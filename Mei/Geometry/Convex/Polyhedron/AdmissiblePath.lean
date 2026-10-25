@@ -191,8 +191,11 @@ the usual homotopies of reparametrization. -/
 theorem toContinuousPath_comp_homotopic (p : AdmissiblePLPath x y) (q : AdmissiblePLPath y z) :
     (toContinuousPath (p.comp q)).Homotopic ((toContinuousPath p).trans (toContinuousPath q)) := by
   induction q with
-  | nil => exact (Path.Homotopic.trans_refl _).symm
+  | nil =>
+    rw [Quiver.Path.comp_nil, toContinuousPath_nil]
+    exact (Path.Homotopic.trans_refl _).symm
   | @cons u v q e ih =>
+    rw [Quiver.Path.comp_cons, toContinuousPath_cons, toContinuousPath_cons]
     exact (ih.hcomp (.refl (Path.segment u.val v.val))).trans
       (Path.Homotopic.trans_assoc _ _ _)
 
@@ -277,12 +280,14 @@ theorem lt_length_of_mem_crossingEvents (p : AdmissiblePLPath x y)
   | nil => simp at ha
   | cons p e ih =>
     rw [Quiver.Path.length_cons]
+    simp only [crossingEvents] at ha
     rcases ha with ha | ⟨b, _, rfl⟩
     · exact Nat.lt_succ_of_lt (ih ha)
     · exact Nat.lt_succ_self _
 
 /-- Reversal sends the crossing at parameter `t` on edge `j` to the crossing at
 parameter `1 - t` on edge `p.length - 1 - j`. -/
+@[simp]
 theorem mem_crossingEvents_reverse (p : AdmissiblePLPath x y) (j : ℕ) (i : ι) (t : ℝ) :
     (j, i, t) ∈ crossingEvents p.reverse ↔
       j < p.length ∧ (p.length - 1 - j, i, 1 - t) ∈ crossingEvents p := by
