@@ -39,6 +39,11 @@ def truncationTransition {k l : ℕ} (h : k ≤ l) :
     d.truncatedLie ℒ l →ₗ⁅R⁆ d.truncatedLie ℒ k :=
   (d.degreeIdeal ℒ l).factor (d.degreeIdeal ℒ k) (d.degreeIdeal_antitone ℒ h)
 
+/-- Truncation transitions are the quotient factors of the nested degree ideals. -/
+theorem truncationTransition_def {k l : ℕ} (h : k ≤ l) :
+    d.truncationTransition ℒ h =
+      (d.degreeIdeal ℒ l).factor (d.degreeIdeal ℒ k) (d.degreeIdeal_antitone ℒ h) := (rfl)
+
 /-- A transition maps each homogeneous piece onto the corresponding piece. -/
 theorem map_truncatedGrading_truncationTransition {k l : ℕ} (h : k ≤ l) (n : N) :
     (d.truncatedGrading ℒ l n).map (d.truncationTransition ℒ h).toLinearMap =
