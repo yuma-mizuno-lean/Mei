@@ -28,8 +28,7 @@ open scoped BigOperators
 
 section
 
-variable {K V : Type*} [Field K] [LinearOrder K] [IsStrictOrderedRing K]
-  [AddCommGroup V] [Module K V]
+variable {K V : Type*} [CommRing K] [AddCommGroup V] [Module K V]
 
 namespace LinearMap
 
@@ -38,13 +37,11 @@ Its coefficients are nonnegative when `f v ≤ 0 ≤ f u`. -/
 def boundaryCombination (f : V →ₗ[K] K) (u v : V) : V :=
   (-f v) • u + f u • v
 
-omit [LinearOrder K] [IsStrictOrderedRing K] in
 /-- The boundary combination uses the explicit coefficients `-f v` and `f u`. -/
 theorem boundaryCombination_def (f : V →ₗ[K] K) (u v : V) :
     f.boundaryCombination u v = (-f v) • u + f u • v := by
   simp only [boundaryCombination]
 
-omit [LinearOrder K] [IsStrictOrderedRing K] in
 /-- The cutting functional vanishes on a boundary combination. -/
 @[simp]
 theorem map_boundaryCombination (f : V →ₗ[K] K) (u v : V) :
@@ -53,6 +50,8 @@ theorem map_boundaryCombination (f : V →ₗ[K] K) (u v : V) :
   ring
 
 end LinearMap
+
+variable [LinearOrder K]
 
 namespace Finset
 
@@ -64,7 +63,6 @@ noncomputable def halfspaceGenerators (s : Finset V) (f : V →ₗ[K] K) : Finse
     ((s ×ˢ s).filter (fun p => 0 < f p.1 ∧ f p.2 < 0)).image
       (fun p => f.boundaryCombination p.1 p.2)
 
-omit [IsStrictOrderedRing K] in
 /-- A cut generator is either retained from the original family or is an explicit
 boundary combination of two original generators with opposite strict signs. -/
 @[simp]
@@ -76,6 +74,13 @@ theorem mem_halfspaceGenerators_iff {s : Finset V} {f : V →ₗ[K] K} {x : V} :
     Finset.mem_product, Prod.exists, exists_and_left, and_assoc]
 
 end Finset
+
+end
+
+section
+
+variable {K V : Type*} [Field K] [LinearOrder K] [IsStrictOrderedRing K]
+  [AddCommGroup V] [Module K V]
 
 namespace PointedCone
 
