@@ -73,6 +73,15 @@ theorem truncatedLieToU_mk (k : ℕ) (x : L) :
       Ideal.Quotient.mk ((F).ideal (k + 1)) (ι R x) := by
   simp [truncatedLieToU]
 
+/-- The finite canonical Lie map takes values in the image of the augmentation ideal. -/
+theorem truncatedLieToU_mem_map_augmentation (k : ℕ) (x : d.truncatedLie ℒ k) :
+    truncatedLieToU d ℒ k x ∈
+      (TauCeti.HopfIdeal.augmentation R U).toIdeal.map
+        (Ideal.Quotient.mk ((F).ideal (k + 1))) := by
+  obtain ⟨x, rfl⟩ := (d.degreeIdeal ℒ k).surjective_mkQ x
+  rw [LieIdeal.mkQ_apply, truncatedLieToU_mk]
+  exact Ideal.mem_map_of_mem _ (TauCeti.UniversalEnvelopingAlgebra.ι_mem_augmentation R L x)
+
 /-- The finite canonical maps commute with lowering the degree cutoff. -/
 theorem factor_truncatedLieToU {k l : ℕ} (h : k ≤ l) (x : d.truncatedLie ℒ l) :
     Ideal.Quotient.factor ((F).antitone (Nat.add_le_add_right h 1))

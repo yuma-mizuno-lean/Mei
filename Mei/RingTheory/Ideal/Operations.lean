@@ -25,6 +25,12 @@ namespace Ideal
 
 variable {A : Type*} [Semiring A]
 
+/-- Every element of a nilpotent left ideal is nilpotent. -/
+theorem isNilpotent_of_mem (I : Ideal A) (hI : IsNilpotent I) {x : A} (hx : x ∈ I) :
+    IsNilpotent x := by
+  obtain ⟨n, hn⟩ := hI
+  exact ⟨n, Ideal.pow_eq_zero_of_mem hn le_rfl hx⟩
+
 /-- A product of four elements of a left ideal vanishes if its fourth power is bottom. -/
 theorem mul_four_eq_zero_of_pow_eq_bot (I : Ideal A) (hI : I ^ 4 = ⊥)
     {a b c d : A} (ha : a ∈ I) (hb : b ∈ I) (hc : c ∈ I) (hd : d ∈ I) :

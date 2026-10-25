@@ -7,6 +7,7 @@ module
 
 public import Mei.Algebra.Lie.UniversalEnveloping.Grading
 public import Mei.RingTheory.GradedAlgebra.DegreeFiltration
+public import Mei.RingTheory.Ideal.Operations
 public import TauCeti.Algebra.Lie.UniversalEnveloping.Augmentation.Basic
 
 /-!
@@ -133,5 +134,21 @@ theorem augmentation_pow_le_degreeFiltration (hpos : ∀ n, d n ≤ 0 → ℒ n 
     intro x hx y hy
     simpa only [Nat.add_comm 1 k] using (degreeFiltration ℒ d hneg).mul_mem
       (augmentation_le_degreeFiltration_one ℒ d hpos hx) (ih hy)
+
+/-- The augmentation image in the order-`k` degree quotient has vanishing
+`(k + 1)`st power for a strictly positive Lie grading. -/
+theorem augmentation_map_quotient_pow_eq_bot
+    (hpos : ∀ n, d n ≤ 0 → ℒ n = ⊥) (k : ℕ) :
+    let F := degreeFiltration ℒ d (fun n hn => hpos n hn.le)
+    let J := (TauCeti.HopfIdeal.augmentation R (_root_.UniversalEnvelopingAlgebra R L)).toIdeal
+    (J.map (Ideal.Quotient.mk (F.ideal (k + 1)))) ^ (k + 1) = ⊥ := by
+  dsimp only
+  rw [← Ideal.map_pow_of_surjective _ _ Ideal.Quotient.mk_surjective]
+  apply eq_bot_iff.mpr
+  calc
+    _ ≤ Ideal.map (Ideal.Quotient.mk _) ((degreeFiltration ℒ d
+        (fun n hn => hpos n hn.le)).ideal (k + 1)) :=
+      Ideal.map_mono (augmentation_pow_le_degreeFiltration ℒ d hpos (k + 1))
+    _ = ⊥ := Ideal.map_quotient_self _
 
 end Mei.UniversalEnvelopingAlgebra
