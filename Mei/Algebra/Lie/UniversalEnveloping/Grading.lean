@@ -94,10 +94,9 @@ instance homogeneousSubmodule_gradedMonoid : SetLike.GradedMonoid (homogeneousSu
 variable [DecidableEq Γ] [GradedLieAlgebra ℒ]
 
 private noncomputable def gradedιLinear : L →ₗ[R] ⨁ n, homogeneousSubmodule ℒ n :=
-  (_root_.DirectSum.toModule R Γ (⨁ n, homogeneousSubmodule ℒ n) fun n =>
-    (_root_.DirectSum.lof R Γ (fun n => ↥(homogeneousSubmodule ℒ n)) n).comp
-      (((ι R : L →ₗ⁅R⁆ U).toLinearMap.comp (ℒ n).subtype).codRestrict _
-        fun x => ι_mem_homogeneousSubmodule ℒ x.property)).comp
+  (_root_.DirectSum.lmap fun n =>
+    (((ι R : L →ₗ⁅R⁆ U).toLinearMap.comp (ℒ n).subtype).codRestrict _
+      fun x => ι_mem_homogeneousSubmodule ℒ x.property)).comp
     (_root_.DirectSum.decomposeLinearEquiv ℒ).toLinearMap
 
 private theorem gradedιLinear_apply {n : Γ} (x : ℒ n) :
@@ -105,7 +104,7 @@ private theorem gradedιLinear_apply {n : Γ} (x : ℒ n) :
       ⟨ι R (x : L), ι_mem_homogeneousSubmodule ℒ x.property⟩ := by
   simp only [gradedιLinear, LinearMap.comp_apply, LinearEquiv.coe_coe,
     _root_.DirectSum.decomposeLinearEquiv_apply, _root_.DirectSum.decompose_coe,
-    ← _root_.DirectSum.lof_eq_of R, _root_.DirectSum.toModule_lof]
+    _root_.DirectSum.lmap_of]
   rfl
 
 private theorem gradedιLinear_map_lie (x y : L) :
