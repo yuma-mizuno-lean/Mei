@@ -42,16 +42,18 @@ theorem isExposed_slice_one_of_homogenization {P : Set V} {G : PointedCone ℝ (
     G.convex.affine_preimage ((AffineMap.id ℝ V).prod (AffineMap.const ℝ V (1 : ℝ)))
   exact hext.isExposed_of_isConvexPolyhedron hP hconv
 
-/-- Faces meeting height one are closed because they are convex extreme
-subsets of a polyhedral cone. No finite-generation assumption is needed. -/
+/-- Every face of a polyhedral homogenization is closed, including faces entirely
+at height zero. No finite-generation assumption is needed. -/
 theorem isClosed_of_homogenization {P : Set V} {G : PointedCone ℝ (V × ℝ)}
-    (hG : G.IsFaceOf (Set.homogenization P)) (hP : TauCeti.IsConvexPolyhedron P)
-    (hne : {x : V | (x, (1 : ℝ)) ∈ G}.Nonempty) : IsClosed (G : Set (V × ℝ)) := by
-  obtain ⟨p, hp⟩ := hne
-  have hPne : P.Nonempty :=
-    ⟨p, (hP.convex.mem_homogenization_one_iff hP.isClosed).mp (hG.le hp)⟩
-  exact (hG.isExtreme.isConvexPolyhedron
-    (Mei.Convex.isConvexPolyhedron_homogenization hP hPne) G.convex).isClosed
+    (hG : G.IsFaceOf (Set.homogenization P)) (hP : TauCeti.IsConvexPolyhedron P) :
+    IsClosed (G : Set (V × ℝ)) := by
+  by_cases hPne : P.Nonempty
+  · exact (hG.isExtreme.isConvexPolyhedron
+      (Mei.Convex.isConvexPolyhedron_homogenization hP hPne) G.convex).isClosed
+  · have hGbot : G = ⊥ := le_bot_iff.mp (by
+      simpa only [Set.not_nonempty_iff_eq_empty.mp hPne, Set.homogenization_empty] using hG.le)
+    rw [hGbot, Submodule.bot_coe]
+    exact isClosed_singleton
 
 end PointedCone.IsFaceOf
 
@@ -84,7 +86,7 @@ def nonemptyExposedFaceOrderIso {P : Set V} (hP : TauCeti.IsConvexPolyhedron P) 
     apply PointedCone.Face.ext
     intro z
     have heq := G.val.toPointedCone.homogenization_slice_one
-      (G.val.isFaceOf.isClosed_of_homogenization hP G.property)
+      (G.val.isFaceOf.isClosed_of_homogenization hP)
       (fun w hw => homogenization_height_nonneg (G.val.isFaceOf.le hw)) G.property
     simpa only [← PointedCone.Face.mem_toPointedCone] using SetLike.ext_iff.mp heq z
   map_rel_iff' := by
