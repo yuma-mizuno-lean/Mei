@@ -6,8 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Algebra.Lie.Graded.Completion
-public import Mei.Algebra.Lie.UniversalEnveloping.DegreeFiltration
-public import Mei.RingTheory.FilteredAlgebra.Algebra
+public import Mei.Algebra.Lie.UniversalEnveloping.Completion
 
 /-!
 # The canonical map into a completed enveloping algebra
@@ -16,6 +15,7 @@ For a positively graded Lie algebra, the canonical enveloping map descends at
 every degree cutoff and extends to a Lie homomorphism from the compatible-family
 Lie completion into the degree completion of its enveloping algebra. The finite
 maps commute with transitions, and projections characterize the completed map.
+Its image consists of primitive elements in the first completion ideal.
 This construction works over an arbitrary commutative ring, without a PBW or
 freeness hypothesis; it does not assert injectivity.
 
@@ -38,8 +38,8 @@ variable {N R L : Type*} [AddCommMonoid N] [CommRing R]
 
 local notation "U" => _root_.UniversalEnvelopingAlgebra R L
 
-local notation "F" => degreeFiltration ℒ d.degree
-  (fun n hn => d.eq_bot_of_degree_nonpos ℒ n (le_of_lt hn))
+local notation "hneg" => (fun n hn => d.eq_bot_of_degree_nonpos ℒ n (le_of_lt hn))
+local notation "F" => degreeFiltration ℒ d.degree hneg
 local notation "π" => LieIdeal.completionProjection (d.degreeIdeal ℒ) (d.degreeIdeal_antitone ℒ)
 
 /-- The canonical Lie map sends the ideal above cutoff `k` into enveloping order `k + 1`. -/
@@ -146,5 +146,36 @@ theorem completedLieToU_unique (f : d.completedLie ℒ →ₗ⁅R⁆ (F).complet
   apply LieHom.ext
   intro x
   exact (F).completion_ext fun k => (hf k x).trans (projection_completedLieToU d ℒ k x).symm
+
+/-- The canonical completed Lie image is primitive, without any PBW hypothesis. -/
+@[simp]
+theorem isCompletedPrimitive_completedLieToU (x : d.completedLie ℒ) :
+    IsCompletedPrimitive ℒ d.degree hneg (completedLieToU d ℒ x) := by
+  rw [isCompletedPrimitive_iff, Mei.AlgFiltration.completedTensor_one_right,
+    Mei.AlgFiltration.completedTensor_one_left]
+  apply (Mei.AlgFiltration.tensorProduct R (F) (F)).completion_ext
+  intro k
+  obtain ⟨y, hy⟩ := (d.degreeIdeal ℒ k).surjective_mkQ (π k x)
+  have he : (F).projection k (completedLieToU d ℒ x) =
+      (F).projection k ((F).toCompletion (_root_.UniversalEnvelopingAlgebra.ι R y)) := by
+    rw [projection_completedLieToU, ← hy, LieIdeal.mkQ_apply, truncatedLieToU_mk,
+      Mei.AlgFiltration.projection_toCompletion]
+  have hp := isCompletedPrimitive_toCompletion_ι ℒ d.degree hneg y
+  rw [isCompletedPrimitive_iff, Mei.AlgFiltration.completedTensor_one_right,
+    Mei.AlgFiltration.completedTensor_one_left] at hp
+  simpa only [map_add, projection_completedCoproduct,
+    Mei.AlgFiltration.projection_includeLeftCompletion,
+    Mei.AlgFiltration.projection_includeRightCompletion, ← he] using
+    congrArg ((Mei.AlgFiltration.tensorProduct R (F) (F)).projection k) hp
+
+/-- The canonical completed Lie image lies in the first enveloping completion ideal. -/
+theorem completedLieToU_mem_completionIdeal_one (x : d.completedLie ℒ) :
+    completedLieToU d ℒ x ∈ (F).completionIdeal 1 := by
+  rw [mem_completionIdeal_one_iff_counit_eq_zero ℒ d.degree hneg
+    (fun n hn => d.eq_bot_of_degree_nonpos ℒ n hn),
+    completedCounit_eq_quotientCounit ℒ d.degree hneg 0, projection_completedLieToU]
+  obtain ⟨y, hy⟩ := (d.degreeIdeal ℒ 0).surjective_mkQ (π 0 x)
+  rw [← hy, LieIdeal.mkQ_apply, truncatedLieToU_mk, quotientCounit_mk]
+  exact TauCeti.UniversalEnvelopingAlgebra.counit_ι R L y
 
 end Mei.UniversalEnvelopingAlgebra
