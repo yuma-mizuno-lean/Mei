@@ -49,14 +49,6 @@ local notation "T" => Ideal.tensorFiltration R
   (Mei.AlgFiltration.ideal (degreeFiltration ℒ d hneg))
   (Mei.AlgFiltration.ideal (degreeFiltration ℒ d hneg))
 
-/-- Every lifted grading derivation preserves the integral degree filtration. -/
-theorem euler_mem_degreeFiltration {k : ℕ} {a : U} (ha : a ∈ (F).ideal k) :
-    (Y : Module.End R U) a ∈ (F).ideal k := by
-  rw [degreeFiltration_ideal, Mei.GradedAlgebra.mem_degreeIdeal_iff,
-    Mei.DirectSum.mem_degreeTail_iff] at ha ⊢
-  intro n hn
-  rw [euler_component ℒ φ, ha n hn, smul_zero]
-
 /-- Antipode-Euler contraction preserves total tensor order. -/
 theorem dynkinContraction_mem_degreeFiltration {k : ℕ} {t : U ⊗[R] U} (ht : t ∈ T k) :
     LinearMap.mul' R U (TensorProduct.map S (Y : Module.End R U) t) ∈ (F).ideal k := by
