@@ -24,6 +24,15 @@ Wall labels commute whenever their affine supporting directions agree, even for
 different primitive degrees. The proof restricts the real normal kernels to the lattice
 and uses the proportional-normal commutation theorem for completed wall groups.
 
+The wall data and direction convention follow Travis Mandel,
+*Scattering diagrams, theta functions, and refined tropical curve counts*,
+[arXiv:1503.06183v5](https://arxiv.org/abs/1503.06183v5), Definition 2.2 and Remark 2.3.
+Label commutation corresponds to the observation immediately preceding equation (8).
+Here we allow general rational-normal polyhedral supports with arbitrary real offsets,
+and express incomingness by membership of the positive projected degree in the support's
+recession cone. This affine adaptation preserves incomingness under translation and
+includes zero projected degrees.
+
 The constructions use `Mei.DirectedWallSpaces.wallGroup`,
 `TauCeti.Toric.IsIntegralLattice.realCharacter`, Mathlib's `AffineEquiv.constVAdd`
 and `Module.Dual.finrank_ker_add_one_of_ne_zero`.
