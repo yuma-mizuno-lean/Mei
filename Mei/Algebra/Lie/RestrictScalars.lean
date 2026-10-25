@@ -11,7 +11,8 @@ public import Mathlib.Algebra.Module.Submodule.RestrictScalars
 /-!
 # Restriction of scalars for Lie ideals and quotients
 
-Lie submodules restrict scalars on the same carrier. In particular, an ideal of
+Lie subalgebras inherit compatible restricted Lie algebra structures, and Lie
+submodules restrict scalars on the same carrier. In particular, an ideal of
 an `S`-Lie algebra remains an ideal for a compatible `R`-Lie algebra structure.
 The quotient by the restricted ideal is canonically isomorphic to the scalar
 restriction of the original quotient. Lie homomorphisms also restrict scalars,
@@ -22,6 +23,17 @@ The quotient comparison refines Mathlib's
 -/
 
 public section
+
+namespace LieSubalgebra
+
+variable {R S L : Type*} [CommRing R] [CommRing S] [LieRing L]
+  [LieAlgebra S L] [LieAlgebra R L] [SMul R S] [IsScalarTower R S L]
+
+/-- A Lie subalgebra retains the ambient Lie algebra structure over restricted scalars. -/
+instance instLieAlgebraRestrictScalars (K : LieSubalgebra S L) : LieAlgebra R K where
+  lie_smul r x y := Subtype.ext (lie_smul r (x : L) (y : L))
+
+end LieSubalgebra
 
 namespace LieSubmodule
 
