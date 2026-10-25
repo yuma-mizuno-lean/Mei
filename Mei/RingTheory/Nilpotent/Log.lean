@@ -10,9 +10,9 @@ public import TauCeti.RingTheory.Nilpotent.Log
 /-!
 # Products of commuting unipotent elements
 
-The finite logarithm preserves commutation and converts a product of commuting
-unipotent elements to a sum. The proof uses the finite polynomial definition and
-the exponential/logarithm inverse identities supplied by Tau Ceti.
+The finite logarithm supplied by Tau Ceti preserves commutation and converts a
+product of commuting unipotent elements to a sum. This identity turns group-like
+coproduct identities into primitive identities in finite enveloping algebra quotients.
 -/
 
 public section

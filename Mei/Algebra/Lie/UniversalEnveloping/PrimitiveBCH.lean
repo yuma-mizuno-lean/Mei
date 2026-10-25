@@ -15,8 +15,9 @@ public import Mei.RingTheory.FilteredAlgebra.Quotient
 In a positively graded enveloping algebra over a commutative rational algebra,
 the logarithm of a product of two exponentials satisfies the primitive identity
 at every finite degree cutoff. Its coproduct takes values in the quotient by
-the total tensor filtration, via `quotientCoproduct`. The proof uses the two
-commuting tensor inclusions and the finite logarithm product formula.
+the total tensor filtration, via `quotientCoproduct`. This identity supplies the
+primitive condition needed to reconstruct finite BCH Lie elements from their
+enveloping algebra images.
 -/
 
 public section
