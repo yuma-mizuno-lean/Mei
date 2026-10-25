@@ -9,6 +9,8 @@ public import Mei.RingTheory.FilteredAlgebra.Basic
 public import Mathlib.RingTheory.Ideal.Quotient.Operations
 public import Mathlib.Algebra.Category.Ring.Limits
 public import Mathlib.CategoryTheory.Category.Preorder
+public import Mathlib.RingTheory.Nilpotent.Defs
+import Mathlib.Algebra.Order.Ring.Synonym
 
 /-!
 # Completion of a ring along an ideal filtration
@@ -20,7 +22,8 @@ compatible families of ring homomorphisms exhibit this ring as the inverse limit
 
 Its induced filtration consists, in positive order, of the kernels of the
 projections. It is multiplicative and separated, and the canonical map pulls it
-back to the original filtration.
+back to the original filtration. Elements of the first completion ideal have
+nilpotent projections at every finite order, with an explicit vanishing power.
 
 The carrier uses Mathlib's `RingCat.sectionsSubring`; the transition maps use
 `Ideal.Quotient.factor`. No commutativity or separatedness is assumed.
@@ -270,5 +273,20 @@ theorem iInf_completionIdeal_eq_bot : ⨅ k, F.completionIdeal k = ⊥ := by
   intro k
   simpa only [map_zero] using
     RingHom.mem_ker.mp ((Submodule.mem_iInf F.completionIdeal).mp hx (k + 1))
+
+/-- The order-`k` projection of an element of the first completion ideal has
+vanishing `(k + 1)`-st power. -/
+theorem projection_pow_eq_zero {x : F.completion}
+    (hx : x ∈ F.completionIdeal 1) (k : ℕ) :
+    F.projection k x ^ (k + 1) = 0 := by
+  have hx' : x ∈ F.completionFiltration.orderDual (OrderDual.toDual 1) := by
+    simpa only [orderDual_apply, OrderDual.ofDual_toDual, completionFiltration_ideal] using hx
+  have hp := SetLike.pow_mem_graded (k + 1) hx'
+  simpa [orderDual_apply, nsmul_eq_mul, completionIdeal_succ, RingHom.mem_ker] using hp
+
+/-- Elements of the first completion ideal are nilpotent at every finite order. -/
+theorem isNilpotent_projection {x : F.completion}
+    (hx : x ∈ F.completionIdeal 1) (k : ℕ) : IsNilpotent (F.projection k x) :=
+  ⟨k + 1, F.projection_pow_eq_zero hx k⟩
 
 end Mei.AlgFiltration
