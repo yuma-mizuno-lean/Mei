@@ -276,6 +276,18 @@ theorem isConvexPolyhedron {P F : Set V} (hF : IsExtreme ℝ P F)
 
 end IsExtreme
 
+namespace IsExposed
+
+/-- Exposed faces of a polyhedron are closed under taking exposed subfaces.
+The polyhedral hypothesis supplies transitivity, which fails for arbitrary convex sets. -/
+theorem trans_of_isConvexPolyhedron {P F G : Set V}
+    (hF : IsExposed ℝ P F) (hG : IsExposed ℝ F G)
+    (hP : TauCeti.IsConvexPolyhedron P) : IsExposed ℝ P G :=
+  (hF.isExtreme.trans hG.isExtreme).isExposed_of_isConvexPolyhedron hP
+    (hG.convex (hF.convex hP.convex))
+
+end IsExposed
+
 namespace TauCeti.IsConvexPolyhedron
 
 /-- An arbitrary convex polyhedron has finitely many convex extreme subsets. -/
