@@ -11,6 +11,7 @@ public import Mathlib.Algebra.Category.Ring.Limits
 public import Mathlib.CategoryTheory.Category.Preorder
 public import Mathlib.RingTheory.Nilpotent.Defs
 import Mathlib.Algebra.Order.Ring.Synonym
+import Mathlib.RingTheory.Nilpotent.Basic
 
 /-!
 # Completion of a ring along an ideal filtration
@@ -24,6 +25,8 @@ Its induced filtration consists, in positive order, of the kernels of the
 projections. It is multiplicative and separated, and the canonical map pulls it
 back to the original filtration. Elements of the first completion ideal have
 nilpotent projections at every finite order, with an explicit vanishing power.
+Consequently, every element congruent to one modulo the first completion ideal is
+a unit, with inverse assembled from the inverses at all finite orders.
 
 The carrier uses Mathlib's `RingCat.sectionsSubring`; the transition maps use
 `Ideal.Quotient.factor`. No commutativity or separatedness is assumed.
@@ -288,5 +291,28 @@ theorem projection_pow_eq_zero {x : F.completion}
 theorem isNilpotent_projection {x : F.completion}
     (hx : x ∈ F.completionIdeal 1) (k : ℕ) : IsNilpotent (F.projection k x) :=
   ⟨k + 1, F.projection_pow_eq_zero hx k⟩
+
+/-- Every element congruent to one modulo the first completion ideal is a unit. -/
+theorem isUnit_of_sub_one_mem {u : F.completion}
+    (hu : u - 1 ∈ F.completionIdeal 1) : IsUnit u := by
+  have hunit (k : ℕ) : IsUnit (F.projection k u) := by
+    simpa only [map_sub, map_one, sub_add_cancel] using
+      (F.isNilpotent_projection hu k).isUnit_add_one
+  let w : ∀ k : ℕᵒᵖ, A ⧸ F.ideal (k.unop + 1) := fun k => ↑(hunit k.unop).unit⁻¹
+  have hw : w ∈ F.completion := (F.mem_completion_iff w).mpr fun {k l} h => by
+    have hmap : Units.map (Ideal.Quotient.factor
+        (F.antitone (Nat.add_le_add_right h 1))).toMonoidHom (hunit l).unit =
+        (hunit k).unit :=
+      Units.ext (F.factor_projection h u)
+    simp only [w, ← hmap, Units.coe_map_inv]
+    rfl
+  let v : F.completion := ⟨w, hw⟩
+  refine ⟨⟨u, v, ?_, ?_⟩, rfl⟩
+  · exact F.completion_ext fun k => by
+      rw [map_mul, map_one]
+      exact (hunit k).mul_val_inv
+  · exact F.completion_ext fun k => by
+      rw [map_mul, map_one]
+      exact (hunit k).val_inv_mul
 
 end Mei.AlgFiltration
