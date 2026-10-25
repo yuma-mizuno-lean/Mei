@@ -74,10 +74,10 @@ jobs:
           persist-credentials: false
 
       - name: Prepare pinned shared tools
-        uses: yuma-mizuno-lean/TauCetiTools/.github/actions/setup@c25e351f20b1dc31660bc38c3333e0c259137b28
+        uses: yuma-mizuno-lean/TauCetiTools/.github/actions/setup@7405c6bc681341dc54c775bc6f5e6de533120ba1
         with:
           tools-repository: yuma-mizuno-lean/TauCetiTools
-          tools-ref: c25e351f20b1dc31660bc38c3333e0c259137b28
+          tools-ref: 7405c6bc681341dc54c775bc6f5e6de533120ba1
           project-directory: .
       - name: Check out workflow-pinned publication planning tools
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262

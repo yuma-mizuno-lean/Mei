@@ -8,6 +8,7 @@ module
 public import Mei.Algebra.Lie.UniversalEnveloping.Coproduct
 public import Mei.RingTheory.FilteredAlgebra.AlgHom
 public import Mei.RingTheory.FilteredAlgebra.TensorProduct.Completion
+public import Mathlib.Algebra.Group.Submonoid.Units
 
 /-!
 # Coproduct and primitive elements in completed enveloping algebras
@@ -19,7 +20,10 @@ thus extends to the completion as an algebra homomorphism to the scalar ring.
 
 Completed primitive elements form a Lie subalgebra, and the canonical Lie map
 lands in it. Completed group-like elements, whose counit is one and whose coproduct
-is their completed tensor square, form a submonoid. These constructions require
+is their completed tensor square, form a submonoid, and group-like units form a
+subgroup. For a strictly positive grading every group-like element is congruent to
+one, hence a unit, so this subgroup accounts for the whole submonoid. These
+constructions require
 only a nonnegative integral degree on the Lie grading, over any commutative ring,
 without a basis or finiteness assumption.
 The tensor target is completed by total degree; no coalgebra structure on the
@@ -27,7 +31,8 @@ ordinary degree quotients is used.
 
 The construction uses `Mei.AlgFiltration.mapCompletionₐ`, the completed tensor
 inclusions, Mathlib's `Ideal.Quotient.liftₐ` and Tau Ceti's primitive-generator
-formula `TauCeti.UniversalEnvelopingAlgebra.comul_ι`.
+formula `TauCeti.UniversalEnvelopingAlgebra.comul_ι`. The group-like subgroup uses
+Mathlib's `MonoidHom.eqLocus` and `MonoidHom.ker` on units.
 -/
 
 public section
@@ -193,6 +198,11 @@ noncomputable def completedPrimitives : LieSubalgebra R (F).completion where
 theorem mem_completedPrimitives (x : (F).completion) :
     x ∈ completedPrimitives ℒ d hneg ↔ IsCompletedPrimitive ℒ d hneg x := Iff.rfl
 
+/-- The negative of a completed primitive element is primitive. -/
+theorem IsCompletedPrimitive.neg {x : (F).completion}
+    (hx : IsCompletedPrimitive ℒ d hneg x) : IsCompletedPrimitive ℒ d hneg (-x) :=
+  (completedPrimitives ℒ d hneg).neg_mem hx
+
 /-- Every canonical Lie generator is primitive in the completion. -/
 theorem isCompletedPrimitive_toCompletion_ι (x : L) :
     IsCompletedPrimitive ℒ d hneg ((F).toCompletion (ι R x)) := by
@@ -263,5 +273,78 @@ noncomputable def completedGroupLikeSubmonoid : Submonoid (F).completion where
 @[simp]
 theorem mem_completedGroupLikeSubmonoid (x : (F).completion) :
     x ∈ completedGroupLikeSubmonoid ℒ d hneg ↔ IsCompletedGroupLike ℒ d hneg x := Iff.rfl
+
+/-- The subgroup of units whose counit is one and whose completed coproduct
+is their tensor square. -/
+noncomputable def completedGroupLikeSubgroup : Subgroup (F).completionˣ :=
+  let diagonal : (F).completionˣ →* (T).completion :=
+    { toFun := fun u => (F).completedTensor (R := R) (F) u u
+      map_one' := by simp
+      map_mul' := fun u v => (F).completedTensor_mul (F) u v u v }
+  ((completedCoproduct ℒ d hneg).toMonoidHom.comp (Units.coeHom _)).eqLocus diagonal ⊓
+    ((completedCounit ℒ d hneg).toMonoidHom.comp (Units.coeHom _)).ker
+
+/-- Membership in the subgroup is precisely the group-like condition on the value. -/
+@[simp]
+theorem mem_completedGroupLikeSubgroup (u : (F).completionˣ) :
+    u ∈ completedGroupLikeSubgroup ℒ d hneg ↔
+      IsCompletedGroupLike ℒ d hneg (u : (F).completion) := by
+  simp [completedGroupLikeSubgroup, MonoidHom.eqLocus, MonoidHom.mem_eqLocusM,
+    isCompletedGroupLike_iff, and_comm]
+
+/-- The inverse of a group-like unit is group-like. -/
+theorem IsCompletedGroupLike.inv {u : (F).completionˣ}
+    (hu : IsCompletedGroupLike ℒ d hneg (u : (F).completion)) :
+    IsCompletedGroupLike ℒ d hneg (u⁻¹ : (F).completionˣ) := by
+  exact (mem_completedGroupLikeSubgroup ℒ d hneg u⁻¹).mp
+    ((completedGroupLikeSubgroup ℒ d hneg).inv_mem
+      ((mem_completedGroupLikeSubgroup ℒ d hneg u).mpr hu))
+
+/-- Every completed group-like element is invertible for a strictly positive grading. -/
+theorem IsCompletedGroupLike.isUnit
+    (hpos : ∀ n, d n ≤ 0 → ℒ n = ⊥) {u : (F).completion}
+    (hu : IsCompletedGroupLike ℒ d hneg u) : IsUnit u :=
+  (F).isUnit_of_sub_one_mem (hu.sub_one_mem ℒ d hneg hpos)
+
+/-- Forgetting that group-like units are units recovers all group-like elements. -/
+theorem ofUnits_completedGroupLikeSubgroup
+    (hpos : ∀ n, d n ≤ 0 → ℒ n = ⊥) :
+    (completedGroupLikeSubgroup ℒ d hneg).ofUnits =
+      completedGroupLikeSubmonoid ℒ d hneg := by
+  ext u
+  constructor
+  · rintro ⟨v, hv, rfl⟩
+    exact (mem_completedGroupLikeSubmonoid ℒ d hneg _).mpr
+      ((mem_completedGroupLikeSubgroup ℒ d hneg v).mp hv)
+  · intro hu
+    have hg := (mem_completedGroupLikeSubmonoid ℒ d hneg u).mp hu
+    have hunit := hg.isUnit ℒ d hneg hpos
+    exact ⟨hunit.unit, (mem_completedGroupLikeSubgroup ℒ d hneg _).mpr
+      (by simpa only [hunit.unit_spec] using hg), hunit.unit_spec⟩
+
+/-- The group-like submonoid is multiplicatively equivalent to the subgroup of
+group-like units. -/
+noncomputable def completedGroupLikeEquivUnits
+    (hpos : ∀ n, d n ≤ 0 → ℒ n = ⊥) :
+    completedGroupLikeSubmonoid ℒ d hneg ≃*
+      completedGroupLikeSubgroup ℒ d hneg :=
+  (MulEquiv.submonoidCongr (ofUnits_completedGroupLikeSubgroup ℒ d hneg hpos).symm).trans
+    (completedGroupLikeSubgroup ℒ d hneg).ofUnitsEquivType
+
+/-- The group-like equivalence preserves the value in the completed algebra. -/
+@[simp]
+theorem coe_completedGroupLikeEquivUnits
+    (hpos : ∀ n, d n ≤ 0 → ℒ n = ⊥)
+    (u : completedGroupLikeSubmonoid ℒ d hneg) :
+    ((completedGroupLikeEquivUnits ℒ d hneg hpos u).val : (F).completion) = u :=
+  (Subgroup.unit_of_mem_ofUnits_spec_val_eq_of_mem _ _)
+
+/-- The inverse equivalence forgets the unit structure. -/
+@[simp]
+theorem coe_completedGroupLikeEquivUnits_symm
+    (hpos : ∀ n, d n ≤ 0 → ℒ n = ⊥)
+    (u : completedGroupLikeSubgroup ℒ d hneg) :
+    ((completedGroupLikeEquivUnits ℒ d hneg hpos).symm u : (F).completion) = u.val :=
+  (rfl)
 
 end Mei.UniversalEnvelopingAlgebra

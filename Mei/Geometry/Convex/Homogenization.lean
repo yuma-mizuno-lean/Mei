@@ -20,6 +20,8 @@ In a Hausdorff space the empty carrier gives the zero cone. Positive-height
 slices recover a closed convex base after rescaling. Closure is essential for
 the height-zero directions of an unbounded base. Conversely, a closed cone in
 nonnegative heights meeting height one is the homogenization of that slice.
+Pulling back its lineality to height zero recovers the lineality of the
+recession cone, providing a bridge from cone faces to affine faces.
 -/
 
 public section
@@ -215,6 +217,16 @@ theorem _root_.Convex.mem_homogenization_zero_iff {P : Set V} (hconvex : _root_.
     (v, (0 : ℝ)) ∈ homogenization P ↔ v ∈ recessionCone P :=
   ⟨hconvex.mem_recessionCone_of_mem_homogenization_zero hclosed,
     mem_homogenization_zero_of_mem_recessionCone hne⟩
+
+/-- The lineality of a nonempty closed convex set's recession cone is the
+height-zero pullback of the lineality of its homogenization. -/
+theorem _root_.Convex.lineal_recessionCone_eq_comap {P : Set V}
+    (hconvex : _root_.Convex ℝ P) (hne : P.Nonempty) (hclosed : IsClosed P) :
+    (recessionCone P).lineal =
+      (homogenization P).lineal.comap (LinearMap.inl ℝ V ℝ) := by
+  ext v
+  simp only [Submodule.mem_comap, LinearMap.inl_apply, PointedCone.mem_lineal,
+    Prod.neg_mk, neg_zero, hconvex.mem_homogenization_zero_iff hne hclosed]
 
 end Topology
 

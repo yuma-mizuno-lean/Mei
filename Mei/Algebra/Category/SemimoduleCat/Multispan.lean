@@ -8,6 +8,8 @@ module
 public import Mei.Algebra.Category.SemimoduleCat.Sections
 public import Mathlib.CategoryTheory.Limits.Shapes.Multiequalizer
 public import Mathlib.LinearAlgebra.Prod
+public import Mathlib.LinearAlgebra.Pi
+public import Mathlib.Algebra.Module.Submodule.Equiv
 
 /-!
 # Matching families for jointly injective spans
@@ -23,6 +25,13 @@ The incidence category is Mathlib's `WalkingMultispan`: its only nonidentity arr
 two incidences at each face. No finite index set, grading, or surjectivity of either leg is
 required. We use `LinearEquiv.ofBijective` to equip restriction to chamber values with its
 linear inverse; the compatible-family carrier is `SemimoduleCat.sectionsSubmodule`.
+
+Linear chamber maps `α j : E →ₗ[R] I.right j` from an arbitrary semimodule whose incident
+pairs lie in each span image assemble to a linear map `piCompatibleFamilies` into compatible
+families. For jointly injective spans, `sectionsLift` glues them to a linear map into matching
+sections whose face values map to the incident chamber values, and
+`existsUnique_sections_lift_iff` shows that such a gluing exists, and is then
+unique, precisely when every incident pair lies in the span image.
 -/
 
 public section
@@ -48,6 +57,11 @@ theorem mem_compatibleFamilies {s : ∀ j, I.right j} :
     s ∈ I.compatibleFamilies ↔ ∀ b, ∃ x : I.left b,
       I.fst b x = s (J.fst b) ∧ I.snd b x = s (J.snd b) := by
   simp [compatibleFamilies, LinearMap.mem_range, Prod.ext_iff]
+
+/-- Compatibility of a chamber family is membership of each incident pair in the span image. -/
+theorem mem_compatibleFamilies_iff_forall_mem_range {s : ∀ j, I.right j} :
+    s ∈ I.compatibleFamilies ↔ ∀ b, (s (J.fst b), s (J.snd b)) ∈
+      LinearMap.range ((I.fst b).hom.prod (I.snd b).hom) := Iff.rfl
 
 /-- Compatibility for a section of an incidence diagram is determined by its two kinds
 of generating arrows. -/
@@ -157,5 +171,116 @@ theorem snd_matchingFamilyEquiv_symm_apply_left
   exact ((I.mem_sectionsSubmodule_multispan.mp
     ((I.matchingFamilyEquiv hinj).symm s).property).2 b).trans
     (I.matchingFamilyEquiv_symm_apply_right hinj s _)
+
+/-- A reconstructed face value is the unique inverse image of its incident pair. -/
+theorem matchingFamilyEquiv_symm_apply_left
+    (h : ∀ b, Function.Injective ((I.fst b).hom.prod (I.snd b).hom))
+    (s : I.compatibleFamilies) (b : J.L) :
+    ((I.matchingFamilyEquiv h).symm s).val (.left b) =
+      (LinearEquiv.ofInjective ((I.fst b).hom.prod (I.snd b).hom) (h b)).symm
+        ⟨(s.val (J.fst b), s.val (J.snd b)),
+          I.mem_compatibleFamilies_iff_forall_mem_range.mp s.property b⟩ := by
+  apply h b
+  rw [LinearEquiv.ofInjective_symm_apply]
+  simpa only [LinearMap.prod_apply, Function.prod_apply] using
+    Prod.ext (I.fst_matchingFamilyEquiv_symm_apply_left h s b)
+      (I.snd_matchingFamilyEquiv_symm_apply_left h s b)
+
+section Lift
+
+variable {E : Type*} [AddCommMonoid E] [Module R E] (α : ∀ j, E →ₗ[R] I.right j)
+
+/-- Linear chamber maps whose incident pairs lie in each span image, assembled into a linear
+map to compatible chamber families. -/
+def piCompatibleFamilies
+    (hα : ∀ x b, (α (J.fst b) x, α (J.snd b) x) ∈
+      LinearMap.range ((I.fst b).hom.prod (I.snd b).hom)) :
+    E →ₗ[R] I.compatibleFamilies :=
+  (LinearMap.pi α).codRestrict I.compatibleFamilies fun x =>
+    I.mem_compatibleFamilies_iff_forall_mem_range.mpr (hα x)
+
+/-- The assembled compatible family evaluates to the given chamber maps. -/
+@[simp]
+theorem piCompatibleFamilies_apply
+    (hα : ∀ x b, (α (J.fst b) x, α (J.snd b) x) ∈
+      LinearMap.range ((I.fst b).hom.prod (I.snd b).hom)) (x : E) (j : J.R) :
+    (I.piCompatibleFamilies α hα x).val j = α j x := (rfl)
+
+/-- For jointly injective face spans, linear chamber maps whose incident pairs lie in each
+span image glue to a linear map into matching sections. -/
+noncomputable def sectionsLift
+    (h : ∀ b, Function.Injective ((I.fst b).hom.prod (I.snd b).hom))
+    (hα : ∀ x b, (α (J.fst b) x, α (J.snd b) x) ∈
+      LinearMap.range ((I.fst b).hom.prod (I.snd b).hom)) :
+    E →ₗ[R] SemimoduleCat.sectionsSubmodule I.multispan :=
+  (I.matchingFamilyEquiv h).symm.toLinearMap ∘ₗ I.piCompatibleFamilies α hα
+
+/-- The glued matching section has the given chamber values. -/
+@[simp]
+theorem sectionsLift_apply_right
+    (h : ∀ b, Function.Injective ((I.fst b).hom.prod (I.snd b).hom))
+    (hα : ∀ x b, (α (J.fst b) x, α (J.snd b) x) ∈
+      LinearMap.range ((I.fst b).hom.prod (I.snd b).hom)) (x : E) (j : J.R) :
+    (I.sectionsLift α h hα x).val (.right j) = α j x :=
+  I.matchingFamilyEquiv_symm_apply_right h _ j
+
+/-- The glued matching section is the reconstruction of the assembled compatible family. -/
+theorem sectionsLift_apply
+    (h : ∀ b, Function.Injective ((I.fst b).hom.prod (I.snd b).hom))
+    (hα : ∀ x b, (α (J.fst b) x, α (J.snd b) x) ∈
+      LinearMap.range ((I.fst b).hom.prod (I.snd b).hom)) (x : E) :
+    I.sectionsLift α h hα x =
+      (I.matchingFamilyEquiv h).symm (I.piCompatibleFamilies α hα x) := (rfl)
+
+/-- The glued face value maps to the first incident chamber value. -/
+@[simp]
+theorem fst_sectionsLift_apply_left
+    (h : ∀ b, Function.Injective ((I.fst b).hom.prod (I.snd b).hom))
+    (hα : ∀ x b, (α (J.fst b) x, α (J.snd b) x) ∈
+      LinearMap.range ((I.fst b).hom.prod (I.snd b).hom)) (x : E) (b : J.L) :
+    I.fst b ((I.sectionsLift α h hα x).val (.left b)) = α (J.fst b) x :=
+  I.fst_matchingFamilyEquiv_symm_apply_left h _ b
+
+/-- The glued face value maps to the second incident chamber value. -/
+@[simp]
+theorem snd_sectionsLift_apply_left
+    (h : ∀ b, Function.Injective ((I.fst b).hom.prod (I.snd b).hom))
+    (hα : ∀ x b, (α (J.fst b) x, α (J.snd b) x) ∈
+      LinearMap.range ((I.fst b).hom.prod (I.snd b).hom)) (x : E) (b : J.L) :
+    I.snd b ((I.sectionsLift α h hα x).val (.left b)) = α (J.snd b) x :=
+  I.snd_matchingFamilyEquiv_symm_apply_left h _ b
+
+/-- When each face span is jointly injective, linear chamber maps `α` extend uniquely to a
+linear map into matching sections iff every incident pair `(α (fst b) x, α (snd b) x)` lies in
+the range of the span. The extension is then `sectionsLift`. -/
+theorem existsUnique_sections_lift_iff
+    (h : ∀ b, Function.Injective ((I.fst b).hom.prod (I.snd b).hom)) :
+    (∃! ℓ : E →ₗ[R] SemimoduleCat.sectionsSubmodule I.multispan,
+        ∀ x j, (ℓ x).val (.right j) = α j x) ↔
+      ∀ x b, (α (J.fst b) x, α (J.snd b) x) ∈
+        LinearMap.range ((I.fst b).hom.prod (I.snd b).hom) := by
+  constructor
+  · rintro ⟨ℓ, hℓ, -⟩ x b
+    simpa only [restrictSections_apply, hℓ] using
+      I.mem_compatibleFamilies_iff_forall_mem_range.mp (I.restrictSections (ℓ x)).property b
+  intro hα
+  refine ⟨I.sectionsLift α h hα, I.sectionsLift_apply_right α h hα, fun ℓ hℓ => ?_⟩
+  ext x : 1
+  apply I.restrictSections_injective h
+  ext j
+  simp [hℓ]
+
+end Lift
+
+/-- A face value is the reconstructed common lift exactly when its two images are the
+prescribed chamber values. Joint injectivity gives uniqueness of this lift. -/
+theorem eq_matchingFamilyEquiv_symm_apply_left_iff
+    (hinj : ∀ b, Function.Injective ((I.fst b).hom.prod (I.snd b).hom))
+    (s : I.compatibleFamilies) (b : J.L) {x : I.left b} :
+    x = ((I.matchingFamilyEquiv hinj).symm s).val (.left b) ↔
+      I.fst b x = s.val (J.fst b) ∧ I.snd b x = s.val (J.snd b) := by
+  refine ⟨by rintro rfl; simp, fun h => hinj b (Prod.ext ?_ ?_)⟩
+  · exact h.1.trans (I.fst_matchingFamilyEquiv_symm_apply_left hinj s b).symm
+  · exact h.2.trans (I.snd_matchingFamilyEquiv_symm_apply_left hinj s b).symm
 
 end CategoryTheory.Limits.MultispanIndex

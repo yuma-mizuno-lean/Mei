@@ -15,7 +15,8 @@ In the degree completion of an enveloping algebra over a commutative rational
 algebra, exponential and logarithm exchange primitive elements of the first
 filtration ideal and group-like elements congruent to one. For a strictly
 positive Lie grading every group-like element is congruent to one, so this gives
-an equivalence with all completed group-like elements.
+an equivalence with all completed group-like elements, and with the subgroup of
+group-like units, under which negation corresponds to inversion.
 
 The coproduct is valued in the total-degree tensor completion. Mathlib's
 `IsNilpotent.map_exp` and commutation of the completed tensor inclusions give
@@ -133,5 +134,48 @@ theorem coe_completedPrimitiveExpEquiv_symm
     (u : {u : (F).completion // IsCompletedGroupLike ℒ d hneg u}) :
     ((completedPrimitiveExpEquiv ℒ d hneg hpos).symm u : (F).completion) =
       (F).completedLog ⟨u.val, u.property.sub_one_mem ℒ d hneg hpos⟩ := (rfl)
+
+/-- Exponential coordinates for the subgroup of completed group-like units. -/
+noncomputable def completedPrimitiveExpUnitsEquiv
+    (hpos : ∀ n, d n ≤ 0 → ℒ n = ⊥) :
+    {x : (F).completionIdeal 1 // IsCompletedPrimitive ℒ d hneg x} ≃
+      completedGroupLikeSubgroup ℒ d hneg :=
+  (completedPrimitiveExpEquiv ℒ d hneg hpos).trans
+    ((Equiv.subtypeEquivRight fun u =>
+      (mem_completedGroupLikeSubmonoid ℒ d hneg u).symm).trans
+        (completedGroupLikeEquivUnits ℒ d hneg hpos).toEquiv)
+
+/-- The subgroup-valued exponential has the usual completed exponential as value. -/
+@[simp]
+theorem coe_completedPrimitiveExpUnitsEquiv
+    (hpos : ∀ n, d n ≤ 0 → ℒ n = ⊥)
+    (x : {x : (F).completionIdeal 1 // IsCompletedPrimitive ℒ d hneg x}) :
+    ((completedPrimitiveExpUnitsEquiv ℒ d hneg hpos x).val : (F).completion) =
+      (F).completedExp x.val := by
+  simp [completedPrimitiveExpUnitsEquiv]
+
+/-- The inverse exponential coordinate is the completed logarithm. -/
+@[simp]
+theorem coe_completedPrimitiveExpUnitsEquiv_symm
+    (hpos : ∀ n, d n ≤ 0 → ℒ n = ⊥)
+    (u : completedGroupLikeSubgroup ℒ d hneg) :
+    (((completedPrimitiveExpUnitsEquiv ℒ d hneg hpos).symm u).val : (F).completion) =
+      (F).completedLog ⟨u.val,
+        ((mem_completedGroupLikeSubgroup ℒ d hneg _).mp u.property).sub_one_mem
+          ℒ d hneg hpos⟩ := by
+  simp [completedPrimitiveExpUnitsEquiv]
+
+/-- Negating a primitive exponential coordinate gives the inverse group-like unit. -/
+theorem completedPrimitiveExpUnitsEquiv_neg
+    (hpos : ∀ n, d n ≤ 0 → ℒ n = ⊥)
+    (x : {x : (F).completionIdeal 1 // IsCompletedPrimitive ℒ d hneg x}) :
+    completedPrimitiveExpUnitsEquiv ℒ d hneg hpos ⟨-x.val, x.property.neg ℒ d hneg⟩ =
+      (completedPrimitiveExpUnitsEquiv ℒ d hneg hpos x)⁻¹ := by
+  apply eq_inv_of_mul_eq_one_left
+  apply Subtype.ext
+  apply Units.ext
+  simp only [Subgroup.coe_mul, Units.val_mul, coe_completedPrimitiveExpUnitsEquiv,
+    Subgroup.coe_one, Units.val_one]
+  exact (F).completedExp_neg_mul_completedExp x.val
 
 end Mei.UniversalEnvelopingAlgebra

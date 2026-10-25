@@ -42,6 +42,13 @@ theorem mem_singularSupport {W : ι → Set V} {x : V} :
   simp only [singularSupport, Set.mem_union, Set.mem_iUnion, Set.mem_ofPred_eq,
     Set.mem_inter_iff, exists_prop]
 
+/-- A point of a family member outside singular support lies in its relative interior. -/
+theorem mem_intrinsicInterior_of_notMem_singularSupport {W : ι → Set V} {i : ι} {x : V}
+    (hxi : x ∈ W i) (hx : x ∉ singularSupport W) :
+    x ∈ intrinsicInterior ℝ (W i) := by
+  rw [← intrinsicClosure_sdiff_intrinsicFrontier]
+  exact ⟨subset_intrinsicClosure hxi, fun hf => hx (mem_singularSupport.mpr (Or.inl ⟨i, hf⟩))⟩
+
 /-- For closed wall carriers, singular support is contained in their union.
 Thus points off all walls are automatically outside the actual singular support. -/
 theorem singularSupport_subset_iUnion (W : ι → Set V) (hclosed : ∀ i, IsClosed (W i)) :
