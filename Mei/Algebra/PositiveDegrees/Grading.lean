@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Algebra.PositiveDegrees.Basic
+public import Mei.Algebra.PositiveDegrees.Map
 public import Mathlib.Algebra.DirectSum.Decomposition
 
 /-!
@@ -56,6 +56,24 @@ theorem degreeSubmodule_antitone : Antitone (d.degreeSubmodule ℒ) := by
   refine iSup_le fun n => d.le_degreeSubmodule ℒ ?_
   have := n.property
   omega
+
+/-- A homogeneous linear map carries degree submodules into degree submodules
+at the cutoffs prescribed by its positive degree map. Only the source grading
+needs positive support; no direct-sum decomposition is required. -/
+theorem map_degreeSubmodule_le {N' M' : Type*} [AddCommMonoid N']
+    [AddCommMonoid M'] [Module R M'] {e : PositiveDegrees N'}
+    (T : PositiveDegreeMap d e) (ℒ' : N' → Submodule R M')
+    [IsPositiveGrading d ℒ] (f : M →ₗ[R] M')
+    (hf : ∀ n, ℒ n ≤ (ℒ' (T n)).comap f) (k : ℕ) :
+    (d.degreeSubmodule ℒ (T.modulus k)).map f ≤ e.degreeSubmodule ℒ' k := by
+  rw [degreeSubmodule_def, Submodule.map_iSup]
+  refine iSup_le fun n => ?_
+  by_cases hn : n.val ∈ d.monoid
+  · exact (Submodule.map_le_iff_le_comap.mpr (hf n.val)).trans
+      (e.le_degreeSubmodule ℒ' (T.degree_gt k hn n.property))
+  · rw [IsPositiveGrading.eq_bot (d := d) (ℒ := ℒ) n.val (Or.inl hn),
+      Submodule.map_bot]
+    exact bot_le
 
 variable [DecidableEq N] [DirectSum.Decomposition ℒ]
 
