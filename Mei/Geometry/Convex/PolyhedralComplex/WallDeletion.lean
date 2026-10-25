@@ -36,12 +36,6 @@ variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ 
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
   {C D : FinitePolyhedralComplex h}
 
-/-- Every wall of a subcomplex is an ambient wall with the same carrier. -/
-theorem IsSubcomplex.walls_subset (hDC : D.IsSubcomplex C) : D.walls ⊆ C.walls := by
-  intro P hP
-  obtain ⟨hPD, hd⟩ := (D.mem_cellsOfCodimension 1 P).mp hP
-  exact (C.mem_cellsOfCodimension 1 P).mpr ⟨isSubcomplex_iff.mp hDC hPD, hd⟩
-
 /-- The free-group homomorphism retaining the walls of `D` and killing all others. -/
 def wallDeletion (C D : FinitePolyhedralComplex h) : FreeGroup C.walls →* FreeGroup D.walls :=
   FreeGroup.lift fun P => if hP : P.val ∈ D.walls then FreeGroup.of ⟨P.val, hP⟩ else 1
@@ -129,13 +123,15 @@ theorem segmentCrossingWord_restrict (ν : C.walls → V →ₗ[ℝ] ℝ) (e : x
     | cons a l ih =>
       by_cases ha : a.1.val ∈ D.walls
       · have he : (⟨a.1.val, hW ha⟩ : C.walls) = a.1 := Subtype.ext rfl
-        rw [List.filterMap_cons_some (show f a = _ from dite_eq_left ha)]
+        have hf : f a = some (⟨a.1.val, ha⟩, a.2) := by simp only [f, dite_eq_left ha]
+        rw [List.filterMap_cons_some hf]
         simp only [List.map_cons, List.prod_cons, map_mul, ih]
         congr 1
         simp only [D.crossingLetter_def, C.crossingLetter_def,
           WallComplement.restrictPrefunctor_obj_val, he]
         split_ifs <;> simp only [map_inv, wallDeletion_of, dite_eq_left ha]
-      · rw [List.filterMap_cons_none (show f a = none from dite_eq_right ha)]
+      · have hf : f a = none := by simp only [f, dite_eq_right ha]
+        rw [List.filterMap_cons_none hf]
         rw [List.map_cons, List.prod_cons, map_mul]
         have hz : C.wallDeletion D (C.crossingLetter ν x y a.1) = 1 := by
           simp only [C.crossingLetter_def]
