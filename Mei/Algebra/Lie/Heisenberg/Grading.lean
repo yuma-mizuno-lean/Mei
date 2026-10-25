@@ -54,6 +54,7 @@ theorem heisenbergGrading_two : heisenbergGrading R 2 = R ∙ heisenbergZ R := b
   simp [heisenbergGrading_def]
 
 /-- All pieces other than degrees one and two vanish. -/
+@[simp]
 theorem heisenbergGrading_eq_bot {n : ℤ} (h₁ : n ≠ 1) (h₂ : n ≠ 2) :
     heisenbergGrading R n = ⊥ := by
   simp [heisenbergGrading_def, h₁, h₂]
