@@ -135,6 +135,21 @@ theorem completedCounit_eq_zero_of_mem {x : (F).completion}
   rw [Mei.AlgFiltration.completionIdeal_succ, RingHom.mem_ker] at hx
   rw [completedCounit_eq_quotientCounit ℒ d hneg 0, hx, map_zero]
 
+/-- For a strictly positive Lie grading, the first completion ideal is precisely
+the kernel of the completed counit. -/
+theorem mem_completionIdeal_one_iff_counit_eq_zero
+    (hpos : ∀ n, d n ≤ 0 → ℒ n = ⊥) (x : (F).completion) :
+    x ∈ (F).completionIdeal 1 ↔ completedCounit ℒ d hneg x = 0 := by
+  refine ⟨completedCounit_eq_zero_of_mem ℒ d hneg, fun hx => ?_⟩
+  obtain ⟨a, ha⟩ := Ideal.Quotient.mk_surjective ((F).projection 0 x)
+  have hc : Coalgebra.counit (R := R) a = 0 := by
+    rw [completedCounit_eq_quotientCounit ℒ d hneg 0, ← ha, quotientCounit_mk] at hx
+    exact hx
+  have hm : a ∈ (F).ideal 1 := augmentation_le_degreeFiltration_one ℒ d hpos
+    ((TauCeti.HopfIdeal.mem_augmentation R _).mpr hc)
+  simpa only [Mei.AlgFiltration.completionIdeal_succ, RingHom.mem_ker,
+    ← ha, Ideal.Quotient.eq_zero_iff_mem] using hm
+
 /-- A completed primitive has coproduct `x ⊗ 1 + 1 ⊗ x` in the completed tensor product. -/
 def IsCompletedPrimitive (x : (F).completion) : Prop :=
   completedCoproduct ℒ d hneg x =
@@ -214,6 +229,15 @@ theorem isCompletedGroupLike_iff (x : (F).completion) :
     IsCompletedGroupLike ℒ d hneg x ↔
       completedCounit ℒ d hneg x = 1 ∧
         completedCoproduct ℒ d hneg x = (F).completedTensor (R := R) (F) x x := Iff.rfl
+
+/-- Every completed group-like element is congruent to one for a strictly positive grading. -/
+theorem IsCompletedGroupLike.sub_one_mem
+    (hpos : ∀ n, d n ≤ 0 → ℒ n = ⊥) {u : (F).completion}
+    (hu : IsCompletedGroupLike ℒ d hneg u) :
+    u - 1 ∈ (F).completionIdeal 1 := by
+  have hc := ((isCompletedGroupLike_iff ℒ d hneg u).mp hu).1
+  rw [mem_completionIdeal_one_iff_counit_eq_zero ℒ d hneg hpos, map_sub, map_one,
+    hc, sub_self]
 
 /-- The unit of the completed enveloping algebra is group-like. -/
 @[simp]
