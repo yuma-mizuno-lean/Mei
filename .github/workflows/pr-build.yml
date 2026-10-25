@@ -25,11 +25,11 @@ permissions:
   actions: read
 jobs:
   validate:
-    uses: yuma-mizuno-lean/TauCetiTools/.github/workflows/pr-build.yml@a32e5a0f1f6f31f51ebcba25eeebaf9388703af1
+    uses: yuma-mizuno-lean/TauCetiTools/.github/workflows/pr-build.yml@7405c6bc681341dc54c775bc6f5e6de533120ba1
     with:
       pr: ${{ inputs.pr || '' }}
       tools_repository: yuma-mizuno-lean/TauCetiTools
-      tools_ref: a32e5a0f1f6f31f51ebcba25eeebaf9388703af1
+      tools_ref: 7405c6bc681341dc54c775bc6f5e6de533120ba1
       project_ref: ${{ github.workflow_sha }}
       lean_root: Mei
       roadmap_dir: TauCetiRoadmap
