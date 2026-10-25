@@ -58,16 +58,16 @@ theorem IsLatticeRational.inf_realCharacter_halfspace (hC : IsLatticeRational i 
       (LinearMap.id : Module.Dual ℝ V →ₗ[ℝ] Module.Dual ℝ V) {h.realCharacter m}) := by
   classical
   obtain ⟨s, rfl⟩ := isLatticeRational_iff.mp hC
-  rw [← Finset.coe_image, ← PointedCone.hull_halfspaceGenerators]
+  rw [← Finset.coe_image, ← Finset.hull_halfspaceGenerators]
   apply isLatticeRational_hull_of_forall_mem_range
   intro x hx
-  rcases PointedCone.mem_halfspaceGenerators_iff.mp hx with ⟨hx, _⟩ | ⟨u, hu, v, hv, _, _, rfl⟩
+  rcases Finset.mem_halfspaceGenerators_iff.mp hx with ⟨hx, _⟩ | ⟨u, hu, v, hv, _, _, rfl⟩
   · obtain ⟨n, _, rfl⟩ := Finset.mem_image.mp hx
     exact ⟨n, rfl⟩
   · obtain ⟨u, _, rfl⟩ := Finset.mem_image.mp hu
     obtain ⟨v, _, rfl⟩ := Finset.mem_image.mp hv
     refine ⟨(-m v) • u + m u • v, ?_⟩
-    simp only [map_add, map_zsmul, PointedCone.boundaryCombination_def,
+    simp only [map_add, map_zsmul, LinearMap.boundaryCombination_def,
       h.realCharacter_apply, ← Int.cast_neg, Int.cast_smul_eq_zsmul]
 
 /-- The full ambient space of an integral lattice is generated as a cone by
