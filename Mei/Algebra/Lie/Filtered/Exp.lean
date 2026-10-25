@@ -6,7 +6,6 @@ Authors: Codex
 module
 
 public import Mei.Algebra.Lie.Filtered.Algebra
-public import Mei.Algebra.Lie.DerivationAction
 public import Mei.LinearAlgebra.End.Exp
 public import Mei.RingTheory.FilteredAlgebra.Algebra
 
@@ -35,15 +34,6 @@ variable {N R L A : Type*} [AddCommMonoid N] [CommRing R]
   (F : AlgFiltration A) (d : PositiveDegrees N) (ℒ : N → Submodule R L)
   [DecidableEq N] [DirectSum.Decomposition ℒ] [IsPositiveGrading d ℒ]
   [IsFiltrationRaising d ℒ (F.toModuleFiltration R)] [IsDerivationAction L A]
-
-/-- The finite-order operator retains the Leibniz rule. -/
-theorem quotientLieAction_mul (k : ℕ) (x : L) (a b : A ⧸ F.ideal (k + 1)) :
-    F.quotientLieAction d ℒ k x (a * b) =
-      a * F.quotientLieAction d ℒ k x b + F.quotientLieAction d ℒ k x a * b := by
-  obtain ⟨a, rfl⟩ := Ideal.Quotient.mk_surjective a
-  obtain ⟨b, rfl⟩ := Ideal.Quotient.mk_surjective b
-  rw [← map_mul, quotientLieAction_mk]
-  simp only [IsDerivationAction.lie_mul, map_add, map_mul, quotientLieAction_mk]
 
 variable [Algebra ℚ A]
 

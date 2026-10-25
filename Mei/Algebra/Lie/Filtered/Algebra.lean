@@ -6,6 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Algebra.Lie.Filtered.Action
+public import Mei.Algebra.Lie.DerivationAction
 public import Mei.RingTheory.FilteredAlgebra.Module
 public import Mathlib.RingTheory.Ideal.Quotient.Operations
 
@@ -14,8 +15,8 @@ public import Mathlib.RingTheory.Ideal.Quotient.Operations
 
 A filtration-raising Lie action induces nilpotent representations on the quotient rings
 of a filtered coefficient algebra. These representations intertwine the quotient-ring
-transitions. No derivation assumption is needed for these linear representations; it
-enters when exponentiating them to algebra automorphisms.
+transitions. No derivation assumption is needed for these linear representations; under
+that assumption, they also satisfy the Leibniz rule.
 
 The construction transports the module representation along Mathlib's
 `Submodule.Quotient.restrictScalarsEquiv`, using `LinearEquiv.conjAlgEquiv`.
@@ -47,6 +48,16 @@ theorem quotientLieAction_mk (k : ℕ) (x : L) (a : A) :
       Ideal.Quotient.mk _ ⁅x, a⁆ := by
   simp [quotientLieAction, LinearEquiv.conjAlgEquiv_apply, ← Ideal.Quotient.mk_eq_mk,
     (F.toModuleFiltration R).quotientLieAction_mk d ℒ k x a]
+
+/-- The finite-order operator retains the Leibniz rule. -/
+theorem quotientLieAction_mul [IsDerivationAction L A]
+    (k : ℕ) (x : L) (a b : A ⧸ F.ideal (k + 1)) :
+    F.quotientLieAction d ℒ k x (a * b) =
+      a * F.quotientLieAction d ℒ k x b + F.quotientLieAction d ℒ k x a * b := by
+  obtain ⟨a, rfl⟩ := Ideal.Quotient.mk_surjective a
+  obtain ⟨b, rfl⟩ := Ideal.Quotient.mk_surjective b
+  rw [← map_mul, quotientLieAction_mk]
+  simp only [IsDerivationAction.lie_mul, map_add, map_mul, quotientLieAction_mk]
 
 /-- At order `k`, every acting endomorphism has `(k + 1)`st power zero. -/
 theorem quotientLieAction_pow_eq_zero (k : ℕ) (x : L) :
