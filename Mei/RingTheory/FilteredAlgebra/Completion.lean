@@ -154,6 +154,17 @@ def completionCone : Cone F.quotientDiagram where
         ext x
         exact (F.factor_projection (leOfHom f.unop) x).symm }
 
+/-- The point of the completion cone is the compatible-family completion. -/
+@[simp]
+theorem completionCone_pt : F.completionCone.pt = RingCat.of F.completion := (rfl)
+
+/-- Under the point and quotient-object identifications, the cone legs are the projections. -/
+@[simp]
+theorem completionCone_π_app (k : ℕᵒᵖ) :
+    F.completionCone.π.app k =
+      eqToHom F.completionCone_pt ≫ RingCat.ofHom (F.projection k.unop) ≫
+        eqToHom (F.quotientDiagram_obj k).symm := (rfl)
+
 /-- The compatible-family completion satisfies the categorical inverse-limit property. -/
 def completionConeIsLimit : IsLimit F.completionCone where
   lift s := RingCat.ofHom (F.lift (fun k => (s.π.app (op k)).hom) (by
