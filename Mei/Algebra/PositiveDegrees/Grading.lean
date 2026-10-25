@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Algebra.PositiveDegrees.Map
-public import Mathlib.Algebra.DirectSum.Decomposition
+public import Mei.Algebra.DirectSum.Degree
 
 /-!
 # Positive gradings and degree submodules
@@ -57,6 +57,21 @@ theorem degreeSubmodule_antitone : Antitone (d.degreeSubmodule ℒ) := by
   have := n.property
   omega
 
+/-- Strict positive cutoffs are the corresponding successor degree tails. -/
+theorem degreeSubmodule_eq_degreeTail (k : ℕ) :
+    d.degreeSubmodule ℒ k = DirectSum.degreeTail ℒ d.degree (k + 1) := by
+  apply le_antisymm
+  · rw [degreeSubmodule_def]
+    apply iSup_le
+    intro n
+    apply DirectSum.le_degreeTail
+    have := n.property
+    omega
+  · rw [DirectSum.degreeTail_def]
+    refine iSup_le fun n => iSup_le fun hn => ?_
+    apply d.le_degreeSubmodule ℒ
+    omega
+
 /-- A homogeneous linear map carries degree submodules into degree submodules
 at the cutoffs prescribed by its positive degree map. Only the source grading
 needs positive support; no direct-sum decomposition is required. -/
@@ -81,28 +96,12 @@ variable [DecidableEq N] [DirectSum.Decomposition ℒ]
 theorem mem_degreeSubmodule_iff {x : M} {k : ℕ} :
     x ∈ d.degreeSubmodule ℒ k ↔
       ∀ n, d.degree n ≤ k → (DirectSum.decompose ℒ x n : M) = 0 := by
+  rw [degreeSubmodule_eq_degreeTail, DirectSum.mem_degreeTail_iff]
   constructor
-  · intro hx n hn
-    rw [degreeSubmodule_def] at hx
-    refine Submodule.iSup_induction _ (motive := fun x =>
-      (DirectSum.decompose ℒ x n : M) = 0) hx
-      (fun m x hx => ?_) ?_ (fun x y hx hy => ?_)
-    · exact DirectSum.decompose_of_mem_ne ℒ hx (by
-        intro h
-        have := m.property
-        rw [h] at this
-        omega)
-    · simp
-    · simp [hx, hy]
-  · intro hx
-    classical
-    rw [← DirectSum.sum_support_decompose ℒ x]
-    apply Submodule.sum_mem
-    intro n _
-    by_cases hn : (k : ℤ) < d.degree n
-    · exact d.le_degreeSubmodule ℒ hn (DirectSum.decompose ℒ x n).property
-    · rw [hx n (le_of_not_gt hn)]
-      exact Submodule.zero_mem _
+  · intro h n hn
+    exact h n (by omega)
+  · intro h n hn
+    exact h n (by omega)
 
 /-- A homogeneous element is above the cutoff exactly when it is zero or its degree is above it. -/
 theorem mem_degreeSubmodule_of_mem_iff {n : N} {x : M} {k : ℕ} (hx : x ∈ ℒ n) :
