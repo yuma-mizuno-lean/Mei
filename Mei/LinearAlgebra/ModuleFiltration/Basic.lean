@@ -53,9 +53,9 @@ instance : IsFiltration F.filtration (fun k => F.submodule (k.ofDual + 1)) where
   is_le h := F.antitone (Nat.succ_le_of_lt h)
   is_sup _ k h := h (OrderDual.toDual (k.ofDual + 1)) (Nat.lt_succ_self _)
 
-section Ring
+section Compatibility
 
-variable {R M : Type*} [Ring R] [AddCommGroup M] [Module R M]
+variable {R M : Type*} [Semiring R] [AddCommMonoid M] [Module R M]
   (F : AlgFiltration R) (G : ModuleFiltration R M)
   [IsModuleFiltration F.orderDual (fun k => F.ideal (k.ofDual + 1))
     G.filtration (fun k => G.submodule (k.ofDual + 1))]
@@ -69,7 +69,7 @@ theorem smul_mem {a b : ℕ} {r : R} {x : M}
   rw [← G.filtration_toDual (a + b)]
   exact SetLike.GradedSMul.smul_mem hr' hx'
 
-end Ring
+end Compatibility
 
 section Semiring
 
