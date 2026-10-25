@@ -8,20 +8,26 @@ module
 public import TauCeti.Geometry.Convex.Cone.Alternative
 public import TauCeti.Geometry.Convex.Cone.Face.Exposed
 public import Mathlib.Data.Fintype.Sum
+public import Mathlib.Geometry.Convex.Cone.Dual
 public import Mathlib.Analysis.Convex.Exposed
 public import Mathlib.Analysis.Normed.Module.FiniteDimension
 
 /-!
 # Faces of finitely generated cones are exposed
 
-Apply Tucker's theorem to a finite generating family together with the negatives
-of its generators lying in the face. The resulting nonnegative relation has its
-positive part in the face. The face property forces every coefficient of an
-outside generator to vanish, so Tucker's functional is strictly positive there.
-It vanishes on the face generators because both signs occur in the family.
+Every face of a finitely generated cone is the zero set within the cone of a
+nonnegative linear functional. This gives supporting hyperplane descriptions,
+allowing the zero functional for the full face.
+`PointedCone.IsFaceOf.exists_nonneg_linear_inf_ker` expresses this as
+an intersection with the functional's kernel, while
+`PointedCone.IsFaceOf.exists_nonneg_linear_zero_iff` gives the pointwise criterion.
+These algebraic results hold over any linearly ordered field, without finite
+dimensionality, topological closedness, or salience assumptions.
 
-This is an algebraic argument over any linearly ordered field. Neither finite
-dimensionality, topological closedness, nor salience is required.
+In a finite-dimensional real normed space,
+`PointedCone.IsFaceOf.isExposed_of_fg` supplies Mathlib's continuous-functional
+predicate `IsExposed`, using the negative functional for its maximization convention.
+The algebraic construction uses Tucker's theorem and the face property.
 -/
 
 public section
@@ -75,16 +81,10 @@ theorem exists_nonneg_linear_inf_ker (hF : F.IsFaceOf C) (hC : C.FG) :
       simp only [hc0, zero_add, a, Sum.elim_inl, hzero, lt_self_iff_false] at hp
     · exact hfacezero ⟨x, hx⟩
   have hfC : ∀ x ∈ C, 0 ≤ f x := by
-    intro x hx
-    rw [← hs] at hx
-    induction hx using Submodule.span_induction with
-    | mem x hx => exact hfgen x hx
-    | zero => simp
-    | add x y _ _ ix iy => simpa only [map_add] using add_nonneg ix iy
-    | smul r x _ ix =>
-      change 0 ≤ f ((r : K) • x)
-      rw [map_smul, smul_eq_mul]
-      exact mul_nonneg r.property ix
+    have hdual : f ∈ PointedCone.dual (Module.Dual.eval K V) (s : Set V) :=
+      fun _ hx => hfgen _ hx
+    rw [← PointedCone.dual_hull, PointedCone.hull, hs] at hdual
+    exact fun _ hx => hdual hx
   exact ⟨f, hfC, PointedCone.inf_ker_eq_of_eq_hull hs.symm hF hfgen hzgen⟩
 
 /-- The exposing functional vanishes precisely on the chosen face, among all
@@ -122,14 +122,14 @@ theorem isExposed_of_fg (hF : F.IsFaceOf C) (hC : C.FG) :
   · intro hxF
     refine ⟨hF.le hxF, fun y hy => ?_⟩
     have hxzero := (hzero x (hF.le hxF)).mpr hxF
-    change -f y ≤ -f x
+    simp only [l, ContinuousLinearMap.coe_mk', LinearMap.neg_apply]
     rw [hxzero, neg_zero]
     exact neg_nonpos.mpr (hf y hy)
   · rintro ⟨hxC, hmax⟩
     have hmaxzero := hmax 0 C.zero_mem
     have hlx : 0 ≤ -f x := by
-      change (-f) 0 ≤ (-f) x at hmaxzero
-      simpa only [map_zero, LinearMap.neg_apply] using hmaxzero
+      simpa only [l, ContinuousLinearMap.coe_mk', LinearMap.neg_apply, map_zero, neg_zero]
+        using hmaxzero
     exact (hzero x hxC).mp (le_antisymm (neg_nonneg.mp hlx) (hf x hxC))
 
 end PointedCone.IsFaceOf
