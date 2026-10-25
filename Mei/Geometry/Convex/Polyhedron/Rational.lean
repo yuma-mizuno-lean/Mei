@@ -38,7 +38,7 @@ namespace RationalAffinePolyhedron
 variable {h : TauCeti.Toric.IsIntegralLattice i}
 
 /-- The closed set defined by the affine inequalities. -/
-@[expose] def carrier (P : RationalAffinePolyhedron h) : Set V :=
+def carrier (P : RationalAffinePolyhedron h) : Set V :=
   {x | ∀ j, P.inequality j x ≤ 0}
 
 /-- Membership is simultaneous satisfaction of all inequalities. -/
@@ -60,11 +60,14 @@ theorem convex (P : RationalAffinePolyhedron h) : Convex ℝ P.carrier :=
   P.isConvexPolyhedron.convex
 
 /-- Rational offsets are additional data; the default presentation allows real offsets. -/
-@[expose] def HasRationalOffsets (P : RationalAffinePolyhedron h) : Prop :=
+def HasRationalOffsets (P : RationalAffinePolyhedron h) : Prop :=
   ∀ j, ∃ q : ℚ, P.inequality j 0 = (q : ℝ)
 
+/-- Rational offsets mean that every inequality takes a rational value at zero. -/
+theorem hasRationalOffsets_iff {P : RationalAffinePolyhedron h} :
+    P.HasRationalOffsets ↔ ∀ j, ∃ q : ℚ, P.inequality j 0 = (q : ℝ) := Iff.rfl
+
 /-- Reindex a finite family of rational-normal inequalities by a finite ordinal. -/
-@[expose]
 noncomputable def ofFinite {ι : Type*} [Finite ι] (g : ι → (V →ᴬ[ℝ] ℝ))
     (hg : ∀ j, Toric.IsRationalFunctional h (g j).toAffineMap.linear) :
     RationalAffinePolyhedron h := by
@@ -77,7 +80,7 @@ theorem mem_carrier_ofFinite {ι : Type*} [Finite ι] {g : ι → (V →ᴬ[ℝ]
     x ∈ (ofFinite g hg).carrier ↔ ∀ j, g j x ≤ 0 := by
   classical
   let _ := Fintype.ofFinite ι
-  change (∀ j, g ((Fintype.equivFin ι).symm j) x ≤ 0) ↔ ∀ j, g j x ≤ 0
+  dsimp only [carrier, ofFinite, Set.mem_ofPred_eq]
   constructor
   · intro hx j
     simpa using hx ((Fintype.equivFin ι) j)
@@ -105,7 +108,7 @@ noncomputable def inter (P Q : RationalAffinePolyhedron h) : RationalAffinePolyh
 theorem carrier_inter (P Q : RationalAffinePolyhedron h) :
     (P.inter Q).carrier = P.carrier ∩ Q.carrier := by
   ext x
-  change x ∈ (ofFinite _ _).carrier ↔ _
+  unfold inter
   rw [mem_carrier_ofFinite]
   simp [Sum.forall]
 
@@ -155,13 +158,21 @@ theorem carrier_preimage (P : RationalAffinePolyhedron h) (f : W →ᴬ[ℝ] V)
 end RationalAffinePolyhedron
 
 /-- A set admits a finite rational-normal affine presentation. -/
-@[expose]
 def IsRationalNormalPolyhedron (h : TauCeti.Toric.IsIntegralLattice i) (P : Set V) : Prop :=
   ∃ Q : RationalAffinePolyhedron h, Q.carrier = P
 
 /-- A rational polyhedron also admits rational offsets. -/
-@[expose]
 def IsRationalPolyhedron (h : TauCeti.Toric.IsIntegralLattice i) (P : Set V) : Prop :=
   ∃ Q : RationalAffinePolyhedron h, Q.carrier = P ∧ Q.HasRationalOffsets
+
+/-- Rational-normal polyhedrality is the existence of a presentation with this carrier. -/
+theorem isRationalNormalPolyhedron_iff {h : TauCeti.Toric.IsIntegralLattice i} {P : Set V} :
+    IsRationalNormalPolyhedron h P ↔ ∃ Q : RationalAffinePolyhedron h, Q.carrier = P :=
+  Iff.rfl
+
+/-- Rational polyhedrality additionally requires rational offsets in the presentation. -/
+theorem isRationalPolyhedron_iff {h : TauCeti.Toric.IsIntegralLattice i} {P : Set V} :
+    IsRationalPolyhedron h P ↔
+      ∃ Q : RationalAffinePolyhedron h, Q.carrier = P ∧ Q.HasRationalOffsets := Iff.rfl
 
 end Mei

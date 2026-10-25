@@ -44,7 +44,6 @@ variable {V ι : Type*} [AddCommGroup V] [Module ℝ V] [TopologicalSpace V]
 
 /-- The explicit continuous affine rows obtained by eliminating `t ≥ 0` from
 `g i y + a i * t ≤ 0`. Pair rows use only multiplication and subtraction. -/
-@[expose]
 def nonnegElimFamily (g : ι → (V →ᴬ[ℝ] ℝ)) (a : ι → ℝ) :
     NonnegElimIndex a → (V →ᴬ[ℝ] ℝ)
   | .inl i => g i.val
@@ -54,14 +53,29 @@ def nonnegElimFamily (g : ι → (V →ᴬ[ℝ] ℝ)) (a : ι → ℝ) :
 @[simp]
 theorem nonnegElimFamily_single_apply (g : ι → (V →ᴬ[ℝ] ℝ)) (a : ι → ℝ)
     (i : {i : ι // 0 ≤ a i}) (y : V) :
-    nonnegElimFamily g a (.inl i) y = g i.val y := rfl
+    nonnegElimFamily g a (.inl i) y = g i.val y := (rfl)
 
 /-- A paired resultant evaluates as the division-free linear combination of its rows. -/
 @[simp]
 theorem nonnegElimFamily_pair_apply (g : ι → (V →ᴬ[ℝ] ℝ)) (a : ι → ℝ)
     (i : {i : ι // a i < 0}) (j : {i : ι // 0 < a i}) (y : V) :
     nonnegElimFamily g a (.inr (i, j)) y = a j.val * g i.val y - a i.val * g j.val y :=
-  rfl
+  (rfl)
+
+/-- A retained row has the original linear part. -/
+@[simp]
+theorem nonnegElimFamily_single_linear (g : ι → (V →ᴬ[ℝ] ℝ)) (a : ι → ℝ)
+    (i : {i : ι // 0 ≤ a i}) :
+    (nonnegElimFamily g a (.inl i)).toAffineMap.linear = (g i.val).toAffineMap.linear :=
+  (rfl)
+
+/-- The linear part of a resultant is the same combination of the original linear parts. -/
+@[simp]
+theorem nonnegElimFamily_pair_linear (g : ι → (V →ᴬ[ℝ] ℝ)) (a : ι → ℝ)
+    (i : {i : ι // a i < 0}) (j : {i : ι // 0 < a i}) :
+    (nonnegElimFamily g a (.inr (i, j))).toAffineMap.linear =
+      a j.val • (g i.val).toAffineMap.linear - a i.val • (g j.val).toAffineMap.linear :=
+  (rfl)
 
 /-- Membership in the one-parameter projection is given by the explicit finite
 family of resultant affine inequalities. -/
@@ -111,7 +125,7 @@ theorem isConvexPolyhedron_setOf_exists_nonneg_affine_le [Finite ι]
   exact TauCeti.isConvexPolyhedron_setOf_forall _
 
 /-- Evaluation of a continuous affine functional along an affine ray. -/
-theorem continuousAffineMap_apply_add_smul (g : V →ᴬ[ℝ] ℝ) (y n : V) (t : ℝ) :
+theorem _root_.ContinuousAffineMap.apply_add_smul (g : V →ᴬ[ℝ] ℝ) (y n : V) (t : ℝ) :
     g (y + t • n) = g y + g.linear n * t := by
   rw [add_comm y]
   have h := g.map_vadd' y (t • n)
@@ -125,7 +139,7 @@ theorem setOf_exists_nonneg_add_smul_forall_le_eq [Finite ι]
     {y : V | ∃ t : ℝ, 0 ≤ t ∧ ∀ i, g i (y + t • n) ≤ 0} =
       {y : V | ∀ k : NonnegElimIndex (fun i => (g i).linear n),
         nonnegElimFamily g (fun i => (g i).linear n) k y ≤ 0} := by
-  simp_rw [continuousAffineMap_apply_add_smul]
+  simp_rw [ContinuousAffineMap.apply_add_smul]
   exact setOf_exists_nonneg_affine_le_eq g (fun i => (g i).linear n)
 
 /-- Adding a negative ray preserves convex polyhedrality, including tangent
@@ -134,7 +148,7 @@ theorem isConvexPolyhedron_setOf_exists_nonneg_add_smul_mem {P : Set V}
     (hP : TauCeti.IsConvexPolyhedron P) (n : V) :
     TauCeti.IsConvexPolyhedron {y : V | ∃ t : ℝ, 0 ≤ t ∧ y + t • n ∈ P} := by
   obtain ⟨k, g, rfl⟩ := TauCeti.isConvexPolyhedron_iff.mp hP
-  change TauCeti.IsConvexPolyhedron {y : V | ∃ t : ℝ, 0 ≤ t ∧ ∀ i, g i (y + t • n) ≤ 0}
+  simp only [Set.mem_ofPred_eq]
   rw [setOf_exists_nonneg_add_smul_forall_le_eq]
   exact TauCeti.isConvexPolyhedron_setOf_forall _
 

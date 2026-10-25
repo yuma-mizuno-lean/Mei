@@ -34,9 +34,9 @@ theorem rational_linear_nonnegElimFamily (g : ι → (V →ᴬ[ℝ] ℝ))
     (a : ι → ℝ) (ha : ∀ j, ∃ q : ℚ, a j = (q : ℝ)) (k : NonnegElimIndex a) :
     Mei.Toric.IsRationalFunctional h (nonnegElimFamily g a k).toAffineMap.linear := by
   rcases k with j | ⟨j, k⟩
-  · exact hg j.val
-  · change Mei.Toric.IsRationalFunctional h
-      (a k.val • (g j.val).toAffineMap.linear - a j.val • (g k.val).toAffineMap.linear)
+  · rw [nonnegElimFamily_single_linear]
+    exact hg j.val
+  · rw [nonnegElimFamily_pair_linear]
     exact ((hg j.val).smul (ha k.val)).sub ((hg k.val).smul (ha j.val))
 
 /-- Rational coefficients and rational offsets give rational offsets for each
@@ -46,7 +46,8 @@ theorem rational_offset_nonnegElimFamily (g : ι → (V →ᴬ[ℝ] ℝ))
     (ha : ∀ j, ∃ q : ℚ, a j = (q : ℝ)) (k : NonnegElimIndex a) :
     ∃ q : ℚ, nonnegElimFamily g a k 0 = (q : ℝ) := by
   rcases k with j | ⟨j, k⟩
-  · exact hg j.val
+  · rw [nonnegElimFamily_single_apply]
+    exact hg j.val
   · obtain ⟨aj, haj⟩ := ha j.val
     obtain ⟨ak, hak⟩ := ha k.val
     obtain ⟨bj, hbj⟩ := hg j.val
@@ -64,7 +65,6 @@ variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ 
 
 /-- The negative-ray sweep of a rational-normal affine presentation along a
 lattice vector, with the explicit finite Fourier–Motzkin resultant inequalities. -/
-@[expose]
 noncomputable def sweep (P : RationalAffinePolyhedron h) (n : N) :
     RationalAffinePolyhedron h :=
   ofFinite
@@ -79,10 +79,10 @@ its carrier, including for tangent sweeping vectors. -/
 theorem carrier_sweep (P : RationalAffinePolyhedron h) (n : N) :
     (P.sweep n).carrier = {y : V | ∃ t : ℝ, 0 ≤ t ∧ y + t • i n ∈ P.carrier} := by
   ext y
-  change y ∈ (ofFinite _ _).carrier ↔ _
+  unfold sweep
   rw [mem_carrier_ofFinite]
   symm
-  change (∃ t : ℝ, 0 ≤ t ∧ ∀ j, P.inequality j (y + t • i n) ≤ 0) ↔ _
+  simp only [mem_carrier]
   have he := Mei.Convex.setOf_exists_nonneg_add_smul_forall_le_eq P.inequality (i n)
   exact Set.ext_iff.mp he y
 
@@ -90,6 +90,8 @@ theorem carrier_sweep (P : RationalAffinePolyhedron h) (n : N) :
 rational evaluations of the original normals on a lattice vector. -/
 theorem HasRationalOffsets.sweep {P : RationalAffinePolyhedron h}
     (hP : P.HasRationalOffsets) (n : N) : (P.sweep n).HasRationalOffsets := by
+  rw [Mei.RationalAffinePolyhedron.sweep]
+  rw [hasRationalOffsets_iff] at hP
   apply hasRationalOffsets_ofFinite
   exact Mei.Convex.rational_offset_nonnegElimFamily P.inequality hP
     (fun j => (P.inequality j).linear (i n))
@@ -106,6 +108,7 @@ variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ 
 negative-ray addition in every lattice direction. -/
 theorem IsRationalNormalPolyhedron.negRay (hP : IsRationalNormalPolyhedron h P) (n : N) :
     IsRationalNormalPolyhedron h {y : V | ∃ t : ℝ, 0 ≤ t ∧ y + t • i n ∈ P} := by
+  rw [isRationalNormalPolyhedron_iff] at hP ⊢
   obtain ⟨Q, rfl⟩ := hP
   exact ⟨Q.sweep n, Q.carrier_sweep n⟩
 
@@ -113,6 +116,7 @@ theorem IsRationalNormalPolyhedron.negRay (hP : IsRationalNormalPolyhedron h P) 
 rational offsets. -/
 theorem IsRationalPolyhedron.negRay (hP : IsRationalPolyhedron h P) (n : N) :
     IsRationalPolyhedron h {y : V | ∃ t : ℝ, 0 ≤ t ∧ y + t • i n ∈ P} := by
+  rw [isRationalPolyhedron_iff] at hP ⊢
   obtain ⟨Q, rfl, hQ⟩ := hP
   exact ⟨Q.sweep n, Q.carrier_sweep n, hQ.sweep n⟩
 

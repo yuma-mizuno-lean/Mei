@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import TauCeti.Geometry.Toric.Algebraic.Lattice
+public import Mei.Geometry.Toric.Algebraic.Lattice
 public import Mathlib.Data.Rat.Cast.Order
 
 /-!
@@ -49,15 +49,6 @@ theorem realCharacter (h : IsIntegralLattice i) (m : Module.Dual ℤ N) :
     IsRationalFunctional h (h.realCharacter m.toAddMonoidHom) :=
   ⟨1, m, by simp⟩
 
-private theorem realCharacter_int_smul (h : IsIntegralLattice i) (a : ℤ)
-    (m : Module.Dual ℤ N) :
-    h.realCharacter (a • m).toAddMonoidHom =
-      (a : ℝ) • h.realCharacter m.toAddMonoidHom := by
-  symm
-  apply h.eq_realCharacter
-  intro n
-  simp
-
 /-- Addition preserves rational functionals, by a common denominator. -/
 theorem add (hf : IsRationalFunctional h f) (hg : IsRationalFunctional h g) :
     IsRationalFunctional h (f + g) := by
@@ -69,9 +60,8 @@ theorem add (hf : IsRationalFunctional h f) (hg : IsRationalFunctional h g) :
   have hchar : h.realCharacter (a • m + b • n).toAddMonoidHom =
       (a : ℝ) • h.realCharacter m.toAddMonoidHom +
         (b : ℝ) • h.realCharacter n.toAddMonoidHom := by
-    rw [show (a • m + b • n).toAddMonoidHom =
-      (a • m).toAddMonoidHom + (b • n).toAddMonoidHom from rfl, map_add,
-      realCharacter_int_smul, realCharacter_int_smul]
+    rw [← LinearMap.toAddMonoidHom'_apply]
+    simp only [map_add, LinearMap.toAddMonoidHom'_apply, h.realCharacter_int_smul]
   rw [hchar, smul_add, smul_smul, smul_smul]
   have hqden : (q.den : ℝ) ≠ 0 := by exact_mod_cast q.den_ne_zero
   have hrden : (r.den : ℝ) ≠ 0 := by exact_mod_cast r.den_ne_zero
