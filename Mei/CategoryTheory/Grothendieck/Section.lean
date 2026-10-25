@@ -36,11 +36,11 @@ maps and their limits use `whiskeringRight`, `limMap` and `Functor.mapAut`.
 
 public section
 
-open CategoryTheory CategoryTheory.Limits CategoryTheory.Functor
+open CategoryTheory CategoryTheory.Limits CategoryTheory.Functor CategoryTheory.Grothendieck
 
 universe v u w z v' u'
 
-namespace CategoryTheory.Grothendieck
+namespace Mei.CategoryTheory.Grothendieck
 
 variable {D : Type u} [Category.{v} D] (C : D ⥤ Cat.{w, z})
 
@@ -146,4 +146,4 @@ theorem coefficientLimit_obj (s : Section C) :
     (coefficientLimit A).obj s = limit (s.toFunctor ⋙ A) := (rfl)
 
 end Section
-end CategoryTheory.Grothendieck
+end Mei.CategoryTheory.Grothendieck
