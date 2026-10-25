@@ -10,7 +10,6 @@ public import Mathlib.LinearAlgebra.Finsupp.LinearCombination
 public import TauCeti.Geometry.Convex.Cone.Relations
 import Mathlib.Data.Finset.Card
 import Mathlib.Algebra.Order.BigOperators.Group.Finset
-import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
 
 /-!
