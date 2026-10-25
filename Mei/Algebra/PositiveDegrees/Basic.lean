@@ -161,6 +161,24 @@ theorem neg_mem_iff {n : G} (hn : n ∈ d.monoid) : -n ∈ d.monoid ↔ n = 0 :=
 
 end Group
 
+/-- The nonnegative integers with their identity degree. -/
+def nonnegIntegers : PositiveDegrees ℤ where
+  monoid := AddSubmonoid.nonneg ℤ
+  degree := AddMonoidHom.id ℤ
+  degree_pos := by
+    intro n hn hne
+    exact lt_of_le_of_ne hn (Ne.symm hne)
+  finite_le k := (Set.finite_Icc (a := (0 : ℤ)) (b := k)).subset fun _ h => h
+
+/-- The allowed integer degrees are precisely the nonnegative integers. -/
+@[simp]
+theorem mem_nonnegIntegers_monoid {n : ℤ} : n ∈ nonnegIntegers.monoid ↔ 0 ≤ n :=
+  Iff.rfl
+
+/-- The degree of a nonnegative integer is the integer itself. -/
+@[simp]
+theorem nonnegIntegers_degree (n : ℤ) : nonnegIntegers.degree n = n := (rfl)
+
 /-- The nonnegative orthant in a finite power of `ℤ`, with coordinate-sum degree.
 The empty coordinate type is allowed. -/
 def orthant (ι : Type*) [Fintype ι] : PositiveDegrees (ι → ℤ) where
