@@ -67,12 +67,10 @@ private theorem comul_word_mem_tensorFiltration (l : List (Σ i, ℒ i)) :
     trivial
   | cons a l ih =>
     simp only [List.map_cons, List.prod_cons, List.sum_cons, map_mul, map_add]
-    have hmul := Ideal.tensorFiltration_mul_le R (F).ideal (F).ideal
-      (fun _ _ => Ideal.mul_le.mpr fun _ hx _ hy => (F).mul_mem hx hy)
-      (fun _ _ => Ideal.mul_le.mpr fun _ hx _ hy => (F).mul_mem hx hy)
-      (d a.1).toNat (d (l.map Sigma.fst).sum).toNat
-      (Ideal.mul_mem_mul (comul_generator_mem_tensorFiltration ℒ d hneg a.2) ih)
-    exact Ideal.tensorFiltration_antitone R (F).ideal (F).ideal (by omega) hmul
+    have hgen := comul_generator_mem_tensorFiltration ℒ d hneg a.2
+    rw [← Mei.AlgFiltration.tensorProduct_ideal R (F) (F)] at hgen ih ⊢
+    exact ((F).tensorProduct R (F)).antitone (by omega)
+      (((F).tensorProduct R (F)).mul_mem hgen ih)
 
 /-- The enveloping coproduct sends each degree ideal into the corresponding
 total-degree tensor ideal. -/
