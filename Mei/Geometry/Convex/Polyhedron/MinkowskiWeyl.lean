@@ -59,7 +59,10 @@ theorem dualFG_of_isConvexPolyhedron (C : PointedCone ℝ V)
     calc
       x ∈ C ↔ x ∈ Mei.Convex.recessionCone (C : Set V) := by rw [C.recessionCone_coe]
       _ ↔ x ∈ Mei.Convex.recessionCone {x : V | ∀ i, g i x ≤ 0} := by rw [hg]
-      _ ↔ ∀ i, (g i).linear x ≤ 0 := Mei.Convex.mem_recessionCone_setOf_forall_iff hne
+      _ ↔ ∀ i, (g i).linear x ≤ 0 := by
+        simpa only [ContinuousAffineMap.coe_toAffineMap] using
+          (Mei.Convex.mem_recessionCone_setOf_forall_iff
+            (g := fun i => (g i).toAffineMap) hne (v := x))
   refine ⟨Finset.univ.image (fun i => -(g i).linear), ?_⟩
   ext x
   constructor
@@ -128,25 +131,25 @@ theorem exists_finset_convexHull_add_recessionCone (hP : TauCeti.IsConvexPolyhed
     change (x, (1 : ℝ)) ∈ PointedCone.hull ℝ (s : Set (V × ℝ)) ↔ x ∈ P
     rw [hs]
     exact hP.convex.mem_homogenization_one_iff hP.isClosed
-  have hzero : (PointedCone.hull ℝ (PointedCone.zeroSliceGenerators s : Set V) : Set V) =
+  have hzero : (PointedCone.hull ℝ (Finset.zeroSliceGenerators s : Set V) : Set V) =
       (Mei.Convex.recessionCone P : Set V) := by
-    rw [← PointedCone.slice_zero_hull s hsheight]
+    rw [← Finset.slice_zero_hull s hsheight]
     ext x
     change (x, (0 : ℝ)) ∈ PointedCone.hull ℝ (s : Set (V × ℝ)) ↔
       x ∈ Mei.Convex.recessionCone P
     rw [hs]
     exact hP.convex.mem_homogenization_zero_iff hne hP.isClosed
-  refine ⟨PointedCone.positiveSliceGenerators s, ?_, ?_⟩
+  refine ⟨Finset.positiveSliceGenerators s, ?_, ?_⟩
   · intro x hx
     apply (hP.convex.mem_homogenization_one_iff hP.isClosed).mp
     rw [← hs]
-    exact PointedCone.mem_hull_one_of_mem_positiveSliceGenerators hx
+    exact Finset.mem_hull_one_of_mem_positiveSliceGenerators hx
   · calc
       P = {x : V | (x, (1 : ℝ)) ∈ PointedCone.hull ℝ (s : Set (V × ℝ))} := hone.symm
-      _ = convexHull ℝ (PointedCone.positiveSliceGenerators s : Set V) +
-          (PointedCone.hull ℝ (PointedCone.zeroSliceGenerators s : Set V) : Set V) :=
-        PointedCone.slice_one_hull s hsheight
-      _ = convexHull ℝ (PointedCone.positiveSliceGenerators s : Set V) +
+      _ = convexHull ℝ (Finset.positiveSliceGenerators s : Set V) +
+          (PointedCone.hull ℝ (Finset.zeroSliceGenerators s : Set V) : Set V) :=
+        Finset.slice_one_hull s hsheight
+      _ = convexHull ℝ (Finset.positiveSliceGenerators s : Set V) +
           (Mei.Convex.recessionCone P : Set V) := by rw [hzero]
 
 end TauCeti.IsConvexPolyhedron
