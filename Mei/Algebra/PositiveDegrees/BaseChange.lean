@@ -6,15 +6,14 @@ Authors: Codex
 module
 
 public import Mei.Algebra.PositiveDegrees.Grading
-public import Mathlib.LinearAlgebra.TensorProduct.Tower
+public import Mei.LinearAlgebra.TensorProduct.BaseChange
 
 /-!
-# Scalar extension of positive gradings
+# Extension of scalars for positive gradings
 
-Positive support and degree submodules are preserved by scalar extension.
-Together with Mathlib's decomposition of the tensor product, these results
-identify the degree filtration after changing the coefficient semiring, with
-no flatness, freeness, or finiteness assumptions on the modules.
+Positive support is preserved by extension of scalars, and extending the sum of
+pieces above a cutoff gives the sum of the extended pieces above that cutoff.
+These statements require neither flatness nor a direct-sum decomposition.
 -/
 
 public section
@@ -25,21 +24,20 @@ variable {N R S M : Type*} [AddCommMonoid N] [CommSemiring R]
   [Semiring S] [Algebra R S] [AddCommMonoid M] [Module R M]
   (d : PositiveDegrees N) (ℳ : N → Submodule R M)
 
-/-- Scalar extension preserves the support condition of a positive grading. -/
+/-- Extension of scalars preserves positive support. -/
 instance IsPositiveGrading.baseChange [IsPositiveGrading d ℳ] :
     IsPositiveGrading d (fun n => (ℳ n).baseChange S) where
   eq_bot n hn := by
     rw [IsPositiveGrading.eq_bot (d := d) (ℒ := ℳ) n hn, Submodule.baseChange_bot]
 
-/-- The sum of pieces above a cutoff commutes with extension of scalars. -/
-@[simp]
-theorem PositiveDegrees.degreeSubmodule_baseChange (k : ℕ) :
-    d.degreeSubmodule (fun n => (ℳ n).baseChange S) k =
-      (d.degreeSubmodule ℳ k).baseChange S := by
-  simp only [PositiveDegrees.degreeSubmodule_def]
-  symm
-  rw [Submodule.iSup_eq_span, Submodule.baseChange_span, Set.image_iUnion,
-    Submodule.span_iUnion]
-  simp only [Submodule.baseChange_eq_span, Submodule.map_coe]
+namespace PositiveDegrees
 
+/-- Extending scalars commutes with taking the submodule above a degree cutoff. -/
+@[simp]
+theorem degreeSubmodule_baseChange (k : ℕ) :
+    (d.degreeSubmodule ℳ k).baseChange S =
+      d.degreeSubmodule (fun n => (ℳ n).baseChange S) k := by
+  simp only [degreeSubmodule_def, Submodule.baseChange_iSup]
+
+end PositiveDegrees
 end Mei
