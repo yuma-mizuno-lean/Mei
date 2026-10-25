@@ -100,6 +100,15 @@ theorem exp_add_of_lie_eq_zero (x y : L) (h : ⁅x, y⁆ = 0) :
     exp (x + y) = exp x * exp y := by
   rw [← bch_eq_add_of_lie_eq_zero x y h, exp_bch]
 
+/-- BCH elements with commuting logarithms commute. -/
+theorem commute_of_lie_log_eq_zero (g h : BCHGroup L) (hgh : ⁅log g, log h⁆ = 0) :
+    Commute g h := by
+  have h' : ⁅log h, log g⁆ = 0 := by
+    simpa only [lie_skew, neg_zero] using congrArg Neg.neg hgh
+  apply log_injective
+  rw [log_mul, log_mul, bch_eq_add_of_lie_eq_zero _ _ hgh,
+    bch_eq_add_of_lie_eq_zero _ _ h', add_comm]
+
 /-- Natural powers of an exponential multiply its Lie algebra coordinate. -/
 theorem exp_nsmul (x : L) (n : ℕ) : exp (n • x) = exp x ^ n := by
   induction n with
