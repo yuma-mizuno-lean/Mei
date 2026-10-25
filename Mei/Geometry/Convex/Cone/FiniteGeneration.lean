@@ -36,6 +36,12 @@ def boundaryCombination (f : V →ₗ[K] K) (u v : V) : V :=
   (-f v) • u + f u • v
 
 omit [LinearOrder K] [IsStrictOrderedRing K] in
+/-- The boundary combination uses the explicit coefficients `-f v` and `f u`. -/
+theorem boundaryCombination_def (f : V →ₗ[K] K) (u v : V) :
+    boundaryCombination f u v = (-f v) • u + f u • v := by
+  simp only [boundaryCombination]
+
+omit [LinearOrder K] [IsStrictOrderedRing K] in
 /-- The cutting functional vanishes on a boundary combination. -/
 @[simp]
 theorem map_boundaryCombination (f : V →ₗ[K] K) (u v : V) :
@@ -50,6 +56,17 @@ noncomputable def halfspaceGenerators (s : Finset V) (f : V →ₗ[K] K) : Finse
   exact s.filter (fun v => 0 ≤ f v) ∪
     ((s ×ˢ s).filter (fun p => 0 < f p.1 ∧ f p.2 < 0)).image
       (fun p => boundaryCombination f p.1 p.2)
+
+omit [IsStrictOrderedRing K] in
+/-- A cut generator is either retained from the original family or is an explicit
+boundary combination of two original generators with opposite strict signs. -/
+@[simp]
+theorem mem_halfspaceGenerators_iff {s : Finset V} {f : V →ₗ[K] K} {x : V} :
+    x ∈ halfspaceGenerators s f ↔ (x ∈ s ∧ 0 ≤ f x) ∨
+      ∃ u ∈ s, ∃ v ∈ s, 0 < f u ∧ f v < 0 ∧ boundaryCombination f u v = x := by
+  classical
+  simp only [halfspaceGenerators, Finset.mem_union, Finset.mem_filter, Finset.mem_image,
+    Finset.mem_product, Prod.exists, exists_and_left, and_assoc]
 
 /-- A nonnegative finite combination satisfying the cutting inequality lies in
 any cone containing the retained generators and opposite-sign boundary pairs. -/
