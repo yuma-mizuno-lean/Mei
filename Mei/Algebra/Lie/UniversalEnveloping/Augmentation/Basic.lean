@@ -13,7 +13,8 @@ public import TauCeti.Algebra.Lie.UniversalEnveloping.Augmentation.Basic
 A Lie-generating family generates the augmentation ideal. A word in canonical
 Lie generators belongs to the augmentation power indexed by its length. This gives
 augmentation-power bounds for words from any family of Lie algebra elements,
-without weights or a Lie-generation assumption.
+without weights or a Lie-generation assumption. Representations sending Lie
+generators into an ideal preserve the corresponding powers.
 
 This refines the canonical-generator description in
 `TauCeti.Algebra.Lie.UniversalEnveloping.Augmentation.Basic`.
@@ -71,3 +72,38 @@ theorem prod_mem_augmentation_pow (l : List S) :
       (TauCeti.UniversalEnvelopingAlgebra.ι_mem_augmentation R L (e s)) ih
 
 end Mei.UniversalEnvelopingAlgebra
+
+namespace AlgHom
+
+variable {R L A : Type*} [CommRing R] [LieRing L] [LieAlgebra R L]
+  [Semiring A] [Algebra R A]
+
+/-- An enveloping representation sending Lie generators into an ideal sends each
+augmentation power into the corresponding ideal power. -/
+theorem map_mem_augmentation_pow (f : UniversalEnvelopingAlgebra R L →ₐ[R] A)
+    (I : Ideal A) (hf : ∀ x : L, f (UniversalEnvelopingAlgebra.ι R x) ∈ I)
+    (n : ℕ) {a : UniversalEnvelopingAlgebra R L}
+    (ha : a ∈ (TauCeti.HopfIdeal.augmentation R
+      (UniversalEnvelopingAlgebra R L)).toIdeal ^ n) : f a ∈ I ^ n := by
+  have h (k : ℕ) : (TauCeti.HopfIdeal.augmentation R
+      (UniversalEnvelopingAlgebra R L)).toIdeal ^ k ≤ (I ^ k).comap f := by
+    induction k with
+    | zero => simp only [Submodule.pow_zero, Ideal.one_eq_top, Ideal.comap_top, le_refl]
+    | succ k ih =>
+      rw [Submodule.pow_succ]
+      apply Ideal.mul_le.mpr
+      intro u hu v hv
+      have hv' : f v ∈ I := by
+        have hgen : (TauCeti.HopfIdeal.augmentation R
+            (UniversalEnvelopingAlgebra R L)).toIdeal ≤ I.comap f := by
+          rw [TauCeti.UniversalEnvelopingAlgebra.augmentation_toIdeal_eq_span_range_ι,
+            Ideal.span_le]
+          rintro _ ⟨x, rfl⟩
+          exact hf x
+        exact hgen hv
+      have hu' : f u ∈ I ^ k := ih hu
+      simpa only [Ideal.mem_comap, map_mul, Submodule.pow_succ] using
+        Ideal.mul_mem_mul hu' hv'
+  exact h n ha
+
+end AlgHom

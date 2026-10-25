@@ -6,13 +6,17 @@ Authors: Codex
 module
 
 public import Mathlib.RingTheory.Ideal.Operations
+public import Mathlib.RingTheory.Ideal.Maps
 
 /-!
-# Vanishing products in nilpotent ideals
+# Products and powers of left ideals
 
 When the fourth power of a left ideal vanishes, every product of four of its elements
 is zero. This allows polynomial identities in such elements to truncate at degree three,
-even in a noncommutative semiring.
+even in a noncommutative semiring. Surjective homomorphisms preserve products and
+powers of left ideals, so nilpotency bounds descend to quotient rings. These
+statements extend Mathlib's `Ideal.map_mul` and `Ideal.map_pow` beyond commutative
+targets, using `Ideal.mem_map_iff_of_surjective`.
 -/
 
 public section
@@ -32,5 +36,35 @@ theorem mul_four_eq_zero_of_pow_eq_bot (I : Ideal A) (hI : I ^ 4 = ⊥)
       show (3 : ℕ) = 2 + 1 from rfl, show (2 : ℕ) = 1 + 1 from rfl,
       Submodule.pow_zero, Ideal.one_eq_top, Ideal.top_mul]
   rwa [he, hI, Ideal.mem_bot] at h
+
+end Ideal
+
+namespace Ideal
+
+variable {A B : Type*} [Semiring A] [Semiring B]
+
+/-- Surjective ring homomorphisms preserve products of left ideals, including
+in noncommutative semirings. -/
+theorem map_mul_of_surjective (I J : Ideal A) (f : A →+* B)
+    (hf : Function.Surjective f) : (I * J).map f = I.map f * J.map f := by
+  apply le_antisymm
+  · rw [map_le_iff_le_comap, mul_le]
+    intro a ha b hb
+    simpa only [mem_comap, map_mul] using
+      mul_mem_mul (mem_map_of_mem f ha) (mem_map_of_mem f hb)
+  · apply mul_le.mpr
+    intro a ha b hb
+    obtain ⟨a, ha', rfl⟩ := (mem_map_iff_of_surjective f hf).mp ha
+    obtain ⟨b, hb', rfl⟩ := (mem_map_iff_of_surjective f hf).mp hb
+    exact (map_mul f a b) ▸ mem_map_of_mem f (mul_mem_mul ha' hb')
+
+/-- Surjective ring homomorphisms preserve powers of left ideals, including
+in noncommutative semirings. -/
+theorem map_pow_of_surjective (I : Ideal A) (f : A →+* B)
+    (hf : Function.Surjective f) (n : ℕ) : (I ^ n).map f = I.map f ^ n := by
+  induction n with
+  | zero => simp only [Submodule.pow_zero, Ideal.one_eq_top, map_top]
+  | succ n ih => rw [Submodule.pow_succ, map_mul_of_surjective _ _ f hf, ih,
+      Submodule.pow_succ]
 
 end Ideal
