@@ -26,7 +26,7 @@ form a span, and `SemimoduleCat.multispanRightSections F` consists of the famili
 whose two values at every face lie in the joint range of its span. When every face span is
 jointly injective, restriction to chambers is a linear equivalence from matching families onto
 these families (`SemimoduleCat.multispanSectionsEquiv`); the value at a face is the unique
-common lift of its two chamber values (`LinearMap.liftOfRangeLE`).
+common lift of its two chamber values (`LinearMap.codLift`).
 
 This is the semimodule analogue of Mathlib's `MulticospanIndex.sectionsEquiv` for the dual
 shape: there the right objects are determined by the left ones, while here the left objects
@@ -111,15 +111,13 @@ variable (hF : ∀ b : J.L, Function.Injective (multispanSpan F b))
 the unique common lift of its two values at the ends of `b`. -/
 noncomputable def multispanLeftLift (b : J.L) :
     multispanRightSections F →ₗ[R] F.obj (.left b) :=
-  LinearMap.liftOfRangeLE _ (hF b)
-    (g := ((LinearMap.proj (J.fst b)).prod (LinearMap.proj (J.snd b))) ∘ₗ
-      (multispanRightSections F).subtype) <| by
-    rintro _ ⟨s, rfl⟩
-    exact mem_multispanRightSections_iff.1 s.2 b
+  (((LinearMap.proj (J.fst b)).prod (LinearMap.proj (J.snd b))) ∘ₗ
+      (multispanRightSections F).subtype).codLift _ (hF b) fun s =>
+    mem_multispanRightSections_iff.1 s.2 b
 
 theorem multispanSpan_multispanLeftLift (b : J.L) (s : multispanRightSections F) :
     multispanSpan F b (multispanLeftLift hF b s) = (s.1 (J.fst b), s.1 (J.snd b)) :=
-  LinearMap.apply_liftOfRangeLE _ _ _ s
+  (mem_multispanRightSections_iff.1 s.2 b).choose_spec
 
 @[simp]
 theorem map_fst_multispanLeftLift (b : J.L) (s : multispanRightSections F) :
