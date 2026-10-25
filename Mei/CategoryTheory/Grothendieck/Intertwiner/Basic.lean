@@ -5,7 +5,6 @@ Authors: Codex
 -/
 module
 
-public import Mei.CategoryTheory.Grothendieck.Pullback
 public import Mei.CategoryTheory.Grothendieck.Pushforward
 
 /-!

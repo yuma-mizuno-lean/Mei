@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.CategoryTheory.Grothendieck.Section
+public import Mei.CategoryTheory.Grothendieck.Pullback
 
 /-!
 # Pushing sections forward along fiber functors
@@ -13,6 +13,7 @@ public import Mei.CategoryTheory.Grothendieck.Section
 A natural transformation between category-valued diagrams sends sections and
 vertical labels to sections and vertical labels. Together with restriction of
 sections, this transports labels between systems over different bases.
+`pullback_pushforward` identifies the two orders of these operations.
 
 A natural transformation between represented coefficient diagrams induces a map
 on the coefficient limits along a section. This map is equivariant for vertical
@@ -71,8 +72,8 @@ def pushforwardFunctor (h : C ⟶ C') : Section C ⥤ Section C' where
   map_id s := by
     apply hom_ext
     intro d
-    simp only [hom_pushforwardHom, hom, Functor.map_id, whiskerRight_app,
-      NatTrans.id_app]
+    simp only [hom_pushforwardHom, hom, _root_.CategoryTheory.Functor.map_id,
+      whiskerRight_app, NatTrans.id_app]
     rfl
   map_comp α β := by
     apply hom_ext
@@ -183,5 +184,15 @@ instance isIso_coefficientPushforwardLimit (h : C ⟶ C')
     [HasLimit (s.toFunctor ⋙ A)] [HasLimit ((pushforward h s).toFunctor ⋙ A')] :
     IsIso (coefficientPushforwardLimit h η s) := by
   exact inferInstanceAs (IsIso (limMap (coefficientPushforward h η s)))
+
+/-- Restricting a pushed-forward section agrees with pushing forward its restriction. -/
+theorem pullback_pushforward {E : Type*} [Category* E] (H : E ⥤ D) (h : C ⟶ C') (s : Section C) :
+    pullback H (pushforward h s) = pushforward (whiskerLeft H h) (pullback H s) := by
+  apply Functor.Fiber.fiberInclusion_obj_inj
+  suffices h : (pullback H (pushforward h s)).toFunctor =
+      (pushforward (whiskerLeft H h) (pullback H s)).toFunctor by
+    exact h
+  exact liftFunctor_comp_map H h (H ⋙ s.toFunctor)
+    (by rw [Functor.assoc, s.toFunctor_comp_forget]; rfl)
 
 end Mei.CategoryTheory.Grothendieck.Section

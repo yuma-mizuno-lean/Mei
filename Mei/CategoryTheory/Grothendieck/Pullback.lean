@@ -117,6 +117,42 @@ theorem liftHom_comp {B : Type*} [Category* B] (H : B ⥤ E)
   congr 1
   erw [eqToHom_trans_assoc]
 
+/-- Reindexing commutes with a natural transformation of the fibers on objects. -/
+@[simp]
+theorem liftObj_map {C' : D ⥤ Cat.{w, z}} (h : C ⟶ C')
+    (X : Grothendieck C) (e : E) (hx : X.base = G.obj e) :
+    liftObj G ((Grothendieck.map h).obj X) e hx =
+      (Grothendieck.map (whiskerLeft G h)).obj (liftObj G X e hx) := by
+  cases X with | mk d x =>
+  dsimp at hx
+  subst d
+  rfl
+
+/-- Reindexing commutes with fiber functors on morphisms, with the endpoints
+identified by `liftObj_map`. -/
+theorem liftHom_map {C' : D ⥤ Cat.{w, z}} (h : C ⟶ C') {X Y : Grothendieck C} {e e' : E}
+    (f : X ⟶ Y) (g : e ⟶ e')
+    (hx : X.base = G.obj e) (hy : Y.base = G.obj e')
+    (hf : f.base = eqToHom hx ≫ G.map g ≫ eqToHom hy.symm) :
+    HEq (liftHom G ((Grothendieck.map h).map f) g hx hy hf)
+      ((Grothendieck.map (whiskerLeft G h)).map (liftHom G f g hx hy hf)) := by
+  cases X with | mk d x =>
+  cases Y with | mk d' y =>
+  dsimp at hx hy
+  subst d d'
+  simp only [eqToHom_refl, Category.id_comp, Category.comp_id] at hf
+  cases f with | mk b k =>
+  dsimp at hf
+  subst b
+  dsimp [liftHom]
+  -- The endpoint casts disappear after substituting the prescribed base objects.
+  apply heq_of_eq
+  refine Grothendieck.ext _ _ (by simp) ?_
+  simp only [Grothendieck.map_map_fiber, whiskerLeft_app,
+    Category.id_comp]
+  erw [eqToHom_refl, Category.id_comp]
+  erw [Category.id_comp, Category.id_comp]
+
 /-- Lift a functor over `G` to the reindexed Grothendieck construction. -/
 -- Expose the object formula so that the new base computes in dependent morphism types.
 @[expose]
@@ -154,6 +190,18 @@ theorem liftFunctor_comp_pre (S : E ⥤ Grothendieck C) (hS : S ⋙ forget C = G
     (by convert Functor.congr_obj hS e using 1; rfl)) ?_
   intro e e' f
   exact pre_map_liftHom G (S.map f) f _ _ _
+
+/-- Lifting a functor over the base commutes with applying fiber functors. -/
+theorem liftFunctor_comp_map {C' : D ⥤ Cat.{w, z}} (h : C ⟶ C') (S : E ⥤ Grothendieck C)
+    (hs : S ⋙ forget C = G) :
+    liftFunctor G (S ⋙ Grothendieck.map h) (by rw [Functor.assoc, functor_comp_forget]; exact hs) =
+      liftFunctor G S hs ⋙ Grothendieck.map (whiskerLeft G h) := by
+  refine Functor.hext (fun e => ?_) (fun e e' f => ?_)
+  · exact liftObj_map G h (S.obj e) e (by convert Functor.congr_obj hs e using 1; rfl)
+  · exact liftHom_map G h (S.map f) f
+      (by convert Functor.congr_obj hs e using 1; rfl)
+      (by convert Functor.congr_obj hs e' using 1; rfl)
+      (by convert Functor.congr_hom hs f using 1 <;> rfl)
 
 variable {S T : E ⥤ Grothendieck C} (hS : S ⋙ forget C = G) (hT : T ⋙ forget C = G)
 
