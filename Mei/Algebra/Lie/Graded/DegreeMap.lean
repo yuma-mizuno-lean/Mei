@@ -6,7 +6,6 @@ Authors: Codex
 module
 
 public import Mei.Algebra.Lie.Graded.Truncation
-public import Mei.Algebra.Lie.Quotient.Map
 
 /-!
 # Graded Lie maps and degree truncation towers
@@ -144,41 +143,6 @@ theorem truncatedMap_comp (g : GradedLieHom U ℒ' ℒ'') (f : GradedLieHom T �
 
 end GradedLieHom
 
-namespace PositiveDegrees
-
-variable (d : PositiveDegrees N) (ℒ : N → Submodule R L)
-  [DecidableEq N] [GradedLieAlgebra ℒ] [IsPositiveGrading d ℒ]
-
-/-- The surjective transition from a higher-order truncation to a lower-order one. -/
-def truncationMap {k l : ℕ} (h : k ≤ l) :
-    d.truncatedLie ℒ l →ₗ⁅R⁆ d.truncatedLie ℒ k :=
-  (d.degreeIdeal ℒ l).factor (d.degreeIdeal ℒ k) (d.degreeIdeal_antitone ℒ h)
-
-/-- A truncation transition retains the same quotient representative. -/
-@[simp]
-theorem truncationMap_mk {k l : ℕ} (h : k ≤ l) (x : L) :
-    d.truncationMap ℒ h (LieSubmodule.Quotient.mk x) = LieSubmodule.Quotient.mk x := by
-  simp [truncationMap]
-
-/-- The transition at the same order is the identity. -/
-@[simp]
-theorem truncationMap_refl (k : ℕ) : d.truncationMap ℒ (le_refl k) = LieHom.id :=
-  LieIdeal.factor_refl _
-
-/-- Successive degree transitions compose to the direct transition. -/
-@[simp]
-theorem truncationMap_comp {k l m : ℕ} (hkl : k ≤ l) (hlm : l ≤ m) :
-    (d.truncationMap ℒ hkl).comp (d.truncationMap ℒ hlm) =
-      d.truncationMap ℒ (hkl.trans hlm) :=
-  LieIdeal.factor_comp _ _ _ _ _
-
-/-- Every class at lower order lifts to a class at higher order. -/
-theorem truncationMap_surjective {k l : ℕ} (h : k ≤ l) :
-    Function.Surjective (d.truncationMap ℒ h) :=
-  LieIdeal.factor_surjective _ _ _
-
-end PositiveDegrees
-
 namespace GradedLieHom
 
 variable {d : PositiveDegrees N} {e : PositiveDegrees N'} {T : PositiveDegreeMap d e}
@@ -202,7 +166,9 @@ theorem truncationMap_comp_truncatedMap (f : GradedLieHom T ℒ ℒ')
     {k l : ℕ} (h : k ≤ l) :
     (e.truncationMap ℒ' h).comp (f.truncatedMap l) =
       (f.truncatedMap k).comp (d.truncationMap ℒ (T.monotone_modulus h)) := by
-  exact LieIdeal.factor_comp_mapQ _ _ _ _ _ _ _ _ _
+  apply (d.degreeIdeal ℒ (T.modulus l)).lieHom_qext
+  intro x
+  simp [LieIdeal.mkQ_apply]
 
 /-- The induced map is homogeneous on the truncated pieces. This statement
 allows degree maps that identify distinct source degrees. -/

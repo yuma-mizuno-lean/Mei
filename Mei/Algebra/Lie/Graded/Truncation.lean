@@ -6,6 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Algebra.PositiveDegrees.Grading
+public import Mei.Algebra.Lie.Quotient.Map
 public import TauCeti.Algebra.DirectSum.Internal
 public import Mathlib.Algebra.Lie.Graded
 public import Mathlib.Algebra.Lie.Nilpotent
@@ -24,6 +25,7 @@ the coefficient ring beyond commutativity is needed.
 The quotient decomposition follows `TauCeti.InternalGrading.quotient`, using
 `iSupIndep.map_of_ker_inf_iSup_le` to preserve independence under the quotient
 map. It keeps the images of the original pieces as submodules of the quotient.
+The natural surjective transitions between cutoffs use `LieIdeal.factor`.
 -/
 
 public section
@@ -192,6 +194,34 @@ theorem truncatedGrading_eq_bot {k : ℕ} {n : N} (hn : (k : ℤ) < d.degree n) 
   intro x hx
   obtain ⟨y, hy, rfl⟩ := (d.mem_truncatedGrading_iff ℒ).mp hx
   exact (d.degreeIdeal ℒ k).mkQ_eq_zero.mpr (d.le_degreeIdeal ℒ hn hy)
+
+/-- The surjective transition from a higher-order truncation to a lower-order one. -/
+def truncationMap {k l : ℕ} (h : k ≤ l) :
+    d.truncatedLie ℒ l →ₗ⁅R⁆ d.truncatedLie ℒ k :=
+  (d.degreeIdeal ℒ l).factor (d.degreeIdeal ℒ k) (d.degreeIdeal_antitone ℒ h)
+
+/-- A truncation transition retains the same quotient representative. -/
+@[simp]
+theorem truncationMap_mk {k l : ℕ} (h : k ≤ l) (x : L) :
+    d.truncationMap ℒ h (LieSubmodule.Quotient.mk x) = LieSubmodule.Quotient.mk x := by
+  simp [truncationMap]
+
+/-- The transition at the same order is the identity. -/
+@[simp]
+theorem truncationMap_refl (k : ℕ) : d.truncationMap ℒ (le_refl k) = LieHom.id :=
+  LieIdeal.factor_refl _
+
+/-- Successive degree transitions compose to the direct transition. -/
+@[simp]
+theorem truncationMap_comp {k l m : ℕ} (hkl : k ≤ l) (hlm : l ≤ m) :
+    (d.truncationMap ℒ hkl).comp (d.truncationMap ℒ hlm) =
+      d.truncationMap ℒ (hkl.trans hlm) :=
+  LieIdeal.factor_comp _ _ _ _ _
+
+/-- Every class at lower order lifts to a class at higher order. -/
+theorem truncationMap_surjective {k l : ℕ} (h : k ≤ l) :
+    Function.Surjective (d.truncationMap ℒ h) :=
+  LieIdeal.factor_surjective _ _ _
 
 end PositiveDegrees
 end Mei
