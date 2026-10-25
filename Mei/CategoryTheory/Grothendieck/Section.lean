@@ -111,16 +111,13 @@ theorem toFunctor_comp_forget (s : GrothendieckSection L) :
 def toNatTrans {s t : GrothendieckSection L} (α : s ⟶ t) : s.toFunctor ⟶ t.toFunctor where
   app d := (Grothendieck.ι _ d).map (α.app d)
   naturality d e f := by
-    refine Grothendieck.ext _ _ (by simp [toFunctor]) ?_
-    simp only [toFunctor, Grothendieck.ι, Grothendieck.comp_base, Grothendieck.comp_fiber,
-      ← NatIso.naturality_2 (Cat.Hom.toNatIso (eqToIso (L.map_id e)) ≪≫
-        eqToIso Cat.Hom.id_toFunctor), Functor.id_obj, Cat.Hom.id_toFunctor, eqToIso_refl,
-      Iso.trans_refl, Cat.Hom.toNatIso_hom, eqToIso.hom, Cat.Hom₂.eqToHom_toNatTrans,
-      eqToHom_app, Functor.id_map, Cat.Hom.toNatIso_inv, eqToIso.inv, Category.assoc,
-      eqToHom_trans_assoc, eqToHom_refl, Category.id_comp, Functor.map_comp, eqToHom_map,
-      α.naturality]
-    -- Normalize the remaining transports in the category stored in `L.obj e`.
-    repeat erw [eqToHom_trans_assoc (C := L.obj e)]
+    rw [← Grothendieck.ιNatTrans_app_comp_ι_map (s.toFunctor.map f),
+      ← Grothendieck.ιNatTrans_app_comp_ι_map (t.toFunctor.map f)]
+    dsimp only [toFunctor]
+    -- The total functors and fiber inclusions present the same objects through different wrappers.
+    erw [Category.assoc, ← Functor.map_comp, ← α.naturality, Functor.map_comp,
+      ← Category.assoc, ← (Grothendieck.ιNatTrans f).naturality (α.app d)]
+    exact Category.assoc _ _ _
 
 @[simp]
 theorem toNatTrans_app {s t : GrothendieckSection L} (α : s ⟶ t) (d : D) :
@@ -138,6 +135,20 @@ def totalFunctor : GrothendieckSection L ⥤ (D ⥤ Grothendieck L) where
     apply NatTrans.ext
     funext d
     exact (Grothendieck.ι _ d).map_comp _ _
+
+/-- The object map is the section's total functor. -/
+@[simp]
+theorem totalFunctor_obj (s : GrothendieckSection L) :
+    totalFunctor.obj s = s.toFunctor := (rfl)
+
+/-- The morphism map is the total natural transformation, after identifying its endpoints. -/
+@[simp]
+theorem totalFunctor_map {s t : GrothendieckSection L} (α : s ⟶ t) :
+    totalFunctor.map α =
+      eqToHom (totalFunctor_obj s) ≫ toNatTrans α ≫ eqToHom (totalFunctor_obj t).symm := by
+  simp only [totalFunctor]
+  erw [eqToHom_refl (C := D ⥤ Grothendieck L),
+    eqToHom_refl (C := D ⥤ Grothendieck L), Category.id_comp, Category.comp_id]
 
 variable [∀ d, IsGroupoid (L.obj d)]
 
