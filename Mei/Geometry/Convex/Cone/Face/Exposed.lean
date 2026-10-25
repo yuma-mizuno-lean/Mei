@@ -28,6 +28,8 @@ In a finite-dimensional real normed space,
 `PointedCone.IsFaceOf.isExposed_of_fg` supplies Mathlib's continuous-functional
 predicate `IsExposed`, using the negative functional for its maximization convention.
 The algebraic construction uses Tucker's theorem and the face property.
+Conversely, `IsExposed.exists_isFaceOf_coe_eq` identifies every nonempty exposed
+subset of a real cone with a cone face, without a finite-generation assumption.
 -/
 
 public section
@@ -103,6 +105,42 @@ theorem exists_nonneg_linear_zero_iff (hF : F.IsFaceOf C) (hC : C.FG) :
     exact hxF.2
 
 end PointedCone.IsFaceOf
+
+namespace IsExposed
+
+variable {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
+  {C : PointedCone ℝ V} {S : Set V}
+
+/-- Every nonempty exposed subset of a pointed cone is the carrier of a cone face.
+No finite-generation or closedness assumption is needed in this direction. -/
+theorem exists_isFaceOf_coe_eq (hS : IsExposed ℝ (C : Set V) S) (hne : S.Nonempty) :
+    ∃ F : PointedCone ℝ V, F.IsFaceOf C ∧ (F : Set V) = S := by
+  obtain ⟨l, hl⟩ := hS hne
+  have hzero (x : V) (hx : x ∈ S) : l x = 0 := by
+    have hm : x ∈ {x ∈ C | ∀ y ∈ C, l y ≤ l x} := hl ▸ hx
+    have h₀ := hm.2 0 C.zero_mem
+    have h₂ := hm.2 (2 • x) (C.smul_mem (by norm_num : (0 : ℝ) ≤ 2) hm.1)
+    simp only [map_zero] at h₀
+    simp only [map_smul, smul_eq_mul] at h₂
+    linarith
+  obtain ⟨p, hp⟩ := hne
+  have hnonpos (x : V) (hx : x ∈ C) : l x ≤ 0 := by
+    have hm : p ∈ {x ∈ C | ∀ y ∈ C, l y ≤ l x} := hl ▸ hp
+    simpa only [hzero p hp] using hm.2 x hx
+  let f : Module.Dual ℝ V := -l.toLinearMap
+  have hf : ∀ x ∈ C, 0 ≤ f x := fun x hx => neg_nonneg.mpr (hnonpos x hx)
+  refine ⟨C ⊓ PointedCone.ofSubmodule (LinearMap.ker f),
+    PointedCone.isFaceOf_inf_ker hf, ?_⟩
+  ext x
+  constructor
+  · rintro ⟨hx, hfx⟩
+    have hxzero : l x = 0 := neg_eq_zero.mp hfx
+    rw [hl]
+    exact ⟨hx, fun y hy => (hnonpos y hy).trans_eq hxzero.symm⟩
+  · intro hx
+    exact ⟨hS.subset hx, by simpa [f] using hzero x hx⟩
+
+end IsExposed
 
 namespace PointedCone.IsFaceOf
 
