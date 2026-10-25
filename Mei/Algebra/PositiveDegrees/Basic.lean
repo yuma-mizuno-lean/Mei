@@ -171,15 +171,7 @@ def orthant (ι : Type*) [Fintype ι] : PositiveDegrees (ι → ℤ) where
       map_add' := by intros; simp [Finset.sum_add_distrib] }
   degree_pos := by
     intro n hn hne
-    have hnonneg : ∀ i, 0 ≤ n i := hn
-    have hsum : 0 ≤ ∑ i, n i := Finset.sum_nonneg (fun i _ => hnonneg i)
-    have hsum_ne : ∑ i, n i ≠ 0 := by
-      intro h
-      apply hne
-      funext i
-      exact (Finset.sum_eq_zero_iff_of_nonneg (fun j _ => hnonneg j)).mp h i
-        (Finset.mem_univ i)
-    exact lt_of_le_of_ne hsum (Ne.symm hsum_ne)
+    exact Fintype.sum_pos (lt_of_le_of_ne hn (Ne.symm hne))
   finite_le := by
     intro k
     apply (Set.Finite.pi (fun _ : ι => Set.finite_Icc (a := (0 : ℤ)) (b := k))).subset
