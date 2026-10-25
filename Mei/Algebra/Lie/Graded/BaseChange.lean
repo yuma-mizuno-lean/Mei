@@ -116,6 +116,19 @@ theorem truncatedBaseChangeEquiv_symm_tmul (k : ℕ) (s : S) (x : L) :
   (d.truncatedBaseChangeEquiv ℒ k).symm_apply_eq.mpr
     (d.truncatedBaseChangeEquiv_mk_tmul ℒ k s x).symm
 
+/-- Extending scalars intertwines the transitions between finite degree quotients. -/
+@[simp]
+theorem truncatedBaseChangeEquiv_truncationMap {k l : ℕ} (hkl : k ≤ l)
+    (x : d.truncatedLie (fun n => (ℒ n).baseChange S) l) :
+    d.truncatedBaseChangeEquiv ℒ k
+        (d.truncationMap (fun n => (ℒ n).baseChange S) hkl x) =
+      LieHom.baseChange S (d.truncationMap ℒ hkl) (d.truncatedBaseChangeEquiv ℒ l x) := by
+  obtain ⟨x, rfl⟩ := (d.degreeIdeal (fun n => (ℒ n).baseChange S) l).surjective_mkQ x
+  simp only [LieIdeal.mkQ_apply, truncationMap_mk, truncatedBaseChangeEquiv_mk]
+  induction x using TensorProduct.inductionOn with
+  | tmul s x => simp [LieIdeal.mkQ_apply]
+  | add x y hx hy => simp only [map_add, hx, hy]
+
 /-- The truncation comparison identifies each extended homogeneous piece. -/
 theorem map_truncatedGrading_baseChange (k : ℕ) (n : N) :
     (d.truncatedGrading (fun n => (ℒ n).baseChange S) k n).map
