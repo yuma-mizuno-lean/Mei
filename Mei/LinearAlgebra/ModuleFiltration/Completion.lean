@@ -154,6 +154,18 @@ def completionCone : Cone F.quotientTower where
         ext x
         exact (F.transition_projection (leOfHom g.unop) x).symm }
 
+/-- The vertex of the completion cone is the completed module. -/
+@[simp]
+lemma completionCone_pt : F.completionCone.pt = ModuleCat.of R F.completion :=
+  (rfl)
+
+/-- The components of the completion cone are the quotient projections. -/
+@[simp]
+lemma completionCone_π_app (k : ℕᵒᵖ) :
+    F.completionCone.π.app k =
+      eqToHom F.completionCone_pt ≫ ModuleCat.ofHom (F.projection k.unop) :=
+  (rfl)
+
 /-- The compatible-family completion is the inverse limit of its quotient tower. -/
 def completionIsLimit : IsLimit F.completionCone where
   lift s := ModuleCat.ofHom (F.lift (fun k => (s.π.app (Opposite.op k)).hom)
