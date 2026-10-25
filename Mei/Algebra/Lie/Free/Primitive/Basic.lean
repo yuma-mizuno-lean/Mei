@@ -8,7 +8,6 @@ module
 public import Mei.Algebra.Lie.Free.Enveloping
 public import Mei.Algebra.Lie.UniversalEnveloping.Dynkin.Grading
 import Mathlib.Algebra.Algebra.Rat
-import Mathlib.Algebra.GroupWithZero.Action.Units
 
 /-!
 # Primitive elements in a free Lie enveloping algebra
