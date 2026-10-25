@@ -294,10 +294,10 @@ theorem mem_crossingEvents_reverse (p : AdmissiblePLPath x y) (j : ℕ) (i : ι)
   induction p generalizing j with
   | nil => simp [Quiver.Path.reverse]
   | @cons u v p e ih =>
-    rw [Quiver.Path.reverse, crossingEvents_comp, Quiver.Hom.toPath, Set.mem_union,
+    simp only [Quiver.Path.reverse, crossingEvents_comp, Quiver.Hom.toPath, Set.mem_union,
       mem_crossingEvents_cons, Quiver.Path.length_cons, crossingEvents_nil,
-      WallComplement.mem_crossings_swap, Quiver.Path.length_cons, Quiver.Path.length_nil,
-      mem_crossingEvents_cons]
+      Quiver.Path.length_nil]
+    rw [WallComplement.mem_crossings_swap]
     rcases j with _ | j
     · simp only [Set.mem_empty_iff_false, false_or, Nat.zero_lt_succ, true_and,
         Nat.add_one_sub_one, Nat.sub_zero, Set.mem_image, Prod.mk.injEq]
@@ -310,15 +310,16 @@ theorem mem_crossingEvents_reverse (p : AdmissiblePLPath x y) (j : ℕ) (i : ι)
         · exact Or.inl h
     · simp only [Set.mem_empty_iff_false, false_or, Nat.add_one_ne_zero, false_and,
         Set.mem_image, Prod.mk.injEq, Nat.add_lt_add_iff_right]
+      have hindex : p.length + 1 - 1 - (j + 1) = p.length - 1 - j := by omega
       constructor
       · rintro ⟨⟨k, b⟩, hk, hj, rfl⟩
         obtain rfl : j = k := by omega
         obtain ⟨hjl, hk⟩ := (ih j).mp hk
         refine ⟨hjl, Or.inl ?_⟩
-        rwa [show p.length + 1 - 1 - (j + 1) = p.length - 1 - j by omega]
+        rwa [hindex]
       · rintro ⟨hjl, h | ⟨h, -⟩⟩
         · refine ⟨(j, i, t), (ih j).mpr ⟨hjl, ?_⟩, by omega, rfl⟩
-          rwa [show p.length + 1 - 1 - (j + 1) = p.length - 1 - j by omega] at h
+          rwa [hindex] at h
         · omega
 
 /-- A finite wall family gives finitely many crossing events along every
