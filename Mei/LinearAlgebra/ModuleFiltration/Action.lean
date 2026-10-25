@@ -33,15 +33,6 @@ variable {R M : Type*} [Ring R] [AddCommGroup M] [Module R M]
   [IsModuleFiltration F.orderDual (fun k => F.ideal (k.ofDual + 1))
     G.filtration (fun k => G.submodule (k.ofDual + 1))]
 
-/-- Scalar multiplication adds the orders of compatible filtrations. -/
-theorem smul_mem {a b : ℕ} {r : R} {x : M}
-    (hr : r ∈ F.ideal a) (hx : x ∈ G.submodule b) :
-    r • x ∈ G.submodule (a + b) := by
-  have hr' : r ∈ F.orderDual (OrderDual.toDual a) := by simpa using hr
-  have hx' : x ∈ G.filtration (OrderDual.toDual b) := by simpa using hx
-  rw [← G.filtration_toDual (a + b)]
-  exact SetLike.GradedSMul.smul_mem hr' hx'
-
 /-- The scalar ideal at order `k + 1` annihilates the order-`k` module quotient. -/
 theorem quotient_isTorsionBySet (k : ℕ) :
     Module.IsTorsionBySet R (G.quotient k) (F.ideal (k + 1)) := by
