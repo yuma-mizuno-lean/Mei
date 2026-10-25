@@ -61,13 +61,13 @@ theorem ext {e f : IntegralAffineEquiv h h'}
   rfl
 
 /-- The identity preserves the integral lattice. -/
-@[expose] def refl (h : IsIntegralLattice i) : IntegralAffineEquiv h h where
+def refl (h : IsIntegralLattice i) : IntegralAffineEquiv h h where
   toAffineEquiv := AffineEquiv.refl ℝ V
   latticeEquiv := AddEquiv.refl N
   map_lattice _ := rfl
 
 /-- Inverting the affine and integral equivalences preserves compatibility. -/
-@[expose] def symm (e : IntegralAffineEquiv h h') : IntegralAffineEquiv h' h where
+def symm (e : IntegralAffineEquiv h h') : IntegralAffineEquiv h' h where
   toAffineEquiv := e.toAffineEquiv.symm
   latticeEquiv := e.latticeEquiv.symm
   map_lattice n := by
@@ -75,33 +75,44 @@ theorem ext {e f : IntegralAffineEquiv h h'}
     simp [e.map_lattice]
 
 /-- Compose integral affine equivalences, applying the left one first. -/
-@[expose] def trans (e : IntegralAffineEquiv h h') (f : IntegralAffineEquiv h' h'') :
+def trans (e : IntegralAffineEquiv h h') (f : IntegralAffineEquiv h' h'') :
     IntegralAffineEquiv h h'' where
   toAffineEquiv := e.toAffineEquiv.trans f.toAffineEquiv
   latticeEquiv := e.latticeEquiv.trans f.latticeEquiv
   map_lattice n := by
-    change f.toAffineEquiv.linear (e.toAffineEquiv.linear (i n)) = _
-    rw [e.map_lattice, f.map_lattice]
+    dsimp only [AffineEquiv.trans]
+    rw [LinearEquiv.trans_apply, e.map_lattice, f.map_lattice]
     rfl
 
-/-- The identity acts as the identity on points. -/
+/-- The identity has the identity affine equivalence. -/
 @[simp]
-theorem refl_apply (h : IsIntegralLattice i) (x : V) : refl h x = x := rfl
+theorem refl_toAffineEquiv (h : IsIntegralLattice i) :
+    (refl h).toAffineEquiv = AffineEquiv.refl ℝ V := (rfl)
 
-/-- Composition agrees with function composition. -/
+/-- The identity has the identity lattice equivalence. -/
 @[simp]
-theorem trans_apply (e : IntegralAffineEquiv h h') (f : IntegralAffineEquiv h' h'') (x : V) :
-    e.trans f x = f (e x) := rfl
+theorem refl_latticeEquiv (h : IsIntegralLattice i) :
+    (refl h).latticeEquiv = AddEquiv.refl N := (rfl)
 
-/-- Applying the inverse after the original map recovers a point. -/
+/-- Inversion inverts the underlying affine equivalence. -/
 @[simp]
-theorem symm_apply_apply (e : IntegralAffineEquiv h h') (x : V) : e.symm (e x) = x :=
-  e.toAffineEquiv.symm_apply_apply x
+theorem symm_toAffineEquiv (e : IntegralAffineEquiv h h') :
+    e.symm.toAffineEquiv = e.toAffineEquiv.symm := (rfl)
 
-/-- Applying the original map after its inverse recovers a point. -/
+/-- Inversion inverts the lattice equivalence. -/
 @[simp]
-theorem apply_symm_apply (e : IntegralAffineEquiv h h') (x : V') : e (e.symm x) = x :=
-  e.toAffineEquiv.apply_symm_apply x
+theorem symm_latticeEquiv (e : IntegralAffineEquiv h h') :
+    e.symm.latticeEquiv = e.latticeEquiv.symm := (rfl)
+
+/-- Composition composes the underlying affine equivalences. -/
+@[simp]
+theorem trans_toAffineEquiv (e : IntegralAffineEquiv h h') (f : IntegralAffineEquiv h' h'') :
+    (e.trans f).toAffineEquiv = e.toAffineEquiv.trans f.toAffineEquiv := (rfl)
+
+/-- Composition composes the lattice equivalences. -/
+@[simp]
+theorem trans_latticeEquiv (e : IntegralAffineEquiv h h') (f : IntegralAffineEquiv h' h'') :
+    (e.trans f).latticeEquiv = e.latticeEquiv.trans f.latticeEquiv := (rfl)
 
 /-- Inverting twice recovers the integral affine equivalence. -/
 @[simp]
@@ -163,30 +174,25 @@ theorem continuous (e : IntegralAffineEquiv h h') : Continuous e := by
   exact e.toAffineEquiv.continuous_of_finiteDimensional
 
 /-- The underlying continuous affine map used to transport affine inequalities. -/
-@[expose] def toContinuousAffineMap (e : IntegralAffineEquiv h h') : V →ᴬ[ℝ] V' :=
+def toContinuousAffineMap (e : IntegralAffineEquiv h h') : V →ᴬ[ℝ] V' :=
   { e.toAffineEquiv.toAffineMap with cont := e.continuous }
 
 /-- Bundling continuity does not change evaluation. -/
 @[simp]
 theorem toContinuousAffineMap_apply (e : IntegralAffineEquiv h h') (x : V) :
-    e.toContinuousAffineMap x = e x := rfl
+    e.toContinuousAffineMap x = e x := (rfl)
 
 /-- Forgetting continuity gives the original affine map. -/
 @[simp]
 theorem toContinuousAffineMap_toAffineMap (e : IntegralAffineEquiv h h') :
-    e.toContinuousAffineMap.toAffineMap = e.toAffineEquiv.toAffineMap := rfl
-
-/-- The continuous affine map has the original rational linear part. -/
-@[simp]
-theorem toContinuousAffineMap_linear (e : IntegralAffineEquiv h h') :
-    e.toContinuousAffineMap.toAffineMap.linear = e.toAffineEquiv.linear.toLinearMap := rfl
+    e.toContinuousAffineMap.toAffineMap = e.toAffineEquiv.toAffineMap := (rfl)
 
 /-- Rationality with the exact bundled continuous-map type, for use in public
 constructions without relying on unfolding the rational-map predicate. -/
 theorem isRational_toContinuousAffineMap (e : IntegralAffineEquiv h h') :
     IsRationalLinearMap h h' e.toContinuousAffineMap.toAffineMap.linear := by
-  rw [toContinuousAffineMap_linear]
-  exact e.isRationalLinearMap
+  simpa only [toContinuousAffineMap_toAffineMap, AffineEquiv.linear_toAffineMap]
+    using e.isRationalLinearMap
 
 end IntegralAffineEquiv
 

@@ -29,7 +29,6 @@ namespace RationalAffinePolyhedron
 
 /-- Transport a rational-normal presentation by pulling back along the inverse
 integral affine equivalence. -/
-@[expose]
 def image (P : RationalAffinePolyhedron h) (e : Toric.IntegralAffineEquiv h h') :
     RationalAffinePolyhedron h' :=
   P.preimage e.symm.toContinuousAffineMap e.symm.isRational_toContinuousAffineMap
@@ -40,9 +39,10 @@ theorem carrier_image (P : RationalAffinePolyhedron h) (e : Toric.IntegralAffine
     (P.image e).carrier = e '' P.carrier := by
   rw [image, carrier_preimage]
   ext y
+  simp only [Set.mem_preimage, Toric.IntegralAffineEquiv.toContinuousAffineMap_apply]
   constructor
   · intro hy
-    exact ⟨e.symm y, hy, e.apply_symm_apply y⟩
+    exact ⟨e.symm y, hy, by simp⟩
   · rintro ⟨x, hx, rfl⟩
     simpa using hx
 
@@ -59,6 +59,7 @@ end RationalAffinePolyhedron
 theorem IsRationalNormalPolyhedron.image {P : Set V}
     (hP : IsRationalNormalPolyhedron h P) (e : Toric.IntegralAffineEquiv h h') :
     IsRationalNormalPolyhedron h' (e '' P) := by
+  rw [isRationalNormalPolyhedron_iff] at hP ⊢
   obtain ⟨Q, rfl⟩ := hP
   exact ⟨Q.image e, Q.carrier_image e⟩
 
