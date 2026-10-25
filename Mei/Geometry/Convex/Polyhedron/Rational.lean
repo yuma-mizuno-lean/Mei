@@ -75,6 +75,7 @@ noncomputable def ofFinite {ι : Type*} [Finite ι] (g : ι → (V →ᴬ[ℝ] �
   exact ⟨Fintype.card ι, fun j => g ((Fintype.equivFin ι).symm j), fun j => hg _⟩
 
 /-- Reindexing preserves the exact simultaneous-inequality carrier. -/
+@[simp high] -- Apply before `mem_carrier` exposes the reindexed inequalities.
 theorem mem_carrier_ofFinite {ι : Type*} [Finite ι] {g : ι → (V →ᴬ[ℝ] ℝ)}
     (hg : ∀ j, Toric.IsRationalFunctional h (g j).toAffineMap.linear) {x : V} :
     x ∈ (ofFinite g hg).carrier ↔ ∀ j, g j x ≤ 0 := by
@@ -87,13 +88,26 @@ theorem mem_carrier_ofFinite {ι : Type*} [Finite ι] {g : ι → (V →ᴬ[ℝ]
   · intro hx j
     exact hx _
 
+/-- Finite reindexing has rational offsets exactly when the original family does. -/
+@[simp]
+theorem hasRationalOffsets_ofFinite_iff {ι : Type*} [Finite ι]
+    {g : ι → (V →ᴬ[ℝ] ℝ)}
+    (hg : ∀ j, Toric.IsRationalFunctional h (g j).toAffineMap.linear) :
+    (ofFinite g hg).HasRationalOffsets ↔ ∀ j, ∃ q : ℚ, g j 0 = (q : ℝ) := by
+  classical
+  let _ := Fintype.ofFinite ι
+  dsimp only [HasRationalOffsets, ofFinite]
+  constructor
+  · intro ho j
+    simpa using ho ((Fintype.equivFin ι) j)
+  · intro ho j
+    exact ho _
+
 /-- Finite reindexing preserves rational affine offsets. -/
 theorem hasRationalOffsets_ofFinite {ι : Type*} [Finite ι] (g : ι → (V →ᴬ[ℝ] ℝ))
     (hg : ∀ j, Toric.IsRationalFunctional h (g j).toAffineMap.linear)
     (ho : ∀ j, ∃ q : ℚ, g j 0 = (q : ℝ)) : (ofFinite g hg).HasRationalOffsets := by
-  classical
-  let _ := Fintype.ofFinite ι
-  exact fun j => ho _
+  exact (hasRationalOffsets_ofFinite_iff hg).2 ho
 
 /-- Intersect two presentations by retaining both families of inequalities. -/
 noncomputable def inter (P Q : RationalAffinePolyhedron h) : RationalAffinePolyhedron h :=
@@ -112,6 +126,13 @@ theorem carrier_inter (P Q : RationalAffinePolyhedron h) :
   rw [mem_carrier_ofFinite]
   simp [Sum.forall]
 
+/-- Intersection has rational offsets exactly when both presentations do. -/
+@[simp]
+theorem hasRationalOffsets_inter_iff {P Q : RationalAffinePolyhedron h} :
+    (P.inter Q).HasRationalOffsets ↔ P.HasRationalOffsets ∧ Q.HasRationalOffsets := by
+  rw [inter, hasRationalOffsets_ofFinite_iff]
+  simp [Sum.forall, hasRationalOffsets_iff]
+
 /-- The empty family of inequalities presents the entire space. -/
 def univ (h : TauCeti.Toric.IsIntegralLattice i) : RationalAffinePolyhedron h :=
   ⟨0, Fin.elim0, fun j => Fin.elim0 j⟩
@@ -122,6 +143,12 @@ theorem carrier_univ (h : TauCeti.Toric.IsIntegralLattice i) :
     (univ h).carrier = Set.univ := by
   ext x
   simp [carrier, univ]
+
+/-- The presentation of the entire space has rational offsets. -/
+@[simp]
+theorem hasRationalOffsets_univ (h : TauCeti.Toric.IsIntegralLattice i) :
+    (univ h).HasRationalOffsets := by
+  simp [HasRationalOffsets, univ]
 
 /-- A contradictory constant inequality presents the empty set. -/
 def empty (h : TauCeti.Toric.IsIntegralLattice i) : RationalAffinePolyhedron h :=
@@ -134,6 +161,14 @@ theorem carrier_empty (h : TauCeti.Toric.IsIntegralLattice i) :
     (empty h).carrier = ∅ := by
   ext x
   simp [carrier, empty]
+
+/-- The contradictory constant presentation has rational offsets. -/
+@[simp]
+theorem hasRationalOffsets_empty (h : TauCeti.Toric.IsIntegralLattice i) :
+    (empty h).HasRationalOffsets := by
+  rw [hasRationalOffsets_iff]
+  intro j
+  exact ⟨1, by simp [empty]⟩
 
 variable {N' W : Type*} [AddCommGroup N'] [NormedAddCommGroup W] [NormedSpace ℝ W]
   {i' : N' →+ W} {h' : TauCeti.Toric.IsIntegralLattice i'}
