@@ -133,3 +133,28 @@ theorem mem_raySubmodule_iff (w : SupportedRay d) (m : Λ →+ ℤ) (x : L) :
     exact Submodule.zero_mem _
 
 end Mei.DirectedWallSpaces
+
+namespace Mei.DirectedWallSpaces
+
+variable {Γ Γ' Λ Λ' R L L' : Type*}
+  [AddCommGroup Γ] [AddCommGroup Γ'] [AddCommMonoid Λ] [AddCommMonoid Λ']
+  [CommRing R] [LieRing L] [LieAlgebra R L] [LieRing L'] [LieAlgebra R L']
+  {ρ : Γ →+ Λ} {ρ' : Γ' →+ Λ'}
+  {ℒ : Γ → Submodule R L} {ℳ : Γ' → Submodule R L'}
+  {d : PositiveDegrees Γ} {e : PositiveDegrees Γ'}
+
+/-- A linear map preserving the homogeneous wall spaces on a ray preserves their
+sum. The target ray condition concerns actual allowed degrees only. -/
+theorem map_mem_raySubmodule (H : DirectedWallSpaces ρ ℒ) (H' : DirectedWallSpaces ρ' ℳ)
+    (f : L →ₗ[R] L') (T : Γ → Γ') {w : SupportedRay d} {v : SupportedRay e}
+    {m : Λ →+ ℤ} {m' : Λ' →+ ℤ}
+    (hdegree : ∀ n ∈ w.rayDegrees, T n ∈ v.rayDegrees)
+    (hwall : ∀ n ∈ w.rayDegrees, ∀ x ∈ H.wall n m, f x ∈ H'.wall (T n) m')
+    {x : L} (hx : x ∈ H.raySubmodule w m) : f x ∈ H'.raySubmodule v m' := by
+  have hle : H.raySubmodule w m ≤ (H'.raySubmodule v m').comap f := by
+    rw [H.raySubmodule_def]
+    exact iSup_le fun n x hx => H'.wall_le_raySubmodule v m' (hdegree n n.property)
+      (hwall n n.property x hx)
+  exact hle hx
+
+end Mei.DirectedWallSpaces
