@@ -16,8 +16,8 @@ Lie homomorphisms. This gives a bound-independent candidate for multiplication i
 exponential coordinates, without requiring a faithful representation or a free
 underlying module.
 
-The construction uses `FreeLieAlgebra.lift` and `LieIdeal.liftQ`; independence of
-bounds follows from `Mei.FreeLieAlgebra.factor_bchElement`.
+The construction uses `Mei.FreeLieAlgebra.liftLowerCentralQuotient`; independence
+of bounds follows from `Mei.FreeLieAlgebra.factor_bchElement`.
 -/
 
 public section
@@ -25,6 +25,7 @@ public section
 namespace Mei
 
 open LieModule
+open Mei.FreeLieAlgebra (liftLowerCentralQuotient liftLowerCentralQuotient_mk)
 
 variable {L L' : Type*} [LieRing L] [LieAlgebra ℚ L]
   [LieRing L'] [LieAlgebra ℚ L']
@@ -32,26 +33,11 @@ variable {L L' : Type*} [LieRing L] [LieAlgebra ℚ L]
 local notation "Free₂" => _root_.FreeLieAlgebra ℚ (Fin 2)
 local notation "C" => lowerCentralSeries ℚ Free₂ Free₂
 
-private noncomputable def evaluation (c : ℕ)
-    (hc : lowerCentralSeries ℚ L L c = ⊥) (x y : L) :
-    Free₂ ⧸ C c →ₗ⁅ℚ⁆ L :=
-  LieIdeal.liftQ (C c) (_root_.FreeLieAlgebra.lift ℚ ![x, y]) (by
-    apply LieIdeal.map_eq_bot_iff.mp
-    apply eq_bot_iff.mpr
-    rw [← hc]
-    exact LieIdeal.map_lowerCentralSeries_le c)
-
-private theorem evaluation_mk (c : ℕ) (hc : lowerCentralSeries ℚ L L c = ⊥)
-    (x y : L) (z : Free₂) :
-    evaluation c hc x y (LieSubmodule.Quotient.mk z) =
-      _root_.FreeLieAlgebra.lift ℚ ![x, y] z := by
-  simp [evaluation]
-
 /-- Evaluate the universal finite BCH element using a specified nilpotency bound.
 The bound uses Mathlib's zero-based lower central series. -/
 noncomputable def bchOfClass (c : ℕ) (hc : lowerCentralSeries ℚ L L c = ⊥)
     (x y : L) : L :=
-  evaluation c hc x y (FreeLieAlgebra.bchElement c)
+  liftLowerCentralQuotient ℚ c hc ![x, y] (FreeLieAlgebra.bchElement c)
 
 /-- Any Lie homomorphism out of the free nilpotent quotient computes BCH from its
 values on the two free generators. -/
@@ -61,31 +47,31 @@ theorem bchOfClass_eq_of_hom (c : ℕ) (hc : lowerCentralSeries ℚ L L c = ⊥)
         (f (LieSubmodule.Quotient.mk (_root_.FreeLieAlgebra.of ℚ 0)))
         (f (LieSubmodule.Quotient.mk (_root_.FreeLieAlgebra.of ℚ 1))) =
       f (FreeLieAlgebra.bchElement c) := by
-  have he : evaluation c hc
-      (f (LieSubmodule.Quotient.mk (_root_.FreeLieAlgebra.of ℚ 0)))
-      (f (LieSubmodule.Quotient.mk (_root_.FreeLieAlgebra.of ℚ 1))) = f := by
+  have he : liftLowerCentralQuotient ℚ c hc
+      ![f (LieSubmodule.Quotient.mk (_root_.FreeLieAlgebra.of ℚ 0)),
+        f (LieSubmodule.Quotient.mk (_root_.FreeLieAlgebra.of ℚ 1))] = f := by
     apply LieIdeal.lieHom_qext (C c)
     intro z
-    suffices h : (evaluation c hc
-        (f (LieSubmodule.Quotient.mk (_root_.FreeLieAlgebra.of ℚ 0)))
-        (f (LieSubmodule.Quotient.mk (_root_.FreeLieAlgebra.of ℚ 1)))).comp
+    suffices h : (liftLowerCentralQuotient ℚ c hc
+        ![f (LieSubmodule.Quotient.mk (_root_.FreeLieAlgebra.of ℚ 0)),
+          f (LieSubmodule.Quotient.mk (_root_.FreeLieAlgebra.of ℚ 1))]).comp
           (LieIdeal.mkQ (C c)) = f.comp (LieIdeal.mkQ (C c)) from by
       simpa only [LieHom.comp_apply] using LieHom.congr_fun h z
     apply _root_.FreeLieAlgebra.hom_ext
     intro i
-    fin_cases i <;> simp [LieHom.comp_apply, LieIdeal.mkQ_apply, evaluation_mk]
+    fin_cases i <;> simp [LieHom.comp_apply, LieIdeal.mkQ_apply, liftLowerCentralQuotient_mk]
   rw [bchOfClass, he]
 
 /-- A larger nilpotency bound gives the same BCH operation. -/
 private theorem bchOfClass_eq_of_le {c d : ℕ} (hc : lowerCentralSeries ℚ L L c = ⊥)
     (hd : lowerCentralSeries ℚ L L d = ⊥) (h : c ≤ d) (x y : L) :
     bchOfClass d hd x y = bchOfClass c hc x y := by
-  have he : (evaluation c hc x y).comp
+  have he : (liftLowerCentralQuotient ℚ c hc ![x, y]).comp
       (LieIdeal.factor (C d) (C c) (antitone_lowerCentralSeries ℚ Free₂ Free₂ h)) =
-        evaluation d hd x y := by
+        liftLowerCentralQuotient ℚ d hd ![x, y] := by
     apply LieIdeal.lieHom_qext (C d)
     intro z
-    simp [LieHom.comp_apply, LieIdeal.mkQ_apply, evaluation_mk]
+    simp [LieHom.comp_apply, LieIdeal.mkQ_apply, liftLowerCentralQuotient_mk]
   rw [bchOfClass, ← he, LieHom.comp_apply, FreeLieAlgebra.factor_bchElement h]
   rfl
 
@@ -110,8 +96,8 @@ theorem _root_.LieHom.map_bchOfClass (f : L →ₗ⁅ℚ⁆ L') (c d : ℕ)
     eq_bot_iff.mpr ((antitone_lowerCentralSeries ℚ L' L' (le_max_right c d)).trans hd.le)
   rw [← bchOfClass_eq_of_le hc hc' (le_max_left c d),
     ← bchOfClass_eq_of_le hd hd' (le_max_right c d)]
-  have he := bchOfClass_eq_of_hom n hd' (f.comp (evaluation n hc' x y))
-  simp only [LieHom.comp_apply, evaluation_mk, _root_.FreeLieAlgebra.lift_of_apply,
+  have he := bchOfClass_eq_of_hom n hd' (f.comp (liftLowerCentralQuotient ℚ n hc' ![x, y]))
+  simp only [LieHom.comp_apply, liftLowerCentralQuotient_mk, _root_.FreeLieAlgebra.lift_of_apply,
     Matrix.cons_val_zero, Matrix.cons_val_one] at he
   exact he.symm
 
@@ -119,7 +105,7 @@ theorem _root_.LieHom.map_bchOfClass (f : L →ₗ⁅ℚ⁆ L') (c d : ℕ)
 @[simp]
 theorem bchOfClass_one (hc : lowerCentralSeries ℚ L L 1 = ⊥) (x y : L) :
     bchOfClass 1 hc x y = x + y := by
-  rw [bchOfClass, FreeLieAlgebra.bchElement_one, evaluation_mk]
+  rw [bchOfClass, FreeLieAlgebra.bchElement_one, liftLowerCentralQuotient_mk]
   simp
 
 section Nilpotent

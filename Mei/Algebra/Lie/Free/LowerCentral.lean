@@ -7,6 +7,7 @@ module
 
 public import Mei.Algebra.Lie.Free.Grading
 public import TauCeti.Algebra.Lie.LowerCentralSeries
+public import TauCeti.Algebra.Lie.Quotient
 public import Mei.Algebra.DirectSum.Degree.Basic
 
 /-!
@@ -18,6 +19,8 @@ leaves. This description holds over every commutative ring.
 
 This identifies lower central quotients with word-length truncations, so their
 elements can be studied through the homogeneous pieces of the free Lie algebra.
+The universal map to a Lie algebra with a specified nilpotency bound descends to
+the corresponding quotient, using `FreeLieAlgebra.lift` and `LieIdeal.liftQ`.
 
 ## References
 
@@ -121,5 +124,27 @@ theorem iInf_lowerCentralSeries_eq_bot :
     exact DirectSum.degreeTail_antitone (homogeneousSubmodule R S) (fun n => (n : ℤ))
       (Nat.le_succ k) hk
   rwa [DirectSum.iInf_degreeTail_eq_bot] at hle
+
+variable {L : Type*} [LieRing L] [LieAlgebra R L]
+
+/-- A map from the free generators to a Lie algebra with lower-central bound `c`
+extends to a Lie homomorphism from the corresponding free lower-central quotient. -/
+noncomputable def liftLowerCentralQuotient (c : ℕ)
+    (hc : LieModule.lowerCentralSeries R L L c = ⊥) (f : S → L) :
+    F ⧸ LieModule.lowerCentralSeries R F F c →ₗ⁅R⁆ L :=
+  LieIdeal.liftQ (LieModule.lowerCentralSeries R F F c) (_root_.FreeLieAlgebra.lift R f) (by
+    apply LieIdeal.map_eq_bot_iff.mp
+    apply eq_bot_iff.mpr
+    rw [← hc]
+    exact LieIdeal.map_lowerCentralSeries_le c)
+
+/-- The induced map on a free lower-central quotient evaluates representatives
+by the free Lie algebra's universal map. -/
+@[simp]
+theorem liftLowerCentralQuotient_mk (c : ℕ)
+    (hc : LieModule.lowerCentralSeries R L L c = ⊥) (f : S → L) (z : F) :
+    liftLowerCentralQuotient R c hc f (LieSubmodule.Quotient.mk z) =
+      _root_.FreeLieAlgebra.lift R f z := by
+  simp [liftLowerCentralQuotient]
 
 end Mei.FreeLieAlgebra
