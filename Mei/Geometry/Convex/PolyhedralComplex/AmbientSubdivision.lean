@@ -130,4 +130,70 @@ theorem carrier_eq_iUnion_ambientSubdivision_cells
   · rintro ⟨Q, _, hsub, hxQ⟩
     exact hsub hxQ
 
+/-- Restricting the rows of an arrangement coarsens its complex. The row map
+need not be injective: repeated inequalities do not change the conclusion. -/
+theorem ofArrangement_isSubdivision_comp {κ : Type*} [Finite κ]
+    (g : ι → (V →ᴬ[ℝ] ℝ))
+    (hg : ∀ j, Toric.IsRationalFunctional h (g j).toAffineMap.linear) (f : κ → ι) :
+    (ofArrangement g hg).IsSubdivision
+      (ofArrangement (g ∘ f) (fun j => hg (f j))) := by
+  apply isSubdivision_iff.mpr
+  refine ⟨?_, by simp⟩
+  apply isWeakRefinement_iff.mpr
+  intro P hP
+  obtain ⟨σ, ⟨x, hx⟩, rfl⟩ := mem_ofArrangement_cells.mp hP
+  have hsub : signCell g σ ⊆ signCell (g ∘ f) (σ ∘ f) :=
+    fun y hy => mem_signCell.mpr (fun j => mem_signCell.mp hy (f j))
+  exact ⟨closure (signCell (g ∘ f) (σ ∘ f)),
+    mem_ofArrangement_cells.mpr ⟨σ ∘ f, ⟨x, hsub hx⟩, rfl⟩, closure_mono hsub⟩
+
+/-- Each row hyperplane is a union of cells of the arrangement. -/
+theorem zeroLocus_eq_iUnion_ofArrangement_cells (g : ι → (V →ᴬ[ℝ] ℝ))
+    (hg : ∀ j, Toric.IsRationalFunctional h (g j).toAffineMap.linear) (j : ι) :
+    {x | g j x = 0} = ⋃ (P : Set V) (_ : P ∈ (ofArrangement g hg).cells)
+      (_ : P ⊆ {x | g j x = 0}), P := by
+  ext x
+  simp only [Set.mem_ofPred_eq, Set.mem_iUnion]
+  constructor
+  · intro hx
+    let σ := fun a => SignType.sign (g a x)
+    have hσ : x ∈ signCell g σ := mem_signCell_sign g x
+    refine ⟨closure (signCell g σ),
+      mem_ofArrangement_cells.mpr ⟨σ, ⟨x, hσ⟩, rfl⟩, ?_, subset_closure hσ⟩
+    rw [closure_signCell ⟨x, hσ⟩]
+    intro y hy
+    exact (mem_weakSignCell.mp hy j).1 (by simp [σ, hx])
+  · rintro ⟨P, _, hP, hxP⟩
+    exact hP hxP
+
+/-- A linear arrangement has conical cells, with lineality allowed. -/
+theorem isConical_ofArrangement (g : ι → (V →L[ℝ] ℝ))
+    (hg : ∀ j, Toric.IsRationalFunctional h (g j).toLinearMap) :
+    (ofArrangement (fun j => (g j).toContinuousAffineMap) hg).IsConical := by
+  apply (isConical_iff _).mpr
+  intro P hP
+  obtain ⟨σ, hσ, rfl⟩ := mem_ofArrangement_cells.mp hP
+  rw [closure_signCell hσ]
+  refine ⟨{
+    carrier := weakSignCell (fun j => (g j).toContinuousAffineMap) σ
+    add_mem' := ?_
+    zero_mem' := ?_
+    smul_mem' := ?_ }, rfl⟩
+  · intro x y hx hy
+    rw [mem_weakSignCell] at hx hy ⊢
+    intro j
+    simp only [ContinuousLinearMap.coe_toContinuousAffineMap, map_add] at hx hy ⊢
+    exact ⟨fun hj => by simp [(hx j).1 hj, (hy j).1 hj],
+      fun hj => add_nonpos ((hx j).2.1 hj) ((hy j).2.1 hj),
+      fun hj => add_nonneg ((hx j).2.2 hj) ((hy j).2.2 hj)⟩
+  · simp [mem_weakSignCell]
+  · intro c x hx
+    rw [mem_weakSignCell] at hx ⊢
+    intro j
+    simp only [ContinuousLinearMap.coe_toContinuousAffineMap, ← Nonneg.coe_smul,
+      map_smul, smul_eq_mul] at hx ⊢
+    exact ⟨fun hj => by simp [(hx j).1 hj],
+      fun hj => mul_nonpos_of_nonneg_of_nonpos c.property ((hx j).2.1 hj),
+      fun hj => mul_nonneg c.property ((hx j).2.2 hj)⟩
+
 end Mei.FinitePolyhedralComplex
