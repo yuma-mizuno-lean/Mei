@@ -5,10 +5,10 @@ Authors: Codex
 -/
 module
 
-public import Mathlib.Topology.Algebra.ContinuousAffineMap
+public import Mathlib.LinearAlgebra.AffineSpace.AffineMap
+public import Mathlib.Topology.Algebra.Module.Basic
 public import Mathlib.Geometry.Convex.Cone.Pointed
-public import Mathlib.Analysis.Normed.Module.Basic
-public import Mathlib.Algebra.Order.Archimedean.Defs
+public import Mathlib.Topology.Algebra.Ring.Real
 import Mathlib.Tactic.Linarith
 
 /-!
@@ -72,11 +72,11 @@ end Algebra
 
 section Inequalities
 
-variable {V ι : Type*} [AddCommGroup V] [Module ℝ V] [TopologicalSpace V]
+variable {V ι : Type*} [AddCommGroup V] [Module ℝ V]
 
 /-- For a nonempty set defined by affine inequalities, recession membership is equivalent
 to the homogeneous inequalities. The index family may be infinite. -/
-theorem mem_recessionCone_setOf_forall_iff {g : ι → (V →ᴬ[ℝ] ℝ)}
+theorem mem_recessionCone_setOf_forall_iff {g : ι → (V →ᵃ[ℝ] ℝ)}
     (hP : {x : V | ∀ i, g i x ≤ 0}.Nonempty) {v : V} :
     v ∈ recessionCone {x : V | ∀ i, g i x ≤ 0} ↔ ∀ i, (g i).linear v ≤ 0 := by
   constructor
@@ -87,21 +87,19 @@ theorem mem_recessionCone_setOf_forall_iff {g : ι → (V →ᴬ[ℝ] ℝ)}
     obtain ⟨n, hn⟩ := exists_lt_nsmul hpos (-g i x)
     have hmem := hv x hx (n : ℝ) (Nat.cast_nonneg n)
     have hle := hmem i
-    have heval := (g i).toAffineMap.map_vadd x ((n : ℝ) • v)
-    simp only [vadd_eq_add, map_smul, smul_eq_mul,
-      ContinuousAffineMap.coe_toAffineMap] at heval
+    have heval := (g i).map_vadd x ((n : ℝ) • v)
+    simp only [vadd_eq_add, map_smul, smul_eq_mul] at heval
     rw [add_comm x, heval] at hle
     simp only [nsmul_eq_mul] at hn
     linarith
   · intro hv x hx t ht i
-    have heval := (g i).toAffineMap.map_vadd x (t • v)
-    simp only [vadd_eq_add, map_smul, smul_eq_mul,
-      ContinuousAffineMap.coe_toAffineMap] at heval
+    have heval := (g i).map_vadd x (t • v)
+    simp only [vadd_eq_add, map_smul, smul_eq_mul] at heval
     rw [add_comm x, heval]
     exact add_nonpos (mul_nonpos_of_nonneg_of_nonpos ht (hv i)) (hx i)
 
 /-- The exact recession carrier of a nonempty affine-inequality presentation. -/
-theorem recessionCone_setOf_forall_eq (g : ι → (V →ᴬ[ℝ] ℝ))
+theorem recessionCone_setOf_forall_eq (g : ι → (V →ᵃ[ℝ] ℝ))
     (hP : {x : V | ∀ i, g i x ≤ 0}.Nonempty) :
     (recessionCone {x : V | ∀ i, g i x ≤ 0} : Set V) =
       {v : V | ∀ i, (g i).linear v ≤ 0} := by
@@ -112,7 +110,8 @@ end Inequalities
 
 section Topology
 
-variable {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
+variable {V : Type*} [AddCommGroup V] [Module ℝ V] [TopologicalSpace V]
+  [ContinuousAdd V] [ContinuousSMul ℝ V]
 
 /-- The recession cone of a closed set is closed, as an intersection of affine
 preimages of the original set. No convexity or nonemptiness is needed. -/

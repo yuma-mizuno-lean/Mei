@@ -85,8 +85,8 @@ theorem homogeneousInequalityCone_emptyOpposedRows :
   · rintro rfl
     simp
 
-/-- The actual homogenization of either inconsistent presentation is the zero cone. -/
-theorem homogenization_empty_presentations :
+-- The actual homogenization of either inconsistent presentation is the zero cone.
+example :
     homogenization {x : ℝ | emptyConstantRow x ≤ 0} = ⊥ ∧
       homogenization {x : ℝ | ∀ b, emptyOpposedRows b x ≤ 0} = ⊥ := by
   rw [emptyConstantRow_carrier, emptyOpposedRows_carrier]

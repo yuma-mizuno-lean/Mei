@@ -6,6 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.Convex.Recession
+public import Mathlib.Analysis.Normed.Module.Basic
 public import TauCeti.Analysis.Convex.Polyhedron.Basic
 
 /-!
@@ -29,7 +30,9 @@ convex polyhedron. -/
 theorem isConvexPolyhedron_recessionCone_setOf_forall {ι : Type*} [Finite ι]
     (g : ι → (V →ᴬ[ℝ] ℝ)) (hP : {x : V | ∀ i, g i x ≤ 0}.Nonempty) :
     TauCeti.IsConvexPolyhedron (recessionCone {x : V | ∀ i, g i x ≤ 0} : Set V) := by
-  rw [recessionCone_setOf_forall_eq g hP]
+  have he := recessionCone_setOf_forall_eq (fun i => (g i).toAffineMap) hP
+  simp only [ContinuousAffineMap.coe_toAffineMap] at he
+  rw [he]
   simpa only [ContinuousLinearMap.coe_toContinuousAffineMap, ContinuousAffineMap.coe_contLinear]
     using TauCeti.isConvexPolyhedron_setOf_forall
       (fun i => (g i).contLinear.toContinuousAffineMap)

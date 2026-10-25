@@ -6,6 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.Convex.Homogenization
+public import Mathlib.Topology.Algebra.ContinuousAffineMap
 
 /-!
 # Homogeneous inequalities for homogenization
@@ -37,6 +38,14 @@ theorem homogenizedInequality_apply (g : V →ᴬ[ℝ] ℝ) (x : V) (t : ℝ) :
     homogenizedInequality g (x, t) = g.linear x + t * g 0 := by
   simp [homogenizedInequality, mul_comm]
 
+/-- At nonzero height, rescaling an affine value gives its homogeneous value. -/
+theorem mul_affine_apply_inv_smul (g : V →ᴬ[ℝ] ℝ) (x : V) {t : ℝ}
+    (ht : t ≠ 0) : t * g (t⁻¹ • x) = homogenizedInequality g (x, t) := by
+  have heval : g (t⁻¹ • x) = t⁻¹ * g.linear x + g 0 := by
+    simpa only [vadd_eq_add, add_zero, map_smul, smul_eq_mul,
+      ContinuousAffineMap.coe_contLinear] using g.map_vadd 0 (t⁻¹ • x)
+  rw [heval, homogenizedInequality_apply, mul_add, ← mul_assoc, mul_inv_cancel₀ ht, one_mul]
+
 end ContinuousAffineMap
 
 open ContinuousAffineMap Set
@@ -66,13 +75,6 @@ theorem mem_homogeneousInequalityCone {g : ι → (V →ᴬ[ℝ] ℝ)} {z : V ×
     z ∈ homogeneousInequalityCone g ↔
       0 ≤ z.2 ∧ ∀ i, homogenizedInequality (g i) z ≤ 0 := (Iff.rfl)
 
-private theorem mul_affine_apply_inv_smul (g : V →ᴬ[ℝ] ℝ) (x : V) {t : ℝ}
-    (ht : t ≠ 0) : t * g (t⁻¹ • x) = homogenizedInequality g (x, t) := by
-  have heval : g (t⁻¹ • x) = t⁻¹ * g.linear x + g 0 := by
-    simpa only [vadd_eq_add, add_zero, map_smul, smul_eq_mul,
-      ContinuousAffineMap.coe_contLinear] using g.map_vadd 0 (t⁻¹ • x)
-  rw [heval, homogenizedInequality_apply, mul_add, ← mul_assoc, mul_inv_cancel₀ ht, one_mul]
-
 /-- The carrier-defined homogenization of a nonempty affine-inequality
 solution set has exactly its homogeneous inequalities. -/
 theorem mem_homogenization_setOf_forall_iff
@@ -95,7 +97,7 @@ theorem mem_homogenization_setOf_forall_iff
     refine ⟨ht, ?_⟩
     rcases ht.eq_or_lt with rfl | ht
     · have hv := (hconvex.mem_homogenization_zero_iff hne hclosed).mp hz
-      have hlin := (mem_recessionCone_setOf_forall_iff hne).mp hv
+      have hlin := (mem_recessionCone_setOf_forall_iff (g := fun i => (g i).toAffineMap) hne).mp hv
       simpa only [homogenizedInequality_apply, zero_mul, add_zero] using hlin
     · have hx := (hconvex.mem_homogenization_pos_iff hclosed ht).mp hz
       intro i
@@ -104,7 +106,7 @@ theorem mem_homogenization_setOf_forall_iff
   · rintro ⟨ht, hrows⟩
     rcases ht.eq_or_lt with rfl | ht
     · apply (hconvex.mem_homogenization_zero_iff hne hclosed).mpr
-      apply (mem_recessionCone_setOf_forall_iff hne).mpr
+      apply (mem_recessionCone_setOf_forall_iff (g := fun i => (g i).toAffineMap) hne).mpr
       simpa only [homogenizedInequality_apply, zero_mul, add_zero] using hrows
     · apply (hconvex.mem_homogenization_pos_iff hclosed ht).mpr
       intro i
