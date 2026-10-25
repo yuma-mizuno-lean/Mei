@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.Convex.Polyhedron.Boundary
-public import Mathlib.LinearAlgebra.AffineSpace.FiniteDimensional
+public import Mei.Geometry.Affine.Codimension
 
 /-! # Finite codimension bounds for polyhedral boundaries
 
@@ -17,37 +17,6 @@ least two, as needed for generic path construction.
 -/
 
 public section
-
-namespace AffineMap
-
-variable {V : Type*} [AddCommGroup V] [Module ℝ V]
-
-/-- An affine zero section has strictly smaller affine span when the function
-is nonzero somewhere on the original set. No convexity is needed. -/
-theorem affineSpan_inter_zero_lt (g : V →ᵃ[ℝ] ℝ) {P : Set V}
-    (hg : ∃ p ∈ P, g p ≠ 0) :
-    affineSpan ℝ {x ∈ P | g x = 0} < affineSpan ℝ P := by
-  refine lt_of_le_of_ne (affineSpan_mono ℝ (fun _ hx => hx.1)) ?_
-  intro heq
-  obtain ⟨p, hp, hgp⟩ := hg
-  have hz : Set.EqOn g (0 : V →ᵃ[ℝ] ℝ) {x ∈ P | g x = 0} := fun _ hx => hx.2
-  have hp' : p ∈ affineSpan ℝ {x ∈ P | g x = 0} := by
-    rw [heq]
-    exact subset_affineSpan ℝ P hp
-  exact hgp (AffineMap.eqOn_affineSpan hz hp')
-
-/-- A nonempty affine zero section has strictly smaller direction dimension
-when the defining function is nonzero somewhere on the original set. -/
-theorem finrank_direction_inter_zero_lt [FiniteDimensional ℝ V]
-    (g : V →ᵃ[ℝ] ℝ) {P : Set V} (hne : {x ∈ P | g x = 0}.Nonempty)
-    (hg : ∃ p ∈ P, g p ≠ 0) :
-    Module.finrank ℝ (affineSpan ℝ {x ∈ P | g x = 0}).direction <
-      Module.finrank ℝ (affineSpan ℝ P).direction :=
-  Submodule.finrank_lt_finrank_of_lt
-    (AffineSubspace.direction_lt_of_nonempty (g.affineSpan_inter_zero_lt hg)
-      (hne.affineSpan ℝ))
-
-end AffineMap
 
 namespace TauCeti.IsConvexPolyhedron
 

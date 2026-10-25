@@ -19,6 +19,37 @@ the scalar division ring.
 
 public section
 
+namespace AffineMap
+
+variable {K V : Type*} [DivisionRing K] [AddCommGroup V] [Module K V]
+
+/-- An affine zero section has strictly smaller affine span when the function
+is nonzero somewhere on the original set. No convexity is needed. -/
+theorem affineSpan_inter_zero_lt (g : V →ᵃ[K] K) {P : Set V}
+    (hg : ∃ p ∈ P, g p ≠ 0) :
+    affineSpan K {x ∈ P | g x = 0} < affineSpan K P := by
+  refine lt_of_le_of_ne (affineSpan_mono K (fun _ hx => hx.1)) ?_
+  intro heq
+  obtain ⟨p, hp, hgp⟩ := hg
+  have hz : Set.EqOn g (0 : V →ᵃ[K] K) {x ∈ P | g x = 0} := fun _ hx => hx.2
+  have hp' : p ∈ affineSpan K {x ∈ P | g x = 0} := by
+    rw [heq]
+    exact subset_affineSpan K P hp
+  exact hgp (AffineMap.eqOn_affineSpan hz hp')
+
+/-- A nonempty affine zero section has strictly smaller direction dimension
+when the defining function is nonzero somewhere on the original set. -/
+theorem finrank_direction_inter_zero_lt [FiniteDimensional K V]
+    (g : V →ᵃ[K] K) {P : Set V} (hne : {x ∈ P | g x = 0}.Nonempty)
+    (hg : ∃ p ∈ P, g p ≠ 0) :
+    Module.finrank K (affineSpan K {x ∈ P | g x = 0}).direction <
+      Module.finrank K (affineSpan K P).direction :=
+  Submodule.finrank_lt_finrank_of_lt
+    (AffineSubspace.direction_lt_of_nonempty (g.affineSpan_inter_zero_lt hg)
+      (hne.affineSpan K))
+
+end AffineMap
+
 namespace AffineSubspace
 
 variable {K V : Type*} [DivisionRing K] [AddCommGroup V] [Module K V]
