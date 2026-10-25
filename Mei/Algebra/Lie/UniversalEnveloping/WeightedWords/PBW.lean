@@ -73,9 +73,9 @@ theorem augmentation_pow_le_weightedPBWIdeal (hpos : ∀ s, 1 ≤ weight s) (k :
 
 /-- Bounded basis weights give the explicit reverse cofinality modulus. -/
 theorem weightedPBWIdeal_le_augmentation_pow (B : ℕ) (hbound : ∀ s, weight s ≤ B)
-    {k : ℕ} (hk : 1 ≤ k) :
+    {k : ℕ} :
     b.weightedPBWIdeal weight hbracket (B * (k - 1) + 1) ≤ J ^ k := by
   rw [← weightedWordIdeal_eq_weightedPBWIdeal]
-  exact weightedWordIdeal_le_augmentation_pow b weight B hbound hk
+  exact weightedWordIdeal_le_augmentation_pow b weight B hbound
 
 end Module.Basis

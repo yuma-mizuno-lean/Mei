@@ -162,7 +162,7 @@ theorem augmentation_pow_le_weightedWordIdeal
 /-- The bounded-weight modulus: total weight greater than `B * (k - 1)`
 forces at least `k` letters, hence membership in the `k`-th augmentation power. -/
 theorem weightedWordIdeal_le_augmentation_pow
-    (weight : S → ℕ) (B : ℕ) (hw : ∀ s, weight s ≤ B) {k : ℕ} (hk : 1 ≤ k) :
+    (weight : S → ℕ) (B : ℕ) (hw : ∀ s, weight s ≤ B) {k : ℕ} :
     weightedWordIdeal (R := R) e weight (B * (k - 1) + 1) ≤ J ^ k := by
   rw [weightedWordIdeal, Ideal.span_le]
   rintro a ⟨l, hl, rfl⟩
@@ -186,7 +186,7 @@ theorem weightedWordIdeal_one_eq_augmentation_pow
   | succ k =>
     apply le_antisymm
     · simpa using weightedWordIdeal_le_augmentation_pow e (fun _ => 1) 1
-        (fun _ => le_rfl) (k := k + 1) (by omega)
+        (fun _ => le_rfl) (k := k + 1)
     · exact augmentation_pow_le_weightedWordIdeal e he (fun _ => 1) (fun _ => le_rfl) _
 
 end Mei.UniversalEnvelopingAlgebra
