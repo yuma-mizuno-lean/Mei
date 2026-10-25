@@ -44,11 +44,10 @@ theorem mem_cellsOfCodimension_image (k : ℕ) (Q : Set V') :
       ∃ P ∈ C.cellsOfCodimension k, e '' P = Q := by
   have hd (P : Set V) : Module.finrank ℝ (affineSpan ℝ (e '' P)).direction =
       Module.finrank ℝ (affineSpan ℝ P).direction := by
-    have hm := AffineSubspace.map_span e.toAffineEquiv.toAffineMap P
     have he : (affineSpan ℝ (e '' P)).direction =
         ((affineSpan ℝ P).direction).map e.toAffineEquiv.linear.toLinearMap := by
-      simpa only [AffineSubspace.map_direction, AffineEquiv.linear_toAffineMap,
-        AffineEquiv.coe_coe] using congrArg AffineSubspace.direction hm.symm
+      simpa only [AffineEquiv.linear_toAffineMap, AffineEquiv.coe_coe] using
+        e.toAffineEquiv.toAffineMap.direction_affineSpan_image P
     rw [he, e.toAffineEquiv.linear.finrank_map_eq]
   have hv := e.toAffineEquiv.linear.finrank_eq
   simp only [mem_cellsOfCodimension, mem_cells_image]

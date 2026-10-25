@@ -54,10 +54,9 @@ def wallComplementMap (e : V ≃ᴬ[ℝ] V') (r : ι ≃ ι')
       have hdir : (affineSpan ℝ (W' (r j))).direction =
           ((affineSpan ℝ (W j)).direction).map e.toAffineEquiv.linear.toLinearMap := by
         rw [hW]
-        simpa only [AffineSubspace.map_direction, AffineEquiv.linear_toAffineMap,
+        simpa only [AffineEquiv.linear_toAffineMap,
           AffineEquiv.coe_coe, ContinuousAffineEquiv.coe_coe] using
-          congrArg AffineSubspace.direction
-            (AffineSubspace.map_span e.toAffineEquiv.toAffineMap (W j)).symm
+          e.toAffineEquiv.toAffineMap.direction_affineSpan_image (W j)
       have hv : e.toAffineEquiv.linear (y.val - x.val) = e y.val - e x.val := by
         simpa only [AffineEquiv.linear_toAffineMap, AffineEquiv.coe_coe,
           ContinuousAffineEquiv.coe_coe, LinearEquiv.coe_coe, vsub_eq_sub] using

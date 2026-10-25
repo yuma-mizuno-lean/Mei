@@ -41,11 +41,10 @@ def image : FiniteWallDiagram (C.image e) H where
   ker_normal Q := by
     obtain ⟨P, rfl⟩ := (C.wallImageEquiv e).surjective Q
     rw [Equiv.symm_apply_apply, LinearMap.ker_comp, D.ker_normal, C.wallImageEquiv_coe]
-    have hm := AffineSubspace.map_span e.toAffineEquiv.toAffineMap (P : Set V)
     have hd : (affineSpan ℝ (e '' (P : Set V))).direction =
         ((affineSpan ℝ (P : Set V)).direction).map e.toAffineEquiv.linear.toLinearMap := by
-      simpa only [AffineSubspace.map_direction, AffineEquiv.linear_toAffineMap,
-        AffineEquiv.coe_coe] using congrArg AffineSubspace.direction hm.symm
+      simpa only [AffineEquiv.linear_toAffineMap, AffineEquiv.coe_coe] using
+        e.toAffineEquiv.toAffineMap.direction_affineSpan_image (P : Set V)
     rw [hd, Submodule.map_equiv_eq_comap_symm]
   label Q := D.label ((C.wallImageEquiv e).symm Q)
 
