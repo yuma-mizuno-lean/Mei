@@ -54,20 +54,29 @@ theorem carrier_activeFace (P : RationalAffinePolyhedron h)
   · rintro ⟨hx, hxI⟩
     exact ⟨hx, fun j => (hxI j.val j.property).ge⟩
 
+/-- An active presentation has rational offsets exactly when the original does. -/
+@[simp]
+theorem hasRationalOffsets_activeFace_iff {P : RationalAffinePolyhedron h}
+    (I : Finset (Fin P.numConstraints)) :
+    (P.activeFace I).HasRationalOffsets ↔ P.HasRationalOffsets := by
+  rw [activeFace, hasRationalOffsets_ofFinite_iff]
+  constructor
+  · intro hP
+    exact hasRationalOffsets_iff.mpr fun j => hP (Sum.inl j)
+  · intro hP j
+    cases j with
+    | inl j => exact hasRationalOffsets_iff.mp hP j
+    | inr j =>
+      obtain ⟨q, hq⟩ := hasRationalOffsets_iff.mp hP j.val
+      refine ⟨-q, ?_⟩
+      simp only [Sum.elim_inr, ContinuousAffineMap.neg_apply, hq, Rat.cast_neg]
+
 /-- Active constraints preserve rational affine offsets because added rows are
 negatives of existing rows. -/
 theorem HasRationalOffsets.activeFace {P : RationalAffinePolyhedron h}
     (hP : P.HasRationalOffsets) (I : Finset (Fin P.numConstraints)) :
-    (P.activeFace I).HasRationalOffsets := by
-  rw [Mei.RationalAffinePolyhedron.activeFace]
-  apply hasRationalOffsets_ofFinite
-  intro j
-  cases j with
-  | inl j => exact hasRationalOffsets_iff.mp hP j
-  | inr j =>
-    obtain ⟨q, hq⟩ := hasRationalOffsets_iff.mp hP j.val
-    refine ⟨-q, ?_⟩
-    simp only [Sum.elim_inr, ContinuousAffineMap.neg_apply, hq, Rat.cast_neg]
+    (P.activeFace I).HasRationalOffsets :=
+  (hasRationalOffsets_activeFace_iff I).mpr hP
 
 /-- Every nonempty convex extreme subset of the carrier is the carrier of one
 of its active rational-normal presentations. -/
@@ -98,13 +107,6 @@ namespace Mei
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
-
-/-- A constant contradictory row gives an empty presentation with rational offsets. -/
-theorem IsRationalPolyhedron.empty (h : TauCeti.Toric.IsIntegralLattice i) :
-    IsRationalPolyhedron h (∅ : Set V) := by
-  exact isRationalPolyhedron_iff.mpr
-    ⟨RationalAffinePolyhedron.empty h, RationalAffinePolyhedron.carrier_empty h,
-      RationalAffinePolyhedron.hasRationalOffsets_empty h⟩
 
 /-- Every convex extreme subset of a rational-normal polyhedron is
 rational-normal, including the empty subset. -/

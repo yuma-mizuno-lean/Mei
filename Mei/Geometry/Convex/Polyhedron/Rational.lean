@@ -210,4 +210,11 @@ theorem isRationalPolyhedron_iff {h : TauCeti.Toric.IsIntegralLattice i} {P : Se
     IsRationalPolyhedron h P ↔
       ∃ Q : RationalAffinePolyhedron h, Q.carrier = P ∧ Q.HasRationalOffsets := Iff.rfl
 
+/-- A constant contradictory row gives an empty presentation with rational offsets. -/
+theorem IsRationalPolyhedron.empty (h : TauCeti.Toric.IsIntegralLattice i) :
+    IsRationalPolyhedron h (∅ : Set V) := by
+  exact isRationalPolyhedron_iff.mpr
+    ⟨RationalAffinePolyhedron.empty h, RationalAffinePolyhedron.carrier_empty h,
+      RationalAffinePolyhedron.hasRationalOffsets_empty h⟩
+
 end Mei
