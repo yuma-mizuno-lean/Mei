@@ -147,4 +147,19 @@ theorem liftLowerCentralQuotient_mk (c : ℕ)
       _root_.FreeLieAlgebra.lift R f z := by
   simp [liftLowerCentralQuotient]
 
+/-- A homomorphism from the free lower-central quotient is the induced lift if
+it agrees with the given map on the quotient generators. -/
+theorem liftLowerCentralQuotient_unique (c : ℕ)
+    (hc : LieModule.lowerCentralSeries R L L c = ⊥) (f : S → L)
+    (g : F ⧸ LieModule.lowerCentralSeries R F F c →ₗ⁅R⁆ L)
+    (h : ∀ s, g (LieSubmodule.Quotient.mk (_root_.FreeLieAlgebra.of R s)) = f s) :
+    g = liftLowerCentralQuotient R c hc f := by
+  have he : g.comp (LieIdeal.mkQ (LieModule.lowerCentralSeries R F F c)) =
+      _root_.FreeLieAlgebra.lift R f :=
+    (_root_.FreeLieAlgebra.lift_unique f _).mp (funext h)
+  apply LieIdeal.lieHom_qext (LieModule.lowerCentralSeries R F F c)
+  intro z
+  simpa only [LieHom.comp_apply, LieIdeal.mkQ_apply, liftLowerCentralQuotient_mk] using
+    LieHom.congr_fun he z
+
 end Mei.FreeLieAlgebra

@@ -25,7 +25,8 @@ public section
 namespace Mei
 
 open LieModule
-open Mei.FreeLieAlgebra (liftLowerCentralQuotient liftLowerCentralQuotient_mk)
+open Mei.FreeLieAlgebra (liftLowerCentralQuotient liftLowerCentralQuotient_mk
+  liftLowerCentralQuotient_unique)
 
 variable {L L' : Type*} [LieRing L] [LieAlgebra ℚ L]
   [LieRing L'] [LieAlgebra ℚ L']
@@ -50,16 +51,10 @@ theorem bchOfClass_eq_of_hom (c : ℕ) (hc : lowerCentralSeries ℚ L L c = ⊥)
   have he : liftLowerCentralQuotient ℚ c hc
       ![f (LieSubmodule.Quotient.mk (_root_.FreeLieAlgebra.of ℚ 0)),
         f (LieSubmodule.Quotient.mk (_root_.FreeLieAlgebra.of ℚ 1))] = f := by
-    apply LieIdeal.lieHom_qext (C c)
-    intro z
-    suffices h : (liftLowerCentralQuotient ℚ c hc
-        ![f (LieSubmodule.Quotient.mk (_root_.FreeLieAlgebra.of ℚ 0)),
-          f (LieSubmodule.Quotient.mk (_root_.FreeLieAlgebra.of ℚ 1))]).comp
-          (LieIdeal.mkQ (C c)) = f.comp (LieIdeal.mkQ (C c)) from by
-      simpa only [LieHom.comp_apply] using LieHom.congr_fun h z
-    apply _root_.FreeLieAlgebra.hom_ext
+    symm
+    apply liftLowerCentralQuotient_unique
     intro i
-    fin_cases i <;> simp [LieHom.comp_apply, LieIdeal.mkQ_apply, liftLowerCentralQuotient_mk]
+    fin_cases i <;> simp
   rw [bchOfClass, he]
 
 /-- A larger nilpotency bound gives the same BCH operation. -/
