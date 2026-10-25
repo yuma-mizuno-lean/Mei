@@ -15,6 +15,8 @@ public import Mathlib.Analysis.Convex.Exposed
 Intersecting a closed convex set with a nonempty affine zero slice commutes
 with closed homogenization. Consequently, nonempty exposed faces homogenize
 to faces of the closed homogenized cone, including its height-zero directions.
+Mathlib's `PointedCone.IsFaceOf.lineal_congr` then shows that a nonempty
+exposed face has the same recession lineality as its ambient closed convex set.
 -/
 
 public section
@@ -92,6 +94,18 @@ theorem homogenization_isFaceOf {P F : Set V} (hF : IsExposed ℝ P F)
       exact ⟨hx, fun y hy => (hpmax.2 y hy).trans_eq heq.symm⟩
   rw [hzero]
   exact hconv.homogenization_zeroFace_isFaceOf hclosed g hg (hzero ▸ ⟨p, hp⟩)
+
+/-- Every nonempty exposed face of a closed convex set has the same lineality
+space, measured by the lineality of its recession cone.
+
+This follows from Mathlib's `PointedCone.IsFaceOf.lineal_congr` applied to
+the actual homogenizations; no polyhedral or finite-dimensional hypothesis is needed. -/
+theorem lineal_recessionCone_eq {P F : Set V} (hF : IsExposed ℝ P F)
+    (hconv : Convex ℝ P) (hclosed : IsClosed P) (hne : F.Nonempty) :
+    (Set.recessionCone F).lineal = (Set.recessionCone P).lineal := by
+  rw [(hF.convex hconv).lineal_recessionCone_eq_comap hne (hF.isClosed hclosed),
+    hconv.lineal_recessionCone_eq_comap (hne.mono hF.subset) hclosed,
+    (hF.homogenization_isFaceOf hconv hclosed hne).lineal_congr]
 
 end IsExposed
 
