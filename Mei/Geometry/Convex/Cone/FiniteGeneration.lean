@@ -1,0 +1,203 @@
+/-
+Copyright (c) 2026 Mei contributors. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Codex
+-/
+module
+
+public import Mathlib.Geometry.Convex.Cone.DualFinite
+public import Mathlib.LinearAlgebra.Finsupp.LinearCombination
+public import TauCeti.Geometry.Convex.Cone.Relations
+import Mathlib.Data.Finset.Card
+import Mathlib.Algebra.Order.BigOperators.Group.Finset
+import Mathlib.Tactic.Linarith
+import Mathlib.Tactic.Ring
+
+/-!
+# Finite generation under a halfspace cut
+
+A finite generating family for a pointed cone can be cut by a linear halfspace:
+retain its nonnegative generators and add boundary combinations of opposite-sign
+generators. Support reduction proves that these generate the whole intersection.
+The argument is algebraic and allows lineality.
+-/
+
+public section
+
+open scoped BigOperators
+
+namespace PointedCone
+
+variable {K V : Type*} [Field K] [LinearOrder K] [IsStrictOrderedRing K]
+  [AddCommGroup V] [Module K V]
+
+/-- A nonnegative combination of two opposite-sign vectors lying on the cutting hyperplane. -/
+def boundaryCombination (f : V →ₗ[K] K) (u v : V) : V :=
+  (-f v) • u + f u • v
+
+omit [LinearOrder K] [IsStrictOrderedRing K] in
+/-- The cutting functional vanishes on a boundary combination. -/
+@[simp]
+theorem map_boundaryCombination (f : V →ₗ[K] K) (u v : V) :
+    f (boundaryCombination f u v) = 0 := by
+  simp [boundaryCombination, map_add, map_smul, smul_eq_mul]
+  ring
+
+/-- The finite family obtained by retaining nonnegative generators and adding
+boundary combinations of every pair with opposite strict signs. -/
+noncomputable def halfspaceGenerators (s : Finset V) (f : V →ₗ[K] K) : Finset V := by
+  classical
+  exact s.filter (fun v => 0 ≤ f v) ∪
+    ((s ×ˢ s).filter (fun p => 0 < f p.1 ∧ f p.2 < 0)).image
+      (fun p => boundaryCombination f p.1 p.2)
+
+/-- A nonnegative finite combination satisfying the cutting inequality lies in
+any cone containing the retained generators and opposite-sign boundary pairs. -/
+private theorem linearCombination_mem_of_nonneg {ι : Type*} [Fintype ι]
+    (D : PointedCone K V) (v : ι → V) (f : V →ₗ[K] K)
+    (hgood : ∀ i, 0 ≤ f (v i) → v i ∈ D)
+    (hpair : ∀ i j, 0 < f (v i) → f (v j) < 0 → boundaryCombination f (v i) (v j) ∈ D)
+    (c : ι → K) (hc : 0 ≤ c) (hf : 0 ≤ f (Fintype.linearCombination K v c)) :
+    Fintype.linearCombination K v c ∈ D := by
+  classical
+  let L := Fintype.linearCombination K v
+  have aux : ∀ n : ℕ, ∀ c : ι → K,
+      (Function.support c).toFinite.toFinset.card = n → 0 ≤ c → 0 ≤ f (L c) → L c ∈ D := by
+    intro n
+    induction n using Nat.strong_induction_on with
+    | h n ih =>
+      intro c hn hc hf
+      by_cases hneg : ∃ j, c j ≠ 0 ∧ f (v j) < 0
+      · obtain ⟨j, hcj, hj⟩ := hneg
+        have hpos : ∃ i, c i ≠ 0 ∧ 0 < f (v i) := by
+          by_contra hnone
+          push Not at hnone
+          have hall : ∀ i, c i * f (v i) ≤ 0 := by
+            intro i
+            by_cases hi : c i = 0
+            · simp [hi]
+            · exact mul_nonpos_of_nonneg_of_nonpos (hc i) (hnone i hi)
+          have hlt : ∑ i, c i * f (v i) < 0 :=
+            Finset.sum_neg' (fun i _ => hall i)
+              ⟨j, Finset.mem_univ _, mul_neg_of_pos_of_neg
+                (lt_of_le_of_ne (hc j) hcj.symm) hj⟩
+          have he : f (L c) = ∑ i, c i * f (v i) := by
+            simp [L, Fintype.linearCombination_apply, map_sum, map_smul, smul_eq_mul]
+          rw [he] at hf
+          exact (not_lt_of_ge hf) hlt
+        obtain ⟨i, hci, hi⟩ := hpos
+        have hij : i ≠ j := by
+          intro he
+          exact (not_lt_of_ge hi.le) (he ▸ hj)
+        let k : ι → K := Pi.single i (-f (v j)) + Pi.single j (f (v i))
+        have hsupport : ∀ a, c a = 0 → k a = 0 := by
+          intro a ha
+          have hai : a ≠ i := fun he => hci (he ▸ ha)
+          have haj : a ≠ j := fun he => hcj (he ▸ ha)
+          simp [k, hai, haj]
+        have hkpos : 0 < k i := by
+          simpa [k, Pi.single_apply, hij] using neg_pos.mpr hj
+        obtain ⟨r, hr, hc', hss⟩ :=
+          TauCeti.exists_pos_sub_smul_nonneg_support_ssubset hc
+            (Function.support k).toFinite hsupport ⟨i, hkpos⟩
+        have hLk : L k = boundaryCombination f (v i) (v j) := by
+          simp [L, k, map_add, Fintype.linearCombination_apply_single, boundaryCombination]
+        have hstrict : (Function.support (c - r • k)).toFinite.toFinset ⊂
+            (Function.support c).toFinite.toFinset := by
+          rw [Set.Finite.toFinset_ssubset, Set.Finite.coe_toFinset]
+          exact hss
+        have hcard : (Function.support (c - r • k)).toFinite.toFinset.card < n := by
+          rw [← hn]
+          exact Finset.card_lt_card hstrict
+        have hfn : 0 ≤ f (L (c - r • k)) := by
+          simpa [map_sub, map_smul, hLk] using hf
+        have hm := ih _ hcard (c - r • k) rfl hc' hfn
+        have he : L c = L (c - r • k) + r • boundaryCombination f (v i) (v j) := by
+          simp [map_sub, map_smul, hLk]
+        rw [he]
+        exact D.add_mem hm (PointedCone.smul_mem D hr.le (hpair i j hi hj))
+      · change (∑ i, c i • v i) ∈ D
+        apply D.sum_mem
+        intro i _
+        by_cases hi : c i = 0
+        · simp [hi]
+        · have hfi : 0 ≤ f (v i) := le_of_not_gt (fun h => hneg ⟨i, hi, h⟩)
+          exact PointedCone.smul_mem D (hc i) (hgood i hfi)
+  exact aux _ c rfl hc hf
+
+/-- The retained generators and boundary pairs generate exactly the intersection
+of the original cone with the nonnegative halfspace of `f`. -/
+theorem hull_halfspaceGenerators (s : Finset V) (f : V →ₗ[K] K) :
+    hull K (halfspaceGenerators s f : Set V) =
+      hull K (s : Set V) ⊓ dual (LinearMap.id : Module.Dual K V →ₗ[K] Module.Dual K V) {f} := by
+  classical
+  apply le_antisymm
+  · apply Submodule.span_le.mpr
+    intro z hz
+    rcases Finset.mem_union.mp hz with hz | hz
+    · obtain ⟨hzs, hfz⟩ := Finset.mem_filter.mp hz
+      exact ⟨subset_hull hzs, by simpa using hfz⟩
+    · obtain ⟨⟨u, v⟩, huv, rfl⟩ := Finset.mem_image.mp hz
+      obtain ⟨huvs, hfu, hfv⟩ := Finset.mem_filter.mp huv
+      obtain ⟨hu, hv⟩ := Finset.mem_product.mp huvs
+      refine ⟨?_, ?_⟩
+      · exact (hull K (s : Set V)).add_mem
+          (PointedCone.smul_mem _ (neg_nonneg.mpr hfv.le) (subset_hull hu))
+          (PointedCone.smul_mem _ hfu.le (subset_hull hv))
+      · simp
+  · intro x hx
+    let v : s → V := fun i => i.val
+    have he : Set.range v = (s : Set V) := by
+      ext y
+      simp [v]
+    have hxC := hx.1
+    rw [← he] at hxC
+    obtain ⟨c, hc⟩ := (Submodule.mem_span_range_iff_exists_fun (Nonneg K)).mp hxC
+    have hc' : Fintype.linearCombination K v (fun i => (c i : K)) = x := by
+      simpa only [Fintype.linearCombination_apply, Nonneg.coe_smul] using hc
+    have hfx : 0 ≤ f x := by simpa using hx.2
+    rw [← hc']
+    apply linearCombination_mem_of_nonneg _ v f
+    · intro i hi
+      apply subset_hull
+      change i.val ∈ halfspaceGenerators s f
+      apply Finset.mem_union_left
+      exact Finset.mem_filter.mpr ⟨i.property, hi⟩
+    · intro i j hi hj
+      apply subset_hull
+      change boundaryCombination f i.val j.val ∈ halfspaceGenerators s f
+      apply Finset.mem_union_right
+      apply Finset.mem_image.mpr
+      exact ⟨(i.val, j.val), Finset.mem_filter.mpr
+        ⟨Finset.mem_product.mpr ⟨i.property, j.property⟩, hi, hj⟩, rfl⟩
+    · exact fun i => (c i).property
+    · simpa only [hc'] using hfx
+
+/-- Intersecting a finitely generated pointed cone with a linear halfspace
+preserves finite generation, without any salience or ambient dimension assumption. -/
+theorem _root_.Submodule.FG.inf_cone_dual_singleton {C : PointedCone K V} (hC : C.FG)
+    (f : V →ₗ[K] K) :
+    (C ⊓ dual (LinearMap.id : Module.Dual K V →ₗ[K] Module.Dual K V) {f}).FG := by
+  obtain ⟨s, rfl⟩ := hC
+  rw [← hull_halfspaceGenerators]
+  exact Submodule.fg_span (halfspaceGenerators s f).finite_toSet
+
+/-- A cone given by finitely many linear inequalities in a finite-dimensional
+space is finitely generated. The pairing may be arbitrary and degenerate. -/
+theorem DualFG.fg {M N : Type*} [AddCommGroup M] [Module K M]
+    [AddCommGroup N] [Module K N] [Module.Finite K N]
+    {p : M →ₗ[K] N →ₗ[K] K} {C : PointedCone K N} (hC : C.DualFG p) : C.FG := by
+  classical
+  obtain ⟨s, rfl⟩ := hC
+  induction s using Finset.induction_on with
+  | empty => simpa using (Module.Finite.fg_top : (⊤ : PointedCone K N).FG)
+  | @insert a s ha ih =>
+    rw [Finset.coe_insert, dual_insert]
+    have he : dual p {a} =
+        dual (LinearMap.id : Module.Dual K N →ₗ[K] Module.Dual K N) {p a} := by
+      ext y
+      simp
+    rw [he, inf_comm]
+    exact ih.inf_cone_dual_singleton (p a)
+
+end PointedCone
