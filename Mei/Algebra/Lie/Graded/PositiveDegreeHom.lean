@@ -6,8 +6,6 @@ Authors: Codex
 module
 
 public import Mei.Algebra.Lie.Graded.Truncation
-public import Mei.Algebra.PositiveDegrees.Map
-public import Mei.Algebra.Lie.Quotient.Map
 
 /-!
 # Graded Lie homomorphisms and their truncations
