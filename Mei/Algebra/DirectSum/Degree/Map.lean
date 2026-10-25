@@ -13,8 +13,12 @@ public import TauCeti.Algebra.DirectSum.Internal
 
 An injective linear map preserving homogeneous components reflects degree tails.
 Thus truncating the target by degree does not kill additional low-degree elements
-of the source. Homogeneous projection commutes with the map by
-`DirectSum.map_decompose_shift`.
+of the source. This allows degree truncations to be compared through homogeneous
+embeddings.
+
+## References
+
+* `DirectSum.map_decompose_shift`: compatibility of homogeneous projections with maps.
 -/
 
 public section

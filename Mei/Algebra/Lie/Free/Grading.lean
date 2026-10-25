@@ -16,9 +16,14 @@ The homogeneous piece of length `n` is spanned by bracketed words with `n` leave
 These pieces form an internal Lie grading over any commutative ring, without a
 basis or a characteristic-zero hypothesis.
 
-Length separation uses the mode-one lift into `LieAlgebra.loopAlgebra` and
-`LieAlgebra.LoopAlgebra.toFinsupp`. Generation uses
-`TauCeti.FreeLieAlgebra.lieSpan_range_of_eq_top`.
+The grading identifies lower central terms by word length and supports degree
+truncations of free Lie algebras.
+
+## References
+
+* `LieAlgebra.loopAlgebra` and `LieAlgebra.LoopAlgebra.toFinsupp`: loop algebras and
+  their coefficients.
+* `TauCeti.FreeLieAlgebra.lieSpan_range_of_eq_top`: Lie generation by the canonical generators.
 -/
 
 public section

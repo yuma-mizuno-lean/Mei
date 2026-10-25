@@ -16,8 +16,12 @@ Mathlib numbers the lower central series from zero. Its `k`-th term in a
 free Lie algebra is precisely the span of bracketed words with at least `k + 1`
 leaves. This description holds over every commutative ring.
 
-The word bound uses `TauCeti.lie_lowerCentralSeries_le`; the converse follows
-from the defining recursion of the lower central series and Lie generation.
+This identifies lower central quotients with word-length truncations, so their
+elements can be studied through the homogeneous pieces of the free Lie algebra.
+
+## References
+
+* `TauCeti.lie_lowerCentralSeries_le`: bracket estimate for lower central terms.
 -/
 
 public section
