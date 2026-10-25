@@ -122,14 +122,17 @@ theorem truncatedRestrictScalarsEquiv_mem_iff (k : ℕ) (n : ι)
     (x : d.truncatedLie (fun n => (ℒ n).restrictScalars R) k) :
     d.truncatedRestrictScalarsEquiv (R := R) ℒ k x ∈ d.truncatedGrading ℒ k n ↔
       x ∈ d.truncatedGrading (fun n => (ℒ n).restrictScalars R) k n := by
-  simp only [mem_truncatedGrading_iff, Submodule.restrictScalars_mem]
-  constructor
-  · rintro ⟨y, hy, h⟩
-    refine ⟨y, hy, (d.truncatedRestrictScalarsEquiv (R := R) ℒ k).injective ?_⟩
-    simpa only [LieIdeal.mkQ_apply, LieEquiv.coe_coe, truncatedRestrictScalarsEquiv_mk]
-      using h
-  · rintro ⟨y, hy, rfl⟩
-    exact ⟨y, hy, by simp [LieIdeal.mkQ_apply]⟩
+  rw [← Submodule.restrictScalars_mem R, ← d.map_truncatedGrading_restrictScalars ℒ k n]
+  have he : (d.truncatedRestrictScalarsEquiv (R := R) ℒ k).toLinearEquiv.toLinearMap =
+      (d.truncatedRestrictScalarsEquiv (R := R) ℒ k).toLinearMap := by
+    ext y
+    simp
+  have h := Submodule.mem_map_equiv
+      (d.truncatedGrading (fun n => (ℒ n).restrictScalars R) k n)
+      (e := (d.truncatedRestrictScalarsEquiv (R := R) ℒ k).toLinearEquiv)
+      (x := (d.truncatedRestrictScalarsEquiv (R := R) ℒ k).toLinearEquiv x)
+  simp only [LinearEquiv.symm_apply_apply] at h
+  simpa only [he, LieEquiv.coe_toLinearEquiv] using h
 
 /-- Homogeneous projection commutes with the scalar-restriction comparison. -/
 @[simp]
