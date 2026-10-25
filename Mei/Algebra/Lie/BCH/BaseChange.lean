@@ -6,6 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Algebra.Lie.BCH.Completion
+public import Mei.Algebra.Lie.BaseChange
 public import Mei.Algebra.Lie.Graded.BaseChange
 
 /-!
@@ -37,13 +38,6 @@ variable {N R L : Type*} [AddCommMonoid N] [CommRing R]
   (S : Type*) [CommRing S] [Algebra R S] [Algebra ℚ S]
   (d : PositiveDegrees N) (ℒ : N → Submodule R L)
   [GradedLieAlgebra ℒ] [IsPositiveGrading d ℒ]
-
-/-- Rational scalars on an extended Lie algebra are induced from `S`. -/
-@[instance_reducible]
-local instance tensorRatLieAlgebra {M : Type*} [LieRing M] [LieAlgebra R M] :
-    LieAlgebra ℚ (S ⊗[R] M) where
-  lie_smul q x y := by
-    simpa only [IsScalarTower.algebraMap_smul] using lie_smul (algebraMap ℚ S q) x y
 
 /-- The tower obtained by extending each finite Lie quotient and then applying BCH. -/
 -- Tower objects must compute to expose their concrete tensor-product coordinates.
