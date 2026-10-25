@@ -49,6 +49,7 @@ theorem weakSignCellRows_eq_zero_iff {g : ι → (V →ᴬ[ℝ] ℝ)} {σ : ι �
 /-- The doubled signed rows present exactly the original weak sign cell. -/
 theorem mem_weakSignCell_iff_rows {g : ι → (V →ᴬ[ℝ] ℝ)} {σ : ι → SignType} {x : V} :
     x ∈ weakSignCell g σ ↔ ∀ p, weakSignCellRows g σ p x ≤ 0 := by
+  rw [mem_weakSignCell]
   constructor
   · intro hx ⟨j, b⟩
     have hxj := hx j
@@ -60,7 +61,7 @@ theorem mem_weakSignCell_iff_rows {g : ι → (V →ᴬ[ℝ] ℝ)} {σ : ι → 
     | zero =>
       simp only [weakSignCellRows, h, Bool.false_eq_true, ↓reduceIte,
         ContinuousAffineMap.neg_apply, neg_nonpos] at h₁ h₂
-      exact le_antisymm h₁ h₂
+      simpa using le_antisymm h₁ h₂
     | neg => simpa [weakSignCellRows, h] using h₁
     | pos => simpa [weakSignCellRows, h] using h₁
 
@@ -98,28 +99,18 @@ theorem exists_zeroSpecialization_signCell {g : ι → (V →ᴬ[ℝ] ℝ)}
   refine ⟨τ, hτ, hτne, ?_⟩
   rw [closure_signCell hτne]
   apply Set.Subset.antisymm
-  · intro x hx j
+  · intro x hx
+    apply mem_weakSignCell.mpr
+    intro j
     by_cases hj : τ j = 0
-    · rw [hj]
-      have hpj : g j p = 0 := sign_eq_zero_iff.mp hj
+    · have hpj : g j p = 0 := sign_eq_zero_iff.mp hj
       have hprow : weakSignCellRows g σ (j, true) p = 0 :=
         weakSignCellRows_eq_zero_iff.mpr hpj
       have hxrow := (hpoint (j, true)).mp hprow x hx
-      exact weakSignCellRows_eq_zero_iff.mp hxrow
-    · have heq : τ j = σ j := by
-        have hgpne : g j p ≠ 0 := fun hz => hj (sign_eq_zero_iff.mpr hz)
-        have hppj := hF.subset hp j
-        cases hs : σ j with
-        | zero =>
-          simp only [hs] at hppj
-          exact False.elim (hgpne hppj)
-        | neg =>
-          simp only [hs] at hppj
-          exact sign_eq_neg_one_iff.mpr (lt_of_le_of_ne hppj hgpne)
-        | pos =>
-          simp only [hs] at hppj
-          exact sign_eq_one_iff.mpr (lt_of_le_of_ne hppj hgpne.symm)
-      simpa only [heq] using hF.subset hx j
+      have hxj := weakSignCellRows_eq_zero_iff.mp hxrow
+      simp [hj, hxj]
+    · have heq : τ j = σ j := (signSpecializes_iff.mp hτ j).resolve_left hj
+      simpa only [heq] using mem_weakSignCell.mp (hF.subset hx) j
   · intro x hx
     rw [hI]
     refine ⟨mem_weakSignCell_iff_rows.mp (weakSignCell_subset_of_specializes hτ hx), ?_⟩
@@ -127,8 +118,7 @@ theorem exists_zeroSpecialization_signCell {g : ι → (V →ᴬ[ℝ] ℝ)}
     have hpI := (hI ▸ hp).2 j hj
     have hpj : g j.1 p = 0 := weakSignCellRows_eq_zero_iff.mp hpI
     have hτj : τ j.1 = 0 := sign_eq_zero_iff.mpr hpj
-    have hxj := hx j.1
-    simp only [hτj] at hxj
+    have hxj := (mem_weakSignCell.mp hx j.1).1 hτj
     exact weakSignCellRows_eq_zero_iff.mpr hxj
 
 /-- Nonempty faces of realized closed sign cells are themselves realized closed
@@ -167,7 +157,7 @@ theorem nonempty_of_mem_realizedSignCellClosures {g : ι → (V →ᴬ[ℝ] ℝ)
 /-- A finite arrangement has only finitely many realized closed sign-cell supports. -/
 theorem finite_realizedSignCellClosures [Finite ι] (g : ι → (V →ᴬ[ℝ] ℝ)) :
     (realizedSignCellClosures g).Finite :=
-  (finite_range_closure_signCell g).subset fun _ ⟨σ, _, heq⟩ => ⟨σ, heq.symm⟩
+  (Set.finite_range (fun σ => closure (signCell g σ))).subset fun _ ⟨σ, _, heq⟩ => ⟨σ, heq.symm⟩
 
 /-- The realized closed sign cells cover the ambient space. -/
 theorem sUnion_realizedSignCellClosures (g : ι → (V →ᴬ[ℝ] ℝ)) :
@@ -183,7 +173,7 @@ theorem isConvexPolyhedron_of_mem_realizedSignCellClosures [Finite ι]
     {g : ι → (V →ᴬ[ℝ] ℝ)} {P : Set V} (hP : P ∈ realizedSignCellClosures g) :
     TauCeti.IsConvexPolyhedron P := by
   obtain ⟨σ, hσ, rfl⟩ := hP
-  exact isConvexPolyhedron_closure_signCell hσ
+  exact isConvexPolyhedron_closure_signCell
 
 /-- The full realized closure family is closed under all nonempty convex extreme subsets. -/
 theorem _root_.IsExtreme.mem_realizedSignCellClosures [Finite ι]
@@ -202,7 +192,7 @@ theorem isExtreme_inter_of_mem_realizedSignCellClosures
     IsExtreme ℝ P (P ∩ Q) := by
   obtain ⟨σ, hσ, rfl⟩ := hP
   obtain ⟨τ, hτ, rfl⟩ := hQ
-  exact isExtreme_closure_signCell_inter hσ hτ
+  exact isExtreme_closure_signCell_inter
 
 /-- Every nonempty intersection of two members of the finite realized closure
 family is again a member of the same family. -/
