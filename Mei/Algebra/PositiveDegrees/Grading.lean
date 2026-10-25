@@ -138,6 +138,15 @@ theorem degree_pos_of_mem_ne_zero {n : N} {x : M} (hx : x ∈ ℒ n) (hne : x �
     exact hne (by simpa [hb] using hx)
   exact d.degree_pos hn.1 hn.2
 
+omit [DecidableEq N] [_root_.DirectSum.Decomposition ℒ] in
+/-- A positive grading has no pieces of nonpositive degree. -/
+theorem eq_bot_of_degree_nonpos (n : N) (hn : d.degree n ≤ 0) : ℒ n = ⊥ := by
+  apply eq_bot_iff.mpr
+  intro x hx
+  apply (Submodule.mem_bot R).mpr
+  by_contra hne
+  exact (not_lt_of_ge hn) (d.degree_pos_of_mem_ne_zero ℒ hx hne)
+
 /-- All of a positively graded module lies above the zero cutoff. -/
 @[simp]
 theorem degreeSubmodule_zero : d.degreeSubmodule ℒ 0 = ⊤ := by
