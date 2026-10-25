@@ -6,6 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Algebra.PositiveDegrees.Grading
+public import Mei.Algebra.DirectSum.Degree.Map
 public import TauCeti.Algebra.Module.GradedModule.Quotient
 
 /-!
@@ -62,18 +63,8 @@ theorem degreeSubmodule_comap [DecidableEq N]
     (f : M' →ₗ[R] M) (hf : Function.Injective f)
     (hmap : ∀ n x, x ∈ ℳ n → f x ∈ ℒ n) (k : ℕ) :
     d.degreeSubmodule ℳ k = (d.degreeSubmodule ℒ k).comap f := by
-  ext x
-  simp only [Submodule.mem_comap, mem_degreeSubmodule_iff]
-  have hproj (n : N) : f (DirectSum.decompose ℳ x n : M') =
-      (DirectSum.decompose ℒ (f x) n : M) := by
-    simpa only [LinearMap.toAddMonoidHom_coe, id_eq] using
-      DirectSum.map_decompose_shift ℳ ℒ f.toAddMonoidHom id Function.injective_id hmap n x
-  constructor
-  · intro hx n hn
-    rw [← hproj n, hx n hn, map_zero]
-  · intro hx n hn
-    apply hf
-    simpa only [hproj n, map_zero] using hx n hn
+  rw [degreeSubmodule_eq_degreeTail, degreeSubmodule_eq_degreeTail]
+  exact (f.comap_degreeTail_eq_of_injective ℳ ℒ hf hmap d.degree (k + 1)).symm
 
 end PositiveDegrees
 

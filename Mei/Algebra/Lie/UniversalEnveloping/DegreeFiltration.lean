@@ -14,8 +14,9 @@ public import TauCeti.Algebra.Lie.UniversalEnveloping.Augmentation.Basic
 
 The word description of the enveloping grading shows that nonnegative support of the Lie
 algebra implies nonnegative support of its enveloping algebra, without a basis assumption.
-The associated decreasing degree filtration contains the powers of the augmentation ideal
-when the Lie algebra is supported in strictly positive degrees.
+Every strictly positive degree ideal lies in the augmentation ideal. Conversely,
+the degree filtration contains the powers of the augmentation ideal when the Lie
+algebra is supported in strictly positive degrees.
 -/
 
 public section
@@ -75,6 +76,28 @@ theorem ι_mem_degreeFiltration (hneg : ∀ n, d n < 0 → ℒ n = ⊥)
   rw [degreeFiltration, Mei.GradedAlgebra.degreeFiltration_ideal]
   exact Mei.GradedAlgebra.le_degreeIdeal (homogeneousSubmodule ℒ) d _ hn _
     (ι_mem_homogeneousSubmodule ℒ hx)
+
+/-- Every strictly positive degree ideal is contained in the augmentation ideal,
+even when the Lie algebra has a degree-zero part. -/
+theorem degreeFiltration_le_augmentation (hneg : ∀ n, d n < 0 → ℒ n = ⊥)
+    {k : ℕ} (hk : 0 < k) :
+    (degreeFiltration ℒ d hneg).ideal k ≤
+      (TauCeti.HopfIdeal.augmentation R (_root_.UniversalEnvelopingAlgebra R L)).toIdeal := by
+  rw [degreeFiltration_ideal, Mei.GradedAlgebra.degreeIdeal_le_iff]
+  intro n hn
+  apply (homogeneousSubmodule_le_iff ℒ n
+    ((TauCeti.HopfIdeal.augmentation R
+      (_root_.UniversalEnvelopingAlgebra R L)).toIdeal.restrictScalars R)).mpr
+  intro l hl
+  cases l with
+  | nil =>
+    simp only [List.map_nil, List.sum_nil] at hl
+    subst n
+    simp at hn
+    omega
+  | cons a l =>
+    exact Ideal.mul_mem_right _ _
+      (TauCeti.UniversalEnvelopingAlgebra.ι_mem_augmentation R L (a.2 : L))
 
 /-- A strictly positive Lie grading puts every Lie generator in filtration order one. -/
 theorem ι_mem_degreeFiltration_one (hpos : ∀ n, d n ≤ 0 → ℒ n = ⊥) (x : L) :
