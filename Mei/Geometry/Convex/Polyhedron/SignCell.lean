@@ -8,9 +8,7 @@ module
 public import TauCeti.Analysis.Convex.Polyhedron.Basic
 public import Mathlib.Analysis.Convex.Topology
 public import Mathlib.Analysis.Convex.Extreme
-public import Mathlib.Analysis.Normed.Module.Basic
 public import Mathlib.Basic.Sign.Defs
-public import Mathlib.Data.Fintype.Pi
 import Mathlib.Tactic.Linarith
 
 /-!
@@ -26,18 +24,31 @@ public section
 
 namespace Mei.Convex
 
-variable {V ι : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
+variable {V ι : Type*} [AddCommGroup V] [Module ℝ V] [TopologicalSpace V]
 
 /-- The locus realizing an assigned sign for each affine row. -/
-@[expose] def signCell (g : ι → (V →ᴬ[ℝ] ℝ)) (σ : ι → SignType) : Set V :=
+def signCell (g : ι → (V →ᴬ[ℝ] ℝ)) (σ : ι → SignType) : Set V :=
   {x | ∀ j, SignType.sign (g j x) = σ j}
 
+/-- Membership in a sign cell means realizing every prescribed affine sign. -/
+@[simp] theorem mem_signCell {g : ι → (V →ᴬ[ℝ] ℝ)} {σ : ι → SignType} {x : V} :
+    x ∈ signCell g σ ↔ ∀ j, SignType.sign (g j x) = σ j := (Iff.rfl)
+
 /-- The weak sign conditions, with equality rows retained exactly. -/
-@[expose] def weakSignCell (g : ι → (V →ᴬ[ℝ] ℝ)) (σ : ι → SignType) : Set V :=
+def weakSignCell (g : ι → (V →ᴬ[ℝ] ℝ)) (σ : ι → SignType) : Set V :=
   {x | ∀ j, match σ j with
     | .zero => g j x = 0
     | .neg => g j x ≤ 0
     | .pos => 0 ≤ g j x}
+
+/-- Membership in a weak sign cell means satisfying every weak row condition. -/
+@[simp] theorem mem_weakSignCell {g : ι → (V →ᴬ[ℝ] ℝ)} {σ : ι → SignType} {x : V} :
+    x ∈ weakSignCell g σ ↔ ∀ j,
+      (σ j = .zero → g j x = 0) ∧ (σ j = .neg → g j x ≤ 0) ∧
+        (σ j = .pos → 0 ≤ g j x) := by
+  apply forall_congr'
+  intro j
+  cases σ j <;> simp
 
 /-- Strict sign conditions imply their weak versions. -/
 theorem signCell_subset_weakSignCell (g : ι → (V →ᴬ[ℝ] ℝ)) (σ : ι → SignType) :
@@ -93,7 +104,8 @@ theorem openSegment_subset_signCell {g : ι → (V →ᴬ[ℝ] ℝ)} {σ : ι �
     exact add_pos_of_nonneg_of_pos (mul_nonneg ha.le hxj) (mul_pos hb hpp)
 
 /-- For a nonempty sign cell, closure is exactly the weakened system. -/
-theorem closure_signCell {g : ι → (V →ᴬ[ℝ] ℝ)} {σ : ι → SignType}
+theorem closure_signCell [ContinuousAdd V] [ContinuousSMul ℝ V]
+    {g : ι → (V →ᴬ[ℝ] ℝ)} {σ : ι → SignType}
     (hne : (signCell g σ).Nonempty) : closure (signCell g σ) = weakSignCell g σ := by
   apply Set.Subset.antisymm
   · exact closure_minimal (signCell_subset_weakSignCell g σ) (isClosed_weakSignCell g σ)
@@ -172,6 +184,24 @@ theorem convex_weakSignCell (g : ι → (V →ᴬ[ℝ] ℝ)) (σ : ι → SignTy
 /-- A sign assignment specializes another by replacing some of its signs with zero. -/
 def SignSpecializes (τ σ : ι → SignType) : Prop := ∀ j, τ j = 0 ∨ τ j = σ j
 
+/-- A specialization replaces each sign with zero or retains it. -/
+theorem signSpecializes_iff {τ σ : ι → SignType} :
+    SignSpecializes τ σ ↔ ∀ j, τ j = 0 ∨ τ j = σ j := (Iff.rfl)
+
+/-- Each sign assignment specializes itself. -/
+@[refl] theorem SignSpecializes.refl {σ : ι → SignType} : SignSpecializes σ σ :=
+  fun _ => Or.inr rfl
+
+/-- Specializing twice is again a specialization. -/
+@[trans] theorem SignSpecializes.trans {ρ τ σ : ι → SignType}
+    (hρτ : SignSpecializes ρ τ) (hτσ : SignSpecializes τ σ) : SignSpecializes ρ σ := by
+  intro j
+  rcases hρτ j with hz | ht
+  · exact Or.inl hz
+  · rcases hτσ j with hz | hs
+    · exact Or.inl (ht.trans hz)
+    · exact Or.inr (ht.trans hs)
+
 /-- Weak sign conditions say exactly that the actual signs specialize the prescribed signs. -/
 theorem mem_weakSignCell_iff_specializes {g : ι → (V →ᴬ[ℝ] ℝ)} {σ : ι → SignType}
     {x : V} : x ∈ weakSignCell g σ ↔ SignSpecializes (fun j => SignType.sign (g j x)) σ := by
@@ -199,22 +229,14 @@ theorem weakSignCell_eq_iUnion_signCell (g : ι → (V →ᴬ[ℝ] ℝ)) (σ : �
     obtain ⟨τ, hxτ⟩ := Set.mem_iUnion.mp hx
     apply mem_weakSignCell_iff_specializes.mpr
     intro j
-    change SignType.sign (g j x) = 0 ∨ SignType.sign (g j x) = σ j
-    rw [hxτ j]
-    exact τ.property j
+    simpa only [hxτ j] using τ.property j
 
 /-- Replacing more signs by zero restricts the corresponding weak sign cell. -/
 theorem weakSignCell_subset_of_specializes {g : ι → (V →ᴬ[ℝ] ℝ)} {σ τ : ι → SignType}
     (h : SignSpecializes τ σ) : weakSignCell g τ ⊆ weakSignCell g σ := by
   intro x hx
-  apply mem_weakSignCell_iff_specializes.mpr
-  have hτ := mem_weakSignCell_iff_specializes.mp hx
-  intro j
-  rcases hτ j with hz | ht
-  · exact Or.inl hz
-  · rcases h j with hz | hs
-    · exact Or.inl (ht.trans hz)
-    · exact Or.inr (ht.trans hs)
+  exact mem_weakSignCell_iff_specializes.mpr
+    ((mem_weakSignCell_iff_specializes.mp hx).trans h)
 
 /-- Finitely many affine rows give polyhedral weak sign cells; equality rows are
 encoded by two opposite affine inequalities. -/
@@ -243,16 +265,17 @@ theorem isConvexPolyhedron_weakSignCell [Finite ι] (g : ι → (V →ᴬ[ℝ] �
   rw [he]
   exact TauCeti.isConvexPolyhedron_setOf_forall rows
 
-/-- The closures of realized cells of a finite arrangement are convex polyhedra. -/
-theorem isConvexPolyhedron_closure_signCell [Finite ι] {g : ι → (V →ᴬ[ℝ] ℝ)}
-    {σ : ι → SignType} (hne : (signCell g σ).Nonempty) :
+/-- The closures of all cells of a finite arrangement are convex polyhedra. -/
+theorem isConvexPolyhedron_closure_signCell [ContinuousAdd V] [ContinuousSMul ℝ V]
+    [Finite ι] {g : ι → (V →ᴬ[ℝ] ℝ)}
+    {σ : ι → SignType} :
     TauCeti.IsConvexPolyhedron (closure (signCell g σ)) := by
-  rw [closure_signCell hne]
-  exact isConvexPolyhedron_weakSignCell g σ
-
-/-- A finite affine family has only finitely many sign cells. Empty labels are permitted. -/
-theorem finite_range_signCell [Finite ι] (g : ι → (V →ᴬ[ℝ] ℝ)) :
-    (Set.range (signCell g)).Finite := Set.finite_range _
+  by_cases hne : (signCell g σ).Nonempty
+  · rw [closure_signCell hne]
+    exact isConvexPolyhedron_weakSignCell g σ
+  · rw [Set.not_nonempty_iff_eq_empty.mp hne, closure_empty]
+    simpa [not_le.mpr (zero_lt_one : (0 : ℝ) < 1)] using
+      (TauCeti.isConvexPolyhedron_setOf_le (ContinuousAffineMap.const ℝ V (1 : ℝ)))
 
 /-- The sign-cell partition has pairwise disjoint cells. -/
 theorem pairwiseDisjoint_signCell (g : ι → (V →ᴬ[ℝ] ℝ)) :
@@ -298,6 +321,38 @@ theorem isExtreme_weakSignCell_of_specializes {g : ι → (V →ᴬ[ℝ] ℝ)}
 def commonSignPattern (σ τ : ι → SignType) : ι → SignType :=
   fun j => if σ j = τ j then σ j else 0
 
+/-- The common pattern retains a row's sign exactly when both assignments agree. -/
+@[simp] theorem commonSignPattern_apply (σ τ : ι → SignType) (j : ι) :
+    commonSignPattern σ τ j = if σ j = τ j then σ j else 0 := (rfl)
+
+/-- The common pattern specializes the first assignment. -/
+theorem commonSignPattern_specializes_left (σ τ : ι → SignType) :
+    SignSpecializes (commonSignPattern σ τ) σ := by
+  intro j
+  by_cases h : σ j = τ j <;> simp [h]
+
+/-- The common pattern specializes the second assignment. -/
+theorem commonSignPattern_specializes_right (σ τ : ι → SignType) :
+    SignSpecializes (commonSignPattern σ τ) τ := by
+  intro j
+  by_cases h : σ j = τ j <;> simp [h]
+
+/-- Specializing the common pattern is equivalent to specializing both assignments. -/
+@[simp] theorem signSpecializes_commonSignPattern_iff {ρ σ τ : ι → SignType} :
+    SignSpecializes ρ (commonSignPattern σ τ) ↔
+      SignSpecializes ρ σ ∧ SignSpecializes ρ τ := by
+  constructor
+  · intro h
+    exact ⟨h.trans (commonSignPattern_specializes_left σ τ),
+      h.trans (commonSignPattern_specializes_right σ τ)⟩
+  · rintro ⟨hσ, hτ⟩ j
+    rcases hσ j with hz | hs
+    · exact Or.inl hz
+    · rcases hτ j with hz | ht
+      · exact Or.inl hz
+      · rw [commonSignPattern_apply, ite_eq_left (hs.symm.trans ht)]
+        exact Or.inr hs
+
 /-- Intersecting two weak sign cells forces every disagreement row to zero. -/
 theorem weakSignCell_inter (g : ι → (V →ᴬ[ℝ] ℝ)) (σ τ : ι → SignType) :
     weakSignCell g σ ∩ weakSignCell g τ = weakSignCell g (commonSignPattern σ τ) := by
@@ -305,48 +360,43 @@ theorem weakSignCell_inter (g : ι → (V →ᴬ[ℝ] ℝ)) (σ τ : ι → Sign
   constructor
   · intro hx j
     by_cases heq : σ j = τ j
-    · simpa only [commonSignPattern, ite_eq_left heq] using hx.1 j
-    · simp only [commonSignPattern, ite_eq_right heq]
+    · simpa only [commonSignPattern_apply, ite_eq_left heq] using hx.1 j
+    · simp only [commonSignPattern_apply, ite_eq_right heq]
       have hxj := hx.1 j
       have hyj := hx.2 j
-      cases hs : σ j <;> cases ht : τ j <;> simp_all <;> linarith
+      cases hs : σ j <;> cases ht : τ j <;> simp_all [-mem_weakSignCell] <;> linarith
   · intro hx
-    have hleft : SignSpecializes (commonSignPattern σ τ) σ := by
-      intro j
-      by_cases h : σ j = τ j <;> simp [commonSignPattern, h]
-    have hright : SignSpecializes (commonSignPattern σ τ) τ := by
-      intro j
-      by_cases h : σ j = τ j <;> simp [commonSignPattern, h]
-    exact ⟨weakSignCell_subset_of_specializes hleft hx,
-      weakSignCell_subset_of_specializes hright hx⟩
+    exact ⟨weakSignCell_subset_of_specializes (commonSignPattern_specializes_left σ τ) hx,
+      weakSignCell_subset_of_specializes (commonSignPattern_specializes_right σ τ) hx⟩
 
 /-- Every intersection of weak sign cells is an extreme subset of the first cell,
 including when the intersection is empty. -/
 theorem isExtreme_weakSignCell_inter (g : ι → (V →ᴬ[ℝ] ℝ)) (σ τ : ι → SignType) :
     IsExtreme ℝ (weakSignCell g σ) (weakSignCell g σ ∩ weakSignCell g τ) := by
   rw [weakSignCell_inter]
-  apply isExtreme_weakSignCell_of_specializes
-  intro j
-  by_cases h : σ j = τ j <;> simp [commonSignPattern, h]
+  exact isExtreme_weakSignCell_of_specializes (commonSignPattern_specializes_left σ τ)
 
 /-- The closure of a realized sign cell consists precisely of its strict zero-specializations. -/
-theorem closure_signCell_eq_iUnion {g : ι → (V →ᴬ[ℝ] ℝ)} {σ : ι → SignType}
+theorem closure_signCell_eq_iUnion [ContinuousAdd V] [ContinuousSMul ℝ V]
+    {g : ι → (V →ᴬ[ℝ] ℝ)} {σ : ι → SignType}
     (hne : (signCell g σ).Nonempty) :
     closure (signCell g σ) = ⋃ τ : {τ // SignSpecializes τ σ}, signCell g τ.val := by
   rw [closure_signCell hne, weakSignCell_eq_iUnion_signCell]
 
-/-- Intersections of closures of realized cells are extreme subsets of each
+/-- Intersections of closures of sign cells are extreme subsets of each
 closure. The intersection may be empty; interchange assignments for the symmetric statement. -/
-theorem isExtreme_closure_signCell_inter {g : ι → (V →ᴬ[ℝ] ℝ)} {σ τ : ι → SignType}
-    (hσ : (signCell g σ).Nonempty) (hτ : (signCell g τ).Nonempty) :
+theorem isExtreme_closure_signCell_inter [ContinuousAdd V] [ContinuousSMul ℝ V]
+    {g : ι → (V →ᴬ[ℝ] ℝ)} {σ τ : ι → SignType} :
     IsExtreme ℝ (closure (signCell g σ))
       (closure (signCell g σ) ∩ closure (signCell g τ)) := by
-  rw [closure_signCell hσ, closure_signCell hτ]
-  exact isExtreme_weakSignCell_inter g σ τ
-
-/-- A finite affine family has finitely many distinct closed sign-cell supports. -/
-theorem finite_range_closure_signCell [Finite ι] (g : ι → (V →ᴬ[ℝ] ℝ)) :
-    (Set.range (fun σ => closure (signCell g σ))).Finite := Set.finite_range _
+  by_cases hσ : (signCell g σ).Nonempty
+  · by_cases hτ : (signCell g τ).Nonempty
+    · rw [closure_signCell hσ, closure_signCell hτ]
+      exact isExtreme_weakSignCell_inter g σ τ
+    · rw [Set.not_nonempty_iff_eq_empty.mp hτ, closure_empty, Set.inter_empty]
+      refine ⟨Set.empty_subset _, ?_⟩
+      simp
+  · rw [Set.not_nonempty_iff_eq_empty.mp hσ, closure_empty, Set.empty_inter]
 
 /-- Closed sign-cell supports cover the ambient space. Empty labels contribute nothing. -/
 theorem iUnion_closure_signCell (g : ι → (V →ᴬ[ℝ] ℝ)) :
