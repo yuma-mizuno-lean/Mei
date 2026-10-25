@@ -42,18 +42,21 @@ theorem truncatedMap_comp_truncationMap (f : GradedLieHom T ℒ ℒ')
     {k l m : ℕ} (hl : T.modulus k ≤ l) (h : l ≤ m) :
     (f.truncatedMap k hl).comp (d.truncationMap ℒ h) =
       f.truncatedMap k (hl.trans h) := by
-  apply (d.degreeIdeal ℒ m).lieHom_qext
-  intro x
-  simp [LieIdeal.mkQ_apply]
+  simp only [truncatedMap_def, PositiveDegrees.truncationMap_def]
+  simpa only [LieIdeal.factor_refl, LieHom.id_comp] using
+    (LieIdeal.factor_comp_mapQ (d.degreeIdeal ℒ m) (e.degreeIdeal ℒ' k)
+      (d.degreeIdeal ℒ l) (e.degreeIdeal ℒ' k)
+      (d.degreeIdeal_antitone ℒ h) le_rfl f.toLieHom
+      (fun _ hx => f.map_mem_degreeIdeal k (d.degreeIdeal_antitone ℒ (hl.trans h) hx))
+      (fun _ hx => f.map_mem_degreeIdeal k (d.degreeIdeal_antitone ℒ hl hx))).symm
 
 /-- The maps of degree truncations commute with the transitions in both towers. -/
 theorem truncationMap_comp_truncatedMap (f : GradedLieHom T ℒ ℒ')
     {k l : ℕ} (h : k ≤ l) :
     (e.truncationMap ℒ' h).comp (f.truncatedMap l le_rfl) =
       (f.truncatedMap k le_rfl).comp (d.truncationMap ℒ (T.monotone_modulus h)) := by
-  apply (d.degreeIdeal ℒ (T.modulus l)).lieHom_qext
-  intro x
-  simp [LieIdeal.mkQ_apply]
+  simp only [truncatedMap_def, PositiveDegrees.truncationMap_def]
+  exact LieIdeal.factor_comp_mapQ _ _ _ _ _ _ _ _ _
 
 end GradedLieHom
 end Mei

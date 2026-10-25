@@ -129,6 +129,13 @@ def truncatedMap (f : GradedLieHom T ℒ ℳ) {a : ℕ} (k : ℕ) (h : T.modulus
   (d.degreeIdeal ℒ a).mapQ (e.degreeIdeal ℳ k) f.toLieHom
     (fun _ hx => f.map_mem_degreeIdeal k (d.degreeIdeal_antitone ℒ h hx))
 
+/-- The induced truncation map is the quotient map of the underlying Lie homomorphism. -/
+theorem truncatedMap_def (f : GradedLieHom T ℒ ℳ) {a : ℕ} (k : ℕ)
+    (h : T.modulus k ≤ a) :
+    f.truncatedMap k h =
+      (d.degreeIdeal ℒ a).mapQ (e.degreeIdeal ℳ k) f.toLieHom
+        (fun _ hx => f.map_mem_degreeIdeal k (d.degreeIdeal_antitone ℒ h hx)) := (rfl)
+
 /-- The induced map sends the class of an element to the class of its image. -/
 @[simp]
 theorem truncatedMap_mk (f : GradedLieHom T ℒ ℳ) {a : ℕ} (k : ℕ)
