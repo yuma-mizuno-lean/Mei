@@ -98,14 +98,7 @@ theorem isConvexPolyhedron_sweep {P : Set V} {n : V}
     TauCeti.IsConvexPolyhedron (sweep P n) := by
   rcases P.eq_empty_or_nonempty with h | hne
   · subst P
-    have hEmpty : TauCeti.IsConvexPolyhedron (∅ : Set V) := by
-      have he : {x : V | (ContinuousAffineMap.const ℝ V (1 : ℝ)) x ≤ 0} = ∅ := by
-        apply Set.eq_empty_iff_forall_notMem.mpr
-        intro x hx
-        exact (not_le_of_gt (zero_lt_one : (0 : ℝ) < 1)) hx
-      rw [← he]
-      exact TauCeti.isConvexPolyhedron_setOf_le (ContinuousAffineMap.const ℝ V (1 : ℝ))
-    simpa [sweep] using hEmpty
+    simpa only [sweep_empty] using hP
   · obtain ⟨f, c, hfn, hfP⟩ := exists_sweep_height hne hn
     exact isConvexPolyhedron_sweep_of_height hP
       ⟨f, f.continuous_of_finiteDimensional⟩ c hfn hfP
