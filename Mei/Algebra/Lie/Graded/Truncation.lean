@@ -200,6 +200,11 @@ def truncationMap {k l : ℕ} (h : k ≤ l) :
     d.truncatedLie ℒ l →ₗ⁅R⁆ d.truncatedLie ℒ k :=
   (d.degreeIdeal ℒ l).factor (d.degreeIdeal ℒ k) (d.degreeIdeal_antitone ℒ h)
 
+/-- The degree transition is the quotient transition induced by inclusion of degree ideals. -/
+theorem truncationMap_def {k l : ℕ} (h : k ≤ l) :
+    d.truncationMap ℒ h =
+      (d.degreeIdeal ℒ l).factor (d.degreeIdeal ℒ k) (d.degreeIdeal_antitone ℒ h) := (rfl)
+
 /-- A truncation transition retains the same quotient representative. -/
 @[simp]
 theorem truncationMap_mk {k l : ℕ} (h : k ≤ l) (x : L) :

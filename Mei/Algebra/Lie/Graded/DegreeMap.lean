@@ -157,18 +157,25 @@ theorem truncatedMap_comp_truncationMap (f : GradedLieHom T ℒ ℒ')
     {k l m : ℕ} (hl : T.modulus k ≤ l) (h : l ≤ m) :
     (f.truncatedMap k l hl).comp (d.truncationMap ℒ h) =
       f.truncatedMap k m (hl.trans h) := by
-  apply (d.degreeIdeal ℒ m).lieHom_qext
-  intro x
-  simp [LieIdeal.mkQ_apply]
+  simpa only [truncatedMap, PositiveDegrees.truncationMap_def,
+    LieIdeal.factor_refl, LieHom.id_comp] using
+    ((d.degreeIdeal ℒ m).factor_comp_mapQ (e.degreeIdeal ℒ' k)
+      (d.degreeIdeal ℒ l) (e.degreeIdeal ℒ' k)
+      (d.degreeIdeal_antitone ℒ h) le_rfl f.toLieHom
+      ((d.degreeIdeal_antitone ℒ (hl.trans h)).trans (f.degreeIdeal_le_comap k))
+      ((d.degreeIdeal_antitone ℒ hl).trans (f.degreeIdeal_le_comap k))).symm
 
 /-- The maps of degree truncations commute with the transitions in both towers. -/
 theorem truncationMap_comp_truncatedMap (f : GradedLieHom T ℒ ℒ')
     {k l : ℕ} (h : k ≤ l) :
     (e.truncationMap ℒ' h).comp (f.truncatedMap l) =
       (f.truncatedMap k).comp (d.truncationMap ℒ (T.monotone_modulus h)) := by
-  apply (d.degreeIdeal ℒ (T.modulus l)).lieHom_qext
-  intro x
-  simp [LieIdeal.mkQ_apply]
+  simpa only [truncatedMap, PositiveDegrees.truncationMap_def] using
+    (d.degreeIdeal ℒ (T.modulus l)).factor_comp_mapQ (e.degreeIdeal ℒ' l)
+      (d.degreeIdeal ℒ (T.modulus k)) (e.degreeIdeal ℒ' k)
+      (d.degreeIdeal_antitone ℒ (T.monotone_modulus h))
+      (e.degreeIdeal_antitone ℒ' h) f.toLieHom
+      (f.degreeIdeal_le_comap l) (f.degreeIdeal_le_comap k)
 
 /-- The induced map is homogeneous on the truncated pieces. This statement
 allows degree maps that identify distinct source degrees. -/
