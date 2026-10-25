@@ -75,6 +75,7 @@ noncomputable def ofFinite {ι : Type*} [Finite ι] (g : ι → (V →ᴬ[ℝ] �
   exact ⟨Fintype.card ι, fun j => g ((Fintype.equivFin ι).symm j), fun j => hg _⟩
 
 /-- Reindexing preserves the exact simultaneous-inequality carrier. -/
+@[simp high] -- Apply before `mem_carrier` exposes the reindexed inequalities.
 theorem mem_carrier_ofFinite {ι : Type*} [Finite ι] {g : ι → (V →ᴬ[ℝ] ℝ)}
     (hg : ∀ j, Toric.IsRationalFunctional h (g j).toAffineMap.linear) {x : V} :
     x ∈ (ofFinite g hg).carrier ↔ ∀ j, g j x ≤ 0 := by
