@@ -111,21 +111,22 @@ theorem toFunctor_comp_forget (s : GrothendieckSection L) :
 def toNatTrans {s t : GrothendieckSection L} (α : s ⟶ t) : s.toFunctor ⟶ t.toFunctor where
   app d := (Grothendieck.ι _ d).map (α.app d)
   naturality d e f := by
-    erw [← Grothendieck.ιNatTrans_app_comp_ι_map (s.toFunctor.map f),
-      ← Grothendieck.ιNatTrans_app_comp_ι_map (t.toFunctor.map f), Category.assoc,
-      ← (Grothendieck.ι L e).map_comp, ← α.naturality,
-      (Grothendieck.ι L e).map_comp, ← Category.assoc]
-    erw [Category.assoc (obj := Grothendieck L)]
-    simpa only [Functor.comp_map, Category.assoc (obj := Grothendieck L),
-      Grothendieck.ι] using
-      congrArg (fun h => h ≫ (Grothendieck.ι L e).map (t.map f))
-      ((Grothendieck.ιNatTrans f).naturality (α.app d)).symm
+    refine Grothendieck.ext _ _ (by simp [toFunctor]) ?_
+    simp only [toFunctor, Grothendieck.ι, Grothendieck.comp_base, Grothendieck.comp_fiber,
+      ← NatIso.naturality_2 (Cat.Hom.toNatIso (eqToIso (L.map_id e)) ≪≫
+        eqToIso Cat.Hom.id_toFunctor), Functor.id_obj, Cat.Hom.id_toFunctor, eqToIso_refl,
+      Iso.trans_refl, Cat.Hom.toNatIso_hom, eqToIso.hom, Cat.Hom₂.eqToHom_toNatTrans,
+      eqToHom_app, Functor.id_map, Cat.Hom.toNatIso_inv, eqToIso.inv, Category.assoc,
+      eqToHom_trans_assoc, eqToHom_refl, Category.id_comp, Functor.map_comp, eqToHom_map,
+      α.naturality]
+    -- Normalize the remaining transports in the category stored in `L.obj e`.
+    repeat erw [eqToHom_trans_assoc (C := L.obj e)]
 
 @[simp]
 theorem toNatTrans_app {s t : GrothendieckSection L} (α : s ⟶ t) (d : D) :
     (toNatTrans α).app d = (Grothendieck.ι _ d).map (α.app d) := (rfl)
 
-/-- The groupoid of sections maps to the functor category of the total category. -/
+/-- The category of sections maps to the functor category of the total category. -/
 def totalFunctor : GrothendieckSection L ⥤ (D ⥤ Grothendieck L) where
   obj := toFunctor
   map := toNatTrans
@@ -181,6 +182,13 @@ noncomputable abbrev automorphismDiagram (s : GrothendieckSection L) : D ⥤ Grp
     have h := Functor.congr_hom congr($(L.map_comp f g).toFunctor) a.asIso.hom
     simpa [Aut.autMulEquivOfIso, Functor.mapAut] using
       congrArg (fun k => inv (s.map (f ≫ g)) ≫ k ≫ s.map (f ≫ g)) h
+
+/-- Transport acts on the underlying arrow by fiber transport followed by conjugation. -/
+@[simp↓]
+theorem automorphismDiagram_map_apply_hom (s : GrothendieckSection L)
+    {d e : D} (f : d ⟶ e) (a : Aut (s.obj d)) :
+    ((s.automorphismDiagram.map f) a).asIso.hom =
+      inv (s.map f) ≫ (L.map f).toFunctor.map a.asIso.hom ≫ s.map f := (rfl)
 
 /-- Automorphisms of a section are compatible families of fiber automorphisms. -/
 noncomputable def autEquivSections (s : GrothendieckSection L) :
@@ -269,13 +277,11 @@ theorem completedLabelIso_comp (α : s ⟶ t) (β : t ⟶ r)
   apply Iso.ext
   apply limit.hom_ext
   intro d
-  rw [Iso.trans_hom, Category.assoc]
-  erw [completedLabelIso_hom_π A β d, completedLabelIso_hom_π_assoc A α d,
-    completedLabelIso_hom_π A (α ≫ β) d]
-  dsimp only [comp_app]
-  erw [(Grothendieck.ι L d).map_comp, A.map_comp]
-  erw [Category.assoc (obj := V)]
-  rfl
+  simp only [Iso.trans_hom, Category.assoc, completedLabelIso_hom_π,
+    comp_app, Functor.map_comp]
+  -- The fiber inclusion and total functor present the same objects through different wrappers.
+  erw [A.map_comp, completedLabelIso_hom_π_assoc]
+  exact (Category.assoc _ _ _).symm
 
 /-- Inverting a label inverts its completed action. -/
 @[simp]
