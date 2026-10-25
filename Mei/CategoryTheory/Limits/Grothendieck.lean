@@ -24,13 +24,18 @@ The construction uses Mathlib's fiber inclusions `Grothendieck.ι`, their transf
 `Grothendieck.ιNatTrans`, and the inverse of `limit.pre`. It is the limit counterpart of
 Mathlib's `fiberwiseColimit`, with an additional restriction hypothesis because the
 Grothendieck construction is covariant in its fibers.
+
+Restricting the total diagram along Mathlib's `Grothendieck.pre C G` for `G : D' ⥤ D`
+corresponds to restricting the fiberwise diagram along `G`. Consequently, when `G` is initial,
+restriction along `Grothendieck.pre C G` is an isomorphism of limits under the same hypothesis on
+the transition functors, which need not themselves be initial.
 -/
 
 public section
 
 open CategoryTheory CategoryTheory.Limits CategoryTheory.Functor
 
-universe v u v' u' w z
+universe v u v' u' v'' u'' w z
 
 namespace CategoryTheory.Limits
 
@@ -280,5 +285,119 @@ theorem limitFiberwiseLimitIso_naturality (α : F ⟶ G)
   rfl
 
 end Naturality
+
+section Pre
+
+variable {D' : Type u''} [Category.{v''} D'] (G : D' ⥤ D)
+
+namespace FiberwiseLimit
+
+/-- A cone on the fiber limits restricted along `G` induces a cone on the total diagram
+restricted along `Grothendieck.pre C G`. -/
+noncomputable abbrev preCone (c : Cone (G ⋙ fiberwiseLimit F)) :
+    Cone (Grothendieck.pre C G ⋙ F) where
+  pt := c.pt
+  π :=
+    { app X := c.π.app X.base ≫ limit.π (Grothendieck.ι C (G.obj X.base) ⋙ F) X.fiber
+      naturality X Y h := by
+        erw [Category.id_comp (obj := V)]
+        rw [← c.w h.base]
+        erw [Category.assoc (obj := V), map_π_of_hom F ((Grothendieck.pre C G).map h),
+          Category.assoc (obj := V)]
+        rfl }
+
+@[simp]
+theorem preCone_pt (c : Cone (G ⋙ fiberwiseLimit F)) : (preCone F G c).pt = c.pt := (rfl)
+
+@[simp]
+theorem preCone_π_app (c : Cone (G ⋙ fiberwiseLimit F)) (X : Grothendieck (G ⋙ C)) :
+    (preCone F G c).π.app X =
+      c.π.app X.base ≫ limit.π (Grothendieck.ι C (G.obj X.base) ⋙ F) X.fiber := (rfl)
+
+/-- A cone on the total diagram restricted along `Grothendieck.pre C G` induces a cone on the
+fiber limits restricted along `G`. -/
+noncomputable abbrev coneOfPreCone (s : Cone (Grothendieck.pre C G ⋙ F)) :
+    Cone (G ⋙ fiberwiseLimit F) where
+  pt := s.pt
+  π :=
+    { app d' := limit.lift (Grothendieck.ι C (G.obj d') ⋙ F)
+        { pt := s.pt
+          π :=
+            { app x := s.π.app ⟨d', x⟩
+              naturality x y g := by
+                let g' : (⟨d', x⟩ : Grothendieck (G ⋙ C)) ⟶ ⟨d', y⟩ :=
+                  ⟨𝟙 d', eqToHom (by simp) ≫ g⟩
+                have e : (Grothendieck.pre C G).map g' = (Grothendieck.ι C (G.obj d')).map g := by
+                  fapply Grothendieck.ext
+                  · simp [g']
+                  · simp [g']
+                    rfl
+                erw [Category.id_comp (obj := V)]
+                rw [Functor.comp_map, ← e]
+                exact (s.w g').symm } }
+      naturality d₁ d₂ h := by
+        erw [Category.id_comp (obj := V)]
+        apply (cancel_mono (limit.pre (Grothendieck.ι C (G.obj d₂) ⋙ F)
+          (C.map (G.map h)).toFunctor)).mp
+        apply limit.hom_ext
+        intro x
+        simp only [Category.assoc (obj := V), Functor.comp_map,
+          limit.pre_π, map_π, limit.lift_π_assoc, limit.lift_π]
+        exact (s.w ((Grothendieck.ιNatTrans (F := G ⋙ C) h).app x)).symm }
+
+@[simp]
+theorem coneOfPreCone_pt (s : Cone (Grothendieck.pre C G ⋙ F)) :
+    (coneOfPreCone F G s).pt = s.pt := (rfl)
+
+/-- Each fiber component of the induced cone projects to the original cone's legs. -/
+@[reassoc]
+theorem coneOfPreCone_π_app_π (s : Cone (Grothendieck.pre C G ⋙ F)) (d' : D')
+    (x : C.obj (G.obj d')) :
+    (coneOfPreCone F G s).π.app d' ≫ limit.π (Grothendieck.ι C (G.obj d') ⋙ F) x =
+      s.π.app ⟨d', x⟩ :=
+  limit.lift_π _ _
+
+/-- A limiting cone on the fiber limits restricted along `G` gives a limiting cone on the total
+diagram restricted along `Grothendieck.pre C G`. -/
+noncomputable def isLimitPreCone {c : Cone (G ⋙ fiberwiseLimit F)} (hc : IsLimit c) :
+    IsLimit (preCone F G c) where
+  lift s := hc.lift (coneOfPreCone F G s)
+  fac s X := by
+    erw [preCone_π_app, hc.fac_assoc, coneOfPreCone_π_app_π]
+  uniq s m hm := by
+    apply hc.uniq (coneOfPreCone F G s) m
+    intro d'
+    apply limit.hom_ext
+    intro x
+    erw [Category.assoc (obj := V), coneOfPreCone_π_app_π]
+    exact hm ⟨d', x⟩
+
+end FiberwiseLimit
+
+/-- Restriction along `Grothendieck.pre C G` preserves existence of limits when `G` is initial. -/
+instance hasLimit_grothendieckPre_comp [G.Initial] [HasLimit F] :
+    HasLimit (Grothendieck.pre C G ⋙ F) := by
+  have := (hasLimit_fiberwiseLimit_iff F).mpr ‹_›
+  exact ⟨⟨_, FiberwiseLimit.isLimitPreCone F G (limit.isLimit _)⟩⟩
+
+/-- Restriction along `Grothendieck.pre C G` is an isomorphism of limits when `G` is initial.
+No initiality of the transition functors is needed, only invertibility of the restrictions of
+fiber limits along them. -/
+instance isIso_limit_pre_grothendieckPre [G.Initial] [HasLimit F] :
+    IsIso (limit.pre F (Grothendieck.pre C G)) := by
+  have := (hasLimit_fiberwiseLimit_iff F).mpr ‹_›
+  have h : limit.pre F (Grothendieck.pre C G) = (limitFiberwiseLimitIso F).hom ≫
+      limit.pre (fiberwiseLimit F) G ≫ ((FiberwiseLimit.isLimitPreCone F G
+        (limit.isLimit _)).conePointUniqueUpToIso (limit.isLimit _)).hom := by
+    apply limit.hom_ext
+    intro X
+    rw [limit.pre_π, Category.assoc, Category.assoc]
+    erw [IsLimit.conePointUniqueUpToIso_hom_comp, FiberwiseLimit.preCone_π_app, limit.pre_π_assoc,
+      limitFiberwiseLimitIso_hom_π]
+    rfl
+  rw [h]
+  infer_instance
+
+end Pre
 
 end CategoryTheory.Limits
