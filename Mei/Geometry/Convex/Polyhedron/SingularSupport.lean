@@ -42,6 +42,14 @@ theorem mem_singularSupport {W : ι → Set V} {x : V} :
   simp only [singularSupport, Set.mem_union, Set.mem_iUnion, Set.mem_ofPred_eq,
     Set.mem_inter_iff, exists_prop]
 
+/-- Restricting or reindexing a wall family introduces no new singular points. -/
+theorem singularSupport_comp_subset {κ : Type*} (W : ι → Set V) (f : κ → ι) :
+    singularSupport (W ∘ f) ⊆ singularSupport W := by
+  intro x hx
+  rcases mem_singularSupport.mp hx with ⟨j, hj⟩ | ⟨j, k, hne, hj, hk⟩
+  · exact mem_singularSupport.mpr (Or.inl ⟨f j, hj⟩)
+  · exact mem_singularSupport.mpr (Or.inr ⟨f j, f k, hne, hj, hk⟩)
+
 /-- A point of a family member outside singular support lies in its relative interior. -/
 theorem mem_intrinsicInterior_of_notMem_singularSupport {W : ι → Set V} {i : ι} {x : V}
     (hxi : x ∈ W i) (hx : x ∉ singularSupport W) :

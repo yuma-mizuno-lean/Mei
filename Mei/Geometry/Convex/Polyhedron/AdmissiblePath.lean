@@ -148,6 +148,20 @@ theorem finite_crossings [Finite ι] (h : AdmissibleSegment x y) : (crossings x 
 
 end AdmissibleSegment
 
+/-- Forget walls along an index map, keeping the same vertices and affine segments.
+Mathlib's `Prefunctor.mapPath` extends this operation to polygonal paths. -/
+def restrictPrefunctor {κ : Type*} (W : ι → Set V) (f : κ → ι) :
+    WallComplement W ⥤q WallComplement (W ∘ f) where
+  obj x := ⟨x.val, fun j => x.notMem (f j)⟩
+  map e := ⟨{
+    transverse j hj := e.down.transverse (f j) hj
+    regular t ht := fun hs => e.down.regular t ht (singularSupport_comp_subset W f hs) }⟩
+
+/-- Forgetting walls leaves every vertex at the same ambient point. -/
+@[simp]
+theorem restrictPrefunctor_obj_val {κ : Type*} (W : ι → Set V) (f : κ → ι)
+    (x : WallComplement W) : ((restrictPrefunctor W f).obj x).val = x.val := (rfl)
+
 /-- Reversal of segments makes the allowed-vertex quiver symmetric. -/
 instance : Quiver.HasInvolutiveReverse (WallComplement W) where
   reverse' e := ⟨e.down.symm⟩
