@@ -6,8 +6,9 @@ Authors: Codex
 module
 
 public import Mei.Algebra.Lie.Graded.Map
+public import Mei.Algebra.Lie.Graded.Truncation
+public import Mei.Algebra.PositiveDegrees.Subquotient
 public import Mathlib.Algebra.Lie.Quotient
-public import TauCeti.Algebra.Module.GradedModule.Quotient
 
 /-!
 # Lie gradings on homogeneous quotients
@@ -20,7 +21,9 @@ that same carrier and decomposition.
 Use `TauCeti.InternalGrading.ofDecomposition` to start from Mathlib's `GradedLieAlgebra`
 interface. The existing `quotient_piece`, `mem_quotient_piece_iff`, and
 `decompose_quotient_mk` describe the pieces and compute their projections. In particular,
-vanishing pieces remain zero, so any positive support condition passes to the quotient.
+vanishing pieces remain zero, so positive support passes to the quotient via
+`Mei.IsPositiveGrading.quotient`. Its degree ideals are the images of the original
+degree ideals.
 -/
 
 public section
@@ -44,5 +47,21 @@ noncomputable instance instGradedLieAlgebraQuotient (I : LieIdeal R L)
       funext (G.quotient_piece I.toSubmodule hI)
     rw [hpieces]
     exact I.mkQ.gradedBracket_map G.piece
+
+/-- The cutoff ideal of a homogeneous quotient is the image of the original cutoff ideal.
+In particular, passage to a homogeneous quotient preserves the positive degree filtration. -/
+theorem degreeIdeal_eq_map (I : LieIdeal R L) (G : TauCeti.InternalGrading R L ι)
+    [GradedLieAlgebra G.piece] (d : Mei.PositiveDegrees ι)
+    [Mei.IsPositiveGrading d G.piece]
+    (hI : DirectSum.SetLike.IsHomogeneous G.piece I.toSubmodule) (k : ℕ) :
+    -- Install positivity explicitly at the module quotient / Lie quotient interface.
+    let := Mei.IsPositiveGrading.quotient d G I.toSubmodule hI
+    d.degreeIdeal (G.quotient I.toSubmodule hI).piece k =
+      (d.degreeIdeal G.piece k).map I.mkQ := by
+  apply LieSubmodule.toSubmodule_injective
+  rw [Mei.PositiveDegrees.degreeIdeal_toSubmodule,
+    LieIdeal.coe_map_of_surjective I.surjective_mkQ,
+    Mei.PositiveDegrees.degreeIdeal_toSubmodule, funext (G.quotient_piece I.toSubmodule hI)]
+  exact d.degreeSubmodule_map G.piece I.mkQ.toLinearMap k
 
 end LieIdeal
