@@ -8,6 +8,8 @@ module
 public import Mathlib.Algebra.Lie.Graded
 public import Mathlib.Algebra.Lie.UniversalEnveloping
 public import Mathlib.RingTheory.GradedAlgebra.Basic
+public import TauCeti.Algebra.DirectSum.Internal
+public import TauCeti.Algebra.Lie.UniversalEnveloping.Bialgebra
 
 /-!
 # The Lie-degree grading of a universal enveloping algebra
@@ -228,5 +230,47 @@ theorem decomposeAlgHom_eq_decomposeAlgEquiv :
   | homogeneous x =>
     simp only [decomposeAlgHom_apply, AlgEquiv.coe_toAlgHom,
       _root_.DirectSum.decomposeAlgEquiv_apply, _root_.DirectSum.decompose_coe]
+
+/-- Canonical Lie inclusion preserves homogeneous components. -/
+theorem ι_component (x : L) (n : Γ) :
+    _root_.UniversalEnvelopingAlgebra.ι R (DirectSum.decompose ℒ x n : L) =
+      (DirectSum.decompose (homogeneousSubmodule ℒ)
+        (_root_.UniversalEnvelopingAlgebra.ι R x) n : U) :=
+  DirectSum.map_decompose_shift ℒ (homogeneousSubmodule ℒ)
+    (_root_.UniversalEnvelopingAlgebra.ι R : L →ₗ⁅R⁆ U).toLinearMap.toAddMonoidHom
+    (fun i => i) Function.injective_id
+    (fun _ _ hx => Mei.UniversalEnvelopingAlgebra.ι_mem_homogeneousSubmodule ℒ hx) n x
+
+section Nat
+
+variable (ℒ : ℕ → Submodule R L) [GradedLieAlgebra ℒ]
+
+/-- The degree-zero component is the scalar counit when the Lie degree-zero piece vanishes. -/
+theorem component_zero_eq_counit (hzero : ℒ 0 = ⊥) (a : U) :
+    (DirectSum.decompose (homogeneousSubmodule ℒ) a 0 : U) =
+      algebraMap R U (Coalgebra.counit (R := R) a) := by
+  have h : GradedRing.projZeroRingHom (homogeneousSubmodule ℒ) =
+      (algebraMap R U).comp (Bialgebra.counitAlgHom R U).toRingHom := by
+    apply RingHom.ext
+    intro a
+    induction a using TauCeti.UniversalEnvelopingAlgebra.induction_ι R L with
+    | ι x =>
+      have hx0 : (DirectSum.decompose ℒ x 0 : L) = 0 := by
+        simpa only [hzero, Submodule.mem_bot] using
+          (DirectSum.decompose ℒ x 0).property
+      simp only [GradedRing.projZeroRingHom_apply, RingHom.comp_apply,
+        AlgHom.toRingHom_eq_coe, AlgHom.coe_toRingHom, Bialgebra.counitAlgHom_apply,
+        TauCeti.UniversalEnvelopingAlgebra.counit_ι, map_zero]
+      rw [← ι_component, hx0, map_zero]
+    | algebraMap r =>
+      rw [GradedRing.projZeroRingHom_apply,
+        DirectSum.decompose_of_mem_same (homogeneousSubmodule ℒ)
+          (SetLike.algebraMap_mem_graded (homogeneousSubmodule ℒ) r)]
+      simp
+    | add a b ha hb => simp only [map_add, ha, hb]
+    | mul a b ha hb => simp only [map_mul, ha, hb]
+  exact DFunLike.congr_fun h a
+
+end Nat
 
 end Mei.UniversalEnvelopingAlgebra

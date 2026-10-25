@@ -91,7 +91,7 @@ congruent to an actual free Lie element through the same order. -/
 theorem exists_sub_ι_mem_augmentation_pow_of_dynkin_sub_mem {a : U} {N : ℕ}
     (ha : a ∈ J) (h : T a - (Y : Module.End R U) a ∈ J ^ N) :
     ∃ x : F, a - _root_.UniversalEnvelopingAlgebra.ι R x ∈ J ^ N := by
-  obtain ⟨x, hx⟩ := Mei.UniversalEnvelopingAlgebra.dynkinOperator_mem_range_ι E a
+  obtain ⟨x, hx⟩ := (E).dynkinOperator_mem_range_ι a
   simp only [LieHom.coe_toLinearMap] at hx
   have h0 : (DirectSum.decompose 𝒰 a 0 : U) = 0 := by
     rw [Mei.UniversalEnvelopingAlgebra.component_zero_eq_counit ℒ
@@ -114,7 +114,7 @@ theorem isPrimitiveElem_iff_mem_range_ι (a : U) :
       a ∈ (_root_.UniversalEnvelopingAlgebra.ι R : F →ₗ⁅R⁆ U).toLinearMap.range := by
   constructor
   · intro hp
-    obtain ⟨x, hx⟩ := Mei.UniversalEnvelopingAlgebra.dynkinOperator_mem_range_ι E a
+    obtain ⟨x, hx⟩ := (E).dynkinOperator_mem_range_ι a
     simp only [LieHom.coe_toLinearMap] at hx
     have he : (Y : Module.End R U) a = _root_.UniversalEnvelopingAlgebra.ι R x := by
       rw [← Mei.HopfAlgebra.dynkinOperator_of_isPrimitiveElem Y hp]
