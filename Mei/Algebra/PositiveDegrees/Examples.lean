@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Algebra.PositiveDegrees.Map
-public import Mei.Algebra.PositiveDegrees.Ray
+public import Mei.Algebra.PositiveDegrees.Ray.Basic
 public import Mathlib.Tactic.Linarith
 public import Mathlib.Algebra.Order.Ring.Abs
 public import Mathlib.Algebra.Group.Subgroup.ZPowers.Basic
