@@ -24,7 +24,9 @@ generation of its monoid of lattice points.
 
 public section
 
-namespace TauCeti.Toric.IsLatticeRational
+namespace Mei
+
+open TauCeti.Toric
 
 variable {N V : Type*} [AddCommGroup N] [AddCommGroup V] [Module ℝ V]
   {i : N →+ V} {σ : PointedCone ℝ V}
@@ -73,9 +75,9 @@ theorem salient_of_degree_pos (hσ : IsLatticeRational i σ) (hi : IsIntegralLat
     (δ : N →+ ℤ) (hδ : ∀ n ∈ σ.latticePoints i, n ≠ 0 → 0 < δ n) :
     (σ : ConvexCone ℝ V).Salient := by
   intro x hx hx0 hneg
-  have hpos := hσ.realCharacter_pos hi δ hδ hx hx0
-  have hnegpos := hσ.realCharacter_pos hi δ hδ hneg (neg_ne_zero.mpr hx0)
+  have hpos := realCharacter_pos hσ hi δ hδ hx hx0
+  have hnegpos := realCharacter_pos hσ hi δ hδ hneg (neg_ne_zero.mpr hx0)
   simp only [map_neg] at hnegpos
   exact (not_lt_of_ge hpos.le) (neg_pos.mp hnegpos)
 
-end TauCeti.Toric.IsLatticeRational
+end Mei
