@@ -304,8 +304,8 @@ theorem isUnit_of_sub_one_mem {u : F.completion}
         (F.antitone (Nat.add_le_add_right h 1))).toMonoidHom (hunit l).unit =
         (hunit k).unit :=
       Units.ext (F.factor_projection h u)
-    simp only [w, ← hmap, Units.coe_map_inv]
-    rfl
+    simp only [w, ← hmap, Units.coe_map_inv, RingHom.toMonoidHom_eq_coe,
+      MonoidHom.coe_ofClass]
   let v : F.completion := ⟨w, hw⟩
   refine ⟨⟨u, v, ?_, ?_⟩, rfl⟩
   · exact F.completion_ext fun k => by
