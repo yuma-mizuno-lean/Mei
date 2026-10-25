@@ -6,6 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Algebra.Lie.UniversalEnveloping.DegreeFiltration
+public import Mei.Algebra.Order.BigOperators.Ring.List
 public import Mei.RingTheory.GradedAlgebra.Generators
 public import Mei.RingTheory.Ideal.List
 public import TauCeti.Algebra.Lie.UniversalEnveloping.PBW.Basic
@@ -30,21 +31,6 @@ variable {Γ R L S : Type*} [AddCommMonoid Γ] [CommRing R] [LieRing L] [LieAlge
 local notation "U" => UniversalEnvelopingAlgebra R L
 local notation "J" => TauCeti.HopfIdeal.toIdeal (TauCeti.HopfIdeal.augmentation R U)
 
-private theorem length_ge_of_degree_ge (d : Γ →+ ℤ) (deg : S → Γ) (B k : ℕ)
-    (hb : ∀ s, d (deg s) ≤ (B : ℤ)) (l : List S)
-    (hl : (B * (k - 1) + 1 : ℕ) ≤ d (l.map deg).sum) : k ≤ l.length := by
-  by_contra h
-  have hlen : l.length ≤ k - 1 := by omega
-  have hs : d (l.map deg).sum ≤ (B : ℤ) * l.length := by
-    have h := List.sum_le_length_nsmul (l.map (fun s => d (deg s))) (B : ℤ)
-      (fun x hx => by obtain ⟨s, _, rfl⟩ := List.mem_map.mp hx; exact hb s)
-    simpa only [map_list_sum, List.map_map, Function.comp_def, List.length_map,
-      nsmul_eq_mul, mul_comm] using h
-  have hbound := hs.trans
-    (mul_le_mul_of_nonneg_left (Int.ofNat_le.mpr hlen) (Int.natCast_nonneg B))
-  push_cast at hl
-  omega
-
 variable [DecidableEq Γ] (ℒ : Γ → Submodule R L) [GradedLieAlgebra ℒ] (d : Γ →+ ℤ)
 
 /-- A bounded homogeneous Lie-generating family puts sufficiently high degree in any
@@ -64,13 +50,17 @@ theorem degreeFiltration_le_augmentation_pow (hneg : ∀ n, d n < 0 → ℒ n = 
       (fun s => ι R (e s)) deg hgen (fun s => ι_mem_homogeneousSubmodule ℒ (hhom s)) n]
     apply Submodule.span_le.mpr
     rintro _ ⟨l, hl, rfl⟩
-    apply Ideal.pow_le_pow_right (length_ge_of_degree_ge d deg B k hb l ?_)
-    · simpa only [List.length_map] using Ideal.list_prod_mem_pow J
-        (l.map (fun s => ι R (e s))) (fun a ha => by
-          obtain ⟨s, _, rfl⟩ := List.mem_map.mp ha
-          exact TauCeti.HopfIdeal.mem_toIdeal.mpr
-            (TauCeti.UniversalEnvelopingAlgebra.ι_mem_augmentation R L (e s)))
-    · simpa only [hl] using hn
+    have hlen : k ≤ l.length := by
+      rw [← hl, map_list_sum, List.map_map] at hn
+      have h := List.le_length_of_sum_ge (l.map (fun s => d (deg s))) B k
+        (fun x hx => by obtain ⟨s, _, rfl⟩ := List.mem_map.mp hx; exact hb s) hn
+      simpa only [List.length_map] using h
+    apply Ideal.pow_le_pow_right hlen
+    simpa only [List.length_map] using Ideal.list_prod_mem_pow J
+      (l.map (fun s => ι R (e s))) (fun a ha => by
+        obtain ⟨s, _, rfl⟩ := List.mem_map.mp ha
+        exact TauCeti.HopfIdeal.mem_toIdeal.mpr
+          (TauCeti.UniversalEnvelopingAlgebra.ι_mem_augmentation R L (e s)))
   exact hspan hx
 
 /-- Under positivity and a bounded homogeneous generating family, the two ideal families are
