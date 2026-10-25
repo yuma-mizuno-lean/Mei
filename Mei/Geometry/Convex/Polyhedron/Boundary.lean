@@ -7,8 +7,6 @@ module
 
 public import TauCeti.Analysis.Convex.Polyhedron.Basic
 public import Mei.Analysis.Convex.Intrinsic
-public import Mei.Data.Set.Basic
-import Mathlib.Tactic.Linarith
 
 /-!
 # Relative interiors and boundaries of polyhedra
