@@ -99,7 +99,8 @@ theorem _root_.AffineEquiv.mem_singularSupport_image_iff {V' κ : Type*}
     · exact singularSupport_comp_subset W' f
   have himage := singularSupport_image W e.toContinuousAffineEquiv
   simp only [AffineEquiv.coe_toContinuousAffineEquiv] at himage
-  rw [hreindex, show W' ∘ f = (fun j => e '' W j) from funext hW, himage]
+  have hfamily : W' ∘ f = (fun j => e '' W j) := funext hW
+  rw [hreindex, hfamily, himage]
   exact e.injective.mem_set_image
 
 /-- The singular support of finitely many codimension-one polyhedra has a
