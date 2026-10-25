@@ -67,7 +67,7 @@ theorem finrank_direction_inf_lt_of_eq_of_ne (A B : AffineSubspace K V)
     have hle : A.direction ≤ B.direction := by rw [← heq]; exact inf_le_right
     exact hne (Submodule.eq_of_le_of_finrank_eq hle hdim)
   have hle : (A ⊓ B).direction ≤ A.direction ⊓ B.direction :=
-    le_inf (direction_le inf_le_left) (direction_le inf_le_right)
+    A.direction_inf B
   exact (Submodule.finrank_mono hle).trans_lt (Submodule.finrank_lt_finrank_of_lt hlt)
 
 /-- The intersection of two codimension-one affine subspaces with different

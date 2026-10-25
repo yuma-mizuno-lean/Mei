@@ -5,7 +5,6 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.Affine.Codimension
 public import Mei.Geometry.Convex.Polyhedron.Boundary.Codimension
 
 /-!

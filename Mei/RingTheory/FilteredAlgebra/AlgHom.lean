@@ -57,6 +57,16 @@ theorem projection_mapCompletionₐ (k : ℕ) (x : F.completion) :
       Ideal.quotientMapₐ (G.ideal (k + 1)) f (hf k) (F.projection (l k) x) :=
   F.projection_mapCompletion G (f : A →+* B) l hl hf k x
 
+/-- Each target component is induced by the algebra map on the appropriate source quotient. -/
+@[simp]
+theorem projectionₐ_comp_mapCompletionₐ (k : ℕ) :
+    (G.projectionₐ (R := R) k).comp (F.mapCompletionₐ G f l hl hf) =
+      (Ideal.quotientMapₐ (G.ideal (k + 1)) f (hf k)).comp (F.projectionₐ (R := R) (l k)) := by
+  apply AlgHom.ext
+  intro x
+  simpa only [AlgHom.comp_apply, projectionₐ_apply] using
+    F.projection_mapCompletionₐ G f l hl hf k x
+
 /-- Any larger source cutoff computes the same quotient algebra component. -/
 theorem projection_mapCompletionₐ_of_le (k a : ℕ) (ha : l k ≤ a) (x : F.completion) :
     G.projection k (F.mapCompletionₐ G f l hl hf x) =
@@ -69,6 +79,16 @@ theorem projection_mapCompletionₐ_of_le (k a : ℕ) (ha : l k ≤ a) (x : F.co
 theorem mapCompletionₐ_toCompletion (a : A) :
     F.mapCompletionₐ G f l hl hf (F.toCompletion a) = G.toCompletion (f a) :=
   F.mapCompletion_toCompletion G (f : A →+* B) l hl hf a
+
+/-- The extension commutes with the canonical algebra maps into the completions. -/
+@[simp]
+theorem mapCompletionₐ_comp_toCompletionₐ :
+    (F.mapCompletionₐ G f l hl hf).comp (F.toCompletionₐ (R := R)) =
+      (G.toCompletionₐ (R := R)).comp f := by
+  apply AlgHom.ext
+  intro a
+  simpa only [AlgHom.comp_apply, toCompletionₐ_apply] using
+    F.mapCompletionₐ_toCompletion G f l hl hf a
 
 /-- The completion map preserves the original cutoff bound on the induced filtrations. -/
 theorem mapCompletionₐ_mem_completionIdeal (k : ℕ) {x : F.completion}

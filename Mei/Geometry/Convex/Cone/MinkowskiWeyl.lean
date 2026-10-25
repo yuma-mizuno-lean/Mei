@@ -7,6 +7,7 @@ module
 
 public import Mei.Geometry.Convex.Cone.FiniteGeneration
 public import Mei.Geometry.Convex.Cone.FiniteDuality
+public import Mei.Geometry.Convex.Recession
 public import Mathlib.Analysis.Normed.Module.FiniteDimension
 public import TauCeti.Analysis.Convex.Polyhedron.Basic
 
@@ -19,10 +20,10 @@ directions combine finite generation under halfspace cuts with the algebraic
 separation theorem for finitely generated cones. No topological closedness is
 assumed in this argument, and cones with lineality are allowed.
 
-For real finite-dimensional normed spaces, a finite inequality presentation is
-also a convex polyhedron in the existing supplier's sense. Thus finitely
-generated cones are closed in every real normed space, by restricting to their
-finite-dimensional linear span.
+For real finite-dimensional normed spaces, finite generation is also equivalent
+to the carrier being a convex polyhedron in the existing supplier's sense. Thus
+finitely generated cones are closed in every real normed space, by restricting to
+their finite-dimensional linear span.
 -/
 
 public section
@@ -107,3 +108,52 @@ theorem cone_isClosed (hC : C.FG) : IsClosed (C : Set V) := by
   exact P.closed_of_finiteDimensional.isClosedEmbedding_subtypeVal.isClosedMap _ hclosed
 
 end Submodule.FG
+
+namespace PointedCone
+
+variable {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
+
+/-- A pointed cone with a finite continuous affine inequality presentation has
+a finite homogeneous inequality presentation, even in infinite dimension. -/
+theorem dualFG_of_isConvexPolyhedron (C : PointedCone ℝ V)
+    (hC : TauCeti.IsConvexPolyhedron (C : Set V)) :
+    C.DualFG (LinearMap.id : Module.Dual ℝ V →ₗ[ℝ] Module.Dual ℝ V) := by
+  classical
+  obtain ⟨n, g, hg⟩ := TauCeti.isConvexPolyhedron_iff.mp hC
+  have hne : {x : V | ∀ i, g i x ≤ 0}.Nonempty := by
+    rw [← hg]
+    exact ⟨0, C.zero_mem⟩
+  have hlin (x : V) : x ∈ C ↔ ∀ i, (g i).linear x ≤ 0 := by
+    calc
+      x ∈ C ↔ x ∈ Set.recessionCone (C : Set V) := by rw [C.recessionCone_coe]
+      _ ↔ x ∈ Set.recessionCone {x : V | ∀ i, g i x ≤ 0} := by rw [hg]
+      _ ↔ ∀ i, (g i).linear x ≤ 0 := by
+        simpa only [ContinuousAffineMap.coe_toAffineMap] using
+          (Set.mem_recessionCone_setOf_forall_iff
+            (g := fun i => (g i).toAffineMap) hne (v := x))
+  refine ⟨Finset.univ.image (fun i => -(g i).linear), ?_⟩
+  ext x
+  constructor
+  · intro hx
+    apply (hlin x).mpr
+    intro i
+    have hi := hx (Finset.mem_image.mpr ⟨i, Finset.mem_univ _, rfl⟩)
+    simpa using hi
+  · intro hx f hf
+    obtain ⟨i, _, rfl⟩ := Finset.mem_image.mp hf
+    simpa using (hlin x).mp hx i
+
+variable [FiniteDimensional ℝ V]
+
+/-- A convex polyhedral pointed cone is finitely generated, allowing lineality. -/
+theorem fg_of_isConvexPolyhedron (C : PointedCone ℝ V)
+    (hC : TauCeti.IsConvexPolyhedron (C : Set V)) : C.FG :=
+  (C.dualFG_of_isConvexPolyhedron hC).fg
+
+/-- Real finite-dimensional pointed cones are finitely generated exactly when
+their carriers are convex polyhedra. -/
+theorem fg_iff_isConvexPolyhedron {C : PointedCone ℝ V} :
+    C.FG ↔ TauCeti.IsConvexPolyhedron (C : Set V) :=
+  ⟨Submodule.FG.cone_isConvexPolyhedron, C.fg_of_isConvexPolyhedron⟩
+
+end PointedCone
