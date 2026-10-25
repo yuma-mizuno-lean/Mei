@@ -39,31 +39,6 @@ def truncationTransition {k l : ℕ} (h : k ≤ l) :
     d.truncatedLie ℒ l →ₗ⁅R⁆ d.truncatedLie ℒ k :=
   (d.degreeIdeal ℒ l).factor (d.degreeIdeal ℒ k) (d.degreeIdeal_antitone ℒ h)
 
-/-- A transition preserves the representative of a quotient class. -/
-@[simp]
-theorem truncationTransition_mk {k l : ℕ} (h : k ≤ l) (x : L) :
-    d.truncationTransition ℒ h (LieSubmodule.Quotient.mk x) =
-      LieSubmodule.Quotient.mk x :=
-  LieIdeal.factor_apply _ _ _ _
-
-/-- The transition at a fixed cutoff is the identity. -/
-@[simp]
-theorem truncationTransition_refl (k : ℕ) :
-    d.truncationTransition ℒ (le_refl k) = LieHom.id :=
-  LieIdeal.factor_refl _
-
-/-- Successive transitions agree with the direct transition. -/
-@[simp]
-theorem truncationTransition_comp {k l m : ℕ} (hkl : k ≤ l) (hlm : l ≤ m) :
-    (d.truncationTransition ℒ hkl).comp (d.truncationTransition ℒ hlm) =
-      d.truncationTransition ℒ (hkl.trans hlm) :=
-  LieIdeal.factor_comp _ _ _ _ _
-
-/-- Every class at a coarser cutoff lifts to any finer cutoff. -/
-theorem truncationTransition_surjective {k l : ℕ} (h : k ≤ l) :
-    Function.Surjective (d.truncationTransition ℒ h) :=
-  LieIdeal.factor_surjective _ _ _
-
 /-- A transition maps each homogeneous piece onto the corresponding piece. -/
 theorem map_truncatedGrading_truncationTransition {k l : ℕ} (h : k ≤ l) (n : N) :
     (d.truncatedGrading ℒ l n).map (d.truncationTransition ℒ h).toLinearMap =
@@ -71,7 +46,7 @@ theorem map_truncatedGrading_truncationTransition {k l : ℕ} (h : k ≤ l) (n :
   rw [truncatedGrading_eq, ← Submodule.map_comp, truncatedGrading_eq]
   congr 1
   ext x
-  exact d.truncationTransition_mk ℒ h x
+  exact LieIdeal.factor_apply _ _ _ x
 
 /-- Homogeneous projections commute with transitions. -/
 @[simp]
@@ -82,13 +57,7 @@ theorem truncationTransition_decompose {k l : ℕ} (h : k ≤ l)
       (DirectSum.decompose (d.truncatedGrading ℒ k)
         (d.truncationTransition ℒ h x) n : d.truncatedLie ℒ k) := by
   obtain ⟨x, rfl⟩ := (d.degreeIdeal ℒ l).surjective_mkQ x
-  simp [LieIdeal.mkQ_apply]
-
-/-- The transition kernel is the image of the coarser cutoff ideal. -/
-theorem ker_truncationTransition {k l : ℕ} (h : k ≤ l) :
-    (d.truncationTransition ℒ h).ker =
-      (d.degreeIdeal ℒ k).map (d.degreeIdeal ℒ l).mkQ :=
-  LieIdeal.ker_factor _ _ _
+  simp [truncationTransition, LieIdeal.mkQ_apply]
 
 /-- Only the degrees in `(k, l]` survive in the kernel from order `l` to order `k`. -/
 theorem ker_truncationTransition_eq_iSup {k l : ℕ} (h : k ≤ l) :
@@ -97,7 +66,7 @@ theorem ker_truncationTransition_eq_iSup {k l : ℕ} (h : k ≤ l) :
         d.truncatedGrading ℒ l n := by
   have hpieces : (d.truncationTransition ℒ h).ker.toSubmodule =
       ⨆ n : {n : N // (k : ℤ) < d.degree n}, d.truncatedGrading ℒ l n := by
-    rw [ker_truncationTransition,
+    rw [truncationTransition, LieIdeal.ker_factor,
       LieIdeal.coe_map_of_surjective (d.degreeIdeal ℒ l).surjective_mkQ,
       degreeIdeal_toSubmodule, degreeSubmodule_def, Submodule.map_iSup]
     congr 1
