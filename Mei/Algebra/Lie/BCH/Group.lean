@@ -16,6 +16,8 @@ by evaluating the universal BCH polynomial. Exponential and logarithm are mutual
 inverse changes of carrier. No faithful representation or freeness is required.
 Lie homomorphisms over any compatible commutative rational algebra induce group
 homomorphisms via `LieHom.bchGroupMap`, by restriction of scalars to `ℚ`.
+Lie equivalences induce group equivalences, and scalar restriction leaves the
+induced homomorphisms unchanged.
 
 The group law uses the bound-independent operation `Mei.bch`; its associativity
 comes from finite enveloping quotients in `Mei.Algebra.Lie.BCH.Associativity`.
@@ -163,5 +165,69 @@ theorem bchGroupMap_comp (f : L →ₗ⁅R⁆ L') (g : L' →ₗ⁅R⁆ L'') :
   simp [bchGroupMap]
 
 end LieHom
+
+namespace LieHom
+
+variable {R S L L' : Type*} [CommRing R] [CommRing S] [Algebra ℚ R] [Algebra ℚ S]
+  [SMul R S]
+  [LieRing L] [LieAlgebra R L] [LieAlgebra S L] [LieAlgebra ℚ L]
+  [IsScalarTower R S L] [IsScalarTower ℚ R L] [IsScalarTower ℚ S L]
+  [LieRing.IsNilpotent L]
+  [LieRing L'] [LieAlgebra R L'] [LieAlgebra S L'] [LieAlgebra ℚ L']
+  [IsScalarTower R S L'] [IsScalarTower ℚ R L'] [IsScalarTower ℚ S L']
+  [LieRing.IsNilpotent L']
+
+/-- Restricting scalars leaves the induced BCH homomorphism unchanged. -/
+@[simp]
+theorem bchGroupMap_restrictScalars (f : L →ₗ⁅S⁆ L') :
+    (f.restrictScalars R).bchGroupMap = f.bchGroupMap := by
+  ext g
+  apply Mei.BCHGroup.log_injective
+  simp
+
+end LieHom
+
+namespace LieEquiv
+
+open Mei BCHGroup
+
+variable {R L L' : Type*} [CommRing R] [Algebra ℚ R]
+  [LieRing L] [LieAlgebra R L] [LieAlgebra ℚ L] [IsScalarTower ℚ R L]
+  [LieRing.IsNilpotent L]
+  [LieRing L'] [LieAlgebra R L'] [LieAlgebra ℚ L'] [IsScalarTower ℚ R L']
+  [LieRing.IsNilpotent L']
+
+/-- A Lie equivalence induces an equivalence of BCH groups. -/
+def bchGroupEquiv (e : L ≃ₗ⁅R⁆ L') : BCHGroup L ≃* BCHGroup L' where
+  __ := e.toLieHom.bchGroupMap
+  invFun g := exp (e.symm (log g))
+  left_inv g := by apply log_injective; simp
+  right_inv g := by apply log_injective; simp
+
+/-- The induced equivalence has the group homomorphism induced by the Lie map. -/
+@[simp]
+theorem coe_bchGroupEquiv (e : L ≃ₗ⁅R⁆ L') :
+    (e.bchGroupEquiv : BCHGroup L →* BCHGroup L') = e.toLieHom.bchGroupMap := (rfl)
+
+/-- The induced equivalence acts by the Lie equivalence in exponential coordinates. -/
+@[simp]
+theorem bchGroupEquiv_exp (e : L ≃ₗ⁅R⁆ L') (x : L) :
+    e.bchGroupEquiv (exp x) = exp (e x) := by
+  exact e.toLieHom.bchGroupMap_exp x
+
+/-- Logarithm intertwines the induced equivalence with the original Lie equivalence. -/
+@[simp]
+theorem log_bchGroupEquiv (e : L ≃ₗ⁅R⁆ L') (g : BCHGroup L) :
+    log (e.bchGroupEquiv g) = e (log g) := by
+  exact e.toLieHom.log_bchGroupMap g
+
+/-- The inverse induced equivalence acts by the inverse Lie equivalence. -/
+@[simp]
+theorem bchGroupEquiv_symm_exp (e : L ≃ₗ⁅R⁆ L') (x : L') :
+    e.bchGroupEquiv.symm (exp x) = exp (e.symm x) := by
+  apply e.bchGroupEquiv.injective
+  simp
+
+end LieEquiv
 
 end

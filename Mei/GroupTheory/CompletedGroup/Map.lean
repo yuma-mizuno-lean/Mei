@@ -20,6 +20,8 @@ Enlarging the source cutoffs and precomposing with the tower transitions leaves
 the completed map unchanged. In particular, maps inverse to one another up to
 such transitions give an equivalence of completed groups. This permits comparison
 of completions formed using different but cofinal filtrations.
+In particular, `Mei.CompletedGroup.congr` sends an isomorphism of towers to an
+equivalence of their completions, computed by the isomorphism at each projection.
 
 The construction uses `CompletedGroup.lift`, the compatible-family universal
 property of the subgroup obtained from Mathlib's `GrpCat.sectionsSubgroup`.
@@ -170,5 +172,43 @@ theorem mapEquiv_symm_apply (x : completedGroup G) :
   (rfl)
 
 end Equiv
+
+/-- An isomorphism of group towers identifies their compatible-family completions. -/
+def congr (e : F ≅ G) : completedGroup F ≃* completedGroup G :=
+  mapEquiv OrderHom.id OrderHom.id e.hom e.inv
+    (fun k => ⟨k, le_rfl, le_rfl, by
+      have hid : F.map (homOfLE (le_rfl : k ≤ k)).op = 𝟙 (F.obj (op k)) :=
+        (congrArg F.map (Subsingleton.elim _ _)).trans (F.map_id _)
+      rw [hid]
+      exact (congrArg (fun f => f ≫ e.hom.app (op k) ≫ e.inv.app (op k)) hid).trans
+        ((Category.id_comp _).trans (e.hom_inv_id_app (op k)))⟩)
+    (fun k => ⟨k, le_rfl, le_rfl, by
+      have hid : G.map (homOfLE (le_rfl : k ≤ k)).op = 𝟙 (G.obj (op k)) :=
+        (congrArg G.map (Subsingleton.elim _ _)).trans (G.map_id _)
+      rw [hid]
+      exact (congrArg (fun f => f ≫ e.inv.app (op k) ≫ e.hom.app (op k)) hid).trans
+        ((Category.id_comp _).trans (e.inv_hom_id_app (op k)))⟩)
+
+/-- The forward map is induced by the forward tower isomorphism. -/
+theorem congr_apply (e : F ≅ G) (x : completedGroup F) :
+    congr e x = map OrderHom.id e.hom x := (rfl)
+
+/-- The inverse map is induced by the inverse tower isomorphism. -/
+theorem congr_symm_apply (e : F ≅ G) (x : completedGroup G) :
+    (congr e).symm x = map OrderHom.id e.inv x := (rfl)
+
+/-- The tower isomorphism computes the induced equivalence at every projection. -/
+@[simp]
+theorem projection_congr (e : F ≅ G) (k : ℕ) (x : completedGroup F) :
+    projection k (congr e x) = e.hom.app (op k) (projection k x) := by
+  rw [congr_apply]
+  exact projection_map OrderHom.id e.hom k x
+
+/-- The inverse tower isomorphism computes the inverse completed equivalence. -/
+@[simp]
+theorem projection_congr_symm (e : F ≅ G) (k : ℕ) (x : completedGroup G) :
+    projection k ((congr e).symm x) = e.inv.app (op k) (projection k x) := by
+  rw [congr_symm_apply]
+  exact projection_map OrderHom.id e.inv k x
 
 end Mei.CompletedGroup
