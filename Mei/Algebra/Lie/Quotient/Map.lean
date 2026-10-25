@@ -36,6 +36,18 @@ variable {R L L' L'' : Type*} [CommRing R]
 
 variable (I : LieIdeal R L) (J : LieIdeal R L')
 
+/-- Quotienting by equal Lie ideals gives equivalent Lie algebras. -/
+def quotEquivOfEq (I J : LieIdeal R L) (h : I = J) : (L ⧸ I) ≃ₗ⁅R⁆ L ⧸ J := by
+  subst J
+  exact LieEquiv.refl
+
+/-- The comparison between quotients by equal ideals preserves representatives. -/
+@[simp]
+theorem quotEquivOfEq_mk (I J : LieIdeal R L) (h : I = J) (x : L) :
+    I.quotEquivOfEq J h (LieSubmodule.Quotient.mk x) = LieSubmodule.Quotient.mk x := by
+  subst J
+  rfl
+
 /-- The Lie homomorphism induced on quotients by a map carrying `I` into `J`. -/
 def mapQ (f : L →ₗ⁅R⁆ L') (h : I ≤ J.comap f) : L ⧸ I →ₗ⁅R⁆ L' ⧸ J :=
   I.liftQ (J.mkQ.comp f) (by
