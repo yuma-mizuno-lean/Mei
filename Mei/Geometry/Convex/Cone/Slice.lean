@@ -24,8 +24,8 @@ open scoped BigOperators Pointwise
 
 namespace PointedCone
 
-variable {K V : Type*} [Field K] [LinearOrder K] [IsStrictOrderedRing K]
-  [AddCommGroup V] [Module K V]
+variable {K V : Type*} [Semiring K] [PartialOrder K] [IsOrderedRing K]
+  [AddCommMonoid V] [Module K V]
 
 /-- The height-one slice of a pointed cone is convex. -/
 theorem convex_slice_one (C : PointedCone K (V × K)) :
