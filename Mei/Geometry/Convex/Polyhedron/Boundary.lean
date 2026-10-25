@@ -6,9 +6,7 @@ Authors: Codex
 module
 
 public import TauCeti.Analysis.Convex.Polyhedron.Basic
-public import Mathlib.Analysis.Convex.Intrinsic
-public import Mathlib.LinearAlgebra.AffineSpace.AffineSubspace.Basic
-import Mathlib.Tactic.Linarith
+public import Mei.Analysis.Convex.Intrinsic
 
 /-!
 # Relative interiors and boundaries of polyhedra
@@ -24,55 +22,13 @@ public section
 
 open Set Filter Topology AffineSubspace
 
-variable {V ι : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
-
-namespace ContinuousAffineMap
-
-/-- An affine function nonpositive on a set and zero at a relative interior
-point must vanish on the entire set. -/
-theorem eq_zero_on_of_mem_intrinsicInterior (g : V →ᴬ[ℝ] ℝ) {P : Set V} {x : V}
-    (hg : ∀ p ∈ P, g p ≤ 0) (hx : x ∈ intrinsicInterior ℝ P) (hgx : g x = 0) :
-    ∀ p ∈ P, g p = 0 := by
-  obtain ⟨xA, hxA, rfl⟩ := hx
-  let A := affineSpan ℝ P
-  let : Nonempty A := ⟨xA⟩
-  intro p hp
-  let pA : A := ⟨p, subset_affineSpan ℝ P hp⟩
-  have hc : Continuous (fun t : ℝ => AffineMap.lineMap xA pA (-t)) :=
-    AffineMap.lineMap_continuous.comp continuous_neg
-  have ht : Tendsto (fun t : ℝ => AffineMap.lineMap xA pA (-t)) (𝓝 0) (𝓝 xA) := by
-    simpa only [neg_zero, AffineMap.lineMap_apply_zero] using hc.tendsto 0
-  have hs : ∀ᶠ y : A in 𝓝 xA, (y : V) ∈ P :=
-    mem_interior_iff_mem_nhds.mp hxA
-  have he := ht.eventually hs
-  obtain ⟨δ, hδ, hball⟩ := Metric.mem_nhds_iff.mp he
-  have hε : 0 < δ / 2 := by positivity
-  have hy := hball (show δ / 2 ∈ Metric.ball (0 : ℝ) δ by
-    rw [Metric.mem_ball, Real.dist_eq, sub_zero, abs_of_pos hε]
-    linarith)
-  have hyP : AffineMap.lineMap (xA : V) p (-(δ / 2)) ∈ P := by
-    change A.subtype (AffineMap.lineMap xA pA (-(δ / 2))) ∈ P at hy
-    rw [A.subtype.apply_lineMap] at hy
-    exact hy
-  have hle := hg _ hyP
-  rw [g.apply_lineMap, AffineMap.lineMap_apply_ring, hgx] at hle
-  have hpnonpos := hg p hp
-  nlinarith
-
-/-- A row with a negative value on the set cuts out a proper active-row subset. -/
-theorem zero_face_ne_self_of_exists_neg (g : V →ᴬ[ℝ] ℝ) {P : Set V}
-    (hg : ∃ p ∈ P, g p < 0) : {x ∈ P | g x = 0} ≠ P := by
-  intro heq
-  obtain ⟨p, hp, hgp⟩ := hg
-  have hpface : p ∈ {x ∈ P | g x = 0} := by rwa [heq]
-  linarith [hpface.2]
-
-end ContinuousAffineMap
+variable {V ι : Type*} [AddCommGroup V] [Module ℝ V] [TopologicalSpace V]
+  [IsTopologicalAddGroup V] [ContinuousSMul ℝ V]
 
 namespace Mei.Convex
 
-/-- A point is in the relative interior precisely when every defining row
-that is not identically zero on the polyhedron is strict at that point. -/
+/-- A point is in the relative interior precisely when it belongs to the polyhedron
+and every defining row that is not identically zero on the polyhedron is strict at that point. -/
 theorem mem_intrinsicInterior_iff_forall_lt [Finite ι] (g : ι → (V →ᴬ[ℝ] ℝ))
     {P : Set V} (hP : P = {x | ∀ j, g j x ≤ 0}) {x : V} :
     x ∈ intrinsicInterior ℝ P ↔
@@ -89,8 +45,10 @@ theorem mem_intrinsicInterior_iff_forall_lt [Finite ι] (g : ι → (V →ᴬ[�
       intro q hq
       rw [hP] at hq
       exact hq j
-    have heq := (g j).eq_zero_on_of_mem_intrinsicInterior hgj hx hzero p hp
-    linarith
+    have heq : g j p = 0 := by
+      simpa only [ContinuousAffineMap.coe_toAffineMap] using
+        (g j).toAffineMap.eq_zero_on_of_mem_intrinsicInterior hgj hx hzero p hp
+    exact hjp.ne heq
   · rintro ⟨hxP, hxstrict⟩
     let A := affineSpan ℝ P
     let xA : A := ⟨x, subset_affineSpan ℝ P hxP⟩
