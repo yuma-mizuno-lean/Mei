@@ -61,7 +61,7 @@ theorem _root_.Submodule.FG.exists_cone_dual_nonneg_and_lt_zero (hC : C.FG) (hx 
     | zero => simp
     | add y z _ _ iy iz => simpa only [map_add] using add_nonneg iy iz
     | smul r y _ iy =>
-      change 0 ≤ f ((r : K) • y)
+      rw [← Nonneg.coe_smul]
       rw [map_smul, smul_eq_mul]
       exact mul_nonneg r.property iy
   refine ⟨f, hfC, ?_⟩
