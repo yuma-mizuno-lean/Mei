@@ -28,6 +28,9 @@ variable (R : Type*) [CommRing R] {S : Type*}
 
 local notation "F" => _root_.FreeLieAlgebra R S
 
+-- Supply the endomorphism Lie ring required by `LieAlgebra.ad`.
+attribute [local instance] LieRing.ofAssociativeRing
+
 /-- A bracketed word of length `n` belongs to lower-central order `n - 1`. -/
 theorem word_mem_lowerCentralSeries (w : FreeMagma S) :
     word R w ∈ LieModule.lowerCentralSeries R F F (w.length - 1) := by
@@ -45,22 +48,14 @@ private theorem lie_mem_span_words_above {k l : ℕ} {x y : F}
     (hx : x ∈ Submodule.span R (word R '' {w : FreeMagma S | k < w.length}))
     (hy : y ∈ Submodule.span R (word R '' {w : FreeMagma S | l < w.length})) :
     ⁅x, y⁆ ∈ Submodule.span R (word R '' {w : FreeMagma S | k + l + 1 < w.length}) := by
-  induction hx using Submodule.span_induction with
-  | mem x hx =>
-    obtain ⟨u, hu, rfl⟩ := hx
-    induction hy using Submodule.span_induction with
-    | mem y hy =>
-      obtain ⟨v, hv, rfl⟩ := hy
-      rw [← word_mul]
-      exact Submodule.subset_span ⟨u * v, by
-        simp only [Set.mem_ofPred_eq, FreeMagma.length] at hu hv ⊢
-        omega, rfl⟩
-    | zero => simp
-    | add x y _ _ hx hy => simpa only [lie_add] using add_mem hx hy
-    | smul r x _ hx => simpa only [lie_smul] using Submodule.smul_mem _ r hx
-  | zero => simp
-  | add x y _ _ hx hy => simpa only [add_lie] using add_mem hx hy
-  | smul r x _ hx => simpa only [smul_lie] using Submodule.smul_mem _ r hx
+  refine LinearMap.BilinMap.apply_apply_mem_of_mem_span
+    (Submodule.span R (word R '' {w : FreeMagma S | k + l + 1 < w.length})) _ _
+    (LieAlgebra.ad R F).toLinearMap ?_ x y hx hy
+  rintro _ ⟨u, hu, rfl⟩ _ ⟨v, hv, rfl⟩
+  rw [LieHom.coe_toLinearMap, LieAlgebra.ad_apply, ← word_mul]
+  exact Submodule.subset_span ⟨u * v, by
+    simp only [Set.mem_ofPred_eq, FreeMagma.length] at hu hv ⊢
+    omega, rfl⟩
 
 /-- The zero-based lower central series is exactly the span of sufficiently
 long bracketed words. -/
