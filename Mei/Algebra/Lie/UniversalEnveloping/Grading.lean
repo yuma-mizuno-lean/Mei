@@ -10,6 +10,7 @@ public import Mathlib.Algebra.Lie.UniversalEnveloping
 public import Mathlib.RingTheory.GradedAlgebra.Basic
 public import TauCeti.Algebra.DirectSum.Internal
 public import TauCeti.Algebra.Lie.UniversalEnveloping.Bialgebra
+public import TauCeti.Algebra.Lie.UniversalEnveloping.Derivation.Basic
 
 /-!
 # The Lie-degree grading of a universal enveloping algebra
@@ -21,6 +22,9 @@ construction works over any commutative ring, without a basis of the Lie algebra
 Homogeneous projection provides degreewise descriptions of maps and descending
 degree ideals even when the homogeneous Lie modules are not free. The construction
 follows the universal-property realization of `TensorAlgebra.gradedAlgebra`.
+For natural gradings, the lifted Euler derivation acts by degree on homogeneous pieces
+and their projections, allowing inverse Euler scaling to reconstruct Lie representatives
+from Dynkin values when detecting primitive elements.
 -/
 
 public section
@@ -244,6 +248,49 @@ theorem ι_component (x : L) (n : Γ) :
 section Nat
 
 variable (ℒ : ℕ → Submodule R L) [GradedLieAlgebra ℒ]
+
+local notation "𝒰" => homogeneousSubmodule ℒ
+local notation "E" => LieDerivation.ofGrading ℒ (Nat.castAddMonoidHom R)
+local notation "Y" => TauCeti.UniversalEnvelopingAlgebra.envelopingDerivation R L E
+
+private theorem euler_word (l : List (Σ n, ℒ n)) :
+    (Y : Module.End R U) (l.map (fun x => _root_.UniversalEnvelopingAlgebra.ι R (x.2 : L))).prod =
+      ((l.map Sigma.fst).sum : R) •
+        (l.map (fun x => _root_.UniversalEnvelopingAlgebra.ι R (x.2 : L))).prod := by
+  induction l with
+  | nil => simp [TauCeti.derivationLieAlgebra.apply_one_eq_zero]
+  | cons x l ih =>
+    have hcast : (Nat.castAddMonoidHom R) x.1 = (x.1 : R) := rfl
+    simp only [List.map_cons, List.prod_cons, List.sum_cons,
+      TauCeti.UniversalEnvelopingAlgebra.envelopingDerivation_mul,
+      TauCeti.UniversalEnvelopingAlgebra.envelopingDerivation_ι,
+      LieDerivation.ofGrading_apply_apply ℒ _ x.2.property, map_smul, ih,
+      Nat.cast_add, hcast, add_smul, smul_mul_assoc, mul_smul_comm]
+
+/-- The enveloping Euler derivation acts by degree on each homogeneous piece. -/
+theorem euler_homogeneous {n : ℕ} {a : U} (ha : a ∈ 𝒰 n) :
+    (Y : Module.End R U) a = (n : R) • a := by
+  rw [Mei.UniversalEnvelopingAlgebra.homogeneousSubmodule_def] at ha
+  induction ha using Submodule.span_induction with
+  | mem a ha =>
+    obtain ⟨l, hl, rfl⟩ := ha
+    simpa only [hl] using euler_word ℒ l
+  | zero => simp
+  | add a b _ _ ha hb => simp only [map_add, ha, hb, smul_add]
+  | smul r a _ ha => simp only [map_smul, ha, smul_comm r]
+
+/-- The enveloping Euler derivation acts diagonally on homogeneous components. -/
+theorem euler_component (a : U) (n : ℕ) :
+    (DirectSum.decompose 𝒰 ((Y : Module.End R U) a) n : U) =
+      (n : R) • (DirectSum.decompose 𝒰 a n : U) := by
+  have hhom (i : ℕ) (x : U) (hx : x ∈ 𝒰 i) : (Y : Module.End R U) x ∈ 𝒰 i := by
+    rw [euler_homogeneous ℒ hx]
+    exact (𝒰 i).smul_mem _ hx
+  have h := DirectSum.map_decompose_shift 𝒰 𝒰 (Y : Module.End R U).toAddMonoidHom
+    (fun i => i) Function.injective_id hhom n a
+  simp only [LinearMap.toAddMonoidHom_coe] at h
+  rw [euler_homogeneous ℒ (DirectSum.decompose 𝒰 a n).property] at h
+  exact h.symm
 
 /-- The degree-zero component is the scalar counit when the Lie degree-zero piece vanishes. -/
 theorem component_zero_eq_counit (hzero : ℒ 0 = ⊥) (a : U) :

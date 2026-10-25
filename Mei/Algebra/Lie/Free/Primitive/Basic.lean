@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Algebra.Lie.Free.Enveloping
-public import Mei.Algebra.Lie.UniversalEnveloping.Dynkin.Grading
+public import Mei.Algebra.Lie.UniversalEnveloping.Dynkin.Basic
 import Mathlib.Algebra.Algebra.Rat
 
 /-!
