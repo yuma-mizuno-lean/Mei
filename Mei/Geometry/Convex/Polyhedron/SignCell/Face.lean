@@ -20,64 +20,12 @@ no rationality assumption or bundled polyhedral-complex structure is introduced.
 
 public section
 
-namespace Mei.Convex
-
-variable {V ι : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
-
-/-- The affine inequalities presenting a weak sign cell. Equality rows are
-doubled, while the other rows are signed to be nonpositive. -/
-def weakSignCellRows (g : ι → (V →ᴬ[ℝ] ℝ)) (σ : ι → SignType) :
-    ι × Bool → (V →ᴬ[ℝ] ℝ) := fun p => match σ p.1 with
-  | .zero => if p.2 then g p.1 else -g p.1
-  | .neg => g p.1
-  | .pos => -g p.1
-
-/-- The signed row is the original affine map or its negative, according to the sign. -/
-theorem weakSignCellRows_eq (g : ι → (V →ᴬ[ℝ] ℝ)) (σ : ι → SignType) (p : ι × Bool) :
-    weakSignCellRows g σ p = match σ p.1 with
-      | .zero => if p.2 then g p.1 else -g p.1
-      | .neg => g p.1
-      | .pos => -g p.1 := by rfl
-
-/-- Signing and doubling do not change the zero locus of an original row. -/
-@[simp]
-theorem weakSignCellRows_eq_zero_iff {g : ι → (V →ᴬ[ℝ] ℝ)} {σ : ι → SignType}
-    {j : ι} {b : Bool} {x : V} :
-    weakSignCellRows g σ (j, b) x = 0 ↔ g j x = 0 := by
-  cases h : σ j <;> cases b <;> simp [weakSignCellRows, h]
-
-/-- The doubled signed rows present exactly the original weak sign cell. -/
-theorem mem_weakSignCell_iff_rows {g : ι → (V →ᴬ[ℝ] ℝ)} {σ : ι → SignType} {x : V} :
-    x ∈ weakSignCell g σ ↔ ∀ p, weakSignCellRows g σ p x ≤ 0 := by
-  rw [mem_weakSignCell]
-  constructor
-  · intro hx ⟨j, b⟩
-    have hxj := hx j
-    cases h : σ j <;> cases b <;> simp_all [weakSignCellRows]
-  · intro hx j
-    have h₁ := hx (j, true)
-    have h₂ := hx (j, false)
-    cases h : σ j with
-    | zero =>
-      simp only [weakSignCellRows, h, Bool.false_eq_true, ↓reduceIte,
-        ContinuousAffineMap.neg_apply, neg_nonpos] at h₁ h₂
-      simpa using le_antisymm h₁ h₂
-    | neg => simpa [weakSignCellRows, h] using h₁
-    | pos => simpa [weakSignCellRows, h] using h₁
-
-/-- The weak cell agrees as a carrier with the finite-inequality presentation. -/
-theorem weakSignCell_eq_setOf_rows (g : ι → (V →ᴬ[ℝ] ℝ)) (σ : ι → SignType) :
-    weakSignCell g σ = {x | ∀ p, weakSignCellRows g σ p x ≤ 0} := by
-  ext x
-  exact mem_weakSignCell_iff_rows
-
-end Mei.Convex
-
 namespace IsExtreme
 
 open Mei.Convex
 
-variable {V ι : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V] [Finite ι]
+variable {V ι : Type*} [AddCommGroup V] [Module ℝ V] [TopologicalSpace V]
+  [ContinuousAdd V] [ContinuousSMul ℝ V] [Finite ι]
 
 /-- Every nonempty convex extreme subset of a weak arrangement cell is the
 closure of a realized strict cell obtained by zero specialization. -/
@@ -135,64 +83,17 @@ end IsExtreme
 
 namespace Mei.Convex
 
-variable {V ι : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
-
-/-- The actual closed supports of the realized sign cells of an affine family. -/
-def realizedSignCellClosures (g : ι → (V →ᴬ[ℝ] ℝ)) : Set (Set V) :=
-  {P | ∃ σ, (signCell g σ).Nonempty ∧ P = closure (signCell g σ)}
-
-/-- Membership means being the closure of a realized strict sign cell. -/
-@[simp]
-theorem mem_realizedSignCellClosures {g : ι → (V →ᴬ[ℝ] ℝ)} {P : Set V} :
-    P ∈ realizedSignCellClosures g ↔
-      ∃ σ, (signCell g σ).Nonempty ∧ P = closure (signCell g σ) := by
-  simp only [realizedSignCellClosures, Set.mem_ofPred_eq]
-
-/-- A member of the realized closure family has nonempty carrier. -/
-theorem nonempty_of_mem_realizedSignCellClosures {g : ι → (V →ᴬ[ℝ] ℝ)} {P : Set V}
-    (hP : P ∈ realizedSignCellClosures g) : P.Nonempty := by
-  obtain ⟨σ, ⟨p, hp⟩, rfl⟩ := hP
-  exact ⟨p, subset_closure hp⟩
-
-/-- A finite arrangement has only finitely many realized closed sign-cell supports. -/
-theorem finite_realizedSignCellClosures [Finite ι] (g : ι → (V →ᴬ[ℝ] ℝ)) :
-    (realizedSignCellClosures g).Finite :=
-  (Set.finite_range (fun σ => closure (signCell g σ))).subset fun _ ⟨σ, _, heq⟩ => ⟨σ, heq.symm⟩
-
-/-- The realized closed sign cells cover the ambient space. -/
-theorem sUnion_realizedSignCellClosures (g : ι → (V →ᴬ[ℝ] ℝ)) :
-    ⋃₀ realizedSignCellClosures g = Set.univ := by
-  apply Set.eq_univ_of_forall
-  intro x
-  let σ := fun j => SignType.sign (g j x)
-  have hx : x ∈ signCell g σ := mem_signCell_sign g x
-  exact Set.mem_sUnion.mpr ⟨closure (signCell g σ), ⟨σ, ⟨x, hx⟩, rfl⟩, subset_closure hx⟩
-
-/-- Every member of a finite realized closure family is a convex polyhedron. -/
-theorem isConvexPolyhedron_of_mem_realizedSignCellClosures [Finite ι]
-    {g : ι → (V →ᴬ[ℝ] ℝ)} {P : Set V} (hP : P ∈ realizedSignCellClosures g) :
-    TauCeti.IsConvexPolyhedron P := by
-  obtain ⟨σ, hσ, rfl⟩ := hP
-  exact isConvexPolyhedron_closure_signCell
+variable {V ι : Type*} [AddCommGroup V] [Module ℝ V] [TopologicalSpace V]
+  [ContinuousAdd V] [ContinuousSMul ℝ V]
 
 /-- The full realized closure family is closed under all nonempty convex extreme subsets. -/
 theorem _root_.IsExtreme.mem_realizedSignCellClosures [Finite ι]
     {g : ι → (V →ᴬ[ℝ] ℝ)} {P F : Set V} (hF : IsExtreme ℝ P F)
     (hP : P ∈ realizedSignCellClosures g) (hconv : Convex ℝ F) (hne : F.Nonempty) :
     F ∈ realizedSignCellClosures g := by
-  obtain ⟨σ, hσ, rfl⟩ := hP
+  obtain ⟨σ, hσ, rfl⟩ := Mei.Convex.mem_realizedSignCellClosures.mp hP
   obtain ⟨τ, _, hτ, heq⟩ := hF.exists_zeroSpecialization_closure_signCell hσ hconv hne
-  exact ⟨τ, hτ, heq⟩
-
-/-- Intersections of realized closed cells are extreme subsets of each cell;
-the intersection is allowed to be empty. -/
-theorem isExtreme_inter_of_mem_realizedSignCellClosures
-    {g : ι → (V →ᴬ[ℝ] ℝ)} {P Q : Set V}
-    (hP : P ∈ realizedSignCellClosures g) (hQ : Q ∈ realizedSignCellClosures g) :
-    IsExtreme ℝ P (P ∩ Q) := by
-  obtain ⟨σ, hσ, rfl⟩ := hP
-  obtain ⟨τ, hτ, rfl⟩ := hQ
-  exact isExtreme_closure_signCell_inter
+  exact Mei.Convex.mem_realizedSignCellClosures.mpr ⟨τ, hτ, heq⟩
 
 /-- Every nonempty intersection of two members of the finite realized closure
 family is again a member of the same family. -/
