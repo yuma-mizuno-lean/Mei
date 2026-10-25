@@ -157,34 +157,44 @@ theorem enlarge_modulus (T : PositiveDegreeMap d e) (μ : ℕ → ℕ) (hμ : Mo
 
 /-- Make an arbitrary cutoff bound monotone using its finite partial suprema. -/
 def ofModulus (T : N →+ M) (hmem : ∀ n ∈ d.monoid, T n ∈ e.monoid)
-    (hne : ∀ n ∈ d.monoid, n ≠ 0 → T n ≠ 0) (μ : ℕ → ℕ)
+    (μ : ℕ → ℕ)
     (hμ : ∀ n ∈ d.monoid, ∀ k : ℕ, (μ k : ℤ) < d.degree n →
       (k : ℤ) < e.degree (T n)) : PositiveDegreeMap d e where
   toAddMonoidHom := T
   map_mem := hmem _
-  map_ne_zero := hne _
+  map_ne_zero {n} hn hn0 h := by
+    have hp : (1 : ℤ) ≤ d.degree n := d.degree_pos hn hn0
+    have hdeg : (μ 0 : ℤ) < d.degree ((μ 0 + 1) • n) := by
+      rw [map_nsmul, nsmul_eq_mul]
+      have := le_mul_of_one_le_right (Int.natCast_nonneg (μ 0 + 1)) hp
+      omega
+    simpa [map_nsmul, h] using hμ _ (d.monoid.nsmul_mem hn _) 0 hdeg
   modulus := partialSups μ
   monotone_modulus := (partialSups μ).monotone
   degree_gt k hn h := hμ _ hn k
     (lt_of_le_of_lt (by exact_mod_cast le_partialSups μ k) h)
 
 @[simp]
-theorem ofModulus_apply (T : N →+ M) (hmem) (hne) (μ) (hμ) (n : N) :
-    ofModulus (d := d) (e := e) T hmem hne μ hμ n = T n := (rfl)
+theorem ofModulus_apply (T : N →+ M) (hmem) (μ) (hμ) (n : N) :
+    ofModulus (d := d) (e := e) T hmem μ hμ n = T n := (rfl)
 
 @[simp]
-theorem ofModulus_modulus (T : N →+ M) (hmem) (hne) (μ) (hμ) :
-    (ofModulus (d := d) (e := e) T hmem hne μ hμ).modulus = partialSups μ := (rfl)
+theorem ofModulus_modulus (T : N →+ M) (hmem) (μ) (hμ) :
+    (ofModulus (d := d) (e := e) T hmem μ hμ).modulus = partialSups μ := (rfl)
 
 /-- A linear source-degree bound gives modulus `k ↦ c * k`.
 The bound must control the source degree by the image degree. -/
 def ofBound (T : N →+ M) (hmem : ∀ n ∈ d.monoid, T n ∈ e.monoid)
-    (hne : ∀ n ∈ d.monoid, n ≠ 0 → T n ≠ 0) (c : ℕ)
+    (c : ℕ)
     (hbound : ∀ n ∈ d.monoid, d.degree n ≤ c * e.degree (T n)) :
     PositiveDegreeMap d e where
   toAddMonoidHom := T
   map_mem := hmem _
-  map_ne_zero := hne _
+  map_ne_zero {n} hn hn0 h := by
+    have hb := hbound n hn
+    have hp := d.degree_pos hn hn0
+    simp only [h, _root_.map_zero, mul_zero] at hb
+    omega
   modulus k := c * k
   monotone_modulus _ _ h := Nat.mul_le_mul_left c h
   degree_gt {n} k hn h := by
@@ -195,19 +205,19 @@ def ofBound (T : N →+ M) (hmem : ∀ n ∈ d.monoid, T n ∈ e.monoid)
     omega
 
 @[simp]
-theorem ofBound_apply (T : N →+ M) (hmem) (hne) (c) (hbound) (n : N) :
-    ofBound (d := d) (e := e) T hmem hne c hbound n = T n := (rfl)
+theorem ofBound_apply (T : N →+ M) (hmem) (c) (hbound) (n : N) :
+    ofBound (d := d) (e := e) T hmem c hbound n = T n := (rfl)
 
 @[simp]
-theorem ofBound_modulus (T : N →+ M) (hmem) (hne) (c) (hbound) (k : ℕ) :
-    (ofBound (d := d) (e := e) T hmem hne c hbound).modulus k = c * k := (rfl)
+theorem ofBound_modulus (T : N →+ M) (hmem) (c) (hbound) (k : ℕ) :
+    (ofBound (d := d) (e := e) T hmem c hbound).modulus k = c * k := (rfl)
 
 /-- A map nonzero on nonzero allowed degrees has a linear cutoff modulus when the
 source monoid is finitely generated. No injectivity of the additive map is needed. -/
 noncomputable def ofFG (T : N →+ M) (hmem : ∀ n ∈ d.monoid, T n ∈ e.monoid)
     (hne : ∀ n ∈ d.monoid, n ≠ 0 → T n ≠ 0) (hfg : d.monoid.FG) :
     PositiveDegreeMap d e :=
-  ofBound T hmem hne
+  ofBound T hmem
     (hfg.exists_degree_le_mul d.degree (e.degree.comp T)
       (fun n hn hn0 => e.degree_pos (hmem n hn) (hne n hn hn0))).choose
     (hfg.exists_degree_le_mul d.degree (e.degree.comp T)
@@ -226,12 +236,16 @@ theorem ofFG_modulus (T : N →+ M) (hmem) (hne) (hfg) :
 source degree of an allowed element surviving the target cutoff. -/
 noncomputable def ofFinitePreimage (T : N →+ M)
     (hmem : ∀ n ∈ d.monoid, T n ∈ e.monoid)
-    (hne : ∀ n ∈ d.monoid, n ≠ 0 → T n ≠ 0)
     (hfin : ∀ k : ℕ, Set.Finite {n | n ∈ d.monoid ∧ e.degree (T n) ≤ k}) :
     PositiveDegreeMap d e where
   toAddMonoidHom := T
   map_mem := hmem _
-  map_ne_zero := hne _
+  map_ne_zero {n} hn hn0 h := by
+    have hi := (nsmul_left_strictMono (d.degree_pos hn hn0)).injective
+    apply Set.infinite_of_injective_forall_mem hi ?_ ((hfin 0).image d.degree)
+    intro m
+    exact ⟨m • n, ⟨d.monoid.nsmul_mem hn m, by simp [map_nsmul, h]⟩,
+      map_nsmul d.degree m n⟩
   modulus k := (hfin k).toFinset.sup (fun n => (d.degree n).toNat)
   monotone_modulus := by
     intro k l hkl
@@ -248,19 +262,19 @@ noncomputable def ofFinitePreimage (T : N →+ M)
     omega
 
 @[simp]
-theorem ofFinitePreimage_apply (T : N →+ M) (hmem) (hne) (hfin) (n : N) :
-    ofFinitePreimage (d := d) (e := e) T hmem hne hfin n = T n := (rfl)
+theorem ofFinitePreimage_apply (T : N →+ M) (hmem) (hfin) (n : N) :
+    ofFinitePreimage (d := d) (e := e) T hmem hfin n = T n := (rfl)
 
 /-- The modulus is the finite supremum of the source degrees in the inverse cutoff.
 Source degrees are nonnegative on the allowed monoid, so `toNat` loses no information. -/
 @[simp]
-theorem ofFinitePreimage_modulus (T : N →+ M) (hmem) (hne) (hfin) (k : ℕ) :
-    (ofFinitePreimage (d := d) (e := e) T hmem hne hfin).modulus k =
+theorem ofFinitePreimage_modulus (T : N →+ M) (hmem) (hfin) (k : ℕ) :
+    (ofFinitePreimage (d := d) (e := e) T hmem hfin).modulus k =
       (hfin k).toFinset.sup (fun n => (d.degree n).toNat) := (rfl)
 
 /-- The finite-maximum modulus is the least cutoff bound at each target order. -/
-theorem ofFinitePreimage_modulus_le_iff (T : N →+ M) (hmem) (hne) (hfin) (k l : ℕ) :
-    (ofFinitePreimage (d := d) (e := e) T hmem hne hfin).modulus k ≤ l ↔
+theorem ofFinitePreimage_modulus_le_iff (T : N →+ M) (hmem) (hfin) (k l : ℕ) :
+    (ofFinitePreimage (d := d) (e := e) T hmem hfin).modulus k ≤ l ↔
       ∀ n ∈ d.monoid, e.degree (T n) ≤ k → d.degree n ≤ l := by
   simp [Finset.sup_le_iff, Int.toNat_le]
 
@@ -270,7 +284,6 @@ noncomputable def ofInjectiveOn (T : N →+ M)
     (hmem : ∀ n ∈ d.monoid, T n ∈ e.monoid) (hinj : Set.InjOn T d.monoid) :
     PositiveDegreeMap d e :=
   ofFinitePreimage T hmem
-    (fun _ hn hn0 h => hn0 (hinj hn d.monoid.zero_mem (h.trans (_root_.map_zero T).symm)))
     (fun k => (e.finite_cutoff k).of_injOn
       (fun n hn => (e.mem_cutoff).mpr ⟨hmem n hn.1, hn.2⟩)
       (hinj.mono (fun _ hn => hn.1)))
@@ -284,7 +297,7 @@ inverse target cutoff, characterized without unfolding the finite-set constructi
 theorem ofInjectiveOn_modulus_le_iff (T : N →+ M) (hmem) (hinj) (k l : ℕ) :
     (ofInjectiveOn (d := d) (e := e) T hmem hinj).modulus k ≤ l ↔
       ∀ n ∈ d.monoid, e.degree (T n) ≤ k → d.degree n ≤ l :=
-  ofFinitePreimage_modulus_le_iff _ _ _ _ _ _
+  ofFinitePreimage_modulus_le_iff _ _ _ _ _
 
 /-- Changing the degree function on the same allowed monoid gives a positive degree
 map. Applying this construction in reverse gives the reverse cutoff comparison. -/
