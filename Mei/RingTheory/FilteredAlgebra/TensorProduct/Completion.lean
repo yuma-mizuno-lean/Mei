@@ -88,6 +88,24 @@ theorem includeRightCompletion_toCompletion (b : B) :
       (F.tensorProduct R G).toCompletion ((1 : A) ⊗ₜ[R] b) := by
   exact G.mapCompletion_toCompletion _ _ id monotone_id _ b
 
+/-- The completed left inclusion preserves each filtration order. -/
+theorem includeLeftCompletion_mem_completionIdeal {k : ℕ} {x : F.completion}
+    (hx : x ∈ F.completionIdeal k) :
+    F.includeLeftCompletion (R := R) G x ∈ (F.tensorProduct R G).completionIdeal k := by
+  cases k with
+  | zero => simp
+  | succ k =>
+    exact F.mapCompletion_mem_completionIdeal _ _ id monotone_id _ k hx
+
+/-- The completed right inclusion preserves each filtration order. -/
+theorem includeRightCompletion_mem_completionIdeal {k : ℕ} {y : G.completion}
+    (hy : y ∈ G.completionIdeal k) :
+    F.includeRightCompletion (R := R) G y ∈ (F.tensorProduct R G).completionIdeal k := by
+  cases k with
+  | zero => simp
+  | succ k =>
+    exact G.mapCompletion_mem_completionIdeal _ _ id monotone_id _ k hy
+
 /-- The two completed tensor inclusions have commuting images. -/
 theorem commute_includeLeftCompletion_includeRightCompletion
     (x : F.completion) (y : G.completion) :
