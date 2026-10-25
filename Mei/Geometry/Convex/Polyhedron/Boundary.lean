@@ -22,7 +22,8 @@ public section
 
 open Set Filter Topology AffineSubspace
 
-variable {V ι : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
+variable {V ι : Type*} [AddCommGroup V] [Module ℝ V] [TopologicalSpace V]
+  [IsTopologicalAddGroup V] [ContinuousSMul ℝ V]
 
 namespace Mei.Convex
 

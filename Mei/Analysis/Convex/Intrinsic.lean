@@ -20,7 +20,8 @@ public section
 
 open Set Filter Topology AffineSubspace
 
-variable {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
+variable {V : Type*} [AddCommGroup V] [Module ℝ V] [TopologicalSpace V]
+  [IsTopologicalAddGroup V] [ContinuousSMul ℝ V]
 
 namespace AffineMap
 
