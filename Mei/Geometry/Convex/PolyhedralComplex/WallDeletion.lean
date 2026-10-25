@@ -6,7 +6,6 @@ Authors: Codex
 module
 
 public import Mei.Geometry.Convex.PolyhedralComplex.CrossingWord
-public import Mei.Geometry.Convex.PolyhedralComplex.Subcomplex
 
 /-!
 # Deleting walls from geometric crossing words
