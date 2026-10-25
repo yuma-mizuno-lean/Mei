@@ -16,11 +16,13 @@ The degree filtration of a completed positively graded BCH group satisfies
 in degree `b` at every order below `a + b`. In particular, the successive
 filtration quotients are central, as needed for constructions by degree induction.
 
-The argument uses `PositiveDegrees.lie_degreeIdeal_le` and
-`BCHGroup.commute_exp_of_lie_eq_zero` in finite Lie quotients. Compatibility of
-`CompletedGroup.projection` detects the filtration membership of representatives;
-Mathlib's `Subgroup.commutator_le` then gives the subgroup estimate. The original
-Lie algebra need not be nilpotent, and no freeness assumption is used.
+In finite Lie quotients, `commute_exp_mk_of_mem_degreeIdeal` says that elements of
+`degreeIdeal ℒ a` and `degreeIdeal ℒ b` have commuting exponentials modulo
+`degreeIdeal ℒ (a + b + 1)`. This specializes the vanishing-bracket criterion
+`BCHGroup.commute_exp_of_lie_eq_zero` using the degree bound
+`PositiveDegrees.lie_degreeIdeal_le`. Its completed counterpart,
+`commutator_degreeFiltration_le`, bounds commutators at all filtration orders.
+The original Lie algebra need not be nilpotent, and no freeness assumption is used.
 -/
 
 public section
