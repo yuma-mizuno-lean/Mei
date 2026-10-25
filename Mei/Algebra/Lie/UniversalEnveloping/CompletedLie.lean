@@ -7,6 +7,7 @@ module
 
 public import Mei.Algebra.Lie.Graded.Completion
 public import Mei.Algebra.Lie.UniversalEnveloping.Completion
+public import Mei.Algebra.PositiveDegrees.Completion
 
 /-!
 # The canonical map into a completed enveloping algebra
@@ -18,6 +19,10 @@ maps commute with transitions, and projections characterize the completed map.
 This construction works over an arbitrary commutative ring, without a PBW or
 freeness hypothesis; it does not assert injectivity.
 Its image consists of primitive elements in the first completed filtration ideal.
+A compatible enveloping family lies in this image exactly when all its finite
+projections have Lie representatives. Assemble those representatives degree by
+degree using `Mei.PositiveDegrees.completionEquivPi`, without requiring the
+representatives themselves to be compatible.
 
 The finite maps use `LieIdeal.liftQ` and Mathlib's quotient algebra maps. The Lie
 completion retains `Mei.ModuleFiltration.completion` as its underlying module.
@@ -189,5 +194,81 @@ theorem isCompletedPrimitive_completedLieToU (x : d.completedLie ℒ) :
   simpa only [projection_completedCoproduct, map_add,
     Mei.AlgFiltration.projection_includeLeftCompletion,
     Mei.AlgFiltration.projection_includeRightCompletion, hp] using h
+
+local notation "𝒰" => homogeneousSubmodule ℒ
+local notation "M" => LieIdeal.completionFiltration (d.degreeIdeal ℒ)
+  (d.degreeIdeal_antitone ℒ)
+local notation "hM" => (fun k => d.degreeIdeal_toSubmodule ℒ k)
+local notation "hℒ" => (fun n hn => IsPositiveGrading.eq_bot (ℒ := ℒ) n (Or.inl hn))
+
+private theorem ι_component_eq_of_representatives (u : (F).completion)
+    (a : ℕ → L)
+    (ha : ∀ k, Ideal.Quotient.mk ((F).ideal (k + 1)) (ι R (a k)) = (F).projection k u)
+    (k l : ℕ) (n : N) (hnk : d.degree n ≤ k) (hnl : d.degree n ≤ l) :
+    ι R (DirectSum.decompose ℒ (a k) n : L) =
+      ι R (DirectSum.decompose ℒ (a l) n : L) := by
+  have hsmall (i j : ℕ) (hij : i ≤ j) (hni : d.degree n ≤ i) :
+      (DirectSum.decompose 𝒰 (ι R (a i)) n : U) =
+        (DirectSum.decompose 𝒰 (ι R (a j)) n : U) := by
+    have he : Ideal.Quotient.mk ((F).ideal (i + 1)) (ι R (a i)) =
+        Ideal.Quotient.mk ((F).ideal (i + 1)) (ι R (a j)) := by
+      rw [ha i, ← Ideal.Quotient.factor_mk ((F).antitone (Nat.add_le_add_right hij 1)),
+        ha j, (F).factor_projection hij]
+    have hm := Ideal.Quotient.eq.mp he
+    rw [degreeFiltration_ideal, Mei.GradedAlgebra.mem_degreeIdeal_iff,
+      Mei.DirectSum.mem_degreeTail_iff] at hm
+    simpa only [DirectSum.decompose_sub, DirectSum.sub_apply, Submodule.coe_sub,
+      sub_eq_zero] using hm n (by omega)
+  rw [ι_component, ι_component]
+  exact (hsmall k (max k l) (le_max_left _ _) hnk).trans
+    (hsmall l (max k l) (le_max_right _ _) hnl).symm
+
+/-- A completed enveloping element has a completed Lie representative exactly when
+each of its finite projections has a Lie representative. This holds over any
+commutative ring, without injectivity of the canonical Lie map. -/
+theorem mem_range_completedLieToU_iff (u : (F).completion) :
+    u ∈ Set.range (completedLieToU d ℒ) ↔
+      ∀ k, (F).projection k u ∈ Set.range (truncatedLieToU d ℒ k) := by
+  classical
+  constructor
+  · rintro ⟨x, rfl⟩ k
+    exact ⟨LieIdeal.completionProjection _ _ k x, (projection_completedLieToU d ℒ k x).symm⟩
+  · intro hu
+    have hreps (k : ℕ) : ∃ a : L,
+        Ideal.Quotient.mk ((F).ideal (k + 1)) (ι R a) = (F).projection k u := by
+      obtain ⟨x, hx⟩ := hu k
+      obtain ⟨a, rfl⟩ := (d.degreeIdeal ℒ k).surjective_mkQ x
+      exact ⟨a, by simpa only [LieIdeal.mkQ_apply, truncatedLieToU_mk] using hx⟩
+    -- Choose finite representatives, then assemble one coefficient per homogeneous degree.
+    choose a ha using hreps
+    let x : ∀ n, ℒ n := fun n => DirectSum.decompose ℒ (a (d.degree n).toNat) n
+    refine ⟨(d.completionEquivPi ℒ M hM hℒ).symm x, ?_⟩
+    apply (F).completion_ext
+    intro k
+    rw [projection_completedLieToU, LieIdeal.completionProjection_apply]
+    rw [d.projection_completionEquivPi_symm, truncatedLieToU_mk, ← ha k]
+    apply Ideal.Quotient.eq.mpr
+    rw [degreeFiltration_ideal, Mei.GradedAlgebra.mem_degreeIdeal_iff,
+      Mei.DirectSum.mem_degreeTail_iff]
+    intro n hn
+    simp only [DirectSum.decompose_sub, DirectSum.sub_apply, Submodule.coe_sub,
+      ← ι_component, DirectSum.decompose_sum, DirectSum.sum_apply, Submodule.coe_sum]
+    have hcoef : ι R (∑ i ∈ (d.finite_cutoff k).toFinset,
+        (DirectSum.decompose ℒ (x i : L) n : L)) =
+          ι R (DirectSum.decompose ℒ (a k) n : L) := by
+      by_cases hP : n ∈ d.monoid
+      · have hnk : n ∈ (d.finite_cutoff k).toFinset := by
+          simp only [Set.Finite.mem_toFinset, PositiveDegrees.mem_cutoff]
+          exact ⟨hP, by omega⟩
+        rw [Finset.sum_eq_single n]
+        · rw [DirectSum.decompose_of_mem_same ℒ (x n).property]
+          exact ι_component_eq_of_representatives d ℒ u a ha _ _ n (Int.self_le_toNat _) (by omega)
+        · intro i hi hin
+          exact DirectSum.decompose_of_mem_ne ℒ (x i).property hin
+        · exact fun h => (h hnk).elim
+      · have hz (y : ℒ n) : (y : L) = 0 := by
+          simpa only [hℒ n hP, Submodule.mem_bot] using y.property
+        simp only [hz, Finset.sum_const_zero, map_zero]
+    exact sub_eq_zero.mpr hcoef
 
 end Mei.UniversalEnvelopingAlgebra

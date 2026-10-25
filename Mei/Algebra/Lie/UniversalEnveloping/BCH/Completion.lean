@@ -7,6 +7,7 @@ module
 
 public import Mei.Algebra.Lie.UniversalEnveloping.BCH.Basic
 public import Mei.Algebra.Lie.UniversalEnveloping.Exp
+public import Mei.Algebra.Lie.UniversalEnveloping.Dynkin.Completion
 public import Mei.Algebra.Lie.BCH.Coordinates
 
 /-!
@@ -16,14 +17,15 @@ The completed BCH group of a positively graded Lie algebra maps canonically to
 the group-like units of its degree-completed enveloping algebra. Projection is
 the finite enveloping exponential, and logarithm recovers the canonical image of
 the completed Lie coordinate. The image consists exactly of the group-like units
-whose logarithm comes from the completed Lie algebra.
+whose logarithm comes from the completed Lie algebra. Finite Dynkin
+reconstruction and homogeneous assembly show that every group-like unit occurs.
 
 The construction combines `Mei.PositiveDegrees.completedBCHExp`, the canonical
 `Mei.UniversalEnvelopingAlgebra.completedLieToU`, and
 `Mei.UniversalEnvelopingAlgebra.completedPrimitiveExpUnitsEquiv`.
 Multiplicativity follows from `truncatedBCHToUnits` at every finite cutoff.
-Neither a PBW theorem nor a free underlying module is assumed; injectivity and
-surjectivity onto all group-like units are not asserted here.
+Neither a PBW theorem nor a free underlying module is assumed; injectivity
+is not asserted here.
 -/
 
 public section
@@ -143,5 +145,15 @@ theorem mem_range_completedBCHToGroupLike_iff (u : G) :
         ℒ d.degree hneg hpos⟩, (F).completedLog_mem _⟩
     · exact congrArg (F).completedExp (Subtype.ext hx)
     · exact (F).completedExp_completedLog _
+
+/-- Every completed group-like unit is the exponential image of a completed BCH
+label, over any commutative rational coefficient algebra. -/
+theorem completedBCHToGroupLike_surjective :
+    Function.Surjective (completedBCHToGroupLike d ℒ) := by
+  intro u
+  apply (mem_range_completedBCHToGroupLike_iff d ℒ u).mpr
+  apply (mem_range_completedLieToU_iff_isCompletedPrimitive d ℒ _).mpr
+  apply (isCompletedPrimitive_completedLog_iff ℒ d.degree _ _).mpr
+  exact (mem_completedGroupLikeSubgroup ℒ d.degree _ _).mp u.property
 
 end Mei.UniversalEnvelopingAlgebra
