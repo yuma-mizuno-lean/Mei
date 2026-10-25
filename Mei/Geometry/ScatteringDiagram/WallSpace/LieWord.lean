@@ -70,7 +70,11 @@ end Normals
 
 namespace DirectedWallSpaces
 
-variable [AddCommGroup Λ] [CommRing R] [LieRing L] [LieAlgebra R L]
+variable [CommRing R] [LieRing L] [LieAlgebra R L]
+
+section Monoid
+
+variable [AddCommMonoid Λ]
 
 variable {ρ : Γ →+ Λ} {ℒ : Γ → Submodule R L} (H : DirectedWallSpaces ρ ℒ)
   (d : S → Γ) (m : S → Λ →+ ℤ) (a : S → L)
@@ -86,6 +90,30 @@ theorem word_mem_wall (ha : ∀ s, a s ∈ H.wall (d s) (m s)) (w : FreeMagma S)
   | ih2 u v hu hv =>
     simpa only [Mei.FreeLieAlgebra.word_mul, LieHom.map_lie, wallWordNormal_mul,
       map_mul, toAdd_mul] using H.bracket_mem hu hv
+
+/-- Every wall Lie word with at least two leaves and zero total geometric direction vanishes. -/
+theorem word_eq_zero_of_direction_eq_zero (ha : ∀ s, a s ∈ H.wall (d s) (m s))
+    (w : FreeMagma S) (hw : 2 ≤ w.length) (hdegree : ρ (deg d w) = 0) :
+    eval w = 0 := by
+  cases w with
+  | of s => simp [FreeMagma.length] at hw
+  | mul u v =>
+    have htotal : ρ (deg d u + deg d v) = 0 := by
+      simpa only [FreeMagma.mul_eq, map_mul, toAdd_mul] using hdegree
+    have hu := H.word_mem_wall d m a ha u
+    have hv := H.word_mem_wall d m a ha v
+    simpa only [FreeMagma.mul_eq, Mei.FreeLieAlgebra.word_mul, LieHom.map_lie] using
+      H.lie_eq_zero_of_normal_total_eq_zero hu hv (by simp [htotal]) (by simp [htotal])
+
+end Monoid
+
+variable [AddCommGroup Λ]
+
+variable {ρ : Γ →+ Λ} {ℒ : Γ → Submodule R L} (H : DirectedWallSpaces ρ ℒ)
+  (d : S → Γ) (m : S → Λ →+ ℤ) (a : S → L)
+
+local notation "eval" => fun w =>
+  _root_.FreeLieAlgebra.lift R a (Mei.FreeLieAlgebra.word R w)
 
 /-- A wall Lie word with at least two leaves vanishes if its total geometric degree
 lies in a subgroup annihilated by every leaf normal. -/
@@ -105,14 +133,6 @@ theorem word_eq_zero_of_direction_mem (ha : ∀ s, a s ∈ H.wall (d s) (m s))
       wallWordNormal_apply_eq_zero ρ d m _ (fun s => hm s _ htotal) z
     simpa only [FreeMagma.mul_eq, Mei.FreeLieAlgebra.word_mul, LieHom.map_lie] using
       H.lie_eq_zero_of_normal_total_eq_zero hu hv (hnormal u) (hnormal v)
-
-/-- Every wall Lie word with at least two leaves and zero total geometric direction vanishes. -/
-theorem word_eq_zero_of_direction_eq_zero (ha : ∀ s, a s ∈ H.wall (d s) (m s))
-    (w : FreeMagma S) (hw : 2 ≤ w.length) (hdegree : ρ (deg d w) = 0) :
-    eval w = 0 := by
-  exact H.word_eq_zero_of_direction_mem d m a ha ⊥
-    (fun s v hv => by simpa only [AddSubgroup.mem_bot.mp hv] using (m s).map_zero)
-    w hw (by simpa only [AddSubgroup.mem_bot] using hdegree)
 
 end DirectedWallSpaces
 

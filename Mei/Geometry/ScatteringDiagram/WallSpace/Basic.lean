@@ -18,6 +18,16 @@ of brackets whose total direction is annihilated by both normals.
 
 The degree and tangent monoids are independent. No lattice basis, coefficient
 characteristic or positivity assumption is needed for these algebraic identities.
+
+The wall-space laws follow Definition 1.2 of Leung, Ma and Young,
+*Refined scattering diagrams and theta functions from asymptotic analysis of
+Maurer-Cartan equations*
+([2019 preprint](https://archive.mpim-bonn.mpg.de/id/eprint/1320/1/preprint_2019_5.pdf#page=9)).
+Here the complex vector spaces are generalized to submodules over any commutative
+ring, with independent degree and tangent monoids related by `ρ`. We extend the
+spaces by zero at nontangent indices. The definition retains the zero-normal,
+rescaling and contracted-bracket laws, but omits the paper's condition (3) on an
+action on a graded algebra: no such action is needed for these Lie identities.
 -/
 
 public section
