@@ -21,7 +21,8 @@ assumed in this argument, and cones with lineality are allowed.
 
 For real finite-dimensional normed spaces, a finite inequality presentation is
 also a convex polyhedron in the existing supplier's sense. Thus finitely
-generated cones are closed as a consequence of the algebraic theorem.
+generated cones are closed in every real normed space, by restricting to their
+finite-dimensional linear span.
 -/
 
 public section
@@ -83,9 +84,26 @@ theorem cone_isConvexPolyhedron (hC : C.FG) : TauCeti.IsConvexPolyhedron (C : Se
   rw [← hs, he]
   exact TauCeti.isConvexPolyhedron_setOf_forall row
 
-/-- Finitely generated real cones are closed. This follows from the finite
-inequality theorem rather than being assumed for algebraic separation. -/
-theorem cone_isClosed (hC : C.FG) : IsClosed (C : Set V) :=
-  hC.cone_isConvexPolyhedron.isClosed
+omit [FiniteDimensional ℝ V] in
+/-- Finitely generated real cones are closed, even in infinite-dimensional spaces.
+This follows from the finite inequality theorem on their linear span, rather than
+being assumed for algebraic separation. -/
+theorem cone_isClosed (hC : C.FG) : IsClosed (C : Set V) := by
+  -- Restrict to the finite-dimensional real span before using the inequality theorem.
+  let P := Submodule.span ℝ (C : Set V)
+  have hP : P.FG := hC.span
+  have : FiniteDimensional ℝ P := Module.Finite.of_fg hP
+  let i := P.subtype.restrictScalars (Nonneg ℝ)
+  let D : PointedCone ℝ P := Submodule.comap i C
+  have hmap : Submodule.map i D = C := by
+    apply Submodule.map_comap_eq_of_le
+    intro x hx
+    exact ⟨⟨x, Submodule.subset_span hx⟩, rfl⟩
+  have hD : D.FG := Submodule.fg_of_fg_map_injective i Subtype.val_injective (hmap.symm ▸ hC)
+  have hclosed := hD.cone_isConvexPolyhedron.isClosed
+  have himage : Subtype.val '' (D : Set P) = (C : Set V) := by
+    exact congrArg (fun S : PointedCone ℝ V => (S : Set V)) hmap
+  rw [← himage]
+  exact P.closed_of_finiteDimensional.isClosedEmbedding_subtypeVal.isClosedMap _ hclosed
 
 end Submodule.FG

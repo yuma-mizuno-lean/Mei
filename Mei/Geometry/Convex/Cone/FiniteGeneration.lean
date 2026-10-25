@@ -26,28 +26,35 @@ public section
 
 open scoped BigOperators
 
-namespace PointedCone
+section
 
 variable {K V : Type*} [Field K] [LinearOrder K] [IsStrictOrderedRing K]
   [AddCommGroup V] [Module K V]
 
-/-- A nonnegative combination of two opposite-sign vectors lying on the cutting hyperplane. -/
+namespace LinearMap
+
+/-- The combination `(-f v) • u + f u • v`, which always lies in the kernel of `f`.
+Its coefficients are nonnegative when `f v ≤ 0 ≤ f u`. -/
 def boundaryCombination (f : V →ₗ[K] K) (u v : V) : V :=
   (-f v) • u + f u • v
 
 omit [LinearOrder K] [IsStrictOrderedRing K] in
 /-- The boundary combination uses the explicit coefficients `-f v` and `f u`. -/
 theorem boundaryCombination_def (f : V →ₗ[K] K) (u v : V) :
-    boundaryCombination f u v = (-f v) • u + f u • v := by
+    f.boundaryCombination u v = (-f v) • u + f u • v := by
   simp only [boundaryCombination]
 
 omit [LinearOrder K] [IsStrictOrderedRing K] in
 /-- The cutting functional vanishes on a boundary combination. -/
 @[simp]
 theorem map_boundaryCombination (f : V →ₗ[K] K) (u v : V) :
-    f (boundaryCombination f u v) = 0 := by
+    f (f.boundaryCombination u v) = 0 := by
   simp [boundaryCombination, map_add, map_smul, smul_eq_mul]
   ring
+
+end LinearMap
+
+namespace Finset
 
 /-- The finite family obtained by retaining nonnegative generators and adding
 boundary combinations of every pair with opposite strict signs. -/
@@ -55,7 +62,7 @@ noncomputable def halfspaceGenerators (s : Finset V) (f : V →ₗ[K] K) : Finse
   classical
   exact s.filter (fun v => 0 ≤ f v) ∪
     ((s ×ˢ s).filter (fun p => 0 < f p.1 ∧ f p.2 < 0)).image
-      (fun p => boundaryCombination f p.1 p.2)
+      (fun p => f.boundaryCombination p.1 p.2)
 
 omit [IsStrictOrderedRing K] in
 /-- A cut generator is either retained from the original family or is an explicit
@@ -63,21 +70,27 @@ boundary combination of two original generators with opposite strict signs. -/
 @[simp]
 theorem mem_halfspaceGenerators_iff {s : Finset V} {f : V →ₗ[K] K} {x : V} :
     x ∈ halfspaceGenerators s f ↔ (x ∈ s ∧ 0 ≤ f x) ∨
-      ∃ u ∈ s, ∃ v ∈ s, 0 < f u ∧ f v < 0 ∧ boundaryCombination f u v = x := by
+      ∃ u ∈ s, ∃ v ∈ s, 0 < f u ∧ f v < 0 ∧ f.boundaryCombination u v = x := by
   classical
   simp only [halfspaceGenerators, Finset.mem_union, Finset.mem_filter, Finset.mem_image,
     Finset.mem_product, Prod.exists, exists_and_left, and_assoc]
+
+end Finset
+
+namespace PointedCone
 
 /-- A nonnegative finite combination satisfying the cutting inequality lies in
 any cone containing the retained generators and opposite-sign boundary pairs. -/
 private theorem linearCombination_mem_of_nonneg {ι : Type*} [Fintype ι]
     (D : PointedCone K V) (v : ι → V) (f : V →ₗ[K] K)
     (hgood : ∀ i, 0 ≤ f (v i) → v i ∈ D)
-    (hpair : ∀ i j, 0 < f (v i) → f (v j) < 0 → boundaryCombination f (v i) (v j) ∈ D)
+    (hpair : ∀ i j, 0 < f (v i) → f (v j) < 0 → f.boundaryCombination (v i) (v j) ∈ D)
     (c : ι → K) (hc : 0 ≤ c) (hf : 0 ≤ f (Fintype.linearCombination K v c)) :
     Fintype.linearCombination K v c ∈ D := by
   classical
   let L := Fintype.linearCombination K v
+  -- Induct on the number of nonzero coefficients. Opposite-sign generators
+  -- give a boundary pair whose subtraction removes at least one coefficient.
   have aux : ∀ n : ℕ, ∀ c : ι → K,
       (Function.support c).toFinite.toFinset.card = n → 0 ≤ c → 0 ≤ f (L c) → L c ∈ D := by
     intro n
@@ -86,23 +99,19 @@ private theorem linearCombination_mem_of_nonneg {ι : Type*} [Fintype ι]
       intro c hn hc hf
       by_cases hneg : ∃ j, c j ≠ 0 ∧ f (v j) < 0
       · obtain ⟨j, hcj, hj⟩ := hneg
-        have hpos : ∃ i, c i ≠ 0 ∧ 0 < f (v i) := by
-          by_contra hnone
-          push Not at hnone
-          have hall : ∀ i, c i * f (v i) ≤ 0 := by
-            intro i
-            by_cases hi : c i = 0
-            · simp [hi]
-            · exact mul_nonpos_of_nonneg_of_nonpos (hc i) (hnone i hi)
-          have hlt : ∑ i, c i * f (v i) < 0 :=
-            Finset.sum_neg' (fun i _ => hall i)
-              ⟨j, Finset.mem_univ _, mul_neg_of_pos_of_neg
-                (lt_of_le_of_ne (hc j) hcj.symm) hj⟩
-          have he : f (L c) = ∑ i, c i * f (v i) := by
-            simp [L, Fintype.linearCombination_apply, map_sum, map_smul, smul_eq_mul]
-          rw [he] at hf
-          exact (not_lt_of_ge hf) hlt
-        obtain ⟨i, hci, hi⟩ := hpos
+        -- Mathlib's finite-sum witnesses supply a positive term, whether the sum
+        -- is strictly positive or zero; nonnegative coefficients give its sign.
+        have hsum : 0 ≤ ∑ i, c i * f (v i) := by
+          simpa [L, Fintype.linearCombination_apply, map_sum, map_smul, smul_eq_mul] using hf
+        have hex : ∃ i ∈ Finset.univ, 0 < c i * f (v i) := by
+          rcases lt_or_eq_of_le hsum with h | h
+          · exact Finset.exists_lt_of_sum_lt (by simpa using h)
+          · exact Finset.exists_pos_of_sum_zero_of_exists_nonzero _ h.symm
+              ⟨j, Finset.mem_univ _, mul_ne_zero hcj hj.ne⟩
+        obtain ⟨i, _, hci⟩ := hex
+        obtain ⟨hci, hi⟩ := (mul_pos_iff.mp hci).resolve_right
+          (fun h => not_lt_of_ge (hc i) h.1)
+        have hci := hci.ne'
         have hij : i ≠ j := by
           intro he
           exact (not_lt_of_ge hi.le) (he ▸ hj)
@@ -114,11 +123,13 @@ private theorem linearCombination_mem_of_nonneg {ι : Type*} [Fintype ι]
           simp [k, hai, haj]
         have hkpos : 0 < k i := by
           simpa [k, Pi.single_apply, hij] using neg_pos.mpr hj
+        -- Subtract the largest admissible positive multiple of the boundary pair.
         obtain ⟨r, hr, hc', hss⟩ :=
           TauCeti.exists_pos_sub_smul_nonneg_support_ssubset hc
             (Function.support k).toFinite hsupport ⟨i, hkpos⟩
-        have hLk : L k = boundaryCombination f (v i) (v j) := by
-          simp [L, k, map_add, Fintype.linearCombination_apply_single, boundaryCombination]
+        have hLk : L k = f.boundaryCombination (v i) (v j) := by
+          simp [L, k, map_add, Fintype.linearCombination_apply_single,
+            LinearMap.boundaryCombination_def]
         have hstrict : (Function.support (c - r • k)).toFinite.toFinset ⊂
             (Function.support c).toFinite.toFinset := by
           rw [Set.Finite.toFinset_ssubset, Set.Finite.coe_toFinset]
@@ -129,11 +140,13 @@ private theorem linearCombination_mem_of_nonneg {ι : Type*} [Fintype ι]
         have hfn : 0 ≤ f (L (c - r • k)) := by
           simpa [map_sub, map_smul, hLk] using hf
         have hm := ih _ hcard (c - r • k) rfl hc' hfn
-        have he : L c = L (c - r • k) + r • boundaryCombination f (v i) (v j) := by
+        have he : L c = L (c - r • k) + r • f.boundaryCombination (v i) (v j) := by
           simp [map_sub, map_smul, hLk]
         rw [he]
         exact D.add_mem hm (PointedCone.smul_mem D hr.le (hpair i j hi hj))
-      · change (∑ i, c i • v i) ∈ D
+      · -- With no negative-image generator in the support, each summand lies in D.
+        dsimp only [L]
+        rw [Fintype.linearCombination_apply]
         apply D.sum_mem
         intro i _
         by_cases hi : c i = 0
@@ -141,6 +154,12 @@ private theorem linearCombination_mem_of_nonneg {ι : Type*} [Fintype ι]
         · have hfi : 0 ≤ f (v i) := le_of_not_gt (fun h => hneg ⟨i, hi, h⟩)
           exact PointedCone.smul_mem D (hc i) (hgood i hfi)
   exact aux _ c rfl hc hf
+
+end PointedCone
+
+namespace Finset
+
+open PointedCone
 
 /-- The retained generators and boundary pairs generate exactly the intersection
 of the original cone with the nonnegative halfspace of `f`. -/
@@ -174,21 +193,20 @@ theorem hull_halfspaceGenerators (s : Finset V) (f : V →ₗ[K] K) :
       simpa only [Fintype.linearCombination_apply, Nonneg.coe_smul] using hc
     have hfx : 0 ≤ f x := by simpa using hx.2
     rw [← hc']
-    apply linearCombination_mem_of_nonneg _ v f
+    apply PointedCone.linearCombination_mem_of_nonneg _ v f
     · intro i hi
       apply subset_hull
-      change i.val ∈ halfspaceGenerators s f
-      apply Finset.mem_union_left
-      exact Finset.mem_filter.mpr ⟨i.property, hi⟩
+      exact mem_halfspaceGenerators_iff.mpr (Or.inl ⟨i.property, hi⟩)
     · intro i j hi hj
       apply subset_hull
-      change boundaryCombination f i.val j.val ∈ halfspaceGenerators s f
-      apply Finset.mem_union_right
-      apply Finset.mem_image.mpr
-      exact ⟨(i.val, j.val), Finset.mem_filter.mpr
-        ⟨Finset.mem_product.mpr ⟨i.property, j.property⟩, hi, hj⟩, rfl⟩
+      exact mem_halfspaceGenerators_iff.mpr
+        (Or.inr ⟨i.val, i.property, j.val, j.property, hi, hj, rfl⟩)
     · exact fun i => (c i).property
     · simpa only [hc'] using hfx
+
+end Finset
+
+namespace PointedCone
 
 /-- Intersecting a finitely generated pointed cone with a linear halfspace
 preserves finite generation, without any salience or ambient dimension assumption. -/
@@ -196,8 +214,8 @@ theorem _root_.Submodule.FG.inf_cone_dual_singleton {C : PointedCone K V} (hC : 
     (f : V →ₗ[K] K) :
     (C ⊓ dual (LinearMap.id : Module.Dual K V →ₗ[K] Module.Dual K V) {f}).FG := by
   obtain ⟨s, rfl⟩ := hC
-  rw [← hull_halfspaceGenerators]
-  exact Submodule.fg_span (halfspaceGenerators s f).finite_toSet
+  rw [← Finset.hull_halfspaceGenerators]
+  exact Submodule.fg_span (s.halfspaceGenerators f).finite_toSet
 
 /-- A cone given by finitely many linear inequalities in a finite-dimensional
 space is finitely generated. The pairing may be arbitrary and degenerate. -/
@@ -218,3 +236,5 @@ theorem DualFG.fg {M N : Type*} [AddCommGroup M] [Module K M]
     exact ih.inf_cone_dual_singleton (p a)
 
 end PointedCone
+
+end
