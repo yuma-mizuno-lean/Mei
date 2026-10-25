@@ -55,6 +55,21 @@ variable [DecidableEq N] [DirectSum.Decomposition ℒ] [IsPositiveGrading d ℒ]
 
 include d ℒ
 
+omit [DecidableEq N] [DirectSum.Decomposition ℒ] in
+/-- A homogeneous Lie element raises coefficient order by its integral degree. -/
+theorem lie_mem_of_mem_homogeneous
+    {n : N} {x : L} (hx : x ∈ ℒ n) {b : ℕ} {m : M} (hm : m ∈ F.submodule b) :
+    ⁅x, m⁆ ∈ F.submodule ((d.degree n).toNat + b) := by
+  by_cases hn : 0 < d.degree n
+  · have hx' : x ∈ d.degreeSubmodule ℒ ((d.degree n).toNat - 1) :=
+      d.le_degreeSubmodule ℒ (by omega) hx
+    have h := IsFiltrationRaising.lie_mem (d := d) (ℒ := ℒ) (F := F) hx' hm
+    have he : (d.degree n).toNat - 1 + b + 1 = (d.degree n).toNat + b := by omega
+    exact he ▸ h
+  · have hx0 : x = 0 := by
+      simpa only [d.eq_bot_of_degree_nonpos ℒ n (by omega), Submodule.mem_bot] using hx
+    simp [hx0]
+
 /-- Every Lie element raises the module filtration by at least one. -/
 theorem lie_mem_succ (x : L) {b : ℕ} {m : M} (hm : m ∈ F.submodule b) :
     ⁅x, m⁆ ∈ F.submodule (b + 1) := by

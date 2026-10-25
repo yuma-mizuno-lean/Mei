@@ -82,6 +82,14 @@ theorem truncatedLieToU_mem_map_augmentation (k : ℕ) (x : d.truncatedLie ℒ k
   rw [LieIdeal.mkQ_apply, truncatedLieToU_mk]
   exact Ideal.mem_map_of_mem _ (TauCeti.UniversalEnvelopingAlgebra.ι_mem_augmentation R L x)
 
+/-- The finite canonical Lie image has nilpotency bound `k + 1` in the enveloping quotient. -/
+theorem truncatedLieToU_pow_eq_zero (k : ℕ) (x : d.truncatedLie ℒ k) :
+    truncatedLieToU d ℒ k x ^ (k + 1) = 0 := by
+  exact Ideal.pow_eq_zero_of_mem
+    (augmentation_map_quotient_pow_eq_bot ℒ d.degree
+      (fun n hn => d.eq_bot_of_degree_nonpos ℒ n hn) k) le_rfl
+    (truncatedLieToU_mem_map_augmentation d ℒ k x)
+
 /-- The finite canonical maps commute with lowering the degree cutoff. -/
 theorem factor_truncatedLieToU {k l : ℕ} (h : k ≤ l) (x : d.truncatedLie ℒ l) :
     Ideal.Quotient.factor ((F).antitone (Nat.add_le_add_right h 1))
