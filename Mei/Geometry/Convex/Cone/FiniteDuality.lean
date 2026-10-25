@@ -54,22 +54,17 @@ theorem _root_.Submodule.FG.exists_cone_dual_nonneg_and_lt_zero (hC : C.FG) (hx 
     rw [← heq]
     exact hbase
   have hfC : ∀ y ∈ C, 0 ≤ f y := by
-    intro y hy
-    rw [← hs] at hy
-    induction hy using Submodule.span_induction with
-    | mem y hy => exact hf (some ⟨y, hy⟩)
-    | zero => simp
-    | add y z _ _ iy iz => simpa only [map_add] using add_nonneg iy iz
-    | smul r y _ iy =>
-      rw [← Nonneg.coe_smul]
-      rw [map_smul, smul_eq_mul]
-      exact mul_nonneg r.property iy
+    have hfmem : f ∈ dual (LinearMap.id : Module.Dual K V →ₗ[K] Module.Dual K V).flip
+        (s : Set V) := fun y hy => hf (some ⟨y, hy⟩)
+    rw [← dual_hull, hull, hs] at hfmem
+    exact fun _ hy => hfmem hy
   refine ⟨f, hfC, ?_⟩
   have h : 0 < -f x := by simpa only [hc0, zero_add, a, Option.elim_none, map_neg] using hpos
   exact neg_pos.mp h
 
 /-- A finitely generated cone equals its algebraic bipolar under evaluation.
 This statement does not require finite dimensionality or topological closedness. -/
+@[simp]
 theorem _root_.Submodule.FG.cone_dual_dual_flip_id (hC : C.FG) :
     dual (LinearMap.id : Module.Dual K V →ₗ[K] Module.Dual K V)
       (dual (LinearMap.id : Module.Dual K V →ₗ[K] Module.Dual K V).flip C) = C := by
