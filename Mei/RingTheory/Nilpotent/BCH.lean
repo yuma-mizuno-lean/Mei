@@ -6,6 +6,7 @@ Authors: Codex
 module
 
 public import TauCeti.RingTheory.Nilpotent.Log
+public import Mei.RingTheory.Ideal.Operations
 public import Mei.RingTheory.Nilpotent.Exp
 import Mathlib.Tactic.NoncommRing
 import Mathlib.Tactic.Module
@@ -17,25 +18,17 @@ For elements of a left ideal whose fourth power vanishes, the finite logarithm o
 product of their finite exponentials is exactly the usual BCH polynomial through degree three.
 All longer words vanish by the ideal-power assumption; no convergence assumption is involved.
 
-The proof uses `IsNilpotent.exp_eq_sum`, `IsNilpotent.log_eq_sum`, and the inverse
-identity `IsNilpotent.exp_log`. The degree-three polynomial is verified by direct expansion.
+The exponential identity expresses multiplication of exponentials in terms of the BCH
+polynomial. The ideal-membership lemmas ensure that this product differs from one by an
+element of the nilpotent ideal, so its finite logarithm applies and recovers that polynomial.
+The finite exponential and logarithm are supplied by `IsNilpotent.exp_eq_sum` and
+`IsNilpotent.log_eq_sum`, with inverse identity `IsNilpotent.exp_log`.
 -/
 
 public section
 
 namespace Ideal
 variable {A : Type*} [Ring A]
-
-private theorem mul_four_eq_zero_of_pow_eq_bot (I : Ideal A) (hI : I ^ 4 = ⊥)
-    {a b c d : A} (ha : a ∈ I) (hb : b ∈ I) (hc : c ∈ I) (hd : d ∈ I) :
-    a * b * c * d = 0 := by
-  have h := Ideal.mul_mem_mul (Ideal.mul_mem_mul (Ideal.mul_mem_mul ha hb) hc) hd
-  -- Expand the fixed numeral power with the left-associated ideal-power convention.
-  have he : ((I * I) * I) * I = I ^ 4 := by
-    simp only [show (4 : ℕ) = 3 + 1 from rfl, Submodule.pow_succ,
-      show (3 : ℕ) = 2 + 1 from rfl, show (2 : ℕ) = 1 + 1 from rfl,
-      Submodule.pow_zero, Ideal.one_eq_top, Ideal.top_mul]
-  rwa [he, hI, Ideal.mem_bot] at h
 
 variable [Algebra ℚ A]
 
