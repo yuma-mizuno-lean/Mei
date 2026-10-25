@@ -26,10 +26,12 @@ are not part of this statement.
 
 public section
 
-namespace TauCeti.Toric
+namespace Finset
+
+open TauCeti.Toric
 
 variable {N V : Type*} [AddCommGroup N] [AddCommGroup V] [Module ℝ V]
-  {i : N →+ V} {C : PointedCone ℝ V}
+  {i : N →+ V}
 
 /-- A finite generating set contained in the lattice image gives an actual
 finite lattice generating presentation. -/
@@ -37,18 +39,21 @@ theorem isLatticeRational_hull_of_forall_mem_range (s : Finset V)
     (hs : ∀ x ∈ s, ∃ n : N, i n = x) :
     IsLatticeRational i (PointedCone.hull ℝ (s : Set V)) := by
   classical
-  choose n hn using (fun x : s => hs x.val x.property)
-  let t : Finset N := Finset.univ.image n
-  have he : i '' (t : Set N) = (s : Set V) := by
-    ext x
-    constructor
-    · rintro ⟨m, hm, rfl⟩
-      obtain ⟨j, _, rfl⟩ := Finset.mem_image.mp hm
-      rw [hn j]
-      exact j.property
-    · intro hx
-      exact ⟨n ⟨x, hx⟩, Finset.mem_image.mpr ⟨⟨x, hx⟩, Finset.mem_univ _, rfl⟩, hn _⟩
-  exact isLatticeRational_iff.mpr ⟨t, by rw [he]⟩
+  have hs' : (s : Set V) ⊆ i '' (Set.univ : Set N) := by
+    intro x hx
+    obtain ⟨n, hn⟩ := hs x hx
+    exact ⟨n, Set.mem_univ _, hn⟩
+  obtain ⟨t, -, ht⟩ := Finset.subset_set_image_iff.mp hs'
+  exact isLatticeRational_iff.mpr ⟨t, by rw [← Finset.coe_image, ht]⟩
+
+end Finset
+
+namespace TauCeti.Toric
+
+open scoped Pointwise
+
+variable {N V : Type*} [AddCommGroup N] [AddCommGroup V] [Module ℝ V]
+  {i : N →+ V} {C : PointedCone ℝ V}
 
 /-- Cutting a lattice-rational cone by an integral-character halfspace keeps
 an actual finite family of lattice generators, with lineality allowed. -/
@@ -59,7 +64,7 @@ theorem IsLatticeRational.inf_realCharacter_halfspace (hC : IsLatticeRational i 
   classical
   obtain ⟨s, rfl⟩ := isLatticeRational_iff.mp hC
   rw [← Finset.coe_image, ← Finset.hull_halfspaceGenerators]
-  apply isLatticeRational_hull_of_forall_mem_range
+  apply Finset.isLatticeRational_hull_of_forall_mem_range
   intro x hx
   rcases Finset.mem_halfspaceGenerators_iff.mp hx with ⟨hx, _⟩ | ⟨u, hu, v, hv, _, _, rfl⟩
   · obtain ⟨n, _, rfl⟩ := Finset.mem_image.mp hx
@@ -80,29 +85,20 @@ theorem IsIntegralLattice.isLatticeRational_top (h : IsIntegralLattice i) :
   let b := Module.Free.chooseBasis ℤ N
   let B := h.isBaseChange.basis b
   let t : Finset N := Finset.univ.image b ∪ Finset.univ.image (fun j => -b j)
-  let D := PointedCone.hull ℝ (i '' (t : Set N))
   have hB (j) : B j = i (b j) := by
     simpa only [B, AddMonoidHom.coe_toIntLinearMap] using h.isBaseChange.basis_apply b j
-  have hpos (j) : B j ∈ D := by
-    rw [hB]
-    apply PointedCone.subset_hull
-    exact ⟨b j, Finset.mem_union_left _ (Finset.mem_image.mpr ⟨j, Finset.mem_univ _, rfl⟩), rfl⟩
-  have hneg (j) : -B j ∈ D := by
-    rw [hB]
-    apply PointedCone.subset_hull
-    exact ⟨-b j, Finset.mem_union_right _
-      (Finset.mem_image.mpr ⟨j, Finset.mem_univ _, rfl⟩), by simp⟩
+  have ht : i '' (t : Set N) = -Set.range B ∪ Set.range B := by
+    simp only [t, Finset.coe_union, Finset.coe_image, Finset.coe_univ, Set.image_union,
+      Set.image_image, map_neg, ← hB]
+    simp only [Set.image_univ, Set.neg_range, Set.union_comm]
   apply isLatticeRational_iff.mpr
-  refine ⟨t, le_antisymm ?_ le_top⟩
-  intro x _
-  change x ∈ D
-  rw [← B.sum_repr x]
-  apply D.sum_mem
-  intro j _
-  rcases le_total 0 (B.repr x j) with hj | hj
-  · exact PointedCone.smul_mem D hj (hpos j)
-  · have hm := PointedCone.smul_mem D (neg_nonneg.mpr hj) (hneg j)
-    simpa only [neg_smul, smul_neg, neg_neg] using hm
+  refine ⟨t, ?_⟩
+  rw [ht]
+  calc
+    ⊤ = (Submodule.span ℝ (Set.range B) : PointedCone ℝ V) := by rw [B.span_eq]; rfl
+    _ = PointedCone.hull ℝ (-Set.range B) ⊔ PointedCone.hull ℝ (Set.range B) :=
+      PointedCone.span_eq_hull_neg_sup_hull ℝ _
+    _ = PointedCone.hull ℝ (-Set.range B ∪ Set.range B) := (Submodule.span_union _ _).symm
 
 /-- A finite family of integral-character inequalities defines a cone with
 finitely many actual lattice generators. -/
