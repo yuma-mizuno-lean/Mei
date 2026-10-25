@@ -111,4 +111,22 @@ theorem augmentation_pow_le_degreeFiltration (hpos : ∀ n, d n ≤ 0 → ℒ n 
     simpa only [Nat.add_comm 1 k] using (degreeFiltration ℒ d hneg).mul_mem
       (augmentation_le_degreeFiltration_one ℒ d hpos hx) (ih hy)
 
+/-- The counit kills every positive-degree term of the enveloping filtration. -/
+theorem degreeFiltration_one_le_ker_counit
+    (hneg : ∀ n, d n < 0 → ℒ n = ⊥) :
+    (degreeFiltration ℒ d hneg).ideal 1 ≤
+      RingHom.ker (Bialgebra.counitAlgHom R (_root_.UniversalEnvelopingAlgebra R L)) := by
+  rw [degreeFiltration_ideal, Mei.GradedAlgebra.degreeIdeal_le_iff]
+  intro n hn
+  apply (homogeneousSubmodule_le_iff ℒ n
+    ((RingHom.ker (Bialgebra.counitAlgHom R
+      (_root_.UniversalEnvelopingAlgebra R L))).restrictScalars R)).mpr
+  intro l hl
+  cases l with
+  | nil => simp only [List.map_nil, List.sum_nil] at hl; simp [← hl] at hn
+  | cons a l =>
+    simp only [Submodule.restrictScalars_mem, RingHom.mem_ker, List.map_cons,
+      List.prod_cons, map_mul, Bialgebra.counitAlgHom_apply,
+      TauCeti.UniversalEnvelopingAlgebra.counit_ι, zero_mul]
+
 end Mei.UniversalEnvelopingAlgebra
