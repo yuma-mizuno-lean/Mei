@@ -7,6 +7,7 @@ module
 
 public import Mei.Geometry.Convex.Polyhedron.Rational
 public import Mathlib.Analysis.Convex.Exposed
+public import Mathlib.Geometry.Convex.Cone.Pointed
 
 /-! # Finite rational-normal polyhedral complexes
 
@@ -81,6 +82,14 @@ theorem face_of_subset (C : FinitePolyhedralComplex h) {P Q : Set V}
   have hne : (Q ∩ P).Nonempty := by rw [heq]; exact C.nonempty P hP
   refine ⟨C.nonempty P hP, ?_⟩
   simpa only [heq] using C.inter_face Q hQ P hP hne
+
+/-- Every cell is the carrier of a pointed cone with apex zero. -/
+def IsConical (C : FinitePolyhedralComplex h) : Prop :=
+  ∀ P ∈ C.cells, ∃ σ : PointedCone ℝ V, (σ : Set V) = P
+
+/-- Conicality means that each actual cell carrier is a cone. -/
+theorem isConical_iff (C : FinitePolyhedralComplex h) :
+    C.IsConical ↔ ∀ P ∈ C.cells, ∃ σ : PointedCone ℝ V, (σ : Set V) = P := Iff.rfl
 
 /-- Weak refinement means every new cell is contained in an old cell. -/
 def IsWeakRefinement (C D : FinitePolyhedralComplex h) : Prop :=

@@ -74,28 +74,11 @@ theorem support_toPolyhedralComplex (Φ : Fan i) :
     mem_support]
   aesop
 
-end TauCeti.Toric.Fan
-
-namespace Mei.FinitePolyhedralComplex
-
-variable {h : IsIntegralLattice i}
-
-/-- Every cell is the carrier of a pointed cone with apex zero. -/
-def IsConical (C : FinitePolyhedralComplex h) : Prop :=
-  ∀ P ∈ C.cells, ∃ σ : PointedCone ℝ V, (σ : Set V) = P
-
-/-- Conicality means that each actual cell carrier is a cone. -/
-theorem isConical_iff (C : FinitePolyhedralComplex h) :
-    C.IsConical ↔ ∀ P ∈ C.cells, ∃ σ : PointedCone ℝ V, (σ : Set V) = P := Iff.rfl
-
-end Mei.FinitePolyhedralComplex
-
-namespace TauCeti.Toric.Fan
-
 open Mei.FinitePolyhedralComplex
 
 /-- The complex associated to a fan is conical. -/
 theorem isConical_toPolyhedralComplex (Φ : Fan i) : Φ.toPolyhedralComplex.IsConical := by
+  apply (isConical_iff _).mpr
   intro P hP
   obtain ⟨σ, _, hσ⟩ := (Φ.mem_toPolyhedralComplex_cells P).mp hP
   exact ⟨σ, hσ⟩
@@ -149,7 +132,7 @@ theorem support_toFan (C : FinitePolyhedralComplex h) (hc : C.IsConical) (hsal) 
   · rintro ⟨σ, hσ, hx⟩
     exact ⟨σ, hσ, hx⟩
   · rintro ⟨P, hP, hx⟩
-    obtain ⟨σ, rfl⟩ := hc P hP
+    obtain ⟨σ, rfl⟩ := (isConical_iff C).mp hc P hP
     exact ⟨σ, hP, hx⟩
 
 /-- Converting a conical complex to a fan and back recovers the complex. -/
@@ -163,7 +146,7 @@ theorem toPolyhedralComplex_toFan (C : FinitePolyhedralComplex h) (hc : C.IsConi
   · rintro ⟨σ, hσ, rfl⟩
     exact hσ
   · intro hP
-    obtain ⟨σ, hσ⟩ := hc P hP
+    obtain ⟨σ, hσ⟩ := (isConical_iff C).mp hc P hP
     exact ⟨σ, hσ ▸ hP, hσ⟩
 
 end Mei.FinitePolyhedralComplex
