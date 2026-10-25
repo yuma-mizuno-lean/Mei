@@ -6,12 +6,13 @@ Authors: Codex
 module
 
 public import Mei.Geometry.Convex.Polyhedron.Rational
-public import Mathlib.Analysis.Convex.Exposed
+public import Mei.Analysis.Convex.Exposed
 
 /-! # Finite rational-normal polyhedral complexes
 
 Cells are actual nonempty closed rational-normal polyhedra. Every nonempty
 exposed face is retained, and nonempty pairwise intersections are common faces.
+Relative interiors of distinct cells are disjoint.
 No boundedness, full-dimensionality, or salience condition is imposed.
 -/
 
@@ -73,6 +74,23 @@ theorem inter_mem_cells (C : FinitePolyhedralComplex h) {P Q : Set V}
     (hP : P ∈ C.cells) (hQ : Q ∈ C.cells) (hne : (P ∩ Q).Nonempty) :
     P ∩ Q ∈ C.cells :=
   C.face_closed P hP (P ∩ Q) (isPolyhedralFace_iff.mpr ⟨hne, C.inter_face P hP Q hQ hne⟩)
+
+/-- Cells with a common relative-interior point are equal, without a dimension assumption. -/
+theorem eq_of_mem_intrinsicInterior (C : FinitePolyhedralComplex h) {P Q : Set V}
+    (hP : P ∈ C.cells) (hQ : Q ∈ C.cells) {x : V}
+    (hxP : x ∈ intrinsicInterior ℝ P) (hxQ : x ∈ intrinsicInterior ℝ Q) : P = Q := by
+  have hx : x ∈ P ∩ Q := ⟨intrinsicInterior_subset hxP, intrinsicInterior_subset hxQ⟩
+  have hleft := (C.inter_face P hP Q hQ ⟨x, hx⟩).eq_of_mem_intrinsicInterior hx hxP
+  have hright := (C.inter_face Q hQ P hP ⟨x, hx.2, hx.1⟩).eq_of_mem_intrinsicInterior
+    ⟨hx.2, hx.1⟩ hxQ
+  exact hleft.symm.trans ((Set.inter_comm P Q).trans hright)
+
+/-- The relative interiors of distinct cells are disjoint. -/
+theorem disjoint_intrinsicInterior (C : FinitePolyhedralComplex h) {P Q : Set V}
+    (hP : P ∈ C.cells) (hQ : Q ∈ C.cells) (hne : P ≠ Q) :
+    Disjoint (intrinsicInterior ℝ P) (intrinsicInterior ℝ Q) := by
+  rw [Set.disjoint_left]
+  exact fun x hxP hxQ => hne (C.eq_of_mem_intrinsicInterior hP hQ hxP hxQ)
 
 /-- A cell contained in another cell is a nonempty face of that cell. -/
 theorem face_of_subset (C : FinitePolyhedralComplex h) {P Q : Set V}

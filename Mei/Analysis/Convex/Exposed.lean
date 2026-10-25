@@ -8,7 +8,6 @@ module
 public import Mathlib.Analysis.Convex.Exposed
 public import Mathlib.Topology.Algebra.Affine
 public import Mei.Analysis.Convex.Intrinsic
-public import Mathlib.LinearAlgebra.AffineSpace.FiniteDimensional
 
 /-!
 # Exposed subsets, relative interiors and affine transport
@@ -20,8 +19,7 @@ linear part preserves all comparisons: the inverse translation contributes
 the same additive constant at every point.
 
 An exposed subset meeting the relative interior is the whole ambient set.
-Nonempty proper exposed subsets have strictly smaller affine dimension.
-The relative-interior statement uses `AffineMap.eq_zero_on_of_mem_intrinsicInterior`.
+See also `AffineMap.eq_zero_on_of_mem_intrinsicInterior`.
 -/
 
 public section
@@ -133,49 +131,5 @@ theorem eq_of_mem_intrinsicInterior (hF : IsExposed ℝ P F) {x : V}
   intro p hp
   rw [hl]
   exact ⟨hp, fun q hq => (hxmax.2 q hq).trans (le_of_eq (sub_eq_zero.mp (hg p hp)).symm)⟩
-
-end IsExposed
-
-namespace IsExposed
-
-variable {K V : Type*} [Ring K] [PartialOrder K] [TopologicalSpace K]
-  [AddCommGroup V] [Module K V] [TopologicalSpace V] {P F : Set V}
-
-/-- An exposed subset with the same affine span as its ambient set is the whole set. -/
-theorem eq_of_affineSpan_eq (hF : IsExposed K P F) (hne : F.Nonempty)
-    (hspan : affineSpan K F = affineSpan K P) : F = P := by
-  obtain ⟨x, hx⟩ := hne
-  obtain ⟨l, hl⟩ := hF ⟨x, hx⟩
-  have hxmax := hl ▸ hx
-  have heq : Set.EqOn l.toLinearMap.toAffineMap (AffineMap.const K V (l x)) F := by
-    intro y hy
-    have hymax := hl ▸ hy
-    exact le_antisymm (hxmax.2 y hymax.1) (hymax.2 x hxmax.1)
-  have hconst : ∀ y ∈ P, l y = l x := by
-    intro y hy
-    apply AffineMap.eqOn_affineSpan heq
-    rw [hspan]
-    exact subset_affineSpan K P hy
-  apply Set.Subset.antisymm hF.subset
-  intro y hy
-  rw [hl]
-  exact ⟨hy, fun z hz => le_of_eq ((hconst z hz).trans (hconst y hy).symm)⟩
-
-end IsExposed
-
-namespace IsExposed
-
-variable {K V : Type*} [DivisionRing K] [PartialOrder K] [TopologicalSpace K]
-  [AddCommGroup V] [Module K V] [TopologicalSpace V] {P F : Set V}
-
-/-- A nonempty proper exposed face has strictly smaller direction dimension. -/
-theorem finrank_direction_lt [FiniteDimensional K V] (hF : IsExposed K P F)
-    (hne : F.Nonempty) (hproper : F ≠ P) :
-    Module.finrank K (affineSpan K F).direction <
-      Module.finrank K (affineSpan K P).direction := by
-  apply Submodule.finrank_lt_finrank_of_lt
-  apply AffineSubspace.direction_lt_of_nonempty _ (hne.affineSpan K)
-  exact lt_of_le_of_ne (affineSpan_mono K hF.subset)
-    (fun heq => hproper (hF.eq_of_affineSpan_eq hne heq))
 
 end IsExposed

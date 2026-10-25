@@ -8,7 +8,6 @@ module
 public import Mei.Geometry.Convex.PolyhedralComplex.Basic
 public import Mei.Geometry.Convex.Polyhedron.SingularSupport
 public import Mei.Geometry.Convex.Polyhedron.Face
-public import Mei.Analysis.Convex.Exposed
 
 /-!
 # Walls, joints and regular points of finite polyhedral complexes
@@ -19,11 +18,14 @@ a subcomplex. The singular support of the wall family is contained in the
 codimension-at-least-two subcomplex. Outside singular support a point belongs
 to at most one wall, so a transverse crossing has an unambiguous wall index.
 
-Relative interiors of distinct cells are disjoint. The proof uses Mathlib's
-`IsExposed` common-face condition and the relative-interior criterion for affine
-functions. The singular-support bound uses the active-inequality boundary
-description and affine intersection dimension bounds already available in Mei.
 All cells may be unbounded and may have lineality.
+
+## References
+
+* Mathlib's `IsExposed` common-face condition and relative interiors.
+* Mei's `Mei.Convex.intrinsicFrontier_eq_iUnion_active` and
+  `AffineMap.finrank_direction_inter_zero_lt`.
+* Mei's `AffineSubspace.finrank_direction_inf_add_one_lt`.
 -/
 
 public section
@@ -32,23 +34,6 @@ namespace Mei.FinitePolyhedralComplex
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
-
-/-- Cells with a common relative-interior point are equal, without a dimension assumption. -/
-theorem eq_of_mem_intrinsicInterior (C : FinitePolyhedralComplex h) {P Q : Set V}
-    (hP : P ∈ C.cells) (hQ : Q ∈ C.cells) {x : V}
-    (hxP : x ∈ intrinsicInterior ℝ P) (hxQ : x ∈ intrinsicInterior ℝ Q) : P = Q := by
-  have hx : x ∈ P ∩ Q := ⟨intrinsicInterior_subset hxP, intrinsicInterior_subset hxQ⟩
-  have hleft := (C.inter_face P hP Q hQ ⟨x, hx⟩).eq_of_mem_intrinsicInterior hx hxP
-  have hright := (C.inter_face Q hQ P hP ⟨x, hx.2, hx.1⟩).eq_of_mem_intrinsicInterior
-    ⟨hx.2, hx.1⟩ hxQ
-  exact hleft.symm.trans ((Set.inter_comm P Q).trans hright)
-
-/-- The relative interiors of distinct cells are disjoint. -/
-theorem disjoint_intrinsicInterior (C : FinitePolyhedralComplex h) {P Q : Set V}
-    (hP : P ∈ C.cells) (hQ : Q ∈ C.cells) (hne : P ≠ Q) :
-    Disjoint (intrinsicInterior ℝ P) (intrinsicInterior ℝ Q) := by
-  rw [Set.disjoint_left]
-  exact fun x hxP hxQ => hne (C.eq_of_mem_intrinsicInterior hP hQ hxP hxQ)
 
 /-- The finite collection of cells of ambient codimension exactly `k`. -/
 noncomputable def cellsOfCodimension (C : FinitePolyhedralComplex h) (k : ℕ) :
@@ -68,6 +53,17 @@ theorem mem_cellsOfCodimension (C : FinitePolyhedralComplex h) (k : ℕ) (P : Se
 /-- Walls are the codimension-one cells. -/
 noncomputable abbrev walls (C : FinitePolyhedralComplex h) : Finset (Set V) :=
   C.cellsOfCodimension 1
+
+/-- Every wall is a cell of the complex. -/
+theorem mem_cells_of_mem_walls (C : FinitePolyhedralComplex h) {P : Set V}
+    (hP : P ∈ C.walls) : P ∈ C.cells :=
+  ((C.mem_cellsOfCodimension 1 P).mp hP).1
+
+/-- The direction dimension of a wall is one less than the ambient dimension. -/
+theorem finrank_direction_add_one_of_mem_walls (C : FinitePolyhedralComplex h)
+    {P : Set V} (hP : P ∈ C.walls) :
+    Module.finrank ℝ (affineSpan ℝ P).direction + 1 = Module.finrank ℝ V :=
+  ((C.mem_cellsOfCodimension 1 P).mp hP).2
 
 /-- Joints are the codimension-two cells. -/
 noncomputable abbrev joints (C : FinitePolyhedralComplex h) : Finset (Set V) :=
@@ -107,6 +103,23 @@ theorem mem_codimensionAtLeast_cells (C : FinitePolyhedralComplex h) (k : ℕ) (
   classical
   simp [codimensionAtLeast]
 
+/-- The codimension bound zero retains the entire complex. -/
+@[simp]
+theorem codimensionAtLeast_zero (C : FinitePolyhedralComplex h) :
+    C.codimensionAtLeast 0 = C := by
+  have := h.finiteDimensional
+  apply ext
+  ext P
+  simp [Submodule.finrank_le]
+
+/-- Every exact-codimension cell belongs to the corresponding codimension subcomplex. -/
+theorem cellsOfCodimension_subset_codimensionAtLeast_cells
+    (C : FinitePolyhedralComplex h) (k : ℕ) :
+    C.cellsOfCodimension k ⊆ (C.codimensionAtLeast k).cells := by
+  intro P hP
+  obtain ⟨hPC, hdim⟩ := (C.mem_cellsOfCodimension k P).mp hP
+  exact (C.mem_codimensionAtLeast_cells k P).mpr ⟨hPC, hdim.le⟩
+
 /-- Increasing the codimension bound gives a subcomplex of the previous one. -/
 theorem codimensionAtLeast_cells_antitone (C : FinitePolyhedralComplex h) :
     Antitone (fun k => (C.codimensionAtLeast k).cells) := by
@@ -124,7 +137,7 @@ theorem codimensionAtLeast_isWeakRefinement (C : FinitePolyhedralComplex h) (k :
 
 /-- The relative boundary of a cell of codimension at least `k` lies in the
 subcomplex of codimension at least `k + 1`. -/
-theorem intrinsicFrontier_subset_codimensionAtLeast (C : FinitePolyhedralComplex h)
+theorem intrinsicFrontier_subset_support_codimensionAtLeast (C : FinitePolyhedralComplex h)
     {P : Set V} (hP : P ∈ C.cells) (k : ℕ)
     (hdim : Module.finrank ℝ (affineSpan ℝ P).direction + k ≤ Module.finrank ℝ V) :
     intrinsicFrontier ℝ P ⊆ (C.codimensionAtLeast (k + 1)).support := by
@@ -139,28 +152,27 @@ theorem intrinsicFrontier_subset_codimensionAtLeast (C : FinitePolyhedralComplex
     dsimp only [F]
     rw [hpres]
     simpa using Mei.Convex.isExposed_setOf_active g {j}
-  have hproper : F ≠ P := by
-    intro heq
-    have hpF : p ∈ F := heq.symm ▸ hp
-    exact hgp.ne hpF.2
-  have hlt := hex.finrank_direction_lt ⟨x, hxF⟩ hproper
+  have hlt : Module.finrank ℝ (affineSpan ℝ F).direction <
+      Module.finrank ℝ (affineSpan ℝ P).direction :=
+    (g j).toAffineMap.finrank_direction_inter_zero_lt ⟨x, hxP, hgx⟩ ⟨p, hp, hgp.ne⟩
   apply mem_support.mpr
   refine ⟨F, (C.mem_codimensionAtLeast_cells (k + 1) F).mpr
     ⟨C.face_closed P hP F (isPolyhedralFace_iff.mpr ⟨⟨x, hxF⟩, hex⟩), ?_⟩, hxF⟩
   omega
 
-/-- The singular support of the wall family lies in the actual cell subcomplex
-of codimension at least two, rather than just an auxiliary affine cover. -/
-theorem singularSupport_walls_subset (C : FinitePolyhedralComplex h) :
+/-- The singular support of the wall family lies in the support of the subcomplex
+of cells of codimension at least two. -/
+theorem singularSupport_walls_subset_support_codimensionAtLeast (C : FinitePolyhedralComplex h) :
     Mei.Convex.singularSupport (fun W : C.walls => (W : Set V)) ⊆
       (C.codimensionAtLeast 2).support := by
   have := h.finiteDimensional
   intro x hx
   rcases Mei.Convex.mem_singularSupport.mp hx with ⟨P, hxP⟩ | ⟨P, Q, hne, hxP, hxQ⟩
-  · obtain ⟨hP, hdim⟩ := (C.mem_cellsOfCodimension 1 P).mp P.property
-    exact C.intrinsicFrontier_subset_codimensionAtLeast hP 1 hdim.le hxP
-  · obtain ⟨hP, hdimP⟩ := (C.mem_cellsOfCodimension 1 P).mp P.property
-    obtain ⟨hQ, hdimQ⟩ := (C.mem_cellsOfCodimension 1 Q).mp Q.property
+  · exact C.intrinsicFrontier_subset_support_codimensionAtLeast
+      (C.mem_cells_of_mem_walls P.property) 1
+      (C.finrank_direction_add_one_of_mem_walls P.property).le hxP
+  · have hdimP := C.finrank_direction_add_one_of_mem_walls P.property
+    have hdimQ := C.finrank_direction_add_one_of_mem_walls Q.property
     have hlt := (affineSpan ℝ (P : Set V)).finrank_direction_inf_add_one_lt
       (affineSpan ℝ (Q : Set V)) hdimP hdimQ hne
     have hle := Submodule.finrank_mono (AffineSubspace.direction_le
@@ -169,25 +181,19 @@ theorem singularSupport_walls_subset (C : FinitePolyhedralComplex h) :
           affineSpan ℝ ((P : Set V) ∩ Q) ≤ affineSpan ℝ (P : Set V) ⊓ affineSpan ℝ (Q : Set V)))
     apply mem_support.mpr
     refine ⟨(P : Set V) ∩ Q, (C.mem_codimensionAtLeast_cells 2 _).mpr
-      ⟨C.inter_mem_cells hP hQ ⟨x, hxP, hxQ⟩, ?_⟩, hxP, hxQ⟩
+      ⟨C.inter_mem_cells (C.mem_cells_of_mem_walls P.property)
+        (C.mem_cells_of_mem_walls Q.property) ⟨x, hxP, hxQ⟩, ?_⟩, hxP, hxQ⟩
     omega
 
 /-- Away from the singular support there is at most one incident wall, including
 when different walls have the same supporting hyperplane. -/
-theorem eq_of_mem_wall_of_not_mem_singularSupport (C : FinitePolyhedralComplex h)
+theorem eq_of_mem_wall_of_notMem_singularSupport (C : FinitePolyhedralComplex h)
     {P Q : C.walls} {x : V} (hxP : x ∈ (P : Set V)) (hxQ : x ∈ (Q : Set V))
     (hx : x ∉ Mei.Convex.singularSupport (fun W : C.walls => (W : Set V))) : P = Q := by
-  have := h.finiteDimensional
-  have hinterior (W : C.walls) (hxW : x ∈ (W : Set V)) :
-      x ∈ intrinsicInterior ℝ (W : Set V) := by
-    have hclosed := (C.isConvexPolyhedron
-      ((C.mem_cellsOfCodimension 1 W).mp W.property).1).isClosed
-    rw [← closure_sdiff_intrinsicFrontier, hclosed.closure_eq]
-    exact ⟨hxW, fun hf => hx (Mei.Convex.mem_singularSupport.mpr (Or.inl ⟨W, hf⟩))⟩
   apply Subtype.ext
   exact C.eq_of_mem_intrinsicInterior
-    ((C.mem_cellsOfCodimension 1 P).mp P.property).1
-    ((C.mem_cellsOfCodimension 1 Q).mp Q.property).1
-    (hinterior P hxP) (hinterior Q hxQ)
+    (C.mem_cells_of_mem_walls P.property) (C.mem_cells_of_mem_walls Q.property)
+    (Mei.Convex.mem_intrinsicInterior_of_notMem_singularSupport hxP hx)
+    (Mei.Convex.mem_intrinsicInterior_of_notMem_singularSupport hxQ hx)
 
 end Mei.FinitePolyhedralComplex
