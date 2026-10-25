@@ -8,7 +8,6 @@ module
 public import TauCeti.Analysis.Convex.Polyhedron.Basic
 public import Mathlib.Analysis.Convex.Topology
 public import Mathlib.Analysis.Convex.Extreme
-public import Mathlib.Analysis.Normed.Module.Basic
 public import Mathlib.Basic.Sign.Defs
 import Mathlib.Tactic.Linarith
 
@@ -25,7 +24,7 @@ public section
 
 namespace Mei.Convex
 
-variable {V ι : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
+variable {V ι : Type*} [AddCommGroup V] [Module ℝ V] [TopologicalSpace V]
 
 /-- The locus realizing an assigned sign for each affine row. -/
 def signCell (g : ι → (V →ᴬ[ℝ] ℝ)) (σ : ι → SignType) : Set V :=
@@ -105,7 +104,8 @@ theorem openSegment_subset_signCell {g : ι → (V →ᴬ[ℝ] ℝ)} {σ : ι �
     exact add_pos_of_nonneg_of_pos (mul_nonneg ha.le hxj) (mul_pos hb hpp)
 
 /-- For a nonempty sign cell, closure is exactly the weakened system. -/
-theorem closure_signCell {g : ι → (V →ᴬ[ℝ] ℝ)} {σ : ι → SignType}
+theorem closure_signCell [ContinuousAdd V] [ContinuousSMul ℝ V]
+    {g : ι → (V →ᴬ[ℝ] ℝ)} {σ : ι → SignType}
     (hne : (signCell g σ).Nonempty) : closure (signCell g σ) = weakSignCell g σ := by
   apply Set.Subset.antisymm
   · exact closure_minimal (signCell_subset_weakSignCell g σ) (isClosed_weakSignCell g σ)
@@ -266,7 +266,8 @@ theorem isConvexPolyhedron_weakSignCell [Finite ι] (g : ι → (V →ᴬ[ℝ] �
   exact TauCeti.isConvexPolyhedron_setOf_forall rows
 
 /-- The closures of all cells of a finite arrangement are convex polyhedra. -/
-theorem isConvexPolyhedron_closure_signCell [Finite ι] {g : ι → (V →ᴬ[ℝ] ℝ)}
+theorem isConvexPolyhedron_closure_signCell [ContinuousAdd V] [ContinuousSMul ℝ V]
+    [Finite ι] {g : ι → (V →ᴬ[ℝ] ℝ)}
     {σ : ι → SignType} :
     TauCeti.IsConvexPolyhedron (closure (signCell g σ)) := by
   by_cases hne : (signCell g σ).Nonempty
@@ -336,6 +337,22 @@ theorem commonSignPattern_specializes_right (σ τ : ι → SignType) :
   intro j
   by_cases h : σ j = τ j <;> simp [h]
 
+/-- Specializing the common pattern is equivalent to specializing both assignments. -/
+@[simp] theorem signSpecializes_commonSignPattern_iff {ρ σ τ : ι → SignType} :
+    SignSpecializes ρ (commonSignPattern σ τ) ↔
+      SignSpecializes ρ σ ∧ SignSpecializes ρ τ := by
+  constructor
+  · intro h
+    exact ⟨h.trans (commonSignPattern_specializes_left σ τ),
+      h.trans (commonSignPattern_specializes_right σ τ)⟩
+  · rintro ⟨hσ, hτ⟩ j
+    rcases hσ j with hz | hs
+    · exact Or.inl hz
+    · rcases hτ j with hz | ht
+      · exact Or.inl hz
+      · rw [commonSignPattern_apply, ite_eq_left (hs.symm.trans ht)]
+        exact Or.inr hs
+
 /-- Intersecting two weak sign cells forces every disagreement row to zero. -/
 theorem weakSignCell_inter (g : ι → (V →ᴬ[ℝ] ℝ)) (σ τ : ι → SignType) :
     weakSignCell g σ ∩ weakSignCell g τ = weakSignCell g (commonSignPattern σ τ) := by
@@ -360,14 +377,16 @@ theorem isExtreme_weakSignCell_inter (g : ι → (V →ᴬ[ℝ] ℝ)) (σ τ : �
   exact isExtreme_weakSignCell_of_specializes (commonSignPattern_specializes_left σ τ)
 
 /-- The closure of a realized sign cell consists precisely of its strict zero-specializations. -/
-theorem closure_signCell_eq_iUnion {g : ι → (V →ᴬ[ℝ] ℝ)} {σ : ι → SignType}
+theorem closure_signCell_eq_iUnion [ContinuousAdd V] [ContinuousSMul ℝ V]
+    {g : ι → (V →ᴬ[ℝ] ℝ)} {σ : ι → SignType}
     (hne : (signCell g σ).Nonempty) :
     closure (signCell g σ) = ⋃ τ : {τ // SignSpecializes τ σ}, signCell g τ.val := by
   rw [closure_signCell hne, weakSignCell_eq_iUnion_signCell]
 
 /-- Intersections of closures of sign cells are extreme subsets of each
 closure. The intersection may be empty; interchange assignments for the symmetric statement. -/
-theorem isExtreme_closure_signCell_inter {g : ι → (V →ᴬ[ℝ] ℝ)} {σ τ : ι → SignType} :
+theorem isExtreme_closure_signCell_inter [ContinuousAdd V] [ContinuousSMul ℝ V]
+    {g : ι → (V →ᴬ[ℝ] ℝ)} {σ τ : ι → SignType} :
     IsExtreme ℝ (closure (signCell g σ))
       (closure (signCell g σ) ∩ closure (signCell g τ)) := by
   by_cases hσ : (signCell g σ).Nonempty
