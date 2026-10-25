@@ -6,8 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Algebra.Lie.Graded.Completion
-public import Mei.Algebra.Lie.UniversalEnveloping.DegreeFiltration
-public import Mei.RingTheory.FilteredAlgebra.Algebra
+public import Mei.Algebra.Lie.UniversalEnveloping.Completion
 
 /-!
 # The canonical map into a completed enveloping algebra
@@ -18,6 +17,7 @@ Lie completion into the degree completion of its enveloping algebra. The finite
 maps commute with transitions, and projections characterize the completed map.
 This construction works over an arbitrary commutative ring, without a PBW or
 freeness hypothesis; it does not assert injectivity.
+Its image consists of primitive elements in the first completed filtration ideal.
 
 The finite maps use `LieIdeal.liftQ` and Mathlib's quotient algebra maps. The Lie
 completion retains `Mei.ModuleFiltration.completion` as its underlying module.
@@ -146,5 +146,40 @@ theorem completedLieToU_unique (f : d.completedLie ℒ →ₗ⁅R⁆ (F).complet
   apply LieHom.ext
   intro x
   exact (F).completion_ext fun k => (hf k x).trans (projection_completedLieToU d ℒ k x).symm
+
+/-- Every completed Lie coordinate maps into the first enveloping filtration ideal. -/
+theorem completedLieToU_mem_completionIdeal_one (x : d.completedLie ℒ) :
+    completedLieToU d ℒ x ∈ (F).completionIdeal 1 := by
+  rw [Mei.AlgFiltration.completionIdeal_succ, RingHom.mem_ker,
+    projection_completedLieToU]
+  obtain ⟨a, ha⟩ := (d.degreeIdeal ℒ 0).surjective_mkQ (π 0 x)
+  rw [← ha, LieIdeal.mkQ_apply, truncatedLieToU_mk, Ideal.Quotient.eq_zero_iff_mem]
+  exact augmentation_le_degreeFiltration_one ℒ d.degree
+    (fun n hn => d.eq_bot_of_degree_nonpos ℒ n hn)
+    (TauCeti.UniversalEnvelopingAlgebra.ι_mem_augmentation R L a)
+
+/-- The canonical map takes the whole Lie completion into completed primitives. -/
+theorem isCompletedPrimitive_completedLieToU (x : d.completedLie ℒ) :
+    IsCompletedPrimitive ℒ d.degree
+      (fun n hn => d.eq_bot_of_degree_nonpos ℒ n (le_of_lt hn)) (completedLieToU d ℒ x) := by
+  rw [isCompletedPrimitive_iff, Mei.AlgFiltration.completedTensor_one_right,
+    Mei.AlgFiltration.completedTensor_one_left]
+  apply Mei.AlgFiltration.completion_ext
+  intro k
+  obtain ⟨a, ha⟩ := (d.degreeIdeal ℒ k).surjective_mkQ (π k x)
+  have hp : (F).projection k (completedLieToU d ℒ x) =
+      (F).projection k ((F).toCompletion (ι R a)) := by
+    rw [projection_completedLieToU, ← ha, LieIdeal.mkQ_apply, truncatedLieToU_mk,
+      Mei.AlgFiltration.projection_toCompletion]
+  have h := (isCompletedPrimitive_iff ℒ d.degree
+    (fun n hn => d.eq_bot_of_degree_nonpos ℒ n (le_of_lt hn)) _).mp
+    (isCompletedPrimitive_toCompletion_ι ℒ d.degree
+      (fun n hn => d.eq_bot_of_degree_nonpos ℒ n (le_of_lt hn)) a)
+  rw [Mei.AlgFiltration.completedTensor_one_right,
+    Mei.AlgFiltration.completedTensor_one_left] at h
+  have h := congrArg ((Mei.AlgFiltration.tensorProduct R (F) (F)).projection k) h
+  simpa only [projection_completedCoproduct, map_add,
+    Mei.AlgFiltration.projection_includeLeftCompletion,
+    Mei.AlgFiltration.projection_includeRightCompletion, hp] using h
 
 end Mei.UniversalEnvelopingAlgebra
