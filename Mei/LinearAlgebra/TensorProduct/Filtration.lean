@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mathlib.LinearAlgebra.TensorProduct.Map
+public import Mathlib.LinearAlgebra.TensorProduct.Basic
 public import Mathlib.RingTheory.FilteredAlgebra.Basic
 
 /-!
