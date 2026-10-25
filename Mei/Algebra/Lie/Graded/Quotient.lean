@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Algebra.Lie.Graded.Map
-public import Mei.Algebra.Lie.Graded.Truncation
+public import Mei.Algebra.Lie.Graded.Truncation.Basic
 public import Mei.Algebra.PositiveDegrees.Subquotient
 public import Mathlib.Algebra.Lie.Quotient
 

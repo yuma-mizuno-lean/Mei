@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Algebra.Lie.Graded.Truncation
+public import Mei.Algebra.Lie.Graded.Truncation.Basic
 
 /-!
 # Graded Lie homomorphisms and their truncations
