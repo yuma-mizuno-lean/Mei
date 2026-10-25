@@ -6,7 +6,8 @@ Authors: Codex
 module
 
 public import Mei.Algebra.Lie.Graded.Hom
-public import TauCeti.Algebra.DirectSum.Internal
+public import Mei.Algebra.Lie.Graded.Truncation
+public import Mei.Algebra.PositiveDegrees.Subquotient
 
 /-!
 # Gradings on homogeneous Lie subalgebras
@@ -15,6 +16,7 @@ A Lie subalgebra stable under homogeneous projection inherits the ambient Lie
 grading: its degree-`i` piece is the inverse image of the ambient degree-`i` piece
 under inclusion. In particular, every vanishing ambient piece remains zero, so
 positive gradings restrict to homogeneous Lie subalgebras.
+The inherited degree ideals are the inverse images of the ambient degree ideals.
 
 `LieSubalgebra.gradedLieAlgebra` supplies the inherited structure for use as a
 local instance. The direct-sum decomposition is Tau Ceti's
@@ -40,5 +42,24 @@ noncomputable def gradedLieAlgebra (hK : DirectSum.SetLike.IsHomogeneous ℒ K) 
     Subtype.val_injective (fun _ _ => Iff.rfl) (fun i x =>
       ⟨⟨_, hK i x.property⟩, rfl⟩)
   toGradedBracket := inferInstance
+
+omit [DecidableEq ι] [GradedLieAlgebra ℒ] in
+/-- The pieces inherited by a Lie subalgebra have positive support. -/
+instance instIsPositiveGrading (d : Mei.PositiveDegrees ι) [Mei.IsPositiveGrading d ℒ] :
+    Mei.IsPositiveGrading d (fun i => (ℒ i).comap K.incl.toLinearMap) :=
+  Mei.IsPositiveGrading.comap d ℒ K.incl.toLinearMap Subtype.val_injective
+
+/-- The cutoff ideal of a homogeneous Lie subalgebra is the preimage of the ambient cutoff.
+Together with the inherited decomposition, this identifies its positive degree filtration. -/
+theorem degreeIdeal_eq_comap (d : Mei.PositiveDegrees ι) [Mei.IsPositiveGrading d ℒ]
+    (hK : DirectSum.SetLike.IsHomogeneous ℒ K) (k : ℕ) :
+    let := K.gradedLieAlgebra ℒ hK
+    d.degreeIdeal (fun i => (ℒ i).comap K.incl.toLinearMap) k =
+      (d.degreeIdeal ℒ k).comap K.incl := by
+  let := K.gradedLieAlgebra ℒ hK
+  apply LieSubmodule.toSubmodule_injective
+  simp only [Mei.PositiveDegrees.degreeIdeal_toSubmodule, LieIdeal.comap_toSubmodule]
+  exact d.degreeSubmodule_comap ℒ _ K.incl.toLinearMap Subtype.val_injective
+    (fun _ _ hx => Submodule.mem_comap.mp hx) k
 
 end LieSubalgebra

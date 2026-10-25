@@ -9,12 +9,11 @@ public import Mei.Algebra.PositiveDegrees.Grading
 public import Mathlib.Algebra.Module.Submodule.RestrictScalars
 
 /-!
-# Restriction of scalars for positive gradings
+# Scalar restriction of positive gradings
 
-Positive support and degree submodules are preserved by restriction of scalars.
-The cutoff comparison applies to arbitrary families of submodules: it requires
-neither an internal decomposition nor positivity. Together with the inherited
-decompositions, it identifies degree filtrations over different coefficient semirings.
+Restricting scalars preserves positive support and the submodules above each degree
+cutoff. These statements do not require a direct-sum decomposition: positive support
+is a condition on the pieces, and scalar restriction preserves their sums.
 -/
 
 public section
@@ -22,24 +21,22 @@ public section
 namespace Mei
 
 variable {N R S M : Type*} [AddCommMonoid N] [Semiring R] [Semiring S]
-  [AddCommMonoid M] [Module R M] [Module S M] [SMul R S] [IsScalarTower R S M]
-  (d : PositiveDegrees N) (ℳ : N → Submodule S M)
+  [AddCommMonoid M] [Module S M] [Module R M] [SMul R S] [IsScalarTower R S M]
 
-/-- Restricting scalars preserves the support of a positive grading. -/
-instance IsPositiveGrading.restrictScalars [IsPositiveGrading d ℳ] :
-    IsPositiveGrading d (fun n => (ℳ n).restrictScalars R) where
+/-- Restricting scalars preserves the vanishing pieces of a positive grading. -/
+instance IsPositiveGrading.restrictScalars (d : PositiveDegrees N)
+    (ℒ : N → Submodule S M) [IsPositiveGrading d ℒ] :
+    IsPositiveGrading d (fun n => (ℒ n).restrictScalars R) where
   eq_bot n hn := by
-    rw [IsPositiveGrading.eq_bot (d := d) (ℒ := ℳ) n hn,
-      Submodule.restrictScalars_bot]
+    rw [Submodule.restrictScalars_eq_bot_iff]
+    exact IsPositiveGrading.eq_bot (d := d) (ℒ := ℒ) n hn
 
-namespace PositiveDegrees
-
-/-- Degree cutoffs commute with restriction of scalars, even without a decomposition. -/
+/-- The degree filtration commutes with restriction of scalars on every piece. -/
 @[simp]
-theorem degreeSubmodule_restrictScalars (k : ℕ) :
-    d.degreeSubmodule (fun n => (ℳ n).restrictScalars R) k =
-      (d.degreeSubmodule ℳ k).restrictScalars R := by
-  simp only [degreeSubmodule_def, Submodule.restrictScalars_iSup]
+theorem PositiveDegrees.degreeSubmodule_restrictScalars (d : PositiveDegrees N)
+    (ℒ : N → Submodule S M) (k : ℕ) :
+    d.degreeSubmodule (fun n => (ℒ n).restrictScalars R) k =
+      (d.degreeSubmodule ℒ k).restrictScalars R := by
+  simp only [d.degreeSubmodule_def, Submodule.restrictScalars_iSup]
 
-end PositiveDegrees
 end Mei
