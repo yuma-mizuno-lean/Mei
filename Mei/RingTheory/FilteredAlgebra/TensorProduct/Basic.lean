@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mei.RingTheory.Ideal.TensorProduct
-public import Mathlib.RingTheory.FilteredAlgebra.Basic
+public import Mei.RingTheory.FilteredAlgebra.Basic
 
 /-!
 # Total-degree filtrations on tensor product algebras
@@ -16,6 +16,8 @@ the images of `I a ⊗ J b` with `k ≤ a + b`. It is decreasing and inherits
 multiplicativity and two-sidedness from the factors. If both families start at
 the whole algebra, so does the tensor filtration. Thus it supplies the quotient
 tower for completed tensor products of filtered associative algebras.
+`Mei.AlgFiltration.tensorProduct` bundles these terms as an `AlgFiltration`;
+the two algebra inclusions preserve its filtration orders.
 
 The construction uses `Ideal.tensorProduct`, whose underlying scalar submodule
 is Mathlib's bilinear image of `TensorProduct.mk`. The multiplicative filtration
@@ -142,3 +144,39 @@ instance tensorFiltration_isRingFiltration (I : ℕ → Ideal A) (J : ℕ → Id
       i.ofDual j.ofDual (mul_mem_mul hx hy)
 
 end Ideal
+
+namespace Mei.AlgFiltration
+
+variable (R : Type*) {A B : Type*} [CommSemiring R] [Semiring A] [Semiring B]
+  [Algebra R A] [Algebra R B] (F : Mei.AlgFiltration A) (G : Mei.AlgFiltration B)
+
+/-- The total-degree filtration on the tensor product of two filtered algebras. -/
+noncomputable def tensorProduct : Mei.AlgFiltration (A ⊗[R] B) where
+  ideal := Ideal.tensorFiltration R F.ideal G.ideal
+  isTwoSided _ := inferInstance
+  antitone := Ideal.tensorFiltration_antitone R F.ideal G.ideal
+  ideal_zero := Ideal.tensorFiltration_zero R F.ideal G.ideal F.ideal_zero G.ideal_zero
+  mul_mem hx hy := Ideal.tensorFiltration_mul_le R F.ideal G.ideal
+    (fun _ _ => Ideal.mul_le.mpr fun _ hx _ hy => F.mul_mem hx hy)
+    (fun _ _ => Ideal.mul_le.mpr fun _ hx _ hy => G.mul_mem hx hy) _ _
+    (Ideal.mul_mem_mul hx hy)
+
+/-- The bundled tensor filtration uses the total-degree tensor ideals. -/
+@[simp]
+theorem tensorProduct_ideal (k : ℕ) :
+    (F.tensorProduct R G).ideal k = Ideal.tensorFiltration R F.ideal G.ideal k := (rfl)
+
+/-- The left inclusion preserves filtration orders. -/
+theorem includeLeft_mem_tensorProduct {k : ℕ} {a : A} (ha : a ∈ F.ideal k) :
+    Algebra.TensorProduct.includeLeft (R := R) (S := R) (B := B) a ∈
+      (F.tensorProduct R G).ideal k := by
+  exact Ideal.tmul_mem_tensorFiltration R (a := k) (b := 0) (by omega) ha
+    (by simp)
+
+/-- The right inclusion preserves filtration orders. -/
+theorem includeRight_mem_tensorProduct {k : ℕ} {b : B} (hb : b ∈ G.ideal k) :
+    Algebra.TensorProduct.includeRight (R := R) (A := A) b ∈ (F.tensorProduct R G).ideal k := by
+  exact Ideal.tmul_mem_tensorFiltration R (a := 0) (b := k) (by omega)
+    (by simp) hb
+
+end Mei.AlgFiltration
