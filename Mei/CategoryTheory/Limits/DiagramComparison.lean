@@ -52,8 +52,10 @@ and the induced maps compose accordingly (`Mei.DiagramComparison.comp_limitMap`)
 * `Mei.DiagramComparison.exists_not_initial_isEmpty_limit_hom`: without initiality of the target
   leg there need be no map of limits at all.
 
-The construction is assembled from Mathlib's `CategoryTheory.Limits.limit.pre`,
-`CategoryTheory.Limits.limMap` and `CategoryTheory.Functor.Initial.limitIso`.
+The construction uses Mathlib's `CategoryTheory.Limits.IsLimit.map` and
+`CategoryTheory.Functor.Initial.isLimitWhiskerEquiv`. Its factorization uses
+`CategoryTheory.Limits.limit.pre`, `CategoryTheory.Limits.limMap` and
+`CategoryTheory.Functor.Initial.limitIso`.
 -/
 
 public section
@@ -94,34 +96,37 @@ variable (S : DiagramComparison F F' A) [HasLimit F] [HasLimit F']
 
 /-- The map of limits induced by a diagram comparison. -/
 noncomputable def limitMap : limit F ⟶ limit F' :=
-  limit.lift (S.target ⋙ F') ((Cone.postcompose S.app).obj ((limit.cone F).whisker S.source)) ≫
-    (Functor.Initial.limitIso S.target F').hom
+  IsLimit.map ((limit.cone F).whisker S.source)
+    ((Functor.Initial.isLimitWhiskerEquiv S.target (limit.cone F')).symm (limit.isLimit F'))
+    S.app
 
 /-- The comparison map is characterized by its projections onto the legs indexed by the
 target leg of the span. -/
 @[reassoc (attr := simp)]
 theorem limitMap_π (a : A) :
     S.limitMap ≫ limit.π F' (S.target.obj a) = limit.π F (S.source.obj a) ≫ S.app.app a := by
-  simp [limitMap, Functor.Initial.limitIso]
+  exact IsLimit.map_π _ _ _ a
 
 omit [HasLimit F] in
 /-- Maps into the target limit are determined by their projections onto the legs indexed by
 the target leg of a comparison. -/
 theorem hom_ext {X : 𝒱} {f g : X ⟶ limit F'}
-    (h : ∀ a, f ≫ limit.π F' (S.target.obj a) = g ≫ limit.π F' (S.target.obj a)) : f = g := by
-  refine (cancel_mono (limit.pre F' S.target)).1 (limit.hom_ext fun a => ?_)
-  simpa only [Category.assoc, limit.pre_π] using h a
+    (h : ∀ a, f ≫ limit.π F' (S.target.obj a) = g ≫ limit.π F' (S.target.obj a)) : f = g :=
+  ((Functor.Initial.isLimitWhiskerEquiv S.target (limit.cone F')).symm
+    (limit.isLimit F')).hom_ext fun a => h a
 
 /-- The comparison map is restriction along the source leg, followed by the map of limits
 induced by the natural transformation and the inverse of restriction along the target leg. -/
 theorem limitMap_eq [HasLimit (S.source ⋙ F)] :
     S.limitMap = limit.pre F S.source ≫ limMap S.app ≫
       (Functor.Initial.limitIso S.target F').hom := by
-  simp only [limitMap, limit.pre, ← limit.lift_map, Category.assoc]
+  apply S.hom_ext
+  intro a
+  simp [Functor.Initial.limitIso]
 
 /-- The comparison map is an isomorphism when restriction along the source leg and the
 natural transformation are isomorphisms. -/
-theorem isIso_limitMap [HasLimit (S.source ⋙ F)] [IsIso (limit.pre F S.source)] [IsIso S.app] :
+instance isIso_limitMap [HasLimit (S.source ⋙ F)] [IsIso (limit.pre F S.source)] [IsIso S.app] :
     IsIso S.limitMap := by
   rw [S.limitMap_eq]
   infer_instance
@@ -243,6 +248,7 @@ theorem comp_app_app (S : DiagramComparison F F' A) (T : DiagramComparison F' F'
     (S.comp T).app.app x = S.app.app x.left ≫ F'.map x.hom ≫ T.app.app x.right := rfl
 
 /-- The map induced by a composite comparison is the composite of the induced maps. -/
+@[simp, reassoc]
 theorem comp_limitMap (S : DiagramComparison F F' A) (T : DiagramComparison F' F'' B)
     [HasLimit F] [HasLimit F'] [HasLimit F''] :
     (S.comp T).limitMap = S.limitMap ≫ T.limitMap := by
@@ -284,6 +290,7 @@ theorem map_app_app (S : DiagramComparison F F' A) (G : 𝒱 ⥤ 𝒲) (a : A) :
 
 /-- A functor preserving both limits carries the comparison map to the comparison map of the
 postcomposed diagrams. -/
+@[reassoc]
 theorem map_limitMap (S : DiagramComparison F F' A) (G : 𝒱 ⥤ 𝒲) [HasLimit F] [HasLimit F']
     [PreservesLimit F G] [PreservesLimit F' G] :
     G.map S.limitMap ≫ (preservesLimitIso G F').hom =
