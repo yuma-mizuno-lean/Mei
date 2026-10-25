@@ -71,7 +71,7 @@ end IsExtreme
 
 namespace IsExposed
 
-variable {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V] {P Q F G : Set V}
+variable {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V] {P Q F : Set V}
 
 /-- Every nonempty exposed face of an intersection of polyhedra splits into
 nonempty exposed faces of the two original polyhedra. -/
@@ -82,12 +82,5 @@ theorem exists_inter_of_isConvexPolyhedron (hF : IsExposed ℝ (P ∩ Q) F)
       F₁.Nonempty ∧ F₂.Nonempty ∧ F = F₁ ∩ F₂ :=
   hF.isExtreme.exists_inter_isExposed_of_isConvexPolyhedron hP hQ
     (hF.convex (hP.convex.inter hQ.convex)) hne
-
-/-- Exposed faces of a polyhedron are closed under taking exposed subfaces.
-The polyhedral hypothesis supplies transitivity, which fails for arbitrary convex sets. -/
-theorem trans_of_isConvexPolyhedron (hF : IsExposed ℝ P F) (hG : IsExposed ℝ F G)
-    (hP : TauCeti.IsConvexPolyhedron P) : IsExposed ℝ P G :=
-  (hF.isExtreme.trans hG.isExtreme).isExposed_of_isConvexPolyhedron hP
-    (hG.convex (hF.convex hP.convex))
 
 end IsExposed
