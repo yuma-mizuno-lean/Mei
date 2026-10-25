@@ -250,10 +250,6 @@ theorem isConvexPolyhedron_closure_signCell [Finite ι] {g : ι → (V →ᴬ[�
   rw [closure_signCell hne]
   exact isConvexPolyhedron_weakSignCell g σ
 
-/-- A finite affine family has only finitely many sign cells. Empty labels are permitted. -/
-theorem finite_range_signCell [Finite ι] (g : ι → (V →ᴬ[ℝ] ℝ)) :
-    (Set.range (signCell g)).Finite := Set.finite_range _
-
 /-- The sign-cell partition has pairwise disjoint cells. -/
 theorem pairwiseDisjoint_signCell (g : ι → (V →ᴬ[ℝ] ℝ)) :
     Set.PairwiseDisjoint (Set.univ : Set (ι → SignType)) (signCell g) := by
@@ -343,10 +339,6 @@ theorem isExtreme_closure_signCell_inter {g : ι → (V →ᴬ[ℝ] ℝ)} {σ τ
       (closure (signCell g σ) ∩ closure (signCell g τ)) := by
   rw [closure_signCell hσ, closure_signCell hτ]
   exact isExtreme_weakSignCell_inter g σ τ
-
-/-- A finite affine family has finitely many distinct closed sign-cell supports. -/
-theorem finite_range_closure_signCell [Finite ι] (g : ι → (V →ᴬ[ℝ] ℝ)) :
-    (Set.range (fun σ => closure (signCell g σ))).Finite := Set.finite_range _
 
 /-- Closed sign-cell supports cover the ambient space. Empty labels contribute nothing. -/
 theorem iUnion_closure_signCell (g : ι → (V →ᴬ[ℝ] ℝ)) :
