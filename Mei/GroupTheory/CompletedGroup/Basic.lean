@@ -6,6 +6,7 @@ Authors: Codex
 module
 
 public import Mathlib.Algebra.Category.Grp.Limits
+public import Mathlib.CategoryTheory.Limits.Types.Images
 public import Mathlib.GroupTheory.QuotientGroup.Basic
 
 /-!
@@ -17,9 +18,9 @@ separated filtration, with the whole group at degree zero.
 
 The carrier is the preimage of Mathlib's `GrpCat.sectionsSubgroup` under reindexing from
 natural numbers to their opposite category. The categorical comparison uses
-`GrpCat.limitConeIsLimit`. The proof of surjectivity at every order extends the recursive
-preimage construction of `CategoryTheory.Limits.Types.surjective_π_app_zero_of_surjective_map`
-to a tail starting at the specified order.
+`GrpCat.limitConeIsLimit`. The proof of surjectivity at every order applies
+`CategoryTheory.Limits.Types.surjective_π_app_zero_of_surjective_map` to a tail starting at the
+specified order.
 -/
 
 public section
@@ -77,7 +78,7 @@ theorem ext {x y : completedGroup F}
     (h : ∀ k, projection k x = projection k y) : x = y :=
   Subtype.ext (funext h)
 
-variable {H : Type*} [Group H]
+variable {H : Type*} [Monoid H]
 
 /-- The unique homomorphism with a prescribed compatible family of projections. -/
 def lift (f : ∀ k : ℕ, H →* F.obj (op k))
@@ -112,6 +113,14 @@ def cone : Cone F where
       naturality := fun ⟨l⟩ ⟨k⟩ f => by
         ext x
         exact (map_projection k l (leOfHom f.unop) x).symm }
+
+@[simp]
+theorem cone_pt : (cone F).pt = GrpCat.of (completedGroup F) := (rfl)
+
+@[simp]
+theorem cone_π_app (j : ℕᵒᵖ) :
+    (cone F).π.app j =
+      eqToHom (cone_pt F) ≫ GrpCat.ofHom (projection (F := F) j.unop) := (rfl)
 
 /-- The compatible-family completed group is an inverse limit in the category of groups. -/
 def coneIsLimit : IsLimit (cone F) where
@@ -187,22 +196,14 @@ theorem projection_surjective
   classical
   intro a
   -- First lift the given value along the tail starting at order `k`.
-  let x : (n : ℕ) → F.obj (op (k + n)) :=
-    Nat.rec a (fun n b => (hF (k + n) b).choose)
-  have step (n : ℕ) :
-      F.map (homOfLE (Nat.le_succ (k + n))).op (x (n + 1)) = x n :=
-    (hF (k + n) (x n)).choose_spec
+  let shift : ℕ →o ℕ := ⟨fun n => k + n, fun _ _ h => Nat.add_le_add_left h k⟩
+  let G := shift.toFunctor.op ⋙ F ⋙ forget GrpCat
+  obtain ⟨s, hs⟩ := Types.surjective_π_app_zero_of_surjective_map
+    (Types.limitConeIsLimit G) (fun n => hF (k + n)) a
+  let x : (n : ℕ) → F.obj (op (k + n)) := fun n => s.val (op n)
   have hx (m n : ℕ) (h : m ≤ n) :
       F.map (homOfLE (Nat.add_le_add_left h k)).op (x n) = x m := by
-    induction h with
-    | refl => simp
-    | @step n h ih =>
-      calc
-        _ = F.map (homOfLE (Nat.add_le_add_left h k)).op
-            (F.map (homOfLE (Nat.le_succ (k + n))).op (x (n + 1))) := by
-          rw [← GrpCat.comp_apply, ← F.map_comp]
-          rfl
-        _ = x m := by rw [step, ih]
+    exact s.property (homOfLE h).op
   -- Project the tail to all orders; the two routes through each triangle agree.
   let y : ∀ n : ℕ, F.obj (op n) :=
     fun n => F.map (homOfLE (Nat.le_add_left n k)).op (x n)
@@ -216,7 +217,7 @@ theorem projection_surjective
         rw [← GrpCat.comp_apply, ← F.map_comp, ← GrpCat.comp_apply, ← F.map_comp]
         rfl
       _ = _ := by rw [hx m n h]
-  exact ⟨⟨y, hy⟩, hx 0 k (Nat.zero_le k)⟩
+  exact ⟨⟨y, hy⟩, (hx 0 k (Nat.zero_le k)).trans hs⟩
 
 /-- For an onto tower, quotienting by the order-`k` projection kernel recovers that order. -/
 noncomputable def quotientEquiv
