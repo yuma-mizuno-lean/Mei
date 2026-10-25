@@ -165,15 +165,4 @@ theorem completedLieEquivPi_bracket_apply (x y : d.completedLie ℒ) (n : N) :
   rw [LieEquiv.map_lie]
   exact d.homogeneousProduct_bracket_apply ℒ _ _ n
 
-/-- Canonical Lie elements have their original homogeneous coefficients. -/
-@[simp]
-theorem completionComponent_toCompletion (x : L) (n : N) :
-    d.completionComponent ℒ F (fun k => d.degreeIdeal_toSubmodule ℒ k) n
-      (LieIdeal.toCompletion (d.degreeIdeal ℒ) (d.degreeIdeal_antitone ℒ) x) =
-      decompose ℒ x n := by
-  rw [d.completionComponent_eq_quotientComponent ℒ F _ n
-      (d.degree n).toNat (Int.self_le_toNat _)]
-  rw [← LieIdeal.completionProjection_apply, LieIdeal.completionProjection_toCompletion,
-    LieIdeal.mkQ_apply, quotientComponent_mk]
-
 end Mei.PositiveDegrees
