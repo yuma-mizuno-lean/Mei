@@ -7,6 +7,7 @@ module
 
 public import Mei.Algebra.Lie.Free.Primitive.Truncation
 public import Mei.Algebra.Lie.UniversalEnveloping.PrimitiveBCH
+public import Mei.RingTheory.Nilpotent.BCH
 
 /-!
 # Universal finite BCH elements
@@ -19,6 +20,8 @@ actual Lie element. Injectivity of the quotient enveloping map gives uniqueness.
 The construction uses the equality of word-degree ideals and augmentation powers,
 transporting exponential and logarithm through the resulting quotient equivalence.
 It defines the universal finite BCH element; group operations and their laws are separate.
+The explicit formula through degree three uses
+`Ideal.log_exp_mul_exp_of_pow_four_eq_bot` in the finite augmentation quotient.
 -/
 
 public section
@@ -235,5 +238,25 @@ theorem bchElement_one :
       (q (_root_.UniversalEnvelopingAlgebra.ι ℚ Y)) :=
     (hmul X Y).trans (hmul Y X).symm
   exact IsNilpotent.exp_add_of_commute hcomm ⟨2, hsquare X⟩ ⟨2, hsquare Y⟩
+
+/-- Through degree three, the universal BCH element has the usual rational
+coefficients, with the first generator placed leftmost in the exponential product. -/
+@[simp]
+theorem bchElement_three :
+    bchElement 3 = LieSubmodule.Quotient.mk
+      (X + Y + (1 / 2 : ℚ) • ⁅X, Y⁆ +
+        (1 / 12 : ℚ) • (⁅X, ⁅X, Y⁆⁆ + ⁅Y, ⁅Y, X⁆⁆)) := by
+  apply quotientEnvelopingMap_injective ℚ (Fin 2) 3
+  rw [quotientEnvelopingMap_bchElement, quotientEnvelopingMap_mk]
+  let q := Ideal.Quotient.mk (J₂ ^ 4)
+  let I := Ideal.map q J₂
+  have hI : I ^ 4 = ⊥ := by
+    rw [← Ideal.map_pow_of_surjective J₂ q Ideal.Quotient.mk_surjective 4]
+    exact Ideal.map_quotient_self (J₂ ^ 4)
+  have hmem (z : F₂) : q (_root_.UniversalEnvelopingAlgebra.ι ℚ z) ∈ I :=
+    Ideal.mem_map_of_mem q (TauCeti.UniversalEnvelopingAlgebra.ι_mem_augmentation ℚ F₂ z)
+  have h := I.log_exp_mul_exp_of_pow_four_eq_bot hI (hmem X) (hmem Y)
+  simpa only [map_add, map_smul, map_rat_smul, LieHom.map_lie, Ring.lie_def,
+    map_sub, map_mul, q] using h
 
 end Mei.FreeLieAlgebra
