@@ -60,12 +60,8 @@ private def preFiberPrefunctor (a : CostructuredArrow G d) :
   map {b b'} g := CostructuredArrow.homMk (Hom.mk (𝟙 a.left) (eqToHom (by simp) ≫ g.left)) (by
     fapply Grothendieck.ext
     · simp
-    · simp only [CostructuredArrow.mk_left, pre_obj_base, CostructuredArrow.mk_hom_eq_self,
-        pre_obj_fiber, Functor.comp_obj, Functor.comp_map, comp_base, pre_map_base, comp_fiber,
-        pre_map_fiber, Functor.map_comp, Category.assoc, CommaMorphism.w, Functor.const_obj_obj,
-        CostructuredArrow.right_eq_id, Functor.const_obj_map, Category.comp_id]
-      rw [eqToHom_map]
-      exact eqToHom_comp_eqToHom_comp_eqToHom_comp _ _ _ _)
+    · aesop (add simp eqToHom_map)
+        (add safe apply eqToHom_comp_eqToHom_comp_eqToHom_comp))
 
 /-- Transport of a fiber component along an arrow of base components. -/
 private abbrev preTransport {a₁ a₂ : CostructuredArrow G d} (h : a₁ ⟶ a₂)
@@ -81,10 +77,7 @@ private def toPreTransport {a₁ a₂ : CostructuredArrow G d} (h : a₁ ⟶ a�
   CostructuredArrow.homMk (Hom.mk h.left (𝟙 _)) (by
     fapply Grothendieck.ext
     · exact CostructuredArrow.w h
-    · simp only [CostructuredArrow.mk_left, pre_obj_base, CostructuredArrow.mk_hom_eq_self,
-        pre_obj_fiber, Functor.comp_obj, Functor.comp_map, comp_base, pre_map_base, comp_fiber,
-        pre_map_fiber, Functor.map_id, Category.id_comp]
-      exact eqToHom_comp_eqToHom_comp_eqToHom_comp _ _ _ _)
+    · aesop (add safe apply eqToHom_comp_eqToHom_comp_eqToHom_comp))
 
 end InitialPre
 

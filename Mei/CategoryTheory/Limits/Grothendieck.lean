@@ -168,10 +168,13 @@ noncomputable abbrev coneOfPreCone (s : Cone (Grothendieck.pre C G ⋙ F)) :
                     -- Mathlib's `Grothendieck.ι` has no simp lemmas; its `map g` is
                     -- `⟨𝟙 _, eqToHom _ ≫ g⟩` by definition.
                     rfl
+                -- `erw` unfolds the composite diagram and the fiber inclusion in the
+                -- source of this identity morphism.
                 erw [Category.id_comp (obj := V)]
                 rw [Functor.comp_map, ← e]
                 exact (s.w g').symm } }
       naturality d₁ d₂ h := by
+        -- `erw` unfolds `(G ⋙ fiberwiseLimit F).obj` to the chosen fiber limit.
         erw [Category.id_comp (obj := V)]
         apply (cancel_mono (limit.pre (Grothendieck.ι C (G.obj d₂) ⋙ F)
           (C.map (G.map h)).toFunctor)).mp
@@ -199,12 +202,15 @@ noncomputable def isLimitPreCone {c : Cone (G ⋙ fiberwiseLimit F)} (hc : IsLim
     IsLimit (preCone F G c) where
   lift s := hc.lift (coneOfPreCone F G s)
   fac s X := by
+    -- `erw` identifies the objects of `G ⋙ fiberwiseLimit F` and `pre C G ⋙ F`
+    -- with the fiber limits and total-diagram objects used by these projection lemmas.
     erw [preCone_π_app, hc.fac_assoc, coneOfPreCone_π_app_π]
   uniq s m hm := by
     apply hc.uniq (coneOfPreCone F G s) m
     intro d'
     apply limit.hom_ext
     intro x
+    -- `erw` unfolds `(G ⋙ fiberwiseLimit F).obj d'` to reassociate at the fiber limit.
     erw [Category.assoc (obj := V), coneOfPreCone_π_app_π]
     exact hm ⟨d', x⟩
 
