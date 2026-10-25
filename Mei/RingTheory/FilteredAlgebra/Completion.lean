@@ -95,7 +95,7 @@ theorem completion_ext {x y : F.completion}
   funext k
   exact h k.unop
 
-variable {B : Type*} [Ring B]
+variable {B : Type*} [Semiring B]
 
 /-- A compatible family of ring maps into the quotients lifts to the completion. -/
 def lift (f : ∀ k, B →+* A ⧸ F.ideal (k + 1))
