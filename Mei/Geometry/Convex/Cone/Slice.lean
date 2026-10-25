@@ -27,31 +27,46 @@ namespace PointedCone
 variable {K V : Type*} [Field K] [LinearOrder K] [IsStrictOrderedRing K]
   [AddCommGroup V] [Module K V]
 
-/-- Normalize the positive-height generators to height one and project to `V`. -/
-noncomputable def positiveSliceGenerators (s : Finset (V × K)) : Finset V := by
-  classical
-  exact (s.filter (fun z => 0 < z.2)).image (fun z => z.2⁻¹ • z.1)
+/-- The height-one slice of a pointed cone is convex. -/
+theorem convex_slice_one (C : PointedCone K (V × K)) :
+    Convex K {x : V | (x, (1 : K)) ∈ C} := by
+  intro x hx y hy a b ha hb hab
+  have hm := C.convex hx hy ha hb hab
+  simp only [Set.mem_ofPred_eq]
+  have he : (a • x + b • y, (1 : K)) = a • (x, (1 : K)) + b • (y, (1 : K)) := by
+    ext <;> simp [hab]
+  rw [he]
+  exact hm
+
+end PointedCone
+
+namespace Finset
+
+open PointedCone
+
+variable {K V : Type*}
+
+section Zero
+
+variable [Zero K]
 
 /-- Project the zero-height generators to `V`. -/
 noncomputable def zeroSliceGenerators (s : Finset (V × K)) : Finset V := by
   classical
   exact (s.filter (fun z => z.2 = 0)).image Prod.fst
 
-omit [IsStrictOrderedRing K] in
-/-- Membership records the original positive-height generator and its normalization. -/
-@[simp]
-theorem mem_positiveSliceGenerators {s : Finset (V × K)} {x : V} :
-    x ∈ positiveSliceGenerators s ↔ ∃ z ∈ s, 0 < z.2 ∧ z.2⁻¹ • z.1 = x := by
-  classical
-  simp only [positiveSliceGenerators, Finset.mem_image, Finset.mem_filter, and_assoc]
-
-omit [IsStrictOrderedRing K] [AddCommGroup V] [Module K V] in
 /-- Membership records an original zero-height generator with the prescribed projection. -/
 @[simp]
 theorem mem_zeroSliceGenerators {s : Finset (V × K)} {x : V} :
     x ∈ zeroSliceGenerators s ↔ ∃ z ∈ s, z.2 = 0 ∧ z.1 = x := by
   classical
   simp only [zeroSliceGenerators, Finset.mem_image, Finset.mem_filter, and_assoc]
+
+end Zero
+
+section OrderedSemiring
+
+variable [Semiring K] [PartialOrder K] [IsOrderedRing K] [AddCommMonoid V] [Module K V]
 
 /-- The projected zero-height generator cone embeds into the original cone at height zero. -/
 theorem hull_zeroSliceGenerators_le_comap (s : Finset (V × K)) :
@@ -60,12 +75,30 @@ theorem hull_zeroSliceGenerators_le_comap (s : Finset (V × K)) :
   classical
   apply Submodule.span_le.mpr
   intro v hv
-  obtain ⟨z, hz, rfl⟩ := Finset.mem_image.mp hv
-  obtain ⟨hzs, hz0⟩ := Finset.mem_filter.mp hz
+  obtain ⟨z, hzs, hz0, rfl⟩ := mem_zeroSliceGenerators.mp hv
   have he : (z.1, (0 : K)) = z := Prod.ext rfl hz0.symm
-  change (z.1, (0 : K)) ∈ hull K (s : Set (V × K))
+  simp only [PointedCone.coe_comap, Set.mem_preimage, LinearMap.inl_apply]
   rw [he]
   exact subset_hull hzs
+
+end OrderedSemiring
+
+section OrderedField
+
+variable [Field K] [LinearOrder K] [IsStrictOrderedRing K] [AddCommGroup V] [Module K V]
+
+/-- Normalize the positive-height generators to height one and project to `V`. -/
+noncomputable def positiveSliceGenerators (s : Finset (V × K)) : Finset V := by
+  classical
+  exact (s.filter (fun z => 0 < z.2)).image (fun z => z.2⁻¹ • z.1)
+
+omit [IsStrictOrderedRing K] in
+/-- Membership records the original positive-height generator and its normalization. -/
+@[simp]
+theorem mem_positiveSliceGenerators {s : Finset (V × K)} {x : V} :
+    x ∈ positiveSliceGenerators s ↔ ∃ z ∈ s, 0 < z.2 ∧ z.2⁻¹ • z.1 = x := by
+  classical
+  simp only [positiveSliceGenerators, Finset.mem_image, Finset.mem_filter, and_assoc]
 
 /-- Normalized positive-height generators embed into the original cone at height one. -/
 theorem mem_hull_one_of_mem_positiveSliceGenerators {s : Finset (V × K)} {x : V}
@@ -77,17 +110,6 @@ theorem mem_hull_one_of_mem_positiveSliceGenerators {s : Finset (V × K)} {x : V
     (inv_nonneg.mpr hzpos.le) (subset_hull hzs)
   convert hm using 1
   ext <;> simp [hzpos.ne']
-
-/-- The height-one slice of a pointed cone is convex. -/
-theorem convex_slice_one (C : PointedCone K (V × K)) :
-    Convex K {x : V | (x, (1 : K)) ∈ C} := by
-  intro x hx y hy a b ha hb hab
-  have hm := C.convex hx hy ha hb hab
-  change (a • x + b • y, (1 : K)) ∈ C
-  have he : (a • x + b • y, (1 : K)) = a • (x, (1 : K)) + b • (y, (1 : K)) := by
-    ext <;> simp [hab]
-  rw [he]
-  exact hm
 
 /-- The convex hull of the normalized positive generators lies in the height-one slice. -/
 theorem convexHull_positiveSliceGenerators_subset (s : Finset (V × K)) :
@@ -142,8 +164,7 @@ theorem slice_one_hull (s : Finset (V × K)) (hs : ∀ z ∈ s, 0 ≤ z.2) :
       intro z hz
       apply PointedCone.smul_mem _ (c z).property
       apply subset_hull
-      exact Finset.mem_image.mpr ⟨z,
-        Finset.mem_filter.mpr ⟨(Finset.mem_filter.mp hz).1, hnzero z hz⟩, rfl⟩
+      exact mem_zeroSliceGenerators.mpr ⟨z, (Finset.mem_filter.mp hz).1, hnzero z hz, rfl⟩
     refine ⟨q, hq, r, hr, ?_⟩
     have h := congrArg Prod.fst he
     simpa only [q, r, p, n, Finset.sum_filter_add_sum_filter_not, Prod.fst_sum,
@@ -153,6 +174,12 @@ theorem slice_one_hull (s : Finset (V × K)) (hs : ∀ z ∈ s, 0 ≤ z.2) :
     have hr0 := hull_zeroSliceGenerators_le_comap s hr
     have hm := (hull K (s : Set (V × K))).add_mem hq1 hr0
     simpa using hm
+
+end OrderedField
+
+section OrderedRing
+
+variable [Ring K] [LinearOrder K] [IsStrictOrderedRing K] [AddCommGroup V] [Module K V]
 
 /-- The height-zero slice is exactly the cone generated by the original
 zero-height generators. Positive-height generators cannot contribute to it. -/
@@ -179,10 +206,12 @@ theorem slice_zero_hull (s : Finset (V × K)) (hs : ∀ z ∈ s, 0 ≤ z.2) :
     by_cases hz0 : z.2 = 0
     · apply PointedCone.smul_mem _ (c z).property
       apply subset_hull
-      exact Finset.mem_image.mpr ⟨z, Finset.mem_filter.mpr ⟨hz, hz0⟩, rfl⟩
+      exact mem_zeroSliceGenerators.mpr ⟨z, hz, hz0, rfl⟩
     · have hc0 : (c z : K) = 0 := (mul_eq_zero.mp (hterm z hz)).resolve_right hz0
       simp [hc0]
   · intro hx
     exact hull_zeroSliceGenerators_le_comap s hx
 
-end PointedCone
+end OrderedRing
+
+end Finset
