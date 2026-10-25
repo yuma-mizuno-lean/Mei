@@ -150,7 +150,8 @@ local notation "Fₚ" => degreeFiltration ℒ p.degree
   (fun n hn => p.eq_bot_of_degree_nonpos ℒ n (le_of_lt hn))
 
 /-- The finite canonical Lie image is characterized by zero counit and the primitive
-identity in the total-degree tensor quotient. The ordinary quotient is not a coalgebra. -/
+identity in the total-degree tensor quotient. No coalgebra structure on the ordinary
+quotient is required. -/
 @[simp]
 theorem exists_truncatedLieToU_eq_iff (k : ℕ) (z : U ⧸ (Fₚ).ideal (k + 1)) :
     (∃ x : p.truncatedLie ℒ k, truncatedLieToU p ℒ k x = z) ↔
