@@ -76,28 +76,20 @@ instance homogeneousSubmodule_gradedMonoid : SetLike.GradedMonoid (homogeneousSu
   one_mem := Submodule.subset_span ⟨[], by simp, rfl⟩
   mul_mem := by
     intro m n a b ha hb
-    induction ha using Submodule.span_induction with
-    | mem a ha =>
-      obtain ⟨l, hl, rfl⟩ := ha
-      induction hb using Submodule.span_induction with
-      | mem b hb =>
-        obtain ⟨t, ht, rfl⟩ := hb
-        have h := prod_mem_homogeneousSubmodule ℒ (l ++ t)
-        simpa [hl, ht] using h
-      | zero => simp
-      | add b c _ _ hb hc => simpa [mul_add] using add_mem hb hc
-      | smul r b _ hb => simpa [mul_smul_comm] using Submodule.smul_mem _ r hb
-    | zero => simp
-    | add a c _ _ ha hc => simpa [add_mul] using add_mem ha hc
-    | smul r a _ ha => simpa [smul_mul_assoc] using Submodule.smul_mem _ r ha
+    have hmul : homogeneousSubmodule ℒ m * homogeneousSubmodule ℒ n ≤
+        homogeneousSubmodule ℒ (m + n) := by
+      rw [homogeneousSubmodule_def, homogeneousSubmodule_def,
+        Submodule.span_mul_span, Submodule.span_le]
+      rintro _ ⟨_, ⟨l, hl, rfl⟩, _, ⟨t, ht, rfl⟩, rfl⟩
+      simpa [hl, ht] using prod_mem_homogeneousSubmodule ℒ (l ++ t)
+    exact hmul (Submodule.mul_mem_mul ha hb)
 
 variable [DecidableEq Γ] [GradedLieAlgebra ℒ]
 
 private noncomputable def gradedιLinear : L →ₗ[R] ⨁ n, homogeneousSubmodule ℒ n :=
-  (_root_.DirectSum.toModule R Γ (⨁ n, homogeneousSubmodule ℒ n) fun n =>
-    (_root_.DirectSum.lof R Γ (fun n => ↥(homogeneousSubmodule ℒ n)) n).comp
-      (((ι R : L →ₗ⁅R⁆ U).toLinearMap.comp (ℒ n).subtype).codRestrict _
-        fun x => ι_mem_homogeneousSubmodule ℒ x.property)).comp
+  (_root_.DirectSum.lmap fun n =>
+    (((ι R : L →ₗ⁅R⁆ U).toLinearMap.comp (ℒ n).subtype).codRestrict _
+      fun x => ι_mem_homogeneousSubmodule ℒ x.property)).comp
     (_root_.DirectSum.decomposeLinearEquiv ℒ).toLinearMap
 
 private theorem gradedιLinear_apply {n : Γ} (x : ℒ n) :
@@ -105,7 +97,7 @@ private theorem gradedιLinear_apply {n : Γ} (x : ℒ n) :
       ⟨ι R (x : L), ι_mem_homogeneousSubmodule ℒ x.property⟩ := by
   simp only [gradedιLinear, LinearMap.comp_apply, LinearEquiv.coe_coe,
     _root_.DirectSum.decomposeLinearEquiv_apply, _root_.DirectSum.decompose_coe,
-    ← _root_.DirectSum.lof_eq_of R, _root_.DirectSum.toModule_lof]
+    _root_.DirectSum.lmap_of]
   rfl
 
 private theorem gradedιLinear_map_lie (x y : L) :

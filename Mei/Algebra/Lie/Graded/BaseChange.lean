@@ -7,7 +7,7 @@ module
 
 public import Mei.Algebra.DirectSum.BaseChange
 public import Mei.Algebra.PositiveDegrees.BaseChange
-public import Mei.Algebra.Lie.Graded.Truncation
+public import Mei.Algebra.Lie.Graded.Truncation.Basic
 public import Mei.Algebra.Lie.Quotient.Map
 public import TauCeti.Algebra.Lie.BaseChange.Quotient
 public import TauCeti.LinearAlgebra.TensorProduct.Submodule
