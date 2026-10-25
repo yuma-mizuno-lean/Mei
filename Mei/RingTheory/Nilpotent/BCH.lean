@@ -39,9 +39,7 @@ private theorem mul_four_eq_zero_of_pow_eq_bot (I : Ideal A) (hI : I ^ 4 = ⊥)
 
 variable [Algebra ℚ A]
 
-set_option maxRecDepth 4096 in
-set_option maxHeartbeats 1200000 in
--- The cubic expansion contains many words before the degree-four reductions.
+-- Separate the homogeneous terms before expanding the powers of the logarithm.
 private theorem algebra_bch3 (x y : A)
     (h4 : ∀ a b c d : A, (a = x ∨ a = y) → (b = x ∨ b = y) →
       (c = x ∨ c = y) → (d = x ∨ d = y) → a * (b * (c * d)) = 0) :
@@ -67,10 +65,35 @@ private theorem algebra_bch3 (x y : A)
   have hyyxy : y * (y * (x * y)) = 0 := h4 _ _ _ _ (by simp) (by simp) (by simp) (by simp)
   have hyyyx : y * (y * (y * x)) = 0 := h4 _ _ _ _ (by simp) (by simp) (by simp) (by simp)
   have hyyyy : y * (y * (y * y)) = 0 := h4 _ _ _ _ (by simp) (by simp) (by simp) (by simp)
+  -- Products of total degree at least four vanish, so square and cube reduce separately.
+  let l := x + y
+  let q := (1 / 2 : ℚ) • x ^ 2 + x * y + (1 / 2 : ℚ) • y ^ 2
+  let c := (1 / 6 : ℚ) • x ^ 3 + (1 / 2 : ℚ) • (x ^ 2 * y) +
+    (1 / 2 : ℚ) • (x * y ^ 2) + (1 / 6 : ℚ) • y ^ 3
+  have he : (1 + x + (1 / 2 : ℚ) • x ^ 2 + (1 / 6 : ℚ) • x ^ 3) *
+      (1 + y + (1 / 2 : ℚ) • y ^ 2 + (1 / 6 : ℚ) • y ^ 3) - 1 = l + q + c := by
+    dsimp [l, q, c]
+    noncomm_ring [hxxxx, hxxxy, hxxyx, hxxyy, hxyxx, hxyxy, hxyyx, hxyyy,
+      hyxxx, hyxxy, hyxyx, hyxyy, hyyxx, hyyxy, hyyyx, hyyyy, smul_add, smul_sub,
+      smul_smul, smul_neg, add_smul, sub_smul]
+    module
+  have he2 : (l + q + c) ^ 2 = l ^ 2 + l * q + q * l := by
+    dsimp [l, q, c]
+    noncomm_ring [hxxxx, hxxxy, hxxyx, hxxyy, hxyxx, hxyxy, hxyyx, hxyyy,
+      hyxxx, hyxxy, hyxyx, hyxyy, hyyxx, hyyxy, hyyyx, hyyyy, smul_add, smul_sub,
+      smul_smul, smul_neg, add_smul, sub_smul]
+    module
+  have he3 : (l + q + c) ^ 3 = l ^ 3 := by
+    rw [pow_succ, he2]
+    dsimp [l, q, c]
+    noncomm_ring [hxxxx, hxxxy, hxxyx, hxxyy, hxyxx, hxyxy, hxyyx, hxyyy,
+      hyxxx, hyxxy, hyxyx, hyxyy, hyyxx, hyyxy, hyyyx, hyyyy, smul_add, smul_sub,
+      smul_smul, smul_neg, add_smul, sub_smul]
+    module
   dsimp only
-  noncomm_ring [hxxxx, hxxxy, hxxyx, hxxyy, hxyxx, hxyxy, hxyyx, hxyyy,
-    hyxxx, hyxxy, hyxyx, hyxyy, hyyxx, hyyxy, hyyyx, hyyyy, smul_add, smul_sub, smul_smul,
-    smul_neg, add_smul, sub_smul]
+  rw [he, he2, he3]
+  dsimp [l, q, c]
+  noncomm_ring [smul_add, smul_sub, smul_smul, smul_neg, add_smul, sub_smul]
   module
 
 /-- The Baker–Campbell–Hausdorff formula is exact through degree three in a
