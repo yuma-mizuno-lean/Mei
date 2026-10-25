@@ -29,7 +29,8 @@ linear inverse; the compatible-family carrier is `SemimoduleCat.sectionsSubmodul
 Linear chamber maps `α j : E →ₗ[R] I.right j` from an arbitrary semimodule whose incident
 pairs lie in each span image assemble to a linear map `piCompatibleFamilies` into compatible
 families. For jointly injective spans, `sectionsLift` glues them to a linear map into matching
-sections, and `existsUnique_sections_lift_iff` shows that such a gluing exists, and is then
+sections whose face values map to the incident chamber values, and
+`existsUnique_sections_lift_iff` shows that such a gluing exists, and is then
 unique, precisely when every incident pair lies in the span image.
 -/
 
@@ -222,6 +223,32 @@ theorem sectionsLift_apply_right
       LinearMap.range ((I.fst b).hom.prod (I.snd b).hom)) (x : E) (j : J.R) :
     (I.sectionsLift α h hα x).val (.right j) = α j x :=
   I.matchingFamilyEquiv_symm_apply_right h _ j
+
+/-- The glued matching section is the reconstruction of the assembled compatible family. -/
+theorem sectionsLift_apply
+    (h : ∀ b, Function.Injective ((I.fst b).hom.prod (I.snd b).hom))
+    (hα : ∀ x b, (α (J.fst b) x, α (J.snd b) x) ∈
+      LinearMap.range ((I.fst b).hom.prod (I.snd b).hom)) (x : E) :
+    I.sectionsLift α h hα x =
+      (I.matchingFamilyEquiv h).symm (I.piCompatibleFamilies α hα x) := (rfl)
+
+/-- The glued face value maps to the first incident chamber value. -/
+@[simp]
+theorem fst_sectionsLift_apply_left
+    (h : ∀ b, Function.Injective ((I.fst b).hom.prod (I.snd b).hom))
+    (hα : ∀ x b, (α (J.fst b) x, α (J.snd b) x) ∈
+      LinearMap.range ((I.fst b).hom.prod (I.snd b).hom)) (x : E) (b : J.L) :
+    I.fst b ((I.sectionsLift α h hα x).val (.left b)) = α (J.fst b) x :=
+  I.fst_matchingFamilyEquiv_symm_apply_left h _ b
+
+/-- The glued face value maps to the second incident chamber value. -/
+@[simp]
+theorem snd_sectionsLift_apply_left
+    (h : ∀ b, Function.Injective ((I.fst b).hom.prod (I.snd b).hom))
+    (hα : ∀ x b, (α (J.fst b) x, α (J.snd b) x) ∈
+      LinearMap.range ((I.fst b).hom.prod (I.snd b).hom)) (x : E) (b : J.L) :
+    I.snd b ((I.sectionsLift α h hα x).val (.left b)) = α (J.snd b) x :=
+  I.snd_matchingFamilyEquiv_symm_apply_left h _ b
 
 /-- When each face span is jointly injective, linear chamber maps `α` extend uniquely to a
 linear map into matching sections iff every incident pair `(α (fst b) x, α (snd b) x)` lies in
