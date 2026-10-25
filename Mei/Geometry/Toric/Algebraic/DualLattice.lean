@@ -35,7 +35,7 @@ theorem realCharacter_toIntLinearMap (h : IsIntegralLattice i) :
       h.isBaseChange.toDual.comp (addMonoidHomLequivInt ℤ).toLinearMap := by
   apply LinearMap.ext
   intro m
-  change h.realCharacter m = h.isBaseChange.toDual (addMonoidHomLequivInt ℤ m)
+  simp only [AddMonoidHom.coe_toIntLinearMap, LinearMap.comp_apply, LinearEquiv.coe_coe]
   symm
   apply h.eq_realCharacter
   intro n
