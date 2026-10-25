@@ -16,9 +16,14 @@ The homogeneous piece of length `n` is spanned by bracketed words with `n` leave
 These pieces form an internal Lie grading over any commutative ring, without a
 basis or a characteristic-zero hypothesis.
 
-Length separation uses the mode-one lift into `LieAlgebra.loopAlgebra` and
-`LieAlgebra.LoopAlgebra.toFinsupp`. Generation uses
-`TauCeti.FreeLieAlgebra.lieSpan_range_of_eq_top`.
+The grading identifies lower central terms by word length and supports degree
+truncations of free Lie algebras.
+
+## References
+
+* `LieAlgebra.loopAlgebra` and `LieAlgebra.LoopAlgebra.toFinsupp`: loop algebras and
+  their coefficients.
+* `TauCeti.FreeLieAlgebra.lieSpan_range_of_eq_top`: Lie generation by the canonical generators.
 -/
 
 public section
@@ -30,6 +35,9 @@ namespace Mei.FreeLieAlgebra
 variable (R : Type*) [CommRing R] {S : Type*}
 
 local notation "F" => _root_.FreeLieAlgebra R S
+
+-- Supply the endomorphism Lie ring required by `LieAlgebra.ad`.
+attribute [local instance] LieRing.ofAssociativeRing
 
 /-- Evaluate a bracketed word in the canonical generators of the free Lie algebra. -/
 noncomputable def word : FreeMagma S → F
@@ -65,20 +73,11 @@ theorem span_range_word (S : Type*) :
   let P := Submodule.span R (Set.range (word R : FreeMagma S → _root_.FreeLieAlgebra R S))
   have hlie (x : _root_.FreeLieAlgebra R S) (hx : x ∈ P)
       (y : _root_.FreeLieAlgebra R S) (hy : y ∈ P) : ⁅x, y⁆ ∈ P := by
-    induction hx using Submodule.span_induction with
-    | mem x hx =>
-      obtain ⟨u, rfl⟩ := hx
-      induction hy using Submodule.span_induction with
-      | mem y hy =>
-        obtain ⟨v, rfl⟩ := hy
-        rw [← word_mul]
-        exact Submodule.subset_span ⟨u * v, rfl⟩
-      | zero => simp
-      | add y z _ _ hy hz => simpa only [lie_add] using add_mem hy hz
-      | smul r y _ hy => simpa only [lie_smul] using Submodule.smul_mem _ r hy
-    | zero => simp
-    | add x z _ _ hx hz => simpa only [add_lie] using add_mem hx hz
-    | smul r x _ hx => simpa only [smul_lie] using Submodule.smul_mem _ r hx
+    refine LinearMap.BilinMap.apply_apply_mem_of_mem_span P _ _
+      (LieAlgebra.ad R (_root_.FreeLieAlgebra R S)).toLinearMap ?_ x y hx hy
+    rintro _ ⟨u, rfl⟩ _ ⟨v, rfl⟩
+    rw [LieHom.coe_toLinearMap, LieAlgebra.ad_apply, ← word_mul]
+    exact Submodule.subset_span ⟨u * v, rfl⟩
   let K : LieSubalgebra R (_root_.FreeLieAlgebra R S) :=
     { P with lie_mem' := fun {x y} hx hy => hlie x hx y hy }
   have hK : LieSubalgebra.lieSpan R (_root_.FreeLieAlgebra R S)
@@ -103,23 +102,14 @@ instance homogeneousSubmodule_gradedBracket :
     SetLike.GradedBracket (homogeneousSubmodule R S) (homogeneousSubmodule R S) where
   bracket_mem := by
     intro i j x y hx hy
-    induction hx using Submodule.span_induction with
-    | mem x hx =>
-      obtain ⟨u, hu, rfl⟩ := hx
-      induction hy using Submodule.span_induction with
-      | mem y hy =>
-        obtain ⟨v, hv, rfl⟩ := hy
-        rw [← word_mul]
-        have h := word_mem_homogeneousSubmodule R (u * v)
-        have hu' : u.length = i := hu
-        have hv' : v.length = j := hv
-        simpa only [FreeMagma.length, hu', hv', vadd_eq_add] using h
-      | zero => simp
-      | add y z _ _ hy hz => simpa only [lie_add] using add_mem hy hz
-      | smul r y _ hy => simpa only [lie_smul] using Submodule.smul_mem _ r hy
-    | zero => simp
-    | add x z _ _ hx hz => simpa only [add_lie] using add_mem hx hz
-    | smul r x _ hx => simpa only [smul_lie] using Submodule.smul_mem _ r hx
+    refine LinearMap.BilinMap.apply_apply_mem_of_mem_span
+      (homogeneousSubmodule R S (i + j)) _ _ (LieAlgebra.ad R F).toLinearMap ?_ x y hx hy
+    rintro _ ⟨u, hu, rfl⟩ _ ⟨v, hv, rfl⟩
+    rw [LieHom.coe_toLinearMap, LieAlgebra.ad_apply, ← word_mul]
+    have h := word_mem_homogeneousSubmodule R (u * v)
+    have hu' : u.length = i := hu
+    have hv' : v.length = j := hv
+    simpa only [FreeMagma.length, hu', hv', vadd_eq_add] using h
 
 private noncomputable def loopLift :
     F →ₗ⁅R⁆ LieAlgebra.loopAlgebra R ℕ F :=

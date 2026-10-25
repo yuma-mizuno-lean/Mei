@@ -7,7 +7,7 @@ module
 
 public import Mei.RingTheory.HopfAlgebra.Dynkin
 public import Mei.RingTheory.HopfAlgebra.Ideal
-public import Mei.RingTheory.FilteredAlgebra.TensorProduct
+public import Mei.RingTheory.FilteredAlgebra.TensorProduct.Basic
 public import TauCeti.Algebra.Lie.UniversalEnveloping.Derivation.Basic
 public import TauCeti.Algebra.Lie.UniversalEnveloping.Augmentation.Basic
 

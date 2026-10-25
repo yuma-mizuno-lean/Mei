@@ -15,9 +15,8 @@ If a homogeneous family generates a graded algebra, each graded piece is spanned
 by words in that family of precisely the required total degree. No basis,
 commutativity of the algebra, or positivity of the grading is required.
 
-The global word spanning property is `Algebra.adjoin_eq_span`, with words
-parametrized using `FreeMonoid.mrange_lift`. Homogeneous projection selects the
-words of a prescribed degree.
+This spanning description reduces questions about a graded piece to words of a prescribed
+total degree, allowing bounds on generator degrees to control the lengths of those words.
 -/
 
 public section
@@ -26,7 +25,7 @@ namespace Mei.GradedAlgebra
 
 open _root_.GradedAlgebra
 
-variable {Γ R A S : Type*} [AddCommMonoid Γ] [DecidableEq Γ]
+variable {Γ R A S : Type*} [AddMonoid Γ] [DecidableEq Γ]
   [CommSemiring R] [Semiring A] [Algebra R A]
   (𝒜 : Γ → Submodule R A) [GradedAlgebra 𝒜]
 
@@ -34,6 +33,8 @@ variable {Γ R A S : Type*} [AddCommMonoid Γ] [DecidableEq Γ]
 theorem grade_eq_span_words (e : S → A) (deg : S → Γ)
     (he : Algebra.adjoin R (Set.range e) = ⊤) (hhom : ∀ s, e s ∈ 𝒜 (deg s)) (n : Γ) :
     𝒜 n = Submodule.span R {a | ∃ l : List S, (l.map deg).sum = n ∧ (l.map e).prod = a} := by
+  -- The global word span comes from `Algebra.adjoin_eq_span`, with words parametrized by
+  -- `FreeMonoid.mrange_lift`.
   have hclosure : (Submonoid.closure (Set.range e) : Set A) =
       Set.range (fun l : List S => (l.map e).prod) := by
     rw [← FreeMonoid.mrange_lift, MonoidHom.coe_mrange]

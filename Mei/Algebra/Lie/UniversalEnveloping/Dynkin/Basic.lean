@@ -12,8 +12,10 @@ public import TauCeti.Algebra.Lie.UniversalEnveloping.HopfAlgebra
 # Dynkin operators in universal enveloping algebras
 
 The Dynkin operator associated with any lifted Lie derivation has values in the canonical
-Lie image. A strengthened induction on right factors proves this without a basis, grading,
-or injectivity assumption on the canonical map.
+Lie image. This supplies a Lie representative for the Dynkin value; in a positive
+grading over a rational algebra, inverse Euler scaling then reconstructs primitive
+elements in the Lie image. No basis, grading, or injectivity assumption is needed
+for the Lie-image result itself.
 -/
 
 public section
@@ -21,7 +23,7 @@ public section
 open scoped TensorProduct
 attribute [local instance 100] LieRing.ofAssociativeRing
 
-namespace Mei.UniversalEnvelopingAlgebra
+namespace LieDerivation
 variable {R L : Type*} [CommRing R] [LieRing L] [LieAlgebra R L]
 local notation "U" => UniversalEnvelopingAlgebra R L
 local notation "ι" => UniversalEnvelopingAlgebra.ι R
@@ -65,4 +67,4 @@ theorem dynkinOperator_mem_range_ι (D : LieDerivation R L L) (a : U) :
     rw [Mei.HopfAlgebra.dynkinOperator_one]
     exact P.zero_mem)
 
-end Mei.UniversalEnvelopingAlgebra
+end LieDerivation
