@@ -42,10 +42,4 @@ def sectionsSubmodule (F : J ⥤ SemimoduleCat R) : Submodule R (∀ j, F.obj j)
 theorem mem_sectionsSubmodule {F : J ⥤ SemimoduleCat R} {s : ∀ j, F.obj j} :
     s ∈ sectionsSubmodule F ↔ ∀ {j j'} (f : j ⟶ j'), F.map f (s j) = s j' := Iff.rfl
 
-/-- A matching family is compatible with every arrow of the diagram. -/
-theorem map_sectionsSubmodule_apply (F : J ⥤ SemimoduleCat R)
-    (s : sectionsSubmodule F) {i j : J} (f : i ⟶ j) :
-    (F.map f).hom (s.1 i) = s.1 j :=
-  mem_sectionsSubmodule.1 s.2 f
-
 end SemimoduleCat
