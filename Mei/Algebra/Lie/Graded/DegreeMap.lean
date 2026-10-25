@@ -35,16 +35,6 @@ variable {d : PositiveDegrees N} {e : PositiveDegrees N'} {T : PositiveDegreeMap
   [DecidableEq N] [DecidableEq N'] [GradedLieAlgebra ℒ] [GradedLieAlgebra ℒ']
   [IsPositiveGrading d ℒ] [IsPositiveGrading e ℒ']
 
-/-- A graded Lie homomorphism takes the source degree ideal into the target
-ideal at the cutoffs prescribed by its modulus. -/
-theorem degreeIdeal_le_comap (f : GradedLieHom T ℒ ℒ') (k : ℕ) :
-    d.degreeIdeal ℒ (T.modulus k) ≤ (e.degreeIdeal ℒ' k).comap f.toLieHom := by
-  rw [← LieSubmodule.toSubmodule_le_toSubmodule, LieIdeal.comap_toSubmodule,
-    d.degreeIdeal_toSubmodule, e.degreeIdeal_toSubmodule,
-    ← Submodule.map_le_iff_le_comap]
-  exact d.map_degreeSubmodule_le ℒ T ℒ' f.toLieHom.toLinearMap
-    (fun _ _ hx => f.map_mem hx) k
-
 /-- Increasing the source cutoff changes the induced map only by precomposition
 with the source truncation transition. -/
 @[simp]

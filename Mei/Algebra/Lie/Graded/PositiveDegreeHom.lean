@@ -105,13 +105,8 @@ No decomposition or positivity hypothesis on the target pieces is needed. -/
 theorem map_degreeSubmodule_le (f : GradedLieHom T ℒ ℳ) (k : ℕ) :
     (d.degreeSubmodule ℒ (T.modulus k)).map f.toLieHom.toLinearMap ≤
       e.degreeSubmodule ℳ k := by
-  rw [d.degreeSubmodule_def, Submodule.map_iSup]
-  refine iSup_le fun n => Submodule.map_le_iff_le_comap.mpr fun x hx => ?_
-  by_cases hn : n.val ∈ d.monoid
-  · exact e.le_degreeSubmodule ℳ (T.degree_gt k hn n.property) (f.map_mem hx)
-  · have hx0 : x = 0 := by
-      simpa [IsPositiveGrading.eq_bot (d := d) (ℒ := ℒ) n.val (Or.inl hn)] using hx
-    simp [hx0]
+  exact d.map_degreeSubmodule_le ℒ T ℳ f.toLieHom.toLinearMap
+    (fun _ _ hx => f.map_mem hx) k
 
 variable [DecidableEq N] [DecidableEq M] [DecidableEq P]
   [GradedLieAlgebra ℒ] [GradedLieAlgebra ℳ] [GradedLieAlgebra ℋ]
