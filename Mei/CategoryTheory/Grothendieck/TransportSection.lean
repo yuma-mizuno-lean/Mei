@@ -6,7 +6,6 @@ Authors: Codex
 module
 
 public import Mei.CategoryTheory.Grothendieck.Section
-public import Mathlib.CategoryTheory.Groupoid
 public import Mathlib.Algebra.Category.Grp.Limits
 
 /-!
@@ -154,6 +153,8 @@ abbrev sectionFunctor : GrothendieckSection L ⥤ CategoryTheory.Grothendieck.Se
   map_comp α β := by
     apply CategoryTheory.Grothendieck.Section.hom_ext
     intro d
+    -- `Functor.map_comp` does not match through `Section.hom`'s fiber wrapper.
+    -- Expose its componentwise composition so `hom_toSectionHom` can rewrite each factor.
     change (CategoryTheory.Grothendieck.Section.hom (toSectionHom (α ≫ β))).app d =
       (CategoryTheory.Grothendieck.Section.hom (toSectionHom α)).app d ≫
         (CategoryTheory.Grothendieck.Section.hom (toSectionHom β)).app d
@@ -297,6 +298,10 @@ theorem completedLabelIso_hom_π (α : s ⟶ t)
       limit.π (s.toFunctor ⋙ A) d ≫ A.map ((Grothendieck.ι L d).map (α.app d)) := by
   unfold completedLabelIso
   erw [HasLimit.isoOfNatIso_hom_π]
+  -- `hom_toSectionHom` cannot match inside the composite functor's `mapIso` projection.
+  -- Its component reduces to the whiskering of `toSectionHom α` by `A`, identifying
+  -- the total functors of `s.toSection` and `t.toSection`
+  -- with `s.toFunctor` and `t.toFunctor`, respectively.
   change limit.π (s.toFunctor ⋙ A) d ≫
     A.map ((CategoryTheory.Grothendieck.Section.hom (toSectionHom α)).app d) = _
   rw [hom_toSectionHom, toNatTrans_app]
@@ -310,6 +315,10 @@ theorem completedLabelIso_inv_π (α : s ⟶ t)
       limit.π (t.toFunctor ⋙ A) d ≫ A.map ((Grothendieck.ι L d).map (inv (α.app d))) := by
   unfold completedLabelIso
   erw [HasLimit.isoOfNatIso_inv_π]
+  -- `hom_toSectionHom` cannot match inside the composite functor's inverse `mapIso` projection.
+  -- Its component reduces to the whiskering of `toSectionHom (inv α)` by `A`, identifying
+  -- the total functors of `t.toSection` and `s.toSection`
+  -- with `t.toFunctor` and `s.toFunctor`, respectively.
   change limit.π (t.toFunctor ⋙ A) d ≫
     A.map ((CategoryTheory.Grothendieck.Section.hom (toSectionHom (inv α))).app d) = _
   rw [hom_toSectionHom, toNatTrans_app, inv_app]
