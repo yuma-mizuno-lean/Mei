@@ -146,7 +146,10 @@ theorem commute_of_mem_wallGroup {w v : SupportedRay d} {m m' : Λ →+ ℤ}
   rw [map_mul, map_mul]
   have hlie := H.lie_eq_zero_of_mem_truncatedRayLieSubalgebra
     ((H.mem_wallGroup w m g).mp hg k) ((H.mem_wallGroup v m' h).mp hh k) hc he hm
-  exact (BCHGroup.commute_of_lie_log_eq_zero _ _ hlie).eq
+  have hc := BCHGroup.commute_exp_of_lie_eq_zero _ _ hlie
+  rw [BCHGroup.exp_log (L := d.truncatedLie ℒ k) (CompletedGroup.projection k g),
+    BCHGroup.exp_log (L := d.truncatedLie ℒ k) (CompletedGroup.projection k h)] at hc
+  exact hc.eq
 
 /-- Every completed wall group is abelian. -/
 noncomputable instance wallGroup_isMulCommutative (w : SupportedRay d) (m : Λ →+ ℤ) :
