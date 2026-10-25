@@ -45,7 +45,7 @@ namespace Mei.CategoryTheory.Grothendieck
 variable {D : Type u} [Category.{v} D] (C : D ⥤ Cat.{w, z})
 
 /-- Sections of the projection to the base, with natural transformations over its identity. -/
-abbrev Section :=
+abbrev Section : Type _ :=
   Functor.Fiber ((whiskeringRight D (Grothendieck C) D).obj (forget C)) (𝟭 D)
 
 namespace Section
