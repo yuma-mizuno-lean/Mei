@@ -26,72 +26,6 @@ public section
 
 open scoped Pointwise
 
-namespace PointedCone
-
-section Algebra
-
-variable {V : Type*} [AddCommGroup V] [Module ℝ V]
-
-/-- The recession cone of the carrier of a pointed cone is the cone itself. -/
-@[simp]
-theorem recessionCone_coe (C : PointedCone ℝ V) : Set.recessionCone (C : Set V) = C := by
-  ext v
-  rw [Set.mem_recessionCone]
-  constructor
-  · intro hv
-    simpa using hv 0 C.zero_mem 1 zero_le_one
-  · intro hv x hx t ht
-    exact C.add_mem hx (PointedCone.smul_mem C ht hv)
-
-end Algebra
-
-variable {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
-
-/-- A pointed cone with a finite continuous affine inequality presentation has
-a finite homogeneous inequality presentation, even in infinite dimension. -/
-theorem dualFG_of_isConvexPolyhedron (C : PointedCone ℝ V)
-    (hC : TauCeti.IsConvexPolyhedron (C : Set V)) :
-    C.DualFG (LinearMap.id : Module.Dual ℝ V →ₗ[ℝ] Module.Dual ℝ V) := by
-  classical
-  obtain ⟨n, g, hg⟩ := TauCeti.isConvexPolyhedron_iff.mp hC
-  have hne : {x : V | ∀ i, g i x ≤ 0}.Nonempty := by
-    rw [← hg]
-    exact ⟨0, C.zero_mem⟩
-  have hlin (x : V) : x ∈ C ↔ ∀ i, (g i).linear x ≤ 0 := by
-    calc
-      x ∈ C ↔ x ∈ Set.recessionCone (C : Set V) := by rw [C.recessionCone_coe]
-      _ ↔ x ∈ Set.recessionCone {x : V | ∀ i, g i x ≤ 0} := by rw [hg]
-      _ ↔ ∀ i, (g i).linear x ≤ 0 := by
-        simpa only [ContinuousAffineMap.coe_toAffineMap] using
-          (Set.mem_recessionCone_setOf_forall_iff
-            (g := fun i => (g i).toAffineMap) hne (v := x))
-  refine ⟨Finset.univ.image (fun i => -(g i).linear), ?_⟩
-  ext x
-  constructor
-  · intro hx
-    apply (hlin x).mpr
-    intro i
-    have hi := hx (Finset.mem_image.mpr ⟨i, Finset.mem_univ _, rfl⟩)
-    simpa using hi
-  · intro hx f hf
-    obtain ⟨i, _, rfl⟩ := Finset.mem_image.mp hf
-    simpa using (hlin x).mp hx i
-
-variable [FiniteDimensional ℝ V]
-
-/-- A convex polyhedral pointed cone is finitely generated, allowing lineality. -/
-theorem fg_of_isConvexPolyhedron (C : PointedCone ℝ V)
-    (hC : TauCeti.IsConvexPolyhedron (C : Set V)) : C.FG :=
-  (C.dualFG_of_isConvexPolyhedron hC).fg
-
-/-- Real finite-dimensional pointed cones are finitely generated exactly when
-their carriers are convex polyhedra. -/
-theorem fg_iff_isConvexPolyhedron {C : PointedCone ℝ V} :
-    C.FG ↔ TauCeti.IsConvexPolyhedron (C : Set V) :=
-  ⟨Submodule.FG.cone_isConvexPolyhedron, C.fg_of_isConvexPolyhedron⟩
-
-end PointedCone
-
 namespace TauCeti.IsConvexPolyhedron
 
 variable {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
@@ -122,6 +56,8 @@ theorem exists_finset_convexHull_add_recessionCone (hP : TauCeti.IsConvexPolyhed
       P = convexHull ℝ (Q : Set V) + (Set.recessionCone P : Set V) := by
   classical
   obtain ⟨s, hs⟩ := hP.fg_homogenization
+  -- `FG` gives a submodule span over nonnegative scalars. `PointedCone.hull` abbreviates
+  -- that span, so `change` presents it in the form required by the slice lemmas.
   change PointedCone.hull ℝ (s : Set (V × ℝ)) = Set.homogenization P at hs
   have hsheight : ∀ z ∈ s, 0 ≤ z.2 := by
     intro z hz
@@ -130,16 +66,13 @@ theorem exists_finset_convexHull_add_recessionCone (hP : TauCeti.IsConvexPolyhed
     exact PointedCone.subset_hull hz
   have hone : {x : V | (x, (1 : ℝ)) ∈ PointedCone.hull ℝ (s : Set (V × ℝ))} = P := by
     ext x
-    change (x, (1 : ℝ)) ∈ PointedCone.hull ℝ (s : Set (V × ℝ)) ↔ x ∈ P
-    rw [hs]
+    simp only [Set.mem_ofPred_eq, hs]
     exact hP.convex.mem_homogenization_one_iff hP.isClosed
   have hzero : (PointedCone.hull ℝ (Finset.zeroSliceGenerators s : Set V) : Set V) =
       (Set.recessionCone P : Set V) := by
     rw [← Finset.slice_zero_hull s hsheight]
     ext x
-    change (x, (0 : ℝ)) ∈ PointedCone.hull ℝ (s : Set (V × ℝ)) ↔
-      x ∈ Set.recessionCone P
-    rw [hs]
+    simp only [Set.mem_ofPred_eq, SetLike.mem_coe, hs]
     exact hP.convex.mem_homogenization_zero_iff hne hP.isClosed
   refine ⟨Finset.positiveSliceGenerators s, ?_, ?_⟩
   · intro x hx

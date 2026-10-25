@@ -129,3 +129,20 @@ theorem isClosed_recessionCone {P : Set V} (hP : IsClosed P) :
 end Topology
 
 end Set
+
+namespace PointedCone
+
+variable {V : Type*} [AddCommGroup V] [Module ℝ V]
+
+/-- The recession cone of the carrier of a pointed cone is the cone itself. -/
+@[simp]
+theorem recessionCone_coe (C : PointedCone ℝ V) : Set.recessionCone (C : Set V) = C := by
+  ext v
+  rw [Set.mem_recessionCone]
+  constructor
+  · intro hv
+    simpa using hv 0 C.zero_mem 1 zero_le_one
+  · intro hv x hx t ht
+    exact C.add_mem hx (PointedCone.smul_mem C ht hv)
+
+end PointedCone
