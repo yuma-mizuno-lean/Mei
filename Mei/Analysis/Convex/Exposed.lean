@@ -9,9 +9,10 @@ public import Mathlib.Analysis.Convex.Exposed
 public import Mathlib.Topology.Algebra.Affine
 
 /-!
-# Affine transport of exposed subsets
+# Intersections and affine transport of exposed subsets
 
-An affine equivalence with continuous inverse carries exposed subsets to
+Intersections of exposed subsets are exposed in the intersection of their
+ambient sets. An affine equivalence with continuous inverse carries exposed subsets to
 exposed subsets. Composing an exposing linear functional with the inverse
 linear part preserves all comparisons: the inverse translation contributes
 the same additive constant at every point.
@@ -20,6 +21,39 @@ the same additive constant at every point.
 public section
 
 namespace IsExposed
+
+section Intersections
+
+variable {R V : Type*} [TopologicalSpace R] [Ring R] [PartialOrder R] [IsOrderedRing R]
+  [ContinuousAdd R] [AddCommMonoid V] [TopologicalSpace V] [Module R V] {P Q F G : Set V}
+
+/-- Intersections of exposed subsets are exposed in the intersection of their
+ambient sets. This includes empty intersections and requires no convexity. -/
+theorem inter_inter (hF : IsExposed R P F) (hG : IsExposed R Q G) :
+    IsExposed R (P ∩ Q) (F ∩ G) := by
+  rintro ⟨p, hpF, hpG⟩
+  obtain ⟨l, hl⟩ := hF ⟨p, hpF⟩
+  obtain ⟨m, hm⟩ := hG ⟨p, hpG⟩
+  have hpL := hl ▸ hpF
+  have hpM := hm ▸ hpG
+  refine ⟨l + m, Set.Subset.antisymm ?_ ?_⟩
+  · rintro x ⟨hxF, hxG⟩
+    have hxL := hl ▸ hxF
+    have hxM := hm ▸ hxG
+    exact ⟨⟨hxL.1, hxM.1⟩, fun y hy => add_le_add (hxL.2 y hy.1) (hxM.2 y hy.2)⟩
+  · rintro x ⟨⟨hxP, hxQ⟩, hxmax⟩
+    have hsum := hxmax p ⟨hpL.1, hpM.1⟩
+    constructor
+    · rw [hl]
+      refine ⟨hxP, fun y hy => ?_⟩
+      exact (add_le_add_iff_right (m x)).mp
+        ((add_le_add (hpL.2 y hy) (hpM.2 x hxQ)).trans hsum)
+    · rw [hm]
+      refine ⟨hxQ, fun y hy => ?_⟩
+      exact (add_le_add_iff_left (l x)).mp
+        ((add_le_add (hpL.2 x hxP) (hpM.2 y hy)).trans hsum)
+
+end Intersections
 
 variable {R V W : Type*} [Ring R] [PartialOrder R] [IsOrderedRing R] [TopologicalSpace R]
   [AddCommGroup V] [TopologicalSpace V] [IsTopologicalAddGroup V] [Module R V]

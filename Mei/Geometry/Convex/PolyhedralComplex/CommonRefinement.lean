@@ -5,6 +5,7 @@ Authors: Codex
 -/
 module
 
+public import Mei.Analysis.Convex.Exposed
 public import Mei.Geometry.Convex.PolyhedralComplex.Basic
 public import Mei.Geometry.Convex.Polyhedron.Face.Intersection
 
