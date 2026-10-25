@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.Convex.PolyhedralComplex.CrossingWord
+public import Mei.Geometry.Convex.PolyhedralComplex.PathSubdivision
 
 /-!
 # Finite wall diagrams and path products
@@ -13,7 +13,8 @@ public import Mei.Geometry.Convex.PolyhedralComplex.CrossingWord
 A finite wall diagram labels the walls of a fixed polyhedral complex in a group.
 Coorientations are represented by linear functionals whose kernels are the wall
 directions. Evaluating the signed crossing word gives the path product, with the
-first crossing rightmost. Products respect concatenation, reversal and relabelling.
+first crossing rightmost. Products respect concatenation, reversal, path subdivision
+and relabelling.
 Positive rescaling of normals, or reversing chosen normals while inverting their
 labels, preserves every path product. Consistency means endpoint independence;
 it is equivalent to triviality of all admissible loop products.
@@ -85,6 +86,11 @@ theorem pathProduct_cons (p : AdmissiblePLPath x y) (e : y ⟶ z) :
 theorem pathProduct_comp (p : AdmissiblePLPath x y) (q : AdmissiblePLPath y z) :
     D.pathProduct (p.comp q) = D.pathProduct q * D.pathProduct p := by
   simp [pathProduct]
+
+/-- Subdividing a polygonal path by allowed interior vertices preserves its product. -/
+theorem pathProduct_eq_of_isSubdivision {p q : AdmissiblePLPath x y}
+    (hpq : p.IsSubdivision q) : D.pathProduct q = D.pathProduct p := by
+  rw [pathProduct_def, pathProduct_def, hpq.crossingWord_eq]
 
 /-- Reversal inverts the entire path product. -/
 @[simp]
