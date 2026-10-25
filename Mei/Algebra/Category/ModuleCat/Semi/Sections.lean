@@ -5,7 +5,7 @@ Authors: Claude Code
 -/
 module
 
-public import Mathlib.Algebra.Category.ModuleCat.Semi
+public import Mei.Algebra.Category.SemimoduleCat.Sections
 public import Mathlib.CategoryTheory.Limits.Shapes.Multiequalizer
 public import Mathlib.LinearAlgebra.Pi
 public import Mei.LinearAlgebra.CommonLift
@@ -47,24 +47,10 @@ section Sections
 
 variable {J : Type*} [Category* J] (F : J ⥤ SemimoduleCat.{v} R)
 
-/-- The families compatible with every arrow of a diagram of semimodules, as a submodule of the
-product of its objects. -/
-def sectionsSubmodule : Submodule R (∀ j, F.obj j) where
-  carrier := (F ⋙ forget (SemimoduleCat R)).sections
-  add_mem' {s t} hs ht j j' f := by simp [← hs f, ← ht f]
-  zero_mem' f := by simp
-  smul_mem' r s hs j j' f := by simp [← hs f]
-
-variable {F} in
-@[simp]
-theorem mem_sectionsSubmodule_iff {s : ∀ j, F.obj j} :
-    s ∈ sectionsSubmodule F ↔ ∀ ⦃i j : J⦄ (f : i ⟶ j), (F.map f).hom (s i) = s j :=
-  Iff.rfl
-
 /-- A matching family is compatible with every arrow of the diagram. -/
 theorem map_sectionsSubmodule_apply (s : sectionsSubmodule F) {i j : J} (f : i ⟶ j) :
     (F.map f).hom (s.1 i) = s.1 j :=
-  mem_sectionsSubmodule_iff.1 s.2 f
+  mem_sectionsSubmodule.1 s.2 f
 
 end Sections
 
@@ -155,7 +141,7 @@ private theorem multispanExtend_apply_right (s : multispanRightSections F) (x : 
 
 private theorem multispanExtend_mem (s : multispanRightSections F) :
     multispanExtend hF s ∈ sectionsSubmodule F := by
-  rw [mem_sectionsSubmodule_iff]
+  rw [mem_sectionsSubmodule]
   rintro _ _ (_ | b | b) <;> simp
 
 /-- A matching family is the extension of its restriction to the right objects. -/
