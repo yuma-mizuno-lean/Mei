@@ -18,12 +18,6 @@ public import Mathlib.Tactic.Module
 The sweep of a set `P` in the direction `n` is `P - ℝ≥0 • n`. When `n` is
 outside the affine direction of `P`, a normalized linear height recovers both
 prism coordinates. This also gives closedness without a compactness hypothesis.
-
-The height, uniqueness, outgoingness, closedness and dimension arguments are adapted
-from the roadmap's
-[sweep prototype](https://github.com/yuma-mizuno/TauCetiRoadmap/blob/9b9115dca5539f86f32bda388135321920596503/TauCetiRoadmap/ScatteringDiagrams/Formalized/SweepGeometry.lean).
-This module supplies a reusable library API, including the prism equivalence and
-convexity. It does not construct oriented cochains or rational-normal presentations.
 -/
 
 public section
@@ -35,10 +29,19 @@ section Algebra
 variable {V : Type*} [AddCommGroup V] [Module ℝ V]
 
 /-- The negative ray sweep of a set. -/
-@[expose] def sweep (P : Set V) (n : V) : Set V :=
+def sweep (P : Set V) (n : V) : Set V :=
   {y | ∃ x ∈ P, ∃ t : ℝ, 0 ≤ t ∧ y = x - t • n}
 
-/-- The base is the zero-height part of its sweep. -/
+/-- The sweep consists of base points translated by nonpositive multiples of `n`. -/
+theorem sweep_def (P : Set V) (n : V) :
+    sweep P n = {y | ∃ x ∈ P, ∃ t : ℝ, 0 ≤ t ∧ y = x - t • n} := (rfl)
+
+/-- A point belongs to the sweep exactly when it has base and nonnegative ray coordinates. -/
+@[simp]
+theorem mem_sweep_iff_exists {P : Set V} {n y : V} :
+    y ∈ sweep P n ↔ ∃ x ∈ P, ∃ t : ℝ, 0 ≤ t ∧ y = x - t • n := (Iff.rfl)
+
+/-- Every base point belongs to its sweep with ray parameter zero. -/
 theorem subset_sweep (P : Set V) (n : V) : P ⊆ sweep P n := by
   intro x hx
   exact ⟨x, hx, 0, le_rfl, by simp⟩
@@ -104,7 +107,7 @@ theorem sweep_coordinates_unique {P : Set V} {n : V} (hn : n ∉ vectorSpan ℝ 
   exact ⟨sub_left_inj.mp h, rfl⟩
 
 /-- The prism parameterization of a transverse sweep is a bijection. -/
-@[expose] noncomputable def sweepEquiv (P : Set V) (n : V)
+noncomputable def sweepEquiv (P : Set V) (n : V)
     (hn : n ∉ vectorSpan ℝ P) :
     (P × {t : ℝ // 0 ≤ t}) ≃ sweep P n :=
   Equiv.ofBijective
@@ -120,7 +123,19 @@ theorem sweep_coordinates_unique {P : Set V} {n : V} (hn : n ∉ vectorSpan ℝ 
 @[simp]
 theorem sweepEquiv_apply (P : Set V) (n : V) (hn : n ∉ vectorSpan ℝ P)
     (z : P × {t : ℝ // 0 ≤ t}) :
-    (sweepEquiv P n hn z : V) = z.1.1 - z.2.1 • n := rfl
+    (sweepEquiv P n hn z : V) = z.1.1 - z.2.1 • n := (rfl)
+
+/-- A normalized height gives the inverse prism coordinates explicitly. -/
+theorem sweepEquiv_symm_apply {P : Set V} {n : V} (hn : n ∉ vectorSpan ℝ P)
+    (f : V →ₗ[ℝ] ℝ) (c : ℝ) (hfn : f n = 1) (hfP : ∀ x ∈ P, f x = c)
+    (y : sweep P n) :
+    (sweepEquiv P n hn).symm y =
+      (⟨(y : V) + (c - f y) • n, ((mem_sweep_iff f c hfn hfP).mp y.property).2⟩,
+       ⟨c - f y, sub_nonneg.mpr ((mem_sweep_iff f c hfn hfP).mp y.property).1⟩) := by
+  apply (sweepEquiv P n hn).injective
+  apply Subtype.ext
+  simp only [Equiv.apply_symm_apply, sweepEquiv_apply]
+  module
 
 /-- Every positive translate of a base point leaves the entire sweep. -/
 theorem positive_translate_notMem_sweep {P : Set V} {n x : V}
@@ -185,7 +200,7 @@ theorem vectorSpan_sweep {P : Set V} (hP : P.Nonempty) (n : V) :
         (Submodule.subset_span (Set.mem_singleton n))
     have hh := (vectorSpan ℝ P ⊔ Submodule.span ℝ {n}).add_mem hbase
       ((vectorSpan ℝ P ⊔ Submodule.span ℝ {n}).smul_mem (s - t) hn)
-    change (x - t • n) - (y - s • n) ∈ _
+    simp only [vsub_eq_sub]
     have he : (x - t • n) - (y - s • n) = x - y + (s - t) • n := by module
     rw [he]
     exact hh
@@ -194,6 +209,14 @@ theorem vectorSpan_sweep {P : Set V} (hP : P.Nonempty) (n : V) :
     obtain ⟨x, hx⟩ := hP
     have hy : x - n ∈ sweep P n := ⟨x, hx, 1, zero_le_one, by simp⟩
     simpa using vsub_mem_vectorSpan ℝ (subset_sweep P n hx) hy
+
+/-- The affine dimension of a nonempty transverse sweep increases by one. -/
+theorem finrank_sweep [FiniteDimensional ℝ V] {P : Set V} {n : V} (hP : P.Nonempty)
+    (hn : n ∉ vectorSpan ℝ P) :
+    Module.finrank ℝ (vectorSpan ℝ (sweep P n)) =
+      Module.finrank ℝ (vectorSpan ℝ P) + 1 := by
+  rw [vectorSpan_sweep hP n]
+  exact Submodule.finrank_sup_span_singleton hn
 
 end Algebra
 
@@ -216,14 +239,6 @@ theorem isClosed_sweep {P : Set V} {n : V} (hP : IsClosed P)
     exact (isClosed_le f.continuous_of_finiteDimensional continuous_const).inter
       (hP.preimage (continuous_id.add
         ((continuous_const.sub f.continuous_of_finiteDimensional).smul continuous_const)))
-
-/-- The affine dimension of a nonempty transverse sweep increases by one. -/
-theorem finrank_sweep {P : Set V} {n : V} (hP : P.Nonempty)
-    (hn : n ∉ vectorSpan ℝ P) :
-    Module.finrank ℝ (vectorSpan ℝ (sweep P n)) =
-      Module.finrank ℝ (vectorSpan ℝ P) + 1 := by
-  rw [vectorSpan_sweep hP n]
-  exact Submodule.finrank_sup_span_singleton hn
 
 end Topology
 
