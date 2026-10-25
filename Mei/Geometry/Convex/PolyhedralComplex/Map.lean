@@ -7,7 +7,6 @@ module
 
 public import Mei.Geometry.Convex.PolyhedralComplex.Basic
 public import Mei.Geometry.Convex.Polyhedron.Rational.Map
-public import Mei.Analysis.Convex.Exposed
 
 /-!
 # Integral affine transport of finite polyhedral complexes
@@ -19,22 +18,6 @@ presentation API; translation vectors and affine offsets may be arbitrary.
 -/
 
 public section
-
-namespace IsExposed
-
-variable {N N' V W : Type*} [AddCommGroup N] [AddCommGroup N']
-  [NormedAddCommGroup V] [NormedAddCommGroup W] [NormedSpace ℝ V] [NormedSpace ℝ W]
-  {i : N →+ V} {i' : N' →+ W}
-  {h : TauCeti.Toric.IsIntegralLattice i} {h' : TauCeti.Toric.IsIntegralLattice i'}
-  {P F : Set V}
-
-/-- Integral affine equivalences preserve actual exposed subsets. -/
-theorem image_integralAffineEquiv (hF : IsExposed ℝ P F)
-    (e : Mei.Toric.IntegralAffineEquiv h h') : IsExposed ℝ (e '' P) (e '' F) := by
-  apply hF.image_affineEquiv e.toAffineEquiv
-  simpa only [Mei.Toric.IntegralAffineEquiv.symm_toAffineEquiv] using e.symm.continuous
-
-end IsExposed
 
 namespace Mei
 

@@ -6,6 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.Toric.Algebraic.RationalFunctional
+public import Mei.Analysis.Convex.Exposed
 public import Mathlib.Analysis.Normed.Module.FiniteDimension
 
 /-!
@@ -15,7 +16,8 @@ An integral affine equivalence is a real affine equivalence together with an
 isomorphism of the integral lattices compatible with its linear part. Its
 translation is arbitrary. Both directions pull rational functionals back to
 rational functionals. In normed spaces the integral lattice supplies finite
-dimensionality and hence continuity without further assumptions.
+dimensionality and hence continuity without further assumptions. These
+equivalences preserve exposed subsets.
 -/
 
 public section
@@ -209,3 +211,19 @@ theorem isRational_toContinuousAffineMap (e : IntegralAffineEquiv h h') :
 end IntegralAffineEquiv
 
 end Mei.Toric
+
+namespace IsExposed
+
+variable {N N' V W : Type*} [AddCommGroup N] [AddCommGroup N']
+  [NormedAddCommGroup V] [NormedAddCommGroup W] [NormedSpace ℝ V] [NormedSpace ℝ W]
+  {i : N →+ V} {i' : N' →+ W}
+  {h : TauCeti.Toric.IsIntegralLattice i} {h' : TauCeti.Toric.IsIntegralLattice i'}
+  {P F : Set V}
+
+/-- Integral affine equivalences preserve actual exposed subsets. -/
+theorem image_integralAffineEquiv (hF : IsExposed ℝ P F)
+    (e : Mei.Toric.IntegralAffineEquiv h h') : IsExposed ℝ (e '' P) (e '' F) := by
+  apply hF.image_affineEquiv e.toAffineEquiv
+  simpa only [Mei.Toric.IntegralAffineEquiv.symm_toAffineEquiv] using e.symm.continuous
+
+end IsExposed
