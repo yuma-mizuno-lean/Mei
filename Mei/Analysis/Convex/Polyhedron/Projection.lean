@@ -66,7 +66,7 @@ theorem nonnegElimFamily_pair_apply (g : ι → (V →ᴬ[ℝ] ℝ)) (a : ι →
 /-- Membership in the one-parameter projection is given by the explicit finite
 family of resultant affine inequalities. -/
 theorem exists_nonneg_affine_le_iff [Finite ι]
-    (g : ι → (V →ᴬ[ℝ] ℝ)) (a : ι → ℝ) (y : V) :
+    {g : ι → (V →ᴬ[ℝ] ℝ)} {a : ι → ℝ} {y : V} :
     (∃ t : ℝ, 0 ≤ t ∧ ∀ i, g i y + a i * t ≤ 0) ↔
       ∀ k : NonnegElimIndex a, nonnegElimFamily g a k y ≤ 0 := by
   have he : (∃ t : ℝ, 0 ≤ t ∧ ∀ i, g i y + a i * t ≤ 0) ↔
@@ -101,7 +101,7 @@ theorem setOf_exists_nonneg_affine_le_eq [Finite ι]
     {y : V | ∃ t : ℝ, 0 ≤ t ∧ ∀ i, g i y + a i * t ≤ 0} =
       {y : V | ∀ k : NonnegElimIndex a, nonnegElimFamily g a k y ≤ 0} := by
   ext y
-  exact exists_nonneg_affine_le_iff g a y
+  exact exists_nonneg_affine_le_iff
 
 /-- Convex polyhedrality is preserved by elimination of a nonnegative parameter. -/
 theorem isConvexPolyhedron_setOf_exists_nonneg_affine_le [Finite ι]
