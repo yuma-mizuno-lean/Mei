@@ -18,10 +18,11 @@ through that existing category. This presentation retains the original fiber
 carriers, so its automorphisms can be identified with compatible families of
 fiber automorphisms, with transitions given by transport and conjugation.
 
-The completed-label isomorphisms below require limits only at their specified
-endpoints. They use the existing section coefficient diagrams, rather than a
-second construction of coefficient maps. Their projections are the represented
-fiber arrows; identity, composition and inversion agree with those of labels.
+The completed-label isomorphisms below require only invertibility of the chosen
+label and limits at its specified endpoints. They use the existing section
+coefficient diagrams, rather than a second construction of coefficient maps.
+Their projections are the represented fiber arrows; identity, composition and
+inversion agree with those of labels.
 
 The constructions use Mathlib's `Grothendieck.ι`, `Aut.autMulEquivOfIso`,
 `Functor.mapAut`, `GrpCat.sectionsSubgroup` and `HasLimit.isoOfNatIso`.
@@ -194,6 +195,18 @@ theorem totalFunctor_map {s t : GrothendieckSection L} (α : s ⟶ t) :
     eqToHom_refl (C := D ⥤ Grothendieck L), Category.id_comp, Category.comp_id]
   exact hom_toSectionHom α
 
+/-- The components of an invertible section morphism are invertible in their fibers. -/
+instance app_isIso {s t : GrothendieckSection L} (α : s ⟶ t) [IsIso α] (d : D) :
+    IsIso (α.app d) :=
+  Functor.map_isIso (evaluation d) α
+
+@[simp]
+theorem inv_app {s t : GrothendieckSection L} (α : s ⟶ t) [IsIso α] (d : D) :
+    (inv α).app d = inv (α.app d) :=
+  (evaluation d).map_inv α
+
+section GroupoidFibers
+
 variable [∀ d, IsGroupoid (L.obj d)]
 
 /-- A vertical morphism is inverted in every fiber. -/
@@ -206,12 +219,6 @@ noncomputable instance : Groupoid (GrothendieckSection L) where
     simp⟩
   inv_comp α := by apply Hom.ext; funext d; simp
   comp_inv α := by apply Hom.ext; funext d; simp
-
-@[simp]
-theorem inv_app {s t : GrothendieckSection L} (α : s ⟶ t) (d : D) :
-    (inv α).app d = inv (α.app d) := by
-  rw [← Groupoid.inv_eq_inv α]
-  rfl
 
 /-- Fiber automorphisms transported along a section by conjugation. This is reducible
 on objects, retaining the actual automorphism groups as carriers. -/
@@ -283,13 +290,15 @@ theorem autEquivSections_symm_apply_hom (s : GrothendieckSection L)
     (a : GrpCat.sectionsSubgroup s.automorphismDiagram) (d : D) :
     (s.autEquivSections.symm a).asIso.hom.app d = (a.val d).asIso.hom := (rfl)
 
+end GroupoidFibers
+
 section Coefficients
 
 variable {V : Type u'} [Category.{v'} V] (A : Grothendieck L ⥤ V)
   {s t r : GrothendieckSection L}
 
 /-- A completed label acts between the coefficient limits along its source and target sections. -/
-noncomputable def completedLabelIso (α : s ⟶ t)
+noncomputable def completedLabelIso (α : s ⟶ t) [IsIso α]
     [HasLimit (s.toFunctor ⋙ A)] [HasLimit (t.toFunctor ⋙ A)] :
     limit (s.toFunctor ⋙ A) ≅ limit (t.toFunctor ⋙ A) :=
   HasLimit.isoOfNatIso
@@ -298,7 +307,7 @@ noncomputable def completedLabelIso (α : s ⟶ t)
 
 /-- Each projection computes the completed action using the represented fiber label. -/
 @[reassoc (attr := simp)]
-theorem completedLabelIso_hom_π (α : s ⟶ t)
+theorem completedLabelIso_hom_π (α : s ⟶ t) [IsIso α]
     [HasLimit (s.toFunctor ⋙ A)] [HasLimit (t.toFunctor ⋙ A)] (d : D) :
     (completedLabelIso A α).hom ≫ limit.π (t.toFunctor ⋙ A) d =
       limit.π (s.toFunctor ⋙ A) d ≫ A.map ((Grothendieck.ι L d).map (α.app d)) := by
@@ -315,7 +324,7 @@ theorem completedLabelIso_hom_π (α : s ⟶ t)
 
 /-- The inverse completed action is computed using the inverse fiber label. -/
 @[reassoc (attr := simp)]
-theorem completedLabelIso_inv_π (α : s ⟶ t)
+theorem completedLabelIso_inv_π (α : s ⟶ t) [IsIso α]
     [HasLimit (s.toFunctor ⋙ A)] [HasLimit (t.toFunctor ⋙ A)] (d : D) :
     (completedLabelIso A α).inv ≫ limit.π (s.toFunctor ⋙ A) d =
       limit.π (t.toFunctor ⋙ A) d ≫ A.map ((Grothendieck.ι L d).map (inv (α.app d))) := by
@@ -343,7 +352,7 @@ theorem completedLabelIso_id (s : GrothendieckSection L) [HasLimit (s.toFunctor 
 
 /-- Completed labels act functorially. -/
 @[simp]
-theorem completedLabelIso_comp (α : s ⟶ t) (β : t ⟶ r)
+theorem completedLabelIso_comp (α : s ⟶ t) (β : t ⟶ r) [IsIso α] [IsIso β]
     [HasLimit (s.toFunctor ⋙ A)] [HasLimit (t.toFunctor ⋙ A)]
     [HasLimit (r.toFunctor ⋙ A)] :
     completedLabelIso A (α ≫ β) = completedLabelIso A α ≪≫ completedLabelIso A β := by
@@ -358,7 +367,7 @@ theorem completedLabelIso_comp (α : s ⟶ t) (β : t ⟶ r)
 
 /-- Inverting a label inverts its completed action. -/
 @[simp]
-theorem completedLabelIso_inv (α : s ⟶ t)
+theorem completedLabelIso_inv (α : s ⟶ t) [IsIso α]
     [HasLimit (s.toFunctor ⋙ A)] [HasLimit (t.toFunctor ⋙ A)] :
     completedLabelIso A (inv α) = (completedLabelIso A α).symm := by
   apply Iso.ext
