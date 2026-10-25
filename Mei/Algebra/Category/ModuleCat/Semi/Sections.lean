@@ -117,7 +117,7 @@ noncomputable def multispanLeftLift (b : J.L) :
 
 theorem multispanSpan_multispanLeftLift (b : J.L) (s : multispanRightSections F) :
     multispanSpan F b (multispanLeftLift hF b s) = (s.1 (J.fst b), s.1 (J.snd b)) :=
-  (mem_multispanRightSections_iff.1 s.2 b).choose_spec
+  LinearMap.congr_fun (LinearMap.comp_codLift _ _ (hF b) _) s
 
 @[simp]
 theorem map_fst_multispanLeftLift (b : J.L) (s : multispanRightSections F) :
@@ -128,6 +128,13 @@ theorem map_fst_multispanLeftLift (b : J.L) (s : multispanRightSections F) :
 theorem map_snd_multispanLeftLift (b : J.L) (s : multispanRightSections F) :
     (F.map (WalkingMultispan.Hom.snd b)).hom (multispanLeftLift hF b s) = s.1 (J.snd b) :=
   congrArg Prod.snd (multispanSpan_multispanLeftLift hF b s)
+
+/-- An element at a left object `b` is the common lift of a family on right objects exactly when
+its two images agree with the values of the family at the ends of `b`. -/
+theorem eq_multispanLeftLift_iff {b : J.L} {s : multispanRightSections F} {y : F.obj (.left b)} :
+    y = multispanLeftLift hF b s ↔ (F.map (WalkingMultispan.Hom.fst b)).hom y = s.1 (J.fst b) ∧
+      (F.map (WalkingMultispan.Hom.snd b)).hom y = s.1 (J.snd b) := by
+  refine ⟨by rintro rfl; simp, fun h => hF b (Prod.ext ?_ ?_)⟩ <;> simp [h]
 
 /-- The family on all objects extending a family on right objects by common lifts. -/
 private noncomputable def multispanExtend :
@@ -157,7 +164,7 @@ private theorem multispanExtend_multispanSectionsRestrict (s : sectionsSubmodule
   funext j
   cases j with
   | left b =>
-    refine hF b (Prod.ext ?_ ?_) <;> simp [map_sectionsSubmodule_apply]
+    exact ((eq_multispanLeftLift_iff hF).2 (by simp [map_sectionsSubmodule_apply])).symm
   | right x => simp
 
 /-- When every span of a diagram over a walking multispan is jointly injective, restriction to

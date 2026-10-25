@@ -40,14 +40,11 @@ theorem exists_comp_eq_iff_range_le {f : N →ₗ[R] W} (hf : Function.Injective
   rintro ⟨ℓ, rfl⟩
   exact range_comp_le_range ℓ f
 
-/-- A pair of maps has a common lift along a span exactly when their product does. -/
-theorem prod_comp_eq_prod_iff {f : N →ₗ[R] U} {g : N →ₗ[R] V} {ℓ : E →ₗ[R] N}
-    {α : E →ₗ[R] U} {β : E →ₗ[R] V} :
-    (f.prod g) ∘ₗ ℓ = α.prod β ↔ f ∘ₗ ℓ = α ∧ g ∘ₗ ℓ = β := by
-  rw [prod_comp]
-  refine ⟨fun h => ⟨?_, ?_⟩, fun h => by rw [h.1, h.2]⟩
-  · simpa using congrArg (fst R U V ∘ₗ ·) h
-  · simpa using congrArg (snd R U V ∘ₗ ·) h
+/-- Two products of linear maps are equal exactly when their components are. -/
+@[simp]
+theorem prod_eq_prod_iff {f f' : N →ₗ[R] U} {g g' : N →ₗ[R] V} :
+    f.prod g = f'.prod g' ↔ f = f' ∧ g = g' := by
+  simp [LinearMap.ext_iff, Prod.ext_iff, forall_and]
 
 /-- Along a jointly injective span `U ← N → V`, two maps `α : E → U` and `β : E → V` have a
 common lift to `N` exactly when every pair `(α e, β e)` lies in the joint range of the span; the
@@ -55,7 +52,7 @@ common lift is then unique. -/
 theorem existsUnique_comp_eq_and_comp_eq_iff {f : N →ₗ[R] U} {g : N →ₗ[R] V}
     (hfg : Function.Injective (f.prod g)) {α : E →ₗ[R] U} {β : E →ₗ[R] V} :
     (∃! ℓ : E →ₗ[R] N, f ∘ₗ ℓ = α ∧ g ∘ₗ ℓ = β) ↔ ∀ e, (α e, β e) ∈ range (f.prod g) := by
-  simp_rw [← prod_comp_eq_prod_iff]
+  simp_rw [← prod_eq_prod_iff, ← prod_comp]
   constructor
   · rintro ⟨ℓ, hℓ, -⟩ e
     exact ⟨ℓ e, by simpa using congr($hℓ e)⟩
