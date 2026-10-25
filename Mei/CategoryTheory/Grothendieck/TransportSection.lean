@@ -113,11 +113,17 @@ def toNatTrans {s t : GrothendieckSection L} (α : s ⟶ t) : s.toFunctor ⟶ t.
   naturality d e f := by
     rw [← Grothendieck.ιNatTrans_app_comp_ι_map (s.toFunctor.map f),
       ← Grothendieck.ιNatTrans_app_comp_ι_map (t.toFunctor.map f)]
-    dsimp only [toFunctor]
-    -- The total functors and fiber inclusions present the same objects through different wrappers.
-    erw [Category.assoc, ← Functor.map_comp, ← α.naturality, Functor.map_comp,
-      ← Category.assoc, ← (Grothendieck.ιNatTrans f).naturality (α.app d)]
-    exact Category.assoc _ _ _
+    -- Retype the factorizations through the fiber inclusions: the total functor's object
+    -- wrappers prevent `simp` from recognizing the common endpoints for reassociation.
+    change ((Grothendieck.ιNatTrans f).app (s.obj d) ≫
+      (Grothendieck.ι L e).map (s.map f)) ≫ (Grothendieck.ι L e).map (α.app e) =
+        (Grothendieck.ι L d).map (α.app d) ≫ (Grothendieck.ιNatTrans f).app (t.obj d) ≫
+          (Grothendieck.ι L e).map (t.map f)
+    simp only [Category.assoc]
+    rw [(Grothendieck.ιNatTrans f).naturality_assoc (α.app d)]
+    simpa only [Functor.comp_map, Functor.map_comp, Category.assoc] using
+      congrArg (fun k => (Grothendieck.ιNatTrans f).app (s.obj d) ≫
+        (Grothendieck.ι L e).map k) (α.naturality f).symm
 
 @[simp]
 theorem toNatTrans_app {s t : GrothendieckSection L} (α : s ⟶ t) (d : D) :
