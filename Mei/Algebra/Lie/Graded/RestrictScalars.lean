@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Algebra.DirectSum.RestrictScalars
-public import Mei.Algebra.Lie.Graded.Truncation.Basic
+public import Mei.Algebra.Lie.Graded.PositiveDegreeHom
 public import Mei.Algebra.Lie.Quotient.Map
 public import Mei.Algebra.Lie.RestrictScalars
 public import Mei.Algebra.PositiveDegrees.RestrictScalars
@@ -23,6 +23,8 @@ For a positive grading, the degree ideals restrict on the same carriers. Consequ
 finite Lie truncation commutes with restriction of scalars, preserving homogeneous
 pieces, homogeneous projections and transitions between cutoffs. The comparison uses
 Mathlib's `Submodule.quotEquivOfEq` and Mei's `LieIdeal.quotientRestrictScalarsEquiv`.
+Graded homomorphisms restrict with the same degree map and cutoff modulus, and
+their finite quotient maps commute with these comparisons.
 -/
 
 public section
@@ -36,6 +38,52 @@ instance GradedLieAlgebra.restrictScalars [GradedLieAlgebra ℒ] :
     GradedLieAlgebra (fun i => (ℒ i).restrictScalars R) where
   toDecomposition := inferInstance
   bracket_mem := SetLike.GradedBracket.bracket_mem (ℒ := ℒ) (ℳ := ℒ)
+
+namespace Mei.GradedLieHom
+
+variable {N M : Type*} [AddCommMonoid N] [AddCommMonoid M]
+  {L' : Type*} [LieRing L'] [LieAlgebra S L'] [LieAlgebra R L']
+  [IsScalarTower R S L'] {d : PositiveDegrees N} {e : PositiveDegrees M}
+  {T : PositiveDegreeMap d e} {ℋ : N → Submodule S L} {ℳ : M → Submodule S L'}
+
+/-- Restrict a graded Lie homomorphism without changing its degree map or cutoff modulus. -/
+def restrictScalars (f : GradedLieHom T ℋ ℳ) (R : Type*) [CommRing R]
+    [LieAlgebra R L] [LieAlgebra R L'] [SMul R S]
+    [IsScalarTower R S L] [IsScalarTower R S L'] :
+    GradedLieHom T (fun n => (ℋ n).restrictScalars R)
+      (fun m => (ℳ m).restrictScalars R) where
+  toLieHom := f.toLieHom.restrictScalars R
+  map_mem hx := by simpa using f.map_mem hx
+
+/-- Scalar restriction preserves the values of a graded Lie homomorphism. -/
+@[simp]
+theorem restrictScalars_apply (f : GradedLieHom T ℋ ℳ) (x : L) :
+    f.restrictScalars R x = f x := by
+  simp only [← coe_toLieHom, restrictScalars, LieHom.restrictScalars_apply]
+
+/-- The underlying Lie map is the scalar restriction of the original map. -/
+@[simp]
+theorem toLieHom_restrictScalars (f : GradedLieHom T ℋ ℳ) :
+    (f.restrictScalars R).toLieHom = f.toLieHom.restrictScalars R := (rfl)
+
+/-- Restricting scalars preserves the identity graded homomorphism. -/
+@[simp]
+theorem restrictScalars_id :
+    (id (d := d) ℋ).restrictScalars R = id (fun n => (ℋ n).restrictScalars R) := by
+  ext x
+  simp
+
+/-- Restricting scalars preserves composition and its composite cutoff modulus. -/
+@[simp]
+theorem restrictScalars_comp {P : Type*} [AddCommMonoid P]
+    {L'' : Type*} [LieRing L''] [LieAlgebra S L''] [LieAlgebra R L'']
+    [IsScalarTower R S L''] {p : PositiveDegrees P} {U : PositiveDegreeMap e p}
+    {ℐ : P → Submodule S L''} (g : GradedLieHom U ℳ ℐ) (f : GradedLieHom T ℋ ℳ) :
+    (g.comp f).restrictScalars R = (g.restrictScalars R).comp (f.restrictScalars R) := by
+  ext x
+  simp
+
+end Mei.GradedLieHom
 
 namespace Mei.PositiveDegrees
 
@@ -158,3 +206,27 @@ theorem truncatedRestrictScalarsEquiv_naturality {k l : ℕ} (h : k ≤ l) :
   simp [LieIdeal.mkQ_apply]
 
 end Mei.PositiveDegrees
+
+namespace Mei.GradedLieHom
+
+variable {N M : Type*} [AddCommMonoid N] [AddCommMonoid M]
+  [DecidableEq N] [DecidableEq M]
+  {L' : Type*} [LieRing L'] [LieAlgebra S L'] [LieAlgebra R L']
+  [IsScalarTower R S L'] {d : PositiveDegrees N} {e : PositiveDegrees M}
+  {T : PositiveDegreeMap d e} {ℋ : N → Submodule S L} {ℳ : M → Submodule S L'}
+  [GradedLieAlgebra ℋ] [GradedLieAlgebra ℳ]
+  [IsPositiveGrading d ℋ] [IsPositiveGrading e ℳ]
+
+/-- The finite quotient maps commute with restriction of scalars, including regraded maps
+whose source cutoff is prescribed by a modulus. -/
+theorem truncatedMap_restrictScalars (f : GradedLieHom T ℋ ℳ) {a : ℕ} (k : ℕ)
+    (h : T.modulus k ≤ a) :
+    (e.truncatedRestrictScalarsEquiv (R := R) ℳ k).toLieHom.comp
+        ((f.restrictScalars R).truncatedMap k h) =
+      ((f.truncatedMap k h).restrictScalars R).comp
+        (d.truncatedRestrictScalarsEquiv (R := R) ℋ a).toLieHom := by
+  apply (d.degreeIdeal (fun n => (ℋ n).restrictScalars R) a).lieHom_qext
+  intro x
+  simp [LieIdeal.mkQ_apply]
+
+end Mei.GradedLieHom

@@ -187,6 +187,21 @@ theorem continuous (e : IntegralAffineEquiv h h') : Continuous e := by
   let := h.finiteDimensional
   exact e.toAffineEquiv.continuous_of_finiteDimensional
 
+/-- The continuous affine equivalence underlying an integral affine equivalence.
+This allows transport of topological constructions, such as admissible wall paths. -/
+def toContinuousAffineEquiv (e : IntegralAffineEquiv h h') : V ≃ᴬ[ℝ] V' :=
+  { e.toAffineEquiv with
+    continuous_toFun := e.continuous
+    continuous_invFun := e.symm.continuous }
+
+@[simp]
+theorem toContinuousAffineEquiv_apply (e : IntegralAffineEquiv h h') (x : V) :
+    e.toContinuousAffineEquiv x = e x := (rfl)
+
+@[simp]
+theorem toContinuousAffineEquiv_toAffineEquiv (e : IntegralAffineEquiv h h') :
+    e.toContinuousAffineEquiv.toAffineEquiv = e.toAffineEquiv := (rfl)
+
 /-- The underlying continuous affine map used to transport affine inequalities. -/
 def toContinuousAffineMap (e : IntegralAffineEquiv h h') : V →ᴬ[ℝ] V' :=
   { e.toAffineEquiv.toAffineMap with cont := e.continuous }

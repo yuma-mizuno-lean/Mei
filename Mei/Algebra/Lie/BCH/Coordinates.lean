@@ -101,4 +101,17 @@ theorem completedBCHExp_neg (x : d.completedLie ℒ) :
   exact (congrArg Inv.inv (d.projection_completedBCHExp ℒ k x).symm).trans
     ((CompletedGroup.projection k).map_inv (d.completedBCHExp ℒ x)).symm
 
+/-- The identity completed group element has zero logarithmic coordinate. -/
+@[simp]
+theorem completedBCHExp_symm_one : (d.completedBCHExp ℒ).symm 1 = 0 := by
+  apply (d.completedBCHExp ℒ).injective
+  simp only [Equiv.apply_symm_apply, completedBCHExp_zero]
+
+/-- Inversion negates the logarithmic coordinate of a completed group element. -/
+@[simp]
+theorem completedBCHExp_symm_inv (g : d.completedBCHGroup ℒ) :
+    (d.completedBCHExp ℒ).symm g⁻¹ = -(d.completedBCHExp ℒ).symm g := by
+  apply (d.completedBCHExp ℒ).injective
+  simp only [Equiv.apply_symm_apply, completedBCHExp_neg]
+
 end Mei.PositiveDegrees
