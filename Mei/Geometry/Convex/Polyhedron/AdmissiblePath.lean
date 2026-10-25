@@ -14,6 +14,10 @@ public import Mathlib.Combinatorics.Quiver.Symmetric
 /-!
 # Admissible polygonal paths through wall families
 
+These are the generic paths along which the ordered wall crossings of a
+scattering diagram, and hence its wall-crossing words and path-ordered
+products, are read off.
+
 Vertices lie off every wall. Edges avoid singular support and are transverse
 to each wall they meet. Admissible polygonal paths are Mathlib quiver paths
 on these vertices: constant paths, concatenation and reversal use the existing
@@ -43,7 +47,7 @@ structure WallComplement (W : ι → Set V) where
   /-- The ambient point. -/
   val : V
   /-- The point lies on no wall. -/
-  not_mem : ∀ i, val ∉ W i
+  notMem : ∀ i, val ∉ W i
 
 namespace WallComplement
 
@@ -62,6 +66,36 @@ structure AdmissibleSegment (x y : WallComplement W) : Prop where
 /-- Admissible segments are the edges of the quiver of allowed vertices. -/
 instance : Quiver (WallComplement W) where
   Hom x y := PLift (AdmissibleSegment x y)
+
+/-- The wall indices and affine crossing parameters of one segment. -/
+def crossings (x y : WallComplement W) : Set (ι × ℝ) :=
+  {p | p.2 ∈ Icc (0 : ℝ) 1 ∧ AffineMap.lineMap x.val y.val p.2 ∈ W p.1}
+
+/-- The characteristic membership test for segment crossings. -/
+@[simp]
+theorem mem_crossings (x y : WallComplement W) (i : ι) (t : ℝ) :
+    (i, t) ∈ crossings x y ↔
+      t ∈ Icc (0 : ℝ) 1 ∧ AffineMap.lineMap x.val y.val t ∈ W i := Iff.rfl
+
+/-- Traversing a segment backwards replaces each crossing parameter `t` by `1 - t`. -/
+theorem mem_crossings_swap (x y : WallComplement W) (i : ι) (t : ℝ) :
+    (i, t) ∈ crossings y x ↔ (i, 1 - t) ∈ crossings x y := by
+  simp only [mem_crossings, AffineMap.lineMap_apply_one_sub, mem_Icc]
+  constructor <;> rintro ⟨⟨h₀, h₁⟩, hi⟩ <;> exact ⟨⟨by linarith, by linarith⟩, hi⟩
+
+/-- The crossings of the reversed segment are those of the segment, with
+parameter `t` replaced by `1 - t`. -/
+theorem crossings_swap (x y : WallComplement W) :
+    crossings y x = (fun a : ι × ℝ => (a.1, 1 - a.2)) '' crossings x y := by
+  ext ⟨i, t⟩
+  rw [mem_crossings_swap]
+  constructor
+  · intro h
+    exact ⟨(i, 1 - t), h, by simp⟩
+  · rintro ⟨⟨j, s⟩, hs, he⟩
+    simp only [Prod.mk.injEq] at he
+    obtain ⟨rfl, rfl⟩ := he
+    simpa only [sub_sub_cancel] using hs
 
 namespace AdmissibleSegment
 
@@ -95,24 +129,14 @@ theorem crossing_mem_intrinsicInterior (h : AdmissibleSegment x y)
     {i : ι} (hclosed : IsClosed (W i)) {t : ℝ}
     (ht : t ∈ Icc (0 : ℝ) 1) (hi : AffineMap.lineMap x.val y.val t ∈ W i) :
     t ∈ Ioo (0 : ℝ) 1 ∧ AffineMap.lineMap x.val y.val t ∈ intrinsicInterior ℝ (W i) := by
-  have hzero : t ≠ 0 := by intro he; exact x.not_mem i (by simpa [he] using hi)
-  have hone : t ≠ 1 := by intro he; exact y.not_mem i (by simpa [he] using hi)
+  have hzero : t ≠ 0 := by intro he; exact x.notMem i (by simpa [he] using hi)
+  have hone : t ≠ 1 := by intro he; exact y.notMem i (by simpa [he] using hi)
   refine ⟨⟨lt_of_le_of_ne ht.1 (Ne.symm hzero), lt_of_le_of_ne ht.2 hone⟩, ?_⟩
   rw [← intrinsicClosure_sdiff_intrinsicFrontier,
     (hclosed.preimage continuous_subtype_val).intrinsicClosure]
   refine ⟨hi, ?_⟩
   intro hb
   exact h.regular t ht (mem_singularSupport.mpr (Or.inl ⟨i, hb⟩))
-
-/-- The wall indices and affine crossing parameters of one segment. -/
-def crossings (x y : WallComplement W) : Set (ι × ℝ) :=
-  {p | p.2 ∈ Icc (0 : ℝ) 1 ∧ AffineMap.lineMap x.val y.val p.2 ∈ W p.1}
-
-/-- The characteristic membership test for segment crossings. -/
-@[simp]
-theorem mem_crossings (x y : WallComplement W) (i : ι) (t : ℝ) :
-    (i, t) ∈ crossings x y ↔
-      t ∈ Icc (0 : ℝ) 1 ∧ AffineMap.lineMap x.val y.val t ∈ W i := Iff.rfl
 
 /-- A segment has finitely many indexed crossings for a finite wall family. -/
 theorem finite_crossings [Finite ι] (h : AdmissibleSegment x y) : (crossings x y).Finite := by
@@ -147,23 +171,25 @@ variable {V ι : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
   {W : ι → Set V} {x y z : WallComplement W}
 
 /-- Realize a finite admissible chain as a continuous path. -/
-noncomputable def toPath : {y : WallComplement W} → AdmissiblePLPath x y → _root_.Path x.val y.val
+noncomputable def toContinuousPath :
+    {y : WallComplement W} → AdmissiblePLPath x y → _root_.Path x.val y.val
   | _, .nil => Path.refl x.val
-  | _, @Quiver.Path.cons _ _ _ u v p _ => (toPath p).trans (Path.segment u.val v.val)
+  | _, @Quiver.Path.cons _ _ _ u v p _ => (toContinuousPath p).trans (Path.segment u.val v.val)
 
 /-- The realization of the zero-edge chain is constant. -/
 @[simp]
-theorem toPath_nil : toPath (Quiver.Path.nil : AdmissiblePLPath x x) = Path.refl x.val := (rfl)
+theorem toContinuousPath_nil :
+    toContinuousPath (Quiver.Path.nil : AdmissiblePLPath x x) = Path.refl x.val := (rfl)
 
 /-- Appending an edge realizes as concatenation with its straight segment. -/
 @[simp]
-theorem toPath_cons (p : AdmissiblePLPath x y) (e : y ⟶ z) :
-    toPath (p.cons e) = (toPath p).trans (Path.segment y.val z.val) := (rfl)
+theorem toContinuousPath_cons (p : AdmissiblePLPath x y) (e : y ⟶ z) :
+    toContinuousPath (p.cons e) = (toContinuousPath p).trans (Path.segment y.val z.val) := (rfl)
 
 /-- Realizing concatenation agrees with continuous path concatenation up to
 the usual homotopies of reparametrization. -/
-theorem toPath_comp_homotopic (p : AdmissiblePLPath x y) (q : AdmissiblePLPath y z) :
-    (toPath (p.comp q)).Homotopic ((toPath p).trans (toPath q)) := by
+theorem toContinuousPath_comp_homotopic (p : AdmissiblePLPath x y) (q : AdmissiblePLPath y z) :
+    (toContinuousPath (p.comp q)).Homotopic ((toContinuousPath p).trans (toContinuousPath q)) := by
   induction q with
   | nil => exact (Path.Homotopic.trans_refl _).symm
   | @cons u v q e ih =>
@@ -172,41 +198,52 @@ theorem toPath_comp_homotopic (p : AdmissiblePLPath x y) (q : AdmissiblePLPath y
 
 /-- Realizing reversal agrees, up to reparametrization homotopy, with reversal
 of the continuous realization. -/
-theorem toPath_reverse_homotopic (p : AdmissiblePLPath x y) :
-    (toPath p.reverse).Homotopic (toPath p).symm := by
+theorem toContinuousPath_reverse_homotopic (p : AdmissiblePLPath x y) :
+    (toContinuousPath p.reverse).Homotopic (toContinuousPath p).symm := by
   induction p with
   | nil => exact .refl _
   | @cons u v p e ih =>
-    have he : (toPath (Quiver.reverse e).toPath).Homotopic
-        (Path.segment v.val u.val) := Path.Homotopic.refl_trans _
-    have h := (toPath_comp_homotopic (Quiver.reverse e).toPath p.reverse).trans
+    have he : (toContinuousPath (Quiver.reverse e).toPath).Homotopic
+        (Path.segment v.val u.val) := by
+      rw [Quiver.Hom.toPath, toContinuousPath_cons, toContinuousPath_nil]
+      exact Path.Homotopic.refl_trans _
+    have h := (toContinuousPath_comp_homotopic (Quiver.reverse e).toPath p.reverse).trans
       (he.hcomp ih)
-    simpa only [Quiver.Path.reverse, toPath_cons, Path.trans_symm, Path.segment_symm] using h
+    simpa only [Quiver.Path.reverse, toContinuousPath_cons, Path.trans_symm,
+      Path.segment_symm] using h
 
-/-- For closed walls, the continuous realization avoids singular support. -/
-theorem toPath_not_mem_singularSupport (p : AdmissiblePLPath x y)
-    (hclosed : ∀ i, IsClosed (W i)) (t : unitInterval) :
-    toPath p t ∉ singularSupport W := by
+/-- A continuous realization starting off singular support avoids it. -/
+theorem toContinuousPath_notMem_singularSupport (p : AdmissiblePLPath x y)
+    (hx : x.val ∉ singularSupport W) (t : unitInterval) :
+    toContinuousPath p t ∉ singularSupport W := by
   induction p generalizing t with
   | nil =>
-    intro hs
-    obtain ⟨i, hi⟩ := Set.mem_iUnion.mp (singularSupport_subset_iUnion W hclosed hs)
-    exact x.not_mem i hi
+    rw [toContinuousPath_nil, Path.refl_apply]
+    exact hx
   | @cons u v p e ih =>
-    have hr : (toPath p).trans (Path.segment u.val v.val) t ∈
-        Set.range (toPath p) ∪ Set.range (Path.segment u.val v.val) := by
+    have hr : (toContinuousPath p).trans (Path.segment u.val v.val) t ∈
+        Set.range (toContinuousPath p) ∪ Set.range (Path.segment u.val v.val) := by
       rw [← Path.trans_range]
       exact Set.mem_range_self t
     rcases hr with ⟨s, hs⟩ | ⟨s, hs⟩
-    · simpa only [toPath_cons, ← hs] using ih s
-    · simpa only [toPath_cons, ← hs, Path.segment_apply] using e.down.regular s.val s.property
+    · simpa only [toContinuousPath_cons, ← hs] using ih s
+    · simpa only [toContinuousPath_cons, ← hs, Path.segment_apply] using
+        e.down.regular s.val s.property
+
+/-- For closed walls, the continuous realization avoids singular support. -/
+theorem toContinuousPath_notMem_singularSupport_of_isClosed (p : AdmissiblePLPath x y)
+    (hclosed : ∀ i, IsClosed (W i)) (t : unitInterval) :
+    toContinuousPath p t ∉ singularSupport W := by
+  refine p.toContinuousPath_notMem_singularSupport (fun hs => ?_) t
+  obtain ⟨i, hi⟩ := Set.mem_iUnion.mp (singularSupport_subset_iUnion W hclosed hs)
+  exact x.notMem i hi
 
 /-- Indexed crossing events retain the edge number, wall index and affine
 parameter. Distinct visits to the same geometric point remain distinct. -/
 def crossingEvents : {y : WallComplement W} → AdmissiblePLPath x y → Set (ℕ × (ι × ℝ))
   | _, .nil => ∅
   | _, @Quiver.Path.cons _ _ _ u v p _ => crossingEvents p ∪
-      Prod.mk p.length '' (WallComplement.AdmissibleSegment.crossings u v)
+      Prod.mk p.length '' WallComplement.crossings u v
 
 /-- A constant chain has no crossing events. -/
 @[simp]
@@ -218,8 +255,7 @@ theorem crossingEvents_nil :
 theorem mem_crossingEvents_cons (p : AdmissiblePLPath x y) (e : y ⟶ z)
     (j : ℕ) (i : ι) (t : ℝ) :
     (j, i, t) ∈ crossingEvents (p.cons e) ↔
-      (j, i, t) ∈ crossingEvents p ∨
-        j = p.length ∧ (i, t) ∈ WallComplement.AdmissibleSegment.crossings y z := by
+      (j, i, t) ∈ crossingEvents p ∨ j = p.length ∧ (i, t) ∈ WallComplement.crossings y z := by
   simp [crossingEvents, eq_comm, and_assoc, and_left_comm, and_comm]
 
 /-- Concatenation shifts the second path's edge indices by the first path's
@@ -233,6 +269,52 @@ theorem crossingEvents_comp (p : AdmissiblePLPath x y) (q : AdmissiblePLPath y z
   | @cons u v q e ih =>
     simp only [Quiver.Path.comp_cons, crossingEvents, ih, Set.image_union,
       Set.image_image, Quiver.Path.length_comp, Set.union_assoc]
+
+/-- Every crossing event occurs on one of the path's edges. -/
+theorem lt_length_of_mem_crossingEvents (p : AdmissiblePLPath x y)
+    {a : ℕ × (ι × ℝ)} (ha : a ∈ crossingEvents p) : a.1 < p.length := by
+  induction p with
+  | nil => simp at ha
+  | cons p e ih =>
+    rw [Quiver.Path.length_cons]
+    rcases ha with ha | ⟨b, _, rfl⟩
+    · exact Nat.lt_succ_of_lt (ih ha)
+    · exact Nat.lt_succ_self _
+
+/-- Reversal sends the crossing at parameter `t` on edge `j` to the crossing at
+parameter `1 - t` on edge `p.length - 1 - j`. -/
+theorem mem_crossingEvents_reverse (p : AdmissiblePLPath x y) (j : ℕ) (i : ι) (t : ℝ) :
+    (j, i, t) ∈ crossingEvents p.reverse ↔
+      j < p.length ∧ (p.length - 1 - j, i, 1 - t) ∈ crossingEvents p := by
+  induction p generalizing j with
+  | nil => simp [Quiver.Path.reverse]
+  | @cons u v p e ih =>
+    rw [Quiver.Path.reverse, crossingEvents_comp, Quiver.Hom.toPath, Set.mem_union,
+      mem_crossingEvents_cons, Quiver.Path.length_cons, crossingEvents_nil,
+      WallComplement.mem_crossings_swap, Quiver.Path.length_cons, Quiver.Path.length_nil,
+      mem_crossingEvents_cons]
+    rcases j with _ | j
+    · simp only [Set.mem_empty_iff_false, false_or, Nat.zero_lt_succ, true_and,
+        Nat.add_one_sub_one, Nat.sub_zero, Set.mem_image, Prod.mk.injEq]
+      constructor
+      · rintro (h | ⟨⟨k, b⟩, -, hk, -⟩)
+        · exact Or.inr h
+        · omega
+      · rintro (h | h)
+        · exact absurd (lt_length_of_mem_crossingEvents p h) (lt_irrefl _)
+        · exact Or.inl h
+    · simp only [Set.mem_empty_iff_false, false_or, Nat.add_one_ne_zero, false_and,
+        Set.mem_image, Prod.mk.injEq, Nat.add_lt_add_iff_right]
+      constructor
+      · rintro ⟨⟨k, b⟩, hk, hj, rfl⟩
+        obtain rfl : j = k := by omega
+        obtain ⟨hjl, hk⟩ := (ih j).mp hk
+        refine ⟨hjl, Or.inl ?_⟩
+        rwa [show p.length + 1 - 1 - (j + 1) = p.length - 1 - j by omega]
+      · rintro ⟨hjl, h | ⟨h, -⟩⟩
+        · refine ⟨(j, i, t), (ih j).mpr ⟨hjl, ?_⟩, by omega, rfl⟩
+          rwa [show p.length + 1 - 1 - (j + 1) = p.length - 1 - j by omega] at h
+        · omega
 
 /-- A finite wall family gives finitely many crossing events along every
 admissible polygonal path, even with repeated visits or coincident walls. -/
@@ -256,7 +338,7 @@ theorem exists_length_eq_two [FiniteDimensional ℝ V] [Finite ι]
     (hdim : ∀ i, Module.finrank ℝ (affineSpan ℝ (W i)).direction + 1 = Module.finrank ℝ V)
     (x y : WallComplement W) : ∃ p : AdmissiblePLPath x y, p.length = 2 := by
   obtain ⟨v, _, hv, htrans, hreg⟩ := exists_mem_open_two_transverse_lineMaps
-    W hpoly hdim x.not_mem y.not_mem isOpen_univ Set.univ_nonempty
+    W hpoly hdim x.notMem y.notMem isOpen_univ Set.univ_nonempty
   let z : WallComplement W := ⟨v, hv⟩
   have hxz : WallComplement.AdmissibleSegment x z :=
     ⟨fun i _ => (htrans i).1, fun t _ => (hreg t).1⟩
