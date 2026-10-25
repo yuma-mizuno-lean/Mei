@@ -17,8 +17,10 @@ and its integer multiplier respect identity and composition, and transport actua
 ray degrees with any cutoff bound satisfied by the original additive map.
 
 Only the target integer module must be free; neither finite rank nor injectivity
-of the additive map is required. Primitive decomposition uses
-`TauCeti.exists_eq_zsmul_isPrimitive`.
+of the additive map is required. For additive equivalences identifying the allowed
+monoids, `SupportedRay.congr` identifies supported rays without any freeness
+assumption. Primitive decomposition uses `TauCeti.exists_eq_zsmul_isPrimitive`;
+transport of primitive generators uses `LinearEquiv.isPrimitive_iff`.
 -/
 
 public section
@@ -199,5 +201,61 @@ theorem mapMultiplier_comp :
     (w.map f hfP hf0).map_generator g hgP hg0, mul_smul]
 
 end Composition
+
+/-- An additive equivalence identifying the allowed monoids identifies their
+supported primitive rays. No freeness or saturation assumption is needed. -/
+def congr (T : N ≃+ M) (hP : ∀ n, T n ∈ e.monoid ↔ n ∈ d.monoid) :
+    SupportedRay d ≃ SupportedRay e where
+  toFun w :=
+    { generator := T w.generator
+      isPrimitive := T.toIntLinearEquiv.isPrimitive_iff.mpr w.isPrimitive
+      supported := by
+        obtain ⟨a, ha, haw⟩ := w.supported
+        exact ⟨a, ha, by simpa only [map_zsmul] using (hP _).mpr haw⟩ }
+  invFun w :=
+    { generator := T.symm w.generator
+      isPrimitive := T.symm.toIntLinearEquiv.isPrimitive_iff.mpr w.isPrimitive
+      supported := by
+        obtain ⟨a, ha, haw⟩ := w.supported
+        refine ⟨a, ha, (hP _).mp ?_⟩
+        simpa only [map_zsmul, T.apply_symm_apply] using haw }
+  left_inv w := ext (T.symm_apply_apply _)
+  right_inv w := ext (T.apply_symm_apply _)
+
+/-- Coordinate changes send the primitive generator itself to the target generator. -/
+@[simp]
+theorem congr_generator (T : N ≃+ M) (hP : ∀ n, T n ∈ e.monoid ↔ n ∈ d.monoid)
+    (w : SupportedRay d) : (congr T hP w).generator = T w.generator := (rfl)
+
+/-- The inverse ray comparison acts by the inverse lattice map on generators. -/
+@[simp]
+theorem congr_symm_generator (T : N ≃+ M) (hP : ∀ n, T n ∈ e.monoid ↔ n ∈ d.monoid)
+    (w : SupportedRay e) : ((congr T hP).symm w).generator = T.symm w.generator := (rfl)
+
+/-- Actual allowed degrees are preserved and reflected by a ray coordinate change. -/
+@[simp]
+theorem mem_rayDegrees_congr (T : N ≃+ M)
+    (hP : ∀ n, T n ∈ e.monoid ↔ n ∈ d.monoid) (w : SupportedRay d) (n : N) :
+    T n ∈ (congr T hP w).rayDegrees ↔ n ∈ w.rayDegrees := by
+  simp only [mem_rayDegrees, congr_generator, hP, ← map_zsmul, T.injective.eq_iff]
+
+/-- Identity coordinates give the identity ray comparison. -/
+@[simp]
+theorem congr_refl : congr (d := d) (AddEquiv.refl N) (fun _ => Iff.rfl) =
+    Equiv.refl (SupportedRay d) := by
+  apply Equiv.ext
+  intro w
+  exact SupportedRay.ext rfl
+
+/-- Successive coordinate changes compose on supported rays. -/
+@[simp]
+theorem congr_trans (T : N ≃+ M) (U : M ≃+ K)
+    (hT : ∀ n, T n ∈ e.monoid ↔ n ∈ d.monoid)
+    (hU : ∀ n, U n ∈ q.monoid ↔ n ∈ e.monoid) :
+    (congr T hT).trans (congr U hU) =
+      congr (T.trans U) (fun n => (hU _).trans (hT n)) := by
+  apply Equiv.ext
+  intro w
+  exact SupportedRay.ext rfl
 
 end Mei.SupportedRay
