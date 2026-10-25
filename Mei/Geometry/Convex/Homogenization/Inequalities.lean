@@ -39,6 +39,34 @@ theorem homogenizedInequality_apply (g : V →ᴬ[ℝ] ℝ) (x : V) (t : ℝ) :
     homogenizedInequality g (x, t) = g.linear x + t * g 0 := by
   simp [homogenizedInequality, mul_comm]
 
+/-- At height one, the existing homogenized functional recovers the affine row. -/
+@[simp high] -- Prefer the affine value to the general coordinate expansion.
+theorem homogenizedInequality_one (g : V →ᴬ[ℝ] ℝ) (x : V) :
+    homogenizedInequality g (x, (1 : ℝ)) = g x := by
+  have h := g.map_vadd (0 : V) x
+  simpa [homogenizedInequality_apply] using h.symm
+
+/-- A nonpositive affine support remains nonpositive throughout the actual
+closed homogenization, including at height zero. -/
+theorem homogenizedInequality_nonpos [ContinuousSMul ℝ V] {P : Set V}
+    (g : V →ᴬ[ℝ] ℝ) (hg : ∀ x ∈ P, g x ≤ 0) {z : V × ℝ}
+    (hz : z ∈ Set.homogenization P) :
+    homogenizedInequality g z ≤ 0 := by
+  let C := (PointedCone.positive ℝ ℝ).comap (-(homogenizedInequality g).toLinearMap)
+  have hcoe : (C : Set (V × ℝ)) = {z | homogenizedInequality g z ≤ 0} := by
+    ext z
+    simp only [C, SetLike.mem_coe, PointedCone.mem_comap, PointedCone.mem_positive,
+      LinearMap.neg_apply, ContinuousLinearMap.coe_coe, neg_nonneg, Set.mem_ofPred_eq]
+  have hclosed : IsClosed (C : Set (V × ℝ)) := by
+    rw [hcoe]
+    exact isClosed_le (homogenizedInequality g).continuous continuous_const
+  have hle : Set.homogenization P ≤ C :=
+    (Set.homogenization_le_iff hclosed).mpr fun x hx => by
+      simpa only [C, PointedCone.mem_comap, PointedCone.mem_positive, LinearMap.neg_apply,
+        ContinuousLinearMap.coe_coe, neg_nonneg, homogenizedInequality_one] using hg x hx
+  simpa only [C, PointedCone.mem_comap, PointedCone.mem_positive, LinearMap.neg_apply,
+    ContinuousLinearMap.coe_coe, neg_nonneg] using hle hz
+
 /-- At nonzero height, rescaling an affine value gives its homogeneous value. -/
 theorem mul_affine_apply_inv_smul (g : V →ᴬ[ℝ] ℝ) (x : V) {t : ℝ}
     (ht : t ≠ 0) : t * g (t⁻¹ • x) = homogenizedInequality g (x, t) := by

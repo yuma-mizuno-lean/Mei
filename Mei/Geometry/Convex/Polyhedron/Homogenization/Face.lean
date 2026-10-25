@@ -5,11 +5,11 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.Convex.Polyhedron.Homogenization.Slice
+public import Mei.Geometry.Convex.Cone.Slice
+public import Mei.Geometry.Convex.Homogenization.Face
 public import Mei.Geometry.Convex.Polyhedron.Homogenization.Inequalities
 public import Mei.Geometry.Convex.Polyhedron.Face
 public import Mathlib.Geometry.Convex.Cone.Face.Lattice
-public import TauCeti.Geometry.Convex.Cone.Face.Exposed
 
 /-!
 # Faces and actual homogenization
@@ -26,113 +26,6 @@ public section
 open Set ContinuousAffineMap
 
 variable {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
-
-namespace Mei.Convex
-
-/-- At height one, the existing homogenized functional recovers the affine row. -/
-theorem homogenizedInequality_one (g : V →ᴬ[ℝ] ℝ) (x : V) :
-    homogenizedInequality g (x, (1 : ℝ)) = g x := by
-  have h := g.map_vadd (0 : V) x
-  simpa [homogenizedInequality_apply] using h.symm
-
-/-- A nonpositive affine support remains nonpositive throughout the actual
-closed homogenization, including at height zero. -/
-theorem homogenizedInequality_nonpos {P : Set V} (g : V →ᴬ[ℝ] ℝ)
-    (hg : ∀ x ∈ P, g x ≤ 0) {z : V × ℝ} (hz : z ∈ homogenization P) :
-    homogenizedInequality g z ≤ 0 := by
-  apply closure_minimal (s :=
-      (PointedCone.hull ℝ ((fun p : V => (p, (1 : ℝ))) '' P) : Set (V × ℝ)))
-    (t := {z | homogenizedInequality g z ≤ 0}) ?_
-    (isClosed_le (homogenizedInequality g).continuous continuous_const)
-    (Set.mem_homogenization_iff.mp hz)
-  intro w hw
-  induction hw using Submodule.span_induction with
-  | mem w hw =>
-    obtain ⟨p, hp, rfl⟩ := hw
-    change homogenizedInequality g (p, 1) ≤ 0
-    rw [homogenizedInequality_one]
-    exact hg p hp
-  | zero => simp
-  | add u v hu hv iu iv =>
-    change homogenizedInequality g u ≤ 0 at iu
-    change homogenizedInequality g v ≤ 0 at iv
-    change homogenizedInequality g (u + v) ≤ 0
-    rw [map_add]
-    exact add_nonpos iu iv
-  | smul c w hw iw =>
-    change homogenizedInequality g ((c : ℝ) • w) ≤ 0
-    rw [map_smul, smul_eq_mul]
-    exact mul_nonpos_of_nonneg_of_nonpos c.property iw
-
-/-- Intersecting a closed convex base with a nonempty affine zero slice commutes
-with actual homogenization, including at height zero. -/
-theorem _root_.Convex.homogenization_inter_zero_eq_inf_ker {P : Set V}
-    (hconv : _root_.Convex ℝ P)
-    (hclosed : IsClosed P) (g : V →ᴬ[ℝ] ℝ)
-    (hne : {x ∈ P | g x = 0}.Nonempty) :
-    homogenization {x ∈ P | g x = 0} = homogenization P ⊓
-      PointedCone.ofSubmodule (LinearMap.ker (homogenizedInequality g).toLinearMap) := by
-  let D := homogenization P ⊓
-    PointedCone.ofSubmodule (LinearMap.ker (homogenizedInequality g).toLinearMap)
-  have hDclosed : IsClosed (D : Set (V × ℝ)) :=
-    (isClosed_homogenization P).inter
-      (isClosed_eq (homogenizedInequality g).continuous continuous_const)
-  have hslice : {x : V | (x, (1 : ℝ)) ∈ D} = {x ∈ P | g x = 0} := by
-    ext x
-    change ((x, (1 : ℝ)) ∈ homogenization P ∧ homogenizedInequality g (x, 1) = 0) ↔ _
-    rw [hconv.mem_homogenization_one_iff hclosed, homogenizedInequality_one]
-    rfl
-  have hDne : {x : V | (x, (1 : ℝ)) ∈ D}.Nonempty := by rwa [hslice]
-  have hrec := D.homogenization_slice_one hDclosed
-    (fun z hz => homogenization_height_nonneg hz.1) hDne
-  rwa [hslice] at hrec
-
-/-- A nonpositive affine support cuts out a genuine cone face after actual homogenization. -/
-theorem _root_.Convex.homogenization_zeroFace_isFaceOf {P : Set V}
-    (hconv : _root_.Convex ℝ P)
-    (hclosed : IsClosed P) (g : V →ᴬ[ℝ] ℝ) (hg : ∀ x ∈ P, g x ≤ 0)
-    (hne : {x ∈ P | g x = 0}.Nonempty) :
-    (homogenization {x ∈ P | g x = 0}).IsFaceOf (homogenization P) := by
-  rw [hconv.homogenization_inter_zero_eq_inf_ker hclosed g hne]
-  have hf : ∀ z ∈ homogenization P, 0 ≤ (-(homogenizedInequality g).toLinearMap) z :=
-    fun z hz => neg_nonneg.mpr (homogenizedInequality_nonpos g hg hz)
-  have hface := PointedCone.isFaceOf_inf_ker hf
-  have hker : LinearMap.ker (-(homogenizedInequality g).toLinearMap) =
-      LinearMap.ker (homogenizedInequality g).toLinearMap := by ext z; simp
-  rwa [hker] at hface
-
-end Mei.Convex
-
-namespace IsExposed
-
-/-- Every nonempty exposed face of a closed convex set homogenizes to a face
-of its actual closed homogenization. -/
-theorem homogenization_isFaceOf {P F : Set V} (hF : IsExposed ℝ P F)
-    (hconv : Convex ℝ P) (hclosed : IsClosed P) (hne : F.Nonempty) :
-    (Set.homogenization F).IsFaceOf (Set.homogenization P) := by
-  obtain ⟨p, hp⟩ := hne
-  obtain ⟨l, hl⟩ := hF ⟨p, hp⟩
-  have hpmax : p ∈ {x ∈ P | ∀ y ∈ P, l y ≤ l x} := by rwa [← hl]
-  let g := l.toContinuousAffineMap - ContinuousAffineMap.const ℝ V (l p)
-  have hg : ∀ x ∈ P, g x ≤ 0 := by
-    intro x hx
-    change l x - l p ≤ 0
-    exact sub_nonpos.mpr (hpmax.2 x hx)
-  have hzero : F = {x ∈ P | g x = 0} := by
-    ext x
-    rw [hl]
-    constructor
-    · rintro ⟨hx, hmax⟩
-      refine ⟨hx, ?_⟩
-      change l x - l p = 0
-      exact sub_eq_zero.mpr (le_antisymm (hpmax.2 x hx) (hmax p hpmax.1))
-    · rintro ⟨hx, hzero⟩
-      have heq : l x = l p := sub_eq_zero.mp hzero
-      exact ⟨hx, fun y hy => (hpmax.2 y hy).trans_eq heq.symm⟩
-  rw [hzero]
-  exact hconv.homogenization_zeroFace_isFaceOf hclosed g hg (hzero ▸ ⟨p, hp⟩)
-
-end IsExposed
 
 namespace PointedCone.IsFaceOf
 
@@ -190,13 +83,15 @@ def nonemptyExposedFaceOrderIso {P : Set V} (hP : TauCeti.IsConvexPolyhedron P) 
     apply Subtype.ext
     apply PointedCone.Face.ext
     intro z
-    change z ∈ homogenization {x : V | (x, (1 : ℝ)) ∈ G.val} ↔ z ∈ G.val.toPointedCone
     have heq := G.val.toPointedCone.homogenization_slice_one
       (G.val.isFaceOf.isClosed_of_homogenization hP G.property)
       (fun w hw => homogenization_height_nonneg (G.val.isFaceOf.le hw)) G.property
-    simpa only [PointedCone.Face.mem_toPointedCone] using SetLike.ext_iff.mp heq z
+    simpa only [← PointedCone.Face.mem_toPointedCone] using SetLike.ext_iff.mp heq z
   map_rel_iff' := by
     intro F F'
+    -- Reduce the subtype orders and the bundled face order to cone inclusion.
+    -- The order isomorphism is still being constructed, so its evaluation lemmas
+    -- are not yet available to rewrite these projections.
     change homogenization F.val ≤ homogenization F'.val ↔ F.val ⊆ F'.val
     constructor
     · intro h x hx

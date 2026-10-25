@@ -18,7 +18,8 @@ The homogenization of `P` is the topological closure of the pointed cone hull
 of its height-one embedding. Its definition depends only on the carrier `P`.
 In a Hausdorff space the empty carrier gives the zero cone. Positive-height
 slices recover a closed convex base after rescaling. Closure is essential for
-the height-zero directions of an unbounded base.
+the height-zero directions of an unbounded base. Conversely, a closed cone in
+nonnegative heights meeting height one is the homogenization of that slice.
 -/
 
 public section
@@ -218,3 +219,42 @@ theorem _root_.Convex.mem_homogenization_zero_iff {P : Set V} (hconvex : _root_.
 end Topology
 
 end Set
+
+namespace PointedCone
+
+variable {V : Type*} [AddCommGroup V] [Module ℝ V] [TopologicalSpace V]
+  [ContinuousAdd V] [ContinuousSMul ℝ V]
+
+/-- A closed cone in nonnegative heights, meeting height one, is determined by
+its height-one slice, including all its height-zero directions. -/
+theorem homogenization_slice_one (C : PointedCone ℝ (V × ℝ))
+    (hclosed : IsClosed (C : Set (V × ℝ))) (hheight : ∀ z ∈ C, 0 ≤ z.2)
+    (hne : {x : V | (x, (1 : ℝ)) ∈ C}.Nonempty) :
+    Set.homogenization {x : V | (x, (1 : ℝ)) ∈ C} = C := by
+  let P := {x : V | (x, (1 : ℝ)) ∈ C}
+  have hpos {x : V} {t : ℝ} (ht : 0 < t) (hz : (x, t) ∈ C) :
+      (x, t) ∈ Set.homogenization P := by
+    have hbase : (t⁻¹ • x, (1 : ℝ)) ∈ C := by
+      have hm := C.smul_mem (inv_nonneg.mpr ht.le) hz
+      simpa [ht.ne'] using hm
+    have hm := (Set.homogenization P).smul_mem ht.le
+      (Set.mem_homogenization_one hbase)
+    convert hm using 1; simp [ht.ne']
+  apply le_antisymm
+  · exact (Set.homogenization_le_iff hclosed).mpr fun x hx => hx
+  · rintro ⟨x, t⟩ hz
+    rcases (hheight _ hz).eq_or_lt with rfl | ht
+    · obtain ⟨p, hp⟩ := hne
+      have hlim : Tendsto (fun ε : ℝ => (x + ε • p, ε)) (𝓝[>] 0) (𝓝 (x, (0 : ℝ))) := by
+        have hc : Continuous (fun ε : ℝ => (x + ε • p, ε)) :=
+          (continuous_const.add (continuous_id.smul continuous_const)).prodMk continuous_id
+        simpa only [zero_smul, add_zero] using
+          (hc.tendsto 0).mono_left nhdsWithin_le_nhds
+      apply (Set.isClosed_homogenization P).mem_of_tendsto hlim
+      filter_upwards [self_mem_nhdsWithin] with ε hε
+      have hm := C.add_mem hz (C.smul_mem (le_of_lt hε) hp)
+      apply hpos hε
+      simpa using hm
+    · exact hpos ht hz
+
+end PointedCone
