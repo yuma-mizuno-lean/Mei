@@ -38,4 +38,23 @@ theorem ιNatTrans_app_comp_ι_map {X Y : Grothendieck C} (h : X ⟶ Y) :
   erw [eqToHom_trans_assoc (C := C.obj e)]
   erw [eqToHom_refl (C := C.obj e), Category.id_comp (obj := C.obj e)]
 
+/-- Successive canonical transports agree with transport along the composite after identifying
+the iterated image with the image of the composite in the target fiber. -/
+theorem ιNatTrans_app_comp {d e b : D} (f : d ⟶ e) (g : e ⟶ b) (x : C.obj d) :
+    (ιNatTrans f).app x ≫ (ιNatTrans g).app ((C.map f).toFunctor.obj x) ≫
+      (ι C b).map (eqToHom (by simp)) = (ιNatTrans (f ≫ g)).app x := by
+  let h : (⟨e, (C.map f).toFunctor.obj x⟩ : Grothendieck C) ⟶
+      ⟨b, (C.map (f ≫ g)).toFunctor.obj x⟩ :=
+    ⟨g, eqToHom (by simp)⟩
+  rw [ιNatTrans_app_comp_ι_map h]
+  symm
+  refine Grothendieck.ext _ _ (by
+    dsimp [Grothendieck.ιNatTrans, Grothendieck.comp, h]
+    rfl) ?_
+  dsimp [Grothendieck.ιNatTrans, Grothendieck.ι, h]
+  erw [(C.map g).toFunctor.map_id]
+  erw [Category.comp_id (obj := C.obj b), Category.id_comp (obj := C.obj b),
+    eqToHom_trans (C := C.obj b)]
+  rfl
+
 end CategoryTheory.Grothendieck

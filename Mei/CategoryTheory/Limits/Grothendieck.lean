@@ -85,21 +85,12 @@ theorem map_comp {d e b : D} (f : d ⟶ e) (g : e ⟶ b) :
   apply limit.hom_ext
   intro x
   simp only [Category.assoc (obj := V), limit.pre_π]
-  let h : (⟨e, (C.map f).toFunctor.obj x⟩ : Grothendieck C) ⟶
-      ⟨b, (C.map (f ≫ g)).toFunctor.obj x⟩ :=
-    ⟨g, eqToHom (by simp)⟩
-  rw [map_π, map_π_of_hom F h]
-  dsimp only [Grothendieck.base, Grothendieck.fiber]
-  erw [map_π_assoc, ← F.map_comp]
-  congr 2
-  refine Grothendieck.ext _ _ (by
-    dsimp [Grothendieck.ιNatTrans, Grothendieck.comp, h]
-    rfl) ?_
-  dsimp [Grothendieck.ιNatTrans, Grothendieck.ι, h]
-  erw [(C.map g).toFunctor.map_id]
-  erw [Category.comp_id (obj := C.obj b), Category.id_comp (obj := C.obj b),
-    eqToHom_trans (C := C.obj b)]
-  rfl
+  rw [map_π, ← limit.w (Grothendieck.ι C b ⋙ F) (eqToHom (by simp :
+    (C.map g).toFunctor.obj ((C.map f).toFunctor.obj x) =
+      (C.map (f ≫ g)).toFunctor.obj x))]
+  simp only [Functor.comp_map, ← Category.assoc (obj := V), map_π]
+  simp only [Category.assoc (obj := V), ← F.map_comp,
+    Category.assoc (obj := Grothendieck C), Grothendieck.ιNatTrans_app_comp]
 
 end FiberwiseLimit
 
