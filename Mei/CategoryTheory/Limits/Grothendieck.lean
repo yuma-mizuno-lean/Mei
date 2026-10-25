@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.CategoryTheory.Grothendieck
+public import Mei.CategoryTheory.Grothendieck.Basic
 public import Mathlib.CategoryTheory.Limits.Final
 
 /-!
