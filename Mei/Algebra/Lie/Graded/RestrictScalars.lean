@@ -61,7 +61,8 @@ def truncatedRestrictScalarsEquiv (k : ℕ) :
     Submodule.quotEquivOfEq (R := R)
       (d.degreeIdeal (fun n => (ℒ n).restrictScalars R) k).toSubmodule
       ((d.degreeIdeal ℒ k).restrictScalars R).toSubmodule (by simp)
-  have he (x : L) : e (Submodule.Quotient.mk x) = Submodule.Quotient.mk x := (rfl)
+  have he (x : L) : e (Submodule.Quotient.mk x) = Submodule.Quotient.mk x :=
+    Submodule.quotEquivOfEq_mk _ _ _ x
   let e' : d.truncatedLie (fun n => (ℒ n).restrictScalars R) k ≃ₗ⁅R⁆
       L ⧸ (d.degreeIdeal ℒ k).restrictScalars R :=
     { e with
@@ -79,8 +80,15 @@ def truncatedRestrictScalarsEquiv (k : ℕ) :
 @[simp]
 theorem truncatedRestrictScalarsEquiv_mk (k : ℕ) (x : L) :
     d.truncatedRestrictScalarsEquiv (R := R) ℒ k (Submodule.Quotient.mk x) =
-      Submodule.Quotient.mk x :=
-  (d.degreeIdeal ℒ k).quotientRestrictScalarsEquiv_mk (R := R) x
+      Submodule.Quotient.mk x := by
+  simp only [truncatedRestrictScalarsEquiv, LieEquiv.trans_apply]
+  -- The first Lie equivalence wraps a linear equivalence; expose it to use its API.
+  change (d.degreeIdeal ℒ k).quotientRestrictScalarsEquiv R
+      (Submodule.quotEquivOfEq (R := R)
+        (d.degreeIdeal (fun n => (ℒ n).restrictScalars R) k).toSubmodule
+        ((d.degreeIdeal ℒ k).restrictScalars R).toSubmodule (by simp)
+        (Submodule.Quotient.mk x)) = Submodule.Quotient.mk x
+  rw [Submodule.quotEquivOfEq_mk, LieIdeal.quotientRestrictScalarsEquiv_mk]
 
 /-- The inverse truncation comparison preserves representatives. -/
 @[simp]
