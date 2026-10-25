@@ -5,11 +5,11 @@ Authors: Codex
 -/
 module
 
+public import Mei.Algebra.Lie.Quotient.Map
 public import Mei.Algebra.Lie.Free.LowerCentral
 public import Mei.Algebra.Lie.UniversalEnveloping.Cofinality
 public import Mei.Algebra.Lie.UniversalEnveloping.GradedEmbedding
 public import TauCeti.Algebra.Lie.UniversalEnveloping.PBW.Embedding
-public import TauCeti.Algebra.Lie.Quotient
 public import Mathlib.RingTheory.Ideal.Quotient.Operations
 
 /-!
@@ -108,6 +108,31 @@ theorem quotientEnvelopingMap_mk (c : ℕ) (x : F) :
       Ideal.Quotient.mk (J ^ (c + 1)) (_root_.UniversalEnvelopingAlgebra.ι R x) := by
   rw [quotientEnvelopingMap, LieIdeal.liftQ_apply, quotientEnvelopingHom,
     LieHom.comp_apply, AlgHom.toLieHom_apply, Ideal.Quotient.mkₐ_eq_mk]
+
+/-- Every element of the canonical Lie image in the finite augmentation quotient is nilpotent. -/
+theorem isNilpotent_quotientEnvelopingMap (c : ℕ)
+    (z : F ⧸ LieModule.lowerCentralSeries R F F c) :
+    IsNilpotent (quotientEnvelopingMap R S c z) := by
+  obtain ⟨z, rfl⟩ := LieIdeal.surjective_mkQ (LieModule.lowerCentralSeries R F F c) z
+  rw [LieIdeal.mkQ_apply, quotientEnvelopingMap_mk]
+  refine ⟨c + 1, ?_⟩
+  rw [← map_pow, Ideal.Quotient.eq_zero_iff_mem]
+  apply Ideal.pow_mem_pow
+  simpa only [pow_one] using
+    TauCeti.UniversalEnvelopingAlgebra.pow_ι_mem_augmentation_toIdeal R F z (by decide : 1 ≠ 0)
+
+/-- The canonical enveloping maps commute with transitions to smaller nilpotency bounds. -/
+theorem quotientEnvelopingMap_factor {c d : ℕ} (h : c ≤ d)
+    (z : F ⧸ LieModule.lowerCentralSeries R F F d) :
+    quotientEnvelopingMap R S c
+        (LieIdeal.factor (LieModule.lowerCentralSeries R F F d)
+          (LieModule.lowerCentralSeries R F F c)
+          (LieModule.antitone_lowerCentralSeries R F F h) z) =
+      Ideal.Quotient.factor (Ideal.pow_le_pow_right (Nat.add_le_add_right h 1))
+        (quotientEnvelopingMap R S d z) := by
+  obtain ⟨z, rfl⟩ := LieIdeal.surjective_mkQ (LieModule.lowerCentralSeries R F F d) z
+  simp only [LieIdeal.mkQ_apply, LieIdeal.factor_apply, quotientEnvelopingMap_mk,
+    Ideal.Quotient.factor_mk]
 
 private theorem ker_quotientEnvelopingHom
     (hι : Function.Injective (_root_.UniversalEnvelopingAlgebra.ι R : F → U)) (c : ℕ) :

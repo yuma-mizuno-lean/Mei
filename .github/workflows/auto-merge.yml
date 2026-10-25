@@ -107,7 +107,7 @@ jobs:
     with:
       review_ref: 3999677031829254b4cbb27e9156c33672c61d0d
       tools_repository: yuma-mizuno-lean/TauCetiTools
-      tools_ref: c25e351f20b1dc31660bc38c3333e0c259137b28
+      tools_ref: 7405c6bc681341dc54c775bc6f5e6de533120ba1
       pr: ${{ needs.resolve.outputs.pr }}
       merge_backend: ${{ vars.MERGE_BACKEND || 'queue' }}
     # Pass only the App credentials merge-only needs, not all of Mei's secrets.
