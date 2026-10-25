@@ -23,7 +23,7 @@ generation and finite dimensionality are not assumed.
 
 public section
 
-open Set
+open Set ContinuousAffineMap
 
 variable {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
 
@@ -43,7 +43,8 @@ theorem homogenizedInequality_nonpos {P : Set V} (g : V →ᴬ[ℝ] ℝ)
   apply closure_minimal (s :=
       (PointedCone.hull ℝ ((fun p : V => (p, (1 : ℝ))) '' P) : Set (V × ℝ)))
     (t := {z | homogenizedInequality g z ≤ 0}) ?_
-    (isClosed_le (homogenizedInequality g).continuous continuous_const) hz
+    (isClosed_le (homogenizedInequality g).continuous continuous_const)
+    (Set.mem_homogenization_iff.mp hz)
   intro w hw
   induction hw using Submodule.span_induction with
   | mem w hw =>
@@ -108,7 +109,7 @@ namespace IsExposed
 of its actual closed homogenization. -/
 theorem homogenization_isFaceOf {P F : Set V} (hF : IsExposed ℝ P F)
     (hconv : Convex ℝ P) (hclosed : IsClosed P) (hne : F.Nonempty) :
-    (Mei.Convex.homogenization F).IsFaceOf (Mei.Convex.homogenization P) := by
+    (Set.homogenization F).IsFaceOf (Set.homogenization P) := by
   obtain ⟨p, hp⟩ := hne
   obtain ⟨l, hl⟩ := hF ⟨p, hp⟩
   have hpmax : p ∈ {x ∈ P | ∀ y ∈ P, l y ≤ l x} := by rwa [← hl]
@@ -137,9 +138,9 @@ namespace PointedCone.IsFaceOf
 
 /-- A cone face of a polyhedral homogenization has an exposed height-one slice. -/
 theorem isExposed_slice_one_of_homogenization {P : Set V} {G : PointedCone ℝ (V × ℝ)}
-    (hG : G.IsFaceOf (Mei.Convex.homogenization P)) (hP : TauCeti.IsConvexPolyhedron P) :
+    (hG : G.IsFaceOf (Set.homogenization P)) (hP : TauCeti.IsConvexPolyhedron P) :
     IsExposed ℝ P {x : V | (x, (1 : ℝ)) ∈ G} := by
-  have hslice : {x : V | (x, (1 : ℝ)) ∈ Mei.Convex.homogenization P} = P := by
+  have hslice : {x : V | (x, (1 : ℝ)) ∈ Set.homogenization P} = P := by
     ext x
     exact hP.convex.mem_homogenization_one_iff hP.isClosed
   have hext := hG.isExtreme_slice_one
@@ -151,7 +152,7 @@ theorem isExposed_slice_one_of_homogenization {P : Set V} {G : PointedCone ℝ (
 /-- Faces meeting height one are closed because they are convex extreme
 subsets of a polyhedral cone. No finite-generation assumption is needed. -/
 theorem isClosed_of_homogenization {P : Set V} {G : PointedCone ℝ (V × ℝ)}
-    (hG : G.IsFaceOf (Mei.Convex.homogenization P)) (hP : TauCeti.IsConvexPolyhedron P)
+    (hG : G.IsFaceOf (Set.homogenization P)) (hP : TauCeti.IsConvexPolyhedron P)
     (hne : {x : V | (x, (1 : ℝ)) ∈ G}.Nonempty) : IsClosed (G : Set (V × ℝ)) := by
   obtain ⟨p, hp⟩ := hne
   have hPne : P.Nonempty :=

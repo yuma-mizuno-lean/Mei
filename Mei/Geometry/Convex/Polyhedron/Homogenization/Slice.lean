@@ -5,7 +5,8 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.Convex.Polyhedron.Homogenization
+public import Mei.Geometry.Convex.Homogenization
+public import Mathlib.Analysis.Normed.Module.Basic
 public import Mathlib.Geometry.Convex.Cone.Face.Basic
 
 /-!
@@ -30,22 +31,18 @@ its height-one slice, including all its height-zero directions. -/
 theorem homogenization_slice_one (C : PointedCone ℝ (V × ℝ))
     (hclosed : IsClosed (C : Set (V × ℝ))) (hheight : ∀ z ∈ C, 0 ≤ z.2)
     (hne : {x : V | (x, (1 : ℝ)) ∈ C}.Nonempty) :
-    Mei.Convex.homogenization {x : V | (x, (1 : ℝ)) ∈ C} = C := by
+    Set.homogenization {x : V | (x, (1 : ℝ)) ∈ C} = C := by
   let P := {x : V | (x, (1 : ℝ)) ∈ C}
   have hpos {x : V} {t : ℝ} (ht : 0 < t) (hz : (x, t) ∈ C) :
-      (x, t) ∈ Mei.Convex.homogenization P := by
+      (x, t) ∈ Set.homogenization P := by
     have hbase : (t⁻¹ • x, (1 : ℝ)) ∈ C := by
       have hm := C.smul_mem (inv_nonneg.mpr ht.le) hz
       simpa [ht.ne'] using hm
-    have hm := (Mei.Convex.homogenization P).smul_mem ht.le
-      (Mei.Convex.mem_homogenization_one hbase)
+    have hm := (Set.homogenization P).smul_mem ht.le
+      (Set.mem_homogenization_one hbase)
     convert hm using 1; simp [ht.ne']
   apply le_antisymm
-  · apply Submodule.topologicalClosure_minimal
-    · apply Submodule.span_le.mpr
-      rintro z ⟨x, hx, rfl⟩
-      exact hx
-    · exact hclosed
+  · exact (Set.homogenization_le_iff hclosed).mpr fun x hx => hx
   · rintro ⟨x, t⟩ hz
     rcases (hheight _ hz).eq_or_lt with rfl | ht
     · obtain ⟨p, hp⟩ := hne
@@ -54,7 +51,7 @@ theorem homogenization_slice_one (C : PointedCone ℝ (V × ℝ))
           (continuous_const.add (continuous_id.smul continuous_const)).prodMk continuous_id
         simpa only [zero_smul, add_zero] using
           (hc.tendsto 0).mono_left nhdsWithin_le_nhds
-      apply (Mei.Convex.isClosed_homogenization P).mem_of_tendsto hlim
+      apply (Set.isClosed_homogenization P).mem_of_tendsto hlim
       filter_upwards [self_mem_nhdsWithin] with ε hε
       have hm := C.add_mem hz (C.smul_mem (le_of_lt hε) hp)
       apply hpos hε

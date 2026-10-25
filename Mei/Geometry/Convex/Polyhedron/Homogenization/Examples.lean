@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.Convex.Polyhedron.Homogenization.Inequalities
+public import Mei.Geometry.Convex.Homogenization.Inequalities
 import Mathlib.Tactic.Linarith
 
 /-!
@@ -19,13 +19,15 @@ homogenization, defined from the carrier, gives the origin in both cases.
 
 public section
 
+open ContinuousAffineMap Set
+
 namespace Mei.Convex
 
 /-- The inconsistent constant row defining an empty subset of the real line. -/
-@[expose] def emptyConstantRow : ℝ →ᴬ[ℝ] ℝ := ContinuousAffineMap.const ℝ ℝ 1
+def emptyConstantRow : ℝ →ᴬ[ℝ] ℝ := ContinuousAffineMap.const ℝ ℝ 1
 
 /-- Two incompatible upper bounds defining the empty subset of the real line. -/
-@[expose] def emptyOpposedRows (b : Bool) : ℝ →ᴬ[ℝ] ℝ :=
+def emptyOpposedRows (b : Bool) : ℝ →ᴬ[ℝ] ℝ :=
   if b then ContinuousAffineMap.const ℝ ℝ 1 - ContinuousAffineMap.id ℝ ℝ
   else ContinuousAffineMap.id ℝ ℝ
 
@@ -51,7 +53,10 @@ theorem homogeneousInequalityCone_emptyConstantRow :
   ext z
   simp only [SetLike.mem_coe, mem_homogeneousInequalityCone, Set.mem_ofPred_eq]
   have hr : homogenizedInequality emptyConstantRow z = z.2 := by
-    simp [homogenizedInequality, emptyConstantRow]
+    rcases z with ⟨x, t⟩
+    rw [homogenizedInequality_apply, ← sub_zero x, ← vsub_eq_sub,
+      AffineMap.linear_apply_vsub]
+    simp [emptyConstantRow]
   simp only [hr, forall_const]
   exact ⟨fun h => le_antisymm h.2 h.1, fun h => by simp [h]⟩
 
@@ -61,11 +66,15 @@ theorem homogeneousInequalityCone_emptyOpposedRows :
   ext z
   simp only [mem_homogeneousInequalityCone, Submodule.mem_bot]
   have h₀ : homogenizedInequality (emptyOpposedRows false) z = z.1 := by
-    change z.1 + 0 * z.2 = z.1
-    simp
+    rcases z with ⟨x, t⟩
+    rw [homogenizedInequality_apply, ← sub_zero x, ← vsub_eq_sub,
+      AffineMap.linear_apply_vsub]
+    simp [emptyOpposedRows]
   have h₁ : homogenizedInequality (emptyOpposedRows true) z = z.2 - z.1 := by
-    change (0 - z.1) + (1 - 0) * z.2 = z.2 - z.1
-    simp [sub_eq_add_neg, add_comm]
+    rcases z with ⟨x, t⟩
+    rw [homogenizedInequality_apply, ← sub_zero x, ← vsub_eq_sub,
+      AffineMap.linear_apply_vsub]
+    simp [emptyOpposedRows, sub_eq_add_neg, add_comm]
   constructor
   · rintro ⟨ht, hz⟩
     have hx := hz false
@@ -76,8 +85,8 @@ theorem homogeneousInequalityCone_emptyOpposedRows :
   · rintro rfl
     simp
 
-/-- The actual homogenization of either inconsistent presentation is the zero cone. -/
-theorem homogenization_empty_presentations :
+-- The actual homogenization of either inconsistent presentation is the zero cone.
+example :
     homogenization {x : ℝ | emptyConstantRow x ≤ 0} = ⊥ ∧
       homogenization {x : ℝ | ∀ b, emptyOpposedRows b x ≤ 0} = ⊥ := by
   rw [emptyConstantRow_carrier, emptyOpposedRows_carrier]
