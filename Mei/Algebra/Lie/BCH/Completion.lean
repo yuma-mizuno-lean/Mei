@@ -178,11 +178,8 @@ theorem completedMap_comp (g : GradedLieHom U ℳ ℋ) (f : GradedLieHom T ℒ �
     (g.truncatedMap k le_rfl).bchGroupMap.comp
       ((f.truncatedMap (U.modulus k) le_rfl).bchGroupMap.comp
         (d.truncationMap ℒ (le_max_right _ _)).bchGroupMap)
-  simp only [← LieHom.bchGroupMap_comp]
-  congr 1
-  apply (d.degreeIdeal ℒ _).lieHom_qext
-  intro a
-  simp [LieIdeal.mkQ_apply]
+  simp only [← LieHom.bchGroupMap_comp, truncatedMap_comp_truncationMap,
+    ← truncatedMap_comp]
 
 /-- The original cutoff modulus also bounds the filtration shift on completed groups. -/
 theorem completedMap_mem_degreeFiltration (f : GradedLieHom T ℒ ℳ) (k : ℕ)
