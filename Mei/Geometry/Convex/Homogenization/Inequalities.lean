@@ -57,25 +57,16 @@ variable {V ι : Type*} [AddCommGroup V] [Module ℝ V] [TopologicalSpace V]
   [IsTopologicalAddGroup V]
 
 /-- The cone of homogeneous inequalities associated with an affine family. -/
-def homogeneousInequalityCone (g : ι → (V →ᴬ[ℝ] ℝ)) : PointedCone ℝ (V × ℝ) where
-  carrier := {z | 0 ≤ z.2 ∧ ∀ i, homogenizedInequality (g i) z ≤ 0}
-  zero_mem' := by simp
-  add_mem' := by
-    intro z w hz hw
-    refine ⟨add_nonneg hz.1 hw.1, fun i => ?_⟩
-    simpa only [map_add] using add_nonpos (hz.2 i) (hw.2 i)
-  smul_mem' := by
-    intro c z hz
-    refine ⟨mul_nonneg c.property hz.1, fun i => ?_⟩
-    simp only [← Nonneg.coe_smul]
-    rw [map_smul, smul_eq_mul]
-    exact mul_nonpos_of_nonneg_of_nonpos c.property (hz.2 i)
+def homogeneousInequalityCone (g : ι → (V →ᴬ[ℝ] ℝ)) : PointedCone ℝ (V × ℝ) :=
+  (PointedCone.positive ℝ ℝ).comap (LinearMap.snd ℝ V ℝ) ⊓
+    ⨅ i, (PointedCone.positive ℝ ℝ).comap (-(homogenizedInequality (g i)).toLinearMap)
 
 /-- Membership in the homogeneous inequality cone records height and all rows. -/
 @[simp]
 theorem mem_homogeneousInequalityCone {g : ι → (V →ᴬ[ℝ] ℝ)} {z : V × ℝ} :
     z ∈ homogeneousInequalityCone g ↔
-      0 ≤ z.2 ∧ ∀ i, homogenizedInequality (g i) z ≤ 0 := (Iff.rfl)
+      0 ≤ z.2 ∧ ∀ i, homogenizedInequality (g i) z ≤ 0 := by
+  simp [homogeneousInequalityCone]
 
 variable [ContinuousSMul ℝ V]
 
@@ -125,6 +116,7 @@ theorem homogenization_setOf_forall_eq
     (g : ι → (V →ᴬ[ℝ] ℝ)) (hne : {x : V | ∀ i, g i x ≤ 0}.Nonempty) :
     homogenization {x : V | ∀ i, g i x ≤ 0} = homogeneousInequalityCone g := by
   ext z
-  exact mem_homogenization_setOf_forall_iff hne
+  simpa only [mem_homogeneousInequalityCone] using
+    (mem_homogenization_setOf_forall_iff (x := z.1) (t := z.2) hne)
 
 end Mei.Convex

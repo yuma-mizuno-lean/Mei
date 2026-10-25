@@ -25,11 +25,14 @@ namespace Mei.Convex
 
 variable {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
 
-/-- The homogeneous inequalities for a finite affine family are themselves a
-convex polyhedron. -/
+/-- The recession cone of a finite affine-inequality solution set is a convex
+polyhedron, including when the solution set is empty. -/
 theorem isConvexPolyhedron_recessionCone_setOf_forall {ι : Type*} [Finite ι]
-    (g : ι → (V →ᴬ[ℝ] ℝ)) (hP : {x : V | ∀ i, g i x ≤ 0}.Nonempty) :
+    (g : ι → (V →ᴬ[ℝ] ℝ)) :
     TauCeti.IsConvexPolyhedron (recessionCone {x : V | ∀ i, g i x ≤ 0} : Set V) := by
+  rcases Set.eq_empty_or_nonempty {x : V | ∀ i, g i x ≤ 0} with h | hP
+  · rw [h, recessionCone_empty]
+    exact TauCeti.isConvexPolyhedron_univ
   have he := recessionCone_setOf_forall_eq (fun i => (g i).toAffineMap) hP
   simp only [ContinuousAffineMap.coe_toAffineMap] at he
   rw [he]
@@ -41,11 +44,7 @@ theorem isConvexPolyhedron_recessionCone_setOf_forall {ι : Type*} [Finite ι]
 case has recession cone equal to the whole space. -/
 theorem isConvexPolyhedron_recessionCone {P : Set V} (hP : TauCeti.IsConvexPolyhedron P) :
     TauCeti.IsConvexPolyhedron (recessionCone P : Set V) := by
-  rcases P.eq_empty_or_nonempty with h | hne
-  · subst P
-    rw [recessionCone_empty]
-    exact TauCeti.isConvexPolyhedron_univ
-  · obtain ⟨k, g, rfl⟩ := TauCeti.isConvexPolyhedron_iff.mp hP
-    exact isConvexPolyhedron_recessionCone_setOf_forall g hne
+  obtain ⟨k, g, rfl⟩ := TauCeti.isConvexPolyhedron_iff.mp hP
+  exact isConvexPolyhedron_recessionCone_setOf_forall g
 
 end Mei.Convex
