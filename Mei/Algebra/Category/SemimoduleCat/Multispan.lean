@@ -158,4 +158,15 @@ theorem snd_matchingFamilyEquiv_symm_apply_left
     ((I.matchingFamilyEquiv hinj).symm s).property).2 b).trans
     (I.matchingFamilyEquiv_symm_apply_right hinj s _)
 
+/-- A face value is the reconstructed common lift exactly when its two images are the
+prescribed chamber values. Joint injectivity gives uniqueness of this lift. -/
+theorem eq_matchingFamilyEquiv_symm_apply_left_iff
+    (hinj : ∀ b, Function.Injective ((I.fst b).hom.prod (I.snd b).hom))
+    (s : I.compatibleFamilies) (b : J.L) {x : I.left b} :
+    x = ((I.matchingFamilyEquiv hinj).symm s).val (.left b) ↔
+      I.fst b x = s.val (J.fst b) ∧ I.snd b x = s.val (J.snd b) := by
+  refine ⟨by rintro rfl; simp, fun h => hinj b (Prod.ext ?_ ?_)⟩
+  · exact h.1.trans (I.fst_matchingFamilyEquiv_symm_apply_left hinj s b).symm
+  · exact h.2.trans (I.snd_matchingFamilyEquiv_symm_apply_left hinj s b).symm
+
 end CategoryTheory.Limits.MultispanIndex
