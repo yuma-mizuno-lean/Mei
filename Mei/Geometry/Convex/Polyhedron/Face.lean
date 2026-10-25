@@ -8,7 +8,6 @@ module
 public import TauCeti.Analysis.Convex.Polyhedron.Basic
 public import Mathlib.Analysis.Convex.Exposed
 public import Mathlib.Topology.Algebra.Affine
-public import Mathlib.LinearAlgebra.AffineSpace.Midpoint
 public import Mathlib.Analysis.Normed.Module.Basic
 import Mathlib.Data.Fintype.Powerset
 import Mathlib.Tactic.Linarith
@@ -27,14 +26,18 @@ public section
 
 open Set Filter Topology
 
-variable {V ι : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
+variable {V ι : Type*}
+
+section Algebra
+
+variable [AddCommGroup V] [Module ℝ V]
 
 namespace Convex
 
 /-- A nonempty convex set has a point where each member of a finite family of
 nonpositive affine functions vanishes exactly when it vanishes on the whole set. -/
 theorem exists_mem_zero_iff_forall {F : Set V} (hF : Convex ℝ F) (hne : F.Nonempty)
-    [Finite ι] (g : ι → (V →ᴬ[ℝ] ℝ)) (hg : ∀ j, ∀ x ∈ F, g j x ≤ 0) :
+    [Finite ι] (g : ι → (V →ᵃ[ℝ] ℝ)) (hg : ∀ j, ∀ x ∈ F, g j x ≤ 0) :
     ∃ p ∈ F, ∀ j, g j p = 0 ↔ ∀ x ∈ F, g j x = 0 := by
   classical
   let := Fintype.ofFinite ι
@@ -83,11 +86,11 @@ theorem exists_mem_zero_iff_forall {F : Set V} (hF : Convex ℝ F) (hne : F.None
 
 end Convex
 
-namespace ContinuousAffineMap
+namespace AffineMap
 
 /-- Matching the active inequalities at a point permits a small extrapolation
 away from the matching point while preserving every defining inequality. -/
-theorem exists_pos_lineMap_neg_forall_le [Finite ι] (g : ι → (V →ᴬ[ℝ] ℝ))
+theorem exists_pos_lineMap_neg_forall_le [Finite ι] (g : ι → (V →ᵃ[ℝ] ℝ))
     {p x : V} (hp : ∀ j, g j p ≤ 0) (hx : ∀ j, g j p = 0 → g j x = 0) :
     ∃ ε : ℝ, 0 < ε ∧ ∀ j, g j (AffineMap.lineMap p x (-ε)) ≤ 0 := by
   have heach (j : ι) : ∀ᶠ ε : ℝ in 𝓝 0, g j (AffineMap.lineMap p x (-ε)) ≤ 0 := by
@@ -96,23 +99,30 @@ theorem exists_pos_lineMap_neg_forall_le [Finite ι] (g : ι → (V →ᴬ[ℝ] 
         rw [(g j).apply_lineMap, AffineMap.lineMap_apply_ring, hj, hx j hj]
         simp
     · have hjlt : g j p < 0 := lt_of_le_of_ne (hp j) hj
-      have hc : Continuous (fun ε : ℝ => g j (AffineMap.lineMap p x (-ε))) :=
-        (g j).continuous.comp (AffineMap.lineMap_continuous.comp continuous_neg)
-      have he := (hc.tendsto 0).eventually (eventually_lt_nhds (by simpa using hjlt))
-      exact he.mono fun _ h => h.le
+      have hval (ε : ℝ) : g j (AffineMap.lineMap p x (-ε)) =
+          (1 + ε) * g j p - ε * g j x := by
+        rw [(g j).apply_lineMap, AffineMap.lineMap_apply_ring]
+        ring
+      have hc : Continuous (fun ε : ℝ => (1 + ε) * g j p - ε * g j x) :=
+        ((continuous_const.add continuous_id).mul continuous_const).sub
+          (continuous_id.mul continuous_const)
+      have hlim : Tendsto (fun ε : ℝ => (1 + ε) * g j p - ε * g j x)
+          (𝓝 0) (𝓝 (g j p)) := by simpa using hc.tendsto 0
+      have he := hlim.eventually (eventually_lt_nhds hjlt)
+      exact he.mono fun ε h => by rw [hval]; exact h.le
   have hall := eventually_all.mpr heach
   obtain ⟨δ, hδ, hball⟩ := Metric.mem_nhds_iff.mp hall
   refine ⟨δ / 2, by positivity, hball ?_⟩
   rw [Metric.mem_ball, Real.dist_eq, sub_zero, abs_of_pos (by positivity)]
   linarith
 
-end ContinuousAffineMap
+end AffineMap
 
 namespace IsExtreme
 
 /-- A nonempty convex extreme subset of a finite intersection of affine
 halfspaces is obtained by imposing equality in some of the defining rows. -/
-theorem eq_setOf_active [Finite ι] (g : ι → (V →ᴬ[ℝ] ℝ)) {F : Set V}
+theorem eq_setOf_active [Finite ι] (g : ι → (V →ᵃ[ℝ] ℝ)) {F : Set V}
     (hF : IsExtreme ℝ {x | ∀ j, g j x ≤ 0} F) (hconv : Convex ℝ F)
     (hne : F.Nonempty) :
     ∃ I : Finset ι, F = {x | (∀ j, g j x ≤ 0) ∧ ∀ j ∈ I, g j x = 0} := by
@@ -127,7 +137,7 @@ theorem eq_setOf_active [Finite ι] (g : ι → (V →ᴬ[ℝ] ℝ)) {F : Set V}
     intro j hj
     exact (hpoint j).mp (Finset.mem_filter.mp hj).2 x hx
   · rintro ⟨hx, hxI⟩
-    obtain ⟨ε, hε, he⟩ := ContinuousAffineMap.exists_pos_lineMap_neg_forall_le g
+    obtain ⟨ε, hε, he⟩ := AffineMap.exists_pos_lineMap_neg_forall_le g
       (hF.subset hp) (fun j hj => hxI j (Finset.mem_filter.mpr ⟨Finset.mem_univ j, hj⟩))
     apply hF.left_mem_of_mem_openSegment hx he hp
     have hden : 0 < 1 + ε := by linarith
@@ -146,13 +156,38 @@ theorem eq_setOf_active [Finite ι] (g : ι → (V →ᴬ[ℝ] ℝ)) {F : Set V}
 
 end IsExtreme
 
+namespace Mei.Convex
+
+/-- A finite affine halfspace presentation has only finitely many convex
+extreme subsets, including the empty subset. No topology is required on the ambient module. -/
+theorem finite_convex_extreme_sets [Finite ι] (g : ι → (V →ᵃ[ℝ] ℝ)) :
+    {F : Set V | Convex ℝ F ∧ IsExtreme ℝ {x | ∀ j, g j x ≤ 0} F}.Finite := by
+  classical
+  let := Fintype.ofFinite ι
+  let faces : Finset ι → Set V :=
+    fun I => {x | (∀ j, g j x ≤ 0) ∧ ∀ j ∈ I, g j x = 0}
+  apply ((Set.finite_range faces).insert ∅).subset
+  intro F ⟨hconv, hF⟩
+  rcases F.eq_empty_or_nonempty with rfl | hne
+  · exact Set.mem_insert _ _
+  · obtain ⟨I, hI⟩ := hF.eq_setOf_active g hconv hne
+    exact Set.mem_insert_of_mem _ ⟨I, hI.symm⟩
+
+end Mei.Convex
+
+end Algebra
+
+section Topology
+
+variable [NormedAddCommGroup V] [NormedSpace ℝ V]
+
 namespace IsExposed
 
 /-- Every nonempty exposed subset of a polyhedron is an active-constraint face. -/
 theorem eq_setOf_active [Finite ι] (g : ι → (V →ᴬ[ℝ] ℝ)) {F : Set V}
     (hF : IsExposed ℝ {x | ∀ j, g j x ≤ 0} F) (hne : F.Nonempty) :
     ∃ I : Finset ι, F = {x | (∀ j, g j x ≤ 0) ∧ ∀ j ∈ I, g j x = 0} :=
-  hF.isExtreme.eq_setOf_active g
+  hF.isExtreme.eq_setOf_active (fun j => (g j).toAffineMap)
     (hF.convex (TauCeti.isConvexPolyhedron_setOf_forall g).convex) hne
 
 end IsExposed
@@ -206,25 +241,10 @@ theorem isConvexPolyhedron_setOf_active [Finite ι] (g : ι → (V →ᴬ[ℝ] �
     have hnonneg := hxI ⟨j, hj⟩
     simpa using hnonneg
 
-/-- A finite affine halfspace presentation has only finitely many convex
-extreme subsets, including the empty subset. -/
-theorem finite_convex_extreme_sets [Finite ι] (g : ι → (V →ᴬ[ℝ] ℝ)) :
-    {F : Set V | Convex ℝ F ∧ IsExtreme ℝ {x | ∀ j, g j x ≤ 0} F}.Finite := by
-  classical
-  let := Fintype.ofFinite ι
-  let faces : Finset ι → Set V :=
-    fun I => {x | (∀ j, g j x ≤ 0) ∧ ∀ j ∈ I, g j x = 0}
-  apply ((Set.finite_range faces).insert ∅).subset
-  intro F ⟨hconv, hF⟩
-  rcases F.eq_empty_or_nonempty with rfl | hne
-  · exact Set.mem_insert _ _
-  · obtain ⟨I, hI⟩ := hF.eq_setOf_active g hconv hne
-    exact Set.mem_insert_of_mem _ ⟨I, hI.symm⟩
-
 /-- A finite affine halfspace presentation has only finitely many exposed subsets. -/
 theorem finite_exposed_sets [Finite ι] (g : ι → (V →ᴬ[ℝ] ℝ)) :
     {F : Set V | IsExposed ℝ {x | ∀ j, g j x ≤ 0} F}.Finite :=
-  (finite_convex_extreme_sets g).subset fun _ hF =>
+  (finite_convex_extreme_sets (fun j => (g j).toAffineMap)).subset fun _ hF =>
     ⟨hF.convex (TauCeti.isConvexPolyhedron_setOf_forall g).convex, hF.isExtreme⟩
 
 end Mei.Convex
@@ -237,7 +257,7 @@ theorem isExposed_of_isConvexPolyhedron {P F : Set V} (hF : IsExtreme ℝ P F)
   rcases F.eq_empty_or_nonempty with rfl | hne
   · exact isExposed_empty
   obtain ⟨m, g, rfl⟩ := TauCeti.isConvexPolyhedron_iff.mp hP
-  obtain ⟨I, rfl⟩ := hF.eq_setOf_active g hconv hne
+  obtain ⟨I, rfl⟩ := hF.eq_setOf_active (fun j => (g j).toAffineMap) hconv hne
   exact Mei.Convex.isExposed_setOf_active g I
 
 /-- Every convex extreme subset of a polyhedron is itself a convex polyhedron. -/
@@ -251,7 +271,7 @@ theorem isConvexPolyhedron {P F : Set V} (hF : IsExtreme ℝ P F)
     ext x
     norm_num
   obtain ⟨m, g, rfl⟩ := TauCeti.isConvexPolyhedron_iff.mp hP
-  obtain ⟨I, rfl⟩ := hF.eq_setOf_active g hconv hne
+  obtain ⟨I, rfl⟩ := hF.eq_setOf_active (fun j => (g j).toAffineMap) hconv hne
   exact Mei.Convex.isConvexPolyhedron_setOf_active g I
 
 end IsExtreme
@@ -262,7 +282,7 @@ namespace TauCeti.IsConvexPolyhedron
 theorem finite_convex_extreme_sets {P : Set V} (hP : TauCeti.IsConvexPolyhedron P) :
     {F : Set V | Convex ℝ F ∧ IsExtreme ℝ P F}.Finite := by
   obtain ⟨m, g, rfl⟩ := TauCeti.isConvexPolyhedron_iff.mp hP
-  exact Mei.Convex.finite_convex_extreme_sets g
+  exact Mei.Convex.finite_convex_extreme_sets (fun j => (g j).toAffineMap)
 
 /-- An arbitrary convex polyhedron has finitely many exposed subsets. -/
 theorem finite_exposed_sets {P : Set V} (hP : TauCeti.IsConvexPolyhedron P) :
@@ -271,3 +291,5 @@ theorem finite_exposed_sets {P : Set V} (hP : TauCeti.IsConvexPolyhedron P) :
   exact Mei.Convex.finite_exposed_sets g
 
 end TauCeti.IsConvexPolyhedron
+
+end Topology
