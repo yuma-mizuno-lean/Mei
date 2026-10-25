@@ -98,16 +98,8 @@ theorem mem_cells_image {C : FinitePolyhedralComplex h} {e : Toric.IntegralAffin
 theorem support_image (C : FinitePolyhedralComplex h) (e : Toric.IntegralAffineEquiv h h') :
     (C.image e).support = e '' C.support := by
   ext x
-  constructor
-  · intro hx
-    obtain ⟨P, hP, hxP⟩ := mem_support.mp hx
-    obtain ⟨Q, hQ, rfl⟩ := mem_cells_image.mp hP
-    obtain ⟨y, hy, rfl⟩ := hxP
-    exact ⟨y, mem_support.mpr ⟨Q, hQ, hy⟩, rfl⟩
-  · rintro ⟨y, hy, rfl⟩
-    obtain ⟨P, hP, hyP⟩ := mem_support.mp hy
-    exact mem_support.mpr
-      ⟨e '' P, mem_cells_image.mpr ⟨P, hP, rfl⟩, ⟨y, hyP, rfl⟩⟩
+  simp only [mem_support, mem_cells_image, Set.mem_image]
+  aesop
 
 /-- Transport by the integral affine identity recovers the original complex. -/
 @[simp]
