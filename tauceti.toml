@@ -29,11 +29,11 @@ completed_dir = "Completed"
 
 # Select full commit SHAs before installing the core workflows.
 # Discover a version with: gh api repos/TauCetiProject/TauCetiTools/commits/main --jq .sha
-# Patched Tools: upstream 166866f plus the fork-PR checkout opt-in (branch fix/fork-pr-checkout).
+# Patched Tools: fork-PR checkout opt-in and renderer-safe upstream bump routing.
 # Switch back to TauCetiProject/TauCetiTools once upstream carries the same fix.
 [tools.tools]
 repo = "yuma-mizuno-lean/TauCetiTools"
-ref = "c25e351f20b1dc31660bc38c3333e0c259137b28"
+ref = "a32e5a0f1f6f31f51ebcba25eeebaf9388703af1"
 [tools.review]
 repo = "TauCetiProject/TauCetiReview"
 ref = "3999677031829254b4cbb27e9156c33672c61d0d"
