@@ -6,21 +6,26 @@ Authors: Codex
 module
 
 public import Mei.GroupTheory.CompletedGroup.Map
-public import Mei.Data.Finset.Sort
-public import Mathlib.Algebra.Notation.Support
+public import Mei.Algebra.BigOperators.Group.Finset.Ordered
+public import Mathlib.Algebra.Group.Support
 
 /-!
 # Ordered products in completed groups
 
-A linearly ordered family in a completed group has a product whenever only finitely
-many factors are nonidentity at each order. The smallest index is the leftmost
-factor. The product is characterized by its finite-order projections, and any finite
-set containing the support at that order can be used to compute it.
+A family in a completed group has an ordered product whenever only finitely many
+factors project nontrivially at each order. The order may be any linear order,
+without a countability or well-ordering assumption. The smallest index is the
+leftmost factor. The finite products are compatible even when their supports grow
+with the cutoff.
 
-Increasing reindexing may delete identity factors, and maps of reindexed towers
-preserve these products. No commutativity, surjectivity of transitions, or topology
-on the tower groups is required. The construction uses the compatible-family
-carrier `Mei.completedGroup`, Mathlib's sorted finite sets and `map_list_prod`.
+The construction uses Mathlib's `Function.mulSupport`, `Finset.sort` and
+`List.prod` on the compatible-family carrier of `CompletedGroup`. Products can be
+computed using any finite set containing the support at the chosen order. This
+also proves uniqueness, deletion of identity factors, order-preserving reindexing,
+swapping adjacent commuting factors, and preservation by maps of reindexed towers.
+The reindexing proof uses Mathlib's `Finset.map_sort`. The predicate
+`HasFiniteSupport` records the support condition and is preserved by injective
+reindexing and maps of reindexed towers.
 -/
 
 public section
@@ -58,106 +63,169 @@ theorem map {x : ι → completedGroup F} (hx : HasFiniteSupport x)
 
 end HasFiniteSupport
 
-variable [LinearOrder ι]
+variable [LinearOrder ι] [LinearOrder κ]
 
-/-- The ordered product of a family with finite support at every order, with the
-smallest index leftmost. -/
-noncomputable def orderedProduct (x : ι → completedGroup F) (hx : HasFiniteSupport x) :
+/-- The ordered product of a family with finite support in every quotient.
+The smallest index is the leftmost factor. -/
+noncomputable def orderedProd (f : ι → completedGroup F)
+    (hf : HasFiniteSupport f) :
     completedGroup F := by
   classical
-  refine ⟨fun k => ((hx k).toFinset.sort.map fun i => projection k (x i)).prod, ?_⟩
-  apply (mem_completedGroup_iff F _).mpr
+  refine ⟨fun k => (((hf k).toFinset).sort.map fun i => projection k (f i)).prod,
+    (mem_completedGroup_iff F _).mpr ?_⟩
   intro k l h
-  rw [map_list_prod, List.map_map]
-  simp only [Function.comp_def, map_projection]
-  apply Finset.prod_map_sort_eq_of_ne_one
-  intro i hi
-  simp only [Set.Finite.mem_toFinset, Function.mem_mulSupport]
-  refine iff_of_true ?_ hi
-  intro hil
-  apply hi
-  rw [← map_projection k l h (x i), hil, map_one]
+  simp only [← List.prod_hom, List.map_map, Function.comp_def, map_projection]
+  apply (Finset.prod_map_sort_subset (f := fun i => projection k (f i)) ?_ ?_).symm
+  · intro i hi
+    simp only [Set.Finite.mem_toFinset, Function.mem_mulSupport] at hi ⊢
+    intro he
+    apply hi
+    rw [← map_projection k l h, he, map_one]
+  · intro i _ hi
+    simpa only [Set.Finite.mem_toFinset, Function.mem_mulSupport, not_not] using hi
 
-/-- The projection of an ordered product is the sorted product of its nonidentity
-factors at that order. -/
+/-- The projection of the ordered product is the increasing product of its
+nonidentity factors at that order. -/
 @[simp]
-theorem projection_orderedProduct (x : ι → completedGroup F) (hx : HasFiniteSupport x)
-    (k : ℕ) :
-    projection k (orderedProduct x hx) =
-      ((hx k).toFinset.sort.map fun i => projection k (x i)).prod := by
+theorem projection_orderedProd (f : ι → completedGroup F)
+    (hf : HasFiniteSupport f) (k : ℕ) :
+    projection k (orderedProd f hf) =
+      (((hf k).toFinset).sort.map fun i => projection k (f i)).prod := by
   rw [projection_apply]
   rfl
 
-/-- Any finite set containing the order-`k` support computes that projection. -/
-theorem projection_orderedProduct_eq_prod (x : ι → completedGroup F)
-    (hx : HasFiniteSupport x) (k : ℕ) (s : Finset ι)
-    (hs : ∀ i, projection k (x i) ≠ 1 → i ∈ s) :
-    projection k (orderedProduct x hx) = (s.sort.map fun i => projection k (x i)).prod := by
+/-- Any finite set containing the nonidentity factors computes the same projection. -/
+theorem projection_orderedProd_of_support (f : ι → completedGroup F)
+    (hf : HasFiniteSupport f)
+    (k : ℕ) (s : Finset ι)
+    (hs : ∀ i, projection k (f i) ≠ 1 → i ∈ s) :
+    projection k (orderedProd f hf) = (s.sort.map fun i => projection k (f i)).prod := by
   classical
-  rw [projection_orderedProduct]
-  apply Finset.prod_map_sort_eq_of_ne_one
-  intro i hi
-  exact iff_of_true ((hx k).mem_toFinset.mpr hi) (hs i hi)
+  rw [projection_orderedProd]
+  apply Finset.prod_map_sort_subset
+  · intro i hi
+    exact hs i ((hf k).mem_toFinset.mp hi)
+  · intro i _ hi
+    simpa only [Set.Finite.mem_toFinset, Function.mem_mulSupport, not_not] using hi
 
-/-- The finite-order formulas uniquely determine the ordered product. -/
-theorem orderedProduct_unique (x : ι → completedGroup F) (hx : HasFiniteSupport x)
-    (y : completedGroup F)
-    (hy : ∀ k, projection k y =
-      ((hx k).toFinset.sort.map fun i => projection k (x i)).prod) :
-    y = orderedProduct x hx := by
-  ext k
-  exact (hy k).trans (projection_orderedProduct x hx k).symm
+/-- An element is the ordered product exactly when it has the prescribed finite products
+as its projections. -/
+theorem eq_orderedProd_iff (f : ι → completedGroup F)
+    (hf : HasFiniteSupport f)
+    (x : completedGroup F) :
+    x = orderedProd f hf ↔ ∀ k, projection k x =
+      (((hf k).toFinset).sort.map fun i => projection k (f i)).prod := by
+  constructor
+  · rintro rfl k
+    exact projection_orderedProd f hf k
+  · intro h
+    exact ext fun k => (h k).trans (projection_orderedProd f hf k).symm
 
-/-- A family supported on a fixed finite set is multiplied in increasing order. -/
-theorem orderedProduct_eq_prod (x : ι → completedGroup F) (hx : HasFiniteSupport x)
-    (s : Finset ι) (hs : ∀ i, x i ≠ 1 → i ∈ s) :
-    orderedProduct x hx = (s.sort.map x).prod := by
-  ext k
-  rw [projection_orderedProduct_eq_prod x hx k s (fun i hi => hs i (by
-    intro h; apply hi; rw [h, map_one])), map_list_prod, List.map_map]
-  rfl
+/-- A globally finite family has its usual finite increasing product. -/
+theorem orderedProd_eq_list_prod (f : ι → completedGroup F)
+    (hf : HasFiniteSupport f)
+    (s : Finset ι) (hs : ∀ i, f i ≠ 1 → i ∈ s) :
+    orderedProd f hf = (s.sort.map f).prod := by
+  apply ext
+  intro k
+  rw [projection_orderedProd_of_support f hf k s (fun i hi => hs i (by
+    intro he
+    exact hi (by simp [he])))]
+  simp only [← List.prod_hom, List.map_map, Function.comp_def]
 
-/-- The ordered product of identity factors is the identity, including the empty family. -/
+/-- A family consisting entirely of identities has ordered product one. -/
 @[simp]
-theorem orderedProduct_one (hx : HasFiniteSupport (fun _ : ι => (1 : completedGroup F))) :
-    orderedProduct (fun _ : ι => (1 : completedGroup F)) hx = 1 := by
-  apply (orderedProduct_eq_prod _ hx ∅ (by simp)).trans
+theorem orderedProd_one
+    (hf : HasFiniteSupport (fun _ : ι => (1 : completedGroup F))) :
+    orderedProd (fun _ : ι => (1 : completedGroup F)) hf = 1 := by
+  apply ext
+  intro k
   simp
 
-variable [LinearOrder κ]
+/-- The product of an empty indexed family is the identity. -/
+@[simp]
+theorem orderedProd_of_isEmpty [IsEmpty ι] (f : ι → completedGroup F)
+    (hf : HasFiniteSupport f) :
+    orderedProd f hf = 1 := by
+  simpa using orderedProd_eq_list_prod f hf ∅ (fun i => isEmptyElim i)
 
-/-- Increasing reindexing preserves the product if all omitted factors are identities.
-In particular this applies to order isomorphisms and to deleting identity factors. -/
-theorem orderedProduct_comp (x : ι → completedGroup F) (hx : HasFiniteSupport x)
-    (e : κ ↪o ι) (he : ∀ i, x i ≠ 1 → i ∈ Set.range e) :
-    orderedProduct (x ∘ e) (hx.comp e.injective) = orderedProduct x hx := by
+/-- Order-preserving reindexing does not change the product if all omitted factors are one. -/
+theorem orderedProd_comp (f : κ → completedGroup F)
+    (hf : HasFiniteSupport f)
+    (e : ι ↪o κ) (he : ∀ j, f j ≠ 1 → j ∈ Set.range e) :
+    orderedProd (fun i => f (e i)) (hf.comp e.injective) = orderedProd f hf := by
   classical
-  ext k
-  let s := ((hx.comp e.injective) k).toFinset
-  rw [projection_orderedProduct, projection_orderedProduct_eq_prod x hx k
-    (s.map e.toEmbedding) (by
-      intro i hi
-      obtain ⟨j, rfl⟩ := he i (by intro h; apply hi; rw [h, map_one])
-      exact Finset.mem_map.mpr ⟨j, (hx.comp e.injective k).mem_toFinset.mpr hi, rfl⟩)]
-  rw [← StrictMonoOn.map_finsetSort e.toEmbedding s (e.strictMono.strictMonoOn _), List.map_map]
-  rfl
+  apply ext
+  intro k
+  have hfe : (Function.mulSupport fun i => projection k (f (e i))).Finite :=
+    hf.comp e.injective k
+  let s := hfe.toFinset
+  rw [projection_orderedProd_of_support f hf k (s.map e.toEmbedding)]
+  · rw [projection_orderedProd, ← Finset.map_sort e.toEmbedding s (· ≤ ·) (· ≤ ·)
+      (by intros; exact e.le_iff_le.symm), List.map_map]
+    rfl
+  · intro j hj
+    obtain ⟨i, rfl⟩ := he j (by intro h; exact hj (by simp [h]))
+    exact Finset.mem_map.mpr
+      ⟨i, hfe.mem_toFinset.mpr hj, rfl⟩
 
-/-- A map of reindexed towers carries an ordered product to the ordered product
-of the images, with the same ordering of factors. -/
-theorem map_orderedProduct (x : ι → completedGroup F) (hx : HasFiniteSupport x)
-    (ρ : ℕ →o ℕ) (f : ρ.toFunctor.op ⋙ F ⟶ G) :
-    map ρ f (orderedProduct x hx) =
-      orderedProduct (fun i => map ρ f (x i)) (hx.map ρ f) := by
+/-- Deleting any set of identity factors preserves the ordered product. -/
+theorem orderedProd_subtype (f : ι → completedGroup F)
+    (hf : HasFiniteSupport f)
+    (s : Set ι) (hs : ∀ i, f i ≠ 1 → i ∈ s) :
+    orderedProd (fun i : s => f i) (hf.comp Subtype.val_injective) = orderedProd f hf :=
+  orderedProd_comp f hf (OrderEmbedding.subtype (fun i => i ∈ s))
+    (fun i hi => ⟨⟨i, hs i hi⟩, rfl⟩)
+
+/-- Two factors adjacent among the nonidentity factors may be swapped when their
+projections commute at every order. Identity factors between the two indices are allowed. -/
+theorem orderedProd_swap (f : ι → completedGroup F)
+    (hf : HasFiniteSupport f)
+    {a b : ι} (hab : a < b) (hgap : ∀ i, a < i → i < b → f i = 1)
+    (hcomm : ∀ k, Commute (projection k (f a)) (projection k (f b))) :
+    orderedProd (fun i => f (Equiv.swap a b i))
+      (hf.comp (Equiv.swap a b).injective) = orderedProd f hf := by
   classical
-  ext k
-  rw [projection_map, projection_orderedProduct_eq_prod _ (hx.map ρ f) k
-    (hx (ρ k)).toFinset (by
-      intro i hi
-      apply (hx (ρ k)).mem_toFinset.mpr
-      intro h
-      apply hi
-      simp [h])]
-  rw [projection_orderedProduct, map_list_prod, List.map_map]
-  simp only [Function.comp_def, projection_map]
+  apply ext
+  intro k
+  let s := (hf k).toFinset ∪ {a, b}
+  have hs : ∀ i, projection k (f i) ≠ 1 → i ∈ s := by
+    intro i hi
+    exact Finset.mem_union_left _ ((hf k).mem_toFinset.mpr hi)
+  rw [projection_orderedProd_of_support f hf k s hs,
+    projection_orderedProd_of_support _ _ k s]
+  · apply Finset.prod_map_sort_swap s (fun i => projection k (f i)) hab
+      (by simp [s]) (by simp [s]) ?_ (hcomm k)
+    intro i hi ⟨hai, hib⟩
+    have hia : i ≠ a := ne_of_gt hai
+    have hib' : i ≠ b := ne_of_lt hib
+    have hfi : projection k (f i) ≠ 1 := by
+      simpa only [s, Finset.mem_union, Finset.mem_insert, Finset.mem_singleton,
+        hia, hib', or_false, Set.Finite.mem_toFinset, Function.mem_mulSupport] using hi
+    exact hfi (by simp [hgap i hai hib])
+  · intro i hi
+    by_cases hia : i = a
+    · simp [s, hia]
+    by_cases hib : i = b
+    · simp [s, hib]
+    apply hs i
+    simpa only [Equiv.swap_apply_of_ne_of_ne hia hib] using hi
+
+/-- Maps of reindexed towers preserve ordered products. -/
+@[simp]
+theorem map_orderedProd (ρ : ℕ →o ℕ) (g : ρ.toFunctor.op ⋙ F ⟶ G)
+    (f : ι → completedGroup F)
+    (hf : HasFiniteSupport f) :
+    map ρ g (orderedProd f hf) =
+      orderedProd (fun i => map ρ g (f i)) (hf.map ρ g) := by
+  apply ext
+  intro k
+  rw [projection_map, projection_orderedProd,
+    projection_orderedProd_of_support _ _ k (hf (ρ k)).toFinset]
+  · simp only [← List.prod_hom, List.map_map, Function.comp_def, projection_map]
+  · intro i hi
+    apply (hf (ρ k)).mem_toFinset.mpr
+    intro he
+    exact hi (by simp [he])
 
 end Mei.CompletedGroup
