@@ -102,16 +102,9 @@ variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ 
 /-- A constant contradictory row gives an empty presentation with rational offsets. -/
 theorem IsRationalPolyhedron.empty (h : TauCeti.Toric.IsIntegralLattice i) :
     IsRationalPolyhedron h (∅ : Set V) := by
-  let g : Fin 1 → (V →ᴬ[ℝ] ℝ) := fun _ => ContinuousAffineMap.const ℝ V 1
-  have hg : ∀ j, Toric.IsRationalFunctional h (g j).toAffineMap.linear :=
-    fun _ => Toric.IsRationalFunctional.zero h
-  apply isRationalPolyhedron_iff.mpr
-  refine ⟨RationalAffinePolyhedron.ofFinite g hg, ?_, ?_⟩
-  · ext x
-    rw [RationalAffinePolyhedron.mem_carrier_ofFinite]
-    simp [g]
-  · apply RationalAffinePolyhedron.hasRationalOffsets_ofFinite
-    exact fun _ => ⟨1, by simp [g]⟩
+  exact isRationalPolyhedron_iff.mpr
+    ⟨RationalAffinePolyhedron.empty h, RationalAffinePolyhedron.carrier_empty h,
+      RationalAffinePolyhedron.hasRationalOffsets_empty h⟩
 
 /-- Every convex extreme subset of a rational-normal polyhedron is
 rational-normal, including the empty subset. -/
