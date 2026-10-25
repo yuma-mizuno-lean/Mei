@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mathlib.Analysis.Convex.Basic
-public import Mathlib.Analysis.Normed.Module.FiniteDimension
+public import Mathlib.Basic.Real.Basic
 public import Mathlib.LinearAlgebra.Dual.Lemmas
 public import Mathlib.LinearAlgebra.AffineSpace.AffineSubspace.Defs
 public import Mathlib.LinearAlgebra.FiniteDimensional.Lemmas
@@ -17,7 +17,7 @@ public import Mathlib.Tactic.Module
 
 The sweep of a set `P` in the direction `n` is `P - ℝ≥0 • n`. When `n` is
 outside the affine direction of `P`, a normalized linear height recovers both
-prism coordinates. This also gives closedness without a compactness hypothesis.
+prism coordinates.
 -/
 
 public section
@@ -219,28 +219,6 @@ theorem finrank_sweep [FiniteDimensional ℝ V] {P : Set V} {n : V} (hP : P.None
   exact Submodule.finrank_sup_span_singleton hn
 
 end Algebra
-
-section Topology
-
-variable {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V] [FiniteDimensional ℝ V]
-
-/-- A closed transverse base has a closed sweep, even when unbounded. -/
-theorem isClosed_sweep {P : Set V} {n : V} (hP : IsClosed P)
-    (hn : n ∉ vectorSpan ℝ P) : IsClosed (sweep P n) := by
-  rcases P.eq_empty_or_nonempty with he | hne
-  · subst P
-    simp [sweep]
-  · obtain ⟨f, c, hfn, hfP⟩ := exists_sweep_height hne hn
-    have he : sweep P n = {y | f y ≤ c} ∩
-        (fun y => y + (c - f y) • n) ⁻¹' P := by
-      ext y
-      exact mem_sweep_iff f c hfn hfP
-    rw [he]
-    exact (isClosed_le f.continuous_of_finiteDimensional continuous_const).inter
-      (hP.preimage (continuous_id.add
-        ((continuous_const.sub f.continuous_of_finiteDimensional).smul continuous_const)))
-
-end Topology
 
 end Mei.Convex
 

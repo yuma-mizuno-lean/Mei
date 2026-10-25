@@ -6,6 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.Convex.Sweep
+public import Mathlib.Analysis.Normed.Module.FiniteDimension
 public import Mathlib.Topology.Homeomorph.Defs
 public import Mathlib.Topology.Algebra.ContinuousAffineMap
 
@@ -17,6 +18,7 @@ the bijective prism parameterization is a homeomorphism, including for unbounded
 bases and bases with lineality. The base need not be closed, convex, or nonempty.
 A normalized continuous height also gives an affine projection onto the base
 hyperplane and expresses the sweep as a halfspace intersected with an affine preimage.
+A closed transverse base has a closed sweep, without a compactness hypothesis.
 -/
 
 public section
@@ -79,6 +81,22 @@ theorem sweep_horizontal_axis :
   sweep_hyperplane (ContinuousLinearMap.snd ℝ ℝ ℝ) 0 rfl
 
 variable [FiniteDimensional ℝ V]
+
+/-- A closed transverse base has a closed sweep, even when unbounded. -/
+theorem isClosed_sweep {P : Set V} {n : V} (hP : IsClosed P)
+    (hn : n ∉ vectorSpan ℝ P) : IsClosed (sweep P n) := by
+  rcases P.eq_empty_or_nonempty with he | hne
+  · subst P
+    simp only [sweep_empty, isClosed_empty]
+  · obtain ⟨f, c, hfn, hfP⟩ := exists_sweep_height hne hn
+    have he : sweep P n = {y | f y ≤ c} ∩
+        (fun y => y + (c - f y) • n) ⁻¹' P := by
+      ext y
+      exact mem_sweep_iff f c hfn hfP
+    rw [he]
+    exact (isClosed_le f.continuous_of_finiteDimensional continuous_const).inter
+      (hP.preimage (continuous_id.add
+        ((continuous_const.sub f.continuous_of_finiteDimensional).smul continuous_const)))
 
 /-- The prism parameterization is a homeomorphism for every transverse base. -/
 noncomputable def sweepHomeomorph (hn : n ∉ vectorSpan ℝ P) :
