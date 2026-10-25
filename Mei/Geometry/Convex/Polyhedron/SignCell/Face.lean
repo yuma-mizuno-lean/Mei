@@ -32,6 +32,13 @@ def weakSignCellRows (g : ι → (V →ᴬ[ℝ] ℝ)) (σ : ι → SignType) :
   | .neg => g p.1
   | .pos => -g p.1
 
+/-- The signed row is the original affine map or its negative, according to the sign. -/
+theorem weakSignCellRows_eq (g : ι → (V →ᴬ[ℝ] ℝ)) (σ : ι → SignType) (p : ι × Bool) :
+    weakSignCellRows g σ p = match σ p.1 with
+      | .zero => if p.2 then g p.1 else -g p.1
+      | .neg => g p.1
+      | .pos => -g p.1 := by rfl
+
 /-- Signing and doubling do not change the zero locus of an original row. -/
 @[simp]
 theorem weakSignCellRows_eq_zero_iff {g : ι → (V →ᴬ[ℝ] ℝ)} {σ : ι → SignType}
