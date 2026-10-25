@@ -106,8 +106,8 @@ jobs:
     uses: TauCetiProject/TauCetiReview/.github/workflows/merge-only.yml@3999677031829254b4cbb27e9156c33672c61d0d
     with:
       review_ref: 3999677031829254b4cbb27e9156c33672c61d0d
-      tools_repository: TauCetiProject/TauCetiTools
-      tools_ref: 166866fd25cdcd433e7fad8bfb70aa770de54554
+      tools_repository: yuma-mizuno-lean/TauCetiTools
+      tools_ref: c25e351f20b1dc31660bc38c3333e0c259137b28
       pr: ${{ needs.resolve.outputs.pr }}
       merge_backend: ${{ vars.MERGE_BACKEND || 'queue' }}
     # Pass only the App credentials merge-only needs, not all of Mei's secrets.
