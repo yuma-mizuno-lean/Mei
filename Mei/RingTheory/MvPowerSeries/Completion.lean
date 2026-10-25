@@ -97,6 +97,28 @@ def principalCompletionMap (φ : R →+* S) :
       intro d hd
       simp [MvPolynomial.coeff_map, hp d hd])
 
+/-- At each order, coefficient change is the induced map on polynomial quotients. -/
+@[simp]
+theorem projection_principalCompletionMap (φ : R →+* S) (k : ℕ)
+    (x : (ofIdeal (MvPolynomial.idealOfVars σ R)).completion) :
+    (ofIdeal (MvPolynomial.idealOfVars σ S)).projection k (φ.principalCompletionMap x) =
+      Ideal.quotientMap ((ofIdeal (MvPolynomial.idealOfVars σ S)).ideal (k + 1))
+        (MvPolynomial.map φ) (by
+          intro p hp
+          simp only [ofIdeal_ideal, Ideal.mem_comap] at hp ⊢
+          rw [MvPolynomial.mem_pow_idealOfVars_iff'] at hp ⊢
+          intro d hd
+          simp [MvPolynomial.coeff_map, hp d hd])
+        ((ofIdeal (MvPolynomial.idealOfVars σ R)).projection k x) := by
+  simp only [principalCompletionMap, projection_mapCompletion, id_eq]
+
+/-- Coefficient change commutes with the canonical inclusion into the completion. -/
+@[simp]
+theorem principalCompletionMap_toCompletion (φ : R →+* S) (p : MvPolynomial σ R) :
+    φ.principalCompletionMap ((ofIdeal (MvPolynomial.idealOfVars σ R)).toCompletion p) =
+      (ofIdeal (MvPolynomial.idealOfVars σ S)).toCompletion (MvPolynomial.map φ p) := by
+  simp only [principalCompletionMap, mapCompletion_toCompletion]
+
 end RingHom
 
 namespace Mei
