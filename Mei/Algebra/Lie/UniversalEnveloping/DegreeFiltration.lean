@@ -20,7 +20,9 @@ when the Lie algebra is supported in strictly positive degrees.
 
 public section
 
-namespace UniversalEnvelopingAlgebra
+namespace Mei.UniversalEnvelopingAlgebra
+
+open _root_.UniversalEnvelopingAlgebra
 
 variable {Γ R L : Type*} [AddCommMonoid Γ] [CommRing R] [LieRing L] [LieAlgebra R L]
   (ℒ : Γ → Submodule R L) (d : Γ →+ ℤ)
@@ -54,23 +56,31 @@ variable [DecidableEq Γ] [GradedLieAlgebra ℒ]
 
 /-- The decreasing total-degree filtration on the enveloping algebra. -/
 noncomputable def degreeFiltration (hneg : ∀ n, d n < 0 → ℒ n = ⊥) :
-    Mei.AlgFiltration (UniversalEnvelopingAlgebra R L) :=
-  GradedAlgebra.degreeFiltration (homogeneousSubmodule ℒ) d
+    Mei.AlgFiltration (_root_.UniversalEnvelopingAlgebra R L) :=
+  Mei.GradedAlgebra.degreeFiltration (homogeneousSubmodule ℒ) d
     (fun _ hn => homogeneousSubmodule_eq_bot_of_degree_neg ℒ d hneg hn)
+
+/-- The enveloping degree filtration consists of the corresponding degree ideals. -/
+@[simp]
+theorem degreeFiltration_ideal (hneg : ∀ n, d n < 0 → ℒ n = ⊥) (k : ℕ) :
+    (degreeFiltration ℒ d hneg).ideal k =
+      Mei.GradedAlgebra.degreeIdeal (homogeneousSubmodule ℒ) d
+        (fun _ hn => homogeneousSubmodule_eq_bot_of_degree_neg ℒ d hneg hn) k := by
+  rw [degreeFiltration, Mei.GradedAlgebra.degreeFiltration_ideal]
 
 /-- Homogeneous generators of degree at least `k` lie in filtration order `k`. -/
 theorem ι_mem_degreeFiltration (hneg : ∀ n, d n < 0 → ℒ n = ⊥)
     {n : Γ} {x : L} (hx : x ∈ ℒ n) {k : ℕ} (hn : (k : ℤ) ≤ d n) :
     ι R x ∈ (degreeFiltration ℒ d hneg).ideal k := by
-  rw [degreeFiltration, GradedAlgebra.degreeFiltration_ideal]
-  exact GradedAlgebra.le_degreeIdeal (homogeneousSubmodule ℒ) d _ hn _
+  rw [degreeFiltration, Mei.GradedAlgebra.degreeFiltration_ideal]
+  exact Mei.GradedAlgebra.le_degreeIdeal (homogeneousSubmodule ℒ) d _ hn _
     (ι_mem_homogeneousSubmodule ℒ hx)
 
 /-- A strictly positive Lie grading puts every Lie generator in filtration order one. -/
 theorem ι_mem_degreeFiltration_one (hpos : ∀ n, d n ≤ 0 → ℒ n = ⊥) (x : L) :
     ι R x ∈ (degreeFiltration ℒ d (fun n hn => hpos n hn.le)).ideal 1 := by
   have hneg : ∀ n, d n < 0 → ℒ n = ⊥ := fun n hn => hpos n hn.le
-  induction x using DirectSum.Decomposition.inductionOn ℒ with
+  induction x using _root_.DirectSum.Decomposition.inductionOn ℒ with
   | zero => simpa only [map_zero] using ((degreeFiltration ℒ d hneg).ideal 1).zero_mem
   | add x y hx hy => simpa only [map_add] using Ideal.add_mem _ hx hy
   | @homogeneous n x =>
@@ -82,7 +92,7 @@ theorem ι_mem_degreeFiltration_one (hpos : ∀ n, d n ≤ 0 → ℒ n = ⊥) (x
 
 /-- The augmentation ideal lies in filtration order one for a positive Lie grading. -/
 theorem augmentation_le_degreeFiltration_one (hpos : ∀ n, d n ≤ 0 → ℒ n = ⊥) :
-    (TauCeti.HopfIdeal.augmentation R (UniversalEnvelopingAlgebra R L)).toIdeal ≤
+    (TauCeti.HopfIdeal.augmentation R (_root_.UniversalEnvelopingAlgebra R L)).toIdeal ≤
       (degreeFiltration ℒ d (fun n hn => hpos n hn.le)).ideal 1 := by
   rw [TauCeti.UniversalEnvelopingAlgebra.augmentation_toIdeal_eq_span_range_ι, Ideal.span_le]
   rintro _ ⟨x, rfl⟩
@@ -90,7 +100,7 @@ theorem augmentation_le_degreeFiltration_one (hpos : ∀ n, d n ≤ 0 → ℒ n 
 
 /-- Powers of the augmentation ideal have at least their corresponding total degree. -/
 theorem augmentation_pow_le_degreeFiltration (hpos : ∀ n, d n ≤ 0 → ℒ n = ⊥) (k : ℕ) :
-    (TauCeti.HopfIdeal.augmentation R (UniversalEnvelopingAlgebra R L)).toIdeal ^ k ≤
+    (TauCeti.HopfIdeal.augmentation R (_root_.UniversalEnvelopingAlgebra R L)).toIdeal ^ k ≤
       (degreeFiltration ℒ d (fun n hn => hpos n hn.le)).ideal k := by
   have hneg : ∀ n, d n < 0 → ℒ n = ⊥ := fun n hn => hpos n hn.le
   induction k with
@@ -101,4 +111,4 @@ theorem augmentation_pow_le_degreeFiltration (hpos : ∀ n, d n ≤ 0 → ℒ n 
     simpa only [Nat.add_comm 1 k] using (degreeFiltration ℒ d hneg).mul_mem
       (augmentation_le_degreeFiltration_one ℒ d hpos hx) (ih hy)
 
-end UniversalEnvelopingAlgebra
+end Mei.UniversalEnvelopingAlgebra

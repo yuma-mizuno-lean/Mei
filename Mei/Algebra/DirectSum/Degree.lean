@@ -18,7 +18,9 @@ The degree function need not be additive and the module need not be free.
 
 public section
 
-namespace DirectSum
+namespace Mei.DirectSum
+
+open _root_.DirectSum
 
 variable {R M ι : Type*} [Semiring R] [AddCommMonoid M] [Module R M]
   (ℳ : ι → Submodule R M) (d : ι → ℤ)
@@ -82,13 +84,13 @@ theorem iInf_degreeTail_eq_bot : (⨅ n : ℕ, degreeTail ℳ d n) = ⊥ := by
   intro x hx
   rw [Submodule.mem_bot]
   apply (decomposeLinearEquiv ℳ).injective
-  apply DirectSum.ext
+  apply _root_.DirectSum.ext
   intro i
   apply Subtype.ext
   have hxi : x ∈ degreeTail ℳ d ((d i).toNat + 1) :=
     (iInf_le (fun n => degreeTail ℳ d n) ((d i).toNat + 1)) hx
   have hi := (mem_degreeTail_iff ℳ d).mp hxi i (by omega)
   simpa only [decomposeLinearEquiv_apply, decompose_zero,
-    DirectSum.zero_apply, ZeroMemClass.coe_zero] using hi
+    _root_.DirectSum.zero_apply, ZeroMemClass.coe_zero] using hi
 
-end DirectSum
+end Mei.DirectSum

@@ -25,9 +25,9 @@ positively graded Lie algebras, the order-zero ideal includes the unit component
 
 public section
 
-namespace GradedAlgebra
+namespace Mei.GradedAlgebra
 
-open DirectSum
+open Mei.DirectSum
 
 section Mul
 
@@ -48,7 +48,7 @@ end Mul
 
 variable {R A ι : Type*} [CommRing R] [Ring A] [Algebra R A]
   [AddCommMonoid ι] (𝒜 : ι → Submodule R A) (d : ι →+ ℤ)
-  [DecidableEq ι] [GradedAlgebra 𝒜]
+  [DecidableEq ι] [_root_.GradedAlgebra 𝒜]
 
 variable (hneg : ∀ i, d i < 0 → 𝒜 i = ⊥)
 
@@ -121,4 +121,4 @@ theorem iInf_degreeIdeal_eq_bot : (⨅ n : ℕ, degreeIdeal 𝒜 d hneg n) = ⊥
       ((iInf_le (fun n => degreeIdeal 𝒜 d hneg n) n) hx)
   rwa [iInf_degreeTail_eq_bot, Submodule.mem_bot] at ht
 
-end GradedAlgebra
+end Mei.GradedAlgebra

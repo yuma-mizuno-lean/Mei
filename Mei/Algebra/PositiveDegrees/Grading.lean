@@ -59,15 +59,15 @@ theorem degreeSubmodule_antitone : Antitone (d.degreeSubmodule ℒ) := by
 
 /-- Strict positive cutoffs are the corresponding successor degree tails. -/
 theorem degreeSubmodule_eq_degreeTail (k : ℕ) :
-    d.degreeSubmodule ℒ k = DirectSum.degreeTail ℒ d.degree (k + 1) := by
+    d.degreeSubmodule ℒ k = Mei.DirectSum.degreeTail ℒ d.degree (k + 1) := by
   apply le_antisymm
   · rw [degreeSubmodule_def]
     apply iSup_le
     intro n
-    apply DirectSum.le_degreeTail
+    apply Mei.DirectSum.le_degreeTail
     have := n.property
     omega
-  · rw [DirectSum.degreeTail_def]
+  · rw [Mei.DirectSum.degreeTail_def]
     refine iSup_le fun n => iSup_le fun hn => ?_
     apply d.le_degreeSubmodule ℒ
     omega
@@ -90,13 +90,13 @@ theorem map_degreeSubmodule_le {N' M' : Type*} [AddCommMonoid N']
       Submodule.map_bot]
     exact bot_le
 
-variable [DecidableEq N] [DirectSum.Decomposition ℒ]
+variable [DecidableEq N] [_root_.DirectSum.Decomposition ℒ]
 
 /-- Membership means that all components at or below the cutoff vanish. -/
 theorem mem_degreeSubmodule_iff {x : M} {k : ℕ} :
     x ∈ d.degreeSubmodule ℒ k ↔
-      ∀ n, d.degree n ≤ k → (DirectSum.decompose ℒ x n : M) = 0 := by
-  rw [degreeSubmodule_eq_degreeTail, DirectSum.mem_degreeTail_iff]
+      ∀ n, d.degree n ≤ k → (_root_.DirectSum.decompose ℒ x n : M) = 0 := by
+  rw [degreeSubmodule_eq_degreeTail, Mei.DirectSum.mem_degreeTail_iff]
   constructor
   · intro h n hn
     exact h n (by omega)
@@ -111,7 +111,7 @@ theorem mem_degreeSubmodule_of_mem_iff {n : N} {x : M} {k : ℕ} (hx : x ∈ ℒ
     by_cases hn : (k : ℤ) < d.degree n
     · exact Or.inr hn
     · exact Or.inl (by
-        simpa only [DirectSum.decompose_of_mem_same ℒ hx] using
+        simpa only [_root_.DirectSum.decompose_of_mem_same ℒ hx] using
           (d.mem_degreeSubmodule_iff ℒ).mp h n (le_of_not_gt hn))
   · rintro (rfl | hn)
     · exact Submodule.zero_mem _
@@ -119,16 +119,16 @@ theorem mem_degreeSubmodule_of_mem_iff {n : N} {x : M} {k : ℕ} (hx : x ∈ ℒ
 
 /-- Every degree submodule is closed under taking homogeneous components. -/
 theorem degreeSubmodule_isHomogeneous (k : ℕ) :
-    DirectSum.SetLike.IsHomogeneous ℒ (d.degreeSubmodule ℒ k) := by
+    _root_.DirectSum.SetLike.IsHomogeneous ℒ (d.degreeSubmodule ℒ k) := by
   intro n x hx
   by_cases hn : (k : ℤ) < d.degree n
-  · exact d.le_degreeSubmodule ℒ hn (DirectSum.decompose ℒ x n).property
+  · exact d.le_degreeSubmodule ℒ hn (_root_.DirectSum.decompose ℒ x n).property
   · rw [(d.mem_degreeSubmodule_iff ℒ).mp hx n (le_of_not_gt hn)]
     exact Submodule.zero_mem _
 
 variable [IsPositiveGrading d ℒ]
 
-omit [DecidableEq N] [DirectSum.Decomposition ℒ] in
+omit [DecidableEq N] [_root_.DirectSum.Decomposition ℒ] in
 /-- Any nonzero homogeneous element has strictly positive degree. -/
 theorem degree_pos_of_mem_ne_zero {n : N} {x : M} (hx : x ∈ ℒ n) (hne : x ≠ 0) :
     0 < d.degree n := by
@@ -142,7 +142,7 @@ theorem degree_pos_of_mem_ne_zero {n : N} {x : M} (hx : x ∈ ℒ n) (hne : x �
 @[simp]
 theorem degreeSubmodule_zero : d.degreeSubmodule ℒ 0 = ⊤ := by
   apply top_unique
-  rw [← (DirectSum.Decomposition.isInternal ℒ).submodule_iSup_eq_top]
+  rw [← (_root_.DirectSum.Decomposition.isInternal ℒ).submodule_iSup_eq_top]
   refine iSup_le fun n x hx => ?_
   by_cases h : x = 0
   · simp [h]
