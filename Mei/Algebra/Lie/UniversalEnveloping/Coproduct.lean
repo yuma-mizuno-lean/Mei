@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Algebra.Lie.UniversalEnveloping.DegreeFiltration
-public import Mei.RingTheory.FilteredAlgebra.TensorProduct
+public import Mei.RingTheory.FilteredAlgebra.TensorProduct.Basic
 
 /-!
 # The coproduct preserves total degree

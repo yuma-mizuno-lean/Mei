@@ -18,8 +18,8 @@ degree components, these sums are two-sided ideals and form a separated
 decreasing multiplicative filtration. No commutativity, freeness, or local
 finiteness assumption on the graded algebra is required.
 
-Multiplicativity uses `TauCeti.GradedAlgebra.mul_le_grade_add`; separation uses
-the homogeneous decomposition. Unlike the strict positive cutoffs used for
+The filtration measures how far an element lies in positive degree and defines
+the corresponding degree completion. Unlike the strict positive cutoffs used for
 positively graded Lie algebras, the order-zero ideal includes the unit component.
 -/
 
@@ -46,7 +46,7 @@ theorem degreeTail_mul_le (m n : ℕ) :
 
 end Mul
 
-variable {R A ι : Type*} [CommRing R] [Ring A] [Algebra R A]
+variable {R A ι : Type*} [CommSemiring R] [Semiring A] [Algebra R A]
   [AddCommMonoid ι] (𝒜 : ι → Submodule R A) (d : ι →+ ℤ)
   [DecidableEq ι] [_root_.GradedAlgebra 𝒜]
 
