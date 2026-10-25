@@ -18,7 +18,7 @@ map are algebra homomorphisms, and compatible families of algebra homomorphisms
 lift uniquely. This gives an inverse limit in `AlgCat` on the same carrier as the
 ring completion, for use in complete coefficient algebras.
 
-The construction refines the existing ring completion using Mathlib's subalgebra
+The construction refines the existing ring completion using Mathlib's `AlgCat.sectionsSubalgebra`
 and quotient-algebra interfaces, in particular `Ideal.Quotient.factorₐ`.
 -/
 
@@ -31,11 +31,37 @@ namespace Mei.AlgFiltration
 variable {R A : Type*} [CommRing R] [Ring A] [Algebra R A]
 variable (F : Mei.AlgFiltration A)
 
+/-- The quotient tower in the category of algebras. -/
+-- The object formula must compute to give arrows their concrete quotient-algebra types.
+@[expose]
+def quotientAlgebraDiagram : ℕᵒᵖ ⥤ AlgCat R where
+  obj k := AlgCat.of R (A ⧸ F.ideal (k.unop + 1))
+  map f := AlgCat.ofHom (Ideal.Quotient.factorₐ R
+    (F.antitone (Nat.add_le_add_right (leOfHom f.unop) 1)))
+  map_id _ := by
+    apply AlgCat.hom_ext
+    apply AlgHom.toRingHom_injective
+    exact Ideal.Quotient.factor_eq
+  map_comp f g := by
+    apply AlgCat.hom_ext
+    apply AlgHom.toRingHom_injective
+    exact (Ideal.Quotient.factor_comp
+      (F.antitone (Nat.add_le_add_right (leOfHom f.unop) 1))
+      (F.antitone (Nat.add_le_add_right (leOfHom g.unop) 1))).symm
+
 /-- Compatible quotient families form a subalgebra of the product of quotient algebras. -/
-def completionSubalgebra : Subalgebra R (∀ k : ℕᵒᵖ, A ⧸ F.ideal (k.unop + 1)) where
-  __ := F.completion.toSubsemiring
-  algebraMap_mem' r := (F.mem_completion_iff _).mpr fun h =>
-    (Ideal.Quotient.factorₐ R (F.antitone (Nat.add_le_add_right h 1))).commutes r
+def completionSubalgebra : Subalgebra R (∀ k : ℕᵒᵖ, A ⧸ F.ideal (k.unop + 1)) :=
+  let S : Subalgebra R (∀ k : ℕᵒᵖ, A ⧸ F.ideal (k.unop + 1)) :=
+    AlgCat.sectionsSubalgebra (F.quotientAlgebraDiagram (R := R))
+  -- Keep the original ring carrier across the opaque module boundary.
+  S.copy (F.completion : Set _) (by
+    ext x
+    refine (F.mem_completion_iff x).trans ?_
+    constructor
+    · intro hx k l f
+      exact hx (leOfHom f.unop)
+    · intro hx k l h
+      exact hx (homOfLE h).op)
 
 /-- Forgetting scalars recovers exactly the compatible-family ring completion. -/
 @[simp]
@@ -126,24 +152,6 @@ theorem algHom_ext {f g : B →ₐ[R] F.completion}
   apply AlgHom.ext
   intro x
   exact F.completion_ext fun k => AlgHom.congr_fun (h k) x
-
-/-- The quotient tower in the category of algebras. -/
--- The object formula must compute to give arrows their concrete quotient-algebra types.
-@[expose]
-def quotientAlgebraDiagram : ℕᵒᵖ ⥤ AlgCat R where
-  obj k := AlgCat.of R (A ⧸ F.ideal (k.unop + 1))
-  map f := AlgCat.ofHom (Ideal.Quotient.factorₐ R
-    (F.antitone (Nat.add_le_add_right (leOfHom f.unop) 1)))
-  map_id _ := by
-    apply AlgCat.hom_ext
-    apply AlgHom.toRingHom_injective
-    exact Ideal.Quotient.factor_eq
-  map_comp f g := by
-    apply AlgCat.hom_ext
-    apply AlgHom.toRingHom_injective
-    exact (Ideal.Quotient.factor_comp
-      (F.antitone (Nat.add_le_add_right (leOfHom f.unop) 1))
-      (F.antitone (Nat.add_le_add_right (leOfHom g.unop) 1))).symm
 
 /-- The algebra tower has the same underlying ring diagram as the ring completion. -/
 @[simp]
