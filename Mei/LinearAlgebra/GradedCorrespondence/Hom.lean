@@ -162,6 +162,21 @@ def symm (f : Hom C D σ τ) : Hom C.symm D.symm τ σ where
 @[simp] theorem symm_left (f : Hom C D σ τ) : f.symm.left = f.right := (rfl)
 @[simp] theorem symm_right (f : Hom C D σ τ) : f.symm.right = f.left := (rfl)
 
+/-- Reversing a correspondence morphism twice recovers the original morphism after
+transporting along the double-reversal equalities for its source and target. -/
+@[simp] theorem symm_symm (f : Hom C D σ τ) :
+    (cast (by rw [GradedCorrespondence.symm_symm, GradedCorrespondence.symm_symm])
+      f.symm.symm : Hom C D σ τ) = f := by
+  have aux {C' : GradedCorrespondence (B := B) 𝒰 𝒱 I J}
+      {D' : GradedCorrespondence (B := B') 𝒰' 𝒱' I' J'}
+      (hC : C' = C) (hD : D' = D) (g : Hom C' D' σ τ)
+      (hm : g.middle = f.middle) (hl : g.left = f.left) (hr : g.right = f.right) :
+      cast (by rw [hC, hD]) g = f := by
+    subst C' D'
+    exact Hom.ext hm hl hr
+  exact aux (GradedCorrespondence.symm_symm C) (GradedCorrespondence.symm_symm D)
+    f.symm.symm rfl rfl rfl
+
 @[simp] theorem symm_id : (id C).symm = id C.symm := by ext <;> rfl
 
 @[simp] theorem symm_comp (g : Hom D E σ' τ') (f : Hom C D σ τ) :
