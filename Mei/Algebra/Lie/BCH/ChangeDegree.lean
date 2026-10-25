@@ -33,27 +33,6 @@ universe u
 
 namespace Mei
 
-namespace GradedLieHom
-
-variable {N R L : Type*} [AddCommMonoid N] [CommRing R]
-  [LieRing L] [LieAlgebra R L]
-
-/-- The identity Lie homomorphism viewed as a change of positive degree function. -/
-def changeDegree (d e : PositiveDegrees N) (hP : d.monoid = e.monoid)
-    (ℒ : N → Submodule R L) : GradedLieHom (PositiveDegreeMap.changeDegree d e hP) ℒ ℒ where
-  toLieHom := LieHom.id
-  map_mem hx := by simpa using hx
-
-@[simp]
-theorem changeDegree_apply (d e : PositiveDegrees N) (hP) (ℒ : N → Submodule R L)
-    (x : L) : changeDegree d e hP ℒ x = x := (rfl)
-
-@[simp]
-theorem changeDegree_toLieHom (d e : PositiveDegrees N) (hP) (ℒ : N → Submodule R L) :
-    (changeDegree d e hP ℒ).toLieHom = LieHom.id := (rfl)
-
-end GradedLieHom
-
 namespace PositiveDegrees
 
 variable {N R : Type*} {L : Type*} [AddCommMonoid N] [CommRing R] [Algebra ℚ R]

@@ -82,6 +82,20 @@ def id (ℒ : N → Submodule R L) : GradedLieHom (PositiveDegreeMap.id d) ℒ �
 @[simp]
 theorem id_apply (x : L) : id (d := d) ℒ x = x := (rfl)
 
+/-- The identity Lie homomorphism viewed as a change of positive degree function. -/
+def changeDegree (d e : PositiveDegrees N) (hP : d.monoid = e.monoid)
+    (ℒ : N → Submodule R L) : GradedLieHom (PositiveDegreeMap.changeDegree d e hP) ℒ ℒ where
+  toLieHom := LieHom.id
+  map_mem hx := by simpa using hx
+
+@[simp]
+theorem changeDegree_apply (d e : PositiveDegrees N) (hP) (ℒ : N → Submodule R L)
+    (x : L) : changeDegree d e hP ℒ x = x := (rfl)
+
+@[simp]
+theorem changeDegree_toLieHom (d e : PositiveDegrees N) (hP) (ℒ : N → Submodule R L) :
+    (changeDegree d e hP ℒ).toLieHom = LieHom.id := (rfl)
+
 /-- Composition carries the composite degree map and its composite cutoff modulus. -/
 def comp (g : GradedLieHom U ℳ ℋ) (f : GradedLieHom T ℒ ℳ) :
     GradedLieHom (U.comp T) ℒ ℋ where
