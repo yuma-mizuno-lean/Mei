@@ -6,10 +6,10 @@ Authors: Codex
 module
 
 public import Mei.Analysis.Convex.FourierMotzkin
+public import Mei.Topology.Algebra.ContinuousAffineMap
 public import TauCeti.Analysis.Convex.Polyhedron.Basic
 public import Mathlib.Basic.Finite.Sum
 public import Mathlib.Basic.Finite.Prod
-public import Mathlib.Topology.Algebra.Ring.Real
 import Mathlib.Tactic.Linarith
 
 /-!
@@ -123,14 +123,6 @@ theorem isConvexPolyhedron_setOf_exists_nonneg_affine_le [Finite ι]
     TauCeti.IsConvexPolyhedron {y : V | ∃ t : ℝ, 0 ≤ t ∧ ∀ i, g i y + a i * t ≤ 0} := by
   rw [setOf_exists_nonneg_affine_le_eq]
   exact TauCeti.isConvexPolyhedron_setOf_forall _
-
-/-- Evaluation of a continuous affine functional along an affine ray. -/
-theorem _root_.ContinuousAffineMap.apply_add_smul (g : V →ᴬ[ℝ] ℝ) (y n : V) (t : ℝ) :
-    g (y + t • n) = g y + g.linear n * t := by
-  rw [add_comm y]
-  have h := g.map_vadd' y (t • n)
-  simpa only [vadd_eq_add, map_smul, smul_eq_mul, mul_comm, add_comm,
-    AffineMap.toFun_eq_coe, ContinuousAffineMap.coe_toAffineMap] using h
 
 /-- The resultant presentation for adding a negative ray to a finite family of
 closed affine halfspaces. The parameter slopes are the linear parts evaluated at `n`. -/
