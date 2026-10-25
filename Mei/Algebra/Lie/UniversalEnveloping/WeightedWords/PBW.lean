@@ -31,7 +31,7 @@ variable {R L S : Type*} [CommRing R] [LieRing L] [LieAlgebra R L]
 local notation "U" => _root_.UniversalEnvelopingAlgebra R L
 local notation "J" => TauCeti.HopfIdeal.toIdeal (TauCeti.HopfIdeal.augmentation R U)
 
-open UniversalEnvelopingAlgebra
+open Mei.UniversalEnvelopingAlgebra
 
 /-- Weighted word ideals agree with the weighted PBW ideals when straightening
 does not decrease weight. -/

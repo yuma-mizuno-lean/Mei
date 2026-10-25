@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import TauCeti.Algebra.Lie.UniversalEnveloping.Augmentation.Basic
+public import Mei.Algebra.Lie.UniversalEnveloping.Augmentation.Basic
 
 /-!
 # Weighted word ideals and the augmentation topology
@@ -24,7 +24,7 @@ The word descriptions refine the canonical-generator descriptions in
 
 public section
 
-namespace UniversalEnvelopingAlgebra
+namespace Mei.UniversalEnvelopingAlgebra
 
 universe u v w
 
@@ -183,17 +183,6 @@ theorem augmentation_pow_le_weightedWordIdeal
     exact (Ideal.mul_mono hbase ih).trans
       (by simpa [Nat.add_comm] using weightedWordIdeal_mul_le e he weight 1 k)
 
-private theorem prod_mem_augmentation_pow (l : List S) :
-    (l.map (fun s => ι (e s))).prod ∈ J ^ l.length := by
-  induction l with
-  | nil => simp only [List.map_nil, List.prod_nil, List.length_nil, Submodule.pow_zero,
-      Ideal.one_eq_top, Submodule.mem_top]
-  | cons s l ih =>
-    simp only [List.map_cons, List.prod_cons, List.length_cons]
-    rw [Ideal.IsTwoSided.pow_succ]
-    exact Ideal.mul_mem_mul
-      (TauCeti.UniversalEnvelopingAlgebra.ι_mem_augmentation R L (e s)) ih
-
 /-- The bounded-weight modulus: total weight greater than `B * (k - 1)`
 forces at least `k` letters, hence membership in the `k`-th augmentation power. -/
 theorem weightedWordIdeal_le_augmentation_pow
@@ -224,4 +213,4 @@ theorem weightedWordIdeal_one_eq_augmentation_pow
         (fun _ => le_rfl) (k := k + 1) (by omega)
     · exact augmentation_pow_le_weightedWordIdeal e he (fun _ => 1) (fun _ => le_rfl) _
 
-end UniversalEnvelopingAlgebra
+end Mei.UniversalEnvelopingAlgebra
