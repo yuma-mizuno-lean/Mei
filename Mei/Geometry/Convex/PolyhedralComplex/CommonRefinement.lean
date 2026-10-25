@@ -77,9 +77,8 @@ noncomputable def commonRefinement (C D : FinitePolyhedralComplex h) :
     obtain ⟨x, hx⟩ := hne
     have hC := C.inter_face P hP P' hP' ⟨x, hx.1.1, hx.2.1⟩
     have hD := D.inter_face Q hQ Q' hQ' ⟨x, hx.1.2, hx.2.2⟩
-    have heq : (P ∩ P') ∩ (Q ∩ Q') = (P ∩ Q) ∩ (P' ∩ Q') := by
-      ext y
-      constructor <;> rintro ⟨⟨a, b⟩, ⟨c, d⟩⟩ <;> exact ⟨⟨a, c⟩, ⟨b, d⟩⟩
+    have heq : (P ∩ P') ∩ (Q ∩ Q') = (P ∩ Q) ∩ (P' ∩ Q') :=
+      Set.inter_inter_inter_comm P P' Q Q'
     simpa only [heq] using hC.inter_inter hD
 
 /-- The public carrier characterization of the cells of a common refinement. -/
@@ -143,19 +142,19 @@ theorem isWeakRefinement_commonRefinement_iff {C D E : FinitePolyhedralComplex h
   · rintro ⟨hEC, hED⟩
     exact isWeakRefinement_commonRefinement hEC hED
 
-/-- With equal supports the common refinement is a subdivision of the first complex. -/
+/-- If the first support is contained in the second, the common refinement subdivides it. -/
 theorem commonRefinement_isSubdivision_left {C D : FinitePolyhedralComplex h}
-    (hsupport : C.support = D.support) : (C.commonRefinement D).IsSubdivision C := by
+    (hsupport : C.support ⊆ D.support) : (C.commonRefinement D).IsSubdivision C := by
   apply isSubdivision_iff.mpr
   refine ⟨commonRefinement_isWeakRefinement_left C D, ?_⟩
-  rw [support_commonRefinement, hsupport, Set.inter_self]
+  rw [support_commonRefinement, Set.inter_eq_left.mpr hsupport]
 
-/-- With equal supports the common refinement is a subdivision of the second complex. -/
+/-- If the second support is contained in the first, the common refinement subdivides it. -/
 theorem commonRefinement_isSubdivision_right {C D : FinitePolyhedralComplex h}
-    (hsupport : C.support = D.support) : (C.commonRefinement D).IsSubdivision D := by
+    (hsupport : D.support ⊆ C.support) : (C.commonRefinement D).IsSubdivision D := by
   apply isSubdivision_iff.mpr
   refine ⟨commonRefinement_isWeakRefinement_right C D, ?_⟩
-  rw [support_commonRefinement, hsupport, Set.inter_self]
+  rw [support_commonRefinement, Set.inter_eq_right.mpr hsupport]
 
 /-- Common refinement is independent of the order of its two inputs. -/
 theorem commonRefinement_comm (C D : FinitePolyhedralComplex h) :

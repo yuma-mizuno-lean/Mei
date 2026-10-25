@@ -43,21 +43,6 @@ variable {N N' V W : Type*} [AddCommGroup N] [AddCommGroup N']
   {i : N →+ V} {i' : N' →+ W}
   {h : TauCeti.Toric.IsIntegralLattice i} {h' : TauCeti.Toric.IsIntegralLattice i'}
 
-/-- Applying the inverse to an image recovers the original set carrier. -/
-theorem Toric.IntegralAffineEquiv.symm_image_image (e : Toric.IntegralAffineEquiv h h')
-    (P : Set V) : e.symm '' (e '' P) = P := by
-  ext x
-  constructor
-  · rintro ⟨y, ⟨z, hz, rfl⟩, rfl⟩
-    simpa using hz
-  · intro hx
-    exact ⟨e x, ⟨x, hx, rfl⟩, by simp⟩
-
-/-- Applying an equivalence after its inverse recovers the set carrier. -/
-theorem Toric.IntegralAffineEquiv.image_symm_image (e : Toric.IntegralAffineEquiv h h')
-    (P : Set W) : e '' (e.symm '' P) = P := by
-  simpa only [Toric.IntegralAffineEquiv.symm_symm] using e.symm.symm_image_image P
-
 /-- Integral affine equivalences preserve nonempty polyhedral faces. -/
 theorem IsPolyhedralFace.image {P F : Set V} (hF : IsPolyhedralFace P F)
     (e : Toric.IntegralAffineEquiv h h') : IsPolyhedralFace (e '' P) (e '' F) := by

@@ -119,6 +119,18 @@ theorem trans_latticeEquiv (e : IntegralAffineEquiv h h') (f : IntegralAffineEqu
 theorem symm_symm (e : IntegralAffineEquiv h h') : e.symm.symm = e := by
   apply ext <;> rfl
 
+/-- Applying the inverse to an image recovers the original set carrier. -/
+@[simp↓]
+theorem symm_image_image (e : IntegralAffineEquiv h h') (P : Set V) :
+    e.symm '' (e '' P) = P :=
+  e.toAffineEquiv.toEquiv.symm_image_image P
+
+/-- Applying an equivalence after its inverse recovers the set carrier. -/
+@[simp↓]
+theorem image_symm_image (e : IntegralAffineEquiv h h') (P : Set V') :
+    e '' (e.symm '' P) = P :=
+  e.toAffineEquiv.toEquiv.image_symm_image P
+
 /-- Composition with the identity on the target changes nothing. -/
 @[simp]
 theorem trans_refl (e : IntegralAffineEquiv h h') : e.trans (refl h') = e := by

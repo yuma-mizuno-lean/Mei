@@ -68,6 +68,12 @@ theorem isConvexPolyhedron (C : FinitePolyhedralComplex h) {P : Set V} (hP : P �
   obtain ⟨Q, rfl⟩ := isRationalNormalPolyhedron_iff.mp (C.rational P hP)
   exact Q.isConvexPolyhedron
 
+/-- A nonempty intersection of two cells is again a cell. -/
+theorem inter_mem_cells (C : FinitePolyhedralComplex h) {P Q : Set V}
+    (hP : P ∈ C.cells) (hQ : Q ∈ C.cells) (hne : (P ∩ Q).Nonempty) :
+    P ∩ Q ∈ C.cells :=
+  C.face_closed P hP (P ∩ Q) (isPolyhedralFace_iff.mpr ⟨hne, C.inter_face P hP Q hQ hne⟩)
+
 /-- A cell contained in another cell is a nonempty face of that cell. -/
 theorem face_of_subset (C : FinitePolyhedralComplex h) {P Q : Set V}
     (hP : P ∈ C.cells) (hQ : Q ∈ C.cells) (hPQ : P ⊆ Q) : IsPolyhedralFace Q P := by
@@ -139,6 +145,22 @@ theorem IsSubdivision.trans {C D E : FinitePolyhedralComplex h}
 theorem IsSubdivision.antisymm {C D : FinitePolyhedralComplex h}
     (hCD : C.IsSubdivision D) (hDC : D.IsSubdivision C) : C = D :=
   hCD.1.antisymm hDC.1
+
+/-- Weak refinement carries a partial-order structure on actual complexes. -/
+@[instance_reducible]
+def weakRefinementPartialOrder : PartialOrder (FinitePolyhedralComplex h) where
+  le := IsWeakRefinement
+  le_refl := IsWeakRefinement.refl
+  le_trans _ _ _ := IsWeakRefinement.trans
+  le_antisymm _ _ := IsWeakRefinement.antisymm
+
+/-- Subdivision carries its own partial-order structure, with support equality built in. -/
+@[instance_reducible]
+def subdivisionPartialOrder : PartialOrder (FinitePolyhedralComplex h) where
+  le := IsSubdivision
+  le_refl := IsSubdivision.refl
+  le_trans _ _ _ := IsSubdivision.trans
+  le_antisymm _ _ := IsSubdivision.antisymm
 
 end FinitePolyhedralComplex
 

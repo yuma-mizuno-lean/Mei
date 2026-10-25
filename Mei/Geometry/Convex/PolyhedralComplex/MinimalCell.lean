@@ -22,12 +22,6 @@ namespace Mei.FinitePolyhedralComplex
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
 
-/-- A nonempty intersection of two cells is again a cell. -/
-theorem inter_mem_cells (C : FinitePolyhedralComplex h) {P Q : Set V}
-    (hP : P ∈ C.cells) (hQ : Q ∈ C.cells) (hne : (P ∩ Q).Nonempty) :
-    P ∩ Q ∈ C.cells :=
-  C.face_closed P hP (P ∩ Q) (isPolyhedralFace_iff.mpr ⟨hne, C.inter_face P hP Q hQ hne⟩)
-
 /-- Every nonempty set contained in a cell has a unique smallest containing cell. -/
 theorem exists_unique_minimalContainingCell (C : FinitePolyhedralComplex h) {A : Set V}
     (hne : A.Nonempty) (hcontained : ∃ P ∈ C.cells, A ⊆ P) :
@@ -73,21 +67,5 @@ theorem minimalContainingCell_subset (C : FinitePolyhedralComplex h) (A : Set V)
     (hQ : Q ∈ C.cells) (hAQ : A ⊆ Q) :
     C.minimalContainingCell A hne hcontained ⊆ Q :=
   (C.exists_unique_minimalContainingCell hne hcontained).choose_spec.1.2.2 Q hQ hAQ
-
-/-- Weak refinement carries a partial-order structure on actual complexes. -/
-@[instance_reducible]
-def weakRefinementPartialOrder : PartialOrder (FinitePolyhedralComplex h) where
-  le := IsWeakRefinement
-  le_refl := IsWeakRefinement.refl
-  le_trans _ _ _ := IsWeakRefinement.trans
-  le_antisymm _ _ := IsWeakRefinement.antisymm
-
-/-- Subdivision carries its own partial-order structure, with support equality built in. -/
-@[instance_reducible]
-def subdivisionPartialOrder : PartialOrder (FinitePolyhedralComplex h) where
-  le := IsSubdivision
-  le_refl := IsSubdivision.refl
-  le_trans _ _ _ := IsSubdivision.trans
-  le_antisymm _ _ := IsSubdivision.antisymm
 
 end Mei.FinitePolyhedralComplex
