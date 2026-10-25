@@ -17,7 +17,7 @@ raises the degree filtration. Its completed exponential action is conjugation by
 completed exponential of the canonical image.
 
 The action is Mathlib's `LieRingModule.compLieHom` applied to the canonical map `ι`.
-The instances are scoped to `Mei.UniversalEnvelopingAlgebra.InnerAction`: opening this
+The instances are scoped to `UniversalEnvelopingAlgebra.InnerAction`: opening this
 scope selects the commutator action, which differs from left multiplication on the
 enveloping algebra. No PBW, freeness, or separatedness assumption is used.
 -/
@@ -26,9 +26,9 @@ public section
 
 attribute [local instance 100] LieRing.ofAssociativeRing
 
-namespace Mei.UniversalEnvelopingAlgebra
+namespace UniversalEnvelopingAlgebra
 
-open _root_.UniversalEnvelopingAlgebra
+open Mei Mei.UniversalEnvelopingAlgebra
 
 variable {N R L : Type*} [AddCommMonoid N] [CommRing R] [LieRing L] [LieAlgebra R L]
 
@@ -96,4 +96,4 @@ theorem expAction_apply (x : L) (a : (F).completion) :
       (fun n hn => d.eq_bot_of_degree_nonpos ℒ n hn) x) a
 
 end InnerAction
-end Mei.UniversalEnvelopingAlgebra
+end UniversalEnvelopingAlgebra
