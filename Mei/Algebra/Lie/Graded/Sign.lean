@@ -175,21 +175,13 @@ theorem signDecomposition_mem (K : Submodule R L)
   · exact K.zero_mem
 
 /-- Adding the three sign components recovers the original element. -/
+@[simp]
 theorem sum_signDecomposition (x : L) :
     ∑ s : SignType, (signDecomposition ℒ θ x s : L) = x := by
-  classical
-  let S := fun s => (signSubalgebra ℒ θ s).toSubmodule
-  let := (isInternal_signSubalgebra ℒ θ).chooseDecomposition
-  have he : DirectSum.decomposeLinearEquiv S = signDecomposition ℒ θ := by
-    apply LinearEquiv.symm_bijective.injective
-    ext a
-    exact signDecomposition_symm_apply ℒ θ a |>.symm
-  rw [← he, DirectSum.decomposeLinearEquiv_apply]
-  conv_rhs => rw [← DirectSum.sum_support_decompose S x]
-  symm
-  apply Finset.sum_subset (Finset.subset_univ _)
-  intro s _ hs
-  simpa using (DFinsupp.notMem_support_iff.mp hs)
+  have h := congrArg (signDecomposition ℒ θ).symm
+    (DirectSum.sum_univ_of (signDecomposition ℒ θ x))
+  simpa only [map_sum, signDecomposition_symm_apply,
+    DirectSum.coeLinearMap_of, LinearEquiv.symm_apply_apply] using h
 
 /-- The three sign components are uniquely determined by their sum. -/
 theorem signDecomposition_eq_iff (x : L)
