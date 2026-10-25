@@ -18,9 +18,8 @@ parameters. Transporting normal functionals by the inverse linear map preserves
 crossing signs, so the crossing word changes by the induced wall bijection.
 This applies to orientation-reversing maps as well as translations.
 
-The proofs use Mathlib's dimension invariance under linear equivalences,
-`Prefunctor.mapPath`, and `FreeGroup.map`, together with the geometric
-membership and order characterization of `orderedCrossings`.
+The proofs use Mathlib's `Prefunctor.mapPath` and `FreeGroup.map`, together
+with the geometric membership and order characterization of `orderedCrossings`.
 -/
 
 public section
@@ -37,49 +36,6 @@ variable {N N' V V' : Type*} [AddCommGroup N] [AddCommGroup N']
   {i : N →+ V} {i' : N' →+ V'}
   {h : TauCeti.Toric.IsIntegralLattice i} {h' : TauCeti.Toric.IsIntegralLattice i'}
   (C : FinitePolyhedralComplex h) (e : Mei.Toric.IntegralAffineEquiv h h')
-
-/-- Affine transport preserves every exact ambient cell codimension. -/
-theorem mem_cellsOfCodimension_image (k : ℕ) (Q : Set V') :
-    Q ∈ (C.image e).cellsOfCodimension k ↔
-      ∃ P ∈ C.cellsOfCodimension k, e '' P = Q := by
-  have hd (P : Set V) : Module.finrank ℝ (affineSpan ℝ (e '' P)).direction =
-      Module.finrank ℝ (affineSpan ℝ P).direction := by
-    have he : (affineSpan ℝ (e '' P)).direction =
-        ((affineSpan ℝ P).direction).map e.toAffineEquiv.linear.toLinearMap := by
-      simpa only [AffineEquiv.linear_toAffineMap, AffineEquiv.coe_coe] using
-        e.toAffineEquiv.toAffineMap.direction_affineSpan_image P
-    rw [he, e.toAffineEquiv.linear.finrank_map_eq]
-  have hv := e.toAffineEquiv.linear.finrank_eq
-  simp only [mem_cellsOfCodimension, mem_cells_image]
-  constructor
-  · rintro ⟨⟨P, hP, rfl⟩, hdim⟩
-    exact ⟨P, ⟨hP, by rwa [hd, ← hv] at hdim⟩, rfl⟩
-  · rintro ⟨P, ⟨hP, hdim⟩, rfl⟩
-    exact ⟨⟨P, hP, rfl⟩, by rw [hd, ← hv]; exact hdim⟩
-
-/-- The bijection from original walls to their actual affine image carriers. -/
-def wallImageEquiv : C.walls ≃ (C.image e).walls :=
-  Equiv.ofBijective
-    (fun P => ⟨e '' (P : Set V), (C.mem_cellsOfCodimension_image e 1 _).mpr
-      ⟨P, P.property, rfl⟩⟩)
-    ⟨fun P Q he => Subtype.ext (e.toAffineEquiv.injective.image_injective
-        (congrArg Subtype.val he)),
-      fun Q => by
-        obtain ⟨P, hP, hPQ⟩ := (C.mem_cellsOfCodimension_image e 1 Q).mp Q.property
-        exact ⟨⟨P, hP⟩, Subtype.ext hPQ⟩⟩
-
-@[simp]
-theorem wallImageEquiv_coe (P : C.walls) :
-    (C.wallImageEquiv e P : Set V') = e '' (P : Set V) := (rfl)
-
-/-- The inverse wall bijection takes the inverse image carrier. -/
-@[simp]
-theorem wallImageEquiv_symm_coe (Q : (C.image e).walls) :
-    ((C.wallImageEquiv e).symm Q : Set V) = e.symm '' (Q : Set V') := by
-  have he := C.wallImageEquiv_coe e ((C.wallImageEquiv e).symm Q)
-  rw [Equiv.apply_symm_apply] at he
-  have hi := congrArg (fun P : Set V' => e.symm '' P) he
-  simpa only [Mei.Toric.IntegralAffineEquiv.symm_image_image] using hi.symm
 
 /-- Transport the allowed vertices and segments to the image complex. -/
 def pathImage : WallComplement (fun P : C.walls => (P : Set V)) ⥤q
@@ -122,17 +78,9 @@ theorem orderedCrossings_pathImage (a : x ⟶ y) :
   rintro ⟨Q, t⟩
   obtain ⟨P, rfl⟩ := (C.wallImageEquiv e).surjective Q
   rw [C.mem_crossings_pathImage]
-  constructor
-  · intro hb
-    obtain ⟨⟨P', s⟩, hb', he'⟩ := List.mem_map.mp hb
-    have hp := congrArg Prod.fst he'
-    have hs := congrArg Prod.snd he'
-    dsimp only at hp hs
-    obtain rfl := (C.wallImageEquiv e).injective hp
-    obtain rfl := hs
-    exact (C.mem_orderedCrossings a _).mp hb'
-  · intro hb
-    exact List.mem_map.mpr ⟨(P, t), (C.mem_orderedCrossings a _).mpr hb, rfl⟩
+  exact (List.mem_map_of_injective
+    ((C.wallImageEquiv e).injective.prodMap Function.injective_id) (a := (P, t))).trans
+      (C.mem_orderedCrossings a _)
 
 /-- Inverse-dual transport preserves each signed crossing letter. The hypothesis
 allows any target representatives with the specified pullback. -/
