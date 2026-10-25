@@ -329,6 +329,18 @@ theorem coefficientPullbackIso_inv_app (s : Section C) (e : E) :
       A.map (eqToHom (Functor.congr_obj (pullback_comp_pre G s) e)) := by
   simp [coefficientPullbackIso, eqToHom_map, eqToHom_app]
 
+/-- The identification of reindexed coefficient diagrams is natural in vertical labels. -/
+@[reassoc]
+theorem coefficientPullbackIso_naturality {s t : Section C} (α : s ⟶ t) :
+    whiskerLeft G (whiskerRight (hom α) A) ≫ (coefficientPullbackIso G A t).hom =
+      (coefficientPullbackIso G A s).hom ≫
+        whiskerRight (hom (pullbackHom G α)) (pre C G ⋙ A) := by
+  ext e
+  simp only [NatTrans.comp_app, whiskerLeft_app, whiskerRight_app,
+    coefficientPullbackIso_hom_app, Functor.comp_map]
+  rw [pre_map_hom_pullbackHom, Functor.map_comp, Functor.map_comp]
+  simp [← Functor.map_comp]
+
 /-- Restriction of coefficients to a new base on the actual completed coefficient objects. -/
 noncomputable def coefficientRestriction (s : Section C)
     [Limits.HasLimit (s.toFunctor ⋙ A)]
@@ -360,10 +372,12 @@ theorem coefficientRestriction_naturality {s t : Section C} (α : s ⟶ t)
         Limits.limMap (whiskerRight (hom (pullbackHom G α)) (pre C G ⋙ A)) := by
   apply Limits.limit.hom_ext
   intro e
-  simp only [Category.assoc, coefficientRestriction_π, Limits.limMap_π,
+  simp only [Category.assoc, coefficientRestriction_π, Limits.limMap_π, Limits.limMap_π_assoc,
     whiskerRight_app, Functor.comp_map, coefficientRestriction_π_assoc]
-  rw [pre_map_hom_pullbackHom, Functor.map_comp, Functor.map_comp]
-  simp [← Functor.map_comp]
+  simpa only [NatTrans.comp_app, whiskerLeft_app, whiskerRight_app,
+    coefficientPullbackIso_hom_app, Functor.comp_map, Category.assoc] using
+    congrArg (Limits.limit.π (s.toFunctor ⋙ A) (G.obj e) ≫ ·)
+      (NatTrans.congr_app (coefficientPullbackIso_naturality G A α) e)
 
 /-- An initial change of base identifies the completed coefficient objects. -/
 instance isIso_coefficientRestriction (s : Section C) [G.Initial]

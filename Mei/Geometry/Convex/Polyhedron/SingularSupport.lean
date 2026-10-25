@@ -6,6 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.Convex.Polyhedron.Boundary.Codimension
+public import Mei.Geometry.Affine.Span
 
 /-!
 # Finite affine covers of polyhedral wall singularities
@@ -15,6 +16,8 @@ the intersections of members whose affine spans have different directions.
 For a finite family of codimension-one polyhedra this actual set is covered by
 finitely many affine subspaces of codimension at least two. Unbounded walls,
 lineality and coincident or parallel supporting hyperplanes are allowed.
+Continuous affine equivalences transport singular support, including under a
+bijection of wall indices, by the intrinsic-frontier image theorem.
 -/
 
 public section
@@ -141,3 +144,47 @@ theorem exists_finite_singularSupport_cover [FiniteDimensional ℝ V] [Finite ι
         (affineSpan ℝ (W j)) (hdim i) (hdim j) hne
 
 end Mei.Convex
+
+namespace ContinuousAffineEquiv
+
+open Mei.Convex
+
+variable {V ι : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
+
+variable {V' ι' : Type*} [NormedAddCommGroup V'] [NormedSpace ℝ V']
+  {W : ι → Set V} {W' : ι' → Set V'}
+
+/-- Transporting and bijectively reindexing walls transports their singular support. -/
+theorem singularSupport_image (e : V ≃ᴬ[ℝ] V') (r : ι ≃ ι')
+    (hW : ∀ j, W' (r j) = e '' W j) : singularSupport W' = e '' singularSupport W := by
+  have hd (j : ι) : (affineSpan ℝ (W' (r j))).direction =
+      ((affineSpan ℝ (W j)).direction).map e.toAffineEquiv.linear.toLinearMap := by
+    rw [hW]
+    simpa only [AffineEquiv.linear_toAffineMap,
+      AffineEquiv.coe_coe, ContinuousAffineEquiv.coe_coe] using
+      e.toAffineEquiv.toAffineMap.direction_affineSpan_image (W j)
+  have hdir (j k : ι) :
+      (affineSpan ℝ (W' (r j))).direction = (affineSpan ℝ (W' (r k))).direction ↔
+        (affineSpan ℝ (W j)).direction = (affineSpan ℝ (W k)).direction := by
+    rw [hd, hd]
+    exact Submodule.map_injective_of_injective e.toAffineEquiv.linear.injective |>.eq_iff
+  ext x
+  obtain ⟨x, rfl⟩ := e.surjective x
+  rw [e.injective.mem_set_image, mem_singularSupport, mem_singularSupport]
+  constructor
+  · rintro (⟨j, hj⟩ | ⟨j, k, hne, hj, hk⟩)
+    · obtain ⟨j, rfl⟩ := r.surjective j
+      rw [hW, e.intrinsicFrontier_image, e.injective.mem_set_image] at hj
+      exact Or.inl ⟨j, hj⟩
+    · obtain ⟨j, rfl⟩ := r.surjective j
+      obtain ⟨k, rfl⟩ := r.surjective k
+      exact Or.inr ⟨j, k, fun h => hne ((hdir j k).mpr h),
+        (e.injective.mem_set_image).mp (hW j ▸ hj),
+        (e.injective.mem_set_image).mp (hW k ▸ hk)⟩
+  · rintro (⟨j, hj⟩ | ⟨j, k, hne, hj, hk⟩)
+    · exact Or.inl ⟨r j, by rw [hW, e.intrinsicFrontier_image]; exact mem_image_of_mem e hj⟩
+    · exact Or.inr ⟨r j, r k, fun h => hne ((hdir j k).mp h),
+        by rw [hW]; exact mem_image_of_mem e hj,
+        by rw [hW]; exact mem_image_of_mem e hk⟩
+
+end ContinuousAffineEquiv

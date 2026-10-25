@@ -44,7 +44,7 @@ def imagePrefunctor :
       WallComplement (fun P : (C.image e).walls => (P : Set V')) := by
   letI := h.finiteDimensional
   exact e.toAffineEquiv.imagePrefunctor (C.wallImageEquiv e) _ _
-    (C.coe_wallImageEquiv e)
+    (C.wallImageEquiv_coe e)
 
 /-- The affine path map sends vertices to their actual coordinate images. -/
 @[simp]
@@ -62,7 +62,7 @@ theorem mem_crossings_image (P : C.walls) (t : ℝ) :
       (P, t) ∈ WallComplement.crossings x y := by
   let := h.finiteDimensional
   exact e.toAffineEquiv.mem_crossings_image (C.wallImageEquiv e) _ _
-    (C.coe_wallImageEquiv e) x y P t
+    (C.wallImageEquiv_coe e) x y P t
 
 /-- Affine transport changes only the wall indices of the ordered crossing list. -/
 theorem orderedCrossings_image (a : x ⟶ y) :

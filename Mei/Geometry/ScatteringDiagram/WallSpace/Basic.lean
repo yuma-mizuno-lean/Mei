@@ -46,6 +46,19 @@ def wallBracketNormal (ρ : Γ →+ Λ) (n n' : Γ) (m m' : Λ →+ ℤ) : Λ �
 theorem wallBracketNormal_apply (ρ : Γ →+ Λ) (n n' : Γ) (m m' : Λ →+ ℤ) (v : Λ) :
     wallBracketNormal ρ n n' m m' v = m (ρ n') * m' v - m' (ρ n) * m v := (rfl)
 
+/-- On integer multiples of two directions, the cross contractions scale by the
+opposite multipliers. -/
+@[simp]
+theorem wallBracketNormal_zsmul {Γ Λ : Type*} [AddCommGroup Γ] [AddCommMonoid Λ]
+    (ρ : Γ →+ Λ) (n n' : Γ) (m m' : Λ →+ ℤ) (a b : ℤ) :
+    wallBracketNormal ρ (a • n) (b • n') m m' =
+      (b * m (ρ n')) • m' - (a * m' (ρ n)) • m := by
+  have hm : m (ρ (b • n')) = b * m (ρ n') := by
+    simpa only [AddMonoidHom.comp_apply, zsmul_eq_mul, Int.cast_id] using (m.comp ρ).map_zsmul b n'
+  have hm' : m' (ρ (a • n)) = a * m' (ρ n) := by
+    simpa only [AddMonoidHom.comp_apply, zsmul_eq_mul, Int.cast_id] using (m'.comp ρ).map_zsmul a n
+  simp only [wallBracketNormal, hm, hm']
+
 /-- Homogeneous submodules with the normal and bracket laws of directed walls.
 For a positive grading, containment in the homogeneous pieces automatically makes
 all spaces outside the nonzero positive degrees vanish. -/
