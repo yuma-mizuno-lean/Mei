@@ -6,6 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.Convex.Homogenization.Inequalities
+public import Mathlib.Analysis.Normed.Module.Basic
 public import TauCeti.Analysis.Convex.Polyhedron.Basic
 
 /-!

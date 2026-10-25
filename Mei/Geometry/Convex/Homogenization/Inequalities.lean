@@ -25,7 +25,8 @@ public section
 
 namespace ContinuousAffineMap
 
-variable {V ι : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
+variable {V ι : Type*} [AddCommGroup V] [Module ℝ V] [TopologicalSpace V]
+  [IsTopologicalAddGroup V]
 
 /-- The continuous linear functional homogenizing an affine inequality. -/
 def homogenizedInequality (g : V →ᴬ[ℝ] ℝ) : (V × ℝ) →L[ℝ] ℝ :=
@@ -52,7 +53,8 @@ open ContinuousAffineMap Set
 
 namespace Mei.Convex
 
-variable {V ι : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
+variable {V ι : Type*} [AddCommGroup V] [Module ℝ V] [TopologicalSpace V]
+  [IsTopologicalAddGroup V]
 
 /-- The cone of homogeneous inequalities associated with an affine family. -/
 def homogeneousInequalityCone (g : ι → (V →ᴬ[ℝ] ℝ)) : PointedCone ℝ (V × ℝ) where
@@ -74,6 +76,8 @@ def homogeneousInequalityCone (g : ι → (V →ᴬ[ℝ] ℝ)) : PointedCone ℝ
 theorem mem_homogeneousInequalityCone {g : ι → (V →ᴬ[ℝ] ℝ)} {z : V × ℝ} :
     z ∈ homogeneousInequalityCone g ↔
       0 ≤ z.2 ∧ ∀ i, homogenizedInequality (g i) z ≤ 0 := (Iff.rfl)
+
+variable [ContinuousSMul ℝ V]
 
 /-- The carrier-defined homogenization of a nonempty affine-inequality
 solution set has exactly its homogeneous inequalities. -/
