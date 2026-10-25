@@ -211,4 +211,29 @@ theorem factor_bchElement {c d : ℕ} (h : c ≤ d) :
     π, Ideal.Quotient.factor_mk] using
     congrArg π (exp_quotientEnvelopingMap_bchElement d)
 
+/-- At nilpotency bound one, the universal BCH element is the sum of the generators. -/
+@[simp]
+theorem bchElement_one :
+    bchElement 1 = LieSubmodule.Quotient.mk (X + Y) := by
+  symm
+  apply bchElement_unique
+  rw [quotientEnvelopingMap_mk, map_add, map_add]
+  let q := Ideal.Quotient.mk (J₂ ^ 2)
+  have hmem (z : F₂) : _root_.UniversalEnvelopingAlgebra.ι ℚ z ∈ J₂ := by
+    simpa only [pow_one] using
+      TauCeti.UniversalEnvelopingAlgebra.pow_ι_mem_augmentation_toIdeal ℚ F₂ z
+        (by decide : 1 ≠ 0)
+  have hmul (u v : F₂) :
+      q (_root_.UniversalEnvelopingAlgebra.ι ℚ u) *
+        q (_root_.UniversalEnvelopingAlgebra.ι ℚ v) = 0 := by
+    rw [← map_mul, Ideal.Quotient.eq_zero_iff_mem]
+    simpa only [Submodule.pow_succ,
+      Submodule.pow_zero, Ideal.one_eq_top, Ideal.top_mul] using Ideal.mul_mem_mul (hmem u) (hmem v)
+  have hsquare (z : F₂) : (q (_root_.UniversalEnvelopingAlgebra.ι ℚ z)) ^ 2 = 0 := by
+    simpa only [pow_two] using hmul z z
+  have hcomm : Commute (q (_root_.UniversalEnvelopingAlgebra.ι ℚ X))
+      (q (_root_.UniversalEnvelopingAlgebra.ι ℚ Y)) :=
+    (hmul X Y).trans (hmul Y X).symm
+  exact IsNilpotent.exp_add_of_commute hcomm ⟨2, hsquare X⟩ ⟨2, hsquare Y⟩
+
 end Mei.FreeLieAlgebra
