@@ -58,7 +58,7 @@ def imagePrefunctor : WallComplement W ⥤q WallComplement W' where
         e.toAffineMap.linear_apply_vsub y.val x.val
       simpa only [← hv, LinearEquiv.symm_apply_apply] using hd
     regular t ht := by
-      rw [← e.apply_lineMap, Mei.Convex.mem_singularSupport_image_iff e f W W' hW]
+      rw [← e.apply_lineMap, e.mem_singularSupport_image_iff f W W' hW]
       exact a.down.regular t ht }⟩
 
 /-- Transport sends a vertex to its affine image. -/

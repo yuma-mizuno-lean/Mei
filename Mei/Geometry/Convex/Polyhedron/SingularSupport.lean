@@ -51,7 +51,7 @@ theorem singularSupport_comp_subset {κ : Type*} (W : ι → Set V) (f : κ → 
   · exact mem_singularSupport.mpr (Or.inr ⟨f j, f k, hne, hj, hk⟩)
 
 /-- Affine equivalences and bijective reindexing preserve the actual singular support. -/
-theorem mem_singularSupport_image_iff {V' κ : Type*}
+theorem _root_.AffineEquiv.mem_singularSupport_image_iff {V' κ : Type*}
     [NormedAddCommGroup V'] [NormedSpace ℝ V'] [FiniteDimensional ℝ V]
     (e : V ≃ᵃ[ℝ] V') (f : ι ≃ κ) (W : ι → Set V) (W' : κ → Set V')
     (hW : ∀ j, W' (f j) = e '' W j) (x : V) :
