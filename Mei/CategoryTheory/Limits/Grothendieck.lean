@@ -131,8 +131,8 @@ noncomputable abbrev coneOfCone (c : Cone F) : Cone (fiberwiseLimit F) where
         apply (cancel_mono (limit.pre (Grothendieck.ι C e ⋙ F) (C.map f).toFunctor)).mp
         apply limit.hom_ext
         intro x
-        erw [Category.assoc (obj := V), limit.pre_π, Category.assoc (obj := V),
-          limit.pre_π, Category.assoc (obj := V), map_π, limit.lift_π_assoc, limit.lift_π]
+        simp only [Category.assoc (obj := V), limit.pre_π, map_π,
+          limit.lift_π_assoc, limit.lift_π]
         exact (c.w ((Grothendieck.ιNatTrans f).app x)).symm }
 
 @[simp]
