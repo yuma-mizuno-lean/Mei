@@ -10,7 +10,7 @@ public import Mei.Geometry.ScatteringDiagram.WallSpace.Hom
 /-!
 # Coordinate changes of directed wall spaces
 
-An algebraic coordinate change identifies the degree and tangent groups, the
+An algebraic coordinate change identifies the degree groups and tangent monoids, the
 positive monoids, the homogeneous Lie pieces and the wall submodules. Normals
 transform by the inverse tangent map. The positive degree functions need not
 agree: the finite-maximum cutoff modulus gives the maps at finite order.
@@ -33,7 +33,7 @@ universe u
 
 variable {Γ Γ' Γ'' Λ Λ' Λ'' R : Type*} {L L' L'' : Type u}
   [AddCommGroup Γ] [AddCommGroup Γ'] [AddCommGroup Γ'']
-  [AddCommGroup Λ] [AddCommGroup Λ'] [AddCommGroup Λ'']
+  [AddCommMonoid Λ] [AddCommMonoid Λ'] [AddCommMonoid Λ'']
   [CommRing R]
   [LieRing L] [LieAlgebra R L] [LieRing L'] [LieAlgebra R L']
   [LieRing L''] [LieAlgebra R L'']
@@ -363,13 +363,9 @@ theorem map_wallGroup (E : CoordinateChange (d := d) (e := e) H H')
     (H.wallGroup w m).map E.completedEquiv =
       H'.wallGroup (E.rayEquiv w) (m.comp E.tangentEquiv.symm) := by
   ext g
-  rw [Subgroup.mem_map]
-  constructor
-  · rintro ⟨g, hg, rfl⟩
-    exact (E.completedMap_mem_wallGroup_iff w m g).mpr hg
-  · intro hg
-    obtain ⟨g, rfl⟩ := E.completedEquiv.surjective g
-    exact ⟨g, (E.completedMap_mem_wallGroup_iff w m g).mp hg, rfl⟩
+  rw [← MulEquiv.toMonoidHom_eq_coe, Subgroup.mem_map_equiv]
+  simpa only [← completedEquiv_apply, MulEquiv.apply_symm_apply] using
+    (E.completedMap_mem_wallGroup_iff w m (E.completedEquiv.symm g)).symm
 
 /-- The induced isomorphism of completed wall groups, on their existing carriers. -/
 noncomputable def wallGroupEquiv (E : CoordinateChange (d := d) (e := e) H H')
