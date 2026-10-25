@@ -100,6 +100,13 @@ theorem exp_add_of_lie_eq_zero (x y : L) (h : ⁅x, y⁆ = 0) :
     exp (x + y) = exp x * exp y := by
   rw [← bch_eq_add_of_lie_eq_zero x y h, exp_bch]
 
+/-- Elements with zero Lie bracket exponentiate to commuting group elements. -/
+theorem commute_exp_of_lie_eq_zero (x y : L) (h : ⁅x, y⁆ = 0) :
+    Commute (exp x) (exp y) := by
+  have h' : ⁅y, x⁆ = 0 := by simpa only [h, neg_zero] using (lie_skew y x).symm
+  exact (exp_add_of_lie_eq_zero x y h).symm.trans
+    ((congrArg exp (add_comm x y)).trans (exp_add_of_lie_eq_zero y x h'))
+
 /-- Natural powers of an exponential multiply its Lie algebra coordinate. -/
 theorem exp_nsmul (x : L) (n : ℕ) : exp (n • x) = exp x ^ n := by
   induction n with
