@@ -44,6 +44,13 @@ variable {A : Type*} [Semiring A] (F : AlgFiltration A)
 attribute [instance] isTwoSided
 attribute [simp] ideal_zero
 
+/-- Powers multiply filtration orders. -/
+theorem pow_mem {a : ℕ} {x : A} (hx : x ∈ F.ideal a) (n : ℕ) :
+    x ^ n ∈ F.ideal (n * a) := by
+  induction n with
+  | zero => simp
+  | succ n ih => simpa only [pow_succ, Nat.succ_mul] using F.mul_mem ih hx
+
 /-- The decreasing family, viewed with increasing order-dual indices. -/
 def orderDual : ℕᵒᵈ → Ideal A := fun k => F.ideal k.ofDual
 

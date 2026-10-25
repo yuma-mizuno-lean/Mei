@@ -6,7 +6,8 @@ Authors: Codex
 module
 
 public import Mei.RingTheory.Ideal.TensorProduct
-public import Mathlib.RingTheory.FilteredAlgebra.Basic
+public import Mei.RingTheory.FilteredAlgebra.Basic
+public import Mathlib.RingTheory.Ideal.Quotient.Operations
 
 /-!
 # Total-degree filtrations on tensor product algebras
@@ -97,8 +98,8 @@ instance tensorFiltration_isTwoSided (I : ℕ → Ideal A) (J : ℕ → Ideal B)
     [∀ a, (I a).IsTwoSided] [∀ b, (J b).IsTwoSided] (k : ℕ) :
     (tensorFiltration R I J k).IsTwoSided where
   mul_mem_of_left z hx := by
-    have h : tensorFiltration R I J k ≤ (tensorFiltration R I J k).comap
-        (LinearMap.mulRight (A ⊗[R] B) z) := by
+    have h : tensorFiltration R I J k ≤ Submodule.comap
+        (LinearMap.mulRight (A ⊗[R] B) z) (tensorFiltration R I J k) := by
       refine (tensorFiltration_le_iff R I J k _).mpr ?_
       intro a b hab x hx y hy
       exact tensorProduct_le_tensorFiltration R I J hab
@@ -142,3 +143,50 @@ instance tensorFiltration_isRingFiltration (I : ℕ → Ideal A) (J : ℕ → Id
       i.ofDual j.ofDual (mul_mem_mul hx hy)
 
 end Ideal
+
+namespace Mei.AlgFiltration
+
+variable (R : Type*) {A B : Type*} [CommSemiring R] [Ring A] [Ring B]
+  [Algebra R A] [Algebra R B] (F : AlgFiltration A) (G : AlgFiltration B)
+
+local notation "T" => Ideal.tensorFiltration R F.ideal G.ideal
+
+/-- The left tensor inclusion descends to the quotient by total filtration order. -/
+noncomputable def quotientIncludeLeft (k : ℕ) :
+    A ⧸ F.ideal k →ₐ[R] (A ⊗[R] B) ⧸ T k :=
+  Ideal.quotientMapₐ (T k) Algebra.TensorProduct.includeLeft (by
+    intro x hx
+    have h1 : (1 : B) ∈ G.ideal 0 := by rw [G.ideal_zero]; trivial
+    exact Ideal.tmul_mem_tensorFiltration R (by omega) hx h1)
+
+/-- The right tensor inclusion descends to the quotient by total filtration order. -/
+noncomputable def quotientIncludeRight (k : ℕ) :
+    B ⧸ G.ideal k →ₐ[R] (A ⊗[R] B) ⧸ T k :=
+  Ideal.quotientMapₐ (T k) Algebra.TensorProduct.includeRight (by
+    intro x hx
+    have h1 : (1 : A) ∈ F.ideal 0 := by rw [F.ideal_zero]; trivial
+    exact Ideal.tmul_mem_tensorFiltration R (by omega) h1 hx)
+
+/-- The left quotient inclusion sends a representative to its tensor with one. -/
+@[simp] theorem quotientIncludeLeft_mk (k : ℕ) (x : A) :
+    quotientIncludeLeft R F G k (Ideal.Quotient.mk (F.ideal k) x) =
+      Ideal.Quotient.mk (T k) (x ⊗ₜ[R] 1) := by
+  rw [quotientIncludeLeft]
+  exact Ideal.quotient_map_mkₐ _ _ _
+
+/-- The right quotient inclusion sends a representative to one tensored with it. -/
+@[simp] theorem quotientIncludeRight_mk (k : ℕ) (x : B) :
+    quotientIncludeRight R F G k (Ideal.Quotient.mk (G.ideal k) x) =
+      Ideal.Quotient.mk (T k) (1 ⊗ₜ[R] x) := by
+  rw [quotientIncludeRight]
+  exact Ideal.quotient_map_mkₐ _ _ _
+
+/-- The images of the two quotient tensor inclusions commute. -/
+theorem commute_quotientIncludes (k : ℕ) (x : A ⧸ F.ideal k) (y : B ⧸ G.ideal k) :
+    Commute (quotientIncludeLeft R F G k x) (quotientIncludeRight R F G k y) := by
+  obtain ⟨x, rfl⟩ := Ideal.Quotient.mk_surjective x
+  obtain ⟨y, rfl⟩ := Ideal.Quotient.mk_surjective y
+  rw [quotientIncludeLeft_mk, quotientIncludeRight_mk]
+  exact ((Commute.one_right x).tmul (Commute.one_left y)).map (Ideal.Quotient.mk (T k))
+
+end Mei.AlgFiltration
