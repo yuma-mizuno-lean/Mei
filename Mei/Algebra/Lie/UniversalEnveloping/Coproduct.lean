@@ -11,12 +11,17 @@ public import Mei.RingTheory.FilteredAlgebra.TensorProduct
 /-!
 # The coproduct preserves total degree
 
-The coproduct of a graded enveloping algebra preserves its decreasing degree
-filtration when the target tensor product carries the total-degree filtration.
-This holds over every commutative ring without a basis or bounded-generation
-assumption. The proof expands homogeneous words using the primitive-generator
-formula `TauCeti.UniversalEnvelopingAlgebra.comul_ι` and the multiplicativity of
-`Ideal.tensorFiltration`.
+For a graded Lie algebra with nonnegative support relative to an integer-valued
+degree map, the enveloping coproduct preserves the decreasing degree filtration
+when the target carries the total-degree filtration `Ideal.tensorFiltration`.
+On Lie generators, the coproduct is given by the primitive-generator formula
+`TauCeti.UniversalEnvelopingAlgebra.comul_ι`.
+
+Preservation induces algebra maps from finite-degree enveloping quotients to
+tensor-product quotients by total degree, compatible with lowering the cutoff.
+These maps supply the finite-order coproducts for passage to degree completions.
+The results hold over every commutative ring without a basis or
+bounded-generation assumption.
 -/
 
 public section
@@ -75,17 +80,11 @@ theorem degreeFiltration_le_comap_comul (k : ℕ) :
     (F).ideal k ≤ (T k).comap (Δ).toRingHom := by
   rw [Mei.UniversalEnvelopingAlgebra.degreeFiltration_ideal,
     GradedAlgebra.degreeIdeal_le_iff]
-  intro n hn x hx
-  rw [homogeneousSubmodule_def] at hx
-  induction hx using Submodule.span_induction with
-  | mem x hx =>
-    obtain ⟨l, hl, rfl⟩ := hx
-    have hw := comul_word_mem_tensorFiltration ℒ d hneg l
-    exact Ideal.tensorFiltration_antitone R (F).ideal (F).ideal (by rw [hl]; omega) hw
-  | zero => simp
-  | add x y _ _ hx hy => exact add_mem hx hy
-  | smul r x _ hx =>
-    exact Submodule.smul_of_tower_mem _ r hx
+  intro n hn
+  apply (homogeneousSubmodule_le_iff ℒ n (((T k).comap (Δ).toRingHom).restrictScalars R)).mpr
+  intro l hl
+  have hw := comul_word_mem_tensorFiltration ℒ d hneg l
+  exact Ideal.tensorFiltration_antitone R (F).ideal (F).ideal (by rw [hl]; omega) hw
 
 /-- The coproduct induced on a finite degree quotient, with its tensor target
 quotiented by total degree. -/
