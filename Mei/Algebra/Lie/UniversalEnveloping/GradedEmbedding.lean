@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Algebra.DirectSum.DegreeMap
+public import Mei.Algebra.DirectSum.Degree.Map
 public import Mei.Algebra.Lie.UniversalEnveloping.DegreeFiltration
 
 /-!

@@ -7,7 +7,7 @@ module
 
 public import Mei.Algebra.Lie.Free.Grading
 public import TauCeti.Algebra.Lie.LowerCentralSeries
-public import Mei.Algebra.DirectSum.Degree
+public import Mei.Algebra.DirectSum.Degree.Basic
 
 /-!
 # Word length and the lower central series of a free Lie algebra

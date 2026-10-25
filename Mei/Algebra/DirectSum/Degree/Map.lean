@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Algebra.DirectSum.Degree
+public import Mei.Algebra.DirectSum.Degree.Basic
 public import TauCeti.Algebra.DirectSum.Internal
 
 /-!

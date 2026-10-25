@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Algebra.PositiveDegrees.Map
-public import Mei.Algebra.DirectSum.Degree
+public import Mei.Algebra.DirectSum.Degree.Basic
 
 /-!
 # Positive gradings and degree submodules
