@@ -6,320 +6,144 @@ Authors: Codex
 module
 
 public import Mei.CategoryTheory.Grothendieck.Basic
+public import Mei.CategoryTheory.FiberedCategory.Fiber
 public import Mathlib.CategoryTheory.Groupoid
-public import Mathlib.Algebra.Category.Grp.Limits
+public import Mathlib.CategoryTheory.Limits.HasLimits
+public import Mathlib.CategoryTheory.Endomorphism
 
 /-!
-# Sections of groupoid-valued diagrams
+# Sections and their coefficient limits
 
-A section chooses an object in every fiber and compatible transport arrows. Morphisms
-are fiberwise arrows commuting with transport. When the fibers are groupoids, so is
-the category of sections.
-Their automorphisms are precisely the compatible families of fiber automorphisms,
-with transition given by transport followed by conjugation.
+A section of a Grothendieck construction chooses an object over each base object
+and compatible transport arrows. Its morphisms are natural transformations over
+the identity of the base. If the fibers are groupoids, these section morphisms
+are invertible, even when the base is not a groupoid.
 
-The total functor of a section lies strictly over the identity on the base. A represented
-label diagram on the Grothendieck construction therefore gives a coefficient diagram
-along each section. A morphism of sections induces an isomorphism of their limits,
-computed on every projection by its represented fiber arrow.
+A represented action on the total category restricts to a coefficient diagram
+along each section. Taking its limit makes completed labels act by isomorphisms
+on completed coefficient objects. Apply `Functor.mapIso` to a label isomorphism
+or `Functor.mapAut` to the automorphism group of a section. Mathlib's `limMap_π`
+computes the action at every base object; functoriality supplies identity and composition.
 
-The constructions use Mathlib's `Grothendieck.ι`, `Aut.autMulEquivOfIso`,
-`Functor.mapAut`, `GrpCat.sectionsSubgroup` and `HasLimit.isoOfNatIso`.
+Construct sections with `Functor.Fiber.mk` from a functor whose composite with the
+projection is the identity. `Section.homMk` constructs a completed label from a
+natural transformation satisfying the corresponding base identity.
+
+The section category uses Mathlib's `Functor.Fiber` of the postcomposition
+functor, rather than a separate encoding of transport coherence. Coefficient
+maps and their limits use `whiskeringRight`, `limMap` and `Functor.mapAut`.
 -/
 
 public section
 
-open CategoryTheory CategoryTheory.Limits
+open CategoryTheory CategoryTheory.Limits CategoryTheory.Functor CategoryTheory.Grothendieck
 
 universe v u w z v' u'
 
-namespace Mei
+namespace Mei.CategoryTheory.Grothendieck
 
-/-- An object in each fiber of a category-valued diagram, with functorial transport. -/
+variable {D : Type u} [Category.{v} D] (C : D ⥤ Cat.{w, z})
+
+/-- Sections of the projection to the base, with natural transformations over its identity. -/
+abbrev Section : Type _ :=
+  Functor.Fiber ((whiskeringRight D (Grothendieck C) D).obj (forget C)) (𝟭 D)
+
+namespace Section
+
+variable {C}
+
+/-- The underlying functor of a section. -/
+abbrev toFunctor (s : Section C) : D ⥤ Grothendieck C :=
+  Functor.Fiber.fiberInclusion.obj s
+
+/-- A section is a right inverse to the projection. -/
+@[simp]
+theorem toFunctor_comp_forget (s : Section C) : s.toFunctor ⋙ forget C = 𝟭 D :=
+  s.property
+
+/-- The underlying natural transformation of a morphism of sections. -/
+abbrev hom {s t : Section C} (α : s ⟶ t) : s.toFunctor ⟶ t.toFunctor :=
+  Functor.Fiber.fiberInclusion.map α
+
+/-- A morphism of sections lies over the identity transformation of the base. -/
+theorem hom_over {s t : Section C} (α : s ⟶ t) :
+    whiskerRight (hom α) (forget C) =
+      eqToHom s.toFunctor_comp_forget ≫ eqToHom t.toFunctor_comp_forget.symm := by
+  have := α.property
+  simpa using IsHomLift.fac'
+    ((whiskeringRight D (Grothendieck C) D).obj (forget C)) (𝟙 (𝟭 D)) (hom α)
+
+/-- Every component of a section morphism projects to an isomorphism of the base. -/
+instance hom_app_base_isIso {s t : Section C} (α : s ⟶ t) (d : D) :
+    IsIso ((hom α).app d).base := by
+  have h := hom_over α
+  have : IsIso (whiskerRight (hom α) (forget C)) := by
+    rw [h]
+    infer_instance
+  -- The projection formula also identifies the dependent endpoints of the component.
+  convert (inferInstance : IsIso ((whiskerRight (hom α) (forget C)).app d)) using 1 <;>
+    simp only [Functor.comp_obj, forget_obj, whiskerRight_app, forget_map]
+  rfl
+
+/-- Morphisms of sections are determined by their components. -/
 @[ext]
-structure GrothendieckSection {D : Type u} [Category.{v} D] (L : D ⥤ Cat.{w, z}) where
-  /-- The chosen object in each fiber. -/
-  obj (d : D) : L.obj d
-  /-- Transport of the chosen object along a base arrow. -/
-  map {d e : D} (f : d ⟶ e) : (L.map f).toFunctor.obj (obj d) ⟶ obj e
-  /-- Transport along an identity is the canonical identification. -/
-  map_id (d : D) : map (𝟙 d) = eqToHom (by simp)
-  /-- Transport respects composition. -/
-  map_comp {d e b : D} (f : d ⟶ e) (g : e ⟶ b) :
-    map (f ≫ g) = eqToHom (by simp) ≫ (L.map g).toFunctor.map (map f) ≫ map g
+theorem hom_ext {s t : Section C} {α β : s ⟶ t}
+    (h : ∀ d, (hom α).app d = (hom β).app d) : α = β := by
+  apply Functor.Fiber.hom_ext
+  exact NatTrans.ext (funext h)
 
-namespace GrothendieckSection
-
-variable {D : Type u} [Category.{v} D] {L : D ⥤ Cat.{w, z}}
-
-attribute [simp] map_id map_comp
-
-/-- A vertical morphism between sections, commuting with the transport arrows. -/
-@[ext]
-structure Hom (s t : GrothendieckSection L) where
-  /-- The arrow in each fiber. -/
-  app (d : D) : s.obj d ⟶ t.obj d
-  /-- Fiber arrows commute with transport. -/
-  naturality {d e : D} (f : d ⟶ e) :
-    (L.map f).toFunctor.map (app d) ≫ t.map f = s.map f ≫ app e
-
-attribute [reassoc] Hom.naturality
-
-/-- Sections and vertical morphisms form a category. -/
-instance : Category (GrothendieckSection L) where
-  Hom := Hom
-  id s := ⟨fun d => 𝟙 (s.obj d), by simp⟩
-  comp α β := ⟨fun d => α.app d ≫ β.app d, by
-    intro d e f
-    simp only [Functor.map_comp, Category.assoc]
-    rw [β.naturality, α.naturality_assoc]⟩
+/-- A natural transformation satisfying the base identity gives a morphism of sections. -/
+def homMk {s t : Section C} (α : s.toFunctor ⟶ t.toFunctor)
+    (hα : whiskerRight α (forget C) =
+      eqToHom s.toFunctor_comp_forget ≫ eqToHom t.toFunctor_comp_forget.symm) : s ⟶ t :=
+  ⟨α, IsHomLift.of_fac'
+    ((whiskeringRight D (Grothendieck C) D).obj (forget C)) (𝟙 (𝟭 D)) α
+    s.toFunctor_comp_forget t.toFunctor_comp_forget (by simpa using hα)⟩
 
 @[simp]
-theorem id_app (s : GrothendieckSection L) (d : D) : (𝟙 s : s ⟶ s).app d = 𝟙 _ := (rfl)
+theorem hom_homMk {s t : Section C} (α : s.toFunctor ⟶ t.toFunctor) (hα) :
+    hom (homMk α hα) = α := (rfl)
+
+/-- Sections of a groupoid-valued diagram form a groupoid. -/
+instance [∀ d, IsGroupoid (C.obj d)] : IsGroupoid (Section C) where
+  all_isIso {s t} α := by
+    have (d : D) : IsIso ((hom α).app d) := Grothendieck.isIso_of_base_fiber _
+    have : IsIso (hom α) := NatIso.isIso_of_isIso_app _
+    exact isIso_of_reflects_iso α Functor.Fiber.fiberInclusion
+
+variable {V : Type u'} [Category.{v'} V] (A : Grothendieck C ⥤ V)
+
+/-- The coefficient diagrams obtained by restricting a represented action to sections. -/
+abbrev coefficientDiagram : Section C ⥤ (D ⥤ V) :=
+  Functor.Fiber.fiberInclusion ⋙ (whiskeringRight D (Grothendieck C) V).obj A
 
 @[simp]
-theorem comp_app {s t r : GrothendieckSection L} (α : s ⟶ t) (β : t ⟶ r) (d : D) :
-    (α ≫ β).app d = α.app d ≫ β.app d := (rfl)
-
-/-- Evaluation at a base object is a functor to that fiber. -/
-abbrev evaluation (d : D) : GrothendieckSection L ⥤ L.obj d where
-  obj s := s.obj d
-  map α := α.app d
-
-/-- The total functor associated to a section. -/
-abbrev toFunctor (s : GrothendieckSection L) : D ⥤ Grothendieck L where
-  obj d := ⟨d, s.obj d⟩
-  map f := ⟨f, s.map f⟩
-  map_id d := by
-    refine Grothendieck.ext _ _ ?_ ?_
-    · rfl
-    · simp only [Grothendieck.id_fiber, map_id]
-      -- The fiber lives in the category stored in `L.obj d`.
-      erw [eqToHom_trans (C := L.obj d)]
-  map_comp f g := by
-    refine Grothendieck.ext _ _ ?_ ?_
-    · rfl
-    · simp only [Grothendieck.comp_fiber, map_comp]
-      erw [eqToHom_trans_assoc (C := L.obj _)]
-
-/-- The total functor of a section lies over the identity. -/
-@[simp]
-theorem toFunctor_comp_forget (s : GrothendieckSection L) :
-    s.toFunctor ⋙ Grothendieck.forget _ = 𝟭 D := (rfl)
-
-/-- A morphism of sections as a natural transformation of total functors. -/
-def toNatTrans {s t : GrothendieckSection L} (α : s ⟶ t) : s.toFunctor ⟶ t.toFunctor where
-  app d := (Grothendieck.ι _ d).map (α.app d)
-  naturality d e f := by
-    rw [← Grothendieck.ιNatTrans_app_comp_ι_map (s.toFunctor.map f),
-      ← Grothendieck.ιNatTrans_app_comp_ι_map (t.toFunctor.map f)]
-    dsimp only [toFunctor]
-    -- The total functors and fiber inclusions present the same objects through different wrappers.
-    erw [Category.assoc, ← Functor.map_comp, ← α.naturality, Functor.map_comp,
-      ← Category.assoc, ← (Grothendieck.ιNatTrans f).naturality (α.app d)]
-    exact Category.assoc _ _ _
+theorem coefficientDiagram_obj (s : Section C) :
+    (coefficientDiagram A).obj s = s.toFunctor ⋙ A := (rfl)
 
 @[simp]
-theorem toNatTrans_app {s t : GrothendieckSection L} (α : s ⟶ t) (d : D) :
-    (toNatTrans α).app d = (Grothendieck.ι _ d).map (α.app d) := (rfl)
+theorem coefficientDiagram_map {s t : Section C} (α : s ⟶ t) :
+    (coefficientDiagram A).map α = whiskerRight (hom α) A := (rfl)
 
-/-- The category of sections maps to the functor category of the total category. -/
-def totalFunctor : GrothendieckSection L ⥤ (D ⥤ Grothendieck L) where
-  obj := toFunctor
-  map := toNatTrans
+variable [∀ s : Section C, HasLimit (s.toFunctor ⋙ A)]
+
+/-- The completed coefficient objects and their maps under completed labels. Only limits
+along the specified sections are required. -/
+noncomputable abbrev coefficientLimit : Section C ⥤ V where
+  obj s := limit (s.toFunctor ⋙ A)
+  map α := limMap ((coefficientDiagram A).map α)
   map_id s := by
-    apply NatTrans.ext
-    funext d
-    exact (Grothendieck.ι _ d).map_id _
+    apply limit.hom_ext
+    intro d
+    simp
   map_comp α β := by
-    apply NatTrans.ext
-    funext d
-    exact (Grothendieck.ι _ d).map_comp _ _
-
-/-- The object map is the section's total functor. -/
-@[simp]
-theorem totalFunctor_obj (s : GrothendieckSection L) :
-    totalFunctor.obj s = s.toFunctor := (rfl)
-
-/-- The morphism map is the total natural transformation, after identifying its endpoints. -/
-@[simp]
-theorem totalFunctor_map {s t : GrothendieckSection L} (α : s ⟶ t) :
-    totalFunctor.map α =
-      eqToHom (totalFunctor_obj s) ≫ toNatTrans α ≫ eqToHom (totalFunctor_obj t).symm := by
-  simp only [totalFunctor]
-  erw [eqToHom_refl (C := D ⥤ Grothendieck L),
-    eqToHom_refl (C := D ⥤ Grothendieck L), Category.id_comp, Category.comp_id]
-
-variable [∀ d, IsGroupoid (L.obj d)]
-
-/-- A vertical morphism is inverted in every fiber. -/
-noncomputable instance : Groupoid (GrothendieckSection L) where
-  inv α := ⟨fun d => inv (α.app d), by
-    intro d e f
-    apply (cancel_mono (α.app e)).mp
-    simp only [Category.assoc, IsIso.inv_hom_id, Category.comp_id]
-    rw [← α.naturality, ← Category.assoc, ← Functor.map_comp]
-    simp⟩
-  inv_comp α := by apply Hom.ext; funext d; simp
-  comp_inv α := by apply Hom.ext; funext d; simp
+    apply limit.hom_ext
+    intro d
+    simp [Category.assoc]
 
 @[simp]
-theorem inv_app {s t : GrothendieckSection L} (α : s ⟶ t) (d : D) :
-    (inv α).app d = inv (α.app d) := by
-  rw [← Groupoid.inv_eq_inv α]
-  rfl
+theorem coefficientLimit_obj (s : Section C) :
+    (coefficientLimit A).obj s = limit (s.toFunctor ⋙ A) := (rfl)
 
-/-- Fiber automorphisms transported along a section by conjugation. This is reducible
-on objects, retaining the actual automorphism groups as carriers. -/
-noncomputable abbrev automorphismDiagram (s : GrothendieckSection L) : D ⥤ GrpCat.{w} where
-  obj d := GrpCat.of (Aut (s.obj d))
-  map f := GrpCat.ofHom
-    ((Aut.autMulEquivOfIso (asIso (s.map f))).toMonoidHom.comp ((L.map f).toFunctor.mapAut _))
-  map_id d := by
-    apply GrpCat.hom_ext
-    apply MonoidHom.ext
-    intro a
-    apply Aut.ext
-    apply Iso.ext
-    have h := Functor.congr_hom congr($(L.map_id d).toFunctor) a.asIso.hom
-    simpa [Aut.autMulEquivOfIso, Functor.mapAut] using
-      congrArg (fun k => inv (s.map (𝟙 d)) ≫ k ≫ s.map (𝟙 d)) h
-  map_comp f g := by
-    apply GrpCat.hom_ext
-    apply MonoidHom.ext
-    intro a
-    apply Aut.ext
-    apply Iso.ext
-    have h := Functor.congr_hom congr($(L.map_comp f g).toFunctor) a.asIso.hom
-    simpa [Aut.autMulEquivOfIso, Functor.mapAut] using
-      congrArg (fun k => inv (s.map (f ≫ g)) ≫ k ≫ s.map (f ≫ g)) h
-
-/-- Transport acts on the underlying arrow by fiber transport followed by conjugation. -/
-@[simp↓]
-theorem automorphismDiagram_map_apply_hom (s : GrothendieckSection L)
-    {d e : D} (f : d ⟶ e) (a : Aut (s.obj d)) :
-    ((s.automorphismDiagram.map f) a).asIso.hom =
-      inv (s.map f) ≫ (L.map f).toFunctor.map a.asIso.hom ≫ s.map f := (rfl)
-
-/-- Automorphisms of a section are compatible families of fiber automorphisms. -/
-noncomputable def autEquivSections (s : GrothendieckSection L) :
-    Aut s ≃* GrpCat.sectionsSubgroup s.automorphismDiagram where
-  toFun a := ⟨fun d => (evaluation d).mapAut s a, by
-    intro d e f
-    apply Aut.ext
-    apply Iso.ext
-    dsimp [Functor.mapAut, automorphismDiagram, Aut.autMulEquivOfIso]
-    rw [a.asIso.hom.naturality, IsIso.inv_hom_id_assoc]⟩
-  invFun a := Aut.of
-    { hom := ⟨fun d => (a.val d).asIso.hom, by
-        intro d e f
-        have h := congrArg (fun a => s.map f ≫ a.asIso.hom) (a.property f)
-        simpa using h⟩
-      inv := ⟨fun d => (a.val d).asIso.inv, by
-        intro d e f
-        have h := congrArg (fun a => s.map f ≫ a.asIso.hom) ((a⁻¹).property f)
-        simpa using h⟩
-      hom_inv_id := by apply Hom.ext; funext d; simp
-      inv_hom_id := by apply Hom.ext; funext d; simp }
-  left_inv a := by
-    apply Aut.ext
-    apply Iso.ext
-    apply Hom.ext
-    rfl
-  right_inv a := by apply Subtype.ext; funext d; rfl
-  map_mul' a b := by apply Subtype.ext; funext d; exact ((evaluation d).mapAut s).map_mul a b
-
-@[simp]
-theorem autEquivSections_apply (s : GrothendieckSection L) (a : Aut s) (d : D) :
-    (s.autEquivSections a).val d = (evaluation d).mapAut s a := (rfl)
-
-/-- Reconstruction from compatible automorphisms retains their fiberwise arrows. -/
-@[simp]
-theorem autEquivSections_symm_apply_hom (s : GrothendieckSection L)
-    (a : GrpCat.sectionsSubgroup s.automorphismDiagram) (d : D) :
-    (s.autEquivSections.symm a).asIso.hom.app d = (a.val d).asIso.hom := (rfl)
-
-section Coefficients
-
-variable {V : Type u'} [Category.{v'} V] (A : Grothendieck L ⥤ V)
-  {s t r : GrothendieckSection L}
-
-/-- A completed label acts between the coefficient limits along its source and target sections. -/
-noncomputable def completedLabelIso (α : s ⟶ t)
-    [HasLimit (s.toFunctor ⋙ A)] [HasLimit (t.toFunctor ⋙ A)] :
-    limit (s.toFunctor ⋙ A) ≅ limit (t.toFunctor ⋙ A) :=
-  HasLimit.isoOfNatIso (Functor.isoWhiskerRight (totalFunctor.mapIso (asIso α)) A)
-
-/-- Each projection computes the completed action using the represented fiber label. -/
-@[reassoc (attr := simp)]
-theorem completedLabelIso_hom_π (α : s ⟶ t)
-    [HasLimit (s.toFunctor ⋙ A)] [HasLimit (t.toFunctor ⋙ A)] (d : D) :
-    (completedLabelIso A α).hom ≫ limit.π (t.toFunctor ⋙ A) d =
-      limit.π (s.toFunctor ⋙ A) d ≫ A.map ((Grothendieck.ι L d).map (α.app d)) := by
-  simp [completedLabelIso, totalFunctor]
-  rfl
-
-/-- The inverse completed action is computed using the inverse fiber label. -/
-@[reassoc (attr := simp)]
-theorem completedLabelIso_inv_π (α : s ⟶ t)
-    [HasLimit (s.toFunctor ⋙ A)] [HasLimit (t.toFunctor ⋙ A)] (d : D) :
-    (completedLabelIso A α).inv ≫ limit.π (s.toFunctor ⋙ A) d =
-      limit.π (t.toFunctor ⋙ A) d ≫ A.map ((Grothendieck.ι L d).map (inv (α.app d))) := by
-  simp [completedLabelIso, totalFunctor]
-  rfl
-
-/-- The identity label acts as the identity on the completed coefficient object. -/
-@[simp]
-theorem completedLabelIso_id (s : GrothendieckSection L) [HasLimit (s.toFunctor ⋙ A)] :
-    completedLabelIso A (𝟙 s) = Iso.refl _ := by
-  apply Iso.ext
-  apply limit.hom_ext
-  intro d
-  rw [completedLabelIso_hom_π]
-  erw [(Grothendieck.ι L d).map_id, A.map_id, Category.comp_id (obj := V)]
-  simp
-
-/-- Completed labels act functorially. -/
-@[simp]
-theorem completedLabelIso_comp (α : s ⟶ t) (β : t ⟶ r)
-    [HasLimit (s.toFunctor ⋙ A)] [HasLimit (t.toFunctor ⋙ A)]
-    [HasLimit (r.toFunctor ⋙ A)] :
-    completedLabelIso A (α ≫ β) = completedLabelIso A α ≪≫ completedLabelIso A β := by
-  apply Iso.ext
-  apply limit.hom_ext
-  intro d
-  simp only [Iso.trans_hom, Category.assoc, completedLabelIso_hom_π,
-    comp_app, Functor.map_comp]
-  -- The fiber inclusion and total functor present the same objects through different wrappers.
-  erw [A.map_comp, completedLabelIso_hom_π_assoc]
-  exact (Category.assoc _ _ _).symm
-
-/-- Inverting a label inverts its completed action. -/
-@[simp]
-theorem completedLabelIso_inv (α : s ⟶ t)
-    [HasLimit (s.toFunctor ⋙ A)] [HasLimit (t.toFunctor ⋙ A)] :
-    completedLabelIso A (inv α) = (completedLabelIso A α).symm := by
-  apply Iso.ext
-  apply limit.hom_ext
-  intro d
-  rw [completedLabelIso_hom_π, Iso.symm_hom, completedLabelIso_inv_π, inv_app]
-
-/-- The group of completed labels at a section acts on its completed coefficient object. -/
-noncomputable def completedAut (s : GrothendieckSection L) [HasLimit (s.toFunctor ⋙ A)] :
-    Aut s →* Aut (limit (s.toFunctor ⋙ A)) where
-  toFun a := Aut.of (completedLabelIso A a.asIso.hom)
-  map_one' := by apply Aut.ext; simp
-  map_mul' a b := by apply Aut.ext; simp
-
-/-- The action of a completed automorphism has its prescribed fiberwise projections. -/
-@[reassoc (attr := simp)]
-theorem completedAut_hom_π (s : GrothendieckSection L) [HasLimit (s.toFunctor ⋙ A)]
-    (a : Aut s) (d : D) :
-    (completedAut A s a).asIso.hom ≫ limit.π (s.toFunctor ⋙ A) d =
-      limit.π (s.toFunctor ⋙ A) d ≫ A.map ((Grothendieck.ι L d).map (a.asIso.hom.app d)) :=
-  completedLabelIso_hom_π A a.asIso.hom d
-
-end Coefficients
-
-end GrothendieckSection
-end Mei
+end Section
+end Mei.CategoryTheory.Grothendieck

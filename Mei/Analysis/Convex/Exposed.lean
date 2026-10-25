@@ -7,15 +7,19 @@ module
 
 public import Mathlib.Analysis.Convex.Exposed
 public import Mathlib.Topology.Algebra.Affine
+public import Mei.Analysis.Convex.Intrinsic
 
 /-!
-# Intersections and affine transport of exposed subsets
+# Exposed subsets, relative interiors and affine transport
 
 Intersections of exposed subsets are exposed in the intersection of their
 ambient sets. An affine equivalence with continuous inverse carries exposed subsets to
 exposed subsets. Composing an exposing linear functional with the inverse
 linear part preserves all comparisons: the inverse translation contributes
 the same additive constant at every point.
+
+An exposed subset meeting the relative interior is the whole ambient set.
+See also `AffineMap.eq_zero_on_of_mem_intrinsicInterior`.
 -/
 
 public section
@@ -105,5 +109,27 @@ theorem image_affineEquiv_iff {e : V ≃ᵃ[R] W}
     rwa [hP, hFset] at hback
   · intro hF
     exact hF.image_affineEquiv e hes
+
+end IsExposed
+
+namespace IsExposed
+
+variable {V : Type*} [AddCommGroup V] [Module ℝ V] [TopologicalSpace V]
+  [IsTopologicalAddGroup V] [ContinuousSMul ℝ V] {P F : Set V}
+
+/-- An exposed subset meeting the relative interior of its ambient set is the whole set.
+Neither convexity nor finite dimensionality is required. -/
+theorem eq_of_mem_intrinsicInterior (hF : IsExposed ℝ P F) {x : V}
+    (hxF : x ∈ F) (hx : x ∈ intrinsicInterior ℝ P) : F = P := by
+  obtain ⟨l, hl⟩ := hF ⟨x, hxF⟩
+  have hxmax := hl ▸ hxF
+  let g : V →ᵃ[ℝ] ℝ := l.toLinearMap.toAffineMap - AffineMap.const ℝ V (l x)
+  have hg : ∀ p ∈ P, g p = 0 :=
+    g.eq_zero_on_of_mem_intrinsicInterior
+      (fun p hp => sub_nonpos.mpr (hxmax.2 p hp)) hx (sub_self _)
+  apply Set.Subset.antisymm hF.subset
+  intro p hp
+  rw [hl]
+  exact ⟨hp, fun q hq => (hxmax.2 q hq).trans (le_of_eq (sub_eq_zero.mp (hg p hp)).symm)⟩
 
 end IsExposed
