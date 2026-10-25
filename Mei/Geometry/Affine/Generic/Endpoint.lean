@@ -22,34 +22,6 @@ open Set
 
 namespace AffineSubspace
 
-section Algebra
-
-variable {K V : Type*} [DivisionRing K] [AddCommGroup V] [Module K V]
-
-/-- An affine subspace whose direction has codimension one is proper. -/
-theorem ne_top_of_finrank_direction_add_one_eq (A : AffineSubspace K V)
-    (hdim : Module.finrank K A.direction + 1 = Module.finrank K V) : A ≠ ⊤ := by
-  intro heq
-  rw [heq, direction_top, finrank_top] at hdim
-  omega
-
-/-- Outside the span of an affine obstacle and an endpoint, every nonzero
-parameter on the line from that endpoint avoids the obstacle. The endpoint
-itself need not avoid the obstacle. -/
-theorem lineMap_not_mem_of_not_mem_affineSpan_insert_of_ne_zero (S : AffineSubspace K V)
-    {x z : V} (hz : z ∉ affineSpan K (insert x (S : Set V)))
-    {t : K} (ht : t ≠ 0) : AffineMap.lineMap x z t ∉ S := by
-  intro htS
-  apply hz
-  have hxspan : x ∈ affineSpan K (insert x (S : Set V)) :=
-    subset_affineSpan K _ (mem_insert x _)
-  have htspan : AffineMap.lineMap x z t ∈ affineSpan K (insert x (S : Set V)) :=
-    subset_affineSpan K _ (mem_insert_of_mem x htS)
-  simpa only [AffineMap.lineMap_lineMap_right, inv_mul_cancel₀ ht,
-    AffineMap.lineMap_apply_one] using AffineMap.lineMap_mem t⁻¹ hxspan htspan
-
-end Algebra
-
 section Normed
 
 variable {V ι κ : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]

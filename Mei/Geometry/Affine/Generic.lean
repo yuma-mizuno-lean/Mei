@@ -123,14 +123,13 @@ theorem affineSpan_insert_ne_top_of_finrank (S : AffineSubspace k P)
   rw [← direction_affineSpan, htop, direction_top, finrank_top] at hle
   exact (not_le_of_gt hS) hle
 
-/-- A vertex outside the affine span of an obstacle and an allowed endpoint
-determines a full line avoiding the obstacle. -/
-theorem lineMap_not_mem_of_not_mem_affineSpan_insert (S : AffineSubspace k P)
-    {x z : P} (hx : x ∉ S) (hz : z ∉ affineSpan k (insert x (S : Set P)))
-    (t : k) : AffineMap.lineMap x z t ∉ S := by
+/-- Outside the span of an affine obstacle and an endpoint, every nonzero
+parameter on the line from that endpoint avoids the obstacle. The endpoint
+itself need not avoid the obstacle. -/
+theorem lineMap_not_mem_of_not_mem_affineSpan_insert_of_ne_zero (S : AffineSubspace k P)
+    {x z : P} (hz : z ∉ affineSpan k (insert x (S : Set P)))
+    {t : k} (ht : t ≠ 0) : AffineMap.lineMap x z t ∉ S := by
   intro htS
-  by_cases ht : t = 0
-  · exact hx (by simpa [ht] using htS)
   apply hz
   have hxspan : x ∈ affineSpan k (insert x (S : Set P)) :=
     subset_affineSpan k _ (mem_insert x _)
@@ -138,6 +137,15 @@ theorem lineMap_not_mem_of_not_mem_affineSpan_insert (S : AffineSubspace k P)
     subset_affineSpan k _ (mem_insert_of_mem x htS)
   simpa only [AffineMap.lineMap_lineMap_right, inv_mul_cancel₀ ht,
     AffineMap.lineMap_apply_one] using AffineMap.lineMap_mem t⁻¹ hxspan htspan
+
+/-- A vertex outside the affine span of an obstacle and an allowed endpoint
+determines a full line avoiding the obstacle. -/
+theorem lineMap_not_mem_of_not_mem_affineSpan_insert (S : AffineSubspace k P)
+    {x z : P} (hx : x ∉ S) (hz : z ∉ affineSpan k (insert x (S : Set P)))
+    (t : k) : AffineMap.lineMap x z t ∉ S := by
+  by_cases ht : t = 0
+  · simpa [ht] using hx
+  · exact S.lineMap_not_mem_of_not_mem_affineSpan_insert_of_ne_zero hz ht
 
 end Algebra
 

@@ -42,6 +42,15 @@ theorem mem_singularSupport {W : ι → Set V} {x : V} :
   simp only [singularSupport, Set.mem_union, Set.mem_iUnion, Set.mem_ofPred_eq,
     Set.mem_inter_iff, exists_prop]
 
+/-- For closed wall carriers, singular support is contained in their union.
+Thus points off all walls are automatically outside the actual singular support. -/
+theorem singularSupport_subset_iUnion (W : ι → Set V) (hclosed : ∀ i, IsClosed (W i)) :
+    singularSupport W ⊆ ⋃ i, W i := by
+  intro x hx
+  rcases mem_singularSupport.mp hx with ⟨i, hxi⟩ | ⟨i, j, _, hxi, _⟩
+  · exact Set.mem_iUnion.mpr ⟨i, intrinsicFrontier_subset (hclosed i) hxi⟩
+  · exact Set.mem_iUnion.mpr ⟨i, hxi⟩
+
 /-- The singular support of finitely many codimension-one polyhedra has a
 finite affine cover of codimension at least two. The cover is obtained from
 their boundary covers and intersections of their supporting affine subspaces. -/

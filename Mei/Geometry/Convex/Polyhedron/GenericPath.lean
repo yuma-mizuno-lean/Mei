@@ -27,15 +27,6 @@ namespace Mei.Convex
 
 variable {V ι : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
 
-/-- For closed wall carriers, singular support is contained in their union.
-Thus points off all walls are automatically outside the actual singular support. -/
-theorem singularSupport_subset_iUnion (W : ι → Set V) (hclosed : ∀ i, IsClosed (W i)) :
-    singularSupport W ⊆ ⋃ i, W i := by
-  intro x hx
-  rcases mem_singularSupport.mp hx with ⟨i, hxi⟩ | ⟨i, j, _, hxi, _⟩
-  · exact Set.mem_iUnion.mpr ⟨i, intrinsicFrontier_subset (hclosed i) hxi⟩
-  · exact Set.mem_iUnion.mpr ⟨i, hxi⟩
-
 /-- Between endpoints outside all walls, an intermediate vertex can be chosen
 in any nonempty open set so that it avoids all walls, both segment directions
 are transverse to every wall, and both full affine lines avoid actual singular support.
@@ -88,11 +79,9 @@ theorem exists_mem_open_two_transverse_lineMaps [FiniteDimensional ℝ V] [Finit
   · intro i hzi
     exact hzA (.inl i) (subset_affineSpan ℝ (W i) hzi)
   · intro i
-    have hzx := hzA (.inr (.inl i))
-    have hzy := hzA (.inr (.inr i))
-    change z ∉ mk' x ((affineSpan ℝ (W i)).direction) at hzx
-    change z ∉ mk' y ((affineSpan ℝ (W i)).direction) at hzy
-    exact ⟨by simpa only [mem_mk', vsub_eq_sub] using hzx,
-      by simpa only [mem_mk', vsub_eq_sub] using hzy⟩
+    exact ⟨by simpa only [A, Sum.elim_inr, Sum.elim_inl, mem_mk', vsub_eq_sub]
+        using hzA (.inr (.inl i)),
+      by simpa only [A, Sum.elim_inr, mem_mk', vsub_eq_sub]
+        using hzA (.inr (.inr i))⟩
 
 end Mei.Convex

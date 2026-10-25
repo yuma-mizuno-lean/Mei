@@ -52,6 +52,21 @@ end AffineMap
 
 namespace AffineSubspace
 
+section
+
+open scoped Affine
+
+variable {K V P : Type*} [DivisionRing K] [AddCommGroup V] [Module K V] [AffineSpace V P]
+
+/-- An affine subspace whose direction has codimension one is proper. -/
+theorem ne_top_of_finrank_direction_add_one_eq (A : AffineSubspace K P)
+    (hdim : Module.finrank K A.direction + 1 = Module.finrank K V) : A ≠ ⊤ := by
+  intro heq
+  rw [heq, direction_top, finrank_top] at hdim
+  omega
+
+end
+
 variable {K V : Type*} [DivisionRing K] [AddCommGroup V] [Module K V]
   [FiniteDimensional K V]
 
