@@ -107,11 +107,17 @@ theorem exists_dist_lt_genericLocus {ι : Sort*} [Countable ι]
 
 end Topology
 
+section Algebra
+
+open scoped Affine
+
+variable {k V P : Type*} [DivisionRing k] [AddCommGroup V] [Module k V] [AffineSpace V P]
+
 /-- Adding one point to a subspace of codimension at least two still gives a
 proper affine subspace. -/
-theorem affineSpan_insert_ne_top_of_finrank (S : AffineSubspace ℝ V)
-    (hS : Module.finrank ℝ S.direction + 1 < Module.finrank ℝ V) (x : V) :
-    affineSpan ℝ (insert x (S : Set V)) ≠ ⊤ := by
+theorem affineSpan_insert_ne_top_of_finrank (S : AffineSubspace k P)
+    (hS : Module.finrank k S.direction + 1 < Module.finrank k V) (x : P) :
+    affineSpan k (insert x (S : Set P)) ≠ ⊤ := by
   intro htop
   have hle := finrank_vectorSpan_insert_le S x
   rw [← direction_affineSpan, htop, direction_top, finrank_top] at hle
@@ -119,19 +125,21 @@ theorem affineSpan_insert_ne_top_of_finrank (S : AffineSubspace ℝ V)
 
 /-- A vertex outside the affine span of an obstacle and an allowed endpoint
 determines a full line avoiding the obstacle. -/
-theorem lineMap_not_mem_of_not_mem_affineSpan_insert (S : AffineSubspace ℝ V)
-    {x z : V} (hx : x ∉ S) (hz : z ∉ affineSpan ℝ (insert x (S : Set V)))
-    (t : ℝ) : AffineMap.lineMap x z t ∉ S := by
+theorem lineMap_not_mem_of_not_mem_affineSpan_insert (S : AffineSubspace k P)
+    {x z : P} (hx : x ∉ S) (hz : z ∉ affineSpan k (insert x (S : Set P)))
+    (t : k) : AffineMap.lineMap x z t ∉ S := by
   intro htS
   by_cases ht : t = 0
   · exact hx (by simpa [ht] using htS)
   apply hz
-  have hxspan : x ∈ affineSpan ℝ (insert x (S : Set V)) :=
-    subset_affineSpan ℝ _ (mem_insert x _)
-  have htspan : AffineMap.lineMap x z t ∈ affineSpan ℝ (insert x (S : Set V)) :=
-    subset_affineSpan ℝ _ (mem_insert_of_mem x htS)
+  have hxspan : x ∈ affineSpan k (insert x (S : Set P)) :=
+    subset_affineSpan k _ (mem_insert x _)
+  have htspan : AffineMap.lineMap x z t ∈ affineSpan k (insert x (S : Set P)) :=
+    subset_affineSpan k _ (mem_insert_of_mem x htS)
   simpa only [AffineMap.lineMap_lineMap_right, inv_mul_cancel₀ ht,
     AffineMap.lineMap_apply_one] using AffineMap.lineMap_mem t⁻¹ hxspan htspan
+
+end Algebra
 
 section Topology
 
