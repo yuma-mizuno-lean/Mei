@@ -76,20 +76,13 @@ instance homogeneousSubmodule_gradedMonoid : SetLike.GradedMonoid (homogeneousSu
   one_mem := Submodule.subset_span ⟨[], by simp, rfl⟩
   mul_mem := by
     intro m n a b ha hb
-    induction ha using Submodule.span_induction with
-    | mem a ha =>
-      obtain ⟨l, hl, rfl⟩ := ha
-      induction hb using Submodule.span_induction with
-      | mem b hb =>
-        obtain ⟨t, ht, rfl⟩ := hb
-        have h := prod_mem_homogeneousSubmodule ℒ (l ++ t)
-        simpa [hl, ht] using h
-      | zero => simp
-      | add b c _ _ hb hc => simpa [mul_add] using add_mem hb hc
-      | smul r b _ hb => simpa [mul_smul_comm] using Submodule.smul_mem _ r hb
-    | zero => simp
-    | add a c _ _ ha hc => simpa [add_mul] using add_mem ha hc
-    | smul r a _ ha => simpa [smul_mul_assoc] using Submodule.smul_mem _ r ha
+    have hmul : homogeneousSubmodule ℒ m * homogeneousSubmodule ℒ n ≤
+        homogeneousSubmodule ℒ (m + n) := by
+      rw [homogeneousSubmodule_def, homogeneousSubmodule_def,
+        Submodule.span_mul_span, Submodule.span_le]
+      rintro _ ⟨_, ⟨l, hl, rfl⟩, _, ⟨t, ht, rfl⟩, rfl⟩
+      simpa [hl, ht] using prod_mem_homogeneousSubmodule ℒ (l ++ t)
+    exact hmul (Submodule.mul_mem_mul ha hb)
 
 variable [DecidableEq Γ] [GradedLieAlgebra ℒ]
 
