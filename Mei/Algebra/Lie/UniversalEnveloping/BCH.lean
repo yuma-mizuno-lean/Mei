@@ -50,7 +50,7 @@ private theorem isNilpotent_augmentationImage (k : ℕ) :
 variable [Algebra ℚ R] [LieAlgebra ℚ L] [IsScalarTower ℚ R L]
 
 /-- Rational scalars on the enveloping algebra come from its coefficient ring. -/
-local instance rationalEnvelopingAlgebra : Algebra ℚ U :=
+local instance rationalTruncatedEnvelopingAlgebra : Algebra ℚ U :=
   Algebra.compHom U (algebraMap ℚ R)
 
 /-- Integrate the canonical finite Lie map to units of the finite enveloping quotient. -/
