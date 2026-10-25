@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.Affine.Generic.Endpoint
+public import Mei.Geometry.Affine.Generic
 public import Mei.Geometry.Convex.Polyhedron.SingularSupport
 
 /-!
