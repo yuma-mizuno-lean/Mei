@@ -26,7 +26,7 @@ on these vertices: constant paths, concatenation and reversal use the existing
 
 For a finite family, the crossing events (segment index, wall index and affine
 parameter) form a finite set. Thus repeated visits and simultaneous coplanar
-crossings are retained. For closed walls, every crossing lies in the relative
+crossings are retained. Every crossing lies in the relative
 interior of its wall. In finite dimension, finite families of codimension-one
 polyhedra admit such paths between any two allowed endpoints, with two edges
 sufficing.
@@ -124,17 +124,16 @@ theorem subsingleton_crossing (h : AdmissibleSegment x y) (i : ι) :
     (subset_affineSpan ℝ (W i) hs.2) (subset_affineSpan ℝ (W i) ht.2)
 
 /-- Every crossing is at a strictly interior parameter and in the relative
-interior of its closed wall. -/
+interior of its wall. -/
 theorem crossing_mem_intrinsicInterior (h : AdmissibleSegment x y)
-    {i : ι} (hclosed : IsClosed (W i)) {t : ℝ}
+    {i : ι} {t : ℝ}
     (ht : t ∈ Icc (0 : ℝ) 1) (hi : AffineMap.lineMap x.val y.val t ∈ W i) :
     t ∈ Ioo (0 : ℝ) 1 ∧ AffineMap.lineMap x.val y.val t ∈ intrinsicInterior ℝ (W i) := by
   have hzero : t ≠ 0 := by intro he; exact x.notMem i (by simpa [he] using hi)
   have hone : t ≠ 1 := by intro he; exact y.notMem i (by simpa [he] using hi)
   refine ⟨⟨lt_of_le_of_ne ht.1 (Ne.symm hzero), lt_of_le_of_ne ht.2 hone⟩, ?_⟩
-  rw [← intrinsicClosure_sdiff_intrinsicFrontier,
-    (hclosed.preimage continuous_subtype_val).intrinsicClosure]
-  refine ⟨hi, ?_⟩
+  rw [← intrinsicClosure_sdiff_intrinsicFrontier]
+  refine ⟨subset_intrinsicClosure hi, ?_⟩
   intro hb
   exact h.regular t ht (mem_singularSupport.mpr (Or.inl ⟨i, hb⟩))
 
