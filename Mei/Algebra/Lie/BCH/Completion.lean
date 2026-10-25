@@ -19,6 +19,8 @@ its positive degree map's cutoff modulus. Projections compute this map at finite
 order. Identity, composition, filtration estimates and convergent ordered products
 are preserved, and the result depends only on the underlying Lie homomorphism,
 not on the choice of cutoff modulus.
+The canonical exponential of an original Lie element is computed in each finite
+quotient and is natural for these completed maps.
 
 The finite maps use `LieHom.bchGroupMap` and `GradedLieHom.truncatedMap`.
 The inverse-limit construction, cutoff comparison and ordered-product law use
@@ -82,6 +84,44 @@ theorem groupTower_map_surjective {k l : ℕᵒᵖ} (f : k ⟶ l) :
 /-- The group of compatible BCH elements in all finite degree truncations. -/
 abbrev completedBCHGroup := completedGroup (d.groupTower ℒ)
 
+/-- The exponential of a Lie element in the degree-completed BCH group. The Lie
+algebra itself need not be nilpotent: exponentiation takes place in each quotient. -/
+def expToCompletion (x : L) : d.completedBCHGroup ℒ :=
+  ⟨fun k => BCHGroup.exp ((d.degreeIdeal ℒ k).mkQ x),
+    (mem_completedGroup_iff _ _).mpr (by
+      intro k l h
+      -- The categorical tower arrow conceals the concrete BCH quotient groups.
+      change (d.truncationMap ℒ h).bchGroupMap
+        (BCHGroup.exp ((d.degreeIdeal ℒ l).mkQ x)) =
+          BCHGroup.exp ((d.degreeIdeal ℒ k).mkQ x)
+      rw [LieHom.bchGroupMap_exp]
+      congr 1
+      exact d.truncationMap_mk ℒ h x)⟩
+
+/-- The completed exponential projects to the exponential of the quotient class. -/
+@[simp]
+theorem projection_expToCompletion (k : ℕ) (x : L) :
+    CompletedGroup.projection k (d.expToCompletion ℒ x) =
+      BCHGroup.exp ((d.degreeIdeal ℒ k).mkQ x) := by
+  rw [CompletedGroup.projection_apply]
+  rfl
+
+@[simp]
+theorem expToCompletion_zero : d.expToCompletion ℒ 0 = 1 := by
+  apply CompletedGroup.ext
+  intro k
+  rw [map_one, projection_expToCompletion, map_zero, BCHGroup.exp_zero]
+  rfl
+
+@[simp]
+theorem expToCompletion_neg (x : L) :
+    d.expToCompletion ℒ (-x) = (d.expToCompletion ℒ x)⁻¹ := by
+  apply CompletedGroup.ext
+  intro k
+  rw [map_inv, projection_expToCompletion, projection_expToCompletion,
+    map_neg, BCHGroup.exp_neg]
+  rfl
+
 end PositiveDegrees
 
 namespace GradedLieHom
@@ -133,6 +173,18 @@ theorem projection_completedMap (f : GradedLieHom T ℒ ℳ) (k : ℕ)
         (CompletedGroup.projection (T.modulus k) x) := by
   rw [completedMap, CompletedGroup.projection_map]
   rfl
+
+/-- A graded completed map carries the exponential of an original Lie element
+to the exponential of its image. -/
+@[simp]
+theorem completedMap_expToCompletion (f : GradedLieHom T ℒ ℳ) (x : L) :
+    f.completedMap (d.expToCompletion ℒ x) = e.expToCompletion ℳ (f x) := by
+  apply CompletedGroup.ext
+  intro k
+  rw [projection_completedMap, PositiveDegrees.projection_expToCompletion,
+    PositiveDegrees.projection_expToCompletion, LieHom.bchGroupMap_exp]
+  congr 1
+  exact f.truncatedMap_mk k le_rfl x
 
 /-- The finite projection formula uniquely characterizes the completed homomorphism. -/
 theorem completedMap_unique (f : GradedLieHom T ℒ ℳ)
@@ -210,16 +262,22 @@ theorem completedMap_eq_of_toLieHom_eq {T' : PositiveDegreeMap d e}
   simpa only [LieIdeal.mkQ_apply, truncatedMap_mk, coe_toLieHom] using
     congrArg (fun h : L →ₗ⁅R⁆ L' => (e.degreeIdeal ℳ k).mkQ (h a)) hfg
 
-variable {ι : Type*} [LinearOrder ι]
+variable {ι : Type*}
+
+/-- A graded completed map preserves finite support at every order. -/
+theorem hasFiniteSupport_completedMap (f : GradedLieHom T ℒ ℳ)
+    {x : ι → d.completedBCHGroup ℒ} (hx : CompletedGroup.HasFiniteSupport x) :
+    CompletedGroup.HasFiniteSupport (fun i => f.completedMap (x i)) := by
+  simpa only [completedMap] using
+    hx.map ⟨T.modulus, T.monotone_modulus⟩ f.groupTowerMap
 
 /-- Graded maps preserve convergent ordered products, with the smallest index leftmost. -/
 @[simp]
-theorem completedMap_orderedProd (f : GradedLieHom T ℒ ℳ)
+theorem completedMap_orderedProd [LinearOrder ι] (f : GradedLieHom T ℒ ℳ)
     (x : ι → d.completedBCHGroup ℒ) (hx : CompletedGroup.HasFiniteSupport x) :
     f.completedMap (CompletedGroup.orderedProd x hx) =
       CompletedGroup.orderedProd (fun i => f.completedMap (x i))
-        (by simpa only [completedMap] using
-          hx.map ⟨T.modulus, T.monotone_modulus⟩ f.groupTowerMap) :=
+        (f.hasFiniteSupport_completedMap hx) :=
   CompletedGroup.map_orderedProd ⟨T.modulus, T.monotone_modulus⟩ f.groupTowerMap x hx
 
 end GradedLieHom
