@@ -25,7 +25,7 @@ namespace Mei.GradedAlgebra
 
 open _root_.GradedAlgebra
 
-variable {Γ R A S : Type*} [AddCommMonoid Γ] [DecidableEq Γ]
+variable {Γ R A S : Type*} [AddMonoid Γ] [DecidableEq Γ]
   [CommSemiring R] [Semiring A] [Algebra R A]
   (𝒜 : Γ → Submodule R A) [GradedAlgebra 𝒜]
 
