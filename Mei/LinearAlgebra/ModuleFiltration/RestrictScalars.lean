@@ -6,7 +6,6 @@ Authors: Codex
 module
 
 public import Mei.LinearAlgebra.ModuleFiltration.Completion
-public import Mathlib.Algebra.Module.Submodule.RestrictScalars
 public import Mathlib.Algebra.Module.Submodule.Equiv
 
 /-!
@@ -27,30 +26,6 @@ No freeness, flatness or separatedness is required.
 public section
 
 namespace Mei.ModuleFiltration
-
-section Semiring
-
-variable (R : Type*) {S M : Type*} [Semiring R] [Semiring S]
-  [AddCommMonoid M] [Module S M] [Module R M] [SMul R S] [IsScalarTower R S M]
-  (F : ModuleFiltration S M)
-
-/-- Restrict the scalars in every term of a module filtration. -/
-abbrev restrictScalars : ModuleFiltration R M where
-  submodule k := (F.submodule k).restrictScalars R
-  antitone := fun _ _ h => Submodule.restrictScalars_mono R (F.antitone h)
-  zero_eq_top := by simp
-
-@[simp]
-lemma restrictScalars_submodule (k : ℕ) :
-    (F.restrictScalars R).submodule k = (F.submodule k).restrictScalars R :=
-  (rfl)
-
-@[simp]
-lemma restrictScalars_self : F.restrictScalars S = F := by
-  ext k
-  simp
-
-end Semiring
 
 section Ring
 

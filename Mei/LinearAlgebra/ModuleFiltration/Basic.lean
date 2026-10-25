@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mathlib.RingTheory.FilteredAlgebra.Basic
-public import Mathlib.Algebra.Module.Submodule.Lattice
+public import Mathlib.Algebra.Module.Submodule.RestrictScalars
 
 /-!
 # Decreasing filtrations of modules
@@ -16,6 +16,7 @@ module. Order `k` retains the quotient by the submodule at `k + 1`.
 The same family on order-dual natural numbers carries Mathlib's `IsFiltration`.
 Compatibility with a ring filtration can be imposed separately using
 `IsModuleFiltration`; it is not needed to construct the module completion.
+Scalar restriction acts termwise and preserves the underlying filtration sets.
 -/
 
 public section
@@ -51,6 +52,30 @@ instance : IsFiltration F.filtration (fun k => F.submodule (k.ofDual + 1)) where
   mono := fun _ _ h => F.antitone h
   is_le h := F.antitone (Nat.succ_le_of_lt h)
   is_sup _ k h := h (OrderDual.toDual (k.ofDual + 1)) (Nat.lt_succ_self _)
+
+section Semiring
+
+variable (R : Type*) {S M : Type*} [Semiring R] [Semiring S]
+  [AddCommMonoid M] [Module S M] [Module R M] [SMul R S] [IsScalarTower R S M]
+  (F : ModuleFiltration S M)
+
+/-- Restrict the scalars in every term of a module filtration. -/
+abbrev restrictScalars : ModuleFiltration R M where
+  submodule k := (F.submodule k).restrictScalars R
+  antitone := fun _ _ h => Submodule.restrictScalars_mono R (F.antitone h)
+  zero_eq_top := by simp
+
+@[simp]
+lemma restrictScalars_submodule (k : ℕ) :
+    (F.restrictScalars R).submodule k = (F.submodule k).restrictScalars R :=
+  (rfl)
+
+@[simp]
+lemma restrictScalars_self : F.restrictScalars S = F := by
+  ext k
+  simp
+
+end Semiring
 
 end ModuleFiltration
 end Mei
