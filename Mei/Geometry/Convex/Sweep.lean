@@ -61,14 +61,6 @@ theorem sub_smul_mem_sweep {P : Set V} {n y : V} (hy : y ∈ sweep P n)
   refine ⟨x, hx, t + s, add_nonneg ht hs, ?_⟩
   module
 
-/-- Sweeping a convex base preserves convexity. -/
-theorem convex_sweep {P : Set V} (hP : _root_.Convex ℝ P) (n : V) :
-    _root_.Convex ℝ (sweep P n) := by
-  rintro _ ⟨x, hx, t, ht, rfl⟩ _ ⟨y, hy, s, hs, rfl⟩ a b ha hb hab
-  refine ⟨a • x + b • y, hP hx hy ha hb hab, a * t + b * s,
-    add_nonneg (mul_nonneg ha ht) (mul_nonneg hb hs), ?_⟩
-  module
-
 /-- A transverse direction admits a linear height constant on the base. -/
 theorem exists_sweep_height {P : Set V} {n : V} (hP : P.Nonempty)
     (hn : n ∉ vectorSpan ℝ P) :
@@ -236,3 +228,17 @@ theorem finrank_sweep {P : Set V} {n : V} (hP : P.Nonempty)
 end Topology
 
 end Mei.Convex
+
+namespace Convex
+
+variable {V : Type*} [AddCommGroup V] [Module ℝ V]
+
+/-- Sweeping a convex base preserves convexity. -/
+theorem sweep {P : Set V} (hP : Convex ℝ P) (n : V) :
+    Convex ℝ (Mei.Convex.sweep P n) := by
+  rintro _ ⟨x, hx, t, ht, rfl⟩ _ ⟨y, hy, s, hs, rfl⟩ a b ha hb hab
+  refine ⟨a • x + b • y, hP hx hy ha hb hab, a * t + b * s,
+    add_nonneg (mul_nonneg ha ht) (mul_nonneg hb hs), ?_⟩
+  module
+
+end Convex
