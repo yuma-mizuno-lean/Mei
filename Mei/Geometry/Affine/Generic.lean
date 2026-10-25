@@ -29,7 +29,7 @@ open Set
 
 namespace AffineSubspace
 
-variable {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
+variable {V : Type*} [AddCommGroup V] [Module ℝ V]
 
 /-- The points avoiding every member of an affine family. -/
 def genericLocus {ι : Sort*} (A : ι → AffineSubspace ℝ V) : Set V :=
@@ -45,6 +45,10 @@ theorem genericLocus_eq_iInter {ι : Sort*} (A : ι → AffineSubspace ℝ V) :
     genericLocus A = ⋂ i, (A i : Set V)ᶜ := by
   ext x
   simp
+
+section Topology
+
+variable {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
 
 /-- A proper real affine subspace has empty interior, even without a
 finite-dimensionality assumption. -/
@@ -101,33 +105,45 @@ theorem exists_dist_lt_genericLocus {ι : Sort*} [Countable ι]
     Metric.isOpen_ball (Metric.nonempty_ball.mpr hε)
   exact ⟨y, hy, hA⟩
 
-omit [FiniteDimensional ℝ V] in
+end Topology
+
+section Algebra
+
+open scoped Affine
+
+variable {k V P : Type*} [DivisionRing k] [AddCommGroup V] [Module k V] [AffineSpace V P]
+
 /-- Adding one point to a subspace of codimension at least two still gives a
 proper affine subspace. -/
-theorem affineSpan_insert_ne_top_of_finrank (S : AffineSubspace ℝ V)
-    (hS : Module.finrank ℝ S.direction + 1 < Module.finrank ℝ V) (x : V) :
-    affineSpan ℝ (insert x (S : Set V)) ≠ ⊤ := by
+theorem affineSpan_insert_ne_top_of_finrank (S : AffineSubspace k P)
+    (hS : Module.finrank k S.direction + 1 < Module.finrank k V) (x : P) :
+    affineSpan k (insert x (S : Set P)) ≠ ⊤ := by
   intro htop
   have hle := finrank_vectorSpan_insert_le S x
   rw [← direction_affineSpan, htop, direction_top, finrank_top] at hle
   exact (not_le_of_gt hS) hle
 
-omit [FiniteDimensional ℝ V] in
 /-- A vertex outside the affine span of an obstacle and an allowed endpoint
 determines a full line avoiding the obstacle. -/
-theorem lineMap_not_mem_of_not_mem_affineSpan_insert (S : AffineSubspace ℝ V)
-    {x z : V} (hx : x ∉ S) (hz : z ∉ affineSpan ℝ (insert x (S : Set V)))
-    (t : ℝ) : AffineMap.lineMap x z t ∉ S := by
+theorem lineMap_not_mem_of_not_mem_affineSpan_insert (S : AffineSubspace k P)
+    {x z : P} (hx : x ∉ S) (hz : z ∉ affineSpan k (insert x (S : Set P)))
+    (t : k) : AffineMap.lineMap x z t ∉ S := by
   intro htS
   by_cases ht : t = 0
   · exact hx (by simpa [ht] using htS)
   apply hz
-  have hxspan : x ∈ affineSpan ℝ (insert x (S : Set V)) :=
-    subset_affineSpan ℝ _ (mem_insert x _)
-  have htspan : AffineMap.lineMap x z t ∈ affineSpan ℝ (insert x (S : Set V)) :=
-    subset_affineSpan ℝ _ (mem_insert_of_mem x htS)
+  have hxspan : x ∈ affineSpan k (insert x (S : Set P)) :=
+    subset_affineSpan k _ (mem_insert x _)
+  have htspan : AffineMap.lineMap x z t ∈ affineSpan k (insert x (S : Set P)) :=
+    subset_affineSpan k _ (mem_insert_of_mem x htS)
   simpa only [AffineMap.lineMap_lineMap_right, inv_mul_cancel₀ ht,
     AffineMap.lineMap_apply_one] using AffineMap.lineMap_mem t⁻¹ hxspan htspan
+
+end Algebra
+
+section Topology
+
+variable {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V] [FiniteDimensional ℝ V]
 
 /-- Between endpoints outside countably many affine obstacles of codimension at
 least two, an intermediate vertex can be chosen in any nonempty open set so
@@ -154,13 +170,15 @@ theorem exists_mem_open_two_lineMaps_avoid {ι : Type*} [Countable ι]
     ⟨(S i).lineMap_not_mem_of_not_mem_affineSpan_insert (hx i) (hz (.inl i)) t,
       (S i).lineMap_not_mem_of_not_mem_affineSpan_insert (hy i) (hz (.inr i)) t⟩⟩
 
+end Topology
+
 end AffineSubspace
 
 namespace Mei
 
 /-- A finite collection of proper affine subspaces to be avoided. Repeated
 exceptions are identified. Empty affine subspaces are permitted. -/
-structure ExceptionalArrangement (V : Type*) [NormedAddCommGroup V] [NormedSpace ℝ V] where
+structure ExceptionalArrangement (V : Type*) [AddCommGroup V] [Module ℝ V] where
   /-- The finite set of affine subspaces to avoid. -/
   exceptions : Finset (AffineSubspace ℝ V)
   /-- No exception contains the whole ambient space. -/
@@ -168,18 +186,27 @@ structure ExceptionalArrangement (V : Type*) [NormedAddCommGroup V] [NormedSpace
 
 namespace ExceptionalArrangement
 
-variable {V W : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
-  [NormedAddCommGroup W] [NormedSpace ℝ W]
+variable {V W : Type*} [AddCommGroup V] [Module ℝ V] [AddCommGroup W] [Module ℝ W]
 
 /-- A point is generic if it avoids every affine exception. -/
 def IsGeneric (E : ExceptionalArrangement V) (x : V) : Prop :=
   ∀ S ∈ E.exceptions, x ∉ S
+
+/-- A point is generic exactly when it avoids every exception. -/
+theorem isGeneric_iff {E : ExceptionalArrangement V} {x : V} :
+    E.IsGeneric x ↔ ∀ S ∈ E.exceptions, x ∉ S := (Iff.rfl)
 
 /-- Union of the exceptions in two arrangements. -/
 noncomputable def union (E F : ExceptionalArrangement V) : ExceptionalArrangement V := by
   classical
   exact ⟨E.exceptions ∪ F.exceptions, fun S h =>
     (Finset.mem_union.mp h).elim (E.proper S) (F.proper S)⟩
+
+open Classical in
+/-- The exceptions of a union are the union of the exceptions. -/
+@[simp]
+theorem exceptions_union (E F : ExceptionalArrangement V) :
+    (E.union F).exceptions = E.exceptions ∪ F.exceptions := (rfl)
 
 /-- Genericity for a union is genericity for each arrangement. -/
 @[simp]
@@ -202,6 +229,12 @@ noncomputable def map (E : ExceptionalArrangement V) (e : V ≃ᵃ[ℝ] W) :
   rw [htop]
   trivial
 
+open Classical in
+/-- Transport maps the finite set of exceptions by the affine equivalence. -/
+@[simp]
+theorem exceptions_map (E : ExceptionalArrangement V) (e : V ≃ᵃ[ℝ] W) :
+    (E.map e).exceptions = E.exceptions.image (AffineSubspace.map e.toAffineMap) := (rfl)
+
 /-- Transport preserves genericity of the corresponding points. -/
 @[simp]
 theorem isGeneric_map_iff {E : ExceptionalArrangement V} (e : V ≃ᵃ[ℝ] W) {x : V} :
@@ -214,13 +247,22 @@ noncomputable def comap (E : ExceptionalArrangement W) (e : V ≃ᵃ[ℝ] W) :
     ExceptionalArrangement V :=
   E.map e.symm
 
+open Classical in
+/-- Pullback maps the exceptions by the inverse affine equivalence. -/
+@[simp]
+theorem exceptions_comap (E : ExceptionalArrangement W) (e : V ≃ᵃ[ℝ] W) :
+    (E.comap e).exceptions = E.exceptions.image (AffineSubspace.map e.symm.toAffineMap) :=
+  (rfl)
+
 /-- A point is generic in a pullback exactly when its image is generic. -/
 @[simp]
 theorem isGeneric_comap_iff {E : ExceptionalArrangement W} {e : V ≃ᵃ[ℝ] W} {x : V} :
     (E.comap e).IsGeneric x ↔ E.IsGeneric (e x) := by
   simpa [comap] using (isGeneric_map_iff (E := E) e.symm (x := e x))
 
-variable [FiniteDimensional ℝ V]
+section Topology
+
+variable {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V] [FiniteDimensional ℝ V]
 
 /-- Generic points of a finite exceptional arrangement form an open set. -/
 theorem isOpen_isGeneric (E : ExceptionalArrangement V) : IsOpen {x | E.IsGeneric x} := by
@@ -246,6 +288,8 @@ theorem isGδ_iInter_isGeneric {ι : Type*} [Countable ι]
     (E : ι → ExceptionalArrangement V) : IsGδ {x | ∀ i, (E i).IsGeneric x} := by
   simpa [AffineSubspace.genericLocus, IsGeneric, Sigma.forall] using
     AffineSubspace.isGδ_genericLocus (fun p : Σ i, (E i).exceptions => p.2.1)
+
+end Topology
 
 end ExceptionalArrangement
 
