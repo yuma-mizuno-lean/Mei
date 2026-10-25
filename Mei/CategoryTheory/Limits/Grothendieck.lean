@@ -129,11 +129,16 @@ noncomputable abbrev preCone (c : Cone (G ⋙ fiberwiseLimit F)) :
   π :=
     { app X := c.π.app X.base ≫ limit.π (Grothendieck.ι C (G.obj X.base) ⋙ F) X.fiber
       naturality X Y h := by
-        erw [Category.id_comp (obj := V)]
-        rw [← c.w h.base]
-        erw [Category.assoc (obj := V), map_π_of_hom F ((Grothendieck.pre C G).map h),
-          Category.assoc (obj := V)]
-        rfl }
+        have w := map_π_of_hom F ((Grothendieck.pre C G).map h)
+        simp only [Grothendieck.pre_map_base, Grothendieck.pre_obj_base,
+          Grothendieck.pre_obj_fiber] at w
+        simp only [Functor.const_obj_obj, Functor.comp_obj, Functor.const_obj_map,
+          Category.id_comp, Functor.comp_map, ← c.w h.base]
+        -- The middle objects are `(Grothendieck.ι C (G.obj Y.base) ⋙ F).obj Y.fiber` and
+        -- `F.obj ((Grothendieck.pre C G).obj Y)`, equal only by unfolding `Grothendieck.ι` and
+        -- `Grothendieck.pre`, so the reassociation is checked by `exact` rather than rewritten.
+        exact (Category.assoc _ _ _).trans
+          ((c.π.app X.base ≫= w).trans (Category.assoc _ _ _).symm) }
 
 @[simp]
 theorem preCone_pt (c : Cone (G ⋙ fiberwiseLimit F)) : (preCone F G c).pt = c.pt := (rfl)
@@ -160,6 +165,8 @@ noncomputable abbrev coneOfPreCone (s : Cone (Grothendieck.pre C G ⋙ F)) :
                   fapply Grothendieck.ext
                   · simp [g']
                   · simp [g']
+                    -- Mathlib's `Grothendieck.ι` has no simp lemmas; its `map g` is
+                    -- `⟨𝟙 _, eqToHom _ ≫ g⟩` by definition.
                     rfl
                 erw [Category.id_comp (obj := V)]
                 rw [Functor.comp_map, ← e]
@@ -201,6 +208,22 @@ noncomputable def isLimitPreCone {c : Cone (G ⋙ fiberwiseLimit F)} (hc : IsLim
     erw [Category.assoc (obj := V), coneOfPreCone_π_app_π]
     exact hm ⟨d', x⟩
 
+/-- A limiting cone on the total diagram restricted along `Grothendieck.pre C G` gives a limiting
+cone on the fiber limits restricted along `G`. -/
+noncomputable def isLimitConeOfPreCone {s : Cone (Grothendieck.pre C G ⋙ F)} (hs : IsLimit s) :
+    IsLimit (coneOfPreCone F G s) where
+  lift c := hs.lift (preCone F G c)
+  fac c d' := by
+    apply limit.hom_ext
+    intro x
+    rw [Category.assoc, coneOfPreCone_π_app_π]
+    exact hs.fac (preCone F G c) ⟨d', x⟩
+  uniq c m hm := by
+    apply hs.uniq (preCone F G c) m
+    rintro ⟨d', x⟩
+    rw [preCone_π_app, ← hm d', Category.assoc]
+    exact (m ≫= coneOfPreCone_π_app_π F G s d' x).symm
+
 end Pre
 
 /-- A cone on the total diagram induces a cone on its fiber limits. This is
@@ -236,21 +259,8 @@ noncomputable def isLimitTotalCone {c : Cone (fiberwiseLimit F)} (hc : IsLimit c
 
 /-- A limiting cone on the total diagram gives a limiting cone on the fiber limits. -/
 noncomputable def isLimitConeOfCone {c : Cone F} (hc : IsLimit c) :
-    IsLimit (coneOfCone F c) where
-  lift s := hc.lift (totalCone F s)
-  fac s d := by
-    apply limit.hom_ext
-    intro x
-    erw [coneOfCone_π_app, Category.assoc (obj := V), limit.lift_π, hc.fac,
-      totalCone_π_app]
-    rfl
-  uniq s m hm := by
-    apply hc.uniq (totalCone F s) m
-    intro X
-    have h := congrArg (fun t => t ≫ limit.π (Grothendieck.ι C X.base ⋙ F) X.fiber)
-      (hm X.base)
-    erw [coneOfCone_π_app, Category.assoc (obj := V), limit.lift_π] at h
-    exact h
+    IsLimit (coneOfCone F c) :=
+  isLimitConeOfPreCone F (𝟭 D) hc
 
 end FiberwiseLimit
 
@@ -352,11 +362,18 @@ section Pre
 
 variable {D' : Type u''} [Category.{v''} D'] (G : D' ⥤ D)
 
+/-- Existence of a limit of the fiberwise diagram restricted along `G` is equivalent to existence
+of a limit of the total diagram restricted along `Grothendieck.pre C G`. -/
+theorem hasLimit_comp_fiberwiseLimit_iff :
+    HasLimit (G ⋙ fiberwiseLimit F) ↔ HasLimit (Grothendieck.pre C G ⋙ F) :=
+  ⟨fun _ => ⟨⟨_, FiberwiseLimit.isLimitPreCone F G (limit.isLimit _)⟩⟩,
+    fun _ => ⟨⟨_, FiberwiseLimit.isLimitConeOfPreCone F G (limit.isLimit _)⟩⟩⟩
+
 /-- Restriction along `Grothendieck.pre C G` preserves existence of limits when `G` is initial. -/
 instance hasLimit_grothendieckPre_comp [G.Initial] [HasLimit F] :
     HasLimit (Grothendieck.pre C G ⋙ F) := by
   have := (hasLimit_fiberwiseLimit_iff F).mpr ‹_›
-  exact ⟨⟨_, FiberwiseLimit.isLimitPreCone F G (limit.isLimit _)⟩⟩
+  exact (hasLimit_comp_fiberwiseLimit_iff F G).mp inferInstance
 
 /-- Restriction along `Grothendieck.pre C G` is an isomorphism of limits when `G` is initial.
 No initiality of the transition functors is needed, only invertibility of the restrictions of
@@ -369,10 +386,12 @@ instance isIso_limit_pre_grothendieckPre [G.Initial] [HasLimit F] :
         (limit.isLimit _)).conePointUniqueUpToIso (limit.isLimit _)).hom := by
     apply limit.hom_ext
     intro X
-    rw [limit.pre_π, Category.assoc, Category.assoc]
-    erw [IsLimit.conePointUniqueUpToIso_hom_comp, FiberwiseLimit.preCone_π_app, limit.pre_π_assoc,
-      limitFiberwiseLimitIso_hom_π]
-    rfl
+    rw [limit.pre_π, Category.assoc, Category.assoc, limit.conePointUniqueUpToIso_hom_comp]
+    -- The leg of `preCone` at `X` is a fiber projection at `(Grothendieck.pre C G).obj X`, which
+    -- is `⟨G.obj X.base, X.fiber⟩` by definition, so `exact` matches it with
+    -- `limitFiberwiseLimitIso_hom_π`.
+    exact (((limitFiberwiseLimitIso F).hom ≫= limit.pre_π_assoc _ _ _ _).trans
+      (limitFiberwiseLimitIso_hom_π F _ _)).symm
   rw [h]
   infer_instance
 

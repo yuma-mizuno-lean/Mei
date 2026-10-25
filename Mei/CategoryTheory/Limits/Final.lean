@@ -36,6 +36,17 @@ section InitialPre
 
 variable {d : D} {x : C.obj d}
 
+/-- Three composable `eqToHom`s returning to their source cancel. The fiber equations below
+have this shape, but their `eqToHom`s live in categories `C.obj (G.obj _)` and `(G ⋙ C).obj _`
+which agree only up to unfolding, so `eqToHom_trans` does not rewrite them; this lemma is stated
+in an arbitrary category and applied by unification instead. -/
+private lemma eqToHom_comp_eqToHom_comp_eqToHom_comp {E : Type*} [Category E] {X Y Z W : E}
+    (p : X = Y) (q : Y = Z) (r : Z = X) (f : X ⟶ W) :
+    eqToHom p ≫ eqToHom q ≫ eqToHom r ≫ f = f := by
+  cases p
+  cases q
+  simp
+
 /-- The costructured arrow to `⟨d, x⟩` with base component `a` and fiber component `b`. -/
 private abbrev preArrow (a : CostructuredArrow G d)
     (b : CostructuredArrow (C.map a.hom).toFunctor x) :
@@ -52,8 +63,9 @@ private def preFiberPrefunctor (a : CostructuredArrow G d) :
     · simp only [CostructuredArrow.mk_left, pre_obj_base, CostructuredArrow.mk_hom_eq_self,
         pre_obj_fiber, Functor.comp_obj, Functor.comp_map, comp_base, pre_map_base, comp_fiber,
         pre_map_fiber, Functor.map_comp, Category.assoc, CommaMorphism.w, Functor.const_obj_obj,
-        CostructuredArrow.right_eq_id, Functor.const_obj_map, Category.comp_id, eqToHom_map]
-      erw [eqToHom_trans_assoc, eqToHom_trans_assoc, eqToHom_refl, Category.id_comp])
+        CostructuredArrow.right_eq_id, Functor.const_obj_map, Category.comp_id]
+      rw [eqToHom_map]
+      exact eqToHom_comp_eqToHom_comp_eqToHom_comp _ _ _ _)
 
 /-- Transport of a fiber component along an arrow of base components. -/
 private abbrev preTransport {a₁ a₂ : CostructuredArrow G d} (h : a₁ ⟶ a₂)
@@ -72,7 +84,7 @@ private def toPreTransport {a₁ a₂ : CostructuredArrow G d} (h : a₁ ⟶ a�
     · simp only [CostructuredArrow.mk_left, pre_obj_base, CostructuredArrow.mk_hom_eq_self,
         pre_obj_fiber, Functor.comp_obj, Functor.comp_map, comp_base, pre_map_base, comp_fiber,
         pre_map_fiber, Functor.map_id, Category.id_comp]
-      erw [eqToHom_trans_assoc, eqToHom_trans_assoc, eqToHom_refl, Category.id_comp])
+      exact eqToHom_comp_eqToHom_comp_eqToHom_comp _ _ _ _)
 
 end InitialPre
 
