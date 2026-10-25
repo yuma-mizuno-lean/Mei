@@ -50,6 +50,43 @@ theorem singularSupport_comp_subset {κ : Type*} (W : ι → Set V) (f : κ → 
   · exact mem_singularSupport.mpr (Or.inl ⟨f j, hj⟩)
   · exact mem_singularSupport.mpr (Or.inr ⟨f j, f k, hne, hj, hk⟩)
 
+/-- Affine equivalences and bijective reindexing preserve the actual singular support. -/
+theorem mem_singularSupport_image_iff {V' κ : Type*}
+    [NormedAddCommGroup V'] [NormedSpace ℝ V'] [FiniteDimensional ℝ V]
+    (e : V ≃ᵃ[ℝ] V') (f : ι ≃ κ) (W : ι → Set V) (W' : κ → Set V')
+    (hW : ∀ j, W' (f j) = e '' W j) (x : V) :
+    e x ∈ singularSupport W' ↔ x ∈ singularSupport W := by
+  have hmem (j : ι) : e x ∈ W' (f j) ↔ x ∈ W j := by
+    rw [hW j]
+    exact e.injective.mem_set_image
+  have hfront (j : ι) :
+      e x ∈ intrinsicFrontier ℝ (W' (f j)) ↔ x ∈ intrinsicFrontier ℝ (W j) := by
+    rw [hW j, e.intrinsicFrontier_image]
+    exact e.injective.mem_set_image
+  have hspan (s : Set V) : affineSpan ℝ (e '' s) =
+      (affineSpan ℝ s).map e.toAffineMap := by
+    simpa only [AffineEquiv.coe_toAffineMap] using
+      (AffineSubspace.map_span e.toAffineMap s).symm
+  have hdir (j k : ι) :
+      (affineSpan ℝ (W' (f j))).direction = (affineSpan ℝ (W' (f k))).direction ↔
+        (affineSpan ℝ (W j)).direction = (affineSpan ℝ (W k)).direction := by
+    rw [hW j, hW k, hspan, hspan,
+      AffineSubspace.map_direction, AffineSubspace.map_direction]
+    exact (Submodule.map_injective_of_injective e.linear.injective).eq_iff
+  simp only [mem_singularSupport]
+  constructor
+  · rintro (⟨j, hj⟩ | ⟨j, k, hne, hj, hk⟩)
+    · obtain ⟨j, rfl⟩ := f.surjective j
+      exact Or.inl ⟨j, (hfront j).mp hj⟩
+    · obtain ⟨j, rfl⟩ := f.surjective j
+      obtain ⟨k, rfl⟩ := f.surjective k
+      exact Or.inr ⟨j, k, fun he => hne ((hdir j k).mpr he),
+        (hmem j).mp hj, (hmem k).mp hk⟩
+  · rintro (⟨j, hj⟩ | ⟨j, k, hne, hj, hk⟩)
+    · exact Or.inl ⟨f j, (hfront j).mpr hj⟩
+    · exact Or.inr ⟨f j, f k, fun he => hne ((hdir j k).mp he),
+        (hmem j).mpr hj, (hmem k).mpr hk⟩
+
 /-- A point of a family member outside singular support lies in its relative interior. -/
 theorem mem_intrinsicInterior_of_notMem_singularSupport {W : ι → Set V} {i : ι} {x : V}
     (hxi : x ∈ W i) (hx : x ∉ singularSupport W) :

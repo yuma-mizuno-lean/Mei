@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.Convex.PolyhedralComplex.Basic
+public import Mei.Geometry.Convex.PolyhedralComplex.Strata
 public import Mei.Geometry.Convex.Polyhedron.Rational.Map
 
 /-!
@@ -92,6 +92,45 @@ theorem mem_cells_image {C : FinitePolyhedralComplex h} {e : Toric.IntegralAffin
     {P : Set W} : P ∈ (C.image e).cells ↔ ∃ Q ∈ C.cells, e '' Q = P := by
   classical
   rw [image_cells, Finset.mem_image]
+
+/-- Affine transport preserves exact ambient codimension of cells. -/
+theorem mem_cellsOfCodimension_image (C : FinitePolyhedralComplex h)
+    (e : Toric.IntegralAffineEquiv h h') (k : ℕ) (P : Set W) :
+    P ∈ (C.image e).cellsOfCodimension k ↔
+      ∃ Q ∈ C.cellsOfCodimension k, e '' Q = P := by
+  have hdim (Q : Set V) :
+      Module.finrank ℝ (affineSpan ℝ (e '' Q)).direction =
+        Module.finrank ℝ (affineSpan ℝ Q).direction := by
+    have hs : affineSpan ℝ (e '' Q) =
+        (affineSpan ℝ Q).map e.toAffineEquiv.toAffineMap := by
+      simpa only [AffineEquiv.coe_toAffineMap] using
+        (AffineSubspace.map_span e.toAffineEquiv.toAffineMap Q).symm
+    rw [hs, AffineSubspace.map_direction]
+    exact e.toAffineEquiv.linear.finrank_map_eq _
+  simp only [mem_cellsOfCodimension, mem_cells_image]
+  constructor
+  · rintro ⟨⟨Q, hQ, rfl⟩, hd⟩
+    exact ⟨Q, ⟨hQ, by simpa only [hdim, ← e.toAffineEquiv.linear.finrank_eq] using hd⟩, rfl⟩
+  · rintro ⟨Q, ⟨hQ, hd⟩, rfl⟩
+    exact ⟨⟨Q, hQ, rfl⟩, by simpa only [hdim, ← e.toAffineEquiv.linear.finrank_eq] using hd⟩
+
+/-- The bijection of actual wall carriers induced by an integral affine equivalence. -/
+noncomputable def wallImageEquiv (C : FinitePolyhedralComplex h)
+    (e : Toric.IntegralAffineEquiv h h') : C.walls ≃ (C.image e).walls :=
+  Equiv.ofBijective (fun P => ⟨e '' P.val,
+    (C.mem_cellsOfCodimension_image e 1 _).mpr ⟨P.val, P.property, rfl⟩⟩) ⟨by
+      intro P Q he
+      apply Subtype.ext
+      exact Set.image_injective.mpr e.toAffineEquiv.injective (congrArg Subtype.val he), by
+      intro P
+      obtain ⟨Q, hQ, he⟩ := (C.mem_cellsOfCodimension_image e 1 P.val).mp P.property
+      exact ⟨⟨Q, hQ⟩, Subtype.ext he⟩⟩
+
+/-- The wall bijection sends each carrier to its actual affine image. -/
+@[simp]
+theorem coe_wallImageEquiv (C : FinitePolyhedralComplex h)
+    (e : Toric.IntegralAffineEquiv h h') (P : C.walls) :
+    ((C.wallImageEquiv e P : (C.image e).walls) : Set W) = e '' (P : Set V) := (rfl)
 
 /-- The support of the transported complex is exactly the affine image of its support. -/
 @[simp]
