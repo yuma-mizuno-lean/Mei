@@ -17,12 +17,11 @@ import Mathlib.Data.Nat.Basic
 
 Over a commutative rational algebra, the primitive elements of a symmetric
 algebra are exactly its degree-one elements, without a basis assumption on the
-module. Multiplication after comultiplication doubles each generator and acts
-on homogeneous degree `n` by `2 ^ n`, while a primitive element is doubled.
+module.
 
-The homogeneous eigenvalue computation uses
-`AlgHom.apply_eq_pow_mul_of_forall_ι_eq`; degree-one reconstruction uses
-`TauCeti.SymmetricAlgebra.homogeneousSubmoduleOneEquiv`.
+Use `SymmetricAlgebra.isPrimitiveElem_iff_mem_range_ι` to recover an element
+`m : M` with `ι R M m = p` from a primitive symmetric-algebra element `p`.
+Conversely, the same equivalence proves that every image of `ι` is primitive.
 -/
 
 public section
@@ -38,6 +37,10 @@ local notation "𝒮" => TauCeti.SymmetricAlgebra.homogeneousSubmodule R M
 primitive exactly when it is a generator. -/
 theorem isPrimitiveElem_iff_mem_range_ι (p : S) :
     Bialgebra.IsPrimitiveElem R p ↔ p ∈ Set.range (_root_.SymmetricAlgebra.ι R M) := by
+  /- Multiplication after comultiplication doubles each generator and acts on
+  homogeneous degree `n` by `2 ^ n`, while a primitive element is doubled.
+  The homogeneous eigenvalue computation uses `AlgHom.apply_eq_pow_mul_of_forall_ι_eq`;
+  degree-one reconstruction uses `TauCeti.SymmetricAlgebra.homogeneousSubmoduleOneEquiv`. -/
   constructor
   · intro hp
     -- Multiplication after the coproduct is the degree-preserving doubling map.
