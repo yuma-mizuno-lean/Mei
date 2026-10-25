@@ -205,6 +205,7 @@ lemma completedFiltration_succ (k : ℕ) :
   (rfl)
 
 /-- The induced filtration on the completion is separated. -/
+@[simp]
 lemma iInf_completedFiltration : (⨅ k, F.completedFiltration.submodule k) = ⊥ := by
   apply le_antisymm _ bot_le
   intro x hx
