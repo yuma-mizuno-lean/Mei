@@ -58,6 +58,26 @@ theorem singularSupport_subset_iUnion (W : ι → Set V) (hclosed : ∀ i, IsClo
   · exact Set.mem_iUnion.mpr ⟨i, intrinsicFrontier_subset (hclosed i) hxi⟩
   · exact Set.mem_iUnion.mpr ⟨i, hxi⟩
 
+/-- A continuous affine change of coordinates transports the actual singular support,
+including relative boundaries and intersections of different wall directions. -/
+@[simp]
+theorem singularSupport_image {U : Type*} [NormedAddCommGroup U] [NormedSpace ℝ U]
+    (W : ι → Set V) (e : V ≃ᴬ[ℝ] U) :
+    singularSupport (fun i => e '' W i) = e '' singularSupport W := by
+  -- The span transport API uses the affine-map coercion, rather than the equivalence coercion.
+  have hcoe : (e.toAffineEquiv.toAffineMap : V → U) = e := by rfl
+  have hdir (i j : ι) :
+      (affineSpan ℝ (e '' W i)).direction = (affineSpan ℝ (e '' W j)).direction ↔
+        (affineSpan ℝ (W i)).direction = (affineSpan ℝ (W j)).direction := by
+    rw [← hcoe, ← AffineSubspace.map_span e.toAffineEquiv.toAffineMap,
+      ← AffineSubspace.map_span e.toAffineEquiv.toAffineMap,
+      AffineSubspace.map_direction, AffineSubspace.map_direction]
+    exact (Submodule.map_injective_of_injective e.toAffineEquiv.linear.injective).eq_iff
+  ext u
+  obtain ⟨x, rfl⟩ := e.surjective u
+  simp only [mem_singularSupport, e.intrinsicFrontier_image, e.injective.mem_set_image,
+    ne_eq, hdir]
+
 /-- The singular support of finitely many codimension-one polyhedra has a
 finite affine cover of codimension at least two. The cover is obtained from
 their boundary covers and intersections of their supporting affine subspaces. -/
