@@ -5,10 +5,10 @@ Authors: Codex
 -/
 module
 
+public import Mei.Algebra.Lie.UniversalEnveloping.Augmentation.Basic
 public import Mei.Algebra.Lie.UniversalEnveloping.DegreeFiltration
 public import Mei.Algebra.Order.BigOperators.Ring.List
 public import Mei.RingTheory.GradedAlgebra.Generators
-public import Mei.RingTheory.Ideal.List
 public import TauCeti.Algebra.Lie.UniversalEnveloping.PBW.Basic
 
 /-!
@@ -56,11 +56,7 @@ theorem degreeFiltration_le_augmentation_pow (hneg : ∀ n, d n < 0 → ℒ n = 
         (fun x hx => by obtain ⟨s, _, rfl⟩ := List.mem_map.mp hx; exact hb s) hn
       simpa only [List.length_map] using h
     apply Ideal.pow_le_pow_right hlen
-    simpa only [List.length_map] using Ideal.list_prod_mem_pow J
-      (l.map (fun s => ι R (e s))) (fun a ha => by
-        obtain ⟨s, _, rfl⟩ := List.mem_map.mp ha
-        exact TauCeti.HopfIdeal.mem_toIdeal.mpr
-          (TauCeti.UniversalEnvelopingAlgebra.ι_mem_augmentation R L (e s)))
+    exact prod_mem_augmentation_pow e l
   exact hspan hx
 
 /-- Under positivity and a bounded homogeneous generating family, the two ideal families are
