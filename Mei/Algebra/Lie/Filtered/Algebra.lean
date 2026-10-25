@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Algebra.Lie.Filtered.Action
-public import Mei.Algebra.Lie.DerivationAction
+public import Mei.Algebra.Lie.Derivation.Action
 public import Mei.RingTheory.FilteredAlgebra.Module
 public import Mathlib.RingTheory.Ideal.Quotient.Operations
 

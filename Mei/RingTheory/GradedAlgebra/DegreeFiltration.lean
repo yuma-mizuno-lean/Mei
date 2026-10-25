@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mei.RingTheory.FilteredAlgebra.Basic
-public import Mei.Algebra.DirectSum.Degree
+public import Mei.Algebra.DirectSum.Degree.Basic
 public import TauCeti.RingTheory.GradedAlgebra.Basic
 
 /-!
