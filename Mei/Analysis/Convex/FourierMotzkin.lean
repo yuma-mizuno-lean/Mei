@@ -36,7 +36,7 @@ private theorem div_le_div_iff_of_neg_pos {a b c d : ℝ} (ha : a < 0) (hc : 0 <
 /-- Eliminate one nonnegative variable from finitely many scalar inequalities.
 The right side uses only multiplication, addition, and order, so rational input
 coefficients lead to rational compatibility inequalities. -/
-theorem exists_nonneg_mul_le_iff {ι : Type*} [Finite ι] (a b : ι → ℝ) :
+theorem exists_nonneg_mul_le_iff {ι : Type*} [Finite ι] {a b : ι → ℝ} :
     (∃ t : ℝ, 0 ≤ t ∧ ∀ i, a i * t ≤ b i) ↔
       (∀ i, 0 ≤ a i → 0 ≤ b i) ∧
       (∀ i j, a i < 0 → 0 < a j → a i * b j ≤ a j * b i) := by

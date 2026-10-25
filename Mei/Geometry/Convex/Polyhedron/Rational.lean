@@ -43,7 +43,7 @@ variable {h : TauCeti.Toric.IsIntegralLattice i}
 
 /-- Membership is simultaneous satisfaction of all inequalities. -/
 @[simp]
-theorem mem_carrier (P : RationalAffinePolyhedron h) (x : V) :
+theorem mem_carrier {P : RationalAffinePolyhedron h} {x : V} :
     x ∈ P.carrier ↔ ∀ j, P.inequality j x ≤ 0 := Iff.rfl
 
 /-- The presentation is a convex polyhedron on the existing supplier's carrier. -/
@@ -72,8 +72,8 @@ noncomputable def ofFinite {ι : Type*} [Finite ι] (g : ι → (V →ᴬ[ℝ] �
   exact ⟨Fintype.card ι, fun j => g ((Fintype.equivFin ι).symm j), fun j => hg _⟩
 
 /-- Reindexing preserves the exact simultaneous-inequality carrier. -/
-theorem mem_carrier_ofFinite {ι : Type*} [Finite ι] (g : ι → (V →ᴬ[ℝ] ℝ))
-    (hg : ∀ j, Toric.IsRationalFunctional h (g j).toAffineMap.linear) (x : V) :
+theorem mem_carrier_ofFinite {ι : Type*} [Finite ι] {g : ι → (V →ᴬ[ℝ] ℝ)}
+    (hg : ∀ j, Toric.IsRationalFunctional h (g j).toAffineMap.linear) {x : V} :
     x ∈ (ofFinite g hg).carrier ↔ ∀ j, g j x ≤ 0 := by
   classical
   let _ := Fintype.ofFinite ι
