@@ -9,16 +9,24 @@ public import Mei.Algebra.Group.Hom.Int
 public import Mei.Geometry.ScatteringDiagram.WallSpace.Group
 public import Mei.Geometry.Convex.Polyhedron.Rational.Map
 public import Mei.Geometry.Convex.Recession
-public import Mei.Geometry.Affine.Span
+public import Mathlib.LinearAlgebra.AffineSpace.AffineSubspace.Basic
+public import Mathlib.LinearAlgebra.Dual.Lemmas
 
 /-!
 # Directed affine walls
 
-A directed wall has an actual nonempty rational-normal polyhedral support, a nonzero
-integral normal, a supported primitive degree, and a completed label in the associated
-wall group. Its support has direction exactly the real kernel of its normal.
-The incoming condition uses the recession cone, so it is invariant under arbitrary
-translations and includes every wall whose geometric direction is zero.
+A directed wall has a nonempty rational-normal polyhedral support, an integral
+normal cutting out its affine direction, a supported primitive degree ray, and
+a label in the corresponding completed wall group. The degree lattice and the
+tangent lattice are independent. In particular the spatial direction may vanish,
+and the primitive generator need not belong to the positive monoid.
+
+Incomingness means that the positive geometric ray preserves the support. It is
+unchanged by translation or by replacing the primitive generator with any actual
+degree on its supported ray. A wall of zero geometric direction is incoming.
+
+Translation uses Mathlib's `AffineEquiv.constVAdd` and `AffineSubspace.map_span`,
+and the existing integral-affine transport of rational-normal polyhedra.
 
 Wall labels commute whenever their affine supporting directions agree, even for
 different primitive degrees. The proof restricts the real normal kernels to the lattice
@@ -40,182 +48,207 @@ and `Module.Dual.finrank_ker_add_one_of_ne_zero`.
 
 public section
 
+noncomputable section
+
+open Set
+
 namespace Mei
 
 variable {Γ Λ R L V : Type*} [AddCommGroup Γ] [AddCommGroup Λ]
   [CommRing R] [Algebra ℚ R] [LieRing L] [LieAlgebra R L]
   [LieAlgebra ℚ L] [IsScalarTower ℚ R L] [DecidableEq Γ]
   [NormedAddCommGroup V] [NormedSpace ℝ V]
-  {ρ : Γ →+ Λ} {ℒ : Γ → Submodule R L} (d : PositiveDegrees Γ)
-  [GradedLieAlgebra ℒ] [IsPositiveGrading d ℒ] {i : Λ →+ V}
+  {ρ : Γ →+ Λ} {ℒ : Γ → Submodule R L} {d : PositiveDegrees Γ}
+  [GradedLieAlgebra ℒ] [IsPositiveGrading d ℒ]
+  {i : Λ →+ V} (h : TauCeti.Toric.IsIntegralLattice i)
+  (H : DirectedWallSpaces ρ ℒ)
 
-/-- An affine wall labelled in the completed group of its supported primitive ray.
-The support may be translated, unbounded or have lineality; the projected degree may vanish. -/
-structure DirectedWall (h : TauCeti.Toric.IsIntegralLattice i)
-    (H : DirectedWallSpaces ρ ℒ) where
-  /-- The coorienting integral normal. -/
+/-- A directed affine wall, with its label in the completed group of its actual
+supported-ray wall spaces. Supports may be bounded or have lineality. -/
+@[ext]
+structure DirectedWall where
+  /-- A nonzero integral conormal. -/
   normal : Λ →+ ℤ
-  /-- A wall has a nonzero normal, including when its geometric direction is zero. -/
+  /-- The conormal is nonzero. -/
   normal_ne_zero : normal ≠ 0
-  /-- The supported primitive ambient degree, which need not belong to the positive monoid. -/
+  /-- The primitive ambient degree direction. -/
   ray : SupportedRay d
-  /-- The degree is tangent to the normal after geometric projection. -/
-  tangent : normal (ρ ray.generator) = 0
-  /-- The actual closed wall carrier. -/
+  /-- The conormal annihilates the geometric degree direction. -/
+  normal_direction : normal (ρ ray.generator) = 0
+  /-- The actual support, independent of an inequality presentation. -/
   support : Set V
-  /-- Empty walls are excluded. -/
-  nonempty : support.Nonempty
-  /-- The support admits rational normals and arbitrary real offsets. -/
-  rational : IsRationalNormalPolyhedron h support
-  /-- The affine tangent hyperplane is exactly the kernel of the extended normal. -/
-  direction_eq : (affineSpan ℝ support).direction = LinearMap.ker (h.realCharacter normal)
+  /-- A wall has nonempty support. -/
+  support_nonempty : support.Nonempty
+  /-- The support has rational normals and arbitrary real offsets. -/
+  rational_support : IsRationalNormalPolyhedron h support
+  /-- The affine direction is the kernel of the real extended normal. -/
+  direction_support : (affineSpan ℝ support).direction = LinearMap.ker (h.realCharacter normal)
   /-- The completed wall label. -/
   label : d.completedBCHGroup ℒ
-  /-- Its finite logarithms belong to the actual allowed degrees on the supported ray. -/
+  /-- The label has logarithms in the supported-ray wall spaces at every order. -/
   label_mem : label ∈ H.wallGroup ray normal
 
 namespace DirectedWall
 
-variable {d} {h : TauCeti.Toric.IsIntegralLattice i} {H : DirectedWallSpaces ρ ℒ}
+variable {h H} (W : DirectedWall (d := d) h H)
 
-/-- The normal, primitive ray, actual support and label determine a directed wall. -/
-@[ext (iff := false)]
-theorem ext {D E : DirectedWall d h H} (hn : D.normal = E.normal) (hr : D.ray = E.ray)
-    (hs : D.support = E.support) (hl : D.label = E.label) : D = E := by
-  cases D
-  cases E
-  cases hn
-  cases hr
-  cases hs
-  cases hl
+/-- The support is a closed convex polyhedron on the existing polyhedral carrier. -/
+theorem isConvexPolyhedron : TauCeti.IsConvexPolyhedron W.support := by
+  obtain ⟨P, hP⟩ := isRationalNormalPolyhedron_iff.mp W.rational_support
+  rw [← hP]
+  exact P.isConvexPolyhedron
+
+/-- The nonzero normal makes the support a codimension-one polyhedron. -/
+theorem finrank_direction_add_one :
+    Module.finrank ℝ (affineSpan ℝ W.support).direction + 1 = Module.finrank ℝ V := by
+  let := h.finiteDimensional
+  rw [W.direction_support]
+  apply Module.Dual.finrank_ker_add_one_of_ne_zero
+  intro he
+  apply W.normal_ne_zero
+  ext n
+  have hn := DFunLike.congr_fun he (i n)
+  simpa using hn
+
+/-- The spatial velocity, with the sign used for directed wall propagation. -/
+def direction : V := -i (ρ W.ray.generator)
+
+/-- The spatial velocity is the negative geometric image of the primitive degree. -/
+theorem direction_def : W.direction = -i (ρ W.ray.generator) := (rfl)
+
+/-- A wall is incoming if its support is preserved by the positive geometric ray. -/
+def Incoming : Prop := i (ρ W.ray.generator) ∈ recessionCone W.support
+
+/-- A wall is outgoing if it is not incoming. -/
+def Outgoing : Prop := ¬W.Incoming
+
+/-- Incomingness is preservation of every ray based at a support point. -/
+theorem incoming_iff : W.Incoming ↔
+    ∀ x ∈ W.support, ∀ t : ℝ, 0 ≤ t → x + t • i (ρ W.ray.generator) ∈ W.support := by
+  rw [Incoming, mem_recessionCone]
+
+/-- Outgoingness is the failure of incomingness, including when the spatial
+direction is zero. -/
+theorem outgoing_iff : W.Outgoing ↔ ¬W.Incoming := Iff.rfl
+
+/-- The geometric degree direction lies in the direction of the supporting hyperplane. -/
+theorem geometricDirection_mem_direction_support :
+    i (ρ W.ray.generator) ∈ (affineSpan ℝ W.support).direction := by
+  rw [W.direction_support, LinearMap.mem_ker, h.realCharacter_apply, W.normal_direction]
+  simp
+
+/-- Every actual degree on the ray has the same incomingness test. -/
+theorem incoming_iff_of_mem_rayDegrees {n : Γ} (hn : n ∈ W.ray.rayDegrees) :
+    W.Incoming ↔ i (ρ n) ∈ recessionCone W.support := by
+  rw [SupportedRay.mem_rayDegrees] at hn
+  obtain ⟨a, ha, rfl⟩ := hn.2
+  have he : i (ρ (a • W.ray.generator)) = (a : ℝ) • i (ρ W.ray.generator) := by
+    simp only [map_zsmul, Int.cast_smul_eq_zsmul]
+  rw [he, (recessionCone W.support).smul_mem_iff (by exact_mod_cast ha)]
   rfl
 
-/-- The wall support is a convex polyhedron on the existing polyhedral carrier. -/
-theorem isConvexPolyhedron (D : DirectedWall d h H) : TauCeti.IsConvexPolyhedron D.support := by
-  obtain ⟨Q, hQ⟩ := isRationalNormalPolyhedron_iff.mp D.rational
-  rw [← hQ]
-  exact Q.isConvexPolyhedron
+/-- A wall with zero spatial degree direction is always incoming. -/
+theorem incoming_of_geometricDirection_eq_zero (hz : i (ρ W.ray.generator) = 0) :
+    W.Incoming := by
+  rw [Incoming, hz]
+  exact (recessionCone W.support).zero_mem
+
+/-- In particular, a degree killed by the projection gives an incoming wall. -/
+theorem incoming_of_degreeDirection_eq_zero (hz : ρ W.ray.generator = 0) : W.Incoming :=
+  W.incoming_of_geometricDirection_eq_zero (by rw [hz, map_zero])
+
+/-- Move only the support by an arbitrary real translation. The integral normal,
+primitive degree and completed label are retained. -/
+def translate (v : V) : DirectedWall (d := d) h H where
+  normal := W.normal
+  normal_ne_zero := W.normal_ne_zero
+  ray := W.ray
+  normal_direction := W.normal_direction
+  support := (fun x => v + x) '' W.support
+  support_nonempty := W.support_nonempty.image _
+  rational_support := by
+    let e : Toric.IntegralAffineEquiv h h :=
+      ⟨AffineEquiv.constVAdd ℝ V v, AddEquiv.refl Λ, fun _ => rfl⟩
+    exact W.rational_support.image e
+  direction_support := by
+    have he := congrArg AffineSubspace.direction
+      (AffineSubspace.map_span (AffineEquiv.constVAdd ℝ V v).toAffineMap W.support)
+    simpa [W.direction_support] using he.symm
+  label := W.label
+  label_mem := W.label_mem
+
+@[simp]
+theorem translate_normal (v : V) : (W.translate v).normal = W.normal := (rfl)
+
+@[simp]
+theorem translate_ray (v : V) : (W.translate v).ray = W.ray := (rfl)
+
+@[simp]
+theorem translate_support (v : V) :
+    (W.translate v).support = (fun x => v + x) '' W.support := (rfl)
+
+@[simp]
+theorem translate_label (v : V) : (W.translate v).label = W.label := (rfl)
+
+/-- Translation leaves the wall's spatial velocity unchanged. -/
+@[simp]
+theorem direction_translate (v : V) : (W.translate v).direction = W.direction := by
+  rw [direction_def, translate_ray, direction_def]
+
+/-- Incomingness depends on the recession cone, so translation preserves it. -/
+@[simp]
+theorem incoming_translate_iff (v : V) : (W.translate v).Incoming ↔ W.Incoming := by
+  simp only [Incoming, translate_ray, translate_support, Set.image_add_left,
+    recessionCone_preimage_add]
+
+/-- Outgoingness is translation invariant, including for unbounded supports. -/
+@[simp]
+theorem outgoing_translate_iff (v : V) : (W.translate v).Outgoing ↔ W.Outgoing := by
+  rw [outgoing_iff, incoming_translate_iff, outgoing_iff]
+
+/-- Translation by zero fixes all wall data. -/
+@[simp]
+theorem translate_zero : W.translate 0 = W := by
+  ext <;> simp
+
+/-- Successive translations add their translation vectors. -/
+@[simp]
+theorem translate_translate (v w : V) : (W.translate v).translate w = W.translate (w + v) := by
+  apply DirectedWall.ext <;>
+    simp only [translate_normal, translate_ray, translate_support, translate_label]
+  rw [Set.image_image]
+  congr 1
+  funext x
+  exact (add_assoc w v x).symm
 
 /-- The real normal takes a constant value along the support. -/
-theorem normal_apply_eq (D : DirectedWall d h H) {x y : V}
+theorem normal_apply_eq (D : DirectedWall (d := d) h H) {x y : V}
     (hx : x ∈ D.support) (hy : y ∈ D.support) :
     h.realCharacter D.normal x = h.realCharacter D.normal y := by
   have hm : x - y ∈ LinearMap.ker (h.realCharacter D.normal) := by
-    rw [← D.direction_eq]
+    rw [← D.direction_support]
     exact AffineSubspace.vsub_mem_direction (subset_affineSpan ℝ _ hx) (subset_affineSpan ℝ _ hy)
   simpa only [LinearMap.mem_ker, map_sub, sub_eq_zero] using hm
 
-/-- The geometric wall direction is the negative image of its primitive degree. -/
-def direction (D : DirectedWall d h H) : V := -i (ρ D.ray.generator)
-
-theorem direction_def (D : DirectedWall d h H) : D.direction = -i (ρ D.ray.generator) := (rfl)
-
-/-- The direction is tangent to the wall, also when it is zero. -/
-theorem direction_mem (D : DirectedWall d h H) :
-    D.direction ∈ (affineSpan ℝ D.support).direction := by
-  rw [D.direction_eq, LinearMap.mem_ker, direction]
-  simp [D.tangent]
-
-/-- The support of a directed wall has codimension one. -/
-theorem finrank_direction_add_one (D : DirectedWall d h H) :
-    Module.finrank ℝ (affineSpan ℝ D.support).direction + 1 = Module.finrank ℝ V := by
-  let := h.finiteDimensional
-  rw [D.direction_eq]
-  apply Module.Dual.finrank_ker_add_one_of_ne_zero
-  intro hz
-  exact D.normal_ne_zero (h.realCharacter_injective (by simpa using hz))
-
-/-- A wall is incoming when its positive projected primitive degree is a recession direction. -/
-def Incoming (D : DirectedWall d h H) : Prop := i (ρ D.ray.generator) ∈ Set.recessionCone D.support
-
-/-- A wall is outgoing when its positive projected degree is not a recession direction. -/
-def Outgoing (D : DirectedWall d h H) : Prop := ¬D.Incoming
-
-theorem incoming_iff (D : DirectedWall d h H) :
-    D.Incoming ↔ ∀ x ∈ D.support, ∀ t : ℝ, 0 ≤ t →
-      x + t • i (ρ D.ray.generator) ∈ D.support := by
-  rw [Incoming, Set.mem_recessionCone]
+/-- The spatial velocity is tangent to the supporting hyperplane, also when it is zero. -/
+theorem direction_mem : W.direction ∈ (affineSpan ℝ W.support).direction := by
+  rw [W.direction_def]
+  exact (affineSpan ℝ W.support).direction.neg_mem W.geometricDirection_mem_direction_support
 
 /-- An outgoing wall has a point which leaves its support under a positive-degree translation. -/
-theorem outgoing_iff (D : DirectedWall d h H) : D.Outgoing ↔
+theorem outgoing_exists_iff (D : DirectedWall (d := d) h H) : D.Outgoing ↔
     ∃ x ∈ D.support, ∃ t : ℝ, 0 ≤ t ∧ x + t • i (ρ D.ray.generator) ∉ D.support := by
   simp only [Outgoing, incoming_iff, not_forall, exists_prop]
 
-/-- Walls with zero projected degree are always incoming. -/
-theorem incoming_of_map_ray_eq_zero (D : DirectedWall d h H) (hz : ρ D.ray.generator = 0) :
-    D.Incoming := by
-  simp [Incoming, hz]
-
-/-- Translate a wall's support, keeping its normal, primitive degree and completed label. -/
-noncomputable def translate (D : DirectedWall d h H) (v : V) : DirectedWall d h H where
-  normal := D.normal
-  normal_ne_zero := D.normal_ne_zero
-  ray := D.ray
-  tangent := D.tangent
-  support := (fun x => v + x) '' D.support
-  nonempty := D.nonempty.image _
-  rational := by
-    let e : Toric.IntegralAffineEquiv h h :=
-      ⟨AffineEquiv.constVAdd ℝ V v, AddEquiv.refl Λ, fun _ => rfl⟩
-    exact D.rational.image e
-  direction_eq := by
-    have hl : (AffineEquiv.constVAdd ℝ V v).toAffineMap.linear = LinearMap.id := rfl
-    have he := (AffineEquiv.constVAdd ℝ V v).toAffineMap.direction_affineSpan_image D.support
-    simpa only [AffineEquiv.coe_toAffineMap, AffineEquiv.constVAdd_apply, vadd_eq_add,
-      hl, Submodule.map_id, D.direction_eq] using he
-  label := D.label
-  label_mem := D.label_mem
-
-@[simp]
-theorem translate_normal (D : DirectedWall d h H) (v : V) : (D.translate v).normal = D.normal :=
-  (rfl)
-
-@[simp]
-theorem translate_ray (D : DirectedWall d h H) (v : V) : (D.translate v).ray = D.ray := (rfl)
-
-@[simp]
-theorem translate_support (D : DirectedWall d h H) (v : V) :
-    (D.translate v).support = (fun x => v + x) '' D.support := (rfl)
-
-@[simp]
-theorem translate_label (D : DirectedWall d h H) (v : V) : (D.translate v).label = D.label :=
-  (rfl)
-
-@[simp]
-theorem translate_zero (D : DirectedWall d h H) : D.translate 0 = D := by
-  ext <;> simp
-
-/-- Successive translations add their displacement vectors. -/
-@[simp]
-theorem translate_translate (D : DirectedWall d h H) (v w : V) :
-    (D.translate v).translate w = D.translate (w + v) := by
-  apply ext
-  · simp
-  · simp
-  · simp only [translate_support, Set.image_image, add_assoc]
-  · simp
-
-/-- Incomingness depends on the recession directions, not the location of the support. -/
-@[simp]
-theorem incoming_translate (D : DirectedWall d h H) (v : V) :
-    (D.translate v).Incoming ↔ D.Incoming := by
-  simp only [Incoming, translate_ray, translate_support, Set.image_add_left,
-    Set.recessionCone_preimage_add_left]
-
-/-- Outgoingness is likewise invariant under arbitrary translations. -/
-@[simp]
-theorem outgoing_translate (D : DirectedWall d h H) (v : V) :
-    (D.translate v).Outgoing ↔ D.Outgoing := by
-  simp [Outgoing]
-
 /-- Labels commute whenever the affine tangent hyperplanes have the same direction.
 The wall supports need not meet and the supported primitive degrees may differ. -/
-theorem commute_label_of_direction_eq (D E : DirectedWall d h H)
+theorem commute_label_of_direction_eq (D E : DirectedWall (d := d) h H)
     (he : (affineSpan ℝ D.support).direction = (affineSpan ℝ E.support).direction) :
     Commute D.label E.label := by
   have hk : D.normal.ker = E.normal.ker := by
     ext n
-    have hn := SetLike.ext_iff.mp (D.direction_eq.symm.trans (he.trans E.direction_eq)) (i n)
+    have hn := SetLike.ext_iff.mp
+      (D.direction_support.symm.trans (he.trans E.direction_support)) (i n)
     simpa only [LinearMap.mem_ker, h.realCharacter_apply, Int.cast_eq_zero,
       AddMonoidHom.mem_ker] using hn
   obtain ⟨c, e, hc, he, hn⟩ :=

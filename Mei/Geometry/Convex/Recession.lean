@@ -68,17 +68,19 @@ theorem recessionCone_univ : recessionCone (Set.univ : Set V) = ⊤ := by
   ext v
   simp [mem_recessionCone]
 
-/-- Translating a set preserves its recession cone, with no convexity or closedness assumption. -/
+/-- Translating a set does not change its recession directions. No convexity,
+closedness or nonemptiness assumption is required. -/
 @[simp]
-theorem recessionCone_preimage_add_left (P : Set V) (v : V) :
-    recessionCone ((fun x => v + x) ⁻¹' P) = recessionCone P := by
-  ext u
+theorem recessionCone_preimage_add (P : Set V) (a : V) :
+    recessionCone ((fun x => a + x) ⁻¹' P) = recessionCone P := by
+  ext v
+  simp only [mem_recessionCone, mem_preimage]
   constructor
-  · intro hu x hx t ht
-    have hm := hu (-v + x) (by simpa using hx) t ht
-    simpa [← add_assoc] using hm
-  · intro hu y hy t ht
-    simpa only [Set.mem_preimage, ← add_assoc] using hu (v + y) hy t ht
+  · intro hv x hx t ht
+    have he := hv (-a + x) (by simpa using hx) t ht
+    simpa [add_assoc] using he
+  · intro hv x hx t ht
+    simpa only [add_assoc] using hv (a + x) hx t ht
 
 end Algebra
 

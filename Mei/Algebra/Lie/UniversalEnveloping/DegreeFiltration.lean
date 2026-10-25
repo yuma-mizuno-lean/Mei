@@ -18,6 +18,7 @@ algebra implies nonnegative support of its enveloping algebra, without a basis a
 Every strictly positive degree ideal lies in the augmentation ideal. Conversely,
 the degree filtration contains the powers of the augmentation ideal when the Lie
 algebra is supported in strictly positive degrees.
+Lifted grading derivations preserve the degree filtration.
 -/
 
 public section
@@ -69,6 +70,19 @@ theorem degreeFiltration_ideal (hneg : ∀ n, d n < 0 → ℒ n = ⊥) (k : ℕ)
       Mei.GradedAlgebra.degreeIdeal (homogeneousSubmodule ℒ) d
         (fun _ hn => homogeneousSubmodule_eq_bot_of_degree_neg ℒ d hneg hn) k := by
   rw [degreeFiltration, Mei.GradedAlgebra.degreeFiltration_ideal]
+
+/-- Every lifted grading derivation preserves the integral degree filtration. -/
+theorem euler_mem_degreeFiltration (hneg : ∀ n, d n < 0 → ℒ n = ⊥) (φ : Γ →+ R)
+    {k : ℕ} {a : _root_.UniversalEnvelopingAlgebra R L}
+    (ha : a ∈ (degreeFiltration ℒ d hneg).ideal k) :
+    (TauCeti.UniversalEnvelopingAlgebra.envelopingDerivation R L
+      (LieDerivation.ofGrading ℒ φ) :
+        Module.End R (_root_.UniversalEnvelopingAlgebra R L)) a ∈
+      (degreeFiltration ℒ d hneg).ideal k := by
+  rw [degreeFiltration_ideal, Mei.GradedAlgebra.mem_degreeIdeal_iff,
+    Mei.DirectSum.mem_degreeTail_iff] at ha ⊢
+  intro n hn
+  rw [euler_component ℒ φ, ha n hn, smul_zero]
 
 /-- Homogeneous generators of degree at least `k` lie in filtration order `k`. -/
 theorem ι_mem_degreeFiltration (hneg : ∀ n, d n < 0 → ℒ n = ⊥)
