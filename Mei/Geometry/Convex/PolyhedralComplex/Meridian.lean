@@ -67,15 +67,8 @@ theorem exists_isolating_joint_triangle (C : FinitePolyhedralComplex h) {J : Set
       p ∈ affineSpan ℝ (W : Set V) ∧ ¬ T ≤ (affineSpan ℝ (W : Set V)).direction := by
     have hJW : J ⊆ (W : Set V) := hcells W (C.mem_cells_of_mem_walls W.property)
       (by obtain ⟨y, hyW, hyball⟩ := hW; exact ⟨y, hball hyball, hyW⟩)
-    refine ⟨subset_affineSpan ℝ _ (hJW (intrinsicInterior_subset hp)), ?_⟩
-    intro hle
-    have htop : (⊤ : Submodule ℝ V) ≤ (affineSpan ℝ (W : Set V)).direction := by
-      rw [← hT.sup_eq_top]
-      exact sup_le (AffineSubspace.direction_le (affineSpan_mono ℝ hJW)) hle
-    have heq := top_unique htop
-    have hdim := C.finrank_direction_add_one_of_mem_walls W.property
-    rw [heq, finrank_top] at hdim
-    omega
+    exact ⟨subset_affineSpan ℝ _ (hJW (intrinsicInterior_subset hp)),
+      C.not_le_wall_direction_of_isCompl hJW W.property hT⟩
   have hsingular : ∀ y ∈ Metric.ball p (min r ε), y ∈ AffineSubspace.mk' p T →
       y ∈ singularSupport (fun W : C.walls => (W : Set V)) → y = p := by
     intro y hyball hyT hy

@@ -151,6 +151,29 @@ theorem transverse_induction_on (n : V) {p : PolyhedralCochain R h E k → Prop}
     · simpa only [transversePart_mk, ite_eq_right (not_not.mpr hn)] using zero
     · simpa only [transversePart_mk, ite_eq_left hn] using mk σ hn c
 
+/-- Linear maps on transverse cochains are determined by transverse generators. -/
+@[ext]
+theorem transverse_hom_ext (n : V) {M : Type*} [AddCommGroup M] [Module R M]
+    {f g : transverseSubmodule (R := R) (h := h) (E := E) (k := k) n →ₗ[R] M}
+    (H : ∀ (σ : OrientedCell h k) (hn : n ∉ (affineSpan ℝ σ.carrier).direction) (c : E),
+      f ⟨mk σ c, mk_mem_transverseSubmodule n σ hn c⟩ =
+        g ⟨mk σ c, mk_mem_transverseSubmodule n σ hn c⟩) : f = g := by
+  apply LinearMap.ext
+  intro C
+  have he : ∃ hC, f ⟨(C : PolyhedralCochain R h E k), hC⟩ = g ⟨C, hC⟩ := by
+    refine transverse_induction_on n
+      (p := fun D => ∃ hD : D ∈ transverseSubmodule n, f ⟨D, hD⟩ = g ⟨D, hD⟩)
+      (C : PolyhedralCochain R h E k) C.property ?_ ?_ ?_
+    · exact ⟨zero_mem _, (map_zero f).trans (map_zero g).symm⟩
+    · rintro D D' ⟨hD, heD⟩ ⟨hD', heD'⟩
+      refine ⟨add_mem hD hD', ?_⟩
+      calc
+        f ⟨D + D', add_mem hD hD'⟩ = f ⟨D, hD⟩ + f ⟨D', hD'⟩ := map_add f ⟨D, hD⟩ ⟨D', hD'⟩
+        _ = g ⟨D, hD⟩ + g ⟨D', hD'⟩ := congrArg₂ (· + ·) heD heD'
+        _ = g ⟨D + D', add_mem hD hD'⟩ := (map_add g ⟨D, hD⟩ ⟨D', hD'⟩).symm
+    · exact fun σ hn c => ⟨mk_mem_transverseSubmodule n σ hn c, H σ hn c⟩
+  exact he.choose_spec
+
 /-- The zero vector is tangent to every cell, so its transverse part vanishes. -/
 @[simp]
 theorem transversePart_zero :

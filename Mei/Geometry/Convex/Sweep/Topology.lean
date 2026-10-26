@@ -9,6 +9,7 @@ public import Mei.Geometry.Convex.Sweep
 public import Mathlib.Analysis.Normed.Module.FiniteDimension
 public import Mathlib.Topology.Homeomorph.Defs
 public import Mathlib.Topology.Algebra.ContinuousAffineMap
+public import Mathlib.Analysis.Convex.Intrinsic
 
 /-!
 # A transverse sweep is a topological prism
@@ -19,6 +20,9 @@ bases and bases with lineality. The base need not be closed, convex, or nonempty
 A normalized continuous height also gives an affine projection onto the base
 hyperplane and expresses the sweep as a halfspace intersected with an affine preimage.
 A closed transverse base has a closed sweep, without a compactness hypothesis.
+Recovering the base point also sends relative interior points of the sweep to
+relative interior points of the base. Thus transverse sweeping preserves
+disjoint relative interiors, as needed for subdivisions.
 -/
 
 public section
@@ -79,6 +83,72 @@ lower half-plane under the positive vertical sweeping vector. -/
 theorem sweep_horizontal_axis :
     sweep {p : ℝ × ℝ | p.2 = 0} (0, 1) = {p : ℝ × ℝ | p.2 ≤ 0} :=
   sweep_hyperplane (ContinuousLinearMap.snd ℝ ℝ ℝ) 0 rfl
+
+/-- A relative interior point of a transverse sweep has its base point in the
+relative interior of the base. No convexity or closedness is required. -/
+theorem mem_intrinsicInterior_of_sub_smul_mem_intrinsicInterior_sweep
+    (hn : n ∉ vectorSpan ℝ P) {x : V} (hx : x ∈ P) {t : ℝ}
+    (hy : x - t • n ∈ intrinsicInterior ℝ (sweep P n)) :
+    x ∈ intrinsicInterior ℝ P := by
+  let A := affineSpan ℝ P
+  let B := affineSpan ℝ (sweep P n)
+  have hnB : n ∈ B.direction := by
+    rw [direction_affineSpan, vectorSpan_sweep ⟨x, hx⟩]
+    exact (le_sup_right : Submodule.span ℝ {n} ≤ _) (Submodule.mem_span_singleton_self n)
+  have hAB : A ≤ B := affineSpan_mono ℝ (subset_sweep P n)
+  let f : A → B := fun z =>
+    ⟨z.val - t • n, by
+      simpa only [vadd_eq_add, neg_add_eq_sub] using
+        B.vadd_mem_of_mem_direction (B.direction.neg_mem (B.direction.smul_mem t hnB))
+          (hAB z.property)⟩
+  have hf : Continuous f :=
+    (continuous_subtype_val.sub continuous_const).subtype_mk _
+  let xA : A := ⟨x, subset_affineSpan ℝ P hx⟩
+  have hfy : f xA ∈ interior (Subtype.val ⁻¹' sweep P n : Set B) := by
+    obtain ⟨y, hy, he⟩ := hy
+    have heq : y = f xA := Subtype.ext he
+    exact heq ▸ hy
+  have hpre : f ⁻¹' (Subtype.val ⁻¹' sweep P n : Set B) ⊆
+      (Subtype.val ⁻¹' P : Set A) := by
+    intro z hz
+    obtain ⟨p, hp, s, hs, he⟩ := mem_sweep_iff_exists.mp hz
+    dsimp only [f] at he
+    obtain ⟨g, c, hgn, hgP⟩ := exists_sweep_height ⟨x, hx⟩ hn
+    have hgA : ∀ z : A, g z.val = c := by
+      intro z
+      exact AffineMap.eqOn_affineSpan (f := g.toAffineMap)
+        (g := AffineMap.const ℝ V c) (fun z hz => hgP z hz) z.property
+    have hts : t = s := by
+      have hh := congrArg g he
+      simp only [map_sub, map_smul, hgA z, hgP p hp, hgn, smul_eq_mul, mul_one,
+        sub_right_inj] at hh
+      exact hh
+    have hzp : z.val = p := by
+      exact sub_left_inj.mp (hts ▸ he)
+    rw [Set.mem_preimage, hzp]
+    exact hp
+  exact ⟨xA, mem_interior_iff_mem_nhds.mpr
+    (Filter.mem_of_superset (hf.continuousAt.preimage_mem_nhds
+      (mem_interior_iff_mem_nhds.mp hfy)) hpre), rfl⟩
+
+/-- Sweeping bases in a common transverse affine subspace preserves disjoint
+relative interiors. The bases need not be convex or closed. -/
+theorem disjoint_intrinsicInterior_sweep {P Q : Set V} {n : V}
+    (hn : n ∉ vectorSpan ℝ (P ∪ Q))
+    (hPQ : Disjoint (intrinsicInterior ℝ P) (intrinsicInterior ℝ Q)) :
+    Disjoint (intrinsicInterior ℝ (sweep P n)) (intrinsicInterior ℝ (sweep Q n)) := by
+  apply Set.disjoint_left.mpr
+  intro y hyP hyQ
+  obtain ⟨p, hp, t, ht, he⟩ := mem_sweep_iff_exists.mp (intrinsicInterior_subset hyP)
+  obtain ⟨q, hq, s, hs, he'⟩ := mem_sweep_iff_exists.mp (intrinsicInterior_subset hyQ)
+  obtain ⟨hpq, hts⟩ := sweep_coordinates_unique hn (Or.inl hp) (Or.inr hq)
+    (he.symm.trans he')
+  subst q
+  exact Set.disjoint_left.mp hPQ
+    (mem_intrinsicInterior_of_sub_smul_mem_intrinsicInterior_sweep
+      (fun hm => hn (vectorSpan_mono ℝ Set.subset_union_left hm)) hp (he ▸ hyP))
+    (mem_intrinsicInterior_of_sub_smul_mem_intrinsicInterior_sweep
+      (fun hm => hn (vectorSpan_mono ℝ Set.subset_union_right hm)) hq (he' ▸ hyQ))
 
 variable [FiniteDimensional ℝ V]
 

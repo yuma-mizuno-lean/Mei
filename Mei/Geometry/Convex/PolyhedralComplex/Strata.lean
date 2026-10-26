@@ -69,6 +69,23 @@ theorem finrank_direction_add_one_of_mem_walls (C : FinitePolyhedralComplex h)
     Module.finrank ℝ (affineSpan ℝ P).direction + 1 = Module.finrank ℝ V :=
   ((C.mem_cellsOfCodimension 1 P).mp hP).2
 
+/-- A complement to the affine direction of a subset of a wall is transverse
+to that wall. No dimension hypothesis on the subset is required. -/
+theorem not_le_wall_direction_of_isCompl (C : FinitePolyhedralComplex h)
+    {J P : Set V} (hJP : J ⊆ P) (hP : P ∈ C.walls) {T : Submodule ℝ V}
+    (hT : IsCompl (affineSpan ℝ J).direction T) :
+    ¬ T ≤ (affineSpan ℝ P).direction := by
+  have := h.finiteDimensional
+  intro hle
+  have hJle := AffineSubspace.direction_le (affineSpan_mono ℝ hJP)
+  have htop : (affineSpan ℝ P).direction = ⊤ := by
+    apply top_unique
+    rw [← hT.sup_eq_top]
+    exact sup_le hJle hle
+  have hdim := C.finrank_direction_add_one_of_mem_walls hP
+  rw [htop, finrank_top] at hdim
+  omega
+
 /-- A wall of any complex lies in at most one wall of `D`. -/
 theorem eq_of_subset_of_mem_walls {C D : FinitePolyhedralComplex h} {Q P P' : Set V}
     (hQ : Q ∈ C.walls) (hP : P ∈ D.walls) (hP' : P' ∈ D.walls) (hQP : Q ⊆ P)

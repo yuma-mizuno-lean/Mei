@@ -18,8 +18,11 @@ codimension at least two agrees with the joint throughout that ball. A chosen
 complement to the joint direction gives a two-dimensional transverse slice
 whose intersection with that skeleton is exactly the center.
 
-The direction of each actual joint is the common kernel of two independent
-integral characters, by `IsRationalNormalPolyhedron.exists_direction_eq_iInf_ker`.
+The joint direction is also the common kernel of two real extensions of
+integral characters. Evaluating these equations on lattice vectors gives the
+integral tangent kernel used in homogeneous wall-space calculations. The two
+characters can be chosen with linearly independent real extensions, by
+`FinitePolyhedralComplex.exists_linearIndependent_joint_direction_eq_inf_ker`.
 
 These are the isolation and transversality conditions needed before constructing
 small polygonal meridians: any filled polygon in the ball and slice misses every
@@ -42,10 +45,22 @@ namespace Mei.FinitePolyhedralComplex
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
 
+/-- The tangent space of a joint is the common kernel of two integral
+characters extended to the ambient real space. -/
+theorem exists_joint_direction_eq_inf_ker (C : FinitePolyhedralComplex h) {J : Set V}
+    (hJ : J ∈ C.joints) :
+    ∃ f g : N →+ ℤ, (affineSpan ℝ J).direction =
+      (h.realCharacter f).ker ⊓ (h.realCharacter g).ker := by
+  obtain ⟨hJC, hdim⟩ := (C.mem_cellsOfCodimension 2 J).mp hJ
+  obtain ⟨f, g, hfg⟩ := (C.rational J hJC).exists_direction_eq_inf_ker
+    (C.nonempty J hJC) hdim
+  exact ⟨f.toAddMonoidHom, g.toAddMonoidHom, hfg⟩
+
 /-- The direction of an actual joint is cut out by two independent integral
 characters. The joint need not contain any lattice point, since its offsets
 may be arbitrary real numbers. -/
-theorem exists_joint_direction_eq_inf_ker (C : FinitePolyhedralComplex h) {J : Set V}
+theorem exists_linearIndependent_joint_direction_eq_inf_ker
+    (C : FinitePolyhedralComplex h) {J : Set V}
     (hJ : J ∈ C.joints) :
     ∃ f g : N →+ ℤ, LinearIndependent ℝ ![h.realCharacter f, h.realCharacter g] ∧
       (affineSpan ℝ J).direction = (h.realCharacter f).ker ⊓ (h.realCharacter g).ker := by

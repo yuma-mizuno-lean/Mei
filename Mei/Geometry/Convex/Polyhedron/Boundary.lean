@@ -16,9 +16,8 @@ making every inequality strict except those that vanish on the whole polyhedron.
 The relative boundary is the union of the active-row faces of the remaining rows.
 An ordinary noninterior point has a nonconstant active row, even when constant
 zero rows are present. Redundant inequalities, empty and lower-dimensional
-polyhedra, unboundedness and lineality are allowed. The affine direction of a
-nonempty polyhedron is the common kernel of the rows vanishing everywhere on it.
-No finite-dimensionality assumption is needed.
+polyhedra, unboundedness and lineality are allowed. No finite-dimensionality
+assumption is needed.
 -/
 
 public section
@@ -112,52 +111,6 @@ theorem intrinsicFrontier_eq_iUnion_active [Finite ι] (g : ι → (V →ᴬ[ℝ
     have hlt := hstrict j hj
     rw [hgj] at hlt
     exact lt_irrefl 0 hlt
-
-/-- The affine direction of a finite intersection of half-spaces is the common
-kernel of the rows vanishing on the whole polyhedron. A relative interior point
-supplies nonemptiness; no finite-dimensionality assumption is needed. -/
-theorem direction_affineSpan_eq_iInf_ker [Finite ι] (g : ι → (V →ᴬ[ℝ] ℝ))
-    {P : Set V} (hP : P = {x | ∀ j, g j x ≤ 0}) {p : V}
-    (hp : p ∈ intrinsicInterior ℝ P) :
-    (affineSpan ℝ P).direction =
-      ⨅ j : {j // ∀ x ∈ P, g j x = 0}, (g j.val).toAffineMap.linear.ker := by
-  apply le_antisymm
-  · apply le_iInf
-    intro j
-    rw [direction_affineSpan, vectorSpan_def, Submodule.span_le]
-    rintro v ⟨a, ha, b, hb, rfl⟩
-    apply LinearMap.mem_ker.mpr
-    rw [AffineMap.linear_apply_vsub]
-    exact sub_eq_zero.mpr ((j.property a ha).trans (j.property b hb).symm)
-  · intro v hv
-    have hstrict := (mem_intrinsicInterior_iff_forall_lt g hP).mp hp
-    -- Every nonconstant inequality stays strict for a small displacement in `v`.
-    have hrow (j : ι) : ∀ᶠ t : ℝ in 𝓝 0, g j (p + t • v) ≤ 0 := by
-      by_cases hj : ∃ x ∈ P, g j x < 0
-      · have hlt : g j (p + (0 : ℝ) • v) < 0 := by simpa using hstrict.2 j hj
-        exact ((by fun_prop : Continuous (fun t : ℝ => g j (p + t • v))).continuousAt.eventually
-          (gt_mem_nhds hlt)).mono fun _ ht => ht.le
-      · have hz : ∀ x ∈ P, g j x = 0 := by
-          intro x hx
-          have hxle : g j x ≤ 0 := by rw [hP] at hx; exact hx j
-          exact le_antisymm hxle (by by_contra hn; exact hj ⟨x, hx, lt_of_not_ge hn⟩)
-        have hgv := LinearMap.mem_ker.mp ((Submodule.mem_iInf _).mp hv ⟨j, hz⟩)
-        exact Filter.Eventually.of_forall fun t => by
-          have he := (g j).toAffineMap.map_vadd p (t • v)
-          simpa only [vadd_eq_add, ContinuousAffineMap.coe_toAffineMap, map_smul, hgv, smul_zero,
-            hz p hstrict.1, zero_add, add_comm] using he.le
-    have hall : ∀ᶠ t : ℝ in 𝓝 0, p + t • v ∈ P := by
-      simpa only [hP, Set.mem_ofPred_eq] using Filter.eventually_all.mpr hrow
-    obtain ⟨ε, hε, he⟩ := Metric.eventually_nhds_iff.mp hall
-    have hmem : p + (ε / 2) • v ∈ P := he (by
-      rw [dist_zero_right, Real.norm_eq_abs, abs_of_pos (by positivity : 0 < ε / 2)]
-      linarith)
-    have hdir := (affineSpan ℝ P).vsub_mem_direction
-      (subset_affineSpan ℝ P hmem) (subset_affineSpan ℝ P hstrict.1)
-    have ht : ε / 2 ≠ 0 := by positivity
-    have hscaled := (affineSpan ℝ P).direction.smul_mem (ε / 2)⁻¹ hdir
-    simpa only [vsub_eq_sub, add_sub_cancel_left, smul_smul, inv_mul_cancel₀ ht,
-      one_smul] using hscaled
 
 omit [IsTopologicalAddGroup V] [ContinuousSMul ℝ V] in
 /-- At a point of a finite intersection of affine half-spaces that is not interior,
