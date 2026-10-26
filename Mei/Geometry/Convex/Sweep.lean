@@ -195,6 +195,19 @@ theorem inter_sweep_of_transverse {P Q : Set V} {n : V}
     exact ⟨hy, hxy.1 ▸ hx⟩
   · exact fun hy => ⟨hy.1, subset_sweep Q n hy.2⟩
 
+/-- Sweeping subsets of a common transverse base identifies no distinct supports. -/
+theorem sweep_eq_sweep_iff_of_subset {P Q B : Set V} {n : V}
+    (hn : n ∉ vectorSpan ℝ B) (hP : P ⊆ B) (hQ : Q ⊆ B) :
+    sweep P n = sweep Q n ↔ P = Q := by
+  constructor
+  · intro he
+    have hbase (S : Set V) (hS : S ⊆ B) : B ∩ sweep S n = S := by
+      rw [inter_sweep_of_transverse (fun hm => hn (vectorSpan_mono ℝ
+        (Set.union_subset le_rfl hS) hm)), Set.inter_eq_right.mpr hS]
+    rw [← hbase P hP, he, hbase Q hQ]
+  · rintro rfl
+    rfl
+
 /-- The direction of a nonempty sweep gains exactly the sweeping line. -/
 theorem vectorSpan_sweep {P : Set V} (hP : P.Nonempty) (n : V) :
     vectorSpan ℝ (sweep P n) = vectorSpan ℝ P ⊔ Submodule.span ℝ {n} := by
