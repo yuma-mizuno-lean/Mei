@@ -27,6 +27,14 @@ into general position: small moves of the vertices keep the ordered crossings of
 family for which the path is admissible, and suitable small moves of the interior
 vertices make it admissible for any further finite family of codimension-one polyhedra.
 
+Normal signs are stable as well. The shared theorem
+`Quiver.Path.exists_pos_invariant_eq_of_forall₂_dist_lt` lifts stability of segment
+data to stability of recursively accumulated path invariants.
+`CommonWallComplement.exists_forall₂_dist_lt_forall` retains finitely many locally
+constant tests while choosing a common admissible path. The normal-sign and
+path-invariant arguments are extracted from Claude's crossing-word stability proof
+in `Mei.Geometry.Convex.PolyhedralComplex.Perturbation`.
+
 The crossing parameter of a perturbed line is the continuous function supplied by
 `AffineSubspace.exists_continuousAt_lineMap_mem`; segments missing a closed set stay
 away from it by `IsClosed.isOpen_setOf_lineMap_notMem`.
@@ -91,6 +99,29 @@ private theorem eventually_notMem_of_notMem (hclosed : ∀ i, IsClosed (W i)) {i
       AffineMap.lineMap q.1 q.2 s ∉ W i :=
   ((hclosed i).isOpen_setOf_lineMap_notMem).mem_nhds fun t ht hti =>
     h t ((mem_crossings x y i t).mpr ⟨ht, hti⟩)
+
+/-- The normal velocity at a crossed wall keeps its sign when the segment's
+endpoints move sufficiently little. No closedness or codimension assumption is needed. -/
+theorem eventually_pos_iff_of_mem_crossings (e : AdmissibleSegment x y)
+    (i : ι) (ν : V →ₗ[ℝ] ℝ)
+    (hν : LinearMap.ker ν = (affineSpan ℝ (W i)).direction) :
+    ∀ᶠ q : V × V in 𝓝 (x.val, y.val),
+      (∃ t, (i, t) ∈ crossings x y) →
+        (0 < ν (q.2 - q.1) ↔ 0 < ν (y.val - x.val)) := by
+  by_cases hi : ∃ t, (i, t) ∈ crossings x y
+  · obtain ⟨t, ht⟩ := hi
+    have hne : ν (y.val - x.val) ≠ 0 := by
+      rw [Ne, ← LinearMap.mem_ker, hν]
+      exact e.transverse i ⟨t, (mem_crossings x y i t).mp ht⟩
+    have hc : ContinuousAt (fun q : V × V => ν (q.2 - q.1)) (x.val, y.val) :=
+      (ν.continuous_of_finiteDimensional.comp
+        (continuous_snd.sub continuous_fst)).continuousAt
+    rcases hne.lt_or_gt with hlt | hgt
+    · filter_upwards [hc.eventually_lt continuousAt_const hlt] with q hq
+      exact fun _ => iff_of_false hq.asymm hlt.asymm
+    · filter_upwards [continuousAt_const.eventually_lt hc hgt] with q hq
+      exact fun _ => iff_of_true hq hgt
+  · exact Eventually.of_forall fun _ h => absurd h hi
 
 variable [Finite ι]
 
@@ -242,4 +273,113 @@ theorem exists_loop_forall₂_dist_lt [Finite ι]
 
 end AdmissiblePLPath
 
+namespace CommonWallComplement
+
+variable {J K : Type*} {I : J → Type*}
+  [Countable J] [∀ j, Finite (I j)] [Finite K] {W : ∀ j, I j → Set V}
+
+/-- Approximate a vertex list by a common admissible path while satisfying finitely
+many tests, each of which holds for all sufficiently close projected paths. -/
+theorem exists_forall₂_dist_lt_forall
+    (hpoly : ∀ j i, TauCeti.IsConvexPolyhedron (W j i))
+    (hdim : ∀ j i, Module.finrank ℝ (affineSpan ℝ (W j i)).direction + 1 =
+      Module.finrank ℝ V)
+    (a : K → J) {x y : CommonWallComplement W} {l : List V} (hl : l ≠ [])
+    {ε : ℝ} (hε : 0 < ε)
+    (test : ∀ k, AdmissiblePLPath (projection (a k) x) (projection (a k) y) → Prop)
+    (htest : ∀ k, ∃ r > 0,
+      ∀ q : AdmissiblePLPath (projection (a k) x) (projection (a k) y),
+        List.Forall₂ (fun u v => dist u v < r) (x.val :: (l ++ [y.val]))
+          (q.vertices.map WallComplement.val) → test k q) :
+    ∃ q : Quiver.Path x y,
+      List.Forall₂ (fun u v => dist u v < ε) (x.val :: (l ++ [y.val]))
+        (q.vertices.map CommonWallComplement.val) ∧
+      ∀ k, test k ((projectionPrefunctor (a k)).mapPath q) := by
+  classical
+  let := Fintype.ofFinite K
+  choose r hr htest using htest
+  -- The extra index also handles an empty collection of tests.
+  let radius : Option K → ℝ := fun k => k.elim ε r
+  let δ := Finset.univ.inf'
+    (Finset.univ_nonempty : (Finset.univ : Finset (Option K)).Nonempty) radius
+  have hδ : 0 < δ := by
+    apply (Finset.lt_inf'_iff _).mpr
+    intro k _
+    cases k with
+    | none => exact hε
+    | some k => exact hr k
+  have hδε : δ ≤ ε := Finset.inf'_le radius (Finset.mem_univ (none : Option K))
+  obtain ⟨q, hq⟩ := exists_forall₂_dist_lt hpoly hdim hl hδ x y
+  refine ⟨q, hq.imp (fun _ _ huv => huv.trans_le hδε), fun k => ?_⟩
+  apply htest k
+  exact (vertices_projection (a k) q).symm ▸
+    hq.imp (fun _ _ huv => huv.trans_le
+      (Finset.inf'_le radius (Finset.mem_univ (some k))))
+
+end CommonWallComplement
+
 end Mei.Convex
+
+namespace Quiver.Path
+
+open Mei.Convex Mei.Convex.WallComplement
+
+variable {V ι A B : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
+  {W : ι → Set V} {x y : WallComplement W}
+
+/-- A recursively accumulated path invariant is stable under small vertex movements
+if its segment data are stable under small endpoint movements. The accumulation
+operation need not satisfy any algebraic laws. -/
+theorem exists_pos_invariant_eq_of_forall₂_dist_lt (p : AdmissiblePLPath x y)
+    (segment : {u v : WallComplement W} → (u ⟶ v) → A)
+    (invariant : {u v : WallComplement W} → AdmissiblePLPath u v → B)
+    (initial : B) (append : B → A → B)
+    (hnil : ∀ u, invariant (Quiver.Path.nil : AdmissiblePLPath u u) = initial)
+    (hcons : ∀ {u v w : WallComplement W} (p : AdmissiblePLPath u v) (e : v ⟶ w),
+      invariant (p.cons e) = append (invariant p) (segment e))
+    (hsegment : ∀ {u v : WallComplement W} (e : u ⟶ v),
+      ∀ᶠ q : V × V in 𝓝 (u.val, v.val),
+        ∀ (u' v' : WallComplement W) (e' : u' ⟶ v'),
+          u'.val = q.1 → v'.val = q.2 → segment e' = segment e) :
+    ∃ ε > 0, ∀ {x' y' : WallComplement W} (q : AdmissiblePLPath x' y'),
+      List.Forall₂ (fun a b => dist a b < ε) (p.vertices.map WallComplement.val)
+        (q.vertices.map WallComplement.val) → invariant q = invariant p := by
+  have hsplit {S : V → V → Prop} {l₁ l₂ : List V} {a b : V} :
+      List.Forall₂ S (l₁ ++ [a]) (l₂ ++ [b]) → List.Forall₂ S l₁ l₂ ∧ S a b := by
+    rw [← List.forall₂_reverse_iff]
+    simp only [List.reverse_append, List.reverse_cons, List.reverse_nil, List.nil_append,
+      List.singleton_append, List.forall₂_cons, List.forall₂_reverse_iff]
+    exact And.symm
+  induction p with
+  | nil =>
+    refine ⟨1, one_pos, fun {x' y'} q hq => ?_⟩
+    cases q with
+    | nil => rw [hnil, hnil]
+    | cons q e =>
+      have := hq.length_eq
+      simp at this
+  | @cons z w p e ih =>
+    obtain ⟨ε₁, hε₁, hp⟩ := ih
+    obtain ⟨ε₂, hε₂, he⟩ := Metric.eventually_nhds_iff.mp (hsegment e)
+    refine ⟨min ε₁ ε₂, lt_min hε₁ hε₂, fun {x' y'} q hq => ?_⟩
+    cases q with
+    | nil =>
+      have := hq.length_eq
+      simp at this
+    | @cons z' w' q e' =>
+      simp only [vertices_cons, List.concat_eq_append, List.map_append, List.map_cons,
+        List.map_nil] at hq
+      obtain ⟨hq, hw⟩ := hsplit hq
+      have hz : dist z.val z'.val < min ε₁ ε₂ := by
+        have hq' := hq
+        rw [← p.dropLast_append_end_eq, ← q.dropLast_append_end_eq, List.map_append,
+          List.map_append, List.map_singleton, List.map_singleton] at hq'
+        exact (hsplit hq').2
+      rw [hcons, hcons,
+        hp q (hq.imp fun _ _ hab => hab.trans_le (min_le_left _ _))]
+      congr 1
+      refine he (y := (z'.val, _)) ?_ z' _ e' rfl rfl
+      rw [Prod.dist_eq, max_lt_iff, dist_comm z'.val, dist_comm _ w.val]
+      exact ⟨hz.trans_le (min_le_right _ _), hw.trans_le (min_le_right _ _)⟩
+
+end Quiver.Path

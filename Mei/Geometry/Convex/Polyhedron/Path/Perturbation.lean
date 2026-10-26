@@ -20,9 +20,9 @@ wall families without changing the original signed crossing data.
 The geometric input is `AdmissibleSegment.eventually_exists_mem_crossings_iff`
 and `AdmissibleSegment.eventually_lt_iff_of_mem_crossings`. We match distinct
 crossing times, rather than ordering individual walls, so the argument also
-handles simultaneous crossings. The normal-sign and vertex-radius arguments adapt
-Claude's crossing-word construction in
-`Mei.Geometry.Convex.PolyhedralComplex.Perturbation`.
+handles simultaneous crossings. The shared normal-sign and vertex-radius helpers
+in `Mei.Geometry.Convex.Polyhedron.Perturbation` are extracted from Claude's
+crossing-word construction in `Mei.Geometry.Convex.PolyhedralComplex.Perturbation`.
 -/
 
 public section
@@ -51,25 +51,9 @@ theorem eventually_segmentCrossingEvents_eq
         x'.val = q.1 → y'.val = q.2 →
           segmentCrossingEvents ν e' = segmentCrossingEvents ν e := by
   classical
-  have hsign (i : ι) : ∀ᶠ q : V × V in 𝓝 (x.val, y.val),
-      (∃ t, (i, t) ∈ crossings x y) →
-        (0 < ν i (q.2 - q.1) ↔ 0 < ν i (y.val - x.val)) := by
-    by_cases hi : ∃ t, (i, t) ∈ crossings x y
-    · obtain ⟨t, ht⟩ := hi
-      have hne : ν i (y.val - x.val) ≠ 0 := by
-        rw [Ne, ← LinearMap.mem_ker, hν]
-        exact e.down.transverse i ⟨t, (mem_crossings x y i t).mp ht⟩
-      have hc : ContinuousAt (fun q : V × V => ν i (q.2 - q.1)) (x.val, y.val) :=
-        ((ν i).continuous_of_finiteDimensional.comp
-          (continuous_snd.sub continuous_fst)).continuousAt
-      rcases hne.lt_or_gt with hlt | hgt
-      · filter_upwards [hc.eventually_lt continuousAt_const hlt] with q hq
-        exact fun _ => iff_of_false hq.asymm hlt.asymm
-      · filter_upwards [continuousAt_const.eventually_lt hc hgt] with q hq
-        exact fun _ => iff_of_true hq hgt
-    · exact Eventually.of_forall fun _ h => absurd h hi
   filter_upwards [e.down.eventually_exists_mem_crossings_iff hclosed hdim,
-    e.down.eventually_lt_iff_of_mem_crossings hdim, eventually_all.mpr hsign]
+    e.down.eventually_lt_iff_of_mem_crossings hdim,
+    eventually_all.mpr (fun i => e.down.eventually_pos_iff_of_mem_crossings i (ν i) (hν i))]
     with ⟨a, b⟩ hwalls horder hsign
   rintro x' y' e' rfl rfl
   have hwalls := hwalls x' y' rfl rfl
@@ -156,44 +140,11 @@ theorem exists_pos_signedCrossingEvents_eq_of_forall₂_dist_lt
       List.Forall₂ (fun a b => dist a b < ε) (p.vertices.map WallComplement.val)
         (q.vertices.map WallComplement.val) →
           q.signedCrossingEvents ν = p.signedCrossingEvents ν := by
-  have hsplit {S : V → V → Prop} {l₁ l₂ : List V} {a b : V} :
-      List.Forall₂ S (l₁ ++ [a]) (l₂ ++ [b]) → List.Forall₂ S l₁ l₂ ∧ S a b := by
-    rw [← List.forall₂_reverse_iff]
-    simp only [List.reverse_append, List.reverse_cons, List.reverse_nil, List.nil_append,
-      List.singleton_append, List.forall₂_cons, List.forall₂_reverse_iff]
-    exact And.symm
-  induction p with
-  | nil =>
-    refine ⟨1, one_pos, fun {x' y'} q hq => ?_⟩
-    cases q with
-    | nil => simp
-    | cons q e =>
-      have := hq.length_eq
-      simp at this
-  | @cons z w p e ih =>
-    obtain ⟨ε₁, hε₁, hp⟩ := ih
-    obtain ⟨ε₂, hε₂, he⟩ := Metric.eventually_nhds_iff.mp
-      (eventually_segmentCrossingEvents_eq hclosed hdim ν hν e)
-    refine ⟨min ε₁ ε₂, lt_min hε₁ hε₂, fun {x' y'} q hq => ?_⟩
-    cases q with
-    | nil =>
-      have := hq.length_eq
-      simp at this
-    | @cons z' w' q e' =>
-      simp only [vertices_cons, List.concat_eq_append, List.map_append, List.map_cons,
-        List.map_nil] at hq
-      obtain ⟨hq, hw⟩ := hsplit hq
-      have hz : dist z.val z'.val < min ε₁ ε₂ := by
-        have hq' := hq
-        rw [← p.dropLast_append_end_eq, ← q.dropLast_append_end_eq, List.map_append,
-          List.map_append, List.map_singleton, List.map_singleton] at hq'
-        exact (hsplit hq').2
-      rw [signedCrossingEvents_cons, signedCrossingEvents_cons,
-        hp q (hq.imp fun _ _ hab => hab.trans_le (min_le_left _ _))]
-      congr 1
-      refine he (y := (z'.val, _)) ?_ z' _ e' rfl rfl
-      rw [Prod.dist_eq, max_lt_iff, dist_comm z'.val, dist_comm _ w.val]
-      exact ⟨hz.trans_le (min_le_right _ _), hw.trans_le (min_le_right _ _)⟩
+  exact p.exists_pos_invariant_eq_of_forall₂_dist_lt
+    (fun e => segmentCrossingEvents ν e) (fun p => p.signedCrossingEvents ν)
+    [] (· ++ ·) (fun _ => signedCrossingEvents_nil ν)
+    (fun p e => signedCrossingEvents_cons ν p e)
+    (eventually_segmentCrossingEvents_eq hclosed hdim ν hν)
 
 end Quiver.Path
 
@@ -223,27 +174,12 @@ theorem exists_forall₂_dist_lt_signedCrossingEvents_eq
         (q.vertices.map CommonWallComplement.val) ∧
       ∀ k, ((projectionPrefunctor (a k)).mapPath q).signedCrossingEvents (ν k) =
         (p k).signedCrossingEvents (ν k) := by
-  classical
-  let := Fintype.ofFinite K
-  choose r hr hevents using fun k =>
-    (p k).exists_pos_signedCrossingEvents_eq_of_forall₂_dist_lt
-      (fun i => (hpoly (a k) i).isClosed) (hdim (a k)) (ν k) (hν k)
-  -- Include the requested radius to handle even an empty collection of tests.
-  let radius : Option K → ℝ := fun k => k.elim ε r
-  let δ := Finset.univ.inf'
-    (Finset.univ_nonempty : (Finset.univ : Finset (Option K)).Nonempty) radius
-  have hδ : 0 < δ := by
-    apply (Finset.lt_inf'_iff _).mpr
-    intro k _
-    cases k with
-    | none => exact hε
-    | some k => exact hr k
-  have hδε : δ ≤ ε := Finset.inf'_le radius (Finset.mem_univ (none : Option K))
-  obtain ⟨q, hq⟩ := exists_forall₂_dist_lt hpoly hdim hl hδ x y
-  refine ⟨q, hq.imp (fun _ _ huv => huv.trans_le hδε), fun k => ?_⟩
-  apply hevents k
-  rw [hp k, vertices_projection (a k) q]
-  exact hq.imp (fun _ _ huv => huv.trans_le
-    (Finset.inf'_le radius (Finset.mem_univ (some k))))
+  apply exists_forall₂_dist_lt_forall hpoly hdim a hl hε
+    (fun k q => q.signedCrossingEvents (ν k) = (p k).signedCrossingEvents (ν k))
+  intro k
+  obtain ⟨r, hr, hevents⟩ := (p k).exists_pos_signedCrossingEvents_eq_of_forall₂_dist_lt
+    (fun i => (hpoly (a k) i).isClosed) (hdim (a k)) (ν k) (hν k)
+  refine ⟨r, hr, fun q hq => hevents q ?_⟩
+  rwa [hp k]
 
 end Mei.Convex.CommonWallComplement

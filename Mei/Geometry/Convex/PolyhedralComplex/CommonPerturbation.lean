@@ -78,31 +78,16 @@ theorem exists_forall₂_dist_lt_crossingWord_eq
         (q.vertices.map CommonWallComplement.val) ∧
       ∀ k, ((projectionPrefunctor (a k)).mapPath q).crossingWord (ν k) =
         (p k).crossingWord (ν k) := by
-  classical
-  let := Fintype.ofFinite K
   have := h.finiteDimensional
-  choose r hr hword using fun k =>
-    (p k).exists_pos_crossingWord_eq_of_forall₂_dist_lt (ν k) (hν k)
-  -- The extra index supplies a positive radius even when no words are prescribed.
-  let radius : Option K → ℝ := fun k => k.elim ε r
-  let δ := Finset.univ.inf' (Finset.univ_nonempty : (Finset.univ : Finset (Option K)).Nonempty)
-    radius
-  have hδ : 0 < δ := by
-    apply (Finset.lt_inf'_iff _).mpr
-    intro k _
-    cases k with
-    | none => exact hε
-    | some k => exact hr k
-  have hδε : δ ≤ ε := Finset.inf'_le radius (Finset.mem_univ (none : Option K))
-  obtain ⟨q, hq⟩ := CommonWallComplement.exists_forall₂_dist_lt
+  apply exists_forall₂_dist_lt_forall
+    (W := fun j => fun P : (C j).walls => (P : Set V)) (x := x) (y := y)
     (fun j P => (C j).isConvexPolyhedron ((C j).mem_cells_of_mem_walls P.property))
-    (fun j P => (C j).finrank_direction_add_one_of_mem_walls P.property) hl hδ x y
-  refine ⟨q, hq.imp (fun _ _ huv => huv.trans_le hδε), fun k => ?_⟩
-  apply hword k
-  rw [hp k]
-  exact (vertices_projection (a k) q).symm ▸
-    hq.imp (fun _ _ huv => huv.trans_le
-      (Finset.inf'_le radius (Finset.mem_univ (some k))))
+    (fun j P => (C j).finrank_direction_add_one_of_mem_walls P.property) a hl hε
+    (fun k q => q.crossingWord (ν k) = (p k).crossingWord (ν k))
+  intro k
+  obtain ⟨r, hr, hword⟩ := (p k).exists_pos_crossingWord_eq_of_forall₂_dist_lt (ν k) (hν k)
+  refine ⟨r, hr, fun q hq => hword q ?_⟩
+  rwa [hp k]
 
 /-- A nonempty finite collection of admissible paths with the same ambient vertex list
 has a common replacement admissible for countably many complexes and retaining

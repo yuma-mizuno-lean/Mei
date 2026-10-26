@@ -47,25 +47,9 @@ theorem eventually_segmentCrossingWord_eq (ν : C.walls → V →ₗ[ℝ] ℝ)
     (C.isConvexPolyhedron (C.mem_cells_of_mem_walls P.2)).isClosed
   have hdim (P : C.walls) := C.finrank_direction_add_one_of_mem_walls P.2
   -- The normal velocity keeps its nonzero sign at each crossed wall.
-  have hsign (P : C.walls) : ∀ᶠ q : V × V in 𝓝 (x.val, y.val),
-      (∃ t, (P, t) ∈ WallComplement.crossings x y) →
-        (0 < ν P (q.2 - q.1) ↔ 0 < ν P (y.val - x.val)) := by
-    by_cases hP : ∃ t, (P, t) ∈ WallComplement.crossings x y
-    · obtain ⟨t, ht⟩ := hP
-      have hne : ν P (y.val - x.val) ≠ 0 := by
-        rw [Ne, ← LinearMap.mem_ker, hν]
-        exact e.down.transverse P ⟨t, ((WallComplement.mem_crossings x y P t).mp ht)⟩
-      have hc : ContinuousAt (fun q : V × V => ν P (q.2 - q.1)) (x.val, y.val) :=
-        ((LinearMap.continuous_of_finiteDimensional (ν P)).comp
-          (continuous_snd.sub continuous_fst)).continuousAt
-      rcases hne.lt_or_gt with hlt | hgt
-      · filter_upwards [hc.eventually_lt continuousAt_const hlt] with q hq
-        exact fun _ => iff_of_false hq.asymm hlt.asymm
-      · filter_upwards [continuousAt_const.eventually_lt hc hgt] with q hq
-        exact fun _ => iff_of_true hq hgt
-    · exact Eventually.of_forall fun q h => absurd h hP
   filter_upwards [e.down.eventually_exists_mem_crossings_iff hclosed hdim,
-    e.down.eventually_lt_iff_of_mem_crossings hdim, eventually_all.mpr hsign]
+    e.down.eventually_lt_iff_of_mem_crossings hdim,
+    eventually_all.mpr (fun i => e.down.eventually_pos_iff_of_mem_crossings i (ν i) (hν i))]
     with ⟨a, b⟩ hwalls horder hsign
   rintro x' y' e' rfl rfl
   have hwalls := hwalls x' y' rfl rfl
@@ -130,43 +114,10 @@ theorem exists_pos_crossingWord_eq_of_forall₂_dist_lt (ν : C.walls → V →�
       (q : AdmissiblePLPath x' y'),
         List.Forall₂ (fun a b => dist a b < ε) (p.vertices.map WallComplement.val)
           (q.vertices.map WallComplement.val) → q.crossingWord ν = p.crossingWord ν := by
-  have hsplit {R : V → V → Prop} {l₁ l₂ : List V} {a b : V} :
-      List.Forall₂ R (l₁ ++ [a]) (l₂ ++ [b]) → List.Forall₂ R l₁ l₂ ∧ R a b := by
-    rw [← List.forall₂_reverse_iff]
-    simp only [List.reverse_append, List.reverse_cons, List.reverse_nil, List.nil_append,
-      List.singleton_append, List.forall₂_cons, List.forall₂_reverse_iff]
-    exact And.symm
-  induction p with
-  | nil =>
-    refine ⟨1, one_pos, fun {x' y'} q hq => ?_⟩
-    cases q with
-    | nil => simp only [crossingWord_nil]
-    | cons q e =>
-      have := hq.length_eq
-      simp at this
-  | @cons z w p e ih =>
-    obtain ⟨ε₁, hε₁, hp⟩ := ih
-    obtain ⟨ε₂, hε₂, he⟩ := Metric.eventually_nhds_iff.mp
-      (C.eventually_segmentCrossingWord_eq ν hν e)
-    refine ⟨min ε₁ ε₂, lt_min hε₁ hε₂, fun {x' y'} q hq => ?_⟩
-    cases q with
-    | nil =>
-      have := hq.length_eq
-      simp at this
-    | @cons z' w' q e' =>
-      simp only [vertices_cons, List.concat_eq_append, List.map_append, List.map_cons,
-        List.map_nil] at hq
-      obtain ⟨hq, hw⟩ := hsplit hq
-      have hz : dist z.val z'.val < min ε₁ ε₂ := by
-        have hq' := hq
-        rw [← p.dropLast_append_end_eq, ← q.dropLast_append_end_eq, List.map_append,
-          List.map_append, List.map_singleton, List.map_singleton] at hq'
-        exact (hsplit hq').2
-      rw [crossingWord_cons, crossingWord_cons,
-        hp q (hq.imp fun _ _ hab => hab.trans_le (min_le_left _ _))]
-      congr 1
-      refine he (y := (z'.val, _)) ?_ z' _ e' rfl rfl
-      rw [Prod.dist_eq, max_lt_iff, dist_comm z'.val, dist_comm _ w.val]
-      exact ⟨hz.trans_le (min_le_right _ _), hw.trans_le (min_le_right _ _)⟩
+  have := h.finiteDimensional
+  exact p.exists_pos_invariant_eq_of_forall₂_dist_lt
+    (fun e => C.segmentCrossingWord ν e) (fun p => p.crossingWord ν)
+    1 (fun word letter => letter * word) (fun _ => crossingWord_nil ν)
+    (fun p e => crossingWord_cons p e ν) (C.eventually_segmentCrossingWord_eq ν hν)
 
 end Quiver.Path
