@@ -72,6 +72,13 @@ def active (k : ℕ) : Set ι :=
 theorem mem_active (k : ℕ) (j : ι) :
     j ∈ D.active k ↔ CompletedGroup.projection k (D.wall j).label ≠ 1 := Iff.rfl
 
+/-- A wall active at some order has a nonidentity completed label. -/
+theorem label_ne_one_of_mem_active {k : ℕ} {j : ι} (hj : j ∈ D.active k) :
+    (D.wall j).label ≠ 1 := by
+  intro he
+  apply (D.mem_active k j).mp hj
+  rw [he, map_one]
+
 /-- The active wall index type is finite at every order. -/
 instance finiteActive (k : ℕ) : Finite (D.active k) :=
   Set.finite_coe_iff.mpr (D.finite_active k)
