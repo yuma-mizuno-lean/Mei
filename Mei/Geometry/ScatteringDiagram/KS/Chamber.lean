@@ -45,10 +45,11 @@ element and the other factors are identities. -/
     (hθ : θ ∈ d.monoid.positiveChamber i) (g : d.truncatedGroup ℒ k) (s : SignType) :
     ((signFactorizationEquiv ℒ (θ.toAddMonoidHom.comp i) d k).symm g s :
         d.truncatedGroup ℒ k) = if s = .pos then g else 1 := by
-  apply signFactorizationEquiv_symm_of_sign_eq
+  apply signFactorizationEquiv_symm_of_uniformSign
   intro n hn
+  have hc := d.mem_cutoff_of_truncatedGrading_ne_bot ℒ hn
   exact sign_pos (((AddSubmonoid.mem_positiveChamber d.monoid i).mp hθ) n
-    (d.mem_cutoff.mp hn.1).1 hn.2)
+    (d.mem_cutoff.mp hc.1).1 hc.2)
 
 /-- At a negative chamber point the negative finite factor is the whole
 element and the other factors are identities. -/
@@ -56,10 +57,11 @@ element and the other factors are identities. -/
     (hθ : θ ∈ d.monoid.negativeChamber i) (g : d.truncatedGroup ℒ k) (s : SignType) :
     ((signFactorizationEquiv ℒ (θ.toAddMonoidHom.comp i) d k).symm g s :
         d.truncatedGroup ℒ k) = if s = .neg then g else 1 := by
-  apply signFactorizationEquiv_symm_of_sign_eq
+  apply signFactorizationEquiv_symm_of_uniformSign
   intro n hn
+  have hc := d.mem_cutoff_of_truncatedGrading_ne_bot ℒ hn
   exact sign_neg (((AddSubmonoid.mem_negativeChamber d.monoid i).mp hθ) n
-    (d.mem_cutoff.mp hn.1).1 hn.2)
+    (d.mem_cutoff.mp hc.1).1 hc.2)
 
 /-- The finite negative-factor quotient from a positive chamber to a
 negative chamber is the original group element. -/
@@ -80,7 +82,7 @@ element; both other completed factors are identities. -/
     (hθ : θ ∈ d.monoid.positiveChamber i) (g : d.completedBCHGroup ℒ) (s : SignType) :
     ((completedSignFactorizationEquiv ℒ (θ.toAddMonoidHom.comp i) d).symm g s :
         d.completedBCHGroup ℒ) = if s = .pos then g else 1 := by
-  apply completedSignFactorizationEquiv_symm_of_sign_eq
+  apply completedSignFactorizationEquiv_symm_of_uniformSign
   intro n hn hn0
   exact sign_pos (((AddSubmonoid.mem_positiveChamber d.monoid i).mp hθ) n hn hn0)
 
@@ -90,7 +92,7 @@ element; both other completed factors are identities. -/
     (hθ : θ ∈ d.monoid.negativeChamber i) (g : d.completedBCHGroup ℒ) (s : SignType) :
     ((completedSignFactorizationEquiv ℒ (θ.toAddMonoidHom.comp i) d).symm g s :
         d.completedBCHGroup ℒ) = if s = .neg then g else 1 := by
-  apply completedSignFactorizationEquiv_symm_of_sign_eq
+  apply completedSignFactorizationEquiv_symm_of_uniformSign
   intro n hn hn0
   exact sign_neg (((AddSubmonoid.mem_negativeChamber d.monoid i).mp hθ) n hn hn0)
 

@@ -6,20 +6,19 @@ Authors: Codex
 module
 
 public import Mei.Algebra.Lie.BCH.Sign.Completion
+public import Mei.Algebra.Lie.Graded.Sign.Chamber
 
 /-!
-# Sign factors when all degrees have one sign
+# Sign factorization in uniform-sign chambers
 
-If a character has the same sign on every retained nonzero degree, the
-corresponding factor of any truncated BCH element is the whole element and
-the other factors are identities. The analogous formula holds in the
-completed group when all positive degrees have the prescribed sign. This
-evaluates factorization at the two ends of positive-to-negative chamber
-transport, without a finite-generation hypothesis on the positive monoid.
-
-We use `signFactorizationEquiv_symm_of_mem` for uniqueness and
-`projection_completedSignFactorizationEquiv_symm` to pass to the completion.
-The chamber interpretation follows Tom Bridgeland,
+If a character has one sign on every nonzero retained homogeneous piece,
+its factorization has the original element in that sign and identity factors
+in the other signs. This follows from uniqueness of sign factorization.
+The analogous formula holds in the completed group when all nonzero allowed
+degrees have the prescribed sign, via
+`projection_completedSignFactorizationEquiv_symm`. This evaluates factorization
+at the two ends of positive-to-negative chamber transport, without a
+finite-generation hypothesis on the positive monoid; see Tom Bridgeland,
 *Scattering diagrams, Hall algebras and stability conditions*, §3.4
 ([arXiv:1603.00416](https://arxiv.org/abs/1603.00416)).
 -/
@@ -33,41 +32,48 @@ namespace Mei.PositiveDegrees
 variable {N R L A : Type*} [AddCommMonoid N] [CommRing R] [Algebra ℚ R]
   [LieRing L] [LieAlgebra R L] [LieAlgebra ℚ L] [IsScalarTower ℚ R L]
   [DecidableEq N] [AddCommGroup A] [LinearOrder A] [IsOrderedAddMonoid A]
-  (ℒ : N → Submodule R L) [GradedLieAlgebra ℒ] (θ : N →+ A)
-  (d : PositiveDegrees N) [IsPositiveGrading d ℒ]
+  (d : PositiveDegrees N) (ℒ : N → Submodule R L) [GradedLieAlgebra ℒ]
+  [IsPositiveGrading d ℒ] (θ : N →+ A) {k : ℕ}
 
-/-- A character of constant sign on retained degrees places the whole
-truncated group in that sign subgroup. Only the chosen cutoff is tested. -/
-theorem signFactorizationEquiv_symm_of_sign_eq (k : ℕ) (t : SignType)
-    (hθ : ∀ n ∈ d.cutoff k \ {0}, SignType.sign (θ n) = t)
-    (g : d.truncatedGroup ℒ k) (s : SignType) :
-    ((signFactorizationEquiv ℒ θ d k).symm g s : d.truncatedGroup ℒ k) =
-      if s = t then g else 1 := by
-  apply signFactorizationEquiv_symm_of_mem
-  rw [LieSubalgebra.mem_bchSubgroup, mem_signSubalgebra_iff]
-  intro n hn
-  by_cases hzero : d.truncatedGrading ℒ k n = ⊥
-  · simpa only [hzero, Submodule.mem_bot] using
-      (DirectSum.decompose (d.truncatedGrading ℒ k) (BCHGroup.log g) n).property
-  · exact (hn (hθ n (d.mem_cutoff_of_truncatedGrading_ne_bot ℒ hzero))).elim
+/-- In a uniform-sign chamber the unique factor of that sign is the original
+BCH element; the other two factors are identities. -/
+theorem signFactorizationEquiv_symm_of_uniformSign (s : SignType)
+    (hs : ∀ n, d.truncatedGrading ℒ k n ≠ ⊥ → SignType.sign (θ n) = s)
+    (g : d.truncatedGroup ℒ k) (t : SignType) :
+    ((signFactorizationEquiv ℒ θ d k).symm g t : d.truncatedGroup ℒ k) =
+      if t = s then g else 1 := by
+  have hg : g ∈ (signSubalgebra (d.truncatedGrading ℒ k) θ s).bchSubgroup := by
+    rw [signSubalgebra_eq_top_of_sign_eq _ _ s hs, LieSubalgebra.mem_bchSubgroup]
+    exact LieSubalgebra.mem_top _
+  let a : ∀ t, (signSubalgebra (d.truncatedGrading ℒ k) θ t).bchSubgroup :=
+    fun t => if ht : t = s then ⟨g, by simpa only [ht] using hg⟩ else 1
+  have ha : (signFactorizationEquiv ℒ θ d k).symm g = a := by
+    apply (signFactorizationEquiv ℒ θ d k).symm_apply_eq.mpr
+    cases s <;> simp [signFactorizationEquiv_apply, a]
+  rw [ha]
+  by_cases ht : t = s <;> simp [a, ht]
 
-/-- If all allowed nonzero degrees have one sign, the completed factorization
+/-- If all nonzero allowed degrees have one sign, the completed factorization
 is concentrated in that sign. -/
-theorem completedSignFactorizationEquiv_symm_of_sign_eq (t : SignType)
-    (hθ : ∀ n ∈ d.monoid, n ≠ 0 → SignType.sign (θ n) = t)
-    (g : d.completedBCHGroup ℒ) (s : SignType) :
-    ((completedSignFactorizationEquiv ℒ θ d).symm g s : d.completedBCHGroup ℒ) =
-      if s = t then g else 1 := by
-  split_ifs with hst
+theorem completedSignFactorizationEquiv_symm_of_uniformSign (s : SignType)
+    (hs : ∀ n ∈ d.monoid, n ≠ 0 → SignType.sign (θ n) = s)
+    (g : d.completedBCHGroup ℒ) (t : SignType) :
+    ((completedSignFactorizationEquiv ℒ θ d).symm g t : d.completedBCHGroup ℒ) =
+      if t = s then g else 1 := by
+  have hk (k : ℕ) : ∀ n, d.truncatedGrading ℒ k n ≠ ⊥ → SignType.sign (θ n) = s := by
+    intro n hn
+    have hc := d.mem_cutoff_of_truncatedGrading_ne_bot ℒ hn
+    exact hs n (d.mem_cutoff.mp hc.1).1 hc.2
+  split_ifs with hts
   · apply CompletedGroup.ext
     intro k
     rw [projection_completedSignFactorizationEquiv_symm]
-    exact (signFactorizationEquiv_symm_of_sign_eq ℒ θ d k t
-      (fun n hn => hθ n (d.mem_cutoff.mp hn.1).1 hn.2) _ s).trans (ite_eq_left hst)
+    exact (d.signFactorizationEquiv_symm_of_uniformSign ℒ θ s (hk k) _ t).trans
+      (ite_eq_left hts)
   · apply CompletedGroup.ext
     intro k
     rw [map_one, projection_completedSignFactorizationEquiv_symm]
-    exact (signFactorizationEquiv_symm_of_sign_eq ℒ θ d k t
-      (fun n hn => hθ n (d.mem_cutoff.mp hn.1).1 hn.2) _ s).trans (ite_eq_right hst)
+    exact (d.signFactorizationEquiv_symm_of_uniformSign ℒ θ s (hk k) _ t).trans
+      (ite_eq_right hts)
 
 end Mei.PositiveDegrees

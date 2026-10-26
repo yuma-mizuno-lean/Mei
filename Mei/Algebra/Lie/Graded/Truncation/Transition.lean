@@ -7,7 +7,7 @@ module
 
 public import Mei.Algebra.Lie.Graded.Truncation.Basic
 public import Mei.Algebra.Lie.Quotient.Map
-public import Mei.Algebra.Lie.Graded.Sign
+public import Mei.Algebra.Lie.Graded.Sign.Basic
 
 /-!
 # Transitions between Lie algebra truncations

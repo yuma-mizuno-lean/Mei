@@ -7,7 +7,7 @@ module
 
 public import Mei.Algebra.Group.Hom.Int
 public import Mei.Geometry.ScatteringDiagram.WallSpace.Group
-public import Mei.Geometry.Convex.Polyhedron.Rational.Map
+public import Mei.Geometry.Convex.Polyhedron.Rational
 public import Mei.Geometry.Convex.Recession
 public import Mathlib.LinearAlgebra.AffineSpace.AffineSubspace.Basic
 public import Mathlib.LinearAlgebra.Dual.Lemmas
@@ -22,11 +22,8 @@ tangent lattice are independent. In particular the spatial direction may vanish,
 and the primitive generator need not belong to the positive monoid.
 
 Incomingness means that the positive geometric ray preserves the support. It is
-unchanged by translation or by replacing the primitive generator with any actual
+unchanged by replacing the primitive generator with any actual
 degree on its supported ray. A wall of zero geometric direction is incoming.
-
-Translation uses Mathlib's `AffineEquiv.constVAdd` and `AffineSubspace.map_span`,
-and the existing integral-affine transport of rational-normal polyhedra.
 
 Wall labels commute whenever their affine supporting directions agree, even for
 different primitive degrees. The proof restricts the real normal kernels to the lattice
@@ -42,8 +39,8 @@ recession cone. This affine adaptation preserves incomingness under translation 
 includes zero projected degrees.
 
 The constructions use `Mei.DirectedWallSpaces.wallGroup`,
-`TauCeti.Toric.IsIntegralLattice.realCharacter`, Mathlib's `AffineEquiv.constVAdd`
-and `Module.Dual.finrank_ker_add_one_of_ne_zero`.
+`TauCeti.Toric.IsIntegralLattice.realCharacter` and Mathlib's
+`Module.Dual.finrank_ker_add_one_of_ne_zero`.
 -/
 
 public section
@@ -156,70 +153,6 @@ theorem incoming_of_geometricDirection_eq_zero (hz : i (ρ W.ray.generator) = 0)
 /-- In particular, a degree killed by the projection gives an incoming wall. -/
 theorem incoming_of_degreeDirection_eq_zero (hz : ρ W.ray.generator = 0) : W.Incoming :=
   W.incoming_of_geometricDirection_eq_zero (by rw [hz, map_zero])
-
-/-- Move only the support by an arbitrary real translation. The integral normal,
-primitive degree and completed label are retained. -/
-def translate (v : V) : DirectedWall (d := d) h H where
-  normal := W.normal
-  normal_ne_zero := W.normal_ne_zero
-  ray := W.ray
-  normal_direction := W.normal_direction
-  support := (fun x => v + x) '' W.support
-  support_nonempty := W.support_nonempty.image _
-  rational_support := by
-    let e : Toric.IntegralAffineEquiv h h :=
-      ⟨AffineEquiv.constVAdd ℝ V v, AddEquiv.refl Λ, fun _ => rfl⟩
-    exact W.rational_support.image e
-  direction_support := by
-    have he := congrArg AffineSubspace.direction
-      (AffineSubspace.map_span (AffineEquiv.constVAdd ℝ V v).toAffineMap W.support)
-    simpa [W.direction_support] using he.symm
-  label := W.label
-  label_mem := W.label_mem
-
-@[simp]
-theorem translate_normal (v : V) : (W.translate v).normal = W.normal := (rfl)
-
-@[simp]
-theorem translate_ray (v : V) : (W.translate v).ray = W.ray := (rfl)
-
-@[simp]
-theorem translate_support (v : V) :
-    (W.translate v).support = (fun x => v + x) '' W.support := (rfl)
-
-@[simp]
-theorem translate_label (v : V) : (W.translate v).label = W.label := (rfl)
-
-/-- Translation leaves the wall's spatial velocity unchanged. -/
-@[simp]
-theorem direction_translate (v : V) : (W.translate v).direction = W.direction := by
-  rw [direction_def, translate_ray, direction_def]
-
-/-- Incomingness depends on the recession cone, so translation preserves it. -/
-@[simp]
-theorem incoming_translate_iff (v : V) : (W.translate v).Incoming ↔ W.Incoming := by
-  simp only [Incoming, translate_ray, translate_support, Set.image_add_left,
-    recessionCone_preimage_add]
-
-/-- Outgoingness is translation invariant, including for unbounded supports. -/
-@[simp]
-theorem outgoing_translate_iff (v : V) : (W.translate v).Outgoing ↔ W.Outgoing := by
-  rw [outgoing_iff, incoming_translate_iff, outgoing_iff]
-
-/-- Translation by zero fixes all wall data. -/
-@[simp]
-theorem translate_zero : W.translate 0 = W := by
-  ext <;> simp
-
-/-- Successive translations add their translation vectors. -/
-@[simp]
-theorem translate_translate (v w : V) : (W.translate v).translate w = W.translate (w + v) := by
-  apply DirectedWall.ext <;>
-    simp only [translate_normal, translate_ray, translate_support, translate_label]
-  rw [Set.image_image]
-  congr 1
-  funext x
-  exact (add_assoc w v x).symm
 
 /-- The real normal takes a constant value along the support. -/
 theorem normal_apply_eq (D : DirectedWall (d := d) h H) {x y : V}

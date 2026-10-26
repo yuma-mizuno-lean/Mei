@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Algebra.Lie.Graded.Sign
+public import Mei.Algebra.Lie.Graded.Sign.Basic
 public import Mei.Algebra.Lie.BCH.Completion
 public import Mei.Algebra.Lie.Graded.Truncation.Transition
 public import Mei.Algebra.Lie.BCH.Subgroup
@@ -235,24 +235,6 @@ theorem signFactorizationEquiv_symm_one (k : ℕ) :
     (signFactorizationEquiv ℒ θ d k).symm 1 = 1 := by
   apply (signFactorizationEquiv ℒ θ d k).symm_apply_eq.mpr
   simp only [signFactorizationEquiv_apply, Pi.one_apply, OneMemClass.coe_one, one_mul]
-
-/-- An element of one sign subgroup has itself as that factor and identity
-as the other two factors. -/
-theorem signFactorizationEquiv_symm_of_mem (k : ℕ) (g : d.truncatedGroup ℒ k)
-    (t : SignType) (hg : g ∈ (signSubalgebra (d.truncatedGrading ℒ k) θ t).bchSubgroup)
-    (s : SignType) :
-    ((signFactorizationEquiv ℒ θ d k).symm g s : d.truncatedGroup ℒ k) =
-      if s = t then g else 1 := by
-  let a : ∀ u, (signSubalgebra (d.truncatedGrading ℒ k) θ u).bchSubgroup :=
-    fun u => ⟨if u = t then g else 1, by
-      split_ifs with hu
-      · subst u
-        exact hg
-      · exact Subgroup.one_mem _⟩
-  have ha : (signFactorizationEquiv ℒ θ d k).symm g = a := by
-    apply (signFactorizationEquiv ℒ θ d k).symm_apply_eq.mpr
-    cases t <;> simp [signFactorizationEquiv_apply, a]
-  exact congrArg (fun b => (b s : d.truncatedGroup ℒ k)) ha
 
 /-- Sign factors depend only on the three sign subalgebras, rather than on
 which character presents them. -/

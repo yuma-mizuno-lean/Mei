@@ -105,6 +105,14 @@ theorem pathProduct_toPath (e : x ⟶ y) :
   simp [Quiver.Hom.toPath, pathProduct, C.segmentCrossingWord_def,
     MonoidHom.map_list_prod, List.map_map, C.crossingLetter_def, Function.comp_def, apply_ite]
 
+/-- A segment meeting no wall has trivial product. -/
+theorem pathProduct_toPath_eq_one (e : x ⟶ y) (he : WallComplement.crossings x y = ∅) :
+    D.pathProduct e.toPath = 1 := by
+  have hl : C.orderedCrossings e = [] := by
+    apply List.eq_nil_iff_forall_not_mem.mpr
+    simp [he]
+  simp [pathProduct_toPath, hl]
+
 /-- Change every wall label by a group homomorphism. -/
 def relabel (f : H →* K) : FiniteWallDiagram C K where
   normal := D.normal

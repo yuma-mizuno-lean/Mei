@@ -58,6 +58,14 @@ instance : FunLike (GradedLieHom T ℒ ℳ) L L' where
     cases hfg
     rfl
 
+/-- Changing a propositionally equal degree map does not change the Lie map's values. -/
+@[simp]
+theorem cast_apply (f : GradedLieHom T ℒ ℳ) {T' : PositiveDegreeMap d e}
+    (h : T = T') (x : L) :
+    (cast (congrArg (fun V => GradedLieHom V ℒ ℳ) h) f) x = f x := by
+  subst T'
+  rfl
+
 instance : LinearMapClass (GradedLieHom T ℒ ℳ) R L L' where
   map_add f := f.toLieHom.map_add
   map_smulₛₗ f := f.toLieHom.map_smul
@@ -189,15 +197,6 @@ theorem truncatedMap_comp (g : GradedLieHom U ℳ ℋ) (f : GradedLieHom T ℒ �
   intro x
   simp [LieIdeal.mkQ_apply]
 
-/-- Induced maps commute with the transitions obtained by truncating identity maps. -/
-theorem truncatedMap_naturality (f : GradedLieHom T ℒ ℳ) {a b k l : ℕ}
-    (hab : a ≤ b) (hkl : k ≤ l) (ha : T.modulus k ≤ a) (hb : T.modulus l ≤ b) :
-    ((id (d := e) ℳ).truncatedMap k (by simpa using hkl)).comp (f.truncatedMap l hb) =
-      (f.truncatedMap k ha).comp ((id (d := d) ℒ).truncatedMap a (by simpa using hab)) := by
-  apply (d.degreeIdeal ℒ b).lieHom_qext
-  intro x
-  simp [LieIdeal.mkQ_apply]
-
 /-- Increasing the source cutoff changes the induced map only by precomposition
 with the source truncation transition. -/
 @[simp]
@@ -213,13 +212,23 @@ theorem truncatedMap_comp_truncationMap (f : GradedLieHom T ℒ ℳ)
       (fun _ hx => f.map_mem_degreeIdeal k (d.degreeIdeal_antitone ℒ (hl.trans h) hx))
       (fun _ hx => f.map_mem_degreeIdeal k (d.degreeIdeal_antitone ℒ hl hx))).symm
 
+/-- Finite graded maps at arbitrary sufficiently large source cutoffs commute
+with the quotient transitions. -/
+theorem truncationMap_comp_truncatedMap_of_le (f : GradedLieHom T ℒ ℳ)
+    {a b k l : ℕ} (hab : a ≤ b) (hkl : k ≤ l)
+    (ha : T.modulus k ≤ a) (hb : T.modulus l ≤ b) :
+    (e.truncationMap ℳ hkl).comp (f.truncatedMap l hb) =
+      (f.truncatedMap k ha).comp (d.truncationMap ℒ hab) := by
+  apply (d.degreeIdeal ℒ b).lieHom_qext
+  intro x
+  simp [LieIdeal.mkQ_apply]
+
 /-- The maps of degree truncations commute with the transitions in both towers. -/
 theorem truncationMap_comp_truncatedMap (f : GradedLieHom T ℒ ℳ)
     {k l : ℕ} (h : k ≤ l) :
     (e.truncationMap ℳ h).comp (f.truncatedMap l le_rfl) =
       (f.truncatedMap k le_rfl).comp (d.truncationMap ℒ (T.monotone_modulus h)) := by
-  simp only [truncatedMap_def, PositiveDegrees.truncationMap_def]
-  exact LieIdeal.factor_comp_mapQ _ _ _ _ _ _ _ _ _
+  exact f.truncationMap_comp_truncatedMap_of_le (T.monotone_modulus h) h le_rfl le_rfl
 
 end GradedLieHom
 end Mei

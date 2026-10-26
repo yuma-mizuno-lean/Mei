@@ -123,4 +123,13 @@ theorem truncate_map (D : KSComplex s d ℒ C l)
     intro x
     simp [LieIdeal.mkQ_apply]
 
+/-- Coefficient change applies the finite BCH map to the geometric path product. -/
+theorem pathProduct_map (D : KSComplex s d ℒ C k)
+    (f : GradedLieHom (PositiveDegreeMap.id d) ℒ ℳ)
+    {x y : WallComplement (fun P : C.walls => (P : Set V))}
+    (p : AdmissiblePLPath x y) :
+    (D.map f).toFiniteWallDiagram.pathProduct p =
+      (f.truncatedMap (a := k) k (by simp)).bchGroupMap (D.toFiniteWallDiagram.pathProduct p) := by
+  rw [toFiniteWallDiagram_map, FiniteWallDiagram.pathProduct_relabel]
+
 end Mei.KSComplex
