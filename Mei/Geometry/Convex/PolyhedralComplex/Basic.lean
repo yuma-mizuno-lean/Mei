@@ -173,6 +173,19 @@ theorem IsSubdivision.antisymm {C D : FinitePolyhedralComplex h}
     (hCD : C.IsSubdivision D) (hDC : D.IsSubdivision C) : C = D :=
   hCD.1.antisymm hDC.1
 
+/-- In a subdivision every point of an old cell lies in a new cell contained in it. -/
+theorem IsSubdivision.exists_mem_cells_subset {C D : FinitePolyhedralComplex h}
+    (hCD : C.IsSubdivision D) {P : Set V}
+    (hP : P ∈ D.cells) {x : V} (hx : x ∈ P) : ∃ Q ∈ C.cells, Q ⊆ P ∧ x ∈ Q := by
+  obtain ⟨hrefine, hsupport⟩ := isSubdivision_iff.mp hCD
+  obtain ⟨Q, hQ, hxQ⟩ := mem_support.mp (hsupport ▸ mem_support.mpr ⟨P, hP, hx⟩)
+  obtain ⟨R, hR, hQR⟩ := isWeakRefinement_iff.mp hrefine Q hQ
+  have hF : IsExposed ℝ Q ((R ∩ P) ∩ Q) := by
+    simpa only [Set.inter_eq_right.mpr hQR] using
+      (D.inter_face R hR P hP ⟨x, hQR hxQ, hx⟩).inter_inter (IsExposed.refl (𝕜 := ℝ) Q)
+  exact ⟨(R ∩ P) ∩ Q, C.face_closed Q hQ _ (isPolyhedralFace_iff.mpr ⟨⟨x, ⟨hQR hxQ, hx⟩, hxQ⟩, hF⟩),
+    fun _ hy => hy.1.2, ⟨hQR hxQ, hx⟩, hxQ⟩
+
 /-- Weak refinement carries a partial-order structure on actual complexes. -/
 @[instance_reducible]
 def weakRefinementPartialOrder : PartialOrder (FinitePolyhedralComplex h) where

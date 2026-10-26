@@ -40,18 +40,6 @@ variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ 
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
   {C D : FinitePolyhedralComplex h}
 
-/-- In a subdivision every point of an old cell lies in a new cell contained in it. -/
-theorem IsSubdivision.exists_mem_cells_subset (hCD : C.IsSubdivision D) {P : Set V}
-    (hP : P ∈ D.cells) {x : V} (hx : x ∈ P) : ∃ Q ∈ C.cells, Q ⊆ P ∧ x ∈ Q := by
-  obtain ⟨hrefine, hsupport⟩ := isSubdivision_iff.mp hCD
-  obtain ⟨Q, hQ, hxQ⟩ := mem_support.mp (hsupport ▸ mem_support.mpr ⟨P, hP, hx⟩)
-  obtain ⟨R, hR, hQR⟩ := isWeakRefinement_iff.mp hrefine Q hQ
-  have hF : IsExposed ℝ Q ((R ∩ P) ∩ Q) := by
-    simpa only [Set.inter_eq_right.mpr hQR] using
-      (D.inter_face R hR P hP ⟨x, hQR hxQ, hx⟩).inter_inter (IsExposed.refl (𝕜 := ℝ) Q)
-  exact ⟨(R ∩ P) ∩ Q, C.face_closed Q hQ _ (isPolyhedralFace_iff.mpr ⟨⟨x, ⟨hQR hxQ, hx⟩, hxQ⟩, hF⟩),
-    fun _ hy => hy.1.2, ⟨hQR hxQ, hx⟩, hxQ⟩
-
 /-- In a subdivision every point of an old cell lies in a new cell of the same dimension
 contained in it. -/
 theorem IsSubdivision.exists_mem_cells_subset_finrank_eq (hCD : C.IsSubdivision D)
@@ -108,26 +96,6 @@ theorem IsSubdivision.exists_mem_walls_subset (hCD : C.IsSubdivision D) {P : Set
   rw [hdim]
   exact D.finrank_direction_add_one_of_mem_walls hP
 
-/-- A wall of any complex lies in at most one wall of `D`. -/
-theorem eq_of_subset_of_mem_walls {C : FinitePolyhedralComplex h} {Q P P' : Set V}
-    (hQ : Q ∈ C.walls) (hP : P ∈ D.walls) (hP' : P' ∈ D.walls) (hQP : Q ⊆ P)
-    (hQP' : Q ⊆ P') : P = P' := by
-  have := h.finiteDimensional
-  obtain ⟨x, hx⟩ := C.nonempty Q (C.mem_cells_of_mem_walls hQ)
-  have hQd := C.finrank_direction_add_one_of_mem_walls hQ
-  -- The common face contains `Q`, so it has the dimension of both walls.
-  have hface {A B : Set V} (hA : A ∈ D.walls) (hB : B ∈ D.walls) (hQA : Q ⊆ A)
-      (hQB : Q ⊆ B) : A ∩ B = A := by
-    have hAB := D.inter_face A (D.mem_cells_of_mem_walls hA) B (D.mem_cells_of_mem_walls hB)
-      ⟨x, hQA hx, hQB hx⟩
-    apply hAB.eq_of_finrank_vectorSpan_eq ⟨x, hQA hx, hQB hx⟩
-    apply le_antisymm (Submodule.finrank_mono (vectorSpan_mono ℝ hAB.subset))
-    have hle := Submodule.finrank_mono (vectorSpan_mono ℝ (subset_inter hQA hQB))
-    have hAd := D.finrank_direction_add_one_of_mem_walls hA
-    rw [direction_affineSpan] at hQd hAd
-    omega
-  rw [← hface hP hP' hQP hQP', Set.inter_comm, hface hP' hP hQP' hQP]
-
 /-- The free-group homomorphism sending each wall of `C` to the wall of `D` containing it,
 inverted unless its coorientation is a positive multiple of that wall's coorientation, and
 to `1` when no wall of `D` contains it. -/
@@ -154,6 +122,7 @@ theorem wallCoarsening_of_of_subset {Q : C.walls} {P : D.walls} (hQP : (Q : Set 
   simp only [wallCoarsening, FreeGroup.lift_apply_of, dite_eq_left hQ, hP]
 
 /-- Coarsening kills a wall contained in no wall of `D`. -/
+@[simp]
 theorem wallCoarsening_of_of_forall_not_subset {Q : C.walls}
     (hQ : ∀ P : D.walls, ¬(Q : Set V) ⊆ P) :
     C.wallCoarsening D ν μ (FreeGroup.of Q) = 1 := by

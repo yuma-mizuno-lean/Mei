@@ -65,6 +65,26 @@ theorem finrank_direction_add_one_of_mem_walls (C : FinitePolyhedralComplex h)
     Module.finrank ℝ (affineSpan ℝ P).direction + 1 = Module.finrank ℝ V :=
   ((C.mem_cellsOfCodimension 1 P).mp hP).2
 
+/-- A wall of any complex lies in at most one wall of `D`. -/
+theorem eq_of_subset_of_mem_walls {C D : FinitePolyhedralComplex h} {Q P P' : Set V}
+    (hQ : Q ∈ C.walls) (hP : P ∈ D.walls) (hP' : P' ∈ D.walls) (hQP : Q ⊆ P)
+    (hQP' : Q ⊆ P') : P = P' := by
+  have := h.finiteDimensional
+  obtain ⟨x, hx⟩ := C.nonempty Q (C.mem_cells_of_mem_walls hQ)
+  have hQd := C.finrank_direction_add_one_of_mem_walls hQ
+  -- The common face contains `Q`, so it has the dimension of both walls.
+  have hface {A B : Set V} (hA : A ∈ D.walls) (hB : B ∈ D.walls) (hQA : Q ⊆ A)
+      (hQB : Q ⊆ B) : A ∩ B = A := by
+    have hAB := D.inter_face A (D.mem_cells_of_mem_walls hA) B (D.mem_cells_of_mem_walls hB)
+      ⟨x, hQA hx, hQB hx⟩
+    apply hAB.eq_of_finrank_vectorSpan_eq ⟨x, hQA hx, hQB hx⟩
+    apply le_antisymm (Submodule.finrank_mono (vectorSpan_mono ℝ hAB.subset))
+    have hle := Submodule.finrank_mono (vectorSpan_mono ℝ (Set.subset_inter hQA hQB))
+    have hAd := D.finrank_direction_add_one_of_mem_walls hA
+    rw [direction_affineSpan] at hQd hAd
+    omega
+  rw [← hface hP hP' hQP hQP', Set.inter_comm, hface hP' hP hQP' hQP]
+
 /-- Joints are the codimension-two cells. -/
 noncomputable abbrev joints (C : FinitePolyhedralComplex h) : Finset (Set V) :=
   C.cellsOfCodimension 2
