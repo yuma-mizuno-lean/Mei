@@ -109,7 +109,7 @@ theorem sum {ι : Type*} (s : Finset ι) (f : ι → Module.Dual ℝ V)
 
 /-- A rational functional has the same kernel as an integral character's real
 extension, including when the functional is zero. -/
-theorem exists_ker_eq_realCharacter (hf : IsRationalFunctional h f) :
+theorem exists_ker_eq_ker_realCharacter (hf : IsRationalFunctional h f) :
     ∃ m : Module.Dual ℤ N, f.ker = (h.realCharacter m.toAddMonoidHom).ker := by
   obtain ⟨q, m, rfl⟩ := hf
   by_cases hq : q = 0

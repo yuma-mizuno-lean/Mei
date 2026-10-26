@@ -20,7 +20,6 @@ whose intersection with that skeleton is exactly the center.
 
 The direction of each actual joint is the common kernel of two independent
 integral characters, by `IsRationalNormalPolyhedron.exists_direction_eq_iInf_ker`.
-This also identifies its tangent lattice for homogeneous joint calculations.
 
 These are the isolation and transversality conditions needed before constructing
 small polygonal meridians: any filled polygon in the ball and slice misses every

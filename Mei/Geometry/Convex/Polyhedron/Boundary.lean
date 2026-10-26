@@ -16,9 +16,9 @@ making every inequality strict except those that vanish on the whole polyhedron.
 The relative boundary is the union of the active-row faces of the remaining rows.
 An ordinary noninterior point has a nonconstant active row, even when constant
 zero rows are present. Redundant inequalities, empty and lower-dimensional
-polyhedra, unboundedness and lineality are allowed. The affine direction is the
-common kernel of the rows vanishing everywhere on the polyhedron. No finite-dimensionality
-assumption is needed.
+polyhedra, unboundedness and lineality are allowed. The affine direction of a
+nonempty polyhedron is the common kernel of the rows vanishing everywhere on it.
+No finite-dimensionality assumption is needed.
 -/
 
 public section

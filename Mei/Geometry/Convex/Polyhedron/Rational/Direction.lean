@@ -7,6 +7,7 @@ module
 
 public import Mei.Geometry.Convex.Polyhedron.Rational
 public import Mei.Geometry.Convex.Polyhedron.Boundary
+public import Mei.LinearAlgebra.Dual.Basic
 public import Mathlib.LinearAlgebra.Dual.Lemmas
 
 /-!
@@ -48,18 +49,15 @@ theorem exists_direction_eq_iInf_ker (hP : IsRationalNormalPolyhedron h P)
   obtain ⟨p, hp⟩ := hne.intrinsicInterior (hQ ▸ Q.convex)
   let A := {j : Fin Q.numConstraints // ∀ x ∈ P, Q.inequality j x = 0}
   obtain ⟨m, hm⟩ := Classical.axiomOfChoice fun j : A =>
-    (Q.rational_linear j.val).exists_ker_eq_realCharacter
+    (Q.rational_linear j.val).exists_ker_eq_ker_realCharacter
   let f : A → Module.Dual ℝ V := fun j => h.realCharacter (m j).toAddMonoidHom
   have hdir : (affineSpan ℝ P).direction = ⨅ j, (f j).ker := by
     have he := Convex.direction_affineSpan_eq_iInf_ker Q.inequality
       (hQ.symm.trans (Set.ext fun _ => RationalAffinePolyhedron.mem_carrier)) hp
     exact he.trans (iInf_congr fun j => hm j)
   have hcoann : (Submodule.span ℝ (range f)).dualCoannihilator =
-      (affineSpan ℝ P).direction := by
-    rw [hdir]
-    ext v
-    rw [← SetLike.mem_coe, Submodule.coe_dualCoannihilator_span]
-    simp only [Set.mem_ofPred_eq, Set.forall_mem_range, Submodule.mem_iInf, LinearMap.mem_ker]
+      (affineSpan ℝ P).direction :=
+    (Submodule.dualCoannihilator_span_range f).trans hdir.symm
   have hrank : Module.finrank ℝ (Submodule.span ℝ (range f)) = k := by
     have he := Subspace.finrank_add_finrank_dualCoannihilator_eq
       (Submodule.span ℝ (range f))
@@ -71,10 +69,6 @@ theorem exists_direction_eq_iInf_ker (hP : IsRationalNormalPolyhedron h P)
   choose a ha using hb
   have heq : (fun j => h.realCharacter (m (a j)).toAddMonoidHom) = b := funext ha
   refine ⟨fun j => m (a j), heq.symm ▸ hlin, ?_⟩
-  · rw [← hcoann, ← hspan]
-    ext v
-    rw [← SetLike.mem_coe, Submodule.coe_dualCoannihilator_span]
-    simp only [Set.mem_ofPred_eq, Set.forall_mem_range, Submodule.mem_iInf,
-      LinearMap.mem_ker, ← ha, f]
+  · rw [← hcoann, ← hspan, Submodule.dualCoannihilator_span_range, ← heq]
 
 end Mei.IsRationalNormalPolyhedron
