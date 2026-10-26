@@ -183,4 +183,77 @@ theorem boundaryFacet_orientation (σ : OrientedCell h k) {F : Set V}
   have := h.finiteDimensional
   rfl
 
+private theorem finite_boundaryFacets (σ : OrientedCell h k) :
+    {τ : OrientedCell h (k + 1) | ∃ (F : Set V) (hF : IsExposed ℝ σ.carrier F)
+      (hne : F.Nonempty)
+      (hdim : finrank ℝ (vectorSpan ℝ F) + 1 = finrank ℝ (vectorSpan ℝ σ.carrier)),
+      τ = σ.boundaryFacet hF hne hdim}.Finite := by
+  apply Set.Finite.of_injOn (f := OrientedCell.carrier)
+    (t := {F | IsExposed ℝ σ.carrier F})
+  · rintro τ ⟨F, hF, hne, hdim, rfl⟩
+    simpa only [boundaryFacet_carrier, Set.mem_ofPred_eq] using hF
+  · rintro τ ⟨F, hF, hne, hdim, rfl⟩ υ ⟨G, hG, hneG, hdimG, rfl⟩ heq
+    simp only [boundaryFacet_carrier] at heq
+    subst G
+    rfl
+  · obtain ⟨P, hP⟩ := isRationalNormalPolyhedron_iff.mp σ.rational
+    exact hP ▸ P.isConvexPolyhedron.finite_exposed_sets
+
+/-- All nonempty exposed facets, with their signed boundary orientations. Each geometric
+facet occurs once, regardless of redundant inequalities in a presentation of the cell. -/
+def boundaryFacets (σ : OrientedCell h k) : Finset (OrientedCell h (k + 1)) :=
+  σ.finite_boundaryFacets.toFinset
+
+/-- Membership in the signed facet family is characterized by the canonical facet construction. -/
+@[simp]
+theorem mem_boundaryFacets (σ : OrientedCell h k) (τ : OrientedCell h (k + 1)) :
+    τ ∈ σ.boundaryFacets ↔ ∃ (F : Set V) (hF : IsExposed ℝ σ.carrier F)
+      (hne : F.Nonempty)
+      (hdim : finrank ℝ (vectorSpan ℝ F) + 1 = finrank ℝ (vectorSpan ℝ σ.carrier)),
+      τ = σ.boundaryFacet hF hne hdim :=
+  Set.Finite.mem_toFinset _
+
+/-- The signed facet associated to any nonempty exposed facet occurs in the family. -/
+theorem boundaryFacet_mem_boundaryFacets (σ : OrientedCell h k) {F : Set V}
+    (hF : IsExposed ℝ σ.carrier F) (hne : F.Nonempty)
+    (hdim : finrank ℝ (vectorSpan ℝ F) + 1 = finrank ℝ (vectorSpan ℝ σ.carrier)) :
+    σ.boundaryFacet hF hne hdim ∈ σ.boundaryFacets :=
+  (σ.mem_boundaryFacets _).mpr ⟨F, hF, hne, hdim, rfl⟩
+
+open Classical in
+/-- Reversing the parent reverses every boundary facet. -/
+@[simp]
+theorem boundaryFacets_reverse (σ : OrientedCell h k) :
+    σ.reverse.boundaryFacets = σ.boundaryFacets.image reverse := by
+  classical
+  ext τ
+  constructor
+  · rintro hτ
+    obtain ⟨F, hF, hne, hdim, rfl⟩ := (σ.reverse.mem_boundaryFacets τ).mp hτ
+    have hF' : IsExposed ℝ σ.carrier F := by simpa only [reverse_carrier] using hF
+    have hd' : finrank ℝ (vectorSpan ℝ F) + 1 =
+        finrank ℝ (vectorSpan ℝ σ.carrier) := by
+      rw [reverse_carrier] at hdim
+      exact hdim
+    exact Finset.mem_image.mpr ⟨σ.boundaryFacet hF' hne hd',
+      σ.boundaryFacet_mem_boundaryFacets hF' hne hd', (σ.boundaryFacet_reverse hF' hne hd').symm⟩
+  · rintro hτ
+    obtain ⟨υ, hυ, rfl⟩ := Finset.mem_image.mp hτ
+    obtain ⟨F, hF, hne, hdim, rfl⟩ := (σ.mem_boundaryFacets υ).mp hυ
+    rw [← boundaryFacet_reverse]
+    exact σ.reverse.boundaryFacet_mem_boundaryFacets _ _ _
+
+/-- A cell with zero-dimensional direction has no nonempty facets. -/
+@[simp]
+theorem boundaryFacets_eq_empty_of_finrank_eq (σ : OrientedCell h k)
+    (hk : k = finrank ℝ V) : σ.boundaryFacets = ∅ := by
+  have hzero : finrank ℝ (vectorSpan ℝ σ.carrier) = 0 := by
+    have hd := σ.finrank_direction_add
+    rw [direction_affineSpan] at hd
+    omega
+  apply Finset.eq_empty_iff_forall_notMem.mpr
+  intro τ hτ
+  obtain ⟨F, hF, hne, hdim, heq⟩ := (σ.mem_boundaryFacets τ).mp hτ
+  omega
+
 end Mei.OrientedCell
