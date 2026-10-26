@@ -141,14 +141,12 @@ theorem transport_reconstruct (g : d.completedBCHGroup ℒ) :
   apply d.transport_reconstruct_of_mem_chambers h ℒ g
   · rw [AddSubmonoid.mem_positiveChamber]
     intro n hn hn0
-    rw [CompletedDiagram.degreePoint_val]
-    rw [← KSSpace.continuousDual_evaluation h, KSSpace.evaluation_degreePoint]
-    exact Int.cast_pos.mpr (d.degree_pos hn hn0)
+    rw [CompletedDiagram.degreePoint_val, ← KSSpace.continuousDual_evaluation h]
+    exact KSSpace.evaluation_degreePoint_pos _ d hn hn0
   · rw [AddSubmonoid.mem_negativeChamber]
     intro n hn hn0
-    rw [CompletedDiagram.negDegreePoint_val, neg_apply]
-    rw [← KSSpace.continuousDual_evaluation h, KSSpace.evaluation_degreePoint]
-    exact neg_neg_of_pos (Int.cast_pos.mpr (d.degree_pos hn hn0))
+    rw [CompletedDiagram.negDegreePoint_val, ← KSSpace.continuousDual_evaluation h]
+    exact KSSpace.evaluation_neg_degreePoint_neg _ d hn hn0
 
 /-- Distinct completed BCH elements reconstruct to distinct completed diagrams. -/
 theorem reconstruct_injective : Function.Injective (d.reconstruct h ℒ) := by

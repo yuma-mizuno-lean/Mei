@@ -137,6 +137,18 @@ theorem evaluation_degreePoint (d : PositiveDegrees N) (n : N) :
     s.evaluation (s.degreePoint d) n = (d.degree n : ℝ) := by
   simp [degreePoint]
 
+/-- The degree point is positive on every nonzero allowed degree. -/
+theorem evaluation_degreePoint_pos (d : PositiveDegrees N) {n : N}
+    (hn : n ∈ d.monoid) (hn0 : n ≠ 0) : 0 < s.evaluation (s.degreePoint d) n := by
+  rw [evaluation_degreePoint]
+  exact Int.cast_pos.mpr (d.degree_pos hn hn0)
+
+/-- The negated degree point is negative on every nonzero allowed degree. -/
+theorem evaluation_neg_degreePoint_neg (d : PositiveDegrees N) {n : N}
+    (hn : n ∈ d.monoid) (hn0 : n ≠ 0) : s.evaluation (-s.degreePoint d) n < 0 := by
+  rw [map_neg, AddMonoidHom.neg_apply]
+  exact neg_neg_of_pos (s.evaluation_degreePoint_pos d hn hn0)
+
 /-- Every nonzero allowed degree has a nonzero normal, without a saturation assumption. -/
 theorem normal_ne_zero (d : PositiveDegrees N) {n : N}
     (hn : n ∈ d.monoid) (hn0 : n ≠ 0) : s.normal n ≠ 0 := by
