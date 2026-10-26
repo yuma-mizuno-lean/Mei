@@ -252,15 +252,10 @@ theorem exists_loop_forall₂_dist_lt [Finite ι]
   by_cases hl : l = []
   · subst l
     have he : WallComplement.AdmissibleSegment x x := by
-      constructor
-      · rintro i ⟨t, _, ht⟩
-        exact False.elim (x.notMem i (by simpa only [AffineMap.lineMap_same_apply] using ht))
-      · intro t _ ht
-        have hs : x.val ∈ singularSupport W := by
-          simpa only [AffineMap.lineMap_same_apply] using ht
-        obtain ⟨i, hi⟩ := Set.mem_iUnion.mp
-          (singularSupport_subset_iUnion W (fun i => (hpoly i).isClosed) hs)
-        exact x.notMem i hi
+      refine WallComplement.AdmissibleSegment.refl x (fun hs => ?_)
+      obtain ⟨i, hi⟩ := Set.mem_iUnion.mp
+        (singularSupport_subset_iUnion W (fun i => (hpoly i).isClosed) hs)
+      exact x.notMem i hi
     refine ⟨x, Quiver.Hom.toPath (PLift.up he), ?_⟩
     have hv' : dist v x.val < ε := hv.trans (half_lt_self hε)
     simp only [Quiver.Path.vertices_toPath, List.nil_append, List.map_cons, List.map_nil]
