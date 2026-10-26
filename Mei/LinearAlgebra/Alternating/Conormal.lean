@@ -11,7 +11,8 @@ public import Mathlib.LinearAlgebra.Orientation
 # Conormal alternating forms
 
 For a submodule `W` of `M`, the conormal forms are the alternating forms on `M` that vanish as
-soon as one argument lies in `W`. A ray of such forms orients the quotient `M ⧸ W` from the
+soon as one argument lies in `W`. When `M ⧸ W` is a finite-dimensional real vector space and
+the form degree equals its dimension, a ray of such forms orients the quotient from the
 conormal side, without passing to the quotient module. Conormality of a ray does not depend on
 the representing form, and reversing a ray preserves it.
 
