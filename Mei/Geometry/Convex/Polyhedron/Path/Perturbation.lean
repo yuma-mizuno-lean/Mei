@@ -5,7 +5,7 @@ Authors: Claude, Codex
 -/
 module
 
-public import Mei.Geometry.Convex.Polyhedron.CrossingEvents
+public import Mei.Geometry.Convex.Polyhedron.Path.Product
 public import Mei.Geometry.Convex.Polyhedron.Perturbation
 
 /-!
@@ -145,6 +145,26 @@ theorem exists_pos_signedCrossingEvents_eq_of_forall₂_dist_lt
     [] (· ++ ·) (fun _ => signedCrossingEvents_nil ν)
     (fun p e => signedCrossingEvents_cons ν p e)
     (eventually_segmentCrossingEvents_eq hclosed hdim ν hν)
+
+/-- Wall transport is locally constant in the vertices of an admissible path, even
+when its endpoints move and several coplanar indexed walls are crossed together. -/
+theorem exists_pos_wallPathProduct_eq_of_forall₂_dist_lt
+    {G : Type*} [Group G] (hclosed : ∀ i, IsClosed (W i))
+    (hdim : ∀ i, Module.finrank ℝ (affineSpan ℝ (W i)).direction + 1 =
+      Module.finrank ℝ V)
+    (ν : ι → V →ₗ[ℝ] ℝ)
+    (hν : ∀ i, LinearMap.ker (ν i) = (affineSpan ℝ (W i)).direction)
+    (label : ι → G)
+    (hcomm : ∀ i j, affineSpan ℝ (W i) = affineSpan ℝ (W j) →
+      Commute (label i) (label j)) (p : AdmissiblePLPath x y) :
+    ∃ ε > 0, ∀ {x' y' : WallComplement W} (q : AdmissiblePLPath x' y'),
+      List.Forall₂ (fun a b => dist a b < ε) (p.vertices.map WallComplement.val)
+        (q.vertices.map WallComplement.val) →
+          q.wallPathProduct ν label hcomm = p.wallPathProduct ν label hcomm := by
+  obtain ⟨ε, hε, hp⟩ :=
+    p.exists_pos_signedCrossingEvents_eq_of_forall₂_dist_lt hclosed hdim ν hν
+  exact ⟨ε, hε, fun q hq =>
+    q.wallPathProduct_eq_of_signedCrossingEvents_eq ν label hcomm p (hp q hq)⟩
 
 end Quiver.Path
 

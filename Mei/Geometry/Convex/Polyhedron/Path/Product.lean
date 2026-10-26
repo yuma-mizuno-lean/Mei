@@ -136,6 +136,17 @@ theorem segmentPathProduct_def (e : x ⟶ y) :
     segmentPathProduct ν label hcomm e =
       ((orderedCrossingTimes e).reverse.map (crossingEventProduct ν label hcomm e)).prod := (rfl)
 
+/-- A stationary segment crosses no wall. -/
+@[simp]
+theorem segmentPathProduct_self (e : x ⟶ x) :
+    segmentPathProduct ν label hcomm e = 1 := by
+  have ht : orderedCrossingTimes e = [] := by
+    apply List.eq_nil_iff_forall_not_mem.mpr
+    intro t ht
+    obtain ⟨i, hi⟩ := (mem_orderedCrossingTimes e t).mp ht
+    exact x.notMem i (by simpa using ((mem_crossings x x i t).mp hi).2)
+  simp [segmentPathProduct_def, ht]
+
 /-- Homomorphisms preserve the segment transport. -/
 @[simp]
 theorem map_segmentPathProduct (f : G →* K) (e : x ⟶ y) :
@@ -207,6 +218,36 @@ theorem wallPathProduct_reverse
   | nil => simp [Quiver.Path.reverse]
   | cons p e ih =>
     simp [Quiver.Path.reverse, ih, segmentPathProduct_reverse ν label hcomm hν, mul_inv_rev]
+
+private theorem wallPathProduct_eq_eventList_prod (p : AdmissiblePLPath x y) :
+    p.wallPathProduct ν label hcomm =
+      ((p.signedCrossingEvents ν).reverse.map
+        (fun S => (S.toList.map (fun a => label a.1 ^ a.2)).prod)).prod := by
+  classical
+  have he {u v : WallComplement W} (e : u ⟶ v) :
+      segmentPathProduct ν label hcomm e =
+        ((segmentCrossingEvents ν e).reverse.map
+          (fun S => (S.toList.map (fun a => label a.1 ^ a.2)).prod)).prod := by
+    simp only [segmentPathProduct_def, segmentCrossingEvents_def, List.map_reverse,
+      List.map_map]
+    congr 2
+    apply List.map_congr_left
+    intro t _
+    exact crossingEventProduct_eq_prod ν label hcomm e t _
+      (Finset.nodup_toList _) (fun _ => Finset.mem_toList)
+  induction p with
+  | nil => simp
+  | cons p e ih =>
+    simp only [wallPathProduct_cons, signedCrossingEvents_cons, List.reverse_append,
+      List.map_append, List.prod_append, ih, he]
+
+/-- The ordered signed event list determines the transport, independently of crossing
+parameters and of the admissibility proofs. Simultaneous indices retain all factors. -/
+theorem wallPathProduct_eq_of_signedCrossingEvents_eq
+    {x' y' : WallComplement W} (p : AdmissiblePLPath x y) (q : AdmissiblePLPath x' y')
+    (hpq : p.signedCrossingEvents ν = q.signedCrossingEvents ν) :
+    p.wallPathProduct ν label hcomm = q.wallPathProduct ν label hcomm := by
+  rw [wallPathProduct_eq_eventList_prod, wallPathProduct_eq_eventList_prod, hpq]
 
 /-- Group homomorphisms preserve all polygonal transports. -/
 @[simp]
