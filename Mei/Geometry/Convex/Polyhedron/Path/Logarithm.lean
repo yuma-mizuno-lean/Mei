@@ -58,7 +58,7 @@ theorem log_wallPathProduct_sub_wallCrossingSum_mem (p : AdmissiblePLPath x y)
     exact K.bchSubgroup.zpow_mem
       (hlabel S (List.mem_reverse.mp hS) a (Finset.mem_toList.mp ha)) _
   have hp : l.prod = p.wallPathProduct ν label hcomm := by
-    rw [wallPathProduct_eq_eventList_prod]
+    rw [wallPathProduct_eq_prod_signedCrossingEvents]
     simp [l, List.flatMap_def, List.prod_flatten, Function.comp_def]
   have hs : (l.map log).sum = p.wallCrossingSum ν (fun j => log (label j)) := by
     simp only [l, List.flatMap_def, List.map_flatten, List.sum_flatten,
