@@ -65,6 +65,20 @@ theorem orthogonalLieSubalgebra_antitone : Antitone (orthogonalLieSubalgebra ℒ
     AddMonoidHom.mem_mker] at hn ⊢
   exact fun θ hθ => hn θ (hστ hθ)
 
+/-- Degree-preserving Lie maps preserve orthogonality to every point of a support.
+Neither an internal decomposition nor positivity of the gradings is needed. -/
+theorem map_orthogonalLieSubalgebra_le {L' : Type*} [LieRing L'] [LieAlgebra R L']
+    (ℳ : N → Submodule R L') [SetLike.GradedBracket ℳ ℳ]
+    (f : L →ₗ⁅R⁆ L') (hf : ∀ n, ∀ x ∈ ℒ n, f x ∈ ℳ n)
+    (σ : Set (N →+ ℝ)) :
+    (orthogonalLieSubalgebra ℒ σ).map f ≤ orthogonalLieSubalgebra ℳ σ := by
+  rw [LieSubalgebra.map_le_iff_le_comap, orthogonalLieSubalgebra_def,
+    supportedLieSubalgebra_le_iff]
+  intro n hn x hx
+  apply le_orthogonalLieSubalgebra ℳ _ (hf n x hx)
+  simpa only [AddSubsemigroup.mem_iInf, AddSubmonoid.mem_toSubsemigroup,
+    AddMonoidHom.mem_mker] using hn
+
 variable [DecidableEq N] [DirectSum.Decomposition ℒ]
 
 /-- A component must vanish whenever one point of the support detects its degree. -/
