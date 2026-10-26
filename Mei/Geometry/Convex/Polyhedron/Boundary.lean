@@ -14,8 +14,10 @@ public import Mei.Analysis.Convex.Intrinsic
 In a finite affine halfspace presentation, the relative interior is obtained by
 making every inequality strict except those that vanish on the whole polyhedron.
 The relative boundary is the union of the active-row faces of the remaining rows.
-Redundant inequalities, empty and lower-dimensional polyhedra, unboundedness and
-lineality are allowed. No finite-dimensionality assumption is needed.
+An ordinary noninterior point has a nonconstant active row, even when constant
+zero rows are present. Redundant inequalities, empty and lower-dimensional
+polyhedra, unboundedness and lineality are allowed. No finite-dimensionality
+assumption is needed.
 -/
 
 public section
@@ -109,5 +111,25 @@ theorem intrinsicFrontier_eq_iUnion_active [Finite ι] (g : ι → (V →ᴬ[ℝ
     have hlt := hstrict j hj
     rw [hgj] at hlt
     exact lt_irrefl 0 hlt
+
+omit [IsTopologicalAddGroup V] [ContinuousSMul ℝ V] in
+/-- At a point of a finite intersection of affine half-spaces that is not interior,
+some active inequality has nonzero linear part. Constant zero rows are ignored. -/
+theorem exists_nonzero_active_row_of_notMem_interior [Finite ι]
+    (g : ι → (V →ᴬ[ℝ] ℝ)) {x : V}
+    (hx : ∀ j, g j x ≤ 0) (hnot : x ∉ interior {y | ∀ j, g j y ≤ 0}) :
+    ∃ j, g j x = 0 ∧ (g j).toAffineMap.linear ≠ 0 := by
+  by_contra! hn
+  apply hnot
+  apply mem_interior_iff_mem_nhds.mpr
+  have hrow (j : ι) : ∀ᶠ y in 𝓝 x, g j y ≤ 0 := by
+    by_cases hz : g j x = 0
+    · obtain ⟨c, hc⟩ := (g j).toAffineMap.linear_eq_zero_iff_exists_const.mp (hn j hz)
+      have heq (y : V) : g j y = c := congrArg (fun f : V →ᵃ[ℝ] ℝ => f y) hc
+      have hc0 : c = 0 := (heq x).symm.trans hz
+      exact Filter.Eventually.of_forall fun y => ((heq y).trans hc0).le
+    · exact ((g j).continuous.continuousAt.eventually
+        (gt_mem_nhds (lt_of_le_of_ne (hx j) hz))).mono fun _ hy => hy.le
+  exact Filter.eventually_all.mpr hrow
 
 end Mei.Convex

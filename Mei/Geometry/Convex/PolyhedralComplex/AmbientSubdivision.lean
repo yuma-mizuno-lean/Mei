@@ -9,6 +9,8 @@ public import Mei.Geometry.Convex.PolyhedralComplex.Strata
 public import Mei.Geometry.Convex.Polyhedron.SignCell.Face
 public import Mei.Geometry.Convex.Polyhedron.SignCell.Rational
 public import Mathlib.GroupTheory.CosetCover
+public import Mei.Geometry.Convex.Polyhedron.SignCell.Interior
+public import Mei.Geometry.Convex.Polyhedron.Boundary
 
 /-!
 # Ambient subdivisions by affine arrangements
@@ -23,6 +25,8 @@ is a union of cells, and a linear arrangement has conical cells, with lineality
 allowed. A row hyperplane with nonzero linear part is moreover covered by walls:
 moving off a point of it in a direction avoiding the other row hyperplanes
 through that point reaches a sign cell spanning the hyperplane.
+Each codimension-one input carrier is covered by walls contained in it, and
+membership in any input is constant on the relative interior of every cell.
 
 The construction uses the existing realized sign-cell closure family and its
 closure under faces. It is therefore extensional in the actual closed cell
@@ -33,7 +37,7 @@ public section
 
 namespace Mei.FinitePolyhedralComplex
 
-open Mei.Convex Filter Topology
+open Set Mei.Convex Filter Topology
 
 variable {N V ι : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i} [Finite ι]
@@ -153,6 +157,16 @@ theorem ofArrangement_isSubdivision_comp {κ : Type*} [Finite κ]
   exact ⟨closure (signCell (g ∘ f) (σ ∘ f)),
     mem_ofArrangement_cells.mpr ⟨σ ∘ f, ⟨x, hsub hx⟩, rfl⟩, closure_mono hsub⟩
 
+/-- Restricting a finite input family coarsens its ambient subdivision. Repetitions
+in the original or restricted family are allowed. -/
+theorem ambientSubdivision_isSubdivision_comp {κ : Type*} [Finite κ]
+    (P : ι → RationalAffinePolyhedron h) (f : κ → ι) :
+    (ambientSubdivision P).IsSubdivision (ambientSubdivision (P ∘ f)) :=
+  ofArrangement_isSubdivision_comp
+    (fun j : Σ a, Fin (P a).numConstraints => (P j.1).inequality j.2)
+    (fun j => (P j.1).rational_linear j.2)
+    (fun j : Σ a, Fin (P (f a)).numConstraints => ⟨f j.1, j.2⟩)
+
 /-- Each row hyperplane is a union of cells of the arrangement. -/
 theorem zeroLocus_eq_iUnion_ofArrangement_cells (g : ι → (V →ᴬ[ℝ] ℝ))
     (hg : ∀ j, Toric.IsRationalFunctional h (g j).toAffineMap.linear) (j : ι) :
@@ -173,11 +187,11 @@ theorem zeroLocus_eq_iUnion_ofArrangement_cells (g : ι → (V →ᴬ[ℝ] ℝ))
     exact hP hxP
 
 /-- A row hyperplane with nonzero linear part is covered by walls: each of its points lies
-on a codimension-one cell of the arrangement. -/
-theorem exists_mem_ofArrangement_walls_of_eq_zero (g : ι → (V →ᴬ[ℝ] ℝ))
+on a codimension-one cell contained in that hyperplane. -/
+theorem exists_mem_ofArrangement_walls_subset_zeroLocus (g : ι → (V →ᴬ[ℝ] ℝ))
     (hg : ∀ j, Toric.IsRationalFunctional h (g j).toAffineMap.linear) {j : ι}
     (hj : (g j).toAffineMap.linear ≠ 0) {x : V} (hx : g j x = 0) :
-    ∃ P ∈ (ofArrangement g hg).walls, x ∈ P := by
+    ∃ P ∈ (ofArrangement g hg).walls, x ∈ P ∧ P ⊆ {y | g j y = 0} := by
   classical
   let := h.finiteDimensional
   let L : ι → V →ₗ[ℝ] ℝ := fun m => (g m).toAffineMap.linear
@@ -264,9 +278,12 @@ theorem exists_mem_ofArrangement_walls_of_eq_zero (g : ι → (V →ᴬ[ℝ] ℝ
       rw [vsub_eq_sub, add_sub_cancel_left] at hmem
       exact (Submodule.smul_mem_iff _ hc0).mp hmem
   refine ⟨closure (signCell g τ), (mem_cellsOfCodimension _ 1 _).mpr
-    ⟨mem_ofArrangement_cells.mpr ⟨τ, hτne, rfl⟩, ?_⟩, hxP⟩
-  rw [hdir]
-  exact Module.Dual.finrank_ker_add_one_of_ne_zero hj
+    ⟨mem_ofArrangement_cells.mpr ⟨τ, hτne, rfl⟩, ?_⟩, hxP, ?_⟩
+  · rw [hdir]
+    exact Module.Dual.finrank_ker_add_one_of_ne_zero hj
+  · intro y hy
+    rw [closure_signCell hτne] at hy
+    exact (mem_weakSignCell.mp hy j).1 (by simp [τ, hx, hwj])
 
 /-- A linear arrangement has conical cells, with lineality allowed. -/
 theorem isConical_ofArrangement (g : ι → (V →L[ℝ] ℝ))
@@ -277,5 +294,128 @@ theorem isConical_ofArrangement (g : ι → (V →L[ℝ] ℝ))
   obtain ⟨σ, hσ, rfl⟩ := mem_ofArrangement_cells.mp hP
   rw [closure_signCell hσ]
   exact ⟨weakSignCellCone g σ, coe_weakSignCellCone g σ⟩
+
+/-- If the relative interior of an ambient subdivision cell meets an input
+polyhedron, the entire closed cell is contained in that input. -/
+theorem subset_carrier_of_mem_intrinsicInterior_ambientSubdivision
+    (P : ι → RationalAffinePolyhedron h) {Q : Set V}
+    (hQ : Q ∈ (ambientSubdivision P).cells) (a : ι) {x : V}
+    (hxQ : x ∈ intrinsicInterior ℝ Q) (hxP : x ∈ (P a).carrier) :
+    Q ⊆ (P a).carrier := by
+  obtain ⟨σ, hσ, rfl⟩ := mem_ambientSubdivision_cells.mp hQ
+  rw [intrinsicInterior_closure_signCell] at hxQ
+  apply closure_minimal ?_ (P a).isClosed
+  intro y hy
+  apply RationalAffinePolyhedron.mem_carrier.mpr
+  intro j
+  apply sign_nonpos_iff.mp
+  rw [mem_signCell.mp hy ⟨a, j⟩, ← mem_signCell.mp hxQ ⟨a, j⟩]
+  exact sign_nonpos_iff.mpr (RationalAffinePolyhedron.mem_carrier.mp hxP j)
+
+private theorem subset_carrier_of_affineSpan_eq_ambientSubdivision
+    (P : ι → RationalAffinePolyhedron h) (a : ι) {Q : Set V}
+    (hQ : Q ∈ (ambientSubdivision P).cells) {x : V}
+    (hxQ : x ∈ Q) (hxP : x ∈ intrinsicInterior ℝ (P a).carrier)
+    (hspan : affineSpan ℝ Q = affineSpan ℝ (P a).carrier) :
+    Q ⊆ (P a).carrier := by
+  intro y hy
+  apply RationalAffinePolyhedron.mem_carrier.mpr
+  intro m
+  by_cases hm : (P a).inequality m x = 0
+  · have he : Set.EqOn ((P a).inequality m).toAffineMap (0 : V →ᵃ[ℝ] ℝ)
+        (P a).carrier :=
+      ((P a).inequality m).toAffineMap.eq_zero_on_of_mem_intrinsicInterior
+        (fun v hv => RationalAffinePolyhedron.mem_carrier.mp hv m) hxP hm
+    have hyspan : y ∈ affineSpan ℝ (P a).carrier := hspan ▸ subset_affineSpan ℝ Q hy
+    exact (AffineMap.eqOn_affineSpan he hyspan).le
+  · have hlt := lt_of_le_of_ne
+      (RationalAffinePolyhedron.mem_carrier.mp (intrinsicInterior_subset hxP) m) hm
+    obtain ⟨τ, hτ, heq⟩ := mem_ambientSubdivision_cells.mp hQ
+    have hxw := mem_weakSignCell.mp (by rwa [heq, closure_signCell hτ] at hxQ)
+    have hyw := mem_weakSignCell.mp (by rwa [heq, closure_signCell hτ] at hy)
+    cases hs : τ ⟨a, m⟩ with
+    | zero => exact (hlt.ne ((hxw ⟨a, m⟩).1 hs)).elim
+    | neg => exact (hyw ⟨a, m⟩).2.1 hs
+    | pos => exact (not_le_of_gt hlt ((hxw ⟨a, m⟩).2.2 hs)).elim
+
+private theorem exists_mem_ambientSubdivision_walls_subset_of_mem_intrinsicInterior
+    (P : ι → RationalAffinePolyhedron h) (a : ι)
+    (hdim : Module.finrank ℝ (affineSpan ℝ (P a).carrier).direction + 1 =
+      Module.finrank ℝ V) {x : V} (hx : x ∈ intrinsicInterior ℝ (P a).carrier) :
+    ∃ Q ∈ (ambientSubdivision P).walls, x ∈ Q ∧ Q ⊆ (P a).carrier := by
+  let := h.finiteDimensional
+  let g := fun j : Σ b, Fin (P b).numConstraints => (P j.1).inequality j.2
+  have hxP := intrinsicInterior_subset hx
+  have hxnot : x ∉ interior {y | ∀ j, (P a).inequality j y ≤ 0} := by
+    intro hxint
+    have hpres : (P a).carrier = {y | ∀ j, (P a).inequality j y ≤ 0} :=
+      Set.ext fun _ => RationalAffinePolyhedron.mem_carrier
+    rw [← hpres] at hxint
+    have htop : affineSpan ℝ (P a).carrier = ⊤ :=
+      top_unique ((isOpen_interior.affineSpan_eq_top ⟨x, hxint⟩) ▸
+        affineSpan_mono ℝ interior_subset)
+    exact (affineSpan ℝ (P a).carrier).ne_top_of_finrank_direction_add_one_eq hdim htop
+  -- An active nonconstant row cuts out the supporting hyperplane.
+  obtain ⟨j, hjx, hj⟩ := exists_nonzero_active_row_of_notMem_interior
+    (P a).inequality (RationalAffinePolyhedron.mem_carrier.mp hxP) hxnot
+  obtain ⟨Q, hQ, hxQ, hQzero⟩ := exists_mem_ofArrangement_walls_subset_zeroLocus
+    g (fun j => (P j.1).rational_linear j.2) (j := ⟨a, j⟩) hj hjx
+  have hPzero := ((P a).inequality j).toAffineMap.eq_zero_on_of_mem_intrinsicInterior
+    (fun y hy => RationalAffinePolyhedron.mem_carrier.mp hy j) hx hjx
+  have hdirP := ((P a).inequality j).toAffineMap.direction_affineSpan_eq_ker_linear
+    hj hPzero hdim
+  have hdirQ := ((P a).inequality j).toAffineMap.direction_affineSpan_eq_ker_linear
+    hj hQzero ((ofArrangement g _).finrank_direction_add_one_of_mem_walls hQ)
+  have hspan : affineSpan ℝ Q = affineSpan ℝ (P a).carrier :=
+    (AffineSubspace.eq_iff_direction_eq_of_mem (subset_affineSpan ℝ Q hxQ)
+      (subset_affineSpan ℝ _ hxP)).mpr (hdirQ.trans hdirP.symm)
+  exact ⟨Q, hQ, hxQ, subset_carrier_of_affineSpan_eq_ambientSubdivision P a
+    ((ambientSubdivision P).mem_cells_of_mem_walls hQ) hxQ hx hspan⟩
+
+/-- A codimension-one input is covered by walls contained in that input,
+including its boundary points. Redundant and constant inequalities are allowed. -/
+theorem exists_mem_ambientSubdivision_walls_subset
+    (P : ι → RationalAffinePolyhedron h) (a : ι)
+    (hdim : Module.finrank ℝ (affineSpan ℝ (P a).carrier).direction + 1 =
+      Module.finrank ℝ V) {x : V} (hx : x ∈ (P a).carrier) :
+    ∃ Q ∈ (ambientSubdivision P).walls, x ∈ Q ∧ Q ⊆ (P a).carrier := by
+  classical
+  let := h.finiteDimensional
+  -- Finitely many closed walls cover the relative interior, hence its limiting
+  -- boundary points as well. Use a segment from one relative interior point.
+  let J := {Q : Set V | Q ∈ (ambientSubdivision P).walls ∧ Q ⊆ (P a).carrier}
+  have hJ : J.Finite := (ambientSubdivision P).walls.finite_toSet.subset fun _ hQ => hQ.1
+  have hclosed : IsClosed (⋃ Q ∈ J, Q) := hJ.isClosed_biUnion fun Q hQ =>
+    ((ambientSubdivision P).isConvexPolyhedron
+      ((ambientSubdivision P).mem_cells_of_mem_walls hQ.1)).isClosed
+  have hsub : intrinsicInterior ℝ (P a).carrier ⊆ ⋃ Q ∈ J, Q := by
+    intro z hz
+    obtain ⟨Q, hQ, hzQ, hQP⟩ :=
+      exists_mem_ambientSubdivision_walls_subset_of_mem_intrinsicInterior P a hdim hz
+    exact mem_iUnion₂.mpr ⟨Q, ⟨hQ, hQP⟩, hzQ⟩
+  obtain ⟨z, hz⟩ := Set.Nonempty.intrinsicInterior (P a).convex ⟨x, hx⟩
+  have hseg := (P a).convex.openSegment_intrinsicInterior_intrinsicClosure_subset_intrinsicInterior
+    hz (subset_intrinsicClosure hx)
+  have hxU := (closure_minimal (hseg.trans hsub) hclosed)
+    (segment_subset_closure_openSegment (right_mem_segment ℝ z x))
+  obtain ⟨Q, hQ, hxQ⟩ := mem_iUnion₂.mp hxU
+  exact ⟨Q, hQ.1, hxQ, hQ.2⟩
+
+/-- A codimension-one input carrier is exactly the union of the walls of its
+ambient subdivision contained in that carrier. -/
+theorem carrier_eq_iUnion_ambientSubdivision_walls
+    (P : ι → RationalAffinePolyhedron h) (a : ι)
+    (hdim : Module.finrank ℝ (affineSpan ℝ (P a).carrier).direction + 1 =
+      Module.finrank ℝ V) :
+    (P a).carrier = ⋃ (Q : Set V) (_ : Q ∈ (ambientSubdivision P).walls)
+      (_ : Q ⊆ (P a).carrier), Q := by
+  ext x
+  simp only [Set.mem_iUnion]
+  constructor
+  · intro hx
+    obtain ⟨Q, hQ, hxQ, hQP⟩ := exists_mem_ambientSubdivision_walls_subset P a hdim hx
+    exact ⟨Q, hQ, hQP, hxQ⟩
+  · rintro ⟨Q, _, hQP, hxQ⟩
+    exact hQP hxQ
 
 end Mei.FinitePolyhedralComplex

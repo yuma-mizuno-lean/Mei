@@ -46,6 +46,20 @@ namespace AffineMap
 
 variable {K V : Type*} [DivisionRing K] [AddCommGroup V] [Module K V]
 
+/-- The linear part of a nonconstant affine functional cuts out the direction
+of any codimension-one set on which the functional vanishes. -/
+theorem direction_affineSpan_eq_ker_linear [FiniteDimensional K V]
+    (g : V →ᵃ[K] K) (hg : g.linear ≠ 0) {P : Set V}
+    (hP : ∀ x ∈ P, g x = 0)
+    (hdim : Module.finrank K (affineSpan K P).direction + 1 = Module.finrank K V) :
+    (affineSpan K P).direction = g.linear.ker := by
+  have hle : (affineSpan K P).direction ≤ g.linear.ker := by
+    rw [direction_affineSpan, vectorSpan_def, Submodule.span_le]
+    rintro v ⟨a, ha, b, hb, rfl⟩
+    exact LinearMap.mem_ker.mpr (by rw [g.linear_apply_vsub, hP a ha, hP b hb, vsub_self])
+  have hk := Module.Dual.finrank_ker_add_one_of_ne_zero hg
+  exact Submodule.eq_of_le_of_finrank_eq hle (by omega)
+
 /-- An affine zero section has strictly smaller affine span when the function
 is nonzero somewhere on the original set. No convexity is needed. -/
 theorem affineSpan_inter_zero_lt (g : V →ᵃ[K] K) {P : Set V}

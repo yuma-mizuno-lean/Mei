@@ -161,15 +161,21 @@ each of its points lies on a codimension-one cell. -/
 theorem exists_mem_arrangementComplex_walls_of_eval_eq_zero {k : ℕ} {n : N}
     (hn : n ∈ d.cutoff k \ {0}) {θ : V →L[ℝ] ℝ} (hθ : θ (i n) = 0) :
     ∃ P ∈ (d.arrangementComplex h k).walls, θ ∈ P := by
+  have hnz : (ContinuousLinearMap.apply ℝ ℝ (i n)).toLinearMap ≠ 0 := by
+    intro he
+    have hpos : (0 : ℝ) < h.continuousRealCharacter d.degree (i n) := by
+      simpa using (Int.cast_pos.mpr
+        (d.degree_pos ((d.mem_cutoff).mp hn.1).1 hn.2) : (0 : ℝ) < d.degree n)
+    have hv := congrArg (fun f : (V →L[ℝ] ℝ) →ₗ[ℝ] ℝ =>
+      f (h.continuousRealCharacter d.degree)) he
+    simp only [LinearMap.zero_apply] at hv
+    exact hpos.ne' hv
+  obtain ⟨P, hP, hθP, _⟩ := exists_mem_ofArrangement_walls_subset_zeroLocus
+    (fun n : ↥(d.cutoff k \ {0}) =>
+      (ContinuousLinearMap.apply ℝ ℝ (i n)).toContinuousAffineMap)
+    (fun n => h.isRationalFunctional_continuousDual_eval n) (j := ⟨n, hn⟩) hnz hθ
   rw [arrangementComplex_eq_ofArrangement]
-  refine exists_mem_ofArrangement_walls_of_eq_zero _ _ (j := ⟨n, hn⟩) (fun he => ?_)
-    (by simpa using hθ)
-  have hpos : (0 : ℝ) < h.continuousRealCharacter d.degree (i n) := by
-    simpa using (Int.cast_pos.mpr
-      (d.degree_pos ((d.mem_cutoff).mp hn.1).1 hn.2) : (0 : ℝ) < d.degree n)
-  have hv := congrArg (fun f : (V →L[ℝ] ℝ) →ₗ[ℝ] ℝ => f (h.continuousRealCharacter d.degree)) he
-  simp only [LinearMap.zero_apply] at hv
-  exact hpos.ne' hv
+  exact ⟨P, hP, hθP⟩
 
 end Mei.PositiveDegrees
 
