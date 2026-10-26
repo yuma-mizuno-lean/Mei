@@ -72,18 +72,10 @@ theorem sweep (hQ : IsOrientedSubdivision σ Q) (n : N)
     IsOrientedSubdivision (σ.sweep n hn) (hQ.sweepPieces n hn) := by
   classical
   refine ⟨?_, ?_, ?_⟩
-  · ext y
-    simp only [mem_iUnion, mem_sweepPieces, sweep_carrier]
-    constructor
-    · rintro ⟨τ, ⟨q, rfl⟩, hy⟩
-      rw [sweep_carrier] at hy
-      exact Convex.sweep_mono (hQ.carrier_subset q.property) (i n) hy
-    · intro hy
-      obtain ⟨x, hx, t, ht, he⟩ := Convex.mem_sweep_iff_exists.mp hy
-      obtain ⟨τ, hτ, hxτ⟩ := mem_iUnion₂.mp (hQ.biUnion_carrier.symm ▸ hx)
-      exact ⟨τ.sweep n (by rwa [hQ.direction_eq hτ]), ⟨⟨τ, hτ⟩, rfl⟩,
-        by simpa only [sweep_carrier] using
-          (Convex.mem_sweep_iff_exists.mpr ⟨x, hxτ, t, ht, he⟩)⟩
+  · simp only [mem_sweepPieces, iUnion_exists, iUnion_iUnion_eq', sweep_carrier]
+    rw [← Convex.sweep_iUnion]
+    simpa only [iUnion_subtype] using
+      congrArg (fun P => Convex.sweep P (i n)) hQ.biUnion_carrier
   · intro τ hτ υ hυ hne
     obtain ⟨q, rfl⟩ := (mem_sweepPieces hQ n hn τ).mp hτ
     obtain ⟨r, rfl⟩ := (mem_sweepPieces hQ n hn υ).mp hυ
