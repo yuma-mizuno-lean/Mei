@@ -6,8 +6,7 @@ Authors: Claude
 module
 
 public import Mei.Geometry.ScatteringDiagram.KS.Reconstruction.Map
-public import Mei.Algebra.Lie.Heisenberg.BCH
-public import Mei.Algebra.Lie.Heisenberg.Grading
+public import Mei.Algebra.Lie.Heisenberg.Completion
 
 /-!
 # Coefficient maps need not reflect equivalence
@@ -40,25 +39,6 @@ open TauCeti PositiveDegrees Mei.Convex
 attribute [local instance 100] LieRing.ofAssociativeRing
 
 variable (R : Type*) [CommRing R] [Algebra ℚ R]
-
-/-- The completed exponentials of the standard Heisenberg generators do not commute
-over a nontrivial coefficient ring. -/
-theorem expToCompletion_heisenbergX_mul_expToCompletion_heisenbergY_ne [Nontrivial R] :
-    nonnegIntegers.expToCompletion (heisenbergGrading R) (heisenbergX R) *
-        nonnegIntegers.expToCompletion (heisenbergGrading R) (heisenbergY R) ≠
-      nonnegIntegers.expToCompletion (heisenbergGrading R) (heisenbergY R) *
-        nonnegIntegers.expToCompletion (heisenbergGrading R) (heisenbergX R) := by
-  intro he
-  have hinj : Function.Injective (nonnegIntegers.degreeIdeal (heisenbergGrading R) 2).mkQ := by
-    rw [← LieHom.ker_eq_bot, LieIdeal.mkQ_ker,
-      degreeIdeal_heisenbergGrading_eq_bot R le_rfl]
-  have h2 := congrArg (CompletedGroup.projection 2) he
-  rw [map_mul, map_mul, projection_expToCompletion, projection_expToCompletion] at h2
-  apply exp_heisenbergX_mul_exp_heisenbergY_ne R
-  apply LieHom.bchGroupMap_injective hinj
-  rw [map_mul, map_mul, LieHom.bchGroupMap_exp, LieHom.bchGroupMap_exp]
-  -- The order-two tower object is the concrete truncated BCH group.
-  exact h2
 
 variable {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V] {i : ℤ →+ V}
   (h : TauCeti.Toric.IsIntegralLattice i)
