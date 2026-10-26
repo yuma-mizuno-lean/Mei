@@ -93,6 +93,19 @@ theorem signSubalgebra_eq_of_sign_eq (φ : ι →+ A)
     · simp [he]
     · exact le_iSup_of_le ⟨n, (h n he).trans n.property⟩ le_rfl
 
+variable {L' : Type*} [LieRing L'] [LieAlgebra R L']
+  (ℳ : ι → Submodule R L') [SetLike.GradedBracket ℳ ℳ]
+
+/-- An additive homomorphism preserving homogeneous degrees preserves each sign subalgebra. -/
+theorem map_mem_signSubalgebra (f : L →+ L')
+    (hf : ∀ n, ∀ x ∈ ℒ n, f x ∈ ℳ n) {s : SignType} {x : L}
+    (hx : x ∈ signSubalgebra ℒ θ s) : f x ∈ signSubalgebra ℳ θ s := by
+  rw [← LieSubalgebra.mem_toSubmodule, signSubalgebra_toSubmodule] at hx ⊢
+  refine Submodule.iSup_induction _ (motive := fun x =>
+    f x ∈ ⨆ n : {n // SignType.sign (θ n) = s}, ℳ n) hx
+    (fun n x hx => Submodule.mem_iSup_of_mem n (hf n x hx))
+    (by simp) (fun x y hx hy => by simpa only [map_add] using Submodule.add_mem _ hx hy)
+
 variable [DecidableEq ι] [DirectSum.Decomposition ℒ]
 
 /-- Membership is characterized by vanishing of the components of other signs. -/
@@ -213,5 +226,19 @@ theorem signDecomposition_eq_iff (x : L)
     apply Subtype.ext
     rw [he, map_sum]
     simp [signDecomposition_coe, DirectSum.sum_apply, DirectSum.coe_of_apply, apply_ite]
+
+variable [DirectSum.Decomposition ℳ]
+
+/-- Sign decomposition commutes with an additive homomorphism preserving homogeneous degrees. -/
+theorem map_signDecomposition (f : L →+ L')
+    (hf : ∀ n, ∀ x ∈ ℒ n, f x ∈ ℳ n) (x : L) (s : SignType) :
+    f (signDecomposition ℒ θ x s : L) =
+      (signDecomposition ℳ θ (f x) s : L') := by
+  let a : ∀ s, signSubalgebra ℳ θ s := fun s =>
+    ⟨f (signDecomposition ℒ θ x s : L),
+      map_mem_signSubalgebra ℒ θ ℳ f hf (signDecomposition ℒ θ x s).property⟩
+  have hsum : ∑ s, (a s : L') = f x := by
+    simpa only [a, ← map_sum] using congrArg f (sum_signDecomposition ℒ θ x)
+  exact (congrArg Subtype.val ((signDecomposition_eq_iff ℳ θ (f x) a).mpr hsum s)).symm
 
 end Mei
