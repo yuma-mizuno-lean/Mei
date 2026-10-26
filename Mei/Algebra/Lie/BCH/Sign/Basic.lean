@@ -252,10 +252,10 @@ theorem truncationMap_signFactorizationEquiv_symm {k l : ℕ} (h : k ≤ l)
   let a := (signFactorizationEquiv ℒ θ d l).symm g
   have hb : signFactorizationEquiv ℒ θ d k (lowerSignFactors ℒ θ d h a) =
       (d.truncationMap ℒ h).bchGroupMap g := by
-    change signProduct _ θ (lowerSignFactors ℒ θ d h a) = _
-    rw [signProduct_lowerSignFactors]
-    exact congrArg (d.truncationMap ℒ h).bchGroupMap
-      ((signFactorizationEquiv ℒ θ d l).apply_symm_apply g)
+    rw [signFactorizationEquiv_apply, ← signProduct_apply, signProduct_lowerSignFactors]
+    simpa only [signFactorizationEquiv_apply, signProduct_apply] using
+      congrArg (d.truncationMap ℒ h).bchGroupMap
+        ((signFactorizationEquiv ℒ θ d l).apply_symm_apply g)
   exact congrArg (fun a => (a s : d.truncatedGroup ℒ k))
     ((signFactorizationEquiv ℒ θ d k).eq_symm_apply.mpr hb)
 
