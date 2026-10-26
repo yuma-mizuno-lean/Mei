@@ -86,7 +86,8 @@ theorem active_mono : Monotone D.active := by
   rw [he, map_one] at hp
   exact hp.symm
 
-private theorem activeLabels_commute (k : ℕ) (a b : D.active k)
+/-- The projected labels of active walls with the same affine span commute. -/
+theorem activeLabels_commute (k : ℕ) (a b : D.active k)
     (hab : affineSpan ℝ (D.wall a).support = affineSpan ℝ (D.wall b).support) :
     Commute (CompletedGroup.projection k (D.wall a).label)
       (CompletedGroup.projection k (D.wall b).label) :=

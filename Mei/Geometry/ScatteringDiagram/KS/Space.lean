@@ -97,6 +97,21 @@ theorem ofLattice_evaluation [Module.Free ℤ N] [Module.Finite ℤ N]
     (h : TauCeti.Toric.IsIntegralLattice i) (θ : V) (n : N) :
     (ofLattice h).evaluation θ n = h.realCharacter (AddMonoidHom.eval n) θ := (rfl)
 
+/-- The continuous dual of a lattice is its canonical real character-space model.
+The required finite freeness follows from the original integral lattice. -/
+def continuousDual {W : Type*} [NormedAddCommGroup W] [NormedSpace ℝ W]
+    {j : N →+ W} (h : TauCeti.Toric.IsIntegralLattice j) : KSSpace h.continuousDual := by
+  letI := h.free
+  letI := h.finite
+  exact ofLattice h.continuousDual
+
+/-- In the continuous-dual model, evaluation is ordinary evaluation on lattice vectors. -/
+@[simp]
+theorem continuousDual_evaluation {W : Type*} [NormedAddCommGroup W] [NormedSpace ℝ W]
+    {j : N →+ W} (h : TauCeti.Toric.IsIntegralLattice j) (θ : W →L[ℝ] ℝ) (n : N) :
+    (continuousDual h).evaluation θ n = θ (j n) := by
+  simp [continuousDual, ofLattice_evaluation]
+
 /-- The linear normal associated to a degree. -/
 def normal (n : N) : V →ₗ[ℝ] ℝ where
   toFun θ := s.evaluation θ n

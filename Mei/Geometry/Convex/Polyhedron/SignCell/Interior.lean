@@ -133,4 +133,31 @@ theorem row_eq_zero_iff_forall_of_mem_intrinsicInterior
     exact (mem_weakSignCell.mp hy j).1 hs
   · exact fun h => h x (intrinsicInterior_subset hx)
 
+/-- A realized finite sign cell with proper affine span has an equality row.
+Thus every lower-dimensional arrangement cell lies in a defining hyperplane. -/
+theorem exists_zero_sign_of_affineSpan_ne_top
+    {W : Type*} [NormedAddCommGroup W] [NormedSpace ℝ W] [Finite ι]
+    {g : ι → (W →ᴬ[ℝ] ℝ)} {σ : ι → SignType}
+    (hne : (signCell g σ).Nonempty)
+    (hspan : affineSpan ℝ (closure (signCell g σ)) ≠ ⊤) :
+    ∃ j, σ j = 0 := by
+  by_contra! hz
+  have hopen : IsOpen (signCell g σ) := by
+    have heq : signCell g σ = ⋂ j, {x | SignType.sign (g j x) = σ j} := by
+      ext x
+      simp
+    rw [heq]
+    apply isOpen_iInter_of_finite
+    intro j
+    cases hs : σ j with
+    | zero => exact (hz j hs).elim
+    | neg =>
+      simpa only [SignType.neg_eq_neg_one, sign_eq_neg_one_iff] using
+        (isOpen_lt (g j).continuous continuous_const : IsOpen {x | g j x < 0})
+    | pos =>
+      simpa only [SignType.pos_eq_one, sign_eq_one_iff] using
+        (isOpen_lt continuous_const (g j).continuous : IsOpen {x | 0 < g j x})
+  exact hspan (top_unique (hopen.affineSpan_eq_top hne ▸
+    affineSpan_mono ℝ subset_closure))
+
 end Mei.Convex

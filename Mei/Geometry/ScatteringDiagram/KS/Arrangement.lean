@@ -8,6 +8,8 @@ module
 public import Mei.Algebra.PositiveDegrees.Basic
 public import Mei.Geometry.Convex.PolyhedralComplex.AmbientSubdivision
 public import Mei.Geometry.Toric.Algebraic.DualLattice
+public import Mei.Geometry.Convex.Polyhedron.SignCell.Interior
+public import Mei.Geometry.Convex.PolyhedralComplex.Strata
 
 /-!
 # Bounded-degree hyperplane arrangements
@@ -132,5 +134,23 @@ theorem commonKernel_mem_arrangementComplex_cells (k : ℕ) :
     by_cases hn0 : n = 0
     · simp [hn0]
     · exact (mem_weakSignCell.mp hθ ⟨n, hn, hn0⟩).1 rfl
+
+/-- Every wall of the degree arrangement lies in a hyperplane of a retained
+nonzero allowed degree. Redundant hyperplanes and lineality are allowed. -/
+theorem exists_degree_forall_eq_zero_of_mem_arrangementComplex_walls
+    {k : ℕ} {P : Set (V →L[ℝ] ℝ)} (hP : P ∈ (d.arrangementComplex h k).walls) :
+    ∃ n ∈ d.cutoff k \ {0}, ∀ θ ∈ P, θ (i n) = 0 := by
+  let := h.continuousDual.finiteDimensional
+  have hcell := (d.arrangementComplex h k).mem_cells_of_mem_walls hP
+  obtain ⟨σ, hσ, heq⟩ := (d.mem_arrangementComplex_cells h k P).mp hcell
+  have hspan : affineSpan ℝ P ≠ ⊤ :=
+    (affineSpan ℝ P).ne_top_of_finrank_direction_add_one_eq
+      ((d.arrangementComplex h k).finrank_direction_add_one_of_mem_walls hP)
+  rw [heq] at hspan
+  obtain ⟨n, hn⟩ := exists_zero_sign_of_affineSpan_ne_top hσ hspan
+  refine ⟨n, n.property, ?_⟩
+  intro θ hθ
+  rw [heq, closure_signCell hσ] at hθ
+  exact (mem_weakSignCell.mp hθ n).1 hn
 
 end Mei.PositiveDegrees
