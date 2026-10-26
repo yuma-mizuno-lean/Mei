@@ -16,8 +16,8 @@ The side facet swept from a boundary facet has the opposite of its swept boundar
 orientation. This is the side term in the boundary formula for a negative-ray prism.
 The sign comes from anticommuting the outward and sweeping contractions.
 
-The proof combines `OrientedCell.eq_boundaryFacet_iff`, the unsigned exposed-face
-construction `IsExposed.sweep_of_transverse`, and `Module.Ray.contract_contract`.
+`OrientedCell.boundaryFacet_sweep_side` identifies the signed side contribution
+in the sweep boundary formula in terms of the sweep of the signed base facet.
 It allows unbounded cells and lineality, and uses no choice of inequalities.
 -/
 
