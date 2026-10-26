@@ -136,16 +136,24 @@ theorem segmentPathProduct_def (e : x ⟶ y) :
     segmentPathProduct ν label hcomm e =
       ((orderedCrossingTimes e).reverse.map (crossingEventProduct ν label hcomm e)).prod := (rfl)
 
-/-- A stationary segment crosses no wall. -/
-@[simp]
-theorem segmentPathProduct_self (e : x ⟶ x) :
-    segmentPathProduct ν label hcomm e = 1 := by
+/-- A segment meeting no wall has identity transport. -/
+theorem segmentPathProduct_eq_one_of_crossings_eq_empty (e : x ⟶ y)
+    (he : crossings x y = ∅) : segmentPathProduct ν label hcomm e = 1 := by
   have ht : orderedCrossingTimes e = [] := by
     apply List.eq_nil_iff_forall_not_mem.mpr
     intro t ht
     obtain ⟨i, hi⟩ := (mem_orderedCrossingTimes e t).mp ht
-    exact x.notMem i (by simpa using ((mem_crossings x x i t).mp hi).2)
+    simp [he] at hi
   simp [segmentPathProduct_def, ht]
+
+/-- A stationary segment crosses no wall. -/
+@[simp]
+theorem segmentPathProduct_self (e : x ⟶ x) :
+    segmentPathProduct ν label hcomm e = 1 := by
+  apply segmentPathProduct_eq_one_of_crossings_eq_empty ν label hcomm e
+  apply Set.eq_empty_iff_forall_notMem.mpr
+  rintro ⟨i, t⟩ hi
+  exact x.notMem i (by simpa using ((mem_crossings x x i t).mp hi).2)
 
 /-- Homomorphisms preserve the segment transport. -/
 @[simp]
