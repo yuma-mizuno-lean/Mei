@@ -172,7 +172,7 @@ def integralAffinePregroupoid (h : TauCeti.Toric.IsIntegralLattice i) : Pregroup
   congr _ hgf hf := hf.congr (fun x hx => (hgf x hx).symm)
 
 /-- The pregroupoid property is precisely the public local-witness predicate. -/
-theorem integralAffinePregroupoid_property_iff {f : V → V} {s : Set V} :
+@[simp] theorem integralAffinePregroupoid_property_iff {f : V → V} {s : Set V} :
     (integralAffinePregroupoid h).property f s ↔ IsLocallyIntegralAffineOn h h f s := by
   rw [integralAffinePregroupoid]
 
@@ -190,7 +190,7 @@ theorem mem_integralAffineGroupoid_iff {e : OpenPartialHomeomorph V V} :
 
 /-- Groupoid membership is exactly local integral affine behavior on the source;
 the inverse condition follows from the partial homeomorphism laws. -/
-theorem mem_integralAffineGroupoid_iff_forward {e : OpenPartialHomeomorph V V} :
+@[simp] theorem mem_integralAffineGroupoid_iff_forward {e : OpenPartialHomeomorph V V} :
     e ∈ integralAffineGroupoid h ↔ IsLocallyIntegralAffineOn h h e e.source := by
   rw [mem_integralAffineGroupoid_iff]
   exact ⟨And.left, fun he => ⟨he, he.symm⟩⟩
