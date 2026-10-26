@@ -1,7 +1,7 @@
 /-
 Copyright (c) 2026 Mei contributors. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Claude
+Authors: Claude, Codex
 -/
 module
 
@@ -222,6 +222,63 @@ theorem exists_forall₂_dist_lt [Finite ι] (hpoly : ∀ i, TauCeti.IsConvexPol
           List.dropLast_singleton, List.singleton_append, List.map_cons, hT]
       rw [hcomp, List.cons_append]
       exact .cons (by simpa using hε) (.cons (Metric.mem_ball'.mp hu) (List.forall₂_cons.mp hq).2)
+
+/-- Every nonempty vertex list is approximated by an admissible path, allowing
+both endpoints to move. Unlike approximation with fixed endpoints, this also
+applies to lists with no interior vertex. -/
+theorem exists_forall₂_dist_lt_free_endpoints [Finite ι]
+    (hpoly : ∀ i, TauCeti.IsConvexPolyhedron (W i))
+    (hdim : ∀ i, Module.finrank ℝ (affineSpan ℝ (W i)).direction + 1 = Module.finrank ℝ V)
+    {l : List V} (hl : l ≠ []) {ε : ℝ} (hε : 0 < ε) :
+    ∃ (x y : WallComplement W) (p : AdmissiblePLPath x y),
+      List.Forall₂ (fun a b => dist a b < ε) l (p.vertices.map WallComplement.val) := by
+  induction l with
+  | nil => exact absurd rfl hl
+  | cons v l ih =>
+    by_cases hl' : l = []
+    · subst l
+      obtain ⟨u, hu, hW⟩ := AffineSubspace.exists_dist_lt_genericLocus
+        (fun i => affineSpan ℝ (W i))
+        (fun i => (affineSpan ℝ (W i)).ne_top_of_finrank_direction_add_one_eq (hdim i)) v hε
+      let x : WallComplement W := ⟨u, fun i hi => hW i (subset_affineSpan ℝ _ hi)⟩
+      exact ⟨x, x, .nil, .cons (by simpa only [dist_comm] using hu) .nil⟩
+    · obtain ⟨x, y, p, hp⟩ := ih hl'
+      obtain ⟨u, hu, hW, ht, hr⟩ := exists_mem_open_two_transverse_lineMaps
+        W hpoly hdim x.notMem x.notMem Metric.isOpen_ball (Metric.nonempty_ball.mpr hε)
+      let z : WallComplement W := ⟨u, hW⟩
+      have hxz : WallComplement.AdmissibleSegment x z :=
+        ⟨fun i _ => (ht i).1, fun t _ => (hr t).1⟩
+      refine ⟨z, y, (Quiver.Hom.toPath (PLift.up hxz.symm)).comp p, ?_⟩
+      simp only [Quiver.Path.vertices_comp, Quiver.Path.vertices_toPath,
+        List.dropLast_cons_cons, List.dropLast_singleton, List.singleton_append,
+        List.map_cons]
+      exact .cons (Metric.mem_ball'.mp hu) hp
+
+/-- A closed vertex list with at least one interior vertex can be approximated
+by an admissible loop, with its basepoint also allowed to move. -/
+theorem exists_loop_forall₂_dist_lt [Finite ι]
+    (hpoly : ∀ i, TauCeti.IsConvexPolyhedron (W i))
+    (hdim : ∀ i, Module.finrank ℝ (affineSpan ℝ (W i)).direction + 1 = Module.finrank ℝ V)
+    (v : V) {l : List V} (hl : l ≠ []) {ε : ℝ} (hε : 0 < ε) :
+    ∃ (x : WallComplement W) (p : AdmissiblePLPath x x),
+      List.Forall₂ (fun a b => dist a b < ε) (v :: (l ++ [v]))
+        (p.vertices.map WallComplement.val) := by
+  have hhalf : 0 < ε / 2 := half_pos hε
+  obtain ⟨u, hu, hW⟩ := AffineSubspace.exists_dist_lt_genericLocus
+    (fun i => affineSpan ℝ (W i))
+    (fun i => (affineSpan ℝ (W i)).ne_top_of_finrank_direction_add_one_eq (hdim i)) v hhalf
+  let x : WallComplement W := ⟨u, fun i hi => hW i (subset_affineSpan ℝ _ hi)⟩
+  obtain ⟨p, hp⟩ := exists_forall₂_dist_lt hpoly hdim hl hhalf x x
+  have hv : dist v x.val < ε / 2 := by simpa only [dist_comm] using hu
+  have hs : List.Forall₂ (fun a b => dist a b < ε / 2)
+      (v :: (l ++ [v])) (x.val :: (l ++ [x.val])) :=
+    .cons hv (List.rel_append (List.forall₂_same.mpr fun _ _ => by simpa using hhalf)
+      (.cons hv .nil))
+  refine ⟨x, p, List.forall₂_of_length_eq_of_get (hs.length_eq.trans hp.length_eq) ?_⟩
+  intro j hj₁ hj₃
+  have hj₂ : j < (x.val :: (l ++ [x.val])).length := by simpa using hj₁
+  exact (dist_triangle _ ((x.val :: (l ++ [x.val])).get ⟨j, hj₂⟩) _).trans_lt
+    (by linarith [hs.get hj₁ hj₂, hp.get hj₂ hj₃])
 
 end AdmissiblePLPath
 

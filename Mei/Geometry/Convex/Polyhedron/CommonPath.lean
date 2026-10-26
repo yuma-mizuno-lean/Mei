@@ -82,13 +82,11 @@ instance (j : J) : (projectionPrefunctor (W := W) j).MapReverse where
 variable {x y : CommonWallComplement W}
 
 /-- Every projected path has precisely the original ambient vertex list. -/
-@[simp]
 theorem vertices_projection (j : J) (p : Quiver.Path x y) :
     ((projectionPrefunctor j).mapPath p).vertices.map WallComplement.val =
       p.vertices.map CommonWallComplement.val := by
-  induction p with
-  | nil => simp
-  | cons p e ih => simp [ih]
+  simp only [Prefunctor.vertices_mapPath, List.map_map, Function.comp_def,
+    projectionPrefunctor_obj, projection_val]
 
 /-- Countably many finite polyhedral wall families admit a common two-edge path
 between any common allowed endpoints. -/
