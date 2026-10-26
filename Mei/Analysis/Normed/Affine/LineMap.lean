@@ -57,16 +57,11 @@ theorem exists_continuousAt_lineMap_mem [FiniteDimensional ℝ V]
     ∃ τ : V × V → ℝ, ContinuousAt τ (x, y) ∧ τ (x, y) = t₀ ∧
       ∀ᶠ q : V × V in 𝓝 (x, y), AffineMap.lineMap q.1 q.2 (τ q) ∈ A := by
   obtain ⟨f, hf, hfA⟩ := Submodule.exists_dual_map_eq_bot_of_notMem hxy inferInstance
-  have hrange : LinearMap.range f = ⊤ := by
-    apply Submodule.eq_top_of_finrank_eq
-    apply le_antisymm (Submodule.finrank_le _)
-    rw [Module.finrank_self, Nat.one_le_iff_ne_zero, Ne, Submodule.finrank_eq_zero,
-      LinearMap.range_eq_bot]
+  have hf0 : f ≠ 0 := by
     rintro rfl
     exact hf rfl
   have hker : LinearMap.ker f = A.direction := by
-    have hrn := LinearMap.finrank_range_add_finrank_ker f
-    rw [hrange, finrank_top, Module.finrank_self] at hrn
+    have hdim := Module.Dual.finrank_ker_add_one_of_ne_zero hf0
     exact (Submodule.eq_of_le_of_finrank_eq (LinearMap.le_ker_iff_map.mpr hfA)
       (by omega)).symm
   have hfc : Continuous f := LinearMap.continuous_of_finiteDimensional f
