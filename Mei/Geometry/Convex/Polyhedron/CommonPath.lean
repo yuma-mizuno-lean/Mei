@@ -24,7 +24,9 @@ allowed points are joined by such a path with two edges. This applies
 `dense_setOf_forall_admissiblePairs`, based on Mathlib's Baire theorem, to the
 existing `WallComplement.AdmissibleSegment` predicates. More generally, any
 nonempty finite list of interior vertices admits arbitrarily close common
-admissible paths with the same number of vertices and fixed endpoints.
+admissible paths with the same number of vertices and fixed endpoints. If the
+endpoints are free, they can also be moved off every wall while approximating
+all the prescribed vertices.
 -/
 
 public section
@@ -75,6 +77,36 @@ def projectionPrefunctor (j : J) : CommonWallComplement W ⥤q WallComplement (W
 theorem projectionPrefunctor_obj (j : J) (x : CommonWallComplement W) :
     (projectionPrefunctor j).obj x = projection j x := (rfl)
 
+/-- Forget the families outside a chosen reindexing. The geometric vertices stay fixed. -/
+-- Objects compute in dependent path types, as for `projectionPrefunctor`.
+@[expose]
+def reindexPrefunctor {K : Type*} (a : K → J) :
+    CommonWallComplement W ⥤q CommonWallComplement (fun k => W (a k)) where
+  obj x := ⟨x.val, fun k => x.notMem (a k)⟩
+  map e := ⟨fun k => e.down (a k)⟩
+
+@[simp]
+theorem reindexPrefunctor_obj_val {K : Type*} (a : K → J) (x : CommonWallComplement W) :
+    ((reindexPrefunctor a).obj x).val = x.val := (rfl)
+
+/-- Reindexing a common path retains its ambient vertex list. -/
+@[simp]
+theorem vertices_reindex {K : Type*} (a : K → J) {x y : CommonWallComplement W}
+    (p : Quiver.Path x y) :
+    ((reindexPrefunctor a).mapPath p).vertices.map CommonWallComplement.val =
+      p.vertices.map CommonWallComplement.val := by
+  induction p with
+  | nil => simp
+  | cons p e ih => simp [ih]
+
+/-- Projecting a reindexed path agrees with projecting directly to that family. -/
+@[simp]
+theorem projection_reindex_mapPath {K : Type*} (a : K → J) (k : K)
+    {x y : CommonWallComplement W} (p : Quiver.Path x y) :
+    (projectionPrefunctor k).mapPath ((reindexPrefunctor a).mapPath p) =
+      (projectionPrefunctor (a k)).mapPath p := by
+  exact (Prefunctor.mapPath_comp_apply (reindexPrefunctor a) (projectionPrefunctor k) p).symm
+
 /-- Reversal preserves simultaneous admissibility. -/
 instance : Quiver.HasInvolutiveReverse (CommonWallComplement W) where
   reverse' e := ⟨fun j => (e.down j).symm⟩
@@ -95,42 +127,9 @@ theorem vertices_projection (j : J) (p : Quiver.Path x y) :
   | nil => simp
   | cons p e ih => simp [ih]
 
-/-- Retain the families selected by an index map, preserving the geometric path. -/
--- Objects must compute in the dependent types of the projected paths.
-@[expose]
-def reindexPrefunctor {J' : Type*} (f : J' → J) :
-    CommonWallComplement W ⥤q CommonWallComplement (fun j => W (f j)) where
-  obj x := ⟨x.val, fun j => x.notMem (f j)⟩
-  map e := ⟨fun j => e.down (f j)⟩
-
 /-- Reindexing preserves reversal of edges, hence also reversal of paths. -/
 instance {J' : Type*} (f : J' → J) : (reindexPrefunctor (W := W) f).MapReverse where
   map_reverse' _ := PLift.ext (Subsingleton.elim _ _)
-
-@[simp]
-theorem reindexPrefunctor_obj_val {J' : Type*} (f : J' → J) (x : CommonWallComplement W) :
-    ((reindexPrefunctor f).obj x).val = x.val := (rfl)
-
-/-- Selecting families leaves every ambient vertex unchanged. -/
-@[simp]
-theorem vertices_reindex {J' : Type*} (f : J' → J) (p : Quiver.Path x y) :
-    ((reindexPrefunctor f).mapPath p).vertices.map CommonWallComplement.val =
-      p.vertices.map CommonWallComplement.val := by
-  induction p with
-  | nil => simp
-  | cons p e ih => simp [ih]
-
-/-- Projecting a reindexed path is the original projection at the selected index. -/
-@[simp]
-theorem projection_mapPath_reindex {J' : Type*} (f : J' → J) (j : J')
-    (p : Quiver.Path x y) :
-    (projectionPrefunctor j).mapPath ((reindexPrefunctor f).mapPath p) =
-      (projectionPrefunctor (f j)).mapPath p := by
-  induction p with
-  | nil => rfl
-  | cons p e ih =>
-    simp only [Prefunctor.mapPath_cons, ih]
-    rfl
 
 /-- Any nonempty list of interior vertices can be approximated by a path
 admissible for countably many finite polyhedral wall families simultaneously.
@@ -183,6 +182,40 @@ theorem exists_forall₂_dist_lt [FiniteDimensional ℝ V] [Countable J]
         simp [Quiver.Path.vertices_comp, hT]
       rw [hcomp, List.cons_append]
       exact .cons (by simpa using hε) (.cons hz (List.forall₂_cons.mp hq).2)
+
+/-- A prescribed list with an interior vertex can be approximated by a common
+admissible path while moving both endpoints as well. The new endpoints avoid every
+wall, including walls of families for which the original endpoints were not allowed. -/
+theorem exists_forall₂_dist_lt_free_endpoints [FiniteDimensional ℝ V] [Countable J]
+    [∀ j, Finite (I j)]
+    (hpoly : ∀ j i, TauCeti.IsConvexPolyhedron (W j i))
+    (hdim : ∀ j i, Module.finrank ℝ (affineSpan ℝ (W j i)).direction + 1 =
+      Module.finrank ℝ V)
+    (x y : V) {l : List V} (hl : l ≠ []) {ε : ℝ} (hε : 0 < ε) :
+    ∃ (x' y' : CommonWallComplement W) (p : Quiver.Path x' y'),
+      List.Forall₂ (fun a b => dist a b < ε) (x :: (l ++ [y]))
+        (p.vertices.map CommonWallComplement.val) := by
+  have hpoint (v : V) : ∃ z : CommonWallComplement W, dist v z.val < ε / 2 := by
+    obtain ⟨z, hz, havoid⟩ := AffineSubspace.exists_dist_lt_genericLocus
+      (fun p : Σ j, I j => affineSpan ℝ (W p.1 p.2))
+      (fun p => (affineSpan ℝ (W p.1 p.2)).ne_top_of_finrank_direction_add_one_eq
+        (hdim p.1 p.2)) v (half_pos hε)
+    exact ⟨⟨z, fun j i hi => havoid ⟨j, i⟩ (subset_affineSpan ℝ _ hi)⟩,
+      by simpa only [dist_comm] using hz⟩
+  obtain ⟨x', hx⟩ := hpoint x
+  obtain ⟨y', hy⟩ := hpoint y
+  obtain ⟨p, hp⟩ := exists_forall₂_dist_lt hpoly hdim hl (half_pos hε) x' y'
+  have hstart : List.Forall₂ (fun a b => dist a b < ε / 2)
+      (x :: (l ++ [y])) (x'.val :: (l ++ [y'.val])) :=
+    .cons hx (List.rel_append
+      (List.forall₂_same.mpr (fun _ _ => by simpa using half_pos hε)) (.cons hy .nil))
+  refine ⟨x', y', p, List.forall₂_of_length_eq_of_get
+    (hstart.length_eq.trans hp.length_eq) ?_⟩
+  intro n hn hn'
+  have hm : n < (x'.val :: (l ++ [y'.val])).length := by
+    simpa only [List.length_cons, List.length_append, List.length_singleton] using hn
+  exact (dist_triangle _ _ _).trans_lt
+    (by linarith [hstart.get hn hm, hp.get hm hn'])
 
 /-- Countably many finite polyhedral wall families admit a common two-edge path
 between any common allowed endpoints. -/

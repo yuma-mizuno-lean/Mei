@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.ScatteringDiagram.KS.Completion
+public import Mei.Geometry.ScatteringDiagram.KS.Equivalence
 public import Mei.Geometry.Convex.PolyhedralComplex.CommonPerturbation
 
 /-!
@@ -13,19 +13,17 @@ public import Mei.Geometry.Convex.PolyhedralComplex.CommonPerturbation
 
 Every common finite-order test of two completed diagrams is realized by a common
 all-order path with the same two projected products. Its endpoints may move: an
-endpoint allowed at one cutoff can lie on walls at higher cutoffs. Connectors
-missing the two finite wall families preserve the test products before the
-countable perturbation is applied. The sequences of complexes need not stabilize
-or refine one another.
+endpoint allowed at one cutoff can lie on walls at higher cutoffs. Countable
+perturbation preserves the two prescribed crossing words and hence the finite
+products. The sequences of complexes need not stabilize or refine one another.
 
-Consequently, agreement of complete products on all common all-order paths is
-equivalent to agreement on common finite-order tests at every cutoff. This is the
-finite-test criterion for equivalence of completed diagrams, without a consistency
+The equivalence criterion is `CompletedDiagram.equivalent_iff_pathProduct_eq`.
+Here `CompletedDiagram.exists_common_pathProduct_eq` additionally exposes the
+all-order paths realizing any prescribed pair of finite tests, without a consistency
 hypothesis or a faithful coefficient action.
 
-This uses `CommonWallComplement.exists_crossingWord_eq_of_vertices_eq`,
-`CompletedDiagram.projection_pathProduct`, and Mathlib's extensionality of compatible
-families as implemented by `CompletedGroup.ext`.
+This uses `CommonWallComplement.exists_free_endpoints_crossingWord_eq_of_vertices_eq`
+and `CompletedDiagram.projection_pathProduct`.
 -/
 
 public section
@@ -86,7 +84,7 @@ theorem exists_common_pathProduct_eq (k : ℕ)
     cases b
     · rfl
     · exact hpq.symm
-  obtain ⟨u, v, r, hr⟩ := CommonWallComplement.exists_crossingWord_eq_of_vertices_eq
+  obtain ⟨u, v, r, hr⟩ := CommonWallComplement.exists_free_endpoints_crossingWord_eq_of_vertices_eq
     (Sum.elim C E) a (fun b => (diagrams b).toFiniteWallDiagram.normal)
     (fun b => (diagrams b).toFiniteWallDiagram.ker_normal) tests false htests
   -- Fix the endpoint types before elaborating products, so unification never unfolds
@@ -109,42 +107,16 @@ theorem exists_common_pathProduct_eq (k : ℕ)
   · rw [D.projection_pathProduct k p', FiniteWallDiagram.pathProduct_def,
       FiniteWallDiagram.pathProduct_def]
     apply congrArg (FreeGroup.lift (D.diagram k).toFiniteWallDiagram.label)
-    have hpr := CommonWallComplement.projection_mapPath_reindex
+    have hpr := CommonWallComplement.projection_reindex_mapPath
       (W := fun j => fun P : (Sum.elim C E j).walls => (P : Set V)) Sum.inl k r
     exact (congrArg (fun t => t.crossingWord (D.diagram k).toFiniteWallDiagram.normal)
       hpr).trans (hr false)
   · rw [F.projection_pathProduct k q', FiniteWallDiagram.pathProduct_def,
       FiniteWallDiagram.pathProduct_def]
     apply congrArg (FreeGroup.lift (F.diagram k).toFiniteWallDiagram.label)
-    have hpr := CommonWallComplement.projection_mapPath_reindex
+    have hpr := CommonWallComplement.projection_reindex_mapPath
       (W := fun j => fun P : (Sum.elim C E j).walls => (P : Set V)) Sum.inr k r
     exact (congrArg (fun t => t.crossingWord (F.diagram k).toFiniteWallDiagram.normal)
       hpr).trans (hr true)
-
-/-- Complete products agree on all common all-order paths exactly when finite
-products agree on common admissible vertex lists at every cutoff. -/
-theorem pathProduct_eq_iff_forall_cutoff :
-    (∀ {x y : Point C} {x' y' : Point E}
-      (p : Quiver.Path x y) (q : Quiver.Path x' y'),
-      p.vertices.map CommonWallComplement.val = q.vertices.map CommonWallComplement.val →
-        D.pathProduct p = F.pathProduct q) ↔
-    ∀ k {x y : WallComplement (fun P : (C k).walls => (P : Set V))}
-      {x' y' : WallComplement (fun P : (E k).walls => (P : Set V))}
-      (p : AdmissiblePLPath x y) (q : AdmissiblePLPath x' y'),
-      p.vertices.map WallComplement.val = q.vertices.map WallComplement.val →
-        (D.diagram k).toFiniteWallDiagram.pathProduct p =
-          (F.diagram k).toFiniteWallDiagram.pathProduct q := by
-  constructor
-  · intro hprod k x y x' y' p q hpq
-    obtain ⟨u, v, u', v', p', q', hvertices, hp', hq'⟩ :=
-      D.exists_common_pathProduct_eq F k p q hpq
-    rw [← hp', ← hq', hprod p' q' hvertices]
-  · intro hprod x y x' y' p q hpq
-    apply CompletedGroup.ext
-    intro k
-    rw [projection_pathProduct, projection_pathProduct]
-    apply hprod k
-    exact (CommonWallComplement.vertices_projection k p).trans
-      (hpq.trans (CommonWallComplement.vertices_projection k q).symm)
 
 end Mei.CompletedDiagram
