@@ -94,6 +94,16 @@ theorem activeLabels_commute (k : ℕ) (a b : D.active k)
   ((D.wall a).commute_label_of_direction_eq (D.wall b)
     (congrArg AffineSubspace.direction hab)).map (CompletedGroup.projection k)
 
+/-- Any endpoints allowed at a fixed cutoff admit a finite-order admissible path. -/
+theorem exists_level_path (k : ℕ)
+    (x y : WallComplement (fun j : D.active k => (D.wall j).support)) :
+    Nonempty (AdmissiblePLPath x y) := by
+  let := h.finiteDimensional
+  obtain ⟨p, _⟩ := AdmissiblePLPath.exists_length_eq_two
+    (fun j : D.active k => (D.wall j).isConvexPolyhedron)
+    (fun j => (D.wall j).finrank_direction_add_one) x y
+  exact ⟨p⟩
+
 /-- The order-`k` transport along a path admissible for the finite active wall family. -/
 def levelPathProduct (k : ℕ)
     {x y : WallComplement (fun j : D.active k => (D.wall j).support)}

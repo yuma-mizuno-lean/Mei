@@ -67,16 +67,6 @@ theorem levelConsistent_iff_loops (k : ℕ) : D.LevelConsistent k ↔
     exact (inv_mul_eq_one.mp (by
       simpa only [levelPathProduct_comp, levelPathProduct_reverse] using he)).symm
 
-/-- Any endpoints allowed at a fixed cutoff admit a finite-order admissible path. -/
-theorem exists_level_path (k : ℕ)
-    (x y : WallComplement (fun j : D.active k => (D.wall j).support)) :
-    Nonempty (AdmissiblePLPath x y) := by
-  let := h.finiteDimensional
-  obtain ⟨p, _⟩ := AdmissiblePLPath.exists_length_eq_two
-    (fun j : D.active k => (D.wall j).isConvexPolyhedron)
-    (fun j => (D.wall j).finrank_direction_add_one) x y
-  exact ⟨p⟩
-
 /-- Endpoint transport at a consistent finite order. -/
 def levelTransport (k : ℕ) (_hD : D.LevelConsistent k)
     (x y : WallComplement (fun j : D.active k => (D.wall j).support)) :
