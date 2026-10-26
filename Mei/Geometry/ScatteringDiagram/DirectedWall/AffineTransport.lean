@@ -5,6 +5,7 @@ Authors: Codex
 -/
 module
 
+public import Mei.Geometry.Affine.Span
 public import Mei.Geometry.ScatteringDiagram.DirectedWall.Basic
 public import Mei.Geometry.ScatteringDiagram.WallSpace.CoordinateChange
 
@@ -87,11 +88,10 @@ def image : DirectedWall (d := d') h' H' where
         Toric.IntegralAffineEquiv.symm_toAffineEquiv, AffineEquiv.linear_symm] using
         h'.realCharacter_comp h e.symm.latticeEquiv
           e.symm.toAffineEquiv.linear.toLinearMap e.symm.map_lattice W.normal
-    have hd := congrArg AffineSubspace.direction
-      (AffineSubspace.map_span e.toAffineEquiv.toAffineMap W.support)
-    rw [AffineSubspace.map_direction] at hd
-    simp only [AffineEquiv.linear_toAffineMap, AffineEquiv.coe_coe] at hd
-    symm at hd
+    have hd : (affineSpan ℝ (e '' W.support)).direction =
+        (affineSpan ℝ W.support).direction.map e.toAffineEquiv.linear.toLinearMap := by
+      simpa only [AffineEquiv.linear_toAffineMap, AffineEquiv.coe_coe] using
+        e.toAffineEquiv.toAffineMap.direction_affineSpan_image W.support
     rw [hd, W.direction_support, hn, LinearMap.ker_comp,
       Submodule.map_equiv_eq_comap_symm]
   label := E.completedEquiv W.label
