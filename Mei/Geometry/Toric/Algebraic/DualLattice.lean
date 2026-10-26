@@ -7,6 +7,8 @@ module
 
 public import TauCeti.Geometry.Toric.Algebraic.Lattice
 public import Mathlib.LinearAlgebra.Dual.Lemmas
+public import Mathlib.Analysis.Normed.Module.FiniteDimension
+public import Mei.Geometry.Toric.Algebraic.RationalFunctional
 
 /-!
 # The integral dual lattice
@@ -19,6 +21,10 @@ additive characters.
 Evaluation on lattice vectors is compatible with this dual lattice. In
 particular, evaluating a real functional on an original lattice vector is the
 real extension, for the dual lattice, of integral evaluation at that vector.
+For normed spaces, the same construction supplies the integral lattice in the
+continuous dual, where these evaluation maps are rational functionals.
+It transports the algebraic dual lattice along Mathlib's
+`LinearMap.toContinuousLinearMap` using `TauCeti.Toric.isIntegralLattice_congr`.
 -/
 
 public section
@@ -63,5 +69,50 @@ theorem dual_realCharacter_eval (h : IsIntegralLattice i) (n : N) :
   apply h.dual.eq_realCharacter
   intro m
   simp
+
+end TauCeti.Toric.IsIntegralLattice
+
+namespace TauCeti.Toric.IsIntegralLattice
+
+variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
+  {i : N →+ V}
+
+/-- Real extension of integral characters into the continuous real dual.
+The finite dimensionality needed for continuity follows from the lattice. -/
+noncomputable def continuousRealCharacter (h : IsIntegralLattice i) :
+    (N →+ ℤ) →+ (V →L[ℝ] ℝ) := by
+  letI := h.finiteDimensional
+  exact LinearMap.toContinuousLinearMap.toAddMonoidHom.comp h.realCharacter
+
+/-- Continuous real extension has the same values as algebraic real extension. -/
+@[simp]
+theorem continuousRealCharacter_apply (h : IsIntegralLattice i) (m : N →+ ℤ) (x : V) :
+    h.continuousRealCharacter m x = h.realCharacter m x := (rfl)
+
+/-- Integral characters form an integral lattice in the continuous real dual. -/
+theorem continuousDual (h : IsIntegralLattice i) :
+    IsIntegralLattice h.continuousRealCharacter := by
+  let _ := h.finiteDimensional
+  exact (isIntegralLattice_congr (AddEquiv.refl (N →+ ℤ))
+    LinearMap.toContinuousLinearMap (fun _ => rfl)).mp h.dual
+
+/-- Evaluation on an original lattice vector is the real extension of integral
+evaluation for the continuous dual lattice. -/
+@[simp]
+theorem continuousDual_realCharacter_eval (h : IsIntegralLattice i) (n : N) :
+    h.continuousDual.realCharacter (AddMonoidHom.eval n) =
+      (ContinuousLinearMap.apply ℝ ℝ (i n)).toLinearMap := by
+  symm
+  apply h.continuousDual.eq_realCharacter
+  intro m
+  simp
+
+/-- Evaluation at a lattice vector is rational for the continuous dual lattice. -/
+theorem isRationalFunctional_continuousDual_eval (h : IsIntegralLattice i) (n : N) :
+    Mei.Toric.IsRationalFunctional h.continuousDual
+      (ContinuousLinearMap.apply ℝ ℝ (i n)).toLinearMap := by
+  rw [← continuousDual_realCharacter_eval]
+  exact Mei.Toric.IsRationalFunctional.realCharacter h.continuousDual
+    (AddMonoidHom.eval n).toIntLinearMap
 
 end TauCeti.Toric.IsIntegralLattice

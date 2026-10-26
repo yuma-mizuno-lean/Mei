@@ -33,6 +33,8 @@ The construction uses `Mei.AlgFiltration.mapCompletionₐ`, the completed tensor
 inclusions, Mathlib's `Ideal.Quotient.liftₐ` and Tau Ceti's primitive-generator
 formula `TauCeti.UniversalEnvelopingAlgebra.comul_ι`. The group-like subgroup uses
 Mathlib's `MonoidHom.eqLocus` and `MonoidHom.ker` on units.
+`Algebra.TensorProduct.productMap` supplies the tensor counit used to show
+that completed primitives have zero counit.
 -/
 
 public section
@@ -202,6 +204,43 @@ theorem mem_completedPrimitives (x : (F).completion) :
 theorem IsCompletedPrimitive.neg {x : (F).completion}
     (hx : IsCompletedPrimitive ℒ d hneg x) : IsCompletedPrimitive ℒ d hneg (-x) :=
   (completedPrimitives ℒ d hneg).neg_mem hx
+
+/-- A completed primitive element has zero completed counit. -/
+theorem IsCompletedPrimitive.completedCounit_eq_zero {x : (F).completion}
+    (hx : IsCompletedPrimitive ℒ d hneg x) : completedCounit ℒ d hneg x = 0 := by
+  let f := Algebra.TensorProduct.productMap (Bialgebra.counitAlgHom R U)
+    (Bialgebra.counitAlgHom R U)
+  have hf : f.comp (Bialgebra.comulAlgHom R U) = Bialgebra.counitAlgHom R U := by
+    ext a
+    simp [f]
+  have hker : (T).ideal 1 ≤ RingHom.ker f.toRingHom := by
+    rw [Mei.AlgFiltration.tensorProduct_ideal]
+    refine (Ideal.tensorFiltration_le_iff R (F).ideal (F).ideal 1 _).mpr ?_
+    intro i j hij a ha b hb
+    have hc (k : ℕ) (hk : 0 < k) (c : U) (hc : c ∈ (F).ideal k) :
+        Coalgebra.counit (R := R) c = 0 :=
+      (TauCeti.HopfIdeal.mem_augmentation R U).mp
+        (degreeFiltration_le_augmentation ℒ d hneg hk hc)
+    simp only [f, RingHom.mem_ker, AlgHom.toRingHom_eq_coe,
+      RingHom.coe_coe, Algebra.TensorProduct.productMap_apply_tmul,
+      Bialgebra.counitAlgHom_apply]
+    rcases Nat.eq_zero_or_pos i with hi | hi
+    · rw [hc j (by omega) b hb, mul_zero]
+    · rw [hc i hi a ha, zero_mul]
+  let q := Ideal.Quotient.lift ((T).ideal 1) f.toRingHom hker
+  obtain ⟨a, ha⟩ := Ideal.Quotient.mk_surjective ((F).projection 0 x)
+  have hp := congrArg ((T).projection 0) hx
+  have he := congrArg q hp
+  have hfa : f (Coalgebra.comul (R := R) a) = Coalgebra.counit (R := R) a :=
+    AlgHom.congr_fun hf a
+  simp only [projection_completedCoproduct, map_add,
+    Mei.AlgFiltration.projection_includeLeftCompletion,
+    Mei.AlgFiltration.projection_includeRightCompletion, ← ha,
+    quotientCoproduct_mk, Ideal.Quotient.factor_mk] at he
+  have hc : Coalgebra.counit (R := R) a = 0 := by
+    simpa [q, hfa, f] using he
+  rw [completedCounit_eq_quotientCounit ℒ d hneg 0, ← ha, quotientCounit_mk]
+  exact hc
 
 /-- Every canonical Lie generator is primitive in the completion. -/
 theorem isCompletedPrimitive_toCompletion_ι (x : L) :

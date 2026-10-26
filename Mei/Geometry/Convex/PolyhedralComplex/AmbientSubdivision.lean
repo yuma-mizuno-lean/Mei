@@ -17,6 +17,9 @@ arrangement form a finite polyhedral complex covering the ambient space.
 Applying this construction to all defining rows of a finite family of presented
 polyhedra expresses every input carrier as a union of cells of one complex.
 Redundant and constant rows, empty inputs, unbounded cells and lineality are allowed.
+Restricting the rows of an arrangement coarsens its complex, each row hyperplane
+is a union of cells, and a linear arrangement has conical cells, with lineality
+allowed.
 
 The construction uses the existing realized sign-cell closure family and its
 closure under faces. It is therefore extensional in the actual closed cell
@@ -129,5 +132,51 @@ theorem carrier_eq_iUnion_ambientSubdivision_cells
     exact ⟨Q, hQ, hsub, hxQ⟩
   · rintro ⟨Q, _, hsub, hxQ⟩
     exact hsub hxQ
+
+/-- Restricting the rows of an arrangement coarsens its complex. The row map
+need not be injective: repeated inequalities do not change the conclusion. -/
+theorem ofArrangement_isSubdivision_comp {κ : Type*} [Finite κ]
+    (g : ι → (V →ᴬ[ℝ] ℝ))
+    (hg : ∀ j, Toric.IsRationalFunctional h (g j).toAffineMap.linear) (f : κ → ι) :
+    (ofArrangement g hg).IsSubdivision
+      (ofArrangement (g ∘ f) (fun j => hg (f j))) := by
+  apply isSubdivision_iff.mpr
+  refine ⟨?_, by simp⟩
+  apply isWeakRefinement_iff.mpr
+  intro P hP
+  obtain ⟨σ, ⟨x, hx⟩, rfl⟩ := mem_ofArrangement_cells.mp hP
+  have hsub : signCell g σ ⊆ signCell (g ∘ f) (σ ∘ f) :=
+    fun y hy => mem_signCell.mpr (fun j => mem_signCell.mp hy (f j))
+  exact ⟨closure (signCell (g ∘ f) (σ ∘ f)),
+    mem_ofArrangement_cells.mpr ⟨σ ∘ f, ⟨x, hsub hx⟩, rfl⟩, closure_mono hsub⟩
+
+/-- Each row hyperplane is a union of cells of the arrangement. -/
+theorem zeroLocus_eq_iUnion_ofArrangement_cells (g : ι → (V →ᴬ[ℝ] ℝ))
+    (hg : ∀ j, Toric.IsRationalFunctional h (g j).toAffineMap.linear) (j : ι) :
+    {x | g j x = 0} = ⋃ (P : Set V) (_ : P ∈ (ofArrangement g hg).cells)
+      (_ : P ⊆ {x | g j x = 0}), P := by
+  ext x
+  simp only [Set.mem_ofPred_eq, Set.mem_iUnion]
+  constructor
+  · intro hx
+    let σ := fun a => SignType.sign (g a x)
+    have hσ : x ∈ signCell g σ := mem_signCell_sign g x
+    refine ⟨closure (signCell g σ),
+      mem_ofArrangement_cells.mpr ⟨σ, ⟨x, hσ⟩, rfl⟩, ?_, subset_closure hσ⟩
+    rw [closure_signCell ⟨x, hσ⟩]
+    intro y hy
+    exact (mem_weakSignCell.mp hy j).1 (by simp [σ, hx])
+  · rintro ⟨P, _, hP, hxP⟩
+    exact hP hxP
+
+/-- A linear arrangement has conical cells, with lineality allowed. -/
+theorem isConical_ofArrangement (g : ι → (V →L[ℝ] ℝ))
+    (hg : ∀ j, Toric.IsRationalFunctional h (g j).toLinearMap) :
+    (ofArrangement (fun j => (g j).toContinuousAffineMap) hg).IsConical := by
+  apply (isConical_iff _).mpr
+  intro P hP
+  obtain ⟨σ, hσ, rfl⟩ := mem_ofArrangement_cells.mp hP
+  rw [closure_signCell hσ]
+  exact ⟨weakSignCellCone g σ, coe_weakSignCellCone g σ⟩
 
 end Mei.FinitePolyhedralComplex

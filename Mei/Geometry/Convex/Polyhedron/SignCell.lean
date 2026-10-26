@@ -9,6 +9,7 @@ public import TauCeti.Analysis.Convex.Polyhedron.Basic
 public import Mathlib.Analysis.Convex.Topology
 public import Mathlib.Analysis.Convex.Extreme
 public import Mathlib.Basic.Sign.Defs
+public import Mathlib.Geometry.Convex.Cone.Pointed
 import Mathlib.Tactic.Linarith
 
 /-!
@@ -18,6 +19,7 @@ An affine family partitions the ambient space by the signs of its values.
 The closure of a nonempty sign cell is obtained by weakening its strict
 inequalities, while retaining its equality rows. Nonemptiness is essential:
 an inconsistent strict system can have a nonempty weakened system.
+For linear rows, every weak sign cell is a pointed cone, possibly with lineality.
 -/
 
 public section
@@ -227,6 +229,29 @@ theorem convex_weakSignCell (g : ι → (V →ᴬ[ℝ] ℝ)) (σ : ι → SignTy
   | pos =>
     simp only [h] at hxj hyj
     exact add_nonneg (mul_nonneg ha hxj) (mul_nonneg hb hyj)
+
+/-- For linear rows, a weak sign cell is a pointed cone. Lineality is allowed. -/
+def weakSignCellCone (g : ι → (V →L[ℝ] ℝ)) (σ : ι → SignType) : PointedCone ℝ V where
+  carrier := weakSignCell (fun j => (g j).toContinuousAffineMap) σ
+  zero_mem' j := by cases σ j <;> simp
+  add_mem' {x y} hx hy j := by
+    have hxj := hx j
+    have hyj := hy j
+    cases h : σ j <;> simp only [h, ContinuousLinearMap.coe_toContinuousAffineMap,
+      map_add] at hxj hyj ⊢
+    exacts [by simp [hxj, hyj], add_nonpos hxj hyj, add_nonneg hxj hyj]
+  smul_mem' c x hx j := by
+    have hxj := hx j
+    cases h : σ j <;> simp only [h, ContinuousLinearMap.coe_toContinuousAffineMap,
+      ← Nonneg.coe_smul, map_smul, smul_eq_mul] at hxj ⊢
+    exacts [by simp [hxj], mul_nonpos_of_nonneg_of_nonpos c.property hxj,
+      mul_nonneg c.property hxj]
+
+/-- The carrier of the cone of linear rows is the weak sign cell. -/
+@[simp]
+theorem coe_weakSignCellCone (g : ι → (V →L[ℝ] ℝ)) (σ : ι → SignType) :
+    (weakSignCellCone g σ : Set V) = weakSignCell (fun j => (g j).toContinuousAffineMap) σ :=
+  (rfl)
 
 /-- A sign assignment specializes another by replacing some of its signs with zero. -/
 def SignSpecializes (τ σ : ι → SignType) : Prop := ∀ j, τ j = 0 ∨ τ j = σ j
