@@ -8,6 +8,7 @@ module
 public import Mei.Geometry.ScatteringDiagram.KS.Sign
 public import Mei.Geometry.Convex.PolyhedralComplex.Strata
 public import Mei.LinearAlgebra.Dual.Order
+public import Mathlib.Topology.Instances.Sign
 
 /-!
 # Local degree signs at arrangement walls
@@ -27,7 +28,7 @@ This supplies the local sign geometry in the reconstruction argument of
 Tom Bridgeland, *Scattering diagrams, Hall algebras and stability conditions*,
 §3.4 ([arXiv:1603.00416](https://arxiv.org/abs/1603.00416)). It uses the
 whole-cell vanishing criterion from `Mei.Geometry.ScatteringDiagram.KS.Sign`
-and Mathlib's finite intersection of neighborhoods.
+and Mathlib's continuity of sign away from zero and finite intersection of neighborhoods.
 -/
 
 public section
@@ -93,15 +94,10 @@ theorem eventually_sign_eq_of_mem_intrinsicInterior_wall
       have hv : c * φ (i m) = φ (i n) := by
         simpa using congrArg (fun f : (V →L[ℝ] ℝ) →ₗ[ℝ] ℝ => f φ) he
       simp only [hz, ↓reduceIte, ← hv, sign_mul, sign_pos hc, one_mul]
-    · rcases lt_or_gt_of_ne hz with hneg | hpos
-      · filter_upwards [((ContinuousLinearMap.apply ℝ ℝ (i n)).continuous.continuousAt).eventually
-          (gt_mem_nhds hneg)] with φ hφ
-        simp only [ContinuousLinearMap.apply_apply] at hφ
-        simp [hz, sign_neg hφ, sign_neg hneg]
-      · filter_upwards [((ContinuousLinearMap.apply ℝ ℝ (i n)).continuous.continuousAt).eventually
-          (lt_mem_nhds hpos)] with φ hφ
-        simp only [ContinuousLinearMap.apply_apply] at hφ
-        simp [hz, sign_pos hφ, sign_pos hpos]
+    · have hsign := ((continuousAt_sign_of_ne_zero hz).comp
+        (f := fun φ : V →L[ℝ] ℝ => φ (i n))
+        (ContinuousLinearMap.apply ℝ ℝ (i n)).continuous.continuousAt).tendsto
+      simpa only [nhds_discrete, tendsto_pure, Function.comp_def, hz, ↓reduceIte] using hsign
   filter_upwards [Filter.eventually_all.mpr hrows] with φ hφ n hn
   exact hφ ⟨n, hn⟩
 
