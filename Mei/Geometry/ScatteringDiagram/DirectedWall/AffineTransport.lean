@@ -6,6 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.Affine.Span
+public import Mei.Geometry.Convex.Polyhedron.Rational.Map
 public import Mei.Geometry.ScatteringDiagram.DirectedWall.Basic
 public import Mei.Geometry.ScatteringDiagram.WallSpace.CoordinateChange
 
@@ -31,7 +32,7 @@ public section
 
 noncomputable section
 
-namespace Mei.DirectedWall
+namespace Mei
 
 open Set
 
@@ -40,25 +41,50 @@ universe u
 variable {Γ Γ' Γ'' Λ Λ' Λ'' R V V' V'' : Type*} {L L' L'' : Type u}
   [AddCommGroup Γ] [AddCommGroup Γ'] [AddCommGroup Γ'']
   [AddCommGroup Λ] [AddCommGroup Λ'] [AddCommGroup Λ'']
-  [CommRing R] [Algebra ℚ R]
-  [LieRing L] [LieAlgebra R L] [LieAlgebra ℚ L] [IsScalarTower ℚ R L]
-  [LieRing L'] [LieAlgebra R L'] [LieAlgebra ℚ L'] [IsScalarTower ℚ R L']
-  [LieRing L''] [LieAlgebra R L''] [LieAlgebra ℚ L''] [IsScalarTower ℚ R L'']
-  [DecidableEq Γ] [DecidableEq Γ'] [DecidableEq Γ'']
+  [CommRing R]
+  [LieRing L] [LieAlgebra R L]
+  [LieRing L'] [LieAlgebra R L']
+  [LieRing L''] [LieAlgebra R L'']
   [NormedAddCommGroup V] [NormedSpace ℝ V]
   [NormedAddCommGroup V'] [NormedSpace ℝ V']
   [NormedAddCommGroup V''] [NormedSpace ℝ V'']
   {ρ : Γ →+ Λ} {ρ' : Γ' →+ Λ'} {ρ'' : Γ'' →+ Λ''}
   {ℒ : Γ → Submodule R L} {ℳ : Γ' → Submodule R L'} {ℋ : Γ'' → Submodule R L''}
   {d : PositiveDegrees Γ} {d' : PositiveDegrees Γ'} {d'' : PositiveDegrees Γ''}
-  [GradedLieAlgebra ℒ] [IsPositiveGrading d ℒ]
-  [GradedLieAlgebra ℳ] [IsPositiveGrading d' ℳ]
-  [GradedLieAlgebra ℋ] [IsPositiveGrading d'' ℋ]
   {i : Λ →+ V} {i' : Λ' →+ V'} {i'' : Λ'' →+ V''}
   {h : TauCeti.Toric.IsIntegralLattice i} {h' : TauCeti.Toric.IsIntegralLattice i'}
   {h'' : TauCeti.Toric.IsIntegralLattice i''}
   {H : DirectedWallSpaces ρ ℒ} {H' : DirectedWallSpaces ρ' ℳ}
   {H'' : DirectedWallSpaces ρ'' ℋ}
+
+namespace DirectedWallSpaces.CoordinateChange
+
+/-- Compatible spatial and algebraic coordinate changes pull real normals back
+along the inverse linear map. -/
+theorem realCharacter_comp_tangentEquiv_symm
+    (E : DirectedWallSpaces.CoordinateChange (d := d) (e := d') H H')
+    (e : Toric.IntegralAffineEquiv h h') (hE : E.tangentEquiv = e.latticeEquiv)
+    (m : Λ →+ ℤ) :
+    h'.realCharacter (m.comp E.tangentEquiv.symm) =
+      (h.realCharacter m).comp e.toAffineEquiv.linear.symm.toLinearMap := by
+  rw [hE]
+  simpa only [Toric.IntegralAffineEquiv.symm_latticeEquiv,
+    Toric.IntegralAffineEquiv.symm_toAffineEquiv, AffineEquiv.linear_symm] using
+    h'.realCharacter_comp h e.symm.latticeEquiv
+      e.symm.toAffineEquiv.linear.toLinearMap e.symm.map_lattice m
+
+end DirectedWallSpaces.CoordinateChange
+
+namespace DirectedWall
+
+variable [Algebra ℚ R]
+  [LieAlgebra ℚ L] [IsScalarTower ℚ R L]
+  [LieAlgebra ℚ L'] [IsScalarTower ℚ R L']
+  [LieAlgebra ℚ L''] [IsScalarTower ℚ R L'']
+  [DecidableEq Γ] [DecidableEq Γ'] [DecidableEq Γ'']
+  [GradedLieAlgebra ℒ] [IsPositiveGrading d ℒ]
+  [GradedLieAlgebra ℳ] [IsPositiveGrading d' ℳ]
+  [GradedLieAlgebra ℋ] [IsPositiveGrading d'' ℋ]
   (W : DirectedWall (d := d) h H)
   (e : Toric.IntegralAffineEquiv h h')
   (E : DirectedWallSpaces.CoordinateChange (d := d) (e := d') H H')
@@ -81,19 +107,12 @@ def image : DirectedWall (d := d') h' H' where
   support_nonempty := W.support_nonempty.image e
   rational_support := W.rational_support.image e
   direction_support := by
-    have hn : h'.realCharacter (W.normal.comp E.tangentEquiv.symm) =
-        (h.realCharacter W.normal).comp e.toAffineEquiv.linear.symm.toLinearMap := by
-      rw [hE]
-      simpa only [Toric.IntegralAffineEquiv.symm_latticeEquiv,
-        Toric.IntegralAffineEquiv.symm_toAffineEquiv, AffineEquiv.linear_symm] using
-        h'.realCharacter_comp h e.symm.latticeEquiv
-          e.symm.toAffineEquiv.linear.toLinearMap e.symm.map_lattice W.normal
     have hd : (affineSpan ℝ (e '' W.support)).direction =
         (affineSpan ℝ W.support).direction.map e.toAffineEquiv.linear.toLinearMap := by
       simpa only [AffineEquiv.linear_toAffineMap, AffineEquiv.coe_coe] using
         e.toAffineEquiv.toAffineMap.direction_affineSpan_image W.support
-    rw [hd, W.direction_support, hn, LinearMap.ker_comp,
-      Submodule.map_equiv_eq_comap_symm]
+    rw [hd, W.direction_support, E.realCharacter_comp_tangentEquiv_symm e hE,
+      LinearMap.ker_comp, Submodule.map_equiv_eq_comap_symm]
   label := E.completedEquiv W.label
   label_mem := by
     rw [E.completedEquiv_apply]
@@ -120,13 +139,7 @@ theorem image_label : (W.image e E hE).label = E.completedEquiv W.label := (rfl)
 theorem realCharacter_image_normal (v : V) :
     h'.realCharacter (W.image e E hE).normal (e.toAffineEquiv.linear v) =
       h.realCharacter W.normal v := by
-  rw [image_normal, hE]
-  have hn := h'.realCharacter_comp h e.symm.latticeEquiv
-    e.symm.toAffineEquiv.linear.toLinearMap e.symm.map_lattice W.normal
-  simp only [Toric.IntegralAffineEquiv.symm_latticeEquiv,
-    Toric.IntegralAffineEquiv.symm_toAffineEquiv, AffineEquiv.linear_symm] at hn
-  rw [hn]
-  simp
+  simp [E.realCharacter_comp_tangentEquiv_symm e hE]
 
 /-- The geometric degree direction transforms by the linear part, including when zero. -/
 theorem geometricDirection_image :
@@ -204,4 +217,5 @@ theorem imageEquiv_apply (W : DirectedWall (d := d) h H) :
 theorem imageEquiv_symm_apply (W : DirectedWall (d := d') h' H') :
     (imageEquiv e E hE).symm W = W.image e.symm E.symm (by simp [hE]) := (rfl)
 
-end Mei.DirectedWall
+end DirectedWall
+end Mei
