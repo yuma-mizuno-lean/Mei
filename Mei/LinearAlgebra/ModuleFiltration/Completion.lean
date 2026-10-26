@@ -180,6 +180,25 @@ def completionIsLimit : IsLimit F.completionCone where
     intro k
     exact congrArg (fun f => f x) (hm (Opposite.op k))
 
+/-- The compatible-family completion is canonically isomorphic to the chosen categorical limit. -/
+noncomputable def completionIsoLimit : ModuleCat.of R F.completion ≅ limit F.quotientTower :=
+  F.completionIsLimit.conePointUniqueUpToIso (limit.isLimit F.quotientTower)
+
+/-- The canonical limit comparison identifies its projections with quotient projections. -/
+@[reassoc (attr := simp)]
+lemma completionIsoLimit_hom_π (k : ℕᵒᵖ) :
+    F.completionIsoLimit.hom ≫ limit.π F.quotientTower k =
+      ModuleCat.ofHom (F.projection k.unop) := by
+  exact F.completionIsLimit.conePointUniqueUpToIso_hom_comp (limit.isLimit F.quotientTower) k
+
+/-- The inverse comparison recovers the quotient components of a categorical limit element. -/
+@[reassoc (attr := simp)]
+lemma completionIsoLimit_inv_projection (k : ℕᵒᵖ) :
+    F.completionIsoLimit.inv ≫ ModuleCat.ofHom (F.projection k.unop) =
+      limit.π F.quotientTower k := by
+  -- Identify the tower object with the concrete quotient module during reassociation.
+  erw [← completionIsoLimit_hom_π, Iso.inv_hom_id_assoc]
+
 /-- The induced filtration: positive orders are kernels of quotient projections. -/
 def completedFiltration : ModuleFiltration R F.completion where
   submodule
