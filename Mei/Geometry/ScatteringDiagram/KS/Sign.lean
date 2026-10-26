@@ -8,7 +8,7 @@ module
 public import Mei.Geometry.ScatteringDiagram.KS.Arrangement
 public import Mei.Geometry.ScatteringDiagram.KS.Orthogonal
 public import Mei.Geometry.Convex.Polyhedron.SignCell.Interior
-public import Mei.Algebra.Lie.Graded.Sign
+public import Mei.Algebra.Lie.Graded.Sign.Basic
 
 /-!
 # Sign Lie algebras on bounded-degree arrangement cells

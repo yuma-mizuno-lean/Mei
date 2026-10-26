@@ -22,8 +22,8 @@ wherever the two wall interiors meet. Degree-preserving coefficient maps commute
 finite reconstruction as an equality of KS complexes: the same arrangement and
 coorientations carry the images of the original middle-factor labels.
 
-This constructs the finite labelled complexes; it does not assert their consistency
-or compatibility on paths. The construction follows Tom Bridgeland,
+Consistency and compatibility on paths are proved in `Reconstruction.PathProduct`
+and `Reconstruction.Completion`. The finite construction follows Tom Bridgeland,
 *Scattering diagrams, Hall algebras and stability conditions*,
 [arXiv:1603.00416](https://arxiv.org/abs/1603.00416), §§3.2 and 3.4, using
 `PositiveDegrees.signFactorizationEquiv`, the relative-interior sign identities in
