@@ -8,6 +8,7 @@ module
 public import Mei.Algebra.PositiveDegrees.Basic
 public import Mei.Analysis.Convex.Sign
 public import Mei.Geometry.Toric.Algebraic.DualLattice
+public import Mathlib.Topology.Instances.Sign
 
 /-!
 # Real dual models for scattering diagrams
@@ -15,7 +16,9 @@ public import Mei.Geometry.Toric.Algebraic.DualLattice
 A `KSSpace` identifies a real vector space carrying the integral dual lattice
 with the real characters of the degree group. Its evaluation normals are the
 real extensions of integral evaluation. The degree functional gives a point
-strictly on the positive side of every allowed-degree hyperplane.
+strictly on the positive side of every allowed-degree hyperplane. Small
+displacements in its direction preserve nonzero retained evaluation signs
+and move all vanishing retained evaluations to the sign of the displacement.
 
 `KSSpace.ofLattice` constructs the model for any finite free degree lattice.
 It uses `Module.evalEquiv` for integral double duality and
@@ -187,6 +190,37 @@ theorem isOpen_setOf_forall_sign_evaluation_eq {S : Set N} (hS : S.Finite)
   rw [he]
   exact hS.isOpen_biInter fun n _ =>
     (isOpen_setOf_sign_eq hσ).preimage (s.normal n).continuous_of_finiteDimensional
+
+/-- A sufficiently small displacement in the degree direction preserves every
+nonzero retained evaluation sign, while a zero evaluation acquires the sign
+of the displacement parameter. Both directions and the zero parameter are included. -/
+theorem eventually_sign_evaluation_add_smul_degreePoint (d : PositiveDegrees N)
+    (k : ℕ) (θ : V) :
+    ∀ᶠ a : ℝ in nhds 0, ∀ n ∈ d.cutoff k \ {0},
+      SignType.sign (s.evaluation (θ + a • s.degreePoint d) n) =
+        if s.evaluation θ n = 0 then SignType.sign a else SignType.sign (s.evaluation θ n) := by
+  classical
+  let := h.finiteDimensional
+  have hrow (n : ↥(d.cutoff k \ {0})) :
+      ∀ᶠ a : ℝ in nhds 0,
+        SignType.sign (s.evaluation (θ + a • s.degreePoint d) n) =
+          if s.evaluation θ n = 0 then SignType.sign a else SignType.sign (s.evaluation θ n) := by
+    by_cases hz : s.evaluation θ n = 0
+    · have hp := s.evaluation_degreePoint_pos d (d.mem_cutoff.mp n.property.1).1 n.property.2
+      exact Filter.Eventually.of_forall fun a => by
+        simp only [map_add, map_smul, AddMonoidHom.add_apply, AddMonoidHom.smul_apply,
+          hz, zero_add, smul_eq_mul, sign_mul, sign_pos hp, mul_one, ↓reduceIte]
+    · have hc : Continuous (fun a : ℝ => s.evaluation (θ + a • s.degreePoint d) n) := by
+        simp only [map_add, map_smul, AddMonoidHom.add_apply, AddMonoidHom.smul_apply,
+          smul_eq_mul]
+        fun_prop
+      have ht := (continuousAt_sign_of_ne_zero hz).tendsto.comp
+        (by simpa using hc.tendsto 0)
+      simpa only [nhds_discrete, Filter.tendsto_pure, Function.comp_def, hz, ↓reduceIte,
+        map_add, map_smul, AddMonoidHom.add_apply, AddMonoidHom.smul_apply, smul_eq_mul,
+        KSSpace.evaluation_degreePoint] using ht
+  filter_upwards [Filter.eventually_all.mpr hrow] with a ha n hn
+  exact ha ⟨n, hn⟩
 
 end SignRegions
 
