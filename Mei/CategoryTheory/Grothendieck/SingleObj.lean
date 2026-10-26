@@ -286,10 +286,10 @@ theorem singleObjLimitAction_hom_π (g : GrpCat.sectionsSubgroup F) (d : D) :
     rw [HasLimit.isoOfNatIso_inv_π, singleObjRepresentationIso_inv_app]
     -- The comparison component is the identity of the original coefficient object.
     exact Category.comp_id _
-  rw [singleObjLimitAction, MonoidHom.comp_apply, MonoidHom.comp_apply,
-    MulEquiv.coe_toMonoidHom, MulEquiv.coe_toMonoidHom, Aut.autMulEquivOfIso_apply_asIso,
-    Iso.trans_hom, Iso.trans_hom, Iso.symm_hom, Category.assoc, Category.assoc, hom_π, h,
-    ← Category.assoc, inv_π]
+  -- Expand the transported action separately from its effect on projections.
+  simp only [singleObjLimitAction, MonoidHom.comp_apply, MulEquiv.coe_toMonoidHom,
+    Aut.autMulEquivOfIso_apply_asIso, Iso.trans_hom, Iso.symm_hom]
+  simp only [Category.assoc, hom_π, h, reassoc_of% inv_π]
 
 /-- A levelwise action on the coefficient limit agrees with the represented section action. -/
 theorem singleObjLimitAction_unique (σ : GrpCat.sectionsSubgroup F →* Aut (limit X))
