@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mathlib.LinearAlgebra.AffineSpace.AffineSubspace.Basic
-public import Mathlib.LinearAlgebra.LinearIndependent.Defs
+public import Mathlib.LinearAlgebra.LinearIndependent.Basic
 public import Mathlib.LinearAlgebra.Quotient.Basic
 
 /-!
@@ -58,13 +58,9 @@ theorem subsingleton_affineSpan_range_inter (S : AffineSubspace k P) {n : ℕ}
     · rintro ⟨⟨l, hl⟩, rfl⟩
       obtain ⟨j, rfl⟩ := Fin.exists_succ_eq.mpr hl
       exact ⟨j, rfl⟩
-  obtain ⟨c, hc⟩ := Submodule.mem_span_range_iff_exists_fun k |>.mp hxy
-  have hc0 := Fintype.linearIndependent_iff.mp hp c <| by
-    have hS : S.direction.mkQ (x -ᵥ y) = 0 :=
-      (Submodule.Quotient.mk_eq_zero _).mpr (S.vsub_mem_direction hx.2 hy.2)
-    rw [← hc, map_sum] at hS
-    simpa only [Function.comp_apply, map_smul] using hS
-  rw [← vsub_eq_zero_iff_eq, ← hc]
-  simp [hc0]
+  apply vsub_eq_zero_iff_eq.mp
+  refine Submodule.disjoint_def.mp (Submodule.range_ker_disjoint hp) _ hxy ?_
+  rw [Submodule.ker_mkQ]
+  exact S.vsub_mem_direction hx.2 hy.2
 
 end AffineSubspace

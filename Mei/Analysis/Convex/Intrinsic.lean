@@ -18,8 +18,8 @@ vanishes on that set. Continuity of the affine function is not required.
 
 A set is a neighbourhood of each of its relative interior points within its
 affine span: points of the span close to a relative interior point stay in the set.
-For a closed set, the relative boundary is nowhere dense in the affine span, and
-off the relative boundary membership is locally constant within the affine span.
+For a closed set, the relative boundary is nowhere dense in the affine span.
+For any set, membership is locally constant off the relative boundary within the affine span.
 -/
 
 public section
@@ -84,21 +84,26 @@ theorem isNowhereDense_preimage_intrinsicFrontier {P : Set V} (hP : IsClosed P)
   exact interior_frontier (hP.preimage continuous_subtype_val)
 
 omit [IsTopologicalAddGroup V] [ContinuousSMul ℝ V] in
-/-- Off the relative boundary of a closed set, membership in the set is locally constant within
+/-- Off the relative boundary of a set, membership in the set is locally constant within
 its affine span. -/
-theorem eventually_mem_iff_of_notMem_intrinsicFrontier {P : Set V} (hP : IsClosed P)
+theorem eventually_mem_iff_of_notMem_intrinsicFrontier {P : Set V}
     {A : AffineSubspace ℝ V} (hA : affineSpan ℝ P = A) {x : A}
     (hx : (x : V) ∉ intrinsicFrontier ℝ P) :
     ∀ᶠ y : A in 𝓝 x, ((y : V) ∈ P ↔ (x : V) ∈ P) := by
   subst hA
-  have hc : IsClosed ((↑) ⁻¹' P : Set (affineSpan ℝ P)) := hP.preimage continuous_subtype_val
+  have hxfr : x ∉ frontier ((↑) ⁻¹' P : Set (affineSpan ℝ P)) :=
+    fun hfr => hx ⟨x, hfr, rfl⟩
   by_cases hxP : (x : V) ∈ P
-  · have hint : x ∈ interior ((↑) ⁻¹' P : Set (affineSpan ℝ P)) := by
-      rw [← self_sdiff_frontier]
-      exact ⟨hxP, fun hfr => hx ⟨x, hfr, rfl⟩⟩
+  · have hint : x ∈ interior ((↑) ⁻¹' P : Set (affineSpan ℝ P)) :=
+      (mem_interior_iff_notMem_frontier
+        (s := ((↑) ⁻¹' P : Set (affineSpan ℝ P))) hxP).mpr hxfr
     filter_upwards [mem_interior_iff_mem_nhds.mp hint] with y hy
     exact iff_of_true hy hxP
-  · filter_upwards [hc.isOpen_compl.mem_nhds hxP] with y hy
+  · have hint : x ∈ interior (((↑) ⁻¹' P : Set (affineSpan ℝ P))ᶜ) :=
+      (mem_interior_iff_notMem_frontier
+        (s := ((↑) ⁻¹' P : Set (affineSpan ℝ P))ᶜ) hxP).mpr
+        (by rwa [frontier_compl])
+    filter_upwards [mem_interior_iff_mem_nhds.mp hint] with y hy
     exact iff_of_false hy hxP
 
 end Mei

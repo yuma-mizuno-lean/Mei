@@ -29,10 +29,7 @@ coefficient module, natural in the coefficients.
 
 The cochain relations preserve the pairing whenever the test is transverse to both
 representatives (`PolyhedralCochain.intersectionPairing_eq_of_ofFinsupp_eq`), although the cells
-of the connecting relation need not be transverse to the test. The proof groups cells by affine
-span; the test meets each relevant span in a single point. Near that point, within the span, the
-local coefficient of a transverse formal sum is constant, while every relation has vanishing
-local coefficient off a nowhere dense subset of the span (`IsNowhereDense`).
+of the connecting relation need not be transverse to the test.
 -/
 
 public section
@@ -265,20 +262,20 @@ private theorem cochainRelations_le_locallyNull (A : AffineSubspace ℝ V) (f : 
       localCoeff_single_of_not (fun hc => hσA ((hQ.affineSpan_eq hτ).symm.trans hc.1)) c
 
 /-- A cochain relation has zero local coefficient at every point `q` of `A` off the relative
-boundaries of its cells: the local coefficient is constant near `q` in `A`, and vanishes off a
-nowhere dense subset of `A`. -/
+boundaries of its cells. -/
 private theorem localCoeff_eq_zero {z : OrientedCell h k →₀ E}
     (hz : z ∈ cochainRelations R h E k) (A : AffineSubspace ℝ V) (f : Fin k → V) (q : A)
     (hq : ∀ σ ∈ z.support, (q : V) ∉ intrinsicFrontier ℝ σ.carrier) :
     localCoeff (R := R) A f q z = 0 := by
   classical
+  -- The local coefficient is constant near `q` in `A` and vanishes off a nowhere dense subset.
   obtain ⟨S, hS, hzS⟩ := cochainRelations_le_locallyNull A f hz
   have hmem : ∀ᶠ y : A in 𝓝 q, ∀ σ ∈ z.support,
       affineSpan ℝ σ.carrier = A → ((y : V) ∈ σ.carrier ↔ (q : V) ∈ σ.carrier) := by
     rw [Filter.eventually_all_finset]
     intro σ hσ
     by_cases hσA : affineSpan ℝ σ.carrier = A
-    · filter_upwards [eventually_mem_iff_of_notMem_intrinsicFrontier σ.isClosed_carrier hσA
+    · filter_upwards [eventually_mem_iff_of_notMem_intrinsicFrontier hσA
         (hq σ hσ)] with y hy _ using hy
     · exact Filter.Eventually.of_forall fun y hA => absurd hA hσA
   have hev : ∀ᶠ y : A in 𝓝 q, localCoeff (R := R) A f y z = localCoeff (R := R) A f q z := by
@@ -302,6 +299,8 @@ theorem intersectionPairing_eq_zero_of_mem_cochainRelations {v : Fin (k + 1) →
     (hv : ∀ σ ∈ z.support, σ.IsTransverse v) :
     intersectionPairing (R := R) v z = 0 := by
   classical
+  -- The test meets each relevant span in a single point. Near that point in the span, the
+  -- local coefficient is constant, while every relation vanishes off a nowhere dense set.
   -- Group the cells by affine span.
   rw [intersectionPairing_apply, Finsupp.sum,
     ← Finset.sum_fiberwise_of_maps_to (g := fun σ => affineSpan ℝ σ.carrier)
