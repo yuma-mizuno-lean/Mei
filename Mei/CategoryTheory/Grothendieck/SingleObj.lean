@@ -6,7 +6,6 @@ Authors: Codex
 module
 
 public import Mei.CategoryTheory.Grothendieck.TransportSection
-public import Mei.GroupTheory.CompletedGroup.Basic
 public import Mathlib.CategoryTheory.SingleObj
 
 /-!
@@ -14,9 +13,9 @@ public import Mathlib.CategoryTheory.SingleObj
 
 A diagram of groups gives a diagram of one-object groupoids. Its distinguished
 section uses identity transport. Automorphisms of this section are exactly
-compatible group elements; for a tower these are the existing completed group.
-Thus the section interpretation of labels retains their multiplication and their
-finite-order components, including ordered products and changes of cutoff.
+compatible group elements, with their multiplication and their components.
+The specialization to completed groups of towers is in
+`Mei.GroupTheory.CompletedGroup.Section`.
 
 The construction uses Mathlib's `MonCat.toCat`, `Units.toAut` and `toUnits`,
 and `GrothendieckSection.autEquivSections` for compatible automorphisms.
@@ -31,6 +30,15 @@ open CategoryTheory CategoryTheory.Limits Mei Opposite
 
 universe u v w
 
+namespace Units
+
+/-- The automorphism of the unique object given by a group element has that element as arrow. -/
+theorem toAut_toUnits_asIso_hom {G : Type*} [Group G] (x : G) :
+    (Units.toAut G (toUnits x)).asIso.hom = x := by
+  simp [SingleObj.toEnd_def]
+
+end Units
+
 namespace CategoryTheory.Functor
 
 variable {D : Type u} [Category.{v} D] (F : D ⥤ GrpCat.{w})
@@ -41,7 +49,9 @@ abbrev singleObjSection :
     GrothendieckSection (F ⋙ forget₂ GrpCat MonCat ⋙ MonCat.toCat) where
   obj d := SingleObj.star (F.obj d)
   map {d e} _ := (1 : F.obj e)
-  map_id _ := by simp [MonCat.toCat, SingleObj.id_as_one]; rfl
+  map_id d := by
+    rw [eqToHom_refl]
+    exact (SingleObj.id_as_one (F.obj d) _).symm
   map_comp {d e b} _ _ := by
     simp only [MonCat.toCat, comp_obj, comp_map, eqToHom_refl, Category.id_comp,
       toCatHom_toFunctor, SingleObj.mapHom_apply_map, map_one]
@@ -56,9 +66,19 @@ theorem singleObjSection_map {d e : D} (f : d ⟶ e) :
     F.singleObjSection.map f = (1 : F.obj e) := (rfl)
 
 /-- The fibers of a group diagram are groupoids. -/
-local instance singleObjDiagramIsGroupoid :
-    ∀ d, IsGroupoid ((F ⋙ forget₂ GrpCat MonCat ⋙ MonCat.toCat).obj d) :=
-  fun d => inferInstanceAs (IsGroupoid (SingleObj (F.obj d)))
+instance singleObjDiagramIsGroupoid (d : D) :
+    IsGroupoid ((F ⋙ forget₂ GrpCat MonCat ⋙ MonCat.toCat).obj d) :=
+  inferInstanceAs (IsGroupoid (SingleObj (F.obj d)))
+
+/-- Identity transport sends the automorphism given by a group element to its image. The
+equation is stated in the target group, the arrow type of its one-object category. -/
+theorem singleObjSection_automorphismDiagram_map_toAut {d e : D} (f : d ⟶ e) (x : F.obj d) :
+    Eq (α := F.obj e) ((F.singleObjSection.automorphismDiagram.map f)
+      (Units.toAut (F.obj d) (toUnits x))).asIso.hom (F.map f x) := by
+  rw [GrothendieckSection.automorphismDiagram_map_apply_hom]
+  simp [MonCat.toCat, SingleObj.inv_as_inv (F.obj e), SingleObj.comp_as_mul (F.obj e),
+    SingleObj.toEnd, End.homEquiv, GrpCat.forget₂_map, @one_mul (F.obj e) _,
+    @mul_one (F.obj e) _]
 
 /-- Compatible group elements are precisely automorphisms of the identity-transport section. -/
 noncomputable def singleObjSectionAutEquiv :
@@ -71,39 +91,29 @@ noncomputable def singleObjSectionAutEquiv :
       -- Expose the forgotten group homomorphism so the transport formula can rewrite it.
       change ((F.singleObjSection.automorphismDiagram.map f)
         (Units.toAut (F.obj d) (toUnits (g.val d)))).asIso.hom = _
-      rw [GrothendieckSection.automorphismDiagram_map_apply_hom]
-      simp only [MonCat.toCat, comp_obj, Cat.of_α, singleObjSection, comp_map,
-        toCatHom_toFunctor, SingleObj.mapHom_apply_obj, id_eq,
-        SingleObj.inv_as_inv (F.obj e), inv_one, Units.toAut_apply_asIso_hom,
-        SingleObj.toEnd, End.homEquiv, Equiv.symm_mk, val_toUnits_apply,
-        MulEquiv.coe_mk, Equiv.coe_fn_mk, SingleObj.mapHom_apply_map,
-        GrpCat.forget₂_map, SingleObj.comp_as_mul (F.obj e),
-        @one_mul (F.obj e) _, @mul_one (F.obj e) _]
-      convert g.property f using 1
-      rfl⟩
+      rw [singleObjSection_automorphismDiagram_map_toAut, Units.toAut_toUnits_asIso_hom]
+      exact g.property f⟩
   invFun a := ⟨fun d => a.asIso.hom.app d, by
     intro d e f
     -- Name the underlying family to keep group operations independent of fiber wrappers.
     let b : ∀ d, F.obj d := fun d => a.asIso.hom.app d
     have ht : (1 : F.obj e) * (F.map f) (b d) = b e * 1 := a.asIso.hom.naturality f
     simp only [one_mul, mul_one] at ht
-    convert ht using 1
-    rfl⟩
+    exact ht⟩
   left_inv g := by
     apply Subtype.ext
     funext d
     dsimp only
     rw [GrothendieckSection.autEquivSections_symm_apply_hom]
-    rfl
+    exact Units.toAut_toUnits_asIso_hom (g.val d)
   right_inv a := by
-    apply F.singleObjSection.autEquivSections.injective
-    simp only [MulEquiv.apply_symm_apply]
-    apply Subtype.ext
-    funext d
     apply Aut.ext
     apply Iso.ext
-    simp only [GrothendieckSection.autEquivSections_apply]
-    rfl
+    apply GrothendieckSection.Hom.ext
+    funext d
+    dsimp only
+    rw [GrothendieckSection.autEquivSections_symm_apply_hom]
+    exact Units.toAut_toUnits_asIso_hom (G := F.obj d) _
   map_mul' g h := by
     apply F.singleObjSection.autEquivSections.injective
     simp only [map_mul, MulEquiv.apply_symm_apply]
@@ -111,53 +121,20 @@ noncomputable def singleObjSectionAutEquiv :
     funext d
     apply Aut.ext
     apply Iso.ext
-    rfl
+    simp
 
 /-- Recover the original group element from each component of its section label. -/
 @[simp]
 theorem singleObjSectionAutEquiv_hom_app (g : GrpCat.sectionsSubgroup F) (d : D) :
     (F.singleObjSectionAutEquiv g).asIso.hom.app d = g.val d := by
-  simp [singleObjSectionAutEquiv]
-  rfl
+  rw [singleObjSectionAutEquiv, MulEquiv.coe_mk, Equiv.coe_fn_mk,
+    GrothendieckSection.autEquivSections_symm_apply_hom]
+  exact Units.toAut_toUnits_asIso_hom (g.val d)
 
 /-- The inverse identification reads off the fiber arrows. -/
 @[simp]
 theorem singleObjSectionAutEquiv_symm_apply (a : Aut F.singleObjSection) (d : D) :
     (F.singleObjSectionAutEquiv.symm a).val d = a.asIso.hom.app d := (rfl)
-
-end CategoryTheory.Functor
-
-namespace CategoryTheory.Functor
-
-open Mei.CompletedGroup
-
-variable (F : ℕᵒᵖ ⥤ GrpCat.{w})
-
-/-- A completed group is the automorphism group of the tower's identity-transport section. -/
-noncomputable def completedGroupAutEquiv : completedGroup F ≃* Aut F.singleObjSection := by
-  let reindex : completedGroup F ≃* GrpCat.sectionsSubgroup F :=
-    { toFun := fun g => ⟨fun d => g.val d.unop, fun {l k} f =>
-        (mem_completedGroup_iff F g.val).mp g.property k.unop l.unop (leOfHom f.unop)⟩
-      invFun := fun g => ⟨fun k => g.val (op k), (mem_completedGroup_iff F _).mpr
-        (fun _ _ h => g.property (homOfLE h).op)⟩
-      left_inv := fun _ => rfl
-      right_inv := fun _ => rfl
-      map_mul' := fun _ _ => rfl }
-  exact reindex.trans F.singleObjSectionAutEquiv
-
-/-- Each fiber arrow is the corresponding finite-order projection. -/
-@[simp]
-theorem completedGroupAutEquiv_hom_app (g : completedGroup F) (k : ℕ) :
-    (completedGroupAutEquiv F g).asIso.hom.app (op k) = projection k g := by
-  simp [completedGroupAutEquiv, projection_apply]
-  rfl
-
-/-- Recovering a completed group element from a label retains every finite projection. -/
-@[simp]
-theorem projection_completedGroupAutEquiv_symm (a : Aut F.singleObjSection) (k : ℕ) :
-    projection k ((completedGroupAutEquiv F).symm a) = a.asIso.hom.app (op k) := by
-  simp [completedGroupAutEquiv, projection_apply]
-  rfl
 
 end CategoryTheory.Functor
 
@@ -206,6 +183,7 @@ theorem singleObjFiber_comp
   simp [singleObjFiber, Grothendieck.comp_fiber, MonCat.toCat,
     SingleObj.comp_as_mul (F.obj c.base), SingleObj.mapHom,
     SingleObj.id_as_one (F.obj c.base), @mul_one (F.obj c.base) _]
+  -- The fiber transport applies the same homomorphism after forgetting to monoids.
   rfl
 
 /-- Compatible actions on a coefficient diagram give a representation of the total
@@ -215,16 +193,14 @@ abbrev singleObjRepresentation :
     Grothendieck (F ⋙ forget₂ GrpCat MonCat ⋙ MonCat.toCat) ⥤ V where
   obj a := X.obj a.base
   map {a b} f := X.map f.base ≫ (ρ b.base (F.singleObjFiber f)).asIso.hom
-  map_id a := by
-    simp [singleObjFiber, Grothendieck.id_fiber, MonCat.toCat,
-      SingleObj.id_as_one (F.obj a.base)]
+  map_id a := by simp
   map_comp {a b c} f g := by
     simp only [singleObjFiber_comp, map_mul, Aut.mul_asIso, Iso.trans_hom,
       Grothendieck.comp_base, X.map_comp, Category.assoc]
     rw [← Category.assoc ((ρ b.base) (F.singleObjFiber f)).asIso.hom,
       hρ g.base (F.singleObjFiber f), Category.assoc]
 
-/-- The represented coefficient object over `d` is the original one. -/
+/-- The represented coefficient object at `a` is the original one over `a.base`. -/
 @[simp]
 theorem singleObjRepresentation_obj
     (a : Grothendieck (F ⋙ forget₂ GrpCat MonCat ⋙ MonCat.toCat)) :
@@ -244,8 +220,8 @@ theorem singleObjRepresentation_map_ι (d : D) (g : F.obj d) :
         (X := SingleObj.star (F.obj d)) (Y := SingleObj.star (F.obj d)) g) =
       (ρ d g).asIso.hom := by
   rw [singleObjRepresentation_map, singleObjFiber_ι_map]
-  simp [Grothendieck.ι]
-  rfl
+  -- The fiber inclusion has the identity of `d` as base arrow.
+  exact (congrArg (· ≫ (ρ d g).asIso.hom) (X.map_id d)).trans (Category.id_comp _)
 
 /-- Restriction of the representation to identity transport recovers the coefficient diagram. -/
 def singleObjRepresentationIso :
@@ -290,22 +266,30 @@ noncomputable def singleObjLimitAction : GrpCat.sectionsSubgroup F →* Aut (lim
 theorem singleObjLimitAction_hom_π (g : GrpCat.sectionsSubgroup F) (d : D) :
     (F.singleObjLimitAction X ρ hρ g).asIso.hom ≫ limit.π X d =
       limit.π X d ≫ (ρ d (g.val d)).asIso.hom := by
-  let e := HasLimit.isoOfNatIso (F.singleObjRepresentationIso X ρ hρ)
-  -- Express conjugation in the underlying category; the automorphism wrappers hide it.
-  change (e.inv ≫ (GrothendieckSection.completedAut
-    (F.singleObjRepresentation X ρ hρ) F.singleObjSection
-      (F.singleObjSectionAutEquiv g)).asIso.hom ≫ e.hom) ≫ limit.π X d = _
-  dsimp only [e]
-  simp only [Category.assoc, HasLimit.isoOfNatIso_hom_π,
-    singleObjRepresentationIso_hom_app]
-  rw [GrothendieckSection.completedAut_hom_π_assoc]
-  simp only [singleObjSectionAutEquiv_hom_app]
-  simp only [singleObjFiber, Grothendieck.ι, Functor.map_id,
-    SingleObj.comp_as_mul (F.obj d)]
-  simp only [Category.id_comp, Category.comp_id]
-  erw [HasLimit.isoOfNatIso_inv_π_assoc]
-  simp [singleObjRepresentationIso, MonCat.toCat, SingleObj.id_as_one (F.obj d)]
-  rfl
+  have h : (GrothendieckSection.completedAut (F.singleObjRepresentation X ρ hρ)
+      F.singleObjSection (F.singleObjSectionAutEquiv g)).asIso.hom ≫
+        limit.π (F.singleObjSection.toFunctor ⋙ F.singleObjRepresentation X ρ hρ) d =
+      limit.π (F.singleObjSection.toFunctor ⋙ F.singleObjRepresentation X ρ hρ) d ≫
+        (ρ d (g.val d)).asIso.hom := by
+    rw [GrothendieckSection.completedAut_hom_π, singleObjSectionAutEquiv_hom_app]
+    -- The section object is the unique object, so the vertical-action formula applies.
+    exact congrArg _ (F.singleObjRepresentation_map_ι X ρ hρ d (g.val d))
+  have hom_π : (HasLimit.isoOfNatIso (F.singleObjRepresentationIso X ρ hρ)).hom ≫
+      limit.π X d =
+        limit.π (F.singleObjSection.toFunctor ⋙ F.singleObjRepresentation X ρ hρ) d := by
+    rw [HasLimit.isoOfNatIso_hom_π, singleObjRepresentationIso_hom_app]
+    -- The comparison component is the identity of the original coefficient object.
+    exact Category.comp_id _
+  have inv_π : (HasLimit.isoOfNatIso (F.singleObjRepresentationIso X ρ hρ)).inv ≫
+      limit.π (F.singleObjSection.toFunctor ⋙ F.singleObjRepresentation X ρ hρ) d =
+        limit.π X d := by
+    rw [HasLimit.isoOfNatIso_inv_π, singleObjRepresentationIso_inv_app]
+    -- The comparison component is the identity of the original coefficient object.
+    exact Category.comp_id _
+  rw [singleObjLimitAction, MonoidHom.comp_apply, MonoidHom.comp_apply,
+    MulEquiv.coe_toMonoidHom, MulEquiv.coe_toMonoidHom, Aut.autMulEquivOfIso_apply_asIso,
+    Iso.trans_hom, Iso.trans_hom, Iso.symm_hom, Category.assoc, Category.assoc, hom_π, h,
+    ← Category.assoc, inv_π]
 
 /-- A levelwise action on the coefficient limit agrees with the represented section action. -/
 theorem singleObjLimitAction_unique (σ : GrpCat.sectionsSubgroup F →* Aut (limit X))
