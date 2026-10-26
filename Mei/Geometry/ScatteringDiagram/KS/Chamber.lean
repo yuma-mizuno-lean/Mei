@@ -41,7 +41,7 @@ variable {N V R L : Type*} [AddCommMonoid N] [NormedAddCommGroup V] [NormedSpace
 
 /-- At a positive chamber point the positive finite factor is the whole
 element and the other factors are identities. -/
-theorem signFactorizationEquiv_symm_of_mem_positiveChamber
+@[simp] theorem signFactorizationEquiv_symm_of_mem_positiveChamber
     (hθ : θ ∈ d.monoid.positiveChamber i) (g : d.truncatedGroup ℒ k) (s : SignType) :
     ((signFactorizationEquiv ℒ (θ.toAddMonoidHom.comp i) d k).symm g s :
         d.truncatedGroup ℒ k) = if s = .pos then g else 1 := by
@@ -52,7 +52,7 @@ theorem signFactorizationEquiv_symm_of_mem_positiveChamber
 
 /-- At a negative chamber point the negative finite factor is the whole
 element and the other factors are identities. -/
-theorem signFactorizationEquiv_symm_of_mem_negativeChamber
+@[simp] theorem signFactorizationEquiv_symm_of_mem_negativeChamber
     (hθ : θ ∈ d.monoid.negativeChamber i) (g : d.truncatedGroup ℒ k) (s : SignType) :
     ((signFactorizationEquiv ℒ (θ.toAddMonoidHom.comp i) d k).symm g s :
         d.truncatedGroup ℒ k) = if s = .neg then g else 1 := by
@@ -76,7 +76,7 @@ theorem signFactorizationEquiv_neg_mul_inv_eq_of_mem_chambers
 
 /-- The positive completed factor at a positive chamber point is the whole
 element; both other completed factors are identities. -/
-theorem completedSignFactorizationEquiv_symm_of_mem_positiveChamber
+@[simp] theorem completedSignFactorizationEquiv_symm_of_mem_positiveChamber
     (hθ : θ ∈ d.monoid.positiveChamber i) (g : d.completedBCHGroup ℒ) (s : SignType) :
     ((completedSignFactorizationEquiv ℒ (θ.toAddMonoidHom.comp i) d).symm g s :
         d.completedBCHGroup ℒ) = if s = .pos then g else 1 := by
@@ -86,7 +86,7 @@ theorem completedSignFactorizationEquiv_symm_of_mem_positiveChamber
 
 /-- The negative completed factor at a negative chamber point is the whole
 element; both other completed factors are identities. -/
-theorem completedSignFactorizationEquiv_symm_of_mem_negativeChamber
+@[simp] theorem completedSignFactorizationEquiv_symm_of_mem_negativeChamber
     (hθ : θ ∈ d.monoid.negativeChamber i) (g : d.completedBCHGroup ℒ) (s : SignType) :
     ((completedSignFactorizationEquiv ℒ (θ.toAddMonoidHom.comp i) d).symm g s :
         d.completedBCHGroup ℒ) = if s = .neg then g else 1 := by
