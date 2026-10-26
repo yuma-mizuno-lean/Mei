@@ -81,32 +81,36 @@ theorem iSup_wall_eq_wall_of_inf_ker (f g : Λ →+ ℤ) {n : Γ}
 
 variable [DecidableEq Γ] [DirectSum.Decomposition ℒ]
 
-/-- A transverse joint component belongs to the wall space with its computed
-integral normal. No generation hypothesis for the annihilator is needed. -/
+/-- Every component of a transverse joint element belongs to the wall space with its computed
+integral normal. Components along the joint vanish, and no generation hypothesis for the
+annihilator is needed. -/
 theorem decompose_mem_wall_of_mem_transverseJointSubmodule_inf_ker
     (f g : Λ →+ ℤ) {x : L}
     (hx : x ∈ H.transverseJointSubmodule (f.ker ⊓ g.ker).toAddSubmonoid)
-    {n : Γ} (hn : ρ n ∉ f.ker ⊓ g.ker) :
+    {n : Γ} :
     (DirectSum.decompose ℒ x n : L) ∈ H.wall n (f (ρ n) • g - g (ρ n) • f) := by
-  have h := H.decompose_mem_of_mem_transverseJointSubmodule
-    (f.ker ⊓ g.ker).toAddSubmonoid hx n
-  simpa only [AddSubgroup.mem_toAddSubmonoid, H.iSup_wall_eq_wall_of_inf_ker f g hn] using h
+  by_cases hn : ρ n ∈ f.ker ⊓ g.ker
+  · rw [H.decompose_eq_zero_of_mem_transverseJointSubmodule hx hn]
+    exact Submodule.zero_mem _
+  · have h := H.decompose_mem_of_mem_transverseJointSubmodule
+      (f.ker ⊓ g.ker).toAddSubmonoid hx n
+    simpa only [AddSubgroup.mem_toAddSubmonoid, H.iSup_wall_eq_wall_of_inf_ker f g hn] using h
 
 section BCH
 
 variable [Algebra ℚ R] [LieAlgebra ℚ L] [IsScalarTower ℚ R L]
   [LieRing.IsNilpotent L]
 
-/-- The nonlinear homogeneous part of a joint product lies in the wall space
+/-- In every degree, the nonlinear homogeneous part of a joint product lies in the wall space
 with normal contracted against its total geometric degree. -/
 theorem decompose_log_list_prod_sub_mem_wall_inf_ker
     (f g : Λ →+ ℤ) {l : List (BCHGroup L)}
     (hl : ∀ a ∈ l, a ∈ (H.jointSubalgebra (f.ker ⊓ g.ker).toAddSubmonoid).bchSubgroup)
-    {n : Γ} (hn : ρ n ∉ f.ker ⊓ g.ker) :
+    {n : Γ} :
     (DirectSum.decompose ℒ (BCHGroup.log l.prod - (l.map BCHGroup.log).sum) n : L) ∈
       H.wall n (f (ρ n) • g - g (ρ n) • f) :=
   H.decompose_mem_wall_of_mem_transverseJointSubmodule_inf_ker f g
-    (H.log_list_prod_sub_sum_mem_transverseJointSubmodule hl) hn
+    (H.log_list_prod_sub_sum_mem_transverseJointSubmodule hl)
 
 end BCH
 
