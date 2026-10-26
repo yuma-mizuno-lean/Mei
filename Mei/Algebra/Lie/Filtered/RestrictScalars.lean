@@ -166,12 +166,12 @@ variable {N R S L A : Type*} [AddCommMonoid N] [CommRing R] [CommRing S]
   [IsScalarTower R S L] [Ring A] [Algebra S A] [Algebra R A]
   [IsScalarTower R S A] [LieRingModule L A] [LieModule S L A] [LieModule R L A]
   (F : AlgFiltration A) (d : PositiveDegrees N) (ℒ : N → Submodule S L)
-  [DecidableEq N] [GradedLieAlgebra ℒ] [IsPositiveGrading d ℒ]
+  [DecidableEq N] [IsPositiveGrading d ℒ]
   [IsFiltrationRaising d ℒ (F.toModuleFiltration S)]
 
 /-- Restricting scalars preserves the Lie representation on each coefficient algebra quotient. -/
 @[simp]
-theorem quotientLieAction_restrictScalars (k : ℕ) (x : L) :
+theorem quotientLieAction_restrictScalars [DirectSum.Decomposition ℒ] (k : ℕ) (x : L) :
     F.quotientLieAction d (fun n => (ℒ n).restrictScalars R) k x =
       (F.quotientLieAction d ℒ k x).restrictScalars R := by
   ext a
@@ -182,7 +182,7 @@ variable [Algebra ℚ A] [IsDerivationAction L A]
 
 /-- Restricting scalars preserves the finite exponential algebra automorphism. -/
 @[simp]
-theorem quotientExpLieAction_restrictScalars (k : ℕ) (x : L) :
+theorem quotientExpLieAction_restrictScalars [DirectSum.Decomposition ℒ] (k : ℕ) (x : L) :
     F.quotientExpLieAction d (fun n => (ℒ n).restrictScalars R) k x =
       (F.quotientExpLieAction d ℒ k x).restrictScalars R := by
   ext a
@@ -191,6 +191,8 @@ theorem quotientExpLieAction_restrictScalars (k : ℕ) (x : L) :
     ← Module.End.exp_restrictScalars (F.quotientLieAction d ℒ k x)
       ⟨k + 1, F.quotientLieAction_pow_eq_zero d ℒ k x⟩]
   rfl
+
+variable [GradedLieAlgebra ℒ]
 
 /-- The finite Lie quotient comparison identifies the exponential algebra actions. -/
 @[simp]
