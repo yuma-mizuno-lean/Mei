@@ -236,6 +236,24 @@ theorem signFactorizationEquiv_symm_one (k : ℕ) :
   apply (signFactorizationEquiv ℒ θ d k).symm_apply_eq.mpr
   simp only [signFactorizationEquiv_apply, Pi.one_apply, OneMemClass.coe_one, one_mul]
 
+/-- Sign factors depend only on the three sign subalgebras, rather than on
+which character presents them. -/
+theorem signFactorizationEquiv_symm_eq_of_signSubalgebra_eq
+    (φ : N →+ A) (k : ℕ)
+    (h : ∀ s, signSubalgebra (d.truncatedGrading ℒ k) θ s =
+      signSubalgebra (d.truncatedGrading ℒ k) φ s)
+    (g : d.truncatedGroup ℒ k) (s : SignType) :
+    ((signFactorizationEquiv ℒ θ d k).symm g s : d.truncatedGroup ℒ k) =
+      ((signFactorizationEquiv ℒ φ d k).symm g s : d.truncatedGroup ℒ k) := by
+  let a := (signFactorizationEquiv ℒ θ d k).symm g
+  let b : ∀ t, (signSubalgebra (d.truncatedGrading ℒ k) φ t).bchSubgroup :=
+    fun t => ⟨a t, by rw [← h t]; exact (a t).property⟩
+  have hb : signFactorizationEquiv ℒ φ d k b = g := by
+    simpa only [signFactorizationEquiv_apply, b] using
+      (signFactorizationEquiv ℒ θ d k).apply_symm_apply g
+  exact congrArg (fun c => (c s : d.truncatedGroup ℒ k))
+    ((signFactorizationEquiv ℒ φ d k).eq_symm_apply.mpr hb)
+
 /-- Each sign factor is compatible with lowering the degree cutoff. -/
 @[simp]
 theorem truncationMap_signFactorizationEquiv_symm {k l : ℕ} (h : k ≤ l)
