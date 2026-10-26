@@ -26,6 +26,21 @@ open Module
 
 namespace AlternatingMap
 
+section CommSemiring
+
+variable {R M E : Type*} [CommSemiring R] [AddCommMonoid M] [AddCommGroup E]
+  [Module R M] [Module R E] {k : ℕ}
+
+/-- Inserting two vectors in the first two slots anticommutes. -/
+theorem curryLeft_curryLeft (α : M [⋀^Fin (k + 2)]→ₗ[R] E) (n m : M) :
+    (α.curryLeft n).curryLeft m = -((α.curryLeft m).curryLeft n) := by
+  have he := curryLeft_same α (n + m)
+  simp only [map_add, curryLeft_add, LinearMap.add_apply, curryLeft_same,
+    zero_add, add_zero] at he
+  exact eq_neg_of_add_eq_zero_right he
+
+end CommSemiring
+
 variable {R M : Type*} [Field R] [AddCommGroup M] [Module R M] {k : ℕ}
 
 /-- Contraction of a nonzero top-degree form is injective in the contracting vector. -/
@@ -200,5 +215,31 @@ theorem contract_eq_contract_iff
         exact SameRay.sameRay_pos_smul_right α hc
       · rintro he
         exact he.map ((LinearMap.applyₗ n).comp AlternatingMap.curryLeftLinearMap)
+
+/-- Contraction depends only on the orientation and vector, independently of the
+subspace used to certify conormality and transversality. -/
+theorem contract_congr (o p : Module.Ray R (M [⋀^Fin (k + 1)]→ₗ[R] R))
+    {U : Submodule R M} (ho : o.IsConormal W) (hp : p.IsConormal U)
+    (hk : finrank R (M ⧸ W) = k + 1) (hl : finrank R (M ⧸ U) = k + 1)
+    (n : M) (hn : n ∉ W) (hm : n ∉ U) (hop : o = p) :
+    o.contract ho hk n hn = p.contract hp hl n hm := by
+  subst p
+  rfl
+
+/-- Successive transverse contractions anticommute. The dimension and transversality
+proofs simply ensure that both successive contractions are defined. -/
+theorem contract_contract (o : Module.Ray R (M [⋀^Fin (k + 2)]→ₗ[R] R))
+    (ho : o.IsConormal W) (hk : finrank R (M ⧸ W) = k + 2)
+    (n m : M) (hn : n ∉ W) (hm : m ∉ W)
+    (hkn : finrank R (M ⧸ (W ⊔ R ∙ n)) = k + 1)
+    (hkm : finrank R (M ⧸ (W ⊔ R ∙ m)) = k + 1)
+    (hmn : m ∉ W ⊔ R ∙ n) (hnm : n ∉ W ⊔ R ∙ m) :
+    (o.contract ho hk n hn).contract (o.isConormal_contract ho hk n hn) hkn m hmn =
+      -((o.contract ho hk m hm).contract (o.isConormal_contract ho hk m hm) hkm n hnm) := by
+  induction o using Module.Ray.ind with
+  | h α hα =>
+    simp only [contract_rayOfNeZero, neg_rayOfNeZero]
+    congr 1
+    exact α.curryLeft_curryLeft n m
 
 end Module.Ray
