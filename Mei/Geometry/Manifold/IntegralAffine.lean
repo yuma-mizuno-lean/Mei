@@ -195,6 +195,21 @@ the inverse condition follows from the partial homeomorphism laws. -/
   rw [mem_integralAffineGroupoid_iff]
   exact ⟨And.left, fun he => ⟨he, he.symm⟩⟩
 
+/-- Restricting an integral affine chart change to an open set keeps it integral affine. -/
+instance : ClosedUnderRestriction (integralAffineGroupoid h) where
+  closedUnderRestriction {e} he s hs := by
+    rw [mem_integralAffineGroupoid_iff_forward] at he ⊢
+    rw [e.restr_source' s hs]
+    exact he.mono inter_subset_left
+
+/-- A global integral affine equivalence, as a partial homeomorphism on the whole
+space, is an integral affine chart change. -/
+theorem IntegralAffineEquiv.mem_integralAffineGroupoid (e : IntegralAffineEquiv h h) :
+    e.toContinuousAffineEquiv.toHomeomorph.toOpenPartialHomeomorph ∈
+      integralAffineGroupoid h :=
+  mem_integralAffineGroupoid_iff_forward.mpr <|
+    .of_eqOn e fun x _ => e.toContinuousAffineEquiv_apply x
+
 /-- A connected nonempty chart-change domain has a unique global integral affine extension. -/
 theorem existsUnique_extension_of_mem_integralAffineGroupoid
     {e : OpenPartialHomeomorph V V} (he : e ∈ integralAffineGroupoid h)

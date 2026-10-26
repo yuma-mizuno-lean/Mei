@@ -52,25 +52,17 @@ variable {h : IsIntegralLattice i} {h' : IsIntegralLattice i'}
 instance : CoeFun (IntegralAffineEquiv h h') (fun _ => V → V') :=
   ⟨fun e => e.toAffineEquiv⟩
 
-/-- Equality of the underlying affine and lattice equivalences gives equality. -/
-@[ext (iff := false)]
-theorem ext {e f : IntegralAffineEquiv h h'}
-    (ha : e.toAffineEquiv = f.toAffineEquiv) (hl : e.latticeEquiv = f.latticeEquiv) :
-    e = f := by
-  cases e
-  cases f
-  cases ha
-  cases hl
+/-- The real affine equivalence determines the integral lattice map uniquely. -/
+theorem toAffineEquiv_injective :
+    Function.Injective (toAffineEquiv : IntegralAffineEquiv h h' → V ≃ᵃ[ℝ] V') := by
+  rintro ⟨e, l, hl⟩ ⟨f, l', hl'⟩ (rfl : e = f)
+  obtain rfl : l = l' := AddEquiv.ext fun n => h'.injective <| by rw [← hl, ← hl']
   rfl
 
-/-- The real affine equivalence determines the integral lattice map uniquely. -/
-theorem eq_of_toAffineEquiv_eq {e f : IntegralAffineEquiv h h'}
-    (he : e.toAffineEquiv = f.toAffineEquiv) : e = f := by
-  apply ext he
-  apply AddEquiv.ext
-  intro n
-  apply h'.injective
-  rw [← e.map_lattice, ← f.map_lattice, he]
+/-- Integral affine equivalences agreeing pointwise are equal. -/
+@[ext]
+theorem ext {e f : IntegralAffineEquiv h h'} (H : ∀ x, e x = f x) : e = f :=
+  toAffineEquiv_injective (AffineEquiv.ext H)
 
 /-- The real linear part is the canonical scalar extension of the integral lattice map. -/
 theorem linear_eq_extend (e : IntegralAffineEquiv h h') :
@@ -134,7 +126,7 @@ theorem trans_latticeEquiv (e : IntegralAffineEquiv h h') (f : IntegralAffineEqu
 /-- Inverting twice recovers the integral affine equivalence. -/
 @[simp]
 theorem symm_symm (e : IntegralAffineEquiv h h') : e.symm.symm = e := by
-  apply ext <;> rfl
+  ext; rfl
 
 /-- Applying the inverse to an image recovers the original set carrier. -/
 @[simp↓]
@@ -151,26 +143,22 @@ theorem image_symm_image (e : IntegralAffineEquiv h h') (P : Set V') :
 /-- Composition with the identity on the target changes nothing. -/
 @[simp]
 theorem trans_refl (e : IntegralAffineEquiv h h') : e.trans (refl h') = e := by
-  apply ext
-  · simp [trans, refl]
-  · exact AddEquiv.ext fun _ => rfl
+  ext; rfl
 
 /-- Composition with the identity on the source changes nothing. -/
 @[simp]
 theorem refl_trans (e : IntegralAffineEquiv h h') : (refl h).trans e = e := by
-  apply ext
-  · simp [trans, refl]
-  · exact AddEquiv.ext fun _ => rfl
+  ext; rfl
 
 /-- Composition with the inverse on the right gives the source identity. -/
 @[simp]
 theorem self_trans_symm (e : IntegralAffineEquiv h h') : e.trans e.symm = refl h := by
-  apply ext <;> simp [trans, symm, refl]
+  ext; simp [trans, symm, refl]
 
 /-- Composition with the inverse on the left gives the target identity. -/
 @[simp]
 theorem symm_trans_self (e : IntegralAffineEquiv h h') : e.symm.trans e = refl h' := by
-  apply ext <;> simp [trans, symm, refl]
+  ext; simp [trans, symm, refl]
 
 /-- Composition of integral affine equivalences is associative. -/
 theorem trans_assoc {N''' V''' : Type*} [AddCommGroup N'''] [AddCommGroup V''']
@@ -178,7 +166,7 @@ theorem trans_assoc {N''' V''' : Type*} [AddCommGroup N'''] [AddCommGroup V''']
     (e : IntegralAffineEquiv h h') (f : IntegralAffineEquiv h' h'')
     (g : IntegralAffineEquiv h'' h''') :
     (e.trans f).trans g = e.trans (f.trans g) := by
-  apply ext <;> rfl
+  ext; rfl
 
 /-- The linear part is rational relative to the given integral lattices. -/
 theorem isRationalLinearMap (e : IntegralAffineEquiv h h') :
@@ -200,7 +188,7 @@ variable {N N' V V' : Type*} [AddCommGroup N] [AddCommGroup N']
 /-- Agreement on a nonempty open set determines the entire integral affine equivalence. -/
 theorem eq_of_eqOn_open {e f : IntegralAffineEquiv h h'} {s : Set V}
     (hs : IsOpen s) (hne : s.Nonempty) (he : Set.EqOn e f s) : e = f := by
-  apply eq_of_toAffineEquiv_eq
+  apply toAffineEquiv_injective
   exact AffineEquiv.ext_on (hs.affineSpan_eq_top hne) e.toAffineEquiv f.toAffineEquiv he
 
 /-- Continuity follows from the finite dimensionality supplied by the lattice. -/
