@@ -7,6 +7,7 @@ module
 
 public import Mei.Algebra.Lie.BCH.Associativity
 public import Mei.Algebra.Lie.RestrictScalars
+public import Mathlib.Data.Finset.NoncommProd
 
 /-!
 # The algebraic BCH group
@@ -21,7 +22,9 @@ induced homomorphisms unchanged.
 
 The group law uses the bound-independent operation `Mei.bch`; its associativity
 comes from finite enveloping quotients in `Mei.Algebra.Lie.BCH.Associativity`.
-The power formulas express multiplication along a single Lie algebra direction.
+The power formulas express multiplication along a single Lie algebra direction, and
+finite pairwise commuting families exponentiate their sum to Mathlib's unordered
+product `Finset.noncommProd`.
 -/
 
 public section
@@ -112,6 +115,23 @@ theorem commute_exp_of_lie_eq_zero (x y : L) (h : ⁅x, y⁆ = 0) :
   have h' : ⁅y, x⁆ = 0 := by simpa only [h, neg_zero] using (lie_skew y x).symm
   exact (exp_add_of_lie_eq_zero x y h).symm.trans
     ((congrArg exp (add_comm x y)).trans (exp_add_of_lie_eq_zero y x h'))
+
+/-- A finite family of pairwise commuting Lie algebra elements has additive exponential
+coordinates: the exponential of the sum is the unordered product of the exponentials. -/
+theorem exp_sum_of_lie_eq_zero {ι : Type*} (s : Finset ι) (x : ι → L)
+    (h : (s : Set ι).Pairwise fun i j => ⁅x i, x j⁆ = 0) :
+    exp (∑ i ∈ s, x i) = s.noncommProd (fun i => exp (x i))
+      (h.imp fun _ _ hij => commute_exp_of_lie_eq_zero _ _ hij) := by
+  induction s using Finset.cons_induction with
+  | empty => rw [Finset.sum_empty, Finset.noncommProd_empty, exp_zero]
+  | cons a s ha ih =>
+    have hs : (s : Set ι).Pairwise fun i j => ⁅x i, x j⁆ = 0 :=
+      h.mono (Finset.coe_subset.mpr (Finset.subset_cons ha))
+    have ha' : ⁅x a, ∑ i ∈ s, x i⁆ = 0 := by
+      rw [lie_sum]
+      exact Finset.sum_eq_zero fun j hj => h (Finset.mem_cons_self a s)
+        (Finset.mem_cons_of_mem hj) (ne_of_mem_of_not_mem hj ha).symm
+    rw [Finset.sum_cons, Finset.noncommProd_cons, exp_add_of_lie_eq_zero _ _ ha', ih hs]
 
 /-- Natural powers of an exponential multiply its Lie algebra coordinate. -/
 theorem exp_nsmul (x : L) (n : ℕ) : exp (n • x) = exp x ^ n := by

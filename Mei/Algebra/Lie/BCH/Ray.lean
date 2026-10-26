@@ -8,6 +8,7 @@ module
 public import Mei.Algebra.Lie.Graded.Ray
 public import Mei.Algebra.Lie.BCH.Subgroup
 public import Mei.Algebra.Lie.BCH.Completion
+public import Mei.Algebra.Lie.BCH.HomogeneousFactor
 
 /-!
 # Completed supported-ray subgroups
@@ -18,14 +19,17 @@ algebras and their BCH subgroups onto the corresponding lower-order objects.
 Distinct ray subgroups have trivial intersection. Under `IsAbelianRays`, labels
 in one completed ray subgroup commute, so coincident supports can be merged
 without choosing an order, including labels indexed by different nonprimitive
-multiples of the same ray.
+multiples of the same ray. Such a label then splits at every order into the
+unordered product of its homogeneous factors, which are trivial off the actual ray
+degrees and are themselves completed ray labels.
 
 The construction uses `Mei.rayLieSubalgebra`, Mathlib's subgroup intersections
 and inverse images, and `LieSubalgebra.bchSubgroup`. Commutation follows from
 `Mei.BCHGroup.commute_exp_of_lie_eq_zero` at every finite order. The levelwise
 subgroup, support-bound and commutation arguments follow
 `Mei.Geometry.ScatteringDiagram.WallSpace.Group`, replacing wall spaces with
-all homogeneous pieces on the ray.
+all homogeneous pieces on the ray. The splitting specializes
+`Mei.PositiveDegrees.projection_eq_noncommProd_homogeneousFactor`.
 -/
 
 public section
@@ -135,5 +139,56 @@ instance completedRaySubgroup_isMulCommutative [IsAbelianRays d ℒ] (w : Suppor
     IsMulCommutative (d.completedRaySubgroup ℒ w) :=
   IsMulCommutative.of_setLike_mul_comm fun _ hg _ hh =>
     (d.commute_of_mem_completedRaySubgroup ℒ hg hh).eq
+
+/-- A completed ray label has no logarithmic coefficient off the actual ray degrees. -/
+theorem logComponent_eq_zero_of_notMem_rayDegrees {w : SupportedRay d}
+    {g : d.completedBCHGroup ℒ} (hg : g ∈ d.completedRaySubgroup ℒ w) {n : N}
+    (hn : n ∉ w.rayDegrees) : d.logComponent ℒ g n = 0 := by
+  let k := (d.degree n).toNat
+  obtain ⟨x, hx, he⟩ := (LieSubalgebra.mem_map _ _ _).mp
+    ((d.map_rayLieSubalgebra_mkQ ℒ w k).symm ▸
+      (d.mem_completedRaySubgroup ℒ w g).mp hg k)
+  rw [d.logComponent_eq_decompose ℒ g (Int.self_le_toNat _) he]
+  exact Subtype.ext ((mem_rayLieSubalgebra_iff ℒ w x).mp hx n hn)
+
+/-- Every logarithmic coefficient of a completed ray label lies in the ray Lie algebra. -/
+theorem logComponent_mem_rayLieSubalgebra {w : SupportedRay d}
+    {g : d.completedBCHGroup ℒ} (hg : g ∈ d.completedRaySubgroup ℒ w) (n : N) :
+    (d.logComponent ℒ g n : L) ∈ rayLieSubalgebra ℒ w := by
+  by_cases hn : n ∈ w.rayDegrees
+  · exact le_rayLieSubalgebra ℒ hn (d.logComponent ℒ g n).property
+  · rw [d.logComponent_eq_zero_of_notMem_rayDegrees ℒ hg hn, ZeroMemClass.coe_zero]
+    exact zero_mem _
+
+/-- The homogeneous factors of a completed ray label are completed ray labels. -/
+theorem homogeneousFactor_mem_completedRaySubgroup {w : SupportedRay d}
+    {g : d.completedBCHGroup ℒ} (hg : g ∈ d.completedRaySubgroup ℒ w) (n : N) :
+    d.homogeneousFactor ℒ g n ∈ d.completedRaySubgroup ℒ w := by
+  rw [homogeneousFactor_def]
+  exact d.expToCompletion_mem_completedRaySubgroup ℒ (d.logComponent_mem_rayLieSubalgebra ℒ hg n)
+
+/-- Off the actual ray degrees, the homogeneous factors of a ray label are trivial. -/
+theorem homogeneousFactor_eq_one_of_notMem_rayDegrees {w : SupportedRay d}
+    {g : d.completedBCHGroup ℒ} (hg : g ∈ d.completedRaySubgroup ℒ w) {n : N}
+    (hn : n ∉ w.rayDegrees) : d.homogeneousFactor ℒ g n = 1 := by
+  rw [homogeneousFactor_def, d.logComponent_eq_zero_of_notMem_rayDegrees ℒ hg hn,
+    ZeroMemClass.coe_zero, expToCompletion_zero]
+
+/-- A completed label on an abelian ray splits into its actual homogeneous degrees: at
+every order it is the unordered product of its homogeneous factors, over any finite set
+containing the ray degrees retained at that order. -/
+theorem projection_eq_noncommProd_homogeneousFactor_of_mem_completedRaySubgroup
+    [IsAbelianRays d ℒ] {w : SupportedRay d} {g : d.completedBCHGroup ℒ}
+    (hg : g ∈ d.completedRaySubgroup ℒ w) (k : ℕ) (s : Finset N)
+    (hs : ∀ n ∈ w.rayDegrees, d.degree n ≤ k → n ∈ s) :
+    CompletedGroup.projection k g =
+      s.noncommProd (fun n => CompletedGroup.projection k (d.homogeneousFactor ℒ g n))
+        (fun n _ m _ _ => (d.commute_homogeneousFactor ℒ (lie_eq_zero_of_mem_rayLieSubalgebra ℒ
+          (d.logComponent_mem_rayLieSubalgebra ℒ hg n)
+          (d.logComponent_mem_rayLieSubalgebra ℒ hg m))).map _) :=
+  d.projection_eq_noncommProd_homogeneousFactor (fun n m =>
+    lie_eq_zero_of_mem_rayLieSubalgebra ℒ (d.logComponent_mem_rayLieSubalgebra ℒ hg n)
+      (d.logComponent_mem_rayLieSubalgebra ℒ hg m)) k s fun n hk h0 =>
+    hs n (by_contra fun hn => h0 (d.logComponent_eq_zero_of_notMem_rayDegrees ℒ hg hn)) hk
 
 end Mei.PositiveDegrees
