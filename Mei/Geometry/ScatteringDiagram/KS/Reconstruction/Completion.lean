@@ -38,22 +38,6 @@ variable {N V R L : Type*} [AddCommGroup N]
   (ℒ : N → Submodule R L) [GradedLieAlgebra ℒ] [IsPositiveGrading d ℒ]
   {k : ℕ}
 
-/-- The negative factor at a positive chamber point is the identity. -/
-theorem signFactorizationEquiv_neg_of_mem_positiveChamber
-    {θ : V →L[ℝ] ℝ} (hθ : θ ∈ d.monoid.positiveChamber i)
-    (g : d.truncatedGroup ℒ k) :
-    ((signFactorizationEquiv ℒ (θ.toAddMonoidHom.comp i) d k).symm g .neg :
-      d.truncatedGroup ℒ k) = 1 := by
-  simpa using d.signFactorizationEquiv_symm_of_mem_positiveChamber i ℒ hθ g .neg
-
-/-- The negative factor at a negative chamber point is the original element. -/
-theorem signFactorizationEquiv_neg_of_mem_negativeChamber
-    {θ : V →L[ℝ] ℝ} (hθ : θ ∈ d.monoid.negativeChamber i)
-    (g : d.truncatedGroup ℒ k) :
-    ((signFactorizationEquiv ℒ (θ.toAddMonoidHom.comp i) d k).symm g .neg :
-      d.truncatedGroup ℒ k) = g := by
-  simpa using d.signFactorizationEquiv_symm_of_mem_negativeChamber i ℒ hθ g .neg
-
 /-- The completed KS diagram reconstructed from a completed BCH group element. -/
 def reconstruct (g : d.completedBCHGroup ℒ) :
     CompletedDiagram (KSSpace.continuousDual h) d ℒ (fun k => d.arrangementComplex h k) where
@@ -118,8 +102,7 @@ theorem transport_reconstruct_of_mem_chambers (g : d.completedBCHGroup ℒ)
       d.truncatedGroup ℒ k) *
     ((signFactorizationEquiv ℒ (x.val.toAddMonoidHom.comp i) d k).symm a .neg :
       d.truncatedGroup ℒ k)⁻¹ = a
-  rw [d.signFactorizationEquiv_neg_of_mem_negativeChamber ℒ hy,
-    d.signFactorizationEquiv_neg_of_mem_positiveChamber ℒ hx, inv_one, mul_one]
+  exact d.signFactorizationEquiv_neg_mul_inv_eq_of_mem_chambers i ℒ hx hy a
 
 /-- Positive-to-negative degree transport in the reconstructed diagram recovers
 its original completed BCH group element. -/
