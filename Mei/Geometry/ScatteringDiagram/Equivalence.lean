@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.ScatteringDiagram.Restriction
-public import Mei.Geometry.Convex.PolyhedralComplex.Perturbation
+public import Mei.Geometry.Convex.PolyhedralComplex.CommonPerturbation
 
 /-!
 # Equivalence of finite wall diagrams
@@ -17,9 +17,9 @@ is transitive even when a test path's vertices lie on walls of the intermediate
 diagram: perturb the whole list into general position for all three families,
 preserving the crossing words in the two original diagrams.
 
-The argument uses the local stability of crossing words from
-`Mei.Geometry.Convex.PolyhedralComplex.Perturbation` and approximation of vertex
-lists by admissible paths from `Mei.Geometry.Convex.Polyhedron.Perturbation`.
+The argument uses simultaneous crossing-word-preserving perturbation from
+`Mei.Geometry.Convex.PolyhedralComplex.CommonPerturbation` and loop
+approximation from `Mei.Geometry.Convex.Polyhedron.Perturbation`.
 Restriction deleting identity labels, positive rescaling and simultaneous
 reversal of normals and labels give equivalent diagrams. Equivalent diagrams
 have the same consistency behavior, by approximating loops while preserving
@@ -90,58 +90,63 @@ test path for the intermediate diagram. -/
 @[trans]
 theorem Equivalent.trans (hDE : D.Equivalent E) (hEF : E.Equivalent F) :
     D.Equivalent F := by
-  have := h.finiteDimensional
   intro x y x' y' p q hpq
-  obtain ⟨ε₁, hε₁, hp⟩ := p.exists_pos_crossingWord_eq_of_forall₂_dist_lt D.normal D.ker_normal
-  obtain ⟨ε₂, hε₂, hq⟩ := q.exists_pos_crossingWord_eq_of_forall₂_dist_lt F.normal F.ker_normal
-  -- Admissibility for the union is stronger than the three separate conditions.
-  let W : C.walls ⊕ (C'.walls ⊕ C''.walls) → Set V :=
-    Sum.elim (fun P => (P : Set V))
-      (Sum.elim (fun P => (P : Set V)) (fun P => (P : Set V)))
-  have hpoly : ∀ a, TauCeti.IsConvexPolyhedron (W a) := by
-    rintro (P | P | P)
-    · exact C.isConvexPolyhedron (C.mem_cells_of_mem_walls P.2)
-    · exact C'.isConvexPolyhedron (C'.mem_cells_of_mem_walls P.2)
-    · exact C''.isConvexPolyhedron (C''.mem_cells_of_mem_walls P.2)
-  have hdim : ∀ a, Module.finrank ℝ (affineSpan ℝ (W a)).direction + 1 =
-      Module.finrank ℝ V := by
-    rintro (P | P | P)
-    · exact C.finrank_direction_add_one_of_mem_walls P.2
-    · exact C'.finrank_direction_add_one_of_mem_walls P.2
-    · exact C''.finrank_direction_add_one_of_mem_walls P.2
-  obtain ⟨a, b, r, hr⟩ := AdmissiblePLPath.exists_forall₂_dist_lt_free_endpoints
-    hpoly hdim (l := p.vertices.map WallComplement.val)
-    (by simpa using p.vertices_ne_nil) (lt_min hε₁ hε₂)
-  -- Present the projected endpoints in the concrete complements used by the diagrams.
-  let r₁ : AdmissiblePLPath
-      (⟨a.val, fun P => a.notMem (.inl P)⟩ : WallComplement (fun P : C.walls => (P : Set V)))
-      ⟨b.val, fun P => b.notMem (.inl P)⟩ :=
-    (WallComplement.restrictPrefunctor W Sum.inl).mapPath r
-  let r₂ : AdmissiblePLPath
-      (⟨a.val, fun P => a.notMem (.inr (.inl P))⟩ :
-        WallComplement (fun P : C'.walls => (P : Set V)))
-      ⟨b.val, fun P => b.notMem (.inr (.inl P))⟩ :=
-    (WallComplement.restrictPrefunctor W (Sum.inr ∘ Sum.inl)).mapPath r
-  let r₃ : AdmissiblePLPath
-      (⟨a.val, fun P => a.notMem (.inr (.inr P))⟩ :
-        WallComplement (fun P : C''.walls => (P : Set V)))
-      ⟨b.val, fun P => b.notMem (.inr (.inr P))⟩ :=
-    (WallComplement.restrictPrefunctor W (Sum.inr ∘ Sum.inr)).mapPath r
-  have hv₁ : r₁.vertices.map WallComplement.val = r.vertices.map WallComplement.val :=
-    WallComplement.vertices_restrictPrefunctor W Sum.inl r
-  have hv₂ : r₂.vertices.map WallComplement.val = r.vertices.map WallComplement.val :=
-    WallComplement.vertices_restrictPrefunctor W (Sum.inr ∘ Sum.inl) r
-  have hv₃ : r₃.vertices.map WallComplement.val = r.vertices.map WallComplement.val :=
-    WallComplement.vertices_restrictPrefunctor W (Sum.inr ∘ Sum.inr) r
-  have hp' := hp r₁ (by rw [hv₁]; exact hr.imp fun _ _ hab => hab.trans_le (min_le_left _ _))
-  have hq' := hq r₃ (by
-    rw [← hpq, hv₃]
-    exact hr.imp fun _ _ hab => hab.trans_le (min_le_right _ _))
+  -- Use all three complexes, preserving the two given crossing words.
+  let A : Option Bool → FinitePolyhedralComplex h :=
+    fun j => j.elim C' (fun b => if b then C'' else C)
+  let ν : (b : Bool) → (A (some b)).walls → V →ₗ[ℝ] ℝ := fun b => by
+    cases b
+    · exact D.normal
+    · exact F.normal
+  have hν : ∀ b P, LinearMap.ker (ν b P) = (affineSpan ℝ (P : Set V)).direction := by
+    intro b
+    cases b
+    · exact D.ker_normal
+    · exact F.ker_normal
+  let X : (b : Bool) → WallComplement (fun P : (A (some b)).walls => (P : Set V)) :=
+    fun b => by
+      cases b
+      · exact x
+      · exact x'
+  let Y : (b : Bool) → WallComplement (fun P : (A (some b)).walls => (P : Set V)) :=
+    fun b => by
+      cases b
+      · exact y
+      · exact y'
+  let tests : ∀ b, AdmissiblePLPath (X b) (Y b) := fun b => by
+    cases b
+    · exact p
+    · exact q
+  have htests : ∀ b, (tests b).vertices.map WallComplement.val =
+      (tests false).vertices.map WallComplement.val := by
+    intro b
+    cases b
+    · rfl
+    · exact hpq.symm
+  obtain ⟨a, b, r, hr⟩ :=
+    CommonWallComplement.exists_free_endpoints_crossingWord_eq_of_vertices_eq
+      A some ν hν tests false htests
+  -- The three indices compute to the original complexes.
+  let r₁ := (CommonWallComplement.projectionPrefunctor (some false)).mapPath r
+  let r₂ := (CommonWallComplement.projectionPrefunctor none).mapPath r
+  let r₃ := (CommonWallComplement.projectionPrefunctor (some true)).mapPath r
+  have hv₁ : r₁.vertices.map WallComplement.val = r.vertices.map CommonWallComplement.val :=
+    CommonWallComplement.vertices_projection (some false) r
+  have hv₂ : r₂.vertices.map WallComplement.val = r.vertices.map CommonWallComplement.val :=
+    CommonWallComplement.vertices_projection none r
+  have hv₃ : r₃.vertices.map WallComplement.val = r.vertices.map CommonWallComplement.val :=
+    CommonWallComplement.vertices_projection (some true) r
+  have hp' : r₁.crossingWord D.normal = p.crossingWord D.normal := hr false
+  have hq' : r₃.crossingWord F.normal = q.crossingWord F.normal := hr true
   calc
-    D.pathProduct p = D.pathProduct r₁ := by simp only [pathProduct_def, hp']
+    D.pathProduct p = D.pathProduct r₁ := by
+      rw [D.pathProduct_def p, D.pathProduct_def r₁]
+      exact congrArg (FreeGroup.lift D.label) hp'.symm
     _ = E.pathProduct r₂ := hDE r₁ r₂ (hv₁.trans hv₂.symm)
     _ = F.pathProduct r₃ := hEF r₂ r₃ (hv₂.trans hv₃.symm)
-    _ = F.pathProduct q := by simp only [pathProduct_def, hq']
+    _ = F.pathProduct q := by
+      rw [F.pathProduct_def r₃, F.pathProduct_def q]
+      exact congrArg (FreeGroup.lift F.label) hq'
 
 /-- Relabelling preserves equivalence. -/
 theorem Equivalent.relabel (hDE : D.Equivalent E) (f : H →* K) :
