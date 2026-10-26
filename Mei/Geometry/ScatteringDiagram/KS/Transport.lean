@@ -7,7 +7,6 @@ module
 
 public import Mei.Geometry.ScatteringDiagram.KS.Equivalence
 public import Mei.Algebra.Lie.BCH.Sign.Basic
-public import Mei.Analysis.Convex.Sign
 
 /-!
 # Consistent completed KS diagrams are classified by their transport
@@ -44,37 +43,6 @@ noncomputable section
 open Set Mei.Convex
 
 namespace Mei
-
-namespace KSSpace
-
-variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
-  {i : (N →+ ℤ) →+ V} {h : TauCeti.Toric.IsIntegralLattice i} (s : KSSpace h)
-
-/-- The points where every degree of `S` evaluates with sign `σ` form a convex set. -/
-theorem convex_setOf_forall_sign_evaluation_eq (S : Set N) (σ : SignType) :
-    Convex ℝ {θ : V | ∀ n ∈ S, SignType.sign (s.evaluation θ n) = σ} := by
-  have he : {θ : V | ∀ n ∈ S, SignType.sign (s.evaluation θ n) = σ} =
-      ⋂ n ∈ S, s.normal n ⁻¹' {a : ℝ | SignType.sign a = σ} := by
-    ext θ
-    simp [normal_apply]
-  rw [he]
-  exact convex_iInter₂ fun n _ => (convex_setOf_sign_eq σ).linear_preimage (s.normal n)
-
-/-- The points where every degree of a finite set `S` evaluates with the nonzero sign `σ`
-form an open set. -/
-theorem isOpen_setOf_forall_sign_evaluation_eq {S : Set N} (hS : S.Finite)
-    {σ : SignType} (hσ : σ ≠ 0) :
-    IsOpen {θ : V | ∀ n ∈ S, SignType.sign (s.evaluation θ n) = σ} := by
-  let := h.finiteDimensional
-  have he : {θ : V | ∀ n ∈ S, SignType.sign (s.evaluation θ n) = σ} =
-      ⋂ n ∈ S, s.normal n ⁻¹' {a : ℝ | SignType.sign a = σ} := by
-    ext θ
-    simp [normal_apply]
-  rw [he]
-  exact hS.isOpen_biInter fun n _ =>
-    (isOpen_setOf_sign_eq hσ).preimage (s.normal n).continuous_of_finiteDimensional
-
-end KSSpace
 
 namespace KSComplex
 

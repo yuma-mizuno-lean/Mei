@@ -32,22 +32,22 @@ theorem isOpen_setOf_sign_eq [TopologicalSpace 𝕜] [OrderClosedTopology 𝕜]
     {σ : SignType} (hσ : σ ≠ 0) : IsOpen {a : 𝕜 | SignType.sign a = σ} := by
   rcases σ with _ | _ | _
   · exact (hσ rfl).elim
-  · simpa only [show {a : 𝕜 | SignType.sign a = SignType.neg} = Iio 0 from
-      ext fun _ => sign_eq_neg_one_iff] using isOpen_Iio
-  · simpa only [show {a : 𝕜 | SignType.sign a = SignType.pos} = Ioi 0 from
-      ext fun _ => sign_eq_one_iff] using isOpen_Ioi
+  · simp_rw [SignType.neg_eq_neg_one, sign_eq_neg_one_iff]
+    exact isOpen_Iio
+  · simp_rw [SignType.pos_eq_one, sign_eq_one_iff]
+    exact isOpen_Ioi
 
 variable [IsStrictOrderedRing 𝕜]
 
 /-- The points of a given sign form a convex set. -/
 theorem convex_setOf_sign_eq (σ : SignType) : Convex 𝕜 {a : 𝕜 | SignType.sign a = σ} := by
   rcases σ with _ | _ | _
-  · simpa only [show {a : 𝕜 | SignType.sign a = SignType.zero} = {0} from
-      ext fun _ => sign_eq_zero_iff] using convex_singleton 0
-  · simpa only [show {a : 𝕜 | SignType.sign a = SignType.neg} = Iio 0 from
-      ext fun _ => sign_eq_neg_one_iff] using convex_Iio 0
-  · simpa only [show {a : 𝕜 | SignType.sign a = SignType.pos} = Ioi 0 from
-      ext fun _ => sign_eq_one_iff] using convex_Ioi 0
+  · simp_rw [SignType.zero_eq_zero, sign_eq_zero_iff, Set.ofPred_eq_eq_singleton]
+    exact convex_singleton 0
+  · simp_rw [SignType.neg_eq_neg_one, sign_eq_neg_one_iff]
+    exact convex_Iio 0
+  · simp_rw [SignType.pos_eq_one, sign_eq_one_iff]
+    exact convex_Ioi 0
 
 /-- If a convex combination of a point of nonzero sign `σ` with `b` vanishes before
 reaching `b`, then `b` has the opposite sign. -/
