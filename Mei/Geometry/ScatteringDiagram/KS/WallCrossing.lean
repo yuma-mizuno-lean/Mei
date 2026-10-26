@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.ScatteringDiagram.KS.Reconstruction
+public import Mei.Geometry.ScatteringDiagram.KS.Reconstruction.Basic
 public import Mei.Geometry.ScatteringDiagram.KS.LocalSigns
 public import Mei.Geometry.Convex.PolyhedralComplex.LocalCrossing
 public import Mei.Algebra.Lie.BCH.Sign.WallCrossing

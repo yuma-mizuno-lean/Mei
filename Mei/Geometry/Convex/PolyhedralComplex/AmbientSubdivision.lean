@@ -5,9 +5,10 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.Convex.PolyhedralComplex.Basic
+public import Mei.Geometry.Convex.PolyhedralComplex.Strata
 public import Mei.Geometry.Convex.Polyhedron.SignCell.Face
 public import Mei.Geometry.Convex.Polyhedron.SignCell.Rational
+public import Mathlib.GroupTheory.CosetCover
 
 /-!
 # Ambient subdivisions by affine arrangements
@@ -19,7 +20,9 @@ polyhedra expresses every input carrier as a union of cells of one complex.
 Redundant and constant rows, empty inputs, unbounded cells and lineality are allowed.
 Restricting the rows of an arrangement coarsens its complex, each row hyperplane
 is a union of cells, and a linear arrangement has conical cells, with lineality
-allowed.
+allowed. A row hyperplane with nonzero linear part is moreover covered by walls:
+moving off a point of it in a direction avoiding the other row hyperplanes
+through that point reaches a sign cell spanning the hyperplane.
 
 The construction uses the existing realized sign-cell closure family and its
 closure under faces. It is therefore extensional in the actual closed cell
@@ -30,7 +33,7 @@ public section
 
 namespace Mei.FinitePolyhedralComplex
 
-open Mei.Convex
+open Mei.Convex Filter Topology
 
 variable {N V ι : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i} [Finite ι]
@@ -168,6 +171,102 @@ theorem zeroLocus_eq_iUnion_ofArrangement_cells (g : ι → (V →ᴬ[ℝ] ℝ))
     exact (mem_weakSignCell.mp hy j).1 (by simp [σ, hx])
   · rintro ⟨P, _, hP, hxP⟩
     exact hP hxP
+
+/-- A row hyperplane with nonzero linear part is covered by walls: each of its points lies
+on a codimension-one cell of the arrangement. -/
+theorem exists_mem_ofArrangement_walls_of_eq_zero (g : ι → (V →ᴬ[ℝ] ℝ))
+    (hg : ∀ j, Toric.IsRationalFunctional h (g j).toAffineMap.linear) {j : ι}
+    (hj : (g j).toAffineMap.linear ≠ 0) {x : V} (hx : g j x = 0) :
+    ∃ P ∈ (ofArrangement g hg).walls, x ∈ P := by
+  classical
+  let := h.finiteDimensional
+  let L : ι → V →ₗ[ℝ] ℝ := fun m => (g m).toAffineMap.linear
+  have hadd (m : ι) (y v : V) : g m (y + v) = g m y + L m v := by
+    simpa [L, vadd_eq_add, add_comm] using (g m).toAffineMap.map_vadd y v
+  let K := LinearMap.ker (L j)
+  -- A direction in the hyperplane on which every row not vanishing on it is nonzero.
+  obtain ⟨w, hw⟩ : ∃ w : K, ∀ m, (∃ v ∈ K, L m v ≠ 0) → L m w ≠ 0 := by
+    by_contra! hall
+    choose m hm hmw using hall
+    obtain ⟨⟨m', hm'⟩, htop⟩ := Subspace.exists_eq_top_of_iUnion_eq_univ (k := ℝ) (E := K)
+      (p := fun m : {m : ι // ∃ v ∈ K, L m v ≠ 0} => (LinearMap.ker (L m)).comap K.subtype)
+      (Set.eq_univ_of_forall fun w => Set.mem_iUnion.mpr ⟨⟨m w, hm w⟩, by simpa using hmw w⟩)
+    obtain ⟨v, hvK, hv⟩ := hm'
+    have hmem : (⟨v, hvK⟩ : K) ∈ (LinearMap.ker (L m')).comap K.subtype := by
+      simp only at htop
+      rw [htop]
+      trivial
+    exact hv (by simpa using hmem)
+  have hwj : L j w = 0 := w.property
+  -- Points just off `x` in the direction `w` have a constant sign pattern `τ`.
+  let τ : ι → SignType := fun m =>
+    if g m x = 0 then SignType.sign (L m w) else SignType.sign (g m x)
+  have hray : ∀ᶠ r in 𝓝[>] (0 : ℝ), x + r • (w : V) ∈ signCell g τ := by
+    have hrow (m : ι) : ∀ᶠ r in 𝓝[>] (0 : ℝ), SignType.sign (g m (x + r • (w : V))) = τ m := by
+      by_cases hm : g m x = 0
+      · filter_upwards [self_mem_nhdsWithin] with r (hr : 0 < r)
+        simp [τ, hm, hadd, sign_mul, sign_pos hr]
+      · apply Filter.Eventually.filter_mono nhdsWithin_le_nhds
+        have hc : Continuous fun r : ℝ => g m x + r * L m w := by fun_prop
+        have hsign := ((continuousAt_sign_of_ne_zero hm).comp_of_eq (hc.continuousAt (x := 0))
+          (by simp)).tendsto
+        simp only [nhds_discrete, tendsto_pure, Function.comp_def] at hsign
+        filter_upwards [hsign] with r hr
+        simpa [τ, hm, hadd] using hr
+    filter_upwards [Filter.eventually_all.mpr hrow] with r hr
+    exact mem_signCell.mpr hr
+  have hxP : x ∈ closure (signCell g τ) := by
+    refine mem_closure_of_tendsto ?_ hray
+    have hc : Continuous fun r : ℝ => x + r • (w : V) := by fun_prop
+    simpa using (hc.tendsto 0).mono_left nhdsWithin_le_nhds
+  obtain ⟨r₀, hr₀⟩ := hray.exists
+  have hτne : (signCell g τ).Nonempty := ⟨_, hr₀⟩
+  -- The closed cell spans exactly the hyperplane direction `K`.
+  have hdir : (affineSpan ℝ (closure (signCell g τ))).direction = K := by
+    apply le_antisymm
+    · have hsub : closure (signCell g τ) ⊆ (AffineSubspace.mk' x K : Set V) := by
+        intro y hy
+        rw [closure_signCell hτne] at hy
+        have hτj : τ j = 0 := by simp [τ, hx, hwj]
+        have hy0 := (mem_weakSignCell.mp hy j).1 hτj
+        rw [SetLike.mem_coe, AffineSubspace.mem_mk', vsub_eq_sub, LinearMap.mem_ker]
+        have := hadd j x (y - x)
+        rw [add_sub_cancel, hy0, hx, zero_add] at this
+        exact this.symm
+      simpa only [AffineSubspace.direction_mk'] using
+        AffineSubspace.direction_le (affineSpan_le.mpr hsub)
+    · intro v hv
+      have hrow (m : ι) : ∀ᶠ c in 𝓝 (0 : ℝ),
+          SignType.sign (g m (x + r₀ • (w : V) + c • v)) = τ m := by
+        by_cases hm : g m (x + r₀ • (w : V)) = 0
+        · have hτm : τ m = 0 := by rw [← mem_signCell.mp hr₀ m, hm, sign_zero]
+          have hLv : L m v = 0 := by
+            by_contra hLv
+            have hx0 : g m x = 0 := by
+              by_contra hx0
+              simp [τ, hx0] at hτm
+            have hLw : L m w = 0 := by simpa [τ, hx0] using hτm
+            exact hw m ⟨v, hv, hLv⟩ hLw
+          exact Eventually.of_forall fun c => by
+            rw [hadd, hm, map_smul, hLv, smul_zero, add_zero, sign_zero, hτm]
+        · have hc : Continuous fun c : ℝ => g m (x + r₀ • (w : V)) + c * L m v := by fun_prop
+          have hsign := ((continuousAt_sign_of_ne_zero hm).comp_of_eq
+            (hc.continuousAt (x := 0)) (by simp)).tendsto
+          simp only [nhds_discrete, tendsto_pure, Function.comp_def] at hsign
+          filter_upwards [hsign] with c hc
+          rw [← mem_signCell.mp hr₀ m, hadd, map_smul, smul_eq_mul]
+          simpa using hc
+      obtain ⟨c, hc, hc0⟩ := ((Filter.eventually_all.mpr hrow).filter_mono
+        nhdsWithin_le_nhds |>.and self_mem_nhdsWithin : ∀ᶠ c in 𝓝[≠] (0 : ℝ), _).exists
+      have hmem := AffineSubspace.vsub_mem_direction
+        (subset_affineSpan ℝ _ (subset_closure (mem_signCell.mpr hc)))
+        (subset_affineSpan ℝ _ (subset_closure hr₀))
+      rw [vsub_eq_sub, add_sub_cancel_left] at hmem
+      exact (Submodule.smul_mem_iff _ hc0).mp hmem
+  refine ⟨closure (signCell g τ), (mem_cellsOfCodimension _ 1 _).mpr
+    ⟨mem_ofArrangement_cells.mpr ⟨τ, hτne, rfl⟩, ?_⟩, hxP⟩
+  rw [hdir]
+  exact Module.Dual.finrank_ker_add_one_of_ne_zero hj
 
 /-- A linear arrangement has conical cells, with lineality allowed. -/
 theorem isConical_ofArrangement (g : ι → (V →L[ℝ] ℝ))

@@ -17,8 +17,10 @@ public import Mei.Geometry.Convex.PolyhedralComplex.Strata
 The nonzero allowed degrees below a cutoff define a finite conical complex in
 the continuous real dual of a lattice. These complexes cover the whole dual
 space, subdivide one another as the cutoff increases, and express each retained
-degree hyperplane as a union of cells. They supply the supports on which
-finite-order scattering labels can be assigned by sign factorization.
+degree hyperplane as a union of cells. Each retained nonzero degree hyperplane
+is covered by walls, so points off the walls have no vanishing retained degree.
+They supply the supports on which finite-order scattering labels can be
+assigned by sign factorization.
 
 The construction uses `Mei.FinitePolyhedralComplex.ofArrangement`, the existing
 closures of realized sign cells, and the integral dual lattice obtained from
@@ -152,5 +154,20 @@ theorem exists_degree_forall_eq_zero_of_mem_arrangementComplex_walls
   intro θ hθ
   rw [heq, closure_signCell hσ] at hθ
   exact (mem_weakSignCell.mp hθ n).1 hn
+
+/-- Every retained nonzero degree hyperplane is covered by walls of the arrangement:
+each of its points lies on a codimension-one cell. -/
+theorem exists_mem_arrangementComplex_walls_of_eval_eq_zero {k : ℕ} {n : N}
+    (hn : n ∈ d.cutoff k \ {0}) {θ : V →L[ℝ] ℝ} (hθ : θ (i n) = 0) :
+    ∃ P ∈ (d.arrangementComplex h k).walls, θ ∈ P := by
+  rw [arrangementComplex_eq_ofArrangement]
+  refine exists_mem_ofArrangement_walls_of_eq_zero _ _ (j := ⟨n, hn⟩) (fun he => ?_)
+    (by simpa using hθ)
+  have hpos : (0 : ℝ) < h.continuousRealCharacter d.degree (i n) := by
+    simpa using (Int.cast_pos.mpr
+      (d.degree_pos ((d.mem_cutoff).mp hn.1).1 hn.2) : (0 : ℝ) < d.degree n)
+  have hv := congrArg (fun f : (V →L[ℝ] ℝ) →ₗ[ℝ] ℝ => f (h.continuousRealCharacter d.degree)) he
+  simp only [LinearMap.zero_apply] at hv
+  exact hpos.ne' hv
 
 end Mei.PositiveDegrees

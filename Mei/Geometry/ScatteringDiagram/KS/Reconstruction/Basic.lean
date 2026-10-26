@@ -15,15 +15,15 @@ public import Mei.Algebra.Lie.BCH.Sign.Map
 Every element of a truncated BCH group determines a KS complex on its bounded-degree
 hyperplane arrangement. Each wall is cooriented by a retained positive degree and
 labelled by the middle sign factor at any relative interior point. The three sign
-factors are well defined on all arrangement cells, and their product recovers the
-original group element. The middle factor belongs to the orthogonal subgroup of the
-whole cell. Cutoff projection preserves these labels wherever the two wall interiors
-meet. Degree-preserving coefficient maps commute with finite reconstruction as
-an equality of KS complexes: the same arrangement and coorientations carry the
-images of the original middle-factor labels.
+factors are well defined on all arrangement cells, locally constant off the walls,
+and their product recovers the original group element. The middle factor belongs to
+the orthogonal subgroup of the whole cell. Cutoff projection preserves these labels
+wherever the two wall interiors meet. Degree-preserving coefficient maps commute with
+finite reconstruction as an equality of KS complexes: the same arrangement and
+coorientations carry the images of the original middle-factor labels.
 
-This constructs the finite labelled complexes; it does not assert their consistency
-or compatibility on paths. The construction follows Tom Bridgeland,
+Consistency and compatibility on paths are proved in `Reconstruction.PathProduct`
+and `Reconstruction.Completion`. The finite construction follows Tom Bridgeland,
 *Scattering diagrams, Hall algebras and stability conditions*,
 [arXiv:1603.00416](https://arxiv.org/abs/1603.00416), §§3.2 and 3.4, using
 `PositiveDegrees.signFactorizationEquiv`, the relative-interior sign identities in
@@ -36,7 +36,7 @@ noncomputable section
 
 namespace Mei.PositiveDegrees
 
-open Set Mei.Convex
+open Set Filter Topology Mei.Convex
 
 variable {N V R L : Type*} [AddCommGroup N]
   [NormedAddCommGroup V] [NormedSpace ℝ V]
@@ -58,6 +58,28 @@ theorem signFactor_eq_of_mem_intrinsicInterior_arrangementComplex
         d.truncatedGroup ℒ k) :=
   signFactorizationEquiv_symm_eq_of_signSubalgebra_eq ℒ _ d _ k
     (d.signSubalgebra_eq_of_mem_intrinsicInterior_arrangementComplex h ℒ hP hθ hφ) g s
+
+/-- Off the walls of the arrangement, all three sign factors are locally constant. -/
+theorem eventually_signFactor_eq_of_notMem_arrangementComplex_walls {θ : V →L[ℝ] ℝ}
+    (hθ : ∀ P : (d.arrangementComplex h k).walls, θ ∉ (P : Set (V →L[ℝ] ℝ)))
+    (g : d.truncatedGroup ℒ k) (s : SignType) :
+    ∀ᶠ φ in 𝓝 θ, ((signFactorizationEquiv ℒ (φ.toAddMonoidHom.comp i) d k).symm g s :
+        d.truncatedGroup ℒ k) =
+      ((signFactorizationEquiv ℒ (θ.toAddMonoidHom.comp i) d k).symm g s :
+        d.truncatedGroup ℒ k) := by
+  have hrow (n : ↥(d.cutoff k \ {0})) :
+      ∀ᶠ φ in 𝓝 θ, SignType.sign (φ (i n)) = SignType.sign (θ (i n)) := by
+    have hz : θ (i n) ≠ 0 := fun hz => by
+      obtain ⟨P, hP, hθP⟩ := d.exists_mem_arrangementComplex_walls_of_eval_eq_zero h n.property hz
+      exact hθ ⟨P, hP⟩ hθP
+    have hsign := ((continuousAt_sign_of_ne_zero hz).comp
+      (f := fun φ : V →L[ℝ] ℝ => φ (i n))
+      (ContinuousLinearMap.apply ℝ ℝ (i n)).continuous.continuousAt).tendsto
+    simpa only [nhds_discrete, tendsto_pure, Function.comp_def] using hsign
+  filter_upwards [eventually_all.mpr hrow] with φ hφ
+  refine signFactorizationEquiv_symm_eq_of_signSubalgebra_eq ℒ _ d _ k
+    (fun s' => signSubalgebra_eq_of_sign_eq _ _ _ (fun n hn => ?_) s') g s
+  simpa using hφ ⟨n, d.mem_cutoff_of_truncatedGrading_ne_bot ℒ hn⟩
 
 private def arrangementCellPoint (P : (d.arrangementComplex h k).cells) :
     intrinsicInterior ℝ (P : Set (V →L[ℝ] ℝ)) := by

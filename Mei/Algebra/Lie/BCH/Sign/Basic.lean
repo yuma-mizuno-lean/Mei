@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Algebra.Lie.Graded.Sign
+public import Mei.Algebra.Lie.Graded.Sign.Basic
 public import Mei.Algebra.Lie.BCH.Completion
 public import Mei.Algebra.Lie.Graded.Truncation.Transition
 public import Mei.Algebra.Lie.BCH.Subgroup
