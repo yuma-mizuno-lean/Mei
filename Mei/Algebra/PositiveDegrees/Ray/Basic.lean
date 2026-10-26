@@ -65,6 +65,23 @@ theorem mem_rayDegrees {w : SupportedRay d} {n : N} :
     n ∈ w.rayDegrees ↔ n ∈ d.monoid ∧ ∃ a : ℤ, 0 < a ∧ n = a • w.generator :=
   Iff.rfl
 
+/-- Actual allowed degrees on a supported ray are closed under addition. -/
+theorem add_mem_rayDegrees {w : SupportedRay d} {n m : N}
+    (hn : n ∈ w.rayDegrees) (hm : m ∈ w.rayDegrees) : n + m ∈ w.rayDegrees := by
+  obtain ⟨hn, a, ha, rfl⟩ := hn
+  obtain ⟨hm, b, hb, rfl⟩ := hm
+  exact ⟨d.monoid.add_mem hn hm, a + b, add_pos ha hb, (add_zsmul _ _ _).symm⟩
+
+/-- The additive semigroup of actual allowed positive degrees on a supported ray. -/
+def degreeSemigroup (w : SupportedRay d) : AddSubsemigroup N where
+  carrier := w.rayDegrees
+  add_mem' := add_mem_rayDegrees
+
+/-- Semigroup membership is membership in the set of actual ray degrees. -/
+@[simp]
+theorem mem_degreeSemigroup (w : SupportedRay d) (n : N) :
+    n ∈ w.degreeSemigroup ↔ n ∈ w.rayDegrees := Iff.rfl
+
 /-- All ray degrees are allowed degrees. -/
 theorem rayDegrees_subset (w : SupportedRay d) : w.rayDegrees ⊆ d.monoid :=
   fun _ hn => hn.1
