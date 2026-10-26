@@ -191,6 +191,8 @@ theorem isOpen_setOf_forall_sign_evaluation_eq {S : Set N} (hS : S.Finite)
   exact hS.isOpen_biInter fun n _ =>
     (isOpen_setOf_sign_eq hσ).preimage (s.normal n).continuous_of_finiteDimensional
 
+end SignRegions
+
 /-- A sufficiently small displacement in the degree direction preserves every
 nonzero retained evaluation sign, while a zero evaluation acquires the sign
 of the displacement parameter. Both directions and the zero parameter are included. -/
@@ -200,7 +202,6 @@ theorem eventually_sign_evaluation_add_smul_degreePoint (d : PositiveDegrees N)
       SignType.sign (s.evaluation (θ + a • s.degreePoint d) n) =
         if s.evaluation θ n = 0 then SignType.sign a else SignType.sign (s.evaluation θ n) := by
   classical
-  let := h.finiteDimensional
   have hrow (n : ↥(d.cutoff k \ {0})) :
       ∀ᶠ a : ℝ in nhds 0,
         SignType.sign (s.evaluation (θ + a • s.degreePoint d) n) =
@@ -221,8 +222,6 @@ theorem eventually_sign_evaluation_add_smul_degreePoint (d : PositiveDegrees N)
         KSSpace.evaluation_degreePoint] using ht
   filter_upwards [Filter.eventually_all.mpr hrow] with a ha n hn
   exact ha ⟨n, hn⟩
-
-end SignRegions
 
 end KSSpace
 end Mei
