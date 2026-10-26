@@ -63,6 +63,18 @@ structure IsTransverse (σ : OrientedCell h k) (v : Fin (k + 1) → V) : Prop wh
 
 variable {σ : OrientedCell h k} {v : Fin (k + 1) → V}
 
+/-- Reversing a cell's orientation preserves transversality of an affine test simplex. -/
+@[simp]
+theorem isTransverse_reverse_iff (σ : OrientedCell h k) (v : Fin (k + 1) → V) :
+    σ.reverse.IsTransverse v ↔ σ.IsTransverse v := by
+  constructor <;> intro hv <;>
+    refine ⟨by simpa only [reverse_carrier] using hv.disjoint_intrinsicFrontier, ?_⟩
+  · have hlin := hv.linearIndependent
+    rw [reverse_carrier] at hlin
+    exact hlin
+  · rw [reverse_carrier]
+    exact hv.linearIndependent
+
 /-- A transverse test meeting a cell meets its affine span in only one point. -/
 theorem IsTransverse.subsingleton_convexHull_inter_affineSpan (hv : σ.IsTransverse v)
     (hmeet : (convexHull ℝ (range v) ∩ σ.carrier).Nonempty) :
