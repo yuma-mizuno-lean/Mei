@@ -10,6 +10,7 @@ public import Mei.Geometry.Convex.PolyhedralComplex.AmbientSubdivision
 public import Mei.Geometry.Toric.Algebraic.DualLattice
 public import Mei.Geometry.Convex.Polyhedron.SignCell.Interior
 public import Mei.Geometry.Convex.PolyhedralComplex.Strata
+public import Mei.Geometry.ScatteringDiagram.KS.Space
 
 /-!
 # Bounded-degree hyperplane arrangements
@@ -169,5 +170,58 @@ theorem exists_mem_arrangementComplex_walls_of_eval_eq_zero {k : ℕ} {n : N}
   have hv := congrArg (fun f : (V →L[ℝ] ℝ) →ₗ[ℝ] ℝ => f (h.continuousRealCharacter d.degree)) he
   simp only [LinearMap.zero_apply] at hv
   exact hpos.ne' hv
+
+end Mei.PositiveDegrees
+
+namespace Mei.PositiveDegrees
+
+variable {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
+  {i : ℤ →+ V} (d : PositiveDegrees ℤ) (h : TauCeti.Toric.IsIntegralLattice i)
+
+/-- In rank one every arrangement wall is the origin, even for nonsaturated
+positive monoids and cutoffs before the first nonzero allowed degree. -/
+theorem eq_singleton_zero_of_mem_arrangementComplex_walls_int {k : ℕ}
+    {P : Set (V →L[ℝ] ℝ)} (hP : P ∈ (d.arrangementComplex h k).walls) : P = {0} := by
+  obtain ⟨n, hn, hPn⟩ :=
+    d.exists_degree_forall_eq_zero_of_mem_arrangementComplex_walls h hP
+  refine Set.eq_singleton_iff_nonempty_unique_mem.mpr
+    ⟨(d.arrangementComplex h k).nonempty P
+      ((d.arrangementComplex h k).mem_cells_of_mem_walls hP), ?_⟩
+  intro θ hθ
+  apply ((KSSpace.continuousDual h).evaluation_eq_zero_iff_of_int_ne_zero hn.2 θ).mp
+  simpa using hPn θ hθ
+
+/-- A rank-one arrangement has exactly one wall as soon as a nonzero allowed
+degree survives the cutoff, and no walls before that. -/
+@[simp↓]
+theorem mem_arrangementComplex_walls_int_iff {k : ℕ} {P : Set (V →L[ℝ] ℝ)} :
+    P ∈ (d.arrangementComplex h k).walls ↔
+      P = {0} ∧ ∃ n, n ∈ d.cutoff k \ {0} := by
+  constructor
+  · intro hP
+    obtain ⟨n, hn, _⟩ :=
+      d.exists_degree_forall_eq_zero_of_mem_arrangementComplex_walls h hP
+    exact ⟨d.eq_singleton_zero_of_mem_arrangementComplex_walls_int h hP, n, hn⟩
+  · rintro ⟨rfl, n, hn⟩
+    obtain ⟨Q, hQ, _⟩ :=
+      d.exists_mem_arrangementComplex_walls_of_eval_eq_zero h hn (θ := 0) (by simp)
+    rwa [d.eq_singleton_zero_of_mem_arrangementComplex_walls_int h hQ] at hQ
+
+/-- For the standard nonnegative integer grading the wall set is empty at order
+zero, and is the singleton consisting of the origin at every positive order. -/
+@[simp]
+theorem walls_arrangementComplex_nonnegIntegers (k : ℕ) :
+    (nonnegIntegers.arrangementComplex h k).walls =
+      if k = 0 then ∅ else {{0}} := by
+  ext P
+  rw [mem_arrangementComplex_walls_int_iff]
+  by_cases hk : k = 0
+  · simp [hk]
+  · have hn : (1 : ℤ) ∈ nonnegIntegers.cutoff k \ {0} := by
+      simp only [Set.mem_sdiff, mem_cutoff, mem_nonnegIntegers_monoid,
+        nonnegIntegers_degree, Set.mem_singleton_iff]
+      exact ⟨⟨by omega, by omega⟩, by omega⟩
+    have hex : ∃ n, n ∈ nonnegIntegers.cutoff k \ {0} := ⟨1, hn⟩
+    simp only [hex, and_true, ite_eq_right hk, Finset.mem_singleton]
 
 end Mei.PositiveDegrees

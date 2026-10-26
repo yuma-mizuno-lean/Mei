@@ -159,6 +159,23 @@ theorem normal_ne_zero (d : PositiveDegrees N) {n : N}
   rw [normal_apply, evaluation_degreePoint, LinearMap.zero_apply] at hz
   exact hp.ne' hz
 
+/-- In rank one, vanishing on any nonzero degree forces the spatial point to be zero. -/
+theorem evaluation_eq_zero_iff_of_int_ne_zero
+    {W : Type*} [AddCommGroup W] [Module ℝ W]
+    {j : (ℤ →+ ℤ) →+ W} {h : TauCeti.Toric.IsIntegralLattice j}
+    (s : KSSpace h) {n : ℤ} (hn : n ≠ 0) (θ : W) :
+    s.evaluation θ n = 0 ↔ θ = 0 := by
+  constructor
+  · intro hθ
+    apply s.evaluation.injective
+    rw [map_zero]
+    apply AddMonoidHom.ext_int
+    have hmul : (n : ℝ) * s.evaluation θ 1 = 0 := by
+      rwa [AddMonoidHom.apply_int ℝ _ n, zsmul_eq_mul] at hθ
+    exact (mul_eq_zero.mp hmul).resolve_left (Int.cast_ne_zero.mpr hn)
+  · rintro rfl
+    simp
+
 section SignRegions
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
