@@ -161,6 +161,11 @@ theorem bchGroupMap_exp (f : L →ₗ⁅R⁆ L') (x : L) :
 theorem log_bchGroupMap (f : L →ₗ⁅R⁆ L') (g : BCHGroup L) :
     log (f.bchGroupMap g) = f (log g) := by simp [bchGroupMap]
 
+/-- An injective Lie homomorphism induces an injective homomorphism of BCH groups. -/
+theorem bchGroupMap_injective {f : L →ₗ⁅R⁆ L'} (hf : Function.Injective f) :
+    Function.Injective f.bchGroupMap := fun g g' hgg' =>
+  log_injective (hf (by simpa only [log_bchGroupMap] using congrArg log hgg'))
+
 /-- The identity Lie homomorphism induces the identity group homomorphism. -/
 @[simp]
 theorem bchGroupMap_id :

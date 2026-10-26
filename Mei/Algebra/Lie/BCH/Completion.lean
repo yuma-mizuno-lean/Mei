@@ -122,6 +122,15 @@ theorem expToCompletion_neg (x : L) :
     map_neg, BCHGroup.exp_neg]
   rfl
 
+/-- Lie elements with zero bracket have commuting completed exponentials. -/
+theorem commute_expToCompletion_of_lie_eq_zero {x y : L} (h : ⁅x, y⁆ = 0) :
+    Commute (d.expToCompletion ℒ x) (d.expToCompletion ℒ y) := by
+  apply CompletedGroup.ext
+  intro k
+  rw [map_mul, map_mul, projection_expToCompletion, projection_expToCompletion]
+  apply BCHGroup.commute_exp_of_lie_eq_zero
+  rw [← LieHom.map_lie, h, map_zero]
+
 end PositiveDegrees
 
 namespace GradedLieHom

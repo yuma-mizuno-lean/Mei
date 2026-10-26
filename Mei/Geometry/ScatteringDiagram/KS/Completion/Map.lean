@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.ScatteringDiagram.KS.Completion
+public import Mei.Geometry.ScatteringDiagram.KS.Equivalence
 public import Mei.Geometry.ScatteringDiagram.KS.Map
 
 /-!
@@ -15,7 +15,10 @@ A degree-preserving Lie homomorphism maps each finite level using `KSComplex.map
 The quotient-transition naturality square makes these levels compatible, even for
 nonstabilizing sequences of complexes and noninjective coefficient maps. Identity
 and composition commute with this construction. Completed geometric path products,
-consistency and endpoint transport are preserved by `GradedLieHom.completedMap`.
+consistency and endpoint transport are preserved by `GradedLieHom.completedMap`,
+and equivalent diagrams have equivalent images. The converse fails: a Heisenberg
+example in `Mei.Geometry.ScatteringDiagram.KS.Reconstruction.Heisenberg` gives
+inequivalent diagrams with equal images.
 
 This uses the finite coefficient maps in `Mei.Geometry.ScatteringDiagram.KS.Map`
 and the compatible-family construction of `CompletedDiagram`.
@@ -118,6 +121,17 @@ theorem transport_mapDiagram (D : CompletedDiagram s d ℒ C) (hD : D.Consistent
   obtain ⟨p⟩ := exists_path x y
   rw [transport_eq_pathProduct _ (hD.mapDiagram f) p,
     D.transport_eq_pathProduct hD p, pathProduct_mapDiagram]
+
+/-- A map of Lie coefficients preserves equivalence of completed diagrams,
+even when the two diagrams use unrelated sequences of complexes. -/
+theorem Equivalent.mapDiagram {E : ℕ → FinitePolyhedralComplex h}
+    {D : CompletedDiagram s d ℒ C} {F : CompletedDiagram s d ℒ E} (hDF : D.Equivalent F)
+    (f : GradedLieHom (PositiveDegreeMap.id d) ℒ ℳ) :
+    (D.mapDiagram f).Equivalent (F.mapDiagram f) := by
+  rw [equivalent_iff] at hDF ⊢
+  intro k x y x' y' p q hpq
+  simp only [mapDiagram_diagram, KSComplex.pathProduct_map]
+  rw [hDF k p q hpq]
 
 end CompletedDiagram
 

@@ -230,5 +230,23 @@ theorem truncationMap_comp_truncatedMap (f : GradedLieHom T ℒ ℳ)
       (f.truncatedMap k le_rfl).comp (d.truncationMap ℒ (T.monotone_modulus h)) := by
   exact f.truncationMap_comp_truncatedMap_of_le (T.monotone_modulus h) h le_rfl le_rfl
 
+variable (d ℒ) in
+/-- The quotient map onto the order-`k` truncation `L / F^{k+1}L`, as a graded Lie
+homomorphism over the identity degree map. -/
+def truncation (k : ℕ) :
+    GradedLieHom (PositiveDegreeMap.id d) ℒ (d.truncatedGrading ℒ k) where
+  toLieHom := (d.degreeIdeal ℒ k).mkQ
+  map_mem hx := by
+    simpa only [PositiveDegreeMap.id_apply] using
+      (d.mem_truncatedGrading_iff ℒ).mpr ⟨_, hx, rfl⟩
+
+@[simp]
+theorem toLieHom_truncation (k : ℕ) :
+    (truncation d ℒ k).toLieHom = (d.degreeIdeal ℒ k).mkQ := (rfl)
+
+@[simp]
+theorem truncation_apply (k : ℕ) (x : L) :
+    truncation d ℒ k x = (d.degreeIdeal ℒ k).mkQ x := (rfl)
+
 end GradedLieHom
 end Mei
