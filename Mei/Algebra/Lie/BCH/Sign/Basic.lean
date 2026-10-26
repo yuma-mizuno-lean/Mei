@@ -177,18 +177,13 @@ theorem signProduct_lowerSignFactors {k l : ℕ} (h : k ≤ l)
 /-- Every family of lower sign factors lifts along a decrease of the cutoff. -/
 theorem lowerSignFactors_surjective {k l : ℕ} (h : k ≤ l) :
     Function.Surjective (lowerSignFactors ℒ θ d h) := by
-  intro a₀
-  have hlift (s) : ∃ a : (signSubalgebra (d.truncatedGrading ℒ l) θ s).bchSubgroup,
-      (d.truncationMap ℒ h).bchGroupMap a = (a₀ s : BCHGroup (d.truncatedLie ℒ k)) := by
-    have hm : (a₀ s : BCHGroup (d.truncatedLie ℒ k)) ∈
-        (signSubalgebra (d.truncatedGrading ℒ l) θ s).bchSubgroup.map
-          (d.truncationMap ℒ h).bchGroupMap := by
-      rw [bchSubgroup_map_signSubalgebra_truncationMap ℒ θ d h s]
-      exact (a₀ s).property
-    obtain ⟨x, hx, hxe⟩ := hm
-    exact ⟨⟨x, hx⟩, hxe⟩
-  choose a ha using hlift
-  exact ⟨a, funext fun s => Subtype.ext (ha s)⟩
+  have hs := Function.Surjective.piMap fun s => (MulEquiv.subgroupCongr
+    (bchSubgroup_map_signSubalgebra_truncationMap ℒ θ d h s)).surjective.comp
+      ((d.truncationMap ℒ h).bchGroupMap.subgroupMap_surjective
+        (signSubalgebra (d.truncatedGrading ℒ l) θ s).bchSubgroup)
+  convert hs using 1
+  ext a s
+  rfl
 
 private theorem logSignProduct_truncated_bijective (k : ℕ) :
     Function.Bijective (logSignProduct (d.truncatedGrading ℒ k) θ) := by
