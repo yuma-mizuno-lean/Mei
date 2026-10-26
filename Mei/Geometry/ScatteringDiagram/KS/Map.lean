@@ -187,6 +187,7 @@ theorem mapDiagram_comp (D : CompletedDiagram s d ℒ C)
   simp
 
 /-- The complete product is natural for the completed Lie coefficient map. -/
+@[simp]
 theorem pathProduct_mapDiagram (D : CompletedDiagram s d ℒ C)
     (f : GradedLieHom (PositiveDegreeMap.id d) ℒ ℳ)
     {x y : Point C} (p : Quiver.Path x y) :
