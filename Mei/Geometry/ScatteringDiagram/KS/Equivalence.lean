@@ -17,6 +17,8 @@ products agree on every common all-order path. The converse includes finite test
 whose endpoints lie on walls at other orders: move all vertices into simultaneous
 general position, preserving the two prescribed finite crossing words, then project
 the resulting complete-product equality.
+`CompletedDiagram.exists_common_pathProduct_eq` exposes these all-order paths, whose
+projected products are the two prescribed finite products.
 
 No relation between the two sequences of complexes is required. In particular,
 the complexes need not stabilize or refine one another, and neither diagram needs
@@ -81,6 +83,81 @@ theorem Equivalent.pathProduct_eq (hDF : D.Equivalent F)
 
 variable (D F)
 
+/-- Two common tests at a finite cutoff can be realized by common all-order paths,
+with exactly the original projected products. Endpoints may move to avoid the walls
+at every cutoff. No consistency assumption is needed. -/
+theorem exists_common_pathProduct_eq (k : ℕ)
+    {x y : WallComplement (fun P : (C k).walls => (P : Set V))}
+    {x' y' : WallComplement (fun P : (E k).walls => (P : Set V))}
+    (p : AdmissiblePLPath x y) (q : AdmissiblePLPath x' y')
+    (hpq : p.vertices.map WallComplement.val = q.vertices.map WallComplement.val) :
+    ∃ (u v : Point C) (u' v' : Point E) (p' : Quiver.Path u v) (q' : Quiver.Path u' v'),
+      p'.vertices.map CommonWallComplement.val = q'.vertices.map CommonWallComplement.val ∧
+      CompletedGroup.projection k (D.pathProduct p') =
+        (D.diagram k).toFiniteWallDiagram.pathProduct p ∧
+      CompletedGroup.projection k (F.pathProduct q') =
+        (F.diagram k).toFiniteWallDiagram.pathProduct q := by
+  -- One countable family records both sequences; the two selected tests retain their own normals.
+  let a : Bool → ℕ ⊕ ℕ := fun b => if b then Sum.inr k else Sum.inl k
+  let diagrams : ∀ b, KSComplex s d ℒ (Sum.elim C E (a b)) k := fun b => by
+    cases b
+    · exact D.diagram k
+    · exact F.diagram k
+  let starts : ∀ b : Bool, WallComplement (fun P : (Sum.elim C E (a b)).walls => (P : Set V)) :=
+    fun b => by
+      cases b
+      · exact x
+      · exact x'
+  let ends : ∀ b : Bool, WallComplement (fun P : (Sum.elim C E (a b)).walls => (P : Set V)) :=
+    fun b => by
+      cases b
+      · exact y
+      · exact y'
+  let tests : ∀ b : Bool, AdmissiblePLPath (starts b) (ends b) :=
+    fun b => by
+      cases b
+      · exact p
+      · exact q
+  have htests (b : Bool) : (tests b).vertices.map WallComplement.val =
+      (tests false).vertices.map WallComplement.val := by
+    cases b
+    · rfl
+    · exact hpq.symm
+  obtain ⟨u, v, r, hr⟩ := CommonWallComplement.exists_free_endpoints_crossingWord_eq_of_vertices_eq
+    (Sum.elim C E) a (fun b => (diagrams b).toFiniteWallDiagram.normal)
+    (fun b => (diagrams b).toFiniteWallDiagram.ker_normal) tests false htests
+  -- Fix the endpoint types before elaborating products, so unification never unfolds
+  -- the hidden finite wall inventories of the two selected subfamilies.
+  let uC : Point C := (CommonWallComplement.reindexPrefunctor
+    (W := fun j => fun P : (Sum.elim C E j).walls => (P : Set V)) Sum.inl).obj u
+  let vC : Point C := (CommonWallComplement.reindexPrefunctor
+    (W := fun j => fun P : (Sum.elim C E j).walls => (P : Set V)) Sum.inl).obj v
+  let uE : Point E := (CommonWallComplement.reindexPrefunctor
+    (W := fun j => fun P : (Sum.elim C E j).walls => (P : Set V)) Sum.inr).obj u
+  let vE : Point E := (CommonWallComplement.reindexPrefunctor
+    (W := fun j => fun P : (Sum.elim C E j).walls => (P : Set V)) Sum.inr).obj v
+  let p' : Quiver.Path uC vC := (CommonWallComplement.reindexPrefunctor
+    (W := fun j => fun P : (Sum.elim C E j).walls => (P : Set V)) Sum.inl).mapPath r
+  let q' : Quiver.Path uE vE := (CommonWallComplement.reindexPrefunctor
+    (W := fun j => fun P : (Sum.elim C E j).walls => (P : Set V)) Sum.inr).mapPath r
+  refine ⟨_, _, _, _, p', q', ?_, ?_, ?_⟩
+  · exact (CommonWallComplement.vertices_reindex Sum.inl r).trans
+      (CommonWallComplement.vertices_reindex Sum.inr r).symm
+  · rw [D.projection_pathProduct k p', FiniteWallDiagram.pathProduct_def,
+      FiniteWallDiagram.pathProduct_def]
+    apply congrArg (FreeGroup.lift (D.diagram k).toFiniteWallDiagram.label)
+    have hpr := CommonWallComplement.projection_reindex_mapPath
+      (W := fun j => fun P : (Sum.elim C E j).walls => (P : Set V)) Sum.inl k r
+    exact (congrArg (fun t => t.crossingWord (D.diagram k).toFiniteWallDiagram.normal)
+      hpr).trans (hr false)
+  · rw [F.projection_pathProduct k q', FiniteWallDiagram.pathProduct_def,
+      FiniteWallDiagram.pathProduct_def]
+    apply congrArg (FreeGroup.lift (F.diagram k).toFiniteWallDiagram.label)
+    have hpr := CommonWallComplement.projection_reindex_mapPath
+      (W := fun j => fun P : (Sum.elim C E j).walls => (P : Set V)) Sum.inr k r
+    exact (congrArg (fun t => t.crossingWord (F.diagram k).toFiniteWallDiagram.normal)
+      hpr).trans (hr true)
+
 /-- Equality on all common all-order paths detects every finite test product,
 even when the original finite test has endpoints on walls at other cutoffs. -/
 theorem equivalent_of_pathProduct_eq
@@ -90,71 +167,9 @@ theorem equivalent_of_pathProduct_eq
         D.pathProduct p = F.pathProduct q) : D.Equivalent F := by
   rw [equivalent_iff]
   intro k x y x' y' p q hpq
-  -- Place both towers in one countable family and preserve the two order-k tests.
-  let A : ℕ ⊕ ℕ → FinitePolyhedralComplex h := Sum.elim C E
-  let a : Bool → ℕ ⊕ ℕ := fun b => if b then .inr k else .inl k
-  let ν : (b : Bool) → (A (a b)).walls → V →ₗ[ℝ] ℝ := fun b => by
-    cases b
-    · exact (D.diagram k).toFiniteWallDiagram.normal
-    · exact (F.diagram k).toFiniteWallDiagram.normal
-  have hν : ∀ b P, LinearMap.ker (ν b P) = (affineSpan ℝ (P : Set V)).direction := by
-    intro b
-    cases b
-    · exact (D.diagram k).toFiniteWallDiagram.ker_normal
-    · exact (F.diagram k).toFiniteWallDiagram.ker_normal
-  let X : (b : Bool) → WallComplement (fun P : (A (a b)).walls => (P : Set V)) := fun b => by
-    cases b
-    · exact x
-    · exact x'
-  let Y : (b : Bool) → WallComplement (fun P : (A (a b)).walls => (P : Set V)) := fun b => by
-    cases b
-    · exact y
-    · exact y'
-  let tests : ∀ b, AdmissiblePLPath (X b) (Y b) := fun b => by
-    cases b
-    · exact p
-    · exact q
-  have htests : ∀ b, (tests b).vertices.map WallComplement.val =
-      (tests false).vertices.map WallComplement.val := by
-    intro b
-    cases b
-    · rfl
-    · exact hpq.symm
-  obtain ⟨u, v, r, hr⟩ :=
-    CommonWallComplement.exists_free_endpoints_crossingWord_eq_of_vertices_eq
-      A a ν hν tests false htests
-  let p' := (CommonWallComplement.reindexPrefunctor (W := fun j =>
-    fun P : (A j).walls => (P : Set V)) Sum.inl).mapPath r
-  let q' := (CommonWallComplement.reindexPrefunctor (W := fun j =>
-    fun P : (A j).walls => (P : Set V)) Sum.inr).mapPath r
-  have hv : p'.vertices.map CommonWallComplement.val =
-      q'.vertices.map CommonWallComplement.val := by
-    exact (CommonWallComplement.vertices_reindex Sum.inl r).trans
-      (CommonWallComplement.vertices_reindex Sum.inr r).symm
-  -- Apply the assumed complete equality, then project back to the selected order.
-  have he := congrArg (CompletedGroup.projection k) (hDF p' q' hv)
-  rw [D.projection_pathProduct k p', F.projection_pathProduct k q'] at he
-  simp only [p', q'] at he
-  have hprojLeft := CommonWallComplement.projection_reindex_mapPath
-    (W := fun j => fun P : (A j).walls => (P : Set V)) Sum.inl k r
-  have hprojRight := CommonWallComplement.projection_reindex_mapPath
-    (W := fun j => fun P : (A j).walls => (P : Set V)) Sum.inr k r
-  have he' := (congrArg (D.diagram k).toFiniteWallDiagram.pathProduct hprojLeft).symm.trans
-    (he.trans (congrArg (F.diagram k).toFiniteWallDiagram.pathProduct hprojRight))
-  have hleft := hr false
-  have hright := hr true
-  -- The sum indices and Boolean cases compute to the two concrete complexes.
-  dsimp only [a, Bool.false_eq_true, ↓reduceIte, A, Sum.elim_inl, Sum.elim_inr,
-    ν, tests] at hleft hright
-  have hleftProd := ((D.diagram k).toFiniteWallDiagram.pathProduct_def
-    ((CommonWallComplement.projectionPrefunctor (.inl k)).mapPath r)).trans
-    ((congrArg (FreeGroup.lift (D.diagram k).toFiniteWallDiagram.label) hleft).trans
-      ((D.diagram k).toFiniteWallDiagram.pathProduct_def p).symm)
-  have hrightProd := ((F.diagram k).toFiniteWallDiagram.pathProduct_def
-    ((CommonWallComplement.projectionPrefunctor (.inr k)).mapPath r)).trans
-    ((congrArg (FreeGroup.lift (F.diagram k).toFiniteWallDiagram.label) hright).trans
-      ((F.diagram k).toFiniteWallDiagram.pathProduct_def q).symm)
-  exact hleftProd.symm.trans (he'.trans hrightProd)
+  -- Realize both tests by common all-order paths, then project the complete equality.
+  obtain ⟨_, _, _, _, p', q', hv, hp, hq⟩ := D.exists_common_pathProduct_eq F k p q hpq
+  exact hp.symm.trans ((congrArg (CompletedGroup.projection k) (hDF p' q' hv)).trans hq)
 
 /-- Complete geometric products detect precisely orderwise equivalence.
 Both directions compare the same ambient vertex lists, with separate admissibility
