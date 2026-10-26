@@ -17,7 +17,8 @@ For a finite family of codimension-one polyhedra this actual set is covered by
 finitely many affine subspaces of codimension at least two. Unbounded walls,
 lineality and coincident or parallel supporting hyperplanes are allowed.
 Continuous affine equivalences transport singular support, including under a
-bijection of wall indices, by the intrinsic-frontier image theorem.
+bijection of wall indices, by the intrinsic-frontier image theorem. Finitely
+many closed walls in finite dimension have closed singular support.
 -/
 
 public section
@@ -68,6 +69,14 @@ theorem singularSupport_subset_iUnion (W : ι → Set V) (hclosed : ∀ i, IsClo
   rcases mem_singularSupport.mp hx with ⟨i, hxi⟩ | ⟨i, j, _, hxi, _⟩
   · exact Set.mem_iUnion.mpr ⟨i, intrinsicFrontier_subset (hclosed i) hxi⟩
   · exact Set.mem_iUnion.mpr ⟨i, hxi⟩
+
+/-- Finitely many closed walls in a finite-dimensional space have closed singular support. -/
+theorem isClosed_singularSupport [FiniteDimensional ℝ V] [Finite ι] {W : ι → Set V}
+    (hclosed : ∀ i, IsClosed (W i)) : IsClosed (singularSupport W) :=
+  (isClosed_iUnion_of_finite fun _ => isClosed_intrinsicFrontier
+    (AffineSubspace.closed_of_finiteDimensional _)).union
+    (isClosed_iUnion_of_finite fun i => isClosed_iUnion_of_finite fun j =>
+      isClosed_iUnion_of_finite fun _ => (hclosed i).inter (hclosed j))
 
 /-- A continuous affine change of coordinates transports the actual singular support,
 including relative boundaries and intersections of different wall directions. -/
