@@ -77,17 +77,10 @@ variable {s d ℒ} {C : FinitePolyhedralComplex h} {k l m : ℕ}
 theorem ker_normal (P : C.walls) :
     LinearMap.ker (s.normal (D.degree P)) = (affineSpan ℝ (P : Set V)).direction := by
   let := h.finiteDimensional
-  have hle : (affineSpan ℝ (P : Set V)).direction ≤
-      LinearMap.ker (s.normal (D.degree P)) := by
-    have ha : affineSpan ℝ (P : Set V) ≤
-        (LinearMap.ker (s.normal (D.degree P))).toAffineSubspace :=
-      affineSpan_le.mpr (fun θ hθ => LinearMap.mem_ker.mpr (by
-        simpa only [KSSpace.normal_apply] using D.evaluation_eq_zero P θ hθ))
-    simpa using AffineSubspace.direction_le ha
-  have hn := s.normal_ne_zero d (D.degree_mem P) (D.degree_ne_zero P)
-  have hd := C.finrank_direction_add_one_of_mem_walls P.property
-  have hk := Module.Dual.finrank_ker_add_one_of_ne_zero hn
-  exact (Submodule.eq_of_le_of_finrank_eq hle (by omega)).symm
+  exact (s.normal (D.degree P)).ker_eq_direction_affineSpan
+    (s.normal_ne_zero d (D.degree_mem P) (D.degree_ne_zero P))
+    (fun θ hθ => by simpa only [KSSpace.normal_apply] using D.evaluation_eq_zero P θ hθ)
+    (C.finrank_direction_add_one_of_mem_walls P.property)
 
 /-- Forget the grading while retaining the actual complex, normals and group labels. -/
 def toFiniteWallDiagram : FiniteWallDiagram C (d.truncatedGroup ℒ k) where
