@@ -15,7 +15,8 @@ any nonempty list of interior vertices, fixing the common allowed endpoints.
 If finitely many complexes already admit that vertex list, the approximation
 can preserve all their signed crossing words simultaneously. For paths without
 an interior vertex, stationary segments supply free vertices without changing
-any crossing word.
+any crossing word. If the original endpoints are only allowed for the selected
+complexes, move them along segments missing those walls before perturbing.
 
 This combines `CommonWallComplement.exists_forall₂_dist_lt`, based on Baire's
 theorem, with `Quiver.Path.exists_pos_crossingWord_eq_of_forall₂_dist_lt`.
@@ -118,5 +119,97 @@ theorem exists_crossingWord_eq
   simpa only [padded, Quiver.Path.crossingWord_comp, Quiver.Path.crossingWord_cons,
     Quiver.Hom.toPath, Quiver.Path.crossingWord_nil,
     FinitePolyhedralComplex.segmentCrossingWord_self, mul_one] using hq k
+
+omit hν in
+private theorem exists_nonCrossing_projections (x : ∀ k,
+    WallComplement (fun P : (C (a k)).walls => (P : Set V))) (k₀ : K)
+    (hx : ∀ k, (x k).val = (x k₀).val) :
+    ∃ z : CommonWallComplement (fun j => fun P : (C j).walls => (P : Set V)),
+      ∀ k, ∃ _ : projection (a k) z ⟶ x k,
+        WallComplement.crossings (projection (a k) z) (x k) = ∅ := by
+  classical
+  have := h.finiteDimensional
+  have hclosed (j : J) (P : (C j).walls) : IsClosed (P : Set V) :=
+    ((C j).isConvexPolyhedron ((C j).mem_cells_of_mem_walls P.property)).isClosed
+  -- The simultaneous allowed locus is dense, including for nonstabilizing complexes.
+  let A : (Σ j, (C j).walls) → AffineSubspace ℝ V :=
+    fun p => affineSpan ℝ (p.2 : Set V)
+  have hA (p : Σ j, (C j).walls) : A p ≠ ⊤ :=
+    (affineSpan ℝ (p.2 : Set V)).ne_top_of_finrank_direction_add_one_eq
+      ((C p.1).finrank_direction_add_one_of_mem_walls p.2.property)
+  -- A neighborhood of the original endpoint admits connectors crossing no selected wall.
+  let U : Set V := {z | ∀ k (P : (C (a k)).walls) (t : ℝ), t ∈ Icc (0 : ℝ) 1 →
+    AffineMap.lineMap z (x k).val t ∉ (P : Set V)}
+  have hU : IsOpen U := by
+    have hopen := isOpen_iInter_of_finite fun k => isOpen_iInter_of_finite
+      fun P : (C (a k)).walls =>
+        (hclosed (a k) P).isOpen_setOf_lineMap_notMem.preimage
+          (f := fun z : V => (z, (x k).val)) (continuous_id.prodMk continuous_const)
+    simpa only [U, ofPred_forall, preimage_iInter, preimage_ofPred_eq] using hopen
+  have hxU : (x k₀).val ∈ U := by
+    intro k P t ht
+    rw [← hx k, AffineMap.lineMap_same]
+    exact (x k).notMem P
+  obtain ⟨z, hzU, hzA⟩ := AffineSubspace.exists_mem_open_genericLocus A hA hU ⟨_, hxU⟩
+  let z' : CommonWallComplement (fun j => fun P : (C j).walls => (P : Set V)) :=
+    ⟨z, fun j P hz => hzA ⟨j, P⟩ (subset_affineSpan ℝ _ hz)⟩
+  refine ⟨z', fun k => ?_⟩
+  have havoid := hzU k
+  have hc : WallComplement.crossings (projection (a k) z') (x k) = ∅ := by
+    apply Set.eq_empty_iff_forall_notMem.mpr
+    rintro ⟨P, t⟩ ht
+    have ht := (WallComplement.mem_crossings _ _ P t).mp ht
+    exact havoid P t ht.1 ht.2
+  refine ⟨⟨⟨?_, ?_⟩⟩, hc⟩
+  · rintro P ⟨t, ht, hP⟩
+    exact (havoid P t ht hP).elim
+  · intro t ht hs
+    obtain ⟨P, hP⟩ := Set.mem_iUnion.mp (singularSupport_subset_iUnion
+      (fun P : (C (a k)).walls => (P : Set V))
+      (hclosed (a k)) hs)
+    exact havoid P t ht hP
+
+/-- Every shared finite-order test has a replacement admissible for countably many
+complexes, retaining all prescribed crossing words. The original endpoints may lie
+on walls in the other complexes; they move along segments missing the selected walls. -/
+theorem exists_crossingWord_eq_of_vertices_eq
+    {x y : ∀ k, WallComplement (fun P : (C (a k)).walls => (P : Set V))}
+    (p : ∀ k, AdmissiblePLPath (x k) (y k)) (k₀ : K)
+    (hp : ∀ k, (p k).vertices.map WallComplement.val =
+      (p k₀).vertices.map WallComplement.val) :
+    ∃ (u v : CommonWallComplement (fun j => fun P : (C j).walls => (P : Set V)))
+      (q : Quiver.Path u v), ∀ k,
+        ((projectionPrefunctor (a k)).mapPath q).crossingWord (ν k) =
+          (p k).crossingWord (ν k) := by
+  have hx (k : K) : (x k).val = (x k₀).val := by
+    have he := congrArg List.head? (hp k)
+    simpa only [List.head?_map, Quiver.Path.vertices_head?, Option.map_some,
+      Option.some.injEq] using he
+  have hy (k : K) : (y k).val = (y k₀).val := by
+    have he := congrArg List.getLast? (hp k)
+    rw [List.getLast?_map, List.getLast?_map,
+      List.getLast?_eq_some_getLast (p k).vertices_ne_nil,
+      List.getLast?_eq_some_getLast (p k₀).vertices_ne_nil] at he
+    simpa only [Quiver.Path.vertices_getLast, Option.map_some, Option.some.injEq] using he
+  obtain ⟨u, hu⟩ := exists_nonCrossing_projections C a x k₀ hx
+  obtain ⟨v, hv⟩ := exists_nonCrossing_projections C a y k₀ hy
+  choose e he using hu
+  choose f hf using hv
+  let padded (k : K) := ((e k).toPath.comp (p k)).comp (Quiver.reverse (f k)).toPath
+  have hpadded (k : K) : (padded k).vertices.map WallComplement.val =
+      (padded k₀).vertices.map WallComplement.val := by
+    simp only [padded, Quiver.Path.vertices_comp, Quiver.Path.vertices_toPath,
+      List.dropLast_cons_cons, List.dropLast_singleton, List.cons_append,
+      List.nil_append, List.map_cons, List.map_append, projection_val,
+      List.map_dropLast, hp k, hy k]
+    rfl
+  obtain ⟨q, hq⟩ := exists_crossingWord_eq C a ν hν padded k₀ hpadded
+  refine ⟨u, v, q, fun k => ?_⟩
+  have heword := (C (a k)).segmentCrossingWord_eq_one (ν k) (e k) (he k)
+  have hfword := (C (a k)).segmentCrossingWord_eq_one (ν k) (f k) (hf k)
+  simpa only [padded, Quiver.Path.crossingWord_comp, Quiver.Path.crossingWord_cons,
+    Quiver.Hom.toPath, Quiver.Path.crossingWord_nil,
+    FinitePolyhedralComplex.segmentCrossingWord_reverse _ _ (hν k), heword, hfword,
+    inv_one, mul_one, one_mul] using hq k
 
 end Mei.Convex.CommonWallComplement

@@ -17,7 +17,8 @@ An edge is a segment admissible for each family separately. Thus a quiver path
 records one vertex list, with an admissible realization in every family. No
 transversality to intersections between different families is imposed.
 
-Projection to a family preserves vertices, concatenation and reversal. For
+Projection to a family preserves vertices, concatenation and reversal. Reindexing
+selects any subfamily of admissibility conditions and commutes with projection. For
 countably many finite codimension-one polyhedral families, any two common
 allowed points are joined by such a path with two edges. This applies
 `dense_setOf_forall_admissiblePairs`, based on Mathlib's Baire theorem, to the
@@ -93,6 +94,39 @@ theorem vertices_projection (j : J) (p : Quiver.Path x y) :
   induction p with
   | nil => simp
   | cons p e ih => simp [ih]
+
+/-- Retain the families selected by an index map, preserving the geometric path. -/
+-- Objects must compute in the dependent types of the projected paths.
+@[expose]
+def reindexPrefunctor {J' : Type*} (f : J' → J) :
+    CommonWallComplement W ⥤q CommonWallComplement (fun j => W (f j)) where
+  obj x := ⟨x.val, fun j => x.notMem (f j)⟩
+  map e := ⟨fun j => e.down (f j)⟩
+
+@[simp]
+theorem reindexPrefunctor_obj_val {J' : Type*} (f : J' → J) (x : CommonWallComplement W) :
+    ((reindexPrefunctor f).obj x).val = x.val := (rfl)
+
+/-- Selecting families leaves every ambient vertex unchanged. -/
+@[simp]
+theorem vertices_reindex {J' : Type*} (f : J' → J) (p : Quiver.Path x y) :
+    ((reindexPrefunctor f).mapPath p).vertices.map CommonWallComplement.val =
+      p.vertices.map CommonWallComplement.val := by
+  induction p with
+  | nil => simp
+  | cons p e ih => simp [ih]
+
+/-- Projecting a reindexed path is the original projection at the selected index. -/
+@[simp]
+theorem projection_mapPath_reindex {J' : Type*} (f : J' → J) (j : J')
+    (p : Quiver.Path x y) :
+    (projectionPrefunctor j).mapPath ((reindexPrefunctor f).mapPath p) =
+      (projectionPrefunctor (f j)).mapPath p := by
+  induction p with
+  | nil => rfl
+  | cons p e ih =>
+    simp only [Prefunctor.mapPath_cons, ih]
+    rfl
 
 /-- Any nonempty list of interior vertices can be approximated by a path
 admissible for countably many finite polyhedral wall families simultaneously.
