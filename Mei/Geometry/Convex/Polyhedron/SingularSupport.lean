@@ -17,7 +17,8 @@ For a finite family of codimension-one polyhedra this actual set is covered by
 finitely many affine subspaces of codimension at least two. Unbounded walls,
 lineality and coincident or parallel supporting hyperplanes are allowed.
 Continuous affine equivalences transport singular support, including under a
-bijection of wall indices, by the intrinsic-frontier image theorem.
+bijection of wall indices, by the intrinsic-frontier image theorem. Finitely
+many closed walls in finite dimension have closed singular support.
 -/
 
 public section

@@ -101,6 +101,14 @@ namespace AdmissibleSegment
 
 variable {x y : WallComplement W}
 
+/-- A stationary segment at an allowed point outside singular support is admissible. -/
+theorem refl (x : WallComplement W) (hx : x.val ∉ singularSupport W) :
+    AdmissibleSegment x x where
+  transverse i hi := by
+    obtain ⟨t, _, hi⟩ := hi
+    exact (x.notMem i (by simpa using hi)).elim
+  regular t _ := by simpa only [AffineMap.lineMap_same_apply] using hx
+
 /-- Reversing an admissible segment preserves its geometric conditions. -/
 theorem symm (h : AdmissibleSegment x y) : AdmissibleSegment y x where
   transverse i hi := by
@@ -150,6 +158,8 @@ end AdmissibleSegment
 
 /-- Forget walls along an index map, keeping the same vertices and affine segments.
 Mathlib's `Prefunctor.mapPath` extends this operation to polygonal paths. -/
+-- Objects must compute when comparing the same path in nested wall families.
+@[expose]
 def restrictPrefunctor {κ : Type*} (W : ι → Set V) (f : κ → ι) :
     WallComplement W ⥤q WallComplement (W ∘ f) where
   obj x := ⟨x.val, fun j => x.notMem (f j)⟩

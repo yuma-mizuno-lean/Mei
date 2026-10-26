@@ -77,6 +77,42 @@ theorem le_signSubalgebra (n : ι) :
   rw [signSubalgebra_toSubmodule]
   exact le_iSup (fun m : {m // SignType.sign (θ m) = SignType.sign (θ n)} => ℒ m) ⟨n, rfl⟩
 
+/-- Taking images commutes with collecting homogeneous pieces by sign. -/
+theorem map_signSubalgebra {L' : Type*} [LieRing L'] [LieAlgebra R L']
+    (ℳ : ι → Submodule R L') [SetLike.GradedBracket ℳ ℳ]
+    (f : L →ₗ⁅R⁆ L') (hf : ∀ n, (ℒ n).map f.toLinearMap = ℳ n) (s : SignType) :
+    (signSubalgebra ℒ θ s).map f = signSubalgebra ℳ θ s := by
+  apply LieSubalgebra.toSubmodule_injective
+  simp only [LieSubalgebra.map, signSubalgebra_toSubmodule, Submodule.map_iSup, hf]
+
+/-- Sign subalgebras depend only on the signs of degrees with nonzero pieces. -/
+theorem signSubalgebra_eq_of_sign_eq (φ : ι →+ A)
+    (h : ∀ n, ℒ n ≠ ⊥ → SignType.sign (θ n) = SignType.sign (φ n))
+    (s : SignType) : signSubalgebra ℒ θ s = signSubalgebra ℒ φ s := by
+  apply LieSubalgebra.toSubmodule_injective
+  simp only [signSubalgebra_toSubmodule]
+  apply le_antisymm
+  · refine iSup_le fun n => ?_
+    by_cases he : ℒ n = ⊥
+    · simp [he]
+    · exact le_iSup_of_le ⟨n, (h n he).symm.trans n.property⟩ le_rfl
+  · refine iSup_le fun n => ?_
+    by_cases he : ℒ n = ⊥
+    · simp [he]
+    · exact le_iSup_of_le ⟨n, (h n he).trans n.property⟩ le_rfl
+
+/-- An implication between sign fibers on nonzero homogeneous pieces induces
+an inclusion of the corresponding sign subalgebras. -/
+theorem signSubalgebra_le_of_sign_imp (φ : ι →+ A) (s t : SignType)
+    (h : ∀ n, ℒ n ≠ ⊥ → SignType.sign (θ n) = s → SignType.sign (φ n) = t) :
+    signSubalgebra ℒ θ s ≤ signSubalgebra ℒ φ t := by
+  rw [← LieSubalgebra.toSubmodule_le_toSubmodule, signSubalgebra_toSubmodule,
+    signSubalgebra_toSubmodule]
+  refine iSup_le fun n => ?_
+  by_cases hn : ℒ n = ⊥
+  · simp [hn]
+  · exact le_iSup_of_le ⟨n, h n hn n.property⟩ le_rfl
+
 variable {L' : Type*} [LieRing L'] [LieAlgebra R L']
   (ℳ : ι → Submodule R L') [SetLike.GradedBracket ℳ ℳ]
 

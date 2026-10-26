@@ -53,6 +53,10 @@ theorem exp_log (g : BCHGroup L) : exp (log g) = g := exp.apply_symm_apply g
 theorem log_injective : Function.Injective (log : BCHGroup L → L) :=
   exp.symm.injective
 
+/-- A trivial Lie algebra has a trivial BCH group. -/
+instance [Subsingleton L] : Subsingleton (BCHGroup L) :=
+  exp.symm.subsingleton
+
 instance [Zero L] : One (BCHGroup L) := ⟨exp 0⟩
 
 instance [Neg L] : Inv (BCHGroup L) := ⟨fun g => exp (-log g)⟩

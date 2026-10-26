@@ -10,10 +10,13 @@ public import Mathlib.LinearAlgebra.AffineSpace.AffineSubspace.Basic
 import Mathlib.Tactic.Linarith
 
 /-!
-# Affine functions at relative interior points
+# Relative interior points
 
 An affine function nonpositive on a set and zero at a relative interior point
 vanishes on that set. Continuity of the affine function is not required.
+
+A set is a neighbourhood of each of its relative interior points within its
+affine span: points of the span close to a relative interior point stay in the set.
 -/
 
 public section
@@ -56,3 +59,15 @@ theorem eq_zero_on_of_mem_intrinsicInterior (g : V →ᵃ[ℝ] ℝ) {P : Set V} 
   nlinarith
 
 end AffineMap
+
+namespace Mei
+
+omit [IsTopologicalAddGroup V] [ContinuousSMul ℝ V] in
+/-- A set is a neighbourhood of each of its relative interior points within its affine span. -/
+theorem mem_nhdsWithin_affineSpan_of_mem_intrinsicInterior {P : Set V} {x : V}
+    (hx : x ∈ intrinsicInterior ℝ P) : P ∈ 𝓝[affineSpan ℝ P] x := by
+  obtain ⟨y, hy, rfl⟩ := hx
+  rw [nhdsWithin_eq_map_subtype_coe y.property]
+  exact mem_interior_iff_mem_nhds.mp hy
+
+end Mei

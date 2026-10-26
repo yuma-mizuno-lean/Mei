@@ -19,9 +19,10 @@ into the positive, zero and negative sign subgroups. The factors are functions
 of the product and commute with lowering the cutoff. These are set equivalences:
 recombination is generally not a group homomorphism.
 
-This formalizes the sign factorization in Tom Bridgeland,
+This formalizes the finite-order (truncated) form of the sign factorization in Tom Bridgeland,
 *Scattering diagrams, Hall algebras and stability conditions*, §3.2, equation (5)
-([arXiv:1603.00416v4](https://arxiv.org/pdf/1603.00416v4)).
+([arXiv:1603.00416v4](https://arxiv.org/pdf/1603.00416v4)). The completed form is
+proved in `Mei.Algebra.Lie.BCH.Sign.Completion`.
 
 The proof uses `Mei.signDecomposition` and the central successive kernels of
 `Mei.PositiveDegrees.truncationMap`. Central corrections make the nonlinear BCH
@@ -144,15 +145,52 @@ namespace PositiveDegrees
 
 variable (d : PositiveDegrees N) [IsPositiveGrading d ℒ]
 
+/-- Lowering the cutoff maps each sign subgroup onto the lower one. -/
+theorem bchSubgroup_map_signSubalgebra_truncationMap {k l : ℕ} (h : k ≤ l) (s : SignType) :
+    (signSubalgebra (d.truncatedGrading ℒ l) θ s).bchSubgroup.map
+        (d.truncationMap ℒ h).bchGroupMap =
+      (signSubalgebra (d.truncatedGrading ℒ k) θ s).bchSubgroup := by
+  rw [← LieSubalgebra.bchSubgroup_map, d.map_signSubalgebra_truncationMap ℒ θ h s]
+
+/-- Lower each sign factor along a decrease of the degree cutoff. -/
+def lowerSignFactors {k l : ℕ} (h : k ≤ l)
+    (a : ∀ s, (signSubalgebra (d.truncatedGrading ℒ l) θ s).bchSubgroup) :
+    ∀ s, (signSubalgebra (d.truncatedGrading ℒ k) θ s).bchSubgroup :=
+  fun s => ⟨(d.truncationMap ℒ h).bchGroupMap (a s), by
+    rw [← bchSubgroup_map_signSubalgebra_truncationMap ℒ θ d h s]
+    exact Subgroup.mem_map_of_mem _ (a s).property⟩
+
+/-- Each lowered sign factor is the image of the original factor. -/
+@[simp]
+theorem coe_lowerSignFactors {k l : ℕ} (h : k ≤ l)
+    (a : ∀ s, (signSubalgebra (d.truncatedGrading ℒ l) θ s).bchSubgroup) (s : SignType) :
+    (lowerSignFactors ℒ θ d h a s : BCHGroup (d.truncatedLie ℒ k)) =
+      (d.truncationMap ℒ h).bchGroupMap (a s) := (rfl)
+
+/-- Lowering sign factors commutes with multiplying them. -/
+theorem signProduct_lowerSignFactors {k l : ℕ} (h : k ≤ l)
+    (a : ∀ s, (signSubalgebra (d.truncatedGrading ℒ l) θ s).bchSubgroup) :
+    signProduct _ θ (lowerSignFactors ℒ θ d h a) =
+      (d.truncationMap ℒ h).bchGroupMap (signProduct _ θ a) := by
+  simp
+
+/-- Every family of lower sign factors lifts along a decrease of the cutoff. -/
+theorem lowerSignFactors_surjective {k l : ℕ} (h : k ≤ l) :
+    Function.Surjective (lowerSignFactors ℒ θ d h) := by
+  have hs := Function.Surjective.piMap fun s => (MulEquiv.subgroupCongr
+    (bchSubgroup_map_signSubalgebra_truncationMap ℒ θ d h s)).surjective.comp
+      ((d.truncationMap ℒ h).bchGroupMap.subgroupMap_surjective
+        (signSubalgebra (d.truncatedGrading ℒ l) θ s).bchSubgroup)
+  convert hs using 1
+  ext a s
+  rfl
+
 private theorem logSignProduct_truncated_bijective (k : ℕ) :
     Function.Bijective (logSignProduct (d.truncatedGrading ℒ k) θ) := by
   induction k with
   | zero =>
-    have hz (x : d.truncatedLie ℒ 0) : x = 0 := by
-      obtain ⟨a, rfl⟩ := (d.degreeIdeal ℒ 0).surjective_mkQ x
-      exact (d.degreeIdeal ℒ 0).mkQ_eq_zero.mpr (by simp)
-    exact ⟨fun _ _ _ => (hz _).trans (hz _).symm,
-      fun y => ⟨y, (hz _).trans (hz _).symm⟩⟩
+    exact ⟨fun _ _ _ => Subsingleton.elim _ _,
+      fun y => ⟨y, Subsingleton.elim _ _⟩⟩
   | succ k ih =>
     let p := d.truncationMap ℒ (Nat.le_succ k)
     apply p.toLinearMap.toAddMonoidHom.bijective_of_semiconj_of_add_ker
@@ -164,11 +202,9 @@ private theorem logSignProduct_truncated_bijective (k : ℕ) :
           rw [← d.map_truncatedGrading_truncationMap ℒ (Nat.le_succ k) n]
           exact Submodule.mem_map_of_mem hx) x
     · intro x z hz
-      apply logSignProduct_add (d.truncatedGrading ℒ (k + 1)) θ p.ker
-        (fun n y hy => ?_) (d.ker_truncationMap_succ_le_center ℒ k) x z hz
-      rw [LieHom.mem_ker] at hy ⊢
-      simp only [p, truncationMap_decompose, hy, DirectSum.decompose_zero,
-        DirectSum.zero_apply, ZeroMemClass.coe_zero]
+      exact logSignProduct_add (d.truncatedGrading ℒ (k + 1)) θ p.ker
+        (d.ker_truncationMap_isHomogeneous ℒ (Nat.le_succ k))
+        (d.ker_truncationMap_succ_le_center ℒ k) x z hz
 
 /-- Multiplication of positive, zero and negative sign subgroups is bijective at
 every finite cutoff, over any commutative rational coefficient algebra. -/
@@ -200,6 +236,24 @@ theorem signFactorizationEquiv_symm_one (k : ℕ) :
   apply (signFactorizationEquiv ℒ θ d k).symm_apply_eq.mpr
   simp only [signFactorizationEquiv_apply, Pi.one_apply, OneMemClass.coe_one, one_mul]
 
+/-- Sign factors depend only on the three sign subalgebras, rather than on
+which character presents them. -/
+theorem signFactorizationEquiv_symm_eq_of_signSubalgebra_eq
+    (φ : N →+ A) (k : ℕ)
+    (h : ∀ s, signSubalgebra (d.truncatedGrading ℒ k) θ s =
+      signSubalgebra (d.truncatedGrading ℒ k) φ s)
+    (g : d.truncatedGroup ℒ k) (s : SignType) :
+    ((signFactorizationEquiv ℒ θ d k).symm g s : d.truncatedGroup ℒ k) =
+      ((signFactorizationEquiv ℒ φ d k).symm g s : d.truncatedGroup ℒ k) := by
+  let a := (signFactorizationEquiv ℒ θ d k).symm g
+  let b : ∀ t, (signSubalgebra (d.truncatedGrading ℒ k) φ t).bchSubgroup :=
+    fun t => ⟨a t, by rw [← h t]; exact (a t).property⟩
+  have hb : signFactorizationEquiv ℒ φ d k b = g := by
+    simpa only [signFactorizationEquiv_apply, b] using
+      (signFactorizationEquiv ℒ θ d k).apply_symm_apply g
+  exact congrArg (fun c => (c s : d.truncatedGroup ℒ k))
+    ((signFactorizationEquiv ℒ φ d k).eq_symm_apply.mpr hb)
+
 /-- Each sign factor is compatible with lowering the degree cutoff. -/
 @[simp]
 theorem truncationMap_signFactorizationEquiv_symm {k l : ℕ} (h : k ≤ l)
@@ -208,21 +262,13 @@ theorem truncationMap_signFactorizationEquiv_symm {k l : ℕ} (h : k ≤ l)
         ((signFactorizationEquiv ℒ θ d l).symm g s : d.truncatedGroup ℒ l) =
       ((signFactorizationEquiv ℒ θ d k).symm
         ((d.truncationMap ℒ h).bchGroupMap g) s : d.truncatedGroup ℒ k) := by
-  let f := (d.truncationMap ℒ h).bchGroupMap
   let a := (signFactorizationEquiv ℒ θ d l).symm g
-  let b : ∀ s, (signSubalgebra (d.truncatedGrading ℒ k) θ s).bchSubgroup := fun s =>
-    ⟨f (a s), by
-      rw [LieSubalgebra.mem_bchSubgroup, LieHom.log_bchGroupMap]
-      apply map_mem_signSubalgebra (d.truncatedGrading ℒ l) θ
-        (d.truncatedGrading ℒ k) (d.truncationMap ℒ h).toLinearMap.toAddMonoidHom _
-        ((LieSubalgebra.mem_bchSubgroup _ _).mp (a s).property)
-      intro n x hx
-      rw [← d.map_truncatedGrading_truncationMap ℒ h n]
-      exact Submodule.mem_map_of_mem hx⟩
-  have hb : signFactorizationEquiv ℒ θ d k b = f g := by
-    rw [signFactorizationEquiv_apply]
-    simp only [b, ← map_mul]
-    exact congrArg f ((signFactorizationEquiv ℒ θ d l).apply_symm_apply g)
+  have hb : signFactorizationEquiv ℒ θ d k (lowerSignFactors ℒ θ d h a) =
+      (d.truncationMap ℒ h).bchGroupMap g := by
+    rw [signFactorizationEquiv_apply, ← signProduct_apply, signProduct_lowerSignFactors]
+    simpa only [signFactorizationEquiv_apply, signProduct_apply] using
+      congrArg (d.truncationMap ℒ h).bchGroupMap
+        ((signFactorizationEquiv ℒ θ d l).apply_symm_apply g)
   exact congrArg (fun a => (a s : d.truncatedGroup ℒ k))
     ((signFactorizationEquiv ℒ θ d k).eq_symm_apply.mpr hb)
 

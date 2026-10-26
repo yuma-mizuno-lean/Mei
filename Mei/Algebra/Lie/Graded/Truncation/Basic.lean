@@ -131,6 +131,12 @@ theorem lowerCentralSeries_truncatedLie_eq_bot (k : ℕ) :
 instance truncatedLie_isNilpotent (k : ℕ) : LieRing.IsNilpotent (d.truncatedLie ℒ k) :=
   LieModule.IsNilpotent.mk _ (d.lowerCentralSeries_truncatedLie_eq_bot ℒ k)
 
+/-- The order-zero truncation is trivial: every degree is strictly positive. -/
+instance truncatedLie_zero_subsingleton : Subsingleton (d.truncatedLie ℒ 0) :=
+  subsingleton_of_forall_eq 0 fun x => by
+    obtain ⟨x, rfl⟩ := (d.degreeIdeal ℒ 0).surjective_mkQ x
+    exact (d.degreeIdeal ℒ 0).mkQ_eq_zero.mpr (by simp)
+
 /-- The degree-`n` piece of the truncation is the image of the original degree-`n` piece. -/
 def truncatedGrading (k : ℕ) (n : N) : Submodule R (d.truncatedLie ℒ k) :=
   (ℒ n).map (d.degreeIdeal ℒ k).toSubmodule.mkQ
@@ -194,6 +200,15 @@ theorem truncatedGrading_eq_bot {k : ℕ} {n : N} (hn : (k : ℤ) < d.degree n) 
   intro x hx
   obtain ⟨y, hy, rfl⟩ := (d.mem_truncatedGrading_iff ℒ).mp hx
   exact (d.degreeIdeal ℒ k).mkQ_eq_zero.mpr (d.le_degreeIdeal ℒ hn hy)
+
+/-- A nonzero piece in a truncation has nonzero allowed degree below the cutoff. -/
+theorem mem_cutoff_of_truncatedGrading_ne_bot {k : ℕ} {n : N}
+    (hn : d.truncatedGrading ℒ k n ≠ ⊥) : n ∈ d.cutoff k \ {0} := by
+  have hp : n ∈ d.monoid ∧ n ≠ 0 := by
+    by_contra h
+    exact hn (IsPositiveGrading.eq_bot (d := d) (ℒ := d.truncatedGrading ℒ k) n (by tauto))
+  refine ⟨d.mem_cutoff.mpr ⟨hp.1, ?_⟩, hp.2⟩
+  exact le_of_not_gt (fun h => hn (d.truncatedGrading_eq_bot ℒ h))
 
 /-- The surjective transition from a higher-order truncation to a lower-order one. -/
 def truncationMap {k l : ℕ} (h : k ≤ l) :
