@@ -168,9 +168,13 @@ theorem reconstructFinite_degree_mem_cutoff (g : d.truncatedGroup ℒ k)
     (d.reconstructFinite h ℒ g).degree P ∈ d.cutoff k \ {0} :=
   (d.arrangementWallDegree_spec h P).1
 
-/-- Reconstruction uses the same geometric coorientations for every group element. -/
-theorem reconstructFinite_degree_eq (g g' : d.truncatedGroup ℒ k) :
-    (d.reconstructFinite h ℒ g).degree = (d.reconstructFinite h ℒ g').degree := (rfl)
+/-- Reconstruction uses the same geometric coorientations for all Lie coefficients
+and group elements. -/
+theorem reconstructFinite_degree_eq {L' : Type*}
+    [LieRing L'] [LieAlgebra R L'] [LieAlgebra ℚ L'] [IsScalarTower ℚ R L']
+    {ℳ : N → Submodule R L'} [GradedLieAlgebra ℳ] [IsPositiveGrading d ℳ]
+    (g : d.truncatedGroup ℒ k) (g' : d.truncatedGroup ℳ k) :
+    (d.reconstructFinite h ℒ g).degree = (d.reconstructFinite h ℳ g').degree := (rfl)
 
 /-- The wall label is the middle factor at any of its relative interior points. -/
 theorem reconstructFinite_label (g : d.truncatedGroup ℒ k)

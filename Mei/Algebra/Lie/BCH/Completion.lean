@@ -174,6 +174,21 @@ theorem projection_completedMap (f : GradedLieHom T ℒ ℳ) (k : ℕ)
   rw [completedMap, CompletedGroup.projection_map]
   rfl
 
+/-- A larger source cutoff also computes the projection of a completed map. -/
+theorem projection_completedMap_of_le (f : GradedLieHom T ℒ ℳ) (k : ℕ)
+    {a : ℕ} (ha : T.modulus k ≤ a) (x : d.completedBCHGroup ℒ) :
+    CompletedGroup.projection k (f.completedMap x) =
+      (f.truncatedMap k ha).bchGroupMap (CompletedGroup.projection a x) := by
+  rw [projection_completedMap]
+  have hp : (d.truncationMap ℒ ha).bchGroupMap (CompletedGroup.projection a x) =
+      CompletedGroup.projection (T.modulus k) x :=
+    CompletedGroup.map_projection (T.modulus k) a ha x
+  let y : d.truncatedGroup ℒ a := CompletedGroup.projection a x
+  have hf := DFunLike.congr_fun (congrArg LieHom.bchGroupMap
+    (f.truncatedMap_comp_truncationMap (k := k) le_rfl ha)) y
+  simp only [LieHom.bchGroupMap_comp, MonoidHom.comp_apply] at hf
+  exact (congrArg (f.truncatedMap k le_rfl).bchGroupMap hp.symm).trans hf
+
 /-- A graded completed map carries the exponential of an original Lie element
 to the exponential of its image. -/
 @[simp]
