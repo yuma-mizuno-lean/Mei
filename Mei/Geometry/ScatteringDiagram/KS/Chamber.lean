@@ -59,17 +59,4 @@ element and the other factors are identities. -/
   intro n hn hn0
   exact sign_neg (((AddSubmonoid.mem_negativeChamber d.monoid i).mp hθ) n hn hn0)
 
-/-- The finite negative-factor quotient from a positive chamber to a
-negative chamber is the original group element. -/
-theorem signFactorizationEquiv_neg_mul_inv_eq_of_mem_chambers
-    (hθ : θ ∈ d.monoid.positiveChamber i) (hφ : φ ∈ d.monoid.negativeChamber i)
-    (g : d.truncatedGroup ℒ k) :
-    ((signFactorizationEquiv ℒ (φ.toAddMonoidHom.comp i) d k).symm g .neg :
-        d.truncatedGroup ℒ k) *
-      ((signFactorizationEquiv ℒ (θ.toAddMonoidHom.comp i) d k).symm g .neg :
-        d.truncatedGroup ℒ k)⁻¹ = g := by
-  rw [d.signFactorizationEquiv_symm_of_mem_negativeChamber i ℒ hφ,
-    d.signFactorizationEquiv_symm_of_mem_positiveChamber i ℒ hθ]
-  simp
-
 end Mei.PositiveDegrees

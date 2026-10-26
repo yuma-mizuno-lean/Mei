@@ -102,7 +102,9 @@ theorem transport_reconstruct_of_mem_chambers (g : d.completedBCHGroup ℒ)
       d.truncatedGroup ℒ k) *
     ((signFactorizationEquiv ℒ (x.val.toAddMonoidHom.comp i) d k).symm a .neg :
       d.truncatedGroup ℒ k)⁻¹ = a
-  exact d.signFactorizationEquiv_neg_mul_inv_eq_of_mem_chambers i ℒ hx hy a
+  rw [d.signFactorizationEquiv_symm_of_mem_negativeChamber i ℒ hy,
+    d.signFactorizationEquiv_symm_of_mem_positiveChamber i ℒ hx]
+  simp
 
 /-- Positive-to-negative degree transport in the reconstructed diagram recovers
 its original completed BCH group element. -/
