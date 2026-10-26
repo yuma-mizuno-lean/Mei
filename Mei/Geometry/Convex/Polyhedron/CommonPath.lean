@@ -6,7 +6,6 @@ Authors: Codex
 module
 
 public import Mei.Geometry.Convex.Polyhedron.SimultaneousPath
-public import Mathlib.Combinatorics.Quiver.Path.Vertices
 public import Mei.Combinatorics.Quiver.Path
 
 /-!

@@ -9,7 +9,6 @@ public import Mei.Analysis.Convex.Intrinsic
 public import Mei.Analysis.Normed.Affine.LineMap
 public import Mei.Geometry.Affine.Segment
 public import Mei.Geometry.Convex.Polyhedron.AdmissiblePath
-public import Mathlib.Combinatorics.Quiver.Path.Vertices
 
 /-!
 # Perturbing admissible segments and polygonal paths
