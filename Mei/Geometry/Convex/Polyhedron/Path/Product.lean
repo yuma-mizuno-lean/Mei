@@ -170,6 +170,64 @@ theorem segmentPathProduct_reverse
 
 end Mei.Convex.WallComplement
 
+namespace Mei.Convex.WallComplement
+
+variable {V ι G : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
+  [Fintype ι] [CommGroup G] {W : ι → Set V}
+  (ν : ι → V →ₗ[ℝ] ℝ) (label : ι → G)
+  {x y : WallComplement W}
+
+open Classical in
+/-- With commutative labels, a segment contributes each crossed index exactly
+once. The time grouping still retains every coincident indexed wall. -/
+theorem segmentPathProduct_eq_prod (e : x ⟶ y) :
+    segmentPathProduct ν label (fun _ _ _ => Commute.all _ _) e =
+      ∏ j, if ∃ t, (j, t) ∈ crossings x y then
+        label j ^ (if 0 < ν j (y.val - x.val) then -1 else 1 : ℤ) else 1 := by
+  classical
+  have hevent (t : ℝ) :
+      crossingEventProduct ν label (fun _ _ _ => Commute.all _ _) e t =
+        ∏ j, if (j, t) ∈ crossings x y then
+          label j ^ (if 0 < ν j (y.val - x.val) then -1 else 1 : ℤ) else 1 := by
+    rw [crossingEventProduct_eq_noncommProd ν label _ e t
+      (fun _ _ _ _ _ => Commute.all _ _), Finset.noncommProd_eq_prod]
+    have hs : signedCrossingEvent ν x y t = (crossingWalls x y t).image
+        (fun j => (j, (if 0 < ν j (y.val - x.val) then -1 else 1 : ℤ))) := by
+      ext ⟨j, s⟩
+      simp [mem_signedCrossingEvent, eq_comm]
+    rw [hs]
+    rw [Finset.prod_image]
+    · have hs : crossingWalls x y t = Finset.univ.filter (fun j => (j, t) ∈ crossings x y) := by
+        ext j
+        simp
+      simpa only [hs, Prod.fst, Prod.snd] using Finset.prod_filter
+        (s := Finset.univ) (fun j => (j, t) ∈ crossings x y)
+        (fun j => label j ^ (if 0 < ν j (y.val - x.val) then -1 else 1 : ℤ))
+    · intro a _ b _ hab
+      exact (Prod.mk.inj hab).1
+  rw [segmentPathProduct_def, List.map_reverse, List.prod_reverse]
+  rw [funext hevent]
+  rw [← List.prod_toFinset _ (pairwise_orderedCrossingTimes e).nodup,
+    Finset.prod_comm]
+  apply Finset.prod_congr rfl
+  intro j _
+  by_cases hj : ∃ t, (j, t) ∈ crossings x y
+  · rw [ite_eq_left hj]
+    obtain ⟨t, ht⟩ := hj
+    rw [Finset.prod_eq_single t]
+    · simp [ht]
+    · intro s _ hst
+      have hs : (j, s) ∉ crossings x y := fun hs => hst
+        (e.down.subsingleton_crossing j ((mem_crossings _ _ _ _).mp hs)
+          ((mem_crossings _ _ _ _).mp ht))
+      simp [hs]
+    · intro hnot
+      exact (hnot (List.mem_toFinset.mpr ((mem_orderedCrossingTimes e t).mpr ⟨j, ht⟩))).elim
+  · rw [ite_eq_right hj]
+    exact Finset.prod_eq_one fun t _ => ite_eq_right (not_exists.mp hj t)
+
+end Mei.Convex.WallComplement
+
 namespace Quiver.Path
 
 open Mei.Convex WallComplement
@@ -219,7 +277,10 @@ theorem wallPathProduct_reverse
   | cons p e ih =>
     simp [Quiver.Path.reverse, ih, segmentPathProduct_reverse ν label hcomm hν, mul_inv_rev]
 
-private theorem wallPathProduct_eq_eventList_prod (p : AdmissiblePLPath x y) :
+/-- Enumerate each simultaneous signed event in any finite-set order and multiply
+the events in reverse traversal order to compute polygonal transport. Commutation
+within each event makes the chosen finite-set enumeration immaterial. -/
+theorem wallPathProduct_eq_prod_signedCrossingEvents (p : AdmissiblePLPath x y) :
     p.wallPathProduct ν label hcomm =
       ((p.signedCrossingEvents ν).reverse.map
         (fun S => (S.toList.map (fun a => label a.1 ^ a.2)).prod)).prod := by
@@ -247,7 +308,8 @@ theorem wallPathProduct_eq_of_signedCrossingEvents_eq
     {x' y' : WallComplement W} (p : AdmissiblePLPath x y) (q : AdmissiblePLPath x' y')
     (hpq : p.signedCrossingEvents ν = q.signedCrossingEvents ν) :
     p.wallPathProduct ν label hcomm = q.wallPathProduct ν label hcomm := by
-  rw [wallPathProduct_eq_eventList_prod, wallPathProduct_eq_eventList_prod, hpq]
+  rw [wallPathProduct_eq_prod_signedCrossingEvents,
+    wallPathProduct_eq_prod_signedCrossingEvents, hpq]
 
 /-- Group homomorphisms preserve all polygonal transports. -/
 @[simp]
