@@ -102,6 +102,26 @@ theorem conormalForms_curryLeft_eq_zero_iff
     hinj.eq_iff,
     Submodule.mkQ_apply, Submodule.Quotient.mk_eq_zero]
 
+/-- Contraction by a transverse vector determines a top-degree conormal form. -/
+theorem conormalForms_curryLeft_inj
+    {W : Submodule R M} (hk : finrank R (M ⧸ W) = k + 1)
+    {α β : M [⋀^Fin (k + 1)]→ₗ[R] R}
+    (hα : α ∈ W.conormalForms (Fin (k + 1)))
+    (hβ : β ∈ W.conormalForms (Fin (k + 1))) {n : M} (hn : n ∉ W) :
+    α.curryLeft n = β.curryLeft n ↔ α = β := by
+  constructor
+  · intro he
+    by_contra hne
+    have hz : (α - β).curryLeft n = 0 := by
+      ext v
+      simpa only [AlternatingMap.curryLeft_apply_apply, sub_apply,
+        zero_apply] using
+        sub_eq_zero.mpr (AlternatingMap.congr_fun he v)
+    exact hn ((conormalForms_curryLeft_eq_zero_iff hk (sub_mem hα hβ)
+      (sub_ne_zero.mpr hne) n).mp hz)
+  · rintro rfl
+    rfl
+
 end Submodule
 
 namespace Module.Ray
@@ -152,5 +172,33 @@ theorem contract_neg (o : Module.Ray R (M [⋀^Fin (k + 1)]→ₗ[R] R))
   | h α hα =>
     simp only [neg_rayOfNeZero, contract_rayOfNeZero]
     congr 1
+
+/-- Contracting two top-degree conormal orientations by the same transverse
+vector preserves and reflects equality. -/
+@[simp]
+theorem contract_eq_contract_iff
+    (o p : Module.Ray R (M [⋀^Fin (k + 1)]→ₗ[R] R))
+    (ho : o.IsConormal W) (hp : p.IsConormal W)
+    (hk : finrank R (M ⧸ W) = k + 1) (n : M) (hn : n ∉ W) :
+    o.contract ho hk n hn = p.contract hp hk n hn ↔ o = p := by
+  induction o using Module.Ray.ind with
+  | h α hα =>
+    induction p using Module.Ray.ind with
+    | h β hβ =>
+      rw [contract_rayOfNeZero, contract_rayOfNeZero, ray_eq_iff, ray_eq_iff]
+      constructor
+      · intro he
+        obtain ⟨c, hc, he⟩ := he.exists_pos_left
+          ((Submodule.conormalForms_curryLeft_eq_zero_iff hk
+            ((isConormal_rayOfNeZero_iff hα).mp ho) hα n).not.mpr hn)
+          ((Submodule.conormalForms_curryLeft_eq_zero_iff hk
+            ((isConormal_rayOfNeZero_iff hβ).mp hp) hβ n).not.mpr hn)
+        have hab : c • α = β := (Submodule.conormalForms_curryLeft_inj hk
+          (Submodule.smul_mem _ c ((isConormal_rayOfNeZero_iff hα).mp ho))
+          ((isConormal_rayOfNeZero_iff hβ).mp hp) hn).mp (by simpa using he)
+        rw [← hab]
+        exact SameRay.sameRay_pos_smul_right α hc
+      · rintro he
+        exact he.map ((LinearMap.applyₗ n).comp AlternatingMap.curryLeftLinearMap)
 
 end Module.Ray
