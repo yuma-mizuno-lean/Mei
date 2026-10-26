@@ -6,6 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.Convex.PolyhedralComplex.Strata
+public import Mei.Geometry.Convex.Polyhedron.Rational.Direction
 public import Mathlib.LinearAlgebra.FiniteDimensional.Lemmas
 
 /-!
@@ -16,6 +17,10 @@ cells containing the joint and misses its relative boundary. The skeleton of
 codimension at least two agrees with the joint throughout that ball. A chosen
 complement to the joint direction gives a two-dimensional transverse slice
 whose intersection with that skeleton is exactly the center.
+
+The joint direction is also the common kernel of two real extensions of
+integral characters. Evaluating these equations on lattice vectors gives the
+integral tangent kernel used in homogeneous wall-space calculations.
 
 These are the isolation and transversality conditions needed before constructing
 small polygonal meridians: any filled polygon in the ball and slice misses every
@@ -37,6 +42,17 @@ namespace Mei.FinitePolyhedralComplex
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
+
+/-- The tangent space of a joint is the common kernel of two integral
+characters extended to the ambient real space. -/
+theorem exists_joint_direction_eq_inf_ker (C : FinitePolyhedralComplex h) {J : Set V}
+    (hJ : J ∈ C.joints) :
+    ∃ f g : N →+ ℤ, (affineSpan ℝ J).direction =
+      (h.realCharacter f).ker ⊓ (h.realCharacter g).ker := by
+  obtain ⟨hJC, hdim⟩ := (C.mem_cellsOfCodimension 2 J).mp hJ
+  obtain ⟨f, g, hfg⟩ := (C.rational J hJC).exists_direction_eq_inf_ker
+    (C.nonempty J hJC) hdim
+  exact ⟨f.toAddMonoidHom, g.toAddMonoidHom, hfg⟩
 
 /-- Every relative interior point of a joint admits an isolating ball and a
 two-dimensional complementary slice. Within that slice and ball, the whole
