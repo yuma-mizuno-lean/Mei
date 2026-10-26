@@ -7,8 +7,7 @@ module
 
 public import Mei.Geometry.Convex.PolyhedralCochain.Basic
 public import Mei.Geometry.Convex.Polyhedron.Rational.Face
-public import Mei.LinearAlgebra.Alternating.Extension
-public import Mei.Analysis.Convex.Exposed
+public import Mei.Analysis.Convex.Exposed.Orientation
 
 /-!
 # Oriented boundary facets
@@ -20,10 +19,12 @@ conormal to the parent's conormal frame and multiply by `(-1)^(k+1)` for a
 parent of codimension `k`. This is the signed generator needed for the
 polyhedral coboundary.
 
-The construction uses `IsExposed.outwardNormal` on the parent direction and
-Mathlib's `Subspace.dualLift` and `AlternatingMap.alternatizeUncurryFin`.
+The construction uses `IsExposed.facetOrientation`, which extends the outward
+covector and forms the signed wedge with the parent's conormal orientation.
 The contraction characterization proves independence of the outward vector
-and determines the oriented facet uniquely. No inner product, boundedness,
+and determines the oriented facet uniquely. `boundaryFacet_orientation` identifies
+it with the general ordered-field construction `IsExposed.facetOrientation`.
+No inner product, boundedness,
 salience or full-dimensionality is assumed.
 -/
 
@@ -38,57 +39,19 @@ namespace Mei.OrientedCell
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i} {k : ℕ}
 
-private theorem exists_boundaryFacet (σ : OrientedCell h k) {F : Set V}
+/-- The signed boundary facet of an oriented cell. Its contraction by an outward
+tangent vector is the negative of the parent's orientation. -/
+def boundaryFacet (σ : OrientedCell h k) {F : Set V}
     (hF : IsExposed ℝ σ.carrier F) (hne : F.Nonempty)
     (hdim : finrank ℝ (vectorSpan ℝ F) + 1 = finrank ℝ (vectorSpan ℝ σ.carrier)) :
-    letI := h.finiteDimensional
-    ∃ τ : OrientedCell h (k + 1), τ.carrier = F ∧
-      ∀ (v : vectorSpan ℝ σ.carrier)
-        (hv : (v : V) ∉ (affineSpan ℝ τ.carrier).direction),
-        0 < (hF.outwardNormal hne hdim).someVector v →
-        τ.orientation.contract τ.isConormal τ.finrank_quotient_direction v hv =
-          -σ.orientation := by
+    OrientedCell h (k + 1) := by
   have := h.finiteDimensional
-  -- Extend the canonical outward functional from the parent direction.
-  let W := vectorSpan ℝ σ.carrier
-  let m := (hF.outwardNormal hne hdim).someVector
-  let l := Subspace.dualLift W m
-  let β := σ.orientation.someVector
-  have hβ : β ∈ W.conormalForms (Fin k) := by
-    simpa only [β, W, direction_affineSpan, Module.Ray.isConormal_iff] using σ.isConormal
-  let α := -AlternatingMap.alternatizeUncurryFin (l.smulRight β)
-  have hα : α ∈ (vectorSpan ℝ F).conormalForms (Fin (k + 1)) := by
-    rw [Submodule.mem_conormalForms]
-    intro v j hv
-    apply neg_eq_zero.mpr
-    apply (Submodule.mem_conormalForms.mp
-      (Submodule.conormalForms_alternatizeUncurryFin_smulRight hβ l)) v j
-    have hvW : v j ∈ W := vectorSpan_mono ℝ hF.subset hv
-    refine ⟨hvW, ?_⟩
-    rw [SetLike.mem_coe, LinearMap.mem_ker]
-    dsimp only [l]
-    rw [Subspace.dualLift_of_mem hvW]
-    apply LinearMap.mem_ker.mp
-    rw [IsExposed.ker_outwardNormal]
-    exact hv
-  -- Contraction recovers the parent form on every outward tangent vector.
-  have hcontract (v : W) : α.curryLeft v = m v • (-β) := by
-    ext a
-    have he := AlternatingMap.congr_fun
-      (Submodule.curryLeft_alternatizeUncurryFin_smulRight_of_mem hβ l v.property) a
-    simpa only [α, AlternatingMap.curryLeft_apply_apply, neg_apply, smul_apply,
-      l, Subspace.dualLift_of_subtype, smul_neg] using congrArg Neg.neg he
-  obtain ⟨v, hv⟩ := LinearMap.surjective_iff_ne_zero.mpr
-    (hF.outwardNormal hne hdim).someVector_ne_zero 1
-  have hα0 : α ≠ 0 := by
-    intro hz
-    have he := hcontract v
-    rw [hz, AlternatingMap.curryLeft_zero, LinearMap.zero_apply, hv] at he
-    exact σ.orientation.someVector_ne_zero (by simpa only [one_smul, neg_eq_zero, β] using he.symm)
-  -- Package the signed form as a cell with the actual facet support.
-  obtain ⟨P, hP⟩ := isRationalNormalPolyhedron_iff.mp σ.rational
-  have hconv : Convex ℝ σ.carrier := hP ▸ P.convex
-  let τ : OrientedCell h (k + 1) :=
+  have ho : σ.orientation.IsConormal (vectorSpan ℝ σ.carrier) := by
+    simpa only [direction_affineSpan] using σ.isConormal
+  have hconv : Convex ℝ σ.carrier := by
+    obtain ⟨P, hP⟩ := isRationalNormalPolyhedron_iff.mp σ.rational
+    exact hP ▸ P.convex
+  exact
     { carrier := F
       rational := hF.isExtreme.isRationalNormalPolyhedron σ.rational
         (hF.convex hconv)
@@ -97,24 +60,10 @@ private theorem exists_boundaryFacet (σ : OrientedCell h k) {F : Set V}
         have hp := σ.finrank_direction_add
         rw [direction_affineSpan] at hp ⊢
         omega
-      orientation := rayOfNeZero ℝ α hα0
+      orientation := hF.facetOrientation hne hdim σ.orientation ho
       isConormal := by
-        rw [Module.Ray.isConormal_rayOfNeZero_iff, direction_affineSpan]
-        exact hα }
-  refine ⟨τ, rfl, fun v hv hpos => ?_⟩
-  rw [Module.Ray.contract_rayOfNeZero]
-  have he := hcontract v
-  rw [← σ.orientation.someVector_ray, neg_rayOfNeZero, ray_eq_iff]
-  rw [he]
-  exact (SameRay.sameRay_pos_smul_right (-β) hpos).symm
-
-/-- The signed boundary facet of an oriented cell. Its contraction by an outward
-tangent vector is the negative of the parent's orientation. -/
-def boundaryFacet (σ : OrientedCell h k) {F : Set V}
-    (hF : IsExposed ℝ σ.carrier F) (hne : F.Nonempty)
-    (hdim : finrank ℝ (vectorSpan ℝ F) + 1 = finrank ℝ (vectorSpan ℝ σ.carrier)) :
-    OrientedCell h (k + 1) :=
-  (exists_boundaryFacet σ hF hne hdim).choose
+        rw [direction_affineSpan]
+        exact hF.isConormal_facetOrientation hne hdim σ.orientation ho }
 
 /-- The boundary facet has exactly the prescribed support. -/
 @[simp]
@@ -122,7 +71,7 @@ theorem boundaryFacet_carrier (σ : OrientedCell h k) {F : Set V}
     (hF : IsExposed ℝ σ.carrier F) (hne : F.Nonempty)
     (hdim : finrank ℝ (vectorSpan ℝ F) + 1 = finrank ℝ (vectorSpan ℝ σ.carrier)) :
     (σ.boundaryFacet hF hne hdim).carrier = F :=
-  (exists_boundaryFacet σ hF hne hdim).choose_spec.1
+  (rfl)
 
 /-- Every outward tangent vector computes the boundary orientation by contraction;
 neither its length nor a particular exposing inequality is part of the result. -/
@@ -135,8 +84,14 @@ theorem contract_boundaryFacet (σ : OrientedCell h k) {F : Set V}
     0 < (hF.outwardNormal hne hdim).someVector v →
     (σ.boundaryFacet hF hne hdim).orientation.contract
       (σ.boundaryFacet hF hne hdim).isConormal
-      (σ.boundaryFacet hF hne hdim).finrank_quotient_direction v hv = -σ.orientation :=
-  (exists_boundaryFacet σ hF hne hdim).choose_spec.2 v hv
+      (σ.boundaryFacet hF hne hdim).finrank_quotient_direction v hv = -σ.orientation := by
+  have := h.finiteDimensional
+  intro hpos
+  have hk := (σ.boundaryFacet hF hne hdim).finrank_quotient_direction
+  rw [boundaryFacet_carrier, direction_affineSpan] at hk
+  simpa only [boundaryFacet, direction_affineSpan] using
+    hF.contract_facetOrientation hne hdim σ.orientation
+      (by simpa only [direction_affineSpan] using σ.isConormal) hk v hpos
 
 /-- Among cells with the prescribed support, a single outward contraction
 characterizes the signed boundary facet. -/
@@ -215,6 +170,18 @@ theorem boundaryFacet_reverse (σ : OrientedCell h k) {F : Set V}
   apply (hc hpos').mpr
   dsimp only [v] at he
   convert he using 1 <;> simp only [reverse_carrier, reverse_orientation]
+
+/-- The boundary facet orientation is the canonical signed covector extension of
+its parent's orientation. -/
+theorem boundaryFacet_orientation (σ : OrientedCell h k) {F : Set V}
+    (hF : IsExposed ℝ σ.carrier F) (hne : F.Nonempty)
+    (hdim : finrank ℝ (vectorSpan ℝ F) + 1 = finrank ℝ (vectorSpan ℝ σ.carrier)) :
+    letI := h.finiteDimensional
+    (σ.boundaryFacet hF hne hdim).orientation =
+      hF.facetOrientation hne hdim σ.orientation
+        (by simpa only [direction_affineSpan] using σ.isConormal) := by
+  have := h.finiteDimensional
+  rfl
 
 private theorem finite_boundaryFacets (σ : OrientedCell h k) :
     {τ : OrientedCell h (k + 1) | ∃ (F : Set V) (hF : IsExposed ℝ σ.carrier F)
