@@ -18,7 +18,7 @@ BCH subgroup of a Lie subalgebra, the difference lies in any submodule containin
 its brackets. Only labels actually encountered by the path are constrained.
 Simultaneous coplanar crossings retain all indexed factors.
 
-The proof uses `Quiver.Path.wallPathProduct_eq_eventList_prod` to enumerate the
+The proof uses `Quiver.Path.wallPathProduct_eq_prod_signedCrossingEvents` to enumerate the
 signed factors and `LieSubalgebra.log_list_prod_sub_sum_mem` to estimate their
 product. The geometric products and additive sums are the existing
 `Quiver.Path.wallPathProduct` and `Quiver.Path.wallCrossingSum`.
@@ -57,7 +57,7 @@ theorem log_wallPathProduct_sub_crossingSum_mem (K : LieSubalgebra R L) (J : Sub
     exact K.bchSubgroup.zpow_mem
       (hp S (List.mem_reverse.mp hS) a (Finset.mem_toList.mp ha)) _
   have hprod : p.wallPathProduct ν label comm = l.prod := by
-    rw [Quiver.Path.wallPathProduct_eq_eventList_prod]
+    rw [Quiver.Path.wallPathProduct_eq_prod_signedCrossingEvents]
     simp only [l, List.flatMap_def, List.prod_flatten, List.map_map, factors,
       Function.comp_def]
   -- Reversal affects multiplication order but not the additive logarithmic sum.
