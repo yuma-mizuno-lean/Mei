@@ -122,7 +122,8 @@ theorem facetOrientation_eq_iff_contract (hF : IsExposed K P F) (hne : F.Nonempt
         apply LinearMap.mem_ker.mp
         rw [hF.ker_outwardNormal hne hdim]
         exact hnF)) = -o := by
-  rw [← Module.Ray.contract_inj (hF.isConormal_facetOrientation hne hdim o ho) hp hk n
+  rw [← Module.Ray.contract_eq_contract_iff _ _
+    (hF.isConormal_facetOrientation hne hdim o ho) hp hk n
     (fun hnF => (ne_of_gt hn) (by
       apply LinearMap.mem_ker.mp
       rw [hF.ker_outwardNormal hne hdim]

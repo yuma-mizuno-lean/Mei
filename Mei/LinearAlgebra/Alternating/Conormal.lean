@@ -133,6 +133,10 @@ vanishes in this way. -/
 def IsConormal (o : Module.Ray R (M [⋀^ι]→ₗ[R] R)) (W : Submodule R M) : Prop :=
   o.someVector ∈ W.conormalForms ι
 
+/-- Conormality can be tested on the canonical nonzero representative of the ray. -/
+theorem isConormal_iff {o : Module.Ray R (M [⋀^ι]→ₗ[R] R)} {W : Submodule R M} :
+    o.IsConormal W ↔ o.someVector ∈ W.conormalForms ι := Iff.rfl
+
 /-- A ray is conormal exactly when any representing form is a conormal form. -/
 @[simp]
 theorem isConormal_rayOfNeZero_iff {α : M [⋀^ι]→ₗ[R] R} (hα : α ≠ 0) {W : Submodule R M} :

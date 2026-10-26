@@ -8,16 +8,17 @@ module
 public import Mei.LinearAlgebra.Alternating.Contraction
 
 /-!
-# Extending conormal forms by a covector
+# Extending conormal forms by a linear functional
 
-Wedging a conormal form with a covector produces a conormal form for the
-intersection of their kernels. Contraction along a tangent vector recovers the
-original form, scaled by the covector's value. In top conormal degree this
-characterizes the extension, so different ambient extensions of the same
-covector on the tangent space give the same form.
+The exterior product of a functional with a form conormal to `W` is conormal
+to the intersection of `W` with the functional's kernel. Contraction by a
+vector in `W` recovers the original form, multiplied by the functional's value.
+These formulas extend a conormal orientation to the boundary of a polyhedron.
+`Module.Ray.wedgeCovector` packages the extension as an orientation, with
+conormality, contraction and orientation-reversal laws.
 
-The wedge is Mathlib's `AlternatingMap.alternatizeUncurryFin` applied to
-`LinearMap.smulRight`; no normalization or factorial is needed.
+The exterior product is Mathlib's `AlternatingMap.alternatizeUncurryFin`
+applied to `LinearMap.smulRight`; no separate wedge-product implementation is needed.
 -/
 
 public section
@@ -25,38 +26,42 @@ public section
 namespace Submodule
 
 variable {R M : Type*} [CommRing R] [AddCommGroup M] [Module R M] {k : ℕ}
-  {W U : Submodule R M} {α : M [⋀^Fin k]→ₗ[R] R}
+  {W : Submodule R M} {β : M [⋀^Fin k]→ₗ[R] R}
 
-/-- Contraction of the covector wedge along a tangent vector recovers the
-original conormal form. -/
-theorem curryLeft_alternatizeUncurryFin_smulRight
-    (hα : α ∈ W.conormalForms (Fin k)) (l : M →ₗ[R] R) {n : M} (hn : n ∈ W) :
-    (AlternatingMap.alternatizeUncurryFin (l.smulRight α)).curryLeft n = l n • α := by
-  rw [mem_conormalForms] at hα
-  ext v
-  rw [AlternatingMap.curryLeft_apply_apply, AlternatingMap.alternatizeUncurryFin_apply,
-    Fin.sum_univ_succ]
-  have hz (j : Fin k) : α (j.succ.removeNth (Matrix.vecCons n v)) = 0 := by
-    have : NeZero k := ⟨by have := j.isLt; omega⟩
-    exact hα _ 0 (by simpa [Fin.removeNth, Matrix.vecCons] using hn)
-  simp [hz]
-
-/-- A covector wedge annihilates every vector annihilated by both factors. -/
-theorem alternatizeUncurryFin_smulRight_mem_conormalForms
-    (hα : α ∈ W.conormalForms (Fin k)) (hUW : U ≤ W) (l : M →ₗ[R] R)
-    (hUl : U ≤ l.ker) :
-    AlternatingMap.alternatizeUncurryFin (l.smulRight α) ∈ U.conormalForms (Fin (k + 1)) := by
-  rw [mem_conormalForms] at hα ⊢
+/-- Adjoining a functional to a conormal form gives a form conormal to the
+intersection with its kernel. -/
+theorem conormalForms_alternatizeUncurryFin_smulRight
+    (hβ : β ∈ W.conormalForms (Fin k)) (l : M →ₗ[R] R) :
+    AlternatingMap.alternatizeUncurryFin (l.smulRight β) ∈
+      (W ⊓ l.ker).conormalForms (Fin (k + 1)) := by
+  classical
+  rw [mem_conormalForms] at hβ ⊢
   intro v j hj
   rw [AlternatingMap.alternatizeUncurryFin_apply]
   apply Finset.sum_eq_zero
   intro a _
   by_cases haj : a = j
   · subst a
-    simp [LinearMap.mem_ker.mp (hUl hj)]
+    simp [LinearMap.mem_ker.mp hj.2]
   · obtain ⟨b, hb⟩ := Fin.exists_succAbove_eq (Ne.symm haj)
-    have hz : α (a.removeNth v) = 0 := hα _ b (by simpa only [Fin.removeNth, hb] using hUW hj)
+    have hz : β (a.removeNth v) = 0 :=
+      hβ _ b (by simpa only [Fin.removeNth, hb, SetLike.mem_coe] using hj.1)
     simp [hz]
+
+/-- Contracting the extended form by a vector tangent to the original form's
+conormal subspace leaves only the term where the functional eats that vector. -/
+theorem curryLeft_alternatizeUncurryFin_smulRight_of_mem
+    (hβ : β ∈ W.conormalForms (Fin k)) (l : M →ₗ[R] R) {n : M} (hn : n ∈ W) :
+    (AlternatingMap.alternatizeUncurryFin (l.smulRight β)).curryLeft n = l n • β := by
+  classical
+  rw [mem_conormalForms] at hβ
+  ext v
+  rw [AlternatingMap.curryLeft_apply_apply, AlternatingMap.alternatizeUncurryFin_apply,
+    Fin.sum_univ_succ]
+  have hz (a : Fin k) : β (a.succ.removeNth (Matrix.vecCons n v)) = 0 := by
+    have : NeZero k := ⟨by have := a.isLt; omega⟩
+    exact hβ _ 0 (by simpa [Fin.removeNth, Fin.succAbove_of_castSucc_lt] using hn)
+  simp [hz]
 
 end Submodule
 
@@ -72,7 +77,7 @@ theorem alternatizeUncurryFin_smulRight_ne_zero {α : M [⋀^Fin k]→ₗ[R] R}
     AlternatingMap.alternatizeUncurryFin (l.smulRight α) ≠ 0 := by
   obtain ⟨n, hn, hln⟩ := hl
   intro hz
-  have he := Submodule.curryLeft_alternatizeUncurryFin_smulRight hα l hn
+  have he := Submodule.curryLeft_alternatizeUncurryFin_smulRight_of_mem hα l hn
   rw [hz, AlternatingMap.curryLeft_zero, LinearMap.zero_apply] at he
   exact (smul_ne_zero hln hα0) he.symm
 
@@ -112,9 +117,12 @@ theorem isConormal_wedgeCovector (o : Module.Ray R (M [⋀^Fin k]→ₗ[R] R))
     (ho : o.IsConormal W) (l : M →ₗ[R] R) (hl : ∃ n ∈ W, l n ≠ 0)
     (hUW : U ≤ W) (hUl : U ≤ l.ker) :
     (o.wedgeCovector ho l hl).IsConormal U := by
-  rw [wedgeCovector, isConormal_rayOfNeZero_iff]
-  exact Submodule.alternatizeUncurryFin_smulRight_mem_conormalForms
-    ((isConormal_rayOfNeZero_iff o.someVector_ne_zero).mp (o.someVector_ray.symm ▸ ho)) hUW l hUl
+  rw [wedgeCovector, isConormal_rayOfNeZero_iff, Submodule.mem_conormalForms]
+  intro v j hv
+  exact Submodule.mem_conormalForms.mp
+    (Submodule.conormalForms_alternatizeUncurryFin_smulRight
+      ((isConormal_rayOfNeZero_iff o.someVector_ne_zero).mp (o.someVector_ray.symm ▸ ho)) l)
+    v j ⟨hUW hv, hUl hv⟩
 
 /-- Contracting a covector wedge along a positive tangent vector recovers the
 original orientation. -/
@@ -128,7 +136,7 @@ theorem contract_wedgeCovector (o : Module.Ray R (M [⋀^Fin k]→ₗ[R] R))
   induction o using Module.Ray.ind with
   | h α hα =>
     simp only [wedgeCovector_rayOfNeZero, contract_rayOfNeZero]
-    have he := Submodule.curryLeft_alternatizeUncurryFin_smulRight
+    have he := Submodule.curryLeft_alternatizeUncurryFin_smulRight_of_mem
       ((isConormal_rayOfNeZero_iff hα).mp ho) l hn
     apply (ray_eq_iff _ _).mpr
     rw [he]

@@ -103,6 +103,18 @@ namespace AdmissibleSegment
 
 variable {x y : WallComplement W}
 
+/-- A segment meeting no closed wall is admissible, with no transversality condition. -/
+theorem of_crossings_eq_empty (hclosed : ∀ i, IsClosed (W i))
+    (he : crossings x y = ∅) : AdmissibleSegment x y where
+  transverse i hi := by
+    obtain ⟨t, ht, hi⟩ := hi
+    have hm : (i, t) ∈ crossings x y := ⟨ht, hi⟩
+    simp [he] at hm
+  regular t ht hs := by
+    obtain ⟨i, hi⟩ := mem_iUnion.mp (singularSupport_subset_iUnion W hclosed hs)
+    have hm : (i, t) ∈ crossings x y := ⟨ht, hi⟩
+    simp [he] at hm
+
 /-- A stationary segment at an allowed point outside singular support is admissible. -/
 theorem refl (x : WallComplement W) (hx : x.val ∉ singularSupport W) :
     AdmissibleSegment x x where

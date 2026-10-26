@@ -17,6 +17,11 @@ exponentiates to a subgroup. This subgroup is characterized by membership of the
 logarithm, and is naturally isomorphic to the subalgebra's own BCH group. Images
 and inverse images agree with those of Lie subalgebras.
 
+Modulo any submodule containing all brackets of the subalgebra, BCH is addition, so
+the logarithm of a product in the subgroup is the sum of the logarithms of its
+factors. This passes to the abelian quotient of the subalgebra, where BCH is
+addition by `Mei.bch_eq_add`.
+
 For a Lie ideal the subgroup is normal: it is the kernel of the group map induced
 by the Lie quotient. The corresponding group quotient is the BCH group of the
 Lie quotient. This uses Mathlib's first isomorphism theorem
@@ -46,6 +51,34 @@ theorem bch_mem (K : LieSubalgebra R L) {x y : L} (hx : x ∈ K) (hy : y ∈ K) 
   rw [← h]
   exact (bch (⟨x, hx⟩ : K) ⟨y, hy⟩).property
 
+/-- Modulo any submodule containing all brackets of a Lie subalgebra, BCH on that subalgebra
+is addition. -/
+theorem bch_sub_add_mem (K : LieSubalgebra R L) (J : Submodule R L)
+    (hJ : ∀ x ∈ K, ∀ y ∈ K, ⁅x, y⁆ ∈ J) {x y : L} (hx : x ∈ K) (hy : y ∈ K) :
+    bch x y - (x + y) ∈ J := by
+  let I : LieIdeal ℚ K :=
+    { carrier := {z | (z : L) ∈ J}
+      add_mem' := J.add_mem
+      zero_mem' := J.zero_mem
+      smul_mem' := fun q _ hz => J.smul_of_tower_mem q hz
+      lie_mem := fun {a z} _ => hJ a a.property z z.property }
+  have : IsLieAbelian (K ⧸ I) := by
+    refine ⟨fun a b => ?_⟩
+    obtain ⟨a, rfl⟩ := I.surjective_mkQ a
+    obtain ⟨b, rfl⟩ := I.surjective_mkQ b
+    rw [← LieHom.map_lie, LieIdeal.mkQ_eq_zero]
+    exact hJ a a.property b b.property
+  let x' : K := ⟨x, hx⟩
+  let y' : K := ⟨y, hy⟩
+  have hbch : ((bch x' y' : K) : L) = bch x y := by
+    simpa only [LieHom.restrictScalars_apply, LieSubalgebra.coe_incl] using
+      (K.incl.restrictScalars ℚ).map_bch x' y'
+  have hI : bch x' y' - (x' + y') ∈ I := by
+    rw [← LieIdeal.mkQ_eq_zero, map_sub, LieHom.map_bch, bch_eq_add, map_add, sub_self]
+  -- Membership in `I` is membership of the underlying element of `L` in `J`.
+  have hJ' : ((bch x' y' - (x' + y') : K) : L) ∈ J := hI
+  rwa [AddSubgroupClass.coe_sub, AddMemClass.coe_add, hbch] at hJ'
+
 /-- The subgroup consisting of exponentials of elements of a Lie subalgebra. -/
 def bchSubgroup (K : LieSubalgebra R L) : Subgroup (BCHGroup L) where
   carrier := {g | log g ∈ K}
@@ -59,6 +92,22 @@ def bchSubgroup (K : LieSubalgebra R L) : Subgroup (BCHGroup L) where
 @[simp]
 theorem mem_bchSubgroup (K : LieSubalgebra R L) (g : BCHGroup L) :
     g ∈ K.bchSubgroup ↔ log g ∈ K := by simp [bchSubgroup]
+
+/-- Modulo any submodule containing all brackets of a Lie subalgebra, the logarithm of a
+product in its exponential subgroup is the sum of the logarithms of the factors. -/
+theorem log_list_prod_sub_sum_mem (K : LieSubalgebra R L) (J : Submodule R L)
+    (hJ : ∀ x ∈ K, ∀ y ∈ K, ⁅x, y⁆ ∈ J) {l : List (BCHGroup L)}
+    (hl : ∀ g ∈ l, g ∈ K.bchSubgroup) : log l.prod - (l.map log).sum ∈ J := by
+  induction l with
+  | nil => simp
+  | cons g l ih =>
+    have hg : log g ∈ K := hl g List.mem_cons_self
+    have hl' : ∀ g ∈ l, g ∈ K.bchSubgroup := fun g hg => hl g (List.mem_cons_of_mem _ hg)
+    have hprod : log l.prod ∈ K := K.bchSubgroup.list_prod_mem hl'
+    have h := J.add_mem (K.bch_sub_add_mem J hJ hg hprod) (ih hl')
+    rw [List.prod_cons, List.map_cons, List.sum_cons, log_mul]
+    convert h using 1
+    abel
 
 /-- Inclusion of exponential subgroups is exactly inclusion of Lie subalgebras. -/
 @[simp]

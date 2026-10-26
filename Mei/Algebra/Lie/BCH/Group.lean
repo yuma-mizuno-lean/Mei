@@ -147,6 +147,11 @@ theorem exp_zsmul (x : L) (n : ℤ) : exp (n • x) = exp x ^ n := by
   | negSucc n =>
     simp only [negSucc_zsmul, exp_neg, exp_nsmul, zpow_negSucc]
 
+/-- The logarithm of an integer power is the corresponding integer multiple. -/
+@[simp]
+theorem log_zpow (g : BCHGroup L) (n : ℤ) : log (g ^ n) = n • log g := by
+  rw [← exp_log g, ← exp_zsmul, log_exp, log_exp]
+
 end BCHGroup
 
 end Mei

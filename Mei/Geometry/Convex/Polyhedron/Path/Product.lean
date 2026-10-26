@@ -136,16 +136,24 @@ theorem segmentPathProduct_def (e : x ⟶ y) :
     segmentPathProduct ν label hcomm e =
       ((orderedCrossingTimes e).reverse.map (crossingEventProduct ν label hcomm e)).prod := (rfl)
 
-/-- A stationary segment crosses no wall. -/
-@[simp]
-theorem segmentPathProduct_self (e : x ⟶ x) :
-    segmentPathProduct ν label hcomm e = 1 := by
+/-- A segment meeting no wall has identity transport. -/
+theorem segmentPathProduct_eq_one_of_crossings_eq_empty (e : x ⟶ y)
+    (he : crossings x y = ∅) : segmentPathProduct ν label hcomm e = 1 := by
   have ht : orderedCrossingTimes e = [] := by
     apply List.eq_nil_iff_forall_not_mem.mpr
     intro t ht
     obtain ⟨i, hi⟩ := (mem_orderedCrossingTimes e t).mp ht
-    exact x.notMem i (by simpa using ((mem_crossings x x i t).mp hi).2)
+    simp [he] at hi
   simp [segmentPathProduct_def, ht]
+
+/-- A stationary segment crosses no wall. -/
+@[simp]
+theorem segmentPathProduct_self (e : x ⟶ x) :
+    segmentPathProduct ν label hcomm e = 1 := by
+  apply segmentPathProduct_eq_one_of_crossings_eq_empty ν label hcomm e
+  apply Set.eq_empty_iff_forall_notMem.mpr
+  rintro ⟨i, t⟩ hi
+  exact x.notMem i (by simpa using ((mem_crossings x x i t).mp hi).2)
 
 /-- Homomorphisms preserve the segment transport. -/
 @[simp]
@@ -167,6 +175,57 @@ theorem segmentPathProduct_reverse
     List.reverse_reverse, List.map_map, Function.comp_def,
     crossingEventProduct_reverse ν label hcomm hν,
     sub_sub_cancel, List.prod_inv_reverse]
+
+end Mei.Convex.WallComplement
+
+namespace Mei.Convex.WallComplement
+
+variable {V ι G : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
+  [Fintype ι] [CommGroup G] {W : ι → Set V}
+  (ν : ι → V →ₗ[ℝ] ℝ) (label : ι → G)
+  {x y : WallComplement W}
+
+open Classical in
+/-- With commutative labels, a segment contributes each crossed index exactly
+once. The time grouping still retains every coincident indexed wall. -/
+theorem segmentPathProduct_eq_prod (e : x ⟶ y) :
+    segmentPathProduct ν label (fun _ _ _ => Commute.all _ _) e =
+      ∏ j, if ∃ t, (j, t) ∈ crossings x y then
+        label j ^ (if 0 < ν j (y.val - x.val) then -1 else 1 : ℤ) else 1 := by
+  classical
+  have hevent (t : ℝ) :
+      crossingEventProduct ν label (fun _ _ _ => Commute.all _ _) e t =
+        ∏ j, if (j, t) ∈ crossings x y then
+          label j ^ (if 0 < ν j (y.val - x.val) then -1 else 1 : ℤ) else 1 := by
+    rw [crossingEventProduct_eq_noncommProd ν label _ e t
+      (fun _ _ _ _ _ => Commute.all _ _), Finset.noncommProd_eq_prod]
+    have hs : signedCrossingEvent ν x y t = (crossingWalls x y t).image
+        (fun j => (j, (if 0 < ν j (y.val - x.val) then -1 else 1 : ℤ))) := by
+      ext ⟨j, s⟩
+      simp [mem_signedCrossingEvent, eq_comm]
+    rw [hs]
+    rw [Finset.prod_image]
+    · have hs : crossingWalls x y t = Finset.univ.filter (fun j => (j, t) ∈ crossings x y) := by
+        ext j
+        simp
+      simpa only [hs, Prod.fst, Prod.snd] using Finset.prod_filter
+        (s := Finset.univ) (fun j => (j, t) ∈ crossings x y)
+        (fun j => label j ^ (if 0 < ν j (y.val - x.val) then -1 else 1 : ℤ))
+    · intro a _ b _ hab
+      exact (Prod.mk.inj hab).1
+  rw [segmentPathProduct_def, List.map_reverse, List.prod_reverse]
+  rw [funext hevent]
+  rw [← List.prod_toFinset _ (pairwise_orderedCrossingTimes e).nodup,
+    Finset.prod_comm]
+  apply Finset.prod_congr rfl
+  intro j _
+  rw [Finset.prod_ite_one _ _ (fun s _ t _ hs ht =>
+    e.down.subsingleton_crossing j ((mem_crossings _ _ _ _).mp hs)
+      ((mem_crossings _ _ _ _).mp ht))]
+  simp only [List.mem_toFinset, mem_orderedCrossingTimes]
+  congr 1
+  exact propext ⟨fun ⟨t, _, ht⟩ => ⟨t, ht⟩,
+    fun ⟨t, ht⟩ => ⟨t, ⟨j, ht⟩, ht⟩⟩
 
 end Mei.Convex.WallComplement
 
@@ -219,7 +278,10 @@ theorem wallPathProduct_reverse
   | cons p e ih =>
     simp [Quiver.Path.reverse, ih, segmentPathProduct_reverse ν label hcomm hν, mul_inv_rev]
 
-private theorem wallPathProduct_eq_eventList_prod (p : AdmissiblePLPath x y) :
+/-- Enumerate each simultaneous signed event in any finite-set order and multiply
+the events in reverse traversal order to compute polygonal transport. Commutation
+within each event makes the chosen finite-set enumeration immaterial. -/
+theorem wallPathProduct_eq_prod_signedCrossingEvents (p : AdmissiblePLPath x y) :
     p.wallPathProduct ν label hcomm =
       ((p.signedCrossingEvents ν).reverse.map
         (fun S => (S.toList.map (fun a => label a.1 ^ a.2)).prod)).prod := by
@@ -247,7 +309,8 @@ theorem wallPathProduct_eq_of_signedCrossingEvents_eq
     {x' y' : WallComplement W} (p : AdmissiblePLPath x y) (q : AdmissiblePLPath x' y')
     (hpq : p.signedCrossingEvents ν = q.signedCrossingEvents ν) :
     p.wallPathProduct ν label hcomm = q.wallPathProduct ν label hcomm := by
-  rw [wallPathProduct_eq_eventList_prod, wallPathProduct_eq_eventList_prod, hpq]
+  rw [wallPathProduct_eq_prod_signedCrossingEvents,
+    wallPathProduct_eq_prod_signedCrossingEvents, hpq]
 
 /-- Group homomorphisms preserve all polygonal transports. -/
 @[simp]
