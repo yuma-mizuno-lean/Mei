@@ -132,8 +132,9 @@ variable {V ι E : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
   {x y : WallComplement W}
 
 /-- The signed sum of additive wall contributions is the difference of endpoint
-potentials when every nonzero contribution is supported on a full hyperplane. In
-particular lower-degree or zero contributions may have arbitrary supports. -/
+potentials when every nonzero contribution is supported on a full hyperplane.
+Zero contributions may have arbitrary supports; lower-degree wall data qualify
+when their coefficient in the degree under consideration vanishes. -/
 theorem sum_signedCrossingEvents_eq_sub_of_hyperplanes (p : AdmissiblePLPath x y)
     (f : ι → V →ᵃ[ℝ] ℝ) (c : ι → E)
     (hW : ∀ j, c j ≠ 0 → W j = {z | f j z = 0}) :

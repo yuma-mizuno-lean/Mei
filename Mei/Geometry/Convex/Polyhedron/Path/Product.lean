@@ -211,20 +211,13 @@ theorem segmentPathProduct_eq_prod (e : x ⟶ y) :
     Finset.prod_comm]
   apply Finset.prod_congr rfl
   intro j _
-  by_cases hj : ∃ t, (j, t) ∈ crossings x y
-  · rw [ite_eq_left hj]
-    obtain ⟨t, ht⟩ := hj
-    rw [Finset.prod_eq_single t]
-    · simp [ht]
-    · intro s _ hst
-      have hs : (j, s) ∉ crossings x y := fun hs => hst
-        (e.down.subsingleton_crossing j ((mem_crossings _ _ _ _).mp hs)
-          ((mem_crossings _ _ _ _).mp ht))
-      simp [hs]
-    · intro hnot
-      exact (hnot (List.mem_toFinset.mpr ((mem_orderedCrossingTimes e t).mpr ⟨j, ht⟩))).elim
-  · rw [ite_eq_right hj]
-    exact Finset.prod_eq_one fun t _ => ite_eq_right (not_exists.mp hj t)
+  rw [Finset.prod_ite_one _ _ (fun s _ t _ hs ht =>
+    e.down.subsingleton_crossing j ((mem_crossings _ _ _ _).mp hs)
+      ((mem_crossings _ _ _ _).mp ht))]
+  simp only [List.mem_toFinset, mem_orderedCrossingTimes]
+  congr 1
+  exact propext ⟨fun ⟨t, _, ht⟩ => ⟨t, ht⟩,
+    fun ⟨t, ht⟩ => ⟨t, ⟨j, ht⟩, ht⟩⟩
 
 end Mei.Convex.WallComplement
 
