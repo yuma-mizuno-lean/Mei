@@ -131,6 +131,12 @@ theorem lowerCentralSeries_truncatedLie_eq_bot (k : ℕ) :
 instance truncatedLie_isNilpotent (k : ℕ) : LieRing.IsNilpotent (d.truncatedLie ℒ k) :=
   LieModule.IsNilpotent.mk _ (d.lowerCentralSeries_truncatedLie_eq_bot ℒ k)
 
+/-- The order-zero truncation is trivial: every degree is strictly positive. -/
+instance truncatedLie_zero_subsingleton : Subsingleton (d.truncatedLie ℒ 0) :=
+  subsingleton_of_forall_eq 0 fun x => by
+    obtain ⟨x, rfl⟩ := (d.degreeIdeal ℒ 0).surjective_mkQ x
+    exact (d.degreeIdeal ℒ 0).mkQ_eq_zero.mpr (by simp)
+
 /-- The degree-`n` piece of the truncation is the image of the original degree-`n` piece. -/
 def truncatedGrading (k : ℕ) (n : N) : Submodule R (d.truncatedLie ℒ k) :=
   (ℒ n).map (d.degreeIdeal ℒ k).toSubmodule.mkQ
