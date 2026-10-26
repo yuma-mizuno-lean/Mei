@@ -201,6 +201,15 @@ theorem truncatedGrading_eq_bot {k : ℕ} {n : N} (hn : (k : ℤ) < d.degree n) 
   obtain ⟨y, hy, rfl⟩ := (d.mem_truncatedGrading_iff ℒ).mp hx
   exact (d.degreeIdeal ℒ k).mkQ_eq_zero.mpr (d.le_degreeIdeal ℒ hn hy)
 
+/-- A nonzero piece in a truncation has nonzero allowed degree below the cutoff. -/
+theorem mem_cutoff_of_truncatedGrading_ne_bot {k : ℕ} {n : N}
+    (hn : d.truncatedGrading ℒ k n ≠ ⊥) : n ∈ d.cutoff k \ {0} := by
+  have hp : n ∈ d.monoid ∧ n ≠ 0 := by
+    by_contra h
+    exact hn (IsPositiveGrading.eq_bot (d := d) (ℒ := d.truncatedGrading ℒ k) n (by tauto))
+  refine ⟨d.mem_cutoff.mpr ⟨hp.1, ?_⟩, hp.2⟩
+  exact le_of_not_gt (fun h => hn (d.truncatedGrading_eq_bot ℒ h))
+
 /-- The surjective transition from a higher-order truncation to a lower-order one. -/
 def truncationMap {k l : ℕ} (h : k ≤ l) :
     d.truncatedLie ℒ l →ₗ⁅R⁆ d.truncatedLie ℒ k :=

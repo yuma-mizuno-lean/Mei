@@ -6,6 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Algebra.Lie.Graded.Completion
+public import Mei.Algebra.Lie.UniversalEnveloping.GradedEmbedding
 public import Mei.Algebra.Lie.UniversalEnveloping.Completion
 public import Mei.Algebra.PositiveDegrees.Completion
 
@@ -17,7 +18,8 @@ every degree cutoff and extends to a Lie homomorphism from the compatible-family
 Lie completion into the degree completion of its enveloping algebra. The finite
 maps commute with transitions, and projections characterize the completed map.
 This construction works over an arbitrary commutative ring, without a PBW or
-freeness hypothesis; it does not assert injectivity.
+freeness hypothesis. Over a commutative rational algebra, it is injective: the
+Euler derivation supplies an enveloping embedding that reflects the degree tails.
 Its image consists of primitive elements in the first completed filtration ideal.
 A compatible enveloping family lies in this image exactly when all its finite
 projections have Lie representatives. Assemble those representatives degree by
@@ -77,6 +79,23 @@ theorem truncatedLieToU_mk (k : ℕ) (x : L) :
     truncatedLieToU d ℒ k (LieSubmodule.Quotient.mk x) =
       Ideal.Quotient.mk ((F).ideal (k + 1)) (ι R x) := by
   simp [truncatedLieToU]
+
+/-- Over a commutative rational algebra, the finite canonical Lie map is injective,
+without a freeness hypothesis. The enveloping degree filtration reflects Lie degree. -/
+theorem truncatedLieToU_injective [Algebra ℚ R] (k : ℕ) :
+    Function.Injective (truncatedLieToU d ℒ k) := by
+  apply (injective_iff_map_eq_zero _).mpr
+  intro x hx
+  obtain ⟨a, rfl⟩ := (d.degreeIdeal ℒ k).surjective_mkQ x
+  rw [LieIdeal.mkQ_apply, truncatedLieToU_mk, Ideal.Quotient.eq_zero_iff_mem] at hx
+  apply (d.degreeIdeal ℒ k).mkQ_eq_zero.mpr
+  have he := comap_degreeFiltration_ι ℒ d.degree
+    (fun n hn => d.eq_bot_of_degree_nonpos ℒ n (le_of_lt hn))
+    (ι_injective_of_nonzero_grading ℒ d.degree
+      (fun n hn => d.eq_bot_of_degree_nonpos ℒ n hn.le)) (k + 1)
+  rw [← d.degreeSubmodule_eq_degreeTail ℒ k] at he
+  rw [← LieSubmodule.mem_toSubmodule, d.degreeIdeal_toSubmodule ℒ k]
+  exact (he ▸ hx : a ∈ d.degreeSubmodule ℒ k)
 
 /-- The finite canonical Lie map takes values in the image of the augmentation ideal. -/
 theorem truncatedLieToU_mem_map_augmentation (k : ℕ) (x : d.truncatedLie ℒ k) :
@@ -140,6 +159,17 @@ theorem projection_completedLieToU (k : ℕ) (x : d.completedLie ℒ) :
     (F).projection k (completedLieToU d ℒ x) = truncatedLieToU d ℒ k (π k x) := by
   rw [Mei.AlgFiltration.projection_apply, completedLieToU]
   rfl
+
+/-- The completed canonical Lie map is injective over a commutative rational algebra,
+with arbitrary homogeneous modules. -/
+theorem completedLieToU_injective [Algebra ℚ R] :
+    Function.Injective (completedLieToU d ℒ) := by
+  intro x y hxy
+  apply ModuleFiltration.completion_ext
+  intro k
+  apply truncatedLieToU_injective d ℒ k
+  simpa only [projection_completedLieToU, LieIdeal.completionProjection_apply] using
+    congrArg ((F).projection k) hxy
 
 /-- The completed map extends the original canonical enveloping map. -/
 @[simp]

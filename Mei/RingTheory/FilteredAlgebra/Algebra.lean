@@ -216,6 +216,29 @@ def completionAlgebraConeIsLimit : IsLimit (F.completionAlgebraCone (R := R)) wh
       (F.projection_liftₐ _
         (fun h => congrArg AlgCat.Hom.hom (s.w (homOfLE h).op)) k x).symm
 
+/-- The concrete completion is canonically isomorphic to the categorical algebra limit. -/
+noncomputable def completionAlgebraIsoLimit :
+    AlgCat.of R F.completion ≅ limit (F.quotientAlgebraDiagram (R := R)) :=
+  F.completionAlgebraConeIsLimit.conePointUniqueUpToIso
+    (limit.isLimit (F.quotientAlgebraDiagram (R := R)))
+
+/-- The canonical algebra-limit comparison identifies the finite-order projections. -/
+@[reassoc (attr := simp)]
+theorem completionAlgebraIsoLimit_hom_π (k : ℕᵒᵖ) :
+    (F.completionAlgebraIsoLimit (R := R)).hom ≫
+      limit.π (F.quotientAlgebraDiagram (R := R)) k =
+        AlgCat.ofHom (F.projectionₐ k.unop) := by
+  exact F.completionAlgebraConeIsLimit.conePointUniqueUpToIso_hom_comp
+    (limit.isLimit (F.quotientAlgebraDiagram (R := R))) k
+
+/-- The inverse algebra-limit comparison recovers the finite quotient components. -/
+@[reassoc (attr := simp)]
+theorem completionAlgebraIsoLimit_inv_projection (k : ℕᵒᵖ) :
+    (F.completionAlgebraIsoLimit (R := R)).inv ≫ AlgCat.ofHom (F.projectionₐ k.unop) =
+      limit.π (F.quotientAlgebraDiagram (R := R)) k := by
+  exact F.completionAlgebraConeIsLimit.conePointUniqueUpToIso_inv_comp
+    (limit.isLimit (F.quotientAlgebraDiagram (R := R))) k
+
 section RestrictScalars
 
 variable {S : Type*} [CommRing S] [Algebra S R] [Algebra S A] [IsScalarTower S R A]

@@ -85,6 +85,22 @@ theorem map_signSubalgebra {L' : Type*} [LieRing L'] [LieAlgebra R L']
   apply LieSubalgebra.toSubmodule_injective
   simp only [LieSubalgebra.map, signSubalgebra_toSubmodule, Submodule.map_iSup, hf]
 
+/-- Sign subalgebras depend only on the signs of degrees with nonzero pieces. -/
+theorem signSubalgebra_eq_of_sign_eq (φ : ι →+ A)
+    (h : ∀ n, ℒ n ≠ ⊥ → SignType.sign (θ n) = SignType.sign (φ n))
+    (s : SignType) : signSubalgebra ℒ θ s = signSubalgebra ℒ φ s := by
+  apply LieSubalgebra.toSubmodule_injective
+  simp only [signSubalgebra_toSubmodule]
+  apply le_antisymm
+  · refine iSup_le fun n => ?_
+    by_cases he : ℒ n = ⊥
+    · simp [he]
+    · exact le_iSup_of_le ⟨n, (h n he).symm.trans n.property⟩ le_rfl
+  · refine iSup_le fun n => ?_
+    by_cases he : ℒ n = ⊥
+    · simp [he]
+    · exact le_iSup_of_le ⟨n, (h n he).trans n.property⟩ le_rfl
+
 variable {L' : Type*} [LieRing L'] [LieAlgebra R L']
   (ℳ : ι → Submodule R L') [SetLike.GradedBracket ℳ ℳ]
 
