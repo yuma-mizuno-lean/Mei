@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.ScatteringDiagram.DirectedWall
+public import Mei.Geometry.ScatteringDiagram.DirectedWall.Basic
 public import Mei.Geometry.Convex.Polyhedron.Path.Product
 
 /-!
