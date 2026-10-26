@@ -45,6 +45,17 @@ theorem mem_singularSupport {W : ι → Set V} {x : V} :
   simp only [singularSupport, Set.mem_union, Set.mem_iUnion, Set.mem_ofPred_eq,
     Set.mem_inter_iff, exists_prop]
 
+/-- The singular support of finitely many closed walls is closed in finite
+dimension. No polyhedral or codimension hypothesis is needed. -/
+theorem isClosed_singularSupport [FiniteDimensional ℝ V] [Finite ι]
+    (W : ι → Set V) (hclosed : ∀ i, IsClosed (W i)) :
+    IsClosed (singularSupport W) := by
+  unfold singularSupport
+  exact (isClosed_iUnion_of_finite fun i =>
+    isClosed_intrinsicFrontier (affineSpan ℝ (W i)).closed_of_finiteDimensional).union
+    (isClosed_iUnion_of_finite fun i => isClosed_iUnion_of_finite fun j =>
+      isClosed_iUnion_of_finite fun _ => (hclosed i).inter (hclosed j))
+
 /-- Restricting or reindexing a wall family introduces no new singular points. -/
 theorem singularSupport_comp_subset {κ : Type*} (W : ι → Set V) (f : κ → ι) :
     singularSupport (W ∘ f) ⊆ singularSupport W := by
