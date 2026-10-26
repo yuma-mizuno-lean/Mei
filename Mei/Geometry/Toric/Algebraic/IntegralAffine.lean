@@ -7,6 +7,7 @@ module
 
 public import Mei.Geometry.Toric.Algebraic.RationalFunctional
 public import Mei.Analysis.Convex.Exposed
+public import Mathlib.Analysis.Normed.Affine.AddTorsorBases
 public import Mathlib.Analysis.Normed.Module.FiniteDimension
 
 /-!
@@ -61,6 +62,20 @@ theorem ext {e f : IntegralAffineEquiv h h'}
   cases ha
   cases hl
   rfl
+
+/-- The real affine equivalence determines the integral lattice map uniquely. -/
+theorem eq_of_toAffineEquiv_eq {e f : IntegralAffineEquiv h h'}
+    (he : e.toAffineEquiv = f.toAffineEquiv) : e = f := by
+  apply ext he
+  apply AddEquiv.ext
+  intro n
+  apply h'.injective
+  rw [← e.map_lattice, ← f.map_lattice, he]
+
+/-- The real linear part is the canonical scalar extension of the integral lattice map. -/
+theorem linear_eq_extend (e : IntegralAffineEquiv h h') :
+    e.toAffineEquiv.linear.toLinearMap = h.extend i' e.latticeEquiv.toAddMonoidHom :=
+  h.eq_extend e.map_lattice
 
 /-- The identity preserves the integral lattice. -/
 def refl (h : IsIntegralLattice i) : IntegralAffineEquiv h h where
@@ -181,6 +196,12 @@ variable {N N' V V' : Type*} [AddCommGroup N] [AddCommGroup N']
   [NormedAddCommGroup V] [NormedAddCommGroup V'] [NormedSpace ℝ V] [NormedSpace ℝ V']
   {i : N →+ V} {i' : N' →+ V'}
   {h : IsIntegralLattice i} {h' : IsIntegralLattice i'}
+
+/-- Agreement on a nonempty open set determines the entire integral affine equivalence. -/
+theorem eq_of_eqOn_open {e f : IntegralAffineEquiv h h'} {s : Set V}
+    (hs : IsOpen s) (hne : s.Nonempty) (he : Set.EqOn e f s) : e = f := by
+  apply eq_of_toAffineEquiv_eq
+  exact AffineEquiv.ext_on (hs.affineSpan_eq_top hne) e.toAffineEquiv f.toAffineEquiv he
 
 /-- Continuity follows from the finite dimensionality supplied by the lattice. -/
 theorem continuous (e : IntegralAffineEquiv h h') : Continuous e := by

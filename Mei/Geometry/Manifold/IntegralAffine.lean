@@ -6,7 +6,6 @@ Authors: Codex
 module
 
 public import Mei.Geometry.Toric.Algebraic.IntegralAffine
-public import Mathlib.Analysis.Normed.Affine.AddTorsorBases
 public import Mathlib.Analysis.Normed.Module.Connected
 public import Mathlib.Geometry.Manifold.StructureGroupoid
 public import Mathlib.Topology.LocallyConstant.Basic
@@ -19,10 +18,6 @@ extension, including their integral lattice maps. Consequently a map locally
 equal to integral affine equivalences on a connected open set extends uniquely
 to one global integral affine equivalence. The associated Mathlib pregroupoid
 and structure groupoid describe integral affine chart changes.
-
-This implements the atlas transition step of
-[ScatteringDiagrams §1.5](https://github.com/yuma-mizuno/TauCetiRoadmap/blob/mei/TauCetiRoadmap/ScatteringDiagrams/README.md#15-integral-affine-bases-and-exponent-data).
-Developing maps and holonomy require additional constructions.
 -/
 
 public section
@@ -36,30 +31,6 @@ variable {N N' V W : Type*} [AddCommGroup N] [AddCommGroup N']
   [NormedAddCommGroup W] [NormedSpace ℝ W]
   {i : N →+ V} {i' : N' →+ W}
   {h : TauCeti.Toric.IsIntegralLattice i} {h' : TauCeti.Toric.IsIntegralLattice i'}
-
-namespace IntegralAffineEquiv
-
-/-- The real affine equivalence determines the integral lattice map uniquely. -/
-theorem eq_of_toAffineEquiv_eq {e f : IntegralAffineEquiv h h'}
-    (he : e.toAffineEquiv = f.toAffineEquiv) : e = f := by
-  apply ext he
-  apply AddEquiv.ext
-  intro n
-  apply h'.injective
-  rw [← e.map_lattice, ← f.map_lattice, he]
-
-/-- The real linear part is the canonical scalar extension of the integral lattice map. -/
-theorem linear_eq_extend (e : IntegralAffineEquiv h h') :
-    e.toAffineEquiv.linear.toLinearMap = h.extend i' e.latticeEquiv.toAddMonoidHom :=
-  h.eq_extend e.map_lattice
-
-/-- Agreement on a nonempty open set determines the entire integral affine equivalence. -/
-theorem eq_of_eqOn_open {e f : IntegralAffineEquiv h h'} {s : Set V}
-    (hs : IsOpen s) (hne : s.Nonempty) (he : EqOn e f s) : e = f := by
-  apply eq_of_toAffineEquiv_eq
-  exact AffineEquiv.ext_on (hs.affineSpan_eq_top hne) e.toAffineEquiv f.toAffineEquiv he
-
-end IntegralAffineEquiv
 
 /-- On a set, a map is locally integral affine if near each point it agrees with
 one global integral affine equivalence, after restriction to that set. -/
@@ -135,15 +106,12 @@ theorem comp {N'' U : Type*} [AddCommGroup N''] [NormedAddCommGroup U]
   obtain ⟨e', v, hv, hxv, he'⟩ := hg (f x) hx.2
   refine ⟨e.trans e', u ∩ e ⁻¹' v, hu.inter (hv.preimage e.continuous),
     ⟨hxu, ?_⟩, ?_⟩
-  · change e x ∈ v
-    rw [← he ⟨hx.1, hxu⟩]
-    exact hxv
+  · simpa only [Set.mem_preimage, ← he ⟨hx.1, hxu⟩] using hxv
   · intro y hy
     have hfy := he ⟨hy.1.1, hy.2.1⟩
     have hgy := he' ⟨hy.1.2, hfy.symm ▸ hy.2.2⟩
-    change g (f y) = (e.trans e').toAffineEquiv y
-    rw [IntegralAffineEquiv.trans_toAffineEquiv]
-    exact hgy.trans (congrArg e' hfy)
+    simpa only [Function.comp_apply, IntegralAffineEquiv.trans_toAffineEquiv,
+      AffineEquiv.trans_apply] using hgy.trans (congrArg e' hfy)
 
 /-- Agreement on the domain preserves local integral affine witnesses. -/
 theorem congr {f g : V → W} {s : Set V}
@@ -186,9 +154,8 @@ theorem symm {e : OpenPartialHomeomorph V W}
   intro z hz
   have haz : a (e.symm z) = z :=
     (ha ⟨e.map_target hz.1, hz.2.2⟩).symm.trans (e.right_inv hz.1)
-  change e.symm z = a.symm.toAffineEquiv z
-  rw [IntegralAffineEquiv.symm_toAffineEquiv]
-  exact a.toAffineEquiv.eq_symm_apply.mpr haz
+  simpa only [IntegralAffineEquiv.symm_toAffineEquiv] using
+    a.toAffineEquiv.eq_symm_apply.mpr haz
 
 end IsLocallyIntegralAffineOn
 
