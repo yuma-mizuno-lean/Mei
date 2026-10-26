@@ -107,6 +107,16 @@ theorem sum {ι : Type*} (s : Finset ι) (f : ι → Module.Dual ℝ V)
     exact (hf j (Finset.mem_insert_self _ _)).add
       (ih (fun k hk => hf k (Finset.mem_insert_of_mem hk)))
 
+/-- A rational functional has the same kernel as an integral character's real
+extension, including when the functional is zero. -/
+theorem exists_ker_eq_realCharacter (hf : IsRationalFunctional h f) :
+    ∃ m : Module.Dual ℤ N, f.ker = (h.realCharacter m.toAddMonoidHom).ker := by
+  obtain ⟨q, m, rfl⟩ := hf
+  by_cases hq : q = 0
+  · have hz : (0 : Module.Dual ℤ N).toAddMonoidHom = 0 := rfl
+    exact ⟨0, by simp [hq, hz]⟩
+  · exact ⟨m, LinearMap.ker_smul _ _ (by exact_mod_cast hq)⟩
+
 /-- A rational functional takes rational values on lattice points. -/
 theorem exists_rat_apply (hf : IsRationalFunctional h f) (n : N) :
     ∃ q : ℚ, f (i n) = (q : ℝ) := by

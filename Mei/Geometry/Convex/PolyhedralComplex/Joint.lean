@@ -6,6 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.Convex.PolyhedralComplex.Strata
+public import Mei.Geometry.Convex.Polyhedron.Rational.Direction
 public import Mathlib.LinearAlgebra.FiniteDimensional.Lemmas
 
 /-!
@@ -16,6 +17,10 @@ cells containing the joint and misses its relative boundary. The skeleton of
 codimension at least two agrees with the joint throughout that ball. A chosen
 complement to the joint direction gives a two-dimensional transverse slice
 whose intersection with that skeleton is exactly the center.
+
+The direction of each actual joint is the common kernel of two independent
+integral characters, by `IsRationalNormalPolyhedron.exists_direction_eq_iInf_ker`.
+This also identifies its tangent lattice for homogeneous joint calculations.
 
 These are the isolation and transversality conditions needed before constructing
 small polygonal meridians: any filled polygon in the ball and slice misses every
@@ -37,6 +42,25 @@ namespace Mei.FinitePolyhedralComplex
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
+
+/-- The direction of an actual joint is cut out by two independent integral
+characters. The joint need not contain any lattice point, since its offsets
+may be arbitrary real numbers. -/
+theorem exists_joint_direction_eq_inf_ker (C : FinitePolyhedralComplex h) {J : Set V}
+    (hJ : J ∈ C.joints) :
+    ∃ f g : N →+ ℤ, LinearIndependent ℝ ![h.realCharacter f, h.realCharacter g] ∧
+      (affineSpan ℝ J).direction = (h.realCharacter f).ker ⊓ (h.realCharacter g).ker := by
+  obtain ⟨hcell, hdim⟩ := (C.mem_cellsOfCodimension 2 J).mp hJ
+  obtain ⟨m, hlin, hdir⟩ := (C.rational J hcell).exists_direction_eq_iInf_ker
+    (C.nonempty J hcell) hdim
+  have heq : (fun j => h.realCharacter (m j).toAddMonoidHom) =
+      ![h.realCharacter (m 0).toAddMonoidHom, h.realCharacter (m 1).toAddMonoidHom] := by
+    ext j
+    fin_cases j <;> rfl
+  refine ⟨(m 0).toAddMonoidHom, (m 1).toAddMonoidHom, heq ▸ hlin, ?_⟩
+  rw [hdir]
+  ext v
+  simp only [Submodule.mem_iInf, Submodule.mem_inf, LinearMap.mem_ker, Fin.forall_fin_two]
 
 /-- Every relative interior point of a joint admits an isolating ball and a
 two-dimensional complementary slice. Within that slice and ball, the whole
