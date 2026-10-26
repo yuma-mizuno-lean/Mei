@@ -18,10 +18,6 @@ the common kernel of `k` independent real extensions of integral characters.
 Offsets need not be rational: only the rows vanishing on the entire polyhedron
 control its affine direction. This supplies integral conormals for actual cells,
 including joints, rather than requiring a choice of defining equations as input.
-
-The proof uses `Mei.Convex.direction_affineSpan_eq_iInf_ker` to identify the
-active equations, then Mathlib's `Submodule.exists_fun_fin_finrank_span_eq`
-and dual-coannihilator dimension formula to extract independent equations.
 -/
 
 public section
@@ -43,6 +39,9 @@ theorem exists_direction_eq_iInf_ker (hP : IsRationalNormalPolyhedron h P)
       LinearIndependent ℝ (fun j => h.realCharacter (m j).toAddMonoidHom) ∧
       (affineSpan ℝ P).direction =
         ⨅ j, (h.realCharacter (m j).toAddMonoidHom).ker := by
+  /- The proof uses `Mei.Convex.direction_affineSpan_eq_iInf_ker` to identify the
+  active equations, then Mathlib's `Submodule.exists_fun_fin_finrank_span_eq`
+  and dual-coannihilator dimension formula to extract independent equations. -/
   classical
   let := h.finiteDimensional
   obtain ⟨Q, hQ⟩ := isRationalNormalPolyhedron_iff.mp hP
