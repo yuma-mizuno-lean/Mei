@@ -20,7 +20,9 @@ whose intersection with that skeleton is exactly the center.
 
 The joint direction is also the common kernel of two real extensions of
 integral characters. Evaluating these equations on lattice vectors gives the
-integral tangent kernel used in homogeneous wall-space calculations.
+integral tangent kernel used in homogeneous wall-space calculations. Contracting
+the equations against a transverse lattice vector gives a nonzero integral
+normal to the sum of the joint direction and that vector's line.
 
 These are the isolation and transversality conditions needed before constructing
 small polygonal meridians: any filled polygon in the ball and slice misses every
@@ -53,6 +55,35 @@ theorem exists_joint_direction_eq_inf_ker (C : FinitePolyhedralComplex h) {J : S
   obtain ⟨f, g, hfg⟩ := (C.rational J hJC).exists_direction_eq_inf_ker
     (C.nonempty J hJC) hdim
   exact ⟨f.toAddMonoidHom, g.toAddMonoidHom, hfg⟩
+
+/-- At a degree transverse to a joint, contracting two integral joint equations
+gives a nonzero integral normal. Its real kernel is exactly the joint direction
+plus the line through that degree. -/
+theorem exists_joint_transverse_normal (C : FinitePolyhedralComplex h) {J : Set V}
+    (hJ : J ∈ C.joints) (v : N) (hv : i v ∉ (affineSpan ℝ J).direction) :
+    ∃ f g : N →+ ℤ,
+      (affineSpan ℝ J).direction = (h.realCharacter f).ker ⊓ (h.realCharacter g).ker ∧
+      f v • g - g v • f ≠ 0 ∧
+      (h.realCharacter (f v • g - g v • f)).ker =
+        (affineSpan ℝ J).direction ⊔ ℝ ∙ i v := by
+  let := h.finiteDimensional
+  obtain ⟨f, g, hfg⟩ := C.exists_joint_direction_eq_inf_ker hJ
+  have hreal : h.realCharacter (f v • g - g v • f) =
+      h.realCharacter f (i v) • h.realCharacter g -
+        h.realCharacter g (i v) • h.realCharacter f := by
+    ext w
+    simp
+  have hker : (h.realCharacter (f v • g - g v • f)).ker =
+      (affineSpan ℝ J).direction ⊔ ℝ ∙ i v := by
+    rw [hreal, LinearMap.ker_apply_smul_sub_apply_smul _ _ (hfg ▸ hv), ← hfg]
+  refine ⟨f, g, hfg, ?_, hker⟩
+  intro he
+  have htop : (affineSpan ℝ J).direction ⊔ ℝ ∙ i v = ⊤ := by
+    simpa only [he, map_zero, LinearMap.ker_zero] using hker.symm
+  have hdim := ((C.mem_cellsOfCodimension 2 J).mp hJ).2
+  have hsup := Submodule.finrank_sup_span_singleton hv
+  rw [htop, finrank_top] at hsup
+  omega
 
 /-- Every relative interior point of a joint admits an isolating ball and a
 two-dimensional complementary slice. Within that slice and ball, the whole
