@@ -161,7 +161,8 @@ theorem incoming_image_iff : (W.image e E hE).Incoming ↔ W.Incoming := by
 /-- Outgoingness is preserved and reflected by affine coordinate changes. -/
 @[simp]
 theorem outgoing_image_iff : (W.image e E hE).Outgoing ↔ W.Outgoing := by
-  rw [outgoing_iff, incoming_image_iff, outgoing_iff]
+  simp only [outgoing_iff, geometricDirection_image, image_support,
+    e.toAffineEquiv.linear_mem_recessionCone_image]
 
 /-- Identity coordinate changes leave every wall datum unchanged. -/
 @[simp]

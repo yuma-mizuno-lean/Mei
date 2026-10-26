@@ -124,9 +124,9 @@ theorem incoming_iff : W.Incoming ↔
     ∀ x ∈ W.support, ∀ t : ℝ, 0 ≤ t → x + t • i (ρ W.ray.generator) ∈ W.support := by
   rw [Incoming, mem_recessionCone]
 
-/-- Outgoingness is the failure of incomingness, including when the spatial
-direction is zero. -/
-theorem outgoing_iff : W.Outgoing ↔ ¬W.Incoming := Iff.rfl
+/-- Outgoingness means the positive geometric degree direction is not a recession
+direction of the support, including when that geometric direction is zero. -/
+theorem outgoing_iff : W.Outgoing ↔ i (ρ W.ray.generator) ∉ recessionCone W.support := Iff.rfl
 
 /-- The geometric degree direction lies in the direction of the supporting hyperplane. -/
 theorem geometricDirection_mem_direction_support :
