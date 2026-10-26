@@ -16,6 +16,9 @@ Multiplication in that order is a bijection onto the completed group. Its invers
 extracts the three factors and is computed by finite sign factorization at every
 cutoff, including the middle factor used as a wall label.
 
+For the attribution to Bridgeland's sign factorization, see the module docstring
+of `Mei.Algebra.Lie.BCH.Sign.Basic`.
+
 The construction assembles `Mei.PositiveDegrees.signFactorizationEquiv` using its
 transition law. The carrier is the existing `Mei.completedGroup`; no additional
 completeness or surjectivity assumption is required.

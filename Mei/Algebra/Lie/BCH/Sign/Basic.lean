@@ -19,6 +19,10 @@ into the positive, zero and negative sign subgroups. The factors are functions
 of the product and commute with lowering the cutoff. These are set equivalences:
 recombination is generally not a group homomorphism.
 
+This formalizes the sign factorization in Tom Bridgeland,
+*Scattering diagrams, Hall algebras and stability conditions*, §3.2, equation (5)
+([arXiv:1603.00416v4](https://arxiv.org/pdf/1603.00416v4)).
+
 The proof uses `Mei.signDecomposition` and the central successive kernels of
 `Mei.PositiveDegrees.truncationMap`. Central corrections make the nonlinear BCH
 recombination act by translation on each new kernel. No freeness, finite rank,
