@@ -20,6 +20,12 @@ the degree cutoff preserves the complex and coorientations, projects its labels
 and path products, and preserves consistency. The degree point and its negative
 are allowed endpoints at every cutoff.
 
+The labeled cone complexes adapt Tom Bridgeland,
+*Scattering diagrams, Hall algebras and stability conditions*,
+[arXiv:1603.00416](https://arxiv.org/abs/1603.00416), Definition 2.1. The cutoff
+maps implement the finite-level transition maps used in Definition 2.3 and
+§§2.9–2.11, with orthogonal BCH group labels in place of Lie algebra labels.
+
 The constructions use `FiniteWallDiagram.relabel`,
 `orthogonalLieSubalgebra` and its truncation theorem, and Mathlib's
 `Module.Dual.finrank_ker_add_one_of_ne_zero`. No salience, saturation or finite
