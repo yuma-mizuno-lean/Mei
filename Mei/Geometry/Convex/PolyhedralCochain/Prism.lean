@@ -14,8 +14,10 @@ public import Mei.Geometry.Convex.Sweep.Face
 
 The base facet of a negative-ray sweep carries the opposite of the original
 cell's orientation. The positive sweeping vector points outwards at the base,
-and contracting the base orientation by this vector recovers the sweep
-orientation. Thus the signed boundary convention forces reversal of the base.
+and contracting the original cell's orientation by this vector recovers the
+sweep orientation. Contracting the signed base facet's orientation instead
+gives the negative sweep orientation, so the boundary convention forces
+reversal of the base.
 This identifies the base term in the polyhedral sweep boundary formula.
 
 The proof combines `OrientedCell.eq_boundaryFacet_iff` with the unsigned
