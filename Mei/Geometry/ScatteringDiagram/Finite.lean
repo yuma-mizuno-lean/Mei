@@ -105,6 +105,25 @@ theorem pathProduct_toPath (e : x ⟶ y) :
   simp [Quiver.Hom.toPath, pathProduct, C.segmentCrossingWord_def,
     MonoidHom.map_list_prod, List.map_map, C.crossingLetter_def, Function.comp_def, apply_ite]
 
+/-- A path product lies in every subgroup containing the labels of all crossed walls. -/
+theorem pathProduct_mem {S : Subgroup H} (p : AdmissiblePLPath x y)
+    (hS : ∀ a ∈ p.crossingEvents, D.label a.2.1 ∈ S) : D.pathProduct p ∈ S := by
+  induction p with
+  | nil => simp
+  | cons p e ih =>
+    rw [pathProduct_cons]
+    refine S.mul_mem ?_ (ih fun a ha => hS a
+      ((Quiver.Path.mem_crossingEvents_cons p e a.1 a.2.1 a.2.2).mpr (Or.inl ha)))
+    rw [pathProduct_toPath]
+    refine S.list_prod_mem fun g hg => ?_
+    obtain ⟨a, ha, rfl⟩ := List.mem_map.mp hg
+    have hl : D.label a.1 ∈ S := hS (p.length, a)
+      ((Quiver.Path.mem_crossingEvents_cons p e _ a.1 a.2).mpr (Or.inr ⟨rfl,
+        (C.mem_orderedCrossings e a).mp (List.mem_reverse.mp ha)⟩))
+    split
+    · exact S.inv_mem hl
+    · exact hl
+
 /-- A segment meeting no wall has trivial product. -/
 theorem pathProduct_toPath_eq_one (e : x ⟶ y) (he : WallComplement.crossings x y = ∅) :
     D.pathProduct e.toPath = 1 := by
