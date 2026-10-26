@@ -18,7 +18,7 @@ avoid a countable arrangement of proper linear subspaces and whose edges are
 transverse to every member. The vertices are `u`, `v`, and `-u-v`.
 The construction uses `AffineSubspace.exists_dist_lt_genericLocus`: after choosing
 `v`, only countably many translates of the forbidden directions and the line
-through `u` have to be excluded when choosing `u`.
+through `v` have to be excluded when choosing `u`.
 
 The same construction in an affine slice treats sets whose supporting spans
 contain the center, ignoring sets that miss the prescribed ball. These triangles
@@ -31,12 +31,12 @@ open Set
 
 namespace LinearIndependent
 
-variable {V : Type*} [AddCommGroup V] [Module ℝ V]
+variable {𝕜 V : Type*} [Field 𝕜] [CharZero 𝕜] [AddCommGroup V] [Module 𝕜 V]
 
 /-- Two independent vectors form a nondegenerate triangle together with the
 negative of their sum. -/
-theorem affineIndependent_centeredTriangle {u v : V} (huv : LinearIndependent ℝ ![u, v]) :
-    AffineIndependent ℝ ![u, v, -u-v] := by
+theorem affineIndependent_centeredTriangle {u v : V} (huv : LinearIndependent 𝕜 ![u, v]) :
+    AffineIndependent 𝕜 ![u, v, -u-v] := by
   rw [affineIndependent_iff_of_fintype]
   intro w hw hs
   rw [Finset.weightedVSub_eq_linear_combination _ hw] at hs
@@ -50,18 +50,21 @@ theorem affineIndependent_centeredTriangle {u v : V} (huv : LinearIndependent �
   have h0 := hc 0
   have h1 := hc 1
   simp only [Matrix.cons_val_zero, Matrix.cons_val_one] at h0 h1
+  have h2 : w 2 = 0 := by
+    linear_combination (1 / 3 : 𝕜) * (hw - h0 - h1)
   intro j
-  fin_cases j <;> dsimp at * <;> linarith
+  fin_cases j <;> simp_all
 
 end LinearIndependent
 
 namespace Affine.Triangle
 
-variable {V : Type*} [AddCommGroup V] [Module ℝ V]
+variable {𝕜 V P : Type*} [DivisionRing 𝕜] [CharZero 𝕜] [AddCommGroup V] [Module 𝕜 V]
+  [AffineSpace V P]
 
 /-- The centroid of a triangle lies on none of the affine lines through pairs
 of its vertices, including outside the edges. -/
-theorem centroid_ne_lineMap (s : Affine.Triangle ℝ V) (j k : Fin 3) (t : ℝ) :
+theorem centroid_ne_lineMap (s : Affine.Triangle 𝕜 P) (j k : Fin 3) (t : 𝕜) :
     s.centroid ≠ AffineMap.lineMap (s.points j) (s.points k) t := by
   have hp : ({j, k} : Set (Fin 3)) ≠ Set.univ := by
     intro he
@@ -72,8 +75,8 @@ theorem centroid_ne_lineMap (s : Affine.Triangle ℝ V) (j k : Fin 3) (t : ℝ) 
   intro he
   apply hc
   rw [he]
-  exact AffineMap.lineMap_mem _ (subset_affineSpan ℝ _ (by simp))
-    (subset_affineSpan ℝ _ (by simp))
+  exact AffineMap.lineMap_mem _ (subset_affineSpan 𝕜 _ (by simp))
+    (subset_affineSpan 𝕜 _ (by simp))
 
 end Affine.Triangle
 
