@@ -84,7 +84,7 @@ def setoid : Setoid (ConsistentDiagram s d ℒ) where
           ((E.equivalent_iff_chamberTransport_eq F).mp hEF))⟩
 
 /-- Consistent completed diagrams modulo equality of finite common path products. -/
-def Class := Quotient (setoid (s := s) (d := d) (ℒ := ℒ))
+def Class : Type _ := Quotient (setoid (s := s) (d := d) (ℒ := ℒ))
 
 /-- The equivalence class of a consistent completed diagram. -/
 def toClass (D : ConsistentDiagram s d ℒ) : Class (s := s) (d := d) (ℒ := ℒ) :=
