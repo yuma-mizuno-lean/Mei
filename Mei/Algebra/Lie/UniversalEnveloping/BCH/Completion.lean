@@ -24,8 +24,9 @@ The construction combines `Mei.PositiveDegrees.completedBCHExp`, the canonical
 `Mei.UniversalEnvelopingAlgebra.completedLieToU`, and
 `Mei.UniversalEnvelopingAlgebra.completedPrimitiveExpUnitsEquiv`.
 Multiplicativity follows from `truncatedBCHToUnits` at every finite cutoff.
-Neither a PBW theorem nor a free underlying module is assumed; injectivity
-is not asserted here.
+The Euler-derivation embedding makes the canonical Lie map injective, so the
+comparison is a group isomorphism. Neither a PBW basis nor a free underlying
+module is assumed.
 -/
 
 public section
@@ -105,6 +106,18 @@ theorem coe_completedBCHToGroupLike (g : d.completedBCHGroup ℒ) :
         completedLieToU_mem_completionIdeal_one d ℒ _⟩ :=
   coe_groupLikeExp d ℒ _
 
+/-- Completed BCH labels are distinguished by their group-like enveloping images,
+without any freeness assumption on the Lie algebra. -/
+theorem completedBCHToGroupLike_injective :
+    Function.Injective (completedBCHToGroupLike d ℒ) := by
+  intro g h hgh
+  apply (d.completedBCHExp ℒ).symm.injective
+  apply completedLieToU_injective d ℒ
+  simpa only [coe_completedBCHToGroupLike, Mei.AlgFiltration.completedLog_completedExp] using
+    congrArg (fun u : G => (F).completedLog ⟨(u.val : (F).completion),
+      ((mem_completedGroupLikeSubgroup ℒ d.degree hneg _).mp u.property).sub_one_mem
+        ℒ d.degree hneg hpos⟩) hgh
+
 /-- Each projection of the completed group map is the existing finite unit map. -/
 theorem projection_completedBCHToGroupLike (k : ℕ) (g : d.completedBCHGroup ℒ) :
     (F).projection k ((completedBCHToGroupLike d ℒ g).val : (F).completion) =
@@ -155,5 +168,32 @@ theorem completedBCHToGroupLike_surjective :
   apply (mem_range_completedLieToU_iff_isCompletedPrimitive d ℒ _).mpr
   apply (isCompletedPrimitive_completedLog_iff ℒ d.degree _ _).mpr
   exact (mem_completedGroupLikeSubgroup ℒ d.degree _ _).mp u.property
+
+/-- The completed BCH group is canonically isomorphic to all group-like units of
+its degree-completed enveloping algebra over a commutative rational algebra. -/
+noncomputable def completedBCHGroupLikeEquiv : d.completedBCHGroup ℒ ≃* G :=
+  MulEquiv.ofBijective (completedBCHToGroupLike d ℒ)
+    ⟨completedBCHToGroupLike_injective d ℒ, completedBCHToGroupLike_surjective d ℒ⟩
+
+/-- The isomorphism has the existing enveloping exponential as its forward map. -/
+@[simp]
+theorem completedBCHGroupLikeEquiv_apply (g : d.completedBCHGroup ℒ) :
+    completedBCHGroupLikeEquiv d ℒ g = completedBCHToGroupLike d ℒ g := (rfl)
+
+/-- Logarithm characterizes the inverse isomorphism through the injective canonical
+completed Lie map. -/
+@[simp]
+theorem completedLieToU_completedBCHGroupLikeEquiv_symm (u : G) :
+    completedLieToU d ℒ ((d.completedBCHExp ℒ).symm
+      ((completedBCHGroupLikeEquiv d ℒ).symm u)) =
+      (F).completedLog ⟨(u.val : (F).completion),
+        ((mem_completedGroupLikeSubgroup ℒ d.degree hneg _).mp u.property).sub_one_mem
+          ℒ d.degree hneg hpos⟩ := by
+  have he : completedBCHToGroupLike d ℒ ((completedBCHGroupLikeEquiv d ℒ).symm u) = u :=
+    (completedBCHGroupLikeEquiv d ℒ).apply_symm_apply u
+  have hlog := congrArg (fun v : G => (F).completedLog ⟨(v.val : (F).completion),
+    ((mem_completedGroupLikeSubgroup ℒ d.degree hneg _).mp v.property).sub_one_mem
+      ℒ d.degree hneg hpos⟩) he
+  simpa only [coe_completedBCHToGroupLike, Mei.AlgFiltration.completedLog_completedExp] using hlog
 
 end Mei.UniversalEnvelopingAlgebra

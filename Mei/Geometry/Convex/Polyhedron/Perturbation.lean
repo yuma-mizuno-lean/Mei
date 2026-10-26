@@ -109,7 +109,7 @@ theorem eventually_admissibleSegment (hclosed : ∀ i, IsClosed (W i))
           hi ⟨t, (mem_crossings x y i t).mp ht⟩] with q hq
       rintro ⟨t, ht, hti⟩
       exact absurd hti (hq t ht)
-  have hreg := eventually_forall_lineMap_notMem (isClosed_singularSupport hclosed) e.regular
+  have hreg := eventually_forall_lineMap_notMem (isClosed_singularSupport W hclosed) e.regular
   filter_upwards [eventually_all.mpr htr, hreg] with ⟨a, b⟩ hq hq'
   rintro x' y' rfl rfl
   exact ⟨fun i hi => hq i hi, hq'⟩

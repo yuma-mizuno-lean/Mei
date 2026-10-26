@@ -105,6 +105,26 @@ theorem lift_unique (f : ∀ k : ℕ, H →* F.obj (op k))
 
 variable (F)
 
+/-- Reindexing identifies the completed group with Mathlib's compatible sections over `ℕᵒᵖ`. -/
+def sectionsSubgroupEquiv : completedGroup F ≃* GrpCat.sectionsSubgroup F where
+  toFun x := ⟨fun j => x.val j.unop, fun {l k} f =>
+    (mem_completedGroup_iff F x.val).mp x.property k.unop l.unop (leOfHom f.unop)⟩
+  invFun x := ⟨fun k => x.val (op k), (mem_completedGroup_iff F _).mpr
+    (fun _ _ h => x.property (homOfLE h).op)⟩
+  left_inv _ := rfl
+  right_inv _ := rfl
+  map_mul' _ _ := rfl
+
+/-- The section attached to a completed element has its projections as components. -/
+@[simp]
+theorem sectionsSubgroupEquiv_apply_val (x : completedGroup F) (j : ℕᵒᵖ) :
+    (sectionsSubgroupEquiv F x).val j = projection j.unop x := (rfl)
+
+/-- The completed element attached to a section has its components as projections. -/
+@[simp]
+theorem projection_sectionsSubgroupEquiv_symm (x : GrpCat.sectionsSubgroup F) (k : ℕ) :
+    projection k ((sectionsSubgroupEquiv F).symm x) = x.val (op k) := (rfl)
+
 /-- The cone of all projections of the completed group. -/
 def cone : Cone F where
   pt := GrpCat.of (completedGroup F)
