@@ -14,11 +14,56 @@ If a common kernel has codimension two, two members of the defining family
 already cut it out. The family may be infinite and may contain zero or
 redundant functionals. The proof uses Mathlib's dimension formula for the kernel
 of a nonzero functional and strict monotonicity of finite dimension.
+
+Contracting two equations against a vector outside their common kernel gives
+one equation for the sum of that kernel and the line through the vector.
 -/
 
 public section
 
 namespace LinearMap
+
+section Contraction
+
+variable {K V : Type*} [Field K] [AddCommGroup V] [Module K V]
+
+/-- Contracting two functionals against a vector outside their common kernel
+cuts out the sum of that common kernel and the vector's span. -/
+theorem ker_apply_smul_sub_apply_smul (f g : V →ₗ[K] K) {v : V}
+    (hv : v ∉ f.ker ⊓ g.ker) :
+    (f v • g - g v • f).ker = (f.ker ⊓ g.ker) ⊔ K ∙ v := by
+  have step (f g : V →ₗ[K] K) (hf : f v ≠ 0) :
+      (f v • g - g v • f).ker ≤ (f.ker ⊓ g.ker) ⊔ K ∙ v := by
+    intro x hx
+    have he : f v * g x = g v * f x := by
+      simpa only [mem_ker, sub_apply, smul_apply, smul_eq_mul, sub_eq_zero] using hx
+    have hw : x - (f x / f v) • v ∈ f.ker ⊓ g.ker := by
+      constructor
+      · simp [mem_ker, hf]
+      · apply mem_ker.mpr
+        rw [map_sub, map_smul, smul_eq_mul, sub_eq_zero, div_mul_eq_mul_div]
+        exact (eq_div_iff hf).mpr (by simpa only [mul_comm] using he)
+    have hl : (f x / f v) • v ∈ K ∙ v := Submodule.smul_mem _ _
+      (Submodule.mem_span_singleton_self v)
+    exact Submodule.mem_sup.mpr ⟨_, hw, _, hl, sub_add_cancel _ _⟩
+  apply le_antisymm
+  · by_cases hf : f v = 0
+    · have hg : g v ≠ 0 := fun hg => hv ⟨hf, hg⟩
+      intro x hx
+      have hx' : x ∈ (g v • f - f v • g).ker := by
+        have he := mem_ker.mp hx
+        apply mem_ker.mpr
+        simpa only [sub_apply, smul_apply, smul_eq_mul, sub_eq_zero] using
+          (sub_eq_zero.mp he).symm
+      simpa only [inf_comm] using step g f hg hx'
+    · exact step f g hf
+  · refine sup_le (fun x hx => ?_) (Submodule.span_le.mpr ?_)
+    · apply mem_ker.mpr
+      simp [mem_ker.mp hx.1, mem_ker.mp hx.2]
+    · rintro x (rfl : x = v)
+      simp [mem_ker, mul_comm]
+
+end Contraction
 
 variable {K V ι : Type*} [DivisionRing K] [AddCommGroup V] [Module K V]
   [FiniteDimensional K V]

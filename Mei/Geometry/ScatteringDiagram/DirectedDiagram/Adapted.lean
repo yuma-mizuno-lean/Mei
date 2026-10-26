@@ -109,4 +109,18 @@ theorem adaptedComplex_isSubdivision {k l : ℕ} (hkl : k ≤ l) :
   FinitePolyhedralComplex.ambientSubdivision_isSubdivision_comp
     (fun j : D.active l => D.presentation j.val) (Set.inclusion (D.active_mono hkl))
 
+/-- Near an adapted cell's relative interior, any active support meeting a
+sufficiently small ball contains the whole cell. This includes cell-boundary
+points of the active support. -/
+theorem exists_pos_subset_support_of_inter_ball {k : ℕ} {J : Set V}
+    (hJ : J ∈ (D.adaptedComplex k).cells)
+    {q : V} (hq : q ∈ intrinsicInterior ℝ J) :
+    ∃ r > 0, ∀ j : D.active k,
+      (Metric.ball q r ∩ (D.wall j).support).Nonempty → J ⊆ (D.wall j).support := by
+  obtain ⟨r, hr, hcells⟩ := Metric.mem_nhds_iff.mp
+    ((D.adaptedComplex k).eventually_subset_of_mem_cell hJ hq)
+  refine ⟨r, hr, fun j ⟨z, hz, hzj⟩ => ?_⟩
+  obtain ⟨Q, hQ, hzQ, hQj⟩ := D.exists_mem_adaptedComplex_walls_subset k j hzj
+  exact (hcells hz Q ((D.adaptedComplex k).mem_cells_of_mem_walls hQ) hzQ).trans hQj
+
 end Mei.DirectedDiagram

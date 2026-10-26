@@ -80,23 +80,10 @@ theorem exists_direction_eq_inf_ker (hP : IsRationalNormalPolyhedron h P)
     (hdim : Module.finrank ℝ (affineSpan ℝ P).direction + 2 = Module.finrank ℝ V) :
     ∃ m n : Module.Dual ℤ N, (affineSpan ℝ P).direction =
       (h.realCharacter m.toAddMonoidHom).ker ⊓ (h.realCharacter n.toAddMonoidHom).ker := by
-  classical
-  let := h.finiteDimensional
-  obtain ⟨Q, rfl⟩ := isRationalNormalPolyhedron_iff.mp hP
-  have hcarrier : Q.carrier = {x | ∀ j, Q.inequality j x ≤ 0} :=
-    Set.ext fun _ => RationalAffinePolyhedron.mem_carrier
-  let I := {j : Fin Q.numConstraints // ∀ x ∈ Q.carrier, Q.inequality j x = 0}
-  have hrows (j : I) := (Q.rational_linear j.val).exists_ker_eq_realCharacter
-  choose m hm using hrows
-  have hdir : (affineSpan ℝ Q.carrier).direction =
-      ⨅ j : I, (h.realCharacter (m j).toAddMonoidHom).ker := by
-    simp_rw [← hm]
-    simpa only [I, iInf_subtype, hcarrier, Set.mem_ofPred_eq,
-      ContinuousAffineMap.coe_toAffineMap] using
-      AffineMap.direction_affineSpan_setOf_forall_le
-        (fun j => (Q.inequality j).toAffineMap) (hcarrier ▸ hne)
-  obtain ⟨j, k, hjk⟩ := LinearMap.exists_iInf_ker_eq_inf
-    (fun j : I => h.realCharacter (m j).toAddMonoidHom) (hdir ▸ hdim)
-  exact ⟨m j, m k, hdir.trans hjk⟩
+  obtain ⟨m, _, hdir⟩ := hP.exists_direction_eq_iInf_ker hne hdim
+  refine ⟨m 0, m 1, ?_⟩
+  rw [hdir]
+  ext v
+  simp only [Submodule.mem_iInf, Submodule.mem_inf, LinearMap.mem_ker, Fin.forall_fin_two]
 
 end Mei.IsRationalNormalPolyhedron

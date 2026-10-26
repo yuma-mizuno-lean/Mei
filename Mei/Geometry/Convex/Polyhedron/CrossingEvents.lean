@@ -293,6 +293,26 @@ theorem nonempty_of_mem_signedCrossingEvents (ν : ι → V →ₗ[ℝ] ℝ)
     · exact ih hp
     · exact nonempty_of_mem_segmentCrossingEvents ν e he
 
+/-- A wall recorded by a path in a convex region meets that region. It suffices
+to check the vertices, since every crossing lies on one of the path's segments. -/
+theorem inter_nonempty_of_mem_signedCrossingEvents (p : AdmissiblePLPath x y)
+    (ν : ι → V →ₗ[ℝ] ℝ) {U : Set V} (hU : Convex ℝ U)
+    (hp : ∀ z ∈ p.vertices, z.val ∈ U) {S : Finset (ι × ℤ)}
+    (hS : S ∈ p.signedCrossingEvents ν) {a : ι × ℤ} (ha : a ∈ S) :
+    (U ∩ W a.1).Nonempty := by
+  induction p with
+  | nil => simp at hS
+  | @cons y z p e ih =>
+    have hp' : ∀ w ∈ p.vertices, w.val ∈ U :=
+      fun w hw => hp w ((Quiver.Path.mem_vertices_cons p e).mpr (Or.inl hw))
+    rcases List.mem_append.mp hS with hS | hS
+    · exact ih hp' hS
+    · obtain ⟨t, _, rfl⟩ := (mem_segmentCrossingEvents ν e S).mp hS
+      obtain ⟨ht, _⟩ := (mem_signedCrossingEvent ν y z t a.1 a.2).mp ha
+      obtain ⟨ht, hwall⟩ := (mem_crossings y z a.1 t).mp ht
+      exact ⟨_, hU.lineMap_mem (hp' y p.end_mem_vertices)
+        (hp z ((Quiver.Path.mem_vertices_cons p e).mpr (Or.inr rfl))) ht, hwall⟩
+
 /-- Reversing a polygonal path reverses its events and negates their exponents. -/
 @[simp]
 theorem signedCrossingEvents_reverse (ν : ι → V →ₗ[ℝ] ℝ)

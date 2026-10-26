@@ -7,6 +7,7 @@ module
 
 public import Mei.Geometry.Convex.PolyhedralComplex.Joint
 public import Mei.Geometry.Convex.Polyhedron.Path.Meridian
+public import Mei.Geometry.Affine.Simplex.Conormal
 public import Mathlib.Analysis.Convex.Combination
 
 /-!
@@ -24,7 +25,9 @@ The construction combines `FinitePolyhedralComplex.exists_isolating_ball_joint`
 with `Mei.Convex.exists_admissible_triangle`. The missing transversality follows
 from the common-face incidence in the isolating ball: every wall meeting that
 ball contains the joint, so a complement to the joint direction cannot lie in
-the direction of that wall. No orientation of the normal plane is chosen here.
+the direction of that wall. For a prescribed conormal orientation, normalize
+the vertex order using `Affine.Simplex.conormal_apply_ne_zero` and Mathlib's
+alternating-map swap formula; reverse the actual boundary at the same time.
 Cells may be unbounded and have lineality.
 -/
 
@@ -105,5 +108,51 @@ theorem exists_isolating_joint_triangle (C : FinitePolyhedralComplex h) {J : Set
   · exact fun Q hQ hne => (hother Q hQ hne).mono_left hfillball
   · rintro Q hQ ⟨y, hy, hyQ⟩
     exact hcells Q hQ ⟨y, hfillball hy, hyQ⟩
+
+/-- Every conormally oriented joint admits arbitrarily small positively ordered
+isolating triangles with admissible boundary. Positivity is measured on the edge
+frame from vertex zero, using the nonzero representative of the supplied ray.
+The filled triangle isolates the joint and meets only cells containing it. -/
+theorem exists_positive_isolating_joint_triangle (C : FinitePolyhedralComplex h)
+    {J : Set V} (hJ : J ∈ C.joints) {p : V} (hp : p ∈ intrinsicInterior ℝ J)
+    (o : Module.Ray ℝ (V [⋀^Fin 2]→ₗ[ℝ] ℝ))
+    (ho : o.IsConormal (affineSpan ℝ J).direction) {ε : ℝ} (hε : 0 < ε) :
+    ∃ (s : Affine.Triangle ℝ V)
+      (x : WallComplement (fun W : C.walls => (W : Set V)))
+      (γ : AdmissiblePLPath x x),
+      0 < o.someVector (fun j : Fin 2 => s.points j.succ - s.points 0) ∧
+      s.centroid = p ∧
+      γ.vertices.map WallComplement.val = [s.points 0, s.points 1, s.points 2, s.points 0] ∧
+      IsCompl (affineSpan ℝ J).direction (vectorSpan ℝ (range s.points)) ∧
+      convexHull ℝ (range s.points) ⊆ Metric.ball p ε ∧
+      convexHull ℝ (range s.points) ∩ (C.codimensionAtLeast 2).support = {p} ∧
+      Disjoint (convexHull ℝ (range s.points)) (intrinsicFrontier ℝ J) ∧
+      (∀ Q ∈ C.joints, Q ≠ J → Disjoint (convexHull ℝ (range s.points)) Q) ∧
+      ∀ Q ∈ C.cells, (convexHull ℝ (range s.points) ∩ Q).Nonempty → J ⊆ Q := by
+  obtain ⟨s, x, γ, hsp, hvertices, hcompl, hball, hskeleton, hfrontier, hother, hcells⟩ :=
+    C.exists_isolating_joint_triangle hJ hp hε
+  have hne := s.conormal_apply_ne_zero hcompl
+    (Module.Ray.isConormal_iff.mp ho) o.someVector_ne_zero
+  by_cases hpos : 0 < o.someVector (fun j : Fin 2 => s.points j.succ - s.points 0)
+  · exact ⟨s, x, γ, hpos, hsp, hvertices, hcompl, hball, hskeleton, hfrontier, hother, hcells⟩
+  · -- Swap the last two vertices and reverse the boundary, keeping its basepoint.
+    let e : Equiv.Perm (Fin 3) := Equiv.swap 1 2
+    let t := s.reindex e
+    have ht (j : Fin 3) : t.points j = s.points (e j) := by
+      simp [t, e, Affine.Simplex.reindex_points]
+    have hrange : range t.points = range s.points := s.reindex_range_points e
+    have hedge : (fun j : Fin 2 => t.points j.succ - t.points 0) =
+        (fun j : Fin 2 => s.points j.succ - s.points 0) ∘ Equiv.swap 0 1 := by
+      funext j
+      fin_cases j <;> simp [ht, e, Equiv.swap_apply_def]
+    refine ⟨t, x, γ.reverse, ?_, ?_, ?_, ?_⟩
+    · rw [hedge, o.someVector.map_swap _ (by decide : (0 : Fin 2) ≠ 1)]
+      exact neg_pos.mpr (lt_of_le_of_ne (le_of_not_gt hpos) hne)
+    · exact (s.centroid_reindex e).trans hsp
+    · rw [Quiver.Path.vertices_reverse, List.map_reverse, hvertices]
+      simp [ht, e, Equiv.swap_apply_def]
+    · simpa only [hrange] using
+        (And.intro hcompl (And.intro hball (And.intro hskeleton
+          (And.intro hfrontier (And.intro hother hcells)))))
 
 end Mei.FinitePolyhedralComplex
