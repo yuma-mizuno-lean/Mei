@@ -7,6 +7,7 @@ module
 
 public import Mei.Analysis.Convex.Intrinsic
 public import Mei.Analysis.Normed.Affine.LineMap
+public import Mei.Geometry.Affine.Segment
 public import Mei.Geometry.Convex.Polyhedron.AdmissiblePath
 public import Mathlib.Combinatorics.Quiver.Path.Vertices
 
@@ -29,7 +30,7 @@ vertices make it admissible for any further finite family of codimension-one pol
 
 The crossing parameter of a perturbed line is the continuous function supplied by
 `AffineSubspace.exists_continuousAt_lineMap_mem`; segments missing a closed set stay
-away from it by the tube lemma `Mei.eventually_forall_lineMap_notMem`.
+away from it by `IsClosed.isOpen_setOf_lineMap_notMem`.
 -/
 
 public section
@@ -89,30 +90,10 @@ private theorem eventually_notMem_of_notMem (hclosed : ∀ i, IsClosed (W i)) {i
     (h : ∀ t, (i, t) ∉ crossings x y) :
     ∀ᶠ q : V × V in 𝓝 (x.val, y.val), ∀ s ∈ Icc (0 : ℝ) 1,
       AffineMap.lineMap q.1 q.2 s ∉ W i :=
-  eventually_forall_lineMap_notMem (hclosed i) fun t ht hti =>
+  ((hclosed i).isOpen_setOf_lineMap_notMem).mem_nhds fun t ht hti =>
     h t ((mem_crossings x y i t).mpr ⟨ht, hti⟩)
 
 variable [Finite ι]
-
-/-- Admissibility is stable: segments between allowed points close to the endpoints of
-an admissible segment are admissible. -/
-theorem eventually_admissibleSegment (hclosed : ∀ i, IsClosed (W i))
-    (e : AdmissibleSegment x y) :
-    ∀ᶠ q : V × V in 𝓝 (x.val, y.val), ∀ x' y' : WallComplement W,
-      x'.val = q.1 → y'.val = q.2 → AdmissibleSegment x' y' := by
-  have htr (i : ι) : ∀ᶠ q : V × V in 𝓝 (x.val, y.val),
-      (∃ t ∈ Icc (0 : ℝ) 1, AffineMap.lineMap q.1 q.2 t ∈ W i) →
-        q.2 - q.1 ∉ (affineSpan ℝ (W i)).direction := by
-    by_cases hi : ∃ t ∈ Icc (0 : ℝ) 1, AffineMap.lineMap x.val y.val t ∈ W i
-    · filter_upwards [e.eventually_sub_notMem_direction hi] with q hq using fun _ => hq
-    · filter_upwards [eventually_notMem_of_notMem hclosed fun t ht =>
-          hi ⟨t, (mem_crossings x y i t).mp ht⟩] with q hq
-      rintro ⟨t, ht, hti⟩
-      exact absurd hti (hq t ht)
-  have hreg := eventually_forall_lineMap_notMem (isClosed_singularSupport W hclosed) e.regular
-  filter_upwards [eventually_all.mpr htr, hreg] with ⟨a, b⟩ hq hq'
-  rintro x' y' rfl rfl
-  exact ⟨fun i hi => hq i hi, hq'⟩
 
 /-- Crossed walls are stable: segments between allowed points close to the endpoints of
 an admissible segment cross exactly the walls it crosses. -/

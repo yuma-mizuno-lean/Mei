@@ -12,37 +12,18 @@ public import Mathlib.LinearAlgebra.Dual.Lemmas
 /-!
 # Segments with perturbed endpoints
 
-Two stability properties of affine segments `t ↦ AffineMap.lineMap x y t` when the
-endpoints `x, y` move. A segment missing a closed set is surrounded by segments
-missing it, by the tube lemma on the compact parameter interval. A line transverse
-to a codimension-one affine subspace keeps meeting it, at a parameter depending
-continuously on the two defining points; the parameter is the ratio of the values
-of a linear functional whose kernel is the subspace direction.
+A line transverse to a codimension-one affine subspace keeps meeting it when
+its two defining points move, at a parameter depending continuously on those
+points. The parameter is the ratio of the values of a linear functional whose
+kernel is the subspace direction.
 
-These are the local ingredients for perturbing admissible wall-crossing paths
+This is a local ingredient for perturbing admissible wall-crossing paths
 without changing their crossings.
 -/
 
 public section
 
 open Set Filter Topology
-
-namespace Mei
-
-variable {V : Type*} [AddCommGroup V] [Module ℝ V] [TopologicalSpace V]
-  [IsTopologicalAddGroup V] [ContinuousSMul ℝ V]
-
-/-- If the segment from `x` to `y` misses a closed set, so do all segments whose
-endpoints are close to `x` and `y`. -/
-theorem eventually_forall_lineMap_notMem {F : Set V} (hF : IsClosed F) {x y : V}
-    (h : ∀ t ∈ Icc (0 : ℝ) 1, AffineMap.lineMap x y t ∉ F) :
-    ∀ᶠ q : V × V in 𝓝 (x, y), ∀ t ∈ Icc (0 : ℝ) 1, AffineMap.lineMap q.1 q.2 t ∉ F := by
-  refine isCompact_Icc.eventually_forall_of_forall_eventually fun t ht => ?_
-  have hc : Continuous fun z : (V × V) × ℝ => AffineMap.lineMap z.1.1 z.1.2 z.2 :=
-    continuous_fst.fst.lineMap continuous_fst.snd continuous_snd
-  exact hc.continuousAt.eventually_mem (hF.isOpen_compl.mem_nhds (h t ht))
-
-end Mei
 
 namespace AffineSubspace
 
