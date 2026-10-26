@@ -133,3 +133,63 @@ theorem eq_of_mem_intrinsicInterior (hF : IsExposed ℝ P F) {x : V}
   exact ⟨hp, fun q hq => (hxmax.2 q hq).trans (le_of_eq (sub_eq_zero.mp (hg p hp)).symm)⟩
 
 end IsExposed
+
+namespace ContinuousLinearMap
+
+variable {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
+
+/-- Subtracting a multiple of a height constant on the base preserves all
+comparisons of functional values there, and therefore preserves its maximizers. -/
+theorem toExposed_sub_smul_of_eq (l f : V →L[ℝ] ℝ) (P : Set V) (a c : ℝ)
+    (hfP : ∀ x ∈ P, f x = c) :
+    (l - a • f).toExposed P = l.toExposed P := by
+  ext x
+  constructor
+  · rintro ⟨hx, hmax⟩
+    refine ⟨hx, fun y hy => ?_⟩
+    have hm := hmax y hy
+    simpa only [sub_apply, smul_apply, smul_eq_mul, hfP x hx, hfP y hy,
+      sub_le_sub_iff_right] using hm
+  · rintro ⟨hx, hmax⟩
+    refine ⟨hx, fun y hy => ?_⟩
+    simpa only [sub_apply, smul_apply, smul_eq_mul, hfP x hx, hfP y hy,
+      sub_le_sub_iff_right] using hmax y hy
+
+end ContinuousLinearMap
+
+namespace IsExposed
+
+variable {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V] [FiniteDimensional ℝ V]
+  {P F : Set V}
+
+/-- A nonempty exposed subset with the same affine-direction dimension as its
+base is the whole base. This also holds for a nonconvex base. -/
+theorem eq_of_finrank_vectorSpan_eq (hF : IsExposed ℝ P F) (hne : F.Nonempty)
+    (hdim : Module.finrank ℝ (vectorSpan ℝ F) = Module.finrank ℝ (vectorSpan ℝ P)) :
+    F = P := by
+  obtain ⟨l, hl⟩ := hF hne
+  have hdir := Submodule.eq_of_le_of_finrank_eq (vectorSpan_mono ℝ hF.subset) hdim
+  have hker : vectorSpan ℝ F ≤ LinearMap.ker l.toLinearMap := by
+    rw [vectorSpan_def]
+    apply Submodule.span_le.mpr
+    rintro v ⟨a, ha, b, hb, rfl⟩
+    have ha' := hl ▸ ha
+    have hb' := hl ▸ hb
+    have hab := ha'.2 b hb'.1
+    have hba := hb'.2 a ha'.1
+    apply LinearMap.mem_ker.mpr
+    simpa only [ContinuousLinearMap.coe_coe, vsub_eq_sub, map_sub] using
+      sub_eq_zero.mpr (le_antisymm hba hab)
+  apply Set.Subset.antisymm hF.subset
+  intro x hx
+  obtain ⟨z, hz⟩ := hne
+  have hxz := vsub_mem_vectorSpan ℝ hx (hF.subset hz)
+  rw [← hdir] at hxz
+  have hlxz := hker hxz
+  have he : l x = l z := sub_eq_zero.mp (by simpa only [LinearMap.mem_ker,
+    ContinuousLinearMap.coe_coe, vsub_eq_sub, map_sub] using hlxz)
+  have hz' := hl ▸ hz
+  rw [hl]
+  exact ⟨hx, fun y hy => by simpa only [he] using hz'.2 y hy⟩
+
+end IsExposed

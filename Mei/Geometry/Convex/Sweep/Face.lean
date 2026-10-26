@@ -5,8 +5,8 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.Convex.Sweep.Topology
-public import Mathlib.Analysis.Convex.Exposed
+public import Mei.Geometry.Convex.Sweep
+public import Mei.Analysis.Convex.Exposed
 import Mathlib.Tactic.Linarith
 
 /-!
@@ -82,23 +82,6 @@ theorem nonneg_apply_of_toExposed_sweep_nonempty (l : V →L[ℝ] ℝ) {P : Set 
   simp only [map_sub, map_smul, smul_eq_mul, one_mul] at hm
   linarith
 
-/-- Subtracting a multiple of a height constant on the base preserves all
-comparisons of functional values there, and therefore preserves its maximizers. -/
-theorem toExposed_sub_smul_of_eq (l f : V →L[ℝ] ℝ) (P : Set V) (a c : ℝ)
-    (hfP : ∀ x ∈ P, f x = c) :
-    (l - a • f).toExposed P = l.toExposed P := by
-  ext x
-  constructor
-  · rintro ⟨hx, hmax⟩
-    refine ⟨hx, fun y hy => ?_⟩
-    have hm := hmax y hy
-    simpa only [sub_apply, smul_apply, smul_eq_mul, hfP x hx, hfP y hy,
-      sub_le_sub_iff_right] using hm
-  · rintro ⟨hx, hmax⟩
-    refine ⟨hx, fun y hy => ?_⟩
-    simpa only [sub_apply, smul_apply, smul_eq_mul, hfP x hx, hfP y hy,
-      sub_le_sub_iff_right] using hmax y hy
-
 end ContinuousLinearMap
 
 namespace IsExposed
@@ -111,6 +94,7 @@ subset of the base or the sweep of one. This direction needs no transversality. 
 theorem exists_base_or_sweep (hG : IsExposed ℝ (sweep P n) G) (hne : G.Nonempty) :
     ∃ F : Set V, F.Nonempty ∧ IsExposed ℝ P F ∧ (G = F ∨ G = sweep F n) := by
   obtain ⟨l, hl⟩ := hG hne
+  -- IsExposed stores a set-builder equality; name it to use the toExposed sweep lemmas.
   change G = l.toExposed (sweep P n) at hl
   have hm : (l.toExposed (sweep P n)).Nonempty := hl ▸ hne
   have hn := l.nonneg_apply_of_toExposed_sweep_nonempty hm
@@ -139,6 +123,7 @@ theorem in_sweep_of_height (hF : IsExposed ℝ P F) (f : V →L[ℝ] ℝ) (c : �
     (hfn : f n = 1) (hfP : ∀ x ∈ P, f x = c) : IsExposed ℝ (sweep P n) F := by
   intro hne
   obtain ⟨l, hl⟩ := hF hne
+  -- IsExposed stores a set-builder equality; name it to use the toExposed adjustment lemma.
   change F = l.toExposed P at hl
   let k := l - (l n - 1) • f
   have hk : k.toExposed P = F :=
@@ -158,46 +143,18 @@ theorem sweep_of_height (hF : IsExposed ℝ P F) (f : V →L[ℝ] ℝ) (c : ℝ)
   obtain ⟨y, hy⟩ := hne
   obtain ⟨x, hx, _, _, _⟩ := mem_sweep_iff_exists.mp hy
   obtain ⟨l, hl⟩ := hF ⟨x, hx⟩
+  -- IsExposed stores a set-builder equality; name it to use the toExposed adjustment lemma.
   change F = l.toExposed P at hl
   let k := l - l n • f
   have hk : k.toExposed P = F :=
     (l.toExposed_sub_smul_of_eq f P (l n) c hfP).trans hl.symm
   have hkn : k n = 0 := by simp [k, hfn]
   refine ⟨k, ?_⟩
+  -- The witness goal is a set-builder equality; name it to rewrite with the sweep formula.
   change sweep F n = k.toExposed (sweep P n)
   rw [k.toExposed_sweep_of_eq_zero P hkn, hk]
 
 variable [FiniteDimensional ℝ V]
-
-/-- A nonempty exposed subset with the same affine-direction dimension as its
-base is the whole base. This also holds for a nonconvex base. -/
-theorem eq_of_finrank_vectorSpan_eq (hF : IsExposed ℝ P F) (hne : F.Nonempty)
-    (hdim : Module.finrank ℝ (vectorSpan ℝ F) = Module.finrank ℝ (vectorSpan ℝ P)) :
-    F = P := by
-  obtain ⟨l, hl⟩ := hF hne
-  have hdir := Submodule.eq_of_le_of_finrank_eq (vectorSpan_mono ℝ hF.subset) hdim
-  have hker : vectorSpan ℝ F ≤ LinearMap.ker l.toLinearMap := by
-    rw [vectorSpan_def]
-    apply Submodule.span_le.mpr
-    rintro v ⟨a, ha, b, hb, rfl⟩
-    have ha' := hl ▸ ha
-    have hb' := hl ▸ hb
-    have hab := ha'.2 b hb'.1
-    have hba := hb'.2 a ha'.1
-    change l (a - b) = 0
-    simp only [map_sub]
-    linarith
-  apply Set.Subset.antisymm hF.subset
-  intro x hx
-  obtain ⟨z, hz⟩ := hne
-  have hxz := vsub_mem_vectorSpan ℝ hx (hF.subset hz)
-  rw [← hdir] at hxz
-  have hlxz := hker hxz
-  have he : l x = l z := sub_eq_zero.mp (by simpa only [LinearMap.mem_ker,
-    ContinuousLinearMap.coe_coe, vsub_eq_sub, map_sub] using hlxz)
-  have hz' := hl ▸ hz
-  rw [hl]
-  exact ⟨hx, fun y hy => by simpa only [he] using hz'.2 y hy⟩
 
 /-- Every exposed subset of a transverse base is exposed in the whole sweep.
 Empty subsets are included according to Mathlib's convention. -/
