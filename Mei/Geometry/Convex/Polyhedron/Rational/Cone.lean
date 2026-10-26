@@ -21,7 +21,8 @@ dual characters supply a presentation with zero offsets.
 The comparison uses `Mei.Toric.isLatticeRational_iff_exists_dual_image`,
 `TauCeti.Toric.IsLatticeRational.inf`, and
 `Set.mem_recessionCone_setOf_forall_iff`. It allows lineality and bridges
-affine polyhedral cells and toric cones.
+affine polyhedral cells and toric cones. In particular a point, the translate of
+the zero cone, is a rational-normal polyhedron.
 -/
 
 public section
@@ -140,5 +141,19 @@ theorem isRationalNormalPolyhedron_coe_iff :
   obtain ⟨P, hP, _⟩ := isRationalPolyhedron_iff.mp
     (isRationalPolyhedron_of_isLatticeRational h hC)
   exact isRationalNormalPolyhedron_iff.mpr ⟨P, hP⟩
+
+
+/-- A point is a rational-normal polyhedron: the translate of the zero cone. -/
+theorem isRationalNormalPolyhedron_singleton (x : V) : IsRationalNormalPolyhedron h {x} := by
+  obtain ⟨P, hP⟩ := isRationalNormalPolyhedron_iff.mp
+    ((isRationalNormalPolyhedron_coe_iff h (C := ⊥)).mpr (isLatticeRational_bot i))
+  let f : V →ᴬ[ℝ] V :=
+    (ContinuousLinearMap.id ℝ V).toContinuousAffineMap - ContinuousAffineMap.const ℝ V x
+  refine isRationalNormalPolyhedron_iff.mpr ⟨P.preimage f ?_, ?_⟩
+  · convert Toric.IsRationalLinearMap.id h
+    ext v
+    simpa [f] using AffineMap.linear_apply_vsub (f : V →ᵃ[ℝ] V) v 0
+  · ext y
+    simp [hP, f, sub_eq_zero]
 
 end Mei
