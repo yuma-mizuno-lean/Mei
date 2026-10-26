@@ -183,6 +183,18 @@ theorem sweep_inter {P Q : Set V} {n : V} (hn : n ∉ vectorSpan ℝ (P ∪ Q)) 
   · rintro ⟨x, ⟨hx, hx'⟩, t, ht, he⟩
     exact ⟨⟨x, hx, t, ht, he⟩, ⟨x, hx', t, ht, he⟩⟩
 
+/-- A base cell meets a swept cell only along their original intersection when
+both bases lie in a common transverse affine subspace. -/
+theorem inter_sweep_of_transverse {P Q : Set V} {n : V}
+    (hn : n ∉ vectorSpan ℝ (P ∪ Q)) : P ∩ sweep Q n = P ∩ Q := by
+  ext y
+  constructor
+  · rintro ⟨hy, x, hx, t, ht, he⟩
+    have hxy := sweep_coordinates_unique hn (Or.inl hy) (Or.inr hx)
+      (t := 0) (t' := t) (by simpa using he)
+    exact ⟨hy, hxy.1 ▸ hx⟩
+  · exact fun hy => ⟨hy.1, subset_sweep Q n hy.2⟩
+
 /-- The direction of a nonempty sweep gains exactly the sweeping line. -/
 theorem vectorSpan_sweep {P : Set V} (hP : P.Nonempty) (n : V) :
     vectorSpan ℝ (sweep P n) = vectorSpan ℝ P ⊔ Submodule.span ℝ {n} := by
