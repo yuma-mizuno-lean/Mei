@@ -81,6 +81,30 @@ theorem logComponent_eq_decompose (g : d.completedBCHGroup ℒ) {n : N} {k : ℕ
     LieIdeal.mkQ_apply]
   exact d.quotientComponent_mk ℒ F _ k n hn x
 
+/-- The logarithmic coefficients of a completed exponential are the homogeneous
+components of the original Lie element. -/
+@[simp]
+theorem logComponent_expToCompletion (x : L) (n : N) :
+    d.logComponent ℒ (d.expToCompletion ℒ x) n = DirectSum.decompose ℒ x n := by
+  apply d.logComponent_eq_decompose ℒ _ (Int.self_le_toNat (d.degree n))
+  rw [projection_expToCompletion, BCHGroup.log_exp]
+
+/-- A homogeneous factor retains the original logarithmic coefficient in its degree. -/
+@[simp]
+theorem logComponent_homogeneousFactor_same (g : d.completedBCHGroup ℒ) (n : N) :
+    d.logComponent ℒ (d.homogeneousFactor ℒ g n) n = d.logComponent ℒ g n := by
+  rw [homogeneousFactor_def, logComponent_expToCompletion]
+  apply Subtype.ext
+  exact DirectSum.decompose_of_mem_same ℒ (d.logComponent ℒ g n).property
+
+/-- A homogeneous factor has zero logarithmic coefficient in every other degree. -/
+@[simp]
+theorem logComponent_homogeneousFactor_of_ne (g : d.completedBCHGroup ℒ) {n m : N}
+    (hnm : n ≠ m) : d.logComponent ℒ (d.homogeneousFactor ℒ g n) m = 0 := by
+  rw [homogeneousFactor_def, logComponent_expToCompletion]
+  apply Subtype.ext
+  exact DirectSum.decompose_of_mem_ne ℒ (d.logComponent ℒ g n).property hnm
+
 /-- The coefficients of the identity label vanish. -/
 @[simp]
 theorem logComponent_one (n : N) : d.logComponent ℒ 1 n = 0 := by
