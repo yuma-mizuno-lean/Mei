@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.ScatteringDiagram.DirectedWall
-public import Mei.Geometry.Convex.Polyhedron.PathProduct
+public import Mei.Geometry.Convex.Polyhedron.Path.Product
 
 /-!
 # Directed diagrams and finite-order path products

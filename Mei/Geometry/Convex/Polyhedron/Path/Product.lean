@@ -7,6 +7,7 @@ module
 
 public import Mei.Geometry.Convex.Polyhedron.CrossingEvents
 public import Mei.Data.Finset.NoncommProd
+public import Mathlib.Combinatorics.Quiver.Path.Weight
 
 /-!
 # Path products for indexed wall families
@@ -20,7 +21,8 @@ the inverse label. Reversal inverts transport, and group homomorphisms preserve 
 
 This evaluates `WallComplement.signedCrossingEvent` using Mathlib's
 `Finset.noncommProd`, rather than choosing an enumeration of simultaneous walls.
-No commutation is required between events at different times.
+No commutation is required between events at different times. Polygonal transport
+uses Mathlib's `Quiver.Path.weight` in the opposite group to reverse multiplication order.
 -/
 
 public section
@@ -168,18 +170,19 @@ variable {V ι G K : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V] [Finite �
   {x y z : WallComplement W}
 
 /-- Polygonal wall transport, retaining repeated visits and combined simultaneous events. -/
-def wallPathProduct : {y : WallComplement W} → AdmissiblePLPath x y → G
-  | _, .nil => 1
-  | _, .cons p e => segmentPathProduct ν label hcomm e * wallPathProduct p
+def wallPathProduct (p : AdmissiblePLPath x y) : G :=
+  MulOpposite.unop (p.weight (fun e => MulOpposite.op (segmentPathProduct ν label hcomm e)))
 
 @[simp]
 theorem wallPathProduct_nil :
-    (Quiver.Path.nil : AdmissiblePLPath x x).wallPathProduct ν label hcomm = 1 := (rfl)
+    (Quiver.Path.nil : AdmissiblePLPath x x).wallPathProduct ν label hcomm = 1 := by
+  simp only [wallPathProduct, weight_nil, MulOpposite.unop_one]
 
 @[simp]
 theorem wallPathProduct_cons (p : AdmissiblePLPath x y) (e : y ⟶ z) :
     (p.cons e).wallPathProduct ν label hcomm =
-      segmentPathProduct ν label hcomm e * p.wallPathProduct ν label hcomm := (rfl)
+      segmentPathProduct ν label hcomm e * p.wallPathProduct ν label hcomm := by
+  simp only [wallPathProduct, weight_cons, MulOpposite.unop_mul, MulOpposite.unop_op]
 
 @[simp]
 theorem wallPathProduct_toPath (e : x ⟶ y) :
@@ -191,9 +194,7 @@ theorem wallPathProduct_toPath (e : x ⟶ y) :
 theorem wallPathProduct_comp (p : AdmissiblePLPath x y) (q : AdmissiblePLPath y z) :
     (p.comp q).wallPathProduct ν label hcomm =
       q.wallPathProduct ν label hcomm * p.wallPathProduct ν label hcomm := by
-  induction q with
-  | nil => simp
-  | cons q e ih => simp [ih, mul_assoc]
+  simp only [wallPathProduct, weight_comp, MulOpposite.unop_mul]
 
 /-- Reversing every segment reverses the total transport. -/
 @[simp]

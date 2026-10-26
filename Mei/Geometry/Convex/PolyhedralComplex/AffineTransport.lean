@@ -7,7 +7,7 @@ module
 
 public import Mei.Geometry.Convex.PolyhedralComplex.Map
 public import Mei.Geometry.Convex.PolyhedralComplex.CrossingWord
-public import Mei.Geometry.Convex.Polyhedron.PathMap
+public import Mei.Geometry.Convex.Polyhedron.Path.Map
 
 /-!
 # Affine transport of crossing words
