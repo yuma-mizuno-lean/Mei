@@ -77,6 +77,14 @@ theorem le_signSubalgebra (n : ι) :
   rw [signSubalgebra_toSubmodule]
   exact le_iSup (fun m : {m // SignType.sign (θ m) = SignType.sign (θ n)} => ℒ m) ⟨n, rfl⟩
 
+/-- Taking images commutes with collecting homogeneous pieces by sign. -/
+theorem map_signSubalgebra {L' : Type*} [LieRing L'] [LieAlgebra R L']
+    (ℳ : ι → Submodule R L') [SetLike.GradedBracket ℳ ℳ]
+    (f : L →ₗ⁅R⁆ L') (hf : ∀ n, (ℒ n).map f.toLinearMap = ℳ n) (s : SignType) :
+    (signSubalgebra ℒ θ s).map f = signSubalgebra ℳ θ s := by
+  apply LieSubalgebra.toSubmodule_injective
+  simp only [LieSubalgebra.map, signSubalgebra_toSubmodule, Submodule.map_iSup, hf]
+
 variable [DecidableEq ι] [DirectSum.Decomposition ℒ]
 
 /-- Membership is characterized by vanishing of the components of other signs. -/

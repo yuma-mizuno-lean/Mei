@@ -7,6 +7,7 @@ module
 
 public import Mei.Algebra.Lie.Graded.Truncation.Basic
 public import Mei.Algebra.Lie.Quotient.Map
+public import Mei.Algebra.Lie.Graded.Sign
 
 /-!
 # Transitions between Lie algebra truncations
@@ -43,6 +44,13 @@ theorem map_truncatedGrading_truncationMap {k l : ℕ} (h : k ≤ l) (n : N) :
   ext x
   exact LieIdeal.factor_apply _ _ _ x
 
+/-- Collecting pieces by sign commutes with lowering the degree cutoff. -/
+theorem map_signSubalgebra_truncationMap {A : Type*} [AddCommGroup A] [LinearOrder A]
+    [IsOrderedAddMonoid A] (θ : N →+ A) {k l : ℕ} (h : k ≤ l) (s : SignType) :
+    (signSubalgebra (d.truncatedGrading ℒ l) θ s).map (d.truncationMap ℒ h) =
+      signSubalgebra (d.truncatedGrading ℒ k) θ s :=
+  map_signSubalgebra _ θ _ _ (d.map_truncatedGrading_truncationMap ℒ h) s
+
 /-- Homogeneous projections commute with transitions. -/
 @[simp]
 theorem truncationMap_decompose {k l : ℕ} (h : k ≤ l)
@@ -53,6 +61,14 @@ theorem truncationMap_decompose {k l : ℕ} (h : k ≤ l)
         (d.truncationMap ℒ h x) n : d.truncatedLie ℒ k) := by
   obtain ⟨x, rfl⟩ := (d.degreeIdeal ℒ l).surjective_mkQ x
   simp [LieIdeal.mkQ_apply]
+
+/-- A degree-transition kernel is stable under homogeneous projections. -/
+theorem ker_truncationMap_isHomogeneous {k l : ℕ} (h : k ≤ l) :
+    DirectSum.SetLike.IsHomogeneous (d.truncatedGrading ℒ l)
+      (d.truncationMap ℒ h).ker.toSubmodule := by
+  intro n x hx
+  simp only [LieSubmodule.mem_toSubmodule, LieHom.mem_ker] at hx ⊢
+  simp [d.truncationMap_decompose, hx]
 
 /-- Only the degrees in `(k, l]` survive in the kernel from order `l` to order `k`. -/
 theorem ker_truncationMap_eq_iSup {k l : ℕ} (h : k ≤ l) :
