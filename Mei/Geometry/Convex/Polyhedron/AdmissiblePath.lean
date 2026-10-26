@@ -10,6 +10,7 @@ public import Mei.Geometry.Convex.Polyhedron.GenericPath
 public import Mathlib.AlgebraicTopology.FundamentalGroupoid.Basic
 public import Mathlib.Analysis.Convex.PathConnected
 public import Mathlib.Combinatorics.Quiver.Symmetric
+public import Mathlib.Topology.LocallyConstant.Basic
 
 /-!
 # Admissible polygonal paths through wall families
@@ -29,7 +30,8 @@ parameter) form a finite set. Thus repeated visits and simultaneous coplanar
 crossings are retained. Every crossing lies in the relative
 interior of its wall. In finite dimension, finite families of codimension-one
 polyhedra admit such paths between any two allowed endpoints, with two edges
-sufficing.
+sufficing. A function that is locally constant off the walls takes equal values
+at the endpoints of a segment meeting no wall, by connectedness of the unit interval.
 -/
 
 public section
@@ -155,6 +157,20 @@ theorem finite_crossings [Finite ι] (h : AdmissibleSegment x y) : (crossings x 
   exact Set.finite_iUnion fun i => (h.subsingleton_crossing i).finite.image _
 
 end AdmissibleSegment
+
+/-- A function that is locally constant at every point off the walls takes the same
+value at the two endpoints of a segment meeting no wall. -/
+theorem apply_eq_of_crossings_eq_empty {Y : Type*} {F : V → Y}
+    (hF : ∀ θ, (∀ i, θ ∉ W i) → ∀ᶠ φ in nhds θ, F φ = F θ) {x y : WallComplement W}
+    (he : crossings x y = ∅) : F x.val = F y.val := by
+  have hc : Continuous fun r : I => AffineMap.lineMap x.val y.val (r : ℝ) :=
+    AffineMap.lineMap_continuous.comp continuous_subtype_val
+  have hf : IsLocallyConstant fun r : I => F (AffineMap.lineMap x.val y.val (r : ℝ)) := by
+    refine (IsLocallyConstant.iff_eventually_eq _).mpr fun r =>
+      (hc.tendsto r).eventually (p := fun φ => F φ = F _) (hF _ fun i hi => ?_)
+    have hr : (i, (r : ℝ)) ∈ crossings x y := ⟨r.property, hi⟩
+    simp [he] at hr
+  simpa using hf.apply_eq_of_preconnectedSpace 0 1
 
 /-- Forget walls along an index map, keeping the same vertices and affine segments.
 Mathlib's `Prefunctor.mapPath` extends this operation to polygonal paths. -/

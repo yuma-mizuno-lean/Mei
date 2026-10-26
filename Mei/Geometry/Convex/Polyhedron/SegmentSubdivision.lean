@@ -10,8 +10,11 @@ public import Mei.Geometry.Convex.Polyhedron.AdmissiblePath
 /-!
 # Subdividing admissible segments
 
-Inserting an allowed vertex inside an admissible segment gives two admissible
-segments. `Quiver.Path.IsSubdivision` records finite repetitions and concatenations
+Restricting an admissible segment to the interval between any two parameters
+with allowed endpoints gives an admissible segment, whose crossings are those of the
+original segment at the rescaled parameters. In particular, inserting an allowed
+vertex inside an admissible segment gives two admissible segments.
+`Quiver.Path.IsSubdivision` records finite repetitions and concatenations
 of these insertions. Their crossing parameters rescale to the original parameter interval.
 These formulas retain the wall indices, including simultaneous crossings in an
 arbitrary wall family, and allow ordered crossing lists to be compared after subdivision.
@@ -29,25 +32,62 @@ namespace Mei.Convex.WallComplement
 variable {V ι : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
   {W : ι → Set V} {x y z : WallComplement W} {t : ℝ}
 
+/-- Restricting an admissible segment to the interval between two parameters in `[0, 1]`
+preserves admissibility, provided the new endpoints lie off all walls. The two parameters
+may occur in either order. -/
+theorem AdmissibleSegment.subsegment (e : AdmissibleSegment x y) {a b : WallComplement W}
+    {s u : ℝ} (hs : s ∈ Icc (0 : ℝ) 1) (hu : u ∈ Icc (0 : ℝ) 1)
+    (ha : a.val = AffineMap.lineMap x.val y.val s)
+    (hb : b.val = AffineMap.lineMap x.val y.val u) : AdmissibleSegment a b := by
+  have hline (r : ℝ) : AffineMap.lineMap a.val b.val r =
+      AffineMap.lineMap x.val y.val (s + r * (u - s)) := by
+    simp only [ha, hb, AffineMap.lineMap_apply_module']
+    module
+  have hmem {r : ℝ} (hr : r ∈ Icc (0 : ℝ) 1) : s + r * (u - s) ∈ Icc (0 : ℝ) 1 := by
+    obtain ⟨hr₀, hr₁⟩ := hr
+    constructor <;> nlinarith [hs.1, hs.2, hu.1, hu.2, mul_nonneg hr₀ hu.1,
+      mul_nonneg (sub_nonneg.mpr hr₁) hs.1, mul_nonneg hr₀ (sub_nonneg.mpr hu.2),
+      mul_nonneg (sub_nonneg.mpr hr₁) (sub_nonneg.mpr hs.2)]
+  refine ⟨fun j hj => ?_, fun r hr => by simpa only [hline] using e.regular _ (hmem hr)⟩
+  obtain ⟨r, hr, hj⟩ := hj
+  rw [hline] at hj
+  have hd := e.transverse j ⟨_, hmem hr, hj⟩
+  have hba : b.val - a.val = (u - s) • (y.val - x.val) := by
+    simp only [ha, hb, AffineMap.lineMap_apply_module']
+    module
+  by_cases hus : u - s = 0
+  · refine (a.notMem j ?_).elim
+    simpa only [ha, hus, mul_zero, add_zero] using hj
+  · rw [hba]
+    exact fun hmem' => hd ((Submodule.smul_mem_iff _ hus).mp hmem')
+
+/-- The parameter `r` on a subsegment between parameters `s` and `u` corresponds to the
+original parameter `s + r * (u - s)`. -/
+theorem mem_crossings_subsegment {a b : WallComplement W} {s u : ℝ}
+    (hs : s ∈ Icc (0 : ℝ) 1) (hu : u ∈ Icc (0 : ℝ) 1)
+    (ha : a.val = AffineMap.lineMap x.val y.val s)
+    (hb : b.val = AffineMap.lineMap x.val y.val u) (i : ι) (r : ℝ) :
+    (i, r) ∈ crossings a b ↔ r ∈ Icc (0 : ℝ) 1 ∧ (i, s + r * (u - s)) ∈ crossings x y := by
+  have hline : AffineMap.lineMap a.val b.val r =
+      AffineMap.lineMap x.val y.val (s + r * (u - s)) := by
+    simp only [ha, hb, AffineMap.lineMap_apply_module']
+    module
+  simp only [mem_crossings, hline]
+  constructor
+  · rintro ⟨hr, hi⟩
+    obtain ⟨hr₀, hr₁⟩ := hr
+    refine ⟨⟨hr₀, hr₁⟩, ⟨?_, ?_⟩, hi⟩ <;> nlinarith [hs.1, hs.2, hu.1, hu.2,
+      mul_nonneg hr₀ hu.1, mul_nonneg (sub_nonneg.mpr hr₁) hs.1,
+      mul_nonneg hr₀ (sub_nonneg.mpr hu.2), mul_nonneg (sub_nonneg.mpr hr₁) (sub_nonneg.mpr hs.2)]
+  · rintro ⟨hr, -, hi⟩
+    exact ⟨hr, hi⟩
+
 /-- Restricting an admissible segment to its first, nonconstant parameter interval
 preserves admissibility, provided the new vertex lies off all walls. -/
 theorem AdmissibleSegment.subdivide_left (e : AdmissibleSegment x y)
     (ht : t ∈ Ioc (0 : ℝ) 1) (hz : z.val = AffineMap.lineMap x.val y.val t) :
-    AdmissibleSegment x z where
-  transverse i hi := by
-    obtain ⟨s, hs, hi⟩ := hi
-    have he := e.transverse i ⟨s * t,
-      ⟨mul_nonneg hs.1 ht.1.le, by
-        nlinarith [mul_nonneg (sub_nonneg.mpr hs.2) ht.1.le, ht.2]⟩,
-      by simpa only [hz, AffineMap.lineMap_lineMap_right] using hi⟩
-    intro hd
-    apply he
-    rw [hz, AffineMap.lineMap_apply_module', add_sub_cancel_right] at hd
-    exact (Submodule.smul_mem_iff _ ht.1.ne').mp hd
-  regular s hs := by
-    simpa only [hz, AffineMap.lineMap_lineMap_right] using
-      e.regular (s * t) ⟨mul_nonneg hs.1 ht.1.le, by
-        nlinarith [mul_nonneg (sub_nonneg.mpr hs.2) ht.1.le, ht.2]⟩
+    AdmissibleSegment x z :=
+  e.subsegment ⟨le_rfl, zero_le_one⟩ ⟨ht.1.le, ht.2⟩ (AffineMap.lineMap_apply_zero _ _).symm hz
 
 /-- Restricting an admissible segment to its last, nonconstant parameter interval
 preserves admissibility. -/
