@@ -103,6 +103,10 @@ def reindexPrefunctor {J' : Type*} (f : J' → J) :
   obj x := ⟨x.val, fun j => x.notMem (f j)⟩
   map e := ⟨fun j => e.down (f j)⟩
 
+/-- Reindexing preserves reversal of edges, hence also reversal of paths. -/
+instance {J' : Type*} (f : J' → J) : (reindexPrefunctor (W := W) f).MapReverse where
+  map_reverse' _ := PLift.ext (Subsingleton.elim _ _)
+
 @[simp]
 theorem reindexPrefunctor_obj_val {J' : Type*} (f : J' → J) (x : CommonWallComplement W) :
     ((reindexPrefunctor f).obj x).val = x.val := (rfl)
