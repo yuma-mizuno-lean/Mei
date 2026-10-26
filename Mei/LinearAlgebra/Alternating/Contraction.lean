@@ -1,0 +1,156 @@
+/-
+Copyright (c) 2026 Mei contributors. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Codex
+-/
+module
+
+public import Mei.LinearAlgebra.Alternating.Conormal
+public import Mathlib.LinearAlgebra.Alternating.Uncurry.Fin
+public import Mathlib.LinearAlgebra.Dual.Lemmas
+
+/-!
+# Contraction of conormal orientations
+
+Contracting a top-degree conormal form by a vector outside the tangent subspace
+produces a nonzero conormal form for the enlarged tangent subspace. This is the
+orientation operation for a transverse polyhedral sweep.
+
+The construction uses Mathlib's `AlternatingMap.curryLeft` and `map_insertNth`,
+and descent through `Submodule.conormalFormsEquiv` to the normal quotient.
+-/
+
+public section
+
+open Module
+
+namespace AlternatingMap
+
+variable {R M : Type*} [Field R] [AddCommGroup M] [Module R M] {k : ℕ}
+
+/-- Contraction of a nonzero top-degree form is injective in the contracting vector. -/
+theorem curryLeft_injective (α : M [⋀^Fin (k + 1)]→ₗ[R] R)
+    (b : Basis (Fin (k + 1)) R M) (hα : α ≠ 0) :
+    Function.Injective α.curryLeft := by
+  classical
+  apply LinearMap.ker_eq_bot.mp
+  apply le_antisymm ?_ bot_le
+  intro n hn
+  rw [Submodule.mem_bot]
+  by_contra hn0
+  obtain ⟨f, hf⟩ := Module.Projective.exists_dual_ne_zero R hn0
+  obtain ⟨s, b', j, hj, -⟩ := exists_basis_of_pairing_ne_zero hf
+  let e := b'.indexEquiv b
+  let b'' := b'.reindex e
+  have hj' : b'' (e j) = n := by simp [b'', hj]
+  have hz : α (Matrix.vecCons n ((e j).removeNth b'')) = 0 := by
+    simpa using congrArg (fun β : M [⋀^Fin k]→ₗ[R] R => β ((e j).removeNth b''))
+      (LinearMap.mem_ker.mp hn)
+  have hb : α b'' = 0 := by
+    rw [← (e j).insertNth_self_removeNth b'', hj', α.map_insertNth, hz, smul_zero]
+  exact ((α.map_basis_ne_zero_iff b'').mpr hα) hb
+
+end AlternatingMap
+
+namespace Submodule
+
+section CommRing
+
+variable {R M : Type*} [CommRing R] [AddCommGroup M] [Module R M] {k : ℕ}
+
+/-- Contraction of a conormal form annihilates both the old subspace and the
+contracting vector. -/
+theorem conormalForms_curryLeft {W : Submodule R M}
+    {α : M [⋀^Fin (k + 1)]→ₗ[R] R} (hα : α ∈ W.conormalForms (Fin (k + 1))) (n : M) :
+    α.curryLeft n ∈ (W ⊔ R ∙ n).conormalForms (Fin k) := by
+  rw [Submodule.mem_conormalForms] at hα ⊢
+  intro v j hv
+  obtain ⟨w, hw, z, hz, he⟩ := Submodule.mem_sup.mp hv
+  obtain ⟨r, rfl⟩ := Submodule.mem_span_singleton.mp hz
+  rw [← Function.update_eq_self j v, ← he, AlternatingMap.map_update_add,
+    AlternatingMap.map_update_smul]
+  have hw0 : α.curryLeft n (Function.update v j w) = 0 :=
+    hα _ j.succ (by simpa using hw)
+  have hn0 : α.curryLeft n (Function.update v j n) = 0 :=
+    α.map_eq_zero_of_eq _ (by simp) (Fin.succ_ne_zero j).symm
+  simp [hw0, hn0]
+
+end CommRing
+
+variable {R M : Type*} [Field R] [AddCommGroup M] [Module R M] {k : ℕ}
+
+/-- In top conormal degree, contraction vanishes exactly in tangent directions. -/
+theorem conormalForms_curryLeft_eq_zero_iff
+    {W : Submodule R M} (hk : finrank R (M ⧸ W) = k + 1)
+    {α : M [⋀^Fin (k + 1)]→ₗ[R] R} (hα : α ∈ W.conormalForms (Fin (k + 1)))
+    (hα0 : α ≠ 0) (n : M) : α.curryLeft n = 0 ↔ n ∈ W := by
+  have : FiniteDimensional R (M ⧸ W) := FiniteDimensional.of_finrank_pos (by omega)
+  let β := W.conormalFormsEquiv.symm ⟨α, hα⟩
+  have hβ : β.compLinearMap W.mkQ = α := by
+    ext v
+    simpa only [AlternatingMap.compLinearMap_apply, Submodule.mkQ_apply] using
+      W.conormalFormsEquiv_symm_apply_mk ⟨α, hα⟩ v
+  have hβ0 : β ≠ 0 := by
+    intro hz
+    simp [hz] at hβ
+    exact hα0 hβ.symm
+  have hi := AlternatingMap.compLinearMap_inj W.mkQ W.mkQ_surjective (β.curryLeft (W.mkQ n)) 0
+  rw [AlternatingMap.zero_compLinearMap] at hi
+  have hinj := β.curryLeft_injective (Module.finBasisOfFinrankEq R _ hk) hβ0
+  rw [← hβ, AlternatingMap.curryLeft_compLinearMap, hi,
+    ← (β.curryLeft).map_zero,
+    hinj.eq_iff,
+    Submodule.mkQ_apply, Submodule.Quotient.mk_eq_zero]
+
+end Submodule
+
+namespace Module.Ray
+
+variable {R M : Type*} [Field R] [LinearOrder R] [IsStrictOrderedRing R]
+  [AddCommGroup M] [Module R M] {k : ℕ}
+  {W : Submodule R M}
+
+/-- Contract a top conormal orientation by a transverse vector, placing that
+vector first in the representing alternating form. -/
+noncomputable def contract (o : Module.Ray R (M [⋀^Fin (k + 1)]→ₗ[R] R))
+    (ho : o.IsConormal W) (hk : finrank R (M ⧸ W) = k + 1)
+    (n : M) (hn : n ∉ W) : Module.Ray R (M [⋀^Fin k]→ₗ[R] R) :=
+  rayOfNeZero R (o.someVector.curryLeft n) <| by
+    apply (Submodule.conormalForms_curryLeft_eq_zero_iff hk _ o.someVector_ne_zero n).not.mpr hn
+    rwa [← o.someVector_ray, isConormal_rayOfNeZero_iff] at ho
+
+/-- Contraction can be computed using any nonzero representing form. -/
+@[simp]
+theorem contract_rayOfNeZero {α : M [⋀^Fin (k + 1)]→ₗ[R] R} (hα : α ≠ 0)
+    (ho : (rayOfNeZero R α hα).IsConormal W) (hk : finrank R (M ⧸ W) = k + 1)
+    (n : M) (hn : n ∉ W) :
+    (rayOfNeZero R α hα).contract ho hk n hn =
+      rayOfNeZero R (α.curryLeft n)
+        ((Submodule.conormalForms_curryLeft_eq_zero_iff hk
+          ((isConormal_rayOfNeZero_iff hα).mp ho) hα n).not.mpr hn) := by
+  apply (ray_eq_iff _ _).mpr
+  exact ((ray_eq_iff (Module.Ray.someVector_ne_zero _) hα).mp
+    (Module.Ray.someVector_ray _)).map
+      ((LinearMap.applyₗ n).comp AlternatingMap.curryLeftLinearMap)
+
+/-- The contracted orientation is conormal to the old tangent space enlarged by
+the sweeping line. -/
+theorem isConormal_contract (o : Module.Ray R (M [⋀^Fin (k + 1)]→ₗ[R] R))
+    (ho : o.IsConormal W) (hk : finrank R (M ⧸ W) = k + 1) (n : M) (hn : n ∉ W) :
+    (o.contract ho hk n hn).IsConormal (W ⊔ R ∙ n) := by
+  induction o using Module.Ray.ind with
+  | h α hα =>
+    rw [contract_rayOfNeZero, isConormal_rayOfNeZero_iff]
+    exact Submodule.conormalForms_curryLeft ((isConormal_rayOfNeZero_iff hα).mp ho) n
+
+/-- Contraction commutes with reversal of the orientation. -/
+@[simp]
+theorem contract_neg (o : Module.Ray R (M [⋀^Fin (k + 1)]→ₗ[R] R))
+    (ho : o.IsConormal W) (hk : finrank R (M ⧸ W) = k + 1) (n : M) (hn : n ∉ W) :
+    (-o).contract (isConormal_neg_iff.mpr ho) hk n hn = -o.contract ho hk n hn := by
+  induction o using Module.Ray.ind with
+  | h α hα =>
+    simp only [neg_rayOfNeZero, contract_rayOfNeZero]
+    congr 1
+
+end Module.Ray
