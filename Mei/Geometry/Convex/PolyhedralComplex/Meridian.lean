@@ -10,20 +10,22 @@ public import Mei.Geometry.Convex.Polyhedron.Path.Meridian
 public import Mathlib.Analysis.Convex.Combination
 
 /-!
-# Isolating triangular meridians of polyhedral joints
+# Isolating triangular loops at polyhedral joints
 
-At every relative interior point of a codimension-two cell, construct an
-arbitrarily small triangle in a complementary plane, with an admissible closed
-polygonal boundary. Its filled triangle meets the codimension-at-least-two
-skeleton exactly at the center, misses the relative boundary of the joint and
-all other joints, and meets only walls containing that joint.
+At every relative interior point of a joint of a finite polyhedral complex,
+construct an arbitrarily small nondegenerate triangle with an admissible
+three-edge boundary. Its plane complements the joint direction. The filled
+triangle meets the codimension-at-least-two skeleton exactly at its centroid,
+misses the relative boundary of the joint and every other joint, and meets only
+cells containing the chosen joint. Thus its wall crossings can be used to
+compute local joint products without contributions from unrelated walls.
 
-No transverse plane or admissible loop is assumed: the plane comes from
-`FinitePolyhedralComplex.exists_isolating_ball_joint`, and its transversality
-to every nearby wall follows from complementary directions and codimension.
-The boundary is supplied by `Mei.Convex.exists_admissible_triangle`.
-The vertex ordering is not prescribed by a conormal orientation; either ordering
-can subsequently be used when evaluating signed meridian products.
+The construction combines `FinitePolyhedralComplex.exists_isolating_ball_joint`
+with `Mei.Convex.exists_admissible_triangle`. The missing transversality follows
+from the common-face incidence in the isolating ball: every wall meeting that
+ball contains the joint, so a complement to the joint direction cannot lie in
+the direction of that wall. No orientation of the normal plane is chosen here.
+Cells may be unbounded and have lineality.
 -/
 
 public section
@@ -35,71 +37,73 @@ namespace Mei.FinitePolyhedralComplex
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
 
-/-- There are arbitrarily small isolating triangular meridians about every
-relative interior point of a joint. The filled triangle meets the whole
-codimension-at-least-two skeleton exactly once, avoids every other joint and
-the joint's relative boundary, and meets only walls containing the joint.
-Its three boundary edges form an actual admissible loop. The ordering of the
-vertices is free; no orientation of the normal quotient is specified here. -/
-theorem exists_isolating_joint_meridian (C : FinitePolyhedralComplex h) {J : Set V}
+/-- A joint admits arbitrarily small admissible triangular loops in a
+complementary plane. The whole filled triangle isolates the joint, including
+its relative boundary and all other joints. Every cell meeting the filled
+triangle contains the joint. The vertex formula specifies the actual loop,
+and the triangle's centroid is the chosen relative interior point. -/
+theorem exists_isolating_joint_triangle (C : FinitePolyhedralComplex h) {J : Set V}
     (hJ : J ∈ C.joints) {p : V} (hp : p ∈ intrinsicInterior ℝ J)
     {ε : ℝ} (hε : 0 < ε) :
-    ∃ (T : Submodule ℝ V) (s : Affine.Triangle ℝ V)
-      (x : WallComplement (fun P : C.walls => (P : Set V))) (γ : AdmissiblePLPath x x),
-      IsCompl (affineSpan ℝ J).direction T ∧ Module.finrank ℝ T = 2 ∧
+    ∃ (s : Affine.Triangle ℝ V)
+      (x : WallComplement (fun W : C.walls => (W : Set V)))
+      (γ : AdmissiblePLPath x x),
       s.centroid = p ∧
       γ.vertices.map WallComplement.val = [s.points 0, s.points 1, s.points 2, s.points 0] ∧
-      convexHull ℝ (range s.points) ⊆
-        Metric.ball p ε ∩ (AffineSubspace.mk' p T : Set V) ∧
+      IsCompl (affineSpan ℝ J).direction (vectorSpan ℝ (range s.points)) ∧
+      convexHull ℝ (range s.points) ⊆ Metric.ball p ε ∧
       convexHull ℝ (range s.points) ∩ (C.codimensionAtLeast 2).support = {p} ∧
       Disjoint (convexHull ℝ (range s.points)) (intrinsicFrontier ℝ J) ∧
       (∀ Q ∈ C.joints, Q ≠ J → Disjoint (convexHull ℝ (range s.points)) Q) ∧
-      ∀ P ∈ C.walls, (convexHull ℝ (range s.points) ∩ P).Nonempty → J ⊆ P := by
+      ∀ Q ∈ C.cells, (convexHull ℝ (range s.points) ∩ Q).Nonempty → J ⊆ Q := by
   classical
   let := h.finiteDimensional
-  -- Shrink an isolating neighborhood to the requested size.
-  obtain ⟨r, T, hr, hT, hdim, hskeleton, hfrontier, hother, hcells⟩ :=
+  obtain ⟨r, T, hr, hT, hdimT, hskeleton, hfrontier, hother, hcells⟩ :=
     C.exists_isolating_ball_joint hJ hp
-  let r' := min r ε
-  have hr' : 0 < r' := lt_min hr hε
-  have hball : Metric.ball p r' ⊆ Metric.ball p r := Metric.ball_subset_ball (min_le_left _ _)
-  have hballε : Metric.ball p r' ⊆ Metric.ball p ε := Metric.ball_subset_ball (min_le_right _ _)
-  -- Complementarity makes the slice transverse to every nearby wall.
-  have hwall (P : C.walls) (hmeet : ((P : Set V) ∩ Metric.ball p r').Nonempty) :
-      p ∈ affineSpan ℝ (P : Set V) ∧ ¬ T ≤ (affineSpan ℝ (P : Set V)).direction := by
-    obtain ⟨y, hyP, hyball⟩ := hmeet
-    have hJP := hcells P (C.mem_cells_of_mem_walls P.property) ⟨y, hball hyball, hyP⟩
-    exact ⟨subset_affineSpan ℝ _ (hJP (intrinsicInterior_subset hp)),
-      C.not_le_wall_direction_of_isCompl hJP P.property hT⟩
-  have hsingular (y : V) (hyball : y ∈ Metric.ball p r')
-      (hyT : y ∈ AffineSubspace.mk' p T)
-      (hys : y ∈ singularSupport (fun P : C.walls => (P : Set V))) : y = p := by
-    apply Set.mem_singleton_iff.mp
-    rw [← hskeleton]
-    exact ⟨⟨hball hyball, hyT⟩, C.singularSupport_walls_subset_support_codimensionAtLeast hys⟩
+  have hball : Metric.ball p (min r ε) ⊆ Metric.ball p r :=
+    Metric.ball_subset_ball (min_le_left _ _)
+  -- Incidence in the isolating ball forces transversality to its incident walls.
+  have hwall (W : C.walls) (hW : ((W : Set V) ∩ Metric.ball p (min r ε)).Nonempty) :
+      p ∈ affineSpan ℝ (W : Set V) ∧ ¬ T ≤ (affineSpan ℝ (W : Set V)).direction := by
+    have hJW : J ⊆ (W : Set V) := hcells W (C.mem_cells_of_mem_walls W.property)
+      (by obtain ⟨y, hyW, hyball⟩ := hW; exact ⟨y, hball hyball, hyW⟩)
+    exact ⟨subset_affineSpan ℝ _ (hJW (intrinsicInterior_subset hp)),
+      C.not_le_wall_direction_of_isCompl hJW W.property hT⟩
+  have hsingular : ∀ y ∈ Metric.ball p (min r ε), y ∈ AffineSubspace.mk' p T →
+      y ∈ singularSupport (fun W : C.walls => (W : Set V)) → y = p := by
+    intro y hyball hyT hy
+    exact Set.mem_singleton_iff.mp (hskeleton ▸
+      ⟨⟨hball hyball, hyT⟩, C.singularSupport_walls_subset_support_codimensionAtLeast hy⟩)
   obtain ⟨s, x, γ, hsp, hvertices, hfill⟩ := exists_admissible_triangle
-    (fun P : C.walls => (P : Set V)) T (by omega) hr' hwall hsingular
-  -- The filled triangle inherits all isolation properties of the ball and slice.
+    (fun W : C.walls => (W : Set V)) T (by omega) (lt_min hr hε) hwall hsingular
+  -- Nondegeneracy makes the triangle span the whole chosen normal plane.
   have hfillball : convexHull ℝ (range s.points) ⊆ Metric.ball p r :=
     fun y hy => hball (hfill hy).1
-  have hpfill : p ∈ convexHull ℝ (range s.points) := by
-    rw [← hsp]
-    exact affineCombination_mem_convexHull
-      (fun j _ => by simp [Finset.centroidWeights_apply])
-      (Finset.sum_centroidWeights_eq_one_of_nonempty ℝ Finset.univ (by simp))
-  refine ⟨T, s, x, γ, hT, hdim, hsp, hvertices,
-    fun y hy => ⟨hballε (hfill hy).1, (hfill hy).2⟩, ?_,
+  have hplane : vectorSpan ℝ (range s.points) = T := by
+    apply Submodule.eq_of_le_of_finrank_eq
+    · rw [← direction_affineSpan, ← AffineSubspace.direction_mk' p T]
+      apply AffineSubspace.direction_le
+      exact affineSpan_le.mpr fun y hy => (hfill (subset_convexHull ℝ _ hy)).2
+    · rw [s.independent.finrank_vectorSpan (Fintype.card_fin 3), hdimT]
+  have hcenter : p ∈ convexHull ℝ (range s.points) := by
+    rw [← hsp, s.centroid_eq_affineCombination]
+    exact affineCombination_mem_convexHull (by simp [Finset.centroidWeights_apply])
+      (Finset.sum_centroidWeights_eq_one_of_nonempty ℝ _ Finset.univ_nonempty)
+  -- Pass all isolation conditions from the ball to the actual filled triangle.
+  refine ⟨s, x, γ, hsp, hvertices, hplane ▸ hT, ?_, ?_,
     hfrontier.mono_left hfillball, ?_, ?_⟩
+  · exact fun y hy => Metric.ball_subset_ball (min_le_right _ _) (hfill hy).1
   · apply Set.Subset.antisymm
-    · rintro y ⟨hyfill, hys⟩
-      rw [← hskeleton]
-      exact ⟨⟨hfillball hyfill, (hfill hyfill).2⟩, hys⟩
-    · rintro y (rfl : y = p)
-      exact ⟨hpfill, mem_support.mpr
-        ⟨J, C.cellsOfCodimension_subset_codimensionAtLeast_cells 2 hJ,
-          intrinsicInterior_subset hp⟩⟩
+    · rintro y ⟨hy, hys⟩
+      exact hskeleton ▸ ⟨⟨hfillball hy, (hfill hy).2⟩, hys⟩
+    · intro y hy
+      have heq := Set.mem_singleton_iff.mp hy
+      subst y
+      exact ⟨hcenter, mem_support.mpr ⟨J,
+        C.cellsOfCodimension_subset_codimensionAtLeast_cells 2 hJ,
+        intrinsicInterior_subset hp⟩⟩
   · exact fun Q hQ hne => (hother Q hQ hne).mono_left hfillball
-  · rintro P hP ⟨y, hyfill, hyP⟩
-    exact hcells P (C.mem_cells_of_mem_walls hP) ⟨y, hfillball hyfill, hyP⟩
+  · rintro Q hQ ⟨y, hy, hyQ⟩
+    exact hcells Q hQ ⟨y, hfillball hy, hyQ⟩
 
 end Mei.FinitePolyhedralComplex

@@ -134,6 +134,12 @@ def signedCrossingEvent (x y : WallComplement W) (t : ℝ) : Finset (ι × ℤ) 
   exact (crossingWalls x y t).image
     (fun i => (i, if 0 < ν i (y.val - x.val) then -1 else 1))
 
+open Classical in
+/-- A signed event is the image of the crossed wall indices with their prescribed exponents. -/
+theorem signedCrossingEvent_def (x y : WallComplement W) (t : ℝ) :
+    signedCrossingEvent ν x y t = (crossingWalls x y t).image
+      (fun i => (i, if 0 < ν i (y.val - x.val) then -1 else 1)) := (rfl)
+
 /-- A signed event retains every wall index and its prescribed crossing exponent. -/
 @[simp]
 theorem mem_signedCrossingEvent (x y : WallComplement W) (t : ℝ) (i : ι) (s : ℤ) :
