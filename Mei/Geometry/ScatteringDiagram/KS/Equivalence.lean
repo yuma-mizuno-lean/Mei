@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.ScatteringDiagram.KS.Completion
-public import Mei.Geometry.Convex.PolyhedralComplex.CommonPerturbation
+public import Mei.Geometry.ScatteringDiagram.Equivalence
 
 /-!
 # Detecting completed diagram equivalence by complete products
@@ -46,15 +46,11 @@ variable {N V R L : Type*} [AddCommGroup N]
   {C E : ℕ → FinitePolyhedralComplex h}
   (D : CompletedDiagram s d ℒ C) (F : CompletedDiagram s d ℒ E)
 
-/-- Completed diagrams are equivalent if their actual geometric products agree
-at each order on every vertex list admissible for both finite diagrams. -/
+/-- Completed diagrams are equivalent if their finite diagrams are equivalent
+at each order: their actual geometric products agree on every vertex list
+admissible for both finite diagrams. -/
 def Equivalent : Prop :=
-  ∀ k {x y : WallComplement (fun P : (C k).walls => (P : Set V))}
-    {x' y' : WallComplement (fun P : (E k).walls => (P : Set V))}
-    (p : AdmissiblePLPath x y) (q : AdmissiblePLPath x' y'),
-    p.vertices.map WallComplement.val = q.vertices.map WallComplement.val →
-      (D.diagram k).toFiniteWallDiagram.pathProduct p =
-        (F.diagram k).toFiniteWallDiagram.pathProduct q
+  ∀ k, (D.diagram k).toFiniteWallDiagram.Equivalent (F.diagram k).toFiniteWallDiagram
 
 /-- The finite-order common-path characterization of completed equivalence. -/
 theorem equivalent_iff : D.Equivalent F ↔
@@ -63,7 +59,8 @@ theorem equivalent_iff : D.Equivalent F ↔
       (p : AdmissiblePLPath x y) (q : AdmissiblePLPath x' y'),
       p.vertices.map WallComplement.val = q.vertices.map WallComplement.val →
         (D.diagram k).toFiniteWallDiagram.pathProduct p =
-          (F.diagram k).toFiniteWallDiagram.pathProduct q := Iff.rfl
+          (F.diagram k).toFiniteWallDiagram.pathProduct q :=
+  forall_congr' fun _ => FiniteWallDiagram.equivalent_def _ _
 
 variable {D F}
 

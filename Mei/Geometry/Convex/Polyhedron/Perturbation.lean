@@ -203,37 +203,6 @@ theorem exists_forall₂_dist_lt [Finite ι] (hpoly : ∀ i, TauCeti.IsConvexPol
   rw [hx, hy] at hp'
   exact hp'
 
-/-- Every nonempty vertex list is approximated by an admissible path, allowing
-both endpoints to move. Unlike approximation with fixed endpoints, this also
-applies to lists with no interior vertex. -/
-theorem exists_forall₂_dist_lt_free_endpoints [Finite ι]
-    (hpoly : ∀ i, TauCeti.IsConvexPolyhedron (W i))
-    (hdim : ∀ i, Module.finrank ℝ (affineSpan ℝ (W i)).direction + 1 = Module.finrank ℝ V)
-    {l : List V} (hl : l ≠ []) {ε : ℝ} (hε : 0 < ε) :
-    ∃ (x y : WallComplement W) (p : AdmissiblePLPath x y),
-      List.Forall₂ (fun a b => dist a b < ε) l (p.vertices.map WallComplement.val) := by
-  induction l with
-  | nil => exact absurd rfl hl
-  | cons v l ih =>
-    by_cases hl' : l = []
-    · subst l
-      obtain ⟨u, hu, hW⟩ := AffineSubspace.exists_dist_lt_genericLocus
-        (fun i => affineSpan ℝ (W i))
-        (fun i => (affineSpan ℝ (W i)).ne_top_of_finrank_direction_add_one_eq (hdim i)) v hε
-      let x : WallComplement W := ⟨u, fun i hi => hW i (subset_affineSpan ℝ _ hi)⟩
-      exact ⟨x, x, .nil, .cons (by simpa only [dist_comm] using hu) .nil⟩
-    · obtain ⟨x, y, p, hp⟩ := ih hl'
-      obtain ⟨u, hu, hW, ht, hr⟩ := exists_mem_open_two_transverse_lineMaps
-        W hpoly hdim x.notMem x.notMem Metric.isOpen_ball (Metric.nonempty_ball.mpr hε)
-      let z : WallComplement W := ⟨u, hW⟩
-      have hxz : WallComplement.AdmissibleSegment x z :=
-        ⟨fun i _ => (ht i).1, fun t _ => (hr t).1⟩
-      refine ⟨z, y, (Quiver.Hom.toPath (PLift.up hxz.symm)).comp p, ?_⟩
-      simp only [Quiver.Path.vertices_comp, Quiver.Path.vertices_toPath,
-        List.dropLast_cons_cons, List.dropLast_singleton, List.singleton_append,
-        List.map_cons]
-      exact .cons (Metric.mem_ball'.mp hu) hp
-
 /-- A closed vertex list can be approximated by an admissible loop, with its
 basepoint also allowed to move, even when there are no interior vertices. -/
 theorem exists_loop_forall₂_dist_lt [Finite ι]
