@@ -13,7 +13,9 @@ public import Mathlib.Geometry.Convex.Cone.Pointed
 
 Cells are actual nonempty closed rational-normal polyhedra. Every nonempty
 exposed face is retained, and nonempty pairwise intersections are common faces.
-Relative interiors of distinct cells are disjoint.
+Relative interiors of distinct cells are disjoint. A cell containing a relative
+interior point of another contains that entire cell; this incidence condition
+holds uniformly for all cells encountered in a neighborhood of the point.
 No boundedness, full-dimensionality, or salience condition is imposed.
 -/
 
@@ -76,15 +78,39 @@ theorem inter_mem_cells (C : FinitePolyhedralComplex h) {P Q : Set V}
     P ∩ Q ∈ C.cells :=
   C.face_closed P hP (P ∩ Q) (isPolyhedralFace_iff.mpr ⟨hne, C.inter_face P hP Q hQ hne⟩)
 
+/-- A cell containing a relative interior point of another cell contains that
+entire cell. -/
+theorem subset_of_mem_intrinsicInterior (C : FinitePolyhedralComplex h) {P Q : Set V}
+    (hP : P ∈ C.cells) (hQ : Q ∈ C.cells) {x : V}
+    (hxP : x ∈ intrinsicInterior ℝ P) (hxQ : x ∈ Q) : P ⊆ Q := by
+  have hx : x ∈ P ∩ Q := ⟨intrinsicInterior_subset hxP, hxQ⟩
+  exact Set.inter_eq_left.mp
+    ((C.inter_face P hP Q hQ ⟨x, hx⟩).eq_of_mem_intrinsicInterior hx hxP)
+
 /-- Cells with a common relative-interior point are equal, without a dimension assumption. -/
 theorem eq_of_mem_intrinsicInterior (C : FinitePolyhedralComplex h) {P Q : Set V}
     (hP : P ∈ C.cells) (hQ : Q ∈ C.cells) {x : V}
     (hxP : x ∈ intrinsicInterior ℝ P) (hxQ : x ∈ intrinsicInterior ℝ Q) : P = Q := by
-  have hx : x ∈ P ∩ Q := ⟨intrinsicInterior_subset hxP, intrinsicInterior_subset hxQ⟩
-  have hleft := (C.inter_face P hP Q hQ ⟨x, hx⟩).eq_of_mem_intrinsicInterior hx hxP
-  have hright := (C.inter_face Q hQ P hP ⟨x, hx.2, hx.1⟩).eq_of_mem_intrinsicInterior
-    ⟨hx.2, hx.1⟩ hxQ
-  exact hleft.symm.trans ((Set.inter_comm P Q).trans hright)
+  exact Set.Subset.antisymm
+    (C.subset_of_mem_intrinsicInterior hP hQ hxP (intrinsicInterior_subset hxQ))
+    (C.subset_of_mem_intrinsicInterior hQ hP hxQ (intrinsicInterior_subset hxP))
+
+open Filter Topology in
+/-- Near a relative interior point of a cell, every cell encountered contains
+that entire cell. This is uniform over the finite complex. -/
+theorem eventually_subset_of_mem_cell (C : FinitePolyhedralComplex h) {P : Set V}
+    (hP : P ∈ C.cells) {x : V} (hx : x ∈ intrinsicInterior ℝ P) :
+    ∀ᶠ y in 𝓝 x, ∀ Q ∈ C.cells, y ∈ Q → P ⊆ Q := by
+  have hQ (Q : C.cells) : ∀ᶠ y in 𝓝 x, y ∈ (Q : Set V) → P ⊆ Q := by
+    by_cases hPQ : P ⊆ Q
+    · exact Eventually.of_forall fun _ _ => hPQ
+    · have hxQ : x ∉ (Q : Set V) := fun hxQ =>
+        hPQ (C.subset_of_mem_intrinsicInterior hP Q.property hx hxQ)
+      filter_upwards [(C.isConvexPolyhedron Q.property).isClosed.isOpen_compl.mem_nhds hxQ]
+        with y hy
+      exact fun hyQ => (hy hyQ).elim
+  filter_upwards [eventually_all.mpr hQ] with y hy Q hQ
+  exact hy ⟨Q, hQ⟩
 
 /-- The relative interiors of distinct cells are disjoint. -/
 theorem disjoint_intrinsicInterior (C : FinitePolyhedralComplex h) {P Q : Set V}

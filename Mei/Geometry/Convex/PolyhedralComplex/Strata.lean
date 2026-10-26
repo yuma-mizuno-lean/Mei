@@ -18,6 +18,10 @@ a subcomplex. The singular support of the wall family is contained in the
 codimension-at-least-two subcomplex. Outside singular support a point belongs
 to at most one wall, so a transverse crossing has an unambiguous wall index.
 
+Near a relative interior point, the skeleton of the same or greater codimension
+agrees with that cell. One ball isolates it from its boundary and all other cells
+of the same codimension, while meeting only cells containing it.
+
 All cells may be unbounded and may have lineality.
 
 ## References
@@ -154,6 +158,68 @@ theorem codimensionAtLeast_isWeakRefinement (C : FinitePolyhedralComplex h) (k :
   apply isWeakRefinement_iff.mpr
   intro P hP
   exact ⟨P, ((C.mem_codimensionAtLeast_cells k P).mp hP).1, Set.Subset.rfl⟩
+
+open Filter Topology in
+/-- Near a relative interior point of a codimension-`k` cell, the skeleton of
+codimension at least `k` agrees with that cell. -/
+theorem eventually_mem_support_codimensionAtLeast_iff (C : FinitePolyhedralComplex h)
+    {P : Set V} {k : ℕ} (hP : P ∈ C.cellsOfCodimension k) {x : V}
+    (hx : x ∈ intrinsicInterior ℝ P) :
+    ∀ᶠ y in 𝓝 x, y ∈ (C.codimensionAtLeast k).support ↔ y ∈ P := by
+  let := h.finiteDimensional
+  obtain ⟨hPC, hdimP⟩ := (C.mem_cellsOfCodimension k P).mp hP
+  filter_upwards [C.eventually_subset_of_mem_cell hPC hx] with y hy
+  constructor
+  · intro hys
+    obtain ⟨Q, hQ, hyQ⟩ := mem_support.mp hys
+    obtain ⟨hQC, hdimQ⟩ := (C.mem_codimensionAtLeast_cells k Q).mp hQ
+    have hPQ := hy Q hQC hyQ
+    have hle := Submodule.finrank_mono (AffineSubspace.direction_le (affineSpan_mono ℝ hPQ))
+    have hface := (isPolyhedralFace_iff.mp (C.face_of_subset hPC hQC hPQ)).2
+    have heq : P = Q := hface.eq_of_finrank_vectorSpan_eq (C.nonempty P hPC)
+      (by rw [← direction_affineSpan, ← direction_affineSpan]; omega)
+    exact heq ▸ hyQ
+  · intro hyP
+    exact mem_support.mpr ⟨P, C.cellsOfCodimension_subset_codimensionAtLeast_cells k hP, hyP⟩
+
+open Set Filter Topology in
+/-- At a relative interior point of an exact-codimension cell, one ball
+simultaneously isolates the cell in its skeleton, avoids its relative boundary,
+misses every other cell of the same codimension, and meets only cells containing it. -/
+theorem exists_isolating_ball (C : FinitePolyhedralComplex h) {P : Set V} {k : ℕ}
+    (hP : P ∈ C.cellsOfCodimension k) {x : V} (hx : x ∈ intrinsicInterior ℝ P) :
+    ∃ r > 0,
+      Metric.ball x r ∩ (C.codimensionAtLeast k).support = Metric.ball x r ∩ P ∧
+      Disjoint (Metric.ball x r) (intrinsicFrontier ℝ P) ∧
+      (∀ Q ∈ C.cellsOfCodimension k, Q ≠ P → Disjoint (Metric.ball x r) Q) ∧
+      ∀ Q ∈ C.cells, (Metric.ball x r ∩ Q).Nonempty → P ⊆ Q := by
+  let := h.finiteDimensional
+  have hPC := ((C.mem_cellsOfCodimension k P).mp hP).1
+  have hxf : x ∉ intrinsicFrontier ℝ P := by
+    rw [← intrinsicClosure_sdiff_intrinsicInterior]
+    exact fun hmem => hmem.2 hx
+  have hfront : ∀ᶠ y in 𝓝 x, y ∉ intrinsicFrontier ℝ P :=
+    (isClosed_intrinsicFrontier (affineSpan ℝ P).closed_of_finiteDimensional).isOpen_compl.mem_nhds
+      hxf
+  have hnear := (C.eventually_mem_support_codimensionAtLeast_iff hP hx).and
+    (hfront.and (C.eventually_subset_of_mem_cell hPC hx))
+  obtain ⟨r, hr, hball⟩ := Metric.mem_nhds_iff.mp hnear
+  refine ⟨r, hr, ?_, ?_, ?_, ?_⟩
+  · ext y
+    exact and_congr_right fun hy => (hball hy).1
+  · exact Set.disjoint_left.mpr fun y hy hyf => (hball hy).2.1 hyf
+  · intro Q hQ hne
+    apply Set.disjoint_left.mpr
+    intro y hy hyQ
+    obtain ⟨hQC, hdimQ⟩ := (C.mem_cellsOfCodimension k Q).mp hQ
+    have hPQ := (hball hy).2.2 Q hQC hyQ
+    have hface := (isPolyhedralFace_iff.mp (C.face_of_subset hPC hQC hPQ)).2
+    have hdimP := ((C.mem_cellsOfCodimension k P).mp hP).2
+    have heq : P = Q := hface.eq_of_finrank_vectorSpan_eq (C.nonempty P hPC)
+      (by rw [← direction_affineSpan, ← direction_affineSpan]; omega)
+    exact hne heq.symm
+  · rintro Q hQ ⟨y, hy, hyQ⟩
+    exact (hball hy).2.2 Q hQ hyQ
 
 /-- The relative boundary of a cell of codimension at least `k` lies in the
 subcomplex of codimension at least `k + 1`. -/
