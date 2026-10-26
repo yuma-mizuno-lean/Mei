@@ -144,6 +144,29 @@ end Topology
 
 end Set
 
+namespace AffineEquiv
+
+variable {V W : Type*} [AddCommGroup V] [Module ℝ V]
+  [AddCommGroup W] [Module ℝ W]
+
+/-- An affine equivalence transports recession directions by its linear part.
+No convexity, closedness or nonemptiness assumption is needed. -/
+theorem linear_mem_recessionCone_image (e : V ≃ᵃ[ℝ] W) (P : Set V) (v : V) :
+    e.linear v ∈ Set.recessionCone (e '' P) ↔ v ∈ Set.recessionCone P := by
+  have he (x : V) (t : ℝ) : e (x + t • v) = e x + t • e.linear v := by
+    simpa only [vadd_eq_add, map_smul, add_comm] using e.map_vadd x (t • v)
+  constructor
+  · intro hv x hx t ht
+    apply e.injective.mem_set_image.mp
+    rw [he]
+    exact hv (e x) ⟨x, hx, rfl⟩ t ht
+  · intro hv y hy t ht
+    obtain ⟨x, hx, rfl⟩ := hy
+    rw [← he]
+    exact ⟨x + t • v, hv x hx t ht, rfl⟩
+
+end AffineEquiv
+
 namespace PointedCone
 
 variable {V : Type*} [AddCommGroup V] [Module ℝ V]
