@@ -18,10 +18,9 @@ adjacency graph. Adjacency means that their ambient closures share a point
 inside the region and outside the actual singular support. Balls are a special
 case. Walls may be unbounded, have lineality, or be repeated in the family.
 
-The proof uses Mei's two transverse segments inside the convex region and the
-finite crossing theorem. The general finite-exception curve theorem constructs
-a finite graph walk; component connectivity or adjacency is never assumed.
-It uses Mathlib's actual `ConnectedComponents` and `connectedComponentIn`.
+These results give finite adjacency walks between chambers even when the wall
+complement is disconnected. Chambers use Mathlib's `ConnectedComponents` and
+`connectedComponentIn`, and regularity uses Mei's actual singular support.
 -/
 
 public section
@@ -78,7 +77,7 @@ private theorem lineMap_reachable [Finite ι] {W : ι → Set V} {U : Set V}
       refine ⟨hconv.lineMap_mem x.property.1 y.property.1 ht, ?_⟩
       simpa only [mem_iUnion, not_exists] using hno
     obtain ⟨i, hi⟩ := hex
-    change t ∈ (e.finite_crossings.image Prod.snd).toFinset
+    dsimp only [T]
     rw [(e.finite_crossings.image Prod.snd).mem_toFinset]
     exact ⟨(i, t), (WallComplement.mem_crossings wx wy i t).mpr ⟨ht, hi⟩, rfl⟩
   have hwalk := componentAdjacencyGraph_reachable_of_finite_exceptions
@@ -87,7 +86,7 @@ private theorem lineMap_reachable [Finite ι] {W : ι → Set V} {U : Set V}
     AffineMap.lineMap_continuous.continuousOn (by norm_num : (0 : ℝ) ≤ 1)
     (by simpa only [AffineMap.lineMap_apply_zero] using x.property)
     (by simpa only [AffineMap.lineMap_apply_one] using y.property)
-    (fun t ht => ⟨hconv.lineMap_mem x.property.1 y.property.1 ht, hreg t ht⟩) hT
+    (fun t ht _ => ⟨hconv.lineMap_mem x.property.1 y.property.1 ht, hreg t ht⟩) hT
   simpa only [chamberGraph, AffineMap.lineMap_apply_zero,
     AffineMap.lineMap_apply_one] using hwalk
 
@@ -124,8 +123,7 @@ theorem chamberGraph_preconnected {U : Set V} (hconv : Convex ℝ U)
   exact hconv.chamberGraph_reachable W hpoly hdim hU x y
 
 /-- In a nonempty open convex region the actual chamber graph is connected.
-Generic-point density supplies its vertex, so nonemptiness is not assumed
-separately for the complement or for any chamber. -/
+Nonemptiness is not assumed separately for the complement or for any chamber. -/
 theorem chamberGraph_connected {U : Set V} (hconv : Convex ℝ U)
     [FiniteDimensional ℝ V] [Finite ι]
     (W : ι → Set V) (hpoly : ∀ i, TauCeti.IsConvexPolyhedron (W i))

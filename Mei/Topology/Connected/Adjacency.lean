@@ -5,9 +5,9 @@ Authors: Codex
 -/
 module
 
+public import Mei.Topology.Connected.Basic
 public import Mathlib.Topology.Connected.Clopen
 public import Mathlib.Topology.Order.IntermediateValue
-public import Mathlib.Topology.Order.DenselyOrdered
 public import Mathlib.Topology.Instances.Real.Lemmas
 public import Mathlib.Combinatorics.SimpleGraph.Connectivity.Connected
 import Mathlib.Tactic.Linarith
@@ -18,12 +18,11 @@ import Mathlib.Tactic.Push
 
 The vertices are Mathlib's connected components of a subset. Two distinct
 components are adjacent when their ambient closures share a point of a
-specified regular set. A continuous curve lying in the regular set and leaving
-the subset only at finitely many parameters gives an actual finite graph walk.
+specified regular set. A continuous curve leaving the subset only at finitely
+many parameters, with regular values at those parameters, gives a finite graph walk.
 
-The proof isolates one exceptional parameter and uses connected images of
-half-open intervals on its two sides. Their common limiting point belongs to
-both component closures. Erasing that parameter gives a finite induction.
+This criterion turns curves with finitely many crossings into connectivity
+results for component adjacency graphs, such as chamber graphs of wall complements.
 No local connectedness or separation assumption on the ambient space is needed.
 -/
 
@@ -39,7 +38,18 @@ variable {X : Type*} [TopologicalSpace X] {s : Set X}
 def carrier (c : ConnectedComponents s) : Set X :=
   Subtype.val '' {x : s | ConnectedComponents.mk x = c}
 
+/-- A point belongs to a component's ambient carrier exactly when it lies in
+the subset and represents that component. -/
+theorem mem_carrier_iff {c : ConnectedComponents s} {x : X} :
+    x ∈ c.carrier ↔ ∃ hx : x ∈ s, ConnectedComponents.mk ⟨x, hx⟩ = c := by
+  constructor
+  · rintro ⟨⟨y, hy⟩, hc, rfl⟩
+    exact ⟨hy, hc⟩
+  · rintro ⟨hx, hc⟩
+    exact ⟨⟨x, hx⟩, hc, rfl⟩
+
 /-- At a represented component the carrier is the actual `connectedComponentIn`. -/
+@[simp]
 theorem carrier_mk (x : s) :
     (ConnectedComponents.mk x).carrier = connectedComponentIn s x.val := by
   rw [carrier, connectedComponentIn_eq_image x.property]
@@ -57,8 +67,7 @@ theorem mk_eq_mk_iff_mem_connectedComponentIn {x y : s} :
     exact ⟨x, h, rfl⟩
   · rintro ⟨z, hz, hzx⟩
     have hzx' : z = x := Subtype.ext hzx
-    change ConnectedComponents.mk z = ConnectedComponents.mk y at hz
-    simpa only [hzx'] using hz
+    simpa only [mem_ofPred_eq, hzx'] using hz
 
 end ConnectedComponents
 
@@ -79,13 +88,13 @@ theorem componentAdjacencyGraph_adj {s R : Set X} {c d : ConnectedComponents s} 
       c ≠ d ∧ ∃ x ∈ R, x ∈ closure c.carrier ∧ x ∈ closure d.carrier := Iff.rfl
 
 /-- A continuous curve with only finitely many exceptional parameters gives
-a finite adjacency walk between its endpoint components. Every parameter of
-the curve lies in the regular set, so all adjacency witnesses are regular.
+a finite adjacency walk between its endpoint components. Only values at
+exceptional parameters need to lie in the regular set.
 The curve may be constant and the endpoints may belong to the same component. -/
 theorem componentAdjacencyGraph_reachable_of_finite_exceptions
     {s R : Set X} {f : ℝ → X} (T : Finset ℝ)
     {a b : ℝ} (hf : ContinuousOn f (Icc a b)) (hab : a ≤ b) (ha : f a ∈ s) (hb : f b ∈ s)
-    (hR : ∀ t ∈ Icc a b, f t ∈ R)
+    (hR : ∀ t ∈ Icc a b, f t ∉ s → f t ∈ R)
     (hT : ∀ t ∈ Icc a b, f t ∉ s → t ∈ T) :
     (componentAdjacencyGraph s R).Reachable
       (ConnectedComponents.mk ⟨f a, ha⟩) (ConnectedComponents.mk ⟨f b, hb⟩) := by
@@ -147,27 +156,21 @@ theorem componentAdjacencyGraph_reachable_of_finite_exceptions
         (fun u hu hus => Finset.mem_erase.mpr
           ⟨by linarith [hu.1], hT u ⟨by linarith [hu.1], hu.2⟩ hus⟩)
       have hcl : f t ∈ closure (connectedComponentIn s (f (t - δ))) := by
-        have hsub : f '' Ico (t - δ) t ⊆ connectedComponentIn s (f (t - δ)) := by
-          apply (isPreconnected_Ico.image f (hf.mono (fun u hu =>
-            ⟨by linarith [hu.1], by linarith [hu.2]⟩))).subset_connectedComponentIn
-            ⟨t - δ, ⟨le_rfl, by linarith⟩, rfl⟩
-          rintro _ ⟨u, hu, rfl⟩
-          exact hlocal u ⟨hu.1, by linarith [hu.2]⟩ hu.2.ne
-        apply closure_mono hsub
-        apply mem_closure_image (hf.continuousAt (Icc_mem_nhds hat htb))
-        rw [closure_Ico (by linarith : t - δ ≠ t)]
-        exact ⟨by linarith, le_rfl⟩
+        apply isPreconnected_Ico.mem_closure_connectedComponentIn_image
+          (s := Ico (t - δ) t)
+          (hf.mono (fun u hu => ⟨by linarith [hu.1], by linarith [hu.2]⟩))
+          ⟨le_rfl, by linarith⟩
+          (by rw [closure_Ico (by linarith : t - δ ≠ t)]; exact ⟨by linarith, le_rfl⟩)
+          (hf.continuousAt (Icc_mem_nhds hat htb)).continuousWithinAt
+        exact fun u hu => hlocal u ⟨hu.1, by linarith [hu.2]⟩ hu.2.ne
       have hcr : f t ∈ closure (connectedComponentIn s (f (t + δ))) := by
-        have hsub : f '' Ioc t (t + δ) ⊆ connectedComponentIn s (f (t + δ)) := by
-          apply (isPreconnected_Ioc.image f (hf.mono (fun u hu =>
-            ⟨by linarith [hu.1], by linarith [hu.2]⟩))).subset_connectedComponentIn
-            ⟨t + δ, ⟨by linarith, le_rfl⟩, rfl⟩
-          rintro _ ⟨u, hu, rfl⟩
-          exact hlocal u ⟨by linarith [hu.1], hu.2⟩ hu.1.ne'
-        apply closure_mono hsub
-        apply mem_closure_image (hf.continuousAt (Icc_mem_nhds hat htb))
-        rw [closure_Ioc (by linarith : t ≠ t + δ)]
-        exact ⟨le_rfl, by linarith⟩
+        apply isPreconnected_Ioc.mem_closure_connectedComponentIn_image
+          (s := Ioc t (t + δ))
+          (hf.mono (fun u hu => ⟨by linarith [hu.1], by linarith [hu.2]⟩))
+          ⟨by linarith, le_rfl⟩
+          (by rw [closure_Ioc (by linarith : t ≠ t + δ)]; exact ⟨le_rfl, by linarith⟩)
+          (hf.continuousAt (Icc_mem_nhds hat htb)).continuousWithinAt
+        exact fun u hu => hlocal u ⟨by linarith [hu.1], hu.2⟩ hu.1.ne'
       have hmiddle : (componentAdjacencyGraph s R).Reachable
           (ConnectedComponents.mk ⟨f (t - δ), hs⟩) (ConnectedComponents.mk ⟨f (t + δ), hu⟩) := by
         by_cases heq : ConnectedComponents.mk (⟨f (t - δ), hs⟩ : s) =
@@ -175,7 +178,7 @@ theorem componentAdjacencyGraph_reachable_of_finite_exceptions
         · rw [heq]
         · apply SimpleGraph.Adj.reachable
           apply componentAdjacencyGraph_adj.mpr
-          exact ⟨heq, f t, hR t ht,
+          exact ⟨heq, f t, hR t ht hbad,
             by rwa [ConnectedComponents.carrier_mk], by rwa [ConnectedComponents.carrier_mk]⟩
       exact hbefore.trans (hmiddle.trans hafter)
 
