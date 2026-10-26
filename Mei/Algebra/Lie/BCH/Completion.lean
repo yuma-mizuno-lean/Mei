@@ -72,14 +72,8 @@ theorem groupTower_map_hom {k l : ℕᵒᵖ} (f : k ⟶ l) :
 
 /-- Every transition in the BCH tower is surjective. -/
 theorem groupTower_map_surjective {k l : ℕᵒᵖ} (f : k ⟶ l) :
-    Function.Surjective ((d.groupTower ℒ).map f) := by
-  intro y
-  obtain ⟨x, hx⟩ := d.truncationMap_surjective ℒ (leOfHom f.unop) (BCHGroup.log y)
-  refine ⟨BCHGroup.exp x, ?_⟩
-  apply BCHGroup.log_injective
-  exact ((d.truncationMap ℒ (leOfHom f.unop)).log_bchGroupMap
-    (BCHGroup.exp x)).trans ((congrArg (d.truncationMap ℒ (leOfHom f.unop))
-      (BCHGroup.log_exp x)).trans hx)
+    Function.Surjective ((d.groupTower ℒ).map f) :=
+  LieHom.bchGroupMap_surjective (d.truncationMap_surjective ℒ (leOfHom f.unop))
 
 /-- The group of compatible BCH elements in all finite degree truncations. -/
 abbrev completedBCHGroup := completedGroup (d.groupTower ℒ)

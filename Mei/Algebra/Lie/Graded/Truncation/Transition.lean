@@ -119,4 +119,9 @@ theorem ker_truncationMap_succ_le_center (k : ℕ) :
   rw [← d.degreeIdeal_zero ℒ]
   simpa using d.lie_degreeIdeal_le ℒ 0 k
 
+/-- The kernel of a successive truncation is abelian. -/
+instance isLieAbelian_ker_truncationMap_succ (k : ℕ) :
+    IsLieAbelian (d.truncationMap ℒ (Nat.le_succ k)).ker :=
+  LieAlgebra.abelian_of_le_center R _ _ (d.ker_truncationMap_succ_le_center ℒ k)
+
 end Mei.PositiveDegrees

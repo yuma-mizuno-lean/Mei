@@ -186,6 +186,12 @@ theorem bchGroupMap_injective {f : L →ₗ⁅R⁆ L'} (hf : Function.Injective 
     Function.Injective f.bchGroupMap := fun g g' hgg' =>
   log_injective (hf (by simpa only [log_bchGroupMap] using congrArg log hgg'))
 
+/-- A surjective Lie homomorphism induces a surjective homomorphism of BCH groups. -/
+theorem bchGroupMap_surjective {f : L →ₗ⁅R⁆ L'} (hf : Function.Surjective f) :
+    Function.Surjective f.bchGroupMap := fun g => by
+  obtain ⟨x, hx⟩ := hf (log g)
+  exact ⟨exp x, by rw [bchGroupMap_exp, hx, exp_log]⟩
+
 /-- The identity Lie homomorphism induces the identity group homomorphism. -/
 @[simp]
 theorem bchGroupMap_id :
