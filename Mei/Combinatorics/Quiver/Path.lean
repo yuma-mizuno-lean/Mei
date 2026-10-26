@@ -46,3 +46,17 @@ theorem mapPath_reverse (F : U ⥤q V) [F.MapReverse] {x y : U} (p : Quiver.Path
       map_reverse]
 
 end Prefunctor
+
+namespace Quiver.Path
+
+variable {V : Type*} [Quiver V] [Quiver.HasReverse V]
+
+/-- Reversing a path reverses its entire vertex list. -/
+@[simp]
+theorem vertices_reverse {x y : V} (p : Path x y) :
+    p.reverse.vertices = p.vertices.reverse := by
+  induction p with
+  | nil => simp
+  | cons p e ih => simp [Path.reverse, ih]
+
+end Quiver.Path
