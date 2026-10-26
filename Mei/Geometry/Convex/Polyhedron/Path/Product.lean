@@ -219,7 +219,9 @@ theorem wallPathProduct_reverse
   | cons p e ih =>
     simp [Quiver.Path.reverse, ih, segmentPathProduct_reverse ν label hcomm hν, mul_inv_rev]
 
-private theorem wallPathProduct_eq_eventList_prod (p : AdmissiblePLPath x y) :
+/-- Polygonal transport is the reverse-time product of all signed event factors.
+Each simultaneous event retains every indexed label. -/
+theorem wallPathProduct_eq_eventList_prod (p : AdmissiblePLPath x y) :
     p.wallPathProduct ν label hcomm =
       ((p.signedCrossingEvents ν).reverse.map
         (fun S => (S.toList.map (fun a => label a.1 ^ a.2)).prod)).prod := by
