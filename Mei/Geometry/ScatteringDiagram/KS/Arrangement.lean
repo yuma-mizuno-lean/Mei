@@ -35,15 +35,18 @@ open Mei.Convex Mei.FinitePolyhedralComplex
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} (d : PositiveDegrees N) (h : TauCeti.Toric.IsIntegralLattice i)
 
-private instance finiteNonzeroCutoff (k : ℕ) : Finite (↥(d.cutoff k \ {0})) :=
-  ((d.finite_cutoff k).sdiff).to_subtype
-
 /-- The finite conical complex cut out by the hyperplanes of nonzero allowed
 lattice degrees of order at most `k`, in the continuous real dual. -/
 def arrangementComplex (k : ℕ) : FinitePolyhedralComplex h.continuousDual :=
   ofArrangement (fun n : ↥(d.cutoff k \ {0}) =>
     (ContinuousLinearMap.apply ℝ ℝ (i n)).toContinuousAffineMap)
-    (fun n => h.isRationalFunctional_eval n)
+    (fun n => h.isRationalFunctional_continuousDual_eval n)
+
+/-- The arrangement complex is the arrangement of the retained evaluation rows. -/
+theorem arrangementComplex_eq_ofArrangement (k : ℕ) :
+    d.arrangementComplex h k = ofArrangement (fun n : ↥(d.cutoff k \ {0}) =>
+      (ContinuousLinearMap.apply ℝ ℝ (i n)).toContinuousAffineMap)
+      (fun n => h.isRationalFunctional_continuousDual_eval n) := (rfl)
 
 /-- The cells are precisely the closures of the realized degree-sign loci. -/
 @[simp]
@@ -56,18 +59,21 @@ theorem mem_arrangementComplex_cells (k : ℕ) (P : Set (V →L[ℝ] ℝ)) :
         P = closure (signCell
           (fun n : ↥(d.cutoff k \ {0}) =>
             (ContinuousLinearMap.apply ℝ ℝ (i n)).toContinuousAffineMap) σ) := by
+  rw [arrangementComplex_eq_ofArrangement]
   exact mem_ofArrangement_cells
 
 /-- Every dual point belongs to the bounded-degree arrangement. -/
 @[simp]
 theorem support_arrangementComplex (k : ℕ) :
-    (d.arrangementComplex h k).support = Set.univ :=
-  support_ofArrangement _ _
+    (d.arrangementComplex h k).support = Set.univ := by
+  rw [arrangementComplex_eq_ofArrangement]
+  exact support_ofArrangement _ _
 
 /-- Every arrangement cell is a cone with apex zero, allowing lineality. -/
 theorem isConical_arrangementComplex (k : ℕ) :
-    (d.arrangementComplex h k).IsConical :=
-  isConical_ofArrangement _ _
+    (d.arrangementComplex h k).IsConical := by
+  rw [arrangementComplex_eq_ofArrangement]
+  exact isConical_ofArrangement _ _
 
 /-- Increasing the degree cutoff subdivides the previous arrangement without
 changing its support. -/
@@ -75,22 +81,31 @@ theorem arrangementComplex_isSubdivision {k l : ℕ} (hkl : k ≤ l) :
     (d.arrangementComplex h l).IsSubdivision (d.arrangementComplex h k) := by
   let f : (↥(d.cutoff k \ {0})) → (↥(d.cutoff l \ {0})) :=
     fun n => ⟨n, d.cutoff_mono hkl n.property.1, n.property.2⟩
+  rw [arrangementComplex_eq_ofArrangement, arrangementComplex_eq_ofArrangement]
   exact ofArrangement_isSubdivision_comp
     (fun n : ↥(d.cutoff l \ {0}) =>
       (ContinuousLinearMap.apply ℝ ℝ (i n)).toContinuousAffineMap)
-    (fun n => h.isRationalFunctional_eval n) f
+    (fun n => h.isRationalFunctional_continuousDual_eval n) f
 
 /-- Every retained degree hyperplane is a union of arrangement cells contained
-in that hyperplane. -/
+in that hyperplane. For the zero degree, both sides are the whole dual space. -/
 theorem hyperplane_eq_iUnion_arrangementComplex_cells {k : ℕ} {n : N}
-    (hn : n ∈ d.cutoff k) (hne : n ≠ 0) :
+    (hn : n ∈ d.cutoff k) :
     {θ : V →L[ℝ] ℝ | θ (i n) = 0} =
       ⋃ (P : Set (V →L[ℝ] ℝ)) (_ : P ∈ (d.arrangementComplex h k).cells)
         (_ : P ⊆ {θ | θ (i n) = 0}), P := by
+  by_cases hne : n = 0
+  · subst hne
+    ext θ
+    obtain ⟨P, hP, hθP⟩ := mem_support.mp (by simp : θ ∈ (d.arrangementComplex h k).support)
+    simp only [map_zero, Set.ofPred_true, Set.mem_univ, Set.subset_univ, Set.mem_iUnion,
+      true_iff]
+    exact ⟨P, hP, trivial, hθP⟩
+  rw [arrangementComplex_eq_ofArrangement]
   exact zeroLocus_eq_iUnion_ofArrangement_cells
     (fun a : ↥(d.cutoff k \ {0}) =>
       (ContinuousLinearMap.apply ℝ ℝ (i a)).toContinuousAffineMap)
-    (fun a => h.isRationalFunctional_eval a)
+    (fun a => h.isRationalFunctional_continuousDual_eval a)
     ⟨n, hn, hne⟩
 
 /-- The intersection of all retained hyperplanes is itself a cell. It need not

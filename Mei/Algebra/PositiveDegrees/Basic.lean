@@ -85,6 +85,9 @@ theorem mem_cutoff {k : ℕ} {n : N} :
 /-- Every degree cutoff is finite. -/
 theorem finite_cutoff (k : ℕ) : (d.cutoff k).Finite := d.finite_le k
 
+/-- Degree cutoffs are finite types, so they can index finite families. -/
+instance (k : ℕ) : Finite (d.cutoff k) := (d.finite_cutoff k).to_subtype
+
 /-- Increasing the cutoff retains every previously allowed degree. -/
 theorem cutoff_mono : Monotone d.cutoff := by
   intro k l h n hn

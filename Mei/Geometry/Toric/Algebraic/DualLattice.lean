@@ -108,13 +108,11 @@ theorem continuousDual_realCharacter_eval (h : IsIntegralLattice i) (n : N) :
   simp
 
 /-- Evaluation at a lattice vector is rational for the continuous dual lattice. -/
-theorem isRationalFunctional_eval (h : IsIntegralLattice i) (n : N) :
+theorem isRationalFunctional_continuousDual_eval (h : IsIntegralLattice i) (n : N) :
     Mei.Toric.IsRationalFunctional h.continuousDual
       (ContinuousLinearMap.apply ℝ ℝ (i n)).toLinearMap := by
-  apply Mei.Toric.IsRationalFunctional.iff_exists_character.mpr
-  refine ⟨1, (AddMonoidHom.eval n).toIntLinearMap, ?_⟩
-  have he : (AddMonoidHom.eval n : (N →+ ℤ) →+ ℤ).toIntLinearMap.toAddMonoidHom =
-      AddMonoidHom.eval n := AddMonoidHom.ext (fun _ => rfl)
-  simp only [Rat.cast_one, one_smul, he, continuousDual_realCharacter_eval]
+  rw [← continuousDual_realCharacter_eval]
+  exact Mei.Toric.IsRationalFunctional.realCharacter h.continuousDual
+    (AddMonoidHom.eval n).toIntLinearMap
 
 end TauCeti.Toric.IsIntegralLattice

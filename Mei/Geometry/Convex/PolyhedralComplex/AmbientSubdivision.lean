@@ -17,6 +17,9 @@ arrangement form a finite polyhedral complex covering the ambient space.
 Applying this construction to all defining rows of a finite family of presented
 polyhedra expresses every input carrier as a union of cells of one complex.
 Redundant and constant rows, empty inputs, unbounded cells and lineality are allowed.
+Restricting the rows of an arrangement coarsens its complex, each row hyperplane
+is a union of cells, and a linear arrangement has conical cells, with lineality
+allowed.
 
 The construction uses the existing realized sign-cell closure family and its
 closure under faces. It is therefore extensional in the actual closed cell
@@ -174,26 +177,6 @@ theorem isConical_ofArrangement (g : ι → (V →L[ℝ] ℝ))
   intro P hP
   obtain ⟨σ, hσ, rfl⟩ := mem_ofArrangement_cells.mp hP
   rw [closure_signCell hσ]
-  refine ⟨{
-    carrier := weakSignCell (fun j => (g j).toContinuousAffineMap) σ
-    add_mem' := ?_
-    zero_mem' := ?_
-    smul_mem' := ?_ }, rfl⟩
-  · intro x y hx hy
-    rw [mem_weakSignCell] at hx hy ⊢
-    intro j
-    simp only [ContinuousLinearMap.coe_toContinuousAffineMap, map_add] at hx hy ⊢
-    exact ⟨fun hj => by simp [(hx j).1 hj, (hy j).1 hj],
-      fun hj => add_nonpos ((hx j).2.1 hj) ((hy j).2.1 hj),
-      fun hj => add_nonneg ((hx j).2.2 hj) ((hy j).2.2 hj)⟩
-  · simp [mem_weakSignCell]
-  · intro c x hx
-    rw [mem_weakSignCell] at hx ⊢
-    intro j
-    simp only [ContinuousLinearMap.coe_toContinuousAffineMap, ← Nonneg.coe_smul,
-      map_smul, smul_eq_mul] at hx ⊢
-    exact ⟨fun hj => by simp [(hx j).1 hj],
-      fun hj => mul_nonpos_of_nonneg_of_nonpos c.property ((hx j).2.1 hj),
-      fun hj => mul_nonneg c.property ((hx j).2.2 hj)⟩
+  exact ⟨weakSignCellCone g σ, coe_weakSignCellCone g σ⟩
 
 end Mei.FinitePolyhedralComplex
