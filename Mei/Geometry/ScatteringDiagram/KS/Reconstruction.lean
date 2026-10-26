@@ -5,9 +5,9 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.ScatteringDiagram.KS.Basic
+public import Mei.Geometry.ScatteringDiagram.KS.Map
 public import Mei.Geometry.ScatteringDiagram.KS.Sign
-public import Mei.Algebra.Lie.BCH.Sign.Basic
+public import Mei.Algebra.Lie.BCH.Sign.Map
 
 /-!
 # Middle-factor labels on finite KS arrangements
@@ -18,7 +18,9 @@ labelled by the middle sign factor at any relative interior point. The three sig
 factors are well defined on all arrangement cells, and their product recovers the
 original group element. The middle factor belongs to the orthogonal subgroup of the
 whole cell. Cutoff projection preserves these labels wherever the two wall interiors
-meet.
+meet. Degree-preserving coefficient maps commute with finite reconstruction as
+an equality of KS complexes: the same arrangement and coorientations carry the
+images of the original middle-factor labels.
 
 This constructs the finite labelled complexes; it does not assert their consistency
 or compatibility on paths. The construction follows Tom Bridgeland,
@@ -200,5 +202,24 @@ theorem truncationMap_reconstructFinite_label (hkl : k ≤ l)
   rw [d.reconstructFinite_label h ℒ g Q hθQ,
     d.reconstructFinite_label h ℒ _ P hθP]
   exact truncationMap_signFactorizationEquiv_symm ℒ _ d hkl g 0
+
+variable {L' : Type*} [LieRing L'] [LieAlgebra R L'] [LieAlgebra ℚ L']
+  [IsScalarTower ℚ R L'] (ℳ : N → Submodule R L')
+  [GradedLieAlgebra ℳ] [IsPositiveGrading d ℳ]
+
+/-- Finite middle-factor reconstruction commutes with degree-preserving
+coefficient changes, as an equality on the same geometric arrangement. -/
+theorem map_reconstructFinite
+    (f : GradedLieHom (PositiveDegreeMap.id d) ℒ ℳ) (g : d.truncatedGroup ℒ k) :
+    (d.reconstructFinite h ℒ g).map f =
+      d.reconstructFinite h ℳ ((f.truncatedMap k (by simp)).bchGroupMap g) := by
+  ext P
+  · rw [KSComplex.map_degree]
+    rfl
+  · obtain ⟨θ, hθ⟩ := d.arrangementCellPoint h
+      ⟨P, (d.arrangementComplex h k).mem_cells_of_mem_walls P.property⟩
+    rw [KSComplex.map_label, d.reconstructFinite_label h ℒ g P hθ,
+      d.reconstructFinite_label h ℳ _ P hθ]
+    exact f.truncatedMap_signFactorizationEquiv_symm _ k g 0
 
 end Mei.PositiveDegrees

@@ -207,6 +207,14 @@ theorem segmentCrossingWord_smul (ν : C.walls → V →ₗ[ℝ] ℝ) (r : C.wal
     C.segmentCrossingWord (fun P => r P • ν P) e = C.segmentCrossingWord ν e := by
   simp only [segmentCrossingWord, crossingLetter_smul C ν r hr]
 
+/-- A stationary segment contributes no crossings, regardless of coorientation. -/
+@[simp]
+theorem segmentCrossingWord_self (ν : C.walls → V →ₗ[ℝ] ℝ) (e : x ⟶ x) :
+    C.segmentCrossingWord ν e = 1 := by
+  apply C.segmentCrossingWord_eq_one ν e
+  ext ⟨P, t⟩
+  simp [WallComplement.mem_crossings, x.notMem P]
+
 end Mei.FinitePolyhedralComplex
 
 namespace Quiver.Path

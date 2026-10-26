@@ -101,6 +101,14 @@ namespace AdmissibleSegment
 
 variable {x y : WallComplement W}
 
+/-- A stationary segment at an allowed point outside singular support is admissible. -/
+theorem refl (x : WallComplement W) (hx : x.val ∉ singularSupport W) :
+    AdmissibleSegment x x where
+  transverse i hi := by
+    obtain ⟨t, _, hi⟩ := hi
+    exact (x.notMem i (by simpa using hi)).elim
+  regular t _ := by simpa only [AffineMap.lineMap_same_apply] using hx
+
 /-- Reversing an admissible segment preserves its geometric conditions. -/
 theorem symm (h : AdmissibleSegment x y) : AdmissibleSegment y x where
   transverse i hi := by
