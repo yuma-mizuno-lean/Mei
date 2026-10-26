@@ -38,6 +38,23 @@ namespace Mei.FinitePolyhedralComplex
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
 
+/-- A complement to the affine direction of a subset of a wall is transverse
+to that wall. No dimension hypothesis on the subset is required. -/
+theorem not_le_wall_direction_of_isCompl (C : FinitePolyhedralComplex h)
+    {J P : Set V} (hJP : J ⊆ P) (hP : P ∈ C.walls) {T : Submodule ℝ V}
+    (hT : IsCompl (affineSpan ℝ J).direction T) :
+    ¬ T ≤ (affineSpan ℝ P).direction := by
+  have := h.finiteDimensional
+  intro hle
+  have hJle := AffineSubspace.direction_le (affineSpan_mono ℝ hJP)
+  have htop : (affineSpan ℝ P).direction = ⊤ := by
+    apply top_unique
+    rw [← hT.sup_eq_top]
+    exact sup_le hJle hle
+  have hdim := C.finrank_direction_add_one_of_mem_walls hP
+  rw [htop, finrank_top] at hdim
+  omega
+
 /-- Every relative interior point of a joint admits an isolating ball and a
 two-dimensional complementary slice. Within that slice and ball, the whole
 codimension-at-least-two skeleton consists of the center alone. The ball misses
