@@ -65,6 +65,12 @@ instance : LinearMapClass (GradedLieHom T ℒ ℳ) R L L' where
 @[simp]
 theorem coe_toLieHom (f : GradedLieHom T ℒ ℳ) : ⇑f.toLieHom = f := (rfl)
 
+/-- Evaluation of a graded homomorphism constructed from a Lie homomorphism. -/
+@[simp]
+theorem mk_apply (f : L →ₗ⁅R⁆ L')
+    (hf : ∀ {n x}, x ∈ ℒ n → f x ∈ ℳ (T n)) (x : L) :
+    (⟨f, hf⟩ : GradedLieHom T ℒ ℳ) x = f x := (rfl)
+
 /-- A graded Lie homomorphism is determined by its values. -/
 @[ext]
 theorem ext {f g : GradedLieHom T ℒ ℳ} (h : ∀ x, f x = g x) : f = g :=

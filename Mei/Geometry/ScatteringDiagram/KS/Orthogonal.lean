@@ -65,6 +65,23 @@ theorem orthogonalLieSubalgebra_antitone : Antitone (orthogonalLieSubalgebra ℒ
     AddMonoidHom.mem_mker] at hn ⊢
   exact fun θ hθ => hn θ (hστ hθ)
 
+/-- A degree-preserving additive homomorphism preserves the algebra orthogonal to any
+dual support. Neither grading needs an internal decomposition. -/
+theorem map_mem_orthogonalLieSubalgebra {L' : Type*} [LieRing L'] [LieAlgebra R L']
+    (ℳ : N → Submodule R L') [SetLike.GradedBracket ℳ ℳ]
+    (f : L →+ L') (hf : ∀ n, ∀ x ∈ ℒ n, f x ∈ ℳ n)
+    {σ : Set (N →+ ℝ)} {x : L} (hx : x ∈ orthogonalLieSubalgebra ℒ σ) :
+    f x ∈ orthogonalLieSubalgebra ℳ σ := by
+  rw [← LieSubalgebra.mem_toSubmodule, orthogonalLieSubalgebra_def,
+    supportedLieSubalgebra_toSubmodule] at hx
+  refine Submodule.iSup_induction _ (motive := fun x =>
+    f x ∈ orthogonalLieSubalgebra ℳ σ) hx (fun n x hx => ?_)
+    (by simp) (fun x y hx hy => by simpa only [map_add] using
+      (orthogonalLieSubalgebra ℳ σ).add_mem hx hy)
+  apply le_orthogonalLieSubalgebra ℳ _ (hf n x hx)
+  simpa only [AddSubsemigroup.mem_iInf, AddSubmonoid.mem_toSubsemigroup,
+    AddMonoidHom.mem_mker] using n.property
+
 variable [DecidableEq N] [DirectSum.Decomposition ℒ]
 
 /-- A component must vanish whenever one point of the support detects its degree. -/
