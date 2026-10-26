@@ -161,14 +161,7 @@ theorem Equivalent.consistent (hDE : D.Equivalent E) (hc : D.Consistent) : E.Con
     cases p with
     | nil =>
       -- A one-edge loop is a constant segment and crosses no wall.
-      have he : C'.orderedCrossings e = [] := by
-        apply List.eq_nil_iff_forall_not_mem.mpr
-        rintro ⟨P, t⟩ ht
-        have ht := (C'.mem_orderedCrossings e _).mp ht
-        exact x.notMem P (by simpa only [AffineMap.lineMap_same_apply] using
-          ((WallComplement.mem_crossings x x P t).mp ht).2)
-      simpa only [Quiver.Hom.toPath, he, List.reverse_nil,
-        List.map_nil, List.prod_nil] using E.pathProduct_toPath e
+      simp [pathProduct_def]
     | @cons z _ p f =>
       let loop := (p.cons f).cons e
       obtain ⟨ε, hε, hp⟩ :=
