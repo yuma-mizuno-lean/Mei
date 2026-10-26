@@ -7,6 +7,7 @@ module
 
 public import Mathlib.Analysis.Normed.Affine.AddTorsorBases
 public import Mathlib.LinearAlgebra.AffineSpace.FiniteDimensional
+public import Mathlib.GroupTheory.CosetCover
 public import Mathlib.Topology.Baire.CompleteMetrizable
 
 /-!
@@ -15,7 +16,9 @@ public import Mathlib.Topology.Baire.CompleteMetrizable
 The common complement of countably many proper affine subspaces of a
 finite-dimensional real normed space is dense and is a Gδ set. For a finite
 family the complement is open. These statements allow arbitrarily small
-perturbations avoiding all the prescribed affine exceptions.
+perturbations avoiding all the prescribed affine exceptions. Relatively, finitely many
+affine subspaces covering all points of an affine subspace `A` near one of its points
+include one whose direction contains that of `A`.
 
 For affine obstacles of codimension at least two, a freely chosen intermediate
 vertex can avoid all the affine spans with either endpoint. This constructs two
@@ -69,6 +72,33 @@ theorem interior_eq_empty_of_ne_top (S : AffineSubspace ℝ V) (hS : S ≠ ⊤) 
 theorem dense_compl_of_ne_top (S : AffineSubspace ℝ V) (hS : S ≠ ⊤) :
     Dense (S : Set V)ᶜ :=
   interior_eq_empty_iff_dense_compl.mp (S.interior_eq_empty_of_ne_top hS)
+
+/-- If finitely many affine subspaces cover all points of `A` near a point of `A`, then
+the direction of one of them contains the direction of `A`. In particular, finitely many
+affine subspaces of smaller dimension never cover a relative neighbourhood in `A`. -/
+theorem exists_direction_le_of_forall_mem {ι : Type*} [Finite ι]
+    (A : AffineSubspace ℝ V) (E : ι → AffineSubspace ℝ V) {x : V} (hx : x ∈ A)
+    {U : Set V} (hU : U ∈ nhds x) (hcover : ∀ y ∈ A, y ∈ U → ∃ j, y ∈ E j) :
+    ∃ j, A.direction ≤ (E j).direction := by
+  -- Every direction of `A` is the direction of two points of one `E j` on its line.
+  have hcov (v : V) (hv : v ∈ A.direction) : ∃ j, v ∈ (E j).direction := by
+    let S : Set ℝ := {t | t • v +ᵥ x ∈ U}
+    have hS : S ∈ nhds (0 : ℝ) := by
+      have hc : Continuous fun t : ℝ => t • v +ᵥ x := by fun_prop
+      exact hc.continuousAt.preimage_mem_nhds (by simpa only [zero_smul, zero_vadd] using hU)
+    have : Infinite S := (infinite_of_mem_nhds (0 : ℝ) hS).to_subtype
+    choose f hf using fun t : S =>
+      hcover _ (vadd_mem_of_mem_direction (A.direction.smul_mem (t : ℝ) hv) hx) t.property
+    obtain ⟨s, t, hst, hj⟩ := Finite.exists_ne_map_eq_of_infinite f
+    have hsub := vsub_mem_direction (hf s) (hj ▸ hf t)
+    rw [vadd_vsub_vadd_cancel_right, ← sub_smul] at hsub
+    have hne : (s : ℝ) - t ≠ 0 := sub_ne_zero.mpr (Subtype.coe_injective.ne hst)
+    exact ⟨f s, by simpa only [smul_smul, inv_mul_cancel₀ hne, one_smul] using
+      (E (f s)).direction.smul_mem ((s : ℝ) - t)⁻¹ hsub⟩
+  let p : ι → Submodule ℝ A.direction := fun j => (E j).direction.comap A.direction.subtype
+  obtain ⟨j, hj⟩ := Subspace.exists_eq_top_of_iUnion_eq_univ (p := p)
+    (Set.eq_univ_of_forall fun v => Set.mem_iUnion.mpr (hcov v v.property))
+  exact ⟨j, fun v hv => (Submodule.eq_top_iff'.mp hj ⟨v, hv⟩ : _)⟩
 
 variable [FiniteDimensional ℝ V]
 
