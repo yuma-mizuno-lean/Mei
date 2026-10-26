@@ -65,17 +65,14 @@ theorem conormalForms_apply_eq_of_sub_mem [Finite ι] {W : Submodule R M}
     obtain ⟨j, hj⟩ := Finset.nonempty_iff_ne_empty.mpr hs
     exact hα _ j (by simpa [Finset.piecewise, hj] using hxy j)
 
-end CommRing
-
-section Field
-
-variable [Field R] [AddCommGroup M] [Module R M] [Finite ι]
+variable [Finite ι]
 
 /-- Pullback from the quotient identifies alternating forms with conormal forms.
 This is the linear version of orienting a normal quotient by conormal forms. -/
 noncomputable def conormalFormsEquiv (W : Submodule R M) :
-    ((M ⧸ W) [⋀^ι]→ₗ[R] R) ≃ₗ[R] W.conormalForms ι :=
-  LinearEquiv.ofBijective
+    ((M ⧸ W) [⋀^ι]→ₗ[R] R) ≃ₗ[R] W.conormalForms ι := by
+  classical
+  exact LinearEquiv.ofBijective
     ({ toFun α := ⟨α.compLinearMap W.mkQ, by
         intro v j hv
         apply α.map_coord_zero j
@@ -86,15 +83,30 @@ noncomputable def conormalFormsEquiv (W : Submodule R M) :
     ⟨fun α β he => AlternatingMap.compLinearMap_injective W.mkQ W.mkQ_surjective
       (congrArg Subtype.val he), by
       intro α
-      obtain ⟨s, hs⟩ := W.mkQ.exists_rightInverse_of_surjective
-        (LinearMap.range_eq_top.mpr W.mkQ_surjective)
-      refine ⟨α.val.compLinearMap s, Subtype.ext ?_⟩
-      ext v
-      apply conormalForms_apply_eq_of_sub_mem α.property
-      intro j
-      apply (Submodule.Quotient.mk_eq_zero W).mp
-      rw [← Submodule.mkQ_apply, map_sub]
-      exact sub_eq_zero.mpr (LinearMap.congr_fun hs (W.mkQ (v j)))⟩
+      let f : (ι → M ⧸ W) → R := fun v => α.val (fun j => (v j).out)
+      have hf (v : ι → M) : f (W.mkQ ∘ v) = α.val v := by
+        apply conormalForms_apply_eq_of_sub_mem α.property
+        intro j
+        exact (Submodule.Quotient.eq W).mp (Submodule.Quotient.mk_out _)
+      have hsurj : Function.Surjective (fun v : ι → M => W.mkQ ∘ v) := by
+        intro v
+        exact ⟨fun j => (v j).out, funext fun j => Submodule.Quotient.mk_out (v j)⟩
+      let β : (M ⧸ W) [⋀^ι]→ₗ[R] R :=
+        { toFun := f
+          map_update_add' := by
+            intro _ v j x y
+            obtain ⟨v, rfl⟩ := hsurj v
+            obtain ⟨x, rfl⟩ := W.mkQ_surjective x
+            obtain ⟨y, rfl⟩ := W.mkQ_surjective y
+            simp only [← map_add, ← Function.comp_update, hf, α.val.map_update_add]
+          map_update_smul' := by
+            intro _ v j c x
+            obtain ⟨v, rfl⟩ := hsurj v
+            obtain ⟨x, rfl⟩ := W.mkQ_surjective x
+            simp only [← map_smul, ← Function.comp_update, hf, α.val.map_update_smul]
+          map_eq_zero_of_eq' := fun v j l hjl hne =>
+            α.val.map_eq_zero_of_eq _ (congrArg Quotient.out hjl) hne }
+      exact ⟨β, Subtype.ext (AlternatingMap.ext hf)⟩⟩
 
 @[simp]
 theorem conormalFormsEquiv_apply (W : Submodule R M) (α : (M ⧸ W) [⋀^ι]→ₗ[R] R) :
@@ -107,7 +119,7 @@ theorem conormalFormsEquiv_symm_apply_mk (W : Submodule R M)
     W.conormalFormsEquiv.symm α (fun j => Submodule.Quotient.mk (v j)) = α.val v :=
   AlternatingMap.congr_fun (congrArg Subtype.val (W.conormalFormsEquiv.apply_symm_apply α)) v
 
-end Field
+end CommRing
 
 end Submodule
 

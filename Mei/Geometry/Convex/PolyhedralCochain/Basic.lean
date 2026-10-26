@@ -71,6 +71,14 @@ namespace OrientedCell
 
 variable {h : TauCeti.Toric.IsIntegralLattice i} {k : ℕ}
 
+/-- The degree of a cell's conormal orientation is the dimension of its normal quotient. -/
+theorem finrank_quotient_direction (σ : OrientedCell h k) :
+    finrank ℝ (V ⧸ (affineSpan ℝ σ.carrier).direction) = k := by
+  have := h.finiteDimensional
+  have := (affineSpan ℝ σ.carrier).direction.finrank_quotient_add_finrank
+  have := σ.finrank_direction_add
+  omega
+
 /-- The same polyhedron with the opposite orientation. -/
 def reverse (σ : OrientedCell h k) : OrientedCell h k where
   carrier := σ.carrier
