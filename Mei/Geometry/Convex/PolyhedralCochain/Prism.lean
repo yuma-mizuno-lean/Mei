@@ -36,32 +36,35 @@ open Module
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i} {k : ℕ}
 
+/-- The original cell is an exposed subset of its transverse sweep. -/
+theorem isExposed_sweep_base (σ : OrientedCell h (k + 1)) (n : N)
+    (hn : i n ∉ (affineSpan ℝ σ.carrier).direction) :
+    IsExposed ℝ (σ.sweep n hn).carrier σ.carrier := by
+  have := h.finiteDimensional
+  rw [sweep_carrier]
+  exact (IsExposed.refl σ.carrier).in_sweep_of_transverse
+    (by simpa only [direction_affineSpan] using hn)
+
+/-- The original cell has codimension one in its transverse sweep. -/
+theorem finrank_vectorSpan_sweep_base (σ : OrientedCell h (k + 1)) (n : N)
+    (hn : i n ∉ (affineSpan ℝ σ.carrier).direction) :
+    finrank ℝ (vectorSpan ℝ σ.carrier) + 1 =
+      finrank ℝ (vectorSpan ℝ (σ.sweep n hn).carrier) := by
+  have := h.finiteDimensional
+  rw [sweep_carrier, Convex.finrank_sweep σ.nonempty
+    (by simpa only [direction_affineSpan] using hn)]
+
 /-- The signed base facet of a transverse negative-ray sweep is the original
 cell with reversed orientation. Exposure and codimension are derived from
 transversality; no exposing inequality is part of the input. -/
 @[simp]
 theorem boundaryFacet_sweep_base (σ : OrientedCell h (k + 1)) (n : N)
     (hn : i n ∉ (affineSpan ℝ σ.carrier).direction) :
-    (σ.sweep n hn).boundaryFacet
-        (by
-          have := h.finiteDimensional
-          rw [sweep_carrier]
-          exact (IsExposed.refl σ.carrier).in_sweep_of_transverse
-            (by simpa only [direction_affineSpan] using hn))
-        σ.nonempty
-        (by
-          have := h.finiteDimensional
-          rw [sweep_carrier, Convex.finrank_sweep σ.nonempty
-            (by simpa only [direction_affineSpan] using hn)]) = σ.reverse := by
+    (σ.sweep n hn).boundaryFacet (isExposed_sweep_base σ n hn) σ.nonempty
+        (finrank_vectorSpan_sweep_base σ n hn) = σ.reverse := by
   have := h.finiteDimensional
-  have hF : IsExposed ℝ (σ.sweep n hn).carrier σ.carrier := by
-    rw [sweep_carrier]
-    exact (IsExposed.refl σ.carrier).in_sweep_of_transverse
-      (by simpa only [direction_affineSpan] using hn)
-  have hdim : finrank ℝ (vectorSpan ℝ σ.carrier) + 1 =
-      finrank ℝ (vectorSpan ℝ (σ.sweep n hn).carrier) := by
-    rw [sweep_carrier, Convex.finrank_sweep σ.nonempty
-      (by simpa only [direction_affineSpan] using hn)]
+  have hF := isExposed_sweep_base σ n hn
+  have hdim := finrank_vectorSpan_sweep_base σ n hn
   have hn' : i n ∉ vectorSpan ℝ σ.carrier := by
     simpa only [direction_affineSpan] using hn
   have hmem : i n ∈ vectorSpan ℝ (σ.sweep n hn).carrier := by
