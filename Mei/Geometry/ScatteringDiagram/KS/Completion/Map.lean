@@ -67,6 +67,22 @@ theorem mapDiagram_diagram (D : CompletedDiagram s d ℒ C)
     (f : GradedLieHom (PositiveDegreeMap.id d) ℒ ℳ) (k : ℕ) :
     (D.mapDiagram f).diagram k = (D.diagram k).map f := (rfl)
 
+/-- Coefficient change retains the distinguished positive allowed point. -/
+@[simp]
+theorem degreePoint_mapDiagram (D : CompletedDiagram s d ℒ C)
+    (f : GradedLieHom (PositiveDegreeMap.id d) ℒ ℳ) :
+    (D.mapDiagram f).degreePoint = D.degreePoint := by
+  apply CommonWallComplement.ext
+  simp
+
+/-- Coefficient change retains the distinguished negative allowed point. -/
+@[simp]
+theorem negDegreePoint_mapDiagram (D : CompletedDiagram s d ℒ C)
+    (f : GradedLieHom (PositiveDegreeMap.id d) ℒ ℳ) :
+    (D.mapDiagram f).negDegreePoint = D.negDegreePoint := by
+  apply CommonWallComplement.ext
+  simp
+
 /-- The identity coefficient map leaves a completed diagram unchanged. -/
 @[simp]
 theorem mapDiagram_id (D : CompletedDiagram s d ℒ C) :
