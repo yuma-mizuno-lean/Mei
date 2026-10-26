@@ -104,22 +104,25 @@ theorem signCell_subset_intrinsicInterior_weakSignCell [Finite ι] :
   filter_upwards [Filter.eventually_all.mpr hrows] with y hy
   exact mem_weakSignCell.mpr hy
 
-/-- The relative interior of a realized closed arrangement cell is precisely
-its strict sign locus. Nonemptiness excludes inconsistent sign assignments. -/
+/-- The relative interior of the closure of a sign cell is precisely its
+strict sign locus, including for inconsistent sign assignments. -/
 @[simp]
-theorem intrinsicInterior_closure_signCell [Finite ι]
-    (hne : (signCell g σ).Nonempty) :
+theorem intrinsicInterior_closure_signCell [Finite ι] :
     intrinsicInterior ℝ (closure (signCell g σ)) = signCell g σ := by
-  rw [closure_signCell hne]
-  exact Subset.antisymm (intrinsicInterior_weakSignCell_subset_signCell hne)
-    signCell_subset_intrinsicInterior_weakSignCell
+  by_cases hne : (signCell g σ).Nonempty
+  · rw [closure_signCell hne]
+    exact Subset.antisymm (intrinsicInterior_weakSignCell_subset_signCell hne)
+      signCell_subset_intrinsicInterior_weakSignCell
+  · simp [Set.not_nonempty_iff_eq_empty.mp hne]
 
 /-- At a relative interior point of a realized closed sign cell, a row vanishes
 if and only if it vanishes on the whole closed cell. -/
 theorem row_eq_zero_iff_forall_of_mem_intrinsicInterior
-    (hne : (signCell g σ).Nonempty) {x : V}
+    {x : V}
     (hx : x ∈ intrinsicInterior ℝ (closure (signCell g σ))) (j : ι) :
     g j x = 0 ↔ ∀ y ∈ closure (signCell g σ), g j y = 0 := by
+  have hne : (signCell g σ).Nonempty :=
+    closure_nonempty_iff.mp ⟨x, intrinsicInterior_subset hx⟩
   have hxs := intrinsicInterior_weakSignCell_subset_signCell hne
     (by rwa [closure_signCell hne] at hx)
   constructor

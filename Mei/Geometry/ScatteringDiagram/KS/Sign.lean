@@ -42,8 +42,8 @@ theorem sign_eq_of_mem_intrinsicInterior_arrangementComplex
     {θ φ : V →L[ℝ] ℝ} (hθ : θ ∈ intrinsicInterior ℝ P)
     (hφ : φ ∈ intrinsicInterior ℝ P) {n : N} (hn : n ∈ d.cutoff k \ {0}) :
     SignType.sign (θ (i n)) = SignType.sign (φ (i n)) := by
-  obtain ⟨σ, hσ, rfl⟩ := (d.mem_arrangementComplex_cells h k P).mp hP
-  rw [intrinsicInterior_closure_signCell hσ] at hθ hφ
+  obtain ⟨σ, _, rfl⟩ := (d.mem_arrangementComplex_cells h k P).mp hP
+  rw [intrinsicInterior_closure_signCell] at hθ hφ
   exact (mem_signCell.mp hθ ⟨n, hn⟩).trans (mem_signCell.mp hφ ⟨n, hn⟩).symm
 
 /-- A retained degree annihilates a relative interior point exactly when it
@@ -53,8 +53,8 @@ theorem eval_eq_zero_iff_forall_of_mem_intrinsicInterior_arrangementComplex
     {θ : V →L[ℝ] ℝ} (hθ : θ ∈ intrinsicInterior ℝ P)
     {n : N} (hn : n ∈ d.cutoff k \ {0}) :
     θ (i n) = 0 ↔ ∀ φ ∈ P, φ (i n) = 0 := by
-  obtain ⟨σ, hσ, rfl⟩ := (d.mem_arrangementComplex_cells h k P).mp hP
-  exact row_eq_zero_iff_forall_of_mem_intrinsicInterior hσ hθ ⟨n, hn⟩
+  obtain ⟨σ, _, rfl⟩ := (d.mem_arrangementComplex_cells h k P).mp hP
+  exact row_eq_zero_iff_forall_of_mem_intrinsicInterior hθ ⟨n, hn⟩
 
 variable {R L : Type*} [CommRing R] [LieRing L] [LieAlgebra R L]
   [DecidableEq N] (ℒ : N → Submodule R L) [GradedLieAlgebra ℒ]
