@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.ScatteringDiagram.Finite
+public import Mei.Geometry.ScatteringDiagram.Equivalence
 public import Mei.Geometry.Convex.PolyhedralComplex.AffineTransport
 
 /-!
@@ -14,8 +14,12 @@ public import Mei.Geometry.Convex.PolyhedralComplex.AffineTransport
 Transport wall labels to the image complex and normal functionals by the inverse
 linear part. The product along the transported path equals the original path
 product, including for translations and orientation-reversing equivalences.
+Affine images preserve and reflect equivalence and consistency. Identity,
+composition and inverse transport hold up to diagram equivalence, so coordinate
+changes act on diagrams independently of their polyhedral presentation.
 The construction uses the wall bijection and crossing-word transport together
-with Mathlib's `FreeGroup.lift_unique`.
+with Mathlib's `FreeGroup.lift_unique`. Inverse path transport compares arbitrary
+test paths in image complexes by their ambient vertex lists.
 -/
 
 public section
@@ -76,5 +80,93 @@ theorem pathProduct_image (p : AdmissiblePLPath x y) :
   exact FreeGroup.lift_unique
     ((FreeGroup.lift (D.image e).label).comp (FreeGroup.map (C.wallImageEquiv e)))
     (by simp)
+
+/-- Pulling an arbitrary image path back recovers its product in the original diagram. -/
+@[simp]
+theorem pathProduct_pathPreimage
+    {x' y' : WallComplement (fun Q : (C.image e).walls => (Q : Set V'))}
+    (q : AdmissiblePLPath x' y') :
+    D.pathProduct ((C.pathPreimage e).mapPath q) = (D.image e).pathProduct q := by
+  rw [← D.pathProduct_image e ((C.pathPreimage e).mapPath q)]
+  apply pathProduct_eq_of_vertices_eq
+  rw [C.vertices_pathImage, C.vertices_pathPreimage, List.map_map]
+  simp [Function.comp_def]
+
+variable {C' : FinitePolyhedralComplex h}
+  {D : FiniteWallDiagram C H} {E : FiniteWallDiagram C' H}
+
+/-- Affine images preserve equivalence, even for diagrams on different complexes. -/
+theorem Equivalent.image (hDE : D.Equivalent E) (e : Toric.IntegralAffineEquiv h h') :
+    (D.image e).Equivalent (E.image e) := by
+  apply (equivalent_def _ _).mpr
+  intro x y x' y' p q hpq
+  rw [← D.pathProduct_pathPreimage e p, ← E.pathProduct_pathPreimage e q]
+  apply (equivalent_def _ _).mp hDE
+  rw [C.vertices_pathPreimage, C'.vertices_pathPreimage, hpq]
+
+/-- Affine images preserve and reflect equivalence. -/
+@[simp]
+theorem equivalent_image_iff (D : FiniteWallDiagram C H) (E : FiniteWallDiagram C' H)
+    (e : Toric.IntegralAffineEquiv h h') :
+    (D.image e).Equivalent (E.image e) ↔ D.Equivalent E := by
+  constructor
+  · intro hDE
+    apply (equivalent_def _ _).mpr
+    intro x y x' y' p q hpq
+    rw [← D.pathProduct_image e p, ← E.pathProduct_image e q]
+    apply (equivalent_def _ _).mp hDE
+    rw [C.vertices_pathImage, C'.vertices_pathImage, hpq]
+  · exact fun hDE => hDE.image e
+
+/-- Affine images preserve and reflect endpoint independence. -/
+@[simp]
+theorem consistent_image_iff (D : FiniteWallDiagram C H) (e : Toric.IntegralAffineEquiv h h') :
+    (D.image e).Consistent ↔ D.Consistent := by
+  rw [consistent_def, consistent_def]
+  constructor
+  · intro hc x y p q
+    rw [← D.pathProduct_image e p, ← D.pathProduct_image e q]
+    exact hc _ _
+  · intro hc x y p q
+    rw [← D.pathProduct_pathPreimage e p, ← D.pathProduct_pathPreimage e q]
+    exact hc _ _
+
+/-- Transport by the identity is equivalent to the original diagram. -/
+theorem image_refl_equivalent (D : FiniteWallDiagram C H) :
+    (D.image (Toric.IntegralAffineEquiv.refl h)).Equivalent D := by
+  apply (equivalent_def _ _).mpr
+  intro x y x' y' p q hpq
+  rw [← D.pathProduct_image (Toric.IntegralAffineEquiv.refl h) q]
+  apply pathProduct_eq_of_vertices_eq
+  rw [C.vertices_pathImage]
+  simpa using hpq
+
+variable {N'' V'' : Type*} [AddCommGroup N'']
+  [NormedAddCommGroup V''] [NormedSpace ℝ V'']
+  {i'' : N'' →+ V''} {h'' : TauCeti.Toric.IsIntegralLattice i''}
+
+/-- Successive coordinate changes agree with their composite up to equivalence. -/
+theorem image_trans_equivalent (D : FiniteWallDiagram C H)
+    (e : Toric.IntegralAffineEquiv h h') (f : Toric.IntegralAffineEquiv h' h'') :
+    ((D.image e).image f).Equivalent (D.image (e.trans f)) := by
+  apply (equivalent_def _ _).mpr
+  intro x y x' y' p q hpq
+  rw [← (D.image e).pathProduct_pathPreimage f p,
+    ← D.pathProduct_pathPreimage e _, ← D.pathProduct_pathPreimage (e.trans f) q]
+  apply D.pathProduct_eq_of_vertices_eq
+  rw [C.vertices_pathPreimage, (C.image e).vertices_pathPreimage,
+    C.vertices_pathPreimage, List.map_map, hpq]
+  apply List.map_congr_left
+  intro a _
+  apply (e.toAffineEquiv.trans f.toAffineEquiv).injective
+  simp
+
+/-- A coordinate change followed by its inverse recovers the diagram up to equivalence. -/
+theorem image_symm_equivalent (D : FiniteWallDiagram C H)
+    (e : Toric.IntegralAffineEquiv h h') :
+    ((D.image e).image e.symm).Equivalent D := by
+  have he := D.image_trans_equivalent e e.symm
+  rw [Toric.IntegralAffineEquiv.self_trans_symm] at he
+  exact he.trans (D.image_refl_equivalent)
 
 end Mei.FiniteWallDiagram

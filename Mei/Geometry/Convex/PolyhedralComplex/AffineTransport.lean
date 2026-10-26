@@ -52,6 +52,44 @@ theorem pathImage_obj_val (x : WallComplement (fun P : C.walls => (P : Set V))) 
   unfold pathImage
   rw [ContinuousAffineEquiv.wallComplementMap_obj_val, AffineEquiv.coe_toContinuousAffineEquiv]
 
+/-- Pull an admissible path in the image complex back to the original complex.
+The target uses the original wall family, without transporting it twice. -/
+def pathPreimage : WallComplement (fun Q : (C.image e).walls => (Q : Set V')) ⥤q
+    WallComplement (fun P : C.walls => (P : Set V)) := by
+  letI := h.finiteDimensional
+  letI := h'.finiteDimensional
+  exact ContinuousAffineEquiv.wallComplementMap e.symm.toAffineEquiv.toContinuousAffineEquiv
+    (C.wallImageEquiv e).symm (fun Q => (C.wallImageEquiv_symm_coe e Q).trans (by
+      rw [AffineEquiv.coe_toContinuousAffineEquiv]))
+
+@[simp]
+theorem pathPreimage_obj_val
+    (x : WallComplement (fun Q : (C.image e).walls => (Q : Set V'))) :
+    ((C.pathPreimage e).obj x).val = e.symm x.val := by
+  let := h.finiteDimensional
+  let := h'.finiteDimensional
+  unfold pathPreimage
+  rw [ContinuousAffineEquiv.wallComplementMap_obj_val, AffineEquiv.coe_toContinuousAffineEquiv]
+
+instance : (C.pathPreimage e).MapReverse where
+  map_reverse' _ := PLift.ext (Subsingleton.elim _ _)
+
+/-- Every vertex of a transported polygonal path is its affine image. -/
+theorem vertices_pathImage
+    {x y : WallComplement (fun P : C.walls => (P : Set V))}
+    (p : AdmissiblePLPath x y) :
+    ((C.pathImage e).mapPath p).vertices.map WallComplement.val =
+      (p.vertices.map WallComplement.val).map e := by
+  simp only [Prefunctor.vertices_mapPath, List.map_map, Function.comp_def, pathImage_obj_val]
+
+/-- Every vertex of a pulled-back polygonal path is its inverse affine image. -/
+theorem vertices_pathPreimage
+    {x y : WallComplement (fun Q : (C.image e).walls => (Q : Set V'))}
+    (p : AdmissiblePLPath x y) :
+    ((C.pathPreimage e).mapPath p).vertices.map WallComplement.val =
+      (p.vertices.map WallComplement.val).map e.symm := by
+  simp only [Prefunctor.vertices_mapPath, List.map_map, Function.comp_def, pathPreimage_obj_val]
+
 /-- The image of an admissible crossing has the same affine parameter. -/
 theorem mem_crossings_pathImage
     (x y : WallComplement (fun P : C.walls => (P : Set V))) (P : C.walls) (t : ℝ) :
