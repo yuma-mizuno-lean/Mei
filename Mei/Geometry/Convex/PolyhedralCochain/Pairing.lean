@@ -17,8 +17,9 @@ the image `convexHull ℝ (range v)` of the standard simplex under the affine ma
 standard vertices to `v`, and its linear part sends the positively oriented standard frame to the
 edge frame `(v 1 - v 0, …, v k - v 0)`. The test is transverse to an oriented cell `σ` of
 codimension `k` when its image avoids the relative boundary of `σ` and, if it meets `σ`, its edge
-frame maps to a basis of the normal quotient `V ⧸ dir σ`. The test then meets the affine span of
-`σ` in a single point, a relative interior point of `σ`. Disjoint tests may be degenerate.
+frame maps to a basis of the normal quotient `V ⧸ dir σ`. If the test meets `σ`, it meets the
+affine span of `σ` in a single point, a relative interior point of `σ`. Disjoint tests may be
+degenerate.
 
 The local intersection index is the sign of the conormal orientation of `σ` on the edge frame
 when the test meets `σ`, and zero otherwise. For a transverse test it vanishes exactly when the
