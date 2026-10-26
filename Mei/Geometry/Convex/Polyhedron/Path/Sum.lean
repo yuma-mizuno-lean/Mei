@@ -137,6 +137,35 @@ theorem wallCrossingSum_toPath (e : x ⟶ y) (ν : ι → V →ₗ[ℝ] ℝ) (c 
 
 end Mei.Convex.WallComplement
 
+namespace Quiver.Path
+
+open Mei.Convex.WallComplement
+
+variable {V ι κ E : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V] [Finite ι] [Finite κ]
+  [AddCommGroup E] {W : ι → Set V}
+
+/-- An injective restriction retaining every nonzero coefficient preserves crossing sums. -/
+@[simp]
+theorem wallCrossingSum_restrict (ν : ι → V →ₗ[ℝ] ℝ) (c : ι → E) (f : κ → ι)
+    (hf : Function.Injective f) (hc : ∀ j, j ∉ range f → c j = 0)
+    {x y : WallComplement W} (p : AdmissiblePLPath x y) :
+    ((restrictPrefunctor W f).mapPath p).wallCrossingSum (ν ∘ f) (c ∘ f) =
+      p.wallCrossingSum ν c := by
+  classical
+  let := Fintype.ofFinite ι
+  let := Fintype.ofFinite κ
+  induction p with
+  | nil => simp
+  | cons p e ih =>
+    rw [Prefunctor.mapPath_cons, ← comp_toPath_eq_cons, ← comp_toPath_eq_cons,
+      wallCrossingSum_comp, wallCrossingSum_comp, ih, wallCrossingSum_toPath,
+      wallCrossingSum_toPath]
+    congr 1
+    exact Fintype.sum_of_injective f hf _ _ (fun j hj => by simp [hc j hj])
+      fun _ => by simp only [mem_crossings, restrictPrefunctor_obj_val, Function.comp_apply]
+
+end Quiver.Path
+
 namespace Mei.Convex.WallComplement
 
 variable {V ι : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]

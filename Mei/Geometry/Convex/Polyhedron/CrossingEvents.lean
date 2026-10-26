@@ -196,6 +196,15 @@ theorem segmentCrossingEvents_def (e : x ⟶ y) :
     segmentCrossingEvents ν e =
       (orderedCrossingTimes e).map (signedCrossingEvent ν x y) := (rfl)
 
+/-- A segment has no crossing events exactly when it meets no wall. -/
+@[simp]
+theorem segmentCrossingEvents_eq_nil_iff (e : x ⟶ y) :
+    segmentCrossingEvents ν e = [] ↔ crossings x y = ∅ := by
+  rw [segmentCrossingEvents_def, List.map_eq_nil_iff, List.eq_nil_iff_forall_not_mem,
+    Set.eq_empty_iff_forall_notMem]
+  simp only [mem_orderedCrossingTimes, not_exists, Prod.forall]
+  exact forall_comm
+
 /-- An event on the list is precisely the signed set at one actual crossing time. -/
 theorem mem_segmentCrossingEvents (e : x ⟶ y) (S : Finset (ι × ℤ)) :
     S ∈ segmentCrossingEvents ν e ↔
