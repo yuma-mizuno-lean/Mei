@@ -17,6 +17,10 @@ on the grading indices. The factors commute with lowering the degree cutoff.
 They are set-theoretic coordinates; multiplication of factors is not asserted
 to be a homomorphism from the product group.
 
+This formalizes the sign factorization in Tom Bridgeland,
+*Scattering diagrams, Hall algebras and stability conditions*, §3.2, equation (5)
+of [arXiv:1603.00416v3](https://arxiv.org/abs/1603.00416v3).
+
 The proof lifts factorizations through the central truncation kernels, splitting
 each logarithmic correction with `Mei.signDecomposition`. It uses the existing
 `LieSubalgebra.bchSubgroup` and `PositiveDegrees.ker_truncationMap_succ_le_center`.
