@@ -128,14 +128,15 @@ namespace Quiver.Path
 variable {V ι E : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V] [FiniteDimensional ℝ V]
   [Finite ι] [AddCommGroup E] {W : ι → Set V}
 
-/-- If every wall with nonzero coefficient is parallel to `v` and has `v` outside its
-recession cone, then a crossing sum vanishing around all admissible loops at `x`
-vanishes along all admissible paths from `x`. -/
+/-- If every wall with nonzero coefficient has a compatible normal, is parallel to `v`,
+and has `v` outside its recession cone, then a crossing sum vanishing around all admissible
+loops at `x` vanishes along all admissible paths from `x`. -/
 theorem wallCrossingSum_eq_zero_of_notMem_recessionCone
     (hpoly : ∀ j, TauCeti.IsConvexPolyhedron (W j))
     (hdim : ∀ j, Module.finrank ℝ (affineSpan ℝ (W j)).direction + 1 = Module.finrank ℝ V)
-    (ν : ι → V →ₗ[ℝ] ℝ) (hν : ∀ j, LinearMap.ker (ν j) = (affineSpan ℝ (W j)).direction)
-    (c : ι → E) {v : V} (hpar : ∀ j, c j ≠ 0 → ν j v = 0)
+    (ν : ι → V →ₗ[ℝ] ℝ) (c : ι → E)
+    (hν : ∀ j, c j ≠ 0 → LinearMap.ker (ν j) = (affineSpan ℝ (W j)).direction)
+    {v : V} (hpar : ∀ j, c j ≠ 0 → ν j v = 0)
     (hrec : ∀ j, c j ≠ 0 → v ∉ recessionCone (W j)) {x y : WallComplement W}
     (hloop : ∀ q : AdmissiblePLPath x x, q.wallCrossingSum ν c = 0)
     (p : AdmissiblePLPath x y) :
@@ -148,7 +149,7 @@ theorem wallCrossingSum_eq_zero_of_notMem_recessionCone
     exact hj ⟨⟨j, hcj⟩, rfl⟩
   -- Among those walls, return from `y` to `x` without crossing any.
   have hpar' (s : S) : v ∈ (affineSpan ℝ (W s.1)).direction := by
-    rw [← hν, LinearMap.mem_ker]
+    rw [← hν s.1 s.2, LinearMap.mem_ker]
     exact hpar s.1 s.2
   obtain ⟨l, hl, r', hr'v, hr'e⟩ :=
     AdmissiblePLPath.exists_signedCrossingEvents_eq_nil_of_notMem_recessionCone
@@ -163,7 +164,7 @@ theorem wallCrossingSum_eq_zero_of_notMem_recessionCone
   have hdim' : ∀ s : S, Module.finrank ℝ (affineSpan ℝ ((W ∘ (Subtype.val : S → ι)) s)).direction
       + 1 = Module.finrank ℝ V := fun s => hdim s.1
   have hν' : ∀ s : S, LinearMap.ker ((ν ∘ (Subtype.val : S → ι)) s) =
-      (affineSpan ℝ ((W ∘ (Subtype.val : S → ι)) s)).direction := fun s => hν s.1
+      (affineSpan ℝ ((W ∘ (Subtype.val : S → ι)) s)).direction := fun s => hν s.1 s.2
   obtain ⟨ε, hε, hev⟩ := r'.exists_pos_signedCrossingEvents_eq_of_forall₂_dist_lt
     hclosed' hdim' (ν ∘ Subtype.val) hν'
   obtain ⟨r, hr⟩ := AdmissiblePLPath.exists_forall₂_dist_lt hpoly hdim hl hε y x

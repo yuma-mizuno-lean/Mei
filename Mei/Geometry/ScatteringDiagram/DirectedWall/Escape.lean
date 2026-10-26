@@ -96,7 +96,7 @@ theorem wallCrossingSum_eq_zero_of_outgoing {ι E : Type*} [Finite ι] [AddCommG
     p.wallCrossingSum (fun j => h.realCharacter (W j).normal) c = 0 := by
   let := h.finiteDimensional
   refine p.wallCrossingSum_eq_zero_of_notMem_recessionCone (fun j => (W j).isConvexPolyhedron)
-    (fun j => (W j).finrank_direction_add_one) _ (fun j => (W j).direction_support.symm) c
+    (fun j => (W j).finrank_direction_add_one) _ c (fun j _ => (W j).direction_support.symm)
     (v := i (ρ n)) (fun j hj => ?_) (fun j hj => ?_) hloop
   · obtain ⟨-, a, -, rfl⟩ := SupportedRay.mem_rayDegrees.mp (hout j hj).2
     simp [h.realCharacter_apply, (W j).normal_direction]
