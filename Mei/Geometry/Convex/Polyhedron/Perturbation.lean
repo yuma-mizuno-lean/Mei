@@ -8,7 +8,7 @@ module
 public import Mei.Analysis.Convex.Intrinsic
 public import Mei.Analysis.Normed.Affine.LineMap
 public import Mei.Geometry.Affine.Segment
-public import Mei.Geometry.Convex.Polyhedron.AdmissiblePath
+public import Mei.Geometry.Convex.Polyhedron.CommonPath
 public import Mathlib.Combinatorics.Quiver.Path.Vertices
 
 /-!
@@ -184,44 +184,25 @@ theorem exists_forall₂_dist_lt [Finite ι] (hpoly : ∀ i, TauCeti.IsConvexPol
     {l : List V} (hl : l ≠ []) {ε : ℝ} (hε : 0 < ε) (x y : WallComplement W) :
     ∃ p : AdmissiblePLPath x y, List.Forall₂ (fun a b => dist a b < ε)
       (x.val :: (l ++ [y.val])) (p.vertices.map WallComplement.val) := by
-  induction l generalizing x with
-  | nil => exact absurd rfl hl
-  | cons v l ih =>
-    by_cases hl' : l = []
-    · subst hl'
-      obtain ⟨u, hu, hz, htrans, hreg⟩ := exists_mem_open_two_transverse_lineMaps
-        W hpoly hdim x.notMem y.notMem Metric.isOpen_ball (Metric.nonempty_ball.mpr hε)
-      let z : WallComplement W := ⟨u, hz⟩
-      have hxz : WallComplement.AdmissibleSegment x z :=
-        ⟨fun i _ => (htrans i).1, fun t _ => (hreg t).1⟩
-      have hyz : WallComplement.AdmissibleSegment y z :=
-        ⟨fun i _ => (htrans i).2, fun t _ => (hreg t).2⟩
-      refine ⟨((Quiver.Path.nil : AdmissiblePLPath x x).cons (PLift.up hxz)).cons
-        (PLift.up hyz.symm), ?_⟩
-      simp only [Quiver.Path.vertices_cons, Quiver.Path.vertices_nil, List.concat_eq_append,
-        List.nil_append, List.cons_append, List.map_cons, List.map_nil]
-      exact .cons (by simpa using hε) (.cons (Metric.mem_ball'.mp hu)
-        (.cons (by simpa using hε) .nil))
-    · obtain ⟨u, hu, hz, htrans, hreg⟩ := exists_mem_open_two_transverse_lineMaps
-        W hpoly hdim x.notMem x.notMem Metric.isOpen_ball (Metric.nonempty_ball.mpr hε)
-      let z : WallComplement W := ⟨u, hz⟩
-      have hxz : WallComplement.AdmissibleSegment x z :=
-        ⟨fun i _ => (htrans i).1, fun t _ => (hreg t).1⟩
-      obtain ⟨q, hq⟩ := ih hl' z
-      refine ⟨(Quiver.Hom.toPath (PLift.up hxz)).comp q, ?_⟩
-      obtain ⟨T, hT⟩ : ∃ T, q.vertices.map WallComplement.val = u :: T := by
-        rcases hv : q.vertices with _ | ⟨a, T⟩
-        · exact absurd hv q.vertices_ne_nil
-        · have ha := q.vertices_head?
-          rw [hv, List.head?_cons, Option.some.injEq] at ha
-          exact ⟨T.map WallComplement.val, by rw [List.map_cons, ha]⟩
-      rw [hT] at hq
-      have hcomp : ((Quiver.Hom.toPath (PLift.up hxz)).comp q).vertices.map WallComplement.val =
-          x.val :: u :: T := by
-        rw [Quiver.Path.vertices_comp, Quiver.Path.vertices_toPath, List.dropLast_cons_cons,
-          List.dropLast_singleton, List.singleton_append, List.map_cons, hT]
-      rw [hcomp, List.cons_append]
-      exact .cons (by simpa using hε) (.cons (Metric.mem_ball'.mp hu) (List.forall₂_cons.mp hq).2)
+  let x' : CommonWallComplement (fun _ : Unit => W) := ⟨x.val, fun _ => x.notMem⟩
+  let y' : CommonWallComplement (fun _ : Unit => W) := ⟨y.val, fun _ => y.notMem⟩
+  obtain ⟨p, hp⟩ := CommonWallComplement.exists_forall₂_dist_lt
+    (fun _ => hpoly) (fun _ => hdim) hl hε x' y'
+  have hp' : ∃ q : Quiver.Path
+      ((CommonWallComplement.projectionPrefunctor ()).obj x')
+      ((CommonWallComplement.projectionPrefunctor ()).obj y'),
+      List.Forall₂ (fun a b => dist a b < ε) (x.val :: (l ++ [y.val]))
+        (q.vertices.map WallComplement.val) := by
+    refine ⟨(CommonWallComplement.projectionPrefunctor ()).mapPath p, ?_⟩
+    exact (CommonWallComplement.vertices_projection () p).symm ▸ hp
+  have hx : (CommonWallComplement.projectionPrefunctor ()).obj x' = x := by
+    ext
+    simp [x']
+  have hy : (CommonWallComplement.projectionPrefunctor ()).obj y' = y := by
+    ext
+    simp [y']
+  rw [hx, hy] at hp'
+  exact hp'
 
 end AdmissiblePLPath
 

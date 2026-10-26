@@ -65,21 +65,19 @@ theorem orthogonalLieSubalgebra_antitone : Antitone (orthogonalLieSubalgebra ℒ
     AddMonoidHom.mem_mker] at hn ⊢
   exact fun θ hθ => hn θ (hστ hθ)
 
-/-- A degree-preserving Lie map preserves orthogonality to any dual support.
-Neither a direct-sum decomposition nor surjectivity is required. -/
-theorem map_mem_orthogonalLieSubalgebra {L' : Type*} [LieRing L'] [LieAlgebra R L']
+/-- A Lie homomorphism preserving homogeneous degrees preserves orthogonality
+to any dual support. Surjectivity on homogeneous pieces is not required. -/
+theorem map_orthogonalLieSubalgebra_le {L' : Type*} [LieRing L'] [LieAlgebra R L']
     (ℳ : N → Submodule R L') [SetLike.GradedBracket ℳ ℳ]
     (f : L →ₗ⁅R⁆ L') (hf : ∀ n, ∀ x ∈ ℒ n, f x ∈ ℳ n)
-    (σ : Set (N →+ ℝ)) {x : L} (hx : x ∈ orthogonalLieSubalgebra ℒ σ) :
-    f x ∈ orthogonalLieSubalgebra ℳ σ := by
-  have hle : orthogonalLieSubalgebra ℒ σ ≤
-      (orthogonalLieSubalgebra ℳ σ).comap f := by
-    rw [orthogonalLieSubalgebra_def, supportedLieSubalgebra_le_iff]
-    intro n hn y hy
-    apply le_orthogonalLieSubalgebra ℳ _ (hf n y hy)
-    simpa only [AddSubsemigroup.mem_iInf, AddSubmonoid.mem_toSubsemigroup,
-      AddMonoidHom.mem_mker] using hn
-  exact hle hx
+    (σ : Set (N →+ ℝ)) :
+    (orthogonalLieSubalgebra ℒ σ).map f ≤ orthogonalLieSubalgebra ℳ σ := by
+  rw [LieSubalgebra.map_le_iff_le_comap, orthogonalLieSubalgebra_def]
+  apply (supportedLieSubalgebra_le_iff ℒ _ _).mpr
+  intro n hn x hx
+  apply le_orthogonalLieSubalgebra ℳ _ (hf n x hx)
+  simpa only [AddSubsemigroup.mem_iInf, AddSubmonoid.mem_toSubsemigroup,
+    AddMonoidHom.mem_mker] using hn
 
 variable [DecidableEq N] [DirectSum.Decomposition ℒ]
 

@@ -101,6 +101,18 @@ theorem signSubalgebra_eq_of_sign_eq (φ : ι →+ A)
     · simp [he]
     · exact le_iSup_of_le ⟨n, (h n he).trans n.property⟩ le_rfl
 
+/-- An implication between sign fibers on nonzero homogeneous pieces induces
+an inclusion of the corresponding sign subalgebras. -/
+theorem signSubalgebra_le_of_sign_imp (φ : ι →+ A) (s t : SignType)
+    (h : ∀ n, ℒ n ≠ ⊥ → SignType.sign (θ n) = s → SignType.sign (φ n) = t) :
+    signSubalgebra ℒ θ s ≤ signSubalgebra ℒ φ t := by
+  rw [← LieSubalgebra.toSubmodule_le_toSubmodule, signSubalgebra_toSubmodule,
+    signSubalgebra_toSubmodule]
+  refine iSup_le fun n => ?_
+  by_cases hn : ℒ n = ⊥
+  · simp [hn]
+  · exact le_iSup_of_le ⟨n, h n hn n.property⟩ le_rfl
+
 variable {L' : Type*} [LieRing L'] [LieAlgebra R L']
   (ℳ : ι → Submodule R L') [SetLike.GradedBracket ℳ ℳ]
 

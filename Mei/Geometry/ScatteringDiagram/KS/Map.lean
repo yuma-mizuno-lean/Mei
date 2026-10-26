@@ -5,246 +5,131 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.ScatteringDiagram.KS.Completion
-public import Mei.Geometry.ScatteringDiagram.KS.Reconstruction
-public import Mei.Algebra.Lie.BCH.Sign.Hom
+public import Mei.Geometry.ScatteringDiagram.KS.Basic
 
 /-!
-# Change of coefficients in KS diagrams
+# Coefficient maps of finite KS complexes
 
-A degree-preserving Lie homomorphism maps finite and completed KS diagrams by
-applying its BCH maps to the wall labels. Orthogonal support is preserved, as
-are geometric path products and consistency. Identity, composition and cutoff
-change commute with this construction. At every finite cutoff, reconstruction
-by middle sign factors commutes with these maps as an equality of KS complexes.
+A degree-preserving Lie homomorphism maps the labels of a KS complex while
+retaining its conical geometry and coorientations. Orthogonal label subgroups
+are preserved without injectivity or surjectivity assumptions. The construction
+respects identity, composition, cutoff projection and geometric path products,
+and sends consistent complexes to consistent complexes.
 
-The geometry is retained, even when a label becomes the identity; injectivity
-of the Lie map is not required. These constructions use
-`FiniteWallDiagram.relabel`, `GradedLieHom.completedMap`,
-`Mei.map_mem_orthogonalLieSubalgebra`, and the uniqueness of sign factorization.
+This uses `GradedLieHom.truncatedMap`, `orthogonalLieSubalgebra`, and the
+relabelling API of `FiniteWallDiagram`. It is the coefficient-change construction
+for finite conical scattering diagrams; no faithful coefficient action is needed.
 -/
 
 public section
 
 noncomputable section
 
-universe u
-
-namespace Mei
-
 open Set Mei.Convex
 
-variable {N V R : Type*} {L L' L'' : Type u} [AddCommGroup N]
+namespace Mei.KSComplex
+
+variable {N V R L L' L'' : Type*} [AddCommGroup N]
   [NormedAddCommGroup V] [NormedSpace ℝ V]
-  [CommRing R] [Algebra ℚ R] [DecidableEq N]
+  [CommRing R] [Algebra ℚ R]
   [LieRing L] [LieAlgebra R L] [LieAlgebra ℚ L] [IsScalarTower ℚ R L]
   [LieRing L'] [LieAlgebra R L'] [LieAlgebra ℚ L'] [IsScalarTower ℚ R L']
   [LieRing L''] [LieAlgebra R L''] [LieAlgebra ℚ L''] [IsScalarTower ℚ R L'']
-  {i : (N →+ ℤ) →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
+  [DecidableEq N] {i : (N →+ ℤ) →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
   {s : KSSpace h} {d : PositiveDegrees N}
   {ℒ : N → Submodule R L} {ℳ : N → Submodule R L'} {ℋ : N → Submodule R L''}
   [GradedLieAlgebra ℒ] [GradedLieAlgebra ℳ] [GradedLieAlgebra ℋ]
   [IsPositiveGrading d ℒ] [IsPositiveGrading d ℳ] [IsPositiveGrading d ℋ]
+  {C : FinitePolyhedralComplex h} {k l : ℕ}
 
-namespace KSComplex
-
-variable {C : FinitePolyhedralComplex h} {k l : ℕ}
-
-/-- Map the Lie coefficients of a finite KS complex, retaining its actual geometry. -/
-def mapDiagram (D : KSComplex s d ℒ C k)
+/-- Apply a degree-preserving Lie homomorphism to the wall labels. -/
+def map (D : KSComplex s d ℒ C k)
     (f : GradedLieHom (PositiveDegreeMap.id d) ℒ ℳ) : KSComplex s d ℳ C k where
   isConical := D.isConical
   degree := D.degree
   degree_mem := D.degree_mem
   degree_ne_zero := D.degree_ne_zero
   evaluation_eq_zero := D.evaluation_eq_zero
-  label P := (f.truncatedMap (a := k) k (by simp)).bchGroupMap (D.label P)
+  label P := (f.truncatedMap k (by simp)).bchGroupMap (D.label P)
   label_mem P := by
     rw [LieSubalgebra.mem_bchSubgroup, LieHom.log_bchGroupMap]
-    exact map_mem_orthogonalLieSubalgebra (d.truncatedGrading ℒ k)
-      (d.truncatedGrading ℳ k) (f.truncatedMap (a := k) k (by simp))
-      (fun _ _ hx => by
-        simpa only [PositiveDegreeMap.id_apply] using
-          f.truncatedMap_mem (a := k) k (by simp) hx) _
-      ((LieSubalgebra.mem_bchSubgroup _ _).mp (D.label_mem P))
+    apply map_orthogonalLieSubalgebra_le (d.truncatedGrading ℒ k)
+      (d.truncatedGrading ℳ k) (f.truncatedMap k (by simp))
+      (fun n x hx => by simpa using f.truncatedMap_mem k (by simp) hx)
+      (s.evaluation '' (P : Set V))
+    exact ⟨BCHGroup.log (D.label P),
+      (LieSubalgebra.mem_bchSubgroup _ _).mp (D.label_mem P), rfl⟩
 
-/-- Coefficient maps retain the coorienting degrees. -/
+/-- Coefficient change retains coorienting degrees. -/
 @[simp]
-theorem mapDiagram_degree (D : KSComplex s d ℒ C k)
-    (f : GradedLieHom (PositiveDegreeMap.id d) ℒ ℳ) :
-    (D.mapDiagram f).degree = D.degree := (rfl)
+theorem map_degree (D : KSComplex s d ℒ C k)
+    (f : GradedLieHom (PositiveDegreeMap.id d) ℒ ℳ) : (D.map f).degree = D.degree := (rfl)
 
-/-- Coefficient change applies the induced finite BCH map to each wall label. -/
+/-- Each label is mapped by the induced homomorphism of finite BCH groups. -/
 @[simp]
-theorem mapDiagram_label (D : KSComplex s d ℒ C k)
+theorem map_label (D : KSComplex s d ℒ C k)
     (f : GradedLieHom (PositiveDegreeMap.id d) ℒ ℳ) (P : C.walls) :
-    (D.mapDiagram f).label P =
-      (f.truncatedMap (a := k) k (by simp)).bchGroupMap (D.label P) := (rfl)
+    (D.map f).label P = (f.truncatedMap k (by simp)).bchGroupMap (D.label P) := (rfl)
 
-/-- Forgetting the grading identifies coefficient change with relabelling. -/
+/-- The identity Lie homomorphism leaves a KS complex unchanged. -/
 @[simp]
-theorem toFiniteWallDiagram_mapDiagram (D : KSComplex s d ℒ C k)
-    (f : GradedLieHom (PositiveDegreeMap.id d) ℒ ℳ) :
-    (D.mapDiagram f).toFiniteWallDiagram =
-      D.toFiniteWallDiagram.relabel (f.truncatedMap (a := k) k (by simp)).bchGroupMap := by
-  ext <;> simp
+theorem map_id (D : KSComplex s d ℒ C k) : D.map (GradedLieHom.id ℒ) = D := by
+  ext P <;> simp
 
-/-- The identity Lie map leaves the finite diagram unchanged. -/
+/-- Successive coefficient changes agree with their composite. -/
 @[simp]
-theorem mapDiagram_id (D : KSComplex s d ℒ C k) :
-    D.mapDiagram (GradedLieHom.id ℒ) = D := by
-  ext <;> simp
-
-/-- Successive coefficient changes compose as equalities of finite complexes. -/
-@[simp]
-theorem mapDiagram_comp (D : KSComplex s d ℒ C k)
+theorem map_map (D : KSComplex s d ℒ C k)
     (f : GradedLieHom (PositiveDegreeMap.id d) ℒ ℳ)
     (g : GradedLieHom (PositiveDegreeMap.id d) ℳ ℋ) :
-    (D.mapDiagram f).mapDiagram g =
-      D.mapDiagram (by simpa only [PositiveDegreeMap.id_comp] using g.comp f) := by
-  ext P
-  · rfl
-  · simp only [mapDiagram_label, ← MonoidHom.comp_apply, ← LieHom.bchGroupMap_comp]
-    congr 1
-    apply congrArg LieHom.bchGroupMap
-    apply (d.degreeIdeal ℒ k).lieHom_qext
-    intro x
-    simp [LieIdeal.mkQ_apply, GradedLieHom.comp_apply]
-
-/-- Lowering the cutoff commutes with changing the Lie coefficients. -/
-@[simp]
-theorem mapDiagram_truncate (D : KSComplex s d ℒ C l)
-    (f : GradedLieHom (PositiveDegreeMap.id d) ℒ ℳ) (hkl : k ≤ l) :
-    (D.truncate hkl).mapDiagram f = (D.mapDiagram f).truncate hkl := by
+    (D.map f).map g = D.map
+      { toLieHom := g.toLieHom.comp f.toLieHom
+        map_mem hx := by simpa using g.map_mem (f.map_mem hx) } := by
   ext P
   · simp
-  · simp only [mapDiagram_label, truncate_label, ← MonoidHom.comp_apply,
+  · simp only [map_label, ← MonoidHom.comp_apply, ← LieHom.bchGroupMap_comp]
+    congr 2
+    apply (d.degreeIdeal ℒ k).lieHom_qext
+    intro x
+    simp [LieIdeal.mkQ_apply, ← GradedLieHom.coe_toLieHom]
+
+/-- Forgetting the grading identifies coefficient change with ordinary relabelling. -/
+@[simp]
+theorem toFiniteWallDiagram_map (D : KSComplex s d ℒ C k)
+    (f : GradedLieHom (PositiveDegreeMap.id d) ℒ ℳ) :
+    (D.map f).toFiniteWallDiagram =
+      D.toFiniteWallDiagram.relabel (f.truncatedMap k (by simp)).bchGroupMap := by
+  ext <;> simp
+
+/-- Coefficient change preserves consistency, including when some labels become trivial. -/
+theorem consistent_map (D : KSComplex s d ℒ C k)
+    (f : GradedLieHom (PositiveDegreeMap.id d) ℒ ℳ)
+    (hD : D.toFiniteWallDiagram.Consistent) : (D.map f).toFiniteWallDiagram.Consistent := by
+  rw [toFiniteWallDiagram_map]
+  exact hD.relabel _
+
+/-- Coefficient change commutes with lowering the degree cutoff. -/
+@[simp]
+theorem truncate_map (D : KSComplex s d ℒ C l)
+    (f : GradedLieHom (PositiveDegreeMap.id d) ℒ ℳ) (hkl : k ≤ l) :
+    (D.map f).truncate hkl = (D.truncate hkl).map f := by
+  ext P
+  · simp
+  · simp only [map_label, truncate_label, ← MonoidHom.comp_apply,
       ← LieHom.bchGroupMap_comp]
-    exact DFunLike.congr_fun
-      (congrArg LieHom.bchGroupMap
-        (f.truncationMap_comp_truncatedMap_of_le hkl hkl (by simp) (by simp)).symm) _
+    -- Work at the explicit cutoffs rather than transporting quotient types
+    -- along the propositional identity-modulus equations.
+    congr 2
+    apply (d.degreeIdeal ℒ l).lieHom_qext
+    intro x
+    simp [LieIdeal.mkQ_apply]
 
 /-- Coefficient change applies the finite BCH map to the geometric path product. -/
-theorem pathProduct_mapDiagram (D : KSComplex s d ℒ C k)
+theorem pathProduct_map (D : KSComplex s d ℒ C k)
     (f : GradedLieHom (PositiveDegreeMap.id d) ℒ ℳ)
     {x y : WallComplement (fun P : C.walls => (P : Set V))}
     (p : AdmissiblePLPath x y) :
-    (D.mapDiagram f).toFiniteWallDiagram.pathProduct p =
+    (D.map f).toFiniteWallDiagram.pathProduct p =
       (f.truncatedMap (a := k) k (by simp)).bchGroupMap (D.toFiniteWallDiagram.pathProduct p) := by
-  rw [toFiniteWallDiagram_mapDiagram, FiniteWallDiagram.pathProduct_relabel]
+  rw [toFiniteWallDiagram_map, FiniteWallDiagram.pathProduct_relabel]
 
-/-- Coefficient maps preserve consistency without an injectivity hypothesis. -/
-theorem consistent_mapDiagram (D : KSComplex s d ℒ C k)
-    (f : GradedLieHom (PositiveDegreeMap.id d) ℒ ℳ)
-    (hD : D.toFiniteWallDiagram.Consistent) :
-    (D.mapDiagram f).toFiniteWallDiagram.Consistent := by
-  rw [toFiniteWallDiagram_mapDiagram]
-  exact hD.relabel _
-
-end KSComplex
-
-namespace CompletedDiagram
-
-variable {C : ℕ → FinitePolyhedralComplex h}
-
-/-- Change the Lie coefficients at every order of a completed KS diagram. -/
-def mapDiagram (D : CompletedDiagram s d ℒ C)
-    (f : GradedLieHom (PositiveDegreeMap.id d) ℒ ℳ) : CompletedDiagram s d ℳ C where
-  diagram k := (D.diagram k).mapDiagram f
-  compatible k {_ _ _ _} p q hpq := by
-    simp only [KSComplex.pathProduct_mapDiagram]
-    have hc := D.compatible k p q hpq
-    have hn := DFunLike.congr_fun
-      (congrArg LieHom.bchGroupMap
-        (f.truncationMap_comp_truncatedMap_of_le (Nat.le_succ k)
-          (Nat.le_succ k) (by simp) (by simp)))
-      ((D.diagram (k + 1)).toFiniteWallDiagram.pathProduct q)
-    simpa only [LieHom.bchGroupMap_comp, MonoidHom.comp_apply, hc] using hn
-
-/-- The finite levels of coefficient change are the existing finite diagram maps. -/
-@[simp]
-theorem mapDiagram_diagram (D : CompletedDiagram s d ℒ C)
-    (f : GradedLieHom (PositiveDegreeMap.id d) ℒ ℳ) (k : ℕ) :
-    (D.mapDiagram f).diagram k = (D.diagram k).mapDiagram f := (rfl)
-
-/-- The identity coefficient map leaves a completed diagram unchanged. -/
-@[simp]
-theorem mapDiagram_id (D : CompletedDiagram s d ℒ C) :
-    D.mapDiagram (GradedLieHom.id ℒ) = D := by
-  apply CompletedDiagram.ext
-  funext k
-  simp
-
-/-- Successive maps of completed diagrams compose as equalities. -/
-@[simp]
-theorem mapDiagram_comp (D : CompletedDiagram s d ℒ C)
-    (f : GradedLieHom (PositiveDegreeMap.id d) ℒ ℳ)
-    (g : GradedLieHom (PositiveDegreeMap.id d) ℳ ℋ) :
-    (D.mapDiagram f).mapDiagram g =
-      D.mapDiagram (by simpa only [PositiveDegreeMap.id_comp] using g.comp f) := by
-  apply CompletedDiagram.ext
-  funext k
-  simp
-
-/-- The complete product is natural for the completed Lie coefficient map. -/
-@[simp]
-theorem pathProduct_mapDiagram (D : CompletedDiagram s d ℒ C)
-    (f : GradedLieHom (PositiveDegreeMap.id d) ℒ ℳ)
-    {x y : Point C} (p : Quiver.Path x y) :
-    (D.mapDiagram f).pathProduct p = f.completedMap (D.pathProduct p) := by
-  apply CompletedGroup.ext
-  intro k
-  rw [f.projection_completedMap_of_le k (a := k) (by simp)]
-  simp only [projection_pathProduct, mapDiagram_diagram, KSComplex.pathProduct_mapDiagram]
-  -- The tower projections use the concrete BCH group operations.
-  rfl
-
-/-- A map of Lie coefficients preserves consistency at all orders. -/
-theorem Consistent.mapDiagram {D : CompletedDiagram s d ℒ C} (hD : D.Consistent)
-    (f : GradedLieHom (PositiveDegreeMap.id d) ℒ ℳ) : (D.mapDiagram f).Consistent := by
-  apply (consistent_iff _).mpr
-  intro k
-  exact (D.diagram k).consistent_mapDiagram f ((consistent_iff _).mp hD k)
-
-/-- Endpoint transport commutes with the completed coefficient map. -/
-theorem transport_mapDiagram (D : CompletedDiagram s d ℒ C) (hD : D.Consistent)
-    (f : GradedLieHom (PositiveDegreeMap.id d) ℒ ℳ) (x y : Point C) :
-    (D.mapDiagram f).transport (hD.mapDiagram f) x y =
-      f.completedMap (D.transport hD x y) := by
-  obtain ⟨p⟩ := exists_path x y
-  rw [transport_eq_pathProduct _ (hD.mapDiagram f) p,
-    D.transport_eq_pathProduct hD p, pathProduct_mapDiagram]
-
-end CompletedDiagram
-
-namespace PositiveDegrees
-
-variable {W : Type*} [NormedAddCommGroup W] [NormedSpace ℝ W]
-  {j : N →+ W} (d : PositiveDegrees N) (hj : TauCeti.Toric.IsIntegralLattice j)
-
-/-- Reconstruction by finite middle factors commutes with coefficient change,
-including coefficient maps which kill nonidentity labels. -/
-@[simp]
-theorem mapDiagram_reconstructFinite (ℒ : N → Submodule R L) (ℳ : N → Submodule R L')
-    [GradedLieAlgebra ℒ] [GradedLieAlgebra ℳ]
-    [IsPositiveGrading d ℒ] [IsPositiveGrading d ℳ]
-    (f : GradedLieHom (PositiveDegreeMap.id d) ℒ ℳ) (k : ℕ)
-    (g : d.truncatedGroup ℒ k) :
-    (d.reconstructFinite hj ℒ g).mapDiagram f =
-      d.reconstructFinite hj ℳ ((f.truncatedMap (a := k) k (by simp)).bchGroupMap g) := by
-  let := hj.continuousDual.finiteDimensional
-  apply KSComplex.ext
-  · rw [KSComplex.mapDiagram_degree]
-    exact d.reconstructFinite_degree_eq hj ℒ g _
-  · funext P
-    obtain ⟨θ, hθ⟩ := (intrinsicInterior_nonempty
-      ((d.arrangementComplex hj k).isConvexPolyhedron
-        ((d.arrangementComplex hj k).mem_cells_of_mem_walls P.property)).convex).mpr
-      ((d.arrangementComplex hj k).nonempty P
-        ((d.arrangementComplex hj k).mem_cells_of_mem_walls P.property))
-    rw [KSComplex.mapDiagram_label, d.reconstructFinite_label hj ℒ g P hθ,
-      d.reconstructFinite_label hj ℳ _ P hθ,
-      GradedLieHom.truncatedMap_signFactorizationEquiv_symm]
-
-end PositiveDegrees
-end Mei
+end Mei.KSComplex
