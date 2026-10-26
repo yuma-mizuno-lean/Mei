@@ -101,16 +101,10 @@ that entire cell. This is uniform over the finite complex. -/
 theorem eventually_subset_of_mem_cell (C : FinitePolyhedralComplex h) {P : Set V}
     (hP : P ∈ C.cells) {x : V} (hx : x ∈ intrinsicInterior ℝ P) :
     ∀ᶠ y in 𝓝 x, ∀ Q ∈ C.cells, y ∈ Q → P ⊆ Q := by
-  have hQ (Q : C.cells) : ∀ᶠ y in 𝓝 x, y ∈ (Q : Set V) → P ⊆ Q := by
-    by_cases hPQ : P ⊆ Q
-    · exact Eventually.of_forall fun _ _ => hPQ
-    · have hxQ : x ∉ (Q : Set V) := fun hxQ =>
-        hPQ (C.subset_of_mem_intrinsicInterior hP Q.property hx hxQ)
-      filter_upwards [(C.isConvexPolyhedron Q.property).isClosed.isOpen_compl.mem_nhds hxQ]
-        with y hy
-      exact fun hyQ => (hy hyQ).elim
-  filter_upwards [eventually_all.mpr hQ] with y hy Q hQ
-  exact hy ⟨Q, hQ⟩
+  have hnear := (locallyFinite_of_finite (fun Q : C.cells => (Q : Set V))).eventually_subset
+    (fun Q => (C.isConvexPolyhedron Q.property).isClosed) x
+  filter_upwards [hnear] with y hy Q hQ hyQ
+  exact C.subset_of_mem_intrinsicInterior hP hQ hx (hy (a := ⟨Q, hQ⟩) hyQ)
 
 /-- The relative interiors of distinct cells are disjoint. -/
 theorem disjoint_intrinsicInterior (C : FinitePolyhedralComplex h) {P Q : Set V}
