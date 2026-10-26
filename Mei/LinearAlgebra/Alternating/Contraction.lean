@@ -102,6 +102,20 @@ theorem conormalForms_curryLeft_eq_zero_iff
     hinj.eq_iff,
     Submodule.mkQ_apply, Submodule.Quotient.mk_eq_zero]
 
+/-- A top conormal form is determined by contraction along one transverse vector. -/
+theorem conormalForms_ext_of_curryLeft {U : Submodule R M}
+    (hk : Module.finrank R (M ⧸ U) = k + 1)
+    {α β : M [⋀^Fin (k + 1)]→ₗ[R] R}
+    (hα : α ∈ U.conormalForms (Fin (k + 1)))
+    (hβ : β ∈ U.conormalForms (Fin (k + 1))) {n : M} (hn : n ∉ U)
+    (he : α.curryLeft n = β.curryLeft n) : α = β := by
+  by_contra hne
+  have hz : (α - β).curryLeft n = 0 := by
+    ext v
+    exact sub_eq_zero.mpr (AlternatingMap.congr_fun he v)
+  exact hn ((conormalForms_curryLeft_eq_zero_iff hk
+    (U.conormalForms _ |>.sub_mem hα hβ) (sub_ne_zero.mpr hne) n).mp hz)
+
 end Submodule
 
 namespace Module.Ray
@@ -152,5 +166,30 @@ theorem contract_neg (o : Module.Ray R (M [⋀^Fin (k + 1)]→ₗ[R] R))
   | h α hα =>
     simp only [neg_rayOfNeZero, contract_rayOfNeZero]
     congr 1
+
+/-- In top conormal degree, contraction at a transverse vector detects equality
+of orientations. -/
+theorem contract_inj {U : Submodule R M}
+    {o p : Module.Ray R (M [⋀^Fin (k + 1)]→ₗ[R] R)}
+    (ho : o.IsConormal U) (hp : p.IsConormal U)
+    (hk : Module.finrank R (M ⧸ U) = k + 1) (n : M) (hn : n ∉ U) :
+    o.contract ho hk n hn = p.contract hp hk n hn ↔ o = p := by
+  refine ⟨?_, fun h => by subst p; rfl⟩
+  induction o using Module.Ray.ind with
+  | h α hα =>
+    induction p using Module.Ray.ind with
+    | h β hβ =>
+      simp only [contract_rayOfNeZero, ray_eq_iff]
+      intro he
+      obtain ⟨c, hc, he⟩ := he.exists_pos_left
+        ((Submodule.conormalForms_curryLeft_eq_zero_iff hk
+          ((isConormal_rayOfNeZero_iff hα).mp ho) hα n).not.mpr hn)
+        ((Submodule.conormalForms_curryLeft_eq_zero_iff hk
+          ((isConormal_rayOfNeZero_iff hβ).mp hp) hβ n).not.mpr hn)
+      have hform : c • α = β := Submodule.conormalForms_ext_of_curryLeft hk
+        ((U.conormalForms _).smul_mem c ((isConormal_rayOfNeZero_iff hα).mp ho))
+        ((isConormal_rayOfNeZero_iff hβ).mp hp) hn (by simpa using he)
+      rw [← hform]
+      exact SameRay.sameRay_pos_smul_right α hc
 
 end Module.Ray

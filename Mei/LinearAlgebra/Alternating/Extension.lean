@@ -65,19 +65,6 @@ namespace Submodule
 variable {R M : Type*} [Field R] [AddCommGroup M] [Module R M] {k : ℕ}
   {U W : Submodule R M}
 
-/-- A top conormal form is determined by contraction along one transverse vector. -/
-theorem conormalForms_ext_of_curryLeft (hk : Module.finrank R (M ⧸ U) = k + 1)
-    {α β : M [⋀^Fin (k + 1)]→ₗ[R] R}
-    (hα : α ∈ U.conormalForms (Fin (k + 1)))
-    (hβ : β ∈ U.conormalForms (Fin (k + 1))) {n : M} (hn : n ∉ U)
-    (he : α.curryLeft n = β.curryLeft n) : α = β := by
-  by_contra hne
-  have hz : (α - β).curryLeft n = 0 := by
-    ext v
-    exact sub_eq_zero.mpr (AlternatingMap.congr_fun he v)
-  exact hn ((conormalForms_curryLeft_eq_zero_iff hk
-    (U.conormalForms _ |>.sub_mem hα hβ) (sub_ne_zero.mpr hne) n).mp hz)
-
 /-- The covector wedge is nonzero when its covector is nonzero on the tangent space. -/
 theorem alternatizeUncurryFin_smulRight_ne_zero {α : M [⋀^Fin k]→ₗ[R] R}
     (hα : α ∈ W.conormalForms (Fin k)) (hα0 : α ≠ 0) (l : M →ₗ[R] R)
@@ -159,29 +146,5 @@ theorem wedgeCovector_neg (o : Module.Ray R (M [⋀^Fin k]→ₗ[R] R))
     have he : l.smulRight (-α) = -(l.smulRight α) := by ext n v; simp
     rw [he, ← neg_one_smul R (l.smulRight α), AlternatingMap.alternatizeUncurryFin_smul]
     simp
-
-/-- In top conormal degree, contraction at a transverse vector detects equality
-of orientations. -/
-theorem contract_inj {o p : Module.Ray R (M [⋀^Fin (k + 1)]→ₗ[R] R)}
-    (ho : o.IsConormal U) (hp : p.IsConormal U)
-    (hk : Module.finrank R (M ⧸ U) = k + 1) (n : M) (hn : n ∉ U) :
-    o.contract ho hk n hn = p.contract hp hk n hn ↔ o = p := by
-  refine ⟨?_, fun h => by subst p; rfl⟩
-  induction o using Module.Ray.ind with
-  | h α hα =>
-    induction p using Module.Ray.ind with
-    | h β hβ =>
-      simp only [contract_rayOfNeZero, ray_eq_iff]
-      intro he
-      obtain ⟨c, hc, he⟩ := he.exists_pos_left
-        ((Submodule.conormalForms_curryLeft_eq_zero_iff hk
-          ((isConormal_rayOfNeZero_iff hα).mp ho) hα n).not.mpr hn)
-        ((Submodule.conormalForms_curryLeft_eq_zero_iff hk
-          ((isConormal_rayOfNeZero_iff hβ).mp hp) hβ n).not.mpr hn)
-      have hform : c • α = β := Submodule.conormalForms_ext_of_curryLeft hk
-        ((U.conormalForms _).smul_mem c ((isConormal_rayOfNeZero_iff hα).mp ho))
-        ((isConormal_rayOfNeZero_iff hβ).mp hp) hn (by simpa using he)
-      rw [← hform]
-      exact SameRay.sameRay_pos_smul_right α hc
 
 end Module.Ray
