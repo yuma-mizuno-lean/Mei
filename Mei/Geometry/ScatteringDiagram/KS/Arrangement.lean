@@ -9,7 +9,6 @@ public import Mei.Algebra.PositiveDegrees.Basic
 public import Mei.Geometry.Convex.PolyhedralComplex.AmbientSubdivision
 public import Mei.Geometry.Toric.Algebraic.DualLattice
 public import Mei.Geometry.Convex.Polyhedron.SignCell.Interior
-public import Mei.Geometry.Convex.PolyhedralComplex.Strata
 
 /-!
 # Bounded-degree hyperplane arrangements
