@@ -254,12 +254,12 @@ theorem exists_forall₂_dist_lt_free_endpoints [Finite ι]
         List.map_cons]
       exact .cons (Metric.mem_ball'.mp hu) hp
 
-/-- A closed vertex list with at least one interior vertex can be approximated
-by an admissible loop, with its basepoint also allowed to move. -/
+/-- A closed vertex list can be approximated by an admissible loop, with its
+basepoint also allowed to move, even when there are no interior vertices. -/
 theorem exists_loop_forall₂_dist_lt [Finite ι]
     (hpoly : ∀ i, TauCeti.IsConvexPolyhedron (W i))
     (hdim : ∀ i, Module.finrank ℝ (affineSpan ℝ (W i)).direction + 1 = Module.finrank ℝ V)
-    (v : V) {l : List V} (hl : l ≠ []) {ε : ℝ} (hε : 0 < ε) :
+    (v : V) {l : List V} {ε : ℝ} (hε : 0 < ε) :
     ∃ (x : WallComplement W) (p : AdmissiblePLPath x x),
       List.Forall₂ (fun a b => dist a b < ε) (v :: (l ++ [v]))
         (p.vertices.map WallComplement.val) := by
@@ -268,8 +268,24 @@ theorem exists_loop_forall₂_dist_lt [Finite ι]
     (fun i => affineSpan ℝ (W i))
     (fun i => (affineSpan ℝ (W i)).ne_top_of_finrank_direction_add_one_eq (hdim i)) v hhalf
   let x : WallComplement W := ⟨u, fun i hi => hW i (subset_affineSpan ℝ _ hi)⟩
-  obtain ⟨p, hp⟩ := exists_forall₂_dist_lt hpoly hdim hl hhalf x x
   have hv : dist v x.val < ε / 2 := by simpa only [dist_comm] using hu
+  by_cases hl : l = []
+  · subst l
+    have he : WallComplement.AdmissibleSegment x x := by
+      constructor
+      · rintro i ⟨t, _, ht⟩
+        exact False.elim (x.notMem i (by simpa only [AffineMap.lineMap_same_apply] using ht))
+      · intro t _ ht
+        have hs : x.val ∈ singularSupport W := by
+          simpa only [AffineMap.lineMap_same_apply] using ht
+        obtain ⟨i, hi⟩ := Set.mem_iUnion.mp
+          (singularSupport_subset_iUnion W (fun i => (hpoly i).isClosed) hs)
+        exact x.notMem i hi
+    refine ⟨x, Quiver.Hom.toPath (PLift.up he), ?_⟩
+    have hv' : dist v x.val < ε := hv.trans (half_lt_self hε)
+    simp only [Quiver.Path.vertices_toPath, List.nil_append, List.map_cons, List.map_nil]
+    exact .cons hv' (.cons hv' .nil)
+  obtain ⟨p, hp⟩ := exists_forall₂_dist_lt hpoly hdim hl hhalf x x
   have hs : List.Forall₂ (fun a b => dist a b < ε / 2)
       (v :: (l ++ [v])) (x.val :: (l ++ [x.val])) :=
     .cons hv (List.rel_append (List.forall₂_same.mpr fun _ _ => by simpa using hhalf)

@@ -191,7 +191,7 @@ theorem Equivalent.consistent (hDE : D.Equivalent E) (hc : D.Consistent) : E.Con
         · exact C.finrank_direction_add_one_of_mem_walls P.2
       -- Keep the new basepoint common, and perturb the interior vertices.
       obtain ⟨a, q, hq⟩ := AdmissiblePLPath.exists_loop_forall₂_dist_lt hpoly hdim x.val
-        (l := l.map WallComplement.val ++ [y.val]) (by simp) hε
+        (l := l.map WallComplement.val ++ [y.val]) hε
       let qE : AdmissiblePLPath
           (⟨a.val, fun P => a.notMem (.inl P)⟩ :
             WallComplement (fun P : C'.walls => (P : Set V)))
