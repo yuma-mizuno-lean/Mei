@@ -7,6 +7,7 @@ module
 
 public import Mathlib.Analysis.Convex.Intrinsic
 public import Mathlib.LinearAlgebra.AffineSpace.AffineSubspace.Basic
+public import Mathlib.Topology.GDelta.Basic
 import Mathlib.Tactic.Linarith
 
 /-!
@@ -17,6 +18,8 @@ vanishes on that set. Continuity of the affine function is not required.
 
 A set is a neighbourhood of each of its relative interior points within its
 affine span: points of the span close to a relative interior point stay in the set.
+For a closed set, the relative boundary is nowhere dense in the affine span, and
+off the relative boundary membership is locally constant within the affine span.
 -/
 
 public section
@@ -69,5 +72,33 @@ theorem mem_nhdsWithin_affineSpan_of_mem_intrinsicInterior {P : Set V} {x : V}
   obtain ⟨y, hy, rfl⟩ := hx
   rw [nhdsWithin_eq_map_subtype_coe y.property]
   exact mem_interior_iff_mem_nhds.mp hy
+
+omit [IsTopologicalAddGroup V] [ContinuousSMul ℝ V] in
+/-- The relative boundary of a closed set is nowhere dense in its affine span. -/
+theorem isNowhereDense_preimage_intrinsicFrontier {P : Set V} (hP : IsClosed P)
+    {A : AffineSubspace ℝ V} (hA : affineSpan ℝ P = A) :
+    IsNowhereDense ((↑) ⁻¹' intrinsicFrontier ℝ P : Set A) := by
+  subst hA
+  rw [intrinsicFrontier, preimage_image_eq _ Subtype.val_injective,
+    isClosed_frontier.isNowhereDense_iff]
+  exact interior_frontier (hP.preimage continuous_subtype_val)
+
+omit [IsTopologicalAddGroup V] [ContinuousSMul ℝ V] in
+/-- Off the relative boundary of a closed set, membership in the set is locally constant within
+its affine span. -/
+theorem eventually_mem_iff_of_notMem_intrinsicFrontier {P : Set V} (hP : IsClosed P)
+    {A : AffineSubspace ℝ V} (hA : affineSpan ℝ P = A) {x : A}
+    (hx : (x : V) ∉ intrinsicFrontier ℝ P) :
+    ∀ᶠ y : A in 𝓝 x, ((y : V) ∈ P ↔ (x : V) ∈ P) := by
+  subst hA
+  have hc : IsClosed ((↑) ⁻¹' P : Set (affineSpan ℝ P)) := hP.preimage continuous_subtype_val
+  by_cases hxP : (x : V) ∈ P
+  · have hint : x ∈ interior ((↑) ⁻¹' P : Set (affineSpan ℝ P)) := by
+      rw [← self_sdiff_frontier]
+      exact ⟨hxP, fun hfr => hx ⟨x, hfr, rfl⟩⟩
+    filter_upwards [mem_interior_iff_mem_nhds.mp hint] with y hy
+    exact iff_of_true hy hxP
+  · filter_upwards [hc.isOpen_compl.mem_nhds hxP] with y hy
+    exact iff_of_false hy hxP
 
 end Mei
