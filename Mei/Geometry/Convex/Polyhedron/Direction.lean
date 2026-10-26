@@ -60,9 +60,7 @@ theorem direction_affineSpan_setOf_forall_le (g : ι → (V →ᵃ[ℝ] ℝ))
     have hdir := AffineSubspace.vsub_mem_direction
       (subset_affineSpan ℝ P hmove) (subset_affineSpan ℝ P hp)
     have heq : lineMap p (v + p) (-ε) -ᵥ p = (-ε) • v := by
-      rw [lineMap_apply_module]
-      simp only [vsub_eq_sub, smul_add, sub_smul, one_smul]
-      module
+      simpa only [vsub_eq_sub, add_sub_cancel_right] using lineMap_vsub_left p (v + p) (-ε)
     rw [heq] at hdir
     exact (Submodule.smul_mem_iff _ (neg_ne_zero.mpr hε.ne')).mp hdir
 
