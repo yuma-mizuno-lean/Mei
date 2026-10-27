@@ -293,19 +293,27 @@ private theorem cutContribution_add (σ π μ : OrientedCell h k) (g : V →ᵃ[
     simp only [cutContribution, dite_eq_right hn, zero_add]
 
 /-- Cutting a cell into two pieces of the same codimension and inherited orientation
-preserves its signed boundary sum. The nonempty cutting section has codimension one
-inside the parent; its two induced orientations cancel. External facets are retained
-or subdivided, with equality in polyhedral cochains. -/
+preserves its signed boundary sum. The cutting section is automatically nonempty and
+has codimension one inside the parent; its two induced orientations cancel. External
+facets are retained or subdivided, with equality in polyhedral cochains. -/
 theorem cellCoboundary_cut_add_eq (σ π μ : OrientedCell h k)
     (l : V →L[ℝ] ℝ) (a : ℝ)
     (hπ : π.carrier = σ.carrier ∩ {x | l x ≤ a})
     (hμ : μ.carrier = σ.carrier ∩ {x | a ≤ l x})
     (hoπ : π.orientation = σ.orientation) (hoμ : μ.orientation = σ.orientation)
-    (hne : (σ.carrier ∩ {x | l x = a}).Nonempty)
     (hdim : finrank ℝ (vectorSpan ℝ (σ.carrier ∩ {x | l x = a})) + 1 =
       finrank ℝ (vectorSpan ℝ σ.carrier)) (c : E) :
     π.cellCoboundary (R := R) c + μ.cellCoboundary c = σ.cellCoboundary c := by
   classical
+  have hne : (σ.carrier ∩ {x | l x = a}).Nonempty := by
+    obtain ⟨x, hx⟩ := π.nonempty
+    obtain ⟨y, hy⟩ := μ.nonempty
+    rw [hπ] at hx
+    rw [hμ] at hy
+    obtain ⟨P, hP⟩ := isRationalNormalPolyhedron_iff.mp σ.rational
+    obtain ⟨z, hz, hlz⟩ := (hP ▸ P.convex).isPreconnected.intermediate_value
+      hx.1 hy.1 l.continuous.continuousOn ⟨hx.2, hy.2⟩
+    exact ⟨z, hz, hlz⟩
   let g : V →ᵃ[ℝ] ℝ := l.toLinearMap.toAffineMap - AffineMap.const ℝ V a
   have hg (x : V) : g x = l x - a := by simp [g]
   have hπg : π.carrier = σ.carrier ∩ {x | g x ≤ 0} := by
