@@ -20,8 +20,8 @@ In particular, a ridge of one boundary facet has at most one other incident
 facet, and its induced orientation there is reversed. The active-constraint
 construction `IsExposed.exists_second_facet_at_ridge` supplies that second
 facet and identifies their intersection with the ridge. Together these results
-supply the unique opposite incidence needed to cancel iterated boundary terms;
-assembling the cancelling sums remains a separate step.
+supply the unique opposite incidence needed to cancel iterated boundary terms.
+`Mei.Geometry.Convex.PolyhedralCochain.SquareZero` assembles the cancelling sums.
 
 The comparison uses `IsExposed.facetOrientation_inter_eq_neg`, the canonical
 `OrientedCell.boundaryFacet`, and the orientation reversal relation
@@ -195,5 +195,19 @@ theorem exists_reverse_mem_boundaryFacets (σ : OrientedCell h k)
     apply hGF
     simpa only [υ, boundaryFacet_carrier, hτcarrier] using congrArg carrier he
   · simpa only [υ, boundaryFacet_carrier, hτcarrier, hrcarrier] using hinter
+
+/-- A signed ridge in one boundary facet has a unique other parent facet,
+where its induced orientation is reversed. -/
+theorem existsUnique_reverse_mem_boundaryFacets (σ : OrientedCell h k)
+    {τ : OrientedCell h (k + 1)} (hτ : τ ∈ σ.boundaryFacets)
+    {r : OrientedCell h (k + 1 + 1)} (hr : r ∈ τ.boundaryFacets) :
+    ∃! υ : OrientedCell h (k + 1),
+      υ ∈ σ.boundaryFacets ∧ υ ≠ τ ∧ r.reverse ∈ υ.boundaryFacets := by
+  obtain ⟨υ, hυ, hne, hrev⟩ := σ.exists_reverse_mem_boundaryFacets hτ hr
+  refine ⟨υ, ⟨hυ, hne, hrev⟩, ?_⟩
+  rintro η ⟨hη, hηne, hrη⟩
+  exact σ.eq_of_ridge_subset_of_ne hτ hη hυ hηne.symm hne.symm hr
+    (by simpa only [reverse_carrier] using η.carrier_subset_of_mem_boundaryFacets hrη)
+    (by simpa only [reverse_carrier] using υ.carrier_subset_of_mem_boundaryFacets hrev)
 
 end Mei.OrientedCell
