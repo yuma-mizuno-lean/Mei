@@ -7,7 +7,7 @@ module
 
 public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Meridian
 public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Localization
-public import Mei.Geometry.Convex.PolyhedralCochain.Transverse
+public import Mei.Geometry.Convex.PolyhedralCochain.Transverse.Basic
 
 /-!
 # Joint obstruction cochains
