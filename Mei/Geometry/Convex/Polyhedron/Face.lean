@@ -88,33 +88,44 @@ end Convex
 
 namespace AffineMap
 
+/-- A direction satisfying the active inequalities of a finite half-space
+presentation is realized by a positive step inside the polyhedron. -/
+theorem exists_pos_smul_add_forall_le [Finite ι] (g : ι → (V →ᵃ[ℝ] ℝ))
+    {x v : V} (hx : ∀ j, g j x ≤ 0)
+    (hv : ∀ j, g j x = 0 → (g j).linear v ≤ 0) :
+    ∃ ε : ℝ, 0 < ε ∧ ∀ j, g j (ε • v + x) ≤ 0 := by
+  have heach (j : ι) : ∀ᶠ ε : ℝ in 𝓝 0,
+      0 ≤ ε → g j (ε • v + x) ≤ 0 := by
+    have hval (ε : ℝ) : g j (ε • v + x) = ε * (g j).linear v + g j x := by
+      simpa only [vadd_eq_add, map_smul, smul_eq_mul] using (g j).map_vadd x (ε • v)
+    by_cases hj : g j x = 0
+    · exact Eventually.of_forall fun ε hε => by
+        rw [hval, hj, add_zero]
+        exact mul_nonpos_of_nonneg_of_nonpos hε (hv j hj)
+    · have hc : Continuous (fun ε : ℝ => ε * (g j).linear v + g j x) := by
+        fun_prop
+      have ht : Tendsto (fun ε : ℝ => ε * (g j).linear v + g j x)
+          (𝓝 0) (𝓝 (g j x)) := by simpa using hc.tendsto 0
+      have he := ht.eventually (gt_mem_nhds (lt_of_le_of_ne (hx j) hj))
+      exact he.mono fun ε hε _ => by rw [hval]; exact hε.le
+  obtain ⟨δ, hδ, hball⟩ := Metric.mem_nhds_iff.mp (eventually_all.mpr heach)
+  refine ⟨δ / 2, by positivity, fun j => hball ?_ j (by positivity)⟩
+  rw [Metric.mem_ball, Real.dist_eq, sub_zero, abs_of_pos (by positivity)]
+  linarith
+
 /-- Matching the active inequalities at a point permits a small extrapolation
 away from the matching point while preserving every defining inequality. -/
 theorem exists_pos_lineMap_neg_forall_le [Finite ι] (g : ι → (V →ᵃ[ℝ] ℝ))
     {p x : V} (hp : ∀ j, g j p ≤ 0) (hx : ∀ j, g j p = 0 → g j x = 0) :
     ∃ ε : ℝ, 0 < ε ∧ ∀ j, g j (AffineMap.lineMap p x (-ε)) ≤ 0 := by
-  have heach (j : ι) : ∀ᶠ ε : ℝ in 𝓝 0, g j (AffineMap.lineMap p x (-ε)) ≤ 0 := by
-    by_cases hj : g j p = 0
-    · exact Eventually.of_forall fun ε => by
-        rw [(g j).apply_lineMap, AffineMap.lineMap_apply_ring, hj, hx j hj]
-        simp
-    · have hjlt : g j p < 0 := lt_of_le_of_ne (hp j) hj
-      have hval (ε : ℝ) : g j (AffineMap.lineMap p x (-ε)) =
-          (1 + ε) * g j p - ε * g j x := by
-        rw [(g j).apply_lineMap, AffineMap.lineMap_apply_ring]
-        ring
-      have hc : Continuous (fun ε : ℝ => (1 + ε) * g j p - ε * g j x) :=
-        ((continuous_const.add continuous_id).mul continuous_const).sub
-          (continuous_id.mul continuous_const)
-      have hlim : Tendsto (fun ε : ℝ => (1 + ε) * g j p - ε * g j x)
-          (𝓝 0) (𝓝 (g j p)) := by simpa using hc.tendsto 0
-      have he := hlim.eventually (eventually_lt_nhds hjlt)
-      exact he.mono fun ε h => by rw [hval]; exact h.le
-  have hall := eventually_all.mpr heach
-  obtain ⟨δ, hδ, hball⟩ := Metric.mem_nhds_iff.mp hall
-  refine ⟨δ / 2, by positivity, hball ?_⟩
-  rw [Metric.mem_ball, Real.dist_eq, sub_zero, abs_of_pos (by positivity)]
-  linarith
+  have hv (j : ι) (hj : g j p = 0) : (g j).linear (p - x) ≤ 0 := by
+    simpa only [vsub_eq_sub, hj, hx j hj, sub_self] using
+      ((g j).linear_apply_vsub p x).le
+  obtain ⟨ε, hε, he⟩ := exists_pos_smul_add_forall_le g hp hv
+  have heq : AffineMap.lineMap p x (-ε) = ε • (p - x) + p := by
+    rw [AffineMap.lineMap_apply_module]
+    module
+  exact ⟨ε, hε, by simpa only [heq] using he⟩
 
 end AffineMap
 
