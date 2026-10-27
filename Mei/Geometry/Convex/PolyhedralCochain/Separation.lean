@@ -8,7 +8,6 @@ module
 public import Mei.Geometry.Convex.PolyhedralCochain.Pairing
 public import Mei.Geometry.Convex.PolyhedralComplex.Strata
 public import Mei.Geometry.Affine.Simplex.Transverse
-public import Mei.Geometry.Affine.Simplex.Conormal
 
 /-!
 # Detecting coefficients on a finite polyhedral complex
@@ -62,17 +61,7 @@ theorem exists_isolating_transverse_test (σ : OrientedCell h k)
       (subset_affineSpan ℝ _ (intrinsicInterior_subset hp)) (lt_min hr hε)
   have hsmall : convexHull ℝ (range s.points) ⊆ Metric.ball p r :=
     hball.trans (Metric.ball_subset_ball (min_le_left _ _))
-  have hne := s.conormal_apply_ne_zero hcompl
-    (Module.Ray.isConormal_iff.mp σ.isConormal) σ.orientation.someVector_ne_zero
-  have hlin : LinearIndependent ℝ ((affineSpan ℝ σ.carrier).direction.mkQ ∘
-      fun j : Fin k => s.points j.succ - s.points 0) := by
-    apply (σ.isConormal.evalSign_ne_zero_iff
-      (σ.finrank_quotient_direction.trans (Fintype.card_fin k).symm) _).mp
-    have he := Module.Ray.evalSign_rayOfNeZero σ.orientation.someVector_ne_zero
-      (fun j : Fin k => s.points j.succ - s.points 0)
-    rw [Module.Ray.someVector_ray] at he
-    rwa [he, sign_ne_zero]
-  refine ⟨s, ⟨hfront.mono_left hsmall, fun _ => hlin⟩,
+  refine ⟨s, σ.isTransverse_of_isCompl s hcompl (hfront.mono_left hsmall),
     hball.trans (Metric.ball_subset_ball (min_le_right _ _)), ?_, hpint,
     fun Q hQ hne => (hother Q hQ hne).mono_left hsmall⟩
   apply Set.Subset.antisymm

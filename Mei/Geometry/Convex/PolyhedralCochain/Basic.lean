@@ -126,6 +126,21 @@ theorem reverse_involutive : Function.Involutive (reverse : OrientedCell h k →
 theorem reverse_ne_self (σ : OrientedCell h k) : σ.reverse ≠ σ := fun hσ =>
   σ.orientation.ne_neg_self (by rw [← reverse_orientation, hσ])
 
+/-- Two oriented cells with the same support agree up to orientation reversal. -/
+theorem eq_or_eq_reverse_of_carrier_eq (σ τ : OrientedCell h k)
+    (hc : σ.carrier = τ.carrier) : σ = τ ∨ σ = τ.reverse := by
+  have := h.finiteDimensional
+  have hτ : τ.orientation.IsConormal (affineSpan ℝ σ.carrier).direction := by
+    rw [hc]
+    exact τ.isConormal
+  rcases σ.isConormal.eq_or_eq_neg hτ
+    (by simpa using σ.finrank_quotient_direction) with ho | ho
+  · exact Or.inl (OrientedCell.ext hc ho)
+  · apply Or.inr
+    apply OrientedCell.ext
+    · simpa only [reverse_carrier] using hc
+    · simpa only [reverse_orientation] using ho
+
 /-- In top codimension the support of a cell is a single point. -/
 theorem exists_carrier_eq_singleton (hk : k = finrank ℝ V) (σ : OrientedCell h k) :
     ∃ x, σ.carrier = {x} := by

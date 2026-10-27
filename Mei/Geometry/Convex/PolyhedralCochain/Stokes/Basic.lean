@@ -1,11 +1,11 @@
 /-
 Copyright (c) 2026 Mei contributors. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Claude Code
+Authors: Claude Code, Codex
 -/
 module
 
-public import Mei.Geometry.Convex.PolyhedralCochain.Facet
+public import Mei.Geometry.Convex.PolyhedralCochain.Boundary
 public import Mei.Geometry.Convex.PolyhedralCochain.Pairing
 public import Mei.LinearAlgebra.Alternating.EdgeFrame
 
@@ -22,6 +22,12 @@ with `σ`:
 `⟨σ.boundaryFacet F, v⟩ = ∑ m, (-1) ^ m * ⟨σ, v ∘ m.succAbove⟩`.
 If the test misses the other facets of `σ`, this is the Stokes formula `⟨dσ, v⟩ = ⟨σ, ∂v⟩` for
 the signed facet sum of `σ`. If the test misses `σ`, both sides of that formula vanish.
+
+If instead a chord in `σ` joins two parameter faces, their signed intersection indices
+cancel. When all other parameter faces miss `σ` and the simplex misses its relative
+boundary, this gives the interior Stokes formula. The cancellation uses
+`AlternatingMap.mul_map_faceEdgeFrame_eq_neg`; the boundary side vanishes by
+`intrinsicFrontier_eq_biUnion_boundaryFacets`.
 
 These are the local comparisons between a small polygonal meridian around a codimension-two
 cell and the signed boundary facets of the walls containing it. No boundedness, absence of
@@ -130,5 +136,89 @@ theorem sum_intersectionIndex_boundaryFacets_eq_sum_succAbove_of_disjoint
     Finset.sum_eq_zero fun m _ => by
       rw [intersectionIndex_of_disjoint
         (hdisj.mono_left (convexHull_mono (range_comp_subset_range _ _))), mul_zero]]
+
+/-- A chord of a cell joining two parameter faces gives opposite signed intersection
+indices on those faces. Positive omitted barycentric coordinates determine the signs;
+degenerate zero evaluations are allowed. No affine independence
+of the simplex or transversality of its faces is required. -/
+theorem signed_intersectionIndex_succAbove_eq_neg (σ : OrientedCell h k)
+    (v : Fin (k + 2) → V) {b c : Fin (k + 2) → ℝ}
+    (hb : ∑ j, b j = 1) (hc : ∑ j, c j = 1) (l m : Fin (k + 2))
+    (hbl : 0 < b l) (hcm : 0 < c m)
+    (hp : ∑ j, b j • v j ∈ convexHull ℝ (range (v ∘ m.succAbove)))
+    (hq : ∑ j, c j • v j ∈ convexHull ℝ (range (v ∘ l.succAbove)))
+    (hpσ : ∑ j, b j • v j ∈ σ.carrier) (hqσ : ∑ j, c j • v j ∈ σ.carrier)
+    (hne : ∑ j, c j • v j ≠ ∑ j, b j • v j) :
+    (-1) ^ (l : ℕ) * σ.intersectionIndex (v ∘ l.succAbove) =
+      -((-1) ^ (m : ℕ) * σ.intersectionIndex (v ∘ m.succAbove)) := by
+  have hu : ∑ j, c j • v j - ∑ j, b j • v j ∈
+      (affineSpan ℝ σ.carrier).direction :=
+    AffineSubspace.vsub_mem_direction (subset_affineSpan ℝ _ hqσ)
+      (subset_affineSpan ℝ _ hpσ)
+  have he := σ.orientation.someVector.mul_map_faceEdgeFrame_eq_neg
+    (Module.Ray.isConormal_iff.mp σ.isConormal) v hb hc l m
+    (convexHull_subset_affineSpan _ hp) (convexHull_subset_affineSpan _ hq) hu hne
+  have hs := congrArg SignType.sign he
+  simp only [sign_mul, sign_pos hcm, sign_pos hbl, one_mul, Left.sign_neg,
+    sign_pow, sign_neg (neg_one_lt_zero : (-1 : ℝ) < 0)] at hs
+  have hz := congrArg (fun s : SignType => (s : ℤ)) hs
+  simp only [SignType.coe_mul, SignType.coe_pow, SignType.coe_neg, SignType.coe_one] at hz
+  have heval (e : Fin k → V) : SignType.sign (σ.orientation.someVector e) =
+      σ.orientation.evalSign e := by
+    simpa only [Module.Ray.someVector_ray] using
+      (Module.Ray.evalSign_rayOfNeZero σ.orientation.someVector_ne_zero e).symm
+  simp only [heval] at hz
+  rw [intersectionIndex_of_nonempty ⟨_, hq, hqσ⟩,
+    intersectionIndex_of_nonempty ⟨_, hp, hpσ⟩]
+  simpa only [Function.comp_apply] using hz
+
+/-- If a test simplex meets a cell through just two parameter faces, their signed
+intersection indices cancel. The two supplied chord endpoints may lie anywhere in the
+indicated faces; positivity is needed only at the two omitted vertices. -/
+theorem sum_intersectionIndex_succAbove_eq_zero_of_two_faces (σ : OrientedCell h k)
+    (v : Fin (k + 2) → V) {b c : Fin (k + 2) → ℝ}
+    (hb : ∑ j, b j = 1) (hc : ∑ j, c j = 1) (l m : Fin (k + 2)) (hlm : l ≠ m)
+    (hbl : 0 < b l) (hcm : 0 < c m)
+    (hp : ∑ j, b j • v j ∈ convexHull ℝ (range (v ∘ m.succAbove)))
+    (hq : ∑ j, c j • v j ∈ convexHull ℝ (range (v ∘ l.succAbove)))
+    (hpσ : ∑ j, b j • v j ∈ σ.carrier) (hqσ : ∑ j, c j • v j ∈ σ.carrier)
+    (hne : ∑ j, c j • v j ≠ ∑ j, b j • v j)
+    (hother : ∀ j, j ≠ l → j ≠ m →
+      Disjoint (convexHull ℝ (range (v ∘ j.succAbove))) σ.carrier) :
+    ∑ j : Fin (k + 2), (-1) ^ (j : ℕ) * σ.intersectionIndex (v ∘ j.succAbove) = 0 := by
+  classical
+  rw [← Finset.sum_subset (Finset.subset_univ ({l, m} : Finset (Fin (k + 2))))
+    (fun j _ hj => by
+      have hj' : j ≠ l ∧ j ≠ m := by simpa using hj
+      rw [intersectionIndex_of_disjoint (hother j hj'.1 hj'.2), mul_zero]),
+    Finset.sum_pair hlm,
+    σ.signed_intersectionIndex_succAbove_eq_neg v hb hc l m hbl hcm hp hq hpσ hqσ hne,
+    neg_add_cancel]
+
+/-- **Interior Stokes formula.** A simplex missing the relative boundary of the cell,
+and meeting it through two parameter faces as specified, has zero intersection with
+the signed facet sum and zero total signed intersection on its parameter boundary.
+Together with the single-facet formula, this treats both kinds of local chord. -/
+theorem sum_intersectionIndex_boundaryFacets_eq_sum_succAbove_of_two_faces
+    (σ : OrientedCell h k) (v : Fin (k + 2) → V) {b c : Fin (k + 2) → ℝ}
+    (hb : ∑ j, b j = 1) (hc : ∑ j, c j = 1) (l m : Fin (k + 2)) (hlm : l ≠ m)
+    (hbl : 0 < b l) (hcm : 0 < c m)
+    (hp : ∑ j, b j • v j ∈ convexHull ℝ (range (v ∘ m.succAbove)))
+    (hq : ∑ j, c j • v j ∈ convexHull ℝ (range (v ∘ l.succAbove)))
+    (hpσ : ∑ j, b j • v j ∈ σ.carrier) (hqσ : ∑ j, c j • v j ∈ σ.carrier)
+    (hne : ∑ j, c j • v j ≠ ∑ j, b j • v j)
+    (hother : ∀ j, j ≠ l → j ≠ m →
+      Disjoint (convexHull ℝ (range (v ∘ j.succAbove))) σ.carrier)
+    (hfrontier : Disjoint (convexHull ℝ (range v)) (intrinsicFrontier ℝ σ.carrier)) :
+    ∑ τ ∈ σ.boundaryFacets, τ.intersectionIndex v =
+      ∑ j : Fin (k + 2), (-1) ^ (j : ℕ) * σ.intersectionIndex (v ∘ j.succAbove) := by
+  rw [σ.sum_intersectionIndex_succAbove_eq_zero_of_two_faces
+    v hb hc l m hlm hbl hcm hp hq hpσ hqσ hne hother]
+  apply Finset.sum_eq_zero
+  intro τ hτ
+  apply intersectionIndex_of_disjoint
+  apply hfrontier.mono_right
+  rw [σ.intrinsicFrontier_eq_biUnion_boundaryFacets]
+  exact subset_iUnion₂_of_subset τ hτ Subset.rfl
 
 end Mei.OrientedCell
