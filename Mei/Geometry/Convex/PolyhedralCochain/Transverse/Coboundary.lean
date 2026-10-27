@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.Convex.PolyhedralCochain.Coboundary
-public import Mei.Geometry.Convex.PolyhedralCochain.Transverse
+public import Mei.Geometry.Convex.PolyhedralCochain.Transverse.Basic
 
 /-!
 # Transverse signed boundaries

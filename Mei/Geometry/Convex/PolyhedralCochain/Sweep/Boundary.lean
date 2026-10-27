@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.Convex.PolyhedralCochain.TransverseCoboundary
+public import Mei.Geometry.Convex.PolyhedralCochain.Transverse.Coboundary
 public import Mei.Geometry.Convex.PolyhedralCochain.Prism
 public import Mei.Geometry.Convex.PolyhedralCochain.Sweep.SideFacet
 public import Mei.Geometry.Convex.PolyhedralCochain.Sweep.Map

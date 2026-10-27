@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.Convex.PolyhedralCochain.Subdivision
-public import Mei.Geometry.Convex.PolyhedralCochain.Transverse
+public import Mei.Geometry.Convex.PolyhedralCochain.Transverse.Basic
 
 /-!
 # Sweeping transverse polyhedral cochains
