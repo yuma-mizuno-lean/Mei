@@ -13,11 +13,23 @@ public import TauCeti.RingTheory.Nilpotent.Log
 The finite logarithm supplied by Tau Ceti preserves commutation and converts a
 product of commuting unipotent elements to a sum. This identity turns group-like
 coproduct identities into primitive identities in finite enveloping algebra quotients.
+For unipotent units, integral multiples of the logarithm exponentiate to integral
+powers, by Tau Ceti's `expSMulHom`.
 -/
 
 public section
 
 variable {A : Type*} [Ring A] [Algebra ℚ A]
+
+/-- Exponentiating an integral multiple of a unipotent unit's logarithm gives
+the corresponding integral power, including negative powers. -/
+theorem Units.exp_zsmul_log (u : Aˣ) (hu : IsNilpotent ((u : A) - 1)) (n : ℤ) :
+    IsNilpotent.exp (n • IsNilpotent.log (u : A)) = (u ^ n : Aˣ) := by
+  have he : TauCeti.nilpotentExpUnit (IsNilpotent.isNilpotent_log hu) = u :=
+    Units.ext (by simpa using IsNilpotent.exp_log hu)
+  have h := (TauCeti.expSMulHom ℤ (IsNilpotent.isNilpotent_log hu)).map_zpow
+    (Multiplicative.ofAdd (1 : ℤ)) n
+  simpa [TauCeti.expSMulHom_apply, he] using congrArg (fun v : Aˣ => (v : A)) h
 
 /-- Finite logarithms of commuting elements commute. -/
 theorem Commute.nilpotentLog {a b : A} (h : Commute a b) :
