@@ -7,6 +7,7 @@ module
 
 public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Restriction
 public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Refinement
+public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Germ
 
 /-!
 # Adjoining directed wall families
@@ -22,10 +23,17 @@ The comparison also holds at every lower cutoff. Thus adjoining corrections of
 birth order `k + 1` preserves the transport already constructed through order `k`.
 No consistency or commutativity at higher orders is assumed.
 
+More generally, adjoining the same wall family preserves equivalence at any
+cutoff, and hence at all orders. At a regular germ of the union the combined
+label is the product of the two families' combined labels; this lets an initial
+presentation be replaced while retaining a fixed correction family.
+
 The comparison uses `DirectedDiagram.levelEquivalent_restrict` to discard
 invisible walls and `DirectedDiagram.Refinement.ofEquiv` to identify the retained
 indices. These are the same restriction and reindexing comparisons used in
-`DirectedDiagram.outgoingCompletion_unique`.
+`DirectedDiagram.outgoingCompletion_unique`. The general congruence uses
+`DirectedDiagram.levelEquivalent_iff_combinedLabel_eq` and the enumeration formula
+`DirectedDiagram.combinedLabel_eq_prod`.
 -/
 
 public section
@@ -140,5 +148,94 @@ theorem append_levelEquivalent_left_of_le {k l : ℕ} (hlk : l ≤ k)
   have he := CompletedGroup.map_projection l k hlk (E.wall j).label
   rw [hE j, map_one] at he
   exact he.symm
+
+/-- The original family's singular points remain singular after adjoining walls. -/
+theorem singularSupport_append_left_subset (k : ℕ) :
+    singularSupport (fun j : D.active k => (D.wall j).support) ⊆
+      singularSupport (fun j : (D.append E).active k => ((D.append E).wall j).support) := by
+  let f : D.active k → (D.append E).active k := fun j =>
+    ⟨.inl j.val, by simpa only [mem_active, append_wall_inl] using j.property⟩
+  exact singularSupport_comp_subset
+    (fun j : (D.append E).active k => ((D.append E).wall j).support) f
+
+/-- The appended family's singular points remain singular in the union. -/
+theorem singularSupport_append_right_subset (k : ℕ) :
+    singularSupport (fun j : E.active k => (E.wall j).support) ⊆
+      singularSupport (fun j : (D.append E).active k => ((D.append E).wall j).support) := by
+  let f : E.active k → (D.append E).active k := fun j =>
+    ⟨.inr j.val, by simpa only [mem_active, append_wall_inr] using j.property⟩
+  exact singularSupport_comp_subset
+    (fun j : (D.append E).active k => ((D.append E).wall j).support) f
+
+/-- At a regular germ of the union, adjoining wall families multiplies their
+combined labels. No ordering of individual coincident walls is required. -/
+@[simp]
+theorem combinedLabel_append (k : ℕ) (θ v : V)
+    (hθ : θ ∉ singularSupport
+      (fun j : (D.append E).active k => ((D.append E).wall j).support)) :
+    (D.append E).combinedLabel k θ v hθ =
+      D.combinedLabel k θ v (fun hs => hθ (D.singularSupport_append_left_subset E k hs)) *
+      E.combinedLabel k θ v (fun hs => hθ (D.singularSupport_append_right_subset E k hs)) := by
+  classical
+  let f : D.active k → (D.append E).active k := fun j =>
+    ⟨.inl j.val, by simpa only [mem_active, append_wall_inl] using j.property⟩
+  let g : E.active k → (D.append E).active k := fun j =>
+    ⟨.inr j.val, by simpa only [mem_active, append_wall_inr] using j.property⟩
+  let S := (Set.toFinite {j : D.active k | θ ∈ (D.wall j).support}).toFinset
+  let T := (Set.toFinite {j : E.active k | θ ∈ (E.wall j).support}).toFinset
+  have hf : Function.Injective f := fun a b hab =>
+    Subtype.ext (Sum.inl_injective (congrArg Subtype.val hab))
+  have hg : Function.Injective g := fun a b hab =>
+    Subtype.ext (Sum.inr_injective (congrArg Subtype.val hab))
+  have hdisj : List.Disjoint (S.toList.map f) (T.toList.map g) := by
+    apply List.disjoint_left.mpr
+    intro j hj hj'
+    obtain ⟨a, _, rfl⟩ := List.mem_map.mp hj
+    obtain ⟨b, _, he⟩ := List.mem_map.mp hj'
+    have he' : Sum.inr b.val = (Sum.inl a.val : ι ⊕ κ) :=
+      congrArg (fun z : (D.append E).active k => z.val) he
+    cases he'
+  have hmem (j : (D.append E).active k) :
+      j ∈ S.toList.map f ++ T.toList.map g ↔ θ ∈ ((D.append E).wall j).support := by
+    rcases j with ⟨j | j, hj⟩
+    · have hjD : j ∈ D.active k := by simpa only [mem_active, append_wall_inl] using hj
+      simp [S, T, f, g, Subtype.ext_iff, (D.mem_active k j).mp hjD]
+    · have hjE : j ∈ E.active k := by simpa only [mem_active, append_wall_inr] using hj
+      simp [S, T, f, g, Subtype.ext_iff, (E.mem_active k j).mp hjE]
+  rw [(D.append E).combinedLabel_eq_prod k θ v hθ _
+    ((S.nodup_toList.map hf).append (T.nodup_toList.map hg) hdisj) hmem,
+    D.combinedLabel_eq_prod k θ v _ S.toList S.nodup_toList (by simp [S]),
+    E.combinedLabel_eq_prod k θ v _ T.toList T.nodup_toList (by simp [T])]
+  simp only [List.map_append, List.prod_append, List.map_map, Function.comp_def,
+    f, g, append_wall_inl, append_wall_inr]
+  -- The categorical tower and concrete BCH presentations have the same multiplication.
+  rfl
+
+variable {η : Type*} {D E}
+
+/-- Adjoining the same indexed walls preserves finite-order equivalence, including
+when the two original presentations have unrelated or cancelling wall germs. -/
+theorem LevelEquivalent.append {k : ℕ} (hDE : D.LevelEquivalent E k)
+    (F : DirectedDiagram (d := d) h H η) :
+    (D.append F).LevelEquivalent (E.append F) k := by
+  apply (levelEquivalent_iff_combinedLabel_eq _ _ k).mpr
+  intro θ v hD hE hvD hvE
+  have hregD := fun hs => hD (D.singularSupport_append_left_subset F k hs)
+  have hregE := fun hs => hE (E.singularSupport_append_left_subset F k hs)
+  have htransD : ∀ j : D.active k, θ ∈ (D.wall j).support →
+      h.realCharacter (D.wall j).normal v ≠ 0 := by
+    intro j hj
+    exact hvD ⟨.inl j.val, by simpa only [mem_active, append_wall_inl] using j.property⟩ hj
+  have htransE : ∀ j : E.active k, θ ∈ (E.wall j).support →
+      h.realCharacter (E.wall j).normal v ≠ 0 := by
+    intro j hj
+    exact hvE ⟨.inl j.val, by simpa only [mem_active, append_wall_inl] using j.property⟩ hj
+  rw [combinedLabel_append, combinedLabel_append,
+    hDE.combinedLabel_eq θ v hregD hregE htransD htransE]
+
+/-- Adjoining the same indexed walls preserves all-order equivalence. -/
+theorem Equivalent.append (hDE : D.Equivalent E)
+    (F : DirectedDiagram (d := d) h H η) : (D.append F).Equivalent (E.append F) := by
+  exact (equivalent_iff _ _).mpr fun k => ((equivalent_iff _ _).mp hDE k).append F
 
 end Mei.DirectedDiagram
