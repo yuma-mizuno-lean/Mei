@@ -8,6 +8,8 @@ module
 public import Mathlib.Combinatorics.Quiver.Symmetric
 public import Mathlib.Combinatorics.Quiver.Path.Vertices
 public import Mathlib.Data.List.Chain
+public import Mathlib.Combinatorics.Quiver.Path.Weight
+public import Mathlib.Algebra.Group.Subgroup.Basic
 
 /-!
 # Vertices and reversal of paths under prefunctors
@@ -19,6 +21,8 @@ A prefunctor also applies its object map to the vertex list, allowing geometric
 paths to be compared after forgetting some of their admissibility conditions.
 Relations between consecutive vertices can be checked separately on each part
 of a concatenation, using Mathlib's `List.isChain_split` at the common endpoint.
+Group-valued edge weights can be gauged at the vertices: if every gauged edge
+lies in a subgroup, so does the gauged weight of the entire path.
 -/
 
 public section
@@ -62,6 +66,21 @@ theorem isChain_vertices_comp {x y z : V} (p : Path x y) (q : Path y z)
   have hq : y :: q.vertices.tail = q.vertices :=
     List.cons_head?_tail (by simp)
   rw [vertices_comp, ← hq, List.isChain_split, dropLast_append_end_eq, hq]
+
+/-- Subgroup membership of the vertex-gauged edge weights propagates along a
+path. Normality is unnecessary: consecutive vertex factors cancel. -/
+theorem mul_weight_mul_inv_mem_of_isChain {G : Type*} [Group G]
+    {x y : V} (p : Path x y)
+    (K : Subgroup G) (w : ∀ {u v : V}, (u ⟶ v) → G) (t : V → G)
+    (hp : p.vertices.IsChain (fun u v => ∀ e : u ⟶ v, t u * w e * (t v)⁻¹ ∈ K)) :
+    t x * p.weight w * (t y)⁻¹ ∈ K := by
+  induction p with
+  | nil => simp
+  | cons p e ih =>
+    rw [← comp_toPath_eq_cons, isChain_vertices_comp] at hp
+    have he := (List.isChain_pair.mp hp.2) e
+    simpa only [weight_cons, end_cons, mul_assoc, inv_mul_cancel_left] using
+      K.mul_mem (ih hp.1) he
 
 variable {V : Type*} [Quiver V] [Quiver.HasReverse V]
 
