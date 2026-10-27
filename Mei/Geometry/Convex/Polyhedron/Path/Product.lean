@@ -274,6 +274,13 @@ variable {V ι G K : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V] [Finite �
 def wallPathProduct (p : AdmissiblePLPath x y) : G :=
   MulOpposite.unop (p.weight (fun e => MulOpposite.op (segmentPathProduct ν label hcomm e)))
 
+/-- Wall transport is the path weight in the opposite group, so later segment
+transports multiply on the left. -/
+theorem wallPathProduct_eq_unop_weight (p : AdmissiblePLPath x y) :
+    p.wallPathProduct ν label hcomm =
+      MulOpposite.unop (p.weight (fun e => MulOpposite.op (segmentPathProduct ν label hcomm e))) :=
+  (rfl)
+
 @[simp]
 theorem wallPathProduct_nil :
     (Quiver.Path.nil : AdmissiblePLPath x x).wallPathProduct ν label hcomm = 1 := by

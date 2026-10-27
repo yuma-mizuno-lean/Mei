@@ -20,7 +20,8 @@ These results turn local combined-label comparisons into equality of transport,
 without matching individual indexed walls or imposing commutativity between
 successive crossing events. They use
 `WallComplement.segmentPathProduct_eq_prod_of_crossingTimes`. The polygonal
-comparison extracts the path induction of `Quiver.Path.wallPathProduct_eq_of_refines`.
+comparison, extracted from `Quiver.Path.wallPathProduct_eq_of_refines`, uses
+`Quiver.Path.weight_eq_of_map_vertices_eq` with weights in the opposite group.
 -/
 
 public section
@@ -86,25 +87,9 @@ theorem wallPathProduct_eq_of_segmentPathProduct_eq
     (p : AdmissiblePLPath x y) (q : AdmissiblePLPath x' y')
     (hpq : p.vertices.map WallComplement.val = q.vertices.map WallComplement.val) :
     p.wallPathProduct ν label hcomm = q.wallPathProduct ν' label' hcomm' := by
-  induction p generalizing x' y' with
-  | nil =>
-    cases q with
-    | nil => simp only [wallPathProduct_nil]
-    | cons q e =>
-      have he := congrArg List.length hpq
-      simp only [List.length_map, vertices_length, length_nil, length_cons] at he
-      omega
-  | @cons z t p e ih =>
-    cases q with
-    | nil =>
-      have he := congrArg List.length hpq
-      simp only [List.length_map, vertices_length, length_nil, length_cons] at he
-      omega
-    | @cons z' t' q e' =>
-      simp only [vertices_cons, List.map_concat, List.concat_inj] at hpq
-      have hz : z.val = z'.val := by
-        have he := congrArg List.getLast? hpq.1
-        simpa [List.getLast?_eq_some_getLast, p.vertices_ne_nil, q.vertices_ne_nil] using he
-      rw [wallPathProduct_cons, wallPathProduct_cons, ih q hpq.1, hsegment e e' hz hpq.2]
+  rw [wallPathProduct_eq_unop_weight, wallPathProduct_eq_unop_weight]
+  apply congrArg MulOpposite.unop
+  exact p.weight_eq_of_map_vertices_eq q WallComplement.val WallComplement.val _ _
+    (fun e e' hx hy => congrArg MulOpposite.op (hsegment e e' hx hy)) hpq
 
 end Quiver.Path

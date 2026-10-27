@@ -25,8 +25,9 @@ of a concatenation, using Mathlib's `List.isChain_split` at the common endpoint.
 An initial segment of a vertex-and-edge sequence defines a path with its expected
 length, vertex list and ordered weight. Group-valued edge weights can be gauged
 at the vertices: if every gauged edge lies in a submonoid, so does the gauged
-weight of the entire path. Endpoint weights also compare paths in different
-quivers with the same mapped vertex list, and distribute over subtraction.
+weight of the entire path. Arrow weights agreeing at matching mapped endpoints
+compare paths in different quivers with the same mapped vertex list.
+Additive endpoint weights also distribute over subtraction.
 
 The sequence-path API is adapted from Codex,
 [Mei PR #325](https://github.com/yuma-mizuno-lean/Mei/pull/325).
@@ -67,20 +68,25 @@ namespace Quiver.Path
 
 variable {V : Type*} [Quiver V]
 
-/-- Endpoint weights depend only on the mapped vertex list, even for paths in
-different quivers. No compatibility of the arrows or injectivity of the vertex
-maps is required. -/
-theorem addWeightOfEPs_eq_of_map_vertices_eq
-    {U W E : Type*} [Quiver U] [AddMonoid E]
+/-- Paths with the same mapped vertex list have equal weights if their arrow
+weights agree whenever the mapped endpoints agree. Neither compatibility of the
+arrows nor injectivity of the vertex maps is required. -/
+@[to_additive addWeight_eq_of_map_vertices_eq
+/-- Paths with the same mapped vertex list have equal additive
+weights if their arrow weights agree whenever the mapped endpoints agree.
+Neither compatibility of the arrows nor injectivity of the vertex maps is required. -/]
+theorem weight_eq_of_map_vertices_eq
+    {U W M : Type*} [Quiver U] [Monoid M]
     {x y : V} {x' y' : U} (p : Path x y) (q : Path x' y')
-    (f : V → W) (g : U → W) (w : W → W → E)
-    (hpq : p.vertices.map f = q.vertices.map g) :
-    p.addWeightOfEPs (fun a b => w (f a) (f b)) =
-      q.addWeightOfEPs (fun a b => w (g a) (g b)) := by
+    (f : V → W) (g : U → W)
+    (w : ∀ {a b : V}, (a ⟶ b) → M) (w' : ∀ {a b : U}, (a ⟶ b) → M)
+    (hw : ∀ {a b : V} {a' b' : U} (e : a ⟶ b) (e' : a' ⟶ b'),
+      f a = g a' → f b = g b' → w e = w' e')
+    (hpq : p.vertices.map f = q.vertices.map g) : p.weight w = q.weight w' := by
   induction p generalizing x' y' with
   | nil =>
     cases q with
-    | nil => simp only [addWeightOfEPs_nil]
+    | nil => simp only [weight_nil]
     | cons q e =>
       have he := congrArg List.length hpq
       simp only [List.length_map, vertices_length, length_nil, length_cons] at he
@@ -96,7 +102,21 @@ theorem addWeightOfEPs_eq_of_map_vertices_eq
       have hz : f z = g z' := by
         have he := congrArg List.getLast? hpq.1
         simpa [List.getLast?_eq_some_getLast, p.vertices_ne_nil, q.vertices_ne_nil] using he
-      rw [addWeightOfEPs_cons, addWeightOfEPs_cons, ih q hpq.1, hz, hpq.2]
+      rw [weight_cons, weight_cons, ih q hpq.1, hw e e' hz hpq.2]
+
+/-- Endpoint weights depend only on the mapped vertex list, even for paths in
+different quivers. No compatibility of the arrows or injectivity of the vertex
+maps is required. -/
+theorem addWeightOfEPs_eq_of_map_vertices_eq
+    {U W E : Type*} [Quiver U] [AddMonoid E]
+    {x y : V} {x' y' : U} (p : Path x y) (q : Path x' y')
+    (f : V → W) (g : U → W) (w : W → W → E)
+    (hpq : p.vertices.map f = q.vertices.map g) :
+    p.addWeightOfEPs (fun a b => w (f a) (f b)) =
+      q.addWeightOfEPs (fun a b => w (g a) (g b)) := by
+  unfold addWeightOfEPs
+  exact p.addWeight_eq_of_map_vertices_eq q f g _ _
+    (fun _ _ ha hb => by simp only [ha, hb]) hpq
 
 /-- Additive endpoint weights distribute over subtraction. -/
 @[simp]
