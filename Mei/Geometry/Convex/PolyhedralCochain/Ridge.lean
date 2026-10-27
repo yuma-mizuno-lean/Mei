@@ -123,8 +123,7 @@ theorem reverse_mem_boundaryFacets_of_subset (σ : OrientedCell h k)
     (by rw [hcr, hcτ, hcυ, he])
 
 /-- A ridge of a signed boundary facet has at most one other incident boundary
-facet. Two proposed partners must agree, since otherwise the induced ridge
-orientation would equal its own reversal. -/
+facet. -/
 theorem eq_of_ridge_subset_of_ne (σ : OrientedCell h k)
     {τ υ η : OrientedCell h (k + 1)} (hτ : τ ∈ σ.boundaryFacets)
     (hυ : υ ∈ σ.boundaryFacets) (hη : η ∈ σ.boundaryFacets)
