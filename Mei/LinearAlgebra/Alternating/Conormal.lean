@@ -25,7 +25,9 @@ quotients of polyhedra in polyhedral cochains.
 
 A ray of alternating forms has a well-defined sign on every tuple of vectors,
 `Module.Ray.evalSign`. For a conormal ray of degree `dim (M ⧸ W)`, this sign is
-nonzero exactly on the tuples mapping to a basis of `M ⧸ W`.
+nonzero exactly on the tuples mapping to a basis of `M ⧸ W`. In this top degree,
+any two conormal orientations agree up to reversal, by descending through
+`Submodule.conormalFormsEquiv` and applying Mathlib's `Orientation.eq_or_eq_neg`.
 -/
 
 public section
@@ -211,5 +213,41 @@ theorem IsConormal.evalSign_ne_zero_iff [Fintype ι] {o : Module.Ray R (M [⋀^�
   have hb := (β.map_basis_ne_zero_iff (basisOfLinearIndependentOfCardEqFinrank' _ hli hk.symm)).mpr
     hβ
   rwa [coe_basisOfLinearIndependentOfCardEqFinrank'] at hb
+
+/-- Two conormal orientations in the top degree of a finite-dimensional normal
+quotient agree up to reversal. -/
+theorem IsConormal.eq_or_eq_neg [Fintype ι] {o p : Module.Ray R (M [⋀^ι]→ₗ[R] R)}
+    {W : Submodule R M} [FiniteDimensional R (M ⧸ W)]
+    (ho : o.IsConormal W) (hp : p.IsConormal W)
+    (hk : finrank R (M ⧸ W) = Fintype.card ι) : o = p ∨ o = -p := by
+  let α := W.conormalFormsEquiv.symm ⟨o.someVector, ho⟩
+  let β := W.conormalFormsEquiv.symm ⟨p.someVector, hp⟩
+  let f := (W.conormalForms ι).subtype ∘ₗ W.conormalFormsEquiv.toLinearMap
+  have hα : f α = o.someVector :=
+    congrArg Subtype.val (W.conormalFormsEquiv.apply_symm_apply _)
+  have hβ : f β = p.someVector :=
+    congrArg Subtype.val (W.conormalFormsEquiv.apply_symm_apply _)
+  have hα0 : α ≠ 0 := by
+    intro hz
+    exact o.someVector_ne_zero (by rw [← hα, hz, map_zero])
+  have hβ0 : β ≠ 0 := by
+    intro hz
+    exact p.someVector_ne_zero (by rw [← hβ, hz, map_zero])
+  -- Descend to genuine orientations of the quotient, then pull their rays back.
+  rcases Orientation.eq_or_eq_neg (rayOfNeZero R α hα0) (rayOfNeZero R β hβ0) hk.symm
+    with he | he
+  · left
+    have hs := ((ray_eq_iff hα0 hβ0).mp he).map f
+    rw [hα, hβ] at hs
+    simpa only [Module.Ray.someVector_ray] using
+      (ray_eq_iff o.someVector_ne_zero p.someVector_ne_zero).mpr hs
+  · right
+    rw [neg_rayOfNeZero] at he
+    have hs := ((ray_eq_iff hα0 (neg_ne_zero.mpr hβ0)).mp he).map f
+    rw [hα, map_neg, hβ] at hs
+    exact o.someVector_ray.symm.trans
+      (((ray_eq_iff o.someVector_ne_zero (neg_ne_zero.mpr p.someVector_ne_zero)).mpr hs).trans
+        ((neg_rayOfNeZero R p.someVector p.someVector_ne_zero).symm.trans
+          (congrArg Neg.neg p.someVector_ray)))
 
 end Module.Ray
