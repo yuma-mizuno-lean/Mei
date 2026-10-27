@@ -17,12 +17,15 @@ the disjoint union of those contained in the pieces. Every such refined cell
 is therefore counted once. This gives the reindexing needed to pass
 from identities on a common complex to identities under arbitrary oriented
 subdivision, in particular for the signed coboundary.
+Unbounded supports and lineality are allowed.
+-/
 
+/-
 The proof uses `OrientedCell.subdivisionPieces` and
 `FinitePolyhedralComplex.subset_of_mem_intrinsicInterior` to identify a cell
 containing a relative interior point. Uniqueness follows from
 `Mei.intrinsicInterior_mono_of_affineSpan_eq` and the original subdivision's
-disjoint relative interiors. Unbounded supports and lineality are allowed.
+disjoint relative interiors.
 -/
 
 public section
