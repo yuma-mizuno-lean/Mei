@@ -17,13 +17,7 @@ codimension-at-least-two skeleton. Thus admissible wall paths avoid every joint
 and every higher stratum. In particular their edges meet the avoidance hypothesis
 for polygonal cone fillings of the complement of the higher skeleton.
 
-The full-dimensional covering uses
-`FinitePolyhedralComplex.exists_mem_cells_subset_finrank_eq_of_cover`.
-Boundary points then lie on actual facets by
-`FinitePolyhedralComplex.exists_mem_wall_of_mem_frontier`. The reverse singular
-support inclusion uses common-face incidence: a regular interior point of a wall
-cannot also lie in a cell of smaller dimension. Cells may be unbounded and have
-lineality; coverage of the ambient space is essential.
+Cells may be unbounded and have lineality; coverage of the ambient space is essential.
 -/
 
 public section
@@ -40,6 +34,8 @@ variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ 
 points on its boundary strata. -/
 theorem exists_mem_cellsOfCodimension_zero (hC : C.support = univ) (x : V) :
     ∃ P ∈ C.cellsOfCodimension 0, x ∈ P := by
+  -- The full-dimensional covering uses
+  -- `FinitePolyhedralComplex.exists_mem_cells_subset_finrank_eq_of_cover`.
   have := h.finiteDimensional
   obtain ⟨P, hP, -, hxP, hdim⟩ := C.exists_mem_cells_subset_finrank_eq_of_cover (P := univ)
     convex_univ (fun y _ => by
@@ -59,6 +55,8 @@ theorem support_codimensionAtLeast_one_eq_iUnion_walls (hC : C.support = univ) :
     have hnot : x ∉ interior P := fun hxi =>
       C.interior_subset_compl_support_codimensionAtLeast_one hP hxi hx
     have hPC := ((C.mem_cellsOfCodimension 0 P).mp hP).1
+    -- Boundary points lie on actual facets by
+    -- `FinitePolyhedralComplex.exists_mem_wall_of_mem_frontier`.
     obtain ⟨W, hW, hxW, -⟩ := C.exists_mem_wall_of_mem_frontier hP (by
       rw [frontier, (C.isConvexPolyhedron hPC).isClosed.closure_eq]
       exact ⟨hxP, hnot⟩)
@@ -86,6 +84,8 @@ theorem singularSupport_walls_eq_support_codimensionAtLeast_two (hC : C.support 
   obtain ⟨W, hxW⟩ := mem_iUnion.mp hxone
   obtain ⟨P, hP, hxP⟩ := mem_support.mp hx
   obtain ⟨hPC, hdimP⟩ := (C.mem_codimensionAtLeast_cells 2 P).mp hP
+  -- Common-face incidence prevents a regular interior point of a wall from
+  -- also lying in a cell of smaller dimension.
   have hWP := C.subset_of_mem_intrinsicInterior (C.mem_cells_of_mem_walls W.property)
     hPC (mem_intrinsicInterior_of_notMem_singularSupport hxW hregular) hxP
   have hle := Submodule.finrank_mono (AffineSubspace.direction_le (affineSpan_mono ℝ hWP))
