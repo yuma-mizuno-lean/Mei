@@ -57,6 +57,18 @@ theorem sweep_empty (n : V) : sweep (∅ : Set V) n = ∅ := by
   ext y
   simp [sweep]
 
+/-- Positive rescaling of the sweeping vector does not change the swept support. -/
+@[simp]
+theorem sweep_smul_of_pos (P : Set V) (n : V) {a : ℝ} (ha : 0 < a) :
+    sweep P (a • n) = sweep P n := by
+  ext y
+  constructor
+  · rintro ⟨x, hx, t, ht, rfl⟩
+    exact ⟨x, hx, t * a, mul_nonneg ht ha.le, by rw [mul_smul]⟩
+  · rintro ⟨x, hx, t, ht, rfl⟩
+    refine ⟨x, hx, t / a, div_nonneg ht ha.le, ?_⟩
+    rw [smul_smul, div_mul_cancel₀ _ ha.ne']
+
 /-- Every sweep is stable under further translation in its negative direction. -/
 theorem sub_smul_mem_sweep {P : Set V} {n y : V} (hy : y ∈ sweep P n)
     {s : ℝ} (hs : 0 ≤ s) : y - s • n ∈ sweep P n := by

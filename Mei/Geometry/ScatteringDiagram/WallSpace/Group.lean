@@ -104,6 +104,15 @@ theorem mem_wallGroup (w : SupportedRay d) (m : Λ →+ ℤ) (g : d.completedBCH
   simp only [wallGroup, Subgroup.mem_iInf]
   exact forall_congr' fun k => LieSubalgebra.mem_bchSubgroup _ _
 
+/-- Exponentiating an element of a supported-ray wall submodule gives a completed
+wall label, without a nilpotence assumption on the original Lie algebra. -/
+theorem expToCompletion_mem_wallGroup {w : SupportedRay d} {m : Λ →+ ℤ} {x : L}
+    (hx : x ∈ H.raySubmodule w m) : d.expToCompletion ℒ x ∈ H.wallGroup w m := by
+  rw [H.mem_wallGroup]
+  intro k
+  rw [PositiveDegrees.projection_expToCompletion, BCHGroup.log_exp]
+  exact (H.mem_truncatedRayLieSubalgebra w m k _).mpr ⟨x, hx, rfl⟩
+
 /-- A completed wall label is invisible below the first actual degree on its ray. -/
 theorem projection_eq_one_of_notMem_raysAtOrder {w : SupportedRay d} {m : Λ →+ ℤ}
     {g : d.completedBCHGroup ℒ} (hg : g ∈ H.wallGroup w m) (k : ℕ)

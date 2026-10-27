@@ -100,6 +100,20 @@ theorem projection_expToCompletion (k : ℕ) (x : L) :
   rw [CompletedGroup.projection_apply]
   rfl
 
+/-- A homogeneous completed exponential is invisible exactly when its coefficient
+vanishes or its degree lies above the cutoff. -/
+theorem projection_expToCompletion_eq_one_iff {n : N} {x : L} (hx : x ∈ ℒ n) (k : ℕ) :
+    CompletedGroup.projection k (d.expToCompletion ℒ x) = 1 ↔
+      x = 0 ∨ (k : ℤ) < d.degree n := by
+  have hquot : BCHGroup.exp ((d.degreeIdeal ℒ k).mkQ x) =
+      (1 : d.truncatedGroup ℒ k) ↔ x = 0 ∨ (k : ℤ) < d.degree n := by
+    rw [← (BCHGroup.log_injective (L := d.truncatedLie ℒ k)).eq_iff,
+      BCHGroup.log_exp, BCHGroup.log_one, (d.degreeIdeal ℒ k).mkQ_eq_zero]
+    simpa only [← LieSubmodule.mem_toSubmodule, degreeIdeal_toSubmodule] using
+      (d.mem_degreeSubmodule_of_mem_iff ℒ (k := k) hx)
+  -- The tower projection and the concrete BCH quotient have the same identity.
+  exact (d.projection_expToCompletion ℒ k x).symm ▸ hquot
+
 @[simp]
 theorem expToCompletion_zero : d.expToCompletion ℒ 0 = 1 := by
   apply CompletedGroup.ext
