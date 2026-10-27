@@ -168,6 +168,18 @@ theorem contract_rayOfNeZero {α : M [⋀^Fin (k + 1)]→ₗ[R] R} (hα : α ≠
     (Module.Ray.someVector_ray _)).map
       ((LinearMap.applyₗ n).comp AlternatingMap.curryLeftLinearMap)
 
+/-- The contracted orientation has the sign of the original orientation with the
+contracting vector placed first. -/
+@[simp]
+theorem evalSign_contract (o : Module.Ray R (M [⋀^Fin (k + 1)]→ₗ[R] R))
+    (ho : o.IsConormal W) (hk : finrank R (M ⧸ W) = k + 1) (n : M) (hn : n ∉ W)
+    (v : Fin k → M) :
+    (o.contract ho hk n hn).evalSign v = o.evalSign (Matrix.vecCons n v) := by
+  induction o using Module.Ray.ind with
+  | h α hα =>
+    rw [contract_rayOfNeZero, evalSign_rayOfNeZero, evalSign_rayOfNeZero,
+      AlternatingMap.curryLeft_apply_apply]
+
 /-- The contracted orientation is conormal to the old tangent space enlarged by
 the sweeping line. -/
 theorem isConormal_contract (o : Module.Ray R (M [⋀^Fin (k + 1)]→ₗ[R] R))
