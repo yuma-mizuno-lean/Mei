@@ -36,6 +36,23 @@ variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ 
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i} {k : ℕ}
 
 open Classical in
+/-- A pair of oppositely oriented boundary facets cancels from the two complete
+signed facet sums, leaving every other occurrence unchanged. -/
+theorem cellCoboundary_add_eq_sum_erase (σ τ : OrientedCell h k)
+    {υ : OrientedCell h (k + 1)} (hυ : υ ∈ σ.boundaryFacets)
+    (hυr : υ.reverse ∈ τ.boundaryFacets)
+    {R E : Type*} [Ring R] [AddCommGroup E] [Module R E] (c : E) :
+    σ.cellCoboundary (R := R) c + τ.cellCoboundary c =
+      (∑ ξ ∈ σ.boundaryFacets.erase υ, PolyhedralCochain.mk ξ c) +
+        ∑ ξ ∈ τ.boundaryFacets.erase υ.reverse, PolyhedralCochain.mk ξ c := by
+  classical
+  rw [cellCoboundary_apply, cellCoboundary_apply,
+    ← Finset.add_sum_erase _ (fun ξ => PolyhedralCochain.mk ξ c) hυ,
+    ← Finset.add_sum_erase _ (fun ξ => PolyhedralCochain.mk ξ c) hυr,
+    PolyhedralCochain.mk_reverse]
+  abel
+
+open Classical in
 /-- In a hyperplane cut into equally oriented cells of the original codimension,
 the internal facet cancels from the sum of their signed boundaries, leaving
 precisely the other facets of the two pieces. -/
@@ -56,11 +73,6 @@ theorem exists_cellCoboundary_cut_add_eq (σ σ₁ σ₂ : OrientedCell h k)
   classical
   obtain ⟨υ, hυ, hcarrier, hυr⟩ := σ.exists_boundaryFacet_cut_reverse σ₁ σ₂ l a
     hminus hplus ho hne hdim
-  refine ⟨υ, hυ, hcarrier, hυr, ?_⟩
-  rw [cellCoboundary_apply, cellCoboundary_apply,
-    ← Finset.add_sum_erase _ (fun τ => PolyhedralCochain.mk τ c) hυ,
-    ← Finset.add_sum_erase _ (fun τ => PolyhedralCochain.mk τ c) hυr,
-    PolyhedralCochain.mk_reverse]
-  abel
+  exact ⟨υ, hυ, hcarrier, hυr, σ₁.cellCoboundary_add_eq_sum_erase σ₂ hυ hυr c⟩
 
 end Mei.OrientedCell

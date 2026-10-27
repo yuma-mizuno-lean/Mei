@@ -5,13 +5,13 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Basic
+public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Consistency
 public import Mei.Geometry.ScatteringDiagram.WallSpace.Joint
 public import Mei.Geometry.ScatteringDiagram.LinearTerm
 public import Mei.Geometry.Convex.Polyhedron.Path.Log
 
 /-!
-# Tangent-degree vanishing of directed loop obstructions
+# Directed loop obstructions and tangent-degree vanishing
 
 Consider a closed admissible path whose crossed wall normals annihilate a fixed
 lattice submonoid of tangent vectors. The nonlinear part of its logarithm lies
@@ -23,7 +23,8 @@ degree. In transverse degrees it lies in the sum of wall spaces annihilating the
 joint, and in a single wall space when those eligible normals form a cyclic group.
 
 No consistency assumption is needed for these vanishing and membership results.
-Lower-order consistency is used separately to make the loop logarithm central.
+Under lower-order consistency, `loopObstruction` places the loop logarithm in
+the successive Lie kernel and characterizes its reversal and vanishing.
 Only crossed normals are constrained; unrelated walls may occur elsewhere.
 
 The argument combines `DirectedWallSpaces.transverseJointSubmodule`, the
@@ -51,7 +52,45 @@ variable {Γ Λ R L V ι : Type*} [AddCommGroup Γ] [AddCommGroup Λ]
   [GradedLieAlgebra ℒ] [IsPositiveGrading d ℒ]
   {i : Λ →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
   {H : DirectedWallSpaces ρ ℒ} (D : DirectedDiagram (d := d) h H ι)
-  {k : ℕ} {x y : WallComplement (fun j : D.active k => (D.wall j).support)}
+  {k : ℕ}
+
+/-- The logarithm of a loop product, valued in the successive Lie kernel.
+Only lower-order consistency is required. -/
+def loopObstruction (hk : D.LevelConsistent k)
+    {x : WallComplement (fun j : D.active (k + 1) => (D.wall j).support)}
+    (γ : AdmissiblePLPath x x) : (d.truncationMap ℒ (Nat.le_succ k)).ker :=
+  ⟨log (D.levelPathProduct (k + 1) γ), by
+    rw [LieHom.mem_ker, ← LieHom.log_bchGroupMap,
+      D.truncation_levelPathProduct (Nat.le_succ k),
+      (D.levelConsistent_iff_loops k).mp hk, log_one]⟩
+
+/-- The underlying obstruction coefficient is the actual loop logarithm. -/
+@[simp]
+theorem coe_loopObstruction (hk : D.LevelConsistent k)
+    {x : WallComplement (fun j : D.active (k + 1) => (D.wall j).support)}
+    (γ : AdmissiblePLPath x x) :
+    (D.loopObstruction hk γ : d.truncatedLie ℒ (k + 1)) =
+      log (D.levelPathProduct (k + 1) γ) := (rfl)
+
+/-- Reversing a loop negates its obstruction. -/
+@[simp]
+theorem loopObstruction_reverse (hk : D.LevelConsistent k)
+    {x : WallComplement (fun j : D.active (k + 1) => (D.wall j).support)}
+    (γ : AdmissiblePLPath x x) :
+    D.loopObstruction hk γ.reverse = -D.loopObstruction hk γ := by
+  apply Subtype.ext
+  simp [D.levelPathProduct_reverse]
+
+/-- An obstruction vanishes precisely when its loop has trivial holonomy. -/
+@[simp]
+theorem loopObstruction_eq_zero_iff (hk : D.LevelConsistent k)
+    {x : WallComplement (fun j : D.active (k + 1) => (D.wall j).support)}
+    (γ : AdmissiblePLPath x x) :
+    D.loopObstruction hk γ = 0 ↔ D.levelPathProduct (k + 1) γ = 1 := by
+  rw [← Subtype.val_inj, coe_loopObstruction, ZeroMemClass.coe_zero,
+    ← log_one (L := d.truncatedLie ℒ (k + 1)), log_injective.eq_iff]
+
+variable {x y : WallComplement (fun j : D.active k => (D.wall j).support)}
 
 /-- The nonlinear remainder of an actual directed path product is transverse to
 any joint direction annihilated by the normals of all crossed walls. -/

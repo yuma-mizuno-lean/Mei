@@ -9,6 +9,7 @@ public import Mei.Geometry.Convex.PolyhedralCochain.Basic
 public import Mei.Geometry.Convex.Polyhedron.Rational.Face
 public import Mei.Geometry.Convex.Polyhedron.Face.Cut
 public import Mei.Analysis.Convex.Exposed.Orientation
+public import Mei.Analysis.Convex.Exposed.Separation
 
 /-!
 # Oriented boundary facets
@@ -422,6 +423,27 @@ theorem boundaryFacet_eq_reverse_of_toExposed (σ τ : OrientedCell h k)
       (by simpa only [direction_affineSpan] using τ.isConormal) hk (-l) hm hmW]
   simp only [← ho, ← hd, ContinuousLinearMap.toLinearMap_neg]
   rw [Module.Ray.wedgeCovector_neg_right, neg_neg]
+
+/-- Adjacent equally oriented cells spanning the same affine subspace induce
+opposite signed boundary orientations on their common facet. -/
+theorem boundaryFacet_eq_reverse_of_common_facet (σ τ : OrientedCell h k)
+    {F : Set V} (hF : IsExposed ℝ σ.carrier F) (hG : IsExposed ℝ τ.carrier F)
+    (hne : F.Nonempty)
+    (hdim : finrank ℝ (vectorSpan ℝ F) + 1 = finrank ℝ (vectorSpan ℝ σ.carrier))
+    (hspan : affineSpan ℝ σ.carrier = affineSpan ℝ τ.carrier)
+    (ho : σ.orientation = τ.orientation) (hinter : σ.carrier ∩ τ.carrier = F) :
+    σ.boundaryFacet hF hne hdim =
+      (τ.boundaryFacet hG hne (by
+        rw [← direction_affineSpan ℝ τ.carrier, ← hspan, direction_affineSpan]
+        exact hdim)).reverse := by
+  have := h.finiteDimensional
+  obtain ⟨P, hP⟩ := isRationalNormalPolyhedron_iff.mp σ.rational
+  obtain ⟨Q, hQ⟩ := isRationalNormalPolyhedron_iff.mp τ.rational
+  obtain ⟨l, hl, hm⟩ := hF.exists_opposite_exposing hG (hP ▸ P.convex) (hQ ▸ Q.convex)
+    hne hdim hspan hinter
+  exact σ.boundaryFacet_eq_reverse_of_toExposed τ hF hG hne hdim
+    (by simpa only [direction_affineSpan] using congrArg AffineSubspace.direction hspan)
+    ho l hl hm
 
 /-- The common slice of a hyperplane cut occurs in both signed facet families,
 with opposite orientations, when the two pieces have the same orientation. -/

@@ -20,7 +20,10 @@ A set is a neighbourhood of each of its relative interior points within its
 affine span: points of the span close to a relative interior point stay in the set.
 For a closed set, the relative boundary is nowhere dense in the affine span.
 For any set, membership is locally constant off the relative boundary within the affine span.
-Relative interiors are monotone for sets with equal affine spans.
+Relative interiors are monotone for sets with equal affine spans. A direction with a positive
+component towards an interior point and an arbitrary component along a relative interior
+set enters the interior of a convex set. This uses Mathlib's
+`Convex.combo_interior_self_mem_interior`.
 -/
 
 public section
@@ -132,3 +135,63 @@ theorem eventually_mem_iff_of_notMem_intrinsicFrontier {P : Set V}
     exact iff_of_false hy hxP
 
 end Mei
+
+namespace Convex
+
+/-- A positive component towards an interior point, together with any direction tangent
+to a set at a relative interior point, enters the interior of the convex ambient set.
+Neither set needs to be closed, polyhedral or finite dimensional. -/
+theorem eventually_add_smul_mem_interior {P Q : Set V} (hQ : Convex ℝ Q)
+    (hPQ : P ⊆ Q) {q x v : V} (hq : q ∈ intrinsicInterior ℝ P)
+    (hx : x ∈ interior Q) {a : ℝ} (ha : 0 < a)
+    (hv : v - a • (x - q) ∈ (affineSpan ℝ P).direction) :
+    ∀ᶠ t : ℝ in 𝓝[>] 0, q + t • v ∈ interior Q := by
+  let w := v - a • (x - q)
+  let f : ℝ → V := fun t => q + (t / (1 - t * a)) • w
+  have hfspan (t : ℝ) : f t ∈ affineSpan ℝ P := by
+    simpa only [f, w, vadd_eq_add, add_comm] using
+      (affineSpan ℝ P).vadd_mem_of_mem_direction
+        ((affineSpan ℝ P).direction.smul_mem (t / (1 - t * a)) hv)
+        (subset_affineSpan ℝ P (intrinsicInterior_subset hq))
+  have hftend : Tendsto f (𝓝 0) (𝓝 q) := by
+    have hc : ContinuousAt f 0 :=
+      continuousAt_const.add ((continuousAt_id.div
+        (continuousAt_const.sub (continuousAt_id.mul continuousAt_const))
+        (by simp)).smul continuousAt_const)
+    simpa [f] using hc.tendsto
+  have hfP : ∀ᶠ t : ℝ in 𝓝 0, f t ∈ P :=
+    (tendsto_nhdsWithin_iff.mpr ⟨hftend, Eventually.of_forall hfspan⟩).eventually
+      (Mei.mem_nhdsWithin_affineSpan_of_mem_intrinsicInterior hq)
+  have hlt : ∀ᶠ t : ℝ in 𝓝 0, t * a < 1 := by
+    exact (continuousAt_id.mul continuousAt_const).eventually
+      (gt_mem_nhds (by simp : (0 : ℝ) * a < 1))
+  filter_upwards [hfP.filter_mono nhdsWithin_le_nhds,
+    hlt.filter_mono nhdsWithin_le_nhds, self_mem_nhdsWithin] with t ht hta htpos
+  have hden : 1 - t * a ≠ 0 := by linarith
+  have heq : (t * a) • x + (1 - t * a) • f t = q + t • v := by
+    dsimp only [f]
+    rw [smul_add, smul_smul, mul_div_cancel₀ _ hden]
+    dsimp only [w]
+    module
+  rw [← heq]
+  exact hQ.combo_interior_self_mem_interior hx (hPQ ht) (mul_pos htpos ha)
+    (by linarith) (by ring)
+
+/-- If the direction of a set contains the kernel of a functional, every positive
+ray from its relative interior enters any convex superset having an interior point
+on the positive side. -/
+theorem eventually_add_smul_mem_interior_of_ker_le {P Q : Set V} (hQ : Convex ℝ Q)
+    (hPQ : P ⊆ Q) (ν : V →ₗ[ℝ] ℝ)
+    (hν : ν.ker ≤ (affineSpan ℝ P).direction) {q x v : V}
+    (hq : q ∈ intrinsicInterior ℝ P) (hx : x ∈ interior Q)
+    (hxpos : 0 < ν (x - q)) (hvpos : 0 < ν v) :
+    ∀ᶠ t : ℝ in 𝓝[>] 0, q + t • v ∈ interior Q := by
+  apply hQ.eventually_add_smul_mem_interior hPQ hq hx (div_pos hvpos hxpos)
+  apply hν
+  rw [LinearMap.mem_ker]
+  simp only [map_sub, map_smul, smul_eq_mul]
+  rw [map_sub] at hxpos
+  field_simp [hxpos.ne']
+  ring
+
+end Convex
