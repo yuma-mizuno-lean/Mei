@@ -7,6 +7,7 @@ module
 
 public import Mei.Geometry.ScatteringDiagram.DirectedWall.Basic
 public import Mei.Geometry.ScatteringDiagram.WallSpace.Normal
+public import Mei.Geometry.ScatteringDiagram.WallSpace.Coorientation
 public import Mei.Geometry.Convex.PolyhedralComplex.Joint
 public import Mei.Geometry.Convex.Polyhedron.Rational.Sweep
 public import Mei.Geometry.Convex.Sweep
@@ -26,6 +27,11 @@ in the sum of wall spaces annihilating the joint: the contracted-normal theorem
 places it in the required single wall space. The supported primitive generator
 need not belong to the positive monoid. Sweeping along it gives the same support
 as sweeping along the actual allowed degree.
+
+`exists_cooriented_sweep` realizes a retained coefficient with the integral normal
+inducing the contraction orientation of an oriented joint sweep. It reuses
+`DirectedWallSpaces.exists_cooriented_sweep_normal`; changing the normal this way
+preserves the coefficient's wall space, while fixing the positive side of its label.
 
 The construction combines `FinitePolyhedralComplex.exists_joint_transverse_normal`,
 `DirectedWallSpaces.iSup_wall_eq_wall_of_inf_ker`, the rational sweep presentation,
@@ -241,5 +247,59 @@ theorem exists_swept_correction_wall_of_truncated [Module.Free ℤ Γ]
     exact congrArg Neg.neg hac
   · intro l
     rw [hproj l, haz]
+
+/-- Realize a retained homogeneous coefficient as an outgoing swept wall whose
+integral normal agrees with the contraction orientation of the swept cell.
+The input equation may have either sign or any nonzero integral scale.
+The logarithm is the negative coefficient, and the active cutoffs are exact,
+including when the coefficient is zero. -/
+theorem exists_cooriented_sweep [Module.Free ℤ Γ]
+    (σ : OrientedCell h 2) {n : Γ} (hn : n ∈ d.monoid)
+    (htrans : i (ρ n) ∉ (affineSpan ℝ σ.carrier).direction)
+    (m₀ : Λ →+ ℤ)
+    (h₀ : (h.realCharacter m₀).ker =
+      (affineSpan ℝ σ.carrier).direction ⊔ ℝ ∙ i (ρ n))
+    (k : ℕ) (hnk : d.degree n ≤ k) (c : d.truncatedLie ℒ k)
+    (hc : c ∈ (H.truncated d k).wall n m₀) :
+    ∃ W : DirectedWall (d := d) h H,
+      W.support = (σ.sweep (ρ n) htrans).carrier ∧
+      (∀ v : V, SignType.sign (h.realCharacter W.normal v) =
+        (σ.sweep (ρ n) htrans).orientation.evalSign (fun _ : Fin 1 => v)) ∧
+      n ∈ W.ray.rayDegrees ∧
+      (∃ a ∈ ℒ n, W.label = d.expToCompletion ℒ (-a)) ∧ W.Outgoing ∧
+      BCHGroup.log (CompletedGroup.projection k W.label) = -c ∧
+      ∀ l : ℕ, CompletedGroup.projection l W.label = 1 ↔
+        c = 0 ∨ (l : ℤ) < d.degree n := by
+  obtain ⟨m, hm, hker, hsign, hwall⟩ := H.exists_cooriented_sweep_normal σ (ρ n) htrans m₀ h₀
+  have hc' : c ∈ (H.truncated d k).wall n m := by
+    simpa only [H.truncated_wall, hwall] using hc
+  rw [H.truncated_wall] at hc'
+  obtain ⟨a, ha, hac⟩ := Submodule.mem_map.mp hc'
+  have hap : a ∈ ℒ n := H.wall_le_piece n m ha
+  have haz : a = 0 ↔ c = 0 := by
+    have he := d.projection_expToCompletion_eq_one_iff ℒ hap k
+    rw [or_iff_left (not_lt.mpr hnk)] at he
+    have hquot : BCHGroup.exp ((d.degreeIdeal ℒ k).mkQ a) =
+        (1 : d.truncatedGroup ℒ k) ↔ c = 0 := by
+      rw [← (BCHGroup.log_injective (L := d.truncatedLie ℒ k)).eq_iff,
+        BCHGroup.log_exp, BCHGroup.log_one]
+      exact (congrArg (fun x : d.truncatedLie ℒ k => x = 0) hac).to_iff
+    -- Compare the categorical tower projection with the concrete BCH quotient.
+    have hc0 : CompletedGroup.projection k (d.expToCompletion ℒ a) = 1 ↔ c = 0 :=
+      (d.projection_expToCompletion ℒ k a).symm ▸ hquot
+    exact he.symm.trans hc0
+  have hn0 : n ≠ 0 := by
+    rintro rfl
+    exact htrans (by simp)
+  obtain ⟨w, hw⟩ := d.exists_supportedRay hn hn0
+  let W := ofSweep σ.carrier σ.nonempty σ.rational w n hw m hm hker a ha
+  refine ⟨W, by rw [OrientedCell.sweep_carrier]; exact ofSweep_support ..,
+    hsign, by simpa only [W, ofSweep_ray] using hw,
+    ⟨a, hap, ofSweep_label ..⟩, ofSweep_outgoing _ _ _ _ _ _ _ _ _ _ _ htrans, ?_, ?_⟩
+  · rw [ofSweep_label, PositiveDegrees.projection_expToCompletion, BCHGroup.log_exp, map_neg]
+    exact congrArg Neg.neg hac
+  · intro l
+    rw [ofSweep_label, d.projection_expToCompletion_eq_one_iff ℒ
+      ((ℒ n).neg_mem hap), neg_eq_zero, haz]
 
 end Mei.DirectedWall
