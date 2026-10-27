@@ -113,6 +113,19 @@ theorem expToCompletion_mem_wallGroup {w : SupportedRay d} {m : Λ →+ ℤ} {x 
   rw [PositiveDegrees.projection_expToCompletion, BCHGroup.log_exp]
   exact (H.mem_truncatedRayLieSubalgebra w m k _).mpr ⟨x, hx, rfl⟩
 
+/-- A finite wall logarithm has no homogeneous component off its actual supported ray.
+The primitive generator need not itself belong to the positive monoid. -/
+theorem decompose_log_projection_eq_zero_of_notMem_rayDegrees
+    {w : SupportedRay d} {m : Λ →+ ℤ} {g : d.completedBCHGroup ℒ}
+    (hg : g ∈ H.wallGroup w m) (k : ℕ) {n : Γ} (hn : n ∉ w.rayDegrees) :
+    (DirectSum.decompose (d.truncatedGrading ℒ k)
+      (BCHGroup.log (CompletedGroup.projection k g)) n : d.truncatedLie ℒ k) = 0 := by
+  obtain ⟨y, hy, he⟩ := (H.mem_truncatedRayLieSubalgebra w m k _).mp
+    ((H.mem_wallGroup w m g).mp hg k)
+  rw [← he, LieIdeal.mkQ_apply, d.decompose_truncatedGrading_mk,
+    H.decompose_eq_zero_of_notMem_rayDegrees hy hn]
+  exact Submodule.Quotient.mk_zero _
+
 /-- A completed wall label is invisible below the first actual degree on its ray. -/
 theorem projection_eq_one_of_notMem_raysAtOrder {w : SupportedRay d} {m : Λ →+ ℤ}
     {g : d.completedBCHGroup ℒ} (hg : g ∈ H.wallGroup w m) (k : ℕ)
