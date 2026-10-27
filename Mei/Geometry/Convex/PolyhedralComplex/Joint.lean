@@ -8,6 +8,7 @@ module
 public import Mei.Geometry.Convex.PolyhedralComplex.Strata
 public import Mei.Geometry.Convex.Polyhedron.Rational.Direction
 public import Mathlib.LinearAlgebra.FiniteDimensional.Lemmas
+public import Mathlib.LinearAlgebra.Dual.Lemmas
 
 /-!
 # Isolating neighborhoods and transverse slices at joints
@@ -146,5 +147,61 @@ theorem exists_isolating_ball_joint (C : FinitePolyhedralComplex h) {J : Set V}
     have hxs : x ∈ Metric.ball x r ∩ (C.codimensionAtLeast 2).support :=
       hskeleton.symm ▸ ⟨hxball, hxJ⟩
     exact ⟨⟨hxball, hxW⟩, hxs.2⟩
+
+section JointGeometry
+
+open Set Module Mei.Convex
+
+variable {C : FinitePolyhedralComplex h} {J : Set V}
+
+/-- Linear functionals vanishing on the direction of a joint form a pencil. Given one
+nonzero such functional `φ`, the affine function `w ↦ φ q - φ w` and a second affine
+function generate, up to constants, every such functional. -/
+theorem exists_pencil_of_joint (hJ : J ∈ C.joints) (q : V) {φ : V →ₗ[ℝ] ℝ}
+    (hφ : ∀ d ∈ (affineSpan ℝ J).direction, φ d = 0) (hφ0 : φ ≠ 0) :
+    ∃ ℓ m : V →ᵃ[ℝ] ℝ, (∀ w, ℓ w = φ q - φ w) ∧
+      ∀ g : V →ₗ[ℝ] ℝ, (∀ d ∈ (affineSpan ℝ J).direction, g d = 0) →
+        ∃ α β : ℝ, ∀ w, g w - g q = α * ℓ w + β * m w := by
+  -- Functionals vanishing on the joint direction are combinations of its equations.
+  obtain ⟨f₁, f₂, hdir⟩ := C.exists_joint_direction_eq_inf_ker hJ
+  have hcomb (g : V →ₗ[ℝ] ℝ) (hg : ∀ d ∈ (affineSpan ℝ J).direction, g d = 0) :
+      ∃ c₁ c₂ : ℝ, ∀ v, g v = c₁ * h.realCharacter f₁ v + c₂ * h.realCharacter f₂ v := by
+    have hmem := mem_span_of_iInf_ker_le_ker (L := ![h.realCharacter f₁, h.realCharacter f₂])
+      (K := g) (by
+        intro v hv
+        simp only [Submodule.mem_iInf, LinearMap.mem_ker, Fin.forall_fin_two,
+          Matrix.cons_val_zero, Matrix.cons_val_one] at hv
+        exact hg v (hdir ▸ ⟨hv.1, hv.2⟩))
+    obtain ⟨c, hc⟩ := (Submodule.mem_span_range_iff_exists_fun ℝ).mp hmem
+    exact ⟨c 0, c 1, fun v => by simp [← hc, Fin.sum_univ_two]⟩
+  obtain ⟨a, b, hab⟩ := hcomb φ hφ
+  have hnorm : a ^ 2 + b ^ 2 ≠ 0 := by
+    intro h0
+    have ha : a = 0 := by nlinarith
+    have hb : b = 0 := by nlinarith
+    exact hφ0 (LinearMap.ext fun v => by simp [hab, ha, hb])
+  -- Rotate the equations so that the first generator is `w ↦ φ q - φ w`.
+  let g₁ : V →ᵃ[ℝ] ℝ := (h.realCharacter f₁).toAffineMap - AffineMap.const ℝ V
+    (h.realCharacter f₁ q)
+  let g₂ : V →ᵃ[ℝ] ℝ := (h.realCharacter f₂).toAffineMap - AffineMap.const ℝ V
+    (h.realCharacter f₂ q)
+  have hg₁ (w : V) : g₁ w = h.realCharacter f₁ (w - q) := by simp [g₁]
+  have hg₂ (w : V) : g₂ w = h.realCharacter f₂ (w - q) := by simp [g₂]
+  refine ⟨(-a) • g₁ + (-b) • g₂, b • g₁ + (-a) • g₂, fun w => ?_, fun g hg => ?_⟩
+  · have := hab (q - w)
+    simp only [map_sub] at this
+    simp only [AffineMap.coe_add, AffineMap.coe_smul, Pi.add_apply, Pi.smul_apply, hg₁, hg₂,
+      map_sub, smul_eq_mul]
+    linarith
+  · obtain ⟨c₁, c₂, hc⟩ := hcomb g hg
+    refine ⟨-(c₁ * a + c₂ * b) / (a ^ 2 + b ^ 2), (c₁ * b - c₂ * a) / (a ^ 2 + b ^ 2),
+      fun w => ?_⟩
+    rw [← map_sub, hc]
+    simp only [AffineMap.coe_add, AffineMap.coe_smul, Pi.add_apply, Pi.smul_apply, hg₁, hg₂,
+      smul_eq_mul]
+    field_simp
+    ring
+
+end JointGeometry
 
 end Mei.FinitePolyhedralComplex

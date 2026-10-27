@@ -8,6 +8,7 @@ module
 public import Mei.Geometry.Convex.PolyhedralComplex.CrossingWord
 public import Mei.Geometry.Convex.Polyhedron.Path.Hyperplane
 public import Mei.LinearAlgebra.AffineSpace.Ordered
+public import Mei.Algebra.Field.Basic
 
 /-!
 # Crossing words in a pencil of hyperplanes
@@ -46,15 +47,6 @@ variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ 
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
   {C : FinitePolyhedralComplex h}
 
-/-- Within the region, a pencil function is the product of its `m`-coefficient, `ℓ`,
-and the difference between the slope and the wall's slope. -/
-private theorem sub_eq_mul_div_sub {ℓ m : V →ᵃ[ℝ] ℝ} {c a β : ℝ} {z : V} (hz : 0 < ℓ z)
-    (hβ : β ≠ 0) (hc : c = a * ℓ z + β * m z) :
-    c = β * ℓ z * (m z / ℓ z - -a / β) := by
-  rw [hc]
-  field_simp
-  ring
-
 /-- The potential of a pencil: the signed letters of the listed walls of slope
 below `s`, the largest slope on the left. -/
 private def pencilPotential (L : List C.walls) (κ : C.walls → ℝ) (β : C.walls → ℝ) (s : ℝ) :
@@ -73,7 +65,8 @@ private theorem mem_iff_div_eq_of_pencil (hℓ : ∀ z ∈ U, 0 < ℓ z)
     (hpen : ∀ P : C.walls, (U ∩ P).Nonempty → ∀ z, ν P z - b P = α P * ℓ z + β P * m z)
     (hβ : ∀ P : C.walls, (U ∩ P).Nonempty → β P ≠ 0) {P : C.walls} (hP : (U ∩ P).Nonempty)
     {z : V} (hz : z ∈ U) : z ∈ (P : Set V) ↔ m z / ℓ z = -α P / β P := by
-  rw [hwall P hP z hz, ← sub_eq_zero, sub_eq_mul_div_sub (hℓ z hz) (hβ P hP) (hpen P hP z)]
+  rw [hwall P hP z hz, ← sub_eq_zero, hpen P hP z,
+    mul_add_mul_eq_mul_mul_div_sub (hℓ z hz).ne' (hβ P hP)]
   simp [hβ P hP, (hℓ z hz).ne', sub_eq_zero]
 
 /-- A segment in the region, traversed with nondecreasing slope, crosses exactly the
@@ -106,8 +99,8 @@ private theorem exists_crossing_iff_of_pencil (hU : Convex ℝ U) (hℓ : ∀ z 
     have hc := WallComplement.exists_crossing_iff_of_hyperplane x y f (j := P)
       (fun z hz => (hwall P hP z (hU.segment_subset hx hy hz)).trans (by rw [hf, sub_eq_zero]))
     apply hc.mpr
-    rw [hf, hf, sub_eq_mul_div_sub (hℓ _ hx) (hβ P hP) (hpen P hP x.val),
-      sub_eq_mul_div_sub (hℓ _ hy) (hβ P hP) (hpen P hP y.val)]
+    rw [hf, hf, hpen P hP x.val, mul_add_mul_eq_mul_mul_div_sub (hℓ _ hx).ne' (hβ P hP),
+      hpen P hP y.val, mul_add_mul_eq_mul_mul_div_sub (hℓ _ hy).ne' (hβ P hP)]
     have hx' : m x.val / ℓ x.val - κ P < 0 := by linarith
     have hy' : 0 < m y.val / ℓ y.val - κ P := by linarith
     rcases lt_or_gt_of_ne (hβ P hP) with hb | hb
@@ -184,8 +177,10 @@ private theorem segmentCrossingWord_eq_pencilPotential_of_le (hU : Convex ℝ U)
     have hPU := (hLmem P).mp hPL
     have hv : ν P (y.val - x.val) =
         β P * (ℓ y.val * (m y.val / ℓ y.val - κ P) + ℓ x.val * (κ P - m x.val / ℓ x.val)) := by
-      have hx' := sub_eq_mul_div_sub (hℓ _ hx) (hβ P hPU) (hpen P hPU x.val)
-      have hy' := sub_eq_mul_div_sub (hℓ _ hy) (hβ P hPU) (hpen P hPU y.val)
+      have hx' := (hpen P hPU x.val).trans
+        (mul_add_mul_eq_mul_mul_div_sub (hℓ _ hx).ne' (hβ P hPU))
+      have hy' := (hpen P hPU y.val).trans
+        (mul_add_mul_eq_mul_mul_div_sub (hℓ _ hy).ne' (hβ P hPU))
       rw [map_sub]
       linear_combination hy' - hx'
     have hpos : 0 < ℓ y.val * (m y.val / ℓ y.val - κ P) + ℓ x.val * (κ P - m x.val / ℓ x.val) :=

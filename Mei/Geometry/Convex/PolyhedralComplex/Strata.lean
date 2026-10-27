@@ -323,4 +323,57 @@ theorem eq_of_mem_wall_of_notMem_singularSupport (C : FinitePolyhedralComplex h)
     (Mei.Convex.mem_intrinsicInterior_of_notMem_singularSupport hxP hx)
     (Mei.Convex.mem_intrinsicInterior_of_notMem_singularSupport hxQ hx)
 
+section JointGeometry
+
+open Set Module Mei.Convex
+
+variable {C : FinitePolyhedralComplex h} {J U : Set V}
+
+/-- If every cell meeting `U` contains the joint `J`, the codimension-two skeleton
+meets `U` only in `J`. -/
+theorem inter_support_codimensionAtLeast_two_subset (hJ : J ∈ C.joints)
+    (hinc : ∀ Q ∈ C.cells, (U ∩ Q).Nonempty → J ⊆ Q) :
+    U ∩ (C.codimensionAtLeast 2).support ⊆ J := by
+  have := h.finiteDimensional
+  rintro y ⟨hyU, hys⟩
+  obtain ⟨Q, hQ, hyQ⟩ := mem_support.mp hys
+  obtain ⟨hQC, hdimQ⟩ := (C.mem_codimensionAtLeast_cells 2 Q).mp hQ
+  obtain ⟨hJC, hdimJ⟩ := (C.mem_cellsOfCodimension 2 J).mp hJ
+  have hJQ := hinc Q hQC ⟨y, hyU, hyQ⟩
+  have hle := Submodule.finrank_mono (AffineSubspace.direction_le (affineSpan_mono ℝ hJQ))
+  have hface := (isPolyhedralFace_iff.mp (C.face_of_subset hJC hQC hJQ)).2
+  have heq : J = Q := hface.eq_of_finrank_vectorSpan_eq (C.nonempty J hJC)
+    (by rw [← direction_affineSpan, ← direction_affineSpan]; omega)
+  exact heq ▸ hyQ
+
+/-- If every cell meeting `U` contains the joint `J`, then `U` misses the relative
+boundary of `J`, which consists of cells of higher codimension. -/
+theorem disjoint_intrinsicFrontier (hJ : J ∈ C.joints)
+    (hinc : ∀ Q ∈ C.cells, (U ∩ Q).Nonempty → J ⊆ Q) :
+    Disjoint U (intrinsicFrontier ℝ J) := by
+  have := h.finiteDimensional
+  obtain ⟨hJC, hdimJ⟩ := (C.mem_cellsOfCodimension 2 J).mp hJ
+  refine Set.disjoint_left.mpr fun y hyU hyf => ?_
+  obtain ⟨Q, hQ, hyQ⟩ := mem_support.mp
+    (C.intrinsicFrontier_subset_support_codimensionAtLeast hJC 2 hdimJ.le hyf)
+  obtain ⟨hQC, hdimQ⟩ := (C.mem_codimensionAtLeast_cells (2 + 1) Q).mp hQ
+  have hle := Submodule.finrank_mono (AffineSubspace.direction_le
+    (affineSpan_mono ℝ (hinc Q hQC ⟨y, hyU, hyQ⟩)))
+  omega
+
+/-- If a wall contains the joint `J`, the points of `J` are singular for the walls. -/
+theorem mem_singularSupport_of_mem_joint (hJ : J ∈ C.joints) {P : C.walls}
+    (hJP : J ⊆ P) {y : V} (hyJ : y ∈ J) :
+    y ∈ singularSupport fun Q : C.walls => (Q : Set V) := by
+  have := h.finiteDimensional
+  obtain ⟨hJC, hdimJ⟩ := (C.mem_cellsOfCodimension 2 J).mp hJ
+  by_contra hy
+  have hPJ := C.subset_of_mem_intrinsicInterior (C.mem_cells_of_mem_walls P.property) hJC
+    (mem_intrinsicInterior_of_notMem_singularSupport (hJP hyJ) hy) hyJ
+  have hle := Submodule.finrank_mono (AffineSubspace.direction_le (affineSpan_mono ℝ hPJ))
+  have := C.finrank_direction_add_one_of_mem_walls P.property
+  omega
+
+end JointGeometry
+
 end Mei.FinitePolyhedralComplex

@@ -28,9 +28,10 @@ After reduction to triangles, a filled triangle missing `J` misses its affine
 span, so it lies in an open half-space bounded by a hyperplane through `J`. There
 the walls form a pencil of hyperplanes through the affine span of `J`, and
 `FinitePolyhedralComplex.crossingWord_eq_of_pencil` shows that the triangle's word
-is trivial. A filled triangle meeting `J` with a non-complementary plane would
-meet `J` on an edge, by `Mei.exists_mem_segment_sub_mem_of_not_isCompl`, contradicting
-admissibility of that edge.
+is trivial. If a wall contains `J`, a filled triangle meeting `J` with a non-complementary
+plane would meet `J` on an edge, by `Mei.exists_mem_segment_sub_mem_of_not_isCompl`,
+contradicting admissibility of that edge. If no wall contains `J`, no wall meets
+`U`, so all crossing words in `U` are trivial.
 
 The separating functional comes from Mathlib's
 `geometric_hahn_banach_compact_closed`; the pencil coefficients come from
@@ -80,99 +81,6 @@ theorem jointTriangleWords_subset_triangleWords (ν : C.walls → V →ₗ[ℝ] 
   exact (C.mem_triangleWords ν U _).mpr ⟨x, y, z, e, f, r, hx, hy, hz, rfl⟩
 
 variable {C} {J U : Set V}
-
-/-- If every cell meeting `U` contains the joint `J`, the codimension-two skeleton
-meets `U` only in `J`. -/
-private theorem inter_support_codimensionAtLeast_two_subset (hJ : J ∈ C.joints)
-    (hinc : ∀ Q ∈ C.cells, (U ∩ Q).Nonempty → J ⊆ Q) :
-    U ∩ (C.codimensionAtLeast 2).support ⊆ J := by
-  have := h.finiteDimensional
-  rintro y ⟨hyU, hys⟩
-  obtain ⟨Q, hQ, hyQ⟩ := mem_support.mp hys
-  obtain ⟨hQC, hdimQ⟩ := (C.mem_codimensionAtLeast_cells 2 Q).mp hQ
-  obtain ⟨hJC, hdimJ⟩ := (C.mem_cellsOfCodimension 2 J).mp hJ
-  have hJQ := hinc Q hQC ⟨y, hyU, hyQ⟩
-  have hle := Submodule.finrank_mono (AffineSubspace.direction_le (affineSpan_mono ℝ hJQ))
-  have hface := (isPolyhedralFace_iff.mp (C.face_of_subset hJC hQC hJQ)).2
-  have heq : J = Q := hface.eq_of_finrank_vectorSpan_eq (C.nonempty J hJC)
-    (by rw [← direction_affineSpan, ← direction_affineSpan]; omega)
-  exact heq ▸ hyQ
-
-/-- If every cell meeting `U` contains the joint `J`, then `U` misses the relative
-boundary of `J`, which consists of cells of higher codimension. -/
-private theorem disjoint_intrinsicFrontier (hJ : J ∈ C.joints)
-    (hinc : ∀ Q ∈ C.cells, (U ∩ Q).Nonempty → J ⊆ Q) :
-    Disjoint U (intrinsicFrontier ℝ J) := by
-  have := h.finiteDimensional
-  obtain ⟨hJC, hdimJ⟩ := (C.mem_cellsOfCodimension 2 J).mp hJ
-  refine Set.disjoint_left.mpr fun y hyU hyf => ?_
-  obtain ⟨Q, hQ, hyQ⟩ := mem_support.mp
-    (C.intrinsicFrontier_subset_support_codimensionAtLeast hJC 2 hdimJ.le hyf)
-  obtain ⟨hQC, hdimQ⟩ := (C.mem_codimensionAtLeast_cells (2 + 1) Q).mp hQ
-  have hle := Submodule.finrank_mono (AffineSubspace.direction_le
-    (affineSpan_mono ℝ (hinc Q hQC ⟨y, hyU, hyQ⟩)))
-  omega
-
-/-- If a wall contains the joint `J`, the points of `J` are singular for the walls. -/
-private theorem mem_singularSupport_of_mem_joint (hJ : J ∈ C.joints) {P : C.walls}
-    (hJP : J ⊆ P) {y : V} (hyJ : y ∈ J) :
-    y ∈ singularSupport fun Q : C.walls => (Q : Set V) := by
-  have := h.finiteDimensional
-  obtain ⟨hJC, hdimJ⟩ := (C.mem_cellsOfCodimension 2 J).mp hJ
-  by_contra hy
-  have hPJ := C.subset_of_mem_intrinsicInterior (C.mem_cells_of_mem_walls P.property) hJC
-    (mem_intrinsicInterior_of_notMem_singularSupport (hJP hyJ) hy) hyJ
-  have hle := Submodule.finrank_mono (AffineSubspace.direction_le (affineSpan_mono ℝ hPJ))
-  have := C.finrank_direction_add_one_of_mem_walls P.property
-  omega
-
-/-- Linear functionals vanishing on the direction of a joint form a pencil. Given one
-nonzero such functional `φ`, the affine function `w ↦ φ q - φ w` and a second affine
-function generate, up to constants, every such functional. -/
-private theorem exists_pencil_of_joint (hJ : J ∈ C.joints) (q : V) {φ : V →ₗ[ℝ] ℝ}
-    (hφ : ∀ d ∈ (affineSpan ℝ J).direction, φ d = 0) (hφ0 : φ ≠ 0) :
-    ∃ ℓ m : V →ᵃ[ℝ] ℝ, (∀ w, ℓ w = φ q - φ w) ∧
-      ∀ g : V →ₗ[ℝ] ℝ, (∀ d ∈ (affineSpan ℝ J).direction, g d = 0) →
-        ∃ α β : ℝ, ∀ w, g w - g q = α * ℓ w + β * m w := by
-  -- Functionals vanishing on the joint direction are combinations of its equations.
-  obtain ⟨f₁, f₂, hdir⟩ := C.exists_joint_direction_eq_inf_ker hJ
-  have hcomb (g : V →ₗ[ℝ] ℝ) (hg : ∀ d ∈ (affineSpan ℝ J).direction, g d = 0) :
-      ∃ c₁ c₂ : ℝ, ∀ v, g v = c₁ * h.realCharacter f₁ v + c₂ * h.realCharacter f₂ v := by
-    have hmem := mem_span_of_iInf_ker_le_ker (L := ![h.realCharacter f₁, h.realCharacter f₂])
-      (K := g) (by
-        intro v hv
-        simp only [Submodule.mem_iInf, LinearMap.mem_ker, Fin.forall_fin_two,
-          Matrix.cons_val_zero, Matrix.cons_val_one] at hv
-        exact hg v (hdir ▸ ⟨hv.1, hv.2⟩))
-    obtain ⟨c, hc⟩ := (Submodule.mem_span_range_iff_exists_fun ℝ).mp hmem
-    exact ⟨c 0, c 1, fun v => by simp [← hc, Fin.sum_univ_two]⟩
-  obtain ⟨a, b, hab⟩ := hcomb φ hφ
-  have hnorm : a ^ 2 + b ^ 2 ≠ 0 := by
-    intro h0
-    have ha : a = 0 := by nlinarith
-    have hb : b = 0 := by nlinarith
-    exact hφ0 (LinearMap.ext fun v => by simp [hab, ha, hb])
-  -- Rotate the equations so that the first generator is `w ↦ φ q - φ w`.
-  let g₁ : V →ᵃ[ℝ] ℝ := (h.realCharacter f₁).toAffineMap - AffineMap.const ℝ V
-    (h.realCharacter f₁ q)
-  let g₂ : V →ᵃ[ℝ] ℝ := (h.realCharacter f₂).toAffineMap - AffineMap.const ℝ V
-    (h.realCharacter f₂ q)
-  have hg₁ (w : V) : g₁ w = h.realCharacter f₁ (w - q) := by simp [g₁]
-  have hg₂ (w : V) : g₂ w = h.realCharacter f₂ (w - q) := by simp [g₂]
-  refine ⟨(-a) • g₁ + (-b) • g₂, b • g₁ + (-a) • g₂, fun w => ?_, fun g hg => ?_⟩
-  · have := hab (q - w)
-    simp only [map_sub] at this
-    simp only [AffineMap.coe_add, AffineMap.coe_smul, Pi.add_apply, Pi.smul_apply, hg₁, hg₂,
-      map_sub, smul_eq_mul]
-    linarith
-  · obtain ⟨c₁, c₂, hc⟩ := hcomb g hg
-    refine ⟨-(c₁ * a + c₂ * b) / (a ^ 2 + b ^ 2), (c₁ * b - c₂ * a) / (a ^ 2 + b ^ 2),
-      fun w => ?_⟩
-    rw [← map_sub, hc]
-    simp only [AffineMap.coe_add, AffineMap.coe_smul, Pi.add_apply, Pi.smul_apply, hg₁, hg₂,
-      smul_eq_mul]
-    field_simp
-    ring
 
 /-- Near a joint, admissible paths have equal crossing words when the convex hull of
 their vertices misses the joint. Such a hull lies in an open half-space bounded by a

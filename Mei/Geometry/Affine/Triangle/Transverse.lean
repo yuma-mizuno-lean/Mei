@@ -6,6 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Analysis.Convex.Hull
+public import Mei.Algebra.Order.Field.Finite
 public import Mei.LinearAlgebra.FiniteDimensional
 
 /-!
@@ -134,32 +135,25 @@ theorem exists_mem_segment_sub_mem_of_not_isCompl {W : Submodule K V}
         Matrix.cons_val_two, Matrix.head_cons, Matrix.tail_cons]
       module
   -- Move along that direction until the first coordinate vanishes.
-  have hneg : (Finset.univ.filter fun j => μ j < 0).Nonempty := by
-    by_contra hne
-    simp only [Finset.not_nonempty_iff_eq_empty, Finset.filter_eq_empty_iff,
-      Finset.mem_univ, true_implies, not_lt] at hne
-    apply hμ
-    funext j
-    have := Finset.single_le_sum (fun i _ => hne (x := i)) (Finset.mem_univ j)
-    rw [hμsum] at this
-    exact le_antisymm this (hne (x := j))
-  obtain ⟨j₀, hj₀, hmin⟩ := (Finset.univ.filter fun j => μ j < 0).exists_min_image
-    (fun j => l j / -μ j) hneg
-  have hμj₀ : μ j₀ < 0 := (Finset.mem_filter.mp hj₀).2
-  set τ := l j₀ / -μ j₀ with hτ
-  have hτ0 : 0 ≤ τ := div_nonneg (hl0 j₀) (by linarith)
+  obtain ⟨τ, hκ0, j₀, hj₀⟩ : ∃ τ : K,
+      (∀ j, 0 ≤ l j + τ * μ j) ∧ ∃ j, l j + τ * μ j = 0 := by
+    by_cases hzero : ∃ j, l j = 0
+    · exact ⟨0, by simpa using hl0, by simpa using hzero⟩
+    · have hlpos (j : Fin 3) : 0 < l j := lt_of_le_of_ne (hl0 j) fun hj => hzero ⟨j, hj.symm⟩
+      have hneg := Finset.exists_neg_of_sum_zero_of_exists_nonzero μ hμsum (by
+        simpa only [Finset.mem_univ, true_and, Pi.zero_apply] using Function.ne_iff.mp hμ)
+      obtain ⟨τ, hτ, hexit⟩ := Finset.univ.exists_pos_forall_nonneg_add_mul_iff l μ
+        (fun j _ => hlpos j) hneg
+      have hnonneg := (hexit τ hτ.le).1.mpr le_rfl
+      have hnotpos : ¬ ∀ j ∈ Finset.univ, 0 < l j + τ * μ j := by
+        rw [(hexit τ hτ.le).2]
+        exact lt_irrefl τ
+      push Not at hnotpos
+      obtain ⟨j, hj, hjzero⟩ := hnotpos
+      exact ⟨τ, fun j => hnonneg j (Finset.mem_univ j), j,
+        le_antisymm hjzero (hnonneg j hj)⟩
   let κ : Fin 3 → K := fun j => l j + τ * μ j
-  have hκ0 (j : Fin 3) : 0 ≤ κ j := by
-    by_cases hj : μ j < 0
-    · have := hmin j (Finset.mem_filter.mpr ⟨Finset.mem_univ _, hj⟩)
-      rw [le_div_iff₀ (by linarith)] at this
-      simp only [κ]
-      linarith
-    · exact add_nonneg (hl0 j) (mul_nonneg hτ0 (le_of_not_gt hj))
-  have hκj₀ : κ j₀ = 0 := by
-    simp only [κ, hτ]
-    field_simp [hμj₀.ne]
-    ring
+  have hκj₀ : κ j₀ = 0 := hj₀
   have hκsum : ∑ j, κ j = 1 := by
     simp only [κ, Finset.sum_add_distrib, ← Finset.mul_sum, hμsum, mul_zero, add_zero, hlsum]
   refine ⟨∑ j, κ j • ![x, y, z] j, ?_, ?_⟩
