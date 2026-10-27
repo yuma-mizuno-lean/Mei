@@ -105,6 +105,7 @@ theorem levelConsistent_image (k : ℕ) {a : ℕ} (ha : E.degreeMap.modulus k �
 /-- Finite endpoint transport is natural at any source cutoff covering the
 coordinate modulus. The target endpoints need only be images of the given
 source endpoints. -/
+@[simp]
 theorem levelTransport_image (k : ℕ) {a : ℕ} (ha : E.degreeMap.modulus k ≤ a)
     (hD : D.LevelConsistent a)
     (x y : WallComplement (fun j : D.active a => (D.wall j).support)) :
@@ -135,6 +136,7 @@ theorem consistent_image_iff : (D.image e E hE).Consistent ↔ D.Consistent := b
   · exact fun hD => hD.image e E hE
 
 /-- Completed endpoint transport commutes with affine coordinate changes. -/
+@[simp]
 theorem transport_image (hD : D.Consistent) (x y : D.Point) :
     (D.image e E hE).transport (hD.image e E hE)
         ((D.pathImage e E hE).obj x) ((D.pathImage e E hE).obj y) =
