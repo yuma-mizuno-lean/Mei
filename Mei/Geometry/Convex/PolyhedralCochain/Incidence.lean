@@ -69,12 +69,9 @@ theorem mem_cellsOfCodimension_of_mem_support_coboundaryPresentation
     (hτ : τ ∈ (coboundaryPresentation (R := R) f).support) :
     τ.carrier ∈ C.cellsOfCodimension (k + 1) := by
   classical
-  rw [← Finsupp.sum_single f] at hτ
-  simp only [Finsupp.sum, map_sum, coboundaryPresentation_single] at hτ
-  obtain ⟨σ, hσ, hτ⟩ := Finsupp.mem_support_finsetSum τ hτ
-  obtain ⟨υ, hυ, hτ⟩ := Finsupp.mem_support_finsetSum τ hτ
-  obtain ⟨rfl, _⟩ := (Finsupp.mem_support_single _ _ _).mp hτ
-  exact σ.mem_cellsOfCodimension_of_mem_boundaryFacets C (hf σ hσ) hυ
+  obtain ⟨σ, hσ, hτ⟩ := Finset.mem_biUnion.mp
+      (support_coboundaryPresentation_subset f hτ)
+  exact σ.mem_cellsOfCodimension_of_mem_boundaryFacets C (hf σ hσ) hτ
 
 end PolyhedralCochain
 
