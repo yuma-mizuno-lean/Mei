@@ -18,12 +18,12 @@ formula uses the reverse ordered product, with the first crossing on the right.
 It compares the boundary edges of an affine filling with the sampled sides of
 an admissible grid without imposing any relations on the wall labels.
 
-The proof uses `FinitePolyhedralComplex.segmentCrossingWord_subdivide`, including
-its endpoint cases, and `WallComplement.AdmissibleSegment.subsegment`. Prefix
-segments give a telescoping sequence of noncommutative words. Applying
-`FinitePolyhedralComplex.crossingWord_grid_boundary_mem_normalClosure` then
-reduces the original boundary word to the grid cell words. No transversality
-of a filling, geometric nondegeneracy, or consistency of a diagram is needed.
+`FinitePolyhedralComplex.crossingWord_boundary_mem_normalClosure_of_sampling`
+places the original four-edge boundary word in the normal closure of the grid
+cell words. This boundary comparison requires each wall form `ν P` to have
+kernel equal to the direction of the wall's affine span, so reversing an edge
+inverts its word. No transversality of a filling, geometric nondegeneracy, or
+consistency of a diagram is needed.
 -/
 
 public section
@@ -49,6 +49,8 @@ theorem segmentCrossingWord_eq_prod_sampling {n : ℕ}
     (edge : ∀ a : Fin n, v a.castSucc ⟶ v a.succ) :
     C.segmentCrossingWord ν e =
       (List.ofFn (fun a : Fin n => C.segmentCrossingWord ν (edge a))).reverse.prod := by
+  -- Use `WallComplement.AdmissibleSegment.subsegment` to form prefixes, then
+  -- telescope their words using `segmentCrossingWord_subdivide`, including its endpoint cases.
   let initialSeg (j : Fin (n + 1)) : v 0 ⟶ v j :=
     ⟨e.down.subsegment ⟨le_rfl, zero_le_one⟩ (t j).property
       (AffineMap.lineMap_apply_zero _ _).symm (hv j)⟩
@@ -145,6 +147,7 @@ theorem crossingWord_boundary_mem_normalClosure_of_sampling (C : FinitePolyhedra
     (x m) (e m) n top t ht (hrow m (by simp))
   have hl := Quiver.Path.crossingWord_ofSeq_eq_segmentCrossingWord ν
     (fun a => x a 0) (fun a => f a 0) m left s hs (hcol 0 (by simp))
+  -- Transfer `crossingWord_grid_boundary_mem_normalClosure` to the original boundary words.
   have hgrid := C.crossingWord_grid_boundary_mem_normalClosure ν hν x e f m n
   simpa only [Quiver.Path.crossingWord_comp, Quiver.Path.crossingWord_cons,
     Quiver.Hom.toPath, Quiver.Path.crossingWord_nil, mul_one,
