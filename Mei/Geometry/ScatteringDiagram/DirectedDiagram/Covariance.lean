@@ -5,30 +5,18 @@ Authors: Claude Code
 -/
 module
 
-public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.AffineTransport.Basic
 public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Uniqueness
 
 /-!
 # Consistency and outgoing completions under coordinate changes
 
-Compatible spatial and algebraic coordinate changes preserve finite-order consistency
-and finite-order equivalence of directed diagrams, with the cutoffs related by the
-coordinate change's modulus: consistency or equivalence at a source cutoff covering the
-modulus of a target order `k` gives the same property at `k`. In particular they
-preserve and reflect consistency and equivalence at all orders. Since incomingness
-and outgoingness are also preserved, the image of an outgoing completion of an initial
-family is an outgoing completion of the transported initial family. By uniqueness, every
-outgoing completion of the transported family is equivalent to that image: forming the
-consistent outgoing completion commutes with coordinate changes.
-
-A path at the target order only avoids the walls active there, which may be fewer than
-the source walls active at the larger cutoff. It is therefore first moved into general
-position for all transported source walls, without changing its product. The pulled-back
-path is then admissible at the source cutoff, and `DirectedDiagram.levelPathProduct_image`
-compares the two products. Loop perturbation uses
-`DirectedDiagram.exists_loop_levelPathProduct_eq_of_vertices_eq`, shared with
-`DirectedDiagram.LevelEquivalent.consistent`; equivalence uses
-`DirectedDiagram.exists_common_levelPathProduct_eq`.
+Compatible spatial and algebraic coordinate changes preserve incomingness,
+outgoingness and consistency. Hence the image of an outgoing completion of an
+initial family is an outgoing completion of the transported initial family.
+By uniqueness, every outgoing completion of the transported family is equivalent
+to that image: forming the consistent outgoing completion commutes with coordinate
+changes. Finite-order consistency and equivalence are treated in
+`Mei.Geometry.ScatteringDiagram.DirectedDiagram.Covariance.Basic`.
 
 The completions are those of Travis Mandel, *Scattering diagrams, theta functions, and
 refined tropical curve counts*, [arXiv:1503.06183v5](https://arxiv.org/abs/1503.06183v5),
@@ -68,149 +56,7 @@ variable {Γ Γ' Λ Λ' R V V' ι κ : Type*} {L L' : Type u}
   (E : DirectedWallSpaces.CoordinateChange (d := d) (e := d') H H')
   (hE : E.tangentEquiv = e.latticeEquiv)
 
-/-- Pull back a path avoiding the transported supports of the walls active at a source
-cutoff to a path admissible at that cutoff. -/
-private def levelPathPreimage (a : ℕ) :
-    WallComplement (fun j : D.active a => ((D.image e E hE).wall j).support) ⥤q
-      WallComplement (fun j : D.active a => (D.wall j).support) :=
-  e.toContinuousAffineEquiv.symm.wallComplementMap (Equiv.refl _) (by
-    intro j
-    have he : (e.toAffineEquiv : V → V') = e.toContinuousAffineEquiv :=
-      funext fun v => (e.toContinuousAffineEquiv_apply v).symm
-    rw [Equiv.refl_apply, image_wall, DirectedWall.image_support, he]
-    exact (e.toContinuousAffineEquiv.symm_image_image _).symm)
-
-private theorem levelPathPreimage_obj_val (a : ℕ)
-    (x : WallComplement (fun j : D.active a => ((D.image e E hE).wall j).support)) :
-    ((D.levelPathPreimage e E hE a).obj x).val = e.toContinuousAffineEquiv.symm x.val :=
-  ContinuousAffineEquiv.wallComplementMap_obj_val _ _ _ x
-
-private theorem vertices_levelPathPreimage (a : ℕ)
-    {x y : WallComplement (fun j : D.active a => ((D.image e E hE).wall j).support)}
-    (r : AdmissiblePLPath x y) :
-    ((D.levelPathPreimage e E hE a).mapPath r).vertices.map WallComplement.val =
-      (r.vertices.map WallComplement.val).map e.toContinuousAffineEquiv.symm := by
-  simp only [Prefunctor.vertices_mapPath, List.map_map, Function.comp_def,
-    levelPathPreimage_obj_val]
-
-/-- A path avoiding the transported supports of all walls active at a source cutoff `a`
-computes at a target order `k` covered by `a` the image of the source product of its
-pullback. -/
-private theorem levelPathProduct_restrict_eq (k : ℕ) {a : ℕ}
-    (ha : E.degreeMap.modulus k ≤ a)
-    {x y : WallComplement (fun j : D.active a => ((D.image e E hE).wall j).support)}
-    (r : AdmissiblePLPath x y) :
-    (D.image e E hE).levelPathProduct k
-        ((WallComplement.restrictPrefunctor _
-          (Set.inclusion (D.active_image_subset e E hE k ha))).mapPath r) =
-      (E.gradedLieHom.truncatedMap k ha).bchGroupMap
-        (D.levelPathProduct a ((D.levelPathPreimage e E hE a).mapPath r)) := by
-  rw [← D.levelPathProduct_image e E hE k ha]
-  apply levelPathProduct_eq_of_vertices_eq
-  have happly (v : V') : e (e.toContinuousAffineEquiv.symm v) = v := by
-    rw [← Toric.IntegralAffineEquiv.toContinuousAffineEquiv_apply,
-      ContinuousAffineEquiv.apply_symm_apply]
-  simp only [Prefunctor.vertices_mapPath, List.map_map, Function.comp_def,
-    WallComplement.restrictPrefunctor_obj_val, levelPathImage_obj_val,
-    levelPathPreimage_obj_val, happly]
-
 variable {D F e E hE}
-
-/-- Consistency at a source cutoff covering the modulus of a target order gives
-consistency of the transported diagram at that order. -/
-theorem LevelConsistent.image {k a : ℕ} (ha : E.degreeMap.modulus k ≤ a)
-    (hD : D.LevelConsistent a) : (D.image e E hE).LevelConsistent k := by
-  apply ((D.image e E hE).levelConsistent_iff_loops k).mpr
-  intro x p
-  obtain ⟨b, q, hq⟩ := (D.image e E hE).exists_loop_levelPathProduct_eq_of_vertices_eq k
-    (fun j : D.active a => ((D.image e E hE).wall j).support)
-    (fun j => ((D.image e E hE).wall j).isConvexPolyhedron)
-    (fun j => ((D.image e E hE).wall j).finrank_direction_add_one) p
-  let r := (WallComplement.restrictPrefunctor _
-    (Set.inclusion (D.active_image_subset e E hE k ha))).mapPath q
-  calc
-    (D.image e E hE).levelPathProduct k p =
-        (D.image e E hE).levelPathProduct k r :=
-      (hq r (WallComplement.vertices_restrictPrefunctor _
-        (Set.inclusion (D.active_image_subset e E hE k ha)) q)).symm
-    _ = 1 := by
-      rw [D.levelPathProduct_restrict_eq e E hE k ha,
-        (D.levelConsistent_iff_loops a).mp hD]
-      exact map_one _
-
-/-- Coordinate changes preserve consistency at every order. -/
-theorem Consistent.image (hD : D.Consistent) : (D.image e E hE).Consistent :=
-  (consistent_iff _).mpr fun k =>
-    ((consistent_iff D).mp hD (E.degreeMap.modulus k)).image le_rfl
-
-variable (e E hE) in
-/-- Coordinate changes preserve and reflect consistency. -/
-@[simp]
-theorem consistent_image_iff : (D.image e E hE).Consistent ↔ D.Consistent := by
-  refine ⟨fun hD => ?_, Consistent.image⟩
-  simpa using hD.image (e := e.symm) (E := E.symm) (hE := by simp [hE])
-
-/-- Equivalence at a source cutoff covering the modulus of a target order gives
-equivalence of the transported diagrams at that order. -/
-theorem LevelEquivalent.image {k a : ℕ} (ha : E.degreeMap.modulus k ≤ a)
-    (hDF : D.LevelEquivalent F a) :
-    (D.image e E hE).LevelEquivalent (F.image e E hE) k := by
-  refine (levelEquivalent_def _ _ k).mpr fun x y x' y' p q hpq => ?_
-  -- The transported supports of all walls of both diagrams active at the source cutoff.
-  let W : Unit → D.active a ⊕ F.active a → Set V' := fun _ =>
-    Sum.elim (fun j => ((D.image e E hE).wall j).support)
-      (fun j => ((F.image e E hE).wall j).support)
-  have hpoly : ∀ j c, TauCeti.IsConvexPolyhedron (W j c) := by
-    rintro _ (c | c)
-    · exact ((D.image e E hE).wall c).isConvexPolyhedron
-    · exact ((F.image e E hE).wall c).isConvexPolyhedron
-  have hdim : ∀ j c, Module.finrank ℝ (affineSpan ℝ (W j c)).direction + 1 =
-      Module.finrank ℝ V' := by
-    rintro _ (c | c)
-    · exact ((D.image e E hE).wall c).finrank_direction_add_one
-    · exact ((F.image e E hE).wall c).finrank_direction_add_one
-  obtain ⟨b, c, r, hP, hQ⟩ := (D.image e E hE).exists_common_levelPathProduct_eq
-    (F.image e E hE) k k hpoly hdim p q hpq
-  let r₀ := (CommonWallComplement.projectionPrefunctor ()).mapPath r
-  let r₁ := (WallComplement.restrictPrefunctor (W ()) Sum.inl).mapPath r₀
-  let r₂ := (WallComplement.restrictPrefunctor (W ()) Sum.inr).mapPath r₀
-  have hv₁ : r₁.vertices.map WallComplement.val = r.vertices.map CommonWallComplement.val :=
-    (WallComplement.vertices_restrictPrefunctor _ _ _).trans
-      (CommonWallComplement.vertices_projection () r)
-  have hv₂ : r₂.vertices.map WallComplement.val = r.vertices.map CommonWallComplement.val :=
-    (WallComplement.vertices_restrictPrefunctor _ _ _).trans
-      (CommonWallComplement.vertices_projection () r)
-  have hP' := hP _ ((WallComplement.vertices_restrictPrefunctor _
-    (Set.inclusion (D.active_image_subset e E hE k ha)) r₁).trans hv₁)
-  have hQ' := hQ _ ((WallComplement.vertices_restrictPrefunctor _
-    (Set.inclusion (F.active_image_subset e E hE k ha)) r₂).trans hv₂)
-  -- The pulled-back paths share their vertices, so the source equivalence applies.
-  have hDF' : D.levelPathProduct a ((D.levelPathPreimage e E hE a).mapPath r₁) =
-      F.levelPathProduct a ((F.levelPathPreimage e E hE a).mapPath r₂) := by
-    apply (levelEquivalent_def D F a).mp hDF
-    refine (D.vertices_levelPathPreimage e E hE a r₁).trans
-      (Eq.trans ?_ (F.vertices_levelPathPreimage e E hE a r₂).symm)
-    exact congrArg (List.map _) (hv₁.trans hv₂.symm)
-  calc
-    (D.image e E hE).levelPathProduct k p = _ := hP'.symm
-    _ = _ := D.levelPathProduct_restrict_eq e E hE k ha r₁
-    _ = _ := congrArg _ hDF'
-    _ = _ := (F.levelPathProduct_restrict_eq e E hE k ha r₂).symm
-    _ = (F.image e E hE).levelPathProduct k q := hQ'
-
-/-- Coordinate changes preserve equivalence of directed diagrams. -/
-theorem Equivalent.image (hDF : D.Equivalent F) :
-    (D.image e E hE).Equivalent (F.image e E hE) :=
-  (equivalent_iff _ _).mpr fun k =>
-    ((equivalent_iff D F).mp hDF (E.degreeMap.modulus k)).image le_rfl
-
-variable (e E hE) in
-/-- Coordinate changes preserve and reflect equivalence of directed diagrams. -/
-@[simp]
-theorem equivalent_image_iff :
-    (D.image e E hE).Equivalent (F.image e E hE) ↔ D.Equivalent F := by
-  refine ⟨fun hDF => ?_, Equivalent.image⟩
-  simpa using hDF.image (e := e.symm) (E := E.symm) (hE := by simp [hE])
 
 section Completion
 

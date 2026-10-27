@@ -6,7 +6,6 @@ Authors: Codex
 module
 
 public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Equivalence
-public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Consistency
 
 /-!
 # Consistency and transport under directed equivalence
@@ -22,10 +21,8 @@ Product stability here uses simultaneous signed crossing events, so repeated and
 overlapping coplanar walls are retained. Common paths compare endpoint transport;
 no stabilization or local finiteness of the union of active walls is needed.
 
-Consistency also descends to lower cutoffs. A lower-order loop can meet additional
-higher-order walls, so first use
-`DirectedDiagram.exists_loop_levelPathProduct_eq_of_vertices_eq` to move it
-into general position, and then project its higher-order product.
+Consistency also descends to lower cutoffs by specializing coordinate covariance
+to the identity spatial and wall-space coordinate changes.
 -/
 
 public section
@@ -93,21 +90,14 @@ theorem LevelEquivalent.consistent_iff {k : ℕ} (hDE : D.LevelEquivalent E k) :
 No admissibility for the higher active wall family is required of the test loops. -/
 theorem LevelConsistent.mono {k l : ℕ} (hD : D.LevelConsistent l) (hkl : k ≤ l) :
     D.LevelConsistent k := by
-  apply (D.levelConsistent_iff_loops k).mpr
-  intro x p
-  obtain ⟨a, q, hq⟩ := D.exists_loop_levelPathProduct_eq_of_vertices_eq k
-    (fun j : D.active l => (D.wall j).support)
-    (fun j => (D.wall j).isConvexPolyhedron)
-    (fun j => (D.wall j).finrank_direction_add_one) p
-  let f := WallComplement.restrictPrefunctor
-    (fun j : D.active l => (D.wall j).support) (Set.inclusion (D.active_mono hkl))
-  have hlow := hq (f.mapPath q) (WallComplement.vertices_restrictPrefunctor
-    (fun j : D.active l => (D.wall j).support) (Set.inclusion (D.active_mono hkl)) q)
-  calc
-    _ = D.levelPathProduct k (f.mapPath q) := hlow.symm
-    _ = (d.truncationMap ℒ hkl).bchGroupMap (D.levelPathProduct l q) :=
-      (D.truncation_levelPathProduct hkl q).symm
-    _ = 1 := by rw [(D.levelConsistent_iff_loops l).mp hD a q, map_one]
+  have ha : (DirectedWallSpaces.CoordinateChange.refl (d := d) H).degreeMap.modulus k ≤ l :=
+    ((DirectedWallSpaces.CoordinateChange.refl H).degreeMap_modulus_le_iff k l).mpr
+      fun n _ hn => by
+        simpa only [DirectedWallSpaces.CoordinateChange.refl_degreeEquiv, AddEquiv.refl_apply]
+          using hn.trans (Int.ofNat_le.mpr hkl)
+  simpa only [image_refl] using hD.image
+    (e := Toric.IntegralAffineEquiv.refl h)
+    (E := DirectedWallSpaces.CoordinateChange.refl H) (hE := by simp) ha
 
 /-- Equivalence preserves consistency at every cutoff. -/
 theorem Equivalent.consistent (hDE : D.Equivalent E) (hD : D.Consistent) : E.Consistent :=
