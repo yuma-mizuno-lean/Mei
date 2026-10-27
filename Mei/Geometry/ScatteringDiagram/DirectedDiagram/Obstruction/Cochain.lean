@@ -7,7 +7,6 @@ module
 
 public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Meridian
 public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Localization
-public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Consistency
 public import Mei.Geometry.Convex.PolyhedralCochain.Transverse
 
 /-!
@@ -51,42 +50,6 @@ variable {Γ Λ R L V ι : Type*} [AddCommGroup Γ] [AddCommGroup Λ]
   {i : Λ →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
   {H : DirectedWallSpaces ρ ℒ} (D : DirectedDiagram (d := d) h H ι)
   {k : ℕ}
-
-/-- The logarithm of a loop product, valued in the successive Lie kernel.
-Only lower-order consistency is required. -/
-def loopObstruction (hk : D.LevelConsistent k)
-    {x : WallComplement (fun j : D.active (k + 1) => (D.wall j).support)}
-    (γ : AdmissiblePLPath x x) : (d.truncationMap ℒ (Nat.le_succ k)).ker :=
-  ⟨log (D.levelPathProduct (k + 1) γ), by
-    rw [LieHom.mem_ker, ← LieHom.log_bchGroupMap,
-      D.truncation_levelPathProduct (Nat.le_succ k),
-      (D.levelConsistent_iff_loops k).mp hk, log_one]⟩
-
-/-- The underlying obstruction coefficient is the actual loop logarithm. -/
-@[simp]
-theorem coe_loopObstruction (hk : D.LevelConsistent k)
-    {x : WallComplement (fun j : D.active (k + 1) => (D.wall j).support)}
-    (γ : AdmissiblePLPath x x) :
-    (D.loopObstruction hk γ : d.truncatedLie ℒ (k + 1)) =
-      log (D.levelPathProduct (k + 1) γ) := (rfl)
-
-/-- Reversing a loop negates its obstruction. -/
-@[simp]
-theorem loopObstruction_reverse (hk : D.LevelConsistent k)
-    {x : WallComplement (fun j : D.active (k + 1) => (D.wall j).support)}
-    (γ : AdmissiblePLPath x x) :
-    D.loopObstruction hk γ.reverse = -D.loopObstruction hk γ := by
-  apply Subtype.ext
-  simp [D.levelPathProduct_reverse]
-
-/-- An obstruction vanishes precisely when its loop has trivial holonomy. -/
-@[simp]
-theorem loopObstruction_eq_zero_iff (hk : D.LevelConsistent k)
-    {x : WallComplement (fun j : D.active (k + 1) => (D.wall j).support)}
-    (γ : AdmissiblePLPath x x) :
-    D.loopObstruction hk γ = 0 ↔ D.levelPathProduct (k + 1) γ = 1 := by
-  rw [← Subtype.val_inj, coe_loopObstruction, ZeroMemClass.coe_zero,
-    ← log_one (L := d.truncatedLie ℒ (k + 1)), log_injective.eq_iff]
 
 variable (σ : (D.adaptedComplex (k + 1)).joints → OrientedCell h 2)
   (x : (D.adaptedComplex (k + 1)).joints →
