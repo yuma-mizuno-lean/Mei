@@ -20,10 +20,11 @@ coboundary descended through subdivision relations.
 
 The geometric input is `OrientedCell.existsUnique_reverse_mem_boundaryFacets`,
 which combines the second-facet construction with uniqueness and the opposite
-ridge-orientation theorem. The finite assembly uses Mathlib's
-`Finset.sum_involution` and the relation `PolyhedralCochain.mk_reverse`.
-The incidence pairing follows the finite-sum argument of
+ridge-orientation theorem. The finite assembly uses
+`PolyhedralCochain.sum_mk_eq_zero_of_existsUnique_reverse`, shared with
 `OrientedCell.IsOrientedSubdivision.sum_internal_boundaryFacets_eq_zero`.
+This pairing was extracted from the latter's finite-incidence argument and uses
+Mathlib's `Finset.sum_involution` and `PolyhedralCochain.mk_reverse`.
 The result allows arbitrary codimension, unbounded cells, lineality and
 coefficients in modules over arbitrary associative rings.
 -/
@@ -50,29 +51,14 @@ theorem sum_cellCoboundary_boundaryFacets (σ : OrientedCell h k) (c : E) :
   have hS (x : Σ _ : OrientedCell h (k + 1), OrientedCell h (k + 1 + 1)) :
       x ∈ S ↔ x.1 ∈ σ.boundaryFacets ∧ x.2 ∈ x.1.boundaryFacets := by
     simp only [S, Finset.mem_sigma]
-  have hex (x) (hx : x ∈ S) :
-      ∃! υ : OrientedCell h (k + 1),
-        υ ∈ σ.boundaryFacets ∧ υ ≠ x.1 ∧ x.2.reverse ∈ υ.boundaryFacets :=
-    σ.existsUnique_reverse_mem_boundaryFacets ((hS x).mp hx).1 ((hS x).mp hx).2
-  -- Pair a parent-ridge incidence with the reversed ridge in its other parent.
-  let g (x) (hx : x ∈ S) : Σ _ : OrientedCell h (k + 1), OrientedCell h (k + 1 + 1) :=
-    ⟨(hex x hx).choose, x.2.reverse⟩
-  have hgmem (x) (hx : x ∈ S) : g x hx ∈ S := by
-    obtain ⟨hυ, _, hr⟩ := (hex x hx).choose_spec.1
-    exact (hS _).mpr ⟨hυ, hr⟩
-  have hgg (x) (hx : x ∈ S) : g (g x hx) (hgmem x hx) = x := by
-    have hp := (hex x hx).choose_spec.1
-    have hfirst : (hex (g x hx) (hgmem x hx)).choose = x.1 :=
-      ((hex (g x hx) (hgmem x hx)).choose_spec.2 x.1
-        ⟨((hS x).mp hx).1, Ne.symm hp.2.1, by
-          simpa only [g, reverse_reverse] using ((hS x).mp hx).2⟩).symm
-    exact Sigma.ext hfirst (heq_of_eq (reverse_reverse x.2))
   simp_rw [cellCoboundary_apply]
   rw [Finset.sum_sigma' σ.boundaryFacets]
-  refine Finset.sum_involution g ?_ ?_ hgmem hgg
-  · intro x hx
-    simp only [g, PolyhedralCochain.mk_reverse, add_neg_cancel]
-  · intro x hx _ he
-    exact (hex x hx).choose_spec.1.2.1 (congrArg Sigma.fst he)
+  apply PolyhedralCochain.sum_mk_eq_zero_of_existsUnique_reverse (S := S)
+  intro x hx
+  obtain ⟨υ, ⟨hυ, hne, hr⟩, huniq⟩ :=
+    σ.existsUnique_reverse_mem_boundaryFacets ((hS x).mp hx).1 ((hS x).mp hx).2
+  refine ⟨υ, ⟨hne, (hS _).mpr ⟨hυ, hr⟩⟩, ?_⟩
+  rintro η ⟨hηne, hη⟩
+  exact huniq η ⟨((hS _).mp hη).1, hηne, ((hS _).mp hη).2⟩
 
 end Mei.OrientedCell

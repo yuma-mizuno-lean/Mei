@@ -32,6 +32,11 @@ the `R`-module carrier has the same underlying group as the abelian-group carrie
 is characterized by its universal property `PolyhedralCochain.lift`. In top codimension every
 cell is a point, and a generator with nonzero coefficient is a nonzero cochain.
 
+Finite indexed occurrences cancel when each has a unique other index carrying its reverse.
+`PolyhedralCochain.sum_mk_eq_zero_of_existsUnique_reverse` factors the incidence-pairing
+argument of `OrientedCell.IsOrientedSubdivision.sum_internal_boundaryFacets_eq_zero`,
+using Mathlib's `Finset.sum_involution` and the orientation reversal relation.
+
 This file constructs the carrier and its universal property. The coboundary, the intersection
 pairing with transverse affine tests and transverse sweeps are further operations on it, used to
 construct wall corrections of scattering diagrams.
@@ -293,6 +298,29 @@ theorem mk_reverse (σ : OrientedCell h k) (c : E) :
   rw [eq_neg_iff_add_eq_zero, ← ofFinsupp_single, ← ofFinsupp_single, ← map_add,
     ofFinsupp_eq_zero_iff]
   exact Submodule.subset_span (Or.inl ⟨σ, c, rfl⟩)
+
+open Classical in
+/-- A finite sum of indexed cell occurrences vanishes when each occurrence has a unique
+other index carrying its reversed orientation. Indices retain incidence multiplicities. -/
+theorem sum_mk_eq_zero_of_existsUnique_reverse {α : Type*}
+    {S : Finset (Σ _ : α, OrientedCell h k)}
+    (hS : ∀ x ∈ S, ∃! a : α, a ≠ x.1 ∧ (⟨a, x.2.reverse⟩ ∈ S)) (c : E) :
+    (∑ x ∈ S, mk (R := R) x.2 c) = 0 := by
+  classical
+  let g (x) (hx : x ∈ S) : Σ _ : α, OrientedCell h k :=
+    ⟨(hS x hx).choose, x.2.reverse⟩
+  have hgmem (x) (hx : x ∈ S) : g x hx ∈ S := (hS x hx).choose_spec.1.2
+  have hgg (x) (hx : x ∈ S) : g (g x hx) (hgmem x hx) = x := by
+    have hp := (hS x hx).choose_spec.1
+    have hfirst : (hS (g x hx) (hgmem x hx)).choose = x.1 :=
+      ((hS (g x hx) (hgmem x hx)).choose_spec.2 x.1
+        ⟨Ne.symm hp.1, by simpa only [g, OrientedCell.reverse_reverse] using hx⟩).symm
+    exact Sigma.ext hfirst (heq_of_eq (OrientedCell.reverse_reverse x.2))
+  refine Finset.sum_involution g ?_ ?_ hgmem hgg
+  · intro x hx
+    simp only [g, mk_reverse, add_neg_cancel]
+  · intro x hx _ he
+    exact (hS x hx).choose_spec.1.1 (congrArg Sigma.fst he)
 
 /-- The class of a generator is the sum of the classes of the pieces of an oriented subdivision. -/
 theorem mk_eq_sum_of_isOrientedSubdivision {σ : OrientedCell h k}
