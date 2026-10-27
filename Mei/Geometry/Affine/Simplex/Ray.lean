@@ -5,11 +5,9 @@ Authors: Codex
 -/
 module
 
-public import Mathlib.Analysis.Convex.Combination
 public import Mathlib.LinearAlgebra.AffineSpace.Simplex.Basic
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.FieldSimp
-import Mathlib.Tactic.Module
 
 /-!
 # Exit points of rays in simplices
@@ -33,23 +31,23 @@ open Set Finset
 
 namespace Affine.Simplex
 
-variable {K V : Type*} [Field K] [LinearOrder K] [IsStrictOrderedRing K]
-  [AddCommGroup V] [Module K V] {n : ℕ}
+variable {K V P : Type*} [Field K] [LinearOrder K] [IsStrictOrderedRing K]
+  [AddCommGroup V] [Module K V] [AffineSpace V P] {n : ℕ}
 
 /-- A ray from an interior point in a nonzero tangent direction exits the
 simplex at a positive parameter on an opposite face. Its nonnegative parameters
 inside the simplex are exactly those at most the exit parameter. -/
-theorem exists_pos_ray_mem_face (s : Simplex K V (n + 1)) {p v : V}
+theorem exists_pos_ray_mem_face (s : Simplex K P (n + 1)) {p : P} {v : V}
     (hp : p ∈ s.interior) (hv : v ∈ vectorSpan K (range s.points)) (hv0 : v ≠ 0) :
     ∃ t : K, 0 < t ∧ ∃ j : Fin (n + 2),
-      p + t • v ∈ (s.faceOpposite j).closedInterior ∧
-      ∀ a : K, 0 ≤ a → (p + a • v ∈ s.closedInterior ↔ a ≤ t) := by
+      t • v +ᵥ p ∈ (s.faceOpposite j).closedInterior ∧
+      ∀ a : K, 0 ≤ a → (a • v +ᵥ p ∈ s.closedInterior ↔ a ≤ t) := by
   classical
   -- Express the velocity as a zero-sum variation of barycentric weights.
   have hpA := s.closedInterior_subset_affineSpan (s.interior_subset_closedInterior hp)
   obtain ⟨b, hb1, hb, hbp⟩ := hp
-  have hyA : p + v ∈ affineSpan K (range s.points) := by
-    simpa only [vadd_eq_add, add_comm] using
+  have hyA : v +ᵥ p ∈ affineSpan K (range s.points) := by
+    exact
       (affineSpan K (range s.points)).vadd_mem_of_mem_direction
         (by simpa only [direction_affineSpan] using hv) hpA
   obtain ⟨c, hc1, hcpv⟩ := eq_affineCombination_of_mem_affineSpan_of_fintype hyA
@@ -58,8 +56,8 @@ theorem exists_pos_ray_mem_face (s : Simplex K V (n + 1)) {p v : V}
   have hdn : ∃ j ∈ (Finset.univ : Finset (Fin (n + 2))), d j ≠ 0 := by
     by_contra! hz
     have hcb : c = b := funext fun j => sub_eq_zero.mp (hz j (mem_univ j))
-    have heq : p = p + v := hbp.symm.trans (hcb ▸ hcpv.symm)
-    exact hv0 (add_left_cancel (heq.symm.trans (add_zero p).symm))
+    have heq : p = v +ᵥ p := hbp.symm.trans (hcb ▸ hcpv.symm)
+    exact hv0 (by simpa using congrArg (fun q => q -ᵥ p) heq.symm)
   obtain ⟨j₀, _, hj₀⟩ := exists_neg_of_sum_zero_of_exists_nonzero d hd1 hdn
   -- The first weight to vanish determines the last permissible ray parameter.
   let S : Finset (Fin (n + 2)) := univ.filter fun j => d j < 0
@@ -91,17 +89,13 @@ theorem exists_pos_ray_mem_face (s : Simplex K V (n + 1)) {p v : V}
     dsimp only [w, t]
     field_simp [hdj.ne]
     ring
-  -- The affine combinations follow the actual ray in the ambient module.
-  have hwp (a : K) : univ.affineCombination K s.points (w a) = p + a • v := by
-    rw [affineCombination_eq_linear_combination _ _ _ (hw1 a)]
-    have hbpsum := hbp
-    rw [affineCombination_eq_linear_combination _ _ _ hb1] at hbpsum
-    have hcpsum := hcpv.symm
-    rw [affineCombination_eq_linear_combination _ _ _ hc1] at hcpsum
-    simp only [w, d, Pi.sub_apply, add_smul, mul_smul, sub_smul,
-      sum_add_distrib, sum_sub_distrib, ← smul_sum]
-    rw [hbpsum, hcpsum]
-    module
+  -- Interpolating barycentric weights follows the ray in the affine space.
+  have hwp (a : K) : univ.affineCombination K s.points (w a) = a • v +ᵥ p := by
+    have hwline : w a = AffineMap.lineMap b c a := by
+      ext i
+      simp [w, d, AffineMap.lineMap_apply_module', smul_eq_mul, add_comm]
+    rw [hwline, ← Finset.lineMap_affineCombination, hbp, ← hcpv,
+      AffineMap.lineMap_apply, vadd_vsub]
   refine ⟨t, ht, j, ?_, ?_⟩
   · rw [← hwp t, faceOpposite, affineCombination_mem_closedInterior_face_iff_nonneg s _ (hw1 t)]
     exact ⟨fun i _ => (hweights t ht.le).mpr le_rfl i, by simpa using hwj⟩
@@ -118,12 +112,12 @@ theorem exists_pos_ray_mem_face (s : Simplex K V (n + 1)) {p v : V}
 /-- If a ray through an interior point of a triangle misses all vertices,
 its exit lies on exactly one edge. This is the vertex-avoidance
 condition on transverse triangular meridians. -/
-theorem exists_pos_ray_mem_unique_face (s : Triangle K V) {p v : V}
+theorem exists_pos_ray_mem_unique_face (s : Triangle K P) {p : P} {v : V}
     (hp : p ∈ s.interior) (hv : v ∈ vectorSpan K (range s.points)) (hv0 : v ≠ 0)
-    (hmiss : ∀ a : K, 0 < a → ∀ i, p + a • v ≠ s.points i) :
+    (hmiss : ∀ a : K, 0 < a → ∀ i, a • v +ᵥ p ≠ s.points i) :
     ∃ t : K, 0 < t ∧
-      (∃! j : Fin 3, p + t • v ∈ (s.faceOpposite j).closedInterior) ∧
-      ∀ a : K, 0 ≤ a → (p + a • v ∈ s.closedInterior ↔ a ≤ t) := by
+      (∃! j : Fin 3, t • v +ᵥ p ∈ (s.faceOpposite j).closedInterior) ∧
+      ∀ a : K, 0 ≤ a → (a • v +ᵥ p ∈ s.closedInterior ↔ a ≤ t) := by
   obtain ⟨t, ht, j, hj, hparam⟩ := s.exists_pos_ray_mem_face hp hv hv0
   refine ⟨t, ht, ⟨j, hj, ?_⟩, hparam⟩
   intro m hm
@@ -137,14 +131,14 @@ theorem exists_pos_ray_mem_unique_face (s : Triangle K V) {p v : V}
       omega
     · rintro rfl
       exact ⟨hkj, hkm⟩
-  have hqA : p + t • v ∈ affineSpan K (s.points '' ({j}ᶜ ∩ {m}ᶜ)) := by
+  have hqA : t • v +ᵥ p ∈ affineSpan K (s.points '' ({j}ᶜ ∩ {m}ᶜ)) := by
     rw [← s.independent.inf_affineSpan_eq_affineSpan_inter]
     constructor
     · simpa only [range_faceOpposite_points] using
         (s.faceOpposite j).closedInterior_subset_affineSpan hj
     · simpa only [range_faceOpposite_points] using
         (s.faceOpposite m).closedInterior_subset_affineSpan hm
-  have hq : p + t • v = s.points k := by
+  have hq : t • v +ᵥ p = s.points k := by
     simpa only [hset, image_singleton, AffineSubspace.mem_affineSpan_singleton] using hqA
   exact hmiss t ht k hq
 
