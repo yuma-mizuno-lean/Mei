@@ -7,6 +7,7 @@ module
 
 public import Mathlib.Combinatorics.Quiver.Symmetric
 public import Mathlib.Combinatorics.Quiver.Path.Vertices
+public import Mathlib.Data.List.Chain
 
 /-!
 # Vertices and reversal of paths under prefunctors
@@ -16,6 +17,8 @@ This extends Mathlib's `Prefunctor.MapReverse` API to `Prefunctor.mapPath`,
 so that geometric projections of polygonal paths can use the same reversal law.
 A prefunctor also applies its object map to the vertex list, allowing geometric
 paths to be compared after forgetting some of their admissibility conditions.
+Relations between consecutive vertices can be checked separately on each part
+of a concatenation, using Mathlib's `List.isChain_split` at the common endpoint.
 -/
 
 public section
@@ -48,6 +51,17 @@ theorem mapPath_reverse (F : U ⥤q V) [F.MapReverse] {x y : U} (p : Quiver.Path
 end Prefunctor
 
 namespace Quiver.Path
+
+variable {V : Type*} [Quiver V]
+
+/-- A relation holds between consecutive vertices of a concatenated path exactly when
+it holds along both paths. The common endpoint is counted only once. -/
+theorem isChain_vertices_comp {x y z : V} (p : Path x y) (q : Path y z)
+    (r : V → V → Prop) :
+    (p.comp q).vertices.IsChain r ↔ p.vertices.IsChain r ∧ q.vertices.IsChain r := by
+  have hq : y :: q.vertices.tail = q.vertices :=
+    List.cons_head?_tail (by simp)
+  rw [vertices_comp, ← hq, List.isChain_split, dropLast_append_end_eq, hq]
 
 variable {V : Type*} [Quiver V] [Quiver.HasReverse V]
 
