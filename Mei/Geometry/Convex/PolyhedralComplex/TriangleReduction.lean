@@ -104,7 +104,8 @@ theorem crossingWord_mem_normalClosure_triangles (p : AdmissiblePLPath x x)
     apply List.isChain_iff_forall_rel_of_append_cons_cons.mpr
     intro u v l₁ l₂ he e
     exact htri u (by rw [he]; simp) v (by rw [he]; simp) e
-  have hmem := p.mul_weight_mul_inv_mem_of_isChain K.op w (fun u => MulOpposite.op (t u)) hchain
+  have hmem := p.mul_weight_mul_inv_mem_of_isChain K.op.toSubmonoid w
+    (fun u => MulOpposite.op (t u)) hchain
   have hweight {a b} (q : AdmissiblePLPath a b) :
       MulOpposite.unop (q.weight w) = q.crossingWord ν := by
     induction q with
@@ -112,8 +113,8 @@ theorem crossingWord_mem_normalClosure_triangles (p : AdmissiblePLPath x x)
     | cons q e ih => simp only [weight_cons, MulOpposite.unop_mul, w,
         MulOpposite.unop_op, ih, crossingWord_cons]
   have hg : (t x)⁻¹ * p.crossingWord ν * t x ∈ K := by
-    simpa only [Subgroup.mem_op, MulOpposite.unop_mul, MulOpposite.unop_inv,
-      MulOpposite.unop_op, hweight, mul_assoc] using hmem
+    simpa only [Subgroup.mem_toSubmonoid, Subgroup.mem_op, MulOpposite.unop_mul,
+      MulOpposite.unop_inv, MulOpposite.unop_op, hweight, mul_assoc] using hmem
   simpa only [mul_assoc, mul_inv_cancel_left, inv_mul_cancel_right, mul_inv_cancel, mul_one] using
     (Subgroup.normalClosure_normal (s := C.triangleWords ν U)).conj_mem _ hg (t x)
 

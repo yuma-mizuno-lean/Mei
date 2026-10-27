@@ -262,12 +262,14 @@ theorem consistent_iff_triangles : D.Consistent ↔
   · intro htri
     apply D.consistent_iff_loops.mpr
     intro x p
+    rw [pathProduct_def, ← MonoidHom.mem_ker]
     apply Subgroup.normalClosure_le_normal (N := (FreeGroup.lift D.label).ker) ?_
       (p.crossingWord_mem_normalClosure_triangles D.normal D.ker_normal
         isOpen_univ (fun _ _ => mem_univ _))
     intro g hg
     obtain ⟨a, b, c, e, f, r, _, _, _, rfl⟩ := (C.mem_triangleWords D.normal univ g).mp hg
-    exact htri a b c e f r
+    apply MonoidHom.mem_ker.mpr
+    simpa only [pathProduct_def] using htri a b c e f r
 
 variable {D} in
 /-- A homomorphism of label groups preserves consistency. -/

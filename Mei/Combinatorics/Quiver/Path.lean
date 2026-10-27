@@ -9,7 +9,7 @@ public import Mathlib.Combinatorics.Quiver.Symmetric
 public import Mathlib.Combinatorics.Quiver.Path.Vertices
 public import Mathlib.Data.List.Chain
 public import Mathlib.Combinatorics.Quiver.Path.Weight
-public import Mathlib.Algebra.Group.Subgroup.Basic
+public import Mathlib.Algebra.Group.Submonoid.Basic
 
 /-!
 # Vertices and reversal of paths under prefunctors
@@ -22,7 +22,7 @@ paths to be compared after forgetting some of their admissibility conditions.
 Relations between consecutive vertices can be checked separately on each part
 of a concatenation, using Mathlib's `List.isChain_split` at the common endpoint.
 Group-valued edge weights can be gauged at the vertices: if every gauged edge
-lies in a subgroup, so does the gauged weight of the entire path.
+lies in a submonoid, so does the gauged weight of the entire path.
 -/
 
 public section
@@ -67,11 +67,11 @@ theorem isChain_vertices_comp {x y z : V} (p : Path x y) (q : Path y z)
     List.cons_head?_tail (by simp)
   rw [vertices_comp, ← hq, List.isChain_split, dropLast_append_end_eq, hq]
 
-/-- Subgroup membership of the vertex-gauged edge weights propagates along a
-path. Normality is unnecessary: consecutive vertex factors cancel. -/
+/-- Submonoid membership of the vertex-gauged edge weights propagates along a
+path: consecutive vertex factors cancel. -/
 theorem mul_weight_mul_inv_mem_of_isChain {G : Type*} [Group G]
     {x y : V} (p : Path x y)
-    (K : Subgroup G) (w : ∀ {u v : V}, (u ⟶ v) → G) (t : V → G)
+    (K : Submonoid G) (w : ∀ {u v : V}, (u ⟶ v) → G) (t : V → G)
     (hp : p.vertices.IsChain (fun u v => ∀ e : u ⟶ v, t u * w e * (t v)⁻¹ ∈ K)) :
     t x * p.weight w * (t y)⁻¹ ∈ K := by
   induction p with
