@@ -7,6 +7,8 @@ module
 
 public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Adapted
 public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.LocalCrossing
+public import Mei.Geometry.Convex.PolyhedralComplex.Chamber
+public import Mei.Geometry.Convex.PolyhedralComplex.Incidence
 public import Mei.LinearAlgebra.Dual.Order
 
 /-!
@@ -18,13 +20,15 @@ interior and on the positive side of any chosen coorientation. Thus each oriente
 wall cell has one crossing label, realized by every sufficiently short positively
 transverse segment through any of its relative interior points. Artificial walls
 carry the identity. Reversing the coorientation inverts the crossing label.
-Positive rescaling preserves it.
+Positive rescaling preserves it. Each short crossing is realized between two
+distinct incident full cells, with endpoints in their ordinary interiors.
 
 These labels provide the crossing factors for the central defects of chamber
 trivializations. They retain all coincident indexed contributions, without requiring
 consistency. The construction combines `DirectedDiagram.adaptedComplex` and its
 support-incidence characterization with `DirectedDiagram.combinedLabel` and its
-short-segment realization theorem.
+short-segment realization theorem. Incident full cells are supplied by
+`FinitePolyhedralComplex.exists_transverse_wall_chambers`.
 -/
 
 public section
@@ -206,5 +210,39 @@ theorem eventually_exists_levelPathProduct_eq_wallCrossingLabel {k : ℕ}
   apply D.eventually_exists_levelPathProduct_eq_combinedLabel
   exact D.realCharacter_normal_ne_zero_of_mem_intrinsicInterior_adaptedWall
     Q.property ν hν hθ hv.ne'
+
+/-- A positive transverse crossing at an adapted wall is realized between two
+distinct incident full cells, uniformly for every sufficiently short length.
+The endpoints lie in ordinary interiors, so finite chamber lifts apply to them. -/
+theorem exists_adapted_wall_crossing {k : ℕ} (Q : (D.adaptedComplex k).walls)
+    (ν : V →ₗ[ℝ] ℝ) (hν : ν.ker = (affineSpan ℝ (Q : Set V)).direction)
+    {θ v : V} (hθ : θ ∈ intrinsicInterior ℝ (Q : Set V)) (hv : 0 < ν v) :
+    ∃ Pminus Pplus : (D.adaptedComplex k).cellsOfCodimension 0,
+      Pminus ≠ Pplus ∧ (Pminus : Set V) ∩ (Pplus : Set V) = (Q : Set V) ∧
+      ∀ᶠ a : ℝ in 𝓝[>] 0,
+        ∃ (x y : WallComplement (fun j : D.active k => (D.wall j).support)) (e : x ⟶ y),
+          x.val = θ - a • v ∧ y.val = θ + a • v ∧
+          x.val ∈ interior (Pminus : Set V) ∧ y.val ∈ interior (Pplus : Set V) ∧
+          D.levelPathProduct k e.toPath = D.wallCrossingLabel Q ν hν := by
+  have htrans : v ∉ (affineSpan ℝ (Q : Set V)).direction := by
+    rw [← hν, LinearMap.mem_ker]
+    exact hv.ne'
+  obtain ⟨Pminus, hm, Pplus, hp, hne, hinter, ε, hε, hshort⟩ :=
+    (D.adaptedComplex k).exists_transverse_wall_chambers Q.property hθ
+      (by simp only [D.support_adaptedComplex, interior_univ, mem_univ]) htrans
+  have hmInt := Mei.intrinsicInterior_eq_interior_of_affineSpan_eq_top
+    ((D.adaptedComplex k).affineSpan_eq_top_of_mem_cellsOfCodimension_zero hm)
+  have hpInt := Mei.intrinsicInterior_eq_interior_of_affineSpan_eq_top
+    ((D.adaptedComplex k).affineSpan_eq_top_of_mem_cellsOfCodimension_zero hp)
+  refine ⟨⟨Pminus, hm⟩, ⟨Pplus, hp⟩, fun he => hne (congrArg Subtype.val he), hinter, ?_⟩
+  have hsmall : ∀ᶠ a : ℝ in 𝓝[>] 0, a ∈ Ioo (0 : ℝ) ε :=
+    mem_nhdsGT_iff_exists_Ioo_subset.mpr ⟨ε, hε, Subset.rfl⟩
+  filter_upwards [hsmall,
+    D.eventually_exists_levelPathProduct_eq_wallCrossingLabel Q ν hν hθ hv] with a ha he
+  obtain ⟨x, y, e, hx, hy, he⟩ := he
+  obtain ⟨hxm, hyp⟩ := hshort a ha
+  refine ⟨x, y, e, hx, hy, ?_, ?_, he⟩
+  · simpa only [hx, hmInt] using hxm
+  · simpa only [hy, hpInt] using hyp
 
 end Mei.DirectedDiagram
