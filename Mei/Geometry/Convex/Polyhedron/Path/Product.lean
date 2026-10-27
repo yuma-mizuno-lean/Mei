@@ -8,6 +8,7 @@ module
 public import Mei.Geometry.Convex.Polyhedron.CrossingEvents
 public import Mei.Data.Finset.NoncommProd
 public import Mathlib.Combinatorics.Quiver.Path.Weight
+import Mei.Algebra.BigOperators.Group.Finset.Ordered
 
 /-!
 # Path products for indexed wall families
@@ -151,17 +152,19 @@ theorem segmentPathProduct_eq_prod_of_crossingTimes (e : x ⟶ y) (T : List ℝ)
     rintro ⟨j, r⟩ hj
     exact ht ((mem_orderedCrossingTimes e t).mpr
       ⟨j, ((mem_signedCrossingEvent ν x y t j r).mp hj).1⟩)
-  have he : (orderedCrossingTimes e).filter (fun t => f t != 1) =
-      T.filter (fun t => f t != 1) := by
-    apply ((pairwise_orderedCrossingTimes e).filter _).eq_of_mem_iff (hT.filter _)
-    intro t
-    simp only [List.mem_filter, bne_iff_ne, ne_eq]
-    exact ⟨fun ht => ⟨hcover t ht.1, ht.2⟩,
-      fun ht => ⟨by by_contra hn; exact ht.2 (hone t hn), ht.2⟩⟩
-  rw [segmentPathProduct_def, ← List.prod_filter_bne_one, ← List.prod_filter_bne_one
-    (T.reverse.map f), List.filter_map, List.filter_map,
-    List.filter_reverse, List.filter_reverse]
-  exact congrArg (fun l : List ℝ => (l.reverse.map f).prod) he
+  have hs : (orderedCrossingTimes e).toFinset ⊆ T.toFinset := by
+    intro t ht
+    exact List.mem_toFinset.mpr (hcover t (List.mem_toFinset.mp ht))
+  have hS : (orderedCrossingTimes e).toFinset.sort = orderedCrossingTimes e := by
+    exact (Finset.sortedLT_sort _).pairwise.eq_of_mem_iff
+      (pairwise_orderedCrossingTimes e) (by simp)
+  have hTsort : T.toFinset.sort = T := by
+    exact (Finset.sortedLT_sort _).pairwise.eq_of_mem_iff hT (by simp)
+  rw [segmentPathProduct_def]
+  simp only [List.map_reverse, List.prod_reverse_noncomm, List.map_map, Function.comp_def]
+  exact congrArg Inv.inv (by
+    simpa only [hS, hTsort] using Finset.prod_map_sort_subset hs (fun t => (f t)⁻¹)
+      (fun t _ ht => by rw [hone t (by simpa only [List.mem_toFinset] using ht), inv_one]))
 
 /-- A segment meeting no wall has identity transport. -/
 theorem segmentPathProduct_eq_one_of_crossings_eq_empty (e : x ⟶ y)

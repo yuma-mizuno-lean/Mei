@@ -82,20 +82,10 @@ private theorem eventProduct_eq_adapted_factor (e : x ⟶ y)
   have hn := (D.adaptedComplex k).normal_velocity_ne_zero (ν a.1) e ha (hν a.1)
   split_ifs with hv
   · rw [inv_inv, D.wallCrossingLabel_eq_combinedLabel a.1 (ν a.1) (hν a.1) hq hv]
-  · have hpos : 0 < ν a.1 (-(y.val - x.val)) := by
-      rw [map_neg]
+  · have hpos : 0 < (-ν a.1) (y.val - x.val) := by
       exact neg_pos.mpr (lt_of_le_of_ne (not_lt.mp hv) hn)
-    have he := D.wallCrossingLabel_eq_combinedLabel a.1 (ν a.1) (hν a.1) hq hpos
-    have ht := D.realCharacter_normal_ne_zero_of_mem_intrinsicInterior_adaptedWall
-      a.1.property (ν a.1) (hν a.1) hq hpos.ne'
-    rw [he]
-    have hneg := D.combinedLabel_neg k
-      (AffineMap.lineMap x.val y.val a.2) (-(y.val - x.val))
-      (D.notMem_singularSupport_of_mem_intrinsicInterior_adaptedWall a.1.property hq) ht
-    rw [neg_neg] at hneg
-    -- The categorical tower and its concrete BCH group carry the same inverse.
-    convert hneg using 1
-    rfl
+    rw [← D.wallCrossingLabel_eq_combinedLabel a.1 (-ν a.1) (by simpa using hν a.1)
+      hq hpos, D.wallCrossingLabel_neg]
 
 /-- On a segment, directed transport equals the product of the combined labels
 on its successive adapted wall crossings. Extra artificial cuts are harmless. -/
