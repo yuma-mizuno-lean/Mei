@@ -20,7 +20,8 @@ refined separately, and identity-labelled walls of `E` need no assignment.
 A refinement is equivalent to the diagram it refines: at every cutoff, a path admissible
 for both active wall families crosses the same walls at the same times, and each
 simultaneous crossing has the same combined label. Hence directed equivalence does not
-depend on the wall presentation.
+depend on the wall presentation. In particular, reindexing the walls along an equivalence
+is a refinement.
 
 Equivalence is the path-ordered-product equivalence of directed scattering diagrams in
 Travis Mandel, *Scattering diagrams, theta functions, and refined tropical curve counts*,
@@ -88,6 +89,24 @@ def refl (D : DirectedDiagram (d := d) h H ι) : D.Refinement D where
 @[simp]
 theorem refl_assign (D : DirectedDiagram (d := d) h H ι) (j : {j : ι // (D.wall j).label ≠ 1}) :
     (refl D).assign j = j.val := (rfl)
+
+/-- Reindexing the walls along an equivalence is a refinement. -/
+def ofEquiv {D : DirectedDiagram (d := d) h H ι} {E : DirectedDiagram (d := d) h H κ}
+    (σ : κ ≃ ι) (hσ : ∀ j, E.wall j = D.wall (σ j)) : D.Refinement E where
+  assign j := σ j.val
+  ray_eq j := by rw [hσ]
+  normal_eq j := by rw [hσ]
+  label_eq j := by rw [hσ]
+  support_subset j := by rw [hσ]
+  support_subset_iUnion a ha z hz := mem_iUnion₂.mpr
+    ⟨⟨σ.symm a, by rwa [hσ, σ.apply_symm_apply]⟩, by simp, by rwa [hσ, σ.apply_symm_apply]⟩
+  pairwiseDisjoint_intrinsicInterior a j₁ hj₁ j₂ hj₂ hne :=
+    (hne (Subtype.ext (σ.injective (hj₁.trans hj₂.symm)))).elim
+
+@[simp]
+theorem ofEquiv_assign {D : DirectedDiagram (d := d) h H ι} {E : DirectedDiagram (d := d) h H κ}
+    (σ : κ ≃ ι) (hσ : ∀ j, E.wall j = D.wall (σ j)) (j : {j : κ // (E.wall j).label ≠ 1}) :
+    (ofEquiv σ hσ).assign j = σ j.val := (rfl)
 
 /-- The assignment on walls active at order `k`. -/
 private def activeAssign (k : ℕ) (j : E.active k) : D.active k :=

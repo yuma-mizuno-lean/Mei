@@ -111,7 +111,9 @@ theorem LevelEquivalent.symm {k : ℕ} (hDE : D.LevelEquivalent E k) :
   intro x y x' y' p q hpq
   exact (hDE q p hpq.symm).symm
 
-private theorem exists_padded_path (D : DirectedDiagram (d := d) h H ι) (k : ℕ)
+/-- Prefixing a stationary segment at the start gives a path with a repeated initial
+vertex and the same finite-order product. -/
+theorem exists_vertices_eq_cons_levelPathProduct_eq (D : DirectedDiagram (d := d) h H ι) (k : ℕ)
     {x y : WallComplement (fun j : D.active k => (D.wall j).support)}
     (p : AdmissiblePLPath x y) :
     ∃ q : AdmissiblePLPath x y,
@@ -142,8 +144,8 @@ theorem LevelEquivalent.trans {k : ℕ} (hDE : D.LevelEquivalent E k)
   intro x y x' y' p q hpq
   let := h.finiteDimensional
   -- Stationary padding gives free interior vertices without changing either product.
-  obtain ⟨p', hvp, hprodP⟩ := exists_padded_path D k p
-  obtain ⟨q', hvq, hprodQ⟩ := exists_padded_path F k q
+  obtain ⟨p', hvp, hprodP⟩ := exists_vertices_eq_cons_levelPathProduct_eq D k p
+  obtain ⟨q', hvq, hprodQ⟩ := exists_vertices_eq_cons_levelPathProduct_eq F k q
   have hx : x.val = x'.val := by
     have he := congrArg List.head? hpq
     simpa using he
