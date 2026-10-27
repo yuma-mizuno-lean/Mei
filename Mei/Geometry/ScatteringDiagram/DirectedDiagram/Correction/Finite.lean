@@ -19,12 +19,13 @@ homogeneous logarithm of degree at most that order on its supported ray.
 Each correction becomes active exactly at its homogeneous degree.
 No finiteness assumption is imposed on the initial index set.
 
-The induction chooses the chamber data using
-`DirectedDiagram.exists_chamber_trivialization`, applies
-`DirectedDiagram.exists_consistent_outgoing_extension`, and preserves earlier
-consistency using the lower-order equivalences supplied by that extension.
-The sum associativity equivalence keeps the original indices separate from all
-correction indices at every stage. This is the finite-order construction in
+This result supplies finite stages for constructing an all-order outgoing
+completion. It gives existence separately at each cutoff; compatibility between
+the chosen stages requires additional data. For the underlying chamber and
+correction constructions, see `DirectedDiagram.exists_chamber_trivialization`
+and `DirectedDiagram.exists_consistent_outgoing_extension`.
+
+The mathematical construction follows
 Mandel, *Scattering diagrams, theta functions, and refined tropical curve counts*,
 proof of Theorem 2.6, and Gross–Hacking–Keel–Kontsevich,
 *Canonical bases for cluster algebras*, Appendix C.3.
