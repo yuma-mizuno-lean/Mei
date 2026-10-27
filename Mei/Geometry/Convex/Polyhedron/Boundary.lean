@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import TauCeti.Analysis.Convex.Polyhedron.Basic
-public import Mei.Analysis.Convex.Halfspace
+public import Mei.Analysis.Convex.Intrinsic
 
 /-!
 # Relative interiors and boundaries of polyhedra
