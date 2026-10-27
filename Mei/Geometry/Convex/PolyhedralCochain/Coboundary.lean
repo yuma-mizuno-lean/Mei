@@ -106,7 +106,6 @@ def coboundaryPresentation :
   Finsupp.lsum ℕ fun σ => ∑ τ ∈ σ.boundaryFacets, Finsupp.lsingle τ
 
 /-- A generator is sent to the formal sum of its signed boundary facets. -/
-@[simp]
 theorem coboundaryPresentation_single (σ : OrientedCell h k) (c : E) :
     coboundaryPresentation (R := R) (Finsupp.single σ c) =
       ∑ τ ∈ σ.boundaryFacets, Finsupp.single τ c := by
@@ -121,17 +120,18 @@ theorem ofFinsupp_coboundaryPresentation (x : OrientedCell h k →₀ E) :
   induction x using Finsupp.induction_linear with
   | zero => simp
   | add x y hx hy => simp only [map_add, hx, hy]
-  | single σ c => simp [OrientedCell.cellCoboundary_apply]
+  | single σ c => simp [coboundaryPresentation_single, OrientedCell.cellCoboundary_apply]
 
-/-- Coefficient maps commute with the presentation-level signed facet sum. -/
+/-- Additive coefficient maps commute with the presentation-level signed facet sum. -/
 @[simp]
-theorem mapRange_coboundaryPresentation (f : E →ₗ[R] E') (x : OrientedCell h k →₀ E) :
-    Finsupp.mapRange f f.map_zero (coboundaryPresentation (R := R) x) =
-      coboundaryPresentation (R := R) (Finsupp.mapRange f f.map_zero x) := by
+theorem mapRange_coboundaryPresentation {F : Type*} [FunLike F E E'] [AddMonoidHomClass F E E']
+    (f : F) (x : OrientedCell h k →₀ E) :
+    Finsupp.mapRange f (map_zero f) (coboundaryPresentation (R := R) x) =
+      coboundaryPresentation (R := R) (Finsupp.mapRange f (map_zero f) x) := by
   induction x using Finsupp.induction_linear with
   | zero => simp
-  | add x y hx hy => simp only [map_add, Finsupp.mapRange_add f.map_add, hx, hy]
-  | single σ c => simp [Finsupp.mapRange_finsetSum f]
+  | add x y hx hy => simp only [map_add, Finsupp.mapRange_add (map_add f), hx, hy]
+  | single σ c => simp [coboundaryPresentation_single, Finsupp.mapRange_finsetSum f]
 
 end PolyhedralCochain
 

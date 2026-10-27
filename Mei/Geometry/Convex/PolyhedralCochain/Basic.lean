@@ -294,6 +294,27 @@ theorem mk_reverse (σ : OrientedCell h k) (c : E) :
     ofFinsupp_eq_zero_iff]
   exact Submodule.subset_span (Or.inl ⟨σ, c, rfl⟩)
 
+/-- Indexed generators cancel when every occurrence `(j, σ)` is matched with a unique
+occurrence `(j', σ.reverse)` with `j' ≠ j`. The matching is a fixed-point-free involution
+(`Finset.sum_involution`), so no division by `2` is needed. -/
+theorem sum_mk_eq_zero_of_existsUnique_reverse {ι : Type*}
+    {S : Finset (Σ _ : ι, OrientedCell h k)}
+    (hS : ∀ x ∈ S, ∃! j : ι, ⟨j, x.2.reverse⟩ ∈ S ∧ j ≠ x.1) (c : E) :
+    ∑ x ∈ S, mk (R := R) x.2 c = 0 := by
+  let g (x) (hx : x ∈ S) : Σ _ : ι, OrientedCell h k := ⟨(hS x hx).choose, x.2.reverse⟩
+  have hgmem (x) (hx : x ∈ S) : g x hx ∈ S := (hS x hx).choose_spec.1.1
+  have hgg (x) (hx : x ∈ S) : g (g x hx) (hgmem x hx) = x := by
+    have hfirst : (hS (g x hx) (hgmem x hx)).choose = x.1 :=
+      ((hS (g x hx) (hgmem x hx)).choose_spec.2 x.1
+        ⟨by simpa only [g, OrientedCell.reverse_reverse] using hx,
+          Ne.symm (hS x hx).choose_spec.1.2⟩).symm
+    exact Sigma.ext hfirst (heq_of_eq (OrientedCell.reverse_reverse x.2))
+  refine Finset.sum_involution g ?_ ?_ hgmem hgg
+  · intro x hx
+    simp only [g, mk_reverse, add_neg_cancel]
+  · intro x hx _ he
+    exact (hS x hx).choose_spec.1.2 (congrArg Sigma.fst he)
+
 /-- The class of a generator is the sum of the classes of the pieces of an oriented subdivision. -/
 theorem mk_eq_sum_of_isOrientedSubdivision {σ : OrientedCell h k}
     {Q : Finset (OrientedCell h k)} (hQ : IsOrientedSubdivision σ Q) (c : E) :

@@ -174,30 +174,14 @@ theorem sum_internal_boundaryFacets_eq_zero
       x ∈ S ↔ x.1 ∈ Q ∧ x.2 ∈ x.1.boundaryFacets ∧
         ¬x.2.carrier ⊆ intrinsicFrontier ℝ σ.carrier := by
     simp only [S, Finset.mem_sigma, Finset.mem_filter]
-  have hex (x) (hx : x ∈ S) :
-      ∃! η : OrientedCell h k, η ∈ Q ∧ η ≠ x.1 ∧ x.2.reverse ∈ η.boundaryFacets := by
-    obtain ⟨hxQ, hxF, hxb⟩ := (hS x).mp hx
-    exact (hQ.carrier_subset_intrinsicFrontier_or_existsUnique_reverse_mem_boundaryFacets
-      hQC hxQ hxF).resolve_left hxb
-  let g (x) (hx : x ∈ S) : Σ _ : OrientedCell h k, OrientedCell h (k + 1) :=
-    ⟨(hex x hx).choose, x.2.reverse⟩
-  have hgmem (x) (hx : x ∈ S) : g x hx ∈ S := by
-    obtain ⟨hη, _, hr⟩ := (hex x hx).choose_spec.1
-    exact (hS _).mpr ⟨hη, hr, by
-      simpa only [g, reverse_carrier] using ((hS x).mp hx).2.2⟩
-  have hgg (x) (hx : x ∈ S) : g (g x hx) (hgmem x hx) = x := by
-    have hp := (hex x hx).choose_spec.1
-    have hfirst : (hex (g x hx) (hgmem x hx)).choose = x.1 :=
-      ((hex (g x hx) (hgmem x hx)).choose_spec.2 x.1
-        ⟨((hS x).mp hx).1, Ne.symm hp.2.1, by
-          simpa only [g, reverse_reverse] using ((hS x).mp hx).2.1⟩).symm
-    exact Sigma.ext hfirst (heq_of_eq (reverse_reverse x.2))
   rw [Finset.sum_sigma' Q]
-  refine Finset.sum_involution g ?_ ?_ hgmem hgg
-  · intro x hx
-    simp only [g, PolyhedralCochain.mk_reverse, add_neg_cancel]
-  · intro x hx _ he
-    exact (hex x hx).choose_spec.1.2.1 (congrArg Sigma.fst he)
+  refine PolyhedralCochain.sum_mk_eq_zero_of_existsUnique_reverse (fun x hx => ?_) c
+  obtain ⟨hxQ, hxF, hxb⟩ := (hS x).mp hx
+  obtain ⟨η, ⟨hη, hne, hr⟩, huniq⟩ :=
+    (hQ.carrier_subset_intrinsicFrontier_or_existsUnique_reverse_mem_boundaryFacets
+      hQC hxQ hxF).resolve_left hxb
+  exact ⟨η, ⟨(hS _).mpr ⟨hη, hr, by simpa only [reverse_carrier] using hxb⟩, hne⟩,
+    fun η' ⟨hη', hη'ne⟩ => huniq η' ⟨((hS _).mp hη').1, hη'ne, ((hS _).mp hη').2.1⟩⟩
 
 open Classical in
 /-- The total boundary of all subdivision pieces contains only occurrences on
