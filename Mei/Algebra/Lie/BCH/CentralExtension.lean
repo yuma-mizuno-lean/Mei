@@ -214,19 +214,14 @@ theorem log_triangle_eq_sum_logDefect (hc : f.ker ≤ LieAlgebra.center R L)
   rw [f.logDefect_mul s t u X Y hX hY] at hsum
   simpa only [LieSubmodule.coe_add, coe_logDefect, hconj, add_assoc] using hsum
 
-/-- Two lifts of the same element differ by an element of the kernel. This is
-`MonoidHom.div_mem_ker_iff` written with `a * b⁻¹`. -/
-theorem mul_inv_mem_ker_bchGroupMap_of_eq {a b : BCHGroup L}
-    (hab : f.bchGroupMap a = f.bchGroupMap b) : a * b⁻¹ ∈ f.bchGroupMap.ker := by
-  simpa only [div_eq_mul_inv] using (MonoidHom.div_mem_ker_iff _).mpr hab
-
 /-- Raising two lifts of the same element to the same integer power multiplies
 their central logarithmic difference by that integer. -/
 theorem log_zpow_mul_inv_zpow_of_eq (hc : f.ker ≤ LieAlgebra.center R L)
     (a b : BCHGroup L) (hab : f.bchGroupMap a = f.bchGroupMap b) (z : ℤ) :
     log (a ^ z * (b ^ z)⁻¹) = z • log (a * b⁻¹) := by
   have hcomm : Commute b (a * b⁻¹) := Subgroup.mem_center_iff.mp
-    (f.ker_bchGroupMap_le_center hc (f.mul_inv_mem_ker_bchGroupMap_of_eq hab)) b
+    (f.ker_bchGroupMap_le_center hc (by
+      simpa only [div_eq_mul_inv] using (MonoidHom.div_mem_ker_iff f.bchGroupMap).mpr hab)) b
   have he : a ^ z * (b ^ z)⁻¹ = (a * b⁻¹) ^ z := by
     apply mul_right_cancel (b := b ^ z)
     rw [inv_mul_cancel_right, ← hcomm.symm.mul_zpow]
@@ -253,7 +248,8 @@ theorem log_prod_mul_inv_prod_of_eq (hc : f.ker ≤ LieAlgebra.center R L)
       simp only [map_list_prod, List.map_map]
       congr 1
       exact List.map_congr_left hl
-    have hker := f.mul_inv_mem_ker_bchGroupMap_of_eq hprod
+    have hker : (l.map a).prod * ((l.map b).prod)⁻¹ ∈ f.bchGroupMap.ker := by
+      simpa only [div_eq_mul_inv] using (MonoidHom.div_mem_ker_iff f.bchGroupMap).mpr hprod
     have hcomm : Commute (b j)⁻¹ ((l.map a).prod * ((l.map b).prod)⁻¹) :=
       Subgroup.mem_center_iff.mp (f.ker_bchGroupMap_le_center hc hker) (b j)⁻¹
     have he : (a j * (l.map a).prod) * (b j * (l.map b).prod)⁻¹ =
@@ -261,6 +257,7 @@ theorem log_prod_mul_inv_prod_of_eq (hc : f.ker ≤ LieAlgebra.center R L)
       simpa only [mul_inv_rev, mul_assoc] using congrArg (a j * ·) hcomm.eq.symm
     simp only [List.map_cons, List.prod_cons, List.sum_cons]
     rw [he, f.log_mul_of_mem_ker_bchGroupMap _ _
-      (f.mul_inv_mem_ker_bchGroupMap_of_eq hj) hker, ih hl]
+      (by simpa only [div_eq_mul_inv] using (MonoidHom.div_mem_ker_iff f.bchGroupMap).mpr hj)
+      hker, ih hl]
 
 end LieHom
