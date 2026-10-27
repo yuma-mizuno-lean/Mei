@@ -17,11 +17,10 @@ This supplies the local one-sided geometry for comparing a transverse
 meridian with a signed boundary facet. Real offsets, unbounded polyhedra,
 lower-dimensional affine spans and lineality are allowed.
 
-The proof uses `TauCeti.IsConvexPolyhedron.exists_facet_presentation` to
-remove universally active equations and redundant non-facet rows. All rows
-active at the chosen point expose the same facet; their inward half-spaces
-agree by `ContinuousLinearMap.sameRay_comp_vectorSpan_of_toExposed_eq`.
-The remaining inequalities stay strict in a neighborhood.
+These local models refine the global facet presentation of
+`TauCeti.IsConvexPolyhedron.exists_facet_presentation`. The inward side is
+independent of the exposing functional by the conormal proportionality of
+`ContinuousLinearMap.sameRay_comp_vectorSpan_of_toExposed_eq`.
 -/
 
 public section
@@ -42,6 +41,9 @@ theorem eventually_mem_iff_of_facet (hP : TauCeti.IsConvexPolyhedron P)
       finrank ℝ (vectorSpan ℝ P))
     {p : V} (hp : p ∈ intrinsicInterior ℝ (l.toExposed P)) :
     ∀ᶠ y in 𝓝 p, y ∈ P ↔ y ∈ affineSpan ℝ P ∧ l y ≤ l p := by
+  /- The facet presentation removes universally active equations and redundant non-facet rows.
+  All rows active at the chosen point expose the same facet; their inward half-spaces agree
+  by conormal proportionality. The remaining inequalities stay strict in a neighborhood. -/
   have hpF : p ∈ l.toExposed P := intrinsicInterior_subset hp
   have hF : IsExposed ℝ P (l.toExposed P) := ContinuousLinearMap.toExposed.isExposed
   obtain ⟨ι, _, g, hpres, hfacets⟩ := hP.exists_facet_presentation
