@@ -152,6 +152,36 @@ theorem intersectionIndex_eq_neg_crossingExponent (e : AdmissibleSegment x y)
 
 variable [Fintype ι] {R E : Type*} [Ring R] [AddCommGroup E] [Module R E]
 
+/-- A segment crossing exactly one indexed cell extracts its coefficient with
+the orientation sign. No bound on the length of the segment is required. -/
+theorem intersectionPairing_eq_of_crossings_singleton
+    (j : ι) (t : ℝ) (he : crossings x y = {(j, t)}) (c : ι → E) :
+    OrientedCell.intersectionPairing (R := R) ![x.val, y.val]
+        (∑ a, Finsupp.single (σ a) (c a)) =
+      ((σ j).orientation.evalSign (fun _ : Fin 1 => y.val - x.val) : ℤ) • c j := by
+  classical
+  have hmeet (a : ι) :
+      (convexHull ℝ (range ![x.val, y.val]) ∩ (σ a).carrier).Nonempty ↔ a = j := by
+    have hm : (convexHull ℝ (range ![x.val, y.val]) ∩ (σ a).carrier).Nonempty ↔
+        ∃ u, (a, u) ∈ crossings x y := by
+      rw [Matrix.range_cons_cons_empty, convexHull_pair, segment_eq_image_lineMap]
+      simp only [mem_crossings]
+      exact Set.image_inter_nonempty_iff
+    rw [hm, he]
+    simp
+  rw [map_sum, Finset.sum_eq_single j]
+  · rw [OrientedCell.intersectionPairing_single,
+      OrientedCell.intersectionIndex_of_nonempty ((hmeet j).mpr rfl)]
+    have hframe : (fun a : Fin 1 => ![x.val, y.val] a.succ - ![x.val, y.val] 0) =
+        fun _ : Fin 1 => y.val - x.val := by ext a; fin_cases a; rfl
+    rw [hframe]
+  · intro a _ ha
+    rw [OrientedCell.intersectionPairing_single,
+      OrientedCell.intersectionIndex_of_disjoint
+        (disjoint_iff_inter_eq_empty.mpr (not_nonempty_iff_eq_empty.mp
+          ((hmeet a).not.mpr ha))), zero_smul]
+  · simp
+
 /-- Pairing a segment with an indexed finite wall presentation gives the negative
 of its crossing sum. Repeated cells and simultaneous crossings are counted with
 their original multiplicities. Zero-coefficient walls need no coorientation compatibility. -/
