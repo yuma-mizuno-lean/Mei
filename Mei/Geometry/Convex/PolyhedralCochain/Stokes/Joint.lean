@@ -18,11 +18,13 @@ small complementary triangle containing the point in its interior, with vertices
 off the affine spans of the participating walls. The radius is uniform over the
 whole presentation, and coefficients may lie in an arbitrary module.
 
-For an isolating triangle the boundary pairing is the sum of the signed
-incidences at the joint. The final formula identifies this sum with the signed
-edge pairings, allowing comparison with additive meridian transport.
+The radius also ensures that the triangle misses every other joint, so the
+boundary pairing is the sum of the signed incidences at the joint. The final
+formula identifies this sum with the signed edge pairings, allowing comparison
+with additive meridian transport.
 
 This assembles `FinitePolyhedralComplex.subset_of_mem_intrinsicInterior`,
+`FinitePolyhedralComplex.exists_isolating_ball`,
 `OrientedCell.exists_ball_sum_intersectionIndex_boundaryFacets_eq_sum_succAbove_of_facet`
 and `PolyhedralCochain.intersectionPairing_coboundaryPresentation_eq_sum_incident`.
 No local Stokes equation or facet-incidence equation is assumed.
@@ -111,9 +113,10 @@ theorem exists_ball_intersectionPairing_coboundaryPresentation_eq_sum_succAbove
   rw [← Finset.sum_smul, hstokes σ hσ, Finset.sum_smul]
   simp only [mul_smul]
 
-/-- For an isolating triangle near a joint, the signed incidence sum of a
-finite wall presentation equals its signed edge pairings. Each parent keeps
-its own coefficient and induced facet orientation. -/
+/-- On every sufficiently small complementary triangle near a joint, the signed
+incidence sum of a finite wall presentation equals its signed edge pairings.
+The radius ensures avoidance of every other joint. Each parent keeps its own
+coefficient and induced facet orientation. -/
 theorem exists_ball_sum_incident_eq_sum_succAbove
     (C : FinitePolyhedralComplex h) (f : OrientedCell h 1 →₀ E)
     (hf : ∀ σ ∈ f.support, σ.carrier ∈ C.cells)
@@ -122,20 +125,24 @@ theorem exists_ball_sum_incident_eq_sum_succAbove
       IsCompl (affineSpan ℝ J).direction (vectorSpan ℝ (range s.points)) →
       convexHull ℝ (range s.points) ⊆ Metric.ball q ε →
       (∀ σ ∈ f.support, ∀ j, s.points j ∉ affineSpan ℝ σ.carrier) →
-      (∀ Q ∈ C.joints, Q ≠ J → Disjoint (convexHull ℝ (range s.points)) Q) →
       (∑ σ ∈ f.support, ∑ τ ∈ σ.boundaryFacets with τ.carrier = J,
         (τ.orientation.evalSign (fun j : Fin 2 => s.points j.succ - s.points 0) : ℤ) • f σ) =
         ∑ m : Fin 3, (-1 : ℤ) ^ (m : ℕ) •
           OrientedCell.intersectionPairing (R := R) (s.points ∘ m.succAbove) f := by
   obtain ⟨ε, hε, hstokes⟩ :=
     exists_ball_intersectionPairing_coboundaryPresentation_eq_sum_succAbove (R := R) C f hf hJ hq
-  refine ⟨ε, hε, fun s hqs hc hs hv ho => ?_⟩
+  obtain ⟨r, hr, _, _, hother, _⟩ := C.exists_isolating_ball hJ hq
+  refine ⟨min ε r, lt_min hε hr, fun s hqs hc hs hv => ?_⟩
+  have hsε := hs.trans (Metric.ball_subset_ball (min_le_left ε r))
+  have hsr := hs.trans (Metric.ball_subset_ball (min_le_right ε r))
+  have ho : ∀ Q ∈ C.joints, Q ≠ J → Disjoint (convexHull ℝ (range s.points)) Q :=
+    fun Q hQ hne => (hother Q hQ hne).mono_left hsr
   have hqHull : q ∈ convexHull ℝ (range s.points) := by
     rw [s.convexHull_eq_closedInterior]
     exact s.interior_subset_closedInterior hqs
   rw [← intersectionPairing_coboundaryPresentation_eq_sum_incident (R := R) C f hf
     ⟨q, hqHull, intrinsicInterior_subset hq⟩ ho]
-  exact hstokes s hqs hc hs hv
+  exact hstokes s hqs hc hsε hv
 
 end PolyhedralCochain
 
