@@ -5,10 +5,9 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.Convex.PolyhedralCochain.Pairing
+public import Mei.Geometry.Convex.PolyhedralCochain.Crossing
 public import Mei.Geometry.Convex.PolyhedralCochain.Coorientation
 public import Mei.Geometry.Convex.PolyhedralCochain.Boundary
-public import Mei.Geometry.Convex.Polyhedron.Path.Sum
 
 /-!
 # Local Stokes at the interior of a wall
@@ -37,52 +36,6 @@ namespace Mei.OrientedCell
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
-
-/-- When a wall agrees with a cooriented hyperplane along a segment, its
-intersection index is the increase of the positive-side indicator. The segment's
-endpoints must miss the hyperplane. -/
-theorem intersectionIndex_eq_sub_side (σ : OrientedCell h 1)
-    (ν : V →ₗ[ℝ] ℝ) (b : ℝ) {x y : V} (hx : ν x ≠ b) (hy : ν y ≠ b)
-    (hν : ∀ w, SignType.sign (ν w) = σ.orientation.evalSign (fun _ : Fin 1 => w))
-    (hlocal : segment ℝ x y ∩ σ.carrier = segment ℝ x y ∩ {z | ν z = b}) :
-    σ.intersectionIndex ![x, y] =
-      (if b < ν y then 1 else 0 : ℤ) - (if b < ν x then 1 else 0) := by
-  classical
-  let W : Unit → Set V := fun _ => {z | ν z = b}
-  let a : WallComplement W := ⟨x, fun _ => hx⟩
-  let c : WallComplement W := ⟨y, fun _ => hy⟩
-  have hc := WallComplement.crossingExponent_eq_side_sub a c ν b () rfl
-  dsimp only [a, c] at hc
-  have hm : (convexHull ℝ (range ![x, y]) ∩ σ.carrier).Nonempty ↔
-      ∃ t, ((), t) ∈ WallComplement.crossings a c := by
-    rw [Matrix.range_cons_cons_empty, convexHull_pair, hlocal, segment_eq_image_lineMap]
-    simp only [WallComplement.mem_crossings]
-    exact Set.image_inter_nonempty_iff
-  have hframe : (fun j : Fin 1 => ![x, y] j.succ - ![x, y] 0) =
-      fun _ : Fin 1 => y - x := by ext j; fin_cases j; rfl
-  by_cases hmeet : (convexHull ℝ (range ![x, y]) ∩ σ.carrier).Nonempty
-  · rw [intersectionIndex_of_nonempty hmeet, hframe, ← hν]
-    rw [ite_eq_left (hm.mp hmeet)] at hc
-    have hn : ν y - ν x ≠ 0 := by
-      intro he
-      have ht := hm.mp hmeet
-      obtain ⟨t, ht⟩ := ht
-      have htb := ((WallComplement.mem_crossings a c () t).mp ht).2
-      simp only [W, mem_ofPred_eq, a, c, AffineMap.lineMap_apply_module',
-        map_add, map_smul, map_sub, smul_eq_mul] at htb
-      exact hx (by simpa only [he, mul_zero, zero_add] using htb)
-    rw [map_sub]
-    rcases lt_or_gt_of_ne hn with hn | hn
-    · simp only [sign_neg hn, SignType.coe_neg_one]
-      simp only [map_sub, ite_eq_right (by linarith : ¬0 < ν y - ν x)] at hc
-      omega
-    · simp only [sign_pos hn, SignType.coe_one]
-      simp only [map_sub, ite_eq_left hn] at hc
-      omega
-  · rw [intersectionIndex_of_disjoint
-      (disjoint_iff_inter_eq_empty.mpr (not_nonempty_iff_eq_empty.mp hmeet))]
-    rw [ite_eq_right (hm.not.mp hmeet)] at hc
-    omega
 
 /-- The signed edge indices of a triangle cancel when the wall agrees with
 one cooriented hyperplane throughout the triangle. Vertices miss that plane;
