@@ -164,3 +164,23 @@ theorem cellCoboundary_sweep_add_sweep_cellCoboundary (σ : OrientedCell h (k + 
   abel
 
 end Mei.OrientedCell
+
+namespace Mei.PolyhedralCochain
+
+variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
+  {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
+  {R E : Type*} [Ring R] [AddCommGroup E] [Module R E] {k : ℕ}
+
+/-- The signed facet sum of a finite transverse presentation is transverse.
+The transversality condition is imposed only on cells with nonzero coefficient. -/
+theorem coboundaryOfFinsupp_mem_transverseSubmodule (v : V)
+    (f : OrientedCell h k →₀ E)
+    (hf : ∀ σ ∈ f.support, v ∉ (affineSpan ℝ σ.carrier).direction) :
+    coboundaryOfFinsupp (R := R) f ∈ transverseSubmodule v := by
+  classical
+  rw [← Finsupp.sum_single f]
+  simp only [Finsupp.sum, map_sum, coboundaryOfFinsupp_single]
+  exact Submodule.sum_mem _ fun σ hσ =>
+    σ.cellCoboundary_mem_transverseSubmodule v (hf σ hσ) (f σ)
+
+end Mei.PolyhedralCochain
