@@ -70,6 +70,21 @@ theorem ker_truncationMap_isHomogeneous {k l : ℕ} (h : k ≤ l) :
   simp only [LieSubmodule.mem_toSubmodule, LieHom.mem_ker] at hx ⊢
   simp [d.truncationMap_decompose, hx]
 
+/-- A nonzero homogeneous element killed by lowering the cutoff has degree
+strictly above the lower cutoff. -/
+theorem lt_degree_of_mem_ker_truncationMap {k l : ℕ} (h : k ≤ l)
+    {n : N} {x : d.truncatedLie ℒ l} (hx : x ∈ d.truncatedGrading ℒ l n)
+    (hker : x ∈ (d.truncationMap ℒ h).ker) (hne : x ≠ 0) :
+    (k : ℤ) < d.degree n := by
+  obtain ⟨a, ha, rfl⟩ := (d.mem_truncatedGrading_iff ℒ).mp hx
+  have hzero : (d.degreeIdeal ℒ k).mkQ a = 0 := by
+    simpa only [LieHom.mem_ker, LieIdeal.mkQ_apply, d.truncationMap_mk] using hker
+  have hmem : a ∈ d.degreeSubmodule ℒ k := by
+    simpa only [← LieSubmodule.mem_toSubmodule, degreeIdeal_toSubmodule] using
+      (d.degreeIdeal ℒ k).mkQ_eq_zero.mp hzero
+  exact ((d.mem_degreeSubmodule_of_mem_iff ℒ ha).mp hmem).resolve_left
+    (fun he => hne (by simp [he]))
+
 /-- Only the degrees in `(k, l]` survive in the kernel from order `l` to order `k`. -/
 theorem ker_truncationMap_eq_iSup {k l : ℕ} (h : k ≤ l) :
     (d.truncationMap ℒ h).ker.toSubmodule =
