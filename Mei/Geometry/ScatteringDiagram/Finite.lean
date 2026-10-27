@@ -6,6 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.Convex.PolyhedralComplex.PathSubdivision
+public import Mei.Geometry.Convex.Polyhedron.Path.Product
 
 /-!
 # Finite wall diagrams and path products
@@ -27,7 +28,7 @@ public section
 
 noncomputable section
 
-open Set Mei.Convex
+open Set Mei.Convex Mei.Convex.WallComplement
 
 namespace Mei
 
@@ -104,6 +105,51 @@ theorem pathProduct_toPath (e : x ⟶ y) :
       if 0 < D.normal a.1 (y.val - x.val) then (D.label a.1)⁻¹ else D.label a.1).prod := by
   simp [Quiver.Hom.toPath, pathProduct, C.segmentCrossingWord_def,
     MonoidHom.map_list_prod, List.map_map, C.crossingLetter_def, Function.comp_def, apply_ite]
+
+/-- The crossing-word product agrees with the indexed simultaneous-event product.
+The commutation hypothesis is needed by the latter interface; regular crossings
+of a complex contain only one wall. -/
+theorem pathProduct_eq_wallPathProduct
+    (comm : ∀ a b : C.walls,
+      affineSpan ℝ (a : Set V) = affineSpan ℝ (b : Set V) →
+        Commute (D.label a) (D.label b)) (p : AdmissiblePLPath x y) :
+    D.pathProduct p = p.wallPathProduct D.normal D.label comm := by
+  have hsegment {x y : WallComplement (fun P : C.walls => (P : Set V))}
+      (e : x ⟶ y) : D.pathProduct e.toPath =
+        e.toPath.wallPathProduct D.normal D.label comm := by
+    let T := (C.orderedCrossings e).map Prod.snd
+    have hT : T.Pairwise (· < ·) := List.pairwise_map.mpr (C.pairwise_orderedCrossings e)
+    have hcover : ∀ t ∈ orderedCrossingTimes e, t ∈ T := by
+      intro t ht
+      obtain ⟨Q, hQ⟩ := (mem_orderedCrossingTimes e t).mp ht
+      exact List.mem_map.mpr ⟨(Q, t), (C.mem_orderedCrossings e _).mpr hQ, rfl⟩
+    rw [pathProduct_toPath, Quiver.Path.wallPathProduct_toPath,
+      segmentPathProduct_eq_prod_of_crossingTimes D.normal D.label comm e T hT hcover]
+    simp only [T, List.map_reverse, List.map_map, Function.comp_def]
+    apply congrArg List.prod
+    apply congrArg List.reverse
+    apply List.map_congr_left
+    intro a ha
+    have ha' := (C.mem_orderedCrossings e a).mp ha
+    have hs : signedCrossingEvent D.normal x y a.2 =
+        {(a.1, if 0 < D.normal a.1 (y.val - x.val) then -1 else 1)} := by
+      ext ⟨Q, z⟩
+      rw [mem_signedCrossingEvent, Finset.mem_singleton, Prod.mk.injEq]
+      constructor
+      · rintro ⟨hQ, hz⟩
+        have he : Q = a.1 := congrArg (fun b => b.val.1)
+          (C.crossing_time_injective e (a₁ := ⟨(Q, a.2), hQ⟩) (a₂ := ⟨a, ha'⟩) rfl)
+        subst Q
+        exact ⟨rfl, hz⟩
+      · rintro ⟨rfl, rfl⟩
+        exact ⟨ha', rfl⟩
+    rw [crossingEventProduct_singleton D.normal D.label comm e a.2 _ hs]
+    split_ifs <;> simp
+  induction p with
+  | nil => simp
+  | cons p e ih =>
+    rw [pathProduct_cons, ← Quiver.Path.comp_toPath_eq_cons,
+      Quiver.Path.wallPathProduct_comp, ih, hsegment]
 
 /-- A path product lies in every subgroup containing the labels of all crossed walls. -/
 theorem pathProduct_mem {S : Subgroup H} (p : AdmissiblePLPath x y)
