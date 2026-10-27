@@ -237,15 +237,9 @@ theorem exists_ball_sum_intersectionIndex_boundaryFacets_eq_sub_endpoints_of_reg
       (σ.nonempty.mono (subset_affineSpan ℝ _))).mp
     exact Submodule.eq_top_of_finrank_eq (by simpa using σ.finrank_direction_add)
   have hmem : ∀ᶠ z in 𝓝 p, z ∈ σ.carrier ↔ p ∈ σ.carrier := by
-    by_cases hpσ : p ∈ σ.carrier
-    · have hpi : p ∈ interior σ.carrier := by
-        rw [← Mei.intrinsicInterior_eq_interior_of_affineSpan_eq_top htop,
-          ← intrinsicClosure_sdiff_intrinsicFrontier]
-        exact ⟨subset_intrinsicClosure hpσ, hfront⟩
-      filter_upwards [mem_interior_iff_mem_nhds.mp hpi] with z hz
-      exact iff_of_true hz hpσ
-    · filter_upwards [σ.isClosed_carrier.isOpen_compl.mem_nhds hpσ] with z hz
-      exact iff_of_false hz hpσ
+    exact (continuous_id.subtype_mk (fun _ => by trivial)).continuousAt.eventually
+      (Mei.eventually_mem_iff_of_notMem_intrinsicFrontier htop
+        (x := ⟨p, by trivial⟩) hfront)
   have hclosed : IsClosed (intrinsicFrontier ℝ σ.carrier) :=
     isClosed_intrinsicFrontier (affineSpan ℝ σ.carrier).closed_of_finiteDimensional
   obtain ⟨ε, hε, he⟩ := Metric.eventually_nhds_iff.mp
