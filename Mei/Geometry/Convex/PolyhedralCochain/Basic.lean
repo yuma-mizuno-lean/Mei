@@ -135,7 +135,10 @@ theorem eq_or_eq_reverse_of_carrier_eq (σ τ : OrientedCell h k)
   rcases σ.isConormal.eq_or_eq_neg hτ
     (by simpa using σ.finrank_quotient_direction) with ho | ho
   · exact Or.inl (OrientedCell.ext hc ho)
-  · exact Or.inr (OrientedCell.ext hc ho)
+  · apply Or.inr
+    apply OrientedCell.ext
+    · simpa only [reverse_carrier] using hc
+    · simpa only [reverse_orientation] using ho
 
 /-- In top codimension the support of a cell is a single point. -/
 theorem exists_carrier_eq_singleton (hk : k = finrank ℝ V) (σ : OrientedCell h k) :

@@ -34,10 +34,13 @@ namespace Mei.PolyhedralCochain
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i} {k : ℕ}
-  {R E : Type*} [Ring R] [AddCommGroup E] [Module R E]
   (C : FinitePolyhedralComplex h) [Fintype (C.cellsOfCodimension k)]
   (σ : C.cellsOfCodimension k → OrientedCell h k)
   (hσ : ∀ Q, (σ Q).carrier = (Q : Set V))
+
+section
+
+variable {E : Type*} [AddCommMonoid E]
   (f : OrientedCell h k →₀ E)
   (hf : ∀ τ ∈ f.support, τ.carrier ∈ C.cells)
 
@@ -87,6 +90,14 @@ theorem eq_sum_single_add_single_reverse :
       rw [he, OrientedCell.reverse_carrier, hσ Q]
       exact ((C.mem_cellsOfCodimension k Q).mp Q.property).1)
     simp [Finsupp.single_eq_of_ne hne, Finsupp.single_eq_of_ne hnerev]
+
+end
+
+variable {R E : Type*} [Ring R] [AddCommGroup E] [Module R E]
+  (f : OrientedCell h k →₀ E)
+  (hf : ∀ τ ∈ f.support, τ.carrier ∈ C.cells)
+
+include hσ hf
 
 /-- On a fixed complex the signed coefficient is the coefficient of the chosen
 orientation minus that of its reverse. These coefficients give a canonical
