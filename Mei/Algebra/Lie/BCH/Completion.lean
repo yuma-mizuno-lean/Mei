@@ -29,8 +29,7 @@ The inverse-limit construction, cutoff comparison and ordered-product law use
 `Mei.CompletedGroup.map`, `Mei.CompletedGroup.map_eq` and
 `Mei.CompletedGroup.map_orderedProd`, on the compatible-family carrier obtained
 from Mathlib's `GrpCat.sectionsSubgroup`.
-The canonical BCH homomorphism uses `Mei.CompletedGroup.lift`; its bounded
-completeness proof compares projections at a common upper cutoff.
+The canonical BCH homomorphism uses `Mei.CompletedGroup.lift`.
 -/
 
 public section

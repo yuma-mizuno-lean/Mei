@@ -17,9 +17,8 @@ a coefficient map to a wall label with this quotient really discards precisely i
 terms above order `k`, even though the mapped label is formally a completed element.
 
 The equivalence uses `PositiveDegrees.bchCompletionEquiv`: the quotient grading
-has no pieces above its retained cutoff. The comparison of maps uses
-`GradedLieHom.truncatedMap_mk` and `CompletedGroup.map_projection` on a common
-upper cutoff, so the original Lie algebra need not be nilpotent or bounded.
+has no pieces above its retained cutoff. The original Lie algebra need not be
+nilpotent or bounded.
 -/
 
 public section
@@ -67,6 +66,8 @@ theorem truncatedBCHCompletionEquiv_completedMap_truncation (k : ℕ)
     (CompletedGroup.projection k g)).symm
   apply CompletedGroup.ext
   intro l
+  -- Compare at a common upper cutoff using `GradedLieHom.truncatedMap_mk`
+  -- and `CompletedGroup.map_projection`.
   let f := GradedLieHom.truncation d ℒ k
   have hmap : f.truncatedMap l (a := max k l) (by simp) =
       (d.degreeIdeal (d.truncatedGrading ℒ k) l).mkQ.comp
