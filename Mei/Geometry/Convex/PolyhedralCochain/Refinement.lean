@@ -5,7 +5,8 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.Convex.PolyhedralCochain.Complex
+public import Mei.Geometry.Convex.PolyhedralCochain.CommonRefinement
+public import Mei.Geometry.Convex.PolyhedralCochain.ExternalFacet
 
 /-!
 # Common complex refinements of oriented subdivisions
@@ -16,7 +17,8 @@ the parent's inherited orientation and contained in the parent, are exactly
 the disjoint union of those contained in the pieces. Every such refined cell
 is therefore counted once. This gives the reindexing needed to pass
 from identities on a common complex to identities under arbitrary oriented
-subdivision, in particular for the signed coboundary.
+subdivision. Consequently the signed coboundary respects arbitrary oriented
+subdivisions, including subdivisions whose pieces do not meet face to face.
 Unbounded supports and lineality are allowed.
 -/
 
@@ -25,7 +27,9 @@ The proof uses `OrientedCell.subdivisionPieces` and
 `FinitePolyhedralComplex.subset_of_mem_intrinsicInterior` to identify a cell
 containing a relative interior point. Uniqueness follows from
 `Mei.intrinsicInterior_mono_of_affineSpan_eq` and the original subdivision's
-disjoint relative interiors.
+disjoint relative interiors. The boundary comparison uses
+`OrientedCell.exists_common_subdivision` and
+`OrientedCell.cellCoboundary_eq_sum_cellCoboundary_subdivisionPieces`.
 -/
 
 public section
@@ -104,3 +108,29 @@ theorem subdivisionPieces_eq_biUnion (hQ : IsOrientedSubdivision σ Q)
       ⟨hηC, hητ.trans (hQ.carrier_subset hτ), hηo.trans (hQ.orientation_eq τ hτ)⟩
 
 end Mei.OrientedCell.IsOrientedSubdivision
+
+namespace Mei.OrientedCell
+
+variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
+  {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i} {k : ℕ}
+  {R E : Type*} [Ring R] [AddCommGroup E] [Module R E]
+
+/-- The signed facet sum respects every oriented subdivision. The original
+pieces need not be cells of a common complex or meet along whole faces. -/
+theorem cellCoboundary_eq_sum_of_isOrientedSubdivision {σ : OrientedCell h k}
+    {Q : Finset (OrientedCell h k)} (hQ : IsOrientedSubdivision σ Q) (c : E) :
+    σ.cellCoboundary (R := R) c = ∑ τ ∈ Q, τ.cellCoboundary c := by
+  classical
+  obtain ⟨C, hC⟩ := exists_common_subdivision (fun a : Option Q =>
+    a.elim σ (fun τ => τ.val))
+  have hpieces := hQ.subdivisionPieces_eq_biUnion C
+    (fun τ hτ => hC (some ⟨τ, hτ⟩))
+  calc
+    σ.cellCoboundary c = ∑ υ ∈ σ.subdivisionPieces C, υ.cellCoboundary c :=
+      σ.cellCoboundary_eq_sum_cellCoboundary_subdivisionPieces (hC none) c
+    _ = ∑ τ ∈ Q, ∑ υ ∈ τ.subdivisionPieces C, υ.cellCoboundary c := by
+      rw [hpieces, Finset.sum_biUnion (hQ.pairwiseDisjoint_subdivisionPieces C)]
+    _ = ∑ τ ∈ Q, τ.cellCoboundary c := Finset.sum_congr rfl fun τ hτ =>
+      (τ.cellCoboundary_eq_sum_cellCoboundary_subdivisionPieces (hC (some ⟨τ, hτ⟩)) c).symm
+
+end Mei.OrientedCell

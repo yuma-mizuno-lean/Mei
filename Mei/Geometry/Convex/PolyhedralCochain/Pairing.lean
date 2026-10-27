@@ -8,6 +8,7 @@ module
 public import Mei.Geometry.Convex.PolyhedralCochain.Basic
 public import Mei.Geometry.Affine.Transverse
 public import Mei.Analysis.Convex.Intrinsic
+public import Mei.Geometry.Affine.Simplex.Conormal
 
 /-!
 # Intersection pairing with affine test simplices
@@ -26,6 +27,9 @@ when the test meets `σ`, and zero otherwise. For a transverse test it vanishes 
 test misses `σ`, and it changes sign with the orientation. Extending linearly gives the
 intersection pairing of a test with finite formal sums of oriented cells, with values in the
 coefficient module, natural in the coefficients.
+
+Complementary nondegenerate simplices are transverse when they avoid the cell frontier,
+using `Affine.Simplex.conormal_apply_ne_zero` on the normal quotient.
 
 The cochain relations preserve the pairing whenever the test is transverse to both
 representatives (`PolyhedralCochain.intersectionPairing_eq_of_ofFinsupp_eq`), although the cells
@@ -65,6 +69,23 @@ theorem isTransverse_of_disjoint (σ : OrientedCell h k) {v : Fin (k + 1) → V}
     (hv : Disjoint (convexHull ℝ (range v)) σ.carrier) : σ.IsTransverse v :=
   ⟨hv.mono_right (intrinsicFrontier_subset σ.isClosed_carrier),
     fun ⟨_, hx, hy⟩ => (Set.disjoint_left.mp hv hx hy).elim⟩
+
+/-- A simplex complementary to the cell direction is transverse provided it
+avoids the cell's relative frontier. -/
+theorem isTransverse_of_isCompl (σ : OrientedCell h k) (s : Affine.Simplex ℝ V k)
+    (hc : IsCompl (affineSpan ℝ σ.carrier).direction (vectorSpan ℝ (range s.points)))
+    (hf : Disjoint (convexHull ℝ (range s.points)) (intrinsicFrontier ℝ σ.carrier)) :
+    σ.IsTransverse s.points := by
+  have := h.finiteDimensional
+  refine ⟨hf, fun _ => ?_⟩
+  apply (σ.isConormal.evalSign_ne_zero_iff
+    (σ.finrank_quotient_direction.trans (Fintype.card_fin k).symm) _).mp
+  have he := Module.Ray.evalSign_rayOfNeZero σ.orientation.someVector_ne_zero
+    (fun j : Fin k => s.points j.succ - s.points 0)
+  rw [Module.Ray.someVector_ray] at he
+  rw [he, sign_ne_zero]
+  exact s.conormal_apply_ne_zero hc
+    (Module.Ray.isConormal_iff.mp σ.isConormal) σ.orientation.someVector_ne_zero
 
 /-- Reversing a cell's orientation preserves transversality of an affine test simplex. -/
 @[simp]

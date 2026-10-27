@@ -13,7 +13,7 @@ public import Mei.Geometry.Convex.PolyhedralCochain.Boundary
 # Signed boundaries under complex subdivision
 
 The signed boundary of a cell equals the sum of the signed boundaries of its
-pieces in a subdivision of finite polyhedral complexes. Internal occurrences
+pieces induced by a finite polyhedral complex covering the cell. Internal occurrences
 cancel, and every external occurrence is a piece of a unique coarse signed
 facet, with the inherited orientation. Parent indices are retained throughout
 the comparison, so no incidence multiplicity is lost.
@@ -40,7 +40,7 @@ namespace Mei.OrientedCell
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i} {k : ℕ}
   {σ τ : OrientedCell h k} {υ ω : OrientedCell h (k + 1)}
-  {C D : FinitePolyhedralComplex h}
+  {C : FinitePolyhedralComplex h}
 
 /-- Each external signed facet of a refined parent is a subdivision piece of
 exactly one signed coarse facet. This identifies its orientation as well as
@@ -70,7 +70,7 @@ variable {R E : Type*} [Ring R] [AddCommGroup E] [Module R E]
 
 open Classical in
 private theorem sum_external_boundaryFacets_eq_sum_subdivisionPieces
-    (hCD : C.IsSubdivision D) (hσ : σ.carrier ∈ D.cells) (c : E) :
+    (hQ : IsOrientedSubdivision σ (σ.subdivisionPieces C)) (c : E) :
     (∑ τ ∈ σ.subdivisionPieces C, ∑ υ ∈ τ.boundaryFacets with
       υ.carrier ⊆ intrinsicFrontier ℝ σ.carrier, PolyhedralCochain.mk (R := R) υ c) =
       ∑ ω ∈ σ.boundaryFacets, ∑ υ ∈ ω.subdivisionPieces C,
@@ -99,7 +99,6 @@ private theorem sum_external_boundaryFacets_eq_sum_subdivisionPieces
     have hxy : x.2 = y.2 := congrArg Sigma.snd he
     obtain ⟨hxQ, hxF, _⟩ := (hS x).mp hx
     obtain ⟨hyQ, hyF, _⟩ := (hS y).mp hy
-    have hQ := σ.isOrientedSubdivision_subdivisionPieces hCD hσ
     have hp := C.eq_of_mem_boundaryFacets
       ((σ.mem_subdivisionPieces C x.1).mp hxQ).1
       ((σ.mem_subdivisionPieces C y.1).mp hyQ).1
@@ -111,7 +110,7 @@ private theorem sum_external_boundaryFacets_eq_sum_subdivisionPieces
     obtain ⟨hyF, hyQ⟩ := (hT y).mp hy
     obtain ⟨F, hF, hFn, hFd, hyeq⟩ := (σ.mem_boundaryFacets y.1).mp hyF
     obtain ⟨τ, ⟨hτ, hyτ⟩, _⟩ :=
-      σ.existsUnique_boundaryFacet_of_mem_subdivisionPieces hCD hσ hF hFn hFd
+      σ.existsUnique_boundaryFacet_of_mem_subdivisionPieces hQ hF hFn hFd
         (hyeq ▸ hyQ)
     have hfront : y.2.carrier ⊆ intrinsicFrontier ℝ σ.carrier := by
       rw [σ.intrinsicFrontier_eq_biUnion_boundaryFacets]
@@ -124,18 +123,17 @@ private theorem sum_external_boundaryFacets_eq_sum_subdivisionPieces
   rw [Finset.sum_sigma' (σ.subdivisionPieces C), Finset.sum_sigma' σ.boundaryFacets]
   exact Finset.sum_bij f hf hinj hsurj (fun _ _ => rfl)
 
-/-- A subdivision of finite polyhedral complexes preserves the entire signed
-boundary: the boundary of an original cell is the sum of the boundaries of
-its same-codimension oriented pieces. -/
+/-- A finite complex subdividing a cell preserves its entire signed boundary:
+the boundary of the original cell is the sum of the boundaries of its
+same-codimension oriented pieces. -/
 theorem cellCoboundary_eq_sum_cellCoboundary_subdivisionPieces
-    (σ : OrientedCell h k) (hCD : C.IsSubdivision D) (hσ : σ.carrier ∈ D.cells) (c : E) :
+    (σ : OrientedCell h k) (hQ : IsOrientedSubdivision σ (σ.subdivisionPieces C)) (c : E) :
     σ.cellCoboundary (R := R) c =
       ∑ τ ∈ σ.subdivisionPieces C, τ.cellCoboundary c := by
   classical
-  have hQ := σ.isOrientedSubdivision_subdivisionPieces hCD hσ
   rw [hQ.sum_cellCoboundary_eq_sum_external_boundaryFacets
     (fun τ hτ => ((σ.mem_subdivisionPieces C τ).mp hτ).1)]
-  exact (σ.cellCoboundary_eq_sum_subdivisionPieces hCD hσ c).trans
-    (sum_external_boundaryFacets_eq_sum_subdivisionPieces hCD hσ c).symm
+  exact (σ.cellCoboundary_eq_sum_subdivisionPieces hQ c).trans
+    (sum_external_boundaryFacets_eq_sum_subdivisionPieces hQ c).symm
 
 end Mei.OrientedCell

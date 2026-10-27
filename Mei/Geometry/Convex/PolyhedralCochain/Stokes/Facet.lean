@@ -7,31 +7,33 @@ module
 
 public import Mei.Geometry.Convex.PolyhedralCochain.Stokes.Basic
 public import Mei.Geometry.Convex.Polyhedron.Face.Local
-public import Mei.Analysis.Convex.Exposed.Transverse
 public import Mei.Geometry.Affine.Simplex.Ray
-public import Mathlib.Analysis.Convex.Combination
+public import Mei.Analysis.Convex.Exposed.Transverse
+import Mathlib.Analysis.Convex.Combination
 
 /-!
-# Local Stokes at a boundary facet of a wall
+# Local Stokes at a boundary facet
 
-Near a relative interior point of a wall facet, every complementary triangle
-containing that point in its interior and having vertices off the wall
-satisfies the signed boundary Stokes formula. No exit point, distinguished
-edge or disjointness of the other edges is assumed: the wall slice is an inward
-ray, which exits through a unique triangle edge.
+At a relative interior point of a wall's boundary facet, every sufficiently
+small triangle complementary to the facet direction satisfies the signed
+Stokes formula, provided its interior contains the point and its vertices
+miss the wall. The radius is independent of the triangle.
+Unbounded walls, real offsets and lineality are allowed.
 
-The geometric inputs are the facet half-space model
-`TauCeti.IsConvexPolyhedron.exists_ball_inter_eq_halfspace_of_facet`, the slice
-parametrization `ContinuousLinearMap.exists_transverse_halfspace_ray_of_toExposed`,
-and `Affine.Triangle.exists_ray_exit_edge`. The sign calculation is
-`OrientedCell.sum_intersectionIndex_boundaryFacets_eq_sum_succAbove`.
+The facet half-space model `exists_ball_inter_eq_halfspace_of_facet` and
+`ContinuousLinearMap.exists_transverse_halfspace_ray_of_toExposed` cut the
+transverse plane in an inward ray. `Affine.Triangle.exists_ray_exit_edge`
+identifies its unique exit edge; the other edges miss the wall. This verifies
+the geometric hypotheses of
+`OrientedCell.sum_intersectionIndex_boundaryFacets_eq_sum_succAbove`, whose
+contraction calculation supplies the orientation signs.
 -/
 
 public section
 
 noncomputable section
 
-open Set Module Filter Topology
+open Set Module
 
 namespace Mei.OrientedCell
 
@@ -121,56 +123,55 @@ private theorem facet_stokes_of_halfspace (σ : OrientedCell h 1) {F : Set V}
   exact σ.sum_intersectionIndex_boundaryFacets_eq_sum_succAbove hF ⟨p, hpF⟩ hdim
     (fun j => (hb01 j).1.le) hb (hsum ▸ hpF) (hb01 m).1 hqm hqσ hqF hdisj hmiss
 
-/-- Near a relative interior point of a wall facet, the signed boundary Stokes
-formula holds for every complementary triangle containing that point in its
-interior and whose vertices avoid the wall. -/
-theorem exists_ball_stokes_at_facet (σ : OrientedCell h 1) {F : Set V}
-    (hF : IsExposed ℝ σ.carrier F)
+/-- At a relative interior point of a wall facet there is a ball on which
+Stokes holds for every transverse triangle containing that point in its
+interior and whose vertices miss the wall. The signed facet
+sum and the signed edge sum use the same vertex order. -/
+theorem exists_ball_sum_intersectionIndex_boundaryFacets_eq_sum_succAbove_of_facet
+    (σ : OrientedCell h 1) {F : Set V} (hF : IsExposed ℝ σ.carrier F)
     (hdim : finrank ℝ (vectorSpan ℝ F) + 1 = finrank ℝ (vectorSpan ℝ σ.carrier))
     {p : V} (hp : p ∈ intrinsicInterior ℝ F) :
-    ∃ ε > 0, ∀ s : Affine.Triangle ℝ V,
-      p ∈ s.interior →
-      IsCompl (vectorSpan ℝ F) (vectorSpan ℝ (range s.points)) →
+    ∃ ε > 0, ∀ s : Affine.Triangle ℝ V, p ∈ s.interior →
+      IsCompl (affineSpan ℝ F).direction (vectorSpan ℝ (range s.points)) →
       convexHull ℝ (range s.points) ⊆ Metric.ball p ε →
       (∀ j, s.points j ∉ σ.carrier) →
       (∑ τ ∈ σ.boundaryFacets, τ.intersectionIndex s.points) =
         ∑ m : Fin 3, (-1 : ℤ) ^ (m : ℕ) * σ.intersectionIndex (s.points ∘ m.succAbove) := by
   classical
-  have hpF : p ∈ F := intrinsicInterior_subset hp
   have := h.finiteDimensional
   obtain ⟨P, hP⟩ := isRationalNormalPolyhedron_iff.mp σ.rational
   have hpoly : TauCeti.IsConvexPolyhedron σ.carrier := hP ▸ P.isConvexPolyhedron
-  obtain ⟨l, ε, hε, hl, hlocal, -⟩ := hpoly.exists_ball_inter_eq_halfspace_of_facet hF hdim hp
-  -- Other facets miss a neighborhood of this relative interior point.
-  have hother (τ : OrientedCell h 2) (hτ : τ ∈ σ.boundaryFacets) (hne : τ.carrier ≠ F) :
-      p ∉ τ.carrier := by
-    obtain ⟨G, hG, hGn, hGd, hτeq⟩ := (σ.mem_boundaryFacets τ).mp hτ
-    have hc : τ.carrier = G := hτeq ▸ σ.boundaryFacet_carrier hG hGn hGd
-    intro hpτ
-    have hi := ((hF.inter hG).mono hF.subset inter_subset_left).eq_of_mem_intrinsicInterior
-      ⟨intrinsicInterior_subset hp, hc ▸ hpτ⟩ hp
-    have hFG : F = G := hF.eq_of_subset_of_finrank_add_one ⟨p, hpF⟩
-      hdim hG (hi ▸ inter_subset_right) (by intro he; rw [he] at hGd; omega)
-    exact hne (hc.trans hFG.symm)
-  have hnear : ∀ᶠ z in 𝓝 p, ∀ τ ∈ σ.boundaryFacets, τ.carrier ≠ F → z ∉ τ.carrier := by
-    rw [Filter.eventually_all_finset]
-    intro τ hτ
-    by_cases he : τ.carrier = F
-    · exact Eventually.of_forall fun _ hne => (hne he).elim
-    · filter_upwards [τ.isClosed_carrier.isOpen_compl.mem_nhds (hother τ hτ he)] with z hz
-      exact fun _ => hz
-  obtain ⟨δ, hδ, hδball⟩ := Metric.eventually_nhds_iff.mp hnear
-  refine ⟨min ε δ, lt_min hε hδ, fun s hs hc hball hv => ?_⟩
-  have hmiss (τ : OrientedCell h 2) (hτ : τ ∈ σ.boundaryFacets) (hne : τ.carrier ≠ F) :
-      Disjoint (convexHull ℝ (range s.points)) τ.carrier := by
+  obtain ⟨l, ε, hε, hl, hlocal, -⟩ :=
+    hpoly.exists_ball_inter_eq_halfspace_of_facet hF hdim hp
+  let S := σ.boundaryFacets.filter (fun τ => τ.carrier ≠ F)
+  have hpnot : p ∉ ⋃ τ ∈ S, τ.carrier := by
+    intro hmem
+    obtain ⟨τ, hτ, hpτ⟩ := mem_iUnion₂.mp hmem
+    obtain ⟨hτmem, hτne⟩ := Finset.mem_filter.mp hτ
+    obtain ⟨G, hG, hGn, hGd, hτG⟩ := (σ.mem_boundaryFacets τ).mp hτmem
+    have he : τ.carrier = G := by rw [hτG, boundaryFacet_carrier]
+    rw [he] at hpτ hτne
+    have hinter : IsExposed ℝ F (F ∩ G) := by
+      simpa only [inter_eq_left.mpr hF.subset] using (IsExposed.refl F).inter_inter hG
+    have hFG : F ⊆ G := inter_eq_left.mp
+      (hinter.eq_of_mem_intrinsicInterior ⟨intrinsicInterior_subset hp, hpτ⟩ hp)
+    exact hτne (hF.eq_of_subset_of_finrank_add_one ⟨p, intrinsicInterior_subset hp⟩ hdim
+      hG hFG (by intro heq; rw [heq] at hGd; omega)).symm
+  have hclosed : IsClosed (⋃ τ ∈ S, τ.carrier) :=
+    S.finite_toSet.isClosed_biUnion fun τ _ => τ.isClosed_carrier
+  obtain ⟨δ, hδ, hball⟩ := Metric.isOpen_iff.mp hclosed.isOpen_compl p hpnot
+  refine ⟨min ε δ, lt_min hε hδ, fun s hps hT hs hv => ?_⟩
+  apply facet_stokes_of_halfspace σ hF hdim l hl s (intrinsicInterior_subset hp) hps
+    (by simpa only [direction_affineSpan] using hT) hv
+  · intro y hy
+    have hyball := Metric.ball_subset_ball (min_le_left _ _) (hs hy)
+    have he := Set.ext_iff.mp hlocal y
+    exact ⟨fun hyσ => (he.mp ⟨hyball, hyσ⟩).2,
+      fun hyσ => (he.mpr ⟨hyball, hyσ⟩).2⟩
+  · intro τ hτ hτne
     apply Set.disjoint_left.mpr
-    intro z hz hzτ
-    exact hδball
-      (Metric.mem_ball.mp (Metric.ball_subset_ball (min_le_right _ _) (hball hz))) τ hτ hne hzτ
-  exact σ.facet_stokes_of_halfspace hF hdim l hl s hpF hs hc hv
-    (fun z hz => by
-      have hzb := Metric.ball_subset_ball (min_le_left _ _) (hball hz)
-      have he := Set.ext_iff.mp hlocal z
-      exact ⟨fun hzσ => (he.mp ⟨hzb, hzσ⟩).2, fun hzA => (he.mpr ⟨hzb, hzA⟩).2⟩) hmiss
+    intro y hy hyτ
+    exact hball (Metric.ball_subset_ball (min_le_right _ _) (hs hy))
+      (mem_iUnion₂.mpr ⟨τ, Finset.mem_filter.mpr ⟨hτ, hτne⟩, hyτ⟩)
 
 end Mei.OrientedCell
