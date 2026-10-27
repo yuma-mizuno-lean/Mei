@@ -30,7 +30,9 @@ public section
 
 noncomputable section
 
-namespace AddMonoidAlgebra
+open AddMonoidAlgebra
+
+namespace Mei.AddMonoidAlgebra
 
 variable {R M : Type*} [AddCommMonoid M]
 
@@ -183,4 +185,4 @@ theorem lie_mem_tangentMonomialDerivations {n n' : M} {D E : Derivation R R[M] R
 
 end Ring
 
-end AddMonoidAlgebra
+end Mei.AddMonoidAlgebra
