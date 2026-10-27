@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Algebra.PositiveDegrees.Grading
-public import Mei.LinearAlgebra.ModuleFiltration.Basic
+public import Mei.LinearAlgebra.ModuleFiltration.Completion
 public import TauCeti.Algebra.DirectSum.Internal
 
 /-!
@@ -210,3 +210,13 @@ theorem shiftedInclusion_mem_shiftedFiltration_iff (n : d.monoid) (x : ℳ (p + 
 
 end PositiveDegrees
 end Mei
+
+namespace Mei.PositiveDegrees
+
+variable {R M Γ : Type*} [Ring R] [AddCommGroup M] [Module R M]
+  [AddCommGroup Γ] (d : Mei.PositiveDegrees Γ) (ℳ : Γ → Submodule R M) (p : Γ)
+
+/-- The completed module supported on `p + P`, with completion taken in relative degree. -/
+abbrev ShiftedCoefficients : Type _ := (d.shiftedFiltration ℳ p).completion
+
+end Mei.PositiveDegrees

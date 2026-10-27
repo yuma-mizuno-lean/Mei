@@ -233,6 +233,22 @@ lemma iInf_completedFiltration : (⨅ k, F.completedFiltration.submodule k) = �
   intro k
   exact ((Submodule.mem_iInf _).mp hx (k + 1) : F.projection k x = 0)
 
+/-- Representatives of a completed element in a filtration term can be chosen
+in that same term at every finer cutoff. -/
+theorem exists_projection_eq_of_mem_completedFiltration {a k : ℕ} (hak : a ≤ k + 1)
+    {x : F.completion} (hx : x ∈ F.completedFiltration.submodule a) :
+    ∃ m ∈ F.submodule a, Submodule.Quotient.mk m = F.projection k x := by
+  obtain ⟨m, hm⟩ := (F.submodule (k + 1)).mkQ_surjective (F.projection k x)
+  refine ⟨m, ?_, hm⟩
+  cases a with
+  | zero => simp
+  | succ a =>
+    rw [completedFiltration_succ, LinearMap.mem_ker] at hx
+    apply (Submodule.Quotient.mk_eq_zero _).mp
+    have he := congrArg (F.transition (by omega : a ≤ k)) hm
+    rw [Submodule.mkQ_apply, transition_mk, transition_projection] at he
+    exact he.trans hx
+
 /-- The canonical map preserves and reflects every filtration order. -/
 @[simp]
 lemma comap_completedFiltration (k : ℕ) :
