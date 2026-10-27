@@ -156,3 +156,50 @@ theorem cellCoboundary_sweep_add_sweep_cellCoboundary (σ : OrientedCell h (k + 
   abel
 
 end Mei.OrientedCell
+
+namespace Mei.PolyhedralCochain
+
+variable {N V ι : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
+  {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
+  {R E : Type*} [Ring R] [AddCommGroup E] [Module R E] {k : ℕ}
+
+/-- The sweep homotopy formula for a finite indexed transverse presentation.
+The swept boundary is computed in the transverse submodule; repeated cells keep
+their indices and contribute with their original coefficients. -/
+theorem coboundaryOfFinsupp_sum_sweep_add_sweep_sum_cellCoboundary [Fintype ι]
+    (n : N) (σ : ι → OrientedCell h (k + 1))
+    (hn : ∀ j, i n ∉ (affineSpan ℝ (σ j).carrier).direction) (c : ι → E) :
+    coboundaryOfFinsupp (R := R) (∑ j, Finsupp.single ((σ j).sweep n (hn j)) (c j)) +
+      sweep n (∑ j, (⟨(σ j).cellCoboundary (R := R) (c j),
+        (σ j).cellCoboundary_mem_transverseSubmodule (i n) (hn j) (c j)⟩ :
+        transverseSubmodule (i n))) = -∑ j, mk (σ j) (c j) := by
+  classical
+  simp only [map_sum, coboundaryOfFinsupp_single]
+  rw [← Finset.sum_add_distrib]
+  simp only [OrientedCell.cellCoboundary_sweep_add_sweep_cellCoboundary,
+    Finset.sum_neg_distrib]
+
+/-- Sweeping a closed finite indexed transverse presentation gives a signed
+boundary equal to the negative source cochain. -/
+theorem coboundaryOfFinsupp_sum_sweep_of_coboundary_eq_zero [Fintype ι]
+    (n : N) (σ : ι → OrientedCell h (k + 1))
+    (hn : ∀ j, i n ∉ (affineSpan ℝ (σ j).carrier).direction) (c : ι → E)
+    (hclosed : coboundaryOfFinsupp (R := R) (∑ j, Finsupp.single (σ j) (c j)) = 0) :
+    coboundaryOfFinsupp (R := R) (∑ j, Finsupp.single ((σ j).sweep n (hn j)) (c j)) =
+      -∑ j, mk (σ j) (c j) := by
+  classical
+  let ζ : transverseSubmodule (R := R) (h := h) (E := E) (k := k + 2) (i n) :=
+    ∑ j, ⟨(σ j).cellCoboundary (c j),
+      (σ j).cellCoboundary_mem_transverseSubmodule (i n) (hn j) (c j)⟩
+  have hboundary : ζ = 0 := by
+    apply Subtype.ext
+    simpa only [ζ, Submodule.coe_sum, ZeroMemClass.coe_zero, map_sum,
+      coboundaryOfFinsupp_single] using hclosed
+  have hsum :
+      coboundaryOfFinsupp (R := R) (∑ j, Finsupp.single ((σ j).sweep n (hn j)) (c j)) +
+        sweep n ζ = -∑ j, mk (σ j) (c j) :=
+    coboundaryOfFinsupp_sum_sweep_add_sweep_sum_cellCoboundary n σ hn c
+  rw [hboundary, map_zero, add_zero] at hsum
+  exact hsum
+
+end Mei.PolyhedralCochain

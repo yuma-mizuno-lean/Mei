@@ -98,28 +98,11 @@ theorem exists_sweep_correction_family [Fintype ι]
     intro j _
     exact (PolyhedralCochain.sweep_mk (k := 1) (ρ n) (σ j) (htrans j) (c j)).symm
   · intro hclosed
-    have hboundary : (∑ j, (⟨(σ j).cellCoboundary (R := R) (c j),
-        (σ j).cellCoboundary_mem_transverseSubmodule (i (ρ n)) (htrans j) (c j)⟩ :
-        PolyhedralCochain.transverseSubmodule (R := R) (h := h)
-          (E := d.truncatedLie ℒ k) (k := 3) (i (ρ n)))) = 0 := by
-      apply Subtype.ext
-      simpa only [Submodule.coe_sum, ZeroMemClass.coe_zero, map_sum,
-        PolyhedralCochain.coboundaryOfFinsupp_single] using hclosed
-    have hsum : (∑ j, ((σ j).sweep (ρ n) (htrans j)).cellCoboundary (R := R) (c j)) +
-        PolyhedralCochain.sweep (ρ n)
-          (∑ j, (⟨(σ j).cellCoboundary (R := R) (c j),
-            (σ j).cellCoboundary_mem_transverseSubmodule (i (ρ n)) (htrans j) (c j)⟩ :
-            PolyhedralCochain.transverseSubmodule (R := R) (h := h)
-              (E := d.truncatedLie ℒ k) (k := 3) (i (ρ n)))) =
-        -(∑ j, PolyhedralCochain.mk (σ j) (c j)) := by
-      rw [map_sum, ← Finset.sum_add_distrib]
-      simpa only [Finset.sum_neg_distrib] using
-        (Finset.sum_congr rfl fun j (_ : j ∈ Finset.univ) =>
-          (σ j).cellCoboundary_sweep_add_sweep_cellCoboundary (k := 1)
-            (ρ n) (htrans j) (c j))
-    rw [hboundary, map_zero, add_zero] at hsum
+    have hsum := PolyhedralCochain.coboundaryOfFinsupp_sum_sweep_of_coboundary_eq_zero
+      (ρ n) σ htrans c hclosed
     simp only [map_sum, PolyhedralCochain.coboundaryOfFinsupp_single,
       ofFinite_wall, hlog, map_neg, Finset.sum_neg_distrib]
-    simpa only [neg_neg] using congrArg Neg.neg hsum
+    simpa only [map_sum, PolyhedralCochain.coboundaryOfFinsupp_single, neg_neg] using
+      congrArg Neg.neg hsum
 
 end Mei.DirectedDiagram
