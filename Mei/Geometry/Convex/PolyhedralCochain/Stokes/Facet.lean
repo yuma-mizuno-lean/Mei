@@ -13,8 +13,9 @@ public import Mathlib.Analysis.Convex.Combination
 /-!
 # Local Stokes at a wall facet
 
-A small triangle complementary to a wall facet and containing a relative interior
-point of that facet crosses the wall through exactly one edge. Its intersection
+A sufficiently small triangle complementary to a wall facet, containing a relative
+interior point of that facet in its own interior, and with all vertices avoiding
+the wall crosses the wall through exactly one edge. Its intersection
 with the signed facet therefore equals the signed sum of its edge intersections
 with the wall. Shrinking the neighborhood excludes all other boundary facets,
 giving the Stokes formula for the complete signed boundary of the wall.
