@@ -134,6 +134,20 @@ theorem intersectionIndex_of_disjoint (hdisj : Disjoint (convexHull ℝ (range v
     σ.intersectionIndex v = 0 := by
   rw [intersectionIndex, ite_eq_right (not_nonempty_iff_eq_empty.mpr hdisj.inter_eq)]
 
+open Classical in
+/-- On a one-dimensional test the edge frame is its endpoint difference, and
+the test image is the closed segment. -/
+theorem intersectionIndex_pair (σ : OrientedCell h 1) (a b : V) :
+    σ.intersectionIndex ![a, b] =
+      if (segment ℝ a b ∩ σ.carrier).Nonempty then
+        (σ.orientation.evalSign (fun _ : Fin 1 => b - a) : ℤ) else 0 := by
+  have hframe : (fun j : Fin 1 => ![a, b] j.succ - ![a, b] 0) =
+      fun _ : Fin 1 => b - a := by
+    ext j
+    fin_cases j
+    rfl
+  rw [intersectionIndex, Matrix.range_cons_cons_empty, convexHull_pair, hframe]
+
 /-- Reversing the orientation of a cell negates its intersection index. -/
 @[simp]
 theorem intersectionIndex_reverse (σ : OrientedCell h k) (v : Fin (k + 1) → V) :
