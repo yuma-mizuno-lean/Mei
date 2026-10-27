@@ -335,3 +335,58 @@ theorem wallCrossingSum_eq_zero_of_cochain_eq_zero (p : AdmissiblePLPath x y)
   simpa [wallCrossingSum_def] using he
 
 end Quiver.Path
+
+namespace Quiver.Path
+
+open Mei Mei.Convex.WallComplement
+
+variable {N V ι : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
+  {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
+  {R E : Type*} [Ring R] [AddCommGroup E] [Module R E]
+
+/-- For a loop with the three geometric edges of a triangle, the sum of
+segment pairings is the alternating sum over its parameter faces. The middle
+face is reversed. No transversality or nondegeneracy assumption is needed. -/
+theorem addWeightOfEPs_intersectionPairing_eq_sum_succAbove
+    {W : ι → Set V} {x : WallComplement W}
+    (p : AdmissiblePLPath x x) (v : Fin 3 → V)
+    (hp : p.vertices.map WallComplement.val = [v 0, v 1, v 2, v 0])
+    (f : OrientedCell h 1 →₀ E) :
+    p.addWeightOfEPs (fun u w => OrientedCell.intersectionPairing (R := R)
+      ![u.val, w.val] f) =
+      ∑ m : Fin 3, (-1 : ℤ) ^ (m : ℕ) •
+        OrientedCell.intersectionPairing (R := R) (v ∘ m.succAbove) f := by
+  have hlen : p.length = 3 := by
+    have he := congrArg List.length hp
+    simpa only [List.length_map, Quiver.Path.vertices_length, List.length_cons,
+      List.length_nil, Nat.add_left_inj] using he
+  -- The vertex equation fixes the three geometric edges, even though their
+  -- admissibility proofs and intermediate endpoint subtypes are arbitrary.
+  cases p with
+  | nil => simp at hlen
+  | cons p e₃ =>
+    cases p with
+    | nil => simp at hlen
+    | cons p e₂ =>
+      cases p with
+      | nil => simp at hlen
+      | cons p e₁ =>
+        cases p with
+        | cons p e => simp at hlen
+        | nil =>
+          simp only [Quiver.Path.vertices_cons, Quiver.Path.vertices_nil,
+            List.concat_eq_append, List.map_cons, List.map_nil,
+            List.cons_append, List.nil_append, List.cons.injEq] at hp
+          rcases hp with ⟨h₀, h₁, h₂, _⟩
+          simp only [Quiver.Path.addWeightOfEPs_cons, Quiver.Path.addWeightOfEPs_nil,
+            zero_add, h₀, h₁, h₂, Fin.sum_univ_three]
+          have hv (m : Fin 3) : v ∘ m.succAbove =
+              ![v (m.succAbove 0), v (m.succAbove 1)] := by
+            ext j
+            fin_cases j <;> rfl
+          simp only [hv]
+          norm_num [Fin.succAbove]
+          rw [OrientedCell.intersectionPairing_pair_swap (v 0) (v 2) f]
+          abel
+
+end Quiver.Path

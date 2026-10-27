@@ -166,23 +166,63 @@ theorem exists_loop_levelPathProduct_eq_of_vertices_eq
   refine ⟨z, q, fun s hs => ?_⟩
   exact (hp s (by rwa [hv, hs])).trans hprod
 
+variable (D F) in
+/-- Two finite-order tests with the same ambient vertices can be realized in any
+countable collection of finite polyhedral wall families. Both products are preserved
+by every admissible realization of the new vertex list; endpoints may move. -/
+theorem exists_common_levelPathProduct_eq (k l : ℕ)
+    {J : Type*} {I : J → Type*} [Countable J] [∀ j, Finite (I j)]
+    {W : ∀ j, I j → Set V}
+    (hpoly : ∀ j a, TauCeti.IsConvexPolyhedron (W j a))
+    (hdim : ∀ j a, Module.finrank ℝ (affineSpan ℝ (W j a)).direction + 1 =
+      Module.finrank ℝ V)
+    {x y : WallComplement (fun j : D.active k => (D.wall j).support)}
+    {x' y' : WallComplement (fun j : F.active l => (F.wall j).support)}
+    (p : AdmissiblePLPath x y) (q : AdmissiblePLPath x' y')
+    (hpq : p.vertices.map WallComplement.val = q.vertices.map WallComplement.val) :
+    ∃ (a b : CommonWallComplement W) (r : Quiver.Path a b),
+      (∀ {u v : WallComplement (fun j : D.active k => (D.wall j).support)}
+        (s : AdmissiblePLPath u v),
+        s.vertices.map WallComplement.val = r.vertices.map CommonWallComplement.val →
+          D.levelPathProduct k s = D.levelPathProduct k p) ∧
+      (∀ {u v : WallComplement (fun j : F.active l => (F.wall j).support)}
+        (s : AdmissiblePLPath u v),
+        s.vertices.map WallComplement.val = r.vertices.map CommonWallComplement.val →
+          F.levelPathProduct l s = F.levelPathProduct l q) := by
+  let := h.finiteDimensional
+  -- Stationary padding supplies a free interior vertex even for constant paths.
+  obtain ⟨p', hvp, hprodP⟩ := D.exists_vertices_eq_cons_levelPathProduct_eq k p
+  obtain ⟨q', hvq, hprodQ⟩ := F.exists_vertices_eq_cons_levelPathProduct_eq l q
+  have hx : x.val = x'.val := by simpa using congrArg List.head? hpq
+  have hvpq : p'.vertices.map WallComplement.val = q'.vertices.map WallComplement.val := by
+    rw [hvp, hvq, hx, hpq]
+  obtain ⟨ε₁, hε₁, hp⟩ := D.exists_pos_levelPathProduct_eq_of_forall₂_dist_lt k p'
+  obtain ⟨ε₂, hε₂, hq⟩ := F.exists_pos_levelPathProduct_eq_of_forall₂_dist_lt l q'
+  have hv : p'.vertices.map WallComplement.val =
+      x.val :: ((x.val :: p.vertices.dropLast.map WallComplement.val) ++ [y.val]) := by
+    have hend := congrArg (List.map WallComplement.val) p.dropLast_append_end_eq
+    simp only [List.map_append, List.map_singleton] at hend
+    simp only [hvp, List.cons_append, hend]
+  -- Move all vertices within both stability radii, then recover the test products.
+  obtain ⟨a, b, r, hr⟩ := CommonWallComplement.exists_forall₂_dist_lt_free_endpoints
+    hpoly hdim x.val y.val (l := x.val :: p.vertices.dropLast.map WallComplement.val)
+    (List.cons_ne_nil _ _) (lt_min hε₁ hε₂)
+  refine ⟨a, b, r, ?_, ?_⟩
+  · intro u v s hs
+    apply Eq.trans (hp s ?_) hprodP
+    have hnear := hr.imp fun _ _ hab => hab.trans_le (min_le_left ε₁ ε₂)
+    rwa [← hv, ← hs] at hnear
+  · intro u v s hs
+    apply Eq.trans (hq s ?_) hprodQ
+    have hnear := hr.imp fun _ _ hab => hab.trans_le (min_le_right ε₁ ε₂)
+    rwa [← hv, hvpq, ← hs] at hnear
+
 /-- Finite-order equivalence is transitive, even when the original test path's
 endpoints lie on active walls of the intermediate diagram. -/
 @[trans]
 theorem LevelEquivalent.trans {k : ℕ} (hDE : D.LevelEquivalent E k)
     (hEF : E.LevelEquivalent F k) : D.LevelEquivalent F k := by
   intro x y x' y' p q hpq
-  let := h.finiteDimensional
-  -- Stationary padding gives free interior vertices without changing either product.
-  obtain ⟨p', hvp, hprodP⟩ := exists_vertices_eq_cons_levelPathProduct_eq D k p
-  obtain ⟨q', hvq, hprodQ⟩ := exists_vertices_eq_cons_levelPathProduct_eq F k q
-  have hx : x.val = x'.val := by
-    have he := congrArg List.head? hpq
-    simpa using he
-  have hvpq : p'.vertices.map WallComplement.val = q'.vertices.map WallComplement.val := by
-    rw [hvp, hvq, hx, hpq]
-  obtain ⟨ε₁, hε₁, hp⟩ := D.exists_pos_levelPathProduct_eq_of_forall₂_dist_lt k p'
-  obtain ⟨ε₂, hε₂, hq⟩ := F.exists_pos_levelPathProduct_eq_of_forall₂_dist_lt k q'
   -- Lift only the finite indices, so the three diagrams may use different universes.
   let I : Option Bool → Type _
     | none => ULift.{max uι uκ uη} (E.active k)
@@ -212,16 +252,8 @@ theorem LevelEquivalent.trans {k : ℕ} (hDE : D.LevelEquivalent E k)
     cases j with
     | none => dsimp [I]; infer_instance
     | some b => cases b <;> dsimp [I] <;> infer_instance
-  have hv : p'.vertices.map WallComplement.val =
-      x.val :: ((x.val :: p.vertices.dropLast.map WallComplement.val) ++ [y.val]) := by
-    have hend := congrArg (List.map WallComplement.val) p.dropLast_append_end_eq
-    simp only [List.map_append, List.map_singleton] at hend
-    simp only [hvp, List.cons_append, hend]
-  -- Move endpoints as well as interior vertices, within both product-stability radii.
-  obtain ⟨a, b, r, hr⟩ := CommonWallComplement.exists_forall₂_dist_lt_free_endpoints
-    hpoly hdim x.val y.val
-    (l := x.val :: p.vertices.dropLast.map WallComplement.val)
-    (List.cons_ne_nil _ _) (lt_min hε₁ hε₂)
+  obtain ⟨a, b, r, hP, hQ⟩ := D.exists_common_levelPathProduct_eq F k k
+    hpoly hdim p q hpq
   -- Project the new path to all three families and recover the two test products.
   let r₁ := (WallComplement.restrictPrefunctor (W (some false)) ULift.up).mapPath
     ((CommonWallComplement.projectionPrefunctor (some false)).mapPath r)
@@ -238,21 +270,11 @@ theorem LevelEquivalent.trans {k : ℕ} (hDE : D.LevelEquivalent E k)
   have hv₃ : r₃.vertices.map WallComplement.val = r.vertices.map CommonWallComplement.val :=
     (WallComplement.vertices_restrictPrefunctor _ _ _).trans
       (CommonWallComplement.vertices_projection (some true) r)
-  have hP : D.levelPathProduct k r₁ = D.levelPathProduct k p' := by
-    apply hp
-    have hnear := hr.imp fun _ _ hab => hab.trans_le (min_le_left _ _)
-    rw [← hv] at hnear
-    exact hv₁.symm ▸ hnear
-  have hQ : F.levelPathProduct k r₃ = F.levelPathProduct k q' := by
-    apply hq
-    have hnear := hr.imp fun _ _ hab => hab.trans_le (min_le_right _ _)
-    rw [← hv, hvpq] at hnear
-    exact hv₃.symm ▸ hnear
   calc
-    D.levelPathProduct k p = D.levelPathProduct k r₁ := hprodP.symm.trans hP.symm
+    D.levelPathProduct k p = D.levelPathProduct k r₁ := (hP r₁ hv₁).symm
     _ = E.levelPathProduct k r₂ := hDE r₁ r₂ (hv₁.trans hv₂.symm)
     _ = F.levelPathProduct k r₃ := hEF r₂ r₃ (hv₂.trans hv₃.symm)
-    _ = F.levelPathProduct k q := hQ.trans hprodQ
+    _ = F.levelPathProduct k q := hQ r₃ hv₃
 
 variable (D E)
 
