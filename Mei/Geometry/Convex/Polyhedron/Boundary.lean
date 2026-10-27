@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import TauCeti.Analysis.Convex.Polyhedron.Basic
-public import Mei.Analysis.Convex.Intrinsic
+public import Mei.Analysis.Convex.Halfspace
 
 /-!
 # Relative interiors and boundaries of polyhedra
@@ -37,20 +37,9 @@ theorem mem_intrinsicInterior_iff_forall_lt [Finite ι] (g : ι → (V →ᴬ[�
       x ∈ P ∧ ∀ j, (∃ p ∈ P, g j p < 0) → g j x < 0 := by
   constructor
   · intro hx
-    have hxP := intrinsicInterior_subset hx
-    refine ⟨hxP, fun j hj => ?_⟩
-    have hle : g j x ≤ 0 := by rw [hP] at hxP; exact hxP j
-    apply lt_of_le_of_ne hle
-    intro hzero
-    obtain ⟨p, hp, hjp⟩ := hj
-    have hgj : ∀ q ∈ P, g j q ≤ 0 := by
-      intro q hq
-      rw [hP] at hq
-      exact hq j
-    have heq : g j p = 0 := by
-      simpa only [ContinuousAffineMap.coe_toAffineMap] using
-        (g j).toAffineMap.eq_zero_on_of_mem_intrinsicInterior hgj hx hzero p hp
-    exact hjp.ne heq
+    refine ⟨intrinsicInterior_subset hx, fun j hj => ?_⟩
+    exact (g j).toAffineMap.lt_zero_of_mem_intrinsicInterior
+      (fun p hp => (hP ▸ hp) j) hj hx
   · rintro ⟨hxP, hxstrict⟩
     let A := affineSpan ℝ P
     let xA : A := ⟨x, subset_affineSpan ℝ P hxP⟩
