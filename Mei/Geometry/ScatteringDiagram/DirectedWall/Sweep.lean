@@ -8,7 +8,6 @@ module
 public import Mei.Geometry.ScatteringDiagram.DirectedWall.Basic
 public import Mei.Geometry.ScatteringDiagram.WallSpace.Normal
 public import Mei.Geometry.ScatteringDiagram.WallSpace.Coorientation
-public import Mei.Geometry.Convex.PolyhedralComplex.Joint
 public import Mei.Geometry.Convex.Polyhedron.Rational.Sweep
 public import Mei.Geometry.Convex.Sweep
 
@@ -158,31 +157,6 @@ theorem exists_outgoing_sweep {P : Set V} (hP : IsRationalNormalPolyhedron h P)
       (H.wall_le_piece _ _ ((H.wall n m).neg_mem ((H.wall n m).neg_mem ha)))]
     exact Or.inr hl
 
-omit [Algebra ℚ R] [LieAlgebra ℚ L] [IsScalarTower ℚ R L] [DecidableEq Γ]
-  [GradedLieAlgebra ℒ] in
-private theorem exists_joint_sweep_normal
-    (C : FinitePolyhedralComplex h) {J : Set V} (hJ : J ∈ C.joints)
-    (n : Γ) (htrans : i (ρ n) ∉ (affineSpan ℝ J).direction) :
-    ∃ m : Λ →+ ℤ, m ≠ 0 ∧
-      (h.realCharacter m).ker = (affineSpan ℝ J).direction ⊔ ℝ ∙ i (ρ n) ∧
-      (⨆ (m : Λ →+ ℤ)
-        (_ : ∀ v : Λ, i v ∈ (affineSpan ℝ J).direction → m v = 0), H.wall n m) ≤
-        H.wall n m := by
-  obtain ⟨f, g, hdir, hm, hker⟩ := C.exists_joint_transverse_normal hJ (ρ n) htrans
-  have hmem (v : Λ) : i v ∈ (affineSpan ℝ J).direction ↔ v ∈ f.ker ⊓ g.ker := by
-    simp only [hdir, Submodule.mem_inf, LinearMap.mem_ker, h.realCharacter_apply,
-      Int.cast_eq_zero, AddSubgroup.mem_inf, AddMonoidHom.mem_ker]
-  have hnfg : ρ n ∉ f.ker ⊓ g.ker := fun hv => htrans ((hmem _).mpr hv)
-  refine ⟨f (ρ n) • g - g (ρ n) • f, hm, hker, ?_⟩
-  intro c hc
-  rw [← H.iSup_wall_eq_wall_of_inf_ker f g hnfg]
-  have hle : (⨆ (m : Λ →+ ℤ)
-      (_ : ∀ v : Λ, i v ∈ (affineSpan ℝ J).direction → m v = 0), H.wall n m) ≤
-      ⨆ (m : Λ →+ ℤ) (_ : ∀ v ∈ f.ker ⊓ g.ker, m v = 0), H.wall n m :=
-    iSup_le fun m => iSup_le fun hm => le_iSup_of_le m
-      (le_iSup_of_le (fun v hv => hm v ((hmem v).mpr hv)) le_rfl)
-  exact hle hc
-
 /-- A transverse rational polyhedron with a homogeneous wall coefficient has an
 outgoing swept wall with the chosen normal. Its supported ray contains the actual
 degree, and its negative-exponential label has exactly the homogeneous cutoffs. -/
@@ -229,7 +203,7 @@ theorem exists_swept_correction_wall [Module.Free ℤ Γ]
       n ∈ W.ray.rayDegrees ∧ W.label = d.expToCompletion ℒ (-c) ∧
       W.Outgoing ∧ ∀ k : ℕ,
         CompletedGroup.projection k W.label = 1 ↔ c = 0 ∨ (k : ℤ) < d.degree n := by
-  obtain ⟨m, hm, hker, hwall⟩ := exists_joint_sweep_normal (H := H) C hJ n htrans
+  obtain ⟨m, hm, hker, hwall⟩ := H.exists_joint_sweep_normal C hJ n htrans
   have hcell := ((C.mem_cellsOfCodimension 2 J).mp hJ).1
   obtain ⟨W, _, hW⟩ := exists_sweep_correction_wall (C.rational J hcell)
     (C.nonempty J hcell) n hn htrans hm hker c (hwall hc)
@@ -293,7 +267,7 @@ theorem exists_swept_correction_wall_of_truncated [Module.Free ℤ Γ]
       BCHGroup.log (CompletedGroup.projection k W.label) = -c ∧
       ∀ l : ℕ, CompletedGroup.projection l W.label = 1 ↔ c = 0 ∨ (l : ℤ) < d.degree n := by
   obtain ⟨m, hm, hker, hwall⟩ :=
-    exists_joint_sweep_normal (H := H.truncated d k) C hJ n htrans
+    (H.truncated d k).exists_joint_sweep_normal C hJ n htrans
   have hcell := ((C.mem_cellsOfCodimension 2 J).mp hJ).1
   obtain ⟨W, _, hW⟩ := exists_sweep_correction_wall_of_truncated (C.rational J hcell)
     (C.nonempty J hcell) n hn htrans hm hker k hnk c (hwall hc)
