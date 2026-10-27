@@ -15,7 +15,7 @@ At a relative interior point of a joint, every wall cell containing the point
 has the joint as a facet. All other wall cells miss a sufficiently small ball.
 Consequently a finite wall presentation satisfies Stokes on every sufficiently
 small complementary triangle containing the point in its interior, with vertices
-off the affine spans of the participating walls. The radius is uniform over the
+off the participating walls themselves. The radius is uniform over the
 whole presentation, and coefficients may lie in an arbitrary module.
 
 The radius also ensures that the triangle misses every other joint, so the
@@ -53,7 +53,7 @@ theorem exists_ball_sum_intersectionIndex_boundaryFacets_eq_sum_succAbove_at_joi
     ∃ ε > 0, ∀ s : Affine.Triangle ℝ V, q ∈ s.interior →
       IsCompl (affineSpan ℝ J).direction (vectorSpan ℝ (range s.points)) →
       convexHull ℝ (range s.points) ⊆ Metric.ball q ε →
-      (∀ j, s.points j ∉ affineSpan ℝ σ.carrier) →
+      (∀ j, s.points j ∉ σ.carrier) →
       (∑ τ ∈ σ.boundaryFacets, τ.intersectionIndex s.points) =
         ∑ m : Fin 3, (-1 : ℤ) ^ (m : ℕ) *
           σ.intersectionIndex (s.points ∘ m.succAbove) := by
@@ -67,8 +67,7 @@ theorem exists_ball_sum_intersectionIndex_boundaryFacets_eq_sum_succAbove_at_joi
     obtain ⟨ε, hε, hstokes⟩ :=
       σ.exists_ball_sum_intersectionIndex_boundaryFacets_eq_sum_succAbove_of_facet
         hface (by omega) hq
-    refine ⟨ε, hε, fun s hqs hc hs hv => hstokes s hqs hc hs ?_⟩
-    exact fun j hj => hv j (subset_affineSpan ℝ σ.carrier hj)
+    exact ⟨ε, hε, fun s hqs hc hs hv => hstokes s hqs hc hs hv⟩
   · obtain ⟨ε, hε, hball⟩ := Metric.isOpen_iff.mp σ.isClosed_carrier.isOpen_compl q hqσ
     refine ⟨ε, hε, fun s _ _ hs _ => ?_⟩
     exact σ.sum_intersectionIndex_boundaryFacets_eq_sum_succAbove_of_disjoint
@@ -91,7 +90,7 @@ theorem exists_ball_intersectionPairing_coboundaryPresentation_eq_sum_succAbove
     ∃ ε > 0, ∀ s : Affine.Triangle ℝ V, q ∈ s.interior →
       IsCompl (affineSpan ℝ J).direction (vectorSpan ℝ (range s.points)) →
       convexHull ℝ (range s.points) ⊆ Metric.ball q ε →
-      (∀ σ ∈ f.support, ∀ j, s.points j ∉ affineSpan ℝ σ.carrier) →
+      (∀ σ ∈ f.support, ∀ j, s.points j ∉ σ.carrier) →
       OrientedCell.intersectionPairing (R := R) s.points
           (coboundaryPresentation (R := R) f) =
         ∑ m : Fin 3, (-1 : ℤ) ^ (m : ℕ) •
@@ -127,7 +126,7 @@ theorem exists_ball_sum_incident_eq_sum_succAbove
     ∃ ε > 0, ∀ s : Affine.Triangle ℝ V, q ∈ s.interior →
       IsCompl (affineSpan ℝ J).direction (vectorSpan ℝ (range s.points)) →
       convexHull ℝ (range s.points) ⊆ Metric.ball q ε →
-      (∀ σ ∈ f.support, ∀ j, s.points j ∉ affineSpan ℝ σ.carrier) →
+      (∀ σ ∈ f.support, ∀ j, s.points j ∉ σ.carrier) →
       (∑ σ ∈ f.support, ∑ τ ∈ σ.boundaryFacets with τ.carrier = J,
         (τ.orientation.evalSign (fun j : Fin 2 => s.points j.succ - s.points 0) : ℤ) • f σ) =
         ∑ m : Fin 3, (-1 : ℤ) ^ (m : ℕ) •
