@@ -23,6 +23,8 @@ the same additive constant at every point.
 
 An exposed subset meeting the relative interior is the whole ambient set.
 See also `AffineMap.eq_zero_on_of_mem_intrinsicInterior`.
+Distinct exposed facets containing a common nonempty facet meet exactly there,
+even when the ambient set is not convex.
 
 A nonempty exposed facet has a canonical outward conormal ray on the direction
 of its parent set. Its representatives vanish precisely on the facet direction
@@ -336,6 +338,32 @@ theorem eq_of_finrank_vectorSpan_eq (hF : IsExposed ℝ P F) (hne : F.Nonempty)
   have hz' := hl ▸ hz
   rw [hl]
   exact ⟨hx, fun y hy => by simpa only [he] using hz'.2 y hy⟩
+
+/-- Distinct exposed facets containing a common nonempty facet meet exactly in
+that common facet. The ambient set need not be convex or polyhedral. -/
+theorem inter_eq_of_common_facet {G Q : Set V}
+    (hF : IsExposed ℝ P F) (hG : IsExposed ℝ P G)
+    (hQ : IsExposed ℝ F Q) (hne : Q.Nonempty) (hQG : Q ⊆ G) (hFG : F ≠ G)
+    (hFd : Module.finrank ℝ (vectorSpan ℝ F) + 1 =
+      Module.finrank ℝ (vectorSpan ℝ P))
+    (hGd : Module.finrank ℝ (vectorSpan ℝ G) + 1 =
+      Module.finrank ℝ (vectorSpan ℝ P))
+    (hQd : Module.finrank ℝ (vectorSpan ℝ Q) + 1 =
+      Module.finrank ℝ (vectorSpan ℝ F)) : F ∩ G = Q := by
+  have hQI : Q ⊆ F ∩ G := Set.subset_inter hQ.subset hQG
+  have hIn := hne.mono hQI
+  have hIF := (hF.inter hG).mono hF.subset Set.inter_subset_left
+  have hIG := (hF.inter hG).mono hG.subset Set.inter_subset_right
+  have hle := Submodule.finrank_mono
+    (vectorSpan_mono ℝ (Set.inter_subset_left : F ∩ G ⊆ F))
+  have hge := Submodule.finrank_mono (vectorSpan_mono ℝ hQI)
+  have hlt : Module.finrank ℝ (vectorSpan ℝ (F ∩ G)) <
+      Module.finrank ℝ (vectorSpan ℝ F) := by
+    by_contra! hn
+    have heF := hIF.eq_of_finrank_vectorSpan_eq hIn (by omega)
+    have heG := hIG.eq_of_finrank_vectorSpan_eq hIn (by omega)
+    exact hFG (heF.symm.trans heG)
+  exact ((hQ.mono Set.inter_subset_left hQI).eq_of_finrank_vectorSpan_eq hne (by omega)).symm
 
 end IsExposed
 
