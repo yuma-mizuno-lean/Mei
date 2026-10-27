@@ -21,6 +21,11 @@ The loop argument follows `FiniteWallDiagram.Equivalent.consistent`, using
 Product stability here uses simultaneous signed crossing events, so repeated and
 overlapping coplanar walls are retained. Common paths compare endpoint transport;
 no stabilization or local finiteness of the union of active walls is needed.
+
+Consistency also descends to lower cutoffs. A lower-order loop can meet additional
+higher-order walls, so first use
+`DirectedDiagram.exists_loop_levelPathProduct_eq_of_vertices_eq` to move it
+into general position, and then project its higher-order product.
 -/
 
 public section
@@ -83,6 +88,26 @@ theorem LevelEquivalent.consistent {k : ℕ} (hDE : D.LevelEquivalent E k)
 theorem LevelEquivalent.consistent_iff {k : ℕ} (hDE : D.LevelEquivalent E k) :
     D.LevelConsistent k ↔ E.LevelConsistent k :=
   ⟨hDE.consistent, hDE.symm.consistent⟩
+
+/-- Consistency at a higher cutoff implies consistency at every lower cutoff.
+No admissibility for the higher active wall family is required of the test loops. -/
+theorem LevelConsistent.mono {k l : ℕ} (hD : D.LevelConsistent l) (hkl : k ≤ l) :
+    D.LevelConsistent k := by
+  apply (D.levelConsistent_iff_loops k).mpr
+  intro x p
+  obtain ⟨a, q, hq⟩ := D.exists_loop_levelPathProduct_eq_of_vertices_eq k
+    (fun j : D.active l => (D.wall j).support)
+    (fun j => (D.wall j).isConvexPolyhedron)
+    (fun j => (D.wall j).finrank_direction_add_one) p
+  let f := WallComplement.restrictPrefunctor
+    (fun j : D.active l => (D.wall j).support) (Set.inclusion (D.active_mono hkl))
+  have hlow := hq (f.mapPath q) (WallComplement.vertices_restrictPrefunctor
+    (fun j : D.active l => (D.wall j).support) (Set.inclusion (D.active_mono hkl)) q)
+  calc
+    _ = D.levelPathProduct k (f.mapPath q) := hlow.symm
+    _ = (d.truncationMap ℒ hkl).bchGroupMap (D.levelPathProduct l q) :=
+      (D.truncation_levelPathProduct hkl q).symm
+    _ = 1 := by rw [(D.levelConsistent_iff_loops l).mp hD a q, map_one]
 
 /-- Equivalence preserves consistency at every cutoff. -/
 theorem Equivalent.consistent (hDE : D.Equivalent E) (hD : D.Consistent) : E.Consistent :=

@@ -22,6 +22,10 @@ using the signed-event stability of
 `Quiver.Path.exists_pos_signedCrossingEvents_eq_of_forall₂_dist_lt` for arbitrary
 wall families. Agreement at every cutoff also identifies the completed products.
 No local finiteness of the union of the active supports is required.
+
+Agreement at one cutoff descends to every lower cutoff. Move lower-order test
+paths into general position for both higher active families, compare there,
+and project the products using `DirectedDiagram.truncation_levelPathProduct`.
 -/
 
 public section
@@ -275,6 +279,54 @@ theorem LevelEquivalent.trans {k : ℕ} (hDE : D.LevelEquivalent E k)
     _ = E.levelPathProduct k r₂ := hDE r₁ r₂ (hv₁.trans hv₂.symm)
     _ = F.levelPathProduct k r₃ := hEF r₂ r₃ (hv₂.trans hv₃.symm)
     _ = F.levelPathProduct k q := hQ r₃ hv₃
+
+/-- Agreement at a higher cutoff implies agreement at every lower cutoff.
+The lower-order test paths may meet walls that are active only at the higher order. -/
+theorem LevelEquivalent.mono {k l : ℕ} (hDE : D.LevelEquivalent E l) (hkl : k ≤ l) :
+    D.LevelEquivalent E k := by
+  intro x y x' y' p q hpq
+  let W : D.active l ⊕ E.active l → Set V :=
+    Sum.elim (fun j => (D.wall j).support) (fun j => (E.wall j).support)
+  have hpoly : ∀ j, TauCeti.IsConvexPolyhedron (W j) := by
+    rintro (j | j)
+    · exact (D.wall j).isConvexPolyhedron
+    · exact (E.wall j).isConvexPolyhedron
+  have hdim : ∀ j, Module.finrank ℝ (affineSpan ℝ (W j)).direction + 1 =
+      Module.finrank ℝ V := by
+    rintro (j | j)
+    · exact (D.wall j).finrank_direction_add_one
+    · exact (E.wall j).finrank_direction_add_one
+  obtain ⟨a, b, r, hP, hQ⟩ := D.exists_common_levelPathProduct_eq E k k
+    (W := fun _ : Unit => W) (fun _ => hpoly) (fun _ => hdim) p q hpq
+  let r₀ := (CommonWallComplement.projectionPrefunctor ()).mapPath r
+  let rD := (WallComplement.restrictPrefunctor W Sum.inl).mapPath r₀
+  let rE := (WallComplement.restrictPrefunctor W Sum.inr).mapPath r₀
+  have hvD : rD.vertices.map WallComplement.val = r.vertices.map CommonWallComplement.val :=
+    (WallComplement.vertices_restrictPrefunctor W Sum.inl r₀).trans
+      (CommonWallComplement.vertices_projection () r)
+  have hvE : rE.vertices.map WallComplement.val = r.vertices.map CommonWallComplement.val :=
+    (WallComplement.vertices_restrictPrefunctor W Sum.inr r₀).trans
+      (CommonWallComplement.vertices_projection () r)
+  let fD := WallComplement.restrictPrefunctor
+    (fun j : D.active l => (D.wall j).support) (Set.inclusion (D.active_mono hkl))
+  let fE := WallComplement.restrictPrefunctor
+    (fun j : E.active l => (E.wall j).support) (Set.inclusion (E.active_mono hkl))
+  have hlowD := hP (fD.mapPath rD)
+    ((WallComplement.vertices_restrictPrefunctor
+      (fun j : D.active l => (D.wall j).support)
+      (Set.inclusion (D.active_mono hkl)) rD).trans hvD)
+  have hlowE := hQ (fE.mapPath rE)
+    ((WallComplement.vertices_restrictPrefunctor
+      (fun j : E.active l => (E.wall j).support)
+      (Set.inclusion (E.active_mono hkl)) rE).trans hvE)
+  calc
+    _ = D.levelPathProduct k (fD.mapPath rD) := hlowD.symm
+    _ = (d.truncationMap ℒ hkl).bchGroupMap (D.levelPathProduct l rD) :=
+      (D.truncation_levelPathProduct hkl rD).symm
+    _ = (d.truncationMap ℒ hkl).bchGroupMap (E.levelPathProduct l rE) :=
+      congrArg (d.truncationMap ℒ hkl).bchGroupMap (hDE rD rE (hvD.trans hvE.symm))
+    _ = E.levelPathProduct k (fE.mapPath rE) := E.truncation_levelPathProduct hkl rE
+    _ = _ := hlowE
 
 variable (D E)
 
