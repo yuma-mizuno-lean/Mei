@@ -5,11 +5,9 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.DefectCochain.Traversal
-public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Realization
-public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Obstruction.Basic
-public import Mei.Geometry.Convex.PolyhedralComplex.SingleCrossing
-import Mei.Algebra.Lie.Graded.Truncation.Transition
+public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.DefectCochain.Path
+import Mei.Geometry.Convex.PolyhedralCochain.Crossing
+import Mei.Geometry.Convex.PolyhedralCochain.ParameterSubdivision
 
 /-!
 # Crossing defects along a given polygonal path
@@ -21,15 +19,14 @@ come from the geometric crossing word; a positive crossing contributes the
 positive defect, while the additive wall-crossing convention contributes its
 negative.
 
-The construction uses `AdaptedWallCrossing.mem_interiors_of_crossings_singleton`,
-`Quiver.Path.exists_subdivision_subsingleton_crossings`, and the indexed transport
-realization `DirectedDiagram.levelPathProduct_eq_adaptedDiagram`. Thus it applies
-to the given path, without replacing it by a path realizing an abstract crossing
-sequence. The auxiliary finite diagram stores the negative exponentials of the
-crossing defects. Its products telescope the chamber lifts, and centrality turns
-these products into additive sums using
-`LieSubalgebra.log_wallPathProduct_sub_crossingSum_mem` and
-`FiniteWallDiagram.pathProduct_eq_wallPathProduct`.
+The construction combines the subdivided transport identity
+`DirectedDiagram.exists_subdivision_log_levelPathProduct_eq_sum_intersectionPairing`
+with `Quiver.Path.IsSubdivision.addWeightOfEPs_intersectionPairing_eq` and
+`Quiver.Path.addWeightOfEPs_intersectionPairing_eq_neg_wallCrossingSum`.
+Thus it computes transport along the given path using its original segment
+pairings. The auxiliary finite diagram stores negative defect exponentials;
+its group identity follows from the logarithmic identity and the central estimate
+`LieSubalgebra.log_wallPathProduct_sub_crossingSum_mem`.
 
 This is the pathwise central-defect calculation in Mandel, *Scattering diagrams,
 theta functions, and refined tropical curve counts*, proof of Theorem 2.6.
@@ -80,119 +77,6 @@ theorem crossingDefectDiagram_label (Q : (D.adaptedComplex (k + 1)).walls) :
     (crossingDefectDiagram σ hσ cross hk b t ht).label Q =
       exp (-((cross Q).defect hk b t ht : d.truncatedLie ℒ (k + 1))) := (rfl)
 
-private theorem positive_segment_defect
-    {x y : WallComplement (fun Q : (D.adaptedComplex (k + 1)).walls => (Q : Set V))}
-    (e : x ⟶ y) (Q : (D.adaptedComplex (k + 1)).walls) (u : ℝ)
-    (he : crossings x y = {(Q, u)})
-    (hv : 0 < h.realCharacter (cross Q).normal (y.val - x.val)) :
-    x.val ∈ interior ((cross Q).minus : Set V) ∧
-    y.val ∈ interior ((cross Q).plus : Set V) ∧
-    (crossingDefectDiagram σ hσ cross hk b t ht).pathProduct e.toPath =
-      (t (cross Q).plus)⁻¹ *
-        (D.adaptedDiagram (k + 1) (fun Q => h.realCharacter (cross Q).normal)
-          (fun Q => by simpa only [hσ Q] using (cross Q).ker_normal)).pathProduct e.toPath *
-        t (cross Q).minus := by
-  have hQ : (⟨(σ Q).carrier, (hσ Q).symm ▸ Q.property⟩ :
-      (D.adaptedComplex (k + 1)).walls) = Q := Subtype.ext (hσ Q)
-  have he' : crossings x y = {(⟨(σ Q).carrier, (hσ Q).symm ▸ Q.property⟩, u)} := by
-    rw [hQ]; exact he
-  obtain ⟨hxm, hyp⟩ := (cross Q).mem_interiors_of_crossings_singleton e u he' hv
-  have hl : (D.adaptedComplex (k + 1)).orderedCrossings e = [(Q, u)] := by
-    symm
-    apply ((D.adaptedComplex (k + 1)).orderedCrossings_eq_iff e _).mpr
-    simp [he]
-  refine ⟨hxm, hyp, ?_⟩
-  simp only [FiniteWallDiagram.pathProduct_toPath, hl, List.reverse_singleton,
-    List.map_singleton, List.prod_singleton, crossingDefectDiagram_normal,
-    crossingDefectDiagram_label, adaptedDiagram_normal, adaptedDiagram_label, hv,
-    ↓reduceIte, exp_neg, inv_inv]
-  simpa only [exp_log, hQ] using congrArg exp ((cross Q).coe_defect hk b t ht)
-
-private theorem segment_endpoint_defect
-    {x y : WallComplement (fun Q : (D.adaptedComplex (k + 1)).walls => (Q : Set V))}
-    (e : x ⟶ y) (hs : (crossings x y).Subsingleton)
-    (P : (D.adaptedComplex (k + 1)).cellsOfCodimension 0)
-    (hx : x.val ∈ interior (P : Set V)) :
-    ∃ Q : (D.adaptedComplex (k + 1)).cellsOfCodimension 0,
-      y.val ∈ interior (Q : Set V) ∧
-      (crossingDefectDiagram σ hσ cross hk b t ht).pathProduct e.toPath =
-        (t Q)⁻¹ *
-          (D.adaptedDiagram (k + 1) (fun Q => h.realCharacter (cross Q).normal)
-            (fun Q => by simpa only [hσ Q] using (cross Q).ker_normal)).pathProduct e.toPath *
-          t P := by
-  classical
-  let C := D.adaptedComplex (k + 1)
-  have heq {Q : C.cellsOfCodimension 0} (hxQ : x.val ∈ interior (Q : Set V)) : Q = P :=
-    Subtype.ext (C.eq_of_mem_intrinsicInterior
-      ((C.mem_cellsOfCodimension 0 _).mp Q.property).1
-      ((C.mem_cellsOfCodimension 0 _).mp P.property).1
-      (interior_subset_intrinsicInterior hxQ) (interior_subset_intrinsicInterior hx))
-  rcases (crossings x y).eq_empty_or_nonempty with he | ⟨⟨Q, u⟩, hQu⟩
-  · refine ⟨P, ?_, ?_⟩
-    · simpa only [AffineMap.lineMap_apply_one] using
-        C.lineMap_mem_interior_of_crossings_eq_empty P.property hx he 1 ⟨zero_le_one, le_rfl⟩
-    · rw [FiniteWallDiagram.pathProduct_toPath_eq_one _ e he,
-        FiniteWallDiagram.pathProduct_toPath_eq_one _ e he]
-      simp
-  · have he : crossings x y = {(Q, u)} := hs.eq_singleton_of_mem hQu
-    have hn : h.realCharacter (cross Q).normal (y.val - x.val) ≠ 0 :=
-      C.normal_velocity_ne_zero _ e ((C.mem_orderedCrossings e _).mpr hQu)
-        (by simpa only [hσ Q] using (cross Q).ker_normal)
-    rcases lt_or_gt_of_ne hn with hv | hv
-    · have hr : crossings y x = {(Q, 1 - u)} := by
-        simpa only [he, Set.image_singleton] using crossings_swap x y
-      have hv' : 0 < h.realCharacter (cross Q).normal (x.val - y.val) := by
-        simpa only [map_sub, neg_sub] using neg_pos.mpr hv
-      obtain ⟨hym, hxp, hprod⟩ := positive_segment_defect σ hσ cross hk b t ht
-        (Quiver.reverse e) Q (1 - u) hr hv'
-      have hP := heq hxp
-      refine ⟨(cross Q).minus, hym, ?_⟩
-      rw [← Quiver.Path.reverse_toPath, FiniteWallDiagram.pathProduct_reverse,
-        FiniteWallDiagram.pathProduct_reverse] at hprod
-      have hi := congrArg Inv.inv hprod
-      simpa only [inv_inv, mul_inv_rev, hP, mul_assoc] using hi
-    · obtain ⟨hxm, hyp, hprod⟩ := positive_segment_defect σ hσ cross hk b t ht e Q u he hv
-      exact ⟨(cross Q).plus, hyp, by simpa only [heq hxm] using hprod⟩
-
-/-- Products of the finite defect diagram telescope the chamber lifts along the
-actual path. Only the endpoints must be specified in full cell interiors. -/
-theorem pathProduct_crossingDefectDiagram
-    {x y : WallComplement (fun Q : (D.adaptedComplex (k + 1)).walls => (Q : Set V))}
-    (p : AdmissiblePLPath x y)
-    (P Q : (D.adaptedComplex (k + 1)).cellsOfCodimension 0)
-    (hx : x.val ∈ interior (P : Set V)) (hy : y.val ∈ interior (Q : Set V)) :
-    (crossingDefectDiagram σ hσ cross hk b t ht).pathProduct p =
-      (t Q)⁻¹ * D.levelPathProduct (k + 1) ((D.adaptedPathPrefunctor (k + 1)).mapPath p) * t P := by
-  let A := crossingDefectDiagram σ hσ cross hk b t ht
-  let B := D.adaptedDiagram (k + 1) (fun Q => h.realCharacter (cross Q).normal)
-    (fun Q => by simpa only [hσ Q] using (cross Q).ker_normal)
-  obtain ⟨q, hpq, hs⟩ := p.exists_subdivision_subsingleton_crossings
-  have hpath : ∀ {y} (q : AdmissiblePLPath x y),
-      q.vertices.IsChain (fun u v => (crossings u v).Subsingleton) →
-      ∃ Q : (D.adaptedComplex (k + 1)).cellsOfCodimension 0,
-        y.val ∈ interior (Q : Set V) ∧ A.pathProduct q = (t Q)⁻¹ * B.pathProduct q * t P := by
-    intro y q
-    induction q with
-    | nil => exact fun _ => ⟨P, hx, by simp⟩
-    | @cons z y q e ih =>
-      intro hs
-      rw [← Quiver.Path.comp_toPath_eq_cons, Quiver.Path.isChain_vertices_comp] at hs
-      obtain ⟨S, hz, hq⟩ := ih hs.1
-      obtain ⟨T, hy, he⟩ := segment_endpoint_defect σ hσ cross hk b t ht e
-        (by simpa only [Quiver.Path.vertices_toPath, List.isChain_pair] using hs.2) S hz
-      refine ⟨T, hy, ?_⟩
-      rw [FiniteWallDiagram.pathProduct_cons, FiniteWallDiagram.pathProduct_cons, hq, he]
-      dsimp only [B]
-      group
-  obtain ⟨T, hyT, hq⟩ := hpath q hs
-  have hT : T = Q := Subtype.ext ((D.adaptedComplex (k + 1)).eq_of_mem_intrinsicInterior
-    (((D.adaptedComplex (k + 1)).mem_cellsOfCodimension 0 _).mp T.property).1
-    (((D.adaptedComplex (k + 1)).mem_cellsOfCodimension 0 _).mp Q.property).1
-    (interior_subset_intrinsicInterior hyT) (interior_subset_intrinsicInterior hy))
-  rw [hT, A.pathProduct_eq_of_isSubdivision hpq, B.pathProduct_eq_of_isSubdivision hpq] at hq
-  rw [D.levelPathProduct_eq_adaptedDiagram]
-  exact hq
-
 /-- The logarithm of gauged transport along the given adapted path is the
 negative signed crossing sum of the actual central wall defects. No consistency
 at the higher order or shortness of the segments is required. -/
@@ -205,6 +89,43 @@ theorem log_inv_mul_levelPathProduct_mul_eq_neg_wallCrossingSum_defect
       D.levelPathProduct (k + 1) ((D.adaptedPathPrefunctor (k + 1)).mapPath p) * t P) =
         -p.wallCrossingSum (fun Q => h.realCharacter (cross Q).normal)
           (fun Q => ((cross Q).defect hk b t ht : d.truncatedLie ℒ (k + 1))) := by
+  classical
+  obtain ⟨q, hpq, _, hlog⟩ :=
+    exists_subdivision_log_levelPathProduct_eq_sum_intersectionPairing
+      σ hσ cross hk b t ht p P Q hx hy
+  let c := fun W => (cross W).defect hk b t ht
+  have hsupport : ∀ τ ∈ (∑ W, Finsupp.single (σ W) (c W)).support, ∃ W, τ = σ W := by
+    intro τ hτ
+    obtain ⟨W, _, hW⟩ := Finsupp.mem_support_finsetSum τ hτ
+    exact ⟨W, ((Finsupp.mem_support_single _ _ _).mp hW).1⟩
+  -- State the pairing comparison over the oriented carriers, then rewrite them
+  -- to the adapted wall family so the original paths can be used directly.
+  have hpair : ∀ {x y : WallComplement (fun W => (σ W).carrier)}
+      (p q : AdmissiblePLPath x y), p.IsSubdivision q →
+      q.addWeightOfEPs (fun u v => OrientedCell.intersectionPairing (R := R)
+        ![u.val, v.val] (∑ W, Finsupp.single (σ W) (c W))) =
+      -p.wallCrossingSum (fun W => h.realCharacter (cross W).normal) c := by
+    intro x y p q hpq
+    rw [hpq.addWeightOfEPs_intersectionPairing_eq _ hsupport]
+    exact p.addWeightOfEPs_intersectionPairing_eq_neg_wallCrossingSum
+      (fun W => h.realCharacter (cross W).normal) c (fun W _ v => (cross W).sign_normal v)
+  rw [show (fun W => (σ W).carrier) =
+    (fun W : (D.adaptedComplex (k + 1)).walls => (W : Set V)) from funext hσ] at hpair
+  rw [hlog]
+  simpa only [map_neg, AddMonoidHom.map_wallCrossingSum, LinearMap.toAddMonoidHom_coe,
+    LieHom.coe_toLinearMap, LieIdeal.incl_apply, c] using
+    congrArg (d.truncationMap ℒ (Nat.le_succ k)).ker.incl.toLinearMap.toAddMonoidHom
+      (hpair p q hpq)
+
+/-- Products of the finite defect diagram telescope the chamber lifts along the
+actual path. Only the endpoints must be specified in full cell interiors. -/
+theorem pathProduct_crossingDefectDiagram
+    {x y : WallComplement (fun Q : (D.adaptedComplex (k + 1)).walls => (Q : Set V))}
+    (p : AdmissiblePLPath x y)
+    (P Q : (D.adaptedComplex (k + 1)).cellsOfCodimension 0)
+    (hx : x.val ∈ interior (P : Set V)) (hy : y.val ∈ interior (Q : Set V)) :
+    (crossingDefectDiagram σ hσ cross hk b t ht).pathProduct p =
+      (t Q)⁻¹ * D.levelPathProduct (k + 1) ((D.adaptedPathPrefunctor (k + 1)).mapPath p) * t P := by
   let A := crossingDefectDiagram σ hσ cross hk b t ht
   let f := d.truncationMap ℒ (Nat.le_succ k)
   let K := f.ker.toLieSubalgebra
@@ -222,9 +143,10 @@ theorem log_inv_mul_levelPathProduct_mul_eq_neg_wallCrossingSum_defect
       simpa only [Submodule.mem_bot] using (d.ker_truncationMap_succ_le_center ℒ k hb) a)
     A.normal A.label hcomm p
     (fun _ _ a _ => (K.mem_bchSubgroup _).mpr (hlabel a.1))
-  rw [Submodule.mem_bot, sub_eq_zero, ← A.pathProduct_eq_wallPathProduct hcomm,
-    pathProduct_crossingDefectDiagram σ hσ cross hk b t ht p P Q hx hy] at he
-  rw [he]
+  rw [Submodule.mem_bot, sub_eq_zero, ← A.pathProduct_eq_wallPathProduct hcomm] at he
+  apply log_injective
+  rw [he, log_inv_mul_levelPathProduct_mul_eq_neg_wallCrossingSum_defect
+    σ hσ cross hk b t ht p P Q hx hy]
   simp only [A, crossingDefectDiagram_normal, crossingDefectDiagram_label, log_exp]
   simp only [Quiver.Path.wallCrossingSum_def, zsmul_neg, Finset.sum_neg_distrib,
     List.sum_neg, List.map_map, Function.comp_def]
