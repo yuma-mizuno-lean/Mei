@@ -64,8 +64,11 @@ theorem exists_ball_sum_intersectionIndex_boundaryFacets_eq_sum_succAbove_at_joi
     have hdimJ := ((C.mem_cellsOfCodimension 2 J).mp hJ).2
     have hdimσ := σ.finrank_direction_add
     rw [direction_affineSpan] at hdimJ hdimσ
-    exact σ.exists_ball_sum_intersectionIndex_boundaryFacets_eq_sum_succAbove_of_facet
-      hface (by omega) hq
+    obtain ⟨ε, hε, hstokes⟩ :=
+      σ.exists_ball_sum_intersectionIndex_boundaryFacets_eq_sum_succAbove_of_facet
+        hface (by omega) hq
+    refine ⟨ε, hε, fun s hqs hc hs hv => hstokes s hqs hc hs ?_⟩
+    exact fun j hj => hv j (subset_affineSpan ℝ σ.carrier hj)
   · obtain ⟨ε, hε, hball⟩ := Metric.isOpen_iff.mp σ.isClosed_carrier.isOpen_compl q hqσ
     refine ⟨ε, hε, fun s _ _ hs _ => ?_⟩
     exact σ.sum_intersectionIndex_boundaryFacets_eq_sum_succAbove_of_disjoint

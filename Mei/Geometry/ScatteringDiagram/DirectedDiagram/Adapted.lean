@@ -7,6 +7,7 @@ module
 
 public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Basic
 public import Mei.Geometry.Convex.PolyhedralComplex.AmbientSubdivision
+public import Mei.Geometry.Convex.Polyhedron.Path.Coarsening
 
 /-!
 # Ambient complexes adapted to directed diagrams
@@ -16,7 +17,9 @@ space whose walls subdivide every active directed support. On the relative
 interior of each cell, membership in each active support is constant: meeting
 that support forces the entire closed cell to lie in it. Increasing the cutoff
 subdivides the earlier complex. These are the geometric carriers on which one
-can assign chamber lifts and crossing defects.
+can assign chamber lifts and crossing defects. The resulting
+`adaptedPathPrefunctor` forgets the extra cuts while preserving all path vertices
+and commutes with reversal.
 
 The construction applies `FinitePolyhedralComplex.ambientSubdivision` to fixed
 presentations of the indexed supports. Its wall coverage uses the supporting
@@ -116,6 +119,28 @@ theorem affineSpan_eq_of_adaptedWall_subset {k : ℕ}
     (Submodule.eq_of_le_of_finrank_eq (AffineSubspace.direction_le hle) (by omega))
     (((D.adaptedComplex k).nonempty Q
       ((D.adaptedComplex k).mem_cells_of_mem_walls hQ)).mono (subset_affineSpan ℝ Q)) hle
+
+/-- Forget the extra cuts of the adapted complex without moving the path.
+Every active support is covered by adapted wall cells with its affine span. -/
+def adaptedPathPrefunctor (k : ℕ) :
+    WallComplement (fun Q : (D.adaptedComplex k).walls => (Q : Set V)) ⥤q
+      WallComplement (fun j : D.active k => (D.wall j).support) :=
+  WallComplement.wallCoverPrefunctor (fun j => (D.wall j).isConvexPolyhedron.isClosed)
+    (fun j x hx => by
+      obtain ⟨Q, hQ, hxQ, hsub⟩ := D.exists_mem_adaptedComplex_walls_subset k j hx
+      exact ⟨⟨Q, hQ⟩, hxQ, hsub, D.affineSpan_eq_of_adaptedWall_subset hQ j hsub⟩)
+
+/-- Forgetting the adapted cuts preserves each ambient point. -/
+@[simp]
+theorem adaptedPathPrefunctor_obj_val (k : ℕ)
+    (x : WallComplement (fun Q : (D.adaptedComplex k).walls => (Q : Set V))) :
+    ((D.adaptedPathPrefunctor k).obj x).val = x.val := by
+  rw [adaptedPathPrefunctor, WallComplement.wallCoverPrefunctor_obj_val]
+
+/-- Forgetting the adapted cuts commutes with path reversal. -/
+instance (k : ℕ) : (D.adaptedPathPrefunctor k).MapReverse := by
+  unfold adaptedPathPrefunctor
+  infer_instance
 
 /-- A velocity transverse to an adapted wall cell is transverse to every active
 support through a relative interior point of that cell. -/

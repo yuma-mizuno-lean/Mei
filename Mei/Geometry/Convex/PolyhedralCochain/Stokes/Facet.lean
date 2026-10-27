@@ -8,7 +8,6 @@ module
 public import Mei.Geometry.Convex.PolyhedralCochain.Stokes.Basic
 public import Mei.Geometry.Convex.Polyhedron.Face.Local
 public import Mei.Geometry.Affine.Simplex.Ray
-import Mei.LinearAlgebra.Submodule.Ray
 import Mathlib.Analysis.Convex.Combination
 
 /-!
@@ -17,15 +16,17 @@ import Mathlib.Analysis.Convex.Combination
 At a relative interior point of a wall's boundary facet, every sufficiently
 small triangle complementary to the facet direction satisfies the signed
 Stokes formula, provided its interior contains the point and its vertices
-miss the wall's affine span. The radius is independent of the triangle.
+miss the wall. The radius is independent of the triangle.
 Unbounded walls, real offsets and lineality are allowed.
 
-The facet half-space model `exists_ball_inter_eq_halfspace_of_facet` cuts the
-transverse plane in an inward ray. `Affine.Triangle.exists_ray_exit_edge`
+The facet half-space model `exists_ball_inter_eq_halfspace_of_facet` and
+`ContinuousLinearMap.exists_halfspace_slice_eq_ray` identify the transverse
+section with an inward ray. `Affine.Triangle.exists_ray_exit_edge`
 identifies its unique exit edge; the other edges miss the wall. This verifies
 the geometric hypotheses of
+`OrientedCell.intersectionIndex_boundaryFacet_eq_sum_succAbove` and
 `OrientedCell.sum_intersectionIndex_boundaryFacets_eq_sum_succAbove`, whose
-contraction calculation supplies the orientation signs.
+contraction calculation and boundary-sum reduction supply the Stokes formulas.
 -/
 
 public section
@@ -39,12 +40,102 @@ namespace Mei.OrientedCell
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
 
+private theorem exists_exit_of_facet_halfspace
+    (σ : OrientedCell h 1) {F : Set V}
+    (hdim : finrank ℝ (vectorSpan ℝ F) + 1 = finrank ℝ (vectorSpan ℝ σ.carrier))
+    (l : V →L[ℝ] ℝ) (hFl : F = l.toExposed σ.carrier)
+    (s : Affine.Triangle ℝ V) {p : V} (hpF : p ∈ F) (hp : p ∈ s.interior)
+    (hcompl : IsCompl (vectorSpan ℝ F) (vectorSpan ℝ (range s.points)))
+    (hvertices : ∀ j, s.points j ∉ σ.carrier)
+    (hlocal : convexHull ℝ (range s.points) ∩ σ.carrier =
+      convexHull ℝ (range s.points) ∩ {z | z ∈ affineSpan ℝ σ.carrier ∧ l z ≤ l p}) :
+    ∃ (b : Fin 3 → ℝ) (j : Fin 3) (q : V),
+      (∀ a, 0 ≤ b a) ∧ ∑ a, b a = 1 ∧ (∑ a, b a • s.points a) ∈ F ∧
+      0 < b j ∧ q ∈ convexHull ℝ (range (s.points ∘ j.succAbove)) ∧
+      q ∈ σ.carrier ∧ q ∉ F ∧
+      ∀ m ≠ j, Disjoint (convexHull ℝ (range (s.points ∘ m.succAbove))) σ.carrier := by
+  have := h.finiteDimensional
+  -- Identify the wall slice in the triangle plane with the normalized inward ray.
+  have hpA := s.closedInterior_subset_affineSpan (s.interior_subset_closedInterior hp)
+  have hplane : AffineSubspace.mk' p (vectorSpan ℝ (range s.points)) =
+      affineSpan ℝ (range s.points) := by
+    rw [← direction_affineSpan, (affineSpan ℝ (range s.points)).mk'_eq hpA]
+  obtain ⟨q, hqA, hlq, hray⟩ := l.exists_halfspace_slice_eq_ray (hFl ▸ hpF)
+    (hFl ▸ hdim) _ (hFl ▸ hcompl)
+  rw [hplane] at hqA hray
+  have hqne : q ≠ p := by intro he; rw [he] at hlq; linarith
+  have hline (t : ℝ) : l (AffineMap.lineMap p q t) = l p - t := by
+    simp only [AffineMap.lineMap_apply_module, map_add, map_smul, smul_eq_mul, hlq]
+    ring
+  have hmem (z : V) (hz : z ∈ convexHull ℝ (range s.points)) :
+      z ∈ σ.carrier ↔ ∃ t : ℝ, 0 ≤ t ∧ AffineMap.lineMap p q t = z := by
+    have hzA := s.closedInterior_subset_affineSpan
+      (Affine.Simplex.convexHull_eq_closedInterior s ▸ hz)
+    have he := Set.ext_iff.mp hlocal z
+    simpa only [mem_inter_iff, mem_ofPred_eq, hz, true_and, hray z hzA] using he
+  -- The inward ray avoids every vertex because all vertices miss the actual wall support.
+  have hv (t : ℝ) (ht : 0 < t) (j : Fin 3) :
+      AffineMap.lineMap p q t ≠ s.points j := by
+    intro he
+    exact hvertices j ((hmem _ (subset_convexHull ℝ _ (mem_range_self j))).mpr
+      ⟨t, ht.le, he⟩)
+  -- The unique exit edge supplies the chord hypotheses for both Stokes formulas.
+  obtain ⟨T, j, hT, hj, hexit⟩ := s.exists_ray_exit_edge hp hqA hqne hv
+  have hface (m : Fin 3) :
+      convexHull ℝ (range (s.points ∘ m.succAbove)) = (s.faceOpposite m).closedInterior := by
+    rw [← Affine.Simplex.convexHull_eq_closedInterior]
+    congr 2
+    ext a
+    simpa using (s.faceOpposite_point_eq_point_succAbove m a).symm
+  have hface_sub (m : Fin 3) : convexHull ℝ (range (s.points ∘ m.succAbove)) ⊆
+      convexHull ℝ (range s.points) := convexHull_mono (range_comp_subset_range _ _)
+  have hjface : AffineMap.lineMap p q T ∈ convexHull ℝ (range (s.points ∘ j.succAbove)) := by
+    rw [hface]
+    exact (s.faceOpposite j).interior_subset_closedInterior hj
+  have hjσ := (hmem _ (hface_sub j hjface)).mpr ⟨T, hT.le, rfl⟩
+  have hjF : AffineMap.lineMap p q T ∉ F := by
+    intro hm
+    have he := ((l.mem_toExposed_iff_of_mem (hFl ▸ hpF)).mp (hFl ▸ hm)).2
+    rw [hline] at he
+    linarith
+  have hdisj (m : Fin 3) (hm : m ≠ j) :
+      Disjoint (convexHull ℝ (range (s.points ∘ m.succAbove))) σ.carrier := by
+    apply Set.disjoint_left.mpr
+    intro z hz hzσ
+    obtain ⟨t, ht, rfl⟩ := (hmem z (hface_sub m hz)).mp hzσ
+    exact hm (((hexit t ht m).mp (hface m ▸ hz)).2)
+  obtain ⟨b, hb, hb01, hbp⟩ := hp
+  have hsum : ∑ a, b a • s.points a = p := by
+    simpa only [Finset.affineCombination_eq_linear_combination _ _ _ hb] using hbp
+  exact ⟨b, j, _, (fun a => (hb01 a).1.le), hb, hsum ▸ hpF,
+    (hb01 j).1, hjface, hjσ, hjF, hdisj⟩
+
+/-- In a half-space neighborhood of a wall facet, a complementary triangle
+containing a point of the facet in its interior satisfies the signed facet Stokes formula.
+The vertices need only avoid the wall itself. -/
+theorem intersectionIndex_boundaryFacet_eq_sum_succAbove_of_halfspace
+    (σ : OrientedCell h 1) {F : Set V} (hF : IsExposed ℝ σ.carrier F)
+    (hne : F.Nonempty)
+    (hdim : finrank ℝ (vectorSpan ℝ F) + 1 = finrank ℝ (vectorSpan ℝ σ.carrier))
+    (l : V →L[ℝ] ℝ) (hFl : F = l.toExposed σ.carrier)
+    (s : Affine.Triangle ℝ V) {p : V} (hpF : p ∈ F) (hp : p ∈ s.interior)
+    (hcompl : IsCompl (vectorSpan ℝ F) (vectorSpan ℝ (range s.points)))
+    (hvertices : ∀ j, s.points j ∉ σ.carrier)
+    (hlocal : convexHull ℝ (range s.points) ∩ σ.carrier =
+      convexHull ℝ (range s.points) ∩ {z | z ∈ affineSpan ℝ σ.carrier ∧ l z ≤ l p}) :
+    (σ.boundaryFacet hF hne hdim).intersectionIndex s.points =
+      ∑ m : Fin 3, (-1 : ℤ) ^ (m : ℕ) * σ.intersectionIndex (s.points ∘ m.succAbove) := by
+  obtain ⟨b, j, q, hb₀, hb₁, hpF', hbj, hqj, hqσ, hqF, hdisj⟩ :=
+    exists_exit_of_facet_halfspace σ hdim l hFl s hpF hp hcompl hvertices hlocal
+  exact σ.intersectionIndex_boundaryFacet_eq_sum_succAbove hF hne hdim
+    hb₀ hb₁ hpF' hbj hqj hqσ hqF hdisj
+
 private theorem stokes_of_facet_halfspace (σ : OrientedCell h 1) {F : Set V}
     (hF : IsExposed ℝ σ.carrier F)
     (hdim : finrank ℝ (vectorSpan ℝ F) + 1 = finrank ℝ (vectorSpan ℝ σ.carrier))
     {p : V} (hpF : p ∈ F) (s : Affine.Triangle ℝ V) (hp : p ∈ s.interior)
     (hT : IsCompl (vectorSpan ℝ F) (vectorSpan ℝ (range s.points)))
-    (hv : ∀ j, s.points j ∉ affineSpan ℝ σ.carrier)
+    (hv : ∀ j, s.points j ∉ σ.carrier)
     (l : V →L[ℝ] ℝ) (hl : F = l.toExposed σ.carrier)
     (hlocal : ∀ y ∈ convexHull ℝ (range s.points),
       y ∈ σ.carrier ↔ y ∈ affineSpan ℝ σ.carrier ∧ l y ≤ l p)
@@ -52,89 +143,20 @@ private theorem stokes_of_facet_halfspace (σ : OrientedCell h 1) {F : Set V}
       Disjoint (convexHull ℝ (range s.points)) τ.carrier) :
     (∑ τ ∈ σ.boundaryFacets, τ.intersectionIndex s.points) =
       ∑ m : Fin 3, (-1 : ℤ) ^ (m : ℕ) * σ.intersectionIndex (s.points ∘ m.succAbove) := by
-  have := h.finiteDimensional
-  -- Slice the facet half-space by the complementary triangle plane.
-  let T := vectorSpan ℝ (range s.points)
-  have hpA : p ∈ affineSpan ℝ σ.carrier := subset_affineSpan ℝ _ (hF.subset hpF)
-  have hpS : p ∈ affineSpan ℝ (range s.points) := s.setInterior_subset_affineSpan hp
-  have hproper : F ≠ σ.carrier := by intro he; rw [he] at hdim; omega
-  obtain ⟨x, hx, hxF⟩ := Set.exists_of_ssubset (lt_of_le_of_ne hF.subset hproper)
-  have hpx : p ∈ l.toExposed σ.carrier := hl ▸ hpF
-  have hlt : l x < l p := lt_of_le_of_ne (hpx.2 x hx) (fun he =>
-    hxF (hl ▸ (l.mem_toExposed_iff_of_mem hpx).mpr ⟨hx, he⟩))
-  obtain ⟨w, hw, hwl, hray⟩ := (vectorSpan ℝ σ.carrier).exists_neg_ray_of_isCompl
-    (vectorSpan ℝ F) T (vectorSpan_mono ℝ hF.subset) hdim hT l.toLinearMap
-    (by rw [hl]; exact l.vectorSpan_toExposed_le_ker σ.carrier)
-    ⟨x - p, vsub_mem_vectorSpan ℝ hx (hF.subset hpF), by simpa using sub_neg.mpr hlt⟩
-  simp only [ContinuousLinearMap.coe_coe] at hwl hray
-  let q := w + p
-  have hqS : q ∈ affineSpan ℝ (range s.points) := by
-    apply (AffineSubspace.vsub_right_mem_direction_iff_mem hpS q).mp
-    simp only [q, vsub_eq_sub, add_sub_cancel_right, direction_affineSpan]
-    exact hw.2
-  have hqp : q ≠ p := by
-    intro he
-    have hw0 : w = 0 := add_right_cancel (he.trans (zero_add p).symm)
-    simp [hw0] at hwl
-  have hline (t : ℝ) : AffineMap.lineMap p q t = t • w + p := by
-    simp [AffineMap.lineMap_apply, q]
-  have hplane (t : ℝ) : AffineMap.lineMap p q t ∈ affineSpan ℝ σ.carrier := by
-    apply (AffineSubspace.vsub_right_mem_direction_iff_mem hpA _).mp
-    simpa only [hline, vsub_eq_sub, add_sub_cancel_right, direction_affineSpan]
-      using (vectorSpan ℝ σ.carrier).smul_mem t hw.1
-  -- The inward ray exits exactly one edge, away from every vertex.
-  obtain ⟨t, j, ht, hj, hexit⟩ := s.exists_ray_exit_edge hp hqS hqp
-    (fun t _ j he => hv j (he ▸ hplane t))
-  let y := AffineMap.lineMap p q t
-  have hyHull : y ∈ convexHull ℝ (range s.points) := by
-    rw [s.convexHull_eq_closedInterior]
-    exact s.closedInterior_faceOpposite_subset_closedInterior j
-      ((s.faceOpposite j).interior_subset_closedInterior hj)
-  have hyl : l y < l p := by
-    have he : l y = t * l w + l p := by simp only [y, hline, map_add, map_smul, smul_eq_mul]
-    rw [he]
-    linarith [mul_neg_of_pos_of_neg ht hwl]
-  have hyσ : y ∈ σ.carrier := (hlocal y hyHull).mpr ⟨hplane t, hyl.le⟩
-  have hyF : y ∉ F := by
-    intro hy
-    have he := (l.mem_toExposed_iff_of_mem hpx).mp (hl ▸ hy)
-    exact hyl.ne he.2
-  have hface (m : Fin 3) : convexHull ℝ (range (s.points ∘ m.succAbove)) =
-      (s.faceOpposite m).closedInterior := by
-    rw [← (s.faceOpposite m).convexHull_eq_closedInterior,
-      s.range_faceOpposite_points, range_comp, Fin.range_succAbove]
-  -- Any other edge intersection would lie on the same ray, contradicting its unique exit.
-  have hdisj (m : Fin 3) (hm : m ≠ j) :
-      Disjoint (convexHull ℝ (range (s.points ∘ m.succAbove))) σ.carrier := by
-    apply Set.disjoint_left.mpr
-    intro z hz hzσ
-    have hzHull : z ∈ convexHull ℝ (range s.points) :=
-      convexHull_mono (range_comp_subset_range _ _) hz
-    have hzT : z - p ∈ T := by
-      simpa only [T, vsub_eq_sub, direction_affineSpan] using
-        (affineSpan ℝ (range s.points)).vsub_mem_direction
-          (convexHull_subset_affineSpan _ hzHull) hpS
-    have hzA := (hlocal z hzHull).mp hzσ
-    have hzU : z - p ∈ vectorSpan ℝ σ.carrier := by
-      simpa only [vsub_eq_sub, direction_affineSpan] using
-        (affineSpan ℝ σ.carrier).vsub_mem_direction hzA.1 hpA
-    obtain ⟨a, ha, haz⟩ := (hray (z - p) hzT).mp
-      ⟨hzU, by simpa only [map_sub] using sub_nonpos.mpr hzA.2⟩
-    have he : AffineMap.lineMap p q a = z := by rw [hline, haz]; abel
-    have hmj := ((hexit a ha m).mp (he.symm ▸ (hface m ▸ hz))).2
-    exact hm hmj
-  -- The established chord geometry lets the existing contraction formula supply the signs.
-  obtain ⟨b, hb, hb01, hbp⟩ := hp
-  have hpSum : ∑ a, b a • s.points a ∈ F := by
-    rw [← Finset.affineCombination_eq_linear_combination _ _ _ hb, hbp]
-    exact hpF
+  obtain ⟨b, j, q, hb₀, hb₁, hpF', hbj, hqj, hqσ, hqF, hdisj⟩ :=
+    exists_exit_of_facet_halfspace σ hdim l hl s hpF hp hT hv (by
+      ext y
+      constructor
+      · rintro ⟨hy, hyσ⟩
+        exact ⟨hy, (hlocal y hy).mp hyσ⟩
+      · rintro ⟨hy, hyσ⟩
+        exact ⟨hy, (hlocal y hy).mpr hyσ⟩)
   exact σ.sum_intersectionIndex_boundaryFacets_eq_sum_succAbove hF ⟨p, hpF⟩ hdim
-    (fun a => (hb01 a).1.le) hb hpSum ((hb01 j).1) (hface j ▸
-      (s.faceOpposite j).interior_subset_closedInterior hj) hyσ hyF hdisj hother
+    hb₀ hb₁ hpF' hbj hqj hqσ hqF hdisj hother
 
 /-- At a relative interior point of a wall facet there is a ball on which
 Stokes holds for every transverse triangle containing that point in its
-interior and whose vertices miss the wall's affine span. The signed facet
+interior and whose vertices miss the wall. The signed facet
 sum and the signed edge sum use the same vertex order. -/
 theorem exists_ball_sum_intersectionIndex_boundaryFacets_eq_sum_succAbove_of_facet
     (σ : OrientedCell h 1) {F : Set V} (hF : IsExposed ℝ σ.carrier F)
@@ -143,7 +165,7 @@ theorem exists_ball_sum_intersectionIndex_boundaryFacets_eq_sum_succAbove_of_fac
     ∃ ε > 0, ∀ s : Affine.Triangle ℝ V, p ∈ s.interior →
       IsCompl (affineSpan ℝ F).direction (vectorSpan ℝ (range s.points)) →
       convexHull ℝ (range s.points) ⊆ Metric.ball p ε →
-      (∀ j, s.points j ∉ affineSpan ℝ σ.carrier) →
+      (∀ j, s.points j ∉ σ.carrier) →
       (∑ τ ∈ σ.boundaryFacets, τ.intersectionIndex s.points) =
         ∑ m : Fin 3, (-1 : ℤ) ^ (m : ℕ) * σ.intersectionIndex (s.points ∘ m.succAbove) := by
   classical
