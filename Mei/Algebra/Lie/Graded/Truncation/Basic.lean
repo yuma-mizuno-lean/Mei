@@ -207,6 +207,15 @@ theorem truncatedGrading_eq_bot {k : ℕ} {n : N} (hn : (k : ℤ) < d.degree n) 
   obtain ⟨y, hy, rfl⟩ := (d.mem_truncatedGrading_iff ℒ).mp hx
   exact (d.degreeIdeal ℒ k).mkQ_eq_zero.mpr (d.le_degreeIdeal ℒ hn hy)
 
+/-- A degree truncation has no terms above its retained cutoff. -/
+@[simp]
+theorem degreeIdeal_truncatedGrading_eq_bot {k l : ℕ} (hkl : k ≤ l) :
+    d.degreeIdeal (d.truncatedGrading ℒ k) l = ⊥ := by
+  apply LieSubmodule.toSubmodule_injective
+  rw [degreeIdeal_toSubmodule, degreeSubmodule_def]
+  exact iSup_eq_bot.mpr fun n =>
+    d.truncatedGrading_eq_bot ℒ (lt_of_le_of_lt (by exact_mod_cast hkl) n.property)
+
 /-- A nonzero piece in a truncation has nonzero allowed degree below the cutoff. -/
 theorem mem_cutoff_of_truncatedGrading_ne_bot {k : ℕ} {n : N}
     (hn : d.truncatedGrading ℒ k n ≠ ⊥) : n ∈ d.cutoff k \ {0} := by
