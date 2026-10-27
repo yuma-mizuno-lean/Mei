@@ -125,7 +125,7 @@ theorem intersectionPairing_eq_sum_sub_reverse (v : Fin (k + 1) → V) :
   simp only [map_sum, map_add, OrientedCell.intersectionPairing_single,
     OrientedCell.intersectionIndex_reverse, neg_smul, sub_eq_add_neg, smul_add, smul_neg]
 
-omit [Fintype (C.cellsOfCodimension k)] in
+omit [Fintype (C.cellsOfCodimension k)] hσ in
 /-- Transverse tests detect zero for any presentation on a finite complex,
 including presentations containing both orientations of the same cell. It
 suffices to test simplices lying in balls of any prescribed positive radius. -/
@@ -144,6 +144,28 @@ theorem ofFinsupp_eq_zero_iff_intersectionPairing_eq_zero {ε : ℝ} (hε : 0 < 
       intersectionPairing_eq_of_ofFinsupp_eq (hz.trans (map_zero _).symm) hv
         (by simp : ∀ τ ∈ (0 : OrientedCell h k →₀ E).support, τ.IsTransverse v)
   · intro htest
+    -- Choose auxiliary orientations by pulling back volume forms of the normal quotients.
+    have hex (Q : C.cellsOfCodimension k) :
+        ∃ τ : OrientedCell h k, τ.carrier = (Q : Set V) := by
+      obtain ⟨hQC, hdim⟩ := (C.mem_cellsOfCodimension k Q).mp Q.property
+      let W := (affineSpan ℝ (Q : Set V)).direction
+      have hk : finrank ℝ (V ⧸ W) = k := by
+        have hdimW : finrank ℝ W + k = finrank ℝ V := hdim
+        have := W.finrank_quotient_add_finrank
+        omega
+      let b := Module.finBasisOfFinrankEq ℝ (V ⧸ W) hk
+      have hα : b.det.compLinearMap W.mkQ ≠ 0 := by
+        intro hz
+        apply b.det_ne_zero
+        exact AlternatingMap.compLinearMap_injective W.mkQ W.mkQ_surjective
+          (by simpa only [AlternatingMap.zero_compLinearMap] using hz)
+      refine ⟨⟨Q, C.rational Q hQC, C.nonempty Q hQC, hdim,
+        rayOfNeZero ℝ _ hα, ?_⟩, rfl⟩
+      rw [Module.Ray.isConormal_rayOfNeZero_iff]
+      simpa only [Submodule.conormalFormsEquiv_apply] using
+        (W.conormalFormsEquiv b.det).property
+    choose σ hσ using hex
+    -- An isolating test recovers each signed coefficient of this presentation.
     rw [ofFinsupp_eq_zero_iff_eq_reverse C σ hσ f hf]
     intro Q
     have hQC := ((C.mem_cellsOfCodimension k Q).mp Q.property).1
