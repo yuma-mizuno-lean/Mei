@@ -92,6 +92,7 @@ theorem jointObstructionCochain_reverse (hσ : ∀ J, (σ J).carrier = (J : Set 
 /-- The obstruction cochain vanishes exactly when every specified joint loop
 has identity transport. Thus cancellation in the cochain quotient detects each
 individual meridian product, even though that quotient allows subdivision. -/
+@[simp]
 theorem jointObstructionCochain_eq_zero_iff (hσ : ∀ J, (σ J).carrier = (J : Set V))
     (hk : D.LevelConsistent k) :
     D.jointObstructionCochain σ x γ hσ hk = 0 ↔

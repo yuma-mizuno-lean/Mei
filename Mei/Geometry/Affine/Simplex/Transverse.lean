@@ -7,7 +7,6 @@ module
 
 public import Mathlib.Analysis.Normed.Affine.Convex
 public import Mathlib.LinearAlgebra.AffineSpace.Simplex.Basic
-public import Mathlib.LinearAlgebra.Projection
 public import Mathlib.Analysis.Convex.Intrinsic
 
 /-!
@@ -27,12 +26,12 @@ open Set Module
 
 namespace AffineSubspace
 
-variable {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
-  [FiniteDimensional ℝ V] {k : ℕ}
+variable {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V] {k : ℕ}
 
 /-- An arbitrarily small simplex complementary to an affine subspace at a
 specified point. Its filled support meets the subspace in precisely that point. -/
 theorem exists_small_transverse_simplex (A : AffineSubspace ℝ V)
+    [FiniteDimensional ℝ (V ⧸ A.direction)]
     (hdim : finrank ℝ (V ⧸ A.direction) = k) {p : V} (hp : p ∈ A)
     {ε : ℝ} (hε : 0 < ε) :
     ∃ s : Affine.Simplex ℝ V k,
@@ -42,10 +41,9 @@ theorem exists_small_transverse_simplex (A : AffineSubspace ℝ V)
       p ∈ intrinsicInterior ℝ (convexHull ℝ (range s.points)) := by
   -- Work in a linear complement, where the desired test has full dimension.
   obtain ⟨T, hT⟩ := Submodule.exists_isCompl A.direction
-  have hdimT : finrank ℝ T = k := by
-    have hsum := Submodule.finrank_add_eq_of_isCompl hT
-    have hquot := A.direction.finrank_quotient_add_finrank
-    omega
+  let eT := A.direction.quotientEquivOfIsCompl T hT
+  have : FiniteDimensional ℝ T := eT.finiteDimensional
+  have hdimT : finrank ℝ T = k := eT.finrank_eq.symm.trans hdim
   obtain ⟨b, hb0, hbball⟩ := exists_mem_interior_convexHull_affineBasis
     (Metric.ball_mem_nhds (0 : T) hε)
   let e := finCongr (congrArg (· + 1) hdimT)
