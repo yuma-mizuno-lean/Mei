@@ -41,7 +41,7 @@ slice and have affine span through the center.
 
 The slice may have any dimension at least two; a transverse plane is the usual
 application. No polyhedral or rational presentation is required by this local
-construction. -/
+construction. Vertices avoid the affine spans of walls meeting the ball. -/
 theorem exists_admissible_triangle (hdim : 2 ≤ Module.finrank ℝ T) (hr : 0 < r)
     (hwall : ∀ j, (W j ∩ Metric.ball p r).Nonempty →
       p ∈ affineSpan ℝ (W j) ∧ ¬ T ≤ (affineSpan ℝ (W j)).direction)
@@ -51,8 +51,10 @@ theorem exists_admissible_triangle (hdim : 2 ≤ Module.finrank ℝ T) (hr : 0 <
       s.centroid = p ∧
       γ.vertices.map WallComplement.val = [s.points 0, s.points 1, s.points 2, s.points 0] ∧
       convexHull ℝ (Set.range s.points) ⊆
-        Metric.ball p r ∩ (AffineSubspace.mk' p T : Set V) := by
-  obtain ⟨s, hsp, hmem, hedge, hvertex⟩ :=
+        Metric.ball p r ∩ (AffineSubspace.mk' p T : Set V) ∧
+      (∀ j a, (W a ∩ Metric.ball p r).Nonempty →
+        s.points j ∉ affineSpan ℝ (W a)) := by
+  obtain ⟨s, hsp, hmem, hedge, hvertex, hspan⟩ :=
     Mei.exists_small_transverse_triangle_in_slice W T hdim hr hwall
   let a : Fin 3 → WallComplement W := fun j => ⟨s.points j, hvertex j⟩
   have hadm (j k : Fin 3) (hjk : j ≠ k) : (a j).AdmissibleSegment (a k) := by
@@ -71,7 +73,7 @@ theorem exists_admissible_triangle (hdim : 2 ≤ Module.finrank ℝ T) (hr : 0 <
   let e20 : a 2 ⟶ a 0 := ⟨hadm 2 0 (by decide)⟩
   let γ : AdmissiblePLPath (a 0) (a 0) :=
     ((Quiver.Path.nil.cons e01).cons e12).cons e20
-  refine ⟨s, a 0, γ, hsp, ?_, ?_⟩
+  refine ⟨s, a 0, γ, hsp, ?_, ?_, hspan⟩
   · rfl
   · exact convexHull_min (Set.range_subset_iff.mpr hmem)
       ((convex_ball p r).inter (AffineSubspace.mk' p T).convex)

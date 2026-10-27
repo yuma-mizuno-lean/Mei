@@ -191,7 +191,8 @@ variable {V ι : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V] [Countable ι
 is an arbitrarily small centered nondegenerate triangle whose vertices miss
 countably many prescribed sets and whose edges are transverse to their affine
 spans. Only the sets meeting the ball must have span through its center and
-proper direction after restriction to the slice. -/
+proper direction after restriction to the slice. Vertices also avoid the
+affine spans of all sets meeting the ball. -/
 theorem exists_small_transverse_triangle_in_slice (hdim : 2 ≤ Module.finrank ℝ T) (hr : 0 < r)
     (hwall : ∀ j, (W j ∩ Metric.ball p r).Nonempty →
       p ∈ affineSpan ℝ (W j) ∧ ¬ T ≤ (affineSpan ℝ (W j)).direction) :
@@ -199,7 +200,9 @@ theorem exists_small_transverse_triangle_in_slice (hdim : 2 ≤ Module.finrank �
       (∀ j, s.points j ∈ Metric.ball p r ∩ (AffineSubspace.mk' p T : Set V)) ∧
       (∀ j k, j ≠ k → ∀ a, (W a ∩ Metric.ball p r).Nonempty →
         s.points k - s.points j ∉ (affineSpan ℝ (W a)).direction) ∧
-      (∀ j a, s.points j ∉ W a) := by
+      (∀ j a, s.points j ∉ W a) ∧
+      (∀ j a, (W a ∩ Metric.ball p r).Nonempty →
+        s.points j ∉ affineSpan ℝ (W a)) := by
   classical
   -- Only sets meeting the ball matter; pull their directions back to the slice.
   let J := {a : ι // (W a ∩ Metric.ball p r).Nonempty}
@@ -266,19 +269,21 @@ theorem exists_small_transverse_triangle_in_slice (hdim : 2 ≤ Module.finrank �
       | exact h10
       | exact h21
       | exact h02
-  refine ⟨s, hsp, hmem, ?_, ?_⟩
+  have hspan (j : Fin 3) (a : ι) (ha : (W a ∩ Metric.ball p r).Nonempty) :
+      s.points j ∉ affineSpan ℝ (W a) := by
+    intro hj
+    apply hvertex j ⟨a, ha⟩
+    have he := (affineSpan ℝ (W a)).vsub_mem_direction hj (hwall a ha).1
+    simpa only [D, Submodule.mem_comap, Submodule.subtype_apply, hs,
+      vsub_eq_sub, add_sub_cancel_left] using he
+  refine ⟨s, hsp, hmem, ?_, ?_, hspan⟩
   · intro j k hjk a ha he
     apply hedge j k hjk ⟨a, ha⟩
     -- The subtype inclusion is linear; translate both vertices by the same center.
     simpa only [D, Submodule.mem_comap, Submodule.coe_sub, Submodule.subtype_apply,
       hs, add_sub_add_left_eq_sub] using he
   · intro j a ha
-    let a' : J := ⟨a, s.points j, ha, (hmem j).1⟩
-    apply hvertex j a'
-    have he := (affineSpan ℝ (W a)).vsub_mem_direction
-      (subset_affineSpan ℝ _ ha) (hwall a a'.property).1
-    simpa only [D, Submodule.mem_comap, Submodule.subtype_apply, hs,
-      vsub_eq_sub, add_sub_cancel_left] using he
+    exact hspan j a ⟨s.points j, ha, (hmem j).1⟩ (subset_affineSpan ℝ _ ha)
 
 end Slice
 

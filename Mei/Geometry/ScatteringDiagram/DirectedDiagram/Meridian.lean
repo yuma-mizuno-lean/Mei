@@ -18,6 +18,9 @@ family. The filled triangle isolates the joint in the entire codimension-two
 skeleton, misses its relative boundary and all other joints, and meets only
 active supports containing the joint. Thus its directed path product is an
 actual local loop product, including all coincident indexed contributions.
+The vertices miss the supporting affine spans of all incident adapted wall
+cells and active directed supports. This permits local facet Stokes formulas
+to be applied to the same meridians used for directed transport.
 
 The construction combines
 `FinitePolyhedralComplex.exists_positive_isolating_joint_triangle` with
@@ -65,7 +68,9 @@ private theorem adapted_wall_cover (k : ℕ) (j : D.active k) (x : V)
 /-- An oriented adapted joint has arbitrarily small positive triangular loops
 admissible for the active directed supports. Their filled triangles isolate the
 joint in the adapted skeleton and meet only active supports containing it.
-The vertex formula specifies the actual path used by `levelPathProduct`. -/
+The vertex formula specifies the actual path used by `levelPathProduct`.
+Vertices also avoid the affine spans of incident adapted cells and active
+supports, including coincident supports. -/
 theorem exists_positive_isolating_joint_triangle {k : ℕ} {J : Set V}
     (hJ : J ∈ (D.adaptedComplex k).joints) {p : V}
     (hp : p ∈ intrinsicInterior ℝ J)
@@ -84,20 +89,31 @@ theorem exists_positive_isolating_joint_triangle {k : ℕ} {J : Set V}
       Disjoint (convexHull ℝ (range s.points)) (intrinsicFrontier ℝ J) ∧
       (∀ Q ∈ (D.adaptedComplex k).joints, Q ≠ J →
         Disjoint (convexHull ℝ (range s.points)) Q) ∧
-      ∀ j : D.active k,
+      (∀ j : D.active k,
         (convexHull ℝ (range s.points) ∩ (D.wall j).support).Nonempty →
-          J ⊆ (D.wall j).support := by
+          J ⊆ (D.wall j).support) ∧
+      (∀ m Q, Q ∈ (D.adaptedComplex k).walls → J ⊆ Q →
+        s.points m ∉ affineSpan ℝ Q) ∧
+      ∀ m (j : D.active k), J ⊆ (D.wall j).support →
+        s.points m ∉ affineSpan ℝ (D.wall j).support := by
   obtain ⟨s, x, γ, hpos, hcenter, hvertices, hcompl, hball, hskeleton,
-      hfrontier, hother, hcells⟩ :=
+      hfrontier, hother, hcells, hspan⟩ :=
     (D.adaptedComplex k).exists_positive_isolating_joint_triangle hJ hp o ho hε
   let F := WallComplement.wallCoverPrefunctor
     (fun j : D.active k => (D.wall j).isConvexPolyhedron.isClosed) (D.adapted_wall_cover k)
   refine ⟨s, F.obj x, F.mapPath γ, hpos, hcenter, ?_, hcompl, hball,
-    hskeleton, hfrontier, hother, ?_⟩
+    hskeleton, hfrontier, hother, ?_, hspan, ?_⟩
   · simpa only [F, Prefunctor.vertices_mapPath, List.map_map, Function.comp_def,
       WallComplement.wallCoverPrefunctor_obj_val] using hvertices
   · rintro j ⟨y, hy, hyj⟩
     obtain ⟨Q, hQ, hyQ, hsub⟩ := D.exists_mem_adaptedComplex_walls_subset k j hyj
     exact (hcells Q ((D.adaptedComplex k).mem_cells_of_mem_walls hQ) ⟨y, hy, hyQ⟩).trans hsub
+  · intro m j hJj
+    obtain ⟨Q, hpQ, -, hQspan⟩ := D.adapted_wall_cover k j p (hJj (intrinsicInterior_subset hp))
+    have hJQ := (D.adaptedComplex k).subset_of_mem_intrinsicInterior
+      (((D.adaptedComplex k).mem_cellsOfCodimension 2 J).mp hJ).1
+      ((D.adaptedComplex k).mem_cells_of_mem_walls Q.property) hp hpQ
+    rw [← hQspan]
+    exact hspan m Q Q.property hJQ
 
 end Mei.DirectedDiagram
