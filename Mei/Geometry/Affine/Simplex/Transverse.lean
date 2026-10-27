@@ -49,19 +49,23 @@ theorem exists_small_transverse_simplex (A : AffineSubspace ℝ V)
   let e := finCongr (congrArg (· + 1) hdimT)
   let t : Affine.Simplex ℝ T k := ⟨b ∘ e.symm, b.ind.comp_embedding e.symm.toEmbedding⟩
   have hrange : range t.points = range b := e.symm.surjective.range_comp b
-  let f : T →ᵃ[ℝ] V := (AffineEquiv.constVAdd ℝ V p).toAffineMap.comp T.subtype.toAffineMap
-  have hf : Function.Injective f := (add_right_injective p).comp Subtype.coe_injective
+  let g : T →ᵃⁱ[ℝ] V :=
+    (AffineIsometryEquiv.constVAdd ℝ V p).toAffineIsometry.comp T.subtypeₗᵢ.toAffineIsometry
+  let f : T →ᵃ[ℝ] V := g.toAffineMap
+  have hfz (z : T) : f z = p + (z : V) := by
+    simp [f, g]
+  have hf : Function.Injective f := by
+    simpa only [f, AffineIsometry.coe_toAffineMap] using g.injective
   let s := t.map f hf
-  have hs (j : Fin (k + 1)) : s.points j = p + (t.points j : V) := (rfl)
+  have hs (j : Fin (k + 1)) : s.points j = p + (t.points j : V) := by
+    rw [Affine.Simplex.map_points, Function.comp_apply, hfz]
   have hhull : convexHull ℝ (range s.points) = f '' convexHull ℝ (range t.points) := by
-    rw [f.image_convexHull, ← range_comp]
-    rfl
-  let g : T →ᵃⁱ[ℝ] V := { f with norm_map := fun _ => rfl }
+    rw [f.image_convexHull, ← range_comp, Affine.Simplex.map_points]
   have hpInterior : p ∈ intrinsicInterior ℝ (convexHull ℝ (range s.points)) := by
-    -- Identify the affine map with its isometric enrichment for intrinsic interiors.
-    have hg : (g : T → V) = f := (rfl)
-    rw [hhull, ← hg, g.intrinsicInterior_image]
-    exact ⟨0, interior_subset_intrinsicInterior (hrange ▸ hb0), by rw [hg]; simp [f]⟩
+    rw [hhull, AffineIsometry.coe_toAffineMap, g.intrinsicInterior_image]
+    exact ⟨0, interior_subset_intrinsicInterior (hrange ▸ hb0), by
+      simpa only [f, AffineIsometry.coe_toAffineMap] using
+        (hfz 0).trans (by simp)⟩
   -- The mapped simplex spans the complement and meets the original subspace only at its center.
   have hspan : vectorSpan ℝ (range s.points) = T := by
     apply Submodule.eq_of_le_of_finrank_eq
@@ -76,9 +80,7 @@ theorem exists_small_transverse_simplex (A : AffineSubspace ℝ V)
   · rintro y hy
     obtain ⟨z, hz, rfl⟩ := hhull ▸ hy
     have hzball := hbball (hrange ▸ hz)
-    simpa only [f, AffineMap.comp_apply, AffineEquiv.coe_toAffineMap,
-      AffineEquiv.constVAdd_apply, LinearMap.coe_toAffineMap, Submodule.subtype_apply,
-      vadd_eq_add, Metric.mem_ball, dist_eq_norm, add_sub_cancel_left,
+    simpa only [hfz, Metric.mem_ball, dist_eq_norm, add_sub_cancel_left,
       Submodule.norm_coe, sub_zero] using hzball
   · apply Set.Subset.antisymm
     · rintro y ⟨hy, hyA⟩
@@ -86,9 +88,7 @@ theorem exists_small_transverse_simplex (A : AffineSubspace ℝ V)
       apply sub_eq_zero.mp
       have hyT : y - p ∈ T := by
         obtain ⟨z, _, rfl⟩ := hhull ▸ hy
-        simpa only [f, AffineMap.comp_apply, AffineEquiv.coe_toAffineMap,
-          AffineEquiv.constVAdd_apply, LinearMap.coe_toAffineMap, Submodule.subtype_apply,
-          vadd_eq_add, add_sub_cancel_left] using z.property
+        simpa only [hfz, add_sub_cancel_left] using z.property
       exact (Submodule.disjoint_def.mp hT.disjoint) _
         (by simpa only [vsub_eq_sub] using A.vsub_mem_direction hyA hp) hyT
     · rintro y (rfl : y = p)

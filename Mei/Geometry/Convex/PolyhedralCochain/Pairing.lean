@@ -141,6 +141,17 @@ theorem IsTransverse.intersectionIndex_eq_zero_iff (hv : σ.IsTransverse v) :
   generalize σ.orientation.evalSign _ = s at hzero hne
   cases s <;> simp_all
 
+/-- A transverse test meeting a cell has intersection index `1` or `-1`. -/
+theorem IsTransverse.intersectionIndex_eq_one_or_neg_one (hv : σ.IsTransverse v)
+    (hmeet : (convexHull ℝ (range v) ∩ σ.carrier).Nonempty) :
+    σ.intersectionIndex v = 1 ∨ σ.intersectionIndex v = -1 := by
+  have hne : σ.intersectionIndex v ≠ 0 := by
+    intro hzero
+    exact hmeet.not_disjoint (hv.intersectionIndex_eq_zero_iff.mp hzero)
+  rw [intersectionIndex_of_nonempty hmeet] at hne ⊢
+  cases hs : σ.orientation.evalSign (fun j : Fin k => v j.succ - v 0) <;>
+    simp [hs] at hne ⊢
+
 variable {R : Type*} [Ring R] {E : Type*} [AddCommGroup E] [Module R E]
 
 /-- The intersection pairing of the affine test simplex with vertices `v` with finite formal sums

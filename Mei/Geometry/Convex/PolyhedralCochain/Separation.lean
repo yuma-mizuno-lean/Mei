@@ -132,14 +132,10 @@ theorem sum_mk_eq_zero_iff (C : FinitePolyhedralComplex h)
         rw [OrientedCell.intersectionIndex_of_disjoint (hdisj P hPQ), zero_smul])
         (by simp)
     rw [map_zero, hvalue] at heval
-    have hindex : (σ Q).intersectionIndex s.points ≠ 0 := by
-      intro hz
-      have hd := htrans.intersectionIndex_eq_zero_iff.mp hz
-      obtain ⟨_, hx, hy⟩ := hmeet ▸ singleton_nonempty p
-      exact Set.disjoint_left.mp hd hx hy
-    rw [OrientedCell.intersectionIndex_of_nonempty (hmeet ▸ singleton_nonempty p)] at heval hindex
-    generalize (σ Q).orientation.evalSign _ = a at heval hindex
-    cases a <;> simp_all
+    rcases htrans.intersectionIndex_eq_one_or_neg_one
+      (hmeet ▸ singleton_nonempty p) with hindex | hindex
+    · simpa only [hindex, one_smul] using heval
+    · simpa only [hindex, neg_smul, one_smul, neg_eq_zero] using heval
   · intro hc
     simp only [hc, map_zero, Finset.sum_const_zero]
 
