@@ -103,9 +103,40 @@ theorem jointTriangleWords_subset_triangleWords (ν : C.walls → V →ₗ[ℝ] 
 
 variable {C} {J U : Set V}
 
-/-- For a joint contained in a wall, a transverse admissible triangle meeting
-that joint satisfies every meridian isolation condition in a convex region
-meeting only cells incident to the joint. -/
+/-- Near a joint contained in a wall, an admissible triangle whose filled triangle meets
+the joint spans a plane complementary to the joint direction: otherwise the joint
+would meet one of its edges. -/
+private theorem isCompl_of_convexHull_inter_nonempty (hJ : J ∈ C.joints) (hU : Convex ℝ U)
+    (hUJ : (U ∩ J).Nonempty) (hinc : ∀ Q ∈ C.cells, (U ∩ Q).Nonempty → J ⊆ Q)
+    {P : C.walls} (hJP : J ⊆ P) {x y z : WallComplement (fun P : C.walls => (P : Set V))}
+    (e : x ⟶ y) (f : y ⟶ z) (r : z ⟶ x) (hx : x.val ∈ U) (hy : y.val ∈ U) (hz : z.val ∈ U)
+    (hmeet : (convexHull ℝ {x.val, y.val, z.val} ∩ J).Nonempty) :
+    IsCompl (affineSpan ℝ J).direction (vectorSpan ℝ {x.val, y.val, z.val}) := by
+  have := h.finiteDimensional
+  obtain ⟨hJC, hdimJ⟩ := (C.mem_cellsOfCodimension 2 J).mp hJ
+  by_contra hcompl
+  obtain ⟨w, hwΔ, hwJ⟩ := hmeet
+  obtain ⟨u, hu, hud⟩ := exists_mem_segment_sub_mem_of_not_isCompl hdimJ hwΔ hcompl
+  have huA : u ∈ affineSpan ℝ J := by
+    simpa using AffineSubspace.vadd_mem_of_mem_direction hud (subset_affineSpan ℝ J hwJ)
+  have hseg {a b : V} (ha : a ∈ U) (hb : b ∈ U) (hu : u ∈ segment ℝ a b) : u ∈ U :=
+    hU.segment_subset ha hb hu
+  have huU : u ∈ U := by
+    rcases hu with hu | hu | hu
+    exacts [hseg hx hy hu, hseg hy hz hu, hseg hz hx hu]
+  have hus := mem_singularSupport_of_mem_joint hJ hJP
+    (hU.inter_affineSpan_subset hUJ (disjoint_intrinsicFrontier hJ hinc) ⟨huU, huA⟩)
+  rcases hu with hu | hu | hu
+  · obtain ⟨t, ht, rfl⟩ := (segment_eq_image_lineMap ℝ x.val y.val) ▸ hu
+    exact e.down.regular t ht hus
+  · obtain ⟨t, ht, rfl⟩ := (segment_eq_image_lineMap ℝ y.val z.val) ▸ hu
+    exact f.down.regular t ht hus
+  · obtain ⟨t, ht, rfl⟩ := (segment_eq_image_lineMap ℝ z.val x.val) ▸ hu
+    exact r.down.regular t ht hus
+
+/-- For a joint contained in a wall, an admissible triangle meeting that joint
+satisfies every meridian isolation condition in a convex region meeting only
+cells incident to the joint. -/
 theorem mem_jointTriangleWords_iff_of_incident_wall (ν : C.walls → V →ₗ[ℝ] ℝ)
     (hJ : J ∈ C.joints) (hU : Convex ℝ U)
     (hinc : ∀ Q ∈ C.cells, (U ∩ Q).Nonempty → J ⊆ Q)
@@ -115,18 +146,20 @@ theorem mem_jointTriangleWords_iff_of_incident_wall (ν : C.walls → V →ₗ[�
         (e : x ⟶ y) (f : y ⟶ z) (r : z ⟶ x),
         x.val ∈ U ∧ y.val ∈ U ∧ z.val ∈ U ∧
           (convexHull ℝ {x.val, y.val, z.val} ∩ J).Nonempty ∧
-          IsCompl (affineSpan ℝ J).direction (vectorSpan ℝ {x.val, y.val, z.val}) ∧
           g = ((e.toPath.cons f).cons r).crossingWord ν := by
   constructor
-  · rintro ⟨x, y, z, e, f, r, q, hq, -, hSU, hc, hskel, -, -, -, rfl⟩
+  · rintro ⟨x, y, z, e, f, r, q, hq, -, hSU, -, hskel, -, -, -, rfl⟩
     have hqS : q ∈ convexHull ℝ {x.val, y.val, z.val} :=
       (Set.ext_iff.mp hskel q |>.mpr (mem_singleton q)).1
     exact ⟨x, y, z, e, f, r,
       hSU (subset_convexHull ℝ _ (by simp)), hSU (subset_convexHull ℝ _ (by simp)),
-      hSU (subset_convexHull ℝ _ (by simp)), ⟨q, hqS, intrinsicInterior_subset hq⟩, hc, rfl⟩
-  · rintro ⟨x, y, z, e, f, r, hx, hy, hz, hmeet, hc, rfl⟩
+      hSU (subset_convexHull ℝ _ (by simp)), ⟨q, hqS, intrinsicInterior_subset hq⟩, rfl⟩
+  · rintro ⟨x, y, z, e, f, r, hx, hy, hz, hmeet, rfl⟩
     have hSU : convexHull ℝ {x.val, y.val, z.val} ⊆ U :=
       convexHull_min (by simp [Set.insert_subset_iff, hx, hy, hz]) hU
+    have hUJ : (U ∩ J).Nonempty :=
+      hmeet.mono (Set.inter_subset_inter_left _ hSU)
+    have hc := isCompl_of_convexHull_inter_nonempty hJ hU hUJ hinc hJP e f r hx hy hz hmeet
     obtain ⟨q, hq, hskel, hfront, hother⟩ := C.exists_isolating_point_of_disjoint_direction
       hJ hinc hSU hmeet
       (by simpa only [affineSpan_convexHull, direction_affineSpan] using hc.disjoint)
@@ -223,37 +256,6 @@ theorem crossingWord_eq_of_disjoint_convexHull (ν : C.walls → V →ₗ[ℝ] �
   exact C.crossingWord_eq_of_pencil ν hν (fun P => ν P q) hU' hsing ℓ m hℓ hwall hpen p q'
     (fun w hw => hmemU' _ (hp w hw)) (fun w hw => hmemU' _ (hq w hw))
 
-/-- Near a joint contained in a wall, an admissible triangle whose filled triangle meets
-the joint spans a plane complementary to the joint direction: otherwise the joint
-would meet one of its edges. -/
-private theorem isCompl_of_convexHull_inter_nonempty (hJ : J ∈ C.joints) (hU : Convex ℝ U)
-    (hUJ : (U ∩ J).Nonempty) (hinc : ∀ Q ∈ C.cells, (U ∩ Q).Nonempty → J ⊆ Q)
-    {P : C.walls} (hJP : J ⊆ P) {x y z : WallComplement (fun P : C.walls => (P : Set V))}
-    (e : x ⟶ y) (f : y ⟶ z) (r : z ⟶ x) (hx : x.val ∈ U) (hy : y.val ∈ U) (hz : z.val ∈ U)
-    (hmeet : (convexHull ℝ {x.val, y.val, z.val} ∩ J).Nonempty) :
-    IsCompl (affineSpan ℝ J).direction (vectorSpan ℝ {x.val, y.val, z.val}) := by
-  have := h.finiteDimensional
-  obtain ⟨hJC, hdimJ⟩ := (C.mem_cellsOfCodimension 2 J).mp hJ
-  by_contra hcompl
-  obtain ⟨w, hwΔ, hwJ⟩ := hmeet
-  obtain ⟨u, hu, hud⟩ := exists_mem_segment_sub_mem_of_not_isCompl hdimJ hwΔ hcompl
-  have huA : u ∈ affineSpan ℝ J := by
-    simpa using AffineSubspace.vadd_mem_of_mem_direction hud (subset_affineSpan ℝ J hwJ)
-  have hseg {a b : V} (ha : a ∈ U) (hb : b ∈ U) (hu : u ∈ segment ℝ a b) : u ∈ U :=
-    hU.segment_subset ha hb hu
-  have huU : u ∈ U := by
-    rcases hu with hu | hu | hu
-    exacts [hseg hx hy hu, hseg hy hz hu, hseg hz hx hu]
-  have hus := mem_singularSupport_of_mem_joint hJ hJP
-    (hU.inter_affineSpan_subset hUJ (disjoint_intrinsicFrontier hJ hinc) ⟨huU, huA⟩)
-  rcases hu with hu | hu | hu
-  · obtain ⟨t, ht, rfl⟩ := (segment_eq_image_lineMap ℝ x.val y.val) ▸ hu
-    exact e.down.regular t ht hus
-  · obtain ⟨t, ht, rfl⟩ := (segment_eq_image_lineMap ℝ y.val z.val) ▸ hu
-    exact f.down.regular t ht hus
-  · obtain ⟨t, ht, rfl⟩ := (segment_eq_image_lineMap ℝ z.val x.val) ▸ hu
-    exact r.down.regular t ht hus
-
 /-- Near a joint, an admissible triangular loop either has trivial crossing word or
 is a transverse joint triangle: its filled triangle meets the joint and its plane is
 complementary to the joint direction. -/
@@ -274,8 +276,7 @@ theorem triangleWords_subset_insert_jointTriangleWords (ν : C.walls → V →�
   · by_cases hwall : ∃ P : C.walls, J ⊆ P
     · obtain ⟨P, hJP⟩ := hwall
       exact Or.inr ((C.mem_jointTriangleWords_iff_of_incident_wall ν hJ hU hinc hJP _).mpr
-        ⟨x, y, z, e, f, r, hx, hy, hz, hmeet,
-          isCompl_of_convexHull_inter_nonempty hJ hU hUJ hinc hJP e f r hx hy hz hmeet, rfl⟩)
+        ⟨x, y, z, e, f, r, hx, hy, hz, hmeet, rfl⟩)
     · -- No wall meets the region, so the pencil condition is vacuous.
       have hmiss (P : C.walls) : ¬ (U ∩ P).Nonempty := fun hP =>
         hwall ⟨P, hinc P (C.mem_cells_of_mem_walls P.property) hP⟩
