@@ -71,6 +71,17 @@ namespace OrientedCell
 
 variable {h : TauCeti.Toric.IsIntegralLattice i} {k : ℕ}
 
+/-- Containment between cells of the same codimension forces their tangent
+spaces to agree. -/
+theorem direction_eq_of_subset (σ τ : OrientedCell h k) (hστ : σ.carrier ⊆ τ.carrier) :
+    (affineSpan ℝ σ.carrier).direction = (affineSpan ℝ τ.carrier).direction := by
+  have := h.finiteDimensional
+  apply Submodule.eq_of_le_of_finrank_eq
+    (AffineSubspace.direction_le (affineSpan_mono ℝ hστ))
+  have hσ := σ.finrank_direction_add
+  have hτ := τ.finrank_direction_add
+  omega
+
 /-- The degree of a cell's conormal orientation is the dimension of its normal quotient. -/
 theorem finrank_quotient_direction (σ : OrientedCell h k) :
     finrank ℝ (V ⧸ (affineSpan ℝ σ.carrier).direction) = k := by
@@ -178,13 +189,8 @@ theorem carrier_subset (hQ : IsOrientedSubdivision σ Q) (hτ : τ ∈ Q) :
 /-- Every piece has the direction of the subdivided cell, since it lies in the subdivided support
 and has the same codimension. -/
 theorem direction_eq (hQ : IsOrientedSubdivision σ Q) (hτ : τ ∈ Q) :
-    (affineSpan ℝ τ.carrier).direction = (affineSpan ℝ σ.carrier).direction := by
-  have := h.finiteDimensional
-  refine Submodule.eq_of_le_of_finrank_eq
-    (AffineSubspace.direction_le (affineSpan_mono ℝ (hQ.carrier_subset hτ))) ?_
-  have hτk := τ.finrank_direction_add
-  have hσk := σ.finrank_direction_add
-  omega
+    (affineSpan ℝ τ.carrier).direction = (affineSpan ℝ σ.carrier).direction :=
+  τ.direction_eq_of_subset σ (hQ.carrier_subset hτ)
 
 /-- Every piece has the affine span of the subdivided cell. -/
 theorem affineSpan_eq (hQ : IsOrientedSubdivision σ Q) (hτ : τ ∈ Q) :

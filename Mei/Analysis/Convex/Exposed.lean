@@ -151,6 +151,28 @@ end IsExposed
 
 namespace ContinuousLinearMap
 
+section OrderedRing
+
+variable {K V : Type*} [Ring K] [PartialOrder K] [TopologicalSpace K]
+  [AddCommMonoid V] [TopologicalSpace V] [Module K V]
+
+/-- When a level set meets a set, the maximizers of the corresponding closed
+half-space cut are exactly that level set. No convexity is required. -/
+@[simp]
+theorem toExposed_inter_le (l : V →L[K] K) (P : Set V) (c : K)
+    (hne : (P ∩ {x | l x = c}).Nonempty) :
+    l.toExposed (P ∩ {x | l x ≤ c}) = P ∩ {x | l x = c} := by
+  obtain ⟨y, hy, hly⟩ := hne
+  have hly : l y = c := hly
+  ext x
+  constructor
+  · rintro ⟨⟨hx, hlx⟩, hmax⟩
+    exact ⟨hx, le_antisymm hlx (by simpa only [hly] using hmax y ⟨hy, hly.le⟩)⟩
+  · rintro ⟨hx, hlx⟩
+    exact ⟨⟨hx, hlx.le⟩, fun z hz => hz.2.trans hlx.ge⟩
+
+end OrderedRing
+
 variable {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
 
 /-- Subtracting a multiple of a height constant on the base preserves all

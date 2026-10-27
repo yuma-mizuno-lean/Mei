@@ -155,4 +155,17 @@ theorem wedgeCovector_neg (o : Module.Ray R (M [⋀^Fin k]→ₗ[R] R))
     rw [he, ← neg_one_smul R (l.smulRight α), AlternatingMap.alternatizeUncurryFin_smul]
     simp
 
+/-- Negating the covector reverses the extended conormal orientation. -/
+@[simp]
+theorem wedgeCovector_neg_right (o : Module.Ray R (M [⋀^Fin k]→ₗ[R] R))
+    (ho : o.IsConormal W) (l : M →ₗ[R] R) (hl : ∃ n ∈ W, l n ≠ 0) :
+    o.wedgeCovector ho (-l) (by simpa using hl) = -o.wedgeCovector ho l hl := by
+  induction o using Module.Ray.ind with
+  | h α hα =>
+    simp only [wedgeCovector_rayOfNeZero, neg_rayOfNeZero]
+    apply (ray_eq_iff _ _).mpr
+    have he : (-l).smulRight α = -(l.smulRight α) := by ext n v; simp
+    rw [he, ← neg_one_smul R (l.smulRight α), AlternatingMap.alternatizeUncurryFin_smul]
+    simp
+
 end Module.Ray
