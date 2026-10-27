@@ -22,7 +22,7 @@ regular walls, as well as points in their complement. These balls provide the
 regular neighborhoods used when decomposing a polygonal homotopy into local
 crossing relations; arbitrary group-valued labels inherit the same independence.
 
-The construction uses `FinitePolyhedralComplex.eq_of_mem_wall_of_notMem_singularSupport`,
+The construction uses `FinitePolyhedralComplex.exists_isolating_ball`,
 `Mei.mem_nhdsWithin_affineSpan_of_mem_intrinsicInterior`, and the local hyperplane
 crossing criterion `WallComplement.exists_crossing_iff_of_hyperplane`.
 -/
@@ -149,17 +149,7 @@ theorem exists_ball_crossingWord_eq (C : FinitePolyhedralComplex h)
     have hint := mem_intrinsicInterior_of_notMem_singularSupport hP hθ
     obtain ⟨δ, hδ, hδmem⟩ := Metric.mem_nhdsWithin_iff.mp
       (Mei.mem_nhdsWithin_affineSpan_of_mem_intrinsicInterior hint)
-    have hmiss : ∀ᶠ z in 𝓝 θ, ∀ Q : C.walls, Q ≠ P → z ∉ (Q : Set V) := by
-      apply eventually_all.mpr
-      intro Q
-      by_cases he : Q = P
-      · exact Eventually.of_forall fun _ hn => (hn he).elim
-      · have hnot : θ ∉ (Q : Set V) := fun hQ =>
-          he (C.eq_of_mem_wall_of_notMem_singularSupport hQ hP hθ)
-        filter_upwards [(C.isConvexPolyhedron
-          (C.mem_cells_of_mem_walls Q.property)).isClosed.isOpen_compl.mem_nhds hnot] with z hz
-        exact fun _ => hz
-    obtain ⟨ε, hε, hεmem⟩ := Metric.mem_nhds_iff.mp hmiss
+    obtain ⟨ε, hε, -, -, hotherε, -⟩ := C.exists_isolating_ball P.property hint
     -- Express that affine span by the given coorientation to compute both words.
     have hplane (z : V) : z ∈ affineSpan ℝ (P : Set V) ↔ ν P z = ν P θ := by
       rw [← (affineSpan ℝ (P : Set V)).mk'_eq (subset_affineSpan ℝ _ hP),
@@ -172,18 +162,17 @@ theorem exists_ball_crossingWord_eq (C : FinitePolyhedralComplex h)
       · exact fun he => hδmem ⟨Metric.ball_subset_ball (min_le_left _ _) hz, (hplane z).mpr he⟩
     have hother (Q : C.walls) (hne : Q ≠ P) :
         Disjoint (Metric.ball θ (min δ ε)) (Q : Set V) :=
-      Set.disjoint_left.mpr fun z hz hzQ =>
-        hεmem (Metric.ball_subset_ball (min_le_right _ _) hz) Q hne hzQ
+      (hotherε Q Q.property (Subtype.coe_ne_coe.mpr hne)).mono_left
+        (Metric.ball_subset_ball (min_le_right _ _))
     refine ⟨min δ ε, lt_min hδ hε, fun x y p q hp hq => ?_⟩
     rw [p.crossingWord_eq_zpow_of_local_wall ν P (ν P θ) (convex_ball θ _) hlocal hother hp,
       q.crossingWord_eq_zpow_of_local_wall ν P (ν P θ) (convex_ball θ _) hlocal hother hq]
   · -- Off all walls, a common ball has no crossings at all.
     have hmiss : ∀ᶠ z in 𝓝 θ, ∀ P : C.walls, z ∉ (P : Set V) := by
-      apply eventually_all.mpr
-      intro P
-      exact (C.isConvexPolyhedron
-        (C.mem_cells_of_mem_walls P.property)).isClosed.isOpen_compl.mem_nhds
-        (fun hP => hwall ⟨P, hP⟩)
+      filter_upwards [(locallyFinite_of_finite (fun P : C.walls => (P : Set V))).eventually_subset
+        (fun P => (C.isConvexPolyhedron (C.mem_cells_of_mem_walls P.property)).isClosed) θ]
+        with z hz P hzP
+      exact hwall ⟨P, hz hzP⟩
     obtain ⟨r, hr, hmem⟩ := Metric.mem_nhds_iff.mp hmiss
     have hword {x y : WallComplement (fun P : C.walls => (P : Set V))}
         (p : AdmissiblePLPath x y) (hp : ∀ z ∈ p.vertices, z.val ∈ Metric.ball θ r) :
