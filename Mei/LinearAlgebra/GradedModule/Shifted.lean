@@ -163,6 +163,13 @@ def shiftedFiltration : ModuleFiltration R (shiftedSubmodule ℳ d.monoid p) whe
         (by simpa using d.degree_nonneg n.property)
     exact hs x.property
 
+omit [DecidableEq Γ] [DirectSum.Decomposition ℳ] in
+/-- Each relative filtration term restricts the corresponding ambient degree tail. -/
+theorem shiftedFiltration_submodule (k : ℕ) :
+    (d.shiftedFiltration ℳ p).submodule k =
+      (Mei.DirectSum.degreeTail ℳ (fun q => d.degree (q - p)) k).comap
+        (shiftedSubmodule ℳ d.monoid p).subtype := (rfl)
+
 /-- Filtration membership means that all components of smaller relative degree vanish. -/
 theorem mem_shiftedFiltration_iff {k : ℕ} {x : shiftedSubmodule ℳ d.monoid p} :
     x ∈ (d.shiftedFiltration ℳ p).submodule k ↔

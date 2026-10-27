@@ -76,8 +76,8 @@ namespace PositiveDegrees
 section Semiring
 
 variable {R A Γ : Type*} [CommSemiring R] [Semiring A] [Algebra R A]
-  [AddCommGroup Γ] [DecidableEq Γ] (d : PositiveDegrees Γ)
-  (𝒜 : Γ → Submodule R A) [DirectSum.Decomposition 𝒜] [SetLike.GradedMul 𝒜]
+  [AddCommGroup Γ] (d : PositiveDegrees Γ)
+  (𝒜 : Γ → Submodule R A) [SetLike.GradedMul 𝒜]
   (p q : Γ)
 
 /-- Shifted multiplication adds relative filtration orders. -/
@@ -87,41 +87,32 @@ theorem shiftedMul_mem_shiftedFiltration {a b : ℕ}
     (hx : x ∈ (d.shiftedFiltration 𝒜 p).submodule a)
     (hy : y ∈ (d.shiftedFiltration 𝒜 q).submodule b) :
     shiftedMul 𝒜 d.monoid p q x y ∈ (d.shiftedFiltration 𝒜 (p + q)).submodule (a + b) := by
-  classical
-  rw [d.mem_shiftedFiltration_iff 𝒜 p] at hx
-  rw [d.mem_shiftedFiltration_iff 𝒜 q] at hy
-  rw [d.mem_shiftedFiltration_iff 𝒜 (p + q)]
-  intro r hr
-  rw [coe_shiftedMul, ← DirectSum.sum_support_decompose 𝒜 (x : A),
-    ← DirectSum.sum_support_decompose 𝒜 (y : A), Finset.sum_mul]
-  simp only [DirectSum.decompose_sum, DirectSum.sum_apply, Submodule.coe_sum]
-  apply Finset.sum_eq_zero
-  intro i _
-  rw [Finset.mul_sum]
-  simp only [DirectSum.decompose_sum, DirectSum.sum_apply, Submodule.coe_sum]
-  apply Finset.sum_eq_zero
-  intro j _
-  by_cases hi : d.degree (i - p) < a
-  · rw [hx i hi]
-    simp
-  by_cases hj : d.degree (j - q) < b
-  · rw [hy j hj]
-    simp
-  apply DirectSum.decompose_of_mem_ne 𝒜
-    (SetLike.mul_mem_graded (DirectSum.decompose 𝒜 (x : A) i).property
-      (DirectSum.decompose 𝒜 (y : A) j).property)
-  intro he
-  have hd : d.degree (r - (p + q)) = d.degree (i - p) + d.degree (j - q) := by
-    rw [← he, map_sub, map_add, map_add, map_sub, map_sub]
-    ring
-  have hab := add_le_add (le_of_not_gt hi) (le_of_not_gt hj)
-  omega
+  have hmul :
+      Mei.DirectSum.degreeTail 𝒜 (fun i => d.degree (i - p)) a *
+          Mei.DirectSum.degreeTail 𝒜 (fun i => d.degree (i - q)) b ≤
+        Mei.DirectSum.degreeTail 𝒜 (fun i => d.degree (i - (p + q))) (a + b) := by
+    simp only [Mei.DirectSum.degreeTail_def, Submodule.iSup_mul, Submodule.mul_iSup,
+      iSup_le_iff]
+    intro i hi j hj
+    apply (TauCeti.GradedAlgebra.mul_le_grade_add 𝒜 j i).trans
+    have hd : d.degree (j + i - (p + q)) = d.degree (j - p) + d.degree (i - q) := by
+      simp only [map_sub, map_add]
+      ring
+    have hab : ((a + b : ℕ) : ℤ) ≤ d.degree (j + i - (p + q)) := by
+      rw [hd, Nat.cast_add]
+      exact add_le_add hj hi
+    simpa only [Mei.DirectSum.degreeTail_def] using
+      Mei.DirectSum.le_degreeTail 𝒜 (fun i => d.degree (i - (p + q))) hab
+  simp only [shiftedFiltration_submodule, Submodule.mem_comap,
+    Submodule.coe_subtype] at hx hy ⊢
+  rw [coe_shiftedMul]
+  exact hmul (Submodule.mul_mem_mul hx hy)
 
 end Semiring
 
 variable {R A Γ : Type*} [CommRing R] [Ring A] [Algebra R A]
-  [AddCommGroup Γ] [DecidableEq Γ] (d : PositiveDegrees Γ)
-  (𝒜 : Γ → Submodule R A) [DirectSum.Decomposition 𝒜] [SetLike.GradedMul 𝒜]
+  [AddCommGroup Γ] (d : PositiveDegrees Γ)
+  (𝒜 : Γ → Submodule R A) [SetLike.GradedMul 𝒜]
   (p q : Γ)
 
 /-- Products of completed shifted coefficients, with shifts added. -/
@@ -162,7 +153,7 @@ theorem shiftedCompletionMul_mem_completedFiltration {a b : ℕ}
       (d.shiftedFiltration 𝒜 (p + q)).completedFiltration.submodule (a + b) :=
   ModuleFiltration.completionBilinear_mem_completedFiltration _ _ _ _ _ hx hy
 
-omit [DecidableEq Γ] [DirectSum.Decomposition 𝒜] [SetLike.GradedMul 𝒜] in
+omit [SetLike.GradedMul 𝒜] in
 private theorem projection_cast {s t : Γ} (h : s = t)
     (x : d.ShiftedCoefficients 𝒜 s) (k : ℕ) :
     (d.shiftedFiltration 𝒜 t).projection k
@@ -172,7 +163,7 @@ private theorem projection_cast {s t : Γ} (h : s = t)
   subst t
   rfl
 
-omit [DecidableEq Γ] [DirectSum.Decomposition 𝒜] [SetLike.GradedMul 𝒜] in
+omit [SetLike.GradedMul 𝒜] in
 private theorem quotient_cast_mk {s t : Γ} (h : s = t)
     (x : shiftedSubmodule 𝒜 d.monoid s) (k : ℕ) :
     cast (congrArg (fun s => (d.shiftedFiltration 𝒜 s).quotient k) h)
