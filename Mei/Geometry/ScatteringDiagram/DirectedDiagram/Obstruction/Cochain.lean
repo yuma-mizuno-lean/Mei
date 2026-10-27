@@ -18,8 +18,10 @@ on the oriented joints of an adapted complex gives a finite obstruction
 cochain. Simultaneously reversing the joint orientations and the loops leaves
 this cochain unchanged.
 
-Positive isolating triangular meridians can be chosen so that every homogeneous
-component of correction degree is transverse to its geometric degree direction.
+If initial walls are full hyperplanes and all other walls have pure logarithms
+of degree below `k + 1`, positive isolating triangular meridians can be chosen
+so that every homogeneous component of correction degree is transverse to its
+geometric degree direction.
 Consequently these components belong to the domain of the negative-ray sweep;
 zero spatial directions give zero components. The cochain retains its specified
 meridians. Independence of those choices and comparison with the coboundary of
@@ -57,7 +59,7 @@ variable (σ : (D.adaptedComplex (k + 1)).joints → OrientedCell h 2)
   (γ : ∀ J, AdmissiblePLPath (x J) (x J))
 
 /-- The finite central obstruction cochain for specified oriented joint cells
-and meridians. The geometric meridians are supplied by
+and arbitrary admissible loops. The geometric meridians are supplied by
 `exists_jointObstructionCochain`. -/
 def jointObstructionCochain (_hσ : ∀ J, (σ J).carrier = (J : Set V))
     (hk : D.LevelConsistent k) :
