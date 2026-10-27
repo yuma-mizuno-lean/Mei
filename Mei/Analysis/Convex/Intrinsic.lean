@@ -14,7 +14,8 @@ import Mathlib.Tactic.Linarith
 # Relative interior points
 
 An affine function nonpositive on a set and zero at a relative interior point
-vanishes on that set. Continuity of the affine function is not required.
+vanishes on that set. If it is strictly negative somewhere on the set, it is
+strictly negative at every relative interior point. Continuity is not required.
 
 A set is a neighbourhood of each of its relative interior points within its
 affine span: points of the span close to a relative interior point stay in the set.
@@ -77,6 +78,16 @@ theorem eq_zero_on_of_mem_intrinsicInterior (g : V →ᵃ[ℝ] ℝ) {P : Set V} 
   rw [g.apply_lineMap, AffineMap.lineMap_apply_ring, hgx] at hle
   have hpnonpos := hg p hp
   nlinarith
+
+/-- An affine inequality that is strict somewhere on a set is strict throughout
+its relative interior. Convexity and continuity of the functional are unnecessary. -/
+theorem lt_zero_of_mem_intrinsicInterior (g : V →ᵃ[ℝ] ℝ) {P : Set V}
+    (hg : ∀ x ∈ P, g x ≤ 0) (hstrict : ∃ x ∈ P, g x < 0)
+    {x : V} (hx : x ∈ intrinsicInterior ℝ P) : g x < 0 := by
+  apply lt_of_le_of_ne (hg x (intrinsicInterior_subset hx))
+  intro he
+  obtain ⟨y, hy, hgy⟩ := hstrict
+  exact hgy.ne (g.eq_zero_on_of_mem_intrinsicInterior hg hx he y hy)
 
 end AffineMap
 
