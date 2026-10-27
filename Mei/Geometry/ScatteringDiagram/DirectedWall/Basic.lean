@@ -26,8 +26,9 @@ unchanged by replacing the primitive generator with any actual
 degree on its supported ray. A wall of zero geometric direction is incoming.
 
 Wall labels commute whenever their affine supporting directions agree, even for
-different primitive degrees. The proof restricts the real normal kernels to the lattice
-and uses the proportional-normal commutation theorem for completed wall groups.
+different primitive degrees, and their finite-order logarithms then have zero bracket.
+The proof restricts the real normal kernels to the lattice and uses the
+proportional-normal commutation theorem for completed wall groups.
 
 The wall data and direction convention follow Travis Mandel,
 *Scattering diagrams, theta functions, and refined tropical curve counts*,
@@ -173,20 +174,35 @@ theorem outgoing_exists_iff (D : DirectedWall (d := d) h H) : D.Outgoing ↔
     ∃ x ∈ D.support, ∃ t : ℝ, 0 ≤ t ∧ x + t • i (ρ D.ray.generator) ∉ D.support := by
   simp only [Outgoing, incoming_iff, not_forall, exists_prop]
 
-/-- Labels commute whenever the affine tangent hyperplanes have the same direction.
-The wall supports need not meet and the supported primitive degrees may differ. -/
-theorem commute_label_of_direction_eq (D E : DirectedWall (d := d) h H)
+/-- Walls with the same affine tangent direction have proportional integral normals. -/
+private theorem exists_ne_zero_zsmul_eq_normal_of_direction_eq (D E : DirectedWall (d := d) h H)
     (he : (affineSpan ℝ D.support).direction = (affineSpan ℝ E.support).direction) :
-    Commute D.label E.label := by
+    ∃ c e : ℤ, c ≠ 0 ∧ e ≠ 0 ∧ c • D.normal = e • E.normal := by
   have hk : D.normal.ker = E.normal.ker := by
     ext n
     have hn := SetLike.ext_iff.mp
       (D.direction_support.symm.trans (he.trans E.direction_support)) (i n)
     simpa only [LinearMap.mem_ker, h.realCharacter_apply, Int.cast_eq_zero,
       AddMonoidHom.mem_ker] using hn
-  obtain ⟨c, e, hc, he, hn⟩ :=
-    D.normal.exists_ne_zero_zsmul_eq_of_ker_eq E.normal D.normal_ne_zero hk
+  exact D.normal.exists_ne_zero_zsmul_eq_of_ker_eq E.normal D.normal_ne_zero hk
+
+/-- Labels commute whenever the affine tangent hyperplanes have the same direction.
+The wall supports need not meet and the supported primitive degrees may differ. -/
+theorem commute_label_of_direction_eq (D E : DirectedWall (d := d) h H)
+    (he : (affineSpan ℝ D.support).direction = (affineSpan ℝ E.support).direction) :
+    Commute D.label E.label := by
+  obtain ⟨c, e, hc, he, hn⟩ := exists_ne_zero_zsmul_eq_normal_of_direction_eq D E he
   exact H.commute_of_mem_wallGroup D.label_mem E.label_mem hc he hn
+
+/-- Labels of walls whose affine tangent hyperplanes have the same direction have
+commuting logarithms at every finite order. -/
+theorem lie_log_projection_eq_zero_of_direction_eq (D E : DirectedWall (d := d) h H)
+    (he : (affineSpan ℝ D.support).direction = (affineSpan ℝ E.support).direction) (k : ℕ) :
+    ⁅BCHGroup.log (CompletedGroup.projection k D.label),
+      BCHGroup.log (CompletedGroup.projection k E.label)⁆ = 0 := by
+  obtain ⟨c, e, hc, he, hn⟩ := exists_ne_zero_zsmul_eq_normal_of_direction_eq D E he
+  exact H.lie_eq_zero_of_mem_truncatedRayLieSubalgebra
+    ((H.mem_wallGroup _ _ _).mp D.label_mem k) ((H.mem_wallGroup _ _ _).mp E.label_mem k) hc he hn
 
 end DirectedWall
 end Mei

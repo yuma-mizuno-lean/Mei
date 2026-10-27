@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Adapted
-public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Obstruction
+public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Obstruction.Basic
 public import Mei.Geometry.ScatteringDiagram.WallSpace.Normal
 public import Mei.Geometry.Convex.PolyhedralComplex.Joint
 

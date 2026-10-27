@@ -13,7 +13,9 @@ public import Mei.Geometry.Convex.PolyhedralComplex.Basic
 
 Distinct, equally oriented cells in a common affine span induce opposite signed
 orientations on every common facet. Consequently the two occurrences of that
-facet cancel from their signed boundary sums. This supplies internal-facet
+facet cancel from their signed boundary sums. A signed facet uniquely determines
+its equally oriented parent among cells spanning the same affine subspace.
+This supplies internal-facet
 cancellation for subdivisions whose adjacent cells need not be the two pieces
 of a single hyperplane cut.
 
@@ -56,6 +58,19 @@ theorem eq_reverse_of_mem_boundaryFacets (C : FinitePolyhedralComplex h)
       (by rw [direction_affineSpan, direction_affineSpan]; exact hFdim.symm)
       (by rw [direction_affineSpan, direction_affineSpan]; exact hGdim.symm)
   exact σ.boundaryFacet_eq_reverse_of_common_facet τ hF hG hFne hFdim hspan ho hinter
+
+/-- A signed facet belongs to at most one equally oriented cell of a complex
+in a fixed affine span. A second parent would induce the opposite sign. -/
+theorem eq_of_common_boundaryFacet (C : FinitePolyhedralComplex h)
+    {σ τ : OrientedCell h k} (hσ : σ.carrier ∈ C.cells) (hτ : τ.carrier ∈ C.cells)
+    (hspan : affineSpan ℝ σ.carrier = affineSpan ℝ τ.carrier)
+    (ho : σ.orientation = τ.orientation)
+    {υ : OrientedCell h (k + 1)} (hυσ : υ ∈ σ.boundaryFacets)
+    (hυτ : υ ∈ τ.boundaryFacets) : σ = τ := by
+  by_cases hc : σ.carrier = τ.carrier
+  · exact OrientedCell.ext hc ho
+  · exact (υ.reverse_ne_self
+      (C.eq_reverse_of_mem_boundaryFacets hσ hτ hc hspan ho hυσ hυτ rfl).symm).elim
 
 open Classical in
 /-- The common signed facet cancels from the sum of the boundaries of two

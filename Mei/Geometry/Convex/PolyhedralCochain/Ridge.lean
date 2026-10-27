@@ -7,6 +7,7 @@ module
 
 public import Mei.Geometry.Convex.PolyhedralCochain.Facet
 public import Mei.Analysis.Convex.Exposed.Ridge
+public import Mei.Geometry.Convex.Polyhedron.Face.Ridge
 
 /-!
 # Cancellation at a common boundary ridge
@@ -16,9 +17,11 @@ through the two facets. Consequently, a ridge generator in one facet boundary
 occurs reversed in the other boundary and their cochain contributions cancel.
 Each nonempty codimension-two face lies in at most two boundary facets.
 In particular, a ridge of one boundary facet has at most one other incident
-facet, and its induced orientation there is reversed. This supplies the
-uniqueness and sign of the partner needed to cancel iterated boundary terms;
-existence of that partner remains a separate geometric step.
+facet, and its induced orientation there is reversed. The active-constraint
+construction `IsExposed.exists_second_facet_at_ridge` supplies that second
+facet and identifies their intersection with the ridge. Together these results
+supply the unique opposite incidence needed to cancel iterated boundary terms;
+assembling the cancelling sums remains a separate step.
 
 The comparison uses `IsExposed.facetOrientation_inter_eq_neg`, the canonical
 `OrientedCell.boundaryFacet`, and the orientation reversal relation
@@ -167,5 +170,30 @@ theorem card_boundaryFacets_containing_le_two (σ : OrientedCell h k) {Q : Set V
   exact hυη (σ.eq_of_ridge_subset_of_ne hτ hυ hη hτυ hτη hr
     (by simpa only [r, boundaryFacet_carrier] using hQυ)
     (by simpa only [r, boundaryFacet_carrier] using hQη))
+
+/-- Every signed facet of a boundary facet occurs with reversed orientation
+in the boundary of a different facet of the original cell. -/
+theorem exists_reverse_mem_boundaryFacets (σ : OrientedCell h k)
+    {τ : OrientedCell h (k + 1)} (hτ : τ ∈ σ.boundaryFacets)
+    {r : OrientedCell h (k + 1 + 1)} (hr : r ∈ τ.boundaryFacets) :
+    ∃ υ ∈ σ.boundaryFacets, υ ≠ τ ∧ r.reverse ∈ υ.boundaryFacets := by
+  have := h.finiteDimensional
+  obtain ⟨F, hF, hFn, hFd, hτF⟩ := (σ.mem_boundaryFacets τ).mp hτ
+  obtain ⟨Q, hQ, hQn, hQd, hrQ⟩ := (τ.mem_boundaryFacets r).mp hr
+  have hτcarrier : τ.carrier = F := by rw [hτF, boundaryFacet_carrier]
+  have hrcarrier : r.carrier = Q := by rw [hrQ, boundaryFacet_carrier]
+  have hpoly : TauCeti.IsConvexPolyhedron σ.carrier := by
+    obtain ⟨P, hP⟩ := isRationalNormalPolyhedron_iff.mp σ.rational
+    exact hP ▸ P.isConvexPolyhedron
+  obtain ⟨G, hG, hGdim, hGF, hinter⟩ := hF.exists_second_facet_at_ridge
+    (by rwa [← hτcarrier]) hpoly hQn hFd (by rwa [← hτcarrier])
+  have hGn : G.Nonempty := hQn.mono (hinter ▸ inter_subset_right)
+  let υ := σ.boundaryFacet hG hGn hGdim
+  have hυ : υ ∈ σ.boundaryFacets := σ.boundaryFacet_mem_boundaryFacets hG hGn hGdim
+  refine ⟨υ, hυ, ?_, σ.reverse_mem_boundaryFacets_of_carrier_eq_inter hτ hυ hr ?_⟩
+  · intro he
+    apply hGF
+    simpa only [υ, boundaryFacet_carrier, hτcarrier] using congrArg carrier he
+  · simpa only [υ, boundaryFacet_carrier, hτcarrier, hrcarrier] using hinter
 
 end Mei.OrientedCell
