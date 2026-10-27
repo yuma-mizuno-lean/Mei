@@ -136,6 +136,33 @@ theorem segmentPathProduct_def (e : x ⟶ y) :
     segmentPathProduct ν label hcomm e =
       ((orderedCrossingTimes e).reverse.map (crossingEventProduct ν label hcomm e)).prod := (rfl)
 
+/-- Any strictly increasing list containing every crossing time computes the
+segment product. Additional times contribute identity factors. -/
+theorem segmentPathProduct_eq_prod_of_crossingTimes (e : x ⟶ y) (T : List ℝ)
+    (hT : T.Pairwise (· < ·))
+    (hcover : ∀ t ∈ orderedCrossingTimes e, t ∈ T) :
+    segmentPathProduct ν label hcomm e =
+      (T.reverse.map (crossingEventProduct ν label hcomm e)).prod := by
+  classical
+  let f := crossingEventProduct ν label hcomm e
+  have hone (t : ℝ) (ht : t ∉ orderedCrossingTimes e) : f t = 1 := by
+    apply crossingEventProduct_empty
+    apply Finset.eq_empty_iff_forall_notMem.mpr
+    rintro ⟨j, r⟩ hj
+    exact ht ((mem_orderedCrossingTimes e t).mpr
+      ⟨j, ((mem_signedCrossingEvent ν x y t j r).mp hj).1⟩)
+  have he : (orderedCrossingTimes e).filter (fun t => f t != 1) =
+      T.filter (fun t => f t != 1) := by
+    apply ((pairwise_orderedCrossingTimes e).filter _).eq_of_mem_iff (hT.filter _)
+    intro t
+    simp only [List.mem_filter, bne_iff_ne, ne_eq]
+    exact ⟨fun ht => ⟨hcover t ht.1, ht.2⟩,
+      fun ht => ⟨by by_contra hn; exact ht.2 (hone t hn), ht.2⟩⟩
+  rw [segmentPathProduct_def, ← List.prod_filter_bne_one, ← List.prod_filter_bne_one
+    (T.reverse.map f), List.filter_map, List.filter_map,
+    List.filter_reverse, List.filter_reverse]
+  exact congrArg (fun l : List ℝ => (l.reverse.map f).prod) he
+
 /-- A segment meeting no wall has identity transport. -/
 theorem segmentPathProduct_eq_one_of_crossings_eq_empty (e : x ⟶ y)
     (he : crossings x y = ∅) : segmentPathProduct ν label hcomm e = 1 := by

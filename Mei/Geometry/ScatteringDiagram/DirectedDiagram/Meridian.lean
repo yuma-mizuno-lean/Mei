@@ -7,7 +7,6 @@ module
 
 public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Adapted
 public import Mei.Geometry.Convex.PolyhedralComplex.Meridian
-public import Mei.Geometry.Convex.Polyhedron.Path.Coarsening
 
 /-!
 # Directed meridians at adapted joints
@@ -22,7 +21,7 @@ actual local loop product, including all coincident indexed contributions.
 The construction combines
 `FinitePolyhedralComplex.exists_positive_isolating_joint_triangle` with
 `DirectedDiagram.exists_mem_adaptedComplex_walls_subset` and
-`WallComplement.wallCoverPrefunctor`. Equal codimensions identify each covering
+`DirectedDiagram.adaptedPathPrefunctor`. Equal codimensions identify each covering
 cell's affine span with that of its directed support. No consistency assumption
 is needed to construct these loops; lower-order consistency subsequently puts
 their products in the central truncation kernel.
@@ -44,23 +43,6 @@ variable {Γ Λ R L V ι : Type*} [AddCommGroup Γ] [AddCommGroup Λ]
   [GradedLieAlgebra ℒ] [IsPositiveGrading d ℒ]
   {i : Λ →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
   {H : DirectedWallSpaces ρ ℒ} (D : DirectedDiagram (d := d) h H ι)
-
-private theorem adapted_wall_cover (k : ℕ) (j : D.active k) (x : V)
-    (hx : x ∈ (D.wall j).support) :
-    ∃ Q : (D.adaptedComplex k).walls, x ∈ (Q : Set V) ∧
-      (Q : Set V) ⊆ (D.wall j).support ∧
-      affineSpan ℝ (Q : Set V) = affineSpan ℝ (D.wall j).support := by
-  let := h.finiteDimensional
-  obtain ⟨Q, hQ, hxQ, hsub⟩ := D.exists_mem_adaptedComplex_walls_subset k j hx
-  have hle := affineSpan_mono ℝ hsub
-  have hdimQ := (D.adaptedComplex k).finrank_direction_add_one_of_mem_walls hQ
-  have hdimW := (D.wall j).finrank_direction_add_one
-  have hdir := Submodule.eq_of_le_of_finrank_eq (AffineSubspace.direction_le hle)
-    (by omega : Module.finrank ℝ (affineSpan ℝ Q).direction =
-      Module.finrank ℝ (affineSpan ℝ (D.wall j).support).direction)
-  exact ⟨⟨Q, hQ⟩, hxQ, hsub,
-    AffineSubspace.eq_of_direction_eq_of_nonempty_of_le hdir
-      ⟨x, subset_affineSpan ℝ Q hxQ⟩ hle⟩
 
 /-- An oriented adapted joint has arbitrarily small positive triangular loops
 admissible for the active directed supports. Their filled triangles isolate the
@@ -90,12 +72,11 @@ theorem exists_positive_isolating_joint_triangle {k : ℕ} {J : Set V}
   obtain ⟨s, x, γ, hpos, hcenter, hvertices, hcompl, hball, hskeleton,
       hfrontier, hother, hcells⟩ :=
     (D.adaptedComplex k).exists_positive_isolating_joint_triangle hJ hp o ho hε
-  let F := WallComplement.wallCoverPrefunctor
-    (fun j : D.active k => (D.wall j).isConvexPolyhedron.isClosed) (D.adapted_wall_cover k)
+  let F := D.adaptedPathPrefunctor k
   refine ⟨s, F.obj x, F.mapPath γ, hpos, hcenter, ?_, hcompl, hball,
     hskeleton, hfrontier, hother, ?_⟩
   · simpa only [F, Prefunctor.vertices_mapPath, List.map_map, Function.comp_def,
-      WallComplement.wallCoverPrefunctor_obj_val] using hvertices
+      D.adaptedPathPrefunctor_obj_val] using hvertices
   · rintro j ⟨y, hy, hyj⟩
     obtain ⟨Q, hQ, hyQ, hsub⟩ := D.exists_mem_adaptedComplex_walls_subset k j hyj
     exact (hcells Q ((D.adaptedComplex k).mem_cells_of_mem_walls hQ) ⟨y, hy, hyQ⟩).trans hsub
