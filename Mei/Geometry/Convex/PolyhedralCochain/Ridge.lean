@@ -20,8 +20,8 @@ In particular, a ridge of one boundary facet has at most one other incident
 facet, and its induced orientation there is reversed. The active-constraint
 construction `IsExposed.exists_second_facet_at_ridge` supplies that second
 facet and identifies their intersection with the ridge. Together these results
-supply the unique opposite incidence needed to cancel iterated boundary terms;
-assembling the cancelling sums remains a separate step.
+supply the unique opposite incidence needed to cancel iterated boundary terms
+in `Mei.Geometry.Convex.PolyhedralCochain.SquareZero`.
 
 The comparison uses `IsExposed.facetOrientation_inter_eq_neg`, the canonical
 `OrientedCell.boundaryFacet`, and the orientation reversal relation
@@ -171,12 +171,13 @@ theorem card_boundaryFacets_containing_le_two (σ : OrientedCell h k) {Q : Set V
     (by simpa only [r, boundaryFacet_carrier] using hQυ)
     (by simpa only [r, boundaryFacet_carrier] using hQη))
 
-/-- Every signed facet of a boundary facet occurs with reversed orientation
-in the boundary of a different facet of the original cell. -/
-theorem exists_reverse_mem_boundaryFacets (σ : OrientedCell h k)
+/-- Every signed ridge incidence has a unique other parent facet, in whose
+boundary it occurs with reversed orientation. -/
+theorem existsUnique_reverse_mem_boundaryFacets (σ : OrientedCell h k)
     {τ : OrientedCell h (k + 1)} (hτ : τ ∈ σ.boundaryFacets)
     {r : OrientedCell h (k + 1 + 1)} (hr : r ∈ τ.boundaryFacets) :
-    ∃ υ ∈ σ.boundaryFacets, υ ≠ τ ∧ r.reverse ∈ υ.boundaryFacets := by
+    ∃! υ : OrientedCell h (k + 1),
+      υ ∈ σ.boundaryFacets ∧ υ ≠ τ ∧ r.reverse ∈ υ.boundaryFacets := by
   have := h.finiteDimensional
   obtain ⟨F, hF, hFn, hFd, hτF⟩ := (σ.mem_boundaryFacets τ).mp hτ
   obtain ⟨Q, hQ, hQn, hQd, hrQ⟩ := (τ.mem_boundaryFacets r).mp hr
@@ -190,10 +191,17 @@ theorem exists_reverse_mem_boundaryFacets (σ : OrientedCell h k)
   have hGn : G.Nonempty := hQn.mono (hinter ▸ inter_subset_right)
   let υ := σ.boundaryFacet hG hGn hGdim
   have hυ : υ ∈ σ.boundaryFacets := σ.boundaryFacet_mem_boundaryFacets hG hGn hGdim
-  refine ⟨υ, hυ, ?_, σ.reverse_mem_boundaryFacets_of_carrier_eq_inter hτ hυ hr ?_⟩
-  · intro he
+  have hυτ : υ ≠ τ := by
+    intro he
     apply hGF
     simpa only [υ, boundaryFacet_carrier, hτcarrier] using congrArg carrier he
+  refine ⟨υ, ⟨hυ, hυτ,
+    σ.reverse_mem_boundaryFacets_of_carrier_eq_inter hτ hυ hr ?_⟩, ?_⟩
   · simpa only [υ, boundaryFacet_carrier, hτcarrier, hrcarrier] using hinter
+  · rintro η ⟨hη, hητ, hrη⟩
+    exact σ.eq_of_ridge_subset_of_ne hτ hη hυ hητ.symm hυτ.symm hr
+      (by simpa only [reverse_carrier] using η.carrier_subset_of_mem_boundaryFacets hrη)
+      (by simpa only [υ, boundaryFacet_carrier, hrcarrier] using
+        hinter ▸ (Set.inter_subset_right : F ∩ G ⊆ G))
 
 end Mei.OrientedCell
