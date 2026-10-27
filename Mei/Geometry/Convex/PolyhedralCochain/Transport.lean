@@ -112,7 +112,7 @@ theorem wallCrossingSum_eq_zero_of_coboundary_eq_zero (p : AdmissiblePLPath x x)
         ∃ j : J, υ = τ j := by
       intro υ hυ
       obtain ⟨P, hP, hυ⟩ :=
-        PolyhedralCochain.exists_mem_boundaryFacets_of_mem_support_coboundaryPresentation hυ
+        Finset.mem_biUnion.mp (PolyhedralCochain.support_coboundaryPresentation_subset g hυ)
       exact ⟨⟨⟨P, hP⟩, ⟨υ, hυ⟩⟩, rfl⟩
     have hpair {u v : WallComplement W} (e : u ⟶ v) :
         OrientedCell.intersectionPairing (R := R) ![u.val, v.val] f =
