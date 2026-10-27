@@ -39,22 +39,24 @@ namespace Mei.Convex.WallComplement
 variable {V ι : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V] {W : ι → Set V}
   {x y : WallComplement W}
 
-/-- For a full affine hyperplane, a crossing occurs exactly when
-the two endpoints lie on opposite sides. -/
+/-- If a wall agrees with an affine hyperplane along the segment, a crossing
+occurs exactly when the endpoints lie on opposite sides of that hyperplane. -/
 theorem exists_crossing_iff_of_hyperplane (x y : WallComplement W) (f : V →ᵃ[ℝ] ℝ) {j : ι}
-    (hW : W j = {z | f z = 0}) :
+    (hW : ∀ z ∈ segment ℝ x.val y.val, z ∈ W j ↔ f z = 0) :
     (∃ t, (j, t) ∈ crossings x y) ↔ ((0 < f x.val) ≠ (0 < f y.val)) := by
-  have hx : f x.val ≠ 0 := fun hz => x.notMem j (by simpa [hW] using hz)
-  have hy : f y.val ≠ 0 := fun hz => y.notMem j (by simpa [hW] using hz)
+  have hx : f x.val ≠ 0 := fun hz =>
+    x.notMem j ((hW _ (left_mem_segment ℝ _ _)).mpr hz)
+  have hy : f y.val ≠ 0 := fun hz =>
+    y.notMem j ((hW _ (right_mem_segment ℝ _ _)).mpr hz)
   have he : (∃ t, (j, t) ∈ crossings x y) ↔
       (0 : ℝ) ∈ segment ℝ (f x.val) (f y.val) := by
     rw [← image_segment ℝ f, segment_eq_image_lineMap]
-    simp only [mem_crossings, hW, mem_ofPred_eq, mem_image]
+    simp only [mem_crossings, mem_image]
     constructor
     · rintro ⟨t, ht, he⟩
-      exact ⟨_, ⟨t, ht, rfl⟩, he⟩
+      exact ⟨_, ⟨t, ht, rfl⟩, (hW _ (lineMap_mem_segment ℝ _ _ ht)).mp he⟩
     · rintro ⟨z, ⟨t, ht, rfl⟩, he⟩
-      exact ⟨t, ht, he⟩
+      exact ⟨t, ht, (hW _ (lineMap_mem_segment ℝ _ _ ht)).mpr he⟩
   rw [he, segment_eq_Icc', mem_Icc, min_le_iff, le_max_iff]
   constructor <;> intro hh <;> grind
 
@@ -74,7 +76,8 @@ theorem segmentPathProduct_eq_prod_of_hyperplanes (e : x ⟶ y) :
   intro j _
   by_cases hj : label j = 1
   · simp [hj]
-  · have hc := exists_crossing_iff_of_hyperplane x y (f j) (hW j hj)
+  · have hc := exists_crossing_iff_of_hyperplane x y (f j) (j := j)
+      (fun z _ => by simp [hW j hj])
     have hd : (f j).linear (y.val - x.val) = f j y.val - f j x.val :=
       (f j).linear_apply_vsub _ _
     rw [hd]

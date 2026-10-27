@@ -22,7 +22,9 @@ this cochain unchanged.
 If initial walls are full hyperplanes and all other walls have pure logarithms
 of degree below `k + 1`, positive isolating triangular meridians can be chosen
 so that every homogeneous component of correction degree is transverse to its
-geometric degree direction.
+geometric degree direction. Their vertices also avoid the affine spans of
+incident adapted wall cells and active supports, so these same choices can
+serve as local Stokes tests.
 Consequently these components belong to the domain of the negative-ray sweep;
 zero spatial directions give zero components. The cochain retains its specified
 meridians. Independence of those choices and comparison with the coboundary of
@@ -118,7 +120,8 @@ theorem jointObstructionCochain_eq_zero (hσ : ∀ J, (σ J).carrier = (J : Set 
 arbitrarily small at each joint. For full initial hyperplanes and lower pure
 birth logarithms, every correction-degree component of their central cochain
 is transverse to its geometric direction, hence can be swept. No consistency
-at order `k + 1` is assumed. -/
+at order `k + 1` is assumed. The chosen vertices avoid the affine spans of
+all incident adapted walls and active directed supports. -/
 theorem exists_jointObstructionCochain (hk : D.LevelConsistent k)
     (hσ : ∀ J, (σ J).carrier = (J : Set V))
     (ε : (D.adaptedComplex (k + 1)).joints → ℝ) (hε : ∀ J, 0 < ε J)
@@ -142,9 +145,13 @@ theorem exists_jointObstructionCochain (hk : D.LevelConsistent k)
         Disjoint (convexHull ℝ (range s.points)) (intrinsicFrontier ℝ (J : Set V)) ∧
         (∀ Q ∈ (D.adaptedComplex (k + 1)).joints, Q ≠ (J : Set V) →
           Disjoint (convexHull ℝ (range s.points)) Q) ∧
-        ∀ j : D.active (k + 1),
+        (∀ j : D.active (k + 1),
           (convexHull ℝ (range s.points) ∩ (D.wall j).support).Nonempty →
             (J : Set V) ⊆ (D.wall j).support) ∧
+        (∀ m Q, Q ∈ (D.adaptedComplex (k + 1)).walls → (J : Set V) ⊆ Q →
+          s.points m ∉ affineSpan ℝ Q) ∧
+        ∀ m (j : D.active (k + 1)), (J : Set V) ⊆ (D.wall j).support →
+          s.points m ∉ affineSpan ℝ (D.wall j).support) ∧
       ∀ n : Γ, d.degree n = (k : ℤ) + 1 →
         let π := (DirectSum.component R Γ (fun m => d.truncatedGrading ℒ (k + 1) m) n) ∘ₗ
           (DirectSum.decomposeLinearEquiv (d.truncatedGrading ℒ (k + 1))).toLinearMap ∘ₗ
@@ -166,12 +173,14 @@ theorem exists_jointObstructionCochain (hk : D.LevelConsistent k)
     rw [← hσ J]
     exact (σ J).isConormal
   -- The smaller of the requested radius and the obstruction radius works for all degrees.
-  choose s x γ hpos hcenter hvertices hcompl hball hskeleton hfrontier hother hcontains using
+  choose s x γ hpos hcenter hvertices hcompl hball hskeleton hfrontier hother hcontains
+    hspans hsupports using
     fun J : C.joints => D.exists_positive_isolating_joint_triangle J.property (hq J)
       (σ J).orientation (ho J) (lt_min (hε J) (hr J))
   refine ⟨x, γ, ?_, ?_⟩
   · intro J
-    refine ⟨s J, hpos J, ?_, hvertices J, hcompl J, ?_, ?_, hfrontier J, hother J, hcontains J⟩
+    refine ⟨s J, hpos J, ?_, hvertices J, hcompl J, ?_, ?_, hfrontier J, hother J,
+      hcontains J, hspans J, hsupports J⟩
     · rw [hcenter J]
       exact hq J
     · rw [hcenter J]

@@ -8,6 +8,7 @@ module
 public import Mei.Geometry.Convex.Polyhedron.CrossingEvents
 public import Mei.Data.Finset.NoncommProd
 public import Mathlib.Combinatorics.Quiver.Path.Weight
+import Mei.Algebra.BigOperators.Group.Finset.Ordered
 
 /-!
 # Path products for indexed wall families
@@ -135,6 +136,35 @@ def segmentPathProduct (e : x ⟶ y) : G :=
 theorem segmentPathProduct_def (e : x ⟶ y) :
     segmentPathProduct ν label hcomm e =
       ((orderedCrossingTimes e).reverse.map (crossingEventProduct ν label hcomm e)).prod := (rfl)
+
+/-- Any strictly increasing list containing every crossing time computes the
+segment product. Additional times contribute identity factors. -/
+theorem segmentPathProduct_eq_prod_of_crossingTimes (e : x ⟶ y) (T : List ℝ)
+    (hT : T.Pairwise (· < ·))
+    (hcover : ∀ t ∈ orderedCrossingTimes e, t ∈ T) :
+    segmentPathProduct ν label hcomm e =
+      (T.reverse.map (crossingEventProduct ν label hcomm e)).prod := by
+  classical
+  let f := crossingEventProduct ν label hcomm e
+  have hone (t : ℝ) (ht : t ∉ orderedCrossingTimes e) : f t = 1 := by
+    apply crossingEventProduct_empty
+    apply Finset.eq_empty_iff_forall_notMem.mpr
+    rintro ⟨j, r⟩ hj
+    exact ht ((mem_orderedCrossingTimes e t).mpr
+      ⟨j, ((mem_signedCrossingEvent ν x y t j r).mp hj).1⟩)
+  have hs : (orderedCrossingTimes e).toFinset ⊆ T.toFinset := by
+    intro t ht
+    exact List.mem_toFinset.mpr (hcover t (List.mem_toFinset.mp ht))
+  have hS : (orderedCrossingTimes e).toFinset.sort = orderedCrossingTimes e := by
+    exact (Finset.sortedLT_sort _).pairwise.eq_of_mem_iff
+      (pairwise_orderedCrossingTimes e) (by simp)
+  have hTsort : T.toFinset.sort = T := by
+    exact (Finset.sortedLT_sort _).pairwise.eq_of_mem_iff hT (by simp)
+  rw [segmentPathProduct_def]
+  simp only [List.map_reverse, List.prod_reverse_noncomm, List.map_map, Function.comp_def]
+  exact congrArg Inv.inv (by
+    simpa only [hS, hTsort] using Finset.prod_map_sort_subset hs (fun t => (f t)⁻¹)
+      (fun t _ ht => by rw [hone t (by simpa only [List.mem_toFinset] using ht), inv_one]))
 
 /-- A segment meeting no wall has identity transport. -/
 theorem segmentPathProduct_eq_one_of_crossings_eq_empty (e : x ⟶ y)

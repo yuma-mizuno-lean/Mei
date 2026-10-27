@@ -18,9 +18,10 @@ intersection indices use the orientation sign, whereas left wall actions use
 its negative. Indexed coincident cells retain all their contributions.
 
 These formulas connect geometric cochain relations with additive transport.
-In particular, a finite wall presentation representing the zero cochain has
-zero crossing sum along every admissible polygonal path. This allows cochain
-cancellation to be used for central wall corrections.
+Equal finite wall presentations give equal crossing sums on every common
+admissible polygonal vertex list. In particular, a presentation representing
+the zero cochain has zero crossing sum along every admissible polygonal path.
+This allows cochain cancellation to be used for central wall corrections.
 
 The segment endpoint formula uses `WallComplement.crossingExponent_eq_side_sub`.
 The comparison uses `OrientedCell.intersectionPairing` and its invariance under
@@ -152,6 +153,36 @@ theorem intersectionIndex_eq_neg_crossingExponent (e : AdmissibleSegment x y)
 
 variable [Fintype ι] {R E : Type*} [Ring R] [AddCommGroup E] [Module R E]
 
+/-- A segment crossing exactly one indexed cell extracts its coefficient with
+the orientation sign. No bound on the length of the segment is required. -/
+theorem intersectionPairing_eq_of_crossings_singleton
+    (j : ι) (t : ℝ) (he : crossings x y = {(j, t)}) (c : ι → E) :
+    OrientedCell.intersectionPairing (R := R) ![x.val, y.val]
+        (∑ a, Finsupp.single (σ a) (c a)) =
+      ((σ j).orientation.evalSign (fun _ : Fin 1 => y.val - x.val) : ℤ) • c j := by
+  classical
+  have hmeet (a : ι) :
+      (convexHull ℝ (range ![x.val, y.val]) ∩ (σ a).carrier).Nonempty ↔ a = j := by
+    have hm : (convexHull ℝ (range ![x.val, y.val]) ∩ (σ a).carrier).Nonempty ↔
+        ∃ u, (a, u) ∈ crossings x y := by
+      rw [Matrix.range_cons_cons_empty, convexHull_pair, segment_eq_image_lineMap]
+      simp only [mem_crossings]
+      exact Set.image_inter_nonempty_iff
+    rw [hm, he]
+    simp
+  rw [map_sum, Finset.sum_eq_single j]
+  · rw [OrientedCell.intersectionPairing_single,
+      OrientedCell.intersectionIndex_of_nonempty ((hmeet j).mpr rfl)]
+    have hframe : (fun a : Fin 1 => ![x.val, y.val] a.succ - ![x.val, y.val] 0) =
+        fun _ : Fin 1 => y.val - x.val := by ext a; fin_cases a; rfl
+    rw [hframe]
+  · intro a _ ha
+    rw [OrientedCell.intersectionPairing_single,
+      OrientedCell.intersectionIndex_of_disjoint
+        (disjoint_iff_inter_eq_empty.mpr (not_nonempty_iff_eq_empty.mp
+          ((hmeet a).not.mpr ha))), zero_smul]
+  · simp
+
 /-- Pairing a segment with an indexed finite wall presentation gives the negative
 of its crossing sum. Repeated cells and simultaneous crossings are counted with
 their original multiplicities. Zero-coefficient walls need no coorientation compatibility. -/
@@ -173,6 +204,47 @@ theorem intersectionPairing_eq_neg_wallCrossingSum (e : x ⟶ y)
   by_cases hc : c j = 0
   · simp [hc]
   · rw [intersectionIndex_eq_neg_crossingExponent e.down (ν j) j (hν j hc), neg_zsmul]
+
+variable {κ : Type*} [Fintype κ] {τ : κ → OrientedCell h 1}
+  {x' y' : WallComplement (fun j => (τ j).carrier)}
+
+/-- Equal polyhedral cochains have equal additive transport on common admissible
+segments. The presentations may differ by subdivision, orientation reversal,
+or cancellation of coincident cells. -/
+theorem wallCrossingSum_toPath_eq_of_cochain_eq
+    (e : x ⟶ y) (e' : x' ⟶ y')
+    (ν : ι → V →ₗ[ℝ] ℝ) (μ : κ → V →ₗ[ℝ] ℝ) (c : ι → E) (c' : κ → E)
+    (hν : ∀ j, c j ≠ 0 → ∀ v, SignType.sign (ν j v) =
+      (σ j).orientation.evalSign (fun _ : Fin 1 => v))
+    (hμ : ∀ j, c' j ≠ 0 → ∀ v, SignType.sign (μ j v) =
+      (τ j).orientation.evalSign (fun _ : Fin 1 => v))
+    (hc : ∑ j, PolyhedralCochain.mk (R := R) (σ j) (c j) =
+      ∑ j, PolyhedralCochain.mk (τ j) (c' j))
+    (hx : x.val = x'.val) (hy : y.val = y'.val) :
+    e.toPath.wallCrossingSum ν c = e'.toPath.wallCrossingSum μ c' := by
+  classical
+  have hf : PolyhedralCochain.ofFinsupp (R := R)
+      (∑ j, Finsupp.single (σ j) (c j)) =
+      PolyhedralCochain.ofFinsupp (∑ j, Finsupp.single (τ j) (c' j)) := by
+    simpa only [map_sum, PolyhedralCochain.ofFinsupp_single] using hc
+  have ht {a b : WallComplement (fun j => (σ j).carrier)} (f : a ⟶ b)
+      (υ : OrientedCell h 1) (hυ : υ ∈ (∑ j, Finsupp.single (σ j) (c j)).support) :
+      υ.IsTransverse ![a.val, b.val] := by
+    obtain ⟨j, _, hj⟩ := Finsupp.mem_support_finsetSum υ hυ
+    obtain ⟨rfl, _⟩ := (Finsupp.mem_support_single _ _ _).mp hj
+    exact f.down.isTransverse_orientedCell j
+  have ht' (υ : OrientedCell h 1)
+      (hυ : υ ∈ (∑ j, Finsupp.single (τ j) (c' j)).support) :
+      υ.IsTransverse ![x.val, y.val] := by
+    obtain ⟨j, _, hj⟩ := Finsupp.mem_support_finsetSum υ hυ
+    obtain ⟨rfl, _⟩ := (Finsupp.mem_support_single _ _ _).mp hj
+    simpa only [hx, hy] using e'.down.isTransverse_orientedCell j
+  have he := PolyhedralCochain.intersectionPairing_eq_of_ofFinsupp_eq
+    (v := ![x.val, y.val]) hf (ht e) ht'
+  conv_rhs at he => rw [hx, hy]
+  rw [intersectionPairing_eq_neg_wallCrossingSum e ν c hν,
+    intersectionPairing_eq_neg_wallCrossingSum e' μ c' hμ] at he
+  exact neg_injective he
 
 end Mei.Convex.WallComplement
 
@@ -200,6 +272,54 @@ theorem addWeightOfEPs_intersectionPairing_eq_neg_wallCrossingSum (p : Admissibl
     rw [addWeightOfEPs_cons, ih, intersectionPairing_eq_neg_wallCrossingSum e ν c hν,
       ← comp_toPath_eq_cons, wallCrossingSum_comp, neg_add]
 
+section Comparison
+
+variable {κ : Type*} [Fintype κ] {τ : κ → OrientedCell h 1}
+  {x' y' : WallComplement (fun j => (τ j).carrier)}
+
+/-- Equal cochains give equal crossing sums along any common polygonal vertex
+list. No common subdivision of the wall presentations needs to be chosen. -/
+theorem wallCrossingSum_eq_of_cochain_eq
+    {W : ι → Set V} {W' : κ → Set V}
+    {a b : WallComplement W} {a' b' : WallComplement W'}
+    (p : AdmissiblePLPath a b) (q : AdmissiblePLPath a' b')
+    (ν : ι → V →ₗ[ℝ] ℝ) (μ : κ → V →ₗ[ℝ] ℝ) (c : ι → E) (c' : κ → E)
+    (hν : ∀ j, c j ≠ 0 → ∀ v, SignType.sign (ν j v) =
+      (σ j).orientation.evalSign (fun _ : Fin 1 => v))
+    (hμ : ∀ j, c' j ≠ 0 → ∀ v, SignType.sign (μ j v) =
+      (τ j).orientation.evalSign (fun _ : Fin 1 => v))
+    (hc : ∑ j, PolyhedralCochain.mk (R := R) (σ j) (c j) =
+      ∑ j, PolyhedralCochain.mk (τ j) (c' j))
+    (hσ : ∀ j, (σ j).carrier = W j) (hτ : ∀ j, (τ j).carrier = W' j)
+    (hpq : p.vertices.map WallComplement.val = q.vertices.map WallComplement.val) :
+    p.wallCrossingSum ν c = q.wallCrossingSum μ c' := by
+  obtain rfl : W = fun j => (σ j).carrier := (funext hσ).symm
+  obtain rfl : W' = fun j => (τ j).carrier := (funext hτ).symm
+  induction p generalizing a' b' with
+  | nil =>
+    cases q with
+    | nil => simp
+    | cons q e =>
+      have he := congrArg List.length hpq
+      simp only [List.length_map, vertices_length, length_nil, length_cons] at he
+      omega
+  | @cons z w p e ih =>
+    cases q with
+    | nil =>
+      have he := congrArg List.length hpq
+      simp only [List.length_map, vertices_length, length_nil, length_cons] at he
+      omega
+    | @cons z' w' q e' =>
+      simp only [vertices_cons, List.map_concat, List.concat_inj] at hpq
+      have hz : z.val = z'.val := by
+        have he := congrArg List.getLast? hpq.1
+        simpa [List.getLast?_eq_some_getLast, p.vertices_ne_nil, q.vertices_ne_nil] using he
+      rw [← comp_toPath_eq_cons, ← comp_toPath_eq_cons, wallCrossingSum_comp,
+        wallCrossingSum_comp, ih q hpq.1,
+        wallCrossingSum_toPath_eq_of_cochain_eq e e' ν μ c c' hν hμ hc hz hpq.2]
+
+end Comparison
+
 /-- Cochain cancellation forces vanishing of additive transport along every
 admissible path. This uses the actual cochain quotient, allowing orientation
 relations and arbitrary subdivisions rather than only literal coefficient cancellation. -/
@@ -209,22 +329,9 @@ theorem wallCrossingSum_eq_zero_of_cochain_eq_zero (p : AdmissiblePLPath x y)
       (σ j).orientation.evalSign (fun _ : Fin 1 => v))
     (hc : ∑ j, PolyhedralCochain.mk (R := R) (σ j) (c j) = 0) :
     p.wallCrossingSum ν c = 0 := by
-  classical
-  have hformal : PolyhedralCochain.ofFinsupp (R := R)
-      (∑ j, Finsupp.single (σ j) (c j)) = PolyhedralCochain.ofFinsupp 0 := by
-    simpa only [map_sum, PolyhedralCochain.ofFinsupp_single, map_zero] using hc
-  have he {a b : WallComplement (fun j => (σ j).carrier)} (e : a ⟶ b) :
-      e.toPath.wallCrossingSum ν c = 0 := by
-    have hp := PolyhedralCochain.intersectionPairing_eq_of_ofFinsupp_eq
-      (v := ![a.val, b.val]) hformal (fun τ hτ => ?_) (by simp)
-    · rw [intersectionPairing_eq_neg_wallCrossingSum e ν c hν, map_zero,
-        neg_eq_zero] at hp
-      exact hp
-    · obtain ⟨j, _, hj⟩ := Finsupp.mem_support_finsetSum τ hτ
-      obtain ⟨rfl, _⟩ := (Finsupp.mem_support_single _ _ _).mp hj
-      exact e.down.isTransverse_orientedCell j
-  induction p with
-  | nil => simp
-  | cons p e ih => rw [← comp_toPath_eq_cons, wallCrossingSum_comp, ih, he e, add_zero]
+  have he := p.wallCrossingSum_eq_of_cochain_eq (R := R) p ν ν c (fun _ => 0)
+    hν (by simp) (by simpa only [map_zero, Finset.sum_const_zero] using hc)
+    (fun _ => rfl) (fun _ => rfl) rfl
+  simpa [wallCrossingSum_def] using he
 
 end Quiver.Path

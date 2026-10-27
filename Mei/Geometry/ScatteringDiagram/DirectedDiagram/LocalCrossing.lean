@@ -183,6 +183,34 @@ theorem combinedLabel_neg (k : ℕ) (θ v : V)
     split_ifs <;> norm_num <;> grind
   rw [hsign, zpow_neg]
 
+/-- At any parameter of an admissible segment, the simultaneous crossing
+product is the combined label at the corresponding point, with the segment's
+velocity. This also holds when no wall is crossed at that parameter. -/
+theorem crossingEventProduct_eq_combinedLabel (k : ℕ)
+    {x y : WallComplement (fun j : D.active k => (D.wall j).support)} (e : x ⟶ y)
+    {t : ℝ} (ht : t ∈ Icc (0 : ℝ) 1) :
+    crossingEventProduct (fun j : D.active k => h.realCharacter (D.wall j).normal)
+        (fun j => CompletedGroup.projection k (D.wall j).label)
+        (D.activeLabels_commute k) e t =
+      D.combinedLabel k (AffineMap.lineMap x.val y.val t) (y.val - x.val)
+        (e.down.regular t ht) := by
+  classical
+  let S := crossingWalls x y t
+  let f := fun j : D.active k =>
+    (j, (if 0 < h.realCharacter (D.wall j).normal (y.val - x.val) then -1 else 1 : ℤ))
+  rw [D.combinedLabel_eq_prod k _ _ _ S.toList S.nodup_toList (fun j => by
+    simp only [Finset.mem_toList, S, mem_crossingWalls, mem_crossings, ht, true_and])]
+  rw [crossingEventProduct_eq_prod _ _ _ e t (S.toList.map f)
+    (S.nodup_toList.map (fun _ _ he => (Prod.mk.inj he).1)) (fun ⟨j, r⟩ => by
+      simp only [List.mem_map, Finset.mem_toList, S, mem_crossingWalls, f,
+        Prod.mk.injEq, mem_signedCrossingEvent]
+      constructor
+      · rintro ⟨a, ha, rfl, hr⟩
+        exact ⟨ha, hr.symm⟩
+      · rintro ⟨ha, hr⟩
+        exact ⟨j, ha, rfl, hr.symm⟩)]
+  simp only [List.map_map, f, Function.comp_def]
+
 /-- A segment meeting precisely one regular wall germ computes its combined label
 in the direction of the segment, including all coincident indexed walls. -/
 theorem levelPathProduct_toPath_eq_combinedLabel (k : ℕ)

@@ -7,6 +7,9 @@ module
 
 public import Mathlib.Combinatorics.Quiver.Symmetric
 public import Mathlib.Combinatorics.Quiver.Path.Vertices
+public import Mathlib.Data.List.Chain
+public import Mathlib.Combinatorics.Quiver.Path.Weight
+public import Mathlib.Algebra.Group.Submonoid.Basic
 
 /-!
 # Vertices and reversal of paths under prefunctors
@@ -16,6 +19,10 @@ This extends Mathlib's `Prefunctor.MapReverse` API to `Prefunctor.mapPath`,
 so that geometric projections of polygonal paths can use the same reversal law.
 A prefunctor also applies its object map to the vertex list, allowing geometric
 paths to be compared after forgetting some of their admissibility conditions.
+Relations between consecutive vertices can be checked separately on each part
+of a concatenation, using Mathlib's `List.isChain_split` at the common endpoint.
+Group-valued edge weights can be gauged at the vertices: if every gauged edge
+lies in a submonoid, so does the gauged weight of the entire path.
 -/
 
 public section
@@ -48,6 +55,32 @@ theorem mapPath_reverse (F : U ⥤q V) [F.MapReverse] {x y : U} (p : Quiver.Path
 end Prefunctor
 
 namespace Quiver.Path
+
+variable {V : Type*} [Quiver V]
+
+/-- A relation holds between consecutive vertices of a concatenated path exactly when
+it holds along both paths. The common endpoint is counted only once. -/
+theorem isChain_vertices_comp {x y z : V} (p : Path x y) (q : Path y z)
+    (r : V → V → Prop) :
+    (p.comp q).vertices.IsChain r ↔ p.vertices.IsChain r ∧ q.vertices.IsChain r := by
+  have hq : y :: q.vertices.tail = q.vertices :=
+    List.cons_head?_tail (by simp)
+  rw [vertices_comp, ← hq, List.isChain_split, dropLast_append_end_eq, hq]
+
+/-- Submonoid membership of the vertex-gauged edge weights propagates along a
+path: consecutive vertex factors cancel. -/
+theorem mul_weight_mul_inv_mem_of_isChain {G : Type*} [Group G]
+    {x y : V} (p : Path x y)
+    (K : Submonoid G) (w : ∀ {u v : V}, (u ⟶ v) → G) (t : V → G)
+    (hp : p.vertices.IsChain (fun u v => ∀ e : u ⟶ v, t u * w e * (t v)⁻¹ ∈ K)) :
+    t x * p.weight w * (t y)⁻¹ ∈ K := by
+  induction p with
+  | nil => simp
+  | cons p e ih =>
+    rw [← comp_toPath_eq_cons, isChain_vertices_comp] at hp
+    have he := (List.isChain_pair.mp hp.2) e
+    simpa only [weight_cons, end_cons, mul_assoc, inv_mul_cancel_left] using
+      K.mul_mem (ih hp.1) he
 
 variable {V : Type*} [Quiver V] [Quiver.HasReverse V]
 

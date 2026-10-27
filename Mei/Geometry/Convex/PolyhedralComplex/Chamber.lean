@@ -6,6 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.Convex.PolyhedralComplex.Strata
+public import Mei.Geometry.Convex.Polyhedron.Face.Facet
 
 /-!
 # Chambers of finite polyhedral complexes
@@ -19,6 +20,8 @@ The argument uses `FinitePolyhedralComplex.intrinsicFrontier_subset_support_codi
 and Mathlib's `IsPreconnected.subset_of_closure_inter_subset`: a chamber cannot leave
 its closed cell without passing through the skeleton. Unbounded cells and lineality
 are allowed, and the component identification does not require a full ambient cover.
+The wall-avoidance criterion uses actual facets supplied by
+`TauCeti.IsConvexPolyhedron.exists_facet_of_mem_intrinsicFrontier`.
 -/
 
 public section
@@ -29,6 +32,16 @@ namespace Mei.FinitePolyhedralComplex
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i} (C : FinitePolyhedralComplex h)
+
+/-- Two full-dimensional cells with a common interior point are equal. -/
+theorem eq_of_mem_interior_cellsOfCodimension_zero {P Q : C.cellsOfCodimension 0}
+    {x : V} (hxP : x ∈ interior (P : Set V)) (hxQ : x ∈ interior (Q : Set V)) :
+    P = Q := by
+  apply Subtype.ext
+  exact C.eq_of_mem_intrinsicInterior
+    ((C.mem_cellsOfCodimension 0 _).mp P.property).1
+    ((C.mem_cellsOfCodimension 0 _).mp Q.property).1
+    (interior_subset_intrinsicInterior hxP) (interior_subset_intrinsicInterior hxQ)
 
 /-- A full-dimensional cell spans the ambient affine space. -/
 theorem affineSpan_eq_top_of_mem_cellsOfCodimension_zero {P : Set V}
@@ -114,5 +127,38 @@ theorem exists_unique_mem_interior_cellsOfCodimension_zero (hC : C.support = uni
       exact ⟨hxP, hx⟩
     exact C.eq_of_mem_intrinsicInterior ((C.mem_cellsOfCodimension 0 Q).mp hQ.1).1 hP
       (interior_subset_intrinsicInterior hQ.2) (interior_subset_intrinsicInterior hxPi)
+
+/-- Every boundary point of a full-dimensional cell lies on a wall of the
+complex. The wall can be chosen to be a facet of that cell. -/
+theorem exists_mem_wall_of_mem_frontier {P : Set V}
+    (hP : P ∈ C.cellsOfCodimension 0) {x : V} (hx : x ∈ frontier P) :
+    ∃ W ∈ C.walls, x ∈ W ∧ W ⊆ P := by
+  have := h.finiteDimensional
+  have hPC := ((C.mem_cellsOfCodimension 0 P).mp hP).1
+  have hfront : intrinsicFrontier ℝ P = frontier P := by
+    rw [← intrinsicClosure_sdiff_intrinsicInterior, intrinsicClosure_eq_closure,
+      Mei.intrinsicInterior_eq_interior_of_affineSpan_eq_top
+        (C.affineSpan_eq_top_of_mem_cellsOfCodimension_zero hP), frontier]
+  obtain ⟨W, hW, hxW, hdim⟩ :=
+    (C.isConvexPolyhedron hPC).exists_facet_of_mem_intrinsicFrontier (hfront.symm ▸ hx)
+  refine ⟨W, (C.mem_cellsOfCodimension 1 W).mpr ⟨?_, ?_⟩, hxW, hW.subset⟩
+  · exact C.face_closed P hPC W (isPolyhedralFace_iff.mpr ⟨⟨x, hxW⟩, hW⟩)
+  · rw [← direction_affineSpan, ← direction_affineSpan] at hdim
+    have hd := ((C.mem_cellsOfCodimension 0 P).mp hP).2
+    omega
+
+/-- A preconnected set avoiding the walls cannot leave a full cell's interior
+once it meets that interior. No coverage assumption on the complex is needed. -/
+theorem subset_interior_of_isPreconnected_of_disjoint_walls {P S : Set V}
+    (hP : P ∈ C.cellsOfCodimension 0) (hS : IsPreconnected S)
+    (hmeet : (S ∩ interior P).Nonempty) (havoid : ∀ W ∈ C.walls, Disjoint S W) :
+    S ⊆ interior P := by
+  apply hS.subset_of_closure_inter_subset isOpen_interior hmeet
+  intro x hx
+  by_contra hnot
+  have hxP : x ∈ closure P := closure_mono interior_subset hx.1
+  obtain ⟨W, hW, hxW, -⟩ := C.exists_mem_wall_of_mem_frontier hP
+    (by rw [frontier]; exact ⟨hxP, hnot⟩)
+  exact Set.disjoint_left.mp (havoid W hW) hx.2 hxW
 
 end Mei.FinitePolyhedralComplex
