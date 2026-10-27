@@ -44,20 +44,6 @@ variable {Γ Λ R L V ι : Type*} [AddCommGroup Γ] [AddCommGroup Λ]
   {i : Λ →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
   {H : DirectedWallSpaces ρ ℒ} (D : DirectedDiagram (d := d) h H ι)
 
-/-- An adapted wall contained in an active support has its entire affine span. -/
-theorem affineSpan_eq_of_adaptedWall_subset {k : ℕ}
-    {Q : Set V} (hQ : Q ∈ (D.adaptedComplex k).walls) (j : D.active k)
-    (hsub : Q ⊆ (D.wall j).support) :
-    affineSpan ℝ Q = affineSpan ℝ (D.wall j).support := by
-  have := h.finiteDimensional
-  have hle := affineSpan_mono ℝ hsub
-  have hdQ := (D.adaptedComplex k).finrank_direction_add_one_of_mem_walls hQ
-  have hdj := (D.wall j).finrank_direction_add_one
-  exact AffineSubspace.eq_of_direction_eq_of_nonempty_of_le
-    (Submodule.eq_of_le_of_finrank_eq (AffineSubspace.direction_le hle) (by omega))
-    (((D.adaptedComplex k).nonempty Q
-      ((D.adaptedComplex k).mem_cells_of_mem_walls hQ)).mono (subset_affineSpan ℝ Q)) hle
-
 /-- Relative interior points of adapted wall cells avoid the active singular support,
 including relative boundaries of repeated or overlapping indexed supports. -/
 theorem notMem_singularSupport_of_mem_intrinsicInterior_adaptedWall {k : ℕ}
@@ -135,7 +121,8 @@ private theorem existsUnique_wallCrossingLabel {k : ℕ} (Q : (D.adaptedComplex 
     exact (hX θ v hθ hvpos).symm
 
 /-- The crossing factor from the negative to the positive side of a cooriented
-adapted wall cell. Positive crossings use inverse original wall labels. -/
+adapted wall cell. Each incident wall label is inverted precisely when that wall's
+own normal evaluates positively on the crossing velocity. -/
 def wallCrossingLabel {k : ℕ} (Q : (D.adaptedComplex k).walls)
     (ν : V →ₗ[ℝ] ℝ) (hν : ν.ker = (affineSpan ℝ (Q : Set V)).direction) :
     d.truncatedGroup ℒ k :=
@@ -197,16 +184,8 @@ theorem wallCrossingLabel_neg {k : ℕ} (Q : (D.adaptedComplex k).walls)
   apply (D.wallCrossingLabel_eq_iff Q (-ν) _ _).mpr
   intro θ v hθ hv
   have hpos : 0 < ν (-v) := by simpa using hv
-  have htrans (j : D.active k) (hj : θ ∈ (D.wall j).support) :
-      h.realCharacter (D.wall j).normal (-v) ≠ 0 := by
-    have hsub := (D.mem_support_iff_of_mem_intrinsicInterior_adaptedComplex k
-      ((D.adaptedComplex k).mem_cells_of_mem_walls Q.property) hθ j).mp hj
-    intro he
-    have hmem : -v ∈ ν.ker := by
-      rw [hν, D.affineSpan_eq_of_adaptedWall_subset Q.property j hsub,
-        (D.wall j).direction_support, LinearMap.mem_ker]
-      exact he
-    exact hpos.ne' (LinearMap.mem_ker.mp hmem)
+  have htrans := D.realCharacter_normal_ne_zero_of_mem_intrinsicInterior_adaptedWall
+    Q.property ν hν hθ hpos.ne'
   calc
     _ = (D.combinedLabel k θ (-v)
         (D.notMem_singularSupport_of_mem_intrinsicInterior_adaptedWall Q.property hθ))⁻¹ := by
@@ -225,13 +204,7 @@ theorem eventually_exists_levelPathProduct_eq_wallCrossingLabel {k : ℕ}
         D.levelPathProduct k e.toPath = D.wallCrossingLabel Q ν hν := by
   rw [D.wallCrossingLabel_eq_combinedLabel Q ν hν hθ hv]
   apply D.eventually_exists_levelPathProduct_eq_combinedLabel
-  intro j hj he
-  have hsub := (D.mem_support_iff_of_mem_intrinsicInterior_adaptedComplex k
-    ((D.adaptedComplex k).mem_cells_of_mem_walls Q.property) hθ j).mp hj
-  have hmem : v ∈ ν.ker := by
-    rw [hν, D.affineSpan_eq_of_adaptedWall_subset Q.property j hsub,
-      (D.wall j).direction_support, LinearMap.mem_ker]
-    exact he
-  exact hv.ne' (LinearMap.mem_ker.mp hmem)
+  exact D.realCharacter_normal_ne_zero_of_mem_intrinsicInterior_adaptedWall
+    Q.property ν hν hθ hv.ne'
 
 end Mei.DirectedDiagram
