@@ -150,8 +150,8 @@ theorem isOrientedSubdivision_subdivisionPieces (σ : OrientedCell h k)
 /-- Every external piece of a signed boundary facet occurs in exactly one refined
 parent boundary, with its inherited orientation. -/
 theorem existsUnique_boundaryFacet_of_mem_subdivisionPieces (σ : OrientedCell h k)
-    {C D : FinitePolyhedralComplex h} (hCD : C.IsSubdivision D)
-    (hσ : σ.carrier ∈ D.cells) {F : Set V}
+    {C : FinitePolyhedralComplex h}
+    (hQ : IsOrientedSubdivision σ (σ.subdivisionPieces C)) {F : Set V}
     (hF : IsExposed ℝ σ.carrier F) (hne : F.Nonempty)
     (hdim : finrank ℝ (vectorSpan ℝ F) + 1 = finrank ℝ (vectorSpan ℝ σ.carrier))
     {τ : OrientedCell h (k + 1)}
@@ -163,16 +163,10 @@ theorem existsUnique_boundaryFacet_of_mem_subdivisionPieces (σ : OrientedCell h
   rw [boundaryFacet_carrier] at hτF
   obtain ⟨x, hx⟩ := Set.Nonempty.intrinsicInterior
     (C.isConvexPolyhedron hτC).convex τ.nonempty
-  obtain ⟨P, hP, hsub, hxP, hd⟩ := hCD.exists_mem_cells_subset_finrank_eq hσ
-    (hF.subset (hτF (intrinsicInterior_subset hx)))
-  have hdimP : finrank ℝ (affineSpan ℝ P).direction + k = finrank ℝ V := by
-    rw [hd]
-    exact σ.finrank_direction_add
-  let υ := subdivisionCell σ C
-    ⟨P, (C.mem_cellsOfCodimension k P).mpr ⟨hP, hdimP⟩, hsub⟩
-  have hυ : υ ∈ σ.subdivisionPieces C :=
-    (σ.mem_subdivisionPieces C υ).mpr ⟨hP, hsub, rfl⟩
-  have hτP : τ.carrier ⊆ P := C.subset_of_mem_intrinsicInterior hτC hP hx hxP
+  obtain ⟨υ, hυ, hxP⟩ := Set.mem_iUnion₂.mp
+    (hQ.biUnion_carrier ▸ hF.subset (hτF (intrinsicInterior_subset hx)))
+  obtain ⟨hP, hsub, hυo⟩ := (σ.mem_subdivisionPieces C υ).mp hυ
+  have hτP : τ.carrier ⊆ υ.carrier := C.subset_of_mem_intrinsicInterior hτC hP hx hxP
   have he : IsExposed ℝ υ.carrier τ.carrier :=
     (isPolyhedralFace_iff.mp (C.face_of_subset hτC hP hτP)).2
   have hdf : finrank ℝ (vectorSpan ℝ τ.carrier) + 1 =
@@ -183,18 +177,36 @@ theorem existsUnique_boundaryFacet_of_mem_subdivisionPieces (σ : OrientedCell h
     omega
   have hτeq : τ = υ.boundaryFacet he τ.nonempty hdf := by
     apply OrientedCell.ext (by simp)
-    exact ho.trans (σ.boundaryFacet_orientation_eq_of_subset υ hsub rfl
+    exact ho.trans (σ.boundaryFacet_orientation_eq_of_subset υ hsub hυo
       hF hne hdim he τ.nonempty hdf hτF).symm
   have hτmem : τ ∈ υ.boundaryFacets := by
     rw [hτeq]
     exact υ.boundaryFacet_mem_boundaryFacets he τ.nonempty hdf
   refine ⟨υ, ⟨hυ, hτmem⟩, ?_⟩
   intro ω hω
-  have hQ := σ.isOrientedSubdivision_subdivisionPieces hCD hσ
   obtain ⟨hωC, _, hωo⟩ := (σ.mem_subdivisionPieces C ω).mp hω.1
   exact C.eq_of_mem_boundaryFacets hωC hP
     ((hQ.affineSpan_eq hω.1).trans (hQ.affineSpan_eq hυ).symm)
     (hωo.trans ((σ.mem_subdivisionPieces C υ).mp hυ).2.2.symm) hω.2 hτmem
+
+/-- A complex subdividing a cell also subdivides each signed boundary facet,
+with its inherited orientation. -/
+theorem isOrientedSubdivision_boundaryFacet_subdivisionPieces (σ : OrientedCell h k)
+    {C : FinitePolyhedralComplex h}
+    (hQ : IsOrientedSubdivision σ (σ.subdivisionPieces C))
+    {τ : OrientedCell h (k + 1)} (hτ : τ ∈ σ.boundaryFacets) :
+    IsOrientedSubdivision τ (τ.subdivisionPieces C) := by
+  obtain ⟨F, hF, hne, hd, rfl⟩ := (σ.mem_boundaryFacets τ).mp hτ
+  apply isOrientedSubdivision_subdivisionPieces_of_cover
+  intro x hx
+  rw [boundaryFacet_carrier] at hx
+  obtain ⟨υ, hυ, hxυ⟩ := Set.mem_iUnion₂.mp (hQ.biUnion_carrier ▸ hF.subset hx)
+  obtain ⟨hυC, hυσ, _⟩ := (σ.mem_subdivisionPieces C υ).mp hυ
+  have hface : IsExposed ℝ υ.carrier (F ∩ υ.carrier) := by
+    simpa only [Set.inter_eq_right.mpr hυσ] using hF.inter_inter (IsExposed.refl υ.carrier)
+  exact ⟨F ∩ υ.carrier, C.face_closed υ.carrier hυC _
+      (isPolyhedralFace_iff.mpr ⟨⟨x, hx, hxυ⟩, hface⟩),
+    by simp only [boundaryFacet_carrier]; exact Set.inter_subset_left, ⟨hx, hxυ⟩⟩
 
 variable {R E : Type*} [Ring R] [AddCommGroup E] [Module R E]
 
@@ -202,19 +214,14 @@ variable {R E : Type*} [Ring R] [AddCommGroup E] [Module R E]
 subdivision. Every summand is a signed facet of a refined parent, by
 `existsUnique_boundaryFacet_of_mem_subdivisionPieces`. -/
 theorem cellCoboundary_eq_sum_subdivisionPieces (σ : OrientedCell h k)
-    {C D : FinitePolyhedralComplex h} (hCD : C.IsSubdivision D)
-    (hσ : σ.carrier ∈ D.cells) (c : E) :
+    {C : FinitePolyhedralComplex h}
+    (hQ : IsOrientedSubdivision σ (σ.subdivisionPieces C)) (c : E) :
     σ.cellCoboundary (R := R) c =
       ∑ τ ∈ σ.boundaryFacets, ∑ υ ∈ τ.subdivisionPieces C, PolyhedralCochain.mk υ c := by
   classical
   rw [cellCoboundary_apply]
-  apply Finset.sum_congr rfl
-  intro τ hτ
-  apply PolyhedralCochain.mk_eq_sum_of_isOrientedSubdivision
-  apply τ.isOrientedSubdivision_subdivisionPieces hCD
-  obtain ⟨F, hF, hne, hdim, rfl⟩ := (σ.mem_boundaryFacets τ).mp hτ
-  rw [boundaryFacet_carrier]
-  exact D.face_closed σ.carrier hσ F (isPolyhedralFace_iff.mpr ⟨hne, hF⟩)
+  exact Finset.sum_congr rfl fun τ hτ => PolyhedralCochain.mk_eq_sum_of_isOrientedSubdivision
+    (σ.isOrientedSubdivision_boundaryFacet_subdivisionPieces hQ hτ) c
 
 open Filter Topology in
 /-- An internal facet of a refined piece has exactly one opposite incidence.
