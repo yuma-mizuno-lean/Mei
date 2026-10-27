@@ -1,0 +1,243 @@
+/-
+Copyright (c) 2026 Mei contributors. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Codex
+-/
+module
+
+public import Mei.Geometry.Convex.Polyhedron.Face
+public import Mei.Analysis.Convex.Exposed
+import Mathlib.Order.Minimal
+
+/-!
+# Facet presentations and relative frontiers
+
+A nonempty polyhedron admits a half-space presentation within its affine span
+in which every row defines a genuine facet. Its relative frontier is therefore
+covered by facets. This identifies the geometric boundary used by signed facet
+sums, including for unbounded and lower-dimensional polyhedra with lineality.
+
+The construction uses `Convex.exists_mem_zero_iff_forall` to obtain simultaneous
+strict inequalities and `AffineMap.exists_pos_lineMap_neg_forall_le` to move
+inside the active hyperplane. Facet dimension is computed with
+`Module.Dual.finrank_ker_add_one_of_ne_zero`.
+-/
+
+public section
+
+open Set Module AffineSubspace
+
+namespace AffineMap
+
+variable {V ι : Type*} [AddCommGroup V] [Module ℝ V] [Finite ι]
+
+/-- At a point where precisely one row is active, the direction of the active
+face is the kernel of that row inside the ambient affine subspace. -/
+theorem vectorSpan_active_eq (g : ι → (V →ᵃ[ℝ] ℝ)) (A : AffineSubspace ℝ V)
+    (j : ι) {p : V} (hp : p ∈ A) (hpj : g j p = 0)
+    (hstrict : ∀ l, l ≠ j → g l p < 0) :
+    vectorSpan ℝ {x | x ∈ A ∧ (∀ l, g l x ≤ 0) ∧ g j x = 0} =
+      A.direction ⊓ (g j).linear.ker := by
+  let F : Set V := {x | x ∈ A ∧ (∀ l, g l x ≤ 0) ∧ g j x = 0}
+  have hpF : p ∈ F := ⟨hp, fun l => by
+    by_cases he : l = j
+    · simp [he, hpj]
+    · exact (hstrict l he).le, hpj⟩
+  apply le_antisymm
+  · rw [vectorSpan_def, Submodule.span_le]
+    rintro v ⟨x, hx, y, hy, rfl⟩
+    exact ⟨A.vsub_mem_direction hx.1 hy.1, LinearMap.mem_ker.mpr (by
+      rw [(g j).linear_apply_vsub, hx.2.2, hy.2.2, vsub_self])⟩
+  · rintro v ⟨hvA, hvj⟩
+    have hpv : v + p ∈ A := A.vadd_mem_of_mem_direction hvA hp
+    obtain ⟨ε, hε, he⟩ := exists_pos_lineMap_neg_forall_le g hpF.2.1
+      (x := v + p) (by
+        intro l hl
+        have hlj : l = j := by
+          by_contra hn
+          exact (hstrict l hn).ne hl
+        subst l
+        rw [← vadd_eq_add, (g j).map_vadd, LinearMap.mem_ker.mp hvj, hpj]
+        simp)
+    have hm : lineMap p (v + p) (-ε) ∈ F := ⟨lineMap_mem _ hp hpv, he, by
+      rw [(g j).apply_lineMap, ← vadd_eq_add v p, (g j).map_vadd,
+        LinearMap.mem_ker.mp hvj, hpj]
+      simp⟩
+    have hv := vsub_mem_vectorSpan ℝ hm hpF
+    have heq : lineMap p (v + p) (-ε) -ᵥ p = (-ε) • v := by
+      simpa only [vsub_eq_sub, add_sub_cancel_right] using lineMap_vsub_left p (v + p) (-ε)
+    rw [heq] at hv
+    exact (Submodule.smul_mem_iff _ (neg_ne_zero.mpr hε.ne')).mp hv
+
+end AffineMap
+
+namespace TauCeti.IsConvexPolyhedron
+
+variable {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
+  [FiniteDimensional ℝ V] {P : Set V}
+
+/-- A nonempty polyhedron has a finite half-space presentation within its
+affine span in which every row defines a nonempty exposed facet. -/
+theorem exists_facet_presentation (hP : TauCeti.IsConvexPolyhedron P) (hne : P.Nonempty) :
+    ∃ (ι : Type) (_ : Fintype ι) (g : ι → (V →ᴬ[ℝ] ℝ)),
+      P = {x | x ∈ affineSpan ℝ P ∧ ∀ j, g j x ≤ 0} ∧
+      ∀ j, IsExposed ℝ P {x ∈ P | g j x = 0} ∧
+        ({x ∈ P | g j x = 0} : Set V).Nonempty ∧
+        finrank ℝ (vectorSpan ℝ {x ∈ P | g j x = 0}) + 1 =
+          finrank ℝ (vectorSpan ℝ P) := by
+  classical
+  -- Remove redundant inequalities relative to the affine span, rather than
+  -- requiring an interior point in the ambient vector space.
+  obtain ⟨n, f, hf⟩ := TauCeti.isConvexPolyhedron_iff.mp hP
+  let A := affineSpan ℝ P
+  let presents (S : Finset (Fin n)) := P = {x | x ∈ A ∧ ∀ j ∈ S, f j x ≤ 0}
+  have hu : presents Finset.univ := by
+    ext x
+    simp only [Finset.mem_univ, forall_const]
+    exact ⟨fun hx => ⟨subset_affineSpan ℝ P hx, by rwa [hf] at hx⟩,
+      fun hx => by rw [hf]; exact hx.2⟩
+  obtain ⟨S, hS⟩ := exists_minimal_of_wellFoundedLT presents ⟨_, hu⟩
+  have hpres : P = {x | x ∈ A ∧ ∀ j ∈ S, f j x ≤ 0} := hS.1
+  have hwitness (j : S) : ∃ x ∈ A, (∀ l ∈ S.erase j.val, f l x ≤ 0) ∧ 0 < f j.val x := by
+    by_contra! hn
+    have herase : presents (S.erase j.val) := by
+      apply Set.Subset.antisymm
+      · intro x hx
+        exact ⟨subset_affineSpan ℝ P hx,
+          fun l hl => (hpres ▸ hx).2 l (Finset.mem_of_mem_erase hl)⟩
+      · rintro x ⟨hxA, hx⟩
+        rw [hpres]
+        refine ⟨hxA, fun l hl => ?_⟩
+        by_cases he : l = j.val
+        · subst l
+          exact hn x hxA hx
+        · exact hx l (Finset.mem_erase.mpr ⟨he, hl⟩)
+    have he := hS.2 herase (Finset.erase_subset _ _)
+    exact Finset.notMem_erase j.val S (he j.property)
+  -- No retained row vanishes identically: that would also vanish on the
+  -- affine span and contradict the witness obtained by deleting that row.
+  have hnonzero (j : S) : ∃ p ∈ P, f j.val p < 0 := by
+    by_contra! hn
+    have hz : ∀ p ∈ P, f j.val p = 0 := fun p hp =>
+      le_antisymm ((hpres ▸ hp).2 j.val j.property) (hn p hp)
+    have heq : P.EqOn (f j.val).toAffineMap (0 : V →ᵃ[ℝ] ℝ) := hz
+    obtain ⟨x, hxA, _, hx⟩ := hwitness j
+    have hx0 := AffineMap.eqOn_affineSpan heq hxA
+    exact hx.ne' hx0
+  obtain ⟨q, hq, hqzero⟩ := hP.convex.exists_mem_zero_iff_forall hne
+    (fun j : S => (f j.val).toAffineMap)
+    (fun j x hx => (hpres ▸ hx).2 j.val j.property)
+  have hqstrict (j : S) : f j.val q < 0 := by
+    have hle := (hpres ▸ hq).2 j.val j.property
+    apply lt_of_le_of_ne hle
+    intro hz
+    obtain ⟨p, hp, hpj⟩ := hnonzero j
+    exact hpj.ne ((hqzero j).mp hz p hp)
+  refine ⟨S, inferInstance, fun j => f j.val, ?_, ?_⟩
+  · simpa only [Subtype.forall] using hpres
+  · intro j
+    -- Join the strictly feasible point to a witness for irredundancy. At the
+    -- crossing of this row, every other retained inequality is still strict.
+    obtain ⟨x, hxA, hxother, hxj⟩ := hwitness j
+    let t := -f j.val q / (f j.val x - f j.val q)
+    have hden : 0 < f j.val x - f j.val q := by linarith [hqstrict j]
+    have ht0 : 0 < t := div_pos (neg_pos.mpr (hqstrict j)) hden
+    have ht1 : t < 1 := (div_lt_one hden).mpr (by linarith)
+    let p := AffineMap.lineMap q x t
+    have hpA : p ∈ A := AffineMap.lineMap_mem t (subset_affineSpan ℝ P hq) hxA
+    have hpj : f j.val p = 0 := by
+      simp only [p, (f j.val).apply_lineMap, AffineMap.lineMap_apply_ring, t]
+      field_simp
+      ring
+    have hpstrict (l : S) (hl : l ≠ j) : f l.val p < 0 := by
+      have hlval : l.val ≠ j.val := fun he => hl (Subtype.ext he)
+      have hlx := hxother l.val (Finset.mem_erase.mpr ⟨hlval, l.property⟩)
+      have hlq := hqstrict l
+      have hterm : 0 < (1 - t) * -f l.val q := mul_pos (sub_pos.mpr ht1) (neg_pos.mpr hlq)
+      have hterm' : t * f l.val x ≤ 0 := mul_nonpos_of_nonneg_of_nonpos ht0.le hlx
+      simp only [p, (f l.val).apply_lineMap, AffineMap.lineMap_apply_ring]
+      nlinarith
+    have hpP : p ∈ P := by
+      rw [hpres]
+      refine ⟨hpA, fun l hl => ?_⟩
+      by_cases he : l = j.val
+      · simpa [he] using hpj.le
+      · exact (hpstrict ⟨l, hl⟩ (fun he' => he (congrArg Subtype.val he'))).le
+    have hface : IsExposed ℝ P {y ∈ P | f j.val y = 0} := by
+      refine fun _ => ⟨(f j.val).contLinear, ?_⟩
+      ext y
+      have hdiff (z : V) : (f j.val).contLinear z = f j.val z - f j.val 0 := by
+        simpa using (f j.val).contLinear_apply_vsub z 0
+      constructor
+      · rintro ⟨hy, hyj⟩
+        refine ⟨hy, fun z hz => ?_⟩
+        rw [hdiff z, hdiff y, hyj]
+        exact sub_le_sub_right ((hpres ▸ hz).2 j.val j.property) _
+      · rintro ⟨hy, hmax⟩
+        have hm := hmax p hpP
+        rw [hdiff p, hdiff y, hpj] at hm
+        exact ⟨hy, le_antisymm ((hpres ▸ hy).2 j.val j.property) (by linarith)⟩
+    refine ⟨hface, ⟨p, hpP, hpj⟩, ?_⟩
+    -- The local active-face direction is a hyperplane in the parent direction.
+    -- Restrict the row there before applying rank-nullity.
+    have hspan := AffineMap.vectorSpan_active_eq
+      (fun l : S => (f l.val).toAffineMap) A j hpA hpj hpstrict
+    simp only [ContinuousAffineMap.coe_toAffineMap] at hspan
+    have hset : {y | y ∈ A ∧ (∀ l : S, f l.val y ≤ 0) ∧ f j.val y = 0} =
+        {y ∈ P | f j.val y = 0} := by
+      ext y
+      simp only [hpres, Set.mem_ofPred_eq, Subtype.forall, and_assoc]
+    rw [hset] at hspan
+    have hl0 : (f j.val).toAffineMap.linear.comp A.direction.subtype ≠ 0 := by
+      intro hz
+      have hv := LinearMap.congr_fun hz
+        ⟨x -ᵥ q, A.vsub_mem_direction hxA (subset_affineSpan ℝ P hq)⟩
+      simp only [LinearMap.comp_apply, Submodule.subtype_apply, LinearMap.zero_apply,
+        vsub_eq_sub] at hv
+      rw [← vsub_eq_sub x q, AffineMap.linear_apply_vsub] at hv
+      simp only [ContinuousAffineMap.coe_toAffineMap, vsub_eq_sub] at hv
+      linarith [hqstrict j]
+    have hk := Module.Dual.finrank_ker_add_one_of_ne_zero hl0
+    have hle : vectorSpan ℝ {y ∈ P | f j.val y = 0} ≤ A.direction := by
+      rw [hspan]
+      exact inf_le_left
+    have he := (Submodule.comapSubtypeEquivOfLe hle).finrank_eq
+    have hker : ((f j.val).toAffineMap.linear.comp A.direction.subtype).ker =
+        (vectorSpan ℝ {y ∈ P | f j.val y = 0}).comap A.direction.subtype := by
+      ext v
+      simp [hspan]
+    rw [hker, he] at hk
+    dsimp only [A] at hk
+    rw [direction_affineSpan] at hk
+    exact hk
+
+/-- Every relative frontier point of a polyhedron belongs to a nonempty
+exposed facet, rather than just to a possibly lower-dimensional active face. -/
+theorem exists_facet_of_mem_intrinsicFrontier (hP : TauCeti.IsConvexPolyhedron P)
+    {x : V} (hx : x ∈ intrinsicFrontier ℝ P) :
+    ∃ F, IsExposed ℝ P F ∧ x ∈ F ∧
+      finrank ℝ (vectorSpan ℝ F) + 1 = finrank ℝ (vectorSpan ℝ P) := by
+  have hxP : x ∈ P := intrinsicFrontier_subset hP.isClosed hx
+  obtain ⟨ι, _, g, hpres, hfacets⟩ := hP.exists_facet_presentation ⟨x, hxP⟩
+  have hactive : ∃ j, g j x = 0 := by
+    by_contra! hn
+    let A := affineSpan ℝ P
+    let xA : A := ⟨x, subset_affineSpan ℝ P hxP⟩
+    let U : Set A := {y | ∀ j, g j (y : V) < 0}
+    have hU : IsOpen U := by
+      simp only [U, Set.ofPred_forall]
+      exact isOpen_iInter_of_finite fun j =>
+        isOpen_lt ((g j).continuous.comp continuous_subtype_val) continuous_const
+    have hxU : xA ∈ U := fun j => lt_of_le_of_ne ((hpres ▸ hxP).2 j) (hn j)
+    have hUP : U ⊆ ((↑) ⁻¹' P : Set A) := by
+      intro y hy
+      rw [hpres]
+      exact ⟨y.property, fun j => (hy j).le⟩
+    have hxint : x ∈ intrinsicInterior ℝ P :=
+      ⟨xA, interior_mono hUP (by rwa [hU.interior_eq]), rfl⟩
+    rw [← intrinsicClosure_sdiff_intrinsicInterior] at hx
+    exact hx.2 hxint
+  obtain ⟨j, hj⟩ := hactive
+  exact ⟨{y ∈ P | g j y = 0}, (hfacets j).1, ⟨hxP, hj⟩, (hfacets j).2.2⟩
+
+end TauCeti.IsConvexPolyhedron
