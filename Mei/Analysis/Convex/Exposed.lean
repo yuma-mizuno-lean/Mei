@@ -316,7 +316,7 @@ end ContinuousLinearMap
 
 namespace IsExposed
 
-variable {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
+variable {V : Type*} [AddCommGroup V] [Module ℝ V] [TopologicalSpace V]
   {P F : Set V}
 
 /-- A nonempty exposed subset with the same affine-direction dimension as its
