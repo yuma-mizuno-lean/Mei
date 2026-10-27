@@ -121,6 +121,36 @@ theorem face_of_subset (C : FinitePolyhedralComplex h) {P Q : Set V}
   refine ⟨C.nonempty P hP, ?_⟩
   simpa only [heq] using C.inter_face Q hQ P hP hne
 
+open Set in
+/-- Two distinct cells with a common facet meet exactly in that facet.
+The dimension condition is relative, so the cells need not be full dimensional. -/
+theorem inter_eq_of_common_facet (C : FinitePolyhedralComplex h)
+    {P Q Q' : Set V} (hP : P ∈ C.cells) (hQ : Q ∈ C.cells) (hQ' : Q' ∈ C.cells)
+    (hPQ : P ⊆ Q) (hPQ' : P ⊆ Q') (hne : Q ≠ Q')
+    (hdim : Module.finrank ℝ (affineSpan ℝ Q).direction =
+      Module.finrank ℝ (affineSpan ℝ P).direction + 1)
+    (hdim' : Module.finrank ℝ (affineSpan ℝ Q').direction =
+      Module.finrank ℝ (affineSpan ℝ P).direction + 1) : Q ∩ Q' = P := by
+  let := h.finiteDimensional
+  have hPI : P ⊆ Q ∩ Q' := subset_inter hPQ hPQ'
+  have hIne := (C.nonempty P hP).mono hPI
+  have hI := C.inter_mem_cells hQ hQ' hIne
+  have hle := Submodule.finrank_mono (AffineSubspace.direction_le
+    (affineSpan_mono ℝ inter_subset_left : affineSpan ℝ (Q ∩ Q') ≤ affineSpan ℝ Q))
+  have hlt : Module.finrank ℝ (affineSpan ℝ (Q ∩ Q')).direction <
+      Module.finrank ℝ (affineSpan ℝ Q).direction := by
+    apply lt_of_le_of_ne hle
+    intro he
+    have heQ := (C.inter_face Q hQ Q' hQ' hIne).eq_of_finrank_vectorSpan_eq hIne
+      (by rw [← direction_affineSpan, ← direction_affineSpan]; exact he)
+    have heQ' := (isPolyhedralFace_iff.mp (C.face_of_subset hI hQ' inter_subset_right)).2
+      |>.eq_of_finrank_vectorSpan_eq hIne
+        (by rw [← direction_affineSpan, ← direction_affineSpan]; omega)
+    exact hne (heQ.symm.trans heQ')
+  have hge := Submodule.finrank_mono (AffineSubspace.direction_le (affineSpan_mono ℝ hPI))
+  exact ((isPolyhedralFace_iff.mp (C.face_of_subset hP hI hPI)).2.eq_of_finrank_vectorSpan_eq
+    (C.nonempty P hP) (by rw [← direction_affineSpan, ← direction_affineSpan]; omega)).symm
+
 /-- Every cell is the carrier of a pointed cone with apex zero. -/
 def IsConical (C : FinitePolyhedralComplex h) : Prop :=
   ∀ P ∈ C.cells, ∃ σ : PointedCone ℝ V, (σ : Set V) = P

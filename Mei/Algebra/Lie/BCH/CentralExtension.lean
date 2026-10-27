@@ -19,6 +19,10 @@ of `t⁻¹ * X * s`. Defects add under composition, negate under reversal, and c
 by a coboundary when the endpoint lifts change. For a central kernel, the sum
 around a closed triangle is the logarithm of its holonomy.
 
+For a central kernel, termwise equal images of two ordered lists imply that
+the logarithmic difference of their products is the sum of the individual
+logarithmic differences. Integer powers multiply these differences by the exponent.
+
 These are the algebraic coefficient operations needed to turn central transport
 errors into additive cochains. They use Mei's `LieHom.bchGroupMap`, its kernel
 description, and `Mei.bch_eq_add_of_lie_eq_zero`. No surjectivity, grading,
@@ -209,5 +213,51 @@ theorem log_triangle_eq_sum_logDefect (hc : f.ker ≤ LieAlgebra.center R L)
     (f.logDefect_mul s u s (Y * X) Z hYX hZ)
   rw [f.logDefect_mul s t u X Y hX hY] at hsum
   simpa only [LieSubmodule.coe_add, coe_logDefect, hconj, add_assoc] using hsum
+
+/-- Raising two lifts of the same element to the same integer power multiplies
+their central logarithmic difference by that integer. -/
+theorem log_zpow_mul_inv_zpow_of_eq (hc : f.ker ≤ LieAlgebra.center R L)
+    (a b : BCHGroup L) (hab : f.bchGroupMap a = f.bchGroupMap b) (z : ℤ) :
+    log (a ^ z * (b ^ z)⁻¹) = z • log (a * b⁻¹) := by
+  have hcomm : Commute b (a * b⁻¹) := Subgroup.mem_center_iff.mp
+    (f.ker_bchGroupMap_le_center hc (by
+      simpa only [div_eq_mul_inv] using (MonoidHom.div_mem_ker_iff f.bchGroupMap).mpr hab)) b
+  have he : a ^ z * (b ^ z)⁻¹ = (a * b⁻¹) ^ z := by
+    apply mul_right_cancel (b := b ^ z)
+    rw [inv_mul_cancel_right, ← hcomm.symm.mul_zpow]
+    simp
+  rw [he, log_zpow]
+
+/-- For two ordered lists with equal images term by term in a central quotient,
+the logarithm of the quotient of their products is the sum of their logarithmic
+differences. The individual lists need not consist of commuting elements. -/
+theorem log_prod_mul_inv_prod_of_eq (hc : f.ker ≤ LieAlgebra.center R L)
+    {ι : Type*} (l : List ι) (a b : ι → BCHGroup L)
+    (hab : ∀ j ∈ l, f.bchGroupMap (a j) = f.bchGroupMap (b j)) :
+    log ((l.map a).prod * ((l.map b).prod)⁻¹) =
+      (l.map fun j => log (a j * (b j)⁻¹)).sum := by
+  have := LieAlgebra.abelian_of_le_center R L f.ker hc
+  induction l with
+  | nil => simp
+  | cons j l ih =>
+    have hj := hab j (List.mem_cons_self ..)
+    have hl : ∀ j ∈ l, f.bchGroupMap (a j) = f.bchGroupMap (b j) :=
+      fun j hj => hab j (List.mem_cons_of_mem _ hj)
+    have hprod : f.bchGroupMap ((l.map a).prod) =
+        f.bchGroupMap ((l.map b).prod) := by
+      simp only [map_list_prod, List.map_map]
+      congr 1
+      exact List.map_congr_left hl
+    have hker : (l.map a).prod * ((l.map b).prod)⁻¹ ∈ f.bchGroupMap.ker := by
+      simpa only [div_eq_mul_inv] using (MonoidHom.div_mem_ker_iff f.bchGroupMap).mpr hprod
+    have hcomm : Commute (b j)⁻¹ ((l.map a).prod * ((l.map b).prod)⁻¹) :=
+      Subgroup.mem_center_iff.mp (f.ker_bchGroupMap_le_center hc hker) (b j)⁻¹
+    have he : (a j * (l.map a).prod) * (b j * (l.map b).prod)⁻¹ =
+        (a j * (b j)⁻¹) * ((l.map a).prod * ((l.map b).prod)⁻¹) := by
+      simpa only [mul_inv_rev, mul_assoc] using congrArg (a j * ·) hcomm.eq.symm
+    simp only [List.map_cons, List.prod_cons, List.sum_cons]
+    rw [he, f.log_mul_of_mem_ker_bchGroupMap _ _
+      (by simpa only [div_eq_mul_inv] using (MonoidHom.div_mem_ker_iff f.bchGroupMap).mpr hj)
+      hker, ih hl]
 
 end LieHom

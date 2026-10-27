@@ -48,27 +48,16 @@ theorem log_wallPathProduct_sub_wallCrossingSum_mem (p : AdmissiblePLPath x y)
     (hlabel : ∀ S ∈ p.signedCrossingEvents ν, ∀ a ∈ S, label a.1 ∈ K.bchSubgroup) :
     log (p.wallPathProduct ν label hcomm) -
       p.wallCrossingSum ν (fun j => log (label j)) ∈ J := by
-  classical
-  let l := (p.signedCrossingEvents ν).reverse.flatMap
-    (fun S => S.toList.map (fun a => label a.1 ^ a.2))
+  let l := ((p.signedCrossingEvents ν).reverse.flatMap Finset.toList).map
+    (fun a => label a.1 ^ a.2)
   have hl : ∀ g ∈ l, g ∈ K.bchSubgroup := by
     intro g hg
-    obtain ⟨S, hS, hg⟩ := List.mem_flatMap.mp hg
     obtain ⟨a, ha, rfl⟩ := List.mem_map.mp hg
+    obtain ⟨S, hS, ha⟩ := List.mem_flatMap.mp ha
     exact K.bchSubgroup.zpow_mem
       (hlabel S (List.mem_reverse.mp hS) a (Finset.mem_toList.mp ha)) _
-  have hp : l.prod = p.wallPathProduct ν label hcomm := by
-    rw [wallPathProduct_eq_prod_signedCrossingEvents]
-    simp [l, List.flatMap_def, List.prod_flatten, Function.comp_def]
-  have hs : (l.map log).sum = p.wallCrossingSum ν (fun j => log (label j)) := by
-    simp only [l, List.flatMap_def, List.map_flatten, List.sum_flatten,
-      List.map_map, List.map_reverse, List.sum_reverse, Function.comp_def, wallCrossingSum_def]
-    congr 1
-    apply List.map_congr_left
-    intro S _
-    simp only [log_zpow]
-    rw [← List.sum_toFinset _ (Finset.nodup_toList S)]
-    simp
-  simpa only [hp, hs] using K.log_list_prod_sub_sum_mem J hJ hl
+  rw [wallPathProduct_eq_prod_flatMap, wallCrossingSum_eq_sum_flatMap]
+  simpa only [l, List.map_map, Function.comp_def, log_zpow] using
+    K.log_list_prod_sub_sum_mem J hJ hl
 
 end Quiver.Path

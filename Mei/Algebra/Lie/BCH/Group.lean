@@ -116,6 +116,11 @@ theorem commute_exp_of_lie_eq_zero (x y : L) (h : ⁅x, y⁆ = 0) :
   exact (exp_add_of_lie_eq_zero x y h).symm.trans
     ((congrArg exp (add_comm x y)).trans (exp_add_of_lie_eq_zero y x h'))
 
+/-- Group elements whose logarithms have zero Lie bracket commute. -/
+theorem commute_of_lie_log_eq_zero (g h : BCHGroup L) (hgh : ⁅log g, log h⁆ = 0) :
+    Commute g h := by
+  simpa only [exp_log] using commute_exp_of_lie_eq_zero _ _ hgh
+
 /-- A finite family of pairwise commuting Lie algebra elements has additive exponential
 coordinates: the exponential of the sum is the unordered product of the exponentials. -/
 theorem exp_sum_of_lie_eq_zero {ι : Type*} (s : Finset ι) (x : ι → L)

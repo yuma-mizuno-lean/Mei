@@ -103,6 +103,37 @@ theorem mem_support_iff_of_mem_intrinsicInterior_adaptedComplex (k : ℕ)
       _ hQ j hx
   · exact fun hsub => hsub (intrinsicInterior_subset hx)
 
+/-- An adapted wall contained in an active support has its entire affine span. -/
+theorem affineSpan_eq_of_adaptedWall_subset {k : ℕ}
+    {Q : Set V} (hQ : Q ∈ (D.adaptedComplex k).walls) (j : D.active k)
+    (hsub : Q ⊆ (D.wall j).support) :
+    affineSpan ℝ Q = affineSpan ℝ (D.wall j).support := by
+  have := h.finiteDimensional
+  have hle := affineSpan_mono ℝ hsub
+  have hdQ := (D.adaptedComplex k).finrank_direction_add_one_of_mem_walls hQ
+  have hdj := (D.wall j).finrank_direction_add_one
+  exact AffineSubspace.eq_of_direction_eq_of_nonempty_of_le
+    (Submodule.eq_of_le_of_finrank_eq (AffineSubspace.direction_le hle) (by omega))
+    (((D.adaptedComplex k).nonempty Q
+      ((D.adaptedComplex k).mem_cells_of_mem_walls hQ)).mono (subset_affineSpan ℝ Q)) hle
+
+/-- A velocity transverse to an adapted wall cell is transverse to every active
+support through a relative interior point of that cell. -/
+theorem realCharacter_normal_ne_zero_of_mem_intrinsicInterior_adaptedWall {k : ℕ}
+    {Q : Set V} (hQ : Q ∈ (D.adaptedComplex k).walls)
+    (ν : V →ₗ[ℝ] ℝ) (hν : ν.ker = (affineSpan ℝ Q).direction)
+    {θ v : V} (hθ : θ ∈ intrinsicInterior ℝ Q) (hv : ν v ≠ 0)
+    (j : D.active k) (hj : θ ∈ (D.wall j).support) :
+    h.realCharacter (D.wall j).normal v ≠ 0 := by
+  have hsub := (D.mem_support_iff_of_mem_intrinsicInterior_adaptedComplex k
+    ((D.adaptedComplex k).mem_cells_of_mem_walls hQ) hθ j).mp hj
+  intro he
+  have hmem : v ∈ ν.ker := by
+    rw [hν, D.affineSpan_eq_of_adaptedWall_subset hQ j hsub,
+      (D.wall j).direction_support, LinearMap.mem_ker]
+    exact he
+  exact hv (LinearMap.mem_ker.mp hmem)
+
 /-- Raising the cutoff gives a subdivision of the earlier adapted complex. -/
 theorem adaptedComplex_isSubdivision {k l : ℕ} (hkl : k ≤ l) :
     (D.adaptedComplex l).IsSubdivision (D.adaptedComplex k) :=

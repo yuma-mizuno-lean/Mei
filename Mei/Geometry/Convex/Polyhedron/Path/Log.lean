@@ -18,7 +18,7 @@ BCH subgroup of a Lie subalgebra, the difference lies in any submodule containin
 its brackets. Only labels actually encountered by the path are constrained.
 Simultaneous coplanar crossings retain all indexed factors.
 
-The proof uses `Quiver.Path.wallPathProduct_eq_prod_signedCrossingEvents` to enumerate the
+The proof uses `Quiver.Path.wallPathProduct_eq_prod_flatMap` to enumerate the
 signed factors and `LieSubalgebra.log_list_prod_sub_sum_mem` to estimate their
 product. The geometric products and additive sums are the existing
 `Quiver.Path.wallPathProduct` and `Quiver.Path.wallCrossingSum`.
@@ -47,28 +47,16 @@ theorem log_wallPathProduct_sub_crossingSum_mem (K : LieSubalgebra R L) (J : Sub
     (hp : ∀ S ∈ p.signedCrossingEvents ν, ∀ a ∈ S, label a.1 ∈ K.bchSubgroup) :
     log (p.wallPathProduct ν label comm) -
       p.wallCrossingSum ν (fun j => log (label j)) ∈ J := by
-  classical
-  let factors (S : Finset (ι × ℤ)) := S.toList.map (fun a => label a.1 ^ a.2)
-  let l := (p.signedCrossingEvents ν).reverse.flatMap factors
+  let l := ((p.signedCrossingEvents ν).reverse.flatMap Finset.toList).map
+    (fun a => label a.1 ^ a.2)
   have hl : ∀ g ∈ l, g ∈ K.bchSubgroup := by
     intro g hg
-    obtain ⟨S, hS, hg⟩ := List.mem_flatMap.mp hg
     obtain ⟨a, ha, rfl⟩ := List.mem_map.mp hg
+    obtain ⟨S, hS, ha⟩ := List.mem_flatMap.mp ha
     exact K.bchSubgroup.zpow_mem
       (hp S (List.mem_reverse.mp hS) a (Finset.mem_toList.mp ha)) _
-  have hprod : p.wallPathProduct ν label comm = l.prod := by
-    rw [Quiver.Path.wallPathProduct_eq_prod_signedCrossingEvents]
-    simp only [l, List.flatMap_def, List.prod_flatten, List.map_map, factors,
-      Function.comp_def]
-  -- Reversal affects multiplication order but not the additive logarithmic sum.
-  have hsum : (l.map log).sum = p.wallCrossingSum ν (fun j => log (label j)) := by
-    simp only [l, factors, List.flatMap_def, List.map_flatten, List.sum_flatten,
-      List.map_map, List.map_reverse, List.sum_reverse, Quiver.Path.wallCrossingSum_def]
-    congr 1
-    apply List.map_congr_left
-    intro S _
-    simp [Function.comp_def, log_zpow]
-  rw [hprod, ← hsum]
-  exact K.log_list_prod_sub_sum_mem J hJ hl
+  rw [Quiver.Path.wallPathProduct_eq_prod_flatMap, Quiver.Path.wallCrossingSum_eq_sum_flatMap]
+  simpa only [l, List.map_map, Function.comp_def, log_zpow] using
+    K.log_list_prod_sub_sum_mem J hJ hl
 
 end LieSubalgebra

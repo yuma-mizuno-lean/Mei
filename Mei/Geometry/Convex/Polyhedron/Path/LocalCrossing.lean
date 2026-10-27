@@ -13,8 +13,10 @@ public import Mei.Geometry.Affine.Segment
 
 A short transverse segment through a point outside singular support meets exactly
 the indexed walls through that point, all at its midpoint. Coincident walls retain
-their distinct indices. A segment with a single crossing event computes the unordered
-product of its signed wall labels, so no enumeration of coincident walls is needed.
+their distinct indices. In particular, every crossing event of an admissible segment is
+the only event of a short admissible segment through its crossing point. A segment with
+a single crossing event computes the unordered product of its signed wall labels, so no
+enumeration of coincident walls is needed.
 
 The geometric argument follows
 `FinitePolyhedralComplex.eventually_exists_orderedCrossings_eq_singleton`,
@@ -109,6 +111,32 @@ theorem eventually_exists_crossings_iff [FiniteDimensional ℝ V]
       ((mem_crossings x y j t).mp hj) ((mem_crossings x y j _).mp (hm hθj))⟩
   · rintro ⟨hj, rfl⟩
     exact hm hj
+
+/-- Every simultaneous crossing event of an admissible segment is the only event of a
+short admissible segment through the same crossing point, in the same direction. -/
+theorem exists_segmentCrossingEvents_eq_singleton [FiniteDimensional ℝ V]
+    (hclosed : ∀ j, IsClosed (W j)) (ν : ι → V →ₗ[ℝ] ℝ) {x y : WallComplement W}
+    (e : x ⟶ y) {t : ℝ} (ht : t ∈ orderedCrossingTimes e) :
+    ∃ (x' y' : WallComplement W) (e' : x' ⟶ y'),
+      segmentCrossingEvents ν e' = [signedCrossingEvent ν x y t] := by
+  have htI : t ∈ Icc (0 : ℝ) 1 := Ioo_subset_Icc_self (mem_Ioo_of_mem_orderedCrossingTimes e ht)
+  obtain ⟨a, ⟨x', y', e', hx', hy', hcross⟩, ha⟩ := ((eventually_exists_crossings_iff hclosed
+    (e.down.regular t htI) fun j hj => e.down.transverse j ⟨t, htI, hj⟩).and
+      self_mem_nhdsWithin).exists
+  have ha : (0 : ℝ) < 2 * a := mul_pos two_pos ha
+  obtain ⟨i, hi⟩ := (mem_orderedCrossingTimes e t).mp ht
+  have htimes : orderedCrossingTimes e' = [1 / 2] := by
+    apply (pairwise_orderedCrossingTimes e').eq_of_mem_iff (by simp)
+    intro s
+    simp only [mem_orderedCrossingTimes, hcross, List.mem_singleton]
+    exact ⟨fun ⟨_, _, hs⟩ => hs, fun hs => ⟨i, ((mem_crossings x y i t).mp hi).2, hs⟩⟩
+  have hd : y'.val - x'.val = (2 * a) • (y.val - x.val) := by rw [hx', hy']; module
+  refine ⟨x', y', e', ?_⟩
+  rw [segmentCrossingEvents_def, htimes, List.map_singleton]
+  congr 1
+  ext ⟨j, s⟩
+  simp only [mem_signedCrossingEvent, hcross, mem_crossings, hd, map_smul, smul_eq_mul,
+    mul_pos_iff_of_pos_left ha, htI, true_and, and_true]
 
 variable {G : Type*} [Group G]
   (ν : ι → V →ₗ[ℝ] ℝ) (label : ι → G)

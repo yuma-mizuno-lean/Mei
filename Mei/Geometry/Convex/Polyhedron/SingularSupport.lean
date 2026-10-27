@@ -19,6 +19,8 @@ lineality and coincident or parallel supporting hyperplanes are allowed.
 Continuous affine equivalences transport singular support, including under a
 bijection of wall indices, by the intrinsic-frontier image theorem. Finitely
 many closed walls in finite dimension have closed singular support.
+Covering each closed wall by pieces with the same affine span can only enlarge
+singular support; extra fine walls are allowed.
 -/
 
 public section
@@ -71,6 +73,27 @@ theorem mem_intrinsicInterior_of_notMem_singularSupport {W : ι → Set V} {i : 
     x ∈ intrinsicInterior ℝ (W i) := by
   rw [← intrinsicClosure_sdiff_intrinsicFrontier]
   exact ⟨subset_intrinsicClosure hxi, fun hf => hx (mem_singularSupport.mpr (Or.inl ⟨i, hf⟩))⟩
+
+/-- Covering closed walls by pieces with the same affine span introduces no
+new singular points in the coarse family. The fine family may have extra walls. -/
+theorem singularSupport_subset_of_wall_cover {κ : Type*} {W : ι → Set V} {W' : κ → Set V}
+    (hclosed : ∀ j, IsClosed (W j))
+    (hcover : ∀ j x, x ∈ W j → ∃ a, x ∈ W' a ∧ W' a ⊆ W j ∧
+      affineSpan ℝ (W' a) = affineSpan ℝ (W j)) :
+    singularSupport W ⊆ singularSupport W' := by
+  intro x hx
+  by_contra hregular
+  rcases mem_singularSupport.mp hx with ⟨j, hxj⟩ | ⟨j, l, hne, hxj, hxl⟩
+  · obtain ⟨a, hxa, hsub, hspan⟩ := hcover j x (intrinsicFrontier_subset (hclosed j) hxj)
+    have hint := mem_intrinsicInterior_of_notMem_singularSupport hxa hregular
+    have hi : x ∈ intrinsicInterior ℝ (W j) := by
+      rw [intrinsicInterior, hspan] at hint
+      exact image_mono (interior_mono (preimage_mono hsub)) hint
+    exact (intrinsicClosure_sdiff_intrinsicInterior (𝕜 := ℝ) (W j) ▸ hxj).2 hi
+  · obtain ⟨a, hxa, -, hspan⟩ := hcover j x hxj
+    obtain ⟨b, hxb, -, hspan'⟩ := hcover l x hxl
+    apply hregular
+    exact mem_singularSupport.mpr (Or.inr ⟨a, b, by rwa [hspan, hspan'], hxa, hxb⟩)
 
 /-- For closed wall carriers, singular support is contained in their union.
 Thus points off all walls are automatically outside the actual singular support. -/
