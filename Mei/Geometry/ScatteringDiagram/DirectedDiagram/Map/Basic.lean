@@ -18,6 +18,8 @@ The active wall family can shrink: a noninjective coefficient map may kill a
 label. Transport along an original admissible path maps to transport along the
 same path after forgetting the killed walls. Consistency is preserved for all
 paths of the resulting diagram, including those through supports that disappear.
+Endpoint transport in a consistent diagram commutes with the coefficient map,
+both at finite order and in the completed group.
 
 The transport calculation combines `GradedLieHom.completedMap` with
 `Quiver.Path.map_wallPathProduct` and `Quiver.Path.wallPathProduct_restrict`,
@@ -27,6 +29,7 @@ The all-order path map and its completed product formula follow the projection
 argument in `DirectedDiagram.pathImage` and `DirectedDiagram.pathProduct_image`.
 The consistency proof uses `exists_loop_levelPathProduct_eq_of_vertices_eq` to
 move a loop off the original active supports while retaining its mapped product.
+The endpoint formulas use the existing path-product formulas and path independence.
 Together with outgoingness of mapped walls, this gives coefficient naturality
 of outgoing completions. No faithful action or injective coefficient map is needed.
 -/
@@ -242,6 +245,29 @@ theorem LevelConsistent.map {k : ℕ} (hD : D.LevelConsistent k) :
 theorem Consistent.map (hD : D.Consistent) : (D.map f hf).Consistent := by
   rw [consistent_iff] at hD ⊢
   exact fun k => (hD k).map D f hf
+
+/-- Finite-order endpoint transport commutes with coefficient change. Endpoints
+need only avoid the original active supports, which contain the mapped ones. -/
+@[simp]
+theorem levelTransport_map {k : ℕ} (hD : D.LevelConsistent k)
+    (x y : WallComplement (fun j : D.active k => (D.wall j).support)) :
+    (D.map f hf).levelTransport k (hD.map D f hf)
+        ((D.mapPathPrefunctor f hf k).obj x) ((D.mapPathPrefunctor f hf k).obj y) =
+      (f.truncatedMap (a := k) k (by simp)).bchGroupMap (D.levelTransport k hD x y) := by
+  obtain ⟨p⟩ := D.exists_level_path k x y
+  rw [levelTransport_eq_levelPathProduct _ (hD.map D f hf)
+      ((D.mapPathPrefunctor f hf k).mapPath p),
+    D.levelTransport_eq_levelPathProduct hD p, levelPathProduct_mapPathPrefunctor]
+
+/-- Completed endpoint transport commutes with the completed coefficient map. -/
+@[simp]
+theorem transport_map (hD : D.Consistent) (x y : D.Point) :
+    (D.map f hf).transport (hD.map D f hf)
+        ((D.pathMap f hf).obj x) ((D.pathMap f hf).obj y) =
+      f.completedMap (D.transport hD x y) := by
+  obtain ⟨p⟩ := D.exists_path x y
+  rw [transport_eq_pathProduct _ (hD.map D f hf) ((D.pathMap f hf).mapPath p),
+    D.transport_eq_pathProduct hD p, pathProduct_pathMap]
 
 omit D in
 /-- Mapping coefficients sends an outgoing completion to an outgoing completion
