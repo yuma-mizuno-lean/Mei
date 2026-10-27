@@ -91,10 +91,11 @@ theorem exists_subordinate_filling_grid (C : FinitePolyhedralComplex h)
       exact ⟨r, hr, Or.inl hword⟩
   choose r hr hmodel using hlocal
   -- A Lebesgue number selects one model per grid cell, with room to perturb.
-  obtain ⟨n, t, hn, ht0, hmono, ht1, ε, hε, hgrid⟩ :=
+  obtain ⟨n, t, hn, ht0, hmono, ht1, -, ε, hε, hgrid⟩ :=
     f.exists_grid_subdivision_convexHull
     (fun θ : S => Metric.ball θ.val (r θ)) (fun _ => Metric.isOpen_ball)
     (fun x => ⟨⟨f x, mem_range_self x⟩, Metric.mem_ball_self (hr ⟨f x, mem_range_self x⟩)⟩)
+      ∅ countable_empty (notMem_empty _) (notMem_empty _)
   refine ⟨n, t, hn, ht0, hmono, ht1, ε, hε, fun a b => ?_⟩
   obtain ⟨θ, hpatch, hperturb⟩ := hgrid a b
   exact ⟨θ.val, θ.property, r θ, hr θ, hpatch, hperturb, hmodel θ⟩
