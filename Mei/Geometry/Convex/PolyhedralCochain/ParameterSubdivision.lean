@@ -5,14 +5,15 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.Convex.PolyhedralCochain.Crossing
+public import Mei.Geometry.Convex.PolyhedralCochain.Pairing
 public import Mei.Geometry.Convex.Polyhedron.SegmentSubdivision
 public import Mathlib.Analysis.Convex.Between
+public import Mathlib.Combinatorics.Quiver.Path.Weight
 
 /-!
 # Subdivision of one-dimensional intersection tests
 
-Splitting a transverse segment at a point outside a wall preserves its intersection
+Splitting a segment at a point outside a wall preserves its intersection
 index and hence its coefficient-valued pairing. The new parameter face must miss the
 wall: otherwise the two closed subsegments would count the same intersection twice.
 The conclusion allows stationary segments missing the wall, real offsets, unbounded
@@ -25,9 +26,9 @@ Path subdivision uses the existing `Quiver.Path.IsSubdivision` relation.
 -/
 
 /-
-The proof uses `OrientedCell.IsTransverse.subsingleton_convexHull_inter_affineSpan`
-to isolate the intersection, Mathlib's `openSegment_subset_union` and betweenness
-transitivity to partition the parameter interval, and `Module.Ray.evalSign_smul`
+The proof uses cell convexity and Mathlib's betweenness transitivity to keep
+intersections on at most one side of the split vertex, `openSegment_subset_union`
+to partition the parameter interval, and `Module.Ray.evalSign_smul`
 for the orientation under positive parameter rescaling.
 -/
 
@@ -42,38 +43,11 @@ namespace Mei.OrientedCell
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
 
-/-- Restricting a transverse segment to a nontrivial parameter interval preserves
-transversality. The parameters may occur in either order, and disjoint stationary
-tests are allowed. -/
-theorem IsTransverse.subsegment {σ : OrientedCell h 1} {x y a b : V}
-    (hv : σ.IsTransverse ![x, y]) {s u : ℝ}
-    (hs : s ∈ Icc (0 : ℝ) 1) (hu : u ∈ Icc (0 : ℝ) 1) (hsu : s ≠ u)
-    (ha : a = AffineMap.lineMap x y s) (hb : b = AffineMap.lineMap x y u) :
-    σ.IsTransverse ![a, b] := by
-  have hseg : segment ℝ a b ⊆ segment ℝ x y := by
-    apply (convex_segment x y).segment_subset
-    · rw [ha, segment_eq_image_lineMap]
-      exact ⟨s, hs, rfl⟩
-    · rw [hb, segment_eq_image_lineMap]
-      exact ⟨u, hu, rfl⟩
-  have hhull : convexHull ℝ (range ![a, b]) ⊆ convexHull ℝ (range ![x, y]) := by
-    simpa only [Matrix.range_cons_cons_empty, convexHull_pair] using hseg
-  have hdiff : b - a = (u - s) • (y - x) := by
-    rw [ha, hb, AffineMap.lineMap_apply_module', AffineMap.lineMap_apply_module']
-    module
-  refine ⟨hv.disjoint_intrinsicFrontier.mono_left hhull, fun hm => ?_⟩
-  have hlin := hv.linearIndependent (hm.mono (inter_subset_inter_left _ hhull))
-  rw [linearIndependent_unique_iff] at hlin ⊢
-  simp only [Function.comp_apply, Fin.default_eq_zero, Fin.succ_zero_eq_one,
-    Matrix.cons_val_one, Matrix.cons_val_zero] at hlin ⊢
-  rw [hdiff, map_smul, smul_ne_zero_iff]
-  exact ⟨sub_ne_zero.mpr hsu.symm, hlin⟩
-
 /-- Inserting an interior parameter vertex outside the cell adds the two
 subsegment intersection indices. The original segment may be degenerate if it
-misses the cell. No nondegeneracy condition is imposed on disjoint tests. -/
+misses the cell. No transversality condition is imposed. -/
 theorem intersectionIndex_subdivide (σ : OrientedCell h 1) {x y z : V} {t : ℝ}
-    (hv : σ.IsTransverse ![x, y]) (ht : t ∈ Ioo (0 : ℝ) 1)
+    (ht : t ∈ Ioo (0 : ℝ) 1)
     (hz : z = AffineMap.lineMap x y t) (hzσ : z ∉ σ.carrier) :
     σ.intersectionIndex ![x, y] =
       σ.intersectionIndex ![x, z] + σ.intersectionIndex ![z, y] := by
@@ -107,22 +81,17 @@ theorem intersectionIndex_subdivide (σ : OrientedCell h 1) {x y z : V} {t : ℝ
     · rintro (⟨p, hp, hpσ⟩ | ⟨p, hp, hpσ⟩)
       · exact ⟨p, hleft hp, hpσ⟩
       · exact ⟨p, hright hp, hpσ⟩
-  -- Uniqueness of the transverse intersection prevents counting it on both sides.
+  -- If both sides meet the convex cell, the split vertex lies in the cell too.
   have hexclusive : ¬((segment ℝ x z ∩ σ.carrier).Nonempty ∧
       (segment ℝ z y ∩ σ.carrier).Nonempty) := by
     rintro ⟨⟨p, hp, hpσ⟩, ⟨q, hq, hqσ⟩⟩
-    have hm : (convexHull ℝ (range ![x, y]) ∩ σ.carrier).Nonempty := by
-      rw [Matrix.range_cons_cons_empty, convexHull_pair]
-      exact ⟨p, hleft hp, hpσ⟩
-    have hsub := hv.subsingleton_convexHull_inter_affineSpan hm
-    rw [Matrix.range_cons_cons_empty, convexHull_pair] at hsub
-    have hpq := hsub ⟨hleft hp, subset_affineSpan ℝ _ hpσ⟩
-      ⟨hright hq, subset_affineSpan ℝ _ hqσ⟩
-    subst q
-    have hpz : p = z :=
-      ((wbtw_swap_left_iff ℝ y).mp ⟨(mem_segment_iff_wbtw.mp hzseg).trans_left_right
-        (mem_segment_iff_wbtw.mp hp), mem_segment_iff_wbtw.mp hq⟩)
-    exact hzσ (hpz ▸ hpσ)
+    have hzp : Wbtw ℝ p z y :=
+      (mem_segment_iff_wbtw.mp hzseg).trans_left_right (mem_segment_iff_wbtw.mp hp)
+    have hzpq : z ∈ segment ℝ p q :=
+      mem_segment_iff_wbtw.mpr (hzp.trans_right_left (mem_segment_iff_wbtw.mp hq))
+    obtain ⟨P, hP⟩ := isRationalNormalPolyhedron_iff.mp σ.rational
+    have hconv : Convex ℝ σ.carrier := hP ▸ P.convex
+    exact hzσ (hconv.segment_subset hpσ hqσ hzpq)
   -- Both parameter changes have positive slope, so their orientation signs agree.
   have hsignleft : σ.orientation.evalSign (fun _ : Fin 1 => z - x) =
       σ.orientation.evalSign (fun _ : Fin 1 => y - x) := by
@@ -145,9 +114,8 @@ variable {R E : Type*} [Ring R] [AddCommGroup E] [Module R E]
 
 /-- Subdividing a segment at a point outside every cell with nonzero coefficient
 preserves its pairing with a finite presentation. Cells with zero coefficient
-impose no transversality or avoidance conditions. -/
+impose no avoidance conditions. No transversality condition is needed. -/
 theorem intersectionPairing_subdivide (f : OrientedCell h 1 →₀ E) {x y z : V} {t : ℝ}
-    (hv : ∀ σ ∈ f.support, σ.IsTransverse ![x, y])
     (ht : t ∈ Ioo (0 : ℝ) 1) (hz : z = AffineMap.lineMap x y t)
     (hzf : ∀ σ ∈ f.support, z ∉ σ.carrier) :
     intersectionPairing (R := R) ![x, y] f =
@@ -155,7 +123,7 @@ theorem intersectionPairing_subdivide (f : OrientedCell h 1 →₀ E) {x y z : V
   simp only [intersectionPairing_apply, Finsupp.sum, ← Finset.sum_add_distrib]
   apply Finset.sum_congr rfl
   intro σ hσ
-  rw [σ.intersectionIndex_subdivide (hv σ hσ) ht hz (hzf σ hσ), add_zsmul]
+  rw [σ.intersectionIndex_subdivide ht hz (hzf σ hσ), add_zsmul]
 
 end Mei.OrientedCell
 
@@ -183,13 +151,10 @@ theorem IsSubdivision.addWeightOfEPs_intersectionPairing_eq
     simp only [addWeightOfEPs_comp, Quiver.Hom.toPath, addWeightOfEPs_cons,
       addWeightOfEPs_nil, zero_add]
     symm
-    refine OrientedCell.intersectionPairing_subdivide f ?_ ht hz ?_
-    · intro τ hτ
-      obtain ⟨j, rfl⟩ := hf τ hτ
-      exact e.down.isTransverse_orientedCell j
-    · intro τ hτ
-      obtain ⟨j, rfl⟩ := hf τ hτ
-      exact c.notMem j
+    refine OrientedCell.intersectionPairing_subdivide f ht hz ?_
+    intro τ hτ
+    obtain ⟨j, rfl⟩ := hf τ hτ
+    exact c.notMem j
   | comp hp hq ihp ihq => simp only [addWeightOfEPs_comp, ihp, ihq]
   | trans hpq hqr ihpq ihqr => exact ihqr.trans ihpq
 
