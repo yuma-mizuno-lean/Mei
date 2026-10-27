@@ -84,6 +84,28 @@ theorem levelChamber_eq_of_mem_interior_adapted {k l : ℕ} (hkl : k ≤ l)
   apply (D.levelChamber_eq_iff x y).mpr
   exact hconn.subset_connectedComponent ⟨⟨y.val, hy⟩, rfl⟩ ⟨⟨x.val, hx⟩, rfl⟩
 
+/-- Two points in the interior of one adapted full cell are joined by an
+admissible segment with identity transport. No consistency is required. -/
+theorem exists_segment_levelPathProduct_eq_one_of_mem_interior_adapted {k : ℕ}
+    {P : Set V} (hP : P ∈ (D.adaptedComplex k).cellsOfCodimension 0)
+    (x y : WallComplement (fun j : D.active k => (D.wall j).support))
+    (hx : x.val ∈ interior P) (hy : y.val ∈ interior P) :
+    ∃ e : x ⟶ y, D.levelPathProduct k e.toPath = 1 := by
+  have hconv := ((D.adaptedComplex k).isConvexPolyhedron
+    ((D.adaptedComplex k).mem_cellsOfCodimension 0 P |>.mp hP).1).convex.interior
+  have he : WallComplement.crossings x y = ∅ := by
+    apply Set.eq_empty_iff_forall_notMem.mpr
+    rintro ⟨j, a⟩ ha
+    obtain ⟨ha, hj⟩ := (WallComplement.mem_crossings x y j a).mp ha
+    exact D.notMem_support_of_mem_interior_adapted le_rfl hP
+      (hconv.lineMap_mem hx hy ha) j hj
+  let e : x ⟶ y := ⟨WallComplement.AdmissibleSegment.of_crossings_eq_empty
+    (fun j => (D.wall j).isConvexPolyhedron.isClosed) he⟩
+  refine ⟨e, ?_⟩
+  rw [D.levelPathProduct_eq_wallPathProduct k _ (D.activeLabels_commute k),
+    Quiver.Path.wallPathProduct_toPath]
+  exact WallComplement.segmentPathProduct_eq_one_of_crossings_eq_empty _ _ _ e he
+
 /-- Lower-order consistent transport has normalized lifts on the finite full
 cells of the higher-order adapted complex. The projection formula holds for
 every interior point, not just a selected representative. -/
