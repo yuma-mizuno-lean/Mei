@@ -8,6 +8,8 @@ module
 public import Mei.Geometry.Convex.PolyhedralCochain.Stokes.Facet
 public import Mei.Geometry.Convex.PolyhedralCochain.Meridian
 
+import Mathlib.Algebra.Order.Field.Pi
+
 /-!
 # Stokes for wall presentations near a joint
 
@@ -93,21 +95,12 @@ theorem exists_ball_intersectionPairing_coboundaryPresentation_eq_sum_succAbove
   classical
   choose r hr hstokes using fun σ : f.support =>
     σ.val.exists_ball_stokes_at_joint C (hf σ.val σ.property) hJ hp
-  -- Adjoin one so that the empty presentation also has a positive radius.
-  let S : Finset ℝ := insert 1 (Finset.univ.image r)
-  have hS : S.Nonempty := Finset.insert_nonempty _ _
-  have hpos : 0 < S.min' hS := by
-    apply (Finset.lt_min'_iff _ _).mpr
-    intro a ha
-    rcases Finset.mem_insert.mp ha with rfl | ha
-    · norm_num
-    · obtain ⟨σ, _, rfl⟩ := Finset.mem_image.mp ha
-      exact hr σ
-  refine ⟨S.min' hS, hpos, fun s hps hT hs hv => ?_⟩
+  obtain ⟨ε, hε, hεr⟩ := Pi.exists_forall_pos_add_lt (x := fun _ : f.support => (0 : ℝ)) hr
+  simp only [zero_add] at hεr
+  refine ⟨ε, hε, fun s hps hT hs hv => ?_⟩
   have he (σ : OrientedCell h 1) (hσ : σ ∈ f.support) :=
     hstokes ⟨σ, hσ⟩ s hps hT
-      (hs.trans (Metric.ball_subset_ball (Finset.min'_le S _
-        (Finset.mem_insert_of_mem (Finset.mem_image.mpr ⟨⟨σ, hσ⟩, Finset.mem_univ _, rfl⟩)))))
+      (hs.trans (Metric.ball_subset_ball (hεr ⟨σ, hσ⟩).le))
       (hv σ hσ)
   conv_lhs => rw [← Finsupp.sum_single f]
   simp only [Finsupp.sum, map_sum, coboundaryPresentation_single,
@@ -123,8 +116,9 @@ theorem exists_ball_intersectionPairing_coboundaryPresentation_eq_sum_succAbove
 
 /-- On a sufficiently small isolating triangle, the alternating edge pairing
 of a wall presentation equals precisely its signed facet incidences on the
-chosen joint. The signed boundary is transverse to that triangle, so its
-pairing also respects equality of cochains. -/
+chosen joint. The signed boundary is transverse to that triangle, so replacing
+it by another representative transverse to the same triangle preserves its
+pairing. -/
 theorem exists_ball_sum_incident_eq_sum_succAbove
     (C : FinitePolyhedralComplex h) (f : OrientedCell h 1 →₀ E)
     (hf : ∀ σ ∈ f.support, σ.carrier ∈ C.cells)
