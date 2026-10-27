@@ -112,6 +112,21 @@ theorem coboundaryPresentation_single (σ : OrientedCell h k) (c : E) :
   simp only [coboundaryPresentation, Finsupp.lsum_single, LinearMap.sum_apply,
     Finsupp.lsingle_apply]
 
+open Classical in
+/-- Every cell with nonzero coefficient in a signed boundary presentation is
+an actual boundary facet of a cell with nonzero source coefficient. -/
+theorem support_coboundaryPresentation_subset (f : OrientedCell h k →₀ E) :
+    (coboundaryPresentation (R := R) f).support ⊆
+      f.support.biUnion OrientedCell.boundaryFacets := by
+  classical
+  intro τ hτ
+  rw [← Finsupp.sum_single f] at hτ
+  simp only [Finsupp.sum, map_sum, coboundaryPresentation_single] at hτ
+  obtain ⟨σ, hσ, hτ⟩ := Finsupp.mem_support_finsetSum τ hτ
+  obtain ⟨υ, hυ, hτ⟩ := Finsupp.mem_support_finsetSum τ hτ
+  obtain ⟨rfl, _⟩ := (Finsupp.mem_support_single _ _ _).mp hτ
+  exact Finset.mem_biUnion.mpr ⟨σ, hσ, hυ⟩
+
 /-- The presentation-level signed facet sum represents the coboundary of the source
 presentation. -/
 @[simp]
