@@ -8,22 +8,29 @@ module
 public import Mei.Geometry.Convex.PolyhedralCochain.Stokes.Endpoint
 public import Mei.Geometry.Convex.PolyhedralCochain.ParameterSubdivision
 public import Mei.Geometry.Convex.PolyhedralCochain.Crossing
-import Mei.Topology.UnitInterval
+import Mei.Topology.Order.LocalRelation
+import Mathlib.Topology.Algebra.Module.Cardinality
 
 /-!
-# Endpoint Stokes along polygonal paths
+# Endpoint Stokes along admissible polygonal paths
 
-Pairing the signed boundary of a finite full-dimensional polyhedral potential
-along an admissible polygonal path gives the value at its target minus the
-value at its source. The wall family must include the boundary facets of the
-chosen potential presentation. Extra walls, repeated supports, unbounded cells
-and lineality are allowed, and the coefficient ring may be noncommutative.
+The pairing of the complete signed boundary of a finite full-dimensional
+potential along an admissible polygonal path is its target point evaluation
+minus its source point evaluation. In particular, the boundary has zero pairing
+around every admissible loop. The wall family must contain every participating
+facet; it may be infinite and may contain additional walls and repeated supports.
 
-The segment formula extends
-`PolyhedralCochain.exists_ball_intersectionPairing_coboundaryPresentation_eq_sub`,
-using `OrientedCell.intersectionPairing_subdivide`. The transport formula applies
-to any wall cochain equal to this boundary in the cochain quotient. It uses
-`PolyhedralCochain.intersectionPairing_eq_of_ofFinsupp_eq` and
+The result combines the local endpoint formula
+`PolyhedralCochain.exists_ball_intersectionPairing_coboundaryPresentation_eq_sub`
+with `OrientedCell.intersectionPairing_subdivide`. Restricting admissibility with
+`WallComplement.restrictPrefunctor` to one wall per participating facet makes the
+crossing parameters finite (`AdmissibleSegment.finite_crossings`). This gives a
+dense set of allowed cut parameters, to which `Dense.rel_of_locally` applies.
+Coefficients may have torsion and lie in a module over any associative ring.
+
+The transport formula `Quiver.Path.wallCrossingSum_eq_sub_of_eq_coboundary`
+applies to any wall cochain equal to this boundary in the cochain quotient. It
+uses `PolyhedralCochain.intersectionPairing_eq_of_ofFinsupp_eq` and
 `Quiver.Path.addWeightOfEPs_intersectionPairing_eq_neg_wallCrossingSum`, so
 subdivision and orientation relations are retained.
 -/
@@ -36,147 +43,129 @@ open Set Mei.Convex WallComplement
 
 namespace Mei.PolyhedralCochain
 
-variable {N V R E ι : Type*} [AddCommGroup N]
-  [NormedAddCommGroup V] [NormedSpace ℝ V]
+variable {N V R E ι : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
-  [Ring R] [AddCommGroup E] [Module R E] [Finite ι]
-  {W : ι → Set V} (f : OrientedCell h 0 →₀ E)
-  (hfacets : ∀ σ ∈ f.support, ∀ τ ∈ σ.boundaryFacets, ∃ j, W j = τ.carrier)
+  [Ring R] [AddCommGroup E] [Module R E]
+  {W : ι → Set V}
 
-include hfacets
-
-private theorem exists_endpoint_stokes_partition
-    {x y : WallComplement W} (e : AdmissibleSegment x y) :
-    ∃ t : ℕ → unitInterval, t 0 = 0 ∧ Monotone t ∧
-      (∃ m, ∀ n ≥ m, t n = 1) ∧
-      (∀ n, ∀ σ ∈ f.support, ∀ τ ∈ σ.boundaryFacets,
-        AffineMap.lineMap x.val y.val (t n : ℝ) ∉ τ.carrier) ∧
-      ∀ n, OrientedCell.intersectionPairing (R := R)
-        ![AffineMap.lineMap x.val y.val (t n : ℝ),
-          AffineMap.lineMap x.val y.val (t (n + 1) : ℝ)]
-        (coboundaryPresentation (R := R) f) =
-          OrientedCell.intersectionPairing (R := R)
-            ![AffineMap.lineMap x.val y.val (t (n + 1) : ℝ)] f -
-          OrientedCell.intersectionPairing (R := R)
-            ![AffineMap.lineMap x.val y.val (t n : ℝ)] f := by
-  classical
-  let a : unitInterval → V := fun u => AffineMap.lineMap x.val y.val (u : ℝ)
-  -- Pull the local Stokes neighborhoods back to the parameter interval.
-  have ha : Continuous a := AffineMap.lineMap_continuous.comp continuous_subtype_val
-  have hregular (u : unitInterval) (σ) (hσ : σ ∈ f.support) (τ)
-      (hτ : τ ∈ σ.boundaryFacets) : a u ∉ intrinsicFrontier ℝ τ.carrier := by
-    obtain ⟨j, hj⟩ := hfacets σ hσ τ hτ
-    intro hp
-    exact e.regular u u.property
-      (mem_singularSupport.mpr (Or.inl ⟨j, by rwa [hj]⟩))
-  choose ε hε hlocal using fun u : unitInterval =>
-    exists_ball_intersectionPairing_coboundaryPresentation_eq_sub (R := R)
-      f (a u) (hregular u)
-  let c : unitInterval → Set unitInterval := fun u => a ⁻¹' Metric.ball (a u) (ε u)
-  have hc : ∀ u, IsOpen (c u) := fun u => ha.isOpen_preimage _ Metric.isOpen_ball
-  have hcover : univ ⊆ ⋃ u, c u := by
-    intro u _
-    exact mem_iUnion.mpr ⟨u, Metric.mem_ball_self (hε u)⟩
-  -- Choose a mesh avoiding all crossing parameters, including coincident crossings.
-  let S := Prod.snd '' crossings x y
-  have hzero : 0 ∉ S := by
-    rintro ⟨⟨j, r⟩, hr, he⟩
-    have hr0 : r = 0 := he
-    exact x.notMem j (by
-      simpa only [hr0, AffineMap.lineMap_apply_zero] using ((mem_crossings x y j r).mp hr).2)
-  have hone : 1 ∉ S := by
-    rintro ⟨⟨j, r⟩, hr, he⟩
-    have hr1 : r = 1 := he
-    exact y.notMem j (by
-      simpa only [hr1, AffineMap.lineMap_apply_one] using ((mem_crossings x y j r).mp hr).2)
-  obtain ⟨t, ht0, htmono, ⟨m, hm⟩, htS, htc⟩ :=
-    exists_monotone_Icc_subset_open_cover_unitInterval_notMem hc hcover
-      (e.finite_crossings.image Prod.snd).countable hzero hone
-  have htmiss (n : ℕ) (j : ι) : a (t n) ∉ W j := by
-    intro hj
-    exact htS n ⟨(j, (t n : ℝ)), (mem_crossings x y j _).mpr ⟨(t n).property, hj⟩, rfl⟩
-  have hmiss (n : ℕ) (σ) (hσ : σ ∈ f.support) (τ) (hτ : τ ∈ σ.boundaryFacets) :
-      a (t n) ∉ τ.carrier := by
-    obtain ⟨j, hj⟩ := hfacets σ hσ τ hτ
-    rw [← hj]
-    exact htmiss n j
-  refine ⟨t, ht0, htmono, ⟨m, hm⟩, hmiss, fun n => ?_⟩
-  obtain ⟨u, hu⟩ := htc n
-  exact hlocal u _ (hu ⟨le_rfl, htmono (Nat.le_succ n)⟩)
-    _ (hu ⟨htmono (Nat.le_succ n), le_rfl⟩) (hmiss n) (hmiss (n + 1))
-
-/-- The pairing of a potential's complete signed boundary with an admissible
-segment is the difference of its endpoint evaluations. Every boundary facet
-of a nonzero source cell must occur in the finite wall family. No bound on
-segment length or transverse angle is imposed. -/
-theorem intersectionPairing_coboundaryPresentation_eq_sub
-    {x y : WallComplement W} (e : AdmissibleSegment x y) :
+/-- Pairing the signed boundary of a full-dimensional potential with an
+admissible segment gives its endpoint difference. Every participating facet
+must occur in the wall family, which need not be finite. No shortness condition
+is required. -/
+theorem intersectionPairing_coboundaryPresentation_eq_sub_of_admissible
+    (f : OrientedCell h 0 →₀ E)
+    (hf : ∀ P ∈ f.support, ∀ τ ∈ P.boundaryFacets, ∃ j, τ.carrier = W j)
+    {x y : WallComplement W} (e : x ⟶ y) :
     OrientedCell.intersectionPairing (R := R) ![x.val, y.val]
         (coboundaryPresentation (R := R) f) =
       OrientedCell.intersectionPairing (R := R) ![y.val] f -
         OrientedCell.intersectionPairing (R := R) ![x.val] f := by
   classical
-  let a : unitInterval → V := fun u => AffineMap.lineMap x.val y.val (u : ℝ)
-  obtain ⟨t, ht0, htmono, ⟨m, hm⟩, hmiss, hstep⟩ :=
-    exists_endpoint_stokes_partition (R := R) f hfacets e
   let g := coboundaryPresentation (R := R) f
-  have hgmiss (n : ℕ) (τ) (hτ : τ ∈ g.support) : a (t n) ∉ τ.carrier := by
-    obtain ⟨σ, hσ, hτ⟩ := Finset.mem_biUnion.mp
-      (support_coboundaryPresentation_subset f hτ)
-    exact hmiss n σ hσ τ hτ
-  have hself (n : ℕ) :
-      OrientedCell.intersectionPairing (R := R) ![a (t n), a (t n)] g = 0 := by
-    rw [OrientedCell.intersectionPairing_apply, Finsupp.sum]
-    apply Finset.sum_eq_zero
+  let φ := AffineMap.lineMap (k := ℝ) x.val y.val
+  -- Only the finitely many participating facets need to constrain cut vertices.
+  let J := Σ P : f.support, P.val.boundaryFacets
+  let j : J → ι := fun a => (hf a.1.val a.1.property a.2.val a.2.property).choose
+  have hcover : ∀ P ∈ f.support, ∀ τ ∈ P.boundaryFacets,
+      ∃ a : J, τ.carrier = W (j a) := by
+    intro P hP τ hτ
+    exact ⟨⟨⟨P, hP⟩, ⟨τ, hτ⟩⟩, (hf P hP τ hτ).choose_spec⟩
+  let r := restrictPrefunctor W j
+  -- Every cut outside the finite crossing set is an allowed subdivision vertex.
+  let B := Prod.snd '' crossings (r.obj x) (r.obj y)
+  have hB : B.Finite := (r.map e).down.finite_crossings.image Prod.snd
+  have hallowed (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1) (htB : t ∈ Bᶜ) (a : J) :
+      φ t ∉ W (j a) := by
+    intro hj
+    apply htB
+    refine ⟨(a, t), (mem_crossings (r.obj x) (r.obj y) a t).mpr ⟨ht, ?_⟩, rfl⟩
+    simpa only [r, restrictPrefunctor_obj_val, Function.comp_apply] using hj
+  have hfacets (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1) (htB : t ∈ Bᶜ) :
+      ∀ P ∈ f.support, ∀ τ ∈ P.boundaryFacets, φ t ∉ τ.carrier := by
+    intro P hP τ hτ
+    obtain ⟨j, hj⟩ := hcover P hP τ hτ
+    rw [hj]
+    exact hallowed t ht htB j
+  have hsupport : ∀ τ ∈ g.support, ∃ a : J, τ.carrier = W (j a) := by
+    dsimp only [g]
+    rw [← Finsupp.sum_single f]
+    simp only [Finsupp.sum, map_sum, coboundaryPresentation_single]
     intro τ hτ
-    rw [OrientedCell.intersectionIndex_of_disjoint, zero_smul]
-    rw [Matrix.range_cons_cons_empty, Set.insert_eq_of_mem (mem_singleton _),
-      convexHull_singleton, Set.disjoint_singleton_left]
-    exact hgmiss n τ hτ
-  -- Additivity of intersections at allowed vertices telescopes the local identities.
-  have hprefix (n : ℕ) :
-      OrientedCell.intersectionPairing (R := R) ![x.val, a (t n)] g =
-        OrientedCell.intersectionPairing (R := R) ![a (t n)] f -
-          OrientedCell.intersectionPairing (R := R) ![x.val] f := by
-    induction n with
-    | zero => simpa only [ht0, a, Set.Icc.coe_zero,
-        AffineMap.lineMap_apply_zero, sub_self] using hself 0
-    | succ n ih =>
-      have hle : (t n : ℝ) ≤ (t (n + 1) : ℝ) := htmono (Nat.le_succ n)
-      by_cases hz : t n = 0
-      · simpa only [hz, a, Set.Icc.coe_zero, AffineMap.lineMap_apply_zero]
-          using hstep n
-      by_cases he : t n = t (n + 1)
-      · simpa only [← he] using ih
-      have htpos : 0 < (t n : ℝ) := lt_of_le_of_ne (t n).property.1
-        (fun he => hz (Subtype.ext he.symm))
-      have hlt : (t n : ℝ) < (t (n + 1) : ℝ) :=
-        lt_of_le_of_ne hle (fun he' => he (Subtype.ext he'))
-      have hratio : (t n : ℝ) / (t (n + 1) : ℝ) ∈ Ioo (0 : ℝ) 1 :=
-        ⟨div_pos htpos (htpos.trans hlt), (div_lt_one (htpos.trans hlt)).mpr hlt⟩
-      have hsplit := OrientedCell.intersectionPairing_subdivide (R := R) g hratio
-        (z := a (t n)) (x := x.val) (y := a (t (n + 1)))
-        (by simp [a, AffineMap.lineMap_lineMap_right, (htpos.trans hlt).ne'])
-        (hgmiss n)
-      rw [hsplit, ih, hstep]
-      abel
-  simpa only [hm m le_rfl, a, Set.Icc.coe_one, AffineMap.lineMap_apply_one]
-    using hprefix m
+    obtain ⟨P, hP, hτ⟩ := Finsupp.mem_support_finsetSum τ hτ
+    obtain ⟨υ, hυ, hτ⟩ := Finsupp.mem_support_finsetSum τ hτ
+    obtain ⟨rfl, _⟩ := (Finsupp.mem_support_single _ _ _).mp hτ
+    exact hcover P hP τ hυ
+  have hends : (0 : ℝ) ∈ Bᶜ ∧ (1 : ℝ) ∈ Bᶜ := by
+    constructor
+    · rintro ⟨⟨a, t⟩, ht, he⟩
+      have hm := (mem_crossings (r.obj x) (r.obj y) a t).mp ht
+      have ht0 : t = 0 := he
+      exact (r.obj x).notMem a
+        (by simpa only [ht0, AffineMap.lineMap_apply_zero] using hm.2)
+    · rintro ⟨⟨a, t⟩, ht, he⟩
+      have hm := (mem_crossings (r.obj x) (r.obj y) a t).mp ht
+      have ht1 : t = 1 := he
+      exact (r.obj y).notMem a
+        (by simpa only [ht1, AffineMap.lineMap_apply_one] using hm.2)
+  -- Glue the local Stokes identities, composing only at allowed parameters.
+  have hglobal := (hB.countable.dense_compl ℝ).rel_of_locally zero_le_one hends.1 hends.2
+    (fun u v => OrientedCell.intersectionPairing (R := R) ![φ u, φ v] g =
+      OrientedCell.intersectionPairing (R := R) ![φ v] f -
+        OrientedCell.intersectionPairing (R := R) ![φ u] f) ?_ ?_
+  · simpa only [φ, AffineMap.lineMap_apply_zero, AffineMap.lineMap_apply_one] using hglobal
+  · intro u hu v hv w hw hus hvs hws huv hvw huvrel hvwrel
+    rcases huv.eq_or_lt with rfl | huv
+    · exact hvwrel
+    rcases hvw.eq_or_lt with rfl | hvw
+    · exact huvrel
+    have hwu : 0 < w - u := by linarith
+    have ht : (v - u) / (w - u) ∈ Ioo (0 : ℝ) 1 :=
+      ⟨div_pos (sub_pos.mpr huv) hwu, (div_lt_one hwu).mpr (by linarith)⟩
+    have hparam : AffineMap.lineMap u w ((v - u) / (w - u)) = v := by
+      rw [AffineMap.lineMap_apply_module', smul_eq_mul, div_mul_cancel₀ _ hwu.ne']
+      ring
+    have hvertex : φ v = AffineMap.lineMap (φ u) (φ w) ((v - u) / (w - u)) := by
+      rw [← AffineMap.apply_lineMap, hparam]
+    rw [OrientedCell.intersectionPairing_subdivide g ht hvertex
+      (fun τ hτ => by
+        obtain ⟨j, hj⟩ := hsupport τ hτ
+        rw [hj]
+        exact hallowed v hv hvs j), huvrel, hvwrel]
+    abel
+  · intro t ht
+    -- Regularity includes the excluded crossing parameters, so the local
+    -- identity can be applied across, rather than just between, crossings.
+    obtain ⟨ε, hε, he⟩ :=
+      exists_ball_intersectionPairing_coboundaryPresentation_eq_sub (R := R) f (φ t)
+        (by
+          intro P hP τ hτ
+          obtain ⟨j, hj⟩ := hf P hP τ hτ
+          rw [hj]
+          exact fun hfront => e.down.regular t ht
+            (mem_singularSupport.mpr (Or.inl ⟨j, hfront⟩)))
+    have hc : Continuous φ := by fun_prop
+    obtain ⟨δ, hδ, hnear⟩ := Metric.eventually_nhds_iff.mp
+      (hc.continuousAt.eventually (Metric.ball_mem_nhds (φ t) hε))
+    refine ⟨δ, hδ, fun u hu v hv hut hvt hus hvs _ => ?_⟩
+    exact he (φ u) (hnear (Metric.mem_ball.mp hut)) (φ v)
+      (hnear (Metric.mem_ball.mp hvt)) (hfacets u hu hus) (hfacets v hv hvs)
 
-/-- The signed boundary pairing along a polygonal path telescopes to the
-potential difference at its endpoints. Repeated vertices and constant paths
-are included. The finite wall family contains all participating facets. -/
+/-- The sum of boundary pairings along an admissible polygonal path is the
+endpoint difference of the potential. Thus it depends only on the endpoints,
+including for constant paths and loops. -/
 theorem addWeightOfEPs_intersectionPairing_coboundaryPresentation_eq_sub
+    (f : OrientedCell h 0 →₀ E)
+    (hf : ∀ P ∈ f.support, ∀ τ ∈ P.boundaryFacets, ∃ j, τ.carrier = W j)
     {x y : WallComplement W} (p : AdmissiblePLPath x y) :
     p.addWeightOfEPs (fun u v => OrientedCell.intersectionPairing (R := R)
-      ![u.val, v.val] (coboundaryPresentation (R := R) f)) =
-        OrientedCell.intersectionPairing (R := R) ![y.val] f -
-          OrientedCell.intersectionPairing (R := R) ![x.val] f := by
+        ![u.val, v.val] (coboundaryPresentation (R := R) f)) =
+      OrientedCell.intersectionPairing (R := R) ![y.val] f -
+        OrientedCell.intersectionPairing (R := R) ![x.val] f := by
   induction p with
   | nil => simp only [Quiver.Path.addWeightOfEPs_nil, sub_self]
   | cons p e ih =>
     rw [Quiver.Path.addWeightOfEPs_cons, ih,
-      intersectionPairing_coboundaryPresentation_eq_sub f hfacets e.down]
+      intersectionPairing_coboundaryPresentation_eq_sub_of_admissible f hf e]
     abel
 
 end Mei.PolyhedralCochain
@@ -202,8 +191,7 @@ theorem wallCrossingSum_eq_sub_of_eq_coboundary
     (hν : ∀ j, c j ≠ 0 → ∀ v, SignType.sign (ν j v) =
       (σ j).orientation.evalSign (fun _ : Fin 1 => v))
     (f : OrientedCell h 0 →₀ E)
-    (hfacets : ∀ υ ∈ f.support, ∀ τ ∈ υ.boundaryFacets,
-      ∃ j, (σ j).carrier = τ.carrier)
+    (hf : ∀ υ ∈ f.support, ∀ τ ∈ υ.boundaryFacets, ∃ j, τ.carrier = (σ j).carrier)
     (hboundary : ∑ j, PolyhedralCochain.mk (R := R) (σ j) (c j) =
       PolyhedralCochain.coboundaryOfFinsupp (R := R) f) :
     p.wallCrossingSum ν c =
@@ -221,8 +209,8 @@ theorem wallCrossingSum_eq_sub_of_eq_coboundary
         OrientedCell.intersectionPairing (R := R) ![b.val] f -
           OrientedCell.intersectionPairing (R := R) ![a.val] f := by
     rw [PolyhedralCochain.intersectionPairing_eq_of_ofFinsupp_eq hboundary']
-    · exact PolyhedralCochain.intersectionPairing_coboundaryPresentation_eq_sub
-        f hfacets e.down
+    · exact PolyhedralCochain.intersectionPairing_coboundaryPresentation_eq_sub_of_admissible
+        f hf e
     · intro τ hτ
       obtain ⟨j, _, hj⟩ := Finsupp.mem_support_finsetSum τ hτ
       obtain ⟨rfl, _⟩ := (Finsupp.mem_support_single _ _ _).mp hj
@@ -230,11 +218,11 @@ theorem wallCrossingSum_eq_sub_of_eq_coboundary
     · intro τ hτ
       obtain ⟨υ, hυ, hτ⟩ := Finset.mem_biUnion.mp
         (PolyhedralCochain.support_coboundaryPresentation_subset f hτ)
-      obtain ⟨j, hj⟩ := hfacets υ hυ τ hτ
+      obtain ⟨j, hj⟩ := hf υ hυ τ hτ
       have ht := e.down.isTransverse_orientedCell j
-      rcases ht with ⟨hf, hl⟩
-      rw [hj] at hf hl
-      exact ⟨hf, hl⟩
+      rcases ht with ⟨hfront, hl⟩
+      rw [← hj] at hfront hl
+      exact ⟨hfront, hl⟩
   have hpath : p.addWeightOfEPs (fun a b =>
       OrientedCell.intersectionPairing (R := R) ![a.val, b.val] g) =
         OrientedCell.intersectionPairing (R := R) ![y.val] f -

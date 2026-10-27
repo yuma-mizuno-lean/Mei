@@ -26,6 +26,9 @@ without imposing relations between distinct walls.
 
 The construction uses Mathlib's `Finset.sort`, `List.prod`, `FreeGroup.of` and
 `Quiver.Path`, together with the regular-wall uniqueness theorem for complexes.
+
+The sequence crossing-word formula is adapted from Codex,
+[Mei PR #325](https://github.com/yuma-mizuno-lean/Mei/pull/325).
 -/
 
 public section
@@ -269,5 +272,17 @@ theorem crossingWord_smul (p : AdmissiblePLPath x y) (ν : C.walls → V →ₗ[
   induction p with
   | nil => simp
   | cons p e ih => simp [ih, C.segmentCrossingWord_smul ν r hr]
+
+/-- The word along a sequence of edges is the inverse of the increasing-order
+product of the inverse edge words, so the first crossing is the rightmost factor. -/
+@[simp]
+theorem crossingWord_ofSeq
+    (x : ℕ → WallComplement (fun P : C.walls => (P : Set V)))
+    (e : ∀ j, x j ⟶ x (j + 1)) (n : ℕ) (ν : C.walls → V →ₗ[ℝ] ℝ) :
+    (ofSeq x e n).crossingWord ν =
+      (((List.range n).map fun j => (C.segmentCrossingWord ν (e j))⁻¹).prod)⁻¹ := by
+  induction n with
+  | zero => simp
+  | succ n ih => simp [ih, List.prod_range_succ]
 
 end Quiver.Path

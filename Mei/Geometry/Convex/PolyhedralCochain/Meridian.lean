@@ -75,15 +75,10 @@ theorem isTransverse_coboundaryPresentation (C : FinitePolyhedralComplex h)
     (ho : ∀ Q ∈ C.cellsOfCodimension (k + 1), Q ≠ J →
       Disjoint (convexHull ℝ (range s.points)) Q) :
     ∀ τ ∈ (coboundaryPresentation (R := R) f).support, τ.IsTransverse s.points := by
-  classical
-  rw [← Finsupp.sum_single f]
-  simp only [Finsupp.sum, map_sum, coboundaryPresentation_single]
   intro τ hτ
-  obtain ⟨σ, hσ, hτ⟩ := Finsupp.mem_support_finsetSum τ hτ
-  obtain ⟨υ, hυ, hτ⟩ := Finsupp.mem_support_finsetSum τ hτ
-  obtain ⟨rfl, _⟩ := (Finsupp.mem_support_single _ _ _).mp hτ
   exact τ.isTransverse_of_isolating_simplex C
-    (σ.mem_cellsOfCodimension_of_mem_boundaryFacets C (hfold σ hσ) hυ) s hc hf ho
+    (mem_cellsOfCodimension_of_mem_support_coboundaryPresentation (R := R) C f hfold hτ)
+    s hc hf ho
 
 /-- Pairing a signed boundary with an isolating test retains precisely the
 incidences on the isolated cell. The conormal signs are evaluated on

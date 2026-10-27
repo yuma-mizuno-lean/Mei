@@ -8,7 +8,7 @@ module
 public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Meridian
 public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Localization
 public import Mei.Geometry.Convex.PolyhedralCochain.Transverse.Basic
-public import Mei.Geometry.Convex.PolyhedralCochain.Separation
+public import Mei.Geometry.Convex.PolyhedralCochain.Map
 
 /-!
 # Joint obstruction cochains
@@ -18,6 +18,10 @@ loop product belongs to the successive Lie kernel. Summing these logarithms
 on the oriented joints of an adapted complex gives a finite obstruction
 cochain. Simultaneously reversing the joint orientations and the loops leaves
 this cochain unchanged.
+The characteristic comparison `jointObstructionCochain_eq_iff` checks equality
+with any kernel-valued cochain using the actual loop logarithms in the ambient
+truncated Lie algebra. Injectivity of coefficient maps on cochains ensures that
+this ambient comparison loses no information through subdivision relations.
 
 If initial walls are full hyperplanes and all other walls have pure logarithms
 of degree below `k + 1`, positive isolating triangular meridians can be chosen
@@ -79,6 +83,30 @@ theorem jointObstructionCochain_def (hσ : ∀ J, (σ J).carrier = (J : Set V))
       ∑ J, PolyhedralCochain.mk (σ J) (D.loopObstruction hk (γ J)) := by
   classical
   rfl
+
+/-- Equality with the central obstruction can be checked using the actual
+loop logarithms in the ambient truncated Lie algebra. In particular, taking
+`A` to be a coboundary reduces a kernel-valued obstruction identity to its
+ambient geometric comparison. -/
+theorem jointObstructionCochain_eq_iff (hσ : ∀ J, (σ J).carrier = (J : Set V))
+    (hk : D.LevelConsistent k)
+    (A : PolyhedralCochain R h (d.truncationMap ℒ (Nat.le_succ k)).ker 2) :
+    D.jointObstructionCochain σ x γ hσ hk = A ↔
+      let _ := Fintype.ofFinite (D.adaptedComplex (k + 1)).joints
+      (∑ J, PolyhedralCochain.mk (σ J)
+        (log (D.levelPathProduct (k + 1) (γ J)))) =
+          PolyhedralCochain.map (d.truncationMap ℒ (Nat.le_succ k)).ker.subtype A := by
+  classical
+  let := Fintype.ofFinite (D.adaptedComplex (k + 1)).joints
+  dsimp only
+  have hm : PolyhedralCochain.map (d.truncationMap ℒ (Nat.le_succ k)).ker.subtype
+      (D.jointObstructionCochain σ x γ hσ hk) =
+        ∑ J, PolyhedralCochain.mk (σ J) (log (D.levelPathProduct (k + 1) (γ J))) := by
+    simp only [jointObstructionCochain_def, map_sum, PolyhedralCochain.map_mk,
+      Submodule.subtype_apply, coe_loopObstruction]
+  rw [← hm]
+  exact (PolyhedralCochain.map_injective
+    (d.truncationMap ℒ (Nat.le_succ k)).ker.subtype Subtype.val_injective).eq_iff.symm
 
 /-- Reversing every joint orientation and its loop preserves the cochain. -/
 @[simp]
