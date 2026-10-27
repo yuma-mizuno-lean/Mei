@@ -7,7 +7,6 @@ module
 
 public import Mei.Algebra.MonoidAlgebra.Twisted.Basic
 public import Mathlib.RingTheory.GradedAlgebra.Basic
-import Mathlib.LinearAlgebra.LinearIndependent.Lemmas
 
 /-!
 # The exponent grading of a twisted monoid algebra
@@ -26,7 +25,9 @@ public section
 
 noncomputable section
 
-namespace TauCeti.TwistedMonoidAlgebra
+namespace Mei.TwistedMonoidAlgebra
+
+open TauCeti TauCeti.TwistedMonoidAlgebra
 
 section Semiring
 
@@ -56,12 +57,7 @@ instance instGradedMonoidGrade : SetLike.GradedMonoid (grade R α) where
     exact (grade R α (i + j)).smul_mem _
       ((grade R α (i + j)).smul_mem _ (of_mem_grade R α (i + j)))
 
-end Semiring
-
-variable {M : Type*} (R : Type*) [CommRing R] [AddMonoid M]
-  (α : Multiplicative M → Multiplicative M → Rˣ) [IsFactorSet α]
-
-/-- The monomial pieces give a direct-sum decomposition, also over the zero ring. -/
+/-- The monomial pieces give a direct-sum decomposition, also over the zero semiring. -/
 theorem isInternal_grade [DecidableEq M] : DirectSum.IsInternal (grade R α) := by
   let b := (basis R (Multiplicative M) α).reindex Multiplicative.toAdd
   have hg : grade R α = fun m => R ∙ b m := by
@@ -69,10 +65,26 @@ theorem isInternal_grade [DecidableEq M] : DirectSum.IsInternal (grade R α) := 
     simp only [grade, b, Module.Basis.reindex_apply, basis_apply]
     rfl
   rw [hg]
-  apply DirectSum.isInternal_submodule_of_iSupIndep_of_iSup_eq_top (R := R)
-    (A := fun m => R ∙ b m)
-  · exact b.linearIndependent.iSupIndep_span_singleton
-  · simpa only [Submodule.iSup_span, Set.iUnion_singleton_eq_range] using b.span_eq
+  let d := b.constr R fun m =>
+    DirectSum.lof R M (fun m => R ∙ b m) m
+      ⟨b m, Submodule.mem_span_singleton_self _⟩
+  have hl : DirectSum.coeLinearMap (fun m => R ∙ b m) ∘ₗ d = LinearMap.id := by
+    apply b.ext
+    intro m
+    simp [d]
+  have hr : d ∘ₗ DirectSum.coeLinearMap (fun m => R ∙ b m) = LinearMap.id := by
+    apply DirectSum.linearMap_ext
+    intro m
+    apply LinearMap.ext
+    intro x
+    obtain ⟨r, hx⟩ := Submodule.mem_span_singleton.mp x.property
+    have hx' : x = r • (⟨b m, Submodule.mem_span_singleton_self _⟩ : R ∙ b m) :=
+      Subtype.ext hx.symm
+    rw [hx']
+    simp only [LinearMap.comp_apply, DirectSum.coeLinearMap_lof,
+      map_smul, LinearMap.id_apply, d, Module.Basis.constr_basis]
+  let := DirectSum.Decomposition.ofLinearMap (fun m => R ∙ b m) d hl hr
+  exact DirectSum.Decomposition.isInternal _
 
 instance instGradedAlgebraGrade [DecidableEq M] : GradedAlgebra (grade R α) :=
   (isInternal_grade R α).gradedAlgebra
@@ -97,4 +109,6 @@ theorem coe_decompose_grade [DecidableEq M]
     · rw [DirectSum.decompose_of_mem_ne (grade R α) hx hjm]
       simp [← basis_apply, Ne.symm hjm]
 
-end TauCeti.TwistedMonoidAlgebra
+end Semiring
+
+end Mei.TwistedMonoidAlgebra

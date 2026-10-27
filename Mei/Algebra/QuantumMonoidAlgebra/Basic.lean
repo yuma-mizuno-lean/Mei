@@ -72,26 +72,27 @@ variable {R Γ : Type*} [CommRing R] [AddCommGroup Γ]
 
 /-- The quantum monomial with exponent `p`. -/
 def monomial (p : Γ) : QuantumMonoidAlgebra q β :=
-  TwistedMonoidAlgebra.of (Multiplicative.ofAdd p)
+  TauCeti.TwistedMonoidAlgebra.of (Multiplicative.ofAdd p)
 
 /-- The zero exponent is the multiplicative identity. -/
 @[simp]
-theorem monomial_zero : monomial q β 0 = 1 := TwistedMonoidAlgebra.of_one
+theorem monomial_zero : monomial q β 0 = 1 := TauCeti.TwistedMonoidAlgebra.of_one
 
 /-- Multiplication of quantum monomials adds exponents and inserts the form's scalar. -/
 @[simp]
 theorem monomial_mul (p r : Γ) :
     monomial q β p * monomial q β r =
       ((q ^ β p r : Rˣ) : R) • monomial q β (p + r) :=
-  TwistedMonoidAlgebra.of_mul_of _ _
+  TauCeti.TwistedMonoidAlgebra.of_mul_of _ _
 
 /-- Quantum monomials form a basis indexed by the original additive exponent group. -/
 def basis : Module.Basis Γ R (QuantumMonoidAlgebra q β) :=
-  (TwistedMonoidAlgebra.basis R (Multiplicative Γ) (factorSet q β)).reindex Multiplicative.toAdd
+  (TauCeti.TwistedMonoidAlgebra.basis R (Multiplicative Γ) (factorSet q β)).reindex
+    Multiplicative.toAdd
 
 @[simp]
 theorem basis_apply (p : Γ) : basis q β p = monomial q β p := by
-  simp only [basis, Module.Basis.reindex_apply, TwistedMonoidAlgebra.basis_apply, monomial]
+  simp only [basis, Module.Basis.reindex_apply, TauCeti.TwistedMonoidAlgebra.basis_apply, monomial]
   rfl
 
 /-- The homogeneous piece of exponent `p`. -/
@@ -129,11 +130,11 @@ theorem monomial_pow (hβ : β.IsAlt) (p : Γ) (n : ℕ) :
 /-- The untwisting equivalence for the zero form. -/
 def zeroFormEquiv : QuantumMonoidAlgebra q (0 : LinearMap.BilinForm ℤ Γ) ≃ₐ[R]
     AddMonoidAlgebra R Γ :=
-  (TwistedMonoidAlgebra.equivOfCoboundary
+  (TauCeti.TwistedMonoidAlgebra.equivOfCoboundary
     (1 : Multiplicative Γ → Multiplicative Γ → Rˣ)
     (factorSet q (0 : LinearMap.BilinForm ℤ Γ)) (fun _ => 1)
     (by intros; simp [factorSet])).trans
-    ((TwistedMonoidAlgebra.monoidAlgebraEquiv R (Multiplicative Γ)).trans
+    ((TauCeti.TwistedMonoidAlgebra.monoidAlgebraEquiv R (Multiplicative Γ)).trans
       (AddMonoidAlgebra.toMultiplicativeAlgEquiv R R Γ).symm)
 
 /-- Untwisting preserves the exponent and the coefficient of every monomial. -/

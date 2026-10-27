@@ -18,7 +18,9 @@ can find the additive inverses without unfolding that subalgebra.
 
 public section
 
-namespace TauCeti.TwistedMonoidAlgebra
+namespace Mei.TwistedMonoidAlgebra
+
+open TauCeti
 
 variable {R G : Type*} [CommRing R] [Monoid G]
   (α : G → G → Rˣ) [IsFactorSet α]
@@ -28,4 +30,4 @@ noncomputable instance instRing : Ring (twistedMonoidAlgebra R G α) :=
   Subalgebra.toRing (R := R) (A := Module.End R (G →₀ R))
     (twistedMonoidAlgebra R G α)
 
-end TauCeti.TwistedMonoidAlgebra
+end Mei.TwistedMonoidAlgebra
