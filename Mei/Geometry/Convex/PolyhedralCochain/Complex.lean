@@ -42,6 +42,18 @@ namespace Mei.OrientedCell
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i} {k : ℕ}
 
+/-- Every signed boundary facet of a cell of a complex is a cell of that
+complex of codimension one higher. -/
+theorem mem_cellsOfCodimension_of_mem_boundaryFacets (σ : OrientedCell h k)
+    (C : FinitePolyhedralComplex h) (hσ : σ.carrier ∈ C.cells)
+    {τ : OrientedCell h (k + 1)} (hτ : τ ∈ σ.boundaryFacets) :
+    τ.carrier ∈ C.cellsOfCodimension (k + 1) := by
+  obtain ⟨F, hF, hne, hdim, rfl⟩ := (σ.mem_boundaryFacets τ).mp hτ
+  apply (C.mem_cellsOfCodimension _ _).mpr
+  refine ⟨?_, (σ.boundaryFacet hF hne hdim).finrank_direction_add⟩
+  rw [boundaryFacet_carrier]
+  exact C.face_closed _ hσ _ (isPolyhedralFace_iff.mpr ⟨hne, hF⟩)
+
 private def subdivisionCell (σ : OrientedCell h k) (C : FinitePolyhedralComplex h)
     (P : {P : Set V // P ∈ C.cellsOfCodimension k ∧ P ⊆ σ.carrier}) :
     OrientedCell h k := by
