@@ -18,9 +18,11 @@ cells and lineality are allowed.
 
 The construction is linear in coefficients, changes sign under orientation reversal, and
 commutes with coefficient maps. `PolyhedralCochain.coboundaryOfFinsupp` applies this formula
-to finite presentations. This is the generator formula only: descent through subdivision
-relations, and the square-zero identity, require additional geometric cancellation results.
-In particular, no coboundary on the quotient of source presentations is defined here.
+to finite presentations, and `PolyhedralCochain.coboundaryPresentation` records the same
+signed facet sum as a finite presentation, so that it can be fed back into the formula.
+This is the generator formula only: descent through subdivision relations requires
+additional geometric cancellation results. In particular, no coboundary on the quotient of
+source presentations is defined here.
 
 The finite assembly uses `TauCeti.IsConvexPolyhedron.finite_exposed_sets`,
 `OrientedCell.boundaryFacet` and its reversal law, and Mathlib's `Finsupp.lsum`.
@@ -95,6 +97,41 @@ theorem map_coboundaryOfFinsupp (f : E →ₗ[R] E') (x : OrientedCell h k →�
   | zero => simp
   | add x y hx hy => simp only [map_add, hx, hy]
   | single σ c => simp
+
+/-- The signed facet sum of a finite presentation, retained as a finite presentation of
+codimension one higher. Every cell is replaced by its signed boundary facets, each carrying
+the cell's coefficient; repeated facets of different cells are added. -/
+def coboundaryPresentation :
+    (OrientedCell h k →₀ E) →ₗ[R] (OrientedCell h (k + 1) →₀ E) :=
+  Finsupp.lsum ℕ fun σ => ∑ τ ∈ σ.boundaryFacets, Finsupp.lsingle τ
+
+/-- A generator is sent to the formal sum of its signed boundary facets. -/
+@[simp]
+theorem coboundaryPresentation_single (σ : OrientedCell h k) (c : E) :
+    coboundaryPresentation (R := R) (Finsupp.single σ c) =
+      ∑ τ ∈ σ.boundaryFacets, Finsupp.single τ c := by
+  simp only [coboundaryPresentation, Finsupp.lsum_single, LinearMap.sum_apply,
+    Finsupp.lsingle_apply]
+
+/-- The presentation-level signed facet sum represents the coboundary of the source
+presentation. -/
+@[simp]
+theorem ofFinsupp_coboundaryPresentation (x : OrientedCell h k →₀ E) :
+    ofFinsupp (R := R) (coboundaryPresentation (R := R) x) = coboundaryOfFinsupp x := by
+  induction x using Finsupp.induction_linear with
+  | zero => simp
+  | add x y hx hy => simp only [map_add, hx, hy]
+  | single σ c => simp [OrientedCell.cellCoboundary_apply]
+
+/-- Coefficient maps commute with the presentation-level signed facet sum. -/
+@[simp]
+theorem mapRange_coboundaryPresentation (f : E →ₗ[R] E') (x : OrientedCell h k →₀ E) :
+    Finsupp.mapRange f f.map_zero (coboundaryPresentation (R := R) x) =
+      coboundaryPresentation (R := R) (Finsupp.mapRange f f.map_zero x) := by
+  induction x using Finsupp.induction_linear with
+  | zero => simp
+  | add x y hx hy => simp only [map_add, Finsupp.mapRange_add f.map_add, hx, hy]
+  | single σ c => simp [Finsupp.mapRange_finsetSum f]
 
 end PolyhedralCochain
 
