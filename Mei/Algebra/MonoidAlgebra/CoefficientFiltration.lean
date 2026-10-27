@@ -49,6 +49,22 @@ The coefficient monoid may contain degrees outside the generating monoid `P`. -/
 def coefficientIdeal (k : ℕ) : Ideal R[Q] :=
   Ideal.span (of' R Q '' {n : Q | n.val ∈ P ∧ (k : ℤ) ≤ δ n.val})
 
+/-- The coefficient ideal is the span of monomials in `P ∩ Q` of degree at least `k`. -/
+theorem coefficientIdeal_def (k : ℕ) :
+    P.coefficientIdeal (R := R) Q δ k =
+      Ideal.span (of' R Q '' {n : Q | n.val ∈ P ∧ (k : ℤ) ≤ δ n.val}) := (rfl)
+
+/-- An ideal contains the coefficient ideal exactly when it contains every generating monomial. -/
+theorem coefficientIdeal_le_iff (k : ℕ) (J : Ideal R[Q]) :
+    P.coefficientIdeal Q δ k ≤ J ↔
+      ∀ n : Q, n.val ∈ P → (k : ℤ) ≤ δ n.val → of' R Q n ∈ J := by
+  rw [coefficientIdeal_def, Ideal.span_le]
+  constructor
+  · intro h n hn hk
+    exact h (Set.mem_image_of_mem _ ⟨hn, hk⟩)
+  · rintro h _ ⟨n, ⟨hn, hk⟩, rfl⟩
+    exact h n hn hk
+
 /-- An element has order at least `k` precisely when each supported exponent
 is a translate in `Q` of an exponent in `P` of degree at least `k`. -/
 theorem mem_coefficientIdeal_iff (k : ℕ) (a : R[Q]) :
@@ -125,7 +141,7 @@ theorem coefficientFiltration_ideal (k : ℕ) :
 
 /-- On the generating monoid itself, if the degree is nonnegative there,
 coefficient order is exactly the degree bound on every supported exponent. -/
-theorem mem_coefficientIdeal_positive_iff (hδ : ∀ n ∈ P, 0 ≤ δ n)
+theorem mem_coefficientIdeal_self_iff_of_nonneg (hδ : ∀ n ∈ P, 0 ≤ δ n)
     (k : ℕ) (a : R[P]) :
     a ∈ P.coefficientIdeal P δ k ↔
       ∀ q ∈ a.coeff.support, (k : ℤ) ≤ δ q.val := by
