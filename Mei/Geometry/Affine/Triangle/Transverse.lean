@@ -33,42 +33,43 @@ open Set Module
 
 namespace Mei
 
-variable {V : Type*} [AddCommGroup V] [Module ℝ V] [FiniteDimensional ℝ V]
+variable {K V : Type*} [Field K] [LinearOrder K] [IsStrictOrderedRing K]
+  [AddCommGroup V] [Module K V] [FiniteDimensional K V]
 
 /-- The exceptional apex positions for one fixed edge and one codimension-two
 obstacle lie in a proper affine subspace. Outside it the filled triangle misses
 the obstacle or has complementary direction. -/
 theorem exists_affineSubspace_triangle_filling_transverse (x y : V) (S : Set V)
-    (hdim : finrank ℝ (affineSpan ℝ S).direction + 2 = finrank ℝ V)
-    (hbase : Disjoint (segment ℝ x y) S) :
-    ∃ B : AffineSubspace ℝ V, B ≠ ⊤ ∧ ∀ z ∉ B,
-      Disjoint (convexHull ℝ {z, x, y}) S ∨
-        IsCompl (affineSpan ℝ S).direction (vectorSpan ℝ {z, x, y}) := by
-  by_cases hv : y - x ∈ (affineSpan ℝ S).direction
+    (hdim : finrank K (affineSpan K S).direction + 2 = finrank K V)
+    (hbase : Disjoint (segment K x y) S) :
+    ∃ B : AffineSubspace K V, B ≠ ⊤ ∧ ∀ z ∉ B,
+      Disjoint (convexHull K {z, x, y}) S ∨
+        IsCompl (affineSpan K S).direction (vectorSpan K {z, x, y}) := by
+  by_cases hv : y - x ∈ (affineSpan K S).direction
   · -- For a tangent edge, exclude the span of the obstacle and the edge.
-    let B := affineSpan ℝ (insert x S)
+    let B := affineSpan K (insert x S)
     have hB : B ≠ ⊤ := by
       simpa only [B, affineSpan_insert_affineSpan] using
-        (affineSpan ℝ S).affineSpan_insert_ne_top_of_finrank (by omega) x
-    have hx : x ∈ B := subset_affineSpan ℝ _ (mem_insert _ _)
-    have hdir : (affineSpan ℝ S).direction ≤ B.direction :=
-      AffineSubspace.direction_le (affineSpan_mono ℝ (subset_insert _ _))
+        (affineSpan K S).affineSpan_insert_ne_top_of_finrank (by omega) x
+    have hx : x ∈ B := subset_affineSpan K _ (mem_insert _ _)
+    have hdir : (affineSpan K S).direction ≤ B.direction :=
+      AffineSubspace.direction_le (affineSpan_mono K (subset_insert _ _))
     have hy : y ∈ B := by
       simpa only [vadd_eq_add, sub_add_cancel] using
         AffineSubspace.vadd_mem_of_mem_direction (hdir hv) hx
-    have hle : affineSpan ℝ ({x, y} ∪ S) ≤ B := by
+    have hle : affineSpan K ({x, y} ∪ S) ≤ B := by
       apply affineSpan_le.mpr
       rintro w (hw | hw)
       · rcases hw with rfl | hw
         · exact hx
         · exact (mem_singleton_iff.mp hw) ▸ hy
-      · exact subset_affineSpan ℝ _ (mem_insert_of_mem _ hw)
+      · exact subset_affineSpan K _ (mem_insert_of_mem _ hw)
     refine ⟨B, hB, fun z hz => Or.inl ?_⟩
-    have hb : Disjoint (convexHull ℝ {x, y}) S := by
+    have hb : Disjoint (convexHull K {x, y}) S := by
       simpa only [convexHull_pair] using hbase
     exact hb.convexHull_insert_of_notMem_affineSpan (fun hw => hz (hle hw))
   · -- Otherwise, one further vector outside this hyperplane completes the normal plane.
-    let B := AffineSubspace.mk' x ((affineSpan ℝ S).direction ⊔ ℝ ∙ (y - x))
+    let B := AffineSubspace.mk' x ((affineSpan K S).direction ⊔ K ∙ (y - x))
     have hB : B ≠ ⊤ := by
       intro he
       have hd := Submodule.finrank_sup_span_singleton hv
@@ -77,10 +78,10 @@ theorem exists_affineSubspace_triangle_filling_transverse (x y : V) (S : Set V)
       rw [ht, finrank_top] at hd
       omega
     refine ⟨B, hB, fun z hz => Or.inr ?_⟩
-    have hw : z - x ∉ (affineSpan ℝ S).direction ⊔ ℝ ∙ (y - x) := by
+    have hw : z - x ∉ (affineSpan K S).direction ⊔ K ∙ (y - x) := by
       simpa only [B, AffineSubspace.mem_mk', vsub_eq_sub] using hz
-    have hspan : vectorSpan ℝ {z, x, y} = Submodule.span ℝ {y - x, z - x} := by
-      rw [vectorSpan_eq_span_vsub_set_right ℝ (by simp : x ∈ ({z, x, y} : Set V))]
+    have hspan : vectorSpan K {z, x, y} = Submodule.span K {y - x, z - x} := by
+      rw [vectorSpan_eq_span_vsub_set_right K (by simp : x ∈ ({z, x, y} : Set V))]
       simp [Submodule.span_insert, sup_comm]
     rw [hspan]
     exact Submodule.isCompl_span_pair_of_notMem _ hdim hv hw

@@ -21,9 +21,9 @@ This isolates the higher-codimension avoidance needed when decomposing a
 polygonal filling into local wall and joint contributions. A second choice theorem makes
 each filling plane complementary to every joint it meets, simultaneously with
 avoidance of the higher skeleton.
-The constructions apply `Mei.exists_mem_open_triangle_fillings_avoid` and
-`Mei.exists_mem_open_triangle_fillings_transverse` to the actual cell supports;
-the segments need not avoid their affine spans.
+The constructions use `Mei.exists_mem_open_triangle_fillings_avoid` for higher
+strata and `Mei.exists_affineSubspace_triangle_filling_transverse` for joint
+exceptions; the segments need not avoid their affine spans.
 -/
 
 public section
@@ -73,37 +73,24 @@ theorem exists_mem_open_triangle_fillings_transverse_joints
       ∀ a, ∀ J ∈ C.joints, (convexHull ℝ {z, x a, y a} ∩ J).Nonempty →
         IsCompl (affineSpan ℝ J).direction (vectorSpan ℝ {z, x a, y a}) := by
   have := h.finiteDimensional
-  let B : (ι × (C.codimensionAtLeast 3).cells) ⊕ μ → AffineSubspace ℝ V :=
-    Sum.elim (fun a => affineSpan ℝ ({x a.1, y a.1} ∪ (a.2 : Set V))) A
-  have hB : ∀ a, B a ≠ ⊤ := by
-    rintro (⟨a, Q⟩ | j)
-    · have he : affineSpan ℝ ({x a, y a} ∪ (Q : Set V)) =
-          affineSpan ℝ ({x a, y a} ∪ (affineSpan ℝ (Q : Set V) : Set V)) := by
-        simp only [AffineSubspace.span_union, AffineSubspace.affineSpan_coe]
-      dsimp only [B, Sum.elim_inl]
-      rw [he]
-      apply (affineSpan ℝ (Q : Set V)).affineSpan_pair_union_ne_top_of_finrank
-      have hd := ((C.mem_codimensionAtLeast_cells 3 Q).mp Q.property).2
-      omega
-    · exact hA j
-  obtain ⟨z, hzU, hzB, hz⟩ := Mei.exists_mem_open_triangle_fillings_transverse x y
-    (fun J : C.joints => (J : Set V))
-    (fun J => ((C.mem_cellsOfCodimension 2 J).mp J.property).2)
-    (fun a J => (hbase a).mono_right (fun w hw => mem_support.mpr
-      ⟨J, C.cellsOfCodimension_subset_codimensionAtLeast_cells 2 J.property, hw⟩))
-    B hB hU hne
-  refine ⟨z, hzU, fun j => hzB (.inr j), fun a => ?_, fun a J hJ hne => ?_⟩
-  · apply disjoint_left.mpr
-    rintro w hw hws
-    obtain ⟨Q, hQ, hwQ⟩ := mem_support.mp hws
-    have hQ₂ : Q ∈ (C.codimensionAtLeast 2).cells := by
-      obtain ⟨hQC, hd⟩ := (C.mem_codimensionAtLeast_cells 3 Q).mp hQ
-      exact (C.mem_codimensionAtLeast_cells 2 Q).mpr ⟨hQC, by omega⟩
-    have hb := (hbase a).mono_right (fun u hu => mem_support.mpr ⟨Q, hQ₂, hu⟩)
-    have hb' : Disjoint (convexHull ℝ {x a, y a}) Q := by
-      simpa only [convexHull_pair] using hb
-    have ht := hb'.convexHull_insert_of_notMem_affineSpan (hzB (.inl (a, ⟨Q, hQ⟩)))
-    exact disjoint_left.mp ht hw hwQ
-  · exact (hz a ⟨J, hJ⟩).resolve_left (not_disjoint_iff_nonempty_inter.mpr hne)
+  choose B hB htrans using fun aj : ι × C.joints =>
+    Mei.exists_affineSubspace_triangle_filling_transverse
+      (x aj.1) (y aj.1) (aj.2 : Set V)
+      ((C.mem_cellsOfCodimension 2 aj.2).mp aj.2.property).2
+      ((hbase aj.1).mono_right (fun w hw => mem_support.mpr
+        ⟨aj.2, C.cellsOfCodimension_subset_codimensionAtLeast_cells 2 aj.2.property, hw⟩))
+  obtain ⟨z, hzU, hz, havoid⟩ :=
+    C.exists_mem_open_triangle_fillings_disjoint_codimensionAtLeast_three x y
+      (fun a => (hbase a).mono_right (fun w hw => by
+        obtain ⟨Q, hQ, hwQ⟩ := mem_support.mp hw
+        exact mem_support.mpr
+          ⟨Q, C.codimensionAtLeast_cells_antitone (by decide : 2 ≤ 3) hQ, hwQ⟩))
+      (Sum.elim B A) (by
+        rintro (aj | j)
+        · exact hB aj
+        · exact hA j) hU hne
+  refine ⟨z, hzU, fun j => hz (.inr j), havoid, fun a J hJ hne => ?_⟩
+  exact (htrans (a, ⟨J, hJ⟩) z (hz (.inl (a, ⟨J, hJ⟩)))).resolve_left
+    (not_disjoint_iff_nonempty_inter.mpr hne)
 
 end Mei.FinitePolyhedralComplex
