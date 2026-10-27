@@ -5,7 +5,6 @@ Authors: Codex
 -/
 module
 
-public import Mei.Algebra.Module.Submodule.Union
 public import Mei.Geometry.Convex.PolyhedralCochain.Sweep.Homotopy
 
 /-!
@@ -38,22 +37,6 @@ namespace Mei.PolyhedralCochain
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
   {R E : Type*} [Ring R] [AddCommGroup E] [Module R E] {k : ℕ}
-
-/-- Every positive-codimension cochain is transverse to some integral direction.
-This is a property of the cochain class; no chosen presentation occurs in the
-conclusion. -/
-theorem exists_mem_transverseSubmodule (C : PolyhedralCochain R h E (k + 1)) :
-    ∃ n : N, C ∈ transverseSubmodule (i n) := by
-  classical
-  have := h.finiteDimensional
-  obtain ⟨f, rfl⟩ := ofFinsupp_surjective C
-  obtain ⟨n, hn⟩ := i.exists_forall_apply_notMem_of_span_eq_top h.span_range_eq_top
-    (fun σ : f.support => (affineSpan ℝ σ.val.carrier).direction) (fun σ he => by
-      have hd := σ.val.finrank_direction_add
-      rw [he, finrank_top] at hd
-      omega)
-  exact ⟨n, (mem_transverseSubmodule_iff_exists (i n) _).mpr
-    ⟨f, fun σ hσ => hn ⟨σ, hσ⟩, rfl⟩⟩
 
 /-- A closed positive-codimension cochain has a finite primitive presentation
 whose cells are all outgoing in one integral direction. This direction is chosen
