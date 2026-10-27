@@ -24,7 +24,7 @@ sign of face `l` in the simplicial boundary `∂τ = ∑ l, (-1) ^ l τ ∘ δ_l
 computation in a Stokes formula for intersection numbers with affine simplices.
 
 The face formula allows arbitrary commutative rings and modules; the two auxiliary vanishing
-and invariance lemmas also hold over commutative semirings.
+and invariance lemmas also hold over semirings.
 -/
 
 public section
@@ -35,37 +35,42 @@ namespace AlternatingMap
 
 section Semiring
 
-variable {R M N : Type*} [CommSemiring R] [AddCommMonoid M] [Module R M] [AddCommMonoid N]
+variable {R M N : Type*} [Semiring R] [AddCommMonoid M] [Module R M] [AddCommMonoid N]
   [Module R N] {n : ℕ}
 
 /-- An alternating map vanishes when the first argument lies in the span of the others. -/
 theorem map_vecCons_eq_zero_of_mem_span (f : M [⋀^Fin (n + 1)]→ₗ[R] N) {x : M}
     {v : Fin n → M} (hx : x ∈ span R (range v)) : f (Matrix.vecCons x v) = 0 := by
-  rw [← curryLeft_apply_apply]
   induction hx using Submodule.span_induction with
   | mem y hy =>
     obtain ⟨i, rfl⟩ := hy
-    rw [curryLeft_apply_apply]
     exact f.map_eq_zero_of_eq _ (by simp) (Fin.succ_ne_zero i).symm
-  | zero => simp
-  | add y z _ _ hy hz => simp [hy, hz]
-  | smul c y _ hy => simp [hy]
+  | zero => exact f.map_coord_zero 0 (by simp)
+  | add y z _ _ hy hz => simp [map_vecCons_add, hy, hz]
+  | smul c y _ hy => simp [map_vecCons_smul, hy]
 
 /-- Adding multiples of the first argument to the others does not change an alternating map. -/
 theorem map_vecCons_tail_add_smul_head (f : M [⋀^Fin (n + 1)]→ₗ[R] N) (x : M) (v : Fin n → M)
     (c : Fin n → R) : f (Matrix.vecCons x fun i => v i + c i • x) = f (Matrix.vecCons x v) := by
   classical
-  rw [← curryLeft_apply_apply, ← curryLeft_apply_apply]
-  have hsum : (fun i => v i + c i • x) = v + fun i => c i • x := rfl
-  rw [hsum, ← coe_multilinearMap, MultilinearMap.map_add_univ,
-    Finset.sum_eq_single_of_mem Finset.univ (Finset.mem_univ _)]
-  · rw [Finset.piecewise_univ]
-  · intro s _ hs
-    obtain ⟨i, hi⟩ : ∃ i, i ∉ s := by simpa [Finset.eq_univ_iff_forall] using hs
-    rw [← update_eq_self i (s.piecewise v fun i => c i • x),
-      Finset.piecewise_eq_of_notMem _ _ _ hi, coe_multilinearMap,
-      AlternatingMap.map_update_smul, curryLeft_apply_apply,
-      f.map_eq_zero_of_eq _ (by simp) (Fin.succ_ne_zero i).symm, smul_zero]
+  -- Add the multiples one coordinate at a time; each extra term repeats the head.
+  have h (s : Finset (Fin n)) :
+      f (Matrix.vecCons x (s.piecewise (fun i => v i + c i • x) v)) =
+        f (Matrix.vecCons x v) := by
+    induction s using Finset.induction_on with
+    | empty => simp
+    | @insert i s hi ih =>
+      -- `vecCons` is `Fin.cons`, so `Fin.cons_update` moves the update to index `i.succ`.
+      rw [Finset.piecewise_insert, Matrix.vecCons, Fin.cons_update, f.map_update_add,
+        f.map_update_smul]
+      have hz : f (update (Fin.cons x (s.piecewise (fun j => v j + c j • x) v))
+          i.succ x) = 0 :=
+        f.map_eq_zero_of_eq _
+          (by simp [Function.update_of_ne (Fin.succ_ne_zero i).symm]) (Fin.succ_ne_zero i)
+      rw [hz, smul_zero, add_zero, ← Fin.cons_update,
+        ← s.piecewise_eq_of_notMem (fun j => v j + c j • x) v hi, update_eq_self]
+      exact ih
+  simpa using h Finset.univ
 
 end Semiring
 
