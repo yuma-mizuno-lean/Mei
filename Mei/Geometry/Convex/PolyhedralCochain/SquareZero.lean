@@ -17,7 +17,7 @@ signed boundary facet of `τ`, is matched with the incidence `(υ, r.reverse)` t
 unique other facet `υ` containing the ridge `r`
 (`OrientedCell.existsUnique_reverse_mem_boundaryFacets`). The two contributions cancel by
 the reversal relation of polyhedral cochains. The more general
-`OrientedCell.sum_boundaryFacets_boundaryFacets_eq_zero` proves this cancellation for any
+`OrientedCell.sum_boundaryFacets_boundaryFacets_eq_zero` in the ridge module proves this for any
 abelian-group-valued function negated by orientation reversal. The matching is a
 fixed-point-free involution on iterated incidences, so the cancellation holds for every
 coefficient module, including modules with `2`-torsion. The involution argument is shared
@@ -45,19 +45,6 @@ variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ 
   {R E : Type*} [Ring R] [AddCommGroup E] [Module R E] {k : ℕ}
 
 namespace OrientedCell
-
-open Classical in
-/-- The iterated signed facet sum vanishes for every abelian-group-valued
-function that changes sign under orientation reversal. -/
-theorem sum_boundaryFacets_boundaryFacets_eq_zero (σ : OrientedCell h k)
-    {A : Type*} [AddCommGroup A] (f : OrientedCell h (k + 1 + 1) → A)
-    (hf : ∀ r, f r.reverse = -f r) :
-    (∑ τ ∈ σ.boundaryFacets, ∑ r ∈ τ.boundaryFacets, f r) = 0 := by
-  classical
-  exact σ.boundaryFacets.sum_sum_eq_zero_of_unique_partner
-    (fun τ => τ.boundaryFacets) reverse reverse_reverse
-    (fun _ hτ _ hr => σ.existsUnique_reverse_mem_boundaryFacets hτ hr)
-    f (fun r => by rw [hf, add_neg_cancel])
 
 /-- The signed facet sums of the signed boundary facets of a cell cancel: the polyhedral
 coboundary squares to zero on generators. -/
