@@ -49,12 +49,8 @@ variable {Γ Λ R L V ι κ : Type*} [AddCommGroup Γ] [AddCommGroup Λ]
 /-- Adjoin two indexed wall families, preserving repeated walls and their labels. -/
 def append : DirectedDiagram (d := d) h H (ι ⊕ κ) where
   wall := Sum.elim D.wall E.wall
-  finite_active k := by
-    apply (((D.finite_active k).image Sum.inl).union
-      ((E.finite_active k).image Sum.inr)).subset
-    rintro (j | j) hj
-    · exact Or.inl ⟨j, hj, rfl⟩
-    · exact Or.inr ⟨j, hj, rfl⟩
+  finite_active k :=
+    Set.finite_preimage_inl_and_inr.mp ⟨D.finite_active k, E.finite_active k⟩
 
 @[simp]
 theorem append_wall_inl (j : ι) : (D.append E).wall (.inl j) = D.wall j := (rfl)
