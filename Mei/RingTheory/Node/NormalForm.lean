@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import TauCeti.RingTheory.Node.Basic
-public import Mathlib.Algebra.MonoidAlgebra.Module
+public import Mathlib.Algebra.Polynomial.Laurent
 public import Mathlib.LinearAlgebra.Basis.Basic
 
 /-!
@@ -14,14 +14,14 @@ public import Mathlib.LinearAlgebra.Basis.Basic
 
 For any commutative ring `R` and `a : R`, the algebra `R[X,Y]/(XY-a)` has
 the basis `X^n` for `n ≥ 0` and `Y^(n+1)` for `n ≥ 0`. Its two maps to the
-Laurent algebra, given by `(X,Y) ↦ (z,az⁻¹)` and `(az⁻¹,z)`, are jointly
+Laurent polynomial ring `R[T;T⁻¹]`, given by `(X,Y) ↦ (T,aT⁻¹)` and `(aT⁻¹,T)`, are jointly
 injective even when `a` is zero or a zero divisor. Nonnegative Laurent
 coefficients in the first map and strictly positive coefficients in the second recover
 the normal form. These formulas allow coefficients to be lifted from either
 chamber of a slab without dividing by `a`.
 
 We use Tau Ceti's `NodeAlgebra` and its universal map `NodeAlgebra.lift`,
-and Mathlib's monoid-algebra coefficients and `Module.Basis.mk`.
+and Mathlib's `LaurentPolynomial`, monoid-algebra coefficients and `Module.Basis.mk`.
 The slab interpretation is that of Gross–Hacking–Siebert, *Theta functions on
 varieties with effective anti-canonical class*, Definitions 3.1–3.3,
 arXiv:1601.07081v4.
@@ -33,37 +33,37 @@ noncomputable section
 
 namespace Mei.NodeAlgebra
 
-open TauCeti TauCeti.NodeAlgebra AddMonoidAlgebra Module
+open TauCeti TauCeti.NodeAlgebra AddMonoidAlgebra LaurentPolynomial Module
 
 variable {R : Type*} [CommRing R] (a : R)
 
-/-- The Laurent chamber map sending `X` to `z` and `Y` to `a z⁻¹`. -/
-def leftLaurentMap : NodeAlgebra R a →ₐ[R] R[ℤ] :=
-  lift a (single 1 1) (single (-1) a) (by simp [coe_algebraMap])
+/-- The Laurent chamber map sending `X` to `T` and `Y` to `a T⁻¹`. -/
+def leftLaurentMap : NodeAlgebra R a →ₐ[R] R[T;T⁻¹] :=
+  lift a (T 1) (C a * T (-1)) (by simp [← C_eq_algebraMap])
 
-/-- The Laurent chamber map sending `X` to `a z⁻¹` and `Y` to `z`. -/
-def rightLaurentMap : NodeAlgebra R a →ₐ[R] R[ℤ] :=
-  lift a (single (-1) a) (single 1 1) (by simp [coe_algebraMap])
+/-- The Laurent chamber map sending `X` to `a T⁻¹` and `Y` to `T`. -/
+def rightLaurentMap : NodeAlgebra R a →ₐ[R] R[T;T⁻¹] :=
+  lift a (C a * T (-1)) (T 1) (by simp [← C_eq_algebraMap])
 
 @[simp]
 theorem leftLaurentMap_coord_zero :
-    leftLaurentMap a (coord a 0) = single 1 1 := by
-  simp [leftLaurentMap]
+    leftLaurentMap a (coord a 0) = T 1 :=
+  lift_coord_zero ..
 
 @[simp]
 theorem leftLaurentMap_coord_one :
-    leftLaurentMap a (coord a 1) = single (-1) a := by
-  simp [leftLaurentMap]
+    leftLaurentMap a (coord a 1) = C a * T (-1) :=
+  lift_coord_one ..
 
 @[simp]
 theorem rightLaurentMap_coord_zero :
-    rightLaurentMap a (coord a 0) = single (-1) a := by
-  simp [rightLaurentMap]
+    rightLaurentMap a (coord a 0) = C a * T (-1) :=
+  lift_coord_zero ..
 
 @[simp]
 theorem rightLaurentMap_coord_one :
-    rightLaurentMap a (coord a 1) = single 1 1 := by
-  simp [rightLaurentMap]
+    rightLaurentMap a (coord a 1) = T 1 :=
+  lift_coord_one ..
 
 private def normalMonomial : ℕ ⊕ ℕ → NodeAlgebra R a
   | .inl n => coord a 0 ^ n
@@ -72,20 +72,16 @@ private def normalMonomial : ℕ ⊕ ℕ → NodeAlgebra R a
 private theorem leftLaurentMap_normalMonomial (i : ℕ ⊕ ℕ) :
     leftLaurentMap a (normalMonomial a i) =
       match i with
-      | .inl n => single (n : ℤ) 1
-      | .inr n => single (-(n + 1 : ℤ)) (a ^ (n + 1)) := by
-  cases i <;> simp only [normalMonomial, map_pow, leftLaurentMap_coord_zero,
-    leftLaurentMap_coord_one, single_pow, one_pow, nsmul_eq_mul, mul_one,
-    mul_neg_one, Nat.cast_add, Nat.cast_one]
+      | .inl n => T n
+      | .inr n => C (a ^ (n + 1)) * T (-(n + 1 : ℤ)) := by
+  cases i <;> simp [normalMonomial, mul_pow]
 
 private theorem rightLaurentMap_normalMonomial (i : ℕ ⊕ ℕ) :
     rightLaurentMap a (normalMonomial a i) =
       match i with
-      | .inl n => single (-(n : ℤ)) (a ^ n)
-      | .inr n => single (n + 1 : ℤ) 1 := by
-  cases i <;> simp only [normalMonomial, map_pow, rightLaurentMap_coord_zero,
-    rightLaurentMap_coord_one, single_pow, one_pow, nsmul_eq_mul, mul_one,
-    mul_neg_one, Nat.cast_add, Nat.cast_one]
+      | .inl n => C (a ^ n) * T (-(n : ℤ))
+      | .inr n => T (n + 1 : ℤ) := by
+  cases i <;> simp [normalMonomial, mul_pow]
 
 private def normalCoeff (i : ℕ ⊕ ℕ) : NodeAlgebra R a →ₗ[R] R :=
   match i with
@@ -101,19 +97,15 @@ private theorem normalCoeff_normalMonomial (i j : ℕ ⊕ ℕ) :
     cases j with
     | inl m => simp [normalCoeff, leftLaurentMap_normalMonomial, eq_comm]
     | inr m =>
-      have h : -(m + 1 : ℤ) ≠ n := by omega
-      simp only [normalCoeff, LinearMap.comp_apply, AlgHom.toLinearMap_apply,
-        LinearEquiv.coe_coe, coeffLinearEquiv_apply, Finsupp.lapply_apply,
-        leftLaurentMap_normalMonomial, coeff_single, Finsupp.single_apply,
-        h, ite_false, Sum.inr_ne_inl]
+      simp [normalCoeff, leftLaurentMap_normalMonomial, -map_pow, ← single_eq_C_mul_T,
+        Finsupp.single_apply]
+      omega
   | inr n =>
     cases j with
     | inl m =>
-      have h : -(m : ℤ) ≠ (n + 1 : ℤ) := by omega
-      simp only [normalCoeff, LinearMap.comp_apply, AlgHom.toLinearMap_apply,
-        LinearEquiv.coe_coe, coeffLinearEquiv_apply, Finsupp.lapply_apply,
-        rightLaurentMap_normalMonomial, coeff_single, Finsupp.single_apply,
-        h, ite_false, Sum.inl_ne_inr]
+      simp [normalCoeff, rightLaurentMap_normalMonomial, -map_pow, ← single_eq_C_mul_T,
+        Finsupp.single_apply]
+      omega
     | inr m => simp [normalCoeff, rightLaurentMap_normalMonomial, eq_comm]
 
 private theorem linearIndependent_normalMonomial : LinearIndependent R (normalMonomial a) := by
@@ -198,13 +190,13 @@ private theorem normalFormBasis_repr_eq (z : NodeAlgebra R a) (i : ℕ ⊕ ℕ) 
     rw [hj, normalCoeff_normalMonomial]
     simp [Finsupp.single_apply]
 
-/-- The first chamber's coefficient of `z^n` recovers the coefficient of `X^n`. -/
+/-- The first chamber's coefficient of `T^n` recovers the coefficient of `X^n`. -/
 @[simp]
 theorem normalFormBasis_repr_inl (z : NodeAlgebra R a) (n : ℕ) :
     (normalFormBasis a).repr z (.inl n) = (leftLaurentMap a z).coeff (n : ℤ) := by
   simpa [normalCoeff] using normalFormBasis_repr_eq a z (.inl n)
 
-/-- The second chamber's coefficient of `z^(n+1)` recovers the coefficient
+/-- The second chamber's coefficient of `T^(n+1)` recovers the coefficient
 of `Y^(n+1)`. -/
 @[simp]
 theorem normalFormBasis_repr_inr (z : NodeAlgebra R a) (n : ℕ) :
