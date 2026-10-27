@@ -9,6 +9,7 @@ public import Mathlib.Analysis.Convex.Intrinsic
 public import Mathlib.LinearAlgebra.AffineSpace.AffineSubspace.Basic
 public import Mathlib.Topology.GDelta.Basic
 import Mathlib.Tactic.Linarith
+import Mathlib.Topology.LocallyConstant.Basic
 
 /-!
 # Relative interior points
@@ -21,6 +22,8 @@ A set is a neighbourhood of each of its relative interior points within its
 affine span: points of the span close to a relative interior point stay in the set.
 For a closed set, the relative boundary is nowhere dense in the affine span.
 For any set, membership is locally constant off the relative boundary within the affine span.
+Consequently a convex set meeting a set and missing its relative boundary meets its
+affine span only inside the set.
 Relative interiors are monotone for sets with equal affine spans. A direction with a positive
 component towards an interior point and an arbitrary component along a relative interior
 set enters the interior of a convex set. This uses Mathlib's
@@ -204,5 +207,23 @@ theorem eventually_add_smul_mem_interior_of_ker_le {P Q : Set V} (hQ : Convex �
   rw [map_sub] at hxpos
   field_simp [hxpos.ne']
   ring
+
+/-- A convex set meeting `P` and missing its relative boundary meets the affine span
+of `P` only inside `P`. Neither set needs to be closed. -/
+theorem inter_affineSpan_subset {P U : Set V} (hU : Convex ℝ U) (hUP : (U ∩ P).Nonempty)
+    (hfr : Disjoint U (intrinsicFrontier ℝ P)) : U ∩ affineSpan ℝ P ⊆ P := by
+  rintro z ⟨hzU, hzA⟩
+  obtain ⟨w, hwU, hwP⟩ := hUP
+  let g : unitInterval → affineSpan ℝ P := fun r =>
+    ⟨AffineMap.lineMap w z (r : ℝ), AffineMap.lineMap_mem _ (subset_affineSpan ℝ P hwP) hzA⟩
+  have hg : Continuous g :=
+    (AffineMap.lineMap_continuous.comp continuous_subtype_val).subtype_mk _
+  have hloc : IsLocallyConstant fun r => (g r : V) ∈ P := by
+    refine (IsLocallyConstant.iff_eventually_eq _).mpr fun r => ?_
+    have hr := Mei.eventually_mem_iff_of_notMem_intrinsicFrontier (x := g r) rfl
+      (Set.disjoint_left.mp hfr (hU.lineMap_mem hwU hzU r.property))
+    filter_upwards [(hg.tendsto r).eventually hr] with r' hr'
+    exact propext hr'
+  simpa [g] using (hloc.apply_eq_of_preconnectedSpace 1 0).mpr (by simpa [g] using hwP)
 
 end Convex

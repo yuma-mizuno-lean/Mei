@@ -6,7 +6,6 @@ Authors: Codex
 module
 
 public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Equivalence
-public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Consistency
 
 /-!
 # Consistency and transport under directed equivalence
@@ -21,6 +20,9 @@ The loop argument follows `FiniteWallDiagram.Equivalent.consistent`, using
 Product stability here uses simultaneous signed crossing events, so repeated and
 overlapping coplanar walls are retained. Common paths compare endpoint transport;
 no stabilization or local finiteness of the union of active walls is needed.
+
+Consistency also descends to lower cutoffs by specializing coordinate covariance
+to the identity spatial and wall-space coordinate changes.
 -/
 
 public section
@@ -83,6 +85,19 @@ theorem LevelEquivalent.consistent {k : ℕ} (hDE : D.LevelEquivalent E k)
 theorem LevelEquivalent.consistent_iff {k : ℕ} (hDE : D.LevelEquivalent E k) :
     D.LevelConsistent k ↔ E.LevelConsistent k :=
   ⟨hDE.consistent, hDE.symm.consistent⟩
+
+/-- Consistency at a higher cutoff implies consistency at every lower cutoff.
+No admissibility for the higher active wall family is required of the test loops. -/
+theorem LevelConsistent.mono {k l : ℕ} (hD : D.LevelConsistent l) (hkl : k ≤ l) :
+    D.LevelConsistent k := by
+  have ha : (DirectedWallSpaces.CoordinateChange.refl (d := d) H).degreeMap.modulus k ≤ l :=
+    ((DirectedWallSpaces.CoordinateChange.refl H).degreeMap_modulus_le_iff k l).mpr
+      fun n _ hn => by
+        simpa only [DirectedWallSpaces.CoordinateChange.refl_degreeEquiv, AddEquiv.refl_apply]
+          using hn.trans (Int.ofNat_le.mpr hkl)
+  simpa only [image_refl] using hD.image
+    (e := Toric.IntegralAffineEquiv.refl h)
+    (E := DirectedWallSpaces.CoordinateChange.refl H) (hE := by simp) ha
 
 /-- Equivalence preserves consistency at every cutoff. -/
 theorem Equivalent.consistent (hDE : D.Equivalent E) (hD : D.Consistent) : E.Consistent :=

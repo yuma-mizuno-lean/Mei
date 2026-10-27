@@ -27,6 +27,11 @@ Consequently two outgoing completions of one family of initial walls are equival
 The initial walls need not be full hyperplanes or incoming, and no condition is imposed
 on walls whose labels are trivial.
 
+The argument already applies at a single finite cutoff: consistency descends to
+the preceding cutoffs by `DirectedDiagram.LevelConsistent.mono`. Thus outgoing
+extensions consistent only through order `k` have the same order-`k` products;
+their higher-order consistency and inactive added walls are unrestricted.
+
 This is the uniqueness assertion of Travis Mandel, *Scattering diagrams, theta functions,
 and refined tropical curve counts*, Theorem 2.6,
 [arXiv:1503.06183v5](https://arxiv.org/abs/1503.06183v5), and of
@@ -209,19 +214,31 @@ theorem levelEquivalent_restrict_succ {s t : Set ι} {k : ℕ}
   exact wallPathProduct_indicatorLabel_eq hs ht hout hk r₀
 
 variable (F) in
+/-- Two subdiagrams consistent at order `k` agree at that order if every active
+wall belonging to just one of them is outgoing. Consistency at higher orders
+is unnecessary. -/
+theorem levelEquivalent_restrict_of_outgoing {s t : Set ι} {k : ℕ}
+    (hs : (F.restrict s).LevelConsistent k) (ht : (F.restrict t).LevelConsistent k)
+    (hout : ∀ j ∈ F.active k, j ∈ s ∆ t → (F.wall j).Outgoing) :
+    (F.restrict s).LevelEquivalent (F.restrict t) k := by
+  induction k with
+  | zero => exact (levelEquivalent_def _ _ 0).mpr fun _ _ _ _ _ _ _ => Subsingleton.elim _ _
+  | succ k ih =>
+    exact F.levelEquivalent_restrict_succ hs ht hout
+      (ih (hs.mono (Nat.le_succ k)) (ht.mono (Nat.le_succ k))
+        (fun j hj => hout j (F.active_mono (Nat.le_succ k) hj)))
+
+variable (F) in
 /-- Two consistent subdiagrams of one directed diagram which differ only by outgoing walls
 are equivalent. Walls with trivial labels need not be outgoing. -/
 theorem equivalent_restrict_of_outgoing {s t : Set ι} (hs : (F.restrict s).Consistent)
     (ht : (F.restrict t).Consistent)
     (hout : ∀ j ∈ s ∆ t, (F.wall j).label ≠ 1 → (F.wall j).Outgoing) :
     (F.restrict s).Equivalent (F.restrict t) := by
-  refine (equivalent_iff _ _).mpr fun k => ?_
-  induction k with
-  | zero => exact (levelEquivalent_def _ _ 0).mpr fun _ _ _ _ _ _ _ => Subsingleton.elim _ _
-  | succ k ih =>
-    exact F.levelEquivalent_restrict_succ ((consistent_iff _).mp hs (k + 1))
-      ((consistent_iff _).mp ht (k + 1))
-      (fun j hj hst => hout j hst (F.label_ne_one_of_mem_active hj)) ih
+  exact (equivalent_iff _ _).mpr fun k =>
+    F.levelEquivalent_restrict_of_outgoing ((consistent_iff _).mp hs k)
+      ((consistent_iff _).mp ht k)
+      (fun j hj hst => hout j hst (F.label_ne_one_of_mem_active hj))
 
 section Completion
 
@@ -253,29 +270,44 @@ private def union (D : DirectedDiagram (d := d) h H (ι₀ ⊕ ι'))
     · exact Or.inl ⟨.inr j, hj, rfl⟩
     · exact Or.inr ⟨.inr j, hj, rfl⟩
 
+/-- Two diagrams consistent at order `k`, sharing their initial walls and having
+only outgoing additional active walls, agree at order `k`. Their labels and
+consistency at higher cutoffs are unrestricted. -/
+theorem outgoingCompletion_levelEquivalent {k : ℕ}
+    {D : DirectedDiagram (d := d) h H (ι₀ ⊕ ι')} {E : DirectedDiagram (d := d) h H (ι₀ ⊕ κ)}
+    (hinitial : ∀ j, D.wall (.inl j) = E.wall (.inl j))
+    (hD : D.LevelConsistent k) (hE : E.LevelConsistent k)
+    (houtD : ∀ j, Sum.inr j ∈ D.active k → (D.wall (.inr j)).Outgoing)
+    (houtE : ∀ j, Sum.inr j ∈ E.active k → (E.wall (.inr j)).Outgoing) :
+    D.LevelEquivalent E k := by
+  let F := union D E
+  let s := range (Sum.map (id : ι₀ → ι₀) (Sum.inl : ι' → ι' ⊕ κ))
+  let t := range (Sum.map (id : ι₀ → ι₀) (Sum.inr : κ → ι' ⊕ κ))
+  -- Both extensions are reindexings of subdiagrams of the union.
+  have hs : (F.restrict s).LevelEquivalent D k := (Refinement.ofEquiv
+    (Equiv.ofInjective _ (Sum.map_injective.mpr ⟨Function.injective_id, Sum.inl_injective⟩)) (by
+      rintro (j | j) <;> rw [restrict_wall, Equiv.ofInjective_apply] <;> rfl)).levelEquivalent k
+  have ht : (F.restrict t).LevelEquivalent E k := (Refinement.ofEquiv
+    (Equiv.ofInjective _ (Sum.map_injective.mpr ⟨Function.injective_id, Sum.inr_injective⟩)) (by
+      rintro (j | j) <;> rw [restrict_wall, Equiv.ofInjective_apply]
+      · exact (hinitial j).symm
+      · rfl)).levelEquivalent k
+  refine hs.symm.trans ((F.levelEquivalent_restrict_of_outgoing (hs.symm.consistent hD)
+    (ht.symm.consistent hE) ?_).trans ht)
+  -- Initial walls are shared, so the two subdiagrams differ only by added walls.
+  rintro (j | j | j) hj hst
+  · simp [s, t, mem_symmDiff] at hst
+  · exact houtD j ((D.mem_active k _).mpr ((F.mem_active k _).mp hj))
+  · exact houtE j ((E.mem_active k _).mpr ((F.mem_active k _).mp hj))
+
 /-- Two outgoing completions of the same family of initial walls are equivalent. -/
 theorem outgoingCompletion_unique {D₀ : ι₀ → DirectedWall (d := d) h H}
     {D : DirectedDiagram (d := d) h H (ι₀ ⊕ ι')} {E : DirectedDiagram (d := d) h H (ι₀ ⊕ κ)}
     (hD : IsOutgoingCompletion D₀ D) (hE : IsOutgoingCompletion D₀ E) : D.Equivalent E := by
-  let F := union D E
-  let s := range (Sum.map (id : ι₀ → ι₀) (Sum.inl : ι' → ι' ⊕ κ))
-  let t := range (Sum.map (id : ι₀ → ι₀) (Sum.inr : κ → ι' ⊕ κ))
-  -- Both completions are reindexings of subdiagrams of the union.
-  have hs : (F.restrict s).Equivalent D := (Refinement.ofEquiv
-    (Equiv.ofInjective _ (Sum.map_injective.mpr ⟨Function.injective_id, Sum.inl_injective⟩)) (by
-      rintro (j | j) <;> rw [restrict_wall, Equiv.ofInjective_apply] <;> rfl)).equivalent
-  have ht : (F.restrict t).Equivalent E := (Refinement.ofEquiv
-    (Equiv.ofInjective _ (Sum.map_injective.mpr ⟨Function.injective_id, Sum.inr_injective⟩)) (by
-      rintro (j | j) <;> rw [restrict_wall, Equiv.ofInjective_apply]
-      · exact (hE.wall_inl j).trans (hD.wall_inl j).symm
-      · rfl)).equivalent
-  refine hs.symm.trans ((F.equivalent_restrict_of_outgoing (hs.symm.consistent hD.consistent)
-    (ht.symm.consistent hE.consistent) ?_).trans ht)
-  -- Initial walls are shared, so the two subdiagrams differ only by added walls.
-  rintro (j | j | j) hj -
-  · simp [s, t, mem_symmDiff] at hj
-  · exact hD.outgoing_inr j
-  · exact hE.outgoing_inr j
+  exact (equivalent_iff D E).mpr fun k => outgoingCompletion_levelEquivalent
+    (fun j => (hD.wall_inl j).trans (hE.wall_inl j).symm)
+    ((consistent_iff D).mp hD.consistent k) ((consistent_iff E).mp hE.consistent k)
+    (fun j _ => hD.outgoing_inr j) (fun j _ => hE.outgoing_inr j)
 
 end Completion
 
