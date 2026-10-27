@@ -16,11 +16,7 @@ of a unique full-dimensional cell. The two opposite rays enter distinct cells, b
 the original wall as a facet. Thus a short transverse crossing determines the
 two chamber cells on which endpoint data for a wall crossing are evaluated.
 
-The construction uses `FinitePolyhedralComplex.exists_isolating_ball` to exclude
-all other cells of positive codimension, `IsExposed.eq_of_finrank_vectorSpan_eq`
-to identify the common facet, and Mathlib's convexity theorem for open segments
-from relative interior points. Unbounded cells, lineality and
-arbitrary real offsets are allowed.
+Unbounded cells, lineality and arbitrary real offsets are allowed.
 -/
 
 public section
@@ -32,35 +28,10 @@ open Set Mei.Convex Filter Topology
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
 
-/-- Two distinct cells with a common facet meet exactly in that facet.
-The dimension condition is relative, so the cells need not be full dimensional. -/
-theorem inter_eq_of_common_facet (C : FinitePolyhedralComplex h)
-    {P Q Q' : Set V} (hP : P ∈ C.cells) (hQ : Q ∈ C.cells) (hQ' : Q' ∈ C.cells)
-    (hPQ : P ⊆ Q) (hPQ' : P ⊆ Q') (hne : Q ≠ Q')
-    (hdim : Module.finrank ℝ (affineSpan ℝ Q).direction =
-      Module.finrank ℝ (affineSpan ℝ P).direction + 1)
-    (hdim' : Module.finrank ℝ (affineSpan ℝ Q').direction =
-      Module.finrank ℝ (affineSpan ℝ P).direction + 1) : Q ∩ Q' = P := by
-  let := h.finiteDimensional
-  have hPI : P ⊆ Q ∩ Q' := subset_inter hPQ hPQ'
-  have hIne := (C.nonempty P hP).mono hPI
-  have hI := C.inter_mem_cells hQ hQ' hIne
-  have hle := Submodule.finrank_mono (AffineSubspace.direction_le
-    (affineSpan_mono ℝ inter_subset_left : affineSpan ℝ (Q ∩ Q') ≤ affineSpan ℝ Q))
-  have hlt : Module.finrank ℝ (affineSpan ℝ (Q ∩ Q')).direction <
-      Module.finrank ℝ (affineSpan ℝ Q).direction := by
-    apply lt_of_le_of_ne hle
-    intro he
-    have heQ := (C.inter_face Q hQ Q' hQ' hIne).eq_of_finrank_vectorSpan_eq hIne
-      (by rw [← direction_affineSpan, ← direction_affineSpan]; exact he)
-    have heQ' := (isPolyhedralFace_iff.mp (C.face_of_subset hI hQ' inter_subset_right)).2
-      |>.eq_of_finrank_vectorSpan_eq hIne
-        (by rw [← direction_affineSpan, ← direction_affineSpan]; omega)
-    exact hne (heQ.symm.trans heQ')
-  have hge := Submodule.finrank_mono (AffineSubspace.direction_le (affineSpan_mono ℝ hPI))
-  exact ((isPolyhedralFace_iff.mp (C.face_of_subset hP hI hPI)).2.eq_of_finrank_vectorSpan_eq
-    (C.nonempty P hP) (by rw [← direction_affineSpan, ← direction_affineSpan]; omega)).symm
-
+-- The construction uses `FinitePolyhedralComplex.exists_isolating_ball` to exclude
+-- all other cells of positive codimension, `IsExposed.eq_of_finrank_vectorSpan_eq`
+-- to identify the common facet, and Mathlib's convexity theorem for open segments
+-- from relative interior points.
 /-- A transverse ray from a wall's relative interior enters a unique
 full-dimensional cell containing the wall, provided the complex covers a
 neighborhood of the starting point. Every sufficiently short positive
