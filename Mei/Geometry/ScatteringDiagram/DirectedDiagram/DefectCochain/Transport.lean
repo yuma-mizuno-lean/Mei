@@ -9,7 +9,6 @@ public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.DefectCochain.Trave
 public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Realization
 public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Obstruction.Basic
 public import Mei.Geometry.Convex.PolyhedralComplex.SingleCrossing
-import Mei.Geometry.Convex.Polyhedron.Path.Log
 import Mei.Algebra.Lie.Graded.Truncation.Transition
 
 /-!
@@ -141,10 +140,7 @@ private theorem segment_endpoint_defect
         (by simpa only [hσ Q] using (cross Q).ker_normal)
     rcases lt_or_gt_of_ne hn with hv | hv
     · have hr : crossings y x = {(Q, 1 - u)} := by
-        ext ⟨W, v⟩
-        rw [mem_crossings_swap x y, he]
-        simp only [mem_singleton_iff, Prod.mk.injEq]
-        constructor <;> rintro ⟨rfl, hv⟩ <;> exact ⟨rfl, by linarith⟩
+        simpa only [he, Set.image_singleton] using crossings_swap x y
       have hv' : 0 < h.realCharacter (cross Q).normal (x.val - y.val) := by
         simpa only [map_sub, neg_sub] using neg_pos.mpr hv
       obtain ⟨hym, hxp, hprod⟩ := positive_segment_defect σ hσ cross hk b t ht
@@ -200,7 +196,7 @@ theorem pathProduct_crossingDefectDiagram
 /-- The logarithm of gauged transport along the given adapted path is the
 negative signed crossing sum of the actual central wall defects. No consistency
 at the higher order or shortness of the segments is required. -/
-theorem log_levelPathProduct_eq_wallCrossingSum_defect
+theorem log_inv_mul_levelPathProduct_mul_eq_neg_wallCrossingSum_defect
     {x y : WallComplement (fun Q : (D.adaptedComplex (k + 1)).walls => (Q : Set V))}
     (p : AdmissiblePLPath x y)
     (P Q : (D.adaptedComplex (k + 1)).cellsOfCodimension 0)
@@ -235,7 +231,7 @@ theorem log_levelPathProduct_eq_wallCrossingSum_defect
 
 /-- Around an actual adapted loop the chamber lift disappears, and its central
 obstruction is the negative signed sum of the crossing-defect coefficients. -/
-theorem coe_loopObstruction_eq_wallCrossingSum_defect
+theorem coe_loopObstruction_eq_neg_wallCrossingSum_defect
     {x : WallComplement (fun Q : (D.adaptedComplex (k + 1)).walls => (Q : Set V))}
     (p : AdmissiblePLPath x x)
     (P : (D.adaptedComplex (k + 1)).cellsOfCodimension 0)
@@ -245,17 +241,9 @@ theorem coe_loopObstruction_eq_wallCrossingSum_defect
         -p.wallCrossingSum (fun Q => h.realCharacter (cross Q).normal)
           (fun Q => ((cross Q).defect hk b t ht : d.truncatedLie ℒ (k + 1))) := by
   let q := (D.adaptedPathPrefunctor (k + 1)).mapPath p
-  have hm : D.levelPathProduct (k + 1) q ∈
-      (d.truncationMap ℒ (Nat.le_succ k)).bchGroupMap.ker := by
-    rw [MonoidHom.mem_ker, D.truncation_levelPathProduct (Nat.le_succ k)]
-    exact (D.levelConsistent_iff_loops k).mp hk _ _
-  have hc := Subgroup.mem_center_iff.mp
-    ((d.truncationMap ℒ (Nat.le_succ k)).ker_bchGroupMap_le_center
-      (d.ker_truncationMap_succ_le_center ℒ k) hm) ((t P)⁻¹)
-  have he : (t P)⁻¹ * D.levelPathProduct (k + 1) q * t P =
-      D.levelPathProduct (k + 1) q := by
-    rw [hc, mul_assoc, inv_mul_cancel, mul_one]
-  have hp := log_levelPathProduct_eq_wallCrossingSum_defect σ hσ cross hk b t ht p P P hx hx
+  have he := D.inv_mul_levelPathProduct_loop_mul hk q (t P)
+  have hp := log_inv_mul_levelPathProduct_mul_eq_neg_wallCrossingSum_defect
+    σ hσ cross hk b t ht p P P hx hx
   rw [coe_loopObstruction]
   exact (congrArg log he).symm.trans hp
 
