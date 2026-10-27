@@ -11,9 +11,10 @@ public import Mei.Geometry.Convex.PolyhedralCochain.Complex
 # Common complex refinements of oriented subdivisions
 
 If a finite polyhedral complex subdivides every piece of an oriented
-subdivision, its cells contained in the parent are exactly the disjoint union
-of its cells contained in the pieces. Every refined cell is therefore counted
-once, with its inherited orientation. This gives the reindexing needed to pass
+subdivision, its cells of the same codimension as the parent, equipped with
+the parent's inherited orientation and contained in the parent, are exactly
+the disjoint union of those contained in the pieces. Every such refined cell
+is therefore counted once. This gives the reindexing needed to pass
 from identities on a common complex to identities under arbitrary oriented
 subdivision, in particular for the signed coboundary.
 
@@ -36,8 +37,9 @@ variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ 
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i} {k : ℕ}
   {σ : OrientedCell h k} {Q : Finset (OrientedCell h k)}
 
-/-- The cells of a fixed complex contained in distinct pieces of an oriented
-subdivision are disjoint as finite families of oriented cells. -/
+/-- The cells of a fixed complex of the same codimension as the parent, equipped
+with the parent's inherited orientation and contained in distinct pieces of an
+oriented subdivision, form disjoint finite families of oriented cells. -/
 theorem pairwiseDisjoint_subdivisionPieces (hQ : IsOrientedSubdivision σ Q)
     (C : FinitePolyhedralComplex h) :
     (Q : Set (OrientedCell h k)).PairwiseDisjoint fun τ => τ.subdivisionPieces C := by
@@ -61,8 +63,9 @@ theorem pairwiseDisjoint_subdivisionPieces (hQ : IsOrientedSubdivision σ Q)
 
 open Classical in
 /-- If one complex subdivides all the pieces of an oriented subdivision, its
-cells contained in the parent are precisely the union of the cells contained
-in those pieces. The union is disjoint by `pairwiseDisjoint_subdivisionPieces`.
+cells of the same codimension as the parent, equipped with the parent's inherited
+orientation and contained in the parent, are precisely the union of those contained
+in the pieces. The union is disjoint by `pairwiseDisjoint_subdivisionPieces`.
 No face-incidence condition on the original pieces is needed. -/
 theorem subdivisionPieces_eq_biUnion (hQ : IsOrientedSubdivision σ Q)
     (C : FinitePolyhedralComplex h)
