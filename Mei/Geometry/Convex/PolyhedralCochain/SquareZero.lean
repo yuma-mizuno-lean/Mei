@@ -1,46 +1,50 @@
 /-
 Copyright (c) 2026 Mei contributors. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Codex
+Authors: Claude, Codex
 -/
 module
 
 public import Mei.Geometry.Convex.PolyhedralCochain.Coboundary
 public import Mei.Geometry.Convex.PolyhedralCochain.Ridge
-public import Mei.Algebra.BigOperators.Group.Finset.Involution
 
 /-!
-# The signed boundary of a cell's signed boundary vanishes
+# The square-zero identity for signed facet sums
 
-Every ridge occurrence in the boundary of a boundary facet has a unique
-oppositely oriented occurrence through the other incident facet. Pairing these
-occurrences proves that the iterated signed facet sum is zero. Parent indices
-are retained throughout, so coincident ridge supports have their actual
-incidence multiplicities. Unbounded cells and lineality are allowed.
+Applying the signed facet sum twice to an oriented cell gives zero in polyhedral cochains.
+Every iterated incidence `(τ, r)`, with `τ` a signed boundary facet of the cell and `r` a
+signed boundary facet of `τ`, is matched with the incidence `(υ, r.reverse)` through the
+unique other facet `υ` containing the ridge `r`
+(`OrientedCell.existsUnique_reverse_mem_boundaryFacets`). The two contributions cancel by
+the reversal relation of polyhedral cochains. The more general
+`OrientedCell.sum_boundaryFacets_boundaryFacets_eq_zero` proves this cancellation for any
+abelian-group-valued function negated by orientation reversal. The matching is a
+fixed-point-free involution on iterated incidences, so the cancellation holds for every
+coefficient module, including modules with `2`-torsion. The involution argument is shared
+with `PolyhedralCochain.sum_mk_eq_zero_of_existsUnique_reverse`, factored out of
+`OrientedCell.IsOrientedSubdivision.sum_internal_boundaryFacets_eq_zero`.
 
-`OrientedCell.sum_boundaryFacets_boundaryFacets_eq_zero` works for any
-abelian-group-valued function negated by orientation reversal.
-`OrientedCell.sum_cellCoboundary_boundaryFacets_eq_zero` applies it to the
-cochain generators. This is the square-zero identity on cells; descending
-the coboundary through subdivision remains a separate requirement.
+Consequently, the presentation-level signed facet sum
+`PolyhedralCochain.coboundaryPresentation` of any finite presentation is a presentation
+whose own signed facet sum vanishes. This identity holds for the source presentation itself;
+it does not require the coboundary to descend through subdivision relations.
 
-The geometric inputs are `OrientedCell.exists_reverse_mem_boundaryFacets`
-and `OrientedCell.eq_of_ridge_subset_of_ne`. The incidence pairing follows
-the same finite-sum construction as
-`IsOrientedSubdivision.sum_internal_boundaryFacets_eq_zero`. Both use
-`Finset.sum_sum_eq_zero_of_unique_partner`, extracted from that construction
-using Mathlib's `Finset.sum_involution`. In particular, no cancellation of
-multiplication by two is used, so coefficients may have torsion.
+Arbitrary codimension, unbounded cells and lineality are allowed. The finite cancellation
+uses `Finset.sum_sum_eq_zero_of_unique_partner` and
+`Finset.sum_eq_zero_of_unique_partner`, based on Mathlib's `Finset.sum_involution`.
 -/
 
 public section
 
 noncomputable section
 
-namespace Mei.OrientedCell
+namespace Mei
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
-  {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i} {k : ℕ}
+  {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
+  {R E : Type*} [Ring R] [AddCommGroup E] [Module R E] {k : ℕ}
+
+namespace OrientedCell
 
 open Classical in
 /-- The iterated signed facet sum vanishes for every abelian-group-valued
@@ -55,15 +59,30 @@ theorem sum_boundaryFacets_boundaryFacets_eq_zero (σ : OrientedCell h k)
     (fun _ hτ _ hr => σ.existsUnique_reverse_mem_boundaryFacets hτ hr)
     f (fun r => by rw [hf, add_neg_cancel])
 
-/-- The signed coboundaries of all signed boundary facets sum to zero.
-This is the square-zero identity for the generator formula, with arbitrary
-module coefficients. -/
+/-- The signed facet sums of the signed boundary facets of a cell cancel: the polyhedral
+coboundary squares to zero on generators. -/
 @[simp]
-theorem sum_cellCoboundary_boundaryFacets_eq_zero (σ : OrientedCell h k)
-    {R E : Type*} [Ring R] [AddCommGroup E] [Module R E] (c : E) :
-    (∑ τ ∈ σ.boundaryFacets, τ.cellCoboundary (R := R) c) = 0 := by
+theorem sum_cellCoboundary_boundaryFacets_eq_zero (σ : OrientedCell h k) (c : E) :
+    ∑ τ ∈ σ.boundaryFacets, τ.cellCoboundary (R := R) c = 0 := by
+  classical
   simp only [cellCoboundary_apply]
   exact σ.sum_boundaryFacets_boundaryFacets_eq_zero
     (fun r => PolyhedralCochain.mk r c) (fun r => PolyhedralCochain.mk_reverse r c)
 
-end Mei.OrientedCell
+end OrientedCell
+
+namespace PolyhedralCochain
+
+/-- The signed facet sum of the presentation-level signed facet sum vanishes: every finite
+presentation of a coboundary obtained by `coboundaryPresentation` is closed. -/
+@[simp]
+theorem coboundaryOfFinsupp_coboundaryPresentation (x : OrientedCell h k →₀ E) :
+    coboundaryOfFinsupp (R := R) (coboundaryPresentation (R := R) x) = 0 := by
+  induction x using Finsupp.induction_linear with
+  | zero => simp
+  | add x y hx hy => rw [map_add, map_add, hx, hy, add_zero]
+  | single σ c => simp [coboundaryPresentation_single]
+
+end PolyhedralCochain
+
+end Mei

@@ -60,6 +60,12 @@ structure IsTransverse (σ : OrientedCell h k) (v : Fin (k + 1) → V) : Prop wh
 
 variable {σ : OrientedCell h k} {v : Fin (k + 1) → V}
 
+/-- A test missing a cell is transverse, including when the test is degenerate. -/
+theorem isTransverse_of_disjoint (σ : OrientedCell h k) {v : Fin (k + 1) → V}
+    (hv : Disjoint (convexHull ℝ (range v)) σ.carrier) : σ.IsTransverse v :=
+  ⟨hv.mono_right (intrinsicFrontier_subset σ.isClosed_carrier),
+    fun ⟨_, hx, hy⟩ => (Set.disjoint_left.mp hv hx hy).elim⟩
+
 /-- Reversing a cell's orientation preserves transversality of an affine test simplex. -/
 @[simp]
 theorem isTransverse_reverse_iff (σ : OrientedCell h k) (v : Fin (k + 1) → V) :
@@ -134,6 +140,17 @@ theorem IsTransverse.intersectionIndex_eq_zero_iff (hv : σ.IsTransverse v) :
   rw [intersectionIndex_of_nonempty hmeet] at hzero
   generalize σ.orientation.evalSign _ = s at hzero hne
   cases s <;> simp_all
+
+/-- A transverse test meeting a cell has intersection index `1` or `-1`. -/
+theorem IsTransverse.intersectionIndex_eq_one_or_neg_one (hv : σ.IsTransverse v)
+    (hmeet : (convexHull ℝ (range v) ∩ σ.carrier).Nonempty) :
+    σ.intersectionIndex v = 1 ∨ σ.intersectionIndex v = -1 := by
+  have hne : σ.intersectionIndex v ≠ 0 := by
+    intro hzero
+    exact hmeet.not_disjoint (hv.intersectionIndex_eq_zero_iff.mp hzero)
+  rw [intersectionIndex_of_nonempty hmeet] at hne ⊢
+  cases hs : σ.orientation.evalSign (fun j : Fin k => v j.succ - v 0) <;>
+    simp [hs] at hne ⊢
 
 variable {R : Type*} [Ring R] {E : Type*} [AddCommGroup E] [Module R E]
 

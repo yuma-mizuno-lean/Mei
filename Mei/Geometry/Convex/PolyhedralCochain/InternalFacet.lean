@@ -6,7 +6,6 @@ Authors: Codex
 module
 
 public import Mei.Geometry.Convex.PolyhedralCochain.Incidence
-public import Mei.Algebra.BigOperators.Group.Finset.Involution
 
 /-!
 # Internal facets of polyhedral subdivisions
@@ -24,9 +23,9 @@ one finite complex, including subdivisions of lower-dimensional cells. It uses
 from a short ray across the facet, and
 `FinitePolyhedralComplex.eq_reverse_of_mem_boundaryFacets` to determine its sign.
 Mathlib's exposed-face maximizers and relative-interior segment theorem provide
-the geometric crossing. The finite cancellation uses
-`Finset.sum_sum_eq_zero_of_unique_partner`, based on `Finset.sum_involution`,
-on parent-facet incidences. No boundedness or absence of lineality is required.
+the geometric crossing. The finite cancellation uses Mathlib's
+`Finset.sum_involution` on parent-facet incidences. No boundedness or absence of
+lineality is required.
 -/
 
 public section
@@ -169,20 +168,20 @@ theorem sum_internal_boundaryFacets_eq_zero
       ¬υ.carrier ⊆ intrinsicFrontier ℝ σ.carrier,
       PolyhedralCochain.mk (R := R) υ c) = 0 := by
   classical
-  refine Q.sum_sum_eq_zero_of_unique_partner
-    (fun τ => τ.boundaryFacets.filter fun υ =>
-      ¬υ.carrier ⊆ intrinsicFrontier ℝ σ.carrier) reverse reverse_reverse ?_
-    (fun υ => PolyhedralCochain.mk (R := R) υ c)
-    (fun υ => by rw [PolyhedralCochain.mk_reverse, add_neg_cancel])
-  intro τ hτ υ hυ
-  obtain ⟨hυ, hυb⟩ := Finset.mem_filter.mp hυ
-  obtain ⟨η, ⟨hη, hne, hr⟩, hunique⟩ :=
+  let S := Q.sigma fun τ => τ.boundaryFacets.filter fun υ =>
+    ¬υ.carrier ⊆ intrinsicFrontier ℝ σ.carrier
+  have hS (x : Σ _ : OrientedCell h k, OrientedCell h (k + 1)) :
+      x ∈ S ↔ x.1 ∈ Q ∧ x.2 ∈ x.1.boundaryFacets ∧
+        ¬x.2.carrier ⊆ intrinsicFrontier ℝ σ.carrier := by
+    simp only [S, Finset.mem_sigma, Finset.mem_filter]
+  rw [Finset.sum_sigma' Q]
+  refine PolyhedralCochain.sum_mk_eq_zero_of_existsUnique_reverse (fun x hx => ?_) c
+  obtain ⟨hxQ, hxF, hxb⟩ := (hS x).mp hx
+  obtain ⟨η, ⟨hη, hne, hr⟩, huniq⟩ :=
     (hQ.carrier_subset_intrinsicFrontier_or_existsUnique_reverse_mem_boundaryFacets
-      hQC hτ hυ).resolve_left hυb
-  refine ⟨η, ⟨hη, hne, Finset.mem_filter.mpr ⟨hr, ?_⟩⟩, ?_⟩
-  · simpa only [reverse_carrier] using hυb
-  · rintro ξ ⟨hξ, hξne, hξr⟩
-    exact hunique ξ ⟨hξ, hξne, (Finset.mem_filter.mp hξr).1⟩
+      hQC hxQ hxF).resolve_left hxb
+  exact ⟨η, ⟨(hS _).mpr ⟨hη, hr, by simpa only [reverse_carrier] using hxb⟩, hne⟩,
+    fun η' ⟨hη', hη'ne⟩ => huniq η' ⟨((hS _).mp hη').1, hη'ne, ((hS _).mp hη').2.1⟩⟩
 
 open Classical in
 /-- The total boundary of all subdivision pieces contains only occurrences on
