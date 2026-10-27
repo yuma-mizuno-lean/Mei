@@ -220,6 +220,31 @@ theorem boundaryFacet_mem_boundaryFacets (σ : OrientedCell h k) {F : Set V}
     σ.boundaryFacet hF hne hdim ∈ σ.boundaryFacets :=
   (σ.mem_boundaryFacets _).mpr ⟨F, hF, hne, hdim, rfl⟩
 
+/-- Every boundary facet is supported inside its parent cell. -/
+theorem carrier_subset_of_mem_boundaryFacets (σ : OrientedCell h k)
+    {τ : OrientedCell h (k + 1)} (hτ : τ ∈ σ.boundaryFacets) :
+    τ.carrier ⊆ σ.carrier := by
+  obtain ⟨F, hF, hne, hdim, rfl⟩ := (σ.mem_boundaryFacets τ).mp hτ
+  exact hF.subset
+
+/-- The parent determines the orientation of a boundary facet from its support. -/
+theorem carrier_injOn_boundaryFacets (σ : OrientedCell h k) :
+    Set.InjOn (fun τ : OrientedCell h (k + 1) => τ.carrier) {τ | τ ∈ σ.boundaryFacets} := by
+  rintro τ hτ υ hυ he
+  obtain ⟨F, hF, hne, hdim, rfl⟩ := (σ.mem_boundaryFacets τ).mp hτ
+  obtain ⟨G, hG, hneG, hdimG, rfl⟩ := (σ.mem_boundaryFacets υ).mp hυ
+  simp only [boundaryFacet_carrier] at he
+  subst G
+  rfl
+
+/-- A vector transverse to a cell is transverse to every boundary facet. -/
+theorem notMem_direction_of_mem_boundaryFacets (σ : OrientedCell h k)
+    {τ : OrientedCell h (k + 1)} (hτ : τ ∈ σ.boundaryFacets) {v : V}
+    (hv : v ∉ (affineSpan ℝ σ.carrier).direction) :
+    v ∉ (affineSpan ℝ τ.carrier).direction :=
+  fun hm => hv ((AffineSubspace.direction_le
+    (affineSpan_mono ℝ (σ.carrier_subset_of_mem_boundaryFacets hτ))) hm)
+
 open Classical in
 /-- Reversing the parent reverses every boundary facet. -/
 @[simp]
