@@ -167,25 +167,21 @@ theorem intersectionPairing_eq_zero_of_crossings_eq_empty
     rintro z ⟨u, hu, rfl⟩ hz
     have hm : (Q, u) ∈ crossings x y := (mem_crossings x y Q u).mpr ⟨hu, (hσ Q) ▸ hz⟩
     simp only [he, mem_empty_iff_false] at hm
-  have hactive : crossings ((D.adaptedPathPrefunctor (k + 1)).obj x)
-      ((D.adaptedPathPrefunctor (k + 1)).obj y) = ∅ := by
-    apply Set.eq_empty_iff_forall_notMem.mpr
-    rintro ⟨j, u⟩ hu
-    obtain ⟨hu, hj⟩ := (mem_crossings _ _ j u).mp hu
-    obtain ⟨Q, hQ, hzQ, -⟩ := D.exists_mem_adaptedComplex_walls_subset (k + 1) j hj
-    simp only [D.adaptedPathPrefunctor_obj_val] at hzQ
-    have hm : (⟨Q, hQ⟩, u) ∈ crossings x y :=
-      (mem_crossings x y ⟨Q, hQ⟩ u).mpr ⟨hu, hzQ⟩
-    simp only [he, mem_empty_iff_false] at hm
-  refine ⟨?_, fun Q => (σ Q).isTransverse_of_disjoint (hdisj Q), ?_, ?_⟩
-  · simpa only [AffineMap.lineMap_apply_one] using
+  have hyP : y.val ∈ interior (P : Set V) := by
+    simpa only [AffineMap.lineMap_apply_one] using
       (D.adaptedComplex (k + 1)).lineMap_mem_interior_of_crossings_eq_empty
         P.property hx he 1 (by simp)
+  refine ⟨hyP, fun Q => (σ Q).isTransverse_of_disjoint (hdisj Q), ?_, ?_⟩
   · simp only [map_sum, OrientedCell.intersectionPairing_single,
       OrientedCell.intersectionIndex_of_disjoint (hdisj _), zero_smul, Finset.sum_const_zero]
-  · rw [D.levelPathProduct_eq_wallPathProduct (k + 1) _
-      (D.activeLabels_commute (k + 1)), Quiver.Path.wallPathProduct_toPath]
-    exact segmentPathProduct_eq_one_of_crossings_eq_empty _ _ _ _ hactive
+  · obtain ⟨e', he'⟩ := D.exists_segment_levelPathProduct_eq_one_of_mem_interior_adapted
+      P.property ((D.adaptedPathPrefunctor (k + 1)).obj x)
+      ((D.adaptedPathPrefunctor (k + 1)).obj y)
+      (by simpa only [D.adaptedPathPrefunctor_obj_val] using hx)
+      (by simpa only [D.adaptedPathPrefunctor_obj_val] using hyP)
+    have heq : e' = (D.adaptedPathPrefunctor (k + 1)).map e :=
+      PLift.ext (Subsingleton.elim _ _)
+    rwa [heq] at he'
 
 /-- Every segment with at most one adapted crossing pairs with the central
 defect presentation as the logarithm of its directed transport gauged by the
