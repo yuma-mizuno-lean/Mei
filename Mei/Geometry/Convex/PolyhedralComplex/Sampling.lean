@@ -139,19 +139,42 @@ theorem crossingWord_boundary_mem_normalClosure_of_sampling (C : FinitePolyhedra
         Subgroup.normalClosure {g | ∃ a < m, ∃ b < n,
           g = ((((e a b).toPath.cons (f a (b + 1))).cons
             (Quiver.reverse (e (a + 1) b))).cons (Quiver.reverse (f a b))).crossingWord ν} := by
-  have hb := Quiver.Path.crossingWord_ofSeq_eq_segmentCrossingWord ν
-    (x 0) (e 0) n bottom t ht (hrow 0 (by simp))
-  have hr := Quiver.Path.crossingWord_ofSeq_eq_segmentCrossingWord ν
-    (fun a => x a n) (fun a => f a n) m right s hs (hcol n (by simp))
-  have ht' := Quiver.Path.crossingWord_ofSeq_eq_segmentCrossingWord ν
-    (x m) (e m) n top t ht (hrow m (by simp))
-  have hl := Quiver.Path.crossingWord_ofSeq_eq_segmentCrossingWord ν
-    (fun a => x a 0) (fun a => f a 0) m left s hs (hcol 0 (by simp))
-  -- Transfer `crossingWord_grid_boundary_mem_normalClosure` to the original boundary words.
-  have hgrid := C.crossingWord_grid_boundary_mem_normalClosure ν hν x e f m n
+  have hb := C.segmentCrossingWord_eq_prod_sampling ν
+    (fun b : Fin (n + 1) => x 0 b.val) bottom (fun b => t b.val)
+    (fun _ _ hab => ht hab) (fun b => hrow 0 (by simp) b.val (by omega))
+    (fun b => e 0 b.val)
+  have hr := C.segmentCrossingWord_eq_prod_sampling ν
+    (fun a : Fin (m + 1) => x a.val n) right (fun a => s a.val)
+    (fun _ _ hab => hs hab) (fun a => hcol n (by simp) a.val (by omega))
+    (fun a => f a.val n)
+  have ht' := C.segmentCrossingWord_eq_prod_sampling ν
+    (fun b : Fin (n + 1) => x m b.val) top (fun b => t b.val)
+    (fun _ _ hab => ht hab) (fun b => hrow m (by simp) b.val (by omega))
+    (fun b => e m b.val)
+  have hl := C.segmentCrossingWord_eq_prod_sampling ν
+    (fun a : Fin (m + 1) => x a.val 0) left (fun a => s a.val)
+    (fun _ _ hab => hs hab) (fun a => hcol 0 (by simp) a.val (by omega))
+    (fun a => f a.val 0)
+  -- Restrict to the finite rectangle, keeping the original boundary orientation.
+  have hgrid := C.crossingWord_grid_boundary_mem_normalClosure ν hν
+    (fun p : Fin (n + 1) × Fin (m + 1) => x p.2.val p.1.val)
+    (fun a b => e b.val a.val) (fun a b => f b.val a.val)
+  have hmem := Subgroup.normalClosure_mono (show
+      {g | ∃ (a : Fin n) (b : Fin m), g =
+        ((((e b.val a.val).toPath.cons (f b.val (a.val + 1))).cons
+          (Quiver.reverse (e (b.val + 1) a.val))).cons
+            (Quiver.reverse (f b.val a.val))).crossingWord ν} ⊆
+      {g | ∃ a < m, ∃ b < n, g =
+        ((((e a b).toPath.cons (f a (b + 1))).cons
+          (Quiver.reverse (e (a + 1) b))).cons
+            (Quiver.reverse (f a b))).crossingWord ν} from by
+      rintro g ⟨a, b, rfl⟩
+      exact ⟨b.val, b.isLt, a.val, a.isLt, rfl⟩) hgrid
+  simp only [Fin.val_zero, Fin.val_last] at hmem
+  rw [← hb, ← hr, ← ht', ← hl] at hmem
   simpa only [Quiver.Path.crossingWord_comp, Quiver.Path.crossingWord_cons,
     Quiver.Hom.toPath, Quiver.Path.crossingWord_nil, mul_one,
     Quiver.Path.crossingWord_reverse _ ν hν, C.segmentCrossingWord_reverse ν hν,
-    hb, hr, ht', hl, mul_assoc] using hgrid
+    Fin.val_zero, Fin.val_last, mul_assoc] using hmem
 
 end Mei.FinitePolyhedralComplex

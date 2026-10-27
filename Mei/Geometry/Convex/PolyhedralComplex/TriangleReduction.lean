@@ -66,6 +66,49 @@ variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ 
   {C : Mei.FinitePolyhedralComplex h}
   {x : WallComplement (fun P : C.walls => (P : Set V))}
 
+/-- If every admissible triangle from one apex through two vertices of a
+polygon has word in a normal subgroup, so does the polygon. The original path
+is kept fixed. -/
+theorem crossingWord_mem_of_triangles_mem (p : AdmissiblePLPath x x)
+    (ν : C.walls → V →ₗ[ℝ] ℝ)
+    (hν : ∀ P, (ν P).ker = (affineSpan ℝ (P : Set V)).direction)
+    (K : Subgroup (FreeGroup C.walls)) (hK : K.Normal)
+    (z : WallComplement (fun P : C.walls => (P : Set V)))
+    (s : ∀ u (_hu : u ∈ p.vertices), z ⟶ u)
+    (htri : ∀ u (hu : u ∈ p.vertices) v (hv : v ∈ p.vertices) (e : u ⟶ v),
+      (((s u hu).toPath.cons e).cons (Quiver.reverse (s v hv))).crossingWord ν ∈ K) :
+    p.crossingWord ν ∈ K := by
+  classical
+  let t := fun u => if hu : u ∈ p.vertices then
+    C.segmentCrossingWord ν (s u hu) else 1
+  let w := fun {u v : WallComplement (fun P : C.walls => (P : Set V))}
+    (e : u ⟶ v) => MulOpposite.op (C.segmentCrossingWord ν e)
+  have hlocal (u) (hu : u ∈ p.vertices) (v) (hv : v ∈ p.vertices) (e : u ⟶ v) :
+      (MulOpposite.op (t u) * w e * (MulOpposite.op (t v))⁻¹) ∈ K.op := by
+    have hm := htri u hu v hv e
+    simpa only [Subgroup.mem_op, MulOpposite.unop_mul, MulOpposite.unop_inv,
+      MulOpposite.unop_op, t, dite_eq_left hu, dite_eq_left hv, w, crossingWord_cons,
+      Quiver.Hom.toPath, crossingWord_nil, mul_one,
+      C.segmentCrossingWord_reverse ν hν] using hm
+  have hchain : p.vertices.IsChain (fun u v => ∀ e : u ⟶ v,
+      MulOpposite.op (t u) * w e * (MulOpposite.op (t v))⁻¹ ∈ K.op) := by
+    apply List.isChain_iff_forall_rel_of_append_cons_cons.mpr
+    intro u v l₁ l₂ he e
+    exact hlocal u (by rw [he]; simp) v (by rw [he]; simp) e
+  have hmem := p.mul_weight_mul_inv_mem_of_isChain K.op.toSubmonoid w
+    (fun u => MulOpposite.op (t u)) hchain
+  have hweight {a b} (q : AdmissiblePLPath a b) :
+      MulOpposite.unop (q.weight w) = q.crossingWord ν := by
+    induction q with
+    | nil => simp
+    | cons q e ih => simp only [weight_cons, MulOpposite.unop_mul, w,
+        MulOpposite.unop_op, ih, crossingWord_cons]
+  have hg : (t x)⁻¹ * p.crossingWord ν * t x ∈ K := by
+    simpa only [Subgroup.mem_toSubmonoid, Subgroup.mem_op, MulOpposite.unop_mul,
+      MulOpposite.unop_inv, MulOpposite.unop_op, hweight, mul_assoc] using hmem
+  simpa only [mul_assoc, mul_inv_cancel_left, inv_mul_cancel_right, mul_inv_cancel, mul_one] using
+    hK.conj_mem _ hg (t x)
+
 /-- An admissible polygonal loop reduces to triangular relations in any open
 set containing its vertices. If that set is convex, the triangles and all their
 spokes remain in it. This is a reduction to triangles, not to joint meridians. -/
@@ -85,37 +128,9 @@ theorem crossingWord_mem_normalClosure_triangles (p : AdmissiblePLPath x x)
   have hs (u) (hu : u ∈ p.vertices) : Nonempty (z ⟶ u) :=
     hz ⟨u, by simpa only [A, List.mem_toFinset] using hu⟩
   let s := fun u hu => (hs u hu).some
-  let t := fun u => if hu : u ∈ p.vertices then
-    C.segmentCrossingWord ν (s u hu) else 1
-  let K := Subgroup.normalClosure (C.triangleWords ν U)
-  let w := fun {u v : WallComplement (fun P : C.walls => (P : Set V))}
-    (e : u ⟶ v) => MulOpposite.op (C.segmentCrossingWord ν e)
-  have htri (u) (hu : u ∈ p.vertices) (v) (hv : v ∈ p.vertices) (e : u ⟶ v) :
-      (MulOpposite.op (t u) * w e * (MulOpposite.op (t v))⁻¹) ∈ K.op := by
-    have hm : (((s u hu).toPath.cons e).cons (Quiver.reverse (s v hv))).crossingWord ν ∈ K :=
-      Subgroup.subset_normalClosure
-        ⟨z, u, v, s u hu, e, Quiver.reverse (s v hv), hzU, hp u hu, hp v hv, rfl⟩
-    simpa only [Subgroup.mem_op, MulOpposite.unop_mul, MulOpposite.unop_inv,
-      MulOpposite.unop_op, t, dite_eq_left hu, dite_eq_left hv, w, crossingWord_cons,
-      Quiver.Hom.toPath, crossingWord_nil, mul_one,
-      C.segmentCrossingWord_reverse ν hν] using hm
-  have hchain : p.vertices.IsChain (fun u v => ∀ e : u ⟶ v,
-      MulOpposite.op (t u) * w e * (MulOpposite.op (t v))⁻¹ ∈ K.op) := by
-    apply List.isChain_iff_forall_rel_of_append_cons_cons.mpr
-    intro u v l₁ l₂ he e
-    exact htri u (by rw [he]; simp) v (by rw [he]; simp) e
-  have hmem := p.mul_weight_mul_inv_mem_of_isChain K.op.toSubmonoid w
-    (fun u => MulOpposite.op (t u)) hchain
-  have hweight {a b} (q : AdmissiblePLPath a b) :
-      MulOpposite.unop (q.weight w) = q.crossingWord ν := by
-    induction q with
-    | nil => simp
-    | cons q e ih => simp only [weight_cons, MulOpposite.unop_mul, w,
-        MulOpposite.unop_op, ih, crossingWord_cons]
-  have hg : (t x)⁻¹ * p.crossingWord ν * t x ∈ K := by
-    simpa only [Subgroup.mem_toSubmonoid, Subgroup.mem_op, MulOpposite.unop_mul,
-      MulOpposite.unop_inv, MulOpposite.unop_op, hweight, mul_assoc] using hmem
-  simpa only [mul_assoc, mul_inv_cancel_left, inv_mul_cancel_right, mul_inv_cancel, mul_one] using
-    (Subgroup.normalClosure_normal (s := C.triangleWords ν U)).conj_mem _ hg (t x)
+  exact p.crossingWord_mem_of_triangles_mem ν hν _
+    (Subgroup.normalClosure_normal (s := C.triangleWords ν U)) z s
+    (fun u hu v hv e => Subgroup.subset_normalClosure
+      ⟨z, u, v, s u hu, e, Quiver.reverse (s v hv), hzU, hp u hu, hp v hv, rfl⟩)
 
 end Quiver.Path

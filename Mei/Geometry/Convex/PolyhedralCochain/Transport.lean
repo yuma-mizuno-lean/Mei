@@ -183,4 +183,19 @@ theorem wallCrossingSum_loop_eq_zero_of_coboundary_eq_zero
   obtain ⟨f, rfl⟩ := PolyhedralCochain.ofFinsupp_surjective B
   exact he.trans (p.wallCrossingSum_loop_eq_zero_of_eq_coboundary μ c hμ f hB)
 
+/-- Additive transport of a closed wall cochain depends only on endpoints,
+without choosing a common refinement or a primitive for the test paths. -/
+theorem wallCrossingSum_eq_of_coboundary_eq_zero
+    {x y : WallComplement (fun j => (σ j).carrier)} (p q : AdmissiblePLPath x y)
+    (ν : ι → V →ₗ[ℝ] ℝ) (c : ι → E)
+    (hν : ∀ j, c j ≠ 0 → ∀ v, SignType.sign (ν j v) =
+      (σ j).orientation.evalSign (fun _ : Fin 1 => v))
+    (hc : PolyhedralCochain.coboundary
+      (∑ j, PolyhedralCochain.mk (R := R) (σ j) (c j)) = 0) :
+    p.wallCrossingSum ν c = q.wallCrossingSum ν c := by
+  have hp := (p.comp q.reverse).wallCrossingSum_loop_eq_zero_of_coboundary_eq_zero ν c hν hc
+  have hq := (q.comp q.reverse).wallCrossingSum_loop_eq_zero_of_coboundary_eq_zero ν c hν hc
+  rw [wallCrossingSum_comp] at hp hq
+  exact add_right_cancel (hp.trans hq.symm)
+
 end Quiver.Path

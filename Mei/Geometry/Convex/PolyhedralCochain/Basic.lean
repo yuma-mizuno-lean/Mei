@@ -226,6 +226,30 @@ end IsOrientedSubdivision
 
 end OrientedCell
 
+/-- A nonempty rational-normal polyhedron of codimension `k` admits a conormal
+orientation, hence is the carrier of an oriented cell. -/
+theorem IsRationalNormalPolyhedron.exists_orientedCell
+    {h : TauCeti.Toric.IsIntegralLattice i} {P : Set V} {k : ℕ}
+    (hP : IsRationalNormalPolyhedron h P) (hne : P.Nonempty)
+    (hdim : finrank ℝ (affineSpan ℝ P).direction + k = finrank ℝ V) :
+    ∃ σ : OrientedCell h k, σ.carrier = P := by
+  have := h.finiteDimensional
+  let W := (affineSpan ℝ P).direction
+  have hk : finrank ℝ (V ⧸ W) = k := by
+    have hdimW : finrank ℝ W + k = finrank ℝ V := hdim
+    have := W.finrank_quotient_add_finrank
+    omega
+  let b := Module.finBasisOfFinrankEq ℝ (V ⧸ W) hk
+  have hα : b.det.compLinearMap W.mkQ ≠ 0 := by
+    intro hz
+    apply b.det_ne_zero
+    exact AlternatingMap.compLinearMap_injective W.mkQ W.mkQ_surjective
+      (by simpa only [AlternatingMap.zero_compLinearMap] using hz)
+  refine ⟨⟨P, hP, hne, hdim, rayOfNeZero ℝ _ hα, ?_⟩, rfl⟩
+  rw [Module.Ray.isConormal_rayOfNeZero_iff]
+  simpa only [Submodule.conormalFormsEquiv_apply] using
+    (W.conormalFormsEquiv b.det).property
+
 open OrientedCell
 
 variable (R : Type*) [Ring R] (h : TauCeti.Toric.IsIntegralLattice i)
