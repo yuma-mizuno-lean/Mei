@@ -23,8 +23,10 @@ the same additive constant at every point.
 
 An exposed subset meeting the relative interior is the whole ambient set.
 See also `AffineMap.eq_zero_on_of_mem_intrinsicInterior`.
-Distinct exposed facets containing a common nonempty facet meet exactly there,
-even when the ambient set is not convex.
+Distinct equal-dimensional exposed subsets containing a common nonempty facet
+meet exactly there, even when the ambient set is not convex. This adapts the
+argument of `FinitePolyhedralComplex.inter_eq_of_common_facet` in
+`Mei.Geometry.Convex.PolyhedralComplex.Basic`.
 
 A nonempty exposed facet has a canonical outward conormal ray on the direction
 of its parent set. Its representatives vanish precisely on the facet direction
@@ -340,16 +342,14 @@ theorem eq_of_finrank_vectorSpan_eq (hF : IsExposed ℝ P F) (hne : F.Nonempty)
   rw [hl]
   exact ⟨hx, fun y hy => by simpa only [he] using hz'.2 y hy⟩
 
-/-- Distinct exposed facets containing a common nonempty facet meet exactly in
-that common facet. The ambient set need not be convex or polyhedral, and only
-its affine direction needs to be finite-dimensional. -/
+/-- Distinct equal-dimensional exposed subsets containing a common nonempty
+facet meet exactly in that facet. The ambient set need not be convex or
+polyhedral, and only its affine direction needs to be finite-dimensional. -/
 theorem inter_eq_of_common_facet {G Q : Set V}
     (hF : IsExposed ℝ P F) (hG : IsExposed ℝ P G)
     (hQ : IsExposed ℝ F Q) (hne : Q.Nonempty) (hQG : Q ⊆ G) (hFG : F ≠ G)
-    (hFd : Module.finrank ℝ (vectorSpan ℝ F) + 1 =
-      Module.finrank ℝ (vectorSpan ℝ P))
-    (hGd : Module.finrank ℝ (vectorSpan ℝ G) + 1 =
-      Module.finrank ℝ (vectorSpan ℝ P))
+    (hFGd : Module.finrank ℝ (vectorSpan ℝ F) =
+      Module.finrank ℝ (vectorSpan ℝ G))
     (hQd : Module.finrank ℝ (vectorSpan ℝ Q) + 1 =
       Module.finrank ℝ (vectorSpan ℝ F)) : F ∩ G = Q := by
   have : FiniteDimensional ℝ (vectorSpan ℝ F) :=

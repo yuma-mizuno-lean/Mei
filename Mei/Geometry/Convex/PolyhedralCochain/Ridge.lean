@@ -118,7 +118,7 @@ theorem reverse_mem_boundaryFacets_of_subset (σ : OrientedCell h k)
     exact σ.carrier_injOn_boundaryFacets hτ hυ (hcτ.trans (he.trans hcυ.symm))
   have hQF : IsExposed ℝ F Q := by rwa [hcτ] at hQ
   have he := hF.inter_eq_of_common_facet hG hQF hQn
-    (by rwa [hcr, hcυ] at hsub) hFG hFd hGd (by rwa [hcτ] at hQd)
+    (by rwa [hcr, hcυ] at hsub) hFG (by omega) (by rwa [hcτ] at hQd)
   exact σ.reverse_mem_boundaryFacets_of_carrier_eq_inter hτ hυ hr
     (by rw [hcr, hcτ, hcυ, he])
 
