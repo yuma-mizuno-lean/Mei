@@ -54,6 +54,7 @@ theorem coboundary_sweep_add_sweep_coboundary (n : N)
   exact LinearMap.congr_fun he C
 
 /-- Sweeping a closed transverse cochain gives a coboundary cancelling that cochain. -/
+@[simp]
 theorem coboundary_sweep_of_coboundary_eq_zero (n : N)
     (C : transverseSubmodule (R := R) (h := h) (E := E) (k := k + 1) (i n))
     (hC : coboundary (C : PolyhedralCochain R h E (k + 1)) = 0) :
@@ -64,6 +65,7 @@ theorem coboundary_sweep_of_coboundary_eq_zero (n : N)
   simpa only [hz, map_zero, add_zero] using coboundary_sweep_add_sweep_coboundary n C
 
 /-- The canonical swept filling cancels the source precisely when it is closed. -/
+@[simp]
 theorem coboundary_sweep_eq_neg_iff (n : N)
     (C : transverseSubmodule (R := R) (h := h) (E := E) (k := k + 1) (i n)) :
     coboundary (sweep n C) = -(C : PolyhedralCochain R h E (k + 1)) ↔
