@@ -110,13 +110,10 @@ theorem wallCrossingSum_eq_zero_of_coboundary_eq_zero (p : AdmissiblePLPath x x)
       exact hg.symm
     have hsupport : ∀ υ ∈ (PolyhedralCochain.coboundaryPresentation (R := R) g).support,
         ∃ j : J, υ = τ j := by
-      rw [← Finsupp.sum_single g]
-      simp only [Finsupp.sum, map_sum, PolyhedralCochain.coboundaryPresentation_single]
       intro υ hυ
-      obtain ⟨P, hP, hυ⟩ := Finsupp.mem_support_finsetSum υ hυ
-      obtain ⟨ψ, hψ, hυ⟩ := Finsupp.mem_support_finsetSum υ hυ
-      exact ⟨⟨⟨P, hP⟩, ⟨ψ, hψ⟩⟩,
-        ((Finsupp.mem_support_single _ _ _).mp hυ).1⟩
+      obtain ⟨P, hP, hυ⟩ :=
+        PolyhedralCochain.exists_mem_boundaryFacets_of_mem_support_coboundaryPresentation hυ
+      exact ⟨⟨⟨P, hP⟩, ⟨υ, hυ⟩⟩, rfl⟩
     have hpair {u v : WallComplement W} (e : u ⟶ v) :
         OrientedCell.intersectionPairing (R := R) ![u.val, v.val] f =
           OrientedCell.intersectionPairing (R := R) ![u.val, v.val]
