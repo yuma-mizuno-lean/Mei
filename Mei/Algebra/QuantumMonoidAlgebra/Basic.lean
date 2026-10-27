@@ -74,6 +74,10 @@ variable {R Γ : Type*} [CommRing R] [AddCommGroup Γ]
 def monomial (p : Γ) : QuantumMonoidAlgebra q β :=
   TauCeti.TwistedMonoidAlgebra.of (Multiplicative.ofAdd p)
 
+/-- A quantum monomial is the twisted basis vector at its additive exponent. -/
+theorem monomial_def (p : Γ) : monomial q β p =
+    TauCeti.TwistedMonoidAlgebra.of (Multiplicative.ofAdd p) := (rfl)
+
 /-- The zero exponent is the multiplicative identity. -/
 @[simp]
 theorem monomial_zero : monomial q β 0 = 1 := TauCeti.TwistedMonoidAlgebra.of_one
