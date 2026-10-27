@@ -9,6 +9,7 @@ public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Uniqueness
 import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Correction.Step
 import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Obstruction.Existence
 import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Append
+import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Assembly
 
 /-!
 # Existence of outgoing completions
@@ -21,7 +22,8 @@ has finite activity because walls added after order `k` are invisible at order
 
 The construction uses `exists_chamber_trivialization` and
 `exists_consistent_outgoing_extension` for the geometric correction, and
-`levelEquivalent_restrict` and `Refinement.ofEquiv` for passage to the union.
+`ofBirthFamily`, `ofBirthFamily_consistent_iff` and `Refinement.ofEquiv` for
+passage to the union.
 Finite correction families are enumerated solely to obtain one countable index
 type for the union; repeated walls remain separate occurrences.
 
@@ -173,57 +175,89 @@ theorem exists_outgoingCompletion
     (stages (Nat.find j.property)).val[j.val]'(Nat.find_spec j.property)
   have hW (k : ℕ) (j : Fin (stages k).val.length) :
       W ⟨j.val, ⟨k, j.isLt⟩⟩ = (stages k).val[j] := by
-    let m := Nat.find (show ∃ l, j.val < (stages l).val.length from ⟨k, j.isLt⟩)
-    have hm : j.val < (stages m).val.length :=
-      Nat.find_spec (show ∃ l, j.val < (stages l).val.length from ⟨k, j.isLt⟩)
+    have hex : ∃ l, j.val < (stages l).val.length := ⟨k, j.isLt⟩
+    let m := Nat.find hex
+    have hm : j.val < (stages m).val.length := Nat.find_spec hex
     exact ((hprefix m _ (Nat.le_max_left m k)).getElem hm).trans
       ((hprefix k _ (Nat.le_max_right m k)).getElem j.isLt).symm
-  have hbound (k : ℕ) (j : κ) (hj : CompletedGroup.projection k (W j).label ≠ 1) :
-      j.val < (stages k).val.length := by
-    by_contra hjk
-    have hm := Nat.find_spec j.property
-    have hkm : k ≤ Nat.find j.property := by
-      by_contra hmk
-      have := hlength (Nat.le_of_lt (Nat.lt_of_not_ge hmk))
-      exact hjk (lt_of_lt_of_le hm this)
-    exact hj (hinvisible k _ hkm j.val hm (by omega))
-  let E : DirectedDiagram (d := d) h H κ :=
-    { wall := W
-      finite_active := fun k => by
-        apply ((finite_Iio (stages k).val.length).preimage
-          (Subtype.val_injective.injOn : Set.InjOn (Subtype.val : κ → ℕ) _)).subset
-        intro j hj
-        exact hbound k j hj }
-  let F := D.append E
-  -- At each cutoff the union restricts, up to reindexing, to its consistent finite stage.
-  have hfinite (k : ℕ) : F.LevelEquivalent (D.listDiagram (stages k).val) k := by
-    let f : ι ⊕ Fin (stages k).val.length → ι ⊕ κ :=
-      Sum.map id (fun j => ⟨j.val, ⟨k, j.isLt⟩⟩)
-    have hf : Function.Injective f := Sum.map_injective.mpr
-      ⟨Function.injective_id, fun _ _ he => Fin.ext (congrArg Subtype.val he)⟩
-    have hactive : F.active k ⊆ range f := by
-      rintro (j | j) hj
-      · exact ⟨.inl j, rfl⟩
-      · have hjk := hbound k j (by simpa only [mem_active, F, append_wall_inr] using hj)
-        exact ⟨.inr ⟨j.val, hjk⟩, congrArg Sum.inr (Subtype.ext rfl)⟩
-    have hreindex : (F.restrict (range f)).LevelEquivalent
-        (D.listDiagram (stages k).val) k :=
-      (Refinement.ofEquiv (Equiv.ofInjective f hf) (by
-        rintro (j | j)
-        · simp [listDiagram, F, f, Equiv.ofInjective_apply]
-        · simp [listDiagram, F, f, E, hW, Equiv.ofInjective_apply])).levelEquivalent k
-    exact (F.levelEquivalent_restrict hactive).trans hreindex
-  refine ⟨κ, inferInstance, F, ⟨fun _ => append_wall_inl _ _ _, ?_, ?_⟩, ?_⟩
+  -- Partition corrections by their first stage; the initial diagram is born at zero.
+  let birth (j : κ) := Nat.find j.property
+  let C (n : ℕ) := {j : κ // birth j = n}
+  have hpos (n : ℕ) (j : C n) : j.val.val < (stages n).val.length := by
+    exact lt_of_lt_of_le (Nat.find_spec j.val.property)
+      (hlength (le_of_eq j.property))
+  let (n : ℕ) : Finite (C n) :=
+    Finite.of_injective (fun j : C n => (⟨j.val.val, hpos n j⟩ : Fin (stages n).val.length))
+      (fun _ _ he => Subtype.ext (Subtype.ext (congrArg Fin.val he)))
+  let B (n : ℕ) := (D.restrict {j | 0 = n}).append (ofFinite (fun j : C n => W j.val))
+  have hbirth : ∀ n k, k < n → ∀ j, CompletedGroup.projection k ((B n).wall j).label = 1 := by
+    intro n k hkn j
+    rcases j with j | j
+    · have hn : 0 = n := j.property
+      omega
+    · have hjk : (stages k).val.length ≤ j.val.val := by
+        by_contra hj
+        have := Nat.find_min' j.val.property (by omega : j.val.val < (stages k).val.length)
+        have hn : Nat.find j.val.property = n := j.property
+        omega
+      simp only [B, append_wall_inr, ofFinite_wall]
+      rw [hW n ⟨j.val.val, hpos n j⟩]
+      exact hinvisible k n (by omega) j.val.val (hpos n j) hjk
+  let A := ofBirthFamily B hbirth
+  let e : (Σ n, {j : ι // 0 = n} ⊕ C n) ≃ ι ⊕ κ :=
+    (Equiv.sigmaSumDistrib _ _).trans
+      (Equiv.sumCongr (Equiv.sigmaFiberEquiv (fun _ : ι => (0 : ℕ)))
+        (Equiv.sigmaFiberEquiv birth))
+  let F : DirectedDiagram (d := d) h H (ι ⊕ κ) :=
+    { wall := A.wall ∘ e.symm
+      finite_active := fun k => (A.finite_active k).preimage e.symm.injective.injOn }
+  have hF (j) : F.wall j = Sum.elim D.wall W j := by
+    cases j <;> simp [F, A, B, e, Equiv.sigmaSumDistrib, Equiv.sigmaFiberEquiv, Sigma.map]
+  -- The bounded birth families contain exactly the occurrences in the finite stage.
+  have hconsistent : A.Consistent := by
+    apply (ofBirthFamily_consistent_iff B hbirth).mpr
+    intro k
+    let f : ι ⊕ Fin (stages k).val.length → {j : Σ n, {j : ι // 0 = n} ⊕ C n // j.1 ≤ k}
+      | .inl j => ⟨⟨0, .inl ⟨j, rfl⟩⟩, Nat.zero_le k⟩
+      | .inr j => ⟨⟨birth ⟨j.val, ⟨k, j.isLt⟩⟩, .inr ⟨⟨j.val, ⟨k, j.isLt⟩⟩, rfl⟩⟩,
+          Nat.find_min' _ j.isLt⟩
+    have hef (j) : e (f j).val = Sum.map id
+        (fun j : Fin (stages k).val.length => (⟨j.val, ⟨k, j.isLt⟩⟩ : κ)) j := by
+      cases j <;> simp [f, e, Equiv.sigmaSumDistrib, Equiv.sigmaFiberEquiv]
+    have hf : Function.Injective f := by
+      intro x y he
+      exact (Sum.map_injective.mpr ⟨Function.injective_id,
+        fun _ _ he => Fin.ext (congrArg Subtype.val he)⟩)
+        (by simpa only [hef] using congrArg (fun j => e j.val) he)
+    have hs : Function.Surjective f := by
+      rintro ⟨⟨n, j | j⟩, hn⟩
+      · refine ⟨.inl j.val, Subtype.ext (e.injective ?_)⟩
+        simp [f, e, Equiv.sigmaSumDistrib, Equiv.sigmaFiberEquiv]
+      · have hjk : j.val.val < (stages k).val.length :=
+          lt_of_lt_of_le (hpos n j) (hlength hn)
+        refine ⟨.inr ⟨j.val.val, hjk⟩, Subtype.ext (e.injective ?_)⟩
+        simp [f, e, Equiv.sigmaSumDistrib, Equiv.sigmaFiberEquiv]
+    have hw (j) : (D.listDiagram (stages k).val).wall j =
+        (A.restrict {j | j.1 ≤ k}).wall (f j) := by
+      cases j with
+      | inl j => simp [listDiagram, A, B, f]
+      | inr j => simpa only [listDiagram, append_wall_inr, ofFinite_wall,
+          restrict_wall, ofBirthFamily_wall, A, B, f] using (hW k j).symm
+    exact ((Refinement.ofEquiv (Equiv.ofBijective f ⟨hf, hs⟩) hw).levelEquivalent k).symm.consistent
+      (stages k).property.1
+  refine ⟨κ, inferInstance, F, ⟨fun j => hF (.inl j), ?_, ?_⟩, ?_⟩
   · intro j
-    simpa only [F, append_wall_inr, E] using
+    simpa only [hF, Sum.elim_inr] using
       ((stages (Nat.find j.property)).property.2 (W j)
         (List.getElem_mem (Nat.find_spec j.property))).1
-  · exact (F.consistent_iff).mpr fun k =>
-      (hfinite k).symm.consistent (stages k).property.1
+  · exact ((Refinement.ofEquiv (D := F) (E := A) e (by
+        intro j
+        simp only [F, Function.comp_apply, Equiv.symm_apply_apply])).equivalent.consistent_iff).mpr
+      hconsistent
   · intro j
     obtain ⟨_, n, hn, _, a, ha, he, hb⟩ :=
       (stages (Nat.find j.property)).property.2 (W j)
         (List.getElem_mem (Nat.find_spec j.property))
-    simpa only [F, append_wall_inr, E, mem_active] using ⟨n, hn, a, ha, he, hb⟩
+    simpa only [hF, Sum.elim_inr, mem_active] using ⟨n, hn, a, ha, he, hb⟩
 
 end Mei.DirectedDiagram
