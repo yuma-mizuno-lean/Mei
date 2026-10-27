@@ -33,6 +33,16 @@ namespace Mei.FinitePolyhedralComplex
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i} (C : FinitePolyhedralComplex h)
 
+/-- Two full-dimensional cells with a common interior point are equal. -/
+theorem eq_of_mem_interior_cellsOfCodimension_zero {P Q : C.cellsOfCodimension 0}
+    {x : V} (hxP : x ∈ interior (P : Set V)) (hxQ : x ∈ interior (Q : Set V)) :
+    P = Q := by
+  apply Subtype.ext
+  exact C.eq_of_mem_intrinsicInterior
+    ((C.mem_cellsOfCodimension 0 _).mp P.property).1
+    ((C.mem_cellsOfCodimension 0 _).mp Q.property).1
+    (interior_subset_intrinsicInterior hxP) (interior_subset_intrinsicInterior hxQ)
+
 /-- A full-dimensional cell spans the ambient affine space. -/
 theorem affineSpan_eq_top_of_mem_cellsOfCodimension_zero {P : Set V}
     (hP : P ∈ C.cellsOfCodimension 0) : affineSpan ℝ P = ⊤ := by

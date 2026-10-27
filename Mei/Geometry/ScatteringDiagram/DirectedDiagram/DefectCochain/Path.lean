@@ -69,18 +69,10 @@ private theorem positive_segment_log
   have he' : crossings x y = {(⟨(σ W).carrier, (hσ W).symm ▸ W.property⟩, a)} := by
     simpa only [hσ W] using he
   obtain ⟨hxm, hyp⟩ := (cross W).mem_interiors_of_crossings_singleton e a he' hv
-  have hP : P = (cross W).minus := by
-    apply Subtype.ext
-    exact (D.adaptedComplex (k + 1)).eq_of_mem_intrinsicInterior
-      (((D.adaptedComplex (k + 1)).mem_cellsOfCodimension 0 _).mp P.property).1
-      (((D.adaptedComplex (k + 1)).mem_cellsOfCodimension 0 _).mp (cross W).minus.property).1
-      (interior_subset_intrinsicInterior hx) (interior_subset_intrinsicInterior hxm)
-  have hQ : Q = (cross W).plus := by
-    apply Subtype.ext
-    exact (D.adaptedComplex (k + 1)).eq_of_mem_intrinsicInterior
-      (((D.adaptedComplex (k + 1)).mem_cellsOfCodimension 0 _).mp Q.property).1
-      (((D.adaptedComplex (k + 1)).mem_cellsOfCodimension 0 _).mp (cross W).plus.property).1
-      (interior_subset_intrinsicInterior hy) (interior_subset_intrinsicInterior hyp)
+  have hP : P = (cross W).minus :=
+    (D.adaptedComplex (k + 1)).eq_of_mem_interior_cellsOfCodimension_zero hx hxm
+  have hQ : Q = (cross W).plus :=
+    (D.adaptedComplex (k + 1)).eq_of_mem_interior_cellsOfCodimension_zero hy hyp
   rw [hP, hQ, (cross W).levelPathProduct_eq_label_of_crossings_singleton e a he' hv
     ((D.adaptedPathPrefunctor (k + 1)).map e)
     (D.adaptedPathPrefunctor_obj_val _ _) (D.adaptedPathPrefunctor_obj_val _ _),
@@ -105,13 +97,8 @@ theorem log_levelPathProduct_eq_intersectionPairing_of_subsingleton
   · have hyP := (D.adaptedComplex (k + 1)).lineMap_mem_interior_of_crossings_eq_empty
       P.property hx he 1 (by simp)
     have hPQ : P = Q := by
-      apply Subtype.ext
-      exact (D.adaptedComplex (k + 1)).eq_of_mem_intrinsicInterior
-        (((D.adaptedComplex (k + 1)).mem_cellsOfCodimension 0 _).mp P.property).1
-        (((D.adaptedComplex (k + 1)).mem_cellsOfCodimension 0 _).mp Q.property).1
-        (interior_subset_intrinsicInterior
-          (by simpa only [AffineMap.lineMap_apply_one] using hyP))
-        (interior_subset_intrinsicInterior hy)
+      exact (D.adaptedComplex (k + 1)).eq_of_mem_interior_cellsOfCodimension_zero
+        (by simpa only [AffineMap.lineMap_apply_one] using hyP) hy
     subst Q
     rw [D.levelPathProduct_toPath_eq_adaptedDiagram
       (fun W => h.realCharacter (cross W).normal)
@@ -247,12 +234,8 @@ theorem exists_subdivision_log_levelPathProduct_eq_sum_intersectionPairing
             (d.truncationMap ℒ (Nat.le_succ k)).ker) : d.truncatedLie ℒ (k + 1)) := by
   obtain ⟨q, hpq, hq⟩ := p.exists_subdivision_subsingleton_crossings
   obtain ⟨Q', hy', hlog⟩ := sum_pairings_of_single_crossings σ hσ cross hk b t ht q hq P hx
-  have hQ : Q' = Q := by
-    apply Subtype.ext
-    exact (D.adaptedComplex (k + 1)).eq_of_mem_intrinsicInterior
-      (((D.adaptedComplex (k + 1)).mem_cellsOfCodimension 0 _).mp Q'.property).1
-      (((D.adaptedComplex (k + 1)).mem_cellsOfCodimension 0 _).mp Q.property).1
-      (interior_subset_intrinsicInterior hy') (interior_subset_intrinsicInterior hy)
+  have hQ : Q' = Q :=
+    (D.adaptedComplex (k + 1)).eq_of_mem_interior_cellsOfCodimension_zero hy' hy
   subst Q'
   refine ⟨q, hpq, hq, ?_⟩
   have hprod := (D.adaptedDiagram (k + 1) (fun W => h.realCharacter (cross W).normal)
