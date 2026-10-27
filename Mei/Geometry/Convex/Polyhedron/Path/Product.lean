@@ -22,8 +22,10 @@ the inverse label. Reversal inverts transport, and group homomorphisms preserve 
 
 This evaluates `WallComplement.signedCrossingEvent` using Mathlib's
 `Finset.noncommProd`, rather than choosing an enumeration of simultaneous walls.
-No commutation is required between events at different times. Polygonal transport
-uses Mathlib's `Quiver.Path.weight` in the opposite group to reverse multiplication order.
+Pointwise multiplication of locally commuting label families uses
+`Finset.noncommProd_mul_distrib`. No commutation is required between events at
+different times. Polygonal transport uses Mathlib's `Quiver.Path.weight` in the
+opposite group to reverse multiplication order.
 -/
 
 public section
@@ -99,6 +101,40 @@ theorem map_crossingEventProduct (f : G →* K) (e : x ⟶ y) (t : ℝ) :
       crossingEventProduct ν (fun i => f (label i))
         (fun i j h => (hcomm i j h).map f) e t := by
   simp only [crossingEventProduct, Finset.map_noncommProd, map_zpow]
+
+/-- Pointwise multiplication of locally commuting labels multiplies each crossing
+event. The families may fail to commute at different events. -/
+@[simp]
+theorem crossingEventProduct_mul (ν : ι → V →ₗ[ℝ] ℝ) (a c : ι → G)
+    (ha : ∀ j k, affineSpan ℝ (W j) = affineSpan ℝ (W k) → Commute (a j) (a k))
+    (hc : ∀ j k, affineSpan ℝ (W j) = affineSpan ℝ (W k) → Commute (c j) (c k))
+    (hac : ∀ j k, affineSpan ℝ (W j) = affineSpan ℝ (W k) → Commute (a j) (c k))
+    {x y : WallComplement W} (e : x ⟶ y) (t : ℝ) :
+    crossingEventProduct ν (fun j => a j * c j)
+        (fun j k hjk => ((ha j k hjk).mul_right (hac j k hjk)).mul_left
+          (((hac k j hjk.symm).symm).mul_right (hc j k hjk))) e t =
+      crossingEventProduct ν a ha e t * crossingEventProduct ν c hc e t := by
+  classical
+  have hspan {j k : ι × ℤ} (hj : j ∈ signedCrossingEvent ν x y t)
+      (hk : k ∈ signedCrossingEvent ν x y t) :
+      affineSpan ℝ (W j.1) = affineSpan ℝ (W k.1) := by
+    exact affineSpan_eq_of_mem_crossingWalls e
+      ((mem_crossingWalls x y t j.1).mpr ((mem_signedCrossingEvent _ _ _ _ _ _).mp hj).1)
+      ((mem_crossingWalls x y t k.1).mpr ((mem_signedCrossingEvent _ _ _ _ _ _).mp hk).1)
+  let comm := fun j k hjk =>
+    ((ha j k hjk).mul_right (hac j k hjk)).mul_left
+      (((hac k j hjk.symm).symm).mul_right (hc j k hjk))
+  rw [crossingEventProduct_eq_noncommProd ν (fun j => a j * c j) comm e t
+    (signedCrossingEvent_pairwise ν _ comm e t),
+    crossingEventProduct_eq_noncommProd ν a ha e t
+      (signedCrossingEvent_pairwise ν a ha e t),
+    crossingEventProduct_eq_noncommProd ν c hc e t
+      (signedCrossingEvent_pairwise ν c hc e t)]
+  have hpow (j : ι × ℤ) : (a j.1 * c j.1) ^ j.2 = a j.1 ^ j.2 * c j.1 ^ j.2 :=
+    (hac _ _ rfl).mul_zpow _
+  simp only [hpow]
+  exact Finset.noncommProd_mul_distrib _ _ _ _
+    (fun j hj k hk _ => ((hac _ _ (hspan hk hj)).symm).zpow_zpow _ _)
 
 /-- Reversing a segment inverts each combined event and reflects its time. -/
 theorem crossingEventProduct_reverse

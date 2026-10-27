@@ -21,12 +21,15 @@ are preserved, and the result depends only on the underlying Lie homomorphism,
 not on the choice of cutoff modulus.
 The canonical exponential of an original Lie element is computed in each finite
 quotient and is natural for these completed maps.
+For a nilpotent Lie algebra, `PositiveDegrees.bchToCompletion` bundles this map
+as a group homomorphism. It is an equivalence when some degree ideal vanishes.
 
 The finite maps use `LieHom.bchGroupMap` and `GradedLieHom.truncatedMap`.
 The inverse-limit construction, cutoff comparison and ordered-product law use
 `Mei.CompletedGroup.map`, `Mei.CompletedGroup.map_eq` and
 `Mei.CompletedGroup.map_orderedProd`, on the compatible-family carrier obtained
 from Mathlib's `GrpCat.sectionsSubgroup`.
+The canonical BCH homomorphism uses `Mei.CompletedGroup.lift`.
 -/
 
 public section
@@ -138,6 +141,95 @@ theorem commute_expToCompletion_of_lie_eq_zero {x y : L} (h : ⁅x, y⁆ = 0) :
   rw [map_mul, map_mul, projection_expToCompletion, projection_expToCompletion]
   apply BCHGroup.commute_exp_of_lie_eq_zero
   rw [← LieHom.map_lie, h, map_zero]
+
+section Nilpotent
+
+variable [LieRing.IsNilpotent L]
+
+/-- The canonical homomorphism from a nilpotent BCH group to its degree completion. -/
+def bchToCompletion : BCHGroup L →* d.completedBCHGroup ℒ :=
+  CompletedGroup.lift (fun k => (d.degreeIdeal ℒ k).mkQ.bchGroupMap) (by
+    intro k l h
+    -- The lift uses categorical tower objects; state its law on the concrete BCH groups.
+    change (d.truncationMap ℒ h).bchGroupMap.comp
+      (d.degreeIdeal ℒ l).mkQ.bchGroupMap = (d.degreeIdeal ℒ k).mkQ.bchGroupMap
+    rw [← LieHom.bchGroupMap_comp]
+    congr 1
+    ext x
+    simp [LieIdeal.mkQ_apply])
+
+/-- The canonical BCH homomorphism is computed by the Lie quotient at each order. -/
+@[simp]
+theorem projection_bchToCompletion (k : ℕ) (g : BCHGroup L) :
+    CompletedGroup.projection k (d.bchToCompletion ℒ g) =
+      (d.degreeIdeal ℒ k).mkQ.bchGroupMap g := by
+  unfold bchToCompletion
+  exact CompletedGroup.projection_lift _ _ k g
+
+/-- The canonical homomorphism sends an exponential to its completed exponential. -/
+@[simp]
+theorem bchToCompletion_exp (x : L) :
+    d.bchToCompletion ℒ (BCHGroup.exp x) = d.expToCompletion ℒ x := by
+  apply CompletedGroup.ext
+  intro k
+  rw [projection_bchToCompletion, LieHom.bchGroupMap_exp, projection_expToCompletion]
+
+/-- A positive grading with a vanishing cutoff ideal is already complete as a BCH group. -/
+theorem bchToCompletion_bijective {k : ℕ} (hk : d.degreeIdeal ℒ k = ⊥) :
+    Function.Bijective (d.bchToCompletion ℒ) := by
+  have hinj : Function.Injective (d.degreeIdeal ℒ k).mkQ := by
+    rw [← LieHom.ker_eq_bot, LieIdeal.mkQ_ker, hk]
+  refine ⟨?_, ?_⟩
+  · intro x y hxy
+    apply BCHGroup.log_injective
+    apply hinj
+    have hp := congrArg (fun z => BCHGroup.log (L := d.truncatedLie ℒ k)
+      (CompletedGroup.projection k z)) hxy
+    simpa only [projection_bchToCompletion, LieHom.log_bchGroupMap] using hp
+  · intro g
+    obtain ⟨x, hx⟩ := LieHom.bchGroupMap_surjective
+      (d.degreeIdeal ℒ k).surjective_mkQ (CompletedGroup.projection k g)
+    refine ⟨x, CompletedGroup.ext fun l => ?_⟩
+    -- Compare at a common upper cutoff, where a representative also determines
+    -- the order-k component and hence, by injectivity, the original BCH element.
+    obtain ⟨y, hy⟩ := LieHom.bchGroupMap_surjective
+      (d.degreeIdeal ℒ (max k l)).surjective_mkQ
+      (CompletedGroup.projection (max k l) g)
+    have hrep (a : ℕ) (ha : a ≤ max k l) :
+        (d.degreeIdeal ℒ a).mkQ.bchGroupMap y = CompletedGroup.projection a g := by
+      have he : (d.truncationMap ℒ ha).bchGroupMap
+          (CompletedGroup.projection (max k l) g) = CompletedGroup.projection a g :=
+        CompletedGroup.map_projection a (max k l) ha g
+      have hsquare : (d.truncationMap ℒ ha).comp
+          (d.degreeIdeal ℒ (max k l)).mkQ = (d.degreeIdeal ℒ a).mkQ := by
+        ext z
+        simp only [LieHom.comp_apply, LieIdeal.mkQ_apply, truncationMap_mk]
+      have hs := congrArg (fun f => f.bchGroupMap y) hsquare
+      rw [LieHom.bchGroupMap_comp, MonoidHom.comp_apply] at hs
+      exact hs.symm.trans ((congrArg (d.truncationMap ℒ ha).bchGroupMap hy).trans he)
+    have hyx : y = x := LieHom.bchGroupMap_injective hinj
+      ((hrep k (le_max_left _ _)).trans hx.symm)
+    rw [projection_bchToCompletion, ← hyx]
+    exact hrep l (le_max_right _ _)
+
+/-- For a bounded positive grading, the BCH group equals its degree completion. -/
+def bchCompletionEquiv {k : ℕ} (hk : d.degreeIdeal ℒ k = ⊥) :
+    BCHGroup L ≃* d.completedBCHGroup ℒ :=
+  MulEquiv.ofBijective (d.bchToCompletion ℒ) (d.bchToCompletion_bijective ℒ hk)
+
+/-- The bounded-completion equivalence is the canonical BCH homomorphism. -/
+@[simp]
+theorem bchCompletionEquiv_apply {k : ℕ} (hk : d.degreeIdeal ℒ k = ⊥) (g : BCHGroup L) :
+    d.bchCompletionEquiv ℒ hk g = d.bchToCompletion ℒ g := (rfl)
+
+/-- The inverse bounded-completion equivalence recovers the original exponential. -/
+@[simp]
+theorem bchCompletionEquiv_symm_expToCompletion {k : ℕ} (hk : d.degreeIdeal ℒ k = ⊥)
+    (x : L) :
+    (d.bchCompletionEquiv ℒ hk).symm (d.expToCompletion ℒ x) = BCHGroup.exp x := by
+  rw [← bchToCompletion_exp, ← bchCompletionEquiv_apply d ℒ hk, MulEquiv.symm_apply_apply]
+
+end Nilpotent
 
 end PositiveDegrees
 
