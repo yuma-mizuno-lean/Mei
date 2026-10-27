@@ -137,6 +137,12 @@ instance truncatedLie_zero_subsingleton : Subsingleton (d.truncatedLie ℒ 0) :=
     obtain ⟨x, rfl⟩ := (d.degreeIdeal ℒ 0).surjective_mkQ x
     exact (d.degreeIdeal ℒ 0).mkQ_eq_zero.mpr (by simp)
 
+/-- The order-one truncation is abelian: brackets of positive degrees have
+order at least two. -/
+instance truncatedLie_one_isLieAbelian : IsLieAbelian (d.truncatedLie ℒ 1) :=
+  (LieModule.trivial_iff_lower_central_eq_bot R _ _).mpr
+    (d.lowerCentralSeries_truncatedLie_eq_bot ℒ 1)
+
 /-- The degree-`n` piece of the truncation is the image of the original degree-`n` piece. -/
 def truncatedGrading (k : ℕ) (n : N) : Submodule R (d.truncatedLie ℒ k) :=
   (ℒ n).map (d.degreeIdeal ℒ k).toSubmodule.mkQ
