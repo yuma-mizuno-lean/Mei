@@ -8,6 +8,7 @@ module
 public import Mei.Geometry.Convex.PolyhedralComplex.Basic
 public import Mei.Geometry.Convex.Polyhedron.SingularSupport
 public import Mei.Geometry.Convex.Polyhedron.Face
+import Mei.Geometry.Affine.Transverse
 
 /-!
 # Walls, joints and regular points of finite polyhedral complexes
@@ -24,6 +25,9 @@ Near a relative interior point, the skeleton of the same or greater codimension
 agrees with that cell. One ball isolates it from its boundary and all other cells
 of the same codimension, while meeting only cells containing it.
 
+A set meeting a joint, with affine direction disjoint from the joint direction,
+meets the skeleton at exactly one point in a region meeting only cells incident
+to that joint. This supplies the isolation conditions for transverse triangular loops.
 All cells may be unbounded and may have lineality.
 
 ## References
@@ -32,6 +36,7 @@ All cells may be unbounded and may have lineality.
 * Mei's `Mei.Convex.intrinsicFrontier_eq_iUnion_active` and
   `AffineMap.finrank_direction_inter_zero_lt`.
 * Mei's `AffineSubspace.finrank_direction_inf_add_one_lt`.
+* Mei's `AffineSubspace.subsingleton_inter_of_disjoint_direction`.
 -/
 
 public section
@@ -360,6 +365,45 @@ theorem disjoint_intrinsicFrontier (hJ : J ∈ C.joints)
   have hle := Submodule.finrank_mono (AffineSubspace.direction_le
     (affineSpan_mono ℝ (hinc Q hQC ⟨y, hyU, hyQ⟩)))
   omega
+
+/-- In a region meeting only cells incident to a joint, a set whose affine
+direction is disjoint from the joint direction meets the skeleton in exactly one
+point whenever it meets the joint. This point is in the joint's relative
+interior, and the set misses the joint boundary and every other joint. -/
+theorem exists_isolating_point_of_disjoint_direction (hJ : J ∈ C.joints)
+    (hinc : ∀ Q ∈ C.cells, (U ∩ Q).Nonempty → J ⊆ Q)
+    {S : Set V} (hSU : S ⊆ U) (hmeet : (S ∩ J).Nonempty)
+    (htrans : Disjoint (affineSpan ℝ J).direction (affineSpan ℝ S).direction) :
+    ∃ q ∈ intrinsicInterior ℝ J,
+      S ∩ (C.codimensionAtLeast 2).support = {q} ∧
+      Disjoint S (intrinsicFrontier ℝ J) ∧
+      ∀ Q ∈ C.joints, Q ≠ J → Disjoint S Q := by
+  have := h.finiteDimensional
+  obtain ⟨q, hqS, hqJ⟩ := hmeet
+  have hsub := (affineSpan ℝ J).subsingleton_inter_of_disjoint_direction
+    (affineSpan ℝ S) htrans
+  have hfront := (C.disjoint_intrinsicFrontier hJ hinc).mono_left hSU
+  have hqint : q ∈ intrinsicInterior ℝ J := by
+    rw [← closure_sdiff_intrinsicFrontier (𝕜 := ℝ)]
+    exact ⟨subset_closure hqJ, hfront.notMem_of_mem_left hqS⟩
+  refine ⟨q, hqint, Set.Subset.antisymm ?_ ?_, hfront, ?_⟩
+  · rintro y ⟨hyS, hys⟩
+    have hyJ := C.inter_support_codimensionAtLeast_two_subset hJ hinc ⟨hSU hyS, hys⟩
+    exact Set.mem_singleton_iff.mpr (hsub
+      ⟨subset_affineSpan ℝ J hyJ, subset_affineSpan ℝ S hyS⟩
+      ⟨subset_affineSpan ℝ J hqJ, subset_affineSpan ℝ S hqS⟩)
+  · rintro y (rfl : y = q)
+    exact ⟨hqS, mem_support.mpr ⟨J,
+      C.cellsOfCodimension_subset_codimensionAtLeast_cells 2 hJ, hqJ⟩⟩
+  · intro Q hQ hne
+    apply Set.disjoint_left.mpr
+    intro y hyS hyQ
+    obtain ⟨hJC, hdimJ⟩ := (C.mem_cellsOfCodimension 2 J).mp hJ
+    obtain ⟨hQC, hdimQ⟩ := (C.mem_cellsOfCodimension 2 Q).mp hQ
+    have hJQ := hinc Q hQC ⟨y, hSU hyS, hyQ⟩
+    have hface := (isPolyhedralFace_iff.mp (C.face_of_subset hJC hQC hJQ)).2
+    exact hne (hface.eq_of_finrank_vectorSpan_eq (C.nonempty J hJC)
+      (by rw [← direction_affineSpan, ← direction_affineSpan]; omega)).symm
 
 /-- If a wall contains the joint `J`, the points of `J` are singular for the walls. -/
 theorem mem_singularSupport_of_mem_joint (hJ : J ∈ C.joints) {P : C.walls}

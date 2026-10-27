@@ -33,6 +33,12 @@ plane would meet `J` on an edge, by `Mei.exists_mem_segment_sub_mem_of_not_isCom
 contradicting admissibility of that edge. If no wall contains `J`, no wall meets
 `U`, so all crossing words in `U` are trivial.
 
+The local generators in `jointTriangleWords` satisfy the full isolation conditions: their
+filled triangles meet the skeleton at one relative interior point of the joint,
+avoid its relative boundary and every other joint, and meet only incident cells.
+This identification uses `FinitePolyhedralComplex.exists_isolating_point_of_disjoint_direction`
+and `AffineSubspace.subsingleton_inter_of_disjoint_direction`.
+
 The separating functional comes from Mathlib's
 `geometric_hahn_banach_compact_closed`; the pencil coefficients come from
 `mem_span_of_iInf_ker_le_ker` and the integral joint equations of
@@ -52,35 +58,89 @@ variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ 
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
   (C : FinitePolyhedralComplex h)
 
-/-- Words of admissible three-edge loops with vertices in `U` whose filled triangle
-meets `J` and spans a plane complementary to the direction of `J`. -/
+/-- Words of admissible triangular meridians in `U` isolating `J`. The filled
+triangle meets the codimension-two skeleton at one relative interior point of
+`J`, its boundary avoids `J`, and it avoids the relative boundary of `J` and
+every other joint while meeting only cells containing `J`. Both orientations of
+the boundary are retained. -/
 def jointTriangleWords (ν : C.walls → V →ₗ[ℝ] ℝ) (J U : Set V) : Set (FreeGroup C.walls) :=
   {g | ∃ (x y z : WallComplement (fun P : C.walls => (P : Set V)))
-    (e : x ⟶ y) (f : y ⟶ z) (r : z ⟶ x),
-    x.val ∈ U ∧ y.val ∈ U ∧ z.val ∈ U ∧
-      (convexHull ℝ {x.val, y.val, z.val} ∩ J).Nonempty ∧
+    (e : x ⟶ y) (f : y ⟶ z) (r : z ⟶ x) (q : V),
+    q ∈ intrinsicInterior ℝ J ∧
+      Disjoint (segment ℝ x.val y.val ∪ segment ℝ y.val z.val ∪ segment ℝ z.val x.val) J ∧
+      convexHull ℝ {x.val, y.val, z.val} ⊆ U ∧
       IsCompl (affineSpan ℝ J).direction (vectorSpan ℝ {x.val, y.val, z.val}) ∧
+      convexHull ℝ {x.val, y.val, z.val} ∩ (C.codimensionAtLeast 2).support = {q} ∧
+      Disjoint (convexHull ℝ {x.val, y.val, z.val}) (intrinsicFrontier ℝ J) ∧
+      (∀ Q ∈ C.joints, Q ≠ J → Disjoint (convexHull ℝ {x.val, y.val, z.val}) Q) ∧
+      (∀ Q ∈ C.cells, (convexHull ℝ {x.val, y.val, z.val} ∩ Q).Nonempty → J ⊆ Q) ∧
       g = ((e.toPath.cons f).cons r).crossingWord ν}
 
-/-- The membership characterization of the transverse joint triangle words. -/
+/-- Membership records the actual admissible boundary and every isolation condition. -/
 @[simp]
 theorem mem_jointTriangleWords (ν : C.walls → V →ₗ[ℝ] ℝ) (J U : Set V)
     (g : FreeGroup C.walls) :
+    g ∈ C.jointTriangleWords ν J U ↔
+      ∃ (x y z : WallComplement (fun P : C.walls => (P : Set V)))
+        (e : x ⟶ y) (f : y ⟶ z) (r : z ⟶ x) (q : V),
+        q ∈ intrinsicInterior ℝ J ∧
+          Disjoint (segment ℝ x.val y.val ∪ segment ℝ y.val z.val ∪ segment ℝ z.val x.val) J ∧
+          convexHull ℝ {x.val, y.val, z.val} ⊆ U ∧
+          IsCompl (affineSpan ℝ J).direction (vectorSpan ℝ {x.val, y.val, z.val}) ∧
+          convexHull ℝ {x.val, y.val, z.val} ∩ (C.codimensionAtLeast 2).support = {q} ∧
+          Disjoint (convexHull ℝ {x.val, y.val, z.val}) (intrinsicFrontier ℝ J) ∧
+          (∀ Q ∈ C.joints, Q ≠ J → Disjoint (convexHull ℝ {x.val, y.val, z.val}) Q) ∧
+          (∀ Q ∈ C.cells, (convexHull ℝ {x.val, y.val, z.val} ∩ Q).Nonempty → J ⊆ Q) ∧
+          g = ((e.toPath.cons f).cons r).crossingWord ν := Iff.rfl
+
+/-- Isolating joint meridians are triangular relations in the same region. -/
+theorem jointTriangleWords_subset_triangleWords (ν : C.walls → V →ₗ[ℝ] ℝ) (J U : Set V) :
+    C.jointTriangleWords ν J U ⊆ C.triangleWords ν U := by
+  rintro g ⟨x, y, z, e, f, r, q, -, -, hU, -, -, -, -, -, rfl⟩
+  exact (C.mem_triangleWords ν U _).mpr ⟨x, y, z, e, f, r,
+    hU (subset_convexHull ℝ _ (by simp)), hU (subset_convexHull ℝ _ (by simp)),
+    hU (subset_convexHull ℝ _ (by simp)), rfl⟩
+
+variable {C} {J U : Set V}
+
+/-- For a joint contained in a wall, a transverse admissible triangle meeting
+that joint satisfies every meridian isolation condition in a convex region
+meeting only cells incident to the joint. -/
+theorem mem_jointTriangleWords_iff_of_incident_wall (ν : C.walls → V →ₗ[ℝ] ℝ)
+    (hJ : J ∈ C.joints) (hU : Convex ℝ U)
+    (hinc : ∀ Q ∈ C.cells, (U ∩ Q).Nonempty → J ⊆ Q)
+    {P : C.walls} (hJP : J ⊆ P) (g : FreeGroup C.walls) :
     g ∈ C.jointTriangleWords ν J U ↔
       ∃ (x y z : WallComplement (fun P : C.walls => (P : Set V)))
         (e : x ⟶ y) (f : y ⟶ z) (r : z ⟶ x),
         x.val ∈ U ∧ y.val ∈ U ∧ z.val ∈ U ∧
           (convexHull ℝ {x.val, y.val, z.val} ∩ J).Nonempty ∧
           IsCompl (affineSpan ℝ J).direction (vectorSpan ℝ {x.val, y.val, z.val}) ∧
-          g = ((e.toPath.cons f).cons r).crossingWord ν := Iff.rfl
-
-/-- Transverse joint triangles are triangular relations. -/
-theorem jointTriangleWords_subset_triangleWords (ν : C.walls → V →ₗ[ℝ] ℝ) (J U : Set V) :
-    C.jointTriangleWords ν J U ⊆ C.triangleWords ν U := by
-  rintro g ⟨x, y, z, e, f, r, hx, hy, hz, -, -, rfl⟩
-  exact (C.mem_triangleWords ν U _).mpr ⟨x, y, z, e, f, r, hx, hy, hz, rfl⟩
-
-variable {C} {J U : Set V}
+          g = ((e.toPath.cons f).cons r).crossingWord ν := by
+  constructor
+  · rintro ⟨x, y, z, e, f, r, q, hq, -, hSU, hc, hskel, -, -, -, rfl⟩
+    have hqS : q ∈ convexHull ℝ {x.val, y.val, z.val} :=
+      (Set.ext_iff.mp hskel q |>.mpr (mem_singleton q)).1
+    exact ⟨x, y, z, e, f, r,
+      hSU (subset_convexHull ℝ _ (by simp)), hSU (subset_convexHull ℝ _ (by simp)),
+      hSU (subset_convexHull ℝ _ (by simp)), ⟨q, hqS, intrinsicInterior_subset hq⟩, hc, rfl⟩
+  · rintro ⟨x, y, z, e, f, r, hx, hy, hz, hmeet, hc, rfl⟩
+    have hSU : convexHull ℝ {x.val, y.val, z.val} ⊆ U :=
+      convexHull_min (by simp [Set.insert_subset_iff, hx, hy, hz]) hU
+    obtain ⟨q, hq, hskel, hfront, hother⟩ := C.exists_isolating_point_of_disjoint_direction
+      hJ hinc hSU hmeet
+      (by simpa only [affineSpan_convexHull, direction_affineSpan] using hc.disjoint)
+    -- An incident wall makes every point of the joint singular for admissible edges.
+    have hedge {a b : WallComplement (fun Q : C.walls => (Q : Set V))} (d : a ⟶ b) :
+        Disjoint (segment ℝ a.val b.val) J := by
+      apply Set.disjoint_left.mpr
+      intro v hv hvJ
+      obtain ⟨t, ht, rfl⟩ := (segment_eq_image_lineMap ℝ a.val b.val) ▸ hv
+      exact d.down.regular t ht (C.mem_singularSupport_of_mem_joint hJ hJP hvJ)
+    refine ⟨x, y, z, e, f, r, q, hq, ((hedge e).union_left (hedge f)).union_left (hedge r),
+      hSU, hc, hskel, hfront, hother, ?_, rfl⟩
+    rintro Q hQ ⟨v, hvS, hvQ⟩
+    exact hinc Q hQ ⟨v, hSU hvS, hvQ⟩
 
 /-- Near a joint, admissible paths have equal crossing words when the convex hull of
 their vertices misses the joint. Such a hull lies in an open half-space bounded by a
@@ -213,8 +273,9 @@ theorem triangleWords_subset_insert_jointTriangleWords (ν : C.walls → V →�
   by_cases hmeet : (convexHull ℝ {x.val, y.val, z.val} ∩ J).Nonempty
   · by_cases hwall : ∃ P : C.walls, J ⊆ P
     · obtain ⟨P, hJP⟩ := hwall
-      exact Or.inr ⟨x, y, z, e, f, r, hx, hy, hz, hmeet,
-        isCompl_of_convexHull_inter_nonempty hJ hU hUJ hinc hJP e f r hx hy hz hmeet, rfl⟩
+      exact Or.inr ((C.mem_jointTriangleWords_iff_of_incident_wall ν hJ hU hinc hJP _).mpr
+        ⟨x, y, z, e, f, r, hx, hy, hz, hmeet,
+          isCompl_of_convexHull_inter_nonempty hJ hU hUJ hinc hJP e f r hx hy hz hmeet, rfl⟩)
     · -- No wall meets the region, so the pencil condition is vacuous.
       have hmiss (P : C.walls) : ¬ (U ∩ P).Nonempty := fun hP =>
         hwall ⟨P, hinc P (C.mem_cells_of_mem_walls P.property) hP⟩
@@ -243,7 +304,8 @@ variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ 
 
 /-- In an open convex region meeting a joint, all of whose incident cells contain
 that joint, the word of every admissible polygonal loop lies in the normal closure
-of the words of transverse triangular loops around the joint. -/
+of the words of isolating triangular meridians around the joint. Each filled
+triangle meets the skeleton once and avoids the joint boundary and all other joints. -/
 theorem crossingWord_mem_normalClosure_jointTriangleWords (p : Mei.Convex.AdmissiblePLPath x x)
     (ν : C.walls → V →ₗ[ℝ] ℝ)
     (hν : ∀ P, LinearMap.ker (ν P) = (affineSpan ℝ (P : Set V)).direction)
