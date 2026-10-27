@@ -128,17 +128,12 @@ function. This formula also applies to elements with several nonzero components.
 theorem decompose_functionWallAction (f : (𝒜 0)ˣ) (a : A) (i : ℤ) :
     (decompose 𝒜 (functionWallAction 𝒜 f a) i : A) =
       (decompose 𝒜 a i : A) * algebraMap (𝒜 0) A (f ^ i : (𝒜 0)ˣ) := by
-  induction a using DirectSum.Decomposition.inductionOn 𝒜 with
-  | zero => simp
-  | @homogeneous j a =>
-    by_cases h : j = i
-    · subst i
-      rw [decompose_of_mem_same 𝒜 (functionWallAction_mem 𝒜 f a.property),
-        decompose_of_mem_same 𝒜 a.property, functionWallAction_apply_of_mem 𝒜 f a.property]
-    · rw [decompose_of_mem_ne 𝒜 (functionWallAction_mem 𝒜 f a.property) h,
-        decompose_of_mem_ne 𝒜 a.property h]
-      simp
-  | add a b ha hb => simp [ha, hb, add_mul]
+  let φ : 𝒜 →+*ᵍ 𝒜 :=
+    { (functionWallAction 𝒜 f).toRingHom with
+      map_mem := functionWallAction_mem 𝒜 f }
+  calc
+    _ = φ (decompose 𝒜 a i) := (φ.map_directSumDecompose (x := a) (i := i)).symm
+    _ = _ := functionWallAction_apply 𝒜 f (decompose 𝒜 a i)
 
 section Naturality
 
