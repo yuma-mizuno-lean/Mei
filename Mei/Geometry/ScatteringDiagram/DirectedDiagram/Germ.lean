@@ -88,18 +88,61 @@ theorem LevelEquivalent.combinedLabel_eq {k : ℕ} (hDE : D.LevelEquivalent E k)
 
 variable (D) in
 /-- Lowering the cutoff projects a regular combined label to the combined label
-of the surviving walls. Walls killed by truncation contribute no factor. -/
+of the surviving walls, for every vector `v`. Walls killed by truncation
+contribute no factor. -/
 theorem truncation_combinedLabel {k l : ℕ} (hkl : k ≤ l) (θ v : V)
     (hl : θ ∉ singularSupport (fun j : D.active l => (D.wall j).support))
-    (hk : θ ∉ singularSupport (fun j : D.active k => (D.wall j).support))
-    (hv : ∀ j : D.active l, θ ∈ (D.wall j).support →
-      h.realCharacter (D.wall j).normal v ≠ 0) :
+    (hk : θ ∉ singularSupport (fun j : D.active k => (D.wall j).support)) :
     (d.truncationMap ℒ hkl).bchGroupMap (D.combinedLabel l θ v hl) =
       D.combinedLabel k θ v hk := by
-  have hvk (j : D.active k) (hj : θ ∈ (D.wall j).support) :
-      h.realCharacter (D.wall j).normal v ≠ 0 :=
-    hv ⟨j.val, D.active_mono hkl j.property⟩ hj
-  simpa using (LevelEquivalent.refl D k).truncation_combinedLabel_eq
-    hkl le_rfl θ v hl hk hv hvk
+  classical
+  -- Filter an enumeration of the incident walls to those surviving at the lower cutoff.
+  let S := (Set.toFinite {j : D.active l | θ ∈ (D.wall j).support}).toFinset.toList
+  let q : D.active l → Option (D.active k) := fun j =>
+    if hj : j.val ∈ D.active k then some ⟨j.val, hj⟩ else none
+  have hq (a : D.active l) (b : D.active k) : q a = some b ↔ a.val = b.val := by
+    simp only [q]
+    split_ifs with ha
+    · simp only [Option.some.injEq, Subtype.ext_iff]
+    · simp only [false_iff]
+      intro hab
+      exact ha (hab ▸ b.property)
+  have hnodup : (S.filterMap q).Nodup := by
+    apply List.Nodup.filterMap ?_ (Finset.nodup_toList _)
+    intro a a' b hab ha'b
+    exact Subtype.ext ((hq a b).mp hab |>.trans ((hq a' b).mp ha'b).symm)
+  have hmem (b : D.active k) : b ∈ S.filterMap q ↔ θ ∈ (D.wall b).support := by
+    simp only [List.mem_filterMap, hq]
+    constructor
+    · rintro ⟨a, ha, hab⟩
+      have ha : θ ∈ (D.wall a).support := by simpa [S] using ha
+      simpa only [hab] using ha
+    · intro hb
+      exact ⟨⟨b.val, D.active_mono hkl b.property⟩, by simpa [S] using hb, rfl⟩
+  rw [D.combinedLabel_eq_prod l θ v hl S (Finset.nodup_toList _)
+    (fun j => by simp [S]), D.combinedLabel_eq_prod k θ v hk _ hnodup hmem]
+  -- Work with the tower group instances when mapping the enumerated product.
+  let F := ((d.groupTower ℒ).map (CategoryTheory.homOfLE hkl).op).hom
+  have hproj (a : D.active l) : F (CompletedGroup.projection l (D.wall a).label) =
+      CompletedGroup.projection k (D.wall a).label :=
+    CompletedGroup.map_projection k l hkl (D.wall a).label
+  have hprod (s : List (D.active l)) :
+      F
+        ((s.map fun j : D.active l => CompletedGroup.projection l (D.wall j).label ^
+          (if 0 < h.realCharacter (D.wall j).normal v then -1 else 1 : ℤ)).prod) =
+      ((s.filterMap q).map fun j : D.active k => CompletedGroup.projection k (D.wall j).label ^
+        (if 0 < h.realCharacter (D.wall j).normal v then -1 else 1 : ℤ)).prod := by
+    induction s with
+    | nil => exact map_one F
+    | cons a s ih =>
+      simp only [List.map_cons, List.prod_cons]
+      rw [map_mul, map_zpow, hproj, ih]
+      by_cases ha : a.val ∈ D.active k
+      · simp only [List.filterMap_cons, q, dite_eq_left ha, List.map_cons, List.prod_cons]
+      · have hone : CompletedGroup.projection k (D.wall a).label = 1 := by
+          simpa only [mem_active, not_not] using ha
+        simp only [List.filterMap_cons, q, dite_eq_right ha, hone, one_zpow, one_mul]
+  -- The tower transition is the BCH truncation map, as in `groupTower_map_hom`.
+  exact hprod S
 
 end Mei.DirectedDiagram
