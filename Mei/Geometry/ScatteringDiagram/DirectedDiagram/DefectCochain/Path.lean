@@ -141,14 +141,7 @@ theorem log_levelPathProduct_eq_intersectionPairing_of_subsingleton
     -- Reverse negative crossings; positive crossings use the stored wall defect.
     rcases lt_or_gt_of_ne hn with hv | hv
     · have her : crossings y x = {(W, 1 - a)} := by
-        ext ⟨U, u⟩
-        rw [mem_crossings_swap, he]
-        simp only [mem_singleton_iff, Prod.mk.injEq]
-        constructor
-        · rintro ⟨hU, hu⟩
-          exact ⟨hU, by linarith⟩
-        · rintro ⟨hU, hu⟩
-          exact ⟨hU, by linarith⟩
+        rw [crossings_swap, he, Set.image_singleton]
       have hvr : 0 < h.realCharacter (cross W).normal (x.val - y.val) := by
         simpa only [map_sub, neg_sub] using neg_pos.mpr hv
       have hlog := positive_segment_log σ hσ cross hk b t ht
@@ -237,9 +230,9 @@ private theorem sum_pairings_of_single_crossings
       Quiver.Path.addWeightOfEPs_cons, LieSubmodule.coe_add]
     exact add_comm _ _
 
-/-- Subdivide an actual adapted path into single-crossing segments. Its original
-gauged directed transport is the sum of the defect-presentation pairings on the
-subdivision. No transport or pairing identity is assumed of that subdivision. -/
+/-- Subdivide an actual adapted path into single-crossing segments. The logarithm
+of its original gauged directed transport is the sum of the defect-presentation
+pairings on the subdivision. No transport or pairing identity is assumed of that subdivision. -/
 theorem exists_subdivision_log_levelPathProduct_eq_sum_intersectionPairing
     {x y : WallComplement (fun W : (D.adaptedComplex (k + 1)).walls => (W : Set V))}
     (p : AdmissiblePLPath x y)
