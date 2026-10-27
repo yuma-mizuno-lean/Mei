@@ -16,7 +16,8 @@ crossing-defect presentation by extracting that wall's coefficient with its
 crossing sign. In either direction this equals the logarithm of the actual
 directed transport gauged by the chamber lifts at the original endpoints.
 The segment need not be short. Every wall in the presentation is transverse
-to the segment, so its pairing is also invariant under cochain relations.
+to the segment, so its pairing is invariant under cochain relations among
+representatives whose cells are also transverse to the segment.
 
 This combines `WallComplement.intersectionPairing_eq_of_crossings_singleton`
 with `AdaptedWallCrossing.mem_interiors_of_crossings_singleton` and
