@@ -17,12 +17,8 @@ relations, even though cochain equality allows arbitrary subdivisions.
 No splitting of the coefficient map or field hypothesis is required; in
 particular the result applies to inclusions of submodules over arbitrary rings.
 
-The proof uses `exists_common_complex_presentation` to put a cochain on one
-finite complex, and
-`ofFinsupp_eq_zero_iff_intersectionPairing_eq_zero` to detect it by transverse
-tests. Naturality of the intersection pairing reflects each zero test value
-through the coefficient embedding. This allows identities and closedness of
-kernel-valued obstruction cochains to be checked in an ambient module.
+This allows identities and closedness of kernel-valued obstruction cochains to
+be checked in an ambient module.
 -/
 
 public section
@@ -40,6 +36,10 @@ variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ 
 and subdivision relations of polyhedral cochains. -/
 theorem map_injective (f : E →ₗ[R] E') (hf : Function.Injective f) :
     Function.Injective (map (h := h) (k := k) f) := by
+  /- The proof uses `exists_common_complex_presentation` to put a cochain on one
+  finite complex, and `ofFinsupp_eq_zero_iff_intersectionPairing_eq_zero` to detect
+  it by transverse tests. Naturality of the intersection pairing reflects each
+  zero test value through the coefficient embedding. -/
   classical
   apply (map f).ker_eq_bot.1
   rw [LinearMap.ker_eq_bot']

@@ -8,7 +8,6 @@ module
 public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Meridian
 public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Localization
 public import Mei.Geometry.Convex.PolyhedralCochain.Transverse.Basic
-public import Mei.Geometry.Convex.PolyhedralCochain.Separation
 public import Mei.Geometry.Convex.PolyhedralCochain.Map
 
 /-!
