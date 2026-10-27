@@ -6,6 +6,8 @@ Authors: Claude Code, Codex
 module
 
 public import Mathlib.LinearAlgebra.Orientation
+public import Mathlib.LinearAlgebra.FiniteDimensional.Lemmas
+public import Mathlib.Basic.Sign.Basic
 public import Mathlib.LinearAlgebra.Quotient.Basic
 
 /-!
@@ -20,6 +22,10 @@ the representing form, and reversing a ray preserves it.
 Pullback from the quotient identifies alternating forms on `M ⧸ W` with conormal
 forms on `M` via `Submodule.conormalFormsEquiv`. These rays orient the normal
 quotients of polyhedra in polyhedral cochains.
+
+A ray of alternating forms has a well-defined sign on every tuple of vectors,
+`Module.Ray.evalSign`. For a conormal ray of degree `dim (M ⧸ W)`, this sign is
+nonzero exactly on the tuples mapping to a basis of `M ⧸ W`.
 -/
 
 public section
@@ -163,5 +169,47 @@ theorem isConormal_neg_iff {o : Module.Ray R (M [⋀^ι]→ₗ[R] R)} {W : Submo
 theorem isConormal_bot (o : Module.Ray R (M [⋀^ι]→ₗ[R] R)) : o.IsConormal ⊥ := by
   rw [IsConormal, Submodule.conormalForms_bot]
   exact Submodule.mem_top
+
+/-- The sign of a ray of alternating forms on a tuple of vectors: the sign of the value of any
+representing form, by `Module.Ray.evalSign_rayOfNeZero`. -/
+noncomputable def evalSign (o : Module.Ray R (M [⋀^ι]→ₗ[R] R)) (v : ι → M) : SignType :=
+  SignType.sign (o.someVector v)
+
+/-- The sign of a ray can be computed using any nonzero representing form. -/
+@[simp]
+theorem evalSign_rayOfNeZero {α : M [⋀^ι]→ₗ[R] R} (hα : α ≠ 0) (v : ι → M) :
+    (rayOfNeZero R α hα).evalSign v = SignType.sign (α v) := by
+  have hβ := (rayOfNeZero R α hα).someVector_ne_zero
+  obtain ⟨r, hr, he⟩ := ((ray_eq_iff hβ hα).mp (someVector_ray _)).exists_pos_left hβ hα
+  have hv : α v = r * (rayOfNeZero R α hα).someVector v := by
+    rw [← smul_eq_mul, ← smul_apply, he]
+  rw [evalSign, hv, sign_mul, sign_pos hr, one_mul]
+
+/-- Reversing a ray negates its sign on every tuple. -/
+@[simp]
+theorem evalSign_neg (o : Module.Ray R (M [⋀^ι]→ₗ[R] R)) (v : ι → M) :
+    (-o).evalSign v = -o.evalSign v := by
+  induction o using Module.Ray.ind with
+  | h α hα =>
+    rw [neg_rayOfNeZero, evalSign_rayOfNeZero, evalSign_rayOfNeZero, neg_apply, Left.sign_neg]
+
+/-- A conormal ray whose degree is the dimension of the quotient has nonzero sign on a tuple
+exactly when the tuple is linearly independent modulo `W`, that is, when it maps to a basis
+of `M ⧸ W`. -/
+theorem IsConormal.evalSign_ne_zero_iff [Fintype ι] {o : Module.Ray R (M [⋀^ι]→ₗ[R] R)}
+    {W : Submodule R M} [FiniteDimensional R (M ⧸ W)] (ho : o.IsConormal W)
+    (hk : finrank R (M ⧸ W) = Fintype.card ι) (v : ι → M) :
+    o.evalSign v ≠ 0 ↔ LinearIndependent R (W.mkQ ∘ v) := by
+  let β := W.conormalFormsEquiv.symm ⟨o.someVector, ho⟩
+  have hβ : β ≠ 0 := by
+    rw [ne_eq, LinearEquiv.map_eq_zero_iff, Subtype.ext_iff]
+    exact o.someVector_ne_zero
+  have hv : o.someVector v = β (W.mkQ ∘ v) :=
+    (W.conormalFormsEquiv_symm_apply_mk ⟨o.someVector, ho⟩ v).symm
+  rw [evalSign, hv, sign_ne_zero]
+  refine ⟨fun hne => by_contra fun hli => hne (β.map_linearDependent _ hli), fun hli => ?_⟩
+  have hb := (β.map_basis_ne_zero_iff (basisOfLinearIndependentOfCardEqFinrank' _ hli hk.symm)).mpr
+    hβ
+  rwa [coe_basisOfLinearIndependentOfCardEqFinrank'] at hb
 
 end Module.Ray

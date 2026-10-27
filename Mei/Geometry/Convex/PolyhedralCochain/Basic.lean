@@ -79,6 +79,11 @@ theorem finrank_quotient_direction (σ : OrientedCell h k) :
   have := σ.finrank_direction_add
   omega
 
+/-- The support of a cell is closed. -/
+theorem isClosed_carrier (σ : OrientedCell h k) : IsClosed σ.carrier := by
+  obtain ⟨P, hP⟩ := isRationalNormalPolyhedron_iff.mp σ.rational
+  exact hP ▸ P.isClosed
+
 /-- The same polyhedron with the opposite orientation. -/
 def reverse (σ : OrientedCell h k) : OrientedCell h k where
   carrier := σ.carrier
@@ -181,6 +186,13 @@ theorem direction_eq (hQ : IsOrientedSubdivision σ Q) (hτ : τ ∈ Q) :
   have hσk := σ.finrank_direction_add
   omega
 
+/-- Every piece has the affine span of the subdivided cell. -/
+theorem affineSpan_eq (hQ : IsOrientedSubdivision σ Q) (hτ : τ ∈ Q) :
+    affineSpan ℝ τ.carrier = affineSpan ℝ σ.carrier := by
+  obtain ⟨x, hx⟩ := τ.nonempty
+  exact AffineSubspace.ext_of_direction_eq (hQ.direction_eq hτ)
+    ⟨x, subset_affineSpan ℝ _ hx, subset_affineSpan ℝ _ (hQ.carrier_subset hτ hx)⟩
+
 /-- A subdivision has at least one piece. -/
 theorem nonempty (hQ : IsOrientedSubdivision σ Q) : Q.Nonempty := by
   obtain ⟨x, hx⟩ := σ.nonempty
@@ -208,6 +220,21 @@ def cochainGenerators : Set (OrientedCell h k →₀ E) :=
 /-- The `R`-submodule of relations spanned by `cochainGenerators`. -/
 def cochainRelations : Submodule R (OrientedCell h k →₀ E) :=
   Submodule.span R (cochainGenerators h E k)
+
+variable {R h E k} in
+/-- A submodule contains all cochain relations exactly when it contains the reversal relations
+and the subdivision relations. -/
+theorem cochainRelations_le_iff {p : Submodule R (OrientedCell h k →₀ E)} :
+    cochainRelations R h E k ≤ p ↔
+      (∀ (σ : OrientedCell h k) (c : E), Finsupp.single σ.reverse c + Finsupp.single σ c ∈ p) ∧
+        ∀ (σ : OrientedCell h k) (Q : Finset (OrientedCell h k)) (c : E),
+          IsOrientedSubdivision σ Q → Finsupp.single σ c - ∑ τ ∈ Q, Finsupp.single τ c ∈ p := by
+  rw [cochainRelations, Submodule.span_le]
+  constructor
+  · intro hp
+    exact ⟨fun σ c => hp (Or.inl ⟨σ, c, rfl⟩), fun σ Q c hQ => hp (Or.inr ⟨σ, Q, c, hQ, rfl⟩)⟩
+  · rintro ⟨hrev, hsub⟩ x (⟨σ, c, rfl⟩ | ⟨σ, Q, c, hQ, rfl⟩)
+    exacts [hrev σ c, hsub σ Q c hQ]
 
 /-- Polyhedral cochains of codimension `k` with coefficients in the `R`-module `E`: finite sums
 of oriented cells with coefficients in `E`, modulo reversal and subdivision. -/

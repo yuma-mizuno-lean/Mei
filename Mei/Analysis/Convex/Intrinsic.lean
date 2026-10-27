@@ -7,6 +7,7 @@ module
 
 public import Mathlib.Analysis.Convex.Intrinsic
 public import Mathlib.LinearAlgebra.AffineSpace.AffineSubspace.Basic
+public import Mathlib.Topology.GDelta.Basic
 import Mathlib.Tactic.Linarith
 
 /-!
@@ -17,6 +18,8 @@ vanishes on that set. Continuity of the affine function is not required.
 
 A set is a neighbourhood of each of its relative interior points within its
 affine span: points of the span close to a relative interior point stay in the set.
+For a closed set, the relative boundary is nowhere dense in the affine span.
+For any set, membership is locally constant off the relative boundary within the affine span.
 -/
 
 public section
@@ -77,5 +80,38 @@ theorem intrinsicInterior_eq_interior_of_affineSpan_eq_top {P : Set V}
   refine Subset.antisymm (fun x hx => ?_) interior_subset_intrinsicInterior
   have hn := mem_nhdsWithin_affineSpan_of_mem_intrinsicInterior hx
   simpa [hP, ← mem_interior_iff_mem_nhds] using hn
+
+omit [IsTopologicalAddGroup V] [ContinuousSMul ℝ V] in
+/-- The relative boundary of a closed set is nowhere dense in its affine span. -/
+theorem isNowhereDense_preimage_intrinsicFrontier {P : Set V} (hP : IsClosed P)
+    {A : AffineSubspace ℝ V} (hA : affineSpan ℝ P = A) :
+    IsNowhereDense ((↑) ⁻¹' intrinsicFrontier ℝ P : Set A) := by
+  subst hA
+  rw [intrinsicFrontier, preimage_image_eq _ Subtype.val_injective,
+    isClosed_frontier.isNowhereDense_iff]
+  exact interior_frontier (hP.preimage continuous_subtype_val)
+
+omit [IsTopologicalAddGroup V] [ContinuousSMul ℝ V] in
+/-- Off the relative boundary of a set, membership in the set is locally constant within
+its affine span. -/
+theorem eventually_mem_iff_of_notMem_intrinsicFrontier {P : Set V}
+    {A : AffineSubspace ℝ V} (hA : affineSpan ℝ P = A) {x : A}
+    (hx : (x : V) ∉ intrinsicFrontier ℝ P) :
+    ∀ᶠ y : A in 𝓝 x, ((y : V) ∈ P ↔ (x : V) ∈ P) := by
+  subst hA
+  have hxfr : x ∉ frontier ((↑) ⁻¹' P : Set (affineSpan ℝ P)) :=
+    fun hfr => hx ⟨x, hfr, rfl⟩
+  by_cases hxP : (x : V) ∈ P
+  · have hint : x ∈ interior ((↑) ⁻¹' P : Set (affineSpan ℝ P)) :=
+      (mem_interior_iff_notMem_frontier
+        (s := ((↑) ⁻¹' P : Set (affineSpan ℝ P))) hxP).mpr hxfr
+    filter_upwards [mem_interior_iff_mem_nhds.mp hint] with y hy
+    exact iff_of_true hy hxP
+  · have hint : x ∈ interior (((↑) ⁻¹' P : Set (affineSpan ℝ P))ᶜ) :=
+      (mem_interior_iff_notMem_frontier
+        (s := ((↑) ⁻¹' P : Set (affineSpan ℝ P))ᶜ) hxP).mpr
+        (by rwa [frontier_compl])
+    filter_upwards [mem_interior_iff_mem_nhds.mp hint] with y hy
+    exact iff_of_false hy hxP
 
 end Mei

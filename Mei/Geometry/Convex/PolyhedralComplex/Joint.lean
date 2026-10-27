@@ -20,8 +20,10 @@ whose intersection with that skeleton is exactly the center.
 
 The joint direction is also the common kernel of two real extensions of
 integral characters. Evaluating these equations on lattice vectors gives the
-integral tangent kernel used in homogeneous wall-space calculations. Contracting
-the equations against a transverse lattice vector gives a nonzero integral
+integral tangent kernel used in homogeneous wall-space calculations. The two
+characters can be chosen with linearly independent real extensions, by
+`FinitePolyhedralComplex.exists_linearIndependent_joint_direction_eq_inf_ker`.
+Contracting the equations against a transverse lattice vector gives a nonzero integral
 normal to the sum of the joint direction and that vector's line.
 
 These are the isolation and transversality conditions needed before constructing
@@ -55,6 +57,26 @@ theorem exists_joint_direction_eq_inf_ker (C : FinitePolyhedralComplex h) {J : S
   obtain ⟨f, g, hfg⟩ := (C.rational J hJC).exists_direction_eq_inf_ker
     (C.nonempty J hJC) hdim
   exact ⟨f.toAddMonoidHom, g.toAddMonoidHom, hfg⟩
+
+/-- The direction of an actual joint is cut out by two independent integral
+characters. The joint need not contain any lattice point, since its offsets
+may be arbitrary real numbers. -/
+theorem exists_linearIndependent_joint_direction_eq_inf_ker
+    (C : FinitePolyhedralComplex h) {J : Set V}
+    (hJ : J ∈ C.joints) :
+    ∃ f g : N →+ ℤ, LinearIndependent ℝ ![h.realCharacter f, h.realCharacter g] ∧
+      (affineSpan ℝ J).direction = (h.realCharacter f).ker ⊓ (h.realCharacter g).ker := by
+  obtain ⟨hcell, hdim⟩ := (C.mem_cellsOfCodimension 2 J).mp hJ
+  obtain ⟨m, hlin, hdir⟩ := (C.rational J hcell).exists_direction_eq_iInf_ker
+    (C.nonempty J hcell) hdim
+  have heq : (fun j => h.realCharacter (m j).toAddMonoidHom) =
+      ![h.realCharacter (m 0).toAddMonoidHom, h.realCharacter (m 1).toAddMonoidHom] := by
+    ext j
+    fin_cases j <;> rfl
+  refine ⟨(m 0).toAddMonoidHom, (m 1).toAddMonoidHom, heq ▸ hlin, ?_⟩
+  rw [hdir]
+  ext v
+  simp only [Submodule.mem_iInf, Submodule.mem_inf, LinearMap.mem_ker, Fin.forall_fin_two]
 
 /-- At a degree transverse to a joint, contracting two integral joint equations
 gives a nonzero integral normal. Its real kernel is exactly the joint direction
