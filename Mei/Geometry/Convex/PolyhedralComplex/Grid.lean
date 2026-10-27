@@ -17,10 +17,11 @@ edges cancel with their reverses without requiring commutative wall labels.
 This permits a subdivided filling to be reduced to its local boundary relations.
 
 The construction uses `Mei.grid_boundary_mem_normalClosure`, the sequence-path
-API, and the concatenation and reversal laws for crossing words. Inverting the
-edge words changes from the group-product convention to the convention that
-the first crossing is the rightmost factor. No geometric filling or local
-consistency condition is assumed by this combinatorial subdivision result.
+API, and the concatenation and reversal laws for crossing words. Invert each
+edge word, take the increasing-order product, and then invert the entire product
+to obtain the crossing word with the first crossing as the rightmost factor.
+No geometric filling or local consistency condition is assumed by this
+combinatorial subdivision result.
 
 The crossing-word grid argument is adapted from Codex,
 [Mei PR #325](https://github.com/yuma-mizuno-lean/Mei/pull/325).

@@ -16,8 +16,9 @@ If the two routes around each grid cell have equal products, the two routes
 around the whole rectangle have equal products. More generally, the outer
 boundary word lies in the normal closure of the cell boundary words. This is
 the cancellation of internal edges needed when subdividing a polygonal filling
-into local relations. Products here put the first edge on the left; inverting
-all edge labels gives the convention for labels acting on the left.
+into local relations. Products here put the first edge on the left. To obtain
+the crossing word for labels acting on the left, invert each edge label, take
+the increasing-order product, and then invert the entire product.
 
 The proof uses Mathlib's `List.prod_range_succ` and the quotient by a normal
 subgroup. No commutation between unrelated edge labels is assumed.
