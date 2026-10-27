@@ -7,7 +7,6 @@ module
 
 public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Uniqueness
 import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Append
-import Mei.Geometry.Convex.Polyhedron.Path.Multiplication
 
 /-!
 # Replacing equivalent initial wall presentations
@@ -20,8 +19,7 @@ Consequently consistent outgoing extensions of equivalent initial inputs have
 the same finite-order transport. Only consistency and input equivalence at the
 specified cutoff are needed; no condition is imposed on later cutoffs.
 
-The replacement uses `WallComplement.segmentPathProduct_mul_congr` and the
-indicator-label formula `DirectedDiagram.levelPathProduct_restrictPathPrefunctor`.
+The replacement uses `DirectedDiagram.LevelEquivalent.restrict_union`.
 The comparison of outgoing extensions uses the first-differing-order uniqueness
 argument `DirectedDiagram.levelEquivalent_restrict_of_outgoing`, following
 Travis Mandel, *Scattering diagrams, theta functions, and refined tropical curve
@@ -32,7 +30,7 @@ public section
 
 noncomputable section
 
-open Set Mei.Convex WallComplement
+open Set Mei.Convex
 open scoped symmDiff
 
 namespace Mei.DirectedDiagram
@@ -44,97 +42,7 @@ variable {Γ Λ R L V ι : Type*} [AddCommGroup Γ] [AddCommGroup Λ]
   {ρ : Γ →+ Λ} {ℒ : Γ → Submodule R L} {d : PositiveDegrees Γ}
   [GradedLieAlgebra ℒ] [IsPositiveGrading d ℒ]
   {i : Λ →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
-  {H : DirectedWallSpaces ρ ℒ} {F : DirectedDiagram (d := d) h H ι}
-
-private theorem levelPathProduct_restrict_union {s t u : Set ι} {k : ℕ}
-    (hst : (F.restrict s).LevelEquivalent (F.restrict t) k)
-    (hsu : Disjoint s u) (htu : Disjoint t u)
-    {x y : WallComplement (fun j : F.active k => (F.wall j).support)}
-    (p : AdmissiblePLPath x y) :
-    (F.restrict (s ∪ u)).levelPathProduct k
-        ((F.restrictPathPrefunctor (s ∪ u) k).mapPath p) =
-      (F.restrict (t ∪ u)).levelPathProduct k
-        ((F.restrictPathPrefunctor (t ∪ u) k).mapPath p) := by
-  classical
-  let := h.finiteDimensional
-  let ν := fun j : F.active k => h.realCharacter (F.wall j).normal
-  let a := fun (v : Set ι) (j : F.active k) =>
-    if j.val ∈ v then CompletedGroup.projection k (F.wall j).label else 1
-  have comm (v w : Set ι) (j j' : F.active k)
-      (hjj' : affineSpan ℝ (F.wall j).support = affineSpan ℝ (F.wall j').support) :
-      Commute (a v j) (a w j') := by
-    by_cases hj : j.val ∈ v <;> by_cases hj' : j'.val ∈ w
-    · simpa only [a, hj, hj', ↓reduceIte] using F.activeLabels_commute k j j' hjj'
-    · simp only [a, hj, hj', ↓reduceIte, Commute.one_right]
-    · simp only [a, hj, hj', ↓reduceIte, Commute.one_left]
-    · simp only [a, hj, hj', ↓reduceIte, Commute.one_left]
-  have formula (v : Set ι)
-      {x y : WallComplement (fun j : F.active k => (F.wall j).support)}
-      (p : AdmissiblePLPath x y) :
-      (F.restrict v).levelPathProduct k ((F.restrictPathPrefunctor v k).mapPath p) =
-        p.wallPathProduct ν (a v) (comm v v) := by
-    have he := F.levelPathProduct_restrictPathPrefunctor v k (fun j j' hjj' => by
-      -- Identify the categorical tower operations with the BCH operations.
-      convert comm v v j j' hjj' using 1 <;> rfl) p
-    -- The formula uses the concrete BCH group and the labels use its tower presentation.
-    convert he using 1
-    rfl
-  have prod_union (v : Set ι) (hvu : Disjoint v u) :
-      a (v ∪ u) = fun j => a v j * a u j := by
-    funext j
-    have hd := Set.disjoint_left.mp hvu
-    by_cases hv : j.val ∈ v <;> by_cases hu : j.val ∈ u <;> simp_all [a]
-  -- Compare the original labels on every common segment.
-  rw [formula, formula]
-  have hab {x y : WallComplement (fun j : F.active k => (F.wall j).support)}
-      (e : x ⟶ y) :
-      segmentPathProduct ν (a s) (comm s s) e =
-        segmentPathProduct ν (a t) (comm t t) e := by
-    have he := (levelEquivalent_def _ _ k).mp hst
-      ((F.restrictPathPrefunctor s k).mapPath e.toPath)
-      ((F.restrictPathPrefunctor t k).mapPath e.toPath)
-      ((F.vertices_restrictPathPrefunctor s k e.toPath).trans
-        (F.vertices_restrictPathPrefunctor t k e.toPath).symm)
-    rw [formula, formula, Quiver.Path.wallPathProduct_toPath,
-      Quiver.Path.wallPathProduct_toPath] at he
-    -- Equality is transported from the concrete BCH carrier to its tower carrier.
-    convert he using 1
-    rfl
-  have hs := prod_union s hsu
-  have ht := prod_union t htu
-  induction p with
-  | nil =>
-    simp only [Quiver.Path.wallPathProduct_nil]
-    -- Both identities are the identity of the same BCH group.
-    rfl
-  | cons p e ih =>
-    simp only [Quiver.Path.wallPathProduct_cons, ih]
-    congr 1
-    -- `hs` and `ht` replace indicator functions; commutation witnesses are propositions.
-    simpa only [← hs, ← ht] using segmentPathProduct_mul_congr
-      (fun j : F.active k => (F.wall j).isConvexPolyhedron.isClosed)
-      ν (a s) (a t) (a u) (comm s s) (comm t t) (comm u u) (comm s u) (comm t u) hab e
-
-/-- Adjoining the same indexed walls to equivalent subdiagrams preserves
-equivalence at a fixed cutoff. The added indices are disjoint from each original
-set, but supports may coincide and labels need not commute globally. -/
-theorem LevelEquivalent.restrict_union {s t u : Set ι} {k : ℕ}
-    (hst : (F.restrict s).LevelEquivalent (F.restrict t) k)
-    (hsu : Disjoint s u) (htu : Disjoint t u) :
-    (F.restrict (s ∪ u)).LevelEquivalent (F.restrict (t ∪ u)) k := by
-  apply (levelEquivalent_def _ _ k).mpr
-  intro x y x' y' p q hpq
-  obtain ⟨a, b, r, hp, hq⟩ := (F.restrict (s ∪ u)).exists_common_levelPathProduct_eq
-    (F.restrict (t ∪ u)) k k
-    (W := fun _ : Unit => fun j : F.active k => (F.wall j).support)
-    (fun _ j => (F.wall j).isConvexPolyhedron)
-    (fun _ j => (F.wall j).finrank_direction_add_one) p q hpq
-  let r₀ := (CommonWallComplement.projectionPrefunctor ()).mapPath r
-  have hv : r₀.vertices.map WallComplement.val = r.vertices.map CommonWallComplement.val :=
-    CommonWallComplement.vertices_projection () r
-  exact (hp _ ((F.vertices_restrictPathPrefunctor (s ∪ u) k r₀).trans hv)).symm.trans
-    ((levelPathProduct_restrict_union hst hsu htu r₀).trans
-      (hq _ ((F.vertices_restrictPathPrefunctor (t ∪ u) k r₀).trans hv)))
+  {H : DirectedWallSpaces ρ ℒ}
 
 section Completion
 
@@ -181,8 +89,7 @@ theorem outgoingCompletion_levelEquivalent_of_input
     rcases j with ((j | j) | (j | j)) <;> simp [t, v]
   have hleft : (F.restrict (s ∪ u)).LevelEquivalent D k := by
     rw [hsu]
-    exact (Refinement.ofEquiv (Equiv.ofInjective _ Sum.inl_injective) (fun j => by
-      simp only [restrict_wall, Equiv.ofInjective_apply, F, append_wall_inl])).levelEquivalent k
+    exact (equivalent_iff _ _).mp (D.restrict_append_left_equivalent E) k
   have hright : (F.restrict (t ∪ v)).LevelEquivalent E k := by
     rw [htv]
     exact (Refinement.ofEquiv (Equiv.ofInjective _ Sum.inr_injective) (fun j => by
