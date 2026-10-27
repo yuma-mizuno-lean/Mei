@@ -62,10 +62,10 @@ def Presentation.levelSetoid (k : ℕ) : Setoid (Presentation.{u} (d := d) h H) 
     fun hDE => hDE.symm, fun hDE hEF => hDE.trans hEF⟩
 
 /-- Indexed directed diagrams modulo agreement of all finite path products. -/
-def Class := Quotient (Presentation.setoid.{u} (d := d) (h := h) (H := H))
+def Class : Type _ := Quotient (Presentation.setoid.{u} (d := d) (h := h) (H := H))
 
 /-- Indexed directed diagrams modulo agreement of order-`k` path products. -/
-def LevelClass (k : ℕ) :=
+def LevelClass (k : ℕ) : Type _ :=
   Quotient (Presentation.levelSetoid.{u} (d := d) (h := h) (H := H) k)
 
 variable {ι κ : Type u}
