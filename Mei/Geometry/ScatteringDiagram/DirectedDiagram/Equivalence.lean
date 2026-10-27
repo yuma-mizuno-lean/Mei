@@ -136,6 +136,36 @@ theorem exists_vertices_eq_cons_levelPathProduct_eq (D : DirectedDiagram (d := d
       rfl
     simp [he]
 
+/-- A loop can be moved into the complement of any finite family of codimension-one
+convex polyhedra, preserving its finite-order product on every admissible path
+with the new ambient vertex list. The basepoint moves with both ends of the loop. -/
+theorem exists_loop_levelPathProduct_eq_of_vertices_eq
+    (D : DirectedDiagram (d := d) h H ι) (k : ℕ)
+    {κ : Type*} [Finite κ] (W : κ → Set V)
+    (hpoly : ∀ j, TauCeti.IsConvexPolyhedron (W j))
+    (hdim : ∀ j, Module.finrank ℝ (affineSpan ℝ (W j)).direction + 1 =
+      Module.finrank ℝ V)
+    {x : WallComplement (fun j : D.active k => (D.wall j).support)}
+    (p : AdmissiblePLPath x x) :
+    ∃ z : WallComplement W, ∃ q : AdmissiblePLPath z z,
+      ∀ {x' y' : WallComplement (fun j : D.active k => (D.wall j).support)}
+        (s : AdmissiblePLPath x' y'),
+        s.vertices.map WallComplement.val = q.vertices.map WallComplement.val →
+          D.levelPathProduct k s = D.levelPathProduct k p := by
+  let := h.finiteDimensional
+  -- Stationary padding also covers the loop with no edges.
+  obtain ⟨p', hvp, hprod⟩ := D.exists_vertices_eq_cons_levelPathProduct_eq k p
+  obtain ⟨ε, hε, hp⟩ := D.exists_pos_levelPathProduct_eq_of_forall₂_dist_lt k p'
+  have hv : p'.vertices.map WallComplement.val =
+      x.val :: ((x.val :: p.vertices.dropLast.map WallComplement.val) ++ [x.val]) := by
+    have hend := congrArg (List.map WallComplement.val) p.dropLast_append_end_eq
+    simp only [List.map_append, List.map_singleton] at hend
+    simp only [hvp, List.cons_append, hend]
+  obtain ⟨z, q, hq⟩ := AdmissiblePLPath.exists_loop_forall₂_dist_lt hpoly hdim x.val
+    (l := x.val :: p.vertices.dropLast.map WallComplement.val) hε
+  refine ⟨z, q, fun s hs => ?_⟩
+  exact (hp s (by rwa [hv, hs])).trans hprod
+
 variable (D F) in
 /-- Two finite-order tests with the same ambient vertices can be realized in any
 countable collection of finite polyhedral wall families. Both products are preserved

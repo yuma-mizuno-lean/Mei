@@ -69,9 +69,9 @@ theorem mem_cellsOfCodimension_of_mem_support_coboundaryPresentation
     (hτ : τ ∈ (coboundaryPresentation (R := R) f).support) :
     τ.carrier ∈ C.cellsOfCodimension (k + 1) := by
   classical
-  obtain ⟨σ, hσ, hυ⟩ :=
-    Finset.mem_biUnion.mp (support_coboundaryPresentation_subset f hτ)
-  exact σ.mem_cellsOfCodimension_of_mem_boundaryFacets C (hf σ hσ) hυ
+  obtain ⟨σ, hσ, hτ⟩ := Finset.mem_biUnion.mp
+      (support_coboundaryPresentation_subset f hτ)
+  exact σ.mem_cellsOfCodimension_of_mem_boundaryFacets C (hf σ hσ) hτ
 
 end PolyhedralCochain
 

@@ -5,7 +5,7 @@ Authors: Claude Code
 -/
 module
 
-public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.AffineTransport
+public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.AffineTransport.Basic
 public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Uniqueness
 
 /-!
@@ -25,8 +25,10 @@ A path at the target order only avoids the walls active there, which may be fewe
 the source walls active at the larger cutoff. It is therefore first moved into general
 position for all transported source walls, without changing its product. The pulled-back
 path is then admissible at the source cutoff, and `DirectedDiagram.levelPathProduct_image`
-compares the two products. The perturbation follows the proofs of
-`DirectedDiagram.LevelEquivalent.consistent` and `DirectedDiagram.LevelEquivalent.trans`.
+compares the two products. Loop perturbation uses
+`DirectedDiagram.exists_loop_levelPathProduct_eq_of_vertices_eq`, shared with
+`DirectedDiagram.LevelEquivalent.consistent`; equivalence uses
+`DirectedDiagram.exists_common_levelPathProduct_eq`.
 
 The completions are those of Travis Mandel, *Scattering diagrams, theta functions, and
 refined tropical curve counts*, [arXiv:1503.06183v5](https://arxiv.org/abs/1503.06183v5),
@@ -118,39 +120,23 @@ variable {D F e E hE}
 consistency of the transported diagram at that order. -/
 theorem LevelConsistent.image {k a : ℕ} (ha : E.degreeMap.modulus k ≤ a)
     (hD : D.LevelConsistent a) : (D.image e E hE).LevelConsistent k := by
-  let := h'.finiteDimensional
   apply ((D.image e E hE).levelConsistent_iff_loops k).mpr
   intro x p
-  cases p with
-  | nil => simp
-  | @cons y _ p s =>
-    let loop := p.cons s
-    obtain ⟨ε, hε, hp⟩ :=
-      (D.image e E hE).exists_pos_levelPathProduct_eq_of_forall₂_dist_lt k loop
-    obtain ⟨l, hl⟩ := List.head?_eq_some_iff.mp p.vertices_head?
-    have hv : loop.vertices.map WallComplement.val =
-        x.val :: (l.map WallComplement.val ++ [x.val]) := by
-      simp only [loop, Quiver.Path.vertices_cons, List.concat_eq_append, List.map_append,
-        List.map_cons, List.map_nil, hl, List.cons_append]
-    -- Move the loop into general position for every transported source wall.
-    obtain ⟨b, q, hq⟩ := AdmissiblePLPath.exists_loop_forall₂_dist_lt
-      (W := fun j : D.active a => ((D.image e E hE).wall j).support)
-      (fun j => ((D.image e E hE).wall j).isConvexPolyhedron)
-      (fun j => ((D.image e E hE).wall j).finrank_direction_add_one) x.val
-      (l := l.map WallComplement.val) hε
-    calc
-      (D.image e E hE).levelPathProduct k loop =
-          (D.image e E hE).levelPathProduct k
-            ((WallComplement.restrictPrefunctor _
-              (Set.inclusion (D.active_image_subset e E hE k ha))).mapPath q) := by
-        refine (hp _ ?_).symm
-        rw [hv]
-        simpa only [Prefunctor.vertices_mapPath, List.map_map, Function.comp_def,
-          WallComplement.restrictPrefunctor_obj_val] using hq
-      _ = 1 := by
-        rw [D.levelPathProduct_restrict_eq e E hE k ha,
-          (D.levelConsistent_iff_loops a).mp hD]
-        exact map_one _
+  obtain ⟨b, q, hq⟩ := (D.image e E hE).exists_loop_levelPathProduct_eq_of_vertices_eq k
+    (fun j : D.active a => ((D.image e E hE).wall j).support)
+    (fun j => ((D.image e E hE).wall j).isConvexPolyhedron)
+    (fun j => ((D.image e E hE).wall j).finrank_direction_add_one) p
+  let r := (WallComplement.restrictPrefunctor _
+    (Set.inclusion (D.active_image_subset e E hE k ha))).mapPath q
+  calc
+    (D.image e E hE).levelPathProduct k p =
+        (D.image e E hE).levelPathProduct k r :=
+      (hq r (WallComplement.vertices_restrictPrefunctor _
+        (Set.inclusion (D.active_image_subset e E hE k ha)) q)).symm
+    _ = 1 := by
+      rw [D.levelPathProduct_restrict_eq e E hE k ha,
+        (D.levelConsistent_iff_loops a).mp hD]
+      exact map_one _
 
 /-- Coordinate changes preserve consistency at every order. -/
 theorem Consistent.image (hD : D.Consistent) : (D.image e E hE).Consistent :=

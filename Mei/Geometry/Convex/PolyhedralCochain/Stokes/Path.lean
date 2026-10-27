@@ -88,9 +88,9 @@ theorem intersectionPairing_coboundaryPresentation_eq_sub_of_admissible
     exact hallowed t ht htB j
   have hsupport : ∀ τ ∈ g.support, ∃ a : J, τ.carrier = W (j a) := by
     intro τ hτ
-    obtain ⟨P, hP, hυ⟩ :=
-      Finset.mem_biUnion.mp (support_coboundaryPresentation_subset f hτ)
-    exact hcover P hP τ hυ
+    obtain ⟨P, hP, hτ⟩ := Finset.mem_biUnion.mp
+        (support_coboundaryPresentation_subset f hτ)
+    exact hcover P hP τ hτ
   have hends : (0 : ℝ) ∈ Bᶜ ∧ (1 : ℝ) ∈ Bᶜ := by
     constructor
     · rintro ⟨⟨a, t⟩, ht, he⟩
