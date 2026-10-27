@@ -23,6 +23,8 @@ The transport calculation combines `GradedLieHom.completedMap` with
 `Quiver.Path.map_wallPathProduct` and `Quiver.Path.wallPathProduct_restrict`,
 following the restriction-and-transport calculation in
 `DirectedDiagram.levelPathProduct_image`.
+The all-order path map and its completed product formula follow the projection
+argument in `DirectedDiagram.pathImage` and `DirectedDiagram.pathProduct_image`.
 The consistency proof uses `exists_loop_levelPathProduct_eq_of_vertices_eq` to
 move a loop off the original active supports while retaining its mapped product.
 Together with outgoingness of mapped walls, this gives coefficient naturality
@@ -59,30 +61,20 @@ variable {Γ Λ R V ι : Type*} {L L' L'' : Type u}
 /-- Apply a fixed-degree coefficient map to every wall label, retaining its index. -/
 def map : DirectedDiagram (d := d) h H' ι where
   wall j := (D.wall j).map f hf
-  finite_active k := by
-    apply (D.finite_active k).subset
-    intro j hj he
-    apply hj
-    dsimp only at he ⊢
-    rw [DirectedWall.map_label, f.projection_completedMap_of_le k (a := k) (by simp), he]
-    -- The categorical tower and the concrete BCH quotient have the same identity.
-    convert (f.truncatedMap k (a := k) (by simp)).bchGroupMap.map_one using 1
-    rfl
+  finite_active := by
+    simpa only [DirectedWall.map_label] using f.hasFiniteSupport_completedMap D.finite_active
 
 @[simp]
 theorem map_wall (j : ι) : (D.map f hf).wall j = (D.wall j).map f hf := (rfl)
 
 /-- Coefficient maps can only remove active walls. -/
 theorem active_map_subset (k : ℕ) : (D.map f hf).active k ⊆ D.active k := by
-  intro j hj
-  simp only [mem_active, map_wall, DirectedWall.map_label,
-    f.projection_completedMap_of_le k (a := k) (by simp)] at hj
-  rw [mem_active]
-  intro he
-  apply hj
-  rw [he]
-  -- The categorical tower and the concrete BCH quotient have the same identity.
-  convert (f.truncatedMap k (a := k) (by simp)).bchGroupMap.map_one using 1
+  simp only [Set.subset_def, mem_active, map_wall, DirectedWall.map_label,
+    f.projection_completedMap_of_le k (a := k) (by simp)]
+  -- Identify categorical tower identities with the concrete BCH quotient identities.
+  convert Function.mulSupport_comp_subset
+    (f.truncatedMap k (a := k) (by simp)).bchGroupMap.map_one
+    (fun j => CompletedGroup.projection k (D.wall j).label) using 1
   rfl
 
 /-- The identity coefficient map fixes the indexed diagram. -/
@@ -124,6 +116,7 @@ theorem mapPathPrefunctor_obj_val (k : ℕ)
 
 /-- Mapping coefficients preserves the actual finite-order product on the same
 ambient path, including simultaneous crossings and labels that become trivial. -/
+@[simp]
 theorem levelPathProduct_mapPathPrefunctor (k : ℕ)
     {x y : WallComplement (fun j : D.active k => (D.wall j).support)}
     (p : AdmissiblePLPath x y) :
@@ -175,6 +168,58 @@ theorem levelPathProduct_mapPathPrefunctor (k : ℕ)
       rfl
     _ = _ := congrArg F (D.levelPathProduct_eq_wallPathProduct k p
       (D.activeLabels_commute k)).symm
+
+/-- Forget coefficient-killed walls along a common all-order path, retaining its
+ambient vertices and segments. -/
+def pathMap : D.Point ⥤q (D.map f hf).Point where
+  obj x := ⟨x.val, fun k j => by
+    have hx := ((D.mapPathPrefunctor f hf k).obj
+      (CommonWallComplement.projection k x)).notMem j
+    simpa only [mapPathPrefunctor_obj_val, CommonWallComplement.projection_val] using hx⟩
+  map a := ⟨fun k => by
+    let b := (D.mapPathPrefunctor f hf k).map
+      ((CommonWallComplement.projectionPrefunctor k).map a)
+    have hb := b.down
+    -- The projected endpoints and their finite images have the same ambient values.
+    convert hb using 1 <;> apply WallComplement.ext <;>
+      simp only [mapPathPrefunctor_obj_val, CommonWallComplement.projection_val,
+        CommonWallComplement.projectionPrefunctor_obj]⟩
+
+/-- The all-order coefficient path map preserves ambient points. -/
+@[simp]
+theorem pathMap_obj_val (x : D.Point) :
+    ((D.pathMap f hf).obj x).val = x.val := (rfl)
+
+/-- The all-order coefficient path map preserves reversal. -/
+instance : (D.pathMap f hf).MapReverse where
+  map_reverse' _ := PLift.ext (Subsingleton.elim _ _)
+
+/-- Projecting a mapped common path agrees with mapping its finite projection. -/
+theorem pathMap_comp_projection (k : ℕ) :
+    D.pathMap f hf ⋙q CommonWallComplement.projectionPrefunctor k =
+      CommonWallComplement.projectionPrefunctor k ⋙q D.mapPathPrefunctor f hf k := by
+  refine Prefunctor.ext (fun x => ?_) (fun _ _ _ => PLift.ext (Subsingleton.elim _ _))
+  apply WallComplement.ext
+  simp
+
+/-- Mapping coefficients carries the completed product along the same geometric
+path through the completed BCH group homomorphism. -/
+@[simp]
+theorem pathProduct_pathMap {x y : D.Point} (p : Quiver.Path x y) :
+    (D.map f hf).pathProduct ((D.pathMap f hf).mapPath p) =
+      f.completedMap (D.pathProduct p) := by
+  apply CompletedGroup.ext
+  intro k
+  have hp := congrArg
+    (fun F : D.Point ⥤q WallComplement
+        (fun j : (D.map f hf).active k => ((D.map f hf).wall j).support) =>
+      (D.map f hf).levelPathProduct k (F.mapPath p))
+    (D.pathMap_comp_projection f hf k)
+  simp only [Prefunctor.mapPath_comp_apply] at hp
+  rw [projection_pathProduct, f.projection_completedMap_of_le k (a := k) (by simp),
+    projection_pathProduct]
+  exact hp.trans (D.levelPathProduct_mapPathPrefunctor f hf k
+    ((CommonWallComplement.projectionPrefunctor k).mapPath p))
 
 /-- Coefficient maps preserve consistency even though paths may cross supports
 of labels killed by the map. -/
