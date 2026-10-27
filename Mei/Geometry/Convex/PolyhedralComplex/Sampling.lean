@@ -159,6 +159,9 @@ theorem crossingWord_boundary_mem_normalClosure_of_sampling (C : FinitePolyhedra
   have hgrid := C.crossingWord_grid_boundary_mem_normalClosure ν hν
     (fun p : Fin (n + 1) × Fin (m + 1) => x p.2.val p.1.val)
     (fun a b => e b.val a.val) (fun a b => f b.val a.val)
+  -- `show` supplies the source set that `normalClosure_mono` cannot infer from
+  -- the target alone: grid cells use finite column-row indices, while the target
+  -- uses bounded natural row-column indices. The inclusion swaps these indices.
   have hmem := Subgroup.normalClosure_mono (show
       {g | ∃ (a : Fin n) (b : Fin m), g =
         ((((e b.val a.val).toPath.cons (f b.val (a.val + 1))).cons
