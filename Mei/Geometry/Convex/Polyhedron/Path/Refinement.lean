@@ -5,7 +5,7 @@ Authors: Claude Code
 -/
 module
 
-public import Mei.Geometry.Convex.Polyhedron.Path.Product
+public import Mei.Geometry.Convex.Polyhedron.Path.Comparison
 
 /-!
 # Products along refined wall families
@@ -156,30 +156,9 @@ theorem wallPathProduct_eq_of_refines (ν : ι → V →ₗ[ℝ] ℝ) (label : �
     (p : AdmissiblePLPath x y) (q : AdmissiblePLPath x' y')
     (hpq : q.vertices.map WallComplement.val = p.vertices.map WallComplement.val) :
     q.wallPathProduct ν' label' hcomm' = p.wallPathProduct ν label hcomm := by
-  induction p generalizing y' with
-  | nil =>
-    cases q with
-    | nil => simp
-    | cons q e' =>
-      have hl := congrArg List.length hpq
-      simp only [List.length_map, vertices_length, length_cons, vertices_nil,
-        List.length_singleton] at hl
-      omega
-  | @cons u v p e ih =>
-    cases q with
-    | nil =>
-      have hl := congrArg List.length hpq
-      simp only [List.length_map, vertices_length, length_cons, vertices_nil,
-        List.length_singleton] at hl
-      omega
-    | @cons u' v' q e' =>
-      simp only [vertices_cons, List.concat_eq_append, List.map_append, List.map_singleton] at hpq
-      obtain ⟨hv, hz⟩ := List.append_inj' hpq rfl
-      have hu : u'.val = u.val := by
-        have hl := congrArg (fun l => l.getLast?) hv
-        simpa [List.getLast?_map, List.getLast?_eq_some_getLast (vertices_ne_nil _)] using hl
-      rw [wallPathProduct_cons, wallPathProduct_cons, ih q hv,
-        segmentPathProduct_eq_of_refines ν label hcomm ν' label' hcomm' hsub hcover hdisj
-          hν hlabel e e' hu (List.singleton_inj.mp hz)]
+  symm
+  exact wallPathProduct_eq_of_segmentPathProduct_eq ν label hcomm ν' label' hcomm'
+    (fun e e' hx hy => (segmentPathProduct_eq_of_refines ν label hcomm ν' label' hcomm'
+      hsub hcover hdisj hν hlabel e e' hx.symm hy.symm).symm) p q hpq.symm
 
 end Quiver.Path
