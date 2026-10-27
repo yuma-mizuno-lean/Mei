@@ -42,23 +42,6 @@ variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ 
   {σ τ : OrientedCell h k} {υ ω : OrientedCell h (k + 1)}
   {C D : FinitePolyhedralComplex h}
 
-/-- A refined boundary facet contained in a coarse boundary facet inherits
-exactly its signed conormal orientation, and is one of its subdivision pieces. -/
-theorem mem_subdivisionPieces_of_mem_boundaryFacets
-    (hτ : τ ∈ σ.subdivisionPieces C) (hυ : υ ∈ τ.boundaryFacets)
-    (hω : ω ∈ σ.boundaryFacets) (hsub : υ.carrier ⊆ ω.carrier) :
-    υ ∈ ω.subdivisionPieces C := by
-  obtain ⟨hτC, hτσ, hτo⟩ := (σ.mem_subdivisionPieces C τ).mp hτ
-  obtain ⟨F, hF, hFn, hFd, rfl⟩ := (τ.mem_boundaryFacets υ).mp hυ
-  obtain ⟨G, hG, hGn, hGd, rfl⟩ := (σ.mem_boundaryFacets ω).mp hω
-  simp only [boundaryFacet_carrier] at hsub
-  apply (mem_subdivisionPieces _ C _).mpr
-  refine ⟨?_, by simpa only [boundaryFacet_carrier] using hsub, ?_⟩
-  · rw [boundaryFacet_carrier]
-    exact C.face_closed τ.carrier hτC F (isPolyhedralFace_iff.mpr ⟨hFn, hF⟩)
-  · exact σ.boundaryFacet_orientation_eq_of_subset τ hτσ hτo
-      hG hGn hGd hF hFn hFd hsub
-
 /-- Each external signed facet of a refined parent is a subdivision piece of
 exactly one signed coarse facet. This identifies its orientation as well as
 its support. -/

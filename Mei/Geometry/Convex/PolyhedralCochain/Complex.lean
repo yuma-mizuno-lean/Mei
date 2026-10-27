@@ -90,6 +90,25 @@ theorem mem_subdivisionPieces (σ : OrientedCell h k) (C : FinitePolyhedralCompl
     refine ⟨⟨τ.carrier, hm⟩, Finset.mem_attach _ _, ?_⟩
     exact OrientedCell.ext rfl ho.symm
 
+/-- A refined boundary facet contained in a coarse boundary facet inherits
+exactly its signed conormal orientation, and is one of its subdivision pieces. -/
+theorem mem_subdivisionPieces_of_mem_boundaryFacets
+    {σ τ : OrientedCell h k} {υ ω : OrientedCell h (k + 1)}
+    {C : FinitePolyhedralComplex h}
+    (hτ : τ ∈ σ.subdivisionPieces C) (hυ : υ ∈ τ.boundaryFacets)
+    (hω : ω ∈ σ.boundaryFacets) (hsub : υ.carrier ⊆ ω.carrier) :
+    υ ∈ ω.subdivisionPieces C := by
+  obtain ⟨hτC, hτσ, hτo⟩ := (σ.mem_subdivisionPieces C τ).mp hτ
+  obtain ⟨F, hF, hFn, hFd, rfl⟩ := (τ.mem_boundaryFacets υ).mp hυ
+  obtain ⟨G, hG, hGn, hGd, rfl⟩ := (σ.mem_boundaryFacets ω).mp hω
+  simp only [boundaryFacet_carrier] at hsub
+  apply (mem_subdivisionPieces _ C _).mpr
+  refine ⟨?_, by simpa only [boundaryFacet_carrier] using hsub, ?_⟩
+  · rw [boundaryFacet_carrier]
+    exact C.face_closed τ.carrier hτC F (isPolyhedralFace_iff.mpr ⟨hFn, hF⟩)
+  · exact σ.boundaryFacet_orientation_eq_of_subset τ hτσ hτo
+      hG hGn hGd hF hFn hFd hsub
+
 /-- A complex subdivision induces an oriented subdivision of every original cell. -/
 theorem isOrientedSubdivision_subdivisionPieces (σ : OrientedCell h k)
     {C D : FinitePolyhedralComplex h} (hCD : C.IsSubdivision D)
