@@ -6,6 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.Convex.PolyhedralCochain.Incidence
+public import Mei.Algebra.BigOperators.Group.Finset.Involution
 
 /-!
 # Internal facets of polyhedral subdivisions
@@ -23,9 +24,9 @@ one finite complex, including subdivisions of lower-dimensional cells. It uses
 from a short ray across the facet, and
 `FinitePolyhedralComplex.eq_reverse_of_mem_boundaryFacets` to determine its sign.
 Mathlib's exposed-face maximizers and relative-interior segment theorem provide
-the geometric crossing. The finite cancellation uses Mathlib's
-`Finset.sum_involution` on parent-facet incidences. No boundedness or absence of
-lineality is required.
+the geometric crossing. The finite cancellation uses
+`Finset.sum_sum_eq_zero_of_unique_partner`, based on `Finset.sum_involution`,
+on parent-facet incidences. No boundedness or absence of lineality is required.
 -/
 
 public section
@@ -168,36 +169,20 @@ theorem sum_internal_boundaryFacets_eq_zero
       ¬υ.carrier ⊆ intrinsicFrontier ℝ σ.carrier,
       PolyhedralCochain.mk (R := R) υ c) = 0 := by
   classical
-  let S := Q.sigma fun τ => τ.boundaryFacets.filter fun υ =>
-    ¬υ.carrier ⊆ intrinsicFrontier ℝ σ.carrier
-  have hS (x : Σ _ : OrientedCell h k, OrientedCell h (k + 1)) :
-      x ∈ S ↔ x.1 ∈ Q ∧ x.2 ∈ x.1.boundaryFacets ∧
-        ¬x.2.carrier ⊆ intrinsicFrontier ℝ σ.carrier := by
-    simp only [S, Finset.mem_sigma, Finset.mem_filter]
-  have hex (x) (hx : x ∈ S) :
-      ∃! η : OrientedCell h k, η ∈ Q ∧ η ≠ x.1 ∧ x.2.reverse ∈ η.boundaryFacets := by
-    obtain ⟨hxQ, hxF, hxb⟩ := (hS x).mp hx
-    exact (hQ.carrier_subset_intrinsicFrontier_or_existsUnique_reverse_mem_boundaryFacets
-      hQC hxQ hxF).resolve_left hxb
-  let g (x) (hx : x ∈ S) : Σ _ : OrientedCell h k, OrientedCell h (k + 1) :=
-    ⟨(hex x hx).choose, x.2.reverse⟩
-  have hgmem (x) (hx : x ∈ S) : g x hx ∈ S := by
-    obtain ⟨hη, _, hr⟩ := (hex x hx).choose_spec.1
-    exact (hS _).mpr ⟨hη, hr, by
-      simpa only [g, reverse_carrier] using ((hS x).mp hx).2.2⟩
-  have hgg (x) (hx : x ∈ S) : g (g x hx) (hgmem x hx) = x := by
-    have hp := (hex x hx).choose_spec.1
-    have hfirst : (hex (g x hx) (hgmem x hx)).choose = x.1 :=
-      ((hex (g x hx) (hgmem x hx)).choose_spec.2 x.1
-        ⟨((hS x).mp hx).1, Ne.symm hp.2.1, by
-          simpa only [g, reverse_reverse] using ((hS x).mp hx).2.1⟩).symm
-    exact Sigma.ext hfirst (heq_of_eq (reverse_reverse x.2))
-  rw [Finset.sum_sigma' Q]
-  refine Finset.sum_involution g ?_ ?_ hgmem hgg
-  · intro x hx
-    simp only [g, PolyhedralCochain.mk_reverse, add_neg_cancel]
-  · intro x hx _ he
-    exact (hex x hx).choose_spec.1.2.1 (congrArg Sigma.fst he)
+  refine Q.sum_sum_eq_zero_of_unique_partner
+    (fun τ => τ.boundaryFacets.filter fun υ =>
+      ¬υ.carrier ⊆ intrinsicFrontier ℝ σ.carrier) reverse reverse_reverse ?_
+    (fun υ => PolyhedralCochain.mk (R := R) υ c)
+    (fun υ => by rw [PolyhedralCochain.mk_reverse, add_neg_cancel])
+  intro τ hτ υ hυ
+  obtain ⟨hυ, hυb⟩ := Finset.mem_filter.mp hυ
+  obtain ⟨η, ⟨hη, hne, hr⟩, hunique⟩ :=
+    (hQ.carrier_subset_intrinsicFrontier_or_existsUnique_reverse_mem_boundaryFacets
+      hQC hτ hυ).resolve_left hυb
+  refine ⟨η, ⟨hη, hne, Finset.mem_filter.mpr ⟨hr, ?_⟩⟩, ?_⟩
+  · simpa only [reverse_carrier] using hυb
+  · rintro ξ ⟨hξ, hξne, hξr⟩
+    exact hunique ξ ⟨hξ, hξne, (Finset.mem_filter.mp hξr).1⟩
 
 open Classical in
 /-- The total boundary of all subdivision pieces contains only occurrences on
