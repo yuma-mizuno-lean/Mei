@@ -23,7 +23,11 @@ for logarithmic derivations of degree `n ∈ P`.
 For a positive monoid in a larger degree group and a coefficient monoid `Q`
 containing it, use its inverse image under `Q.subtype` and restrict the degree
 to `Q`. This retains the positive increments rather than filtering by the
-ambient degree of a coefficient, which can be negative.
+ambient degree of a coefficient, which can be negative. When every exponent
+is allowed (`P = ⊤`) and `δ` is nonnegative,
+`mem_monoidAlgebraIdeal_top_iff_of_nonneg` identifies these ideals with ordinary
+degree cutoffs. Applied to the monoid of positive exponents itself, this compares
+the coefficient filtration with the degree truncations used for its completion.
 
 The support characterization uses `AddMonoidAlgebra.mem_ideal_span_of'_image`;
 the action calculation uses `Mei.AddMonoidAlgebra.monomialDerivation_single`.
@@ -66,6 +70,20 @@ theorem mem_monoidAlgebraIdeal_iff (k : ℕ) (f : R[M]) :
     f ∈ P.monoidAlgebraIdeal δ k ↔
       ∀ p ∈ f.coeff.support, ∃ n ∈ P, (k : ℤ) ≤ δ n ∧ ∃ q, p = q + n := by
   simp only [monoidAlgebraIdeal, mem_ideal_span_of'_image, Set.mem_ofPred_eq, and_assoc]
+
+/-- When all exponents are allowed and their degrees are nonnegative, monomial
+ideal membership is exactly the degree bound on every supported exponent. -/
+theorem mem_monoidAlgebraIdeal_top_iff_of_nonneg {δ : M →+ ℤ}
+    (hδ : ∀ n, 0 ≤ δ n) (k : ℕ) (f : R[M]) :
+    f ∈ (⊤ : AddSubmonoid M).monoidAlgebraIdeal δ k ↔
+      ∀ p ∈ f.coeff.support, (k : ℤ) ≤ δ p := by
+  rw [mem_monoidAlgebraIdeal_iff]
+  constructor
+  · intro hf p hp
+    obtain ⟨n, _, hn, q, rfl⟩ := hf p hp
+    simpa only [map_add] using hn.trans (le_add_of_nonneg_left (hδ q))
+  · intro hf p hp
+    exact ⟨p, mem_top p, hf p hp, 0, by simp⟩
 
 /-- A monomial belongs precisely when its coefficient vanishes or its exponent
 contains an increment of the required order. -/
