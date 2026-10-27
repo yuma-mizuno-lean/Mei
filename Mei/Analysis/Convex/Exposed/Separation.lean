@@ -30,21 +30,7 @@ open Set Module
 namespace IsExposed
 
 variable {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
-  [FiniteDimensional ℝ V] {P Q F G : Set V}
-
-/-- An exposed facet is maximal among proper exposed subsets of its parent. -/
-theorem eq_of_subset_of_finrank_add_one (hF : IsExposed ℝ P F)
-    (hne : F.Nonempty)
-    (hdim : finrank ℝ (vectorSpan ℝ F) + 1 = finrank ℝ (vectorSpan ℝ P))
-    (hG : IsExposed ℝ P G) (hFG : F ⊆ G) (hproper : G ≠ P) : F = G := by
-  have hle := Submodule.finrank_mono (vectorSpan_mono ℝ hG.subset)
-  have hlt : finrank ℝ (vectorSpan ℝ G) < finrank ℝ (vectorSpan ℝ P) := by
-    have hneG : G.Nonempty := hne.mono hFG
-    have hneq : finrank ℝ (vectorSpan ℝ G) ≠ finrank ℝ (vectorSpan ℝ P) :=
-      fun he => hproper (hG.eq_of_finrank_vectorSpan_eq hneG he)
-    omega
-  have hlow := Submodule.finrank_mono (vectorSpan_mono ℝ hFG)
-  exact (hF.mono hG.subset hFG).eq_of_finrank_vectorSpan_eq hne (by omega)
+  [FiniteDimensional ℝ V] {P Q F : Set V}
 
 /-- Convex sets with the same affine span meeting exactly in a common facet admit
 opposite exposing functionals for that facet. No closedness or polyhedrality is needed. -/

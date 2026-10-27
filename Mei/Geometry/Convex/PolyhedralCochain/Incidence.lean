@@ -7,7 +7,6 @@ module
 
 public import Mei.Geometry.Convex.PolyhedralCochain.Cancellation
 public import Mei.Geometry.Convex.PolyhedralComplex.Basic
-public import Mei.Analysis.Convex.Exposed.Separation
 
 /-!
 # Cancellation at common facets of a polyhedral complex
@@ -18,9 +17,8 @@ facet cancel from their signed boundary sums. This supplies internal-facet
 cancellation for subdivisions whose adjacent cells need not be the two pieces
 of a single hyperplane cut.
 
-`IsExposed.exists_opposite_exposing` supplies the opposite exposing functionals;
-`OrientedCell.boundaryFacet_eq_reverse_of_toExposed` then identifies the signed
-orientations. The intersection is identified geometrically by
+`OrientedCell.boundaryFacet_eq_reverse_of_common_facet` identifies the opposite
+signed orientations. The intersection is identified geometrically by
 `FinitePolyhedralComplex.inter_eq_of_common_facet`. Arbitrary codimension,
 real offsets, unbounded cells, lineality and arbitrary-ring module coefficients
 are allowed.
@@ -36,31 +34,6 @@ namespace Mei
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i} {k : ℕ}
-
-namespace OrientedCell
-
-/-- Adjacent equally oriented cells spanning the same affine subspace induce
-opposite signed boundary orientations on their common facet. -/
-theorem boundaryFacet_eq_reverse_of_common_facet (σ τ : OrientedCell h k)
-    {F : Set V} (hF : IsExposed ℝ σ.carrier F) (hG : IsExposed ℝ τ.carrier F)
-    (hne : F.Nonempty)
-    (hdim : finrank ℝ (vectorSpan ℝ F) + 1 = finrank ℝ (vectorSpan ℝ σ.carrier))
-    (hspan : affineSpan ℝ σ.carrier = affineSpan ℝ τ.carrier)
-    (ho : σ.orientation = τ.orientation) (hinter : σ.carrier ∩ τ.carrier = F) :
-    σ.boundaryFacet hF hne hdim =
-      (τ.boundaryFacet hG hne (by
-        rw [← direction_affineSpan ℝ τ.carrier, ← hspan, direction_affineSpan]
-        exact hdim)).reverse := by
-  have := h.finiteDimensional
-  obtain ⟨P, hP⟩ := isRationalNormalPolyhedron_iff.mp σ.rational
-  obtain ⟨Q, hQ⟩ := isRationalNormalPolyhedron_iff.mp τ.rational
-  obtain ⟨l, hl, hm⟩ := hF.exists_opposite_exposing hG (hP ▸ P.convex) (hQ ▸ Q.convex)
-    hne hdim hspan hinter
-  exact σ.boundaryFacet_eq_reverse_of_toExposed τ hF hG hne hdim
-    (by simpa only [direction_affineSpan] using congrArg AffineSubspace.direction hspan)
-    ho l hl hm
-
-end OrientedCell
 
 namespace FinitePolyhedralComplex
 
