@@ -6,8 +6,6 @@ Authors: Codex
 module
 
 public import Mei.Geometry.Convex.PolyhedralComplex.Strata
-public import Mei.Analysis.Convex.Intrinsic
-public import Mathlib.Topology.Connected.Clopen
 
 /-!
 # Chambers of finite polyhedral complexes
@@ -79,7 +77,7 @@ theorem inter_compl_support_codimensionAtLeast_one {P : Set V}
     exact ⟨subset_intrinsicClosure hx.1, by simpa only [hi] using hxi⟩
   exact hx.2 (C.intrinsicFrontier_subset_support_codimensionAtLeast hPC 0 (by omega) hxf)
 
-/-- The full cell interiors are precisely the chambers of the skeleton complement. -/
+/-- Each full cell interior is a chamber of the skeleton complement. -/
 theorem connectedComponentIn_compl_support_codimensionAtLeast_one {P : Set V}
     (hP : P ∈ C.cellsOfCodimension 0) {x : V} (hx : x ∈ interior P) :
     connectedComponentIn (C.codimensionAtLeast 1).supportᶜ x = interior P := by

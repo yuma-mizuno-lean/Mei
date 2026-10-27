@@ -135,10 +135,10 @@ theorem adapted_chamber_lift_path_mem_ker {k l : ℕ} (hkl : k ≤ l)
       (d.truncationMap ℒ hkl).bchGroupMap.ker := by
   let r := WallComplement.restrictPrefunctor (fun j : D.active l => (D.wall j).support)
     (Set.inclusion (D.active_mono hkl))
-  rw [MonoidHom.mem_ker, map_mul, map_mul, map_inv, ht P (r.obj x) hx, ht Q (r.obj y) hy,
-    D.truncation_levelPathProduct hkl,
-    ← D.levelTransport_eq_levelPathProduct hk]
-  dsimp only [r]
-  rw [mul_assoc, ← D.levelTransport_comp hk b, inv_mul_cancel]
+  simp only [MonoidHom.mem_ker, map_mul, map_inv, ht P (r.obj x) hx, ht Q (r.obj y) hy,
+    D.truncation_levelPathProduct hkl]
+  rw [D.levelPathProduct_eq_chamberTransport hk b]
+  simp only [D.chamberTransport_levelChamber, r]
+  group
 
 end Mei.DirectedDiagram
