@@ -11,8 +11,9 @@ public import Mei.Geometry.Convex.PolyhedralCochain.Cancellation
 /-!
 # Signed boundaries of hyperplane cuts
 
-The signed boundary of a cell is the sum of the signed boundaries of its two
-equally oriented halfspace pieces. The common cutting facet cancels, while each
+When the cutting hyperplane meets a cell in a codimension-one section, the signed
+boundary of the cell is the sum of the signed boundaries of its two equally
+oriented halfspace pieces. The common cutting facet cancels, while each
 original facet is either retained on one side or subdivided between the two sides.
 The equality holds in polyhedral cochains, so subdivisions of the external facets
 are already identified. It allows arbitrary codimension, unbounded cells,
@@ -293,9 +294,10 @@ private theorem cutContribution_add (σ π μ : OrientedCell h k) (g : V →ᵃ[
     simp only [cutContribution, dite_eq_right hn, zero_add]
 
 /-- Cutting a cell into two pieces of the same codimension and inherited orientation
-preserves its signed boundary sum. The cutting section is automatically nonempty and
-has codimension one inside the parent; its two induced orientations cancel. External
-facets are retained or subdivided, with equality in polyhedral cochains. -/
+preserves its signed boundary sum, assuming the cutting section has codimension one
+inside the parent (`hdim`). The section is automatically nonempty, and its two induced
+orientations cancel. External facets are retained or subdivided, with equality in
+polyhedral cochains. -/
 theorem cellCoboundary_cut_add_eq (σ π μ : OrientedCell h k)
     (l : V →L[ℝ] ℝ) (a : ℝ)
     (hπ : π.carrier = σ.carrier ∩ {x | l x ≤ a})
