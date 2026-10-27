@@ -8,6 +8,7 @@ module
 public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Meridian
 public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Localization
 public import Mei.Geometry.Convex.PolyhedralCochain.Transverse.Basic
+public import Mei.Geometry.Convex.PolyhedralCochain.Separation
 
 /-!
 # Joint obstruction cochains
@@ -87,6 +88,19 @@ theorem jointObstructionCochain_reverse (hσ : ∀ J, (σ J).carrier = (J : Set 
   classical
   simp only [jointObstructionCochain_def, loopObstruction_reverse,
     map_neg, PolyhedralCochain.mk_reverse, neg_neg]
+
+/-- The obstruction cochain vanishes exactly when every specified joint loop
+has identity transport. Thus cancellation in the cochain quotient detects each
+individual meridian product, even though that quotient allows subdivision. -/
+theorem jointObstructionCochain_eq_zero_iff (hσ : ∀ J, (σ J).carrier = (J : Set V))
+    (hk : D.LevelConsistent k) :
+    D.jointObstructionCochain σ x γ hσ hk = 0 ↔
+      ∀ J, D.levelPathProduct (k + 1) (γ J) = 1 := by
+  classical
+  let := Fintype.ofFinite (D.adaptedComplex (k + 1)).joints
+  rw [jointObstructionCochain_def,
+    PolyhedralCochain.sum_mk_eq_zero_iff (D.adaptedComplex (k + 1)) σ hσ]
+  exact forall_congr' fun J => D.loopObstruction_eq_zero_iff hk (γ J)
 
 /-- Consistency at the next order makes the entire obstruction cochain zero. -/
 theorem jointObstructionCochain_eq_zero (hσ : ∀ J, (σ J).carrier = (J : Set V))

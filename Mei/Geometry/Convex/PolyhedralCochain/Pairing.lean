@@ -60,6 +60,12 @@ structure IsTransverse (σ : OrientedCell h k) (v : Fin (k + 1) → V) : Prop wh
 
 variable {σ : OrientedCell h k} {v : Fin (k + 1) → V}
 
+/-- A test missing a cell is transverse, including when the test is degenerate. -/
+theorem isTransverse_of_disjoint (σ : OrientedCell h k) {v : Fin (k + 1) → V}
+    (hv : Disjoint (convexHull ℝ (range v)) σ.carrier) : σ.IsTransverse v :=
+  ⟨hv.mono_right (intrinsicFrontier_subset σ.isClosed_carrier),
+    fun ⟨_, hx, hy⟩ => (Set.disjoint_left.mp hv hx hy).elim⟩
+
 /-- Reversing a cell's orientation preserves transversality of an affine test simplex. -/
 @[simp]
 theorem isTransverse_reverse_iff (σ : OrientedCell h k) (v : Fin (k + 1) → V) :
