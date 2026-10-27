@@ -5,14 +5,14 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.Convex.Polyhedron.Face
+public import Mei.Geometry.Convex.Polyhedron.Direction
 public import Mei.Analysis.Convex.Exposed
 import Mathlib.Order.Minimal
 
 /-!
 # Facet presentations and relative frontiers
 
-A nonempty polyhedron admits a half-space presentation within its affine span
+A polyhedron admits a half-space presentation within its affine span
 in which every row defines a genuine facet. Its relative frontier is therefore
 covered by facets. This identifies the geometric boundary used by signed facet
 sums, including for unbounded and lower-dimensional polyhedra with lineality.
@@ -27,58 +27,14 @@ public section
 
 open Set Module AffineSubspace
 
-namespace AffineMap
-
-variable {V ι : Type*} [AddCommGroup V] [Module ℝ V] [Finite ι]
-
-/-- At a point where precisely one row is active, the direction of the active
-face is the kernel of that row inside the ambient affine subspace. -/
-theorem vectorSpan_active_eq (g : ι → (V →ᵃ[ℝ] ℝ)) (A : AffineSubspace ℝ V)
-    (j : ι) {p : V} (hp : p ∈ A) (hpj : g j p = 0)
-    (hstrict : ∀ l, l ≠ j → g l p < 0) :
-    vectorSpan ℝ {x | x ∈ A ∧ (∀ l, g l x ≤ 0) ∧ g j x = 0} =
-      A.direction ⊓ (g j).linear.ker := by
-  let F : Set V := {x | x ∈ A ∧ (∀ l, g l x ≤ 0) ∧ g j x = 0}
-  have hpF : p ∈ F := ⟨hp, fun l => by
-    by_cases he : l = j
-    · simp [he, hpj]
-    · exact (hstrict l he).le, hpj⟩
-  apply le_antisymm
-  · rw [vectorSpan_def, Submodule.span_le]
-    rintro v ⟨x, hx, y, hy, rfl⟩
-    exact ⟨A.vsub_mem_direction hx.1 hy.1, LinearMap.mem_ker.mpr (by
-      rw [(g j).linear_apply_vsub, hx.2.2, hy.2.2, vsub_self])⟩
-  · rintro v ⟨hvA, hvj⟩
-    have hpv : v + p ∈ A := A.vadd_mem_of_mem_direction hvA hp
-    obtain ⟨ε, hε, he⟩ := exists_pos_lineMap_neg_forall_le g hpF.2.1
-      (x := v + p) (by
-        intro l hl
-        have hlj : l = j := by
-          by_contra hn
-          exact (hstrict l hn).ne hl
-        subst l
-        rw [← vadd_eq_add, (g j).map_vadd, LinearMap.mem_ker.mp hvj, hpj]
-        simp)
-    have hm : lineMap p (v + p) (-ε) ∈ F := ⟨lineMap_mem _ hp hpv, he, by
-      rw [(g j).apply_lineMap, ← vadd_eq_add v p, (g j).map_vadd,
-        LinearMap.mem_ker.mp hvj, hpj]
-      simp⟩
-    have hv := vsub_mem_vectorSpan ℝ hm hpF
-    have heq : lineMap p (v + p) (-ε) -ᵥ p = (-ε) • v := by
-      simpa only [vsub_eq_sub, add_sub_cancel_right] using lineMap_vsub_left p (v + p) (-ε)
-    rw [heq] at hv
-    exact (Submodule.smul_mem_iff _ (neg_ne_zero.mpr hε.ne')).mp hv
-
-end AffineMap
-
 namespace TauCeti.IsConvexPolyhedron
 
 variable {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
   [FiniteDimensional ℝ V] {P : Set V}
 
-/-- A nonempty polyhedron has a finite half-space presentation within its
+/-- A polyhedron has a finite half-space presentation within its
 affine span in which every row defines a nonempty exposed facet. -/
-theorem exists_facet_presentation (hP : TauCeti.IsConvexPolyhedron P) (hne : P.Nonempty) :
+theorem exists_facet_presentation (hP : TauCeti.IsConvexPolyhedron P) :
     ∃ (ι : Type) (_ : Fintype ι) (g : ι → (V →ᴬ[ℝ] ℝ)),
       P = {x | x ∈ affineSpan ℝ P ∧ ∀ j, g j x ≤ 0} ∧
       ∀ j, IsExposed ℝ P {x ∈ P | g j x = 0} ∧
@@ -86,6 +42,8 @@ theorem exists_facet_presentation (hP : TauCeti.IsConvexPolyhedron P) (hne : P.N
         finrank ℝ (vectorSpan ℝ {x ∈ P | g j x = 0}) + 1 =
           finrank ℝ (vectorSpan ℝ P) := by
   classical
+  rcases P.eq_empty_or_nonempty with rfl | hne
+  · exact ⟨Fin 0, inferInstance, Fin.elim0, by simp, by simp⟩
   -- Remove redundant inequalities relative to the affine span, rather than
   -- requiring an interior point in the ambient vector space.
   obtain ⟨n, f, hf⟩ := TauCeti.isConvexPolyhedron_iff.mp hP
@@ -164,19 +122,7 @@ theorem exists_facet_presentation (hP : TauCeti.IsConvexPolyhedron P) (hne : P.N
       · simpa [he] using hpj.le
       · exact (hpstrict ⟨l, hl⟩ (fun he' => he (congrArg Subtype.val he'))).le
     have hface : IsExposed ℝ P {y ∈ P | f j.val y = 0} := by
-      refine fun _ => ⟨(f j.val).contLinear, ?_⟩
-      ext y
-      have hdiff (z : V) : (f j.val).contLinear z = f j.val z - f j.val 0 := by
-        simpa using (f j.val).contLinear_apply_vsub z 0
-      constructor
-      · rintro ⟨hy, hyj⟩
-        refine ⟨hy, fun z hz => ?_⟩
-        rw [hdiff z, hdiff y, hyj]
-        exact sub_le_sub_right ((hpres ▸ hz).2 j.val j.property) _
-      · rintro ⟨hy, hmax⟩
-        have hm := hmax p hpP
-        rw [hdiff p, hdiff y, hpj] at hm
-        exact ⟨hy, le_antisymm ((hpres ▸ hy).2 j.val j.property) (by linarith)⟩
+      simpa [hf] using (Mei.Convex.isExposed_setOf_active f {j.val})
     refine ⟨hface, ⟨p, hpP, hpj⟩, ?_⟩
     -- The local active-face direction is a hyperplane in the parent direction.
     -- Restrict the row there before applying rank-nullity.
@@ -218,7 +164,7 @@ theorem exists_facet_of_mem_intrinsicFrontier (hP : TauCeti.IsConvexPolyhedron P
     ∃ F, IsExposed ℝ P F ∧ x ∈ F ∧
       finrank ℝ (vectorSpan ℝ F) + 1 = finrank ℝ (vectorSpan ℝ P) := by
   have hxP : x ∈ P := intrinsicFrontier_subset hP.isClosed hx
-  obtain ⟨ι, _, g, hpres, hfacets⟩ := hP.exists_facet_presentation ⟨x, hxP⟩
+  obtain ⟨ι, _, g, hpres, hfacets⟩ := hP.exists_facet_presentation
   have hactive : ∃ j, g j x = 0 := by
     by_contra! hn
     let A := affineSpan ℝ P
@@ -234,7 +180,7 @@ theorem exists_facet_of_mem_intrinsicFrontier (hP : TauCeti.IsConvexPolyhedron P
       rw [hpres]
       exact ⟨y.property, fun j => (hy j).le⟩
     have hxint : x ∈ intrinsicInterior ℝ P :=
-      ⟨xA, interior_mono hUP (by rwa [hU.interior_eq]), rfl⟩
+      mem_intrinsicInterior.mpr ⟨xA, interior_mono hUP (by rwa [hU.interior_eq]), rfl⟩
     rw [← intrinsicClosure_sdiff_intrinsicInterior] at hx
     exact hx.2 hxint
   obtain ⟨j, hj⟩ := hactive

@@ -6,6 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.Convex.Polyhedron.Face
+import Mathlib.LinearAlgebra.AffineSpace.AffineSubspace.Basic
 
 /-!
 # Directions of finite intersections of affine halfspaces
@@ -13,7 +14,9 @@ public import Mei.Geometry.Convex.Polyhedron.Face
 The direction of a nonempty polyhedron is the common kernel of the linear
 parts of the inequalities that vanish on the whole polyhedron. This identifies
 the tangent space without choosing an irredundant presentation, and allows
-arbitrary offsets, unboundedness and lineality.
+arbitrary offsets, unboundedness and lineality. At a point with exactly one
+active inequality, the direction of the active face is the kernel of that
+row restricted to the ambient affine subspace.
 
 The argument uses `Convex.exists_mem_zero_iff_forall` to choose a point with
 exactly the universally active constraints, and
@@ -25,7 +28,7 @@ public section
 
 namespace AffineMap
 
-open Set
+open Set AffineSubspace
 
 variable {V ι : Type*} [AddCommGroup V] [Module ℝ V] [Finite ι]
 
@@ -63,5 +66,43 @@ theorem direction_affineSpan_setOf_forall_le (g : ι → (V →ᵃ[ℝ] ℝ))
       simpa only [vsub_eq_sub, add_sub_cancel_right] using lineMap_vsub_left p (v + p) (-ε)
     rw [heq] at hdir
     exact (Submodule.smul_mem_iff _ (neg_ne_zero.mpr hε.ne')).mp hdir
+
+/-- At a point where precisely one row is active, the direction of the active
+face is the kernel of that row inside the ambient affine subspace. -/
+theorem vectorSpan_active_eq (g : ι → (V →ᵃ[ℝ] ℝ)) (A : AffineSubspace ℝ V)
+    (j : ι) {p : V} (hp : p ∈ A) (hpj : g j p = 0)
+    (hstrict : ∀ l, l ≠ j → g l p < 0) :
+    vectorSpan ℝ {x | x ∈ A ∧ (∀ l, g l x ≤ 0) ∧ g j x = 0} =
+      A.direction ⊓ (g j).linear.ker := by
+  let F : Set V := {x | x ∈ A ∧ (∀ l, g l x ≤ 0) ∧ g j x = 0}
+  have hpF : p ∈ F := ⟨hp, fun l => by
+    by_cases he : l = j
+    · simp [he, hpj]
+    · exact (hstrict l he).le, hpj⟩
+  apply le_antisymm
+  · rw [vectorSpan_def, Submodule.span_le]
+    rintro v ⟨x, hx, y, hy, rfl⟩
+    exact ⟨A.vsub_mem_direction hx.1 hy.1, LinearMap.mem_ker.mpr (by
+      rw [(g j).linear_apply_vsub, hx.2.2, hy.2.2, vsub_self])⟩
+  · rintro v ⟨hvA, hvj⟩
+    have hpv : v + p ∈ A := A.vadd_mem_of_mem_direction hvA hp
+    obtain ⟨ε, hε, he⟩ := exists_pos_lineMap_neg_forall_le g hpF.2.1
+      (x := v + p) (by
+        intro l hl
+        have hlj : l = j := by
+          by_contra hn
+          exact (hstrict l hn).ne hl
+        subst l
+        rw [← vadd_eq_add, (g j).map_vadd, LinearMap.mem_ker.mp hvj, hpj]
+        simp)
+    have hm : lineMap p (v + p) (-ε) ∈ F := ⟨lineMap_mem _ hp hpv, he, by
+      rw [(g j).apply_lineMap, ← vadd_eq_add v p, (g j).map_vadd,
+        LinearMap.mem_ker.mp hvj, hpj]
+      simp⟩
+    have hv := vsub_mem_vectorSpan ℝ hm hpF
+    have heq : lineMap p (v + p) (-ε) -ᵥ p = (-ε) • v := by
+      simpa only [vsub_eq_sub, add_sub_cancel_right] using lineMap_vsub_left p (v + p) (-ε)
+    rw [heq] at hv
+    exact (Submodule.smul_mem_iff _ (neg_ne_zero.mpr hε.ne')).mp hv
 
 end AffineMap
