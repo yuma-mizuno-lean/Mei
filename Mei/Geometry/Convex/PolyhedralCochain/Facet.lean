@@ -7,6 +7,7 @@ module
 
 public import Mei.Geometry.Convex.PolyhedralCochain.Basic
 public import Mei.Geometry.Convex.Polyhedron.Rational.Face
+public import Mei.Geometry.Convex.Polyhedron.Face.Cut
 public import Mei.Analysis.Convex.Exposed.Orientation
 
 /-!
@@ -26,6 +27,11 @@ and determines the oriented facet uniquely. `boundaryFacet_orientation` identifi
 it with the general ordered-field construction `IsExposed.facetOrientation`.
 No inner product, boundedness,
 salience or full-dimensionality is assumed.
+
+For a half-space cut retaining the cell's codimension,
+`carrier_eq_cut_zero_or_inter_boundaryFacet` classifies the supports of every signed facet
+of the cut piece: each is the cutting section or the restriction of an original signed
+facet. It uses the exposed-face classification `TauCeti.IsConvexPolyhedron.facet_cut_iff`.
 -/
 
 public section
@@ -236,6 +242,36 @@ theorem carrier_injOn_boundaryFacets (σ : OrientedCell h k) :
   simp only [boundaryFacet_carrier] at he
   subst G
   rfl
+
+/-- Every signed facet of a half-space cut retaining the parent's codimension is supported
+on the cutting section or on the restriction of an original signed facet. The orientations
+of the parent and the cut piece need not agree for this support classification. -/
+theorem carrier_eq_cut_zero_or_inter_boundaryFacet (σ τ : OrientedCell h k)
+    (g : V →ᴬ[ℝ] ℝ) (hτ : τ.carrier = σ.carrier ∩ {x | g x ≤ 0})
+    {υ : OrientedCell h (k + 1)} (hυ : υ ∈ τ.boundaryFacets) :
+    υ.carrier = σ.carrier ∩ {x | g x = 0} ∨
+      ∃ η ∈ σ.boundaryFacets, υ.carrier = η.carrier ∩ {x | g x ≤ 0} := by
+  have := h.finiteDimensional
+  obtain ⟨F, hF, hFne, hFdim, hυF⟩ := (τ.mem_boundaryFacets υ).mp hυ
+  have hσdim := σ.finrank_direction_add
+  have hτdim := τ.finrank_direction_add
+  rw [direction_affineSpan] at hσdim hτdim
+  have hcut : finrank ℝ (vectorSpan ℝ (σ.carrier ∩ {x | g x ≤ 0})) =
+      finrank ℝ (vectorSpan ℝ σ.carrier) := by
+    rw [← hτ]
+    omega
+  have hpoly : TauCeti.IsConvexPolyhedron σ.carrier := by
+    obtain ⟨P, hP⟩ := isRationalNormalPolyhedron_iff.mp σ.rational
+    exact hP ▸ P.isConvexPolyhedron
+  have hface : IsExposed ℝ (σ.carrier ∩ {x | g x ≤ 0}) F := by rwa [← hτ]
+  rcases (hpoly.facet_cut_iff g hFne hcut (by omega)).mp hface with he | ⟨G, hG, hGdim, he⟩
+  · left
+    simpa only [hυF, boundaryFacet_carrier] using he
+  · right
+    have hGne : G.Nonempty := hFne.mono (he ▸ Set.inter_subset_left)
+    refine ⟨σ.boundaryFacet hG hGne hGdim,
+      σ.boundaryFacet_mem_boundaryFacets hG hGne hGdim, ?_⟩
+    simpa only [hυF, boundaryFacet_carrier] using he
 
 /-- A vector transverse to a cell is transverse to every boundary facet. -/
 theorem notMem_direction_of_mem_boundaryFacets (σ : OrientedCell h k)
