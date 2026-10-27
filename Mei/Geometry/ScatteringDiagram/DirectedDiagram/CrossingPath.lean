@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.DefectCochain
+public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.DefectCochain.Basic
 public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Obstruction.Basic
 public import Mei.Algebra.Lie.Graded.Truncation.Transition
 
