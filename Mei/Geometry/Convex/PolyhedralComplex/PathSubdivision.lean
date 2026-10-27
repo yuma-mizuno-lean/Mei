@@ -85,18 +85,32 @@ theorem crossingLetter_subdivide_right (ν : C.walls → V →ₗ[ℝ] ℝ)
   rw [crossingLetter_def, crossingLetter_def, hv, map_smul]
   simp only [smul_eq_mul, mul_pos_iff_of_pos_left (sub_pos.mpr ht)]
 
-/-- Inserting an allowed interior vertex preserves the segment word; the last
-subsegment's factors remain on the left. -/
+/-- Inserting an allowed vertex at any parameter in `[0, 1]` preserves the segment
+word; the last subsegment's factors remain on the left. Endpoint insertions give
+stationary segments with empty words. -/
 theorem segmentCrossingWord_subdivide (ν : C.walls → V →ₗ[ℝ] ℝ)
     (e : x ⟶ y) (e₁ : x ⟶ z) (e₂ : z ⟶ y)
-    (ht : t ∈ Ioo (0 : ℝ) 1) (hz : z.val = AffineMap.lineMap x.val y.val t) :
+    (ht : t ∈ Icc (0 : ℝ) 1) (hz : z.val = AffineMap.lineMap x.val y.val t) :
     C.segmentCrossingWord ν e =
       C.segmentCrossingWord ν e₂ * C.segmentCrossingWord ν e₁ := by
-  simp only [segmentCrossingWord_def, C.orderedCrossings_subdivide e e₁ e₂ ht hz,
+  rcases eq_or_lt_of_le ht.1 with ht0 | ht0
+  · have hzx : z = x := WallComplement.ext (by
+      simpa only [← ht0, AffineMap.lineMap_apply_zero] using hz)
+    subst z
+    simpa only [segmentCrossingWord_self, mul_one] using
+      congrArg (C.segmentCrossingWord ν) (PLift.ext (Subsingleton.elim e.down e₂.down))
+  rcases eq_or_lt_of_le ht.2 with ht1 | ht1
+  · have hzy : z = y := WallComplement.ext (by
+      simpa only [ht1, AffineMap.lineMap_apply_one] using hz)
+    subst z
+    simpa only [segmentCrossingWord_self, one_mul] using
+      congrArg (C.segmentCrossingWord ν) (PLift.ext (Subsingleton.elim e.down e₁.down))
+  have ht' : t ∈ Ioo (0 : ℝ) 1 := ⟨ht0, ht1⟩
+  simp only [segmentCrossingWord_def, C.orderedCrossings_subdivide e e₁ e₂ ht' hz,
     List.reverse_append, List.map_append, List.prod_append, List.map_reverse,
     List.map_map, Function.comp_def,
-    C.crossingLetter_subdivide_left ν ht.1 hz,
-    C.crossingLetter_subdivide_right ν ht.2 hz]
+    C.crossingLetter_subdivide_left ν ht0 hz,
+    C.crossingLetter_subdivide_right ν ht1 hz]
 
 end Mei.FinitePolyhedralComplex
 
@@ -116,7 +130,7 @@ theorem IsSubdivision.crossingWord_eq {p q : AdmissiblePLPath x y}
   | split e e₁ e₂ ht hz =>
     simpa only [crossingWord_comp, Quiver.Hom.toPath, crossingWord_cons,
       crossingWord_nil, mul_one] using
-      (C.segmentCrossingWord_subdivide ν e e₁ e₂ ht hz).symm
+      (C.segmentCrossingWord_subdivide ν e e₁ e₂ ⟨ht.1.le, ht.2.le⟩ hz).symm
   | comp hp hq ihp ihq => simp only [crossingWord_comp, ihp, ihq]
   | trans hpq hqr ihpq ihqr => exact ihqr.trans ihpq
 
