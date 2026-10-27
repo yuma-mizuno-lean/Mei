@@ -31,9 +31,13 @@ namespace Mei.PositiveDegrees
 
 open Mei
 
-variable {Γ R L M : Type*} [AddCommGroup Γ] [CommRing R]
+variable {Γ R L M : Type*} [CommRing R]
   [LieRing L] [LieAlgebra R L] [AddCommGroup M] [Module R M]
   [LieRingModule L M] [DecidableEq Γ]
+
+section Monoid
+
+variable [AddCommMonoid Γ]
   (d : PositiveDegrees Γ) (ℒ : Γ → Submodule R L) (ℳ : Γ → Submodule R M)
   [hℒ : DirectSum.Decomposition ℒ] [hpos : IsPositiveGrading d ℒ]
   [hbr : SetLike.GradedBracket ℒ ℳ] (p : Γ)
@@ -73,7 +77,14 @@ abbrev shiftedLieSubmodule : LieSubmodule R L M where
 theorem shiftedLieSubmodule_toSubmodule :
     (d.shiftedLieSubmodule ℒ ℳ p).toSubmodule = shiftedSubmodule ℳ d.monoid p := (rfl)
 
-variable [DirectSum.Decomposition ℳ]
+end Monoid
+
+variable [AddCommGroup Γ]
+  (d : PositiveDegrees Γ) (ℒ : Γ → Submodule R L) (ℳ : Γ → Submodule R M)
+  [hℒ : DirectSum.Decomposition ℒ] [hpos : IsPositiveGrading d ℒ]
+  [hbr : SetLike.GradedBracket ℒ ℳ] (p : Γ) [DirectSum.Decomposition ℳ]
+
+include hℒ hpos hbr
 
 /-- The relative filtration on the shifted Lie module. Its carrier remembers the
 restricted action, so filtered-action instances can be inferred. -/
