@@ -24,10 +24,8 @@ If the test misses the other facets of `σ`, this is the Stokes formula `⟨dσ,
 the signed facet sum of `σ`. If the test misses `σ`, both sides of that formula vanish.
 
 These are the local comparisons between a small polygonal meridian around a codimension-two
-cell and the signed boundary facets of the walls containing it. The signs are computed by the
-face formula `AlternatingMap.map_vecCons_sub_faceEdgeFrame` for edge frames and by the outward
-contraction `OrientedCell.contract_boundaryFacet` defining boundary orientations. No
-boundedness, absence of lineality or nondegeneracy of the test simplex is assumed.
+cell and the signed boundary facets of the walls containing it. No boundedness, absence of
+lineality or nondegeneracy of the test simplex is assumed.
 -/
 
 public section

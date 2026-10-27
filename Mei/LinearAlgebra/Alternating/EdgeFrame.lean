@@ -18,14 +18,13 @@ with `∑ j, b j = 1`, and let `q` lie in the affine span of the `l`th face. An 
 `α (q - p, face frame) = (-1) ^ l * b l * α (edge frame)`.
 
 For an interior point `p` and a point `q` on face `l`, the vector `q - p` leaves the simplex
-through that face. Thus the formula compares the orientation induced on face `l` by an inward
-vector with the orientation of the whole simplex. The sign `(-1) ^ l` is the sign of face `l`
-in the simplicial boundary `∂τ = ∑ l, (-1) ^ l τ ∘ δ_l`. This is the sign computation in a
-Stokes formula for intersection numbers with affine simplices.
+through that face. Thus the formula compares the orientation induced on face `l` by the
+outward vector `q - p` with the orientation of the whole simplex. The sign `(-1) ^ l` is the
+sign of face `l` in the simplicial boundary `∂τ = ∑ l, (-1) ^ l τ ∘ δ_l`. This is the sign
+computation in a Stokes formula for intersection numbers with affine simplices.
 
-The proof uses Mathlib's `AlternatingMap.map_insertNth` to move an inserted vector to the
-front. The face formula allows arbitrary commutative rings and modules; the two auxiliary
-vanishing and invariance lemmas also hold over commutative semirings.
+The face formula allows arbitrary commutative rings and modules; the two auxiliary vanishing
+and invariance lemmas also hold over commutative semirings.
 -/
 
 public section
@@ -53,7 +52,7 @@ theorem map_vecCons_eq_zero_of_mem_span (f : M [⋀^Fin (n + 1)]→ₗ[R] N) {x 
   | smul c y _ hy => simp [hy]
 
 /-- Adding multiples of the first argument to the others does not change an alternating map. -/
-theorem map_vecCons_add_smul (f : M [⋀^Fin (n + 1)]→ₗ[R] N) (x : M) (v : Fin n → M)
+theorem map_vecCons_tail_add_smul_head (f : M [⋀^Fin (n + 1)]→ₗ[R] N) (x : M) (v : Fin n → M)
     (c : Fin n → R) : f (Matrix.vecCons x fun i => v i + c i • x) = f (Matrix.vecCons x v) := by
   classical
   rw [← curryLeft_apply_apply, ← curryLeft_apply_apply]
@@ -116,8 +115,8 @@ theorem map_vecCons_sub_faceEdgeFrame (f : M [⋀^Fin (n + 1)]→ₗ[R] N) (v : 
         simp only [he, r, Fin.succAbove_zero, Fin.succ_zero_eq_one]
         module
       have hr : r = 1 := by simp [r]
-      rw [hframe, hr, map_vecCons_add_smul, Fin.val_zero, pow_zero, one_smul]
-      exact congrArg f (Fin.cons_self_tail fun j : Fin (n + 1) => v j.succ - v 0)
+      rw [hframe, hr, map_vecCons_tail_add_smul_head, Fin.val_zero, pow_zero, one_smul]
+      exact congrArg f (funext fun j => by cases j using Fin.cases <;> simp)
     | succ j =>
       have hframe : e = j.removeNth fun i => v i.succ - v 0 := by
         ext i
