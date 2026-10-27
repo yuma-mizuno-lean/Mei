@@ -1,12 +1,13 @@
 /-
 Copyright (c) 2026 Mei contributors. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Claude Code
+Authors: Claude Code, Codex
 -/
 module
 
-public import Mathlib.LinearAlgebra.Alternating.Uncurry.Fin
 public import Mathlib.LinearAlgebra.AffineSpace.AffineSubspace.Basic
+public import Mei.LinearAlgebra.Alternating.Extension
+public import Mathlib.LinearAlgebra.Dual.Lemmas
 
 /-!
 # Alternating forms on edge frames of simplices and their faces
@@ -25,6 +26,13 @@ computation in a Stokes formula for intersection numbers with affine simplices.
 
 The face formula allows arbitrary commutative rings and modules; the two auxiliary vanishing
 and invariance lemmas also hold over semirings.
+
+Over a field, `mul_map_faceEdgeFrame_eq_neg` compares the two signed face evaluations
+of a conormal form along a nonzero tangent chord. The omitted barycentric coordinates
+give the weights. This supplies the cancellation of entry and exit intersection signs.
+It uses the face formula and
+`Submodule.curryLeft_alternatizeUncurryFin_smulRight_of_mem` to extend the conormal
+form by a covector taking value one on the chord.
 -/
 
 public section
@@ -135,5 +143,52 @@ theorem map_vecCons_sub_faceEdgeFrame (f : M [⋀^Fin (n + 1)]→ₗ[R] N) (v : 
   rw [hdecomp, ← curryLeft_apply_apply, map_add, add_apply, curryLeft_apply_apply,
     curryLeft_apply_apply, f.map_vecCons_eq_zero_of_mem_span htan, add_zero, map_vecCons_smul,
     hkey, smul_smul, mul_comm]
+
+end AlternatingMap
+
+namespace AlternatingMap
+
+variable {R M : Type*} [Field R] [AddCommGroup M] [Module R M] {n : ℕ}
+
+/-- The signed face evaluations of a conormal form at the two ends of a tangent chord
+are opposite, weighted by the barycentric coordinates at the omitted vertices.
+The endpoints need only belong to the affine spans of the indicated faces. -/
+theorem mul_map_faceEdgeFrame_eq_neg (f : M [⋀^Fin n]→ₗ[R] R)
+    {W : Submodule R M} (hf : f ∈ W.conormalForms (Fin n))
+    (v : Fin (n + 2) → M) {b c : Fin (n + 2) → R}
+    (hb : ∑ j, b j = 1) (hc : ∑ j, c j = 1) (l m : Fin (n + 2))
+    (hp : ∑ j, b j • v j ∈ affineSpan R (range (v ∘ m.succAbove)))
+    (hq : ∑ j, c j • v j ∈ affineSpan R (range (v ∘ l.succAbove)))
+    (hu : ∑ j, c j • v j - ∑ j, b j • v j ∈ W)
+    (hne : ∑ j, c j • v j ≠ ∑ j, b j • v j) :
+    c m * ((-1) ^ (l : ℕ) *
+        f (fun j : Fin n => v (l.succAbove j.succ) - v (l.succAbove 0))) =
+      -(b l * ((-1) ^ (m : ℕ) *
+        f (fun j : Fin n => v (m.succAbove j.succ) - v (m.succAbove 0)))) := by
+  obtain ⟨a, ha⟩ := Module.Projective.exists_dual_eq_one R (sub_ne_zero.mpr hne)
+  let g := AlternatingMap.alternatizeUncurryFin (a.smulRight f)
+  have hg : g.curryLeft (∑ j, c j • v j - ∑ j, b j • v j) = f := by
+    rw [Submodule.curryLeft_alternatizeUncurryFin_smulRight_of_mem hf a hu, ha, one_smul]
+  have hl := g.map_vecCons_sub_faceEdgeFrame v l hb hq
+  have hm := g.map_vecCons_sub_faceEdgeFrame v m hc hp
+  rw [← curryLeft_apply_apply, hg, smul_eq_mul] at hl
+  rw [← neg_sub (∑ j, c j • v j), ← neg_one_smul R, map_vecCons_smul,
+    ← curryLeft_apply_apply, hg, neg_one_smul, smul_eq_mul] at hm
+  have hs (j : Fin (n + 2)) : (-1 : R) ^ (j : ℕ) * (-1) ^ (j : ℕ) = 1 := by
+    rw [← pow_add, Even.neg_one_pow ⟨_, rfl⟩]
+  calc
+    _ = c m * b l * g (fun j : Fin (n + 1) => v j.succ - v 0) := by
+      rw [hl]
+      calc
+        _ = c m * b l * g (fun j : Fin (n + 1) => v j.succ - v 0) *
+            ((-1 : R) ^ (l : ℕ) * (-1) ^ (l : ℕ)) := by ring
+        _ = _ := by rw [hs, mul_one]
+    _ = b l * c m * g (fun j : Fin (n + 1) => v j.succ - v 0) *
+        ((-1 : R) ^ (m : ℕ) * (-1) ^ (m : ℕ)) := by rw [hs, mul_one]; ring
+    _ = b l * ((-1) ^ (m : ℕ) *
+        (-f (fun j : Fin n => v (m.succAbove j.succ) - v (m.succAbove 0)))) := by
+      rw [hm]
+      ring
+    _ = _ := by ring
 
 end AlternatingMap
