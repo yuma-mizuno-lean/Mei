@@ -93,13 +93,13 @@ instance shiftedLieFiltration_isFiltrationRaising :
       rw [d.mem_shiftedFiltration_iff ℳ p]
       intro q hq
       rw [LieSubmodule.coe_bracket]
-      rw [← DirectSum.sum_support_decompose ℳ (y : M), lie_sum,
-        DirectSum.decompose_sum, DirectSum.sum_apply, Submodule.coe_sum]
+      rw [← DirectSum.sum_support_decompose ℳ (y : M)]
+      simp only [lie_sum, DirectSum.decompose_sum, DirectSum.sum_apply, Submodule.coe_sum]
       apply Finset.sum_eq_zero
       intro m _
       by_cases hm : d.degree (m - p) < b
-      · rw [(d.mem_shiftedFiltration_iff ℳ p).mp hy m hm, lie_zero,
-          DirectSum.decompose_zero, DirectSum.zero_apply, ZeroMemClass.coe_zero]
+      · rw [(d.mem_shiftedFiltration_iff ℳ p).mp hy m hm]
+        simp
       · apply DirectSum.decompose_of_mem_ne ℳ
           (SetLike.GradedBracket.bracket_mem hx (DirectSum.decompose ℳ (y : M) m).property)
         intro he

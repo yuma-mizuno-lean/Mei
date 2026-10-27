@@ -21,7 +21,8 @@ degree operators can act.
 
 The filtration restricts `Mei.DirectSum.degreeTail`; its membership and separatedness
 use the ambient homogeneous decomposition. The relative decomposition uses
-`TauCeti.DirectSum.Decomposition.restrict` and `DirectSum.map_decompose_shift`.
+`TauCeti.DirectSum.Decomposition.restrict` and `DirectSum.IsInternal.iSup_fiber`;
+`DirectSum.map_decompose_shift` identifies its projections with the ambient ones.
 No freeness or finiteness of the pieces is required.
 -/
 
@@ -31,7 +32,11 @@ noncomputable section
 
 namespace Mei
 
-variable {Γ R M : Type*} [AddCommGroup Γ] [Semiring R] [AddCommMonoid M] [Module R M]
+variable {R M : Type*} [Semiring R] [AddCommMonoid M] [Module R M]
+
+section Monoid
+
+variable {Γ : Type*} [AddCommMonoid Γ]
   (ℳ : Γ → Submodule R M) (P : AddSubmonoid Γ) (p : Γ)
 
 /-- The submodule supported in the translate `p + P`. -/
@@ -53,7 +58,25 @@ def shiftedInclusion (n : P) : ℳ (p + n) →ₗ[R] shiftedSubmodule ℳ P p :=
 theorem coe_shiftedInclusion (n : P) (x : ℳ (p + n)) :
     (shiftedInclusion ℳ P p n x : M) = x := (rfl)
 
-variable [DecidableEq Γ] [DirectSum.Decomposition ℳ]
+/-- Relative degree `n` is ambient degree `p + n` in the shifted submodule. -/
+def shiftedGrading (n : Γ) : Submodule R (shiftedSubmodule ℳ P p) :=
+  (ℳ (p + n)).comap (shiftedSubmodule ℳ P p).subtype
+
+/-- Each relative homogeneous piece is the inverse image of its ambient piece. -/
+theorem shiftedGrading_def (n : Γ) :
+    shiftedGrading ℳ P p n =
+      (ℳ (p + n)).comap (shiftedSubmodule ℳ P p).subtype := (rfl)
+
+/-- Relative homogeneity is ambient homogeneity after adding `p`. -/
+@[simp]
+theorem mem_shiftedGrading {n : Γ} {x : shiftedSubmodule ℳ P p} :
+    x ∈ shiftedGrading ℳ P p n ↔ (x : M) ∈ ℳ (p + n) := (Iff.rfl)
+
+end Monoid
+
+variable {Γ : Type*} [AddCommGroup Γ]
+  (ℳ : Γ → Submodule R M) (P : AddSubmonoid Γ) (p : Γ)
+  [DecidableEq Γ] [DirectSum.Decomposition ℳ]
 
 /-- The ambient components outside `p + P` vanish exactly on the shifted module. -/
 theorem mem_shiftedSubmodule_iff {x : M} :
@@ -91,25 +114,6 @@ theorem shiftedSubmodule_isHomogeneous :
   · rw [(mem_shiftedSubmodule_iff ℳ P p).mp hx q hq]
     exact Submodule.zero_mem _
 
-/-- Relative degree `n` is ambient degree `p + n` in the shifted submodule. -/
-def shiftedGrading (n : Γ) : Submodule R (shiftedSubmodule ℳ P p) :=
-  (ℳ (p + n)).comap (shiftedSubmodule ℳ P p).subtype
-
-omit [DecidableEq Γ] [DirectSum.Decomposition ℳ] in
-/-- Each relative homogeneous piece is the inverse image of its ambient piece. -/
-theorem shiftedGrading_def (n : Γ) :
-    shiftedGrading ℳ P p n =
-      (ℳ (p + n)).comap (shiftedSubmodule ℳ P p).subtype := (rfl)
-
-omit [DecidableEq Γ] [DirectSum.Decomposition ℳ] in
-/-- Relative homogeneity is ambient homogeneity after adding `p`. -/
-@[simp]
-theorem mem_shiftedGrading {n : Γ} {x : shiftedSubmodule ℳ P p} :
-    x ∈ shiftedGrading ℳ P p n ↔ (x : M) ∈ ℳ (p + n) := (Iff.rfl)
-
-variable {R M : Type*} [Ring R] [AddCommGroup M] [Module R M]
-  (ℳ : Γ → Submodule R M) [DirectSum.Decomposition ℳ] (P : AddSubmonoid Γ) (p : Γ)
-
 /-- The ambient direct-sum decomposition induces the relative grading on `p + P`. -/
 instance instDecompositionShiftedGrading : DirectSum.Decomposition (shiftedGrading ℳ P p) := by
   let 𝓝 := fun q => (ℳ q).comap (shiftedSubmodule ℳ P p).subtype
@@ -118,11 +122,8 @@ instance instDecompositionShiftedGrading : DirectSum.Decomposition (shiftedGradi
     (fun q x => ⟨⟨_, shiftedSubmodule_isHomogeneous ℳ P p q x.property⟩, rfl⟩)
   apply DirectSum.IsInternal.chooseDecomposition
   rw [funext (shiftedGrading_def ℳ P p)]
-  apply DirectSum.isInternal_submodule_of_iSupIndep_of_iSup_eq_top
-  · exact (DirectSum.Decomposition.isInternal 𝓝).submodule_iSupIndep.comp
-      (add_right_injective p)
-  · exact ((Equiv.addLeft p).iSup_comp (g := 𝓝)).trans
-      (DirectSum.Decomposition.isInternal 𝓝).submodule_iSup_eq_top
+  simpa only [sub_eq_iff_eq_add, iSup_iSup_eq_left, add_comm] using
+    (DirectSum.Decomposition.isInternal 𝓝).iSup_fiber (fun q => q - p)
 
 /-- Relative homogeneous projections agree with ambient projections. -/
 @[simp]
@@ -171,30 +172,8 @@ theorem mem_shiftedFiltration_iff {k : ℕ} {x : shiftedSubmodule ℳ d.monoid p
 /-- The relative-degree filtration is separated. -/
 theorem iInf_shiftedFiltration_eq_bot :
     (⨅ k, (d.shiftedFiltration ℳ p).submodule k) = ⊥ := by
-  rw [shiftedFiltration, ← Submodule.comap_iInf,
-    Mei.DirectSum.iInf_degreeTail_eq_bot, Submodule.comap_bot,
-    LinearMap.ker_eq_bot_of_injective (shiftedSubmodule ℳ d.monoid p).injective_subtype]
-
-/-- A homogeneous coefficient has its specified relative order, unless it is zero. -/
-theorem shiftedInclusion_mem_shiftedFiltration_iff (n : d.monoid) (x : ℳ (p + n)) (k : ℕ) :
-    shiftedInclusion ℳ d.monoid p n x ∈ (d.shiftedFiltration ℳ p).submodule k ↔
-      x = 0 ∨ (k : ℤ) ≤ d.degree n := by
-  rw [mem_shiftedFiltration_iff]
-  constructor
-  · intro hx
-    by_cases hn : (k : ℤ) ≤ d.degree n
-    · exact Or.inr hn
-    · left
-      apply Subtype.ext
-      simpa only [coe_shiftedInclusion, add_sub_cancel_left,
-        DirectSum.decompose_of_mem_same ℳ x.property, ZeroMemClass.coe_zero] using
-        hx (p + n) (by simpa only [add_sub_cancel_left] using lt_of_not_ge hn)
-  · rintro (rfl | hn) q hq
-    · simp
-    · exact DirectSum.decompose_of_mem_ne ℳ x.property (by
-        intro he
-        have : d.degree (q - p) = d.degree n := by rw [← he, add_sub_cancel_left]
-        omega)
+  rw [shiftedFiltration, ← Submodule.comap_iInf, Mei.DirectSum.iInf_degreeTail_eq_bot]
+  simp
 
 /-- The successor relative filtration term is the degree submodule of the relative grading.
 This identifies shifted completions with the existing degree-completion construction. -/
@@ -215,6 +194,19 @@ theorem shiftedFiltration_succ (k : ℕ) :
       (hx (q - p) (by omega))
     simp only [coe_decompose_shiftedGrading, ZeroMemClass.coe_zero] at hh
     exact (congrArg (fun t => (DirectSum.decompose ℳ (x : M) t : M)) he).symm.trans hh
+
+/-- A homogeneous coefficient has its specified relative order, unless it is zero. -/
+theorem shiftedInclusion_mem_shiftedFiltration_iff (n : d.monoid) (x : ℳ (p + n)) (k : ℕ) :
+    shiftedInclusion ℳ d.monoid p n x ∈ (d.shiftedFiltration ℳ p).submodule k ↔
+      x = 0 ∨ (k : ℤ) ≤ d.degree n := by
+  cases k with
+  | zero => simp [d.degree_nonneg n.property]
+  | succ k =>
+    rw [shiftedFiltration_succ, d.mem_degreeSubmodule_of_mem_iff
+      (shiftedGrading ℳ d.monoid p) ((mem_shiftedGrading ℳ d.monoid p).mpr x.property)]
+    have hz : shiftedInclusion ℳ d.monoid p n x = 0 ↔ x = 0 := by
+      simp only [Subtype.ext_iff, coe_shiftedInclusion, ZeroMemClass.coe_zero]
+    exact or_congr hz (by omega)
 
 end PositiveDegrees
 end Mei
