@@ -41,6 +41,13 @@ def functionWallDerivation (f : (𝒜 0)ˣ) : Derivation R A A :=
   IsNilpotent.log (algebraMap (𝒜 0) A (f : 𝒜 0)) •
     gradingDerivation 𝒜 (Int.castAddHom R)
 
+/-- The logarithmic wall derivation is the scalar multiple of the integer
+weight derivation by the logarithm of the wall function. -/
+theorem functionWallDerivation_def (f : (𝒜 0)ˣ) :
+    functionWallDerivation 𝒜 f =
+      IsNilpotent.log (algebraMap (𝒜 0) A (f : 𝒜 0)) •
+        gradingDerivation 𝒜 (Int.castAddHom R) := (rfl)
+
 /-- The logarithmic wall derivation multiplies a homogeneous element by its
 weight times the logarithm of the wall function. -/
 theorem functionWallDerivation_apply_of_mem (f : (𝒜 0)ˣ) {i : ℤ} {a : A}

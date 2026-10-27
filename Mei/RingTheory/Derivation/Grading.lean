@@ -25,7 +25,7 @@ namespace Mei.GradedAlgebra
 
 open DirectSum
 
-variable {ι R A : Type*} [DecidableEq ι] [AddCommMonoid ι]
+variable {ι R A : Type*} [DecidableEq ι] [AddMonoid ι]
   [CommSemiring R] [CommSemiring A] [Algebra R A]
   (𝒜 : ι → Submodule R A) [GradedAlgebra 𝒜]
 
