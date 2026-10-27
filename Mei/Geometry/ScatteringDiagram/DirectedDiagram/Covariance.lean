@@ -170,19 +170,6 @@ theorem LevelEquivalent.image {k a : ℕ} (ha : E.degreeMap.modulus k ≤ a)
     (hDF : D.LevelEquivalent F a) :
     (D.image e E hE).LevelEquivalent (F.image e E hE) k := by
   refine (levelEquivalent_def _ _ k).mpr fun x y x' y' p q hpq => ?_
-  let := h'.finiteDimensional
-  -- Stationary padding gives free interior vertices without changing either product.
-  obtain ⟨p', hvp, hprodP⟩ := exists_vertices_eq_cons_levelPathProduct_eq (D.image e E hE) k p
-  obtain ⟨q', hvq, hprodQ⟩ := exists_vertices_eq_cons_levelPathProduct_eq (F.image e E hE) k q
-  have hx : x.val = x'.val := by
-    have he := congrArg List.head? hpq
-    simpa using he
-  have hvpq : p'.vertices.map WallComplement.val = q'.vertices.map WallComplement.val := by
-    rw [hvp, hvq, hx, hpq]
-  obtain ⟨ε₁, hε₁, hp⟩ :=
-    (D.image e E hE).exists_pos_levelPathProduct_eq_of_forall₂_dist_lt k p'
-  obtain ⟨ε₂, hε₂, hq⟩ :=
-    (F.image e E hE).exists_pos_levelPathProduct_eq_of_forall₂_dist_lt k q'
   -- The transported supports of all walls of both diagrams active at the source cutoff.
   let W : Unit → D.active a ⊕ F.active a → Set V' := fun _ =>
     Sum.elim (fun j => ((D.image e E hE).wall j).support)
@@ -196,15 +183,8 @@ theorem LevelEquivalent.image {k a : ℕ} (ha : E.degreeMap.modulus k ≤ a)
     rintro _ (c | c)
     · exact ((D.image e E hE).wall c).finrank_direction_add_one
     · exact ((F.image e E hE).wall c).finrank_direction_add_one
-  have hv : p'.vertices.map WallComplement.val =
-      x.val :: ((x.val :: p.vertices.dropLast.map WallComplement.val) ++ [y.val]) := by
-    have hend := congrArg (List.map WallComplement.val) p.dropLast_append_end_eq
-    simp only [List.map_append, List.map_singleton] at hend
-    simp only [hvp, List.cons_append, hend]
-  -- Move endpoints as well as interior vertices, within both product-stability radii.
-  obtain ⟨b, c, r, hr⟩ := CommonWallComplement.exists_forall₂_dist_lt_free_endpoints
-    hpoly hdim x.val y.val (l := x.val :: p.vertices.dropLast.map WallComplement.val)
-    (List.cons_ne_nil _ _) (lt_min hε₁ hε₂)
+  obtain ⟨b, c, r, hP, hQ⟩ := (D.image e E hE).exists_common_levelPathProduct_eq
+    (F.image e E hE) k k hpoly hdim p q hpq
   let r₀ := (CommonWallComplement.projectionPrefunctor ()).mapPath r
   let r₁ := (WallComplement.restrictPrefunctor (W ()) Sum.inl).mapPath r₀
   let r₂ := (WallComplement.restrictPrefunctor (W ()) Sum.inr).mapPath r₀
@@ -214,24 +194,10 @@ theorem LevelEquivalent.image {k a : ℕ} (ha : E.degreeMap.modulus k ≤ a)
   have hv₂ : r₂.vertices.map WallComplement.val = r.vertices.map CommonWallComplement.val :=
     (WallComplement.vertices_restrictPrefunctor _ _ _).trans
       (CommonWallComplement.vertices_projection () r)
-  have hP : (D.image e E hE).levelPathProduct k
-      ((WallComplement.restrictPrefunctor _
-        (Set.inclusion (D.active_image_subset e E hE k ha))).mapPath r₁) =
-        (D.image e E hE).levelPathProduct k p' := by
-    apply hp
-    have hnear := hr.imp fun _ _ hab => hab.trans_le (min_le_left ε₁ ε₂)
-    rw [← hv, ← hv₁, ← WallComplement.vertices_restrictPrefunctor _
-      (Set.inclusion (D.active_image_subset e E hE k ha)) r₁] at hnear
-    exact hnear
-  have hQ : (F.image e E hE).levelPathProduct k
-      ((WallComplement.restrictPrefunctor _
-        (Set.inclusion (F.active_image_subset e E hE k ha))).mapPath r₂) =
-        (F.image e E hE).levelPathProduct k q' := by
-    apply hq
-    have hnear := hr.imp fun _ _ hab => hab.trans_le (min_le_right ε₁ ε₂)
-    rw [← hv, hvpq, ← hv₂, ← WallComplement.vertices_restrictPrefunctor _
-      (Set.inclusion (F.active_image_subset e E hE k ha)) r₂] at hnear
-    exact hnear
+  have hP' := hP _ ((WallComplement.vertices_restrictPrefunctor _
+    (Set.inclusion (D.active_image_subset e E hE k ha)) r₁).trans hv₁)
+  have hQ' := hQ _ ((WallComplement.vertices_restrictPrefunctor _
+    (Set.inclusion (F.active_image_subset e E hE k ha)) r₂).trans hv₂)
   -- The pulled-back paths share their vertices, so the source equivalence applies.
   have hDF' : D.levelPathProduct a ((D.levelPathPreimage e E hE a).mapPath r₁) =
       F.levelPathProduct a ((F.levelPathPreimage e E hE a).mapPath r₂) := by
@@ -240,11 +206,11 @@ theorem LevelEquivalent.image {k a : ℕ} (ha : E.degreeMap.modulus k ≤ a)
       (Eq.trans ?_ (F.vertices_levelPathPreimage e E hE a r₂).symm)
     exact congrArg (List.map _) (hv₁.trans hv₂.symm)
   calc
-    (D.image e E hE).levelPathProduct k p = _ := hprodP.symm.trans hP.symm
+    (D.image e E hE).levelPathProduct k p = _ := hP'.symm
     _ = _ := D.levelPathProduct_restrict_eq e E hE k ha r₁
     _ = _ := congrArg _ hDF'
     _ = _ := (F.levelPathProduct_restrict_eq e E hE k ha r₂).symm
-    _ = (F.image e E hE).levelPathProduct k q := hQ.trans hprodQ
+    _ = (F.image e E hE).levelPathProduct k q := hQ'
 
 /-- Coordinate changes preserve equivalence of directed diagrams. -/
 theorem Equivalent.image (hDF : D.Equivalent F) :
@@ -278,6 +244,7 @@ theorem IsOutgoingCompletion.image {D : DirectedDiagram (d := d) h H (ι₀ ⊕ 
 variable (e E hE) in
 /-- A diagram is an outgoing completion exactly when its image is an outgoing completion
 of the transported initial walls. -/
+@[simp]
 theorem isOutgoingCompletion_image_iff {D : DirectedDiagram (d := d) h H (ι₀ ⊕ ι')} :
     IsOutgoingCompletion (fun j => (D₀ j).image e E hE) (D.image e E hE) ↔
       IsOutgoingCompletion D₀ D := by
