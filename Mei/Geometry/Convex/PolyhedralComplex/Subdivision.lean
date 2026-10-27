@@ -40,10 +40,11 @@ variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ 
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
   {C D : FinitePolyhedralComplex h}
 
-/-- In a subdivision every point of an old cell lies in a new cell of the same dimension
-contained in it. -/
-theorem IsSubdivision.exists_mem_cells_subset_finrank_eq (hCD : C.IsSubdivision D)
-    {P : Set V} (hP : P ∈ D.cells) {x : V} (hx : x ∈ P) :
+/-- If a convex set is covered by cells contained in it, cells of its own dimension
+already cover it, including its relative boundary. -/
+theorem exists_mem_cells_subset_finrank_eq_of_cover (C : FinitePolyhedralComplex h)
+    {P : Set V} (hconv : Convex ℝ P)
+    (hcover : ∀ x ∈ P, ∃ Q ∈ C.cells, Q ⊆ P ∧ x ∈ Q) {x : V} (hx : x ∈ P) :
     ∃ Q ∈ C.cells, Q ⊆ P ∧ x ∈ Q ∧ Module.finrank ℝ (affineSpan ℝ Q).direction =
       Module.finrank ℝ (affineSpan ℝ P).direction := by
   classical
@@ -70,7 +71,7 @@ theorem IsSubdivision.exists_mem_cells_subset_finrank_eq (hCD : C.IsSubdivision 
       (fun Q : T => affineSpan ℝ (Q : Set V)) (mem_affineSpan ℝ (intrinsicInterior_subset hy))
       (Filter.inter_mem hU (hG.isOpen_compl.mem_nhds hyG)) (by
         intro z hzA hzU
-        obtain ⟨Q, hQ, hQP, hzQ⟩ := hCD.exists_mem_cells_subset hP (hUP ⟨hzU.1, hzA⟩)
+        obtain ⟨Q, hQ, hQP, hzQ⟩ := hcover z (hUP ⟨hzU.1, hzA⟩)
         have hlt : Module.finrank ℝ (affineSpan ℝ Q).direction <
             Module.finrank ℝ (affineSpan ℝ P).direction :=
           lt_of_le_of_ne (Submodule.finrank_mono
@@ -80,12 +81,20 @@ theorem IsSubdivision.exists_mem_cells_subset_finrank_eq (hCD : C.IsSubdivision 
     exact (Submodule.finrank_mono hle).not_gt (Finset.mem_filter.mp Q.property).2.2
   -- Every point of the cell is a limit of relative interior points.
   intro y hy
-  have hconv := (D.isConvexPolyhedron hP).convex
   obtain ⟨z, hz⟩ := Set.Nonempty.intrinsicInterior hconv ⟨y, hy⟩
   have hseg : openSegment ℝ z y ⊆ G :=
     (hconv.openSegment_intrinsicInterior_intrinsicClosure_subset_intrinsicInterior hz
       (subset_intrinsicClosure hy)).trans hri
   exact closure_minimal hseg hG (segment_subset_closure_openSegment (right_mem_segment ℝ z y))
+
+/-- In a subdivision every point of an old cell lies in a new cell of the same dimension
+contained in it. -/
+theorem IsSubdivision.exists_mem_cells_subset_finrank_eq (hCD : C.IsSubdivision D)
+    {P : Set V} (hP : P ∈ D.cells) {x : V} (hx : x ∈ P) :
+    ∃ Q ∈ C.cells, Q ⊆ P ∧ x ∈ Q ∧ Module.finrank ℝ (affineSpan ℝ Q).direction =
+      Module.finrank ℝ (affineSpan ℝ P).direction :=
+  C.exists_mem_cells_subset_finrank_eq_of_cover (D.isConvexPolyhedron hP).convex
+    (fun _ hx => hCD.exists_mem_cells_subset hP hx) hx
 
 /-- In a subdivision every point of an old wall lies in a new wall contained in it. -/
 theorem IsSubdivision.exists_mem_walls_subset (hCD : C.IsSubdivision D) {P : Set V}
