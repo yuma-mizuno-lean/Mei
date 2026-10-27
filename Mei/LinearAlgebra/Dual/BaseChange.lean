@@ -5,7 +5,6 @@ Authors: Codex
 -/
 module
 
-public import Mathlib.LinearAlgebra.Dual.Defs
 public import Mathlib.RingTheory.TensorProduct.IsBaseChangeHom
 public import Mathlib.RingTheory.Flat.Equalizer
 
