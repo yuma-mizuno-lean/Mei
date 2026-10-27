@@ -6,11 +6,12 @@ Authors: Codex
 module
 
 public import Mei.Geometry.Convex.PolyhedralCochain.Cancellation
-public import Mei.Geometry.Convex.PolyhedralComplex.Basic
+public import Mei.Geometry.Convex.PolyhedralComplex.Strata
 
 /-!
-# Cancellation at common facets of a polyhedral complex
+# Signed facet incidence in a polyhedral complex
 
+Every signed boundary facet of a cell is a cell of codimension one higher.
 Distinct, equally oriented cells in a common affine span induce opposite signed
 orientations on every common facet. Consequently the two occurrences of that
 facet cancel from their signed boundary sums. A signed facet uniquely determines
@@ -39,6 +40,22 @@ namespace Mei
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i} {k : ℕ}
+
+namespace OrientedCell
+
+/-- Every signed boundary facet of a cell of a complex is a cell of that
+complex of codimension one higher. -/
+theorem mem_cellsOfCodimension_of_mem_boundaryFacets (σ : OrientedCell h k)
+    (C : FinitePolyhedralComplex h) (hσ : σ.carrier ∈ C.cells)
+    {τ : OrientedCell h (k + 1)} (hτ : τ ∈ σ.boundaryFacets) :
+    τ.carrier ∈ C.cellsOfCodimension (k + 1) := by
+  obtain ⟨F, hF, hne, hdim, rfl⟩ := (σ.mem_boundaryFacets τ).mp hτ
+  apply (C.mem_cellsOfCodimension _ _).mpr
+  refine ⟨?_, (σ.boundaryFacet hF hne hdim).finrank_direction_add⟩
+  rw [boundaryFacet_carrier]
+  exact C.face_closed _ hσ _ (isPolyhedralFace_iff.mpr ⟨hne, hF⟩)
+
+end OrientedCell
 
 namespace FinitePolyhedralComplex
 

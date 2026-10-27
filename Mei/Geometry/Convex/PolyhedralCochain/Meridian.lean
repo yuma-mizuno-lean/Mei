@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.Convex.PolyhedralCochain.Complex
+public import Mei.Geometry.Convex.PolyhedralCochain.Incidence
 public import Mei.Geometry.Convex.PolyhedralCochain.Pairing
 
 /-!
