@@ -36,6 +36,11 @@ there. This makes the ray independent of the exposing inequality, including for
 lower-dimensional polyhedra with lineality, and supplies the outward conormal
 used to orient boundary faces.
 
+A complement to a facet direction meets the inward half-space in a single ray.
+`exists_halfspace_slice_eq_ray` normalizes its direction by the exposing functional;
+it uses `ker_comp_vectorSpan_of_toExposed` and Mathlib's
+`Submodule.existsUnique_add_of_isCompl` to identify the slice.
+
 The facet construction uses Mathlib's `ContinuousLinearMap.toExposed`,
 `Submodule.comapSubtypeEquivOfLe` and `Module.Ray`, and
 `LinearMap.exists_pos_smul_eq_of_ker_le_ker` for positive proportionality.
@@ -277,6 +282,80 @@ end DivisionRing
 
 variable {K V : Type*} [Field K] [LinearOrder K] [IsStrictOrderedRing K]
   [TopologicalSpace K] [AddCommGroup V] [Module K V] [TopologicalSpace V] {P : Set V}
+
+/-- A complement to the direction of an exposed facet cuts its inward half-space
+inside the parent affine span in a ray from any point of the facet. The ray is
+normalized so the exposing functional decreases by one at parameter one.
+Only the parent direction needs to be finite-dimensional. -/
+theorem exists_halfspace_slice_eq_ray (l : V →L[K] K)
+    [FiniteDimensional K (vectorSpan K P)] {p : V} (hp : p ∈ l.toExposed P)
+    (hdim : Module.finrank K (vectorSpan K (l.toExposed P)) + 1 =
+      Module.finrank K (vectorSpan K P))
+    (T : Submodule K V) (hT : IsCompl (vectorSpan K (l.toExposed P)) T) :
+    ∃ q : V, q ∈ AffineSubspace.mk' p T ∧ l q = l p - 1 ∧
+      ∀ z ∈ AffineSubspace.mk' p T,
+        (z ∈ affineSpan K P ∧ l z ≤ l p) ↔
+          ∃ t : K, 0 ≤ t ∧ AffineMap.lineMap p q t = z := by
+  -- Project an inward tangent vector onto the complement and normalize its functional value.
+  have hproper : l.toExposed P ≠ P := by
+    intro he
+    rw [he] at hdim
+    omega
+  obtain ⟨x, hxP, hxF⟩ := Set.exists_of_ssubset
+    (lt_of_le_of_ne (fun x (hx : x ∈ l.toExposed P) => hx.1) hproper)
+  have hx : l x < l p := lt_of_le_of_ne (hp.2 x hxP)
+    (fun he => hxF ((l.mem_toExposed_iff_of_mem hp).mpr ⟨hxP, he⟩))
+  obtain ⟨a, b, hab, -⟩ := Submodule.existsUnique_add_of_isCompl hT (x - p)
+  have ha : l a = 0 := l.vectorSpan_toExposed_le_ker P a.property
+  have hb : l b = l x - l p := by
+    have he := congrArg l hab
+    simpa only [map_add, map_sub, ha, zero_add] using he
+  let v : V := (l p - l x)⁻¹ • (b : V)
+  have hvT : v ∈ T := T.smul_mem _ b.property
+  have hlv : l v = -1 := by
+    simp only [v, map_smul, smul_eq_mul, hb]
+    field_simp [(sub_pos.mpr hx).ne']
+    ring
+  have hFle : vectorSpan K (l.toExposed P) ≤ vectorSpan K P :=
+    vectorSpan_mono K (fun _ hy => hy.1)
+  have hbP : (b : V) ∈ vectorSpan K P := by
+    rw [← add_sub_cancel_left (a : V) (b : V), hab]
+    exact (vectorSpan K P).sub_mem (vsub_mem_vectorSpan K hxP hp.1) (hFle a.property)
+  have hvP : v ∈ vectorSpan K P := (vectorSpan K P).smul_mem _ hbP
+  have hpP : p ∈ affineSpan K P := subset_affineSpan K P hp.1
+  have hqP : p + v ∈ affineSpan K P := by
+    rw [← (affineSpan K P).mk'_eq hpP, AffineSubspace.mem_mk']
+    simpa only [vsub_eq_sub, add_sub_cancel_left, direction_affineSpan] using hvP
+  refine ⟨p + v, ?_, by simp [map_add, hlv, sub_eq_add_neg], fun z hz => ?_⟩
+  · simpa only [AffineSubspace.mem_mk', vsub_eq_sub, add_sub_cancel_left] using hvT
+  constructor
+  · rintro ⟨hzP, hzl⟩
+    let t := l p - l z
+    have hzT : z - p ∈ T := AffineSubspace.mem_mk'.mp hz
+    have hwP : z - p - t • v ∈ vectorSpan K P :=
+      (vectorSpan K P).sub_mem
+        (by simpa only [direction_affineSpan, vsub_eq_sub] using
+          (affineSpan K P).vsub_mem_direction hzP hpP)
+        ((vectorSpan K P).smul_mem _ hvP)
+    -- Equal functional values differ by a facet tangent vector, killed by the complement.
+    have hwF : z - p - t • v ∈ vectorSpan K (l.toExposed P) := by
+      have hk : (⟨_, hwP⟩ : vectorSpan K P) ∈
+          (l.toLinearMap.comp (vectorSpan K P).subtype).ker := by
+        simp [LinearMap.mem_ker, hlv, t, sub_eq_add_neg]
+      rwa [l.ker_comp_vectorSpan_of_toExposed ⟨p, hp⟩ hdim] at hk
+    have hw : z - p - t • v = 0 := (Submodule.disjoint_def.mp hT.disjoint) _ hwF
+      (T.sub_mem hzT (T.smul_mem _ hvT))
+    refine ⟨t, sub_nonneg.mpr hzl, ?_⟩
+    have he : z = p + t • v := by
+      rw [sub_eq_zero, sub_eq_iff_eq_add] at hw
+      simpa only [add_comm] using hw
+    rw [he, AffineMap.lineMap_apply_module]
+    module
+  · rintro ⟨t, ht, rfl⟩
+    refine ⟨AffineMap.lineMap_mem t hpP hqP, ?_⟩
+    simp only [AffineMap.lineMap_apply_module, map_add, map_smul,
+      smul_eq_mul, hlv]
+    linarith
 
 /-- Two functionals exposing the same facet determine the same outward conormal ray
 on the parent direction; their ambient kernels need not coincide. -/
