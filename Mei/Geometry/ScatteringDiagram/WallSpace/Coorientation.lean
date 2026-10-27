@@ -51,7 +51,7 @@ theorem exists_cooriented_normal (σ : OrientedCell h 1) (m₀ : Λ →+ ℤ)
         σ.orientation.evalSign (fun _ : Fin 1 => v)) ∧
       ∀ n : Γ, H.wall n m = H.wall n m₀ := by
   obtain ⟨m, hm, hdir, hsign⟩ := σ.exists_integral_coorientation
-  refine ⟨m, hm, hdir, hsign, fun n => H.wall_eq_of_ker_eq n hm ?_⟩
+  refine ⟨m, hm, hdir, hsign, fun n => H.wall_eq_of_ker_eq n ?_⟩
   ext v
   have he := SetLike.ext_iff.mp (hdir.trans h₀.symm) (i v)
   simpa only [LinearMap.mem_ker, h.realCharacter_apply, Int.cast_eq_zero,
