@@ -62,7 +62,8 @@ The index universe is the input's universe; the additional walls can be countabl
 def Scat : Class.{u} (d := d) (h := h) (H := H) :=
   (D.exists_scat_class hfull).choose
 
-private theorem scat_spec :
+/-- The scattering class has a representative that is an outgoing completion of the input. -/
+theorem scat_spec :
     ∃ (η : Type) (E : DirectedDiagram (d := d) h H (ι ⊕ η)),
       IsOutgoingCompletion D.wall E ∧ D.Scat hfull = E.toClass :=
   (D.exists_scat_class hfull).choose_spec
