@@ -6,8 +6,7 @@ Authors: Codex
 module
 
 public import Mei.RingTheory.PowerSeries.DifferenceEquation
-public import TauCeti.RingTheory.PowerSeries.Rescale
-public import Mathlib.Algebra.GroupWithZero.Units.Lemmas
+public import Mei.Algebra.Ring.Units
 
 /-!
 # The formal quantum dilogarithm
@@ -34,18 +33,8 @@ variable {R S : Type*} [CommRing R] [CommRing S]
 
 private theorem quantumDilog_denominators (q : Rˣ)
     (h : ∀ n : ℕ, IsUnit ((q : R) ^ (n + 1) - ((q⁻¹ : Rˣ) : R) ^ (n + 1)))
-    (n : ℕ) : IsUnit (((q : R) ^ 2) ^ (n + 1) - 1) := by
-  have hinv : (q : R) ^ (n + 1) * ((q⁻¹ : Rˣ) : R) ^ (n + 1) = 1 := by
-    rw [← mul_pow]
-    simp
-  have he : (q : R) ^ (n + 1) *
-      ((q : R) ^ (n + 1) - ((q⁻¹ : Rˣ) : R) ^ (n + 1)) =
-        ((q : R) ^ 2) ^ (n + 1) - 1 := by
-    rw [mul_sub, hinv, ← pow_add, ← pow_mul]
-    congr 2
-    omega
-  rw [← he]
-  exact (q.isUnit.pow _).mul (h n)
+    (n : ℕ) : IsUnit (((q : R) ^ 2) ^ (n + 1) - 1) :=
+  q.isUnit_sq_pow_sub_one (n + 1) (h n)
 
 /-- The normalized formal quantum dilogarithm. Its defining difference equation
 uses the indicated invertible quantum denominators. -/
@@ -105,7 +94,8 @@ theorem map_quantumDilog (φ : R →+* S) (q : Rˣ)
     (h : ∀ n : ℕ, IsUnit ((q : R) ^ (n + 1) - ((q⁻¹ : Rˣ) : R) ^ (n + 1))) :
     (quantumDilog q h).map φ = quantumDilog (Units.map φ.toMonoidHom q)
       (fun n => by simpa using (h n).map φ) := by
-  have hmap : ((Units.map φ.toMonoidHom q : Sˣ) : S) = φ (q : R) := (rfl)
+  have hmap : ((Units.map φ.toMonoidHom q : Sˣ) : S) = φ (q : R) :=
+    Units.coe_map φ.toMonoidHom q
   apply eq_quantumDilog
   · rw [← coeff_zero_eq_constantCoeff_apply]
     simp only [coeff_map, coeff_zero_eq_constantCoeff_apply, constantCoeff_quantumDilog, map_one]
@@ -119,23 +109,10 @@ theorem rescale_pow_quantumDilog (q : Rˣ)
     (h : ∀ n : ℕ, IsUnit ((q : R) ^ (n + 1) - ((q⁻¹ : Rˣ) : R) ^ (n + 1))) (r : ℕ) :
     rescale ((q : R) ^ (2 * r)) (quantumDilog q h) =
       (∏ j ∈ Finset.range r, (1 + C ((q : R) ^ (2 * j + 1)) * X)) * quantumDilog q h := by
-  induction r with
-  | zero => simp
-  | succ r ih =>
-    have he := congrArg (rescale ((q : R) ^ (2 * r))) (rescale_quantumDilog q h)
-    have hf : rescale ((q : R) ^ (2 * r)) (1 + C (q : R) * X) =
-        1 + C ((q : R) ^ (2 * r + 1)) * X := by
-      simp only [map_add, map_one, map_mul, rescale_C, rescale_X]
-      rw [← mul_assoc, ← map_mul]
-      congr 2
-      simp [pow_succ, mul_comm]
-    have hp : (q : R) ^ 2 * (q : R) ^ (2 * r) = (q : R) ^ (2 * (r + 1)) := by
-      rw [← pow_add]
-      congr 1
-      omega
-    rw [rescale_rescale, hp, map_mul, hf, ih] at he
-    rw [Finset.prod_range_succ]
-    exact he.trans (by ring)
+  have hq (j : ℕ) : (q : R) * (q : R) ^ (2 * j) = (q : R) ^ (2 * j + 1) := by
+    rw [pow_succ, mul_comm]
+  simpa only [← pow_mul, hq] using
+    rescale_pow_of_rescale_eq (rescale_quantumDilog q h) r
 
 /-- Negative finite rescalings give the product of inverses with negative odd
 powers, in the normalization used for reverse quantum crossings. -/
@@ -144,30 +121,13 @@ theorem rescale_inv_pow_quantumDilog (q : Rˣ)
     rescale (((q⁻¹ : Rˣ) : R) ^ (2 * r)) (quantumDilog q h) =
       (∏ j ∈ Finset.range r,
         Ring.inverse (1 + C (((q⁻¹ : Rˣ) : R) ^ (2 * j + 1)) * X)) * quantumDilog q h := by
-  induction r with
-  | zero => simp
-  | succ r ih =>
-    have hp : (q : R) ^ 2 * ((q⁻¹ : Rˣ) : R) ^ (2 * (r + 1)) =
-        ((q⁻¹ : Rˣ) : R) ^ (2 * r) := by
-      have hexp : 2 * (r + 1) = 2 + 2 * r := by omega
-      rw [hexp, pow_add, ← mul_assoc, ← mul_pow]
-      simp
-    have hq : (q : R) * ((q⁻¹ : Rˣ) : R) ^ (2 * (r + 1)) =
-        ((q⁻¹ : Rˣ) : R) ^ (2 * r + 1) := by
-      have hexp : 2 * (r + 1) = 1 + (2 * r + 1) := by omega
-      rw [hexp, pow_add, pow_one, ← mul_assoc]
-      simp
-    have he := congrArg (rescale (((q⁻¹ : Rˣ) : R) ^ (2 * (r + 1))))
-      (rescale_quantumDilog q h)
-    have hf : rescale (((q⁻¹ : Rˣ) : R) ^ (2 * (r + 1))) (1 + C (q : R) * X) =
-        1 + C (((q⁻¹ : Rˣ) : R) ^ (2 * r + 1)) * X := by
-      simp only [map_add, map_one, map_mul, rescale_C, rescale_X]
-      rw [← mul_assoc, ← map_mul, hq]
-    rw [rescale_rescale, hp, map_mul, hf] at he
-    have hu : IsUnit (1 + C (((q⁻¹ : Rˣ) : R) ^ (2 * r + 1)) * (X : PowerSeries R)) :=
-      isUnit_iff_constantCoeff.mpr (by simp)
-    have hinv := (Ring.inverse_mul_eq_iff_eq_mul _ _ _ hu).mpr he
-    rw [← hinv, ih, Finset.prod_range_succ]
-    ring
+  have hq (j : ℕ) : (q : R) * ((q⁻¹ : Rˣ) : R) ^ (2 * (j + 1)) =
+      ((q⁻¹ : Rˣ) : R) ^ (2 * j + 1) := by
+    have hexp : 2 * (j + 1) = 1 + (2 * j + 1) := by omega
+    rw [hexp, pow_add, pow_one, ← mul_assoc]
+    simp
+  have he := rescale_inv_pow_of_rescale_eq (a := q ^ 2) (rescale_quantumDilog q h) r
+  simp only [Units.inv_pow_eq_pow_inv, ← pow_mul, hq] at he
+  exact he
 
 end PowerSeries

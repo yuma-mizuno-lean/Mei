@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mathlib.RingTheory.PowerSeries.Inverse
-public import Mathlib.Algebra.Regular.Basic
+public import TauCeti.RingTheory.PowerSeries.Rescale
 
 /-!
 # First-order multiplicative difference equations for formal series
@@ -14,7 +14,8 @@ public import Mathlib.Algebra.Regular.Basic
 The equation `F(aX) = (1 + bX) F(X)`, with constant coefficient one, has a
 unique solution when every `a^(n+1) - 1` is a unit. Its coefficients are obtained
 by a finite product of the recurrence factors. No field, characteristic-zero
-or convergence assumption is required.
+or convergence assumption is required. Iterating the equation gives finite
+rescaling products for any solution, without a normalization hypothesis.
 
 This coefficientwise construction uses Mathlib's `PowerSeries.mk`, `rescale`
 and `Ring.inverse`. It supplies the formal difference-equation characterization
@@ -28,7 +29,52 @@ noncomputable section
 
 namespace PowerSeries
 
-variable {R : Type*} [CommRing R]
+variable {R : Type*}
+
+/-- Iterating a multiplicative difference equation gives a finite product,
+without any assumption on the constant coefficient or the difference denominators. -/
+theorem rescale_pow_of_rescale_eq [CommSemiring R] {a b : R} {F : PowerSeries R}
+    (hF : rescale a F = (1 + C b * X) * F) (r : ℕ) :
+    rescale (a ^ r) F = (∏ j ∈ Finset.range r, (1 + C (b * a ^ j) * X)) * F := by
+  induction r with
+  | zero => simp
+  | succ r ih =>
+    have he := congrArg (rescale (a ^ r)) hF
+    have hf : rescale (a ^ r) (1 + C b * X) = 1 + C (b * a ^ r) * X := by
+      ext n
+      simp only [coeff_rescale, map_add, coeff_one, coeff_C_mul, coeff_X]
+      split_ifs <;> simp_all [mul_comm]
+    rw [rescale_rescale, ← pow_succ', map_mul, hf, ih] at he
+    rw [Finset.prod_range_succ]
+    exact he.trans (by simp only [mul_assoc, mul_left_comm])
+
+variable [CommRing R]
+
+/-- Iterating a multiplicative difference equation backwards along a unit gives
+inverses of the rescaled linear factors. No normalization of the solution is needed. -/
+theorem rescale_inv_pow_of_rescale_eq {a : Rˣ} {b : R} {F : PowerSeries R}
+    (hF : rescale (a : R) F = (1 + C b * X) * F) (r : ℕ) :
+    rescale (((a⁻¹ : Rˣ) : R) ^ r) F =
+      (∏ j ∈ Finset.range r,
+        Ring.inverse (1 + C (b * ((a⁻¹ : Rˣ) : R) ^ (j + 1)) * X)) * F := by
+  induction r with
+  | zero => simp
+  | succ r ih =>
+    have hp : (a : R) * ((a⁻¹ : Rˣ) : R) ^ (r + 1) =
+        ((a⁻¹ : Rˣ) : R) ^ r := by
+      rw [pow_succ', ← mul_assoc]
+      simp
+    have he := congrArg (rescale (((a⁻¹ : Rˣ) : R) ^ (r + 1))) hF
+    have hf : rescale (((a⁻¹ : Rˣ) : R) ^ (r + 1)) (1 + C b * X) =
+        1 + C (b * ((a⁻¹ : Rˣ) : R) ^ (r + 1)) * X := by
+      simp only [map_add, map_one, map_mul, rescale_C, rescale_X]
+      rw [← mul_assoc, ← map_mul]
+    rw [rescale_rescale, hp, map_mul, hf] at he
+    have hu : IsUnit (1 + C (b * ((a⁻¹ : Rˣ) : R) ^ (r + 1)) * (X : PowerSeries R)) :=
+      isUnit_iff_constantCoeff.mpr (by simp)
+    have hinv := (Ring.inverse_mul_eq_iff_eq_mul _ _ _ hu).mpr he
+    rw [← hinv, ih, Finset.prod_range_succ]
+    ring
 
 /-- A multiplicative difference equation determines each coefficient from the
 preceding one after multiplication by its difference denominator. -/
