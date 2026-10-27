@@ -100,10 +100,10 @@ variable [Fintype ι] {R E : Type*} [Ring R] [AddCommGroup E] [Module R E]
 
 /-- Pairing a segment with an indexed finite wall presentation gives the negative
 of its crossing sum. Repeated cells and simultaneous crossings are counted with
-their original multiplicities. -/
+their original multiplicities. Zero-coefficient walls need no coorientation compatibility. -/
 theorem intersectionPairing_eq_neg_wallCrossingSum (e : x ⟶ y)
     (ν : ι → V →ₗ[ℝ] ℝ) (c : ι → E)
-    (hν : ∀ j v, SignType.sign (ν j v) =
+    (hν : ∀ j, c j ≠ 0 → ∀ v, SignType.sign (ν j v) =
       (σ j).orientation.evalSign (fun _ : Fin 1 => v)) :
     OrientedCell.intersectionPairing (R := R) ![x.val, y.val]
         (∑ j, Finsupp.single (σ j) (c j)) = -e.toPath.wallCrossingSum ν c := by
@@ -115,8 +115,10 @@ theorem intersectionPairing_eq_neg_wallCrossingSum (e : x ⟶ y)
   rw [he, map_sum, ← Finset.sum_neg_distrib]
   apply Finset.sum_congr rfl
   intro j _
-  rw [OrientedCell.intersectionPairing_single,
-    intersectionIndex_eq_neg_crossingExponent e.down (ν j) j (hν j), neg_zsmul]
+  rw [OrientedCell.intersectionPairing_single]
+  by_cases hc : c j = 0
+  · simp [hc]
+  · rw [intersectionIndex_eq_neg_crossingExponent e.down (ν j) j (hν j hc), neg_zsmul]
 
 end Mei.Convex.WallComplement
 
@@ -132,9 +134,9 @@ variable {N V ι : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace �
 
 /-- Summing the segment intersection pairings along a polygonal path gives the
 negative additive crossing sum, retaining repeated visits to each wall. -/
-theorem addWeight_intersectionPairing_eq_neg_wallCrossingSum (p : AdmissiblePLPath x y)
+theorem addWeightOfEPs_intersectionPairing_eq_neg_wallCrossingSum (p : AdmissiblePLPath x y)
     (ν : ι → V →ₗ[ℝ] ℝ) (c : ι → E)
-    (hν : ∀ j v, SignType.sign (ν j v) =
+    (hν : ∀ j, c j ≠ 0 → ∀ v, SignType.sign (ν j v) =
       (σ j).orientation.evalSign (fun _ : Fin 1 => v)) :
     p.addWeightOfEPs (fun a b => OrientedCell.intersectionPairing (R := R)
       ![a.val, b.val] (∑ j, Finsupp.single (σ j) (c j))) = -p.wallCrossingSum ν c := by
@@ -149,7 +151,7 @@ admissible path. This uses the actual cochain quotient, allowing orientation
 relations and arbitrary subdivisions rather than only literal coefficient cancellation. -/
 theorem wallCrossingSum_eq_zero_of_cochain_eq_zero (p : AdmissiblePLPath x y)
     (ν : ι → V →ₗ[ℝ] ℝ) (c : ι → E)
-    (hν : ∀ j v, SignType.sign (ν j v) =
+    (hν : ∀ j, c j ≠ 0 → ∀ v, SignType.sign (ν j v) =
       (σ j).orientation.evalSign (fun _ : Fin 1 => v))
     (hc : ∑ j, PolyhedralCochain.mk (R := R) (σ j) (c j) = 0) :
     p.wallCrossingSum ν c = 0 := by
