@@ -175,6 +175,18 @@ theorem intersectionIndex_pair (σ : OrientedCell h 1) (a b : V) :
     rfl
   rw [intersectionIndex, Matrix.range_cons_cons_empty, convexHull_pair, hframe]
 
+/-- Reversing the endpoints of a segment negates its intersection index,
+including for a stationary segment or one disjoint from the cell. -/
+theorem intersectionIndex_pair_swap (σ : OrientedCell h 1) (a b : V) :
+    σ.intersectionIndex ![b, a] = -σ.intersectionIndex ![a, b] := by
+  have hframe : (fun _ : Fin 1 => a - b) =
+      fun j => (-1 : ℝ) • (fun _ : Fin 1 => b - a) j := by
+    ext j
+    simp
+  rw [intersectionIndex_pair, intersectionIndex_pair, segment_symm ℝ b a, hframe,
+    Module.Ray.evalSign_smul]
+  split_ifs <;> simp
+
 /-- Reversing the orientation of a cell negates its intersection index. -/
 @[simp]
 theorem intersectionIndex_reverse (σ : OrientedCell h k) (v : Fin (k + 1) → V) :
@@ -230,6 +242,14 @@ theorem intersectionPairing_apply (v : Fin (k + 1) → V) (x : OrientedCell h k 
     intersectionPairing (R := R) v x = x.sum fun σ c => σ.intersectionIndex v • c := by
   rw [intersectionPairing, Finsupp.lsum_apply]
   exact Finsupp.sum_congr fun σ _ => by rw [LinearMap.smul_apply, LinearMap.id_apply]
+
+/-- Reversing a segment negates its pairing with a finite wall presentation. -/
+theorem intersectionPairing_pair_swap (a b : V) (f : OrientedCell h 1 →₀ E) :
+    intersectionPairing (R := R) ![b, a] f = -intersectionPairing (R := R) ![a, b] f := by
+  simp only [intersectionPairing_apply, Finsupp.sum, ← Finset.sum_neg_distrib]
+  apply Finset.sum_congr rfl
+  intro σ _
+  rw [σ.intersectionIndex_pair_swap, neg_smul]
 
 /-- The intersection pairing commutes with linear maps of coefficients. -/
 theorem intersectionPairing_comp_mapRange {E' : Type*} [AddCommGroup E'] [Module R E']
