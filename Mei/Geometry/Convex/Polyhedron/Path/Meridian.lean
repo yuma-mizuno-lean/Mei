@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.Affine.Triangle
+public import Mei.Geometry.Affine.Triangle.Basic
 public import Mei.Geometry.Convex.Polyhedron.AdmissiblePath
 
 /-!
