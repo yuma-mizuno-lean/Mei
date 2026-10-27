@@ -24,8 +24,9 @@ The facet half-space model `exists_ball_inter_eq_halfspace_of_facet` and
 section with an inward ray. `Affine.Triangle.exists_ray_exit_edge`
 identifies its unique exit edge; the other edges miss the wall. This verifies
 the geometric hypotheses of
-`OrientedCell.intersectionIndex_boundaryFacet_eq_sum_succAbove`, whose
-contraction calculation supplies the orientation signs.
+`OrientedCell.intersectionIndex_boundaryFacet_eq_sum_succAbove` and
+`OrientedCell.sum_intersectionIndex_boundaryFacets_eq_sum_succAbove`, whose
+contraction calculation and boundary-sum reduction supply the Stokes formulas.
 -/
 
 public section
@@ -39,12 +40,8 @@ namespace Mei.OrientedCell
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
 
-/-- In a half-space neighborhood of a wall facet, a complementary triangle
-containing a point of the facet in its interior satisfies the signed facet Stokes formula.
-The vertices need only avoid the wall itself. -/
-theorem intersectionIndex_boundaryFacet_eq_sum_succAbove_of_halfspace
-    (σ : OrientedCell h 1) {F : Set V} (hF : IsExposed ℝ σ.carrier F)
-    (hne : F.Nonempty)
+private theorem exists_exit_of_facet_halfspace
+    (σ : OrientedCell h 1) {F : Set V}
     (hdim : finrank ℝ (vectorSpan ℝ F) + 1 = finrank ℝ (vectorSpan ℝ σ.carrier))
     (l : V →L[ℝ] ℝ) (hFl : F = l.toExposed σ.carrier)
     (s : Affine.Triangle ℝ V) {p : V} (hpF : p ∈ F) (hp : p ∈ s.interior)
@@ -52,8 +49,11 @@ theorem intersectionIndex_boundaryFacet_eq_sum_succAbove_of_halfspace
     (hvertices : ∀ j, s.points j ∉ σ.carrier)
     (hlocal : convexHull ℝ (range s.points) ∩ σ.carrier =
       convexHull ℝ (range s.points) ∩ {z | z ∈ affineSpan ℝ σ.carrier ∧ l z ≤ l p}) :
-    (σ.boundaryFacet hF hne hdim).intersectionIndex s.points =
-      ∑ m : Fin 3, (-1 : ℤ) ^ (m : ℕ) * σ.intersectionIndex (s.points ∘ m.succAbove) := by
+    ∃ (b : Fin 3 → ℝ) (j : Fin 3) (q : V),
+      (∀ a, 0 ≤ b a) ∧ ∑ a, b a = 1 ∧ (∑ a, b a • s.points a) ∈ F ∧
+      0 < b j ∧ q ∈ convexHull ℝ (range (s.points ∘ j.succAbove)) ∧
+      q ∈ σ.carrier ∧ q ∉ F ∧
+      ∀ m ≠ j, Disjoint (convexHull ℝ (range (s.points ∘ m.succAbove))) σ.carrier := by
   have := h.finiteDimensional
   -- Identify the wall slice in the triangle plane with the normalized inward ray.
   have hpA := s.closedInterior_subset_affineSpan (s.interior_subset_closedInterior hp)
@@ -79,7 +79,7 @@ theorem intersectionIndex_boundaryFacet_eq_sum_succAbove_of_halfspace
     intro he
     exact hvertices j ((hmem _ (subset_convexHull ℝ _ (mem_range_self j))).mpr
       ⟨t, ht.le, he⟩)
-  -- The unique exit edge supplies the chord hypotheses for the existing sign formula.
+  -- The unique exit edge supplies the chord hypotheses for both Stokes formulas.
   obtain ⟨T, j, hT, hj, hexit⟩ := s.exists_ray_exit_edge hp hqA hqne hv
   have hface (m : Fin 3) :
       convexHull ℝ (range (s.points ∘ m.succAbove)) = (s.faceOpposite m).closedInterior := by
@@ -107,8 +107,28 @@ theorem intersectionIndex_boundaryFacet_eq_sum_succAbove_of_halfspace
   obtain ⟨b, hb, hb01, hbp⟩ := hp
   have hsum : ∑ a, b a • s.points a = p := by
     simpa only [Finset.affineCombination_eq_linear_combination _ _ _ hb] using hbp
+  exact ⟨b, j, _, (fun a => (hb01 a).1.le), hb, hsum ▸ hpF,
+    (hb01 j).1, hjface, hjσ, hjF, hdisj⟩
+
+/-- In a half-space neighborhood of a wall facet, a complementary triangle
+containing a point of the facet in its interior satisfies the signed facet Stokes formula.
+The vertices need only avoid the wall itself. -/
+theorem intersectionIndex_boundaryFacet_eq_sum_succAbove_of_halfspace
+    (σ : OrientedCell h 1) {F : Set V} (hF : IsExposed ℝ σ.carrier F)
+    (hne : F.Nonempty)
+    (hdim : finrank ℝ (vectorSpan ℝ F) + 1 = finrank ℝ (vectorSpan ℝ σ.carrier))
+    (l : V →L[ℝ] ℝ) (hFl : F = l.toExposed σ.carrier)
+    (s : Affine.Triangle ℝ V) {p : V} (hpF : p ∈ F) (hp : p ∈ s.interior)
+    (hcompl : IsCompl (vectorSpan ℝ F) (vectorSpan ℝ (range s.points)))
+    (hvertices : ∀ j, s.points j ∉ σ.carrier)
+    (hlocal : convexHull ℝ (range s.points) ∩ σ.carrier =
+      convexHull ℝ (range s.points) ∩ {z | z ∈ affineSpan ℝ σ.carrier ∧ l z ≤ l p}) :
+    (σ.boundaryFacet hF hne hdim).intersectionIndex s.points =
+      ∑ m : Fin 3, (-1 : ℤ) ^ (m : ℕ) * σ.intersectionIndex (s.points ∘ m.succAbove) := by
+  obtain ⟨b, j, q, hb₀, hb₁, hpF', hbj, hqj, hqσ, hqF, hdisj⟩ :=
+    exists_exit_of_facet_halfspace σ hdim l hFl s hpF hp hcompl hvertices hlocal
   exact σ.intersectionIndex_boundaryFacet_eq_sum_succAbove hF hne hdim
-    (fun a => (hb01 a).1.le) hb (hsum ▸ hpF) (hb01 j).1 hjface hjσ hjF hdisj
+    hb₀ hb₁ hpF' hbj hqj hqσ hqF hdisj
 
 private theorem stokes_of_facet_halfspace (σ : OrientedCell h 1) {F : Set V}
     (hF : IsExposed ℝ σ.carrier F)
@@ -123,21 +143,16 @@ private theorem stokes_of_facet_halfspace (σ : OrientedCell h 1) {F : Set V}
       Disjoint (convexHull ℝ (range s.points)) τ.carrier) :
     (∑ τ ∈ σ.boundaryFacets, τ.intersectionIndex s.points) =
       ∑ m : Fin 3, (-1 : ℤ) ^ (m : ℕ) * σ.intersectionIndex (s.points ∘ m.succAbove) := by
-  classical
-  have hsign := σ.intersectionIndex_boundaryFacet_eq_sum_succAbove_of_halfspace
-    hF ⟨p, hpF⟩ hdim l hl s hpF hp hT hv (by
+  obtain ⟨b, j, q, hb₀, hb₁, hpF', hbj, hqj, hqσ, hqF, hdisj⟩ :=
+    exists_exit_of_facet_halfspace σ hdim l hl s hpF hp hT hv (by
       ext y
       constructor
       · rintro ⟨hy, hyσ⟩
         exact ⟨hy, (hlocal y hy).mp hyσ⟩
       · rintro ⟨hy, hyσ⟩
         exact ⟨hy, (hlocal y hy).mpr hyσ⟩)
-  rw [Finset.sum_eq_single_of_mem _ (σ.boundaryFacet_mem_boundaryFacets hF ⟨p, hpF⟩ hdim)
-    fun τ hτ hne => intersectionIndex_of_disjoint (hother τ hτ fun hτF =>
-      hne (σ.carrier_injOn_boundaryFacets hτ
-        (σ.boundaryFacet_mem_boundaryFacets hF ⟨p, hpF⟩ hdim)
-        (hτF.trans (σ.boundaryFacet_carrier hF ⟨p, hpF⟩ hdim).symm)))]
-  exact hsign
+  exact σ.sum_intersectionIndex_boundaryFacets_eq_sum_succAbove hF ⟨p, hpF⟩ hdim
+    hb₀ hb₁ hpF' hbj hqj hqσ hqF hdisj hother
 
 /-- At a relative interior point of a wall facet there is a ball on which
 Stokes holds for every transverse triangle containing that point in its

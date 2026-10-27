@@ -6,6 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.Convex.PolyhedralComplex.PathSubdivision
+public import Mei.Geometry.Convex.PolyhedralComplex.TriangleReduction
 public import Mei.Geometry.Convex.Polyhedron.Path.Product
 
 /-!
@@ -19,6 +20,8 @@ and relabelling.
 Positive rescaling of normals, or reversing chosen normals while inverting their
 labels, preserves every path product. Consistency means endpoint independence;
 it is equivalent to triviality of all admissible loop products.
+It suffices to test three-edge loops: admissible spokes to a common apex reduce
+every polygonal loop to triangular relations.
 
 The construction uses Mathlib's `FreeGroup.lift` and the signed polygonal crossing
 words in `Mei.Geometry.Convex.PolyhedralComplex.CrossingWord`.
@@ -292,6 +295,27 @@ theorem consistent_iff_loops : D.Consistent ↔
   · intro hc x y p q
     have he := hc x (p.comp q.reverse)
     exact (inv_mul_eq_one.mp (by simpa only [pathProduct_comp, pathProduct_reverse] using he)).symm
+
+/-- Consistency can be tested on admissible three-edge loops. The triangles may
+contain several joints; reducing them to local meridians is a further step. -/
+theorem consistent_iff_triangles : D.Consistent ↔
+    ∀ (x y z : WallComplement (fun P : C.walls => (P : Set V)))
+      (e : x ⟶ y) (f : y ⟶ z) (r : z ⟶ x),
+      D.pathProduct ((e.toPath.cons f).cons r) = 1 := by
+  constructor
+  · intro hD x y z e f r
+    exact D.consistent_iff_loops.mp hD x _
+  · intro htri
+    apply D.consistent_iff_loops.mpr
+    intro x p
+    rw [pathProduct_def, ← MonoidHom.mem_ker]
+    apply Subgroup.normalClosure_le_normal (N := (FreeGroup.lift D.label).ker) ?_
+      (p.crossingWord_mem_normalClosure_triangles D.normal D.ker_normal
+        isOpen_univ (fun _ _ => mem_univ _))
+    intro g hg
+    obtain ⟨a, b, c, e, f, r, _, _, _, rfl⟩ := (C.mem_triangleWords D.normal univ g).mp hg
+    apply MonoidHom.mem_ker.mpr
+    simpa only [pathProduct_def] using htri a b c e f r
 
 variable {D} in
 /-- A homomorphism of label groups preserves consistency. -/

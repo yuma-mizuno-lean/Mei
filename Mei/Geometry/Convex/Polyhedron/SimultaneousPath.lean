@@ -18,6 +18,8 @@ polyhedra. Baire's theorem then gives a dense Gδ set of vertices working for
 countably many finite families simultaneously, even when their unions are not
 locally finite. All endpoints remain fixed, and the same two-edge geometric
 path works at every level.
+For countably many allowed vertices, one apex can simultaneously be joined to
+all of them by admissible segments.
 
 This develops the endpoint topology of `WallComplement.AdmissibleSegment`,
 using the finite-family construction
@@ -125,6 +127,33 @@ theorem dense_setOf_admissiblePairs [FiniteDimensional ℝ V] [Finite ι]
     ⟨fun i _ => (ht i).2, fun t _ => (hr t).2⟩
   exact ⟨z, hzU, ⟨mem_admissiblePairs_iff _ _ |>.mpr hxz,
     mem_admissiblePairs_iff _ _ |>.mpr hyz.symm⟩⟩
+
+/-- Countably many allowed vertices admit a common apex in any nonempty open
+set, joined to each vertex by an admissible segment. The vertices may repeat. -/
+theorem WallComplement.exists_mem_open_admissible_spokes
+    [FiniteDimensional ℝ V] [Finite ι] {κ : Type*} [Countable κ]
+    (W : ι → Set V) (hpoly : ∀ i, TauCeti.IsConvexPolyhedron (W i))
+    (hdim : ∀ i, Module.finrank ℝ (affineSpan ℝ (W i)).direction + 1 = Module.finrank ℝ V)
+    (a : κ → WallComplement W) {U : Set V} (hU : IsOpen U) (hne : U.Nonempty) :
+    ∃ z : WallComplement W, z.val ∈ U ∧ ∀ j, Nonempty (z ⟶ a j) := by
+  cases isEmpty_or_nonempty κ with
+  | inl hempty =>
+    obtain ⟨z, hzU, hz⟩ := AffineSubspace.exists_mem_open_genericLocus
+      (fun i => affineSpan ℝ (W i))
+      (fun i => (affineSpan ℝ (W i)).ne_top_of_finrank_direction_add_one_eq (hdim i))
+      hU hne
+    exact ⟨⟨z, fun i hi => hz i (subset_affineSpan ℝ (W i) hi)⟩, hzU,
+      fun j => isEmptyElim j⟩
+  | inr hnonempty =>
+    have hdense : Dense (⋂ j, {z | ((a j).val, z) ∈ admissiblePairs W ∧
+        (z, (a j).val) ∈ admissiblePairs W}) :=
+      dense_iInter_of_isOpen
+        (fun j => isOpen_setOf_admissiblePairs W (fun i => (hpoly i).isClosed) _ _)
+        (fun j => dense_setOf_admissiblePairs W hpoly hdim (a j).notMem (a j).notMem)
+    obtain ⟨z, hzU, hz⟩ := hdense.inter_open_nonempty U hU hne
+    have hpair (j : κ) : (z, (a j).val) ∈ admissiblePairs W := (mem_iInter.mp hz j).2
+    let b : WallComplement W := ⟨z, (hpair (Classical.arbitrary κ)).1⟩
+    exact ⟨b, hzU, fun j => ⟨⟨(mem_admissiblePairs_iff b (a j)).mp (hpair j)⟩⟩⟩
 
 section Simultaneous
 
