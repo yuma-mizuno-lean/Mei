@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.CorrectionWall
+public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Correction.Wall
 public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Consistency
 public import Mei.Algebra.Lie.Graded.Truncation.Transition
 
