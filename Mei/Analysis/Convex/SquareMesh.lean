@@ -59,21 +59,20 @@ theorem exists_square_mesh_convexHull_ball_subset
       0 ≤ (a : ℝ) / n ∧ ((a : ℝ) + 1) / n ≤ 1 := by
     have ha : (a : ℝ) + 1 ≤ n := by exact_mod_cast a.isLt
     exact ⟨div_nonneg (Nat.cast_nonneg _) hnreal.le, (div_le_one hnreal).mpr ha⟩
+  have hleft (c : Fin n) : (c : ℝ) / n ∈ Icc ((c : ℝ) / n) (((c : ℝ) + 1) / n) :=
+    left_mem_Icc.mpr (by gcongr; linarith)
   refine ⟨n, hn, δ / 2, half_pos hδ, fun a b => ?_⟩
+  have hcell : Icc ((a : ℝ) / n) (((a : ℝ) + 1) / n) ×ˢ Icc ((b : ℝ) / n) (((b : ℝ) + 1) / n) ⊆
+      Icc (0 : ℝ) 1 ×ˢ Icc (0 : ℝ) 1 :=
+    prod_mono (Icc_subset_Icc (hcoord a).1 (hcoord a).2)
+      (Icc_subset_Icc (hcoord b).1 (hcoord b).2)
   let p : ℝ × ℝ := ((a : ℝ) / n, (b : ℝ) / n)
-  have hp : p ∈ Icc (0 : ℝ) 1 ×ˢ Icc (0 : ℝ) 1 := by
-    have ha := (hcoord a).2
-    have hb := (hcoord b).2
-    rw [div_le_one hnreal] at ha hb
-    exact ⟨⟨(hcoord a).1, (div_le_one hnreal).mpr (by linarith)⟩,
-      ⟨(hcoord b).1, (div_le_one hnreal).mpr (by linarith)⟩⟩
+  have hp : p ∈ Icc (0 : ℝ) 1 ×ˢ Icc (0 : ℝ) 1 := hcell ⟨hleft a, hleft b⟩
   obtain ⟨j, hj⟩ := hlocal (H p) (mem_image_of_mem H hp)
   refine ⟨j, convexHull_min ?_ (hconvex j)⟩
   intro y hy
   obtain ⟨z, hzcell, hy⟩ := mem_iUnion₂.mp hy
-  have hzsquare : z ∈ Icc (0 : ℝ) 1 ×ˢ Icc (0 : ℝ) 1 :=
-    ⟨⟨(hcoord a).1.trans hzcell.1.1, hzcell.1.2.trans (hcoord a).2⟩,
-      ⟨(hcoord b).1.trans hzcell.2.1, hzcell.2.2.trans (hcoord b).2⟩⟩
+  have hzsquare : z ∈ Icc (0 : ℝ) 1 ×ˢ Icc (0 : ℝ) 1 := hcell hzcell
   have hdistcoord (c : Fin n) (t : ℝ)
       (ht : t ∈ Icc ((c : ℝ) / n) (((c : ℝ) + 1) / n)) :
       dist t ((c : ℝ) / n) ≤ 1 / n := by
@@ -83,9 +82,8 @@ theorem exists_square_mesh_convexHull_ball_subset
     rw [Prod.dist_eq, max_lt_iff]
     exact ⟨(hdistcoord a z.1 hzcell.1).trans_lt hstep,
       (hdistcoord b z.2 hzcell.2).trans_lt hstep⟩
-  apply hj
   have hHz := hsmall z hzsquare p hp hzdist
-  have hyz : dist y (H z) < δ / 2 := hy
-  exact (dist_triangle y (H z) (H p)).trans_lt (by linarith)
+  have hyz : dist y (H z) < δ / 2 := mem_ball.mp hy
+  exact hj (mem_ball.mpr ((dist_triangle y (H z) (H p)).trans_lt (by linarith)))
 
 end Mei
