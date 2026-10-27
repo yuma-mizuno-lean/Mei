@@ -29,11 +29,11 @@ open scoped unitInterval
 
 namespace ContinuousMap
 
-variable {V ι : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
+variable {V ι : Type*} [SeminormedAddCommGroup V] [NormedSpace ℝ V]
 
 /-- Subdivide a square filling under an open cover, retaining a uniform positive
-margin for perturbing its vertices. Each cover member contains both the whole
-original parameter patch and the convex hull of its four perturbed corners.
+margin for perturbing its vertices. For each grid cell, one cover member contains
+both its entire image patch and the convex hull of its four perturbed corners.
 The grid times start at zero, are monotone, and reach one at the final index. -/
 theorem exists_grid_subdivision_convexHull (f : C(↥unitInterval × ↥unitInterval, V))
     (U : ι → Set V) (hU : ∀ j, IsOpen (U j))
