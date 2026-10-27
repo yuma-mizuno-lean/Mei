@@ -70,4 +70,12 @@ theorem mem_nhdsWithin_affineSpan_of_mem_intrinsicInterior {P : Set V} {x : V}
   rw [nhdsWithin_eq_map_subtype_coe y.property]
   exact mem_interior_iff_mem_nhds.mp hy
 
+omit [IsTopologicalAddGroup V] [ContinuousSMul ℝ V] in
+/-- For a set spanning the ambient affine space, relative and ordinary interiors agree. -/
+theorem intrinsicInterior_eq_interior_of_affineSpan_eq_top {P : Set V}
+    (hP : affineSpan ℝ P = ⊤) : intrinsicInterior ℝ P = interior P := by
+  refine Subset.antisymm (fun x hx => ?_) interior_subset_intrinsicInterior
+  have hn := mem_nhdsWithin_affineSpan_of_mem_intrinsicInterior hx
+  simpa [hP, ← mem_interior_iff_mem_nhds] using hn
+
 end Mei
