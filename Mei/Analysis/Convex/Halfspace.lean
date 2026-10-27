@@ -14,10 +14,6 @@ A halfspace cut that contains a strictly feasible point of a convex set retains
 its affine span. An affine inequality with a strictly feasible point is strict
 throughout the relative interior. These facts detect full-dimensional pieces
 and disjoint relative interiors in subdivisions by hyperplanes.
-
-The relative-interior statement uses
-`AffineMap.eq_zero_on_of_mem_intrinsicInterior`; the affine-span statement uses
-short segments starting at a strictly feasible point.
 -/
 
 public section
@@ -58,17 +54,5 @@ theorem affineSpan_inter_le_eq (g : V →ᵃ[ℝ] ℝ) {P : Set V} (hP : Convex 
   have hyx : y -ᵥ x ∈ A.direction :=
     (Submodule.smul_mem_iff A.direction ht.ne').mp hv
   simpa only [vsub_vadd, A, SetLike.mem_coe] using A.vadd_mem_of_mem_direction hyx hxA
-
-variable [TopologicalSpace V] [IsTopologicalAddGroup V] [ContinuousSMul ℝ V]
-
-/-- An affine inequality that is strict somewhere on a set is strict throughout
-its relative interior. Convexity and continuity of the functional are unnecessary. -/
-theorem lt_zero_of_mem_intrinsicInterior (g : V →ᵃ[ℝ] ℝ) {P : Set V}
-    (hg : ∀ x ∈ P, g x ≤ 0) (hstrict : ∃ x ∈ P, g x < 0)
-    {x : V} (hx : x ∈ intrinsicInterior ℝ P) : g x < 0 := by
-  apply lt_of_le_of_ne (hg x (intrinsicInterior_subset hx))
-  intro he
-  obtain ⟨y, hy, hgy⟩ := hstrict
-  exact hgy.ne (g.eq_zero_on_of_mem_intrinsicInterior hg hx he y hy)
 
 end AffineMap
