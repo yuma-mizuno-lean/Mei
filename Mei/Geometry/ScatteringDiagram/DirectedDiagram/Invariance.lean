@@ -45,53 +45,39 @@ variable {Γ Λ R L V ι κ : Type*} [AddCommGroup Γ] [AddCommGroup Λ]
 a test loop lies on active walls of the other diagram. -/
 theorem LevelEquivalent.consistent {k : ℕ} (hDE : D.LevelEquivalent E k)
     (hD : D.LevelConsistent k) : E.LevelConsistent k := by
-  let := h.finiteDimensional
   apply (E.levelConsistent_iff_loops k).mpr
   intro x p
-  cases p with
-  | nil => simp
-  | @cons y _ p e =>
-    let loop := p.cons e
-    obtain ⟨ε, hε, hp⟩ := E.exists_pos_levelPathProduct_eq_of_forall₂_dist_lt k loop
-    obtain ⟨l, hl⟩ := List.head?_eq_some_iff.mp p.vertices_head?
-    have hv : loop.vertices.map WallComplement.val =
-        x.val :: (l.map WallComplement.val ++ [x.val]) := by
-      simp only [loop, Quiver.Path.vertices_cons, List.concat_eq_append, List.map_append,
-        List.map_cons, List.map_nil, hl, List.cons_append]
-    let W : E.active k ⊕ D.active k → Set V :=
-      Sum.elim (fun j => (E.wall j).support) (fun j => (D.wall j).support)
-    have hpoly : ∀ j, TauCeti.IsConvexPolyhedron (W j) := by
-      rintro (j | j)
-      · exact (E.wall j).isConvexPolyhedron
-      · exact (D.wall j).isConvexPolyhedron
-    have hdim : ∀ j, Module.finrank ℝ (affineSpan ℝ (W j)).direction + 1 =
-        Module.finrank ℝ V := by
-      rintro (j | j)
-      · exact (E.wall j).finrank_direction_add_one
-      · exact (D.wall j).finrank_direction_add_one
-    -- Perturb the basepoint once for both ends of the loop, preserving closedness.
-    obtain ⟨a, q, hq⟩ := AdmissiblePLPath.exists_loop_forall₂_dist_lt hpoly hdim x.val
-      (l := l.map WallComplement.val) hε
-    let qE : AdmissiblePLPath
-        (⟨a.val, fun j => a.notMem (.inl j)⟩ :
-          WallComplement (fun j : E.active k => (E.wall j).support))
-        ⟨a.val, fun j => a.notMem (.inl j)⟩ :=
-      (WallComplement.restrictPrefunctor W Sum.inl).mapPath q
-    let qD : AdmissiblePLPath
-        (⟨a.val, fun j => a.notMem (.inr j)⟩ :
-          WallComplement (fun j : D.active k => (D.wall j).support))
-        ⟨a.val, fun j => a.notMem (.inr j)⟩ :=
-      (WallComplement.restrictPrefunctor W Sum.inr).mapPath q
-    have hvE : qE.vertices.map WallComplement.val = q.vertices.map WallComplement.val :=
-      WallComplement.vertices_restrictPrefunctor W Sum.inl q
-    have hvD : qD.vertices.map WallComplement.val = q.vertices.map WallComplement.val :=
-      WallComplement.vertices_restrictPrefunctor W Sum.inr q
-    calc
-      E.levelPathProduct k loop = E.levelPathProduct k qE :=
-        (hp qE (by rwa [hv, hvE])).symm
-      _ = D.levelPathProduct k qD :=
-        ((levelEquivalent_def D E k).mp hDE qD qE (hvD.trans hvE.symm)).symm
-      _ = 1 := (D.levelConsistent_iff_loops k).mp hD _ qD
+  let W : E.active k ⊕ D.active k → Set V :=
+    Sum.elim (fun j => (E.wall j).support) (fun j => (D.wall j).support)
+  have hpoly : ∀ j, TauCeti.IsConvexPolyhedron (W j) := by
+    rintro (j | j)
+    · exact (E.wall j).isConvexPolyhedron
+    · exact (D.wall j).isConvexPolyhedron
+  have hdim : ∀ j, Module.finrank ℝ (affineSpan ℝ (W j)).direction + 1 =
+      Module.finrank ℝ V := by
+    rintro (j | j)
+    · exact (E.wall j).finrank_direction_add_one
+    · exact (D.wall j).finrank_direction_add_one
+  obtain ⟨a, q, hq⟩ := E.exists_loop_levelPathProduct_eq_of_vertices_eq k W hpoly hdim p
+  let qE : AdmissiblePLPath
+      (⟨a.val, fun j => a.notMem (.inl j)⟩ :
+        WallComplement (fun j : E.active k => (E.wall j).support))
+      ⟨a.val, fun j => a.notMem (.inl j)⟩ :=
+    (WallComplement.restrictPrefunctor W Sum.inl).mapPath q
+  let qD : AdmissiblePLPath
+      (⟨a.val, fun j => a.notMem (.inr j)⟩ :
+        WallComplement (fun j : D.active k => (D.wall j).support))
+      ⟨a.val, fun j => a.notMem (.inr j)⟩ :=
+    (WallComplement.restrictPrefunctor W Sum.inr).mapPath q
+  have hvE : qE.vertices.map WallComplement.val = q.vertices.map WallComplement.val :=
+    WallComplement.vertices_restrictPrefunctor W Sum.inl q
+  have hvD : qD.vertices.map WallComplement.val = q.vertices.map WallComplement.val :=
+    WallComplement.vertices_restrictPrefunctor W Sum.inr q
+  calc
+    E.levelPathProduct k p = E.levelPathProduct k qE := (hq qE hvE).symm
+    _ = D.levelPathProduct k qD :=
+      ((levelEquivalent_def D E k).mp hDE qD qE (hvD.trans hvE.symm)).symm
+    _ = 1 := (D.levelConsistent_iff_loops k).mp hD _ qD
 
 /-- Equivalent directed presentations have the same consistency at a fixed order. -/
 theorem LevelEquivalent.consistent_iff {k : ℕ} (hDE : D.LevelEquivalent E k) :

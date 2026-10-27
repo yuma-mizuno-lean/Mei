@@ -22,8 +22,8 @@ source-active labels disappear at the target cutoff. Repeated indexed walls,
 translations and orientation-reversing spatial equivalences are allowed.
 -/
 
-/- The proof combines `DirectedDiagram.levelPathProduct_image` with the
-moving-basepoint perturbation in `DirectedDiagram.LevelEquivalent.consistent`. -/
+/- The proof combines `DirectedDiagram.levelPathProduct_image` with the loop perturbation of
+`DirectedDiagram.exists_loop_levelPathProduct_eq_of_vertices_eq`. -/
 
 public section
 
@@ -61,46 +61,34 @@ covered by the coordinate change's modulus. No common-path condition is imposed
 on target loops. -/
 theorem levelConsistent_image (k : ℕ) {a : ℕ} (ha : E.degreeMap.modulus k ≤ a)
     (hD : D.LevelConsistent a) : (D.image e E hE).LevelConsistent k := by
-  have := h'.finiteDimensional
   apply ((D.image e E hE).levelConsistent_iff_loops k).mpr
   intro x p
-  cases p with
-  | nil => simp
-  | @cons y _ p f =>
-    let loop := p.cons f
-    obtain ⟨ε, hε, hp⟩ := (D.image e E hE).exists_pos_levelPathProduct_eq_of_forall₂_dist_lt
-      k loop
-    obtain ⟨l, hl⟩ := List.head?_eq_some_iff.mp p.vertices_head?
-    have hv : loop.vertices.map WallComplement.val =
-        x.val :: (l.map WallComplement.val ++ [x.val]) := by
-      simp only [loop, Quiver.Path.vertices_cons, List.concat_eq_append, List.map_append,
-        List.map_cons, List.map_nil, hl, List.cons_append]
-    let W : D.active a → Set V' := fun j => ((D.wall j).image e E hE).support
-    have hpoly : ∀ j, TauCeti.IsConvexPolyhedron (W j) :=
-      fun j => ((D.wall j).image e E hE).isConvexPolyhedron
-    have hdim : ∀ j, Module.finrank ℝ (affineSpan ℝ (W j)).direction + 1 =
-        Module.finrank ℝ V' := fun j => ((D.wall j).image e E hE).finrank_direction_add_one
-    obtain ⟨z, q, hq⟩ := AdmissiblePLPath.exists_loop_forall₂_dist_lt hpoly hdim x.val
-      (l := l.map WallComplement.val) hε
-    -- Pull the perturbed loop back through all source-active supports.
-    let B := e.symm.toContinuousAffineEquiv.wallComplementMap (Equiv.refl (D.active a))
-      (W := W) (W' := fun j : D.active a => (D.wall j).support) (by
-        intro j
-        simp only [Equiv.refl_apply, W, DirectedWall.image_support]
-        ext v
-        simp)
-    let r := B.mapPath q
-    let s := (D.levelPathImage e E hE k ha).mapPath r
-    have hs : s.vertices.map WallComplement.val = q.vertices.map WallComplement.val := by
-      simp only [s, r, Prefunctor.vertices_mapPath, List.map_map, Function.comp_def,
-        levelPathImage_obj_val]
-      apply List.map_congr_left
-      intro v _
-      simp [B, Toric.IntegralAffineEquiv.symm_toAffineEquiv]
-    have hprod : (D.image e E hE).levelPathProduct k s = 1 := by
-      rw [D.levelPathProduct_image e E hE k ha r,
-        ((D.levelConsistent_iff_loops a).mp hD _ r), map_one]
-    exact (hp s (by simpa only [hv, hs] using hq)).symm.trans hprod
+  let W : D.active a → Set V' := fun j => ((D.wall j).image e E hE).support
+  have hpoly : ∀ j, TauCeti.IsConvexPolyhedron (W j) :=
+    fun j => ((D.wall j).image e E hE).isConvexPolyhedron
+  have hdim : ∀ j, Module.finrank ℝ (affineSpan ℝ (W j)).direction + 1 =
+      Module.finrank ℝ V' := fun j => ((D.wall j).image e E hE).finrank_direction_add_one
+  obtain ⟨z, q, hq⟩ := (D.image e E hE).exists_loop_levelPathProduct_eq_of_vertices_eq
+    k W hpoly hdim p
+  -- Pull the perturbed loop back through all source-active supports.
+  let B := e.symm.toContinuousAffineEquiv.wallComplementMap (Equiv.refl (D.active a))
+    (W := W) (W' := fun j : D.active a => (D.wall j).support) (by
+      intro j
+      simp only [Equiv.refl_apply, W, DirectedWall.image_support]
+      ext v
+      simp)
+  let r := B.mapPath q
+  let s := (D.levelPathImage e E hE k ha).mapPath r
+  have hs : s.vertices.map WallComplement.val = q.vertices.map WallComplement.val := by
+    simp only [s, r, Prefunctor.vertices_mapPath, List.map_map, Function.comp_def,
+      levelPathImage_obj_val]
+    apply List.map_congr_left
+    intro v _
+    simp [B, Toric.IntegralAffineEquiv.symm_toAffineEquiv]
+  have hprod : (D.image e E hE).levelPathProduct k s = 1 := by
+    rw [D.levelPathProduct_image e E hE k ha r,
+      ((D.levelConsistent_iff_loops a).mp hD _ r), map_one]
+  exact (hq s hs).symm.trans hprod
 
 /-- Finite endpoint transport is natural at any source cutoff covering the
 coordinate modulus. The target endpoints need only be images of the given
