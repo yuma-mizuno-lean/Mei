@@ -38,6 +38,13 @@ variable {Γ Λ R L : Type*} [AddCommMonoid Γ] [AddCommGroup Λ]
   [CommRing R] [LieRing L] [LieAlgebra R L]
   {ρ : Γ →+ Λ} {ℒ : Γ → Submodule R L} (H : DirectedWallSpaces ρ ℒ)
 
+/-- Nonzero integral normals with the same kernel define the same wall spaces.
+In particular a change of coorientation preserves eligible coefficients. -/
+theorem wall_eq_of_ker_eq (n : Γ) {m m' : Λ →+ ℤ} (hm : m ≠ 0)
+    (hker : m.ker = m'.ker) : H.wall n m = H.wall n m' := by
+  obtain ⟨c, e, hc, he, hme⟩ := m.exists_ne_zero_zsmul_eq_of_ker_eq m' hm hker
+  rw [← H.rescale n m c hc, hme, H.rescale n m' e he]
+
 /-- At a degree transverse to a common kernel, the sum of all wall spaces
 annihilating that kernel is the wall space with the contracted normal.
 This also applies when that normal vanishes, in which case the sum is zero. -/
