@@ -25,7 +25,8 @@ of a concatenation, using Mathlib's `List.isChain_split` at the common endpoint.
 An initial segment of a vertex-and-edge sequence defines a path with its expected
 length, vertex list and ordered weight. Group-valued edge weights can be gauged
 at the vertices: if every gauged edge lies in a submonoid, so does the gauged
-weight of the entire path.
+weight of the entire path. Four-edge grid loops have vertices among their
+four indexed corners.
 
 The sequence-path API is adapted from Codex,
 [Mei PR #325](https://github.com/yuma-mizuno-lean/Mei/pull/325).
@@ -127,6 +128,36 @@ theorem mul_weight_mul_inv_mem_of_isChain {G : Type*} [Group G]
       K.mul_mem (ih hp.1) he
 
 variable {V : Type*} [Quiver V] [Quiver.HasReverse V]
+
+/-- Every vertex of a four-edge grid cell is one of its four corners.
+This also controls the loop under any map of vertices, for example into a
+convex hull of geometric corner positions. -/
+theorem grid_cell_vertices_subset_range {m n : ℕ}
+    (x : Fin (m + 1) × Fin (n + 1) → V)
+    (e : ∀ (a : Fin m) (b : Fin (n + 1)), x (a.castSucc, b) ⟶ x (a.succ, b))
+    (f : ∀ (a : Fin (m + 1)) (b : Fin n), x (a, b.castSucc) ⟶ x (a, b.succ))
+    (a : Fin m) (b : Fin n) :
+    ∀ z ∈ ((((e a b.castSucc).toPath.cons (f a.succ b)).cons
+        (Quiver.reverse (e a b.succ))).cons (Quiver.reverse (f a.castSucc b))).vertices,
+      z ∈ Set.range (fun c : Fin 2 × Fin 2 =>
+        x (⟨a.val + c.1.val, by omega⟩, ⟨b.val + c.2.val, by omega⟩)) := by
+  have hc (c : Fin 2 × Fin 2) := Set.mem_range_self
+    (f := fun c : Fin 2 × Fin 2 =>
+      x (⟨a.val + c.1.val, by omega⟩, ⟨b.val + c.2.val, by omega⟩)) c
+  intro z hz
+  simp only [vertices_cons, vertices_toPath, List.concat_eq_append,
+    List.mem_append, List.mem_cons, List.not_mem_nil, or_false] at hz
+  rcases hz with ((((rfl | rfl) | rfl) | rfl) | rfl)
+  · convert hc (0, 0) using 2
+    congr 2
+  · convert hc (1, 0) using 2
+    congr 2
+  · convert hc (1, 1) using 2
+    congr 2
+  · convert hc (0, 1) using 2
+    congr 2
+  · convert hc (0, 0) using 2
+    congr 2
 
 /-- Reversing a path reverses its entire vertex list. -/
 @[simp]
