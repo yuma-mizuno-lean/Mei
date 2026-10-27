@@ -7,7 +7,7 @@ module
 
 public import Mei.Geometry.ScatteringDiagram.DirectedWall.Basic
 public import Mei.Geometry.ScatteringDiagram.WallSpace.Normal
-public import Mei.Geometry.Convex.PolyhedralComplex.Joint
+public import Mei.Geometry.ScatteringDiagram.WallSpace.Coorientation
 public import Mei.Geometry.Convex.Polyhedron.Rational.Sweep
 public import Mei.Geometry.Convex.Sweep
 
@@ -26,6 +26,11 @@ in the sum of wall spaces annihilating the joint: the contracted-normal theorem
 places it in the required single wall space. The supported primitive generator
 need not belong to the positive monoid. Sweeping along it gives the same support
 as sweeping along the actual allowed degree.
+
+`exists_cooriented_sweep` realizes a retained coefficient with the integral normal
+inducing the contraction orientation of an oriented joint sweep. It reuses
+`DirectedWallSpaces.exists_cooriented_sweep_normal`; changing the normal this way
+preserves the coefficient's wall space, while fixing the positive side of its label.
 
 The construction combines `FinitePolyhedralComplex.exists_joint_transverse_normal`,
 `DirectedWallSpaces.iSup_wall_eq_wall_of_inf_ker`, the rational sweep presentation,
@@ -152,6 +157,38 @@ theorem exists_outgoing_sweep {P : Set V} (hP : IsRationalNormalPolyhedron h P)
       (H.wall_le_piece _ _ ((H.wall n m).neg_mem ((H.wall n m).neg_mem ha)))]
     exact Or.inr hl
 
+/-- A transverse rational polyhedron with a homogeneous wall coefficient has an
+outgoing swept wall with the chosen normal. Its supported ray contains the actual
+degree, and its negative-exponential label has exactly the homogeneous cutoffs. -/
+theorem exists_sweep_correction_wall_of_ker_eq [Module.Free ℤ Γ]
+    {P : Set V} (hP : IsRationalNormalPolyhedron h P) (hne : P.Nonempty)
+    (n : Γ) (hn : n ∈ d.monoid)
+    (htrans : i (ρ n) ∉ (affineSpan ℝ P).direction)
+    {m : Λ →+ ℤ} (hm : m ≠ 0)
+    (hker : (h.realCharacter m).ker = (affineSpan ℝ P).direction ⊔ ℝ ∙ i (ρ n))
+    (c : L) (hc : c ∈ H.wall n m) :
+    ∃ W : DirectedWall (d := d) h H,
+      W.normal = m ∧ W.support = sweep P (i (ρ n)) ∧
+      W.support = sweep P (i (ρ W.ray.generator)) ∧
+      n ∈ W.ray.rayDegrees ∧ W.label = d.expToCompletion ℒ (-c) ∧
+      W.Outgoing ∧ ∀ k : ℕ,
+        CompletedGroup.projection k W.label = 1 ↔ c = 0 ∨ (k : ℤ) < d.degree n := by
+  have hn0 : n ≠ 0 := by
+    rintro rfl
+    exact htrans (by simp)
+  obtain ⟨w, hw⟩ := d.exists_supportedRay hn hn0
+  let W := ofSweep P hne hP w n hw m hm hker c hc
+  refine ⟨W, ofSweep_normal .., ofSweep_support .., ?_, by simpa [W] using hw,
+    ofSweep_label .., ofSweep_outgoing _ _ _ _ _ _ _ _ _ _ _ htrans, ?_⟩
+  · rw [ofSweep_support, ofSweep_ray]
+    obtain ⟨_, a, ha, he⟩ := SupportedRay.mem_rayDegrees.mp hw
+    rw [he, map_zsmul, map_zsmul, ← Int.cast_smul_eq_zsmul ℝ]
+    exact sweep_smul_of_pos P _ (by exact_mod_cast ha)
+  · intro k
+    rw [ofSweep_label, d.projection_expToCompletion_eq_one_iff ℒ
+      (H.wall_le_piece _ _ ((H.wall _ _).neg_mem hc))]
+    simp only [neg_eq_zero]
+
 /-- Every transverse joint coefficient produces an outgoing wall with pure birth
 logarithm. If the coefficient is nonzero, its first active order is exactly its
 degree. No primitive-normal or saturation assumption is needed. -/
@@ -166,36 +203,50 @@ theorem exists_swept_correction_wall [Module.Free ℤ Γ]
       n ∈ W.ray.rayDegrees ∧ W.label = d.expToCompletion ℒ (-c) ∧
       W.Outgoing ∧ ∀ k : ℕ,
         CompletedGroup.projection k W.label = 1 ↔ c = 0 ∨ (k : ℤ) < d.degree n := by
-  obtain ⟨f, g, hdir, hm, hker⟩ := C.exists_joint_transverse_normal hJ (ρ n) htrans
-  have hn0 : n ≠ 0 := by
-    rintro rfl
-    exact htrans (by simp)
-  obtain ⟨w, hw⟩ := d.exists_supportedRay hn hn0
-  have hmem (v : Λ) : i v ∈ (affineSpan ℝ J).direction ↔ v ∈ f.ker ⊓ g.ker := by
-    simp only [hdir, Submodule.mem_inf, LinearMap.mem_ker, h.realCharacter_apply,
-      Int.cast_eq_zero, AddSubgroup.mem_inf, AddMonoidHom.mem_ker]
-  have hnfg : ρ n ∉ f.ker ⊓ g.ker := fun hv => htrans ((hmem _).mpr hv)
-  have hc' : c ∈ H.wall n (f (ρ n) • g - g (ρ n) • f) := by
-    rw [← H.iSup_wall_eq_wall_of_inf_ker f g hnfg]
-    have hle : (⨆ (m : Λ →+ ℤ)
-        (_ : ∀ v : Λ, i v ∈ (affineSpan ℝ J).direction → m v = 0), H.wall n m) ≤
-        ⨆ (m : Λ →+ ℤ) (_ : ∀ v ∈ f.ker ⊓ g.ker, m v = 0), H.wall n m :=
-      iSup_le fun m => iSup_le fun hm => le_iSup_of_le m
-        (le_iSup_of_le (fun v hv => hm v ((hmem v).mpr hv)) le_rfl)
-    exact hle hc
+  obtain ⟨m, hm, hker, hwall⟩ := H.exists_joint_sweep_normal C hJ n htrans
   have hcell := ((C.mem_cellsOfCodimension 2 J).mp hJ).1
-  let W := ofSweep J (C.nonempty J hcell) (C.rational J hcell) w n hw
-    (f (ρ n) • g - g (ρ n) • f) hm hker c hc'
-  refine ⟨W, ofSweep_support .., ?_, by simpa [W] using hw, ofSweep_label ..,
-    ofSweep_outgoing _ _ _ _ _ _ _ _ _ _ _ htrans, ?_⟩
-  · rw [ofSweep_support, ofSweep_ray]
-    obtain ⟨_, a, ha, he⟩ := SupportedRay.mem_rayDegrees.mp hw
-    rw [he, map_zsmul, map_zsmul, ← Int.cast_smul_eq_zsmul ℝ]
-    exact sweep_smul_of_pos J _ (by exact_mod_cast ha)
-  · intro k
-    rw [ofSweep_label, d.projection_expToCompletion_eq_one_iff ℒ
-      (H.wall_le_piece _ _ ((H.wall _ _).neg_mem hc'))]
-    simp only [neg_eq_zero]
+  obtain ⟨W, _, hW⟩ := exists_sweep_correction_wall_of_ker_eq (C.rational J hcell)
+    (C.nonempty J hcell) n hn htrans hm hker c (hwall hc)
+  exact ⟨W, hW⟩
+
+/-- A retained homogeneous coefficient in a wall space lifts to an outgoing
+swept wall with the prescribed normal. Its finite logarithm is the negative
+coefficient and its active cutoffs are exact, even for a zero coefficient. -/
+theorem exists_sweep_correction_wall_of_truncated_of_ker_eq [Module.Free ℤ Γ]
+    {P : Set V} (hP : IsRationalNormalPolyhedron h P) (hne : P.Nonempty)
+    (n : Γ) (hn : n ∈ d.monoid)
+    (htrans : i (ρ n) ∉ (affineSpan ℝ P).direction)
+    {m : Λ →+ ℤ} (hm : m ≠ 0)
+    (hker : (h.realCharacter m).ker = (affineSpan ℝ P).direction ⊔ ℝ ∙ i (ρ n))
+    (k : ℕ) (hnk : d.degree n ≤ k) (c : d.truncatedLie ℒ k)
+    (hc : c ∈ (H.truncated d k).wall n m) :
+    ∃ W : DirectedWall (d := d) h H,
+      W.normal = m ∧ W.support = sweep P (i (ρ n)) ∧
+      W.support = sweep P (i (ρ W.ray.generator)) ∧
+      n ∈ W.ray.rayDegrees ∧
+      (∃ a ∈ ℒ n, W.label = d.expToCompletion ℒ (-a)) ∧ W.Outgoing ∧
+      BCHGroup.log (CompletedGroup.projection k W.label) = -c ∧
+      ∀ l : ℕ, CompletedGroup.projection l W.label = 1 ↔ c = 0 ∨ (l : ℤ) < d.degree n := by
+  rw [H.truncated_wall] at hc
+  obtain ⟨a, haw, hac⟩ := Submodule.mem_map.mp hc
+  have ha : a ∈ ℒ n := H.wall_le_piece n m haw
+  have haz : a = 0 ↔ c = 0 := by
+    constructor
+    · rintro rfl
+      simpa using hac.symm
+    · intro hc0
+      have hai := (d.degreeIdeal ℒ k).mkQ_eq_zero.mp (hac.trans hc0)
+      have hai' : a ∈ d.degreeSubmodule ℒ k := by
+        simpa only [← LieSubmodule.mem_toSubmodule, PositiveDegrees.degreeIdeal_toSubmodule]
+          using hai
+      exact ((d.mem_degreeSubmodule_of_mem_iff ℒ ha).mp hai').resolve_right (not_lt.mpr hnk)
+  obtain ⟨W, hnormal, hs, hsr, hnW, hlabel, hout, hproj⟩ :=
+    exists_sweep_correction_wall_of_ker_eq hP hne n hn htrans hm hker a haw
+  refine ⟨W, hnormal, hs, hsr, hnW, ⟨a, ha, hlabel⟩, hout, ?_, ?_⟩
+  · rw [hlabel, PositiveDegrees.projection_expToCompletion, BCHGroup.log_exp, map_neg]
+    exact congrArg Neg.neg hac
+  · intro l
+    rw [hproj l, haz]
 
 /-- A coefficient in a retained homogeneous piece of a finite-order joint
 obstruction lifts to an outgoing swept wall in the original completed group.
@@ -215,31 +266,43 @@ theorem exists_swept_correction_wall_of_truncated [Module.Free ℤ Γ]
       (∃ a ∈ ℒ n, W.label = d.expToCompletion ℒ (-a)) ∧ W.Outgoing ∧
       BCHGroup.log (CompletedGroup.projection k W.label) = -c ∧
       ∀ l : ℕ, CompletedGroup.projection l W.label = 1 ↔ c = 0 ∨ (l : ℤ) < d.degree n := by
-  let S : Submodule R L := ⨆ (m : Λ →+ ℤ)
-    (_ : ∀ v : Λ, i v ∈ (affineSpan ℝ J).direction → m v = 0), H.wall n m
-  have hmap : (⨆ (m : Λ →+ ℤ)
-      (_ : ∀ v : Λ, i v ∈ (affineSpan ℝ J).direction → m v = 0),
-      (H.truncated d k).wall n m) = S.map (d.degreeIdeal ℒ k).mkQ.toLinearMap := by
-    simp only [S, Submodule.map_iSup, H.truncated_wall]
-  obtain ⟨a, haS, hac⟩ := Submodule.mem_map.mp (hmap ▸ hc)
-  have hle : S ≤ ℒ n := iSup_le fun m => iSup_le fun _ => H.wall_le_piece n m
-  have ha : a ∈ ℒ n := hle haS
-  have haz : a = 0 ↔ c = 0 := by
-    constructor
-    · rintro rfl
-      simpa using hac.symm
-    · intro hc0
-      have hai := (d.degreeIdeal ℒ k).mkQ_eq_zero.mp (hac.trans hc0)
-      have hai' : a ∈ d.degreeSubmodule ℒ k := by
-        simpa only [← LieSubmodule.mem_toSubmodule, PositiveDegrees.degreeIdeal_toSubmodule]
-          using hai
-      exact ((d.mem_degreeSubmodule_of_mem_iff ℒ ha).mp hai').resolve_right (not_lt.mpr hnk)
-  obtain ⟨W, hs, hsr, hnW, hlabel, hout, hproj⟩ :=
-    exists_swept_correction_wall C hJ n hn htrans a haS
-  refine ⟨W, hs, hsr, hnW, ⟨a, ha, hlabel⟩, hout, ?_, ?_⟩
-  · rw [hlabel, PositiveDegrees.projection_expToCompletion, BCHGroup.log_exp, map_neg]
-    exact congrArg Neg.neg hac
-  · intro l
-    rw [hproj l, haz]
+  obtain ⟨m, hm, hker, hwall⟩ :=
+    (H.truncated d k).exists_joint_sweep_normal C hJ n htrans
+  have hcell := ((C.mem_cellsOfCodimension 2 J).mp hJ).1
+  obtain ⟨W, _, hW⟩ := exists_sweep_correction_wall_of_truncated_of_ker_eq (C.rational J hcell)
+    (C.nonempty J hcell) n hn htrans hm hker k hnk c (hwall hc)
+  exact ⟨W, hW⟩
+
+/-- Realize a retained homogeneous coefficient as an outgoing swept wall whose
+integral normal agrees with the contraction orientation of the swept cell.
+The input equation may have either sign or any nonzero integral scale.
+The logarithm is the negative coefficient, and the active cutoffs are exact,
+including when the coefficient is zero. -/
+theorem exists_cooriented_sweep [Module.Free ℤ Γ]
+    (σ : OrientedCell h 2) {n : Γ} (hn : n ∈ d.monoid)
+    (htrans : i (ρ n) ∉ (affineSpan ℝ σ.carrier).direction)
+    (m₀ : Λ →+ ℤ)
+    (h₀ : (h.realCharacter m₀).ker =
+      (affineSpan ℝ σ.carrier).direction ⊔ ℝ ∙ i (ρ n))
+    (k : ℕ) (hnk : d.degree n ≤ k) (c : d.truncatedLie ℒ k)
+    (hc : c ∈ (H.truncated d k).wall n m₀) :
+    ∃ W : DirectedWall (d := d) h H,
+      W.support = (σ.sweep (ρ n) htrans).carrier ∧
+      (∀ v : V, SignType.sign (h.realCharacter W.normal v) =
+        (σ.sweep (ρ n) htrans).orientation.evalSign (fun _ : Fin 1 => v)) ∧
+      n ∈ W.ray.rayDegrees ∧
+      (∃ a ∈ ℒ n, W.label = d.expToCompletion ℒ (-a)) ∧ W.Outgoing ∧
+      BCHGroup.log (CompletedGroup.projection k W.label) = -c ∧
+      ∀ l : ℕ, CompletedGroup.projection l W.label = 1 ↔
+        c = 0 ∨ (l : ℤ) < d.degree n := by
+  obtain ⟨m, hm, hker, hsign, hwall⟩ := H.exists_cooriented_sweep_normal σ (ρ n) htrans m₀ h₀
+  have hc' : c ∈ (H.truncated d k).wall n m := by
+    simpa only [H.truncated_wall, hwall] using hc
+  obtain ⟨W, hnormal, hs, _, hray, hpure, hout, hlog, hactive⟩ :=
+    exists_sweep_correction_wall_of_truncated_of_ker_eq σ.rational σ.nonempty n hn htrans
+      hm hker k hnk c hc'
+  refine ⟨W, ?_, ?_, hray, hpure, hout, hlog, hactive⟩
+  · simpa only [OrientedCell.sweep_carrier] using hs
+  · simpa only [hnormal] using hsign
 
 end Mei.DirectedWall

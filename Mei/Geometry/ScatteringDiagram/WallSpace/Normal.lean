@@ -6,6 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.ScatteringDiagram.WallSpace.Joint
+public import Mei.Geometry.Convex.PolyhedralComplex.Joint
 
 /-!
 # The wall normal of a transverse joint component
@@ -16,6 +17,9 @@ normal is `f v • g - g v • f`. Every wall space of this degree whose normal
 annihilates the joint lies in this single wall space. This does not require a
 primitive choice of normal, a basis, or saturation of the positive monoid.
 If the computed normal is zero, all these wall spaces are zero.
+For a transverse degree at a geometric joint, `exists_joint_sweep_normal`
+provides a nonzero normal to the swept direction whose wall space contains
+every wall space annihilating the joint.
 
 The result applies to homogeneous components of the nonlinear BCH remainder
 at a joint. It complements the conditional
@@ -77,6 +81,38 @@ theorem iSup_wall_eq_wall_of_inf_ker (f g : Λ →+ ℤ) {n : Γ}
       have hg : g v = 0 := hv.2
       simp [μ, hf, hg]
     exact le_iSup_of_le μ (le_iSup_of_le hμW le_rfl)
+
+section Geometry
+
+variable {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
+  {i : Λ →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
+
+/-- At a degree transverse to a joint, there is a nonzero integral normal to the
+swept direction whose wall space contains every wall space annihilating the joint. -/
+theorem exists_joint_sweep_normal
+    (C : FinitePolyhedralComplex h) {J : Set V} (hJ : J ∈ C.joints)
+    (n : Γ) (htrans : i (ρ n) ∉ (affineSpan ℝ J).direction) :
+    ∃ m : Λ →+ ℤ, m ≠ 0 ∧
+      (h.realCharacter m).ker = (affineSpan ℝ J).direction ⊔ ℝ ∙ i (ρ n) ∧
+      (⨆ (m : Λ →+ ℤ)
+        (_ : ∀ v : Λ, i v ∈ (affineSpan ℝ J).direction → m v = 0), H.wall n m) ≤
+        H.wall n m := by
+  obtain ⟨f, g, hdir, hm, hker⟩ := C.exists_joint_transverse_normal hJ (ρ n) htrans
+  have hmem (v : Λ) : i v ∈ (affineSpan ℝ J).direction ↔ v ∈ f.ker ⊓ g.ker := by
+    simp only [hdir, Submodule.mem_inf, LinearMap.mem_ker, h.realCharacter_apply,
+      Int.cast_eq_zero, AddSubgroup.mem_inf, AddMonoidHom.mem_ker]
+  have hnfg : ρ n ∉ f.ker ⊓ g.ker := fun hv => htrans ((hmem _).mpr hv)
+  refine ⟨f (ρ n) • g - g (ρ n) • f, hm, hker, ?_⟩
+  intro c hc
+  rw [← H.iSup_wall_eq_wall_of_inf_ker f g hnfg]
+  have hle : (⨆ (m : Λ →+ ℤ)
+      (_ : ∀ v : Λ, i v ∈ (affineSpan ℝ J).direction → m v = 0), H.wall n m) ≤
+      ⨆ (m : Λ →+ ℤ) (_ : ∀ v ∈ f.ker ⊓ g.ker, m v = 0), H.wall n m :=
+    iSup_le fun m => iSup_le fun hm => le_iSup_of_le m
+      (le_iSup_of_le (fun v hv => hm v ((hmem v).mpr hv)) le_rfl)
+  exact hle hc
+
+end Geometry
 
 variable [DecidableEq Γ] [DirectSum.Decomposition ℒ]
 

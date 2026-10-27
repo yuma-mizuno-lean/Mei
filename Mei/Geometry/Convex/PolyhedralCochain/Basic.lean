@@ -10,6 +10,7 @@ public import Mei.LinearAlgebra.Alternating.Conormal
 public import Mathlib.Analysis.Convex.Intrinsic
 public import Mathlib.LinearAlgebra.Finsupp.LSum
 public import Mathlib.LinearAlgebra.Quotient.Basic
+public import Mei.Algebra.BigOperators.Group.Finset.Involution
 
 /-!
 # Polyhedral cochains
@@ -293,6 +294,17 @@ theorem mk_reverse (σ : OrientedCell h k) (c : E) :
   rw [eq_neg_iff_add_eq_zero, ← ofFinsupp_single, ← ofFinsupp_single, ← map_add,
     ofFinsupp_eq_zero_iff]
   exact Submodule.subset_span (Or.inl ⟨σ, c, rfl⟩)
+
+/-- Indexed generators cancel when every occurrence `(j, σ)` is matched with a unique
+occurrence `(j', σ.reverse)` with `j' ≠ j`. The matching is a fixed-point-free involution
+(`Finset.sum_involution`), so no division by `2` is needed. -/
+theorem sum_mk_eq_zero_of_existsUnique_reverse {ι : Type*}
+    {S : Finset (Σ _ : ι, OrientedCell h k)}
+    (hS : ∀ x ∈ S, ∃! j : ι, ⟨j, x.2.reverse⟩ ∈ S ∧ j ≠ x.1) (c : E) :
+    ∑ x ∈ S, mk (R := R) x.2 c = 0 := by
+  exact S.sum_eq_zero_of_unique_partner OrientedCell.reverse
+    OrientedCell.reverse_reverse hS (fun σ => mk (R := R) σ c)
+    (fun σ => by rw [mk_reverse, add_neg_cancel])
 
 /-- The class of a generator is the sum of the classes of the pieces of an oriented subdivision. -/
 theorem mk_eq_sum_of_isOrientedSubdivision {σ : OrientedCell h k}

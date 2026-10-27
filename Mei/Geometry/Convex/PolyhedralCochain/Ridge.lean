@@ -20,8 +20,12 @@ In particular, a ridge of one boundary facet has at most one other incident
 facet, and its induced orientation there is reversed. The active-constraint
 construction `IsExposed.exists_second_facet_at_ridge` supplies that second
 facet and identifies their intersection with the ridge. Together these results
-supply the unique opposite incidence needed to cancel iterated boundary terms;
-assembling the cancelling sums remains a separate step.
+supply the unique opposite incidence needed to cancel iterated boundary terms
+(`OrientedCell.existsUnique_reverse_mem_boundaryFacets`). Consequently,
+`OrientedCell.sum_boundaryFacets_boundaryFacets_eq_zero` shows that the iterated
+signed facet sum vanishes for every abelian-group-valued function negated by
+orientation reversal. Its finite cancellation uses
+`Finset.sum_sum_eq_zero_of_unique_partner`, based on Mathlib's `Finset.sum_involution`.
 
 The comparison uses `IsExposed.facetOrientation_inter_eq_neg`, the canonical
 `OrientedCell.boundaryFacet`, and the orientation reversal relation
@@ -195,5 +199,32 @@ theorem exists_reverse_mem_boundaryFacets (σ : OrientedCell h k)
     apply hGF
     simpa only [υ, boundaryFacet_carrier, hτcarrier] using congrArg carrier he
   · simpa only [υ, boundaryFacet_carrier, hτcarrier, hrcarrier] using hinter
+
+/-- Every signed facet of a boundary facet occurs with reversed orientation in the
+boundary of exactly one other facet of the original cell. -/
+theorem existsUnique_reverse_mem_boundaryFacets (σ : OrientedCell h k)
+    {τ : OrientedCell h (k + 1)} (hτ : τ ∈ σ.boundaryFacets)
+    {r : OrientedCell h (k + 1 + 1)} (hr : r ∈ τ.boundaryFacets) :
+    ∃! υ : OrientedCell h (k + 1),
+      υ ∈ σ.boundaryFacets ∧ υ ≠ τ ∧ r.reverse ∈ υ.boundaryFacets := by
+  have hsub {υ : OrientedCell h (k + 1)} (hυ : r.reverse ∈ υ.boundaryFacets) :
+      r.carrier ⊆ υ.carrier := by
+    simpa only [reverse_carrier] using υ.carrier_subset_of_mem_boundaryFacets hυ
+  obtain ⟨υ, hυ, hne, hrυ⟩ := σ.exists_reverse_mem_boundaryFacets hτ hr
+  exact ⟨υ, ⟨hυ, hne, hrυ⟩, fun η ⟨hη, hηne, hrη⟩ =>
+    σ.eq_of_ridge_subset_of_ne hτ hη hυ hηne.symm hne.symm hr (hsub hrη) (hsub hrυ)⟩
+
+open Classical in
+/-- The iterated signed facet sum vanishes for every abelian-group-valued
+function that changes sign under orientation reversal. -/
+theorem sum_boundaryFacets_boundaryFacets_eq_zero (σ : OrientedCell h k)
+    {A : Type*} [AddCommGroup A] (f : OrientedCell h (k + 1 + 1) → A)
+    (hf : ∀ r, f r.reverse = -f r) :
+    (∑ τ ∈ σ.boundaryFacets, ∑ r ∈ τ.boundaryFacets, f r) = 0 := by
+  classical
+  exact σ.boundaryFacets.sum_sum_eq_zero_of_unique_partner
+    (fun τ => τ.boundaryFacets) reverse reverse_reverse
+    (fun _ hτ _ hr => σ.existsUnique_reverse_mem_boundaryFacets hτ hr)
+    f (fun r => by rw [hf, add_neg_cancel])
 
 end Mei.OrientedCell

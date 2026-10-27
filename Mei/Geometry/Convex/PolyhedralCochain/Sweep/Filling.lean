@@ -77,11 +77,9 @@ theorem exists_sweep_presentation (n : N) (f : OrientedCell h (k + 1) →₀ E)
   refine ⟨g, ?_, ?_, ?_⟩
   · rw [sweep_ofFinsupp n f hf]
     simp only [g, map_sum, ofFinsupp_single]
-  · rw [htrans, map_sum]
-    simp only [map_sum, coboundaryOfFinsupp_single]
-    rw [← Finset.sum_add_distrib]
-    simp only [OrientedCell.cellCoboundary_sweep_add_sweep_cellCoboundary,
-      Finset.sum_neg_distrib, ← hbase]
+  · rw [htrans, hbase]
+    exact coboundaryOfFinsupp_sum_sweep_add_sweep_sum_cellCoboundary n
+      (fun σ : f.support => σ.val) (fun σ => hf σ.val σ.property) (fun σ => f σ.val)
   · intro τ hτ
     dsimp only [g] at hτ
     obtain ⟨σ, _, hσ⟩ := Finsupp.mem_support_finsetSum τ hτ
