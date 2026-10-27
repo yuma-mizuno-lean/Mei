@@ -31,9 +31,9 @@ public section
 
 noncomputable section
 
-namespace TauCeti.NodeAlgebra
+namespace Mei.NodeAlgebra
 
-open AddMonoidAlgebra Module
+open TauCeti TauCeti.NodeAlgebra AddMonoidAlgebra Module
 
 variable {R : Type*} [CommRing R] (a : R)
 
@@ -117,10 +117,11 @@ private theorem normalCoeff_normalMonomial (i j : ℕ ⊕ ℕ) :
     | inr m => simp [normalCoeff, rightLaurentMap_normalMonomial, eq_comm]
 
 private theorem linearIndependent_normalMonomial : LinearIndependent R (normalMonomial a) := by
-  rw [linearIndependent_iff']
-  intro s c h i hi
-  have hcoeff := congrArg (normalCoeff a i) h
-  simpa [map_sum, normalCoeff_normalMonomial, hi] using hcoeff
+  apply LinearIndependent.of_pairwise_dual_eq_zero_one (normalMonomial a) (normalCoeff a)
+  · intro i j hij
+    simp [normalCoeff_normalMonomial, hij.symm]
+  · intro i
+    simp [normalCoeff_normalMonomial]
 
 private theorem span_normalMonomial :
     ⊤ ≤ Submodule.span R (Set.range (normalMonomial a)) := by
@@ -184,15 +185,18 @@ theorem normalFormBasis_inr (n : ℕ) :
 
 private theorem normalFormBasis_repr_eq (z : NodeAlgebra R a) (i : ℕ ⊕ ℕ) :
     (normalFormBasis a).repr z i = normalCoeff a i z := by
-  have h : (Finsupp.lapply i).comp (normalFormBasis a).repr.toLinearMap =
-      normalCoeff a i := by
-    apply (normalFormBasis a).ext
-    intro j
+  refine (normalFormBasis a).repr_apply_eq (fun z i => normalCoeff a i z) ?_ ?_ ?_ z i
+  · intro x y
+    ext j
+    exact map_add (normalCoeff a j) x y
+  · intro r x
+    ext j
+    exact map_smul (normalCoeff a j) r x
+  · intro j
+    ext k
     have hj : normalFormBasis a j = normalMonomial a j := Basis.mk_apply _ _ _
-    simp only [LinearMap.comp_apply, LinearEquiv.coe_coe, Finsupp.lapply_apply]
-    rw [Basis.repr_self, hj, normalCoeff_normalMonomial]
-    simp [Finsupp.single_apply, eq_comm]
-  exact LinearMap.congr_fun h z
+    rw [hj, normalCoeff_normalMonomial]
+    simp [Finsupp.single_apply]
 
 /-- The first chamber's coefficient of `z^n` recovers the coefficient of `X^n`. -/
 @[simp]
@@ -220,4 +224,4 @@ theorem laurentMaps_jointly_injective :
   | inl n => simp only [normalFormBasis_repr_inl, hl]
   | inr n => simp only [normalFormBasis_repr_inr, hr]
 
-end TauCeti.NodeAlgebra
+end Mei.NodeAlgebra
