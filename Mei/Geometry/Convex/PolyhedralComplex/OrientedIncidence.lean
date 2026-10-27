@@ -19,7 +19,9 @@ well defined on oriented wall cells.
 
 The construction uses `FinitePolyhedralComplex.existsUnique_cell_of_transverse_ray`
 for one crossing, then `Convex.eventually_add_smul_mem_interior_of_ker_le` to extend
-its chamber to all positive transverse crossings. Ordinary interiors are the actual
+its chamber to all positive transverse crossings. The pair's distinctness and intersection
+come from `FinitePolyhedralComplex.exists_transverse_wall_chambers`.
+Ordinary interiors are the actual
 chambers by `FinitePolyhedralComplex.connectedComponentIn_compl_support_codimensionAtLeast_one`.
 Only a neighborhood of one relative interior point must be covered by the complex.
 Unbounded cells, lineality and arbitrary real offsets are allowed.
@@ -101,9 +103,9 @@ theorem exists_cooriented_wall_chambers (C : FinitePolyhedralComplex h)
       ∀ q ∈ intrinsicInterior ℝ P, ∀ v : V, 0 < ν v →
         ∀ᶠ t : ℝ in 𝓝[>] 0,
           q - t • v ∈ interior Qminus ∧ q + t • v ∈ interior Qplus := by
-  obtain ⟨Qplus, ⟨hp, hPp, hplus⟩, -⟩ :=
+  obtain ⟨Qplus, ⟨hp, _, hplus⟩, -⟩ :=
     C.existsUnique_cell_of_positive_transverse_rays hP ν hν hcover
-  obtain ⟨Qminus, ⟨hm, hPm, hminus⟩, -⟩ :=
+  obtain ⟨Qminus, ⟨hm, _, hminus⟩, -⟩ :=
     C.existsUnique_cell_of_positive_transverse_rays hP (-ν) (by simpa using hν) hcover
   have hall : ∀ q ∈ intrinsicInterior ℝ P, ∀ v : V, 0 < ν v →
       ∀ᶠ t : ℝ in 𝓝[>] 0,
@@ -111,32 +113,30 @@ theorem exists_cooriented_wall_chambers (C : FinitePolyhedralComplex h)
     intro q hq v hv
     simpa only [LinearMap.neg_apply, map_neg, neg_neg, smul_neg, sub_eq_add_neg] using
       (hminus q hq (-v) (by simpa using hv)).and (hplus q hq v hv)
-  have hne : Qminus ≠ Qplus := by
-    intro heq
-    obtain ⟨q, hq, -⟩ := hcover
-    have hνne : ν ≠ 0 := by
-      intro hz
-      have hd := C.finrank_direction_add_one_of_mem_walls hP
-      rw [← hν, hz, LinearMap.ker_zero, finrank_top] at hd
-      omega
-    obtain ⟨v, hv⟩ := LinearMap.surjective hνne 1
-    obtain ⟨t, ht⟩ := (hall q hq v (by rw [hv]; exact zero_lt_one)).exists
-    rw [heq] at ht
-    have hqi : q ∈ interior Qplus :=
-      (C.isConvexPolyhedron ((C.mem_cellsOfCodimension 0 Qplus).mp hp).1).convex
-        |>.openSegment_interior_self_subset_interior ht.1 (interior_subset ht.2)
-          (_root_.mem_openSegment_sub_add (𝕜 := ℝ) q _)
-    exact C.interior_subset_compl_support_codimensionAtLeast_one hp hqi
-      (mem_support.mpr ⟨P,
-        C.cellsOfCodimension_subset_codimensionAtLeast_cells 1 hP, intrinsicInterior_subset hq⟩)
-  refine ⟨Qminus, hm, Qplus, hp, hne, ?_, hall⟩
-  apply C.inter_eq_of_common_facet (C.mem_cells_of_mem_walls hP)
-    ((C.mem_cellsOfCodimension 0 Qminus).mp hm).1
-    ((C.mem_cellsOfCodimension 0 Qplus).mp hp).1 hPm hPp hne
-  all_goals
-    have hdP := C.finrank_direction_add_one_of_mem_walls hP
-    have hdm := ((C.mem_cellsOfCodimension 0 Qminus).mp hm).2
-    have hdp := ((C.mem_cellsOfCodimension 0 Qplus).mp hp).2
+  -- Identify the simultaneous pair with the pair at one covered transverse crossing.
+  obtain ⟨q, hq, hcover⟩ := hcover
+  have hνne : ν ≠ 0 := by
+    intro hz
+    have hd := C.finrank_direction_add_one_of_mem_walls hP
+    rw [← hν, hz, LinearMap.ker_zero, finrank_top] at hd
     omega
+  obtain ⟨v, hv⟩ := LinearMap.surjective hνne 1
+  have hvtrans : v ∉ (affineSpan ℝ P).direction := by
+    rw [← hν, LinearMap.mem_ker, hv]
+    exact one_ne_zero
+  obtain ⟨Rminus, hRm, Rplus, hRp, hne, hinter, ε, hε, hshort⟩ :=
+    C.exists_transverse_wall_chambers hP hq hcover hvtrans
+  obtain ⟨t, ht, htε⟩ :=
+    ((hall q hq v (by rw [hv]; exact zero_lt_one)).and (Ioo_mem_nhdsGT hε)).exists
+  have heqm : Rminus = Qminus := C.eq_of_mem_intrinsicInterior
+    ((C.mem_cellsOfCodimension 0 Rminus).mp hRm).1
+    ((C.mem_cellsOfCodimension 0 Qminus).mp hm).1
+    (hshort t htε).1 (interior_subset_intrinsicInterior ht.1)
+  have heqp : Rplus = Qplus := C.eq_of_mem_intrinsicInterior
+    ((C.mem_cellsOfCodimension 0 Rplus).mp hRp).1
+    ((C.mem_cellsOfCodimension 0 Qplus).mp hp).1
+    (hshort t htε).2 (interior_subset_intrinsicInterior ht.2)
+  subst Rminus Rplus
+  exact ⟨Qminus, hm, Qplus, hp, hne, hinter, hall⟩
 
 end Mei.FinitePolyhedralComplex
