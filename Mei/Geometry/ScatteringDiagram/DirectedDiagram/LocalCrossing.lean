@@ -98,6 +98,49 @@ theorem combinedLabel_eq_prod (k : ℕ) (θ v : V)
   exact (Finset.noncommProd_congr hs (fun _ _ => rfl) _).trans
     (Finset.noncommProd_toFinset l _ _ hl)
 
+/-- Lowering the cutoff projects a regular combined label to the combined label
+of the surviving walls, for every vector `v`. Walls killed by truncation
+contribute no factor. -/
+theorem truncation_combinedLabel {k l : ℕ} (hkl : k ≤ l) (θ v : V)
+    (hl : θ ∉ singularSupport (fun j : D.active l => (D.wall j).support))
+    (hk : θ ∉ singularSupport (fun j : D.active k => (D.wall j).support)) :
+    (d.truncationMap ℒ hkl).bchGroupMap (D.combinedLabel l θ v hl) =
+      D.combinedLabel k θ v hk := by
+  classical
+  let S := (Set.toFinite {j : D.active l | θ ∈ (D.wall j).support}).toFinset
+  let T := (Set.toFinite {j : D.active k | θ ∈ (D.wall j).support}).toFinset
+  let emb : D.active k ↪ D.active l :=
+    ⟨Set.inclusion (D.active_mono hkl), Set.inclusion_injective _⟩
+  have hs : T.map emb ⊆ S := by
+    intro a ha
+    obtain ⟨b, hb, rfl⟩ := Finset.mem_map.mp ha
+    simpa [S, T, emb] using hb
+  have hz : ∀ a ∈ S, a ∉ T.map emb →
+      CompletedGroup.projection k (D.wall a).label ^
+        (if 0 < h.realCharacter (D.wall a).normal v then -1 else 1 : ℤ) = 1 := by
+    intro a ha hnot
+    have hinactive : a.val ∉ D.active k := by
+      intro hak
+      apply hnot
+      exact Finset.mem_map.mpr ⟨⟨a.val, hak⟩, by simpa [T, S] using ha, rfl⟩
+    have hone : CompletedGroup.projection k (D.wall a).label = 1 := by
+      simpa only [mem_active, not_not] using hinactive
+    simp only [hone, one_zpow]
+  -- Use the tower group instances to map the unordered product; the tower
+  -- transition is the BCH truncation map, as in `groupTower_map_hom`.
+  let F := ((d.groupTower ℒ).map (CategoryTheory.homOfLE hkl).op).hom
+  have hproj (a : D.active l) : F (CompletedGroup.projection l (D.wall a).label) =
+      CompletedGroup.projection k (D.wall a).label :=
+    CompletedGroup.map_projection k l hkl (D.wall a).label
+  unfold combinedLabel
+  -- This exposes the tower homomorphism to the generic product-mapping lemma.
+  change F (S.noncommProd _ _) = T.noncommProd _ _
+  refine (Finset.map_noncommProd S _ _ F).trans ?_
+  simp only [map_zpow, hproj]
+  generalize_proofs _ hcS hcT
+  exact ((Finset.noncommProd_map T emb _ (hcS.mono (Finset.coe_subset.mpr hs))).symm.trans
+    (Finset.noncommProd_subset hs _ hcS hz)).symm
+
 /-- A point on no active wall has trivial combined label. -/
 @[simp]
 theorem combinedLabel_eq_one_of_forall_notMem (k : ℕ) (θ v : V)

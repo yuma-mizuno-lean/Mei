@@ -6,7 +6,6 @@ Authors: Codex
 module
 
 public import Mei.Geometry.ScatteringDiagram.WallSpace.Joint
-public import Mei.Algebra.Group.Hom.Int
 
 /-!
 # The wall normal of a transverse joint component

@@ -130,6 +130,39 @@ theorem facetOrientation_eq_iff_contract (hF : IsExposed K P F) (hne : F.Nonempt
       exact hnF)), hF.contract_facetOrientation hne hdim o ho hk n hn]
   exact eq_comm
 
+/-- Any exposing functional computes the signed facet orientation by prepending
+its covector and negating the wedge. The parent orientation has top conormal
+degree, as expressed by the dimension of the facet's normal quotient. -/
+theorem facetOrientation_eq_neg_wedgeCovector (hF : IsExposed K P F) (hne : F.Nonempty)
+    (hdim : finrank K (vectorSpan K F) + 1 = finrank K (vectorSpan K P))
+    (o : Module.Ray K (V [⋀^Fin k]→ₗ[K] K)) (ho : o.IsConormal (vectorSpan K P))
+    (hk : finrank K (V ⧸ vectorSpan K F) = k + 1)
+    (l : V →L[K] K) (hl : F = l.toExposed P)
+    (hlW : ∃ n ∈ vectorSpan K P, l n ≠ 0) :
+    hF.facetOrientation hne hdim o ho = -o.wedgeCovector ho l.toLinearMap hlW := by
+  have hproper : F ≠ P := by
+    intro heq
+    rw [heq] at hdim
+    omega
+  obtain ⟨x, hx, hxF⟩ := Set.exists_of_ssubset (lt_of_le_of_ne hF.subset hproper)
+  obtain ⟨y, hy⟩ := hne
+  let v : vectorSpan K P := ⟨y - x, vsub_mem_vectorSpan K (hF.subset hy) hx⟩
+  have hpos := (hF.outwardNormal_apply_pos_iff ⟨y, hy⟩ hdim hx hy).mpr hxF
+  have hlpos : 0 < l v := by
+    have hy' : y ∈ l.toExposed P := hl ▸ hy
+    have hlt : l x < l y := lt_of_le_of_ne (hy'.2 x hx) (fun he =>
+      hxF (hl ▸ (l.mem_toExposed_iff_of_mem hy').mpr ⟨hx, he⟩))
+    simpa only [v, ContinuousLinearMap.map_sub] using sub_pos.mpr hlt
+  have hle : vectorSpan K F ≤ l.toLinearMap.ker := by
+    rw [hl]
+    exact l.vectorSpan_toExposed_le_ker P
+  have hw := o.isConormal_wedgeCovector ho l.toLinearMap hlW
+    (vectorSpan_mono K hF.subset) hle
+  apply (hF.facetOrientation_eq_iff_contract ⟨y, hy⟩ hdim o ho _
+    (Module.Ray.isConormal_neg_iff.mpr hw) hk v hpos).mpr
+  rw [Module.Ray.contract_neg _ hw, o.contract_wedgeCovector ho l.toLinearMap hlW
+    (vectorSpan_mono K hF.subset) hle hk v.property hlpos]
+
 omit [FiniteDimensional K (vectorSpan K P)] in
 /-- Reversing the parent orientation reverses the induced facet orientation. -/
 @[simp]

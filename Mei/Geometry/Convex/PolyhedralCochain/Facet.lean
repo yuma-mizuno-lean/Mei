@@ -24,13 +24,17 @@ covector and forms the signed wedge with the parent's conormal orientation.
 The contraction characterization proves independence of the outward vector
 and determines the oriented facet uniquely. `boundaryFacet_orientation` identifies
 it with the general ordered-field construction `IsExposed.facetOrientation`.
+Equally oriented cells induce opposite boundary orientations on a common facet
+exposed by opposite functionals, as computed by
+`IsExposed.facetOrientation_eq_neg_wedgeCovector`. In particular, the common
+slice of a hyperplane cut occurs with opposite orientations in both facet families.
 No inner product, boundedness,
 salience or full-dimensionality is assumed.
 -/
 
 public section
 
-open Module
+open Module Set
 
 noncomputable section
 
@@ -295,11 +299,7 @@ theorem boundaryFacet_orientation_eq_of_subset (σ π : OrientedCell h k)
   have := h.finiteDimensional
   -- Equal codimensions identify the parent and facet directions.
   have hdP : vectorSpan ℝ π.carrier = vectorSpan ℝ σ.carrier := by
-    apply Submodule.eq_of_le_of_finrank_eq (vectorSpan_mono ℝ hπ)
-    have hσk := σ.finrank_direction_add
-    have hπk := π.finrank_direction_add
-    rw [direction_affineSpan] at hσk hπk
-    omega
+    simpa only [direction_affineSpan] using π.direction_eq_of_subset σ hπ
   have hdF : vectorSpan ℝ G = vectorSpan ℝ F :=
     Submodule.eq_of_le_of_finrank_eq (vectorSpan_mono ℝ hGF) (by rw [hdP] at hGd; omega)
   -- A vector towards the smaller facet points outwards for both parents.
@@ -337,5 +337,92 @@ theorem boundaryFacet_orientation_eq_of_subset (σ π : OrientedCell h k)
       (by simpa only [boundaryFacet_carrier, direction_affineSpan, ← hdF] using hv) hposF
     simpa only [τ, boundaryFacet_carrier, direction_affineSpan, hdF, ho] using hc
   exact (congrArg orientation he).symm
+
+/-- Equally oriented cells with the same tangent direction induce opposite
+signed orientations on a facet exposed by opposite functionals. -/
+theorem boundaryFacet_eq_reverse_of_toExposed (σ τ : OrientedCell h k)
+    {F : Set V} (hF : IsExposed ℝ σ.carrier F) (hG : IsExposed ℝ τ.carrier F)
+    (hne : F.Nonempty)
+    (hdim : finrank ℝ (vectorSpan ℝ F) + 1 = finrank ℝ (vectorSpan ℝ σ.carrier))
+    (hd : vectorSpan ℝ σ.carrier = vectorSpan ℝ τ.carrier)
+    (ho : σ.orientation = τ.orientation)
+    (l : V →L[ℝ] ℝ) (hl : F = l.toExposed σ.carrier)
+    (hm : F = (-l).toExposed τ.carrier) :
+    σ.boundaryFacet hF hne hdim =
+      (τ.boundaryFacet hG hne (by rw [← hd]; exact hdim)).reverse := by
+  have := h.finiteDimensional
+  have hlW : ∃ n ∈ vectorSpan ℝ σ.carrier, l n ≠ 0 := by
+    by_contra hn
+    apply l.comp_vectorSpan_ne_zero (hl ▸ hne) (by
+      rw [← hl]
+      intro he
+      rw [he] at hdim
+      omega)
+    ext v
+    simpa only [ContinuousLinearMap.coe_coe, LinearMap.comp_apply,
+      Submodule.subtype_apply, LinearMap.zero_apply] using
+      not_not.mp (fun hv => hn ⟨v, v.property, hv⟩)
+  have hmW : ∃ n ∈ vectorSpan ℝ τ.carrier, (-l) n ≠ 0 := by
+    simpa only [← hd, neg_apply, neg_ne_zero] using hlW
+  have hk := (σ.boundaryFacet hF hne hdim).finrank_quotient_direction
+  rw [boundaryFacet_carrier, direction_affineSpan] at hk
+  apply OrientedCell.ext (by simp only [boundaryFacet_carrier, reverse_carrier])
+  rw [reverse_orientation, σ.boundaryFacet_orientation, τ.boundaryFacet_orientation,
+    hF.facetOrientation_eq_neg_wedgeCovector hne hdim σ.orientation
+      (by simpa only [direction_affineSpan] using σ.isConormal) hk l hl hlW,
+    hG.facetOrientation_eq_neg_wedgeCovector hne (by rw [← hd]; exact hdim) τ.orientation
+      (by simpa only [direction_affineSpan] using τ.isConormal) hk (-l) hm hmW]
+  simp only [← ho, ← hd, ContinuousLinearMap.toLinearMap_neg]
+  rw [Module.Ray.wedgeCovector_neg_right, neg_neg]
+
+/-- The common slice of a hyperplane cut occurs in both signed facet families,
+with opposite orientations, when the two pieces have the same orientation. -/
+theorem exists_boundaryFacet_cut_reverse (σ σ₁ σ₂ : OrientedCell h k)
+    (l : V →L[ℝ] ℝ) (a : ℝ)
+    (hminus : σ₁.carrier = σ.carrier ∩ {x | l x ≤ a})
+    (hplus : σ₂.carrier = σ.carrier ∩ {x | a ≤ l x})
+    (ho : σ₁.orientation = σ₂.orientation)
+    (hne : (σ.carrier ∩ {x | l x = a}).Nonempty)
+    (hdim : finrank ℝ (vectorSpan ℝ (σ.carrier ∩ {x | l x = a})) + 1 =
+      finrank ℝ (vectorSpan ℝ σ.carrier)) :
+    ∃ υ ∈ σ₁.boundaryFacets, υ.carrier = σ.carrier ∩ {x | l x = a} ∧
+      υ.reverse ∈ σ₂.boundaryFacets := by
+  have := h.finiteDimensional
+  have hdminus : vectorSpan ℝ σ₁.carrier = vectorSpan ℝ σ.carrier := by
+    simpa only [direction_affineSpan] using
+      σ₁.direction_eq_of_subset σ (by rw [hminus]; exact inter_subset_left)
+  have hdplus : vectorSpan ℝ σ₂.carrier = vectorSpan ℝ σ.carrier := by
+    simpa only [direction_affineSpan] using
+      σ₂.direction_eq_of_subset σ (by rw [hplus]; exact inter_subset_left)
+  let F := σ.carrier ∩ {x | l x = a}
+  have hl : F = l.toExposed σ₁.carrier := by
+    rw [hminus, l.toExposed_inter_le σ.carrier a hne]
+  have hm : F = (-l).toExposed σ₂.carrier := by
+    have hne' : (σ.carrier ∩ {x | (-l) x = -a}).Nonempty := by
+      simpa only [neg_apply, neg_inj] using hne
+    have he := (-l).toExposed_inter_le σ.carrier (-a) hne'
+    simpa only [neg_apply, neg_le_neg_iff, neg_inj, ← hplus] using he.symm
+  have hF : IsExposed ℝ σ₁.carrier F := by
+    rw [hl]
+    exact ContinuousLinearMap.toExposed.isExposed
+  have hG : IsExposed ℝ σ₂.carrier F := by
+    rw [hm]
+    exact ContinuousLinearMap.toExposed.isExposed
+  have hdm : finrank ℝ (vectorSpan ℝ F) + 1 = finrank ℝ (vectorSpan ℝ σ₁.carrier) := by
+    rw [hdminus]
+    exact hdim
+  have hdp : finrank ℝ (vectorSpan ℝ F) + 1 = finrank ℝ (vectorSpan ℝ σ₂.carrier) := by
+    rw [hdplus]
+    exact hdim
+  let υ := σ₁.boundaryFacet hF hne hdm
+  have hυ : υ ∈ σ₁.boundaryFacets := σ₁.boundaryFacet_mem_boundaryFacets hF hne hdm
+  have he : σ₂.boundaryFacet hG hne hdp = υ.reverse := by
+    have hr := σ₁.boundaryFacet_eq_reverse_of_toExposed σ₂ hF hG hne hdm
+      (hdminus.trans hdplus.symm) ho l hl hm
+    simpa only [reverse_reverse] using congrArg reverse hr.symm
+  have hυr : υ.reverse ∈ σ₂.boundaryFacets := by
+    rw [← he]
+    exact σ₂.boundaryFacet_mem_boundaryFacets hG hne hdp
+  exact ⟨υ, hυ, by simp only [υ, boundaryFacet_carrier, F], hυr⟩
 
 end Mei.OrientedCell
