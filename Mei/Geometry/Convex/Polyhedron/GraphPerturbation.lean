@@ -38,16 +38,20 @@ include hpoly hdim
 open Classical in
 /-- Choose the vertices indexed by `T` in prescribed open sets, retaining all
 other positions. Every segment involving a newly chosen vertex and any vertex
-indexed by `S ∪ T` is admissible. Original positions indexed by `S` avoid the walls. -/
+indexed by `S ∪ T` is admissible. Only original positions indexed by `S \ T`
+must avoid the walls. -/
 theorem exists_mem_open_admissible_vertices
     (x : A → V) (S T : Finset A)
-    (hfixed : ∀ a ∈ S, ∀ i, x a ∉ W i) (U : A → Set V)
+    (hfixed : ∀ a ∈ S \ T, ∀ i, x a ∉ W i) (U : A → Set V)
     (hU : ∀ a ∈ T, IsOpen (U a)) (hne : ∀ a ∈ T, (U a).Nonempty) :
     ∃ y : A → V, (∀ a ∉ T, y a = x a) ∧ (∀ a ∈ T, y a ∈ U a) ∧
       (∀ a ∈ S ∪ T, ∀ i, y a ∉ W i) ∧
       ∀ a ∈ S ∪ T, ∀ b ∈ S ∪ T, a ∈ T ∨ b ∈ T →
         (y a, y b) ∈ admissiblePairs W := by
   classical
+  -- Only vertices outside the free set retain their original positions.
+  rw [← Finset.sdiff_union_self_eq_union (s := S) (t := T)]
+  generalize S \ T = R at hfixed ⊢
   -- Insert one free vertex at a time, connecting it to the entire previously chosen family.
   induction T using Finset.induction_on with
   | empty =>
@@ -57,7 +61,7 @@ theorem exists_mem_open_admissible_vertices
     obtain ⟨y, hyfix, hyU, hyallowed, hypairs⟩ := ih
       (fun b hb => hU b (Finset.mem_insert_of_mem hb))
       (fun b hb => hne b (Finset.mem_insert_of_mem hb))
-    let p : (S ∪ T : Finset A) → WallComplement W :=
+    let p : (R ∪ T : Finset A) → WallComplement W :=
       fun b => ⟨y b, hyallowed b b.property⟩
     obtain ⟨z, hzU, hz⟩ := WallComplement.exists_mem_open_admissible_spokes W hpoly hdim p
       (hU a (Finset.mem_insert_self a T)) (hne a (Finset.mem_insert_self a T))
@@ -74,7 +78,7 @@ theorem exists_mem_open_admissible_vertices
       by_cases hba : b = a
       · subst b
         simpa using z.notMem i
-      · have hb' : b ∈ S ∪ T := by simpa [hba] using hb
+      · have hb' : b ∈ R ∪ T := by simpa [hba] using hb
         simpa [hba] using hyallowed b hb' i
     -- Only incidences involving the new vertex need new segments.
     · intro b hb c hc hfree
@@ -88,16 +92,16 @@ theorem exists_mem_open_admissible_vertices
               (singularSupport_subset_iUnion W (fun i => (hpoly i).isClosed) hs)
             exact z.notMem i hi
           simpa using (mem_admissiblePairs_iff z z).mpr (.refl z hregular)
-        · have hc' : c ∈ S ∪ T := by simpa [hca] using hc
+        · have hc' : c ∈ R ∪ T := by simpa [hca] using hc
           obtain ⟨e⟩ := hz ⟨c, hc'⟩
           simpa [hca, p] using (mem_admissiblePairs_iff z (p ⟨c, hc'⟩)).mpr e.down
       · by_cases hca : c = a
         · subst c
-          have hb' : b ∈ S ∪ T := by simpa [hba] using hb
+          have hb' : b ∈ R ∪ T := by simpa [hba] using hb
           obtain ⟨e⟩ := hz ⟨b, hb'⟩
           simpa [hba, p] using (mem_admissiblePairs_iff (p ⟨b, hb'⟩) z).mpr e.down.symm
-        · have hb' : b ∈ S ∪ T := by simpa [hba] using hb
-          have hc' : c ∈ S ∪ T := by simpa [hca] using hc
+        · have hb' : b ∈ R ∪ T := by simpa [hba] using hb
+          have hc' : c ∈ R ∪ T := by simpa [hca] using hc
           have hf : b ∈ T ∨ c ∈ T := by simpa [hba, hca] using hfree
           simpa [hba, hca] using hypairs b hb' c hc' hf
 
@@ -117,7 +121,8 @@ theorem exists_admissible_graph_perturbation [Finite A]
   let := Fintype.ofFinite A
   obtain ⟨y, hyfix, hyball, hyallowed, hypairs⟩ :=
     exists_mem_open_admissible_vertices W hpoly hdim x S (Finset.univ \ S)
-      hfixed (fun a => Metric.ball (x a) (ε a))
+      (fun a ha => hfixed a (Finset.mem_sdiff.mp ha).1)
+      (fun a => Metric.ball (x a) (ε a))
       (fun _ _ => Metric.isOpen_ball) (fun a _ => Metric.nonempty_ball.mpr (hε a))
   have hsame (a) (ha : a ∈ S) : y a = x a := hyfix a (by simp [ha])
   refine ⟨y, hsame, ?_, ?_, ?_⟩
