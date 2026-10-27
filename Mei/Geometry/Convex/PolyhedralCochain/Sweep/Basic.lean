@@ -47,19 +47,11 @@ def sweep (σ : OrientedCell h (k + 1)) (n : N)
   have := h.finiteDimensional
   refine
     { carrier := Convex.sweep σ.carrier (i n)
-      rational := ?_
+      rational := σ.rational.sweep n
       nonempty := Convex.sweep_nonempty σ.nonempty (i n)
       finrank_direction_add := ?_
       orientation := σ.orientation.contract σ.isConormal σ.finrank_quotient_direction (i n) hn
       isConormal := ?_ }
-  · convert σ.rational.negRay n using 1
-    ext y
-    rw [Convex.mem_sweep_iff_exists]
-    constructor
-    · rintro ⟨x, hx, t, ht, rfl⟩
-      exact ⟨t, ht, by simpa using hx⟩
-    · rintro ⟨t, ht, hx⟩
-      exact ⟨y + t • i n, hx, t, ht, by simp⟩
   · rw [direction_affineSpan, Convex.finrank_sweep σ.nonempty
       (by simpa [direction_affineSpan] using hn)]
     have := σ.finrank_direction_add

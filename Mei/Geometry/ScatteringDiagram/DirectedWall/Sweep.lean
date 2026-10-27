@@ -74,15 +74,7 @@ def ofSweep (P : Set V) (hP : P.Nonempty) (hPrat : IsRationalNormalPolyhedron h 
     exact (mul_eq_zero.mp hmn).resolve_left (ne_of_gt ha)
   support := sweep P (i (ρ n))
   support_nonempty := sweep_nonempty hP _
-  rational_support := by
-    convert hPrat.negRay (ρ n) using 1
-    ext y
-    rw [mem_sweep_iff_exists]
-    constructor
-    · rintro ⟨x, hx, t, ht, rfl⟩
-      exact ⟨t, ht, by simpa using hx⟩
-    · rintro ⟨t, ht, hy⟩
-      exact ⟨y + t • i (ρ n), hy, t, ht, by simp⟩
+  rational_support := hPrat.sweep (ρ n)
   direction_support := by
     rw [direction_affineSpan, vectorSpan_sweep hP, ← direction_affineSpan, hker]
   label := d.expToCompletion ℒ (-c)
@@ -137,6 +129,28 @@ theorem ofSweep_outgoing (P : Set V) (hP : P.Nonempty)
   intro hrec
   exact hnot ((W.incoming_iff_of_mem_rayDegrees hray).mp
     (W.incoming_iff.mpr (mem_recessionCone.mp hrec)))
+
+/-- A transverse swept polyhedron with a homogeneous wall coefficient gives an
+actual outgoing wall. Its normal, supported ray, support and label are prescribed,
+and it is invisible below the coefficient's degree. -/
+theorem exists_outgoing_sweep {P : Set V} (hP : IsRationalNormalPolyhedron h P)
+    (hne : P.Nonempty) {n : Γ} {w : SupportedRay d} (hn : n ∈ w.rayDegrees)
+    (htrans : i (ρ n) ∉ (affineSpan ℝ P).direction)
+    {m : Λ →+ ℤ} (hm : m ≠ 0)
+    (hker : (h.realCharacter m).ker = (affineSpan ℝ P).direction ⊔ ℝ ∙ i (ρ n))
+    {a : L} (ha : a ∈ H.wall n m) :
+    ∃ W : DirectedWall (d := d) h H,
+      W.normal = m ∧ W.ray = w ∧ W.support = Convex.sweep P (i (ρ n)) ∧
+      W.label = d.expToCompletion ℒ a ∧ W.Outgoing ∧
+      ∀ l : ℕ, (l : ℤ) < d.degree n → CompletedGroup.projection l W.label = 1 := by
+  let W := ofSweep P hne hP w n hn m hm hker (-a) ((H.wall n m).neg_mem ha)
+  refine ⟨W, ofSweep_normal .., ofSweep_ray .., ofSweep_support .., ?_,
+    ofSweep_outgoing _ _ _ _ _ _ _ _ _ _ _ htrans, ?_⟩
+  · rw [ofSweep_label, neg_neg]
+  · intro l hl
+    rw [ofSweep_label, d.projection_expToCompletion_eq_one_iff ℒ
+      (H.wall_le_piece _ _ ((H.wall n m).neg_mem ((H.wall n m).neg_mem ha)))]
+    exact Or.inr hl
 
 /-- Every transverse joint coefficient produces an outgoing wall with pure birth
 logarithm. If the coefficient is nonzero, its first active order is exactly its

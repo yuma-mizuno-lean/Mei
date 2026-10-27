@@ -6,6 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.Convex.Polyhedron.Rational
+public import Mei.Geometry.Convex.Sweep
 public import Mei.Analysis.Convex.Polyhedron.Projection
 
 /-!
@@ -111,6 +112,18 @@ theorem IsRationalNormalPolyhedron.negRay (hP : IsRationalNormalPolyhedron h P) 
   rw [isRationalNormalPolyhedron_iff] at hP ⊢
   obtain ⟨Q, rfl⟩ := hP
   exact ⟨Q.sweep n, Q.carrier_sweep n⟩
+
+/-- The negative-ray sweep along a lattice vector has rational normals. -/
+theorem IsRationalNormalPolyhedron.sweep (hP : IsRationalNormalPolyhedron h P) (n : N) :
+    IsRationalNormalPolyhedron h (Convex.sweep P (i n)) := by
+  convert hP.negRay n using 1
+  ext y
+  rw [Convex.mem_sweep_iff_exists]
+  constructor
+  · rintro ⟨x, hx, t, ht, rfl⟩
+    exact ⟨t, ht, by simpa using hx⟩
+  · rintro ⟨t, ht, hx⟩
+    exact ⟨y + t • i n, hx, t, ht, by simp⟩
 
 /-- Negative-ray addition preserves polyhedra that admit rational normals and
 rational offsets. -/
