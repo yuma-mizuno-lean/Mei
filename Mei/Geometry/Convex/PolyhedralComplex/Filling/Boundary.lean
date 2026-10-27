@@ -20,8 +20,8 @@ even when a uniform mesh would place a boundary vertex on a wall.
 The construction uses `Convex.exists_admissible_filling_grid_fixed_boundary`
 with the local models of
 `FinitePolyhedralComplex.exists_ball_crossingWord_eq_or_isolating_joint`.
-The regular alternative gives endpoint independence for arbitrary admissible
-paths in the ball; the joint alternative controls ambient cell incidence as
+The regular alternative gives path independence for admissible paths with fixed endpoints
+in the ball; the joint alternative controls ambient cell incidence as
 well as isolation in the original affine slice.
 -/
 
@@ -38,8 +38,8 @@ variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ 
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
 
 /-- A transverse square with four affine admissible sides has a subordinate
-admissible grid fixing every boundary vertex. Regular patches have
-endpoint-independent words; joint patches isolate one joint in the original
+admissible grid fixing every boundary vertex. In regular patches, crossing words
+depend only on endpoints; joint patches isolate one joint in the original
 slice and meet only ambient cells containing it. Interior vertices may move
 arbitrarily little and need not remain in that slice. -/
 theorem exists_admissible_filling_grid_fixed_boundary (C : FinitePolyhedralComplex h)
