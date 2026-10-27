@@ -303,6 +303,15 @@ theorem wallPathProduct_eq_prod_signedCrossingEvents (p : AdmissiblePLPath x y) 
     simp only [wallPathProduct_cons, signedCrossingEvents_cons, List.reverse_append,
       List.map_append, List.prod_append, ih, he]
 
+/-- Flatten the signed events, in reverse traversal order, into a single list of indexed
+crossings whose signed labels multiply to the polygonal transport. -/
+theorem wallPathProduct_eq_prod_flatMap (p : AdmissiblePLPath x y) :
+    p.wallPathProduct ν label hcomm =
+      (((p.signedCrossingEvents ν).reverse.flatMap Finset.toList).map
+        fun a => label a.1 ^ a.2).prod := by
+  rw [wallPathProduct_eq_prod_signedCrossingEvents]
+  simp [List.flatMap_def, List.prod_flatten, Function.comp_def]
+
 /-- The ordered signed event list determines the transport, independently of crossing
 parameters and of the admissibility proofs. Simultaneous indices retain all factors. -/
 theorem wallPathProduct_eq_of_signedCrossingEvents_eq

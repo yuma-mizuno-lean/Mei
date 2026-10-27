@@ -46,6 +46,22 @@ theorem wallCrossingSum_def (p : AdmissiblePLPath x y) (ν : ι → V →ₗ[ℝ
     p.wallCrossingSum ν c =
       ((p.signedCrossingEvents ν).map (fun S => ∑ a ∈ S, a.2 • c a.1)).sum := (rfl)
 
+/-- The crossing sum over the flattened list of indexed crossings. The list is ordered
+as in `Quiver.Path.wallPathProduct_eq_prod_flatMap`; its order does not affect the sum. -/
+theorem wallCrossingSum_eq_sum_flatMap (p : AdmissiblePLPath x y) (ν : ι → V →ₗ[ℝ] ℝ)
+    (c : ι → E) :
+    p.wallCrossingSum ν c =
+      (((p.signedCrossingEvents ν).reverse.flatMap Finset.toList).map
+        fun a => a.2 • c a.1).sum := by
+  classical
+  simp only [wallCrossingSum_def, List.flatMap_def, List.map_flatten, List.sum_flatten,
+    List.map_map, List.map_reverse, List.sum_reverse, Function.comp_def]
+  congr 1
+  apply List.map_congr_left
+  intro S _
+  rw [← List.sum_toFinset _ (Finset.nodup_toList S)]
+  simp
+
 @[simp]
 theorem wallCrossingSum_nil (ν : ι → V →ₗ[ℝ] ℝ) (c : ι → E) :
     (Quiver.Path.nil : AdmissiblePLPath x x).wallCrossingSum ν c = 0 := by

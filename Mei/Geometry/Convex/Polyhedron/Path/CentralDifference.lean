@@ -19,16 +19,18 @@ every simultaneous indexed crossing and every repeated visit; the original
 labels need not commute at different crossing events.
 
 After any additive projection, if the surviving coefficients are supported on
-walls escaping in a common parallel direction, equality of the two transports
-around loops forces the projected difference to vanish along every path. This
-connects central differences of transports with the rectangle argument used in
-outgoing-completion uniqueness.
+walls with compatible normals escaping in a common parallel direction, equality of
+the two transports around loops at the initial point forces the projected
+difference to vanish along every path from that point. This connects central
+differences of transports with the rectangle argument used in outgoing-completion
+uniqueness.
 
-The algebra uses `LieHom.log_prod_mul_inv_prod_of_eq` and the signed-event
-expansion `Quiver.Path.wallPathProduct_eq_prod_signedCrossingEvents`. The escape
-step uses `Quiver.Path.wallCrossingSum_eq_zero_of_notMem_recessionCone`. The
-application is the uniqueness assertion in Travis Mandel, *Scattering diagrams,
-theta functions, and refined tropical curve counts*, Theorem 2.6,
+The algebra uses `LieHom.log_prod_mul_inv_prod_of_eq` and the flattened
+signed-event expansions `Quiver.Path.wallPathProduct_eq_prod_flatMap` and
+`Quiver.Path.wallCrossingSum_eq_sum_flatMap`. The escape step uses
+`Quiver.Path.wallCrossingSum_eq_zero_of_notMem_recessionCone`. The application is
+the uniqueness assertion in Travis Mandel, *Scattering diagrams, theta functions,
+and refined tropical curve counts*, Theorem 2.6,
 [arXiv:1503.06183v5](https://arxiv.org/abs/1503.06183v5).
 -/
 
@@ -66,31 +68,16 @@ theorem log_wallPathProduct_mul_inv_eq_wallCrossingSum (p : AdmissiblePLPath x y
     intro j hj
     obtain ⟨S, hS, hj⟩ := List.mem_flatMap.mp hj
     exact hab S (List.mem_reverse.mp hS) j (Finset.mem_toList.mp hj)
-  have hp (label : ι → BCHGroup L)
-      (hcomm : ∀ j k, affineSpan ℝ (W j) = affineSpan ℝ (W k) →
-        Commute (label j) (label k)) :
-      (l.map (fun j => label j.1 ^ j.2)).prod = p.wallPathProduct ν label hcomm := by
-    rw [wallPathProduct_eq_prod_signedCrossingEvents]
-    simp [l, List.flatMap_def, List.prod_flatten, Function.comp_def]
-  have he := f.log_prod_mul_inv_prod_of_eq hc l
-    (fun j => a j.1 ^ j.2) (fun j => b j.1 ^ j.2)
-    (fun j hj => by simp only [map_zpow, hl j hj])
-  rw [hp a ha, hp b hb] at he
-  have hs : (l.map (fun j => log (a j.1 ^ j.2 * (b j.1 ^ j.2)⁻¹))).sum =
-      p.wallCrossingSum ν (fun j => log (a j * (b j)⁻¹)) := by
-    rw [List.map_congr_left (fun j hj => f.log_zpow_mul_inv_zpow_of_eq hc _ _ (hl j hj) _)]
-    simp only [l, List.flatMap_def, List.map_flatten, List.sum_flatten,
-      List.map_map, List.map_reverse, List.sum_reverse, Function.comp_def, wallCrossingSum_def]
-    congr 1
-    apply List.map_congr_left
-    intro S _
-    rw [← List.sum_toFinset _ (Finset.nodup_toList S)]
-    simp
-  exact he.trans hs
+  rw [wallPathProduct_eq_prod_flatMap ν a ha, wallPathProduct_eq_prod_flatMap ν b hb,
+    wallCrossingSum_eq_sum_flatMap, f.log_prod_mul_inv_prod_of_eq hc _ _ _
+      (fun j hj => by simp only [map_zpow, hl j hj])]
+  exact congrArg List.sum
+    (List.map_congr_left fun j hj => f.log_zpow_mul_inv_zpow_of_eq hc _ _ (hl j hj) _)
 
-/-- Projected central differences vanish along all paths if they vanish around
-loops and every wall with nonzero projected coefficient escapes in a common
-parallel direction. Zero-coefficient walls impose no escape condition. -/
+/-- Projected central differences vanish along all paths from `x` if they vanish
+around loops at `x` and every wall with nonzero projected coefficient has a
+compatible normal, is parallel to `v`, and has `v` outside its recession cone.
+Zero-coefficient walls impose no condition. -/
 theorem map_log_wallPathProduct_mul_inv_eq_zero_of_notMem_recessionCone
     [FiniteDimensional ℝ V] {E : Type*} [AddCommGroup E]
     (hpoly : ∀ j, TauCeti.IsConvexPolyhedron (W j))
