@@ -58,6 +58,35 @@ theorem intrinsicFrontier_eq_biUnion_boundaryFacets (σ : OrientedCell h k) :
     rw [he] at hFd
     omega
 
+/-- Near a relative interior point of a facet, all other signed boundary
+facets of the parent are absent. The radius is independent of any transverse test. -/
+theorem exists_ball_disjoint_other_boundaryFacets (σ : OrientedCell h k)
+    {F : Set V} (hF : IsExposed ℝ σ.carrier F)
+    (hdim : finrank ℝ (vectorSpan ℝ F) + 1 = finrank ℝ (vectorSpan ℝ σ.carrier))
+    {p : V} (hp : p ∈ intrinsicInterior ℝ F) :
+    ∃ ε > 0, ∀ τ ∈ σ.boundaryFacets, τ.carrier ≠ F →
+      Disjoint (Metric.ball p ε) τ.carrier := by
+  classical
+  have := h.finiteDimensional
+  let S := σ.boundaryFacets.filter (fun τ => τ.carrier ≠ F)
+  have hpnot : p ∉ ⋃ τ ∈ S, τ.carrier := by
+    intro hm
+    obtain ⟨τ, hτ, hpτ⟩ := mem_iUnion₂.mp hm
+    obtain ⟨hτ, hn⟩ := Finset.mem_filter.mp hτ
+    obtain ⟨G, hG, hGn, hGd, rfl⟩ := (σ.mem_boundaryFacets τ).mp hτ
+    simp only [boundaryFacet_carrier] at hpτ hn
+    have hinter : IsExposed ℝ F (F ∩ G) := by
+      simpa only [inter_eq_left.mpr hF.subset] using (IsExposed.refl F).inter_inter hG
+    have hFG : F ⊆ G := inter_eq_left.mp
+      (hinter.eq_of_mem_intrinsicInterior ⟨intrinsicInterior_subset hp, hpτ⟩ hp)
+    exact hn (hF.eq_of_subset_of_finrank_add_one ⟨p, intrinsicInterior_subset hp⟩ hdim
+      hG hFG (by intro he; rw [he] at hGd; omega)).symm
+  have hc : IsClosed (⋃ τ ∈ S, τ.carrier) :=
+    S.finite_toSet.isClosed_biUnion fun τ _ => τ.isClosed_carrier
+  obtain ⟨ε, hε, hball⟩ := Metric.isOpen_iff.mp hc.isOpen_compl p hpnot
+  refine ⟨ε, hε, fun τ hτ hn => disjoint_left.mpr fun z hz hzτ => ?_⟩
+  exact hball hz (mem_iUnion₂.mpr ⟨τ, Finset.mem_filter.mpr ⟨hτ, hn⟩, hzτ⟩)
+
 /-- A codimension-one subcell contained in a parent is internal, with all its
 relative interior in the parent's relative interior, or it is contained in a
 unique signed boundary facet. This applies to boundary facets of arbitrary

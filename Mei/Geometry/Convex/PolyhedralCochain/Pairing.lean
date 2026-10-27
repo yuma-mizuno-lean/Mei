@@ -162,6 +162,18 @@ theorem intersectionIndex_of_disjoint (hdisj : Disjoint (convexHull ℝ (range v
   rw [intersectionIndex, ite_eq_right (not_nonempty_iff_eq_empty.mpr hdisj.inter_eq)]
 
 open Classical in
+/-- A point test on a full-dimensional cell reads its orientation sign when
+the point belongs to the cell, and is zero otherwise. -/
+@[simp]
+theorem intersectionIndex_singleton (σ : OrientedCell h 0) (x : V) :
+    σ.intersectionIndex ![x] =
+      if x ∈ σ.carrier then (σ.orientation.evalSign ![] : ℤ) else 0 := by
+  have he : (fun j : Fin 0 => (![x] : Fin 1 → V) j.succ - ![x] 0) = ![] :=
+    funext fun j => Fin.elim0 j
+  rw [intersectionIndex, he]
+  simp [Matrix.range_cons]
+
+open Classical in
 /-- On a one-dimensional test the edge frame is its endpoint difference, and
 the test image is the closed segment. -/
 theorem intersectionIndex_pair (σ : OrientedCell h 1) (a b : V) :
