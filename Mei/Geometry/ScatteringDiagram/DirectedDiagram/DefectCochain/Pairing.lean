@@ -93,12 +93,19 @@ theorem eventually_exists_intersectionPairing_eq_log_defect
     rw [← (cross Q).sign_normal, hdiff, map_smul, smul_eq_mul]
     exact sign_pos (mul_pos (by positivity) hv)
   have hmid : q ∈ segment ℝ x.val y.val := by
-    rw [segment_eq_image_lineMap]
-    refine ⟨(1 / 2 : ℝ), by norm_num, ?_⟩
-    rw [AffineMap.lineMap_apply_module', hx, hy]
-    module
-  obtain ⟨htrans, hvalue⟩ := hpair (hx ▸ ha.1) (hy ▸ ha.2) hmid (by rw [hsign]; decide)
+    rw [hx, hy]
+    exact mem_segment_sub_add (𝕜 := ℝ) q (a • v)
+  have hframe : (fun j : Fin 1 => ![x.val, y.val] j.succ - ![x.val, y.val] 0) =
+      fun _ : Fin 1 => y.val - x.val := by ext j; fin_cases j; rfl
+  obtain ⟨htrans, hvalue⟩ := hpair (v := ![x.val, y.val])
+    (by
+      intro j
+      fin_cases j
+      · exact hx ▸ ha.1
+      · exact hy ▸ ha.2)
+    (by rw [Matrix.range_cons_cons_empty, convexHull_pair]; exact hmid)
+    (by rw [hframe, hsign]; decide)
   refine ⟨x, y, e, hx, hy, hxm, hyp, htrans, ?_⟩
-  rw [hvalue, hsign, SignType.coe_one, one_smul, he]
+  rw [hvalue, hframe, hsign, SignType.coe_one, one_smul, he]
 
 end Mei.DirectedDiagram
