@@ -193,44 +193,19 @@ theorem levelEquivalent_restrict_succ {s t : Set ι} {k : ℕ}
   classical
   apply (levelEquivalent_def _ _ _).mpr
   intro x y x' y' p q hpq
-  let := h.finiteDimensional
-  -- Pad both paths, then move all vertices into general position for every active wall.
-  obtain ⟨p', hvp, hprodP⟩ := (F.restrict s).exists_vertices_eq_cons_levelPathProduct_eq _ p
-  obtain ⟨q', hvq, hprodQ⟩ := (F.restrict t).exists_vertices_eq_cons_levelPathProduct_eq _ q
-  have hx : x.val = x'.val := by simpa using congrArg List.head? hpq
-  have hvpq : p'.vertices.map WallComplement.val = q'.vertices.map WallComplement.val := by
-    rw [hvp, hvq, hx, hpq]
-  obtain ⟨ε₁, hε₁, hp⟩ := (F.restrict s).exists_pos_levelPathProduct_eq_of_forall₂_dist_lt _ p'
-  obtain ⟨ε₂, hε₂, hq⟩ := (F.restrict t).exists_pos_levelPathProduct_eq_of_forall₂_dist_lt _ q'
-  have hv : p'.vertices.map WallComplement.val =
-      x.val :: ((x.val :: p.vertices.dropLast.map WallComplement.val) ++ [y.val]) := by
-    have hend := congrArg (List.map WallComplement.val) p.dropLast_append_end_eq
-    simp only [List.map_append, List.map_singleton] at hend
-    simp only [hvp, List.cons_append, hend]
-  obtain ⟨a, b, r, hr⟩ := CommonWallComplement.exists_forall₂_dist_lt_free_endpoints
+  obtain ⟨a, b, r, hP, hQ⟩ := (F.restrict s).exists_common_levelPathProduct_eq
+    (F.restrict t) (k + 1) (k + 1)
     (W := fun _ : Unit => fun j : F.active (k + 1) => (F.wall j).support)
     (fun _ j => (F.wall j).isConvexPolyhedron) (fun _ j => (F.wall j).finrank_direction_add_one)
-    x.val y.val (l := x.val :: p.vertices.dropLast.map WallComplement.val)
-    (List.cons_ne_nil _ _) (lt_min hε₁ hε₂)
+    p q hpq
   let r₀ := (CommonWallComplement.projectionPrefunctor ()).mapPath r
   let r₁ := (F.restrictPathPrefunctor s (k + 1)).mapPath r₀
   let r₂ := (F.restrictPathPrefunctor t (k + 1)).mapPath r₀
   have hv₀ : r₀.vertices.map WallComplement.val = r.vertices.map CommonWallComplement.val :=
     CommonWallComplement.vertices_projection () r
-  have hP : (F.restrict s).levelPathProduct (k + 1) r₁ =
-      (F.restrict s).levelPathProduct (k + 1) p' := by
-    apply hp
-    have hnear := hr.imp fun _ _ hab => hab.trans_le (min_le_left _ _)
-    rw [← hv, ← hv₀] at hnear
-    simpa only [r₁, vertices_restrictPathPrefunctor] using hnear
-  have hQ : (F.restrict t).levelPathProduct (k + 1) r₂ =
-      (F.restrict t).levelPathProduct (k + 1) q' := by
-    apply hq
-    have hnear := hr.imp fun _ _ hab => hab.trans_le (min_le_right _ _)
-    rw [← hv, hvpq, ← hv₀] at hnear
-    simpa only [r₂, vertices_restrictPathPrefunctor] using hnear
-  rw [← hprodP, ← hP, ← hprodQ, ← hQ, levelPathProduct_restrict_eq,
-    levelPathProduct_restrict_eq]
+  have hP' := hP r₁ ((F.vertices_restrictPathPrefunctor s (k + 1) r₀).trans hv₀)
+  have hQ' := hQ r₂ ((F.vertices_restrictPathPrefunctor t (k + 1) r₀).trans hv₀)
+  rw [← hP', ← hQ', levelPathProduct_restrict_eq, levelPathProduct_restrict_eq]
   exact wallPathProduct_indicatorLabel_eq hs ht hout hk r₀
 
 variable (F) in

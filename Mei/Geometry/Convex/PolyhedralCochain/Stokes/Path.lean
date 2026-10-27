@@ -7,6 +7,7 @@ module
 
 public import Mei.Geometry.Convex.PolyhedralCochain.Stokes.Endpoint
 public import Mei.Geometry.Convex.PolyhedralCochain.ParameterSubdivision
+public import Mei.Geometry.Convex.PolyhedralCochain.Crossing
 import Mei.Topology.Order.LocalRelation
 import Mathlib.Topology.Algebra.Module.Cardinality
 
@@ -26,6 +27,12 @@ with `OrientedCell.intersectionPairing_subdivide`. Restricting admissibility wit
 crossing parameters finite (`AdmissibleSegment.finite_crossings`). This gives a
 dense set of allowed cut parameters, to which `Dense.rel_of_locally` applies.
 Coefficients may have torsion and lie in a module over any associative ring.
+
+The transport formula `Quiver.Path.wallCrossingSum_eq_sub_of_eq_coboundary`
+applies to any wall cochain equal to this boundary in the cochain quotient. It
+uses `PolyhedralCochain.intersectionPairing_eq_of_ofFinsupp_eq` and
+`Quiver.Path.addWeightOfEPs_intersectionPairing_eq_neg_wallCrossingSum`, so
+subdivision and orientation relations are retained.
 -/
 
 public section
@@ -81,7 +88,8 @@ theorem intersectionPairing_coboundaryPresentation_eq_sub_of_admissible
     exact hallowed t ht htB j
   have hsupport : ∀ τ ∈ g.support, ∃ a : J, τ.carrier = W (j a) := by
     intro τ hτ
-    obtain ⟨P, hP, hτ⟩ := exists_boundaryFacet_of_mem_support_coboundaryPresentation f hτ
+    obtain ⟨P, hP, hτ⟩ := Finset.mem_biUnion.mp
+        (support_coboundaryPresentation_subset f hτ)
     exact hcover P hP τ hτ
   have hends : (0 : ℝ) ∈ Bᶜ ∧ (1 : ℝ) ∈ Bᶜ := by
     constructor
@@ -157,3 +165,68 @@ theorem addWeightOfEPs_intersectionPairing_coboundaryPresentation_eq_sub
     abel
 
 end Mei.PolyhedralCochain
+
+namespace Quiver.Path
+
+open Mei
+
+variable {N V R E ι : Type*} [AddCommGroup N]
+  [NormedAddCommGroup V] [NormedSpace ℝ V]
+  {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
+  [Ring R] [AddCommGroup E] [Module R E] [Fintype ι]
+  {σ : ι → OrientedCell h 1}
+  {x y : WallComplement (fun j => (σ j).carrier)}
+
+/-- A wall cochain equal to the boundary of a full-dimensional potential has
+additive transport given by the source value minus the target value. Equality
+is in the cochain quotient, including subdivision and orientation relations.
+The path is admissible for the indexed walls, which also contain all facets
+of the potential presentation. -/
+theorem wallCrossingSum_eq_sub_of_eq_coboundary
+    (p : AdmissiblePLPath x y) (ν : ι → V →ₗ[ℝ] ℝ) (c : ι → E)
+    (hν : ∀ j, c j ≠ 0 → ∀ v, SignType.sign (ν j v) =
+      (σ j).orientation.evalSign (fun _ : Fin 1 => v))
+    (f : OrientedCell h 0 →₀ E)
+    (hf : ∀ υ ∈ f.support, ∀ τ ∈ υ.boundaryFacets, ∃ j, τ.carrier = (σ j).carrier)
+    (hboundary : ∑ j, PolyhedralCochain.mk (R := R) (σ j) (c j) =
+      PolyhedralCochain.coboundaryOfFinsupp (R := R) f) :
+    p.wallCrossingSum ν c =
+      OrientedCell.intersectionPairing (R := R) ![x.val] f -
+        OrientedCell.intersectionPairing (R := R) ![y.val] f := by
+  classical
+  let g := ∑ j, Finsupp.single (σ j) (c j)
+  have hboundary' : PolyhedralCochain.ofFinsupp (R := R) g =
+      PolyhedralCochain.ofFinsupp
+        (PolyhedralCochain.coboundaryPresentation (R := R) f) := by
+    simpa only [g, map_sum, PolyhedralCochain.ofFinsupp_single,
+      PolyhedralCochain.ofFinsupp_coboundaryPresentation] using hboundary
+  have hsegment {a b : WallComplement (fun j => (σ j).carrier)} (e : a ⟶ b) :
+      OrientedCell.intersectionPairing (R := R) ![a.val, b.val] g =
+        OrientedCell.intersectionPairing (R := R) ![b.val] f -
+          OrientedCell.intersectionPairing (R := R) ![a.val] f := by
+    rw [PolyhedralCochain.intersectionPairing_eq_of_ofFinsupp_eq hboundary']
+    · exact PolyhedralCochain.intersectionPairing_coboundaryPresentation_eq_sub_of_admissible
+        f hf e
+    · intro τ hτ
+      obtain ⟨j, _, hj⟩ := Finsupp.mem_support_finsetSum τ hτ
+      obtain ⟨rfl, _⟩ := (Finsupp.mem_support_single _ _ _).mp hj
+      exact e.down.isTransverse_orientedCell j
+    · intro τ hτ
+      obtain ⟨υ, hυ, hτ⟩ := Finset.mem_biUnion.mp
+        (PolyhedralCochain.support_coboundaryPresentation_subset f hτ)
+      obtain ⟨j, hj⟩ := hf υ hυ τ hτ
+      have ht := e.down.isTransverse_orientedCell j
+      rcases ht with ⟨hfront, hl⟩
+      rw [← hj] at hfront hl
+      exact ⟨hfront, hl⟩
+  have hpath : p.addWeightOfEPs (fun a b =>
+      OrientedCell.intersectionPairing (R := R) ![a.val, b.val] g) =
+        OrientedCell.intersectionPairing (R := R) ![y.val] f -
+          OrientedCell.intersectionPairing (R := R) ![x.val] f := by
+    induction p with
+    | nil => simp only [addWeightOfEPs_nil, sub_self]
+    | cons p e ih => rw [addWeightOfEPs_cons, ih, hsegment e]; abel
+  rw [addWeightOfEPs_intersectionPairing_eq_neg_wallCrossingSum p ν c hν] at hpath
+  simpa only [neg_neg, neg_sub] using congrArg Neg.neg hpath
+
+end Quiver.Path

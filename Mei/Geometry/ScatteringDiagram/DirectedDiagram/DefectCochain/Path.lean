@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.DefectCochain.Traversal
-public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Realization
+public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Realization.Basic
 public import Mei.Geometry.Convex.PolyhedralComplex.SingleCrossing
 public import Mei.Geometry.Convex.PolyhedralCochain.LocalCrossing
 public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Obstruction.Basic

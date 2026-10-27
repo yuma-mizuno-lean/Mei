@@ -122,7 +122,8 @@ private theorem wallCrossingSum_loop_eq_zero_of_eq_coboundary
     have hg₁ : ∀ υ ∈ g.support, ∃ j : J, υ = τ j := by
       intro υ hυ
       obtain ⟨P, hP, hυ⟩ :=
-        PolyhedralCochain.exists_boundaryFacet_of_mem_support_coboundaryPresentation f hυ
+        Finset.mem_biUnion.mp
+          (PolyhedralCochain.support_coboundaryPresentation_subset f hυ)
       exact ⟨⟨⟨P, hP⟩, ⟨υ, hυ⟩⟩, rfl⟩
     -- Compare both representatives on the same edges of the enlarged-wall loop.
     have hpair {u v : WallComplement W} (q : AdmissiblePLPath u v) :
