@@ -21,12 +21,14 @@ cells and lineality.
 Finite subdivisions of admissible polygonal paths therefore preserve the sum of
 their segment pairings. This permits an intersection test along a meridian edge to
 be evaluated on smaller crossing neighborhoods without changing its value.
+Path subdivision uses the existing `Quiver.Path.IsSubdivision` relation.
+-/
 
+/-
 The proof uses `OrientedCell.IsTransverse.subsingleton_convexHull_inter_affineSpan`
 to isolate the intersection, Mathlib's `openSegment_subset_union` and betweenness
 transitivity to partition the parameter interval, and `Module.Ray.evalSign_smul`
-for the orientation under positive parameter rescaling. Path subdivision uses the
-existing `Quiver.Path.IsSubdivision` relation.
+for the orientation under positive parameter rescaling.
 -/
 
 public section

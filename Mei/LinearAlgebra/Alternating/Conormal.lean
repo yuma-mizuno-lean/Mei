@@ -24,9 +24,9 @@ forms on `M` via `Submodule.conormalFormsEquiv`. These rays orient the normal
 quotients of polyhedra in polyhedral cochains.
 
 A ray of alternating forms has a well-defined sign on every tuple of vectors,
-`Module.Ray.evalSign`. Scaling its arguments follows Mathlib's
-`AlternatingMap.map_smul_univ` and `signHom`. For a conormal ray of degree
-`dim (M ⧸ W)`, this sign is
+`Module.Ray.evalSign`. By `Module.Ray.evalSign_smul`, independently scaling each
+argument multiplies the evaluation sign by the product of the scalar signs. For a
+conormal ray of degree `dim (M ⧸ W)`, this sign is
 nonzero exactly on the tuples mapping to a basis of `M ⧸ W`. In this top degree,
 any two conormal orientations agree up to reversal, by descending through
 `Submodule.conormalFormsEquiv` and applying Mathlib's `Orientation.eq_or_eq_neg`.
@@ -189,6 +189,7 @@ theorem evalSign_rayOfNeZero {α : M [⋀^ι]→ₗ[R] R} (hα : α ≠ 0) (v : 
     rw [← smul_eq_mul, ← smul_apply, he]
   rw [evalSign, hv, sign_mul, sign_pos hr, one_mul]
 
+/- The scaling formula uses Mathlib's `AlternatingMap.map_smul_univ` and `signHom`. -/
 /-- Scaling the arguments multiplies the evaluation sign by the product of
 the scalar signs. -/
 @[simp]
