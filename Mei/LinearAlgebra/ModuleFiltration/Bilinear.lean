@@ -94,6 +94,7 @@ theorem completionBilinear_of (x : M) (y : N) :
   simp
 
 /-- The completed bilinear map adds filtration orders. -/
+@[grind .]
 theorem completionBilinear_mem_completedFiltration {a b : ℕ}
     {x : F.completion} {y : G.completion}
     (hx : x ∈ F.completedFiltration.submodule a)
@@ -104,9 +105,9 @@ theorem completionBilinear_mem_completedFiltration {a b : ℕ}
   | succ k =>
     rw [completedFiltration_succ, LinearMap.mem_ker, projection_completionBilinear]
     obtain ⟨m, hm, he⟩ := F.exists_projection_eq_of_mem_completedFiltration
-      (k := k) (by omega) hx
+      (k := k) hx
     obtain ⟨n, hn, he'⟩ := G.exists_projection_eq_of_mem_completedFiltration
-      (k := k) (by omega) hy
+      (k := k) hy
     rw [← he, ← he', quotientBilinear_mk, Submodule.Quotient.mk_eq_zero]
     simpa only [hab] using hf a b hm hn
 

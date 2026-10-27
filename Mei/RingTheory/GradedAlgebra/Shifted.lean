@@ -23,6 +23,7 @@ We use `Mei.shiftedSubmodule`, the relative filtrations of shifted modules,
 and `ModuleFiltration.completionBilinear`, built from Mathlib's quotient
 bilinear maps. No commutativity of the coefficient algebra or freeness of its
 homogeneous pieces is required.
+The shifted product restricts Mathlib's `LinearMap.mul`.
 -/
 
 public section
@@ -53,18 +54,20 @@ theorem shiftedSubmodule_mul_le :
 /-- The bilinear product of two shifted coefficient modules. -/
 def shiftedMul : shiftedSubmodule 𝒜 P p →ₗ[R]
     shiftedSubmodule 𝒜 P q →ₗ[R] shiftedSubmodule 𝒜 P (p + q) :=
-  LinearMap.mk₂ R
-    (fun x y => ⟨(x : A) * y, shiftedSubmodule_mul_le 𝒜 P p q
-      (Submodule.mul_mem_mul x.property y.property)⟩)
-    (by intros; apply Subtype.ext; exact add_mul _ _ _)
-    (by intros; apply Subtype.ext; exact smul_mul_assoc _ _ _)
-    (by intros; apply Subtype.ext; exact mul_add _ _ _)
-    (by intros; apply Subtype.ext; exact mul_smul_comm _ _ _)
+  ((LinearMap.mul R A).domRestrict₁₂
+    (shiftedSubmodule 𝒜 P p) (shiftedSubmodule 𝒜 P q)).codRestrict₂
+    (shiftedSubmodule 𝒜 P (p + q)).subtype (Submodule.subtype_injective _)
+    (fun x y => by
+      simpa only [Submodule.range_subtype, LinearMap.domRestrict₁₂_apply,
+        LinearMap.mul_apply'] using shiftedSubmodule_mul_le 𝒜 P p q
+        (Submodule.mul_mem_mul x.property y.property))
 
 /-- The shifted product is the original product on underlying coefficients. -/
 @[simp]
 theorem coe_shiftedMul (x : shiftedSubmodule 𝒜 P p) (y : shiftedSubmodule 𝒜 P q) :
-    (shiftedMul 𝒜 P p q x y : A) = (x : A) * y := (rfl)
+    (shiftedMul 𝒜 P p q x y : A) = (x : A) * y := by
+  rw [shiftedMul, ← Submodule.subtype_apply, LinearMap.codRestrict₂_apply,
+    LinearMap.domRestrict₁₂_apply, LinearMap.mul_apply']
 
 end Semiring
 
@@ -78,6 +81,7 @@ variable {R A Γ : Type*} [CommSemiring R] [Semiring A] [Algebra R A]
   (p q : Γ)
 
 /-- Shifted multiplication adds relative filtration orders. -/
+@[grind .]
 theorem shiftedMul_mem_shiftedFiltration {a b : ℕ}
     {x : shiftedSubmodule 𝒜 d.monoid p} {y : shiftedSubmodule 𝒜 d.monoid q}
     (hx : x ∈ (d.shiftedFiltration 𝒜 p).submodule a)
@@ -149,6 +153,7 @@ theorem shiftedCompletionMul_of
   ModuleFiltration.completionBilinear_of _ _ _ _ _ x y
 
 /-- Completed products add relative orders, including order zero. -/
+@[grind .]
 theorem shiftedCompletionMul_mem_completedFiltration {a b : ℕ}
     {x : d.ShiftedCoefficients 𝒜 p} {y : d.ShiftedCoefficients 𝒜 q}
     (hx : x ∈ (d.shiftedFiltration 𝒜 p).completedFiltration.submodule a)
