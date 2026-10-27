@@ -27,6 +27,8 @@ public section
 
 open Set Filter Topology AffineSubspace
 
+namespace Mei
+
 /-- Relative interiors are monotone among sets with the same affine span. -/
 theorem intrinsicInterior_mono_of_affineSpan_eq
     {𝕜 W A : Type*} [Ring 𝕜] [AddCommGroup W] [Module 𝕜 W]
@@ -35,6 +37,8 @@ theorem intrinsicInterior_mono_of_affineSpan_eq
     intrinsicInterior 𝕜 P ⊆ intrinsicInterior 𝕜 Q := by
   rw [intrinsicInterior, intrinsicInterior, hspan]
   exact image_mono (interior_mono (preimage_mono hPQ))
+
+end Mei
 
 variable {V : Type*} [AddCommGroup V] [Module ℝ V] [TopologicalSpace V]
   [IsTopologicalAddGroup V] [ContinuousSMul ℝ V]
