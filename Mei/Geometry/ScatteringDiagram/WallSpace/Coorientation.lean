@@ -7,7 +7,7 @@ module
 
 public import Mei.Geometry.Convex.PolyhedralCochain.Coorientation
 public import Mei.Geometry.Convex.PolyhedralCochain.Sweep.Basic
-public import Mei.Geometry.ScatteringDiagram.WallSpace.Normal
+public import Mei.Geometry.ScatteringDiagram.WallSpace.Basic
 
 /-!
 # Matching swept orientations with integral wall normals
