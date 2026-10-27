@@ -387,59 +387,6 @@ theorem boundaryFacets_eq_empty_of_finrank_eq (σ : OrientedCell h k)
   obtain ⟨F, hF, hne, hdim, heq⟩ := (σ.mem_boundaryFacets τ).mp hτ
   omega
 
-/-- A surviving facet of a same-dimensional oriented piece has the original
-boundary orientation. The piece and the parent carry the same orientation. -/
-theorem boundaryFacet_orientation_eq_of_subset (σ π : OrientedCell h k)
-    (hπ : π.carrier ⊆ σ.carrier) (ho : π.orientation = σ.orientation)
-    {F G : Set V} (hF : IsExposed ℝ σ.carrier F) (hG : IsExposed ℝ π.carrier G)
-    (hFne : F.Nonempty) (hGne : G.Nonempty)
-    (hFd : finrank ℝ (vectorSpan ℝ F) + 1 = finrank ℝ (vectorSpan ℝ σ.carrier))
-    (hGd : finrank ℝ (vectorSpan ℝ G) + 1 = finrank ℝ (vectorSpan ℝ π.carrier))
-    (hGF : G ⊆ F) :
-    (π.boundaryFacet hG hGne hGd).orientation =
-      (σ.boundaryFacet hF hFne hFd).orientation := by
-  have := h.finiteDimensional
-  -- Equal codimensions identify the parent and facet directions.
-  have hdP : vectorSpan ℝ π.carrier = vectorSpan ℝ σ.carrier := by
-    simpa only [direction_affineSpan] using π.direction_eq_of_subset σ hπ
-  have hdF : vectorSpan ℝ G = vectorSpan ℝ F :=
-    Submodule.eq_of_le_of_finrank_eq (vectorSpan_mono ℝ hGF) (by rw [hdP] at hGd; omega)
-  -- A vector towards the smaller facet points outwards for both parents.
-  obtain ⟨x, hx, hxF⟩ : ∃ x ∈ π.carrier, x ∉ F := by
-    apply Set.not_subset.mp
-    intro hs
-    have hle := Submodule.finrank_mono (vectorSpan_mono ℝ hs)
-    rw [hdP] at hle
-    omega
-  have hGne' := hGne
-  obtain ⟨y, hy⟩ := hGne'
-  let v : vectorSpan ℝ π.carrier := ⟨y - x, vsub_mem_vectorSpan ℝ (hG.subset hy) hx⟩
-  have hposG := (hG.outwardNormal_apply_pos_iff hGne hGd hx hy).mpr
-    (fun hxG => hxF (hGF hxG))
-  have hposF := (hF.outwardNormal_apply_pos_iff hFne hFd (hπ hx) (hGF hy)).mpr hxF
-  have hv : (v : V) ∉ (affineSpan ℝ G).direction := by
-    intro hv
-    have hz : (hG.outwardNormal hGne hGd).someVector v = 0 := by
-      apply LinearMap.mem_ker.mp
-      rw [hG.ker_outwardNormal hGne hGd]
-      simpa only [direction_affineSpan, Submodule.mem_comap, Submodule.subtype_apply] using hv
-    exact (ne_of_gt hposG) hz
-  -- The shared outward contraction determines the boundary orientation.
-  let τ : OrientedCell h (k + 1) :=
-    { π.boundaryFacet hG hGne hGd with
-      orientation := (σ.boundaryFacet hF hFne hFd).orientation
-      isConormal := by
-        rw [boundaryFacet_carrier, direction_affineSpan, hdF, ← direction_affineSpan]
-        simpa only [boundaryFacet_carrier] using (σ.boundaryFacet hF hFne hFd).isConormal }
-  have he : τ = π.boundaryFacet hG hGne hGd := by
-    apply (π.eq_boundaryFacet_iff hG hGne hGd τ (by simp [τ]) v
-      (by simpa only [τ, boundaryFacet_carrier] using hv) hposG).mpr
-    have hc := σ.contract_boundaryFacet hF hFne hFd
-      ⟨y - x, vsub_mem_vectorSpan ℝ (hF.subset (hGF hy)) (hπ hx)⟩
-      (by simpa only [boundaryFacet_carrier, direction_affineSpan, ← hdF] using hv) hposF
-    simpa only [τ, boundaryFacet_carrier, direction_affineSpan, hdF, ho] using hc
-  exact (congrArg orientation he).symm
-
 /-- Equally oriented cells with the same tangent direction induce opposite
 signed orientations on a facet exposed by opposite functionals. -/
 theorem boundaryFacet_eq_reverse_of_toExposed (σ τ : OrientedCell h k)

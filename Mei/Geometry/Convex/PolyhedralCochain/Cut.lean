@@ -67,7 +67,7 @@ theorem exists_boundaryFacet_inter_le (σ π : OrientedCell h k)
   refine ⟨π.boundaryFacet hface hne hd, π.boundaryFacet_mem_boundaryFacets _ _ _,
     boundaryFacet_carrier _ _ _ _, ?_⟩
   exact σ.boundaryFacet_orientation_eq_of_subset π
-    (hπ ▸ inter_subset_left) ho hF hface hFne hne hFd hd inter_subset_left
+    (hπ ▸ inter_subset_left) ho hF hFne hFd hface hne hd inter_subset_left
 
 open Classical in
 /-- If a hyperplane crosses an external facet on both strict sides, its two
