@@ -343,37 +343,6 @@ theorem eq_of_finrank_vectorSpan_eq [FiniteDimensional ℝ (vectorSpan ℝ P)]
   rw [hl]
   exact ⟨hx, fun y hy => by simpa only [he] using hz'.2 y hy⟩
 
-/-- Distinct equal-dimensional exposed subsets containing a common nonempty
-facet meet exactly in that facet. The ambient set need not be convex or
-polyhedral, and its affine direction may be infinite-dimensional. -/
-theorem inter_eq_of_common_facet {G Q : Set V}
-    (hF : IsExposed ℝ P F) (hG : IsExposed ℝ P G)
-    (hQ : IsExposed ℝ F Q) (hne : Q.Nonempty) (hQG : Q ⊆ G) (hFG : F ≠ G)
-    (hFGd : Module.finrank ℝ (vectorSpan ℝ F) =
-      Module.finrank ℝ (vectorSpan ℝ G))
-    (hQd : Module.finrank ℝ (vectorSpan ℝ Q) + 1 =
-      Module.finrank ℝ (vectorSpan ℝ F)) : F ∩ G = Q := by
-  have : FiniteDimensional ℝ (vectorSpan ℝ F) :=
-    FiniteDimensional.of_finrank_pos (by omega)
-  have : FiniteDimensional ℝ (vectorSpan ℝ G) :=
-    FiniteDimensional.of_finrank_pos (by omega)
-  have : FiniteDimensional ℝ (vectorSpan ℝ (F ∩ G)) :=
-    Submodule.finiteDimensional_of_le (vectorSpan_mono ℝ Set.inter_subset_left)
-  have hQI : Q ⊆ F ∩ G := Set.subset_inter hQ.subset hQG
-  have hIn := hne.mono hQI
-  have hIF := (hF.inter hG).mono hF.subset Set.inter_subset_left
-  have hIG := (hF.inter hG).mono hG.subset Set.inter_subset_right
-  have hle := Submodule.finrank_mono
-    (vectorSpan_mono ℝ (Set.inter_subset_left : F ∩ G ⊆ F))
-  have hge := Submodule.finrank_mono (vectorSpan_mono ℝ hQI)
-  have hlt : Module.finrank ℝ (vectorSpan ℝ (F ∩ G)) <
-      Module.finrank ℝ (vectorSpan ℝ F) := by
-    by_contra! hn
-    have heF := hIF.eq_of_finrank_vectorSpan_eq hIn (by omega)
-    have heG := hIG.eq_of_finrank_vectorSpan_eq hIn (by omega)
-    exact hFG (heF.symm.trans heG)
-  exact ((hQ.mono Set.inter_subset_left hQI).eq_of_finrank_vectorSpan_eq hne (by omega)).symm
-
 /-- An exposed facet is maximal among proper exposed subsets of its parent. -/
 theorem eq_of_subset_of_finrank_add_one {G : Set V} (hF : IsExposed ℝ P F)
     (hne : F.Nonempty)
@@ -391,6 +360,28 @@ theorem eq_of_subset_of_finrank_add_one {G : Set V} (hF : IsExposed ℝ P F)
     omega
   have hlow := Submodule.finrank_mono (vectorSpan_mono ℝ hFG)
   exact (hF.mono hG.subset hFG).eq_of_finrank_vectorSpan_eq hne (by omega)
+
+/-- Distinct equal-dimensional exposed subsets containing a common nonempty
+facet meet exactly in that facet. The ambient set need not be convex or
+polyhedral, and its affine direction may be infinite-dimensional. -/
+theorem inter_eq_of_common_facet {G Q : Set V}
+    (hF : IsExposed ℝ P F) (hG : IsExposed ℝ P G)
+    (hQ : IsExposed ℝ F Q) (hne : Q.Nonempty) (hQG : Q ⊆ G) (hFG : F ≠ G)
+    (hFGd : Module.finrank ℝ (vectorSpan ℝ F) =
+      Module.finrank ℝ (vectorSpan ℝ G))
+    (hQd : Module.finrank ℝ (vectorSpan ℝ Q) + 1 =
+      Module.finrank ℝ (vectorSpan ℝ F)) : F ∩ G = Q := by
+  have : FiniteDimensional ℝ (vectorSpan ℝ G) :=
+    FiniteDimensional.of_finrank_pos (by omega)
+  have hQI : Q ⊆ F ∩ G := Set.subset_inter hQ.subset hQG
+  have hIn := hne.mono hQI
+  have hIF := (hF.inter hG).mono hF.subset Set.inter_subset_left
+  have hIG := (hF.inter hG).mono hG.subset Set.inter_subset_right
+  have hproper : F ∩ G ≠ F := by
+    intro heq
+    have heG := hIG.eq_of_finrank_vectorSpan_eq hIn (by rw [heq]; exact hFGd)
+    exact hFG (heq.symm.trans heG)
+  exact (hQ.eq_of_subset_of_finrank_add_one hne hQd hIF hQI hproper).symm
 
 end IsExposed
 
