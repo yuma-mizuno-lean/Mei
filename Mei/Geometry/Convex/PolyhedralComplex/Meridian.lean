@@ -44,7 +44,8 @@ variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ 
 complementary plane. The whole filled triangle isolates the joint, including
 its relative boundary and all other joints. Every cell meeting the filled
 triangle contains the joint. The vertex formula specifies the actual loop,
-and the triangle's centroid is the chosen relative interior point. -/
+and the triangle's centroid is the chosen relative interior point. Its vertices
+avoid the affine span of every wall containing that joint. -/
 theorem exists_isolating_joint_triangle (C : FinitePolyhedralComplex h) {J : Set V}
     (hJ : J ∈ C.joints) {p : V} (hp : p ∈ intrinsicInterior ℝ J)
     {ε : ℝ} (hε : 0 < ε) :
@@ -58,7 +59,8 @@ theorem exists_isolating_joint_triangle (C : FinitePolyhedralComplex h) {J : Set
       convexHull ℝ (range s.points) ∩ (C.codimensionAtLeast 2).support = {p} ∧
       Disjoint (convexHull ℝ (range s.points)) (intrinsicFrontier ℝ J) ∧
       (∀ Q ∈ C.joints, Q ≠ J → Disjoint (convexHull ℝ (range s.points)) Q) ∧
-      ∀ Q ∈ C.cells, (convexHull ℝ (range s.points) ∩ Q).Nonempty → J ⊆ Q := by
+      (∀ Q ∈ C.cells, (convexHull ℝ (range s.points) ∩ Q).Nonempty → J ⊆ Q) ∧
+      ∀ j W, W ∈ C.walls → J ⊆ W → s.points j ∉ affineSpan ℝ W := by
   classical
   let := h.finiteDimensional
   obtain ⟨r, T, hr, hT, hdimT, hskeleton, hfrontier, hother, hcells⟩ :=
@@ -77,7 +79,7 @@ theorem exists_isolating_joint_triangle (C : FinitePolyhedralComplex h) {J : Set
     intro y hyball hyT hy
     exact Set.mem_singleton_iff.mp (hskeleton ▸
       ⟨⟨hball hyball, hyT⟩, C.singularSupport_walls_subset_support_codimensionAtLeast hy⟩)
-  obtain ⟨s, x, γ, hsp, hvertices, hfill⟩ := exists_admissible_triangle
+  obtain ⟨s, x, γ, hsp, hvertices, hfill, hspan⟩ := exists_admissible_triangle
     (fun W : C.walls => (W : Set V)) T (by omega) (lt_min hr hε) hwall hsingular
   -- Nondegeneracy makes the triangle span the whole chosen normal plane.
   have hfillball : convexHull ℝ (range s.points) ⊆ Metric.ball p r :=
@@ -94,7 +96,7 @@ theorem exists_isolating_joint_triangle (C : FinitePolyhedralComplex h) {J : Set
       (Finset.sum_centroidWeights_eq_one_of_nonempty ℝ _ Finset.univ_nonempty)
   -- Pass all isolation conditions from the ball to the actual filled triangle.
   refine ⟨s, x, γ, hsp, hvertices, hplane ▸ hT, ?_, ?_,
-    hfrontier.mono_left hfillball, ?_, ?_⟩
+    hfrontier.mono_left hfillball, ?_, ?_, ?_⟩
   · exact fun y hy => Metric.ball_subset_ball (min_le_right _ _) (hfill hy).1
   · apply Set.Subset.antisymm
     · rintro y ⟨hy, hys⟩
@@ -108,11 +110,15 @@ theorem exists_isolating_joint_triangle (C : FinitePolyhedralComplex h) {J : Set
   · exact fun Q hQ hne => (hother Q hQ hne).mono_left hfillball
   · rintro Q hQ ⟨y, hy, hyQ⟩
     exact hcells Q hQ ⟨y, hfillball hy, hyQ⟩
+  · intro j W hW hJW
+    exact hspan j ⟨W, hW⟩ ⟨p, hJW (intrinsicInterior_subset hp), Metric.mem_ball_self
+      (lt_min hr hε)⟩
 
 /-- Every conormally oriented joint admits arbitrarily small positively ordered
 isolating triangles with admissible boundary. Positivity is measured on the edge
 frame from vertex zero, using the nonzero representative of the supplied ray.
-The filled triangle isolates the joint and meets only cells containing it. -/
+The filled triangle isolates the joint and meets only cells containing it. Its vertices
+avoid the affine span of every wall containing that joint. -/
 theorem exists_positive_isolating_joint_triangle (C : FinitePolyhedralComplex h)
     {J : Set V} (hJ : J ∈ C.joints) {p : V} (hp : p ∈ intrinsicInterior ℝ J)
     (o : Module.Ray ℝ (V [⋀^Fin 2]→ₗ[ℝ] ℝ))
@@ -128,13 +134,15 @@ theorem exists_positive_isolating_joint_triangle (C : FinitePolyhedralComplex h)
       convexHull ℝ (range s.points) ∩ (C.codimensionAtLeast 2).support = {p} ∧
       Disjoint (convexHull ℝ (range s.points)) (intrinsicFrontier ℝ J) ∧
       (∀ Q ∈ C.joints, Q ≠ J → Disjoint (convexHull ℝ (range s.points)) Q) ∧
-      ∀ Q ∈ C.cells, (convexHull ℝ (range s.points) ∩ Q).Nonempty → J ⊆ Q := by
-  obtain ⟨s, x, γ, hsp, hvertices, hcompl, hball, hskeleton, hfrontier, hother, hcells⟩ :=
+      (∀ Q ∈ C.cells, (convexHull ℝ (range s.points) ∩ Q).Nonempty → J ⊆ Q) ∧
+      ∀ j W, W ∈ C.walls → J ⊆ W → s.points j ∉ affineSpan ℝ W := by
+  obtain ⟨s, x, γ, hsp, hvertices, hcompl, hball, hskeleton, hfrontier, hother, hcells, hspan⟩ :=
     C.exists_isolating_joint_triangle hJ hp hε
   have hne := s.conormal_apply_ne_zero hcompl
     (Module.Ray.isConormal_iff.mp ho) o.someVector_ne_zero
   by_cases hpos : 0 < o.someVector (fun j : Fin 2 => s.points j.succ - s.points 0)
-  · exact ⟨s, x, γ, hpos, hsp, hvertices, hcompl, hball, hskeleton, hfrontier, hother, hcells⟩
+  · exact ⟨s, x, γ, hpos, hsp, hvertices, hcompl, hball, hskeleton,
+      hfrontier, hother, hcells, hspan⟩
   · -- Swap the last two vertices and reverse the boundary, keeping its basepoint.
     let e : Equiv.Perm (Fin 3) := Equiv.swap 1 2
     let t := s.reindex e
@@ -151,8 +159,10 @@ theorem exists_positive_isolating_joint_triangle (C : FinitePolyhedralComplex h)
     · exact (s.centroid_reindex e).trans hsp
     · rw [Quiver.Path.vertices_reverse, List.map_reverse, hvertices]
       simp [ht, e, Equiv.swap_apply_def]
-    · simpa only [hrange] using
-        (And.intro hcompl (And.intro hball (And.intro hskeleton
-          (And.intro hfrontier (And.intro hother hcells)))))
+    · rw [hrange]
+      refine ⟨hcompl, hball, hskeleton, hfrontier, hother, hcells, ?_⟩
+      intro j W hW hJW
+      rw [ht]
+      exact hspan (e j) W hW hJW
 
 end Mei.FinitePolyhedralComplex

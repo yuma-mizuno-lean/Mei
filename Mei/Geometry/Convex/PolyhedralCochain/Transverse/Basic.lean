@@ -5,6 +5,7 @@ Authors: Codex
 -/
 module
 
+public import Mei.Algebra.Module.Submodule.Union
 public import Mei.Geometry.Convex.PolyhedralCochain.Basic
 public import Mathlib.LinearAlgebra.Projection
 
@@ -133,6 +134,22 @@ theorem mem_transverseSubmodule_iff_exists (n : V) (C : PolyhedralCochain R h E 
     rw [mem_transverseSubmodule_iff, transversePart_ofFinsupp]
     congr 1
     exact (Finsupp.filter_eq_self_iff _ _).mpr fun σ hσ => hf σ (Finsupp.mem_support_iff.mpr hσ)
+
+/-- Every positive-codimension cochain is transverse to some integral direction.
+This is a property of the cochain class; no chosen presentation occurs in the
+conclusion. -/
+theorem exists_mem_transverseSubmodule (C : PolyhedralCochain R h E (k + 1)) :
+    ∃ n : N, C ∈ transverseSubmodule (i n) := by
+  classical
+  have := h.finiteDimensional
+  obtain ⟨f, rfl⟩ := ofFinsupp_surjective C
+  obtain ⟨n, hn⟩ := i.exists_forall_apply_notMem_of_span_eq_top h.span_range_eq_top
+    (fun σ : f.support => (affineSpan ℝ σ.val.carrier).direction) (fun σ he => by
+      have hd := σ.val.finrank_direction_add
+      rw [he, finrank_top] at hd
+      omega)
+  exact ⟨n, (mem_transverseSubmodule_iff_exists (i n) _).mpr
+    ⟨f, fun σ hσ => hn ⟨σ, hσ⟩, rfl⟩⟩
 
 /-- To prove a property of transverse cochains, it suffices to prove it for zero,
 addition, and generators whose cells are transverse. -/

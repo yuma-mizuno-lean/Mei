@@ -16,12 +16,25 @@ A line whose direction is outside an affine subspace's direction meets that
 subspace at most once, counted by its affine parameter. More generally, the
 affine span of finitely many points meets an affine subspace at most once when
 the edge vectors from the first point are linearly independent modulo the
-subspace's direction.
+subspace's direction. Any two affine subspaces with disjoint directions also
+meet in at most one point.
 -/
 
 public section
 
 namespace AffineSubspace
+
+/-- Affine subspaces with disjoint directions meet in at most one point.
+Neither affine subspace is required to be nonempty. -/
+theorem subsingleton_inter_of_disjoint_direction
+    {k V P : Type*} [Ring k] [AddCommGroup V] [Module k V] [AddTorsor V P]
+    (S T : AffineSubspace k P)
+    (hST : Disjoint S.direction T.direction) :
+    ((S : Set P) ∩ T).Subsingleton := by
+  intro x hx y hy
+  apply vsub_eq_zero_iff_eq.mp
+  exact Submodule.disjoint_def.mp hST _
+    (S.vsub_mem_direction hx.1 hy.1) (T.vsub_mem_direction hx.2 hy.2)
 
 variable {k V P : Type*} [DivisionRing k] [AddCommGroup V] [Module k V]
   [AddTorsor V P]

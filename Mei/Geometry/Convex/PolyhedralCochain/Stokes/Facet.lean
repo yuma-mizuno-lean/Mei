@@ -174,23 +174,7 @@ theorem exists_ball_sum_intersectionIndex_boundaryFacets_eq_sum_succAbove_of_fac
   have hpoly : TauCeti.IsConvexPolyhedron σ.carrier := hP ▸ P.isConvexPolyhedron
   obtain ⟨l, ε, hε, hl, hlocal, -⟩ :=
     hpoly.exists_ball_inter_eq_halfspace_of_facet hF hdim hp
-  let S := σ.boundaryFacets.filter (fun τ => τ.carrier ≠ F)
-  have hpnot : p ∉ ⋃ τ ∈ S, τ.carrier := by
-    intro hmem
-    obtain ⟨τ, hτ, hpτ⟩ := mem_iUnion₂.mp hmem
-    obtain ⟨hτmem, hτne⟩ := Finset.mem_filter.mp hτ
-    obtain ⟨G, hG, hGn, hGd, hτG⟩ := (σ.mem_boundaryFacets τ).mp hτmem
-    have he : τ.carrier = G := by rw [hτG, boundaryFacet_carrier]
-    rw [he] at hpτ hτne
-    have hinter : IsExposed ℝ F (F ∩ G) := by
-      simpa only [inter_eq_left.mpr hF.subset] using (IsExposed.refl F).inter_inter hG
-    have hFG : F ⊆ G := inter_eq_left.mp
-      (hinter.eq_of_mem_intrinsicInterior ⟨intrinsicInterior_subset hp, hpτ⟩ hp)
-    exact hτne (hF.eq_of_subset_of_finrank_add_one ⟨p, intrinsicInterior_subset hp⟩ hdim
-      hG hFG (by intro heq; rw [heq] at hGd; omega)).symm
-  have hclosed : IsClosed (⋃ τ ∈ S, τ.carrier) :=
-    S.finite_toSet.isClosed_biUnion fun τ _ => τ.isClosed_carrier
-  obtain ⟨δ, hδ, hball⟩ := Metric.isOpen_iff.mp hclosed.isOpen_compl p hpnot
+  obtain ⟨δ, hδ, hδball⟩ := σ.exists_ball_disjoint_other_boundaryFacets hF hdim hp
   refine ⟨min ε δ, lt_min hε hδ, fun s hps hT hs hv => ?_⟩
   apply stokes_of_facet_halfspace σ hF hdim (intrinsicInterior_subset hp) s hps
     (by simpa only [direction_affineSpan] using hT) hv l hl
@@ -200,9 +184,7 @@ theorem exists_ball_sum_intersectionIndex_boundaryFacets_eq_sum_succAbove_of_fac
     exact ⟨fun hyσ => (he.mp ⟨hyball, hyσ⟩).2,
       fun hyσ => (he.mpr ⟨hyball, hyσ⟩).2⟩
   · intro τ hτ hτne
-    apply Set.disjoint_left.mpr
-    intro y hy hyτ
-    exact hball (Metric.ball_subset_ball (min_le_right _ _) (hs hy))
-      (mem_iUnion₂.mpr ⟨τ, Finset.mem_filter.mpr ⟨hτ, hτne⟩, hyτ⟩)
+    exact (hδball τ hτ hτne).mono_left
+      (hs.trans (Metric.ball_subset_ball (min_le_right _ _)))
 
 end Mei.OrientedCell

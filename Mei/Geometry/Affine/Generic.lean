@@ -157,6 +157,19 @@ theorem affineSpan_insert_ne_top_of_finrank (S : AffineSubspace k P)
   rw [← direction_affineSpan, htop, direction_top, finrank_top] at hle
   exact (not_le_of_gt hS) hle
 
+/-- Adjoining two points to a subspace of codimension at least three leaves
+a proper affine subspace. The two points need not be distinct. -/
+theorem affineSpan_pair_union_ne_top_of_finrank (S : AffineSubspace k P)
+    (hS : Module.finrank k S.direction + 2 < Module.finrank k V) (x y : P) :
+    affineSpan k ({x, y} ∪ (S : Set P)) ≠ ⊤ := by
+  have hfirst := finrank_vectorSpan_insert_le S y
+  have hsecond := finrank_vectorSpan_insert_le_set k (insert y (S : Set P)) x
+  intro he
+  have he' : affineSpan k (insert x (insert y (S : Set P))) = ⊤ := by
+    simpa only [insert_union, singleton_union] using he
+  rw [← direction_affineSpan, he', direction_top, finrank_top] at hsecond
+  omega
+
 /-- Outside the span of an affine obstacle and an endpoint, every nonzero
 parameter on the line from that endpoint avoids the obstacle. The endpoint
 itself need not avoid the obstacle. -/

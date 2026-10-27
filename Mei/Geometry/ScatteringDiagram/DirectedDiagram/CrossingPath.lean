@@ -148,16 +148,6 @@ theorem exists_loopObstruction_eq_addWeight_defect
   obtain ⟨p, hprod, hp⟩ := exists_path_log_eq_addWeight_defect
     σ hσ cross hminus hplus hk b t ht z hz q
   refine ⟨p, hprod, Subtype.ext ?_⟩
-  have hm : D.levelPathProduct (k + 1) p ∈
-      (d.truncationMap ℒ (Nat.le_succ k)).bchGroupMap.ker := by
-    rw [MonoidHom.mem_ker, D.truncation_levelPathProduct (Nat.le_succ k)]
-    exact (D.levelConsistent_iff_loops k).mp hk _ _
-  have hc := Subgroup.mem_center_iff.mp
-    ((d.truncationMap ℒ (Nat.le_succ k)).ker_bchGroupMap_le_center
-      (d.ker_truncationMap_succ_le_center ℒ k) hm) ((t P)⁻¹)
-  have he : (t P)⁻¹ * D.levelPathProduct (k + 1) p * t P =
-      D.levelPathProduct (k + 1) p := by
-    rw [hc, mul_assoc, inv_mul_cancel, mul_one]
-  simpa only [he, coe_loopObstruction] using hp
+  simpa only [D.inv_mul_levelPathProduct_loop_mul hk p, coe_loopObstruction] using hp
 
 end Mei.DirectedDiagram

@@ -7,6 +7,7 @@ module
 
 public import Mei.Geometry.Convex.PolyhedralCochain.Pairing
 public import Mei.Geometry.Convex.PolyhedralComplex.Strata
+public import Mei.Geometry.Convex.Polyhedron.AdmissiblePath
 
 /-!
 # Local evaluation of a cell presentation
@@ -16,7 +17,9 @@ small transverse affine test containing that point pairs with the presentation
 of cells of the same codimension by extracting its coefficient, with the
 orientation sign. The radius works for every such test and every coefficient
 family. All cells in the presentation are transverse to the test, so the
-pairing also respects cochain relations.
+pairing also respects cochain relations. A singleton-crossing formula extracts
+the coefficient of the sole crossed cell for any finite indexed wall family; it
+requires neither a small neighborhood nor admissibility of the segment.
 
 The neighborhood is supplied by `FinitePolyhedralComplex.exists_isolating_ball`.
 The sign and transversality use `OrientedCell.intersectionIndex` and the conormal
@@ -78,5 +81,44 @@ theorem exists_ball_intersectionPairing_eq (C : FinitePolyhedralComplex h) {k : 
       rw [OrientedCell.intersectionIndex_of_disjoint (hdisj P hPQ), zero_smul]) (by simp)]
     rw [OrientedCell.intersectionIndex_of_nonempty
       ⟨q, hqv, (hσ Q).symm ▸ intrinsicInterior_subset hq⟩]
+
+open Mei.Convex WallComplement
+
+variable {ι : Type*} [Fintype ι] {W : ι → Set V}
+
+/-- A segment with exactly one indexed wall crossing extracts that wall's
+coefficient with the sign of its oriented normal evaluation. -/
+theorem intersectionPairing_eq_of_crossings_singleton
+    (σ : ι → OrientedCell h 1) (hσ : ∀ Q, (σ Q).carrier = W Q)
+    (c : ι → E)
+    {x y : WallComplement W}
+    {Q : ι} {a : ℝ} (he : crossings x y = {(Q, a)}) :
+    OrientedCell.intersectionPairing (R := R) ![x.val, y.val]
+        (∑ W, Finsupp.single (σ W) (c W)) =
+      ((σ Q).orientation.evalSign (fun _ : Fin 1 => y.val - x.val) : ℤ) • c Q := by
+  classical
+  have hmeet (j : ι) :
+      (convexHull ℝ (range ![x.val, y.val]) ∩ (σ j).carrier).Nonempty ↔ j = Q := by
+    rw [Matrix.range_cons_cons_empty, convexHull_pair, hσ j, segment_eq_image_lineMap]
+    rw [Set.image_inter_nonempty_iff]
+    constructor
+    · rintro ⟨u, hu, hWu⟩
+      have hm := (mem_crossings x y j u).mpr ⟨hu, hWu⟩
+      rw [he, mem_singleton_iff, Prod.mk.injEq] at hm
+      exact hm.1
+    · intro hW
+      rw [hW]
+      exact ⟨a, (mem_crossings x y Q a).mp (he ▸ mem_singleton _)⟩
+  rw [map_sum, Finset.sum_eq_single Q]
+  · rw [OrientedCell.intersectionPairing_single,
+      OrientedCell.intersectionIndex_of_nonempty ((hmeet Q).mpr rfl)]
+    have hframe : (fun j : Fin 1 => ![x.val, y.val] j.succ - ![x.val, y.val] 0) =
+        fun _ : Fin 1 => y.val - x.val := by ext j; fin_cases j; rfl
+    rw [hframe]
+  · intro W _ hW
+    rw [OrientedCell.intersectionPairing_single, OrientedCell.intersectionIndex_of_disjoint
+      (disjoint_iff_inter_eq_empty.mpr (not_nonempty_iff_eq_empty.mp
+        (fun hm => hW ((hmeet W).mp hm)))), zero_smul]
+  · simp
 
 end Mei.PolyhedralCochain

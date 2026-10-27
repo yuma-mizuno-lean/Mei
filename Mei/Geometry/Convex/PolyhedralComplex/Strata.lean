@@ -17,6 +17,8 @@ one, joints have codimension two, and the cells of codimension at least `k` form
 a subcomplex. The singular support of the wall family is contained in the
 codimension-at-least-two subcomplex. Outside singular support a point belongs
 to at most one wall, so a transverse crossing has an unambiguous wall index.
+The difference of successive skeleta is partitioned by the relative interiors
+of the exact-codimension cells.
 
 Near a relative interior point, the skeleton of the same or greater codimension
 agrees with that cell. One ball isolates it from its boundary and all other cells
@@ -262,6 +264,28 @@ theorem intrinsicFrontier_subset_support_codimensionAtLeast (C : FinitePolyhedra
   refine ⟨F, (C.mem_codimensionAtLeast_cells (k + 1) F).mpr
     ⟨C.face_closed P hP F (isPolyhedralFace_iff.mpr ⟨⟨x, hxF⟩, hex⟩), ?_⟩, hxF⟩
   omega
+
+/-- A point in the codimension-at-least-`k` skeleton but outside the next
+skeleton lies in the relative interior of a unique cell of codimension `k`. -/
+theorem existsUnique_mem_cellsOfCodimension_of_notMem_succ
+    (C : FinitePolyhedralComplex h) {k : ℕ} {x : V}
+    (hx : x ∈ (C.codimensionAtLeast k).support)
+    (hnext : x ∉ (C.codimensionAtLeast (k + 1)).support) :
+    ∃! P : Set V, P ∈ C.cellsOfCodimension k ∧ x ∈ intrinsicInterior ℝ P := by
+  obtain ⟨P, hP, hxP⟩ := mem_support.mp hx
+  obtain ⟨hPC, hdim⟩ := (C.mem_codimensionAtLeast_cells k P).mp hP
+  have hexact : Module.finrank ℝ (affineSpan ℝ P).direction + k = Module.finrank ℝ V := by
+    by_contra he
+    exact hnext (mem_support.mpr ⟨P,
+      (C.mem_codimensionAtLeast_cells (k + 1) P).mpr ⟨hPC, by omega⟩, hxP⟩)
+  have hint : x ∈ intrinsicInterior ℝ P := by
+    rw [← intrinsicClosure_sdiff_intrinsicFrontier]
+    exact ⟨subset_intrinsicClosure hxP, fun hfront => hnext
+      (C.intrinsicFrontier_subset_support_codimensionAtLeast hPC k hdim hfront)⟩
+  refine ⟨P, ⟨(C.mem_cellsOfCodimension k P).mpr ⟨hPC, hexact⟩, hint⟩, ?_⟩
+  rintro Q ⟨hQ, hxQ⟩
+  exact C.eq_of_mem_intrinsicInterior
+    ((C.mem_cellsOfCodimension k Q).mp hQ).1 hPC hxQ hint
 
 /-- The singular support of the wall family lies in the support of the subcomplex
 of cells of codimension at least two. -/

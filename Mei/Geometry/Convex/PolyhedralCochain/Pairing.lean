@@ -99,6 +99,33 @@ theorem isTransverse_reverse_iff (σ : OrientedCell h k) (v : Fin (k + 1) → V)
   · rw [reverse_carrier]
     exact hv.linearIndependent
 
+/-- Restricting a transverse segment to a nontrivial parameter interval preserves
+transversality. The parameters may occur in either order, and disjoint stationary
+tests are allowed. -/
+theorem IsTransverse.subsegment {σ : OrientedCell h 1} {x y a b : V}
+    (hv : σ.IsTransverse ![x, y]) {s u : ℝ}
+    (hs : s ∈ Icc (0 : ℝ) 1) (hu : u ∈ Icc (0 : ℝ) 1) (hsu : s ≠ u)
+    (ha : a = AffineMap.lineMap x y s) (hb : b = AffineMap.lineMap x y u) :
+    σ.IsTransverse ![a, b] := by
+  have hseg : segment ℝ a b ⊆ segment ℝ x y := by
+    apply (convex_segment x y).segment_subset
+    · rw [ha, segment_eq_image_lineMap]
+      exact ⟨s, hs, rfl⟩
+    · rw [hb, segment_eq_image_lineMap]
+      exact ⟨u, hu, rfl⟩
+  have hhull : convexHull ℝ (range ![a, b]) ⊆ convexHull ℝ (range ![x, y]) := by
+    simpa only [Matrix.range_cons_cons_empty, convexHull_pair] using hseg
+  have hdiff : b - a = (u - s) • (y - x) := by
+    rw [ha, hb, AffineMap.lineMap_apply_module', AffineMap.lineMap_apply_module']
+    module
+  refine ⟨hv.disjoint_intrinsicFrontier.mono_left hhull, fun hm => ?_⟩
+  have hlin := hv.linearIndependent (hm.mono (inter_subset_inter_left _ hhull))
+  rw [linearIndependent_unique_iff] at hlin ⊢
+  simp only [Function.comp_apply, Fin.default_eq_zero, Fin.succ_zero_eq_one,
+    Matrix.cons_val_one, Matrix.cons_val_zero] at hlin ⊢
+  rw [hdiff, map_smul, smul_ne_zero_iff]
+  exact ⟨sub_ne_zero.mpr hsu.symm, hlin⟩
+
 /-- A transverse test meeting a cell meets its affine span in only one point. -/
 theorem IsTransverse.subsingleton_convexHull_inter_affineSpan (hv : σ.IsTransverse v)
     (hmeet : (convexHull ℝ (range v) ∩ σ.carrier).Nonempty) :
@@ -133,6 +160,44 @@ theorem intersectionIndex_of_nonempty
 theorem intersectionIndex_of_disjoint (hdisj : Disjoint (convexHull ℝ (range v)) σ.carrier) :
     σ.intersectionIndex v = 0 := by
   rw [intersectionIndex, ite_eq_right (not_nonempty_iff_eq_empty.mpr hdisj.inter_eq)]
+
+open Classical in
+/-- A point test on a full-dimensional cell reads its orientation sign when
+the point belongs to the cell, and is zero otherwise. -/
+@[simp]
+theorem intersectionIndex_singleton (σ : OrientedCell h 0) (x : V) :
+    σ.intersectionIndex ![x] =
+      if x ∈ σ.carrier then (σ.orientation.evalSign ![] : ℤ) else 0 := by
+  have he : (fun j : Fin 0 => (![x] : Fin 1 → V) j.succ - ![x] 0) = ![] :=
+    funext fun j => Fin.elim0 j
+  rw [intersectionIndex, he]
+  simp [Matrix.range_cons]
+
+open Classical in
+/-- On a one-dimensional test the edge frame is its endpoint difference, and
+the test image is the closed segment. -/
+theorem intersectionIndex_pair (σ : OrientedCell h 1) (a b : V) :
+    σ.intersectionIndex ![a, b] =
+      if (segment ℝ a b ∩ σ.carrier).Nonempty then
+        (σ.orientation.evalSign (fun _ : Fin 1 => b - a) : ℤ) else 0 := by
+  have hframe : (fun j : Fin 1 => ![a, b] j.succ - ![a, b] 0) =
+      fun _ : Fin 1 => b - a := by
+    ext j
+    fin_cases j
+    rfl
+  rw [intersectionIndex, Matrix.range_cons_cons_empty, convexHull_pair, hframe]
+
+/-- Reversing the endpoints of a segment negates its intersection index,
+including for a stationary segment or one disjoint from the cell. -/
+theorem intersectionIndex_pair_swap (σ : OrientedCell h 1) (a b : V) :
+    σ.intersectionIndex ![b, a] = -σ.intersectionIndex ![a, b] := by
+  have hframe : (fun _ : Fin 1 => a - b) =
+      fun j => (-1 : ℝ) • (fun _ : Fin 1 => b - a) j := by
+    ext j
+    simp
+  rw [intersectionIndex_pair, intersectionIndex_pair, segment_symm ℝ b a, hframe,
+    Module.Ray.evalSign_smul]
+  split_ifs <;> simp
 
 /-- Reversing the orientation of a cell negates its intersection index. -/
 @[simp]
@@ -189,6 +254,14 @@ theorem intersectionPairing_apply (v : Fin (k + 1) → V) (x : OrientedCell h k 
     intersectionPairing (R := R) v x = x.sum fun σ c => σ.intersectionIndex v • c := by
   rw [intersectionPairing, Finsupp.lsum_apply]
   exact Finsupp.sum_congr fun σ _ => by rw [LinearMap.smul_apply, LinearMap.id_apply]
+
+/-- Reversing a segment negates its pairing with a finite wall presentation. -/
+theorem intersectionPairing_pair_swap (a b : V) (f : OrientedCell h 1 →₀ E) :
+    intersectionPairing (R := R) ![b, a] f = -intersectionPairing (R := R) ![a, b] f := by
+  simp only [intersectionPairing_apply, Finsupp.sum, ← Finset.sum_neg_distrib]
+  apply Finset.sum_congr rfl
+  intro σ _
+  rw [σ.intersectionIndex_pair_swap, neg_smul]
 
 /-- The intersection pairing commutes with linear maps of coefficients. -/
 theorem intersectionPairing_comp_mapRange {E' : Type*} [AddCommGroup E'] [Module R E']

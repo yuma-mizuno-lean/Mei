@@ -9,6 +9,8 @@ public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Consistency
 public import Mei.Geometry.ScatteringDiagram.WallSpace.Joint
 public import Mei.Geometry.ScatteringDiagram.LinearTerm
 public import Mei.Geometry.Convex.Polyhedron.Path.Log
+import Mei.Algebra.Lie.BCH.CentralExtension
+import Mei.Algebra.Lie.Graded.Truncation.Transition
 
 /-!
 # Directed loop obstructions and tangent-degree vanishing
@@ -71,6 +73,21 @@ theorem coe_loopObstruction (hk : D.LevelConsistent k)
     (γ : AdmissiblePLPath x x) :
     (D.loopObstruction hk γ : d.truncatedLie ℒ (k + 1)) =
       log (D.levelPathProduct (k + 1) γ) := (rfl)
+
+/-- Under lower-order consistency, conjugating a loop product at the next order
+by any chamber lift leaves it unchanged. -/
+theorem inv_mul_levelPathProduct_loop_mul (hk : D.LevelConsistent k)
+    {x : WallComplement (fun j : D.active (k + 1) => (D.wall j).support)}
+    (γ : AdmissiblePLPath x x) (g : d.truncatedGroup ℒ (k + 1)) :
+    g⁻¹ * D.levelPathProduct (k + 1) γ * g = D.levelPathProduct (k + 1) γ := by
+  have hm : D.levelPathProduct (k + 1) γ ∈
+      (d.truncationMap ℒ (Nat.le_succ k)).bchGroupMap.ker := by
+    rw [MonoidHom.mem_ker, D.truncation_levelPathProduct (Nat.le_succ k)]
+    exact (D.levelConsistent_iff_loops k).mp hk _ _
+  have hc := Subgroup.mem_center_iff.mp
+    ((d.truncationMap ℒ (Nat.le_succ k)).ker_bchGroupMap_le_center
+      (d.ker_truncationMap_succ_le_center ℒ k) hm) g⁻¹
+  rw [hc, mul_assoc, inv_mul_cancel, mul_one]
 
 /-- Reversing a loop negates its obstruction. -/
 @[simp]

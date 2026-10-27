@@ -396,6 +396,16 @@ theorem map_mk (f : E →ₗ[R] E') (σ : OrientedCell h k) (c : E) :
     map f (mk σ c) = mk σ (f c) :=
   lift_mk _ _ _ σ c
 
+/-- Changing coefficients in a finite presentation represents the induced map
+of its cochain class. -/
+@[simp]
+theorem map_ofFinsupp (f : E →ₗ[R] E') (x : OrientedCell h k →₀ E) :
+    map f (ofFinsupp (R := R) x) = ofFinsupp (Finsupp.mapRange.linearMap f x) := by
+  induction x using Finsupp.induction_linear with
+  | zero => simp
+  | add x y hx hy => simp only [map_add, hx, hy]
+  | single σ c => simp
+
 @[simp]
 theorem map_id : map (h := h) (k := k) (LinearMap.id : E →ₗ[R] E) = LinearMap.id := by
   ext σ c

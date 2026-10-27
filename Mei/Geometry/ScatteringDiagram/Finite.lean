@@ -6,6 +6,8 @@ Authors: Codex
 module
 
 public import Mei.Geometry.Convex.PolyhedralComplex.PathSubdivision
+public import Mei.Geometry.Convex.PolyhedralComplex.TriangleReduction
+public import Mei.Geometry.Convex.Polyhedron.Path.Product
 
 /-!
 # Finite wall diagrams and path products
@@ -18,6 +20,8 @@ and relabelling.
 Positive rescaling of normals, or reversing chosen normals while inverting their
 labels, preserves every path product. Consistency means endpoint independence;
 it is equivalent to triviality of all admissible loop products.
+It suffices to test three-edge loops: admissible spokes to a common apex reduce
+every polygonal loop to triangular relations.
 
 The construction uses Mathlib's `FreeGroup.lift` and the signed polygonal crossing
 words in `Mei.Geometry.Convex.PolyhedralComplex.CrossingWord`.
@@ -27,7 +31,7 @@ public section
 
 noncomputable section
 
-open Set Mei.Convex
+open Set Mei.Convex Mei.Convex.WallComplement
 
 namespace Mei
 
@@ -104,6 +108,51 @@ theorem pathProduct_toPath (e : x ⟶ y) :
       if 0 < D.normal a.1 (y.val - x.val) then (D.label a.1)⁻¹ else D.label a.1).prod := by
   simp [Quiver.Hom.toPath, pathProduct, C.segmentCrossingWord_def,
     MonoidHom.map_list_prod, List.map_map, C.crossingLetter_def, Function.comp_def, apply_ite]
+
+/-- The crossing-word product agrees with the indexed simultaneous-event product.
+The commutation hypothesis is needed by the latter interface; regular crossings
+of a complex contain only one wall. -/
+theorem pathProduct_eq_wallPathProduct
+    (comm : ∀ a b : C.walls,
+      affineSpan ℝ (a : Set V) = affineSpan ℝ (b : Set V) →
+        Commute (D.label a) (D.label b)) (p : AdmissiblePLPath x y) :
+    D.pathProduct p = p.wallPathProduct D.normal D.label comm := by
+  have hsegment {x y : WallComplement (fun P : C.walls => (P : Set V))}
+      (e : x ⟶ y) : D.pathProduct e.toPath =
+        e.toPath.wallPathProduct D.normal D.label comm := by
+    let T := (C.orderedCrossings e).map Prod.snd
+    have hT : T.Pairwise (· < ·) := List.pairwise_map.mpr (C.pairwise_orderedCrossings e)
+    have hcover : ∀ t ∈ orderedCrossingTimes e, t ∈ T := by
+      intro t ht
+      obtain ⟨Q, hQ⟩ := (mem_orderedCrossingTimes e t).mp ht
+      exact List.mem_map.mpr ⟨(Q, t), (C.mem_orderedCrossings e _).mpr hQ, rfl⟩
+    rw [pathProduct_toPath, Quiver.Path.wallPathProduct_toPath,
+      segmentPathProduct_eq_prod_of_crossingTimes D.normal D.label comm e T hT hcover]
+    simp only [T, List.map_reverse, List.map_map, Function.comp_def]
+    apply congrArg List.prod
+    apply congrArg List.reverse
+    apply List.map_congr_left
+    intro a ha
+    have ha' := (C.mem_orderedCrossings e a).mp ha
+    have hs : signedCrossingEvent D.normal x y a.2 =
+        {(a.1, if 0 < D.normal a.1 (y.val - x.val) then -1 else 1)} := by
+      ext ⟨Q, z⟩
+      rw [mem_signedCrossingEvent, Finset.mem_singleton, Prod.mk.injEq]
+      constructor
+      · rintro ⟨hQ, hz⟩
+        have he : Q = a.1 := congrArg (fun b => b.val.1)
+          (C.crossing_time_injective e (a₁ := ⟨(Q, a.2), hQ⟩) (a₂ := ⟨a, ha'⟩) rfl)
+        subst Q
+        exact ⟨rfl, hz⟩
+      · rintro ⟨rfl, rfl⟩
+        exact ⟨ha', rfl⟩
+    rw [crossingEventProduct_singleton D.normal D.label comm e a.2 _ hs]
+    split_ifs <;> simp
+  induction p with
+  | nil => simp
+  | cons p e ih =>
+    rw [pathProduct_cons, ← Quiver.Path.comp_toPath_eq_cons,
+      Quiver.Path.wallPathProduct_comp, ih, hsegment]
 
 /-- A path product lies in every subgroup containing the labels of all crossed walls. -/
 theorem pathProduct_mem {S : Subgroup H} (p : AdmissiblePLPath x y)
@@ -246,6 +295,27 @@ theorem consistent_iff_loops : D.Consistent ↔
   · intro hc x y p q
     have he := hc x (p.comp q.reverse)
     exact (inv_mul_eq_one.mp (by simpa only [pathProduct_comp, pathProduct_reverse] using he)).symm
+
+/-- Consistency can be tested on admissible three-edge loops. The triangles may
+contain several joints; reducing them to local meridians is a further step. -/
+theorem consistent_iff_triangles : D.Consistent ↔
+    ∀ (x y z : WallComplement (fun P : C.walls => (P : Set V)))
+      (e : x ⟶ y) (f : y ⟶ z) (r : z ⟶ x),
+      D.pathProduct ((e.toPath.cons f).cons r) = 1 := by
+  constructor
+  · intro hD x y z e f r
+    exact D.consistent_iff_loops.mp hD x _
+  · intro htri
+    apply D.consistent_iff_loops.mpr
+    intro x p
+    rw [pathProduct_def, ← MonoidHom.mem_ker]
+    apply Subgroup.normalClosure_le_normal (N := (FreeGroup.lift D.label).ker) ?_
+      (p.crossingWord_mem_normalClosure_triangles D.normal D.ker_normal
+        isOpen_univ (fun _ _ => mem_univ _))
+    intro g hg
+    obtain ⟨a, b, c, e, f, r, _, _, _, rfl⟩ := (C.mem_triangleWords D.normal univ g).mp hg
+    apply MonoidHom.mem_ker.mpr
+    simpa only [pathProduct_def] using htri a b c e f r
 
 variable {D} in
 /-- A homomorphism of label groups preserves consistency. -/
