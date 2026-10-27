@@ -183,6 +183,71 @@ theorem boundaryFacet_orientation (σ : OrientedCell h k) {F : Set V}
   have := h.finiteDimensional
   rfl
 
+/-- A facet inherited by a same-codimension subcell has the same signed conormal
+orientation as the original facet. Both parent cells carry the same orientation;
+the smaller facet need only be contained in the original one. -/
+theorem boundaryFacet_orientation_eq_of_subset (σ τ : OrientedCell h k)
+    (hτσ : τ.carrier ⊆ σ.carrier) (ho : τ.orientation = σ.orientation)
+    {F G : Set V} (hF : IsExposed ℝ σ.carrier F) (hneF : F.Nonempty)
+    (hdF : finrank ℝ (vectorSpan ℝ F) + 1 = finrank ℝ (vectorSpan ℝ σ.carrier))
+    (hG : IsExposed ℝ τ.carrier G) (hneG : G.Nonempty)
+    (hdG : finrank ℝ (vectorSpan ℝ G) + 1 = finrank ℝ (vectorSpan ℝ τ.carrier))
+    (hGF : G ⊆ F) :
+    (τ.boundaryFacet hG hneG hdG).orientation =
+      (σ.boundaryFacet hF hneF hdF).orientation := by
+  have := h.finiteDimensional
+  -- The two facets have the same tangent hyperplane inside the parent direction.
+  have hd : (affineSpan ℝ G).direction = (affineSpan ℝ F).direction := by
+    apply Submodule.eq_of_le_of_finrank_eq
+      (AffineSubspace.direction_le (affineSpan_mono ℝ hGF))
+    have hσ := σ.finrank_direction_add
+    have hτ := τ.finrank_direction_add
+    rw [direction_affineSpan] at hσ hτ
+    rw [direction_affineSpan, direction_affineSpan]
+    omega
+  -- A vector from the smaller parent to its facet points outward for both parents.
+  have hnot : ¬ τ.carrier ⊆ F := by
+    intro ht
+    have hle := Submodule.finrank_mono (vectorSpan_mono ℝ ht)
+    have hσ := σ.finrank_direction_add
+    have hτ := τ.finrank_direction_add
+    rw [direction_affineSpan] at hσ hτ
+    omega
+  obtain ⟨x, hx, hxF⟩ := Set.not_subset.mp hnot
+  have hneGcopy := hneG
+  obtain ⟨y, hy⟩ := hneGcopy
+  let v : vectorSpan ℝ τ.carrier :=
+    ⟨y - x, vsub_mem_vectorSpan ℝ (hG.subset hy) hx⟩
+  have hposG := (hG.outwardNormal_apply_pos_iff hneG hdG hx hy).mpr
+    (fun hxG => hxF (hGF hxG))
+  have hnG : (v : V) ∉ (affineSpan ℝ G).direction := by
+    intro hv
+    have hz : (hG.outwardNormal hneG hdG).someVector v = 0 := by
+      apply LinearMap.mem_ker.mp
+      rw [IsExposed.ker_outwardNormal]
+      simpa only [Submodule.mem_comap, Submodule.subtype_apply, direction_affineSpan] using hv
+    exact (ne_of_gt hposG) hz
+  let u : vectorSpan ℝ σ.carrier :=
+    ⟨y - x, vsub_mem_vectorSpan ℝ (hF.subset (hGF hy)) (hτσ hx)⟩
+  have hposF := (hF.outwardNormal_apply_pos_iff hneF hdF (hτσ hx) (hGF hy)).mpr hxF
+  have hnF : (u : V) ∉ (affineSpan ℝ F).direction := by
+    simpa only [u, v, ← hd] using hnG
+  have hp : (σ.boundaryFacet hF hneF hdF).orientation.IsConormal
+      (affineSpan ℝ G).direction := by
+    rw [hd]
+    exact (σ.boundaryFacet hF hneF hdF).isConormal
+  -- The common outward contraction determines the top conormal orientation.
+  apply (Module.Ray.contract_eq_contract_iff _ _
+    (τ.boundaryFacet hG hneG hdG).isConormal hp
+    (τ.boundaryFacet hG hneG hdG).finrank_quotient_direction v hnG).mp
+  rw [τ.contract_boundaryFacet hG hneG hdG v hnG hposG, ho]
+  exact (σ.contract_boundaryFacet hF hneF hdF u hnF hposF).symm.trans
+    (Module.Ray.contract_congr _ _
+      (σ.boundaryFacet hF hneF hdF).isConormal hp
+      (σ.boundaryFacet hF hneF hdF).finrank_quotient_direction
+      (τ.boundaryFacet hG hneG hdG).finrank_quotient_direction
+      (y - x) hnF hnG rfl)
+
 private theorem finite_boundaryFacets (σ : OrientedCell h k) :
     {τ : OrientedCell h (k + 1) | ∃ (F : Set V) (hF : IsExposed ℝ σ.carrier F)
       (hne : F.Nonempty)
