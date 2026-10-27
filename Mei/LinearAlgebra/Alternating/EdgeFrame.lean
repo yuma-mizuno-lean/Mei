@@ -7,7 +7,6 @@ module
 
 public import Mathlib.LinearAlgebra.AffineSpace.AffineSubspace.Basic
 public import Mei.LinearAlgebra.Alternating.Extension
-public import Mathlib.LinearAlgebra.Dual.Lemmas
 
 /-!
 # Alternating forms on edge frames of simplices and their faces
