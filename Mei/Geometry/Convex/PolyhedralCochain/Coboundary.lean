@@ -112,6 +112,20 @@ theorem coboundaryPresentation_single (σ : OrientedCell h k) (c : E) :
   simp only [coboundaryPresentation, Finsupp.lsum_single, LinearMap.sum_apply,
     Finsupp.lsingle_apply]
 
+/-- Every cell supported in a boundary presentation is a signed boundary facet
+of a supported source cell. Cancellation can only shrink the boundary support. -/
+theorem exists_boundaryFacet_of_mem_support_coboundaryPresentation
+    (f : OrientedCell h k →₀ E) {τ : OrientedCell h (k + 1)}
+    (hτ : τ ∈ (coboundaryPresentation (R := R) f).support) :
+    ∃ σ ∈ f.support, τ ∈ σ.boundaryFacets := by
+  classical
+  rw [← Finsupp.sum_single f] at hτ
+  simp only [Finsupp.sum, map_sum, coboundaryPresentation_single] at hτ
+  obtain ⟨σ, hσ, hτ⟩ := Finsupp.mem_support_finsetSum τ hτ
+  obtain ⟨υ, hυ, hτ⟩ := Finsupp.mem_support_finsetSum τ hτ
+  obtain ⟨rfl, _⟩ := (Finsupp.mem_support_single _ _ _).mp hτ
+  exact ⟨σ, hσ, hυ⟩
+
 /-- The presentation-level signed facet sum represents the coboundary of the source
 presentation. -/
 @[simp]

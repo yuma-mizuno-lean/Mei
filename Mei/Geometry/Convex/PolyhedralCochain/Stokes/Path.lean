@@ -80,14 +80,9 @@ theorem intersectionPairing_coboundaryPresentation_eq_sub_of_admissible
     rw [hj]
     exact hallowed t ht htB j
   have hsupport : ∀ τ ∈ g.support, ∃ a : J, τ.carrier = W (j a) := by
-    dsimp only [g]
-    rw [← Finsupp.sum_single f]
-    simp only [Finsupp.sum, map_sum, coboundaryPresentation_single]
     intro τ hτ
-    obtain ⟨P, hP, hτ⟩ := Finsupp.mem_support_finsetSum τ hτ
-    obtain ⟨υ, hυ, hτ⟩ := Finsupp.mem_support_finsetSum τ hτ
-    obtain ⟨rfl, _⟩ := (Finsupp.mem_support_single _ _ _).mp hτ
-    exact hcover P hP τ hυ
+    obtain ⟨P, hP, hτ⟩ := exists_boundaryFacet_of_mem_support_coboundaryPresentation f hτ
+    exact hcover P hP τ hτ
   have hends : (0 : ℝ) ∈ Bᶜ ∧ (1 : ℝ) ∈ Bᶜ := by
     constructor
     · rintro ⟨⟨a, t⟩, ht, he⟩

@@ -65,10 +65,11 @@ theorem levelPathProduct_adapted_loop_eq_one_of_coboundary_crossingDefectCochain
         (fun Q => h.realCharacter (cross Q).normal) (fun Q => (cross Q).defect hk b t ht) = 0 := by
     intro x p
     exact p.wallCrossingSum_loop_eq_zero_of_coboundary_eq_zero (R := R) _ _
-      (fun Q => (cross Q).sign_normal)
+      (fun Q _ => (cross Q).sign_normal)
       (by simpa only [crossingDefectCochain_def] using hc)
-  rw [show (fun Q => (σ Q).carrier) =
-    (fun Q : (D.adaptedComplex (k + 1)).walls => (Q : Set V)) from funext hσ] at hsum
+  have hcarriers : (fun Q => (σ Q).carrier) =
+      (fun Q : (D.adaptedComplex (k + 1)).walls => (Q : Set V)) := funext hσ
+  rw [hcarriers] at hsum
   obtain ⟨P, ⟨hP, hx⟩, _⟩ :=
     (D.adaptedComplex (k + 1)).exists_unique_mem_interior_cellsOfCodimension_zero
       (D.support_adaptedComplex (k + 1)) (by

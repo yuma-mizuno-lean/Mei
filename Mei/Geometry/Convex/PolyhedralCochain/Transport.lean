@@ -120,14 +120,10 @@ private theorem wallCrossingSum_loop_eq_zero_of_eq_coboundary
       obtain ⟨j, _, hj⟩ := Finsupp.mem_support_finsetSum υ hυ
       exact ⟨j, ((Finsupp.mem_support_single _ _ _).mp hj).1⟩
     have hg₁ : ∀ υ ∈ g.support, ∃ j : J, υ = τ j := by
-      dsimp only [g]
-      rw [← Finsupp.sum_single f]
-      simp only [Finsupp.sum, map_sum, PolyhedralCochain.coboundaryPresentation_single]
       intro υ hυ
-      obtain ⟨P, hP, hυ⟩ := Finsupp.mem_support_finsetSum υ hυ
-      obtain ⟨υ', hυ', hυ⟩ := Finsupp.mem_support_finsetSum υ hυ
-      obtain ⟨rfl, _⟩ := (Finsupp.mem_support_single _ _ _).mp hυ
-      exact ⟨⟨⟨P, hP⟩, ⟨υ, hυ'⟩⟩, rfl⟩
+      obtain ⟨P, hP, hυ⟩ :=
+        PolyhedralCochain.exists_boundaryFacet_of_mem_support_coboundaryPresentation f hυ
+      exact ⟨⟨⟨P, hP⟩, ⟨υ, hυ⟩⟩, rfl⟩
     -- Compare both representatives on the same edges of the enlarged-wall loop.
     have hpair {u v : WallComplement W} (q : AdmissiblePLPath u v) :
         (r.mapPath q).addWeightOfEPs (fun u v => OrientedCell.intersectionPairing (R := R)
@@ -161,16 +157,29 @@ private theorem wallCrossingSum_loop_eq_zero_of_eq_coboundary
 
 /-- A closed codimension-one wall cochain has zero additive transport around
 all admissible loops. Closedness is equality in the cochain quotient, so
-orientation relations, subdivisions and coincident contributions are retained. -/
+orientation relations, subdivisions and coincident contributions are retained.
+Normals need agree with the orientations only on walls with nonzero coefficients. -/
 theorem wallCrossingSum_loop_eq_zero_of_coboundary_eq_zero
     {x : WallComplement (fun j => (σ j).carrier)} (p : AdmissiblePLPath x x)
     (ν : ι → V →ₗ[ℝ] ℝ) (c : ι → E)
-    (hν : ∀ j v, SignType.sign (ν j v) =
+    (hν : ∀ j, c j ≠ 0 → ∀ v, SignType.sign (ν j v) =
       (σ j).orientation.evalSign (fun _ : Fin 1 => v))
     (hc : PolyhedralCochain.coboundary (∑ j, PolyhedralCochain.mk (R := R) (σ j) (c j)) = 0) :
     p.wallCrossingSum ν c = 0 := by
+  classical
+  -- Fill in unused normals to apply the geometric perturbation argument.
+  choose m _ _ hm using fun j => (σ j).exists_integral_coorientation
+  let μ : ι → V →ₗ[ℝ] ℝ := fun j => if c j = 0 then h.realCharacter (m j) else ν j
+  have hμ : ∀ j v, SignType.sign (μ j v) =
+      (σ j).orientation.evalSign (fun _ : Fin 1 => v) := by
+    intro j v
+    by_cases hj : c j = 0
+    · simpa only [μ, ite_eq_left hj] using hm j v
+    · simpa only [μ, ite_eq_right hj] using hν j hj v
+  have he := p.wallCrossingSum_eq_of_cochain_eq (R := R) p ν μ c c
+    hν (fun j _ => hμ j) rfl (fun _ => rfl) (fun _ => rfl) rfl
   obtain ⟨B, hB⟩ := (PolyhedralCochain.coboundary_eq_zero_iff_exists_coboundary _).mp hc
   obtain ⟨f, rfl⟩ := PolyhedralCochain.ofFinsupp_surjective B
-  exact p.wallCrossingSum_loop_eq_zero_of_eq_coboundary ν c hν f hB
+  exact he.trans (p.wallCrossingSum_loop_eq_zero_of_eq_coboundary μ c hμ f hB)
 
 end Quiver.Path
