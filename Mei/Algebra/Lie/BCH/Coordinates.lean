@@ -7,6 +7,7 @@ module
 
 public import Mei.Algebra.Lie.BCH.Completion
 public import Mei.Algebra.Lie.Graded.Completion
+public import Mei.Algebra.PositiveDegrees.Completion
 
 /-!
 # Exponential coordinates on completed BCH groups
@@ -115,3 +116,56 @@ theorem completedBCHExp_symm_inv (g : d.completedBCHGroup ℒ) :
   simp only [Equiv.apply_symm_apply, completedBCHExp_neg]
 
 end Mei.PositiveDegrees
+
+namespace Mei.GradedLieHom
+
+universe u
+
+variable {N R : Type*} {L L' : Type u} [AddCommMonoid N] [CommRing R] [Algebra ℚ R]
+  [LieRing L] [LieAlgebra R L] [LieAlgebra ℚ L] [IsScalarTower ℚ R L]
+  [LieRing L'] [LieAlgebra R L'] [LieAlgebra ℚ L'] [IsScalarTower ℚ R L']
+  [DecidableEq N] {d : PositiveDegrees N}
+  {ℒ : N → Submodule R L} {ℳ : N → Submodule R L'}
+  [GradedLieAlgebra ℒ] [IsPositiveGrading d ℒ]
+  [GradedLieAlgebra ℳ] [IsPositiveGrading d ℳ]
+
+/-- A surjective degree-preserving Lie map induces a surjection on completed BCH groups. -/
+theorem completedMap_surjective (f : GradedLieHom (PositiveDegreeMap.id d) ℒ ℳ)
+    (hf : Function.Surjective f) : Function.Surjective f.completedMap := by
+  classical
+  let F := LieIdeal.completionFiltration (d.degreeIdeal ℒ) (d.degreeIdeal_antitone ℒ)
+  let G := LieIdeal.completionFiltration (d.degreeIdeal ℳ) (d.degreeIdeal_antitone ℳ)
+  let E := d.completionEquivPi ℒ F (fun k => d.degreeIdeal_toSubmodule ℒ k)
+    (fun n hn => IsPositiveGrading.eq_bot n (Or.inl hn))
+  let E' := d.completionEquivPi ℳ G (fun k => d.degreeIdeal_toSubmodule ℳ k)
+    (fun n hn => IsPositiveGrading.eq_bot n (Or.inl hn))
+  intro g
+  let y := (d.completedBCHExp ℳ).symm g
+  let b := E' y
+  choose a ha using fun n => f.surjective_on_piece hf n (b n)
+  let x := E.symm a
+  refine ⟨d.completedBCHExp ℒ x, ?_⟩
+  apply CompletedGroup.ext
+  intro k
+  rw [f.projection_completedMap_of_le k (a := k) (by simp),
+    PositiveDegrees.projection_completedBCHExp,
+    LieHom.bchGroupMap_exp, ← (d.completedBCHExp ℳ).apply_symm_apply g,
+    PositiveDegrees.projection_completedBCHExp]
+  congr 1
+  have hy : E'.symm b = (d.completedBCHExp ℳ).symm g := E'.symm_apply_apply y
+  rw [← hy]
+  rw [LieIdeal.completionProjection_apply, LieIdeal.completionProjection_apply]
+  -- The abbreviations name the filtrations and their product comparisons above.
+  change f.truncatedMap k (by simp) (F.projection k (E.symm a)) =
+    G.projection k (E'.symm b)
+  rw [show F.projection k (E.symm a) =
+      Submodule.Quotient.mk (∑ n ∈ (d.finite_cutoff k).toFinset, (a n : L)) from
+      d.projection_completionEquivPi_symm ℒ F _ _ a k,
+    show G.projection k (E'.symm b) =
+      Submodule.Quotient.mk (∑ n ∈ (d.finite_cutoff k).toFinset, (b n : L')) from
+      d.projection_completionEquivPi_symm ℳ G _ _ b k,
+    truncatedMap_mk, map_sum]
+  congr 1
+  exact Finset.sum_congr rfl (fun n _ => ha n)
+
+end Mei.GradedLieHom

@@ -7,6 +7,7 @@ module
 
 public import Mei.Geometry.ScatteringDiagram.KS.Reconstruction.Classification
 public import Mei.Geometry.ScatteringDiagram.KS.Completion.Map
+public import Mei.Algebra.Lie.BCH.Coordinates
 
 /-!
 # Equivalence classes of consistent KS diagrams
@@ -160,6 +161,14 @@ theorem chamberTransport_map (f : GradedLieHom (PositiveDegreeMap.id d) ℒ ℳ)
       CompletedDiagram.negDegreePoint_mapDiagram]
     exact D.diagram.transport_mapDiagram D.consistent f _ _
 
+/-- An injective degree-preserving coefficient map embeds consistent diagram classes. -/
+theorem map_injective (f : GradedLieHom (PositiveDegreeMap.id d) ℒ ℳ)
+    (hf : Function.Injective f) : Function.Injective (map (s := s) f) := by
+  intro x y hxy
+  apply chamberTransport_injective
+  apply f.completedMap_injective hf
+  simpa only [chamberTransport_map] using congrArg chamberTransport hxy
+
 /-- The identity coefficient map fixes every consistent diagram class. -/
 @[simp]
 theorem map_id (x : Class (s := s) (d := d) (ℒ := ℒ)) :
@@ -185,6 +194,27 @@ theorem map_comp (f : GradedLieHom (PositiveDegreeMap.id d) ℒ ℳ)
   rw [he, GradedLieHom.completedMap_comp, MonoidHom.comp_apply]
 
 end Class
+
+variable {ℳ : N → Submodule R L'} [GradedLieAlgebra ℳ] [IsPositiveGrading d ℳ]
+
+/-- An injective coefficient map reflects equivalence of consistent diagrams. -/
+theorem mapDiagram_equivalent_iff (f : GradedLieHom (PositiveDegreeMap.id d) ℒ ℳ)
+    (hf : Function.Injective f) (D E : ConsistentDiagram s d ℒ) :
+    (D.diagram.mapDiagram f).Equivalent (E.diagram.mapDiagram f) ↔
+      D.diagram.Equivalent E.diagram := by
+  constructor
+  · intro h
+    apply (toClass_eq_iff D E).mp
+    apply Class.map_injective f hf
+    simpa only [Class.map_toClass] using
+      (toClass_eq_iff ⟨D.complex, D.diagram.mapDiagram f, D.consistent.mapDiagram f⟩
+        ⟨E.complex, E.diagram.mapDiagram f, E.consistent.mapDiagram f⟩).mpr h
+  · intro h
+    apply (toClass_eq_iff ⟨D.complex, D.diagram.mapDiagram f, D.consistent.mapDiagram f⟩
+      ⟨E.complex, E.diagram.mapDiagram f, E.consistent.mapDiagram f⟩).mp
+    simpa only [← Class.map_toClass] using
+      congrArg (Class.map f) ((toClass_eq_iff D E).mpr h)
+
 end ConsistentDiagram
 
 end General
@@ -234,4 +264,31 @@ theorem projection_reconstructionEquiv_toClass
   D.diagram.projection_transport D.consistent k p
 
 end PositiveDegrees
+
+namespace ConsistentDiagram.Class
+
+variable {N V R : Type*} {L : Type u} [AddCommGroup N]
+  [NormedAddCommGroup V] [NormedSpace ℝ V]
+  [CommRing R] [Algebra ℚ R] [DecidableEq N]
+  [LieRing L] [LieAlgebra R L] [LieAlgebra ℚ L] [IsScalarTower ℚ R L]
+  {i : N →+ V} (d : PositiveDegrees N)
+  (h : TauCeti.Toric.IsIntegralLattice i) (ℒ : N → Submodule R L)
+  [GradedLieAlgebra ℒ] [IsPositiveGrading d ℒ]
+
+/-- A surjective coefficient map is surjective on consistent diagram classes. -/
+theorem map_surjective {L' : Type u}
+    [LieRing L'] [LieAlgebra R L'] [LieAlgebra ℚ L'] [IsScalarTower ℚ R L']
+    {ℳ : N → Submodule R L'} [GradedLieAlgebra ℳ] [IsPositiveGrading d ℳ]
+    (f : GradedLieHom (PositiveDegreeMap.id d) ℒ ℳ) (hf : Function.Surjective f) :
+    Function.Surjective (ConsistentDiagram.Class.map (s := KSSpace.continuousDual h) f) := by
+  intro y
+  obtain ⟨x, hx⟩ := f.completedMap_surjective hf (d.reconstructionEquiv h ℳ y)
+  refine ⟨(d.reconstructionEquiv h ℒ).symm x, ?_⟩
+  apply (d.reconstructionEquiv h ℳ).injective
+  rw [PositiveDegrees.reconstructionEquiv_apply, chamberTransport_map,
+    ← PositiveDegrees.reconstructionEquiv_apply, Equiv.apply_symm_apply]
+  exact hx
+
+
+end ConsistentDiagram.Class
 end Mei

@@ -6,6 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Algebra.Lie.Graded.Truncation.Basic
+public import Mei.Algebra.PositiveDegrees.Subquotient
 
 /-!
 # Graded Lie homomorphisms and their truncations
@@ -167,6 +168,46 @@ theorem truncatedMap_mk (f : GradedLieHom T ℒ ℳ) {a : ℕ} (k : ℕ)
     f.truncatedMap k h (Submodule.Quotient.mk x) =
       Submodule.Quotient.mk (f x) := by
   exact (d.degreeIdeal ℒ a).mapQ_apply (e.degreeIdeal ℳ k) f.toLieHom _ x
+
+variable {ℳ₀ : N → Submodule R L'} [GradedLieAlgebra ℳ₀] [IsPositiveGrading d ℳ₀]
+
+/-- An injective degree-preserving Lie map induces an injection at each cutoff. -/
+theorem truncatedMap_injective (f : GradedLieHom (PositiveDegreeMap.id d) ℒ ℳ₀)
+    (hf : Function.Injective f) (k : ℕ) :
+    Function.Injective (f.truncatedMap k (by simp : (PositiveDegreeMap.id d).modulus k ≤ k)) := by
+  rw [truncatedMap_def]
+  apply (LieIdeal.mapQ_injective_iff _ _ _ _).mpr
+  intro x hx
+  have h := d.degreeSubmodule_comap ℳ₀ ℒ f.toLieHom.toLinearMap hf
+    (fun _ _ hx => by simpa only [LieHom.coe_toLinearMap, coe_toLieHom,
+      PositiveDegreeMap.id_apply] using f.map_mem hx) k
+  have hx' : x ∈ (d.degreeSubmodule ℳ₀ k).comap f.toLieHom.toLinearMap := by
+    simpa only [Submodule.mem_comap, LieHom.coe_toLinearMap, coe_toLieHom,
+      ← d.degreeIdeal_toSubmodule ℳ₀ k, LieSubmodule.mem_toSubmodule] using
+      (LieIdeal.mem_comap.mp hx)
+  exact (LieSubmodule.mem_toSubmodule _).mp (by rw [d.degreeIdeal_toSubmodule, h]; exact hx')
+
+/-- A surjective Lie map induces surjections on the prescribed degree truncations. -/
+theorem truncatedMap_surjective (f : GradedLieHom T ℒ ℳ) (hf : Function.Surjective f)
+    {a : ℕ} (k : ℕ) (h : T.modulus k ≤ a) :
+    Function.Surjective (f.truncatedMap k h) := by
+  rw [truncatedMap_def]
+  exact LieIdeal.mapQ_surjective _ _ _ _ hf
+
+omit [IsPositiveGrading d ℒ] [IsPositiveGrading d ℳ₀] in
+/-- A surjective degree-preserving Lie map is surjective on each homogeneous piece. -/
+theorem surjective_on_piece (f : GradedLieHom (PositiveDegreeMap.id d) ℒ ℳ₀)
+    (hf : Function.Surjective f) (n : N) (y : ℳ₀ n) :
+    ∃ x : ℒ n, f x = y := by
+  obtain ⟨z, hz⟩ := hf y
+  refine ⟨DirectSum.decompose ℒ z n, ?_⟩
+  have hcomp := DirectSum.map_decompose_shift ℒ ℳ₀ f.toLieHom.toLinearMap.toAddMonoidHom
+    (fun n => n) Function.injective_id (fun _ _ hx => by simpa using f.map_mem hx) n z
+  -- Expose the underlying Lie map hidden by the additive and linear map wrappers.
+  change f (DirectSum.decompose ℒ z n : L) =
+    (DirectSum.decompose ℳ₀ (f z) n : L') at hcomp
+  rw [hz, DirectSum.decompose_of_mem_same ℳ₀ y.property] at hcomp
+  exact hcomp
 
 /-- The induced map preserves homogeneous pieces along the original degree map. -/
 theorem truncatedMap_mem (f : GradedLieHom T ℒ ℳ) {a : ℕ} (k : ℕ)

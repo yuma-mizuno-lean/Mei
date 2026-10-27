@@ -206,6 +206,20 @@ theorem projection_completedMap_of_le (f : GradedLieHom T ℒ ℳ) (k : ℕ)
   simp only [LieHom.bchGroupMap_comp, MonoidHom.comp_apply] at hf
   exact (congrArg (f.truncatedMap k le_rfl).bchGroupMap hp.symm).trans hf
 
+variable {ℳ₀ : N → Submodule R L'} [GradedLieAlgebra ℳ₀] [IsPositiveGrading d ℳ₀]
+
+/-- An injective degree-preserving Lie map induces an injective map of completions. -/
+theorem completedMap_injective (f : GradedLieHom (PositiveDegreeMap.id d) ℒ ℳ₀)
+    (hf : Function.Injective f) : Function.Injective f.completedMap := by
+  intro x y hxy
+  apply CompletedGroup.ext
+  intro k
+  apply LieHom.bchGroupMap_injective (f.truncatedMap_injective hf k)
+  have h := congrArg (CompletedGroup.projection k) hxy
+  rw [f.projection_completedMap_of_le k (a := k) (by simp) x,
+    f.projection_completedMap_of_le k (a := k) (by simp) y] at h
+  exact h
+
 /-- A graded completed map carries the exponential of an original Lie element
 to the exponential of its image. -/
 @[simp]
