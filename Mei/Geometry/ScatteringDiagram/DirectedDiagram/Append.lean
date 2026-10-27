@@ -95,8 +95,9 @@ theorem vertices_appendLeftPathPrefunctor (k : ℕ)
     (p : AdmissiblePLPath x y) :
     ((D.appendLeftPathPrefunctor E k).mapPath p).vertices.map WallComplement.val =
       p.vertices.map WallComplement.val := by
-  simp only [Prefunctor.vertices_mapPath, List.map_map, Function.comp_def,
-    appendLeftPathPrefunctor_obj_val]
+  exact WallComplement.vertices_restrictPrefunctor _
+    (fun j : D.active k => ⟨Sum.inl j.val, by
+      simpa only [mem_active, append_wall_inl] using j.property⟩) p
 
 /-- Adjoining labels invisible at order `k` preserves every common order-`k`
 path product. No condition is imposed at later orders. -/
