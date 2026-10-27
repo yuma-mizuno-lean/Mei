@@ -33,12 +33,10 @@ public section
 
 noncomputable section
 
-namespace Mei
-
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i} {k : ℕ}
 
-namespace OrientedCell
+namespace Mei.OrientedCell
 
 /-- Any finite family of oriented cells can be subdivided simultaneously using
 the cells of one finite complex. Each piece inherits its parent's orientation. -/
@@ -55,11 +53,13 @@ theorem exists_common_subdivision {ι : Type*} [Finite ι] (σ : ι → Oriented
       (by rwa [hP a])
   exact ⟨Q, hQ, by rwa [hP a] at hsub, hxQ⟩
 
-end OrientedCell
+end Mei.OrientedCell
 
-namespace PolyhedralCochain
+open Mei PolyhedralCochain
 
 variable {R E : Type*} [Ring R] [AddCommGroup E] [Module R E]
+
+namespace Finsupp
 
 /-- A finite presentation can be refined onto a prescribed complex whenever
 its supported cells admit the induced oriented subdivisions. The coefficient
@@ -85,6 +85,10 @@ theorem exists_presentation_on_complex (f : OrientedCell h k →₀ E)
     rw [he]
     exact ((σ.mem_subdivisionPieces C υ).mp hυ).1
 
+end Finsupp
+
+namespace Mei.PolyhedralCochain
+
 /-- Every finite family of cochains has presentations supported on the cells
 of one finite complex. Original supports may overlap, coincide, or have
 different affine spans. No relation between the cochains is assumed. -/
@@ -96,11 +100,9 @@ theorem exists_common_complex_presentation {ι : Type*} [Finite ι]
   choose f hf using fun a => ofFinsupp_surjective (x a)
   obtain ⟨C, hC⟩ := OrientedCell.exists_common_subdivision
     (fun a : Σ a, (f a).support => a.2.val)
-  have hex (a : ι) := exists_presentation_on_complex (R := R) (f a) C
+  have hex (a : ι) := (f a).exists_presentation_on_complex (R := R) C
     (fun σ hσ => hC ⟨a, ⟨σ, hσ⟩⟩)
   choose g hg using hex
   exact ⟨C, g, fun a => ⟨(hg a).1.trans (hf a), (hg a).2⟩⟩
 
-end PolyhedralCochain
-
-end Mei
+end Mei.PolyhedralCochain
