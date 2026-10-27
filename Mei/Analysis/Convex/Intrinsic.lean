@@ -20,11 +20,21 @@ A set is a neighbourhood of each of its relative interior points within its
 affine span: points of the span close to a relative interior point stay in the set.
 For a closed set, the relative boundary is nowhere dense in the affine span.
 For any set, membership is locally constant off the relative boundary within the affine span.
+Relative interiors are monotone for sets with equal affine spans.
 -/
 
 public section
 
 open Set Filter Topology AffineSubspace
+
+/-- Relative interiors are monotone among sets with the same affine span. -/
+theorem intrinsicInterior_mono_of_affineSpan_eq
+    {𝕜 W A : Type*} [Ring 𝕜] [AddCommGroup W] [Module 𝕜 W]
+    [TopologicalSpace A] [AddTorsor W A] {P Q : Set A} (hPQ : P ⊆ Q)
+    (hspan : affineSpan 𝕜 P = affineSpan 𝕜 Q) :
+    intrinsicInterior 𝕜 P ⊆ intrinsicInterior 𝕜 Q := by
+  rw [intrinsicInterior, intrinsicInterior, hspan]
+  exact image_mono (interior_mono (preimage_mono hPQ))
 
 variable {V : Type*} [AddCommGroup V] [Module ℝ V] [TopologicalSpace V]
   [IsTopologicalAddGroup V] [ContinuousSMul ℝ V]
