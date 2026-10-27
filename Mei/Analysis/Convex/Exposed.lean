@@ -314,11 +314,12 @@ end ContinuousLinearMap
 
 namespace IsExposed
 
-variable {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V] [FiniteDimensional ℝ V]
-  {P F : Set V}
+variable {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
+  {P F : Set V} [FiniteDimensional ℝ (vectorSpan ℝ P)]
 
 /-- A nonempty exposed subset with the same affine-direction dimension as its
-base is the whole base. This also holds for a nonconvex base. -/
+base is the whole base. This also holds for a nonconvex base, and only its
+affine direction needs to be finite-dimensional. -/
 theorem eq_of_finrank_vectorSpan_eq (hF : IsExposed ℝ P F) (hne : F.Nonempty)
     (hdim : Module.finrank ℝ (vectorSpan ℝ F) = Module.finrank ℝ (vectorSpan ℝ P)) :
     F = P := by
@@ -340,7 +341,8 @@ theorem eq_of_finrank_vectorSpan_eq (hF : IsExposed ℝ P F) (hne : F.Nonempty)
   exact ⟨hx, fun y hy => by simpa only [he] using hz'.2 y hy⟩
 
 /-- Distinct exposed facets containing a common nonempty facet meet exactly in
-that common facet. The ambient set need not be convex or polyhedral. -/
+that common facet. The ambient set need not be convex or polyhedral, and only
+its affine direction needs to be finite-dimensional. -/
 theorem inter_eq_of_common_facet {G Q : Set V}
     (hF : IsExposed ℝ P F) (hG : IsExposed ℝ P G)
     (hQ : IsExposed ℝ F Q) (hne : Q.Nonempty) (hQG : Q ⊆ G) (hFG : F ≠ G)
@@ -350,6 +352,12 @@ theorem inter_eq_of_common_facet {G Q : Set V}
       Module.finrank ℝ (vectorSpan ℝ P))
     (hQd : Module.finrank ℝ (vectorSpan ℝ Q) + 1 =
       Module.finrank ℝ (vectorSpan ℝ F)) : F ∩ G = Q := by
+  have : FiniteDimensional ℝ (vectorSpan ℝ F) :=
+    Submodule.finiteDimensional_of_le (vectorSpan_mono ℝ hF.subset)
+  have : FiniteDimensional ℝ (vectorSpan ℝ G) :=
+    Submodule.finiteDimensional_of_le (vectorSpan_mono ℝ hG.subset)
+  have : FiniteDimensional ℝ (vectorSpan ℝ (F ∩ G)) :=
+    Submodule.finiteDimensional_of_le (vectorSpan_mono ℝ Set.inter_subset_left)
   have hQI : Q ⊆ F ∩ G := Set.subset_inter hQ.subset hQG
   have hIn := hne.mono hQI
   have hIF := (hF.inter hG).mono hF.subset Set.inter_subset_left
@@ -370,6 +378,8 @@ theorem eq_of_subset_of_finrank_add_one {G : Set V} (hF : IsExposed ℝ P F)
     (hne : F.Nonempty)
     (hdim : Module.finrank ℝ (vectorSpan ℝ F) + 1 = Module.finrank ℝ (vectorSpan ℝ P))
     (hG : IsExposed ℝ P G) (hFG : F ⊆ G) (hproper : G ≠ P) : F = G := by
+  have : FiniteDimensional ℝ (vectorSpan ℝ G) :=
+    Submodule.finiteDimensional_of_le (vectorSpan_mono ℝ hG.subset)
   have hle := Submodule.finrank_mono (vectorSpan_mono ℝ hG.subset)
   have hlt : Module.finrank ℝ (vectorSpan ℝ G) < Module.finrank ℝ (vectorSpan ℝ P) := by
     have hneG : G.Nonempty := hne.mono hFG
