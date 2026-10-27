@@ -365,6 +365,20 @@ theorem inter_eq_of_common_facet {G Q : Set V}
     exact hFG (heF.symm.trans heG)
   exact ((hQ.mono Set.inter_subset_left hQI).eq_of_finrank_vectorSpan_eq hne (by omega)).symm
 
+/-- An exposed facet is maximal among proper exposed subsets of its parent. -/
+theorem eq_of_subset_of_finrank_add_one {G : Set V} (hF : IsExposed ℝ P F)
+    (hne : F.Nonempty)
+    (hdim : Module.finrank ℝ (vectorSpan ℝ F) + 1 = Module.finrank ℝ (vectorSpan ℝ P))
+    (hG : IsExposed ℝ P G) (hFG : F ⊆ G) (hproper : G ≠ P) : F = G := by
+  have hle := Submodule.finrank_mono (vectorSpan_mono ℝ hG.subset)
+  have hlt : Module.finrank ℝ (vectorSpan ℝ G) < Module.finrank ℝ (vectorSpan ℝ P) := by
+    have hneG : G.Nonempty := hne.mono hFG
+    have hneq : Module.finrank ℝ (vectorSpan ℝ G) ≠ Module.finrank ℝ (vectorSpan ℝ P) :=
+      fun he => hproper (hG.eq_of_finrank_vectorSpan_eq hneG he)
+    omega
+  have hlow := Submodule.finrank_mono (vectorSpan_mono ℝ hFG)
+  exact (hF.mono hG.subset hFG).eq_of_finrank_vectorSpan_eq hne (by omega)
+
 end IsExposed
 
 namespace IsExposed
