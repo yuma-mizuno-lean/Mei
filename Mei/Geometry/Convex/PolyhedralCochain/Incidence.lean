@@ -16,6 +16,9 @@ orientations on every common facet. Consequently the two occurrences of that
 facet cancel from their signed boundary sums. This supplies internal-facet
 cancellation for subdivisions whose adjacent cells need not be the two pieces
 of a single hyperplane cut.
+For fixed parent orientation and affine span, a signed facet determines its
+parent uniquely. Mere containment of a facet in a distinct parent forces the
+opposite signed incidence; that parent's boundary need not be specified first.
 
 `OrientedCell.boundaryFacet_eq_reverse_of_common_facet` identifies the opposite
 signed orientations. The intersection is identified geometrically by
@@ -78,6 +81,43 @@ theorem cellCoboundary_add_eq_sum_erase (C : FinitePolyhedralComplex h)
       (C.eq_reverse_of_mem_boundaryFacets hσ hτ hne hspan ho hυ hω hc).symm
   subst ω
   exact σ.cellCoboundary_add_eq_sum_erase τ hυ hω c
+
+/-- Among equally oriented cells in one affine span, a signed boundary facet
+determines its parent uniquely. Opposite incidences may have different parents. -/
+theorem eq_of_mem_boundaryFacets (C : FinitePolyhedralComplex h)
+    {σ τ : OrientedCell h k} (hσ : σ.carrier ∈ C.cells) (hτ : τ.carrier ∈ C.cells)
+    (hspan : affineSpan ℝ σ.carrier = affineSpan ℝ τ.carrier)
+    (ho : σ.orientation = τ.orientation)
+    {υ : OrientedCell h (k + 1)} (hυσ : υ ∈ σ.boundaryFacets)
+    (hυτ : υ ∈ τ.boundaryFacets) : σ = τ := by
+  by_cases hc : σ.carrier = τ.carrier
+  · exact OrientedCell.ext hc ho
+  · exact (υ.reverse_ne_self
+      (C.eq_reverse_of_mem_boundaryFacets hσ hτ hc hspan ho hυσ hυτ rfl).symm).elim
+
+/-- A geometric facet contained in a distinct equally oriented cell of the same
+affine span occurs there with the opposite boundary orientation. -/
+theorem reverse_mem_boundaryFacets_of_subset (C : FinitePolyhedralComplex h)
+    {σ τ : OrientedCell h k} (hσ : σ.carrier ∈ C.cells) (hτ : τ.carrier ∈ C.cells)
+    (hne : σ.carrier ≠ τ.carrier)
+    (hspan : affineSpan ℝ σ.carrier = affineSpan ℝ τ.carrier)
+    (ho : σ.orientation = τ.orientation)
+    {υ : OrientedCell h (k + 1)} (hυ : υ ∈ σ.boundaryFacets)
+    (hsub : υ.carrier ⊆ τ.carrier) : υ.reverse ∈ τ.boundaryFacets := by
+  have := h.finiteDimensional
+  obtain ⟨F, hF, hFne, hFdim, rfl⟩ := (σ.mem_boundaryFacets υ).mp hυ
+  rw [OrientedCell.boundaryFacet_carrier] at hsub
+  have hFC := C.face_closed σ.carrier hσ F (isPolyhedralFace_iff.mpr ⟨hFne, hF⟩)
+  have hG := (isPolyhedralFace_iff.mp (C.face_of_subset hFC hτ hsub)).2
+  have hdim : finrank ℝ (vectorSpan ℝ F) + 1 =
+      finrank ℝ (vectorSpan ℝ τ.carrier) := by
+    rw [← direction_affineSpan ℝ τ.carrier, ← hspan, direction_affineSpan]
+    exact hFdim
+  have he := C.eq_reverse_of_mem_boundaryFacets hσ hτ hne hspan ho
+    (σ.boundaryFacet_mem_boundaryFacets hF hFne hFdim)
+    (τ.boundaryFacet_mem_boundaryFacets hG hFne hdim) (by simp)
+  rw [he, OrientedCell.reverse_reverse]
+  exact τ.boundaryFacet_mem_boundaryFacets hG hFne hdim
 
 end FinitePolyhedralComplex
 
