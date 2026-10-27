@@ -31,38 +31,6 @@ public section
 
 open Set Module
 
-namespace IsExposed
-
-variable {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V] {F : Set V}
-  {g : V →ᴬ[ℝ] ℝ}
-
-/-- A nonempty exposed face of a half-space is either the entire half-space or the
-boundary level. This includes constant affine functionals. -/
-theorem eq_halfspace_or_zero (hF : IsExposed ℝ {x | g x ≤ 0} F) (hne : F.Nonempty) :
-    F = {x | g x ≤ 0} ∨ F = {x | g x = 0} := by
-  have hbase : {x | ∀ _ : Unit, g x ≤ 0} = {x | g x ≤ 0} := by simp
-  rw [← hbase] at hF
-  obtain ⟨I, hI⟩ := hF.eq_setOf_active (fun _ : Unit => g) hne
-  by_cases hmem : () ∈ I
-  · right
-    rw [hI]
-    ext x
-    constructor
-    · rintro ⟨_, hx⟩
-      exact hx () hmem
-    · intro hx
-      exact ⟨fun _ => hx.le, fun _ _ => hx⟩
-  · left
-    have hIempty : I = ∅ := by
-      apply Finset.eq_empty_iff_forall_notMem.mpr
-      intro j hj
-      exact hmem (Subsingleton.elim j () ▸ hj)
-    simp only [hIempty, Finset.notMem_empty, IsEmpty.forall_iff, forall_const,
-      and_true] at hI
-    exact hI
-
-end IsExposed
-
 namespace TauCeti.IsConvexPolyhedron
 
 variable {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
