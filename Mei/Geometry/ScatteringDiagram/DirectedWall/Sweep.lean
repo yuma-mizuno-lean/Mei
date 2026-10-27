@@ -160,7 +160,7 @@ theorem exists_outgoing_sweep {P : Set V} (hP : IsRationalNormalPolyhedron h P)
 /-- A transverse rational polyhedron with a homogeneous wall coefficient has an
 outgoing swept wall with the chosen normal. Its supported ray contains the actual
 degree, and its negative-exponential label has exactly the homogeneous cutoffs. -/
-theorem exists_sweep_correction_wall [Module.Free ℤ Γ]
+theorem exists_sweep_correction_wall_of_ker_eq [Module.Free ℤ Γ]
     {P : Set V} (hP : IsRationalNormalPolyhedron h P) (hne : P.Nonempty)
     (n : Γ) (hn : n ∈ d.monoid)
     (htrans : i (ρ n) ∉ (affineSpan ℝ P).direction)
@@ -205,14 +205,14 @@ theorem exists_swept_correction_wall [Module.Free ℤ Γ]
         CompletedGroup.projection k W.label = 1 ↔ c = 0 ∨ (k : ℤ) < d.degree n := by
   obtain ⟨m, hm, hker, hwall⟩ := H.exists_joint_sweep_normal C hJ n htrans
   have hcell := ((C.mem_cellsOfCodimension 2 J).mp hJ).1
-  obtain ⟨W, _, hW⟩ := exists_sweep_correction_wall (C.rational J hcell)
+  obtain ⟨W, _, hW⟩ := exists_sweep_correction_wall_of_ker_eq (C.rational J hcell)
     (C.nonempty J hcell) n hn htrans hm hker c (hwall hc)
   exact ⟨W, hW⟩
 
 /-- A retained homogeneous coefficient in a wall space lifts to an outgoing
 swept wall with the prescribed normal. Its finite logarithm is the negative
 coefficient and its active cutoffs are exact, even for a zero coefficient. -/
-theorem exists_sweep_correction_wall_of_truncated [Module.Free ℤ Γ]
+theorem exists_sweep_correction_wall_of_truncated_of_ker_eq [Module.Free ℤ Γ]
     {P : Set V} (hP : IsRationalNormalPolyhedron h P) (hne : P.Nonempty)
     (n : Γ) (hn : n ∈ d.monoid)
     (htrans : i (ρ n) ∉ (affineSpan ℝ P).direction)
@@ -241,7 +241,7 @@ theorem exists_sweep_correction_wall_of_truncated [Module.Free ℤ Γ]
           using hai
       exact ((d.mem_degreeSubmodule_of_mem_iff ℒ ha).mp hai').resolve_right (not_lt.mpr hnk)
   obtain ⟨W, hnormal, hs, hsr, hnW, hlabel, hout, hproj⟩ :=
-    exists_sweep_correction_wall hP hne n hn htrans hm hker a haw
+    exists_sweep_correction_wall_of_ker_eq hP hne n hn htrans hm hker a haw
   refine ⟨W, hnormal, hs, hsr, hnW, ⟨a, ha, hlabel⟩, hout, ?_, ?_⟩
   · rw [hlabel, PositiveDegrees.projection_expToCompletion, BCHGroup.log_exp, map_neg]
     exact congrArg Neg.neg hac
@@ -269,7 +269,7 @@ theorem exists_swept_correction_wall_of_truncated [Module.Free ℤ Γ]
   obtain ⟨m, hm, hker, hwall⟩ :=
     (H.truncated d k).exists_joint_sweep_normal C hJ n htrans
   have hcell := ((C.mem_cellsOfCodimension 2 J).mp hJ).1
-  obtain ⟨W, _, hW⟩ := exists_sweep_correction_wall_of_truncated (C.rational J hcell)
+  obtain ⟨W, _, hW⟩ := exists_sweep_correction_wall_of_truncated_of_ker_eq (C.rational J hcell)
     (C.nonempty J hcell) n hn htrans hm hker k hnk c (hwall hc)
   exact ⟨W, hW⟩
 
@@ -299,7 +299,7 @@ theorem exists_cooriented_sweep [Module.Free ℤ Γ]
   have hc' : c ∈ (H.truncated d k).wall n m := by
     simpa only [H.truncated_wall, hwall] using hc
   obtain ⟨W, hnormal, hs, _, hray, hpure, hout, hlog, hactive⟩ :=
-    exists_sweep_correction_wall_of_truncated σ.rational σ.nonempty n hn htrans
+    exists_sweep_correction_wall_of_truncated_of_ker_eq σ.rational σ.nonempty n hn htrans
       hm hker k hnk c hc'
   refine ⟨W, ?_, ?_, hray, hpure, hout, hlog, hactive⟩
   · simpa only [OrientedCell.sweep_carrier] using hs
