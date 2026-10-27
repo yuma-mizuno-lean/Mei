@@ -7,13 +7,15 @@ module
 
 public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Correction.Family
 public import Mei.Geometry.Convex.PolyhedralCochain.Sweep.Family
+public import Mei.Geometry.Convex.PolyhedralCochain.Differential
+public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Obstruction.Cochain
 
 /-!
 # Signed boundaries of mixed-degree joint corrections
 
 The nonzero homogeneous components of local joint loop logarithms give one
 finite family of outgoing walls. Each integral normal represents the contracted
-orientation of its swept joint. If each homogeneous component presentation is
+orientation of its swept joint. If the kernel-valued obstruction cochain is
 closed, the signed boundary of the logarithmic correction presentation is the
 entire joint obstruction cochain, with its original orientations and coefficients.
 Thus the different geometric sweeping directions can be used simultaneously.
@@ -21,7 +23,10 @@ Thus the different geometric sweeping directions can be used simultaneously.
 The construction combines `DirectedDiagram.exists_pos_joint_loop_obstruction`,
 `DirectedWall.exists_cooriented_sweep`, and the componentwise sweep homotopy
 formula. The source is reconstructed with `DirectSum.sum_support_decompose`;
-no relation between distinct homogeneous sweeping directions is required.
+coefficient projections from `DirectSum.decomposeLinearEquiv` commute with the
+coboundary by `PolyhedralCochain.map_coboundary`. Thus closedness of the total
+obstruction implies closedness of every homogeneous component. No relation
+between distinct homogeneous sweeping directions is required.
 This is the signed homogeneous assembly in Mandel, *Scattering diagrams,
 theta functions, and refined tropical curve counts*, proof of Theorem 2.6.
 Closedness of the obstruction and consistency of the corrected diagram remain
@@ -47,8 +52,8 @@ variable {Γ Λ R L V ι : Type*} [AddCommGroup Γ] [AddCommGroup Λ]
 
 /-- Construct all nonzero homogeneous joint corrections with the signs of the
 cochain sweep. Each wall is outgoing, has a pure birth logarithm at the correction
-order, and has the contracted coorientation. If every homogeneous source
-presentation is closed, their combined logarithmic presentation has signed
+order, and has the contracted coorientation. If the kernel-valued source
+cochain is closed, their combined logarithmic presentation has signed
 boundary equal to the full source obstruction cochain. The loops need only lie
 in the indicated neighborhoods; they need not already be consistent at the new
 order. Joint orientations are arbitrary and fixed independently of the loops. -/
@@ -85,10 +90,8 @@ theorem exists_joint_sweep_correction_family {k : ℕ}
             (∃ b ∈ ℒ a.2.val, (E.wall a).label = d.expToCompletion ℒ (-b)) ∧
             (E.wall a).Outgoing ∧ log (CompletedGroup.projection (k + 1) (E.wall a).label) = -c a ∧
             ∀ l : ℕ, a ∈ E.active l ↔ k + 1 ≤ l) ∧
-          ((∀ n : Γ, PolyhedralCochain.coboundaryOfFinsupp (R := R)
-              (∑ J : (D.adaptedComplex (k + 1)).joints, Finsupp.single (σ J)
-                (DirectSum.decompose (d.truncatedGrading ℒ (k + 1))
-                  (log (D.levelPathProduct (k + 1) (p J))) n : d.truncatedLie ℒ (k + 1))) = 0) →
+          (PolyhedralCochain.coboundary
+              (D.jointObstructionCochain σ x p hσ hk) = 0 →
             PolyhedralCochain.coboundaryOfFinsupp (R := R)
               (∑ a : D.JointCorrectionIndex x p,
                 Finsupp.single ((σ a.1).sweep (ρ a.2.val) (htrans a))
@@ -146,6 +149,27 @@ theorem exists_joint_sweep_correction_family {k : ℕ}
     simp only [hc a, false_or, not_lt, hd a] at he
     exact he.trans (by omega)
   · intro hclosed
+    -- Coefficient projections commute with the coboundary on the cochain quotient.
+    have hcomponent (n : Γ) : PolyhedralCochain.coboundaryOfFinsupp (R := R)
+        (∑ J : (D.adaptedComplex (k + 1)).joints, Finsupp.single (σ J)
+          (DirectSum.decompose (d.truncatedGrading ℒ (k + 1))
+            (log (D.levelPathProduct (k + 1) (p J))) n : d.truncatedLie ℒ (k + 1))) = 0 := by
+      let f := (d.truncatedGrading ℒ (k + 1) n).subtype ∘ₗ
+        DirectSum.component R Γ (d.truncatedGrading ℒ (k + 1) ·) n ∘ₗ
+        (DirectSum.decomposeLinearEquiv (d.truncatedGrading ℒ (k + 1))).toLinearMap ∘ₗ
+        (d.truncationMap ℒ (Nat.le_succ k)).ker.subtype
+      have hf (J : (D.adaptedComplex (k + 1)).joints) :
+          f (D.loopObstruction hk (p J)) =
+            (DirectSum.decompose (d.truncatedGrading ℒ (k + 1))
+              (log (D.levelPathProduct (k + 1) (p J))) n : d.truncatedLie ℒ (k + 1)) := by
+        simp only [f, LinearMap.comp_apply, LinearEquiv.coe_coe,
+          DirectSum.decomposeLinearEquiv_apply, ← DirectSum.apply_eq_component,
+          Submodule.subtype_apply, D.coe_loopObstruction]
+      have hm := congrArg (PolyhedralCochain.map f) hclosed
+      rw [PolyhedralCochain.map_coboundary, D.jointObstructionCochain_def, map_sum] at hm
+      simp only [PolyhedralCochain.map_mk, hf, map_zero] at hm
+      simpa only [← PolyhedralCochain.coboundary_ofFinsupp, map_sum,
+        PolyhedralCochain.ofFinsupp_single] using hm
     -- Discarding zero components does not alter any homogeneous source presentation.
     have hfiber (n : Γ) :
         (∑ a ∈ Finset.univ.filter (fun a : D.JointCorrectionIndex x p => a.2.val = n),
@@ -170,7 +194,7 @@ theorem exists_joint_sweep_correction_family {k : ℕ}
           Finsupp.single_zero]
     have hboundary := PolyhedralCochain.coboundaryOfFinsupp_sum_sweep_of_fiberwise_closed (R := R)
       (fun a : D.JointCorrectionIndex x p => a.2.val) ρ (fun a => σ a.1) htrans c
-      (fun n => by rw [hfiber]; exact hclosed n)
+      (fun n => by rw [hfiber]; exact hcomponent n)
     -- Sum the actual homogeneous components back to each original loop logarithm.
     have hsource : (∑ a : D.JointCorrectionIndex x p, PolyhedralCochain.mk (R := R) (σ a.1) (c a)) =
         ∑ J : (D.adaptedComplex (k + 1)).joints,
