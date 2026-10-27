@@ -188,15 +188,14 @@ without choosing a common refinement or a primitive for the test paths. -/
 theorem wallCrossingSum_eq_of_coboundary_eq_zero
     {x y : WallComplement (fun j => (σ j).carrier)} (p q : AdmissiblePLPath x y)
     (ν : ι → V →ₗ[ℝ] ℝ) (c : ι → E)
-    (hker : ∀ j, (ν j).ker = (affineSpan ℝ (σ j).carrier).direction)
     (hν : ∀ j, c j ≠ 0 → ∀ v, SignType.sign (ν j v) =
       (σ j).orientation.evalSign (fun _ : Fin 1 => v))
     (hc : PolyhedralCochain.coboundary
       (∑ j, PolyhedralCochain.mk (R := R) (σ j) (c j)) = 0) :
     p.wallCrossingSum ν c = q.wallCrossingSum ν c := by
-  have he := (p.comp q.reverse).wallCrossingSum_loop_eq_zero_of_coboundary_eq_zero ν c hν hc
-  rw [wallCrossingSum_comp, wallCrossingSum_reverse q ν c hker, ← sub_eq_add_neg,
-    sub_eq_zero] at he
-  exact he
+  have hp := (p.comp q.reverse).wallCrossingSum_loop_eq_zero_of_coboundary_eq_zero ν c hν hc
+  have hq := (q.comp q.reverse).wallCrossingSum_loop_eq_zero_of_coboundary_eq_zero ν c hν hc
+  rw [wallCrossingSum_comp] at hp hq
+  exact add_right_cancel (hp.trans hq.symm)
 
 end Quiver.Path
