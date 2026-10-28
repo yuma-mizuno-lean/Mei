@@ -6,6 +6,7 @@ Authors: Claude
 module
 
 public import Mei.Algebra.Lie.Logarithmic.Coefficient
+public import Mei.RingTheory.Derivation.Exp
 public import Mei.RingTheory.FilteredAlgebra.Exp.Basic
 public import Mei.RingTheory.Nilpotent.Log
 
@@ -15,9 +16,10 @@ public import Mei.RingTheory.Nilpotent.Log
 Fix a character `m` of the spatial lattice. The allowed degrees tangent to `m` form the
 monoid `T = {n ∈ P | m(ρ n) = 0}`, and a coefficient `u = ∑ u_q z^q` on `T` defines the
 positive tropical vertex field `u ∂_m = ∑_{q ≠ 0} u_q z^q ∂_m`. On a coefficient algebra
-`R[Q]`, this field acts as `u` times the weight derivation `z^p ↦ m(ρ p) z^p`, and `u` has
-weight zero. Hence the exponential of `u ∂_m` multiplies `z^p` by `exp(m(ρ p) u)` at every
-finite order. Completed tangent coefficients of positive order give completed fields, and
+`R[Q]`, when `u.coeff 0 = 0`, this field acts as `u` times the weight derivation
+`z^p ↦ m(ρ p) z^p`, and `u` has weight zero. When `u` has positive coefficient order,
+the exponential of `u ∂_m` multiplies `z^p` by `exp(m(ρ p) u)` at every finite order.
+Completed tangent coefficients of positive order give completed fields, and
 the completed label `exp(u ∂_m)` acts on the completed coefficient algebra by the same
 formula. For an integral character `n` and a completed tangent series `f` congruent to one,
 the label `exp(log(f) ∂_n)` therefore multiplies `z^p` by the unit power `f^{n(ρ p)}`.
@@ -108,12 +110,13 @@ abbrev tropicalTangentInclusion : R[T] →ₐ[R] R[Q] :=
 
 omit [DecidableEq Γ] in
 /-- Tangent coefficients have weight zero for the character `m`. -/
+@[simp]
 theorem monomialDerivation_zero_tropicalTangentInclusion (u : R[T]) :
     AddMonoidAlgebra.monomialDerivation (0 : Q) (m.comp (ρ.comp Q.subtype))
-      (tropicalTangentInclusion d ρ m Q hQ u) = 0 := by
+      (mapDomain (AddSubmonoid.inclusion ((tropicalTangentMonoid_le d ρ m).trans hQ)) u) = 0 := by
   induction u using induction_linear with
   | zero => simp
-  | add a b ha hb => rw [map_add, map_add, ha, hb, add_zero]
+  | add a b ha hb => simp only [mapDomain_add, map_add, ha, hb, add_zero]
   | single q c =>
     simp [((mem_tropicalTangentMonoid d ρ m q).mp q.2).2]
 
@@ -132,15 +135,17 @@ omit [DecidableEq Γ] in
 /-- A tangent coefficient of positive order has no constant coefficient. -/
 theorem coeff_zero_eq_zero_of_mem_filtration_ideal_one {v : R[T]} (hv : v ∈ (G).ideal 1) :
     v.coeff 0 = 0 := by
-  rw [TropicalVertexCoefficientAction.filtration_ideal,
-    AddSubmonoid.mem_monoidAlgebraIdeal_iff] at hv
+  have htop : d.monoid.comap (T).subtype = ⊤ := by
+    ext q
+    simp only [AddSubmonoid.mem_comap, AddSubmonoid.subtype_apply, AddSubmonoid.mem_top,
+      iff_true]
+    exact ((mem_tropicalTangentMonoid d ρ m q).mp q.2).1
+  rw [TropicalVertexCoefficientAction.filtration_ideal, htop,
+    AddSubmonoid.mem_monoidAlgebraIdeal_top_iff_of_nonneg
+      (fun q : T => d.degree_nonneg ((mem_tropicalTangentMonoid d ρ m q).mp q.2).1)] at hv
   by_contra h
-  obtain ⟨n, -, hdn, q', hq'⟩ := hv 0 (Finsupp.mem_support_iff.mpr h)
-  have he := congrArg (fun x : T => d.degree (x : Γ)) hq'
-  have h2 := d.degree_nonneg ((mem_tropicalTangentMonoid d ρ m q').mp q'.2).1
-  simp only [AddSubmonoid.coe_zero, map_zero, AddSubmonoid.coe_add, map_add] at he
-  simp only [AddMonoidHom.comp_apply, AddSubmonoid.subtype_apply, Nat.cast_one] at hdn
-  omega
+  have hd := hv 0 (Finsupp.mem_support_iff.mpr h)
+  simp at hd
 
 /-- The field `u ∂_m` acts as `u` times the weight derivation of `m`, when `u` has no
 constant coefficient. -/
@@ -176,20 +181,24 @@ local notation "𝔤" => tropicalVertexLieAlgebra (R := R) d ρ
 /-- Tangent coefficients of order above `k` give fields above degree `k`. -/
 theorem tropicalTangentField_mem_degreeIdeal {k : ℕ} {v : R[T]} (hv : v ∈ (G).ideal (k + 1)) :
     tropicalTangentField d ρ m v ∈ d.degreeIdeal ℒ k := by
-  rw [TropicalVertexCoefficientAction.filtration_ideal,
-    AddSubmonoid.mem_monoidAlgebraIdeal_iff] at hv
+  have htop : d.monoid.comap (T).subtype = ⊤ := by
+    ext q
+    simp only [AddSubmonoid.mem_comap, AddSubmonoid.subtype_apply, AddSubmonoid.mem_top,
+      iff_true]
+    exact ((mem_tropicalTangentMonoid d ρ m q).mp q.2).1
+  rw [TropicalVertexCoefficientAction.filtration_ideal, htop,
+    AddSubmonoid.mem_monoidAlgebraIdeal_top_iff_of_nonneg
+      (fun q : T => d.degree_nonneg ((mem_tropicalTangentMonoid d ρ m q).mp q.2).1)] at hv
   rw [← sum_coeff_single v, Finsupp.sum, map_sum]
   refine Submodule.sum_mem (d.degreeIdeal ℒ k).toSubmodule fun q hq => ?_
-  obtain ⟨n, -, hdn, q', rfl⟩ := hv q hq
-  by_cases hq0 : ((q' + n : T) : Γ) = 0
-  · have h0 : q' + n = 0 := Subtype.ext hq0
+  by_cases hq0 : (q : Γ) = 0
+  · have h0 : q = 0 := Subtype.ext hq0
     rw [h0, tropicalTangentField_single_zero]
     exact zero_mem _
-  · refine d.le_degreeIdeal ℒ (n := ((q' + n : T) : Γ)) ?_ ?_
-    · have h2 := d.degree_nonneg ((mem_tropicalTangentMonoid d ρ m q').mp q'.2).1
-      simp only [AddMonoidHom.comp_apply, AddSubmonoid.subtype_apply] at hdn
-      simp only [AddSubmonoid.coe_add, map_add]
-      omega
+  · refine d.le_degreeIdeal ℒ (n := (q : Γ)) ?_ ?_
+    · have hd := hv q hq
+      simpa only [AddMonoidHom.comp_apply, AddSubmonoid.subtype_apply, Nat.cast_add,
+        Nat.cast_one] using (Int.add_one_le_iff.mp hd)
     · rw [mem_tropicalVertexGrading_iff]
       exact ⟨_, (coe_tropicalTangentField_single d ρ m hq0 _).symm⟩
 
@@ -239,6 +248,19 @@ theorem completionProjection_completedTropicalTangentField (k : ℕ) (u : (G).co
     AlgFiltration.projectionₐ_apply, hv, tangentFieldQuotient_mk]
   rfl
 
+/-- Completing a finite tangent coefficient commutes with forming its tangent field. -/
+@[simp]
+theorem completedTropicalTangentField_toCompletion (u : R[T]) :
+    completedTropicalTangentField d ρ m ((G).toCompletion u) =
+      LieIdeal.toCompletion (d.degreeIdeal ℒ) (d.degreeIdeal_antitone ℒ)
+        (tropicalTangentField d ρ m u) := by
+  apply ModuleFiltration.completion_ext
+  intro k
+  simpa only [← LieIdeal.completionProjection_apply] using
+    (completionProjection_completedTropicalTangentField d ρ m k _ u
+      ((G).projection_toCompletion k u)).trans
+      (LieIdeal.completionProjection_toCompletion _ _ k _).symm
+
 end Completion
 
 section Exponential
@@ -260,48 +282,53 @@ theorem quotientExpLieAction_tropicalTangentField (k : ℕ) (u : R[T]) (hu : u �
       IsNilpotent.exp (Ideal.Quotient.mk ((F).ideal (k + 1))
           (m (ρ p) • tropicalTangentInclusion d ρ m Q Fact.out u)) *
         Ideal.Quotient.mk _ (single p r) := by
-  set D := (F).quotientLieAction d ℒ k (tropicalTangentField d ρ m u) with hDdef
-  set x := Ideal.Quotient.mk ((F).ideal (k + 1))
-    (m (ρ p) • tropicalTangentInclusion d ρ m Q Fact.out u) with hxdef
-  set z := Ideal.Quotient.mk ((F).ideal (k + 1)) (single p r) with hzdef
-  have hD (a : R[Q]) : D (Ideal.Quotient.mk _ a) = Ideal.Quotient.mk _
-      (tropicalTangentInclusion d ρ m Q Fact.out u *
-        AddMonoidAlgebra.monomialDerivation (0 : Q) (m.comp (ρ.comp Q.subtype)) a) := by
-    rw [hDdef, AlgFiltration.quotientLieAction_mk, lie_eq,
+  let δ : Derivation R R[Q] R[Q] :=
+    AddMonoidAlgebra.monomialDerivation (0 : Q) (m.comp (ρ.comp Q.subtype))
+  have hδ : ∀ a, Ideal.Quotient.mkₐ R ((F).ideal (k + 1)) a = 0 →
+      Ideal.Quotient.mkₐ R ((F).ideal (k + 1)) (δ a) = 0 := by
+    intro a ha
+    have ha' : a ∈ (F).ideal (k + 1) := Ideal.Quotient.eq_zero_iff_mem.mp ha
+    rw [TropicalVertexCoefficientAction.filtration_ideal] at ha'
+    apply Ideal.Quotient.eq_zero_iff_mem.mpr
+    rw [TropicalVertexCoefficientAction.filtration_ideal]
+    simpa only [Nat.zero_add] using
+      (d.monoid.comap Q.subtype).monomialDerivation_mem_monoidAlgebraIdeal
+        (d.degree.comp Q.subtype) (n := 0) (zero_mem _) (m.comp (ρ.comp Q.subtype))
+        (a := 0) (b := k + 1) (by simp) ha'
+  let D : Derivation R (R[Q] ⧸ (F).ideal (k + 1)) (R[Q] ⧸ (F).ideal (k + 1)) :=
+    Derivation.liftOfSurjective (f := Ideal.Quotient.mkₐ R ((F).ideal (k + 1)))
+      (d := δ) Ideal.Quotient.mk_surjective hδ
+  let x := Ideal.Quotient.mk ((F).ideal (k + 1))
+    (tropicalTangentInclusion d ρ m Q Fact.out u)
+  have hD (a : R[Q]) : D (Ideal.Quotient.mk _ a) = Ideal.Quotient.mk _ (δ a) :=
+    Derivation.liftOfSurjective_apply _ hδ a
+  have hx : D x = 0 := by
+    simp only [x, hD, δ, tropicalTangentInclusion, mapDomainAlgHom_apply,
+      monomialDerivation_zero_tropicalTangentInclusion d ρ m Q Fact.out, map_zero]
+  have hn : IsNilpotent x := by
+    refine ⟨k + 1, ?_⟩
+    rw [← map_pow, Ideal.Quotient.eq_zero_iff_mem]
+    simpa only [Nat.mul_one] using (F).pow_mem
+      (filtration_ideal_le_comap_tropicalTangentInclusion d ρ m Q Fact.out 1 hu) (k + 1)
+  have ha : D (Ideal.Quotient.mk _ (single p r)) =
+      m (ρ p) • Ideal.Quotient.mk _ (single p r) := by
+    rw [hD, AddMonoidAlgebra.monomialDerivation_single, zero_add]
+    simp only [AddMonoidHom.comp_apply, AddSubmonoid.subtype_apply]
+    simpa only [Ideal.Quotient.mkₐ_eq_mk, smul_single', smul_eq_mul, mul_comm] using
+      map_smul (Ideal.Quotient.mkₐ R ((F).ideal (k + 1))) (m (ρ p)) (single p r)
+  have he : (F).quotientLieAction d ℒ k (tropicalTangentField d ρ m u) =
+      (x • D).toLinearMap := by
+    apply LinearMap.ext
+    intro a
+    obtain ⟨a, rfl⟩ := Ideal.Quotient.mk_surjective a
+    rw [AlgFiltration.quotientLieAction_mk, lie_eq,
       tropicalVertexCoefficientAction_tropicalTangentField d ρ m Q _ u
         (coeff_zero_eq_zero_of_mem_filtration_ideal_one d ρ m hu),
-      Derivation.smul_apply, smul_eq_mul]
-  have hx : D x = 0 := by
-    rw [hxdef, hD, Derivation.map_smul, monomialDerivation_zero_tropicalTangentInclusion,
-      smul_zero, mul_zero, map_zero]
-  have hz : D z = x * z := by
-    rw [hzdef, hD, AddMonoidAlgebra.monomialDerivation_single, hxdef, ← map_mul]
-    congr 1
-    rw [smul_mul_assoc, ← mul_smul_comm, smul_single', zero_add]
-    simp [mul_comm]
-  have hxpow (j : ℕ) : D (x ^ j) = 0 := by
-    induction j with
-    | zero =>
-      rw [pow_zero, ← map_one (Ideal.Quotient.mk ((F).ideal (k + 1))), hD,
-        Derivation.map_one_eq_zero, mul_zero, map_zero]
-    | succ j ih => rw [pow_succ, (F).quotientLieAction_mul, ih, hx, mul_zero, zero_mul, add_zero]
-  have hpow (j : ℕ) : (D ^ j) z = x ^ j * z := by
-    induction j with
-    | zero => simp
-    | succ j ih =>
-      rw [pow_succ', Module.End.mul_apply, ih, (F).quotientLieAction_mul, hxpow, zero_mul,
-        add_zero, hz, pow_succ, mul_assoc]
-  have hxk : x ^ (k + 1) = 0 := by
-    rw [hxdef, ← map_pow, Ideal.Quotient.eq_zero_iff_mem]
-    simpa using (F).pow_mem (Submodule.smul_of_tower_mem _ (m (ρ p))
-      (filtration_ideal_le_comap_tropicalTangentInclusion d ρ m Q Fact.out 1 hu)) (k + 1)
-  rw [AlgFiltration.quotientExpLieAction_apply, ← Module.End.smul_def,
-    IsNilpotent.exp_smul_eq_sum (k := k + 1)
-      (by rw [Module.End.smul_def, hpow, hxk, zero_mul])
-      ⟨k + 1, (F).quotientLieAction_pow_eq_zero d ℒ k _⟩,
-    IsNilpotent.exp_eq_sum hxk, Finset.sum_mul]
-  refine Finset.sum_congr rfl fun j _ => ?_
-  rw [Module.End.smul_def, hpow, smul_mul_assoc]
+      Derivation.smul_apply, smul_eq_mul, map_mul]
+    simp only [Derivation.coeFn_coe, Derivation.smul_apply, hD, smul_eq_mul]
+    rfl
+  rw [AlgFiltration.quotientExpLieAction_apply, he, D.exp_smul_toLinearMap_apply hx hn ha]
+  congr 2
 
 omit [DecidableEq Γ] in
 /-- Completed tangent coefficients, viewed as completed coefficients. -/
@@ -319,6 +346,14 @@ theorem projection_completedTropicalTangentInclusion (k : ℕ) (u : (G).completi
         ((G).projection k u) :=
   (G).projection_mapCompletionₐ_of_le (F) (tropicalTangentInclusion d ρ m Q Fact.out)
     id monotone_id _ k k le_rfl u
+
+omit [Algebra ℚ R] [DecidableEq Γ] in
+/-- Completing a finite tangent coefficient commutes with its inclusion. -/
+@[simp]
+theorem completedTropicalTangentInclusion_toCompletion (u : R[T]) :
+    completedTropicalTangentInclusion d ρ m Q ((G).toCompletion u) =
+      (F).toCompletion (tropicalTangentInclusion d ρ m Q Fact.out u) :=
+  (G).mapCompletionₐ_toCompletion (F) _ id monotone_id _ u
 
 omit [Algebra ℚ R] [DecidableEq Γ] in
 /-- Completed tangent coefficients of positive order map to positive order. -/
@@ -364,6 +399,15 @@ theorem completedBCHAction_completedBCHExp_completedTropicalTangentField (u : (G
   rw [hp]
   exact map_smul (Ideal.Quotient.mkₐ R _) _ _
 
+omit [Algebra ℚ R] [DecidableEq Γ] in
+/-- A completed tangent coefficient congruent to one is a unit of the coefficient
+completion. -/
+theorem isUnit_completedTropicalTangentInclusion {f : (G).completion}
+    (hf : f - 1 ∈ (G).completionIdeal 1) : IsUnit (completedTropicalTangentInclusion d ρ m Q f) :=
+  (F).isUnit_of_sub_one_mem (by
+    simpa only [map_sub, map_one] using
+      completedTropicalTangentInclusion_mem_completionIdeal_one d ρ m Q hf)
+
 end Exponential
 
 section Integral
@@ -378,15 +422,6 @@ local notation "χ" => AddMonoidHom.comp (Int.castAddHom R) n
 local notation "G" =>
   TropicalVertexCoefficientAction.filtration (R := R) d (tropicalTangentMonoid d ρ χ)
 
-omit [Algebra ℚ R] [DecidableEq Γ] in
-/-- A completed tangent coefficient congruent to one is a unit of the coefficient
-completion. -/
-theorem isUnit_completedTropicalTangentInclusion {f : (G).completion}
-    (hf : f - 1 ∈ (G).completionIdeal 1) : IsUnit (completedTropicalTangentInclusion d ρ χ Q f) :=
-  (F).isUnit_of_sub_one_mem (by
-    simpa only [map_sub, map_one] using
-      completedTropicalTangentInclusion_mem_completionIdeal_one d ρ χ Q hf)
-
 /-- **Wall-function formula.** For an integral normal `n` and a completed tangent wall
 function `f` congruent to one, the label `exp(log(f) ∂_n)` multiplies a monomial `r z^p` by
 `f^{n(ρ p)}`, the power being taken in units. -/
@@ -395,14 +430,14 @@ theorem completedBCHAction_completedBCHExp_completedTropicalTangentField_complet
     (F).completedBCHAction d ℒ (d.completedBCHExp ℒ
         (completedTropicalTangentField d ρ χ ((G).completedLog ⟨f, hf⟩)))
         ((F).toCompletion (single p r)) =
-      ((isUnit_completedTropicalTangentInclusion d ρ Q n hf).unit ^ n (ρ p) : (F).completionˣ) *
+      ((isUnit_completedTropicalTangentInclusion d ρ χ Q hf).unit ^ n (ρ p) : (F).completionˣ) *
         (F).toCompletion (single p r) := by
   rw [completedBCHAction_completedBCHExp_completedTropicalTangentField d ρ χ Q _
     ((G).completedLog_mem ⟨f, hf⟩) p r]
   congr 1
   apply (F).completion_ext
   intro k
-  set U := (isUnit_completedTropicalTangentInclusion d ρ Q n hf).unit with hUdef
+  set U := (isUnit_completedTropicalTangentInclusion d ρ χ Q hf).unit with hUdef
   have hf1 : IsNilpotent ((G).projection k f - 1) := by
     simpa only [map_sub, map_one] using (G).isNilpotent_projection hf k
   have hlog :
