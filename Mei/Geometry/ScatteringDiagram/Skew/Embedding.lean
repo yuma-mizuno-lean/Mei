@@ -18,7 +18,8 @@ degree `n` to the principal degree `r(n) = (p₁*(n), n)` with the same cutoff o
 Thus it supplies the graded map required to transport nilpotent truncations and
 completed BCH labels into the
 tropical vertex algebra. Injectivity requires no nondegeneracy of the skew form:
-the principal character coordinate detects even radical generators.
+the retained unfrozen coordinate distinguishes even radical exponents, while the
+principal normal detects their coefficients over a free ambient lattice.
 
 The construction reuses `principalRealization`, its coefficient recovery, and
 `SkewLieAlgebra.positiveGrading`. The principal embedding follows
