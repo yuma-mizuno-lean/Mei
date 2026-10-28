@@ -26,8 +26,9 @@ principal realization of its scattering diagrams, and its wall normals are the f
 Morphisms are integer-linear maps preserving the form and carrying the two sublattices into
 their counterparts; skew lattice data on finite free lattices form a category.
 
-For a vector `n`, the normalization `κ(n)` is the ray index of `N°` (`AddSubgroup.rayIndex`):
-the positive rational with `ℝ_{>0} n ∩ N° = ℕ_{>0} κ(n) n`. For `n ∈ N_uf` the vector `κ(n) n`
+For a nonzero vector `n`, the normalization `κ(n)` is the ray index of `N°`
+(`AddSubgroup.rayIndex`): the positive rational with `ℝ_{>0} n ∩ N° = ℕ_{>0} κ(n) n`.
+By convention `κ(0) = 0`. For `n ∈ N_uf` the vector `κ(n) n`
 lies in `N_uf ∩ N°`, so `{-, κ(n) n}` is an integral functional on `N`
 (`SkewLatticeDatum.normal`).
 

@@ -16,9 +16,10 @@ public import Mathlib.GroupTheory.Subgroup.Saturated
 
 Let `H` be a subgroup of a free integer module `N`, for instance a finite-index sublattice.
 For a nonzero `n : N`, write `n = d • w` with `d > 0` and `w` primitive. The *ray index*
-`H.rayIndex n = addOrderOf (w : N ⧸ H) / d` is the rational number `κ` such that the positive
-rational multiples of `n` lying in `H` are exactly the multiples by `j * κ`, for positive
-integers `j`. On a primitive vector it is the order of its class modulo `H`, an integer, and it
+`H.rayIndex n = addOrderOf (w : N ⧸ H) / d` is a nonnegative rational number `κ`. When `κ > 0`,
+the positive rational multiples of `n` lying in `H` are exactly the multiples by `j * κ`, for
+positive integers `j`. When `κ = 0`, no positive rational multiple of `n` lies in `H`.
+On a primitive vector it is the order of its class modulo `H`, an integer, and it
 scales inversely with the vector: `κ(t n) = κ(n) / t` for every positive rational `t` with
 `t n ∈ N`. It is positive on nonzero vectors when `H` has finite index.
 
@@ -33,7 +34,8 @@ algebras*, §1, defined by `ℝ_{>0} n ∩ N° = ℕ_{>0} κ(n) n` for the finit
 * `AddSubgroup.rayIndex`: the ray index of a vector with respect to a subgroup.
 * `AddSubgroup.rayIndex_eq_of_eq_zsmul`: its value on any primitive decomposition.
 * `AddSubgroup.mem_iff_exists_div_eq_mul_rayIndex_of_zsmul_eq_zsmul`: the positive rational
-  multiples of `n` in `H` are those by the positive integer multiples of `H.rayIndex n`.
+  multiples of a nonzero `n` in `H` are those by the positive integer multiples of
+  `H.rayIndex n` when the index is positive; none lie in `H` when the index is zero.
 * `AddSubgroup.rayIndex_eq_of_zsmul_eq_zsmul`: the scaling law of the ray index.
 -/
 
@@ -45,9 +47,10 @@ variable {N : Type*} [AddCommGroup N] [Module.Free ℤ N] (H : AddSubgroup N)
 
 open Classical in
 /-- The ray index of `n` with respect to `H`: for `n = d • w` with `d > 0` and `w` primitive,
-the order of `w` modulo `H` divided by `d`. The positive rational multiples of a nonzero `n`
-lying in `H` are its multiples by `j * H.rayIndex n` with `j` a positive integer
-(`AddSubgroup.mem_iff_exists_div_eq_mul_rayIndex_of_zsmul_eq_zsmul`).
+the order of `w` modulo `H` divided by `d`. When `H.rayIndex n > 0`, the positive rational
+multiples of a nonzero `n` lying in `H` are its multiples by `j * H.rayIndex n` with `j` a
+positive integer (`AddSubgroup.mem_iff_exists_div_eq_mul_rayIndex_of_zsmul_eq_zsmul`).
+When `n ≠ 0` and `H.rayIndex n = 0`, no positive rational multiple of `n` lies in `H`.
 By convention the ray index of `0` is `0`. -/
 noncomputable def rayIndex (n : N) : ℚ :=
   if hn : n = 0 then 0 else
@@ -127,9 +130,10 @@ theorem rayIndex_neg (n : N) : H.rayIndex (-n) = H.rayIndex n := by
     H.rayIndex_eq_of_eq_zsmul hd hw.neg (smul_neg d w).symm, QuotientAddGroup.mk_neg,
     addOrderOf_neg]
 
-/-- The positive rational multiples of a nonzero vector `n` lying in `H` are exactly its
-multiples by `j * H.rayIndex n` for positive integers `j`. Here the multiple `m = (b / a) n` is
-recorded by `a • m = b • n` with `a, b > 0`. -/
+/-- When `H.rayIndex n > 0`, the positive rational multiples of a nonzero vector `n` lying in
+`H` are exactly its multiples by `j * H.rayIndex n` for positive integers `j`.
+When `H.rayIndex n = 0`, no positive rational multiple of `n` lies in `H`.
+Here the multiple `m = (b / a) n` is recorded by `a • m = b • n` with `a, b > 0`. -/
 theorem mem_iff_exists_div_eq_mul_rayIndex_of_zsmul_eq_zsmul {m n : N} (hn : n ≠ 0)
     {a b : ℤ} (ha : 0 < a) (hb : 0 < b)
     (h : a • m = b • n) :
