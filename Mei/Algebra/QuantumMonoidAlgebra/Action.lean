@@ -165,10 +165,6 @@ scoped instance instIsFiltrationRaising :
 
 variable [Algebra ℚ R]
 
-/-- Rational scalars on the ambient quantum algebra are inherited from `R`. -/
-scoped instance ambientRationalAlgebra : Algebra ℚ (QuantumMonoidAlgebra q β) :=
-  Algebra.compHom _ (algebraMap ℚ R)
-
 private theorem factor_coefficientLog (g : d.completedBCHGroup ℒ) {k l : ℕ} (h : k ≤ l) :
     Ideal.Quotient.factor ((𝓕).antitone (Nat.add_le_add_right h 1))
         (truncatedCoefficientInclusion q β d l (BCHGroup.log (CompletedGroup.projection l g))) =
