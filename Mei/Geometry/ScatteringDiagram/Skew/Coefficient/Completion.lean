@@ -88,14 +88,16 @@ theorem coeff_principalCoefficientPolynomialEquiv (a : R[Q]) (n : ι →₀ ℕ)
 
 end Polynomial
 
-variable [CommRing R]
-
 local notation "F" => TropicalVertexCoefficientAction.filtration
   (R := R) (D.principalPositiveDegrees d) Q
 
 variable (he : ∀ n : d.monoid, d.degree n = ((e n).degree : ℤ))
 
 include he
+
+section Filtration
+
+variable [CommSemiring R]
 
 /-- Native principal filtration terms are exactly powers of the polynomial
 variable ideal, in coordinates whose total degree is the positive degree. -/
@@ -130,7 +132,9 @@ theorem comap_idealOfVars_pow_principalCoefficientPolynomialEquiv (k : ℕ) :
     simp only [AddEquiv.apply_symm_apply] at hd
     omega
 
-variable [Finite ι]
+end Filtration
+
+variable [CommRing R] [Finite ι]
 
 /-- The completion of the native principal coefficient algebra is the power
 series algebra in free positive coordinates over the character algebra. -/
