@@ -47,6 +47,7 @@ def wallSubmodule (n : Γ) (m : Γ →+ ℤ) : Submodule R (QuantumMonoidAlgebra
   exact if m ≠ 0 ∧ m.ker = (β n).toAddMonoidHom.ker then grade q β n else ⊥
 
 /-- Eligible quantum wall spaces are the full homogeneous monomial lines. -/
+@[simp]
 theorem wallSubmodule_eq_grade {n : Γ} {m : Γ →+ ℤ}
     (hm : m ≠ 0) (hker : m.ker = (β n).toAddMonoidHom.ker) :
     wallSubmodule q β n m = grade q β n := by
@@ -75,6 +76,7 @@ theorem wallSubmodule_zero_normal (n : Γ) : wallSubmodule q β n 0 = ⊥ := by
 
 /-- Radical degrees have no eligible quantum wall normals, even if their monomials
 are nonzero central elements. -/
+@[simp]
 theorem wallSubmodule_eq_bot_of_radical (n : Γ) (h : β n = 0) (m : Γ →+ ℤ) :
     wallSubmodule q β n m = ⊥ := by
   have hk : (β n).toAddMonoidHom.ker = ⊤ := by
