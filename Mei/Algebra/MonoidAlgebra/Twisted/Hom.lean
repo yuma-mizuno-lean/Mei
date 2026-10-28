@@ -181,13 +181,11 @@ theorem domCongr_mem_grade_iff (e : M ≃+ N)
     (h : ∀ i j, α i j = δ (e.toMultiplicative i) (e.toMultiplicative j))
     (m : M) (x : twistedMonoidAlgebra R (Multiplicative M) α) :
     domCongr e.toMultiplicative h x ∈ grade R δ (e m) ↔ x ∈ grade R α m := by
-  rw [mem_grade_iff, mem_grade_iff]
-  constructor
-  · rintro ⟨r, hr⟩
-    refine ⟨r, (domCongr e.toMultiplicative h).injective ?_⟩
-    simpa using hr
-  · rintro ⟨r, rfl⟩
-    exact ⟨r, by simp⟩
+  simpa [mem_grade_iff, Submodule.mem_span_singleton] using
+    Submodule.apply_mem_span_image_iff_mem_span
+    (f := (domCongr e.toMultiplicative h).toLinearMap)
+    (s := {of (Multiplicative.ofAdd m)}) (x := x)
+    (domCongr e.toMultiplicative h).injective
 
 end Grading
 
