@@ -6,6 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Algebra.PositiveDegrees.Grading
+public import Mei.Algebra.DirectSum.Supported
 public import Mei.LinearAlgebra.ModuleFiltration.Completion
 public import TauCeti.Algebra.DirectSum.Internal
 
@@ -83,36 +84,17 @@ theorem mem_shiftedSubmodule_iff {x : M} :
     x ∈ shiftedSubmodule ℳ P p ↔
       ∀ q, q - p ∉ P → (DirectSum.decompose ℳ x q : M) = 0 := by
   classical
-  constructor
-  · intro hx q hq
-    refine Submodule.iSup_induction _
-      (motive := fun x => (DirectSum.decompose ℳ x q : M) = 0) hx
-      (fun n x hx => ?_) (by simp) (fun x y hx hy => by simp [hx, hy])
-    apply DirectSum.decompose_of_mem_ne ℳ hx
-    intro he
-    apply hq
-    simpa only [← he, add_sub_cancel_left] using n.property
-  · intro hx
-    rw [← DirectSum.sum_support_decompose ℳ x]
-    apply Submodule.sum_mem
-    intro q _
-    by_cases hq : q - p ∈ P
-    · have he : p + (q - p) = q := by abel
-      apply le_shiftedSubmodule ℳ P p hq
-      simpa only [he] using (DirectSum.decompose ℳ x q).property
-    · rw [hx q hq]
-      exact Submodule.zero_mem _
+  have h := Mei.DirectSum.mem_iSup_iff_decompose_eq_zero ℳ
+    ((fun n => p + n) '' (P : Set Γ)) (x := x)
+  simp only [iSup_subtype, iSup_image] at h
+  simpa only [shiftedSubmodule_def, iSup_subtype, Set.mem_image, SetLike.mem_coe,
+    ← eq_sub_iff_add_eq', exists_eq_right] using h
 
 /-- The shifted submodule is stable under every ambient homogeneous projection. -/
 theorem shiftedSubmodule_isHomogeneous :
     DirectSum.SetLike.IsHomogeneous ℳ (shiftedSubmodule ℳ P p) := by
-  intro q x hx
-  by_cases hq : q - p ∈ P
-  · have he : p + (q - p) = q := by abel
-    apply le_shiftedSubmodule ℳ P p hq
-    simpa only [he] using (DirectSum.decompose ℳ x q).property
-  · rw [(mem_shiftedSubmodule_iff ℳ P p).mp hx q hq]
-    exact Submodule.zero_mem _
+  simpa only [shiftedSubmodule_def, iSup_subtype, iSup_image, SetLike.mem_coe] using
+    Mei.DirectSum.iSup_isHomogeneous ℳ ((fun n => p + n) '' (P : Set Γ))
 
 /-- The ambient direct-sum decomposition induces the relative grading on `p + P`. -/
 instance instDecompositionShiftedGrading : DirectSum.Decomposition (shiftedGrading ℳ P p) := by

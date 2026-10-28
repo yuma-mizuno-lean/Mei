@@ -14,10 +14,11 @@ public import Mei.RingTheory.GradedAlgebra.DegreeFiltration
 
 Inside the full quantum algebra, retain precisely the exponents in a chosen
 additive submonoid. The inherited exponent grading has zero pieces outside
-that monoid. Positive degree data then give a separated multiplicative
+that monoid. A degree nonnegative on the monoid gives a separated multiplicative
 two-sided ideal filtration, whose order-`k` quotient retains degrees at most
-`k`. Membership is characterized by the quantum basis coefficients, so this
-filtration can be used without unfolding submodule suprema.
+`k`. Strict positivity and finite degree cutoffs are not required. Membership is
+characterized by the quantum basis coefficients, so this filtration can be used
+without unfolding submodule suprema.
 
 This is the coefficient algebra to complete before integrating quantum inner
 derivations. We reuse `Mei.supportedSubalgebra`, the inherited grading from
@@ -72,26 +73,27 @@ theorem positiveMonomial_mul (P : AddSubmonoid Γ) (p r : P) :
   apply Subtype.ext
   simp
 
-variable (d : PositiveDegrees Γ)
+variable (P : AddSubmonoid Γ) (δ : Γ →+ ℤ) (hδ : ∀ p ∈ P, 0 ≤ δ p)
 
-/-- The degree filtration of the positive quantum coefficient algebra. -/
-def positiveFiltration : AlgFiltration (positiveSubalgebra q β d.monoid) := by
+/-- The degree filtration of a quantum coefficient algebra whose allowed exponents
+have nonnegative degree. -/
+def positiveFiltration : AlgFiltration (positiveSubalgebra q β P) := by
   classical
   exact GradedAlgebra.degreeFiltration
-    ((positiveSubalgebra q β d.monoid).grading (grade q β)) d.degree
-    (fun p hp => supportedSubalgebra_grading_eq_bot (grade q β) d.monoid
-      (fun h => (not_lt_of_ge (d.degree_nonneg h)) hp))
+    ((positiveSubalgebra q β P).grading (grade q β)) δ
+    (fun p hp => supportedSubalgebra_grading_eq_bot (grade q β) P
+      (fun h => (not_lt_of_ge (hδ p h)) hp))
 
 /-- A filtration term consists exactly of coefficients supported above its lower bound. -/
-theorem mem_positiveFiltration_iff (k : ℕ) (x : positiveSubalgebra q β d.monoid) :
-    x ∈ (positiveFiltration q β d).ideal k ↔
-      ∀ p, d.degree p < k → (basis q β).repr (x : QuantumMonoidAlgebra q β) p = 0 := by
+theorem mem_positiveFiltration_iff (k : ℕ) (x : positiveSubalgebra q β P) :
+    x ∈ (positiveFiltration q β P δ hδ).ideal k ↔
+      ∀ p, δ p < k → (basis q β).repr (x : QuantumMonoidAlgebra q β) p = 0 := by
   classical
   rw [positiveFiltration, GradedAlgebra.degreeFiltration_ideal,
     GradedAlgebra.mem_degreeIdeal_iff, Mei.DirectSum.mem_degreeTail_iff]
   constructor
   · intro hx p hp
-    have h := congrArg (fun y : positiveSubalgebra q β d.monoid =>
+    have h := congrArg (fun y : positiveSubalgebra q β P =>
       (y : QuantumMonoidAlgebra q β)) (hx p hp)
     rw [Subalgebra.coe_decompose_grading] at h
     exact (decompose_eq_zero_iff q β _ p).mp (ZeroMemClass.coe_eq_zero.mp h)
@@ -103,9 +105,9 @@ theorem mem_positiveFiltration_iff (k : ℕ) (x : positiveSubalgebra q β d.mono
 /-- A homogeneous positive monomial has exactly its prescribed filtration order,
 unless its scalar coefficient is zero. -/
 @[simp]
-theorem smul_positiveMonomial_mem_positiveFiltration_iff (k : ℕ) (p : d.monoid) (r : R) :
-    r • positiveMonomial q β d.monoid p ∈ (positiveFiltration q β d).ideal k ↔
-      r = 0 ∨ (k : ℤ) ≤ d.degree p := by
+theorem smul_positiveMonomial_mem_positiveFiltration_iff (k : ℕ) (p : P) (r : R) :
+    r • positiveMonomial q β P p ∈ (positiveFiltration q β P δ hδ).ideal k ↔
+      r = 0 ∨ (k : ℤ) ≤ δ p := by
   classical
   rw [mem_positiveFiltration_iff]
   simp only [Subalgebra.coe_smul, coe_positiveMonomial, ← basis_apply, map_smul,
@@ -113,7 +115,7 @@ theorem smul_positiveMonomial_mem_positiveFiltration_iff (k : ℕ) (p : d.monoid
     Finsupp.single_apply]
   constructor
   · intro h
-    by_cases hp : (k : ℤ) ≤ d.degree p
+    by_cases hp : (k : ℤ) ≤ δ p
     · exact Or.inr hp
     · exact Or.inl (by simpa using h p (lt_of_not_ge hp))
   · rintro (rfl | hp)
@@ -124,7 +126,7 @@ theorem smul_positiveMonomial_mem_positiveFiltration_iff (k : ℕ) (p : d.monoid
 
 /-- The positive quantum degree filtration is separated. -/
 theorem iInf_positiveFiltration_eq_bot :
-    (⨅ k, (positiveFiltration q β d).ideal k) = ⊥ := by
+    (⨅ k, (positiveFiltration q β P δ hδ).ideal k) = ⊥ := by
   classical
   simp only [positiveFiltration, GradedAlgebra.degreeFiltration_ideal]
   exact GradedAlgebra.iInf_degreeIdeal_eq_bot _ _ _

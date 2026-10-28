@@ -81,30 +81,16 @@ theorem mem_supportedSubalgebra_iff (x : A) :
       ∀ n, n ∉ P → (DirectSum.decompose 𝒜 x n : A) = 0 := by
   classical
   rw [← Subalgebra.mem_toSubmodule, supportedSubalgebra_toSubmodule]
-  simp only [shiftedSubmodule_def, zero_add]
-  constructor
-  · intro hx n hn
-    refine Submodule.iSup_induction _
-      (motive := fun x => (DirectSum.decompose 𝒜 x n : A) = 0) hx
-      (fun m x hx => ?_) (by simp) (fun x y hx hy => by simp [hx, hy])
-    exact DirectSum.decompose_of_mem_ne 𝒜 hx (fun h => hn (h ▸ m.property))
-  · intro hx
-    rw [← DirectSum.sum_support_decompose 𝒜 x]
-    apply Submodule.sum_mem
-    intro n _
-    by_cases hn : n ∈ P
-    · exact Submodule.mem_iSup_of_mem ⟨n, hn⟩ (DirectSum.decompose 𝒜 x n).property
-    · rw [hx n hn]
-      exact Submodule.zero_mem _
+  simpa only [shiftedSubmodule_def, zero_add, iSup_subtype, SetLike.mem_coe] using
+    Mei.DirectSum.mem_iSup_iff_decompose_eq_zero 𝒜 (P : Set Γ)
 
 /-- The supported subalgebra is closed under ambient homogeneous projections. -/
 theorem supportedSubalgebra_isHomogeneous :
     DirectSum.SetLike.IsHomogeneous 𝒜 (supportedSubalgebra 𝒜 P) := by
-  intro n x hx
-  by_cases hn : n ∈ P
-  · exact le_supportedSubalgebra 𝒜 P hn (DirectSum.decompose 𝒜 x n).property
-  · rw [(mem_supportedSubalgebra_iff 𝒜 P x).mp hx n hn]
-    exact (supportedSubalgebra 𝒜 P).zero_mem
+  simpa only [DirectSum.SetLike.IsHomogeneous, ← Subalgebra.mem_toSubmodule,
+    supportedSubalgebra_toSubmodule, shiftedSubmodule_def, zero_add, iSup_subtype,
+    SetLike.mem_coe] using
+    Mei.DirectSum.iSup_isHomogeneous 𝒜 (P : Set Γ)
 
 /-- Restrict the ambient grading to the supported subalgebra. -/
 instance instGradedAlgebraSupportedSubalgebra :

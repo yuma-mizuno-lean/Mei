@@ -6,6 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Algebra.Lie.Graded.Map
+public import Mei.Algebra.DirectSum.Supported
 
 /-!
 # Lie subalgebras supported on additive sets of degrees
@@ -82,31 +83,15 @@ variable [DecidableEq N] [DirectSum.Decomposition ℒ]
 theorem mem_supportedLieSubalgebra_iff (S : AddSubsemigroup N) (x : L) :
     x ∈ supportedLieSubalgebra ℒ S ↔
       ∀ n, n ∉ S → (DirectSum.decompose ℒ x n : L) = 0 := by
-  constructor
-  · intro hx n hn
-    exact Submodule.iSup_induction _
-      (motive := fun x => (DirectSum.decompose ℒ x n : L) = 0) hx
-      (fun m x hx => DirectSum.decompose_of_mem_ne ℒ hx (by
-        intro he; exact hn (he ▸ m.property)))
-      (by simp) (fun x y hx hy => by simp [hx, hy])
-  · intro hx
-    classical
-    rw [← DirectSum.sum_support_decompose ℒ x]
-    apply Submodule.sum_mem
-    intro n _
-    by_cases hn : n ∈ S
-    · exact le_supportedLieSubalgebra ℒ hn (DirectSum.decompose ℒ x n).property
-    · rw [hx n hn]
-      exact Submodule.zero_mem _
+  rw [← LieSubalgebra.mem_toSubmodule, supportedLieSubalgebra_toSubmodule]
+  exact Mei.DirectSum.mem_iSup_iff_decompose_eq_zero ℒ (S : Set N)
 
 /-- Supported Lie subalgebras are stable under all homogeneous projections. -/
 theorem supportedLieSubalgebra_isHomogeneous (S : AddSubsemigroup N) :
     DirectSum.SetLike.IsHomogeneous ℒ (supportedLieSubalgebra ℒ S) := by
-  intro n x hx
-  by_cases hn : n ∈ S
-  · exact le_supportedLieSubalgebra ℒ hn (DirectSum.decompose ℒ x n).property
-  · rw [(mem_supportedLieSubalgebra_iff ℒ S x).mp hx n hn]
-    exact Submodule.zero_mem _
+  simpa only [DirectSum.SetLike.IsHomogeneous, ← LieSubalgebra.mem_toSubmodule,
+    supportedLieSubalgebra_toSubmodule, iSup_subtype, SetLike.mem_coe] using
+    Mei.DirectSum.iSup_isHomogeneous ℒ (S : Set N)
 
 /-- Selecting every degree recovers the entire Lie algebra. -/
 @[simp]
