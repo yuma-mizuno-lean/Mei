@@ -9,6 +9,7 @@ public import Mei.Algebra.Lie.Logarithmic.Basic
 public import Mei.Algebra.Lie.Graded.Supported
 public import Mei.Algebra.Lie.Graded.Subalgebra
 public import Mathlib.LinearAlgebra.Finsupp.Span
+public import Mathlib.LinearAlgebra.Finsupp.Pi
 public import Mathlib.LinearAlgebra.LinearIndependent.Lemmas
 
 /-!
@@ -18,14 +19,16 @@ Formal logarithmic vector fields decompose by their exponent. The homogeneous
 fields whose characters annihilate their spatial degrees are closed under the
 bracket. Selecting strictly positive degrees gives the tropical vertex Lie algebra,
 with its internal positive grading and ordinary action on the coefficient algebra.
+Restricting to a submodule of characters preserves this positive grading.
 Here the coefficients are `R`-valued additive characters; comparison with tensor
 products of integral tangent characters is a separate base-change identification.
 
 The decomposition uses Mathlib's independence and spanning theorems for
 `Finsupp.lsingle`. Restriction uses `LieSubalgebra.gradedLieAlgebra` and
-`supportedLieSubalgebra`. The tangent-character bracket is the logarithmic
-bracket of Mandel, *Scattering diagrams, theta functions, and refined tropical
-curve counts*, Example 2.1(i), arXiv:1503.06183v5.
+`supportedLieSubalgebra`; character restriction uses `Finsupp.submodule`.
+The tangent-character bracket is the logarithmic bracket of Mandel, *Scattering
+diagrams, theta functions, and refined tropical curve counts*, Example 2.1(i),
+arXiv:1503.06183v5.
 -/
 
 public section
@@ -253,3 +256,129 @@ theorem single_mem_tropicalVertexLieAlgebra {n : Γ} (hn : n ∈ d.monoid) (hne 
     simp [h]
 
 end Mei
+
+namespace Mei.LogarithmicVectorField
+
+variable {R Γ Λ : Type*} [CommRing R] [AddCommMonoid Γ] [AddCommMonoid Λ]
+  (ρ : Γ →+ Λ) (U : Submodule R (Λ →+ R))
+
+private def characterGrade (n : Γ) : Submodule R (LogarithmicVectorField R Γ Λ ρ) :=
+  U.map (single ρ n)
+
+private instance : SetLike.GradedBracket (characterGrade ρ U) (characterGrade ρ U) where
+  bracket_mem := by
+    rintro n n' x y ⟨m, hm, rfl⟩ ⟨m', hm', rfl⟩
+    exact ⟨_, U.sub_mem (U.smul_mem _ hm') (U.smul_mem _ hm),
+      (single_bracket_single ρ n n' m m').symm⟩
+
+/-- Formal logarithmic fields all of whose characters belong to `U`. -/
+def characterSubalgebra : LieSubalgebra R (LogarithmicVectorField R Γ Λ ρ) :=
+  supportedLieSubalgebra (characterGrade ρ U) ⊤
+
+/-- The character restriction is the image of the coefficient submodule. -/
+@[simp]
+theorem characterSubalgebra_toSubmodule :
+    (characterSubalgebra ρ U).toSubmodule =
+      (Finsupp.submodule (fun _ : Γ => U)).map (toFinsupp ρ).symm.toLinearMap := by
+  simp only [characterSubalgebra, supportedLieSubalgebra_toSubmodule, characterGrade,
+    iSup_subtype, AddSubsemigroup.mem_top, iSup_pos, Finsupp.submodule_eq_iSup,
+    Submodule.map_iSup, Submodule.map_comp, single_def]
+
+/-- Character restriction is coefficientwise, with no condition outside the support. -/
+@[simp]
+theorem mem_characterSubalgebra_iff (x : LogarithmicVectorField R Γ Λ ρ) :
+    x ∈ characterSubalgebra ρ U ↔ ∀ n, toFinsupp ρ x n ∈ U := by
+  rw [← LieSubalgebra.mem_toSubmodule, characterSubalgebra_toSubmodule,
+    Submodule.mem_map_equiv, LinearEquiv.symm_symm, Finsupp.mem_submodule_iff]
+
+/-- A homogeneous field belongs to the character restriction exactly when its
+character does. -/
+theorem single_mem_characterSubalgebra_iff (n : Γ) (m : Λ →+ R) :
+    single ρ n m ∈ characterSubalgebra ρ U ↔ m ∈ U := by
+  rw [mem_characterSubalgebra_iff, toFinsupp_single]
+  simpa only [Submodule.mem_comap, Finsupp.lsingle_apply, Finsupp.mem_submodule_iff] using
+    (SetLike.ext_iff.mp (Finsupp.comap_lsingle_submodule (fun _ : Γ => U) n) m)
+
+/-- Restrict the positive tangent Lie algebra to characters in `U`. -/
+def tropicalSubalgebra (d : PositiveDegrees Γ) :
+    LieSubalgebra R (tropicalVertexLieAlgebra (R := R) d ρ) :=
+  (characterSubalgebra ρ U).comap (tropicalVertexLieAlgebra d ρ).incl
+
+/-- Membership in the positive character restriction is coefficientwise. -/
+@[simp]
+theorem mem_tropicalSubalgebra_iff (d : PositiveDegrees Γ)
+    (x : tropicalVertexLieAlgebra (R := R) d ρ) :
+    x ∈ tropicalSubalgebra ρ U d ↔ ∀ n, toFinsupp ρ x.val n ∈ U :=
+  mem_characterSubalgebra_iff ρ U x.val
+
+/-- The restricted algebra is stable under homogeneous projection. -/
+theorem tropicalSubalgebra_isHomogeneous [DecidableEq Γ] (d : PositiveDegrees Γ) :
+    DirectSum.SetLike.IsHomogeneous (tropicalVertexGrading (R := R) d ρ)
+      (tropicalSubalgebra ρ U d) := by
+  intro n x hx
+  rw [mem_tropicalSubalgebra_iff] at hx ⊢
+  have he := TauCeti.DirectSum.map_decompose_restrict (grade ρ)
+    (tropicalVertexGrading (R := R) d ρ) (tropicalVertexLieAlgebra d ρ).incl.toLinearMap
+    (by intros; simp only [tropicalVertexGrading_def, Submodule.mem_comap,
+      LieHom.coe_toLinearMap]) n x
+  simp only [LieHom.coe_toLinearMap, LieSubalgebra.coe_incl] at he
+  rw [← mem_characterSubalgebra_iff, he, decompose_grade,
+    single_mem_characterSubalgebra_iff]
+  exact hx n
+
+/-- The exponent pieces inherited by the positive character restriction. -/
+def tropicalSubalgebraGrading (d : PositiveDegrees Γ) (n : Γ) :
+    Submodule R (tropicalSubalgebra ρ U d) :=
+  (tropicalVertexGrading d ρ n).comap (tropicalSubalgebra ρ U d).incl.toLinearMap
+
+/-- The restricted exponent grading is the inverse image of the tropical vertex grading. -/
+theorem tropicalSubalgebraGrading_def (d : PositiveDegrees Γ) :
+    tropicalSubalgebraGrading ρ U d = fun n =>
+      (tropicalVertexGrading d ρ n).comap (tropicalSubalgebra ρ U d).incl.toLinearMap := (rfl)
+
+/-- The positive character restriction retains an internal Lie grading. -/
+instance [DecidableEq Γ] (d : PositiveDegrees Γ) :
+    GradedLieAlgebra (tropicalSubalgebraGrading ρ U d) := by
+  rw [tropicalSubalgebraGrading_def]
+  exact (tropicalSubalgebra ρ U d).gradedLieAlgebra (tropicalVertexGrading d ρ)
+    (tropicalSubalgebra_isHomogeneous ρ U d)
+
+instance (d : PositiveDegrees Γ) :
+    IsPositiveGrading d (tropicalSubalgebraGrading ρ U d) := by
+  rw [tropicalSubalgebraGrading_def]
+  exact inferInstanceAs (IsPositiveGrading d (fun n =>
+    (tropicalVertexGrading d ρ n).comap (tropicalSubalgebra ρ U d).incl.toLinearMap))
+
+end Mei.LogarithmicVectorField
+
+namespace Mei.LogarithmicVectorField
+
+variable {R Γ Λ : Type*} [CommRing R] [AddCommMonoid Γ] [AddCommMonoid Λ]
+  (d : PositiveDegrees Γ) (ρ : Γ →+ Λ) (U : Submodule R (Λ →+ R))
+
+/-- A positive tangent homogeneous field with its character in `U`. -/
+def tropicalSingle {n : Γ} (hn : n ∈ d.monoid) (hne : n ≠ 0)
+    (m : U) (hm : m.val (ρ n) = 0) : tropicalSubalgebra ρ U d :=
+  ⟨⟨single ρ n m.val, single_mem_tropicalVertexLieAlgebra d ρ hn hne m.val hm⟩,
+    (single_mem_characterSubalgebra_iff ρ U n m.val).mpr m.property⟩
+
+/-- The ambient formal field of the restricted homogeneous generator. -/
+@[simp]
+theorem coe_tropicalSingle {n : Γ} (hn : n ∈ d.monoid) (hne : n ≠ 0)
+    (m : U) (hm : m.val (ρ n) = 0) :
+    (tropicalSingle (d := d) (ρ := ρ) (U := U) hn hne m hm).val.val = single ρ n m.val := (rfl)
+
+/-- A homogeneous restricted field is represented by a character in the selected subspace. -/
+theorem mem_tropicalSubalgebraGrading_iff (n : Γ) (x : tropicalSubalgebra ρ U d) :
+    x ∈ tropicalSubalgebraGrading ρ U d n ↔ ∃ m : U, single ρ n m.val = x.val.val := by
+  constructor
+  · intro hx
+    obtain ⟨m, hm⟩ := (mem_tropicalVertexGrading_iff d ρ n x.val).mp hx
+    have hU := (mem_tropicalSubalgebra_iff ρ U d x.val).mp x.property
+    refine ⟨⟨m, ?_⟩, hm⟩
+    exact (single_mem_characterSubalgebra_iff ρ U n m).mp
+      (hm ▸ (mem_characterSubalgebra_iff ρ U x.val.val).mpr hU)
+  · rintro ⟨m, hm⟩
+    exact (mem_tropicalVertexGrading_iff d ρ n x.val).mpr ⟨m.val, hm⟩
+
+end Mei.LogarithmicVectorField
