@@ -37,6 +37,14 @@ theorem mapAlgHom_mem_gradeBy (φ : R →ₐ[K] S) {f : M → ι} {i : ι} {u : 
     (hu : u ∈ gradeBy R f i) : mapAlgHom M φ u ∈ gradeBy S f i := by
   exact fun m hm => hu m (Finsupp.support_mapRange (hf := φ.map_zero) hm)
 
+/-- Changing coefficients commutes with currying the two exponent coordinates. -/
+@[simp]
+theorem curryAlgEquiv_mapAlgHom [AddMonoid ι] (x : R[M × ι]) (φ : R →ₐ[K] S) :
+    curryAlgEquiv S (mapAlgHom (M × ι) φ x) =
+      mapAlgHom M (mapAlgHom ι φ) (curryAlgEquiv R x) := by
+  ext m n
+  rfl
+
 end CoefficientChange
 
 variable {R M N : Type*} [CommSemiring R] [AddMonoid M]
