@@ -288,37 +288,26 @@ theorem sub_mul_sub_nonneg_of_disjoint_singularSupport (hK : Convex ℝ K)
     (hrK : r ∈ K) (hrW : r ∈ W k) :
     0 ≤ (ν p - ν r) * (ν q - ν r) := by
   refine le_of_not_gt fun hneg => ?_
-  set a := ν p - ν r
-  set b := ν q - ν r
-  have hab : a - b ≠ 0 := fun h => by
-    rw [sub_eq_zero.mp h] at hneg
-    nlinarith [mul_self_nonneg b]
-  -- The zero of the normal along the segment from `p` to `q`.
-  set t := a / (a - b)
-  set m := AffineMap.lineMap p q t
-  have ht : t ∈ Icc (0 : ℝ) 1 := by
-    rcases lt_or_gt_of_ne hab with h | h
-    · constructor
-      · exact div_nonneg_of_nonpos (by nlinarith) h.le
-      · rw [div_le_one_of_neg h]; nlinarith
-    · constructor
-      · exact div_nonneg (by nlinarith) h.le
-      · rw [div_le_one h]; nlinarith
-  have hmK : m ∈ K := hK.lineMap_mem hpK hqK ht
+  have hrseg : ν r ∈ segment ℝ (ν p) (ν q) := by
+    rw [segment_eq_Icc']
+    rcases mul_neg_iff.mp hneg with ⟨hp, hq⟩ | ⟨hp, hq⟩
+    · exact ⟨(min_le_right _ _).trans (by linarith),
+        (by linarith : ν r ≤ ν p).trans (le_max_left _ _)⟩
+    · exact ⟨(min_le_left _ _).trans (by linarith),
+        (by linarith : ν r ≤ ν q).trans (le_max_right _ _)⟩
+  have himage := image_segment ℝ ν.toAffineMap p q
+  simp only [LinearMap.coe_toAffineMap] at himage
+  rw [← himage] at hrseg
+  obtain ⟨m, hmseg, hνm⟩ := hrseg
+  have hmK : m ∈ K := hK.segment_subset hpK hqK hmseg
   have hmj : m ∈ W j := hK.inter_affineSpan_subset_of_disjoint_singularSupport hKW
-    ⟨p, hpK, hpW⟩ ⟨hmK, AffineMap.lineMap_mem t (subset_affineSpan ℝ _ hpW)
-      (subset_affineSpan ℝ _ hqW)⟩
-  have hνm : ν m = ν r := by
-    have hm : ν m = (1 - t) * ν p + t * ν q := by
-      simp only [m, AffineMap.lineMap_apply_module, map_add, map_smul, smul_eq_mul]
-    have htab : t * (a - b) = a := div_mul_cancel₀ a hab
-    rw [hm]
-    linear_combination (-1 : ℝ) * htab
+    ⟨p, hpK, hpW⟩ ⟨hmK, (affineSpan ℝ (W j)).convex.segment_subset
+      (subset_affineSpan ℝ _ hpW) (subset_affineSpan ℝ _ hqW) hmseg⟩
   have hmk : m ∈ W k :=
     (hK.mem_iff_apply_eq_of_disjoint_singularSupport hKW hν hrK hrW hmK).mpr hνm
   have hpk : p ∈ W k := (hK.mem_iff_mem_of_disjoint_singularSupport hKW hmK hmj hmk
     hpK).mp hpW
-  have ha : a = 0 := sub_eq_zero.mpr
+  have ha : ν p - ν r = 0 := sub_eq_zero.mpr
     ((hK.mem_iff_apply_eq_of_disjoint_singularSupport hKW hν hrK hrW hpK).mp hpk)
   rw [ha, zero_mul] at hneg
   exact lt_irrefl _ hneg
