@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Algebra.PositiveDegrees.Basic
+public import Mei.Algebra.PositiveDegrees.Graph
 public import Mathlib.LinearAlgebra.Basis.Defs
 
 /-!
@@ -16,6 +16,8 @@ graded by the sum of its coordinates. Its bounded-degree sets are finite, includ
 when the basis is empty. These are the degree data for completions in independent
 formal variables. The construction pulls back `Mei.PositiveDegrees.orthant` along
 Mathlib's `Module.Basis.equivFun`.
+For graphs in a torsion-free target, every supported primitive ray generator
+already belongs to the graph monoid.
 -/
 
 public section
@@ -63,5 +65,23 @@ theorem positiveDegrees_monoid_eq_closure :
   · apply AddSubmonoid.closure_le.mpr
     rintro _ ⟨j, rfl⟩
     simp [mem_positiveDegrees_monoid, Finsupp.single_apply, ite_nonneg]
+
+/-- Supported primitive generators belong to the basis graph monoid when the
+target is torsion-free. This integral membership does not require real embeddings. -/
+theorem supportedRay_generator_mem_positiveDegrees_graph
+    {M : Type*} [AddCommGroup M] [Module.IsTorsionFree ℤ M] (f : N →+ M)
+    (w : Mei.SupportedRay (b.positiveDegrees.graph f)) :
+    w.generator ∈ (b.positiveDegrees.graph f).monoid := by
+  obtain ⟨a, ha, haw⟩ := w.supported
+  have h := (Mei.PositiveDegrees.mem_graph_monoid b.positiveDegrees f _ _).mp haw
+  apply (Mei.PositiveDegrees.mem_graph_monoid b.positiveDegrees f _ _).mpr
+  constructor
+  · apply (b.mem_positiveDegrees_monoid _).mpr
+    intro c
+    have hc := (b.mem_positiveDegrees_monoid _).mp h.1 c
+    simp only [zsmul_eq_smul, map_zsmul, Finsupp.smul_apply, smul_eq_mul] at hc
+    exact nonneg_of_mul_nonneg_right hc ha
+  · apply smul_right_injective M ha.ne'
+    simpa only [zsmul_eq_smul, map_zsmul] using h.2
 
 end Module.Basis

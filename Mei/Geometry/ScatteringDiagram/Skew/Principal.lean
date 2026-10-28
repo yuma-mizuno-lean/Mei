@@ -7,7 +7,6 @@ module
 
 public import Mei.Geometry.ScatteringDiagram.Skew.Basic
 public import Mei.Algebra.PositiveDegrees.Graph
-public import Mei.Algebra.PositiveDegrees.Basis
 public import Mathlib.LinearAlgebra.Dual.Lemmas
 
 /-!
@@ -70,29 +69,6 @@ its degree is read from the retained unfrozen exponent. -/
 abbrev principalPositiveDegrees (d : PositiveDegrees D.unfrozen) :
     PositiveDegrees (Module.Dual ℤ D.sublattice × D.unfrozen) :=
   d.graph D.principalCharacter.toAddMonoidHom
-
-/-- Supported primitive generators belong to the principal positive monoid.
-This integral membership does not require real embeddings. -/
-theorem supportedRay_generator_mem_principalPositiveDegrees
-    {ι : Type*} [Fintype ι] (b : Module.Basis ι ℤ D.unfrozen)
-    (w : SupportedRay (D.principalPositiveDegrees b.positiveDegrees)) :
-    w.generator ∈ (D.principalPositiveDegrees b.positiveDegrees).monoid := by
-  obtain ⟨a, ha, haw⟩ := w.supported
-  have h := (PositiveDegrees.mem_graph_monoid b.positiveDegrees
-    D.principalCharacter.toAddMonoidHom _ _).mp haw
-  apply (PositiveDegrees.mem_graph_monoid b.positiveDegrees
-    D.principalCharacter.toAddMonoidHom _ _).mpr
-  constructor
-  · apply (b.mem_positiveDegrees_monoid _).mpr
-    intro c
-    have hc := (b.mem_positiveDegrees_monoid _).mp h.1 c
-    simp only [zsmul_eq_smul, map_zsmul, Finsupp.smul_apply, smul_eq_mul] at hc
-    exact nonneg_of_mul_nonneg_right hc ha
-  · apply LinearMap.ext
-    intro n
-    have he := congrArg (fun χ => χ n) h.2
-    simp only [zsmul_eq_smul, map_zsmul, LinearMap.smul_apply, zsmul_eq_mul] at he
-    exact mul_left_cancel₀ ha.ne' he
 
 variable [Module.Free ℤ N]
 
