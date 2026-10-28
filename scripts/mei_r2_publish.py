@@ -28,10 +28,15 @@ MAP = re.compile(r'revisions/yuma-mizuno-lean/Mei/tc/leanprover--lean4---[0-9A-Z
 
 
 class Stop(RuntimeError):
-    pass
+    """Abort publication without retry; prior remote writes may have succeeded."""
 
 
 class S3:
+    """Minimal signed transport for the dedicated mei-cache bucket.
+
+    Construct with its HTTPS bucket endpoint and AccessKeyID:SecretAccessKey.
+    Invalid endpoint or credential syntax raises Stop before any request.
+    """
     def __init__(self, endpoint, credential):
         if not re.fullmatch(r'https://[0-9a-f]{32}\.r2\.cloudflarestorage\.com/mei-cache', endpoint):
             raise Stop('expected the exact R2 endpoint for mei-cache')
@@ -40,6 +45,13 @@ class S3:
         self.endpoint, self.credential = endpoint, credential
 
     def request(self, method, key='', data=None, headers=None, query=None):
+        """Return (HTTP status, response bytes, lowercase response headers).
+
+        key is bucket-relative; query and headers are optional mappings. data
+        is bytes or a Path to a frozen upload file, or None for no payload.
+        HTTP errors are returned for the caller to inspect. Transport failures
+        raise Stop with an uncertain remote outcome; requests are never retried.
+        """
         url = self.endpoint + '/' + urllib.parse.quote(key, safe='/')
         if query:
             url += '?' + urllib.parse.urlencode(query)
@@ -75,10 +87,24 @@ class S3:
 
 
 def initial_state():
+    """Return a fresh in-memory budget, including control-object byte allowance.
+
+    No remote state is created. day is unset, class_a is zero, and active is
+    None until initialization or reservation supplies their operational values.
+    """
     return dict(version=1, reserved_bytes=STATE_ALLOWANCE, day='', class_a=0, active=None)
 
 
 def reserve(state, sizes, today, token):
+    """Return a locked copy of state reserving payload bytes and publication PUTs.
+
+    sizes is a sequence of nonnegative integer byte counts; today is the UTC
+    ISO date and token identifies this attempt. active must be None. Bytes
+    accumulate without refunds; class_a resets only on a later day. Invalid
+    state, an existing lock, or exhausted limits raises Stop. This function
+    performs no I/O: the caller must persist the result conditionally before
+    uploading anything. The input state is not mutated.
+    """
     state = copy.deepcopy(state)
     if (state.get('version') != 1 or type(state.get('reserved_bytes')) is not int
             or not STATE_ALLOWANCE <= state['reserved_bytes'] <= LIMIT
@@ -105,6 +131,15 @@ def reserve(state, sizes, today, token):
 
 
 def load_plan(directory, endpoint):
+    """Validate a trusted frozen plan and return ordered (bucket key, Path) pairs.
+
+    directory contains artifacts.curl, map-url and outputs.jsonl from the
+    trusted planner. URLs must use endpoint; payloads must be regular files
+    directly inside directory. The revision map is always the final pair.
+    Reject unsafe directives, keys, paths and duplicates with Stop; malformed
+    JSON or inaccessible files may raise ValueError or OSError. The caller
+    must keep payloads immutable from validation through publication.
+    """
     directory = directory.resolve()
     rows = (directory / 'artifacts.curl').read_text().splitlines()
     if len(rows) % 2 or len(rows) > 2 * A_LIMIT:
@@ -136,6 +171,14 @@ def load_plan(directory, endpoint):
 
 
 def initialize(client):
+    """Create the remote budget once, returning None on confirmed success.
+
+    client provides the S3 request contract. The dedicated bucket must have
+    no objects or multipart uploads and no concurrent external writers. Check
+    both listings, then conditionally create the control object; never replace
+    existing state. Inspection or creation failures raise Stop (malformed XML
+    raises ParseError); an uncertain write must be inspected before retrying.
+    """
     # Explicit one-time initialization ONLY for a verified empty dedicated bucket.
     for query, forbidden, expected in [({'list-type': '2', 'max-keys': '1'}, 'Contents', 'ListBucketResult'),
                              ({'uploads': '', 'max-uploads': '1'}, 'Upload', 'ListMultipartUploadsResult')]:
@@ -158,6 +201,17 @@ def initialize(client):
 
 
 def publish(client, objects, today=None):
+    """Publish a validated frozen plan, returning None on confirmed completion.
+
+    objects must be the nonempty ordered sequence returned by load_plan, with
+    the revision map last and files unchanged. client provides S3.request;
+    today optionally supplies the UTC ISO date, otherwise the current date is
+    used. Persist a conditional budget reservation before payload PUTs, upload
+    artifacts before the map, then conditionally clear the lock. Failures raise
+    Stop or propagate parsing/file errors. After reservation, failure retains
+    the byte/operation budget and may leave a lock or partial remote uploads;
+    never automatically retry, refund, or clear an uncertain reservation.
+    """
     today = today or dt.datetime.now(dt.timezone.utc).date().isoformat()
     code, body, headers = client.request('GET', STATE_KEY)
     if code != 200 or 'etag' not in headers:
@@ -191,6 +245,13 @@ def publish(client, objects, today=None):
 
 
 def main():
+    """Run initialize-empty or publish from CLI arguments and environment.
+
+    Read MEI_R2_BUCKET_ENDPOINT and LAKE_CACHE_KEY_RAW; publish also requires
+    --plan pointing to a trusted frozen plan. Return None and print success
+    only after the selected operation completes. Exceptions propagate to the
+    entrypoint, which reports failure and exits with status 2 for handled errors.
+    """
     parser = argparse.ArgumentParser()
     parser.add_argument('command', choices=['initialize-empty', 'publish'])
     parser.add_argument('--plan', type=Path)
