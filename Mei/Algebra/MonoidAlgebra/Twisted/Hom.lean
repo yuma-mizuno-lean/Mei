@@ -62,6 +62,7 @@ theorem map_algebraMap (φ : R →+* S) (f : G →* H)
   exact (lift (fun g => of (f g)) _ _).commutes r
 
 /-- Coefficients transform semilinearly under a twisted algebra map. -/
+@[simp↓]
 theorem map_smul (φ : R →+* S) (f : G →* H)
     (h : ∀ g j, Units.map φ.toMonoidHom (α g j) = β (f g) (f j))
     (r : R) (x : twistedMonoidAlgebra R G α) :
