@@ -17,7 +17,8 @@ from the finite-index sublattice. These fields satisfy the skew Lie bracket
 `[Xₙ,Xₙ'] = {n',n} Xₙ₊ₙ'`. Assuming `Module.Free ℤ N`, their nonzero-degree generators
 are linearly independent, even for a degenerate or zero skew form. Under this assumption,
 linear combinations give a faithful formal principal realization away from degree zero
-without imposing nondegeneracy on the skew form.
+without imposing nondegeneracy on the skew form. Casting the integral principal normal
+to coefficients gives the ray index times this rational evaluation character.
 
 We use `LogarithmicVectorField.single_bracket_single`, its coefficient equivalence,
 and Mathlib's `Finsupp.linearCombination`. The principal realization follows
@@ -118,6 +119,43 @@ theorem principalEvaluation_restrict (n : D.unfrozen) (φ : Module.Dual ℤ N)
 section Free
 
 variable [Module.Free ℤ N]
+
+/-- Casting the normalized integral normal to coefficients multiplies the rational
+principal evaluation character by the ray index `κ(n)`. -/
+theorem intCast_principalNormal_apply
+    (n : D.unfrozen) (x : Module.Dual ℤ D.sublattice × D.unfrozen) :
+    (D.principalNormal n x : R) =
+      algebraMap ℚ R (D.sublattice.toAddSubgroup.rayIndex n) *
+        D.principalEvaluation (R := R) n x := by
+  have heval : (D.principalNormal n x : ℚ) =
+      D.sublattice.toAddSubgroup.rayIndex n * D.principalEvaluation (R := ℚ) n x := by
+    let I := D.sublattice.toAddSubgroup.index
+    let κ := D.sublattice.toAddSubgroup.rayIndex n
+    have hi : (I : ℚ) ≠ 0 := by
+      exact_mod_cast (AddSubgroup.index_ne_zero (H := D.sublattice.toAddSubgroup))
+    have hd : (κ.den : ℚ) ≠ 0 := by positivity
+    have he : (κ.den : ℤ) • (I • D.sublattice.toAddSubgroup.rayVector n) =
+        κ.num • (⟨I • (n : N), D.sublattice.toAddSubgroup.nsmul_index_mem n⟩ :
+          D.sublattice) := by
+      apply Subtype.ext
+      simp only [AddSubgroup.coe_zsmul, AddSubgroup.coe_nsmul, Submodule.coe_smul_of_tower]
+      rw [smul_comm, D.sublattice.toAddSubgroup.den_rayIndex_zsmul_rayVector,
+        smul_comm]
+    have hφ := congrArg x.1 he
+    simp only [map_zsmul, map_nsmul, zsmul_eq_mul, nsmul_eq_mul] at hφ
+    have hφQ : (κ.den : ℚ) * (I * (x.1 (D.sublattice.toAddSubgroup.rayVector n) : ℚ)) =
+        κ.num * (x.1 ⟨I • (n : N), D.sublattice.toAddSubgroup.nsmul_index_mem n⟩ : ℚ) := by
+      exact_mod_cast hφ
+    dsimp only [κ, I] at hφQ
+    rw [principalNormal_apply, principalEvaluation_apply]
+    simp only [Algebra.algebraMap_self, RingHom.id_apply]
+    rw [← Rat.num_div_den (D.sublattice.toAddSubgroup.rayIndex n)]
+    dsimp only [κ, I] at hi hd ⊢
+    field_simp
+    nlinarith [hφQ]
+  have h := congrArg (algebraMap ℚ R) heval
+  simpa only [map_intCast, map_mul, principalEvaluation_apply, Algebra.algebraMap_self,
+    RingHom.id_apply] using h
 
 /-- A nonzero principal normal has no scalar torsion over any rational
 coefficient algebra, including coefficient algebras with zero divisors. -/

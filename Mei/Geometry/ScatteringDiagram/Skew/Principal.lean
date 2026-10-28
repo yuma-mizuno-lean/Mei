@@ -19,7 +19,8 @@ Any positive degree data on `N_uf` induce positive degree data on its image,
 with exactly the same finite cutoffs and no saturation assumption.
 
 The normalized principal normal evaluates a character at the normalized vector
-in `N°`. It annihilates the principal exponent of its own degree.
+in `N°`. For a nonzero unfrozen exponent it is primitive in the principal dual lattice.
+It annihilates the principal exponent of its own degree.
 These are the lattice data for the principal coefficient realization of
 Gross–Hacking–Keel–Kontsevich, *Canonical bases for cluster algebras*, §1 and
 Appendix B, arXiv:1411.1394v2. The integral lift uses Mathlib's
@@ -82,6 +83,20 @@ def principalNormal (n : D.unfrozen) :
 theorem principalNormal_apply (n : D.unfrozen)
     (x : Module.Dual ℤ D.sublattice × D.unfrozen) :
     D.principalNormal n x = x.1 (D.sublattice.toAddSubgroup.rayVector n) := (rfl)
+
+/-- The integral principal normal is primitive for each nonzero unfrozen exponent.
+The sublattice freeness assumption follows automatically from finite ambient rank. -/
+theorem isPrimitive_principalNormal [Module.Free ℤ D.sublattice]
+    {n : D.unfrozen} (hn : n ≠ 0) : TauCeti.IsPrimitive (D.principalNormal n) := by
+  let : Module.Free ℤ D.sublattice.toAddSubgroup :=
+    inferInstanceAs (Module.Free ℤ D.sublattice)
+  have hnN : (n : N) ≠ 0 := fun h => hn (Subtype.ext h)
+  obtain ⟨f, hf⟩ := TauCeti.isPrimitive_def.mp
+    (D.sublattice.toAddSubgroup.isPrimitive_rayVector
+      (D.sublattice.toAddSubgroup.rayIndex_pos hnN))
+  refine TauCeti.isPrimitive_def.mpr
+    ⟨Module.Dual.eval ℤ _ (f, (0 : D.unfrozen)), ?_⟩
+  simpa only [Module.Dual.eval_apply, principalNormal_apply] using hf
 
 /-- Every nonzero unfrozen exponent has a nonzero principal normal, even if
 the skew form vanishes on that exponent. -/
