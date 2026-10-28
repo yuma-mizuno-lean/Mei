@@ -7,6 +7,7 @@ module
 
 public import Mei.Algebra.PositiveDegrees.Basic
 public import Mei.Algebra.Module.Primitive
+public import Mathlib.GroupTheory.Subgroup.Saturated
 
 /-!
 # Supported primitive rays of a positive monoid
@@ -55,6 +56,15 @@ theorem ext {v w : SupportedRay d} (h : v.generator = w.generator) : v = w := by
 /-- A supported ray has nonzero generator. -/
 theorem generator_ne_zero (w : SupportedRay d) : w.generator ≠ 0 :=
   w.isPrimitive.ne_zero
+
+/-- A supported generator belongs to the allowed monoid if that monoid is saturated
+under division by positive natural multiples. -/
+theorem generator_mem_of_nsmulSaturated (w : SupportedRay d)
+    (h : d.monoid.NSMulSaturated) : w.generator ∈ d.monoid := by
+  obtain ⟨a, ha, haw⟩ := w.supported
+  have haw' : a.toNat • w.generator ∈ d.monoid := by
+    simpa only [← Nat.cast_smul_eq_nsmul ℤ, Int.toNat_of_nonneg ha.le] using haw
+  exact (h haw').resolve_left (by omega)
 
 /-- The allowed positive multiples of a supported primitive generator. -/
 def rayDegrees (w : SupportedRay d) : Set N :=

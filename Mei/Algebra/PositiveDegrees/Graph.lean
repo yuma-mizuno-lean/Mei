@@ -55,6 +55,19 @@ theorem mem_graph_monoid (m : M) (n : N) :
   · rintro ⟨hn, rfl⟩
     exact ⟨n, hn, rfl⟩
 
+/-- Graph monoids inherit saturation when the source monoid is saturated and the
+target has no additive torsion. -/
+theorem nsmulSaturated_graph_monoid [HasUniqueDiv M]
+    (h : d.monoid.NSMulSaturated) : (d.graph f).monoid.NSMulSaturated := by
+  rintro a ⟨m, n⟩ ha
+  by_cases ha0 : a = 0
+  · exact Or.inl ha0
+  · right
+    have hn := (mem_graph_monoid d f _ _).mp ha
+    apply (mem_graph_monoid d f _ _).mpr
+    exact ⟨(h hn.1).resolve_left ha0,
+      nsmul_right_injective ha0 (hn.2.trans (map_nsmul f a n))⟩
+
 /-- The graph degree ignores the first coordinate. -/
 @[simp]
 theorem graph_degree (m : M) (n : N) : (d.graph f).degree (m, n) = d.degree n := (rfl)

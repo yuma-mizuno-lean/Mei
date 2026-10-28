@@ -7,6 +7,7 @@ module
 
 public import Mei.Algebra.PositiveDegrees.Basis
 public import Mei.Geometry.Convex.Cone.LatticePoints
+public import Mei.LinearAlgebra.Basis.Integral
 public import Mathlib.LinearAlgebra.Basis.VectorSpace
 public import TauCeti.Geometry.Convex.Cone.Face.Simplicial
 
@@ -18,11 +19,14 @@ combinations of these vectors as lattice points. The retained second coordinate
 prevents additional lattice points even when `f` has a kernel or nonprimitive
 values. This identifies graph positive degrees with a saturated cone monoid.
 
-The proof uses `PointedCone.mem_hull_image_iff_linearCombination` for source cones,
-`Mei.PositiveDegrees.graph` for the integral monoid, and
-`PointedCone.latticePoints_map_prod_id` for the graph lift. The source basis images
-need only be real linearly independent; they need not span the ambient space.
-The first lattice map need only be injective.
+The source basis images must be real linearly independent; they need not span
+the ambient space. The first lattice map must be injective.
+
+## References
+
+* `PointedCone.mem_hull_image_iff_linearCombination`
+* `Mei.PositiveDegrees.graph`
+* `PointedCone.latticePoints_map_prod_id`
 -/
 
 public section
@@ -44,14 +48,11 @@ theorem positiveDegrees_monoid_eq_latticePoints_hull :
   classical
   let C := PointedCone.hull ℝ (Set.range fun a => i (b a))
   let L := Fintype.linearCombination ℝ (fun a => i (b a))
-  have hsum (n : N) : L (fun a => (b.repr n a : ℝ)) = i n := by
-    simpa only [L, Fintype.linearCombination_apply, map_sum, map_zsmul,
-      Int.cast_smul_eq_zsmul] using congrArg i (b.sum_repr n)
   ext n
   rw [b.mem_positiveDegrees_monoid, PointedCone.mem_latticePoints]
   constructor
   · intro hn
-    rw [← hsum n, Fintype.linearCombination_apply]
+    rw [← b.fintypeLinearCombination_repr_cast (R := ℝ) i n, Fintype.linearCombination_apply]
     exact C.sum_mem fun a _ => PointedCone.smul_mem C
       (by exact_mod_cast hn a)
       (PointedCone.subset_hull (Set.mem_range_self a))
@@ -61,7 +62,8 @@ theorem positiveDegrees_monoid_eq_latticePoints_hull :
     have he' : L (fun a => c a) = i n := by
       simpa [L, Fintype.linearCombination_apply, Finsupp.linearCombination_apply,
         Finsupp.sum_fintype] using he
-    have hcoords := hi.fintypeLinearCombination_injective (he'.trans (hsum n).symm)
+    have hcoords := hi.fintypeLinearCombination_injective
+      (he'.trans (b.fintypeLinearCombination_repr_cast (R := ℝ) i n).symm)
     have ha : 0 ≤ (b.repr n a : ℝ) := by
       rw [← congrFun hcoords a]
       exact hc a
@@ -81,16 +83,10 @@ theorem positiveDegrees_graph_monoid_eq_latticePoints_hull :
     (LinearMap.ker_eq_bot.mpr hi.fintypeLinearCombination_injective)
   let F := (Fintype.linearCombination ℝ (fun a => j (f (b a)))).comp r
   have hF (n : N) : F (i n) = j (f n) := by
-    have hn : L (fun a => (b.repr n a : ℝ)) = i n := by
-      simpa only [L, Fintype.linearCombination_apply, map_sum, map_zsmul,
-        Int.cast_smul_eq_zsmul] using congrArg i (b.sum_repr n)
     have hrn := LinearMap.congr_fun hr (fun a => (b.repr n a : ℝ))
-    rw [LinearMap.comp_apply, hn] at hrn
-    simp only [F, LinearMap.comp_apply, hrn, LinearMap.id_apply,
-      Fintype.linearCombination_apply]
-    simpa only [map_sum, map_zsmul, Int.cast_smul_eq_zsmul,
-      AddMonoidHom.comp_apply] using
-      congrArg (j.comp f) (b.sum_repr n)
+    rw [LinearMap.comp_apply, b.fintypeLinearCombination_repr_cast (R := ℝ) i n] at hrn
+    simp only [F, LinearMap.comp_apply, hrn, LinearMap.id_apply]
+    exact b.fintypeLinearCombination_repr_cast (R := ℝ) (j.comp f) n
   have hmap :
       (PointedCone.hull ℝ (Set.range fun a => i (b a))).map
           (F.prod LinearMap.id) =
