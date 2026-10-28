@@ -81,6 +81,7 @@ theorem rightLaurentMap_incomingLift (n : {n : ℤ | 0 ≤ n}) (u : grade R n.va
 
 /-- Crossing from the left multiplies the coefficient by `a^n` and reverses
 the Laurent exponent. This formula requires no invertibility of `a`. -/
+@[simp]
 theorem rightLaurentMap_incomingLift_zero (n : {n : ℤ | 0 ≤ n})
     (u : grade R n.val) :
     rightLaurentMap a (incomingLift a 0 n u) =
@@ -90,6 +91,7 @@ theorem rightLaurentMap_incomingLift_zero (n : {n : ℤ | 0 ≤ n})
 
 /-- Crossing from the right has the same coefficient multiplier as crossing
 from the left, with the two chamber variables exchanged. -/
+@[simp]
 theorem leftLaurentMap_incomingLift_one (n : {n : ℤ | 0 ≤ n})
     (u : grade R n.val) :
     leftLaurentMap a (incomingLift a 1 n u) =
@@ -145,6 +147,7 @@ theorem normalWeightCorrespondence_liftRight (n : {n : ℤ | 0 ≤ n}) :
     (normalWeightCorrespondence a).liftRight n = incomingLift a 1 n := (rfl)
 
 /-- The opposite image of an incoming coefficient is concentrated in weight `-n`. -/
+@[simp↓]
 theorem normalWeightCorrespondence_transfer (n : {n : ℤ | 0 ≤ n}) (j : ℤ)
     (u : grade R n.val) :
     ((normalWeightCorrespondence a).transfer n j u : R[T;T⁻¹]) =
@@ -159,6 +162,7 @@ theorem normalWeightCorrespondence_transfer (n : {n : ℤ | 0 ≤ n}) (j : ℤ)
   · simp [DirectSum.of_eq_of_ne _ _ _ h, h]
 
 /-- The reverse transfer has the same formula, in the other Laurent variable. -/
+@[simp↓]
 theorem normalWeightCorrespondence_symm_transfer (n : {n : ℤ | 0 ≤ n}) (j : ℤ)
     (u : grade R n.val) :
     ((normalWeightCorrespondence a).symm.transfer n j u : R[T;T⁻¹]) =
