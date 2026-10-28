@@ -117,16 +117,10 @@ theorem empty (h : TauCeti.Toric.IsIntegralLattice i) :
     IsLocallyClosedPolyhedron h (∅ : Set V) :=
   (IsRationalNormalPolyhedron.empty h).isLocallyClosedPolyhedron
 
-/-- A strict system is the intersection of the preimages of the open negative half-line. -/
-private theorem setOf_forall_neg_eq {κ : Type*} (g : κ → (V →ᴬ[ℝ] ℝ)) :
-    {x | ∀ k, g k x < 0} = ⋂ k, g k ⁻¹' Set.Iio 0 := by
-  ext x
-  simp
-
 /-- Locally closed polyhedra are convex. -/
 theorem convex {S : Set V} (hS : IsLocallyClosedPolyhedron h S) : Convex ℝ S := by
   obtain ⟨P, hP, n, g, -, rfl⟩ := hS
-  rw [setOf_forall_neg_eq]
+  rw [Set.ofPred_forall]
   exact hP.convex.inter (convex_iInter fun k =>
     (convex_Iio (0 : ℝ)).affine_preimage (g k).toAffineMap)
 
@@ -134,7 +128,7 @@ theorem convex {S : Set V} (hS : IsLocallyClosedPolyhedron h S) : Convex ℝ S :
 theorem isLocallyClosed {S : Set V} (hS : IsLocallyClosedPolyhedron h S) :
     IsLocallyClosed S := by
   obtain ⟨P, hP, n, g, -, rfl⟩ := hS
-  rw [setOf_forall_neg_eq]
+  rw [Set.ofPred_forall]
   exact hP.isClosed.isLocallyClosed.inter
     (isOpen_iInter_of_finite fun k => isOpen_Iio.preimage (g k).continuous).isLocallyClosed
 
@@ -160,13 +154,10 @@ theorem preimage {S : Set V} (hS : IsLocallyClosedPolyhedron h S) (f : W →ᴬ[
 theorem image {S : Set V} (hS : IsLocallyClosedPolyhedron h S)
     (e : Toric.IntegralAffineEquiv h h') : IsLocallyClosedPolyhedron h' (e '' S) := by
   have he : e '' S = e.symm.toContinuousAffineMap ⁻¹' S := by
-    ext y
-    simp only [Set.mem_preimage, Toric.IntegralAffineEquiv.toContinuousAffineMap_apply]
-    constructor
-    · rintro ⟨x, hx, rfl⟩
-      simpa using hx
-    · intro hy
-      exact ⟨e.symm y, hy, by simp⟩
+    simpa only [AffineEquiv.coe_toEquiv, AffineEquiv.coe_symm_toEquiv, Set.preimage,
+      Toric.IntegralAffineEquiv.toContinuousAffineMap_apply,
+      Toric.IntegralAffineEquiv.symm_toAffineEquiv] using
+      e.toAffineEquiv.toEquiv.image_eq_preimage_symm S
   rw [he]
   exact hS.preimage _ e.symm.isRational_toContinuousAffineMap
 
@@ -300,13 +291,9 @@ theorem IsLocallyClosedPolyhedron.isRationalSemilinear {S : Set V}
     (hS : IsLocallyClosedPolyhedron h S) : IsRationalSemilinear h S := by
   obtain ⟨P, hP, n, g, hg, rfl⟩ := hS
   obtain ⟨Q, rfl⟩ := isRationalNormalPolyhedron_iff.mp hP
-  have hQ : Q.carrier = ⋂ j, {x | Q.inequality j x ≤ 0} := by
-    ext x
-    simp
-  have hg' : {x | ∀ k, g k x < 0} = ⋂ k, {x | g k x < 0} := by
-    ext x
-    simp
-  rw [hQ, hg']
+  have hQ : Q.carrier = {x | ∀ j, Q.inequality j x ≤ 0} :=
+    Set.ext fun _ => RationalAffinePolyhedron.mem_carrier
+  rw [hQ, Set.ofPred_forall, Set.ofPred_forall]
   exact (IsRationalSemilinear.iInter fun j =>
       IsRationalSemilinear.setOf_nonpos (Q.rational_linear j)).inter
     (IsRationalSemilinear.iInter fun k => IsRationalSemilinear.setOf_neg (hg k))

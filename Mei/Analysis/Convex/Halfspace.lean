@@ -69,10 +69,7 @@ theorem Convex.closure_inter_setOf_forall_neg {V ι : Type*} [AddCommGroup V] [M
     (hne : (P ∩ {x | ∀ k, g k x < 0}).Nonempty) :
     closure (P ∩ {x | ∀ k, g k x < 0}) = P ∩ {x | ∀ k, g k x ≤ 0} := by
   have hclosed : IsClosed (P ∩ {x | ∀ k, g k x ≤ 0}) := by
-    have he : {x | ∀ k, g k x ≤ 0} = ⋂ k, g k ⁻¹' Iic 0 := by
-      ext x
-      simp
-    rw [he]
+    rw [Set.ofPred_forall]
     exact hPc.inter (isClosed_iInter fun k => isClosed_Iic.preimage (g k).continuous)
   apply Subset.antisymm
   · exact closure_minimal (inter_subset_inter_right _ fun x hx k => (hx k).le) hclosed
