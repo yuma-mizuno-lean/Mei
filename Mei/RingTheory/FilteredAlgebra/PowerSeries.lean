@@ -8,7 +8,7 @@ module
 public import Mei.RingTheory.FilteredAlgebra.Algebra
 public import Mei.RingTheory.PowerSeries.Nilpotent
 import TauCeti.RingTheory.PowerSeries.Evaluation
-import Mathlib.RingTheory.PowerSeries.Inverse
+public import Mathlib.RingTheory.PowerSeries.Inverse
 
 /-!
 # Evaluating power series in a completed filtered algebra
@@ -85,5 +85,35 @@ theorem completedAeval_mem_first (x : F.completionIdeal 1) {f : PowerSeries R}
 theorem isUnit_completedAeval (x : F.completionIdeal 1) {f : PowerSeries R}
     (hf : IsUnit (PowerSeries.constantCoeff f)) : IsUnit (F.completedAeval x f) :=
   (PowerSeries.isUnit_iff_constantCoeff.mpr hf).map (F.completedAeval x)
+
+/-- The formal inverse at an invertible constant coefficient evaluates to the inverse unit. -/
+@[simp]
+theorem completedAeval_invOfUnit (x : F.completionIdeal 1) (f : PowerSeries R) (u : Rˣ)
+    (hf : PowerSeries.constantCoeff f = u) :
+    F.completedAeval x (PowerSeries.invOfUnit f u) = Ring.inverse (F.completedAeval x f) := by
+  apply left_inv_eq_right_inv (a := F.completedAeval x f)
+  · rw [← map_mul, PowerSeries.invOfUnit_mul f u hf, map_one]
+  · exact Ring.mul_inverse_cancel _ (F.isUnit_completedAeval x (hf ▸ u.isUnit))
+
+/-- A scalar commutation factor rescales completed power-series evaluation. -/
+theorem completedAeval_mul_of_semiconj (x : F.completionIdeal 1) (y : F.completion) (a : R)
+    (h : SemiconjBy y (a • (x : F.completion)) x) (f : PowerSeries R) :
+    F.completedAeval x f * y = y * F.completedAeval x (PowerSeries.rescale a f) := by
+  apply F.completion_ext
+  intro k
+  simp only [map_mul, F.projection_completedAeval]
+  apply PowerSeries.nilpotentAeval_mul_of_semiconj
+  have hk := congrArg (F.projectionₐ (R := R) k) h
+  simp only [map_mul, map_smul] at hk
+  simpa only [SemiconjBy, F.projectionₐ_apply] using hk
+
+/-- Conjugation by an evaluated unit series is its scalar rescaling ratio. -/
+theorem completedAeval_conj (x : F.completionIdeal 1) (y : F.completion) (a : R)
+    (h : SemiconjBy y (a • (x : F.completion)) x) (f : (PowerSeries R)ˣ) :
+    F.completedAeval x (f : PowerSeries R) * y *
+        F.completedAeval x (↑(f⁻¹) : PowerSeries R) =
+      y * F.completedAeval x
+        (PowerSeries.rescale a (f : PowerSeries R) * (↑(f⁻¹) : PowerSeries R)) := by
+  rw [F.completedAeval_mul_of_semiconj x y a h, map_mul, mul_assoc]
 
 end Mei.AlgFiltration

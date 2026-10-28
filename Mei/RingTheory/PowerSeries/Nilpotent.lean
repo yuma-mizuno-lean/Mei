@@ -7,6 +7,7 @@ module
 
 public import TauCeti.RingTheory.PowerSeries.Substitution
 public import Mathlib.RingTheory.Adjoin.Singleton
+public import Mathlib.Algebra.Group.Semiconj.Basic
 import TauCeti.RingTheory.PowerSeries.Evaluation
 
 /-!
@@ -94,5 +95,19 @@ theorem nilpotentAeval_X {x : A} (hx : IsNilpotent x) :
 theorem nilpotentAeval_coe {x : A} (hx : IsNilpotent x) (p : Polynomial R) :
     nilpotentAeval hx (p : R⟦X⟧) = Polynomial.aeval x p := by
   rw [algHom_coe_eq_aeval, nilpotentAeval_X]
+
+/-- A scalar commutation factor rescales every series evaluated at a nilpotent element. -/
+theorem nilpotentAeval_mul_of_semiconj {x : A} (hx : IsNilpotent x) (y : A) (a : R)
+    (h : SemiconjBy y (a • x) x) (f : R⟦X⟧) :
+    nilpotentAeval hx f * y = y * nilpotentAeval hx (rescale a f) := by
+  let n := hx.choose
+  have hn : x ^ n = 0 := hx.choose_spec
+  rw [nilpotentAeval_eq_sum _ hn, nilpotentAeval_eq_sum _ hn,
+    Finset.sum_mul, Finset.mul_sum]
+  apply Finset.sum_congr rfl
+  intro i _
+  simpa only [coeff_rescale, smul_pow, smul_smul, smul_mul_assoc, mul_smul_comm,
+    mul_comm (a ^ i)] using
+    congrArg (fun z : A => coeff i f • z) (h.pow_right i).eq.symm
 
 end PowerSeries
