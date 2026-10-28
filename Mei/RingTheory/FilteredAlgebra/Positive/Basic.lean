@@ -70,10 +70,12 @@ theorem mem_positiveCompletion {x : F.completion} :
 variable {F P}
 
 /-- Zero is positive. -/
+@[simp]
 theorem isPositive_zero : F.IsPositive P 0 :=
   (F.mem_positiveCompletion P).mp (zero_mem _)
 
 /-- One is positive. -/
+@[simp]
 theorem isPositive_one : F.IsPositive P 1 :=
   (F.mem_positiveCompletion P).mp (one_mem _)
 
