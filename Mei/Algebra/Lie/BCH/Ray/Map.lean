@@ -102,7 +102,8 @@ theorem rayGroupMap_comp (g : GradedLieHom U ℳ ℋ) (f : GradedLieHom T ℒ �
       (g.rayGroupMap hg).comp (f.rayGroupMap hf) := by
   ext x : 1
   apply Subtype.ext
-  exact DFunLike.congr_fun (completedMap_comp g f) (x : d.completedBCHGroup ℒ)
+  simpa only [MonoidHom.comp_apply, coe_rayGroupMap_apply] using
+    DFunLike.congr_fun (completedMap_comp g f) (x : d.completedBCHGroup ℒ)
 
 /-- For a free target degree group, the image label lies on the canonically
 transported primitive ray. The generator may acquire a positive integer multiplier. -/
