@@ -7,16 +7,17 @@ module
 
 public import Mei.Geometry.ScatteringDiagram.WallSpace.Quantum.Basic
 public import Mei.Geometry.ScatteringDiagram.WallSpace.Action
-public import Mei.Algebra.Lie.Graded.Shifted
 
 /-!
-# Quantum wall actions on shifted coefficients
+# Quantum wall actions on coefficients
 
 The positive quantum Lie algebra acts on the full quantum algebra by commutators.
 This action adds exponent degrees and annihilates coefficients tangent to a wall
-normal. Consequently it acts on every shifted coefficient completion, and completed
-wall labels fix the images of tangent homogeneous coefficients, including those
-whose ambient exponent has negative degree.
+normal. Together with `Mei.Algebra.Lie.Graded.Shifted`, these instances give actions
+on shifted coefficient completions. The general theorem
+`DirectedWallSpaces.completedBCHAction_of_eq_self_of_normal_eq_zero` then shows
+that completed wall labels fix the images of tangent homogeneous coefficients,
+including those whose ambient exponent has negative degree.
 
 We retain Mathlib's adjoint action and its restriction to Lie subalgebras, rather
 than introduce another coefficient representation. Annihilation uses the existing
@@ -61,33 +62,5 @@ instance instIsWallAnnihilatingPositive (d : PositiveDegrees Γ) (hβ : β.IsAlt
     exact IsWallAnnihilating.lie_eq_zero
       (H := ambientWallSpaces q β hβ) (𝒜 := grade q β)
       ((ambientWallSpaces_wall q β hβ _ _).symm ▸ hx) ha hm
-
-section Completion
-
-variable [Algebra ℚ R] [DecidableEq Γ] (d : PositiveDegrees Γ)
-
-/-- Rational scalars on the quantum algebra are induced from the coefficient ring. -/
-local instance rationalAlgebra : Algebra ℚ (QuantumMonoidAlgebra q β) :=
-  Algebra.compHom _ (algebraMap ℚ R)
-
-/-- Completed quantum wall labels fix every embedded tangent homogeneous coefficient
-in any shifted coefficient module. The shift and the coefficient exponent may have
-arbitrary ambient degree. -/
-theorem shifted_completedBCHAction_of_eq_self_of_normal_eq_zero
-    (hβ : β.IsAlt) (p : Γ) {w : SupportedRay d} {m : Γ →+ ℤ}
-    {g : d.completedBCHGroup (positiveLieGrading q β d)}
-    (hg : g ∈ (wallSpaces q β d hβ).wallGroup w m)
-    {r : Γ} (a : d.shiftedLieSubmodule (positiveLieGrading q β d) (grade q β) p)
-    (ha : (a : QuantumMonoidAlgebra q β) ∈ grade q β r) (hm : m r = 0) :
-    (d.shiftedLieFiltration (positiveLieGrading q β d) (grade q β) p).completedBCHAction
-        d (positiveLieGrading q β d) g
-        ((d.shiftedLieFiltration (positiveLieGrading q β d) (grade q β) p).of a) =
-      (d.shiftedLieFiltration (positiveLieGrading q β d) (grade q β) p).of a := by
-  exact (wallSpaces q β d hβ).completedBCHAction_of_eq_self_of_normal_eq_zero
-    (fun r => (grade q β r).comap
-      (d.shiftedLieSubmodule (positiveLieGrading q β d) (grade q β) p).incl.toLinearMap)
-    (d.shiftedLieFiltration (positiveLieGrading q β d) (grade q β) p) hg ha hm
-
-end Completion
 
 end Mei.QuantumMonoidAlgebra
