@@ -1,0 +1,45 @@
+name: Lean bootstrap regression tests
+
+on:
+  pull_request:
+    paths:
+      - .github/actions/restore-lean-toolchain/**
+      - .github/workflows/warm-dependencies.yml
+      - .github/workflows/lean-bootstrap-tests.yml
+      - scripts/test_official_lean_install.py
+  push:
+    branches: [main]
+    paths:
+      - .github/actions/restore-lean-toolchain/**
+      - .github/workflows/warm-dependencies.yml
+      - .github/workflows/lean-bootstrap-tests.yml
+      - scripts/test_official_lean_install.py
+
+permissions:
+  contents: read
+
+jobs:
+  regression:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Read the existing pinned shared materializer
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          repository: yuma-mizuno-lean/TauCetiTools
+          ref: 7405c6bc681341dc54c775bc6f5e6de533120ba1
+          path: .tauceti-tools
+          persist-credentials: false
+      - name: Run isolated tests without Lean downloads or publication credentials
+        env:
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: |
+          set -euo pipefail
+          python3 -m venv "$RUNNER_TEMP/lean-bootstrap-tests"
+          "$RUNNER_TEMP/lean-bootstrap-tests/bin/python" -m pip install 'PyYAML==6.0.3'
+          PYTHONPATH="$GITHUB_WORKSPACE/.tauceti-tools" \
+            "$RUNNER_TEMP/lean-bootstrap-tests/bin/python" -m unittest discover \
+            -s scripts -p test_official_lean_install.py
