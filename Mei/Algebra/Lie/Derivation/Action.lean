@@ -6,7 +6,6 @@ Authors: Codex
 module
 
 public import Mathlib.Algebra.Lie.OfAssociative
-public import Mathlib.Algebra.Lie.Subalgebra
 
 /-!
 # Lie actions by associative derivations
