@@ -6,6 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.Affine.Generic
+public import Mei.Geometry.Affine.Transverse
 
 /-!
 # Generic incoming affine germs
@@ -46,9 +47,10 @@ theorem eventually_smul_vadd_notMem (S : AffineSubspace ℝ P)
       · exact eventually_ne_nhdsWithin (Ne.symm hs0)
     filter_upwards [he] with t ht
     intro hmem
-    have hd := S.vsub_mem_direction hmem hs
-    rw [vadd_vsub_vadd_cancel_right, ← sub_smul] at hd
-    exact hv ((S.direction.smul_mem_iff (sub_ne_zero.mpr ht)).mp hd)
+    refine ht (S.subsingleton_preimage_lineMap (x := x) (y := v +ᵥ x)
+      (by simpa using hv) ?_ ?_)
+    · simpa only [mem_preimage, AffineMap.lineMap_vadd_apply, mem_coe] using hmem
+    · simpa only [mem_preimage, AffineMap.lineMap_vadd_apply, mem_coe] using hs
   · exact Filter.Eventually.of_forall fun t ht => hex ⟨t, ht⟩
 
 end AffineSubspace
