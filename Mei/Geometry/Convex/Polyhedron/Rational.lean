@@ -217,4 +217,61 @@ theorem IsRationalPolyhedron.empty (h : TauCeti.Toric.IsIntegralLattice i) :
     ⟨RationalAffinePolyhedron.empty h, RationalAffinePolyhedron.carrier_empty h,
       RationalAffinePolyhedron.hasRationalOffsets_empty h⟩
 
+namespace IsRationalNormalPolyhedron
+
+variable {h : TauCeti.Toric.IsIntegralLattice i}
+
+/-- The whole space is a rational-normal polyhedron. -/
+@[simp]
+theorem univ (h : TauCeti.Toric.IsIntegralLattice i) :
+    IsRationalNormalPolyhedron h (Set.univ : Set V) :=
+  isRationalNormalPolyhedron_iff.mpr
+    ⟨RationalAffinePolyhedron.univ h, RationalAffinePolyhedron.carrier_univ h⟩
+
+/-- The empty set is a rational-normal polyhedron. -/
+@[simp]
+theorem empty (h : TauCeti.Toric.IsIntegralLattice i) :
+    IsRationalNormalPolyhedron h (∅ : Set V) :=
+  isRationalNormalPolyhedron_iff.mpr
+    ⟨RationalAffinePolyhedron.empty h, RationalAffinePolyhedron.carrier_empty h⟩
+
+/-- Rational-normal polyhedra are closed. -/
+theorem isClosed {P : Set V} (hP : IsRationalNormalPolyhedron h P) : IsClosed P := by
+  obtain ⟨Q, rfl⟩ := isRationalNormalPolyhedron_iff.mp hP
+  exact Q.isClosed
+
+/-- Rational-normal polyhedra are convex. -/
+theorem convex {P : Set V} (hP : IsRationalNormalPolyhedron h P) : Convex ℝ P := by
+  obtain ⟨Q, rfl⟩ := isRationalNormalPolyhedron_iff.mp hP
+  exact Q.convex
+
+/-- Rational-normal polyhedra are closed under intersection. -/
+theorem inter {P Q : Set V} (hP : IsRationalNormalPolyhedron h P)
+    (hQ : IsRationalNormalPolyhedron h Q) : IsRationalNormalPolyhedron h (P ∩ Q) := by
+  obtain ⟨P, rfl⟩ := isRationalNormalPolyhedron_iff.mp hP
+  obtain ⟨Q, rfl⟩ := isRationalNormalPolyhedron_iff.mp hQ
+  exact isRationalNormalPolyhedron_iff.mpr ⟨P.inter Q, P.carrier_inter Q⟩
+
+variable {N' W : Type*} [AddCommGroup N'] [NormedAddCommGroup W] [NormedSpace ℝ W]
+  {i' : N' →+ W} {h' : TauCeti.Toric.IsIntegralLattice i'}
+
+/-- Rational-normal polyhedra pull back along affine maps with rational linear part. -/
+theorem preimage {P : Set V} (hP : IsRationalNormalPolyhedron h P) (f : W →ᴬ[ℝ] V)
+    (hf : Toric.IsRationalLinearMap h' h f.toAffineMap.linear) :
+    IsRationalNormalPolyhedron h' (f ⁻¹' P) := by
+  obtain ⟨P, rfl⟩ := isRationalNormalPolyhedron_iff.mp hP
+  exact isRationalNormalPolyhedron_iff.mpr ⟨P.preimage f hf, P.carrier_preimage f hf⟩
+
+end IsRationalNormalPolyhedron
+
+/-- Finitely many affine inequalities with rational linear parts cut out a
+rational-normal polyhedron. -/
+theorem isRationalNormalPolyhedron_setOf_forall {h : TauCeti.Toric.IsIntegralLattice i}
+    {ι : Type*} [Finite ι] (g : ι → (V →ᴬ[ℝ] ℝ))
+    (hg : ∀ j, Toric.IsRationalFunctional h (g j).toAffineMap.linear) :
+    IsRationalNormalPolyhedron h {x | ∀ j, g j x ≤ 0} :=
+  isRationalNormalPolyhedron_iff.mpr ⟨RationalAffinePolyhedron.ofFinite g hg, by
+    ext x
+    exact RationalAffinePolyhedron.mem_carrier_ofFinite hg⟩
+
 end Mei
