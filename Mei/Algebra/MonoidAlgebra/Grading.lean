@@ -49,8 +49,12 @@ variable {K R S M ι : Type*} [CommSemiring K] [Semiring R] [Semiring S]
 theorem curryAlgEquiv_mapAlgHom [AddMonoid ι] (x : R[M × ι]) (φ : R →ₐ[K] S) :
     curryAlgEquiv K (mapAlgHom (M × ι) φ x) =
       mapAlgHom M (mapAlgHom ι φ) (curryAlgEquiv K x) := by
-  ext m n
-  rfl
+  induction x using AddMonoidAlgebra.induction_linear with
+  | zero => simp
+  | add x y hx hy => simp [hx, hy]
+  | single p r =>
+    rcases p with ⟨m, n⟩
+    simp
 
 end CurryCoefficientChange
 
@@ -63,9 +67,10 @@ theorem curryAlgEquiv_mapAlgHom_ofId {R S M N : Type*} [CommSemiring R]
     (x : R[N × M]) :
     curryAlgEquiv S (mapAlgHom (N × M) (Algebra.ofId R S) x) =
       mapAlgHom N (Algebra.ofId R[M] S[M]) (curryAlgEquiv R x) := by
-  -- Currying ignores its scalar annotation, and the scoped algebra map on
-  -- monoid algebras is pointwise coefficient change over the original scalars.
-  exact curryAlgEquiv_mapAlgHom x (Algebra.ofId R S)
+  -- Currying has the same underlying ring equivalence for either scalar ring.
+  refine (curryAlgEquiv_mapAlgHom x (Algebra.ofId R S)).trans ?_
+  ext n m
+  simp only [coeff_mapAlgHom, Algebra.ofId_apply, algebraMap_def, coeff_mapRingHom]
 
 variable {R M N : Type*} [CommSemiring R] [AddMonoid M]
 
