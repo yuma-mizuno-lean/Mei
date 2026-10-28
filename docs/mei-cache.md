@@ -33,7 +33,9 @@ is enabled by this change. Repository billing controls remain in force.
 
 ## Consumption
 
-Main and PR/merge-group CI restore before the ordinary offline build. The PR hook
+PR/merge-group CI restore before the ordinary offline build. Main deliberately
+compiles Mei without its artifact cache and runs all audits before publication;
+it remains an independent source verification rather than trusting its own cache. The PR hook
 executes the workflow-pinned copy of `scripts/mei_release_cache.py`, never a
 candidate's helper. A missing or damaged release is reported and falls back to
 the normal build. Mathlib continues using its own `lake exe cache get`.

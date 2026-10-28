@@ -181,7 +181,7 @@ def restore(root):
         bundle = tmp / "bundle.tar.gz"
         download(base + rev + ".tar.gz", bundle, MAX_BUNDLE)
         unpack(bundle, meta, tmp / "stage", inputs)
-        run(["lake", "cache", "unstage", str(tmp / "stage")], root, env)
+        run(["lake", "cache", "unstage", str(tmp / "stage"), "--force-overwrite"], root, env)
     if os.environ.get("GITHUB_ENV"):
         with open(os.environ["GITHUB_ENV"], "a") as f:
             for k in ("LAKE_ARTIFACT_CACHE", "LAKE_RESTORE_ARTIFACTS", "LAKE_CACHE_DIR"):
