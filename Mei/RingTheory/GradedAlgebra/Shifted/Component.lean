@@ -56,20 +56,8 @@ private theorem decompose_mul_cutoff (x : ∀ n, 𝒜 (p + n)) (y : ∀ n, 𝒜 
   simp only [Finset.sum_mul_sum, decompose_sum, DirectSum.sum_apply, Submodule.coe_sum]
   simp_rw [hproj]
   rw [← Finset.sum_product (f := fun ab : Γ × Γ =>
-    if ab.1 + ab.2 = n then (x ab.1 : A) * y ab.2 else 0), ← Finset.sum_filter]
-  apply Finset.sum_congr
-  · ext ab
-    simp only [Finset.mem_filter, Finset.mem_product, Set.Finite.mem_toFinset,
-      mem_cutoff, Set.mem_ofPred_eq]
-    constructor
-    · rintro ⟨⟨ha, hb⟩, hab⟩
-      exact ⟨ha.1, hb.1, hab⟩
-    · rintro ⟨ha, hb, hab⟩
-      exact ⟨⟨⟨ha, (d.degree_le_of_add_eq hb hab).trans (Int.self_le_toNat _)⟩,
-        ⟨hb, (d.degree_le_of_add_eq ha (by simpa [add_comm] using hab)).trans
-          (Int.self_le_toNat _)⟩⟩, hab⟩
-  · intro ab hab
-    rfl
+    if ab.1 + ab.2 = n then (x ab.1 : A) * y ab.2 else 0), ← Finset.sum_filter,
+    d.filter_cutoff_product_eq_decompositions n _ (Int.self_le_toNat _)]
 
 /-- Each component of a completed shifted product is a finite convolution over
 the actual allowed relative degrees. This includes degrees outside the positive

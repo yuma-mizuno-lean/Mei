@@ -123,6 +123,22 @@ theorem finite_decompositions (n : N) :
     ⟨hb, (d.degree_le_of_add_eq ha (by simpa [add_comm] using hab)).trans
       (Int.self_le_toNat _)⟩⟩
 
+/-- Filtering a product of degree cutoffs by addition gives all allowed
+decompositions whenever the cutoff bounds the degree of the total. -/
+theorem filter_cutoff_product_eq_decompositions [DecidableEq N] (n : N) (k : ℕ)
+    (hn : d.degree n ≤ k) :
+    (((d.finite_cutoff k).toFinset ×ˢ (d.finite_cutoff k).toFinset).filter
+      (fun p : N × N => p.1 + p.2 = n)) = (d.finite_decompositions n).toFinset := by
+  ext ⟨a, b⟩
+  simp only [Finset.mem_filter, Finset.mem_product, Set.Finite.mem_toFinset,
+    mem_cutoff, Set.mem_ofPred_eq]
+  constructor
+  · rintro ⟨⟨ha, hb⟩, hab⟩
+    exact ⟨ha.1, hb.1, hab⟩
+  · rintro ⟨ha, hb, hab⟩
+    exact ⟨⟨⟨ha, (d.degree_le_of_add_eq hb hab).trans hn⟩,
+      ⟨hb, (d.degree_le_of_add_eq ha (by simpa [add_comm] using hab)).trans hn⟩⟩, hab⟩
+
 /-- Finite addition fibers on the subtype of allowed degrees. -/
 theorem finite_add_fiber (n : d.monoid) :
     Set.Finite {p : d.monoid × d.monoid | p.1 + p.2 = n} := by
