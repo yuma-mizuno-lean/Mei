@@ -158,7 +158,8 @@ variable {d Q} in
 coefficient filtration term above the cutoff modulus into the target term. Thus
 `Mei.AlgFiltration.mapCompletionₐ` extends it to the completed coefficient algebras
 with the original modulus of `T`. -/
-theorem filtration_ideal_le_comap_mapDomainAlgHom (T : PositiveDegreeMap d e)
+theorem filtration_ideal_le_comap_mapDomainAlgHom {R : Type*} [CommSemiring R]
+    (T : PositiveDegreeMap d e)
     (hT : Q.map T.toAddMonoidHom ≤ Q') (k : ℕ) :
     (filtration (R := R) d Q).ideal (T.modulus k + 1) ≤
       ((filtration e Q').ideal (k + 1)).comap (mapDomainAlgHom R R
