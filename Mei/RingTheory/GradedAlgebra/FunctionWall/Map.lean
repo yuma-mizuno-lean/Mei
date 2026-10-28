@@ -14,8 +14,9 @@ public import Mei.RingTheory.FilteredAlgebra.Map
 A continuous ring map intertwines completed function-wall actions when its
 finite quotient maps preserve normal weights and carry the source wall functions
 to the target wall functions. The source and target scalar rings may differ,
-and the cutoff modulus need not preserve orders. Coefficient quotients may make
-wall actions trivial; neither injectivity nor separated filtrations are required.
+and the cutoff modulus may differ from the identity but must be monotone.
+Coefficient quotients may make wall actions trivial; neither injectivity nor
+separated filtrations are required.
 
 The comparison uses `AlgFiltration.projection_mapCompletion` and the finite
 `GradedAlgebra.map_functionWallAction`. It also identifies the image of the
