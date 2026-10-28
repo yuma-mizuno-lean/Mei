@@ -148,25 +148,25 @@ theorem finiteAlphabet_monoid_eq_closure :
 
 variable {L : Type*} [AddCommGroup L] (e : PositiveDegrees L) (τ : M × (E → ℤ) →+ L)
 
-/-- An additive map out of the finite alphabet sends an allowed degree to the
-corresponding combination of the images of the letters. -/
-theorem map_eq_sum_letter {x : M × (E → ℤ)} (hx : x ∈ (finiteAlphabet m).monoid) :
+/-- An additive map sends an integer combination of letters to the corresponding
+combination of their images. -/
+theorem map_eq_sum_letter {x : M × (E → ℤ)} (hx : x.1 = ∑ α, x.2 α • m α) :
     τ x = ∑ α, x.2 α • τ (letter m α) := by
-  conv_lhs => rw [eq_sum_letter m ((mem_finiteAlphabet_monoid m).mp hx).2]
+  conv_lhs => rw [eq_sum_letter m hx]
   simp [map_sum, map_zsmul]
 
 /-- An additive map out of the finite alphabet that sends every letter `(m α, e_α)` to
-`m α` agrees with the first projection on allowed degrees. -/
-theorem eq_fst_of_mem {σ : M × (E → ℤ) →+ M} (hσ : ∀ α, σ (letter m α) = m α)
-    {x : M × (E → ℤ)} (hx : x ∈ (finiteAlphabet m).monoid) : σ x = x.1 := by
-  rw [map_eq_sum_letter m σ hx, ((mem_finiteAlphabet_monoid m).mp hx).2]
+`m α` agrees with the first projection on integer combinations of letters. -/
+theorem eq_fst_of_eq_sum {σ : M × (E → ℤ) →+ M} (hσ : ∀ α, σ (letter m α) = m α)
+    {x : M × (E → ℤ)} (hx : x.1 = ∑ α, x.2 α • m α) : σ x = x.1 := by
+  rw [map_eq_sum_letter m σ hx, hx]
   simp [hσ]
 
 variable {e τ}
 
-/-- The image degree of an allowed alphabet degree is the sum of its letter counts weighted
-by the degrees of the images of the letters. -/
-theorem degree_map_eq_sum {x : M × (E → ℤ)} (hx : x ∈ (finiteAlphabet m).monoid) :
+/-- The image degree of an integer combination of letters is the sum of its letter counts
+weighted by the degrees of the images of the letters. -/
+theorem degree_map_eq_sum {x : M × (E → ℤ)} (hx : x.1 = ∑ α, x.2 α • m α) :
     e.degree (τ x) = ∑ α, x.2 α * e.degree (τ (letter m α)) := by
   simp [map_eq_sum_letter m τ hx, map_sum]
 
@@ -177,7 +177,7 @@ include hτ hτ0
 the image degree. -/
 theorem finiteAlphabet_degree_le {x : M × (E → ℤ)} (hx : x ∈ (finiteAlphabet m).monoid) :
     (finiteAlphabet m).degree x ≤ e.degree (τ x) := by
-  rw [degree_map_eq_sum m hx, finiteAlphabet_degree]
+  rw [degree_map_eq_sum m ((mem_finiteAlphabet_monoid m).mp hx).2, finiteAlphabet_degree]
   refine Finset.sum_le_sum fun α _ => ?_
   have hpos := ((mem_finiteAlphabet_monoid m).mp hx).1 α
   have hδ := e.degree_pos (hτ α) (hτ0 α)
@@ -189,7 +189,7 @@ image has degree at most `k + 1` has alphabet degree at most `k`. -/
 theorem finiteAlphabet_degree_lt {x : M × (E → ℤ)} (hx : x ∈ (finiteAlphabet m).monoid)
     {α : E} (hα : 0 < x.2 α) (h2 : 2 ≤ e.degree (τ (letter m α))) :
     (finiteAlphabet m).degree x < e.degree (τ x) := by
-  rw [degree_map_eq_sum m hx, finiteAlphabet_degree]
+  rw [degree_map_eq_sum m ((mem_finiteAlphabet_monoid m).mp hx).2, finiteAlphabet_degree]
   refine Finset.sum_lt_sum (fun β _ => ?_) ⟨α, Finset.mem_univ α, by nlinarith⟩
   have hpos := ((mem_finiteAlphabet_monoid m).mp hx).1 β
   have hδ := e.degree_pos (hτ β) (hτ0 β)
@@ -197,26 +197,23 @@ theorem finiteAlphabet_degree_lt {x : M × (E → ℤ)} (hx : x ∈ (finiteAlpha
 
 /-- The finite alphabet lift: an additive map sending every letter to a nonzero allowed
 degree is a positive degree map with identity cutoff modulus. -/
-def finiteAlphabetLift : PositiveDegreeMap (finiteAlphabet m) e where
-  toAddMonoidHom := τ
-  map_mem {x} hx := by
+def finiteAlphabetLift : PositiveDegreeMap (finiteAlphabet m) e :=
+  PositiveDegreeMap.ofBound τ (fun x hx => by
     rw [finiteAlphabet_monoid_eq_closure] at hx
-    exact (AddSubmonoid.closure_le (S := e.monoid.comap τ)).mpr
-      (Set.range_subset_iff.mpr hτ) hx
-  map_ne_zero {x} hx hx0 h := by
-    have hlt := (finiteAlphabet m).degree_pos hx hx0
-    have hle := finiteAlphabet_degree_le m hτ hτ0 hx
-    simp only [h, _root_.map_zero] at hle
-    omega
-  modulus := id
-  monotone_modulus := monotone_id
-  degree_gt _ hx h := lt_of_lt_of_le h (finiteAlphabet_degree_le m hτ hτ0 hx)
+    simpa only [AddSubmonoid.mem_comap] using
+      (AddSubmonoid.closure_le (S := e.monoid.comap τ)).mpr
+        (Set.range_subset_iff.mpr hτ) hx) 1
+    (fun _ hx => by simpa using finiteAlphabet_degree_le m hτ hτ0 hx)
 
 @[simp]
 theorem finiteAlphabetLift_apply (x : M × (E → ℤ)) :
-    finiteAlphabetLift m hτ hτ0 x = τ x := (rfl)
+    finiteAlphabetLift m hτ hτ0 x = τ x := by
+  unfold finiteAlphabetLift
+  exact PositiveDegreeMap.ofBound_apply ..
 
 @[simp]
-theorem finiteAlphabetLift_modulus (k : ℕ) : (finiteAlphabetLift m hτ hτ0).modulus k = k := (rfl)
+theorem finiteAlphabetLift_modulus (k : ℕ) : (finiteAlphabetLift m hτ hτ0).modulus k = k := by
+  unfold finiteAlphabetLift
+  rw [PositiveDegreeMap.ofBound_modulus, one_mul]
 
 end Mei.PositiveDegrees

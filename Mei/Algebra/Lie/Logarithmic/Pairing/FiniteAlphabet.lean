@@ -46,7 +46,8 @@ def finiteAlphabetLift :
   ofDegreeMap (PositiveDegrees.finiteAlphabetLift m hτ hτ0)
     (fun _ hx => by
       rw [PositiveDegrees.finiteAlphabetLift_apply]
-      exact eq_fst_of_mem m (σ := π.comp τ) hπ hx) U
+      exact eq_fst_of_eq_sum m (σ := π.comp τ) hπ
+        ((mem_finiteAlphabet_monoid m).mp hx).2) U
 
 @[simp]
 theorem finiteAlphabetLift_degreeMap :
