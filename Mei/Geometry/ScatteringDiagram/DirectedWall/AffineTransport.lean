@@ -141,6 +141,30 @@ theorem realCharacter_image_normal (v : V) :
       h.realCharacter W.normal v := by
   simp [E.realCharacter_comp_tangentEquiv_symm e hE]
 
+/-- A full affine hyperplane stays full under coordinate change; its offset also
+records the translation of the origin. -/
+theorem image_support_eq_hyperplane {a : ℝ}
+    (ha : W.support = {x | h.realCharacter W.normal x = a}) :
+    (W.image e E hE).support =
+      {y | h'.realCharacter (W.image e E hE).normal y =
+        a + h'.realCharacter (W.image e E hE).normal (e 0)} := by
+  have hval (x : V) : h'.realCharacter (W.image e E hE).normal (e x) =
+      h.realCharacter W.normal x + h'.realCharacter (W.image e E hE).normal (e 0) := by
+    have hx := e.toAffineEquiv.map_vadd (0 : V) x
+    simp only [vadd_eq_add, add_zero] at hx
+    rw [hx, map_add, W.realCharacter_image_normal e E hE]
+  rw [image_support, ha]
+  ext y
+  constructor
+  · rintro ⟨x, hx, rfl⟩
+    exact (hval x).trans (congrArg (· + _) hx)
+  · intro hy
+    refine ⟨e.toAffineEquiv.symm y, ?_, e.toAffineEquiv.apply_symm_apply y⟩
+    have hv := hval (e.toAffineEquiv.symm y)
+    simp only [AffineEquiv.apply_symm_apply] at hv
+    simp only [Set.mem_ofPred_eq] at hy ⊢
+    linarith
+
 /-- The geometric degree direction transforms by the linear part, including when zero. -/
 theorem geometricDirection_image :
     i' (ρ' (W.image e E hE).ray.generator) =
