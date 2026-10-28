@@ -88,32 +88,38 @@ private theorem principalLieHom_mem (x : 𝔤) :
   exact (Finsupp.mem_support_iff.mp hn)
     ((SkewLieAlgebra.mem_positiveLieAlgebra_iff β hβ d x.val).mp x.property n (Or.inl h))
 
+/-- The principal Lie map on the positive subalgebra, with codomain restricted to the
+tropical vertex Lie algebra. -/
+private def principalPositiveLieHom :
+    𝔤 →ₗ⁅R⁆ tropicalVertexLieAlgebra (R := R)
+      (D.principalPositiveDegrees d) (AddMonoidHom.id Lpr) :=
+  { ((D.principalLieHom (R := R)).toLinearMap.comp
+      (SkewLieAlgebra.positiveLieAlgebra β hβ d).incl.toLinearMap).codRestrict
+        _ (D.principalLieHom_mem d) with
+    map_lie' {x y} := Subtype.ext (D.principalLieHom.map_lie x.val y.val) }
+
+private theorem coe_principalPositiveLieHom_apply (x : 𝔤) :
+    (D.principalPositiveLieHom (R := R) d x).val = D.principalLieHom x.val := (rfl)
+
 /-- The principal embedding of the positive skew Lie algebra into the tropical
 vertex Lie algebra. Its degree map is graph inclusion, with identity cutoff modulus. -/
 def principalGradedLieHom :
     GradedLieHom (d.graphMap D.principalCharacter.toAddMonoidHom) ℒ ℳ where
-  toLieHom :=
-    { ((D.principalLieHom (R := R)).toLinearMap.comp
-        (SkewLieAlgebra.positiveLieAlgebra β hβ d).incl.toLinearMap).codRestrict
-          _ (D.principalLieHom_mem d) with
-      map_lie' {x y} := Subtype.ext (D.principalLieHom.map_lie x.val y.val) }
+  toLieHom := D.principalPositiveLieHom d
   map_mem {n x} hx := by
     obtain ⟨c, hc⟩ := (SkewLieAlgebra.mem_grade_iff β hβ n x.val).mp
       ((SkewLieAlgebra.mem_positiveGrading_iff β hβ d n x).mp hx)
     apply (mem_tropicalVertexGrading_iff _ _ _ _).mpr
     refine ⟨c • D.principalEvaluation n, ?_⟩
-    -- The restricted Lie map has the same ambient value as `principalLieHom`.
-    change LogarithmicVectorField.single (AddMonoidHom.id Lpr)
-      (d.graphMap D.principalCharacter.toAddMonoidHom n) (c • D.principalEvaluation n) =
-        D.principalLieHom x.val
-    rw [← hc, principalLieHom_single]
+    rw [coe_principalPositiveLieHom_apply, ← hc, principalLieHom_single]
     apply (LogarithmicVectorField.toFinsupp _).injective
     simp
 
 /-- Forgetting the target positive subalgebra recovers the ambient principal map. -/
 @[simp]
-theorem coe_principalGradedLieHom (x : 𝔤) :
-    (D.principalGradedLieHom (R := R) d x).val = D.principalLieHom x.val := (rfl)
+theorem coe_principalGradedLieHom_apply (x : 𝔤) :
+    (D.principalGradedLieHom (R := R) d x).val = D.principalLieHom x.val :=
+  D.coe_principalPositiveLieHom_apply d x
 
 /-- The principal graded realization is injective, including for a zero skew form
 and rational coefficient algebras with zero divisors. -/
@@ -122,7 +128,7 @@ theorem principalGradedLieHom_injective [Module.Free ℤ N] :
   apply (injective_iff_map_eq_zero (D.principalGradedLieHom d)).mpr
   intro x hx
   have hz : D.principalRealization (SkewLieAlgebra.toFinsupp β hβ x.val) = 0 := by
-    simpa only [coe_principalGradedLieHom, principalLieHom_apply, ZeroMemClass.coe_zero]
+    simpa only [coe_principalGradedLieHom_apply, principalLieHom_apply, ZeroMemClass.coe_zero]
       using congrArg Subtype.val hx
   have hc := (D.principalRealization_eq_zero_iff _).mp hz
   have h0 := (SkewLieAlgebra.mem_positiveLieAlgebra_iff β hβ d x.val).mp x.property
