@@ -41,22 +41,24 @@ variable {R Γ Λ : Type*} [CommRing R] [AddCommMonoid Γ] [AddCommMonoid Λ]
 namespace LogarithmicVectorField
 
 private def coefficientLinear : LogarithmicVectorField R Γ Λ ρ →ₗ[R]
-    Derivation R R[Q] R[Q] := by
-  classical
-  exact (Finsupp.lsum R fun n => if hn : n ∈ Q then
-    (AddMonoidAlgebra.monomialDerivation (⟨n, hn⟩ : Q)).comp
-      ((addMonoidHomLequivNat R).symm.toLinearMap.comp
-        ((LinearMap.lcomp R R (ρ.comp Q.subtype).toNatLinearMap).comp
-          (addMonoidHomLequivNat R).toLinearMap))
-    else 0).comp (toFinsupp ρ).toLinearMap
+    Derivation R R[Q] R[Q] :=
+  (action (ρ.comp Q.subtype)).toLinearMap.comp
+    ((toFinsupp (ρ.comp Q.subtype)).symm.toLinearMap.comp
+      ((Finsupp.lsubtypeDomain (Q : Set Γ)).comp (toFinsupp ρ).toLinearMap))
 
 private theorem coefficientLinear_single {n : Γ} (hn : n ∈ Q) (m : Λ →+ R) :
     coefficientLinear (R := R) ρ Q (single ρ n m) =
       AddMonoidAlgebra.monomialDerivation (⟨n, hn⟩ : Q) (m.comp (ρ.comp Q.subtype)) := by
   classical
+  have hs : Finsupp.lsubtypeDomain (R := R) (Q : Set Γ) (Finsupp.single n m) =
+      Finsupp.single (⟨n, hn⟩ : Q) m := by
+    rw [Finsupp.lsubtypeDomain_apply]
+    ext p
+    simp [Finsupp.single_apply, Subtype.ext_iff]
   simp only [coefficientLinear, LinearMap.comp_apply, LinearEquiv.coe_toLinearMap,
-    toFinsupp_single, Finsupp.lsum_single, dite_eq_left hn]
-  congr 1
+    LieHom.coe_toLinearMap, toFinsupp_single, hs]
+  simpa only [single_def, LinearMap.comp_apply, LinearEquiv.coe_toLinearMap,
+    Finsupp.lsingle_apply] using action_single (ρ.comp Q.subtype) (⟨n, hn⟩ : Q) m
 
 private theorem coefficientLinear_mapDomain (hQ : d.monoid ≤ Q)
     (x : tropicalVertexLieAlgebra (R := R) d ρ) (a : R[Q]) :

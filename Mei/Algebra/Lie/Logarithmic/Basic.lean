@@ -203,11 +203,14 @@ instance : LieRing (LogarithmicVectorField R Γ Λ ρ) where
 instance : LieAlgebra R (LogarithmicVectorField R Γ Λ ρ) where
   lie_smul t x y := by simp [bracket_def, map_smul]
 
-/-- Rational scalars act on formal fields through the coefficient algebra. -/
-instance [Algebra ℚ R] : LieAlgebra ℚ (LogarithmicVectorField R Γ Λ ρ) where
-  lie_smul q x y := by
+/-- Scalars act on formal fields through the coefficient algebra. -/
+instance {S : Type*} [CommRing S] [Algebra S R] :
+    LieAlgebra S (LogarithmicVectorField R Γ Λ ρ) where
+  lie_smul s x y := by
+    let : IsScalarTower S R (LogarithmicVectorField R Γ Λ ρ) :=
+      inferInstanceAs (IsScalarTower S R (Γ →₀ (Λ →+ R)))
     simpa only [IsScalarTower.algebraMap_smul] using
-      lie_smul (algebraMap ℚ R q) x y
+      lie_smul (algebraMap S R s) x y
 
 private def actionLinear : LogarithmicVectorField R Γ Λ ρ →ₗ[R]
     Derivation R R[Γ] R[Γ] :=
