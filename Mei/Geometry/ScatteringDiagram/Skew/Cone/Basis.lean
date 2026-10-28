@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.ScatteringDiagram.Skew.Cone
+public import Mei.Geometry.ScatteringDiagram.Skew.Cone.Basic
 public import Mei.Geometry.Toric.Algebraic.Cone.Basis
 
 /-!
