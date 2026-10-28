@@ -3,8 +3,9 @@ name: publish-lake-cache
 # Secret-isolated Lake cache publisher shared by main CI and merge-group CI. The caller may
 # execute arbitrary Lean code while producing the staging artifact, so this workflow treats the
 # entire artifact and every reported value as hostile. Only the toolchain pin comes from the
-# immutable revision being published. All planning and confirmation helpers are workflow-pinned
-# and execute without keys. Only inline workflow shell and curl run in the upload step.
+# immutable revision being published. Planning and confirmation helpers execute without keys.
+# The upload step runs inline shell, curl, and the workflow-pinned Python guard from the
+# trusted-r2 checkout at github.workflow_sha. Candidate-produced code never runs with keys.
 
 on:
   workflow_call:
