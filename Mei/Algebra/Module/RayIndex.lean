@@ -95,6 +95,7 @@ theorem rayIndex_pos [H.FiniteIndex] {n : N} (hn : n ≠ 0) : 0 < H.rayIndex n :
   positivity
 
 /-- The ray index scales inversely with positive integer multiples. -/
+@[simp]
 theorem rayIndex_zsmul {d : ℤ} (hd : 0 < d) (n : N) :
     H.rayIndex (d • n) = H.rayIndex n / d := by
   rcases eq_or_ne n 0 with rfl | hn
