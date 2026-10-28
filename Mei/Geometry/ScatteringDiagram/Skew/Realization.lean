@@ -194,6 +194,35 @@ theorem toFinsupp_principalField (n : D.unfrozen) :
 theorem principalField_zero : D.principalField (R := R) 0 = 0 := by
   simp [principalField]
 
+/-- The normalized integral-normal field spans exactly the principal field line.
+At nonzero degree, normalization rescales by the rational unit `κ(n)`;
+at degree zero, both fields vanish. -/
+theorem span_principalNormalField [Module.Free ℤ N] (n : D.unfrozen) :
+    R ∙ single (AddMonoidHom.id Lpr) (D.principalEmbedding n)
+      ((Int.castAddHom R).comp (D.principalNormal n).toAddMonoidHom) =
+      R ∙ D.principalField (R := R) n := by
+  by_cases hn : n = 0
+  · subst n
+    have hz : (Int.castAddHom R).comp
+        (D.principalNormal 0).toAddMonoidHom = 0 := by
+      ext v
+      simp
+    simp [hz]
+  have he : (Int.castAddHom R).comp (D.principalNormal n).toAddMonoidHom =
+      algebraMap ℚ R (D.sublattice.toAddSubgroup.rayIndex n) •
+        D.principalEvaluation n := by
+    ext v
+    exact D.intCast_principalNormal_apply n v
+  have hf : single (AddMonoidHom.id Lpr) (D.principalEmbedding n)
+      (D.principalEvaluation (R := R) n) = D.principalField n := by
+    apply (toFinsupp _).injective
+    simp
+  rw [he, map_smul, hf]
+  exact Submodule.span_singleton_smul_eq
+    ((isUnit_iff_ne_zero.mpr
+      (D.sublattice.toAddSubgroup.rayIndex_pos
+        (fun h => hn (Subtype.ext h))).ne').map (algebraMap ℚ R)) _
+
 /-- Principal fields are tangent to their own exponents. -/
 theorem principalField_mem_tangentGrade (n : D.unfrozen) :
     D.principalField (R := R) n ∈ tangentGrade (AddMonoidHom.id Lpr)

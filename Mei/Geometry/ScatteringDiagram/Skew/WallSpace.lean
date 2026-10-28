@@ -42,27 +42,6 @@ variable {N R : Type*} [AddCommGroup N] [Module.Free ℤ N]
 
 local notation "Lpr" => Module.Dual ℤ D.sublattice × D.unfrozen
 
-/-- The normalized integral-normal field spans exactly the principal field line.
-Normalization changes the generator by the nonzero rational unit `κ(n)`. -/
-theorem span_principalNormalField {n : D.unfrozen} (hn : n ≠ 0) :
-    R ∙ single (AddMonoidHom.id Lpr) (D.principalEmbedding n)
-      ((Int.castAddHom R).comp (D.principalNormal n).toAddMonoidHom) =
-      R ∙ D.principalField (R := R) n := by
-  have he : (Int.castAddHom R).comp (D.principalNormal n).toAddMonoidHom =
-      algebraMap ℚ R (D.sublattice.toAddSubgroup.rayIndex n) •
-        D.principalEvaluation n := by
-    ext v
-    exact D.intCast_principalNormal_apply n v
-  have hf : single (AddMonoidHom.id Lpr) (D.principalEmbedding n)
-      (D.principalEvaluation (R := R) n) = D.principalField n := by
-    apply (toFinsupp _).injective
-    simp
-  rw [he, map_smul, hf]
-  exact Submodule.span_singleton_smul_eq
-    ((isUnit_iff_ne_zero.mpr
-      (D.sublattice.toAddSubgroup.rayIndex_pos
-        (fun h => hn (Subtype.ext h))).ne').map (algebraMap ℚ R)) _
-
 variable (d : PositiveDegrees D.unfrozen)
 
 local notation "ℒ" => SkewLieAlgebra.positiveGrading
@@ -107,7 +86,7 @@ theorem mem_principalWallSpaces_iff (n : D.unfrozen) (m : Lpr →+ ℤ)
 
 /-- An eligible principal normal retains the whole homogeneous skew piece.
 Equality of kernels allows either coorientation and any nonzero rational rescaling. -/
-theorem principalWallSpaces_wall_eq_piece {n : D.unfrozen} (hn : n ≠ 0)
+theorem principalWallSpaces_wall_eq_piece {n : D.unfrozen}
     {m : Lpr →+ ℤ} (hk : m.ker = (D.principalNormal n).toAddMonoidHom.ker) :
     (D.principalWallSpaces (R := R) d).wall n m = ℒ n := by
   apply le_antisymm ((D.principalWallSpaces d).wall_le_piece n m)
@@ -115,15 +94,14 @@ theorem principalWallSpaces_wall_eq_piece {n : D.unfrozen} (hn : n ≠ 0)
   refine (D.mem_principalWallSpaces_iff d n m x).mpr ⟨hx, ?_⟩
   rw [(H).wall_eq_of_ker_eq (D.principalEmbedding n) hk,
     mem_tropicalVertexWallSpaces_iff,
-    wallSubmodule_of_tangent _ _ _ (by simp), D.span_principalNormalField hn]
-  obtain ⟨c, hc⟩ := (SkewLieAlgebra.mem_grade_iff _ _ n x.val).mp
+    wallSubmodule_of_tangent _ _ _ (by simp), D.span_principalNormalField n]
+  rw [coe_principalGradedLieHom_apply]
+  exact D.principalLieHom_mem_span_principalField
     ((SkewLieAlgebra.mem_positiveGrading_iff _ _ d n x).mp hx)
-  rw [coe_principalGradedLieHom_apply, ← hc, principalLieHom_single]
-  exact Submodule.smul_mem _ _ (Submodule.mem_span_singleton_self _)
 
 /-- A principal wall element with nonzero coefficient determines the kernel
 of its integral normal, even over coefficient algebras with zero divisors. -/
-theorem ker_eq_of_mem_principalWallSpaces {n : D.unfrozen} (hn : n ≠ 0)
+theorem ker_eq_of_mem_principalWallSpaces {n : D.unfrozen}
     {m : Lpr →+ ℤ}
     {x : SkewLieAlgebra.positiveLieAlgebra
       (D.coefficientForm R) (D.isAlt_coefficientForm R) d}
@@ -139,11 +117,10 @@ theorem ker_eq_of_mem_principalWallSpaces {n : D.unfrozen} (hn : n ≠ 0)
   obtain ⟨r, hr⟩ := (mem_tropicalVertexWallSpaces_iff_of_tangent
     _ _ _ m ht (f x)).mp hx.2
   have hp : (f x).val ∈ R ∙ D.principalField n := by
-    obtain ⟨c, hc⟩ := (SkewLieAlgebra.mem_grade_iff _ _ n x.val).mp
+    rw [coe_principalGradedLieHom_apply]
+    exact D.principalLieHom_mem_span_principalField
       ((SkewLieAlgebra.mem_positiveGrading_iff _ _ d n x).mp hx.1)
-    rw [coe_principalGradedLieHom_apply, ← hc, principalLieHom_single]
-    exact Submodule.smul_mem _ _ (Submodule.mem_span_singleton_self _)
-  rw [← D.span_principalNormalField hn] at hp
+  rw [← D.span_principalNormalField n] at hp
   obtain ⟨s, hs⟩ := Submodule.mem_span_singleton.mp hp
   have hr0 : r ≠ 0 := by
     intro h
@@ -155,14 +132,11 @@ theorem ker_eq_of_mem_principalWallSpaces {n : D.unfrozen} (hn : n ≠ 0)
       s • (Int.castAddHom R).comp (D.principalNormal n).toAddMonoidHom := by
     apply single_injective (AddMonoidHom.id Lpr) (D.principalEmbedding n)
     simpa only [map_smul] using hr.trans hs.symm
-  -- Nonzero integers become units in every rational algebra. This cancels
-  -- integer evaluations without cancelling arbitrary coefficient-ring elements.
+  -- Torsion-free integer scalars cancel even when R has zero divisors.
+  let := HasUniqueDiv.of_module_rat R
   have cancel (a : R) (ha : a ≠ 0) (z : ℤ) (hz : a * (z : R) = 0) : z = 0 := by
-    by_contra hz0
-    have hu : IsUnit (z : R) := by
-      simpa using (isUnit_iff_ne_zero.mpr (Int.cast_ne_zero.mpr hz0 : (z : ℚ) ≠ 0)).map
-        (algebraMap ℚ R)
-    exact ha (hu.mul_left_eq_zero.mp hz)
+    exact (IsAddTorsionFree.zsmul_eq_zero_iff_left ha).mp
+      (by simpa only [zsmul_eq_mul'] using hz)
   ext v
   simp only [AddMonoidHom.mem_ker, LinearMap.toAddMonoidHom_coe]
   have hv := DFunLike.congr_fun he v
@@ -178,13 +152,13 @@ theorem ker_eq_of_mem_principalWallSpaces {n : D.unfrozen} (hn : n ≠ 0)
     simpa only [hm, Int.cast_zero, mul_zero] using hv
 
 /-- Normals outside the principal normal line carry no skew wall coefficients. -/
-theorem principalWallSpaces_wall_eq_bot {n : D.unfrozen} (hn : n ≠ 0)
+theorem principalWallSpaces_wall_eq_bot {n : D.unfrozen}
     {m : Lpr →+ ℤ} (hk : m.ker ≠ (D.principalNormal n).toAddMonoidHom.ker) :
     (D.principalWallSpaces (R := R) d).wall n m = ⊥ := by
   apply eq_bot_iff.mpr
   intro x hx
   by_contra hx0
-  exact hk (D.ker_eq_of_mem_principalWallSpaces d hn hx hx0)
+  exact hk (D.ker_eq_of_mem_principalWallSpaces d hx hx0)
 
 open Classical in
 /-- The complete principal wall-space formula: each eligible normal carries the
@@ -206,7 +180,7 @@ theorem principalWallSpaces_wall (n : D.unfrozen) (m : Lpr →+ ℤ) :
   · subst m
     simp [(D.principalWallSpaces d).zero_normal]
   by_cases hk : m.ker = (D.principalNormal n).toAddMonoidHom.ker
-  · rw [ite_eq_left ⟨hm, hk⟩, D.principalWallSpaces_wall_eq_piece d hn hk]
-  · rw [ite_eq_right (by tauto), D.principalWallSpaces_wall_eq_bot d hn hk]
+  · rw [ite_eq_left ⟨hm, hk⟩, D.principalWallSpaces_wall_eq_piece d hk]
+  · rw [ite_eq_right (by tauto), D.principalWallSpaces_wall_eq_bot d hk]
 
 end Mei.SkewLatticeDatum

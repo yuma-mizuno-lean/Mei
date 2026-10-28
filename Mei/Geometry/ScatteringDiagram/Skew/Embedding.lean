@@ -72,6 +72,15 @@ theorem principalLieHom_single (n : D.unfrozen) (c : R) :
     D.principalLieHom (SkewLieAlgebra.single β hβ n c) = c • D.principalField n := by
   rw [principalLieHom_apply, SkewLieAlgebra.toFinsupp_single, principalRealization_single]
 
+/-- A homogeneous skew element realizes in the line spanned by its principal field,
+including at degree zero, where the principal field vanishes. -/
+theorem principalLieHom_mem_span_principalField {n : D.unfrozen}
+    {x : D.skewLieAlgebra R} (hx : x ∈ SkewLieAlgebra.grade β hβ n) :
+    D.principalLieHom x ∈ R ∙ D.principalField n := by
+  obtain ⟨c, hc⟩ := (SkewLieAlgebra.mem_grade_iff β hβ n x).mp hx
+  rw [← hc, principalLieHom_single]
+  exact Submodule.smul_mem _ _ (Submodule.mem_span_singleton_self _)
+
 variable (d : PositiveDegrees D.unfrozen)
 
 local notation "𝔤" => SkewLieAlgebra.positiveLieAlgebra β hβ d
