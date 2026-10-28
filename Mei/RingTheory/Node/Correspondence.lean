@@ -156,10 +156,7 @@ theorem normalWeightCorrespondence_transfer (n : {n : ℤ | 0 ≤ n}) (j : ℤ)
     normalWeightCorrespondence_liftLeft]
   simp only [AlgHom.toLinearMap_apply, rightLaurentMap_incomingLift_zero,
     grade.decompose_single]
-  by_cases h : j = -n.val
-  · subst j
-    simp
-  · simp [DirectSum.of_eq_of_ne _ _ _ h, h]
+  simp only [DirectSum.coe_of_apply, eq_comm, apply_ite Subtype.val, Submodule.coe_zero]
 
 /-- The reverse transfer has the same formula, in the other Laurent variable. -/
 @[simp↓]
@@ -172,9 +169,6 @@ theorem normalWeightCorrespondence_symm_transfer (n : {n : ℤ | 0 ≤ n}) (j : 
     normalWeightCorrespondence_liftRight]
   simp only [AlgHom.toLinearMap_apply, leftLaurentMap_incomingLift_one,
     grade.decompose_single]
-  by_cases h : j = -n.val
-  · subst j
-    simp
-  · simp [DirectSum.of_eq_of_ne _ _ _ h, h]
+  simp only [DirectSum.coe_of_apply, eq_comm, apply_ite Subtype.val, Submodule.coe_zero]
 
 end Mei.NodeAlgebra
