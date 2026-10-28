@@ -83,7 +83,7 @@ end PointedCone
 
 namespace AddMonoidHom
 
-variable {Γ V : Type*} [AddCommGroup Γ] [AddCommGroup V]
+variable {Γ V : Type*} [AddZeroClass Γ] [AddZeroClass V]
 
 /-- The extension of a lattice map `i : Γ →+ V` to extended degrees, by integer casts
 on the charge and probe coordinates. -/
