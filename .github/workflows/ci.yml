@@ -67,10 +67,10 @@ jobs:
           fetch-depth: 0
 
       - name: Prepare pinned shared tools
-        uses: yuma-mizuno-lean/TauCetiTools/.github/actions/setup@7405c6bc681341dc54c775bc6f5e6de533120ba1
+        uses: yuma-mizuno-lean/TauCetiTools/.github/actions/setup@5aa5d085a0b779a3ff6068b60655500946c0c70a
         with:
           tools-repository: yuma-mizuno-lean/TauCetiTools
-          tools-ref: 7405c6bc681341dc54c775bc6f5e6de533120ba1
+          tools-ref: 5aa5d085a0b779a3ff6068b60655500946c0c70a
           project-directory: .
       - name: Import-boundary guard (Mei/ and Mei.lean ⊬ roadmap/review)
         run: |
@@ -200,6 +200,10 @@ jobs:
           PUBLIC_ARTIFACT_ENDPOINT: ${{ vars.LAKE_CACHE_ARTIFACT_ENDPOINT_PUBLIC }}
           PUBLIC_REVISION_ENDPOINT: ${{ vars.LAKE_CACHE_REVISION_ENDPOINT_PUBLIC }}
         run: bash scripts/lake-cache-get.sh .
+
+      - name: Restore Mei Lake release cache
+        if: ${{ vars.MEI_RELEASE_CACHE == '1' }}
+        run: python3 scripts/mei_release_cache.py restore . || test "$?" = 2
 
       - name: Save verified Lake archive records before building
         run: python3 scripts/lake_cache_reuse.py snapshot . "$RUNNER_TEMP/lake-cache-reuse.json"
@@ -399,6 +403,77 @@ jobs:
           # burns CPU on both ends and saves nothing.
           compression-level: 0
 
+      # Reuse Lake's platform-independent mapping; never archive .lake/build blindly.
+      - name: Stage audited Mei cache for GitHub Releases
+        if: ${{ vars.MEI_RELEASE_CACHE == '1' }}
+        env:
+          LAKE_ARTIFACT_CACHE: "true"
+          LAKE_RESTORE_ARTIFACTS: "true"
+          LAKE_NO_CACHE: "true"
+          LAKE_CACHE_DIR: ${{ github.workspace }}/.lake/cache
+        run: |
+          lake build
+          lake build --no-build --rehash -o "$RUNNER_TEMP/mei-outputs.jsonl"
+          lake cache stage "$RUNNER_TEMP/mei-outputs.jsonl" "$RUNNER_TEMP/mei-release-stage"
+          python3 scripts/mei_release_cache.py pack . --stage "$RUNNER_TEMP/mei-release-stage" --output "$RUNNER_TEMP/mei-release-upload"
+
+      - name: Transfer audited cache to isolated publisher
+        if: ${{ vars.MEI_RELEASE_CACHE == '1' }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: mei-release-cache
+          path: ${{ runner.temp }}/mei-release-upload/
+          retention-days: 1
+          compression-level: 0
+
+  publish-release-cache:
+    needs: build
+    if: ${{ vars.MEI_RELEASE_CACHE == '1' && needs.build.result == 'success' }}
+    permissions:
+      contents: write
+      actions: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: mei-release-cache
+          path: ${{ runner.temp }}/mei-release-upload
+      - name: Validate archive without publishing credentials
+        run: python3 scripts/mei_release_cache.py validate . --stage "$RUNNER_TEMP/mei-release-upload"
+      - name: Publish verified cache (manifest last)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          cd "$RUNNER_TEMP/mei-release-upload"
+          tag=$(jq -r .tag manifest.json)
+          rev=$(jq -r .revision manifest.json)
+          bundle=$(jq -r .bundle manifest.json)
+          if ! gh release view "$tag" >/dev/null 2>&1; then
+            gh release create "$tag" --target "$GITHUB_SHA" --title "Mei build cache" --notes "Audited main build artifacts in stock Lake format. Managed by CI." --prerelease
+          fi
+          gh release upload "$tag" "$bundle" --clobber
+          gh release upload "$tag" manifest.json --clobber
+          # Keep only the current payload within this compatibility scope.
+          gh release view "$tag" --json assets --jq '.assets[].name' | while read -r asset; do
+            if [[ "$asset" =~ ^[0-9a-f]{40}\.tar\.gz$ && "$asset" != "$bundle" ]]; then
+              gh release delete-asset "$tag" "$asset" --yes
+            fi
+          done
+      - name: Remove transient Actions artifact after publication
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          gh api "repos/$GH_REPO/actions/runs/$GITHUB_RUN_ID/artifacts" --jq '.artifacts[] | select(.name == "mei-release-cache") | .id' | while read -r id; do
+            gh api --method DELETE "repos/$GH_REPO/actions/artifacts/$id"
+          done
+
   # Run the secret-bearing upload on a fresh runner through the same hardened publisher used
   # by merge-group CI. Main publication remains a fallback: merge groups normally publish the
   # exact commit before landing, while this covers human-owned changes and operational retries.
@@ -410,7 +485,7 @@ jobs:
     uses: ./.github/workflows/publish-lake-cache.yml
     with:
       tools_repository: yuma-mizuno-lean/TauCetiTools
-      tools_ref: 7405c6bc681341dc54c775bc6f5e6de533120ba1
+      tools_ref: 5aa5d085a0b779a3ff6068b60655500946c0c70a
       revision: ${{ github.sha }}
       artifact-name: lake-cache-staging
       reported-toolchain: ${{ needs.build.outputs.reported-toolchain }}
