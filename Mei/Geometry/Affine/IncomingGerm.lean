@@ -17,9 +17,10 @@ base point, the resulting incoming germs eventually avoid the arrangement,
 simultaneously for all the velocities. The base point itself may be exceptional.
 Applying the result to a union of arrangements allows further finite refinements.
 
-The construction uses `AffineSubspace.exists_mem_open_genericLocus` to avoid
-translates of the exceptional directions. Empty exceptions impose no constraint,
-and zero normal evaluations are deliberately left unconstrained.
+The construction uses `AffineSubspace.exists_direction_le_of_forall_mem` to avoid
+finitely many translates of the exceptional directions, without requiring finite
+dimensionality. Empty exceptions impose no constraint, and zero normal evaluations
+are deliberately left unconstrained.
 -/
 
 public section
@@ -28,30 +29,33 @@ open Set Filter Topology
 
 namespace AffineSubspace
 
-variable {V : Type*} [AddCommGroup V] [TopologicalSpace V] [IsTopologicalAddGroup V]
-  [Module ℝ V] [ContinuousSMul ℝ V]
+variable {V : Type*} [AddCommGroup V] [Module ℝ V]
 
-/-- A transverse affine germ eventually avoids a closed affine subspace, even
+/-- A transverse affine germ eventually avoids an affine subspace, even
 when its base point lies in that subspace. -/
 theorem eventually_smul_vadd_notMem (S : AffineSubspace ℝ V)
-    (hS : IsClosed (S : Set V)) {v : V} (hv : v ∉ S.direction) (x : V) :
+    {v : V} (hv : v ∉ S.direction) (x : V) :
     ∀ᶠ t : ℝ in 𝓝[>] 0, t • v +ᵥ x ∉ S := by
-  by_cases hx : x ∈ S
-  · filter_upwards [self_mem_nhdsWithin] with t ht
+  by_cases hex : ∃ s : ℝ, s • v +ᵥ x ∈ S
+  · obtain ⟨s, hs⟩ := hex
+    have he : ∀ᶠ t : ℝ in 𝓝[>] 0, t ≠ s := by
+      by_cases hs0 : s = 0
+      · subst s
+        filter_upwards [self_mem_nhdsWithin] with t ht
+        exact ne_of_gt ht
+      · exact eventually_ne_nhdsWithin (Ne.symm hs0)
+    filter_upwards [he] with t ht
     intro hmem
-    have hd := (S.vadd_mem_iff_mem_direction (t • v) hx).mp hmem
-    exact hv ((S.direction.smul_mem_iff (ne_of_gt ht)).mp hd)
-  · have hc : Continuous (fun t : ℝ => t • v +ᵥ x) := by fun_prop
-    have he : ∀ᶠ t : ℝ in 𝓝 0, t • v +ᵥ x ∉ S :=
-      hc.continuousAt.eventually (hS.isOpen_compl.mem_nhds (by simpa using hx))
-    exact he.filter_mono nhdsWithin_le_nhds
+    have hd := S.vsub_mem_direction hmem hs
+    rw [vadd_vsub_vadd_cancel_right, ← sub_smul] at hd
+    exact hv ((S.direction.smul_mem_iff (sub_ne_zero.mpr ht)).mp hd)
+  · exact Filter.Eventually.of_forall fun t ht => hex ⟨t, ht⟩
 
 end AffineSubspace
 
 namespace Mei.ExceptionalArrangement
 
 variable {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
-  [FiniteDimensional ℝ V]
 
 /-- A single arbitrarily small perturbation preserves the nonzero normal signs
 of finitely many velocities and makes their incoming germs generic from every
@@ -78,13 +82,18 @@ theorem exists_norm_lt_forall_eventually_isGeneric
   let K := {S : E.exceptions // (S.1 : Set V).Nonempty}
   let A : ι × K → AffineSubspace ℝ V := fun a =>
     AffineSubspace.mk' (-v a.1) a.2.1.1.direction
-  have hA : ∀ a, A a ≠ ⊤ := by
-    intro a ha
-    have hd := congrArg AffineSubspace.direction ha
-    simp only [A, AffineSubspace.direction_mk', AffineSubspace.direction_top] at hd
+  have hA : ∀ a, (A a).direction ≠ ⊤ := by
+    intro a hd
+    simp only [A, AffineSubspace.direction_mk'] at hd
     exact E.proper _ a.2.1.2
       ((AffineSubspace.direction_eq_top_iff_of_nonempty a.2.2).mp hd)
-  obtain ⟨r, hrU, hrA⟩ := AffineSubspace.exists_mem_open_genericLocus A hA hU ⟨0, hzero⟩
+  have hex : ∃ r ∈ U, ∀ a, r ∉ A a := by
+    by_contra! hcover
+    obtain ⟨a, ha⟩ := AffineSubspace.exists_direction_le_of_forall_mem
+      (⊤ : AffineSubspace ℝ V) A (by trivial) (hU.mem_nhds hzero)
+      (fun y _ hy => hcover y hy)
+    exact hA a (top_le_iff.mp (by simpa using ha))
+  obtain ⟨r, hrU, hrA⟩ := hex
   have htrans : ∀ i S, S ∈ E.exceptions → (S : Set V).Nonempty →
       v i + r ∉ S.direction := by
     intro i S hS hne hmem
@@ -100,8 +109,7 @@ theorem exists_norm_lt_forall_eventually_isGeneric
     apply E.exceptions.eventually_all.mpr
     intro S hS
     by_cases hne : (S : Set V).Nonempty
-    · exact S.eventually_smul_vadd_notMem S.closed_of_finiteDimensional
-        (htrans i S hS hne) x
+    · exact S.eventually_smul_vadd_notMem (htrans i S hS hne) x
     · exact Filter.Eventually.of_forall fun t ht => hne ⟨_, ht⟩
 
 end Mei.ExceptionalArrangement
