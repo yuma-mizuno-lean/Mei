@@ -67,6 +67,7 @@ theorem shiftedQuotientComponent_truncatedExpLieAction_of_normal_eq_zero
       ModuleFiltration.quotientLieAction_mk]
     have hb := d.shiftedQuotientComponent_mk ℳ p q k hk
       (⁅y, b⁆ : d.shiftedLieSubmodule ℒ ℳ p)
+    rw [LieSubmodule.coe_bracket] at hb
     exact (hb.trans
       (H.decompose_lie_eq_zero_of_mem_ray_of_normal_eq_zero ℳ hy hq (b : M))).symm
   have he := LinearMap.congr_fun
