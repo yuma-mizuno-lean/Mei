@@ -18,7 +18,8 @@ positive-increment filtration is exactly the degree filtration on the second
 coordinate, so this action integrates on its completion.
 
 Open the `Mei.SkewLatticeDatum.PrincipalCoefficientAction` scope to use the
-Lie module and filtration instances with `AlgFiltration.completedBCHAction`.
+Lie module and filtration instances with `AlgFiltration.completedBCHAction`
+and `AlgFiltration.completedBCHAction_injective`.
 The resulting representation is faithful when the ambient integer module is
 projective, in particular for every lattice. No spanning assumption on `P`
 or nondegeneracy assumption on the skew form is needed.
@@ -242,16 +243,6 @@ scoped instance instIsFiltrationDetected :
       hf' q (Finsupp.mem_support_iff.mpr hcoeff)
     simp only [q, p, AddSubmonoid.coe_add, Prod.snd_add, add_zero] at hd
     omega
-
-variable [DecidableEq D.unfrozen]
-
-/-- The principal completed BCH representation is faithful over every
-commutative rational coefficient algebra, without a nondegeneracy assumption
-on the skew form. Use the existing `AlgFiltration.completedBCHAction` with
-the principal coefficient filtration and positive skew grading. -/
-theorem completedBCHAction_injective :
-    Function.Injective ((Fpr).completedBCHAction d 𝓛) :=
-  AlgFiltration.completedBCHAction_injective _ _ _
 
 end PrincipalCoefficientAction
 
