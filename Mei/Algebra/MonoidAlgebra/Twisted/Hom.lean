@@ -33,9 +33,9 @@ variable {R S G H : Type*} [CommSemiring R] [CommSemiring S] [Monoid G] [Monoid 
 /-- Change coefficients and exponents, preserving the twisting factor set. -/
 def map (φ : R →+* S) (f : G →* H)
     (h : ∀ g j, Units.map φ.toMonoidHom (α g j) = β (f g) (f j)) :
-    twistedMonoidAlgebra R G α →+* twistedMonoidAlgebra S H β := by
+    twistedMonoidAlgebra R G α →+* twistedMonoidAlgebra S H β :=
   letI := Algebra.compHom (twistedMonoidAlgebra S H β) φ
-  exact (lift (fun g => of (f g)) (by simp) (by
+  (lift (fun g => of (f g)) (by simp) (by
     intro g j
     rw [of_mul_of, map_mul]
     exact congrArg (fun u : Sˣ => (u : S) • (of (f g * f j) :
@@ -53,6 +53,8 @@ theorem map_of (φ : R →+* S) (f : G →* H)
 theorem map_algebraMap (φ : R →+* S) (f : G →* H)
     (h : ∀ g j, Units.map φ.toMonoidHom (α g j) = β (f g) (f j)) (r : R) :
     map φ f h (algebraMap R _ r) = algebraMap S _ (φ r) := by
+  -- `map` is the ring map underlying `lift`, an algebra map for `Algebra.compHom`, whose
+  -- `algebraMap` is by definition `algebraMap S _ ∘ φ`.
   let := Algebra.compHom (twistedMonoidAlgebra S H β) φ
   exact (lift (fun g => of (f g)) _ _).commutes r
 
