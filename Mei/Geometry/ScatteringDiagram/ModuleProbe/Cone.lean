@@ -105,7 +105,7 @@ variable {Γ V : Type*} [AddCommGroup Γ] [AddCommGroup V] [Module ℝ V]
 
 /-- The probe cone over a lattice-rational cone and a lattice shift is lattice rational
 for the extended lattice map. -/
-theorem isLatticeRational_cone {i : Γ →+ V} {σ : PointedCone ℝ V}
+theorem isLatticeRational_moduleProbe {i : Γ →+ V} {σ : PointedCone ℝ V}
     (hσ : IsLatticeRational i σ) (p : Γ) :
     IsLatticeRational i.moduleProbeLatticeMap (σ.moduleProbe (i p)) := by
   rw [PointedCone.moduleProbe_def]
@@ -117,7 +117,7 @@ theorem isLatticeRational_cone {i : Γ →+ V} {σ : PointedCone ℝ V}
 /-- An extended degree is a lattice point of the probe cone over `i p` exactly when its
 charge `c` is nonnegative, its probe coordinate vanishes, and `x - c • p` is a lattice
 point of `σ`. The lattice map `i` need not be injective. -/
-theorem mem_latticePoints_cone {σ : PointedCone ℝ V} {i : Γ →+ V} {p x : Γ} {c l : ℤ} :
+theorem mem_latticePoints_moduleProbe {σ : PointedCone ℝ V} {i : Γ →+ V} {p x : Γ} {c l : ℤ} :
     (x, c, l) ∈ (σ.moduleProbe (i p)).latticePoints i.moduleProbeLatticeMap ↔
       x - c • p ∈ σ.latticePoints i ∧ 0 ≤ c ∧ l = 0 := by
   simp [map_zsmul, ← Int.cast_smul_eq_zsmul ℝ]
@@ -130,6 +130,6 @@ theorem positiveDegrees_monoid_eq_latticePoints {i : Γ →+ V} {σ : PointedCon
     (hσ : d.monoid = σ.latticePoints i) :
     (positiveDegrees d p).monoid = (σ.moduleProbe (i p)).latticePoints i.moduleProbeLatticeMap := by
   ext ⟨x, c, l⟩
-  rw [mem_positiveDegrees_monoid, mem_latticePoints_cone, hσ]
+  rw [mem_positiveDegrees_monoid, mem_latticePoints_moduleProbe, hσ]
 
 end Mei.ModuleProbe
