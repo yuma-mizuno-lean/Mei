@@ -8,7 +8,6 @@ module
 public import Mei.Geometry.ScatteringDiagram.Skew.Cone
 public import Mei.Geometry.Toric.Algebraic.Cone.Basis
 public import TauCeti.Geometry.Convex.Cone.Face.Simplicial
-public import TauCeti.Geometry.Toric.Algebraic.Cone.Basic
 
 /-!
 # The basis-generated principal positive cone

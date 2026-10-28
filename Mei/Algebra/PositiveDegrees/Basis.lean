@@ -7,7 +7,6 @@ module
 
 public import Mei.Algebra.PositiveDegrees.Basic
 public import Mathlib.LinearAlgebra.Basis.Defs
-public import Mathlib.Algebra.Group.Submonoid.Membership
 
 /-!
 # Positive degrees from an integral basis
