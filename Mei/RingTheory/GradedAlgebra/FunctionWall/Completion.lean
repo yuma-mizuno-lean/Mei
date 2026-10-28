@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mei.RingTheory.GradedAlgebra.FunctionWall.Exp
-public import Mei.RingTheory.FilteredAlgebra.Algebra
+public import Mei.RingTheory.FilteredAlgebra.Action
 
 /-!
 # Function walls on completed coefficient algebras
@@ -20,7 +20,7 @@ of its logarithmic normal derivation, with nilpotency bound `k + 1` at order `k`
 
 The quotient gradings need only be preserved by the transition maps; the
 completion itself need not have an internal direct-sum grading. The construction
-uses `AlgFiltration.liftₐ` and the finite `GradedAlgebra.functionWallAction`,
+uses `AlgFiltration.completedAction` and the finite `GradedAlgebra.functionWallAction`,
 including its naturality and exponential comparison. The function-wall formula
 follows Mandel, *Scattering diagrams, theta functions, and refined tropical curve
 counts*, Example 2.1(i), arXiv:1503.06183v5.
@@ -32,7 +32,7 @@ noncomputable section
 
 namespace Mei.AlgFiltration
 
-open Mei.GradedAlgebra Opposite
+open Mei.GradedAlgebra CategoryTheory Opposite
 
 variable {R A : Type*} [CommRing R] [CommRing A] [Algebra R A]
   (F : AlgFiltration A)
@@ -88,64 +88,101 @@ theorem projection_completedWallFunction (k : ℕ) :
   rw [F.projection_apply]
   rfl
 
-include h𝒜 hf in
-private theorem factor_functionWallAction {k l : ℕ} (h : k ≤ l)
-    (a : A ⧸ F.ideal (l + 1)) :
-    Ideal.Quotient.factor (F.antitone (Nat.add_le_add_right h 1))
-      (functionWallAction (𝒜 l) (f l) a) =
-        functionWallAction (𝒜 k) (f k)
-          (Ideal.Quotient.factor (F.antitone (Nat.add_le_add_right h 1)) a) := by
-  let φ : 𝒜 l →+*ᵍ 𝒜 k :=
-    { Ideal.Quotient.factor (F.antitone (Nat.add_le_add_right h 1)) with
-      map_mem := h𝒜 h }
-  have he : Units.map φ.gradedZeroRingHom.toMonoidHom (f l) = f k := by
+/-- The constant wall function one assembles to the identity unit. -/
+@[simp]
+theorem completedWallFunction_one :
+    F.completedWallFunction 𝒜 (fun _ => 1) (by intro k l h; simp) = 1 := by
+  apply Units.ext
+  apply F.completion_ext
+  intro k
+  rw [F.projection_completedWallFunction 𝒜 (fun _ => 1) (by intro k l h; simp)]
+  simp
+
+/-- Multiplication of compatible wall functions commutes with completion. -/
+theorem completedWallFunction_mul (g : ∀ k, (𝒜 k 0)ˣ)
+    (hg : ∀ {k l : ℕ} (h : k ≤ l),
+      Ideal.Quotient.factor (F.antitone (Nat.add_le_add_right h 1))
+        (algebraMap (𝒜 l 0) _ (g l : 𝒜 l 0)) =
+          algebraMap (𝒜 k 0) _ (g k : 𝒜 k 0)) :
+    F.completedWallFunction 𝒜 (fun k => f k * g k)
+        (by intro k l h; simp only [Units.val_mul, map_mul, hf h, hg h]) =
+      F.completedWallFunction 𝒜 f hf * F.completedWallFunction 𝒜 g hg := by
+  apply Units.ext
+  apply F.completion_ext
+  intro k
+  rw [F.projection_completedWallFunction 𝒜 (fun k => f k * g k)
+    (by intro k l h; simp only [Units.val_mul, map_mul, hf h, hg h])]
+  simp
+
+/-- Inverting compatible wall functions commutes with completion. -/
+theorem completedWallFunction_inv :
+    F.completedWallFunction 𝒜 (fun k => (f k)⁻¹) (by exact F.compatible_inv 𝒜 f hf) =
+      (F.completedWallFunction 𝒜 f hf)⁻¹ := by
+  apply Units.ext
+  apply F.completion_ext
+  intro k
+  rw [F.projection_apply, F.projection_apply]
+  rfl
+
+private def wallTransition {k l : ℕ} (h : k ≤ l) : 𝒜 l →+*ᵍ 𝒜 k :=
+  { Ideal.Quotient.factor (F.antitone (Nat.add_le_add_right h 1)) with
+    map_mem := h𝒜 h }
+
+private def wallGroupDiagram : ℕᵒᵖ ⥤ GrpCat where
+  obj k := GrpCat.of ((𝒜 k.unop 0)ˣ)
+  map h := GrpCat.ofHom
+    (Units.map (F.wallTransition 𝒜 h𝒜 (leOfHom h.unop)).gradedZeroRingHom.toMonoidHom)
+  map_id k := by
+    apply GrpCat.hom_ext
+    apply MonoidHom.ext
+    intro u
     apply Units.ext
     apply Subtype.ext
-    exact hf h
-  exact (map_functionWallAction (𝒜 l) (𝒜 k) φ (f l) a).trans
-    (congrArg (fun u => functionWallAction (𝒜 k) u (φ a)) he)
+    exact DFunLike.congr_fun Ideal.Quotient.factor_eq (u.val : A ⧸ F.ideal (k.unop + 1))
+  map_comp h h' := by
+    apply GrpCat.hom_ext
+    apply MonoidHom.ext
+    intro u
+    apply Units.ext
+    apply Subtype.ext
+    exact (Ideal.Quotient.factor_comp_apply
+      (F.antitone (Nat.add_le_add_right (leOfHom h.unop) 1))
+      (F.antitone (Nat.add_le_add_right (leOfHom h'.unop) 1)) _).symm
 
-private def completedFunctionWallHom : F.completion →ₐ[R] F.completion :=
-  F.liftₐ (fun k => (functionWallAction (𝒜 k) (f k)).toAlgHom.comp (F.projectionₐ k))
-    (by
-      intro k l h
-      ext x
-      simp only [AlgHom.comp_apply, AlgEquiv.coe_toAlgHom, projectionₐ_apply,
-        Ideal.Quotient.factorₐ_apply]
-      rw [F.factor_functionWallAction 𝒜 h𝒜 f hf h, F.factor_projection h])
+private def wallLabel : completedGroup (F.wallGroupDiagram 𝒜 h𝒜) :=
+  ⟨f, (mem_completedGroup_iff _ _).mpr fun _ _ h => Units.ext (Subtype.ext (hf h))⟩
 
-private theorem projection_completedFunctionWallHom (k : ℕ) (x : F.completion) :
-    F.projection k (F.completedFunctionWallHom 𝒜 h𝒜 f hf x) =
-      functionWallAction (𝒜 k) (f k) (F.projection k x) := by
-  rw [completedFunctionWallHom, F.projection_liftₐ, AlgHom.comp_apply,
-    AlgEquiv.coe_toAlgHom, F.projectionₐ_apply]
+private def wallRepresentation (k : ℕ) :
+    (F.wallGroupDiagram 𝒜 h𝒜).obj (op k) →*
+      ((A ⧸ F.ideal (k + 1)) ≃ₐ[R] (A ⧸ F.ideal (k + 1))) where
+  toFun := functionWallAction (𝒜 k)
+  map_one' := functionWallAction_one (𝒜 k)
+  map_mul' := functionWallAction_mul (𝒜 k)
+
+private theorem wallRepresentation_compatible {k l : ℕ} (h : k ≤ l)
+    (u : (F.wallGroupDiagram 𝒜 h𝒜).obj (op l)) (a : A ⧸ F.ideal (l + 1)) :
+    Ideal.Quotient.factor (F.antitone (Nat.add_le_add_right h 1))
+        (F.wallRepresentation 𝒜 h𝒜 l u a) =
+      F.wallRepresentation 𝒜 h𝒜 k ((F.wallGroupDiagram 𝒜 h𝒜).map (homOfLE h).op u)
+        (Ideal.Quotient.factor (F.antitone (Nat.add_le_add_right h 1)) a) :=
+  map_functionWallAction (𝒜 l) (𝒜 k) (F.wallTransition 𝒜 h𝒜 h) u a
 
 /-- The algebra automorphism of the coefficient completion defined by compatible
 weight-zero function walls on its quotients. -/
 def completedFunctionWallAction : F.completion ≃ₐ[R] F.completion :=
-  AlgEquiv.ofAlgHom (F.completedFunctionWallHom 𝒜 h𝒜 f hf)
-    (F.completedFunctionWallHom 𝒜 h𝒜 (fun k => (f k)⁻¹) (F.compatible_inv 𝒜 f hf))
-    (by
-      apply AlgHom.ext
-      intro x
-      apply F.completion_ext
-      intro k
-      simp only [AlgHom.comp_apply, AlgHom.id_apply, F.projection_completedFunctionWallHom,
-        functionWallAction_inv, AlgEquiv.apply_symm_apply])
-    (by
-      apply AlgHom.ext
-      intro x
-      apply F.completion_ext
-      intro k
-      simp only [AlgHom.comp_apply, AlgHom.id_apply, F.projection_completedFunctionWallHom,
-        functionWallAction_inv, AlgEquiv.symm_apply_apply])
+  F.completedAction (F.wallRepresentation 𝒜 h𝒜) (F.wallRepresentation_compatible 𝒜 h𝒜)
+    (F.wallLabel 𝒜 h𝒜 f hf)
 
 /-- The completed action is evaluated by the finite function-wall action at each order. -/
 @[simp]
 theorem projection_completedFunctionWallAction (k : ℕ) (x : F.completion) :
     F.projection k (F.completedFunctionWallAction 𝒜 h𝒜 f hf x) =
-      functionWallAction (𝒜 k) (f k) (F.projection k x) :=
-  F.projection_completedFunctionWallHom 𝒜 h𝒜 f hf k x
+      functionWallAction (𝒜 k) (f k) (F.projection k x) := by
+  rw [completedFunctionWallAction,
+    F.projection_completedAction (F.wallRepresentation 𝒜 h𝒜)
+      (F.wallRepresentation_compatible 𝒜 h𝒜),
+    CompletedGroup.projection_apply]
+  rfl
 
 /-- The finite projection formula characterizes the completed automorphism uniquely. -/
 theorem completedFunctionWallAction_unique (e : F.completion ≃ₐ[R] F.completion)
@@ -161,33 +198,17 @@ theorem completedFunctionWallAction_unique (e : F.completion ≃ₐ[R] F.complet
 @[simp]
 theorem completedFunctionWallAction_one :
     F.completedFunctionWallAction 𝒜 h𝒜 (fun _ => 1) (by intro k l h; simp) =
-      AlgEquiv.refl := by
-  apply AlgEquiv.ext
-  intro x
-  apply F.completion_ext
-  intro k
-  rw [F.projection_completedFunctionWallAction 𝒜 h𝒜 (fun _ => 1) (by intro k l h; simp)]
-  simp
+      AlgEquiv.refl :=
+  (F.completedAction (F.wallRepresentation 𝒜 h𝒜)
+    (F.wallRepresentation_compatible 𝒜 h𝒜)).map_one
 
 /-- Inverting every finite wall function inverts the completed action. -/
 theorem completedFunctionWallAction_inv :
-    F.completedFunctionWallAction 𝒜 h𝒜 (fun k => (f k)⁻¹) (by
-      intro k l h
-      have he : Units.map (Ideal.Quotient.factor
-          (F.antitone (Nat.add_le_add_right h 1))).toMonoidHom
-          (Units.map (algebraMap (𝒜 l 0) _).toMonoidHom (f l)) =
-            Units.map (algebraMap (𝒜 k 0) _).toMonoidHom (f k) := Units.ext (hf h)
-      simpa using congrArg (fun u => (u⁻¹).val) he) =
-      (F.completedFunctionWallAction 𝒜 h𝒜 f hf).symm := by
-  apply AlgEquiv.ext
-  intro x
-  apply (F.completedFunctionWallAction 𝒜 h𝒜 f hf).injective
-  apply F.completion_ext
-  intro k
-  rw [AlgEquiv.apply_symm_apply, F.projection_completedFunctionWallAction,
-    F.projection_completedFunctionWallAction 𝒜 h𝒜 (fun k => (f k)⁻¹)
-      (F.compatible_inv 𝒜 f hf)]
-  simp only [functionWallAction_inv, AlgEquiv.apply_symm_apply]
+    F.completedFunctionWallAction 𝒜 h𝒜 (fun k => (f k)⁻¹)
+        (by exact F.compatible_inv 𝒜 f hf) =
+      (F.completedFunctionWallAction 𝒜 h𝒜 f hf).symm :=
+  map_inv (F.completedAction (F.wallRepresentation 𝒜 h𝒜)
+    (F.wallRepresentation_compatible 𝒜 h𝒜)) (F.wallLabel 𝒜 h𝒜 f hf)
 
 /-- Multiplying compatible wall functions composes their completed actions. -/
 theorem completedFunctionWallAction_mul (g : ∀ k, (𝒜 k 0)ˣ)
@@ -198,26 +219,18 @@ theorem completedFunctionWallAction_mul (g : ∀ k, (𝒜 k 0)ˣ)
     F.completedFunctionWallAction 𝒜 h𝒜 (fun k => f k * g k)
         (by intro k l h; simp only [Units.val_mul, map_mul, hf h, hg h]) =
       (F.completedFunctionWallAction 𝒜 h𝒜 g hg).trans
-        (F.completedFunctionWallAction 𝒜 h𝒜 f hf) := by
-  apply AlgEquiv.ext
-  intro x
-  apply F.completion_ext
-  intro k
-  rw [F.projection_completedFunctionWallAction 𝒜 h𝒜 (fun k => f k * g k)
-    (by intro k l h; simp only [Units.val_mul, map_mul, hf h, hg h])]
-  simp only [functionWallAction_mul, AlgEquiv.trans_apply, projection_completedFunctionWallAction]
+        (F.completedFunctionWallAction 𝒜 h𝒜 f hf) :=
+  (F.completedAction (F.wallRepresentation 𝒜 h𝒜)
+    (F.wallRepresentation_compatible 𝒜 h𝒜)).map_mul
+      (F.wallLabel 𝒜 h𝒜 f hf) (F.wallLabel 𝒜 h𝒜 g hg)
 
 /-- Function walls preserve and reflect every order of the completion filtration. -/
 @[simp]
 theorem completedFunctionWallAction_mem_completionIdeal_iff (k : ℕ) (x : F.completion) :
     F.completedFunctionWallAction 𝒜 h𝒜 f hf x ∈ F.completionIdeal k ↔
-      x ∈ F.completionIdeal k := by
-  cases k with
-  | zero => simp
-  | succ k =>
-    simp only [completionIdeal_succ, RingHom.mem_ker,
-      projection_completedFunctionWallAction,
-      map_eq_zero_iff _ (functionWallAction (𝒜 k) (f k)).injective]
+      x ∈ F.completionIdeal k :=
+  F.completedAction_mem_completionIdeal_iff (F.wallRepresentation 𝒜 h𝒜)
+    (F.wallRepresentation_compatible 𝒜 h𝒜) (F.wallLabel 𝒜 h𝒜 f hf) x k
 
 /-- On a completed element of fixed normal weight, the wall formula uses an
 integer power of the completed wall function, including for negative weights. -/
