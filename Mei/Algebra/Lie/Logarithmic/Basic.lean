@@ -51,6 +51,10 @@ instance {S : Type*} [Semiring S] [Module S R] :
     Module S (LogarithmicVectorField R Γ Λ ρ) :=
   inferInstanceAs (Module S (Γ →₀ (Λ →+ R)))
 
+instance {S : Type*} [Semiring S] [Module S R] [IsScalarTower S R R] :
+    IsScalarTower S R (LogarithmicVectorField R Γ Λ ρ) :=
+  inferInstanceAs (IsScalarTower S R (Γ →₀ (Λ →+ R)))
+
 /-- The coefficient description of formal logarithmic vector fields. -/
 def toFinsupp : LogarithmicVectorField R Γ Λ ρ ≃ₗ[R] Γ →₀ (Λ →+ R) :=
   { toFun := fun x => x
@@ -207,8 +211,6 @@ instance : LieAlgebra R (LogarithmicVectorField R Γ Λ ρ) where
 instance {S : Type*} [CommRing S] [Algebra S R] :
     LieAlgebra S (LogarithmicVectorField R Γ Λ ρ) where
   lie_smul s x y := by
-    let : IsScalarTower S R (LogarithmicVectorField R Γ Λ ρ) :=
-      inferInstanceAs (IsScalarTower S R (Γ →₀ (Λ →+ R)))
     simpa only [IsScalarTower.algebraMap_smul] using
       lie_smul (algebraMap S R s) x y
 
