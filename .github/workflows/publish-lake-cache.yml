@@ -41,6 +41,9 @@ permissions:
 
 jobs:
   publish:
+    concurrency:
+      group: mei-r2-publisher
+      cancel-in-progress: false
     # A NEW ephemeral runner for this job, separate from the candidate sandbox.
     # Direct labels request no privileged container, cache volume, git mirror or tool cache.
     # Priority zero precedes compiler jobs; run-ID assignment prevents cross-run pickup.
@@ -73,11 +76,20 @@ jobs:
           sparse-checkout-cone-mode: false
           persist-credentials: false
 
+      - name: Check out workflow-pinned R2 guard
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: trusted-r2
+          sparse-checkout: scripts/mei_r2_publish.py
+          sparse-checkout-cone-mode: false
+          persist-credentials: false
+
       - name: Prepare pinned shared tools
-        uses: yuma-mizuno-lean/TauCetiTools/.github/actions/setup@5aa5d085a0b779a3ff6068b60655500946c0c70a
+        uses: yuma-mizuno-lean/TauCetiTools/.github/actions/setup@7405c6bc681341dc54c775bc6f5e6de533120ba1
         with:
           tools-repository: yuma-mizuno-lean/TauCetiTools
-          tools-ref: 5aa5d085a0b779a3ff6068b60655500946c0c70a
+          tools-ref: 7405c6bc681341dc54c775bc6f5e6de533120ba1
           project-directory: .
       - name: Check out workflow-pinned publication planning tools
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
@@ -151,6 +163,8 @@ jobs:
           ELAN_TOOLCHAIN: ${{ steps.toolchain.outputs.name }}
           REVISION: ${{ inputs.revision }}
           PUBLICATION_REQUIRED: ${{ inputs.publication-required }}
+          MEI_R2_BUCKET_ENDPOINT: ${{ vars.MEI_R2_BUCKET_ENDPOINT }}
+          MEI_R2_GUARDS_READY: ${{ vars.MEI_R2_GUARDS_READY }}
         run: |
           set -euo pipefail
           skip_or_fail() {
@@ -174,28 +188,21 @@ jobs:
             || skip_or_fail 'the public Lake revision endpoint is not configured'
           [ -n "$LAKE_CACHE_KEY_RAW" ] \
             || skip_or_fail 'the LAKE_CACHE_KEY secret is not configured'
+          [ "$MEI_R2_GUARDS_READY" = '1' ] && [ -n "$MEI_R2_BUCKET_ENDPOINT" ] \
+            || skip_or_fail 'R2 guard initialization and deployment verification are incomplete'
 
           KEY="$LAKE_CACHE_KEY_RAW"
           KEY="${KEY%"${KEY##*[![:space:]]}"}"
           [ -n "$KEY" ] || skip_or_fail 'the LAKE_CACHE_KEY secret is empty after trimming'
           echo "::add-mask::$KEY"
 
-          # The workflow-pinned, key-free planner supplied only validated flat files
-          # and URLs. No repository helper, Lake workspace, or candidate code executes
-          # in this step. Artifacts complete before the FULL map becomes visible.
+          # Only the workflow-pinned guard executes with credentials. It reserves
+          # capacity and PUT operations durably before uploading, with no retries.
+          # Candidate files remain inert; artifacts complete before the full map.
           PLAN="$RUNNER_TEMP/lake-publication-plan"
           started=$SECONDS
-          if [ -s "$PLAN/artifacts.curl" ]; then
-            curl --parallel --parallel-max 50 --fail-early --fail --silent --show-error \
-              --retry 2 --retry-all-errors --max-time 120 \
-              --aws-sigv4 aws:amz:auto:s3 --user "$KEY" --request PUT \
-              --header 'Content-Type: application/vnd.reservoir.artifact' \
-              --config "$PLAN/artifacts.curl"
-          fi
-          curl --fail --silent --show-error --retry 2 --retry-all-errors --max-time 120 \
-            --aws-sigv4 aws:amz:auto:s3 --user "$KEY" --request PUT \
-            --header 'Content-Type: application/vnd.reservoir.outputs+json-lines' \
-            --upload-file "$PLAN/outputs.jsonl" "$(cat "$PLAN/map-url")"
+          python3 trusted-r2/scripts/mei_r2_publish.py publish --plan "$PLAN" \
+            || skip_or_fail 'R2 publication stopped by the guard; inspect its budget before retrying'
           echo "Lake publication upload seconds: $((SECONDS - started))"
 
           echo 'uploaded=true' >> "$GITHUB_OUTPUT"

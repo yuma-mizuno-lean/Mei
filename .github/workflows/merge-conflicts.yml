@@ -114,10 +114,10 @@ jobs:
           sparse-checkout: scripts/pr_status
           persist-credentials: false
       - name: Prepare pinned shared tools
-        uses: yuma-mizuno-lean/TauCetiTools/.github/actions/setup@5aa5d085a0b779a3ff6068b60655500946c0c70a
+        uses: yuma-mizuno-lean/TauCetiTools/.github/actions/setup@7405c6bc681341dc54c775bc6f5e6de533120ba1
         with:
           tools-repository: yuma-mizuno-lean/TauCetiTools
-          tools-ref: 5aa5d085a0b779a3ff6068b60655500946c0c70a
+          tools-ref: 7405c6bc681341dc54c775bc6f5e6de533120ba1
           project-directory: .
       - name: Label conflicting PRs
         env:

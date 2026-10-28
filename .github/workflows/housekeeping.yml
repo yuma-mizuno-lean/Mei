@@ -67,10 +67,10 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
 
       - name: Prepare pinned shared tools
-        uses: yuma-mizuno-lean/TauCetiTools/.github/actions/setup@5aa5d085a0b779a3ff6068b60655500946c0c70a
+        uses: yuma-mizuno-lean/TauCetiTools/.github/actions/setup@7405c6bc681341dc54c775bc6f5e6de533120ba1
         with:
           tools-repository: yuma-mizuno-lean/TauCetiTools
-          tools-ref: 5aa5d085a0b779a3ff6068b60655500946c0c70a
+          tools-ref: 7405c6bc681341dc54c775bc6f5e6de533120ba1
           project-directory: .
       - name: Abandon stuck PRs and close duplicates
         env:
