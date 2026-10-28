@@ -43,7 +43,7 @@ theorem IsPositive.completedAeval {x : F.completionIdeal 1}
 
 /-- A power series with natural-number coefficients evaluates at a positive element of the
 first completed ideal to a positive element. -/
-theorem IsPositive.completedAeval_map_natCast {x : F.completionIdeal 1}
+theorem IsPositive.completedAeval_map_castRingHom {x : F.completionIdeal 1}
     (hx : F.IsPositive P (x : F.completion)) (g : PowerSeries ℕ) :
     F.IsPositive P (F.completedAeval x (PowerSeries.map (Nat.castRingHom R) g)) :=
   hx.completedAeval fun i => by simp
