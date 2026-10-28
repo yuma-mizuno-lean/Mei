@@ -68,6 +68,13 @@ theorem raySubmodule_le_degreeIdeal (w : SupportedRay d) (m : Λ →+ ℤ) (k : 
   by_contra hn
   exact hw ((d.mem_raysAtOrder).mpr ⟨n, n.property, le_of_not_gt hn⟩)
 
+omit [IsPositiveGrading d ℒ] in
+/-- Every ray wall sum lies in the ray Lie subalgebra of the underlying grading. -/
+theorem raySubmodule_le_rayLieSubalgebra (w : SupportedRay d) (m : Λ →+ ℤ) :
+    H.raySubmodule w m ≤ (Mei.rayLieSubalgebra ℒ w).toSubmodule := by
+  rw [raySubmodule_def]
+  exact iSup_le fun n => (H.wall_le_piece n m).trans (le_rayLieSubalgebra ℒ n.property)
+
 /-- Rays with no actual allowed degree at or below the cutoff have zero finite image. -/
 theorem truncatedRayLieSubalgebra_eq_bot (w : SupportedRay d) (m : Λ →+ ℤ) (k : ℕ)
     (hw : w ∉ d.raysAtOrder k) : H.truncatedRayLieSubalgebra w m k = ⊥ := by
@@ -114,11 +121,7 @@ theorem wallGroup_le_completedRaySubgroup (w : SupportedRay d) (m : Λ →+ ℤ)
   rw [← d.map_rayLieSubalgebra_mkQ ℒ w k]
   obtain ⟨x, hx, he⟩ := (H.mem_truncatedRayLieSubalgebra w m k _).mp
     ((H.mem_wallGroup w m g).mp hg k)
-  refine ⟨x, ?_, he⟩
-  have hle : H.raySubmodule w m ≤ (Mei.rayLieSubalgebra ℒ w).toSubmodule := by
-    rw [H.raySubmodule_def]
-    exact iSup_le fun n => (H.wall_le_piece n m).trans (le_rayLieSubalgebra ℒ n.property)
-  exact hle hx
+  exact ⟨x, H.raySubmodule_le_rayLieSubalgebra w m hx, he⟩
 
 /-- If the wall spaces exhaust a ray Lie algebra, their completed wall group is
 the entire completed ray subgroup. -/

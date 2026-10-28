@@ -11,7 +11,7 @@ public import Mei.Geometry.ScatteringDiagram.ModuleProbe.Ray
 /-!
 # Charge-one wall labels of module probes
 
-At a nonzero multiple of the probe normal, the wall group on a charge-one
+At the probe normal, and hence at its nonzero multiples, the wall group on a charge-one
 ray is the entire ray subgroup. It is therefore the additive homogeneous
 coefficient group: every such wall label is the exponential of a unique
 coefficient. Other normals give the trivial group, as does a charge-one
@@ -56,13 +56,16 @@ theorem raySubmodule_moduleRay (q : Γ) (hq : q - p ∈ d.monoid)
 
 variable [DirectSum.Decomposition ℳ] [Algebra ℚ R]
 
-/-- At a nonzero probe normal, the charge-one wall group exhausts the ray group. -/
-theorem wallGroup_moduleRay (q : Γ) (hq : q - p ∈ d.monoid) (c : ℤ) (hc : c ≠ 0) :
-    (wallSpaces d ℳ p ℒ H).wallGroup (moduleRay d p q hq) (c • probeNormal) =
+/-- At the probe normal, the charge-one wall group exhausts the ray group. Nonzero
+multiples of the normal reduce to this case by `DirectedWallSpaces.wallGroup_rescale`. -/
+@[simp]
+theorem wallGroup_moduleRay (q : Γ) (hq : q - p ∈ d.monoid) :
+    (wallSpaces d ℳ p ℒ H).wallGroup (moduleRay d p q hq) probeNormal =
       (positiveDegrees d p).completedRaySubgroup (grading d ℳ p ℒ) (moduleRay d p q hq) := by
   apply DirectedWallSpaces.wallGroup_eq_completedRaySubgroup
-  rw [raySubmodule_moduleRay, wallSpaces_wall, wallSubmodule_module d ℳ p ℒ H q c hc,
-    moduleRayLieSubalgebra_toSubmodule]
+  have h := wallSubmodule_module d ℳ p ℒ H q 1 one_ne_zero
+  rw [one_smul] at h
+  rw [raySubmodule_moduleRay, wallSpaces_wall, h, moduleRayLieSubalgebra_toSubmodule]
 
 /-- Every other normal has trivial charge-one wall group. -/
 theorem wallGroup_moduleRay_eq_bot_of_notMem_range (q : Γ) (hq : q - p ∈ d.monoid)
@@ -83,18 +86,18 @@ theorem wallGroup_eq_bot_of_notMem (w : SupportedRay (positiveDegrees d p))
     (completedRaySubgroup_eq_bot_of_notMem d ℳ p ℒ w hw hq).le
 
 /-- Charge-one wall labels at the probe normal are exactly additive homogeneous
-coefficients. Nonzero rescaling of that normal leaves the parametrization unchanged. -/
-def moduleWallGroupEquiv (q : Γ) (hq : q - p ∈ d.monoid) (c : ℤ) (hc : c ≠ 0) :
+coefficients. -/
+def moduleWallGroupEquiv (q : Γ) (hq : q - p ∈ d.monoid) :
     Multiplicative (shiftedGrading ℳ d.monoid p (q - p)) ≃*
-      (wallSpaces d ℳ p ℒ H).wallGroup (moduleRay d p q hq) (c • probeNormal) :=
+      (wallSpaces d ℳ p ℒ H).wallGroup (moduleRay d p q hq) probeNormal :=
   (moduleRayGroupEquiv d ℳ p ℒ q hq).trans
-    (MulEquiv.subgroupCongr (wallGroup_moduleRay d ℳ p ℒ H q hq c hc).symm)
+    (MulEquiv.subgroupCongr (wallGroup_moduleRay d ℳ p ℒ H q hq).symm)
 
 /-- The wall-group parametrization exponentiates the included coefficient. -/
 @[simp]
-theorem coe_moduleWallGroupEquiv (q : Γ) (hq : q - p ∈ d.monoid) (c : ℤ) (hc : c ≠ 0)
+theorem coe_moduleWallGroupEquiv (q : Γ) (hq : q - p ∈ d.monoid)
     (a : Multiplicative (shiftedGrading ℳ d.monoid p (q - p))) :
-    (moduleWallGroupEquiv d ℳ p ℒ H q hq c hc a :
+    (moduleWallGroupEquiv d ℳ p ℒ H q hq a :
       (positiveDegrees d p).completedBCHGroup (grading d ℳ p ℒ)) =
       (positiveDegrees d p).expToCompletion (grading d ℳ p ℒ)
         (moduleInclusion d ℳ p ℒ ((moduleCoefficientsEquiv d ℳ p).symm a.toAdd.val)) := by
@@ -103,9 +106,8 @@ theorem coe_moduleWallGroupEquiv (q : Γ) (hq : q - p ∈ d.monoid) (c : ℤ) (h
 /-- Recover a probe wall coefficient from its charge-one logarithmic component. -/
 @[simp]
 theorem coe_moduleWallGroupEquiv_symm (q : Γ) (hq : q - p ∈ d.monoid)
-    (c : ℤ) (hc : c ≠ 0)
-    (g : (wallSpaces d ℳ p ℒ H).wallGroup (moduleRay d p q hq) (c • probeNormal)) :
-    (((moduleWallGroupEquiv d ℳ p ℒ H q hq c hc).symm g).toAdd :
+    (g : (wallSpaces d ℳ p ℒ H).wallGroup (moduleRay d p q hq) probeNormal) :
+    (((moduleWallGroupEquiv d ℳ p ℒ H q hq).symm g).toAdd :
       shiftedSubmodule ℳ d.monoid p) =
       moduleCoefficientsEquiv d ℳ p
         ((positiveDegrees d p).logComponent (grading d ℳ p ℒ) g.val (q, 1, 0)).val.left := by
