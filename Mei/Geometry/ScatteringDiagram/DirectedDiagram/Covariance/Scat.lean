@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Covariance.Class
+public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Class
 public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Scat
 import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Covariance
 
