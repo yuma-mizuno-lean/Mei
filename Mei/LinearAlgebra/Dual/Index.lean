@@ -5,21 +5,21 @@ Authors: Claude Code
 -/
 module
 
-public import Mathlib.Data.ZMod.QuotientGroup
+public import Mathlib.GroupTheory.SpecificGroups.Cyclic
 public import Mathlib.GroupTheory.IndexNSmul
 public import Mathlib.LinearAlgebra.Dual.Lemmas
 public import Mathlib.LinearAlgebra.Matrix.Dual
-public import Mei.Algebra.Module.Primitive
-public import TauCeti.LinearAlgebra.FreeModule.Int
+public import Mei.LinearAlgebra.Dual.Kernel
+public import Mei.LinearAlgebra.FreeModule.Int
 
 /-!
 # Indices of dual lattices
 
 Let `M₀` be a sublattice of finite index `ℓ` in a finite free `ℤ`-module `M`. Restricting
 functionals identifies the dual lattice `N = Dual ℤ M` with a sublattice of `N₀ = Dual ℤ M₀`,
-and this sublattice again has index `ℓ`. More generally, the transpose of an injective map
-between lattices of equal rank is injective, and its image has the same index as the image of
-the original map: both indices are the absolute value of one determinant.
+and this sublattice again has index `ℓ`. More generally, the transpose of any map between
+lattices of equal rank has the same image index as the original map. For injective maps,
+both indices are the absolute value of one determinant; for singular maps, both are zero.
 
 For a primitive vector `m₀` of `M₀`, write `m₀ = r • m` with `m` primitive in `M` and `r > 0`.
 Evaluation at `m₀` maps `N₀` onto `ℤ` and `N` onto `rℤ`, so
@@ -41,8 +41,6 @@ of primitive normals.
 * `Submodule.index_range_dualRestrict`: the dual of a sublattice of finite index `ℓ` contains
   the dual of the ambient lattice with index `ℓ`.
 * `Submodule.index_eq_mul_relIndex_ker_eval`: `ℓ = r · [m₀⊥ ∩ N₀ : m₀⊥ ∩ N]`.
-* `LinearMap.ker_eq_span_singleton_of_isPrimitive`: in rank at most two, the kernel of a nonzero
-  functional is spanned by any of its primitive vectors.
 * `Submodule.exists_dualRestrict_eq_zsmul_natAbs_eq_relIndex`: in rank two, the restricted
   primitive normal is a multiple of the primitive normal of `N₀` by `±[m₀⊥ ∩ N₀ : m₀⊥ ∩ N]`.
 -/
@@ -69,9 +67,10 @@ theorem dualMap_injective_of_injective {f : M →ₗ[ℤ] N} (hf : Function.Inje
     simpa using LinearMap.congr_fun (mem_ker.mp hφ) (g y)
   simpa [hfg, hc] using h
 
-/-- The image of the transpose of an injective map between finite free `ℤ`-modules of equal
-rank has the same index as the image of the map. -/
-theorem index_range_dualMap {f : M →ₗ[ℤ] N} (hf : Function.Injective f)
+/-- The image of the transpose of a map between finite free `ℤ`-modules of equal rank has
+the same index as the image of the map, including index zero for singular maps. -/
+@[simp]
+theorem index_range_dualMap {f : M →ₗ[ℤ] N}
     (hrank : finrank ℤ M = finrank ℤ N) :
     (range f.dualMap).toAddSubgroup.index = (range f).toAddSubgroup.index := by
   classical
@@ -80,45 +79,24 @@ theorem index_range_dualMap {f : M →ₗ[ℤ] N} (hf : Function.Injective f)
     Fintype.equivOfCardEq <| by
       rw [← finrank_eq_card_chooseBasisIndex, ← finrank_eq_card_chooseBasisIndex, hrank]
   let c := (Free.chooseBasis ℤ N).reindex e
-  rw [index_range_eq_natAbs_det_toMatrix c.dualBasis b.dualBasis
-      (dualMap_injective_of_injective hf hrank),
-    index_range_eq_natAbs_det_toMatrix b c hf, dualMap_def, toMatrix_transpose,
-    Matrix.det_transpose]
-
-/-- In a finite free `ℤ`-module of rank at most two, the kernel of a nonzero functional is
-spanned by any of its primitive vectors. -/
-theorem ker_eq_span_singleton_of_isPrimitive {V : Type*} [AddCommGroup V] [Module.Free ℤ V]
-    [Module.Finite ℤ V] (hV : finrank ℤ V ≤ 2) {e : V →ₗ[ℤ] ℤ} (he : e ≠ 0) {v : V}
-    (hv : TauCeti.IsPrimitive v) (hev : e v = 0) : ker e = ℤ ∙ v := by
-  obtain ⟨f, hf⟩ := TauCeti.isPrimitive_def.mp hv
-  obtain ⟨w, hw⟩ : ∃ w, e w ≠ 0 := by
-    by_contra! h
-    exact he (LinearMap.ext h)
-  refine le_antisymm (fun x hx => ?_) ((Submodule.span_singleton_le_iff_mem _ _).mpr hev)
-  rw [mem_ker] at hx
-  rw [Submodule.mem_span_singleton]
-  -- three vectors in a module of rank at most two are dependent
-  have hdep : ¬LinearIndependent ℤ ![v, x, w] := fun h => by
-    have := h.fintype_card_le_finrank
-    simp only [Fintype.card_fin] at this
-    omega
-  obtain ⟨c, hc, i, hi⟩ := Fintype.not_linearIndependent_iff.mp hdep
-  simp only [Fin.sum_univ_three, Matrix.cons_val_zero, Matrix.cons_val_one,
-    Matrix.cons_val_two, Matrix.head_cons, Matrix.tail_cons] at hc
-  have hc2 : c 2 = 0 := by
-    have h := congr(e $hc)
-    simp only [map_add, map_zsmul, hev, hx, map_zero, smul_eq_mul, mul_zero, zero_add,
-      mul_eq_zero] at h
-    exact h.resolve_right hw
-  have hc0 : c 0 + c 1 * f x = 0 := by
-    simpa [hf, hc2] using congr(f $hc)
-  have hc1 : c 1 ≠ 0 := by
-    intro h
-    fin_cases i <;> simp_all
-  refine ⟨f x, smul_right_injective V hc1 ?_⟩
-  have h : c 0 • v + c 1 • x = 0 := by simpa [hc2] using hc
-  simp only [smul_smul]
-  rw [show c 1 * f x = -c 0 by linarith, neg_smul, neg_eq_iff_add_eq_zero, h]
+  by_cases hf : Function.Injective f
+  · rw [index_range_eq_natAbs_det_toMatrix c.dualBasis b.dualBasis
+        (dualMap_injective_of_injective hf hrank),
+      index_range_eq_natAbs_det_toMatrix b c hf, dualMap_def, toMatrix_transpose,
+      Matrix.det_transpose]
+  · have hdualrank : finrank ℤ (Dual ℤ N) = finrank ℤ (Dual ℤ M) := by
+      simpa only [← c.toDualEquiv.finrank_eq, ← b.toDualEquiv.finrank_eq] using hrank.symm
+    have hdual : ¬Function.Injective f.dualMap := by
+      intro h
+      have hbidual := dualMap_injective_of_injective h hdualrank
+      apply hf
+      intro x y hxy
+      apply (bijective_dual_eval ℤ M).injective
+      apply hbidual
+      ext φ
+      simpa using congrArg φ hxy
+    rw [(index_range_eq_zero_iff hdualrank).mpr hdual,
+      (index_range_eq_zero_iff hrank).mpr hf]
 
 end LinearMap
 
@@ -128,10 +106,11 @@ variable {M : Type*} [AddCommGroup M] [Module.Free ℤ M] [Module.Finite ℤ M]
 
 /-- The restriction of functionals to a sublattice `M₀` of finite index identifies `Dual ℤ M`
 with a sublattice of `Dual ℤ M₀` of the same index. -/
+@[simp]
 theorem index_range_dualRestrict (M₀ : Submodule ℤ M) [M₀.toAddSubgroup.FiniteIndex] :
     (LinearMap.range M₀.dualRestrict).toAddSubgroup.index = M₀.toAddSubgroup.index := by
   have hrank : finrank ℤ M₀ = finrank ℤ M := AddSubgroup.finrank_eq_of_finiteIndex M₀.toAddSubgroup
-  rw [dualRestrict_def, LinearMap.index_range_dualMap M₀.injective_subtype hrank, range_subtype]
+  rw [dualRestrict_def, LinearMap.index_range_dualMap hrank, range_subtype]
 
 /-- Let `M₀` be a sublattice of finite index `ℓ` and `m₀` a primitive vector of `M₀` with
 `m₀ = r • m` for a primitive vector `m` of `M`. Viewing `Dual ℤ M` inside `Dual ℤ M₀` by
@@ -206,12 +185,13 @@ theorem exists_dualRestrict_eq_zsmul_natAbs_eq_relIndex (hM : finrank ℤ M ≤ 
       exact ⟨a, by rw [map_zsmul, ← hk]⟩
     · rintro ⟨a, rfl⟩
       exact ⟨⟨a • n, by rw [map_zsmul, ← hk]⟩, by simp [hn₀m₀]⟩
-  have hinj : Function.Injective (zmultiplesHom (Dual ℤ M₀) n₀) :=
-    hn₀.zsmul_left_injective
+  have horder : addOrderOf n₀ = 0 :=
+    addOrderOf_eq_zero_iff.mpr (injective_zsmul_iff_not_isOfFinAddOrder.mp hn₀.zsmul_left_injective)
+  have hidx : (AddSubgroup.zmultiples (k • n₀)).relIndex (AddSubgroup.zmultiples n₀) =
+      k.natAbs := by
+    simpa [horder] using AddSubgroup.relIndex_zmultiples_zsmul_zsmul n₀ k 1
   rw [← AddSubgroup.inf_relIndex_right, hinf, hK₀, span_singleton_toAddSubgroup_eq_zmultiples,
-    ← zmultiplesHom_apply, ← AddMonoidHom.map_zmultiples, ← AddSubgroup.range_zmultiplesHom n₀,
-    AddMonoidHom.range_eq_map, AddSubgroup.relIndex_map_map_of_injective _ _ hinj,
-    AddSubgroup.relIndex_top_right, Int.index_zmultiples]
+    hidx]
 
 end Submodule
 
@@ -225,13 +205,8 @@ example (m₀ : Submodule.span ℤ (Set.range ![![(1 : ℤ), 0], ![1, 2]]))
       (LinearMap.range (Submodule.span ℤ (Set.range ![![(1 : ℤ), 0], ![1, 2]])).dualRestrict
         ).toAddSubgroup.relIndex (LinearMap.ker (Dual.eval ℤ _ m₀)).toAddSubgroup = 1 := by
   have hli : LinearIndependent ℤ ![![(1 : ℤ), 0], ![1, 2]] := by
-    rw [Fintype.linearIndependent_iff]
-    intro g hg i
-    have h0 := congr_fun hg 0
-    have h1 := congr_fun hg 1
-    simp only [Fin.sum_univ_two, Finset.sum_apply, Pi.smul_apply, smul_eq_mul] at h0 h1
-    simp at h0 h1
-    fin_cases i <;> simp <;> omega
+    exact Matrix.linearIndependent_rows_of_det_ne_zero (A := !![(1 : ℤ), 0; 1, 2])
+      (by norm_num [Matrix.det_fin_two])
   let bN := Basis.span hli
   have h0 : (bN 0 : Fin 2 → ℤ) = ![1, 0] := by simp [bN, Basis.span_apply]
   have h1 : (bN 1 : Fin 2 → ℤ) = ![1, 2] := by simp [bN, Basis.span_apply]
