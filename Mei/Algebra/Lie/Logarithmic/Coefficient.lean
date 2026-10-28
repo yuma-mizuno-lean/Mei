@@ -8,6 +8,7 @@ module
 public import Mei.Algebra.Lie.Logarithmic.Grading
 public import Mei.Algebra.MonoidAlgebra.Filtration
 public import Mei.Algebra.Lie.Filtered.BCH
+public import Mei.Algebra.Lie.Logarithmic.Pairing
 
 /-!
 # Tropical vertex actions on coefficient monoids
@@ -19,6 +20,12 @@ filtration, so its BCH group acts on the completed coefficient algebra.
 With the `TropicalVertexCoefficientAction` scope open, use
 `AlgFiltration.completedBCHAction` and `AlgFiltration.projection_completedBCHAction`
 with `TropicalVertexCoefficientAction.filtration` and `tropicalVertexGrading`.
+
+A tropical pairing `(T, S)` intertwines these actions with the monomial map
+`z^q ↦ z^(T q)` on coefficient algebras, provided its evaluation identity also holds
+on the coefficient exponents; on the positive coefficient algebras this is automatic.
+The monomial map carries the filtration term above the cutoff modulus of `T` into the
+target term, so it extends to completed coefficient algebras with that modulus.
 
 The construction uses `LogarithmicVectorField.action`, the monomial derivations
 and filtration bounds in `Mei.Algebra.MonoidAlgebra.Filtration`, and the existing
@@ -143,6 +150,32 @@ theorem filtration_ideal {R : Type*} [Semiring R] (k : ℕ) :
       (d.monoid.comap Q.subtype).monoidAlgebraIdeal (d.degree.comp Q.subtype) k := by
   rw [filtration, AddSubmonoid.monoidAlgebraFiltration_ideal]
 
+section Map
+
+variable {Γ' : Type*} [AddCommMonoid Γ'] {e : PositiveDegrees Γ'} {Q' : AddSubmonoid Γ'}
+
+variable {d Q} in
+/-- The monomial map `z^q ↦ z^(T q)` along a positive degree map carries the
+coefficient filtration term above the cutoff modulus into the target term. Thus
+`Mei.AlgFiltration.mapCompletionₐ` extends it to the completed coefficient algebras
+with the original modulus of `T`. -/
+theorem filtration_ideal_le_comap_mapDomainAlgHom (T : PositiveDegreeMap d e)
+    (hT : Q.map T.toAddMonoidHom ≤ Q') (k : ℕ) :
+    (filtration (R := R) d Q).ideal (T.modulus k + 1) ≤
+      ((filtration e Q').ideal (k + 1)).comap (mapDomainAlgHom R R
+        ((AddSubmonoid.inclusion hT).comp (T.toAddMonoidHom.addSubmonoidMap Q))) := by
+  intro a ha
+  rw [filtration_ideal] at ha
+  rw [Ideal.mem_comap, filtration_ideal]
+  refine (d.monoid.comap Q.subtype).monoidAlgebraIdeal_le_comap_mapDomainRingHom
+    (d.degree.comp Q.subtype) (e.monoid.comap Q'.subtype) (e.degree.comp Q'.subtype)
+    _ (fun _ hn => T.map_mem hn) (fun n hn hd => ?_) ha
+  have h := T.degree_gt k hn (by simpa only [Nat.cast_add, Nat.cast_one,
+    Int.add_one_le_iff, AddMonoidHom.comp_apply] using hd)
+  simpa [Int.add_one_le_iff] using h
+
+end Map
+
 variable [Fact (d.monoid ≤ Q)]
 
 /-- The logarithmic derivation representation, as a Lie action on coefficients.
@@ -229,5 +262,70 @@ scoped instance instIsFiltrationRaising :
           (a + b + 1) |>.add_mem hx hy
 
 end TropicalVertexCoefficientAction
+
+namespace TropicalPairing
+
+open LogarithmicVectorField
+
+variable {Γ' Λ' : Type*} [AddCommMonoid Γ'] [AddCommMonoid Λ']
+  {d ρ Q} {e : PositiveDegrees Γ'} {ρ' : Γ' →+ Λ'} {Q' : AddSubmonoid Γ'}
+  {U : Submodule R (Λ →+ R)} (p : TropicalPairing (d := d) (e := e) (ρ := ρ) (ρ' := ρ') U)
+
+/-- A tropical pairing intertwines the coefficient actions with the monomial map
+`z^q ↦ z^(T q)`, whenever the pairing identity also holds on the coefficient exponents.
+Taking `Q = P` and `Q' = P'`, this hypothesis is the defining identity of the pairing;
+see `mapDomainAlgHom_tropicalVertexCoefficientAction_monoid`. -/
+theorem mapDomainAlgHom_tropicalVertexCoefficientAction (hQ : d.monoid ≤ Q)
+    (hQ' : e.monoid ≤ Q') (hT : Q.map p.degreeMap.toAddMonoidHom ≤ Q')
+    (heval : ∀ (m : U) {q : Γ}, q ∈ Q →
+      p.characterMap m (ρ' (p.degreeMap q)) = m.val (ρ q))
+    (x : tropicalSubalgebra ρ U d) (a : R[Q]) :
+    mapDomainAlgHom R R
+        ((AddSubmonoid.inclusion hT).comp (p.degreeMap.toAddMonoidHom.addSubmonoidMap Q))
+        (tropicalVertexCoefficientAction d ρ Q hQ x a) =
+      tropicalVertexCoefficientAction e ρ' Q' hQ' (p.gradedLieHom x)
+        (mapDomainAlgHom R R
+          ((AddSubmonoid.inclusion hT).comp (p.degreeMap.toAddMonoidHom.addSubmonoidMap Q)) a) := by
+  classical
+  induction x using DirectSum.Decomposition.inductionOn (tropicalSubalgebraGrading ρ U d) with
+  | zero => simp
+  | @homogeneous n x =>
+    by_cases hn : n ∈ d.monoid
+    · obtain ⟨m, hm⟩ := (mem_tropicalSubalgebraGrading_iff d ρ U n x).mp x.property
+      rw [tropicalVertexCoefficientAction_of_homogeneous d ρ Q hQ hn _ m.val hm,
+        tropicalVertexCoefficientAction_of_homogeneous e ρ' Q' hQ' (p.degreeMap.map_mem hn) _
+          (p.characterMap m) (p.coe_gradedLieHom_of_homogeneous x m hm).symm]
+      induction a using AddMonoidAlgebra.induction_linear with
+      | zero => simp
+      | add a b ha hb => simp only [map_add, ha, hb]
+      | single q r =>
+        simp only [mapDomainAlgHom_apply, mapDomain_single,
+          AddMonoidAlgebra.monomialDerivation_single, AddMonoidHom.comp_apply,
+          AddSubmonoid.subtype_apply, map_add]
+        congr 1
+        simp [heval m q.2]
+    · have hx : (x : tropicalSubalgebra ρ U d) = 0 := by
+        simpa only [IsPositiveGrading.eq_bot (d := d)
+          (ℒ := tropicalSubalgebraGrading ρ U d) n (Or.inl hn), Submodule.mem_bot]
+          using x.property
+      simp [hx]
+  | add x y hx hy =>
+    simp only [AddMemClass.coe_add, map_add, Derivation.add_apply]
+    rw [hx, hy]
+
+/-- On the positive coefficient algebras, a tropical pairing intertwines the
+coefficient actions with the monomial map `z^p ↦ z^(T p)` without further hypotheses. -/
+theorem mapDomainAlgHom_tropicalVertexCoefficientAction_monoid
+    (x : tropicalSubalgebra ρ U d) (a : R[d.monoid]) :
+    mapDomainAlgHom R R ((AddSubmonoid.inclusion p.degreeMap.map_monoid_le).comp
+        (p.degreeMap.toAddMonoidHom.addSubmonoidMap d.monoid))
+        (tropicalVertexCoefficientAction d ρ d.monoid le_rfl x a) =
+      tropicalVertexCoefficientAction e ρ' e.monoid le_rfl (p.gradedLieHom x)
+        (mapDomainAlgHom R R ((AddSubmonoid.inclusion p.degreeMap.map_monoid_le).comp
+          (p.degreeMap.toAddMonoidHom.addSubmonoidMap d.monoid)) a) :=
+  p.mapDomainAlgHom_tropicalVertexCoefficientAction le_rfl le_rfl p.degreeMap.map_monoid_le
+    (fun m _ hq => p.eval_eq m hq) x a
+
+end TropicalPairing
 
 end Mei

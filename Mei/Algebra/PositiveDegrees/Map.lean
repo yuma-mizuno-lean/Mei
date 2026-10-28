@@ -64,6 +64,10 @@ theorem map_zero (T : PositiveDegreeMap d e) : T 0 = 0 := T.toAddMonoidHom.map_z
 theorem map_add (T : PositiveDegreeMap d e) (a b : N) :
     T (a + b) = T a + T b := T.toAddMonoidHom.map_add a b
 
+/-- The image of the source positive monoid lies in the target positive monoid. -/
+theorem map_monoid_le (T : PositiveDegreeMap d e) : d.monoid.map T.toAddMonoidHom ≤ e.monoid :=
+  AddSubmonoid.map_le_iff_le_comap.mpr fun _ => T.map_mem
+
 /-- A positive degree map is determined by its additive map and its cutoff modulus. -/
 @[ext]
 theorem ext {T U : PositiveDegreeMap d e} (h : ∀ n, T n = U n)
