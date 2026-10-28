@@ -5,7 +5,6 @@ Authors: Codex
 -/
 module
 
-public import Mei.Algebra.QuantumMonoidAlgebra.Hom
 public import Mei.Algebra.QuantumMonoidAlgebra.Positive
 public import Mei.Algebra.PositiveDegrees.Map
 public import Mei.RingTheory.FilteredAlgebra.Map
@@ -41,88 +40,6 @@ variable {R S U Γ Γ' Γ'' : Type*}
   {β : LinearMap.BilinForm ℤ Γ} {β' : LinearMap.BilinForm ℤ Γ'}
   {β'' : LinearMap.BilinForm ℤ Γ''}
 
-section Support
-
-variable (φ : R →+* S) (f : Γ →+ Γ')
-  (h : ∀ p r, Units.map φ.toMonoidHom (q ^ β p r) = q' ^ β' (f p) (f r))
-  (P : AddSubmonoid Γ) (P' : AddSubmonoid Γ') (hf : ∀ n ∈ P, f n ∈ P')
-
-include hf in
-/-- A quantum map carries coefficients supported on `P` to coefficients supported
-on `P'` when the exponent map sends `P` into `P'`. -/
-theorem map_mem_positiveSubalgebra {x : QuantumMonoidAlgebra q β}
-    (hx : x ∈ positiveSubalgebra q β P) :
-    map φ f h x ∈ positiveSubalgebra q' β' P' := by
-  have hx' : x ∈ shiftedSubmodule (grade q β) P 0 := by
-    rwa [← supportedSubalgebra_toSubmodule (grade q β) P]
-  rw [shiftedSubmodule_def] at hx'
-  refine Submodule.iSup_induction _
-    (motive := fun x => map φ f h x ∈ positiveSubalgebra q' β' P') hx'
-    (fun n x hx => ?_) (by simp) (fun x y hx hy => by
-      simpa using (positiveSubalgebra q' β' P').add_mem hx hy)
-  simp only [zero_add] at hx
-  exact le_supportedSubalgebra (grade q' β') P' (hf n n.property)
-    (map_mem_grade φ f h hx)
-
-/-- Restrict a simultaneous quantum coefficient and exponent map to positive support. -/
-def positiveMap : positiveSubalgebra q β P →+* positiveSubalgebra q' β' P' :=
-  (map φ f h).restrict _ _ (fun _ hx => map_mem_positiveSubalgebra φ f h P P' hf hx)
-
-/-- The restricted map agrees with the ambient quantum map. -/
-@[simp]
-theorem coe_positiveMap (x : positiveSubalgebra q β P) :
-    (positiveMap φ f h P P' hf x : QuantumMonoidAlgebra q' β') = map φ f h x := (rfl)
-
-/-- Positive quantum monomials map to the corresponding image monomials. -/
-@[simp]
-theorem positiveMap_positiveMonomial (p : P) :
-    positiveMap φ f h P P' hf (positiveMonomial q β P p) =
-      positiveMonomial q' β' P' ⟨f p, hf p p.property⟩ := by
-  apply Subtype.ext
-  simp
-
-/-- The restricted map applies the coefficient homomorphism to scalars. -/
-@[simp]
-theorem positiveMap_algebraMap (r : R) :
-    positiveMap φ f h P P' hf (algebraMap R _ r) = algebraMap S _ (φ r) := by
-  apply Subtype.ext
-  simp
-
-/-- The restricted quantum map preserves the inherited homogeneous pieces. -/
-theorem positiveMap_mem_grading {n : Γ} {x : positiveSubalgebra q β P}
-    (hx : x ∈ (positiveSubalgebra q β P).grading (grade q β) n) :
-    positiveMap φ f h P P' hf x ∈
-      (positiveSubalgebra q' β' P').grading (grade q' β') (f n) := by
-  rw [Subalgebra.mem_grading_iff] at hx ⊢
-  simpa only [coe_positiveMap] using map_mem_grade φ f h hx
-
-end Support
-
-/-- Identity coefficient and exponent maps restrict to the identity on positive support. -/
-@[simp]
-theorem positiveMap_id (P : AddSubmonoid Γ) :
-    positiveMap (q := q) (β := β) (RingHom.id R) (AddMonoidHom.id Γ)
-      (fun _ _ => by simp) P P (fun _ hn => hn) = RingHom.id _ := by
-  apply RingHom.ext
-  intro x
-  apply Subtype.ext
-  simp only [coe_positiveMap, map_id, RingHom.id_apply]
-
-/-- Positive quantum maps compose in both coefficients and exponents. -/
-theorem positiveMap_comp (φ : R →+* S) (ψ : S →+* U) (f : Γ →+ Γ') (g : Γ' →+ Γ'')
-    (h : ∀ p r, Units.map φ.toMonoidHom (q ^ β p r) = q' ^ β' (f p) (f r))
-    (h' : ∀ p r, Units.map ψ.toMonoidHom (q' ^ β' p r) = q'' ^ β'' (g p) (g r))
-    (P : AddSubmonoid Γ) (P' : AddSubmonoid Γ') (P'' : AddSubmonoid Γ'')
-    (hf : ∀ n ∈ P, f n ∈ P') (hg : ∀ n ∈ P', g n ∈ P'') :
-    (positiveMap ψ g h' P' P'' hg).comp (positiveMap φ f h P P' hf) =
-      positiveMap (ψ.comp φ) (g.comp f) (fun p r => by
-        rw [AddMonoidHom.comp_apply, AddMonoidHom.comp_apply, ← h', ← h]; rfl)
-        P P'' (fun n hn => hg _ (hf n hn)) := by
-  apply RingHom.ext
-  intro x
-  apply Subtype.ext
-  simp
-
 variable (d : PositiveDegrees Γ) (e : PositiveDegrees Γ')
   (T : PositiveDegreeMap d e) (φ : R →+* S)
   (h : ∀ p r, Units.map φ.toMonoidHom (q ^ β p r) = q' ^ β' (T p) (T r))
@@ -136,27 +53,20 @@ theorem positiveMap_ideal_le (k : ℕ) :
     (F).ideal (T.modulus k + 1) ≤ ((G).ideal (k + 1)).comap
       (positiveMap φ T.toAddMonoidHom h d.monoid e.monoid (fun _ hn => T.map_mem hn)) := by
   classical
-  have ht : ((F).ideal (T.modulus k + 1)).restrictScalars R ≤
-      (((G).ideal (k + 1)).comap
-        (positiveMap φ T.toAddMonoidHom h d.monoid e.monoid
-          (fun _ hn => T.map_mem hn))).restrictScalars R := by
-    rw [positiveFiltration_ideal_restrictScalars, Mei.DirectSum.degreeTail_def]
-    simp only [iSup_le_iff]
-    intro n hn x hx
-    by_cases hp : n ∈ d.monoid
-    · have hd : (k + 1 : ℕ) ≤ e.degree (T n) := by
-        have := T.degree_gt k hp (by omega)
-        omega
-      have hm := Mei.DirectSum.le_degreeTail
-        ((positiveSubalgebra q' β' e.monoid).grading (grade q' β')) e.degree hd
-        (positiveMap_mem_grading φ T.toAddMonoidHom h d.monoid e.monoid
-          (fun _ hn => T.map_mem hn) hx)
-      rwa [← positiveFiltration_ideal_restrictScalars] at hm
-    · have hz := supportedSubalgebra_grading_eq_bot (grade q β) d.monoid hp
-      have : x = 0 := by simpa only [hz, Submodule.mem_bot] using hx
-      subst x
-      simp
-  exact fun _ hx => ht hx
+  rw [positiveFiltration_ideal, GradedAlgebra.degreeIdeal_le_iff]
+  intro n hn x hx
+  by_cases hp : n ∈ d.monoid
+  · have hd : (k + 1 : ℕ) ≤ e.degree (T n) := by
+      have := T.degree_gt k hp (by omega)
+      omega
+    rw [Ideal.mem_comap, positiveFiltration_ideal]
+    exact GradedAlgebra.le_degreeIdeal _ e.degree _ hd _
+      (positiveMap_mem_grading φ T.toAddMonoidHom h d.monoid e.monoid
+        (fun _ hn => T.map_mem hn) hx)
+  · have hz := supportedSubalgebra_grading_eq_bot (grade q β) d.monoid hp
+    have : x = 0 := by simpa only [hz, Submodule.mem_bot] using hx
+    subst x
+    simp
 
 /-- Extend a quantum map to the degree completions of its positive coefficient algebras. -/
 def mapPositiveCompletion : (F).completion →+* (G).completion :=
