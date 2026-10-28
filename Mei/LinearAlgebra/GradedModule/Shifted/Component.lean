@@ -15,7 +15,8 @@ A homogeneous component of a completed shifted coefficient can be read from any
 finite quotient retaining its relative degree. The quotient components descend
 the existing degree-completion API for the relative grading. Transport to the
 ambient homogeneous piece preserves its quotient and cutoff laws; the existing
-product comparison supplies component extensionality.
+product comparison supplies component extensionality. Each finite projection is
+represented by the sum of its retained ambient components.
 
 The shifted coefficient completion is the one used in Travis Mandel, *Scattering
 diagrams, theta functions, and refined tropical curve counts*, §2.1
@@ -78,17 +79,6 @@ def shiftedHomogeneousComponent (q : Γ) : d.ShiftedCoefficients ℳ p →ₗ[R]
     (d.completionComponent (shiftedGrading ℳ d.monoid p) (d.shiftedFiltration ℳ p)
       (d.shiftedFiltration_succ ℳ p) (q - p))
 
-/-- Relative completed components agree with ambient components after adding the shift. -/
-@[simp]
-theorem coe_completionComponent_shiftedGrading (n : Γ) (x : d.ShiftedCoefficients ℳ p) :
-    (d.completionComponent (shiftedGrading ℳ d.monoid p) (d.shiftedFiltration ℳ p)
-      (d.shiftedFiltration_succ ℳ p) n x : M) =
-      (d.shiftedHomogeneousComponent ℳ p (p + n) x : M) := by
-  have hn : p + n - p = n := by abel
-  simp only [shiftedHomogeneousComponent, LinearMap.comp_apply,
-    coe_shiftedPieceToAmbient]
-  rw [hn]
-
 /-- A completed component can be read at any cutoff that retains its relative degree. -/
 theorem shiftedHomogeneousComponent_eq (q : Γ) (k : ℕ) (hk : d.degree (q - p) ≤ k)
     (x : d.ShiftedCoefficients ℳ p) :
@@ -106,6 +96,43 @@ theorem shiftedHomogeneousComponent_of (q : Γ) (x : shiftedSubmodule ℳ d.mono
   apply Subtype.ext
   rw [coe_shiftedPieceToAmbient, coe_decompose_shiftedGrading]
   congr 2 <;> abel_nf
+
+/-- Relative completed components and ambient shifted components have the same value. -/
+@[simp]
+theorem coe_completionComponent_shiftedGrading (n : Γ) (x : d.ShiftedCoefficients ℳ p) :
+    ((d.completionComponent (shiftedGrading ℳ d.monoid p) (d.shiftedFiltration ℳ p)
+      (d.shiftedFiltration_succ ℳ p) n x : shiftedSubmodule ℳ d.monoid p) : M) =
+      d.shiftedHomogeneousComponent ℳ p (p + n) x := by
+  rw [shiftedHomogeneousComponent, LinearMap.comp_apply, coe_shiftedPieceToAmbient,
+    add_sub_cancel_left]
+
+/-- Every finite projection is represented by the finite sum of its retained
+ambient homogeneous components. -/
+theorem projection_eq_sum_shiftedHomogeneousComponent (k : ℕ)
+    (x : d.ShiftedCoefficients ℳ p) :
+    (d.shiftedFiltration ℳ p).projection k x =
+      Submodule.Quotient.mk
+        (∑ n ∈ (d.finite_cutoff k).toFinset.attach,
+          shiftedInclusion ℳ d.monoid p ⟨n.val, (d.mem_cutoff.mp
+            ((d.finite_cutoff k).mem_toFinset.mp n.property)).1⟩
+            (d.shiftedHomogeneousComponent ℳ p (p + n.val) x)) := by
+  classical
+  let e := d.completionEquivPi (shiftedGrading ℳ d.monoid p)
+    (d.shiftedFiltration ℳ p) (d.shiftedFiltration_succ ℳ p)
+    (fun n hn => shiftedGrading_eq_bot ℳ d.monoid p hn)
+  have h := d.projection_completionEquivPi_symm (shiftedGrading ℳ d.monoid p)
+    (d.shiftedFiltration ℳ p) (d.shiftedFiltration_succ ℳ p)
+    (fun n hn => shiftedGrading_eq_bot ℳ d.monoid p hn) (e x) k
+  rw [LinearEquiv.symm_apply_apply] at h
+  rw [h]
+  congr 1
+  apply Subtype.ext
+  simp only [Submodule.coe_sum, coe_shiftedInclusion]
+  rw [← Finset.sum_attach]
+  apply Finset.sum_congr rfl
+  intro n hn
+  simpa only [e, completionEquivPi_apply] using
+    d.coe_completionComponent_shiftedGrading ℳ p n.val x
 
 /-- Completed coefficients have no components outside the shifted support. -/
 @[simp]

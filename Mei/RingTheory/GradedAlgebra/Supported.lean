@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.RingTheory.GradedAlgebra.Shifted
+public import Mei.RingTheory.GradedAlgebra.Shifted.Basic
 public import TauCeti.RingTheory.GradedAlgebra.Subalgebra
 
 /-!

@@ -86,20 +86,8 @@ private theorem decompose_lie_cutoff (x y : ∀ n, ℒ n) (n : N) :
   simp_rw [hproj]
   rw [← Finset.sum_product (f := fun p : N × N =>
     if p.1 + p.2 = n then ⁅(x p.1 : L), (y p.2 : L)⁆ else 0),
-    ← Finset.sum_filter]
-  apply Finset.sum_congr
-  · ext p
-    simp only [Finset.mem_filter, Finset.mem_product, Set.Finite.mem_toFinset,
-      mem_cutoff, Set.mem_ofPred_eq]
-    constructor
-    · rintro ⟨⟨ha, hb⟩, hab⟩
-      exact ⟨ha.1, hb.1, hab⟩
-    · rintro ⟨ha, hb, hab⟩
-      exact ⟨⟨⟨ha, (d.degree_le_of_add_eq hb hab).trans (Int.self_le_toNat _)⟩,
-        ⟨hb, (d.degree_le_of_add_eq ha (by simpa [add_comm] using hab)).trans
-          (Int.self_le_toNat _)⟩⟩, hab⟩
-  · intro p hp
-    rfl
+    ← Finset.sum_filter,
+    d.filter_cutoff_product_eq_decompositions n _ (Int.self_le_toNat _), piLieBracket_apply]
 
 private theorem component_lie_inverse (x y : ∀ n, ℒ n) (n : N) :
     d.completionComponent ℒ F (fun k => d.degreeIdeal_toSubmodule ℒ k) n
