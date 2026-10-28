@@ -69,15 +69,15 @@ theorem coeff_quantumDilogarithm_succ (n : ℕ) :
     ((q : R) ^ (2 * (n + 1)) - 1) * coeff (n + 1) (quantumDilogarithm q hq) =
       (q : R) * coeff n (quantumDilogarithm q hq) := by
   simpa only [← pow_mul] using
-    coeff_succ_mul_sub_of_rescale_eq (rescale_quantumDilogarithm q hq) n
+    pow_succ_sub_one_mul_coeff_succ_of_rescale_eq (rescale_quantumDilogarithm q hq) n
 
 /-- The coefficient recursion, with inverses taken only of units. -/
-theorem coeff_succ_quantumDilogarithm (n : ℕ) :
+theorem coeff_succ_quantumDilogarithm_eq_mul_inverse (n : ℕ) :
     coeff (n + 1) (quantumDilogarithm q hq) =
       (q : R) * coeff n (quantumDilogarithm q hq) *
         Ring.inverse (((q : R) ^ 2) ^ (n + 1) - 1) := by
   rw [Ring.eq_mul_inverse_iff_mul_eq _ _ _ (dilogDenominators q hq n), mul_comm]
-  exact coeff_succ_mul_sub_of_rescale_eq (rescale_quantumDilogarithm q hq) n
+  exact pow_succ_sub_one_mul_coeff_succ_of_rescale_eq (rescale_quantumDilogarithm q hq) n
 
 /-- The quantum dilogarithm is an invertible series. -/
 @[simp]
@@ -121,15 +121,10 @@ theorem rescale_inv_pow_quantumDilogarithm_mul_prod (r : ℕ) :
     have hexp : 2 * (j + 1) = 1 + (2 * j + 1) := by omega
     rw [hexp, pow_add, pow_one, ← mul_assoc]
     simp
-  have he := rescale_inv_pow_of_rescale_eq (a := q ^ 2)
+  have he := rescale_inv_pow_mul_prod_of_rescale_eq (a := q ^ 2)
     (rescale_quantumDilogarithm q hq) r
   simp only [Units.inv_pow_eq_pow_inv, ← pow_mul, hp] at he
-  rw [he, mul_right_comm, ← Finset.prod_mul_distrib]
-  have hcancel : ∀ j : ℕ, Ring.inverse (1 + C ((↑q⁻¹ : R) ^ (2 * j + 1)) * X) *
-      (1 + C ((↑q⁻¹ : R) ^ (2 * j + 1)) * X) = (1 : PowerSeries R) := by
-    intro j
-    exact Ring.inverse_mul_cancel _ (PowerSeries.isUnit_iff_constantCoeff.mpr (by simp))
-  simp only [hcancel, Finset.prod_const_one, one_mul]
+  exact he
 
 /-- Dividing a negative rescaling by the dilogarithm gives the product of inverse linear factors. -/
 theorem rescale_inv_pow_quantumDilogarithm_mul_inv (r : ℕ) :

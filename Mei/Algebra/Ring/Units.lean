@@ -18,8 +18,7 @@ public section
 
 namespace Units
 
-/-- Multiplication by a power of a unit converts an invertible difference of
-opposite powers into an invertible even-power difference from one. -/
+/-- If `q ^ n - q⁻¹ ^ n` is a unit, then so is `(q ^ 2) ^ n - 1`. -/
 theorem isUnit_sq_pow_sub_one {R : Type*} [Ring R] (q : Rˣ) (n : ℕ)
     (h : IsUnit ((q : R) ^ n - ((q⁻¹ : Rˣ) : R) ^ n)) :
     IsUnit (((q : R) ^ 2) ^ n - 1) := by
