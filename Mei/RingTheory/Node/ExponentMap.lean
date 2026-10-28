@@ -50,16 +50,14 @@ theorem exponentLeftMap_map (x : NodeAlgebra R[M] a) :
     exponentLeftMap a' (TauCeti.NodeAlgebra.map (S := S[M]) a x) = ψ (exponentLeftMap a x) := by
   apply (curryAlgEquiv S).injective
   simp only [curry_exponentLeftMap, leftLaurentMap_map,
-    curryAlgEquiv_mapAlgHom]
-  rfl
+    curryAlgEquiv_mapAlgHom_ofId]
 
 /-- Changing coefficients commutes with the right full-exponent chamber map. -/
 theorem exponentRightMap_map (x : NodeAlgebra R[M] a) :
     exponentRightMap a' (TauCeti.NodeAlgebra.map (S := S[M]) a x) = ψ (exponentRightMap a x) := by
   apply (curryAlgEquiv S).injective
   simp only [curry_exponentRightMap, rightLaurentMap_map,
-    curryAlgEquiv_mapAlgHom]
-  rfl
+    curryAlgEquiv_mapAlgHom_ofId]
 
 /-- Incoming lifts retain their normal and tangential exponents under coefficient change. -/
 theorem map_exponentIncomingLift (i : Fin 2) (p : {p : ℤ × M | 0 ≤ p.1})
@@ -68,8 +66,7 @@ theorem map_exponentIncomingLift (i : Fin 2) (p : {p : ℤ × M | 0 ≤ p.1})
       exponentIncomingLift a' i p
         ⟨ψ u, mapAlgHom_mem_gradeBy (Algebra.ofId R S) u.property⟩ := by
   simp only [exponentIncomingLift_apply, map_incomingLift,
-    curryAlgEquiv_mapAlgHom]
-  rfl
+    curryAlgEquiv_mapAlgHom_ofId]
 
 /-- Scalar change is a morphism of slab correspondences retaining both exponent coordinates.
 Its degree maps are identities, so transfers commute component by component. -/

@@ -37,15 +37,35 @@ theorem mapAlgHom_mem_gradeBy (φ : R →ₐ[K] S) {f : M → ι} {i : ι} {u : 
     (hu : u ∈ gradeBy R f i) : mapAlgHom M φ u ∈ gradeBy S f i := by
   exact fun m hm => hu m (Finsupp.support_mapRange (hf := φ.map_zero) hm)
 
+end CoefficientChange
+
+section CurryCoefficientChange
+
+variable {K R S M ι : Type*} [CommSemiring K] [Semiring R] [Semiring S]
+  [Algebra K R] [Algebra K S] [AddMonoid M]
+
 /-- Changing coefficients commutes with currying the two exponent coordinates. -/
 @[simp]
 theorem curryAlgEquiv_mapAlgHom [AddMonoid ι] (x : R[M × ι]) (φ : R →ₐ[K] S) :
-    curryAlgEquiv S (mapAlgHom (M × ι) φ x) =
-      mapAlgHom M (mapAlgHom ι φ) (curryAlgEquiv R x) := by
+    curryAlgEquiv K (mapAlgHom (M × ι) φ x) =
+      mapAlgHom M (mapAlgHom ι φ) (curryAlgEquiv K x) := by
   ext m n
   rfl
 
-end CoefficientChange
+end CurryCoefficientChange
+
+open scoped AlgebraMonoidAlgebra in
+/-- After currying, scalar coefficient change is coefficient change over the
+corresponding monoid algebra. -/
+@[simp]
+theorem curryAlgEquiv_mapAlgHom_ofId {R S M N : Type*} [CommSemiring R]
+    [CommSemiring S] [Algebra R S] [AddCommMonoid M] [AddMonoid N]
+    (x : R[N × M]) :
+    curryAlgEquiv S (mapAlgHom (N × M) (Algebra.ofId R S) x) =
+      mapAlgHom N (Algebra.ofId R[M] S[M]) (curryAlgEquiv R x) := by
+  -- Currying ignores its scalar annotation, and the scoped algebra map on
+  -- monoid algebras is pointwise coefficient change over the original scalars.
+  exact curryAlgEquiv_mapAlgHom x (Algebra.ofId R S)
 
 variable {R M N : Type*} [CommSemiring R] [AddMonoid M]
 
