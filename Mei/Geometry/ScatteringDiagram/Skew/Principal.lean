@@ -20,7 +20,8 @@ with exactly the same finite cutoffs and no saturation assumption.
 
 The normalized principal normal evaluates a character at the normalized vector
 in `N°`. For a nonzero unfrozen exponent it is primitive in the principal dual lattice.
-It annihilates the principal exponent of its own degree.
+It annihilates the principal exponent of its own degree. The projected normal on
+the character lattice pulls back to this principal normal.
 These are the lattice data for the principal coefficient realization of
 Gross–Hacking–Keel–Kontsevich, *Canonical bases for cluster algebras*, §1 and
 Appendix B, arXiv:1411.1394v2. The integral lift uses Mathlib's
@@ -121,6 +122,41 @@ theorem principalNormal_eq_zero_iff (n : D.unfrozen) :
   · rintro rfl
     apply LinearMap.ext
     intro x
+    simp
+
+/-- The normalized integral normal on the projected character lattice. It evaluates
+a character at `κ(n)n` and is defined even for a radical degree. -/
+def projectedPrincipalNormal (n : D.unfrozen) : Module.Dual ℤ (Module.Dual ℤ D.sublattice) :=
+  Module.Dual.eval ℤ D.sublattice (D.sublattice.toAddSubgroup.rayVector n)
+
+/-- Evaluation of the projected normal on a character. -/
+@[simp]
+theorem projectedPrincipalNormal_apply (n : D.unfrozen) (φ : Module.Dual ℤ D.sublattice) :
+    D.projectedPrincipalNormal n φ =
+      φ (D.sublattice.toAddSubgroup.rayVector n) := (rfl)
+
+/-- The projected normal pulls back to the principal cylinder normal. -/
+@[simp]
+theorem projectedPrincipalNormal_comp_fst (n : D.unfrozen) :
+    (D.projectedPrincipalNormal n).toAddMonoidHom.comp
+        (AddMonoidHom.fst (Module.Dual ℤ D.sublattice) D.unfrozen) =
+      (D.principalNormal n).toAddMonoidHom := by
+  ext x
+  simp
+
+/-- A nonzero degree has a nonzero projected normal, independently of degeneracy
+of the skew form. -/
+@[simp]
+theorem projectedPrincipalNormal_eq_zero_iff (n : D.unfrozen) :
+    D.projectedPrincipalNormal n = 0 ↔ n = 0 := by
+  constructor
+  · intro h
+    apply (D.principalNormal_eq_zero_iff n).mp
+    apply LinearMap.ext
+    intro x
+    simpa using LinearMap.congr_fun h x.1
+  · rintro rfl
+    ext φ
     simp
 
 /-- Normal evaluation on a lifted exponent is the normalized skew pairing. -/
