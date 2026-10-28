@@ -43,6 +43,19 @@ class IsFiltrationRaising (d : PositiveDegrees N) (ℒ : N → Submodule R L)
     x ∈ d.degreeSubmodule ℒ a → m ∈ F.submodule b →
       ⁅x, m⁆ ∈ F.submodule (a + b + 1)
 
+/-- Restricting a filtration-raising action to a Lie subalgebra preserves the
+filtration bound for the inverse-image homogeneous pieces. -/
+instance IsFiltrationRaising.lieSubalgebra (d : PositiveDegrees N)
+    (ℒ : N → Submodule R L) (F : ModuleFiltration R M)
+    [IsFiltrationRaising d ℒ F] (K : LieSubalgebra R L) :
+    IsFiltrationRaising d (fun n => (ℒ n).comap K.incl.toLinearMap) F where
+  lie_mem {a b x m} hx hm := by
+    have hle : d.degreeSubmodule (fun n => (ℒ n).comap K.incl.toLinearMap) a ≤
+        (d.degreeSubmodule ℒ a).comap K.incl.toLinearMap := by
+      rw [d.degreeSubmodule_def]
+      exact iSup_le fun n => Submodule.comap_mono (d.le_degreeSubmodule ℒ n.property)
+    exact IsFiltrationRaising.lie_mem (d := d) (ℒ := ℒ) (F := F) (hle hx) hm
+
 namespace ModuleFiltration
 
 variable (F : ModuleFiltration R M) (d : PositiveDegrees N) (ℒ : N → Submodule R L)

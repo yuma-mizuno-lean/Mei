@@ -267,6 +267,14 @@ scoped instance instIsFiltrationRaising :
         (d.monoid.comap Q.subtype).monoidAlgebraIdeal (d.degree.comp Q.subtype)
           (a + b + 1) |>.add_mem hx hy
 
+/-- Restricting the logarithmic coefficient action to any character domain
+preserves its positive-increment filtration bound. -/
+scoped instance instIsFiltrationRaisingTropicalSubalgebra (U : Submodule R (Λ →+ R)) :
+    IsFiltrationRaising d (LogarithmicVectorField.tropicalSubalgebraGrading ρ U d)
+      ((filtration (R := R) d Q).toModuleFiltration R) := by
+  rw [LogarithmicVectorField.tropicalSubalgebraGrading_def]
+  infer_instance
+
 end TropicalVertexCoefficientAction
 
 end Mei
