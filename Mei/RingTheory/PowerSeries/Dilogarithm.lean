@@ -14,8 +14,8 @@ import Mathlib.Algebra.Algebra.Rat
 
 Over a `ℚ`-algebra, `negDilogNeg A` is the formal power series
 `-Li₂(-X) = ∑_{n ≥ 1} (-1)^(n+1) Xⁿ / n² = X - X²/4 + X³/9 - ⋯`.
-It is the unique power series without constant term whose logarithmic derivative
-`X · d/dX` is Mathlib's `PowerSeries.log A = log(1 + X)`.
+It is the unique power series `f` without constant term with `X · d/dX f` equal to
+Mathlib's `PowerSeries.log A = log(1 + X)`.
 
 Its coefficients are the logarithmic coefficients of the dilogarithm elements
 `Ψ[n] = exp(∑_{j ≥ 1} (-1)^(j+1) X_{jn} / j²)` of cluster scattering diagrams.
@@ -63,7 +63,7 @@ theorem map_negDilogNeg {A' : Type*} [CommRing A'] [Algebra ℚ A'] (f : A →+*
   simp only [coeff_map, coeff_negDilogNeg]
   split_ifs <;> simp [RingHom.map_rat_algebraMap]
 
-/-- The logarithmic derivative of `-Li₂(-X)` is `log(1 + X)`. -/
+/-- `X · d/dX` applied to `-Li₂(-X)` is `log(1 + X)`. -/
 theorem X_mul_derivative_negDilogNeg : X * d⁄dX (negDilogNeg A) = log A := by
   ext n
   cases n with
@@ -76,8 +76,8 @@ theorem X_mul_derivative_negDilogNeg : X * d⁄dX (negDilogNeg A) = log A := by
     congr 1
     field_simp
 
-/-- `-Li₂(-X)` is the power series without constant term whose logarithmic derivative is
-`log(1 + X)`. -/
+/-- `-Li₂(-X)` is the power series `f` without constant term with
+`X · d/dX f = log(1 + X)`. -/
 theorem eq_negDilogNeg_iff (f : A⟦X⟧) :
     f = negDilogNeg A ↔ constantCoeff f = 0 ∧ X * d⁄dX f = log A := by
   refine ⟨fun h => h ▸ ⟨constantCoeff_negDilogNeg, X_mul_derivative_negDilogNeg⟩, ?_⟩
