@@ -21,6 +21,7 @@ namespace Module.Basis
 
 /-- The image of a lattice vector is the linear combination of the basis images
 with its integral coordinates cast into the target scalar ring. -/
+@[simp]
 theorem fintypeLinearCombination_repr_cast
     {ι N R V : Type*} [Fintype ι] [AddCommGroup N] [Ring R]
     [AddCommGroup V] [Module R V] (b : Basis ι ℤ N) (i : N →+ V) (n : N) :
