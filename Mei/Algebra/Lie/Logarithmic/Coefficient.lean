@@ -1,0 +1,224 @@
+/-
+Copyright (c) 2026 Mei contributors. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Codex
+-/
+module
+
+public import Mei.Algebra.Lie.Logarithmic.Grading
+public import Mei.Algebra.MonoidAlgebra.Filtration
+public import Mei.Algebra.Lie.Filtered.BCH
+
+/-!
+# Tropical vertex actions on coefficient monoids
+
+Positive formal logarithmic fields act on `R[Q]` for every additive coefficient
+monoid `Q` containing the positive monoid. The action retains the formal Lie
+algebra even when some characters act trivially. It raises the allowed-increment
+filtration, so its BCH group acts on the completed coefficient algebra.
+
+The construction uses `LogarithmicVectorField.action`, the monomial derivations
+and filtration bounds in `Mei.Algebra.MonoidAlgebra.Filtration`, and the existing
+filtered BCH action. The coefficient action is that of Mandel, *Scattering
+diagrams, theta functions, and refined tropical curve counts*, Example 2.1(i),
+arXiv:1503.06183v5.
+-/
+
+public section
+
+noncomputable section
+
+namespace Mei
+
+open _root_.AddMonoidAlgebra
+
+variable {R Γ Λ : Type*} [CommRing R] [AddCommMonoid Γ] [AddCommMonoid Λ]
+  (d : PositiveDegrees Γ) (ρ : Γ →+ Λ) (Q : AddSubmonoid Γ)
+
+namespace LogarithmicVectorField
+
+private def coefficientLinear : LogarithmicVectorField R Γ Λ ρ →ₗ[R]
+    Derivation R R[Q] R[Q] := by
+  classical
+  exact (Finsupp.lsum R fun n => if hn : n ∈ Q then
+    (AddMonoidAlgebra.monomialDerivation (⟨n, hn⟩ : Q)).comp
+      ((addMonoidHomLequivNat R).symm.toLinearMap.comp
+        ((LinearMap.lcomp R R (ρ.comp Q.subtype).toNatLinearMap).comp
+          (addMonoidHomLequivNat R).toLinearMap))
+    else 0).comp (toFinsupp ρ).toLinearMap
+
+private theorem coefficientLinear_single {n : Γ} (hn : n ∈ Q) (m : Λ →+ R) :
+    coefficientLinear (R := R) ρ Q (single ρ n m) =
+      AddMonoidAlgebra.monomialDerivation (⟨n, hn⟩ : Q) (m.comp (ρ.comp Q.subtype)) := by
+  classical
+  simp only [coefficientLinear, LinearMap.comp_apply, LinearEquiv.coe_toLinearMap,
+    toFinsupp_single, Finsupp.lsum_single, dite_eq_left hn]
+  congr 1
+
+private theorem coefficientLinear_mapDomain (hQ : d.monoid ≤ Q)
+    (x : tropicalVertexLieAlgebra (R := R) d ρ) (a : R[Q]) :
+    mapDomainRingHom R Q.subtype (coefficientLinear ρ Q x a) =
+      action ρ x (mapDomainRingHom R Q.subtype a) := by
+  classical
+  induction x using DirectSum.Decomposition.inductionOn
+    (tropicalVertexGrading (R := R) d ρ) with
+  | zero => simp
+  | @homogeneous n x =>
+    by_cases hn : n ∈ d.monoid
+    · obtain ⟨m, hm⟩ := (mem_tropicalVertexGrading_iff d ρ n
+        (x : tropicalVertexLieAlgebra (R := R) d ρ)).mp x.property
+      rw [← hm, coefficientLinear_single ρ Q (hQ hn), action_single]
+      induction a using induction_linear with
+      | zero => simp
+      | add a b ha hb => simp_all [mapDomain_add]
+      | single p r => simp [mapDomainRingHom_apply]
+    · have hx : (x : tropicalVertexLieAlgebra (R := R) d ρ) = 0 := by
+        simpa only [IsPositiveGrading.eq_bot (d := d)
+          (ℒ := tropicalVertexGrading (R := R) d ρ) n (Or.inl hn), Submodule.mem_bot]
+          using x.property
+      simp [hx]
+  | add x y hx hy => simp_all [mapDomain_add]
+
+end LogarithmicVectorField
+
+/-- The tropical vertex Lie algebra acts on any coefficient monoid containing its
+positive degrees, by logarithmic derivations. -/
+def tropicalVertexCoefficientAction (hQ : d.monoid ≤ Q) :
+    tropicalVertexLieAlgebra (R := R) d ρ →ₗ⁅R⁆ Derivation R R[Q] R[Q] :=
+  { (LogarithmicVectorField.coefficientLinear ρ Q).comp
+      (tropicalVertexLieAlgebra d ρ).incl.toLinearMap with
+    map_lie' := by
+      intro x y
+      apply Derivation.ext
+      intro a
+      apply mapDomain_injective Q.subtype_injective
+      simp only [LinearMap.toFun_eq_coe, LinearMap.comp_apply,
+        LieHom.coe_toLinearMap, LieSubalgebra.coe_incl, Derivation.commutator_apply]
+      simp only [← mapDomainRingHom_apply, map_sub]
+      simp only [LogarithmicVectorField.coefficientLinear_mapDomain d ρ Q hQ]
+      simp only [LieSubalgebra.coe_bracket, LieHom.map_lie, Derivation.commutator_apply] }
+
+/-- Embedding coefficients into the ambient monoid algebra intertwines the restricted
+and ordinary formal actions. -/
+theorem mapDomain_tropicalVertexCoefficientAction (hQ : d.monoid ≤ Q)
+    (x : tropicalVertexLieAlgebra (R := R) d ρ) (a : R[Q]) :
+    mapDomainRingHom R Q.subtype (tropicalVertexCoefficientAction d ρ Q hQ x a) =
+      LogarithmicVectorField.action ρ x (mapDomainRingHom R Q.subtype a) :=
+  LogarithmicVectorField.coefficientLinear_mapDomain d ρ Q hQ x a
+
+/-- A homogeneous field acts by its character restricted to the coefficient monoid. -/
+theorem tropicalVertexCoefficientAction_of_homogeneous (hQ : d.monoid ≤ Q)
+    {n : Γ} (hn : n ∈ d.monoid) (x : tropicalVertexLieAlgebra (R := R) d ρ)
+    (m : Λ →+ R) (hx : LogarithmicVectorField.single ρ n m = x.val) :
+    tropicalVertexCoefficientAction d ρ Q hQ x =
+      AddMonoidAlgebra.monomialDerivation (⟨n, hQ hn⟩ : Q) (m.comp (ρ.comp Q.subtype)) := by
+  exact (congrArg (LogarithmicVectorField.coefficientLinear ρ Q) hx).symm.trans
+    (LogarithmicVectorField.coefficientLinear_single ρ Q (hQ hn) m)
+
+/-- A positive tangent generator acts by the restricted monomial logarithmic derivation. -/
+@[simp]
+theorem tropicalVertexCoefficientAction_single (hQ : d.monoid ≤ Q)
+    {n : Γ} (hn : n ∈ d.monoid) (hne : n ≠ 0) (m : Λ →+ R) (hm : m (ρ n) = 0) :
+    tropicalVertexCoefficientAction d ρ Q hQ
+        ⟨LogarithmicVectorField.single ρ n m,
+          single_mem_tropicalVertexLieAlgebra d ρ hn hne m hm⟩ =
+      AddMonoidAlgebra.monomialDerivation (⟨n, hQ hn⟩ : Q) (m.comp (ρ.comp Q.subtype)) :=
+  tropicalVertexCoefficientAction_of_homogeneous d ρ Q hQ hn _ m rfl
+
+namespace TropicalVertexCoefficientAction
+
+/-- The positive-increment filtration on the coefficient monoid algebra. -/
+def filtration : AlgFiltration R[Q] :=
+  (d.monoid.comap Q.subtype).monoidAlgebraFiltration (d.degree.comp Q.subtype)
+
+/-- The filtration is measured by positive increments in `Q`. -/
+@[simp]
+theorem filtration_ideal (k : ℕ) :
+    (filtration (R := R) d Q).ideal k =
+      (d.monoid.comap Q.subtype).monoidAlgebraIdeal (d.degree.comp Q.subtype) k := by
+  rw [filtration, AddSubmonoid.monoidAlgebraFiltration_ideal]
+
+variable [Fact (d.monoid ≤ Q)]
+
+/-- The logarithmic derivation representation, as a Lie action on coefficients.
+Open this scope to select this action. -/
+scoped instance instLieRingModule :
+    LieRingModule (tropicalVertexLieAlgebra (R := R) d ρ) R[Q] :=
+  LieRingModule.compLieHom _ (tropicalVertexCoefficientAction d ρ Q Fact.out)
+
+/-- The logarithmic coefficient action is linear over the coefficient ring. -/
+scoped instance instLieModule :
+    LieModule R (tropicalVertexLieAlgebra (R := R) d ρ) R[Q] :=
+  LieModule.compLieHom _ (tropicalVertexCoefficientAction d ρ Q Fact.out)
+
+/-- The selected Lie action evaluates the coefficient derivation. -/
+@[simp]
+theorem lie_eq (x : tropicalVertexLieAlgebra (R := R) d ρ) (a : R[Q]) :
+    ⁅x, a⁆ = tropicalVertexCoefficientAction d ρ Q Fact.out x a := (rfl)
+
+/-- Logarithmic fields act by derivations of coefficient multiplication. -/
+scoped instance instIsDerivationAction :
+    IsDerivationAction (tropicalVertexLieAlgebra (R := R) d ρ) R[Q] where
+  lie_mul x a b := by simp [lie_eq, Derivation.leibniz, mul_comm]
+
+/-- A positive field above cutoff `a` raises coefficient order by `a + 1`. -/
+scoped instance instIsFiltrationRaising :
+    IsFiltrationRaising d (tropicalVertexGrading (R := R) d ρ)
+      ((filtration (R := R) d Q).toModuleFiltration R) where
+  lie_mem {a b x f} hx hf := by
+    classical
+    have hQ : d.monoid ≤ Q := Fact.out
+    simp only [filtration_ideal, Submodule.restrictScalars_mem] at hf ⊢
+    rw [d.degreeSubmodule_def (tropicalVertexGrading (R := R) d ρ) a] at hx
+    refine Submodule.iSup_induction
+      (fun n : {n : Γ // (a : ℤ) < d.degree n} => tropicalVertexGrading (R := R) d ρ n)
+      (motive := fun x => ⁅x, f⁆ ∈
+        (d.monoid.comap Q.subtype).monoidAlgebraIdeal (d.degree.comp Q.subtype)
+          (a + b + 1)) hx ?_ (by simp) ?_
+    · intro n x hx
+      by_cases hn : n.val ∈ d.monoid
+      · obtain ⟨m, hm⟩ := (mem_tropicalVertexGrading_iff d ρ n x).mp hx
+        rw [lie_eq, tropicalVertexCoefficientAction_of_homogeneous d ρ Q hQ hn x m hm]
+        have hi : (⟨n.val, hQ hn⟩ : Q) ∈ d.monoid.comap Q.subtype := hn
+        have hd : ((a + 1 : ℕ) : ℤ) ≤
+            (d.degree.comp Q.subtype) (⟨n.val, hQ hn⟩ : Q) := by
+          simpa only [AddMonoidHom.comp_apply, AddSubmonoid.subtype_apply, Nat.cast_add,
+            Nat.cast_one] using (Int.add_one_le_iff.mpr n.property)
+        simpa only [Nat.add_assoc, Nat.add_comm 1 b] using
+          (d.monoid.comap Q.subtype).monomialDerivation_mem_monoidAlgebraIdeal
+            (d.degree.comp Q.subtype) hi (m.comp (ρ.comp Q.subtype)) hd hf
+      · have hx0 : x = 0 := by
+          simpa only [IsPositiveGrading.eq_bot (d := d)
+            (ℒ := tropicalVertexGrading (R := R) d ρ) n (Or.inl hn), Submodule.mem_bot]
+            using hx
+        simp [hx0]
+    · intro x y hx hy
+      simpa only [add_lie] using
+        (d.monoid.comap Q.subtype).monoidAlgebraIdeal (d.degree.comp Q.subtype)
+          (a + b + 1) |>.add_mem hx hy
+
+variable [Algebra ℚ R] [DecidableEq Γ]
+
+/-- The completed tropical vertex group acts by algebra automorphisms on the
+completion of the coefficient monoid algebra. -/
+def completedAction :
+    d.completedBCHGroup (tropicalVertexGrading (R := R) d ρ) →*
+      ((filtration (R := R) d Q).completion ≃ₐ[R] (filtration (R := R) d Q).completion) :=
+  (filtration (R := R) d Q).completedBCHAction (R := R) d (tropicalVertexGrading (R := R) d ρ)
+
+/-- At order `k`, the completed coefficient action is the finite exponential of
+the order-`k` logarithm, evaluated on the order-`k` coefficient. -/
+@[simp]
+theorem projection_completedAction
+    (g : d.completedBCHGroup (tropicalVertexGrading (R := R) d ρ))
+    (a : (filtration (R := R) d Q).completion) (k : ℕ) :
+    (filtration (R := R) d Q).projection k (completedAction d ρ Q g a) =
+      (filtration (R := R) d Q).truncatedExpLieAction (R := R) d
+        (tropicalVertexGrading (R := R) d ρ) k
+        (BCHGroup.log (CompletedGroup.projection k g)) ((filtration (R := R) d Q).projection k a) :=
+  (filtration (R := R) d Q).projection_completedBCHAction (R := R) d
+    (tropicalVertexGrading (R := R) d ρ) g a k
+
+end TropicalVertexCoefficientAction
+
+end Mei

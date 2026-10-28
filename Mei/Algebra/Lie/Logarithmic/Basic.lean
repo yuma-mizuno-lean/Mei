@@ -47,8 +47,9 @@ variable {R Γ Λ} (ρ : Γ →+ Λ)
 instance : AddCommGroup (LogarithmicVectorField R Γ Λ ρ) :=
   inferInstanceAs (AddCommGroup (Γ →₀ (Λ →+ R)))
 
-instance : Module R (LogarithmicVectorField R Γ Λ ρ) :=
-  inferInstanceAs (Module R (Γ →₀ (Λ →+ R)))
+instance {S : Type*} [Semiring S] [Module S R] :
+    Module S (LogarithmicVectorField R Γ Λ ρ) :=
+  inferInstanceAs (Module S (Γ →₀ (Λ →+ R)))
 
 /-- The coefficient description of formal logarithmic vector fields. -/
 def toFinsupp : LogarithmicVectorField R Γ Λ ρ ≃ₗ[R] Γ →₀ (Λ →+ R) :=
@@ -201,6 +202,12 @@ instance : LieRing (LogarithmicVectorField R Γ Λ ρ) where
 
 instance : LieAlgebra R (LogarithmicVectorField R Γ Λ ρ) where
   lie_smul t x y := by simp [bracket_def, map_smul]
+
+/-- Rational scalars act on formal fields through the coefficient algebra. -/
+instance [Algebra ℚ R] : LieAlgebra ℚ (LogarithmicVectorField R Γ Λ ρ) where
+  lie_smul q x y := by
+    simpa only [IsScalarTower.algebraMap_smul] using
+      lie_smul (algebraMap ℚ R q) x y
 
 private def actionLinear : LogarithmicVectorField R Γ Λ ρ →ₗ[R]
     Derivation R R[Γ] R[Γ] :=
