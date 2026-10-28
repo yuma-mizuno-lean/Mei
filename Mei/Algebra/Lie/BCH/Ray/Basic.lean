@@ -67,6 +67,24 @@ theorem mem_completedRaySubgroup (w : SupportedRay d) (g : d.completedBCHGroup �
   simp only [completedRaySubgroup, Subgroup.mem_iInf]
   exact forall_congr' fun k => LieSubalgebra.mem_bchSubgroup _ _
 
+/-- A ray with zero Lie algebra has no nonidentity completed labels. -/
+theorem completedRaySubgroup_eq_bot_of_rayLieSubalgebra_eq_bot (w : SupportedRay d)
+    (hw : rayLieSubalgebra ℒ w = ⊥) : d.completedRaySubgroup ℒ w = ⊥ := by
+  apply le_antisymm _ bot_le
+  intro g hg
+  rw [Subgroup.mem_bot]
+  apply CompletedGroup.ext
+  intro k
+  apply BCHGroup.log_injective (L := d.truncatedLie ℒ k)
+  have hm := (d.mem_completedRaySubgroup ℒ w g).mp hg k
+  rw [← map_rayLieSubalgebra_mkQ, hw] at hm
+  obtain ⟨x, hx, he⟩ := (LieSubalgebra.mem_map _ _ _).mp hm
+  rw [LieSubalgebra.mem_bot] at hx
+  subst x
+  rw [map_one]
+  exact he.symm.trans (((d.degreeIdeal ℒ k).mkQ.map_zero).trans
+    (BCHGroup.log_one (L := d.truncatedLie ℒ k)).symm)
+
 /-- Exponentials of elements of the original ray Lie algebra lie in its completed subgroup. -/
 theorem expToCompletion_mem_completedRaySubgroup {w : SupportedRay d} {x : L}
     (hx : x ∈ rayLieSubalgebra ℒ w) :

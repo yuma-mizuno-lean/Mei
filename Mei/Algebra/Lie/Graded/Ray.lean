@@ -59,6 +59,21 @@ theorem rayLieSubalgebra_le_iff (w : SupportedRay d) (K : LieSubalgebra R L) :
   simpa only [rayLieSubalgebra, SupportedRay.mem_degreeSemigroup] using
     supportedLieSubalgebra_le_iff ℒ w.degreeSemigroup K
 
+/-- If only one homogeneous piece on a ray can be nonzero, that piece is the entire ray
+Lie algebra. The distinguished degree need not be primitive. -/
+theorem rayLieSubalgebra_eq_of_single_degree (w : SupportedRay d) (n : N)
+    (hn : n ∈ w.rayDegrees)
+    (hvan : ∀ m ∈ w.rayDegrees, m ≠ n → ℒ m = ⊥) :
+    (rayLieSubalgebra ℒ w).toSubmodule = ℒ n := by
+  rw [rayLieSubalgebra_toSubmodule]
+  apply le_antisymm
+  · refine iSup_le fun m => ?_
+    by_cases hm : (m : N) = n
+    · simpa only [hm] using (le_refl (ℒ n))
+    · rw [hvan m m.property hm]
+      exact bot_le
+  · exact le_iSup_of_le ⟨n, hn⟩ le_rfl
+
 /-- Abelian rays require commutation within each supported ray, not between distinct rays. -/
 class IsAbelianRays (d : PositiveDegrees N) (ℒ : N → Submodule R L)
     [SetLike.GradedBracket ℒ ℒ] : Prop where
