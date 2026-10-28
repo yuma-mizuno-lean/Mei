@@ -41,15 +41,6 @@ variable {ι κ R M N : Type*} [AddCommMonoid ι] [AddCommMonoid κ]
   (hF : ∀ k, F.submodule (k + 1) = d.degreeSubmodule ℳ k)
   (hG : ∀ k, G.submodule (k + 1) = e.degreeSubmodule 𝓝 k)
 
-/-- A finite projection is reconstructed from the completed components in its cutoff. -/
-theorem projection_eq_sum_completionComponent
-    (hℳ : ∀ n, n ∉ d.monoid → ℳ n = ⊥) (k : ℕ) (x : F.completion) :
-    F.projection k x = Submodule.Quotient.mk
-      (∑ n ∈ (d.finite_cutoff k).toFinset, (d.completionComponent ℳ F hF n x : M)) := by
-  have h := d.projection_completionEquivPi_symm ℳ F hF hℳ
-    (d.completionEquivPi ℳ F hF hℳ x) k
-  simpa only [LinearEquiv.symm_apply_apply, completionEquivPi_apply] using h
-
 variable (f : M →ₗ[R] N) (σ : ι → κ)
   (hhom : ∀ n x, x ∈ ℳ n → f x ∈ 𝓝 (σ n))
   (μ : ℕ → ℕ) (hμ : Monotone μ)

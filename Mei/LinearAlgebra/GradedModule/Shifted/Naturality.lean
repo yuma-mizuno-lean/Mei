@@ -69,18 +69,7 @@ theorem shiftedHomogeneousComponent_completionMap_eq_sum (j : Γ') (k : ℕ)
     (shiftedGrading ℳ d.monoid p) (shiftedGrading 𝓝 e.monoid (T p)) F G
     (d.shiftedFiltration_succ ℳ p) (e.shiftedFiltration_succ 𝓝 (T p))
     f T hrel μ hμ hf (fun n hn => shiftedGrading_eq_bot ℳ d.monoid p hn) j k hj x
-  have ht :
-      (e.completionComponent (shiftedGrading 𝓝 e.monoid (T p)) G
-        (e.shiftedFiltration_succ 𝓝 (T p)) j (F.completionMap G f μ hμ hf x) : N) =
-      (e.shiftedHomogeneousComponent 𝓝 (T p) (T p + j)
-        (F.completionMap G f μ hμ hf x) : N) := by
-    rw [e.completionComponent_eq_quotientComponent _ G _ j k hj,
-      e.shiftedHomogeneousComponent_eq 𝓝 (T p) (T p + j) k (by simpa using hj)]
-    obtain ⟨b, hb⟩ := (G.submodule (k + 1)).mkQ_surjective
-      (G.projection k (F.completionMap G f μ hμ hf x))
-    rw [← hb, Submodule.mkQ_apply, quotientComponent_mk, shiftedQuotientComponent_mk]
-    exact coe_decompose_shiftedGrading 𝓝 e.monoid (T p) b j
-  rw [← ht]
+  rw [← e.coe_completionComponent_shiftedGrading 𝓝 (T p)]
   calc
     _ = ∑ n ∈ (d.finite_cutoff (μ k)).toFinset with T n = j,
         (f (d.completionComponent (shiftedGrading ℳ d.monoid p) F
@@ -89,15 +78,8 @@ theorem shiftedHomogeneousComponent_completionMap_eq_sum (j : Γ') (k : ℕ)
         (T p) => (a : N)) h
     _ = _ := by
       apply Finset.sum_congr rfl
-      intro n hn
+      intro n _
       rw [hcoe]
-      congr 1
-      have hn' : d.degree n ≤ μ k := ((d.mem_cutoff).mp
-        (Set.Finite.mem_toFinset _ |>.mp (Finset.mem_filter.mp hn).1)).2
-      rw [d.completionComponent_eq_quotientComponent _ F _ n (μ k) hn',
-        d.shiftedHomogeneousComponent_eq ℳ p (p + n) (μ k) (by simpa using hn')]
-      obtain ⟨b, hb⟩ := (F.submodule (μ k + 1)).mkQ_surjective (F.projection (μ k) x)
-      rw [← hb, Submodule.mkQ_apply, quotientComponent_mk, shiftedQuotientComponent_mk]
-      exact coe_decompose_shiftedGrading ℳ d.monoid p b n
+      rw [d.coe_completionComponent_shiftedGrading ℳ p]
 
 end Mei.PositiveDegrees

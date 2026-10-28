@@ -78,6 +78,17 @@ def shiftedHomogeneousComponent (q : Γ) : d.ShiftedCoefficients ℳ p →ₗ[R]
     (d.completionComponent (shiftedGrading ℳ d.monoid p) (d.shiftedFiltration ℳ p)
       (d.shiftedFiltration_succ ℳ p) (q - p))
 
+/-- Relative completed components agree with ambient components after adding the shift. -/
+@[simp]
+theorem coe_completionComponent_shiftedGrading (n : Γ) (x : d.ShiftedCoefficients ℳ p) :
+    (d.completionComponent (shiftedGrading ℳ d.monoid p) (d.shiftedFiltration ℳ p)
+      (d.shiftedFiltration_succ ℳ p) n x : M) =
+      (d.shiftedHomogeneousComponent ℳ p (p + n) x : M) := by
+  have hn : p + n - p = n := by abel
+  simp only [shiftedHomogeneousComponent, LinearMap.comp_apply,
+    coe_shiftedPieceToAmbient]
+  rw [hn]
+
 /-- A completed component can be read at any cutoff that retains its relative degree. -/
 theorem shiftedHomogeneousComponent_eq (q : Γ) (k : ℕ) (hk : d.degree (q - p) ≤ k)
     (x : d.ShiftedCoefficients ℳ p) :

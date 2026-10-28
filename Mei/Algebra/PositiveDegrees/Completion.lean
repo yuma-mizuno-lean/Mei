@@ -209,4 +209,13 @@ theorem projection_completionEquivPi_symm (x : ∀ n, ℳ n) (k : ℕ) :
       simp only [piToQuotient, LinearMap.comp_apply, Submodule.mkQ_apply,
         finiteApprox, LinearMap.sum_apply, LinearMap.proj_apply, Submodule.subtype_apply]
 
+include hℳ in
+/-- A finite projection is reconstructed from the completed components in its cutoff. -/
+theorem projection_eq_sum_completionComponent (k : ℕ) (x : F.completion) :
+    F.projection k x = Submodule.Quotient.mk
+      (∑ n ∈ (d.finite_cutoff k).toFinset, (d.completionComponent ℳ F hF n x : M)) := by
+  have h := d.projection_completionEquivPi_symm ℳ F hF hℳ
+    (d.completionEquivPi ℳ F hF hℳ x) k
+  simpa only [LinearEquiv.symm_apply_apply, completionEquivPi_apply] using h
+
 end Mei.PositiveDegrees
