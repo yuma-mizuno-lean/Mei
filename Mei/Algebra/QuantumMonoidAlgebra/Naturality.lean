@@ -8,6 +8,7 @@ module
 public import Mei.Algebra.QuantumMonoidAlgebra.Action
 public import Mei.Algebra.QuantumMonoidAlgebra.Completion
 public import Mei.Algebra.Lie.BCH.RestrictScalars
+public import Mei.RingTheory.FilteredAlgebra.Exp.Map
 public import Mathlib.Algebra.Algebra.Hom.Rat
 
 /-!
@@ -26,10 +27,10 @@ Finite coefficient inclusions commute with these maps, so coefficient logarithms
 and their exponentials commute with completion maps. The conjugation formula
 `CoefficientAction.completedBCHAction_apply` then gives action equivariance.
 
-We use Mathlib's `RingHom.toRatAlgHom` and `IsNilpotent.map_exp`, and Mei's
-scalar-restriction and finite-quotient APIs. The quantum inner-action convention
-follows Mandel, *Scattering diagrams, theta functions, and refined tropical curve
-counts*, Example 2.1(iii), arXiv:1503.06183v5.
+We use Mathlib's `RingHom.toRatAlgHom` and Mei's scalar-restriction,
+finite-quotient and completed-exponential naturality APIs. The quantum inner-action
+convention follows Mandel, *Scattering diagrams, theta functions, and refined
+tropical curve counts*, Example 2.1(iii), arXiv:1503.06183v5.
 -/
 
 public section
@@ -140,25 +141,29 @@ inner action, even when specialization kills the label. -/
 theorem mapPositiveCompletion_completedExp_coefficientLog (g : d.completedBCHGroup ℒ) :
     Φ ((F).completedExp (completedCoefficientLog q β d g)) =
       (G).completedExp (completedCoefficientLog q' β' e (Ψ g)) := by
-  apply (G).completion_ext
-  intro k
-  let Q := Ideal.quotientMap ((G).ideal (k + 1)) ψ
-    (positiveMap_ideal_le d e T φ h k)
-  let x := completedCoefficientLog q β d g
-  let y := completedCoefficientLog q' β' e (Ψ g)
-  have hc : Q ((F).projection (T.modulus k) x) = (G).projection k y :=
-    (projection_mapPositiveCompletion d e T φ h k x).symm.trans
-      (congrArg ((G).projection k)
-        (mapPositiveCompletion_completedCoefficientLog d e T φ h g))
-  calc
-    _ = Q ((F).projection (T.modulus k) ((F).completedExp x)) :=
-      projection_mapPositiveCompletion d e T φ h k _
-    _ = Q (IsNilpotent.exp ((F).projection (T.modulus k) x)) :=
-      congrArg Q ((F).projection_completedExp x (T.modulus k))
-    _ = IsNilpotent.exp (Q ((F).projection (T.modulus k) x)) :=
-      ((F).isNilpotent_projection x.property (T.modulus k)).map_exp Q
-    _ = IsNilpotent.exp ((G).projection k y) := congrArg IsNilpotent.exp hc
-    _ = _ := ((G).projection_completedExp y k).symm
+  have h₁ : (F).ideal 1 ≤ ((G).ideal 1).comap ψ := by
+    apply positiveMap_ideal_le_of_degree φ T.toAddMonoidHom h d.monoid e.monoid
+      (fun _ hn => T.map_mem hn) d.degree e.degree
+      (fun _ hn => d.degree_nonneg hn) (fun _ hn => e.degree_nonneg hn)
+    intro n hn hd
+    have hn0 : n ≠ 0 := by
+      intro hz
+      simp only [hz, map_zero] at hd
+      omega
+    exact e.degree_pos (T.map_mem hn) (T.map_ne_zero hn hn0)
+  have hΦ (x : (F).completion) :
+      Φ x = (F).mapCompletion (G) ψ T.modulus T.monotone_modulus
+        (positiveMap_ideal_le d e T φ h) x := by
+    apply (G).completion_ext
+    intro k
+    exact (projection_mapPositiveCompletion d e T φ h k x).trans
+      ((F).projection_mapCompletion (G) ψ T.modulus T.monotone_modulus
+        (positiveMap_ideal_le d e T φ h) k x).symm
+  exact (hΦ _).trans
+    (((F).mapCompletion_completedExp (G) ψ T.modulus T.monotone_modulus
+      (positiveMap_ideal_le d e T φ h) h₁ (completedCoefficientLog q β d g)).trans
+        (congrArg (G).completedExp (Subtype.ext ((hΦ _).symm.trans
+          (mapPositiveCompletion_completedCoefficientLog d e T φ h g)))))
 
 /-- Simultaneous coefficient and exponent transport intertwines the completed
 quantum inner actions. Both the label and coefficient may be arbitrary completed
