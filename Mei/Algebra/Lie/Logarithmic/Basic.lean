@@ -246,5 +246,26 @@ theorem action_single_apply (n : Γ) (m : Λ →+ R) (p : Γ) (r : R) :
       _root_.AddMonoidAlgebra.single (n + p) (r * m (ρ p)) := by
   simp
 
+section Cancel
+
+variable [IsRightCancelAdd Γ]
+
+/-- A coefficient of the action on a monomial recovers the corresponding formal
+character, evaluated on the spatial exponent of the monomial. -/
+@[simp]
+theorem action_coeff (x : LogarithmicVectorField R Γ Λ ρ) (n p : Γ) (r : R) :
+    (action ρ x (_root_.AddMonoidAlgebra.single p r)).coeff (n + p) =
+      r * toFinsupp ρ x n (ρ p) := by
+  induction x using induction_on ρ with
+  | h0 => simp
+  | hs n' m =>
+    by_cases h : n' = n
+    · subst n'; simp
+    · have hsum : n' + p ≠ n + p := fun he => h (add_right_cancel he)
+      simp [h, hsum]
+  | ha x y hx hy => simp [hx, hy, mul_add]
+
+end Cancel
+
 end LogarithmicVectorField
 end Mei

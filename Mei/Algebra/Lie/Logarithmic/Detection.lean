@@ -17,8 +17,8 @@ determine a formal field. In a positively graded tangent algebra, a field surviv
 a given cutoff has a nonzero monomial observation in a Lie degree at or below it.
 This supplies the coefficient detection needed for faithful completed actions.
 
-The coefficient calculation follows `LogarithmicVectorField.realization_coeff`,
-using cancellation of exponents for the ordinary action. Detection uses Mathlib's
+The coefficient calculation `LogarithmicVectorField.action_coeff` follows
+`LogarithmicVectorField.realization_coeff`. Detection uses Mathlib's
 `LinearMap.liftBaseChange` and the universal property of linear span.
 The faithfulness question comes from Mandel, *Scattering diagrams, theta functions,
 and refined tropical curve counts*, Example 2.1(i), arXiv:1503.06183v5.
@@ -35,27 +35,6 @@ namespace Mei.LogarithmicVectorField
 
 variable {R Γ Λ : Type*} [CommRing R] [AddCancelCommMonoid Γ]
 
-section Monoid
-
-variable [AddCommMonoid Λ] (ρ : Γ →+ Λ)
-
-/-- A coefficient of the action on a monomial recovers the corresponding formal
-character, evaluated on the spatial exponent of the monomial. -/
-@[simp]
-theorem action_coeff (x : LogarithmicVectorField R Γ Λ ρ) (n p : Γ) (r : R) :
-    (action ρ x (_root_.AddMonoidAlgebra.single p r)).coeff (n + p) =
-      r * toFinsupp ρ x n (ρ p) := by
-  induction x using induction_on ρ with
-  | h0 => simp
-  | hs n' m =>
-    by_cases h : n' = n
-    · subst n'; simp
-    · have hsum : n' + p ≠ n + p := fun he => h (add_right_cancel he)
-      simp [h, hsum]
-  | ha x y hx hy => simp [hx, hy, mul_add]
-
-end Monoid
-
 section Rational
 
 variable [AddCommGroup Λ] [Algebra ℚ R] (ρ : Γ →+ Λ) (P : Set Γ)
@@ -65,26 +44,20 @@ include hspan
 
 /-- Every nonzero formal character is observed on some monomial whose spatial
 exponent belongs to a rationally spanning test family. -/
-theorem exists_action_single_coeff_ne_zero (x : LogarithmicVectorField R Γ Λ ρ)
+theorem exists_action_apply_single_coeff_ne_zero (x : LogarithmicVectorField R Γ Λ ρ)
     {n : Γ} (hn : toFinsupp ρ x n ≠ 0) :
     ∃ p ∈ P, (action ρ x (_root_.AddMonoidAlgebra.single p 1)).coeff (n + p) ≠ 0 := by
   by_contra h
   push Not at h
   let f := (toFinsupp ρ x n).toIntLinearMap.liftBaseChange ℚ
-  have hker : Submodule.span ℚ ((fun p : Γ => (1 : ℚ) ⊗ₜ[ℤ] ρ p) '' P) ≤
-      LinearMap.ker f := by
-    rw [Submodule.span_le]
-    rintro z ⟨p, hp, rfl⟩
-    simpa [f] using h p hp
-  rw [hspan, top_le_iff, LinearMap.ker_eq_top] at hker
+  have hf : f = 0 := LinearMap.ext_on hspan (by rintro _ ⟨p, hp, rfl⟩; simpa [f] using h p hp)
   apply hn
   ext l
-  have he := LinearMap.congr_fun hker ((1 : ℚ) ⊗ₜ[ℤ] l)
-  simpa [f] using he
+  simpa [f] using LinearMap.congr_fun hf ((1 : ℚ) ⊗ₜ[ℤ] l)
 
 /-- Monomial tests with rationally spanning spatial exponents determine a formal field.
 The test outputs remain in the ambient monoid algebra. -/
-theorem action_single_injective : Function.Injective
+theorem action_apply_single_injective : Function.Injective
     (fun x : LogarithmicVectorField R Γ Λ ρ =>
       fun p : P => action ρ x (_root_.AddMonoidAlgebra.single p.val 1)) := by
   intro x y h
@@ -92,7 +65,7 @@ theorem action_single_injective : Function.Injective
   ext n l
   have hz : toFinsupp ρ (x - y) n = 0 := by
     by_contra hn
-    obtain ⟨p, hp, hne⟩ := exists_action_single_coeff_ne_zero ρ P hspan (x - y) hn
+    obtain ⟨p, hp, hne⟩ := exists_action_apply_single_coeff_ne_zero ρ P hspan (x - y) hn
     have he := congrFun h ⟨p, hp⟩
     apply hne
     simp only [map_sub, Derivation.sub_apply, he, sub_self]
@@ -116,9 +89,11 @@ variable {R Γ Λ : Type*} [CommRing R] [Algebra ℚ R]
 
 include hspan
 
-/-- A positive tangent field surviving order `k` has a nonzero monomial observation
-in a nonzero allowed Lie degree of order at most `k`. -/
-theorem exists_action_single_coeff_ne_zero_of_not_mem_degreeSubmodule
+/-- If the spatial exponents of `d.monoid` span `ℚ ⊗[ℤ] Λ`, then a positive tangent
+field with a nonzero homogeneous component of degree at most `k` (that is, not in
+`degreeSubmodule k`) has a nonzero monomial coefficient at a nonzero positive degree
+`n` with `d.degree n ≤ k`, tested on some `p ∈ d.monoid`. -/
+theorem exists_action_apply_single_coeff_ne_zero_of_notMem_degreeSubmodule
     {k : ℕ} (x : tropicalVertexLieAlgebra (R := R) d ρ)
     (hx : x ∉ d.degreeSubmodule (tropicalVertexGrading d ρ) k) :
     ∃ n ∈ d.monoid, n ≠ 0 ∧ d.degree n ≤ k ∧
@@ -142,7 +117,8 @@ theorem exists_action_single_coeff_ne_zero_of_not_mem_degreeSubmodule
   have hpos : n ∈ d.monoid ∧ n ≠ 0 := by
     by_contra h
     exact hc ((mem_tropicalVertexLieAlgebra_iff d ρ x.val).mp x.property |>.2 n (by tauto))
-  obtain ⟨p, hp, hne⟩ := exists_action_single_coeff_ne_zero ρ (d.monoid : Set Γ) hspan x.val hc
+  obtain ⟨p, hp, hne⟩ :=
+    exists_action_apply_single_coeff_ne_zero ρ (d.monoid : Set Γ) hspan x.val hc
   exact ⟨n, hpos.1, hpos.2, hnk, p, hp, hne⟩
 
 end Mei
