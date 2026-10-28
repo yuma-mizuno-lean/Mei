@@ -7,6 +7,7 @@ module
 
 public import Mei.Geometry.Convex.Polyhedron.Boundary.Codimension
 public import Mei.Geometry.Affine.Span
+import Mei.Analysis.Convex.Intrinsic
 
 /-!
 # Finite affine covers of polyhedral wall singularities
@@ -22,7 +23,8 @@ many closed walls in finite dimension have closed singular support.
 Covering each closed wall by pieces with the same affine span can only enlarge
 singular support; extra fine walls are allowed. Adding unrestricted coordinates
 to every wall gives the cylinder over the original singular support, including
-for families with empty walls.
+for families with empty walls. On a convex set avoiding singular support, each wall
+meeting the set agrees there with its affine span, and distinct wall directions cannot cross.
 -/
 
 public section
@@ -229,3 +231,96 @@ theorem singularSupport_image (e : V ≃ᴬ[ℝ] V') (r : ι ≃ ι')
         by rw [hW]; exact mem_image_of_mem e hk⟩
 
 end ContinuousAffineEquiv
+
+namespace Convex
+
+open Mei.Convex
+
+variable {V ι : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V] {W : ι → Set V} {K : Set V}
+
+/-- On a convex set missing the singular support of a wall family, a wall meeting
+the set contains every point of the set lying in the wall's affine span. -/
+theorem inter_affineSpan_subset_of_disjoint_singularSupport (hK : Convex ℝ K)
+    (hKW : Disjoint K (singularSupport W)) {j : ι}
+    (hmeet : (K ∩ W j).Nonempty) : K ∩ affineSpan ℝ (W j) ⊆ W j := by
+  apply hK.inter_affineSpan_subset hmeet
+  exact disjoint_left.mpr fun x hx hf =>
+    hKW.notMem_of_mem_left hx (mem_singularSupport.mpr (Or.inl ⟨j, hf⟩))
+
+/-- On a convex set missing the singular support, a wall meeting the set at `p`
+consists there of the points where a normal of its affine span takes its value at `p`. -/
+theorem mem_iff_apply_eq_of_disjoint_singularSupport (hK : Convex ℝ K)
+    (hKW : Disjoint K (singularSupport W)) {j : ι}
+    {ν : V →ₗ[ℝ] ℝ} (hν : LinearMap.ker ν = (affineSpan ℝ (W j)).direction)
+    {p : V} (hpK : p ∈ K) (hpW : p ∈ W j) {v : V} (hv : v ∈ K) :
+    v ∈ W j ↔ ν v = ν p := by
+  have hp : p ∈ affineSpan ℝ (W j) := subset_affineSpan ℝ _ hpW
+  have hiff : v ∈ affineSpan ℝ (W j) ↔ ν v = ν p := by
+    rw [← AffineSubspace.vsub_right_mem_direction_iff_mem hp, ← hν, LinearMap.mem_ker,
+      vsub_eq_sub, map_sub, sub_eq_zero]
+  refine ⟨fun h => hiff.mp (subset_affineSpan ℝ _ h), fun h => ?_⟩
+  exact hK.inter_affineSpan_subset_of_disjoint_singularSupport hKW ⟨p, hpK, hpW⟩
+    ⟨hv, hiff.mpr h⟩
+
+/-- On a convex set missing the singular support, two walls with a common point
+in the set agree on the set. -/
+theorem mem_iff_mem_of_disjoint_singularSupport (hK : Convex ℝ K)
+    (hKW : Disjoint K (singularSupport W)) {j k : ι}
+    {p : V} (hpK : p ∈ K) (hpj : p ∈ W j) (hpk : p ∈ W k) {v : V} (hv : v ∈ K) :
+    v ∈ W j ↔ v ∈ W k := by
+  have hdir : (affineSpan ℝ (W j)).direction = (affineSpan ℝ (W k)).direction := by
+    by_contra hne
+    exact hKW.notMem_of_mem_left hpK (mem_singularSupport.mpr (Or.inr ⟨j, k, hne, hpj, hpk⟩))
+  have hspan := AffineSubspace.ext_of_direction_eq hdir
+    ⟨p, subset_affineSpan ℝ _ hpj, subset_affineSpan ℝ _ hpk⟩
+  have hsub {i : ι} (hpi : p ∈ W i) :
+      v ∈ W i ↔ v ∈ affineSpan ℝ (W i) :=
+    ⟨fun h => subset_affineSpan ℝ _ h, fun h =>
+      hK.inter_affineSpan_subset_of_disjoint_singularSupport hKW ⟨p, hpK, hpi⟩ ⟨hv, h⟩⟩
+  rw [hsub hpj, hsub hpk, hspan]
+
+/-- Two walls do not cross inside a convex set missing the singular support: the
+normal of one wall does not change sign between two points of another wall in the set. -/
+theorem sub_mul_sub_nonneg_of_disjoint_singularSupport (hK : Convex ℝ K)
+    (hKW : Disjoint K (singularSupport W)) {j k : ι}
+    {ν : V →ₗ[ℝ] ℝ} (hν : LinearMap.ker ν = (affineSpan ℝ (W k)).direction)
+    {p q r : V} (hpK : p ∈ K) (hpW : p ∈ W j) (hqK : q ∈ K) (hqW : q ∈ W j)
+    (hrK : r ∈ K) (hrW : r ∈ W k) :
+    0 ≤ (ν p - ν r) * (ν q - ν r) := by
+  refine le_of_not_gt fun hneg => ?_
+  set a := ν p - ν r
+  set b := ν q - ν r
+  have hab : a - b ≠ 0 := fun h => by
+    rw [sub_eq_zero.mp h] at hneg
+    nlinarith [mul_self_nonneg b]
+  -- The zero of the normal along the segment from `p` to `q`.
+  set t := a / (a - b)
+  set m := AffineMap.lineMap p q t
+  have ht : t ∈ Icc (0 : ℝ) 1 := by
+    rcases lt_or_gt_of_ne hab with h | h
+    · constructor
+      · exact div_nonneg_of_nonpos (by nlinarith) h.le
+      · rw [div_le_one_of_neg h]; nlinarith
+    · constructor
+      · exact div_nonneg (by nlinarith) h.le
+      · rw [div_le_one h]; nlinarith
+  have hmK : m ∈ K := hK.lineMap_mem hpK hqK ht
+  have hmj : m ∈ W j := hK.inter_affineSpan_subset_of_disjoint_singularSupport hKW
+    ⟨p, hpK, hpW⟩ ⟨hmK, AffineMap.lineMap_mem t (subset_affineSpan ℝ _ hpW)
+      (subset_affineSpan ℝ _ hqW)⟩
+  have hνm : ν m = ν r := by
+    have hm : ν m = (1 - t) * ν p + t * ν q := by
+      simp only [m, AffineMap.lineMap_apply_module, map_add, map_smul, smul_eq_mul]
+    have htab : t * (a - b) = a := div_mul_cancel₀ a hab
+    rw [hm]
+    linear_combination (-1 : ℝ) * htab
+  have hmk : m ∈ W k :=
+    (hK.mem_iff_apply_eq_of_disjoint_singularSupport hKW hν hrK hrW hmK).mpr hνm
+  have hpk : p ∈ W k := (hK.mem_iff_mem_of_disjoint_singularSupport hKW hmK hmj hmk
+    hpK).mp hpW
+  have ha : a = 0 := sub_eq_zero.mpr
+    ((hK.mem_iff_apply_eq_of_disjoint_singularSupport hKW hν hrK hrW hpK).mp hpk)
+  rw [ha, zero_mul] at hneg
+  exact lt_irrefl _ hneg
+
+end Convex

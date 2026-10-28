@@ -18,6 +18,8 @@ of another affine function by `ℓ` is monotone along the segment, in the direct
 which it increases between the ends. The level sets of `m / ℓ` form a pencil of
 hyperplanes, so a segment on which `ℓ` is positive meets them in the order of their
 levels. The proof cross-multiplies, using `AffineMap.apply_lineMap`.
+For linear functionals, a crossing of a level hyperplane determines the signs before
+and after the crossing along the segment.
 -/
 
 public section
@@ -47,3 +49,41 @@ theorem monotoneOn_div_lineMap (ℓ m : P →ᵃ[k] k) {x y : P} (hx : 0 < ℓ x
   nlinarith
 
 end AffineMap
+
+namespace LinearMap
+
+variable {k V : Type*} [CommRing k] [AddCommGroup V] [Module k V]
+
+/-- Along a segment through a hyperplane `μ = c` at parameter `s`, the value of `μ - c` at
+parameter `r`, scaled by `s`, is its value at the start scaled by `s - r`. -/
+theorem apply_lineMap_sub_mul (μ : V →ₗ[k] k) {u v : V} {s c : k}
+    (hs : μ (AffineMap.lineMap u v s) = c) (r : k) :
+    (μ (AffineMap.lineMap u v r) - c) * s = (μ u - c) * (s - r) := by
+  simp only [AffineMap.lineMap_apply_module, map_add, map_smul, smul_eq_mul] at hs ⊢
+  rw [← hs]
+  ring
+
+variable [LinearOrder k] [IsStrictOrderedRing k]
+
+/-- Along a segment from `u` meeting the hyperplane `μ = c` at parameter `s > 0`, with
+`u` off the hyperplane, points before `s` lie on the side of `u`. -/
+theorem mul_pos_of_lt_of_apply_lineMap (μ : V →ₗ[k] k) {u v : V} {s c r : k}
+    (hs : μ (AffineMap.lineMap u v s) = c) (hs0 : 0 < s) (hu : μ u - c ≠ 0) (hr : r < s) :
+    0 < (μ (AffineMap.lineMap u v r) - c) * (μ u - c) := by
+  have : 0 < (μ (AffineMap.lineMap u v r) - c) * (μ u - c) * s := by
+    rw [mul_right_comm _ _ s, μ.apply_lineMap_sub_mul hs r, mul_right_comm]
+    exact mul_pos (mul_self_pos.mpr hu) (by linarith)
+  exact pos_of_mul_pos_left this hs0.le
+
+/-- Along a segment from `u` meeting the hyperplane `μ = c` at parameter `s > 0`, with
+`u` off the hyperplane, points after `s` lie on the side opposite to `u`. -/
+theorem mul_neg_of_lt_of_apply_lineMap (μ : V →ₗ[k] k) {u v : V} {s c r : k}
+    (hs : μ (AffineMap.lineMap u v s) = c) (hs0 : 0 < s) (hu : μ u - c ≠ 0) (hr : s < r) :
+    (μ (AffineMap.lineMap u v r) - c) * (μ u - c) < 0 := by
+  have : (μ (AffineMap.lineMap u v r) - c) * (μ u - c) * s < 0 := by
+    rw [mul_right_comm _ _ s, μ.apply_lineMap_sub_mul hs r, mul_right_comm]
+    exact mul_neg_of_pos_of_neg (mul_self_pos.mpr hu) (by linarith)
+  by_contra hneg
+  exact this.not_ge (mul_nonneg (not_lt.mp hneg) hs0.le)
+
+end LinearMap

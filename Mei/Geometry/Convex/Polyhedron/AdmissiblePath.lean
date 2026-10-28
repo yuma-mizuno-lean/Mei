@@ -425,3 +425,31 @@ theorem exists_length_eq_two [FiniteDimensional ℝ V] [Finite ι]
     (PLift.up hyz.symm), rfl⟩
 
 end Mei.Convex.AdmissiblePLPath
+
+namespace Convex
+
+open Mei.Convex Mei.Convex.WallComplement
+
+variable {V ι : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V] {W : ι → Set V} {K : Set V}
+
+/-- A segment between off-wall points of a convex set missing the singular support of a
+wall family is admissible. -/
+theorem admissibleSegment_of_disjoint_singularSupport (hK : Convex ℝ K)
+    (hKW : Disjoint K (singularSupport W))
+    {x y : WallComplement W} (hx : x.val ∈ K)
+    (hy : y.val ∈ K) : AdmissibleSegment x y where
+  transverse i := by
+    rintro ⟨t, ht, hti⟩ hd
+    have hmeet : (K ∩ W i).Nonempty := ⟨_, hK.lineMap_mem hx hy ht, hti⟩
+    apply x.notMem i
+    apply hK.inter_affineSpan_subset_of_disjoint_singularSupport hKW hmeet
+    refine ⟨hx, ?_⟩
+    have hx' : x.val = (-t) • (y.val - x.val) +ᵥ AffineMap.lineMap x.val y.val t := by
+      simp only [AffineMap.lineMap_apply_module, vadd_eq_add]
+      module
+    rw [hx']
+    exact AffineSubspace.vadd_mem_of_mem_direction
+      ((affineSpan ℝ (W i)).direction.smul_mem _ hd) (subset_affineSpan ℝ _ hti)
+  regular t ht := hKW.notMem_of_mem_left (hK.lineMap_mem hx hy ht)
+
+end Convex
