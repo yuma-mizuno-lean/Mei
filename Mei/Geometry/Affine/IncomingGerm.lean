@@ -29,12 +29,12 @@ open Set Filter Topology
 
 namespace AffineSubspace
 
-variable {V : Type*} [AddCommGroup V] [Module ℝ V]
+variable {V P : Type*} [AddCommGroup V] [Module ℝ V] [AddTorsor V P]
 
 /-- A transverse affine germ eventually avoids an affine subspace, even
 when its base point lies in that subspace. -/
-theorem eventually_smul_vadd_notMem (S : AffineSubspace ℝ V)
-    {v : V} (hv : v ∉ S.direction) (x : V) :
+theorem eventually_smul_vadd_notMem (S : AffineSubspace ℝ P)
+    {v : V} (hv : v ∉ S.direction) (x : P) :
     ∀ᶠ t : ℝ in 𝓝[>] 0, t • v +ᵥ x ∉ S := by
   by_cases hex : ∃ s : ℝ, s • v +ᵥ x ∈ S
   · obtain ⟨s, hs⟩ := hex
