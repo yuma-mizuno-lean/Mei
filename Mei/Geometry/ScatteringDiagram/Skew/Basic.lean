@@ -208,6 +208,21 @@ theorem normal_apply {n : N} (hn : n ∈ D.unfrozen) (a : N) :
     D.normal n hn a = (D.form a (D.sublattice.toAddSubgroup.rayVector n : N)).num := by
   rw [D.form_rayVector, ← D.cast_normal_apply hn a, Rat.num_intCast]
 
+/-- The integral normal of the zero vector is zero. -/
+@[simp]
+theorem normal_zero : D.normal 0 D.unfrozen.zero_mem = 0 := by
+  ext a
+  apply Int.cast_injective (α := ℚ)
+  simp
+
+/-- The integral normal commutes with negation of the unfrozen vector. -/
+@[simp]
+theorem normal_neg {n : N} (hn : n ∈ D.unfrozen) :
+    D.normal (-n) (D.unfrozen.neg_mem hn) = -D.normal n hn := by
+  ext a
+  apply Int.cast_injective (α := ℚ)
+  simp
+
 /-- The integral normal depends only on the positive ray of its unfrozen vector. -/
 theorem normal_zsmul {d : ℤ} (hd : 0 < d) {n : N} (hn : n ∈ D.unfrozen) :
     D.normal (d • n) (D.unfrozen.smul_mem d hn) = D.normal n hn := by

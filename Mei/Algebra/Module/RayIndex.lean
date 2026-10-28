@@ -203,6 +203,48 @@ theorem den_rayIndex_zsmul_rayVector (n : N) :
     ((H.rayIndex n).den : ℤ) • (H.rayVector n : N) = (H.rayIndex n).num • n :=
   (H.exists_mem_den_rayIndex_zsmul_eq_num_rayIndex_zsmul n).choose_spec.2
 
+/-- The normalized vector of zero is zero. -/
+@[simp]
+theorem rayVector_zero : H.rayVector 0 = 0 := by
+  apply Subtype.ext
+  simpa using H.den_rayIndex_zsmul_rayVector 0
+
+/-- Normalization commutes with negation. -/
+@[simp]
+theorem rayVector_neg (n : N) : H.rayVector (-n) = -H.rayVector n := by
+  apply Subtype.ext
+  apply smul_right_injective N (r := ((H.rayIndex n).den : ℤ))
+    (by exact_mod_cast (H.rayIndex n).den_nz)
+  simpa [H.den_rayIndex_zsmul_rayVector] using H.den_rayIndex_zsmul_rayVector (-n)
+
+/-- The normalized vector depends only on the positive ray of its input. -/
+@[simp]
+theorem rayVector_zsmul {d : ℤ} (hd : 0 < d) (n : N) :
+    H.rayVector (d • n) = H.rayVector n := by
+  have hd' : (d : ℚ) ≠ 0 := by exact_mod_cast hd.ne'
+  have hκ := H.rayIndex_zsmul hd n
+  rw [← Rat.num_div_den (H.rayIndex (d • n)), ← Rat.num_div_den (H.rayIndex n),
+    div_div, div_eq_div_iff (by positivity) (mul_ne_zero (by positivity) hd')] at hκ
+  have hcross : ((H.rayIndex n).den : ℤ) * (H.rayIndex (d • n)).num * d =
+      ((H.rayIndex (d • n)).den : ℤ) * (H.rayIndex n).num := by
+    have hc : (H.rayIndex (d • n)).num * (((H.rayIndex n).den : ℤ) * d) =
+        (H.rayIndex n).num * ((H.rayIndex (d • n)).den : ℤ) := by
+      exact_mod_cast hκ
+    simpa [mul_comm, mul_left_comm, mul_assoc] using hc
+  apply Subtype.ext
+  apply smul_right_injective N (r :=
+    ((H.rayIndex (d • n)).den : ℤ) * (H.rayIndex n).den)
+    (mul_ne_zero (by exact_mod_cast (H.rayIndex (d • n)).den_nz)
+      (by exact_mod_cast (H.rayIndex n).den_nz))
+  calc
+    _ = ((H.rayIndex n).den : ℤ) •
+        (((H.rayIndex (d • n)).den : ℤ) • (H.rayVector (d • n) : N)) := by
+      rw [smul_smul, mul_comm]
+    _ = (((H.rayIndex n).den : ℤ) * (H.rayIndex (d • n)).num * d) • n := by
+      rw [H.den_rayIndex_zsmul_rayVector, smul_smul, smul_smul]
+    _ = (((H.rayIndex (d • n)).den : ℤ) * (H.rayIndex n).num) • n := by rw [hcross]
+    _ = _ := by simp only [mul_smul, H.den_rayIndex_zsmul_rayVector]
+
 /-- Normalization preserves membership in any saturated subgroup. -/
 theorem rayVector_mem_of_mem {K : AddSubgroup N} (hK : K.toAddSubmonoid.NSMulSaturated)
     {n : N} (hn : n ∈ K) : (H.rayVector n : N) ∈ K := by
