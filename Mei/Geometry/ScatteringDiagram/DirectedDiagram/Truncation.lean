@@ -44,8 +44,9 @@ variable {Γ Λ R L V : Type*} {ι κ : Type*}
   {i : Λ →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
   {H : DirectedWallSpaces ρ ℒ}
 
-/-- Quotient labels agree at every order exactly when the original diagrams agree
-at the retained cutoff. This also reflects equivalence for inconsistent diagrams. -/
+/-- The quotient diagrams' path products agree at every order exactly when the original
+diagrams' path products agree at cutoff `k`. This also reflects equivalence for
+inconsistent diagrams. -/
 @[simp]
 theorem equivalent_map_truncation_iff
     (D : DirectedDiagram (d := d) h H ι) (E : DirectedDiagram (d := d) h H κ) (k : ℕ) :
