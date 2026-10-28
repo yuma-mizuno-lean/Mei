@@ -9,6 +9,7 @@ import argparse
 import copy
 from concurrent.futures import ThreadPoolExecutor
 import datetime as dt
+from email.utils import parsedate_to_datetime
 import json
 import os
 from pathlib import Path
@@ -200,11 +201,36 @@ def initialize(client):
         raise Stop('budget already exists or initialization failed')
 
 
+def _observed_budget(body, headers):
+    """Charge a completed reservation through the control object's server day.
+
+    A PUT may commit after midnight even if its body was prepared before it.
+    Its server-controlled Last-Modified and ETag describe the same GET version.
+    Carry the entire previous reservation forward to that UTC day before any
+    reset. This overcounts safely, including initialization and completion PUTs,
+    without another write or a change to the persisted state format. Missing or
+    invalid metadata stops admission; a locked state still cannot be reused.
+    """
+    try:
+        modified = parsedate_to_datetime(headers['last-modified'])
+        if modified.tzinfo is None:
+            raise ValueError('missing timezone')
+        server_day = modified.astimezone(dt.timezone.utc).date().isoformat()
+    except (KeyError, TypeError, ValueError, OverflowError) as error:
+        raise Stop('budget Last-Modified missing or invalid; no upload') from error
+    state = json.loads(body)
+    if not isinstance(state, dict) or not isinstance(state.get('day'), str):
+        raise Stop('invalid budget state')
+    state['day'] = max(state['day'], server_day)
+    return state
+
+
 def publish(client, objects, today=None):
     """Publish a validated frozen plan, returning None on confirmed completion.
 
     objects must be the nonempty ordered sequence returned by load_plan, with
-    the revision map last and files unchanged. client provides S3.request;
+    the revision map last and files unchanged. client provides S3.request and
+    server-controlled last-modified plus etag headers on the budget GET;
     today optionally supplies the UTC ISO date, otherwise the current date is
     used. Persist a conditional budget reservation before payload PUTs, upload
     artifacts before the map, then conditionally clear the lock. Failures raise
@@ -216,7 +242,8 @@ def publish(client, objects, today=None):
     code, body, headers = client.request('GET', STATE_KEY)
     if code != 200 or 'etag' not in headers:
         raise Stop('budget missing or unreadable; never initialize implicitly')
-    state = reserve(json.loads(body), [p.stat().st_size for _, p in objects], today, uuid.uuid4().hex)
+    state = reserve(_observed_budget(body, headers),
+                    [p.stat().st_size for _, p in objects], today, uuid.uuid4().hex)
     code, _, headers = client.request('PUT', STATE_KEY, json.dumps(state).encode(),
                                       {'If-Match': headers['etag']})
     if code != 200 or 'etag' not in headers:
