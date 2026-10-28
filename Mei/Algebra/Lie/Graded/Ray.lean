@@ -6,6 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Algebra.Lie.Graded.Supported
+public import Mei.Algebra.Lie.Graded.PositiveDegreeHom
 public import Mei.Algebra.Lie.Graded.Truncation.Transition
 public import Mei.Algebra.PositiveDegrees.Ray.Basic
 public import Mathlib.Algebra.Lie.Abelian
@@ -16,6 +17,8 @@ public import Mathlib.Algebra.Lie.Abelian
 The ray Lie algebra sums the homogeneous pieces on the actual allowed positive
 multiples of a supported primitive vector. The vector itself need not be allowed.
 Its elements are characterized by vanishing of all components off the ray.
+Graded Lie maps transport ray support along their degree maps, including on
+finite quotients with the source cutoff prescribed by the map's modulus.
 
 `IsAbelianRays` says that each such Lie algebra is abelian. It can be checked on
 pairs of homogeneous elements, and is inherited by degree-preserving surjective
@@ -181,3 +184,43 @@ instance isAbelianRays_truncatedGrading [IsAbelianRays d ℒ] (k : ℕ) :
     (fun n => (d.truncatedGrading_eq ℒ k n).symm)
 
 end Mei.PositiveDegrees
+
+namespace Mei.GradedLieHom
+
+variable {N M R L L' : Type*} [AddCommGroup N] [AddCommGroup M] [CommRing R]
+  [LieRing L] [LieAlgebra R L] [LieRing L'] [LieAlgebra R L']
+  {d : PositiveDegrees N} {e : PositiveDegrees M} {T : PositiveDegreeMap d e}
+  {ℒ : N → Submodule R L} {ℳ : M → Submodule R L'}
+  {w : SupportedRay d} {v : SupportedRay e}
+
+/-- A graded Lie map preserves ray support whenever its degree map carries the
+actual source ray degrees into the chosen target ray. No lattice freeness,
+internal decomposition or positivity of the homogeneous pieces is required. -/
+theorem map_mem_rayLieSubalgebra [SetLike.GradedBracket ℒ ℒ] [SetLike.GradedBracket ℳ ℳ]
+    (f : GradedLieHom T ℒ ℳ)
+    (hdegree : ∀ n ∈ w.rayDegrees, T n ∈ v.rayDegrees)
+    {x : L} (hx : x ∈ rayLieSubalgebra ℒ w) : f x ∈ rayLieSubalgebra ℳ v := by
+  have hle : rayLieSubalgebra ℒ w ≤ (rayLieSubalgebra ℳ v).comap f.toLieHom :=
+    (rayLieSubalgebra_le_iff ℒ w _).mpr fun n hn _ hx =>
+      le_rayLieSubalgebra ℳ (hdegree n hn) (f.map_mem hx)
+  exact hle hx
+
+variable [DecidableEq N] [DecidableEq M]
+  [GradedLieAlgebra ℒ] [GradedLieAlgebra ℳ]
+  [IsPositiveGrading d ℒ] [IsPositiveGrading e ℳ]
+
+/-- Ray support is preserved at finite order, for any source cutoff at least
+the order prescribed by the positive degree map. -/
+theorem truncatedMap_mem_rayLieSubalgebra (f : GradedLieHom T ℒ ℳ)
+    (hdegree : ∀ n ∈ w.rayDegrees, T n ∈ v.rayDegrees)
+    {a k : ℕ} (ha : T.modulus k ≤ a) {x : d.truncatedLie ℒ a}
+    (hx : x ∈ rayLieSubalgebra (d.truncatedGrading ℒ a) w) :
+    f.truncatedMap k ha x ∈ rayLieSubalgebra (e.truncatedGrading ℳ k) v := by
+  rw [← d.map_rayLieSubalgebra_mkQ ℒ w a] at hx
+  obtain ⟨y, hy, rfl⟩ := (LieSubalgebra.mem_map _ _ _).mp hx
+  rw [← e.map_rayLieSubalgebra_mkQ ℳ v k]
+  refine (LieSubalgebra.mem_map _ _ _).mpr
+    ⟨f y, f.map_mem_rayLieSubalgebra hdegree hy, ?_⟩
+  simpa only [LieIdeal.mkQ_apply] using (f.truncatedMap_mk k ha y).symm
+
+end Mei.GradedLieHom
