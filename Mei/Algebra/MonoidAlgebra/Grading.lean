@@ -25,10 +25,6 @@ variable {K R S M ι : Type*} [CommSemiring K] [CommSemiring R] [CommSemiring S]
 /-- Coefficient change preserves homogeneous support for an arbitrary degree function. -/
 theorem mapAlgHom_mem_gradeBy (φ : R →ₐ[K] S) {f : M → ι} {i : ι} {u : R[M]}
     (hu : u ∈ gradeBy R f i) : mapAlgHom M φ u ∈ gradeBy S f i := by
-  intro m hm
-  apply hu m
-  apply Finsupp.mem_support_iff.mpr
-  intro hz
-  exact (Finsupp.mem_support_iff.mp hm) (by simp [coeff_mapAlgHom, hz])
+  exact fun m hm => hu m (Finsupp.support_mapRange (hf := φ.map_zero) hm)
 
 end AddMonoidAlgebra
