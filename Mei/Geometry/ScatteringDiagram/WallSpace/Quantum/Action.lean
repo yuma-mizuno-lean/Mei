@@ -38,14 +38,6 @@ attribute [local instance] LieRing.ofAssociativeRing
 variable {R Γ : Type*} [CommRing R] [AddCommGroup Γ]
   (q : Rˣ) (β : LinearMap.BilinForm ℤ Γ)
 
-/-- The restricted quantum commutator adds the Lie and coefficient exponents. -/
-instance instGradedBracketPositiveLieGrading (d : PositiveDegrees Γ) :
-    SetLike.GradedBracket (positiveLieGrading q β d) (grade q β) where
-  bracket_mem _ _ _ _ hx ha := by
-    rw [LieSubalgebra.coe_bracket_of_module]
-    exact SetLike.GradedBracket.bracket_mem (ℒ := grade q β)
-      ((mem_positiveLieGrading q β d _ _).mp hx) ha
-
 /-- Quantum wall elements commute with every homogeneous coefficient tangent to
 their normal, including at specializations where further commutators vanish. -/
 instance instIsWallAnnihilatingAmbient (hβ : β.IsAlt) :
@@ -77,9 +69,6 @@ variable [Algebra ℚ R] [DecidableEq Γ] (d : PositiveDegrees Γ)
 /-- Rational scalars on the quantum algebra are induced from the coefficient ring. -/
 local instance rationalAlgebra : Algebra ℚ (QuantumMonoidAlgebra q β) :=
   Algebra.compHom _ (algebraMap ℚ R)
-
-local instance rationalScalarTower : IsScalarTower ℚ R (QuantumMonoidAlgebra q β) :=
-  IsScalarTower.of_algebraMap_eq fun _ => rfl
 
 /-- Completed quantum wall labels fix every embedded tangent homogeneous coefficient
 in any shifted coefficient module. The shift and the coefficient exponent may have

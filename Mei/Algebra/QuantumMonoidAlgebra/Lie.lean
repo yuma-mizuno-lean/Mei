@@ -90,6 +90,14 @@ theorem mem_positiveLieGrading (n : Γ) (x : positiveLieAlgebra q β d) :
     x ∈ positiveLieGrading q β d n ↔ (x : QuantumMonoidAlgebra q β) ∈ grade q β n :=
   Iff.rfl
 
+/-- The restricted quantum commutator adds the Lie and coefficient exponents. -/
+instance instGradedBracketPositiveLieGrading :
+    SetLike.GradedBracket (positiveLieGrading q β d) (grade q β) where
+  bracket_mem _ _ _ _ hx ha := by
+    rw [LieSubalgebra.coe_bracket_of_module]
+    exact SetLike.GradedBracket.bracket_mem (ℒ := grade q β)
+      ((mem_positiveLieGrading q β d _ _).mp hx) ha
+
 /-- Positive quantum Lie elements inherit the internal homogeneous decomposition. -/
 instance instGradedLieAlgebraPositiveLieGrading [DecidableEq Γ] :
     GradedLieAlgebra (positiveLieGrading q β d) := by
