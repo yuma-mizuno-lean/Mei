@@ -69,23 +69,28 @@ theorem isFiltrationDetected
         exact Finsupp.mapDomain_apply_of_injective d.monoid.subtype_injective
           f.coeff (⟨n, hn⟩ + ⟨p, hp⟩)
       exact fun hz => hne (he.trans hz)
+    have htop : d.monoid.comap d.monoid.subtype = ⊤ := by
+      ext q
+      simp
     refine ⟨b, a, ?_, ?_⟩
     · simp only [Submodule.restrictScalars_mem,
-        filtration_ideal, a, AddSubmonoid.single_mem_monoidAlgebraIdeal_iff]
-      exact Or.inr ⟨⟨p, hp⟩, hp, by simpa using hb.le, 0, by simp⟩
+        filtration_ideal, htop,
+        AddSubmonoid.mem_monoidAlgebraIdeal_top_iff_of_nonneg
+          (δ := d.degree.comp d.monoid.subtype)
+          (fun q : d.monoid => d.degree_nonneg q.property)]
+      intro q hq
+      have hqp : q = ⟨p, hp⟩ := (Finsupp.mem_support_single _ _ _).mp hq |>.1
+      subst q
+      exact hb.le
     · intro hf
       simp only [Submodule.restrictScalars_mem,
-        filtration_ideal, lie_eq] at hf
-      have hf' : f ∈ (d.monoid.comap d.monoid.subtype).monoidAlgebraIdeal
-          (d.degree.comp d.monoid.subtype) (b + k + 2) := hf
-      obtain ⟨r, _, hr, q, he⟩ :=
-        (AddSubmonoid.mem_monoidAlgebraIdeal_iff _ _ _ f).mp hf'
-          (⟨n, hn⟩ + ⟨p, hp⟩) (Finsupp.mem_support_iff.mpr hc)
-      have hq := d.degree_nonneg q.property
-      have hd := congrArg (fun t : d.monoid => d.degree t.val) he
-      simp only [AddSubmonoid.coe_add, map_add] at hd
+        filtration_ideal, lie_eq, htop,
+        AddSubmonoid.mem_monoidAlgebraIdeal_top_iff_of_nonneg
+          (δ := d.degree.comp d.monoid.subtype)
+          (fun q : d.monoid => d.degree_nonneg q.property)] at hf
+      have hd := hf (⟨n, hn⟩ + ⟨p, hp⟩) (Finsupp.mem_support_iff.mpr hc)
       simp only [AddMonoidHom.comp_apply, AddSubmonoid.subtype_apply,
-        Nat.cast_add, Nat.cast_ofNat] at hr
+        map_add, Nat.cast_add, Nat.cast_ofNat] at hd
       omega
 
 variable [DecidableEq Γ]
