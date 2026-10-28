@@ -8,6 +8,7 @@ module
 public import Mei.Geometry.ScatteringDiagram.WallSpace.Ray
 public import Mei.Algebra.Lie.BCH.Subgroup
 public import Mei.Algebra.Lie.BCH.Completion
+public import Mei.Algebra.Lie.BCH.Ray.Basic
 
 /-!
 # Completed wall groups
@@ -104,6 +105,34 @@ theorem mem_wallGroup (w : SupportedRay d) (m : Λ →+ ℤ) (g : d.completedBCH
   simp only [wallGroup, Subgroup.mem_iInf]
   exact forall_congr' fun k => LieSubalgebra.mem_bchSubgroup _ _
 
+/-- Wall labels are supported on their underlying ray, independently of the normal. -/
+theorem wallGroup_le_completedRaySubgroup (w : SupportedRay d) (m : Λ →+ ℤ) :
+    H.wallGroup w m ≤ d.completedRaySubgroup ℒ w := by
+  intro g hg
+  rw [PositiveDegrees.mem_completedRaySubgroup]
+  intro k
+  rw [← d.map_rayLieSubalgebra_mkQ ℒ w k]
+  obtain ⟨x, hx, he⟩ := (H.mem_truncatedRayLieSubalgebra w m k _).mp
+    ((H.mem_wallGroup w m g).mp hg k)
+  refine ⟨x, ?_, he⟩
+  have hle : H.raySubmodule w m ≤ (Mei.rayLieSubalgebra ℒ w).toSubmodule := by
+    rw [H.raySubmodule_def]
+    exact iSup_le fun n => (H.wall_le_piece n m).trans (le_rayLieSubalgebra ℒ n.property)
+  exact hle hx
+
+/-- If the wall spaces exhaust a ray Lie algebra, their completed wall group is
+the entire completed ray subgroup. -/
+theorem wallGroup_eq_completedRaySubgroup (w : SupportedRay d) (m : Λ →+ ℤ)
+    (h : H.raySubmodule w m = (Mei.rayLieSubalgebra ℒ w).toSubmodule) :
+    H.wallGroup w m = d.completedRaySubgroup ℒ w := by
+  have he : H.rayLieSubalgebra w m = Mei.rayLieSubalgebra ℒ w := by
+    ext x
+    rw [H.mem_rayLieSubalgebra, h]
+    exact LieSubalgebra.mem_toSubmodule (Mei.rayLieSubalgebra ℒ w)
+  ext g
+  simp only [H.mem_wallGroup, PositiveDegrees.mem_completedRaySubgroup,
+    truncatedRayLieSubalgebra, he, d.map_rayLieSubalgebra_mkQ]
+
 /-- Exponentiating an element of a supported-ray wall algebra gives a completed wall label. -/
 theorem expToCompletion_mem_wallGroup {w : SupportedRay d} {m : Λ →+ ℤ} {x : L}
     (hx : x ∈ H.raySubmodule w m) : d.expToCompletion ℒ x ∈ H.wallGroup w m := by
@@ -135,21 +164,26 @@ theorem projection_eq_one_of_notMem_raysAtOrder {w : SupportedRay d} {m : Λ →
   rw [H.truncatedRayLieSubalgebra_eq_bot w m k hw, LieSubalgebra.mem_bot] at h
   exact h.trans BCHGroup.log_one.symm
 
-/-- Only the identity completed label has zero normal. -/
-@[simp]
-theorem wallGroup_zero (w : SupportedRay d) : H.wallGroup w 0 = ⊥ := by
+/-- A vanishing ray wall space has no nonidentity completed wall labels. -/
+theorem wallGroup_eq_bot_of_raySubmodule_eq_bot (w : SupportedRay d) (m : Λ →+ ℤ)
+    (h : H.raySubmodule w m = ⊥) : H.wallGroup w m = ⊥ := by
   apply le_antisymm _ bot_le
   intro g hg
   apply CompletedGroup.ext
   intro k
   rw [map_one]
   apply BCHGroup.log_injective (L := d.truncatedLie ℒ k)
-  obtain ⟨y, hy, heq⟩ := (H.mem_truncatedRayLieSubalgebra w 0 k _).mp
-    ((H.mem_wallGroup w 0 g).mp hg k)
-  rw [H.raySubmodule_zero, Submodule.mem_bot] at hy
+  obtain ⟨y, hy, heq⟩ := (H.mem_truncatedRayLieSubalgebra w m k _).mp
+    ((H.mem_wallGroup w m g).mp hg k)
+  rw [h, Submodule.mem_bot] at hy
   subst y
   exact ((map_zero (d.degreeIdeal ℒ k).mkQ).symm.trans heq).symm.trans
     (BCHGroup.log_one (L := d.truncatedLie ℒ k)).symm
+
+/-- Only the identity completed label has zero normal. -/
+@[simp]
+theorem wallGroup_zero (w : SupportedRay d) : H.wallGroup w 0 = ⊥ :=
+  H.wallGroup_eq_bot_of_raySubmodule_eq_bot w 0 (H.raySubmodule_zero w)
 
 /-- Nonzero integer rescaling of the normal preserves the completed wall group. -/
 @[simp]
