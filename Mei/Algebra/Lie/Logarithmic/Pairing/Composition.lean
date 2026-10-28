@@ -32,9 +32,9 @@ namespace Mei.TropicalPairing
 
 open Mei.LogarithmicVectorField
 
-universe u
+section
 
-variable {R Γ Λ Γ' Λ' Γ'' Λ'' : Type u} [CommRing R]
+variable {R Γ Λ Γ' Λ' Γ'' Λ'' : Type*} [CommRing R]
   [AddCommMonoid Γ] [AddCommMonoid Λ] [AddCommMonoid Γ'] [AddCommMonoid Λ']
   [AddCommMonoid Γ''] [AddCommMonoid Λ'']
   {d : PositiveDegrees Γ} {e : PositiveDegrees Γ'} {f : PositiveDegrees Γ''}
@@ -53,6 +53,9 @@ theorem id_degreeMap : (id d ρ U).degreeMap = PositiveDegreeMap.id d := (rfl)
 
 @[simp]
 theorem id_characterMap (m : U) : (id d ρ U).characterMap m = m.val := (rfl)
+
+/-- The identity pairing keeps characters in its selected subspace. -/
+theorem id_characterMap_mem (m : U) : (id d ρ U).characterMap m ∈ U := m.property
 
 variable (p : TropicalPairing (d := d) (e := e) (ρ := ρ) (ρ' := ρ') U)
   (q : TropicalPairing (d := e) (e := f) (ρ := ρ') (ρ' := ρ'') V)
@@ -79,6 +82,12 @@ theorem comp_degreeMap (h : ∀ m, p.characterMap m ∈ V) :
 theorem comp_characterMap (h : ∀ m, p.characterMap m ∈ V) (m : U) :
     (q.comp p h).characterMap m = q.characterMap ⟨p.characterMap m, h m⟩ := (rfl)
 
+/-- A composite keeps characters in any subspace containing the second character image. -/
+theorem comp_characterMap_mem {W : Submodule R (Λ'' →+ R)}
+    (hp : ∀ m, p.characterMap m ∈ V) (hq : ∀ m, q.characterMap m ∈ W) (m : U) :
+    (q.comp p hp).characterMap m ∈ W :=
+  hq ⟨p.characterMap m, hp m⟩
+
 @[simp]
 theorem id_comp (h : ∀ m, p.characterMap m ∈ V) : (id e ρ' V).comp p h = p := by
   apply TropicalPairing.ext
@@ -88,8 +97,7 @@ theorem id_comp (h : ∀ m, p.characterMap m ∈ V) : (id e ρ' V).comp p h = p 
     simp only [comp_characterMap, id_characterMap]
 
 @[simp]
-theorem comp_id :
-    p.comp (id d ρ U) (fun m => by simpa only [id_characterMap] using m.property) = p := by
+theorem comp_id : p.comp (id d ρ U) id_characterMap_mem = p := by
   apply TropicalPairing.ext
   · simp only [comp_degreeMap, id_degreeMap, PositiveDegreeMap.comp_id]
   · apply LinearMap.ext
@@ -98,14 +106,13 @@ theorem comp_id :
 
 /-- Composition is associative on compatible character domains, including its
 cutoff modulus. -/
-theorem comp_assoc {Γ''' Λ''' : Type u} [AddCommMonoid Γ'''] [AddCommMonoid Λ''']
+theorem comp_assoc {Γ''' Λ''' : Type*} [AddCommMonoid Γ'''] [AddCommMonoid Λ''']
     {g : PositiveDegrees Γ'''} {ρ''' : Γ''' →+ Λ'''}
     {W : Submodule R (Λ'' →+ R)}
     (r : TropicalPairing (d := f) (e := g) (ρ := ρ'') (ρ' := ρ''') W)
     (hp : ∀ m, p.characterMap m ∈ V) (hq : ∀ m, q.characterMap m ∈ W) :
     (r.comp q hq).comp p hp =
-      r.comp (q.comp p hp)
-        (fun m => by simpa only [comp_characterMap] using hq ⟨p.characterMap m, hp m⟩) := by
+      r.comp (q.comp p hp) (p.comp_characterMap_mem q hp hq) := by
   apply TropicalPairing.ext
   · simp only [comp_degreeMap, PositiveDegreeMap.comp_assoc]
   · apply LinearMap.ext
@@ -117,11 +124,9 @@ This permits a second pairing to act without enlarging its domain. -/
 theorem gradedLieHom_mem_tropicalSubalgebra (h : ∀ m, p.characterMap m ∈ V)
     (x : tropicalSubalgebra ρ U d) :
     p.gradedLieHom x ∈ tropicalSubalgebra ρ' V e := by
-  classical
-  induction x using DirectSum.Decomposition.inductionOn (tropicalSubalgebraGrading ρ U d) with
+  induction x using tropicalSubalgebra_induction with
   | zero => simpa only [map_zero] using (tropicalSubalgebra ρ' V e).zero_mem
-  | @homogeneous n x =>
-    obtain ⟨m, hm⟩ := (mem_tropicalSubalgebraGrading_iff d ρ U n x).mp x.property
+  | homogeneous n m x hm =>
     rw [mem_tropicalSubalgebra_iff, p.coe_gradedLieHom_of_homogeneous x m hm]
     exact (mem_characterSubalgebra_iff ρ' V _).mp
       ((single_mem_characterSubalgebra_iff ρ' V _ _).mpr (h m))
@@ -154,11 +159,9 @@ theorem coe_restrictGradedLieHom (h : ∀ m, p.characterMap m ∈ V)
 @[simp]
 theorem gradedLieHom_id_apply (x : tropicalSubalgebra ρ U d) :
     (id d ρ U).gradedLieHom x = x.val := by
-  classical
-  induction x using DirectSum.Decomposition.inductionOn (tropicalSubalgebraGrading ρ U d) with
+  induction x using tropicalSubalgebra_induction with
   | zero => simp only [map_zero, ZeroMemClass.coe_zero]
-  | @homogeneous n x =>
-    obtain ⟨m, hm⟩ := (mem_tropicalSubalgebraGrading_iff d ρ U n x).mp x.property
+  | homogeneous n m x hm =>
     apply Subtype.ext
     have he := (id d ρ U).coe_gradedLieHom_of_homogeneous x m hm
     simp only [id_degreeMap, PositiveDegreeMap.id_apply, id_characterMap] at he
@@ -169,8 +172,7 @@ theorem gradedLieHom_id_apply (x : tropicalSubalgebra ρ U d) :
 identity Lie map. -/
 @[simp]
 theorem restrictGradedLieHom_id :
-    ((id d ρ U).restrictGradedLieHom
-      (fun m => by simpa only [id_characterMap] using m.property)).toLieHom = LieHom.id := by
+    ((id d ρ U).restrictGradedLieHom id_characterMap_mem).toLieHom = LieHom.id := by
   apply LieHom.ext
   intro x
   apply Subtype.ext
@@ -182,14 +184,12 @@ the character restriction needed by the second pairing. -/
 theorem gradedLieHom_comp (h : ∀ m, p.characterMap m ∈ V) :
     (q.comp p h).gradedLieHom.toLieHom =
       q.gradedLieHom.toLieHom.comp (p.restrictGradedLieHom h).toLieHom := by
-  classical
   apply LieHom.ext
   intro x
   simp only [LieHom.comp_apply, GradedLieHom.coe_toLieHom]
-  induction x using DirectSum.Decomposition.inductionOn (tropicalSubalgebraGrading ρ U d) with
+  induction x using tropicalSubalgebra_induction with
   | zero => simp only [map_zero]
-  | @homogeneous n x =>
-    obtain ⟨m, hm⟩ := (mem_tropicalSubalgebraGrading_iff d ρ U n x).mp x.property
+  | homogeneous n m x hm =>
     apply Subtype.ext
     rw [(q.comp p h).coe_gradedLieHom_of_homogeneous x m hm,
       q.coe_gradedLieHom_of_homogeneous _ ⟨p.characterMap m, h m⟩
@@ -203,8 +203,7 @@ so it can be iterated through further pairings. -/
 @[simp]
 theorem restrictGradedLieHom_comp {W : Submodule R (Λ'' →+ R)}
     (hp : ∀ m, p.characterMap m ∈ V) (hq : ∀ m, q.characterMap m ∈ W) :
-    ((q.comp p hp).restrictGradedLieHom
-      (fun m => by simpa only [comp_characterMap] using hq ⟨p.characterMap m, hp m⟩)).toLieHom =
+    ((q.comp p hp).restrictGradedLieHom (p.comp_characterMap_mem q hp hq)).toLieHom =
         (q.restrictGradedLieHom hq).toLieHom.comp (p.restrictGradedLieHom hp).toLieHom := by
   apply LieHom.ext
   intro x
@@ -215,12 +214,44 @@ theorem restrictGradedLieHom_comp {W : Submodule R (Λ'' →+ R)}
 
 section Completion
 
-variable [Algebra ℚ R] [DecidableEq Γ] [DecidableEq Γ'] [DecidableEq Γ'']
+variable [Algebra ℚ R] [DecidableEq Γ]
 
-/-- Pairing maps compose on completed BCH groups, with successive cutoff moduli
-composed in the source-to-target order. -/
+/-- On the completion of a selected character domain, the identity pairing
+induces the identity group homomorphism. -/
 @[simp]
-theorem completedMap_comp (h : ∀ m, p.characterMap m ∈ V) :
+theorem completedMap_restrictGradedLieHom_id :
+    ((id d ρ U).restrictGradedLieHom id_characterMap_mem).completedMap =
+      MonoidHom.id (d.completedBCHGroup (tropicalSubalgebraGrading ρ U d)) := by
+  refine (GradedLieHom.completedMap_eq_of_toLieHom_eq _
+    (GradedLieHom.id (d := d) (tropicalSubalgebraGrading ρ U d)) ?_).trans
+      GradedLieHom.completedMap_id
+  simpa only [GradedLieHom.toLieHom_id] using
+    (restrictGradedLieHom_id (d := d) (ρ := ρ) (U := U))
+
+end Completion
+
+end
+
+/-! The composition laws for completed maps compare BCH groups of Lie algebras in a
+common universe, as `GradedLieHom.completedMap_comp` requires. -/
+
+section CompletionComp
+
+universe u
+
+variable {R Γ Λ Γ' Λ' Γ'' Λ'' : Type u} [CommRing R] [Algebra ℚ R]
+  [AddCommMonoid Γ] [AddCommMonoid Λ] [AddCommMonoid Γ'] [AddCommMonoid Λ']
+  [AddCommMonoid Γ''] [AddCommMonoid Λ''] [DecidableEq Γ] [DecidableEq Γ'] [DecidableEq Γ'']
+  {d : PositiveDegrees Γ} {e : PositiveDegrees Γ'} {f : PositiveDegrees Γ''}
+  {ρ : Γ →+ Λ} {ρ' : Γ' →+ Λ'} {ρ'' : Γ'' →+ Λ''}
+  {U : Submodule R (Λ →+ R)} {V : Submodule R (Λ' →+ R)}
+  (p : TropicalPairing (d := d) (e := e) (ρ := ρ) (ρ' := ρ') U)
+  (q : TropicalPairing (d := e) (e := f) (ρ := ρ') (ρ' := ρ'') V)
+
+/-- Pairing maps compose on completed BCH groups, with cutoff modulus
+`p.degreeMap.modulus ∘ q.degreeMap.modulus`. -/
+@[simp]
+theorem completedMap_gradedLieHom_comp (h : ∀ m, p.characterMap m ∈ V) :
     (q.comp p h).gradedLieHom.completedMap =
       q.gradedLieHom.completedMap.comp (p.restrictGradedLieHom h).completedMap := by
   exact ((q.comp p h).gradedLieHom.completedMap_eq_of_toLieHom_eq
@@ -233,8 +264,7 @@ character domains. -/
 @[simp]
 theorem completedMap_restrictGradedLieHom_comp {W : Submodule R (Λ'' →+ R)}
     (hp : ∀ m, p.characterMap m ∈ V) (hq : ∀ m, q.characterMap m ∈ W) :
-    ((q.comp p hp).restrictGradedLieHom
-      (fun m => by simpa only [comp_characterMap] using hq ⟨p.characterMap m, hp m⟩)).completedMap =
+    ((q.comp p hp).restrictGradedLieHom (p.comp_characterMap_mem q hp hq)).completedMap =
         (q.restrictGradedLieHom hq).completedMap.comp
           (p.restrictGradedLieHom hp).completedMap := by
   refine (GradedLieHom.completedMap_eq_of_toLieHom_eq _
@@ -242,19 +272,6 @@ theorem completedMap_restrictGradedLieHom_comp {W : Submodule R (Λ'' →+ R)}
       (GradedLieHom.completedMap_comp _ _)
   simpa only [GradedLieHom.toLieHom_comp] using p.restrictGradedLieHom_comp q hp hq
 
-/-- On the completion of a selected character domain, the identity pairing
-induces the identity group homomorphism. -/
-@[simp]
-theorem completedMap_id :
-    ((id d ρ U).restrictGradedLieHom
-      (fun m => by simpa only [id_characterMap] using m.property)).completedMap =
-      MonoidHom.id (d.completedBCHGroup (tropicalSubalgebraGrading ρ U d)) := by
-  refine (GradedLieHom.completedMap_eq_of_toLieHom_eq _
-    (GradedLieHom.id (d := d) (tropicalSubalgebraGrading ρ U d)) ?_).trans
-      GradedLieHom.completedMap_id
-  simpa only [GradedLieHom.toLieHom_id] using
-    (restrictGradedLieHom_id (d := d) (ρ := ρ) (U := U))
-
-end Completion
+end CompletionComp
 
 end Mei.TropicalPairing

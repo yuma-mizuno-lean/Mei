@@ -381,4 +381,22 @@ theorem mem_tropicalSubalgebraGrading_iff (n : Γ) (x : tropicalSubalgebra ρ U 
   · rintro ⟨m, hm⟩
     exact (mem_tropicalVertexGrading_iff d ρ n x.val).mpr ⟨m.val, hm⟩
 
+variable {d ρ U} in
+/-- Induction on restricted fields: a predicate closed under zero and addition holds
+everywhere once it holds on each homogeneous field `single ρ n m` with `m ∈ U`. -/
+@[elab_as_elim]
+theorem tropicalSubalgebra_induction {motive : tropicalSubalgebra ρ U d → Prop}
+    (zero : motive 0)
+    (homogeneous : ∀ (n : Γ) (m : U) (x : tropicalSubalgebra ρ U d),
+      single ρ n m.val = x.val.val → motive x)
+    (add : ∀ x y, motive x → motive y → motive (x + y))
+    (x : tropicalSubalgebra ρ U d) : motive x := by
+  classical
+  induction x using DirectSum.Decomposition.inductionOn (tropicalSubalgebraGrading ρ U d) with
+  | zero => exact zero
+  | @homogeneous n x =>
+    obtain ⟨m, hm⟩ := (mem_tropicalSubalgebraGrading_iff d ρ U n x).mp x.property
+    exact homogeneous n m x hm
+  | add x y hx hy => exact add x y hx hy
+
 end Mei.LogarithmicVectorField
