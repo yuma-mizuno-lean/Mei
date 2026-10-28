@@ -138,6 +138,28 @@ private theorem mem_wallSubmodule_cases {a : Γ × ℤ × ℤ}
     exact Or.inr ⟨n, e, ha, he, rfl, ha ▸ hx⟩
   · exact (hx0 (by simpa only [Submodule.mem_bot] using hx)).elim
 
+/-- A probe wall element is zero, a lifted base wall element, or an element of a
+charge-one piece with a nonzero integral probe normal. -/
+@[simp]
+theorem mem_wallSubmodule_iff (a : Γ × ℤ × ℤ) (m : (Λ × ℤ × ℤ) →+ ℤ)
+    (x : ProbeLie d ℳ p ℒ) :
+    x ∈ wallSubmodule d ℳ p ℒ H a m ↔
+      x = 0 ∨
+      (∃ n m₀ y, a = (n, 0, 0) ∧ m = baseNormal m₀ ∧
+        y ∈ H.wall n m₀ ∧ x = baseInclusion d ℳ p ℒ y) ∨
+      (∃ (q : Γ) (c : ℤ), a = (q, 1, 0) ∧ c ≠ 0 ∧ m = c • probeNormal ∧
+        x ∈ grading d ℳ p ℒ (q, 1, 0)) := by
+  constructor
+  · intro hx
+    by_cases hx0 : x = 0
+    · exact Or.inl hx0
+    · exact Or.inr (mem_wallSubmodule_cases d ℳ p ℒ H hx hx0)
+  · rintro (rfl | ⟨n, m₀, y, rfl, rfl, hy, rfl⟩ | ⟨q, c, rfl, hc, rfl, hx⟩)
+    · exact Submodule.zero_mem _
+    · rw [wallSubmodule_base]
+      exact Submodule.mem_map.mpr ⟨y, hy, rfl⟩
+    · rwa [wallSubmodule_module d ℳ p ℒ H q c hc]
+
 private theorem wallSubmodule_rescale (a : Γ × ℤ × ℤ)
     (m : (Λ × ℤ × ℤ) →+ ℤ) (c : ℤ) (hc : c ≠ 0) :
     wallSubmodule d ℳ p ℒ H a (c • m) = wallSubmodule d ℳ p ℒ H a m := by
@@ -155,7 +177,7 @@ private theorem wallSubmodule_rescale (a : Γ × ℤ × ℤ)
     smul_mem_range_smul_probeNormal _ hc, hs, H.rescale _ _ c hc, ne_eq, hz]
 
 section
-variable [SetLike.GradedBracket ℒ ℒ] [IsWallAnnihilating H ℳ]
+variable [IsWallAnnihilating H ℳ]
 
 private theorem mixed_bracket_mem {n q : Γ} {m : Λ →+ ℤ} {c : ℤ}
     (hc : c ≠ 0) {x : L} (hx : x ∈ H.wall n m)
@@ -164,9 +186,11 @@ private theorem mixed_bracket_mem {n q : Γ} {m : Λ →+ ℤ} {c : ℤ}
       wallSubmodule d ℳ p ℒ H (n + q, 1, 0)
         ((m (ρ q) * c) • probeNormal) := by
   classical
+  obtain ⟨hyR, hyL⟩ := (mem_grading_module d ℳ p ℒ q y).mp hy
+  have he : y = moduleInclusion d ℳ p ℒ y.left := by
+    apply LieAlgebra.SemiDirectSum.ext <;> simp [hyR]
   by_cases hm : m (ρ q) = 0
-  · obtain ⟨hyR, hyL⟩ := (mem_grading_module d ℳ p ℒ q y).mp hy
-    have ha : ((moduleCoefficientsEquiv d ℳ p y.left : shiftedSubmodule ℳ d.monoid p) : M)
+  · have ha : ((moduleCoefficientsEquiv d ℳ p y.left : shiftedSubmodule ℳ d.monoid p) : M)
         ∈ ℳ q := by simpa using (mem_shiftedGrading ℳ d.monoid p).mp hyL
     have hz := IsWallAnnihilating.lie_eq_zero (H := H) (𝒜 := ℳ) hx ha hm
     have hd : actionDerivationHom d ℳ p (ℒ := ℒ) x y.left = 0 := by
@@ -174,15 +198,13 @@ private theorem mixed_bracket_mem {n q : Γ} {m : Λ →+ ℤ} {c : ℤ}
       rw [moduleCoefficientsEquiv_actionDerivationHom, map_zero]
       apply Subtype.ext
       exact hz
-    have he : y = moduleInclusion d ℳ p ℒ y.left := by
-      apply LieAlgebra.SemiDirectSum.ext <;> simp [hyR]
     rw [he, lie_baseInclusion_moduleInclusion, hd, map_zero]
     exact Submodule.zero_mem _
-  · rw [wallSubmodule_module d ℳ p ℒ H _ _ (mul_ne_zero hm hc)]
-    have hx' : baseInclusion d ℳ p ℒ x ∈ grading d ℳ p ℒ (n, 0, 0) := by
-      rw [grading_base]
-      exact Submodule.mem_map.mpr ⟨x, H.wall_le_piece n m hx, rfl⟩
-    exact SetLike.GradedBracket.bracket_mem (i := (n, 0, 0)) (j := (q, 1, 0)) hx' hy
+  · rw [wallSubmodule_module d ℳ p ℒ H _ _ (mul_ne_zero hm hc), he,
+      lie_baseInclusion_moduleInclusion, mem_grading_module]
+    refine ⟨rfl, ?_⟩
+    simpa only [LieAlgebra.SemiDirectSum.inl_eq_mk, add_sub_assoc] using
+      actionDerivationHom_mem_shiftedGrading d ℳ p ℒ (H.wall_le_piece n m hx) hyL
 
 /-- The module probe carries directed wall spaces, including the full coefficient
 pieces even when their original spatial degree vanishes. -/
@@ -245,7 +267,7 @@ end
 
 /-- The bundled wall spaces have the stated degree and normal cases. -/
 @[simp]
-theorem wallSpaces_wall [SetLike.GradedBracket ℒ ℒ] [IsWallAnnihilating H ℳ]
+theorem wallSpaces_wall [IsWallAnnihilating H ℳ]
     (a : Γ × ℤ × ℤ) (m : (Λ × ℤ × ℤ) →+ ℤ) :
     (wallSpaces d ℳ p ℒ H).wall a m = wallSubmodule d ℳ p ℒ H a m := (rfl)
 
