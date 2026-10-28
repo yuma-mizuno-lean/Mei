@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.ScatteringDiagram.ModuleProbe.Grading.Lie
+public import Mei.Geometry.ScatteringDiagram.ModuleProbe.Grading.Basic
 public import Mei.Geometry.ScatteringDiagram.ModuleProbe.Normal
 public import Mei.Geometry.ScatteringDiagram.WallSpace.Action
 
