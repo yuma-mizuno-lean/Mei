@@ -6,8 +6,6 @@ Authors: Claude Code
 module
 
 public import Mathlib.GroupTheory.SpecificGroups.Cyclic
-public import Mathlib.GroupTheory.IndexNSmul
-public import Mathlib.LinearAlgebra.Dual.Lemmas
 public import Mathlib.LinearAlgebra.Matrix.Dual
 public import Mei.LinearAlgebra.Dual.Kernel
 public import Mei.LinearAlgebra.FreeModule.Int
@@ -138,9 +136,7 @@ theorem index_eq_mul_relIndex_ker_eval (M₀ : Submodule ℤ M) [M₀.toAddSubgr
     · rintro ⟨j, rfl⟩
       exact ⟨_, ⟨j • g, rfl⟩, by simp [ev, hr, hg]⟩
   have hsup : (H ⊔ K).index = r := by
-    rw [← hker, ← mul_one (H ⊔ ev.ker).index, ← AddSubgroup.index_top (G := ℤ),
-      ← ev.range_eq_top_of_surjective hev, ← AddSubgroup.index_map, hmap,
-      Int.index_zmultiples, Int.natAbs_natCast]
+    simpa [hker, hmap, ev.range_eq_top_of_surjective hev] using (H.index_map ev).symm
   rw [← index_range_dualRestrict M₀, ← AddSubgroup.relIndex_mul_index (le_sup_left : H ≤ H ⊔ K),
     AddSubgroup.relIndex_sup_left, hsup, mul_comm]
 
@@ -173,18 +169,18 @@ theorem exists_dualRestrict_eq_zsmul_natAbs_eq_relIndex (hM : finrank ℤ M ≤ 
     rw [← Submodule.mem_span_singleton, ← hK₀]
     simpa using hnm₀
   refine ⟨k, hk.symm, ?_⟩
+  have heval : (Dual.eval ℤ M₀ m₀).comp M₀.dualRestrict = Dual.eval ℤ M (m₀ : M) := by
+    ext φ
+    simp
   have hinf : (LinearMap.range M₀.dualRestrict).toAddSubgroup ⊓
       (LinearMap.ker (Dual.eval ℤ M₀ m₀)).toAddSubgroup = AddSubgroup.zmultiples (k • n₀) := by
-    ext φ
-    simp only [AddSubgroup.mem_inf, mem_toAddSubgroup, LinearMap.mem_range, LinearMap.mem_ker,
-      Dual.eval_apply, AddSubgroup.mem_zmultiples_iff]
-    constructor
-    · rintro ⟨⟨ψ, rfl⟩, hψ⟩
-      have : ψ ∈ ℤ ∙ n := hK ▸ by simpa using hψ
-      obtain ⟨a, rfl⟩ := Submodule.mem_span_singleton.mp this
-      exact ⟨a, by rw [map_zsmul, ← hk]⟩
-    · rintro ⟨a, rfl⟩
-      exact ⟨⟨a • n, by rw [map_zsmul, ← hk]⟩, by simp [hn₀m₀]⟩
+    -- The subgroup intersection is definitionally the underlying group of the submodule
+    -- intersection; expose that submodule so `map_comap_eq` can rewrite it.
+    change (LinearMap.range M₀.dualRestrict ⊓ LinearMap.ker (Dual.eval ℤ M₀ m₀)
+      ).toAddSubgroup = _
+    rw [← Submodule.map_comap_eq, ← LinearMap.ker_comp, heval, hK,
+      Submodule.map_span, Set.image_singleton, ← hk,
+      span_singleton_toAddSubgroup_eq_zmultiples]
   have horder : addOrderOf n₀ = 0 :=
     addOrderOf_eq_zero_iff.mpr (injective_zsmul_iff_not_isOfFinAddOrder.mp hn₀.zsmul_left_injective)
   have hidx : (AddSubgroup.zmultiples (k • n₀)).relIndex (AddSubgroup.zmultiples n₀) =
