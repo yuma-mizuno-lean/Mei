@@ -101,6 +101,26 @@ theorem completedBCHExp_neg (x : d.completedLie ℒ) :
   exact (congrArg Inv.inv (d.projection_completedBCHExp ℒ k x).symm).trans
     ((CompletedGroup.projection k).map_inv (d.completedBCHExp ℒ x)).symm
 
+/-- Completed Lie coordinates with zero bracket add under the completed exponential. -/
+theorem completedBCHExp_add_of_lie_eq_zero {x y : d.completedLie ℒ} (h : ⁅x, y⁆ = 0) :
+    d.completedBCHExp ℒ (x + y) = d.completedBCHExp ℒ x * d.completedBCHExp ℒ y := by
+  apply CompletedGroup.ext
+  intro k
+  rw [map_mul, projection_completedBCHExp, projection_completedBCHExp,
+    projection_completedBCHExp, map_add]
+  apply BCHGroup.exp_add_of_lie_eq_zero
+  rw [← LieHom.map_lie, h, map_zero]
+
+/-- Integer multiples of a completed Lie coordinate give integer powers. -/
+theorem completedBCHExp_zsmul (x : d.completedLie ℒ) (n : ℤ) :
+    d.completedBCHExp ℒ (n • x) = d.completedBCHExp ℒ x ^ n := by
+  apply CompletedGroup.ext
+  intro k
+  rw [map_zpow, projection_completedBCHExp, projection_completedBCHExp, map_zsmul,
+    BCHGroup.exp_zsmul]
+  -- The power on the right is taken in the categorical tower object.
+  rfl
+
 /-- The identity completed group element has zero logarithmic coordinate. -/
 @[simp]
 theorem completedBCHExp_symm_one : (d.completedBCHExp ℒ).symm 1 = 0 := by
