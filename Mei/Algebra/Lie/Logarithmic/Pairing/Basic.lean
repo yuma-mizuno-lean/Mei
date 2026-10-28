@@ -82,6 +82,32 @@ theorem ext {U : Submodule R (Λ →+ R)}
   cases hS
   rfl
 
+section OfDegreeMap
+
+variable {ρ' : Γ' →+ Λ}
+
+/-- A positive degree map compatible on allowed degrees with projections into a common
+tangent lattice is a pairing acting as the identity on any character subspace. -/
+def ofDegreeMap (T : PositiveDegreeMap d e) (hT : ∀ n ∈ d.monoid, ρ' (T n) = ρ n)
+    (U : Submodule R (Λ →+ R)) : TropicalPairing (d := d) (e := e) (ρ := ρ) (ρ' := ρ') U where
+  degreeMap := T
+  characterMap := U.subtype
+  eval_eq m n hn := by simp [hT n hn]
+
+variable {U} (T : PositiveDegreeMap d e) (hT : ∀ n ∈ d.monoid, ρ' (T n) = ρ n)
+
+@[simp]
+theorem ofDegreeMap_degreeMap : (ofDegreeMap T hT U).degreeMap = T := (rfl)
+
+@[simp]
+theorem ofDegreeMap_characterMap (m : U) : (ofDegreeMap T hT U).characterMap m = m.val := (rfl)
+
+/-- A pairing from a compatible degree map keeps characters in its selected subspace. -/
+theorem ofDegreeMap_characterMap_mem (m : U) : (ofDegreeMap T hT U).characterMap m ∈ U :=
+  m.property
+
+end OfDegreeMap
+
 open LogarithmicVectorField
 
 variable {U} (p : TropicalPairing (d := d) (e := e) (ρ := ρ) (ρ' := ρ') U)
