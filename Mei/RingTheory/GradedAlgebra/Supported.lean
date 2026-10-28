@@ -17,7 +17,9 @@ This restricts a Laurent grading to a positive coefficient algebra before
 taking its degree completion.
 
 The underlying module is `Mei.shiftedSubmodule` at shift zero; multiplication
-and homogeneity reuse its existing API. The induced algebra grading is
+reuses its existing API. Homogeneity follows from the support characterization,
+and excluded pieces vanish by independence of the ambient decomposition.
+The induced algebra grading is
 `Subalgebra.gradedAlgebra`, rather than a second decomposition construction.
 -/
 
@@ -69,7 +71,7 @@ end Mei
 namespace Mei
 
 variable {R A Γ : Type*} [CommSemiring R] [Semiring A] [Algebra R A]
-  [AddCommGroup Γ] [DecidableEq Γ] (𝒜 : Γ → Submodule R A) [GradedAlgebra 𝒜]
+  [AddCommMonoid Γ] [DecidableEq Γ] (𝒜 : Γ → Submodule R A) [GradedAlgebra 𝒜]
   (P : AddSubmonoid Γ)
 
 /-- Membership means that every excluded ambient homogeneous component vanishes. -/
@@ -77,13 +79,32 @@ variable {R A Γ : Type*} [CommSemiring R] [Semiring A] [Algebra R A]
 theorem mem_supportedSubalgebra_iff (x : A) :
     x ∈ supportedSubalgebra 𝒜 P ↔
       ∀ n, n ∉ P → (DirectSum.decompose 𝒜 x n : A) = 0 := by
+  classical
   rw [← Subalgebra.mem_toSubmodule, supportedSubalgebra_toSubmodule]
-  simpa only [sub_zero] using (mem_shiftedSubmodule_iff 𝒜 P 0 (x := x))
+  simp only [shiftedSubmodule_def, zero_add]
+  constructor
+  · intro hx n hn
+    refine Submodule.iSup_induction _
+      (motive := fun x => (DirectSum.decompose 𝒜 x n : A) = 0) hx
+      (fun m x hx => ?_) (by simp) (fun x y hx hy => by simp [hx, hy])
+    exact DirectSum.decompose_of_mem_ne 𝒜 hx (fun h => hn (h ▸ m.property))
+  · intro hx
+    rw [← DirectSum.sum_support_decompose 𝒜 x]
+    apply Submodule.sum_mem
+    intro n _
+    by_cases hn : n ∈ P
+    · exact Submodule.mem_iSup_of_mem ⟨n, hn⟩ (DirectSum.decompose 𝒜 x n).property
+    · rw [hx n hn]
+      exact Submodule.zero_mem _
 
 /-- The supported subalgebra is closed under ambient homogeneous projections. -/
 theorem supportedSubalgebra_isHomogeneous :
-    DirectSum.SetLike.IsHomogeneous 𝒜 (supportedSubalgebra 𝒜 P) :=
-  shiftedSubmodule_isHomogeneous 𝒜 P 0
+    DirectSum.SetLike.IsHomogeneous 𝒜 (supportedSubalgebra 𝒜 P) := by
+  intro n x hx
+  by_cases hn : n ∈ P
+  · exact le_supportedSubalgebra 𝒜 P hn (DirectSum.decompose 𝒜 x n).property
+  · rw [(mem_supportedSubalgebra_iff 𝒜 P x).mp hx n hn]
+    exact (supportedSubalgebra 𝒜 P).zero_mem
 
 /-- Restrict the ambient grading to the supported subalgebra. -/
 instance instGradedAlgebraSupportedSubalgebra :
@@ -94,12 +115,12 @@ instance instGradedAlgebraSupportedSubalgebra :
 @[simp]
 theorem supportedSubalgebra_grading_eq_bot {n : Γ} (hn : n ∉ P) :
     (supportedSubalgebra 𝒜 P).grading 𝒜 n = ⊥ := by
-  apply eq_bot_iff.mpr
-  intro x hx
-  apply (Submodule.mem_bot R).mpr
-  apply Subtype.ext
-  have hz := (mem_supportedSubalgebra_iff 𝒜 P x).mp x.property n hn
-  simpa only [DirectSum.decompose_of_mem_same 𝒜
-    ((Subalgebra.mem_grading_iff _ _).mp hx), ZeroMemClass.coe_zero] using hz
+  have hd : Disjoint (supportedSubalgebra 𝒜 P).toSubmodule (𝒜 n) := by
+    rw [supportedSubalgebra_toSubmodule]
+    simpa only [shiftedSubmodule_def, zero_add, iSup_subtype, SetLike.mem_coe] using
+      ((DirectSum.Decomposition.isInternal 𝒜).submodule_iSupIndep.disjoint_biSup hn).symm
+  ext x
+  simpa only [Subalgebra.mem_grading_iff, Submodule.mem_bot] using
+    (Submodule.mem_right_iff_eq_zero_of_disjoint hd (x := x))
 
 end Mei
