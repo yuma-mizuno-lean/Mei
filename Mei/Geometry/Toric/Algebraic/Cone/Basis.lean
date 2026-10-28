@@ -6,7 +6,6 @@ Authors: Codex
 module
 
 public import Mei.Algebra.PositiveDegrees.Basis
-public import Mei.Algebra.PositiveDegrees.Graph
 public import Mei.Geometry.Convex.Cone.LatticePoints
 public import TauCeti.Geometry.Toric.Algebraic.Lattice
 
