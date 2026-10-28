@@ -36,6 +36,21 @@ def graphGrading (p : κ × ι) : Submodule R M := by
   classical
   exact if p.1 = f p.2 then ℳ p.2 else ⊥
 
+open Classical in
+/-- At any degree, the graph piece is the original piece on the graph and zero otherwise. -/
+theorem graphGrading_def (p : κ × ι) :
+    graphGrading ℳ f p = if p.1 = f p.2 then ℳ p.2 else ⊥ := (rfl)
+
+/-- Membership at a graph degree is original homogeneity; off the graph only zero belongs. -/
+@[simp]
+theorem mem_graphGrading_iff {p : κ × ι} {x : M} :
+    x ∈ graphGrading ℳ f p ↔ (p.1 = f p.2 ∧ x ∈ ℳ p.2) ∨ x = 0 := by
+  classical
+  have hz : x = 0 → x ∈ ℳ p.2 := by
+    rintro rfl
+    exact (ℳ p.2).zero_mem
+  by_cases hp : p.1 = f p.2 <;> simp [graphGrading_def, hp, or_iff_left_of_imp hz]
+
 /-- The graph grading retains precisely the original piece on the graph. -/
 @[simp]
 theorem graphGrading_apply (i : ι) : graphGrading ℳ f (f i, i) = ℳ i := by
@@ -73,6 +88,8 @@ variable [DecidableEq ι] [DecidableEq κ] [DirectSum.Decomposition ℳ]
 
 /-- Graph reindexing preserves the internal direct-sum decomposition. -/
 instance instDecompositionGraphGrading : DirectSum.Decomposition (graphGrading ℳ f) :=
+  -- The ascription elaborates the internality argument as a proof, allowing the private
+  -- helper in this public data declaration; a tactic `have` rejects that helper.
   (show DirectSum.IsInternal (graphGrading ℳ f) from by
     have h := (DirectSum.Decomposition.isInternal ℳ).iSup_fiber (fun i => (f i, i))
     simpa only [← graphGrading_eq_iSup] using h).chooseDecomposition
