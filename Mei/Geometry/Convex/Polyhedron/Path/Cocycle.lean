@@ -36,7 +36,7 @@ public section
 
 noncomputable section
 
-open Set Topology Mei.Convex
+open Set Topology Mei.Convex Mei.Convex.WallComplement
 
 namespace Convex
 
@@ -143,15 +143,10 @@ theorem sub_mul_sub_nonneg_of_disjoint_singularSupport (hK : Convex ℝ K)
   rw [ha, zero_mul] at hneg
   exact lt_irrefl _ hneg
 
-end Convex
-
-namespace Mei.Convex.WallComplement
-
-variable {V ι : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V] {W : ι → Set V} {K : Set V}
-
 /-- A segment between off-wall points of a convex set missing the singular support of a
 closed wall family is admissible. -/
-theorem AdmissibleSegment.of_mem_convex (hK : Convex ℝ K) (hKW : Disjoint K (singularSupport W))
+theorem admissibleSegment_of_disjoint_singularSupport (hK : Convex ℝ K)
+    (hKW : Disjoint K (singularSupport W))
     (hclosed : ∀ i, IsClosed (W i)) {x y : WallComplement W} (hx : x.val ∈ K)
     (hy : y.val ∈ K) : AdmissibleSegment x y where
   transverse i := by
@@ -389,6 +384,14 @@ private theorem crossing_classes (hK : Convex ℝ K) (hKW : Disjoint K (singular
       (iff_of_false (hno y z hy hz) (by simp)) (fun h => (hno x y hx hy h).elim)
       (fun h => (hno x z hx hz h).elim) (fun h => (hno y z hy hz h).elim)
 
+end Convex
+
+namespace Mei.Convex.WallComplement
+
+variable {V ι : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V] {W : ι → Set V}
+  (hclosed : ∀ i, IsClosed (W i)) {ν : ι → V →ₗ[ℝ] ℝ}
+  (hν : ∀ i, LinearMap.ker (ν i) = (affineSpan ℝ (W i)).direction)
+
 variable [Finite ι] {G : Type*} [Group G] (ν) (label : ι → G)
   (hcomm : ∀ i j, affineSpan ℝ (W i) = affineSpan ℝ (W j) → Commute (label i) (label j))
 
@@ -413,7 +416,7 @@ theorem segmentPathProduct_mul_segmentPathProduct {x y z : WallComplement W}
   let A := Finset.univ.filter fun j => (∃ t, (j, t) ∈ crossings x y) ∧ ∃ t, (j, t) ∈ crossings x z
   let B := Finset.univ.filter fun j => (∃ t, (j, t) ∈ crossings x y) ∧ ∃ t, (j, t) ∈ crossings y z
   let C := Finset.univ.filter fun j => (∃ t, (j, t) ∈ crossings x z) ∧ ∃ t, (j, t) ∈ crossings y z
-  have hcl := fun j => crossing_classes hclosed hν hK hT hx hy hz j
+  have hcl := fun j => Convex.crossing_classes hclosed hν hK hT hx hy hz j
   have hxy (j : ι) : (∃ t, (j, t) ∈ crossings x y) ↔ j ∈ A ∨ j ∈ B := by
     simpa only [A, B, Finset.mem_filter, Finset.mem_univ, true_and] using (hcl j).1
   have hxz (j : ι) : (∃ t, (j, t) ∈ crossings x z) ↔ j ∈ A ∨ j ∈ C := by
@@ -479,7 +482,8 @@ theorem segmentPathProduct_mul_segmentPathProduct {x y z : WallComplement W}
     (fun j => by rw [List.mem_append, hmA, hmB, hxy])
     (List.pairwise_append.mpr ⟨hpA.imp fun h s t hs ht => (hτeq e₁ hs) ▸ (hτeq e₁ ht) ▸ h,
       hpB.imp fun h s t hs ht => (hτeq e₁ hs) ▸ (hτeq e₁ ht) ▸ h,
-      fun j hj k hk s t hs ht => crossing_le_of_crossing_opposite hclosed hν hK hT hx hy hz hs
+      fun j hj k hk s t hs ht =>
+        Convex.crossing_le_of_crossing_opposite hclosed hν hK hT hx hy hz hs
         (hAmem ((hmA j).mp hj)).2 ht (hBmem ((hmB k).mp hk)).2⟩)
   -- Transport along `[x, z]`: walls separating `x` precede walls separating `z`.
   have h₃ := segmentPathProduct_eq_prod_of_pairwise ν label hcomm e₃ (lA ++ lC)
@@ -489,10 +493,11 @@ theorem segmentPathProduct_mul_segmentPathProduct {x y z : WallComplement W}
         (hCmem ((hmC j).mp hk)).2⟩⟩)
     (fun j => by rw [List.mem_append, hmA, hmC, hxz])
     (List.pairwise_append.mpr ⟨hpA.imp_of_mem fun {j k} hj hk h s t hs ht =>
-        crossing_le_of_crossing_le hclosed hν hK hT hx hy hz
+        Convex.crossing_le_of_crossing_le hclosed hν hK hT hx hy hz
           (hτ (hAmem ((hmA j).mp hj)).1) (hτ (hAmem ((hmA k).mp hk)).1) hs ht h,
       hpC.imp fun h s t hs ht => (hτeq e₃ hs) ▸ (hτeq e₃ ht) ▸ h,
-      fun j hj k hk s t hs ht => crossing_le_of_crossing_opposite hclosed hν hK hT hx hz hy hs
+      fun j hj k hk s t hs ht =>
+        Convex.crossing_le_of_crossing_opposite hclosed hν hK hT hx hz hy hs
         (hAmem ((hmA j).mp hj)).1 ht (hswap (hCmem ((hmC k).mp hk)).2)⟩)
   -- Transport along `[y, z]`: walls separating `y`, in reverse order, precede walls
   -- separating `z`.
@@ -503,15 +508,17 @@ theorem segmentPathProduct_mul_segmentPathProduct {x y z : WallComplement W}
         (hCmem ((hmC j).mp hk)).1, (hBmem ((hmB j).mp (List.mem_reverse.mp hj))).2⟩⟩)
     (fun j => by rw [List.mem_append, List.mem_reverse, hmB, hmC, hyz])
     (List.pairwise_append.mpr ⟨List.pairwise_reverse.mpr (hpB.imp_of_mem
-        fun {j k} hj hk h s t hs ht => crossing_le_of_crossing_le hclosed hν hK hT hy hx hz
+        fun {j k} hj hk h s t hs ht =>
+          Convex.crossing_le_of_crossing_le hclosed hν hK hT hy hx hz
           (hswap' (hτ (hBmem ((hmB k).mp hk)).1)) (hswap' (hτ (hBmem ((hmB j).mp hj)).1))
           hs ht (by linarith)),
       hpC.imp_of_mem fun {j k} hj hk h s t hs ht => by
-        have := crossing_le_of_crossing_le hclosed hν hK hT hz hx hy
+        have := Convex.crossing_le_of_crossing_le hclosed hν hK hT hz hx hy
           (hswap' (hτ (hCmem ((hmC k).mp hk)).1)) (hswap' (hτ (hCmem ((hmC j).mp hj)).1))
           (hswap' ht) (hswap' hs) (by linarith)
         linarith,
-      fun j hj k hk s t hs ht => crossing_le_of_crossing_opposite hclosed hν hK hT hy hz hx hs
+      fun j hj k hk s t hs ht =>
+        Convex.crossing_le_of_crossing_opposite hclosed hν hK hT hy hz hx hs
         (hswap (hBmem ((hmB j).mp (List.mem_reverse.mp hj))).1) ht
         (hswap (hCmem ((hmC k).mp hk)).1)⟩)
   -- Compare the signed labels class by class.
