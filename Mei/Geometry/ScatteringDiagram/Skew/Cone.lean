@@ -51,14 +51,14 @@ theorem principalCone_eq_hull :
 
 /-- The principal cone is salient: the unfrozen coordinate retains an independent
 basis, regardless of the first lattice map or the skew form. -/
-theorem principalCone_salient (hi : IsIntegralLattice i) :
+theorem salient_principalCone (hi : IsIntegralLattice i) :
     (D.principalCone b j i : ConvexCone ℝ (W × V)).Salient := by
   rw [principalCone]
   exact PointedCone.salient_hull_range
     (LinearIndependent.of_comp (LinearMap.snd ℝ W V) (hi.linearIndependent_basis b))
 
 /-- The principal positive cone is lattice rational, including for the zero skew form. -/
-theorem principalCone_isLatticeRational [Finite ι] :
+theorem isLatticeRational_principalCone [Finite ι] :
     IsLatticeRational (j.prodMap i) (D.principalCone b j i) := by
   classical
   let := Fintype.ofFinite ι
@@ -79,14 +79,25 @@ theorem principalPositiveDegrees_monoid_eq_latticePoints_principalCone
     D.principalCharacter.toAddMonoidHom
 
 /-- Supported primitive generators belong to the principal positive monoid.
-Unlike an arbitrary positive monoid, this monoid contains all lattice points of its cone. -/
+This integral membership does not require real embeddings. -/
 theorem supportedRay_generator_mem_principalPositiveDegrees
-    (hj : Function.Injective j) (hi : IsIntegralLattice i)
     (w : SupportedRay (D.principalPositiveDegrees b.positiveDegrees)) :
     w.generator ∈ (D.principalPositiveDegrees b.positiveDegrees).monoid := by
   obtain ⟨a, ha, haw⟩ := w.supported
-  rw [D.principalPositiveDegrees_monoid_eq_latticePoints_principalCone b j i hj hi] at haw ⊢
-  exact ((D.principalCone b j i).zsmul_mem_latticePoints_iff (j.prodMap i) ha
-    w.generator).mp haw
+  have h := (PositiveDegrees.mem_graph_monoid b.positiveDegrees
+    D.principalCharacter.toAddMonoidHom _ _).mp haw
+  apply (PositiveDegrees.mem_graph_monoid b.positiveDegrees
+    D.principalCharacter.toAddMonoidHom _ _).mpr
+  constructor
+  · apply (b.mem_positiveDegrees_monoid _).mpr
+    intro c
+    have hc := (b.mem_positiveDegrees_monoid _).mp h.1 c
+    simp only [zsmul_eq_smul, map_zsmul, Finsupp.smul_apply, smul_eq_mul] at hc
+    exact nonneg_of_mul_nonneg_right hc ha
+  · apply LinearMap.ext
+    intro n
+    have he := congrArg (fun χ => χ n) h.2
+    simp only [zsmul_eq_smul, map_zsmul, LinearMap.smul_apply, zsmul_eq_mul] at he
+    exact mul_left_cancel₀ ha.ne' he
 
 end Mei.SkewLatticeDatum
