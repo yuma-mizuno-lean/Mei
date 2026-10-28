@@ -62,7 +62,6 @@ theorem map_algebraMap (φ : R →+* S) (f : G →* H)
   exact (lift (fun g => of (f g)) _ _).commutes r
 
 /-- Coefficients transform semilinearly under a twisted algebra map. -/
-@[simp]
 theorem map_smul (φ : R →+* S) (f : G →* H)
     (h : ∀ g j, Units.map φ.toMonoidHom (α g j) = β (f g) (f j))
     (r : R) (x : twistedMonoidAlgebra R G α) :
@@ -173,7 +172,7 @@ theorem map_mem_grade (φ : R →+* S) (f : M →+ N)
     (hx : x ∈ grade R α m) :
     map φ f.toMultiplicative h x ∈ grade S β (f m) := by
   obtain ⟨r, rfl⟩ := (mem_grade_iff R α m x).mp hx
-  exact (mem_grade_iff S β (f m) _).mpr ⟨φ r, by simp⟩
+  exact (mem_grade_iff S β (f m) _).mpr ⟨φ r, by simp [map_smul]⟩
 
 /-- Coordinate transport preserves and reflects homogeneous membership. -/
 @[simp]

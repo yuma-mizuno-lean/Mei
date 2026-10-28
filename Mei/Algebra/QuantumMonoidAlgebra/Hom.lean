@@ -83,7 +83,6 @@ theorem map_algebraMap (φ : R →+* S) (f : Γ →+ Γ')
   exact TwistedMonoidAlgebra.map_algebraMap _ _ _ r
 
 /-- Quantum algebra maps are semilinear for their coefficient homomorphism. -/
-@[simp]
 theorem map_smul (φ : R →+* S) (f : Γ →+ Γ')
     (h : ∀ p r, Units.map φ.toMonoidHom (q ^ β p r) = q' ^ β' (f p) (f r))
     (r : R) (x : QuantumMonoidAlgebra q β) :
