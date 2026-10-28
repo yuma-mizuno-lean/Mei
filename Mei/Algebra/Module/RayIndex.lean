@@ -21,7 +21,8 @@ the positive rational multiples of `n` lying in `H` are exactly the multiples by
 positive integers `j`. When `κ = 0`, no positive rational multiple of `n` lies in `H`.
 On a primitive vector it is the order of its class modulo `H`, an integer, and it
 scales inversely with the vector: `κ(t n) = κ(n) / t` for every positive rational `t` with
-`t n ∈ N`. It is positive on nonzero vectors when `H` has finite index.
+`t n ∈ N`. It is positive on nonzero vectors when `H` has finite index. The normalized vector
+`H.rayVector n` is primitive in `H` whenever this index is positive and `H` is free.
 
 Real or rational scalings of lattice vectors are expressed without leaving `N`: a vector
 `m = (b / a) n` with positive integers `a, b` is recorded by the equation `a • m = b • n`.
@@ -258,5 +259,56 @@ theorem rayVector_mem_of_mem {K : AddSubgroup N} (hK : K.toAddSubmonoid.NSMulSat
     exact K.zsmul_mem hn _
   exact ((AddSubgroup.saturated_iff_zsmul.mp hK) _ _ hm).resolve_left (by
     exact_mod_cast (H.rayIndex n).den_nz)
+
+/-- The normalized lattice vector vanishes exactly when its ray index is zero. -/
+@[simp]
+theorem rayVector_eq_zero_iff (n : N) : H.rayVector n = 0 ↔ H.rayIndex n = 0 := by
+  constructor
+  · intro hv
+    by_cases hn : n = 0
+    · simp [hn]
+    · have h := H.den_rayIndex_zsmul_rayVector n
+      rw [hv, ZeroMemClass.coe_zero, smul_zero] at h
+      have hnum : (H.rayIndex n).num = 0 := by
+        by_contra hnum
+        exact (smul_ne_zero hnum hn) h.symm
+      exact Rat.num_eq_zero.mp hnum
+  · intro hκ
+    apply Subtype.ext
+    have h := H.den_rayIndex_zsmul_rayVector n
+    simpa [hκ] using h
+
+/-- A ray-normalized vector is primitive in the subgroup whenever its ray index is
+positive. Freeness of the subgroup is automatic for finite-rank sublattices. -/
+theorem isPrimitive_rayVector [Module.Free ℤ H] {n : N} (hκ : 0 < H.rayIndex n) :
+    TauCeti.IsPrimitive (H.rayVector n) := by
+  have hn : n ≠ 0 := by rintro rfl; simp at hκ
+  have hv : H.rayVector n ≠ 0 :=
+    fun hv => hκ.ne' ((H.rayVector_eq_zero_iff n).mp hv)
+  obtain ⟨c, w, hc, hw, hcw⟩ := TauCeti.exists_eq_zsmul_isPrimitive hv
+  have he : (((H.rayIndex n).den : ℤ) * c) • (w : N) =
+      (H.rayIndex n).num • n := by
+    rw [mul_smul, ← H.den_rayIndex_zsmul_rayVector n]
+    exact congrArg (fun v : H => ((H.rayIndex n).den : ℤ) • (v : N)) hcw.symm
+  obtain ⟨j, hj, hje⟩ :=
+    (H.mem_iff_exists_div_eq_mul_rayIndex_of_zsmul_eq_zsmul hn
+      (mul_pos (by exact_mod_cast (H.rayIndex n).den_pos) hc)
+      (Rat.num_pos.mpr hκ) he).mp w.property
+  have hcq : (c : ℚ) ≠ 0 := by exact_mod_cast hc.ne'
+  have hratio : ((H.rayIndex n).num : ℚ) /
+      ((((H.rayIndex n).den : ℤ) * c : ℤ) : ℚ) = H.rayIndex n / c := by
+    push_cast
+    rw [← div_div, Rat.num_div_den]
+  rw [hratio, div_eq_iff hcq] at hje
+  have hjc : (j : ℚ) * c = 1 := by
+    apply (mul_right_cancel₀ hκ.ne')
+    calc
+      (j : ℚ) * c * H.rayIndex n = j * H.rayIndex n * c := by ring
+      _ = H.rayIndex n := hje.symm
+      _ = 1 * H.rayIndex n := (one_mul _).symm
+  have hjcZ : (j : ℤ) * c = 1 := by exact_mod_cast hjc
+  have hc1 : c = 1 := by nlinarith [show (1 : ℤ) ≤ j by exact_mod_cast hj]
+  rw [hc1, one_smul] at hcw
+  exact hcw.symm ▸ hw
 
 end AddSubgroup
