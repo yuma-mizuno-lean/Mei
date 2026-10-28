@@ -6,8 +6,6 @@ Authors: Claude
 module
 
 public import Mei.Algebra.Lie.Skew.Grading
-public import Mei.Algebra.Lie.BCH.Coordinates
-public import Mei.Algebra.Lie.BCH.HomogeneousFactor
 public import Mei.Algebra.Lie.BCH.Ray.Basic
 public import Mathlib.RingTheory.PowerSeries.Basic
 
@@ -51,30 +49,6 @@ local notation "F" =>
 
 include hn hn0
 
-/-- Positive multiples of a nonzero allowed degree have strictly larger degree. -/
-private theorem lt_degree_succ_nsmul (j : ℕ) : (j : ℤ) < d.degree ((j + 1) • n) := by
-  have h := d.degree_pos hn hn0
-  rw [map_nsmul, nsmul_eq_mul]
-  push_cast
-  nlinarith
-
-omit hn0 in
-private theorem succ_nsmul_mem_monoid (j : ℕ) : (j + 1) • n ∈ d.monoid :=
-  d.monoid.nsmul_mem hn _
-
-private theorem succ_nsmul_ne_zero (j : ℕ) : (j + 1) • n ≠ 0 := by
-  intro h
-  have := lt_degree_succ_nsmul hn hn0 j
-  rw [h, map_zero] at this
-  omega
-
-private theorem succ_nsmul_injective : Function.Injective fun j : ℕ => (j + 1) • n := by
-  intro i j h
-  have h := congrArg d.degree h
-  simp only [map_nsmul, nsmul_eq_mul] at h
-  have := d.degree_pos hn hn0
-  exact_mod_cast Nat.succ_injective (by exact_mod_cast mul_right_cancel₀ this.ne' h)
-
 /-- The positive skew generator `c X_{(j+1)n}` on the ray of a nonzero allowed degree `n`. -/
 def rayGenerator (j : ℕ) : R →ₗ[R] 𝔤 where
   toFun c := ⟨single β hβ ((j + 1) • n) c, by
@@ -83,7 +57,7 @@ def rayGenerator (j : ℕ) : R →ₗ[R] 𝔤 where
     intro m hm
     rw [toFinsupp_single, Finsupp.single_apply, ite_eq_right_iff]
     rintro rfl
-    exact (hm.elim (· (succ_nsmul_mem_monoid hn j)) (succ_nsmul_ne_zero hn hn0 j)).elim⟩
+    exact (hm.elim (· (d.monoid.nsmul_mem hn (j + 1))) (d.succ_nsmul_ne_zero hn hn0 j)).elim⟩
   map_add' _ _ := Subtype.ext (map_add _ _ _)
   map_smul' _ _ := Subtype.ext (map_smul _ _ _)
 
@@ -122,7 +96,7 @@ private theorem rayPartialSum_sub_mem {k l : ℕ} (h : k ≤ l) (f : R⟦X⟧) :
   rw [rayPartialSum_apply, rayPartialSum_apply, ← Finset.sum_range_add_sum_Ico _ h,
     add_sub_cancel_left]
   refine Submodule.sum_mem (d.degreeIdeal ℒ k).toSubmodule fun j hj => ?_
-  apply d.le_degreeIdeal ℒ (lt_of_le_of_lt _ (lt_degree_succ_nsmul hn hn0 j))
+  apply d.le_degreeIdeal ℒ (lt_of_le_of_lt _ (d.lt_degree_succ_nsmul hn hn0 j))
     (rayGenerator_mem β hβ hn hn0 j _)
   exact_mod_cast (Finset.mem_Ico.mp hj).1
 
@@ -211,7 +185,7 @@ theorem logComponent_rayExp_succ_nsmul (f : R⟦X⟧) (j : ℕ) :
       rayGenerator β hβ hn hn0 j (coeff (j + 1) f) := by
   let k := (d.degree ((j + 1) • n)).toNat
   have hj : j ∈ Finset.range k := Finset.mem_range.mpr (by
-    have := lt_degree_succ_nsmul hn hn0 j
+    have := d.lt_degree_succ_nsmul hn hn0 j
     omega)
   rw [d.logComponent_eq_decompose ℒ _ (Int.self_le_toNat _)
     (log_projection_rayExp β hβ hn hn0 k f), rayPartialSum_apply, DirectSum.decompose_sum,
@@ -219,7 +193,7 @@ theorem logComponent_rayExp_succ_nsmul (f : R⟦X⟧) (j : ℕ) :
   · exact DirectSum.decompose_of_mem_same ℒ (rayGenerator_mem β hβ hn hn0 j _)
   · intro i _ hij
     exact DirectSum.decompose_of_mem_ne ℒ (rayGenerator_mem β hβ hn hn0 i _)
-      fun h => hij (succ_nsmul_injective hn hn0 h)
+      fun h => hij (d.succ_nsmul_injective hn hn0 h)
 
 /-- Off the positive multiples of `n`, a ray label has no logarithmic coefficient. -/
 theorem logComponent_rayExp_eq_zero_of_forall_ne (f : R⟦X⟧) {m : Γ}
@@ -233,14 +207,6 @@ theorem logComponent_rayExp_eq_zero_of_forall_ne (f : R⟦X⟧) {m : Γ}
     (DirectSum.decompose_of_mem_ne ℒ (rayGenerator_mem β hβ hn hn0 j _) (hm j)).trans
       (ZeroMemClass.coe_zero _).symm
 
-omit [DecidableEq Γ] in
-private theorem succ_nsmul_mem_rayDegrees {w : SupportedRay d} (hw : n ∈ w.rayDegrees)
-    (j : ℕ) : (j + 1) • n ∈ w.rayDegrees := by
-  obtain ⟨-, a, ha, rfl⟩ := SupportedRay.mem_rayDegrees.mp hw
-  refine SupportedRay.mem_rayDegrees.mpr ⟨succ_nsmul_mem_monoid hn j, (j + 1) * a, ?_, ?_⟩
-  · positivity
-  · rw [mul_smul, ← Nat.cast_succ, natCast_zsmul]
-
 /-- A ray label lies in the completed subgroup of the supported ray through `n`. -/
 theorem rayExp_mem_completedRaySubgroup {w : SupportedRay d} (hw : n ∈ w.rayDegrees)
     (f : R⟦X⟧) : rayExp β hβ hn hn0 f ∈ d.completedRaySubgroup ℒ w := by
@@ -250,7 +216,7 @@ theorem rayExp_mem_completedRaySubgroup {w : SupportedRay d} (hw : n ∈ w.rayDe
   refine ⟨_, ?_, rfl⟩
   rw [rayPartialSum_apply]
   exact Submodule.sum_mem (rayLieSubalgebra ℒ w).toSubmodule fun j _ =>
-    le_rayLieSubalgebra ℒ (succ_nsmul_mem_rayDegrees hn hn0 hw j)
+    le_rayLieSubalgebra ℒ (SupportedRay.succ_nsmul_mem_rayDegrees hw j)
       (rayGenerator_mem β hβ hn hn0 j _)
 
 end Mei.SkewLieAlgebra

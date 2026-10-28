@@ -6,7 +6,6 @@ Authors: Claude
 module
 
 public import Mathlib.RingTheory.PowerSeries.Log
-public import Mathlib.RingTheory.PowerSeries.Derivative
 
 import Mathlib.Algebra.Algebra.Rat
 
@@ -19,8 +18,9 @@ It is the unique power series without constant term whose logarithmic derivative
 `X · d/dX` is Mathlib's `PowerSeries.log A = log(1 + X)`.
 
 Its coefficients are the logarithmic coefficients of the dilogarithm elements
-`Ψ[n] = exp(∑_{j ≥ 1} (-1)^(j+1) X_{jn} / j²)` of cluster scattering diagrams, whose wall
-functions `1 + z^n` arise from the identity `X · d/dX (-Li₂(-X)) = log(1 + X)`; see
+`Ψ[n] = exp(∑_{j ≥ 1} (-1)^(j+1) X_{jn} / j²)` of cluster scattering diagrams.
+The normalized elements `Ψ[n]^κ(n)` have wall functions `1 + z^n`, arising from the identity
+`X · d/dX (-Li₂(-X)) = log(1 + X)`; see
 Gross–Hacking–Keel–Kontsevich, *Canonical bases for cluster algebras*, §1.1
 (arXiv:1411.1394v2), and Nakanishi, *Cluster algebras and scattering diagrams, Part III*,
 §5 (arXiv:2111.00800v6). The definition follows `PowerSeries.log`.
@@ -82,14 +82,8 @@ theorem eq_negDilogNeg_iff (f : A⟦X⟧) :
     f = negDilogNeg A ↔ constantCoeff f = 0 ∧ X * d⁄dX f = log A := by
   refine ⟨fun h => h ▸ ⟨constantCoeff_negDilogNeg, X_mul_derivative_negDilogNeg⟩, ?_⟩
   rintro ⟨h0, hd⟩
-  ext n
-  cases n with
-  | zero => simpa using h0
-  | succ n =>
-    have h := congrArg (coeff (n + 1)) (hd.trans X_mul_derivative_negDilogNeg.symm)
-    rw [coeff_succ_X_mul, coeff_succ_X_mul, coeff_derivative, coeff_derivative] at h
-    have hu : IsUnit ((n : A) + 1) := by
-      simpa using (algebraMap ℚ A).isUnit_map (Ne.isUnit (n.cast_add_one_ne_zero (R := ℚ)))
-    exact hu.mul_left_injective h
+  let : HasUniqueDiv A := .of_module_rat A
+  exact derivative.ext (X_mul_cancel (hd.trans X_mul_derivative_negDilogNeg.symm))
+    (h0.trans constantCoeff_negDilogNeg.symm)
 
 end PowerSeries

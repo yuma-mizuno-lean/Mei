@@ -74,6 +74,32 @@ theorem degree_eq_zero_iff {n : N} (hn : n ∈ d.monoid) : d.degree n = 0 ↔ n 
   · rintro rfl
     exact map_zero _
 
+/-- The degree of the `(j + 1)`st multiple of a nonzero allowed degree exceeds `j`. -/
+theorem lt_degree_succ_nsmul {n : N} (hn : n ∈ d.monoid) (hn0 : n ≠ 0) (j : ℕ) :
+    (j : ℤ) < d.degree ((j + 1) • n) := by
+  have h := d.degree_pos hn hn0
+  rw [map_nsmul, nsmul_eq_mul]
+  push_cast
+  exact lt_of_lt_of_le (by omega : (j : ℤ) < j + 1)
+    (le_mul_of_one_le_right (by omega) (by omega))
+
+/-- Positive multiples of a nonzero allowed degree are nonzero. -/
+theorem succ_nsmul_ne_zero {n : N} (hn : n ∈ d.monoid) (hn0 : n ≠ 0) (j : ℕ) :
+    (j + 1) • n ≠ 0 := by
+  intro h
+  have := d.lt_degree_succ_nsmul hn hn0 j
+  rw [h, map_zero] at this
+  omega
+
+/-- Positive multiples of a nonzero allowed degree have distinct multipliers. -/
+theorem succ_nsmul_injective {n : N} (hn : n ∈ d.monoid) (hn0 : n ≠ 0) :
+    Function.Injective fun j : ℕ => (j + 1) • n := by
+  intro i j h
+  have h := congrArg d.degree h
+  simp only [map_nsmul, nsmul_eq_mul] at h
+  have := d.degree_pos hn hn0
+  exact_mod_cast Nat.succ_injective (by exact_mod_cast mul_right_cancel₀ this.ne' h)
+
 /-- The degree cutoff, retaining zero and all allowed degrees of order at most `k`. -/
 def cutoff (k : ℕ) : Set N := {n | n ∈ d.monoid ∧ d.degree n ≤ k}
 

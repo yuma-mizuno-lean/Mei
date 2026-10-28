@@ -72,6 +72,14 @@ theorem add_mem_rayDegrees {w : SupportedRay d} {n m : N}
   obtain ⟨hm, b, hb, rfl⟩ := hm
   exact ⟨d.monoid.add_mem hn hm, a + b, add_pos ha hb, (add_zsmul _ _ _).symm⟩
 
+/-- Positive natural multiples of an actual ray degree remain on that ray. -/
+theorem succ_nsmul_mem_rayDegrees {w : SupportedRay d} {n : N} (hn : n ∈ w.rayDegrees)
+    (j : ℕ) : (j + 1) • n ∈ w.rayDegrees := by
+  obtain ⟨hn, a, ha, rfl⟩ := mem_rayDegrees.mp hn
+  refine mem_rayDegrees.mpr ⟨d.monoid.nsmul_mem hn _, (j + 1) * a, ?_, ?_⟩
+  · positivity
+  · rw [mul_smul, ← Nat.cast_succ, natCast_zsmul]
+
 /-- The additive semigroup of actual allowed positive degrees on a supported ray. -/
 def degreeSemigroup (w : SupportedRay d) : AddSubsemigroup N where
   carrier := w.rayDegrees
