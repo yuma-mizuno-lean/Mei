@@ -95,6 +95,7 @@ theorem LevelClass.truncate_inj (k : ℕ)
 
 /-- Mapping a completed class to a finite Lie quotient factors through precisely its
 finite-order projection. -/
+@[simp]
 theorem Class.map_truncation (c : Class.{u} (d := d) (h := h) (H := H)) (k : ℕ) :
     map (GradedLieHom.truncation d ℒ k) (H.truncation_mem_wall d k) c =
       LevelClass.truncate k (c.projection k) := by
