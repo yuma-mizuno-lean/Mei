@@ -95,8 +95,9 @@ theorem map_smul (φ : R →+* S) (f : Γ →+ Γ')
 @[simp]
 theorem map_id :
     map (RingHom.id R) (AddMonoidHom.id Γ) (q := q) (β := β) (fun _ _ => rfl) =
-      RingHom.id _ :=
-  ringHom_ext (fun r => map_algebraMap _ _ _ r) fun p => map_monomial _ _ _ p
+      RingHom.id _ := by
+  simpa only [map, AddMonoidHom.toMultiplicative_id] using
+    (TwistedMonoidAlgebra.map_id (α := factorSet q β))
 
 /-- Simultaneous quantum maps compose in both coefficients and exponents. -/
 theorem map_comp (φ : R →+* S) (ψ : S →+* T) (f : Γ →+ Γ') (g : Γ' →+ Γ'')
@@ -104,8 +105,9 @@ theorem map_comp (φ : R →+* S) (ψ : S →+* T) (f : Γ →+ Γ') (g : Γ' �
     (h' : ∀ p r, Units.map ψ.toMonoidHom (q' ^ β' p r) = q'' ^ β'' (g p) (g r)) :
     (map ψ g h').comp (map φ f h) =
       map (ψ.comp φ) (g.comp f) (fun p r => by
-        rw [AddMonoidHom.comp_apply, AddMonoidHom.comp_apply, ← h', ← h]; rfl) :=
-  ringHom_ext (fun r => by simp) fun p => by simp
+        rw [AddMonoidHom.comp_apply, AddMonoidHom.comp_apply, ← h', ← h]; rfl) := by
+  unfold map
+  exact TwistedMonoidAlgebra.map_comp φ ψ f.toMultiplicative g.toMultiplicative _ _
 
 /-- Applying two simultaneous quantum maps in turn applies their composite. -/
 @[simp]
@@ -123,74 +125,75 @@ theorem map_mem_grade (φ : R →+* S) (f : Γ →+ Γ')
     (h : ∀ p r, Units.map φ.toMonoidHom (q ^ β p r) = q' ^ β' (f p) (f r))
     {p : Γ} {x : QuantumMonoidAlgebra q β} (hx : x ∈ grade q β p) :
     map φ f h x ∈ grade q' β' (f p) := by
-  obtain ⟨r, rfl⟩ := (mem_grade_iff q β p x).mp hx
-  exact (mem_grade_iff q' β' (f p) _).mpr ⟨φ r, by simp⟩
+  unfold map
+  exact TwistedMonoidAlgebra.map_mem_grade φ f _ hx
 
 /-- An exponent map compatible with the factor sets, with fixed coefficients,
 is an algebra map. -/
 def mapDomainAlgHom (f : Γ →+ Γ') (h : ∀ p r, q ^ β p r = q ^ β' (f p) (f r)) :
-    QuantumMonoidAlgebra q β →ₐ[R] QuantumMonoidAlgebra q β' where
-  __ := map (RingHom.id R) f h
-  commutes' r := map_algebraMap (RingHom.id R) f h r
+    QuantumMonoidAlgebra q β →ₐ[R] QuantumMonoidAlgebra q β' :=
+  TwistedMonoidAlgebra.mapDomainAlgHom f.toMultiplicative fun p r => by
+    simpa only [factorSet_apply, AddMonoidHom.toMultiplicative_apply_apply, toAdd_ofAdd]
+      using h p.toAdd r.toAdd
 
 /-- Forgetting linearity recovers the simultaneous map with identity coefficients. -/
 @[simp]
 theorem coe_mapDomainAlgHom (f : Γ →+ Γ') (h : ∀ p r, q ^ β p r = q ^ β' (f p) (f r)) :
     (mapDomainAlgHom f h :
       QuantumMonoidAlgebra q β →+* QuantumMonoidAlgebra q β') =
-      map (RingHom.id R) f h := (rfl)
+      map (RingHom.id R) f h := by
+  unfold mapDomainAlgHom map
+  rw [TwistedMonoidAlgebra.coe_mapDomainAlgHom]
 
 /-- The algebra map has the prescribed effect on every quantum monomial. -/
 @[simp]
 theorem mapDomainAlgHom_monomial (f : Γ →+ Γ')
     (h : ∀ p r, q ^ β p r = q ^ β' (f p) (f r)) (p : Γ) :
-    mapDomainAlgHom f h (monomial q β p) = monomial q β' (f p) :=
-  map_monomial (RingHom.id R) f h p
+    mapDomainAlgHom f h (monomial q β p) = monomial q β' (f p) := by
+  unfold mapDomainAlgHom
+  simp only [monomial_def, TwistedMonoidAlgebra.mapDomainAlgHom_of,
+    AddMonoidHom.toMultiplicative_apply_apply, toAdd_ofAdd]
 
 /-- Changes of exponent coordinates compatible with the factor sets give quantum
 algebra equivalences. -/
 def domCongr (e : Γ ≃+ Γ') (h : ∀ p r, q ^ β p r = q ^ β' (e p) (e r)) :
     QuantumMonoidAlgebra q β ≃ₐ[R] QuantumMonoidAlgebra q β' :=
-  AlgEquiv.ofAlgHom (mapDomainAlgHom e.toAddMonoidHom h)
-    (mapDomainAlgHom e.symm.toAddMonoidHom fun p r => by
-      simpa using (h (e.symm p) (e.symm r)).symm)
-    (algHom_ext fun p => by simp)
-    (algHom_ext fun p => by simp)
+  TwistedMonoidAlgebra.domCongr e.toMultiplicative fun p r => by
+    simpa only [factorSet_apply, AddEquiv.toMultiplicative_apply_apply, toAdd_ofAdd]
+      using h p.toAdd r.toAdd
 
 /-- The exponent equivalence is induced by its forward algebra map. -/
 @[simp]
 theorem domCongr_toAlgHom (e : Γ ≃+ Γ') (h : ∀ p r, q ^ β p r = q ^ β' (e p) (e r)) :
     (domCongr e h).toAlgHom = mapDomainAlgHom e.toAddMonoidHom h := by
-  apply AlgEquiv.toAlgHom_ofAlgHom
+  unfold domCongr mapDomainAlgHom
+  exact TwistedMonoidAlgebra.domCongr_toAlgHom _ _
 
 /-- Coordinate transport sends each quantum monomial to the monomial at the
 transported exponent. -/
 @[simp]
 theorem domCongr_monomial (e : Γ ≃+ Γ') (h : ∀ p r, q ^ β p r = q ^ β' (e p) (e r))
     (p : Γ) :
-    domCongr e h (monomial q β p) = monomial q β' (e p) :=
-  (DFunLike.congr_fun (domCongr_toAlgHom e h) _).trans
-    (mapDomainAlgHom_monomial e.toAddMonoidHom h p)
+    domCongr e h (monomial q β p) = monomial q β' (e p) := by
+  unfold domCongr
+  simp only [monomial_def, TwistedMonoidAlgebra.domCongr_of,
+    AddEquiv.toMultiplicative_apply_apply, toAdd_ofAdd]
 
 /-- Inverse coordinate transport uses the inverse exponent map. -/
 @[simp]
 theorem domCongr_symm_monomial (e : Γ ≃+ Γ') (h : ∀ p r, q ^ β p r = q ^ β' (e p) (e r))
     (p : Γ') :
     (domCongr e h).symm (monomial q β' p) = monomial q β (e.symm p) := by
-  apply (domCongr e h).injective
-  simp
+  unfold domCongr
+  simp only [monomial_def, TwistedMonoidAlgebra.domCongr_symm_of,
+    AddEquiv.toMultiplicative_apply_symm_apply, toAdd_ofAdd]
 
 /-- Quantum coordinate transport preserves and reflects homogeneous membership. -/
 @[simp]
 theorem domCongr_mem_grade_iff (e : Γ ≃+ Γ') (h : ∀ p r, q ^ β p r = q ^ β' (e p) (e r))
     (p : Γ) (x : QuantumMonoidAlgebra q β) :
     domCongr e h x ∈ grade q β' (e p) ↔ x ∈ grade q β p := by
-  rw [mem_grade_iff, mem_grade_iff]
-  constructor
-  · rintro ⟨r, hr⟩
-    refine ⟨r, (domCongr e h).injective ?_⟩
-    simpa using hr
-  · rintro ⟨r, rfl⟩
-    exact ⟨r, by simp⟩
+  unfold domCongr
+  exact TwistedMonoidAlgebra.domCongr_mem_grade_iff e _ p x
 
 end Mei.QuantumMonoidAlgebra
