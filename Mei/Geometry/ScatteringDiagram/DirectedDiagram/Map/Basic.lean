@@ -117,6 +117,15 @@ theorem mapPathPrefunctor_obj_val (k : ℕ)
     ((D.mapPathPrefunctor f hf k).obj x).val = x.val := by
   simp [mapPathPrefunctor]
 
+/-- The finite-order coefficient path map preserves ambient vertices. -/
+theorem vertices_mapPathPrefunctor (k : ℕ)
+    {x y : WallComplement (fun j : D.active k => (D.wall j).support)}
+    (p : AdmissiblePLPath x y) :
+    ((D.mapPathPrefunctor f hf k).mapPath p).vertices.map WallComplement.val =
+      p.vertices.map WallComplement.val := by
+  simp only [Prefunctor.vertices_mapPath, List.map_map, Function.comp_def,
+    mapPathPrefunctor_obj_val]
+
 /-- Mapping coefficients preserves the actual finite-order product on the same
 ambient path, including simultaneous crossings and labels that become trivial. -/
 @[simp]
@@ -234,9 +243,8 @@ theorem LevelConsistent.map {k : ℕ} (hD : D.LevelConsistent k) :
     (fun j : D.active k => (D.wall j).support)
     (fun j => (D.wall j).isConvexPolyhedron)
     (fun j => (D.wall j).finrank_direction_add_one) p
-  have he := hq ((D.mapPathPrefunctor f hf k).mapPath q) (by
-    simp only [Prefunctor.vertices_mapPath, List.map_map, Function.comp_def,
-      mapPathPrefunctor_obj_val])
+  have he := hq ((D.mapPathPrefunctor f hf k).mapPath q)
+    (D.vertices_mapPathPrefunctor f hf k q)
   rw [levelPathProduct_mapPathPrefunctor, (D.levelConsistent_iff_loops k).mp hD z q,
     map_one] at he
   exact he.symm

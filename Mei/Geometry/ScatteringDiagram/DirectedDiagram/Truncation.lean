@@ -54,22 +54,9 @@ theorem equivalent_map_truncation_iff
       D.LevelEquivalent E k := by
   rw [equivalent_iff_levelEquivalent_of_degreeIdeal_eq_bot _ _
     (d.degreeIdeal_truncatedGrading_eq_bot ℒ le_rfl)]
-  refine ⟨?_, fun hDE => hDE.map _ _⟩
-  intro hDE
-  rw [levelEquivalent_def] at hDE ⊢
-  intro x y x' y' p q hpq
-  have hinj : Function.Injective
-      ((GradedLieHom.truncation d ℒ k).truncatedMap k (a := k) (by simp)) := by
-    rw [GradedLieHom.truncatedMap_truncation, ← LieHom.ker_eq_bot, LieIdeal.mkQ_ker]
-    exact d.degreeIdeal_truncatedGrading_eq_bot ℒ le_rfl
-  apply LieHom.bchGroupMap_injective hinj
-  rw [← D.levelPathProduct_mapPathPrefunctor
-      (GradedLieHom.truncation d ℒ k) (H.truncation_mem_wall d k) k,
-    ← E.levelPathProduct_mapPathPrefunctor
-      (GradedLieHom.truncation d ℒ k) (H.truncation_mem_wall d k) k]
-  apply hDE
-  simpa only [Prefunctor.vertices_mapPath, List.map_map, Function.comp_def,
-    mapPathPrefunctor_obj_val] using hpq
+  apply levelEquivalent_map_iff_of_injective
+  rw [GradedLieHom.truncatedMap_truncation, ← LieHom.ker_eq_bot, LieIdeal.mkQ_ker]
+  exact d.degreeIdeal_truncatedGrading_eq_bot ℒ le_rfl
 
 /-- Interpret a finite-order class as a completed class with coefficients in the
 finite Lie quotient. The result depends only on the given finite-order class. -/
@@ -99,9 +86,15 @@ theorem LevelClass.truncate_injective (k : ℕ) :
         equivalent_map_truncation_iff] at he
       exact (toLevelClass_eq_iff D E k).mpr he
 
+/-- Equality after finite-class truncation is exactly equality at the cutoff. -/
+@[simp]
+theorem LevelClass.truncate_inj (k : ℕ)
+    {x y : LevelClass.{u} (d := d) (h := h) (H := H) k} :
+    truncate k x = truncate k y ↔ x = y :=
+  (truncate_injective k).eq_iff
+
 /-- Mapping a completed class to a finite Lie quotient factors through precisely its
 finite-order projection. -/
-@[simp]
 theorem Class.map_truncation (c : Class.{u} (d := d) (h := h) (H := H)) (k : ℕ) :
     map (GradedLieHom.truncation d ℒ k) (H.truncation_mem_wall d k) c =
       LevelClass.truncate k (c.projection k) := by
