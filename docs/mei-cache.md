@@ -26,9 +26,10 @@ build, axiom, module, lint and review gates.
 
 Old payloads in the same compatibility scope are deleted after publication.
 Older compatibility tags remain available to PRs with old dependency pins.
-Release assets are bounded below 2 GiB. A transient Actions artifact transfers
-between isolated jobs, is deleted after publication, and expires after one day
-if publication fails. No paid cache expansion, R2 service or additional token
+Release assets are bounded below 2 GiB. A transient Actions cache transfers between isolated jobs using an exact
+run-specific key on main, then is deleted after publication. It shares the
+existing 10 GB cache allowance; there is no Actions artifact-storage upload.
+If publication fails, the ordinary cache eviction policy applies. No paid cache expansion, R2 service or additional token
 is enabled by this change. Repository billing controls remain in force.
 
 ## Consumption

@@ -417,13 +417,10 @@ jobs:
 
       - name: Transfer audited cache to isolated publisher
         if: ${{ vars.MEI_RELEASE_CACHE == '1' }}
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830
         with:
-          name: mei-release-cache
-          path: ${{ runner.temp }}/mei-release-upload/
-          if-no-files-found: error
-          retention-days: 1
-          compression-level: 0
+          key: mei-release-transfer-${{ github.run_id }}
+          path: ${{ runner.temp }}/mei-release-upload
 
   publish-release-cache:
     needs: build
@@ -437,10 +434,11 @@ jobs:
         with:
           ref: ${{ github.sha }}
           persist-credentials: false
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+      - uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830
         with:
-          name: mei-release-cache
+          key: mei-release-transfer-${{ github.run_id }}
           path: ${{ runner.temp }}/mei-release-upload
+          fail-on-cache-miss: true
       - name: Validate archive without publishing credentials
         run: python3 scripts/mei_release_cache.py validate . --stage "$RUNNER_TEMP/mei-release-upload"
       - name: Publish verified cache (manifest last)
@@ -464,14 +462,12 @@ jobs:
               gh release delete-asset "$tag" "$asset" --yes
             fi
           done
-      - name: Remove transient Actions artifact after publication
+      - name: Remove transient Actions cache after publication
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
         run: |
-          gh api "repos/$GH_REPO/actions/runs/$GITHUB_RUN_ID/artifacts" --jq '.artifacts[] | select(.name == "mei-release-cache") | .id' | while read -r id; do
-            gh api --method DELETE "repos/$GH_REPO/actions/artifacts/$id"
-          done
+          gh cache delete "mei-release-transfer-$GITHUB_RUN_ID" --ref refs/heads/main
 
   # Run the secret-bearing upload on a fresh runner through the same hardened publisher used
   # by merge-group CI. Main publication remains a fallback: merge groups normally publish the
