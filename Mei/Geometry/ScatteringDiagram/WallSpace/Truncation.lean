@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.ScatteringDiagram.WallSpace.Map
-public import Mei.Algebra.Lie.Graded.Truncation.Basic
+public import Mei.Algebra.Lie.Graded.PositiveDegreeHom
 
 /-!
 # Finite-order directed wall spaces
@@ -40,6 +40,13 @@ theorem truncated_wall (k : ℕ) (n : Γ) (m : Λ →+ ℤ) :
     (H.truncated d k).wall n m =
       (H.wall n m).map (d.degreeIdeal ℒ k).mkQ.toLinearMap := by
   rw [truncated, map_wall]
+
+/-- The canonical graded quotient homomorphism preserves directed wall spaces. -/
+theorem truncation_mem_wall (k : ℕ) (n : Γ) (m : Λ →+ ℤ) (x : L)
+    (hx : x ∈ H.wall n m) :
+    GradedLieHom.truncation d ℒ k x ∈ (H.truncated d k).wall n m := by
+  rw [truncated_wall]
+  exact Submodule.mem_map.mpr ⟨x, hx, (GradedLieHom.truncation_apply k x).symm⟩
 
 /-- Every finite-order wall space maps onto its image at a lower cutoff. -/
 theorem map_truncationMap_wall {k l : ℕ} (h : k ≤ l) (n : Γ) (m : Λ →+ ℤ) :

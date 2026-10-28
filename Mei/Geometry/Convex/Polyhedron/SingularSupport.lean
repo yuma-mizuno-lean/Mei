@@ -20,7 +20,9 @@ Continuous affine equivalences transport singular support, including under a
 bijection of wall indices, by the intrinsic-frontier image theorem. Finitely
 many closed walls in finite dimension have closed singular support.
 Covering each closed wall by pieces with the same affine span can only enlarge
-singular support; extra fine walls are allowed.
+singular support; extra fine walls are allowed. Adding unrestricted coordinates
+to every wall gives the cylinder over the original singular support, including
+for families with empty walls.
 -/
 
 public section
@@ -123,6 +125,27 @@ theorem singularSupport_image {U : Type*} [NormedAddCommGroup U] [NormedSpace �
   obtain ⟨x, rfl⟩ := e.surjective u
   simp only [mem_singularSupport, e.intrinsicFrontier_image, e.injective.mem_set_image,
     ne_eq, hdir]
+
+/-- A cylinder family has precisely the singularities of the original family.
+Empty members are allowed. -/
+@[simp]
+theorem singularSupport_prod_univ {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
+    (W : ι → Set V) :
+    singularSupport (fun j => W j ×ˢ (univ : Set E)) = singularSupport W ×ˢ univ := by
+  ext x
+  simp only [mem_singularSupport, Mei.intrinsicFrontier_prod_univ, mem_prod, mem_univ,
+    and_true]
+  constructor
+  · rintro (hfront | ⟨i, j, hne, hi, hj⟩)
+    · exact Or.inl hfront
+    · exact Or.inr ⟨i, j, fun he => hne
+        ((Mei.direction_affineSpan_prod_univ_eq_iff
+          ⟨x.1, hi⟩ ⟨x.1, hj⟩).mpr he), hi, hj⟩
+  · rintro (hfront | ⟨i, j, hne, hi, hj⟩)
+    · exact Or.inl hfront
+    · exact Or.inr ⟨i, j, fun he => hne
+        ((Mei.direction_affineSpan_prod_univ_eq_iff
+          ⟨x.1, hi⟩ ⟨x.1, hj⟩).mp he), hi, hj⟩
 
 /-- The singular support of finitely many codimension-one polyhedra has a
 finite affine cover of codimension at least two. The cover is obtained from

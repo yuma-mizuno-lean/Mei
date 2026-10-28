@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.RingTheory.FilteredAlgebra.PowerSeries
+public import Mei.RingTheory.FilteredAlgebra.PowerSeries.Basic
 public import Mei.RingTheory.PowerSeries.QuantumDilogarithm
 
 /-!

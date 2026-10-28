@@ -84,15 +84,28 @@ theorem LevelEquivalent.map {k : ℕ} (hDE : D.LevelEquivalent E k) :
       (CommonWallComplement.vertices_projection () r)
   have hvMapD : ((D.mapPathPrefunctor f hf k).mapPath rD).vertices.map
       WallComplement.val = r.vertices.map CommonWallComplement.val := by
-    simpa only [Prefunctor.vertices_mapPath, List.map_map, Function.comp_def,
-      mapPathPrefunctor_obj_val] using hvD
+    exact (D.vertices_mapPathPrefunctor f hf k rD).trans hvD
   have hvMapE : ((E.mapPathPrefunctor f hf k).mapPath rE).vertices.map
       WallComplement.val = r.vertices.map CommonWallComplement.val := by
-    simpa only [Prefunctor.vertices_mapPath, List.map_map, Function.comp_def,
-      mapPathPrefunctor_obj_val] using hvE
+    exact (E.vertices_mapPathPrefunctor f hf k rE).trans hvE
   rw [← hP _ hvMapD, ← hQ _ hvMapE, levelPathProduct_mapPathPrefunctor,
     levelPathProduct_mapPathPrefunctor,
     (levelEquivalent_def _ _ _).mp hDE rD rE (hvD.trans hvE.symm)]
+
+/-- A coefficient map injective at the cutoff preserves and reflects finite-order
+equivalence, including for inconsistent diagrams. -/
+theorem levelEquivalent_map_iff_of_injective (k : ℕ)
+    (hinj : Function.Injective (f.truncatedMap k (a := k) (by simp))) :
+    (D.map f hf).LevelEquivalent (E.map f hf) k ↔ D.LevelEquivalent E k := by
+  refine ⟨?_, fun hDE => hDE.map f hf⟩
+  intro hDE
+  rw [levelEquivalent_def] at hDE ⊢
+  intro x y x' y' p q hpq
+  apply LieHom.bchGroupMap_injective hinj
+  rw [← D.levelPathProduct_mapPathPrefunctor f hf k,
+    ← E.levelPathProduct_mapPathPrefunctor f hf k]
+  apply hDE
+  simpa only [vertices_mapPathPrefunctor] using hpq
 
 /-- Equivalent directed presentations remain equivalent after changing coefficients,
 even if they have different index types and different active supports. -/

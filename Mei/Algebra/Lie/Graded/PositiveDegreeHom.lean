@@ -248,5 +248,15 @@ theorem toLieHom_truncation (k : ℕ) :
 theorem truncation_apply (k : ℕ) (x : L) :
     truncation d ℒ k x = (d.degreeIdeal ℒ k).mkQ x := (rfl)
 
+/-- Truncating the quotient homomorphism at its retained order gives the canonical
+map from that quotient to its own degree quotient. -/
+@[simp]
+theorem truncatedMap_truncation (k : ℕ) :
+    (truncation d ℒ k).truncatedMap k (a := k) (by simp) =
+      (d.degreeIdeal (d.truncatedGrading ℒ k) k).mkQ := by
+  apply (d.degreeIdeal ℒ k).lieHom_qext
+  intro x
+  simp [LieIdeal.mkQ_apply]
+
 end GradedLieHom
 end Mei

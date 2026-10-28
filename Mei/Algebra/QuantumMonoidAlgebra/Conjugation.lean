@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Algebra.QuantumMonoidAlgebra.Positive
-public import Mei.RingTheory.FilteredAlgebra.PowerSeries
+public import Mei.RingTheory.FilteredAlgebra.PowerSeries.Basic
 
 /-!
 # Quantum ray conjugation in completed coefficient algebras

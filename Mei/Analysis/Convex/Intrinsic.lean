@@ -23,7 +23,8 @@ affine span: points of the span close to a relative interior point stay in the s
 For a closed set, the relative boundary is nowhere dense in the affine span.
 For any set, membership is locally constant off the relative boundary within the affine span.
 Consequently a convex set meeting a set and missing its relative boundary meets its
-affine span only inside the set.
+affine span only inside the set. Intrinsic closure commutes with products, and
+the relative boundary of a cylinder is the cylinder over the relative boundary.
 Relative interiors are monotone for sets with equal affine spans. A direction with a positive
 component towards an interior point and an arbitrary component along a relative interior
 set enters the interior of a convex set. This uses Mathlib's
@@ -35,6 +36,29 @@ public section
 open Set Filter Topology AffineSubspace
 
 namespace Mei
+
+/-- Intrinsic closure commutes with products of sets in topological affine spaces. -/
+theorem intrinsicClosure_prod_eq
+    {𝕜 V W P Q : Type*} [Ring 𝕜] [AddCommGroup V] [Module 𝕜 V]
+    [AddCommGroup W] [Module 𝕜 W] [TopologicalSpace P] [TopologicalSpace Q]
+    [AddTorsor V P] [AddTorsor W Q] (s : Set P) (t : Set Q) :
+    intrinsicClosure 𝕜 (s ×ˢ t) = intrinsicClosure 𝕜 s ×ˢ intrinsicClosure 𝕜 t := by
+  simp only [intrinsicClosure_eq_closure_inter_affineSpan, closure_prod_eq,
+    affineSpan_prod_eq, AffineSubspace.coe_prod]
+  ext x
+  simp only [mem_inter_iff, mem_prod]
+  tauto
+
+/-- The relative boundary of a cylinder is the cylinder over the relative boundary. -/
+@[simp]
+theorem intrinsicFrontier_prod_univ
+    {𝕜 V W P Q : Type*} [Ring 𝕜] [AddCommGroup V] [Module 𝕜 V]
+    [AddCommGroup W] [Module 𝕜 W] [TopologicalSpace P] [TopologicalSpace Q]
+    [AddTorsor V P] [AddTorsor W Q] (s : Set P) :
+    intrinsicFrontier 𝕜 (s ×ˢ (univ : Set Q)) = intrinsicFrontier 𝕜 s ×ˢ univ := by
+  ext x
+  simp [← intrinsicClosure_sdiff_intrinsicInterior, intrinsicClosure_prod_eq,
+    intrinsicInterior_prod_eq]
 
 /-- Relative interiors are monotone among sets with the same affine span. -/
 theorem intrinsicInterior_mono_of_affineSpan_eq

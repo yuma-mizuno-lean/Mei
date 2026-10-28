@@ -9,6 +9,8 @@ public import Mathlib.LinearAlgebra.AffineSpace.AffineMap
 public import Mathlib.Topology.Algebra.Module.Basic
 public import Mathlib.Geometry.Convex.Cone.Pointed
 public import Mathlib.Topology.Algebra.Ring.Real
+public import Mathlib.Order.Filter.AtTopBot.Basic
+import Mathlib.Tactic.Module
 import Mathlib.Tactic.Linarith
 
 /-!
@@ -183,3 +185,34 @@ theorem recessionCone_coe (C : PointedCone ℝ V) : Set.recessionCone (C : Set V
     exact C.add_mem hx (PointedCone.smul_mem C ht hv)
 
 end PointedCone
+
+namespace AffineMap
+
+open Filter Set
+
+variable {V : Type*} [AddCommGroup V] [Module ℝ V]
+
+variable {C : Set V} (f : ℝ →ᵃ[ℝ] V)
+
+/-- A single intersection with a set admitting the backward velocity is equivalent
+to membership eventually at negative infinity. No convexity, closedness or
+nonemptiness is needed. -/
+theorem eventually_mem_atBot_iff (hv : -f.linear 1 ∈ recessionCone C) :
+    (∀ᶠ t in atBot, f t ∈ C) ↔ ∃ t, f t ∈ C := by
+  constructor
+  · exact Filter.Eventually.exists
+  · rintro ⟨a, ha⟩
+    apply eventually_atBot.mpr
+    refine ⟨a, fun t ht => ?_⟩
+    have hm := (mem_recessionCone.mp hv) (f a) ha (a - t) (sub_nonneg.mpr ht)
+    have he : f t = f a + (a - t) • (-f.linear 1) := by
+      have hlin : f.linear (t - a) = (t - a) • f.linear 1 := by
+        simpa only [smul_eq_mul, mul_one] using f.linear.map_smul (t - a) (1 : ℝ)
+      calc
+        f t = f.linear (t - a) + f a := by
+          simpa only [vadd_eq_add, sub_add_cancel] using f.map_vadd a (t - a)
+        _ = f a + (a - t) • (-f.linear 1) := by rw [hlin]; module
+    rwa [← he] at hm
+
+
+end AffineMap

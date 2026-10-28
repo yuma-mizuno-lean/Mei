@@ -6,7 +6,7 @@ Authors: Claude Code
 module
 
 public import Mei.RingTheory.FilteredAlgebra.Positive.Basic
-public import Mei.RingTheory.FilteredAlgebra.PowerSeries
+public import Mei.RingTheory.FilteredAlgebra.PowerSeries.Basic
 
 /-!
 # Positivity of completed power series evaluations
