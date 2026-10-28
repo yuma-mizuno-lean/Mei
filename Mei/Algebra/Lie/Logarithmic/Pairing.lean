@@ -18,7 +18,8 @@ source degrees may merge in the target.
 
 We use the character restriction from the grading layer, `Finsupp.lsum` for
 transporting finite sums, and `GradedLieHom` for finite-order Lie maps. Import
-`Mei.Algebra.Lie.BCH.Completion` to obtain the induced completed group maps.
+`Mei.Algebra.Lie.BCH.Completion` to obtain the induced completed group maps
+when `R` is a ℚ-algebra.
 The pairing condition and logarithmic bracket follow Mandel, *Scattering diagrams,
 theta functions, and refined tropical curve counts*, Example 2.1(i),
 arXiv:1503.06183v5.
@@ -184,8 +185,10 @@ private def lieHom :
       | add x z hx hz => simp_all }
 
 /-- Transport positive tangent fields along a tropical pairing. The existing
-`GradedLieHom.truncatedMap` and `GradedLieHom.completedMap` provide its finite
-and completed group maps with the original cutoff modulus. -/
+`GradedLieHom.truncatedMap` provides its finite-order Lie map. When `R` is a
+ℚ-algebra, applying `.bchGroupMap` to that Lie map gives the finite group map,
+and `GradedLieHom.completedMap` gives the completed group map after importing
+`Mei.Algebra.Lie.BCH.Completion`, both with the original cutoff modulus. -/
 def gradedLieHom :
     GradedLieHom p.degreeMap (tropicalSubalgebraGrading ρ U d)
       (tropicalVertexGrading (R := R) e ρ') where
