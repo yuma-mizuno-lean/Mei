@@ -97,6 +97,7 @@ theorem finiteAlphabet_monoid_nsmulSaturated [IsAddTorsionFree M] :
 variable [DecidableEq E]
 
 /-- Every letter is an allowed degree. -/
+@[simp high]
 theorem letter_mem (α : E) : letter m α ∈ (finiteAlphabet m).monoid := by
   refine (mem_finiteAlphabet_monoid m).mpr ⟨fun β => ?_, ?_⟩
   · by_cases h : β = α
