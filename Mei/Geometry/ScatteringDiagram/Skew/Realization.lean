@@ -14,9 +14,10 @@ public import Mei.Algebra.Lie.Logarithmic.Grading
 The principal field associated to an unfrozen degree `n` is `z^(p₁*(n),n) ∂_νₙ`,
 where `νₙ(m,a) = ⟨n,m⟩` uses the rational extension of the integral character `m`
 from the finite-index sublattice. These fields satisfy the skew Lie bracket
-`[Xₙ,Xₙ'] = {n',n} Xₙ₊ₙ'`. Their nonzero-degree generators are linearly independent,
-even for a degenerate or zero skew form. Thus linear combinations give a faithful formal
-principal realization away from degree zero without imposing nondegeneracy on the skew form.
+`[Xₙ,Xₙ'] = {n',n} Xₙ₊ₙ'`. Assuming `Module.Free ℤ N`, their nonzero-degree generators
+are linearly independent, even for a degenerate or zero skew form. Under this assumption,
+linear combinations give a faithful formal principal realization away from degree zero
+without imposing nondegeneracy on the skew form.
 
 We use `LogarithmicVectorField.single_bracket_single`, its coefficient equivalence,
 and Mathlib's `Finsupp.linearCombination`. The principal realization follows
@@ -181,7 +182,8 @@ theorem lie_principalField (n n' : D.unfrozen) :
   ring
 
 /-- Extend the principal generators linearly to arbitrary finite coefficient families.
-The coefficient at degree zero is killed; all other coefficients are retained. -/
+The coefficient at degree zero is killed; assuming `Module.Free ℤ N`, all other
+coefficients are retained. -/
 def principalRealization : (D.unfrozen →₀ R) →ₗ[R]
     LogarithmicVectorField R Lpr Lpr (AddMonoidHom.id Lpr) :=
   Finsupp.linearCombination R D.principalField
