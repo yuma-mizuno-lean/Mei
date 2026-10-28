@@ -49,16 +49,14 @@ theorem segmentPathProduct_eq_prod_of_pairwise (e : x ⟶ y) (l : List ι) (hl :
   set sgn : ι → ℤ := fun j => if 0 < ν j (y.val - x.val) then -1 else 1 with hsgn
   set g : ι → G := fun j => label j ^ sgn j with hg
   -- The unique crossing time of each listed wall.
-  let τ : ι → ℝ := fun j => if h : ∃ t, (j, t) ∈ crossings x y then h.choose else 0
-  have hτ (j : ι) (hj : j ∈ l) : (j, τ j) ∈ crossings x y := by
-    have h := (hmem j).mp hj
-    simpa only [τ, h, dite_true] using h.choose_spec
+  let τ := crossingTime x y
+  have hτ (j : ι) (hj : j ∈ l) : (j, τ j) ∈ crossings x y :=
+    mem_crossings_crossingTime ((hmem j).mp hj)
   have hcross (j : ι) (t : ℝ) : (j, t) ∈ crossings x y ↔ j ∈ l ∧ t = τ j := by
     constructor
     · intro ht
       have hj := (hmem j).mpr ⟨t, ht⟩
-      exact ⟨hj, e.down.subsingleton_crossing j ((mem_crossings _ _ _ _).mp ht)
-        ((mem_crossings _ _ _ _).mp (hτ j hj))⟩
+      exact ⟨hj, eq_crossingTime_of_mem e ht⟩
     · rintro ⟨hj, rfl⟩
       exact hτ j hj
   -- Each simultaneous event is the product over the walls listed at its time.

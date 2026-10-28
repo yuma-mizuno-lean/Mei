@@ -8,6 +8,7 @@ module
 public import Mei.Geometry.Convex.Polyhedron.Path.Enumeration
 import Mei.Geometry.Convex.Polyhedron.Path.Hyperplane
 import Mei.LinearAlgebra.AffineSpace.Ordered
+import Mei.Data.Finset.Sort
 
 /-!
 # The local segment cocycle
@@ -26,7 +27,8 @@ at that vertex, and they are crossed before the walls separating the opposite ed
 endpoints. Comparing time-sorted enumerations of the crossed walls on the three edges
 (`WallComplement.segmentPathProduct_eq_prod_of_pairwise`) then gives the identity.
 
-Segments between off-wall points of such a convex set are automatically admissible.
+`Convex.admissibleSegment_of_disjoint_singularSupport` in the admissible-path module
+supplies admissibility for segments between off-wall points of such a convex set.
 The cocycle identity holds for off-wall endpoints in convex sets avoiding singular
 support, providing compatibility needed to construct coefficient local systems of wall
 diagrams; compare
@@ -54,11 +56,11 @@ then determined by the side of the target. -/
 private theorem exists_crossing_iff_of_mem (hK : Convex ℝ K)
     (hKW : Disjoint K (singularSupport W)) {j : ι} {p : V} (hpK : p ∈ K) (hpW : p ∈ W j)
     (u v : WallComplement W) (hu : u.val ∈ K) (hv : v.val ∈ K) :
-    ((∃ t, (j, t) ∈ crossings u v) ↔ ((0 < ν j u.val - ν j p) ≠ (0 < ν j v.val - ν j p))) ∧
+    ((∃ t, (j, t) ∈ crossings u v) ↔ (¬(0 < ν j u.val - ν j p ↔ 0 < ν j v.val - ν j p))) ∧
       ((∃ t, (j, t) ∈ crossings u v) →
         (0 < ν j (v.val - u.val) ↔ 0 < ν j v.val - ν j p)) := by
   have hiff : (∃ t, (j, t) ∈ crossings u v) ↔
-      ((0 < ν j u.val - ν j p) ≠ (0 < ν j v.val - ν j p)) := by
+      (¬(0 < ν j u.val - ν j p ↔ 0 < ν j v.val - ν j p)) := by
     have := exists_crossing_iff_of_hyperplane u v
       ((ν j).toAffineMap - AffineMap.const ℝ V (ν j p)) (j := j) fun w hw => by
         simp only [AffineMap.coe_sub, Pi.sub_apply, LinearMap.coe_toAffineMap,
@@ -66,7 +68,7 @@ private theorem exists_crossing_iff_of_mem (hK : Convex ℝ K)
         exact hK.mem_iff_apply_eq_of_disjoint_singularSupport hKW (hν j) hpK hpW
           (hK.segment_subset hu hv hw)
     simpa only [AffineMap.coe_sub, Pi.sub_apply, LinearMap.coe_toAffineMap,
-      AffineMap.const_apply]
+      AffineMap.const_apply, ne_eq, eq_iff_iff]
       using this
   refine ⟨hiff, fun h => ?_⟩
   have hs := hiff.mp h
@@ -74,11 +76,11 @@ private theorem exists_crossing_iff_of_mem (hK : Convex ℝ K)
   constructor
   · intro hd
     by_contra hv'
-    exact hs (propext ⟨fun _ => absurd (by linarith : 0 < ν j v.val - ν j p) hv',
-      fun h' => absurd h' hv'⟩)
+    exact hs ⟨fun _ => absurd (by linarith : 0 < ν j v.val - ν j p) hv',
+      fun h' => absurd h' hv'⟩
   · intro hv'
     by_contra hd
-    exact hs (propext ⟨fun _ => hv', fun _ => by linarith⟩)
+    exact hs ⟨fun _ => hv', fun _ => by linarith⟩
 
 include hν in
 /-- Walls separating a vertex `a` from `b` and `c` are crossed in the same order along
@@ -90,6 +92,7 @@ private theorem crossing_le_of_crossing_le (hK : Convex ℝ K)
     (hjt : (j, t) ∈ crossings a c) (hkt : (k, t') ∈ crossings a c) (hss : s ≤ s') :
     t ≤ t' := by
   refine le_of_not_gt fun htt => ?_
+  have ht' := (mem_Ioo_of_mem_crossings hkt).1
   obtain ⟨hsI, hjs⟩ := (mem_crossings _ _ _ _).mp hjs
   obtain ⟨hs'I, hks⟩ := (mem_crossings _ _ _ _).mp hks
   obtain ⟨htI, hjt⟩ := (mem_crossings _ _ _ _).mp hjt
@@ -105,11 +108,6 @@ private theorem crossing_le_of_crossing_le (hK : Convex ℝ K)
   have hqk : ν k (AffineMap.lineMap a.val c.val t') = d :=
     (hmem (hK.lineMap_mem ha hc ht'I)).mp hkt
   have h₂ := (ν k).apply_lineMap_sub_mul hqk t
-  have ht' : 0 < t' := by
-    rcases ht'I.1.lt_or_eq with h | h
-    · exact h
-    · rw [← h, AffineMap.lineMap_apply_zero] at hkt
-      exact absurd hkt (a.notMem k)
   rcases hss.lt_or_eq with hss | rfl
   · -- Strictly earlier along `[a, b]`: wall `k` separates the two crossings of wall `j`.
     have hsign₁ := (ν k).mul_pos_of_lt_of_apply_lineMap hd (lt_of_le_of_lt hsI.1 hss) hda hss
@@ -137,6 +135,8 @@ private theorem crossing_le_of_crossing_opposite (hK : Convex ℝ K)
     (hks : (k, s') ∈ crossings a b) (hkc : ∃ u, (k, u) ∈ crossings b c) : s ≤ s' := by
   refine le_of_not_gt fun hss => ?_
   obtain ⟨t, hjt⟩ := hjc
+  have ⟨ht, htne⟩ := mem_Ioo_of_mem_crossings hjt
+  have hbne := (mem_Ioo_of_mem_crossings hjs).2
   obtain ⟨htI, hjt⟩ := (mem_crossings _ _ _ _).mp hjt
   obtain ⟨u, hku⟩ := hkc
   obtain ⟨huI, hku⟩ := (mem_crossings _ _ _ _).mp hku
@@ -152,21 +152,6 @@ private theorem crossing_le_of_crossing_opposite (hK : Convex ℝ K)
   have hs : 0 < s := lt_of_le_of_lt hs'I.1 hss
   have hqt : ν j (AffineMap.lineMap a.val c.val t) = d :=
     (hmem (hK.lineMap_mem ha hc htI)).mp hjt
-  have ht : 0 < t := by
-    rcases htI.1.lt_or_eq with h | h
-    · exact h
-    · rw [← h, AffineMap.lineMap_apply_zero] at hjt
-      exact absurd hjt (a.notMem j)
-  have hbne : s < 1 := by
-    rcases hsI.2.lt_or_eq with h | h
-    · exact h
-    · rw [h, AffineMap.lineMap_apply_one] at hjs
-      exact absurd hjs (b.notMem j)
-  have htne : t < 1 := by
-    rcases htI.2.lt_or_eq with h | h
-    · exact h
-    · rw [h, AffineMap.lineMap_apply_one] at hjt
-      exact absurd hjt (c.notMem j)
   -- Wall `j` puts `b` and `c` opposite to `a`, and the earlier crossing of `k` with `a`.
   have hb' := (ν j).mul_neg_of_lt_of_apply_lineMap hd hs hda hbne
   have hc' := (ν j).mul_neg_of_lt_of_apply_lineMap hqt ht hda htne
@@ -189,17 +174,26 @@ private theorem crossing_le_of_crossing_opposite (hK : Convex ℝ K)
       rw [hd]
       nlinarith [mul_neg_of_pos_of_neg hp' hr', mul_self_nonneg (ν j a.val - d)])
 
+/-- The edge classes and signs of one wall in a triangle. -/
+private structure CrossingClasses (P Q R sP sQ sR : Prop) : Prop where
+  xy_iff : P ↔ (P ∧ Q) ∨ (P ∧ R)
+  xz_iff : Q ↔ (P ∧ Q) ∨ (Q ∧ R)
+  yz_iff : R ↔ (P ∧ R) ∨ (Q ∧ R)
+  not_all : ¬(P ∧ Q ∧ R)
+  sign_at_x : P → Q → (sP ↔ sQ)
+  sign_at_y : P → R → (sR ↔ ¬sP)
+  sign_at_z : Q → R → (sR ↔ sQ)
+
 /-- Propositional bookkeeping for a wall and a triangle: if crossings of the three edges are
 side changes between the vertices and crossing exponents are read off at the targets, the
 wall crosses exactly two edges or none, with matching exponents at the shared vertex. -/
 private theorem classes_of_sides {P Q R α β γ sP sQ sR : Prop} (hP : P ↔ ¬(α ↔ β))
     (hQ : Q ↔ ¬(α ↔ γ)) (hR : R ↔ ¬(β ↔ γ)) (h₄ : P → (sP ↔ β)) (h₅ : Q → (sQ ↔ γ))
     (h₆ : R → (sR ↔ γ)) :
-    (P ↔ (P ∧ Q) ∨ (P ∧ R)) ∧ (Q ↔ (P ∧ Q) ∨ (Q ∧ R)) ∧ (R ↔ (P ∧ R) ∨ (Q ∧ R)) ∧
-      ¬(P ∧ Q ∧ R) ∧ (P → Q → (sP ↔ sQ)) ∧ (P → R → (sR ↔ ¬sP)) ∧
-      (Q → R → (sR ↔ sQ)) := by
+    CrossingClasses P Q R sP sQ sR := by
   rw [hP, hQ, hR] at *
-  by_cases hα : α <;> by_cases hβ : β <;> by_cases hγ : γ <;> simp_all
+  constructor <;>
+    (by_cases hα : α <;> by_cases hβ : β <;> by_cases hγ : γ <;> simp_all)
 
 include hν in
 /-- Each wall crosses either no edge or exactly two edges of a triangle missing the singular
@@ -210,16 +204,13 @@ private theorem crossing_classes (hK : Convex ℝ K) (hKW : Disjoint K (singular
     let P := ∃ t, (j, t) ∈ crossings x y
     let Q := ∃ t, (j, t) ∈ crossings x z
     let R := ∃ t, (j, t) ∈ crossings y z
-    (P ↔ (P ∧ Q) ∨ (P ∧ R)) ∧ (Q ↔ (P ∧ Q) ∨ (Q ∧ R)) ∧ (R ↔ (P ∧ R) ∨ (Q ∧ R)) ∧
-      ¬(P ∧ Q ∧ R) ∧ (P → Q → (0 < ν j (y.val - x.val) ↔ 0 < ν j (z.val - x.val))) ∧
-      (P → R → (0 < ν j (z.val - y.val) ↔ ¬0 < ν j (y.val - x.val))) ∧
-      (Q → R → (0 < ν j (z.val - y.val) ↔ 0 < ν j (z.val - x.val))) := by
+    CrossingClasses P Q R (0 < ν j (y.val - x.val)) (0 < ν j (z.val - x.val))
+      (0 < ν j (z.val - y.val)) := by
   intro P Q R
   by_cases hmeet : (K ∩ W j).Nonempty
   · obtain ⟨p, hpK, hpW⟩ := hmeet
     have h := fun (u v : WallComplement W) (hu : u.val ∈ K) (hv : v.val ∈ K) =>
       exists_crossing_iff_of_mem hν hK hKW hpK hpW u v hu hv
-    simp only [ne_eq, eq_iff_iff] at h
     exact classes_of_sides (h x y hx hy).1 (h x z hx hz).1 (h y z hy hz).1 (h x y hx hy).2
       (h x z hx hz).2 (h y z hy hz).2
   · have hno (u v : WallComplement W) (hu : u.val ∈ K) (hv : v.val ∈ K) :
@@ -265,45 +256,25 @@ theorem segmentPathProduct_mul_segmentPathProduct {x y z : WallComplement W}
   let C := Finset.univ.filter fun j => (∃ t, (j, t) ∈ crossings x z) ∧ ∃ t, (j, t) ∈ crossings y z
   have hcl := fun j => Convex.crossing_classes hν hK hT hx hy hz j
   have hxy (j : ι) : (∃ t, (j, t) ∈ crossings x y) ↔ j ∈ A ∨ j ∈ B := by
-    simpa only [A, B, Finset.mem_filter, Finset.mem_univ, true_and] using (hcl j).1
+    simpa only [A, B, Finset.mem_filter, Finset.mem_univ, true_and] using (hcl j).xy_iff
   have hxz (j : ι) : (∃ t, (j, t) ∈ crossings x z) ↔ j ∈ A ∨ j ∈ C := by
-    simpa only [A, C, Finset.mem_filter, Finset.mem_univ, true_and] using (hcl j).2.1
+    simpa only [A, C, Finset.mem_filter, Finset.mem_univ, true_and] using (hcl j).xz_iff
   have hyz (j : ι) : (∃ t, (j, t) ∈ crossings y z) ↔ j ∈ B ∨ j ∈ C := by
-    simpa only [B, C, Finset.mem_filter, Finset.mem_univ, true_and] using (hcl j).2.2.1
-  have hnot (j : ι) := (hcl j).2.2.2.1
+    simpa only [B, C, Finset.mem_filter, Finset.mem_univ, true_and] using (hcl j).yz_iff
+  have hnot (j : ι) := (hcl j).not_all
   have hA (j : ι) (hj : j ∈ A) : (0 < ν j (y.val - x.val) ↔ 0 < ν j (z.val - x.val)) := by
     simp only [A, Finset.mem_filter, Finset.mem_univ, true_and] at hj
-    exact (hcl j).2.2.2.2.1 hj.1 hj.2
+    exact (hcl j).sign_at_x hj.1 hj.2
   have hB (j : ι) (hj : j ∈ B) : (0 < ν j (z.val - y.val) ↔ ¬0 < ν j (y.val - x.val)) := by
     simp only [B, Finset.mem_filter, Finset.mem_univ, true_and] at hj
-    exact (hcl j).2.2.2.2.2.1 hj.1 hj.2
+    exact (hcl j).sign_at_y hj.1 hj.2
   have hC (j : ι) (hj : j ∈ C) : (0 < ν j (z.val - y.val) ↔ 0 < ν j (z.val - x.val)) := by
     simp only [C, Finset.mem_filter, Finset.mem_univ, true_and] at hj
-    exact (hcl j).2.2.2.2.2.2 hj.1 hj.2
-  -- Crossing times along the two edges at `x`, used to sort the classes.
-  let τ (u v : WallComplement W) (j : ι) : ℝ :=
-    if h : ∃ t, (j, t) ∈ crossings u v then h.choose else 0
-  have hτ {u v : WallComplement W} {j : ι} (h : ∃ t, (j, t) ∈ crossings u v) :
-      (j, τ u v j) ∈ crossings u v := by
-    simpa only [τ, h, dite_true] using h.choose_spec
-  have hτeq {u v : WallComplement W} (e : u ⟶ v) {j : ι} {t : ℝ}
-      (ht : (j, t) ∈ crossings u v) : t = τ u v j :=
-    e.down.subsingleton_crossing j ((mem_crossings _ _ _ _).mp ht)
-      ((mem_crossings _ _ _ _).mp (hτ ⟨t, ht⟩))
-  have hsort (S : Finset ι) (f : ι → ℝ) : ∃ l : List ι, l.Nodup ∧ (∀ j, j ∈ l ↔ j ∈ S) ∧
-      l.Pairwise fun j k => f j ≤ f k := by
-    let r : ι → ι → Bool := fun j k => decide (f j ≤ f k)
-    have hr := List.pairwise_mergeSort (le := r)
-      (fun a b c hab hbc => by
-        simp only [r, decide_eq_true_eq] at hab hbc ⊢
-        exact hab.trans hbc)
-      (fun a b => by simpa [r] using le_total (f a) (f b)) S.toList
-    refine ⟨S.toList.mergeSort r, (List.mergeSort_perm _ _).nodup_iff.mpr S.nodup_toList,
-      fun j => by simp, hr.imp fun h => ?_⟩
-    simpa [r] using h
-  obtain ⟨lA, hlA, hmA, hpA⟩ := hsort A (τ x y)
-  obtain ⟨lB, hlB, hmB, hpB⟩ := hsort B (τ x y)
-  obtain ⟨lC, hlC, hmC, hpC⟩ := hsort C (τ x z)
+    exact (hcl j).sign_at_z hj.1 hj.2
+  -- Sort each vertex class by crossing time along an edge at `x`.
+  obtain ⟨lA, hlA, hmA, hpA⟩ := A.exists_nodup_pairwise_le_key (crossingTime x y)
+  obtain ⟨lB, hlB, hmB, hpB⟩ := B.exists_nodup_pairwise_le_key (crossingTime x y)
+  obtain ⟨lC, hlC, hmC, hpC⟩ := C.exists_nodup_pairwise_le_key (crossingTime x z)
   have hAmem {j : ι} (hj : j ∈ A) :
       (∃ t, (j, t) ∈ crossings x y) ∧ ∃ t, (j, t) ∈ crossings x z := by
     simpa only [A, Finset.mem_filter, Finset.mem_univ, true_and] using hj
@@ -313,13 +284,6 @@ theorem segmentPathProduct_mul_segmentPathProduct {x y z : WallComplement W}
   have hCmem {j : ι} (hj : j ∈ C) :
       (∃ t, (j, t) ∈ crossings x z) ∧ ∃ t, (j, t) ∈ crossings y z := by
     simpa only [C, Finset.mem_filter, Finset.mem_univ, true_and] using hj
-  have hswap {u v : WallComplement W} {j : ι} (h : ∃ t, (j, t) ∈ crossings u v) :
-      ∃ t, (j, t) ∈ crossings v u := by
-    obtain ⟨t, ht⟩ := h
-    exact ⟨1 - t, (mem_crossings_swap u v j (1 - t)).mpr (by simpa only [sub_sub_cancel])⟩
-  have hswap' {u v : WallComplement W} {j : ι} {t : ℝ} (h : (j, t) ∈ crossings u v) :
-      (j, 1 - t) ∈ crossings v u :=
-    (mem_crossings_swap u v j (1 - t)).mpr (by simpa only [sub_sub_cancel])
   -- Transport along `[x, y]`: walls separating `x` precede walls separating `y`.
   have h₁ := segmentPathProduct_eq_prod_of_pairwise ν label hcomm e₁ (lA ++ lB)
     (List.nodup_append.mpr ⟨hlA, hlB, fun j hj k hk hjk => by
@@ -327,8 +291,10 @@ theorem segmentPathProduct_mul_segmentPathProduct {x y z : WallComplement W}
       exact hnot j ⟨(hAmem ((hmA j).mp hj)).1, (hAmem ((hmA j).mp hj)).2,
         (hBmem ((hmB j).mp hk)).2⟩⟩)
     (fun j => by rw [List.mem_append, hmA, hmB, hxy])
-    (List.pairwise_append.mpr ⟨hpA.imp fun h s t hs ht => (hτeq e₁ hs) ▸ (hτeq e₁ ht) ▸ h,
-      hpB.imp fun h s t hs ht => (hτeq e₁ hs) ▸ (hτeq e₁ ht) ▸ h,
+    (List.pairwise_append.mpr ⟨hpA.imp fun h s t hs ht =>
+        (eq_crossingTime_of_mem e₁ hs) ▸ (eq_crossingTime_of_mem e₁ ht) ▸ h,
+      hpB.imp fun h s t hs ht =>
+        (eq_crossingTime_of_mem e₁ hs) ▸ (eq_crossingTime_of_mem e₁ ht) ▸ h,
       fun j hj k hk s t hs ht =>
         Convex.crossing_le_of_crossing_opposite hν hK hT hx hy hz hs
         (hAmem ((hmA j).mp hj)).2 ht (hBmem ((hmB k).mp hk)).2⟩)
@@ -341,11 +307,13 @@ theorem segmentPathProduct_mul_segmentPathProduct {x y z : WallComplement W}
     (fun j => by rw [List.mem_append, hmA, hmC, hxz])
     (List.pairwise_append.mpr ⟨hpA.imp_of_mem fun {j k} hj hk h s t hs ht =>
         Convex.crossing_le_of_crossing_le hν hK hT hx hy hz
-          (hτ (hAmem ((hmA j).mp hj)).1) (hτ (hAmem ((hmA k).mp hk)).1) hs ht h,
-      hpC.imp fun h s t hs ht => (hτeq e₃ hs) ▸ (hτeq e₃ ht) ▸ h,
+          (mem_crossings_crossingTime (hAmem ((hmA j).mp hj)).1)
+          (mem_crossings_crossingTime (hAmem ((hmA k).mp hk)).1) hs ht h,
+      hpC.imp fun h s t hs ht =>
+        (eq_crossingTime_of_mem e₃ hs) ▸ (eq_crossingTime_of_mem e₃ ht) ▸ h,
       fun j hj k hk s t hs ht =>
         Convex.crossing_le_of_crossing_opposite hν hK hT hx hz hy hs
-        (hAmem ((hmA j).mp hj)).1 ht (hswap (hCmem ((hmC k).mp hk)).2)⟩)
+        (hAmem ((hmA j).mp hj)).1 ht (exists_mem_crossings_swap.mpr (hCmem ((hmC k).mp hk)).2)⟩)
   -- Transport along `[y, z]`: walls separating `y`, in reverse order, precede walls
   -- separating `z`.
   have h₂ := segmentPathProduct_eq_prod_of_pairwise ν label hcomm e₂ (lB.reverse ++ lC)
@@ -357,17 +325,19 @@ theorem segmentPathProduct_mul_segmentPathProduct {x y z : WallComplement W}
     (List.pairwise_append.mpr ⟨List.pairwise_reverse.mpr (hpB.imp_of_mem
         fun {j k} hj hk h s t hs ht =>
           Convex.crossing_le_of_crossing_le hν hK hT hy hx hz
-          (hswap' (hτ (hBmem ((hmB k).mp hk)).1)) (hswap' (hτ (hBmem ((hmB j).mp hj)).1))
+          (mem_crossings_swap_of_mem (mem_crossings_crossingTime (hBmem ((hmB k).mp hk)).1))
+          (mem_crossings_swap_of_mem (mem_crossings_crossingTime (hBmem ((hmB j).mp hj)).1))
           hs ht (by linarith)),
       hpC.imp_of_mem fun {j k} hj hk h s t hs ht => by
         have := Convex.crossing_le_of_crossing_le hν hK hT hz hx hy
-          (hswap' (hτ (hCmem ((hmC k).mp hk)).1)) (hswap' (hτ (hCmem ((hmC j).mp hj)).1))
-          (hswap' ht) (hswap' hs) (by linarith)
+          (mem_crossings_swap_of_mem (mem_crossings_crossingTime (hCmem ((hmC k).mp hk)).1))
+          (mem_crossings_swap_of_mem (mem_crossings_crossingTime (hCmem ((hmC j).mp hj)).1))
+          (mem_crossings_swap_of_mem ht) (mem_crossings_swap_of_mem hs) (by linarith)
         linarith,
       fun j hj k hk s t hs ht =>
         Convex.crossing_le_of_crossing_opposite hν hK hT hy hz hx hs
-        (hswap (hBmem ((hmB j).mp (List.mem_reverse.mp hj))).1) ht
-        (hswap (hCmem ((hmC k).mp hk)).1)⟩)
+        (exists_mem_crossings_swap.mpr (hBmem ((hmB j).mp (List.mem_reverse.mp hj))).1) ht
+        (exists_mem_crossings_swap.mpr (hCmem ((hmC k).mp hk)).1)⟩)
   -- Compare the signed labels class by class.
   have hgA : lA.reverse.map (fun j => label j ^ (if 0 < ν j (y.val - x.val) then -1 else 1 : ℤ)) =
       lA.reverse.map (fun j => label j ^ (if 0 < ν j (z.val - x.val) then -1 else 1 : ℤ)) :=

@@ -23,7 +23,8 @@ Vertices lie off every wall. Edges avoid singular support and are transverse
 to each wall they meet. Admissible polygonal paths are Mathlib quiver paths
 on these vertices: constant paths, concatenation and reversal use the existing
 `Quiver.Path` operations and laws. Their continuous realizations concatenate
-`Path.segment`s.
+`Path.segment`s. By `Convex.admissibleSegment_of_disjoint_singularSupport`,
+segments between off-wall points of a convex set avoiding singular support are admissible.
 
 For a finite family, the crossing events (segment index, wall index and affine
 parameter) form a finite set. Thus repeated visits and simultaneous coplanar
@@ -79,11 +80,30 @@ theorem mem_crossings (x y : WallComplement W) (i : ι) (t : ℝ) :
     (i, t) ∈ crossings x y ↔
       t ∈ Icc (0 : ℝ) 1 ∧ AffineMap.lineMap x.val y.val t ∈ W i := Iff.rfl
 
+/-- A segment between off-wall vertices crosses walls only at strictly interior parameters. -/
+theorem mem_Ioo_of_mem_crossings {x y : WallComplement W} {i : ι} {t : ℝ}
+    (h : (i, t) ∈ crossings x y) : t ∈ Ioo (0 : ℝ) 1 := by
+  obtain ⟨ht, hi⟩ := (mem_crossings _ _ _ _).mp h
+  have hzero : t ≠ 0 := by intro he; exact x.notMem i (by simpa [he] using hi)
+  have hone : t ≠ 1 := by intro he; exact y.notMem i (by simpa [he] using hi)
+  exact ⟨lt_of_le_of_ne ht.1 (Ne.symm hzero), lt_of_le_of_ne ht.2 hone⟩
+
 /-- Traversing a segment backwards replaces each crossing parameter `t` by `1 - t`. -/
 theorem mem_crossings_swap (x y : WallComplement W) (i : ι) (t : ℝ) :
     (i, t) ∈ crossings y x ↔ (i, 1 - t) ∈ crossings x y := by
   simp only [mem_crossings, AffineMap.lineMap_apply_one_sub, mem_Icc]
   constructor <;> rintro ⟨⟨h₀, h₁⟩, hi⟩ <;> exact ⟨⟨by linarith, by linarith⟩, hi⟩
+
+/-- A crossing at `t` gives a crossing at `1 - t` when the segment is reversed. -/
+theorem mem_crossings_swap_of_mem {x y : WallComplement W} {i : ι} {t : ℝ}
+    (h : (i, t) ∈ crossings x y) : (i, 1 - t) ∈ crossings y x :=
+  (mem_crossings_swap x y i (1 - t)).mpr (by simpa only [sub_sub_cancel] using h)
+
+/-- Reversing a segment preserves the existence of a crossing of each wall. -/
+theorem exists_mem_crossings_swap {x y : WallComplement W} {i : ι} :
+    (∃ t, (i, t) ∈ crossings y x) ↔ ∃ t, (i, t) ∈ crossings x y :=
+  ⟨fun ⟨t, ht⟩ => ⟨1 - t, mem_crossings_swap_of_mem ht⟩,
+    fun ⟨t, ht⟩ => ⟨1 - t, mem_crossings_swap_of_mem ht⟩⟩
 
 /-- The crossings of the reversed segment are those of the segment, with
 parameter `t` replaced by `1 - t`. -/
@@ -151,9 +171,7 @@ theorem crossing_mem_intrinsicInterior (h : AdmissibleSegment x y)
     {i : ι} {t : ℝ}
     (ht : t ∈ Icc (0 : ℝ) 1) (hi : AffineMap.lineMap x.val y.val t ∈ W i) :
     t ∈ Ioo (0 : ℝ) 1 ∧ AffineMap.lineMap x.val y.val t ∈ intrinsicInterior ℝ (W i) := by
-  have hzero : t ≠ 0 := by intro he; exact x.notMem i (by simpa [he] using hi)
-  have hone : t ≠ 1 := by intro he; exact y.notMem i (by simpa [he] using hi)
-  refine ⟨⟨lt_of_le_of_ne ht.1 (Ne.symm hzero), lt_of_le_of_ne ht.2 hone⟩, ?_⟩
+  refine ⟨mem_Ioo_of_mem_crossings ((mem_crossings _ _ _ _).mpr ⟨ht, hi⟩), ?_⟩
   rw [← intrinsicClosure_sdiff_intrinsicFrontier]
   refine ⟨subset_intrinsicClosure hi, ?_⟩
   intro hb
@@ -181,6 +199,31 @@ theorem finite_crossings [Finite ι] (h : AdmissibleSegment x y) : (crossings x 
   exact Set.finite_iUnion fun i => (h.subsingleton_crossing i).finite.image _
 
 end AdmissibleSegment
+
+/-- A chosen crossing parameter of wall `i` along `[x, y]`, or zero if there is no crossing.
+On an admissible segment this is the unique crossing parameter whenever the wall is met. -/
+noncomputable def crossingTime (x y : WallComplement W) (i : ι) : ℝ := by
+  classical
+  exact if h : ∃ t, (i, t) ∈ crossings x y then h.choose else 0
+
+/-- The chosen crossing parameter is a crossing whenever the wall is met. -/
+theorem mem_crossings_crossingTime {x y : WallComplement W} {i : ι}
+    (h : ∃ t, (i, t) ∈ crossings x y) : (i, crossingTime x y i) ∈ crossings x y := by
+  classical
+  simpa only [crossingTime, h, dite_true] using h.choose_spec
+
+/-- The crossing parameter defaults to zero for walls not met by the segment. -/
+theorem crossingTime_eq_zero_of_not_exists {x y : WallComplement W} {i : ι}
+    (h : ¬∃ t, (i, t) ∈ crossings x y) : crossingTime x y i = 0 := by
+  classical
+  simp only [crossingTime, h, dite_false]
+
+/-- Every crossing on an admissible segment occurs at the chosen crossing parameter. -/
+theorem eq_crossingTime_of_mem {x y : WallComplement W} (e : x ⟶ y) {i : ι} {t : ℝ}
+    (ht : (i, t) ∈ crossings x y) : t = crossingTime x y i :=
+  e.down.subsingleton_crossing i ((mem_crossings _ _ _ _).mp ht)
+    ((mem_crossings _ _ _ _).mp (mem_crossings_crossingTime ⟨t, ht⟩))
+
 
 /-- A function that is locally constant at every point off the walls takes the same
 value at the two endpoints of a segment meeting no wall. -/
