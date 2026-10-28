@@ -53,47 +53,6 @@ theorem grading_eq_bot_of_charge_one_ray (w : SupportedRay (positiveDegrees d p)
     Int.cast_id, mul_one] using
     grading_charge_eq_bot d ℳ p ℒ (c • q) c 0 (by omega) hc₁
 
-/-- The coefficient inclusion identifies its homogeneous piece with the
-charge-one homogeneous piece of the probe. -/
-def moduleGradingEquiv (q : Γ) :
-    shiftedGrading ℳ d.monoid p (q - p) ≃ₗ[R] grading d ℳ p ℒ (q, 1, 0) :=
-  (Submodule.equivMapOfInjective
-    ((moduleInclusion d ℳ p ℒ).toLinearMap.comp
-      (moduleCoefficientsEquiv d ℳ p).symm.toLinearMap)
-    ((LieAlgebra.SemiDirectSum.inl_injective _).comp
-      (moduleCoefficientsEquiv d ℳ p).symm.injective)
-    (shiftedGrading ℳ d.monoid p (q - p))).trans
-    (LinearEquiv.ofEq _ _ (grading_module d ℳ p ℒ q).symm)
-
-/-- The homogeneous equivalence is the coefficient inclusion on ambient values. -/
-@[simp]
-theorem coe_moduleGradingEquiv (q : Γ)
-    (a : shiftedGrading ℳ d.monoid p (q - p)) :
-    (moduleGradingEquiv d ℳ p ℒ q a : ProbeLie d ℳ p ℒ) =
-      moduleInclusion d ℳ p ℒ ((moduleCoefficientsEquiv d ℳ p).symm a.val) := (rfl)
-
-/-- The inverse homogeneous equivalence recovers the shifted coefficient part. -/
-@[simp]
-theorem coe_moduleGradingEquiv_symm (q : Γ) (x : grading d ℳ p ℒ (q, 1, 0)) :
-    ((moduleGradingEquiv d ℳ p ℒ q).symm x : shiftedSubmodule ℳ d.monoid p) =
-      moduleCoefficientsEquiv d ℳ p x.val.left := by
-  have h := congrArg (fun y : ProbeLie d ℳ p ℒ =>
-    moduleCoefficientsEquiv d ℳ p y.left)
-    (coe_moduleGradingEquiv d ℳ p ℒ q ((moduleGradingEquiv d ℳ p ℒ q).symm x))
-  simpa only [LinearEquiv.apply_symm_apply, moduleInclusion,
-    LieAlgebra.SemiDirectSum.inl_eq_mk] using h.symm
-
-section RationalScalars
-
-variable [Algebra ℚ R]
-
-/-- Rational scalars on the probe are induced by its coefficient ring. -/
-scoped instance rationalLieAlgebra : LieAlgebra ℚ (ProbeLie d ℳ p ℒ) where
-  toModule := Module.compHom _ (algebraMap ℚ R)
-  lie_smul r x y := lie_smul (algebraMap ℚ R r) x y
-
-end RationalScalars
-
 variable [SetLike.GradedBracket ℒ ℒ]
 
 /-- The ray Lie algebra of a module ray is exactly its homogeneous coefficient piece. -/
@@ -143,8 +102,9 @@ theorem coe_moduleRayGroupEquiv (q : Γ) (hq : q - p ∈ d.monoid)
       (positiveDegrees d p).expToCompletion (grading d ℳ p ℒ)
         (moduleInclusion d ℳ p ℒ ((moduleCoefficientsEquiv d ℳ p).symm a.toAdd.val)) := by
   simp only [moduleRayGroupEquiv, MulEquiv.trans_apply,
-    PositiveDegrees.coe_completedRaySingleEquiv]
-  rfl
+    PositiveDegrees.coe_completedRaySingleEquiv,
+    AddEquiv.toMultiplicative_apply_apply, toAdd_ofAdd, LinearEquiv.coe_toAddEquiv,
+    LinearEquiv.coe_addEquiv_apply, coe_moduleGradingEquiv]
 
 /-- The inverse ray equivalence extracts the homogeneous logarithmic coefficient
 and forgets the semidirect inclusion. -/

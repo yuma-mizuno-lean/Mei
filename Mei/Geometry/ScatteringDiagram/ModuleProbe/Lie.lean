@@ -90,6 +90,17 @@ Mathlib's left factor and its original Lie algebra is the right factor. -/
 abbrev ProbeLie :=
   LieAlgebra.SemiDirectSum (ModuleCoefficients d ℳ p) L (actionDerivationHom d ℳ p (ℒ := ℒ))
 
+section RationalScalars
+
+variable [Algebra ℚ R]
+
+/-- Rational scalars on the probe are induced by its coefficient ring. -/
+scoped instance rationalLieAlgebra : LieAlgebra ℚ (ProbeLie d ℳ p ℒ) where
+  toModule := Module.compHom _ (algebraMap ℚ R)
+  lie_smul r x y := lie_smul (algebraMap ℚ R r) x y
+
+end RationalScalars
+
 /-- Include the original Lie algebra in charge zero. -/
 abbrev baseInclusion : L →ₗ⁅R⁆ ProbeLie d ℳ p ℒ :=
   LieAlgebra.SemiDirectSum.inr (actionDerivationHom d ℳ p (ℒ := ℒ))

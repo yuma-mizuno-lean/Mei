@@ -60,6 +60,36 @@ theorem grading_module (q : Γ) : grading d ℳ p ℒ (q, 1, 0) =
         (moduleCoefficientsEquiv d ℳ p).symm.toLinearMap) := by
   simp only [grading, one_ne_zero, false_and, ↓reduceIte, and_self]
 
+/-- The coefficient inclusion identifies its homogeneous piece with the
+charge-one homogeneous piece of the probe. -/
+def moduleGradingEquiv (q : Γ) :
+    shiftedGrading ℳ d.monoid p (q - p) ≃ₗ[R] grading d ℳ p ℒ (q, 1, 0) :=
+  (Submodule.equivMapOfInjective
+    ((moduleInclusion d ℳ p ℒ).toLinearMap.comp
+      (moduleCoefficientsEquiv d ℳ p).symm.toLinearMap)
+    ((LieAlgebra.SemiDirectSum.inl_injective _).comp
+      (moduleCoefficientsEquiv d ℳ p).symm.injective)
+    (shiftedGrading ℳ d.monoid p (q - p))).trans
+    (LinearEquiv.ofEq _ _ (grading_module d ℳ p ℒ q).symm)
+
+/-- The homogeneous equivalence is the coefficient inclusion on ambient values. -/
+@[simp]
+theorem coe_moduleGradingEquiv (q : Γ)
+    (a : shiftedGrading ℳ d.monoid p (q - p)) :
+    (moduleGradingEquiv d ℳ p ℒ q a : ProbeLie d ℳ p ℒ) =
+      moduleInclusion d ℳ p ℒ ((moduleCoefficientsEquiv d ℳ p).symm a.val) := (rfl)
+
+/-- The inverse homogeneous equivalence recovers the shifted coefficient part. -/
+@[simp]
+theorem coe_moduleGradingEquiv_symm (q : Γ) (x : grading d ℳ p ℒ (q, 1, 0)) :
+    ((moduleGradingEquiv d ℳ p ℒ q).symm x : shiftedSubmodule ℳ d.monoid p) =
+      moduleCoefficientsEquiv d ℳ p x.val.left := by
+  have h := congrArg (fun y : ProbeLie d ℳ p ℒ =>
+    moduleCoefficientsEquiv d ℳ p y.left)
+    (coe_moduleGradingEquiv d ℳ p ℒ q ((moduleGradingEquiv d ℳ p ℒ q).symm x))
+  simpa only [LinearEquiv.apply_symm_apply, moduleInclusion,
+    LieAlgebra.SemiDirectSum.inl_eq_mk] using h.symm
+
 /-- A charge-zero element has no coefficient part and has homogeneous base part. -/
 @[simp↓]
 theorem mem_grading_base (q : Γ) (x : ProbeLie d ℳ p ℒ) :
