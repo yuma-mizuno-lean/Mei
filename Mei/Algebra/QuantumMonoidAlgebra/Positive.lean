@@ -84,6 +84,17 @@ def positiveFiltration : AlgFiltration (positiveSubalgebra q β P) := by
     (fun p hp => supportedSubalgebra_grading_eq_bot (grade q β) P
       (fun h => (not_lt_of_ge (hδ p h)) hp))
 
+/-- Each positive filtration ideal is the degree ideal of the inherited grading. -/
+@[simp]
+theorem positiveFiltration_ideal [DecidableEq Γ] (k : ℕ) :
+    (positiveFiltration q β P δ hδ).ideal k = GradedAlgebra.degreeIdeal
+      ((positiveSubalgebra q β P).grading (grade q β)) δ
+      (fun p hp => supportedSubalgebra_grading_eq_bot (grade q β) P
+        (fun h => (not_lt_of_ge (hδ p h)) hp)) k := by
+  ext x
+  simp only [positiveFiltration, GradedAlgebra.degreeFiltration_ideal,
+    GradedAlgebra.mem_degreeIdeal_iff]
+
 /-- A filtration term consists exactly of coefficients supported above its lower bound. -/
 theorem mem_positiveFiltration_iff (k : ℕ) (x : positiveSubalgebra q β P) :
     x ∈ (positiveFiltration q β P δ hδ).ideal k ↔

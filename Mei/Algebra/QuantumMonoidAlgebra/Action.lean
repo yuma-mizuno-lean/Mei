@@ -110,17 +110,12 @@ theorem positiveLieToCoefficients_mem_positiveFiltration {k : ℕ}
     (motive := fun x => positiveLieToCoefficients q β d x ∈ (𝓕).ideal (k + 1))
     hx ?_ (by simp) ?_
   · intro n x hx
-    rw [mem_positiveFiltration_iff]
-    intro p hp
-    obtain ⟨r, hr⟩ := (mem_grade_iff q β n x).mp ((mem_positiveLieGrading q β d n x).mp hx)
-    have hnp : n.val ≠ p := by
-      intro he
-      have := n.property
-      rw [he] at this
-      omega
-    simp only [coe_positiveLieToCoefficients, ← hr, ← basis_apply, map_smul,
-      Module.Basis.repr_self]
-    simp [hnp]
+    rw [positiveFiltration_ideal]
+    apply GradedAlgebra.le_degreeIdeal
+      ((positiveSubalgebra q β d.monoid).grading (grade q β)) d.degree _
+      (i := (n : Γ)) (by have := n.property; omega)
+    rw [Subalgebra.mem_grading_iff, coe_positiveLieToCoefficients]
+    exact (mem_positiveLieGrading q β d n x).mp hx
   · intro x y hx hy
     simpa only [map_add] using ((𝓕).ideal (k + 1)).add_mem hx hy
 
