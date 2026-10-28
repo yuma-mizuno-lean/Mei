@@ -16,6 +16,9 @@ Positive formal logarithmic fields act on `R[Q]` for every additive coefficient
 monoid `Q` containing the positive monoid. The action retains the formal Lie
 algebra even when some characters act trivially. It raises the allowed-increment
 filtration, so its BCH group acts on the completed coefficient algebra.
+With the `TropicalVertexCoefficientAction` scope open, use
+`AlgFiltration.completedBCHAction` and `AlgFiltration.projection_completedBCHAction`
+with `TropicalVertexCoefficientAction.filtration` and `tropicalVertexGrading`.
 
 The construction uses `LogarithmicVectorField.action`, the monomial derivations
 and filtration bounds in `Mei.Algebra.MonoidAlgebra.Filtration`, and the existing
@@ -128,12 +131,12 @@ theorem tropicalVertexCoefficientAction_single (hQ : d.monoid ≤ Q)
 namespace TropicalVertexCoefficientAction
 
 /-- The positive-increment filtration on the coefficient monoid algebra. -/
-def filtration : AlgFiltration R[Q] :=
+def filtration {R : Type*} [Semiring R] : AlgFiltration R[Q] :=
   (d.monoid.comap Q.subtype).monoidAlgebraFiltration (d.degree.comp Q.subtype)
 
 /-- The filtration is measured by positive increments in `Q`. -/
 @[simp]
-theorem filtration_ideal (k : ℕ) :
+theorem filtration_ideal {R : Type*} [Semiring R] (k : ℕ) :
     (filtration (R := R) d Q).ideal k =
       (d.monoid.comap Q.subtype).monoidAlgebraIdeal (d.degree.comp Q.subtype) k := by
   rw [filtration, AddSubmonoid.monoidAlgebraFiltration_ideal]
@@ -196,28 +199,6 @@ scoped instance instIsFiltrationRaising :
       simpa only [add_lie] using
         (d.monoid.comap Q.subtype).monoidAlgebraIdeal (d.degree.comp Q.subtype)
           (a + b + 1) |>.add_mem hx hy
-
-variable [Algebra ℚ R] [DecidableEq Γ]
-
-/-- The completed tropical vertex group acts by algebra automorphisms on the
-completion of the coefficient monoid algebra. -/
-def completedAction :
-    d.completedBCHGroup (tropicalVertexGrading (R := R) d ρ) →*
-      ((filtration (R := R) d Q).completion ≃ₐ[R] (filtration (R := R) d Q).completion) :=
-  (filtration (R := R) d Q).completedBCHAction (R := R) d (tropicalVertexGrading (R := R) d ρ)
-
-/-- At order `k`, the completed coefficient action is the finite exponential of
-the order-`k` logarithm, evaluated on the order-`k` coefficient. -/
-@[simp]
-theorem projection_completedAction
-    (g : d.completedBCHGroup (tropicalVertexGrading (R := R) d ρ))
-    (a : (filtration (R := R) d Q).completion) (k : ℕ) :
-    (filtration (R := R) d Q).projection k (completedAction d ρ Q g a) =
-      (filtration (R := R) d Q).truncatedExpLieAction (R := R) d
-        (tropicalVertexGrading (R := R) d ρ) k
-        (BCHGroup.log (CompletedGroup.projection k g)) ((filtration (R := R) d Q).projection k a) :=
-  (filtration (R := R) d Q).projection_completedBCHAction (R := R) d
-    (tropicalVertexGrading (R := R) d ρ) g a k
 
 end TropicalVertexCoefficientAction
 
