@@ -95,21 +95,15 @@ theorem induction_on {P : SkewLieAlgebra β hβ → Prop} (x : SkewLieAlgebra β
 noncomputable instance : Bracket (SkewLieAlgebra β hβ) (SkewLieAlgebra β hβ) :=
   ⟨fun x y => (Finsupp.lsum R fun n =>
       (Finsupp.lsum R fun m =>
-        (LinearMap.mk₂ R (fun r s : R => single β hβ (n + m) (r * s * β m n))
-          (by intros; simp [add_mul])
-          (by intro c r s; rw [← map_smul]; congr 1; simp [smul_eq_mul, mul_assoc])
-          (by intros; simp [mul_add, add_mul])
-          (by intro c r s; rw [← map_smul]; congr 1; simp [smul_eq_mul]; ring)).flip).flip)
+        ((LinearMap.mul R R).compr₂
+          ((single β hβ (n + m)).comp (LinearMap.mulRight R (β m n)))).flip).flip)
         (toFinsupp β hβ x) (toFinsupp β hβ y)⟩
 
 private theorem bracket_def (x y : SkewLieAlgebra β hβ) :
     ⁅x, y⁆ = (Finsupp.lsum R fun n =>
       (Finsupp.lsum R fun m =>
-        (LinearMap.mk₂ R (fun r s : R => single β hβ (n + m) (r * s * β m n))
-          (by intros; simp [add_mul])
-          (by intro c r s; rw [← map_smul]; congr 1; simp [smul_eq_mul, mul_assoc])
-          (by intros; simp [mul_add, add_mul])
-          (by intro c r s; rw [← map_smul]; congr 1; simp [smul_eq_mul]; ring)).flip).flip)
+        ((LinearMap.mul R R).compr₂
+          ((single β hβ (n + m)).comp (LinearMap.mulRight R (β m n)))).flip).flip)
         (toFinsupp β hβ x) (toFinsupp β hβ y) := (rfl)
 
 /-- The alternating-form bracket on homogeneous generators. -/

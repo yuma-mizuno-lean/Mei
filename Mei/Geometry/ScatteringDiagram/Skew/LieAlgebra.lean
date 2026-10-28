@@ -33,9 +33,8 @@ variable {N : Type*} [AddCommGroup N] (D : SkewLatticeDatum N)
 
 /-- The rational skew form, restricted to unfrozen exponents and mapped to coefficients. -/
 def coefficientForm : D.unfrozen →ₗ[ℤ] D.unfrozen →ₗ[ℤ] R :=
-  LinearMap.mk₂ ℤ (fun n m => algebraMap ℚ R (D.form n m))
-    (by intros; simp) (by intros; simp)
-    (by intros; simp) (by intros; simp)
+  (D.form.compl₁₂ D.unfrozen.subtype D.unfrozen.subtype).compr₂
+    (algebraMap ℚ R).toAddMonoidHom.toIntLinearMap
 
 @[simp]
 theorem coefficientForm_apply (n m : D.unfrozen) :

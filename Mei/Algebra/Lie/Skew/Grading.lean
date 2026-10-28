@@ -9,7 +9,6 @@ public import Mei.Algebra.Lie.Skew.Basic
 public import Mei.Algebra.Lie.Graded.Ray
 public import Mei.Algebra.Lie.Graded.Subalgebra
 public import Mathlib.LinearAlgebra.Finsupp.Span
-public import Mathlib.LinearAlgebra.Finsupp.Pi
 
 /-!
 # Positive gradings and abelian rays of skew Lie algebras
