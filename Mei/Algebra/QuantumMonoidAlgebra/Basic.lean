@@ -112,6 +112,18 @@ theorem coe_decompose [DecidableEq Γ] (x : QuantumMonoidAlgebra q β) (p : Γ) 
     Equiv.symm_symm, monomial] using
     TwistedMonoidAlgebra.coe_decompose_grade R (factorSet q β) x p
 
+/-- A homogeneous quantum component vanishes exactly when its basis coefficient does. -/
+@[simp]
+theorem decompose_eq_zero_iff [DecidableEq Γ] (x : QuantumMonoidAlgebra q β) (p : Γ) :
+    DirectSum.decompose (grade q β) x p = 0 ↔
+      (basis q β).repr x p = 0 := by
+  rw [← ZeroMemClass.coe_eq_zero, coe_decompose, ← basis_apply]
+  constructor
+  · intro h
+    exact (basis q β).linearIndependent.smul_left_injective p (by simpa using h)
+  · intro h
+    simp [h]
+
 /-- For an alternating form, monomials with opposite exponents are inverse. -/
 theorem monomial_mul_neg (hβ : β.IsAlt) (p : Γ) :
     monomial q β p * monomial q β (-p) = 1 := by
