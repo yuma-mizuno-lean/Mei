@@ -9,6 +9,7 @@ public import Mei.Algebra.Module.Primitive
 public import Mathlib.Algebra.Order.Field.Basic
 public import Mathlib.GroupTheory.Index
 public import Mathlib.GroupTheory.OrderOfElement
+public import Mathlib.GroupTheory.Subgroup.Saturated
 
 /-!
 # Ray indices of sublattices
@@ -31,9 +32,9 @@ algebras*, §1, defined by `ℝ_{>0} n ∩ N° = ℕ_{>0} κ(n) n` for the finit
 
 * `AddSubgroup.rayIndex`: the ray index of a vector with respect to a subgroup.
 * `AddSubgroup.rayIndex_eq_of_eq_zsmul`: its value on any primitive decomposition.
-* `AddSubgroup.mem_iff_of_zsmul_eq_zsmul`: the positive rational multiples of `n` in `H` are
-  those by the positive integer multiples of `H.rayIndex n`.
-* `AddSubgroup.rayIndex_of_zsmul_eq_zsmul`: the scaling law of the ray index.
+* `AddSubgroup.mem_iff_exists_div_eq_mul_rayIndex_of_zsmul_eq_zsmul`: the positive rational
+  multiples of `n` in `H` are those by the positive integer multiples of `H.rayIndex n`.
+* `AddSubgroup.rayIndex_eq_of_zsmul_eq_zsmul`: the scaling law of the ray index.
 -/
 
 public section
@@ -46,7 +47,8 @@ open Classical in
 /-- The ray index of `n` with respect to `H`: for `n = d • w` with `d > 0` and `w` primitive,
 the order of `w` modulo `H` divided by `d`. The positive rational multiples of a nonzero `n`
 lying in `H` are its multiples by `j * H.rayIndex n` with `j` a positive integer
-(`AddSubgroup.mem_iff_of_zsmul_eq_zsmul`). By convention the ray index of `0` is `0`. -/
+(`AddSubgroup.mem_iff_exists_div_eq_mul_rayIndex_of_zsmul_eq_zsmul`).
+By convention the ray index of `0` is `0`. -/
 noncomputable def rayIndex (n : N) : ℚ :=
   if hn : n = 0 then 0 else
     (addOrderOf ((TauCeti.exists_eq_zsmul_isPrimitive hn).choose_spec.choose : N ⧸ H) : ℚ) /
@@ -104,7 +106,7 @@ theorem rayIndex_zsmul {d : ℤ} (hd : 0 < d) (n : N) :
 
 /-- The ray index scales inversely with positive rational multiples: if `m = (b / a) n`, that
 is `a • m = b • n` with `a, b > 0`, then `κ(m) = κ(n) * a / b`. -/
-theorem rayIndex_of_zsmul_eq_zsmul {m n : N} {a b : ℤ} (ha : 0 < a) (hb : 0 < b)
+theorem rayIndex_eq_of_zsmul_eq_zsmul {m n : N} {a b : ℤ} (ha : 0 < a) (hb : 0 < b)
     (h : a • m = b • n) : H.rayIndex m = H.rayIndex n * a / b := by
   have hm := H.rayIndex_zsmul ha m
   rw [h, H.rayIndex_zsmul hb n] at hm
@@ -127,7 +129,8 @@ theorem rayIndex_neg (n : N) : H.rayIndex (-n) = H.rayIndex n := by
 /-- The positive rational multiples of a nonzero vector `n` lying in `H` are exactly its
 multiples by `j * H.rayIndex n` for positive integers `j`. Here the multiple `m = (b / a) n` is
 recorded by `a • m = b • n` with `a, b > 0`. -/
-theorem mem_iff_of_zsmul_eq_zsmul {m n : N} (hn : n ≠ 0) {a b : ℤ} (ha : 0 < a) (hb : 0 < b)
+theorem mem_iff_exists_div_eq_mul_rayIndex_of_zsmul_eq_zsmul {m n : N} (hn : n ≠ 0)
+    {a b : ℤ} (ha : 0 < a) (hb : 0 < b)
     (h : a • m = b • n) :
     m ∈ H ↔ ∃ j : ℕ, 0 < j ∧ (b / a : ℚ) = j * H.rayIndex n := by
   have : HasUniqueDiv N := .of_isTorsionFree ℤ N
@@ -168,7 +171,7 @@ theorem mem_iff_of_zsmul_eq_zsmul {m n : N} (hn : n ≠ 0) {a b : ℤ} (ha : 0 <
 
 /-- The multiple `κ(n) n` lies in `H`: some `m ∈ H` satisfies `den(κ) • m = num(κ) • n`, where
 `κ = H.rayIndex n`. -/
-theorem exists_mem_zsmul_eq_rayIndex (n : N) :
+theorem exists_mem_den_rayIndex_zsmul_eq_num_rayIndex_zsmul (n : N) :
     ∃ m ∈ H, ((H.rayIndex n).den : ℤ) • m = (H.rayIndex n).num • n := by
   rcases eq_or_ne n 0 with rfl | hn
   · exact ⟨0, H.zero_mem, by simp⟩
@@ -188,5 +191,25 @@ theorem exists_mem_zsmul_eq_rayIndex (n : N) :
         linarith
       exact_mod_cast this
     rw [← Nat.cast_smul_eq_nsmul ℤ, smul_smul, smul_smul, hcross]
+
+/-- The normalized vector `κ(n) n`, as an element of `H`. It is characterized by
+`den_rayIndex_zsmul_rayVector`, including when the ray index is zero. -/
+noncomputable def rayVector (n : N) : H :=
+  ⟨(H.exists_mem_den_rayIndex_zsmul_eq_num_rayIndex_zsmul n).choose,
+    (H.exists_mem_den_rayIndex_zsmul_eq_num_rayIndex_zsmul n).choose_spec.1⟩
+
+/-- Clearing the denominator of the ray index recovers its normalized lattice vector. -/
+theorem den_rayIndex_zsmul_rayVector (n : N) :
+    ((H.rayIndex n).den : ℤ) • (H.rayVector n : N) = (H.rayIndex n).num • n :=
+  (H.exists_mem_den_rayIndex_zsmul_eq_num_rayIndex_zsmul n).choose_spec.2
+
+/-- Normalization preserves membership in any saturated subgroup. -/
+theorem rayVector_mem_of_mem {K : AddSubgroup N} (hK : K.toAddSubmonoid.NSMulSaturated)
+    {n : N} (hn : n ∈ K) : (H.rayVector n : N) ∈ K := by
+  have hm : ((H.rayIndex n).den : ℤ) • (H.rayVector n : N) ∈ K := by
+    rw [H.den_rayIndex_zsmul_rayVector]
+    exact K.zsmul_mem hn _
+  exact ((AddSubgroup.saturated_iff_zsmul.mp hK) _ _ hm).resolve_left (by
+    exact_mod_cast (H.rayIndex n).den_nz)
 
 end AddSubgroup

@@ -7,7 +7,6 @@ module
 
 public import Mei.Algebra.Module.RayIndex
 public import Mathlib.CategoryTheory.Category.Basic
-public import Mathlib.GroupTheory.Subgroup.Saturated
 public import Mathlib.LinearAlgebra.Dual.Defs
 public import Mathlib.LinearAlgebra.SesquilinearForm.Basic
 public import Mathlib.Tactic.FieldSimp
@@ -107,6 +106,8 @@ structure Hom (D : SkewLatticeDatum N) (D' : SkewLatticeDatum N') where
   /-- The map carries `N°` into `N'°`. -/
   sublattice_le : D.sublattice ≤ D'.sublattice.comap toLinearMap
 
+attribute [simp] Hom.form_map
+
 namespace Hom
 
 variable {D : SkewLatticeDatum N} {D' : SkewLatticeDatum N'} {D'' : SkewLatticeDatum N''}
@@ -122,7 +123,7 @@ def id (D : SkewLatticeDatum N) : Hom D D where
 /-- The composite of morphisms of skew lattice data, `g` after `f`. -/
 def comp (g : Hom D' D'') (f : Hom D D') : Hom D D'' where
   toLinearMap := g.toLinearMap ∘ₗ f.toLinearMap
-  form_map a b := by simp [g.form_map, f.form_map]
+  form_map a b := by simp
   unfrozen_le _ h := g.unfrozen_le (f.unfrozen_le h)
   sublattice_le _ h := g.sublattice_le (f.sublattice_le h)
 
@@ -161,57 +162,61 @@ section RayIndex
 
 variable [Module.Free ℤ N] (D : SkewLatticeDatum N)
 
+/-- For an unfrozen vector, `κ(n) n` lies in both defining sublattices. -/
+theorem rayVector_mem_unfrozen_inf_sublattice {n : N} (hn : n ∈ D.unfrozen) :
+    (D.sublattice.toAddSubgroup.rayVector n : N) ∈ D.unfrozen ⊓ D.sublattice :=
+  ⟨D.sublattice.toAddSubgroup.rayVector_mem_of_mem
+      (K := D.unfrozen.toAddSubgroup) D.unfrozen_saturated hn,
+    (D.sublattice.toAddSubgroup.rayVector n).property⟩
+
+/-- Pairing with the normalized lattice vector multiplies the form by the ray index. -/
+theorem form_rayVector (a n : N) :
+    D.form a (D.sublattice.toAddSubgroup.rayVector n : N) =
+      D.sublattice.toAddSubgroup.rayIndex n * D.form a n := by
+  have h := congrArg (D.form a) (D.sublattice.toAddSubgroup.den_rayIndex_zsmul_rayVector n)
+  simp only [map_zsmul, zsmul_eq_mul] at h
+  rw [← Rat.num_div_den (D.sublattice.toAddSubgroup.rayIndex n)]
+  have hden : ((D.sublattice.toAddSubgroup.rayIndex n).den : ℚ) ≠ 0 := by positivity
+  field_simp
+  simpa [mul_comm] using h
+
 /-- For `n ∈ N_uf` and every `a`, the value `{a, κ(n) n} = κ(n) {a, n}` is an integer, where
 `κ` is the ray index of `N°`: the vector `κ(n) n` lies in `N_uf ∩ N°`. -/
 theorem exists_int_eq_rayIndex_mul_form {n : N} (hn : n ∈ D.unfrozen) (a : N) :
     ∃ k : ℤ, D.sublattice.toAddSubgroup.rayIndex n * D.form a n = k := by
-  rcases eq_or_ne n 0 with rfl | hn0
-  · exact ⟨0, by simp⟩
-  obtain ⟨d, w, hd, hw, rfl⟩ := TauCeti.exists_eq_zsmul_isPrimitive hn0
-  -- The primitive vector `w` lies in `N_uf` by saturation.
-  have hwu : w ∈ D.unfrozen := by
-    have hdn : d.toNat • w ∈ D.unfrozen := by
-      rwa [← natCast_zsmul, Int.toNat_of_nonneg hd.le]
-    exact (D.unfrozen_saturated hdn).resolve_left (by omega)
-  -- Its multiple by the order of `w` modulo `N°` lies in `N_uf ∩ N°`.
-  set o := addOrderOf (w : N ⧸ D.sublattice.toAddSubgroup)
-  have hos : o • w ∈ D.sublattice := by
-    rw [← Submodule.mem_toAddSubgroup, ← QuotientAddGroup.eq_zero_iff,
-      QuotientAddGroup.mk_nsmul, addOrderOf_nsmul_eq_zero]
-  obtain ⟨k, hk⟩ :=
-    D.integral_unfrozen_inf_sublattice a (o • w) ⟨D.unfrozen.smul_of_tower_mem o hwu, hos⟩
-  refine ⟨k, ?_⟩
-  have hd' : (d : ℚ) ≠ 0 := by exact_mod_cast hd.ne'
-  rw [AddSubgroup.rayIndex_eq_of_eq_zsmul _ hd hw rfl, ← hk, map_zsmul, map_nsmul,
-    zsmul_eq_mul, nsmul_eq_mul]
-  simp only [o]
-  field_simp
-
-private theorem cast_num_rayIndex_mul_form {n : N} (hn : n ∈ D.unfrozen) (a : N) :
-    ((D.sublattice.toAddSubgroup.rayIndex n * D.form a n).num : ℚ) =
-      D.sublattice.toAddSubgroup.rayIndex n * D.form a n := by
-  obtain ⟨k, hk⟩ := D.exists_int_eq_rayIndex_mul_form hn a
-  rw [hk, Rat.num_intCast]
+  rw [← D.form_rayVector]
+  exact D.integral_unfrozen_inf_sublattice a _ (D.rayVector_mem_unfrozen_inf_sublattice hn)
 
 /-- The integral functional `{-, κ(n) n}` on `N`, for `n ∈ N_uf`, where `κ` is the ray index
 of `N°`. -/
-noncomputable def normal (n : N) (hn : n ∈ D.unfrozen) : Module.Dual ℤ N where
-  toFun a := (D.sublattice.toAddSubgroup.rayIndex n * D.form a n).num
-  map_add' a b := by
-    apply Int.cast_injective (α := ℚ)
-    rw [Int.cast_add, D.cast_num_rayIndex_mul_form hn, D.cast_num_rayIndex_mul_form hn,
-      D.cast_num_rayIndex_mul_form hn, map_add, LinearMap.add_apply, mul_add]
-  map_smul' c a := by
-    apply Int.cast_injective (α := ℚ)
-    rw [RingHom.id_apply, smul_eq_mul, Int.cast_mul, D.cast_num_rayIndex_mul_form hn,
-      D.cast_num_rayIndex_mul_form hn, map_zsmul, LinearMap.smul_apply, zsmul_eq_mul]
-    ring
+noncomputable def normal (n : N) (hn : n ∈ D.unfrozen) : Module.Dual ℤ N :=
+  (LinearEquiv.ofInjective (Algebra.linearMap ℤ ℚ) Int.cast_injective).symm.toLinearMap ∘ₗ
+    LinearMap.codRestrict _ (D.sublattice.toAddSubgroup.rayIndex n • D.form.flip n)
+      (fun a => by
+        obtain ⟨k, hk⟩ := D.exists_int_eq_rayIndex_mul_form hn a
+        exact ⟨k, hk.symm⟩)
 
 /-- The value of `{-, κ(n) n}` at `a` is `κ(n) {a, n}`. -/
 @[simp]
 theorem cast_normal_apply {n : N} (hn : n ∈ D.unfrozen) (a : N) :
-    (D.normal n hn a : ℚ) = D.sublattice.toAddSubgroup.rayIndex n * D.form a n :=
-  D.cast_num_rayIndex_mul_form hn a
+    (D.normal n hn a : ℚ) = D.sublattice.toAddSubgroup.rayIndex n * D.form a n := by
+  exact congrArg Subtype.val
+    ((LinearEquiv.ofInjective (Algebra.linearMap ℤ ℚ) Int.cast_injective).apply_symm_apply _)
+
+/-- The integral normal evaluates to the integer value of the form on `κ(n) n`. -/
+theorem normal_apply {n : N} (hn : n ∈ D.unfrozen) (a : N) :
+    D.normal n hn a = (D.form a (D.sublattice.toAddSubgroup.rayVector n : N)).num := by
+  rw [D.form_rayVector, ← D.cast_normal_apply hn a, Rat.num_intCast]
+
+/-- The integral normal depends only on the positive ray of its unfrozen vector. -/
+theorem normal_zsmul {d : ℤ} (hd : 0 < d) {n : N} (hn : n ∈ D.unfrozen) :
+    D.normal (d • n) (D.unfrozen.smul_mem d hn) = D.normal n hn := by
+  ext a
+  apply Int.cast_injective (α := ℚ)
+  simp only [D.cast_normal_apply, AddSubgroup.rayIndex_zsmul _ hd, map_zsmul,
+    zsmul_eq_mul]
+  have hd' : (d : ℚ) ≠ 0 := by exact_mod_cast hd.ne'
+  field_simp
 
 /-- The functional `{-, κ(n) n}` vanishes on `n`. -/
 @[simp]
@@ -253,6 +258,12 @@ instance : Category SkewLatticeDatumCat.{u} where
   id_comp f := SkewLatticeDatum.Hom.comp_id f
   comp_id f := SkewLatticeDatum.Hom.id_comp f
   assoc f g h := (SkewLatticeDatum.Hom.comp_assoc h g f).symm
+
+/-- Morphisms in the category are determined by their underlying linear maps. -/
+@[ext]
+theorem hom_ext {X Y : SkewLatticeDatumCat.{u}} {f g : X ⟶ Y}
+    (h : f.toLinearMap = g.toLinearMap) : f = g :=
+  SkewLatticeDatum.Hom.ext h
 
 /-- The underlying linear map of the identity morphism is the identity. -/
 @[simp]
