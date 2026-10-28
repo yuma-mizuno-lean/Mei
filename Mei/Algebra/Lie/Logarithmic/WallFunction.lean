@@ -7,7 +7,7 @@ module
 
 public import Mei.Algebra.Lie.Logarithmic.Coefficient
 public import Mei.RingTheory.Derivation.Exp
-public import Mei.RingTheory.FilteredAlgebra.Exp.Basic
+public import Mei.RingTheory.FilteredAlgebra.Exp.Map
 public import Mei.RingTheory.Nilpotent.Log
 
 /-!
@@ -359,11 +359,10 @@ omit [Algebra ℚ R] [DecidableEq Γ] in
 /-- Completed tangent coefficients of positive order map to positive order. -/
 theorem completedTropicalTangentInclusion_mem_completionIdeal_one {u : (G).completion}
     (hu : u ∈ (G).completionIdeal 1) :
-    completedTropicalTangentInclusion d ρ m Q u ∈ (F).completionIdeal 1 := by
-  have h0 : (G).projection 0 u = 0 := by
-    simpa only [AlgFiltration.completionIdeal_succ, RingHom.mem_ker] using hu
-  rw [AlgFiltration.completionIdeal_succ, RingHom.mem_ker,
-    projection_completedTropicalTangentInclusion, h0, map_zero]
+    completedTropicalTangentInclusion d ρ m Q u ∈ (F).completionIdeal 1 :=
+  (G).mapCompletionₐ_mem_completionIdeal (F) (tropicalTangentInclusion d ρ m Q Fact.out)
+    id monotone_id
+    (fun k => filtration_ideal_le_comap_tropicalTangentInclusion d ρ m Q Fact.out (k + 1)) 0 hu
 
 /-- **The tangent wall function.** The completed label `exp(u ∂_m)` of a completed tangent
 coefficient `u` of positive order multiplies a monomial `r z^p` by `exp(m(ρ p) u)`. -/
@@ -438,14 +437,17 @@ theorem completedBCHAction_completedBCHExp_completedTropicalTangentField_complet
   apply (F).completion_ext
   intro k
   set U := (isUnit_completedTropicalTangentInclusion d ρ χ Q hf).unit with hUdef
-  have hf1 : IsNilpotent ((G).projection k f - 1) := by
-    simpa only [map_sub, map_one] using (G).isNilpotent_projection hf k
   have hlog :
       (F).projection k (completedTropicalTangentInclusion d ρ χ Q ((G).completedLog ⟨f, hf⟩)) =
       IsNilpotent.log ((F).projection k (completedTropicalTangentInclusion d ρ χ Q f)) := by
-    rw [projection_completedTropicalTangentInclusion, projection_completedTropicalTangentInclusion,
-      AlgFiltration.projection_completedLog]
-    exact hf1.map_log _
+    rw [completedTropicalTangentInclusion, ← AlgHom.coe_toRingHom,
+      AlgFiltration.coe_mapCompletionₐ]
+    simpa only [AlgFiltration.projection_completedLog] using
+      congrArg ((F).projection k)
+        ((G).mapCompletion_completedLog (F) (tropicalTangentInclusion d ρ χ Q Fact.out : _ →+* _)
+          id monotone_id
+          (fun k => filtration_ideal_le_comap_tropicalTangentInclusion d ρ χ Q Fact.out (k + 1))
+          (filtration_ideal_le_comap_tropicalTangentInclusion d ρ χ Q Fact.out 1) ⟨f, hf⟩)
   let φ : (F).completion →* R[Q] ⧸ (F).ideal (k + 1) := ((F).projection k).toMonoidHom
   have hU1 : IsNilpotent ((F).projection k (completedTropicalTangentInclusion d ρ χ Q f) - 1) := by
     have h := (F).isNilpotent_projection (by
