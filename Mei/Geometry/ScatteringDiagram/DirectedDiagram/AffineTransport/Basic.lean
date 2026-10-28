@@ -75,6 +75,20 @@ def image : DirectedDiagram (d := d') h' H' ι where
 @[simp]
 theorem image_wall (j : ι) : (D.image e E hE).wall j = (D.wall j).image e E hE := (rfl)
 
+/-- Integral affine transport preserves full-hyperplane inputs, with translated offsets. -/
+theorem image_fullHyperplane
+    (hfull : ∀ j, ∃ a : ℝ,
+      (D.wall j).support = {x | h.realCharacter (D.wall j).normal x = a})
+    (e : Toric.IntegralAffineEquiv h h')
+    (E : DirectedWallSpaces.CoordinateChange (d := d) (e := d') H H')
+    (hE : E.tangentEquiv = e.latticeEquiv) : ∀ j, ∃ a : ℝ,
+    ((D.image e E hE).wall j).support =
+      {x | h'.realCharacter ((D.image e E hE).wall j).normal x = a} := by
+  intro j
+  obtain ⟨a, ha⟩ := hfull j
+  rw [image_wall]
+  exact ⟨_, (D.wall j).image_support_eq_hyperplane e E hE ha⟩
+
 /-- Identity coordinates fix a directed diagram. -/
 @[simp]
 theorem image_refl :

@@ -6,7 +6,6 @@ Authors: Codex
 module
 
 public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Class
-public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Covariance.Basic
 
 /-!
 # Coordinate changes on directed-diagram classes

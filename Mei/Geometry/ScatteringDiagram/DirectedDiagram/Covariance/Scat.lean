@@ -54,16 +54,6 @@ variable {Γ Γ' Λ Λ' R V V' : Type*} {L L' : Type v} {ι : Type u}
   (E : DirectedWallSpaces.CoordinateChange (d := d) (e := d') H H')
   (hE : E.tangentEquiv = e.latticeEquiv)
 
-include hfull in
-/-- Integral affine transport preserves full-hyperplane inputs, with translated offsets. -/
-theorem image_fullHyperplane : ∀ j, ∃ a : ℝ,
-    ((D.image e E hE).wall j).support =
-      {x | h'.realCharacter ((D.image e E hE).wall j).normal x = a} := by
-  intro j
-  obtain ⟨a, ha⟩ := hfull j
-  rw [image_wall]
-  exact ⟨_, (D.wall j).image_support_eq_hyperplane e E hE ha⟩
-
 variable [Module.Free ℤ Γ] [Module.Free ℤ Γ']
 
 /-- Forming the canonical outgoing scattering class commutes with coordinate changes. -/
