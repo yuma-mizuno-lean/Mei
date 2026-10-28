@@ -34,9 +34,13 @@ variable {R M Γ Λ : Type*} [CommRing R] [AddCommGroup M] [Module R M]
   (d : PositiveDegrees Γ) (ℳ : Γ → Submodule R M) (p : Γ)
   {L : Type*} [LieRing L] [LieAlgebra R L]
   [LieRingModule L M] [LieModule R L M]
-  (ℒ : Γ → Submodule R L) [GradedLieAlgebra ℒ] [IsPositiveGrading d ℒ]
+  (ℒ : Γ → Submodule R L) [IsPositiveGrading d ℒ]
   [SetLike.GradedBracket ℒ ℳ] {ρ : Γ →+ Λ} (H : DirectedWallSpaces ρ ℒ)
   [IsWallAnnihilating H ℳ]
+
+section
+
+variable [DirectSum.Decomposition ℒ]
 
 /-- Only the generator piece can contribute to a charge-one ray wall sum. -/
 @[simp]
@@ -54,7 +58,9 @@ theorem raySubmodule_moduleRay (q : Γ) (hq : q - p ∈ d.monoid)
           (moduleRay_generator d p q hq) a.property ha).le.trans bot_le)
   · exact (wallSpaces d ℳ p ℒ H).wall_le_raySubmodule _ m (by simp)
 
-variable [DirectSum.Decomposition ℳ] [Algebra ℚ R]
+end
+
+variable [GradedLieAlgebra ℒ] [DirectSum.Decomposition ℳ] [Algebra ℚ R]
 
 /-- At the probe normal, the charge-one wall group exhausts the ray group. Nonzero
 multiples of the normal reduce to this case by `DirectedWallSpaces.wallGroup_rescale`. -/

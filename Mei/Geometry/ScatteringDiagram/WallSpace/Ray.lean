@@ -6,6 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.ScatteringDiagram.WallSpace.Basic
+public import Mei.Algebra.Lie.Graded.Ray
 public import Mei.Algebra.PositiveDegrees.Ray.Basic
 public import Mathlib.Algebra.Lie.Abelian
 public import Mathlib.Algebra.DirectSum.Decomposition
@@ -39,6 +40,13 @@ def raySubmodule (w : SupportedRay d) (m : Λ →+ ℤ) : Submodule R L :=
 /-- The ray submodule is the sum over its allowed degrees. -/
 theorem raySubmodule_def (w : SupportedRay d) (m : Λ →+ ℤ) :
     H.raySubmodule w m = ⨆ n : w.rayDegrees, H.wall n m := (rfl)
+
+/-- Every ray wall sum lies in the ray Lie subalgebra of the underlying grading. -/
+theorem raySubmodule_le_rayLieSubalgebra [SetLike.GradedBracket ℒ ℒ]
+    (w : SupportedRay d) (m : Λ →+ ℤ) :
+    H.raySubmodule w m ≤ (Mei.rayLieSubalgebra ℒ w).toSubmodule := by
+  rw [raySubmodule_def]
+  exact iSup_le fun n => (H.wall_le_piece n m).trans (le_rayLieSubalgebra ℒ n.property)
 
 /-- A homogeneous wall space embeds into its supported-ray sum. -/
 theorem wall_le_raySubmodule (w : SupportedRay d) (m : Λ →+ ℤ)
