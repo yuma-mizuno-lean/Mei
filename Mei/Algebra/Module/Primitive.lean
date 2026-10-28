@@ -15,6 +15,8 @@ multiples coincide. This gives uniqueness of primitive representatives of ration
 rays without choosing a real realization of the lattice.
 
 We use `TauCeti.IsPrimitive`, defined by an integer-valued functional taking value one.
+A combination `p • b i + q • b j` of two distinct basis vectors with coprime coefficients is
+primitive (`Module.Basis.isPrimitive_zsmul_add_zsmul`).
 -/
 
 public section
@@ -46,3 +48,16 @@ theorem eq_of_pos_zsmul_eq [HasUniqueDiv M] {v w : M} (hv : TauCeti.IsPrimitive 
   exact zsmul_right_injective ha.ne' (hab ▸ h)
 
 end TauCeti.IsPrimitive
+
+namespace Module.Basis
+
+variable {ι M : Type*} [AddCommGroup M] [Module ℤ M]
+
+/-- A combination of two distinct basis vectors with coprime coefficients is primitive. -/
+theorem isPrimitive_zsmul_add_zsmul (b : Basis ι ℤ M) {i j : ι} (hij : i ≠ j) {p q : ℤ}
+    (hpq : IsCoprime p q) : TauCeti.IsPrimitive (p • b i + q • b j) := by
+  obtain ⟨u, v, huv⟩ := hpq
+  refine TauCeti.isPrimitive_def.mpr ⟨u • b.coord i + v • b.coord j, ?_⟩
+  simpa [hij, hij.symm, mul_comm] using huv
+
+end Module.Basis
