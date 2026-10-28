@@ -77,6 +77,23 @@ theorem mk_truncTotal_principalCompletionEquiv (k : ℕ)
         (ofIdeal (MvPolynomial.idealOfVars σ R)).projection k x := by
   rw [← projection_principalCompletionEquiv_symm, AlgEquiv.symm_apply_apply]
 
+/-- A polynomial representing the order-`k` projection has the same coefficients
+as the associated power series in every total degree at most `k`. -/
+theorem coeff_principalCompletionEquiv_eq_of_projection_eq
+    (x : (ofIdeal (MvPolynomial.idealOfVars σ R)).completion) (k : ℕ)
+    (p : MvPolynomial σ R)
+    (hp : Ideal.Quotient.mk ((ofIdeal (MvPolynomial.idealOfVars σ R)).ideal (k + 1)) p =
+      (ofIdeal (MvPolynomial.idealOfVars σ R)).projection k x)
+    (n : σ →₀ ℕ) (hn : n.degree ≤ k) :
+    MvPowerSeries.coeff n (principalCompletionEquiv σ R x) = p.coeff n := by
+  rw [← mk_truncTotal_principalCompletionEquiv] at hp
+  have hmem := Ideal.Quotient.eq.mp hp
+  rw [ofIdeal_ideal, MvPolynomial.mem_pow_idealOfVars_iff'] at hmem
+  have he := hmem n (Nat.lt_succ_of_le hn)
+  symm
+  simpa only [MvPolynomial.coeff_sub, MvPowerSeries.coeff_truncTotal _
+    (Nat.lt_succ_of_le hn), sub_eq_zero] using he
+
 end Mei
 
 namespace RingHom
