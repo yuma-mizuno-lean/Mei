@@ -14,9 +14,10 @@ public import Mathlib.Topology.Algebra.ContinuousAffineMap
 
 The zero sets of the nonconstant members of a finite family of affine functionals
 form an exceptional arrangement. Constant conditions are omitted, including the
-identically zero condition. At a generic point, all signs are locally constant.
-This turns finite affine inequalities into stable local membership tests, even
-when some inequalities vanish identically.
+identically zero condition. When the affine conditions are continuous, all signs
+are locally constant at a generic point. This turns finite continuous affine
+inequalities into stable local membership tests, even when some inequalities
+vanish identically.
 
 We use Mathlib's affine-subspace preimages and the existing generic-locus and
 open-sign-region APIs.

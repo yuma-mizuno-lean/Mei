@@ -39,27 +39,15 @@ variable {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
   {n : ℕ} (f : Fin n → V →L[ℝ] ℝ) (c : Fin n → ℝ) (v : Fin n → V)
   {m : Fin n → ℕ} (g : ∀ i, Fin (m i) → V →ᴬ[ℝ] ℝ)
 
-/-- Affine endpoint conditions: negative elapsed times, followed by support
-inequalities pulled back to the respective encounter points. -/
-def backwardCondition : (Fin n ⊕ (Σ i, Fin (m i))) → V →ᴬ[ℝ] ℝ :=
-  Sum.elim (fun i => -backwardTime f c v i)
-    (fun j => (g j.1 j.2).comp (backwardPoint f c v j.1.succ))
-
-/-- The time row is nonpositive exactly when the elapsed time is nonnegative. -/
-@[simp]
-theorem backwardCondition_time (i : Fin n) (Q : V) :
-    backwardCondition f c v g (.inl i) Q = -backwardTime f c v i Q := (rfl)
-
-/-- The support row is evaluated at the corresponding encounter point. -/
-@[simp]
-theorem backwardCondition_support (i : Fin n) (j : Fin (m i)) (Q : V) :
-    backwardCondition f c v g (.inr ⟨i, j⟩) Q =
-      g i j (backwardPoint f c v i.succ Q) := (rfl)
-
 /-- The discriminant of the selected itinerary and presented supports. It omits
 constant endpoint conditions, including identically zero support rows. -/
 def backwardDiscriminant : ExceptionalArrangement V :=
   ExceptionalArrangement.ofAffineForms (fun j => (backwardCondition f c v g j).toAffineMap)
+
+/-- The backward discriminant is the arrangement of the affine endpoint conditions. -/
+theorem backwardDiscriminant_def :
+    backwardDiscriminant f c v g = ExceptionalArrangement.ofAffineForms
+      (fun j => (backwardCondition f c v g j).toAffineMap) := (rfl)
 
 /-- Genericity is nonvanishing of each nonconstant endpoint condition. -/
 @[simp]

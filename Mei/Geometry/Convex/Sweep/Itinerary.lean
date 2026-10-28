@@ -224,23 +224,44 @@ theorem isLocallyClosed_backwardDomain {P : Fin n → Set V}
     (isOpen_Ioi.preimage (backwardTime f c v i).continuous).inter (hU i)).isLocallyClosed.inter
       (isClosed_iInter hZ).isLocallyClosed
 
+section EndpointConditions
+
+variable {m : Fin n → ℕ} (g : ∀ i, Fin (m i) → V →ᴬ[ℝ] ℝ)
+
+/-- Affine endpoint conditions: negative elapsed times, followed by support
+inequalities pulled back to the respective encounter points. -/
+def backwardCondition : (Fin n ⊕ (Σ i, Fin (m i))) → V →ᴬ[ℝ] ℝ :=
+  Sum.elim (fun i => -backwardTime f c v i)
+    (fun j => (g j.1 j.2).comp (backwardPoint f c v j.1.succ))
+
+/-- The time row is nonpositive exactly when the elapsed time is nonnegative. -/
+@[simp]
+theorem backwardCondition_time (i : Fin n) (Q : V) :
+    backwardCondition f c v g (.inl i) Q = -backwardTime f c v i Q := (rfl)
+
+/-- The support row is evaluated at the corresponding encounter point. -/
+@[simp]
+theorem backwardCondition_support (i : Fin n) (j : Fin (m i)) (Q : V) :
+    backwardCondition f c v g (.inr ⟨i, j⟩) Q =
+      g i j (backwardPoint f c v i.succ Q) := (rfl)
+
+end EndpointConditions
+
 /-- Polyhedral support constraints pull back to a polyhedron when zero elapsed
 times are admitted. No boundedness or finite-dimensionality is assumed. -/
 theorem isConvexPolyhedron_weakBackwardDomain {P : Fin n → Set V}
     (hP : ∀ i, TauCeti.IsConvexPolyhedron (P i)) :
     TauCeti.IsConvexPolyhedron (weakBackwardDomain f c v P) := by
   choose m g hg using fun i => TauCeti.isConvexPolyhedron_iff.mp (hP i)
-  let rows : Fin n ⊕ (Σ i, Fin (m i)) → V →ᴬ[ℝ] ℝ := Sum.elim
-    (fun i => -backwardTime f c v i)
-    (fun a => (g a.1 a.2).comp (backwardPoint f c v a.1.succ))
-  have he : weakBackwardDomain f c v P = {Q | ∀ j, rows j Q ≤ 0} := by
+  have he : weakBackwardDomain f c v P =
+      {Q | ∀ j, backwardCondition f c v g j Q ≤ 0} := by
     ext Q
-    simp only [mem_weakBackwardDomain, hg, Set.mem_ofPred_eq, rows, Sum.forall,
+    simp only [mem_weakBackwardDomain, hg, Set.mem_ofPred_eq, backwardCondition, Sum.forall,
       Sum.elim_inl, Sum.elim_inr,
       Sigma.forall, ContinuousAffineMap.neg_apply, neg_nonpos,
       ContinuousAffineMap.comp_apply, forall_and]
   rw [he]
-  exact TauCeti.isConvexPolyhedron_setOf_forall rows
+  exact TauCeti.isConvexPolyhedron_setOf_forall (backwardCondition f c v g)
 
 /-- If one strict realization exists, every weak realization is its limit along
 a segment inside the support constraints. The nonemptiness hypothesis is essential. -/
