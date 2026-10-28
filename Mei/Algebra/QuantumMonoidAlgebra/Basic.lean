@@ -133,6 +133,18 @@ theorem monomial_mul_neg (hβ : β.IsAlt) (p : Γ) :
     monomial q β p * monomial q β (-p) = 1 := by
   simp [hβ.self_eq_zero]
 
+/-- Moving a quantum ray generator past a monomial rescales it by `q^(2β(n,p))`. -/
+theorem monomial_semiconjBy (hβ : β.IsAlt) (n p : Γ) :
+    SemiconjBy (monomial q β p)
+      (((q ^ (2 * β n p) : Rˣ) : R) • monomial q β n) (monomial q β n) := by
+  unfold SemiconjBy
+  rw [mul_smul_comm, monomial_mul, monomial_mul, smul_smul,
+    ← Units.val_mul, ← zpow_add, ← hβ.neg_eq n p]
+  congr 2
+  · congr 1
+    omega
+  · exact add_comm p n
+
 /-- Along a single alternating ray, ordinary powers multiply only the exponent. -/
 @[simp]
 theorem monomial_pow (hβ : β.IsAlt) (p : Γ) (n : ℕ) :

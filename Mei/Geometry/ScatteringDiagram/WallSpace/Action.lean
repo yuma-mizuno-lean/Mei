@@ -46,6 +46,15 @@ class IsWallAnnihilating (H : DirectedWallSpaces ρ ℒ) (𝒜 : Γ → Submodul
   lie_eq_zero : ∀ {n p : Γ} {m : Λ →+ ℤ} {x : L} {a : M},
     x ∈ H.wall n m → a ∈ 𝒜 p → m (ρ p) = 0 → ⁅x, a⁆ = 0
 
+/-- Restricting a wall-annihilating action to a Lie submodule preserves annihilation
+for its inherited ambient homogeneous pieces. -/
+instance IsWallAnnihilating.comap (H : DirectedWallSpaces ρ ℒ)
+    (𝒜 : Γ → Submodule R M) [IsWallAnnihilating H 𝒜] (S : LieSubmodule R L M) :
+    IsWallAnnihilating H (fun p => (𝒜 p).comap S.incl.toLinearMap) where
+  lie_eq_zero hx ha hm := by
+    apply Subtype.ext
+    exact IsWallAnnihilating.lie_eq_zero (H := H) (𝒜 := 𝒜) hx ha hm
+
 namespace DirectedWallSpaces
 
 variable (H : DirectedWallSpaces ρ ℒ) (𝒜 : Γ → Submodule R M)

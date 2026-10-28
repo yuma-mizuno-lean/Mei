@@ -161,6 +161,32 @@ scoped instance instLieModule :
 theorem lie_eq (x : tropicalVertexLieAlgebra (R := R) d ρ) (a : R[Q]) :
     ⁅x, a⁆ = tropicalVertexCoefficientAction d ρ Q Fact.out x a := (rfl)
 
+/-- A positive homogeneous logarithmic field shifts the ambient coefficient degree. -/
+scoped instance instGradedBracket :
+    SetLike.GradedBracket (tropicalVertexGrading (R := R) d ρ)
+      (gradeBy R Q.subtype) where
+  bracket_mem := by
+    intro n p x a hx ha
+    by_cases hn : n ∈ d.monoid
+    · obtain ⟨m, hm⟩ := (mem_tropicalVertexGrading_iff d ρ n x).mp hx
+      rw [lie_eq, tropicalVertexCoefficientAction_of_homogeneous d ρ Q Fact.out hn x m hm]
+      rw [← sum_coeff_single a, Finsupp.sum, map_sum]
+      apply Submodule.sum_mem
+      intro q hq
+      rw [AddMonoidAlgebra.monomialDerivation_single]
+      have hp : (q : Γ) = p := ha q hq
+      simpa only [AddMonoidHom.comp_apply, AddSubmonoid.subtype_apply,
+        AddSubmonoid.coe_add, hp, vadd_eq_add] using
+        single_mem_gradeBy Q.subtype
+          ((⟨n, (Fact.out : d.monoid ≤ Q) hn⟩ : Q) + q)
+          (a.coeff q * m (ρ q))
+    · have hx0 : x = 0 := by
+        simpa only [IsPositiveGrading.eq_bot (d := d)
+          (ℒ := tropicalVertexGrading (R := R) d ρ) n (Or.inl hn), Submodule.mem_bot]
+          using hx
+      simp [hx0]
+
+
 /-- Logarithmic fields act by derivations of coefficient multiplication. -/
 scoped instance instIsDerivationAction :
     IsDerivationAction (tropicalVertexLieAlgebra (R := R) d ρ) R[Q] where
