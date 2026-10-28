@@ -54,7 +54,7 @@ theorem curryAlgEquiv_mem_grade [AddCommMonoid N] (p : M × N) (x : R[M × N])
   simpa only [lsingle_apply, curryAlgEquiv_single] using single_mem_grade m (single n c)
 
 /-- Currying a homogeneous element retains its tangential monomial coefficient. -/
-theorem coeff_curryAlgEquiv_of_mem_grade [AddCommMonoid N] (p : M × N)
+theorem coeff_curryAlgEquiv_of_mem_grade [AddMonoid N] (p : M × N)
     (x : R[M × N]) (hx : x ∈ grade R p) :
     (curryAlgEquiv R x).coeff p.1 = single p.2 (x.coeff p) := by
   rcases p with ⟨m, n⟩

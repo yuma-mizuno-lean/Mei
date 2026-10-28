@@ -11,7 +11,7 @@ public import TauCeti.RingTheory.Node.Basic
 # Scalar towers for nodal algebras
 
 The nodal algebra over an algebra `S` is itself an algebra over the original
-coefficient semiring `R`. The scoped instances in `TauCeti.NodeAlgebra` use the
+coefficient semiring `R`. The scoped instances in `Mei.NodeAlgebra` use the
 composite scalar map. They allow the chamber maps and incoming lifts to retain
 their linear structures over `R` when `S` is a tangential coefficient algebra.
 -/
@@ -20,7 +20,9 @@ public section
 
 noncomputable section
 
-namespace TauCeti.NodeAlgebra
+namespace Mei.NodeAlgebra
+
+open TauCeti
 
 variable (R S : Type*) [CommSemiring R] [CommRing S] [Algebra R S] (a : S)
 
@@ -32,4 +34,4 @@ scoped instance scalarAlgebra : Algebra R (NodeAlgebra S a) :=
 scoped instance scalarTower : IsScalarTower R S (NodeAlgebra S a) :=
   IsScalarTower.of_algebraMap_smul fun _ _ => rfl
 
-end TauCeti.NodeAlgebra
+end Mei.NodeAlgebra

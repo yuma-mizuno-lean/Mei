@@ -32,7 +32,7 @@ noncomputable section
 namespace Mei.NodeAlgebra
 
 open TauCeti TauCeti.NodeAlgebra AddMonoidAlgebra LaurentPolynomial
-open scoped TauCeti.NodeAlgebra
+open scoped Mei.NodeAlgebra
 
 variable {R M : Type*} [CommRing R] [AddCommMonoid M] (a : R[M])
 
