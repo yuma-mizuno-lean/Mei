@@ -17,7 +17,8 @@ public import Mathlib.Tactic.Module
 
 The sweep of a set `P` in the direction `n` is `P - ℝ≥0 • n`. When `n` is
 outside the affine direction of `P`, a normalized linear height recovers both
-prism coordinates.
+prism coordinates. Sweeps commute with adding unrestricted coordinates, as needed
+when comparing projected wall supports with their cylinders.
 -/
 
 public section
@@ -50,6 +51,20 @@ theorem subset_sweep (P : Set V) (n : V) : P ⊆ sweep P n := by
 theorem sweep_mono {P Q : Set V} (h : P ⊆ Q) (n : V) : sweep P n ⊆ sweep Q n := by
   rintro y ⟨x, hx, t, ht, he⟩
   exact ⟨x, h hx, t, ht, he⟩
+
+/-- Sweeping a cylinder only changes its base. The unrestricted coordinate absorbs
+every second component of the sweeping vector, including when the first is zero. -/
+@[simp]
+theorem sweep_prod_univ {E : Type*} [AddCommGroup E] [Module ℝ E]
+    (P : Set V) (n : V × E) :
+    sweep (P ×ˢ (Set.univ : Set E)) n = sweep P n.1 ×ˢ Set.univ := by
+  ext y
+  constructor
+  · rintro ⟨x, hx, t, ht, he⟩
+    exact ⟨⟨x.1, hx.1, t, ht, congrArg Prod.fst he⟩, Set.mem_univ _⟩
+  · rintro ⟨⟨x, hx, t, ht, he⟩, _⟩
+    refine ⟨(x, y.2 + t • n.2), ⟨hx, Set.mem_univ _⟩, t, ht, ?_⟩
+    exact Prod.ext he (by simp)
 
 /-- The empty base has empty sweep. -/
 @[simp]
