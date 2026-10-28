@@ -39,18 +39,6 @@ variable {R Γ : Type*} [CommRing R] [AddCommGroup Γ]
 
 include hβ
 
-/-- Moving a quantum ray generator past a monomial rescales it by `q^(2β(n,p))`. -/
-theorem monomial_semiconjBy :
-    SemiconjBy (monomial q β p)
-      (((q ^ (2 * β n p) : Rˣ) : R) • monomial q β n) (monomial q β n) := by
-  unfold SemiconjBy
-  rw [mul_smul_comm, monomial_mul, monomial_mul, smul_smul,
-    ← Units.val_mul, ← zpow_add, ← hβ.neg_eq n p]
-  congr 2
-  · congr 1
-    omega
-  · exact add_comm p n
-
 /-- A unit series on a quantum ray conjugates a monomial by the scalar rescaling ratio. -/
 theorem evalMonomial_conj (G : R⟦X⟧ˣ) :
     PowerSeries.evalMonomial (monomial q β n) (G : R⟦X⟧) *
@@ -85,6 +73,7 @@ theorem coeff_evalMonomial_conj (G : R⟦X⟧ˣ) (j : ℕ) :
 
 omit hβ in
 /-- Compatible quantum maps commute with formal evaluation on rays. -/
+@[simp]
 theorem map_evalMonomial {S Γ' : Type*} [CommRing S] [AddCommGroup Γ']
     {q' : Sˣ} {β' : LinearMap.BilinForm ℤ Γ'} (φ : R →+* S) (f : Γ →+ Γ')
     (h : ∀ a b, Units.map φ.toMonoidHom (q ^ β a b) = q' ^ β' (f a) (f b))
