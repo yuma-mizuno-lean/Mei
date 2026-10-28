@@ -7,7 +7,6 @@ module
 
 public import Mei.Geometry.ScatteringDiagram.Skew.Cone
 public import Mei.Geometry.Toric.Algebraic.Cone.Basis
-public import TauCeti.Geometry.Convex.Cone.Face.Simplicial
 
 /-!
 # The basis-generated principal positive cone
@@ -58,11 +57,11 @@ theorem principalBasisCone_eq_principalCone (hi : IsIntegralLattice i) :
 
 /-- The principal basis cone is salient: the unfrozen coordinate retains an independent
 basis, regardless of the first lattice map or the skew form. -/
-theorem salient_principalBasisCone (hi : IsIntegralLattice i) :
+theorem salient_principalBasisCone (hi : LinearIndependent ℝ fun a => i (b a)) :
     (D.principalBasisCone b j i : ConvexCone ℝ (W × V)).Salient := by
   rw [principalBasisCone]
   exact PointedCone.salient_hull_range
-    (LinearIndependent.of_comp (LinearMap.snd ℝ W V) (hi.linearIndependent_basis b))
+    (LinearIndependent.of_comp (LinearMap.snd ℝ W V) hi)
 
 /-- The principal basis cone is lattice rational, including for the zero skew form. -/
 theorem isLatticeRational_principalBasisCone [Finite ι] :
@@ -77,9 +76,10 @@ theorem isLatticeRational_principalBasisCone [Finite ι] :
 variable [Fintype ι]
 
 /-- Principal positive degrees are exactly the lattice points of the principal cone.
-The first lattice map only needs to be injective; the unfrozen lattice is integral. -/
+The first lattice map only needs to be injective; the unfrozen basis images need
+only be real linearly independent, without spanning the ambient space. -/
 theorem principalPositiveDegrees_monoid_eq_latticePoints_principalBasisCone
-    (hj : Function.Injective j) (hi : IsIntegralLattice i) :
+    (hj : Function.Injective j) (hi : LinearIndependent ℝ fun a => i (b a)) :
     (D.principalPositiveDegrees b.positiveDegrees).monoid =
       (D.principalBasisCone b j i).latticePoints (j.prodMap i) :=
   b.positiveDegrees_graph_monoid_eq_latticePoints_hull hi j hj
