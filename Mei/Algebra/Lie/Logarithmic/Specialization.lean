@@ -13,7 +13,7 @@ public import Mei.Algebra.Lie.Graded.RestrictScalars
 
 A coefficient homomorphism `φ : R →ₐ[K] S` and a multiplicative weight `χ` on
 the degree monoid send `z^n ∂_m` to `χ(n) z^n ∂_(φ ∘ m)`. This preserves the
-logarithmic bracket, tangency and positive support, including when coefficients
+logarithmic bracket, tangency and exponent support, including when coefficients
 or weights vanish. Specializations compose by multiplying the second weight by
 the image of the first weight.
 
@@ -114,17 +114,34 @@ theorem coefficientMap_comp (ψ : S →ₐ[K] T) (ω : Multiplicative Γ →* T)
   ext x n l
   simp [mul_assoc]
 
-/-- Twisted coefficient specialization preserves positive support and tangency. -/
-theorem coefficientMap_mem_tropicalVertexLieAlgebra (d : PositiveDegrees Γ)
-    {x : LogarithmicVectorField R Γ Λ ρ} (hx : x ∈ tropicalVertexLieAlgebra d ρ) :
-    coefficientMap ρ φ χ x ∈ tropicalVertexLieAlgebra d ρ := by
-  obtain ⟨ht, hs⟩ := (mem_tropicalVertexLieAlgebra_iff d ρ x).mp hx
-  apply (mem_tropicalVertexLieAlgebra_iff d ρ _).mpr
+/-- Twisted coefficient specialization preserves tangency and support in any
+additive subsemigroup of exponents. -/
+theorem coefficientMap_mem_tangentSubalgebra (A : AddSubsemigroup Γ)
+    {x : LogarithmicVectorField R Γ Λ ρ} (hx : x ∈ tangentSubalgebra ρ A) :
+    coefficientMap ρ φ χ x ∈ tangentSubalgebra ρ A := by
+  obtain ⟨ht, hs⟩ := (mem_tangentSubalgebra_iff ρ A x).mp hx
+  apply (mem_tangentSubalgebra_iff ρ A _).mpr
   constructor
   · intro n
     simp [ht n]
   · intro n hn
     simp [hs n hn]
+
+/-- Twisted coefficient specialization preserves positive support and tangency. -/
+theorem coefficientMap_mem_tropicalVertexLieAlgebra (d : PositiveDegrees Γ)
+    {x : LogarithmicVectorField R Γ Λ ρ} (hx : x ∈ tropicalVertexLieAlgebra d ρ) :
+    coefficientMap ρ φ χ x ∈ tropicalVertexLieAlgebra d ρ := by
+  rw [mem_tropicalVertexLieAlgebra_iff] at hx ⊢
+  have hA : x ∈ tangentSubalgebra ρ d.monoid.toAddSubsemigroup :=
+    (mem_tangentSubalgebra_iff ρ _ x).mpr
+      ⟨hx.1, fun n hn => hx.2 n (Or.inl hn)⟩
+  have h := (mem_tangentSubalgebra_iff ρ _ _).mp
+    (coefficientMap_mem_tangentSubalgebra ρ φ χ _ hA)
+  refine ⟨h.1, ?_⟩
+  intro n hn
+  rcases hn with hn | rfl
+  · exact h.2 n hn
+  · simp [hx.2 0 (Or.inr rfl)]
 
 /-- Twisted coefficient change on positive tropical vertex algebras, with identity
 degree map and modulus. Restricting scalars permits arbitrary coefficient algebra
