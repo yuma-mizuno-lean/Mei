@@ -74,8 +74,9 @@ theorem verticalCoefficient_eq_of_height (k : ℕ) (hD : D.LevelConsistent (k + 
     simpa using ha
   have he := D.combinedLabel_eq_of_parallel_displacement (k + 1) hD θ v (t • y)
     hθ hη (fun a => by
-      rw [map_smul, realCharacter_normal_height_eq_zero_of_label_ne_one
-        d ℳ p ℒ H h h' (D.wall a) (D.label_ne_one_of_mem_active a.property), smul_zero])
+      rw [map_smul]
+      simp [normal_height_eq_zero_of_label_ne_one
+        d ℳ p ℒ H h h' (D.wall a) (D.label_ne_one_of_mem_active a.property)])
     hparallel
   simp only [verticalCoefficient_def, he]
 
