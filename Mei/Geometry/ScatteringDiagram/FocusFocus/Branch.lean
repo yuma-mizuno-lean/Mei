@@ -106,6 +106,7 @@ theorem fst_slabBranch_eq_zero_iff (t : ℝ) :
   exact eq_comm
 
 /-- The slab encounter has the height determined by backward propagation. -/
+@[simp]
 theorem slabBranch_crossing :
     slabBranch n b c Q hQ (Q.1 / (n : ℝ)) =
       (0, Q.2 - (c : ℝ) * Q.1 / n) := by
@@ -117,6 +118,7 @@ theorem slabBranch_crossing :
     ring
 
 /-- Singular incidence occurs exactly when the unique slab encounter is at height zero. -/
+@[simp]
 theorem slabBranch_eq_zero_iff (t : ℝ) :
     slabBranch n b c Q hQ t = 0 ↔
       t = Q.1 / (n : ℝ) ∧ Q.2 - (c : ℝ) * Q.1 / n = 0 := by
@@ -134,6 +136,7 @@ theorem slabBranch_eq_zero_iff (t : ℝ) :
 
 /-- The entire incoming half-line avoids the singularity exactly off the crossing-height
 hyperplane. The crossing is in the half-line because the endpoint is in the opposite chamber. -/
+@[simp↓]
 theorem slabBranch_avoids_origin_iff :
     (∀ t ≤ 0, slabBranch n b c Q hQ t ≠ 0) ↔ Q.2 - (c : ℝ) * Q.1 / n ≠ 0 := by
   constructor
