@@ -72,4 +72,12 @@ theorem eulerDerivInv_eq_iff (f g : PowerSeries R) (hf : constantCoeff f = 0) :
     exact derivative.ext (X_mul_cancel ((X_mul_derivative_eulerDerivInv f hf).trans hd.symm))
       ((constantCoeff_eulerDerivInv f).trans hg.symm)
 
+/-- Coefficient homomorphisms commute with integration against `dX / X`. -/
+@[simp]
+theorem map_eulerDerivInv {S : Type*} [CommRing S] [Algebra ℚ S]
+    (φ : R →+* S) (f : PowerSeries R) :
+    map φ (eulerDerivInv f) = eulerDerivInv (map φ f) := by
+  ext j
+  simp only [coeff_map, coeff_eulerDerivInv, map_rat_smul]
+
 end PowerSeries

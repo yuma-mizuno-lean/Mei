@@ -90,6 +90,13 @@ theorem principalEvaluation_apply (n : D.unfrozen) (x : Lpr) :
         x.1 ⟨D.sublattice.toAddSubgroup.index • (n : N),
           D.sublattice.toAddSubgroup.nsmul_index_mem n⟩) := (rfl)
 
+/-- Rational principal evaluation characters commute with coefficient change. -/
+@[simp]
+theorem map_principalEvaluation {S : Type*} [CommRing S] [Algebra ℚ S]
+    (φ : R →ₐ[ℚ] S) (n : D.unfrozen) (x : Lpr) :
+    φ (D.principalEvaluation (R := R) n x) = D.principalEvaluation (R := S) n x := by
+  simp [principalEvaluation_apply]
+
 /-- Normal evaluation at a principal exponent recovers the skew pairing, with
 order reversed relative to the field indices. -/
 @[simp]
