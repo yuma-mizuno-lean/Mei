@@ -6,6 +6,7 @@ Authors: Claude Code
 module
 
 public import Mei.Geometry.ScatteringDiagram.Skew.Basic
+public import Mei.LinearAlgebra.Basis.Diagonal
 public import Mathlib.LinearAlgebra.Basis.Basic
 
 /-!
@@ -79,22 +80,12 @@ variable {D : SkewLatticeDatum N} {ι : Type*} (B : D.AdaptedBasis ι)
 /-- A vector is unfrozen exactly when its coordinates outside `I_uf` vanish. -/
 theorem mem_unfrozen_iff {n : N} :
     n ∈ D.unfrozen ↔ ∀ i ∉ B.unfrozenIndex, B.basis.repr n i = 0 := by
-  rw [B.unfrozen_eq_span, Basis.mem_span_image]
-  refine ⟨fun h i hi => ?_, fun h i hi => ?_⟩
-  · by_contra hne
-    exact hi (h (Finsupp.mem_support_iff.mpr hne))
-  · by_contra hne
-    exact Finsupp.mem_support_iff.mp hi (h i hne)
+  simp only [B.unfrozen_eq_span, Basis.mem_span_image, Finsupp.support_subset_iff, Finset.mem_coe]
 
 /-- A basis vector is unfrozen exactly when its index is unfrozen. -/
 @[simp]
 theorem basis_mem_unfrozen_iff {i : ι} : B.basis i ∈ D.unfrozen ↔ i ∈ B.unfrozenIndex := by
-  classical
-  rw [B.mem_unfrozen_iff]
-  refine ⟨fun h => ?_, fun h j hj => ?_⟩
-  · by_contra hi
-    simpa using h i hi
-  · simp [show i ≠ j by rintro rfl; exact hj h]
+  simp only [B.unfrozen_eq_span, Basis.self_mem_span_image, Finset.mem_coe]
 
 /-- The multiple `d_i e_i` lies in `N°`. -/
 theorem nsmul_basis_mem_sublattice (i : ι) : B.multiplier i • B.basis i ∈ D.sublattice := by
@@ -192,15 +183,9 @@ theorem coe_sublatticeBasis (i : ι) :
 by `d_i`. -/
 theorem basis_repr_coe_sublattice (n : D.sublattice) (i : ι) :
     B.basis.repr n i = B.multiplier i * B.sublatticeBasis.repr n i := by
-  classical
-  have h : (Finsupp.lapply i ∘ₗ B.basis.repr.toLinearMap ∘ₗ D.sublattice.subtype :
-      D.sublattice →ₗ[ℤ] ℤ) = (B.multiplier i : ℤ) • (Finsupp.lapply i ∘ₗ
-        B.sublatticeBasis.repr.toLinearMap) := by
-    refine B.sublatticeBasis.ext fun j => ?_
-    rcases eq_or_ne j i with rfl | hji
-    · simp
-    · simp [hji]
-  exact LinearMap.congr_fun h n
+  exact B.sublatticeBasis.repr_apply_of_apply_eq_smul B.basis
+    (g := D.sublattice.subtype) (s := fun j => (B.multiplier j : ℤ))
+    (fun j => by simp [natCast_zsmul]) n i
 
 section RayIndex
 

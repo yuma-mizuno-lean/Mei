@@ -216,6 +216,13 @@ def AdaptedBasis.principalCoefficientCompletionEquiv :
   D.principalCoefficientCompletionEquiv _ B.unfrozenBasis.positiveDegreesMonoidEquiv
     B.unfrozenBasis.positiveDegrees_degree_eq_degree_positiveDegreesMonoidEquiv
 
+/-- The adapted completion dictionary is the general dictionary in the natural coordinates
+of the unfrozen basis, so its coefficient and inverse-projection formulas apply. -/
+theorem AdaptedBasis.principalCoefficientCompletionEquiv_def :
+    B.principalCoefficientCompletionEquiv (R := R) =
+      D.principalCoefficientCompletionEquiv _ B.unfrozenBasis.positiveDegreesMonoidEquiv
+        B.unfrozenBasis.positiveDegrees_degree_eq_degree_positiveDegreesMonoidEquiv := (rfl)
+
 /-- In adapted coordinates the principal monomial `z^m t^n` is the power series monomial
 whose exponent of `t_i` is the `i`-th coordinate of `n`. -/
 @[simp]
