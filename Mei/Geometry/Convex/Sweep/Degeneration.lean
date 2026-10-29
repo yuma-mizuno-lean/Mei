@@ -115,11 +115,7 @@ theorem backwardPath_apply_parameter {Q : V}
     backwardPath f c v Q (backwardParameter f c (fun j => v j.castSucc) j Q) =
       backwardPoint f c (fun j => v j.castSucc) j Q := by
   classical
-  have hanti : Antitone (fun j => backwardParameter f c (fun j => v j.castSucc) j Q) := by
-    apply Fin.antitone_iff_succ_le.mpr
-    intro a
-    rw [backwardParameter_succ]
-    exact sub_le_self _ (hQ a)
+  have hanti := antitone_backwardParameter f c (fun j => v j.castSucc) Q hQ
   rw [backwardPath_apply]
   have he : (∑ a : Fin n,
       max (backwardParameter f c (fun j => v j.castSucc) a.succ Q -
@@ -143,15 +139,9 @@ theorem backwardPath_apply_parameter {Q : V}
 theorem backwardPath_apply_zero {Q : V}
     (hQ : ∀ j, 0 ≤ backwardTime f c (fun j => v j.castSucc) j Q) :
     backwardPath f c v Q 0 = Q := by
-  have hanti : Antitone (fun j => backwardParameter f c (fun j => v j.castSucc) j Q) := by
-    apply Fin.antitone_iff_succ_le.mpr
-    intro j
-    rw [backwardParameter_succ]
-    exact sub_le_self _ (hQ j)
-  have hnonpos (j : Fin n) : backwardParameter f c (fun j => v j.castSucc) j.succ Q ≤ 0 := by
-    simpa using hanti (Fin.zero_le j.succ)
-  simp only [backwardPath_apply, sub_zero, max_eq_right (hnonpos _), zero_smul,
-    Finset.sum_const_zero, zero_add]
+  simpa only [backwardParameter_zero, backwardPoint_zero, ContinuousAffineMap.coe_id,
+    id_eq] using
+    backwardPath_apply_parameter f c v hQ 0
 
 /-- With nonnegative elapsed times, the extended path retains the entire incoming
 half-line from the last encounter, even when encounters coincide. -/
@@ -160,11 +150,7 @@ theorem backwardPath_apply_incoming {Q : V}
     {s : ℝ} (hs : 0 ≤ s) :
     backwardPath f c v Q (backwardParameter f c (fun j => v j.castSucc) (Fin.last n) Q - s) =
       backwardPoint f c (fun j => v j.castSucc) (Fin.last n) Q + s • v (Fin.last n) := by
-  have hanti : Antitone (fun j => backwardParameter f c (fun j => v j.castSucc) j Q) := by
-    apply Fin.antitone_iff_succ_le.mpr
-    intro j
-    rw [backwardParameter_succ]
-    exact sub_le_self _ (hQ j)
+  have hanti := antitone_backwardParameter f c (fun j => v j.castSucc) Q hQ
   rw [backwardPath_apply]
   have hnonneg (j : Fin n) : 0 ≤ backwardParameter f c (fun j => v j.castSucc) j.succ Q -
       (backwardParameter f c (fun j => v j.castSucc) (Fin.last n) Q - s) :=

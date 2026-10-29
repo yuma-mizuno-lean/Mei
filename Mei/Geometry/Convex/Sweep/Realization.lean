@@ -52,6 +52,15 @@ theorem backwardParameter_succ (j : Fin n) (Q : V) :
       backwardParameter f c u j.castSucc Q - backwardTime f c u j Q := by
   simp [backwardParameter, Fin.partialSum_succ, sub_eq_add_neg]
 
+/-- Nonnegative elapsed times weakly order the encounters backwards. -/
+theorem antitone_backwardParameter (Q : V)
+    (hQ : ∀ j, 0 ≤ backwardTime f c u j Q) :
+    Antitone (fun j => backwardParameter f c u j Q) := by
+  apply Fin.antitone_iff_succ_le.mpr
+  intro j
+  rw [backwardParameter_succ]
+  exact sub_le_self _ (hQ j)
+
 /-- Positive elapsed times strictly order the encounters backwards. -/
 theorem strictAnti_backwardParameter (Q : V)
     (hpos : ∀ j, 0 < backwardTime f c u j Q) :
