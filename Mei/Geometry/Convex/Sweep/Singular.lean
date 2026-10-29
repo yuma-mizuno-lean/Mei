@@ -17,6 +17,7 @@ specified sets. In contrast to wall encounters, singular encounters are forbidde
 even at recorded times.
 
 For finitely many closed rational-normal singular cells and lattice directions,
+with rational selected hyperplane normals and rational semilinear selected supports,
 this domain is rational semilinear. Since rational semilinearity is closed under
 finite intersections, `IsRationalSemilinear.exists_disjoint_intrinsicInteriors`
 decomposes its intersection with any other rational semilinear domain.
