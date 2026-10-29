@@ -55,4 +55,21 @@ theorem cylinder_active (k : ℕ) : (D.cylinder h').active k = D.active k := by
   ext a
   simp
 
+variable (hfull : ∀ a, ∃ c : ℝ,
+  (D.wall a).support = {x | h.realCharacter (D.wall a).normal x = c})
+
+include hfull in
+/-- A cylinder over a full affine hyperplane is again a full affine hyperplane,
+with the same offset and the pulled-back normal. -/
+theorem cylinder_fullHyperplane : ∀ a, ∃ c : ℝ,
+    ((D.cylinder h').wall a).support =
+      {x | (h.prod h').realCharacter ((D.cylinder h').wall a).normal x = c} := by
+  intro a
+  obtain ⟨c, hc⟩ := hfull a
+  refine ⟨c, ?_⟩
+  rw [cylinder_wall, DirectedWall.cylinder_support,
+    DirectedWall.realCharacter_cylinder_normal, hc]
+  ext x
+  simp
+
 end Mei.DirectedDiagram
