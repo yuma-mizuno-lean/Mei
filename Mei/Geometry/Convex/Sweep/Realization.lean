@@ -210,8 +210,9 @@ theorem incomingReference_backwardRay :
         backwardParameter f c (fun j => v j.castSucc) (Fin.last n) Q • v (Fin.last n) :=
   stage_incomingReference f c v Q hpos _
 
-/-- On a finite segment, the realization has exactly the itinerary's prescribed
-velocity and starts at the computed encounter point. -/
+/-- On a finite segment, the realization has prescribed direction `v j.castSucc`
+and velocity `-v j.castSucc` as the parameter increases. It passes through the
+computed encounter point at the segment's right endpoint. -/
 theorem backwardRay_apply_segment (j : Fin n) (t : ℝ)
     (hlo : backwardParameter f c (fun j => v j.castSucc) j.succ Q ≤ t)
     (hhi : t ≤ backwardParameter f c (fun j => v j.castSucc) j.castSucc Q) :
