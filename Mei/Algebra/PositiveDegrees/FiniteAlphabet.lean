@@ -52,6 +52,7 @@ theorem letter_fst (α : E) : (letter m α).1 = m α := (rfl)
 theorem letter_snd (α : E) : (letter m α).2 = Pi.single α 1 := (rfl)
 
 /-- A letter of a finite alphabet is nonzero: its letter count at its own index is one. -/
+@[simp]
 theorem letter_ne_zero [Zero M] (α : E) : letter m α ≠ 0 :=
   fun h => by simpa using congrArg (fun x => x.2 α) h
 

@@ -120,6 +120,7 @@ theorem exponent_apply_basis_self (i : B.unfrozenIndex) : I.exponent i (B.basis 
   simp [I.cast_exponent_apply]
 
 /-- The exponents are nonzero. -/
+@[simp]
 theorem exponent_ne_zero (i : B.unfrozenIndex) : I.exponent i ≠ 0 :=
   (I.isPrimitive_exponent i).ne_zero
 
@@ -185,6 +186,7 @@ def initialFunction (R : Type*) [Semiring R] (i : B.unfrozenIndex) :
 
 /-- The coefficient of the initial function at `i` on the letter of a variable `p_{j,s}`
 is `1` if `j = i` and `0` otherwise. -/
+@[simp]
 theorem coeff_initialFunction_letter (R : Type*) [Semiring R] (i : B.unfrozenIndex)
     (α : I.Letter) :
     (I.initialFunction R i).coeff (PositiveDegrees.letter I.letterExponent α) =
@@ -212,6 +214,7 @@ theorem coeff_initialFunction_zero (R : Type*) [Semiring R] (i : B.unfrozenIndex
 
 /-- Away from `0` and the letters of the variables `p_{i,s}`, the initial function at `i` has
 zero coefficient. -/
+@[simp]
 theorem coeff_initialFunction_eq_zero (R : Type*) [Semiring R] (i : B.unfrozenIndex)
     {x : Module.Dual ℤ N × (I.Letter → ℤ)} (h0 : x ≠ 0)
     (hx : ∀ s, x ≠ PositiveDegrees.letter I.letterExponent ⟨i, s⟩) :
