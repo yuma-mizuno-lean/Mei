@@ -86,12 +86,9 @@ jobs:
           sparse-checkout-cone-mode: false
           persist-credentials: false
 
-      - name: Prepare pinned shared tools
-        uses: yuma-mizuno-lean/TauCetiTools/.github/actions/setup@7405c6bc681341dc54c775bc6f5e6de533120ba1
-        with:
-          tools-repository: yuma-mizuno-lean/TauCetiTools
-          tools-ref: 7405c6bc681341dc54c775bc6f5e6de533120ba1
-          project-directory: .
+      # This isolated runner intentionally has no candidate tauceti.toml.
+      # Read the standalone helpers directly; project setup requires that file
+      # and is unnecessary for these standard-library Python entry points.
       - name: Check out workflow-pinned publication planning tools
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
