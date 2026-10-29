@@ -5,7 +5,7 @@ Authors: Claude Code
 -/
 module
 
-public import Mei.Geometry.ScatteringDiagram.Skew.PolynomialInput
+public import Mei.Geometry.ScatteringDiagram.Skew.PolynomialInput.Basic
 public import Mathlib.LinearAlgebra.Basis.Fin
 public import Mathlib.Data.ZMod.Basic
 
