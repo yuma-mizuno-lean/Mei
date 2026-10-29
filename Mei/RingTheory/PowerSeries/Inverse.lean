@@ -21,7 +21,9 @@ and uniqueness of a two-sided inverse.
 
 public section
 
-namespace PowerSeries
+namespace Mei
+
+open PowerSeries
 
 /-- The inverse linear series has geometric coefficients, even when its slope
 is a zero divisor or is not a unit. -/
@@ -35,4 +37,4 @@ theorem coeff_invOfUnit_one_add_C_mul_X {R : Type*} [Ring R] (a : R) (j : ℕ) :
     (mul_invOfUnit (1 + C a * X) 1 (by simp))
   exact (congrArg (coeff j) heq).symm.trans (coeff_mk _ _)
 
-end PowerSeries
+end Mei

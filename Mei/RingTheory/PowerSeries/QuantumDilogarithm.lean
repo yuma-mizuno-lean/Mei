@@ -159,7 +159,7 @@ theorem coeff_rescale_inv_pow_quantumDilogarithm_mul_inv (r j : ℕ) :
       ∑ l ∈ Finset.finsuppAntidiag (Finset.range r) j,
         ∏ i ∈ Finset.range r, (-((↑q⁻¹ : R) ^ (2 * i + 1))) ^ l i := by
   rw [rescale_inv_pow_quantumDilogarithm_mul_inv, PowerSeries.coeff_prod]
-  simp only [PowerSeries.coeff_invOfUnit_one_add_C_mul_X]
+  simp only [Mei.coeff_invOfUnit_one_add_C_mul_X]
 
 /-- Coefficient maps preserving the parameter preserve the quantum dilogarithm. -/
 @[simp]
