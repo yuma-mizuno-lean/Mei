@@ -8,7 +8,6 @@ module
 public import Mei.Geometry.ScatteringDiagram.FocusFocus.Algebra
 public import Mei.Geometry.ScatteringDiagram.FocusFocus.Theta
 public import Mei.LinearAlgebra.ModuleFiltration.Basis
-public import Mei.RingTheory.Ideal.Operations
 public import Mei.RingTheory.MvPowerSeries.Completion
 
 /-!
@@ -84,14 +83,17 @@ def completedThetaCoefficientsEquiv : (thetaFiltration K).completion ≃ₗ[S]
     ((LinearEquiv.piCongrRight fun _ => (principalModuleCompletionEquiv Unit K).symm).ofSubmodule'
       ((F).restrictedFamilies (ℤ × ℤ))).symm
 
-private theorem completedThetaCoefficientsEquiv_apply (x : (thetaFiltration K).completion)
+/-- The completed theta coefficients are the power series images of the completed
+basis coefficients. -/
+@[simp]
+theorem completedThetaCoefficientsEquiv_apply (x : (thetaFiltration K).completion)
     (i : ℤ × ℤ) :
     (completedThetaCoefficientsEquiv K x).val i =
-      principalModuleCompletionEquiv Unit K (((b).completedCoefficientsEquiv F x).val i) := rfl
+      principalModuleCompletionEquiv Unit K (((b).completedCoefficientsEquiv F x).val i) := (rfl)
 
 /-- A finite monomial expansion has its original polynomial coefficients,
 viewed in the power series ring. -/
-@[simp]
+@[simp↓]
 theorem completedThetaCoefficientsEquiv_of (x : A) (i : ℤ × ℤ) :
     (completedThetaCoefficientsEquiv K ((thetaFiltration K).of x)).val i =
       ((b).repr x i : PowerSeries K) := by
@@ -99,7 +101,7 @@ theorem completedThetaCoefficientsEquiv_of (x : A) (i : ℤ × ℤ) :
     Module.Basis.completedCoefficientsEquiv_of, principalModuleCompletionEquiv_of]
 
 /-- Each theta monomial is the single-coordinate expansion at its own index. -/
-@[simp↓]
+@[simp↓ high]
 theorem completedThetaCoefficientsEquiv_of_theta (n w : ℤ) (i : ℤ × ℤ) :
     (completedThetaCoefficientsEquiv K ((thetaFiltration K).of (theta t n w))).val i =
       if (n, w) = i then 1 else 0 := by

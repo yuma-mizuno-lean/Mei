@@ -7,6 +7,7 @@ module
 
 public import Mei.LinearAlgebra.ModuleFiltration.Finsupp
 public import Mathlib.LinearAlgebra.Basis.Basic
+public import Mathlib.RingTheory.Ideal.Operations
 
 /-!
 # Completed expansions in a basis
@@ -18,6 +19,9 @@ scalar coefficients and finite support modulo every filtration term.
 This transports `ModuleFiltration.finsuppCompletionEquiv` through `Basis.repr`.
 The finite quotients are described in the same way by
 `ModuleFiltration.finsuppQuotientEquiv`.
+
+In a free module with a chosen basis, an element is an ideal multiple of the
+whole module exactly when all its basis coefficients lie in the ideal.
 -/
 
 public section
@@ -32,6 +36,16 @@ section Semiring
 
 variable {R V : Type*} [Semiring R] [AddCommMonoid V] [Module R V]
   (b : Basis ι R V) (F : Mei.ModuleFiltration R R)
+
+/-- Ideal multiples of a free module are detected by its basis coefficients. -/
+theorem mem_ideal_smul_top_iff_repr_mem (I : Ideal R) [I.IsTwoSided] (x : V) :
+    x ∈ I • (⊤ : Submodule R V) ↔ ∀ i, b.repr x i ∈ I := by
+  rw [← b.span_eq, Submodule.mem_ideal_smul_span_iff_exists_sum]
+  constructor
+  · rintro ⟨a, ha, rfl⟩
+    simpa only [← Finsupp.linearCombination_apply, b.repr_linearCombination] using ha
+  · intro hx
+    exact ⟨b.repr x, hx, b.linearCombination_repr x⟩
 
 /-- The coefficientwise filtration of a module in a chosen basis. -/
 def coefficientFiltration : Mei.ModuleFiltration R V where
@@ -118,5 +132,15 @@ theorem coefficientQuotientEquiv_projection_completedCoefficientsEquiv_symm
     ((F.finsupp ι).projection k ((F.finsuppCompletionEquiv ι).symm x))
   simp only [Submodule.mkQ_apply] at hy
   simp [← hy]
+
+/-- Projecting a completed basis coefficient reads its finite quotient coordinate. -/
+@[simp]
+theorem projection_completedCoefficientsEquiv
+    (x : (b.coefficientFiltration F).completion) (k : ℕ) (i : ι) :
+    F.projection k ((b.completedCoefficientsEquiv F x).val i) =
+      b.coefficientQuotientEquiv F k ((b.coefficientFiltration F).projection k x) i := by
+  simpa only [LinearEquiv.symm_apply_apply] using
+    (b.coefficientQuotientEquiv_projection_completedCoefficientsEquiv_symm
+      F (b.completedCoefficientsEquiv F x) k i).symm
 
 end Module.Basis
