@@ -86,6 +86,16 @@ theorem slabTransferEquiv_symm_apply_val
     omega
   rw [← hi, Int.toNat_natCast]
 
+/-- The index recovered from a nonzero transfer reconstructs its outgoing degree. -/
+theorem slabTransferEquiv_symm_degree
+    (q : {q : ℤ × ℤ //
+      (exponentCorrespondence (single 0 t + single 1 t)).transfer
+        ⟨((d : ℤ), b), by simp⟩ q
+        ⟨single (d, b) c, single_mem_grade _ _⟩ ≠ 0}) :
+    (-(d : ℤ), b + ((slabTransferEquiv t c d b).symm q).val.val) = q.val := by
+  simpa only [slabTransferEquiv_apply] using
+    congrArg Subtype.val ((slabTransferEquiv t c d b).apply_symm_apply q)
+
 /-- Upper and lower descriptions agree at every outgoing homogeneous degree,
 including degrees outside the binomial range. -/
 theorem slab_transfer_eq_upper (q : ℤ × ℤ) :

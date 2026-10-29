@@ -28,11 +28,11 @@ has the same decoration by binomial reflection. At endpoints avoiding
 all binomial crossing-height hyperplanes, the sum of the final decorations is
 exactly the image of the incoming lift in the opposite Laurent chamber.
 
-This combines `eq_slabBranch` with `slabTransferEquiv`; no geometric or
-coefficient exhaustion is assumed. The slab interpretation is that of
+The slab interpretation is that of
 Gross–Siebert, *An Invitation to Toric Degenerations*, §2.2–2.3
 (arXiv:0808.2749v2), and Gross–Hacking–Siebert, *Theta functions on varieties with
 effective anti-canonical class*, §3 (arXiv:1601.07081v4).
+The central formal references are `eq_slabBranch` and `slabTransferEquiv`.
 -/
 
 public noncomputable section
@@ -111,7 +111,7 @@ theorem ext {β γ : SlabBrokenLine t c n b Q} (h : β.degree = γ.degree) : β 
   congr
 
 /-- Singular avoidance is exactly nonvanishing of the crossing height. -/
-theorem crossingHeight_ne_zero (β : SlabBrokenLine t c n b Q) :
+theorem snd_sub_mul_fst_div_ne_zero (β : SlabBrokenLine t c n b Q) :
     Q.2 - (β.degree.2 : ℝ) * Q.1 / n ≠ 0 := by
   have h := β.avoids_origin
   rw [β.ray_eq_slabBranch] at h
@@ -129,6 +129,13 @@ def decoration (β : SlabBrokenLine t c n b Q) : R[ℤ × ℤ] :=
   (exponentCorrespondence (single 0 t + single 1 t)).transfer
     ⟨((n.natAbs : ℤ), b), by simp⟩ β.degree
     ⟨single (n.natAbs, b) c, single_mem_grade _ _⟩
+
+/-- The final decoration is the whole transfer at the selected outgoing degree. -/
+theorem decoration_def (β : SlabBrokenLine t c n b Q) :
+    β.decoration =
+      ((exponentCorrespondence (single 0 t + single 1 t)).transfer
+        ⟨((n.natAbs : ℤ), b), by simp⟩ β.degree
+        ⟨single (n.natAbs, b) c, single_mem_grade _ _⟩ : R[ℤ × ℤ]) := (rfl)
 
 /-- The final decoration is nonzero as an element of the outgoing chamber algebra. -/
 @[simp]
@@ -194,7 +201,7 @@ theorem decoration_slabBrokenLine (hQ : Q.1 / (n : ℝ) < 0)
     (slabBrokenLine t c n b Q hQ j).decoration =
       single (-(n.natAbs : ℤ), b + j.val.val)
         (c * t ^ n.natAbs * (n.natAbs.choose j.val.val : R)) := by
-  rw [SlabBrokenLine.decoration, degree_slabBrokenLine]
+  rw [SlabBrokenLine.decoration_def, degree_slabBrokenLine]
   have h := exponentCorrespondence_transfer_binomial t c n.natAbs b 1 (by decide) j.val.val
   rw [mul_one] at h
   exact h
@@ -206,30 +213,25 @@ def slabBrokenLineEquiv (hQ : Q.1 / (n : ℝ) < 0) :
   toFun := slabBrokenLine t c n b Q hQ
   invFun β := by
     let j := (slabTransferEquiv t c n.natAbs b).symm ⟨β.degree, β.transfer_ne_zero⟩
-    have he : (-(n.natAbs : ℤ), b + j.val.val) = β.degree := by
-      simpa only [slabTransferEquiv_apply] using
-        congrArg Subtype.val ((slabTransferEquiv t c n.natAbs b).apply_symm_apply
-          ⟨β.degree, β.transfer_ne_zero⟩)
+    have he : (-(n.natAbs : ℤ), b + j.val.val) = β.degree :=
+      slabTransferEquiv_symm_degree t c n.natAbs b ⟨β.degree, β.transfer_ne_zero⟩
     exact ⟨j.val, j.property, by
-      simpa only [← he] using β.crossingHeight_ne_zero⟩
+      simpa only [← he] using β.snd_sub_mul_fst_div_ne_zero⟩
   left_inv j := by
-    dsimp only [slabBrokenLine]
+    have he := (Equiv.symm_apply_eq (slabTransferEquiv t c n.natAbs b)
+      (x := ⟨(slabBrokenLine t c n b Q hQ j).degree,
+        (slabBrokenLine t c n b Q hQ j).transfer_ne_zero⟩)
+      (y := ⟨j.val, j.property.1⟩)).mpr
+        (by
+          apply Subtype.ext
+          simp only [Subtype.coe_mk, degree_slabBrokenLine, slabTransferEquiv_apply])
     apply Subtype.ext
-    have he : (⟨(-(n.natAbs : ℤ), b + j.val.val),
-        (slabBrokenLine t c n b Q hQ j).transfer_ne_zero⟩ :
-        {q : ℤ × ℤ // (exponentCorrespondence (single 0 t + single 1 t)).transfer
-          ⟨((n.natAbs : ℤ), b), by simp⟩ q
-          ⟨single (n.natAbs, b) c, single_mem_grade _ _⟩ ≠ 0}) =
-        slabTransferEquiv t c n.natAbs b ⟨j.val, j.property.1⟩ := by
-      apply Subtype.ext
-      rw [slabTransferEquiv_apply]
-    simp only [he, Equiv.symm_apply_apply]
+    apply Fin.ext
+    exact congrArg (fun i => i.val.val) he
   right_inv β := by
     apply SlabBrokenLine.ext
     dsimp only [slabBrokenLine]
-    simpa only [slabTransferEquiv_apply] using
-      congrArg Subtype.val ((slabTransferEquiv t c n.natAbs b).apply_symm_apply
-        ⟨β.degree, β.transfer_ne_zero⟩)
+    exact slabTransferEquiv_symm_degree t c n.natAbs b ⟨β.degree, β.transfer_ne_zero⟩
 
 @[simp]
 theorem slabBrokenLineEquiv_apply (hQ : Q.1 / (n : ℝ) < 0)
@@ -259,16 +261,28 @@ instance : Fintype (SlabBrokenLine t c n b Q) := Fintype.ofFinite _
 def slabWeightedEvaluation : R[ℤ × ℤ] :=
   ∑ β : SlabBrokenLine t c n b Q, β.decoration
 
+/-- Weighted evaluation sums the final decorations of the actual evaluation fiber. -/
+theorem slabWeightedEvaluation_def :
+    slabWeightedEvaluation t c n b Q =
+      ∑ β : SlabBrokenLine t c n b Q, β.decoration := (rfl)
+
+/-- No crossing ray ends outside the chamber opposite the incoming direction. -/
+@[simp]
+theorem slabWeightedEvaluation_of_not_neg (hQ : ¬ Q.1 / (n : ℝ) < 0) :
+    slabWeightedEvaluation t c n b Q = 0 := by
+  have : IsEmpty (SlabBrokenLine t c n b Q) := ⟨fun β => hQ β.opposite⟩
+  simp [slabWeightedEvaluation_def]
+
 /-- Zero incoming coefficient gives an empty evaluation fiber and hence zero weight. -/
 @[simp]
 theorem slabWeightedEvaluation_zero : slabWeightedEvaluation t (0 : R) n b Q = 0 := by
   have : IsEmpty (SlabBrokenLine t (0 : R) n b Q) := ⟨fun β =>
     β.transfer_ne_zero (by simp)⟩
-  simp [slabWeightedEvaluation]
+  simp [slabWeightedEvaluation_def]
 
-open Classical in
 /-- Weighted evaluation is the finite sum of the surviving, nonsingular branches. -/
-theorem slabWeightedEvaluation_eq_sum (hQ : Q.1 / (n : ℝ) < 0) :
+theorem slabWeightedEvaluation_eq_sum [Fintype (SlabBranchIndex t c n b Q)]
+    (hQ : Q.1 / (n : ℝ) < 0) :
     slabWeightedEvaluation t c n b Q =
       ∑ j : SlabBranchIndex t c n b Q,
         single (-(n.natAbs : ℤ), b + j.val.val)
@@ -280,7 +294,7 @@ theorem slabWeightedEvaluation_eq_sum (hQ : Q.1 / (n : ℝ) < 0) :
 /-- Away from the surviving binomial crossing-height hyperplanes, weighted evaluation
 is the full slab crossing. Terms killed by the scalar ring or smoothing parameter
 are discarded from the fiber and contribute zero to the algebraic expansion. -/
-theorem slabWeightedEvaluation_eq_crossing (hQ : Q.1 / (n : ℝ) < 0)
+theorem slabWeightedEvaluation_eq_exponentRightMap_exponentIncomingLift (hQ : Q.1 / (n : ℝ) < 0)
     (hgeneric : ∀ j : Fin (n.natAbs + 1),
       c * t ^ n.natAbs * (n.natAbs.choose j.val : R) ≠ 0 →
         Q.2 - ((b + j.val : ℤ) : ℝ) * Q.1 / n ≠ 0) :
@@ -309,7 +323,7 @@ theorem slabWeightedEvaluation_eq_crossing (hQ : Q.1 / (n : ℝ) < 0)
 
 /-- The same evaluation is the reverse slab crossing for incoming `Y` powers.
 The two normal Laurent coordinates both give positive incoming exponent `|n|`. -/
-theorem slabWeightedEvaluation_eq_reverseCrossing (hQ : Q.1 / (n : ℝ) < 0)
+theorem slabWeightedEvaluation_eq_exponentLeftMap_exponentIncomingLift (hQ : Q.1 / (n : ℝ) < 0)
     (hgeneric : ∀ j : Fin (n.natAbs + 1),
       c * t ^ n.natAbs * (n.natAbs.choose j.val : R) ≠ 0 →
         Q.2 - ((b + j.val : ℤ) : ℝ) * Q.1 / n ≠ 0) :
@@ -318,7 +332,7 @@ theorem slabWeightedEvaluation_eq_reverseCrossing (hQ : Q.1 / (n : ℝ) < 0)
         (exponentIncomingLift (single 0 t + single 1 t) 1
           ⟨((n.natAbs : ℤ), b), by simp⟩
           ⟨single (n.natAbs, b) c, single_mem_grade _ _⟩) := by
-  rw [slabWeightedEvaluation_eq_crossing t c n b Q hQ hgeneric,
+  rw [slabWeightedEvaluation_eq_exponentRightMap_exponentIncomingLift t c n b Q hQ hgeneric,
     exponentRightMap_exponentIncomingLift_binomial,
     exponentLeftMap_exponentIncomingLift_binomial]
 
