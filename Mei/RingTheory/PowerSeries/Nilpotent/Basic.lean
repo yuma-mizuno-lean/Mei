@@ -96,6 +96,55 @@ theorem nilpotentAeval_coe {x : A} (hx : IsNilpotent x) (p : Polynomial R) :
     nilpotentAeval hx (p : R⟦X⟧) = Polynomial.aeval x p := by
   rw [algHom_coe_eq_aeval, nilpotentAeval_X]
 
+end PowerSeries
+
+namespace AlgHom
+
+open PowerSeries
+
+variable {R A : Type*} [CommRing R] [Ring A] [Algebra R A]
+
+/-- A power-series algebra map sending the variable to a nilpotent element is
+uniquely determined by that image, without a continuity hypothesis. -/
+theorem apply_eq_nilpotentAeval (φ : R⟦X⟧ →ₐ[R] A)
+    (hφ : IsNilpotent (φ X)) (f : R⟦X⟧) :
+    φ f = nilpotentAeval hφ f := by
+  let n := hφ.choose
+  have hn : φ X ^ n = 0 := hφ.choose_spec
+  rw [nilpotentAeval_eq_aeval_trunc _ hn]
+  conv_lhs => rw [eq_X_pow_mul_shift_add_trunc n f]
+  rw [map_add, map_mul, map_pow, hn, zero_mul, zero_add, algHom_coe_eq_aeval]
+
+end AlgHom
+
+namespace PowerSeries
+
+variable {R A B : Type*} [CommRing R] [Ring A] [Ring B] [Algebra R A] [Algebra R B]
+
+/-- Evaluating a series with zero constant coefficient at a nilpotent element
+again gives a nilpotent element, also in an associative target algebra. -/
+theorem isNilpotent_nilpotentAeval {x : A} (hx : IsNilpotent x)
+    {f : R⟦X⟧} (hf : constantCoeff f = 0) :
+    IsNilpotent (nilpotentAeval hx f) := by
+  obtain ⟨g, rfl⟩ := X_dvd_iff.mpr hf
+  rw [map_mul, nilpotentAeval_X]
+  have hc := (Commute.all X g).map (nilpotentAeval hx)
+  rw [nilpotentAeval_X] at hc
+  exact hc.isNilpotent_mul_right hx
+
+/-- Nilpotent evaluation commutes with substitution of a series without
+constant term. -/
+theorem nilpotentAeval_subst {x : A} (hx : IsNilpotent x) (f g : R⟦X⟧)
+    (hg : constantCoeff g = 0) :
+    nilpotentAeval hx (f.subst g) =
+      nilpotentAeval (isNilpotent_nilpotentAeval hx hg) f := by
+  let φ := (nilpotentAeval hx).comp (substAlgHom (HasSubst.of_constantCoeff_zero' hg))
+  have hφ : IsNilpotent (φ X) := by
+    simpa only [φ, AlgHom.comp_apply, substAlgHom_X] using
+      isNilpotent_nilpotentAeval hx hg
+  simpa only [φ, AlgHom.comp_apply, coe_substAlgHom, substAlgHom_X] using
+    φ.apply_eq_nilpotentAeval hφ f
+
 /-- A scalar commutation factor rescales every series evaluated at a nilpotent element. -/
 theorem nilpotentAeval_mul_of_semiconj {x : A} (hx : IsNilpotent x) (y : A) (a : R)
     (h : SemiconjBy y (a • x) x) (f : R⟦X⟧) :

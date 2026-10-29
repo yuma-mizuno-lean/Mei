@@ -6,6 +6,7 @@ Authors: Claude
 module
 
 public import Mathlib.RingTheory.PowerSeries.Log
+public import Mei.RingTheory.PowerSeries.EulerDerivInv
 
 import Mathlib.Algebra.Algebra.Rat
 
@@ -76,14 +77,16 @@ theorem X_mul_derivative_negDilogNeg : X * d⁄dX (negDilogNeg A) = log A := by
     congr 1
     field_simp
 
+/-- The negative dilogarithm is the inverse Euler derivation of `log(1 + X)`. -/
+@[simp]
+theorem eulerDerivInv_log : eulerDerivInv (log A) = negDilogNeg A :=
+  (eulerDerivInv_eq_iff _ _ constantCoeff_log).mpr
+    ⟨constantCoeff_negDilogNeg, X_mul_derivative_negDilogNeg⟩
+
 /-- `-Li₂(-X)` is the power series `f` without constant term with
 `X · d/dX f = log(1 + X)`. -/
 theorem eq_negDilogNeg_iff (f : A⟦X⟧) :
     f = negDilogNeg A ↔ constantCoeff f = 0 ∧ X * d⁄dX f = log A := by
-  refine ⟨fun h => h ▸ ⟨constantCoeff_negDilogNeg, X_mul_derivative_negDilogNeg⟩, ?_⟩
-  rintro ⟨h0, hd⟩
-  let : HasUniqueDiv A := .of_module_rat A
-  exact derivative.ext (X_mul_cancel (hd.trans X_mul_derivative_negDilogNeg.symm))
-    (h0.trans constantCoeff_negDilogNeg.symm)
+  rw [← eulerDerivInv_log, eq_comm, eulerDerivInv_eq_iff _ _ constantCoeff_log]
 
 end PowerSeries

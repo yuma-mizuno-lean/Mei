@@ -7,6 +7,7 @@ module
 
 public import Mei.RingTheory.PowerSeries.Nilpotent.Basic
 public import TauCeti.RingTheory.Nilpotent.Log
+public import Mathlib.RingTheory.PowerSeries.Log
 
 /-!
 # Evaluating the logarithm at a nilpotent element
@@ -14,7 +15,9 @@ public import TauCeti.RingTheory.Nilpotent.Log
 The algebra evaluation of the scalar series `log(1 + X)` at a nilpotent element
 is the finite logarithm of one plus that element. This works in associative
 rational algebras and connects `PowerSeries.nilpotentAeval` with
-`IsNilpotent.log_eq_sum`.
+`IsNilpotent.log_eq_sum`. More generally, the formal logarithm `logOf f` of a
+constant-one series `f` evaluates to the finite logarithm of the value of `f`;
+this reduces to `log(1 + X)` through `logOf_eq` and `nilpotentAeval_subst`.
 -/
 
 public section
@@ -38,5 +41,14 @@ theorem nilpotentAeval_log {x : A} (hx : IsNilpotent x) :
   · simp [hi]
   · simp only [coeff_log, hi, ite_false, add_sub_cancel_left]
     exact IsScalarTower.algebraMap_smul R _ _
+
+/-- The formal logarithm of a constant-one series evaluates to the nilpotent
+logarithm of its value. -/
+@[simp]
+theorem nilpotentAeval_logOf {x : A} (hx : IsNilpotent x) (f : R⟦X⟧)
+    (hf : constantCoeff f = 1) :
+    nilpotentAeval hx (logOf f) = IsNilpotent.log (nilpotentAeval hx f) := by
+  rw [logOf_eq, nilpotentAeval_subst hx _ _ (by simp [hf]), nilpotentAeval_log]
+  simp
 
 end PowerSeries

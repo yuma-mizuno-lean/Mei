@@ -36,4 +36,16 @@ theorem completedAeval_log (x : F.completionIdeal 1) :
   simp only [F.projection_completedAeval, PowerSeries.nilpotentAeval_log,
     F.projection_completedLog, map_add, map_one]
 
+/-- The formal logarithm of any constant-one series evaluates to the completed
+logarithm of its value. -/
+@[simp]
+theorem completedAeval_logOf (x : F.completionIdeal 1) (f : PowerSeries R)
+    (hf : PowerSeries.constantCoeff f = 1) :
+    F.completedAeval x (PowerSeries.logOf f) =
+      F.completedLog ⟨F.completedAeval x f, F.completedAeval_sub_one_mem_first x f hf⟩ := by
+  apply F.completion_ext
+  intro k
+  simp only [F.projection_completedAeval, PowerSeries.nilpotentAeval_logOf _ _ hf,
+    F.projection_completedLog]
+
 end Mei.AlgFiltration
