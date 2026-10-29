@@ -7,6 +7,8 @@ module
 
 public import Mei.Geometry.Convex.PolyhedralComplex.Chamber
 public import Mei.Geometry.Convex.PolyhedralComplex.Subdivision
+public import Mei.Geometry.Affine.Generic
+public import Mathlib.Topology.Category.TopCat.Basic
 
 /-!
 # The regular locus of an ambient polyhedral complex
@@ -14,15 +16,17 @@ public import Mei.Geometry.Convex.PolyhedralComplex.Subdivision
 For a finite polyhedral complex covering the ambient space, its walls cover the
 positive-codimension skeleton, and their singular support is exactly the
 codimension-at-least-two skeleton. Thus admissible wall paths avoid every joint
-and every higher stratum. In particular their edges meet the avoidance hypothesis
-for polygonal cone fillings of the complement of the higher skeleton.
+and every higher stratum. Their edges meet the avoidance hypothesis for polygonal
+cone fillings of the complement of the higher skeleton. Coverage of the ambient
+space is essential for these skeleton identifications.
 
-Cells may be unbounded and have lineality; coverage of the ambient space is essential.
+For any finite complex, convex regular opens form a basis, with dense off-wall
+points and admissible segments between them. Cells may be unbounded and have lineality.
 -/
 
 public section
 
-open Set Mei.Convex
+open Set Mei.Convex CategoryTheory TopologicalSpace Topology
 
 namespace Mei.FinitePolyhedralComplex
 
@@ -107,5 +111,81 @@ theorem disjoint_segment_support_codimensionAtLeast (hC : C.support = univ)
   rw [C.singularSupport_walls_eq_support_codimensionAtLeast_two hC]
   obtain ⟨P, hP, hzP⟩ := mem_support.mp hzk
   exact mem_support.mpr ⟨P, C.codimensionAtLeast_cells_antitone hk hP, hzP⟩
+
+/-- The open locus obtained by removing wall boundaries and joints. -/
+abbrev regularLocus : Set V :=
+  (singularSupport (fun P : C.walls => (P : Set V)))ᶜ
+
+/-- The regular locus is open, even for unbounded walls with lineality. -/
+theorem isOpen_regularLocus : IsOpen C.regularLocus := by
+  have := h.finiteDimensional
+  exact (isClosed_singularSupport _ (fun P =>
+    (C.isConvexPolyhedron (C.mem_cells_of_mem_walls P.property)).isClosed)).isOpen_compl
+
+/-- The regular locus as the base space of the coefficient sheaf. -/
+abbrev regularSpace : TopCat := TopCat.of C.regularLocus
+
+/-- Coefficient values are recorded at the off-wall points of the regular locus. -/
+abbrev coefficientPoints : Set C.regularSpace :=
+  {x | ∀ P : C.walls, x.val ∉ (P : Set V)}
+
+/-- Off-wall coefficient points are dense in the full regular locus. -/
+theorem dense_coefficientPoints : Dense C.coefficientPoints := by
+  have := h.finiteDimensional
+  have hd := AffineSubspace.dense_genericLocus
+    (fun P : C.walls => affineSpan ℝ (P : Set V))
+    (fun P => (affineSpan ℝ (P : Set V)).ne_top_of_finrank_direction_add_one_eq
+      (C.finrank_direction_add_one_of_mem_walls P.property))
+  have hd' : Dense (((↑) : C.regularSpace → V) ⁻¹'
+      AffineSubspace.genericLocus (fun P : C.walls => affineSpan ℝ (P : Set V))) :=
+    hd.preimage C.isOpen_regularLocus.isOpenMap_subtype_val
+  apply hd'.mono
+  exact fun x hx P hP => (AffineSubspace.mem_genericLocus.mp hx) P (subset_affineSpan ℝ _ hP)
+
+/-- Convex ambient images of regular opens are the segment-transport charts. -/
+def coefficientCharts : Set (Opens C.regularSpace) :=
+  {U | Convex ℝ (Subtype.val '' (U : Set C.regularSpace))}
+
+/-- A coefficient chart is exactly a regular open with convex ambient image. -/
+@[simp]
+theorem mem_coefficientCharts (U : Opens C.regularSpace) :
+    U ∈ C.coefficientCharts ↔ Convex ℝ (Subtype.val '' (U : Set C.regularSpace)) := Iff.rfl
+
+/-- Convex regular opens form a basis, by taking small ambient balls. -/
+theorem coefficientCharts_isBasis : Opens.IsBasis C.coefficientCharts := by
+  rw [Opens.isBasis_iff_nbhd]
+  intro U x hx
+  have ho : IsOpen (Subtype.val '' (U : Set C.regularSpace)) :=
+    C.isOpen_regularLocus.isOpenMap_subtype_val _ U.isOpen
+  obtain ⟨ε, hε, hεU⟩ := Metric.isOpen_iff.mp ho x.val ⟨x, hx, rfl⟩
+  let B : Opens C.regularSpace :=
+    ⟨Subtype.val ⁻¹' Metric.ball x.val ε, Metric.isOpen_ball.preimage continuous_subtype_val⟩
+  have hB : Subtype.val '' (B : Set C.regularSpace) = Metric.ball x.val ε := by
+    ext y
+    constructor
+    · rintro ⟨z, hz, rfl⟩
+      exact hz
+    · intro hy
+      obtain ⟨z, hz, rfl⟩ := hεU hy
+      exact ⟨z, hy, rfl⟩
+  refine ⟨B, ?_, Metric.mem_ball_self hε, ?_⟩
+  · simpa only [coefficientCharts, mem_ofPred_eq, hB] using convex_ball x.val ε
+  · intro y hy
+    obtain ⟨z, hz, he⟩ := hεU hy
+    exact (Subtype.ext he) ▸ hz
+
+/-- Every transport chart is preconnected in the regular locus. -/
+theorem coefficientChart_preconnected {U : Opens C.regularSpace}
+    (hU : U ∈ C.coefficientCharts) : IsPreconnected (U : Set C.regularSpace) :=
+  IsInducing.subtypeVal.isPreconnected_image.mp hU.isPreconnected
+
+/-- A segment in a convex regular chart is admissible. -/
+def coefficientSegment (U : Opens C.regularSpace) (hU : U ∈ C.coefficientCharts)
+    (x y : C.coefficientPoints) (hx : x.val ∈ U) (hy : y.val ∈ U) :
+    (⟨x.val.val, x.property⟩ : WallComplement (fun P : C.walls => (P : Set V))) ⟶
+      ⟨y.val.val, y.property⟩ :=
+  ⟨hU.admissibleSegment_of_disjoint_singularSupport
+    (Set.disjoint_left.mpr (by rintro _ ⟨z, _, rfl⟩ hz; exact z.property hz))
+    ⟨x.val, hx, rfl⟩ ⟨y.val, hy, rfl⟩⟩
 
 end Mei.FinitePolyhedralComplex
