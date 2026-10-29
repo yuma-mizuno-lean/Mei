@@ -18,7 +18,8 @@ have finite support. This describes completed expansions in an infinite basis,
 where more basis vectors may appear as the cutoff increases.
 
 The construction uses `Finsupp.submodule`, `Finsupp.mapRange.linearMap`, and
-`LinearMap.quotKerEquivOfSurjective` for the finite quotients. The inverse assembles
+`LinearMap.quotKerEquivOfSurjective` for the finite quotients, and reads each completed
+coefficient with `ModuleFiltration.completionMap` of `Finsupp.lapply`. The inverse assembles
 the finite coefficient vectors with `Finsupp.ofSupportFinite` and the universal
 property of `ModuleFiltration.completion`.
 -/
@@ -45,6 +46,12 @@ def finsupp : ModuleFiltration R (ι →₀ M) where
 theorem mem_finsupp_submodule (k : ℕ) (x : ι →₀ M) :
     x ∈ (F.finsupp ι).submodule k ↔ ∀ i, x i ∈ F.submodule k := Iff.rfl
 
+/-- Each direct-sum filtration term is Mathlib's coefficientwise submodule. -/
+theorem finsupp_submodule (k : ℕ) :
+    (F.finsupp ι).submodule k = Finsupp.submodule fun _ => F.submodule k := by
+  ext x
+  rw [mem_finsupp_submodule, Finsupp.mem_submodule_iff]
+
 end Semiring
 
 variable {R M : Type*} [Ring R] [AddCommGroup M] [Module R M]
@@ -54,8 +61,7 @@ variable {R M : Type*} [Ring R] [AddCommGroup M] [Module R M]
 def finsuppQuotientEquiv (k : ℕ) :
     (F.finsupp ι).quotient k ≃ₗ[R] (ι →₀ F.quotient k) :=
   (Submodule.quotEquivOfEq _ _ (by
-    rw [Finsupp.ker_mapRange, Submodule.ker_mkQ]
-    rfl)).trans
+    rw [Finsupp.ker_mapRange, Submodule.ker_mkQ, finsupp_submodule])).trans
     ((Finsupp.mapRange.linearMap (F.submodule (k + 1)).mkQ).quotKerEquivOfSurjective
       (by exact Finsupp.mapRange_surjective _ (map_zero _) (Submodule.mkQ_surjective _)))
 
@@ -67,6 +73,16 @@ theorem finsuppQuotientEquiv_mk (k : ℕ) (x : ι →₀ M) (i : ι) :
   exact congrArg (fun y : ι →₀ F.quotient k => y i)
     ((Finsupp.mapRange.linearMap (F.submodule (k + 1)).mkQ).quotKerEquivOfSurjective_apply_mk
       (by exact Finsupp.mapRange_surjective _ (map_zero _) (Submodule.mkQ_surjective _)) x)
+
+/-- The inverse quotient dictionary assembles coefficientwise classes into one class. -/
+@[simp]
+theorem finsuppQuotientEquiv_symm_mapRange_mk (k : ℕ) (x : ι →₀ M) :
+    (F.finsuppQuotientEquiv ι k).symm
+        (x.mapRange Submodule.Quotient.mk (Submodule.Quotient.mk_zero _)) =
+      Submodule.Quotient.mk x := by
+  rw [LinearEquiv.symm_apply_eq]
+  ext i
+  simp
 
 /-- The finite coefficient dictionaries commute with quotient transitions. -/
 @[simp]
@@ -98,21 +114,24 @@ theorem mem_restrictedFamilies (x : ι → F.completion) :
     x ∈ F.restrictedFamilies ι ↔
       ∀ k, (Function.support fun i => F.projection k (x i)).Finite := Iff.rfl
 
+private theorem finsupp_le_comap_lapply (i : ι) (k : ℕ) :
+    (F.finsupp ι).submodule (id k + 1) ≤ (F.submodule (k + 1)).comap (Finsupp.lapply i) :=
+  fun _ hx => (F.mem_finsupp_submodule ι _ _).mp hx i
+
 /-- Read one completed coefficient from a completed direct sum. -/
 def completedCoefficient (i : ι) : (F.finsupp ι).completion →ₗ[R] F.completion :=
-  F.lift (fun k => (Finsupp.lapply i).comp
-    ((F.finsuppQuotientEquiv ι k).toLinearMap.comp ((F.finsupp ι).projection k))) (by
-      intro k l h
-      ext x
-      simp only [LinearMap.comp_apply, Finsupp.lapply_apply, LinearEquiv.coe_coe]
-      rw [← finsuppQuotientEquiv_transition, transition_projection])
+  (F.finsupp ι).completionMap F (Finsupp.lapply i) id monotone_id
+    (F.finsupp_le_comap_lapply ι i)
 
 /-- Projecting a completed coefficient reads the corresponding finite coefficient. -/
 @[simp]
 theorem projection_completedCoefficient (i : ι) (k : ℕ) (x : (F.finsupp ι).completion) :
     F.projection k (F.completedCoefficient ι i x) =
       F.finsuppQuotientEquiv ι k ((F.finsupp ι).projection k x) i := by
-  simp [completedCoefficient]
+  obtain ⟨y, hy⟩ := Submodule.mkQ_surjective _ ((F.finsupp ι).projection k x)
+  rw [completedCoefficient, projection_completionMap]
+  simp only [id_eq, ← hy]
+  simp
 
 private def toRestrictedFamilies : (F.finsupp ι).completion →ₗ[R] F.restrictedFamilies ι :=
   (LinearMap.pi (F.completedCoefficient ι)).codRestrict _ fun x k => by
@@ -170,7 +189,8 @@ theorem finsuppCompletionEquiv_apply (x : (F.finsupp ι).completion) (i : ι) :
 
 /-- The inverse dictionary recovers a finite coefficient vector at each cutoff. -/
 @[simp]
-theorem finsuppQuotientEquiv_projection_symm (x : F.restrictedFamilies ι) (k : ℕ) (i : ι) :
+theorem finsuppQuotientEquiv_projection_finsuppCompletionEquiv_symm
+    (x : F.restrictedFamilies ι) (k : ℕ) (i : ι) :
     F.finsuppQuotientEquiv ι k
       ((F.finsupp ι).projection k ((F.finsuppCompletionEquiv ι).symm x)) i =
         F.projection k (x.val i) := by
@@ -179,9 +199,28 @@ theorem finsuppQuotientEquiv_projection_symm (x : F.restrictedFamilies ι) (k : 
 /-- A finite expansion retains each of its coefficients under completion. -/
 @[simp]
 theorem completedCoefficient_of (x : ι →₀ M) (i : ι) :
-    F.completedCoefficient ι i ((F.finsupp ι).of x) = F.of (x i) := by
-  apply completion_ext
-  intro k
+    F.completedCoefficient ι i ((F.finsupp ι).of x) = F.of (x i) :=
+  (F.finsupp ι).completionMap_of F (Finsupp.lapply i) id monotone_id
+    (F.finsupp_le_comap_lapply ι i) x
+
+/-- The canonical images of the coefficients of a finite expansion are admissible. -/
+theorem of_comp_mem_restrictedFamilies (x : ι →₀ M) :
+    F.of ∘ x ∈ F.restrictedFamilies ι := fun k =>
+  x.support.finite_toSet.subset fun i hi => by
+    simp only [Function.mem_support, Function.comp_apply] at hi
+    simp only [Finsupp.mem_support_iff, Finset.mem_coe]
+    rintro h
+    simp [h] at hi
+
+/-- The inverse dictionary sends the canonical images of finitely many coefficients
+to the canonical image of their expansion. -/
+@[simp]
+theorem finsuppCompletionEquiv_symm_of (x : ι →₀ M) :
+    (F.finsuppCompletionEquiv ι).symm ⟨F.of ∘ x, F.of_comp_mem_restrictedFamilies ι x⟩ =
+      (F.finsupp ι).of x := by
+  rw [LinearEquiv.symm_apply_eq]
+  apply Subtype.ext
+  funext i
   simp
 
 end Mei.ModuleFiltration

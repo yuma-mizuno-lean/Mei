@@ -7,6 +7,7 @@ module
 
 public import Mathlib.RingTheory.Ideal.Operations
 public import Mathlib.RingTheory.Ideal.Maps
+public import Mathlib.LinearAlgebra.Basis.Basic
 
 /-!
 # Products and powers of left ideals
@@ -17,6 +18,9 @@ even in a noncommutative semiring. Surjective homomorphisms preserve products an
 powers of left ideals, so nilpotency bounds descend to quotient rings. These
 statements extend Mathlib's `Ideal.map_mul` and `Ideal.map_pow` beyond commutative
 targets, using `Ideal.mem_map_iff_of_surjective`.
+
+In a free module with a chosen basis, an element is an ideal multiple of the
+whole module exactly when all its basis coefficients lie in the ideal.
 -/
 
 public section
@@ -74,3 +78,20 @@ theorem map_pow_of_surjective (I : Ideal A) (f : A →+* B)
       Submodule.pow_succ]
 
 end Ideal
+
+namespace Module.Basis
+
+variable {ι S W : Type*} [Semiring S] [AddCommMonoid W] [Module S W]
+  (c : Basis ι S W)
+
+/-- Ideal multiples of a free module are detected by its basis coefficients. -/
+theorem mem_ideal_smul_top_iff_repr_mem (I : Ideal S) [I.IsTwoSided] (x : W) :
+    x ∈ I • (⊤ : Submodule S W) ↔ ∀ i, c.repr x i ∈ I := by
+  rw [← c.span_eq, Submodule.mem_ideal_smul_span_iff_exists_sum]
+  constructor
+  · rintro ⟨a, ha, rfl⟩
+    simpa only [← Finsupp.linearCombination_apply, c.repr_linearCombination] using ha
+  · intro hx
+    exact ⟨c.repr x, hx, c.linearCombination_repr x⟩
+
+end Module.Basis

@@ -7,7 +7,6 @@ module
 
 public import Mei.LinearAlgebra.ModuleFiltration.Finsupp
 public import Mathlib.LinearAlgebra.Basis.Basic
-public import Mathlib.RingTheory.Ideal.Operations
 
 /-!
 # Completed expansions in a basis
@@ -17,6 +16,8 @@ module with a chosen basis. Its completion has unique expansions with completed
 scalar coefficients and finite support modulo every filtration term.
 
 This transports `ModuleFiltration.finsuppCompletionEquiv` through `Basis.repr`.
+The finite quotients are described in the same way by
+`ModuleFiltration.finsuppQuotientEquiv`.
 -/
 
 public section
@@ -43,18 +44,23 @@ def coefficientFiltration : Mei.ModuleFiltration R V where
 theorem mem_coefficientFiltration_submodule (k : ℕ) (x : V) :
     x ∈ (b.coefficientFiltration F).submodule k ↔ ∀ i, b.repr x i ∈ F.submodule k := by
   rw [coefficientFiltration, Submodule.mem_comap, Mei.ModuleFiltration.mem_finsupp_submodule]
-  rfl
+  simp only [LinearEquiv.coe_coe]
 
 end Semiring
 
 variable {R V : Type*} [Ring R] [AddCommGroup V] [Module R V]
   (b : Basis ι R V) (F : Mei.ModuleFiltration R R)
 
+private theorem comap_repr_finsupp_submodule (k : ℕ) :
+    ((F.finsupp ι).submodule k).comap b.repr.toLinearMap =
+      (b.coefficientFiltration F).submodule k := rfl
+
 /-- Completed basis expansions are exactly the families of completed scalars
 with finite support at each order. -/
 def completedCoefficientsEquiv : (b.coefficientFiltration F).completion ≃ₗ[R]
     F.restrictedFamilies ι :=
-  ((b.coefficientFiltration F).completionEquiv (F.finsupp ι) b.repr (fun _ => rfl)).trans
+  ((b.coefficientFiltration F).completionEquiv (F.finsupp ι) b.repr
+    (b.comap_repr_finsupp_submodule F)).trans
     (F.finsuppCompletionEquiv ι)
 
 /-- The completed coefficient expansion agrees with the original basis coordinates. -/
@@ -62,27 +68,55 @@ def completedCoefficientsEquiv : (b.coefficientFiltration F).completion ≃ₗ[R
 theorem completedCoefficientsEquiv_of (x : V) (i : ι) :
     (b.completedCoefficientsEquiv F ((b.coefficientFiltration F).of x)).val i =
       F.of (b.repr x i) := by
-  have h := (b.coefficientFiltration F).completionEquiv_of (F.finsupp ι) b.repr
-    (fun _ => rfl) x
-  exact (congrArg (fun y => (F.finsuppCompletionEquiv ι y).val i) h).trans
-    ((F.finsuppCompletionEquiv_apply ι ((F.finsupp ι).of (b.repr x)) i).trans
-      (F.completedCoefficient_of ι (b.repr x) i))
+  rw [completedCoefficientsEquiv, LinearEquiv.trans_apply,
+    Mei.ModuleFiltration.completionEquiv_of, Mei.ModuleFiltration.finsuppCompletionEquiv_apply,
+    Mei.ModuleFiltration.completedCoefficient_of]
 
-section Ideal
+/-- The inverse expansion sends the canonical images of basis coordinates to the
+canonical image of the original vector. -/
+@[simp]
+theorem completedCoefficientsEquiv_symm_of (x : V) :
+    (b.completedCoefficientsEquiv F).symm
+        ⟨F.of ∘ b.repr x, F.of_comp_mem_restrictedFamilies ι (b.repr x)⟩ =
+      (b.coefficientFiltration F).of x := by
+  rw [LinearEquiv.symm_apply_eq]
+  apply Subtype.ext
+  funext i
+  simp
 
-variable {S W : Type*} [CommRing S] [AddCommGroup W] [Module S W]
-  (c : Basis ι S W)
+/-- A finite quotient of a basis filtration consists of finite coefficient vectors
+over the corresponding scalar quotient. -/
+def coefficientQuotientEquiv (k : ℕ) :
+    (b.coefficientFiltration F).quotient k ≃ₗ[R] (ι →₀ F.quotient k) :=
+  (Submodule.Quotient.equiv ((b.coefficientFiltration F).submodule (k + 1))
+    ((F.finsupp ι).submodule (k + 1)) b.repr (by
+      rw [← b.comap_repr_finsupp_submodule F]
+      exact Submodule.map_comap_eq_of_surjective b.repr.surjective _)).trans
+    (F.finsuppQuotientEquiv ι k)
 
-/-- Ideal multiples of a free module are detected by its basis coefficients. -/
-theorem mem_ideal_smul_top_iff_repr_mem (I : Ideal S) (x : W) :
-    x ∈ I • (⊤ : Submodule S W) ↔ ∀ i, c.repr x i ∈ I := by
-  rw [← c.span_eq, Submodule.mem_ideal_smul_span_iff_exists_sum]
-  constructor
-  · rintro ⟨a, ha, rfl⟩
-    simpa only [← Finsupp.linearCombination_apply, c.repr_linearCombination] using ha
-  · intro hx
-    exact ⟨c.repr x, hx, c.linearCombination_repr x⟩
+/-- On representatives, the quotient coefficients are the classes of the basis
+coordinates. -/
+@[simp]
+theorem coefficientQuotientEquiv_mk (k : ℕ) (x : V) (i : ι) :
+    b.coefficientQuotientEquiv F k (Submodule.Quotient.mk x) i =
+      Submodule.Quotient.mk (b.repr x i) := by
+  rw [coefficientQuotientEquiv, LinearEquiv.trans_apply, Submodule.Quotient.equiv_apply,
+    Submodule.mapQ_apply, Mei.ModuleFiltration.finsuppQuotientEquiv_mk, LinearEquiv.coe_coe]
 
-end Ideal
+/-- At each cutoff, the inverse expansion has the finite coefficients of the given
+completed family. -/
+@[simp]
+theorem coefficientQuotientEquiv_projection_completedCoefficientsEquiv_symm
+    (x : F.restrictedFamilies ι) (k : ℕ) (i : ι) :
+    b.coefficientQuotientEquiv F k
+        ((b.coefficientFiltration F).projection k ((b.completedCoefficientsEquiv F).symm x)) i =
+      F.projection k (x.val i) := by
+  rw [← F.finsuppQuotientEquiv_projection_finsuppCompletionEquiv_symm ι x k i,
+    completedCoefficientsEquiv, LinearEquiv.symm_trans_apply,
+    Mei.ModuleFiltration.projection_completionEquiv_symm]
+  obtain ⟨y, hy⟩ := Submodule.mkQ_surjective _
+    ((F.finsupp ι).projection k ((F.finsuppCompletionEquiv ι).symm x))
+  simp only [Submodule.mkQ_apply] at hy
+  simp [← hy]
 
 end Module.Basis
