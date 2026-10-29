@@ -68,19 +68,6 @@ theorem skewComparisonEquiv_toLinearMap (hnd : D.form.Nondegenerate) :
 theorem coe_skewComparisonEquiv (hnd : D.form.Nondegenerate) :
     ⇑(D.skewComparisonEquiv hD h hnd) = D.skewComparison hD h := (rfl)
 
-/-- Comparison recovers a dual vector from its inverse image. -/
-@[simp]
-theorem skewComparison_skewComparisonEquiv_symm (hnd : D.form.Nondegenerate)
-    (θ : V →L[ℝ] ℝ) :
-    D.skewComparison hD h ((D.skewComparisonEquiv hD h hnd).symm θ) = θ :=
-  (D.skewComparisonEquiv hD h hnd).apply_symm_apply θ
-
-/-- The inverse comparison recovers an original vector. -/
-@[simp]
-theorem skewComparisonEquiv_symm_skewComparison (hnd : D.form.Nondegenerate) (x : V) :
-    (D.skewComparisonEquiv hD h hnd).symm (D.skewComparison hD h x) = x :=
-  (D.skewComparisonEquiv hD h hnd).symm_apply_apply x
-
 /-- Pullback preserves the dimension of the affine direction of every set,
 including the empty set. -/
 theorem finrank_direction_skewComparison_preimage (hnd : D.form.Nondegenerate)
