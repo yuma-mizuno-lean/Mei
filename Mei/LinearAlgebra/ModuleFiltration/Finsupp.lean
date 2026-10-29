@@ -206,11 +206,7 @@ theorem completedCoefficient_of (x : ι →₀ M) (i : ι) :
 /-- The canonical images of the coefficients of a finite expansion are admissible. -/
 theorem of_comp_mem_restrictedFamilies (x : ι →₀ M) :
     F.of ∘ x ∈ F.restrictedFamilies ι := fun k =>
-  x.support.finite_toSet.subset fun i hi => by
-    simp only [Function.mem_support, Function.comp_apply] at hi
-    simp only [Finsupp.mem_support_iff, Finset.mem_coe]
-    rintro h
-    simp [h] at hi
+  x.hasFiniteSupport.fun_comp (g := (F.projection k).comp F.of) (map_zero _)
 
 /-- The inverse dictionary sends the canonical images of finitely many coefficients
 to the canonical image of their expansion. -/
