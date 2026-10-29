@@ -58,23 +58,6 @@ def recessionCone (P : Set V) : PointedCone ℝ V where
 theorem mem_recessionCone {P : Set V} {v : V} :
     v ∈ recessionCone P ↔ ∀ x ∈ P, ∀ t : ℝ, 0 ≤ t → x + t • v ∈ P := (Iff.rfl)
 
-/-- In a recession direction, eventual membership along a positive ray is equivalent
-to one intersection at a nonnegative parameter. No regularity of the set is needed. -/
-theorem eventually_add_smul_mem_atTop_iff {P : Set V} {v : V}
-    (hv : v ∈ recessionCone P) (x : V) :
-    (∀ᶠ t : ℝ in Filter.atTop, x + t • v ∈ P) ↔
-      ∃ t : ℝ, 0 ≤ t ∧ x + t • v ∈ P := by
-  constructor
-  · intro hx
-    obtain ⟨t, ht, hx⟩ := ((Filter.eventually_ge_atTop (0 : ℝ)).and hx).exists
-    exact ⟨t, ht, hx⟩
-  · rintro ⟨t, -, hx⟩
-    apply Filter.eventually_atTop.mpr
-    refine ⟨t, fun s hs => ?_⟩
-    have hm := hv (x + t • v) hx (s - t) (sub_nonneg.mpr hs)
-    have he : x + t • v + (s - t) • v = x + s • v := by module
-    rwa [he] at hm
-
 /-- The recession cone of the empty set is the whole space, by vacuity. -/
 @[simp]
 theorem recessionCone_empty : recessionCone (∅ : Set V) = ⊤ := by
