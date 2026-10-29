@@ -44,7 +44,8 @@ theorem apply_eval_eq_iff_eq_div (htrans : f.linear β.direction ≠ 0) (c t : �
   constructor <;> intro h <;> linarith
 
 /-- Bends confined to one hyperplane with conserved transverse velocity have
-singleton support. The encounter itself need not be an actual bend. -/
+support contained in the singleton encounter time. The encounter itself need not
+be an actual bend. -/
 theorem support_bends_subset_singleton (htrans : f.linear β.direction ≠ 0) (c : ℝ)
     (hwall : ∀ t ∈ β.bends.support, f (β t) = c) :
     β.bends.support ⊆ {(f β.endpoint - c) / f.linear β.direction} := by
