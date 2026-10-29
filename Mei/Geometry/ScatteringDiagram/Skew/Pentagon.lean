@@ -182,19 +182,6 @@ private theorem rayExp_smul_negDilogNeg_pentagon_integral {n₁ n₂ : D.unfroze
   · simp only [Units.coe_map, MonoidHom.coe_ofClass, hU₂, map_add, map_one, map_mul, W₁, W₁₂,
       Mei.map_units_zpow, e₁₂, e₁₂₂]
 
--- The unimodular plane provides the universal pair with skew pairing one.
-private def pentagonDatum : SkewLatticeDatum (ℤ × ℤ) where
-  unfrozen := ⊤
-  unfrozen_saturated _ _ _ := Or.inr Submodule.mem_top
-  sublattice := ⊤
-  finiteIndex_sublattice := by
-    simpa only [Submodule.top_toAddSubgroup] using
-      (inferInstance : (⊤ : AddSubgroup (ℤ × ℤ)).FiniteIndex)
-  form := Examples.rankTwoForm
-  isAlt_form x := by simp [mul_comm]
-  integral_unfrozen_sublattice a _ b _ := ⟨_, Examples.rankTwoForm_apply a b⟩
-  integral_unfrozen_inf_sublattice a b _ := ⟨_, Examples.rankTwoForm_apply a b⟩
-
 omit [Module.Free ℤ N] in
 /-- **Pentagon identity.** For nonzero positive degrees with `c {n₁, n₂} = 1`,
 the rationally powered ray labels satisfy
@@ -212,9 +199,9 @@ theorem rayExp_smul_negDilogNeg_pentagon {n₁ n₂ : D.unfrozen} (hn₁ : n₁ 
         Ψ hn₂ hn₂0 (algebraMap ℚ R c • negDilogNeg R) := by
   classical
   -- Establish the unit-pairing identity in the unimodular plane.
-  let E := pentagonDatum
+  let E := Examples.unimodularRankTwo
   let t : (ℤ × ℤ) ≃ₗ[ℤ] E.unfrozen :=
-    (Submodule.topEquiv (R := ℤ) (M := ℤ × ℤ)).symm
+    (LinearEquiv.ofTop E.unfrozen Examples.unimodularRankTwo_unfrozen).symm
   let b := (Module.Basis.finTwoProd ℤ).map t
   let δ := b.positiveDegrees
   let v₁ := b 0
@@ -225,7 +212,8 @@ theorem rayExp_smul_negDilogNeg_pentagon {n₁ n₂ : D.unfrozen} (hn₁ : n₁ 
   have hv₂0 : v₂ ≠ 0 := b.ne_zero 1
   -- The equivalence fixes the underlying coordinates; specify it to keep the
   -- canonical integer module on `E.unfrozen` in every basis coercion.
-  have ht (v : ℤ × ℤ) : (t v : ℤ × ℤ) = v := (rfl)
+  have ht (v : ℤ × ℤ) : (t v : ℤ × ℤ) = v :=
+    LinearEquiv.coe_ofTop_symm_apply _ v
   have hb₁ : (v₁ : ℤ × ℤ) = (1, 0) := by
     simpa only [v₁, b, Module.Basis.map_apply, Module.Basis.finTwoProd_zero] using
       ht (1, 0)
@@ -233,13 +221,13 @@ theorem rayExp_smul_negDilogNeg_pentagon {n₁ n₂ : D.unfrozen} (hn₁ : n₁ 
     simpa only [v₂, b, Module.Basis.map_apply, Module.Basis.finTwoProd_one] using
       ht (0, 1)
   have hpair : E.form v₁ v₂ = 1 := by
-    simp only [E, pentagonDatum, Examples.rankTwoForm_apply, hb₁, hb₂]
+    simp only [E, Examples.unimodularRankTwo_form, Examples.rankTwoForm_apply, hb₁, hb₂]
     norm_num
   have hκ₁ : E.sublattice.toAddSubgroup.rayIndex v₁ = 1 :=
-    E.rayIndex_eq_one_of_form_eq_one (a := -v₂) v₁.property (by trivial) (by
+    E.rayIndex_eq_one_of_form_eq_one (a := -v₂) v₁.property (by simp [E]) (by
       rw [map_neg, LinearMap.neg_apply, form_swap, neg_neg, hpair])
   have hκ₂ : E.sublattice.toAddSubgroup.rayIndex v₂ = 1 :=
-    E.rayIndex_eq_one_of_form_eq_one v₂.property (by trivial) hpair
+    E.rayIndex_eq_one_of_form_eq_one v₂.property (by simp [E]) hpair
   have hp := E.rayExp_smul_negDilogNeg_pentagon_integral (R := R) δ hv₁ hv₂ hv₁0 hv₂0
     (c := 1) (s₁ := 1) (s₂ := 1) (by simpa using hpair) (by simp [hκ₁]) (by simp [hκ₂])
   simp only [map_one, one_smul] at hp
@@ -282,7 +270,8 @@ theorem rayExp_smul_negDilogNeg_pentagon {n₁ n₂ : D.unfrozen} (hn₁ : n₁ 
       map_zsmul, LinearMap.smul_apply, form_self, D.form_swap n₁ n₂]
     have hs : E.form v w =
         (b.repr v 0 : ℚ) * b.repr w 1 - (b.repr v 1 : ℚ) * b.repr w 0 := by
-      simp only [E, pentagonDatum, Examples.rankTwoForm_apply, he, Int.cast_sub, Int.cast_mul]
+      simp only [E, Examples.unimodularRankTwo_form, Examples.rankTwoForm_apply, he,
+        Int.cast_sub, Int.cast_mul]
     rw [hs]
     linear_combination (-(b.repr v 0 : ℚ) * b.repr w 1 + (b.repr v 1 : ℚ) * b.repr w 0) * hc
   let φ := SkewLieAlgebra.gradedMap (E.coefficientForm R) (E.isAlt_coefficientForm R)

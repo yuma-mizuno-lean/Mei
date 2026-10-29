@@ -10,12 +10,15 @@ public import Mathlib.LinearAlgebra.Basis.Fin
 public import Mathlib.Data.ZMod.Basic
 
 /-!
-# A rank-two skew lattice datum
+# Rank-two skew lattice data
 
 On `N = ℤ × ℤ` take the skew form with `{e₁, e₂} = 1`, every vector unfrozen, and the
 sublattice `N° = ℤ e₁ ⊕ 2ℤ e₂` of the multipliers `d = (1, 2)`. Both integrality conditions
 hold, the standard basis with multipliers `(1, 2)` is an adapted basis, the ray indices of `N°`
 are `κ(e₁) = 1` and `κ(e₂) = 2`, and the integral functional `{-, κ(e₂) e₂}` is `a ↦ 2 a₁`.
+
+The unimodular variant takes `N° = N`. Its standard basis provides a universal pair with
+skew pairing one for transporting rank-two identities.
 -/
 
 public section
@@ -31,6 +34,32 @@ def rankTwoForm : ℤ × ℤ →ₗ[ℤ] ℤ × ℤ →ₗ[ℤ] ℚ :=
 @[simp]
 theorem rankTwoForm_apply (x y : ℤ × ℤ) :
     rankTwoForm x y = ((x.1 * y.2 - x.2 * y.1 : ℤ) : ℚ) :=
+  (rfl)
+
+/-- The unimodular rank-two skew lattice datum with `{e₁, e₂} = 1`, all vectors unfrozen,
+and `N° = N = ℤ × ℤ`. -/
+def unimodularRankTwo : SkewLatticeDatum (ℤ × ℤ) where
+  unfrozen := ⊤
+  unfrozen_saturated _ _ _ := Or.inr Submodule.mem_top
+  sublattice := ⊤
+  finiteIndex_sublattice := by
+    simpa only [Submodule.top_toAddSubgroup] using
+      (inferInstance : (⊤ : AddSubgroup (ℤ × ℤ)).FiniteIndex)
+  form := rankTwoForm
+  isAlt_form x := by simp [mul_comm]
+  integral_unfrozen_sublattice a _ b _ := ⟨_, rankTwoForm_apply a b⟩
+  integral_unfrozen_inf_sublattice a b _ := ⟨_, rankTwoForm_apply a b⟩
+
+@[simp]
+theorem unimodularRankTwo_unfrozen : unimodularRankTwo.unfrozen = ⊤ :=
+  (rfl)
+
+@[simp]
+theorem unimodularRankTwo_sublattice : unimodularRankTwo.sublattice = ⊤ :=
+  (rfl)
+
+@[simp]
+theorem unimodularRankTwo_form : unimodularRankTwo.form = rankTwoForm :=
   (rfl)
 
 /-- The sublattice `ℤ e₁ ⊕ 2ℤ e₂` of vectors with even second coordinate, the kernel of the
