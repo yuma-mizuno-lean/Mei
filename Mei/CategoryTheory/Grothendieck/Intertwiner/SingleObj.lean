@@ -35,31 +35,6 @@ variable {D : Type u₁} [Category.{v₁} D] {E : Type u₂} [Category.{v₂} E]
   {F : D ⥤ GrpCat.{w}} {F' : E ⥤ GrpCat.{w}}
   {X : D ⥤ V} {X' : E ⥤ V} (G : E ⥤ D) (φ : G ⋙ F ⟶ F')
 
-/-- The map of total categories carries the target-fiber label through the group map. -/
-@[simp]
-theorem singleObjFiber_map_whiskerRight
-    {a b : Grothendieck (G ⋙ (F ⋙ forget₂ GrpCat MonCat ⋙ MonCat.toCat))}
-    (f : a ⟶ b) :
-    F'.singleObjFiber ((Grothendieck.map
-      (whiskerRight φ (forget₂ GrpCat MonCat ⋙ MonCat.toCat))).map f) =
-      φ.app b.base ((G ⋙ F).singleObjFiber f) := by
-  simp only [singleObjFiber_def, Grothendieck.map_map,
-    whiskerRight_app, comp_map, MonCat.toCat, toCatHom_toFunctor,
-    Cat.eqToHom_app, SingleObj.mapHom]
-  erw [SingleObj.comp_as_mul]
-  exact mul_one _
-
-/-- Pullback changes the base of a total arrow and retains its group label. -/
-@[simp]
-theorem singleObjFiber_pre
-    {a b : Grothendieck (G ⋙ (F ⋙ forget₂ GrpCat MonCat ⋙ MonCat.toCat))}
-    (f : a ⟶ b) :
-    F.singleObjFiber ((Grothendieck.pre
-      (F ⋙ forget₂ GrpCat MonCat ⋙ MonCat.toCat) G).map f) =
-      (G ⋙ F).singleObjFiber f := by
-  rw [singleObjFiber_def, singleObjFiber_def]
-  rfl
-
 variable (ρ : ∀ d, F.obj d →* Aut (X.obj d))
   (σ : ∀ e, F'.obj e →* Aut (X'.obj e))
   (hρ : ∀ {d e : D} (f : d ⟶ e) (g : F.obj d),

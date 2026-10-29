@@ -28,7 +28,7 @@ public section
 
 open CategoryTheory CategoryTheory.Limits Mei Opposite
 
-universe u v w
+universe u v w u₂ v₂
 
 namespace Units
 
@@ -190,6 +190,38 @@ theorem singleObjFiber_comp
     SingleObj.id_as_one (F.obj c.base), @mul_one (F.obj c.base) _]
   -- The fiber transport applies the same homomorphism after forgetting to monoids.
   rfl
+
+section LabelTransport
+
+variable {F} {E : Type u₂} [Category.{v₂} E] {F' : E ⥤ GrpCat.{w}}
+  (G : E ⥤ D) (φ : G ⋙ F ⟶ F')
+
+/-- The map of total categories carries the target-fiber label through the group map. -/
+@[simp]
+theorem singleObjFiber_map_whiskerRight
+    {a b : Grothendieck (G ⋙ (F ⋙ forget₂ GrpCat MonCat ⋙ MonCat.toCat))}
+    (f : a ⟶ b) :
+    F'.singleObjFiber ((Grothendieck.map
+      (whiskerRight φ (forget₂ GrpCat MonCat ⋙ MonCat.toCat))).map f) =
+      φ.app b.base ((G ⋙ F).singleObjFiber f) := by
+  simp only [singleObjFiber_def, Grothendieck.map_map,
+    whiskerRight_app, comp_map, MonCat.toCat, toCatHom_toFunctor,
+    Cat.eqToHom_app, SingleObj.mapHom]
+  erw [SingleObj.comp_as_mul]
+  exact mul_one _
+
+/-- Pullback changes the base of a total arrow and retains its group label. -/
+@[simp]
+theorem singleObjFiber_pre
+    {a b : Grothendieck (G ⋙ (F ⋙ forget₂ GrpCat MonCat ⋙ MonCat.toCat))}
+    (f : a ⟶ b) :
+    F.singleObjFiber ((Grothendieck.pre
+      (F ⋙ forget₂ GrpCat MonCat ⋙ MonCat.toCat) G).map f) =
+      (G ⋙ F).singleObjFiber f := by
+  rw [singleObjFiber_def, singleObjFiber_def]
+  rfl
+
+end LabelTransport
 
 /-- Compatible actions on a coefficient diagram give a representation of the total
 one-object label system. A total arrow first restricts coefficients, then acts.

@@ -248,30 +248,36 @@ variable {N M P R : Type*} {L L' L'' : Type u}
   [IsPositiveGrading d ℒ] [IsPositiveGrading e ℳ] [IsPositiveGrading p ℋ]
   {T : PositiveDegreeMap d e} {U : PositiveDegreeMap e p}
 
-/-- A graded Lie homomorphism gives a map of group towers reindexed by its modulus. -/
-def groupTowerMap (f : GradedLieHom T ℒ ℳ) :
-    (⟨T.modulus, T.monotone_modulus⟩ : ℕ →o ℕ).toFunctor.op ⋙ d.groupTower ℒ ⟶ e.groupTower ℳ where
-  app k := GrpCat.ofHom (f.truncatedMap k.unop le_rfl).bchGroupMap
+/-- A graded Lie homomorphism gives a map of group towers reindexed by any
+monotone cutoff at least as large as its modulus. -/
+def groupTowerMap (f : GradedLieHom T ℒ ℳ) (μ : ℕ →o ℕ)
+    (hT : ∀ k, T.modulus k ≤ μ k) :
+    μ.toFunctor.op ⋙ d.groupTower ℒ ⟶ e.groupTower ℳ where
+  app k := GrpCat.ofHom (f.truncatedMap k.unop (hT k.unop)).bchGroupMap
   naturality {k l} h := by
     apply GrpCat.hom_ext
     -- Expose the concrete quotient groups hidden by the functor object wrappers.
-    change (f.truncatedMap l.unop le_rfl).bchGroupMap.comp
-        (d.truncationMap ℒ (T.monotone_modulus (leOfHom h.unop))).bchGroupMap =
+    change (f.truncatedMap l.unop (hT l.unop)).bchGroupMap.comp
+        (d.truncationMap ℒ (μ.monotone (leOfHom h.unop))).bchGroupMap =
       (e.truncationMap ℳ (leOfHom h.unop)).bchGroupMap.comp
-        (f.truncatedMap k.unop le_rfl).bchGroupMap
+        (f.truncatedMap k.unop (hT k.unop)).bchGroupMap
     simp only [← LieHom.bchGroupMap_comp]
     exact congrArg (fun h => h.bchGroupMap)
-      (f.truncationMap_comp_truncatedMap (leOfHom h.unop)).symm
+      (f.truncationMap_comp_truncatedMap_of_le (μ.monotone (leOfHom h.unop))
+        (leOfHom h.unop) (hT l.unop) (hT k.unop)).symm
 
 /-- The order-`k` tower map is the BCH map of the corresponding Lie truncation map. -/
 @[simp]
-theorem groupTowerMap_app_hom (f : GradedLieHom T ℒ ℳ) (k : ℕᵒᵖ) :
-    (f.groupTowerMap.app k).hom = (f.truncatedMap k.unop le_rfl).bchGroupMap := (rfl)
+theorem groupTowerMap_app_hom (f : GradedLieHom T ℒ ℳ) (μ : ℕ →o ℕ)
+    (hT : ∀ k, T.modulus k ≤ μ k) (k : ℕᵒᵖ) :
+    ((f.groupTowerMap μ hT).app k).hom =
+      (f.truncatedMap k.unop (hT k.unop)).bchGroupMap := (rfl)
 
 /-- The completed group homomorphism induced by a graded Lie homomorphism. -/
 def completedMap (f : GradedLieHom T ℒ ℳ) :
     d.completedBCHGroup ℒ →* e.completedBCHGroup ℳ :=
-  CompletedGroup.map ⟨T.modulus, T.monotone_modulus⟩ f.groupTowerMap
+  CompletedGroup.map ⟨T.modulus, T.monotone_modulus⟩
+    (f.groupTowerMap ⟨T.modulus, T.monotone_modulus⟩ (fun _ => le_rfl))
 
 /-- Projection computes the completed map using exactly the prescribed source cutoff. -/
 @[simp]
@@ -316,7 +322,8 @@ theorem completedMap_unique (f : GradedLieHom T ℒ ℳ)
     (hg : ∀ k, (CompletedGroup.projection k).comp g =
       (f.truncatedMap k le_rfl).bchGroupMap.comp
         (CompletedGroup.projection (T.modulus k))) : g = f.completedMap :=
-  CompletedGroup.map_unique ⟨T.modulus, T.monotone_modulus⟩ f.groupTowerMap g hg
+  CompletedGroup.map_unique ⟨T.modulus, T.monotone_modulus⟩
+    (f.groupTowerMap ⟨T.modulus, T.monotone_modulus⟩ (fun _ => le_rfl)) g hg
 
 /-- The completed map of the identity graded homomorphism is the identity. -/
 @[simp]
@@ -362,7 +369,8 @@ theorem completedMap_mem_degreeFiltration (f : GradedLieHom T ℒ ℳ) (k : ℕ)
     {x : d.completedBCHGroup ℒ}
     (hx : x ∈ CompletedGroup.degreeFiltration (d.groupTower ℒ) (T.modulus k + 1)) :
     f.completedMap x ∈ CompletedGroup.degreeFiltration (e.groupTower ℳ) (k + 1) :=
-  CompletedGroup.map_mem_degreeFiltration ⟨T.modulus, T.monotone_modulus⟩ f.groupTowerMap k hx
+  CompletedGroup.map_mem_degreeFiltration ⟨T.modulus, T.monotone_modulus⟩
+    (f.groupTowerMap ⟨T.modulus, T.monotone_modulus⟩ (fun _ => le_rfl)) k hx
 
 /-- Graded homomorphisms with the same underlying Lie map induce the same completed
 homomorphism, even when their degree maps or cutoff moduli differ. -/
@@ -393,7 +401,8 @@ theorem hasFiniteSupport_completedMap (f : GradedLieHom T ℒ ℳ)
     {x : ι → d.completedBCHGroup ℒ} (hx : CompletedGroup.HasFiniteSupport x) :
     CompletedGroup.HasFiniteSupport (fun i => f.completedMap (x i)) := by
   simpa only [completedMap] using
-    hx.map ⟨T.modulus, T.monotone_modulus⟩ f.groupTowerMap
+    hx.map ⟨T.modulus, T.monotone_modulus⟩
+      (f.groupTowerMap ⟨T.modulus, T.monotone_modulus⟩ (fun _ => le_rfl))
 
 /-- Graded maps preserve convergent ordered products, with the smallest index leftmost. -/
 @[simp]
@@ -402,7 +411,8 @@ theorem completedMap_orderedProd [LinearOrder ι] (f : GradedLieHom T ℒ ℳ)
     f.completedMap (CompletedGroup.orderedProd x hx) =
       CompletedGroup.orderedProd (fun i => f.completedMap (x i))
         (f.hasFiniteSupport_completedMap hx) :=
-  CompletedGroup.map_orderedProd ⟨T.modulus, T.monotone_modulus⟩ f.groupTowerMap x hx
+  CompletedGroup.map_orderedProd ⟨T.modulus, T.monotone_modulus⟩
+    (f.groupTowerMap ⟨T.modulus, T.monotone_modulus⟩ (fun _ => le_rfl)) x hx
 
 end GradedLieHom
 end Mei

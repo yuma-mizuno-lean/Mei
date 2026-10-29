@@ -101,20 +101,7 @@ cutoff need not be cofinal and neither underlying map needs to be injective. -/
 def bchActionIntertwiner :
     ActionIntertwiner (⟨μ, hμ⟩ : ℕ →o ℕ).toFunctor.op
       (F.bchRepresentation d ℒ) (G.bchRepresentation e ℒ') := by
-  let τ : (⟨μ, hμ⟩ : ℕ →o ℕ).toFunctor.op ⋙ d.groupTower ℒ ⟶ e.groupTower ℒ' :=
-    { app := fun k => GrpCat.ofHom (φ.truncatedMap k.unop (hT k.unop)).bchGroupMap
-      naturality := by
-        intro k l f
-        apply GrpCat.hom_ext
-        -- The categorical group maps are the concrete BCH maps of the Lie quotients.
-        change (φ.truncatedMap l.unop (hT l.unop)).bchGroupMap.comp
-            (d.truncationMap ℒ (hμ (leOfHom f.unop))).bchGroupMap =
-          (e.truncationMap ℒ' (leOfHom f.unop)).bchGroupMap.comp
-            (φ.truncatedMap k.unop (hT k.unop)).bchGroupMap
-        simp only [← LieHom.bchGroupMap_comp]
-        exact congrArg (fun f => f.bchGroupMap)
-          (φ.truncationMap_comp_truncatedMap_of_le (hμ (leOfHom f.unop))
-            (leOfHom f.unop) (hT l.unop) (hT k.unop)).symm }
+  let τ := φ.groupTowerMap ⟨μ, hμ⟩ hT
   exact Functor.singleObjActionIntertwiner (X := F.quotientTower) (X' := G.quotientTower) _ τ
     (fun k => F.truncatedBCHModuleAut d ℒ k.unop)
     (fun k => G.truncatedBCHModuleAut e ℒ' k.unop)
@@ -122,7 +109,11 @@ def bchActionIntertwiner :
     (fun f g => truncatedBCHModuleAut_naturality G e ℒ' f g)
     (F.quotientTowerMap G ψ μ hμ hψ) (by
       intro k g
-      rw [quotientTowerMap_app]
+      have hτ : τ.app k =
+          GrpCat.ofHom (φ.truncatedMap k.unop (hT k.unop)).bchGroupMap := by
+        apply GrpCat.hom_ext
+        exact φ.groupTowerMap_app_hom ⟨μ, hμ⟩ hT k
+      rw [hτ, quotientTowerMap_app]
       apply ModuleCat.hom_ext
       apply LinearMap.ext
       intro a
@@ -152,6 +143,6 @@ theorem bchActionIntertwiner_labelMap_map (k : ℕᵒᵖ)
   unfold bchActionIntertwiner
   -- The group tower objects are the corresponding concrete BCH quotient groups.
   erw [Functor.singleObjActionIntertwiner_labelMap]
-  rfl
+  exact congrArg (fun f => f g) (φ.groupTowerMap_app_hom ⟨μ, hμ⟩ hT k)
 
 end Mei.ModuleFiltration
