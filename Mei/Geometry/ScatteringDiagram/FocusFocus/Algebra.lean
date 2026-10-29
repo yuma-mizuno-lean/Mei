@@ -109,6 +109,19 @@ theorem slabNodeMap_coord (ht : algebraMap S S' t = t') (i : Fin 2) :
     slabNodeMap ht (NodeAlgebra.coord _ i) = NodeAlgebra.coord _ i :=
   NodeAlgebra.mapOfEq_coord _ _ i
 
+/-- The monomial `W^n` of `S'[W^{±1},X,Y]/(XY - t'(1+W))` is the same whether the coefficients
+are taken in `S[W^{±1}]` or in `S'[W^{±1}]`. -/
+@[simp]
+theorem algebraMap_T_slabNode (n : ℤ) :
+    algebraMap S[T;T⁻¹] (SlabNode t') (T n) = algebraMap S'[T;T⁻¹] (SlabNode t') (T n) := by
+  rw [IsScalarTower.algebraMap_apply S[T;T⁻¹] S'[T;T⁻¹], Mei.LaurentPolynomial.algebraMap_T]
+
+/-- `slabNodeMap` fixes the monomials `W^n`. -/
+theorem slabNodeMap_algebraMap_T (ht : algebraMap S S' t = t') (n : ℤ) :
+    slabNodeMap ht (algebraMap S[T;T⁻¹] (SlabNode t) (T n)) =
+      algebraMap S'[T;T⁻¹] (SlabNode t') (T n) := by
+  rw [AlgHom.commutes, algebraMap_T_slabNode]
+
 /-- **Compatibility of the focus-focus isomorphism with coefficient change and truncation.**
 For `S → S'` sending `t` to `t'` and `k' ≤ k`, the isomorphisms `algebraEquiv` at orders `k`
 and `k'` intertwine `slabNodeMap` with the induced map of slab algebras. Both `K[t]/(t^(k+1)) →

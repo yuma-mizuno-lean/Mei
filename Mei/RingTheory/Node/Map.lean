@@ -22,6 +22,9 @@ its coefficient-algebra action.
 Quotient coefficient algebras are allowed, so the same morphism applies to
 truncations even when a smoothing parameter or an incoming coefficient vanishes.
 
+More generally, `Mei.NodeAlgebra.mapOfEq` is the coefficient map
+`R[x,y]/(xy-a) → S[x,y]/(xy-a')` whenever `a` maps to `a'`.
+
 We use `TauCeti.NodeAlgebra.map`, `AddMonoidAlgebra.mapAlgHom`, and the chosen
 lifts of `Mei.NodeAlgebra.normalWeightCorrespondence`. The slab interpretation
 follows Gross–Hacking–Siebert, *Theta functions on varieties with effective
@@ -38,6 +41,24 @@ open TauCeti TauCeti.NodeAlgebra AddMonoidAlgebra LaurentPolynomial
 
 variable {R S : Type*} [CommRing R] [CommRing S] [Algebra R S] (a : R)
 
+section MapOfEq
+
+variable {a' : S} [Algebra R (NodeAlgebra S a')] [IsScalarTower R S (NodeAlgebra S a')]
+  (h : algebraMap R S a = a')
+
+/-- The coefficient map `R[x,y]/(xy-a) → S[x,y]/(xy-a')`, `x ↦ x`, `y ↦ y`, when `a` maps
+to `a'`. -/
+def mapOfEq : NodeAlgebra R a →ₐ[R] NodeAlgebra S a' :=
+  lift a (coord a' 0) (coord a' 1) (by
+    rw [coord_zero_mul_coord_one, IsScalarTower.algebraMap_apply R S, h])
+
+/-- `mapOfEq` fixes both coordinates. -/
+@[simp]
+theorem mapOfEq_coord (i : Fin 2) : mapOfEq a h (coord a i) = coord a' i := by
+  fin_cases i <;> simp [mapOfEq]
+
+end MapOfEq
+
 variable [Algebra R (NodeAlgebra S (algebraMap R S a))]
   [IsScalarTower R S (NodeAlgebra S (algebraMap R S a))]
 
@@ -51,6 +72,10 @@ def mapAlgHom : NodeAlgebra R a →ₐ[R] NodeAlgebra S (algebraMap R S a) where
 @[simp]
 theorem mapAlgHom_apply (x : NodeAlgebra R a) :
     mapAlgHom (S := S) a x = TauCeti.NodeAlgebra.map (S := S) a x := (rfl)
+
+/-- For `a' = algebraMap R S a`, `mapOfEq` is the coefficient map `TauCeti.NodeAlgebra.map`. -/
+theorem mapOfEq_rfl : mapOfEq a (rfl : algebraMap R S a = _) = mapAlgHom a := by
+  ext <;> simp
 
 omit [Algebra R (NodeAlgebra S (algebraMap R S a))]
   [IsScalarTower R S (NodeAlgebra S (algebraMap R S a))] in

@@ -26,9 +26,8 @@ arXiv:0808.2749v2, see `Mei.FocusFocus.slabAlgebraMap_algebraEquiv`.
 
 ## Main definitions
 
-* `Mei.NodeAlgebra.mapOfEq`: the coefficient map `R[x,y]/(xy-a) → R'[x,y]/(xy-a')` when `a`
-  maps to `a'`.
-* `Mei.NodeAlgebra.slabAlgebraMap`: the induced map of slab algebras.
+* `Mei.NodeAlgebra.slabAlgebraMap`: the induced map of slab algebras, built from the coefficient
+  map `Mei.NodeAlgebra.mapOfEq`.
 
 ## Main results
 
@@ -46,27 +45,6 @@ open TauCeti TauCeti.NodeAlgebra
 open scoped Mei.NodeAlgebra
 
 variable {R R' : Type*} [CommRing R] [CommRing R'] [Algebra R R']
-
-section MapOfEq
-
-variable (a : R) {a' : R'} (h : algebraMap R R' a = a')
-
-/-- The coefficient map `R[x,y]/(xy-a) → R'[x,y]/(xy-a')`, `x ↦ x`, `y ↦ y`, when `a` maps
-to `a'`. -/
-def mapOfEq : NodeAlgebra R a →ₐ[R] NodeAlgebra R' a' :=
-  lift a (coord a' 0) (coord a' 1) (by
-    rw [coord_zero_mul_coord_one, IsScalarTower.algebraMap_apply R R', h])
-
-/-- `mapOfEq` fixes both coordinates. -/
-@[simp]
-theorem mapOfEq_coord (i : Fin 2) : mapOfEq a h (coord a i) = coord a' i := by
-  fin_cases i <;> simp [mapOfEq]
-
-/-- For `a' = algebraMap R R' a`, `mapOfEq` is the coefficient map `TauCeti.NodeAlgebra.map`. -/
-theorem mapOfEq_rfl : mapOfEq a (rfl : algebraMap R R' a = _) = mapAlgHom a := by
-  ext <;> simp
-
-end MapOfEq
 
 variable (t f : R) {t' f' : R'} (ht : algebraMap R R' t = t') (hf : algebraMap R R' f = f')
   {k k' : ℕ} (hk : k' ≤ k)
