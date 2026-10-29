@@ -110,6 +110,16 @@ omit [Module ℝ V] [AddTorsor V P] in
 @[simp]
 theorem direction_straight (Q : P) (v : V) : (straight Q v).direction = v := (rfl)
 
+omit [Module ℝ V] [AddTorsor V P] in
+/-- A ray is the straight ray with its endpoint and direction exactly when it has no bends. -/
+theorem eq_straight_iff (β : FiniteAffineRay V P) :
+    β = straight β.endpoint β.direction ↔ β.bends = 0 := by
+  constructor
+  · intro h
+    simpa only [bends_straight] using congrArg FiniteAffineRay.bends h
+  · intro h
+    apply FiniteAffineRay.ext <;> simp [h]
+
 /-- The unbent ray is the affine half-line with negative velocity. -/
 @[simp]
 theorem straight_apply (Q : P) (v : V) (t : ℝ) : straight Q v t = (-t • v) +ᵥ Q := by
