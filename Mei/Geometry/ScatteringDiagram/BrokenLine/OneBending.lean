@@ -6,6 +6,7 @@ Authors: Claude Code
 module
 
 public import Mei.Geometry.Affine.FiniteRay.Moment
+public import Mei.LinearAlgebra.Determinant.Prod
 import Mathlib.Tactic.IntervalCases
 import Mathlib.Tactic.LinearCombination
 
@@ -24,19 +25,21 @@ such broken line from exponent `(-d₁, -d₂)` to `(k a - d₁, k b - d₂)`, a
 exactly one bend, on `ℝ_{<0} (a, b)`; Burcroff–Lee–Mou use it for coprime `a, b > 0` and
 `k ≥ 1`.
 
-The position–velocity determinant of such a broken line is constant
+Assume `k > 0` and `Δ = b d₁ - a d₂ ≠ 0`. The position–velocity determinant of such a
+broken line is constant
 (`FiniteAffineRay.form_eval_directionAt`). Hence consecutive bend positions, and so the exponent
 increments `u_i`, rotate strictly in one direction, beginning on the side of the incoming
 direction `(d₁, d₂)` facing `(a, b)`. If there are two bends, the first increment is a lattice
 point `(a₁, b₁)` with `a₁ ≤ k a` and `b₁ ≤ k b` strictly between the directions `(d₁, d₂)` and
-`(a, b)`. Writing `Δ = b d₁ - a d₂`, "strictly between" means that `d₁ b₁ - d₂ a₁` and
+`(a, b)`. Here "strictly between" means that `d₁ b₁ - d₂ a₁` and
 `a₁ b - b₁ a` both have the sign of `Δ`; for `b₁ > 0` this says that `a₁ / b₁` lies strictly
 between `a / b` and `d₁ / d₂`. The absence of such lattice points therefore implies
 one-bending (`RankTwo.oneBending_of_forall_not_between`). Coprimality of `a` and `b` is not
 needed for this implication.
 
-If `Δ > 0` and `d₂ ≥ Δ k b`, there is no such lattice point, and dually for `Δ < 0` and
-`d₁ ≥ -Δ k a` (Burcroff–Lee–Mou, Corollary 5.14(2)). The rectangle `(6, 4)` with
+Under the same assumptions, if `Δ > 0` and `d₂ ≥ Δ k b`, there is no such lattice point, and
+dually for `Δ < 0` and `d₁ ≥ -Δ k a` (Burcroff–Lee–Mou, Corollary 5.14(2)).
+The rectangle `(6, 4)` with
 `(a, b) = (1, 1)` and `k = 3` is one-bending by the lattice test, although `d₂ < Δ k b`.
 The rectangle `(5, 3)` is not: the broken line with velocities `(5, 3)`, `(2, 1)`, `(2, 0)`
 bends at `(-6, -4)` and on the negative `y`-axis, its first increment being the lattice point
@@ -63,6 +66,7 @@ open Finset
 namespace Mei.RankTwo
 
 open FiniteAffineRay
+open Prod (det det_apply det_isAlt det_trans)
 
 /-- A finite ray in `ℝ²` bends at time `t` on the open ray `ℝ_{<0} u` spanned by the negative
 of a lattice vector `u ∈ ℕ²`, with exponent increment `u`; that is, its backward direction
@@ -71,6 +75,12 @@ and on the outgoing rays `ℝ_{≤0} (a', b')` of a rank-two scattering diagram.
 def IsNegativeRayBend (β : FiniteAffineRay (ℝ × ℝ) (ℝ × ℝ)) (t : ℝ) : Prop :=
   ∃ u : ℕ × ℕ, β.bends t = (-(u.1 : ℝ), -(u.2 : ℝ)) ∧
     ∃ s : ℝ, 0 < s ∧ β t = (-(s * u.1), -(s * u.2))
+
+/-- Characterize a negative-ray bend by its lattice increment and bend position. -/
+theorem isNegativeRayBend_iff (β : FiniteAffineRay (ℝ × ℝ) (ℝ × ℝ)) (t : ℝ) :
+    IsNegativeRayBend β t ↔
+      ∃ u : ℕ × ℕ, β.bends t = (-(u.1 : ℝ), -(u.2 : ℝ)) ∧
+        ∃ s : ℝ, 0 < s ∧ β t = (-(s * u.1), -(s * u.2)) := (Iff.rfl)
 
 /-- The rectangle `(d₁, d₂)` is one-bending for `(a, b)` and `k` if every finite ray in `ℝ²`
 with exponent `(-d₁, -d₂)` before its bends and `(k a - d₁, k b - d₂)` after them, all of whose
@@ -84,36 +94,21 @@ def OneBending (d₁ d₂ a b k : ℕ) : Prop :=
     ∃ t : ℝ, β.bends = Finsupp.single t (-((k : ℝ) * a), -((k : ℝ) * b)) ∧
       ∃ s : ℝ, 0 < s ∧ β t = (-(s * a), -(s * b))
 
-/-- The determinant form on `ℝ²`. -/
-private def det : (ℝ × ℝ) →ₗ[ℝ] (ℝ × ℝ) →ₗ[ℝ] ℝ :=
-  LinearMap.mk₂ ℝ (fun x y => x.1 * y.2 - x.2 * y.1) (fun _ _ _ => by simp; ring)
-    (fun _ _ _ => by simp; ring) (fun _ _ _ => by simp; ring) (fun _ _ _ => by simp; ring)
-
-private theorem det_apply (x y : ℝ × ℝ) : det x y = x.1 * y.2 - x.2 * y.1 := by
-  simp [det]
-
-private theorem det_isAlt : det.IsAlt := fun x => by
-  rw [det_apply]
-  ring
-
-/-- For vectors in the open half-plane `x₁ + x₂ < 0`, the relation "`det x y` is a positive
-multiple of `c`" is transitive. -/
-private theorem det_trans {c : ℝ} {x y z : ℝ × ℝ} (hx : x.1 + x.2 < 0) (hy : y.1 + y.2 < 0)
-    (hz : z.1 + z.2 < 0) (hxy : ∃ α > 0, det x y = c * α) (hyz : ∃ α > 0, det y z = c * α) :
-    ∃ α > 0, det x z = c * α := by
-  obtain ⟨α, hα, hxy⟩ := hxy
-  obtain ⟨γ, hγ, hyz⟩ := hyz
-  refine ⟨(γ * (x.1 + x.2) + α * (z.1 + z.2)) / (y.1 + y.2),
-    div_pos_of_neg_of_neg (by nlinarith) hy, ?_⟩
-  rw [det_apply] at hxy hyz ⊢
-  rw [mul_div_assoc', eq_div_iff hy.ne]
-  linear_combination (z.1 + z.2) * hxy + (x.1 + x.2) * hyz
+/-- Characterize one-bending by the unique bend carrying the full exponent increment. -/
+theorem oneBending_iff (d₁ d₂ a b k : ℕ) :
+    OneBending d₁ d₂ a b k ↔
+      ∀ β : FiniteAffineRay (ℝ × ℝ) (ℝ × ℝ),
+        β.incomingDirection = (-(d₁ : ℝ), -(d₂ : ℝ)) →
+        β.direction = ((k : ℝ) * a - d₁, (k : ℝ) * b - d₂) →
+        (∀ t ∈ β.bends.support, IsNegativeRayBend β t) →
+        ∃ t : ℝ, β.bends = Finsupp.single t (-((k : ℝ) * a), -((k : ℝ) * b)) ∧
+          ∃ s : ℝ, 0 < s ∧ β t = (-(s * a), -(s * b)) := (Iff.rfl)
 
 /-- The increment of a bend in the support has negative coordinate sum. -/
 private theorem fst_add_snd_neg {β : FiniteAffineRay (ℝ × ℝ) (ℝ × ℝ)} {t : ℝ}
     (h : IsNegativeRayBend β t) (ht : t ∈ β.bends.support) :
     (β.bends t).1 + (β.bends t).2 < 0 := by
-  obtain ⟨u, hu, -⟩ := h
+  obtain ⟨u, hu, -⟩ := (isNegativeRayBend_iff β t).mp h
   have hne := Finsupp.mem_support_iff.mp ht
   rw [hu] at hne ⊢
   by_contra hle
@@ -291,6 +286,7 @@ theorem oneBending_of_forall_not_between {d₁ d₂ a b k : ℕ} (hk : 0 < k) (h
         0 < ((b * d₁ : ℤ) - a * d₂) * (a₁ * b - b₁ * a))) :
     OneBending d₁ d₂ a b k := by
   classical
+  rw [oneBending_iff]
   intro β hin hout hβ
   have hsum := sum_bends_eq hin hout
   have hΔℝ : (b * d₁ - a * d₂ : ℝ) ≠ 0 := by
@@ -393,6 +389,7 @@ example : OneBending 6 4 1 1 3 := by
 example : ¬OneBending 5 3 1 1 3 := by
   classical
   intro h
+  rw [oneBending_iff] at h
   set β : FiniteAffineRay (ℝ × ℝ) (ℝ × ℝ) :=
     ((FiniteAffineRay.straight (2, -1) (-2, 0)).insert (-1) (0, -1) (by norm_num)).insert (-4)
       (-3, -2) (by norm_num)

@@ -14,16 +14,16 @@ public import Mathlib.LinearAlgebra.SesquilinearForm.Basic
 Let `ω` be an alternating bilinear form on a real vector space `V`, and let `β` be a finite
 affine ray in `V`, regarded as an affine space over itself. Along a segment with direction
 `m` the position moves by multiples of `m`, so the moment `ω(β t, m)` is constant. If every
-direction increment of `β` is proportional to its bend position in the sense
-`ω(β b, Δ_b) = 0`, as for bends on walls through the origin with increments tangent to the
-wall, then the moment is also unchanged across each bend. Hence
+direction increment of `β` is `ω`-orthogonal to its bend position, in the sense
+`ω(β b, Δ_b) = 0` (which holds in particular when the increment is proportional to the
+position), then the moment is also unchanged across each bend. Hence
 `ω(β t, β.directionAt t) = ω(β.endpoint, β.direction)` at every time
 (`FiniteAffineRay.form_eval_directionAt`). Between consecutive bend times `s < t` the positions
 then satisfy `ω(β s, β t) = (s - t) ω(β.endpoint, β.direction)`
-(`FiniteAffineRay.form_eval_eval`): for `ω(β.endpoint, β.direction) ≠ 0` successive bend
-positions rotate strictly in one sense.
+(`FiniteAffineRay.form_eval_eval`).
 
-For `V = ℝ²` and the determinant this is the conservation of the position–velocity
+For `V = ℝ²` and the determinant, a nonzero moment means that successive bend positions
+rotate strictly in one sense. This is the conservation of the position–velocity
 determinant of broken lines in rank-two scattering diagrams, used by Burcroff–Lee–Mou,
 *Positivity of generalized cluster scattering diagrams*, Lemma 5.13
 (arXiv:2503.03719v1), to order the bends of a broken line.
@@ -88,7 +88,8 @@ theorem form_eval_directionAt (hω : ω.IsAlt) (β : FiniteAffineRay V V)
       exact ih' t
 
 /-- Under the hypotheses of `form_eval_directionAt`, if no bend lies strictly between the times
-`s < t` or at `t`, then `ω(β s, β t) = (s - t) ω(β.endpoint, β.direction)`. -/
+`s < t`, allowing bends at either endpoint, then
+`ω(β s, β t) = (s - t) ω(β.endpoint, β.direction)`. -/
 theorem form_eval_eval (hω : ω.IsAlt) (β : FiniteAffineRay V V)
     (hβ : ∀ b ∈ β.bends.support, ω (β b) (β.bends b) = 0) {s t : ℝ} (hst : s < t)
     (hb : ∀ b ∈ β.bends.support, b ≤ s ∨ t ≤ b) :
