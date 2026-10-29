@@ -163,7 +163,7 @@ wall function `(1 + z^(r(n)))^s` at the integral principal normal `κ(n)νₙ`.
 The rational power is expressed by scaling its logarithmic ray series.
 The unit `f` is specified by its value `1 + z^(r(n))`; negative exponents are
 unit powers. Any coefficient monoid containing the positive degrees is allowed. -/
-theorem completedBCHAction_normalizedDilogElement (q : Q)
+theorem completedBCHAction_completedMap_rayExp_smul_negDilogNeg (q : Q)
     (hq : q.val = D.principalEmbedding n) (f : (F).completionˣ)
     (hf : (f : (F).completion) = 1 + (F).toCompletion (single q 1)) (p : Q) (c : R) :
     (F).completedBCHAction (R := R) e ℳ
