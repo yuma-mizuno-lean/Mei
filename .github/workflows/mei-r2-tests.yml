@@ -1,0 +1,22 @@
+name: Mei R2 safety tests
+on:
+  pull_request:
+    paths:
+      - 'infra/mei-cache-reader/**'
+      - 'scripts/mei_r2_publish.py'
+      - 'scripts/test_mei_r2_publish.py'
+      - '.github/workflows/publish-lake-cache.yml'
+      - '.github/workflows/mei-r2-tests.yml'
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  safety:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - run: python3 scripts/test_mei_r2_publish.py
+      - run: node --test infra/mei-cache-reader/worker.test.mjs

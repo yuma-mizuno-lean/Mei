@@ -7,8 +7,7 @@ module
 
 public import Mei.Algebra.QuantumMonoidAlgebra.Lie
 public import Mei.Algebra.QuantumMonoidAlgebra.Positive
-public import Mei.Algebra.Lie.Filtered.BCH
-public import Mei.Algebra.Lie.Filtered.Inner
+public import Mei.Algebra.Lie.Filtered.Inner.Completed
 
 /-!
 # Inner actions on positive quantum coefficients
@@ -23,8 +22,9 @@ finite projections compute this formula by nilpotent exponentials.
 Open `Mei.QuantumMonoidAlgebra.CoefficientAction` to select the inner action, and
 use `AlgFiltration.completedBCHAction` with `positiveFiltration` and
 `positiveLieGrading`. The action uses Mathlib's `LieRingModule.compLieHom`;
-integration and conjugation use `AlgFiltration.completedBCHAction` and
-`AlgFiltration.expAction_apply_eq_completedExp_mul`. The finite inclusions follow
+integration and conjugation reuse `AlgFiltration.completedBCHAction_eq_inner`,
+`AlgFiltration.truncatedExpLieAction_eq_inner`, and `AlgFiltration.completedInnerElement`.
+The finite inclusions follow
 `Mei.UniversalEnvelopingAlgebra.truncatedLieToU`;
 compatibility of logarithms uses `PositiveDegrees.completedBCHExp`.
 The parallel enveloping construction is `UniversalEnvelopingAlgebra.InnerAction`.
@@ -151,6 +151,25 @@ theorem factor_truncatedCoefficientInclusion {k l : ℕ} (h : k ≤ l)
   obtain ⟨x, rfl⟩ := (d.degreeIdeal ℒ l).surjective_mkQ x
   simp
 
+/-- The generic finite inner map agrees with the canonical quantum coefficient inclusion. -/
+@[simp]
+theorem truncatedInnerMap_eq_truncatedCoefficientInclusion
+    (hj : ∀ k, d.degreeSubmodule ℒ k ≤
+      (((𝓕).ideal (k + 1)).restrictScalars R).comap
+        (positiveLieToCoefficients q β d).toLinearMap) (k : ℕ) :
+    (𝓕).truncatedInnerMap d ℒ (positiveLieToCoefficients q β d).toLinearMap hj k =
+      (truncatedCoefficientInclusion q β d k).toLinearMap := by
+  apply LinearMap.ext
+  intro x
+  obtain ⟨x, rfl⟩ := (d.degreeIdeal ℒ k).surjective_mkQ x
+  simp only [LieIdeal.mkQ_apply, AlgFiltration.truncatedInnerMap_mk,
+    LieHom.coe_toLinearMap, truncatedCoefficientInclusion_mk]
+
+local notation "j" => LieHom.toLinearMap (positiveLieToCoefficients q β d)
+local notation "hj" => (fun (k : ℕ) (x : positiveLieAlgebra q β d)
+  (hx : x ∈ d.degreeSubmodule ℒ k) =>
+    positiveLieToCoefficients_mem_positiveFiltration q β d hx)
+
 namespace CoefficientAction
 
 /-- The positive quantum inner action raises the coefficient degree filtration. -/
@@ -165,40 +184,33 @@ scoped instance instIsFiltrationRaising :
 
 variable [Algebra ℚ R]
 
-private theorem factor_coefficientLog (g : d.completedBCHGroup ℒ) {k l : ℕ} (h : k ≤ l) :
-    Ideal.Quotient.factor ((𝓕).antitone (Nat.add_le_add_right h 1))
-        (truncatedCoefficientInclusion q β d l (BCHGroup.log (CompletedGroup.projection l g))) =
-      truncatedCoefficientInclusion q β d k (BCHGroup.log (CompletedGroup.projection k g)) := by
-  let z := (d.completedBCHExp ℒ).symm g
-  let π := LieIdeal.completionProjection (d.degreeIdeal ℒ) (d.degreeIdeal_antitone ℒ)
-  have ht : d.truncationMap ℒ h (BCHGroup.log (CompletedGroup.projection l g)) =
-      BCHGroup.log (CompletedGroup.projection k g) := calc
-    _ = d.truncationMap ℒ h (π l z) :=
-      congrArg (d.truncationMap ℒ h) (d.completionProjection_completedBCHExp_symm ℒ l g).symm
-    _ = π k z := by
-      simpa only [PositiveDegrees.truncationMap_def] using
-        LieIdeal.factor_completionProjection _ _ h z
-    _ = _ := d.completionProjection_completedBCHExp_symm ℒ k g
-  exact (factor_truncatedCoefficientInclusion q β d h _).trans
-    (congrArg (truncatedCoefficientInclusion q β d k) ht)
 
 /-- The coefficient image of a completed label's logarithm. It lies in the first
 completion ideal, so its completed exponential is defined. -/
-def completedCoefficientLog (g : d.completedBCHGroup ℒ) : (𝓕).completionIdeal 1 := by
-  let z : (𝓕).completion := ⟨fun k => truncatedCoefficientInclusion q β d k.unop
-      (BCHGroup.log (CompletedGroup.projection k.unop g)),
-    ((𝓕).mem_completion_iff _).mpr (fun h => factor_coefficientLog q β d g h)⟩
-  refine ⟨z, ?_⟩
-  rw [AlgFiltration.completionIdeal_succ, RingHom.mem_ker]
-  have hz : BCHGroup.log (CompletedGroup.projection 0 g) = 0 := Subsingleton.elim _ _
-  simp only [AlgFiltration.projection_apply, z, hz, map_zero]
+def completedCoefficientLog (g : d.completedBCHGroup ℒ) : (𝓕).completionIdeal 1 :=
+  (𝓕).completedInnerElement d ℒ j hj ((d.completedBCHExp ℒ).symm g)
 
 /-- Every projection reads the coefficient image of the finite logarithm. -/
 @[simp]
 theorem projection_completedCoefficientLog (g : d.completedBCHGroup ℒ) (k : ℕ) :
     (𝓕).projection k (completedCoefficientLog q β d g) =
-      truncatedCoefficientInclusion q β d k (BCHGroup.log (CompletedGroup.projection k g)) :=
-  (𝓕).projection_apply k (completedCoefficientLog q β d g)
+      truncatedCoefficientInclusion q β d k (BCHGroup.log (CompletedGroup.projection k g)) := by
+  have hc : (completedCoefficientLog q β d g : (𝓕).completion) =
+      (𝓕).completedInnerMap d ℒ j hj ((d.completedBCHExp ℒ).symm g) := by
+    simpa only [completedCoefficientLog] using!
+      (𝓕).coe_completedInnerElement d ℒ j hj ((d.completedBCHExp ℒ).symm g)
+  let z := (d.completedBCHExp ℒ).symm g
+  let π := LieIdeal.completionProjection (d.degreeIdeal ℒ) (d.degreeIdeal_antitone ℒ)
+  calc
+    _ = (𝓕).projection k ((𝓕).completedInnerMap d ℒ j hj z) :=
+      congrArg ((𝓕).projection k) hc
+    _ = (𝓕).truncatedInnerMap d ℒ j hj k (π k z) :=
+      (𝓕).projection_completedInnerMap d ℒ j hj k z
+    _ = truncatedCoefficientInclusion q β d k (π k z) :=
+      LinearMap.congr_fun (truncatedInnerMap_eq_truncatedCoefficientInclusion q β d hj k)
+        (π k z)
+    _ = _ := congrArg (truncatedCoefficientInclusion q β d k)
+      (d.completionProjection_completedBCHExp_symm ℒ k g)
 
 /-- On an original Lie exponential, the coefficient logarithm is the canonical
 completed image of the original quantum coefficient. -/
@@ -241,11 +253,9 @@ theorem truncatedExpLieAction_apply (k : ℕ) (x : d.truncatedLie ℒ k)
     (𝓕).truncatedExpLieAction d ℒ k x a =
       IsNilpotent.exp (truncatedCoefficientInclusion q β d k x) * a *
         IsNilpotent.exp (-truncatedCoefficientInclusion q β d k x) := by
-  obtain ⟨x, rfl⟩ := (d.degreeIdeal ℒ k).surjective_mkQ x
-  simp only [LieIdeal.mkQ_apply, AlgFiltration.truncatedExpLieAction_mk,
-    truncatedCoefficientInclusion_mk]
-  exact (𝓕).quotientExpLieAction_apply_eq_exp_mul_exp_neg d ℒ k (lie_eq q β d x)
-    (positiveLieToCoefficients_mem_positiveFiltration q β d (by simp)) a
+  have h := (𝓕).truncatedExpLieAction_eq_inner d ℒ j hj (lie_eq q β d) k x a
+  rw [truncatedInnerMap_eq_truncatedCoefficientInclusion q β d hj k] at h
+  exact h
 
 /-- Every completed quantum BCH label acts by conjugation with the completed
 exponential of its coefficient logarithm. The inverse factor uses the inverse label. -/
@@ -254,34 +264,12 @@ theorem completedBCHAction_apply (g : d.completedBCHGroup ℒ) (a : (𝓕).compl
     (𝓕).completedBCHAction d ℒ g a =
       (𝓕).completedExp (completedCoefficientLog q β d g) * a *
         (𝓕).completedExp (completedCoefficientLog q β d g⁻¹) := by
-  apply (𝓕).completion_ext
-  intro k
-  let x : d.truncatedLie ℒ k := BCHGroup.log (CompletedGroup.projection k g)
-  have hg : (𝓕).projection k (completedCoefficientLog q β d g) =
-      truncatedCoefficientInclusion q β d k x := projection_completedCoefficientLog q β d g k
-  have hgi : (𝓕).projection k (completedCoefficientLog q β d g⁻¹) =
-      -truncatedCoefficientInclusion q β d k x := by
-    exact (congrArg ((𝓕).projection k) (coe_completedCoefficientLog_inv q β d g)).trans
-      ((((𝓕).projection k).toAddMonoidHom.map_neg _).trans (congrArg Neg.neg hg))
-  calc
-    _ = (𝓕).truncatedExpLieAction d ℒ k x ((𝓕).projection k a) :=
-      (𝓕).projection_completedBCHAction d ℒ g a k
-    _ = IsNilpotent.exp (truncatedCoefficientInclusion q β d k x) * (𝓕).projection k a *
-        IsNilpotent.exp (-truncatedCoefficientInclusion q β d k x) :=
-      truncatedExpLieAction_apply q β d k x _
-    _ = _ := by
-      let u := (𝓕).completedExp (completedCoefficientLog q β d g)
-      let v := (𝓕).completedExp (completedCoefficientLog q β d g⁻¹)
-      have hu : (𝓕).projection k u =
-          IsNilpotent.exp (truncatedCoefficientInclusion q β d k x) :=
-        ((𝓕).projection_completedExp _ k).trans (congrArg IsNilpotent.exp hg)
-      have hv : (𝓕).projection k v =
-          IsNilpotent.exp (-truncatedCoefficientInclusion q β d k x) :=
-        ((𝓕).projection_completedExp _ k).trans (congrArg IsNilpotent.exp hgi)
-      exact ((((𝓕).projection k).toMonoidHom.map_mul (u * a) v).trans
-        ((congrArg (fun t => t * (𝓕).projection k v)
-          (((𝓕).projection k).toMonoidHom.map_mul u a)).trans
-            (congrArg₂ (fun u v => u * (𝓕).projection k a * v) hu hv))).symm
+  refine ((𝓕).completedBCHAction_eq_inner d ℒ j hj (lie_eq q β d) g a).trans ?_
+  apply congrArg (fun z => (𝓕).completedExp (completedCoefficientLog q β d g) * a * z)
+  apply congrArg ((𝓕).completedExp)
+  apply Subtype.ext
+  simpa only [completedCoefficientLog, Submodule.coe_neg] using!
+    (coe_completedCoefficientLog_inv q β d g).symm
 
 end CoefficientAction
 end Mei.QuantumMonoidAlgebra

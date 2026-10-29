@@ -1,0 +1,15 @@
+name = "mei-cache-reader"
+main = "worker.mjs"
+compatibility_date = "2026-10-28"
+workers_dev = true
+preview_urls = false
+
+[vars]
+ENABLED = "false"
+
+[[r2_buckets]]
+binding = "CACHE"
+bucket_name = "mei-cache"
+
+# Deployment prerequisite: account Workers plan MUST be Free.
+# This file cannot enforce the account plan. No paid services or public R2 route.

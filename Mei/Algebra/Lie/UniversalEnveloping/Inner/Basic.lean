@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Algebra.Lie.Filtered.Inner
+public import Mei.Algebra.Lie.Filtered.Inner.Basic
 public import Mei.Algebra.Lie.UniversalEnveloping.CompletedLie
 
 /-!

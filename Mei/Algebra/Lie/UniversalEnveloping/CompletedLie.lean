@@ -6,6 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Algebra.Lie.Graded.Completion
+public import Mei.Algebra.Lie.Filtered.Inner.Map
 public import Mei.Algebra.Lie.UniversalEnveloping.GradedEmbedding
 public import Mei.Algebra.Lie.UniversalEnveloping.Completion
 public import Mei.Algebra.PositiveDegrees.Completion
@@ -49,19 +50,22 @@ local notation "F" => degreeFiltration ℒ d.degree
   (fun n hn => d.eq_bot_of_degree_nonpos ℒ n (le_of_lt hn))
 local notation "π" => LieIdeal.completionProjection (d.degreeIdeal ℒ) (d.degreeIdeal_antitone ℒ)
 
+/-- The canonical enveloping map sends Lie degree tails into the corresponding ideal. -/
+theorem degreeSubmodule_le_comap_ι (k : ℕ) :
+    d.degreeSubmodule ℒ k ≤
+      (((F).ideal (k + 1)).restrictScalars R).comap (ι R).toLinearMap := by
+  rw [d.degreeSubmodule_def ℒ]
+  refine iSup_le fun n x hx => ?_
+  exact ι_mem_degreeFiltration ℒ d.degree
+    (fun n hn => d.eq_bot_of_degree_nonpos ℒ n (le_of_lt hn)) hx
+    (by have := n.property; omega)
+
 /-- The canonical Lie map sends the ideal above cutoff `k` into enveloping order `k + 1`. -/
 theorem ι_mem_degreeFiltration_of_mem_degreeIdeal {k : ℕ} {x : L}
     (hx : x ∈ d.degreeIdeal ℒ k) : ι R x ∈ (F).ideal (k + 1) := by
-  have h : d.degreeSubmodule ℒ k ≤
-      (((F).ideal (k + 1)).restrictScalars R).comap (ι R).toLinearMap := by
-    rw [d.degreeSubmodule_def ℒ]
-    refine iSup_le fun n x hx => ?_
-    exact ι_mem_degreeFiltration ℒ d.degree
-      (fun n hn => d.eq_bot_of_degree_nonpos ℒ n (le_of_lt hn)) hx
-      (by have := n.property; omega)
   have hx' : x ∈ (d.degreeIdeal ℒ k).toSubmodule := hx
   rw [d.degreeIdeal_toSubmodule ℒ k] at hx'
-  exact h hx'
+  exact degreeSubmodule_le_comap_ι d ℒ k hx'
 
 /-- The canonical Lie map at a finite degree cutoff. -/
 noncomputable def truncatedLieToU (k : ℕ) :
@@ -190,16 +194,38 @@ theorem completedLieToU_unique (f : d.completedLie ℒ →ₗ⁅R⁆ (F).complet
   intro x
   exact (F).completion_ext fun k => (hf k x).trans (projection_completedLieToU d ℒ k x).symm
 
+/-- The general truncated inner coefficient map at the canonical Lie map is the
+existing finite enveloping Lie map, independently of its filtration witness. -/
+@[simp]
+theorem truncatedInnerMap_eq_truncatedLieToU
+    (hj : ∀ k, d.degreeSubmodule ℒ k ≤
+      (((F).ideal (k + 1)).restrictScalars R).comap (ι R).toLinearMap) (k : ℕ) :
+    (F).truncatedInnerMap d ℒ (ι R).toLinearMap hj k = (truncatedLieToU d ℒ k).toLinearMap := by
+  ext x
+  obtain ⟨x, rfl⟩ := (d.degreeIdeal ℒ k).surjective_mkQ x
+  simp only [LieIdeal.mkQ_apply, Mei.AlgFiltration.truncatedInnerMap_mk,
+    LieHom.coe_toLinearMap, truncatedLieToU_mk]
+
+/-- The general completed inner coefficient map at the canonical Lie map is the
+existing completed enveloping Lie map, as a linear map. -/
+@[simp]
+theorem completedInnerMap_eq_completedLieToU
+    (hj : ∀ k, d.degreeSubmodule ℒ k ≤
+      (((F).ideal (k + 1)).restrictScalars R).comap (ι R).toLinearMap) :
+    (F).completedInnerMap d ℒ (ι R).toLinearMap hj = (completedLieToU d ℒ).toLinearMap := by
+  apply LinearMap.ext
+  intro x
+  apply (F).completion_ext
+  intro k
+  simp only [Mei.AlgFiltration.projection_completedInnerMap,
+    truncatedInnerMap_eq_truncatedLieToU, LieHom.coe_toLinearMap,
+    projection_completedLieToU]
+
 /-- Every completed Lie coordinate maps into the first enveloping filtration ideal. -/
 theorem completedLieToU_mem_completionIdeal_one (x : d.completedLie ℒ) :
     completedLieToU d ℒ x ∈ (F).completionIdeal 1 := by
-  rw [Mei.AlgFiltration.completionIdeal_succ, RingHom.mem_ker,
-    projection_completedLieToU]
-  obtain ⟨a, ha⟩ := (d.degreeIdeal ℒ 0).surjective_mkQ (π 0 x)
-  rw [← ha, LieIdeal.mkQ_apply, truncatedLieToU_mk, Ideal.Quotient.eq_zero_iff_mem]
-  exact augmentation_le_degreeFiltration_one ℒ d.degree
-    (fun n hn => d.eq_bot_of_degree_nonpos ℒ n hn)
-    (TauCeti.UniversalEnvelopingAlgebra.ι_mem_augmentation R L a)
+  simpa only [completedInnerMap_eq_completedLieToU, LieHom.coe_toLinearMap] using
+    (F).completedInnerMap_mem_one d ℒ (ι R).toLinearMap (degreeSubmodule_le_comap_ι d ℒ) x
 
 /-- The canonical map takes the whole Lie completion into completed primitives. -/
 theorem isCompletedPrimitive_completedLieToU (x : d.completedLie ℒ) :

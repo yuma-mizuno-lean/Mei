@@ -157,6 +157,15 @@ def IsRationalLinearMap {N' V' : Type*} [AddCommGroup N'] [AddCommGroup V'] [Mod
     (T : V →ₗ[ℝ] V') : Prop :=
   ∀ f : Module.Dual ℝ V', IsRationalFunctional h' f → IsRationalFunctional h (f.comp T)
 
+/-- Rationality of a linear map is precisely preservation of rational functionals
+under pullback. -/
+theorem isRationalLinearMap_iff {N' V' : Type*} [AddCommGroup N'] [AddCommGroup V']
+    [Module ℝ V'] {i' : N' →+ V'} (h : IsIntegralLattice i) (h' : IsIntegralLattice i')
+    (T : V →ₗ[ℝ] V') :
+    IsRationalLinearMap h h' T ↔
+      ∀ f : Module.Dual ℝ V', IsRationalFunctional h' f → IsRationalFunctional h (f.comp T) :=
+  Iff.rfl
+
 namespace IsRationalLinearMap
 
 variable {N' N'' V' V'' : Type*} [AddCommGroup N'] [AddCommGroup N'']

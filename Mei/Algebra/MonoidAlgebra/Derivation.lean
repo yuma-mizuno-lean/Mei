@@ -102,6 +102,17 @@ theorem monomialDerivation_single (n : M) (m : M →+ R) (p : M) (r : R) :
     monomialDerivation n m (single p r) = single (n + p) (r * m p) :=
   monomialLinearMap_single n m p r
 
+/-- A degree-`n` logarithmic derivation is the multiple of the degree-zero weight
+derivation by the monomial `z^n`. -/
+theorem monomialDerivation_eq_single_smul (n : M) (m : M →+ R) :
+    monomialDerivation n m = (single n 1 : R[M]) • monomialDerivation 0 m := by
+  apply Derivation.ext
+  intro a
+  induction a using induction_linear with
+  | zero => simp
+  | add a b ha hb => simp_all [mul_add]
+  | single p r => simp [single_mul_single]
+
 /-- A homogeneous logarithmic derivation uniquely determines its character,
 even over a coefficient ring with zero divisors. -/
 theorem monomialDerivation_injective (n : M) :

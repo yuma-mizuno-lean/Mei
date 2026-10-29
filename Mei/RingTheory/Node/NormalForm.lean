@@ -17,7 +17,8 @@ the basis `X^n` for `n ≥ 0` and `Y^(n+1)` for `n ≥ 0`. Its two maps to the
 Laurent polynomial ring `R[T;T⁻¹]`, given by `(X,Y) ↦ (T,aT⁻¹)` and `(aT⁻¹,T)`, are jointly
 injective even when `a` is zero or a zero divisor. Nonnegative Laurent
 coefficients in the first map and strictly positive coefficients in the second recover
-the normal form. These formulas allow coefficients to be lifted from either
+the normal form; the remaining coefficients are the other normal-form coordinates multiplied
+by powers of `a`. These formulas allow coefficients to be lifted from either
 chamber of a slab without dividing by `a`.
 
 We use Tau Ceti's `NodeAlgebra` and its universal map `NodeAlgebra.lift`,
@@ -203,6 +204,50 @@ theorem normalFormBasis_repr_inr (z : NodeAlgebra R a) (n : ℕ) :
     (normalFormBasis a).repr z (.inr n) =
       (rightLaurentMap a z).coeff (n + 1 : ℤ) := by
   simpa [normalCoeff] using normalFormBasis_repr_eq a z (.inr n)
+
+/-- The coefficient of `T^(-(n+1))` in the first chamber is `a^(n+1)` times the coefficient
+of `Y^(n+1)`. -/
+theorem coeff_leftLaurentMap_neg_succ (z : NodeAlgebra R a) (n : ℕ) :
+    (leftLaurentMap a z).coeff (-(n + 1 : ℤ)) =
+      a ^ (n + 1) * (normalFormBasis a).repr z (.inr n) := by
+  have h := (normalFormBasis a).ext
+    (f₁ := (Finsupp.lapply (-(n + 1 : ℤ))).comp
+      ((coeffLinearEquiv R).toLinearMap.comp (leftLaurentMap a).toLinearMap))
+    (f₂ := a ^ (n + 1) • (Finsupp.lapply (.inr n)).comp (normalFormBasis a).repr.toLinearMap)
+    fun i => by
+      simp only [LinearMap.comp_apply, LinearMap.smul_apply, LinearEquiv.coe_coe,
+        Basis.repr_self]
+      cases i with
+      | inl m => simp; omega
+      | inr m =>
+        simp only [AlgHom.toLinearMap_apply, normalFormBasis_inr, map_pow,
+          leftLaurentMap_coord_one, mul_pow, T_pow]
+        rw [← map_pow C, ← single_eq_C_mul_T]
+        simp [Finsupp.single_apply, -single_eq_C_mul_T]
+        split_ifs with h <;> simp [h]
+  simpa using LinearMap.congr_fun h z
+
+/-- The coefficient of `T^(-n)` in the second chamber is `a^n` times the coefficient
+of `X^n`. -/
+theorem coeff_rightLaurentMap_neg (z : NodeAlgebra R a) (n : ℕ) :
+    (rightLaurentMap a z).coeff (-(n : ℤ)) =
+      a ^ n * (normalFormBasis a).repr z (.inl n) := by
+  have h := (normalFormBasis a).ext
+    (f₁ := (Finsupp.lapply (-(n : ℤ))).comp
+      ((coeffLinearEquiv R).toLinearMap.comp (rightLaurentMap a).toLinearMap))
+    (f₂ := a ^ n • (Finsupp.lapply (.inl n)).comp (normalFormBasis a).repr.toLinearMap)
+    fun i => by
+      simp only [LinearMap.comp_apply, LinearMap.smul_apply, LinearEquiv.coe_coe,
+        Basis.repr_self]
+      cases i with
+      | inl m =>
+        simp only [AlgHom.toLinearMap_apply, normalFormBasis_inl, map_pow,
+          rightLaurentMap_coord_zero, mul_pow, T_pow]
+        rw [← map_pow C, ← single_eq_C_mul_T]
+        simp [Finsupp.single_apply, -single_eq_C_mul_T]
+        split_ifs with h <;> simp [h]
+      | inr m => simp; omega
+  simpa using LinearMap.congr_fun h z
 
 /-- The two Laurent chamber maps are jointly injective, including at singular
 and nonreduced values of the nodal parameter. -/

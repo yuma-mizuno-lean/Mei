@@ -3,8 +3,9 @@ name: publish-lake-cache
 # Secret-isolated Lake cache publisher shared by main CI and merge-group CI. The caller may
 # execute arbitrary Lean code while producing the staging artifact, so this workflow treats the
 # entire artifact and every reported value as hostile. Only the toolchain pin comes from the
-# immutable revision being published. All planning and confirmation helpers are workflow-pinned
-# and execute without keys. Only inline workflow shell and curl run in the upload step.
+# immutable revision being published. Planning and confirmation helpers execute without keys.
+# The upload step runs inline shell, curl, and the workflow-pinned Python guard from the
+# trusted-r2 checkout at github.workflow_sha. Candidate-produced code never runs with keys.
 
 on:
   workflow_call:
@@ -41,6 +42,9 @@ permissions:
 
 jobs:
   publish:
+    concurrency:
+      group: mei-r2-publisher
+      cancel-in-progress: false
     # A NEW ephemeral runner for this job, separate from the candidate sandbox.
     # Direct labels request no privileged container, cache volume, git mirror or tool cache.
     # Priority zero precedes compiler jobs; run-ID assignment prevents cross-run pickup.
@@ -70,6 +74,15 @@ jobs:
         with:
           ref: ${{ inputs.revision }}
           sparse-checkout: lean-toolchain
+          sparse-checkout-cone-mode: false
+          persist-credentials: false
+
+      - name: Check out workflow-pinned R2 guard
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: trusted-r2
+          sparse-checkout: scripts/mei_r2_publish.py
           sparse-checkout-cone-mode: false
           persist-credentials: false
 
@@ -151,6 +164,8 @@ jobs:
           ELAN_TOOLCHAIN: ${{ steps.toolchain.outputs.name }}
           REVISION: ${{ inputs.revision }}
           PUBLICATION_REQUIRED: ${{ inputs.publication-required }}
+          MEI_R2_BUCKET_ENDPOINT: ${{ vars.MEI_R2_BUCKET_ENDPOINT }}
+          MEI_R2_GUARDS_READY: ${{ vars.MEI_R2_GUARDS_READY }}
         run: |
           set -euo pipefail
           skip_or_fail() {
@@ -174,28 +189,21 @@ jobs:
             || skip_or_fail 'the public Lake revision endpoint is not configured'
           [ -n "$LAKE_CACHE_KEY_RAW" ] \
             || skip_or_fail 'the LAKE_CACHE_KEY secret is not configured'
+          [ "$MEI_R2_GUARDS_READY" = '1' ] && [ -n "$MEI_R2_BUCKET_ENDPOINT" ] \
+            || skip_or_fail 'R2 guard initialization and deployment verification are incomplete'
 
           KEY="$LAKE_CACHE_KEY_RAW"
           KEY="${KEY%"${KEY##*[![:space:]]}"}"
           [ -n "$KEY" ] || skip_or_fail 'the LAKE_CACHE_KEY secret is empty after trimming'
           echo "::add-mask::$KEY"
 
-          # The workflow-pinned, key-free planner supplied only validated flat files
-          # and URLs. No repository helper, Lake workspace, or candidate code executes
-          # in this step. Artifacts complete before the FULL map becomes visible.
+          # Only the workflow-pinned guard executes with credentials. It reserves
+          # capacity and PUT operations durably before uploading, with no retries.
+          # Candidate files remain inert; artifacts complete before the full map.
           PLAN="$RUNNER_TEMP/lake-publication-plan"
           started=$SECONDS
-          if [ -s "$PLAN/artifacts.curl" ]; then
-            curl --parallel --parallel-max 50 --fail-early --fail --silent --show-error \
-              --retry 2 --retry-all-errors --max-time 120 \
-              --aws-sigv4 aws:amz:auto:s3 --user "$KEY" --request PUT \
-              --header 'Content-Type: application/vnd.reservoir.artifact' \
-              --config "$PLAN/artifacts.curl"
-          fi
-          curl --fail --silent --show-error --retry 2 --retry-all-errors --max-time 120 \
-            --aws-sigv4 aws:amz:auto:s3 --user "$KEY" --request PUT \
-            --header 'Content-Type: application/vnd.reservoir.outputs+json-lines' \
-            --upload-file "$PLAN/outputs.jsonl" "$(cat "$PLAN/map-url")"
+          python3 trusted-r2/scripts/mei_r2_publish.py publish --plan "$PLAN" \
+            || skip_or_fail 'R2 publication stopped by the guard; inspect its budget before retrying'
           echo "Lake publication upload seconds: $((SECONDS - started))"
 
           echo 'uploaded=true' >> "$GITHUB_OUTPUT"
