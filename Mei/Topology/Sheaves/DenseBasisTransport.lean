@@ -211,7 +211,8 @@ def evaluationEquiv {B U : Opens X} (hB : B ∈ T.basis) (hUB : U ≤ B)
     T.sheaf.presheaf.obj (op U) ≃ M where
   toFun s := T.value s x hx
   invFun a := T.parallelSection hB hUB x (hUB hx) a
-  left_inv s := T.section_ext (fun y hy => T.parallel_of_le hB hUB s x y hx hy)
+  left_inv s := T.section_ext (fun y hy => by
+    simpa only [value_parallelSection] using T.parallel_of_le hB hUB s x y hx hy)
   right_inv a := by simp
 
 /-- The evaluation equivalence evaluates actual coefficients. -/
@@ -240,7 +241,8 @@ theorem restriction_bijective {B U V : Opens X} (hB : B ∈ T.basis) (hUB : U �
   constructor
   · intro s t he
     apply (T.evaluationEquiv hB hUB x' (hVU hxV)).injective
-    exact congrArg (fun r => T.value r x' hxV) he
+    simpa only [evaluationEquiv_apply, value_restrict] using
+      congrArg (fun r => T.value r x' hxV) he
   · intro t
     refine ⟨(T.evaluationEquiv hB hUB x' (hVU hxV)).symm (T.value t x' hxV), ?_⟩
     apply (T.evaluationEquiv hB (hVU.trans hUB) x' hxV).injective
