@@ -34,6 +34,8 @@ public section
 
 open CategoryTheory TopologicalSpace Opposite Topology Set
 
+open TopCat.Presheaf (restrict_restrict)
+
 universe u v
 
 namespace TopCat.Sheaf
@@ -72,16 +74,16 @@ private theorem exists_isPreconnected_inter (hS : IsOpen S) {κ : Type*} [Counta
   have hDO : D ⊆ (N : Set (TopCat.of S)) ∩ O := fun p hp => ⟨hp.1, by_contra fun hpO => by
     obtain ⟨k, hk⟩ := hsing p (hNWU hp.1).2 hpO
     exact hp.2 (mem_iUnion.mpr ⟨k, hk⟩)⟩
-  have hND : (N : Set (TopCat.of S)) ⊆ closure D := fun p hp => by
-    -- Every small ball around a point of `N` still meets `B` off the obstacles.
-    refine closure_subtype.mpr (Metric.mem_closure_iff.mpr fun ε hε => ?_)
-    have hpath := Convex.isPathConnected_diff_of_subset_iUnion
-      ((convex_ball (p : V) ε).inter (convex_ball (x : V) r))
-      (Metric.isOpen_ball.inter Metric.isOpen_ball) ⟨p, Metric.mem_ball_self hε, hp⟩ A hA
-      subset_rfl
-    obtain ⟨q, ⟨hqε, hqB⟩, hqE⟩ := hpath.nonempty
-    rw [hval sdiff_subset]
-    exact ⟨q, ⟨hqB, hqE⟩, by rw [dist_comm]; exact hqε⟩
+  have hA' (k : κ) : A k ≠ ⊤ := fun htop => by
+    have := hA k
+    rw [htop, AffineSubspace.direction_top, finrank_top] at this
+    omega
+  have hdense : Dense Eᶜ := by
+    simpa only [E, AffineSubspace.genericLocus_eq_iInter, Set.compl_iUnion] using
+      AffineSubspace.dense_genericLocus A hA'
+  have hND : (N : Set (TopCat.of S)) ⊆ closure D := by
+    rw [hinduc.closure_eq_preimage_closure_image, hval sdiff_subset]
+    exact fun p hp => Metric.isOpen_ball.inter_closure (s := B) (t := Eᶜ) ⟨hp, hdense (p : V)⟩
   obtain ⟨p, hpB, hpE⟩ := hDpath.nonempty
   refine ⟨N, Metric.mem_ball_self hr, fun p hp => (hNWU hp).1, ?_,
     hDconn.subset_closure hDO fun p hp => hND hp.1, ⟨⟨p, hBS hpB⟩, hDO ⟨hpB, hpE⟩⟩⟩
@@ -115,13 +117,10 @@ theorem existsUnique_extension_of_facets (hS : IsOpen S) {κ : Type*} [Countable
       · exact hfacet x hx hxG
   have hbij := F.map_bijective_of_isPreconnected_inter hOU fun x hx W hW =>
     exists_isPreconnected_inter hS A hA hsing hx hW
-  have hcomp (w : F.presheaf.obj (op U)) :
-      F.presheaf.map (homOfLE hGO).op (F.presheaf.map (homOfLE hOU).op w) =
-        F.presheaf.map (homOfLE (hGO.trans hOU)).op w := by
-    rw [← ConcreteCategory.comp_apply, ← Functor.map_comp]
-    rfl
   obtain ⟨u, rfl⟩ := hbij.surjective u'
-  refine ⟨u, (hcomp u).symm.trans hu', fun u₁ hu₁ => ?_⟩
-  exact hbij.injective (huniq' _ ((hcomp u₁).trans hu₁))
+  refine ⟨u, (restrict_restrict (CC := fun T => T) (F := F.presheaf) hGO hOU u).symm.trans hu',
+    fun u₁ hu₁ => ?_⟩
+  exact hbij.injective (huniq' _
+    ((restrict_restrict (CC := fun T => T) (F := F.presheaf) hGO hOU u₁).trans hu₁))
 
 end TopCat.Sheaf

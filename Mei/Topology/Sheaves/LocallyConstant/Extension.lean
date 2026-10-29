@@ -30,6 +30,8 @@ public section
 
 open CategoryTheory TopologicalSpace Opposite Topology
 
+open TopCat.Presheaf (restrict_restrict)
+
 universe u v
 
 namespace TopCat.Sheaf
@@ -50,14 +52,6 @@ private theorem section_ext {U : Opens X} {s t : F.presheaf.obj (op U)}
   · rintro _ _ ⟨x⟩
     exact H x
 
-/-- Restriction of sections along a composite inclusion is the composite restriction. -/
-private theorem map_map {U V W : Opens X} (hVU : V ≤ U) (hWV : W ≤ V)
-    (s : F.presheaf.obj (op U)) :
-    F.presheaf.map (homOfLE hWV).op (F.presheaf.map (homOfLE hVU).op s) =
-      F.presheaf.map (homOfLE (hWV.trans hVU)).op s := by
-  rw [← ConcreteCategory.comp_apply, ← Functor.map_comp]
-  rfl
-
 variable [F.HasLocallyBijectivePreconnectedRestrictions]
 
 /-- Every point has a neighborhood `W` such that restriction between nonempty preconnected
@@ -72,7 +66,7 @@ theorem exists_bijective_restrictions_of_le (x : X) :
   have hN := hW N hNW (hP.mono hPN) hcN
   have hcomp : F.presheaf.map (homOfLE hPN).op ∘ F.presheaf.map (homOfLE hNW).op =
       F.presheaf.map (homOfLE (hPN.trans hNW)).op :=
-    funext fun s => map_map F hNW hPN s
+    funext fun s => restrict_restrict (CC := fun T => T) (F := F.presheaf) hPN hNW s
   rw [← Function.Bijective.of_comp_iff _ hN, hcomp]
   exact hW P (hPN.trans hNW) hP hcP
 
@@ -97,7 +91,14 @@ theorem map_injective_of_subset_closure {G U : Opens X} (hGU : G ≤ U)
   refine ⟨N', hNU, hxN, (hW N' P hPN (fun z hz => (hNWU hz).1)
     ⟨y, mem_connectedComponentIn ⟨hyN, hyG⟩⟩ hcN.isPreconnected
     isPreconnected_connectedComponentIn).injective ?_⟩
-  rw [map_map, map_map, ← map_map F hGU hPG, ← map_map F hGU hPG, hst]
+  rw [dsimp% [Presheaf.restrictOpen, Presheaf.restrict]
+      restrict_restrict (CC := fun T => T) (F := F.presheaf),
+    dsimp% [Presheaf.restrictOpen, Presheaf.restrict]
+      restrict_restrict (CC := fun T => T) (F := F.presheaf),
+    ← dsimp% [Presheaf.restrictOpen, Presheaf.restrict]
+      restrict_restrict (CC := fun T => T) (F := F.presheaf) hPG hGU,
+    ← dsimp% [Presheaf.restrictOpen, Presheaf.restrict]
+      restrict_restrict (CC := fun T => T) (F := F.presheaf) hPG hGU, hst]
 
 /-- On a locally connected space, a section over a dense open subset `G` of `U` extends to `U`
 if it extends to a neighborhood of every point of `U`; the extension is unique. -/
@@ -125,19 +126,27 @@ theorem existsUnique_extension_of_subset_closure {G U : Opens X} (hGU : G ≤ U)
       F.presheaf.map (homOfLE (inf_le_right : N' x ⊓ G ≤ G)).op s := by
     have h := congrArg (F.presheaf.map (homOfLE
       (inf_le_inf_right G inf_le_left : N' x ⊓ G ≤ N x ⊓ G)).op) (ht x)
-    simp only [t', map_map] at h ⊢
+    simp only [t', dsimp% [Presheaf.restrictOpen, Presheaf.restrict]
+      restrict_restrict (CC := fun T => T) (F := F.presheaf)] at h ⊢
     exact h
   have hcompat : TopCat.Presheaf.IsCompatible F.presheaf N' t' := by
     intro x y
     apply hinj (inf_le_left.trans inf_le_right : N' x ⊓ N' y ≤ U)
     unfold Opens.infLELeft Opens.infLERight
-    simp only [map_map]
-    rw [← map_map F (inf_le_left : N' x ⊓ G ≤ N' x)
+    simp only [dsimp% [Presheaf.restrictOpen, Presheaf.restrict]
+      restrict_restrict (CC := fun T => T) (F := F.presheaf)]
+    rw [← dsimp% [Presheaf.restrictOpen, Presheaf.restrict]
+      restrict_restrict (CC := fun T => T) (F := F.presheaf)
         (le_inf (inf_le_left.trans inf_le_left) inf_le_right :
-          (N' x ⊓ N' y) ⊓ G ≤ N' x ⊓ G),
-      ← map_map F (inf_le_left : N' y ⊓ G ≤ N' y)
+          (N' x ⊓ N' y) ⊓ G ≤ N' x ⊓ G) (inf_le_left : N' x ⊓ G ≤ N' x),
+      ← dsimp% [Presheaf.restrictOpen, Presheaf.restrict]
+      restrict_restrict (CC := fun T => T) (F := F.presheaf)
         (le_inf (inf_le_left.trans inf_le_right) inf_le_right :
-          (N' x ⊓ N' y) ⊓ G ≤ N' y ⊓ G), ht', ht', map_map, map_map]
+          (N' x ⊓ N' y) ⊓ G ≤ N' y ⊓ G) (inf_le_left : N' y ⊓ G ≤ N' y),
+      ht', ht', dsimp% [Presheaf.restrictOpen, Presheaf.restrict]
+      restrict_restrict (CC := fun T => T) (F := F.presheaf),
+      dsimp% [Presheaf.restrictOpen, Presheaf.restrict]
+        restrict_restrict (CC := fun T => T) (F := F.presheaf)]
   obtain ⟨g, hg, -⟩ := TopCat.Presheaf.IsSheaf.isSheafUniqueGluing_types F.property t' hcompat
   have hcover : U ≤ iSup N' := fun x hx =>
     Opens.mem_iSup.mpr ⟨⟨x, hx⟩, hxN ⟨x, hx⟩, hx⟩
@@ -145,9 +154,13 @@ theorem existsUnique_extension_of_subset_closure {G U : Opens X} (hGU : G ≤ U)
   -- Near each point of `G`, both sections are restrictions of the local extension.
   obtain ⟨y, rfl⟩ : ∃ y : U, y.1 = x := ⟨⟨x, hGU hx⟩, rfl⟩
   refine ⟨N' y ⊓ G, inf_le_right, ⟨⟨hxN y, hGU hx⟩, hx⟩, ?_⟩
-  rw [map_map, ← ht' y, ← hg y]
+  rw [dsimp% [Presheaf.restrictOpen, Presheaf.restrict]
+      restrict_restrict (CC := fun T => T) (F := F.presheaf), ← ht' y, ← hg y]
   unfold Opens.leSupr
-  rw [map_map, map_map]
+  rw [dsimp% [Presheaf.restrictOpen, Presheaf.restrict]
+      restrict_restrict (CC := fun T => T) (F := F.presheaf),
+    dsimp% [Presheaf.restrictOpen, Presheaf.restrict]
+      restrict_restrict (CC := fun T => T) (F := F.presheaf)]
 
 /-- On a locally connected space, restriction of sections from `U` to an open subset `O` is
 bijective if every point of `U` has arbitrarily small preconnected open neighborhoods whose
