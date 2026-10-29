@@ -100,6 +100,7 @@ private theorem projection_assemble (x : completedGroup F ⋊[action φ hφ] H) 
 
 /-- All finite projections of an element of the completed semidirect tower have the same
 `H`-coordinate. -/
+@[simp]
 theorem projection_right_eq_projection_zero (x : completedGroup (semidirectTower φ hφ)) (k : ℕ) :
     (projection k x).right = (projection 0 x).right := by
   have hx := congrArg SemidirectProduct.right (map_projection 0 k (Nat.zero_le k) x)
