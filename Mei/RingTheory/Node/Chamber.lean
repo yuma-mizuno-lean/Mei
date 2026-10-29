@@ -58,11 +58,10 @@ annihilators. This includes the truncated polynomial parameter over any base rin
 theorem leftChamberLaurentMap_injective (ht : t ^ (k + 1) = 0)
     (hann : ∀ (i : ℕ) (c : R), t ^ i * c = 0 → t ^ (k + 1 - i) ∣ c) :
     Function.Injective (leftChamberLaurentMap ht) := by
-  refine (injective_iff_map_eq_zero _).mpr ?_
+  unfold leftChamberLaurentMap
+  refine RingHom.lift_injective_of_ker_le_ideal _ _ ?_
   intro z hz
-  obtain ⟨z, rfl⟩ := Ideal.Quotient.mk_surjective z
-  rw [leftChamberLaurentMap_mk] at hz
-  apply Ideal.Quotient.eq_zero_iff_mem.mpr
+  rw [RingHom.mem_ker, AlgHom.coe_toRingHom] at hz
   rw [mem_span_coord_one_pow_iff ht]
   refine ⟨fun n => by simp [hz], fun d => ?_⟩
   have h := congrArg (fun p : R[T;T⁻¹] => p.coeff (-(d + 1 : ℤ))) hz
@@ -73,11 +72,10 @@ theorem leftChamberLaurentMap_injective (ht : t ^ (k + 1) = 0)
 theorem rightChamberLaurentMap_injective (ht : t ^ (k + 1) = 0)
     (hann : ∀ (i : ℕ) (c : R), t ^ i * c = 0 → t ^ (k + 1 - i) ∣ c) :
     Function.Injective (rightChamberLaurentMap ht) := by
-  refine (injective_iff_map_eq_zero _).mpr ?_
+  unfold rightChamberLaurentMap
+  refine RingHom.lift_injective_of_ker_le_ideal _ _ ?_
   intro z hz
-  obtain ⟨z, rfl⟩ := Ideal.Quotient.mk_surjective z
-  rw [rightChamberLaurentMap_mk] at hz
-  apply Ideal.Quotient.eq_zero_iff_mem.mpr
+  rw [RingHom.mem_ker, AlgHom.coe_toRingHom] at hz
   rw [mem_span_coord_zero_pow_iff ht]
   refine ⟨fun d => by simp [hz], fun n => ?_⟩
   apply hann n
