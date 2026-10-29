@@ -43,54 +43,6 @@ namespace TopCat.Sheaf
 variable {V : Type u} [NormedAddCommGroup V] [NormedSpace ℝ V] [FiniteDimensional ℝ V]
   {S : Set V} (F : (TopCat.of S).Sheaf (Type v)) [F.HasLocallyBijectivePreconnectedRestrictions]
 
-/-- If the points of `U` outside `O` lie in countably many affine subspaces of codimension at
-least two, then every point of `U` has arbitrarily small preconnected open neighborhoods whose
-intersections with `O` are nonempty and preconnected. -/
-private theorem exists_isPreconnected_inter (hS : IsOpen S) {κ : Type*} [Countable κ]
-    (A : κ → AffineSubspace ℝ V)
-    (hA : ∀ k, Module.finrank ℝ (A k).direction + 1 < Module.finrank ℝ V)
-    {O U : Opens (TopCat.of S)} (hsing : ∀ x ∈ U, x ∉ O → ∃ k, (x : V) ∈ A k)
-    {x : TopCat.of S} (hx : x ∈ U) {W : Set (TopCat.of S)} (hW : W ∈ 𝓝 x) :
-    ∃ N : Opens (TopCat.of S), x ∈ N ∧ (N : Set (TopCat.of S)) ⊆ W ∧
-      IsPreconnected (N : Set (TopCat.of S)) ∧
-        IsPreconnected ((N : Set (TopCat.of S)) ∩ O) ∧ ((N : Set (TopCat.of S)) ∩ O).Nonempty := by
-  obtain ⟨w, hw, hwW⟩ := mem_nhds_subtype S x _ |>.mp
-    (Filter.inter_mem hW (U.isOpen.mem_nhds hx))
-  obtain ⟨r, hr, hrw⟩ := Metric.mem_nhds_iff.mp (Filter.inter_mem hw (hS.mem_nhds x.2))
-  let E : Set V := ⋃ k, (A k : Set V)
-  let B : Set V := Metric.ball (x : V) r
-  have hBS : B ⊆ S := fun p hp => (hrw hp).2
-  have hval {T : Set V} (hT : T ⊆ B) : ((↑) : S → V) '' ((↑) ⁻¹' T) = T := by
-    rw [Subtype.image_preimage_coe, inter_eq_right.mpr (hT.trans hBS)]
-  have hinduc : IsInducing ((↑) : S → V) := IsInducing.subtypeVal
-  let N : Opens (TopCat.of S) := ⟨(↑) ⁻¹' B, Metric.isOpen_ball.preimage continuous_subtype_val⟩
-  have hNWU : (N : Set (TopCat.of S)) ⊆ W ∩ U := fun p hp => hwW (hrw hp).1
-  -- The off-obstacle part of `N` is preconnected and dense in `N`.
-  let D : Set (TopCat.of S) := (↑) ⁻¹' (B \ E)
-  have hDpath : IsPathConnected (B \ E) := (convex_ball _ _).isPathConnected_diff_of_subset_iUnion
-    Metric.isOpen_ball (Metric.nonempty_ball.mpr hr) A hA subset_rfl
-  have hDconn : IsPreconnected D :=
-    hinduc.isPreconnected_image.mp (by rw [hval sdiff_subset]; exact hDpath.isConnected.2)
-  have hDO : D ⊆ (N : Set (TopCat.of S)) ∩ O := fun p hp => ⟨hp.1, by_contra fun hpO => by
-    obtain ⟨k, hk⟩ := hsing p (hNWU hp.1).2 hpO
-    exact hp.2 (mem_iUnion.mpr ⟨k, hk⟩)⟩
-  have hA' (k : κ) : A k ≠ ⊤ := fun htop => by
-    have := hA k
-    rw [htop, AffineSubspace.direction_top, finrank_top] at this
-    omega
-  have hdense : Dense Eᶜ := by
-    simpa only [E, AffineSubspace.genericLocus_eq_iInter, Set.compl_iUnion] using
-      AffineSubspace.dense_genericLocus A hA'
-  have hND : (N : Set (TopCat.of S)) ⊆ closure D := by
-    rw [hinduc.closure_eq_preimage_closure_image, hval sdiff_subset]
-    exact fun p hp => Metric.isOpen_ball.inter_closure (s := B) (t := Eᶜ) ⟨hp, hdense (p : V)⟩
-  obtain ⟨p, hpB, hpE⟩ := hDpath.nonempty
-  refine ⟨N, Metric.mem_ball_self hr, fun p hp => (hNWU hp).1, ?_,
-    hDconn.subset_closure hDO fun p hp => hND hp.1, ⟨⟨p, hBS hpB⟩, hDO ⟨hpB, hpE⟩⟩⟩
-  exact hinduc.isPreconnected_image.mp (by
-    rw [Opens.coe_mk, hval subset_rfl]
-    exact (convex_ball _ _).isPreconnected)
-
 /-- **Facet descent.** Let `G ≤ O ≤ U` be opens of an open subset `S` of a finite-dimensional
 real normed space, with `G` dense in `O` and the points of `U` outside `O` contained in countably
 many affine subspaces of codimension at least two. A section `s` of `F` on `G` extends uniquely to
@@ -116,7 +68,7 @@ theorem existsUnique_extension_of_facets (hS : IsOpen S) {κ : Type*} [Countable
       · exact ⟨G, s, hxG, rfl⟩
       · exact hfacet x hx hxG
   have hbij := F.map_bijective_of_isPreconnected_inter hOU fun x hx W hW =>
-    exists_isPreconnected_inter hS A hA hsing hx hW
+    hS.exists_isPreconnected_inter_of_subset_iUnion A hA hsing hx hW
   obtain ⟨u, rfl⟩ := hbij.surjective u'
   refine ⟨u, (restrict_restrict (CC := fun T => T) (F := F.presheaf) hGO hOU u).symm.trans hu',
     fun u₁ hu₁ => ?_⟩

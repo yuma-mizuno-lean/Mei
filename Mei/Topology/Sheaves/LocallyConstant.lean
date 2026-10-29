@@ -40,4 +40,22 @@ class HasLocallyBijectivePreconnectedRestrictions (F : X.Sheaf (Type v)) : Prop 
       (V : Set X).Nonempty → IsPreconnected (V : Set X) →
         Function.Bijective (F.presheaf.map (homOfLE hVU).op)
 
+variable (F : X.Sheaf (Type v)) [F.HasLocallyBijectivePreconnectedRestrictions]
+
+/-- Every point has a neighborhood `W` such that restriction between nonempty preconnected
+opens `P ≤ N ≤ W` is bijective. -/
+theorem exists_bijective_restrictions_of_le (x : X) :
+    ∃ W : Opens X, x ∈ W ∧ ∀ (N P : Opens X) (hPN : P ≤ N), N ≤ W →
+      (P : Set X).Nonempty → IsPreconnected (N : Set X) → IsPreconnected (P : Set X) →
+        Function.Bijective (F.presheaf.map (homOfLE hPN).op) := by
+  obtain ⟨W, hxW, hW⟩ := HasLocallyBijectivePreconnectedRestrictions.exists_bijective_restrictions
+    (F := F) x
+  refine ⟨W, hxW, fun N P hPN hNW hP hcN hcP => ?_⟩
+  have hN := hW N hNW (hP.mono hPN) hcN
+  have hcomp : F.presheaf.map (homOfLE hPN).op ∘ F.presheaf.map (homOfLE hNW).op =
+      F.presheaf.map (homOfLE (hPN.trans hNW)).op :=
+    funext fun s => TopCat.Presheaf.restrict_restrict (CC := fun T => T) (F := F.presheaf) hPN hNW s
+  rw [← Function.Bijective.of_comp_iff _ hN, hcomp]
+  exact hW P (hPN.trans hNW) hP hcP
+
 end TopCat.Sheaf
