@@ -14,6 +14,9 @@ A Laurent polynomial is divisible by a constant `C a` exactly when all of its co
 divisible by `a`, as for `Polynomial.C_dvd_iff_dvd_coeff`. Consequently `1 + T` is a
 nonzerodivisor modulo every constant: if `C a` divides `(1 + T) * p`, then it divides `p`.
 This is the regularity of a gluing function `1 + w` on truncated Laurent coefficient rings.
+
+We also record how the coefficient change `R[T;T⁻¹] → S[T;T⁻¹]` along an `R`-algebra `S`, the
+scoped algebra `AddMonoidAlgebra.algebraAddMonoidAlgebra`, acts on constants and on monomials.
 -/
 
 public section
@@ -68,5 +71,23 @@ theorem C_dvd_of_C_dvd_one_add_T_mul [Ring R] {a : R} {p : R[T;T⁻¹]}
     exact dvd_zero _
   · have := hup (n - N).toNat
     rwa [Int.toNat_of_nonneg (by omega), add_sub_cancel] at this
+
+section AlgebraMap
+
+open scoped AlgebraMonoidAlgebra
+
+variable {S : Type*} [CommSemiring R] [CommSemiring S] [Algebra R S]
+
+/-- Coefficient change of Laurent polynomials sends the constant `C r` to `C (algebraMap R S r)`.
+-/
+theorem algebraMap_C (r : R) :
+    algebraMap R[T;T⁻¹] S[T;T⁻¹] (C r) = C (algebraMap R S r) := by
+  simp [C, -single_eq_C_mul_T]
+
+/-- Coefficient change of Laurent polynomials fixes the monomials `T n`. -/
+theorem algebraMap_T (n : ℤ) : algebraMap R[T;T⁻¹] S[T;T⁻¹] (T n) = T n := by
+  simp [T, -single_eq_C_mul_T]
+
+end AlgebraMap
 
 end Mei.LaurentPolynomial
