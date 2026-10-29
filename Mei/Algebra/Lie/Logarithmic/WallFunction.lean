@@ -337,6 +337,19 @@ def completedTropicalTangentInclusion : (G).completion →ₐ[R] (F).completion 
     fun k => filtration_ideal_le_comap_tropicalTangentInclusion d ρ m Q Fact.out (k + 1)
 
 omit [Algebra ℚ R] [DecidableEq Γ] in
+/-- Forgetting scalars in the completed tangent inclusion gives the filtered
+ring completion map of the monoid inclusion. -/
+@[simp]
+theorem coe_completedTropicalTangentInclusion :
+    (completedTropicalTangentInclusion d ρ m Q : (G).completion →+* (F).completion) =
+      (G).mapCompletion (F) (tropicalTangentInclusion d ρ m Q Fact.out : _ →+* _)
+        id monotone_id
+        (fun k => filtration_ideal_le_comap_tropicalTangentInclusion d ρ m Q Fact.out (k + 1)) := by
+  unfold completedTropicalTangentInclusion
+  exact (G).coe_mapCompletionₐ (F) (tropicalTangentInclusion d ρ m Q Fact.out)
+    id monotone_id _
+
+omit [Algebra ℚ R] [DecidableEq Γ] in
 /-- At order `k`, the map of completions is the induced map of coefficient quotients. -/
 @[simp]
 theorem projection_completedTropicalTangentInclusion (k : ℕ) (u : (G).completion) :

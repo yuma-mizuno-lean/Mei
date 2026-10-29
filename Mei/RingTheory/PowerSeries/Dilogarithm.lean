@@ -5,7 +5,7 @@ Authors: Claude
 -/
 module
 
-public import Mathlib.RingTheory.PowerSeries.Log
+public import Mei.RingTheory.PowerSeries.EulerIntegral
 
 import Mathlib.Algebra.Algebra.Rat
 
@@ -75,6 +75,12 @@ theorem X_mul_derivative_negDilogNeg : X * d⁄dX (negDilogNeg A) = log A := by
     rw [hn, ← map_mul]
     congr 1
     field_simp
+
+/-- The negative dilogarithm is the Euler integral of `log(1 + X)`. -/
+@[simp]
+theorem eulerIntegral_log : eulerIntegral (log A) = negDilogNeg A :=
+  (eulerIntegral_eq_iff _ _ constantCoeff_log).mpr
+    ⟨constantCoeff_negDilogNeg, X_mul_derivative_negDilogNeg⟩
 
 /-- `-Li₂(-X)` is the power series `f` without constant term with
 `X · d/dX f = log(1 + X)`. -/
