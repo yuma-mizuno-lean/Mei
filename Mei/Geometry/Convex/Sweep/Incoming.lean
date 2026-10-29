@@ -14,8 +14,9 @@ public import Mei.Geometry.Convex.Polyhedron.Rational.Ray
 After the last selected backward encounter, the incoming segment continues along
 an unbounded ray. Its open part must avoid every active wall, and it must eventually
 lie in the specified incoming source. Adding these conditions to a backward
-itinerary preserves rational semilinearity when the velocities are lattice vectors,
-the active wall family is finite, and the walls and source are closed
+itinerary preserves rational semilinearity when the selected hyperplane normals are
+rational, the selected supports are rational semilinear, the velocities are lattice
+vectors, the active wall family is finite, and the walls and source are closed
 rational-normal polyhedra. Thus the resulting endpoint domains admit
 the existing finite disjoint decomposition into locally closed polyhedra.
 
