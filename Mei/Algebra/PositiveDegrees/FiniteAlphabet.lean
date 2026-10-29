@@ -51,6 +51,10 @@ theorem letter_fst (α : E) : (letter m α).1 = m α := (rfl)
 @[simp]
 theorem letter_snd (α : E) : (letter m α).2 = Pi.single α 1 := (rfl)
 
+/-- A letter of a finite alphabet is nonzero: its letter count at its own index is one. -/
+theorem letter_ne_zero [Zero M] (α : E) : letter m α ≠ 0 :=
+  fun h => by simpa using congrArg (fun x => x.2 α) h
+
 /-- The letters of a finite alphabet are linearly independent over `ℤ`. -/
 theorem linearIndependent_letter [AddCommGroup M] : LinearIndependent ℤ (letter m) :=
   LinearIndependent.of_comp (LinearMap.snd ℤ M (E → ℤ)) (Pi.linearIndependent_single_one E ℤ)

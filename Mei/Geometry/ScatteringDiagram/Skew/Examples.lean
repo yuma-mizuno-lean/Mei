@@ -5,7 +5,7 @@ Authors: Claude Code
 -/
 module
 
-public import Mei.Geometry.ScatteringDiagram.Skew.AdaptedBasis
+public import Mei.Geometry.ScatteringDiagram.Skew.PolynomialInput
 public import Mathlib.LinearAlgebra.Basis.Fin
 public import Mathlib.Data.ZMod.Basic
 
@@ -19,6 +19,12 @@ are `κ(e₁) = 1` and `κ(e₂) = 2`, and the integral functional `{-, κ(e₂)
 
 The unimodular variant takes `N° = N`. Its standard basis provides a universal pair with
 skew pairing one for transporting rank-two identities.
+
+On the datum with `d = (1, 2)`, the multiplicities `ℓ = (1, 2)` give a polynomial input of a
+generalized cluster scattering diagram in the sense of Burcroff–Lee–Mou, *Positivity of
+generalized cluster scattering diagrams*, Definition 8.2, with primitive exponents
+`w₁ = e₂*` and `w₂ = -e₁*`. With `ℓ₂ = 1` the exponent at the second index would be the
+imprimitive vector `-2 e₁*`.
 -/
 
 public section
@@ -139,5 +145,41 @@ theorem normal_snd_apply (a : ℤ × ℤ) :
   apply Int.cast_injective (α := ℚ)
   rw [cast_normal_apply, rayIndex_snd]
   simp
+
+/-- The polynomial input on the rank-two datum with `{e₁, e₂} = 1` and multipliers `d = (1, 2)`
+with multiplicities `ℓ = (1, 2)`. Its exponents are `w₁ = d₁ {e₁, -} / ℓ₁ = e₂*` and
+`w₂ = d₂ {e₂, -} / ℓ₂ = -e₁*`, so its initial functions are `1 + p_{1,1} z^{e₂*}` and
+`1 + p_{2,1} z^{-e₁*} + p_{2,2} z^{-2e₁*}`. -/
+noncomputable def rankTwoBLMPolynomialInput : rankTwoAdaptedBasis.BLMPolynomialInput where
+  multiplicity i := ![1, 2] i.1
+  multiplicity_pos i := by
+    obtain ⟨i, -⟩ := i
+    fin_cases i <;> simp
+  exponent i := ![LinearMap.snd ℤ ℤ ℤ, -LinearMap.fst ℤ ℤ ℤ] i.1
+  multiplicity_mul_exponent i a := by
+    obtain ⟨i, -⟩ := i
+    fin_cases i <;> simp
+  isPrimitive_exponent i := by
+    obtain ⟨i, -⟩ := i
+    fin_cases i
+    · exact TauCeti.isPrimitive_def.mpr ⟨LinearMap.applyₗ (0, 1), by simp⟩
+    · exact TauCeti.isPrimitive_def.mpr ⟨LinearMap.applyₗ (-1, 0), by simp⟩
+  eq_one_of_dvd_multiplier k hk := by
+    simpa using hk 0
+  eq_zero_of_form_eq_zero v _ hv := by
+    have h₁ := hv (1, 0)
+    have h₂ := hv (0, 1)
+    simp only [rankTwo_form, rankTwoForm_apply, Int.cast_eq_zero] at h₁ h₂
+    ext <;> simp_all
+
+@[simp]
+theorem rankTwoBLMPolynomialInput_multiplicity (i : rankTwoAdaptedBasis.unfrozenIndex) :
+    rankTwoBLMPolynomialInput.multiplicity i = ![1, 2] i.1 :=
+  (rfl)
+
+@[simp]
+theorem rankTwoBLMPolynomialInput_exponent (i : rankTwoAdaptedBasis.unfrozenIndex) :
+    rankTwoBLMPolynomialInput.exponent i = ![LinearMap.snd ℤ ℤ ℤ, -LinearMap.fst ℤ ℤ ℤ] i.1 :=
+  (rfl)
 
 end Mei.SkewLatticeDatum.Examples

@@ -87,6 +87,10 @@ theorem mem_unfrozen_iff {n : N} :
 theorem basis_mem_unfrozen_iff {i : ι} : B.basis i ∈ D.unfrozen ↔ i ∈ B.unfrozenIndex := by
   simp only [B.unfrozen_eq_span, Basis.self_mem_span_image, Finset.mem_coe]
 
+/-- An unfrozen basis vector `e_i`, `i ∈ I_uf`, lies in `N_uf`. -/
+theorem basis_mem_unfrozen (i : B.unfrozenIndex) : B.basis i ∈ D.unfrozen :=
+  B.basis_mem_unfrozen_iff.mpr i.2
+
 /-- The multiple `d_i e_i` lies in `N°`. -/
 theorem nsmul_basis_mem_sublattice (i : ι) : B.multiplier i • B.basis i ∈ D.sublattice := by
   rw [B.sublattice_eq_span]
