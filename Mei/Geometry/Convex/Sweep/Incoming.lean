@@ -92,7 +92,8 @@ theorem isRationalSemilinear_backwardIncomingDomain
       (((hW b).isLocallyClosedPolyhedron_posRay q).isRationalSemilinear.compl).preimage X hX
   have hsource : IsRationalSemilinear h
       (X ⁻¹' {x : V | ∀ᶠ t : ℝ in Filter.atTop, x + t • i q ∈ C}) :=
-    ((hC.eventually_add_smul_mem q).preimage X hX).isLocallyClosedPolyhedron.isRationalSemilinear
+    ((hC.eventually_add_smul_mem (i q)).preimage X hX).isLocallyClosedPolyhedron
+      |>.isRationalSemilinear
   convert (isRationalSemilinear_backwardDomain f c u hf hP).inter
     (havoid.inter hsource) using 1
   ext Q
