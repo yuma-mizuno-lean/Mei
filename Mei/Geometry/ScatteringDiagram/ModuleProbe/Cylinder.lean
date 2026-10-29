@@ -210,6 +210,7 @@ theorem cylinderDiagram_consistent_iff :
 
 /-- Finite endpoint transport through probe cylinders depends on the base endpoints
 through the charge-zero inclusion. -/
+@[simp]
 theorem levelTransport_cylinderDiagram {k : ℕ} (hD : D.LevelConsistent k)
     (x y : WallComplement (fun a : (cylinderDiagram d ℳ p ℒ H h h' D).active k =>
       ((cylinderDiagram d ℳ p ℒ H h h' D).wall a).support)) :
