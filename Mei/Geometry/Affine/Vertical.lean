@@ -164,22 +164,25 @@ theorem exists_isGeneric_vertical_iff (E : ExceptionalArrangement (V × ℝ)) (x
     obtain ⟨t, ht⟩ := ((E.isGeneric_verticalProjection_iff_finite x).mp hx).infinite_compl.nonempty
     exact ⟨t, not_not.mp ht⟩
 
-/-- Over a generic endpoint, regular heights form an open subset of the real
+/-- Over any endpoint, regular heights form an open subset of the real
 line. No topology or finite-dimensionality is needed on the endpoint space. -/
-theorem isOpen_isGeneric_vertical (E : ExceptionalArrangement (V × ℝ)) {x : V}
-    (hx : E.verticalProjection.IsGeneric x) : IsOpen {t : ℝ | E.IsGeneric (x, t)} := by
-  have hf := (E.isGeneric_verticalProjection_iff_finite x).mp hx
-  simpa only [Set.compl_ofPred, not_not] using hf.isClosed.isOpen_compl
+theorem isOpen_isGeneric_vertical (E : ExceptionalArrangement (V × ℝ)) {x : V} :
+    IsOpen {t : ℝ | E.IsGeneric (x, t)} := by
+  by_cases hx : E.verticalProjection.IsGeneric x
+  · have hf := (E.isGeneric_verticalProjection_iff_finite x).mp hx
+    simpa only [Set.compl_ofPred, not_not] using hf.isClosed.isOpen_compl
+  · have hempty : {t : ℝ | E.IsGeneric (x, t)} = ∅ := by
+      ext t
+      simp only [mem_ofPred_eq, mem_empty_iff_false, iff_false]
+      exact fun ht => hx ((E.exists_isGeneric_vertical_iff x).mp ⟨t, ht⟩)
+    rw [hempty]
+    exact isOpen_empty
 
 /-- Over a generic endpoint, regular heights are dense, so one can choose a
 height in any prescribed nonempty open interval. The endpoint space needs no topology. -/
 theorem dense_isGeneric_vertical (E : ExceptionalArrangement (V × ℝ)) {x : V}
     (hx : E.verticalProjection.IsGeneric x) : Dense {t : ℝ | E.IsGeneric (x, t)} := by
   have hf := (E.isGeneric_verticalProjection_iff_finite x).mp hx
-  apply dense_iff_inter_open.mpr
-  intro U hU ⟨u, hu⟩
-  have hUinf := infinite_of_mem_nhds u (hU.mem_nhds hu)
-  obtain ⟨t, htU, ht⟩ := (hUinf.sdiff hf).nonempty
-  exact ⟨t, htU, not_not.mp ht⟩
+  simpa only [← compl_eq_univ_sdiff, compl_ofPred, not_not] using (dense_univ.sdiff_finite hf)
 
 end Mei.ExceptionalArrangement
