@@ -124,6 +124,14 @@ theorem coe_wallCoefficient_probeWall (a : ℳ p) :
     exact probeWall_label d ℳ p ℒ H h h' a
   exact congrArg (fun b : shiftedGrading ℳ d.monoid p (p - p) => (b.val : M)) he
 
+/-- Every nonidentity probe wall is tangent to the height coordinate. This
+holds for both lifted base normals and all nonzero multiples of the probe normal. -/
+@[simp]
+theorem normal_height_eq_zero_of_label_ne_one (hne : W.label ≠ 1) :
+    W.normal (0, 1, 0) = 0 := by
+  rcases wallGroup_cases_of_ne_one d ℳ p ℒ H W.label_mem hne with
+    ⟨v, m, _, hm⟩ | ⟨q, hq, c, _, _, hm⟩ <;> simp [hm]
+
 variable [LieAlgebra ℚ L] [IsScalarTower ℚ R L]
 
 /-- Every wall whose normal is not a lifted base normal disappears under base
