@@ -68,7 +68,7 @@ open Finset
 namespace Mei.RankTwo
 
 open FiniteAffineRay
-open Prod (det det_apply det_isAlt det_trans)
+open Prod (det det_apply isAlt_det det_trans)
 
 /-- A condition on the bend data of a finite ray in `ℝ²` at time `t`: its position is `-s • u`
 for `s > 0` and a lattice vector `u ∈ ℕ²`, and its backward direction increment is `-u`.
@@ -137,7 +137,7 @@ private theorem exists_det_bends_eq_mul_of_consecutive {β : FiniteAffineRay (�
     ∃ α > 0, det (β.bends s) (β.bends t) = -det β.endpoint β.direction * α := by
   obtain ⟨u, hu, σ, hσ, hpos⟩ := hβ s hs
   obtain ⟨u', hu', σ', hσ', hpos'⟩ := hβ t ht
-  have h := form_eval_eval det_isAlt β (fun c hc => det_eval_bends (hβ c hc)) hst hb
+  have h := form_eval_eval isAlt_det β (fun c hc => det_eval_bends (hβ c hc)) hst hb
   rw [hpos, hpos', det_apply] at h
   refine ⟨(t - s) / (σ * σ'), div_pos (by linarith) (by positivity), ?_⟩
   rw [hu, hu', det_apply, mul_div_assoc', eq_div_iff (by positivity)]
@@ -187,7 +187,7 @@ private theorem exists_det_incomingDirection_bends_eq_mul
   -- the moment at the first bend is computed against the incoming direction
   have h₀ : ∃ α > 0, det β.incomingDirection (β.bends t₀) = -det β.endpoint β.direction * α := by
     obtain ⟨u, hu, σ, hσ, hpos⟩ := hβ t₀ ht₀
-    have hcons := form_eval_directionAt det_isAlt β (fun c hc => det_eval_bends (hβ c hc)) t₀
+    have hcons := form_eval_directionAt isAlt_det β (fun c hc => det_eval_bends (hβ c hc)) t₀
     rw [β.directionAt_of_le_bends t₀ hmin, hpos, det_apply] at hcons
     refine ⟨1 / σ, by positivity, ?_⟩
     rw [hu, det_apply, ← hcons]
@@ -271,7 +271,7 @@ private theorem le_and_between_of_ne {β : FiniteAffineRay (ℝ × ℝ) (ℝ × 
     have hB : k * (u.1 * b - u.2 * a : ℝ) =
         -det β.endpoint β.direction * ∑ c ∈ β.bends.support.erase t₀, γ c := by
       have h := congrArg (det (β.bends t₀)) hsum
-      rw [map_sum, ← add_sum_erase _ _ ht₀, det_isAlt.self_eq_zero, zero_add,
+      rw [map_sum, ← add_sum_erase _ _ ht₀, isAlt_det.self_eq_zero, zero_add,
         sum_congr rfl hdet, ← mul_sum, hu] at h
       simp only [det_apply] at h ⊢
       linear_combination -h

@@ -34,7 +34,7 @@ def det {R : Type*} [CommRing R] : (R × R) →ₗ[R] (R × R) →ₗ[R] R :=
   simp [det]
 
 /-- The determinant bilinear form is alternating. -/
-theorem det_isAlt {R : Type*} [CommRing R] : (det (R := R)).IsAlt := fun x => by
+theorem isAlt_det {R : Type*} [CommRing R] : (det (R := R)).IsAlt := fun x => by
   rw [det_apply]
   ring
 
