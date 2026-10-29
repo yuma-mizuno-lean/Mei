@@ -37,7 +37,7 @@ local notation "O" => Overlap (C t) k
 local notation "D" => LocalizedOverlap (C t) (1 + T 1) k
 
 private def wUnit : Rˣ :=
-  ⟨T 1, T (-1), by rw [← T_add]; exact T_zero, by rw [← T_add]; exact T_zero⟩
+  unitOfInvertible (T 1 : R)
 
 /-- The upper overlap identification `(x,y,w) ↦ (wx,w⁻¹y,w)`. -/
 def upperOverlap : O ≃ₐ[R] O := scaleOverlap (C t) k (wUnit (S := S))
@@ -90,7 +90,8 @@ theorem coe_upperSlabFunctionUnit :
     RingHom.toMonoidHom_eq_coe, MonoidHom.coe_ofClass,
     coe_slabFunctionUnit]
   rw [← map_mul]
-  simp only [wUnit, Units.inv_mk, Units.val_mk, mul_add, mul_one, ← T_add]
+  simp only [wUnit, unitOfInvertible, Units.inv_mk, Units.val_mk, invOf_T,
+    mul_add, mul_one, ← T_add]
   simp only [Int.reduceAdd, T_zero, add_comm]
 
 /-- The lower wall map `x ↦ fx`, `y ↦ f⁻¹y` after the identity overlap identification. -/
