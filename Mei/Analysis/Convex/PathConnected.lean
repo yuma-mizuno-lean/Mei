@@ -20,7 +20,7 @@ segments avoid the obstacles. Mathlib's `isPathConnected_compl_of_one_lt_codim` 
 a single linear subspace and the whole space.
 
 The resulting neighborhood criterion gives arbitrarily small preconnected neighborhoods
-whose intersections with an open subset are nonempty and preconnected, when its complement
+whose intersections with a subset are nonempty and preconnected, when its complement
 is contained in the affine obstacles.
 -/
 
@@ -65,7 +65,7 @@ theorem IsOpen.exists_isPreconnected_inter_of_subset_iUnion (hS : IsOpen S)
     {κ : Type*} [Countable κ]
     (A : κ → AffineSubspace ℝ V)
     (hA : ∀ k, Module.finrank ℝ (A k).direction + 1 < Module.finrank ℝ V)
-    {O U : Opens S} (hsing : ∀ x ∈ U, x ∉ O → ∃ k, (x : V) ∈ A k)
+    {O : Set S} {U : Opens S} (hsing : ∀ x ∈ U, x ∉ O → ∃ k, (x : V) ∈ A k)
     {x : S} (hx : x ∈ U) {W : Set S} (hW : W ∈ 𝓝 x) :
     ∃ N : Opens S, x ∈ N ∧ (N : Set S) ⊆ W ∧
       IsPreconnected (N : Set S) ∧

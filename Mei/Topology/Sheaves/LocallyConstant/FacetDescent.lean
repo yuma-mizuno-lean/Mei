@@ -68,7 +68,7 @@ theorem existsUnique_extension_of_facets (hS : IsOpen S) {κ : Type*} [Countable
       · exact ⟨G, s, hxG, rfl⟩
       · exact hfacet x hx hxG
   have hbij := F.map_bijective_of_isPreconnected_inter hOU fun x hx W hW =>
-    hS.exists_isPreconnected_inter_of_subset_iUnion A hA hsing hx hW
+    hS.exists_isPreconnected_inter_of_subset_iUnion A hA (O := (O : Set S)) hsing hx hW
   obtain ⟨u, rfl⟩ := hbij.surjective u'
   refine ⟨u, (restrict_restrict (CC := fun T => T) (F := F.presheaf) hGO hOU u).symm.trans hu',
     fun u₁ hu₁ => ?_⟩
