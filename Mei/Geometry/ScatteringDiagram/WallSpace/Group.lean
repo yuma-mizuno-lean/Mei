@@ -176,6 +176,19 @@ theorem wallGroup_eq_bot_of_raySubmodule_eq_bot (w : SupportedRay d) (m : Λ →
   exact ((map_zero (d.degreeIdeal ℒ k).mkQ).symm.trans heq).symm.trans
     (BCHGroup.log_one (L := d.truncatedLie ℒ k)).symm
 
+/-- A nonidentity wall label requires a nonzero homogeneous wall space at some
+actual allowed degree on its supported ray. -/
+theorem exists_mem_wall_ne_zero_of_mem_wallGroup {w : SupportedRay d} {m : Λ →+ ℤ}
+    {g : d.completedBCHGroup ℒ} (hg : g ∈ H.wallGroup w m) (hne : g ≠ 1) :
+    ∃ n ∈ w.rayDegrees, ∃ x ∈ H.wall n m, x ≠ 0 := by
+  by_contra! hzero
+  have hr : H.raySubmodule w m = ⊥ := by
+    rw [raySubmodule_def]
+    refine iSup_eq_bot.mpr fun n => eq_bot_iff.mpr fun x hx => ?_
+    exact (Submodule.mem_bot R).mpr (hzero n n.property x hx)
+  rw [H.wallGroup_eq_bot_of_raySubmodule_eq_bot w m hr, Subgroup.mem_bot] at hg
+  exact hne hg
+
 /-- Only the identity completed label has zero normal. -/
 @[simp]
 theorem wallGroup_zero (w : SupportedRay d) : H.wallGroup w 0 = ⊥ :=

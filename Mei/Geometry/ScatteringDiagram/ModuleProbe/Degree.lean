@@ -219,4 +219,43 @@ theorem chargeOne_mem_moduleRay (q : Γ) (hq : q - p ∈ d.monoid) (x : Γ) :
   · rintro rfl
     exact ⟨by simpa using hq, 1, by omega, by simp, rfl⟩
 
+/-- A supported ray meeting charge zero is the lift of an original supported ray.
+The original primitive generator need not itself belong to the positive monoid. -/
+theorem exists_baseRay_eq_of_mem_rayDegrees (w : SupportedRay (positiveDegrees d p))
+    {n : Γ} (hn : (n, 0, 0) ∈ w.rayDegrees) :
+    ∃ v : SupportedRay d, w = baseRay d p v := by
+  obtain ⟨hn, a, ha, he⟩ := SupportedRay.mem_rayDegrees.mp hn
+  have hc : w.generator.2.1 = 0 := by
+    have := congrArg (fun b : Γ × ℤ × ℤ => b.2.1) he
+    simpa [ha.ne'] using this
+  have hl : w.generator.2.2 = 0 := by
+    have := congrArg (fun b : Γ × ℤ × ℤ => b.2.2) he
+    simpa [ha.ne'] using this
+  have hw : w.generator = (w.generator.1, 0, 0) := by
+    exact Prod.ext rfl (Prod.ext hc hl)
+  have hp : TauCeti.IsPrimitive w.generator.1 := by
+    obtain ⟨f, hf⟩ := TauCeti.isPrimitive_def.mp w.isPrimitive
+    refine TauCeti.isPrimitive_def.mpr ⟨f.comp (LinearMap.inl ℤ Γ (ℤ × ℤ)), ?_⟩
+    rw [hw] at hf
+    exact hf
+  have hm : a • w.generator.1 ∈ d.monoid := by
+    have hn' : n ∈ d.monoid := by simpa using hn
+    have he' : n = a • w.generator.1 := congrArg Prod.fst he
+    rwa [← he']
+  exact ⟨⟨w.generator.1, hp, a, ha, hm⟩, SupportedRay.ext hw⟩
+
+/-- A ray meeting charge one is the module ray of that very degree: positive
+integer multiplication cannot create charge one from a different generator. -/
+theorem eq_moduleRay_of_mem_rayDegrees (w : SupportedRay (positiveDegrees d p))
+    {q : Γ} (hq : q - p ∈ d.monoid) (hn : (q, 1, 0) ∈ w.rayDegrees) :
+    w = moduleRay d p q hq := by
+  obtain ⟨_, a, ha, he⟩ := SupportedRay.mem_rayDegrees.mp hn
+  have hc : (1 : ℤ) = a * w.generator.2.1 := by
+    simpa using congrArg (fun b : Γ × ℤ × ℤ => b.2.1) he
+  have ha1 : a = 1 := by
+    have := Int.le_of_dvd (by norm_num : (0 : ℤ) < 1) ⟨w.generator.2.1, hc⟩
+    omega
+  apply SupportedRay.ext
+  simpa only [ha1, one_smul, moduleRay_generator] using he.symm
+
 end Mei.ModuleProbe
