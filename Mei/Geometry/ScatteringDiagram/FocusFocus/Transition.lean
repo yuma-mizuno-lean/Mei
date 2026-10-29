@@ -100,12 +100,22 @@ private theorem upperOverlap_exponentOverlapEquiv_single (q : exponentMonoid) (r
   have hl : leftOrder (upperMonoid q) = leftOrder q := by simp
   have hr : rightOrder (upperMonoid q) = rightOrder q := by simp
   simp only [exponentEquiv_apply] at hb
+  have hcoeff : (single q.val.2.1 r : R[T;T⁻¹]) *
+        _root_.LaurentPolynomial.T 1 ^ rightOrder q *
+        _root_.LaurentPolynomial.T (-1) ^ leftOrder q =
+      single (upperMonoid q).val.2.1 r := by
+    simp only [hb, _root_.LaurentPolynomial.single_eq_C_mul_T,
+      _root_.LaurentPolynomial.T_pow, mul_one, mul_neg_one,
+      _root_.LaurentPolynomial.T_sub, _root_.LaurentPolynomial.T_add]
+    ring
   simp only [exponentOverlapEquiv_single, map_mul, map_pow, AlgEquiv.commutes,
-    upperOverlap_mk_coord_zero, upperOverlap_mk_coord_one, hl, hr, hb, mul_pow]
-  simp only [← map_pow, _root_.LaurentPolynomial.single_eq_C_mul_T,
-    _root_.LaurentPolynomial.T_pow, mul_one, mul_neg_one]
-  rw [_root_.LaurentPolynomial.T_sub, _root_.LaurentPolynomial.T_add]
-  simp only [map_mul]
+    upperOverlap_mk_coord_zero, upperOverlap_mk_coord_one, hl, hr, mul_pow]
+  convert congrArg
+    (fun c => algebraMap R[T;T⁻¹] (Overlap (_root_.LaurentPolynomial.C t) k) c *
+      Ideal.Quotient.mk _ (coord (_root_.LaurentPolynomial.C t) 0) ^ rightOrder q *
+      Ideal.Quotient.mk _ (coord (_root_.LaurentPolynomial.C t) 1) ^ leftOrder q) hcoeff
+    using 1
+  simp only [map_mul, map_pow]
   ring
 
 /-- The exponent shear specializes to the upper overlap transition on every
