@@ -106,29 +106,20 @@ private theorem overlapMap_algebraMap (r : R) :
       algebraMap R' (Overlap t' k') (algebraMap R R' r) := by
   rw [AlgHom.commutes, IsScalarTower.algebraMap_apply R R']
 
-include hf in
-private theorem powers_le_comap_overlapMap :
-    Submonoid.powers (algebraMap R (Overlap t k) f) ≤
-      (Submonoid.powers (algebraMap R' (Overlap t' k') f')).comap (overlapMap t ht hk) := by
-  rintro _ ⟨n, rfl⟩
-  exact ⟨n, by rw [map_pow, overlapMap_algebraMap, hf]⟩
-
 /-- Coefficient change and truncation of the overlap with `f` inverted. -/
-def localizedOverlapMap : LocalizedOverlap t f k →ₐ[R] LocalizedOverlap t' f' k' where
-  __ := IsLocalization.map (LocalizedOverlap t' f' k') (overlapMap t ht hk).toRingHom
-    (powers_le_comap_overlapMap t f ht hf hk)
-  commutes' r := by
-    rw [IsScalarTower.algebraMap_apply R (Overlap t k) (LocalizedOverlap t f k) r,
-      IsScalarTower.algebraMap_apply R (Overlap t' k') (LocalizedOverlap t' f' k') r,
-      ← AlgHom.commutes (overlapMap t ht hk)]
-    exact IsLocalization.map_eq _ _
+def localizedOverlapMap : LocalizedOverlap t f k →ₐ[R] LocalizedOverlap t' f' k' := by
+  haveI : IsLocalization.Away (overlapMap t ht hk (algebraMap R (Overlap t k) f))
+      (LocalizedOverlap t' f' k') := by
+    rw [overlapMap_algebraMap, hf]
+    infer_instance
+  exact IsLocalization.Away.mapₐ _ _ (overlapMap t ht hk) (algebraMap R (Overlap t k) f)
 
 /-- The localized overlap map extends the overlap map. -/
 @[simp]
 theorem localizedOverlapMap_algebraMap (z : Overlap t k) :
     localizedOverlapMap t f ht hf hk (algebraMap _ _ z) =
-      algebraMap _ (LocalizedOverlap t' f' k') (overlapMap t ht hk z) :=
-  IsLocalization.map_eq (S := LocalizedOverlap t f k) (powers_le_comap_overlapMap t f ht hf hk) z
+      algebraMap _ (LocalizedOverlap t' f' k') (overlapMap t ht hk z) := by
+  simp [localizedOverlapMap, IsLocalization.Away.mapₐ, IsLocalization.Away.map]
 
 /-- The localized overlap map sends `f⁻¹` to `f'⁻¹`. -/
 @[simp]
@@ -140,9 +131,7 @@ theorem localizedOverlapMap_invSelf :
   rw [map_mul, map_one, localizedOverlapMap_algebraMap, overlapMap_algebraMap, hf] at h₁
   have h₂ := IsLocalization.Away.mul_invSelf (S := LocalizedOverlap t' f' k')
     (algebraMap R' (Overlap t' k') f')
-  linear_combination IsLocalization.Away.invSelf (algebraMap R' (Overlap t' k') f') * h₁ -
-    localizedOverlapMap t f ht hf hk
-      (IsLocalization.Away.invSelf (algebraMap R (Overlap t k) f)) * h₂
+  exact inv_unique h₁ h₂
 
 /-- Coefficient change and truncation commute with the left gluing map. -/
 theorem localizedOverlapMap_leftGluing (z : LeftChamber t k) :
