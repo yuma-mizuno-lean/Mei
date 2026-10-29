@@ -33,7 +33,7 @@ completed_dir = "Completed"
 # Switch back to TauCetiProject/TauCetiTools once upstream carries the same fix.
 [tools.tools]
 repo = "yuma-mizuno-lean/TauCetiTools"
-ref = "7405c6bc681341dc54c775bc6f5e6de533120ba1"
+ref = "d9f2698a0a84029dec85f99a8718847c4c0e0eaf"
 [tools.review]
 repo = "TauCetiProject/TauCetiReview"
 ref = "3999677031829254b4cbb27e9156c33672c61d0d"
@@ -61,6 +61,8 @@ upstream_destination = false
 [[upstreams]]
 repo = "TauCetiProject/TauCeti"
 package = "TauCeti"
+cache_artifact_url = "https://cache.taucetiproject.org/artifacts"
+cache_revision_url = "https://cache.taucetiproject.org/revisions"
 branch = "main"
 update = true
 overlap = false
@@ -90,10 +92,10 @@ deployment = "docker" # docker | cloudflare
 # image = "ghcr.io/taucetiproject/bors-ng@sha256:SELECT_RELEASE_DIGEST"
 
 [services.cache]
-mode = "off"
-# name = "mei-public"
-# artifact_url = "https://cache.example.org/artifacts"
-# revision_url = "https://cache.example.org/revisions"
+mode = "custom"
+name = "mei-public"
+artifact_url = "https://mei-cache-reader.ymizuno-lean-cache.workers.dev/artifacts"
+revision_url = "https://mei-cache-reader.ymizuno-lean-cache.workers.dev/revisions"
 # artifact_write_url = "https://ACCOUNT_ID.r2.cloudflarestorage.com/PROJECT-cache/artifacts"
 # revision_write_url = "https://ACCOUNT_ID.r2.cloudflarestorage.com/PROJECT-cache/revisions"
 
