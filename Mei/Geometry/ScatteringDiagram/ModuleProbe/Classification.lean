@@ -15,8 +15,9 @@ Every nonidentity wall label of a module probe has either a lifted base ray and
 base normal, or an allowed charge-one ray and a nonzero multiple of the probe
 normal. In the latter case the label is the exponential of a unique homogeneous
 shifted coefficient. Its first visible cutoff is the relative degree plus one,
-and its base projection is trivial. These results apply to arbitrary walls of a
-probe completion, without a pure-logarithm hypothesis on its construction.
+and its base projection is trivial. In the former case forgetting the module
+summand fixes the label. These results apply to arbitrary walls of a probe
+completion, without a pure-logarithm hypothesis on its construction.
 
 The classification uses `ModuleProbe.wallGroup_cases_of_ne_one`.
 Coefficient extraction uses
@@ -147,5 +148,20 @@ theorem completedBaseProjection_label_eq_one_of_normal_notMem_range
   · rw [label_eq_expToCompletion_wallCoefficient d ℳ p ℒ H h h' W q hq hw,
       completedBaseProjection_expToCompletion]
     simp [moduleInclusion]
+
+omit [LieAlgebra ℚ L] [IsScalarTower ℚ R L] in
+/-- Forgetting the module summand fixes every wall label whose normal is a lifted
+base normal. Such a label is the charge-zero inclusion of its base projection. -/
+theorem completedMap_chargeZeroGradedLieHom_label_of_normal_mem_range
+    (hm : W.normal ∈ Set.range (baseNormal (Λ := Λ))) :
+    (chargeZeroGradedLieHom d ℳ p ℒ).completedMap W.label = W.label := by
+  by_cases he : W.label = 1
+  · rw [he, map_one]
+  rcases wallGroup_cases_of_ne_one d ℳ p ℒ H W.label_mem he with
+    ⟨v, m, hw, _⟩ | ⟨q, hq, c, hc, _, hm'⟩
+  · exact completedMap_chargeZeroGradedLieHom_of_mem_completedRaySubgroup d ℳ p ℒ v
+      (hw ▸ (wallSpaces d ℳ p ℒ H).wallGroup_le_completedRaySubgroup W.ray W.normal W.label_mem)
+  · obtain ⟨m, hm⟩ := hm
+    exact (hc ((baseNormal_eq_smul_probeNormal_iff m c).mp (hm.trans hm')).2).elim
 
 end Mei.ModuleProbe

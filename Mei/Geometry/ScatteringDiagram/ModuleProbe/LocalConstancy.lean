@@ -17,6 +17,7 @@ therefore tangent to every incident wall. Near the point they preserve regularit
 vertical transversality and the extracted coefficient. In particular the vertical
 coefficient is locally constant on the vertically transverse regular locus in
 each fixed auxiliary-coordinate slice. Consistency is not needed for these local statements.
+The real probe normal is the probe coordinate of the auxiliary factor.
 
 We use the normal classification of `ModuleProbe.wallGroup_cases_of_ne_one`,
 the local combined-label theorem and `ModuleProbe.verticalCoefficient`.
@@ -83,6 +84,17 @@ theorem eventually_verticalCoefficient_add_eq (k : ℕ) (θ : V × E)
   refine ⟨hη, fun a ha => hv a ((hmem a).mp ha), ?_⟩
   simp only [verticalCoefficient_def, he]
 
+omit [AddCommGroup M] [Module R M] [AddCommGroup Γ] [DecidableEq Γ] in
+/-- The real probe normal reads the probe coordinate of the auxiliary factor; in
+particular it vanishes on the base factor and on the height direction. -/
+theorem realCharacter_probeNormal :
+    (h.prod h').realCharacter (probeNormal (Λ := Λ)) =
+      (h'.realCharacter (AddMonoidHom.snd ℤ ℤ)).comp (LinearMap.snd ℝ V E) := by
+  symm
+  apply (h.prod h').eq_realCharacter
+  rintro ⟨a, b, c⟩
+  simp
+
 /-- On each fixed auxiliary-coordinate slice, the vertical coefficient is locally
 constant on the vertically transverse regular locus. This includes regular points
 off the module walls, whose coefficient is zero. -/
@@ -94,14 +106,8 @@ theorem isLocallyConstant_verticalCoefficient (k : ℕ) (η : E) :
       verticalCoefficient d ℳ p ℒ H h h' D k (Q.val, η) Q.property.1) := by
   apply (IsLocallyConstant.iff_eventually_eq _).mpr
   intro Q
-  have hnormal : (h.prod h').realCharacter (probeNormal (Λ := Λ)) =
-      (h'.realCharacter (AddMonoidHom.snd ℤ ℤ)).comp (LinearMap.snd ℝ V E) := by
-    symm
-    apply (h.prod h').eq_realCharacter
-    rintro ⟨a, b, c⟩
-    simp
   let displacement (x : V) : S := ⟨(x - Q.val, 0), by
-    simp [LinearMap.mem_ker, hnormal]⟩
+    simp [LinearMap.mem_ker, realCharacter_probeNormal h h']⟩
   have hd : Continuous displacement := by
     fun_prop
   have hd0 : displacement Q.val = 0 := Subtype.ext (by simp [displacement])

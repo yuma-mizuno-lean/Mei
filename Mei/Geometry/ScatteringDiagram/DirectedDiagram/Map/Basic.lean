@@ -19,7 +19,9 @@ label. Transport along an original admissible path maps to transport along the
 same path after forgetting the killed walls. Consistency is preserved for all
 paths of the resulting diagram, including those through supports that disappear.
 Endpoint transport in a consistent diagram commutes with the coefficient map,
-both at finite order and in the completed group.
+both at finite order and in the completed group. A coefficient endomorphism fixes
+the product of a path in a convex region if it fixes the labels of the walls
+meeting that region.
 
 The transport calculation combines `GradedLieHom.completedMap` with
 `Quiver.Path.map_wallPathProduct` and `Quiver.Path.wallPathProduct_restrict`,
@@ -180,6 +182,41 @@ theorem levelPathProduct_mapPathPrefunctor (k : ℕ)
       rfl
     _ = _ := congrArg F (D.levelPathProduct_eq_wallPathProduct k p
       (D.activeLabels_commute k)).symm
+
+/-- A coefficient endomorphism fixes the finite-order product of a path whose vertices
+lie in a convex region, provided it fixes the label of every active wall meeting that
+region. Walls missing the region may have arbitrary labels. -/
+theorem bchGroupMap_levelPathProduct_eq_self (φ : GradedLieHom (PositiveDegreeMap.id d) ℒ ℒ)
+    (k : ℕ) {U : Set V} (hU : Convex ℝ U)
+    {x y : WallComplement (fun j : D.active k => (D.wall j).support)}
+    (p : AdmissiblePLPath x y) (hp : ∀ z ∈ p.vertices, z.val ∈ U)
+    (hφ : ∀ j : D.active k, (U ∩ (D.wall j).support).Nonempty →
+      φ.completedMap (D.wall j).label = (D.wall j).label) :
+    (φ.truncatedMap (a := k) k (by simp)).bchGroupMap (D.levelPathProduct k p) =
+      D.levelPathProduct k p := by
+  let F := (φ.truncatedMap (a := k) k (by simp)).bchGroupMap
+  let ν := fun j : D.active k => h.realCharacter (D.wall j).normal
+  -- Read the tower projections as elements of the concrete finite BCH group.
+  let c : D.active k → d.truncatedGroup ℒ k := fun j => CompletedGroup.projection k (D.wall j).label
+  let l := (p.signedCrossingEvents ν).reverse.flatMap Finset.toList
+  have hl : l.map (fun a => F (c a.1) ^ a.2) = l.map (fun a => c a.1 ^ a.2) := by
+    apply List.map_congr_left
+    intro a ha
+    obtain ⟨S, hS, haS⟩ := List.mem_flatMap.mp ha
+    have hne := p.inter_nonempty_of_mem_signedCrossingEvents _ hU hp (List.mem_reverse.mp hS)
+      (Finset.mem_toList.mp haS)
+    have hc : F (c a.1) = c a.1 := by
+      simp only [F, c]
+      rw [← φ.projection_completedMap_of_le k (a := k) (by simp), hφ a.1 hne]
+    rw [hc]
+  have hm : F (p.wallPathProduct ν c (D.activeLabels_commute k)) =
+      p.wallPathProduct ν (fun j => F (c j))
+        (fun a b hab => (D.activeLabels_commute k a b hab).map F) :=
+    p.map_wallPathProduct ν c (D.activeLabels_commute k) F
+  rw [Quiver.Path.wallPathProduct_eq_prod_flatMap, hl,
+    ← Quiver.Path.wallPathProduct_eq_prod_flatMap ν c (D.activeLabels_commute k)] at hm
+  exact (congrArg F (D.levelPathProduct_eq_wallPathProduct k p _)).trans
+    (hm.trans (D.levelPathProduct_eq_wallPathProduct k p _).symm)
 
 /-- Forget coefficient-killed walls along a common all-order path, retaining its
 ambient vertices and segments. -/

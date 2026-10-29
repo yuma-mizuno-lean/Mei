@@ -7,6 +7,7 @@ module
 
 public import Mei.Geometry.ScatteringDiagram.ModuleProbe.Completion
 public import Mei.Algebra.Group.Hom.Conjugation
+public import Mei.Algebra.Lie.BCH.Ray.Map
 
 /-!
 # Recovering base labels from module probes
@@ -19,7 +20,8 @@ precisely of completed coefficient labels. Thus forgetting the probe coefficient
 retains the base label without requiring a faithful coefficient action.
 The kernel equivalence extracts coefficients, with their finite logarithmic
 projections. Conjugation by any probe label acts on coefficients through its
-base projection, both at finite order and after completion.
+base projection, both at finite order and after completion. Forgetting the module
+summand fixes every completed label on a lifted base ray.
 
 We use Mathlib's `LieAlgebra.SemiDirectSum.projr`, the degree-ideal splitting in
 `ModuleProbe.mem_degreeIdeal_succ`, and the finite and completed coefficient
@@ -113,6 +115,26 @@ theorem moduleQuotientInclusion_projection_of_base_eq_zero (k : ℕ)
     rw [he]
     exact (d.degreeIdeal ℒ (k + 1)).neg_mem hr
   · simp [moduleInclusion]
+
+/-- At every finite order the degree-preserving projection is the existing base
+projection followed by the charge-zero inclusion. -/
+theorem truncatedMap_chargeZeroGradedLieHom (k : ℕ) :
+    (chargeZeroGradedLieHom d ℳ p ℒ).truncatedMap (a := k) k (by simp) =
+      ((baseGradedLieHom d ℳ p ℒ).truncatedMap (a := k) k (by simp)).comp
+        (baseQuotientProjection d ℳ p ℒ k) := by
+  have hcomp : (chargeZeroGradedLieHom d ℳ p ℒ).toLieHom =
+      ((baseGradedLieHom d ℳ p ℒ).toLieHom).comp (LieAlgebra.SemiDirectSum.projr _) := by
+    apply LieHom.ext
+    intro x
+    exact (chargeZeroGradedLieHom_apply d ℳ p ℒ x).trans
+      (baseGradedLieHom_apply d ℳ p ℒ x.right).symm
+  rw [GradedLieHom.truncatedMap_def, GradedLieHom.truncatedMap_def,
+    baseQuotientProjection]
+  simp only [hcomp]
+  exact LieIdeal.mapQ_comp
+    ((positiveDegrees d p).degreeIdeal (grading d ℳ p ℒ) k) (d.degreeIdeal ℒ k)
+    ((positiveDegrees d p).degreeIdeal (grading d ℳ p ℒ) k) (LieAlgebra.SemiDirectSum.projr _)
+    (baseGradedLieHom d ℳ p ℒ).toLieHom _ _ _
 
 variable [Algebra ℚ R] [LieAlgebra ℚ L] [IsScalarTower ℚ R L]
 
@@ -230,25 +252,25 @@ theorem completedMap_chargeZeroGradedLieHom
   intro k
   rw [GradedLieHom.projection_completedMap_of_le _ k (a := k) (by simp),
     GradedLieHom.projection_completedMap_of_le _ k (a := k) (by simp),
-    projection_completedBaseProjection]
-  have he : (chargeZeroGradedLieHom d ℳ p ℒ).truncatedMap (a := k) k (by simp) =
-      ((baseGradedLieHom d ℳ p ℒ).truncatedMap (a := k) k (by simp)).comp
-        (baseQuotientProjection d ℳ p ℒ k) := by
-    have hcomp : (chargeZeroGradedLieHom d ℳ p ℒ).toLieHom =
-        ((baseGradedLieHom d ℳ p ℒ).toLieHom).comp (LieAlgebra.SemiDirectSum.projr _) := by
-      apply LieHom.ext
-      intro x
-      exact (chargeZeroGradedLieHom_apply d ℳ p ℒ x).trans
-        (baseGradedLieHom_apply d ℳ p ℒ x.right).symm
-    rw [GradedLieHom.truncatedMap_def, GradedLieHom.truncatedMap_def,
-      baseQuotientProjection]
-    simp only [hcomp]
-    exact LieIdeal.mapQ_comp
-      ((positiveDegrees d p).degreeIdeal (grading d ℳ p ℒ) k) (d.degreeIdeal ℒ k)
-      ((positiveDegrees d p).degreeIdeal (grading d ℳ p ℒ) k) (LieAlgebra.SemiDirectSum.projr _)
-      (baseGradedLieHom d ℳ p ℒ).toLieHom _ _ _
-  rw [he, LieHom.bchGroupMap_comp]
+    projection_completedBaseProjection, truncatedMap_chargeZeroGradedLieHom,
+    LieHom.bchGroupMap_comp]
   exact MonoidHom.comp_apply _ _ _
+
+omit [LieAlgebra ℚ L] [IsScalarTower ℚ R L] in
+/-- Forgetting the module summand fixes every completed label on a lifted base ray,
+so such a label is the charge-zero inclusion of its base projection. -/
+theorem completedMap_chargeZeroGradedLieHom_of_mem_completedRaySubgroup (w : SupportedRay d)
+    {g : (positiveDegrees d p).completedBCHGroup (grading d ℳ p ℒ)}
+    (hg : g ∈ (positiveDegrees d p).completedRaySubgroup (grading d ℳ p ℒ) (baseRay d p w)) :
+    (chargeZeroGradedLieHom d ℳ p ℒ).completedMap g = g := by
+  apply GradedLieHom.completedMap_eq_self_of_mem_completedRaySubgroup _ _ hg
+  rintro ⟨n, c, l⟩ hn x hx
+  obtain ⟨-, rfl, rfl⟩ := (mem_baseRay_rayDegrees d p w n c l).mp hn
+  obtain ⟨hl, -⟩ := (mem_grading_base d ℳ p ℒ n x).mp hx
+  rw [chargeZeroGradedLieHom_apply]
+  ext
+  · simp [hl]
+  · simp
 
 /-- The completed charge-zero inclusion loses no base labels. -/
 theorem completedMap_base_injective :

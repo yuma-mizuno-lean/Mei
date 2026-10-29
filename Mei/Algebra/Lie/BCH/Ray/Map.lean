@@ -21,6 +21,8 @@ Restricting the existing completed homomorphism gives a homomorphism between ray
 subgroups, respecting identity and composition. In particular these results apply
 directly to the graded maps of tropical pairings and to changes of positive degree.
 No abelian-ray condition or injectivity of the degree or Lie map is required.
+A degree-preserving endomorphism fixing the homogeneous pieces on a ray fixes every
+completed label of that ray.
 
 The finite support argument uses `Mei.GradedLieHom.map_mem_rayLieSubalgebra` and
 `Mei.PositiveDegrees.map_rayLieSubalgebra_mkQ`. Completion uses
@@ -116,5 +118,29 @@ theorem completedMap_mem_completedRaySubgroup_map [Module.Free ℤ M]
   f.completedMap_mem_completedRaySubgroup
     (fun _ hn => w.map_mem_rayDegrees T.toAddMonoidHom
       (fun _ hn => T.map_mem hn) (fun _ hn h0 => T.map_ne_zero hn h0) hn) hg
+
+/-- A degree-preserving graded endomorphism fixing every homogeneous piece on a ray
+pointwise fixes every completed label of that ray. -/
+theorem completedMap_eq_self_of_mem_completedRaySubgroup
+    (f : GradedLieHom (PositiveDegreeMap.id d) ℒ ℒ)
+    (hf : ∀ n ∈ w.rayDegrees, ∀ x ∈ ℒ n, f x = x)
+    {g : d.completedBCHGroup ℒ} (hg : g ∈ d.completedRaySubgroup ℒ w) :
+    f.completedMap g = g := by
+  apply CompletedGroup.ext
+  intro k
+  rw [f.projection_completedMap_of_le k (a := k) (by simp)]
+  -- Read the tower projection as an element of the concrete finite BCH group.
+  let y : d.truncatedGroup ℒ k := CompletedGroup.projection k g
+  apply BCHGroup.log_injective
+  refine ((f.truncatedMap (a := k) k (by simp)).log_bchGroupMap y).trans ?_
+  have hle : (rayLieSubalgebra (d.truncatedGrading ℒ k) w).toSubmodule ≤
+      LinearMap.eqLocus (f.truncatedMap (a := k) k (by simp)).toLinearMap LinearMap.id := by
+    rw [rayLieSubalgebra_toSubmodule]
+    refine iSup_le fun n => ?_
+    rw [d.truncatedGrading_eq]
+    rintro _ ⟨x, hx, rfl⟩
+    rw [LinearMap.mem_eqLocus, LieHom.coe_toLinearMap, LinearMap.id_apply,
+      Submodule.mkQ_apply, f.truncatedMap_mk, hf n n.property x hx]
+  exact LinearMap.mem_eqLocus.mp (hle ((d.mem_completedRaySubgroup ℒ w g).mp hg k))
 
 end Mei.GradedLieHom
