@@ -1,6 +1,6 @@
 name: publish-lake-cache
 
-# Secret-isolated Lake cache publisher shared by main CI and merge-group CI. The caller may
+# Secret-isolated Lake cache publisher used only by main CI. The caller may
 # execute arbitrary Lean code while producing the staging artifact, so this workflow treats the
 # entire artifact and every reported value as hostile. Only the toolchain pin comes from the
 # immutable revision being published. Planning and confirmation helpers execute without keys.
