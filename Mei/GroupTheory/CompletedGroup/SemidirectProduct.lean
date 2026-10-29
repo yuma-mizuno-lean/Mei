@@ -11,9 +11,10 @@ public import Mathlib.GroupTheory.SemidirectProduct
 /-!
 # Completing semidirect products with a fixed acting group
 
-Suppose a group `H` acts on each group of a tower, compatibly with its transitions.
-The action extends to the completed group. Forming the semidirect product with `H`
-commutes with completion, provided the transitions leave the `H` coordinate fixed.
+Suppose a monoid `H` acts by automorphisms on each group of a tower, compatibly with
+its transitions. The action extends to the completed group. When `H` is a group,
+forming the semidirect product with `H` commutes with completion, provided the
+transitions leave the `H` coordinate fixed.
 The comparison and its inverse are characterized by their finite projections.
 Thus a compatible family of elements of `Gₖ ⋊ H` has a single, constant `H`-coordinate.
 
@@ -30,7 +31,11 @@ universe u v
 
 namespace Mei.CompletedGroup
 
-variable {F : ℕᵒᵖ ⥤ GrpCat.{u}} {H : Type v} [Group H]
+variable {F : ℕᵒᵖ ⥤ GrpCat.{u}} {H : Type v}
+
+section Action
+
+variable [Monoid H]
   (φ : ∀ j, H →* MulAut (F.obj j))
   (hφ : ∀ {j l} (f : j ⟶ l) (h : H) (x : F.obj j),
     F.map f (φ j h x) = φ l h (F.map f x))
@@ -59,6 +64,13 @@ def action : H →* MulAut (completedGroup F) where
 theorem projection_action (h : H) (x : completedGroup F) (k : ℕ) :
     projection k (action φ hφ h x) = φ (op k) h (projection k x) := by
   exact projection_congr _ k x
+
+end Action
+
+variable [Group H]
+  (φ : ∀ j, H →* MulAut (F.obj j))
+  (hφ : ∀ {j l} (f : j ⟶ l) (h : H) (x : F.obj j),
+    F.map f (φ j h x) = φ l h (F.map f x))
 
 /-- The tower of semidirect products, with transitions fixing the acting group. -/
 abbrev semidirectTower : ℕᵒᵖ ⥤ GrpCat.{max u v} where
