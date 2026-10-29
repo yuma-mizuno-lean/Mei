@@ -1,12 +1,19 @@
 # Mei public Lake cache reader
 
-Status: local implementation and mocked R2 tests pass. User reports dashboard
-deployment and CACHE binding completed; deployment has not been independently
-verified. **Not enabled** (ENABLED remains unset).
-The guarded publisher is implemented in `scripts/mei_r2_publish.py` and wired
-into the reusable publication workflow. Its local failure-path tests pass.
-Real R2 initialization, credential setup and end-to-end deployment verification
-remain required. Keep `MEI_R2_GUARDS_READY` unset until those are complete.
+Status: the reader is deployed and enabled. R2 initialization and real
+TauCetiTools publication-plan validation succeeded. Publication remains paused
+until existing objects are accounted for and the main-only writer is deployed.
+Do not claim completed end-to-end rollout until a real Lake restore succeeds.
+
+## One writer, shared readers
+
+Main CI is the only R2 writer and uses the guarded local publisher. PR and
+merge-group CI read the same public Lake cache but receive no upload key.
+Keep `LAKE_CACHE_ARTIFACT_ENDPOINT` and `LAKE_CACHE_REVISION_ENDPOINT` unset:
+those legacy variables enable the shared Tools publisher, which does not use
+Mei's budget guard. Main derives its write URLs from `MEI_R2_BUCKET_ENDPOINT`.
+Queue acceptance requires the normal build and audits; publication follows
+merge. A miss falls back to building normally.
 
 ## What is implemented
 
@@ -63,7 +70,7 @@ behavior, or a complete `lake cache get` execution.
   10,000 direct Class B cap is not implemented; do not claim a total bill cap.
 - Conditional R2 writes serialize reservations; a persistent active reservation
   blocks other writers even after a crash or a date change. GitHub concurrency
-  also serializes main and merge-group publication. Unknown outcomes fail closed.
+  also serializes main publication and explicit budget administration. Unknown outcomes fail closed.
 - The workflow-pinned guard executes with credentials; candidate payloads remain
   inert. All artifacts finish before the full revision map is published.
 - Automatic reclamation is not implemented. At capacity or after an interrupted
@@ -77,8 +84,6 @@ behavior, or a complete `lake cache get` execution.
 Repository variables (only activate after verification):
 
 - `MEI_R2_BUCKET_ENDPOINT`: `https://<account-id>.r2.cloudflarestorage.com/mei-cache`
-- `LAKE_CACHE_ARTIFACT_ENDPOINT`: bucket endpoint plus `/artifacts`
-- `LAKE_CACHE_REVISION_ENDPOINT`: bucket endpoint plus `/revisions`
 - `LAKE_CACHE_ARTIFACT_ENDPOINT_PUBLIC`: reader URL plus `/artifacts`
 - `LAKE_CACHE_REVISION_ENDPOINT_PUBLIC`: reader URL plus `/revisions`
 - `MEI_R2_GUARDS_READY`: `1`, after initialization and checks only
@@ -120,3 +125,15 @@ With one R2 read per public request, Workers Free admits at most 3.1 million
 such reads in a 31-day month. This bound depends on the Free account plan and
 the absence of bypass paths. It does not bound storage, writes, other consumers,
 administrator changes or leaked credentials, and is not a contractual bill cap.
+
+## Accounting for pre-existing objects
+
+After stopping all external writers and confirming no in-flight uploads remain,
+run the budget administration workflow with `operation=adopt-existing` and
+`confirmation=mei-cache`. It locks the current budget, rejects multipart uploads,
+checks up to 20 pages of objects, and adds their full size to existing reserved
+bytes without refunds. This deliberately double-counts already reserved objects.
+It never deletes payloads or clears a previously interrupted lock. Failure leaves
+its own reservation locked for inspection. Only after confirmed success may
+`MEI_R2_GUARDS_READY=1` re-enable main publication. Past unguarded operations are
+not retroactively covered by the new operation budget.

@@ -271,8 +271,80 @@ def publish(client, objects, today=None):
         raise Stop('completion uncertain; reservation retained; inspection required')
 
 
+def adopt_existing(client):
+    """Conservatively add existing bucket bytes to the budget; never refund.
+
+    Administrative operation only: stop every external writer first. Refuse
+    active reservations and pending multipart uploads. Reserve 23 operations
+    (two state PUTs, one multipart listing, at most twenty object pages), lock
+    with If-Match, then add the inventory bytes to the existing reservation.
+    Double counting is intentional. Any uncertain or incomplete inventory
+    leaves the lock in place. Historical unguarded operations are not covered
+    retroactively. Return None after a confirmed conditional completion PUT.
+    """
+    today = dt.datetime.now(dt.timezone.utc).date().isoformat()
+    code, body, headers = client.request('GET', STATE_KEY)
+    if code != 200 or 'etag' not in headers:
+        raise Stop('budget missing or unreadable')
+    state = reserve(_observed_budget(body, headers), [0] * 21, today, uuid.uuid4().hex)
+    code, _, headers = client.request('PUT', STATE_KEY, json.dumps(state).encode(),
+                                      {'If-Match': headers['etag']})
+    if code != 200 or 'etag' not in headers:
+        raise Stop('inventory reservation failed; no inventory started')
+    etag = headers['etag']
+
+    def listing(query, expected):
+        if dt.datetime.now(dt.timezone.utc).date().isoformat() != today:
+            raise Stop('UTC date changed during inventory; inspection required')
+        code, body, _ = client.request('GET', query=query)
+        if code != 200:
+            raise Stop('inventory listing failed; reservation retained')
+        root = ET.fromstring(body)
+        for element in root.iter():
+            element.tag = element.tag.rsplit('}', 1)[-1]
+        if root.tag != expected:
+            raise Stop('unexpected inventory response')
+        return root
+
+    root = listing({'uploads': '', 'max-uploads': '1'}, 'ListMultipartUploadsResult')
+    if root.findall('Upload') or root.findtext('IsTruncated') != 'false':
+        raise Stop('pending multipart uploads; inspection required')
+    total, token, seen = 0, None, set()
+    for _ in range(20):
+        query = {'list-type': '2', 'max-keys': '1000'}
+        if token:
+            query['continuation-token'] = token
+        root = listing(query, 'ListBucketResult')
+        for obj in root.findall('Contents'):
+            key, size = obj.findtext('Key'), obj.findtext('Size')
+            if not key or key in seen or not size or not size.isdecimal():
+                raise Stop('invalid or duplicate inventory entry')
+            seen.add(key)
+            if key != STATE_KEY:
+                total += int(size)
+            if state['reserved_bytes'] + total > LIMIT:
+                raise Stop('inventory exceeds conservative storage budget')
+        if root.findtext('IsTruncated') == 'false':
+            break
+        if root.findtext('IsTruncated') != 'true':
+            raise Stop('invalid inventory pagination')
+        next_token = root.findtext('NextContinuationToken')
+        if not next_token or next_token == token:
+            raise Stop('missing or repeated inventory continuation token')
+        token = next_token
+    else:
+        raise Stop('inventory page limit reached; reservation retained')
+    if STATE_KEY not in seen:
+        raise Stop('budget absent from inventory; inspection required')
+    state.update(reserved_bytes=state['reserved_bytes'] + total, active=None)
+    code, _, _ = client.request('PUT', STATE_KEY, json.dumps(state).encode(), {'If-Match': etag})
+    if code != 200:
+        raise Stop('inventory completion uncertain; inspection required')
+    print(f'Existing payload bytes added to reservation: {total}')
+
+
 def main():
-    """Run initialize-empty or publish from CLI arguments and environment.
+    """Run explicit budget administration or publish from CLI and environment.
 
     Read MEI_R2_BUCKET_ENDPOINT and LAKE_CACHE_KEY_RAW; publish also requires
     --plan pointing to a trusted frozen plan. Return None and print success
@@ -280,13 +352,15 @@ def main():
     entrypoint, which reports failure and exits with status 2 for handled errors.
     """
     parser = argparse.ArgumentParser()
-    parser.add_argument('command', choices=['initialize-empty', 'publish'])
+    parser.add_argument('command', choices=['initialize-empty', 'adopt-existing', 'publish'])
     parser.add_argument('--plan', type=Path)
     args = parser.parse_args()
     endpoint = os.environ['MEI_R2_BUCKET_ENDPOINT'].rstrip('/')
     objects = load_plan(args.plan, endpoint) if args.command == 'publish' else None
     client = S3(endpoint, os.environ['LAKE_CACHE_KEY_RAW'].strip())
-    if objects is None:
+    if args.command == 'adopt-existing':
+        adopt_existing(client)
+    elif objects is None:
         initialize(client)
     else:
         publish(client, objects)

@@ -103,6 +103,33 @@ abbrev toFunctor (s : GrothendieckSection L) : D ⥤ Grothendieck L where
     · simp only [Grothendieck.comp_fiber, map_comp]
       erw [eqToHom_trans_assoc (C := L.obj _)]
 
+/-- The transport arrow factors through the fiber inclusion in the target category. -/
+theorem toFunctor_map_factor (s : GrothendieckSection L) {d e : D} (f : d ⟶ e) :
+    s.toFunctor.map f =
+      (Grothendieck.ιNatTrans f).app (s.obj d) ≫ (Grothendieck.ι L e).map (s.map f) := by
+  exact (Grothendieck.ιNatTrans_app_comp_ι_map (s.toFunctor.map f)).symm
+
+/-- The total functor determines the objects and transport arrows of its section presentation. -/
+theorem toFunctor_injective :
+    Function.Injective (toFunctor (L := L)) := by
+  intro s t h
+  rcases s with ⟨so, sm, _, _⟩
+  rcases t with ⟨tobj, tm, _, _⟩
+  have ho : so = tobj := by
+    funext d
+    exact eq_of_heq (Grothendieck.mk.inj
+      (_root_.CategoryTheory.Functor.congr_obj h d)).2
+  subst tobj
+  refine GrothendieckSection.ext ?_ ?_
+  · rfl
+  · apply heq_of_eq
+    funext d e f
+    have hf := _root_.CategoryTheory.Functor.congr_hom h f
+    have hm := (by
+      simpa only [eqToHom_refl, Category.id_comp, Category.comp_id] using hf :
+        (⟨f, sm f⟩ : (⟨d, so d⟩ : Grothendieck L) ⟶ ⟨e, so e⟩) = ⟨f, tm f⟩)
+    exact eq_of_heq (Grothendieck.Hom.mk.inj hm).2
+
 /-- The total functor of a section lies over the identity. -/
 @[simp]
 theorem toFunctor_comp_forget (s : GrothendieckSection L) :
@@ -133,6 +160,19 @@ theorem toNatTrans_app {s t : GrothendieckSection L} (α : s ⟶ t) (d : D) :
 /-- Fiberwise transport data give a section of the Grothendieck projection. -/
 abbrev toSection (s : GrothendieckSection L) : CategoryTheory.Grothendieck.Section L :=
   CategoryTheory.Functor.Fiber.mk s.toFunctor_comp_forget
+
+/-- The actual section constructed from transport data has the specified total functor. -/
+@[simp]
+theorem toSection_toFunctor (s : GrothendieckSection L) :
+    s.toSection.toFunctor = s.toFunctor := (rfl)
+
+/-- A transformation between transport sections has identity base components. -/
+@[simp]
+theorem sectionHom_base {s t : GrothendieckSection L} (α : s.toSection ⟶ t.toSection) (d : D) :
+    ((CategoryTheory.Grothendieck.Section.hom α).app d).base = 𝟙 d := by
+  have h := CategoryTheory.Grothendieck.Section.hom_over α
+  erw [eqToHom_refl (C := D ⥤ D), Category.id_comp] at h
+  exact NatTrans.congr_app h d
 
 /-- Fiberwise morphisms give morphisms in the existing category of sections. -/
 def toSectionHom {s t : GrothendieckSection L} (α : s ⟶ t) : s.toSection ⟶ t.toSection :=
@@ -175,6 +215,16 @@ theorem sectionFunctor_obj (s : GrothendieckSection L) :
 @[simp]
 theorem sectionFunctor_map {s t : GrothendieckSection L} (α : s ⟶ t) :
     sectionFunctor.map α = toSectionHom α := (rfl)
+
+instance : (sectionFunctor (L := L)).Faithful where
+  map_injective {s t} α β h := by
+    apply Hom.ext
+    funext d
+    apply (Grothendieck.ι L d).map_injective
+    have hd := congrArg (fun γ => (CategoryTheory.Grothendieck.Section.hom γ).app d) h
+    rw [sectionFunctor_map, sectionFunctor_map, hom_toSectionHom, hom_toSectionHom,
+      toNatTrans_app, toNatTrans_app] at hd
+    exact hd
 
 /-- The total functor factors through the existing section category and its inclusion. -/
 def totalFunctor : GrothendieckSection L ⥤ (D ⥤ Grothendieck L) :=

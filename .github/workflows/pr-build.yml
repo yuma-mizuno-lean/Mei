@@ -25,11 +25,11 @@ permissions:
   actions: read
 jobs:
   validate:
-    uses: yuma-mizuno-lean/TauCetiTools/.github/workflows/pr-build.yml@7405c6bc681341dc54c775bc6f5e6de533120ba1
+    uses: yuma-mizuno-lean/TauCetiTools/.github/workflows/pr-build.yml@d9f2698a0a84029dec85f99a8718847c4c0e0eaf
     with:
       pr: ${{ inputs.pr || '' }}
       tools_repository: yuma-mizuno-lean/TauCetiTools
-      tools_ref: 7405c6bc681341dc54c775bc6f5e6de533120ba1
+      tools_ref: d9f2698a0a84029dec85f99a8718847c4c0e0eaf
       project_ref: ${{ github.workflow_sha }}
       lean_root: Mei
       roadmap_dir: TauCetiRoadmap
@@ -37,7 +37,7 @@ jobs:
       APP_ID: ${{ secrets.APP_ID }}
       APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
       FLEET_READ_TOKEN: ${{ secrets.FLEET_READ_TOKEN }}
-      LAKE_CACHE_KEY: ${{ secrets.LAKE_CACHE_KEY }}
+      # PR and merge-group jobs only read the cache. Main CI is the sole writer.
       CI_READ_APP_ID: ${{ secrets.CI_READ_APP_ID }}
       CI_READ_APP_PRIVATE_KEY: ${{ secrets.CI_READ_APP_PRIVATE_KEY }}
       CI_STATUS_APP_ID: ${{ secrets.CI_STATUS_APP_ID }}
