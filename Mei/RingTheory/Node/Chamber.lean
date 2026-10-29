@@ -101,8 +101,7 @@ theorem leftChamberLaurentMap_toSlabAlgebra (z : NodeAlgebra R (t * f)) :
       simp only [AlgHom.comp_apply, AlgHom.fst_apply, Subalgebra.val_apply,
         coe_toSlabAlgebra_coord_zero, coe_toSlabAlgebra_coord_one,
         leftChamberLaurentMap_mk, map_mul, AlgHom.commutes,
-        leftLaurentMap_coord_zero, leftLaurentMap_coord_one, C_eq_algebraMap]
-      ; ring
+        leftLaurentMap_coord_zero, leftLaurentMap_coord_one, C_eq_algebraMap]; ring
   exact AlgHom.congr_fun h z
 
 /-- The second slab projection followed by the chamber realization is the right
@@ -118,8 +117,7 @@ theorem rightChamberLaurentMap_toSlabAlgebra (z : NodeAlgebra R (t * f)) :
       simp only [AlgHom.comp_apply, AlgHom.snd_apply, Subalgebra.val_apply,
         coe_toSlabAlgebra_coord_zero, coe_toSlabAlgebra_coord_one,
         rightChamberLaurentMap_mk, map_mul, AlgHom.commutes,
-        rightLaurentMap_coord_zero, rightLaurentMap_coord_one, C_eq_algebraMap]
-      ; ring
+        rightLaurentMap_coord_zero, rightLaurentMap_coord_one, C_eq_algebraMap]; ring
   exact AlgHom.congr_fun h z
 
 end Comparison
