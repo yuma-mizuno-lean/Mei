@@ -6,6 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.Convex.Polyhedron.Rational.LocallyClosed
+public import Mei.Geometry.Convex.Polyhedron.SignCell.Interior
 
 /-!
 # Common stratifications of rational semilinear domains
@@ -81,5 +82,35 @@ theorem IsRationalSemilinear.exists_common_partition
       Convex.mem_signCell_sign g x⟩
   · intro σ x hx y hy
     exact hmem σ x y hx hy
+
+/-- A rational semilinear set is a finite disjoint union of relative interiors of
+nonempty closed rational-normal polyhedra. Each closed chart lies in the closure
+of the original set, so it adds only limits of valid points. -/
+theorem IsRationalSemilinear.exists_disjoint_intrinsicInteriors
+    {S : Set V} (hS : IsRationalSemilinear h S) :
+    ∃ (κ : Type) (_ : Finite κ) (K : κ → Set V),
+      (∀ a, (K a).Nonempty ∧ IsRationalNormalPolyhedron h (K a) ∧ K a ⊆ closure S) ∧
+        (Pairwise fun a b => Disjoint (intrinsicInterior ℝ (K a))
+          (intrinsicInterior ℝ (K b))) ∧ ⋃ a, intrinsicInterior ℝ (K a) = S := by
+  obtain ⟨ι, _, g, hg, s, hs⟩ := hS.exists_eq_biUnion_signCell
+  let κ := {σ : ι → SignType // σ ∈ s ∧ (Convex.signCell g σ).Nonempty}
+  refine ⟨κ, inferInstance, fun σ => closure (Convex.signCell g σ), ?_, ?_, ?_⟩
+  · intro σ
+    refine ⟨σ.property.2.mono subset_closure, ?_, ?_⟩
+    · exact (isLocallyClosedPolyhedron_signCell g hg σ).isRationalNormalPolyhedron_closure
+    · apply closure_mono
+      rw [← hs]
+      exact Set.subset_iUnion₂_of_subset σ.val σ.property.1 Set.Subset.rfl
+  · intro σ τ hστ
+    simp only [Convex.intrinsicInterior_closure_signCell]
+    exact Convex.signCell_disjoint (Subtype.coe_injective.ne hστ)
+  · simp only [Convex.intrinsicInterior_closure_signCell]
+    apply Set.Subset.antisymm
+    · rw [← hs]
+      exact Set.iUnion_subset fun σ =>
+        Set.subset_iUnion₂_of_subset σ.val σ.property.1 Set.Subset.rfl
+    · intro x hx
+      obtain ⟨σ, hσ, hxσ⟩ := Set.mem_iUnion₂.mp (hs ▸ hx)
+      exact Set.mem_iUnion.mpr ⟨⟨σ, hσ, x, hxσ⟩, hxσ⟩
 
 end Mei
