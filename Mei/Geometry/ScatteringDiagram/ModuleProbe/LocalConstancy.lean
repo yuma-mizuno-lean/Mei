@@ -17,7 +17,7 @@ a nonzero multiple of the probe normal. Displacements within the probe slice are
 therefore tangent to every incident wall. Near the point they preserve regularity,
 vertical transversality and the extracted coefficient. In particular the vertical
 coefficient is locally constant on the vertically transverse regular locus in
-each fixed-height slice. Consistency is not needed for these local statements.
+each fixed auxiliary-coordinate slice. Consistency is not needed for these local statements.
 
 We use the normal classification of `ModuleProbe.wallGroup_cases_of_ne_one`,
 the local combined-label theorem and `ModuleProbe.verticalCoefficient`.
