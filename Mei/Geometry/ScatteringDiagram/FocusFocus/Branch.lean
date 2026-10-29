@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.Affine.FiniteRay
+public import Mei.Geometry.Affine.FiniteRay.Basic
 
 /-!
 # One-crossing branches in the focus-focus plane
