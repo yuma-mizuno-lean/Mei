@@ -100,12 +100,10 @@ private theorem upperOverlap_exponentOverlapEquiv_single (q : exponentMonoid) (r
   have hl : leftOrder (upperMonoid q) = leftOrder q := by simp
   have hr : rightOrder (upperMonoid q) = rightOrder q := by simp
   simp only [exponentEquiv_apply] at hb
-  rw [exponentOverlapEquiv_single, exponentOverlapEquiv_single,
-    map_mul, map_mul, map_pow, map_pow, AlgEquiv.commutes,
-    upperOverlap_mk_coord_zero, upperOverlap_mk_coord_one, hl, hr, hb]
-  simp only [mul_pow, ← map_pow, _root_.LaurentPolynomial.single_eq_C_mul_T,
-    _root_.LaurentPolynomial.T_pow]
-  simp only [mul_one, mul_neg_one]
+  simp only [exponentOverlapEquiv_single, map_mul, map_pow, AlgEquiv.commutes,
+    upperOverlap_mk_coord_zero, upperOverlap_mk_coord_one, hl, hr, hb, mul_pow]
+  simp only [← map_pow, _root_.LaurentPolynomial.single_eq_C_mul_T,
+    _root_.LaurentPolynomial.T_pow, mul_one, mul_neg_one]
   rw [_root_.LaurentPolynomial.T_sub, _root_.LaurentPolynomial.T_add]
   simp only [map_mul]
   ring
@@ -147,14 +145,14 @@ private theorem upperMonoid_map_overlapIdeal :
   have hf : Function.Surjective
       (domCongr R R upperMonoid : AddMonoidAlgebra R exponentMonoid →+*
         AddMonoidAlgebra R exponentMonoid) := (domCongr R R upperMonoid).surjective
-  ext a
-  refine (Ideal.mem_map_iff_of_surjective _ hf).trans ?_
-  constructor
-  · rintro ⟨b, hb, rfl⟩
-    exact (hmem b).mpr hb
-  · intro ha
-    obtain ⟨b, rfl⟩ := (domCongr R R upperMonoid).surjective a
-    exact ⟨b, (hmem b).mp ha, rfl⟩
+  let K := Ideal.span {single smoothingDegree 1 - single 0 t} ⊔
+    Ideal.span {(single xDegree (1 : R)) ^ (k + 1), (single yDegree 1) ^ (k + 1)}
+  have hc : K.comap (domCongr R R upperMonoid :
+      AddMonoidAlgebra R exponentMonoid →+* AddMonoidAlgebra R exponentMonoid) = K :=
+    Ideal.ext hmem
+  exact (congrArg (Ideal.map (domCongr R R upperMonoid :
+    AddMonoidAlgebra R exponentMonoid →+* AddMonoidAlgebra R exponentMonoid)) hc).symm.trans
+      (Ideal.map_comap_of_surjective _ hf _)
 
 /-- The exponent shear descends to an automorphism after imposing the smoothing
 relation and both chamber cutoffs. -/
