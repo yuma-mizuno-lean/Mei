@@ -12,7 +12,8 @@ public import TauCeti.Geometry.Toric.Algebraic.Lattice
 
 Real extension sends integer multiples of integral characters to the corresponding
 real multiples. This identity lets rational-normal constructions clear denominators.
-An equivalence of integral lattices extends to a real linear equivalence. Its
+An injective lattice map has injective real extension, and an equivalence of
+integral lattices extends to a real linear equivalence. Its
 linear map is the existing scalar extension, and extension respects identity,
 inverse and composition without choosing a new basis.
 -/
@@ -39,6 +40,19 @@ section Equiv
 variable {N' N'' V' V'' : Type*} [AddCommGroup N'] [AddCommGroup N'']
   [AddCommGroup V'] [AddCommGroup V''] [Module ℝ V'] [Module ℝ V'']
   {i' : N' →+ V'} {i'' : N'' →+ V''}
+
+/-- Real extension of an injective map between integral lattices is injective. -/
+theorem extend_injective (h : IsIntegralLattice i) (h' : IsIntegralLattice i')
+    (f : N →+ N') (hf : Function.Injective f) :
+    Function.Injective (h.extend i' f) := by
+  let := h.free
+  let b := Module.Free.chooseBasis ℤ N
+  apply LinearMap.injective_of_linearIndependent (h.isBaseChange.basis b).span_eq
+  have hi := (Toric.linearIndependent_comp_iff_of_liftBaseChange_injective
+    h'.isBaseChange.liftBaseChange_injective).mpr
+      (b.linearIndependent.map' f.toIntLinearMap (LinearMap.ker_eq_bot.mpr hf))
+  simpa only [Function.comp_def, h.isBaseChange.basis_apply, AddMonoidHom.coe_toIntLinearMap,
+    extend_apply] using hi
 
 /-- Extend an equivalence of integral lattices to an equivalence of real vector spaces. -/
 noncomputable def extendEquiv (h : IsIntegralLattice i) (h' : IsIntegralLattice i')

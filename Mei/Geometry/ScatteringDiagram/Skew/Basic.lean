@@ -92,6 +92,46 @@ theorem form_self (n : N) : D.form n n = 0 :=
 theorem form_swap (a b : N) : D.form b a = -D.form a b :=
   (D.isAlt_form.neg a b).symm
 
+variable (hD : ∀ a b, ∃ k : ℤ, D.form a b = k)
+
+/-- The integer-valued skew character `n ↦ {n,-}`, when the form is integral
+on the whole lattice. -/
+noncomputable def integralCharacter : N →ₗ[ℤ] Module.Dual ℤ N :=
+  D.form.codRestrict₂ (Algebra.linearMap ℤ ℚ) Int.cast_injective (fun a b => by
+    obtain ⟨k, hk⟩ := hD a b
+    exact ⟨k, hk.symm⟩)
+
+/-- The integral character retains the given rational form. -/
+@[simp]
+theorem cast_integralCharacter_apply (a b : N) :
+    (D.integralCharacter hD a b : ℚ) = D.form a b := by
+  unfold integralCharacter
+  simpa only [Algebra.linearMap_apply, algebraMap_int_eq, Int.coe_castRingHom] using
+    (LinearMap.codRestrict₂_apply D.form (Algebra.linearMap ℤ ℚ)
+      Int.cast_injective _ a b)
+
+/-- The integral character is alternating. -/
+@[simp]
+theorem integralCharacter_self (n : N) : D.integralCharacter hD n n = 0 := by
+  apply Int.cast_injective (α := ℚ)
+  simp
+
+/-- Skew symmetry of the integral character. -/
+theorem integralCharacter_swap (a b : N) :
+    D.integralCharacter hD b a = -D.integralCharacter hD a b := by
+  apply Int.cast_injective (α := ℚ)
+  rw [Int.cast_neg, cast_integralCharacter_apply, cast_integralCharacter_apply, D.form_swap]
+
+/-- A left-separating integral skew form has an injective integral character map. -/
+theorem integralCharacter_injective (hnd : D.form.SeparatingLeft) :
+    Function.Injective (D.integralCharacter hD) := by
+  apply (injective_iff_map_eq_zero _).mpr
+  intro n hn
+  apply hnd n
+  intro a
+  rw [← D.cast_integralCharacter_apply hD, hn]
+  simp
+
 end Form
 
 /-- A morphism of skew lattice data: an integer-linear map preserving the skew form and
@@ -240,6 +280,19 @@ theorem normal_zsmul {d : ℤ} (hd : 0 < d) {n : N} (hn : n ∈ D.unfrozen) :
 theorem normal_apply_self {n : N} (hn : n ∈ D.unfrozen) : D.normal n hn n = 0 := by
   apply Int.cast_injective (α := ℚ)
   simp
+
+/-- A nonzero unfrozen degree has nonzero normalized normal when the form
+separates its right argument. -/
+theorem normal_ne_zero (hnd : D.form.SeparatingRight) {n : N}
+    (hn : n ∈ D.unfrozen) (hn0 : n ≠ 0) : D.normal n hn ≠ 0 := by
+  intro hz
+  apply hn0
+  apply hnd n
+  intro a
+  have he := D.cast_normal_apply hn a
+  rw [hz, LinearMap.zero_apply, Int.cast_zero] at he
+  exact (mul_eq_zero.mp he.symm).resolve_left
+    (ne_of_gt (D.sublattice.toAddSubgroup.rayIndex_pos hn0))
 
 end RayIndex
 

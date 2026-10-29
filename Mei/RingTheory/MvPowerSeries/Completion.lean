@@ -7,6 +7,7 @@ module
 
 public import Mei.RingTheory.AdicCompletion.Filtered
 public import Mei.RingTheory.FilteredAlgebra.Map
+public import Mei.RingTheory.FilteredAlgebra.Module
 public import Mathlib.RingTheory.MvPowerSeries.Equiv
 
 /-!
@@ -21,6 +22,9 @@ that are lattice monoid algebras.
 This uses Mathlib's `MvPowerSeries.toAdicCompletionAlgEquiv`, rather than
 reconstructing its power series or truncation arguments, and the comparison
 between adic and filtered completions.
+
+The same identification holds for the module completion of the polynomial ring
+over itself, through `AlgFiltration.moduleCompletionEquiv`.
 -/
 
 public section
@@ -93,6 +97,35 @@ theorem coeff_principalCompletionEquiv_eq_of_projection_eq
   symm
   simpa only [MvPolynomial.coeff_sub, MvPowerSeries.coeff_truncTotal _
     (Nat.lt_succ_of_le hn), sub_eq_zero] using he
+
+/-- The module completion of a polynomial ring over itself along the ideal of
+variables is its power series ring. -/
+def principalModuleCompletionEquiv :
+    ((ofIdeal (MvPolynomial.idealOfVars σ R)).toModuleFiltration (MvPolynomial σ R)).completion
+      ≃ₗ[MvPolynomial σ R] MvPowerSeries σ R :=
+  (ofIdeal (MvPolynomial.idealOfVars σ R)).moduleCompletionEquiv.trans
+    (principalCompletionEquiv σ R).toLinearEquiv
+
+/-- A completed polynomial is sent to the same polynomial, viewed as a power series. -/
+@[simp]
+theorem principalModuleCompletionEquiv_of (p : MvPolynomial σ R) :
+    principalModuleCompletionEquiv σ R
+      (((ofIdeal (MvPolynomial.idealOfVars σ R)).toModuleFiltration (MvPolynomial σ R)).of p) =
+      p := by
+  rw [principalModuleCompletionEquiv, LinearEquiv.trans_apply, moduleCompletionEquiv_of,
+    AlgEquiv.toLinearEquiv_apply, principalCompletionEquiv_toCompletion]
+
+/-- At order `k`, the inverse equivalence is the class of the total-degree
+truncation at `k+1`. -/
+@[simp]
+theorem projection_principalModuleCompletionEquiv_symm (k : ℕ) (p : MvPowerSeries σ R) :
+    ((ofIdeal (MvPolynomial.idealOfVars σ R)).toModuleFiltration (MvPolynomial σ R)).projection k
+      ((principalModuleCompletionEquiv σ R).symm p) =
+      Submodule.Quotient.mk (p.truncTotal (k + 1)) := by
+  rw [principalModuleCompletionEquiv, LinearEquiv.symm_trans_apply,
+    projection_moduleCompletionEquiv_symm, ← AlgEquiv.toLinearEquiv_symm,
+    AlgEquiv.toLinearEquiv_apply, projection_principalCompletionEquiv_symm,
+    ← Ideal.Quotient.mk_eq_mk, Submodule.Quotient.restrictScalarsEquiv_symm_mk]
 
 end Mei
 

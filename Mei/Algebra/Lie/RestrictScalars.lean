@@ -35,6 +35,21 @@ instance instLieAlgebraRestrictScalars (K : LieSubalgebra S L) : LieAlgebra R K 
 
 end LieSubalgebra
 
+namespace LieModule
+
+/-- A Lie module remains linear over any compatible restricted scalar action. -/
+theorem restrictScalars (R S L M : Type*) [CommRing R] [CommRing S]
+    [LieRing L] [LieAlgebra S L] [LieAlgebra R L]
+    [AddCommGroup M] [Module S M] [Module R M] [SMul R S]
+    [IsScalarTower R S L] [IsScalarTower R S M]
+    [LieRingModule L M] [LieModule S L M] : LieModule R L M where
+  smul_lie r x m := by
+    rw [← smul_one_smul S r x, smul_lie, smul_one_smul]
+  lie_smul r x m := by
+    rw [← smul_one_smul S r m, lie_smul, smul_one_smul]
+
+end LieModule
+
 namespace LieSubmodule
 
 variable {R S L M : Type*} [CommRing R] [CommRing S] [LieRing L]
