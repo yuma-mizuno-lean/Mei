@@ -136,6 +136,18 @@ theorem mem_realizedDegreeItineraries_of_encounters (k : ℕ) (l : List (Γ × J
     (X 0) X t rfl hstep hheight).2
   exact ⟨hmem, hdegree, X 0, fun a => (ht a) ▸ hpos a⟩
 
+private theorem exists_nodup_lift_of_mem_realizedDegreeItineraries
+    {k : ℕ} {l : List (Γ × J)} (hl : l ∈ realizedDegreeItineraries d f c v k) :
+    ∃ L : {b : List (d.cutoff k × J) // b.Nodup},
+      L.val.map (fun a => (a.1.val, a.2)) = l := by
+  let L : List (d.cutoff k × J) := l.attach.map fun a =>
+    (⟨a.val.1, (hl.1 a.val a.property).1⟩, a.val.2)
+  have hL : L.map (fun a => (a.1.val, a.2)) = l := by
+    simp only [L, List.map_map, Function.comp_def]
+    exact List.attach_map_subtype_val l
+  exact ⟨⟨L, List.Nodup.of_map (fun a => (a.1.val, a.2))
+    (hL.symm ▸ nodup_of_mem_realizedDegreeItineraries d f c v hl)⟩, hL⟩
+
 /-- The number of encounters is at most the number of retained degree-wall
 pairs. No encounter count or distinctness hypothesis is assumed. -/
 theorem length_le_card_of_mem_realizedDegreeItineraries [Finite J]
@@ -143,15 +155,9 @@ theorem length_le_card_of_mem_realizedDegreeItineraries [Finite J]
     l.length ≤ Nat.card (d.cutoff k) * Nat.card J := by
   let := Fintype.ofFinite (d.cutoff k)
   let := Fintype.ofFinite J
-  let L : List (d.cutoff k × J) := l.attach.map fun a =>
-    (⟨a.val.1, (hl.1 a.val a.property).1⟩, a.val.2)
-  have hL : L.map (fun a => (a.1.val, a.2)) = l := by
-    simp only [L, List.map_map, Function.comp_def]
-    exact List.attach_map_subtype_val l
-  have hnodup : L.Nodup := List.Nodup.of_map (fun a => (a.1.val, a.2))
-    (hL.symm ▸ nodup_of_mem_realizedDegreeItineraries d f c v hl)
-  simpa only [L, List.length_map, List.length_attach, Fintype.card_prod,
-    Nat.card_eq_fintype_card] using hnodup.length_le_card
+  obtain ⟨L, rfl⟩ := exists_nodup_lift_of_mem_realizedDegreeItineraries d f c v hl
+  simpa only [List.length_map, Fintype.card_prod, Nat.card_eq_fintype_card]
+    using L.property.length_le_card
 
 /-- At any fixed order, only finitely many transverse decreasing-degree
 itineraries are realized, even as the endpoint varies over the entire space.
@@ -163,13 +169,7 @@ theorem finite_realizedDegreeItineraries [Finite J] (k : ℕ) :
   apply (Set.finite_range fun b : {b : List (d.cutoff k × J) // b.Nodup} =>
     b.val.map (fun a => (a.1.val, a.2))).subset
   intro l hl
-  let L : List (d.cutoff k × J) := l.attach.map fun a =>
-    (⟨a.val.1, (hl.1 a.val a.property).1⟩, a.val.2)
-  have hL : L.map (fun a => (a.1.val, a.2)) = l := by
-    simp only [L, List.map_map, Function.comp_def]
-    exact List.attach_map_subtype_val l
-  exact ⟨⟨L, List.Nodup.of_map (fun a => (a.1.val, a.2))
-    (hL.symm ▸ nodup_of_mem_realizedDegreeItineraries d f c v hl)⟩, hL⟩
+  exact exists_nodup_lift_of_mem_realizedDegreeItineraries d f c v hl
 
 /-- Realized lists can index finite endpoint families without an assumed bound
 on their number of encounters. -/
