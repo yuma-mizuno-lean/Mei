@@ -204,4 +204,16 @@ theorem lie_base_moduleQuotientInclusion (k : ℕ) (x : L)
     (actionDerivationHom d ℳ p (ℒ := ℒ) x ((moduleCoefficientsEquiv d ℳ p).symm a)),
     moduleCoefficientsEquiv_actionDerivationHom, LinearEquiv.apply_symm_apply]
 
+/-- Two included finite coefficients have zero bracket. -/
+@[simp]
+theorem lie_moduleQuotientInclusion (k : ℕ)
+    (a b : (d.shiftedFiltration ℳ p).quotient k) :
+    ⁅moduleQuotientInclusion d ℳ p ℒ k a, moduleQuotientInclusion d ℳ p ℒ k b⁆ = 0 := by
+  obtain ⟨a, rfl⟩ := ((d.shiftedFiltration ℳ p).submodule (k + 1)).mkQ_surjective a
+  obtain ⟨b, rfl⟩ := ((d.shiftedFiltration ℳ p).submodule (k + 1)).mkQ_surjective b
+  rw [Submodule.mkQ_apply, Submodule.mkQ_apply, moduleQuotientInclusion_mk,
+    moduleQuotientInclusion_mk,
+    ← LieSubmodule.Quotient.mk_bracket, lie_moduleInclusion]
+  exact ((positiveDegrees d p).degreeIdeal (grading d ℳ p ℒ) (k + 1)).mkQ.map_zero
+
 end Mei.ModuleProbe

@@ -8,6 +8,7 @@ module
 public import Mei.Geometry.ScatteringDiagram.ModuleProbe.Grading.Basic
 public import Mei.Geometry.ScatteringDiagram.ModuleProbe.Degree
 public import Mei.Algebra.Lie.Graded.Map
+public import Mei.Algebra.Lie.Graded.PositiveDegreeHom
 
 /-!
 # Positive grading on the module probe
@@ -101,6 +102,21 @@ instance instGradedBracketGrading [SetLike.GradedBracket ℒ ℒ] :
           Submodule.mem_bot] using hx
         rw [hx0, zero_lie]
         exact Submodule.zero_mem _
+
+/-- Include the original positive Lie grading in the charge-zero probe grading.
+The induced finite and completed maps use the identity cutoff modulus. -/
+def baseGradedLieHom :
+    GradedLieHom (baseMap d p) ℒ (grading d ℳ p ℒ) where
+  toLieHom := baseInclusion d ℳ p ℒ
+  map_mem := by
+    intro n x hx
+    rw [baseMap_apply, grading_base]
+    exact Submodule.mem_map.mpr ⟨x, hx, rfl⟩
+
+/-- The graded inclusion is the semidirect sum's charge-zero inclusion. -/
+@[simp]
+theorem baseGradedLieHom_apply (x : L) :
+    baseGradedLieHom d ℳ p ℒ x = baseInclusion d ℳ p ℒ x := (rfl)
 
 variable [DirectSum.Decomposition ℳ]
 
