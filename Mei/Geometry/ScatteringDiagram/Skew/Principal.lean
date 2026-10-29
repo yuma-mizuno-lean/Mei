@@ -166,6 +166,14 @@ theorem cast_principalNormal_principalEmbedding (n m : D.unfrozen) :
   rw [principalNormal_apply, principalEmbedding_apply, cast_principalCharacter_apply,
     D.form_rayVector]
 
+/-- The normalized principal normal `s κ(n) νₙ` evaluates to `c {m, n}` on the principal
+exponent of `m`, when `s κ(n) = c`. -/
+theorem zsmul_principalNormal_principalEmbedding {n m : D.unfrozen} {c : ℚ} {s k : ℤ}
+    (h : s * D.sublattice.toAddSubgroup.rayIndex n = c) (hk : c * D.form m n = k) :
+    s * D.principalNormal n (D.principalEmbedding m) = k := by
+  apply Int.cast_injective (α := ℚ)
+  rw [Int.cast_mul, cast_principalNormal_principalEmbedding, ← hk, ← h, mul_assoc]
+
 /-- The integral skew character kills its own normalized ray vector. In
 particular, the principal normal annihilates the corresponding principal exponent. -/
 @[simp]

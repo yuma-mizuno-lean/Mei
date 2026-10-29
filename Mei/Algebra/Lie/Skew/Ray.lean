@@ -91,7 +91,7 @@ theorem rayPartialSum_apply (k : ℕ) (f : R⟦X⟧) :
 variable [DecidableEq Γ]
 
 /-- Terms beyond order `k` lie in the degree ideal above `k`. -/
-private theorem rayPartialSum_sub_mem {k l : ℕ} (h : k ≤ l) (f : R⟦X⟧) :
+theorem rayPartialSum_sub_mem {k l : ℕ} (h : k ≤ l) (f : R⟦X⟧) :
     rayPartialSum β hβ hn hn0 l f - rayPartialSum β hβ hn hn0 k f ∈ d.degreeIdeal ℒ k := by
   rw [rayPartialSum_apply, rayPartialSum_apply, ← Finset.sum_range_add_sum_Ico _ h,
     add_sub_cancel_left]

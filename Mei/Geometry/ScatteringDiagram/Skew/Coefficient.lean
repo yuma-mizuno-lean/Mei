@@ -119,6 +119,23 @@ theorem mem_principalCoefficientFiltration_ideal_iff [Semiring R] (k : ℕ) (a :
     · apply Subtype.ext
       simp [n, q]
 
+omit [Algebra ℚ R] in
+/-- A principal coefficient monomial of nonzero unfrozen degree is congruent to `0`, so
+`1 + z^q` is a unit of the principal coefficient completion. -/
+theorem exists_units_eq_one_add_single (q : Qpr) (hq : q.val.2 ≠ 0) :
+    ∃ U : (Fpr).completionˣ, (U : (Fpr).completion) = 1 + (Fpr).toCompletion (single q 1) := by
+  have hmem : (Fpr).toCompletion (single q 1) ∈ (Fpr).completionIdeal 1 := by
+    rw [AlgFiltration.toCompletion_mem_completionIdeal_iff,
+      mem_principalCoefficientFiltration_ideal_iff]
+    intro p hp
+    have hpq : p = q := by
+      by_contra h
+      exact (Finsupp.mem_support_iff.mp hp) (by simp [Ne.symm h])
+    rw [hpq]
+    have := d.degree_pos ((D.mem_principalCoefficientMonoid d _).mp q.property) hq
+    omega
+  exact ⟨((Fpr).isUnit_of_sub_one_mem (by simpa using hmem)).unit, IsUnit.unit_spec _⟩
+
 /-- Each principal coefficient of the action on a monomial recovers the
 corresponding skew coefficient times the principal evaluation character. -/
 @[simp]

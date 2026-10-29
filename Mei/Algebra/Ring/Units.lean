@@ -8,13 +8,24 @@ module
 public import Mathlib.Algebra.Ring.Units
 
 /-!
-# Units and power differences
+# Powers of units and power differences
 
+Multiplicative maps preserve integer powers of units.
 Invertibility of a difference of powers of a unit and its inverse implies
 invertibility of the corresponding even-power difference from one.
 -/
 
 public section
+
+namespace Mei
+
+/-- A multiplicative map sends an integer power of a unit to the same power of its image. -/
+theorem map_units_zpow {M N F : Type*} [Monoid M] [Monoid N]
+    [FunLike F M N] [MonoidHomClass F M N] (f : F) (u : Mˣ) (k : ℤ) :
+    f ↑(u ^ k) = ↑(Units.map (f : M →* N) u ^ k) := by
+  rw [← map_zpow, Units.coe_map, MonoidHom.coe_ofClass]
+
+end Mei
 
 namespace Units
 

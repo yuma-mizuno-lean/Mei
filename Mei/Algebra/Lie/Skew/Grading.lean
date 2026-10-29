@@ -102,6 +102,17 @@ def positiveLieAlgebra : LieSubalgebra R (SkewLieAlgebra β hβ) :=
         intro h
         simp [h] at hp }
 
+/-- The positive skew algebra is supported on the nonzero allowed degrees. -/
+theorem positiveLieAlgebra_def : positiveLieAlgebra β hβ d =
+    supportedLieSubalgebra (grade β hβ)
+      { carrier := {n | n ∈ d.monoid ∧ n ≠ 0}
+        add_mem' := by
+          rintro n m ⟨hn, hn0⟩ ⟨hm, hm0⟩
+          refine ⟨add_mem hn hm, ?_⟩
+          intro h
+          have := add_pos (d.degree_pos hn hn0) (d.degree_pos hm hm0)
+          simp only [← map_add, h, map_zero, lt_self_iff_false] at this } := (rfl)
+
 /-- Positive support is exactly the vanishing of coefficients at zero and outside
 of the chosen monoid. -/
 @[simp]
