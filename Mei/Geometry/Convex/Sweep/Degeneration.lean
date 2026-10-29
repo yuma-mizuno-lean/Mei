@@ -86,26 +86,58 @@ theorem tendsto_backwardRay {A : Type*} {l : Filter A} {Q : A → V} {Q₀ : V}
   simpa only [← backwardPath_eq_backwardRay, Function.comp_def] using
     (backwardPath f c v).continuous.continuousAt.tendsto.comp hQ
 
-/-- At any boundary endpoint approached by strict realizations, the extended path
-still passes through every affine encounter point at its limiting parameter.
-Several of those parameters may be equal. -/
-theorem backwardPath_apply_parameter_of_mem_closure {Q : V}
-    (hQ : Q ∈ closure {Q | ∀ j, 0 < backwardTime f c (fun j => v j.castSucc) j Q})
+private theorem backwardPath_partial_sum (Q : V) (j : Fin (n + 1)) (t : ℝ) :
+    (∑ a ∈ Finset.univ.filter (fun a : Fin n => a.val < j.val),
+      (backwardParameter f c (fun j => v j.castSucc) a.succ Q - t) •
+        (v a.succ - v a.castSucc)) =
+      backwardPoint f c (fun j => v j.castSucc) j Q +
+        (backwardParameter f c (fun j => v j.castSucc) j Q - t) • v j +
+          t • v 0 - Q := by
+  classical
+  induction j using Fin.induction with
+  | zero => simp
+  | succ j ih =>
+    have he : Finset.univ.filter (fun a : Fin n => a.val < j.succ.val) =
+        insert j (Finset.univ.filter (fun a : Fin n => a.val < j.castSucc.val)) := by
+      ext a
+      simp only [Finset.mem_filter, Finset.mem_univ, true_and, Finset.mem_insert,
+        Fin.val_succ, Fin.val_castSucc, Fin.ext_iff]
+      omega
+    rw [he, Finset.sum_insert (by simp), ih, backwardPoint_succ_apply,
+      backwardParameter_succ]
+    module
+
+/-- With nonnegative elapsed times, the extended path passes through every affine
+encounter point at its parameter. Several of those parameters may be equal. -/
+theorem backwardPath_apply_parameter {Q : V}
+    (hQ : ∀ j, 0 ≤ backwardTime f c (fun j => v j.castSucc) j Q)
     (j : Fin (n + 1)) :
     backwardPath f c v Q (backwardParameter f c (fun j => v j.castSucc) j Q) =
       backwardPoint f c (fun j => v j.castSucc) j Q := by
-  have he : EqOn
-      (fun Q => backwardPath f c v Q (backwardParameter f c (fun j => v j.castSucc) j Q))
-      (backwardPoint f c (fun j => v j.castSucc) j)
-      {Q | ∀ j, 0 < backwardTime f c (fun j => v j.castSucc) j Q} := by
-    intro Q hQ
-    dsimp only
-    rw [backwardPath_eq_backwardRay f c v Q hQ, FiniteAffineRay.toContinuousMap_apply]
-    exact backwardRay_apply_parameter f c v Q hQ j
-  exact he.closure
-    ((backwardPath f c v).continuous.eval
-      (backwardParameter f c (fun j => v j.castSucc) j).continuous)
-    (backwardPoint f c (fun j => v j.castSucc) j).continuous hQ
+  classical
+  have hanti : Antitone (fun j => backwardParameter f c (fun j => v j.castSucc) j Q) := by
+    apply Fin.antitone_iff_succ_le.mpr
+    intro a
+    rw [backwardParameter_succ]
+    exact sub_le_self _ (hQ a)
+  rw [backwardPath_apply]
+  have he : (∑ a : Fin n,
+      max (backwardParameter f c (fun j => v j.castSucc) a.succ Q -
+        backwardParameter f c (fun j => v j.castSucc) j Q) 0 • (v a.succ - v a.castSucc)) =
+      ∑ a ∈ Finset.univ.filter (fun a : Fin n => a.val < j.val),
+        (backwardParameter f c (fun j => v j.castSucc) a.succ Q -
+          backwardParameter f c (fun j => v j.castSucc) j Q) • (v a.succ - v a.castSucc) := by
+    rw [Finset.sum_filter]
+    apply Finset.sum_congr rfl
+    intro a _
+    by_cases ha : a.val < j.val
+    · rw [ite_eq_left ha, max_eq_left (sub_nonneg.mpr (hanti (by
+        simp only [Fin.le_iff_val_le_val, Fin.val_succ]; omega)))]
+    · rw [ite_eq_right ha, max_eq_right (sub_nonpos.mpr (hanti (by
+        simp only [Fin.le_iff_val_le_val, Fin.val_succ]; omega))), zero_smul]
+  rw [he, backwardPath_partial_sum]
+  simp only [sub_self, zero_smul, add_zero]
+  abel
 
 /-- Nonnegative elapsed times suffice for the extended path to retain its endpoint. -/
 theorem backwardPath_apply_zero {Q : V}
@@ -121,28 +153,28 @@ theorem backwardPath_apply_zero {Q : V}
   simp only [backwardPath_apply, sub_zero, max_eq_right (hnonpos _), zero_smul,
     Finset.sum_const_zero, zero_add]
 
-/-- The limiting path retains the entire incoming affine half-line. Its origin
-is the last encounter, even if several encounters have collapsed to that point. -/
-theorem backwardPath_apply_incoming_of_mem_closure {Q : V}
-    (hQ : Q ∈ closure {Q | ∀ j, 0 < backwardTime f c (fun j => v j.castSucc) j Q})
+/-- With nonnegative elapsed times, the extended path retains the entire incoming
+half-line from the last encounter, even when encounters coincide. -/
+theorem backwardPath_apply_incoming {Q : V}
+    (hQ : ∀ j, 0 ≤ backwardTime f c (fun j => v j.castSucc) j Q)
     {s : ℝ} (hs : 0 ≤ s) :
     backwardPath f c v Q (backwardParameter f c (fun j => v j.castSucc) (Fin.last n) Q - s) =
       backwardPoint f c (fun j => v j.castSucc) (Fin.last n) Q + s • v (Fin.last n) := by
-  have he : EqOn
-      (fun Q => backwardPath f c v Q
-        (backwardParameter f c (fun j => v j.castSucc) (Fin.last n) Q - s))
-      (fun Q => backwardPoint f c (fun j => v j.castSucc) (Fin.last n) Q + s • v (Fin.last n))
-      {Q | ∀ j, 0 < backwardTime f c (fun j => v j.castSucc) j Q} := by
-    intro Q hQ
-    dsimp only
-    rw [backwardPath_eq_backwardRay f c v Q hQ, FiniteAffineRay.toContinuousMap_apply,
-      backwardRay_apply_incoming f c v Q hQ _ (sub_le_self _ hs), sub_sub_cancel]
-  exact he.closure
-    ((backwardPath f c v).continuous.eval
-      ((backwardParameter f c (fun j => v j.castSucc) (Fin.last n)).continuous.sub
-        continuous_const))
-    ((backwardPoint f c (fun j => v j.castSucc) (Fin.last n)).continuous.add
-      continuous_const) hQ
+  have hanti : Antitone (fun j => backwardParameter f c (fun j => v j.castSucc) j Q) := by
+    apply Fin.antitone_iff_succ_le.mpr
+    intro j
+    rw [backwardParameter_succ]
+    exact sub_le_self _ (hQ j)
+  rw [backwardPath_apply]
+  have hnonneg (j : Fin n) : 0 ≤ backwardParameter f c (fun j => v j.castSucc) j.succ Q -
+      (backwardParameter f c (fun j => v j.castSucc) (Fin.last n) Q - s) :=
+    sub_nonneg.mpr ((sub_le_self _ hs).trans (hanti (Fin.le_last _)))
+  simp_rw [max_eq_left (hnonneg _)]
+  have he := backwardPath_partial_sum f c v Q (Fin.last n)
+    (backwardParameter f c (fun j => v j.castSucc) (Fin.last n) Q - s)
+  simp only [Fin.val_last, Finset.filter_true_of_mem (fun (a : Fin n) _ => a.isLt)] at he
+  rw [he]
+  module
 
 variable (P : Fin n → Set V)
 
