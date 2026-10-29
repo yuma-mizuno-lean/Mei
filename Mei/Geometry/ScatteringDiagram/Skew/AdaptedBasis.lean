@@ -115,17 +115,24 @@ theorem mem_sublattice_iff {n : N} :
     rw [hc, mul_comm, mul_smul, natCast_zsmul]
     exact Submodule.smul_mem _ _ (B.nsmul_basis_mem_sublattice i)
 
+/-- The multiple `m e_i` lies in `N°` exactly when `d_i` divides `m`. -/
+theorem nsmul_basis_mem_sublattice_iff {m : ℕ} {i : ι} :
+    m • B.basis i ∈ D.sublattice ↔ B.multiplier i ∣ m := by
+  rw [B.mem_sublattice_iff]
+  refine ⟨fun h => Int.natCast_dvd_natCast.mp (by simpa using h i), fun h j => ?_⟩
+  rcases eq_or_ne i j with rfl | hij
+  · simpa using Int.natCast_dvd_natCast.mpr h
+  · simp [hij]
+
 /-- The multipliers and the unfrozen indices of an adapted basis are determined by its
 basis. -/
 @[ext]
 theorem ext {B B' : D.AdaptedBasis ι} (h : B.basis = B'.basis) : B = B' := by
   have hd : B.multiplier = B'.multiplier := by
     funext i
-    have h₁ := (B.mem_sublattice_iff).mp (B'.nsmul_basis_mem_sublattice i) i
-    have h₂ := (B'.mem_sublattice_iff).mp (B.nsmul_basis_mem_sublattice i) i
-    simp only [h, map_nsmul, Basis.repr_self, Finsupp.smul_single, Finsupp.single_eq_same,
-      nsmul_eq_mul, mul_one] at h₁ h₂
-    exact Nat.dvd_antisymm (by exact_mod_cast h₁) (by exact_mod_cast h₂)
+    have h₁ := B.nsmul_basis_mem_sublattice_iff.mp (h ▸ B'.nsmul_basis_mem_sublattice i)
+    have h₂ := B'.nsmul_basis_mem_sublattice_iff.mp (h ▸ B.nsmul_basis_mem_sublattice i)
+    exact Nat.dvd_antisymm h₁ h₂
   have hI : B.unfrozenIndex = B'.unfrozenIndex := by
     ext i
     rw [← B.basis_mem_unfrozen_iff, ← B'.basis_mem_unfrozen_iff, h]
@@ -150,8 +157,7 @@ theorem linearIndependent_nsmul_basis :
 def unfrozenBasis : Basis B.unfrozenIndex ℤ D.unfrozen :=
   (Basis.span (B.basis.linearIndependent.comp _ Subtype.val_injective)).map
     (LinearEquiv.ofEq _ _ (by
-      rw [B.unfrozen_eq_span, Set.image_eq_range]
-      rfl))
+      rw [B.unfrozen_eq_span, Set.range_comp, Subtype.range_coe]))
 
 /-- The unfrozen basis consists of the basis vectors `e_i` with `i ∈ I_uf`. -/
 @[simp]
@@ -200,11 +206,8 @@ theorem rayIndex_basis (i : ι) :
   · rw [← QuotientAddGroup.mk_nsmul, QuotientAddGroup.eq_zero_iff]
     exact B.nsmul_basis_mem_sublattice i
   · rw [← QuotientAddGroup.mk_nsmul, Ne, QuotientAddGroup.eq_zero_iff]
-    intro h
-    have hdvd := (B.mem_sublattice_iff (n := m • B.basis i)).mp h i
-    simp only [map_nsmul, Basis.repr_self, Finsupp.smul_single, Finsupp.single_eq_same,
-      nsmul_eq_mul, mul_one] at hdvd
-    exact absurd (Nat.le_of_dvd hm0 (by exact_mod_cast hdvd)) (not_le.mpr hm)
+    exact fun h => absurd (Nat.le_of_dvd hm0 (B.nsmul_basis_mem_sublattice_iff.mp h))
+      (not_le.mpr hm)
 
 /-- The normalized vector `κ(e_i) e_i` of a basis vector is `d_i e_i`. -/
 @[simp]
