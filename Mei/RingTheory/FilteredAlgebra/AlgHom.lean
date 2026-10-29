@@ -7,6 +7,7 @@ module
 
 public import Mei.RingTheory.FilteredAlgebra.Algebra
 public import Mei.RingTheory.FilteredAlgebra.Map
+public import Mei.CategoryTheory.Limits.Reindex
 
 /-!
 # Algebra maps between filtered completions
@@ -21,7 +22,9 @@ The induced map is independent of the chosen modulus, respects identity and
 composition, and commutes with restriction of scalars. Its projection formula
 and filtration bound allow maps of complete coefficient algebras to be used at
 any finite order. The algebras may be noncommutative, and no separatedness
-or adic-presentation hypothesis is required.
+or adic-presentation hypothesis is required. The quotient maps form a natural
+comparison of algebra diagrams along the cutoff modulus; its categorical limit
+agrees with the concrete completion map under `completionAlgebraIsoLimit`.
 -/
 
 public section
@@ -139,5 +142,51 @@ theorem mapCompletionₐ_restrictScalars :
   rfl
 
 end RestrictScalars
+
+section DiagramMap
+
+open CategoryTheory CategoryTheory.Limits
+
+variable {R : Type u} {A B : Type v} [CommRing R]
+  [Ring A] [Algebra R A] [Ring B] [Algebra R B]
+  (F : AlgFiltration A) (G : AlgFiltration B) (f : A →ₐ[R] B)
+  (μ : ℕ → ℕ) (hμ : Monotone μ)
+  (hf : ∀ k, F.ideal (μ k + 1) ≤ (G.ideal (k + 1)).comap f)
+
+/-- A filtered algebra map compares the quotient algebra diagrams along its
+cutoff modulus. -/
+def quotientAlgebraDiagramMap :
+    (⟨μ, hμ⟩ : ℕ →o ℕ).toFunctor.op ⋙ F.quotientAlgebraDiagram (R := R) ⟶
+      G.quotientAlgebraDiagram (R := R) where
+  app k := AlgCat.ofHom (Ideal.quotientMapₐ (G.ideal (k.unop + 1)) f (hf k.unop))
+  naturality {k l} g := by
+    apply AlgCat.hom_ext
+    apply AlgHom.ext
+    intro x
+    obtain ⟨a, rfl⟩ := Ideal.Quotient.mk_surjective x
+    rfl
+
+/-- The comparison at order `k` is the induced algebra map from source order `μ k`. -/
+@[simp]
+theorem quotientAlgebraDiagramMap_app (k : ℕᵒᵖ) :
+    (F.quotientAlgebraDiagramMap G f μ hμ hf).app k =
+      AlgCat.ofHom (Ideal.quotientMapₐ (G.ideal (k.unop + 1)) f (hf k.unop)) := (rfl)
+
+/-- The categorical comparison of algebra limits is the concrete filtered
+completion map under the canonical limit isomorphisms. -/
+theorem mapCompletionₐ_completionAlgebraIsoLimit :
+    AlgCat.ofHom (F.mapCompletionₐ G f μ hμ hf) ≫ G.completionAlgebraIsoLimit.hom =
+      F.completionAlgebraIsoLimit.hom ≫
+        (F.quotientAlgebraDiagramMap G f μ hμ hf).reindexLimitMap := by
+  apply limit.hom_ext
+  intro k
+  simp only [Category.assoc, completionAlgebraIsoLimit_hom_π, NatTrans.reindexLimitMap_π,
+    quotientAlgebraDiagramMap_app]
+  -- Identify the source projection behind the reindexed diagram.
+  erw [← Category.assoc, completionAlgebraIsoLimit_hom_π]
+  apply AlgCat.hom_ext
+  exact F.projectionₐ_comp_mapCompletionₐ G f μ hμ hf k.unop
+
+end DiagramMap
 
 end Mei.AlgFiltration
