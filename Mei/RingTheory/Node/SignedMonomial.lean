@@ -50,8 +50,7 @@ theorem signedMonomial_natCast (n : ℕ) : signedMonomial a n = coord a 1 ^ n :=
 /-- The signed monomial of `-n`, for a natural number `n`, is `X^n`. -/
 @[simp]
 theorem signedMonomial_neg_natCast (n : ℕ) : signedMonomial a (-n) = coord a 0 ^ n := by
-  simp only [signedMonomial, neg_neg, Int.toNat_natCast]
-  rw [show (-(n : ℤ)).toNat = 0 by omega, pow_zero, mul_one]
+  simp [signedMonomial]
 
 /-- The signed monomial of `0` is `1`. -/
 @[simp]
