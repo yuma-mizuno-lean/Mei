@@ -8,16 +8,19 @@ module
 public import Mei.RingTheory.Node.Gluing
 
 /-!
-# Maps from truncated nodal overlaps
+# Unit twists of truncated nodal overlaps
 
-The overlap `R[x,y]/(xy-t, x^(k+1), y^(k+1))` represents pairs of elements
-whose product is `t` and whose `(k+1)`st powers vanish. Its evaluation map
-and coordinate extensionality let one compare gluing maps without choosing
-polynomial representatives. Rescaling the two coordinates by mutually inverse
-units gives maps to any algebra over the overlap.
+The overlap `R[x,y]/(xy-t, x^(k+1), y^(k+1))` admits the coordinate change
+`x ↦ ux`, `y ↦ u⁻¹y` for every scalar unit `u`. More generally, an overlap map
+into a commutative algebra can be twisted by a unit in that algebra. This permits
+comparison of slab gluing maps in a common localized overlap, even when their wall
+functions are not units before localization. Evaluation at nilpotent coordinates
+and coordinate extensionality describe maps out of the overlap; the chamber
+quotient relates these maps to the existing slab incidence maps.
 
-We use `TauCeti.NodeAlgebra.lift` and `Ideal.Quotient.liftₐ` for the two
-successive quotients.
+We use `TauCeti.NodeAlgebra.lift` and `Ideal.Quotient.liftₐ`. The overlap model
+and its unit changes of coordinates follow Gross–Siebert, *An Invitation to Toric
+Degenerations*, §2.3, arXiv:0808.2749v2.
 -/
 
 public noncomputable section
@@ -54,77 +57,130 @@ theorem overlap_hom_ext {φ ψ : Overlap t k →ₐ[R] A}
   apply Ideal.Quotient.algHom_ext
   exact TauCeti.NodeAlgebra.hom_ext t hx hy
 
-variable [Algebra (Overlap t k) A] [IsScalarTower R (Overlap t k) A]
-
-/-- Rescale the first overlap coordinate by `u` and the second by `u⁻¹`,
-then evaluate in an algebra over the overlap. -/
-def overlapRescale (u : Aˣ) : Overlap t k →ₐ[R] A :=
-  overlapLift t k
-    ((u : A) * algebraMap (Overlap t k) A (Ideal.Quotient.mk _ (coord t 0)))
-    ((↑u⁻¹ : A) * algebraMap (Overlap t k) A (Ideal.Quotient.mk _ (coord t 1)))
-    (by rw [mul_mul_mul_comm, Units.mul_inv, one_mul, ← map_mul, ← map_mul,
-          coord_zero_mul_coord_one, Ideal.Quotient.mk_algebraMap,
-          ← IsScalarTower.algebraMap_apply])
-    (by rw [mul_pow, ← map_pow, ← map_pow, Ideal.Quotient.eq_zero_iff_mem.mpr
-          (Ideal.subset_span (by simp)), map_zero, mul_zero])
-    (by rw [mul_pow, ← map_pow, ← map_pow, Ideal.Quotient.eq_zero_iff_mem.mpr
-          (Ideal.subset_span (by simp)), map_zero, mul_zero])
-
-/-- Rescaling multiplies the first coordinate by the unit. -/
+/-- Both overlap coordinates vanish to order `k + 1`. -/
 @[simp]
-theorem overlapRescale_coord_zero (u : Aˣ) :
-    overlapRescale t k u (Ideal.Quotient.mk _ (coord t 0)) =
-      (u : A) * algebraMap (Overlap t k) A (Ideal.Quotient.mk _ (coord t 0)) := by
-  simp [overlapRescale]
+theorem overlap_mk_coord_pow_succ (i : Fin 2) :
+    (Ideal.Quotient.mk _ (coord t i) : Overlap t k) ^ (k + 1) = 0 := by
+  rw [← map_pow, Ideal.Quotient.eq_zero_iff_mem]
+  fin_cases i <;> exact Ideal.subset_span (by simp)
 
-/-- Rescaling multiplies the second coordinate by the inverse unit. -/
+private def twistOverlapLift (φ : Overlap t k →ₐ[R] A) (u : Aˣ) :
+    NodeAlgebra R t →ₐ[R] A :=
+  lift t (u * φ (Ideal.Quotient.mk _ (coord t 0)))
+    (↑u⁻¹ * φ (Ideal.Quotient.mk _ (coord t 1))) (by
+      rw [mul_mul_mul_comm, Units.mul_inv, one_mul, ← map_mul, ← map_mul,
+        coord_zero_mul_coord_one, Ideal.Quotient.mk_algebraMap, AlgHom.commutes])
+
+private theorem twistOverlapLift_eq_zero (φ : Overlap t k →ₐ[R] A) (u : Aˣ) :
+    ∀ z ∈ Ideal.span {coord t 0 ^ (k + 1), coord t 1 ^ (k + 1)},
+      twistOverlapLift t k φ u z = 0 := by
+  have hker : Ideal.span {coord t 0 ^ (k + 1), coord t 1 ^ (k + 1)} ≤
+      RingHom.ker (twistOverlapLift t k φ u) := by
+    apply Ideal.span_le.mpr
+    intro z hz
+    rcases Set.mem_insert_iff.mp hz with rfl | hz
+    · apply (RingHom.mem_ker (f := (twistOverlapLift t k φ u).toRingHom)).mpr
+      simp only [AlgHom.toRingHom_eq_coe, AlgHom.coe_toRingHom, map_pow,
+        twistOverlapLift, lift_coord_zero, mul_pow]
+      rw [← map_pow, overlap_mk_coord_pow_succ, map_zero, mul_zero]
+    · obtain rfl := Set.mem_singleton_iff.mp hz
+      apply (RingHom.mem_ker (f := (twistOverlapLift t k φ u).toRingHom)).mpr
+      simp only [AlgHom.toRingHom_eq_coe, AlgHom.coe_toRingHom, map_pow,
+        twistOverlapLift, lift_coord_one, mul_pow]
+      rw [← map_pow, overlap_mk_coord_pow_succ, map_zero, mul_zero]
+  exact fun z hz => hker hz
+
+/-- Twist a map from the truncated nodal overlap by `x ↦ ux`, `y ↦ u⁻¹y`.
+The unit may exist only in the target algebra. -/
+def twistOverlap (φ : Overlap t k →ₐ[R] A) (u : Aˣ) : Overlap t k →ₐ[R] A :=
+  Ideal.Quotient.liftₐ _ (twistOverlapLift t k φ u) (twistOverlapLift_eq_zero t k φ u)
+
+private theorem twistOverlap_mk (φ : Overlap t k →ₐ[R] A) (u : Aˣ)
+    (z : NodeAlgebra R t) :
+    twistOverlap t k φ u (Ideal.Quotient.mk _ z) = twistOverlapLift t k φ u z :=
+  AlgHom.congr_fun (Ideal.Quotient.liftₐ_comp _ _ (twistOverlapLift_eq_zero t k φ u)) z
+
+/-- The first overlap coordinate is multiplied by the twisting unit. -/
 @[simp]
-theorem overlapRescale_coord_one (u : Aˣ) :
-    overlapRescale t k u (Ideal.Quotient.mk _ (coord t 1)) =
-      (↑u⁻¹ : A) * algebraMap (Overlap t k) A (Ideal.Quotient.mk _ (coord t 1)) := by
-  simp [overlapRescale]
+theorem twistOverlap_mk_coord_zero (φ : Overlap t k →ₐ[R] A) (u : Aˣ) :
+    twistOverlap t k φ u (Ideal.Quotient.mk _ (coord t 0)) =
+      u * φ (Ideal.Quotient.mk _ (coord t 0)) := by
+  rw [twistOverlap_mk, twistOverlapLift, lift_coord_zero]
 
-/-- Unit rescaling recovers the structural map from the overlap. -/
+/-- The second overlap coordinate is multiplied by the inverse twisting unit. -/
 @[simp]
-theorem overlapRescale_one :
-    overlapRescale t k (1 : Aˣ) = IsScalarTower.toAlgHom R (Overlap t k) A := by
-  apply overlap_hom_ext <;> simp
+theorem twistOverlap_mk_coord_one (φ : Overlap t k →ₐ[R] A) (u : Aˣ) :
+    twistOverlap t k φ u (Ideal.Quotient.mk _ (coord t 1)) =
+      ↑u⁻¹ * φ (Ideal.Quotient.mk _ (coord t 1)) := by
+  rw [twistOverlap_mk, twistOverlapLift, lift_coord_one]
 
-/-- A coefficient-unit rescaling followed by a target-unit rescaling multiplies
-those units. The first unit is fixed because it comes from the coefficient ring. -/
-theorem overlapRescale_comp (u : Rˣ) (v : Aˣ) :
-    (overlapRescale t k v).comp
-        (overlapRescale t k (Units.map (algebraMap R (Overlap t k)) u)) =
-      overlapRescale t k (Units.map (algebraMap R A) u * v) := by
-  apply overlap_hom_ext <;>
-    simp [Units.coe_map, map_mul, ← map_inv, mul_assoc, mul_left_comm]
+/-- Twisting by one leaves the overlap map unchanged. -/
+@[simp]
+theorem twistOverlap_one (φ : Overlap t k →ₐ[R] A) : twistOverlap t k φ 1 = φ := by
+  apply Ideal.Quotient.algHom_ext
+  ext <;> simp
 
-/-- Rescaling by a coefficient unit is an automorphism of the truncated overlap. -/
-def overlapRescaleEquiv (u : Rˣ) : Overlap t k ≃ₐ[R] Overlap t k :=
+/-- Composing with a scalar coordinate twist multiplies the target twisting unit
+by the image of the scalar unit. -/
+theorem twistOverlap_comp (φ : Overlap t k →ₐ[R] A) (u : Aˣ) (v : Rˣ) :
+    (twistOverlap t k φ u).comp
+        (twistOverlap t k (AlgHom.id R _) (Units.map (algebraMap R (Overlap t k)).toMonoidHom v)) =
+      twistOverlap t k φ (u * Units.map (algebraMap R A).toMonoidHom v) := by
+  apply Ideal.Quotient.algHom_ext
+  ext <;> simp [mul_assoc, mul_left_comm, mul_comm]
+
+/-- A scalar unit gives an automorphism of the truncated overlap, with inverse
+the twist by its inverse. -/
+def scaleOverlap (u : Rˣ) : Overlap t k ≃ₐ[R] Overlap t k :=
   AlgEquiv.ofAlgHom
-    (overlapRescale t k (Units.map (algebraMap R (Overlap t k)) u))
-    (overlapRescale t k (Units.map (algebraMap R (Overlap t k)) u⁻¹))
-    (by rw [overlapRescale_comp, ← map_mul, inv_mul_cancel, map_one, overlapRescale_one]; rfl)
-    (by rw [overlapRescale_comp, ← map_mul, mul_inv_cancel, map_one, overlapRescale_one]; rfl)
+    (twistOverlap t k (AlgHom.id R _) (Units.map (algebraMap R (Overlap t k)).toMonoidHom u))
+    (twistOverlap t k (AlgHom.id R _) (Units.map (algebraMap R (Overlap t k)).toMonoidHom u⁻¹))
+    (by rw [twistOverlap_comp]; simp)
+    (by rw [twistOverlap_comp]; simp)
 
-/-- The overlap automorphism has the values of coordinate rescaling. -/
+/-- The scalar overlap automorphism has the underlying unit twist. -/
 @[simp]
-theorem overlapRescaleEquiv_apply (u : Rˣ) (z : Overlap t k) :
-    overlapRescaleEquiv t k u z =
-      overlapRescale t k (Units.map (algebraMap R (Overlap t k)) u) z := (rfl)
+theorem scaleOverlap_toAlgHom (u : Rˣ) :
+    (scaleOverlap t k u).toAlgHom =
+      twistOverlap t k (AlgHom.id R _)
+        (Units.map (algebraMap R (Overlap t k)).toMonoidHom u) := (rfl)
 
-/-- The inverse rescaling is given by the inverse coefficient unit. -/
+/-- Scaling the first coordinate multiplies it by `u`. -/
 @[simp]
-theorem overlapRescaleEquiv_symm (u : Rˣ) :
-    (overlapRescaleEquiv t k u).symm = overlapRescaleEquiv t k u⁻¹ := by
-  ext z
-  rfl
+theorem scaleOverlap_mk_coord_zero (u : Rˣ) :
+    scaleOverlap t k u (Ideal.Quotient.mk _ (coord t 0)) =
+      algebraMap R (Overlap t k) u * Ideal.Quotient.mk _ (coord t 0) := by
+  exact twistOverlap_mk_coord_zero t k _ _
 
-/-- The algebra map underlying the rescaling automorphism. -/
+/-- Scaling the second coordinate multiplies it by `u⁻¹`. -/
 @[simp]
-theorem overlapRescaleEquiv_toAlgHom (u : Rˣ) :
-    (overlapRescaleEquiv t k u).toAlgHom =
-      overlapRescale t k (Units.map (algebraMap R (Overlap t k)) u) := (rfl)
+theorem scaleOverlap_mk_coord_one (u : Rˣ) :
+    scaleOverlap t k u (Ideal.Quotient.mk _ (coord t 1)) =
+      algebraMap R (Overlap t k) (↑u⁻¹ : R) * Ideal.Quotient.mk _ (coord t 1) := by
+  have h := twistOverlap_mk_coord_one t k (AlgHom.id R _)
+    (Units.map (algebraMap R (Overlap t k)).toMonoidHom u)
+  rw [← map_inv, Units.coe_map] at h
+  exact h
+
+/-- The identity scalar gives the identity overlap automorphism. -/
+@[simp]
+theorem scaleOverlap_one : scaleOverlap t k (1 : Rˣ) = AlgEquiv.refl := by
+  apply AlgEquiv.coe_toAlgHom_injective
+  simp
+
+/-- Multiplication of scalar units gives composition of overlap automorphisms. -/
+@[simp]
+theorem scaleOverlap_mul (u v : Rˣ) :
+    scaleOverlap t k (u * v) = (scaleOverlap t k v).trans (scaleOverlap t k u) := by
+  apply AlgEquiv.coe_toAlgHom_injective
+  apply Ideal.Quotient.algHom_ext
+  ext <;> simp [mul_assoc, mul_left_comm, mul_comm]
+
+/-- Inverting the scalar unit inverts its overlap automorphism. -/
+@[simp]
+theorem scaleOverlap_inv (u : Rˣ) :
+    scaleOverlap t k u⁻¹ = (scaleOverlap t k u).symm := by
+  simp [scaleOverlap, AlgEquiv.ofAlgHom_symm]
 
 /-- The quotient from the left chamber to the overlap. -/
 def leftToOverlap : LeftChamber t k →ₐ[R] Overlap t k :=
