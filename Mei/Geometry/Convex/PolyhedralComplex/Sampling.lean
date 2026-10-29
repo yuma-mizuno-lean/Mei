@@ -82,6 +82,24 @@ theorem segmentCrossingWord_eq_prod_sampling {n : ℕ}
         (ih (by omega))).trans (hstep ⟨m, by omega⟩).symm
   exact (hprod n le_rfl).symm
 
+/-- A segment with independently specified endpoints has the reverse product of
+its sampled subsegment words when the first and last parameters are zero and one.
+Repeated parameters and stationary segments are allowed. -/
+theorem segmentCrossingWord_eq_prod_sampling_of_endpoints {n : ℕ}
+    {x y : WallComplement (fun P : C.walls => (P : Set V))}
+    (e : x ⟶ y) (v : Fin (n + 1) → WallComplement (fun P : C.walls => (P : Set V)))
+    (t : Fin (n + 1) → unitInterval) (ht0 : t 0 = 0) (ht1 : t (Fin.last n) = 1)
+    (hmono : Monotone t)
+    (hv : ∀ j, (v j).val = AffineMap.lineMap x.val y.val (t j : ℝ))
+    (edge : ∀ a : Fin n, v a.castSucc ⟶ v a.succ) :
+    C.segmentCrossingWord ν e =
+      (List.ofFn (fun a : Fin n => C.segmentCrossingWord ν (edge a))).reverse.prod := by
+  have hx : v 0 = x := by ext; simpa [ht0] using hv 0
+  have hy : v (Fin.last n) = y := by ext; simpa [ht1] using hv (Fin.last n)
+  subst x
+  subst y
+  exact C.segmentCrossingWord_eq_prod_sampling ν v e t hmono hv edge
+
 end Mei.FinitePolyhedralComplex
 
 namespace Quiver.Path

@@ -13,6 +13,7 @@ public import Mei.Geometry.Convex.Polyhedron.Path.Product
 Adding unrestricted spatial coordinates to each wall preserves singular support
 and signed crossings. Projection onto the original coordinates carries admissible
 polygonal paths and their wall products to the original wall family.
+A fixed-coordinate lift is a section of this projection on points and paths.
 -/
 
 public section
@@ -51,6 +52,37 @@ theorem cylinderProjection_obj_val
 
 instance : (cylinderProjection (E := E) W).MapReverse where
   map_reverse' _ := PLift.ext (Subsingleton.elim _ _)
+
+/-- Lift an admissible path at a fixed value of the unrestricted coordinates. -/
+def cylinderLift (e : E) : WallComplement W ⥤q
+    WallComplement (fun j => W j ×ˢ (univ : Set E)) where
+  obj x := ⟨(x.val, e), fun j hj => x.notMem j hj.1⟩
+  map {x y} a := ⟨{
+    transverse := fun j hj hm => by
+      obtain ⟨t, ht, hmem⟩ := hj
+      have hx : AffineMap.lineMap x.val y.val t ∈ W j := by
+        simpa [AffineMap.lineMap_apply] using hmem.1
+      rw [Mei.direction_affineSpan_prod_univ ⟨_, hx⟩] at hm
+      exact a.down.transverse j ⟨t, ht, hx⟩ hm.1
+    regular := fun t ht hm => by
+      rw [singularSupport_prod_univ W] at hm
+      apply a.down.regular t ht
+      simpa [AffineMap.lineMap_apply] using hm.1 }⟩
+
+@[simp]
+theorem cylinderLift_obj_val (e : E) (x : WallComplement W) :
+    ((cylinderLift W e).obj x).val = (x.val, e) := (rfl)
+
+instance (e : E) : (cylinderLift W e).MapReverse where
+  map_reverse' _ := PLift.ext (Subsingleton.elim _ _)
+
+/-- Projection is a retraction of the fixed-coordinate path lift. -/
+@[simp]
+theorem cylinderLift_comp_cylinderProjection (e : E) :
+    cylinderLift W e ⋙q cylinderProjection W = Prefunctor.id _ := by
+  refine Prefunctor.ext (fun _ => WallComplement.ext rfl) ?_
+  intros
+  exact PLift.ext (Subsingleton.elim _ _)
 
 /-- A segment and its projection cross the same walls at the same times. -/
 theorem mem_crossings_cylinderProjection
