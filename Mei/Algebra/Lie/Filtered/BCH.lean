@@ -239,6 +239,22 @@ theorem completedBCHAction_unique
         (F.projection k a)) : σ = F.completedBCHAction d ℒ :=
   F.completedAction_unique _ _ σ hσ
 
+/-- Completed algebra actions agreeing on the canonical image of `A` agree: every completed
+element has the same finite-order projections as a canonical one. -/
+theorem completedBCHAction_eq_of_forall_toCompletion {g h : d.completedBCHGroup ℒ}
+    (hgh : ∀ a : A, F.completedBCHAction d ℒ g (F.toCompletion a) =
+      F.completedBCHAction d ℒ h (F.toCompletion a)) :
+    F.completedBCHAction d ℒ g = F.completedBCHAction d ℒ h := by
+  apply AlgEquiv.ext
+  intro z
+  apply F.completion_ext
+  intro k
+  obtain ⟨a, ha⟩ := Ideal.Quotient.mk_surjective (F.projection k z)
+  have hk := congrArg (F.projection k) (hgh a)
+  simp only [projection_completedBCHAction, projection_toCompletion] at hk ⊢
+  rw [← ha]
+  exact hk
+
 /-- Filtration detection makes the completed action by algebra automorphisms faithful. -/
 theorem completedBCHAction_injective
     [IsFiltrationDetected d ℒ (F.toModuleFiltration R)] :

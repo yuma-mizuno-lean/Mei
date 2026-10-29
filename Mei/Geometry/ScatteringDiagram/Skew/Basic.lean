@@ -92,6 +92,12 @@ theorem form_self (n : N) : D.form n n = 0 :=
 theorem form_swap (a b : N) : D.form b a = -D.form a b :=
   (D.isAlt_form.neg a b).symm
 
+/-- Vectors with nonzero skew pairing have nonzero sum, since `{a, -a} = 0`. -/
+theorem add_ne_zero_of_form_ne_zero {a b : N} (h : D.form a b ≠ 0) : a + b ≠ 0 := by
+  intro hab
+  rw [eq_neg_of_add_eq_zero_right hab, map_neg, form_self, neg_zero] at h
+  exact h rfl
+
 variable (hD : ∀ a b, ∃ k : ℤ, D.form a b = k)
 
 /-- The integer-valued skew character `n ↦ {n,-}`, when the form is integral
@@ -203,13 +209,8 @@ theorem rayVector_mem_unfrozen_inf_sublattice {n : N} (hn : n ∈ D.unfrozen) :
 /-- Pairing with the normalized lattice vector multiplies the form by the ray index. -/
 theorem form_rayVector (a n : N) :
     D.form a (D.sublattice.toAddSubgroup.rayVector n : N) =
-      D.sublattice.toAddSubgroup.rayIndex n * D.form a n := by
-  have h := congrArg (D.form a) (D.sublattice.toAddSubgroup.den_rayIndex_zsmul_rayVector n)
-  simp only [map_zsmul, zsmul_eq_mul] at h
-  rw [← Rat.num_div_den (D.sublattice.toAddSubgroup.rayIndex n)]
-  have hden : ((D.sublattice.toAddSubgroup.rayIndex n).den : ℚ) ≠ 0 := by positivity
-  field_simp
-  simpa [mul_comm] using h
+      D.sublattice.toAddSubgroup.rayIndex n * D.form a n :=
+  D.sublattice.toAddSubgroup.map_rayVector (D.form a).toAddMonoidHom n
 
 /-- For `n ∈ N_uf` and every `a`, the value `{a, κ(n) n} = κ(n) {a, n}` is an integer, where
 `κ` is the ray index of `N°`: the vector `κ(n) n` lies in `N_uf ∩ N°`. -/
@@ -217,6 +218,25 @@ theorem exists_int_eq_rayIndex_mul_form {n : N} (hn : n ∈ D.unfrozen) (a : N) 
     ∃ k : ℤ, D.sublattice.toAddSubgroup.rayIndex n * D.form a n = k := by
   rw [← D.form_rayVector]
   exact D.integral_unfrozen_inf_sublattice a _ (D.rayVector_mem_unfrozen_inf_sublattice hn)
+
+/-- An unfrozen vector of `N°` pairing to `1` with some vector has ray index `1`. -/
+theorem rayIndex_eq_one_of_form_eq_one {n a : N} (hn : n ∈ D.unfrozen)
+    (hn' : n ∈ D.sublattice) (h : D.form a n = 1) :
+    D.sublattice.toAddSubgroup.rayIndex n = 1 := by
+  have hn0 : n ≠ 0 := by
+    rintro rfl
+    simp at h
+  obtain ⟨j, -, hje⟩ :=
+    (D.sublattice.toAddSubgroup.mem_iff_exists_div_eq_mul_rayIndex_of_zsmul_eq_zsmul
+      hn0 one_pos one_pos rfl).mp hn'
+  obtain ⟨k, hk⟩ := D.exists_int_eq_rayIndex_mul_form hn a
+  rw [h, mul_one] at hk
+  rw [hk] at hje ⊢
+  have hjk : ((j : ℤ) * k : ℚ) = 1 := by simpa using hje.symm
+  have hjk' : (j : ℤ) * k = 1 := by exact_mod_cast hjk
+  have hj1 : (j : ℤ) = 1 := Int.eq_one_of_mul_eq_one_right (by positivity) hjk'
+  rw [hj1, one_mul] at hjk'
+  exact_mod_cast hjk'
 
 /-- The integral functional `{-, κ(n) n}` on `N`, for `n ∈ N_uf`, where `κ` is the ray index
 of `N°`. -/

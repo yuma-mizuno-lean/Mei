@@ -10,6 +10,7 @@ public import Mathlib.Algebra.Order.Field.Basic
 public import Mathlib.GroupTheory.Index
 public import Mathlib.GroupTheory.OrderOfElement
 public import Mathlib.GroupTheory.Subgroup.Saturated
+public import Mathlib.LinearAlgebra.Dual.Lemmas
 
 /-!
 # Ray indices of sublattices
@@ -38,6 +39,8 @@ algebras*, §1, defined by `ℝ_{>0} n ∩ N° = ℕ_{>0} κ(n) n` for the finit
   multiples of a nonzero `n` in `H` are those by the positive integer multiples of
   `H.rayIndex n` when the index is positive; none lie in `H` when the index is zero.
 * `AddSubgroup.rayIndex_eq_of_zsmul_eq_zsmul`: the scaling law of the ray index.
+* `AddSubgroup.exists_zsmul_rayVector_add`: a common integer multiple `c` of `κ(n₁)` and
+  `κ(n₂)` is an integer multiple of `κ(n₁ + n₂)`, compatibly with the normalized vectors.
 -/
 
 public section
@@ -175,6 +178,23 @@ theorem mem_iff_exists_div_eq_mul_rayIndex_of_zsmul_eq_zsmul {m n : N} (hn : n �
     rw [mul_div_assoc', div_left_inj' hd'] at hje
     exact_mod_cast (hje.trans (mul_comm _ _))
 
+/-- Every rational multiple `m = (b / a) n` of a nonzero vector lying in `H`, of either sign,
+is an integer multiple of the ray index: `b / a = s * H.rayIndex n` for some integer `s`. -/
+theorem exists_int_mul_rayIndex_eq_of_zsmul_eq_zsmul {m n : N} (hn : n ≠ 0) (hm : m ∈ H)
+    {a b : ℤ} (ha : 0 < a) (h : a • m = b • n) :
+    ∃ s : ℤ, s * H.rayIndex n = b / a := by
+  rcases lt_trichotomy b 0 with hb | rfl | hb
+  · have h' : a • -m = (-b) • n := by rw [smul_neg, h, neg_smul]
+    obtain ⟨j, -, hj⟩ := (H.mem_iff_exists_div_eq_mul_rayIndex_of_zsmul_eq_zsmul hn ha
+      (neg_pos.mpr hb) h').mp (H.neg_mem hm)
+    refine ⟨-j, ?_⟩
+    push_cast at hj ⊢
+    rw [neg_mul, ← hj, neg_div, neg_neg]
+  · exact ⟨0, by simp⟩
+  · obtain ⟨j, -, hj⟩ :=
+      (H.mem_iff_exists_div_eq_mul_rayIndex_of_zsmul_eq_zsmul hn ha hb h).mp hm
+    exact ⟨j, by exact_mod_cast hj.symm⟩
+
 /-- The multiple `κ(n) n` lies in `H`: some `m ∈ H` satisfies `den(κ) • m = num(κ) • n`, where
 `κ = H.rayIndex n`. -/
 theorem exists_mem_den_rayIndex_zsmul_eq_num_rayIndex_zsmul (n : N) :
@@ -209,6 +229,49 @@ theorem den_rayIndex_zsmul_rayVector (n : N) :
     ((H.rayIndex n).den : ℤ) • (H.rayVector n : N) = (H.rayIndex n).num • n :=
   (H.exists_mem_den_rayIndex_zsmul_eq_num_rayIndex_zsmul n).choose_spec.2
 
+/-- A rational-valued additive map sends the normalized vector `κ(n) n` to `κ(n)` times
+its value at `n`. -/
+theorem map_rayVector (g : N →+ ℚ) (n : N) :
+    g (H.rayVector n) = H.rayIndex n * g n := by
+  have h := congrArg g (H.den_rayIndex_zsmul_rayVector n)
+  simp only [map_zsmul, zsmul_eq_mul] at h
+  rw [← Rat.num_div_den (H.rayIndex n)]
+  have hden : ((H.rayIndex n).den : ℚ) ≠ 0 := by positivity
+  rw [div_mul_eq_mul_div, eq_div_iff hden, mul_comm]
+  exact_mod_cast h
+
+/-- If `c = s₁ κ(n₁) = s₂ κ(n₂)` for integers `s₁, s₂` and `n₁ + n₂ ≠ 0`, then
+`c (n₁ + n₂) = s₁ κ(n₁) n₁ + s₂ κ(n₂) n₂` lies in `H`, so `c` is also an integer multiple
+`s₃ κ(n₁ + n₂)`, and `s₃ κ(n₁ + n₂) (n₁ + n₂) = s₁ κ(n₁) n₁ + s₂ κ(n₂) n₂`. -/
+theorem exists_zsmul_rayVector_add {n₁ n₂ : N} (hn : n₁ + n₂ ≠ 0) {c : ℚ}
+    {s₁ s₂ : ℤ} (h₁ : s₁ * H.rayIndex n₁ = c) (h₂ : s₂ * H.rayIndex n₂ = c) :
+    ∃ s₃ : ℤ, s₃ * H.rayIndex (n₁ + n₂) = c ∧
+      s₃ • H.rayVector (n₁ + n₂) = s₁ • H.rayVector n₁ + s₂ • H.rayVector n₂ := by
+  -- Lattice vectors are compared through their rational values under integral functionals.
+  have hκ (f : Module.Dual ℤ N) (n : N) : (f (H.rayVector n) : ℚ) = H.rayIndex n * f n := by
+    simpa using H.map_rayVector ((Int.castAddHom ℚ).comp f.toAddMonoidHom) n
+  have hsep {x y : N} (h : ∀ f : Module.Dual ℤ N, (f x : ℚ) = f y) : x = y := by
+    rw [← sub_eq_zero, ← Module.forall_dual_apply_eq_zero_iff ℤ]
+    intro f
+    rw [map_sub, sub_eq_zero]
+    exact_mod_cast h f
+  set m := s₁ • H.rayVector n₁ + s₂ • H.rayVector n₂
+  have hm (f : Module.Dual ℤ N) : (f m : ℚ) = c * f (n₁ + n₂) := by
+    simp only [m, AddSubgroup.coe_add, AddSubgroup.coe_zsmul, map_add, map_zsmul, smul_eq_mul,
+      Int.cast_add, Int.cast_mul, hκ]
+    rw [← mul_assoc, ← mul_assoc, h₁, h₂, mul_add]
+  have hden : (c.den : ℤ) • (m : N) = c.num • (n₁ + n₂) := by
+    refine hsep fun f => ?_
+    simp only [map_zsmul, smul_eq_mul, Int.cast_mul, Int.cast_natCast, hm, ← Rat.mul_den_eq_num]
+    ring
+  obtain ⟨s₃, hs₃⟩ :=
+    H.exists_int_mul_rayIndex_eq_of_zsmul_eq_zsmul hn m.property (by positivity) hden
+  have hc : s₃ * H.rayIndex (n₁ + n₂) = c := by
+    rw [hs₃, Int.cast_natCast, Rat.num_div_den]
+  refine ⟨s₃, hc, Subtype.ext (hsep fun f => ?_)⟩
+  simp only [AddSubgroup.coe_zsmul, map_zsmul, smul_eq_mul, Int.cast_mul, hκ, hm]
+  rw [← hc]
+  ring
 /-- The normalized vector of zero is zero. -/
 @[simp]
 theorem rayVector_zero : H.rayVector 0 = 0 := by
