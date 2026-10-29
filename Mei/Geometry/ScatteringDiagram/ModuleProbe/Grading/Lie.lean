@@ -17,6 +17,11 @@ The semidirect bracket respects the extended degree: base elements have charge
 zero, coefficients have charge one, and the bracket of two coefficients vanishes.
 The original positive grading and the shifted support give a positive grading
 for `ModuleProbe.positiveDegrees`, including coefficients of relative degree zero.
+Projecting onto the base and reincluding it gives a degree-preserving charge-zero
+endomorphism of the probe; it fixes the base summand and kills the module summand.
+The retraction uses Mathlib's `LieAlgebra.SemiDirectSum.projr` and the base
+inclusion, following Mandel, *Scattering diagrams, theta functions, and refined
+tropical curve counts*, §3.3.3 (arXiv:1503.06183v5).
 -/
 
 public section
@@ -117,6 +122,36 @@ def baseGradedLieHom :
 @[simp]
 theorem baseGradedLieHom_apply (x : L) :
     baseGradedLieHom d ℳ p ℒ x = baseInclusion d ℳ p ℒ x := (rfl)
+
+/-- Project onto the charge-zero summand, retaining the extended degree lattice. -/
+def chargeZeroGradedLieHom :
+    GradedLieHom (PositiveDegreeMap.id (positiveDegrees d p))
+      (grading d ℳ p ℒ) (grading d ℳ p ℒ) where
+  toLieHom := (baseInclusion d ℳ p ℒ).comp (LieAlgebra.SemiDirectSum.projr _)
+  map_mem := by
+    rintro ⟨q, c, l⟩ x hx
+    simp only [PositiveDegreeMap.id_apply]
+    by_cases h₀ : c = 0 ∧ l = 0
+    · obtain ⟨rfl, rfl⟩ := h₀
+      obtain ⟨_, hr⟩ := (mem_grading_base d ℳ p ℒ q x).mp hx
+      rw [grading_base]
+      exact Submodule.mem_map.mpr ⟨x.right, hr, rfl⟩
+    · by_cases h₁ : c = 1 ∧ l = 0
+      · obtain ⟨rfl, rfl⟩ := h₁
+        have hr := ((mem_grading_module d ℳ p ℒ q x).mp hx).1
+        have he : (baseInclusion d ℳ p ℒ).comp (LieAlgebra.SemiDirectSum.projr _) x = 0 := by
+          rw [LieHom.comp_apply, LieAlgebra.SemiDirectSum.projr_mk, hr, map_zero]
+        rw [he]
+        exact Submodule.zero_mem _
+      · have hx₀ : x = 0 := by
+          simpa only [grading_def, h₀, h₁, ↓reduceIte, Submodule.mem_bot] using hx
+        rw [hx₀, map_zero]
+        exact Submodule.zero_mem _
+
+/-- On the semidirect carrier this is the original base inclusion after projection. -/
+@[simp]
+theorem chargeZeroGradedLieHom_apply (x : ProbeLie d ℳ p ℒ) :
+    chargeZeroGradedLieHom d ℳ p ℒ x = baseInclusion d ℳ p ℒ x.right := (rfl)
 
 variable [DirectSum.Decomposition ℳ]
 

@@ -16,8 +16,6 @@ charge-zero inclusion. At extended order `k + 1`, its kernel is precisely the
 embedded relative-order-`k` coefficient module; the completed kernel consists
 precisely of completed coefficient labels. Thus forgetting the probe coefficient
 retains the base label without requiring a faithful coefficient action.
-Reincluding the projected label gives the degree-preserving charge-zero
-endomorphism of the probe; it fixes the base summand and kills the module summand.
 The kernel equivalence extracts coefficients, with their finite logarithmic
 projections and the base-conjugation action.
 
@@ -42,42 +40,6 @@ variable {R Γ : Type*} {M L : Type u} [CommRing R] [AddCommGroup M] [Module R M
   [LieRingModule L M] [LieModule R L M]
   (ℒ : Γ → Submodule R L) [GradedLieAlgebra ℒ] [IsPositiveGrading d ℒ]
   [SetLike.GradedBracket ℒ ℳ] [DirectSum.Decomposition ℳ]
-
-section ChargeZero
-
-omit [DirectSum.Decomposition ℳ] in
-/-- Project onto the charge-zero summand, retaining the extended degree lattice. -/
-def chargeZeroGradedLieHom :
-    GradedLieHom (PositiveDegreeMap.id (positiveDegrees d p))
-      (grading d ℳ p ℒ) (grading d ℳ p ℒ) where
-  toLieHom := (baseInclusion d ℳ p ℒ).comp (LieAlgebra.SemiDirectSum.projr _)
-  map_mem := by
-    rintro ⟨q, c, l⟩ x hx
-    simp only [PositiveDegreeMap.id_apply]
-    by_cases h₀ : c = 0 ∧ l = 0
-    · obtain ⟨rfl, rfl⟩ := h₀
-      obtain ⟨_, hr⟩ := (mem_grading_base d ℳ p ℒ q x).mp hx
-      rw [grading_base]
-      exact Submodule.mem_map.mpr ⟨x.right, hr, rfl⟩
-    · by_cases h₁ : c = 1 ∧ l = 0
-      · obtain ⟨rfl, rfl⟩ := h₁
-        have hr := ((mem_grading_module d ℳ p ℒ q x).mp hx).1
-        have he : (baseInclusion d ℳ p ℒ).comp (LieAlgebra.SemiDirectSum.projr _) x = 0 := by
-          rw [LieHom.comp_apply, LieAlgebra.SemiDirectSum.projr_mk, hr, map_zero]
-        rw [he]
-        exact Submodule.zero_mem _
-      · have hx₀ : x = 0 := by
-          simpa only [grading_def, h₀, h₁, ↓reduceIte, Submodule.mem_bot] using hx
-        rw [hx₀, map_zero]
-        exact Submodule.zero_mem _
-
-omit [DirectSum.Decomposition ℳ] in
-/-- On the semidirect carrier this is the original base inclusion after projection. -/
-@[simp]
-theorem chargeZeroGradedLieHom_apply (x : ProbeLie d ℳ p ℒ) :
-    chargeZeroGradedLieHom d ℳ p ℒ x = baseInclusion d ℳ p ℒ x.right := (rfl)
-
-end ChargeZero
 
 private theorem right_mem_degreeIdeal (k : ℕ) {x : ProbeLie d ℳ p ℒ}
     (hx : x ∈ (positiveDegrees d p).degreeIdeal (grading d ℳ p ℒ) k) :
@@ -249,7 +211,7 @@ theorem completedMap_chargeZeroGradedLieHom
       (grading d ℳ p ℒ) k).surjective_mkQ x
     simp [LieIdeal.mkQ_apply]
   rw [he, LieHom.bchGroupMap_comp]
-  rfl
+  exact MonoidHom.comp_apply _ _ _
 
 /-- The completed charge-zero inclusion loses no base labels. -/
 theorem completedMap_base_injective :

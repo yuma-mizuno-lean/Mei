@@ -68,35 +68,9 @@ variable [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : Λ →+ V} (h : TauCeti.Toric.IsIntegralLattice i)
   {j : (ℤ × ℤ) →+ E} (h' : TauCeti.Toric.IsIntegralLattice j)
 
-/-- The charge-zero diagram retains the wall geometry and replaces each label
-by its base projection included back into the probe. -/
-def chargeZeroDiagram {ι : Type*}
-    (D : DirectedDiagram (d := positiveDegrees d p) (h.prod h') (wallSpaces d ℳ p ℒ H) ι) :
-    DirectedDiagram (d := positiveDegrees d p) (h.prod h') (wallSpaces d ℳ p ℒ H) ι :=
-  D.map (chargeZeroGradedLieHom d ℳ p ℒ) (chargeZeroGradedLieHom_mem_wall d ℳ p ℒ H)
-
-omit [LieAlgebra ℚ L] [IsScalarTower ℚ R L] in
-/-- Charge-zero projection is the fixed-degree coefficient map of the retraction. -/
-theorem chargeZeroDiagram_def {ι : Type*}
-    (D : DirectedDiagram (d := positiveDegrees d p) (h.prod h') (wallSpaces d ℳ p ℒ H) ι) :
-    chargeZeroDiagram d ℳ p ℒ H h h' D =
-      D.map (chargeZeroGradedLieHom d ℳ p ℒ)
-        (chargeZeroGradedLieHom_mem_wall d ℳ p ℒ H) := (rfl)
-
-omit [LieAlgebra ℚ L] [IsScalarTower ℚ R L] in
-/-- Charge-zero projection leaves every wall's ray, normal and support in place. -/
-@[simp]
-theorem chargeZeroDiagram_wall {ι : Type*}
-    (D : DirectedDiagram (d := positiveDegrees d p) (h.prod h') (wallSpaces d ℳ p ℒ H) ι)
-    (a : ι) :
-    (chargeZeroDiagram d ℳ p ℒ H h h' D).wall a =
-      (D.wall a).map (chargeZeroGradedLieHom d ℳ p ℒ)
-        (chargeZeroGradedLieHom_mem_wall d ℳ p ℒ H) := by
-  exact D.map_wall _ _ a
-
 /-- A charge-zero cylinder wall is fixed by forgetting the module summand. -/
 @[simp]
-theorem map_chargeZero_baseCylinder (W : DirectedWall (d := d) h H) :
+theorem baseCylinder_map_chargeZeroGradedLieHom (W : DirectedWall (d := d) h H) :
     (baseCylinder d ℳ p ℒ H h h' W).map (chargeZeroGradedLieHom d ℳ p ℒ)
       (chargeZeroGradedLieHom_mem_wall d ℳ p ℒ H) = baseCylinder d ℳ p ℒ H h h' W := by
   apply DirectedWall.ext <;> simp
@@ -110,14 +84,16 @@ theorem completedBaseProjection_probeWall_label (a : ℳ p) :
 
 /-- At every cutoff, the charge-zero initial input is just the cylinder input:
 the additional full probe hyperplane carries the identity label. -/
-theorem chargeZero_initialDiagram_equivalent {ι : Type*}
+theorem initialDiagram_map_chargeZeroGradedLieHom_equivalent_cylinderDiagram {ι : Type*}
     (D : DirectedDiagram (d := d) h H ι) (a : ℳ p) :
-    (chargeZeroDiagram d ℳ p ℒ H h h' (initialDiagram d ℳ p ℒ H h h' D a)).Equivalent
+    ((initialDiagram d ℳ p ℒ H h h' D a).map (chargeZeroGradedLieHom d ℳ p ℒ)
+      (chargeZeroGradedLieHom_mem_wall d ℳ p ℒ H)).Equivalent
       (cylinderDiagram d ℳ p ℒ H h h' D) := by
   let Z := DirectedDiagram.ofFinite (fun _ : Unit =>
     (probeWall d ℳ p ℒ H h h' a).map (chargeZeroGradedLieHom d ℳ p ℒ)
       (chargeZeroGradedLieHom_mem_wall d ℳ p ℒ H))
-  have he : chargeZeroDiagram d ℳ p ℒ H h h' (initialDiagram d ℳ p ℒ H h h' D a) =
+  have he : (initialDiagram d ℳ p ℒ H h h' D a).map (chargeZeroGradedLieHom d ℳ p ℒ)
+      (chargeZeroGradedLieHom_mem_wall d ℳ p ℒ H) =
       (cylinderDiagram d ℳ p ℒ H h h' D).append Z := by
     apply DirectedDiagram.ext
     funext b
@@ -132,29 +108,31 @@ theorem chargeZero_initialDiagram_equivalent {ι : Type*}
 /-- The charge-zero part of a probe completion is the cylinder over a prescribed
 base completion, up to all-order diagram equivalence. No purity or choice of
 correction algorithm is needed. -/
-theorem chargeZero_outgoingCompletion_equivalent {ι κ κ' : Type*}
+theorem map_chargeZeroGradedLieHom_equivalent_cylinderDiagram_of_isOutgoingCompletion
+    {ι κ κ' : Type*}
     (D₀ : DirectedDiagram (d := d) h H ι)
     (D : DirectedDiagram (d := d) h H (ι ⊕ κ)) (a : ℳ p)
     (F : DirectedDiagram (d := positiveDegrees d p) (h.prod h')
       (wallSpaces d ℳ p ℒ H) ((ι ⊕ Unit) ⊕ κ'))
     (hD : DirectedDiagram.IsOutgoingCompletion D₀.wall D)
     (hF : DirectedDiagram.IsOutgoingCompletion (initialDiagram d ℳ p ℒ H h h' D₀ a).wall F) :
-    (chargeZeroDiagram d ℳ p ℒ H h h' F).Equivalent
+    (F.map (chargeZeroGradedLieHom d ℳ p ℒ)
+      (chargeZeroGradedLieHom_mem_wall d ℳ p ℒ H)).Equivalent
       (cylinderDiagram d ℳ p ℒ H h h' D) := by
   have hC : DirectedDiagram.IsOutgoingCompletion
       (cylinderDiagram d ℳ p ℒ H h h' D₀).wall
-      (cylinderDiagram d ℳ p ℒ H h h' D) :=
-    { wall_inl b := by simp [hD.wall_inl]
-      outgoing_inr b := by simpa using hD.outgoing_inr b
-      consistent := (cylinderDiagram_consistent_iff d ℳ p ℒ H h h' D).mpr hD.consistent }
+      (cylinderDiagram d ℳ p ℒ H h h' D) := by
+    convert cylinderDiagram_isOutgoingCompletion d ℳ p ℒ H h h' hD using 1
+    exact funext (cylinderDiagram_wall d ℳ p ℒ H h h' D₀)
   have hZ : DirectedDiagram.IsOutgoingCompletion
-      (chargeZeroDiagram d ℳ p ℒ H h h' (initialDiagram d ℳ p ℒ H h h' D₀ a)).wall
-      (chargeZeroDiagram d ℳ p ℒ H h h' F) :=
-    { wall_inl b := by simp [hF.wall_inl]
-      outgoing_inr b := by simpa using hF.outgoing_inr b
-      consistent := hF.consistent.map F (chargeZeroGradedLieHom d ℳ p ℒ)
-        (chargeZeroGradedLieHom_mem_wall d ℳ p ℒ H) }
+      ((initialDiagram d ℳ p ℒ H h h' D₀ a).map (chargeZeroGradedLieHom d ℳ p ℒ)
+        (chargeZeroGradedLieHom_mem_wall d ℳ p ℒ H)).wall
+      (F.map (chargeZeroGradedLieHom d ℳ p ℒ)
+        (chargeZeroGradedLieHom_mem_wall d ℳ p ℒ H)) := by
+    convert hF.map (chargeZeroGradedLieHom d ℳ p ℒ)
+      (chargeZeroGradedLieHom_mem_wall d ℳ p ℒ H) using 1
+    exact funext ((initialDiagram d ℳ p ℒ H h h' D₀ a).map_wall _ _)
   exact hZ.equivalent_of_input hC
-    (chargeZero_initialDiagram_equivalent d ℳ p ℒ H h h' D₀ a)
+    (initialDiagram_map_chargeZeroGradedLieHom_equivalent_cylinderDiagram d ℳ p ℒ H h h' D₀ a)
 
 end Mei.ModuleProbe
