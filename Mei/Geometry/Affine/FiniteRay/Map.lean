@@ -44,6 +44,20 @@ theorem direction_map (β : FiniteAffineRay V P) (f : P →ᵃ[ℝ] Q) :
 theorem bends_map_apply (β : FiniteAffineRay V P) (f : P →ᵃ[ℝ] Q) (t : ℝ) :
     (β.map f).bends t = f.linear (β.bends t) := (rfl)
 
+/-- An affine image is straight if its linear part kills every direction increment.
+It suffices to check the finitely many actual bends. -/
+theorem map_eq_straight (β : FiniteAffineRay V P) (f : P →ᵃ[ℝ] Q)
+    (hf : ∀ t ∈ β.bends.support, f.linear (β.bends t) = 0) :
+    β.map f = straight (f β.endpoint) (f.linear β.direction) := by
+  apply FiniteAffineRay.ext
+  · simp
+  · simp
+  · ext t
+    by_cases ht : t ∈ β.bends.support
+    · simpa only [bends_map_apply, bends_straight, Finsupp.zero_apply] using hf t ht
+    · simp only [bends_map_apply, Finsupp.notMem_support_iff.mp ht, map_zero,
+        bends_straight, Finsupp.zero_apply]
+
 /-- Affine maps commute with the entire hinge realization. -/
 @[simp]
 theorem map_apply (β : FiniteAffineRay V P) (f : P →ᵃ[ℝ] Q) (t : ℝ) :
