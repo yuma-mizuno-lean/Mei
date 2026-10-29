@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mathlib.LinearAlgebra.AffineSpace.AffineSubspace.Basic
+public import Mathlib.LinearAlgebra.AffineSpace.FiniteDimensional
 
 /-!
 # Directions of affine spans under affine maps
@@ -15,6 +15,8 @@ direction. This formula supports transport of transversality and codimension
 without requiring an invertible map or a nonempty set.
 Adding unrestricted coordinates preserves and reflects equality of affine spans.
 For nonempty sets it also preserves and reflects equality of their directions.
+An affine map whose linear image has larger dimension than an affine subspace
+cannot have its image contained in that subspace.
 -/
 
 public section
@@ -81,3 +83,21 @@ theorem direction_affineSpan_prod_univ_eq_iff {s t : Set P}
 
 end Prod
 end Mei
+
+namespace AffineSubspace
+
+variable {k V W P Q : Type*} [DivisionRing k] [AddCommGroup V] [Module k V]
+  [AddCommGroup W] [Module k W] [AddTorsor V P] [AddTorsor W Q]
+  [FiniteDimensional k W]
+
+/-- An affine subspace of dimension smaller than the image of an affine map
+cannot contain that image. -/
+theorem comap_ne_top_of_finrank_lt (S : AffineSubspace k Q) (f : P →ᵃ[k] Q)
+    (hS : Module.finrank k S.direction < Module.finrank k (LinearMap.range f.linear)) :
+    S.comap f ≠ ⊤ := by
+  intro he
+  have hle := direction_le (map_comap_le f S)
+  rw [he, map_direction, direction_top, Submodule.map_top] at hle
+  exact (not_le_of_gt hS) (Submodule.finrank_mono hle)
+
+end AffineSubspace
