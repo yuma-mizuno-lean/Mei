@@ -7,17 +7,17 @@ module
 
 public import Mei.Geometry.ScatteringDiagram.ModuleProbe.Component
 public import Mei.Geometry.ScatteringDiagram.ModuleProbe.Crossing
-public import Mei.Geometry.ScatteringDiagram.ModuleProbe.Initial
 public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Asymptotic
 
 /-!
 # Asymptotic initial values of probe coefficients
 
-In an outgoing extension of a cylinder input and its probe wall, translate in
+In an extension of a cylinder input and its probe wall, translate in
 the positive spatial direction of a charge-one degree. Eventually the component
 of that degree in every regular vertical coefficient is the component of the
 original incoming coefficient. The bound is uniform over a compact subset of
-the probe hyperplane. Other homogeneous components need not stabilize there.
+the probe hyperplane. Only additional active walls carrying this degree must
+be outgoing. Other homogeneous components need not stabilize there.
 
 This specializes `DirectedDiagram.eventually_decompose_log_combinedLabel_eq_sum_incoming`:
 base cylinders have no charge-one component, outgoing walls escape, and the
@@ -64,7 +64,8 @@ private theorem sum_incoming_coefficient
     (hinitial : ∀ b, D.wall (.inl b) =
       (initialDiagram d ℳ p ℒ H h h' D₀ a).wall b)
     (k : ℕ) (q : Γ) (hk : d.degree (q - p) ≤ k)
-    (hout : ∀ b, Sum.inr b ∈ D.active (k + 1) → (D.wall (.inr b)).Outgoing)
+    (hout : ∀ b, Sum.inr b ∈ D.active (k + 1) →
+      (q, 1, 0) ∈ (D.wall (.inr b)).ray.rayDegrees → (D.wall (.inr b)).Outgoing)
     (θ : V × E) (hplane : (h.prod h').realCharacter probeNormal θ = 0) :
     let _ := Fintype.ofFinite (D.active (k + 1))
     let P := (d.shiftedQuotientComponent ℳ p q k hk).comp
@@ -83,10 +84,11 @@ private theorem sum_incoming_coefficient
   have hP (x : G (k + 1)) :
       P (DirectSum.decompose (ℋ (k + 1)) x (q, 1, 0)) = P x :=
     shiftedQuotientComponent_moduleQuotientProjection_decompose d ℳ p ℒ q k hk x
-  have hnot (b : κ) (hb : Sum.inr b ∈ D.active (k + 1)) :
+  have hnot (b : κ) (hb : Sum.inr b ∈ D.active (k + 1))
+      (hn : (q, 1, 0) ∈ (D.wall (.inr b)).ray.rayDegrees) :
       ¬ (D.wall (.inr b)).Incoming := by
     simpa only [DirectedWall.outgoing_iff, DirectedWall.incoming_iff, mem_recessionCone]
-      using hout b hb
+      using hout b hb hn
   -- Base cylinders have zero charge-one component, while the probe recovers the input.
   have hbase (b : ι) :
       P (BCHGroup.log (CompletedGroup.projection (k + 1)
@@ -112,8 +114,12 @@ private theorem sum_incoming_coefficient
     rcases b with ⟨((b | b) | b), hb'⟩
     · simp only [hbase, smul_zero, ite_self]
     · exact (hb (by cases b; rfl)).elim
-    · have hin : ¬ (D.wall (.inr b)).Incoming := hnot b hb'
-      simp only [hin, false_and, ite_false]
+    · by_cases hn : (q, 1, 0) ∈ (D.wall (.inr b)).ray.rayDegrees
+      · simp only [hnot b hb' hn, false_and, ite_false]
+      · have hz := (wallSpaces d ℳ p ℒ H).decompose_log_projection_eq_zero_of_notMem_rayDegrees
+          (D.wall (.inr b)).label_mem (k + 1) hn
+        rw [← hP, hz, map_zero]
+        simp only [smul_zero, ite_self]
   -- A zero input has no active probe; otherwise it is the unique surviving summand.
   by_cases ha : a = 0
   · subst a
@@ -143,12 +149,14 @@ private theorem sum_incoming_coefficient
 /-- Far along a charge-one degree direction, each retained homogeneous component
 of the vertical coefficient equals the corresponding component of the incoming
 coefficient. The bound is uniform over compact sets in the probe hyperplane.
-Only additional active walls must be outgoing; the base input is arbitrary. -/
+Only additional active walls carrying this degree must be outgoing; the base
+input and additional walls on other rays are arbitrary. -/
 theorem eventually_shiftedQuotientComponent_verticalCoefficient_eq
     (hinitial : ∀ b, D.wall (.inl b) =
       (initialDiagram d ℳ p ℒ H h h' D₀ a).wall b)
     (k : ℕ) (q : Γ) (hk : d.degree (q - p) ≤ k)
-    (hout : ∀ b, Sum.inr b ∈ D.active (k + 1) → (D.wall (.inr b)).Outgoing)
+    (hout : ∀ b, Sum.inr b ∈ D.active (k + 1) →
+      (q, 1, 0) ∈ (D.wall (.inr b)).ray.rayDegrees → (D.wall (.inr b)).Outgoing)
     {K : Set (V × E)} (hK : IsCompact K)
     (hplane : ∀ θ ∈ K, (h.prod h').realCharacter probeNormal θ = 0) :
     ∀ᶠ t : ℝ in atTop, ∀ θ ∈ K,
@@ -166,10 +174,11 @@ theorem eventually_shiftedQuotientComponent_verticalCoefficient_eq
   have hP (x : G (k + 1)) :
       P (DirectSum.decompose (ℋ (k + 1)) x (q, 1, 0)) = P x :=
     shiftedQuotientComponent_moduleQuotientProjection_decompose d ℳ p ℒ q k hk x
-  have hnot (b : κ) (hb : Sum.inr b ∈ D.active (k + 1)) :
+  have hnot (b : κ) (hb : Sum.inr b ∈ D.active (k + 1))
+      (hn : (q, 1, 0) ∈ (D.wall (.inr b)).ray.rayDegrees) :
       ¬ (D.wall (.inr b)).Incoming := by
     simpa only [DirectedWall.outgoing_iff, DirectedWall.incoming_iff, mem_recessionCone]
-      using hout b hb
+      using hout b hb hn
   -- Only the initial probe can be incoming on a charge-one ray.
   have hfull : ∀ b : D.active (k + 1), (D.wall b).Incoming →
       (q, 1, 0) ∈ (D.wall b).ray.rayDegrees →
@@ -182,7 +191,7 @@ theorem eventually_shiftedQuotientComponent_verticalCoefficient_eq
       simp only [hinitial, initialDiagram_wall_inr, probeWall_support, probeWall_normal]
       ext x
       simp
-    · exact (hnot b hb hin).elim
+    · exact (hnot b hb hn hin).elim
   have he := D.eventually_decompose_log_combinedLabel_eq_sum_incoming
     (k + 1) (q, 1, 0) hfull hK
   -- Convert the spatial image of the extended degree to its product coordinates.
