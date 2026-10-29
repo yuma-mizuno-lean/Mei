@@ -47,22 +47,21 @@ def coefficientGradedLieHom :
     GradedLieHom (R := K) (L := tropicalSubalgebra ρ U d)
       (L' := tropicalVertexLieAlgebra (R := S) e ρ') p.degreeMap
       (fun n => (tropicalSubalgebraGrading ρ U d n).restrictScalars K)
-      (fun n => (tropicalVertexGrading (R := S) e ρ' n).restrictScalars K) :=
-  cast (congrArg (fun T : PositiveDegreeMap d e =>
-    GradedLieHom (R := K) (L := tropicalSubalgebra ρ U d)
-    (L' := tropicalVertexLieAlgebra (R := S) e ρ') T
-    (fun n => (tropicalSubalgebraGrading ρ U d n).restrictScalars K)
-    (fun n => (tropicalVertexGrading (R := S) e ρ' n).restrictScalars K))
-    (PositiveDegreeMap.comp_id p.degreeMap))
-    ((p.gradedLieHom.restrictScalars K).comp
-      (restrictCoefficientMonoidGradedLieHom φ χ hQ hφ))
+      (fun n => (tropicalVertexGrading (R := S) e ρ' n).restrictScalars K) where
+  toLieHom := ((p.gradedLieHom.restrictScalars K).comp
+    (restrictCoefficientMonoidGradedLieHom φ χ hQ hφ)).toLieHom
+  map_mem hx := by
+    simpa only [PositiveDegreeMap.comp_id] using
+      ((p.gradedLieHom.restrictScalars K).comp
+        (restrictCoefficientMonoidGradedLieHom φ χ hQ hφ)).map_mem hx
 
 /-- Coefficient transport is specialization followed by the pairing map. -/
 theorem coefficientGradedLieHom_apply (x : tropicalSubalgebra ρ U d) :
     p.coefficientGradedLieHom φ χ hQ hφ x =
       p.gradedLieHom (restrictCoefficientMonoidGradedLieHom φ χ hQ hφ x) := by
-  simp only [coefficientGradedLieHom, GradedLieHom.cast_apply, PositiveDegreeMap.comp_id,
-    GradedLieHom.comp_apply, GradedLieHom.restrictScalars_apply]
+  simp only [← GradedLieHom.coe_toLieHom, coefficientGradedLieHom,
+    GradedLieHom.toLieHom_comp, GradedLieHom.toLieHom_restrictScalars,
+    LieHom.comp_apply, LieHom.restrictScalars_apply]
 
 /-- A homogeneous field acquires its source weight before its degree and
 coefficient-changed character are transported. Distinct source degrees may merge. -/
