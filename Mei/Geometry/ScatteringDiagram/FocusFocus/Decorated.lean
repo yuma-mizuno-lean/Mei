@@ -110,7 +110,7 @@ theorem ext {β γ : SlabBrokenLine t c n b Q} (h : β.degree = γ.degree) : β 
   cases γ
   congr
 
-/-- Singular avoidance is exactly nonvanishing of the crossing height. -/
+/-- A decorated ray's crossing height is nonzero, since it avoids the singular origin. -/
 theorem snd_sub_mul_fst_div_ne_zero (β : SlabBrokenLine t c n b Q) :
     Q.2 - (β.degree.2 : ℝ) * Q.1 / n ≠ 0 := by
   have h := β.avoids_origin
@@ -211,11 +211,11 @@ This is an equivalence of actual evaluation fibers, not just of formal degrees. 
 def slabBrokenLineEquiv (hQ : Q.1 / (n : ℝ) < 0) :
     SlabBranchIndex t c n b Q ≃ SlabBrokenLine t c n b Q where
   toFun := slabBrokenLine t c n b Q hQ
-  invFun β := by
+  invFun β :=
     let j := (slabTransferEquiv t c n.natAbs b).symm ⟨β.degree, β.transfer_ne_zero⟩
-    have he : (-(n.natAbs : ℤ), b + j.val.val) = β.degree :=
-      slabTransferEquiv_symm_degree t c n.natAbs b ⟨β.degree, β.transfer_ne_zero⟩
-    exact ⟨j.val, j.property, by
+    ⟨j.val, j.property, by
+      have he : (-(n.natAbs : ℤ), b + j.val.val) = β.degree :=
+        slabTransferEquiv_symm_degree t c n.natAbs b ⟨β.degree, β.transfer_ne_zero⟩
       simpa only [← he] using β.snd_sub_mul_fst_div_ne_zero⟩
   left_inv j := by
     have he := (Equiv.symm_apply_eq (slabTransferEquiv t c n.natAbs b)
@@ -230,7 +230,7 @@ def slabBrokenLineEquiv (hQ : Q.1 / (n : ℝ) < 0) :
     exact congrArg (fun i => i.val.val) he
   right_inv β := by
     apply SlabBrokenLine.ext
-    dsimp only [slabBrokenLine]
+    rw [degree_slabBrokenLine]
     exact slabTransferEquiv_symm_degree t c n.natAbs b ⟨β.degree, β.transfer_ne_zero⟩
 
 @[simp]
