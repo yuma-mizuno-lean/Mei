@@ -239,8 +239,8 @@ theorem completedBCHAction_unique
         (F.projection k a)) : σ = F.completedBCHAction d ℒ :=
   F.completedAction_unique _ _ σ hσ
 
-/-- Completed algebra actions agreeing on the canonical image of `A` agree: every completed
-element has the same finite-order projections as a canonical one. -/
+/-- Completed algebra actions agreeing on the canonical image of `A` agree. At each finite order,
+every completed element has the same projection as some canonical element. -/
 theorem completedBCHAction_eq_of_forall_toCompletion {g h : d.completedBCHGroup ℒ}
     (hgh : ∀ a : A, F.completedBCHAction d ℒ g (F.toCompletion a) =
       F.completedBCHAction d ℒ h (F.toCompletion a)) :
