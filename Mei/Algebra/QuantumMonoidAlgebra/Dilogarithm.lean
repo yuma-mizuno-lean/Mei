@@ -90,11 +90,9 @@ theorem quantumDilogarithm_conj_eq_prod (p : P) (r : ℕ) (hr : β n p = r) :
         (∏ j ∈ Finset.range r, (1 + PowerSeries.C ((q : R) ^ (2 * j + 1)) *
           PowerSeries.X)) := by
   classical
-  let G : R⟦X⟧ˣ :=
-    ⟨Units.quantumDilogarithm q hq, PowerSeries.invOfUnit (Units.quantumDilogarithm q hq) 1,
-      PowerSeries.mul_invOfUnit _ 1 (by simp), PowerSeries.invOfUnit_mul _ 1 (by simp)⟩
-  have hc := completedAeval_conj_monomial q β P δ hδ n hn hβ p G
-  simp only [G, Units.val_mk, Units.inv_mk, hr,
+  have hc := completedAeval_conj_monomial q β P δ hδ n hn hβ p
+    (Units.quantumDilogarithmUnit q hq)
+  simp only [Units.coe_quantumDilogarithmUnit, Units.coe_quantumDilogarithmUnit_inv, hr,
     AlgFiltration.completedAeval_invOfUnit _ _ _ 1
       (Units.constantCoeff_quantumDilogarithm q hq)] at hc
   have he : ((q ^ (2 * (r : ℤ)) : Rˣ) : R) = (q : R) ^ (2 * r) := by
@@ -210,14 +208,11 @@ theorem coeff_quantumDilogarithm_conj_of_pairing_nonpos (r j : ℕ) (hr : β n p
         ∑ l ∈ Finset.finsuppAntidiag (Finset.range r) j,
           ∏ i ∈ Finset.range r, (-((↑q⁻¹ : R) ^ (2 * i + 1))) ^ l i) •
         monomial q β (p + j • n) := by
-  let G : R⟦X⟧ˣ :=
-    ⟨Units.quantumDilogarithm q hq, invOfUnit (Units.quantumDilogarithm q hq) 1,
-      mul_invOfUnit _ 1 (by simp), invOfUnit_mul _ 1 (by simp)⟩
-  have hc := coeff_evalMonomial_conj q β hβ n p G j
+  have hc := coeff_evalMonomial_conj q β hβ n p (Units.quantumDilogarithmUnit q hq) j
   have he : ((q ^ (-(2 * (r : ℤ))) : Rˣ) : R) = (↑q⁻¹ : R) ^ (2 * r) := by
-    rw [zpow_neg, ← Nat.cast_ofNat, ← Nat.cast_mul, zpow_natCast,
-      Units.inv_pow_eq_pow_inv]
-  simpa only [G, Units.val_mk, Units.inv_mk, hr, mul_neg, neg_neg,
+    simp [zpow_mul, pow_mul]
+  simpa only [Units.coe_quantumDilogarithmUnit, Units.coe_quantumDilogarithmUnit_inv,
+    hr, mul_neg, neg_neg,
     he, Units.coeff_rescale_inv_pow_quantumDilogarithm_mul_inv] using hc
 
 /-- At pairing minus one, all quantum ordering factors cancel. Thus the

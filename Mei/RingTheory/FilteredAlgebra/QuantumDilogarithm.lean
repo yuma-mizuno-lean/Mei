@@ -42,11 +42,8 @@ theorem completedAeval_quantumDilogarithm_conj_of_nonneg (r : ℕ)
         F.completedAeval x (PowerSeries.invOfUnit (Units.quantumDilogarithm q hq) 1) =
       y * ((List.range r).map fun j =>
         1 + ((q : R) ^ (2 * j + 1)) • (x : F.completion)).prod := by
-  let G : R⟦X⟧ˣ :=
-    ⟨Units.quantumDilogarithm q hq, PowerSeries.invOfUnit (Units.quantumDilogarithm q hq) 1,
-      PowerSeries.mul_invOfUnit _ 1 (by simp), PowerSeries.invOfUnit_mul _ 1 (by simp)⟩
-  have h := F.completedAeval_conj x y _ hy G
-  simp only [G, Units.inv_mk, Units.val_mk] at h
+  have h := F.completedAeval_conj x y _ hy (Units.quantumDilogarithmUnit q hq)
+  simp only [Units.coe_quantumDilogarithmUnit, Units.coe_quantumDilogarithmUnit_inv] at h
   have heval := congrArg (F.completedAeval x)
     (Units.rescale_pow_quantumDilogarithm_mul_inv q hq r)
   refine h.trans (congrArg (fun t => y * t) (heval.trans ?_))
@@ -65,11 +62,8 @@ theorem completedAeval_quantumDilogarithm_conj_of_nonpos (r : ℕ)
         F.completedAeval x (PowerSeries.invOfUnit (Units.quantumDilogarithm q hq) 1) =
       y * ((List.range r).map fun j =>
         Ring.inverse (1 + ((↑q⁻¹ : R) ^ (2 * j + 1)) • (x : F.completion))).prod := by
-  let G : R⟦X⟧ˣ :=
-    ⟨Units.quantumDilogarithm q hq, PowerSeries.invOfUnit (Units.quantumDilogarithm q hq) 1,
-      PowerSeries.mul_invOfUnit _ 1 (by simp), PowerSeries.invOfUnit_mul _ 1 (by simp)⟩
-  have h := F.completedAeval_conj x y _ hy G
-  simp only [G, Units.inv_mk, Units.val_mk] at h
+  have h := F.completedAeval_conj x y _ hy (Units.quantumDilogarithmUnit q hq)
+  simp only [Units.coe_quantumDilogarithmUnit, Units.coe_quantumDilogarithmUnit_inv] at h
   have heval := congrArg (F.completedAeval x)
     (Units.rescale_inv_pow_quantumDilogarithm_mul_inv q hq r)
   refine h.trans (congrArg (fun t => y * t) (heval.trans ?_))

@@ -59,6 +59,24 @@ private theorem quantumDilogarithm_spec :
 theorem constantCoeff_quantumDilogarithm : constantCoeff (quantumDilogarithm q hq) = 1 :=
   (quantumDilogarithm_spec q hq).1
 
+/-- The quantum dilogarithm as a unit, with inverse given by `PowerSeries.invOfUnit`. -/
+def quantumDilogarithmUnit : R⟦X⟧ˣ :=
+  ⟨quantumDilogarithm q hq, invOfUnit (quantumDilogarithm q hq) 1,
+    mul_invOfUnit _ 1 (by simp), invOfUnit_mul _ 1 (by simp)⟩
+
+/-- The underlying series of the quantum dilogarithm unit. -/
+@[simp]
+theorem coe_quantumDilogarithmUnit :
+    (quantumDilogarithmUnit q hq : R⟦X⟧) = quantumDilogarithm q hq := by
+  rfl
+
+/-- The inverse quantum dilogarithm unit has the formal inverse series as its value. -/
+@[simp]
+theorem coe_quantumDilogarithmUnit_inv :
+    (↑(quantumDilogarithmUnit q hq)⁻¹ : R⟦X⟧) =
+      invOfUnit (quantumDilogarithm q hq) 1 := by
+  rfl
+
 /-- The defining q-difference equation. -/
 theorem rescale_quantumDilogarithm :
     rescale ((q : R) ^ 2) (quantumDilogarithm q hq) =
