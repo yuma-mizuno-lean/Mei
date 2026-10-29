@@ -18,8 +18,8 @@ shifted coefficient. Its first visible cutoff is the relative degree plus one,
 and its base projection is trivial. These results apply to arbitrary walls of a
 probe completion, without a pure-logarithm hypothesis on its construction.
 
-The classification uses `DirectedWallSpaces.exists_mem_wall_ne_zero_of_mem_wallGroup`
-and the defining probe wall spaces. Coefficient extraction uses
+The classification uses `ModuleProbe.wallGroup_cases_of_ne_one`.
+Coefficient extraction uses
 `ModuleProbe.moduleRayGroupEquiv` and the completed base projection. The
 semidirect probe interpretation follows Mandel, *Scattering diagrams, theta
 functions, and refined tropical curve counts*, §3.3.3 (arXiv:1503.06183v5).
@@ -39,28 +39,6 @@ variable {R Γ Λ V E : Type*} {M L : Type u} [CommRing R] [Algebra ℚ R]
   (ℒ : Γ → Submodule R L) [GradedLieAlgebra ℒ] [IsPositiveGrading d ℒ]
   [SetLike.GradedBracket ℒ ℳ] [DirectSum.Decomposition ℳ]
   {ρ : Γ →+ Λ} (H : DirectedWallSpaces ρ ℒ) [IsWallAnnihilating H ℳ]
-
-/-- A nonidentity probe wall label is supported either on a lifted base ray with
-base normal or on an allowed charge-one ray with a nonzero probe normal. -/
-theorem wallGroup_cases_of_ne_one {w : SupportedRay (positiveDegrees d p)}
-    {m : (Λ × ℤ × ℤ) →+ ℤ}
-    {g : (positiveDegrees d p).completedBCHGroup (grading d ℳ p ℒ)}
-    (hg : g ∈ (wallSpaces d ℳ p ℒ H).wallGroup w m) (hne : g ≠ 1) :
-    (∃ (v : SupportedRay d) (m₀ : Λ →+ ℤ),
-      w = baseRay d p v ∧ m = baseNormal m₀) ∨
-    (∃ (q : Γ) (hq : q - p ∈ d.monoid) (c : ℤ),
-      c ≠ 0 ∧ w = moduleRay d p q hq ∧ m = c • probeNormal) := by
-  obtain ⟨n, hn, x, hx, hx0⟩ :=
-    (wallSpaces d ℳ p ℒ H).exists_mem_wall_ne_zero_of_mem_wallGroup hg hne
-  rw [wallSpaces_wall] at hx
-  rcases (mem_wallSubmodule_iff d ℳ p ℒ H n m x).mp hx with
-    hx | ⟨n, m₀, y, rfl, rfl, _, rfl⟩ | ⟨q, c, rfl, hc, rfl, _⟩
-  · exact (hx0 hx).elim
-  · obtain ⟨v, hv⟩ := exists_baseRay_eq_of_mem_rayDegrees d p w hn
-    exact Or.inl ⟨v, m₀, hv, rfl⟩
-  · have hq : q - p ∈ d.monoid := by
-      simpa using (SupportedRay.mem_rayDegrees.mp hn).1
-    exact Or.inr ⟨q, hq, c, hc, eq_moduleRay_of_mem_rayDegrees d p w hq hn, rfl⟩
 
 variable [NormedAddCommGroup V] [NormedSpace ℝ V]
   [NormedAddCommGroup E] [NormedSpace ℝ E]

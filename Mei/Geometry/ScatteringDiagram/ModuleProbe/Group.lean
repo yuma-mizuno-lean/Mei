@@ -17,9 +17,13 @@ coefficient group: every such wall label is the exponential of a unique
 coefficient. Other normals give the trivial group, as does a charge-one
 generator outside the shifted support, even if higher multiples are allowed.
 
+Every nonidentity probe wall label has either a lifted base ray and base normal,
+or an allowed charge-one ray and a nonzero multiple of the probe normal.
 These comparisons let combined probe wall labels be read as coefficients.
 They use `ModuleProbe.moduleRayGroupEquiv`, `DirectedWallSpaces.wallGroup`
-and Mathlib's `MulEquiv.subgroupCongr`. The module probe follows Mandel,
+and Mathlib's `MulEquiv.subgroupCongr`. The classification uses
+`DirectedWallSpaces.exists_mem_wall_ne_zero_of_mem_wallGroup`.
+The module probe follows Mandel,
 *Scattering diagrams, theta functions, and refined tropical curve counts*,
 §3.3.3 (arXiv:1503.06183v5).
 -/
@@ -61,6 +65,28 @@ theorem raySubmodule_moduleRay (q : Γ) (hq : q - p ∈ d.monoid)
 end
 
 variable [GradedLieAlgebra ℒ] [DirectSum.Decomposition ℳ] [Algebra ℚ R]
+
+/-- A nonidentity probe wall label is supported either on a lifted base ray with
+base normal or on an allowed charge-one ray with a nonzero probe normal. -/
+theorem wallGroup_cases_of_ne_one {w : SupportedRay (positiveDegrees d p)}
+    {m : (Λ × ℤ × ℤ) →+ ℤ}
+    {g : (positiveDegrees d p).completedBCHGroup (grading d ℳ p ℒ)}
+    (hg : g ∈ (wallSpaces d ℳ p ℒ H).wallGroup w m) (hne : g ≠ 1) :
+    (∃ (v : SupportedRay d) (m₀ : Λ →+ ℤ),
+      w = baseRay d p v ∧ m = baseNormal m₀) ∨
+    (∃ (q : Γ) (hq : q - p ∈ d.monoid) (c : ℤ),
+      c ≠ 0 ∧ w = moduleRay d p q hq ∧ m = c • probeNormal) := by
+  obtain ⟨n, hn, x, hx, hx0⟩ :=
+    (wallSpaces d ℳ p ℒ H).exists_mem_wall_ne_zero_of_mem_wallGroup hg hne
+  rw [wallSpaces_wall] at hx
+  rcases (mem_wallSubmodule_iff d ℳ p ℒ H n m x).mp hx with
+    hx | ⟨n, m₀, y, rfl, rfl, _, rfl⟩ | ⟨q, c, rfl, hc, rfl, _⟩
+  · exact (hx0 hx).elim
+  · obtain ⟨v, hv⟩ := exists_baseRay_eq_of_mem_rayDegrees d p w hn
+    exact Or.inl ⟨v, m₀, hv, rfl⟩
+  · have hq : q - p ∈ d.monoid := by
+      simpa using (SupportedRay.mem_rayDegrees.mp hn).1
+    exact Or.inr ⟨q, hq, c, hc, eq_moduleRay_of_mem_rayDegrees d p w hq hn, rfl⟩
 
 /-- At the probe normal, the charge-one wall group exhausts the ray group. Nonzero
 multiples of the normal reduce to this case by `DirectedWallSpaces.wallGroup_rescale`. -/
