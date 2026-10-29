@@ -116,6 +116,7 @@ theorem mem_sublattice_iff {n : N} :
     exact Submodule.smul_mem _ _ (B.nsmul_basis_mem_sublattice i)
 
 /-- The multiple `m e_i` lies in `N°` exactly when `d_i` divides `m`. -/
+@[simp]
 theorem nsmul_basis_mem_sublattice_iff {m : ℕ} {i : ι} :
     m • B.basis i ∈ D.sublattice ↔ B.multiplier i ∣ m := by
   rw [B.mem_sublattice_iff]
