@@ -26,7 +26,7 @@ namespace AddMonoidHom
 
 /-- An integer character on a product with two integer factors is determined
 by its restriction to the first factor and its values on the two coordinate vectors. -/
-theorem apply_prod_int_int {Λ : Type*} [AddCommMonoid Λ]
+theorem apply_prod_int_int {Λ : Type*} [AddMonoid Λ]
     (m : (Λ × ℤ × ℤ) →+ ℤ) (v : Λ) (c l : ℤ) :
     m (v, c, l) = m (v, 0, 0) + c * m (0, 1, 0) + l * m (0, 0, 1) := by
   have hc := ((m.comp (AddMonoidHom.inr Λ (ℤ × ℤ))).comp
