@@ -35,7 +35,6 @@ universe u
 variable {R Γ Λ V E ι : Type*} {M L : Type u} [CommRing R] [Algebra ℚ R]
   [AddCommGroup M] [Module R M] [AddCommGroup Γ] [DecidableEq Γ]
   [AddCommGroup Λ] [LieRing L] [LieAlgebra R L]
-  [LieAlgebra ℚ L] [IsScalarTower ℚ R L]
   [LieRingModule L M] [LieModule R L M]
   (d : PositiveDegrees Γ) (ℳ : Γ → Submodule R M) (p : Γ)
   (ℒ : Γ → Submodule R L) [GradedLieAlgebra ℒ] [IsPositiveGrading d ℒ]
@@ -48,6 +47,71 @@ variable {R Γ Λ V E ι : Type*} {M L : Type u} [CommRing R] [Algebra ℚ R]
   (D : DirectedDiagram (d := positiveDegrees d p) (h.prod h') (wallSpaces d ℳ p ℒ H) ι)
 
 local notation "v" => (0, j (0, 1))
+
+/-- An endpoint arrangement outside which only finitely many heights are singular
+or lie in an active vertically tangent wall's affine span. -/
+def coefficientArrangement (k : ℕ) : ExceptionalArrangement V :=
+  (D.exists_finite_bad_vertical_heights h h' (k + 1)).choose
+
+/-- The defining finiteness property of the coefficient endpoint arrangement. -/
+theorem finite_bad_heights (k : ℕ) (Q : V)
+    (hQ : (coefficientArrangement d ℳ p ℒ H h h' D k).IsGeneric Q) :
+    {y : ℝ | (Q, y • j (1, 0)) ∈
+        singularSupport (fun a : D.active (k + 1) => (D.wall a).support) ∨
+      ∃ a : D.active (k + 1), (Q, y • j (1, 0)) ∈ affineSpan ℝ (D.wall a).support ∧
+        (h.prod h').realCharacter (D.wall a).normal v = 0}.Finite :=
+  (D.exists_finite_bad_vertical_heights h h' (k + 1)).choose_spec Q hQ
+
+/-- Every nonempty open interval contains a regular height above a generic endpoint. -/
+theorem exists_regular_height (k : ℕ) (Q : V)
+    (hQ : (coefficientArrangement d ℳ p ℒ H h h' D k).IsGeneric Q)
+    {U : Set ℝ} (hU : IsOpen U) (hUne : U.Nonempty) :
+    ∃ y ∈ U, (Q, y • j (1, 0)) ∉
+      singularSupport (fun a : D.active (k + 1) => (D.wall a).support) := by
+  obtain ⟨y, hyU, hy⟩ :=
+    (dense_univ.sdiff_finite (finite_bad_heights d ℳ p ℒ H h h' D k Q hQ)).inter_open_nonempty
+      U hU hUne
+  exact ⟨y, hyU, fun hs => hy.2 (Or.inl hs)⟩
+
+/-- An active base-wall hyperplane misses the entire height line over a generic
+endpoint. This is stronger than transversality at a single regular height. -/
+theorem not_mem_base_affineSpan_of_isGeneric (k : ℕ) (Q : V)
+    (hQ : (coefficientArrangement d ℳ p ℒ H h h' D k).IsGeneric Q)
+    (y : ℝ) (a : D.active (k + 1))
+    (ha : (D.wall a).normal ∈ Set.range (baseNormal (Λ := Λ))) :
+    (Q, y • j (1, 0)) ∉ affineSpan ℝ (D.wall a).support := by
+  rintro hy
+  obtain ⟨m, hm⟩ := ha
+  have ht : (h.prod h').realCharacter (D.wall a).normal v = 0 := by
+    rw [← hm]
+    simp
+  have hd : (0, j (1, 0)) ∈ (affineSpan ℝ (D.wall a).support).direction := by
+    rw [(D.wall a).direction_support, LinearMap.mem_ker, ← hm]
+    simp
+  have hall (t : ℝ) : (Q, t • j (1, 0)) ∈ affineSpan ℝ (D.wall a).support := by
+    have hv := AffineSubspace.vadd_mem_of_mem_direction
+      ((affineSpan ℝ (D.wall a).support).direction.smul_mem (t - y) hd) hy
+    simpa only [vadd_eq_add, Prod.smul_mk, smul_zero, Prod.mk_add_mk, zero_add,
+      ← add_smul, sub_add_cancel] using hv
+  have hf := finite_bad_heights d ℳ p ℒ H h h' D k Q hQ
+  exact Set.infinite_univ (hf.subset fun t _ => Or.inr ⟨a, hall t, ht⟩)
+
+/-- All incident active walls above a generic endpoint are vertically transverse,
+even before regularity of the germ is imposed. -/
+theorem vertical_transverse_of_isGeneric (k : ℕ) (Q : V)
+    (hQ : (coefficientArrangement d ℳ p ℒ H h h' D k).IsGeneric Q) (y : ℝ)
+    (a : D.active (k + 1)) (ha : (Q, y • j (1, 0)) ∈ (D.wall a).support) :
+    (h.prod h').realCharacter (D.wall a).normal v ≠ 0 := by
+  intro hz
+  have hb : (D.wall a).normal ∈ Set.range (baseNormal (Λ := Λ)) := by
+    apply (mem_range_baseNormal _).mpr
+    refine ⟨normal_height_eq_zero_of_label_ne_one d ℳ p ℒ H h h' (D.wall a)
+      (D.label_ne_one_of_mem_active a.property), ?_⟩
+    simpa using hz
+  exact not_mem_base_affineSpan_of_isGeneric d ℳ p ℒ H h h' D k Q hQ y a hb
+    (subset_affineSpan ℝ _ ha)
+
+variable [LieAlgebra ℚ L] [IsScalarTower ℚ R L]
 
 /-- Generic base endpoints admit a regular probe height in every nonempty open
 interval. All sufficiently short upward crossings at that height compute the
