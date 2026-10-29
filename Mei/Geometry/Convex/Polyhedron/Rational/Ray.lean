@@ -41,9 +41,10 @@ variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ 
 
 /-- The base points of open positive rays along a lattice vector meeting a closed
 rational-normal polyhedron form a locally closed rational-normal polyhedron.
+This is the strict-parameter counterpart of `IsRationalNormalPolyhedron.negRay`.
 The vector may be zero or tangent to the polyhedron, and the intersection may be
 a single point. -/
-theorem IsRationalNormalPolyhedron.isLocallyClosedPolyhedron_posRay
+theorem IsRationalNormalPolyhedron.isLocallyClosedPolyhedron_openNegRay
     (hP : IsRationalNormalPolyhedron h P) (w : N) :
     IsLocallyClosedPolyhedron h {x : V | ∃ t : ℝ, 0 < t ∧ x + t • i w ∈ P} := by
   obtain ⟨A, rfl⟩ := isRationalNormalPolyhedron_iff.mp hP
