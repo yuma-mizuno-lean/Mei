@@ -34,10 +34,10 @@ jobs:
           persist-credentials: false
 
       - name: Prepare pinned shared tools
-        uses: yuma-mizuno-lean/TauCetiTools/.github/actions/setup@d9f2698a0a84029dec85f99a8718847c4c0e0eaf
+        uses: yuma-mizuno-lean/TauCetiTools/.github/actions/setup@225ccb1a25e3051edce54faa94fe8f44e0340b34
         with:
           tools-repository: yuma-mizuno-lean/TauCetiTools
-          tools-ref: d9f2698a0a84029dec85f99a8718847c4c0e0eaf
+          tools-ref: 225ccb1a25e3051edce54faa94fe8f44e0340b34
           project-directory: .
 
       - name: Install pinned and checksum-verified elan

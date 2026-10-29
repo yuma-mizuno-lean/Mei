@@ -76,10 +76,10 @@ jobs:
           fetch-depth: 100
 
       - name: Prepare pinned shared tools
-        uses: yuma-mizuno-lean/TauCetiTools/.github/actions/setup@d9f2698a0a84029dec85f99a8718847c4c0e0eaf
+        uses: yuma-mizuno-lean/TauCetiTools/.github/actions/setup@225ccb1a25e3051edce54faa94fe8f44e0340b34
         with:
           tools-repository: yuma-mizuno-lean/TauCetiTools
-          tools-ref: d9f2698a0a84029dec85f99a8718847c4c0e0eaf
+          tools-ref: 225ccb1a25e3051edce54faa94fe8f44e0340b34
           project-directory: .
       - name: Import-boundary guard (Mei/ and Mei.lean ⊬ roadmap/review)
         run: |
@@ -149,45 +149,15 @@ jobs:
       # permanently stale snapshot is what pushed merge-queue builds onto the roughly
       # 55 minute cold-cache path.
       # No-op until the LAKE_CACHE_*_PUBLIC repo variables are set, as on the consuming side.
-      - name: Configure the Lake artifact cache (no-op unless the public endpoints are set)
-        env:
-          PUBLIC_ARTIFACT_ENDPOINT: ${{ vars.LAKE_CACHE_ARTIFACT_ENDPOINT_PUBLIC }}
-          PUBLIC_REVISION_ENDPOINT: ${{ vars.LAKE_CACHE_REVISION_ENDPOINT_PUBLIC }}
-        run: |
-          if [ -n "$PUBLIC_ARTIFACT_ENDPOINT" ] && [ -n "$PUBLIC_REVISION_ENDPOINT" ]; then
-            {
-              echo "LAKE_CACHE_DIR=$GITHUB_WORKSPACE/.lake/cache"
-              echo "LAKE_ARTIFACT_CACHE=true"
-              echo "LAKE_RESTORE_ARTIFACTS=true"
-              echo "TAUCETI_CACHE_ENABLED=1"
-            } >> "$GITHUB_ENV"
-            echo "::notice::Lake artifact cache enabled — restoring Mei's oleans and building incrementally"
-          else
-            echo "::notice::Lake artifact cache not configured — building Mei/ from scratch (set the LAKE_CACHE_*_PUBLIC repo variables to enable)"
-          fi
+      - name: Restore Mei cache in one GitHub bundle
+        uses: ./.tauceti-tools/.github/actions/restore-lake-bundle
+        with:
+          project-dir: .
+          package: Mei
+          script: scripts/lake_cache_bundle.py
 
-      # Anonymous GETs from the PUBLIC read host, the same trusted, publisher-built data
-      # pr-build restores. The shared script retains hash-verified artifacts between attempts,
-      # then discards the partial cache only if every attempt remains incomplete; see its header.
-      #
-      # What this does NOT establish: that a restored module matches what a compile of the
-      # checked-out source would produce. Lake keys artifacts by an input hash that is a single
-      # UInt64 and explicitly not cryptographic (Lake/Build/Trace.lean carries a TODO to replace
-      # it), so content addressing is a deduplication scheme here, not an integrity guarantee.
-      # Restoring on main also gives up main's former role as the one build that took nothing on
-      # faith. nightly-verify.yml reinstates it on a daily cadence: it rebuilds from source with the
-      # cache off and compares the resulting oleans byte for byte against a cache-restored build of
-      # the same commit. That is a detector, not an equivalent guarantee, and its own header spells
-      # out the exposure window it leaves. The two are a pair; do not enable this restore without
-      # that nightly running.
-      - name: Fetch Mei's own oleans from the Lake cache
-        if: ${{ env.TAUCETI_CACHE_ENABLED == '1' }}
-        env:
-          # Passed under non-LAKE_ names so Lake never sees the deprecated endpoint
-          # environment variables; the script hands it the endpoints through a `--service` config.
-          PUBLIC_ARTIFACT_ENDPOINT: ${{ vars.LAKE_CACHE_ARTIFACT_ENDPOINT_PUBLIC }}
-          PUBLIC_REVISION_ENDPOINT: ${{ vars.LAKE_CACHE_REVISION_ENDPOINT_PUBLIC }}
-        run: bash scripts/lake-cache-get.sh .
+      - name: Fetch configured upstream caches (Mei uses offline bundle)
+        run: python3 scripts/lake_dependency_cache.py .
 
       - name: Save verified Lake archive records before building
         run: python3 scripts/lake_cache_reuse.py snapshot . "$RUNNER_TEMP/lake-cache-reuse.json"

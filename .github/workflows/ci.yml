@@ -1,6 +1,7 @@
 name: CI
 
 on:
+  workflow_dispatch:
   # PR builds moved to pr-build.yml, which sandboxes untrusted PR code under bwrap in a
   # trusted (base-defined) workflow. This run is only the post-merge health check on main.
   push:
@@ -8,6 +9,7 @@ on:
 
 permissions:
   contents: read
+  actions: read  # Check the repository storage budget before saving a bundle.
   pull-requests: read  # scripts/lint-scope.sh reads the merged PRs' labels and branches
 
 # Keep the cache publisher live under a burst of main pushes. GitHub retains at
@@ -67,10 +69,10 @@ jobs:
           fetch-depth: 0
 
       - name: Prepare pinned shared tools
-        uses: yuma-mizuno-lean/TauCetiTools/.github/actions/setup@d9f2698a0a84029dec85f99a8718847c4c0e0eaf
+        uses: yuma-mizuno-lean/TauCetiTools/.github/actions/setup@225ccb1a25e3051edce54faa94fe8f44e0340b34
         with:
           tools-repository: yuma-mizuno-lean/TauCetiTools
-          tools-ref: d9f2698a0a84029dec85f99a8718847c4c0e0eaf
+          tools-ref: 225ccb1a25e3051edce54faa94fe8f44e0340b34
           project-directory: .
       - name: Import-boundary guard (Mei/ and Mei.lean ⊬ roadmap/review)
         run: |
@@ -152,54 +154,18 @@ jobs:
           path: ${{ steps.mathlib_ltar_restore.outputs.cache-dir }}/*.ltar
           key: ${{ steps.mathlib_ltar_restore.outputs.cache-primary-key }}
 
-      # --- Lake artifact-cache restore (dormant until configured) --------------------
-      # Restore Mei's OWN oleans before building, exactly as pr-build.yml does. Without
-      # this, the post-merge run recompiled the whole library from scratch on every push,
-      # spending about 49 minutes to reproduce oleans the merge-queue build had produced
-      # minutes earlier. Because the publisher is serialized, that capped publication at
-      # roughly one snapshot an hour while several commits an hour were landing, and the
-      # permanently stale snapshot is what pushed merge-queue builds onto the roughly
-      # 55 minute cold-cache path.
-      # No-op until the LAKE_CACHE_*_PUBLIC repo variables are set, as on the consuming side.
-      - name: Configure the Lake artifact cache (no-op unless the public endpoints are set)
-        env:
-          PUBLIC_ARTIFACT_ENDPOINT: ${{ vars.LAKE_CACHE_ARTIFACT_ENDPOINT_PUBLIC }}
-          PUBLIC_REVISION_ENDPOINT: ${{ vars.LAKE_CACHE_REVISION_ENDPOINT_PUBLIC }}
-        run: |
-          if [ -n "$PUBLIC_ARTIFACT_ENDPOINT" ] && [ -n "$PUBLIC_REVISION_ENDPOINT" ]; then
-            {
-              echo "LAKE_CACHE_DIR=$GITHUB_WORKSPACE/.lake/cache"
-              echo "LAKE_ARTIFACT_CACHE=true"
-              echo "LAKE_RESTORE_ARTIFACTS=true"
-              echo "TAUCETI_CACHE_ENABLED=1"
-            } >> "$GITHUB_ENV"
-            echo "::notice::Lake artifact cache enabled — restoring Mei's oleans and building incrementally"
-          else
-            echo "::notice::Lake artifact cache not configured — building Mei/ from scratch (set the LAKE_CACHE_*_PUBLIC repo variables to enable)"
-          fi
+      # CI uses one trusted GitHub bundle, including on a cache miss. It never
+      # downloads root-package objects or searches revision history on Cloudflare.
+      - name: Restore Mei cache in one GitHub bundle
+        id: lake_bundle
+        uses: ./.tauceti-tools/.github/actions/restore-lake-bundle
+        with:
+          project-dir: .
+          package: Mei
+          script: scripts/lake_cache_bundle.py
 
-      # Anonymous GETs from the PUBLIC read host, the same trusted, publisher-built data
-      # pr-build restores. The shared script retains hash-verified artifacts between attempts,
-      # then discards the partial cache only if every attempt remains incomplete; see its header.
-      #
-      # What this does NOT establish: that a restored module matches what a compile of the
-      # checked-out source would produce. Lake keys artifacts by an input hash that is a single
-      # UInt64 and explicitly not cryptographic (Lake/Build/Trace.lean carries a TODO to replace
-      # it), so content addressing is a deduplication scheme here, not an integrity guarantee.
-      # Restoring on main also gives up main's former role as the one build that took nothing on
-      # faith. nightly-verify.yml reinstates it on a daily cadence: it rebuilds from source with the
-      # cache off and compares the resulting oleans byte for byte against a cache-restored build of
-      # the same commit. That is a detector, not an equivalent guarantee, and its own header spells
-      # out the exposure window it leaves. The two are a pair; do not enable this restore without
-      # that nightly running.
-      - name: Fetch Mei's own oleans from the Lake cache
-        if: ${{ env.TAUCETI_CACHE_ENABLED == '1' }}
-        env:
-          # Passed under non-LAKE_ names so Lake never sees the deprecated endpoint
-          # environment variables; the script hands it the endpoints through a `--service` config.
-          PUBLIC_ARTIFACT_ENDPOINT: ${{ vars.LAKE_CACHE_ARTIFACT_ENDPOINT_PUBLIC }}
-          PUBLIC_REVISION_ENDPOINT: ${{ vars.LAKE_CACHE_REVISION_ENDPOINT_PUBLIC }}
-        run: bash scripts/lake-cache-get.sh .
+      - name: Fetch configured upstream caches (Mei uses offline bundle)
+        run: python3 scripts/lake_dependency_cache.py .
 
       - name: Save verified Lake archive records before building
         run: python3 scripts/lake_cache_reuse.py snapshot . "$RUNNER_TEMP/lake-cache-reuse.json"
@@ -249,7 +215,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
-          EVENT: push
+          EVENT: ${{ github.event_name }}
           BASE: ${{ github.event.before }}
           HEAD: ${{ github.sha }}
           SCOPE_REPO: .
@@ -327,6 +293,36 @@ jobs:
           else
             echo "::notice::Exact Lake cache map is absent or unreadable; retaining main's publication fallback"
           fi
+
+      - name: Pack one bounded Mei bundle for subsequent CI runs
+        if: ${{ github.ref == 'refs/heads/main' }}
+        env:
+          LAKE_NO_CACHE: 'true'
+        run: |
+          python3 scripts/lake_cache_reuse.py reconnect . "$RUNNER_TEMP/lake-cache-reuse.json"
+          lake build --no-build --rehash -o .lake/outputs.jsonl
+          python3 scripts/lake_cache_bundle.py pack . "$RUNNER_TEMP/lake-bundle/cache.tar" --package Mei
+
+      - name: Check GitHub cache storage budget
+        id: bundle_budget
+        if: ${{ github.ref == 'refs/heads/main' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          used=$(gh api "repos/$GITHUB_REPOSITORY/actions/cache/usage" --jq .active_caches_size_in_bytes)
+          bytes=$(stat -c %s "$RUNNER_TEMP/lake-bundle/cache.tar")
+          if [ "$((used + bytes))" -lt 8589934592 ]; then
+            echo 'save=true' >> "$GITHUB_OUTPUT"
+          else
+            echo '::warning::Bundle save skipped: repository cache would exceed the 8 GiB safety budget'
+          fi
+
+      - name: Save one trusted Mei bundle
+        if: ${{ steps.bundle_budget.outputs.save == 'true' }}
+        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830
+        with:
+          path: ${{ steps.lake_bundle.outputs.archive }}
+          key: ${{ steps.lake_bundle.outputs.key }}
 
       - name: Stage Mei's oleans for the publish job
         id: stage
@@ -410,10 +406,30 @@ jobs:
     uses: ./.github/workflows/publish-lake-cache.yml
     with:
       tools_repository: yuma-mizuno-lean/TauCetiTools
-      tools_ref: d9f2698a0a84029dec85f99a8718847c4c0e0eaf
+      tools_ref: 225ccb1a25e3051edce54faa94fe8f44e0340b34
       revision: ${{ github.sha }}
       artifact-name: lake-cache-staging
       reported-toolchain: ${{ needs.build.outputs.reported-toolchain }}
       publication-required: false
     secrets:
       LAKE_CACHE_KEY: ${{ secrets.LAKE_CACHE_KEY }}
+
+  retain-lake-bundles:
+    needs: [build]
+    if: ${{ always() && github.ref == 'refs/heads/main' && needs.build.result == 'success' }}
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+    steps:
+      - name: Retain at most eight Mei bundles (64 MiB each)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python3 - <<'PY'
+          import json, os, subprocess
+          base = 'repos/' + os.environ['GITHUB_REPOSITORY'] + '/actions/caches'
+          pages = json.loads(subprocess.check_output(['gh','api','--paginate','--slurp',base+'?per_page=100']))
+          caches = [c for page in pages for c in page['actions_caches'] if c['key'].startswith('lake-bundle-v1-Mei-')]
+          for cache in sorted(caches, key=lambda c:c['created_at'], reverse=True)[8:]:
+              subprocess.run(['gh','api','--method','DELETE',base+'/'+str(cache['id'])],check=True)
+          PY

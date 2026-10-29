@@ -33,7 +33,7 @@ completed_dir = "Completed"
 # Switch back to TauCetiProject/TauCetiTools once upstream carries the same fix.
 [tools.tools]
 repo = "yuma-mizuno-lean/TauCetiTools"
-ref = "d9f2698a0a84029dec85f99a8718847c4c0e0eaf"
+ref = "225ccb1a25e3051edce54faa94fe8f44e0340b34"
 [tools.review]
 repo = "TauCetiProject/TauCetiReview"
 ref = "3999677031829254b4cbb27e9156c33672c61d0d"
@@ -92,6 +92,7 @@ deployment = "docker" # docker | cloudflare
 # image = "ghcr.io/taucetiproject/bors-ng@sha256:SELECT_RELEASE_DIGEST"
 
 [services.cache]
+ci_bundle = true # CI restores one GitHub archive, never individual Mei objects from R2.
 mode = "custom"
 name = "mei-public"
 artifact_url = "https://mei-cache-reader.ymizuno-lean-cache.workers.dev/artifacts"
