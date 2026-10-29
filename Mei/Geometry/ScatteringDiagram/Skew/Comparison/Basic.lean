@@ -10,6 +10,7 @@ public import Mei.Geometry.Affine.Codimension
 public import Mei.Geometry.Toric.Algebraic.DualLattice
 public import Mei.Geometry.Convex.Polyhedron.Rational
 public import Mei.Geometry.Convex.Recession
+public import Mathlib.Basic.Sign.Defs
 
 /-!
 # Pulling back cones along an integral skew form
@@ -23,7 +24,8 @@ of their images in the original cone, even when the form is degenerate.
 For a set in the evaluation hyperplane of an unfrozen degree, the pulled-back
 normal is the real extension of `{-, κ(n)n}`. If this normal is nonzero and the
 pullback has codimension one, it cuts out exactly the affine direction of the
-pullback. These are the geometric support and incomingness comparisons used to
+pullback. The normalized normal preserves evaluation signs, including tangencies.
+These are the geometric support and incomingness comparisons used to
 pass from conical to directed walls.
 
 We use `LinearMap.codRestrict₂`, `IsIntegralLattice.extend`, the integral dual
@@ -209,5 +211,21 @@ theorem direction_skewComparison_preimage {n : N} (hn : n ∈ D.unfrozen)
   exact (LinearMap.ker_eq_direction_affineSpan _ hne
     (fun _ hx => LinearMap.mem_ker.mp
       (D.skewComparison_preimage_subset_ker_normal hD h hn σ hσ hx)) hcodim).symm
+
+/-- The normalized skew normal and the evaluation normal give the same sign
+on every vector, including tangencies. Nondegeneracy is unnecessary. -/
+theorem sign_realCharacter_normal_eq_sign_eval_skewComparison
+    {n : N} (hn : n ∈ D.unfrozen) (hn0 : n ≠ 0) (v : V) :
+    let _ := h.free
+    SignType.sign (h.realCharacter (D.normal n hn).toAddMonoidHom v) =
+      SignType.sign (D.skewComparison hD h v (i n)) := by
+  let := h.free
+  dsimp only
+  rw [D.realCharacter_normal_eq_smul_eval_comp_skewComparison hD h hn]
+  simp only [LinearMap.smul_apply, LinearMap.comp_apply, ContinuousLinearMap.coe_coe,
+    ContinuousLinearMap.apply_apply, smul_eq_mul, sign_mul]
+  have hp : (0 : ℝ) < D.sublattice.toAddSubgroup.rayIndex n :=
+    Rat.cast_pos.mpr (D.sublattice.toAddSubgroup.rayIndex_pos hn0)
+  rw [sign_pos hp, one_mul]
 
 end Mei.SkewLatticeDatum
