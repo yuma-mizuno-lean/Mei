@@ -230,18 +230,13 @@ theorem coeff_quantumDilogarithm_conj_of_pairing_neg_one (j : ℕ) (hp : β n p 
         evalMonomial (monomial q β n)
           (invOfUnit (Units.quantumDilogarithm q hq) 1)) =
       (-1 : R) ^ j • monomial q β (p + j • n) := by
-  let G : R⟦X⟧ˣ :=
-    ⟨Units.quantumDilogarithm q hq, invOfUnit (Units.quantumDilogarithm q hq) 1,
-      mul_invOfUnit _ 1 (by simp), invOfUnit_mul _ 1 (by simp)⟩
-  have hc := coeff_evalMonomial_conj q β hβ n p G j
-  have he : ((q ^ (-2 : ℤ) : Rˣ) : R) = (↑q⁻¹ : R) ^ 2 := by
-    norm_num [zpow_neg, Units.inv_pow_eq_pow_inv, Units.val_pow_eq_pow_val]
-  have hs : rescale ((↑q⁻¹ : R) ^ 2) (Units.quantumDilogarithm q hq) *
-      invOfUnit (Units.quantumDilogarithm q hq) 1 =
-      invOfUnit (1 + C (↑q⁻¹ : R) * X) 1 := by
-    simpa using Units.rescale_inv_pow_quantumDilogarithm_mul_inv q hq 1
-  simp only [G, Units.val_mk, Units.inv_mk, hp, mul_neg_one, neg_neg,
-    he, hs, coeff_invOfUnit_one_add_C_mul_X, zpow_natCast,
+  have hc := coeff_quantumDilogarithm_conj_of_nonpos q β hβ n p hq 1 j (by simpa using hp)
+  have hs : Finset.finsuppAntidiag (Finset.range 1) j = {Finsupp.single 0 j} := by
+    ext l
+    simp only [Finset.mem_finsuppAntidiag, Finset.range_one, Finset.sum_singleton,
+      Finset.mem_singleton, Finsupp.eq_single_iff, and_comm]
+  simp only [Nat.cast_one, mul_one, hs, Finset.sum_singleton, Finset.prod_range_one,
+    Nat.mul_zero, Nat.zero_add, pow_one, Finsupp.single_eq_same, zpow_natCast,
     Units.val_pow_eq_pow_val] at hc
   have hscalar : (q : R) ^ j * (-(↑q⁻¹ : R)) ^ j = (-1 : R) ^ j := by
     rw [← mul_pow]
