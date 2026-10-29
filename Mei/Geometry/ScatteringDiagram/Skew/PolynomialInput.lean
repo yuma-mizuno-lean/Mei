@@ -184,6 +184,12 @@ def initialFunction (R : Type*) [Semiring R] (i : B.unfrozenIndex) :
   1 + ∑ s : Fin (I.multiplicity i),
     AddMonoidAlgebra.single (PositiveDegrees.letter I.letterExponent ⟨i, s⟩) 1
 
+/-- The initial wall function is the finite sum of the constant term and its variable monomials. -/
+theorem initialFunction_def (R : Type*) [Semiring R] (i : B.unfrozenIndex) :
+    I.initialFunction R i = 1 + ∑ s : Fin (I.multiplicity i),
+      AddMonoidAlgebra.single (PositiveDegrees.letter I.letterExponent ⟨i, s⟩) 1 :=
+  (rfl)
+
 /-- The coefficient of the initial function at `i` on the letter of a variable `p_{j,s}`
 is `1` if `j = i` and `0` otherwise. -/
 @[simp]
