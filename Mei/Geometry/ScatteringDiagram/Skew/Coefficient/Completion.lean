@@ -6,6 +6,8 @@ Authors: Codex
 module
 
 public import Mei.Geometry.ScatteringDiagram.Skew.Coefficient
+public import Mei.Geometry.ScatteringDiagram.Skew.AdaptedBasis
+public import Mei.Algebra.PositiveDegrees.Basis
 public import Mei.Algebra.MonoidAlgebra.Grading
 public import Mei.RingTheory.FilteredAlgebra.Equiv
 public import Mei.RingTheory.MvPowerSeries.Completion
@@ -24,6 +26,10 @@ The coefficient formula retains both the unfrozen exponent and the character
 exponent. In particular, characters have filtration order zero even when the
 skew form is degenerate. The inverse at each finite order is total-degree
 truncation followed by the inverse polynomial dictionary and the quotient map.
+
+For an adapted basis, the natural coordinates of the unfrozen basis supply these
+free coordinates, giving `R[[Q_pr]] = R[M°][[t_i]]` with one variable `t_i` for each
+unfrozen index (`AdaptedBasis.principalCoefficientCompletionEquiv`).
 
 This uses Mathlib's `AddMonoidAlgebra.domCongr` and `curryAlgEquiv`, and Mei's
 `principalCompletionEquiv`. The principal coefficient model follows
@@ -90,6 +96,8 @@ end Polynomial
 
 local notation "F" => TropicalVertexCoefficientAction.filtration
   (R := R) (D.principalPositiveDegrees d) Q
+
+section FreeCoordinates
 
 variable (he : ∀ n : d.monoid, d.degree n = ((e n).degree : ℤ))
 
@@ -189,5 +197,39 @@ theorem coeff_principalCoefficientCompletionEquiv_eq_of_projection_eq
   have hc := congrArg (fun b : R[M] => b.coeff m) h
   simpa only [principalCoefficientCompletionEquiv, AlgEquiv.trans_apply,
     AlgEquiv.restrictScalars_apply, E, coeff_principalCoefficientPolynomialEquiv] using hc
+
+end FreeCoordinates
+
+section Adapted
+
+variable [CommRing R] {D} {J : Type*} (B : D.AdaptedBasis J)
+
+local notation "F₀" => TropicalVertexCoefficientAction.filtration
+  (R := R) (D.principalPositiveDegrees B.unfrozenBasis.positiveDegrees)
+  (D.principalCoefficientMonoid B.unfrozenBasis.positiveDegrees)
+
+/-- In the coordinates of an adapted basis, the completed principal coefficient algebra on
+`P_N = ∑_{i ∈ I_uf} ℕ e_i` is the power series algebra `R[M°][[t_i]]`, with one variable for
+each unfrozen index. -/
+def AdaptedBasis.principalCoefficientCompletionEquiv :
+    (F₀).completion ≃ₐ[R] MvPowerSeries B.unfrozenIndex R[M] :=
+  D.principalCoefficientCompletionEquiv _ B.unfrozenBasis.positiveDegreesMonoidEquiv
+    B.unfrozenBasis.positiveDegrees_degree_eq_degree_positiveDegreesMonoidEquiv
+
+/-- In adapted coordinates the principal monomial `z^m t^n` is the power series monomial
+whose exponent of `t_i` is the `i`-th coordinate of `n`. -/
+@[simp]
+theorem AdaptedBasis.principalCoefficientCompletionEquiv_toCompletion_single
+    (p : D.principalCoefficientMonoid B.unfrozenBasis.positiveDegrees) (r : R) :
+    B.principalCoefficientCompletionEquiv ((F₀).toCompletion (single p r)) =
+      MvPowerSeries.monomial
+        (B.unfrozenBasis.positiveDegreesMonoidEquiv
+          ⟨p.val.2, (D.mem_principalCoefficientMonoid _ p.val).mp p.property⟩)
+        (single p.val.1 r) := by
+  rw [AdaptedBasis.principalCoefficientCompletionEquiv,
+    principalCoefficientCompletionEquiv_toCompletion, principalCoefficientPolynomialEquiv_single,
+    MvPolynomial.coe_monomial]
+
+end Adapted
 
 end Mei.SkewLatticeDatum

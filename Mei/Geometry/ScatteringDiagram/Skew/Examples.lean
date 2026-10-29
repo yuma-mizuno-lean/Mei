@@ -5,7 +5,8 @@ Authors: Claude Code
 -/
 module
 
-public import Mei.Geometry.ScatteringDiagram.Skew.Basic
+public import Mei.Geometry.ScatteringDiagram.Skew.AdaptedBasis
+public import Mathlib.LinearAlgebra.Basis.Fin
 public import Mathlib.Data.ZMod.Basic
 
 /-!
@@ -13,8 +14,8 @@ public import Mathlib.Data.ZMod.Basic
 
 On `N = ℤ × ℤ` take the skew form with `{e₁, e₂} = 1`, every vector unfrozen, and the
 sublattice `N° = ℤ e₁ ⊕ 2ℤ e₂` of the multipliers `d = (1, 2)`. Both integrality conditions
-hold, the ray indices of `N°` are `κ(e₁) = 1` and `κ(e₂) = 2`, and the integral functional
-`{-, κ(e₂) e₂}` is `a ↦ 2 a₁`.
+hold, the standard basis with multipliers `(1, 2)` is an adapted basis, the ray indices of `N°`
+are `κ(e₁) = 1` and `κ(e₂) = 2`, and the integral functional `{-, κ(e₂) e₂}` is `a ↦ 2 a₁`.
 -/
 
 public section
@@ -67,24 +68,41 @@ theorem rankTwo_sublattice : rankTwo.sublattice = evenSnd :=
 theorem rankTwo_form : rankTwo.form = rankTwoForm :=
   (rfl)
 
+/-- The standard basis of `ℤ × ℤ`, with both indices unfrozen and multipliers `(1, 2)`, is an
+adapted basis of the rank-two datum. -/
+noncomputable def rankTwoAdaptedBasis : rankTwo.AdaptedBasis (Fin 2) where
+  basis := Module.Basis.finTwoProd ℤ
+  unfrozenIndex := Finset.univ
+  multiplier := ![1, 2]
+  multiplier_pos i := by fin_cases i <;> simp
+  unfrozen_eq_span := by
+    rw [Finset.coe_univ, Set.image_univ, Module.Basis.span_eq, rankTwo_unfrozen]
+  sublattice_eq_span := by
+    ext x
+    rw [Submodule.mem_span_range_iff_exists_fun, rankTwo_sublattice, mem_evenSnd]
+    simp only [Fin.sum_univ_two, Module.Basis.finTwoProd_zero, Module.Basis.finTwoProd_one,
+      Matrix.cons_val_zero, Matrix.cons_val_one]
+    constructor
+    · rintro ⟨k, hk⟩
+      refine ⟨![x.1, k], Prod.ext ?_ ?_⟩ <;> simp [hk, mul_comm]
+    · rintro ⟨c, rfl⟩
+      simp
+
+@[simp]
+theorem rankTwoAdaptedBasis_basis : rankTwoAdaptedBasis.basis = Module.Basis.finTwoProd ℤ :=
+  (rfl)
+
+@[simp]
+theorem rankTwoAdaptedBasis_multiplier : rankTwoAdaptedBasis.multiplier = ![1, 2] :=
+  (rfl)
+
 /-- The ray index of `e₁` is `1`, since `e₁ ∈ N°`. -/
 theorem rayIndex_fst : rankTwo.sublattice.toAddSubgroup.rayIndex (1, 0) = 1 := by
-  rw [AddSubgroup.rayIndex_of_isPrimitive _
-      (TauCeti.isPrimitive_def.2 ⟨LinearMap.fst ℤ ℤ ℤ, rfl⟩),
-    Nat.cast_eq_one, AddMonoid.addOrderOf_eq_one_iff, QuotientAddGroup.eq_zero_iff]
-  simp
+  simpa using rankTwoAdaptedBasis.rayIndex_basis 0
 
 /-- The ray index of `e₂` is `2`, since `e₂ ∉ N°` and `2 e₂ ∈ N°`. -/
 theorem rayIndex_snd : rankTwo.sublattice.toAddSubgroup.rayIndex (0, 1) = 2 := by
-  rw [AddSubgroup.rayIndex_of_isPrimitive _
-    (TauCeti.isPrimitive_def.2 ⟨LinearMap.snd ℤ ℤ ℤ, rfl⟩)]
-  have : addOrderOf (((0, 1) : ℤ × ℤ) : (ℤ × ℤ) ⧸ rankTwo.sublattice.toAddSubgroup) = 2 := by
-    apply addOrderOf_eq_prime
-    · rw [← QuotientAddGroup.mk_nsmul, QuotientAddGroup.eq_zero_iff]
-      simp
-    · rw [Ne, QuotientAddGroup.eq_zero_iff]
-      simp
-  rw [this, Nat.cast_ofNat]
+  simpa using rankTwoAdaptedBasis.rayIndex_basis 1
 
 /-- The integral functional `{-, κ(e₂) e₂}` sends `a` to `2 a₁`. -/
 theorem normal_snd_apply (a : ℤ × ℤ) :

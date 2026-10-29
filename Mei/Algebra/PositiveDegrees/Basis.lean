@@ -15,7 +15,9 @@ A finite integral basis defines the monoid of nonnegative integral combinations,
 graded by the sum of its coordinates. Its bounded-degree sets are finite, including
 when the basis is empty. These are the degree data for completions in independent
 formal variables. The construction pulls back `Mei.PositiveDegrees.orthant` along
-Mathlib's `Module.Basis.equivFun`.
+Mathlib's `Module.Basis.equivFun`. The allowed monoid is free on the basis vectors:
+`Module.Basis.positiveDegreesMonoidEquiv` identifies it with `ι →₀ ℕ`, carrying the degree
+to the total degree.
 For graphs in a torsion-free target, every supported primitive ray generator
 already belongs to the graph monoid.
 -/
@@ -78,6 +80,43 @@ theorem nsmulSaturated_positiveDegrees_monoid : b.positiveDegrees.monoid.NSMulSa
     have hc := (b.mem_positiveDegrees_monoid _).mp hn c
     simp only [map_nsmul, Finsupp.smul_apply, nsmul_eq_mul] at hc
     exact nonneg_of_mul_nonneg_right hc (by exact_mod_cast Nat.pos_of_ne_zero ha)
+
+/-- Free natural coordinates on the nonnegative basis monoid: an allowed exponent is
+recorded by its basis coordinates, which are natural numbers. -/
+def positiveDegreesMonoidEquiv : b.positiveDegrees.monoid ≃+ (ι →₀ ℕ) where
+  toFun n := (b.repr n).mapRange Int.toNat Int.toNat_zero
+  invFun c := ⟨b.repr.symm (c.mapRange (↑) Nat.cast_zero), by simp⟩
+  left_inv n := by
+    ext1
+    apply b.repr.injective
+    ext j
+    simp [Int.toNat_of_nonneg ((b.mem_positiveDegrees_monoid _).mp n.property j)]
+  right_inv c := by
+    ext j
+    simp
+  map_add' n m := by
+    ext j
+    simp [Int.toNat_add ((b.mem_positiveDegrees_monoid _).mp n.property j)
+      ((b.mem_positiveDegrees_monoid _).mp m.property j)]
+
+/-- The natural coordinates of an allowed exponent are its basis coordinates. -/
+@[simp]
+theorem positiveDegreesMonoidEquiv_apply (n : b.positiveDegrees.monoid) (j : ι) :
+    b.positiveDegreesMonoidEquiv n j = (b.repr n j).toNat :=
+  (rfl)
+
+/-- The allowed exponent with natural coordinates `c` has basis coordinates `c`. -/
+@[simp]
+theorem repr_positiveDegreesMonoidEquiv_symm_apply (c : ι →₀ ℕ) (j : ι) :
+    b.repr (b.positiveDegreesMonoidEquiv.symm c) j = c j := by
+  simp [positiveDegreesMonoidEquiv]
+
+/-- The degree of an allowed exponent is the total degree of its natural coordinates. -/
+theorem positiveDegrees_degree_eq_degree_positiveDegreesMonoidEquiv
+    (n : b.positiveDegrees.monoid) :
+    b.positiveDegrees.degree n = ((b.positiveDegreesMonoidEquiv n).degree : ℤ) := by
+  simp [Finsupp.degree_eq_sum,
+    Int.toNat_of_nonneg ((b.mem_positiveDegrees_monoid _).mp n.property _)]
 
 /-- Supported primitive generators belong to the basis graph monoid when the
 target is torsion-free. This integral membership does not require real embeddings. -/
