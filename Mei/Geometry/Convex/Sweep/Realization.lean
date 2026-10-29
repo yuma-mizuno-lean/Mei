@@ -118,20 +118,6 @@ private theorem stage_incomingReference (j : Fin (n + 1)) :
     simp only [vadd_eq_add]
     module
 
-private theorem stage_bends (j : Fin (n + 1)) {t : ℝ}
-    (ht : t ∈ (realizationStage f c v Q hpos j).bends.support) :
-    ∃ a : Fin n, a.val < j.val ∧
-      t = backwardParameter f c (fun j => v j.castSucc) a.succ Q := by
-  induction j using Fin.induction with
-  | zero => simp [stage_zero] at ht
-  | succ j ih =>
-    rw [stage_succ, FiniteAffineRay.bends_insert] at ht
-    rcases Finset.mem_union.mp (Finsupp.support_add ht) with ht | ht
-    · obtain ⟨a, ha, rfl⟩ := ih ht
-      exact ⟨a, by simpa only [Fin.val_succ, Fin.val_castSucc] using Nat.lt_succ_of_lt ha, rfl⟩
-    · exact ⟨j, by simp only [Fin.val_succ]; omega,
-        Finset.mem_singleton.mp (Finsupp.support_single_subset ht)⟩
-
 private theorem stage_bends_eq (j : Fin (n + 1)) :
     (realizationStage f c v Q hpos j).bends =
       ∑ a ∈ Finset.univ.filter (fun a : Fin n => a.val < j.val),
@@ -150,6 +136,15 @@ private theorem stage_bends_eq (j : Fin (n + 1)) :
     rw [stage_succ, FiniteAffineRay.bends_insert, ih, he, Finset.sum_insert]
     · exact add_comm _ _
     · simp
+
+private theorem stage_bends (j : Fin (n + 1)) {t : ℝ}
+    (ht : t ∈ (realizationStage f c v Q hpos j).bends.support) :
+    ∃ a : Fin n, a.val < j.val ∧
+      t = backwardParameter f c (fun j => v j.castSucc) a.succ Q := by
+  rw [stage_bends_eq] at ht
+  obtain ⟨a, ha, ht⟩ := Finsupp.mem_support_finsetSum t ht
+  exact ⟨a, (Finset.mem_filter.mp ha).2,
+    Finset.mem_singleton.mp (Finsupp.support_single_subset ht)⟩
 
 private theorem stage_before (j : Fin (n + 1)) (t : ℝ)
     (ht : t ≤ backwardParameter f c (fun j => v j.castSucc) j Q) :
