@@ -20,7 +20,9 @@ Choose free additive coordinates on the positive unfrozen monoid, with total
 coordinate degree equal to its positive degree. The principal coefficient algebra
 is then a polynomial algebra over the Laurent character algebra. Its native
 positive-increment filtration becomes the powers of the ideal of variables, so
-its completion is the corresponding multivariate power series algebra.
+its completion is the corresponding multivariate power series algebra. The
+polynomial dictionary is natural in the scalar ring, so it matches the expressions
+with scalars from a subring image on both sides.
 
 The coefficient formula retains both the unfrozen exponent and the character
 exponent. In particular, characters have filtration order zero even when the
@@ -92,6 +94,32 @@ theorem coeff_principalCoefficientPolynomialEquiv (a : R[Q]) (n : ι →₀ ℕ)
   rw [← coeff_curryAlgEquiv_symm, AlgEquiv.symm_apply_apply, coeff_domCongr]
   rfl
 
+/-- The polynomial dictionary is natural in the scalar ring: changing scalars of a
+principal coefficient expression changes the scalars of its character coefficients. -/
+@[simp]
+theorem principalCoefficientPolynomialEquiv_mapRingHom {S : Type*} [CommSemiring S]
+    (φ : S →+* R) (a : S[Q]) :
+    D.principalCoefficientPolynomialEquiv d e (mapRingHom Q φ a) =
+      MvPolynomial.map (mapRingHom M φ) (D.principalCoefficientPolynomialEquiv d e a) := by
+  ext n m
+  simp only [coeff_principalCoefficientPolynomialEquiv, coeff_mapRingHom, MvPolynomial.coeff_map]
+
+/-- The polynomial dictionary sends exactly the principal coefficient expressions with
+scalars from the image of `S` to polynomials whose character coefficients have
+scalars from that image. -/
+theorem principalCoefficientPolynomialEquiv_mem_rangeS_iff {S : Type*} [CommSemiring S]
+    (φ : S →+* R) (a : R[Q]) :
+    D.principalCoefficientPolynomialEquiv d e a ∈
+        (MvPolynomial.map (σ := ι) (mapRingHom M φ)).rangeS ↔
+      a ∈ (mapRingHom Q φ).rangeS := by
+  constructor
+  · rintro ⟨c, hc⟩
+    refine ⟨(D.principalCoefficientPolynomialEquiv d e).symm c, ?_⟩
+    apply (D.principalCoefficientPolynomialEquiv (R := R) d e).injective
+    rw [principalCoefficientPolynomialEquiv_mapRingHom, AlgEquiv.apply_symm_apply, hc]
+  · rintro ⟨b, rfl⟩
+    exact ⟨_, (D.principalCoefficientPolynomialEquiv_mapRingHom d e φ b).symm⟩
+
 end Polynomial
 
 local notation "F" => TropicalVertexCoefficientAction.filtration
@@ -142,17 +170,36 @@ theorem comap_idealOfVars_pow_principalCoefficientPolynomialEquiv (k : ℕ) :
 
 end Filtration
 
-variable [CommRing R] [Finite ι]
+variable [CommRing R]
+
+/-- The polynomial dictionary identifies the native principal filtration with the
+filtration by powers of the ideal of variables. -/
+theorem comap_ofIdeal_principalCoefficientPolynomialEquiv (k : ℕ) :
+    ((AlgFiltration.ofIdeal (MvPolynomial.idealOfVars ι R[M])).ideal k).comap
+      (D.principalCoefficientPolynomialEquiv d e).toAlgHom = (F).ideal k := by
+  simpa only [AlgFiltration.ofIdeal_ideal] using
+    D.comap_idealOfVars_pow_principalCoefficientPolynomialEquiv d e he k
+
+variable [Finite ι]
 
 /-- The completion of the native principal coefficient algebra is the power
 series algebra in free positive coordinates over the character algebra. -/
 def principalCoefficientCompletionEquiv :
     (F).completion ≃ₐ[R] MvPowerSeries ι R[M] :=
   ((F).completionEquiv (AlgFiltration.ofIdeal (MvPolynomial.idealOfVars ι R[M]))
-    (D.principalCoefficientPolynomialEquiv d e) (fun k => by
-      simpa only [AlgFiltration.ofIdeal_ideal] using
-        D.comap_idealOfVars_pow_principalCoefficientPolynomialEquiv d e he k)).trans
+    (D.principalCoefficientPolynomialEquiv d e)
+    (D.comap_ofIdeal_principalCoefficientPolynomialEquiv d e he)).trans
     ((principalCompletionEquiv ι R[M]).restrictScalars R)
+
+/-- The completed dictionary is the completion of the polynomial dictionary followed by
+the identification of the polynomial completion with power series. -/
+theorem principalCoefficientCompletionEquiv_apply (x : (F).completion) :
+    D.principalCoefficientCompletionEquiv d e he x =
+      principalCompletionEquiv ι R[M] ((F).completionEquiv
+        (AlgFiltration.ofIdeal (MvPolynomial.idealOfVars ι R[M]))
+        (D.principalCoefficientPolynomialEquiv d e)
+        (D.comap_ofIdeal_principalCoefficientPolynomialEquiv d e he) x) :=
+  (rfl)
 
 /-- Completing a finite principal coefficient expression gives its polynomial
 dictionary, viewed as a power series. -/
