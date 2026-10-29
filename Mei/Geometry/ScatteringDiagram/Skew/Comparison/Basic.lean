@@ -213,15 +213,18 @@ theorem direction_skewComparison_preimage {n : N} (hn : n ∈ D.unfrozen)
       (D.skewComparison_preimage_subset_ker_normal hD h hn σ hσ hx)) hcodim).symm
 
 /-- The normalized skew normal and the evaluation normal give the same sign
-on every vector, including tangencies. Nondegeneracy is unnecessary. -/
+on every vector, including tangencies and the zero degree. Nondegeneracy is unnecessary. -/
 theorem sign_realCharacter_normal_eq_sign_eval_skewComparison
-    {n : N} (hn : n ∈ D.unfrozen) (hn0 : n ≠ 0) (v : V) :
+    {n : N} (hn : n ∈ D.unfrozen) (v : V) :
     let _ := h.free
     SignType.sign (h.realCharacter (D.normal n hn).toAddMonoidHom v) =
       SignType.sign (D.skewComparison hD h v (i n)) := by
   let := h.free
   dsimp only
   rw [D.realCharacter_normal_eq_smul_eval_comp_skewComparison hD h hn]
+  by_cases hn0 : n = 0
+  · subst n
+    simp
   simp only [LinearMap.smul_apply, LinearMap.comp_apply, ContinuousLinearMap.coe_coe,
     ContinuousLinearMap.apply_apply, smul_eq_mul, sign_mul]
   have hp : (0 : ℝ) < D.sublattice.toAddSubgroup.rayIndex n :=

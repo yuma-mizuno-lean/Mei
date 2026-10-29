@@ -18,9 +18,9 @@ has the same sign as evaluation after comparison, so the two descriptions give
 the same signed crossing factors. Recession membership is the incomingness test
 already established for arbitrary skew forms.
 
-Real injectivity uses scalar extension of injective lattice maps; dimension
-equality gives surjectivity. Affine spans and their dimensions are transported
-with Mathlib's affine and linear equivalence APIs. The geometric comparison
+Pullback preserves the dimension of the affine direction of every set, including
+the empty set. This transports codimension hypotheses on the original support
+to its pullback. The geometric comparison
 follows Gross–Hacking–Keel–Kontsevich, *Canonical bases for cluster algebras*,
 §1 and Appendix B, and Mandel, *Scattering diagrams, theta functions, and
 refined tropical curve counts*, Remark 2.3.
