@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.ScatteringDiagram.Skew.WallSpace
+public import Mei.Geometry.ScatteringDiagram.Skew.WallSpace.Basic
 public import Mei.Geometry.ScatteringDiagram.WallSpace.Projection
 
 /-!
