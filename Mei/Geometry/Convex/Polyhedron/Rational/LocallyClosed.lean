@@ -145,6 +145,19 @@ theorem inter {S T : Set V} (hS : IsLocallyClosedPolyhedron h S)
   simp only [Set.mem_inter_iff, Set.mem_ofPred_eq, Sum.forall, Sum.elim_inl, Sum.elim_inr]
   tauto
 
+/-- A finite intersection of locally closed rational-normal polyhedra is again
+one; the empty intersection is the whole space. -/
+theorem iInter {κ : Type*} [Finite κ] {S : κ → Set V}
+    (hS : ∀ j, IsLocallyClosedPolyhedron h (S j)) :
+    IsLocallyClosedPolyhedron h (⋂ j, S j) := by
+  classical
+  let := Fintype.ofFinite κ
+  have hs (s : Finset κ) : IsLocallyClosedPolyhedron h (⋂ j ∈ s, S j) := by
+    induction s using Finset.induction_on with
+    | empty => simp
+    | insert j s _ ih => simpa using (hS j).inter ih
+  simpa using hs Finset.univ
+
 /-- Locally closed polyhedra pull back along affine maps with rational linear part. -/
 theorem preimage {S : Set V} (hS : IsLocallyClosedPolyhedron h S) (f : W →ᴬ[ℝ] V)
     (hf : Toric.IsRationalLinearMap h' h f.toAffineMap.linear) :

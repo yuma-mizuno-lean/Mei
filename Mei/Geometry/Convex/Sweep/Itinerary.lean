@@ -61,6 +61,16 @@ def backwardTime (i : Fin n) : V →ᴬ[ℝ] ℝ :=
   (f i (v i))⁻¹ • (ContinuousAffineMap.const ℝ V (c i) -
     (f i).toContinuousAffineMap.comp (backwardPoint f c v i.castSucc))
 
+/-- The linear part of elapsed time is the negative pulled-back normal divided
+by its value on the velocity. -/
+@[simp]
+theorem backwardTime_linear (j : Fin n) :
+    (backwardTime f c v j).toAffineMap.linear =
+      (f j (v j))⁻¹ • (-(f j).toLinearMap.comp
+        (backwardPoint f c v j.castSucc).toAffineMap.linear) := by
+  ext x
+  simp [backwardTime, ← ContinuousAffineMap.coe_contLinear]
+
 /-- The affine backward-time formula. -/
 @[simp]
 theorem backwardTime_apply (i : Fin n) (Q : V) :

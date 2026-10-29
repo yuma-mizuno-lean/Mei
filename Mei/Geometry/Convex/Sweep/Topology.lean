@@ -47,6 +47,15 @@ theorem sweepProjection_apply (f : V →L[ℝ] ℝ) (c : ℝ) (n y : V) :
     ContinuousAffineMap.coe_const, Function.const_apply]
   module
 
+/-- The linear part of a sweep projection subtracts the normal component along
+the sweeping vector. -/
+@[simp]
+theorem sweepProjection_linear (f : V →L[ℝ] ℝ) (c : ℝ) (n : V) :
+    (sweepProjection f c n).toAffineMap.linear =
+      LinearMap.id - f.toLinearMap.smulRight n := by
+  ext x
+  simp [sweepProjection, ← ContinuousAffineMap.coe_contLinear]
+
 /-- The recovered base point has the required height. -/
 theorem sweepProjection_height (f : V →L[ℝ] ℝ) (c : ℝ) {n : V}
     (hn : f n = 1) (y : V) :
