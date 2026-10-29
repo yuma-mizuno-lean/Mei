@@ -101,6 +101,7 @@ local notation "q" => ofEquiv (AddEquiv.symm T) (AddEquiv.symm S)
 
 /-- The reverse coordinate pairing is a left inverse on positive tangent fields.
 Only the Lie maps agree with the identity: cutoff moduli remain independent. -/
+@[simp]
 theorem ofEquiv_restrictGradedLieHom_symm_comp :
     ((q).restrictGradedLieHom (fun _ => Submodule.mem_top)).toLieHom.comp
         ((p).restrictGradedLieHom (fun _ => Submodule.mem_top)).toLieHom =
@@ -133,6 +134,7 @@ variable [Algebra ℚ R] [DecidableEq Γ] [DecidableEq Γ']
 
 /-- Forward and reverse coordinate maps are inverse after completion, even for
 different degree functions and noninverse cutoff moduli. -/
+@[simp]
 theorem ofEquiv_completedMap_symm_comp :
     ((q).restrictGradedLieHom (fun _ => Submodule.mem_top)).completedMap.comp
         ((p).restrictGradedLieHom (fun _ => Submodule.mem_top)).completedMap =
