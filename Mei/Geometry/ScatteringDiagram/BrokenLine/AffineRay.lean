@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.Affine.FiniteRay
+public import Mei.Geometry.Affine.FiniteRay.Basic
 public import Mei.Geometry.ScatteringDiagram.Incoming.Affine
 
 /-!
