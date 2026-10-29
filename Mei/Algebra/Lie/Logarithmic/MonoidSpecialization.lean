@@ -33,7 +33,7 @@ namespace Mei.LogarithmicVectorField
 
 open _root_.AddMonoidAlgebra
 
-variable {K R S Γ : Type*} [CommRing K] [CommRing R] [CommRing S]
+variable {K R S Γ : Type*} [CommSemiring K] [CommSemiring R] [CommSemiring S]
   [Algebra K R] [Algebra K S] [AddCommMonoid Γ]
   (d : PositiveDegrees Γ) (Q : AddSubmonoid Γ)
   (φ : R →ₐ[K] S) (χ : Multiplicative Q →* S)
