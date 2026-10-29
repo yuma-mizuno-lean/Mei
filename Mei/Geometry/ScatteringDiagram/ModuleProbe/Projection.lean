@@ -16,10 +16,14 @@ charge-zero inclusion. At extended order `k + 1`, its kernel is precisely the
 embedded relative-order-`k` coefficient module; the completed kernel consists
 precisely of completed coefficient labels. Thus forgetting the probe coefficient
 retains the base label without requiring a faithful coefficient action.
+The kernel equivalence extracts coefficients, with their finite logarithmic
+projections and the base-conjugation action.
 
 We use Mathlib's `LieAlgebra.SemiDirectSum.projr`, the degree-ideal splitting in
 `ModuleProbe.mem_degreeIdeal_succ`, and the finite and completed coefficient
-inclusions. The use of this semidirect extension to recover coefficient transport
+inclusions. The kernel equivalence uses Mathlib's `MonoidHom.ofInjective`;
+its conjugation formula uses `base_conj_completedModuleBCHInclusion`.
+The use of this semidirect extension to recover coefficient transport
 follows Mandel, *Scattering diagrams, theta functions, and refined tropical curve
 counts*, §3.3.3 (arXiv:1503.06183v5).
 -/
@@ -273,5 +277,78 @@ theorem completedBaseProjection_eq_one_iff
           (BCHGroup.exp_log _)
   · rintro ⟨a, rfl⟩
     exact completedBaseProjection_module d ℳ p ℒ a
+
+local notation "G" => PositiveDegrees.completedBCHGroup (positiveDegrees d p) (grading d ℳ p ℒ)
+local notation "C" => ModuleFiltration.completion (d.shiftedFiltration ℳ p)
+local notation "π" => completedBaseProjection d ℳ p ℒ
+local notation "ι" => completedModuleBCHInclusion d ℳ p ℒ
+
+/-- The completed coefficient inclusion has exactly the kernel of base projection
+as its range. -/
+theorem range_completedModuleBCHInclusion : (ι).range = (π).ker := by
+  ext g
+  rw [MonoidHom.mem_range, MonoidHom.mem_ker,
+    completedBaseProjection_eq_one_iff,
+    (completedModuleBCHInclusion_injective d ℳ p ℒ).existsUnique_iff_exists]
+
+/-- The unique completed coefficient of a label with trivial base. Products of
+labels correspond to addition in the coefficient module. -/
+def completedKernelEquiv : (π).ker ≃* Multiplicative C :=
+  (MulEquiv.subgroupCongr (range_completedModuleBCHInclusion d ℳ p ℒ).symm).trans
+    (MonoidHom.ofInjective (completedModuleBCHInclusion_injective d ℳ p ℒ)).symm
+
+/-- Exponentiating the extracted coefficient recovers the original label. -/
+@[simp]
+theorem completedModuleBCHInclusion_completedKernelEquiv (g : (π).ker) :
+    ι (completedKernelEquiv d ℳ p ℒ g) = g.val := by
+  exact MonoidHom.apply_ofInjective_symm
+    (completedModuleBCHInclusion_injective d ℳ p ℒ) _
+
+/-- Extracting an included coefficient recovers that coefficient. -/
+@[simp]
+theorem completedKernelEquiv_inclusion (a : Multiplicative C) :
+    completedKernelEquiv d ℳ p ℒ ⟨ι a, by simp⟩ = a := by
+  apply completedModuleBCHInclusion_injective d ℳ p ℒ
+  simp
+
+/-- The inverse equivalence is the original completed coefficient inclusion. -/
+@[simp]
+theorem coe_completedKernelEquiv_symm (a : Multiplicative C) :
+    ((completedKernelEquiv d ℳ p ℒ).symm a : G) = ι a := by
+  exact (completedModuleBCHInclusion_completedKernelEquiv d ℳ p ℒ
+    ((completedKernelEquiv d ℳ p ℒ).symm a)).symm.trans
+      (congrArg ι ((completedKernelEquiv d ℳ p ℒ).apply_symm_apply a))
+
+/-- Relative order `k` of the extracted coefficient is the coefficient projection
+of the logarithm at extended order `k + 1`. -/
+@[simp]
+theorem projection_completedKernelEquiv (g : (π).ker) (k : ℕ) :
+    (d.shiftedFiltration ℳ p).projection k
+        (completedKernelEquiv d ℳ p ℒ g).toAdd =
+      moduleQuotientProjection d ℳ p ℒ k
+        (BCHGroup.log (L := (positiveDegrees d p).truncatedLie
+          (grading d ℳ p ℒ) (k + 1)) (CompletedGroup.projection (k + 1) g.val)) := by
+  have he := congrArg (CompletedGroup.projection (k + 1))
+    (completedModuleBCHInclusion_completedKernelEquiv d ℳ p ℒ g)
+  rw [projection_completedModuleBCHInclusion, moduleBCHInclusion_apply,
+    toAdd_ofAdd] at he
+  rw [← he, BCHGroup.log_exp, moduleQuotientProjection_inclusion]
+
+/-- Extracting a conjugated vertical label gives the existing completed BCH
+action on its coefficient. -/
+theorem completedKernelEquiv_base_conj (b : d.completedBCHGroup ℒ) (g : (π).ker) :
+    (completedKernelEquiv d ℳ p ℒ
+      ⟨(baseGradedLieHom d ℳ p ℒ).completedMap b * g.val *
+        ((baseGradedLieHom d ℳ p ℒ).completedMap b)⁻¹, by
+          simp only [MonoidHom.mem_ker, map_mul, map_inv,
+            completedBaseProjection_base, MonoidHom.mem_ker.mp g.property,
+            mul_one, mul_inv_cancel]⟩).toAdd =
+      (d.shiftedLieFiltration ℒ ℳ p).completedBCHAction d ℒ b
+        (completedKernelEquiv d ℳ p ℒ g).toAdd := by
+  apply Multiplicative.ofAdd.injective
+  apply completedModuleBCHInclusion_injective d ℳ p ℒ
+  simp only [ofAdd_toAdd, completedModuleBCHInclusion_completedKernelEquiv]
+  rw [← base_conj_completedModuleBCHInclusion,
+    completedModuleBCHInclusion_completedKernelEquiv]
 
 end Mei.ModuleProbe
