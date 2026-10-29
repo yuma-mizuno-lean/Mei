@@ -286,6 +286,16 @@ theorem continuous (β : FiniteAffineRay V P) : Continuous β := by
   simp only [Finsupp.sum]
   fun_prop
 
+/-- The continuous path realizing the finite ray, including its affine continuation
+past the endpoint. -/
+def toContinuousMap (β : FiniteAffineRay V P) : C(ℝ, P) :=
+  ⟨β, β.continuous⟩
+
+/-- The bundled continuous path evaluates as the finite ray. -/
+@[simp]
+theorem toContinuousMap_apply (β : FiniteAffineRay V P) (t : ℝ) :
+    β.toContinuousMap t = β t := (rfl)
+
 /-- The affine line representing the incoming germ of the bent ray. -/
 def incomingLine (β : FiniteAffineRay V P) : ℝ →ᴬ[ℝ] P :=
   ContinuousAffineMap.lineMap β.incomingReference (-β.incomingDirection +ᵥ β.incomingReference)

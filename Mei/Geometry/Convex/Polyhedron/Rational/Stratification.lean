@@ -16,6 +16,10 @@ affine arrangement whose sign cells determine membership in every set. Its nonem
 sign cells partition the whole space into locally closed convex polyhedra. Each
 original set is a union of these strata, including its lower-dimensional pieces.
 
+A rational semilinear set also decomposes into disjoint relative interiors of
+finitely many closed rational-normal polyhedra contained in its closure. These
+closed charts retain boundary limits of points in the original set.
+
 This simultaneous construction is useful for endpoint domains of finitely many
 affine histories: the set of admitted history labels is constant on each stratum.
 It combines the individual arrangements supplied by

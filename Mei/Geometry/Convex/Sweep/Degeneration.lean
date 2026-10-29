@@ -21,16 +21,13 @@ their affine formulas. No crossing is sent to infinity at a finite endpoint.
 Every rational semilinear subdomain of a selected itinerary admits finitely many
 disjoint charts that are relative interiors of closed rational-normal polyhedra.
 On their closures the selected support incidences persist and elapsed times are
-nonnegative. Endpoint evaluation on a closed chart is proper. Extra semilinear
-validity constraints may be imposed before taking these charts; their boundary
-points need not satisfy strict avoidance conditions.
+nonnegative. Each closed chart has a proper inclusion into endpoint space
+because it is closed. Extra semilinear validity constraints may be imposed before
+taking these charts; their boundary points need not satisfy strict avoidance
+conditions.
 
-We use `backwardRay`, its bend and encounter formulas, sign-cell decomposition
-and relative interiors, and Mathlib's `ContinuousMap.curry`. The backward
-parameterization follows Carl–Pumperla–Siebert, *A tropical view on
-Landau–Ginzburg models*, §4 (arXiv:2205.07753v2). This construction concerns
-geometric charts; coefficient decorations and finiteness of the set of
-itineraries are separate requirements.
+The backward parameterization follows Carl–Pumperla–Siebert, *A tropical view on
+Landau–Ginzburg models*, §4 (arXiv:2205.07753v2).
 -/
 
 public noncomputable section
@@ -68,11 +65,12 @@ theorem backwardPath_apply (Q : V) (t : ℝ) :
 /-- On a strict itinerary the extended path is the actual finite affine ray,
 including its affine continuation beyond time zero. -/
 theorem backwardPath_eq_backwardRay (Q : V)
-    (hpos : ∀ j, 0 < backwardTime f c (fun j => v j.castSucc) j Q) (t : ℝ) :
-    backwardPath f c v Q t = backwardRay f c v Q hpos t := by
+    (hpos : ∀ j, 0 < backwardTime f c (fun j => v j.castSucc) j Q) :
+    backwardPath f c v Q = (backwardRay f c v Q hpos).toContinuousMap := by
   classical
-  rw [backwardPath_apply, FiniteAffineRay.eval_def, bends_backwardRay,
-    direction_backwardRay, endpoint_backwardRay]
+  ext t
+  rw [FiniteAffineRay.toContinuousMap_apply, backwardPath_apply, FiniteAffineRay.eval_def,
+    bends_backwardRay, direction_backwardRay, endpoint_backwardRay]
   rw [← Finsupp.sum_finsetSum_index (fun b => smul_zero (max (b - t) 0))
     (fun b x y => smul_add (max (b - t) 0) x y)]
   simp only [Finsupp.sum_single_index
@@ -83,51 +81,50 @@ realizations to the extended path, even when some limiting elapsed times vanish.
 theorem tendsto_backwardRay {A : Type*} {l : Filter A} {Q : A → V} {Q₀ : V}
     (hQ : Tendsto Q l (𝓝 Q₀))
     (hpos : ∀ a j, 0 < backwardTime f c (fun j => v j.castSucc) j (Q a)) :
-    Tendsto (fun a => (⟨backwardRay f c v (Q a) (hpos a),
-      (backwardRay f c v (Q a) (hpos a)).continuous⟩ : C(ℝ, V))) l
+    Tendsto (fun a => (backwardRay f c v (Q a) (hpos a)).toContinuousMap) l
       (𝓝 (backwardPath f c v Q₀)) := by
-  have he (a : A) : (⟨backwardRay f c v (Q a) (hpos a),
-      (backwardRay f c v (Q a) (hpos a)).continuous⟩ : C(ℝ, V)) =
-      backwardPath f c v (Q a) := by
-    ext t
-    exact (backwardPath_eq_backwardRay f c v (Q a) (hpos a) t).symm
-  simp_rw [he]
-  exact (backwardPath f c v).continuous.continuousAt.tendsto.comp hQ
-
-variable (P : Fin n → Set V)
+  simpa only [← backwardPath_eq_backwardRay, Function.comp_def] using
+    (backwardPath f c v).continuous.continuousAt.tendsto.comp hQ
 
 /-- At any boundary endpoint approached by strict realizations, the extended path
 still passes through every affine encounter point at its limiting parameter.
 Several of those parameters may be equal. -/
 theorem backwardPath_apply_parameter_of_mem_closure {Q : V}
-    (hQ : Q ∈ closure (backwardDomain f c (fun j => v j.castSucc) P))
+    (hQ : Q ∈ closure {Q | ∀ j, 0 < backwardTime f c (fun j => v j.castSucc) j Q})
     (j : Fin (n + 1)) :
     backwardPath f c v Q (backwardParameter f c (fun j => v j.castSucc) j Q) =
       backwardPoint f c (fun j => v j.castSucc) j Q := by
   have he : EqOn
       (fun Q => backwardPath f c v Q (backwardParameter f c (fun j => v j.castSucc) j Q))
       (backwardPoint f c (fun j => v j.castSucc) j)
-      (backwardDomain f c (fun j => v j.castSucc) P) := by
+      {Q | ∀ j, 0 < backwardTime f c (fun j => v j.castSucc) j Q} := by
     intro Q hQ
     dsimp only
-    have hpos := fun j => ((mem_backwardDomain _ _ _ _ Q).mp hQ j).1
-    rw [backwardPath_eq_backwardRay f c v Q hpos]
-    exact backwardRay_apply_parameter f c v Q hpos j
+    rw [backwardPath_eq_backwardRay f c v Q hQ, FiniteAffineRay.toContinuousMap_apply]
+    exact backwardRay_apply_parameter f c v Q hQ j
   exact he.closure
     ((backwardPath f c v).continuous.eval
       (backwardParameter f c (fun j => v j.castSucc) j).continuous)
     (backwardPoint f c (fun j => v j.castSucc) j).continuous hQ
 
-/-- Degenerate paths retain their endpoint at parameter zero. -/
-theorem backwardPath_apply_zero_of_mem_closure {Q : V}
-    (hQ : Q ∈ closure (backwardDomain f c (fun j => v j.castSucc) P)) :
+/-- Nonnegative elapsed times suffice for the extended path to retain its endpoint. -/
+theorem backwardPath_apply_zero {Q : V}
+    (hQ : ∀ j, 0 ≤ backwardTime f c (fun j => v j.castSucc) j Q) :
     backwardPath f c v Q 0 = Q := by
-  simpa using backwardPath_apply_parameter_of_mem_closure f c v P hQ 0
+  have hanti : Antitone (fun j => backwardParameter f c (fun j => v j.castSucc) j Q) := by
+    apply Fin.antitone_iff_succ_le.mpr
+    intro j
+    rw [backwardParameter_succ]
+    exact sub_le_self _ (hQ j)
+  have hnonpos (j : Fin n) : backwardParameter f c (fun j => v j.castSucc) j.succ Q ≤ 0 := by
+    simpa using hanti (Fin.zero_le j.succ)
+  simp only [backwardPath_apply, sub_zero, max_eq_right (hnonpos _), zero_smul,
+    Finset.sum_const_zero, zero_add]
 
 /-- The limiting path retains the entire incoming affine half-line. Its origin
 is the last encounter, even if several encounters have collapsed to that point. -/
 theorem backwardPath_apply_incoming_of_mem_closure {Q : V}
-    (hQ : Q ∈ closure (backwardDomain f c (fun j => v j.castSucc) P))
+    (hQ : Q ∈ closure {Q | ∀ j, 0 < backwardTime f c (fun j => v j.castSucc) j Q})
     {s : ℝ} (hs : 0 ≤ s) :
     backwardPath f c v Q (backwardParameter f c (fun j => v j.castSucc) (Fin.last n) Q - s) =
       backwardPoint f c (fun j => v j.castSucc) (Fin.last n) Q + s • v (Fin.last n) := by
@@ -135,12 +132,11 @@ theorem backwardPath_apply_incoming_of_mem_closure {Q : V}
       (fun Q => backwardPath f c v Q
         (backwardParameter f c (fun j => v j.castSucc) (Fin.last n) Q - s))
       (fun Q => backwardPoint f c (fun j => v j.castSucc) (Fin.last n) Q + s • v (Fin.last n))
-      (backwardDomain f c (fun j => v j.castSucc) P) := by
+      {Q | ∀ j, 0 < backwardTime f c (fun j => v j.castSucc) j Q} := by
     intro Q hQ
     dsimp only
-    have hpos := fun j => ((mem_backwardDomain _ _ _ _ Q).mp hQ j).1
-    rw [backwardPath_eq_backwardRay f c v Q hpos,
-      backwardRay_apply_incoming f c v Q hpos _ (sub_le_self _ hs), sub_sub_cancel]
+    rw [backwardPath_eq_backwardRay f c v Q hQ, FiniteAffineRay.toContinuousMap_apply,
+      backwardRay_apply_incoming f c v Q hQ _ (sub_le_self _ hs), sub_sub_cancel]
   exact he.closure
     ((backwardPath f c v).continuous.eval
       ((backwardParameter f c (fun j => v j.castSucc) (Fin.last n)).continuous.sub
@@ -148,13 +144,15 @@ theorem backwardPath_apply_incoming_of_mem_closure {Q : V}
     ((backwardPoint f c (fun j => v j.castSucc) (Fin.last n)).continuous.add
       continuous_const) hQ
 
+variable (P : Fin n → Set V)
+
 variable {N : Type*} [AddCommGroup N] {i : N →+ V}
   {h : TauCeti.Toric.IsIntegralLattice i}
 
 /-- Any rational semilinear validity subdomain has finite closed degeneration
-charts. Their interiors partition precisely that domain; their closures retain
-nonnegative times and all selected closed-support incidences. The endpoint maps
-on the closed charts are proper, without boundedness assumptions. -/
+charts. Their relative interiors partition precisely that domain; their closures retain
+nonnegative times and all selected closed-support incidences. Each chart inclusion
+into endpoint space is proper because the chart is closed. -/
 theorem exists_backwardClosedCharts {D : Set V}
     (hD : IsRationalSemilinear h D)
     (hvalid : D ⊆ backwardDomain f c (fun j => v j.castSucc) P)
