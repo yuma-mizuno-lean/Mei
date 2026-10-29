@@ -116,31 +116,6 @@ theorem backwardRay_avoids_iff (W : J → Set V) :
       simp only [backwardParameter_succ] at hlo
       linarith
 
-/-- Eventual source admission of the backward incoming ray is equivalent to
-source admission of the realized path at negative infinity. The source may be
-an arbitrary set. -/
-theorem backwardRay_eventually_mem_iff (C : Set V) :
-    (∀ᶠ t : ℝ in atBot, β t ∈ C) ↔
-      ∀ᶠ s : ℝ in atTop, X (Fin.last n) + s • v (Fin.last n) ∈ C := by
-  have htop : Tendsto (fun s : ℝ => τ (Fin.last n) - s) atTop atBot := by
-    simpa only [sub_eq_add_neg] using
-      tendsto_atBot_add_const_left atTop (τ (Fin.last n)) tendsto_neg_atTop_atBot
-  have hbot : Tendsto (fun t : ℝ => τ (Fin.last n) - t) atBot atTop := by
-    simpa only [sub_eq_add_neg] using
-      tendsto_atTop_add_const_left atBot (τ (Fin.last n)) tendsto_neg_atBot_atTop
-  have he : ∀ᶠ t : ℝ in atBot,
-      β t = X (Fin.last n) + (τ (Fin.last n) - t) • v (Fin.last n) :=
-    (eventually_le_atBot _).mono fun t ht =>
-      backwardRay_apply_incoming f c v Q hpos t ht
-  constructor
-  · intro h
-    filter_upwards [htop.eventually h, htop.eventually he] with s hs he'
-    rw [he'] at hs
-    simpa only [sub_sub_cancel] using hs
-  · intro h
-    filter_upwards [hbot.eventually h, he] with t ht he'
-    rwa [he']
-
 /-- The intersection of the finite and incoming endpoint domains characterizes
 selected incidences, absence of every unrecorded wall encounter, and eventual
 source admission on the actual continuous path. The endpoint itself is excluded

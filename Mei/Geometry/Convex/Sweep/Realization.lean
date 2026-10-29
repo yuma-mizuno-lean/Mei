@@ -21,6 +21,8 @@ while contributing no geometric bend.
 
 This connects `backwardPoint` and `backwardTime` with `FiniteAffineRay`; selected
 support incidences can consequently be read on an actual continuous path.
+Eventual source admission agrees on the incoming half-line and the realization
+at negative infinity.
 Avoidance and coefficient propagation remain separate conditions. The backward
 parameterization follows Carl–Pumperla–Siebert, *A tropical view on
 Landau–Ginzburg models*, §4 (arXiv:2205.07753v2).
@@ -30,7 +32,7 @@ public noncomputable section
 
 namespace Mei.Convex
 
-open Set
+open Set Filter
 
 variable {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
   {n : ℕ} (f : Fin n → V →L[ℝ] ℝ) (c : Fin n → ℝ) (u : Fin n → V)
@@ -231,6 +233,40 @@ theorem backwardRay_apply_incoming (t : ℝ)
       backwardPoint f c (fun j => v j.castSucc) (Fin.last n) Q +
         (backwardParameter f c (fun j => v j.castSucc) (Fin.last n) Q - t) • v (Fin.last n) :=
   stage_before f c v Q hpos (Fin.last n) t ht
+
+/-- Eventual source admission of the backward incoming ray is equivalent to
+source admission of the realized path at negative infinity. The source may be
+an arbitrary set. -/
+theorem backwardRay_eventually_mem_iff (C : Set V) :
+    (∀ᶠ t : ℝ in atBot, backwardRay f c v Q hpos t ∈ C) ↔
+      ∀ᶠ s : ℝ in atTop,
+        backwardPoint f c (fun j => v j.castSucc) (Fin.last n) Q + s • v (Fin.last n) ∈ C := by
+  have htop : Tendsto
+      (fun s : ℝ => backwardParameter f c (fun j => v j.castSucc) (Fin.last n) Q - s)
+      atTop atBot := by
+    simpa only [sub_eq_add_neg] using
+      tendsto_atBot_add_const_left atTop
+        (backwardParameter f c (fun j => v j.castSucc) (Fin.last n) Q) tendsto_neg_atTop_atBot
+  have hbot : Tendsto
+      (fun t : ℝ => backwardParameter f c (fun j => v j.castSucc) (Fin.last n) Q - t)
+      atBot atTop := by
+    simpa only [sub_eq_add_neg] using
+      tendsto_atTop_add_const_left atBot
+        (backwardParameter f c (fun j => v j.castSucc) (Fin.last n) Q) tendsto_neg_atBot_atTop
+  have he : ∀ᶠ t : ℝ in atBot,
+      backwardRay f c v Q hpos t =
+        backwardPoint f c (fun j => v j.castSucc) (Fin.last n) Q +
+          (backwardParameter f c (fun j => v j.castSucc) (Fin.last n) Q - t) • v (Fin.last n) :=
+    (eventually_le_atBot _).mono fun t ht =>
+      backwardRay_apply_incoming f c v Q hpos t ht
+  constructor
+  · intro h
+    filter_upwards [htop.eventually h, htop.eventually he] with s hs he'
+    rw [he'] at hs
+    simpa only [sub_sub_cancel] using hs
+  · intro h
+    filter_upwards [hbot.eventually h, he] with t ht he'
+    rwa [he']
 
 /-- Every computed encounter is attained at its cumulative negative parameter. -/
 @[simp]
