@@ -65,6 +65,15 @@ theorem toFunctor_comp_forget (s : Section C) : s.toFunctor ⋙ forget C = 𝟭 
 abbrev hom {s t : Section C} (α : s ⟶ t) : s.toFunctor ⟶ t.toFunctor :=
   Functor.Fiber.fiberInclusion.map α
 
+/-- The underlying transformation of an identity section morphism is the identity. -/
+@[simp↓]
+theorem hom_id (s : Section C) : hom (𝟙 s) = 𝟙 s.toFunctor := (rfl)
+
+/-- The underlying transformation preserves composition of section morphisms. -/
+@[simp↓, reassoc]
+theorem hom_comp {s t r : Section C} (α : s ⟶ t) (β : t ⟶ r) :
+    hom (α ≫ β) = hom α ≫ hom β := (rfl)
+
 /-- A morphism of sections lies over the identity transformation of the base. -/
 theorem hom_over {s t : Section C} (α : s ⟶ t) :
     whiskerRight (hom α) (forget C) =

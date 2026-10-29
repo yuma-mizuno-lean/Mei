@@ -1,6 +1,6 @@
 name: publish-lake-cache
 
-# Secret-isolated Lake cache publisher shared by main CI and merge-group CI. The caller may
+# Secret-isolated Lake cache publisher used only by main CI. The caller may
 # execute arbitrary Lean code while producing the staging artifact, so this workflow treats the
 # entire artifact and every reported value as hostile. Only the toolchain pin comes from the
 # immutable revision being published. Planning and confirmation helpers execute without keys.
@@ -86,12 +86,9 @@ jobs:
           sparse-checkout-cone-mode: false
           persist-credentials: false
 
-      - name: Prepare pinned shared tools
-        uses: yuma-mizuno-lean/TauCetiTools/.github/actions/setup@7405c6bc681341dc54c775bc6f5e6de533120ba1
-        with:
-          tools-repository: yuma-mizuno-lean/TauCetiTools
-          tools-ref: 7405c6bc681341dc54c775bc6f5e6de533120ba1
-          project-directory: .
+      # This isolated runner intentionally has no candidate tauceti.toml.
+      # Read the standalone helpers directly; project setup requires that file
+      # and is unnecessary for these standard-library Python entry points.
       - name: Check out workflow-pinned publication planning tools
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
@@ -140,11 +137,11 @@ jobs:
           printf 'name=%s\n' "$TOOLCHAIN" >> "$GITHUB_OUTPUT"
 
       - name: Validate staged data and verify inherited objects without credentials
-        if: ${{ vars.LAKE_CACHE_ARTIFACT_ENDPOINT != '' && vars.LAKE_CACHE_REVISION_ENDPOINT != '' && vars.LAKE_CACHE_ARTIFACT_ENDPOINT_PUBLIC != '' }}
+        if: ${{ vars.MEI_R2_BUCKET_ENDPOINT != '' && vars.LAKE_CACHE_ARTIFACT_ENDPOINT_PUBLIC != '' }}
         env:
           STAGING: ${{ runner.temp }}/lake-cache-staging
-          S3_ARTIFACT_ENDPOINT: ${{ vars.LAKE_CACHE_ARTIFACT_ENDPOINT }}
-          S3_REVISION_ENDPOINT: ${{ vars.LAKE_CACHE_REVISION_ENDPOINT }}
+          S3_ARTIFACT_ENDPOINT: ${{ vars.MEI_R2_BUCKET_ENDPOINT != '' && format('{0}/artifacts', vars.MEI_R2_BUCKET_ENDPOINT) || '' }}
+          S3_REVISION_ENDPOINT: ${{ vars.MEI_R2_BUCKET_ENDPOINT != '' && format('{0}/revisions', vars.MEI_R2_BUCKET_ENDPOINT) || '' }}
           PUBLIC_ARTIFACT_ENDPOINT: ${{ vars.LAKE_CACHE_ARTIFACT_ENDPOINT_PUBLIC }}
           REVISION: ${{ inputs.revision }}
           TOOLCHAIN: ${{ steps.toolchain.outputs.name }}
@@ -156,8 +153,8 @@ jobs:
       - name: Publish the staged Lake cache
         id: upload
         env:
-          S3_ARTIFACT_ENDPOINT: ${{ vars.LAKE_CACHE_ARTIFACT_ENDPOINT }}
-          S3_REVISION_ENDPOINT: ${{ vars.LAKE_CACHE_REVISION_ENDPOINT }}
+          S3_ARTIFACT_ENDPOINT: ${{ vars.MEI_R2_BUCKET_ENDPOINT != '' && format('{0}/artifacts', vars.MEI_R2_BUCKET_ENDPOINT) || '' }}
+          S3_REVISION_ENDPOINT: ${{ vars.MEI_R2_BUCKET_ENDPOINT != '' && format('{0}/revisions', vars.MEI_R2_BUCKET_ENDPOINT) || '' }}
           PUBLIC_REVISION_ENDPOINT: ${{ vars.LAKE_CACHE_REVISION_ENDPOINT_PUBLIC }}
           PUBLIC_ARTIFACT_ENDPOINT: ${{ vars.LAKE_CACHE_ARTIFACT_ENDPOINT_PUBLIC }}
           LAKE_CACHE_KEY_RAW: ${{ secrets.LAKE_CACHE_KEY }}

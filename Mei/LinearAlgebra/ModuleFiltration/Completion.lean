@@ -45,6 +45,10 @@ abbrev quotient (k : ℕ) := M ⧸ F.submodule (k + 1)
 def transition {k l : ℕ} (h : k ≤ l) : F.quotient l →ₗ[R] F.quotient k :=
   Submodule.factor (F.antitone (Nat.add_le_add_right h 1))
 
+/-- A quotient transition is the factor map induced by the filtration inclusion. -/
+theorem transition_eq_factor {k l : ℕ} (h : k ≤ l) :
+    F.transition h = Submodule.factor (F.antitone (Nat.add_le_add_right h 1)) := (rfl)
+
 @[simp]
 lemma transition_mk {k l : ℕ} (h : k ≤ l) (x : M) :
     F.transition h (Submodule.Quotient.mk x) = Submodule.Quotient.mk x :=

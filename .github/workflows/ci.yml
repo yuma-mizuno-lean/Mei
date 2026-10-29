@@ -67,10 +67,10 @@ jobs:
           fetch-depth: 0
 
       - name: Prepare pinned shared tools
-        uses: yuma-mizuno-lean/TauCetiTools/.github/actions/setup@7405c6bc681341dc54c775bc6f5e6de533120ba1
+        uses: yuma-mizuno-lean/TauCetiTools/.github/actions/setup@d9f2698a0a84029dec85f99a8718847c4c0e0eaf
         with:
           tools-repository: yuma-mizuno-lean/TauCetiTools
-          tools-ref: 7405c6bc681341dc54c775bc6f5e6de533120ba1
+          tools-ref: d9f2698a0a84029dec85f99a8718847c4c0e0eaf
           project-directory: .
       - name: Import-boundary guard (Mei/ and Mei.lean ⊬ roadmap/review)
         run: |
@@ -295,19 +295,19 @@ jobs:
           # The secret is deliberately not referenced anywhere in this job, not even to test
           # whether it is set. The endpoints alone decide whether staging runs; the publish
           # job skips with a notice if the key turns out to be missing.
-          S3_ARTIFACT_ENDPOINT: ${{ vars.LAKE_CACHE_ARTIFACT_ENDPOINT }}
-          S3_REVISION_ENDPOINT: ${{ vars.LAKE_CACHE_REVISION_ENDPOINT }}
+          S3_ARTIFACT_ENDPOINT: ${{ vars.MEI_R2_GUARDS_READY == '1' && vars.MEI_R2_BUCKET_ENDPOINT != '' && format('{0}/artifacts', vars.MEI_R2_BUCKET_ENDPOINT) || '' }}
+          S3_REVISION_ENDPOINT: ${{ vars.MEI_R2_GUARDS_READY == '1' && vars.MEI_R2_BUCKET_ENDPOINT != '' && format('{0}/revisions', vars.MEI_R2_BUCKET_ENDPOINT) || '' }}
         run: |
           if [ -n "$S3_ARTIFACT_ENDPOINT" ] && [ -n "$S3_REVISION_ENDPOINT" ]; then
             echo "enabled=true" >> "$GITHUB_OUTPUT"
             echo "::notice::Lake cache upload configured; staging Mei's oleans"
           else
             echo "enabled=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::Lake cache upload not configured, skipping (set the LAKE_CACHE_ARTIFACT_ENDPOINT / LAKE_CACHE_REVISION_ENDPOINT repo variables and the LAKE_CACHE_KEY secret to enable)"
+            echo "::notice::Lake cache upload not configured, skipping (configure MEI_R2_BUCKET_ENDPOINT, MEI_R2_GUARDS_READY and LAKE_CACHE_KEY to enable)"
           fi
 
-      # Merge-group CI normally publishes and publicly confirms the exact commit before GitHub
-      # lands it. Avoid packing and transferring the same map again on main when that happened.
+      # Main CI is the sole publisher. On reruns, avoid packing and transferring
+      # an exact map that a previous successful publication already made public.
       # This is deliberately fail-open: only a downloaded, structurally valid exact map sets
       # exists=true. A direct human merge has no map, and any 404, timeout, service error or
       # malformed response therefore retains the staging/publication fallback below.
@@ -399,9 +399,9 @@ jobs:
           # burns CPU on both ends and saves nothing.
           compression-level: 0
 
-  # Run the secret-bearing upload on a fresh runner through the same hardened publisher used
-  # by merge-group CI. Main publication remains a fallback: merge groups normally publish the
-  # exact commit before landing, while this covers human-owned changes and operational retries.
+  # Publish this main build through the guarded uploader on a fresh runner.
+  # PR and merge-group jobs only read the public cache;
+  # this guarded main job is the sole writer, including operational retries.
   publish-lake-cache:
     needs: [build]
     if: ${{ needs.build.result == 'success' && needs.build.outputs.staged == 'true' }}
@@ -410,7 +410,7 @@ jobs:
     uses: ./.github/workflows/publish-lake-cache.yml
     with:
       tools_repository: yuma-mizuno-lean/TauCetiTools
-      tools_ref: 7405c6bc681341dc54c775bc6f5e6de533120ba1
+      tools_ref: d9f2698a0a84029dec85f99a8718847c4c0e0eaf
       revision: ${{ github.sha }}
       artifact-name: lake-cache-staging
       reported-toolchain: ${{ needs.build.outputs.reported-toolchain }}

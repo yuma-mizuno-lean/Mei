@@ -7,7 +7,7 @@ module
 
 public import Mei.Algebra.QuantumMonoidAlgebra.Lie
 public import Mei.Algebra.QuantumMonoidAlgebra.Positive
-public import Mei.Algebra.Lie.Filtered.Inner
+public import Mei.Algebra.Lie.Filtered.Inner.Basic
 
 /-!
 # Positive quantum coefficient actions
