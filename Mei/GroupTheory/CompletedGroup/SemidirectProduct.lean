@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.GroupTheory.CompletedGroup.Basic
+public import Mei.GroupTheory.CompletedGroup.Map
 public import Mathlib.GroupTheory.SemidirectProduct
 
 /-!
@@ -15,10 +15,10 @@ Suppose a group `H` acts on each group of a tower, compatibly with its transitio
 The action extends to the completed group. Forming the semidirect product with `H`
 commutes with completion, provided the transitions leave the `H` coordinate fixed.
 The comparison and its inverse are characterized by their finite projections.
-Thus a compatible family of transport labels, each consisting of a wall label and
-a chart-change label, retains one chart-change label after completion.
+Thus a compatible family of elements of `Gₖ ⋊ H` has a single, constant `H`-coordinate.
 
-The construction uses `CompletedGroup.lift` and Mathlib's `SemidirectProduct.map`.
+The construction uses `CompletedGroup.congr`, `CompletedGroup.lift`, and Mathlib's
+`SemidirectProduct.map`.
 No surjectivity of the tower transitions or finiteness of either group is required.
 -/
 
@@ -35,49 +35,30 @@ variable {F : ℕᵒᵖ ⥤ GrpCat.{u}} {H : Type v} [Group H]
   (hφ : ∀ {j l} (f : j ⟶ l) (h : H) (x : F.obj j),
     F.map f (φ j h x) = φ l h (F.map f x))
 
-private def actionHom (h : H) : completedGroup F →* completedGroup F :=
-  lift (fun k => (φ (op k) h).toMonoidHom.comp (projection k)) (by
-    intro k l hkl
-    ext x
-    simp only [MonoidHom.comp_apply, MulEquiv.coe_toMonoidHom]
-    rw [hφ, map_projection])
-
-private theorem projection_actionHom (h : H) (x : completedGroup F) (k : ℕ) :
-    projection k (actionHom φ hφ h x) = φ (op k) h (projection k x) := by
-  rw [actionHom, projection_lift, MonoidHom.comp_apply, MulEquiv.coe_toMonoidHom]
-
 /-- The compatible levelwise automorphisms give an action on the completed group. -/
 def action : H →* MulAut (completedGroup F) where
-  toFun h :=
-    { toFun := actionHom φ hφ h
-      map_mul' := (actionHom φ hφ h).map_mul
-      invFun := actionHom φ hφ h⁻¹
-      left_inv x := by
-        apply ext
-        intro k
-        simp only [projection_actionHom, map_inv, MulAut.inv_apply_self]
-      right_inv x := by
-        apply ext
-        intro k
-        simp only [projection_actionHom, map_inv, MulAut.apply_inv_self] }
+  toFun h := congr (NatIso.ofComponents (fun j => (φ j h).toGrpIso) (by
+    intro j l f
+    ext x
+    exact (hφ f h x).symm))
   map_one' := by
     apply MulEquiv.ext
     intro x
     apply ext
     intro k
-    simp [projection_actionHom]
+    simp [projection_congr]
   map_mul' h h' := by
     apply MulEquiv.ext
     intro x
     apply ext
     intro k
-    simp [projection_actionHom, MulAut.mul_apply]
+    simp [projection_congr, MulAut.mul_apply]
 
 /-- The completed action is computed by the action at each finite order. -/
 @[simp]
 theorem projection_action (h : H) (x : completedGroup F) (k : ℕ) :
-    projection k (action φ hφ h x) = φ (op k) h (projection k x) :=
-  projection_actionHom φ hφ h x k
+    projection k (action φ hφ h x) = φ (op k) h (projection k x) := by
+  exact projection_congr _ k x
 
 /-- The tower of semidirect products, with transitions fixing the acting group. -/
 abbrev semidirectTower : ℕᵒᵖ ⥤ GrpCat.{max u v} where
@@ -97,12 +78,12 @@ def semidirectProjection (k : ℕ) :
   SemidirectProduct.map (projection k) (MonoidHom.id H)
     (fun h => by ext x; exact projection_action φ hφ h x k)
 
-/-- The finite wall label is the corresponding projection of the completed wall label. -/
+/-- The left coordinate of a projected element is the projection of its left coordinate. -/
 @[simp]
 theorem semidirectProjection_left (k : ℕ) (x : completedGroup F ⋊[action φ hφ] H) :
     (semidirectProjection φ hφ k x).left = projection k x.left := (rfl)
 
-/-- Projection retains the chart-change label. -/
+/-- Projection preserves the `H`-coordinate. -/
 @[simp]
 theorem semidirectProjection_right (k : ℕ) (x : completedGroup F ⋊[action φ hφ] H) :
     (semidirectProjection φ hφ k x).right = x.right := (rfl)
@@ -117,7 +98,8 @@ private theorem projection_assemble (x : completedGroup F ⋊[action φ hφ] H) 
     projection k (assemble φ hφ x) = semidirectProjection φ hφ k x :=
   projection_lift _ _ k x
 
-/-- All projections of a completed semidirect label have the same acting-group part. -/
+/-- All finite projections of an element of the completed semidirect tower have the same
+`H`-coordinate. -/
 theorem projection_right_eq_projection_zero (x : completedGroup (semidirectTower φ hφ)) (k : ℕ) :
     (projection k x).right = (projection 0 x).right := by
   have hx := congrArg SemidirectProduct.right (map_projection 0 k (Nat.zero_le k) x)
@@ -135,7 +117,7 @@ private theorem projection_leftPart (x : completedGroup (semidirectTower φ hφ)
   rw [projection_apply]
   rfl
 
-/-- Completion commutes with semidirect product by a fixed acting group. The wall-label
+/-- Completion commutes with semidirect product by a fixed acting group. The left
 coordinate is completed, while the acting-group coordinate is constant through the tower. -/
 def semidirectProductEquiv : completedGroup (semidirectTower φ hφ) ≃*
     (completedGroup F ⋊[action φ hφ] H) where
@@ -175,7 +157,16 @@ theorem projection_semidirectProductEquiv_left
 theorem semidirectProductEquiv_right (x : completedGroup (semidirectTower φ hφ)) :
     (semidirectProductEquiv φ hφ x).right = (projection 0 x).right := (rfl)
 
-/-- The inverse comparison reconstructs each finite transport label by projection. -/
+/-- Each finite projection of the forward comparison is the original projection. -/
+@[simp]
+theorem semidirectProjection_semidirectProductEquiv
+    (x : completedGroup (semidirectTower φ hφ)) (k : ℕ) :
+    semidirectProjection φ hφ k (semidirectProductEquiv φ hφ x) = projection k x := by
+  apply SemidirectProduct.ext
+  · simp
+  · simpa using (projection_right_eq_projection_zero φ hφ x k).symm
+
+/-- Each finite projection of the inverse comparison is `semidirectProjection`. -/
 @[simp]
 theorem projection_semidirectProductEquiv_symm
     (x : completedGroup F ⋊[action φ hφ] H) (k : ℕ) :
