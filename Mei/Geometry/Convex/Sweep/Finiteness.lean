@@ -7,7 +7,7 @@ module
 
 public import Mei.Geometry.Convex.Sweep.Realization
 public import Mei.Algebra.PositiveDegrees.Basic
-public import Mathlib.Data.Set.Finite.List
+public import Mathlib.Data.Fintype.List
 public import Mathlib.SetTheory.Cardinal.Finite
 
 /-!
@@ -141,31 +141,35 @@ pairs. No encounter count or distinctness hypothesis is assumed. -/
 theorem length_le_card_of_mem_realizedDegreeItineraries [Finite J]
     {k : ℕ} {l : List (Γ × J)} (hl : l ∈ realizedDegreeItineraries d f c v k) :
     l.length ≤ Nat.card (d.cutoff k) * Nat.card J := by
-  let lift (a : Fin l.length) : d.cutoff k × J :=
-    (⟨(l.get a).1, (hl.1 _ (List.get_mem l a)).1⟩, (l.get a).2)
-  have hinj : Function.Injective lift := by
-    intro a b hab
-    apply (nodup_of_mem_realizedDegreeItineraries d f c v hl).injective_get
-    exact Prod.ext (congrArg (fun x : d.cutoff k × J => x.1.val) hab)
-      (congrArg (fun x : d.cutoff k × J => x.2) hab)
-  simpa only [Nat.card_fin, Nat.card_prod] using Nat.card_le_card_of_injective lift hinj
+  let := Fintype.ofFinite (d.cutoff k)
+  let := Fintype.ofFinite J
+  let L : List (d.cutoff k × J) := l.attach.map fun a =>
+    (⟨a.val.1, (hl.1 a.val a.property).1⟩, a.val.2)
+  have hL : L.map (fun a => (a.1.val, a.2)) = l := by
+    simp only [L, List.map_map, Function.comp_def]
+    exact List.attach_map_subtype_val l
+  have hnodup : L.Nodup := List.Nodup.of_map (fun a => (a.1.val, a.2))
+    (hL.symm ▸ nodup_of_mem_realizedDegreeItineraries d f c v hl)
+  simpa only [L, List.length_map, List.length_attach, Fintype.card_prod,
+    Nat.card_eq_fintype_card] using hnodup.length_le_card
 
 /-- At any fixed order, only finitely many transverse decreasing-degree
 itineraries are realized, even as the endpoint varies over the entire space.
 Additional support, incoming-tail and coefficient constraints select a subset. -/
 theorem finite_realizedDegreeItineraries [Finite J] (k : ℕ) :
     (realizedDegreeItineraries d f c v k).Finite := by
-  apply ((List.finite_length_le (d.cutoff k × J)
-    (Nat.card (d.cutoff k) * Nat.card J)).image
-      (fun L => L.map (fun a => (a.1.val, a.2)))).subset
+  let := Fintype.ofFinite (d.cutoff k)
+  let := Fintype.ofFinite J
+  apply (Set.finite_range fun b : {b : List (d.cutoff k × J) // b.Nodup} =>
+    b.val.map (fun a => (a.1.val, a.2))).subset
   intro l hl
   let L : List (d.cutoff k × J) := l.attach.map fun a =>
     (⟨a.val.1, (hl.1 a.val a.property).1⟩, a.val.2)
-  refine ⟨L, ?_, ?_⟩
-  · simpa only [Set.mem_ofPred_eq, L, List.length_map, List.length_attach] using
-      length_le_card_of_mem_realizedDegreeItineraries d f c v hl
-  · simp only [L, List.map_map, Function.comp_def]
+  have hL : L.map (fun a => (a.1.val, a.2)) = l := by
+    simp only [L, List.map_map, Function.comp_def]
     exact List.attach_map_subtype_val l
+  exact ⟨⟨L, List.Nodup.of_map (fun a => (a.1.val, a.2))
+    (hL.symm ▸ nodup_of_mem_realizedDegreeItineraries d f c v hl)⟩, hL⟩
 
 /-- Realized lists can index finite endpoint families without an assumed bound
 on their number of encounters. -/
