@@ -80,11 +80,10 @@ private theorem normalized_rayGenerator (q : T) (hq : q.val = D.principalEmbeddi
   have hc : ((j + 1 : ℕ) : R) *
       algebraMap ℚ R ((-1) ^ j / ((j : ℚ) + 1) ^ 2) =
       algebraMap ℚ R ((-1) ^ (j + 2) / ((j : ℚ) + 1)) := by
-    have hcast : ((j + 1 : ℕ) : R) = algebraMap ℚ R ((j : ℚ) + 1) := by simp
-    rw [hcast, ← map_mul]
-    congr 1
-    field_simp
-    ring
+    simpa only [coeff_succ_X_mul, coeff_derivative, coeff_succ_negDilogNeg,
+      coeff_log, Nat.add_eq_zero_iff, Nat.one_ne_zero, and_false, ite_false,
+      Nat.cast_add, Nat.cast_one, mul_comm] using
+      congrArg (PowerSeries.coeff (j + 1)) (X_mul_derivative_negDilogNeg (A := R))
   simp only [Nat.cast_add, Nat.cast_one] at hc ⊢
   linear_combination (s : R) * algebraMap ℚ R
     (D.sublattice.toAddSubgroup.rayIndex n) * D.principalEvaluation n p * hc
