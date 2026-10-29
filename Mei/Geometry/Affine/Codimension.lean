@@ -15,7 +15,9 @@ Affine subspaces with equal-dimensional but different directions have an
 intersection of strictly smaller direction dimension. In particular, distinct
 hyperplane directions give intersections of codimension at least two. The
 statements include empty intersections and require no topology or ordering of
-the scalar division ring.
+the scalar division ring. An affine subspace cannot contain the image of an
+affine map whose linear image has larger dimension; only the subspace direction
+needs to be finite-dimensional.
 
 A nonzero functional vanishing on a codimension-one set has its affine
 direction as kernel, by Mathlib's `Module.Dual.finrank_ker_add_one_of_ne_zero`.
@@ -88,6 +90,24 @@ theorem finrank_direction_inter_zero_lt [FiniteDimensional K V]
 end AffineMap
 
 namespace AffineSubspace
+
+section Comap
+
+variable {k V W P Q : Type*} [DivisionRing k] [AddCommGroup V] [Module k V]
+  [AddCommGroup W] [Module k W] [AddTorsor V P] [AddTorsor W Q]
+
+/-- An affine subspace of dimension smaller than the image of an affine map
+cannot contain that image. -/
+theorem comap_ne_top_of_finrank_lt (S : AffineSubspace k Q) [FiniteDimensional k S.direction]
+    (f : P →ᵃ[k] Q)
+    (hS : Module.finrank k S.direction < Module.finrank k (LinearMap.range f.linear)) :
+    S.comap f ≠ ⊤ := by
+  intro he
+  have hle := direction_le (map_comap_le f S)
+  rw [he, map_direction, direction_top, Submodule.map_top] at hle
+  exact (not_le_of_gt hS) (Submodule.finrank_mono hle)
+
+end Comap
 
 section
 

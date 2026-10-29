@@ -9,19 +9,34 @@ public import Mathlib.Algebra.Group.Subgroup.Ker
 public import Mathlib.Algebra.Group.Int.Defs
 
 /-!
-# Kernels and proportionality of integer characters
+# Integer characters
 
 Nonzero integer-valued characters with the same kernel are rationally proportional:
 some nonzero integer multiples agree. This detects proportional integral normals
 without choosing a basis or extending scalars to a field. Kernel containment
 also gives proportionality when the second character can vanish. For two
 characters, contracting against a vector outside their common kernel detects
-every character annihilating both that kernel and the vector.
+every character annihilating both that kernel and the vector. Characters on a
+product with two integer factors are determined by their coordinate restrictions.
 -/
 
 public section
 
 namespace AddMonoidHom
+
+/-- An integer character on a product with two integer factors is determined
+by its restriction to the first factor and its values on the two coordinate vectors. -/
+theorem apply_prod_int_int {Λ : Type*} [AddCommMonoid Λ]
+    (m : (Λ × ℤ × ℤ) →+ ℤ) (v : Λ) (c l : ℤ) :
+    m (v, c, l) = m (v, 0, 0) + c * m (0, 1, 0) + l * m (0, 0, 1) := by
+  have hc := ((m.comp (AddMonoidHom.inr Λ (ℤ × ℤ))).comp
+    (AddMonoidHom.inl ℤ ℤ)).map_zsmul c (1 : ℤ)
+  have hl := ((m.comp (AddMonoidHom.inr Λ (ℤ × ℤ))).comp
+    (AddMonoidHom.inr ℤ ℤ)).map_zsmul l (1 : ℤ)
+  have hc' : m (0, c, 0) = c * m (0, 1, 0) := by simpa using hc
+  have hl' : m (0, 0, l) = l * m (0, 0, 1) := by simpa using hl
+  rw [← hc', ← hl', ← map_add, ← map_add]
+  simp
 
 variable {A : Type*} [AddGroup A]
 

@@ -83,19 +83,6 @@ theorem probeNormal_ne_zero : (probeNormal : (Λ × ℤ × ℤ) →+ ℤ) ≠ 0 
   have := DFunLike.congr_fun h (0, 0, 1)
   norm_num at this
 
-/-- An extended normal is determined by its base restriction and its values on
-the two extra coordinate vectors. -/
-theorem normal_apply_eq (m : (Λ × ℤ × ℤ) →+ ℤ) (v : Λ) (c l : ℤ) :
-    m (v, c, l) = m (v, 0, 0) + c * m (0, 1, 0) + l * m (0, 0, 1) := by
-  have hc := ((m.comp (AddMonoidHom.inr Λ (ℤ × ℤ))).comp
-    (AddMonoidHom.inl ℤ ℤ)).map_zsmul c (1 : ℤ)
-  have hl := ((m.comp (AddMonoidHom.inr Λ (ℤ × ℤ))).comp
-    (AddMonoidHom.inr ℤ ℤ)).map_zsmul l (1 : ℤ)
-  have hc' : m (0, c, 0) = c * m (0, 1, 0) := by simpa using hc
-  have hl' : m (0, 0, l) = l * m (0, 0, 1) := by simpa using hl
-  rw [← hc', ← hl', ← map_add, ← map_add]
-  simp
-
 /-- Base normals are exactly the normals vanishing on both extra coordinates. -/
 theorem mem_range_baseNormal (m : (Λ × ℤ × ℤ) →+ ℤ) :
     m ∈ Set.range (baseNormal (Λ := Λ)) ↔ m (0, 1, 0) = 0 ∧ m (0, 0, 1) = 0 := by
@@ -107,7 +94,7 @@ theorem mem_range_baseNormal (m : (Λ × ℤ × ℤ) →+ ℤ) :
     ext ⟨v, c, l⟩
     -- Evaluate the composite normal on the base inclusion; the product zero is (0, 0).
     change m (v, 0, 0) = m (v, c, l)
-    simpa [h.1, h.2] using (normal_apply_eq m v c l).symm
+    simpa [h.1, h.2] using (m.apply_prod_int_int v c l).symm
 
 /-- Probe normals are exactly the normals vanishing on the base and charge
 coordinates; the integer multiplier is their value on the probe coordinate. -/
@@ -120,7 +107,7 @@ theorem mem_range_smul_probeNormal (m : (Λ × ℤ × ℤ) →+ ℤ) :
   · intro h
     refine ⟨m (0, 0, 1), ?_⟩
     ext ⟨v, c, l⟩
-    simpa [h.1, h.2, mul_comm] using (normal_apply_eq m v c l).symm
+    simpa [h.1, h.2, mul_comm] using (m.apply_prod_int_int v c l).symm
 
 /-- Membership in the class of base normals is unchanged by nonzero integral
 rescaling, as required by the directed wall-space rescaling law. -/

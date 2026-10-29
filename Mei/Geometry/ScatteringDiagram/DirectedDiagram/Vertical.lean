@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.LocalCrossing
+public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Basic
 public import Mei.Geometry.Affine.Vertical
 
 /-!
@@ -119,11 +119,7 @@ theorem exists_finite_bad_vertical_heights (k : ℕ) :
       have heval := (h.prod h').realCharacter_apply (D.wall a).normal (0, 0, 1)
       simp only [AddMonoidHom.coe_prodMap, Prod.map_apply, map_zero] at heval
       exact_mod_cast heval.symm.trans hvertical
-    have hsplit : (v, c, l) = (v, 0, 0) + c • (0, 1, 0) + l • (0, 0, 1) := by
-      ext <;> simp
-    rw [hsplit]
-    simp only [map_add, map_zsmul, hb, hc, hl, smul_zero, add_zero]
-    simp only [AddMonoidHom.zero_apply, smul_zero, add_zero]
+    simpa [hb, hc, hl] using ((D.wall a).normal.apply_prod_int_int v c l)
   -- Project the slice arrangement and discard its remaining finitely many bad heights.
   let B : ExceptionalArrangement (V × ℝ) :=
     ⟨S.image (fun B => B.comap f.toAffineMap) ∪
