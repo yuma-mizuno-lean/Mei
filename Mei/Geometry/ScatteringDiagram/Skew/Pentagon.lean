@@ -119,11 +119,17 @@ private theorem rayExp_smul_negDilogNeg_pentagon_integral {n₁ n₂ : D.unfroze
     ⟨⟨_, by simpa using hn₂⟩, rfl⟩
   have hq₁₂ : ((q₁ + q₂ : Qpr) : Lpr) = D.principalEmbedding (n₁ + n₂) := by
     rw [AddSubmonoid.coe_add, hq₁, hq₂, map_add]
-  obtain ⟨U₁, hU₁⟩ := D.exists_units_eq_one_add_single (R := R) d q₁
+  obtain ⟨U₁, hU₁⟩ : ∃ U : (Fpr).completionˣ,
+      (U : (Fpr).completion) = 1 + (Fpr).toCompletion (single q₁ 1) :=
+    D.exists_units_eq_one_add_single (R := R) d q₁
     (by simpa [hq₁] using hn₁0)
-  obtain ⟨U₂, hU₂⟩ := D.exists_units_eq_one_add_single (R := R) d q₂
+  obtain ⟨U₂, hU₂⟩ : ∃ U : (Fpr).completionˣ,
+      (U : (Fpr).completion) = 1 + (Fpr).toCompletion (single q₂ 1) :=
+    D.exists_units_eq_one_add_single (R := R) d q₂
     (by simpa [hq₂] using hn₂0)
-  obtain ⟨U₁₂, hU₁₂⟩ := D.exists_units_eq_one_add_single (R := R) d (q₁ + q₂)
+  obtain ⟨U₁₂, hU₁₂⟩ : ∃ U : (Fpr).completionˣ,
+      (U : (Fpr).completion) = 1 + (Fpr).toCompletion (single (q₁ + q₂) 1) :=
+    D.exists_units_eq_one_add_single (R := R) d (q₁ + q₂)
     (by simpa [hq₁₂] using ne_of_apply_ne Subtype.val hn₁₂)
   -- Each factor multiplies `z^p` by a power of its binomial unit.
   have W₁ := D.completedBCHAction_completedMap_rayExp_smul_negDilogNeg d hn₁ hn₁0 s₁ Qpr q₁ hq₁
