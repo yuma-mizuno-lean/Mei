@@ -44,6 +44,10 @@ theorem spatialMap_chargeOne_ne_zero (ρ : Γ →+ Λ) (q : Γ) :
 def baseNormal (m : Λ →+ ℤ) : (Λ × ℤ × ℤ) →+ ℤ :=
   m.comp (AddMonoidHom.fst Λ (ℤ × ℤ))
 
+/-- A base normal is the pullback along the first spatial projection. -/
+theorem baseNormal_def (m : Λ →+ ℤ) :
+    baseNormal m = m.comp (AddMonoidHom.fst Λ (ℤ × ℤ)) := (rfl)
+
 /-- Evaluate a lifted base normal. -/
 @[simp]
 theorem baseNormal_apply (m : Λ →+ ℤ) (v : Λ) (c l : ℤ) :
