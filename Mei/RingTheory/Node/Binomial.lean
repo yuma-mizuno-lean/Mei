@@ -32,6 +32,7 @@ variable {R : Type*} [CommRing R] (t c : R) (n : ℕ) (b w : ℤ)
 
 /-- With nonzero integral tangential step, the `j`-th binomial term is the
 entire homogeneous transfer at its full exponent. -/
+@[simp↓ high]
 theorem exponentCorrespondence_transfer_binomial (hw : w ≠ 0) (j : ℕ) (hj : j ≤ n) :
     ((exponentCorrespondence (single 0 t + single w t)).transfer
       ⟨((n : ℤ), b), by simp⟩ (-(n : ℤ), b + j * w)
