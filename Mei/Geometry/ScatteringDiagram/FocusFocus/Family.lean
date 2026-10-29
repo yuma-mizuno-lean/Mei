@@ -104,6 +104,13 @@ theorem mem_closure_slabBranchDomain {n : ℤ} (hn : n ≠ 0) (q : ℤ)
     simp [Convex.mem_weakSignCell, Bool.forall_bool, slabRows, slabSigns,
       smul_eq_mul, div_eq_mul_inv, mul_comm, mul_assoc]
 
+/-- The relative interior of each closed chart is exactly its valid endpoint domain. -/
+@[simp]
+theorem intrinsicInterior_closure_slabBranchDomain (n q : ℤ) (upper : Bool) :
+    intrinsicInterior ℝ (closure (slabBranchDomain n q upper)) =
+      slabBranchDomain n q upper :=
+  Convex.intrinsicInterior_closure_signCell
+
 /-- Boundary points represent terminal face crossings or singular-origin encounters. -/
 theorem slabBranchDomain_boundary {n : ℤ} (hn : n ≠ 0) (q : ℤ)
     (upper : Bool) {Q : ℝ × ℝ} (hQ : Q ∈ closure (slabBranchDomain n q upper))
