@@ -60,7 +60,7 @@ variable (hfull : ∀ a, ∃ c : ℝ,
 
 include hfull in
 /-- A cylinder over a full affine hyperplane is again a full affine hyperplane,
-with the same offset and the pulled-back normal. -/
+with the pulled-back normal. -/
 theorem cylinder_fullHyperplane : ∀ a, ∃ c : ℝ,
     ((D.cylinder h').wall a).support =
       {x | (h.prod h').realCharacter ((D.cylinder h').wall a).normal x = c} := by

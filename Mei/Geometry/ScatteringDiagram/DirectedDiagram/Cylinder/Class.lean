@@ -80,6 +80,13 @@ theorem Class.cylinder_injective : Function.Injective
       simp only [cylinder_toClass, toClass_eq_iff, cylinder_equivalent_iff] at he
       exact (toClass_eq_iff D F).mpr he
 
+/-- Two completed cylinder classes agree exactly when their original classes agree. -/
+@[simp]
+theorem Class.cylinder_inj
+    {x y : Class.{u} (d := d) (h := h) (H := H.project (AddMonoidHom.fst Λ K))} :
+    Class.cylinder h' x = Class.cylinder h' y ↔ x = y :=
+  (cylinder_injective h').eq_iff
+
 /-- Adding unrestricted coordinates loses no finite-order path-product information. -/
 theorem LevelClass.cylinder_injective (k : ℕ) : Function.Injective
     (LevelClass.cylinder.{u} (d := d) (h := h) (H := H) h' k) := by
@@ -89,6 +96,13 @@ theorem LevelClass.cylinder_injective (k : ℕ) : Function.Injective
       intro he
       simp only [cylinder_toLevelClass, toLevelClass_eq_iff, cylinder_levelEquivalent_iff] at he
       exact (toLevelClass_eq_iff D F k).mpr he
+
+/-- Two finite cylinder classes agree exactly when their original classes agree. -/
+@[simp]
+theorem LevelClass.cylinder_inj (k : ℕ)
+    {x y : LevelClass.{u} (d := d) (h := h) (H := H.project (AddMonoidHom.fst Λ K)) k} :
+    LevelClass.cylinder h' k x = LevelClass.cylinder h' k y ↔ x = y :=
+  (cylinder_injective h' k).eq_iff
 
 /-- Taking a finite projection commutes with cylinder lifting. -/
 @[simp]
