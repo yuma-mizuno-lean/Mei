@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.ScatteringDiagram.ModuleProbe.Component
-public import Mei.Geometry.ScatteringDiagram.ModuleProbe.Crossing
+public import Mei.Geometry.ScatteringDiagram.ModuleProbe.Field
 public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Asymptotic
 
 /-!
@@ -21,9 +21,13 @@ be outgoing. Other homogeneous components need not stabilize there.
 
 This specializes `DirectedDiagram.eventually_decompose_log_combinedLabel_eq_sum_incoming`:
 base cylinders have no charge-one component, outgoing walls escape, and the
-initial probe contributes with the negative upward-crossing sign. No consistency,
-pure birth logarithms, or nonzero projected spatial direction is required.
-Regularity of each germ being evaluated remains an explicit hypothesis.
+initial probe contributes with the negative upward-crossing sign. The germ
+statement needs neither consistency nor pure birth logarithms nor a nonzero
+projected spatial direction.
+For a consistent diagram, regular heights in a bounded moving interval
+remove the germ-regularity hypothesis and give initial values of the actual
+endpoint field. Components with zero spatial direction consequently have their
+initial value at every generic endpoint, without a nonzero-velocity assumption.
 
 The asymptotic initial condition is the one used by Mandel, *Scattering diagrams,
 theta functions, and refined tropical curve counts*, §3.3.3
@@ -205,5 +209,73 @@ theorem eventually_shiftedQuotientComponent_verticalCoefficient_eq
     (sum_incoming_coefficient d ℳ p ℒ H h h' D₀ a D hinitial k q hk hout θ (hplane θ hθK))
   rw [verticalCoefficient_def, map_neg]
   exact congrArg Neg.neg hvalue |>.trans (neg_neg _)
+
+/-- Uniformly over compact sets of base endpoints, a retained component of the
+endpoint field eventually equals the incoming component along its positive
+spatial direction. The translated endpoint need only be generic: no regular
+height is prescribed or assumed. Only active additional walls carrying the
+selected degree must be outgoing. -/
+theorem eventually_shiftedQuotientComponent_coefficientField_eq
+    (hinitial : ∀ b, D.wall (.inl b) =
+      (initialDiagram d ℳ p ℒ H h h' D₀ a).wall b)
+    (k : ℕ) (hD : D.LevelConsistent (k + 1))
+    (q : Γ) (hk : d.degree (q - p) ≤ k)
+    (hout : ∀ b, Sum.inr b ∈ D.active (k + 1) →
+      (q, 1, 0) ∈ (D.wall (.inr b)).ray.rayDegrees → (D.wall (.inr b)).Outgoing)
+    {K : Set V} (hK : IsCompact K) :
+    ∀ᶠ t : ℝ in atTop, ∀ Q ∈ K,
+      ∀ hQ : (coefficientArrangement d ℳ p ℒ H h h' D k).IsGeneric
+          (Q + t • i (ρ q)),
+      d.shiftedQuotientComponent ℳ p q k hk
+        (coefficientField d ℳ p ℒ H h h' D k (Q + t • i (ρ q)) hQ) =
+        DirectSum.decompose ℳ (a : M) q := by
+  -- A compact interval of initial heights lets us choose a regular height after
+  -- translation. A single prescribed moving height could remain singular forever.
+  let K' : Set (V × E) :=
+    (fun x : V × ℝ => (x.1, x.2 • j (1, 0))) '' (K ×ˢ Icc 0 1)
+  have hK' : IsCompact K' := (hK.prod isCompact_Icc).image (by fun_prop)
+  have hplane : ∀ θ ∈ K', (h.prod h').realCharacter probeNormal θ = 0 := by
+    rintro _ ⟨⟨Q, s⟩, _, rfl⟩
+    have hn : (probeNormal : (Λ × ℤ × ℤ) →+ ℤ) =
+        (AddMonoidHom.snd ℤ ℤ).comp (AddMonoidHom.snd Λ (ℤ × ℤ)) := by
+      ext ⟨x, c, l⟩
+      simp
+    rw [hn, (h.prod h').realCharacter_comp h'
+      (AddMonoidHom.snd Λ (ℤ × ℤ)) (LinearMap.snd ℝ V E) (fun _ => rfl)]
+    simp
+  filter_upwards [eventually_shiftedQuotientComponent_verticalCoefficient_eq
+    d ℳ p ℒ H h h' D₀ a D hinitial k q hk hout hK' hplane] with t ht Q hQK hQ
+  obtain ⟨y, hy, hreg⟩ := exists_regular_height d ℳ p ℒ H h h' D k
+    (Q + t • i (ρ q)) hQ isOpen_Ioo (nonempty_Ioo.mpr (lt_add_one t))
+  have hmem : (Q, (y - t) • j (1, 0)) ∈ K' := by
+    exact ⟨(Q, y - t), ⟨hQK, by constructor <;> linarith [hy.1, hy.2]⟩, rfl⟩
+  have he : (Q, (y - t) • j (1, 0)) + t • (i (ρ q), j (1, 0)) =
+      (Q + t • i (ρ q), y • j (1, 0)) := by
+    simp only [Prod.smul_mk, Prod.mk_add_mk, ← add_smul, sub_add_cancel]
+  have hvalue := ht (Q, (y - t) • j (1, 0)) hmem
+    (by simpa only [he] using hreg)
+  simp only [he] at hvalue
+  rw [coefficientField_eq_verticalCoefficient d ℳ p ℒ H h h' D k hD
+    (Q + t • i (ρ q)) hQ y hreg]
+  exact hvalue
+
+/-- A retained component whose spatial direction is zero has its incoming value
+at every generic endpoint. Height independence converts escape in the auxiliary
+height direction into an exact identity at the unchanged base endpoint. -/
+theorem shiftedQuotientComponent_coefficientField_eq_of_spatial_eq_zero
+    (hinitial : ∀ b, D.wall (.inl b) =
+      (initialDiagram d ℳ p ℒ H h h' D₀ a).wall b)
+    (k : ℕ) (hD : D.LevelConsistent (k + 1))
+    (q : Γ) (hk : d.degree (q - p) ≤ k) (hq : i (ρ q) = 0)
+    (hout : ∀ b, Sum.inr b ∈ D.active (k + 1) →
+      (q, 1, 0) ∈ (D.wall (.inr b)).ray.rayDegrees → (D.wall (.inr b)).Outgoing)
+    (Q : V) (hQ : (coefficientArrangement d ℳ p ℒ H h h' D k).IsGeneric Q) :
+    d.shiftedQuotientComponent ℳ p q k hk
+        (coefficientField d ℳ p ℒ H h h' D k Q hQ) =
+      DirectSum.decompose ℳ (a : M) q := by
+  obtain ⟨t, ht⟩ := (eventually_shiftedQuotientComponent_coefficientField_eq
+    d ℳ p ℒ H h h' D₀ a D hinitial k hD q hk hout (isCompact_singleton (x := Q))).exists
+  simpa only [hq, smul_zero, add_zero] using ht Q (mem_singleton Q) (by
+    simpa only [hq, smul_zero, add_zero] using hQ)
 
 end Mei.ModuleProbe
