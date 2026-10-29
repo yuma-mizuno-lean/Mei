@@ -55,6 +55,7 @@ local notation "ιM" => moduleBCHInclusion d ℳ p ℒ
 
 /-- A vertical transverse germ has trivial base crossing label. Transversality
 excludes lifted base normals, which vanish on the upward probe direction. -/
+@[simp]
 theorem baseBCHProjection_combinedLabel_vertical_eq_one (k : ℕ) (θ : V × E)
     (hθ : θ ∉ singularSupport (fun a : D.active (k + 1) => (D.wall a).support))
     (hv : ∀ a : D.active (k + 1), θ ∈ (D.wall a).support →
@@ -102,6 +103,7 @@ theorem verticalCoefficient_def (k : ℕ) (θ : V × E)
 
 /-- Exponentiating the negative coefficient recovers the entire upward crossing
 label, including all simultaneous indexed module walls. -/
+@[simp↓] -- Reconstruct before simplifying the negated coefficient inside the inclusion.
 theorem moduleBCHInclusion_neg_verticalCoefficient (k : ℕ) (θ : V × E)
     (hθ : θ ∉ singularSupport (fun a : D.active (k + 1) => (D.wall a).support))
     (hv : ∀ a : D.active (k + 1), θ ∈ (D.wall a).support →
@@ -127,7 +129,8 @@ theorem verticalCoefficient_eq_iff (k : ℕ) (θ : V × E)
 
 /-- Sufficiently short upward segments through a vertical transverse regular
 point all compute the negative exponential of the same coefficient. -/
-theorem eventually_exists_levelPathProduct_eq_neg_verticalCoefficient (k : ℕ) (θ : V × E)
+theorem eventually_exists_levelPathProduct_eq_moduleBCHInclusion_neg_verticalCoefficient
+    (k : ℕ) (θ : V × E)
     (hθ : θ ∉ singularSupport (fun a : D.active (k + 1) => (D.wall a).support))
     (hv : ∀ a : D.active (k + 1), θ ∈ (D.wall a).support →
       (h.prod h').realCharacter (D.wall a).normal v ≠ 0) :
