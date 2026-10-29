@@ -110,14 +110,13 @@ variable {S : Type*} [CommRing S] (a : S[T;T⁻¹])
 /-- Over a Laurent polynomial ring `S[W, W⁻¹]`, the elements `W^b` times the signed monomial of
 `n` form an `S`-basis of `S[W, W⁻¹][X,Y]/(XY-a)` indexed by `(n, b) : ℤ × ℤ`, for every `a`. -/
 def laurentBasis : Basis (ℤ × ℤ) S (NodeAlgebra S[T;T⁻¹] a) :=
-  ((AddMonoidAlgebra.basis ℤ S).smulTower (signedMonomialBasis a)).reindex (Equiv.prodComm _ _)
+  (AddMonoidAlgebra.basis ℤ S).smulTower' (signedMonomialBasis a)
 
 @[simp]
 theorem laurentBasis_apply (n b : ℤ) :
     laurentBasis a (n, b) = (T b : S[T;T⁻¹]) • signedMonomial a n := by
-  rw [laurentBasis, Basis.reindex_apply, Basis.smulTower_apply]
-  simp only [Equiv.prodComm_symm, Equiv.prodComm_apply, Prod.fst_swap, Prod.snd_swap,
-    AddMonoidAlgebra.basis_apply, signedMonomialBasis_apply]
+  rw [laurentBasis, Basis.smulTower'_apply]
+  simp only [AddMonoidAlgebra.basis_apply, signedMonomialBasis_apply]
   rw [single_eq_C_mul_T, map_one, one_mul]
 
 /-- A nodal algebra over a Laurent polynomial ring `S[W, W⁻¹]` is free over `S`. -/
