@@ -137,11 +137,11 @@ jobs:
           printf 'name=%s\n' "$TOOLCHAIN" >> "$GITHUB_OUTPUT"
 
       - name: Validate staged data and verify inherited objects without credentials
-        if: ${{ vars.LAKE_CACHE_ARTIFACT_ENDPOINT != '' && vars.LAKE_CACHE_REVISION_ENDPOINT != '' && vars.LAKE_CACHE_ARTIFACT_ENDPOINT_PUBLIC != '' }}
+        if: ${{ vars.MEI_R2_BUCKET_ENDPOINT != '' && vars.LAKE_CACHE_ARTIFACT_ENDPOINT_PUBLIC != '' }}
         env:
           STAGING: ${{ runner.temp }}/lake-cache-staging
-          S3_ARTIFACT_ENDPOINT: ${{ vars.LAKE_CACHE_ARTIFACT_ENDPOINT }}
-          S3_REVISION_ENDPOINT: ${{ vars.LAKE_CACHE_REVISION_ENDPOINT }}
+          S3_ARTIFACT_ENDPOINT: ${{ vars.MEI_R2_BUCKET_ENDPOINT != '' && format('{0}/artifacts', vars.MEI_R2_BUCKET_ENDPOINT) || '' }}
+          S3_REVISION_ENDPOINT: ${{ vars.MEI_R2_BUCKET_ENDPOINT != '' && format('{0}/revisions', vars.MEI_R2_BUCKET_ENDPOINT) || '' }}
           PUBLIC_ARTIFACT_ENDPOINT: ${{ vars.LAKE_CACHE_ARTIFACT_ENDPOINT_PUBLIC }}
           REVISION: ${{ inputs.revision }}
           TOOLCHAIN: ${{ steps.toolchain.outputs.name }}
@@ -153,8 +153,8 @@ jobs:
       - name: Publish the staged Lake cache
         id: upload
         env:
-          S3_ARTIFACT_ENDPOINT: ${{ vars.LAKE_CACHE_ARTIFACT_ENDPOINT }}
-          S3_REVISION_ENDPOINT: ${{ vars.LAKE_CACHE_REVISION_ENDPOINT }}
+          S3_ARTIFACT_ENDPOINT: ${{ vars.MEI_R2_BUCKET_ENDPOINT != '' && format('{0}/artifacts', vars.MEI_R2_BUCKET_ENDPOINT) || '' }}
+          S3_REVISION_ENDPOINT: ${{ vars.MEI_R2_BUCKET_ENDPOINT != '' && format('{0}/revisions', vars.MEI_R2_BUCKET_ENDPOINT) || '' }}
           PUBLIC_REVISION_ENDPOINT: ${{ vars.LAKE_CACHE_REVISION_ENDPOINT_PUBLIC }}
           PUBLIC_ARTIFACT_ENDPOINT: ${{ vars.LAKE_CACHE_ARTIFACT_ENDPOINT_PUBLIC }}
           LAKE_CACHE_KEY_RAW: ${{ secrets.LAKE_CACHE_KEY }}

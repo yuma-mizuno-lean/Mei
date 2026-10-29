@@ -295,15 +295,15 @@ jobs:
           # The secret is deliberately not referenced anywhere in this job, not even to test
           # whether it is set. The endpoints alone decide whether staging runs; the publish
           # job skips with a notice if the key turns out to be missing.
-          S3_ARTIFACT_ENDPOINT: ${{ vars.LAKE_CACHE_ARTIFACT_ENDPOINT }}
-          S3_REVISION_ENDPOINT: ${{ vars.LAKE_CACHE_REVISION_ENDPOINT }}
+          S3_ARTIFACT_ENDPOINT: ${{ vars.MEI_R2_GUARDS_READY == '1' && vars.MEI_R2_BUCKET_ENDPOINT != '' && format('{0}/artifacts', vars.MEI_R2_BUCKET_ENDPOINT) || '' }}
+          S3_REVISION_ENDPOINT: ${{ vars.MEI_R2_GUARDS_READY == '1' && vars.MEI_R2_BUCKET_ENDPOINT != '' && format('{0}/revisions', vars.MEI_R2_BUCKET_ENDPOINT) || '' }}
         run: |
           if [ -n "$S3_ARTIFACT_ENDPOINT" ] && [ -n "$S3_REVISION_ENDPOINT" ]; then
             echo "enabled=true" >> "$GITHUB_OUTPUT"
             echo "::notice::Lake cache upload configured; staging Mei's oleans"
           else
             echo "enabled=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::Lake cache upload not configured, skipping (set the LAKE_CACHE_ARTIFACT_ENDPOINT / LAKE_CACHE_REVISION_ENDPOINT repo variables and the LAKE_CACHE_KEY secret to enable)"
+            echo "::notice::Lake cache upload not configured, skipping (configure MEI_R2_BUCKET_ENDPOINT, MEI_R2_GUARDS_READY and LAKE_CACHE_KEY to enable)"
           fi
 
       # Merge-group CI normally publishes and publicly confirms the exact commit before GitHub

@@ -7,7 +7,7 @@ from types import SimpleNamespace
 import unittest
 from unittest.mock import patch
 
-from mei_r2_publish import A_LIMIT, LIMIT, STATE_ALLOWANCE, STATE_KEY, Stop, initial_state, initialize, load_plan, publish, reserve
+from mei_r2_publish import A_LIMIT, LIMIT, STATE_ALLOWANCE, STATE_KEY, Stop, adopt_existing, initial_state, initialize, load_plan, publish, reserve
 
 TODAY = dt.datetime.now(dt.timezone.utc).date().isoformat()
 
@@ -50,6 +50,49 @@ class FakeR2:
 
 
 class BudgetTests(unittest.TestCase):
+    def inventory_client(self, pages, multipart=False):
+        client = FakeR2()
+        request = client.request
+        def inventory(method, key='', data=None, headers=None, query=None):
+            if query and 'list-type' in query:
+                return 200, pages.pop(0).encode(), {}
+            if query and multipart:
+                return 200, b'<ListMultipartUploadsResult><Upload/><IsTruncated>false</IsTruncated></ListMultipartUploadsResult>', {}
+            return request(method, key, data, headers, query)
+        client.request = inventory
+        return client
+
+    def test_inventory_counts_all_pages_without_refunds(self):
+        pages = [
+            '<ListBucketResult><Contents><Key>_control/budget.json</Key><Size>100</Size></Contents><Contents><Key>a</Key><Size>11</Size></Contents><IsTruncated>true</IsTruncated><NextContinuationToken>next</NextContinuationToken></ListBucketResult>',
+            '<ListBucketResult><Contents><Key>b</Key><Size>22</Size></Contents><IsTruncated>false</IsTruncated></ListBucketResult>',
+        ]
+        client = self.inventory_client(pages)
+        client.state['reserved_bytes'] += 50
+        adopt_existing(client)
+        self.assertEqual(client.state['reserved_bytes'], STATE_ALLOWANCE + 50 + 33)
+        self.assertEqual(client.state['class_a'], 23)
+        self.assertIsNone(client.state['active'])
+
+    def test_inventory_overflow_and_multipart_keep_lock(self):
+        for pages, multipart in [
+            ([f'<ListBucketResult><Contents><Key>a</Key><Size>{LIMIT}</Size></Contents><IsTruncated>false</IsTruncated></ListBucketResult>'], False),
+            ([], True),
+            (['<ListBucketResult><IsTruncated>true</IsTruncated></ListBucketResult>'], False),
+        ]:
+            with self.subTest(pages=pages, multipart=multipart):
+                client = self.inventory_client(pages, multipart)
+                with self.assertRaises(Stop):
+                    adopt_existing(client)
+                self.assertIsNotNone(client.state['active'])
+                self.assertEqual(client.state['reserved_bytes'], STATE_ALLOWANCE)
+
+    def test_inventory_conflict_does_not_list(self):
+        client = FakeR2(conflict=True)
+        with self.assertRaises(Stop):
+            adopt_existing(client)
+        self.assertNotIn(('GET', ''), client.calls)
+
     def test_exact_capacity_and_one_byte_over(self):
         state = reserve(initial_state(), [LIMIT - STATE_ALLOWANCE], TODAY, 'token')
         self.assertEqual(state['reserved_bytes'], LIMIT)
