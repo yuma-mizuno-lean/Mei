@@ -76,7 +76,7 @@ theorem exists_verticalCoefficient_arrangement (k : ℕ) :
     fun hs => hygood (Or.inl hs)
   have hv : ∀ a : D.active (k + 1), (Q, y • j (1, 0)) ∈ (D.wall a).support →
       (h.prod h').realCharacter (D.wall a).normal v ≠ 0 :=
-    fun a ha hz => hygood (Or.inr ⟨a, ha, hz⟩)
+    fun a ha hz => hygood (Or.inr ⟨a, subset_affineSpan ℝ _ ha, hz⟩)
   exact ⟨y, hyU, hθ, hv,
     eventually_exists_levelPathProduct_eq_moduleBCHInclusion_neg_verticalCoefficient
       d ℳ p ℒ H h h' D k _ hθ hv⟩
