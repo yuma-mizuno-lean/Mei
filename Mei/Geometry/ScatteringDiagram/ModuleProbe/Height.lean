@@ -71,20 +71,11 @@ theorem verticalCoefficient_eq_of_height (k : ℕ) (hD : D.LevelConsistent (k + 
     apply (mem_range_baseNormal _).mpr
     refine ⟨normal_height_eq_zero_of_label_ne_one d ℳ p ℒ H h h' (D.wall a)
       (D.label_ne_one_of_mem_active a.property), ?_⟩
-    have he := (h.prod h').realCharacter_apply (D.wall a).normal (0, 0, 1)
-    have hc : ((D.wall a).normal (0, 0, 1) : ℝ) = 0 := by
-      simpa only [AddMonoidHom.coe_prodMap, Prod.map_apply, map_zero, ha] using he.symm
-    exact Int.cast_eq_zero.mp hc
+    simpa using ha
   have he := D.combinedLabel_eq_of_parallel_displacement (k + 1) hD θ v (t • y)
     hθ hη (fun a => by
-      rw [map_smul]
-      have hz := normal_height_eq_zero_of_label_ne_one d ℳ p ℒ H h h' (D.wall a)
-        (D.label_ne_one_of_mem_active a.property)
-      have heval := (h.prod h').realCharacter_apply (D.wall a).normal (0, 1, 0)
-      have heval' : (h.prod h').realCharacter (D.wall a).normal y = 0 := by
-        simpa only [AddMonoidHom.coe_prodMap, Prod.map_apply, map_zero, hz, Int.cast_zero]
-          using heval
-      rw [heval', smul_zero])
+      rw [map_smul, realCharacter_normal_height_eq_zero_of_label_ne_one
+        d ℳ p ℒ H h h' (D.wall a) (D.label_ne_one_of_mem_active a.property), smul_zero])
     hparallel
   simp only [verticalCoefficient_def, he]
 

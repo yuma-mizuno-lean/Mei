@@ -16,6 +16,8 @@ An injective lattice map has injective real extension, and an equivalence of
 integral lattices extends to a real linear equivalence. Its
 linear map is the existing scalar extension, and extension respects identity,
 inverse and composition without choosing a new basis.
+On a product lattice, evaluation on a lattice point of the second factor recovers
+the corresponding integer character value.
 -/
 
 public section
@@ -34,6 +36,21 @@ theorem realCharacter_int_smul (h : IsIntegralLattice i) (a : ℤ)
   apply h.eq_realCharacter
   intro n
   simp
+
+section Prod
+
+variable {N' V' : Type*} [AddCommGroup N'] [AddCommGroup V'] [Module ℝ V']
+  {i' : N' →+ V'}
+
+/-- Evaluate a real character on a lattice point in the second product factor. -/
+@[simp]
+theorem realCharacter_prod_apply_inr (h : IsIntegralLattice (i.prodMap i'))
+    (m : (N × N') →+ ℤ) (n : N') :
+    h.realCharacter m (0, i' n) = (m (0, n) : ℝ) := by
+  simpa only [AddMonoidHom.coe_prodMap, Prod.map_apply, map_zero] using
+    h.realCharacter_apply m (0, n)
+
+end Prod
 
 section Equiv
 

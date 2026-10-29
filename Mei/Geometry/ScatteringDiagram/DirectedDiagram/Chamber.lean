@@ -93,10 +93,7 @@ theorem isLocallyConstant_levelTransport {k : ℕ} (hD : D.LevelConsistent k)
     exact hball ((convex_ball y.val r).lineMap_mem (by simpa [a] using hr) hz ht) j hj
   let e : a ⟶ b := ⟨WallComplement.AdmissibleSegment.of_crossings_eq_empty
     (fun j => (D.wall j).isConvexPolyhedron.isClosed) he⟩
-  have hprod : D.levelPathProduct k e.toPath = 1 := by
-    rw [D.levelPathProduct_eq_wallPathProduct k _ (D.activeLabels_commute k),
-      Quiver.Path.wallPathProduct_toPath]
-    exact WallComplement.segmentPathProduct_eq_one_of_crossings_eq_empty _ _ _ e he
+  have hprod := D.levelPathProduct_eq_one_of_crossings_eq_empty k e he
   have hab : D.levelTransport k hD a b = 1 :=
     (D.levelTransport_eq_levelPathProduct hD e.toPath).trans hprod
   simpa only [hab, one_mul] using D.levelTransport_comp hD x a b

@@ -101,10 +101,7 @@ theorem exists_segment_levelPathProduct_eq_one_of_mem_interior_adapted {k : ℕ}
       (hconv.lineMap_mem hx hy ha) j hj
   let e : x ⟶ y := ⟨WallComplement.AdmissibleSegment.of_crossings_eq_empty
     (fun j => (D.wall j).isConvexPolyhedron.isClosed) he⟩
-  refine ⟨e, ?_⟩
-  rw [D.levelPathProduct_eq_wallPathProduct k _ (D.activeLabels_commute k),
-    Quiver.Path.wallPathProduct_toPath]
-  exact WallComplement.segmentPathProduct_eq_one_of_crossings_eq_empty _ _ _ e he
+  exact ⟨e, D.levelPathProduct_eq_one_of_crossings_eq_empty k e he⟩
 
 /-- Lower-order consistent transport has normalized lifts on the finite full
 cells of the higher-order adapted complex. The projection formula holds for

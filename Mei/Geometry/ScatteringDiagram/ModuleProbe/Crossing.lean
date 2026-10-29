@@ -55,7 +55,6 @@ local notation "ιM" => moduleBCHInclusion d ℳ p ℒ
 
 /-- A vertical transverse germ has trivial base crossing label. Transversality
 excludes lifted base normals, which vanish on the upward probe direction. -/
-@[simp]
 theorem baseBCHProjection_combinedLabel_vertical_eq_one (k : ℕ) (θ : V × E)
     (hθ : θ ∉ singularSupport (fun a : D.active (k + 1) => (D.wall a).support))
     (hv : ∀ a : D.active (k + 1), θ ∈ (D.wall a).support →
@@ -76,8 +75,7 @@ theorem baseBCHProjection_combinedLabel_vertical_eq_one (k : ℕ) (θ : V × E)
     rintro ⟨m, hm⟩
     apply hv a (by simpa [S] using ha)
     rw [← hm]
-    have he := (h.prod h').realCharacter_apply (baseNormal m) (0, 0, 1)
-    simpa using he
+    simp
   have hp := congrArg (CompletedGroup.projection (k + 1))
     (completedBaseProjection_label_eq_one_of_normal_notMem_range d ℳ p ℒ H h h'
       (D.wall a) hm)
@@ -103,7 +101,6 @@ theorem verticalCoefficient_def (k : ℕ) (θ : V × E)
 
 /-- Exponentiating the negative coefficient recovers the entire upward crossing
 label, including all simultaneous indexed module walls. -/
-@[simp↓] -- Reconstruct before simplifying the negated coefficient inside the inclusion.
 theorem moduleBCHInclusion_neg_verticalCoefficient (k : ℕ) (θ : V × E)
     (hθ : θ ∉ singularSupport (fun a : D.active (k + 1) => (D.wall a).support))
     (hv : ∀ a : D.active (k + 1), θ ∈ (D.wall a).support →

@@ -131,6 +131,15 @@ theorem levelPathProduct_eq_wallPathProduct (k : ℕ)
       p.wallPathProduct (fun j : D.active k => h.realCharacter (D.wall j).normal)
         (fun j => CompletedGroup.projection k (D.wall j).label) comm := (rfl)
 
+/-- A segment meeting no active wall has identity finite-order transport. -/
+theorem levelPathProduct_eq_one_of_crossings_eq_empty (k : ℕ)
+    {x y : WallComplement (fun j : D.active k => (D.wall j).support)}
+    (e : x ⟶ y) (he : WallComplement.crossings x y = ∅) :
+    D.levelPathProduct k e.toPath = 1 := by
+  rw [D.levelPathProduct_eq_wallPathProduct k _ (D.activeLabels_commute k),
+    Quiver.Path.wallPathProduct_toPath]
+  exact WallComplement.segmentPathProduct_eq_one_of_crossings_eq_empty _ _ _ e he
+
 @[simp]
 theorem levelPathProduct_nil (k : ℕ)
     (x : WallComplement (fun j : D.active k => (D.wall j).support)) :

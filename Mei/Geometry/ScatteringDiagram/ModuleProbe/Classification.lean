@@ -132,6 +132,11 @@ theorem normal_height_eq_zero_of_label_ne_one (hne : W.label ≠ 1) :
   rcases wallGroup_cases_of_ne_one d ℳ p ℒ H W.label_mem hne with
     ⟨v, m, _, hm⟩ | ⟨q, hq, c, _, _, hm⟩ <;> simp [hm]
 
+/-- The real normal of every nonidentity probe wall annihilates the height direction. -/
+theorem realCharacter_normal_height_eq_zero_of_label_ne_one (hne : W.label ≠ 1) :
+    (h.prod h').realCharacter W.normal (0, j (1, 0)) = 0 := by
+  simp [normal_height_eq_zero_of_label_ne_one d ℳ p ℒ H h h' W hne]
+
 variable [LieAlgebra ℚ L] [IsScalarTower ℚ R L]
 
 /-- Every wall whose normal is not a lifted base normal disappears under base

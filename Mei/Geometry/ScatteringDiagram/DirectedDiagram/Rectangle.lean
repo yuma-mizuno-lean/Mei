@@ -115,15 +115,12 @@ theorem combinedLabel_eq_of_parallel_displacement (k : ℕ) (hD : D.LevelConsist
     (fun b => (D.wall b).isConvexPolyhedron.isClosed) hc₀⟩
   let r₁ : x₁ ⟶ y₁ := ⟨.of_crossings_eq_empty
     (fun b => (D.wall b).isConvexPolyhedron.isClosed) hc₁⟩
-  have hprod {x y : WallComplement (fun b : D.active k => (D.wall b).support)}
-      (r : x ⟶ y) (hr : crossings x y = ∅) : D.levelPathProduct k r.toPath = 1 := by
-    rw [D.levelPathProduct_eq_wallPathProduct k r.toPath (D.activeLabels_commute k),
-      Quiver.Path.wallPathProduct_toPath]
-    exact segmentPathProduct_eq_one_of_crossings_eq_empty _ _ _ r hr
   -- The two routes have equal products; both connecting factors are identities.
   have hc := (D.levelConsistent_def k).mp hD
     (e.toPath.comp r₁.toPath) (r₀.toPath.comp f.toPath)
-  simpa only [D.levelPathProduct_comp, he, hf, hprod r₀ hc₀, hprod r₁ hc₁,
+  simpa only [D.levelPathProduct_comp, he, hf,
+    D.levelPathProduct_eq_one_of_crossings_eq_empty k r₀ hc₀,
+    D.levelPathProduct_eq_one_of_crossings_eq_empty k r₁ hc₁,
     one_mul, mul_one] using hc.symm
 
 end Mei.DirectedDiagram
