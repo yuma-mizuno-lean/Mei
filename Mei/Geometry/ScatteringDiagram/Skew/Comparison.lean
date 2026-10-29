@@ -6,6 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.ScatteringDiagram.Skew.Basic
+public import Mei.Geometry.Affine.Codimension
 public import Mei.Geometry.Toric.Algebraic.DualLattice
 public import Mei.Geometry.Convex.Polyhedron.Rational
 public import Mei.Geometry.Convex.Recession
@@ -19,7 +20,7 @@ of the extended integral rows. Pulling a rational cone back along this map gives
 a rational-normal polyhedron. Its recession directions are detected by membership
 of their images in the original cone, even when the form is degenerate.
 
-For a cone in the evaluation hyperplane of an unfrozen degree, the pulled-back
+For a set in the evaluation hyperplane of an unfrozen degree, the pulled-back
 normal is the real extension of `{-, κ(n)n}`. If this normal is nonzero and the
 pullback has codimension one, it cuts out exactly the affine direction of the
 pullback. These are the geometric support and incomingness comparisons used to
@@ -165,13 +166,13 @@ theorem realCharacter_normal_eq_smul_eval_comp_skewComparison
   rw [← D.cast_integralCharacter_apply hD a n] at he
   exact_mod_cast he.symm
 
-/-- A cone in a degree evaluation hyperplane pulls back into the kernel of the
+/-- A set in a degree evaluation hyperplane pulls back into the kernel of the
 normalized integral skew normal. -/
 theorem skewComparison_preimage_subset_ker_normal {n : N} (hn : n ∈ D.unfrozen)
-    (σ : PointedCone ℝ (V →L[ℝ] ℝ))
+    (σ : Set (V →L[ℝ] ℝ))
     (hσ : ∀ θ ∈ σ, θ (i n) = 0) :
     let _ := h.free
-    (D.skewComparison hD h) ⁻¹' (σ : Set (V →L[ℝ] ℝ)) ⊆
+    (D.skewComparison hD h) ⁻¹' σ ⊆
       LinearMap.ker (h.realCharacter (D.normal n hn).toAddMonoidHom) := by
   let := h.free
   dsimp only
@@ -182,39 +183,31 @@ theorem skewComparison_preimage_subset_ker_normal {n : N} (hn : n ∈ D.unfrozen
     ContinuousLinearMap.coe_coe, ContinuousLinearMap.apply_apply, smul_eq_mul]
   rw [hσ _ hx, mul_zero]
 
-/-- If the pulled-back normal is nonzero and the cone pullback has codimension
+/-- If the pulled-back normal is nonzero and the set pullback has codimension
 one, this normal cuts out exactly its affine direction, giving the affine-direction
 condition for a directed wall. Rational-normal polyhedrality additionally requires
-`IsRationalNormalPolyhedron h.continuousDual (σ : Set (V →L[ℝ] ℝ))` and follows from
+`IsRationalNormalPolyhedron h.continuousDual σ` and follows from
 `isRationalNormalPolyhedron_skewComparison_preimage`. -/
 theorem direction_skewComparison_preimage {n : N} (hn : n ∈ D.unfrozen)
-    (σ : PointedCone ℝ (V →L[ℝ] ℝ))
+    (σ : Set (V →L[ℝ] ℝ))
     (hσ : ∀ θ ∈ σ, θ (i n) = 0)
     (hnormal : let _ := h.free; D.normal n hn ≠ 0)
     (hcodim : Module.finrank ℝ (affineSpan ℝ
-      ((D.skewComparison hD h) ⁻¹' (σ : Set (V →L[ℝ] ℝ)))).direction + 1 =
+      ((D.skewComparison hD h) ⁻¹' σ)).direction + 1 =
         Module.finrank ℝ V) :
     let _ := h.free
-    (affineSpan ℝ ((D.skewComparison hD h) ⁻¹' (σ : Set (V →L[ℝ] ℝ)))).direction =
+    (affineSpan ℝ ((D.skewComparison hD h) ⁻¹' σ)).direction =
       LinearMap.ker (h.realCharacter (D.normal n hn).toAddMonoidHom) := by
   let := h.free
   dsimp only
   let := h.finiteDimensional
-  have hle : (affineSpan ℝ
-      ((D.skewComparison hD h) ⁻¹' (σ : Set (V →L[ℝ] ℝ)))).direction ≤
-        LinearMap.ker (h.realCharacter (D.normal n hn).toAddMonoidHom) := by
-    rw [direction_affineSpan, vectorSpan_def, Submodule.span_le]
-    rintro v ⟨x, hx, y, hy, rfl⟩
-    exact Submodule.sub_mem _
-      (D.skewComparison_preimage_subset_ker_normal hD h hn σ hσ hx)
-      (D.skewComparison_preimage_subset_ker_normal hD h hn σ hσ hy)
-  apply Submodule.eq_of_le_of_finrank_eq hle
   have hne : h.realCharacter (D.normal n hn).toAddMonoidHom ≠ 0 := by
     intro hz
     apply hnormal
     apply LinearMap.toAddMonoidHom_injective
     exact h.realCharacter_injective (hz.trans (map_zero _).symm)
-  have he := Module.Dual.finrank_ker_add_one_of_ne_zero hne
-  omega
+  exact (LinearMap.ker_eq_direction_affineSpan _ hne
+    (fun _ hx => LinearMap.mem_ker.mp
+      (D.skewComparison_preimage_subset_ker_normal hD h hn σ hσ hx)) hcodim).symm
 
 end Mei.SkewLatticeDatum
