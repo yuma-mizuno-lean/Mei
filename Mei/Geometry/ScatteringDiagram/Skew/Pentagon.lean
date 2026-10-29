@@ -10,25 +10,28 @@ public import Mei.Geometry.ScatteringDiagram.Skew.Dilogarithm
 public import Mei.Geometry.ScatteringDiagram.Skew.Examples
 public import Mei.Algebra.Lie.Skew.Map
 public import Mei.Algebra.Group.Units.Hom
+public import Mei.Algebra.Ring.Units
 public import Mei.Algebra.PositiveDegrees.Basis
 
 /-!
 # The pentagon identity for dilogarithm elements
 
-Let `n₁, n₂` be nonzero positive degrees of a skew lattice datum and `c` a rational number
-with `c {n₁, n₂} = 1`. Writing `Ψ[n]^c` for the ray label `rayExp (c • negDilogNeg R)`
+Let `n₁, n₂` be nonzero positive degrees for an alternating form `β` valued in a
+commutative `ℚ`-algebra, and let `c` satisfy `c * β n₁ n₂ = 1`. Writing `Ψ[n]^c` for the
+ray label `rayExp (c • negDilogNeg R)`
 of degree `n`, the completed skew group satisfies the pentagon identity
 `Ψ[n₂]^c Ψ[n₁]^c = Ψ[n₁]^c Ψ[n₁ + n₂]^c Ψ[n₂]^c`.
-For `c > 0` the left side is antiordered and the right side ordered, since
+For a rational-valued form and rational `c > 0`, the left side is antiordered and the right
+side ordered, since
 `{n₂, n₁} < 0` and `{n₁, n₁ + n₂} = {n₁ + n₂, n₂} = {n₁, n₂} > 0`. This is the elementary
 exchange of out-of-order dilogarithm factors in rank two. No nondegeneracy of the skew form
-is assumed.
+is assumed. Specializing `β` to `D.coefficientForm R` gives the skew lattice identity.
 
 ## Main statements
 
-* `Mei.SkewLatticeDatum.rayExp_smul_negDilogNeg_pentagon`: the pentagon identity for the
+* `Mei.SkewLieAlgebra.rayExp_smul_negDilogNeg_pentagon`: the pentagon identity for the
   normalized powers `Ψ[n]^c`.
-* `Mei.SkewLatticeDatum.dilogElement_pentagon`: if `{n₁, n₂} = 1`, then
+* `Mei.SkewLieAlgebra.dilogElement_pentagon`: if `{n₁, n₂} = 1`, then
   `Ψ[n₂] Ψ[n₁] = Ψ[n₁] Ψ[n₁ + n₂] Ψ[n₂]`.
 
 ## Implementation notes
@@ -74,32 +77,6 @@ local notation "Qpr" => D.principalCoefficientMonoid d
 local notation "Fpr" => TropicalVertexCoefficientAction.filtration (R := R) e Qpr
 local notation "κ" => D.sublattice.toAddSubgroup.rayIndex
 local notation "Ψ" => SkewLieAlgebra.rayExp β hβ
-
-/-- The unit identity behind the pentagon: if `U₁ = 1 + x`, `U₂ = 1 + y`,
-`V = 1 + U₂ x`, `P = 1 + U₁⁻¹ x y` and `W = 1 + P⁻¹ U₁⁻¹ y`, then `V = P U₁` and
-`U₂ = W P`, so `V^a U₂^b z = W^b P^(a + b) U₁^a z`. -/
-private theorem pentagon_units {K : Type*} [CommRing K] {x y w : K} {U₁ U₂ V P W : Kˣ}
-    (hU₁ : (U₁ : K) = 1 + x) (hU₂ : (U₂ : K) = 1 + y) (hw : w = x * y)
-    (hV : (V : K) = 1 + ↑(U₂ ^ (1 : ℤ)) * x) (hP : (P : K) = 1 + ↑(U₁ ^ (-1 : ℤ)) * w)
-    (hW : (W : K) = 1 + ↑(P ^ (-1 : ℤ)) * (↑(U₁ ^ (-1 : ℤ)) * y)) (a b : ℤ) (z : K) :
-    ↑(V ^ a) * (↑(U₂ ^ b) * z) = ↑(W ^ b) * (↑(P ^ (a + b)) * (↑(U₁ ^ a) * z)) := by
-  subst hw
-  simp only [zpow_one] at hV
-  simp only [zpow_neg_one] at hP hW
-  have h₁ := U₁.inv_mul
-  have hP' := P.inv_mul
-  have hVP : V = P * U₁ := by
-    apply Units.ext
-    rw [Units.val_mul, hV, hP, hU₂]
-    linear_combination (-(x * y)) * h₁ - hU₁
-  have hWP : U₂ = W * P := by
-    apply Units.ext
-    rw [Units.val_mul, hW, hU₂]
-    linear_combination (-(↑U₁⁻¹ * y)) * hP' - hP - y * h₁ + (↑U₁⁻¹ * y) * hU₁
-  have key : V ^ a * U₂ ^ b = W ^ b * P ^ (a + b) * U₁ ^ a := by
-    rw [hVP, hWP, mul_zpow, mul_zpow, zpow_add]
-    simp only [mul_assoc, mul_comm]
-  simpa only [Units.val_mul, mul_assoc] using congrArg (fun u : Kˣ => (u : K) * z) key
 
 variable [DecidableEq D.unfrozen]
 
@@ -176,27 +153,36 @@ private theorem rayExp_smul_negDilogNeg_pentagon_integral {n₁ n₂ : D.unfroze
   intro p
   simp only [map_mul, AlgEquiv.mul_apply]
   simp only [W₁, W₂, W₁₂, map_mul, Mei.map_units_zpow, hadd]
-  refine pentagon_units hU₁ hU₂ hXY ?_ ?_ ?_ _ _ _
+  refine Units.pentagon hU₁ hU₂ hXY ?_ ?_ ?_ _ _ _
   · simp only [Units.coe_map, MonoidHom.coe_ofClass, hU₁, map_add, map_one, W₂, e₂₁]
   · simp only [Units.coe_map, MonoidHom.coe_ofClass, hU₁₂, map_add, map_one, W₁, e₁]
   · simp only [Units.coe_map, MonoidHom.coe_ofClass, hU₂, map_add, map_one, map_mul, W₁, W₁₂,
       Mei.map_units_zpow, e₁₂, e₁₂₂]
 
-omit [Module.Free ℤ N] in
-/-- **Pentagon identity.** For nonzero positive degrees with `c {n₁, n₂} = 1`,
-the rationally powered ray labels satisfy
+end Mei.SkewLatticeDatum
+
+namespace Mei.SkewLieAlgebra
+
+open PowerSeries SkewLatticeDatum
+
+variable {Γ R : Type*} [AddCommGroup Γ] [DecidableEq Γ] [CommRing R] [Algebra ℚ R]
+  (β : Γ →ₗ[ℤ] Γ →ₗ[ℤ] R) (hβ : β.IsAlt) (d : PositiveDegrees Γ)
+
+local notation "Ψ" => rayExp β hβ
+
+/-- **Pentagon identity.** For nonzero positive degrees with `c * β n₁ n₂ = 1`,
+the scaled ray labels satisfy
 `Ψ[n₂]^c Ψ[n₁]^c = Ψ[n₁]^c Ψ[n₁ + n₂]^c Ψ[n₂]^c`.
-There is no restriction involving the finite-index sublattice. -/
-theorem rayExp_smul_negDilogNeg_pentagon {n₁ n₂ : D.unfrozen} (hn₁ : n₁ ∈ d.monoid)
-    (hn₂ : n₂ ∈ d.monoid) (hn₁0 : n₁ ≠ 0) (hn₂0 : n₂ ≠ 0) {c : ℚ}
-    (hc : c * D.form n₁ n₂ = 1) :
-    Ψ hn₂ hn₂0 (algebraMap ℚ R c • negDilogNeg R) *
-        Ψ hn₁ hn₁0 (algebraMap ℚ R c • negDilogNeg R) =
-      Ψ hn₁ hn₁0 (algebraMap ℚ R c • negDilogNeg R) *
-        Ψ (add_mem hn₁ hn₂) (ne_of_apply_ne Subtype.val
-          (D.add_ne_zero_of_form_ne_zero (right_ne_zero_of_mul_eq_one hc)))
-          (algebraMap ℚ R c • negDilogNeg R) *
-        Ψ hn₂ hn₂0 (algebraMap ℚ R c • negDilogNeg R) := by
+The alternating form may take values in any commutative `ℚ`-algebra. -/
+theorem rayExp_smul_negDilogNeg_pentagon {n₁ n₂ : Γ} (hn₁ : n₁ ∈ d.monoid)
+    (hn₂ : n₂ ∈ d.monoid) (hn₁0 : n₁ ≠ 0) (hn₂0 : n₂ ≠ 0) {c : R}
+    (hc : c * β n₁ n₂ = 1) :
+    Ψ hn₂ hn₂0 (c • negDilogNeg R) *
+        Ψ hn₁ hn₁0 (c • negDilogNeg R) =
+      Ψ hn₁ hn₁0 (c • negDilogNeg R) *
+        Ψ (add_mem hn₁ hn₂) (d.add_ne_zero hn₁ hn₂ hn₁0)
+          (c • negDilogNeg R) *
+        Ψ hn₂ hn₂0 (c • negDilogNeg R) := by
   classical
   -- Establish the unit-pairing identity in the unimodular plane.
   let E := Examples.unimodularRankTwo
@@ -232,7 +218,7 @@ theorem rayExp_smul_negDilogNeg_pentagon {n₁ n₂ : D.unfrozen} (hn₁ : n₁ 
     (c := 1) (s₁ := 1) (s₂ := 1) (by simpa using hpair) (by simp [hκ₁]) (by simp [hκ₂])
   simp only [map_one, one_smul] at hp
   -- The basis map preserves positivity, with source degree bounded by target degree.
-  let f : E.unfrozen →ₗ[ℤ] D.unfrozen := b.constr ℤ ![n₁, n₂]
+  let f : E.unfrozen →ₗ[ℤ] Γ := b.constr ℤ ![n₁, n₂]
   have f₁ : f v₁ = n₁ := by simp [f, v₁]
   have f₂ : f v₂ = n₂ := by simp [f, v₂]
   have f_apply (v : E.unfrozen) : f v = b.repr v 0 • n₁ + b.repr v 1 • n₂ := by
@@ -256,26 +242,22 @@ theorem rayExp_smul_negDilogNeg_pentagon {n₁ n₂ : D.unfrozen} (hn₁ : n₁ 
   let T : PositiveDegreeMap δ d := PositiveDegreeMap.ofBound f.toAddMonoidHom hfmem 1 hbound
   -- Scaling generators by `c` compensates for the change in skew pairing.
   have hform (v w : E.unfrozen) :
-      E.coefficientForm R v w = algebraMap ℚ R c * D.coefficientForm R (T v) (T w) := by
+      E.coefficientForm R v w = c * β (T v) (T w) := by
     have he (v : E.unfrozen) : (v : ℤ × ℤ) = (b.repr v 0, b.repr v 1) := by
       -- The mapped standard basis reads exactly the two coordinates of `v`.
       rfl
     have hTapply (v : E.unfrozen) : T v = f v :=
       PositiveDegreeMap.ofBound_apply _ _ _ _ v
-    simp only [hTapply, coefficientForm_apply]
-    rw [← map_mul]
-    congr 1
+    simp only [hTapply, SkewLatticeDatum.coefficientForm_apply, E,
+      Examples.unimodularRankTwo_form, Examples.rankTwoForm_apply, he,
+      Int.cast_sub, Int.cast_mul, map_sub, map_mul, map_intCast]
     rw [f_apply, f_apply]
-    simp only [Submodule.coe_add, Submodule.coe_smul, map_add, LinearMap.add_apply,
-      map_zsmul, LinearMap.smul_apply, form_self, D.form_swap n₁ n₂]
-    have hs : E.form v w =
-        (b.repr v 0 : ℚ) * b.repr w 1 - (b.repr v 1 : ℚ) * b.repr w 0 := by
-      simp only [E, Examples.unimodularRankTwo_form, Examples.rankTwoForm_apply, he,
-        Int.cast_sub, Int.cast_mul]
-    rw [hs]
-    linear_combination (-(b.repr v 0 : ℚ) * b.repr w 1 + (b.repr v 1 : ℚ) * b.repr w 0) * hc
+    simp only [map_add, LinearMap.add_apply, map_zsmul, LinearMap.smul_apply,
+      hβ.self_eq_zero, ← hβ.neg n₁ n₂]
+    linear_combination (-(b.repr v 0 : R) * b.repr w 1 +
+      (b.repr v 1 : R) * b.repr w 0) * hc
   let φ := SkewLieAlgebra.gradedMap (E.coefficientForm R) (E.isAlt_coefficientForm R)
-    β hβ (algebraMap ℚ R c) T hform
+    β hβ c T hform
   -- Transport each finite projection; the degree estimate gives the same source cutoff.
   apply CompletedGroup.ext
   intro k
@@ -290,9 +272,9 @@ theorem rayExp_smul_negDilogNeg_pentagon {n₁ n₂ : D.unfrozen} (hn₁ : n₁ 
   have hmap {v : E.unfrozen} (hv : v ∈ δ.monoid) (hv0 : v ≠ 0) :
       ψ (SkewLieAlgebra.rayExp (E.coefficientForm R) (E.isAlt_coefficientForm R)
         hv hv0 (negDilogNeg R)) = CompletedGroup.projection k
-          (Ψ (T.map_mem hv) (T.map_ne_zero hv hv0) (algebraMap ℚ R c • negDilogNeg R)) := by
+          (Ψ (T.map_mem hv) (T.map_ne_zero hv hv0) (c • negDilogNeg R)) := by
     exact SkewLieAlgebra.truncatedMap_gradedMap_projection_rayExp
-      (E.coefficientForm R) (E.isAlt_coefficientForm R) β hβ (algebraMap ℚ R c) T hform
+      (E.coefficientForm R) (E.isAlt_coefficientForm R) β hβ c T hform
       hv hv0 (negDilogNeg R) k k le_rfl hk
   simp only [hmap] at h
   have hTapply (v : E.unfrozen) : T v = f v :=
@@ -301,18 +283,16 @@ theorem rayExp_smul_negDilogNeg_pentagon {n₁ n₂ : D.unfrozen} (hn₁ : n₁ 
   simp only [map_mul]
   exact h
 
-omit [Module.Free ℤ N] in
 /-- **Pentagon identity for dilogarithm elements.** For nonzero positive degrees
 with `{n₁, n₂} = 1`, one has `Ψ[n₂] Ψ[n₁] = Ψ[n₁] Ψ[n₁ + n₂] Ψ[n₂]`. -/
-theorem dilogElement_pentagon {n₁ n₂ : D.unfrozen} (hn₁ : n₁ ∈ d.monoid) (hn₂ : n₂ ∈ d.monoid)
-    (hn₁0 : n₁ ≠ 0) (hn₂0 : n₂ ≠ 0) (h : D.form n₁ n₂ = 1) :
+theorem dilogElement_pentagon {n₁ n₂ : Γ} (hn₁ : n₁ ∈ d.monoid) (hn₂ : n₂ ∈ d.monoid)
+    (hn₁0 : n₁ ≠ 0) (hn₂0 : n₂ ≠ 0) (h : β n₁ n₂ = 1) :
     SkewLieAlgebra.dilogElement β hβ hn₂ hn₂0 * SkewLieAlgebra.dilogElement β hβ hn₁ hn₁0 =
       SkewLieAlgebra.dilogElement β hβ hn₁ hn₁0 *
-        SkewLieAlgebra.dilogElement β hβ (add_mem hn₁ hn₂) (ne_of_apply_ne Subtype.val
-          (D.add_ne_zero_of_form_ne_zero (ne_of_eq_of_ne h one_ne_zero))) *
+        SkewLieAlgebra.dilogElement β hβ (add_mem hn₁ hn₂) (d.add_ne_zero hn₁ hn₂ hn₁0) *
         SkewLieAlgebra.dilogElement β hβ hn₂ hn₂0 := by
-  have hp := D.rayExp_smul_negDilogNeg_pentagon (R := R) d hn₁ hn₂ hn₁0 hn₂0 (c := 1)
+  have hp := rayExp_smul_negDilogNeg_pentagon β hβ d hn₁ hn₂ hn₁0 hn₂0 (c := 1)
     (by rw [one_mul, h])
-  simpa only [map_one, one_smul, SkewLieAlgebra.dilogElement_def] using hp
+  simpa only [one_smul, SkewLieAlgebra.dilogElement_def] using hp
 
-end Mei.SkewLatticeDatum
+end Mei.SkewLieAlgebra

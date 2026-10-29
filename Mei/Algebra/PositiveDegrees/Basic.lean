@@ -74,6 +74,16 @@ theorem degree_eq_zero_iff {n : N} (hn : n ∈ d.monoid) : d.degree n = 0 ↔ n 
   · rintro rfl
     exact map_zero _
 
+/-- Adding an allowed degree to a nonzero allowed degree gives a nonzero degree. -/
+theorem add_ne_zero {n m : N} (hn : n ∈ d.monoid) (hm : m ∈ d.monoid) (hn0 : n ≠ 0) :
+    n + m ≠ 0 := by
+  intro h
+  have := d.degree_pos hn hn0
+  have := d.degree_nonneg hm
+  have := congrArg d.degree h
+  simp only [map_add, map_zero] at this
+  omega
+
 /-- The degree of the `(j + 1)`st multiple of a nonzero allowed degree exceeds `j`. -/
 theorem lt_degree_succ_nsmul {n : N} (hn : n ∈ d.monoid) (hn0 : n ≠ 0) (j : ℕ) :
     (j : ℤ) < d.degree ((j + 1) • n) := by
