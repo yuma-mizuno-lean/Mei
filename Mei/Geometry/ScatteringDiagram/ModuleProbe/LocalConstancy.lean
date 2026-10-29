@@ -84,17 +84,6 @@ theorem eventually_verticalCoefficient_add_eq (k : ℕ) (θ : V × E)
   refine ⟨hη, fun a ha => hv a ((hmem a).mp ha), ?_⟩
   simp only [verticalCoefficient_def, he]
 
-omit [AddCommGroup M] [Module R M] [AddCommGroup Γ] [DecidableEq Γ] in
-/-- The real probe normal reads the probe coordinate of the auxiliary factor; in
-particular it vanishes on the base factor and on the height direction. -/
-theorem realCharacter_probeNormal :
-    (h.prod h').realCharacter (probeNormal (Λ := Λ)) =
-      (h'.realCharacter (AddMonoidHom.snd ℤ ℤ)).comp (LinearMap.snd ℝ V E) := by
-  symm
-  apply (h.prod h').eq_realCharacter
-  rintro ⟨a, b, c⟩
-  simp
-
 /-- On each fixed auxiliary-coordinate slice, the vertical coefficient is locally
 constant on the vertically transverse regular locus. This includes regular points
 off the module walls, whose coefficient is zero. -/

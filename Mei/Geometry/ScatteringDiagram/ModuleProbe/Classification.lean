@@ -133,6 +133,21 @@ theorem normal_height_eq_zero_of_label_ne_one (hne : W.label ≠ 1) :
   rcases wallGroup_cases_of_ne_one d ℳ p ℒ H W.label_mem hne with
     ⟨v, m, _, hm⟩ | ⟨q, hq, c, _, _, hm⟩ <;> simp [hm]
 
+/-- The probe coordinate is constant on the support of every nonidentity wall
+that is not tangent to the probe direction: such a wall has a nonzero multiple
+of the probe normal. -/
+theorem realCharacter_probeNormal_eq_of_ne_zero (hne : W.label ≠ 1)
+    (hv : (h.prod h').realCharacter W.normal (0, j (0, 1)) ≠ 0)
+    {w w' : V × E} (hw : w ∈ W.support) (hw' : w' ∈ W.support) :
+    (h.prod h').realCharacter (probeNormal (Λ := Λ)) w =
+      (h.prod h').realCharacter (probeNormal (Λ := Λ)) w' := by
+  rcases wallGroup_cases_of_ne_one d ℳ p ℒ H W.label_mem hne with
+    ⟨_, m, _, hm⟩ | ⟨_, _, c, hc, _, hm⟩
+  · exact (hv (by simp [hm])).elim
+  · have hn := W.normal_apply_eq hw hw'
+    rw [hm, map_zsmul, LinearMap.smul_apply, LinearMap.smul_apply] at hn
+    exact (smul_right_injective _ hc) hn
+
 variable [LieAlgebra ℚ L] [IsScalarTower ℚ R L]
 
 /-- Every wall whose normal is not a lifted base normal disappears under base

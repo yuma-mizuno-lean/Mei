@@ -6,11 +6,8 @@ Authors: Claude
 module
 
 public import Mei.Geometry.ScatteringDiagram.ModuleProbe.ChargeZero
-public import Mei.Geometry.ScatteringDiagram.ModuleProbe.Classification
 public import Mei.Geometry.ScatteringDiagram.ModuleProbe.Field
-public import Mei.Geometry.ScatteringDiagram.ModuleProbe.LocalConstancy
 public import Mei.Geometry.ScatteringDiagram.ModuleProbe.Transport
-public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Invariance
 
 /-!
 # Transport of probe coefficients along base paths
@@ -34,7 +31,7 @@ wall is transported along admissible paths for any outgoing completion of the ba
 This is the transport of coefficients obtained from the module probe in Mandel,
 *Scattering diagrams, theta functions, and refined tropical curve counts*, §3.3.3
 (arXiv:1503.06183v5). It combines `ModuleProbe.verticalCoefficient_eq_action_of_paths`
-with the charge-zero comparison `DirectedDiagram.levelTransport_map` and
+with the charge-zero comparison `DirectedDiagram.levelPathProduct_mapPathPrefunctor` and
 `ModuleProbe.levelTransport_cylinderDiagram`.
 -/
 
@@ -64,11 +61,13 @@ variable {R Γ Λ V E ι κ : Type*} {M L : Type u} [CommRing R] [Algebra ℚ R]
 local notation "v" => (0, j (0, 1))
 local notation "π" => baseQuotientProjection d ℳ p ℒ
 
-/-- If the charge-zero image of a consistent probe diagram is equivalent at order `k`
+/-- If the charge-zero image of a probe diagram is consistent and equivalent at order `k`
 to the cylinder over a base diagram, then base projection carries each probe path
 product to the base path product between the projected endpoints. The auxiliary
 coordinates of the two probe endpoints are arbitrary and may differ. -/
-theorem baseBCHProjection_levelPathProduct (k : ℕ) (hD : D.LevelConsistent k)
+theorem baseBCHProjection_levelPathProduct (k : ℕ)
+    (hD₀ : (D.map (chargeZeroGradedLieHom d ℳ p ℒ)
+      (chargeZeroGradedLieHom_mem_wall d ℳ p ℒ H)).LevelConsistent k)
     (hB : (D.map (chargeZeroGradedLieHom d ℳ p ℒ)
       (chargeZeroGradedLieHom_mem_wall d ℳ p ℒ H)).LevelEquivalent
       (cylinderDiagram d ℳ p ℒ H h h' B) k)
@@ -79,7 +78,6 @@ theorem baseBCHProjection_levelPathProduct (k : ℕ) (hD : D.LevelConsistent k)
     (π k).bchGroupMap (D.levelPathProduct k r) = B.levelPathProduct k γ := by
   let f := chargeZeroGradedLieHom d ℳ p ℒ
   let hf := chargeZeroGradedLieHom_mem_wall d ℳ p ℒ H
-  have hD₀ := hD.map D f hf
   have hC := hB.consistent hD₀
   have hBc := (cylinderDiagram_levelConsistent_iff d ℳ p ℒ H h h' B k).mp hC
   let x' := (cylinderPathLift d ℳ p ℒ H h h' B k a.val.2).obj x
@@ -94,31 +92,14 @@ theorem baseBCHProjection_levelPathProduct (k : ℕ) (hD : D.LevelConsistent k)
     WallComplement.ext (by simp [y'])
   apply LieHom.bchGroupMap_injective
     (Function.LeftInverse.injective (baseQuotientProjection_base d ℳ p ℒ k))
-  have he := (D.levelTransport_map f hf hD a b).symm.trans
+  have he := ((D.map f hf).levelTransport_eq_levelPathProduct hD₀
+    ((D.mapPathPrefunctor f hf k).mapPath r)).symm.trans
     ((hB.levelTransport_eq hD₀ hC hx' hy').trans
       (levelTransport_cylinderDiagram d ℳ p ℒ H h h' B hBc x' y'))
   rw [hpx, hpy, B.levelTransport_eq_levelPathProduct hBc γ,
-    D.levelTransport_eq_levelPathProduct hD r, truncatedMap_chargeZeroGradedLieHom,
+    D.levelPathProduct_mapPathPrefunctor, truncatedMap_chargeZeroGradedLieHom,
     LieHom.bchGroupMap_comp] at he
   exact he
-
-omit [LieAlgebra ℚ L] [IsScalarTower ℚ R L] in
-/-- The probe coordinate is constant on the support of every active wall that is not
-tangent to the probe direction: such a wall has a nonzero multiple of the probe normal. -/
-private theorem realCharacter_probeNormal_eq_of_ne_zero (k : ℕ) (a : D.active k)
-    (hv : (h.prod h').realCharacter (D.wall a).normal v ≠ 0)
-    {w w' : V × E} (hw : w ∈ (D.wall a).support) (hw' : w' ∈ (D.wall a).support) :
-    (h.prod h').realCharacter (probeNormal (Λ := Λ)) w =
-      (h.prod h').realCharacter (probeNormal (Λ := Λ)) w' := by
-  rcases wallGroup_cases_of_ne_one d ℳ p ℒ H (D.wall a).label_mem
-      (D.label_ne_one_of_mem_active a.property) with
-    ⟨_, m, _, hm⟩ | ⟨_, _, c, hc, _, hm⟩
-  · exact (hv (by simp [hm])).elim
-  · have hd : w - w' ∈ (affineSpan ℝ (D.wall a).support).direction :=
-      AffineSubspace.vsub_mem_direction (subset_affineSpan ℝ _ hw) (subset_affineSpan ℝ _ hw')
-    rw [(D.wall a).direction_support, LinearMap.mem_ker, hm, map_zsmul, LinearMap.smul_apply,
-      map_sub] at hd
-    exact sub_eq_zero.mp ((smul_eq_zero.mp hd).resolve_left hc)
 
 omit [LieAlgebra ℚ L] [IsScalarTower ℚ R L] in
 /-- At each cutoff there is a slab width such that thin slabs of probe levels away from
@@ -150,16 +131,20 @@ private theorem exists_pos_forall_exists_levelPathProduct_eq (k : ℕ) :
     (hIo.preimage ζ.continuous_of_finiteDimensional) hz hw
   refine ⟨q, D.bchGroupMap_levelPathProduct_eq_self _ k (hIc.convex.linear_preimage ζ) q hq ?_⟩
   rintro a ⟨u, huI, hu⟩
+  rw [← (chargeZeroGradedLieHom d ℳ p ℒ).projection_completedMap_of_le k (a := k) (by simp)]
+  congr 1
   refine completedMap_chargeZeroGradedLieHom_label_of_normal_mem_range d ℳ p ℒ H h h'
     (D.wall a) ?_
   refine (mem_range_baseNormal _).mpr ⟨normal_height_eq_zero_of_label_ne_one d ℳ p ℒ H h h'
     (D.wall a) (D.label_ne_one_of_mem_active a.property), ?_⟩
   by_contra hz
-  have he := realCharacter_probeNormal_eq_of_ne_zero d ℳ p ℒ H h h' D k a
-    (by simpa using hz) hu (D.wall a).support_nonempty.some_mem
-  have h0 : level a = 0 :=
-    hlevel a (abs_lt.mpr (by rw [show level a = ζ u from he.symm]; exact hI huI))
-  exact hI0 ((show ζ u = 0 from he.trans h0) ▸ huI)
+  have he : ζ u = level a :=
+    realCharacter_probeNormal_eq_of_ne_zero d ℳ p ℒ H h h' (D.wall a)
+      (D.label_ne_one_of_mem_active a.property) (by simpa using hz)
+      hu (D.wall a).support_nonempty.some_mem
+  have h0 : level a = 0 := hlevel a (abs_lt.mpr (by rw [← he]; exact hI huI))
+  rw [Set.mem_preimage, he, h0] at huI
+  exact hI0 huI
 
 /-- In a consistent probe diagram, consider a quadrilateral of admissible paths whose two
 sides `e` and `f` have trivial base projection and whose other two sides `r₀` and `r₁`
@@ -232,16 +217,10 @@ theorem coefficientField_eq_truncatedBCHAction_levelPathProduct (k : ℕ)
     (by rw [hx₀, (hζ _ _).2]; constructor <;> linarith)
     (by rw [hy₀, (hζ _ _).2]; constructor <;> linarith)
   -- Upward crossings carry module labels only, so the two slab paths agree.
-  have hπC (Q : V) (hQ : (Q, t • j (1, 0)) ∉
-      singularSupport (fun a : D.active (k + 1) => (D.wall a).support))
-      (hQv : ∀ a : D.active (k + 1), (Q, t • j (1, 0)) ∈ (D.wall a).support →
-        (h.prod h').realCharacter (D.wall a).normal v ≠ 0) :
-      (π (k + 1)).bchGroupMap (D.combinedLabel (k + 1) (Q, t • j (1, 0)) v hQ) = 1 := by
-    rw [← moduleBCHInclusion_neg_verticalCoefficient d ℳ p ℒ H h h' D k _ hQ hQv]
-    exact (baseBCHProjection_eq_one_iff d ℳ p ℒ k _).mpr
-      ⟨_, rfl, fun _ hb => moduleBCHInclusion_injective d ℳ p ℒ k hb⟩
   have hr := levelPathProduct_eq_of_baseBCHProjection_eq_one d ℳ p ℒ H h h' D (k + 1) hD
-    e.toPath f.toPath r₀ r₁ (he ▸ hπC _ hθ hv) (hf ▸ hπC _ hθ' hv') hr₀ hr₁
+    e.toPath f.toPath r₀ r₁
+    (he ▸ baseBCHProjection_combinedLabel_vertical_eq_one d ℳ p ℒ H h h' D k _ hθ hv)
+    (hf ▸ baseBCHProjection_combinedLabel_vertical_eq_one d ℳ p ℒ H h h' D k _ hθ' hv') hr₀ hr₁
   have hmain := verticalCoefficient_eq_action_of_paths d ℳ p ℒ H h h' D k hD _ _ hθ hθ' hv hv'
     e.toPath f.toPath r₀ r₁ he hf hr
   rw [← coefficientField_eq_verticalCoefficient d ℳ p ℒ H h h' D k hD y.val hy t hθ',
@@ -257,7 +236,8 @@ theorem coefficientField_eq_truncatedBCHAction_levelPathProduct (k : ℕ)
   simp only [LieHom.bchGroupMap_comp, MonoidHom.comp_apply] at ht'
   rw [ht', D.truncation_levelPathProduct (Nat.le_succ k) r₀]
   exact baseBCHProjection_levelPathProduct d ℳ p ℒ H h h' D B k
-    (hD.mono (Nat.le_succ k)) hB _ γ (by simp [hx₀]) (by simp [hy₀])
+    ((hD.mono (Nat.le_succ k)).map D (chargeZeroGradedLieHom d ℳ p ℒ)
+      (chargeZeroGradedLieHom_mem_wall d ℳ p ℒ H)) hB _ γ (by simp [hx₀]) (by simp [hy₀])
 
 /-- Transport of the probe coefficient field of an outgoing completion of a cylinder
 input and its probe wall: along every admissible path for an outgoing completion of

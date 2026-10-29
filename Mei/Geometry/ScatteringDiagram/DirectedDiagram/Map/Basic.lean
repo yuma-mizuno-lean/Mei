@@ -184,14 +184,16 @@ theorem levelPathProduct_mapPathPrefunctor (k : ℕ)
       (D.activeLabels_commute k)).symm
 
 /-- A coefficient endomorphism fixes the finite-order product of a path whose vertices
-lie in a convex region, provided it fixes the label of every active wall meeting that
+lie in a convex region, provided it fixes the order-`k` label of every active wall meeting that
 region. Walls missing the region may have arbitrary labels. -/
 theorem bchGroupMap_levelPathProduct_eq_self (φ : GradedLieHom (PositiveDegreeMap.id d) ℒ ℒ)
     (k : ℕ) {U : Set V} (hU : Convex ℝ U)
     {x y : WallComplement (fun j : D.active k => (D.wall j).support)}
     (p : AdmissiblePLPath x y) (hp : ∀ z ∈ p.vertices, z.val ∈ U)
     (hφ : ∀ j : D.active k, (U ∩ (D.wall j).support).Nonempty →
-      φ.completedMap (D.wall j).label = (D.wall j).label) :
+      (φ.truncatedMap (a := k) k (by simp)).bchGroupMap
+        (CompletedGroup.projection k (D.wall j).label) =
+          CompletedGroup.projection k (D.wall j).label) :
     (φ.truncatedMap (a := k) k (by simp)).bchGroupMap (D.levelPathProduct k p) =
       D.levelPathProduct k p := by
   let F := (φ.truncatedMap (a := k) k (by simp)).bchGroupMap
@@ -205,10 +207,7 @@ theorem bchGroupMap_levelPathProduct_eq_self (φ : GradedLieHom (PositiveDegreeM
     obtain ⟨S, hS, haS⟩ := List.mem_flatMap.mp ha
     have hne := p.inter_nonempty_of_mem_signedCrossingEvents _ hU hp (List.mem_reverse.mp hS)
       (Finset.mem_toList.mp haS)
-    have hc : F (c a.1) = c a.1 := by
-      simp only [F, c]
-      rw [← φ.projection_completedMap_of_le k (a := k) (by simp), hφ a.1 hne]
-    rw [hc]
+    rw [hφ a.1 hne]
   have hm : F (p.wallPathProduct ν c (D.activeLabels_commute k)) =
       p.wallPathProduct ν (fun j => F (c j))
         (fun a b hab => (D.activeLabels_commute k a b hab).map F) :=
