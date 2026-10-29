@@ -16,7 +16,8 @@ A twisted coefficient map on a monoid algebra preserves the positive-increment
 filtration, even when a monomial weight vanishes. It therefore extends to the
 completion and intertwines the completed tropical vertex actions. The weights
 need only be defined on the coefficient monoid, which permits polynomial
-specializations unavailable on the ambient Laurent algebra.
+specializations unavailable on the ambient Laurent algebra. Combining the map
+with positive degree transport retains the degree map's cutoff modulus.
 
 We use `LogarithmicVectorField.coefficientMonoidGradedLieHom` and
 `AlgFiltration.mapCompletionₐ_completedBCHAction_of_gradedLieHom`, restricting
@@ -55,6 +56,20 @@ theorem filtration_ideal_le_comap_coefficientMonoidMap (k : ℕ) :
   simp only [Ideal.mem_comap, of'_apply, hf, map_one, one_mul,
     AddSubmonoid.single_mem_monoidAlgebraIdeal_iff]
   exact Or.inr ⟨n, hn, hd, 0, by simp⟩
+
+/-- Combining a monoid-local coefficient specialization with a positive degree
+map preserves the coefficient filtration with that degree map's cutoff modulus. -/
+theorem filtration_ideal_le_comap_coefficientDegreeMap
+    {Γ' : Type*} [AddCommMonoid Γ'] {e : PositiveDegrees Γ'} {Q' : AddSubmonoid Γ'}
+    (T : PositiveDegreeMap d e) (hT : Q.map T.toAddMonoidHom ≤ Q') (k : ℕ) :
+    (TropicalVertexCoefficientAction.filtration (R := R) d Q).ideal (T.modulus k + 1) ≤
+      ((TropicalVertexCoefficientAction.filtration (R := S) e Q').ideal (k + 1)).comap
+        ((mapDomainAlgHom S S
+          ((AddSubmonoid.inclusion hT).comp (T.toAddMonoidHom.addSubmonoidMap Q))).restrictScalars K
+          |>.comp f) := by
+  intro a ha
+  exact TropicalVertexCoefficientAction.filtration_ideal_le_comap_mapDomainAlgHom T hT k
+    (filtration_ideal_le_comap_coefficientMonoidMap d Q φ χ f hf _ ha)
 
 end Mei.LogarithmicVectorField
 

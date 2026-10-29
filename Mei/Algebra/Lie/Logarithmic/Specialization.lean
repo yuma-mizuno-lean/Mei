@@ -464,3 +464,57 @@ theorem map_coefficientAction (d : PositiveDegrees Γ) (hQ : d.monoid ≤ Q)
   | add x y hx hy => simp_all
 
 end Mei.LogarithmicVectorField
+
+namespace Mei.LogarithmicVectorField
+
+variable {K R S Γ Λ : Type*} [CommRing K] [CommRing R] [CommRing S]
+  [Algebra K R] [Algebra K S] [AddCommMonoid Γ] [AddCommMonoid Λ]
+  {d : PositiveDegrees Γ} {ρ : Γ →+ Λ} {Q : AddSubmonoid Γ}
+  {U : Submodule R (Λ →+ R)} {V : Submodule S (Λ →+ S)}
+  (φ : R →ₐ[K] S) (χ : Multiplicative Q →* S) (hQ : d.monoid ≤ Q)
+  (hφ : ∀ m : U, (φ : R →+ S).comp m.val ∈ V)
+
+include hφ in
+/-- Specialization preserves selected character subspaces when coefficient
+change sends their characters into the target subspace. Vanishing weights need
+no separate treatment. -/
+theorem coefficientMonoidGradedLieHom_mem_tropicalSubalgebra
+    (x : tropicalSubalgebra ρ U d) :
+    coefficientMonoidGradedLieHom ρ φ Q χ d hQ x.val ∈ tropicalSubalgebra ρ V d := by
+  rw [mem_tropicalSubalgebra_iff]
+  intro n
+  by_cases hn : n ∈ Q
+  · rw [toFinsupp_coefficientMonoidGradedLieHom ρ φ Q χ d hQ x.val hn]
+    exact V.smul_mem _ (hφ ⟨toFinsupp ρ x.val.val n,
+      (mem_tropicalSubalgebra_iff ρ U d x.val).mp x.property n⟩)
+  · rw [toFinsupp_coefficientMonoidGradedLieHom_of_not_mem ρ φ Q χ d hQ x.val hn]
+    exact V.zero_mem
+
+/-- Restrict monoid-local coefficient specialization to its actual source and
+target character domains, retaining the common scalar ring. -/
+def restrictCoefficientMonoidGradedLieHom :
+    GradedLieHom (R := K) (L := tropicalSubalgebra ρ U d)
+      (L' := tropicalSubalgebra ρ V d) (PositiveDegreeMap.id d)
+      (fun n => (tropicalSubalgebraGrading ρ U d n).restrictScalars K)
+      (fun n => (tropicalSubalgebraGrading ρ V d n).restrictScalars K) where
+  toLieHom :=
+    { toFun x := ⟨coefficientMonoidGradedLieHom ρ φ Q χ d hQ x.val,
+        coefficientMonoidGradedLieHom_mem_tropicalSubalgebra φ χ hQ hφ x⟩
+      map_add' x y := by apply Subtype.ext; simp
+      map_smul' r x := by apply Subtype.ext; simp
+      map_lie' := by
+        intro x y
+        apply Subtype.ext
+        simp only [LieSubalgebra.coe_bracket, GradedLieHom.map_lie] }
+  map_mem hx := by
+    rw [Submodule.restrictScalars_mem, tropicalSubalgebraGrading_def,
+      Submodule.mem_comap, LieHom.coe_toLinearMap, LieSubalgebra.coe_incl] at hx ⊢
+    exact (coefficientMonoidGradedLieHom ρ φ Q χ d hQ).map_mem hx
+
+/-- Forgetting the target character restriction recovers monoid-local specialization. -/
+@[simp]
+theorem coe_restrictCoefficientMonoidGradedLieHom (x : tropicalSubalgebra ρ U d) :
+    (restrictCoefficientMonoidGradedLieHom φ χ hQ hφ x).val =
+      coefficientMonoidGradedLieHom ρ φ Q χ d hQ x.val := (rfl)
+
+end Mei.LogarithmicVectorField
