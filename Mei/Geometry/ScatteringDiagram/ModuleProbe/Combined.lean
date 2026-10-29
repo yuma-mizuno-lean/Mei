@@ -75,6 +75,12 @@ def combinedModuleCoefficient (ε : J → ℤ) : (F).completion :=
   ∑ j ∈ s, ε j • (F).of
     (((moduleWallGroupEquiv d ℳ p ℒ H (q j) (hq j)).symm (g j)).toAdd.val)
 
+/-- The combined coefficient is the signed sum of the included homogeneous coefficients. -/
+theorem combinedModuleCoefficient_def (ε : J → ℤ) :
+    combinedModuleCoefficient d ℳ p ℒ H s q hq g ε =
+      ∑ j ∈ s, ε j • (F).of
+        (((moduleWallGroupEquiv d ℳ p ℒ H (q j) (hq j)).symm (g j)).toAdd.val) := (rfl)
+
 /-- An empty family contributes zero coefficient. -/
 @[simp]
 theorem combinedModuleCoefficient_empty (ε : J → ℤ) :
@@ -119,6 +125,6 @@ theorem noncommProd_moduleWallLabels (ε : J → ℤ) :
   simp_rw [ha, ← map_zpow]
   rw [← Finset.map_noncommProd s (fun j => a j ^ ε j)
     (fun _ _ _ _ _ => Commute.all _ _) ι, Finset.noncommProd_eq_prod]
-  congr 1
+  simp only [combinedModuleCoefficient_def, ofAdd_sum, ofAdd_zsmul, a]
 
 end Mei.ModuleProbe
