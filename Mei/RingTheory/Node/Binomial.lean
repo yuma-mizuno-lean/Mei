@@ -31,9 +31,10 @@ open TauCeti AddMonoidAlgebra
 variable {R : Type*} [CommRing R] (t c : R) (n : ℕ) (b w : ℤ)
 
 /-- With nonzero integral tangential step, the `j`-th binomial term is the
-entire homogeneous transfer at its full exponent. -/
+entire homogeneous transfer at its full exponent, for every natural index.
+Indices above `n` have coefficient zero. -/
 @[simp↓ high]
-theorem exponentCorrespondence_transfer_binomial (hw : w ≠ 0) (j : ℕ) (hj : j ≤ n) :
+theorem exponentCorrespondence_transfer_binomial (hw : w ≠ 0) (j : ℕ) :
     ((exponentCorrespondence (single 0 t + single w t)).transfer
       ⟨((n : ℤ), b), by simp⟩ (-(n : ℤ), b + j * w)
       ⟨single (n, b) c, single_mem_grade _ _⟩ : R[ℤ × ℤ]) =
@@ -47,7 +48,9 @@ theorem exponentCorrespondence_transfer_binomial (hw : w ≠ 0) (j : ℕ) (hj : 
   · simp
   · intro a _ haj
     simp [hw, haj]
-  · simp [Finset.mem_range, hj]
+  · intro hj
+    simp only [Finset.mem_range, not_lt] at hj
+    simp [Nat.choose_eq_zero_of_lt (by omega : n < j)]
 
 /-- A nonzero outgoing transfer occurs precisely at a surviving binomial index.
 The criterion retains the coefficient product, without cancelling a possibly
@@ -82,9 +85,9 @@ theorem exponentCorrespondence_transfer_ne_zero_iff (hw : w ≠ 0) (q : ℤ × �
       exact hjc (by simp [coeff_single, Ne.symm hq])
     refine ⟨j, Nat.le_of_lt_succ (Finset.mem_range.mp hj), hq, ?_⟩
     simpa [hq, coeff_single, nsmul_eq_mul] using hjc
-  · rintro ⟨j, hj, rfl, hc⟩ hzero
+  · rintro ⟨j, _, rfl, hc⟩ hzero
     have hz := congrArg Subtype.val hzero
-    rw [exponentCorrespondence_transfer_binomial t c n b w hw j hj] at hz
+    rw [exponentCorrespondence_transfer_binomial t c n b w hw j] at hz
     exact hc (single_eq_zero.mp hz)
 
 end Mei.NodeAlgebra
