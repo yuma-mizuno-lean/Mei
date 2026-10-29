@@ -84,21 +84,21 @@ theorem theta_mul_theta (n m b c : ℤ) :
   -- Both sides are a Laurent coefficient times the signed monomial of `n + m`.
   have hcoeff : (T (b + c) : S[T;T⁻¹]) * (C t * (1 + T 1)) ^ r =
       ∑ j ∈ Finset.range (r + 1), t ^ r • r.choose j • (T (b + c + j) : S[T;T⁻¹]) := by
-    rw [mul_pow, add_comm (1 : S[T;T⁻¹]), add_pow, ← map_pow C, Finset.mul_sum, Finset.mul_sum]
+    rw [mul_pow, add_comm (1 : S[T;T⁻¹]), add_pow, ← map_pow C]
+    simp only [Finset.mul_sum]
     refine Finset.sum_congr rfl fun j _ => ?_
-    rw [T_pow, smul_eq_C_mul, nsmul_eq_mul, one_pow, mul_one, mul_one]
-    simp only [T_add]
+    simp only [T_pow, smul_eq_C_mul, nsmul_eq_mul, one_pow, mul_one, T_add]
     ring
   calc
     theta t n b * theta t m c =
         ((T (b + c) : S[T;T⁻¹]) * (C t * (1 + T 1)) ^ r) •
           signedMonomial (C t * (1 + T 1)) (n + m) := by
-      rw [theta_def, theta_def, smul_mul_smul_comm, signedMonomial_mul_signedMonomial, ← map_pow,
-        ← Algebra.smul_def, smul_smul, T_add]
+      simp only [theta_def, smul_mul_smul_comm]
+      rw [signedMonomial_mul_signedMonomial, ← map_pow]
+      simp only [← Algebra.smul_def, smul_smul, T_add, r]
     _ = _ := by
-      rw [hcoeff, Finset.sum_smul, Finset.smul_sum]
-      refine Finset.sum_congr rfl fun j _ => ?_
-      rw [theta_def, smul_assoc, smul_assoc]
+      rw [hcoeff]
+      simp only [Finset.sum_smul, Finset.smul_sum, theta_def, smul_assoc]
 
 /-- The product `ϑ_{-1,0} ϑ_{1,0} = XY` is `t ϑ_{0,0} + t ϑ_{0,1}`. -/
 theorem theta_neg_one_mul_theta_one :
