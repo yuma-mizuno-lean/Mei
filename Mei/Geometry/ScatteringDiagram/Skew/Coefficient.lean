@@ -115,10 +115,10 @@ theorem mem_principalCoefficientFiltration_ideal_iff [Semiring R] (k : ℕ) (a :
     · apply Subtype.ext
       simp [n, q]
 
-omit [Algebra ℚ R] in
+omit [CommRing R] [Algebra ℚ R] in
 /-- The monomial at the principal embedding of a positive degree lies in the first
 completed ideal, for any coefficient monoid containing it. -/
-theorem toCompletion_single_principalEmbedding_mem_first
+theorem toCompletion_single_principalEmbedding_mem_first {R : Type*} [Ring R]
     {n : D.unfrozen} (hn : n ∈ d.monoid) (hn0 : n ≠ 0)
     (P : AddSubmonoid Lpr) (q : P) (hq : q.val = D.principalEmbedding n) :
     (TropicalVertexCoefficientAction.filtration
