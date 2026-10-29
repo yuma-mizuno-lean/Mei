@@ -33,7 +33,7 @@ completed_dir = "Completed"
 # Switch back to TauCetiProject/TauCetiTools once upstream carries the same fix.
 [tools.tools]
 repo = "yuma-mizuno-lean/TauCetiTools"
-ref = "d9f2698a0a84029dec85f99a8718847c4c0e0eaf"
+ref = "35d3b9a330a55632ff27718f4c2a1f7292739f1c"
 [tools.review]
 repo = "TauCetiProject/TauCetiReview"
 ref = "3999677031829254b4cbb27e9156c33672c61d0d"
