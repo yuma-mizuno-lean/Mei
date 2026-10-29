@@ -33,6 +33,9 @@ edge has
 `d₂ #H < d₂ + d₁ #V` (`mul_card_horizontal_lt`) and `d₁ #V < d₁ + d₂ #H`
 (`mul_card_vertical_lt`). The slope comparison `Mei.CyclicMatching.mul_sum_lt_of_forall_matched`
 then gives `d₂ p < d₁ q` for every grading counted by `C₊(p, q)` with `q < d₂`, and dually.
+Combining both regions, every nonzero grading counted by `C₊` has `d₂ p < d₁ q`
+(`mul_verticalTotal_lt_mul_horizontalTotal`) and every nonzero grading counted by `C₋` has
+`d₁ q < d₂ p` (`mul_horizontalTotal_lt_mul_verticalTotal`).
 
 ## References
 
@@ -221,16 +224,24 @@ private theorem exists_balanced_of_compatible' {γ : Edge d₁ d₂ → ℕ} (hc
   obtain ⟨e, he, hbal⟩ := hnot hv
   exact ⟨e, he, (verticalBalanced_iff γ h e).mp hbal⟩
 
-/-- **(V) for `C₊`.** Off `(0, 0)`, `C₊(p, q) = 0` when `d₁ q ≤ d₂ p`. -/
-@[simp]
-theorem cplus_eq_zero {p q : ℕ} (h0 : (p, q) ≠ (0, 0)) (hpq : d₁ * q ≤ d₂ * p) :
-    cplus d₁ d₂ P₁ P₂ p q = 0 := by
-  rcases le_or_gt d₁ p with hp | hp
-  · exact cplus_eq_zero_of_le P₁ P₂ hp h0
-  rw [cplus_def]
-  refine sum_eq_zero fun γ hγ ↦ absurd hγ ?_
-  rw [mem_filter, not_and]
-  rintro - ⟨hc, rfl, rfl, hs⟩
+/-- **Slope of the gradings counted by `C₊`.** A nonzero compatible grading whose nonzero
+vertical support lies in the total horizontal shadow has `d₂ p < d₁ q`. -/
+theorem mul_verticalTotal_lt_mul_horizontalTotal {γ : Edge d₁ d₂ → ℕ} (hc : Compatible γ)
+    (hs : verticalSupport γ ⊆ totalHorizontalShadow γ) (hγ : γ ≠ 0) :
+    d₂ * verticalTotal γ < d₁ * horizontalTotal γ := by
+  by_contra hpq
+  push Not at hpq
+  have h0 : (verticalTotal γ, horizontalTotal γ) ≠ (0, 0) := fun h ↦
+    hγ (eq_zero_of_totals_eq_zero γ (Prod.ext_iff.mp h).1 (Prod.ext_iff.mp h).2)
+  rcases le_or_gt d₁ (verticalTotal γ) with hp | hp
+  · rcases Nat.eq_zero_or_pos d₁ with hd₁ | hd₁
+    · subst hd₁
+      -- Without horizontal edges both totals vanish.
+      have hq0 := horizontalTotal_zero_left γ
+      have hp0 := verticalTotal_eq_zero_of_subset_empty γ hs (by
+        rw [← card_eq_zero, card_totalHorizontalShadow, hq0, _root_.min_zero])
+      exact h0 (by rw [hp0, hq0])
+    · exact not_compatible_of_verticalSupport_subset γ hd₁ hp hs hc
   have hd : 0 < d₁ + d₂ := by omega
   have : NeZero (d₁ + d₂) := ⟨hd.ne'⟩
   have hq : horizontalTotal γ < d₂ := by
@@ -260,16 +271,24 @@ theorem cplus_eq_zero {p q : ℕ} (h0 : (p, q) ≠ (0, 0)) (hpq : d₁ * q ≤ d
   rw [← verticalTotal_eq, compl_verticalEdges, ← horizontalTotal_eq] at hlt
   omega
 
-/-- **(V) for `C₋`.** Off `(0, 0)`, `C₋(p, q) = 0` when `d₂ p ≤ d₁ q`. -/
-@[simp]
-theorem cminus_eq_zero {p q : ℕ} (h0 : (p, q) ≠ (0, 0)) (hpq : d₂ * p ≤ d₁ * q) :
-    cminus d₁ d₂ P₁ P₂ p q = 0 := by
-  rcases le_or_gt d₂ q with hq | hq
-  · exact cminus_eq_zero_of_le P₁ P₂ hq h0
-  rw [cminus_def]
-  refine sum_eq_zero fun γ hγ ↦ absurd hγ ?_
-  rw [mem_filter, not_and]
-  rintro - ⟨hc, rfl, rfl, hs⟩
+/-- **Slope of the gradings counted by `C₋`.** A nonzero compatible grading whose nonzero
+horizontal support lies in the total vertical shadow has `d₁ q < d₂ p`. -/
+theorem mul_horizontalTotal_lt_mul_verticalTotal {γ : Edge d₁ d₂ → ℕ} (hc : Compatible γ)
+    (hs : horizontalSupport γ ⊆ totalVerticalShadow γ) (hγ : γ ≠ 0) :
+    d₁ * horizontalTotal γ < d₂ * verticalTotal γ := by
+  by_contra hpq
+  push Not at hpq
+  have h0 : (verticalTotal γ, horizontalTotal γ) ≠ (0, 0) := fun h ↦
+    hγ (eq_zero_of_totals_eq_zero γ (Prod.ext_iff.mp h).1 (Prod.ext_iff.mp h).2)
+  rcases le_or_gt d₂ (horizontalTotal γ) with hq | hq
+  · rcases Nat.eq_zero_or_pos d₂ with hd₂ | hd₂
+    · subst hd₂
+      -- Without vertical edges both totals vanish.
+      have hp0 := verticalTotal_zero_right γ
+      have hq0 := horizontalTotal_eq_zero_of_subset_empty γ hs (by
+        rw [← card_eq_zero, card_totalVerticalShadow, hp0, _root_.min_zero])
+      exact h0 (by rw [hp0, hq0])
+    · exact not_compatible_of_horizontalSupport_subset γ hd₂ hq hs hc
   have hd : 0 < d₁ + d₂ := by omega
   have : NeZero (d₁ + d₂) := ⟨hd.ne'⟩
   have hp : verticalTotal γ < d₁ := by
@@ -298,5 +317,27 @@ theorem cminus_eq_zero {p q : ℕ} (h0 : (p, q) ≠ (0, 0)) (hpq : d₂ * p ≤ 
     (by rw [← verticalTotal_eq]; exact hp0)
   rw [← verticalTotal_eq, compl_verticalEdges, ← horizontalTotal_eq] at hlt
   omega
+
+/-- **(V) for `C₊`.** Off `(0, 0)`, `C₊(p, q) = 0` when `d₁ q ≤ d₂ p`. -/
+@[simp]
+theorem cplus_eq_zero {p q : ℕ} (h0 : (p, q) ≠ (0, 0)) (hpq : d₁ * q ≤ d₂ * p) :
+    cplus d₁ d₂ P₁ P₂ p q = 0 := by
+  rw [cplus_def]
+  refine sum_eq_zero fun γ hγ ↦ absurd hγ ?_
+  rw [mem_filter, not_and]
+  rintro - ⟨hc, rfl, rfl, hs⟩
+  refine (mul_verticalTotal_lt_mul_horizontalTotal hc hs fun hγ ↦ h0 ?_).not_ge hpq
+  rw [hγ, verticalTotal_zero, horizontalTotal_zero]
+
+/-- **(V) for `C₋`.** Off `(0, 0)`, `C₋(p, q) = 0` when `d₂ p ≤ d₁ q`. -/
+@[simp]
+theorem cminus_eq_zero {p q : ℕ} (h0 : (p, q) ≠ (0, 0)) (hpq : d₂ * p ≤ d₁ * q) :
+    cminus d₁ d₂ P₁ P₂ p q = 0 := by
+  rw [cminus_def]
+  refine sum_eq_zero fun γ hγ ↦ absurd hγ ?_
+  rw [mem_filter, not_and]
+  rintro - ⟨hc, rfl, rfl, hs⟩
+  refine (mul_horizontalTotal_lt_mul_verticalTotal hc hs fun hγ ↦ h0 ?_).not_ge hpq
+  rw [hγ, verticalTotal_zero, horizontalTotal_zero]
 
 end Mei.MaximalDyckPath
