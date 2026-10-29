@@ -287,7 +287,7 @@ theorem principalBLMForm_apply (x y : Nᴮ) :
           (x (.inl i) * y (.inr i) - x (.inr i) * y (.inl i))) := by
   simp [principalBLMForm, mul_add]
 
-theorem principalBLMForm_isAlt : (B.principalBLMForm ℓ).IsAlt := fun x => by
+theorem isAlt_principalBLMForm : (B.principalBLMForm ℓ).IsAlt := fun x => by
   simp [principalBLMForm_apply, mul_comm]
 
 /-- The form pairs `a_i`, `i ∈ I_uf`, with `x` by `c d_i w_i(x)`. -/
@@ -317,7 +317,7 @@ it vanishes on the frozen `a_j` against the `c_i`. -/
 theorem principalBLMForm_single_inl_single_inr (j : ι) (i : B.unfrozenIndex) :
     B.principalBLMForm ℓ (Finsupp.single (.inl j) 1) (Finsupp.single (.inr i) 1) =
       if j = i then B.principalBLMScale ℓ * B.multiplier i else 0 := by
-  rw [← neg_neg (B.principalBLMForm ℓ _ _), (B.principalBLMForm_isAlt ℓ).neg,
+  rw [← neg_neg (B.principalBLMForm ℓ _ _), (B.isAlt_principalBLMForm ℓ).neg,
     principalBLMForm_single_inr, neg_neg]
   by_cases h : j = i <;> simp [h, eq_comm]
 
@@ -332,6 +332,8 @@ theorem principalBLMForm_single_inr_single_inr (i i' : B.unfrozenIndex) :
 private theorem exists_int_principalBLMForm_single_inl (i : B.unfrozenIndex)
     (b : ι ⊕ B.unfrozenIndex) : ∃ k : ℤ, B.principalBLMForm ℓ (Finsupp.single (.inl i) 1)
       (B.principalBLMMultiplier ℓ b • Finsupp.single b 1) = k := by
+  -- Move the second argument's multiplier next to the scale: the normalization identity
+  -- rewrites their product, whereas `rw` alone does not reorder the factors.
   rw [principalBLMForm_single_inl, map_nsmul, nsmul_eq_mul, Int.cast_mul, Int.cast_natCast,
     show ∀ x y z w : ℚ, x * y * (z * w) = z * x * y * w by intros; ring,
     cast_principalBLMMultiplier_mul_principalBLMScale]
@@ -345,6 +347,8 @@ private theorem exists_int_principalBLMForm_single_inl (i : B.unfrozenIndex)
         B.multiplier j * D.form (B.basis i) (B.basis j) := by
       simp
     refine ⟨-(ℓ j * k), ?_⟩
+    -- After evaluating the exponent, pair `premultiplier / Λ` with `d_j` so that
+    -- `premultiplier_div_mul_multiplier` applies; leave `d_i` with the original form.
     rw [hw, show ∀ x y z w : ℚ, x * y * (z * w) = x * z * (y * w) by intros; ring,
       premultiplier_div_mul_multiplier]
     push_cast
@@ -362,7 +366,7 @@ private theorem exists_int_principalBLMForm_smul_single_inl (i : B.unfrozenIndex
       (B.principalBLMMultiplier ℓ (.inl i) • Finsupp.single (.inl i) 1) = k := by
   refine ⟨-(ℓ i * B.principalBLMExponent i (Finsupp.single b 1)), ?_⟩
   rw [map_nsmul, nsmul_eq_mul, ← neg_neg (B.principalBLMForm ℓ _ _),
-    (B.principalBLMForm_isAlt ℓ).neg, principalBLMForm_single_inl]
+    (B.isAlt_principalBLMForm ℓ).neg, principalBLMForm_single_inl]
   push_cast
   rw [← premultiplier_div_mul_multiplier B ℓ i, ← cast_principalBLMMultiplier_mul_principalBLMScale]
   ring
@@ -373,7 +377,7 @@ private theorem exists_int_principalBLMForm_smul_single_inl (i : B.unfrozenIndex
 def principalBLMDatum : SkewLatticeDatum Nᴮ :=
   SkewLatticeDatum.ofBasis Finsupp.basisSingleOne (B.unfrozenIndex.map .inl)
     (B.principalBLMMultiplier ℓ) (B.principalBLMForm ℓ) (B.principalBLMMultiplier_pos ℓ)
-    (B.principalBLMForm_isAlt ℓ)
+    (B.isAlt_principalBLMForm ℓ)
     (by
       simp only [Finset.mem_map, Function.Embedding.inl_apply, forall_exists_index, and_imp,
         Finsupp.coe_basisSingleOne]
@@ -410,16 +414,9 @@ theorem principalBLMBasis_multiplier :
   simp [principalBLMBasis]
 
 /-- The unfrozen indices of the extension are those of the original adapted basis. -/
-def principalBLMUnfrozenEquiv : B.unfrozenIndex ≃ (B.principalBLMBasis ℓ).unfrozenIndex where
-  toFun i := ⟨.inl i, by simp⟩
-  invFun
-    | ⟨.inl j, h⟩ => ⟨j, by simpa using h⟩
-    | ⟨.inr _, h⟩ => absurd h (by simp)
-  left_inv _ := rfl
-  right_inv := by
-    rintro ⟨_ | _, h⟩
-    · rfl
-    · simp at h
+def principalBLMUnfrozenEquiv : B.unfrozenIndex ≃ (B.principalBLMBasis ℓ).unfrozenIndex :=
+  (Finset.equivMap Function.Embedding.inl B.unfrozenIndex).trans
+    (Equiv.subtypeEquivRight fun _ => by rw [principalBLMBasis_unfrozenIndex])
 
 @[simp]
 theorem coe_principalBLMUnfrozenEquiv (i : B.unfrozenIndex) :
@@ -464,14 +461,14 @@ def principalBLMExtension [Nonempty ι] : (B.principalBLMBasis ℓ).BLMPolynomia
 
 @[simp]
 theorem principalBLMExtension_multiplicity [Nonempty ι] (i : B.unfrozenIndex) :
-    (B.principalBLMExtension ℓ).multiplicity (B.principalBLMUnfrozenEquiv ℓ i) = ℓ i :=
-  (rfl)
+    (B.principalBLMExtension ℓ).multiplicity (B.principalBLMUnfrozenEquiv ℓ i) = ℓ i := by
+  simp [principalBLMExtension]
 
 @[simp]
 theorem principalBLMExtension_exponent [Nonempty ι] (i : B.unfrozenIndex) :
     (B.principalBLMExtension ℓ).exponent (B.principalBLMUnfrozenEquiv ℓ i) =
-      B.principalBLMExponent i :=
-  (rfl)
+      B.principalBLMExponent i := by
+  simp [principalBLMExtension]
 
 end Form
 
