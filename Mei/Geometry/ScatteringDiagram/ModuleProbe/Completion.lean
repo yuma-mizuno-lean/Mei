@@ -60,7 +60,9 @@ private theorem moduleBCHComponent_compatible (k l : ℕ) (h : k ≤ l) :
         moduleBCHComponent d ℳ p ℒ k := by
   apply MonoidHom.ext
   intro a
-  -- The tower's categorical objects are the concrete finite BCH quotients.
+  -- `groupTower_map_hom` alone leaves categorical object types in `MonoidHom.comp`;
+  -- subsequent rewrites cannot match through the unexposed `BCHGroup` wrapper.
+  -- Specify the concrete quotient types as well as the transition map.
   change ((positiveDegrees d p).truncationMap (grading d ℳ p ℒ) h).bchGroupMap
     (moduleBCHComponent d ℳ p ℒ l a) = moduleBCHComponent d ℳ p ℒ k a
   simp only [moduleBCHComponent_apply, LieHom.bchGroupMap_exp]
@@ -129,6 +131,7 @@ theorem completedModuleBCHInclusion_of (a : shiftedSubmodule ℳ d.monoid p) :
     simp only [projection_completedModuleBCHInclusion, ModuleFiltration.projection_of,
       moduleBCHInclusion_apply, toAdd_ofAdd, moduleQuotientInclusion_mk,
       PositiveDegrees.projection_expToCompletion]
+    -- `LieIdeal.mkQ` wraps the same quotient constructor as `LieSubmodule.Quotient.mk`.
     rfl
 
 end Inclusion
@@ -166,7 +169,9 @@ theorem base_conj_completedModuleBCHInclusion (g : d.completedBCHGroup ℒ)
       GradedLieHom.projection_completedMap_of_le (baseGradedLieHom d ℳ p ℒ)
         (k + 1) (by simp) g
     have hg := CompletedGroup.map_projection k (k + 1) (Nat.le_succ k) g
-    -- Express the categorical tower transition as the concrete BCH quotient map.
+    -- `map_projection` uses `ConcreteCategory.hom`, which `groupTower_map_hom`
+    -- does not match directly. This also identifies the categorical object types
+    -- with the concrete BCH quotients, avoiding unexposed-wrapper rewrite failures.
     change (d.truncationMap ℒ (Nat.le_succ k)).bchGroupMap
       (CompletedGroup.projection (k + 1) g) = CompletedGroup.projection k g at hg
     have hc := base_conj_moduleBCHInclusion d ℳ p ℒ k
