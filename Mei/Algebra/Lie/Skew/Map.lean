@@ -110,9 +110,9 @@ theorem coe_gradedMap_apply (x : positiveLieAlgebra β hβ d) :
 variable [Algebra ℚ R] [DecidableEq Γ] [DecidableEq Γ']
 
 /-- A truncated skew map transports a projected ray label by scaling its power series.
-The source order must cover both the target order and the degree map's modulus. -/
+The source order need only cover the degree map's modulus at the target order. -/
 theorem truncatedMap_gradedMap_projection_rayExp {n : Γ} (hn : n ∈ d.monoid) (hn0 : n ≠ 0)
-    (g : PowerSeries R) (k a : ℕ) (hka : k ≤ a) (hma : T.modulus k ≤ a) :
+    (g : PowerSeries R) (k a : ℕ) (hma : T.modulus k ≤ a) :
     ((gradedMap β hβ β' hβ' c T hT).truncatedMap k hma).bchGroupMap
         (CompletedGroup.projection a (rayExp β hβ hn hn0 g)) =
       CompletedGroup.projection k
@@ -131,7 +131,22 @@ theorem truncatedMap_gradedMap_projection_rayExp {n : Γ} (hn : n ∈ d.monoid) 
       rayPartialSum β' hβ' (T.map_mem hn) (T.map_ne_zero hn hn0) a (c • g) := by
     simp only [rayPartialSum_apply, _root_.map_sum, hgen]
   rw [hsum]
-  exact (Submodule.Quotient.eq _).mpr
-    (rayPartialSum_sub_mem β' hβ' (T.map_mem hn) (T.map_ne_zero hn hn0) hka (c • g))
+  by_cases hka : k ≤ a
+  · exact (Submodule.Quotient.eq _).mpr
+      (rayPartialSum_sub_mem β' hβ' (T.map_mem hn) (T.map_ne_zero hn hn0) hka (c • g))
+  · -- When the source cutoff is smaller, the modulus still kills the omitted target terms.
+    have hak : a ≤ k := by omega
+    symm
+    apply (Submodule.Quotient.eq _).mpr
+    rw [rayPartialSum_apply, rayPartialSum_apply, ← Finset.sum_range_add_sum_Ico _ hak,
+      add_sub_cancel_left]
+    refine Submodule.sum_mem (e.degreeIdeal (positiveGrading β' hβ' e) k).toSubmodule
+      fun j hj => ?_
+    apply e.le_degreeIdeal _ _ (rayGenerator_mem β' hβ' (T.map_mem hn)
+      (T.map_ne_zero hn hn0) j _)
+    rw [← T.toAddMonoidHom.map_nsmul]
+    apply T.degree_gt k (d.monoid.nsmul_mem hn (j + 1))
+    exact lt_of_le_of_lt (by exact_mod_cast le_trans hma (Finset.mem_Ico.mp hj).1)
+      (d.lt_degree_succ_nsmul hn hn0 j)
 
 end Mei.SkewLieAlgebra

@@ -275,7 +275,7 @@ theorem rayExp_smul_negDilogNeg_pentagon {n₁ n₂ : Γ} (hn₁ : n₁ ∈ d.mo
           (Ψ (T.map_mem hv) (T.map_ne_zero hv hv0) (c • negDilogNeg R)) := by
     exact SkewLieAlgebra.truncatedMap_gradedMap_projection_rayExp
       (E.coefficientForm R) (E.isAlt_coefficientForm R) β hβ c T hform
-      hv hv0 (negDilogNeg R) k k le_rfl hk
+      hv hv0 (negDilogNeg R) k k hk
   simp only [hmap] at h
   have hTapply (v : E.unfrozen) : T v = f v :=
     PositiveDegreeMap.ofBound_apply _ _ _ _ v
