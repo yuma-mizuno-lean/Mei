@@ -172,14 +172,6 @@ end Filtration
 
 variable [CommRing R]
 
-/-- The polynomial dictionary identifies the native principal filtration with the
-filtration by powers of the ideal of variables. -/
-theorem comap_ofIdeal_principalCoefficientPolynomialEquiv (k : ℕ) :
-    ((AlgFiltration.ofIdeal (MvPolynomial.idealOfVars ι R[M])).ideal k).comap
-      (D.principalCoefficientPolynomialEquiv d e).toAlgHom = (F).ideal k := by
-  simpa only [AlgFiltration.ofIdeal_ideal] using
-    D.comap_idealOfVars_pow_principalCoefficientPolynomialEquiv d e he k
-
 variable [Finite ι]
 
 /-- The completion of the native principal coefficient algebra is the power
@@ -188,7 +180,8 @@ def principalCoefficientCompletionEquiv :
     (F).completion ≃ₐ[R] MvPowerSeries ι R[M] :=
   ((F).completionEquiv (AlgFiltration.ofIdeal (MvPolynomial.idealOfVars ι R[M]))
     (D.principalCoefficientPolynomialEquiv d e)
-    (D.comap_ofIdeal_principalCoefficientPolynomialEquiv d e he)).trans
+    (by simpa only [AlgFiltration.ofIdeal_ideal] using
+      D.comap_idealOfVars_pow_principalCoefficientPolynomialEquiv (R := R) d e he)).trans
     ((principalCompletionEquiv ι R[M]).restrictScalars R)
 
 /-- The completed dictionary is the completion of the polynomial dictionary followed by
@@ -198,7 +191,8 @@ theorem principalCoefficientCompletionEquiv_apply (x : (F).completion) :
       principalCompletionEquiv ι R[M] ((F).completionEquiv
         (AlgFiltration.ofIdeal (MvPolynomial.idealOfVars ι R[M]))
         (D.principalCoefficientPolynomialEquiv d e)
-        (D.comap_ofIdeal_principalCoefficientPolynomialEquiv d e he) x) :=
+        (by simpa only [AlgFiltration.ofIdeal_ideal] using
+          D.comap_idealOfVars_pow_principalCoefficientPolynomialEquiv (R := R) d e he) x) :=
   (rfl)
 
 /-- Completing a finite principal coefficient expression gives its polynomial

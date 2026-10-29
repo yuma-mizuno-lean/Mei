@@ -17,7 +17,7 @@ positivity criterion proved for one presentation of a filtered algebra, such as
 power series in free coordinates, be read on another presentation with the same
 completion, such as a coefficient monoid algebra with its monomial filtration.
 
-The proof compares finite projections through `Mei.AlgFiltration.completionEquiv`.
+The proof uses `Mei.PositiveSpecialization.map_isPositive` to transport positivity.
 -/
 
 public section
@@ -33,11 +33,18 @@ variable {R A B : Type*} [CommRing R] [Ring A] [Algebra R A] [Ring B] [Algebra R
 positive for `P` to elements positive for `P'`. -/
 theorem IsPositive.completionEquiv (hP : ∀ a ∈ P, e a ∈ P') {x : F.completion}
     (hx : F.IsPositive P x) : G.IsPositive P' (F.completionEquiv G e he x) := by
-  rw [isPositive_iff]
+  let φ : PositiveSpecialization F G P P' :=
+    { toRingHom := e.toRingHom
+      exists_modulus := ⟨id, monotone_id, fun k => (he (k + 1)).ge⟩
+      map_mem := hP }
+  suffices F.completionEquiv G e he x = φ.completionMap x by
+    rw [this]
+    exact φ.map_isPositive hx
+  rw [φ.completionMap_eq_mapCompletion id monotone_id (fun k => (he (k + 1)).ge)]
+  apply G.completion_ext
   intro k
-  obtain ⟨a, ha, hax⟩ := (isPositive_iff F P x).mp hx k
-  refine ⟨e a, hP a ha, ?_⟩
-  rw [projection_completionEquiv, ← hax, Ideal.quotient_map_mkₐ, Ideal.Quotient.mkₐ_eq_mk]
+  rw [projection_completionEquiv,
+    F.projection_mapCompletion G φ.toRingHom id monotone_id (fun k => (he (k + 1)).ge)]
   rfl
 
 variable (F G e he) in

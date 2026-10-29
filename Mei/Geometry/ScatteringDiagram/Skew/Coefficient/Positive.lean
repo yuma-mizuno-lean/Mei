@@ -61,8 +61,11 @@ theorem isPositive_principalCoefficientCompletion_iff (φ : S →+* R) (x : (F).
         (MvPowerSeries.coeff n (D.principalCoefficientCompletionEquiv d e he x)).coeff m ∈
           φ.rangeS := by
   rw [principalCoefficientCompletionEquiv_apply,
-    ← AlgFiltration.isPositive_completionEquiv_iff _ _ _
-      (D.comap_ofIdeal_principalCoefficientPolynomialEquiv d e he)
+    ← AlgFiltration.isPositive_completionEquiv_iff _
+      (AlgFiltration.ofIdeal (MvPolynomial.idealOfVars ι R[M]))
+      (D.principalCoefficientPolynomialEquiv d e)
+      (by simpa only [AlgFiltration.ofIdeal_ideal] using
+        D.comap_idealOfVars_pow_principalCoefficientPolynomialEquiv (R := R) d e he)
       (D.principalCoefficientPolynomialEquiv_mem_rangeS_iff d e φ),
     AlgFiltration.isPositive_principalCompletion_iff]
   refine forall_congr' fun n => ?_
@@ -81,8 +84,11 @@ theorem isPositive_principalCoefficientCompletion_natPolynomial_iff {A : Type*}
         ((MvPowerSeries.coeff n (D.principalCoefficientCompletionEquiv d e he x)).coeff m).coeff
           a = c := by
   rw [principalCoefficientCompletionEquiv_apply,
-    ← AlgFiltration.isPositive_completionEquiv_iff _ _ _
-      (D.comap_ofIdeal_principalCoefficientPolynomialEquiv d e he)
+    ← AlgFiltration.isPositive_completionEquiv_iff _
+      (AlgFiltration.ofIdeal (MvPolynomial.idealOfVars ι (MvPolynomial A ℚ)[M]))
+      (D.principalCoefficientPolynomialEquiv d e)
+      (by simpa only [AlgFiltration.ofIdeal_ideal] using
+        D.comap_idealOfVars_pow_principalCoefficientPolynomialEquiv (R := MvPolynomial A ℚ) d e he)
       (D.principalCoefficientPolynomialEquiv_mem_rangeS_iff d e _),
     AlgFiltration.isPositive_principalCompletion_natPolynomial_iff]
 
