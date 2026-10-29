@@ -17,9 +17,9 @@ specified sets. In contrast to wall encounters, singular encounters are forbidde
 even at recorded times.
 
 For finitely many closed rational-normal singular cells and lattice directions,
-this domain is rational semilinear. Intersecting it with the wall-avoidance and
-incoming-source domains therefore supplies the singular-set condition in valid
-endpoint charts, with the existing finite disjoint locally closed decomposition.
+this domain is rational semilinear. Since rational semilinearity is closed under
+finite intersections, `IsRationalSemilinear.exists_disjoint_intrinsicInteriors`
+decomposes its intersection with any other rational semilinear domain.
 No codimension assumption is needed for this domain calculation.
 
 We reuse `backwardRay_avoids_iff`, the finite-segment and incoming-ray avoidance
@@ -111,9 +111,8 @@ variable {N : Type*} [AddCommGroup N] {i : N →+ V}
 
 /-- Avoidance of a finite family of closed rational-normal singular cells along
 the whole realized ray preserves rational semilinearity of the endpoint domain.
-Selected supports may themselves be semilinear; offsets are arbitrary real numbers.
-Thus the finite disjoint locally closed decomposition applies after imposing this
-condition as well as wall avoidance and incoming-source admission. -/
+The incoming source is unrestricted. Selected supports may themselves be semilinear;
+offsets are arbitrary real numbers. -/
 theorem isRationalSemilinear_backwardSingularAvoidanceDomain [Finite J]
     (w : Fin (n + 1) → N)
     (hf : ∀ j, Toric.IsRationalFunctional h (f j).toLinearMap)
