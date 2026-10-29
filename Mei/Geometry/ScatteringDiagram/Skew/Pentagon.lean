@@ -9,7 +9,7 @@ public import Mei.Geometry.ScatteringDiagram.Skew.Coefficient
 public import Mei.Geometry.ScatteringDiagram.Skew.Dilogarithm
 public import Mei.Geometry.ScatteringDiagram.Skew.Examples
 public import Mei.Algebra.Lie.Skew.Map
-public import Mei.Algebra.Ring.Units
+public import Mei.Algebra.Group.Units.Hom
 public import Mei.Algebra.PositiveDegrees.Basis
 
 /-!
