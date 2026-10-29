@@ -100,16 +100,22 @@ theorem prod_apply (β : FiniteAffineRay V P) (γ : FiniteAffineRay W Q) (t : �
   · simpa only [map_snd_prod, AffineMap.coe_snd, AffineMap.snd_linear,
     LinearMap.snd_apply] using (map_apply (β.prod γ) (AffineMap.snd : P × Q →ᵃ[ℝ] Q) t).symm
 
+omit [Module ℝ V] [Module ℝ W] [AddTorsor V P] [AddTorsor W Q] in
 @[simp]
 theorem incomingDirection_prod (β : FiniteAffineRay V P) (γ : FiniteAffineRay W Q) :
     (β.prod γ).incomingDirection = (β.incomingDirection, γ.incomingDirection) := by
-  apply Prod.ext
-  · simpa only [map_fst_prod, AffineMap.coe_fst, AffineMap.fst_linear,
-    LinearMap.fst_apply] using
-      (incomingDirection_map (β.prod γ) (AffineMap.fst : P × Q →ᵃ[ℝ] P)).symm
-  · simpa only [map_snd_prod, AffineMap.coe_snd, AffineMap.snd_linear,
-    LinearMap.snd_apply] using
-      (incomingDirection_map (β.prod γ) (AffineMap.snd : P × Q →ᵃ[ℝ] Q)).symm
+  classical
+  simp only [incomingDirection_def, direction_prod]
+  rw [Finsupp.sum_of_support_subset (β.prod γ).bends
+      (s := β.bends.support ∪ γ.bends.support) (by
+        intro b hb
+        simpa only [Finset.mem_union, Finsupp.mem_support_iff, bends_prod_apply,
+          ne_eq, Prod.mk_eq_zero, not_and_or] using hb) _ (by simp),
+    Finsupp.sum_of_support_subset β.bends
+      (s := β.bends.support ∪ γ.bends.support) Finset.subset_union_left _ (by simp),
+    Finsupp.sum_of_support_subset γ.bends
+      (s := β.bends.support ∪ γ.bends.support) Finset.subset_union_right _ (by simp)]
+  apply Prod.ext <;> simp [Prod.fst_sum, Prod.snd_sum]
 
 @[simp]
 theorem incomingReference_prod (β : FiniteAffineRay V P) (γ : FiniteAffineRay W Q) :
@@ -122,16 +128,22 @@ theorem incomingReference_prod (β : FiniteAffineRay V P) (γ : FiniteAffineRay 
     LinearMap.snd_apply] using
       (incomingReference_map (β.prod γ) (AffineMap.snd : P × Q →ᵃ[ℝ] Q)).symm
 
+omit [Module ℝ V] [Module ℝ W] [AddTorsor V P] [AddTorsor W Q] in
 @[simp]
 theorem directionAt_prod (β : FiniteAffineRay V P) (γ : FiniteAffineRay W Q) (t : ℝ) :
     (β.prod γ).directionAt t = (β.directionAt t, γ.directionAt t) := by
-  apply Prod.ext
-  · simpa only [map_fst_prod, AffineMap.coe_fst, AffineMap.fst_linear,
-    LinearMap.fst_apply] using
-      (directionAt_map (β.prod γ) (AffineMap.fst : P × Q →ᵃ[ℝ] P) t).symm
-  · simpa only [map_snd_prod, AffineMap.coe_snd, AffineMap.snd_linear,
-    LinearMap.snd_apply] using
-      (directionAt_map (β.prod γ) (AffineMap.snd : P × Q →ᵃ[ℝ] Q) t).symm
+  classical
+  simp only [directionAt_def, direction_prod]
+  rw [Finsupp.sum_of_support_subset (β.prod γ).bends
+      (s := β.bends.support ∪ γ.bends.support) (by
+        intro b hb
+        simpa only [Finset.mem_union, Finsupp.mem_support_iff, bends_prod_apply,
+          ne_eq, Prod.mk_eq_zero, not_and_or] using hb) _ (by simp),
+    Finsupp.sum_of_support_subset β.bends
+      (s := β.bends.support ∪ γ.bends.support) Finset.subset_union_left _ (by simp),
+    Finsupp.sum_of_support_subset γ.bends
+      (s := β.bends.support ∪ γ.bends.support) Finset.subset_union_right _ (by simp)]
+  apply Prod.ext <;> simp [Prod.fst_sum, Prod.snd_sum, apply_ite]
 
 /-- Given the forgotten endpoint, final direction and increments, there is exactly
 one lift of the projected ray with those finite affine data. -/
