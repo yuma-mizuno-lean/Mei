@@ -36,7 +36,7 @@ noncomputable section
 
 namespace Mei.FocusFocus
 
-open TauCeti LaurentPolynomial Module
+open TauCeti _root_.LaurentPolynomial Module
 
 variable {S : Type*} [CommRing S] (t : S) (k : ℕ)
 
@@ -51,7 +51,7 @@ def algebraEquiv (ht : t ^ (k + 1) = 0) :
     SlabNode t ≃ₐ[S[T;T⁻¹]] NodeAlgebra.slabAlgebra (C t) (1 + T 1) k :=
   NodeAlgebra.slabEquiv _ (by rw [← map_pow, ht, map_zero]) fun j c h => by
     rw [← map_pow] at h ⊢
-    exact C_dvd_of_C_dvd_one_add_T_mul h
+    exact LaurentPolynomial.C_dvd_of_C_dvd_one_add_T_mul h
 
 /-- The focus-focus isomorphism is the general slab comparison map. -/
 @[simp]

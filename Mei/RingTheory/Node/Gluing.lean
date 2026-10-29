@@ -7,7 +7,6 @@ module
 
 public import Mei.LinearAlgebra.Basis.Diagonal
 public import Mei.RingTheory.Node.NormalForm
-public import Mathlib.RingTheory.Localization.Away.Basic
 
 /-!
 # Gluing truncated chambers of a node
@@ -19,9 +18,10 @@ Let `t, f : R` with `t^(k+1) = 0`. The left and right chambers
 is the *slab algebra*. If `f` is a nonzerodivisor modulo every power of `t`, then the slab
 algebra is the nodal algebra `R[X,Y]/(XY - tf)`, by `X ↦ (x, f x)` and `Y ↦ (f y, y)`.
 
-The proof compares monomial normal forms. In the chambers these are the normal forms of
-`R[x,y]/(xy-t)` with the coordinates of `x^n`, respectively `y^(d+1)`, divisible by
-`t^(k+1-n)`, respectively `t^(k-d)`, and the other coordinates zero.
+The proof compares monomial normal forms in `R[x,y]/(xy-t)`. The kernel `(y^(k+1))` of the
+left chamber quotient has zero `x^n`-coordinates and `y^(d+1)`-coordinates divisible by
+`t^(k-d)`. The kernel `(x^(k+1))` of the right chamber quotient has zero
+`y^(d+1)`-coordinates and `x^n`-coordinates divisible by `t^(k+1-n)`.
 The localized overlap is handled by clearing the denominators of the left gluing map.
 
 For the focus-focus singularity, `R = S[w^{±1}]` with `S = K[t]/(t^(k+1))` and `f = 1 + w`;
@@ -253,6 +253,7 @@ def slabAlgebra : Subalgebra R (LeftChamber t k × RightChamber t k) :=
     ((rightGluing t f k).comp (AlgHom.snd R _ _))
 
 /-- A pair lies in the slab algebra exactly when its two gluing images agree. -/
+@[simp]
 theorem mem_slabAlgebra_iff {p : LeftChamber t k × RightChamber t k} :
     p ∈ slabAlgebra t f k ↔ leftGluing t f k p.1 = rightGluing t f k p.2 := Iff.rfl
 
@@ -390,11 +391,13 @@ theorem toSlabAlgebra_injective (ht : t ^ (k + 1) = 0) :
     Function.Injective (toSlabAlgebra t f k) := by
   refine (injective_iff_map_eq_zero _).mpr fun z hz => ?_
   have h₁ : scaleCoordOne t f z ∈ Ideal.span {coord t 1 ^ (k + 1)} :=
-    Ideal.Quotient.eq_zero_iff_mem.mp
-      (congrArg (fun p : slabAlgebra t f k => (p : LeftChamber t k × RightChamber t k).1) hz)
+    Ideal.Quotient.eq_zero_iff_mem.mp (by
+      simpa only [coe_toSlabAlgebra, ZeroMemClass.coe_zero, Prod.fst_zero] using
+        congrArg (fun p : slabAlgebra t f k => (p : LeftChamber t k × RightChamber t k).1) hz)
   have h₂ : scaleCoordZero t f z ∈ Ideal.span {coord t 0 ^ (k + 1)} :=
-    Ideal.Quotient.eq_zero_iff_mem.mp
-      (congrArg (fun p : slabAlgebra t f k => (p : LeftChamber t k × RightChamber t k).2) hz)
+    Ideal.Quotient.eq_zero_iff_mem.mp (by
+      simpa only [coe_toSlabAlgebra, ZeroMemClass.coe_zero, Prod.snd_zero] using
+        congrArg (fun p : slabAlgebra t f k => (p : LeftChamber t k × RightChamber t k).2) hz)
   apply (normalFormBasis (t * f)).repr.injective
   ext i
   rw [map_zero, Finsupp.zero_apply]

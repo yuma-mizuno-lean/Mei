@@ -18,14 +18,14 @@ This is the regularity of a gluing function `1 + w` on truncated Laurent coeffic
 
 public section
 
-namespace LaurentPolynomial
+namespace Mei.LaurentPolynomial
 
-open AddMonoidAlgebra
+open AddMonoidAlgebra _root_.LaurentPolynomial
 
 variable {R : Type*}
 
 /-- A Laurent polynomial is divisible by a constant exactly when all its coefficients are. -/
-theorem C_dvd_iff_dvd_coeff [CommSemiring R] (a : R) (p : R[T;T⁻¹]) :
+theorem C_dvd_iff_dvd_coeff [Semiring R] (a : R) (p : R[T;T⁻¹]) :
     C a ∣ p ↔ ∀ n, a ∣ p.coeff n := by
   classical
   constructor
@@ -33,19 +33,18 @@ theorem C_dvd_iff_dvd_coeff [CommSemiring R] (a : R) (p : R[T;T⁻¹]) :
     rw [← single_eq_C, coeff_single_zero_mul]
     exact dvd_mul_right _ _
   · intro h
-    let g : R → R := fun r => if hr : r ≠ 0 ∧ a ∣ r then hr.2.choose else 0
-    have hg (r : R) (hr : a ∣ r) : a * g r = r := by
-      simp only [g]
-      split_ifs with h'
-      · exact h'.2.choose_spec.symm
-      · simp_all
-    refine ⟨(coeffLinearEquiv R).symm (p.coeff.mapRange g (by simp [g])),
-      LaurentPolynomial.ext fun n => ?_⟩
+    have hp : p.coeff ∈ Set.range (Finsupp.mapRange (fun r => a * r) (mul_zero a)) := by
+      rw [Finsupp.range_mapRange]
+      intro n
+      obtain ⟨r, hr⟩ := h n
+      exact ⟨r, hr.symm⟩
+    obtain ⟨q, hq⟩ := hp
+    refine ⟨(coeffLinearEquiv R).symm q, _root_.LaurentPolynomial.ext fun n => ?_⟩
     rw [← single_eq_C, coeff_single_zero_mul]
-    simp [hg _ (h n)]
+    simpa using congrArg (fun c : ℤ →₀ R => c n) hq.symm
 
 /-- Multiplication by `1 + T` is injective modulo a constant. -/
-theorem C_dvd_of_C_dvd_one_add_T_mul [CommRing R] {a : R} {p : R[T;T⁻¹]}
+theorem C_dvd_of_C_dvd_one_add_T_mul [Ring R] {a : R} {p : R[T;T⁻¹]}
     (h : C a ∣ (1 + T 1) * p) : C a ∣ p := by
   rw [C_dvd_iff_dvd_coeff] at h ⊢
   have hcoeff (n : ℤ) : a ∣ p.coeff n + p.coeff (n - 1) := by
@@ -70,4 +69,4 @@ theorem C_dvd_of_C_dvd_one_add_T_mul [CommRing R] {a : R} {p : R[T;T⁻¹]}
   · have := hup (n - N).toNat
     rwa [Int.toNat_of_nonneg (by omega), add_sub_cancel] at this
 
-end LaurentPolynomial
+end Mei.LaurentPolynomial
