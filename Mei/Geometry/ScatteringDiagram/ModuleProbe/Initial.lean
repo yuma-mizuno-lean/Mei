@@ -126,9 +126,7 @@ theorem baseCylinder_support_eq_hyperplane (W : DirectedWall (d := d) h H) {c : 
       {x | (h.prod h').realCharacter (baseCylinder d ℳ p ℒ H h h' W).normal x = c} := by
   have hn : (h.prod h').realCharacter (baseCylinder d ℳ p ℒ H h h' W).normal =
       (h.realCharacter W.normal).comp (LinearMap.fst ℝ V E) := by
-    rw [baseCylinder_normal, baseNormal_def]
-    exact (h.prod h').realCharacter_comp h (AddMonoidHom.fst Λ (ℤ × ℤ))
-      (LinearMap.fst ℝ V E) (fun _ => rfl) W.normal
+    exact (baseProjectedWall d ℳ p ℒ H h W).realCharacter_cylinder_normal h'
   ext x
   rw [hn]
   simp [baseCylinder_support, hW]
@@ -217,8 +215,7 @@ theorem projection_probeWall_label_eq_one_iff (a : ℳ p) (k : ℕ) :
     simp only [positiveDegrees_degree, mul_one]
     omega
   rw [hz, hd] at he
-  simpa only [probeWall_label, initialCoefficient,
-    show (k : ℤ) < 1 ↔ k = 0 by omega] using he
+  simpa only [probeWall_label, initialCoefficient, Nat.cast_lt_one] using he
 
 variable [LieAlgebra ℚ L] [IsScalarTower ℚ R L]
 
