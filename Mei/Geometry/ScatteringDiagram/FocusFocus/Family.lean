@@ -7,8 +7,6 @@ module
 
 public import Mei.Geometry.ScatteringDiagram.FocusFocus.Decorated
 public import Mei.Analysis.Convex.Sign
-public import Mei.Geometry.Convex.Polyhedron.Rational.LocallyClosed
-public import Mei.Geometry.Convex.Polyhedron.SignCell.Interior
 public import Mei.Geometry.Convex.Sweep.Degeneration
 
 /-!
@@ -106,13 +104,6 @@ theorem mem_closure_slabBranchDomain {n : ℤ} (hn : n ≠ 0) (q : ℤ)
     simp [Convex.mem_weakSignCell, Bool.forall_bool, slabRows, slabSigns,
       smul_eq_mul, div_eq_mul_inv, mul_comm, mul_assoc]
 
-/-- The relative interior of each closed chart is exactly its valid endpoint domain. -/
-@[simp]
-theorem intrinsicInterior_closure_slabBranchDomain (n q : ℤ) (upper : Bool) :
-    intrinsicInterior ℝ (closure (slabBranchDomain n q upper)) =
-      slabBranchDomain n q upper :=
-  Convex.intrinsicInterior_closure_signCell
-
 /-- Boundary points represent terminal face crossings or singular-origin encounters. -/
 theorem slabBranchDomain_boundary {n : ℤ} (hn : n ≠ 0) (q : ℤ)
     (upper : Bool) {Q : ℝ × ℝ} (hQ : Q ∈ closure (slabBranchDomain n q upper))
@@ -152,18 +143,7 @@ theorem isLocallyClosedPolyhedron_slabBranchDomain (n q : ℤ) (upper : Bool) :
     IsLocallyClosedPolyhedron h (slabBranchDomain n q upper) :=
   isLocallyClosedPolyhedron_signCell _ (rational_slabRows h n q) _
 
-/-- The closed endpoint charts are rational-normal polyhedra, including for a
-zero horizontal exponent, when the chart is empty. -/
-theorem isRationalNormalPolyhedron_closure_slabBranchDomain (n q : ℤ) (upper : Bool) :
-    IsRationalNormalPolyhedron h (closure (slabBranchDomain n q upper)) :=
-  (isLocallyClosedPolyhedron_slabBranchDomain h n q upper).isRationalNormalPolyhedron_closure
-
 end Rational
-
-/-- A closed branch chart has a proper endpoint embedding into the plane. -/
-theorem isProperMap_slabBranchDomain (n q : ℤ) (upper : Bool) :
-    IsProperMap (fun Q : closure (slabBranchDomain n q upper) => (Q : ℝ × ℝ)) :=
-  isClosed_closure.isProperMap_subtypeVal
 
 /-- The hinge extension of a branch, defined continuously for all endpoints.
 It allows zero encounter time and singular encounters on the closed charts. -/
@@ -275,29 +255,58 @@ theorem slabChartIndexEquiv_symm_apply (Q : ℝ × ℝ) (hQ : Q.1 / (n : ℝ) < 
 
 /-- The endpoint fiber of the finite chart family is precisely the actual decorated
 slab-ray fiber, preserving the binomial index and its whole homogeneous decoration. -/
-def slabChartEquiv (Q : ℝ × ℝ) (hQ : Q.1 / (n : ℝ) < 0) :
+def slabChartEquiv (Q : ℝ × ℝ) :
     {α : SlabChartIndex t c n // Q ∈ slabBranchDomain n (b + α.1.val.val) α.2} ≃
-      SlabBrokenLine t c n b Q :=
-  (slabChartIndexEquiv t c n b Q hQ).trans (slabBrokenLineEquiv t c n b Q hQ)
+      SlabBrokenLine t c n b Q where
+  toFun α :=
+    let hQ := ((mem_slabBranchDomain _ _ _ _).mp α.property).1
+    slabBrokenLineEquiv t c n b Q hQ (slabChartIndexEquiv t c n b Q hQ α)
+  invFun β := (slabChartIndexEquiv t c n b Q β.opposite).symm
+    ((slabBrokenLineEquiv t c n b Q β.opposite).symm β)
+  left_inv α :=
+    let hQ := ((mem_slabBranchDomain _ _ _ _).mp α.property).1
+    ((slabChartIndexEquiv t c n b Q hQ).trans
+      (slabBrokenLineEquiv t c n b Q hQ)).symm_apply_apply α
+  right_inv β :=
+    ((slabChartIndexEquiv t c n b Q β.opposite).trans
+      (slabBrokenLineEquiv t c n b Q β.opposite)).apply_symm_apply β
+
+/-- The fiber equivalence preserves the binomial index in its outgoing degree. -/
+@[simp]
+theorem degree_slabChartEquiv (Q : ℝ × ℝ)
+    (α : {α : SlabChartIndex t c n // Q ∈ slabBranchDomain n (b + α.1.val.val) α.2}) :
+    (slabChartEquiv t c n b Q α).degree =
+      (-(n.natAbs : ℤ), b + α.val.1.val.val) := by
+  simp only [slabChartEquiv, Equiv.coe_fn_mk, slabBrokenLineEquiv_apply,
+    degree_slabBrokenLine, slabChartIndexEquiv_apply_val]
+
+/-- The inverse fiber equivalence recovers the binomial index and its encounter
+sign using the decorated ray's opposite-chamber condition. -/
+@[simp]
+theorem slabChartEquiv_symm_apply (Q : ℝ × ℝ) (β : SlabBrokenLine t c n b Q) :
+    (slabChartEquiv t c n b Q).symm β =
+      (slabChartIndexEquiv t c n b Q β.opposite).symm
+        ((slabBrokenLineEquiv t c n b Q β.opposite).symm β) := (rfl)
 
 /-- Decorations are constant throughout each chart, over arbitrary coefficient rings. -/
 @[simp]
-theorem decoration_slabChartEquiv (Q : ℝ × ℝ) (hQ : Q.1 / (n : ℝ) < 0)
+theorem decoration_slabChartEquiv (Q : ℝ × ℝ)
     (α : {α : SlabChartIndex t c n // Q ∈ slabBranchDomain n (b + α.1.val.val) α.2}) :
-    (slabChartEquiv t c n b Q hQ α).decoration =
+    (slabChartEquiv t c n b Q α).decoration =
       AddMonoidAlgebra.single (-(n.natAbs : ℤ), b + α.val.1.val.val)
         (c * t ^ n.natAbs * (n.natAbs.choose α.val.1.val.val : R)) := by
-  rw [slabChartEquiv, Equiv.trans_apply, slabBrokenLineEquiv_apply]
-  exact decoration_slabBrokenLine t c n b Q hQ _
+  simp only [slabChartEquiv, Equiv.coe_fn_mk, slabBrokenLineEquiv_apply,
+    decoration_slabBrokenLine, slabChartIndexEquiv_apply_val]
 
 /-- Throughout an upper or lower chart, one fixed incoming exponent gives the
 continuous closed-chart path. Thus the chart transition does not change in a limit. -/
-theorem ray_slabChartEquiv (Q : ℝ × ℝ) (hQ : Q.1 / (n : ℝ) < 0)
+theorem ray_slabChartEquiv (Q : ℝ × ℝ)
     (α : {α : SlabChartIndex t c n // Q ∈ slabBranchDomain n (b + α.1.val.val) α.2}) :
-    (slabChartEquiv t c n b Q hQ α).ray.toContinuousMap =
+    (slabChartEquiv t c n b Q α).ray.toContinuousMap =
       slabBranchPath n (if α.val.2 then b + n.natAbs else b)
         (b + α.val.1.val.val) Q := by
-  rw [slabChartEquiv, Equiv.trans_apply, slabBrokenLineEquiv_apply, ray_slabBrokenLine]
+  simp only [slabChartEquiv, Equiv.coe_fn_mk, slabBrokenLineEquiv_apply,
+    ray_slabBrokenLine, slabChartIndexEquiv_apply_val]
   rw [← slabBranchPath_eq_slabBranch]
   congr 2
   have hs := (mem_slabBranchDomain _ _ _ _).mp α.property
@@ -308,15 +317,15 @@ theorem ray_slabChartEquiv (Q : ℝ × ℝ) (hQ : Q.1 / (n : ℝ) < 0)
 open Classical in
 /-- Weighted evaluation is the sum of the fixed decorations on the admitted charts.
 No genericity assumption is required; singular branches are absent from the fiber. -/
-theorem slabWeightedEvaluation_eq_sum_charts (Q : ℝ × ℝ) (hQ : Q.1 / (n : ℝ) < 0) :
+theorem slabWeightedEvaluation_eq_sum_charts (Q : ℝ × ℝ) :
     slabWeightedEvaluation t c n b Q =
       ∑ α : {α : SlabChartIndex t c n // Q ∈ slabBranchDomain n (b + α.1.val.val) α.2},
         AddMonoidAlgebra.single (-(n.natAbs : ℤ), b + α.val.1.val.val)
           (c * t ^ n.natAbs * (n.natAbs.choose α.val.1.val.val : R)) := by
   classical
   rw [slabWeightedEvaluation_def]
-  exact (Fintype.sum_equiv (slabChartEquiv t c n b Q hQ) _ _
-    (fun α => (decoration_slabChartEquiv t c n b Q hQ α).symm)).symm
+  exact (Fintype.sum_equiv (slabChartEquiv t c n b Q) _ _
+    (fun α => (decoration_slabChartEquiv t c n b Q α).symm)).symm
 
 end Decorated
 
