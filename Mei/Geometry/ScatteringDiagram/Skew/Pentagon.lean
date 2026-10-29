@@ -5,7 +5,6 @@ Authors: Claude Code
 -/
 module
 
-public import Mei.Geometry.ScatteringDiagram.Skew.Coefficient
 public import Mei.Geometry.ScatteringDiagram.Skew.Dilogarithm
 public import Mei.Geometry.ScatteringDiagram.Skew.Examples
 public import Mei.Algebra.Lie.Skew.Map
