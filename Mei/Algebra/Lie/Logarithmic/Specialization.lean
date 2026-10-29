@@ -23,6 +23,9 @@ provided by the existing graded-map constructions. Weights specified only on a
 coefficient monoid are handled by `coefficientMonoidGradedLieHom`. These weights
 may vanish even over a nontrivial ring. The construction has identity and
 composition laws and agrees with ambient specialization when the weight extends.
+Monoid-local specialization restricts to the selected character subalgebras
+`tropicalSubalgebra ρ U d → tropicalSubalgebra ρ V d` as a graded Lie map over `K`
+whenever `φ ∘ m ∈ V` for every `m ∈ U`.
 The coefficient-action comparison applies to any monomial algebra map with the
 same generator formula.
 
