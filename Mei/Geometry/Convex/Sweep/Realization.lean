@@ -38,8 +38,7 @@ variable {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
 /-- Path parameters of successive backward encounters, obtained by subtracting
 elapsed times from zero. Each parameter is affine in the endpoint. -/
 def backwardParameter : Fin (n + 1) → V →ᴬ[ℝ] ℝ :=
-  Fin.induction (ContinuousAffineMap.const ℝ V 0)
-    (fun j T => T - backwardTime f c u j)
+  Fin.partialSum (fun j => -backwardTime f c u j)
 
 /-- The endpoint is at parameter zero. -/
 @[simp]
@@ -51,7 +50,7 @@ theorem backwardParameter_zero (Q : V) : backwardParameter f c u 0 Q = 0 := by
 theorem backwardParameter_succ (j : Fin n) (Q : V) :
     backwardParameter f c u j.succ Q =
       backwardParameter f c u j.castSucc Q - backwardTime f c u j Q := by
-  simp [backwardParameter, Fin.induction_succ]
+  simp [backwardParameter, Fin.partialSum_succ, sub_eq_add_neg]
 
 /-- Positive elapsed times strictly order the encounters backwards. -/
 theorem strictAnti_backwardParameter (Q : V)
