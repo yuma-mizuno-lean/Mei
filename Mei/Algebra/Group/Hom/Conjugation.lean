@@ -22,14 +22,14 @@ public section
 
 namespace MonoidHom
 
-variable {N G B : Type*} [CommGroup N] [Group G] [Group B]
+variable {N G B : Type*} [CommGroup N] [Group G] [MulOneClass B]
 
 /-- Conjugation on an abelian group image depends only on the projection when
 the image contains the kernel. -/
 theorem conj_eq_of_apply_eq (f : G →* B) (i : N →* G) (hker : f.ker ≤ i.range)
     {x y : G} (hxy : f x = f y) (a : N) :
     x * i a * x⁻¹ = y * i a * y⁻¹ := by
-  have hz : y⁻¹ * x ∈ f.ker := by simp [MonoidHom.mem_ker, hxy]
+  have hz : y⁻¹ * x ∈ f.ker := (f.eq_iff).mp hxy
   obtain ⟨c, hc⟩ := hker hz
   calc
     x * i a * x⁻¹ = y * ((y⁻¹ * x) * i a * (y⁻¹ * x)⁻¹) * y⁻¹ := by group
