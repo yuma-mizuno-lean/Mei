@@ -34,23 +34,22 @@ open scoped Mei.NodeAlgebra
 
 variable (R : Type*) [CommRing R] (t : R) (k : ℕ)
 
+/-- The ideal of the exponent algebra imposing the smoothing relation `h = t`
+and both chamber cutoffs `x^(k+1) = y^(k+1) = 0`. -/
+abbrev exponentOverlapIdeal : Ideal (AddMonoidAlgebra R exponentMonoid) :=
+  Ideal.span {single smoothingDegree 1 - single 0 t} ⊔
+    Ideal.span {(single xDegree (1 : R)) ^ (k + 1), (single yDegree (1 : R)) ^ (k + 1)}
+
 /-- The exponent algebra with smoothing relation and both chamber cutoffs is
 precisely the truncated nodal overlap. No nilpotence assumption on `t` is needed. -/
 def exponentOverlapEquiv :
-    (AddMonoidAlgebra R exponentMonoid ⧸
-      (Ideal.span {single smoothingDegree 1 - single 0 t} ⊔
-        Ideal.span {(single xDegree (1 : R)) ^ (k + 1),
-          (single yDegree (1 : R)) ^ (k + 1)})) ≃ₐ[R]
+    (AddMonoidAlgebra R exponentMonoid ⧸ exponentOverlapIdeal R t k) ≃ₐ[R]
       Overlap (_root_.LaurentPolynomial.C t) k := by
-  let I : Ideal (AddMonoidAlgebra R exponentMonoid) :=
-    Ideal.span {single smoothingDegree 1 - single 0 t}
-  let J : Ideal (AddMonoidAlgebra R exponentMonoid) :=
-    Ideal.span {(single xDegree 1) ^ (k + 1), (single yDegree 1) ^ (k + 1)}
-  refine (DoubleQuot.quotQuotEquivQuotSupₐ R I J).symm.trans
+  refine (DoubleQuot.quotQuotEquivQuotSupₐ R _ _).symm.trans
     (Ideal.quotientEquivAlg _ _ (smoothingSpecializationEquiv R t) ?_)
-  simp only [J, Ideal.map_span, Set.image_insert_eq, Set.image_singleton,
+  simp only [Ideal.map_span, Set.image_insert_eq, Set.image_singleton,
     RingHom.coe_coe, Ideal.Quotient.mkₐ_eq_mk]
-  simp only [I, map_pow, smoothingSpecializationEquiv_mk]
+  simp only [map_pow, smoothingSpecializationEquiv_mk]
   simp
 
 /-- Evaluate any monoid-algebra representative by the polynomial dictionary and
@@ -109,13 +108,7 @@ private theorem upperOverlap_exponentOverlapEquiv_single (q : exponentMonoid) (r
       _root_.LaurentPolynomial.T_sub, _root_.LaurentPolynomial.T_add]
     ring
   simp only [exponentOverlapEquiv_single, map_mul, map_pow, AlgEquiv.commutes,
-    upperOverlap_mk_coord_zero, upperOverlap_mk_coord_one, hl, hr, mul_pow]
-  convert congrArg
-    (fun c => algebraMap R[T;T⁻¹] (Overlap (_root_.LaurentPolynomial.C t) k) c *
-      Ideal.Quotient.mk _ (coord (_root_.LaurentPolynomial.C t) 0) ^ rightOrder q *
-      Ideal.Quotient.mk _ (coord (_root_.LaurentPolynomial.C t) 1) ^ leftOrder q) hcoeff
-    using 1
-  simp only [map_mul, map_pow]
+    upperOverlap_mk_coord_zero, upperOverlap_mk_coord_one, hl, hr, mul_pow, ← hcoeff]
   ring
 
 /-- The exponent shear specializes to the upper overlap transition on every
@@ -130,53 +123,30 @@ private theorem upperOverlap_exponentOverlapEquiv_mk (a : AddMonoidAlgebra R exp
   | single q r =>
     rw [domCongr_single, upperOverlap_exponentOverlapEquiv_single]
 
-private theorem upperMonoid_map_overlapIdeal :
-    (Ideal.span {single smoothingDegree 1 - single 0 t} ⊔
-      Ideal.span {(single xDegree (1 : R)) ^ (k + 1),
-        (single yDegree (1 : R)) ^ (k + 1)}).map
-          (domCongr R R upperMonoid : AddMonoidAlgebra R exponentMonoid →+*
-            AddMonoidAlgebra R exponentMonoid) =
-      (Ideal.span {single smoothingDegree 1 - single 0 t} ⊔
-        Ideal.span {(single xDegree (1 : R)) ^ (k + 1),
-          (single yDegree (1 : R)) ^ (k + 1)}) := by
+private theorem map_upperMonoid_exponentOverlapIdeal :
+    (exponentOverlapIdeal R t k).map
+        (domCongr R R upperMonoid : AddMonoidAlgebra R exponentMonoid →+*
+          AddMonoidAlgebra R exponentMonoid) =
+      exponentOverlapIdeal R t k := by
   have hmem (a : AddMonoidAlgebra R exponentMonoid) :
-      domCongr R R upperMonoid a ∈
-          (Ideal.span {single smoothingDegree 1 - single 0 t} ⊔
-            Ideal.span {(single xDegree (1 : R)) ^ (k + 1),
-              (single yDegree (1 : R)) ^ (k + 1)}) ↔
-        a ∈ (Ideal.span {single smoothingDegree 1 - single 0 t} ⊔
-          Ideal.span {(single xDegree (1 : R)) ^ (k + 1),
-            (single yDegree (1 : R)) ^ (k + 1)}) := by
-    have he := upperOverlap_exponentOverlapEquiv_mk R t k a
-    have hz := congrArg (fun z => z = 0) he
-    simpa only [map_eq_zero_iff _ (exponentOverlapEquiv R t k).injective,
-      map_eq_zero_iff _ (upperOverlap t k).injective,
-      Ideal.Quotient.eq_zero_iff_mem] using (Iff.of_eq hz.symm)
-  have hf : Function.Surjective
-      (domCongr R R upperMonoid : AddMonoidAlgebra R exponentMonoid →+*
-        AddMonoidAlgebra R exponentMonoid) := (domCongr R R upperMonoid).surjective
-  let K := Ideal.span {single smoothingDegree 1 - single 0 t} ⊔
-    Ideal.span {(single xDegree (1 : R)) ^ (k + 1), (single yDegree 1) ^ (k + 1)}
-  have hc : K.comap (domCongr R R upperMonoid :
-      AddMonoidAlgebra R exponentMonoid →+* AddMonoidAlgebra R exponentMonoid) = K :=
-    Ideal.ext hmem
-  exact (congrArg (Ideal.map (domCongr R R upperMonoid :
-    AddMonoidAlgebra R exponentMonoid →+* AddMonoidAlgebra R exponentMonoid)) hc).symm.trans
-      (Ideal.map_comap_of_surjective _ hf _)
+      domCongr R R upperMonoid a ∈ exponentOverlapIdeal R t k ↔
+        a ∈ exponentOverlapIdeal R t k := by
+    rw [← Ideal.Quotient.eq_zero_iff_mem, ← Ideal.Quotient.eq_zero_iff_mem,
+      ← map_eq_zero_iff _ (exponentOverlapEquiv R t k).injective,
+      ← map_eq_zero_iff _ (exponentOverlapEquiv R t k).injective,
+      ← upperOverlap_exponentOverlapEquiv_mk, map_eq_zero_iff _ (upperOverlap t k).injective]
+  refine (Ideal.map_comap_of_equiv (domCongr R R upperMonoid).toRingEquiv).trans
+    (Ideal.ext fun a => ?_)
+  rw [Ideal.mem_comap, ← hmem, AlgEquiv.toRingEquiv_symm, AlgEquiv.coe_toRingEquiv,
+    AlgEquiv.apply_symm_apply]
 
 /-- The exponent shear descends to an automorphism after imposing the smoothing
 relation and both chamber cutoffs. -/
 def upperExponentOverlap :
-    (AddMonoidAlgebra R exponentMonoid ⧸
-      (Ideal.span {single smoothingDegree 1 - single 0 t} ⊔
-        Ideal.span {(single xDegree (1 : R)) ^ (k + 1),
-          (single yDegree (1 : R)) ^ (k + 1)})) ≃ₐ[R]
-    (AddMonoidAlgebra R exponentMonoid ⧸
-      (Ideal.span {single smoothingDegree 1 - single 0 t} ⊔
-        Ideal.span {(single xDegree (1 : R)) ^ (k + 1),
-          (single yDegree (1 : R)) ^ (k + 1)})) :=
+    (AddMonoidAlgebra R exponentMonoid ⧸ exponentOverlapIdeal R t k) ≃ₐ[R]
+      (AddMonoidAlgebra R exponentMonoid ⧸ exponentOverlapIdeal R t k) :=
   Ideal.quotientEquivAlg _ _ (domCongr R R upperMonoid)
-    (upperMonoid_map_overlapIdeal R t k).symm
+    (map_upperMonoid_exponentOverlapIdeal R t k).symm
 
 /-- On quotient representatives the descended transition is the original
 monoid-algebra shear. -/
