@@ -205,11 +205,19 @@ theorem completedMap_chargeZeroGradedLieHom
   have he : (chargeZeroGradedLieHom d ℳ p ℒ).truncatedMap (a := k) k (by simp) =
       ((baseGradedLieHom d ℳ p ℒ).truncatedMap (a := k) k (by simp)).comp
         (baseQuotientProjection d ℳ p ℒ k) := by
-    apply LieHom.ext
-    intro x
-    obtain ⟨x, rfl⟩ := ((positiveDegrees d p).degreeIdeal
-      (grading d ℳ p ℒ) k).surjective_mkQ x
-    simp [LieIdeal.mkQ_apply]
+    have hcomp : (chargeZeroGradedLieHom d ℳ p ℒ).toLieHom =
+        ((baseGradedLieHom d ℳ p ℒ).toLieHom).comp (LieAlgebra.SemiDirectSum.projr _) := by
+      apply LieHom.ext
+      intro x
+      exact (chargeZeroGradedLieHom_apply d ℳ p ℒ x).trans
+        (baseGradedLieHom_apply d ℳ p ℒ x.right).symm
+    rw [GradedLieHom.truncatedMap_def, GradedLieHom.truncatedMap_def,
+      baseQuotientProjection]
+    simp only [hcomp]
+    exact LieIdeal.mapQ_comp
+      ((positiveDegrees d p).degreeIdeal (grading d ℳ p ℒ) k) (d.degreeIdeal ℒ k)
+      ((positiveDegrees d p).degreeIdeal (grading d ℳ p ℒ) k) (LieAlgebra.SemiDirectSum.projr _)
+      (baseGradedLieHom d ℳ p ℒ).toLieHom _ _ _
   rw [he, LieHom.bchGroupMap_comp]
   exact MonoidHom.comp_apply _ _ _
 

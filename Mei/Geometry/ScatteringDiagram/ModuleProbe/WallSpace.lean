@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.ScatteringDiagram.ModuleProbe.Grading.Basic
+public import Mei.Geometry.ScatteringDiagram.ModuleProbe.Grading.Lie
 public import Mei.Geometry.ScatteringDiagram.ModuleProbe.Normal
 public import Mei.Geometry.ScatteringDiagram.WallSpace.Action
 
@@ -270,5 +270,16 @@ end
 theorem wallSpaces_wall [IsWallAnnihilating H ℳ]
     (a : Γ × ℤ × ℤ) (m : (Λ × ℤ × ℤ) →+ ℤ) :
     (wallSpaces d ℳ p ℒ H).wall a m = wallSubmodule d ℳ p ℒ H a m := (rfl)
+
+/-- Forgetting charge one preserves all the directed probe wall spaces. -/
+theorem chargeZeroGradedLieHom_mem_wall [IsWallAnnihilating H ℳ]
+    (n : Γ × ℤ × ℤ) (m : (Λ × ℤ × ℤ) →+ ℤ)
+    (x : ProbeLie d ℳ p ℒ) (hx : x ∈ (wallSpaces d ℳ p ℒ H).wall n m) :
+    chargeZeroGradedLieHom d ℳ p ℒ x ∈ (wallSpaces d ℳ p ℒ H).wall n m := by
+  rw [wallSpaces_wall, mem_wallSubmodule_iff] at hx ⊢
+  rcases hx with rfl | ⟨q, m₀, y, rfl, rfl, hy, rfl⟩ | ⟨q, c, rfl, hc, rfl, hx⟩
+  · exact Or.inl (map_zero _)
+  · exact Or.inr (Or.inl ⟨q, m₀, y, rfl, rfl, hy, by simp⟩)
+  · exact Or.inl (by simp [((mem_grading_module d ℳ p ℒ q x).mp hx).1])
 
 end Mei.ModuleProbe

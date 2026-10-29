@@ -42,23 +42,6 @@ variable {R Γ Λ V E : Type*} {M L : Type u} [CommRing R]
   (ℒ : Γ → Submodule R L) [GradedLieAlgebra ℒ] [IsPositiveGrading d ℒ]
   [SetLike.GradedBracket ℒ ℳ]
 
-section WallSpaces
-
-variable [AddCommMonoid Λ] {ρ : Γ →+ Λ} (H : DirectedWallSpaces ρ ℒ)
-  [IsWallAnnihilating H ℳ]
-
-/-- Forgetting charge one preserves all the directed probe wall spaces. -/
-theorem chargeZeroGradedLieHom_mem_wall (n : Γ × ℤ × ℤ) (m : (Λ × ℤ × ℤ) →+ ℤ)
-    (x : ProbeLie d ℳ p ℒ) (hx : x ∈ (wallSpaces d ℳ p ℒ H).wall n m) :
-    chargeZeroGradedLieHom d ℳ p ℒ x ∈ (wallSpaces d ℳ p ℒ H).wall n m := by
-  rw [wallSpaces_wall, mem_wallSubmodule_iff] at hx ⊢
-  rcases hx with rfl | ⟨q, m₀, y, rfl, rfl, hy, rfl⟩ | ⟨q, c, rfl, hc, rfl, hx⟩
-  · exact Or.inl (map_zero _)
-  · exact Or.inr (Or.inl ⟨q, m₀, y, rfl, rfl, hy, by simp⟩)
-  · exact Or.inl (by simp [((mem_grading_module d ℳ p ℒ q x).mp hx).1])
-
-end WallSpaces
-
 variable [AddCommGroup Λ] {ρ : Γ →+ Λ} (H : DirectedWallSpaces ρ ℒ)
   [IsWallAnnihilating H ℳ] [DirectSum.Decomposition ℳ]
   [Algebra ℚ R] [LieAlgebra ℚ L] [IsScalarTower ℚ R L]
