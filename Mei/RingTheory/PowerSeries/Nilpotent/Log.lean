@@ -15,7 +15,9 @@ public import Mathlib.RingTheory.PowerSeries.Log
 The algebra evaluation of the scalar series `log(1 + X)` at a nilpotent element
 is the finite logarithm of one plus that element. This works in associative
 rational algebras and connects `PowerSeries.nilpotentAeval` with
-`IsNilpotent.log_eq_sum`.
+`IsNilpotent.log_eq_sum`. More generally, the formal logarithm `logOf f` of a
+constant-one series `f` evaluates to the finite logarithm of the value of `f`;
+this reduces to `log(1 + X)` through `logOf_eq` and `nilpotentAeval_subst`.
 -/
 
 public section

@@ -67,21 +67,12 @@ theorem completedBCHAction_completedMap_rayExp_smul_negDilogNeg (q : Q)
         ((F).toCompletion (single p c)) =
       ((f ^ (s * D.principalNormal n p.val) : (F).completionˣ) : (F).completion) *
         (F).toCompletion (single p c) := by
-  have hpos : (q : Lpr) ∈ (e).monoid := by
-    rw [hq, principalEmbedding_apply, PositiveDegrees.mem_graph_monoid]
-    exact ⟨hn, rfl⟩
-  have hdegree : (1 : ℤ) ≤ (e).degree q := by
-    rw [hq, principalEmbedding_apply, PositiveDegrees.graph_degree]
-    exact d.degree_pos hn hn0
-  have hfirst : (F).toCompletion (single q (1 : R)) ∈ (F).completionIdeal 1 := by
-    rw [AlgFiltration.toCompletion_mem_completionIdeal_iff, filtration_ideal,
-      AddSubmonoid.single_mem_monoidAlgebraIdeal_iff]
-    exact Or.inr ⟨q, hpos, hdegree, 0, by simp⟩
-  let u : (F).completionIdeal 1 := ⟨(F).toCompletion (single q 1), hfirst⟩
+  let u : (F).completionIdeal 1 := ⟨(F).toCompletion (single q 1),
+    D.toCompletion_single_principalEmbedding_mem_first d hn hn0 Q q hq⟩
   have hfu : (f : (F).completion) = (F).completedAeval u (1 + X : PowerSeries R) := by
     simpa only [map_add, map_one, AlgFiltration.completedAeval_X] using hf
-  simpa only [logOf_one_add_X, eulerIntegral_log] using
-    D.completedBCHAction_completedMap_rayExp_eulerIntegral_logOf d hn hn0 s Q
+  simpa only [logOf_one_add_X, eulerDerivInv_log] using
+    D.completedBCHAction_completedMap_rayExp_eulerDerivInv_logOf d hn hn0 s Q
       (1 + X : PowerSeries R) (by simp) q hq u rfl f hfu p c
 
 end Mei.SkewLatticeDatum

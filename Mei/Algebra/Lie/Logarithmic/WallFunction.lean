@@ -8,6 +8,7 @@ module
 public import Mei.Algebra.Lie.Logarithmic.Coefficient
 public import Mei.RingTheory.Derivation.Exp
 public import Mei.RingTheory.FilteredAlgebra.Exp.Map
+public import Mei.RingTheory.FilteredAlgebra.PowerSeries.Map
 public import Mei.RingTheory.Nilpotent.Log
 
 /-!
@@ -376,6 +377,25 @@ theorem completedTropicalTangentInclusion_mem_completionIdeal_one {u : (G).compl
   (G).mapCompletionₐ_mem_completionIdeal (F) (tropicalTangentInclusion d ρ m Q Fact.out)
     id monotone_id
     (fun k => filtration_ideal_le_comap_tropicalTangentInclusion d ρ m Q Fact.out (k + 1)) 0 hu
+
+omit [Algebra ℚ R] [DecidableEq Γ] in
+/-- The completed tangent inclusion commutes with evaluating a power series at a
+completed tangent coefficient of positive order. -/
+theorem completedTropicalTangentInclusion_completedAeval (u : (G).completionIdeal 1)
+    (f : PowerSeries R) :
+    completedTropicalTangentInclusion d ρ m Q ((G).completedAeval u f) =
+      (F).completedAeval ⟨completedTropicalTangentInclusion d ρ m Q u,
+        completedTropicalTangentInclusion_mem_completionIdeal_one d ρ m Q u.property⟩ f := by
+  let inc := tropicalTangentInclusion d ρ m Q Fact.out
+  have hc (x : (G).completion) :=
+    RingHom.congr_fun (coe_completedTropicalTangentInclusion d ρ m Q) x
+  have he := (G).mapCompletion_completedAeval (F) (RingHom.id R) inc.toRingHom
+    (fun r => inc.commutes r) id monotone_id
+    (fun k => filtration_ideal_le_comap_tropicalTangentInclusion d ρ m Q Fact.out (k + 1))
+    (filtration_ideal_le_comap_tropicalTangentInclusion d ρ m Q Fact.out 1) u f
+  rw [PowerSeries.map_id, id_eq] at he
+  exact (hc _).trans (he.trans
+    (congrArg (fun x => (F).completedAeval x f) (Subtype.ext (hc u).symm)))
 
 /-- **The tangent wall function.** The completed label `exp(u ∂_m)` of a completed tangent
 coefficient `u` of positive order multiplies a monomial `r z^p` by `exp(m(ρ p) u)`. -/

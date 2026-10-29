@@ -9,18 +9,19 @@ public import Mei.Geometry.ScatteringDiagram.Skew.Embedding
 public import Mei.Algebra.Lie.Skew.Ray
 public import Mei.Algebra.Lie.Logarithmic.WallFunction
 public import Mei.RingTheory.FilteredAlgebra.PowerSeries.Log
-public import Mei.RingTheory.PowerSeries.EulerIntegral
-public import Mei.RingTheory.FilteredAlgebra.PowerSeries.Map
+public import Mei.RingTheory.PowerSeries.EulerDerivInv
 
 /-!
 # Principal actions of arbitrary ray functions
 
-A scalar ray potential `a(T)` defines a skew label with logarithm
-`κ(n) ∑ a_j X_{jn}`. Its principal image is the tangent label with logarithmic
-coefficient `T * derivative a`, because the normal in degree `jn` is `j νₙ`.
-Taking `a` to be the Euler integral of `logOf f` gives the wall function `f`
-for every scalar series with constant coefficient one. The resulting action
-uses powers in units, so it includes negative normal weights and inverse crossings.
+For an integer scale `s`, a scalar ray potential `a(T)` defines a skew label with
+logarithm `s κ(n) ∑ a_j X_{jn}`. Its principal image is the tangent label with
+logarithmic coefficient `T * derivative a` at the integral normal `s κ(n) νₙ`,
+because the normal in degree `jn` is `j νₙ`. Taking `a` to be the inverse Euler
+derivation of `logOf f` gives the wall function `f` at the integral normal
+`s κ(n) νₙ` (equivalently `f^s` at `κ(n) νₙ`) for every scalar series with constant
+coefficient one. The resulting action uses powers in units, so it includes
+negative normal weights and inverse crossings.
 
 This connects `SkewLieAlgebra.rayExp`, `principalGradedLieHom`, and
 `completedTropicalTangentField`; formal logarithms and finite nilpotent evaluation
@@ -55,6 +56,26 @@ local notation "ℳ" => tropicalVertexGrading (R := R) e ρ
 local notation "β" => D.coefficientForm R
 local notation "hβ" => D.isAlt_coefficientForm R
 local notation "κ" => algebraMap ℚ R ((s : ℚ) * D.sublattice.toAddSubgroup.rayIndex n)
+
+omit [Module.Free ℤ N] [Algebra ℚ R] [DecidableEq D.unfrozen]
+  [DecidableEq (Module.Dual ℤ D.sublattice)] in
+include hn hn0 in
+/-- The monomial at the principal embedding of a positive degree lies in the first
+completed ideal, for any coefficient monoid containing it. -/
+theorem toCompletion_single_principalEmbedding_mem_first
+    (P : AddSubmonoid Lpr) (q : P) (hq : q.val = D.principalEmbedding n) :
+    (TropicalVertexCoefficientAction.filtration (R := R) e P).toCompletion (single q 1) ∈
+      (TropicalVertexCoefficientAction.filtration (R := R) e P).completionIdeal 1 := by
+  have hpos : (q : Lpr) ∈ (e).monoid := by
+    rw [hq, principalEmbedding_apply, PositiveDegrees.mem_graph_monoid]
+    exact ⟨hn, rfl⟩
+  have hdegree : (1 : ℤ) ≤ (e).degree q := by
+    rw [hq, principalEmbedding_apply, PositiveDegrees.graph_degree]
+    exact d.degree_pos hn hn0
+  rw [AlgFiltration.toCompletion_mem_completionIdeal_iff,
+    TropicalVertexCoefficientAction.filtration_ideal,
+    AddSubmonoid.single_mem_monoidAlgebraIdeal_iff]
+  exact Or.inr ⟨q, hpos, hdegree, 0, by simp⟩
 
 section Potential
 
@@ -168,14 +189,14 @@ private theorem principal_rayLog (f : PowerSeries R) (hf : constantCoeff f = 1)
     (q : T) (hq : q.val = D.principalEmbedding n)
     (u : (G).completionIdeal 1) (hu : u.val = (G).toCompletion (single q 1)) :
     (D.principalGradedLieHom d).completedMap
-        (SkewLieAlgebra.rayExp β hβ hn hn0 (κ • eulerIntegral (logOf f))) =
+        (SkewLieAlgebra.rayExp β hβ hn hn0 (κ • eulerDerivInv (logOf f))) =
       (e).completedBCHExp ℳ (completedTropicalTangentField e ρ χ
         ((G).completedLog ⟨(G).completedAeval u f,
           (G).completedAeval_sub_one_mem_first u f hf⟩)) := by
   have hlabel := D.principalGradedLieHom_completedMap_rayExp (R := R) d hn hn0 s
-    (eulerIntegral (logOf f)) q hq u hu
+    (eulerDerivInv (logOf f)) q hq u hu
   have hlog := (congrArg ((G).completedAeval u)
-    (X_mul_derivative_eulerIntegral (logOf f) (constantCoeff_logOf hf))).trans
+    (X_mul_derivative_eulerDerivInv (logOf f) (constantCoeff_logOf hf))).trans
       ((G).completedAeval_logOf u f hf)
   exact hlabel.trans (congrArg (fun x =>
     (e).completedBCHExp ℳ (completedTropicalTangentField e ρ χ x)) hlog)
@@ -188,54 +209,12 @@ variable (Q : AddSubmonoid (Module.Dual ℤ D.sublattice × D.unfrozen))
 
 local notation "F" => TropicalVertexCoefficientAction.filtration (R := R) e Q
 
-omit [Algebra ℚ R] [DecidableEq D.unfrozen]
-  [DecidableEq (Module.Dual ℤ D.sublattice)] in
-private theorem principalTangentInclusion_aeval
-    (t : T) (q : Q) (htq : (t : Lpr) = q.val)
-    (u : (G).completionIdeal 1) (hu : u.val = (G).toCompletion (single t 1))
-    (uQ : (F).completionIdeal 1) (huQ : uQ.val = (F).toCompletion (single q 1))
-    (f : PowerSeries R) :
-    completedTropicalTangentInclusion e ρ χ Q ((G).completedAeval u f) =
-      (F).completedAeval uQ f := by
-  let inc := tropicalTangentInclusion e ρ χ Q Fact.out
-  have hmono : completedTropicalTangentInclusion e ρ χ Q u = uQ := by
-    calc
-      _ = completedTropicalTangentInclusion e ρ χ Q ((G).toCompletion (single t 1)) :=
-        congrArg (completedTropicalTangentInclusion e ρ χ Q) hu
-      _ = (F).toCompletion (single q 1) := by
-        rw [completedTropicalTangentInclusion_toCompletion]
-        apply congrArg (F).toCompletion
-        rw [tropicalTangentInclusion, mapDomainAlgHom_apply, mapDomain_single]
-        congr 1
-        exact Subtype.ext htq
-      _ = uQ := huQ.symm
-  have he := (G).mapCompletion_completedAeval (F) (RingHom.id R) inc.toRingHom
-    (fun r => inc.commutes r) id monotone_id
-    (fun k => filtration_ideal_le_comap_tropicalTangentInclusion e ρ χ Q Fact.out (k + 1))
-    (filtration_ideal_le_comap_tropicalTangentInclusion e ρ χ Q Fact.out 1) u f
-  let g := (G).mapCompletion (F) inc.toRingHom id monotone_id
-    (fun k => filtration_ideal_le_comap_tropicalTangentInclusion e ρ χ Q Fact.out (k + 1))
-  have hcoe : (completedTropicalTangentInclusion e ρ χ Q :
-      (G).completion →+* (F).completion) = g := by
-    exact coe_completedTropicalTangentInclusion e ρ χ Q
-  let v : (F).completionIdeal 1 := ⟨g u,
-    (G).mapCompletion_mem_first (F) inc.toRingHom id monotone_id _
-      (filtration_ideal_le_comap_tropicalTangentInclusion e ρ χ Q Fact.out 1) u.property⟩
-  have hv : v = uQ := Subtype.ext
-    ((congrArg (fun h : (G).completion →+* (F).completion => h u) hcoe).symm.trans hmono)
-  have he' : g ((G).completedAeval u f) = (F).completedAeval v f := by
-    simpa only [PowerSeries.map_id, id_eq] using he
-  exact (congrArg (fun h : (G).completion →+* (F).completion =>
-    h ((G).completedAeval u f)) hcoe).trans
-      (he'.trans (congrArg (fun x => (F).completedAeval x f) hv))
-
-
 /-- The principal image of the normalized skew ray label with scalar potential
-`eulerIntegral (logOf f)` acts with wall function `f(z^(r(n)))` at the integral
+`eulerDerivInv (logOf f)` acts with wall function `f(z^(r(n)))` at the integral
 normal `s κ(n) νₙ`. The unit `fQ` specifies that evaluated ray function.
 This allows arbitrary constant-one scalar series, coefficient monoids containing
 the positive degrees, radical degrees, and negative powers. -/
-theorem completedBCHAction_completedMap_rayExp_eulerIntegral_logOf
+theorem completedBCHAction_completedMap_rayExp_eulerDerivInv_logOf
     (f : PowerSeries R) (hconst : constantCoeff f = 1)
     (q : Q) (hq : q.val = D.principalEmbedding n)
     (uQ : (F).completionIdeal 1) (huQ : uQ.val = (F).toCompletion (single q 1))
@@ -243,7 +222,7 @@ theorem completedBCHAction_completedMap_rayExp_eulerIntegral_logOf
     (p : Q) (c : R) :
     (F).completedBCHAction (R := R) e ℳ
         ((D.principalGradedLieHom d).completedMap
-          (SkewLieAlgebra.rayExp β hβ hn hn0 (κ • eulerIntegral (logOf f))))
+          (SkewLieAlgebra.rayExp β hβ hn hn0 (κ • eulerDerivInv (logOf f))))
         ((F).toCompletion (single p c)) =
       ((fQ ^ (s * D.principalNormal n p.val) : (F).completionˣ) : (F).completion) *
         (F).toCompletion (single p c) := by
@@ -258,21 +237,24 @@ theorem completedBCHAction_completedMap_rayExp_eulerIntegral_logOf
   let t : T := ⟨D.principalEmbedding n, (mem_tropicalTangentMonoid e ρ χ _).mpr
     ⟨hpos, htan⟩⟩
   have ht : (t : Lpr) = D.principalEmbedding n := rfl
-  have hdegree : (1 : ℤ) ≤ (e).degree t := by
-    rw [ht, principalEmbedding_apply, PositiveDegrees.graph_degree]
-    exact d.degree_pos hn hn0
-  have hfirst : (G).toCompletion (single t (1 : R)) ∈ (G).completionIdeal 1 := by
-    rw [AlgFiltration.toCompletion_mem_completionIdeal_iff, filtration_ideal,
-      AddSubmonoid.single_mem_monoidAlgebraIdeal_iff]
-    exact Or.inr ⟨t, hpos, hdegree, 0, by simp⟩
-  let u : (G).completionIdeal 1 := ⟨(G).toCompletion (single t 1), hfirst⟩
+  let u : (G).completionIdeal 1 := ⟨(G).toCompletion (single t 1),
+    D.toCompletion_single_principalEmbedding_mem_first d hn hn0 T t ht⟩
   have hlabel := D.principal_rayLog (R := R) d hn hn0 s f hconst t ht u rfl
   refine (congrArg (fun z =>
     (F).completedBCHAction (R := R) e ℳ z ((F).toCompletion (single p c))) hlabel).trans ?_
   have hg : (G).completedAeval u f - 1 ∈ (G).completionIdeal 1 :=
     (G).completedAeval_sub_one_mem_first u f hconst
-  have hinc := D.principalTangentInclusion_aeval (R := R) d s Q t q
-    (ht.trans hq.symm) u rfl uQ huQ f
+  have hmono : completedTropicalTangentInclusion e ρ χ Q u.val = uQ.val := by
+    calc
+      _ = (F).toCompletion (single q 1) := by
+        rw [completedTropicalTangentInclusion_toCompletion]
+        apply congrArg (F).toCompletion
+        rw [tropicalTangentInclusion, mapDomainAlgHom_apply, mapDomain_single]
+        congr 1
+        exact Subtype.ext (ht.trans hq.symm)
+      _ = uQ := huQ.symm
+  have hinc := (completedTropicalTangentInclusion_completedAeval e ρ χ Q u f).trans
+    (congrArg (fun x => (F).completedAeval x f) (Subtype.ext hmono))
   have hunit : (isUnit_completedTropicalTangentInclusion e ρ χ Q hg).unit = fQ := by
     apply Units.ext
     exact (IsUnit.unit_spec _).trans (hinc.trans hfQ.symm)
