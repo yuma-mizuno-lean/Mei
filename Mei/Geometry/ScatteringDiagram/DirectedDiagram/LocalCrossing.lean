@@ -14,13 +14,15 @@ public import Mei.Geometry.Convex.Polyhedron.Path.LocalCrossing
 At a fixed cutoff, all active walls through a point outside singular support have
 commuting labels. Their combined label in a transverse direction is the unordered
 product of the signed projected labels. Every enumeration gives the same value.
-Any segment crossing precisely this germ computes that label, and sufficiently
+Its logarithm is the signed sum of the incident logarithms. Any segment
+crossing precisely this germ computes that label, and sufficiently
 short transverse segments realize it. These are the local crossing values used
 when replacing an indexed wall presentation by an adapted polyhedral complex.
 
 The construction uses `DirectedDiagram.activeLabels_commute`, the grouped products
 of `WallComplement.segmentPathProduct`, and the short-segment isolation theorem
-`WallComplement.eventually_exists_crossings_iff`. The sign convention follows
+`WallComplement.eventually_exists_crossings_iff`. The logarithm formula uses
+`BCHGroup.exp_sum_of_lie_eq_zero`. The sign convention follows
 Travis Mandel, *Scattering diagrams, theta functions, and refined tropical curve
 counts*, [arXiv:1503.06183v5](https://arxiv.org/abs/1503.06183v5), equation (8).
 -/
@@ -97,6 +99,51 @@ theorem combinedLabel_eq_prod (k : ℕ) (θ v : V)
       l.toFinset := by ext j; simpa using (hm j).symm
   exact (Finset.noncommProd_congr hs (fun _ _ => rfl) _).trans
     (Finset.noncommProd_toFinset l _ _ hl)
+
+open scoped Classical in
+/-- At a regular germ, the logarithm of the combined label is the signed sum of
+the incident wall logarithms. No global commutativity or consistency is required. -/
+theorem log_combinedLabel_eq_sum (k : ℕ) (θ v : V)
+    (hθ : θ ∉ singularSupport (fun j : D.active k => (D.wall j).support)) :
+    let _ := Fintype.ofFinite (D.active k)
+    BCHGroup.log (D.combinedLabel k θ v hθ) = ∑ j : D.active k,
+      if θ ∈ (D.wall j).support then
+        (if 0 < h.realCharacter (D.wall j).normal v then -1 else 1 : ℤ) •
+          BCHGroup.log (L := d.truncatedLie ℒ k)
+            (CompletedGroup.projection k (D.wall j).label) else 0 := by
+  classical
+  let := Fintype.ofFinite (D.active k)
+  let S := Finset.univ.filter fun j : D.active k => θ ∈ (D.wall j).support
+  let a (j : D.active k) : d.truncatedLie ℒ k :=
+    (if 0 < h.realCharacter (D.wall j).normal v then -1 else 1 : ℤ) •
+      BCHGroup.log (L := d.truncatedLie ℒ k)
+        (CompletedGroup.projection k (D.wall j).label)
+  have hlie : (S : Set (D.active k)).Pairwise fun b c => ⁅a b, a c⁆ = 0 := by
+    intro b hb c hc _
+    have hb : θ ∈ (D.wall b).support := (Finset.mem_filter.mp hb).2
+    have hc : θ ∈ (D.wall c).support := (Finset.mem_filter.mp hc).2
+    have hdir : (affineSpan ℝ (D.wall b).support).direction =
+        (affineSpan ℝ (D.wall c).support).direction := by
+      by_contra hne
+      exact hθ (mem_singularSupport.mpr (Or.inr ⟨b, c, hne, hb, hc⟩))
+    simp only [a, zsmul_lie, lie_zsmul,
+      (D.wall b).lie_log_projection_eq_zero_of_direction_eq (D.wall c) hdir k,
+      smul_zero]
+  have he : BCHGroup.exp (∑ j ∈ S, a j) = D.combinedLabel k θ v hθ := by
+    have hx (j : D.active k) : BCHGroup.exp (a j) =
+        CompletedGroup.projection k (D.wall j).label ^
+          (if 0 < h.realCharacter (D.wall j).normal v then -1 else 1 : ℤ) := by
+      exact (BCHGroup.exp_zsmul _ _).trans
+        (congrArg (fun g : BCHGroup (d.truncatedLie ℒ k) =>
+          g ^ (if 0 < h.realCharacter (D.wall j).normal v then -1 else 1 : ℤ))
+          (BCHGroup.exp_log (L := d.truncatedLie ℒ k) _))
+    have hc := hlie.imp fun _ _ hij => BCHGroup.commute_exp_of_lie_eq_zero _ _ hij
+    simp only [hx] at hc
+    rw [BCHGroup.exp_sum_of_lie_eq_zero S a hlie,
+      D.combinedLabel_eq_noncommProd k θ v hθ S (by simp [S]) hc]
+    exact Finset.noncommProd_congr rfl (fun j _ => hx j) _
+  rw [← he, BCHGroup.log_exp]
+  exact Finset.sum_filter _ _
 
 /-- Lowering the cutoff projects a regular combined label to the combined label
 of the surviving walls, for every vector `v`. Walls killed by truncation
