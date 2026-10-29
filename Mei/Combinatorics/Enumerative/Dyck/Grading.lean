@@ -33,9 +33,13 @@ from the last edge to the first; they are the cyclic intervals `Mei.CyclicMatchi
   `∏_v [x^{γ_V(v)}] P₁ ∏_h [y^{γ_H(h)}] P₂` of compatible gradings with totals `(p, q)` whose
   nonzero vertical support lies in the total horizontal shadow, respectively whose nonzero
   horizontal support lies in the total vertical shadow. Grades are bounded by the degrees.
+* `shadowedSum` and `tightSum`: the weight sums of the shadowed, respectively tight, gradings
+  with totals `(p, q)`. The tight sum is the shadowed sum when `p ≤ d₁`, `q ≤ d₂` and
+  `|p d₂ - q d₁| = gcd(p, q)` (`tightSum_eq_shadowedSum`), and zero otherwise
+  (`tightSum_eq_zero`).
 
-When `P₁` and `P₂` have constant coefficient `1`, both sums equal `1` at `(p, q) = (0, 0)`,
-the only contribution being the zero grading.
+When `P₁` and `P₂` have constant coefficient `1`, `C₊`, `C₋` and the shadowed sum equal `1` at
+`(p, q) = (0, 0)`, the only contribution being the zero grading.
 
 These are the gradings of Lee–Li–Zelevinsky and Rupel used by Burcroff–Lee–Mou for the
 coefficients of rank-two wall functions.
@@ -573,6 +577,63 @@ theorem cminus_zero_zero (h₁ : P₁.coeff 0 = 1) (h₂ : P₂.coeff 0 = 1) :
     cminus d₁ d₂ P₁ P₂ 0 0 = 1 := by
   rw [cminus, filter_totals_zero _ (by simp [horizontalSupport]), Finset.sum_singleton,
     weight_zero _ _ h₁ h₂]
+
+variable (d₁ d₂) in
+/-- The weight sum of the shadowed gradings with totals `(p, q)`. -/
+def shadowedSum (p q : ℕ) : S :=
+  ∑ γ ∈ gradings d₁ d₂ P₁.natDegree P₂.natDegree with Shadowed γ ∧ verticalTotal γ = p ∧
+    horizontalTotal γ = q, weight P₁ P₂ γ
+
+theorem shadowedSum_def (p q : ℕ) :
+    shadowedSum d₁ d₂ P₁ P₂ p q =
+      ∑ γ ∈ gradings d₁ d₂ P₁.natDegree P₂.natDegree with Shadowed γ ∧ verticalTotal γ = p ∧
+        horizontalTotal γ = q, weight P₁ P₂ γ :=
+  (rfl)
+
+variable (d₁ d₂) in
+/-- The weight sum of the tight gradings with totals `(p, q)`. -/
+def tightSum (p q : ℕ) : S :=
+  ∑ γ ∈ gradings d₁ d₂ P₁.natDegree P₂.natDegree with Tight γ ∧ verticalTotal γ = p ∧
+    horizontalTotal γ = q, weight P₁ P₂ γ
+
+theorem tightSum_def (p q : ℕ) :
+    tightSum d₁ d₂ P₁ P₂ p q =
+      ∑ γ ∈ gradings d₁ d₂ P₁.natDegree P₂.natDegree with Tight γ ∧ verticalTotal γ = p ∧
+        horizontalTotal γ = q, weight P₁ P₂ γ :=
+  (rfl)
+
+/-- The shadowed sum at `(0, 0)` is `1` when both constant coefficients are one. -/
+@[simp]
+theorem shadowedSum_zero_zero (h₁ : P₁.coeff 0 = 1) (h₂ : P₂.coeff 0 = 1) :
+    shadowedSum d₁ d₂ P₁ P₂ 0 0 = 1 := by
+  rw [shadowedSum, filter_congr (q := fun γ ↦ Compatible γ ∧ verticalTotal γ = 0 ∧
+      horizontalTotal γ = 0 ∧ (horizontalSupport γ ⊆ totalVerticalShadow γ ∨
+        verticalSupport γ ⊆ totalHorizontalShadow γ)) fun γ _ ↦ by rw [shadowed_iff]; tauto,
+    filter_totals_zero _ (Or.inl (by simp [horizontalSupport])), Finset.sum_singleton,
+    weight_zero _ _ h₁ h₂]
+
+/-- The tight sum is the shadowed sum when `p ≤ d₁`, `q ≤ d₂` and `|p d₂ - q d₁| = gcd(p, q)`. -/
+theorem tightSum_eq_shadowedSum {p q : ℕ} (hp : p ≤ d₁) (hq : q ≤ d₂)
+    (hpq : ((p * d₂ : ℤ) - q * d₁).natAbs = p.gcd q) :
+    tightSum d₁ d₂ P₁ P₂ p q = shadowedSum d₁ d₂ P₁ P₂ p q := by
+  rw [tightSum_def, shadowedSum_def]
+  refine sum_congr (filter_congr fun γ _ ↦ ?_) fun _ _ ↦ rfl
+  rw [tight_iff]
+  constructor
+  · exact fun ⟨⟨hs, _⟩, hγ⟩ ↦ ⟨hs, hγ⟩
+  · rintro ⟨hs, rfl, rfl⟩
+    exact ⟨⟨hs, hp, hq, hpq⟩, rfl, rfl⟩
+
+/-- The tight sum vanishes unless `p ≤ d₁`, `q ≤ d₂` and `|p d₂ - q d₁| = gcd(p, q)`. -/
+@[simp]
+theorem tightSum_eq_zero {p q : ℕ}
+    (h : ¬(p ≤ d₁ ∧ q ≤ d₂ ∧ ((p * d₂ : ℤ) - q * d₁).natAbs = p.gcd q)) :
+    tightSum d₁ d₂ P₁ P₂ p q = 0 := by
+  rw [tightSum_def]
+  refine sum_eq_zero fun γ hγ ↦ absurd hγ ?_
+  rw [mem_filter, tight_iff]
+  rintro ⟨-, ⟨-, hp, hq, hpq⟩, rfl, rfl⟩
+  exact h ⟨hp, hq, hpq⟩
 
 end Weights
 
