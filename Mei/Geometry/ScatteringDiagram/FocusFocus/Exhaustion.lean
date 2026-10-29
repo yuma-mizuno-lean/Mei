@@ -12,9 +12,10 @@ public import Mei.Geometry.Affine.FiniteRay.Hyperplane
 # Exhaustion of the focus-focus slab branches
 
 In one developed chart, crossing the focus-focus slab preserves the horizontal
-exponent. A finite ray whose bends lie on the slab therefore has constant
-horizontal velocity and meets the slab at most once. We derive this bound from
-the bend conditions, rather than requiring a one-crossing itinerary.
+exponent. A finite ray whose bends lie on the slab and whose direction increments
+preserve the horizontal component has constant horizontal velocity. If its
+horizontal direction is nonzero, it meets the slab at most once. We derive this
+bound from the bend conditions, rather than requiring a one-crossing itinerary.
 
 For endpoints in the opposite chamber, the ray is the existing `slabBranch` with
 its prescribed incoming and outgoing exponents. This identification concerns

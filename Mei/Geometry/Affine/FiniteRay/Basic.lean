@@ -112,6 +112,7 @@ theorem direction_straight (Q : P) (v : V) : (straight Q v).direction = v := (rf
 
 omit [Module ℝ V] [AddTorsor V P] in
 /-- A ray is the straight ray with its endpoint and direction exactly when it has no bends. -/
+@[simp]
 theorem eq_straight_iff (β : FiniteAffineRay V P) :
     β = straight β.endpoint β.direction ↔ β.bends = 0 := by
   constructor
