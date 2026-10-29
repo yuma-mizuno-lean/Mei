@@ -6,6 +6,7 @@ Authors: Codex
 module
 
 public import Mei.LinearAlgebra.ModuleFiltration.Completion
+public import Mei.CategoryTheory.Limits.Reindex
 
 /-!
 # Maps of filtered module completions
@@ -22,6 +23,10 @@ allow coefficient modules to be compared even when their truncation orders diffe
 -/
 
 public section
+
+open CategoryTheory CategoryTheory.Limits
+
+universe u v
 
 namespace Mei.ModuleFiltration
 
@@ -133,5 +138,57 @@ theorem completionMap_comp :
   intro k
   simp only [LinearMap.comp_apply, projection_completionMap, Function.comp_apply]
   rw [Submodule.mapQ_comp, LinearMap.comp_apply]
+
+section TowerMap
+
+variable {R : Type u} {M N : Type v} [Ring R]
+  [AddCommGroup M] [Module R M] [AddCommGroup N] [Module R N]
+  (F : ModuleFiltration R M) (G : ModuleFiltration R N) (f : M →ₗ[R] N)
+  (ρ : ℕ → ℕ) (hρ : Monotone ρ)
+  (hf : ∀ k, F.submodule (ρ k + 1) ≤ (G.submodule (k + 1)).comap f)
+
+/-- A filtered linear map gives a natural comparison of the quotient towers,
+reindexed by its cutoff modulus. -/
+def quotientTowerMap :
+    (⟨ρ, hρ⟩ : ℕ →o ℕ).toFunctor.op ⋙ F.quotientTower ⟶ G.quotientTower where
+  app k := ModuleCat.ofHom ((F.submodule (ρ k.unop + 1)).mapQ
+    (G.submodule (k.unop + 1)) f (hf k.unop))
+  naturality {k l} g := by
+    apply ModuleCat.hom_ext
+    apply LinearMap.ext
+    intro x
+    obtain ⟨x, rfl⟩ := (F.submodule (ρ k.unop + 1)).mkQ_surjective x
+    -- Express categorical composition in the concrete quotient modules.
+    change (F.submodule (ρ l.unop + 1)).mapQ (G.submodule (l.unop + 1)) f (hf l.unop)
+        (F.transition (hρ (leOfHom g.unop)) (Submodule.Quotient.mk x)) =
+      G.transition (leOfHom g.unop)
+        ((F.submodule (ρ k.unop + 1)).mapQ (G.submodule (k.unop + 1)) f (hf k.unop)
+          (Submodule.Quotient.mk x))
+    simp only [transition_mk, Submodule.mapQ_apply]
+
+/-- The components of the tower comparison are the induced maps on quotients. -/
+@[simp]
+theorem quotientTowerMap_app (k : ℕᵒᵖ) :
+    (F.quotientTowerMap G f ρ hρ hf).app k =
+      ModuleCat.ofHom ((F.submodule (ρ k.unop + 1)).mapQ
+        (G.submodule (k.unop + 1)) f (hf k.unop)) := (rfl)
+
+/-- Taking the categorical limit of the quotient comparison recovers the
+concrete filtered completion map. -/
+theorem completionMap_completionIsoLimit :
+    ModuleCat.ofHom (F.completionMap G f ρ hρ hf) ≫ G.completionIsoLimit.hom =
+      F.completionIsoLimit.hom ≫ (F.quotientTowerMap G f ρ hρ hf).reindexLimitMap := by
+  apply limit.hom_ext
+  intro k
+  simp only [Category.assoc, completionIsoLimit_hom_π, NatTrans.reindexLimitMap_π,
+    quotientTowerMap_app]
+  -- The reindexed tower object is the source quotient at the chosen cutoff.
+  erw [← Category.assoc, completionIsoLimit_hom_π]
+  apply ModuleCat.hom_ext
+  apply LinearMap.ext
+  intro x
+  exact F.projection_completionMap G f ρ hρ hf k.unop x
+
+end TowerMap
 
 end Mei.ModuleFiltration

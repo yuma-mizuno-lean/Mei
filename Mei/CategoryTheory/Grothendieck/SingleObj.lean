@@ -151,6 +151,11 @@ def singleObjFiber
     {a b : Grothendieck (F ⋙ forget₂ GrpCat MonCat ⋙ MonCat.toCat)}
     (f : a ⟶ b) : F.obj b.base := f.fiber
 
+/-- The group label of a total arrow is its fiber component. -/
+theorem singleObjFiber_def
+    {a b : Grothendieck (F ⋙ forget₂ GrpCat MonCat ⋙ MonCat.toCat)}
+    (f : a ⟶ b) : F.singleObjFiber f = f.fiber := (rfl)
+
 /-- Constructing a total arrow with a specified group element recovers that element. -/
 @[simp]
 theorem singleObjFiber_mk
