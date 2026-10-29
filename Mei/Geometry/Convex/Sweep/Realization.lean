@@ -72,6 +72,30 @@ theorem strictAnti_backwardParameter (Q : V)
   rw [backwardParameter_succ]
   exact sub_lt_self _ (hpos j)
 
+/-- Between encounters with a constant backward direction, propagation is one
+straight segment whose elapsed time is the difference of cumulative parameters.
+The formula also holds for zero or negative elapsed times. -/
+theorem backwardPoint_eq_add_of_constant (Q : V) (a b : Fin (n + 1))
+    (hab : a ≤ b) (w : V)
+    (hw : ∀ j : Fin n, a ≤ j.castSucc → j.succ ≤ b → u j = w) :
+    backwardPoint f c u b Q = backwardPoint f c u a Q +
+      (backwardParameter f c u a Q - backwardParameter f c u b Q) • w := by
+  induction b using Fin.induction with
+  | zero =>
+    have ha : a = 0 := le_antisymm hab (Fin.zero_le a)
+    simp [ha]
+  | succ j ih =>
+    by_cases ha : a = j.succ
+    · simp [ha]
+    · have haj : a ≤ j.castSucc := by
+        simp only [Fin.le_iff_val_le_val, Fin.val_succ, Fin.val_castSucc,
+          Fin.ext_iff] at hab ha ⊢
+        omega
+      rw [backwardPoint_succ_apply, hw j haj le_rfl,
+        ih haj (fun l hl hl' => hw l hl (hl'.trans (Fin.castSucc_le_succ j))),
+        backwardParameter_succ]
+      module
+
 variable (v : Fin (n + 1) → V) (Q : V)
   (hpos : ∀ j, 0 < backwardTime f c (fun j => v j.castSucc) j Q)
 
