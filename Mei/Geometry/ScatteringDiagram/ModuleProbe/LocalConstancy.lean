@@ -7,7 +7,6 @@ module
 
 public import Mei.Geometry.ScatteringDiagram.ModuleProbe.Crossing
 public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.LocalConstancy
-import Mathlib.Topology.LocallyConstant.Basic
 
 /-!
 # Local constancy of vertical probe coefficients
