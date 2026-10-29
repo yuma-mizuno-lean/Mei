@@ -9,22 +9,26 @@ public import Mei.Geometry.Convex.Polyhedron.Rational.Sweep
 public import Mei.Geometry.Convex.Polyhedron.Rational.LocallyClosed
 public import Mei.Geometry.Convex.Recession
 import Mei.Geometry.Convex.Polyhedron.Face
+import Mei.Geometry.Convex.Polyhedron.Escape
 
 /-!
 # Open ray encounters and eventual source admission
 
-The base points whose open positive ray meets a closed rational-normal polyhedron
-form a locally closed rational-normal polyhedron. The nonnegative sweep gives the
-weak conditions; rows increasing along the ray must additionally be strictly
-negative at its base. This excludes intersections occurring only at parameter zero,
-while retaining positive isolated intersections and rays tangent to the support.
+The base points whose open positive ray along a lattice vector meets a closed
+rational-normal polyhedron form a locally closed rational-normal polyhedron.
+The nonnegative sweep gives the weak conditions; rows increasing along the ray
+must additionally be strictly negative at its base. This excludes intersections
+occurring only at parameter zero, while retaining positive isolated intersections
+and rays tangent to the support.
 
-For a recession direction, eventual membership is a nonnegative sweep and therefore
-has a closed rational-normal domain. These two results supply wall avoidance and
-source admission for unbounded incoming segments.
+Eventual membership along a lattice vector has a closed rational-normal domain:
+it is a nonnegative sweep for recession directions and empty otherwise.
+These two results supply wall avoidance and source admission for unbounded incoming
+segments.
 
 The construction reuses `IsRationalNormalPolyhedron.negRay` and the active-inequality
-perturbation theorem `AffineMap.exists_pos_smul_add_forall_le`.
+perturbation theorem `AffineMap.exists_pos_smul_add_forall_le`, together with
+`Convex.eventually_forall_notMem_of_notMem_recessionCone` for nonrecession directions.
 -/
 
 public section
@@ -34,9 +38,10 @@ namespace Mei
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i} {P : Set V}
 
-/-- The base points of open positive rays meeting a closed rational-normal
-polyhedron form a locally closed rational-normal polyhedron. The vector may be zero
-or tangent to the polyhedron, and the intersection may be a single point. -/
+/-- The base points of open positive rays along a lattice vector meeting a closed
+rational-normal polyhedron form a locally closed rational-normal polyhedron.
+The vector may be zero or tangent to the polyhedron, and the intersection may be
+a single point. -/
 theorem IsRationalNormalPolyhedron.isLocallyClosedPolyhedron_posRay
     (hP : IsRationalNormalPolyhedron h P) (w : N) :
     IsLocallyClosedPolyhedron h {x : V | ∃ t : ℝ, 0 < t ∧ x + t • i w ∈ P} := by
@@ -73,12 +78,24 @@ theorem IsRationalNormalPolyhedron.isLocallyClosedPolyhedron_posRay
   exact hweak.isLocallyClosedPolyhedron_inter (fun j : J => A.inequality j.val)
     (fun j => A.rational_linear j.val)
 
-/-- Eventual admission along a lattice recession direction has a closed
-rational-normal domain, including for empty sources and zero directions. -/
+/-- Eventual admission along a lattice vector has a closed rational-normal domain,
+including for empty sources and zero directions. Outside the recession cone,
+the domain is empty. -/
 theorem IsRationalNormalPolyhedron.eventually_add_smul_mem
-    (hP : IsRationalNormalPolyhedron h P) (w : N) (hw : i w ∈ Set.recessionCone P) :
+    (hP : IsRationalNormalPolyhedron h P) (w : N) :
     IsRationalNormalPolyhedron h
       {x : V | ∀ᶠ t : ℝ in Filter.atTop, x + t • i w ∈ P} := by
-  simpa only [Set.eventually_add_smul_mem_atTop_iff hw] using hP.negRay w
+  by_cases hw : i w ∈ Set.recessionCone P
+  · simpa only [Set.eventually_add_smul_mem_atTop_iff hw] using hP.negRay w
+  · obtain ⟨A, rfl⟩ := isRationalNormalPolyhedron_iff.mp hP
+    have he : {x : V | ∀ᶠ t : ℝ in Filter.atTop, x + t • i w ∈ A.carrier} = ∅ := by
+      apply Set.eq_empty_iff_forall_notMem.mpr
+      intro x hx
+      have hescape := Convex.eventually_forall_notMem_of_notMem_recessionCone
+        A.isConvexPolyhedron hw (K := {x}) isCompact_singleton
+      obtain ⟨t, ht, htP⟩ := (hescape.and hx).exists
+      exact ht x (Set.mem_singleton x) htP
+    rw [he]
+    exact IsRationalNormalPolyhedron.empty h
 
 end Mei

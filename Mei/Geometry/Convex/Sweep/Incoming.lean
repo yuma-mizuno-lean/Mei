@@ -15,8 +15,8 @@ After the last selected backward encounter, the incoming segment continues along
 an unbounded ray. Its open part must avoid every active wall, and it must eventually
 lie in the specified incoming source. Adding these conditions to a backward
 itinerary preserves rational semilinearity when the velocities are lattice vectors,
-the walls and source are closed rational-normal polyhedra, and the incoming vector
-is a recession direction of the source. Thus the resulting endpoint domains admit
+the active wall family is finite, and the walls and source are closed
+rational-normal polyhedra. Thus the resulting endpoint domains admit
 the existing finite disjoint decomposition into locally closed polyhedra.
 
 The point at ray parameter zero is excluded from avoidance: it may be the last
@@ -80,7 +80,7 @@ theorem isRationalSemilinear_backwardIncomingDomain
     (u : Fin n → N) (q : N)
     (hf : ∀ j, Toric.IsRationalFunctional h (f j).toLinearMap)
     (hP : ∀ j, IsRationalSemilinear h (P j))
-    (hC : IsRationalNormalPolyhedron h C) (hq : i q ∈ Set.recessionCone C)
+    (hC : IsRationalNormalPolyhedron h C)
     (hW : ∀ b, IsRationalNormalPolyhedron h (W b)) :
     IsRationalSemilinear h
       (backwardIncomingDomain f c (fun j => i (u j)) P (i q) C W) := by
@@ -92,7 +92,7 @@ theorem isRationalSemilinear_backwardIncomingDomain
       (((hW b).isLocallyClosedPolyhedron_posRay q).isRationalSemilinear.compl).preimage X hX
   have hsource : IsRationalSemilinear h
       (X ⁻¹' {x : V | ∀ᶠ t : ℝ in Filter.atTop, x + t • i q ∈ C}) :=
-    ((hC.eventually_add_smul_mem q hq).preimage X hX).isLocallyClosedPolyhedron.isRationalSemilinear
+    ((hC.eventually_add_smul_mem q).preimage X hX).isLocallyClosedPolyhedron.isRationalSemilinear
   convert (isRationalSemilinear_backwardDomain f c u hf hP).inter
     (havoid.inter hsource) using 1
   ext Q
