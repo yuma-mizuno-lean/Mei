@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Algebra.Lie.Logarithmic.Grading
-public import Mei.Algebra.MonoidAlgebra.Filtration
+public import Mei.Algebra.MonoidAlgebra.WeightedMap
 public import Mei.Algebra.Lie.Filtered.BCH
 
 /-!
@@ -148,6 +148,18 @@ theorem filtration_ideal {R : Type*} [Semiring R] (k : ℕ) :
     (filtration (R := R) d Q).ideal k =
       (d.monoid.comap Q.subtype).monoidAlgebraIdeal (d.degree.comp Q.subtype) k := by
   rw [filtration, AddSubmonoid.monoidAlgebraFiltration_ideal]
+
+/-- Weighted coefficient maps preserve the positive-increment filtration, including
+specializations that kill coefficients or weights. -/
+theorem filtration_ideal_le_comap_weightedMap
+    {K R S : Type*} [CommSemiring K] [Semiring R] [CommSemiring S]
+    [Algebra K R] [Algebra K S]
+    (φ : R →ₐ[K] S) (χ : Multiplicative Q →* S) (k : ℕ) :
+    (filtration (R := R) d Q).ideal k ≤
+      ((filtration (R := S) d Q).ideal k).comap (weightedMap φ χ) := by
+  simpa only [filtration_ideal] using
+    (d.monoid.comap Q.subtype).monoidAlgebraIdeal_le_comap_weightedMap
+      (d.degree.comp Q.subtype) φ χ k
 
 section Map
 

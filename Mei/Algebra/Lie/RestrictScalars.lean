@@ -35,6 +35,20 @@ instance instLieAlgebraRestrictScalars (K : LieSubalgebra S L) : LieAlgebra R K 
 
 end LieSubalgebra
 
+namespace LieModule
+
+/-- Restricting compatible scalars preserves a Lie module action on the same carrier. -/
+theorem restrictScalars {R S L M : Type*} [CommRing R] [CommRing S] [Algebra R S]
+    [LieRing L] [LieAlgebra S L] [LieAlgebra R L] [IsScalarTower R S L]
+    [AddCommGroup M] [Module S M] [Module R M] [IsScalarTower R S M]
+    [LieRingModule L M] [LieModule S L M] : LieModule R L M where
+  smul_lie t x m := by
+    rw [← IsScalarTower.algebraMap_smul S t x, smul_lie, IsScalarTower.algebraMap_smul]
+  lie_smul t x m := by
+    rw [← IsScalarTower.algebraMap_smul S t m, lie_smul, IsScalarTower.algebraMap_smul]
+
+end LieModule
+
 namespace LieSubmodule
 
 variable {R S L M : Type*} [CommRing R] [CommRing S] [LieRing L]
