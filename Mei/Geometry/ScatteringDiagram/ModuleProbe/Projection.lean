@@ -6,6 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.ScatteringDiagram.ModuleProbe.Completion
+public import Mei.Algebra.Group.Hom.Conjugation
 
 /-!
 # Recovering base labels from module probes
@@ -17,12 +18,14 @@ embedded relative-order-`k` coefficient module; the completed kernel consists
 precisely of completed coefficient labels. Thus forgetting the probe coefficient
 retains the base label without requiring a faithful coefficient action.
 The kernel equivalence extracts coefficients, with their finite logarithmic
-projections and the base-conjugation action.
+projections. Conjugation by any probe label acts on coefficients through its
+base projection, both at finite order and after completion.
 
 We use Mathlib's `LieAlgebra.SemiDirectSum.projr`, the degree-ideal splitting in
 `ModuleProbe.mem_degreeIdeal_succ`, and the finite and completed coefficient
 inclusions. The kernel equivalence uses Mathlib's `MonoidHom.ofInjective`;
-its conjugation formula uses `base_conj_completedModuleBCHInclusion`.
+its conjugation formula uses `base_conj_completedModuleBCHInclusion` and
+`MonoidHom.conj_eq_of_apply_eq`.
 The use of this semidirect extension to recover coefficient transport
 follows Mandel, *Scattering diagrams, theta functions, and refined tropical curve
 counts*, §3.3.3 (arXiv:1503.06183v5).
@@ -132,6 +135,32 @@ theorem baseBCHProjection_eq_one_iff (k : ℕ)
     exact ⟨_, he⟩
   · rintro ⟨a, rfl⟩
     simp
+
+/-- Any finite probe label acts on module labels by its projected base action.
+The base is truncated once more to act on relative order `k` coefficients. -/
+theorem conj_moduleBCHInclusion (k : ℕ)
+    (g : BCHGroup ((positiveDegrees d p).truncatedLie (grading d ℳ p ℒ) (k + 1)))
+    (a : Multiplicative ((d.shiftedFiltration ℳ p).quotient k)) :
+    g * moduleBCHInclusion d ℳ p ℒ k a * g⁻¹ =
+      moduleBCHInclusion d ℳ p ℒ k (Multiplicative.ofAdd
+      ((d.shiftedLieFiltration ℒ ℳ p).truncatedBCHAction d ℒ k
+        ((d.truncationMap ℒ (Nat.le_succ k)).bchGroupMap
+          ((baseQuotientProjection d ℳ p ℒ (k + 1)).bchGroupMap g))
+        a.toAdd)) := by
+  let b := (baseQuotientProjection d ℳ p ℒ (k + 1)).bchGroupMap g
+  let s := ((baseGradedLieHom d ℳ p ℒ).truncatedMap (a := k + 1) (k + 1)
+    (by simp)).bchGroupMap
+  have hs : (baseQuotientProjection d ℳ p ℒ (k + 1)).bchGroupMap (s b) = b := by
+    apply BCHGroup.log_injective
+    simp [s]
+  have hker : (baseQuotientProjection d ℳ p ℒ (k + 1)).bchGroupMap.ker ≤
+      (moduleBCHInclusion d ℳ p ℒ k).range := by
+    intro x hx
+    obtain ⟨c, hc, _⟩ := (baseBCHProjection_eq_one_iff d ℳ p ℒ k x).mp hx
+    exact ⟨c, hc⟩
+  exact ((baseQuotientProjection d ℳ p ℒ (k + 1)).bchGroupMap.conj_eq_of_apply_eq
+    (moduleBCHInclusion d ℳ p ℒ k) hker hs.symm a).trans
+    (base_conj_moduleBCHInclusion d ℳ p ℒ k b a)
 
 private def baseProjectionComponent (k : ℕ) :
     (positiveDegrees d p).completedBCHGroup (grading d ℳ p ℒ) →* d.truncatedGroup ℒ k :=
@@ -322,6 +351,16 @@ theorem range_completedModuleBCHInclusion : (ι).range = (π).ker := by
     completedBaseProjection_eq_one_iff,
     (completedModuleBCHInclusion_injective d ℳ p ℒ).existsUnique_iff_exists]
 
+/-- Any completed probe label acts on completed coefficients by its base
+projection, even when it has nonzero module components at infinitely many orders. -/
+theorem conj_completedModuleBCHInclusion (g : G) (a : Multiplicative C) :
+    g * ι a * g⁻¹ = ι (Multiplicative.ofAdd
+      ((d.shiftedLieFiltration ℒ ℳ p).completedBCHAction d ℒ (π g) a.toAdd)) := by
+  have he := (π).conj_eq_of_apply_eq (ι)
+    (le_of_eq (range_completedModuleBCHInclusion d ℳ p ℒ).symm)
+    (completedBaseProjection_base d ℳ p ℒ (π g)).symm a
+  exact he.trans (base_conj_completedModuleBCHInclusion d ℳ p ℒ (π g) a)
+
 /-- The unique completed coefficient of a label with trivial base. Products of
 labels correspond to addition in the coefficient module. -/
 def completedKernelEquiv : (π).ker ≃* Multiplicative C :=
@@ -365,21 +404,17 @@ theorem projection_completedKernelEquiv (g : (π).ker) (k : ℕ) :
     toAdd_ofAdd] at he
   rw [← he, BCHGroup.log_exp, moduleQuotientProjection_inclusion]
 
-/-- Extracting a conjugated vertical label gives the existing completed BCH
-action on its coefficient. -/
-theorem completedKernelEquiv_base_conj (b : d.completedBCHGroup ℒ) (g : (π).ker) :
+/-- Extracting a conjugated kernel label gives the base action on its
+coefficient, for an arbitrary transporting probe label. -/
+theorem completedKernelEquiv_conj (g : G) (a : (π).ker) :
     (completedKernelEquiv d ℳ p ℒ
-      ⟨(baseGradedLieHom d ℳ p ℒ).completedMap b * g.val *
-        ((baseGradedLieHom d ℳ p ℒ).completedMap b)⁻¹, by
-          simp only [MonoidHom.mem_ker, map_mul, map_inv,
-            completedBaseProjection_base, MonoidHom.mem_ker.mp g.property,
-            mul_one, mul_inv_cancel]⟩).toAdd =
-      (d.shiftedLieFiltration ℒ ℳ p).completedBCHAction d ℒ b
-        (completedKernelEquiv d ℳ p ℒ g).toAdd := by
+      ⟨g * a.val * g⁻¹, by simp [MonoidHom.mem_ker.mp a.property]⟩).toAdd =
+      (d.shiftedLieFiltration ℒ ℳ p).completedBCHAction d ℒ (π g)
+        (completedKernelEquiv d ℳ p ℒ a).toAdd := by
   apply Multiplicative.ofAdd.injective
   apply completedModuleBCHInclusion_injective d ℳ p ℒ
   simp only [ofAdd_toAdd, completedModuleBCHInclusion_completedKernelEquiv]
-  rw [← base_conj_completedModuleBCHInclusion,
+  rw [← conj_completedModuleBCHInclusion,
     completedModuleBCHInclusion_completedKernelEquiv]
 
 end Mei.ModuleProbe
