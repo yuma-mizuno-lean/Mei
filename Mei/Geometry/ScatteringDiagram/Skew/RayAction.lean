@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.ScatteringDiagram.Skew.Embedding
+public import Mei.Geometry.ScatteringDiagram.Skew.Coefficient
 public import Mei.Algebra.Lie.Skew.Ray
 public import Mei.Algebra.Lie.Logarithmic.WallFunction
 public import Mei.RingTheory.FilteredAlgebra.PowerSeries.Log
@@ -56,26 +56,6 @@ local notation "ℳ" => tropicalVertexGrading (R := R) e ρ
 local notation "β" => D.coefficientForm R
 local notation "hβ" => D.isAlt_coefficientForm R
 local notation "κ" => algebraMap ℚ R ((s : ℚ) * D.sublattice.toAddSubgroup.rayIndex n)
-
-omit [Module.Free ℤ N] [Algebra ℚ R] [DecidableEq D.unfrozen]
-  [DecidableEq (Module.Dual ℤ D.sublattice)] in
-include hn hn0 in
-/-- The monomial at the principal embedding of a positive degree lies in the first
-completed ideal, for any coefficient monoid containing it. -/
-theorem toCompletion_single_principalEmbedding_mem_first
-    (P : AddSubmonoid Lpr) (q : P) (hq : q.val = D.principalEmbedding n) :
-    (TropicalVertexCoefficientAction.filtration (R := R) e P).toCompletion (single q 1) ∈
-      (TropicalVertexCoefficientAction.filtration (R := R) e P).completionIdeal 1 := by
-  have hpos : (q : Lpr) ∈ (e).monoid := by
-    rw [hq, principalEmbedding_apply, PositiveDegrees.mem_graph_monoid]
-    exact ⟨hn, rfl⟩
-  have hdegree : (1 : ℤ) ≤ (e).degree q := by
-    rw [hq, principalEmbedding_apply, PositiveDegrees.graph_degree]
-    exact d.degree_pos hn hn0
-  rw [AlgFiltration.toCompletion_mem_completionIdeal_iff,
-    TropicalVertexCoefficientAction.filtration_ideal,
-    AddSubmonoid.single_mem_monoidAlgebraIdeal_iff]
-  exact Or.inr ⟨q, hpos, hdegree, 0, by simp⟩
 
 section Potential
 

@@ -115,6 +115,27 @@ theorem mem_principalCoefficientFiltration_ideal_iff [Semiring R] (k : ℕ) (a :
     · apply Subtype.ext
       simp [n, q]
 
+omit [Algebra ℚ R] in
+/-- The monomial at the principal embedding of a positive degree lies in the first
+completed ideal, for any coefficient monoid containing it. -/
+theorem toCompletion_single_principalEmbedding_mem_first
+    {n : D.unfrozen} (hn : n ∈ d.monoid) (hn0 : n ≠ 0)
+    (P : AddSubmonoid Lpr) (q : P) (hq : q.val = D.principalEmbedding n) :
+    (TropicalVertexCoefficientAction.filtration
+        (R := R) (D.principalPositiveDegrees d) P).toCompletion (single q 1) ∈
+      (TropicalVertexCoefficientAction.filtration
+        (R := R) (D.principalPositiveDegrees d) P).completionIdeal 1 := by
+  have hpos : (q : Lpr) ∈ (D.principalPositiveDegrees d).monoid := by
+    rw [hq, principalEmbedding_apply, PositiveDegrees.mem_graph_monoid]
+    exact ⟨hn, rfl⟩
+  have hdegree : (1 : ℤ) ≤ (D.principalPositiveDegrees d).degree q := by
+    rw [hq, principalEmbedding_apply, PositiveDegrees.graph_degree]
+    exact d.degree_pos hn hn0
+  rw [AlgFiltration.toCompletion_mem_completionIdeal_iff,
+    TropicalVertexCoefficientAction.filtration_ideal,
+    AddSubmonoid.single_mem_monoidAlgebraIdeal_iff]
+  exact Or.inr ⟨q, hpos, hdegree, 0, by simp⟩
+
 /-- Each principal coefficient of the action on a monomial recovers the
 corresponding skew coefficient times the principal evaluation character. -/
 @[simp]
