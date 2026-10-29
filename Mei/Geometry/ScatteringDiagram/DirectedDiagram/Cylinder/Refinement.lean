@@ -59,12 +59,12 @@ def cylinder (r : D.Refinement F) : (D.cylinder h').Refinement (F.cylinder h') w
   support_subset a := by
     simp only [cylinder_wall, DirectedWall.cylinder_support]
     exact prod_mono_left (r.support_subset ⟨a.val, by simpa using a.property⟩)
-  support_subset_iUnion a ha x hx := by
-    simp only [cylinder_wall, DirectedWall.cylinder_support, mem_prod, mem_univ, and_true] at hx
-    simp only [cylinder_wall, DirectedWall.cylinder_support]
-    obtain ⟨b, hb, hxb⟩ := mem_iUnion₂.mp (r.support_subset_iUnion a
-      (by simpa using ha) hx)
-    exact mem_iUnion₂.mpr ⟨⟨b.val, by simpa using b.property⟩, hb, hxb, mem_univ _⟩
+  support_subset_iUnion a ha := by
+    simp only [cylinder_wall, DirectedWall.cylinder_support, ← iUnion₂_prod_const]
+    apply prod_mono_left
+    simpa only [iUnion_subtype, cylinder_wall, DirectedWall.cylinder_label,
+      mem_preimage, mem_singleton_iff] using
+      r.support_subset_iUnion a (by simpa using ha)
   pairwiseDisjoint_intrinsicInterior a b hb c hc hbc := by
     simp only [cylinder_wall, DirectedWall.cylinder_support, intrinsicInterior_prod_eq]
     exact (r.pairwiseDisjoint_intrinsicInterior a hb hc
@@ -86,23 +86,23 @@ def ofCylinder (r : (D.cylinder h').Refinement (F.cylinder h')) : D.Refinement F
     ext x
     simpa using DFunLike.congr_fun hn (x, 0)
   label_eq a := by simpa using r.label_eq ⟨a.val, by simpa using a.property⟩
-  support_subset a x hx := by
+  support_subset a := by
     have hs := r.support_subset ⟨a.val, by simpa using a.property⟩
     simp only [cylinder_wall, DirectedWall.cylinder_support] at hs
-    exact (@hs (x, (0 : E)) ⟨hx, mem_univ _⟩).1
-  support_subset_iUnion a ha x hx := by
+    exact (prod_subset_prod_iff_left univ_nonempty).mp hs
+  support_subset_iUnion a ha := by
     have hs := r.support_subset_iUnion a (by simpa using ha)
-    simp only [cylinder_wall, DirectedWall.cylinder_support] at hs
-    obtain ⟨b, hb, hxb⟩ := mem_iUnion₂.mp (@hs (x, (0 : E)) ⟨hx, mem_univ _⟩)
-    exact mem_iUnion₂.mpr ⟨⟨b.val, by simpa using b.property⟩, hb, hxb.1⟩
+    simp only [cylinder_wall, DirectedWall.cylinder_support, ← iUnion₂_prod_const] at hs
+    simpa only [iUnion_subtype, cylinder_wall, DirectedWall.cylinder_label,
+      mem_preimage, mem_singleton_iff] using
+      (prod_subset_prod_iff_left univ_nonempty).mp hs
   pairwiseDisjoint_intrinsicInterior a b hb c hc hbc := by
     have hd := r.pairwiseDisjoint_intrinsicInterior a hb hc
       (fun he => hbc (Subtype.ext (Subtype.mk.inj he)))
     simp only [cylinder_wall, DirectedWall.cylinder_support, intrinsicInterior_prod_eq] at hd
     have h0 : (0 : E) ∈ intrinsicInterior ℝ (univ : Set E) :=
       interior_subset_intrinsicInterior (by simp)
-    have hd' := disjoint_left.mp hd
-    exact disjoint_left.mpr fun x hx hy => @hd' (x, (0 : E)) ⟨hx, h0⟩ ⟨hy, h0⟩
+    exact (disjoint_prod.mp hd).resolve_right (not_disjoint_iff.mpr ⟨0, h0, h0⟩)
 
 /-- Descending a cylinder refinement leaves its wall assignment unchanged. -/
 @[simp]
