@@ -32,8 +32,9 @@ increments `u_i`, rotate strictly in one direction, beginning on the side of the
 direction `(d₁, d₂)` facing `(a, b)`. If there are two bends, the first increment is a lattice
 point `(a₁, b₁)` with `a₁ ≤ k a` and `b₁ ≤ k b` strictly between the directions `(d₁, d₂)` and
 `(a, b)`. Here "strictly between" means that `d₁ b₁ - d₂ a₁` and
-`a₁ b - b₁ a` both have the sign of `Δ`; for `b₁ > 0` this says that `a₁ / b₁` lies strictly
-between `a / b` and `d₁ / d₂`. The absence of such lattice points therefore implies
+`a₁ b - b₁ a` both have the sign of `Δ`; when `b > 0`, `d₂ > 0`, and `b₁ > 0`, this says
+that `a₁ / b₁` lies strictly between `a / b` and `d₁ / d₂`. The determinant formulation also
+covers zero denominators. The absence of such lattice points therefore implies
 one-bending (`RankTwo.oneBending_of_forall_not_between`). Coprimality of `a` and `b` is not
 needed for this implication.
 
@@ -47,7 +48,8 @@ bends at `(-6, -4)` and on the negative `y`-axis, its first increment being the 
 
 ## Main definitions and statements
 
-* `Mei.RankTwo.IsNegativeRayBend`: a bend at `-s • u` with exponent increment `u ∈ ℕ²`.
+* `Mei.RankTwo.IsNegativeRayBend`: a condition on bend data at `-s • u` with exponent increment
+  `u ∈ ℕ²`; an actual bend additionally requires `t ∈ β.bends.support`.
 * `Mei.RankTwo.OneBending`: the one-bending property of a rectangle.
 * `Mei.RankTwo.oneBending_of_forall_not_between`: the lattice test for one-bending.
 * `Mei.RankTwo.oneBending_of_lt_of_le_snd`, `Mei.RankTwo.oneBending_of_lt_of_le_fst`:
@@ -68,15 +70,17 @@ namespace Mei.RankTwo
 open FiniteAffineRay
 open Prod (det det_apply det_isAlt det_trans)
 
-/-- A finite ray in `ℝ²` bends at time `t` on the open ray `ℝ_{<0} u` spanned by the negative
-of a lattice vector `u ∈ ℕ²`, with exponent increment `u`; that is, its backward direction
-increment at `t` is `-u`. These are the bends of broken lines on the negative coordinate axes
-and on the outgoing rays `ℝ_{≤0} (a', b')` of a rank-two scattering diagram. -/
+/-- A condition on the bend data of a finite ray in `ℝ²` at time `t`: its position is `-s • u`
+for `s > 0` and a lattice vector `u ∈ ℕ²`, and its backward direction increment is `-u`.
+This allows `u = 0` at the origin; an actual bend additionally requires
+`t ∈ β.bends.support`. At such a time, this describes a bend on a negative coordinate axis
+or on an outgoing ray `ℝ_{≤0} (a', b')` of a rank-two scattering diagram. -/
 def IsNegativeRayBend (β : FiniteAffineRay (ℝ × ℝ) (ℝ × ℝ)) (t : ℝ) : Prop :=
   ∃ u : ℕ × ℕ, β.bends t = (-(u.1 : ℝ), -(u.2 : ℝ)) ∧
     ∃ s : ℝ, 0 < s ∧ β t = (-(s * u.1), -(s * u.2))
 
-/-- Characterize a negative-ray bend by its lattice increment and bend position. -/
+/-- Characterize negative-ray bend data by its lattice increment and position.
+An actual bend additionally requires `t ∈ β.bends.support`. -/
 theorem isNegativeRayBend_iff (β : FiniteAffineRay (ℝ × ℝ) (ℝ × ℝ)) (t : ℝ) :
     IsNegativeRayBend β t ↔
       ∃ u : ℕ × ℕ, β.bends t = (-(u.1 : ℝ), -(u.2 : ℝ)) ∧
