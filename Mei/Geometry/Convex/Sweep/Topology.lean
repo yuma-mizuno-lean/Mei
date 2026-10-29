@@ -50,7 +50,7 @@ theorem sweepProjection_apply (f : V →L[ℝ] ℝ) (c : ℝ) (n y : V) :
 /-- The linear part of a sweep projection subtracts the normal component along
 the sweeping vector. -/
 @[simp]
-theorem sweepProjection_linear (f : V →L[ℝ] ℝ) (c : ℝ) (n : V) :
+theorem _root_.ContinuousLinearMap.sweepProjection_linear (f : V →L[ℝ] ℝ) (c : ℝ) (n : V) :
     (sweepProjection f c n).toAffineMap.linear =
       LinearMap.id - f.toLinearMap.smulRight n := by
   ext x
