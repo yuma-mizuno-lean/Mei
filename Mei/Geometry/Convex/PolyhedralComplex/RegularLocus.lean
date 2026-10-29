@@ -7,7 +7,6 @@ module
 
 public import Mei.Geometry.Convex.PolyhedralComplex.Chamber
 public import Mei.Geometry.Convex.PolyhedralComplex.Subdivision
-public import Mei.Geometry.Affine.Generic
 public import Mathlib.Topology.Category.TopCat.Basic
 
 /-!
@@ -161,13 +160,7 @@ theorem coefficientCharts_isBasis : Opens.IsBasis C.coefficientCharts := by
   let B : Opens C.regularSpace :=
     ⟨Subtype.val ⁻¹' Metric.ball x.val ε, Metric.isOpen_ball.preimage continuous_subtype_val⟩
   have hB : Subtype.val '' (B : Set C.regularSpace) = Metric.ball x.val ε := by
-    ext y
-    constructor
-    · rintro ⟨z, hz, rfl⟩
-      exact hz
-    · intro hy
-      obtain ⟨z, hz, rfl⟩ := hεU hy
-      exact ⟨z, hy, rfl⟩
+    exact Set.image_preimage_eq_of_subset (hεU.trans (Set.image_subset_range _ _))
   refine ⟨B, ?_, Metric.mem_ball_self hε, ?_⟩
   · simpa only [coefficientCharts, mem_ofPred_eq, hB] using convex_ball x.val ε
   · intro y hy

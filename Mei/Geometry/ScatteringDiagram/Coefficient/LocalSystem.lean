@@ -5,8 +5,9 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.ScatteringDiagram.CoefficientTransport
+public import Mei.Geometry.ScatteringDiagram.Coefficient.Transport
 public import Mei.Topology.Sheaves.DenseBasisTransport
+public import Mei.Topology.Sheaves.LocallyConstant
 public import Mei.Geometry.Convex.PolyhedralComplex.RegularLocus
 
 /-!
@@ -102,7 +103,7 @@ instance coefficientLocalSystem_hasLocallyBijectivePreconnectedRestrictions :
     (D.coefficientLocalSystem M).HasLocallyBijectivePreconnectedRestrictions where
   exists_bijective_restrictions x := by
     obtain ⟨B, hB, hxB, _⟩ := Opens.isBasis_iff_nbhd.mp C.coefficientCharts_isBasis
-      (show x ∈ (⊤ : Opens C.regularSpace) from mem_univ x)
+      (Opens.mem_top x)
     exact ⟨B, hxB, fun V hVB hne hcV =>
       (D.coefficientTransport M).restriction_bijective hB le_rfl
         (C.coefficientChart_preconnected hB) hVB hne hcV⟩

@@ -5,7 +5,6 @@ Authors: Codex
 -/
 module
 
-public import Mei.Topology.Sheaves.LocallyConstant
 public import Mathlib.Topology.Sheaves.LocalPredicate
 public import Mei.Topology.LocallyConstant.Extend
 
@@ -156,14 +155,14 @@ theorem exists_normalized {B U : Opens X} (hB : B ∈ T.basis) (hUB : U ≤ B)
     ∃ g : LocallyConstant U M, ∀ (x : S) (hx : x.val ∈ U),
       g ⟨x.val, hx⟩ = T.transport B hB x a (hUB hx) ha (T.value s x hx) := by
   let A := {x : S // x.val ∈ U}
-  let f : A → U := fun x => ⟨x.val.val, x.property⟩
+  let f : A → U := (U : Set X).restrictPreimage (Subtype.val : S → X)
   have hd : DenseRange f := by
     have hdU : Dense (((↑) : U → X) ⁻¹' S) :=
       T.dense.preimage U.isOpen.isOpenMap_subtype_val
     have hr : range f = ((↑) : U → X) ⁻¹' S := by
-      ext x
-      exact ⟨fun ⟨y, hy⟩ => hy ▸ y.val.property,
-        fun hx => ⟨⟨⟨x.val, hx⟩, x.property⟩, rfl⟩⟩
+      rw [Set.range_restrictPreimage, Subtype.range_coe_subtype]
+      -- The open and its underlying set have the same subtype projection.
+      rfl
     -- Express density using the range of the two nested subtype projections.
     simpa only [DenseRange, hr] using hdU
   let g : A → M := fun x =>
@@ -180,6 +179,7 @@ theorem exists_normalized {B U : Opens X} (hB : B ∈ T.basis) (hUB : U ≤ B)
     have hn : ∀ᶠ y : U in 𝓝 x, y.val ∈ C :=
       (C.isOpen.preimage continuous_subtype_val).mem_nhds hxC
     filter_upwards [hn.comap f] with y hy
+    simp only [f, Set.restrictPreimage_coe] at hy
     have hp := hsW C hC hCW z' y.val hzC hy
     rw [T.transport_restrict hC hB (hCU.trans hUB)] at hp
     have hp' : T.transport B hB z' y.val (hUB (hCU hzC)) (hUB y.property)
