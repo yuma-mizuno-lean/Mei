@@ -200,7 +200,7 @@ is a finite sum over multiplicities of inverse linear factors. The input
 exponent can be any Laurent exponent. The formal parameter records the ray
 multiple; its coefficient is a scalar multiple of the monomial at
 exponent `p + j • n`. -/
-theorem coeff_quantumDilogarithm_conj_of_nonpos (r j : ℕ) (hr : β n p = -(r : ℤ)) :
+theorem coeff_quantumDilogarithm_conj_of_pairing_nonpos (r j : ℕ) (hr : β n p = -(r : ℤ)) :
     coeff j
       (evalMonomial (monomial q β n) (Units.quantumDilogarithm q hq) *
         C (monomial q β p) *
@@ -230,7 +230,7 @@ theorem coeff_quantumDilogarithm_conj_of_pairing_neg_one (j : ℕ) (hp : β n p 
         evalMonomial (monomial q β n)
           (invOfUnit (Units.quantumDilogarithm q hq) 1)) =
       (-1 : R) ^ j • monomial q β (p + j • n) := by
-  have hc := coeff_quantumDilogarithm_conj_of_nonpos q β hβ n p hq 1 j (by simpa using hp)
+  have hc := coeff_quantumDilogarithm_conj_of_pairing_nonpos q β hβ n p hq 1 j (by simpa using hp)
   have hs : Finset.finsuppAntidiag (Finset.range 1) j = {Finsupp.single 0 j} := by
     ext l
     simp only [Finset.mem_finsuppAntidiag, Finset.range_one, Finset.sum_singleton,
