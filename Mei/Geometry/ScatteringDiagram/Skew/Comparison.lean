@@ -7,7 +7,7 @@ module
 
 public import Mei.Geometry.ScatteringDiagram.Skew.Basic
 public import Mei.Geometry.Toric.Algebraic.DualLattice
-public import Mei.Geometry.Convex.Polyhedron.Rational.Cone
+public import Mei.Geometry.Convex.Polyhedron.Rational
 public import Mei.Geometry.Convex.Recession
 
 /-!
@@ -43,34 +43,6 @@ variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ 
   (D : SkewLatticeDatum N)
   (hD : ∀ a b, ∃ k : ℤ, D.form a b = k)
   {i : N →+ V} (h : TauCeti.Toric.IsIntegralLattice i)
-
-/-- The integer-valued skew character `n ↦ {n,-}`, when the form is integral
-on the whole lattice. -/
-def integralCharacter : N →ₗ[ℤ] Module.Dual ℤ N :=
-  D.form.codRestrict₂ (Algebra.linearMap ℤ ℚ) Int.cast_injective (fun a b => by
-    obtain ⟨k, hk⟩ := hD a b
-    exact ⟨k, hk.symm⟩)
-
-/-- The integral character retains the given rational form. -/
-@[simp]
-theorem cast_integralCharacter_apply (a b : N) :
-    (D.integralCharacter hD a b : ℚ) = D.form a b := by
-  unfold integralCharacter
-  simpa only [Algebra.linearMap_apply, algebraMap_int_eq, Int.coe_castRingHom] using
-    (LinearMap.codRestrict₂_apply D.form (Algebra.linearMap ℤ ℚ)
-      Int.cast_injective _ a b)
-
-/-- The integral character is alternating. -/
-@[simp]
-theorem integralCharacter_self (n : N) : D.integralCharacter hD n n = 0 := by
-  apply Int.cast_injective (α := ℚ)
-  simp
-
-/-- Skew symmetry of the integral character. -/
-theorem integralCharacter_swap (a b : N) :
-    D.integralCharacter hD b a = -D.integralCharacter hD a b := by
-  apply Int.cast_injective (α := ℚ)
-  rw [Int.cast_neg, cast_integralCharacter_apply, cast_integralCharacter_apply, D.form_swap]
 
 /-- The real comparison map extending the integral skew character into the
 continuous dual of the lattice space. -/
@@ -169,8 +141,9 @@ theorem mem_recessionCone_skewComparison_preimage (σ : PointedCone ℝ (V →L[
       D.skewComparison hD h x ∈ σ := by
   rw [← PointedCone.coe_comap, PointedCone.recessionCone_coe, PointedCone.mem_comap]
 
-/-- The primitive-degree normalized normal pulls back with its positive ray-index
-factor. The comparison may have a kernel and the pulled-back normal may vanish. -/
+/-- The primitive-degree normalized normal pulls back with its ray-index factor,
+which is positive when `n ≠ 0` and zero when `n = 0`. The comparison may have a
+kernel and the pulled-back normal may vanish. -/
 theorem realCharacter_normal_eq_smul_eval_comp_skewComparison
     {n : N} (hn : n ∈ D.unfrozen) :
     let _ := h.free
@@ -210,8 +183,10 @@ theorem skewComparison_preimage_subset_ker_normal {n : N} (hn : n ∈ D.unfrozen
   rw [hσ _ hx, mul_zero]
 
 /-- If the pulled-back normal is nonzero and the cone pullback has codimension
-one, this normal cuts out exactly its affine direction. Thus the pullback has
-precisely the support geometry required of a directed wall. -/
+one, this normal cuts out exactly its affine direction, giving the affine-direction
+condition for a directed wall. Rational-normal polyhedrality additionally requires
+`IsRationalNormalPolyhedron h.continuousDual (σ : Set (V →L[ℝ] ℝ))` and follows from
+`isRationalNormalPolyhedron_skewComparison_preimage`. -/
 theorem direction_skewComparison_preimage {n : N} (hn : n ∈ D.unfrozen)
     (σ : PointedCone ℝ (V →L[ℝ] ℝ))
     (hσ : ∀ θ ∈ σ, θ (i n) = 0)
