@@ -340,6 +340,26 @@ theorem wallPathProduct_comp (p : AdmissiblePLPath x y) (q : AdmissiblePLPath y 
       q.wallPathProduct ν label hcomm * p.wallPathProduct ν label hcomm := by
   simp only [wallPathProduct, weight_comp, MulOpposite.unop_mul]
 
+/-- Prefix two stationary segments, preserving transport and supplying a free
+interior vertex even when the original path is constant. -/
+theorem exists_vertices_eq_cons_wallPathProduct_eq
+    (hclosed : ∀ i, IsClosed (W i)) (ν : ι → V →ₗ[ℝ] ℝ) (label : ι → G)
+    (comm : ∀ i j, affineSpan ℝ (W i) = affineSpan ℝ (W j) →
+      Commute (label i) (label j))
+    {x y : WallComplement W} (p : AdmissiblePLPath x y) :
+    ∃ q : AdmissiblePLPath x y,
+      q.vertices.map WallComplement.val = x.val :: x.val :: p.vertices.map WallComplement.val ∧
+      q.wallPathProduct ν label comm = p.wallPathProduct ν label comm := by
+  let e : x ⟶ x := ⟨AdmissibleSegment.refl x (by
+    intro hs
+    obtain ⟨i, hi⟩ := mem_iUnion.mp (singularSupport_subset_iUnion W hclosed hs)
+    exact x.notMem i hi)⟩
+  refine ⟨(e.toPath.cons e).comp p, ?_, ?_⟩
+  · simp only [vertices_comp, vertices_cons, vertices_toPath, List.concat_eq_append,
+      List.cons_append, List.nil_append, List.dropLast_cons_cons,
+      List.dropLast_singleton, List.map_cons]
+  · simp
+
 /-- Reversing every segment reverses the total transport. -/
 @[simp]
 theorem wallPathProduct_reverse
