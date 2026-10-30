@@ -110,21 +110,17 @@ variable (Q : AddSubmonoid (Module.Dual ℤ N × (I.Letter → ℤ)))
 
 local notation "G" => TropicalVertexCoefficientAction.filtration (R := R) 𝒅 Q
 
-variable (hQ : ∀ i : B.unfrozenIndex,
-  (B.basis.coord i, 0) ∈ Q ∧ (-B.basis.coord i, 0) ∈ Q)
-
-include hQ
-
 /-- The initial polynomial is the wall function of the grouped ray walls over it. -/
-theorem isWallFunction_incomingGrouping (i : B.unfrozenIndex) :
+theorem isWallFunction_incomingGrouping (i : B.unfrozenIndex)
+    (hQ : (B.basis.coord i, 0) ∈ Q ∧ (-B.basis.coord i, 0) ∈ Q) :
     (I.incomingGrouping (R := R) h).IsWallFunction ((G).completedBCHAction 𝒅 ℒ) i
       (I.completedInitialFunction Q i) := by
   refine ((I.incomingGrouping h).isWallFunction_iff _ i _).mpr fun j hj => ?_
   rw [incomingGrouping_group] at hj
   subst hj
   constructor
-  · let p : Q := ⟨(B.basis.coord j.1, 0), (hQ j.1).1⟩
-    let p' : Q := ⟨(-B.basis.coord j.1, 0), (hQ j.1).2⟩
+  · let p : Q := ⟨(B.basis.coord j.1, 0), hQ.1⟩
+    let p' : Q := ⟨(-B.basis.coord j.1, 0), hQ.2⟩
     have hpp' : p + p' = 0 := Subtype.ext (by simp [p, p'])
     have hmul : (single p 1 * single p' 1 : R[Q]) = 1 := by
       rw [single_mul_single, hpp', mul_one, one_def]
@@ -135,13 +131,18 @@ theorem isWallFunction_incomingGrouping (i : B.unfrozenIndex) :
     simpa only [incomingDiagram_normal, AddMonoidHom.id_apply] using
       I.completedBCHAction_initialLabel Q j.1 _ (I.coe_completedInitialFunction Q j.1) p c
 
+variable (hQ : ∀ i : B.unfrozenIndex,
+  (B.basis.coord i, 0) ∈ Q ∧ (-B.basis.coord i, 0) ∈ Q)
+
+include hQ
+
 /-- The grouping of the incoming diagram by initial polynomial is positive when the
 coefficient monoid contains both signs of the spatial basis characters. -/
 theorem isPositive_incomingGrouping {S : Type*} [Semiring S] (φ : S →+* R) :
     (I.incomingGrouping (R := R) h).IsPositive ((G).completedBCHAction 𝒅 ℒ)
       (AddMonoidAlgebra.mapRingHom Q φ).rangeS :=
   ((I.incomingGrouping h).isPositive_iff _ _).mpr fun i =>
-    ⟨I.completedInitialFunction Q i, I.isWallFunction_incomingGrouping h Q hQ i,
+    ⟨I.completedInitialFunction Q i, I.isWallFunction_incomingGrouping h Q i (hQ i),
       I.isPositive_completedInitialFunction Q φ i⟩
 
 /-- The incoming diagram of a BLM polynomial input is a positive wall representative when
