@@ -16,10 +16,11 @@ open images under identity and composite inclusions. These are equalities of
 actual sections of the existing coefficient sheaf, not merely equations at
 generic endpoints.
 
-The proofs combine `value_coefficientLocalTransition`, relative dense-point
-extensionality, and the identity and composition laws for module quotient maps.
 No consistency or probe-diagram hypothesis is needed.
 -/
+
+-- The proofs combine `value_coefficientLocalTransition`, relative dense-point
+-- extensionality, and the identity and composition laws for module quotient maps.
 
 public noncomputable section
 
@@ -61,13 +62,14 @@ theorem coefficientLocalTransition_refl (k : ℕ)
   let T := (B.adaptedDiagram k ν hν).coefficientTransport ((F).quotient k)
   let σ := B.adaptedComplex_isSubdivision (le_refl k)
   apply T.section_ext_image T σ.regularInclusion σ.isOpenEmbedding_regularInclusion
-    σ.coefficientPointMap (fun _ => rfl) le_rfl
+    σ.coefficientPointMap σ.coefficientPointMap_val le_rfl
   intro x hx
-  have hxU : x.val ∈ U := σ.isOpenEmbedding_regularInclusion.injective.mem_set_image.mp hx
+  have hxU : x.val ∈ U := σ.isOpenEmbedding_regularInclusion.injective.mem_set_image.mp
+    (σ.coefficientPointMap_val x ▸ hx)
   rw [value_coefficientLocalTransition d ℳ p ℒ H h B (le_refl k) ν hν ν hν s x hxU,
     DenseBasisTransport.value_restrict]
-  simp only [ModuleFiltration.transition_refl, LinearMap.id_apply]
-  rfl
+  simp only [T, ModuleFiltration.transition_refl, LinearMap.id_apply,
+    FinitePolyhedralComplex.IsSubdivision.coefficientPointMap_refl]
 
 /-- Lowering the cutoff in two steps equals lowering it directly on every open
 domain. The iterated target section is restricted along the canonical equality
@@ -101,18 +103,20 @@ theorem coefficientLocalTransition_comp {k l m : ℕ} (hkl : k ≤ l) (hlm : l �
   let σml := B.adaptedComplex_isSubdivision hlm
   let σlk := B.adaptedComplex_isSubdivision hkl
   apply Tm.section_ext_image Tk σmk.regularInclusion σmk.isOpenEmbedding_regularInclusion
-    σmk.coefficientPointMap (fun _ => rfl) le_rfl
+    σmk.coefficientPointMap σmk.coefficientPointMap_val le_rfl
   intro x hx
-  have hxU : x.val ∈ U := σmk.isOpenEmbedding_regularInclusion.injective.mem_set_image.mp hx
+  have hxU : x.val ∈ U := σmk.isOpenEmbedding_regularInclusion.injective.mem_set_image.mp
+    (σmk.coefficientPointMap_val x ▸ hx)
   rw [value_coefficientLocalTransition d ℳ p ℒ H h B (hkl.trans hlm)
     νk hνk νm hνm s x hxU]
   dsimp only [Tk]
   erw [DenseBasisTransport.value_restrict]
   have hq : σmk.coefficientPointMap x =
-      σlk.coefficientPointMap (σml.coefficientPointMap x) := rfl
+      σlk.coefficientPointMap (σml.coefficientPointMap x) :=
+    σml.coefficientPointMap_trans σlk x
   simp only [hq]
   erw [value_coefficientLocalTransition d ℳ p ℒ H h B hkl νk hνk νl hνl _
-      (σml.coefficientPointMap x) (by exact ⟨x.val, hxU, rfl⟩),
+      (σml.coefficientPointMap x) (σml.coefficientPointMap_mem_regularOpenImage U x hxU),
     value_coefficientLocalTransition d ℳ p ℒ H h B hlm νl hνl νm hνm s x hxU]
   exact (DFunLike.congr_fun ((F).transition_comp hkl hlm) (Tm.value s x hxU)).symm
 

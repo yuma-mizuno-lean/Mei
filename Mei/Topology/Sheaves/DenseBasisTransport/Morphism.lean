@@ -15,10 +15,11 @@ A map of coefficients intertwining chart transport defines a morphism to the
 existing target sheaf restricted along an open embedding. The dense coefficient
 domains may differ: target coefficients at additional points are determined by
 the transported dense values. Source sections need only be locally parallel.
-We construct target sections on source local-predicate witnesses and use the
-existing sheaf gluing theorem; agreement on the dense source points proves
-uniqueness and naturality.
 -/
+
+-- Construct target sections on source local-predicate witnesses and use the
+-- existing sheaf gluing theorem; agreement on the dense source points proves
+-- uniqueness and naturality.
 
 public noncomputable section
 
@@ -55,8 +56,7 @@ theorem section_ext_image {U : Opens X} {V : Opens Y} (hVU : V ≤ hj.functor.ob
 
 include hq in
 /-- A mapped coefficient point belongs to the image of every source open
-containing it. Naming this proof keeps the transport-intertwining interface
-available across Lean module boundaries. -/
+containing it. -/
 theorem mem_image_of_mem (U : Opens X) (x : S) (hx : x.val ∈ U) :
     (q x).val ∈ hj.functor.obj U := by
   rw [hq]

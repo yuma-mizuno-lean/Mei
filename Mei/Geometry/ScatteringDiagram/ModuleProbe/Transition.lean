@@ -16,10 +16,10 @@ public import Mei.Topology.Sheaves.DenseBasisTransport.Morphism
 Lowering the coefficient order intertwines the actual transport on the adapted
 complexes. The fine regular locus embeds openly into the coarse regular locus;
 the target sections are restricted to this open image.
-
-The transport comparison combines `truncation_pathProduct_adaptedDiagram` with
-`ModuleFiltration.transition_truncatedBCHAction`.
 -/
+
+-- The transport comparison combines `truncation_pathProduct_adaptedDiagram` with
+-- `ModuleFiltration.transition_truncatedBCHAction`.
 
 public noncomputable section
 
@@ -67,15 +67,20 @@ theorem transition_coefficientTransport
         (by simpa using (B.adaptedComplex_isSubdivision hkl).coefficientChart_regularOpenImage hU)
         ((B.adaptedComplex_isSubdivision hkl).coefficientPointMap x)
         ((B.adaptedComplex_isSubdivision hkl).coefficientPointMap y)
-        (by exact ⟨x.val, hx, rfl⟩) (by exact ⟨y.val, hy, rfl⟩)
+        ((B.adaptedComplex_isSubdivision hkl).coefficientPointMap_mem_regularOpenImage U x hx)
+        ((B.adaptedComplex_isSubdivision hkl).coefficientPointMap_mem_regularOpenImage U y hy)
         ((F).transition hkl a) := by
   let s := B.adaptedComplex_isSubdivision hkl
   let γ := (B.adaptedComplex l).coefficientSegment U hU x y hx hy
   let δ := (B.adaptedComplex k).coefficientSegment (s.regularOpenImage U)
     (s.coefficientChart_regularOpenImage hU) (s.coefficientPointMap x) (s.coefficientPointMap y)
-    (by exact ⟨x.val, hx, rfl⟩) (by exact ⟨y.val, hy, rfl⟩)
+    (s.coefficientPointMap_mem_regularOpenImage U x hx)
+    (s.coefficientPointMap_mem_regularOpenImage U y hy)
   have hp := B.truncation_pathProduct_adaptedDiagram hkl νk hνk νl hνl
-    γ.toPath δ.toPath (by rfl)
+    γ.toPath δ.toPath (by
+      simp only [Quiver.Path.vertices_toPath, List.map_cons, List.map_nil,
+        FinitePolyhedralComplex.IsSubdivision.coefficientPointMap_val]
+      rw [s.regularInclusion_val, s.regularInclusion_val])
   rw [FiniteWallDiagram.coefficientTransport_transport,
     FiniteWallDiagram.coefficientTransport_transport,
     FiniteWallDiagram.coefficientPathTransport_apply,
@@ -99,7 +104,8 @@ def coefficientLocalTransition :
     ((B.adaptedDiagram k νk hνk).coefficientTransport ((F).quotient k))
     (B.adaptedComplex_isSubdivision hkl).regularInclusion
     (B.adaptedComplex_isSubdivision hkl).isOpenEmbedding_regularInclusion
-    (B.adaptedComplex_isSubdivision hkl).coefficientPointMap (fun _ => rfl)
+    (B.adaptedComplex_isSubdivision hkl).coefficientPointMap
+    (B.adaptedComplex_isSubdivision hkl).coefficientPointMap_val
     ((F).transition hkl)
     (fun U hU => by
       have hU' : U ∈ (B.adaptedComplex l).coefficientCharts := by simpa using hU
@@ -117,14 +123,15 @@ theorem value_coefficientLocalTransition {U : Opens (B.adaptedComplex l).regular
     ((B.adaptedDiagram k νk hνk).coefficientTransport ((F).quotient k)).value
       ((coefficientLocalTransition d ℳ p ℒ H h B hkl νk hνk νl hνl).hom.app (op U) s)
       ((B.adaptedComplex_isSubdivision hkl).coefficientPointMap x)
-      (by exact ⟨x.val, hx, rfl⟩) =
+      ((B.adaptedComplex_isSubdivision hkl).coefficientPointMap_mem_regularOpenImage U x hx) =
         (F).transition hkl
           (((B.adaptedDiagram l νl hνl).coefficientTransport ((F).quotient l)).value s x hx) := by
   exact ((B.adaptedDiagram l νl hνl).coefficientTransport ((F).quotient l)).value_mapOfIntertwining
     ((B.adaptedDiagram k νk hνk).coefficientTransport ((F).quotient k))
     (B.adaptedComplex_isSubdivision hkl).regularInclusion
     (B.adaptedComplex_isSubdivision hkl).isOpenEmbedding_regularInclusion
-    (B.adaptedComplex_isSubdivision hkl).coefficientPointMap (fun _ => rfl)
+    (B.adaptedComplex_isSubdivision hkl).coefficientPointMap
+    (B.adaptedComplex_isSubdivision hkl).coefficientPointMap_val
     ((F).transition hkl)
     (fun U hU => by
       have hU' : U ∈ (B.adaptedComplex l).coefficientCharts := by simpa using hU
@@ -163,7 +170,8 @@ theorem coefficientLocalTransition_section :
     ((B.adaptedDiagram k νk hνk).coefficientTransport ((F).quotient k))
     (B.adaptedComplex_isSubdivision hkl).regularInclusion
     (B.adaptedComplex_isSubdivision hkl).isOpenEmbedding_regularInclusion
-    (B.adaptedComplex_isSubdivision hkl).coefficientPointMap (fun _ => rfl) le_rfl
+    (B.adaptedComplex_isSubdivision hkl).coefficientPointMap
+    (B.adaptedComplex_isSubdivision hkl).coefficientPointMap_val le_rfl
   intro x hx
   rw [value_coefficientLocalTransition d ℳ p ℒ H h B hkl νk hνk νl hνl _ x (by trivial),
     DenseBasisTransport.value_restrict,
@@ -176,7 +184,8 @@ theorem coefficientLocalTransition_section :
   convert he using 1
   congr 1
   apply WallComplement.ext
-  simp only [B.adaptedPathPrefunctor_obj_val, WallComplement.restrictPrefunctor_obj_val]
-  rfl
+  simp only [B.adaptedPathPrefunctor_obj_val, WallComplement.restrictPrefunctor_obj_val,
+    FinitePolyhedralComplex.IsSubdivision.coefficientPointMap_val]
+  exact (B.adaptedComplex_isSubdivision hkl).regularInclusion_val x.val
 
 end Mei.ModuleProbe

@@ -16,10 +16,12 @@ complexes have compatible path products. The coorientations may be chosen
 independently. Consistency is unnecessary: the comparison uses the same geometric
 path, including the walls whose labels become identity at the lower cutoff.
 
-We combine `levelPathProduct_eq_adaptedDiagram`, `truncation_levelPathProduct`,
-and `levelPathProduct_eq_of_vertices_eq`. This is the transport comparison needed
-to lower the coefficient order of sections on the adapted regular loci.
+This transport comparison lowers the coefficient order of sections on the
+adapted regular loci.
 -/
+
+-- Combine `levelPathProduct_eq_adaptedDiagram`, `truncation_levelPathProduct`,
+-- and `levelPathProduct_eq_of_vertices_eq`.
 
 public noncomputable section
 

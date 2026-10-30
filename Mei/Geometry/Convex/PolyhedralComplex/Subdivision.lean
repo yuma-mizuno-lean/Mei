@@ -105,6 +105,16 @@ theorem IsSubdivision.exists_mem_walls_subset (hCD : C.IsSubdivision D) {P : Set
   rw [hdim]
   exact D.finrank_direction_add_one_of_mem_walls hP
 
+/-- Each coarse wall is covered by fine walls contained in it with the same
+affine span, including at its boundary points. -/
+theorem IsSubdivision.exists_mem_walls_subset_affineSpan_eq (hCD : C.IsSubdivision D)
+    (P : D.walls) (x : V)
+    (hx : x ∈ (P : Set V)) :
+    ∃ Q : C.walls, x ∈ (Q : Set V) ∧ (Q : Set V) ⊆ P ∧
+      affineSpan ℝ (Q : Set V) = affineSpan ℝ (P : Set V) := by
+  obtain ⟨Q, hQ, hQP, hxQ⟩ := hCD.exists_mem_walls_subset P.property hx
+  exact ⟨⟨Q, hQ⟩, hxQ, hQP, affineSpan_eq_of_walls_subset ⟨Q, hQ⟩ P hQP⟩
+
 /-- The free-group homomorphism sending each wall of `C` to the wall of `D` containing it,
 inverted unless its coorientation is a positive multiple of that wall's coorientation, and
 to `1` when no wall of `D` contains it. -/
