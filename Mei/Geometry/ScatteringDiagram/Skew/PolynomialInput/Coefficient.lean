@@ -44,38 +44,6 @@ local notation "e" => I.principalDatum.principalPositiveDegrees
 local notation "Q'" => I.principalDatum.principalCoefficientMonoid
   I.principalBasis.unfrozenBasis.positiveDegrees
 
-/-- The BLM coefficient exponents: arbitrary Laurent character and nonnegative
-multiplicities of the independent variables. -/
-def coefficientMonoid : AddSubmonoid (Module.Dual ℤ N × (I.Letter → ℤ)) :=
-  (⊤ : AddSubmonoid (Module.Dual ℤ N)).prod (PositiveDegrees.orthant I.Letter).monoid
-
-omit [DecidableEq ι] [Fintype ι] in
-@[simp]
-theorem mem_coefficientMonoid (q : Module.Dual ℤ N × (I.Letter → ℤ)) :
-    q ∈ I.coefficientMonoid ↔ ∀ α, 0 ≤ q.2 α := by
-  simp [coefficientMonoid, AddSubmonoid.mem_prod]
-
-omit [DecidableEq ι] [Fintype ι] in
-/-- The alphabet's positive degrees are allowed coefficient exponents. -/
-theorem positiveDegrees_le_coefficientMonoid : (d).monoid ≤ I.coefficientMonoid :=
-  fun _ h => (I.mem_coefficientMonoid _).mpr
-    ((PositiveDegrees.mem_finiteAlphabet_monoid _).mp h).1
-
-/-- The multiplicities of a coefficient exponent, as a polynomial multi-index.
-The Laurent character does not contribute to this index. -/
-def coefficientMultiplicity : I.coefficientMonoid →+ (I.Letter →₀ ℕ) where
-  toFun q := Finsupp.equivFunOnFinite.symm (fun α => (q.val.2 α).toNat)
-  map_zero' := by ext; simp
-  map_add' q r := by
-    ext α
-    simp [Int.toNat_add ((I.mem_coefficientMonoid _).mp q.property α)
-      ((I.mem_coefficientMonoid _).mp r.property α)]
-
-omit [DecidableEq ι] in
-@[simp]
-theorem coefficientMultiplicity_apply (q : I.coefficientMonoid) (α : I.Letter) :
-    I.coefficientMultiplicity q α = (q.val.2 α).toNat := (rfl)
-
 /-- Restrict the principal lattice lift to the two coefficient monoids. -/
 def principalCoefficientExponent : I.coefficientMonoid →+ Q' :=
   (I.principalLift.toAddMonoidHom.comp I.coefficientMonoid.subtype).codRestrict Q' (fun q => by
@@ -101,22 +69,6 @@ theorem map_coefficientMonoid_le :
   rintro _ ⟨q, hq, rfl⟩
   simpa only [coe_principalCoefficientExponent, I.principalFiniteAlphabetLift_apply] using
     (I.principalCoefficientExponent ⟨q, hq⟩).property
-
-/-- The coefficient exponent of the independent variable `p_{i,s} z^{s w_i}`. -/
-def coefficientLetter (α : I.Letter) : I.coefficientMonoid :=
-  ⟨PositiveDegrees.letter I.letterExponent α,
-    I.positiveDegrees_le_coefficientMonoid (PositiveDegrees.letter_mem _ α)⟩
-
-omit [Fintype ι] in
-@[simp]
-theorem coe_coefficientLetter (α : I.Letter) :
-    (I.coefficientLetter α).val = PositiveDegrees.letter I.letterExponent α := (rfl)
-
-@[simp]
-theorem coefficientMultiplicity_coefficientLetter (α : I.Letter) :
-    I.coefficientMultiplicity (I.coefficientLetter α) = Finsupp.single α 1 := by
-  ext β
-  simp [Finsupp.single_apply, Pi.single_apply, apply_ite Int.toNat, eq_comm]
 
 /-- A variable in slot `s` acquires the principal exponent `s r(ε_i)`. -/
 theorem coe_principalCoefficientExponent_coefficientLetter (α : I.Letter) :
@@ -198,21 +150,6 @@ theorem principalCoefficientPolynomialEquiv_principalCoefficientMap_letter (α :
     split_ifs <;> simp
   · exact congrArg (fun p => single p (MvPolynomial.X α)) (congrArg Prod.fst hp)
 
-/-- The initial function in the coefficient monoid, retaining all independent variables. -/
-def initialCoefficientFunction (i : B.unfrozenIndex) : R[I.coefficientMonoid] :=
-  1 + ∑ s : Fin (I.multiplicity i), single (I.coefficientLetter ⟨i, s⟩) 1
-
-omit [Fintype ι] in
-/-- Forgetting the coefficient-monoid restriction gives the original BLM initial function. -/
-@[simp]
-theorem mapDomain_initialCoefficientFunction (i : B.unfrozenIndex) :
-    mapDomain Subtype.val (I.initialCoefficientFunction R i) = I.initialFunction R i := by
-  have h : mapDomainAlgHom R R I.coefficientMonoid.subtype
-      (I.initialCoefficientFunction R i) = I.initialFunction R i := by
-    rw [initialCoefficientFunction, map_add, map_one, map_sum, initialFunction_def]
-    simp [mapDomainAlgHom_apply, mapDomain_single]
-  simpa only [mapDomainAlgHom_apply, AddSubmonoid.coe_subtype] using h
-
 /-- The principal substitution sends the initial function to the polynomial
 with independent coefficients `a_{i,s}` at exponents `s r(ε_i)`. -/
 @[simp]
@@ -221,7 +158,7 @@ theorem principalCoefficientMap_initialCoefficientFunction (i : B.unfrozenIndex)
       1 + ∑ s : Fin (I.multiplicity i),
         single (I.principalCoefficientExponent (I.coefficientLetter ⟨i, s⟩))
           (MvPolynomial.X ⟨i, s⟩) := by
-  simp [initialCoefficientFunction, MvPolynomial.X]
+  simp [initialCoefficientFunction_def, MvPolynomial.X]
 
 /-- The coefficient substitution preserves the native positive-increment filtration.
 The modulus is the identity, although a letter of multiplicity `s` acquires
