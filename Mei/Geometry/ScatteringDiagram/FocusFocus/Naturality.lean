@@ -16,11 +16,13 @@ Coefficient homomorphisms and reductions of the chamber order act on both the
 absolute exponent quotients and the nodal chambers over truncated polynomial
 scalars. The comparison `truncatedExponentChamberEquiv` intertwines these maps.
 Thus the chamber dictionary compares quotient towers, rather than only their
-individual rings.
+individual rings. The same reductions on the fiber-product slab act by the
+two chamber reductions and respect identity, composition and the nodal comparison.
 
 We use Mathlib's `AdjoinRoot.map`, `Ideal.quotientMap` and coefficient maps of
 monoid algebras, and `Mei.NodeAlgebra.mapOfEq` with the chamber maps
-`Mei.NodeAlgebra.rightChamberMap` and `Mei.NodeAlgebra.leftChamberMap`. The coordinates
+`Mei.NodeAlgebra.rightChamberMap` and `Mei.NodeAlgebra.leftChamberMap`, and
+`Mei.NodeAlgebra.slabAlgebraMap` on the fiber product. The coordinates
 follow Gross–Siebert, *An Invitation to Toric Degenerations*, §2.2–2.3
 (arXiv:0808.2749v2).
 -/
@@ -29,7 +31,7 @@ public noncomputable section
 
 namespace Mei.FocusFocus
 
-open TauCeti AddMonoidAlgebra
+open TauCeti AddMonoidAlgebra Mei.NodeAlgebra _root_.LaurentPolynomial
 open _root_.Mei.LaurentPolynomial
 open scoped _root_.LaurentPolynomial Mei.NodeAlgebra
 
@@ -89,14 +91,19 @@ def truncatedExponentChamberMap :
   | 0 => (Mei.NodeAlgebra.rightChamberMap _ (truncatedScalarMap_C_root φ hl) hl).toRingHom
   | 1 => (Mei.NodeAlgebra.leftChamberMap _ (truncatedScalarMap_C_root φ hl) hl).toRingHom
 
-/-- The nodal chamber reduction is the corresponding quotient map over the
-truncated Laurent scalar reduction. -/
-theorem truncatedExponentChamberMap_def :
-    letI : Algebra S[ℤ] S'[ℤ] := RingHom.toAlgebra (truncatedScalarMap φ hl)
-    truncatedExponentChamberMap φ hl i = match i with
-      | 0 => (Mei.NodeAlgebra.rightChamberMap _ (truncatedScalarMap_C_root φ hl) hl).toRingHom
-      | 1 => (Mei.NodeAlgebra.leftChamberMap _ (truncatedScalarMap_C_root φ hl) hl).toRingHom :=
-  (rfl)
+/-- The left nodal chamber reduction is the canonical quotient reduction. -/
+theorem truncatedExponentChamberMap_one :
+    truncatedExponentChamberMap φ hl 1 =
+      (letI : Algebra S[ℤ] S'[ℤ] := RingHom.toAlgebra (truncatedScalarMap φ hl)
+       (Mei.NodeAlgebra.leftChamberMap (_root_.LaurentPolynomial.C τ)
+         (truncatedScalarMap_C_root φ hl) hl).toRingHom) := (rfl)
+
+/-- The right nodal chamber reduction is the canonical quotient reduction. -/
+theorem truncatedExponentChamberMap_zero :
+    truncatedExponentChamberMap φ hl 0 =
+      (letI : Algebra S[ℤ] S'[ℤ] := RingHom.toAlgebra (truncatedScalarMap φ hl)
+       (Mei.NodeAlgebra.rightChamberMap (_root_.LaurentPolynomial.C τ)
+         (truncatedScalarMap_C_root φ hl) hl).toRingHom) := (rfl)
 
 /-- Both nodal coordinates retain their quotient classes. -/
 @[simp]
@@ -201,5 +208,56 @@ theorem truncatedExponentChamberMap_surjective (hφ : Function.Surjective φ) :
     ((truncatedExponentChamberEquiv K' l i).symm z)
   refine ⟨truncatedExponentChamberEquiv K k i a, ?_⟩
   rw [truncatedExponentChamberMap_equiv, ha, AlgEquiv.apply_symm_apply]
+
+/-- Coefficient change and cutoff reduction on the focus-focus fiber product,
+using the same scalar reduction as on its two chamber factors. -/
+def truncatedSlabMap :
+    slabAlgebra (C τ) (1 + T 1) k →+* slabAlgebra (C τ') (1 + T 1) l :=
+  letI : Algebra S[ℤ] S'[ℤ] := RingHom.toAlgebra (truncatedScalarMap φ hl)
+  (slabAlgebraMap (C τ) (1 + T 1) (truncatedScalarMap_C_root φ hl)
+    (by simp [RingHom.algebraMap_toAlgebra]) hl).toRingHom
+
+/-- The slab reduction acts on the first factor by the left chamber reduction. -/
+@[simp]
+theorem truncatedSlabMap_fst (z : slabAlgebra (C τ) (1 + T 1) k) :
+    (truncatedSlabMap φ hl z).val.1 = truncatedExponentChamberMap φ hl 1 z.val.1 := by
+  simp only [truncatedSlabMap, AlgHom.toRingHom_eq_coe, AlgHom.coe_toRingHom, coe_slabAlgebraMap,
+    truncatedExponentChamberMap_one]
+
+/-- The slab reduction acts on the second factor by the right chamber reduction. -/
+@[simp]
+theorem truncatedSlabMap_snd (z : slabAlgebra (C τ) (1 + T 1) k) :
+    (truncatedSlabMap φ hl z).val.2 = truncatedExponentChamberMap φ hl 0 z.val.2 := by
+  simp only [truncatedSlabMap, AlgHom.toRingHom_eq_coe, AlgHom.coe_toRingHom, coe_slabAlgebraMap,
+    truncatedExponentChamberMap_zero]
+
+/-- The slab reduction fixes the fiber product when coefficients and cutoff agree. -/
+@[simp]
+theorem truncatedSlabMap_id :
+    truncatedSlabMap (RingHom.id K) (k := k) le_rfl = RingHom.id _ := by
+  ext z : 1
+  apply Subtype.ext
+  apply Prod.ext <;> simp
+
+/-- Successive coefficient changes and cutoff reductions compose on the slab. -/
+theorem truncatedSlabMap_comp (ψ : K' →+* K'') (hm : m ≤ l) :
+    (truncatedSlabMap ψ hm).comp (truncatedSlabMap φ hl) =
+      truncatedSlabMap (ψ.comp φ) (hm.trans hl) := by
+  ext z : 1
+  apply Subtype.ext
+  apply Prod.ext <;>
+    simp only [RingHom.comp_apply, truncatedSlabMap_fst, truncatedSlabMap_snd]
+  · exact RingHom.congr_fun (truncatedExponentChamberMap_comp φ hl 1 ψ hm) z.val.1
+  · exact RingHom.congr_fun (truncatedExponentChamberMap_comp φ hl 0 ψ hm) z.val.2
+
+/-- Reduction commutes with the comparison from the nodal algebra to the slab. -/
+theorem truncatedSlabMap_toSlabAlgebra (z : NodeAlgebra S[ℤ] (C τ * (1 + T 1))) :
+    truncatedSlabMap φ hl (toSlabAlgebra (C τ) (1 + T 1) k z) =
+      toSlabAlgebra (C τ') (1 + T 1) l
+        (letI : Algebra S[ℤ] S'[ℤ] := RingHom.toAlgebra (truncatedScalarMap φ hl)
+         mapOfEq (C τ * (1 + T 1)) (by simp [RingHom.algebraMap_toAlgebra]) z) := by
+  let : Algebra S[ℤ] S'[ℤ] := RingHom.toAlgebra (truncatedScalarMap φ hl)
+  exact slabAlgebraMap_toSlabAlgebra (C τ) (1 + T 1)
+    (truncatedScalarMap_C_root φ hl) (by simp [RingHom.algebraMap_toAlgebra]) hl z
 
 end Mei.FocusFocus
