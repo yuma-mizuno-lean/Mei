@@ -10,9 +10,9 @@ public import Mei.Algebra.Lie.Filtered.BCH
 /-!
 # Lower-order dependence of filtered BCH corrections
 
-A filtration-raising Lie action induces the identity on every associated graded
-piece. Consequently, the difference between a finite BCH action and the identity
-at order `k + 1` factors through the coefficient quotient of order `k`.
+A filtration-raising Lie action induces zero on each associated graded piece, so the
+integrated BCH action induces the identity. The difference from the identity at order
+`k + 1` thus factors through the coefficient quotient of order `k`.
 `truncatedBCHCorrection` is this linear map. Its evaluation formula expresses the
 new coefficient using only lower-order input; its product law also applies to
 noncommuting successive wall crossings.
