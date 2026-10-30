@@ -75,6 +75,20 @@ theorem rightLaurentMap_smul_signedMonomial_of_nonneg (n : ℤ) (hn : 0 ≤ n) (
   simp [Algebra.smul_def, ← C_eq_algebraMap, C, T,
     AddMonoidAlgebra.single_mul_single, -single_eq_C_mul_T]
 
+/-- On an incoming left weight, the Laurent image of the signed monomial is `T (-n)`. This is
+the simp normal form of `leftLaurentMap_smul_signedMonomial_of_nonpos`, after `map_smul`. -/
+@[simp]
+theorem leftLaurentMap_signedMonomial_of_nonpos (n : ℤ) (hn : n ≤ 0) :
+    leftLaurentMap a (signedMonomial a n) = T (-n) := by
+  simpa using leftLaurentMap_smul_signedMonomial_of_nonpos a n hn 1
+
+/-- On an incoming right weight, the Laurent image of the signed monomial is `T n`. This is
+the simp normal form of `rightLaurentMap_smul_signedMonomial_of_nonneg`, after `map_smul`. -/
+@[simp]
+theorem rightLaurentMap_signedMonomial_of_nonneg (n : ℤ) (hn : 0 ≤ n) :
+    rightLaurentMap a (signedMonomial a n) = T n := by
+  simpa using rightLaurentMap_smul_signedMonomial_of_nonneg a n hn 1
+
 /-- The product of two signed monomials is the signed monomial of the sum times `a^r`, where
 `r = (|n| + |m| - |n + m|) / 2` is the number of cancelling pairs `XY = a`. -/
 theorem signedMonomial_mul_signedMonomial (n m : ℤ) :
