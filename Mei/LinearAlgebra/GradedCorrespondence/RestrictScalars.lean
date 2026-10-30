@@ -62,6 +62,22 @@ theorem restrictScalars_liftRight_apply (C : GradedCorrespondence (B := B) 𝒰 
     (C.restrictScalars R).liftRight j a = C.liftRight j a :=
   LinearMap.restrictScalars_apply R (C.liftRight j) a
 
+/-- Restricting scalars leaves the underlying value of each homogeneous transfer unchanged. -/
+@[simp↓]
+theorem restrictScalars_transfer_apply [DecidableEq κ] [DirectSum.Decomposition 𝒱]
+    (C : GradedCorrespondence (B := B) 𝒰 𝒱 I J)
+    (i : I) (j : κ) (a : (𝒰 i).restrictScalars R) :
+    ((C.restrictScalars R).transfer i j a : V) =
+      (C.transfer i j ⟨a, a.property⟩ : V) := by
+  -- The restricted lift has the same underlying function; repackage its input
+  -- explicitly in the original homogeneous submodule.
+  have hLift : (C.restrictScalars R).liftLeft i a = C.liftLeft i ⟨a, a.property⟩ := by
+    rfl
+  rw [transfer_apply, transfer_apply, hLift, restrictScalars_right,
+    LinearMap.restrictScalars_apply]
+  exact DirectSum.coe_decompose_restrictScalars (R := R) 𝒱
+    (C.right (C.liftLeft i ⟨a, a.property⟩)) j
+
 /-- Reversing a correspondence commutes with restriction of scalars. -/
 @[simp]
 theorem restrictScalars_symm (C : GradedCorrespondence (B := B) 𝒰 𝒱 I J) :

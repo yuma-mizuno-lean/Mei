@@ -60,17 +60,11 @@ theorem map_decoration_eq_transfer (β : SlabBrokenLine t c n b Q) (φ : R →+*
       ((exponentCorrespondence (algebraMap R[ℤ] S[ℤ] (single 0 t + single 1 t))).transfer
         ⟨((n.natAbs : ℤ), b), by simp⟩ β.degree
         ⟨single (n.natAbs, b) (φ c), single_mem_grade _ _⟩ : S[ℤ × ℤ]) := by
-    ext p
-    have hp := congrArg (fun x : S[ℤ × ℤ] => x.coeff p) h.symm
-    simp only [decoration_def, exponentCorrespondenceMap_left,
+    simpa only [decoration_def, exponentCorrespondenceMap_left,
       exponentCorrespondenceMap_right, AlgHom.toLinearMap_apply, id_eq,
       ← AlgHom.coe_toRingHom, toRingHom_mapAlgHom, AlgHom.toRingHom_eq_coe,
-      Algebra.toRingHom_ofId, hφ, mapRingHom_single, GradedCorrespondence.transfer_apply,
-      GradedCorrespondence.restrictScalars_right,
-      GradedCorrespondence.restrictScalars_liftLeft_apply, LinearMap.restrictScalars_apply,
-      DirectSum.coe_decompose_restrictScalars, coeff_mapRingHom] at hp ⊢
-    convert hp using 1
-    congr 6
+      Algebra.toRingHom_ofId, hφ, mapRingHom_single,
+      GradedCorrespondence.restrictScalars_transfer_apply] using h.symm
   refine h'.trans ?_
   exact congrArg (fun a : S[ℤ] =>
     ((exponentCorrespondence a).transfer ⟨((n.natAbs : ℤ), b), by simp⟩ β.degree
