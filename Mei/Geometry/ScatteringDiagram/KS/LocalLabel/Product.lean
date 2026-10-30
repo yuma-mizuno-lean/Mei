@@ -50,19 +50,6 @@ variable {N V R L : Type*} [AddCommGroup N]
 
 include hθ
 
-/-- The logarithmic coefficients of a regular completed germ commute pairwise
-when ray Lie algebras are abelian. -/
-@[simp]
-theorem lie_logComponent_germLabel (n m : N) :
-    ⁅(d.logComponent ℒ (D.germLabel θ hθ) n : L),
-      (d.logComponent ℒ (D.germLabel θ hθ) m : L)⁆ = 0 := by
-  by_cases hg : D.germLabel θ hθ = 1
-  · simp [hg]
-  · obtain ⟨w, hw, _⟩ := D.existsUnique_germLabel_mem_completedRaySubgroup θ hθ hg
-    exact lie_eq_zero_of_mem_rayLieSubalgebra ℒ
-      (d.logComponent_mem_rayLieSubalgebra ℒ hw n)
-      (d.logComponent_mem_rayLieSubalgebra ℒ hw m)
-
 /-- All homogeneous walls through a common regular point have commuting completed
 labels, even when their supports come from different cutoffs. -/
 theorem homogeneousWall_label_commute_of_mem (a b : HomogeneousWallIndex d C)
@@ -181,15 +168,7 @@ theorem projection_germLabel_eq_one_iff_wallIndices_eq_empty (k : ℕ) :
         apply D.homogeneousPresentation.mem_wallIndices.mpr
         simpa only [homogeneousPresentation_wall] using Set.singleton_subset_iff.mpr hθa
       simp only [he, Finset.notMem_empty] at ha
-    rw [d.groupTower_obj_one ℒ k]
-    apply BCHGroup.log_injective (L := d.truncatedLie ℒ k)
-    rw [BCHGroup.log_one, d.log_projection_eq_mkQ_sum ℒ]
-    have hsum : (∑ n ∈ (d.finite_cutoff k).toFinset,
-        (d.logComponent ℒ (D.germLabel θ hθ) n : L)) = 0 := by
-      apply Finset.sum_eq_zero
-      intro n hn
-      exact congrArg Subtype.val (hz n (d.mem_cutoff.mp
-        ((d.finite_cutoff k).mem_toFinset.mp hn)).2)
-    rw [hsum, map_zero]
+    simpa only [CompletedGroup.degreeFiltration_succ, MonoidHom.mem_ker] using
+      (d.mem_degreeFiltration_succ_iff (ℒ := ℒ)).mpr hz
 
 end Mei.CompletedDiagram
