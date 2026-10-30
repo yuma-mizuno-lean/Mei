@@ -8,7 +8,6 @@ module
 public import Mei.Geometry.ScatteringDiagram.FocusFocus.Upper
 public import Mei.Geometry.ScatteringDiagram.FocusFocus.Overlap
 public import Mei.Geometry.ScatteringDiagram.FocusFocus.Lifts
-public import Mei.LinearAlgebra.GradedCorrespondence.Hom
 
 /-!
 # Upper gluing of the focus-focus chambers
