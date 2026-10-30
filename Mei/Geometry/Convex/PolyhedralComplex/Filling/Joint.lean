@@ -141,13 +141,12 @@ theorem normalClosure_jointMeridianWords_eq (C : FinitePolyhedralComplex h)
     Subgroup.normalClosure (C.jointMeridianWords ν U) =
       Subgroup.normalClosure (C.triangleWords ν U) := by
   apply le_antisymm (Subgroup.normalClosure_mono (C.jointMeridianWords_subset_triangleWords ν U))
+  rw [← C.normalClosure_transverseTriangleWords_eq hC ν hν hUo]
   apply Subgroup.normalClosure_le_normal
   intro g hg
-  obtain ⟨x, y, z, e, f, r, hx, hy, hz, rfl⟩ := (C.mem_triangleWords ν U g).mp hg
-  apply Quiver.Path.crossingWord_mem_normalClosure_jointMeridianWords _ hC ν hν hUo hU
-  intro u hu
-  simp only [Quiver.Path.vertices_cons, Quiver.Path.vertices_toPath,
-    List.concat_eq_append, List.mem_append, List.mem_cons, List.not_mem_nil, or_false] at hu
-  rcases hu with (((rfl | rfl) | rfl) | rfl) <;> assumption
+  obtain ⟨x, y, z, e, f, r, hx, hy, hz, havoid, -, rfl⟩ :=
+    (C.mem_transverseTriangleWords ν U g).mp hg
+  exact C.crossingWord_triangle_mem_normalClosure_jointMeridianWords ν hν hUo e f r
+    (convexHull_min (by simp [insert_subset_iff, hx, hy, hz]) hU) havoid
 
 end Mei.FinitePolyhedralComplex
