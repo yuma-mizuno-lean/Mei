@@ -312,10 +312,10 @@ theorem exists_backwardClosedCharts {D : Set V}
   refine ⟨κ, hκ, K, ?_, hdisj, hcover⟩
   intro a
   have hweak := closure_subset_weakBackwardDomain f c _ hvalid hclosed
-  exact ⟨(hK a).1, (hK a).2.1, (hK a).2.2, (hK a).2.2.trans hweak,
+  exact ⟨(hK a).1, (hK a).2.1, (hK a).2.2.2, (hK a).2.2.2.trans hweak,
     (hK a).2.1.isClosed.isProperMap_subtypeVal,
     isProperMap_backwardPath_restrict f c v (hK a).2.1.isClosed
       (fun Q hQ j => ((mem_weakBackwardDomain _ _ _ _ _).mp
-        (hweak ((hK a).2.2 hQ)) j).1)⟩
+        (hweak ((hK a).2.2.2 hQ)) j).1)⟩
 
 end Mei.Convex
