@@ -231,21 +231,13 @@ private def extensionWeight : Multiplicative P →* MvPolynomial E R :=
   ((B.principalBLMExtension ℓ).coefficientWeight R).comp
     (AddSubmonoid.inclusion (B.principalBLMExtensionCoefficientMonoid_le ℓ)).toMultiplicative
 
-private def extensionTwist : R[P] →ₐ[R] (MvPolynomial E R)[P] :=
-  lift R _ _ (singleHom.comp ((B.extensionWeight ℓ R).prod (MonoidHom.id _)))
-
-private theorem extensionTwist_single (q : P) (r : R) :
-    B.extensionTwist ℓ R (single q r) =
-      single q (MvPolynomial.C r * B.extensionWeight ℓ R (.ofAdd q)) := by
-  simp [extensionTwist, lift_single, Algebra.smul_def, singleHom, single_mul_single]
-
 /-- Substitute the independent variables into the original principal
 coefficient algebra; the polynomial weights need not be units. -/
 def principalBLMExtensionCoefficientMap : R[P] →ₐ[R] (MvPolynomial E R)[Q] :=
   (AlgHom.restrictScalars R (mapDomainAlgHom (MvPolynomial E R) (MvPolynomial E R)
     ((AddSubmonoid.inclusion (B.map_principalBLMExtensionCoefficientMonoid_le ℓ)).comp
       ((B.principalBLMExtensionDegreeMap ℓ).toAddMonoidHom.addSubmonoidMap P)))).comp
-    (B.extensionTwist ℓ R)
+    (AddMonoidAlgebra.coefficientTwist R (B.extensionWeight ℓ R))
 
 /-- Each monomial keeps its full polynomial weight before exponents merge. -/
 @[simp]
@@ -255,8 +247,9 @@ theorem principalBLMExtensionCoefficientMap_single (q : P) (r : R) :
         (MvPolynomial.C r * MvPolynomial.monomial
           ((B.principalBLMExtension ℓ).coefficientMultiplicity
             (AddSubmonoid.inclusion (B.principalBLMExtensionCoefficientMonoid_le ℓ) q)) 1) := by
-  simp only [principalBLMExtensionCoefficientMap, AlgHom.comp_apply, extensionTwist_single,
-    AlgHom.restrictScalars_apply, mapDomainAlgHom_apply, mapDomain_single,
+  simp only [principalBLMExtensionCoefficientMap, AlgHom.comp_apply,
+    AddMonoidAlgebra.coefficientTwist_single, AlgHom.restrictScalars_apply,
+    mapDomainAlgHom_apply, mapDomain_single,
     extensionWeight, MonoidHom.comp_apply, AddMonoidHom.coe_toMultiplicative, Function.comp_apply,
     BLMPolynomialInput.coefficientWeight_apply]
   congr 1
@@ -311,7 +304,8 @@ theorem filtration_ideal_le_comap_principalBLMExtensionCoefficientMap (k : ℕ) 
   simpa only [principalBLMExtensionDegreeMap_modulus, principalBLMExtensionCoefficientMap] using
     LogarithmicVectorField.filtration_ideal_le_comap_coefficientDegreeMap
       d P (Algebra.ofId R (MvPolynomial E R))
-      (B.extensionWeight ℓ R) (B.extensionTwist ℓ R) (B.extensionTwist_single ℓ R)
+      (B.extensionWeight ℓ R) (AddMonoidAlgebra.coefficientTwist R (B.extensionWeight ℓ R))
+      (AddMonoidAlgebra.coefficientTwist_single R (B.extensionWeight ℓ R))
       (B.principalBLMExtensionDegreeMap ℓ) (B.map_principalBLMExtensionCoefficientMonoid_le ℓ) k
 
 end Semiring
