@@ -59,11 +59,9 @@ def combinedLabel (k : ℕ) (θ v : V)
     intro a ha b hb _
     have ha : θ ∈ (D.wall a).support := by simpa [S] using ha
     have hb : θ ∈ (D.wall b).support := by simpa [S] using hb
-    apply (D.activeLabels_commute k a b ?_).zpow_zpow
-    apply AffineSubspace.ext_of_direction_eq _
-      ⟨θ, subset_affineSpan ℝ _ ha, subset_affineSpan ℝ _ hb⟩
-    by_contra hne
-    exact hθ (mem_singularSupport.mpr (Or.inr ⟨a, b, hne, ha, hb⟩)))
+    exact (D.activeLabels_commute k a b
+      (affineSpan_eq_of_notMem_singularSupport
+        (W := fun j : D.active k => (D.wall j).support) hθ ha hb)).zpow_zpow _ _)
 
 /-- Any finite set containing exactly the active incident indices computes the
 combined label, independently of the proof of commutation. -/

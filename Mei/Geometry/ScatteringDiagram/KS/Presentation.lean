@@ -165,16 +165,22 @@ private theorem affineSpan_eq_of_subset {k : ℕ} {Q : Set V} (hQ : Q ∈ (D.lev
   (D.levelComplex k).affineSpan_eq_of_subset_of_mem_walls hQ hsub
     (D.wall j).finrank_direction_add_one
 
+private theorem wallCover (k : ℕ) :
+    ∀ (j : D.active k) x, x ∈ (D.wall j).support →
+      ∃ a : (D.levelComplex k).walls, x ∈ (a : Set V) ∧
+        (a : Set V) ⊆ (D.wall j).support ∧
+        affineSpan ℝ (a : Set V) = affineSpan ℝ (D.wall j).support := by
+  intro j x hx
+  obtain ⟨Q, hQ, hxQ, hsub⟩ := D.exists_mem_levelComplex_walls_subset k j hx
+  exact ⟨⟨Q, hQ⟩, hxQ, hsub, D.affineSpan_eq_of_subset hQ j hsub⟩
+
 /-- The active indexed family has no singular points outside the singular support
 of its subdividing complex. Extra cuts may introduce additional singular points. -/
 theorem singularSupport_active_subset (k : ℕ) :
     singularSupport (fun j : D.active k => (D.wall j).support) ⊆
-      singularSupport (fun Q : (D.levelComplex k).walls => (Q : Set V)) := by
-  apply singularSupport_subset_of_wall_cover
-    (fun j : D.active k => (D.wall j).isConvexPolyhedron.isClosed)
-  intro j x hx
-  obtain ⟨Q, hQ, hxQ, hsub⟩ := D.exists_mem_levelComplex_walls_subset k j hx
-  exact ⟨⟨Q, hQ⟩, hxQ, hsub, D.affineSpan_eq_of_subset hQ j hsub⟩
+      singularSupport (fun Q : (D.levelComplex k).walls => (Q : Set V)) :=
+  singularSupport_subset_of_wall_cover
+    (fun j : D.active k => (D.wall j).isConvexPolyhedron.isClosed) (D.wallCover k)
 
 /-- All indexed walls containing a wall of the order-`k` complex lie on one supported ray. -/
 theorem ray_eq_of_subset [Module.Free ℤ N] {k : ℕ} {Q : Set V} (hQ : Q ∈ (D.levelComplex k).walls)
@@ -188,9 +194,7 @@ def pathPrefunctor (k : ℕ) :
     WallComplement (fun Q : (D.levelComplex k).walls => (Q : Set V)) ⥤q
       WallComplement (fun j : D.active k => (D.wall j).support) :=
   WallComplement.wallCoverPrefunctor (fun j => (D.wall j).isConvexPolyhedron.isClosed)
-    (fun j x hx => by
-      obtain ⟨Q, hQ, hxQ, hsub⟩ := D.exists_mem_levelComplex_walls_subset k j hx
-      exact ⟨⟨Q, hQ⟩, hxQ, hsub, D.affineSpan_eq_of_subset hQ j hsub⟩)
+    (D.wallCover k)
 
 /-- Forgetting the extra cuts preserves each ambient point. -/
 @[simp]
@@ -255,11 +259,8 @@ theorem wallIndices_singleton_pairwise_commute (k : ℕ) (θ : V)
   intro a ha b hb _
   have ha : θ ∈ (D.wall a).support := singleton_subset_iff.mp (D.mem_wallIndices.mp ha)
   have hb : θ ∈ (D.wall b).support := singleton_subset_iff.mp (D.mem_wallIndices.mp hb)
-  apply D.activeLabels_commute k a b
-  apply AffineSubspace.ext_of_direction_eq _
-    ⟨θ, subset_affineSpan ℝ _ ha, subset_affineSpan ℝ _ hb⟩
-  by_contra hne
-  exact hθ (mem_singularSupport.mpr (Or.inr ⟨a, b, hne, ha, hb⟩))
+  exact D.activeLabels_commute k a b (affineSpan_eq_of_notMem_singularSupport
+    (W := fun j : D.active k => (D.wall j).support) hθ ha hb)
 
 /-- The order-`k` KS complex of a presentation. Each wall carries the unordered product of the
 projected labels of all active indexed walls containing it, and is cooriented by a degree on
