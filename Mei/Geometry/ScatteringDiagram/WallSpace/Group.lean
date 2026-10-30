@@ -194,6 +194,7 @@ theorem wallGroup_eq_bot_of_raySubmodule_eq_bot (w : SupportedRay d) (m : Λ →
 
 /-- A normal that does not annihilate the geometric direction of a supported ray has
 trivial wall group on that ray. -/
+@[simp]
 theorem wallGroup_eq_bot_of_normal_ne_zero {w : SupportedRay d} {m : Λ →+ ℤ}
     (hm : m (ρ w.generator) ≠ 0) : H.wallGroup w m = ⊥ := by
   apply H.wallGroup_eq_bot_of_raySubmodule_eq_bot

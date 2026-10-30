@@ -120,6 +120,12 @@ theorem logComponent_homogeneousFactor_of_ne (g : d.completedBCHGroup ℒ) {n m 
 theorem logComponent_one (n : N) : d.logComponent ℒ 1 n = 0 := by
   rw [logComponent, completedBCHExp_symm_one, map_zero]
 
+/-- Inverting a completed label negates each logarithmic coefficient. -/
+@[simp]
+theorem logComponent_inv (g : d.completedBCHGroup ℒ) (n : N) :
+    d.logComponent ℒ g⁻¹ n = -d.logComponent ℒ g n := by
+  rw [logComponent, completedBCHExp_symm_inv, map_neg, logComponent]
+
 /-- Coefficients vanish in degrees carrying no homogeneous piece. -/
 theorem logComponent_eq_zero_of_notMem_monoid (g : d.completedBCHGroup ℒ) {n : N}
     (hn : n ∉ d.monoid) : d.logComponent ℒ g n = 0 := by

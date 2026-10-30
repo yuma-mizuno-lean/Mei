@@ -87,12 +87,14 @@ theorem eq_rayFactor_iff {g h : d.completedBCHGroup ℒ} {w : SupportedRay d} :
     · rw [hnot n hn, d.logComponent_rayFactor_of_notMem ℒ g hn]
 
 /-- Ray factors are completed ray labels. -/
+@[simp high]
 theorem rayFactor_mem_completedRaySubgroup (g : d.completedBCHGroup ℒ) (w : SupportedRay d) :
     d.rayFactor ℒ g w ∈ d.completedRaySubgroup ℒ w :=
   (d.mem_completedRaySubgroup_iff_logComponent ℒ w _).mpr fun _ hn =>
     d.logComponent_rayFactor_of_notMem ℒ g hn
 
 /-- A label on one supported ray is its own ray factor there. -/
+@[simp]
 theorem rayFactor_eq_self {g : d.completedBCHGroup ℒ} {w : SupportedRay d}
     (hg : g ∈ d.completedRaySubgroup ℒ w) : d.rayFactor ℒ g w = g :=
   (eq_rayFactor_iff d ℒ).mpr ⟨fun _ _ => rfl,
@@ -111,13 +113,23 @@ theorem rayFactor_eq_one [HasUniqueDiv N] {g : d.completedBCHGroup ℒ} {v w : S
   · exact d.logComponent_rayFactor_of_notMem ℒ g hn
 
 /-- The identity label has trivial ray factors. -/
-@[simp]
+@[simp high]
 theorem rayFactor_one (w : SupportedRay d) : d.rayFactor ℒ 1 w = 1 := by
   apply d.ext_logComponent ℒ
   intro n
   by_cases hn : n ∈ w.rayDegrees
   · rw [d.logComponent_rayFactor_of_mem ℒ 1 hn]
   · rw [d.logComponent_rayFactor_of_notMem ℒ 1 hn, logComponent_one]
+
+/-- Ray factors respect inversion of completed labels. -/
+@[simp]
+theorem rayFactor_inv (g : d.completedBCHGroup ℒ) (w : SupportedRay d) :
+    d.rayFactor ℒ g⁻¹ w = (d.rayFactor ℒ g w)⁻¹ := by
+  apply d.ext_logComponent ℒ
+  intro n
+  by_cases hn : n ∈ w.rayDegrees
+  · simp only [logComponent_rayFactor_of_mem d ℒ _ hn, logComponent_inv]
+  · simp only [logComponent_rayFactor_of_notMem d ℒ _ hn, logComponent_inv, neg_zero]
 
 /-- Only finitely many ray factors of a label are nontrivial at each order. -/
 theorem hasFiniteSupport_rayFactor [HasUniqueDiv N] (g : d.completedBCHGroup ℒ) :

@@ -38,7 +38,11 @@ namespace Mei
 
 open _root_.AddMonoidAlgebra
 
-variable {R Γ Λ : Type*} [CommRing R] [Algebra ℚ R] [AddCommGroup Γ] [AddCommMonoid Λ]
+variable {R Γ Λ : Type*} [CommRing R] [Algebra ℚ R] [AddCommMonoid Λ]
+
+section Monoid
+
+variable [AddCommMonoid Γ]
   [DecidableEq Γ] (d : PositiveDegrees Γ) (ρ : Γ →+ Λ) (n : Λ →+ ℤ)
 
 local notation "χ" => AddMonoidHom.comp (Int.castAddHom R) n
@@ -98,8 +102,22 @@ theorem logComponent_completedBCHExp_completedTropicalTangentField_mem_wall
         completionProjection_completedTropicalTangentField d ρ χ _ u v hv.symm])]
   exact decompose_tropicalTangentField_mem_wall d ρ n v q
 
+end Monoid
+
+section Group
+
+variable [AddCommGroup Γ] [DecidableEq Γ]
+  (d : PositiveDegrees Γ) (ρ : Γ →+ Λ) (n : Λ →+ ℤ)
+
+local notation "χ" => AddMonoidHom.comp (Int.castAddHom R) n
+local notation "T" => tropicalTangentMonoid d ρ χ
+local notation "G" => TropicalVertexCoefficientAction.filtration (R := R) d T
+local notation "ℒ" => tropicalVertexGrading (R := R) d ρ
+local notation "H" => tropicalVertexWallSpaces (R := R) d ρ
+
 /-- The ray factors of a completed tangent label `exp(u ∂_n)` are wall labels with
 normal `n`. For nontangent rays these wall groups are trivial. -/
+@[simp high]
 theorem rayFactor_completedBCHExp_completedTropicalTangentField_mem_wallGroup
     (u : (G).completion) (w : SupportedRay d) :
     d.rayFactor ℒ (d.completedBCHExp ℒ (completedTropicalTangentField d ρ χ u)) w ∈
@@ -109,6 +127,7 @@ theorem rayFactor_completedBCHExp_completedTropicalTangentField_mem_wallGroup
 
 /-- A completed tangent label `exp(u ∂_n)` has trivial ray factors on the supported rays
 whose geometric direction is not annihilated by `n`. -/
+@[simp]
 theorem rayFactor_completedBCHExp_completedTropicalTangentField_eq_one
     (u : (G).completion) {w : SupportedRay d} (hw : n (ρ w.generator) ≠ 0) :
     d.rayFactor ℒ (d.completedBCHExp ℒ (completedTropicalTangentField d ρ χ u)) w = 1 := by
@@ -131,5 +150,7 @@ theorem projection_completedBCHExp_completedTropicalTangentField_eq_noncommProd_
   d.projection_eq_noncommProd_rayFactor (fun q q' => (H).lie_eq_zero_of_same_normal
     (logComponent_completedBCHExp_completedTropicalTangentField_mem_wall d ρ n u q)
     (logComponent_completedBCHExp_completedTropicalTangentField_mem_wall d ρ n u q')) k s hs
+
+end Group
 
 end Mei
