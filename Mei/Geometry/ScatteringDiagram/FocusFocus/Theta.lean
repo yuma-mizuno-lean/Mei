@@ -6,6 +6,7 @@ Authors: Claude
 module
 
 public import Mei.RingTheory.Node.SignedMonomial
+public import Mei.RingTheory.Node.Tangential
 
 /-!
 # Theta functions of the focus-focus algebra
@@ -21,6 +22,8 @@ free, hence flat, over `S`. They multiply by
 `r = (|n| + |m| - |n + m|) / 2`. The structure constants `(r choose j) t^r` are images of
 elements of `ℕ[t]`.
 
+Each scalar theta monomial is the homogeneous incoming lift from its admissible chamber.
+
 The usual truncated coefficient ring is `S = K[t]/(t^(k+1))`; here `S` and `t` are arbitrary.
 The example follows Gross–Siebert, *An Invitation to Toric Degenerations*, §2.2–2.3
 (arXiv:0808.2749v2), and Gross–Hacking–Siebert, *Theta functions on varieties with effective
@@ -33,7 +36,7 @@ noncomputable section
 
 namespace Mei.FocusFocus
 
-open TauCeti TauCeti.NodeAlgebra LaurentPolynomial Mei.NodeAlgebra
+open TauCeti TauCeti.NodeAlgebra AddMonoidAlgebra LaurentPolynomial Mei.NodeAlgebra
 open scoped Mei.NodeAlgebra
 
 variable {S : Type*} [CommRing S] (t : S)
@@ -47,6 +50,29 @@ def theta (n b : ℤ) : NodeAlgebra S[T;T⁻¹] (C t * (1 + T 1)) :=
 theorem theta_def (n b : ℤ) :
     theta t n b = (T b : S[T;T⁻¹]) • signedMonomial (C t * (1 + T 1)) n :=
   (rfl)
+
+/-- An algebraic theta monomial, with arbitrary scalar coefficient, is the
+admissible homogeneous lift from its incoming chamber. -/
+theorem smul_theta_eq_exponentIncomingLift (c : S) (n b : ℤ) (i : Fin 2)
+    (hi : if i = 0 then n ≤ 0 else 0 ≤ n) :
+    c • theta t n b =
+      exponentIncomingLift (C t * (1 + T 1)) i
+        ⟨((n.natAbs : ℤ), b), by simp⟩
+        ⟨single (n.natAbs, b) c, single_mem_grade _ _⟩ := by
+  rw [exponentIncomingLift_single]
+  have hcoeff : (single b c : S[ℤ]) = c • (T b : S[T;T⁻¹]) := by
+    simp [T, -single_eq_C_mul_T]
+  rw [hcoeff, smul_assoc, theta_def]
+  congr 1
+  fin_cases i
+  · norm_num at hi
+    have hn : n = -(n.natAbs : ℤ) := by omega
+    conv_lhs => rw [hn, signedMonomial_neg_natCast]
+    rfl
+  · norm_num at hi
+    have hn : n = (n.natAbs : ℤ) := by omega
+    conv_lhs => rw [hn, signedMonomial_natCast]
+    rfl
 
 /-- For a natural number `n`, `ϑ_{n,b} = Y^n W^b`. -/
 @[simp]

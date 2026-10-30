@@ -119,6 +119,15 @@ theorem mem_cyclicIcc_iff_le_or_lt {e e' k : Fin n} :
     simp only [Fin.le_def, Fin.lt_def] at *
     omega
 
+/-- A cyclic interval contains the cyclic intervals ending at its right end and starting inside
+it. -/
+theorem cyclicIcc_subset_of_mem {e e' k : Fin n} (hk : k ∈ cyclicIcc e e') :
+    cyclicIcc k e' ⊆ cyclicIcc e e' := by
+  intro x hx
+  rw [mem_cyclicIcc] at hk hx ⊢
+  rw [← val_sub_le_val_sub_iff e x e']
+  exact ((val_sub_le_val_sub_iff k x e').mpr hx).trans ((val_sub_le_val_sub_iff e k e').mpr hk)
+
 variable (B : Finset (Fin n)) (τ : Fin n → ℕ)
 
 /-- The weight of a position: `-1` at a sink and the number of tokens elsewhere. -/

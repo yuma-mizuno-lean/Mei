@@ -1,15 +1,15 @@
-name: Initialize empty Mei R2 budget
+name: Inspect or administer Mei R2 budget
 on:
   workflow_dispatch:
     inputs:
       operation:
         description: 'Initialize an empty bucket, or conservatively account for existing objects after stopping external writers'
         type: choice
-        options: [initialize-empty, adopt-existing]
-        default: initialize-empty
+        options: [inspect, initialize-empty, adopt-existing]
+        default: inspect
         required: true
       confirmation:
-        description: 'Type mei-cache to initialize its empty dedicated bucket once'
+        description: 'Type mei-cache to confirm the selected budget operation'
         required: true
         type: string
 permissions:

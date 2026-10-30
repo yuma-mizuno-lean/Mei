@@ -43,13 +43,13 @@ variable {Γ Λ R L V E ι : Type*} [AddCommGroup Γ] [AddCommGroup Λ]
   {H : DirectedWallSpaces ρ ℒ} (D : DirectedDiagram (d := d) (h.prod h') H ι)
 
 /-- Outside a finite arrangement of base endpoints, only finitely many heights
-in the zero slice are singular or fail vertical transversality. The auxiliary
-real space can be any integral lattice model of the two added coordinates. -/
+in the zero slice are singular or lie in the affine span of a vertically tangent
+wall. The auxiliary real space can be any integral lattice model of the two added coordinates. -/
 theorem exists_finite_bad_vertical_heights (k : ℕ) :
     ∃ A : ExceptionalArrangement V, ∀ Q, A.IsGeneric Q →
       {y : ℝ | (Q, y • j (1, 0)) ∈
           singularSupport (fun a : D.active k => (D.wall a).support) ∨
-        ∃ a : D.active k, (Q, y • j (1, 0)) ∈ (D.wall a).support ∧
+        ∃ a : D.active k, (Q, y • j (1, 0)) ∈ affineSpan ℝ (D.wall a).support ∧
           (h.prod h').realCharacter (D.wall a).normal (0, j (0, 1)) = 0}.Finite := by
   classical
   let := h.finiteDimensional
@@ -141,6 +141,6 @@ theorem exists_finite_bad_vertical_heights (k : ℕ) :
   · exact hgood ((affineSpan ℝ (D.wall a).support).comap f.toAffineMap)
       (Finset.mem_union_right _ (Finset.mem_image.mpr
         ⟨a, Finset.mem_filter.mpr ⟨Finset.mem_univ _, hv⟩, rfl⟩))
-      (subset_affineSpan ℝ _ ha)
+      ha
 
 end Mei.DirectedDiagram

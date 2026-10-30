@@ -31,8 +31,9 @@ parameter) form a finite set. Thus repeated visits and simultaneous coplanar
 crossings are retained. Every crossing lies in the relative
 interior of its wall. In finite dimension, finite families of codimension-one
 polyhedra admit such paths between any two allowed endpoints, with two edges
-sufficing. A function that is locally constant off the walls takes equal values
-at the endpoints of a segment meeting no wall, by connectedness of the unit interval.
+sufficing and all vertices in any prescribed open set containing the endpoints.
+A function that is locally constant off the walls takes equal values at the
+endpoints of a segment meeting no wall, by connectedness of the unit interval.
 -/
 
 public section
@@ -451,21 +452,37 @@ namespace Mei.Convex.AdmissiblePLPath
 
 variable {V ι : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V] {W : ι → Set V}
 
-/-- Allowed endpoints in a finite family of codimension-one polyhedra admit
-an admissible chain with exactly two edges. -/
-theorem exists_length_eq_two [FiniteDimensional ℝ V] [Finite ι]
+/-- Allowed endpoints in an open set, for a finite family of codimension-one
+polyhedra, admit an admissible chain with exactly two edges whose vertices all lie
+in that set. The set need not be convex. -/
+theorem exists_length_eq_two_vertices_mem_of_isOpen [FiniteDimensional ℝ V] [Finite ι]
     (hpoly : ∀ i, TauCeti.IsConvexPolyhedron (W i))
     (hdim : ∀ i, Module.finrank ℝ (affineSpan ℝ (W i)).direction + 1 = Module.finrank ℝ V)
-    (x y : WallComplement W) : ∃ p : AdmissiblePLPath x y, p.length = 2 := by
-  obtain ⟨v, _, hv, htrans, hreg⟩ := exists_mem_open_two_transverse_lineMaps
-    W hpoly hdim x.notMem y.notMem isOpen_univ Set.univ_nonempty
+    {U : Set V} (hU : IsOpen U) {x y : WallComplement W} (hx : x.val ∈ U) (hy : y.val ∈ U) :
+    ∃ p : AdmissiblePLPath x y, p.length = 2 ∧ ∀ z ∈ p.vertices, z.val ∈ U := by
+  obtain ⟨v, hvU, hv, htrans, hreg⟩ := exists_mem_open_two_transverse_lineMaps
+    W hpoly hdim x.notMem y.notMem hU ⟨x.val, hx⟩
   let z : WallComplement W := ⟨v, hv⟩
   have hxz : WallComplement.AdmissibleSegment x z :=
     ⟨fun i _ => (htrans i).1, fun t _ => (hreg t).1⟩
   have hyz : WallComplement.AdmissibleSegment y z :=
     ⟨fun i _ => (htrans i).2, fun t _ => (hreg t).2⟩
-  exact ⟨((Quiver.Path.nil : AdmissiblePLPath x x).cons (PLift.up hxz)).cons
-    (PLift.up hyz.symm), rfl⟩
+  refine ⟨((Quiver.Path.nil : AdmissiblePLPath x x).cons (PLift.up hxz)).cons
+    (PLift.up hyz.symm), rfl, ?_⟩
+  simp only [Quiver.Path.mem_vertices_cons, Quiver.Path.vertices_nil, List.mem_singleton]
+  rintro w ((rfl | rfl) | rfl)
+  · exact hx
+  · exact hvU
+  · exact hy
+
+/-- Allowed endpoints in a finite family of codimension-one polyhedra admit
+an admissible chain with exactly two edges. -/
+theorem exists_length_eq_two [FiniteDimensional ℝ V] [Finite ι]
+    (hpoly : ∀ i, TauCeti.IsConvexPolyhedron (W i))
+    (hdim : ∀ i, Module.finrank ℝ (affineSpan ℝ (W i)).direction + 1 = Module.finrank ℝ V)
+    (x y : WallComplement W) : ∃ p : AdmissiblePLPath x y, p.length = 2 :=
+  (exists_length_eq_two_vertices_mem_of_isOpen hpoly hdim isOpen_univ
+    (mem_univ x.val) (mem_univ y.val)).imp fun _ hp => hp.1
 
 end Mei.Convex.AdmissiblePLPath
 

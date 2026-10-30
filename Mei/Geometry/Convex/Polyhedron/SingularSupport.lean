@@ -25,6 +25,8 @@ singular support; extra fine walls are allowed. Adding unrestricted coordinates
 to every wall gives the cylinder over the original singular support, including
 for families with empty walls. On a convex set avoiding singular support, each wall
 meeting the set agrees there with its affine span, and distinct wall directions cannot cross.
+Near a regular point, displacements tangent to the incident walls preserve all
+incident indices.
 -/
 
 public section
@@ -77,6 +79,33 @@ theorem mem_intrinsicInterior_of_notMem_singularSupport {W : ι → Set V} {i : 
     x ∈ intrinsicInterior ℝ (W i) := by
   rw [← intrinsicClosure_sdiff_intrinsicFrontier]
   exact ⟨subset_intrinsicClosure hxi, fun hf => hx (mem_singularSupport.mpr (Or.inl ⟨i, hf⟩))⟩
+
+open Filter Topology in
+/-- Near a regular point, displacements in a submodule tangent to every incident
+wall preserve the entire set of incident indices. Closedness excludes nonincident
+walls, while relative interior controls the incident ones. -/
+theorem eventually_mem_iff_of_submodule_le_direction [Finite ι]
+    (W : ι → Set V) (hclosed : ∀ j, IsClosed (W j)) (x : V)
+    (hx : x ∉ singularSupport W) (S : Submodule ℝ V)
+    (hS : ∀ j, x ∈ W j → S ≤ (affineSpan ℝ (W j)).direction) :
+    ∀ᶠ w : S in 𝓝 0, ∀ j, x + (w : V) ∈ W j ↔ x ∈ W j := by
+  apply eventually_all.mpr
+  intro j
+  have ht : Tendsto (fun w : S => x + (w : V)) (𝓝 0) (𝓝 x) := by
+    have hc : Continuous (fun w : S => x + (w : V)) := by fun_prop
+    simpa using hc.tendsto (0 : S)
+  by_cases hj : x ∈ W j
+  · have hspan (w : S) : x + (w : V) ∈ affineSpan ℝ (W j) := by
+      simpa only [vadd_eq_add, add_comm] using
+        (affineSpan ℝ (W j)).vadd_mem_of_mem_direction (hS j hj w.property)
+          (subset_affineSpan ℝ _ hj)
+    have hwithin := tendsto_nhdsWithin_iff.mpr ⟨ht, Eventually.of_forall hspan⟩
+    filter_upwards [hwithin.eventually
+      (Mei.mem_nhdsWithin_affineSpan_of_mem_intrinsicInterior
+        (mem_intrinsicInterior_of_notMem_singularSupport hj hx))] with w hw
+    exact iff_of_true hw hj
+  · filter_upwards [ht.eventually ((hclosed j).isOpen_compl.mem_nhds hj)] with w hw
+    exact iff_of_false hw hj
 
 /-- Covering closed walls by pieces with the same affine span introduces no
 new singular points in the coarse family. The fine family may have extra walls. -/

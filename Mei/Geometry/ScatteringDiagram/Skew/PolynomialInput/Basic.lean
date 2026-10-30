@@ -33,6 +33,9 @@ over the exponents `m_{i,s} = s w_i`: identifying `p_{i,s} z^{s w_i}` with the m
 letter `v_{i,s} = (s w_i, e_{(i,s)})` of `M × ℤ^E` presents the initial functions
 (`BLMPolynomialInput.initialFunction`) in the monoid algebra of the alphabet lattice, where
 distinct variables span distinct supported rays even when their exponents are proportional.
+The coefficient monoid `BLMPolynomialInput.coefficientMonoid` also allows arbitrary Laurent
+characters, with nonnegative multiplicities of the independent variables; the native initial
+functions `BLMPolynomialInput.initialCoefficientFunction` map to `initialFunction` under inclusion.
 
 A basis vector `e_i` with `i ∈ I_uf` cannot lie in the radical of the form, so the zero form
 admits no such input when `I_uf` is nonempty (`BLMPolynomialInput.isEmpty_of_form_eq_zero`).
@@ -228,6 +231,88 @@ theorem coeff_initialFunction_eq_zero (R : Type*) [Semiring R] (i : B.unfrozenIn
   simp [initialFunction, AddMonoidAlgebra.one_def, h0.symm, fun s => (hx s).symm]
 
 end Letter
+
+section Coefficient
+
+open _root_.AddMonoidAlgebra
+
+variable [DecidableEq ι] [Fintype ι]
+
+local notation "d" => PositiveDegrees.finiteAlphabet I.letterExponent
+
+/-- The BLM coefficient exponents: arbitrary Laurent character and nonnegative
+multiplicities of the independent variables. -/
+def coefficientMonoid : AddSubmonoid (Module.Dual ℤ N × (I.Letter → ℤ)) :=
+  (⊤ : AddSubmonoid (Module.Dual ℤ N)).prod (PositiveDegrees.orthant I.Letter).monoid
+
+omit [DecidableEq ι] [Fintype ι] in
+@[simp]
+theorem mem_coefficientMonoid (q : Module.Dual ℤ N × (I.Letter → ℤ)) :
+    q ∈ I.coefficientMonoid ↔ ∀ α, 0 ≤ q.2 α := by
+  simp [coefficientMonoid, AddSubmonoid.mem_prod]
+
+omit [DecidableEq ι] [Fintype ι] in
+/-- The alphabet's positive degrees are allowed coefficient exponents. -/
+theorem positiveDegrees_le_coefficientMonoid : (d).monoid ≤ I.coefficientMonoid :=
+  fun _ h => (I.mem_coefficientMonoid _).mpr
+    ((PositiveDegrees.mem_finiteAlphabet_monoid _).mp h).1
+
+/-- The multiplicities of a coefficient exponent, as a polynomial multi-index.
+The Laurent character does not contribute to this index. -/
+def coefficientMultiplicity : I.coefficientMonoid →+ (I.Letter →₀ ℕ) where
+  toFun q := Finsupp.equivFunOnFinite.symm (fun α => (q.val.2 α).toNat)
+  map_zero' := by ext; simp
+  map_add' q r := by
+    ext α
+    simp [Int.toNat_add ((I.mem_coefficientMonoid _).mp q.property α)
+      ((I.mem_coefficientMonoid _).mp r.property α)]
+
+omit [DecidableEq ι] in
+@[simp]
+theorem coefficientMultiplicity_apply (q : I.coefficientMonoid) (α : I.Letter) :
+    I.coefficientMultiplicity q α = (q.val.2 α).toNat := (rfl)
+
+/-- The coefficient exponent of the independent variable `p_{i,s} z^{s w_i}`. -/
+def coefficientLetter (α : I.Letter) : I.coefficientMonoid :=
+  ⟨PositiveDegrees.letter I.letterExponent α,
+    I.positiveDegrees_le_coefficientMonoid (PositiveDegrees.letter_mem _ α)⟩
+
+omit [Fintype ι] in
+@[simp]
+theorem coe_coefficientLetter (α : I.Letter) :
+    (I.coefficientLetter α).val = PositiveDegrees.letter I.letterExponent α := (rfl)
+
+@[simp]
+theorem coefficientMultiplicity_coefficientLetter (α : I.Letter) :
+    I.coefficientMultiplicity (I.coefficientLetter α) = Finsupp.single α 1 := by
+  ext β
+  simp [Finsupp.single_apply, Pi.single_apply, apply_ite Int.toNat, eq_comm]
+
+variable (R : Type*) [Semiring R]
+
+/-- The initial function in the coefficient monoid, retaining all independent variables. -/
+def initialCoefficientFunction (i : B.unfrozenIndex) : R[I.coefficientMonoid] :=
+  1 + ∑ s : Fin (I.multiplicity i), single (I.coefficientLetter ⟨i, s⟩) 1
+
+omit [Fintype ι] in
+/-- The native initial function is the constant term plus its independent-variable monomials. -/
+theorem initialCoefficientFunction_def (i : B.unfrozenIndex) :
+    I.initialCoefficientFunction R i = 1 + ∑ s : Fin (I.multiplicity i),
+      single (I.coefficientLetter ⟨i, s⟩) 1 :=
+  (rfl)
+
+omit [Fintype ι] in
+/-- Forgetting the coefficient-monoid restriction gives the original BLM initial function. -/
+@[simp]
+theorem mapDomain_initialCoefficientFunction (i : B.unfrozenIndex) :
+    mapDomain Subtype.val (I.initialCoefficientFunction R i) = I.initialFunction R i := by
+  have h : mapDomainRingHom R I.coefficientMonoid.subtype
+      (I.initialCoefficientFunction R i) = I.initialFunction R i := by
+    rw [initialCoefficientFunction_def, map_add, map_one, map_sum, initialFunction_def]
+    simp [mapDomainRingHom_apply, mapDomain_single]
+  simpa only [mapDomainRingHom_apply, AddSubmonoid.coe_subtype] using h
+
+end Coefficient
 
 end BLMPolynomialInput
 

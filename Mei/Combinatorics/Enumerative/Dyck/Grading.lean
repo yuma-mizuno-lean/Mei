@@ -48,7 +48,7 @@ coefficients of rank-two wall functions.
 public section
 
 open DyckStep Finset Polynomial
-open Mei.CyclicMatching (cyclicIcc mem_cyclicIcc cyclicIcc_self)
+open Mei.CyclicMatching (cyclicIcc mem_cyclicIcc cyclicIcc_self cyclicIcc_subset_of_mem)
 open Fin (val_sub_eq_zero_iff val_sub_self)
 
 namespace Mei.MaximalDyckPath
@@ -493,6 +493,105 @@ theorem exists_tight_two_one :
       decide
   exact ⟨γ, hp, hq, hshadow, ht, hn⟩
 
+section Truncation
+
+/-- Horizontal balance on `ev` only depends on the vertical grades on `ev`. -/
+theorem horizontalBalanced_congr {γ γ' : Edge d₁ d₂ → ℕ} {e v : Edge d₁ d₂}
+    (hV : ∀ k ∈ cyclicIcc e v ∩ verticalEdges d₁ d₂, γ k = γ' k) :
+    HorizontalBalanced γ e v ↔ HorizontalBalanced γ' e v := by
+  rw [horizontalBalanced_iff_card_eq_sum, horizontalBalanced_iff_card_eq_sum, sum_congr rfl hV]
+
+/-- Horizontal balance only depends on the vertical grades. -/
+theorem horizontalBalanced_congr' {γ γ' : Edge d₁ d₂ → ℕ}
+    (hV : ∀ k ∈ verticalEdges d₁ d₂, γ k = γ' k) (e v : Edge d₁ d₂) :
+    HorizontalBalanced γ e v ↔ HorizontalBalanced γ' e v :=
+  horizontalBalanced_congr fun k hk ↦ hV k (mem_inter.mp hk).2
+
+/-- Vertical balance on `he` only depends on the horizontal grades on `he`. -/
+theorem verticalBalanced_congr' {γ γ' : Edge d₁ d₂ → ℕ} {h e : Edge d₁ d₂}
+    (hH : ∀ k ∈ cyclicIcc h e ∩ horizontalEdges d₁ d₂, γ k = γ' k) :
+    VerticalBalanced γ h e ↔ VerticalBalanced γ' h e := by
+  rw [verticalBalanced_iff_card_eq_sum, verticalBalanced_iff_card_eq_sum, sum_congr rfl hH]
+
+/-- Vertical balance only depends on the horizontal grades. -/
+theorem verticalBalanced_congr {γ γ' : Edge d₁ d₂ → ℕ}
+    (hH : ∀ k ∈ horizontalEdges d₁ d₂, γ k = γ' k) (h e : Edge d₁ d₂) :
+    VerticalBalanced γ h e ↔ VerticalBalanced γ' h e :=
+  verticalBalanced_congr' fun k hk ↦ hH k (mem_inter.mp hk).2
+
+/-- The local horizontal shadows only depend on the horizontal grades. -/
+theorem horizontalShadow_congr {γ γ' : Edge d₁ d₂ → ℕ}
+    (hH : ∀ k ∈ horizontalEdges d₁ d₂, γ k = γ' k) (h : Edge d₁ d₂) :
+    horizontalShadow γ h = horizontalShadow γ' h := by
+  ext k
+  simp only [mem_horizontalShadow, verticalBalanced_congr hH]
+
+/-- The local vertical shadows only depend on the vertical grades. -/
+theorem verticalShadow_congr {γ γ' : Edge d₁ d₂ → ℕ}
+    (hV : ∀ k ∈ verticalEdges d₁ d₂, γ k = γ' k) (v : Edge d₁ d₂) :
+    verticalShadow γ v = verticalShadow γ' v := by
+  ext k
+  simp only [mem_verticalShadow, horizontalBalanced_congr' hV]
+
+theorem totalHorizontalShadow_congr {γ γ' : Edge d₁ d₂ → ℕ}
+    (hH : ∀ k ∈ horizontalEdges d₁ d₂, γ k = γ' k) :
+    totalHorizontalShadow γ = totalHorizontalShadow γ' := by
+  ext k
+  simp only [mem_totalHorizontalShadow, horizontalShadow_congr hH]
+
+theorem totalVerticalShadow_congr {γ γ' : Edge d₁ d₂ → ℕ}
+    (hV : ∀ k ∈ verticalEdges d₁ d₂, γ k = γ' k) :
+    totalVerticalShadow γ = totalVerticalShadow γ' := by
+  ext k
+  simp only [mem_totalVerticalShadow, verticalShadow_congr hV]
+
+/-- **Compatibility only sees the shadowed vertical grades.** Two gradings with the same
+horizontal grades that agree on the total horizontal shadow are compatible together. -/
+theorem compatible_congr_of_horizontal {γ γ' : Edge d₁ d₂ → ℕ}
+    (hH : ∀ k ∈ horizontalEdges d₁ d₂, γ k = γ' k)
+    (hV : ∀ k ∈ totalHorizontalShadow γ, γ k = γ' k) : Compatible γ ↔ Compatible γ' := by
+  rw [compatible_iff, compatible_iff]
+  refine forall₂_congr fun h hh ↦ forall₂_congr fun v hv ↦ ?_
+  simp only [verticalBalanced_congr hH]
+  by_cases hA : ∃ e, (e - h).val < (v - h).val ∧ VerticalBalanced γ' h e
+  · exact iff_of_true (Or.inl hA) (Or.inl hA)
+  have hsh : v ∈ horizontalShadow γ h := (mem_horizontalShadow γ).mpr
+    ⟨hv, fun e he hb ↦ hA ⟨e, he, (verticalBalanced_congr hH h e).mp hb⟩⟩
+  refine or_congr_right (exists_congr fun e ↦ and_congr_right fun he ↦
+    horizontalBalanced_congr fun k hk ↦ hV k ?_)
+  have hev : e ∈ cyclicIcc h v := by
+    rw [mem_cyclicIcc, ← Fin.val_sub_le_val_sub_iff]
+    exact he.le
+  have hkv := mem_cyclicIcc.mp (cyclicIcc_subset_of_mem hev (mem_inter.mp hk).1)
+  rw [mem_horizontalShadow] at hsh
+  rw [mem_totalHorizontalShadow]
+  exact ⟨h, hh, (mem_horizontalShadow γ).mpr
+    ⟨(mem_inter.mp hk).2, fun e' he' ↦ hsh.2 e' (lt_of_lt_of_le he' hkv)⟩⟩
+
+/-- **Compatibility only sees the shadowed horizontal grades.** Two gradings with the same
+vertical grades that agree on the total vertical shadow are compatible together. -/
+theorem compatible_congr_of_vertical {γ γ' : Edge d₁ d₂ → ℕ}
+    (hV : ∀ k ∈ verticalEdges d₁ d₂, γ k = γ' k)
+    (hH : ∀ k ∈ totalVerticalShadow γ, γ k = γ' k) : Compatible γ ↔ Compatible γ' := by
+  rw [compatible_iff, compatible_iff]
+  refine forall₂_congr fun h hh ↦ forall₂_congr fun v hv ↦ ?_
+  simp only [horizontalBalanced_congr' hV]
+  by_cases hB : ∃ e, (v - e).val < (v - h).val ∧ HorizontalBalanced γ' e v
+  · exact iff_of_true (Or.inr hB) (Or.inr hB)
+  have hsh : h ∈ verticalShadow γ v := (mem_verticalShadow γ).mpr
+    ⟨hh, fun e he hb ↦ hB ⟨e, he, (horizontalBalanced_congr' hV e v).mp hb⟩⟩
+  refine or_congr_left (exists_congr fun e ↦ and_congr_right fun he ↦
+    verticalBalanced_congr' fun k hk ↦ hH k ?_)
+  have hkv : (v - k).val ≤ (v - h).val := by
+    rw [Fin.val_sub_le_val_sub_iff]
+    exact (mem_cyclicIcc.mp (mem_inter.mp hk).1).trans he.le
+  rw [mem_verticalShadow] at hsh
+  rw [mem_totalVerticalShadow]
+  exact ⟨v, hv, (mem_verticalShadow γ).mpr
+    ⟨(mem_inter.mp hk).2, fun e' he' ↦ hsh.2 e' (lt_of_lt_of_le he' hkv)⟩⟩
+
+end Truncation
+
 section Weights
 
 variable (d₁ d₂) in
@@ -516,6 +615,18 @@ theorem weight_def (γ : Edge d₁ d₂ → ℕ) :
     weight P₁ P₂ γ =
       (∏ v ∈ verticalEdges d₁ d₂, P₁.coeff (γ v)) *
         ∏ h ∈ horizontalEdges d₁ d₂, P₂.coeff (γ h) := (rfl)
+
+variable (d₁ d₂) in
+/-- The weight sum of all compatible gradings with totals `(p, q)`. -/
+def compatibleSum (p q : ℕ) : S :=
+  ∑ γ ∈ gradings d₁ d₂ P₁.natDegree P₂.natDegree with Compatible γ ∧ verticalTotal γ = p ∧
+    horizontalTotal γ = q, weight P₁ P₂ γ
+
+theorem compatibleSum_def (p q : ℕ) :
+    compatibleSum d₁ d₂ P₁ P₂ p q =
+      ∑ γ ∈ gradings d₁ d₂ P₁.natDegree P₂.natDegree with Compatible γ ∧ verticalTotal γ = p ∧
+        horizontalTotal γ = q, weight P₁ P₂ γ :=
+  (rfl)
 
 variable (d₁ d₂) in
 /-- `C₊(p, q)`: the weight sum of the compatible gradings with totals `(p, q)` whose nonzero

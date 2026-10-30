@@ -236,6 +236,14 @@ theorem directionAt_insert (β : FiniteAffineRay V P) (b : ℝ) (δ : V) (hb : b
     Finsupp.sum_single_index (h := fun b v => if t ≤ b then v else 0) (by split <;> rfl)]
   abel
 
+omit [Module ℝ V] [AddTorsor V P] in
+/-- Before all bends, the interval direction is the incoming direction. -/
+theorem directionAt_of_le_bends (β : FiniteAffineRay V P) (t : ℝ)
+    (ht : ∀ b ∈ β.bends.support, t ≤ b) : β.directionAt t = β.incomingDirection := by
+  rw [directionAt_def, incomingDirection_def]
+  congr 1
+  exact Finsupp.sum_congr fun b hb => ite_eq_left (ht b hb)
+
 /-- On any interval without an interior bend, realization has the stated constant velocity. -/
 theorem eval_vsub_eval (β : FiniteAffineRay V P) {s t : ℝ} (hst : s ≤ t)
     (hb : ∀ b ∈ β.bends.support, b ≤ s ∨ t ≤ b) :

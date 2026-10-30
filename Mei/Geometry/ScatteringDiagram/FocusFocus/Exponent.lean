@@ -7,6 +7,7 @@ module
 
 public import Mathlib.LinearAlgebra.Prod
 public import Mathlib.Algebra.MonoidAlgebra.Ideal
+public import Mathlib.Data.Fin.VecNotation
 
 /-!
 # Exponents of the focus-focus chambers
@@ -123,6 +124,12 @@ def leftOrder : exponentMonoid →+ ℕ :=
 def rightOrder : exponentMonoid →+ ℕ :=
   (AddMonoidHom.snd ℕ ℕ).comp ((AddMonoidHom.snd ℤ (ℕ × ℕ)).comp
     exponentEquiv.toAddMonoidHom)
+
+/-- The order used for the right (`i=0`) or left (`i=1`) chamber cutoff. -/
+def chamberOrder (i : Fin 2) : exponentMonoid →+ ℕ := ![rightOrder, leftOrder] i
+
+@[simp] theorem chamberOrder_zero : chamberOrder 0 = rightOrder := (rfl)
+@[simp] theorem chamberOrder_one : chamberOrder 1 = leftOrder := (rfl)
 
 @[simp] theorem leftOrder_apply (q : exponentMonoid) : leftOrder q = q.val.2.2.toNat := (rfl)
 @[simp] theorem rightOrder_apply (q : exponentMonoid) :

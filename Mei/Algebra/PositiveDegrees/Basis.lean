@@ -68,6 +68,20 @@ theorem positiveDegrees_monoid_eq_closure :
     rintro _ ⟨j, rfl⟩
     simp [mem_positiveDegrees_monoid, Finsupp.single_apply, ite_nonneg]
 
+open Classical in
+/-- The supported primitive ray through an integral basis vector in the
+nonnegative basis monoid. -/
+def positiveDegreesRay (j : ι) : Mei.SupportedRay b.positiveDegrees :=
+  Mei.SupportedRay.ofMem (b j)
+    (by simp [mem_positiveDegrees_monoid, Finsupp.single_apply, ite_nonneg])
+    (b.isPrimitive j)
+
+/-- The generator of a basis ray is the corresponding basis vector. -/
+@[simp]
+theorem positiveDegreesRay_generator (j : ι) :
+    (b.positiveDegreesRay j).generator = b j := by
+  simp [positiveDegreesRay]
+
 /-- The nonnegative basis monoid is saturated under division by positive natural
 multiples. -/
 theorem nsmulSaturated_positiveDegrees_monoid : b.positiveDegrees.monoid.NSMulSaturated := by

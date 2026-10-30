@@ -50,6 +50,18 @@ variable {R Γ Λ V E : Type*} {M L : Type u} [CommRing R] [Algebra ℚ R]
   {i : Λ →+ V} (h : TauCeti.Toric.IsIntegralLattice i)
   {j : (ℤ × ℤ) →+ E} (h' : TauCeti.Toric.IsIntegralLattice j)
 
+omit [AddCommGroup M] [Module R M] [AddCommGroup Γ] [DecidableEq Γ] in
+/-- The real probe normal reads the probe coordinate of the auxiliary factor; in
+particular it vanishes on the base factor and on the height direction. -/
+@[simp]
+theorem realCharacter_probeNormal :
+    (h.prod h').realCharacter (probeNormal (Λ := Λ)) =
+      (h'.realCharacter (AddMonoidHom.snd ℤ ℤ)).comp (LinearMap.snd ℝ V E) := by
+  symm
+  apply (h.prod h').eq_realCharacter
+  rintro ⟨a, b, c⟩
+  simp
+
 section Base
 
 variable [LieAlgebra ℚ L] [IsScalarTower ℚ R L]

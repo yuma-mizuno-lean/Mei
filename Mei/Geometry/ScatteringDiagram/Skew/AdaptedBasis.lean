@@ -8,6 +8,7 @@ module
 public import Mei.Geometry.ScatteringDiagram.Skew.Basic
 public import Mei.LinearAlgebra.Basis.Diagonal
 public import Mathlib.LinearAlgebra.Basis.Basic
+public import Mathlib.GroupTheory.IndexNSmul
 
 /-!
 # Adapted bases of skew lattice data
@@ -34,6 +35,11 @@ coefficient algebra as power series in the `t_i`
 (`AdaptedBasis.principalCoefficientCompletionEquiv`, in
 `Mei.Geometry.ScatteringDiagram.Skew.Coefficient.Completion`).
 
+Conversely, a finite basis with chosen unfrozen indices, positive multipliers and an
+alternating rational form determines a skew lattice datum with that adapted basis as soon as the
+two integrality conditions hold on basis vectors (`SkewLatticeDatum.ofBasis`,
+`AdaptedBasis.ofBasis`).
+
 ## Main declarations
 
 * `Mei.SkewLatticeDatum.AdaptedBasis`: an adapted basis of a skew lattice datum.
@@ -43,6 +49,8 @@ coefficient algebra as power series in the `t_i`
 * `Mei.SkewLatticeDatum.AdaptedBasis.unfrozenBasis`,
   `Mei.SkewLatticeDatum.AdaptedBasis.sublatticeBasis`: the induced bases of `N_uf` and `N°`.
 * `Mei.SkewLatticeDatum.AdaptedBasis.rayIndex_basis`: `κ(e_i) = d_i`.
+* `Mei.SkewLatticeDatum.ofBasis`, `Mei.SkewLatticeDatum.AdaptedBasis.ofBasis`: the skew lattice
+  datum and adapted basis defined by a finite basis, integrality being checked on basis vectors.
 -/
 
 public section
@@ -225,5 +233,134 @@ theorem coe_rayVector_basis (i : ι) :
 end RayIndex
 
 end AdaptedBasis
+
+section OfBasis
+
+variable {κ : Type*} [Finite κ] (b : Basis κ ℤ N) (S : Finset κ) (m : κ → ℕ)
+  (f : N →ₗ[ℤ] N →ₗ[ℤ] ℚ)
+
+/-- The skew lattice datum written in a finite basis `(b_i)`: the unfrozen sublattice is spanned
+by the `b_i` with `i ∈ S`, the finite-index sublattice by the multiples `m_i b_i`, and the form is
+an alternating form whose integrality conditions are checked on basis vectors,
+`{b_i, m_j b_j} ∈ ℤ` and `{b_j, m_i b_i} ∈ ℤ` for `i ∈ S` and every `j`. Its adapted basis is
+`AdaptedBasis.ofBasis`. -/
+def ofBasis (hm : ∀ i, 0 < m i) (hf : f.IsAlt)
+    (h₁ : ∀ i ∈ S, ∀ j, ∃ k : ℤ, f (b i) (m j • b j) = k)
+    (h₂ : ∀ i ∈ S, ∀ j, ∃ k : ℤ, f (b j) (m i • b i) = k) : SkewLatticeDatum N where
+  unfrozen := Submodule.span ℤ (b '' S)
+  unfrozen_saturated n x hx := by
+    refine or_iff_not_imp_left.mpr fun hn => ?_
+    rw [Submodule.mem_toAddSubmonoid, Basis.mem_span_image, Finsupp.support_subset_iff] at hx ⊢
+    intro i hi
+    simpa [hn] using hx i hi
+  sublattice := Submodule.span ℤ (Set.range fun i => m i • b i)
+  finiteIndex_sublattice := by
+    have := Fintype.ofFinite κ
+    have : Module.Free ℤ N := Module.Free.of_basis b
+    have : Module.Finite ℤ N := Module.Finite.of_basis b
+    have hP : ∀ i, m i ∣ ∏ j, m j := fun i => Finset.dvd_prod_of_mem m (Finset.mem_univ i)
+    have hP0 : ∏ j, m j ≠ 0 := Finset.prod_ne_zero_iff.mpr fun i _ => (hm i).ne'
+    have : (nsmulAddMonoidHom (α := N) (∏ j, m j)).range.FiniteIndex := by
+      refine ⟨?_⟩
+      rw [AddSubgroup.index_range_nsmul]
+      exact pow_ne_zero _ hP0
+    refine AddSubgroup.finiteIndex_of_le (H := (nsmulAddMonoidHom (α := N) (∏ j, m j)).range) ?_
+    rintro _ ⟨x, rfl⟩
+    rw [nsmulAddMonoidHom_apply, ← b.sum_repr x, Finset.smul_sum]
+    refine Submodule.sum_mem _ fun i _ => ?_
+    obtain ⟨c, hc⟩ := hP i
+    rw [smul_comm, hc, mul_comm, mul_smul]
+    exact Submodule.smul_mem _ _ (nsmul_mem (Submodule.subset_span
+      (Set.mem_range_self (f := fun i => m i • b i) i)) c)
+  form := f
+  isAlt_form := hf
+  integral_unfrozen_sublattice a ha c hc := by
+    have hle : Submodule.map₂ f (Submodule.span ℤ (b '' S))
+        (Submodule.span ℤ (Set.range fun i => m i • b i)) ≤
+          LinearMap.range (Algebra.linearMap ℤ ℚ) := by
+      rw [Submodule.map₂_span_span, Submodule.span_le]
+      rintro _ ⟨_, ⟨i, hi, rfl⟩, _, ⟨j, rfl⟩, rfl⟩
+      obtain ⟨k, hk⟩ := h₁ i hi j
+      exact ⟨k, by simp [hk]⟩
+    obtain ⟨k, hk⟩ := hle (Submodule.apply_mem_map₂ f ha hc)
+    exact ⟨k, by simpa using hk.symm⟩
+  integral_unfrozen_inf_sublattice a c hc := by
+    have := Fintype.ofFinite κ
+    obtain ⟨hcS, hcm⟩ := hc
+    obtain ⟨t, rfl⟩ := (Submodule.mem_span_range_iff_exists_fun ℤ).mp hcm
+    have ht : ∀ j ∉ S, t j = 0 := by
+      intro j hj
+      rw [SetLike.mem_coe, Basis.mem_span_image, Finsupp.support_subset_iff] at hcS
+      have h := hcS j hj
+      simp only [map_sum, map_zsmul, map_nsmul, Basis.repr_self, Finsupp.smul_single,
+        Finsupp.finsetSum_apply] at h
+      rw [Finset.sum_eq_single_of_mem j (Finset.mem_univ j)
+        (fun c _ hc => Finsupp.single_eq_of_ne' hc), Finsupp.single_eq_same] at h
+      simpa [(hm j).ne'] using h
+    have hle : Submodule.map₂ f (Submodule.span ℤ (Set.range b))
+        (Submodule.span ℤ ((fun i => m i • b i) '' S)) ≤
+          LinearMap.range (Algebra.linearMap ℤ ℚ) := by
+      rw [Submodule.map₂_span_span, Submodule.span_le]
+      rintro _ ⟨_, ⟨j, rfl⟩, _, ⟨i, hi, rfl⟩, rfl⟩
+      obtain ⟨k, hk⟩ := h₂ i hi j
+      exact ⟨k, by simp [hk]⟩
+    have hc : ∑ j, t j • m j • b j ∈ Submodule.span ℤ ((fun i => m i • b i) '' S) := by
+      refine Submodule.sum_mem _ fun j _ => ?_
+      by_cases hj : j ∈ S
+      · exact Submodule.smul_mem _ _ (Submodule.subset_span ⟨j, hj, rfl⟩)
+      · simp [ht j hj]
+    obtain ⟨k, hk⟩ := hle (Submodule.apply_mem_map₂ f (by simp [b.span_eq]) hc)
+    exact ⟨k, by simpa using hk.symm⟩
+
+variable {b S m f} {hm : ∀ i, 0 < m i} {hf : f.IsAlt}
+  {h₁ : ∀ i ∈ S, ∀ j, ∃ k : ℤ, f (b i) (m j • b j) = k}
+  {h₂ : ∀ i ∈ S, ∀ j, ∃ k : ℤ, f (b j) (m i • b i) = k}
+
+@[simp]
+theorem ofBasis_unfrozen :
+    (ofBasis b S m f hm hf h₁ h₂).unfrozen = Submodule.span ℤ (b '' S) :=
+  (rfl)
+
+@[simp]
+theorem ofBasis_sublattice :
+    (ofBasis b S m f hm hf h₁ h₂).sublattice = Submodule.span ℤ (Set.range fun i => m i • b i) :=
+  (rfl)
+
+@[simp]
+theorem ofBasis_form : (ofBasis b S m f hm hf h₁ h₂).form = f :=
+  (rfl)
+
+variable (b S m f hm hf h₁ h₂)
+
+/-- The adapted basis `(b_i)` of `SkewLatticeDatum.ofBasis`, with unfrozen indices `S` and
+multipliers `m_i`. -/
+def AdaptedBasis.ofBasis (hm : ∀ i, 0 < m i) (hf : f.IsAlt)
+    (h₁ : ∀ i ∈ S, ∀ j, ∃ k : ℤ, f (b i) (m j • b j) = k)
+    (h₂ : ∀ i ∈ S, ∀ j, ∃ k : ℤ, f (b j) (m i • b i) = k) :
+    (ofBasis b S m f hm hf h₁ h₂).AdaptedBasis κ where
+  basis := b
+  unfrozenIndex := S
+  multiplier := m
+  multiplier_pos := hm
+  unfrozen_eq_span := rfl
+  sublattice_eq_span := rfl
+
+variable {b S m f hm hf h₁ h₂}
+
+@[simp]
+theorem AdaptedBasis.ofBasis_basis : (AdaptedBasis.ofBasis b S m f hm hf h₁ h₂).basis = b :=
+  (rfl)
+
+@[simp]
+theorem AdaptedBasis.ofBasis_unfrozenIndex :
+    (AdaptedBasis.ofBasis b S m f hm hf h₁ h₂).unfrozenIndex = S :=
+  (rfl)
+
+@[simp]
+theorem AdaptedBasis.ofBasis_multiplier :
+    (AdaptedBasis.ofBasis b S m f hm hf h₁ h₂).multiplier = m :=
+  (rfl)
+
+end OfBasis
 
 end Mei.SkewLatticeDatum
