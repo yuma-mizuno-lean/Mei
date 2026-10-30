@@ -95,6 +95,11 @@ theorem equivalent_iff : D.Equivalent F ↔
 
 variable {D F}
 
+/-- Equivalent completed diagrams are consistent simultaneously. -/
+theorem Equivalent.consistent_iff (hDF : D.Equivalent F) : D.Consistent ↔ F.Consistent := by
+  rw [CompletedDiagram.consistent_iff, CompletedDiagram.consistent_iff]
+  exact forall_congr' fun k => (hDF k).consistent_iff
+
 /-- Equivalent completed diagrams have equal products on common all-order paths. -/
 theorem Equivalent.pathProduct_eq (hDF : D.Equivalent F)
     {x y : Point C} {x' y' : Point E} (p : Quiver.Path x y) (q : Quiver.Path x' y')
