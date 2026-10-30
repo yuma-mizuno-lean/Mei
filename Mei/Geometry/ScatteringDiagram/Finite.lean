@@ -6,8 +6,6 @@ Authors: Codex
 module
 
 public import Mei.Geometry.Convex.PolyhedralComplex.Filling.Joint
-public import Mei.Geometry.Convex.PolyhedralComplex.PathSubdivision
-public import Mei.Geometry.Convex.PolyhedralComplex.TriangleReduction
 public import Mei.Geometry.Convex.Polyhedron.Path.Product
 
 /-!

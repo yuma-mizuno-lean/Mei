@@ -109,6 +109,26 @@ theorem jointTriangleWords_subset_triangleWords (ν : C.walls → V →ₗ[ℝ] 
     hU (subset_convexHull ℝ _ (by simp)), hU (subset_convexHull ℝ _ (by simp)),
     hU (subset_convexHull ℝ _ (by simp)), rfl⟩
 
+/-- Words of the isolating triangular meridians, in `U`, of all joints of the complex. -/
+def jointMeridianWords (ν : C.walls → V →ₗ[ℝ] ℝ) (U : Set V) : Set (FreeGroup C.walls) :=
+  {g | ∃ J ∈ C.joints, g ∈ C.jointTriangleWords ν J U}
+
+@[simp]
+theorem mem_jointMeridianWords (ν : C.walls → V →ₗ[ℝ] ℝ) (U : Set V) (g : FreeGroup C.walls) :
+    g ∈ C.jointMeridianWords ν U ↔ ∃ J ∈ C.joints, g ∈ C.jointTriangleWords ν J U := Iff.rfl
+
+/-- Enlarging the region keeps every joint meridian. -/
+theorem jointMeridianWords_mono (ν : C.walls → V →ₗ[ℝ] ℝ) {U U' : Set V} (hUU' : U ⊆ U') :
+    C.jointMeridianWords ν U ⊆ C.jointMeridianWords ν U' := by
+  rintro g ⟨J, hJ, hg⟩
+  exact ⟨J, hJ, C.jointTriangleWords_mono ν J hUU' hg⟩
+
+/-- Joint meridians are triangular relations in the same region. -/
+theorem jointMeridianWords_subset_triangleWords (ν : C.walls → V →ₗ[ℝ] ℝ) (U : Set V) :
+    C.jointMeridianWords ν U ⊆ C.triangleWords ν U := by
+  rintro g ⟨J, -, hg⟩
+  exact C.jointTriangleWords_subset_triangleWords ν J U hg
+
 variable {C} {J U : Set V}
 
 /-- Near a joint contained in a wall, an admissible triangle whose filled triangle meets
