@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.ScatteringDiagram.FocusFocus.Upper
+public import Mei.Geometry.ScatteringDiagram.FocusFocus.Upper.Basic
 public import Mei.Geometry.ScatteringDiagram.FocusFocus.Overlap
 
 /-!
