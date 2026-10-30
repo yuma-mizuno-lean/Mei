@@ -145,6 +145,22 @@ theorem homogeneousHistoryStage_mem_snoc {n : ℕ}
   · simpa only [Fin.snoc_last, homogeneousHistoryStage_last, LinearMap.id_apply] using a.property
   · simpa only [Fin.snoc_castSucc] using homogeneousHistoryStage_mem ℳ T p a i
 
+/-- Any relation satisfied by the input and nonzero output degrees of each
+propagation map holds at every step of a surviving homogeneous history,
+including the step adjacent to the incoming coefficient. -/
+theorem homogeneousHistory_rel_of_ne_zero {n : ℕ}
+    (T : Fin n → Module.End R M) {P : Fin n → ι → ι → Prop}
+    (hP : ∀ j p q (x : M), x ∈ ℳ p →
+      DirectSum.decompose ℳ (T j x) q ≠ 0 → P j q p)
+    (r : Fin n → ι) (r₀ : ι) (a : ℳ r₀)
+    (hne : homogeneousHistory ℳ T r a ≠ 0) (j : Fin n) :
+    P j (r j) (Fin.snoc (α := fun _ => ι) r r₀ j.succ) := by
+  apply hP j _ _ _ (homogeneousHistoryStage_mem_snoc ℳ T r r₀ a j.succ)
+  intro hz
+  apply homogeneousHistoryStage_ne_zero ℳ T r hne j.castSucc
+  rw [homogeneousHistoryStage_castSucc_apply]
+  exact congrArg Subtype.val hz
+
 section Regrading
 
 variable {N κ : Type*} [AddCommMonoid N] [Module R N] [DecidableEq κ]

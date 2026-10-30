@@ -360,15 +360,10 @@ theorem homogeneousHistory_shiftedBCHAction_sub_mem_monoid
     (hne : homogeneousHistory (d.shiftedQuotientGrading ℳ p k).piece
       (fun j => ((F).truncatedBCHAction d ℒ k (g j)).toLinearMap) r a ≠ 0) (j : Fin n) :
     r j - Fin.snoc (α := fun _ => Γ) r r₀ j.succ ∈ d.monoid := by
-  let T := fun j => ((F).truncatedBCHAction d ℒ k (g j)).toLinearMap
-  apply d.sub_mem_monoid_of_decompose_shiftedBCHAction_ne_zero ℒ ℳ p k (g j)
-    (homogeneousHistoryStage_mem_snoc _ T r r₀ a j.succ)
-  intro hz
-  have hs := homogeneousHistoryStage_ne_zero (d.shiftedQuotientGrading ℳ p k).piece
-    (fun j => ((F).truncatedBCHAction d ℒ k (g j)).toLinearMap) r hne j.castSucc
-  apply hs
-  rw [homogeneousHistoryStage_castSucc_apply]
-  exact congrArg Subtype.val hz
+  exact homogeneousHistory_rel_of_ne_zero (d.shiftedQuotientGrading ℳ p k).piece _
+    (fun j _ _ _ ha hq =>
+      d.sub_mem_monoid_of_decompose_shiftedBCHAction_ne_zero ℒ ℳ p k (g j) ha hq)
+    r r₀ a hne j
 
 /-- Reading a surviving history backwards, any earlier degree differs from
 any later degree by an allowed increment. The comparison includes the incoming
