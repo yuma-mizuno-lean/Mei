@@ -106,6 +106,13 @@ theorem affineSpan_eq_of_subset_of_mem_walls (C : FinitePolyhedralComplex h) {Q 
     (Submodule.eq_of_le_of_finrank_eq (AffineSubspace.direction_le hle) (by omega))
     ((C.nonempty Q (C.mem_cells_of_mem_walls hQ)).mono (subset_affineSpan ℝ Q)) hle
 
+/-- Contained walls in two finite complexes have the same affine span. -/
+theorem affineSpan_eq_of_walls_subset {C D : FinitePolyhedralComplex h} (Q : C.walls) (P : D.walls)
+    (hQP : (Q : Set V) ⊆ P) :
+    affineSpan ℝ (Q : Set V) = affineSpan ℝ (P : Set V) :=
+  C.affineSpan_eq_of_subset_of_mem_walls Q.property hQP
+    (D.finrank_direction_add_one_of_mem_walls P.property)
+
 /-- A wall of any complex lies in at most one wall of `D`. -/
 theorem eq_of_subset_of_mem_walls {C D : FinitePolyhedralComplex h} {Q P P' : Set V}
     (hQ : Q ∈ C.walls) (hP : P ∈ D.walls) (hP' : P' ∈ D.walls) (hQP : Q ⊆ P)

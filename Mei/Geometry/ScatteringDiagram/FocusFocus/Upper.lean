@@ -172,7 +172,6 @@ theorem upperTruncatedExponentChamber_parameter :
     domCongr_single, upperMonoid_smoothingDegree]
 
 /-- Tangential Laurent monomials are fixed by the upper change. -/
-@[simp]
 theorem upperTruncatedExponentChamber_tangent (b : ℤ) :
     upperTruncatedExponentChamber K k i
         (algebraMap S[ℤ] (TruncatedExponentChamber K k i) (_root_.LaurentPolynomial.T b)) =
@@ -181,6 +180,50 @@ theorem upperTruncatedExponentChamber_tangent (b : ℤ) :
   simp only [truncatedExponentChamberEquiv_symm_upper,
     truncatedExponentChamberEquiv_symm_tangent, upperExponentOrder_mk,
     domCongr_single, upperMonoid_tangentDegree]
+
+/-- Upper transport fixes the entire tangential coefficient algebra, including
+the truncated smoothing parameter. -/
+@[simp]
+theorem upperTruncatedExponentChamber_algebraMap (r : S[ℤ]) :
+    upperTruncatedExponentChamber K k i
+        (algebraMap S[ℤ] (TruncatedExponentChamber K k i) r) =
+      algebraMap S[ℤ] (TruncatedExponentChamber K k i) r := by
+  let : IsScalarTower K S (TruncatedExponentChamber K k i) :=
+    IsScalarTower.of_algebraMap_eq fun _ => rfl
+  have hS : (upperTruncatedExponentChamber K k i).toAlgHom.comp
+      (IsScalarTower.toAlgHom K S _) = IsScalarTower.toAlgHom K S _ := by
+    apply AdjoinRoot.algHom_ext
+    exact upperTruncatedExponentChamber_parameter K k i
+  have h : (upperTruncatedExponentChamber K k i).toAlgHom.toRingHom.comp
+      (algebraMap S[ℤ] (TruncatedExponentChamber K k i)) =
+      algebraMap S[ℤ] (TruncatedExponentChamber K k i) := by
+    apply AddMonoidAlgebra.ringHom_ext
+    · intro c
+      have hc : algebraMap S[ℤ] (TruncatedExponentChamber K k i) (single 0 c) =
+          algebraMap S (TruncatedExponentChamber K k i) c :=
+        (IsScalarTower.algebraMap_apply S S[ℤ] (TruncatedExponentChamber K k i) c).symm
+      simp only [RingHom.comp_apply, hc]
+      exact AlgHom.congr_fun hS c
+    · exact upperTruncatedExponentChamber_tangent K k i
+  exact RingHom.congr_fun h r
+
+/-- The upper chamber change as an equivalence over the entire tangential
+Laurent coefficient algebra, including the truncated smoothing parameter. -/
+def upperTruncatedExponentChamberₐ :
+    TruncatedExponentChamber K k i ≃ₐ[S[ℤ]] TruncatedExponentChamber K k i :=
+  AlgEquiv.ofRingEquiv (f := (upperTruncatedExponentChamber K k i).toRingEquiv)
+    (upperTruncatedExponentChamber_algebraMap K k i)
+
+/-- The Laurent-linear upper change has the same underlying chamber map. -/
+@[simp]
+theorem coe_upperTruncatedExponentChamberₐ :
+    ⇑(upperTruncatedExponentChamberₐ K k i) = upperTruncatedExponentChamber K k i := (rfl)
+
+/-- The inverse Laurent-linear upper change has the same underlying inverse map. -/
+@[simp]
+theorem coe_upperTruncatedExponentChamberₐ_symm :
+    ⇑(upperTruncatedExponentChamberₐ K k i).symm =
+      (upperTruncatedExponentChamber K k i).symm := (rfl)
 
 /-- Full exponent homogeneity in the nodal chamber is transported by the upper shear. -/
 @[simp]

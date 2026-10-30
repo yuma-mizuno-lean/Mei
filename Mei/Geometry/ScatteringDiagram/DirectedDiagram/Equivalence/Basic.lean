@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Completion
-public import Mei.Geometry.Convex.Polyhedron.Path.Perturbation
+public import Mei.Geometry.Convex.Polyhedron.Path.CommonProduct
 
 /-!
 # Equivalence of directed diagrams
@@ -119,22 +119,14 @@ theorem exists_vertices_eq_cons_levelPathProduct_eq (D : DirectedDiagram (d := d
     ∃ q : AdmissiblePLPath x y,
       q.vertices.map WallComplement.val = x.val :: x.val :: p.vertices.map WallComplement.val ∧
       D.levelPathProduct k q = D.levelPathProduct k p := by
-  let e : x ⟶ x := ⟨WallComplement.AdmissibleSegment.refl _ (by
-    intro hs
-    obtain ⟨j, hj⟩ := Set.mem_iUnion.mp (singularSupport_subset_iUnion
-      (fun j : D.active k => (D.wall j).support)
-      (fun j => (D.wall j).isConvexPolyhedron.isClosed) hs)
-    exact x.notMem j hj)⟩
-  refine ⟨(e.toPath.cons e).comp p, ?_, ?_⟩
-  · simp only [Quiver.Path.vertices_comp, Quiver.Path.vertices_cons,
-      Quiver.Path.vertices_toPath, List.concat_eq_append, List.cons_append,
-      List.nil_append, List.dropLast_cons_cons, List.dropLast_singleton, List.map_cons]
-  · have he : D.levelPathProduct k e.toPath = 1 := by
-      rw [D.levelPathProduct_eq_wallPathProduct k e.toPath (D.activeLabels_commute k)]
-      simp
-      -- The concrete BCH identity agrees with the categorical tower identity.
-      rfl
-    simp [he]
+  obtain ⟨q, hv, hp⟩ := p.exists_vertices_eq_cons_wallPathProduct_eq
+    (fun j : D.active k => (D.wall j).isConvexPolyhedron.isClosed)
+    (fun j => h.realCharacter (D.wall j).normal)
+    (fun j => CompletedGroup.projection k (D.wall j).label) (D.activeLabels_commute k)
+  refine ⟨q, hv, ?_⟩
+  rw [D.levelPathProduct_eq_wallPathProduct k q (D.activeLabels_commute k),
+    D.levelPathProduct_eq_wallPathProduct k p (D.activeLabels_commute k)]
+  exact hp
 
 /-- A loop can be moved into the complement of any finite family of codimension-one
 convex polyhedra, preserving its finite-order product on every admissible path
@@ -190,32 +182,25 @@ theorem exists_common_levelPathProduct_eq (k l : ℕ)
         s.vertices.map WallComplement.val = r.vertices.map CommonWallComplement.val →
           F.levelPathProduct l s = F.levelPathProduct l q) := by
   let := h.finiteDimensional
-  -- Stationary padding supplies a free interior vertex even for constant paths.
-  obtain ⟨p', hvp, hprodP⟩ := D.exists_vertices_eq_cons_levelPathProduct_eq k p
-  obtain ⟨q', hvq, hprodQ⟩ := F.exists_vertices_eq_cons_levelPathProduct_eq l q
-  have hx : x.val = x'.val := by simpa using congrArg List.head? hpq
-  have hvpq : p'.vertices.map WallComplement.val = q'.vertices.map WallComplement.val := by
-    rw [hvp, hvq, hx, hpq]
-  obtain ⟨ε₁, hε₁, hp⟩ := D.exists_pos_levelPathProduct_eq_of_forall₂_dist_lt k p'
-  obtain ⟨ε₂, hε₂, hq⟩ := F.exists_pos_levelPathProduct_eq_of_forall₂_dist_lt l q'
-  have hv : p'.vertices.map WallComplement.val =
-      x.val :: ((x.val :: p.vertices.dropLast.map WallComplement.val) ++ [y.val]) := by
-    have hend := congrArg (List.map WallComplement.val) p.dropLast_append_end_eq
-    simp only [List.map_append, List.map_singleton] at hend
-    simp only [hvp, List.cons_append, hend]
-  -- Move all vertices within both stability radii, then recover the test products.
-  obtain ⟨a, b, r, hr⟩ := CommonWallComplement.exists_forall₂_dist_lt_free_endpoints
-    hpoly hdim x.val y.val (l := x.val :: p.vertices.dropLast.map WallComplement.val)
-    (List.cons_ne_nil _ _) (lt_min hε₁ hε₂)
-  refine ⟨a, b, r, ?_, ?_⟩
-  · intro u v s hs
-    apply Eq.trans (hp s ?_) hprodP
-    have hnear := hr.imp fun _ _ hab => hab.trans_le (min_le_left ε₁ ε₂)
-    rwa [← hv, ← hs] at hnear
-  · intro u v s hs
-    apply Eq.trans (hq s ?_) hprodQ
-    have hnear := hr.imp fun _ _ hab => hab.trans_le (min_le_right ε₁ ε₂)
-    rwa [← hv, hvpq, ← hs] at hnear
+  obtain ⟨a, b, r, hP, hQ⟩ := p.exists_common_wallPathProduct_eq
+    (fun j : D.active k => (D.wall j).isConvexPolyhedron.isClosed)
+    (fun j => (D.wall j).finrank_direction_add_one)
+    (fun j => h.realCharacter (D.wall j).normal)
+    (fun j => (D.wall j).direction_support.symm)
+    (fun j => CompletedGroup.projection k (D.wall j).label) (D.activeLabels_commute k)
+    (fun j : F.active l => (F.wall j).isConvexPolyhedron.isClosed)
+    (fun j => (F.wall j).finrank_direction_add_one)
+    (fun j => h.realCharacter (F.wall j).normal)
+    (fun j => (F.wall j).direction_support.symm)
+    (fun j => CompletedGroup.projection l (F.wall j).label) (F.activeLabels_commute l)
+    hpoly hdim q hpq
+  refine ⟨a, b, r, fun t ht => ?_, fun t ht => ?_⟩
+  · rw [D.levelPathProduct_eq_wallPathProduct k t (D.activeLabels_commute k),
+      D.levelPathProduct_eq_wallPathProduct k p (D.activeLabels_commute k)]
+    exact hP t ht
+  · rw [F.levelPathProduct_eq_wallPathProduct l t (F.activeLabels_commute l),
+      F.levelPathProduct_eq_wallPathProduct l q (F.activeLabels_commute l)]
+    exact hQ t ht
 
 /-- Finite-order equivalence is transitive, even when the original test path's
 endpoints lie on active walls of the intermediate diagram. -/

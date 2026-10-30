@@ -122,6 +122,26 @@ theorem toLieHom_id : (id (d := d) ℒ).toLieHom = LieHom.id := (rfl)
 theorem toLieHom_comp (g : GradedLieHom U ℳ ℋ) (f : GradedLieHom T ℒ ℳ) :
     (g.comp f).toLieHom = g.toLieHom.comp f.toLieHom := (rfl)
 
+/-- Compose degree-preserving maps while retaining the identity degree map. -/
+def compId {ℳ : N → Submodule R L'} {ℋ : N → Submodule R L''}
+    (g : GradedLieHom (PositiveDegreeMap.id d) ℳ ℋ)
+    (f : GradedLieHom (PositiveDegreeMap.id d) ℒ ℳ) :
+    GradedLieHom (PositiveDegreeMap.id d) ℒ ℋ where
+  toLieHom := g.toLieHom.comp f.toLieHom
+  map_mem hx := by simpa using g.map_mem (f.map_mem hx)
+
+@[simp]
+theorem compId_apply {ℳ : N → Submodule R L'} {ℋ : N → Submodule R L''}
+    (g : GradedLieHom (PositiveDegreeMap.id d) ℳ ℋ)
+    (f : GradedLieHom (PositiveDegreeMap.id d) ℒ ℳ) (x : L) :
+    g.compId f x = g (f x) := (rfl)
+
+@[simp]
+theorem toLieHom_compId {ℳ : N → Submodule R L'} {ℋ : N → Submodule R L''}
+    (g : GradedLieHom (PositiveDegreeMap.id d) ℳ ℋ)
+    (f : GradedLieHom (PositiveDegreeMap.id d) ℒ ℳ) :
+    (g.compId f).toLieHom = g.toLieHom.comp f.toLieHom := (rfl)
+
 variable [IsPositiveGrading d ℒ]
 
 /-- The cutoff modulus sends the source degree submodule into the target one.

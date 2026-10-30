@@ -139,6 +139,15 @@ variable {N V R L : Type*} [AddCommGroup N]
   [GradedLieAlgebra ℒ] [IsPositiveGrading d ℒ]
   {C : FinitePolyhedralComplex h} {k : ℕ} (D : KSComplex s d ℒ C k)
 
+/-- The supported primitive ray of the coorienting degree of a KS wall. -/
+noncomputable def wallRay [Module.Free ℤ N] (P : C.walls) : SupportedRay d :=
+  (d.exists_supportedRay (D.degree_mem P) (D.degree_ne_zero P)).choose
+
+/-- The original coorienting degree is an actual degree of its supported ray. -/
+theorem degree_mem_wallRay [Module.Free ℤ N] (P : C.walls) :
+    D.degree P ∈ (D.wallRay P).rayDegrees :=
+  (d.exists_supportedRay (D.degree_mem P) (D.degree_ne_zero P)).choose_spec
+
 /-- The Lie algebra orthogonal to a wall of a KS complex is the Lie algebra of the supported ray
 of its coorienting degree, for every positive grading. -/
 theorem orthogonalLieSubalgebra_eq_rayLieSubalgebra [Module.Free ℤ N]

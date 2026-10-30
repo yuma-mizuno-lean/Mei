@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Algebra.Lie.BCH.Ray.Basic
+public import Mei.Algebra.Lie.BCH.Ray.Factor
 public import Mei.Algebra.PositiveDegrees.Ray.Map
 
 /-!
@@ -23,6 +23,8 @@ directly to the graded maps of tropical pairings and to changes of positive degr
 No abelian-ray condition or injectivity of the degree or Lie map is required.
 A degree-preserving endomorphism fixing the homogeneous pieces on a ray fixes every
 completed label of that ray.
+Taking a ray factor commutes with degree-preserving coefficient maps, even when
+the coefficient map kills some or all of its logarithmic coefficients.
 
 The finite support argument uses `Mei.GradedLieHom.map_mem_rayLieSubalgebra` and
 `Mei.PositiveDegrees.map_rayLieSubalgebra_mkQ`. Completion uses
@@ -142,5 +144,25 @@ theorem completedMap_eq_self_of_mem_completedRaySubgroup
     rw [LinearMap.mem_eqLocus, LieHom.coe_toLinearMap, LinearMap.id_apply,
       Submodule.mkQ_apply, f.truncatedMap_mk, hf n n.property x hx]
   exact LinearMap.mem_eqLocus.mp (hle ((d.mem_completedRaySubgroup ℒ w g).mp hg k))
+
+variable {𝓝 : N → Submodule R L'} [GradedLieAlgebra 𝓝] [IsPositiveGrading d 𝓝]
+
+/-- Taking a supported-ray factor commutes with degree-preserving coefficient
+maps. Specializations may kill arbitrary coefficients, including a whole ray. -/
+@[simp]
+theorem completedMap_rayFactor (f : GradedLieHom (PositiveDegreeMap.id d) ℒ 𝓝)
+    (g : d.completedBCHGroup ℒ) (w : SupportedRay d) :
+    f.completedMap (d.rayFactor ℒ g w) = d.rayFactor 𝓝 (f.completedMap g) w := by
+  apply d.ext_logComponent 𝓝
+  intro n
+  apply Subtype.ext
+  rw [f.logComponent_completedMap]
+  by_cases hn : n ∈ w.rayDegrees
+  · rw [d.logComponent_rayFactor_of_mem ℒ g hn,
+      d.logComponent_rayFactor_of_mem 𝓝 (f.completedMap g) hn,
+      f.logComponent_completedMap]
+  · rw [d.logComponent_rayFactor_of_notMem ℒ g hn,
+      d.logComponent_rayFactor_of_notMem 𝓝 (f.completedMap g) hn]
+    simp
 
 end Mei.GradedLieHom

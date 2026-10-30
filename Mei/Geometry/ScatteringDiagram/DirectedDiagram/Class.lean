@@ -250,9 +250,9 @@ variable {L'' : Type v} [LieRing L''] [LieAlgebra R L''] [LieAlgebra ℚ L'']
 @[simp]
 theorem Class.map_map (x : Class.{u} (d := d) (h := h) (H := H)) :
     map g hg (map f hf x) = map
-      { toLieHom := g.toLieHom.comp f.toLieHom
-        map_mem hx := by simpa using g.map_mem (f.map_mem hx) }
-      (fun n m x hx => hg n m _ (hf n m x hx)) x := by
+      (g.compId f)
+      (fun n m x hx => by
+        simpa only [GradedLieHom.compId_apply] using hg n m _ (hf n m x hx)) x := by
   induction x using Class.inductionOn with | _ D =>
     exact congrArg toClass (D.map_map f hf g hg)
 
@@ -261,9 +261,9 @@ theorem Class.map_map (x : Class.{u} (d := d) (h := h) (H := H)) :
 theorem LevelClass.map_map (k : ℕ)
     (x : LevelClass.{u} (d := d) (h := h) (H := H) k) :
     map g hg k (map f hf k x) = map
-      { toLieHom := g.toLieHom.comp f.toLieHom
-        map_mem hx := by simpa using g.map_mem (f.map_mem hx) }
-      (fun n m x hx => hg n m _ (hf n m x hx)) k x := by
+      (g.compId f)
+      (fun n m x hx => by
+        simpa only [GradedLieHom.compId_apply] using hg n m _ (hf n m x hx)) k x := by
   induction x using LevelClass.inductionOn with | _ D =>
     exact congrArg (fun E => E.toLevelClass k) (D.map_map f hf g hg)
 
