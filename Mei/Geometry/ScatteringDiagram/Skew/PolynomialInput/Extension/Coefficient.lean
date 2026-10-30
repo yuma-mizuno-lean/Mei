@@ -23,7 +23,8 @@ the largest letter multiplicity. Thus the substitution extends to the native
 coefficient completions with identity cutoff modulus.
 
 We use `principalBLMSpaceEquiv`, `PositiveDegrees.finiteAlphabetLift`,
-`BLMPolynomialInput.coefficientWeight`, Mathlib's `AddMonoidAlgebra.lift`, and
+`BLMPolynomialInput.coefficientWeight`, Mathlib's `AddMonoidAlgebra.lift`,
+`LogarithmicVectorField.filtration_ideal_le_comap_coefficientDegreeMap`, and
 `AlgFiltration.mapCompletionₐ`. The extension and specialization follow
 Burcroff–Lee–Mou, *Positivity of generalized cluster scattering diagrams*, §9.2
 (arXiv:2503.03719v1), with the principal realization conventions of
@@ -134,7 +135,8 @@ theorem degree_principalBLMExtensionLift_bounds (c : ℕ)
     simpa only [Equiv.apply_symm_apply] using B.principalBLMExtension_multiplicity ℓ
       ((B.principalBLMUnfrozenEquiv ℓ).symm α.1)
   have hb := hc ((B.principalBLMUnfrozenEquiv ℓ).symm α.1)
-  exact_mod_cast (show (α.2 : ℕ) + 1 ≤ c by omega)
+  have hs : (α.2 : ℕ) + 1 ≤ c := by omega
+  exact_mod_cast hs
 
 /-- Coefficient exponents have arbitrary original Laurent character,
 nonnegative original principal coordinates, and nonnegative letter counts. -/
@@ -214,6 +216,13 @@ theorem coe_principalBLMExtensionCoefficientExponent_letter
     coe_principalBLMExtensionCoefficientLetter, PositiveDegrees.letter_fst] using
     B.principalBLMExtensionLift_letter ℓ α
 
+private theorem map_principalBLMExtensionCoefficientMonoid_le :
+    (P).map (B.principalBLMExtensionDegreeMap ℓ).toAddMonoidHom ≤ Q := by
+  rintro _ ⟨q, hq, rfl⟩
+  simpa only [coe_principalBLMExtensionCoefficientExponent,
+    principalBLMExtensionDegreeMap_apply, principalBLMExtensionLift_apply] using
+    (B.principalBLMExtensionCoefficientExponent ℓ ⟨q, hq⟩).property
+
 section Semiring
 
 variable (R : Type*) [CommSemiring R]
@@ -222,11 +231,21 @@ private def extensionWeight : Multiplicative P →* MvPolynomial E R :=
   ((B.principalBLMExtension ℓ).coefficientWeight R).comp
     (AddSubmonoid.inclusion (B.principalBLMExtensionCoefficientMonoid_le ℓ)).toMultiplicative
 
+private def extensionTwist : R[P] →ₐ[R] (MvPolynomial E R)[P] :=
+  lift R _ _ (singleHom.comp ((B.extensionWeight ℓ R).prod (MonoidHom.id _)))
+
+private theorem extensionTwist_single (q : P) (r : R) :
+    B.extensionTwist ℓ R (single q r) =
+      single q (MvPolynomial.C r * B.extensionWeight ℓ R (.ofAdd q)) := by
+  simp [extensionTwist, lift_single, Algebra.smul_def, singleHom, single_mul_single]
+
 /-- Substitute the independent variables into the original principal
 coefficient algebra; the polynomial weights need not be units. -/
 def principalBLMExtensionCoefficientMap : R[P] →ₐ[R] (MvPolynomial E R)[Q] :=
-  lift R _ _ (singleHom.comp ((B.extensionWeight ℓ R).prod
-    (B.principalBLMExtensionCoefficientExponent ℓ).toMultiplicative))
+  (AlgHom.restrictScalars R (mapDomainAlgHom (MvPolynomial E R) (MvPolynomial E R)
+    ((AddSubmonoid.inclusion (B.map_principalBLMExtensionCoefficientMonoid_le ℓ)).comp
+      ((B.principalBLMExtensionDegreeMap ℓ).toAddMonoidHom.addSubmonoidMap P)))).comp
+    (B.extensionTwist ℓ R)
 
 /-- Each monomial keeps its full polynomial weight before exponents merge. -/
 @[simp]
@@ -236,14 +255,27 @@ theorem principalBLMExtensionCoefficientMap_single (q : P) (r : R) :
         (MvPolynomial.C r * MvPolynomial.monomial
           ((B.principalBLMExtension ℓ).coefficientMultiplicity
             (AddSubmonoid.inclusion (B.principalBLMExtensionCoefficientMonoid_le ℓ) q)) 1) := by
-  simp [principalBLMExtensionCoefficientMap, lift_single, Algebra.smul_def,
-    singleHom, single_mul_single, extensionWeight]
+  simp only [principalBLMExtensionCoefficientMap, AlgHom.comp_apply, extensionTwist_single,
+    AlgHom.restrictScalars_apply, mapDomainAlgHom_apply, mapDomain_single,
+    extensionWeight, MonoidHom.comp_apply, AddMonoidHom.coe_toMultiplicative, Function.comp_apply,
+    BLMPolynomialInput.coefficientWeight_apply]
+  congr 1
+  apply Subtype.ext
+  simp [coe_principalBLMExtensionCoefficientExponent, principalBLMExtensionDegreeMap_apply,
+    principalBLMExtensionLift_apply]
 
 /-- The initial BLM polynomial in the restricted coefficient monoid. -/
 def principalBLMExtensionInitialFunction
     (i : (B.principalBLMBasis ℓ).unfrozenIndex) : R[P] :=
   1 + ∑ s : Fin ((B.principalBLMExtension ℓ).multiplicity i),
     single (B.principalBLMExtensionCoefficientLetter ℓ ⟨i, s⟩) 1
+
+/-- The restricted initial function is the finite sum of its coefficient letters. -/
+theorem principalBLMExtensionInitialFunction_def
+    (i : (B.principalBLMBasis ℓ).unfrozenIndex) :
+    B.principalBLMExtensionInitialFunction ℓ R i =
+      1 + ∑ s : Fin ((B.principalBLMExtension ℓ).multiplicity i),
+        single (B.principalBLMExtensionCoefficientLetter ℓ ⟨i, s⟩) 1 := (rfl)
 
 /-- Inclusion recovers the actual initial BLM coefficient polynomial. -/
 @[simp↓]
@@ -253,7 +285,7 @@ theorem mapDomain_principalBLMExtensionInitialFunction
         (B.principalBLMExtensionCoefficientMonoid_le ℓ))
         (B.principalBLMExtensionInitialFunction ℓ R i) =
       (B.principalBLMExtension ℓ).initialCoefficientFunction R i := by
-  rw [principalBLMExtensionInitialFunction, map_add, map_one, map_sum,
+  rw [principalBLMExtensionInitialFunction_def, map_add, map_one, map_sum,
     BLMPolynomialInput.initialCoefficientFunction_def]
   simp [mapDomainAlgHom_apply, mapDomain_single]
 
@@ -268,7 +300,7 @@ theorem principalBLMExtensionCoefficientMap_initialFunction
         single (B.principalBLMExtensionCoefficientExponent ℓ
           (B.principalBLMExtensionCoefficientLetter ℓ ⟨i, s⟩))
           (MvPolynomial.X ⟨i, s⟩) := by
-  simp [principalBLMExtensionInitialFunction, MvPolynomial.X]
+  simp [principalBLMExtensionInitialFunction_def, MvPolynomial.X]
 
 /-- The specialization preserves positive-increment ideals with identity
 cutoff modulus. In particular the old principal variables are not inverted. -/
@@ -276,28 +308,11 @@ theorem filtration_ideal_le_comap_principalBLMExtensionCoefficientMap (k : ℕ) 
     (TropicalVertexCoefficientAction.filtration (R := R) d P).ideal (k + 1) ≤
       ((TropicalVertexCoefficientAction.filtration (R := MvPolynomial E R) e Q).ideal
         (k + 1)).comap (B.principalBLMExtensionCoefficientMap ℓ R) := by
-  rw [TropicalVertexCoefficientAction.filtration_ideal,
-    AddSubmonoid.monoidAlgebraIdeal_le_iff]
-  intro n hn hd
-  rw [Ideal.mem_comap, of'_apply, principalBLMExtensionCoefficientMap_single,
-    map_one, one_mul, TropicalVertexCoefficientAction.filtration_ideal,
-    AddSubmonoid.single_mem_monoidAlgebraIdeal_iff]
-  refine Or.inr ⟨B.principalBLMExtensionCoefficientExponent ℓ n, ?_, ?_, 0, by simp⟩
-  · simpa only [AddSubmonoid.mem_comap, AddSubmonoid.subtype_apply,
-      coe_principalBLMExtensionCoefficientExponent,
-      principalBLMExtensionDegreeMap_apply,
-      principalBLMExtensionLift_apply] using (B.principalBLMExtensionDegreeMap ℓ).map_mem hn
-  · have hd' : (k : ℤ) < (d).degree n.val := by
-      simpa only [AddMonoidHom.comp_apply, AddSubmonoid.subtype_apply,
-        Nat.cast_add, Nat.cast_one, Int.add_one_le_iff] using hd
-    have h := (B.principalBLMExtensionDegreeMap ℓ).degree_gt (n := n.val) k
-      (by simpa using hn) (by
-        simpa only [principalBLMExtensionDegreeMap_modulus] using hd')
-    simpa only [AddMonoidHom.comp_apply, AddSubmonoid.subtype_apply,
-      Nat.cast_add, Nat.cast_one, Int.add_one_le_iff,
-      coe_principalBLMExtensionCoefficientExponent,
-      principalBLMExtensionDegreeMap_apply,
-      principalBLMExtensionLift_apply] using h
+  simpa only [principalBLMExtensionDegreeMap_modulus, principalBLMExtensionCoefficientMap] using
+    LogarithmicVectorField.filtration_ideal_le_comap_coefficientDegreeMap
+      d P (Algebra.ofId R (MvPolynomial E R))
+      (B.extensionWeight ℓ R) (B.extensionTwist ℓ R) (B.extensionTwist_single ℓ R)
+      (B.principalBLMExtensionDegreeMap ℓ) (B.map_principalBLMExtensionCoefficientMonoid_le ℓ) k
 
 end Semiring
 
