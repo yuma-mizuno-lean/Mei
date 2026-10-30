@@ -17,7 +17,7 @@ support. On a homogeneous input of degree `r`, every nonzero output component
 has degree in `r + P`, and the degree-`r` component is exactly the input. Thus
 a change of degree strictly increases relative order, including when a spatial
 projection identifies the input and output degrees. These statements also hold
-for components of the finite action of each projected group label.
+for components of the finite action of every truncated group label.
 
 The support comparison uses `shiftedCompletedInclusion` and the naturality of
 filtered BCH actions. The diagonal comparison uses the leading-component theorem
@@ -166,17 +166,19 @@ theorem degree_lt_of_shiftedHomogeneousComponent_completedBCHAction_ne_zero
     rw [← map_add, sub_add_sub_cancel]
   omega
 
-/-- In every finite projection, a surviving component of a homogeneous input
+/-- Under every finite BCH label, a surviving component of a homogeneous input
 still has positive-monoid shift. In particular, truncation cannot introduce
 spurious degree changes. -/
 theorem sub_mem_monoid_of_shiftedQuotientComponent_truncatedBCHAction_ne_zero
     (p : Γ) {r q : Γ} (hrp : r - p ∈ d.monoid)
-    (g : d.completedBCHGroup ℒ) (a : shiftedSubmodule ℳ d.monoid p)
-    (ha : (a : M) ∈ ℳ r) (k : ℕ) (hk : d.degree (q - p) ≤ k)
+    (k : ℕ) (g : d.truncatedGroup ℒ k) (a : shiftedSubmodule ℳ d.monoid p)
+    (ha : (a : M) ∈ ℳ r) (hk : d.degree (q - p) ≤ k)
     (hq : d.shiftedQuotientComponent ℳ p q k hk
       ((d.shiftedLieFiltration ℒ ℳ p).truncatedBCHAction d ℒ k
-        (CompletedGroup.projection k g) (Submodule.Quotient.mk a)) ≠ 0) :
+        g (Submodule.Quotient.mk a)) ≠ 0) :
     q - r ∈ d.monoid := by
+  obtain ⟨g, rfl⟩ := CompletedGroup.projection_surjective (d.groupTower ℒ)
+    (fun n => d.groupTower_map_surjective ℒ (CategoryTheory.homOfLE (Nat.le_succ n)).op) k g
   apply d.sub_mem_monoid_of_shiftedHomogeneousComponent_completedBCHAction_ne_zero
     ℒ ℳ p hrp g a ha
   simpa only [d.shiftedHomogeneousComponent_eq ℳ p q k hk,
@@ -186,12 +188,14 @@ theorem sub_mem_monoid_of_shiftedQuotientComponent_truncatedBCHAction_ne_zero
 relative order. The cutoff is relative to the original incoming origin `p`. -/
 theorem degree_lt_of_shiftedQuotientComponent_truncatedBCHAction_ne_zero
     (p : Γ) {r q : Γ} (hrp : r - p ∈ d.monoid) (hrq : r ≠ q)
-    (g : d.completedBCHGroup ℒ) (a : shiftedSubmodule ℳ d.monoid p)
-    (ha : (a : M) ∈ ℳ r) (k : ℕ) (hk : d.degree (q - p) ≤ k)
+    (k : ℕ) (g : d.truncatedGroup ℒ k) (a : shiftedSubmodule ℳ d.monoid p)
+    (ha : (a : M) ∈ ℳ r) (hk : d.degree (q - p) ≤ k)
     (hq : d.shiftedQuotientComponent ℳ p q k hk
       ((d.shiftedLieFiltration ℒ ℳ p).truncatedBCHAction d ℒ k
-        (CompletedGroup.projection k g) (Submodule.Quotient.mk a)) ≠ 0) :
+        g (Submodule.Quotient.mk a)) ≠ 0) :
     d.degree (r - p) < d.degree (q - p) := by
+  obtain ⟨g, rfl⟩ := CompletedGroup.projection_surjective (d.groupTower ℒ)
+    (fun n => d.groupTower_map_surjective ℒ (CategoryTheory.homOfLE (Nat.le_succ n)).op) k g
   apply d.degree_lt_of_shiftedHomogeneousComponent_completedBCHAction_ne_zero
     ℒ ℳ p hrp hrq g a ha
   simpa only [d.shiftedHomogeneousComponent_eq ℳ p q k hk,
@@ -199,14 +203,15 @@ theorem degree_lt_of_shiftedQuotientComponent_truncatedBCHAction_ne_zero
 
 /-- The retained unchanged-degree component is the original homogeneous input,
 even for inverse labels and inputs of positive relative order. -/
-@[simp]
 theorem shiftedQuotientComponent_truncatedBCHAction_of_mem_same
     (p : Γ) {r : Γ} (hrp : r - p ∈ d.monoid)
-    (g : d.completedBCHGroup ℒ) (a : shiftedSubmodule ℳ d.monoid p)
-    (ha : (a : M) ∈ ℳ r) (k : ℕ) (hk : d.degree (r - p) ≤ k) :
+    (k : ℕ) (g : d.truncatedGroup ℒ k) (a : shiftedSubmodule ℳ d.monoid p)
+    (ha : (a : M) ∈ ℳ r) (hk : d.degree (r - p) ≤ k) :
     d.shiftedQuotientComponent ℳ p r k hk
       ((d.shiftedLieFiltration ℒ ℳ p).truncatedBCHAction d ℒ k
-        (CompletedGroup.projection k g) (Submodule.Quotient.mk a)) = ⟨a, ha⟩ := by
+        g (Submodule.Quotient.mk a)) = ⟨a, ha⟩ := by
+  obtain ⟨g, rfl⟩ := CompletedGroup.projection_surjective (d.groupTower ℒ)
+    (fun n => d.groupTower_map_surjective ℒ (CategoryTheory.homOfLE (Nat.le_succ n)).op) k g
   simpa only [d.shiftedHomogeneousComponent_eq ℳ p r k hk,
     ModuleFiltration.projection_completedBCHAction, ModuleFiltration.projection_of] using
     d.shiftedHomogeneousComponent_completedBCHAction_of_mem_same ℒ ℳ p hrp g a ha
