@@ -114,33 +114,6 @@ theorem homogeneousWall_label_commute_of_mem (a b : HomogeneousWallIndex d C)
     D.homogeneousWall_label_eq_germLabel b θ hθ hb]
   exact d.commute_homogeneousFactor ℒ (D.lie_logComponent_germLabel θ hθ _ _)
 
-omit [IsAbelianRays d ℒ] in
-private theorem exists_active_homogeneousWall {k : ℕ} {n : N} (hn : d.degree n ≤ k)
-    (h0 : d.logComponent ℒ (D.germLabel θ hθ) n ≠ 0) :
-    ∃ a : D.homogeneousPresentation.active k,
-      a.val.1.val = n ∧ θ ∈ (D.homogeneousWall a).support := by
-  have hg : D.germLabel θ hθ ≠ 1 := by
-    intro he
-    exact h0 (by simp [he])
-  obtain ⟨w, hw, _⟩ := D.existsUnique_germLabel_mem_completedRaySubgroup θ hθ hg
-  have hr : n ∈ w.rayDegrees := by
-    by_contra hr
-    exact h0 (d.logComponent_eq_zero_of_notMem_rayDegrees ℒ hw hr)
-  have hfactor : CompletedGroup.projection k
-      (d.homogeneousFactor ℒ (D.germLabel θ hθ) n) ≠ 1 := by
-    intro he
-    have hz := d.logComponent_eq_zero_of_projection_eq_one ℒ hn he
-    exact h0 (by simpa only [PositiveDegrees.logComponent_homogeneousFactor_same] using hz)
-  obtain ⟨a, ⟨ha, hθa, _⟩, _⟩ :=
-    (D.existsUnique_homogeneousWall_iff
-      ⟨n, w.rayDegrees_subset hr, SupportedRay.ne_zero_of_mem_rayDegrees hr⟩ θ hθ).mpr
-        (fun he => hfactor (by rw [he, map_one]))
-  have hlabel := D.homogeneousWall_label_eq_germLabel a θ hθ hθa
-  have hactive : a ∈ D.homogeneousPresentation.active k := by
-    rw [IndexedWallPresentation.mem_active, homogeneousPresentation_wall, hlabel, ha]
-    exact hfactor
-  exact ⟨⟨a, hactive⟩, congrArg Subtype.val ha, hθa⟩
-
 /-- The active homogeneous indexed walls through a regular point recover the
 finite projection of its completed germ. The index inventory is precisely the
 presentation's `wallIndices` for the singleton point. -/
@@ -205,11 +178,8 @@ theorem projection_germLabel_eq_one_iff_wallIndices_eq_empty (k : ℕ) :
   · intro he
     have hz (n : N) (hn : d.degree n ≤ k) : d.logComponent ℒ (D.germLabel θ hθ) n = 0 := by
       by_contra h0
-      obtain ⟨a, _, hθa⟩ := D.exists_active_homogeneousWall θ hθ hn h0
-      have ha : a ∈ D.homogeneousPresentation.wallIndices k {θ} := by
-        apply D.homogeneousPresentation.mem_wallIndices.mpr
-        simpa only [homogeneousPresentation_wall] using Set.singleton_subset_iff.mpr hθa
-      simp only [he, Finset.notMem_empty] at ha
+      have ha := (D.mem_image_homogeneousPresentation_wallIndices k θ hθ n).mpr ⟨hn, h0⟩
+      simp [he] at ha
     simpa only [CompletedGroup.degreeFiltration_succ, MonoidHom.mem_ker] using
       (d.mem_degreeFiltration_succ_iff (ℒ := ℒ)).mpr hz
 
