@@ -32,6 +32,12 @@ jobs:
           ref: 225ccb1a25e3051edce54faa94fe8f44e0340b34
           path: .tauceti-tools
           persist-credentials: false
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          repository: TauCetiProject/TauCetiReview
+          ref: 3999677031829254b4cbb27e9156c33672c61d0d
+          path: .tauceti-review
+          persist-credentials: false
       - name: Test shared release policy and trusted caller wiring
         env:
           PYTHONDONTWRITEBYTECODE: '1'

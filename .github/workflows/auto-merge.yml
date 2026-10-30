@@ -132,4 +132,4 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
-        run: gh workflow run merge-sweep.yml --repo "$REPO" --ref main -f dry-run=false -f full-scan=false
+        run: gh workflow run merge-sweep.yml --repo "$REPO" --ref main -f dry-run=false -f full-scan=true

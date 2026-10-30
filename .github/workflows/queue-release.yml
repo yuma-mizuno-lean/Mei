@@ -63,4 +63,6 @@ jobs:
         # workflow_dispatch may trigger another workflow using GITHUB_TOKEN.
         # The sweep's existing concurrency group serializes scheduled and release runs.
         # It owns head-pinned review/CI checks, reservations, and eviction recovery.
-        run: gh workflow run merge-sweep.yml --repo "$REPO" --ref main -f dry-run=false
+        # Displaced PRs may lack ready/recovery labels; include the background tier.
+        # The shared sweep still bounds API work and checks every admission.
+        run: gh workflow run merge-sweep.yml --repo "$REPO" --ref main -f dry-run=false -f full-scan=true
