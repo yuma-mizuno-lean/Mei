@@ -11,6 +11,7 @@ from concurrent.futures import ThreadPoolExecutor
 import datetime as dt
 from email.utils import parsedate_to_datetime
 import json
+import hashlib
 import os
 from pathlib import Path
 import re
@@ -343,6 +344,91 @@ def adopt_existing(client):
     print(f'Existing payload bytes added to reservation: {total}')
 
 
+def publish_incremental(client, objects):
+    """Deduplicate against a private, SHA-256-pinned successful-upload catalog.
+
+    No public HEAD/GET probes. Old deployments without a catalog upload once.
+    The catalog is immutable and charged as another payload; its pointer is
+    committed only after every upload succeeds. Never refund or clear locks.
+    Assumes the documented exclusive writer and no external object deletion.
+    """
+    today = dt.datetime.now(dt.timezone.utc).date().isoformat()
+    code, body, headers = client.request('GET', STATE_KEY)
+    if code != 200 or 'etag' not in headers:
+        raise Stop('budget missing or unreadable')
+    previous = _observed_budget(body, headers)
+    # Validate the existing state and lock before any additional request.
+    reserve(previous, [], today, 'validation-only')
+    known = {}
+    pointer = previous.get('catalog')
+    if pointer is not None:
+        if not isinstance(pointer, str) or not re.fullmatch(r'[0-9a-f]{64}', pointer):
+            raise Stop('invalid catalog pointer')
+        code, raw, _ = client.request('GET', '_control/catalog/' + pointer + '.json')
+        if code != 200 or hashlib.sha256(raw).hexdigest() != pointer:
+            raise Stop('publication catalog missing or corrupted')
+        catalog = json.loads(raw)
+        if not isinstance(catalog, dict) or catalog.get('version') != 1 or not isinstance(catalog.get('objects'), dict):
+            raise Stop('invalid catalog schema')
+        known = catalog['objects']
+        for key, record in known.items():
+            if (not ART.fullmatch(key) or not isinstance(record, list) or len(record) != 2
+                    or not isinstance(record[0], str) or not re.fullmatch(r'[0-9a-f]{64}', record[0])
+                    or type(record[1]) is not int or not 0 < record[1] <= LIMIT):
+                raise Stop('invalid catalog entry')
+    if not objects or not MAP.fullmatch(objects[-1][0]):
+        raise Stop('revision map must be last')
+    pending = []
+    known = dict(known)
+    for key, path in objects[:-1]:
+        if not ART.fullmatch(key):
+            raise Stop('unexpected artifact key')
+        digest = hashlib.sha256()
+        with path.open('rb') as stream:
+            for chunk in iter(lambda: stream.read(1024 * 1024), b''):
+                digest.update(chunk)
+        record = [digest.hexdigest(), path.stat().st_size]
+        if key in known:
+            if known[key] != record:
+                raise Stop('immutable artifact collision')
+        else:
+            known[key] = record
+            pending.append((key, path))
+    raw = json.dumps(dict(version=1, objects=known), sort_keys=True, separators=(',', ':')).encode()
+    if len(raw) > 8 * 1024 * 1024:
+        raise Stop('catalog size limit reached')
+    catalog_hash = hashlib.sha256(raw).hexdigest()
+    catalog_key = '_control/catalog/' + catalog_hash + '.json'
+    # Reuse identical catalogs; maps are cheap and remain the final public write.
+    changed_catalog = catalog_hash != pointer
+    sizes = [p.stat().st_size for _, p in pending] + [objects[-1][1].stat().st_size]
+    if changed_catalog:
+        sizes.append(len(raw))
+    state = reserve(previous, sizes, today, uuid.uuid4().hex)
+    code, _, reservation_headers = client.request('PUT', STATE_KEY, json.dumps(state).encode(),
+                                                 {'If-Match': headers['etag']})
+    if code != 200 or 'etag' not in reservation_headers:
+        raise Stop('budget reservation failed; no upload')
+    def put(key, payload, content):
+        if dt.datetime.now(dt.timezone.utc).date().isoformat() != today:
+            raise Stop('UTC date changed; reservation retained')
+        code, _, _ = client.request('PUT', key, payload, {'Content-Type': content})
+        if code != 200:
+            raise Stop('upload failed; reservation retained')
+    with ThreadPoolExecutor(max_workers=16) as pool:
+        for _ in pool.map(lambda item: put(*item, 'application/vnd.reservoir.artifact'), pending):
+            pass
+    if changed_catalog:
+        put(catalog_key, raw, 'application/json')
+    put(*objects[-1], 'application/vnd.reservoir.outputs+json-lines')
+    state.update(active=None, catalog=catalog_hash)
+    code, _, _ = client.request('PUT', STATE_KEY, json.dumps(state).encode(),
+                                {'If-Match': reservation_headers['etag']})
+    if code != 200:
+        raise Stop('completion uncertain; reservation retained')
+    print(f'Published {len(pending)} new artifacts; reused {len(objects)-1-len(pending)}; public artifact probes=0')
+
+
 def main():
     """Run explicit budget administration or publish from CLI and environment.
 
@@ -352,13 +438,21 @@ def main():
     entrypoint, which reports failure and exits with status 2 for handled errors.
     """
     parser = argparse.ArgumentParser()
-    parser.add_argument('command', choices=['initialize-empty', 'adopt-existing', 'publish'])
+    parser.add_argument('command', choices=['initialize-empty', 'adopt-existing', 'publish', 'publish-incremental', 'inspect'])
     parser.add_argument('--plan', type=Path)
     args = parser.parse_args()
     endpoint = os.environ['MEI_R2_BUCKET_ENDPOINT'].rstrip('/')
-    objects = load_plan(args.plan, endpoint) if args.command == 'publish' else None
+    objects = load_plan(args.plan, endpoint) if args.command in ('publish', 'publish-incremental') else None
     client = S3(endpoint, os.environ['LAKE_CACHE_KEY_RAW'].strip())
-    if args.command == 'adopt-existing':
+    if args.command == 'inspect':
+        code, body, headers = client.request('GET', STATE_KEY)
+        if code != 200:
+            raise Stop('budget unreadable')
+        state = _observed_budget(body, headers)
+        print(json.dumps({k: state.get(k) for k in ('reserved_bytes', 'day', 'class_a', 'active', 'catalog')}))
+    elif args.command == 'publish-incremental':
+        publish_incremental(client, objects)
+    elif args.command == 'adopt-existing':
         adopt_existing(client)
     elif objects is None:
         initialize(client)

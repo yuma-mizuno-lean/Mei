@@ -110,6 +110,14 @@ abbrev tropicalTangentInclusion : R[T] →ₐ[R] R[Q] :=
   mapDomainAlgHom R R (AddSubmonoid.inclusion ((tropicalTangentMonoid_le d ρ m).trans hQ))
 
 omit [DecidableEq Γ] in
+/-- The tangent inclusion sends a monomial to the same degree in the coefficient monoid. -/
+theorem tropicalTangentInclusion_single (q : T) (c : R) :
+    tropicalTangentInclusion d ρ m Q hQ (single q c) =
+      single (⟨q.val, hQ (tropicalTangentMonoid_le d ρ m q.property)⟩ : Q) c := by
+  simp only [tropicalTangentInclusion, mapDomainAlgHom_apply, mapDomain_single]
+  exact congrArg (fun p : Q => single p c) (Subtype.ext (AddSubmonoid.coe_inclusion _ q))
+
+omit [DecidableEq Γ] in
 /-- Tangent coefficients have weight zero for the character `m`. -/
 @[simp]
 theorem monomialDerivation_zero_tropicalTangentInclusion (u : R[T]) :

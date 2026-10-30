@@ -264,6 +264,25 @@ theorem truncatedExponentChamberEquiv_single (q : exponentMonoid) (r : K) :
           NodeAlgebra.coord (_root_.LaurentPolynomial.C τ) 1 ^ leftOrder q) :=
   toChamber_single K k i q r
 
+/-- The cutoff ideal consists precisely of the terms beyond the chamber order. -/
+theorem mem_span_single_pow_iff (f : AddMonoidAlgebra K exponentMonoid) :
+    f ∈ Ideal.span {(single (![xDegree, yDegree] i) (1 : K)) ^ (k + 1)} ↔
+      ∀ q ∈ f.coeff.support, k < chamberOrder i q := by
+  fin_cases i <;> simp only [Fin.zero_eta, Fin.mk_one, chamberOrder_zero, chamberOrder_one]
+  · exact (mem_span_xDegree_pow_iff f (k + 1)).trans
+      (forall_congr' fun q => forall_congr' fun _ => Nat.lt_iff_add_one_le.symm)
+  · exact (mem_span_yDegree_pow_iff f (k + 1)).trans
+      (forall_congr' fun q => forall_congr' fun _ => Nat.lt_iff_add_one_le.symm)
+
+/-- A monomial class vanishes exactly when its coefficient vanishes or its
+exponent is removed by the chamber cutoff. -/
+@[simp]
+theorem exponentOrderQuotient_single_eq_zero_iff (q : exponentMonoid) (r : K) :
+    (Ideal.Quotient.mk _ (single q r) : ExponentOrderQuotient K k i) = 0 ↔
+      r = 0 ∨ k < chamberOrder i q := by
+  rw [Ideal.Quotient.eq_zero_iff_mem, mem_span_single_pow_iff]
+  by_cases hr : r = 0 <;> simp [hr]
+
 /-- The inverse sends each nodal coordinate to its original monomial class. -/
 @[simp]
 theorem truncatedExponentChamberEquiv_symm_coord (j : Fin 2) :

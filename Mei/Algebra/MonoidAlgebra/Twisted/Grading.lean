@@ -6,6 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Algebra.MonoidAlgebra.Twisted.Basic
+public import Mei.LinearAlgebra.GradedModule.Monomial.Basic
 public import Mathlib.RingTheory.GradedAlgebra.Basic
 
 /-!
@@ -57,34 +58,22 @@ instance instGradedMonoidGrade : SetLike.GradedMonoid (grade R α) where
     exact (grade R α (i + j)).smul_mem _
       ((grade R α (i + j)).smul_mem _ (of_mem_grade R α (i + j)))
 
-/-- The monomial pieces give a direct-sum decomposition, also over the zero semiring. -/
-theorem isInternal_grade [DecidableEq M] : DirectSum.IsInternal (grade R α) := by
-  let b := (basis R (Multiplicative M) α).reindex Multiplicative.toAdd
-  have hg : grade R α = fun m => R ∙ b m := by
-    funext m
-    simp only [grade, b, Module.Basis.reindex_apply, basis_apply]
+/-- The standard twisted monomials present the exponent pieces as basis lines. -/
+def monomialPresentation : MonomialPresentation (grade R α) where
+  basis := (basis R (Multiplicative M) α).reindex Multiplicative.toAdd
+  grade_eq_span m := by
+    simp only [grade, Module.Basis.reindex_apply, basis_apply]
     rfl
-  rw [hg]
-  let d := b.constr R fun m =>
-    DirectSum.lof R M (fun m => R ∙ b m) m
-      ⟨b m, Submodule.mem_span_singleton_self _⟩
-  have hl : DirectSum.coeLinearMap (fun m => R ∙ b m) ∘ₗ d = LinearMap.id := by
-    apply b.ext
-    intro m
-    simp [d]
-  have hr : d ∘ₗ DirectSum.coeLinearMap (fun m => R ∙ b m) = LinearMap.id := by
-    apply DirectSum.linearMap_ext
-    intro m
-    apply LinearMap.ext
-    intro x
-    obtain ⟨r, hx⟩ := Submodule.mem_span_singleton.mp x.property
-    have hx' : x = r • (⟨b m, Submodule.mem_span_singleton_self _⟩ : R ∙ b m) :=
-      Subtype.ext hx.symm
-    rw [hx']
-    simp only [LinearMap.comp_apply, DirectSum.coeLinearMap_lof,
-      map_smul, LinearMap.id_apply, d, Module.Basis.constr_basis]
-  let := DirectSum.Decomposition.ofLinearMap (fun m => R ∙ b m) d hl hr
-  exact DirectSum.Decomposition.isInternal _
+
+/-- The presentation uses the twisted basis reindexed by additive exponents. -/
+@[simp]
+theorem monomialPresentation_basis :
+    (monomialPresentation R α).basis =
+      (basis R (Multiplicative M) α).reindex Multiplicative.toAdd := (rfl)
+
+/-- The monomial pieces give a direct-sum decomposition, also over the zero semiring. -/
+theorem isInternal_grade [DecidableEq M] : DirectSum.IsInternal (grade R α) :=
+  (monomialPresentation R α).isInternal
 
 instance instGradedAlgebraGrade [DecidableEq M] : GradedAlgebra (grade R α) :=
   (isInternal_grade R α).gradedAlgebra
@@ -95,19 +84,9 @@ theorem coe_decompose_grade [DecidableEq M]
     (DirectSum.decompose (grade R α) x m : twistedMonoidAlgebra R (Multiplicative M) α) =
       (basis R (Multiplicative M) α).repr x (Multiplicative.ofAdd m) •
         of (Multiplicative.ofAdd m) := by
-  induction x using DirectSum.Decomposition.inductionOn (grade R α) with
-  | zero => simp
-  | add x y hx hy => simp [hx, hy, add_smul]
-  | @homogeneous j x =>
-    obtain ⟨r, hr⟩ := (mem_grade_iff R α j x.val).mp x.property
-    have hx := x.property
-    rw [← hr] at hx ⊢
-    by_cases hjm : j = m
-    · subst m
-      rw [DirectSum.decompose_of_mem_same (grade R α) hx]
-      simp [← basis_apply]
-    · rw [DirectSum.decompose_of_mem_ne (grade R α) hx hjm]
-      simp [← basis_apply, Ne.symm hjm]
+  simpa only [monomialPresentation_basis, Module.Basis.repr_reindex_apply,
+    Module.Basis.reindex_apply, basis_apply, Multiplicative.toAdd_symm_eq] using
+    (monomialPresentation R α).coe_decompose x m
 
 end Semiring
 
