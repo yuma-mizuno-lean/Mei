@@ -37,15 +37,15 @@ variable {K K' K'' : Type*} [CommRing K] [CommRing K'] [CommRing K'']
 /-- Change coefficients and lower the order in the absolute exponent quotient. -/
 def exponentOrderMap : ExponentOrderQuotient K k i →+* ExponentOrderQuotient K' l i :=
   Ideal.quotientMap _ (mapRingHom exponentMonoid φ) (by
-    rw [Ideal.span_le, Set.singleton_subset_iff, SetLike.mem_coe, Ideal.mem_comap, map_pow,
-      mapRingHom_single, map_one, Ideal.mem_span_singleton]
-    exact pow_dvd_pow _ (by omega))
+    simpa [Ideal.span_le, Ideal.mem_span_singleton] using
+      pow_dvd_pow (single (![xDegree, yDegree] i) (1 : K')) (by omega : l + 1 ≤ k + 1))
 
 /-- The absolute quotient map acts coefficientwise on every representative. -/
 @[simp]
 theorem exponentOrderMap_mk (a : AddMonoidAlgebra K exponentMonoid) :
     exponentOrderMap φ hl i (Ideal.Quotient.mk _ a) =
-      Ideal.Quotient.mk _ (mapRingHom exponentMonoid φ a) := (rfl)
+      Ideal.Quotient.mk _ (mapRingHom exponentMonoid φ a) :=
+  Ideal.quotientMap_mk
 
 /-- Changing neither coefficients nor cutoff gives the identity map. -/
 @[simp]
@@ -76,15 +76,51 @@ local notation "S'" => AdjoinRoot (Polynomial.X ^ (l + 1) : Polynomial K')
 local notation "τ" => AdjoinRoot.root (Polynomial.X ^ (k + 1) : Polynomial K)
 local notation "τ'" => AdjoinRoot.root (Polynomial.X ^ (l + 1) : Polynomial K')
 
-/-- The truncated scalar reduction `S[ℤ] → S'[ℤ]`, applying `AdjoinRoot.map` coefficientwise. -/
-local notation "ρ" => mapRingHom ℤ (AdjoinRoot.map φ (Polynomial.X ^ (k + 1))
-  (Polynomial.X ^ (l + 1)) (dvd_trans (pow_dvd_pow _ (Nat.add_le_add_right hl 1))
-    (Eq.dvd (Eq.symm (Eq.trans (Polynomial.map_pow (f := φ) (p := Polynomial.X) (k + 1))
-      (congrArg (· ^ (k + 1)) (Polynomial.map_X (f := φ))))))))
+include hl in
+private theorem X_pow_dvd_map_X_pow :
+    (Polynomial.X ^ (l + 1) : Polynomial K') ∣ (Polynomial.X ^ (k + 1) : Polynomial K).map φ := by
+  simpa using pow_dvd_pow _ (by omega)
 
-private theorem scalarReduction_C :
-    ρ (_root_.LaurentPolynomial.C τ) = _root_.LaurentPolynomial.C τ' := by
-  simp only [← _root_.LaurentPolynomial.single_eq_C, mapRingHom_single, AdjoinRoot.map_root]
+/-- The truncated scalar reduction `S[ℤ] → S'[ℤ]`, applying `AdjoinRoot.map` coefficientwise. -/
+def truncatedScalarMap : S[ℤ] →+* S'[ℤ] :=
+  mapRingHom ℤ (AdjoinRoot.map φ _ _ (X_pow_dvd_map_X_pow φ hl))
+
+/-- The truncated scalar reduction sends the truncated parameter to the truncated parameter. -/
+@[simp]
+theorem truncatedScalarMap_C_root :
+    truncatedScalarMap φ hl (_root_.LaurentPolynomial.C τ) = _root_.LaurentPolynomial.C τ' := by
+  simp only [truncatedScalarMap, ← _root_.LaurentPolynomial.single_eq_C, mapRingHom_single,
+    AdjoinRoot.map_root]
+
+/-- The truncated scalar reduction changes constant scalars by `φ`. -/
+@[simp]
+theorem truncatedScalarMap_C_of (r : K) :
+    truncatedScalarMap φ hl (_root_.LaurentPolynomial.C (AdjoinRoot.of _ r)) =
+      _root_.LaurentPolynomial.C (AdjoinRoot.of _ (φ r)) := by
+  simp only [truncatedScalarMap, ← _root_.LaurentPolynomial.single_eq_C, mapRingHom_single,
+    AdjoinRoot.map_of]
+
+/-- The truncated scalar reduction fixes the Laurent monomials. -/
+@[simp]
+theorem truncatedScalarMap_T (b : ℤ) :
+    truncatedScalarMap φ hl (_root_.LaurentPolynomial.T b) = _root_.LaurentPolynomial.T b := by
+  simp only [truncatedScalarMap, _root_.LaurentPolynomial.T, mapRingHom_single, map_one]
+
+/-- Changing neither coefficients nor cutoff gives the identity scalar map. -/
+@[simp]
+theorem truncatedScalarMap_id :
+    truncatedScalarMap (RingHom.id K) (k := k) le_rfl = RingHom.id _ := by
+  rw [truncatedScalarMap, ← mapRingHom_id]
+  congr 1
+  ext <;> simp
+
+/-- Truncated scalar reductions compose in the expected order. -/
+theorem truncatedScalarMap_comp (ψ : K' →+* K'') (hm : m ≤ l) :
+    (truncatedScalarMap ψ hm).comp (truncatedScalarMap φ hl) =
+      truncatedScalarMap (ψ.comp φ) (hm.trans hl) := by
+  simp only [truncatedScalarMap, ← mapRingHom_comp]
+  congr 1
+  ext <;> simp
 
 /-- Change coefficients and reduce the order in the nodal chamber. The truncated
 scalar parameter is reduced by `AdjoinRoot.map`, and both node coordinates are fixed.
@@ -92,10 +128,10 @@ This is `Mei.NodeAlgebra.rightChamberMap` for `i = 0` and
 `Mei.NodeAlgebra.leftChamberMap` for `i = 1`. -/
 def truncatedExponentChamberMap :
     TruncatedExponentChamber K k i →+* TruncatedExponentChamber K' l i :=
-  letI : Algebra S[ℤ] S'[ℤ] := RingHom.toAlgebra ρ
+  letI : Algebra S[ℤ] S'[ℤ] := RingHom.toAlgebra (truncatedScalarMap φ hl)
   match i with
-  | 0 => (Mei.NodeAlgebra.rightChamberMap _ (scalarReduction_C φ hl) hl).toRingHom
-  | 1 => (Mei.NodeAlgebra.leftChamberMap _ (scalarReduction_C φ hl) hl).toRingHom
+  | 0 => (Mei.NodeAlgebra.rightChamberMap _ (truncatedScalarMap_C_root φ hl) hl).toRingHom
+  | 1 => (Mei.NodeAlgebra.leftChamberMap _ (truncatedScalarMap_C_root φ hl) hl).toRingHom
 
 /-- Both nodal coordinates retain their quotient classes. -/
 @[simp]
@@ -103,27 +139,27 @@ theorem truncatedExponentChamberMap_coord (j : Fin 2) :
     truncatedExponentChamberMap φ hl i
         (Ideal.Quotient.mk _ (NodeAlgebra.coord (_root_.LaurentPolynomial.C τ) j)) =
       Ideal.Quotient.mk _ (NodeAlgebra.coord (_root_.LaurentPolynomial.C τ') j) := by
-  let : Algebra S[ℤ] S'[ℤ] := RingHom.toAlgebra ρ
+  let : Algebra S[ℤ] S'[ℤ] := RingHom.toAlgebra (truncatedScalarMap φ hl)
   match i with
   | 0 =>
-    exact (Mei.NodeAlgebra.rightChamberMap_mk _ (scalarReduction_C φ hl) hl _).trans
+    exact (Mei.NodeAlgebra.rightChamberMap_mk _ (truncatedScalarMap_C_root φ hl) hl _).trans
       (congrArg _ (Mei.NodeAlgebra.mapOfEq_coord _ _ j))
   | 1 =>
-    exact (Mei.NodeAlgebra.leftChamberMap_mk _ (scalarReduction_C φ hl) hl _).trans
+    exact (Mei.NodeAlgebra.leftChamberMap_mk _ (truncatedScalarMap_C_root φ hl) hl _).trans
       (congrArg _ (Mei.NodeAlgebra.mapOfEq_coord _ _ j))
 
-/-- The coefficient Laurent algebra is reduced by the usual truncated scalar map. -/
+/-- The coefficient Laurent algebra is reduced by `truncatedScalarMap`. -/
 @[simp]
 theorem truncatedExponentChamberMap_algebraMap (a : S[ℤ]) :
     truncatedExponentChamberMap φ hl i (algebraMap S[ℤ] _ a) =
-      algebraMap S'[ℤ] _ (ρ a) := by
-  let : Algebra S[ℤ] S'[ℤ] := RingHom.toAlgebra ρ
+      algebraMap S'[ℤ] _ (truncatedScalarMap φ hl a) := by
+  let : Algebra S[ℤ] S'[ℤ] := RingHom.toAlgebra (truncatedScalarMap φ hl)
   match i with
   | 0 =>
-    exact ((Mei.NodeAlgebra.rightChamberMap _ (scalarReduction_C φ hl) hl).commutes a).trans
+    exact ((Mei.NodeAlgebra.rightChamberMap _ (truncatedScalarMap_C_root φ hl) hl).commutes a).trans
       (IsScalarTower.algebraMap_apply S[ℤ] S'[ℤ] _ a)
   | 1 =>
-    exact ((Mei.NodeAlgebra.leftChamberMap _ (scalarReduction_C φ hl) hl).commutes a).trans
+    exact ((Mei.NodeAlgebra.leftChamberMap _ (truncatedScalarMap_C_root φ hl) hl).commutes a).trans
       (IsScalarTower.algebraMap_apply S[ℤ] S'[ℤ] _ a)
 
 /-- On polynomial representatives the nodal chamber map changes only coefficients. -/
@@ -132,18 +168,14 @@ theorem truncatedExponentChamberMap_mk (p : MvPolynomial (Fin 2) S[ℤ]) :
     truncatedExponentChamberMap φ hl i
         (Ideal.Quotient.mk _ (NodeAlgebra.mk (_root_.LaurentPolynomial.C τ) p)) =
       Ideal.Quotient.mk _ (NodeAlgebra.mk (_root_.LaurentPolynomial.C τ')
-        (MvPolynomial.map ρ p)) := by
+        (MvPolynomial.map (truncatedScalarMap φ hl) p)) := by
   have h : (truncatedExponentChamberMap φ hl i).comp ((Ideal.Quotient.mk _).comp
       (NodeAlgebra.mk (_root_.LaurentPolynomial.C τ)).toRingHom) =
       ((Ideal.Quotient.mk _).comp (NodeAlgebra.mk (_root_.LaurentPolynomial.C τ')).toRingHom).comp
-        (MvPolynomial.map ρ) := by
+        (MvPolynomial.map (truncatedScalarMap φ hl)) := by
     apply MvPolynomial.ringHom_ext
     · intro a
-      simp only [RingHom.comp_apply, AlgHom.toRingHom_eq_coe, AlgHom.coe_toRingHom,
-        MvPolynomial.map_C]
-      rw [MvPolynomial.C_eq_algebraMap, AlgHom.commutes, Ideal.Quotient.mk_algebraMap,
-        truncatedExponentChamberMap_algebraMap, MvPolynomial.C_eq_algebraMap, AlgHom.commutes,
-        Ideal.Quotient.mk_algebraMap]
+      simp
     · intro j
       simp
   exact RingHom.congr_fun h p
@@ -157,9 +189,9 @@ theorem truncatedExponentChamberMap_equiv (a : ExponentOrderQuotient K k i) :
   rw [truncatedExponentChamberEquiv_mk, truncatedExponentChamberMap_mk,
     exponentOrderMap_mk, truncatedExponentChamberEquiv_mk,
     exponentPolynomialEquiv_mapRingHom]
-  have h : RingHom.comp ρ (mapRingHom ℤ (AdjoinRoot.of _)) =
+  have h : (truncatedScalarMap φ hl).comp (mapRingHom ℤ (AdjoinRoot.of _)) =
       (mapRingHom ℤ (AdjoinRoot.of _)).comp (mapRingHom ℤ φ) := by
-    simp only [← mapRingHom_comp]
+    simp only [truncatedScalarMap, ← mapRingHom_comp]
     congr 1
     ext r
     simp
