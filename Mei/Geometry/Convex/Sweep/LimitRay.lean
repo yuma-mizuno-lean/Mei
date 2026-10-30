@@ -83,6 +83,7 @@ theorem backwardLimitRay_apply (Q : V)
 
 /-- The final direction incorporates exactly the increments whose encounters
 have collapsed onto the endpoint. -/
+@[simp]
 theorem direction_backwardLimitRay (Q : V)
     (hQ : ∀ j, 0 ≤ backwardTime f c (fun j => v j.castSucc) j Q) :
     (backwardLimitRay f c v Q hQ).direction =

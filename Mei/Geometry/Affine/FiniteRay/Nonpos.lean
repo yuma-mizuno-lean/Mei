@@ -36,8 +36,10 @@ def ofNonposBends (Q : P) (v : V) (b : ℝ →₀ V)
     { endpoint := Q
       direction := v + b 0
       bends := b.erase 0
-      bend_neg := fun t ht =>
-        lt_of_le_of_ne (hb t (Finset.mem_erase.mp ht).2) (Finset.mem_erase.mp ht).1 }
+      bend_neg := by
+        intro t ht
+        rw [Finsupp.support_erase] at ht
+        exact lt_of_le_of_ne (hb t (Finset.mem_erase.mp ht).2) (Finset.mem_erase.mp ht).1 }
 
 /-- Normalization retains the endpoint. -/
 @[simp]
