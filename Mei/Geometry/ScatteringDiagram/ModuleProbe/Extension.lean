@@ -72,6 +72,16 @@ private theorem coefficientAnchor_generic (k : ℕ)
   (exists_generic_allowed (d := d) (ℒ := ℒ) (H := H) (h := h) (B := B) k
     (coefficientArrangement d ℳ p ℒ H h h' D k) x).choose_spec
 
+/-- The endpoint only witnesses nonemptiness of the allowed locus in a proof of
+the same existential proposition. Proof irrelevance makes the chosen anchor
+independent of that witness. -/
+private theorem coefficientAnchor_eq (k : ℕ)
+    (x y : WallComplement (fun c : B.active k => (B.wall c).support)) :
+    coefficientAnchor d ℳ p ℒ H h h' D B k x =
+      coefficientAnchor d ℳ p ℒ H h h' D B k y := by
+  unfold coefficientAnchor
+  rfl
+
 /-- The probe coefficient extended to every finite-order allowed base endpoint
 by consistent base transport from a generic allowed point. -/
 def extendedCoefficientField (k : ℕ) (hBc : B.LevelConsistent k)
@@ -119,21 +129,16 @@ theorem extendedCoefficientField_eq_coefficientField (k : ℕ) (hBc : B.LevelCon
   simp
 
 /-- The extended coefficients obey the base transport equation at all allowed
-endpoints, without any exceptional-arrangement condition on either endpoint. -/
+endpoints. This follows from their common anchor and consistent base transport;
+agreement with the generic probe field requires the separate probe hypotheses. -/
 theorem extendedCoefficientField_eq_transport (k : ℕ) (hBc : B.LevelConsistent k)
-    (hD : D.LevelConsistent (k + 1))
-    (hB : (D.map (chargeZeroGradedLieHom d ℳ p ℒ)
-      (chargeZeroGradedLieHom_mem_wall d ℳ p ℒ H)).LevelEquivalent
-      (cylinderDiagram d ℳ p ℒ H h h' B) k)
     (x y : WallComplement (fun c : B.active k => (B.wall c).support)) :
     extendedCoefficientField d ℳ p ℒ H h h' D B k hBc y =
       (A).truncatedBCHAction d ℒ k (B.levelTransport k hBc x y)
         (extendedCoefficientField d ℳ p ℒ H h h' D B k hBc x) := by
-  obtain ⟨z, hz⟩ := exists_generic_allowed (d := d) (ℒ := ℒ) (H := H) (h := h) (B := B) k
-    (coefficientArrangement d ℳ p ℒ H h h' D k) x
-  rw [extendedCoefficientField_eq_action d ℳ p ℒ H h h' D B k hBc hD hB y z hz,
-    extendedCoefficientField_eq_action d ℳ p ℒ H h h' D B k hBc hD hB x z hz,
-    ← LinearEquiv.mul_apply, ← MonoidHom.map_mul, ← B.levelTransport_comp]
+  unfold extendedCoefficientField
+  simp only [coefficientAnchor_eq d ℳ p ℒ H h h' D B k x y]
+  rw [← LinearEquiv.mul_apply, ← MonoidHom.map_mul, ← B.levelTransport_comp]
 
 /-- The extension is the unique family obeying base transport and recovering
 the actual generic probe coefficients. -/
@@ -150,11 +155,7 @@ theorem extendedCoefficientField_unique (k : ℕ) (hBc : B.LevelConsistent k)
 
 /-- On the finite active-wall complement, the extended coefficients are locally
 constant. The transport equation also specifies their change across base walls. -/
-theorem isLocallyConstant_extendedCoefficientField (k : ℕ) (hBc : B.LevelConsistent k)
-    (hD : D.LevelConsistent (k + 1))
-    (hB : (D.map (chargeZeroGradedLieHom d ℳ p ℒ)
-      (chargeZeroGradedLieHom_mem_wall d ℳ p ℒ H)).LevelEquivalent
-      (cylinderDiagram d ℳ p ℒ H h h' B) k) :
+theorem isLocallyConstant_extendedCoefficientField (k : ℕ) (hBc : B.LevelConsistent k) :
     IsLocallyConstant (fun x : {x : V // ∀ c : B.active k, x ∉ (B.wall c).support} =>
       extendedCoefficientField d ℳ p ℒ H h h' D B k hBc ⟨x.val, x.property⟩) := by
   apply (IsLocallyConstant.iff_eventually_eq _).mpr
@@ -169,7 +170,7 @@ theorem isLocallyConstant_extendedCoefficientField (k : ℕ) (hBc : B.LevelConsi
         (A).truncatedBCHAction d ℒ k (B.levelTransport k hBc z ⟨y.val, y.property⟩)
           (extendedCoefficientField d ℳ p ℒ H h h' D B k hBc z)) := by
     funext y
-    exact extendedCoefficientField_eq_transport d ℳ p ℒ H h h' D B k hBc hD hB z _
+    exact extendedCoefficientField_eq_transport d ℳ p ℒ H h h' D B k hBc z _
   filter_upwards [hc.eventually_eq x] with y hy
   exact (congrFun he y).trans (hy.trans (congrFun he x).symm)
 
@@ -263,6 +264,6 @@ theorem completedExtendedCoefficientField_eq_transport
   rw [(A).projection_completedBCHAction, projection_completedExtendedCoefficientField,
     projection_completedExtendedCoefficientField, B.projection_transport_eq_levelTransport]
   exact extendedCoefficientField_eq_transport d ℳ p ℒ H h h' D B k ((B.consistent_iff.mp hBc) k)
-    ((D.consistent_iff.mp hD) (k + 1)) ((DirectedDiagram.equivalent_iff _ _).mp hB k) _ _
+    _ _
 
 end Mei.ModuleProbe

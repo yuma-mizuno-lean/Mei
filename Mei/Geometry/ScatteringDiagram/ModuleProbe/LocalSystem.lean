@@ -168,7 +168,7 @@ theorem value_coefficientLocalSection_eq_extendedCoefficientField
     intro U hU _ a b ha hb
     have hU' : U ∈ (B.adaptedComplex k).coefficientCharts := by simpa [T] using hU
     let γ := (B.adaptedComplex k).coefficientSegment U hU' a b ha hb
-    have he := extendedCoefficientField_eq_transport d ℳ p ℒ H h h' D B k hBc hD hB
+    have he := extendedCoefficientField_eq_transport d ℳ p ℒ H h h' D B k hBc
       ((B.adaptedPathPrefunctor k).obj ⟨a.val.val, a.property⟩)
       ((B.adaptedPathPrefunctor k).obj ⟨b.val.val, b.property⟩)
     rw [B.levelTransport_eq_levelPathProduct hBc
