@@ -83,6 +83,28 @@ theorem mem_degreeTail_iff [DecidableEq ι] [DirectSum.Decomposition ℳ]
   · intro h
     simp [h]
 
+include P in
+/-- The monomial pieces form an internal direct sum. -/
+theorem isInternal [DecidableEq ι] : DirectSum.IsInternal ℳ := by
+  let f := P.basis.constr ℕ (fun i => DirectSum.lof R ι (fun i => ℳ i) i
+    ⟨P.basis i, P.basis_mem i⟩)
+  have hl : (DirectSum.coeLinearMap ℳ).comp f = LinearMap.id := by
+    apply P.basis.ext
+    intro i
+    simp [f]
+  have hr : f.comp (DirectSum.coeLinearMap ℳ) = LinearMap.id := by
+    apply DirectSum.linearMap_ext
+    intro i
+    apply LinearMap.ext
+    intro x
+    obtain ⟨r, hr⟩ := (P.mem_grade_iff i x).mp x.property
+    have hx : x = r • (⟨P.basis i, P.basis_mem i⟩ : ℳ i) := Subtype.ext hr.symm
+    rw [hx]
+    simp only [LinearMap.comp_apply, LinearMap.id_apply, map_smul]
+    simp [f]
+  let := DirectSum.Decomposition.ofLinearMap ℳ f hl hr
+  exact DirectSum.Decomposition.isInternal ℳ
+
 end MonomialPresentation
 
 variable {R M ι : Type*} [Ring R] [AddCommGroup M] [Module R M]
@@ -90,15 +112,6 @@ variable {R M ι : Type*} [Ring R] [AddCommGroup M] [Module R M]
 namespace MonomialPresentation
 
 variable {ℳ : ι → Submodule R M} (P : MonomialPresentation ℳ)
-
-include P in
-/-- The monomial pieces form an internal direct sum. -/
-theorem isInternal [DecidableEq ι] : DirectSum.IsInternal ℳ := by
-  have h : ℳ = fun i => R ∙ P.basis i := funext P.grade_eq_span
-  rw [h]
-  exact DirectSum.isInternal_submodule_of_iSupIndep_of_iSup_eq_top
-    P.basis.linearIndependent.iSupIndep_span_singleton
-    (by rw [← Submodule.span_range_eq_iSup, P.basis.span_eq])
 
 /-- Discarding coordinates gives the corresponding monomial presentation on the
 quotient's surviving homogeneous pieces. -/

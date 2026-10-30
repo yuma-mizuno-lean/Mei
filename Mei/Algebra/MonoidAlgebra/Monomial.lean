@@ -21,7 +21,9 @@ We use Mathlib's `AddMonoidAlgebra.basis` and exponent grading.
 
 public noncomputable section
 
-namespace AddMonoidAlgebra
+namespace Mei.AddMonoidAlgebra
+
+open _root_.AddMonoidAlgebra
 
 variable {R Γ : Type*} [CommSemiring R]
 
@@ -38,4 +40,4 @@ def monomialPresentation : Mei.MonomialPresentation (grade R : Γ → Submodule 
 theorem monomialPresentation_basis :
     (monomialPresentation (R := R) (Γ := Γ)).basis = basis Γ R := (rfl)
 
-end AddMonoidAlgebra
+end Mei.AddMonoidAlgebra

@@ -35,14 +35,8 @@ def supported :
   have hb (i : s) : (b i : M) = P.basis i := by
     simp [b, LinearEquiv.coe_ofEq_apply]
   refine ⟨b, fun i => ?_⟩
-  ext x
-  rw [Submodule.mem_comap, P.mem_grade_iff, Submodule.mem_span_singleton]
-  constructor
-  · rintro ⟨r, hr⟩
-    exact ⟨r, Subtype.ext (by
-      simpa only [Submodule.subtype_apply, Submodule.coe_smul, hb] using hr)⟩
-  · rintro ⟨r, rfl⟩
-    exact ⟨r, by simp only [Submodule.subtype_apply, Submodule.coe_smul, hb]⟩
+  rw [P.grade_eq_span, ← hb i]
+  exact LinearMap.submoduleOf_span_singleton_of_mem _ (b i).property
 
 /-- Restriction keeps each selected monomial as the same ambient vector. -/
 @[simp]
