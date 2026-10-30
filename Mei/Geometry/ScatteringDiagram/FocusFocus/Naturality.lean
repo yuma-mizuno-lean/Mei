@@ -7,6 +7,7 @@ module
 
 public import Mei.Geometry.ScatteringDiagram.FocusFocus.OrderQuotient
 public import Mei.RingTheory.Node.SlabMap
+public import Mei.RingTheory.AdjoinRoot.Laurent
 
 /-!
 # Naturality of the focus-focus chamber dictionary
@@ -29,7 +30,8 @@ public noncomputable section
 namespace Mei.FocusFocus
 
 open TauCeti AddMonoidAlgebra
-open scoped LaurentPolynomial Mei.NodeAlgebra
+open _root_.Mei.LaurentPolynomial
+open scoped _root_.LaurentPolynomial Mei.NodeAlgebra
 
 variable {K K' K'' : Type*} [CommRing K] [CommRing K'] [CommRing K'']
   {k l m : ℕ} (φ : K →+* K') (hl : l ≤ k) (i : Fin 2)
@@ -76,52 +78,6 @@ local notation "S'" => AdjoinRoot (Polynomial.X ^ (l + 1) : Polynomial K')
 local notation "τ" => AdjoinRoot.root (Polynomial.X ^ (k + 1) : Polynomial K)
 local notation "τ'" => AdjoinRoot.root (Polynomial.X ^ (l + 1) : Polynomial K')
 
-include hl in
-private theorem X_pow_dvd_map_X_pow :
-    (Polynomial.X ^ (l + 1) : Polynomial K') ∣ (Polynomial.X ^ (k + 1) : Polynomial K).map φ := by
-  simpa using pow_dvd_pow _ (by omega)
-
-/-- The truncated scalar reduction `S[ℤ] → S'[ℤ]`, applying `AdjoinRoot.map` coefficientwise. -/
-def truncatedScalarMap : S[ℤ] →+* S'[ℤ] :=
-  mapRingHom ℤ (AdjoinRoot.map φ _ _ (X_pow_dvd_map_X_pow φ hl))
-
-/-- The truncated scalar reduction sends the truncated parameter to the truncated parameter. -/
-@[simp]
-theorem truncatedScalarMap_C_root :
-    truncatedScalarMap φ hl (_root_.LaurentPolynomial.C τ) = _root_.LaurentPolynomial.C τ' := by
-  simp only [truncatedScalarMap, ← _root_.LaurentPolynomial.single_eq_C, mapRingHom_single,
-    AdjoinRoot.map_root]
-
-/-- The truncated scalar reduction changes constant scalars by `φ`. -/
-@[simp]
-theorem truncatedScalarMap_C_of (r : K) :
-    truncatedScalarMap φ hl (_root_.LaurentPolynomial.C (AdjoinRoot.of _ r)) =
-      _root_.LaurentPolynomial.C (AdjoinRoot.of _ (φ r)) := by
-  simp only [truncatedScalarMap, ← _root_.LaurentPolynomial.single_eq_C, mapRingHom_single,
-    AdjoinRoot.map_of]
-
-/-- The truncated scalar reduction fixes the Laurent monomials. -/
-@[simp]
-theorem truncatedScalarMap_T (b : ℤ) :
-    truncatedScalarMap φ hl (_root_.LaurentPolynomial.T b) = _root_.LaurentPolynomial.T b := by
-  simp only [truncatedScalarMap, _root_.LaurentPolynomial.T, mapRingHom_single, map_one]
-
-/-- Changing neither coefficients nor cutoff gives the identity scalar map. -/
-@[simp]
-theorem truncatedScalarMap_id :
-    truncatedScalarMap (RingHom.id K) (k := k) le_rfl = RingHom.id _ := by
-  rw [truncatedScalarMap, ← mapRingHom_id]
-  congr 1
-  ext <;> simp
-
-/-- Truncated scalar reductions compose in the expected order. -/
-theorem truncatedScalarMap_comp (ψ : K' →+* K'') (hm : m ≤ l) :
-    (truncatedScalarMap ψ hm).comp (truncatedScalarMap φ hl) =
-      truncatedScalarMap (ψ.comp φ) (hm.trans hl) := by
-  simp only [truncatedScalarMap, ← mapRingHom_comp]
-  congr 1
-  ext <;> simp
-
 /-- Change coefficients and reduce the order in the nodal chamber. The truncated
 scalar parameter is reduced by `AdjoinRoot.map`, and both node coordinates are fixed.
 This is `Mei.NodeAlgebra.rightChamberMap` for `i = 0` and
@@ -148,7 +104,7 @@ theorem truncatedExponentChamberMap_coord (j : Fin 2) :
     exact (Mei.NodeAlgebra.leftChamberMap_mk _ (truncatedScalarMap_C_root φ hl) hl _).trans
       (congrArg _ (Mei.NodeAlgebra.mapOfEq_coord _ _ j))
 
-/-- The coefficient Laurent algebra is reduced by `truncatedScalarMap`. -/
+/-- The coefficient Laurent algebra is reduced by `Mei.LaurentPolynomial.truncatedScalarMap`. -/
 @[simp]
 theorem truncatedExponentChamberMap_algebraMap (a : S[ℤ]) :
     truncatedExponentChamberMap φ hl i (algebraMap S[ℤ] _ a) =
@@ -191,10 +147,13 @@ theorem truncatedExponentChamberMap_equiv (a : ExponentOrderQuotient K k i) :
     exponentPolynomialEquiv_mapRingHom]
   have h : (truncatedScalarMap φ hl).comp (mapRingHom ℤ (AdjoinRoot.of _)) =
       (mapRingHom ℤ (AdjoinRoot.of _)).comp (mapRingHom ℤ φ) := by
-    simp only [truncatedScalarMap, ← mapRingHom_comp]
-    congr 1
-    ext r
-    simp
+    apply AddMonoidAlgebra.ringHom_ext
+    · intro r
+      simpa only [RingHom.comp_apply, ← _root_.LaurentPolynomial.single_eq_C, mapRingHom_single]
+        using truncatedScalarMap_C_of φ hl r
+    · intro n
+      simpa only [RingHom.comp_apply, mapRingHom_single, map_one, _root_.LaurentPolynomial.T]
+        using truncatedScalarMap_T φ hl n
   simp only [MvPolynomial.map_map, h]
 
 /-- The inverse chamber dictionary commutes with the same reductions. -/
