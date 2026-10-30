@@ -38,7 +38,7 @@ namespace Mei.Convex
 variable {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
   {n : ℕ} (f : Fin n → V →L[ℝ] ℝ) (c : Fin n → ℝ)
   (v : Fin (n + 1) → V) (β : FiniteAffineRay V V) (t : Fin (n + 1) → ℝ)
-  (ht : StrictAnti t)
+  (ht : Antitone t) (hstrict : StrictAnti t)
   (hb : ∀ s ∈ β.bends.support, ∃ j : Fin n, s = t j.succ)
 
 include ht hb in
@@ -48,9 +48,9 @@ private theorem bends_outside_encounter_interval (j : Fin n) :
   intro s hs
   obtain ⟨a, rfl⟩ := hb s hs
   by_cases hja : j ≤ a
-  · exact Or.inl (ht.antitone (Fin.succ_le_succ_iff.mpr hja))
+  · exact Or.inl (ht (Fin.succ_le_succ_iff.mpr hja))
   · apply Or.inr
-    apply ht.antitone
+    apply ht
     simpa only [Fin.le_iff_val_le_val, Fin.val_succ, Fin.val_castSucc] using
       Nat.succ_le_iff.mpr (lt_of_not_ge hja)
 
@@ -61,8 +61,8 @@ variable (h0 : t 0 = 0) (hv : ∀ j, β.directionAt (t j) = v j)
 include ht h0 hf hheight in
 /-- Actual transverse encounters recover both the affine encounter positions
 and their cumulative parameters, without prescribing either backward formula.
-Only the recorded intervals need be free of interior bends; the earlier
-incoming tail and its direction are unrestricted. -/
+Encounter parameters may coincide. Only the recorded intervals need be free of
+interior bends; the earlier incoming tail and its direction are unrestricted. -/
 theorem backward_eq_of_ray_encounters
     (hb : ∀ j : Fin n, ∀ s ∈ β.bends.support, s ≤ t j.succ ∨ t j.castSucc ≤ s)
     (hv : ∀ j : Fin n, β.directionAt (t j.castSucc) = v j.castSucc) :
@@ -70,7 +70,7 @@ theorem backward_eq_of_ray_encounters
       ∀ j, t j = backwardParameter f c (fun j => v j.castSucc) j β.endpoint := by
   have hstep (j : Fin n) :
       β (t j.succ) = β (t j.castSucc) + (t j.castSucc - t j.succ) • v j.castSucc := by
-    have he := β.eval_vsub_eval (ht Fin.castSucc_lt_succ).le
+    have he := β.eval_vsub_eval (ht Fin.castSucc_lt_succ.le)
       (hb j)
     -- Vector subtraction on the affine space over itself is ordinary subtraction.
     rw [hv, vsub_eq_sub] at he
@@ -89,7 +89,7 @@ theorem backward_eq_of_ray_encounters
     rw [backwardParameter_succ, ← ih, ← hrec.2 j]
     abel
 
-include ht hb h0 hv hf hheight in
+include hstrict hb h0 hv hf hheight in
 /-- Endpoint and a transverse itinerary determine the entire finite affine ray.
 Positive backward elapsed times are a consequence of the actual encounter order.
 Unchanged directions need not be removed from the itinerary. -/
@@ -99,21 +99,21 @@ theorem eq_backwardRay_of_encounters :
       (∀ j, t j = backwardParameter f c (fun j => v j.castSucc) j β.endpoint) ∧
         β = backwardRay f c v β.endpoint hpos := by
   classical
-  have hparameter := (backward_eq_of_ray_encounters f c v β t ht h0 hf hheight
-    (bends_outside_encounter_interval β t ht hb) (fun j => hv j.castSucc)).2
+  have hparameter := (backward_eq_of_ray_encounters f c v β t hstrict.antitone h0 hf hheight
+    (bends_outside_encounter_interval β t hstrict.antitone hb) (fun j => hv j.castSucc)).2
   have hpos (j : Fin n) :
       0 < backwardTime f c (fun j => v j.castSucc) j β.endpoint := by
     have he := hparameter j.succ
     rw [backwardParameter_succ, ← hparameter j.castSucc] at he
-    linarith [ht (Fin.castSucc_lt_succ (i := j))]
+    linarith [hstrict (Fin.castSucc_lt_succ (i := j))]
   refine ⟨hpos, hparameter, ?_⟩
   have hjump (j : Fin n) : β.bends (t j.succ) = v j.succ - v j.castSucc := by
-    rw [← β.directionAt_sub_eq_bends (ht Fin.castSucc_lt_succ)
-      (bends_outside_encounter_interval β t ht hb j), hv, hv]
+    rw [← β.directionAt_sub_eq_bends (hstrict Fin.castSucc_lt_succ)
+      (bends_outside_encounter_interval β t hstrict.antitone hb j), hv, hv]
   have hbends : β.bends =
       ∑ j : Fin n, Finsupp.single (t j.succ) (v j.succ - v j.castSucc) := by
     have hinj : Function.Injective (fun j : Fin n => t j.succ) :=
-      ht.injective.comp (Fin.succ_injective n)
+      hstrict.injective.comp (Fin.succ_injective n)
     rw [← Finsupp.mapDomain_comapDomain (fun j : Fin n => t j.succ) hinj β.bends
       (fun s hs => (hb s hs).imp fun _ he => he.symm), Finsupp.mapDomain_fintype]
     simp only [Finsupp.comapDomain_apply, hjump]
