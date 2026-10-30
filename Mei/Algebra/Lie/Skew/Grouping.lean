@@ -50,8 +50,8 @@ private theorem rayExp_congr_degree {n n' : Γ} (h : n = n') (hn : n ∈ d.monoi
 
 /-- **Grouping a sorted product of ray labels by degree.** Let a finite product of ray labels
 `exp(fᵢ)` at degrees `nᵢ` be sorted, `β(nᵢ, nⱼ) ≥ 0` for `i < j`. It equals the product, over
-a sublist of representatives of its distinct degrees, again sorted, of the labels of the summed
-series `∑_{nⱼ = n} fⱼ`. -/
+a list of representatives chosen from the original list for its distinct degrees, again sorted,
+of the labels of the summed series `∑_{nⱼ = n} fⱼ`. -/
 theorem exists_nodup_prod_rayExp_eq [PartialOrder R] [IsOrderedAddMonoid R] (l : List ι)
     (hl : l.Pairwise fun i j => 0 ≤ β (deg i) (deg j)) :
     ∃ l' : List ι, l' ⊆ l ∧ (∀ i ∈ l, ∃ j ∈ l', deg j = deg i) ∧ (l'.map deg).Nodup ∧
