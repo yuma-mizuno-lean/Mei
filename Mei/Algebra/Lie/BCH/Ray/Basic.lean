@@ -96,6 +96,16 @@ theorem expToCompletion_mem_completedRaySubgroup {w : SupportedRay d} {x : L}
   rw [projection_expToCompletion, BCHGroup.log_exp, ← map_rayLieSubalgebra_mkQ]
   exact ⟨x, hx, rfl⟩
 
+/-- Every finite ray label lifts to a completed label on the same ray. -/
+theorem exists_completedRaySubgroup_projection_eq (w : SupportedRay d) (k : ℕ)
+    {g : d.truncatedGroup ℒ k}
+    (hg : g ∈ (rayLieSubalgebra (d.truncatedGrading ℒ k) w).bchSubgroup) :
+    ∃ G ∈ d.completedRaySubgroup ℒ w, CompletedGroup.projection k G = g := by
+  rw [LieSubalgebra.mem_bchSubgroup, ← d.map_rayLieSubalgebra_mkQ ℒ w k] at hg
+  obtain ⟨x, hx, he⟩ := (LieSubalgebra.mem_map _ _ _).mp hg
+  refine ⟨d.expToCompletion ℒ x, d.expToCompletion_mem_completedRaySubgroup ℒ hx, ?_⟩
+  rw [projection_expToCompletion, he, BCHGroup.exp_log]
+
 /-- Distinct primitive rays have no common nonidentity completed label. -/
 theorem disjoint_completedRaySubgroup [HasUniqueDiv N] {v w : SupportedRay d} (h : v ≠ w) :
     Disjoint (d.completedRaySubgroup ℒ v) (d.completedRaySubgroup ℒ w) := by

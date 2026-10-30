@@ -15,8 +15,9 @@ public import Mei.LinearAlgebra.ModuleFiltration.Map
 Levelwise exponential and logarithm identify the compatible-family Lie completion
 with the completed BCH group as sets. This comparison lets Lie maps out of the
 completion describe group representations in exponential coordinates, without
-requiring the original Lie algebra to be nilpotent. Completed graded BCH maps
-correspond to filtered linear completion maps in these coordinates.
+requiring the original Lie algebra to be nilpotent.
+In these coordinates, completed graded group maps agree with the linear maps
+of module completions, retaining the prescribed cutoff modulus.
 
 The carriers and transition laws are those of `LieIdeal.completion` and
 `Mei.CompletedGroup`; the finite coordinate maps are `Mei.BCHGroup.exp` and
@@ -142,8 +143,8 @@ namespace Mei.GradedLieHom
 
 universe u
 
-variable {N M R : Type*} {L L' : Type u}
-  [AddCommMonoid N] [AddCommMonoid M] [CommRing R] [Algebra ℚ R]
+variable {N M R : Type*} {L L' : Type u} [AddCommMonoid N] [AddCommMonoid M]
+  [CommRing R] [Algebra ℚ R]
   [LieRing L] [LieAlgebra R L] [LieAlgebra ℚ L] [IsScalarTower ℚ R L]
   [LieRing L'] [LieAlgebra R L'] [LieAlgebra ℚ L'] [IsScalarTower ℚ R L']
   [DecidableEq N] [DecidableEq M]
@@ -151,16 +152,15 @@ variable {N M R : Type*} {L L' : Type u}
   {ℒ : N → Submodule R L} {ℳ : M → Submodule R L'}
   [GradedLieAlgebra ℒ] [GradedLieAlgebra ℳ]
   [IsPositiveGrading d ℒ] [IsPositiveGrading e ℳ]
-  {T : PositiveDegreeMap d e} (f : GradedLieHom T ℒ ℳ)
+  {T : PositiveDegreeMap d e}
 
-local notation "F" =>
-  LieIdeal.completionFiltration (d.degreeIdeal ℒ) (d.degreeIdeal_antitone ℒ)
-local notation "G" =>
-  LieIdeal.completionFiltration (e.degreeIdeal ℳ) (e.degreeIdeal_antitone ℳ)
+local notation "F" => LieIdeal.completionFiltration (d.degreeIdeal ℒ) (d.degreeIdeal_antitone ℒ)
+local notation "G" => LieIdeal.completionFiltration (e.degreeIdeal ℳ) (e.degreeIdeal_antitone ℳ)
 
-/-- In exponential coordinates, a completed BCH map is the filtered linear
-completion map of the underlying Lie homomorphism. -/
-theorem completedBCHExp_symm_completedMap (g : d.completedBCHGroup ℒ) :
+/-- In logarithmic coordinates, a completed BCH map is the linear completion map
+with the same cutoff modulus. -/
+theorem completedBCHExp_symm_completedMap (f : GradedLieHom T ℒ ℳ)
+    (g : d.completedBCHGroup ℒ) :
     (e.completedBCHExp ℳ).symm (f.completedMap g) =
       (F).completionMap G f.toLieHom.toLinearMap T.modulus T.monotone_modulus
         (fun k _ hx => f.map_mem_degreeIdeal k hx) ((d.completedBCHExp ℒ).symm g) := by

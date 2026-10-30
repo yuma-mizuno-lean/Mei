@@ -93,19 +93,13 @@ theorem map_id : W.map (GradedLieHom.id ℒ) (fun _ _ _ hx => by simpa using hx)
 theorem map_map (g : GradedLieHom (PositiveDegreeMap.id d) ℳ ℋ)
     (hg : ∀ n m, ∀ x ∈ H'.wall n m, g x ∈ H''.wall n m) :
     (W.map f hf).map g hg = W.map
-      { toLieHom := g.toLieHom.comp f.toLieHom
-        map_mem hx := by simpa using g.map_mem (f.map_mem hx) }
-      (fun n m x hx => hg n m _ (hf n m x hx)) := by
+      (g.compId f)
+      (fun n m x hx => by
+        simpa only [GradedLieHom.compId_apply] using hg n m _ (hf n m x hx)) := by
   apply DirectedWall.ext
   · rfl
   · rfl
   · rfl
-  · simp only [map_label]
-    rw [← MonoidHom.comp_apply, ← GradedLieHom.completedMap_comp]
-    exact DFunLike.congr_fun
-      (GradedLieHom.completedMap_eq_of_toLieHom_eq (g.comp f)
-        ({ toLieHom := g.toLieHom.comp f.toLieHom
-           map_mem hx := by simpa using g.map_mem (f.map_mem hx) } :
-          GradedLieHom (PositiveDegreeMap.id d) ℒ ℋ) (by simp)) W.label
+  · simp only [map_label, GradedLieHom.completedMap_compId, MonoidHom.comp_apply]
 
 end Mei.DirectedWall

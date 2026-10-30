@@ -191,4 +191,23 @@ def leftToOverlap : LeftChamber t k →ₐ[R] Overlap t k :=
 theorem leftToOverlap_mk (z : NodeAlgebra R t) :
     leftToOverlap t k (Ideal.Quotient.mk _ z) = Ideal.Quotient.mk _ z := (rfl)
 
+/-- The quotient from the right chamber to the overlap. -/
+def rightToOverlap : RightChamber t k →ₐ[R] Overlap t k :=
+  Ideal.Quotient.factorₐ R (Ideal.span_mono (by simp))
+
+/-- The right chamber quotient keeps nodal representatives. -/
+@[simp]
+theorem rightToOverlap_mk (z : NodeAlgebra R t) :
+    rightToOverlap t k (Ideal.Quotient.mk _ z) = Ideal.Quotient.mk _ z := (rfl)
+
+/-- The right gluing map factors through the chamber-to-overlap quotient. -/
+theorem rightGluing_eq_comp_rightToOverlap (f : R) :
+    rightGluing t f k =
+      (IsScalarTower.toAlgHom R (Overlap t k) _).comp (rightToOverlap t k) := by
+  apply Ideal.Quotient.algHom_ext
+  apply AlgHom.ext
+  intro z
+  simp only [AlgHom.comp_apply, Ideal.Quotient.mkₐ_eq_mk, rightGluing_mk,
+    rightToOverlap_mk, IsScalarTower.toAlgHom_apply]
+
 end Mei.NodeAlgebra
