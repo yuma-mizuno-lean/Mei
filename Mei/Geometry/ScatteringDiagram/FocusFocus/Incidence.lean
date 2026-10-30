@@ -75,14 +75,11 @@ local notation "R" => S[T;T⁻¹]
 theorem leftToOverlap_upper (x : TruncatedExponentChamber K k 1) :
     leftToOverlap (C τ) k (upperTruncatedExponentChamber K k 1 x) =
       upperOverlap τ k (leftToOverlap (C τ) k x) := by
-  let e : TruncatedExponentChamber K k 1 ≃ₐ[R] TruncatedExponentChamber K k 1 :=
-    AlgEquiv.ofRingEquiv (f := (upperTruncatedExponentChamber K k 1).toRingEquiv)
-      (upperTruncatedExponentChamber_algebraMap K k 1)
-  have he : (leftToOverlap (C τ) k).comp e.toAlgHom =
+  have he : (leftToOverlap (C τ) k).comp (upperTruncatedExponentChamberₐ K k 1).toAlgHom =
       (upperOverlap τ k).toAlgHom.comp (leftToOverlap (C τ) k) := by
     apply Ideal.Quotient.algHom_ext
-    ext <;> simp [e]
-  exact AlgHom.congr_fun he x
+    ext <;> simp
+  simpa using AlgHom.congr_fun he x
 
 /-- The right chamber shear also commutes with its quotient to the overlap.
 This is the overlap square for a change of the right frame. -/
@@ -90,14 +87,11 @@ This is the overlap square for a change of the right frame. -/
 theorem rightToOverlap_upper (x : TruncatedExponentChamber K k 0) :
     rightToOverlap (C τ) k (upperTruncatedExponentChamber K k 0 x) =
       upperOverlap τ k (rightToOverlap (C τ) k x) := by
-  let e : TruncatedExponentChamber K k 0 ≃ₐ[R] TruncatedExponentChamber K k 0 :=
-    AlgEquiv.ofRingEquiv (f := (upperTruncatedExponentChamber K k 0).toRingEquiv)
-      (upperTruncatedExponentChamber_algebraMap K k 0)
-  have he : (rightToOverlap (C τ) k).comp e.toAlgHom =
+  have he : (rightToOverlap (C τ) k).comp (upperTruncatedExponentChamberₐ K k 0).toAlgHom =
       (upperOverlap τ k).toAlgHom.comp (rightToOverlap (C τ) k) := by
     apply Ideal.Quotient.algHom_ext
-    ext <;> simp [e]
-  exact AlgHom.congr_fun he x
+    ext <;> simp
+  simpa using AlgHom.congr_fun he x
 
 /-- The upper crossing after the left chamber shear equals the lower incidence
 on every chamber element, including classes killed by the overlap quotient. -/
@@ -125,15 +119,12 @@ on the left chamber and the identity on the right. The equivalence fixes the
 entire Laurent coefficient algebra over the truncated smoothing ring. -/
 def upperSlabEquiv :
     slabAlgebra (C τ) (1 + T 1) k ≃ₐ[R] upperSlabAlgebra τ k := by
-  let e : TruncatedExponentChamber K k 1 ≃ₐ[R] TruncatedExponentChamber K k 1 :=
-    AlgEquiv.ofRingEquiv (f := (upperTruncatedExponentChamber K k 1).toRingEquiv)
-      (upperTruncatedExponentChamber_algebraMap K k 1)
-  let f := AlgEquiv.prodCongr e (AlgEquiv.refl :
+  let f := AlgEquiv.prodCongr (upperTruncatedExponentChamberₐ K k 1) (AlgEquiv.refl :
     TruncatedExponentChamber K k 0 ≃ₐ[R] TruncatedExponentChamber K k 0)
   have hcomap : slabAlgebra (C τ) (1 + T 1) k =
       (upperSlabAlgebra τ k).comap f.toAlgHom := by
     ext z
-    exact (mem_upperSlabAlgebra_upper_iff K k z).symm
+    simp [f]
   have hmap : (slabAlgebra (C τ) (1 + T 1) k).map f.toAlgHom =
       upperSlabAlgebra τ k := by
     rw [hcomap]
@@ -144,12 +135,16 @@ def upperSlabEquiv :
 @[simp]
 theorem coe_upperSlabEquiv (z : slabAlgebra (C τ) (1 + T 1) k) :
     (upperSlabEquiv K k z).val =
-      (upperTruncatedExponentChamber K k 1 z.val.1, z.val.2) := (rfl)
+      (upperTruncatedExponentChamber K k 1 z.val.1, z.val.2) := by
+  simp [upperSlabEquiv, Prod.map]
 
 /-- Returning to the lower presentation applies the inverse shear on the left. -/
 @[simp]
 theorem coe_upperSlabEquiv_symm (z : upperSlabAlgebra τ k) :
     ((upperSlabEquiv K k).symm z).val =
-      ((upperTruncatedExponentChamber K k 1).symm z.val.1, z.val.2) := (rfl)
+      ((upperTruncatedExponentChamber K k 1).symm z.val.1, z.val.2) := by
+  have h := coe_upperSlabEquiv K k ((upperSlabEquiv K k).symm z)
+  simpa [Prod.map] using
+    congrArg (Prod.map (upperTruncatedExponentChamber K k 1).symm id) h.symm
 
 end Mei.FocusFocus
