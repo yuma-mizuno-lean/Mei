@@ -26,6 +26,7 @@ namespace DirectSum
 
 open Classical in
 /-- For a finite grading, summing all homogeneous components recovers the input. -/
+@[simp]
 theorem sum_univ_decompose {ι M S : Type*}
     [Fintype ι] [DecidableEq ι] [AddCommMonoid M]
     [SetLike S M] [AddSubmonoidClass S M]

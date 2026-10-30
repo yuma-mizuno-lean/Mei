@@ -84,6 +84,7 @@ variable [Fintype ι]
 
 /-- Summing all homogeneous histories recovers the original ordered composite.
 There is no restriction on which components or intermediate sums vanish. -/
+@[simp]
 theorem sum_homogeneousHistory {n : ℕ} (T : Fin n → Module.End R M) (a : M) :
     ∑ p : Fin n → ι, homogeneousHistory ℳ T p a = (List.ofFn T).prod a := by
   classical
