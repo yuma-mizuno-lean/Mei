@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.ScatteringDiagram.FocusFocus.OrderQuotient
-public import Mei.RingTheory.Node.Map
+public import Mei.RingTheory.Node.SlabMap
 
 /-!
 # Naturality of the focus-focus chamber dictionary
@@ -18,7 +18,8 @@ Thus the chamber dictionary compares quotient towers, rather than only their
 individual rings.
 
 We use Mathlib's `AdjoinRoot.map`, `Ideal.quotientMap` and coefficient maps of
-monoid algebras, and `Mei.NodeAlgebra.mapOfEq`. The coordinates
+monoid algebras, and `Mei.NodeAlgebra.mapOfEq` with the chamber maps
+`Mei.NodeAlgebra.rightChamberMap` and `Mei.NodeAlgebra.leftChamberMap`. The coordinates
 follow Gross–Siebert, *An Invitation to Toric Degenerations*, §2.2–2.3
 (arXiv:0808.2749v2).
 -/
@@ -136,14 +137,36 @@ private theorem nodeReduction_mk (p : MvPolynomial (Fin 2) S[ℤ]) :
       simpa using nodeReduction_coord φ hl j
   exact RingHom.congr_fun h p
 
+private theorem scalarReduction_C :
+    mapRingHom ℤ (AdjoinRoot.map φ (Polynomial.X ^ (k + 1)) (Polynomial.X ^ (l + 1))
+        (by simpa using (pow_dvd_pow (Polynomial.X : Polynomial K')
+          (Nat.add_le_add_right hl 1)))) (_root_.LaurentPolynomial.C τ) =
+      _root_.LaurentPolynomial.C τ' := by
+  simp only [← _root_.LaurentPolynomial.single_eq_C, mapRingHom_single, AdjoinRoot.map_root]
+
 /-- Change coefficients and reduce the order in the nodal chamber. The truncated
-scalar parameter is reduced by `AdjoinRoot.map`, and both node coordinates are fixed. -/
+scalar parameter is reduced by `AdjoinRoot.map`, and both node coordinates are fixed.
+This is `Mei.NodeAlgebra.rightChamberMap` for `i = 0` and
+`Mei.NodeAlgebra.leftChamberMap` for `i = 1`. -/
 def truncatedExponentChamberMap :
     TruncatedExponentChamber K k i →+* TruncatedExponentChamber K' l i :=
-  Ideal.quotientMap _ (nodeReduction φ hl) (by
-    rw [Ideal.span_le, Set.singleton_subset_iff, SetLike.mem_coe, Ideal.mem_comap, map_pow,
-      nodeReduction_coord, Ideal.mem_span_singleton]
-    exact pow_dvd_pow _ (by omega))
+  letI : Algebra S[ℤ] S'[ℤ] := (mapRingHom ℤ (AdjoinRoot.map φ (Polynomial.X ^ (k + 1))
+    (Polynomial.X ^ (l + 1)) (by simpa using (pow_dvd_pow (Polynomial.X : Polynomial K')
+      (Nat.add_le_add_right hl 1))))).toAlgebra
+  match i with
+  | 0 => (Mei.NodeAlgebra.rightChamberMap _ (scalarReduction_C φ hl) hl).toRingHom
+  | 1 => (Mei.NodeAlgebra.leftChamberMap _ (scalarReduction_C φ hl) hl).toRingHom
+
+private theorem truncatedExponentChamberMap_quotient_mk
+    (z : NodeAlgebra S[ℤ] (_root_.LaurentPolynomial.C τ)) :
+    truncatedExponentChamberMap φ hl i (Ideal.Quotient.mk _ z) =
+      Ideal.Quotient.mk _ (nodeReduction φ hl z) := by
+  let : Algebra S[ℤ] S'[ℤ] := (mapRingHom ℤ (AdjoinRoot.map φ (Polynomial.X ^ (k + 1))
+    (Polynomial.X ^ (l + 1)) (by simpa using (pow_dvd_pow (Polynomial.X : Polynomial K')
+      (Nat.add_le_add_right hl 1))))).toAlgebra
+  match i with
+  | 0 => exact Mei.NodeAlgebra.rightChamberMap_mk _ (scalarReduction_C φ hl) hl z
+  | 1 => exact Mei.NodeAlgebra.leftChamberMap_mk _ (scalarReduction_C φ hl) hl z
 
 /-- On polynomial representatives the nodal chamber map changes only coefficients. -/
 @[simp]
@@ -155,7 +178,7 @@ theorem truncatedExponentChamberMap_mk (p : MvPolynomial (Fin 2) S[ℤ]) :
           (Polynomial.X ^ (k + 1)) (Polynomial.X ^ (l + 1))
         (by simpa using (pow_dvd_pow (Polynomial.X : Polynomial K')
           (Nat.add_le_add_right hl 1))))) p)) := by
-  rw [truncatedExponentChamberMap, Ideal.quotientMap_mk, nodeReduction_mk]
+  rw [truncatedExponentChamberMap_quotient_mk, nodeReduction_mk]
 
 /-- Both nodal coordinates retain their quotient classes. -/
 @[simp]
@@ -163,7 +186,7 @@ theorem truncatedExponentChamberMap_coord (j : Fin 2) :
     truncatedExponentChamberMap φ hl i
         (Ideal.Quotient.mk _ (NodeAlgebra.coord (_root_.LaurentPolynomial.C τ) j)) =
       Ideal.Quotient.mk _ (NodeAlgebra.coord (_root_.LaurentPolynomial.C τ') j) := by
-  rw [truncatedExponentChamberMap, Ideal.quotientMap_mk, nodeReduction_coord]
+  rw [truncatedExponentChamberMap_quotient_mk, nodeReduction_coord]
 
 /-- The coefficient Laurent algebra is reduced by the usual truncated scalar map. -/
 @[simp]
@@ -172,8 +195,8 @@ theorem truncatedExponentChamberMap_algebraMap (a : S[ℤ]) :
       algebraMap S'[ℤ] _ (mapRingHom ℤ (AdjoinRoot.map φ (Polynomial.X ^ (k + 1))
         (Polynomial.X ^ (l + 1)) (by simpa using
           (pow_dvd_pow (Polynomial.X : Polynomial K') (Nat.add_le_add_right hl 1)))) a) := by
-  rw [← Ideal.Quotient.mk_algebraMap, truncatedExponentChamberMap,
-    Ideal.quotientMap_mk, nodeReduction_algebraMap, Ideal.Quotient.mk_algebraMap]
+  rw [← Ideal.Quotient.mk_algebraMap, truncatedExponentChamberMap_quotient_mk,
+    nodeReduction_algebraMap, Ideal.Quotient.mk_algebraMap]
 
 /-- Coefficient change and cutoff reduction commute with the chamber dictionary. -/
 @[simp]
