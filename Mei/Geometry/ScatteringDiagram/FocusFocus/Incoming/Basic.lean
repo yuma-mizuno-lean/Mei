@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.Affine.FiniteRay.Hyperplane
-public import Mathlib.Algebra.MonoidAlgebra.Defs
+public import Mathlib.Algebra.MonoidAlgebra.MapDomain
 
 /-!
 # Incoming-chamber rays for the focus-focus slab
@@ -229,5 +229,16 @@ theorem incomingSlabWeightedEvaluation_eq :
   · have : IsEmpty (IncomingSlabBrokenLine c n b Q) :=
       ⟨fun β => h ⟨β.exponent_ne_zero, β.off_slab, β.incoming_side⟩⟩
     simp [incomingSlabWeightedEvaluation]
+
+open AddMonoidAlgebra in
+/-- Incoming proper rays specialize coefficientwise, including when the
+specialization kills the incoming coefficient. -/
+theorem map_incomingSlabWeightedEvaluation {R S : Type*} [Semiring R] [Semiring S]
+    (φ : R →+* S) (c : R) (n b : ℤ)
+    (Q : ℝ × ℝ) :
+    mapRingHom (ℤ × ℤ) φ (incomingSlabWeightedEvaluation c n b Q) =
+      incomingSlabWeightedEvaluation (φ c) n b Q := by
+  simp only [incomingSlabWeightedEvaluation_eq]
+  split_ifs <;> simp
 
 end Mei.FocusFocus

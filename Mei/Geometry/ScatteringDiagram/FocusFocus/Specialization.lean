@@ -218,16 +218,6 @@ theorem mapRingHom_slabWeightedEvaluation (φ : R →+* S) (t c : R)
     _ = _ := Fintype.sum_equiv (SlabBrokenLine.mapEquiv φ) _ _
       (fun β => (β.val.decoration_map φ β.property).symm)
 
-/-- Incoming proper rays specialize coefficientwise, including when the
-specialization kills the incoming coefficient. -/
-theorem map_incomingSlabWeightedEvaluation {R S : Type*} [Semiring R] [Semiring S]
-    (φ : R →+* S) (c : R) (n b : ℤ)
-    (Q : ℝ × ℝ) :
-    mapRingHom (ℤ × ℤ) φ (incomingSlabWeightedEvaluation c n b Q) =
-      incomingSlabWeightedEvaluation (φ c) n b Q := by
-  simp only [incomingSlabWeightedEvaluation_eq]
-  split_ifs <;> simp
-
 /-- The complete focus-focus evaluation, with its incoming, crossing and stationary
 sectors, commutes with coefficient maps and hence with smoothing-order reduction. -/
 @[simp]
