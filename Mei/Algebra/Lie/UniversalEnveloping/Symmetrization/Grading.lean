@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Algebra.Lie.UniversalEnveloping.Grading
-public import Mei.Algebra.Lie.UniversalEnveloping.Symmetrization
+public import Mei.Algebra.Lie.UniversalEnveloping.Symmetrization.Basic
 public import Mei.LinearAlgebra.SymmetricAlgebra.Grading
 
 /-!
