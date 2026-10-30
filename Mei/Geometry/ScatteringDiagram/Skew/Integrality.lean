@@ -46,7 +46,7 @@ its factors are again of the form `Ψ[tn]^(s κ(tn))` with `s` an integer.
 ## References
 
 * Tomoki Nakanishi, *Cluster algebras and scattering diagrams, Part III*, §5.2, the lemma
-  that `Ψ[tn]^(s δ(tn))` acts on `ℤ[[P̃]]` if and only if `s` is an integer,
+  that `Ψ[tn]^(s δ(tn))` acts on `ℤ[[P_pr]]` if and only if `s` is an integer,
   arXiv:2111.00800v6.
 * Gross–Hacking–Keel–Kontsevich, *Canonical bases for cluster algebras*, §1.1 and
   Appendix B, arXiv:1411.1394v2, for the principal realization.
