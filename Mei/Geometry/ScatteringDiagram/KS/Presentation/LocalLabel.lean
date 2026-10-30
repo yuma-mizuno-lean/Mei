@@ -15,8 +15,10 @@ At a regular point of the complex of an indexed presentation, its local label is
 the product of precisely the active indexed labels whose supports contain the
 point. This includes points off every support, where the product is empty.
 Repeated supports retain their separate factors, and cancellation is allowed.
-The same formula computes each projection of the completed local germ, even when
-the complexes change with the cutoff.
+Together with `CompletedDiagram.projection_germLabel` and
+`IndexedWallPresentation.toCompletedDiagram_diagram`, the finite formula computes
+each projection of the completed local germ, even when the complexes change with
+the cutoff.
 
 This bridges the cellwise construction `IndexedWallPresentation.toKSComplex`
 and `CompletedDiagram.germLabel`: recovering an arbitrary completed diagram from
@@ -91,19 +93,5 @@ theorem localLabel_toKSComplex_eq_prod (k : ℕ) (θ : V)
   rw [D.localLabel_toKSComplex k θ hθ]
   exact (Finset.noncommProd_congr he (fun _ _ => rfl) _).trans
     (Finset.noncommProd_toFinset l _ _ hl)
-
-/-- Each projection of the completed local germ is the finite product of the
-active indexed labels through that point, with no stabilization assumption. -/
-@[simp↓]
-theorem projection_germLabel_toCompletedDiagram (θ : V)
-    (hθ : ∀ k, θ ∉ singularSupport (fun Q : (D.levelComplex k).walls => (Q : Set V)))
-    (k : ℕ) :
-    CompletedGroup.projection k (D.toCompletedDiagram.germLabel θ hθ) =
-      (D.wallIndices k {θ}).noncommProd
-        (fun j : D.active k => CompletedGroup.projection k (D.wall j).label)
-        (D.wallIndices_singleton_pairwise_commute k θ
-          (fun hs => hθ k (D.singularSupport_active_subset k hs))) := by
-  rw [CompletedDiagram.projection_germLabel, toCompletedDiagram_diagram,
-    D.localLabel_toKSComplex k θ (hθ k)]
 
 end Mei.IndexedWallPresentation
