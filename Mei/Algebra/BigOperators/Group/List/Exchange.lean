@@ -5,7 +5,7 @@ Authors: Claude
 -/
 module
 
-public import Mathlib.Algebra.BigOperators.Group.List.Basic
+public import Mei.Algebra.BigOperators.Group.List.Basic
 public import Mathlib.Data.List.Chain
 public import Mathlib.Data.Multiset.Bind
 public import Mathlib.Data.Multiset.DershowitzManna
@@ -113,11 +113,15 @@ private theorem exists_inversions_exchange {x y : F} (hxy : bad x y) (hyx : ¬ b
       crossInv bad A [x] + crossInv bad A [y] + crossInv bad A B,
     inversions bad M + crossInv bad M [x] + crossInv bad [y] M + crossInv bad M B +
       crossInv bad A M, ?_, ?_, ?_⟩
-  · rw [show A ++ x :: y :: B = A ++ ([x] ++ [y] ++ B) from rfl]
+  · -- `inversions_append` splits append blocks, not cons cells. Expose `[x]` and `[y]`
+    -- so it separates their mutual inversion from those involving `A` or `B`.
+    rw [show A ++ x :: y :: B = A ++ ([x] ++ [y] ++ B) from rfl]
     simp only [inversions_append, inversions_singleton, crossInv_append_left,
       crossInv_append_right, crossInv_singleton_of_bad bad hxy]
     abel
-  · rw [show A ++ y :: (M ++ x :: B) = A ++ ([y] ++ M ++ [x] ++ B) by simp]
+  · -- Expose `[y]`, `M`, and `[x]` as append blocks for `inversions_append`; the
+    -- cons form hides these boundaries, and the appends also need reassociation.
+    rw [show A ++ y :: (M ++ x :: B) = A ++ ([y] ++ M ++ [x] ++ B) by simp]
     simp only [inversions_append, inversions_singleton, crossInv_append_left,
       crossInv_append_right, crossInv_singleton_of_not bad hyx]
     abel
@@ -138,19 +142,6 @@ private theorem exists_inversions_exchange {x y : F} (hxy : bad x y) (hyx : ¬ b
       exact ⟨.inr h₂, by simp [h₁], by simp [h₂]⟩
 
 end Inversions
-
-/-- Deleting factors that evaluate to `1` does not change a product, as for
-`Finset.prod_filter_of_ne`. The monoid need not be commutative. -/
-@[to_additive /-- Deleting terms that evaluate to `0` does not change a sum. -/]
-theorem prod_map_filter_of_ne {p : F → Prop} [DecidablePred p] {e : F → G} (l : List F)
-    (h : ∀ x ∈ l, e x ≠ 1 → p x) : ((l.filter p).map e).prod = (l.map e).prod := by
-  induction l with
-  | nil => rfl
-  | cons a l ih =>
-    have ih := ih fun x hx => h x (mem_cons_of_mem a hx)
-    by_cases ha : p a
-    · simp [ha, ih]
-    · simp [ha, ih, not_not.mp (mt (h a mem_cons_self) ha)]
 
 /-- **Exchange ordering.** Suppose that factors of degree above `k` evaluate to `1`, that
 `bad` is asymmetric, and that each bad adjacent pair `x y` of degree at most `k` can be
