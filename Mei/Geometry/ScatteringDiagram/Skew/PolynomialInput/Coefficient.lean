@@ -7,7 +7,6 @@ module
 
 public import Mei.Geometry.ScatteringDiagram.Skew.PolynomialInput.Pairing
 public import Mei.Geometry.ScatteringDiagram.Skew.Coefficient.Completion
-public import Mei.RingTheory.FilteredAlgebra.AlgHom
 public import Mei.Algebra.Lie.Logarithmic.Pairing.Specialization
 
 /-!
