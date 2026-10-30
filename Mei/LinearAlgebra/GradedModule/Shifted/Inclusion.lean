@@ -48,6 +48,13 @@ def shiftedCompletedInclusion : d.ShiftedCoefficients ℳ p →ₗ[R] d.ShiftedC
     (shiftedSupportInclusion ℳ d.monoid p q hpq) id monotone_id
     (fun k => d.shiftedSupportInclusion_filtered ℳ p q hpq (k + 1))
 
+/-- The support inclusion is the completion map with identity cutoff modulus. -/
+theorem shiftedCompletedInclusion_def :
+    d.shiftedCompletedInclusion ℳ p q hpq =
+      (d.shiftedFiltration ℳ p).completionMap (d.shiftedFiltration ℳ q)
+        (shiftedSupportInclusion ℳ d.monoid p q hpq) id monotone_id
+        (fun k => d.shiftedSupportInclusion_filtered ℳ p q hpq (k + 1)) := (rfl)
+
 /-- The completed inclusion has the corresponding finite quotient maps as projections. -/
 @[simp]
 theorem projection_shiftedCompletedInclusion (k : ℕ) (x : d.ShiftedCoefficients ℳ p) :
