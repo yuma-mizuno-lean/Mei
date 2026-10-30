@@ -162,12 +162,15 @@ theorem mem_admissibleBackwardDomain (r : AdmissibleRayRealization f c v P W S C
 end AdmissibleRayRealization
 
 /-- Realize an admissible endpoint by the unique continuous ray of its transverse
-itinerary. No properness or nonzero incoming direction is required. -/
-def admissibleRayRealization (hf : ∀ j, f j (v j.castSucc) ≠ 0)
-    (hQ : Q ∈ admissibleBackwardDomain f c v P W S C) :
+itinerary. Transversality follows from admission; no properness or nonzero
+incoming direction is required. -/
+def admissibleRayRealization (hQ : Q ∈ admissibleBackwardDomain f c v P W S C) :
     AdmissibleRayRealization f c v P W S C Q := by
   have hpos := fun j => ((mem_backwardDomain _ _ _ _ _).mp
     (admissibleBackwardDomain_subset_backwardDomain f c v P W S C hQ) j).1
+  have hf (j) : f j (v j.castSucc) ≠ 0 := by
+    intro hj
+    simpa only [backwardTime_apply, hj, div_zero, lt_self_iff_false] using hpos j
   obtain ⟨hP, hW, hC, hS, hoff⟩ :=
     (mem_admissibleBackwardDomain_iff f c v P W S C Q hpos).mp hQ
   refine {
@@ -195,28 +198,28 @@ def admissibleRayRealization (hf : ∀ j, f j (v j.castSucc) ≠ 0)
 
 /-- The constructor uses the affine cumulative encounter parameters. -/
 @[simp]
-theorem parameter_admissibleRayRealization (hf : ∀ j, f j (v j.castSucc) ≠ 0)
+theorem parameter_admissibleRayRealization
     (hQ : Q ∈ admissibleBackwardDomain f c v P W S C) (j : Fin (n + 1)) :
-    (admissibleRayRealization f c v P W S C Q hf hQ).parameter j =
+    (admissibleRayRealization f c v P W S C Q hQ).parameter j =
       backwardParameter f c (fun j => v j.castSucc) j Q := (rfl)
 
 /-- The constructor uses the backward ray of its admitted endpoint. -/
 @[simp]
-theorem ray_admissibleRayRealization (hf : ∀ j, f j (v j.castSucc) ≠ 0)
+theorem ray_admissibleRayRealization
     (hQ : Q ∈ admissibleBackwardDomain f c v P W S C) :
-    (admissibleRayRealization f c v P W S C Q hf hQ).ray =
+    (admissibleRayRealization f c v P W S C Q hQ).ray =
       backwardRay f c v Q (fun j => ((mem_backwardDomain _ _ _ _ _).mp
         (admissibleBackwardDomain_subset_backwardDomain f c v P W S C hQ) j).1) := (rfl)
 
-/-- A transverse itinerary is realizable at exactly the endpoints in its
-admissible domain. In particular, the additional constraints impose no hidden
-conditions beyond the stated continuous-path requirements. -/
+/-- An itinerary is realizable at exactly the endpoints in its admissible domain.
+In particular, tangent steps give empty domains, and the additional constraints
+impose no hidden conditions beyond the stated continuous-path requirements. -/
 @[simp]
-theorem nonempty_admissibleRayRealization_iff (hf : ∀ j, f j (v j.castSucc) ≠ 0) :
+theorem nonempty_admissibleRayRealization_iff :
     Nonempty (AdmissibleRayRealization f c v P W S C Q) ↔
       Q ∈ admissibleBackwardDomain f c v P W S C :=
   ⟨fun ⟨r⟩ => r.mem_admissibleBackwardDomain,
-    fun hQ => ⟨admissibleRayRealization f c v P W S C Q hf hQ⟩⟩
+    fun hQ => ⟨admissibleRayRealization f c v P W S C Q hQ⟩⟩
 
 section Rational
 
@@ -252,7 +255,7 @@ section Family
 variable {H : Type*} (m : H → ℕ)
   (F : ∀ a, Fin (m a) → V →L[ℝ] ℝ) (b : ∀ a, Fin (m a) → ℝ)
   (u : ∀ a, Fin (m a + 1) → V) (A : ∀ a, Fin (m a) → Set V)
-  (source : H → Set V) (hf : ∀ a j, F a j (u a j.castSucc) ≠ 0)
+  (source : H → Set V)
 
 /-- The actual realization fiber of a family is precisely its admitted labels.
 Overlapping domains retain distinct labels, and every label has its unique ray
@@ -261,7 +264,7 @@ def admissibleRayFiberEquiv :
     (Σ a, AdmissibleRayRealization (F a) (b a) (u a) (A a) W S (source a) Q) ≃
       {a // Q ∈ admissibleBackwardDomain (F a) (b a) (u a) (A a) W S (source a)} where
   toFun r := ⟨r.1, r.2.mem_admissibleBackwardDomain⟩
-  invFun a := ⟨a.val, admissibleRayRealization _ _ _ _ _ _ _ _ (hf a.val) a.property⟩
+  invFun a := ⟨a.val, admissibleRayRealization _ _ _ _ _ _ _ _ a.property⟩
   left_inv := by
     rintro ⟨a, r⟩
     exact congrArg (Sigma.mk a) (Subsingleton.elim _ _)
@@ -271,14 +274,14 @@ def admissibleRayFiberEquiv :
 @[simp]
 theorem admissibleRayFiberEquiv_apply_val
     (r : Σ a, AdmissibleRayRealization (F a) (b a) (u a) (A a) W S (source a) Q) :
-    (admissibleRayFiberEquiv W S Q m F b u A source hf r).val = r.1 := (rfl)
+    (admissibleRayFiberEquiv W S Q m F b u A source r).val = r.1 := (rfl)
 
 /-- An admitted label is sent back to its unique backward realization. -/
 @[simp]
 theorem admissibleRayFiberEquiv_symm_apply
     (a : {a // Q ∈ admissibleBackwardDomain (F a) (b a) (u a) (A a) W S (source a)}) :
-    (admissibleRayFiberEquiv W S Q m F b u A source hf).symm a =
-      ⟨a.val, admissibleRayRealization _ _ _ _ _ _ _ _ (hf a.val) a.property⟩ := (rfl)
+    (admissibleRayFiberEquiv W S Q m F b u A source).symm a =
+      ⟨a.val, admissibleRayRealization _ _ _ _ _ _ _ _ a.property⟩ := (rfl)
 
 variable {N : Type*} [AddCommGroup N] {i : N →+ V}
   {h : TauCeti.Toric.IsIntegralLattice i} [Finite H] [Finite J] [Finite K]
@@ -288,7 +291,6 @@ variable {N : Type*} [AddCommGroup N] {i : N →+ V}
 locally constant by itinerary label. The domain includes all avoidance and
 source constraints, so no extra admissibility assumptions are needed nearby. -/
 theorem exists_admissibleRayFiber_membershipArrangement
-    (htrans : ∀ a j, F a j (i (w a j.castSucc)) ≠ 0)
     (hF : ∀ a j, Toric.IsRationalFunctional h (F a j).toLinearMap)
     (hA : ∀ a j, IsRationalSemilinear h (A a j))
     (hW : ∀ a, IsRationalNormalPolyhedron h (W a))
@@ -308,8 +310,8 @@ theorem exists_admissibleRayFiber_membershipArrangement
   refine ⟨E, hfrontier, fun Q hQ => (hstable Q hQ).mono fun Q' hQQ' => ?_⟩
   let e := Equiv.subtypeEquivRight (fun a => (hQQ' a).symm)
   refine ⟨((admissibleRayFiberEquiv W S Q m F b
-    (fun a j => i (w a j)) A source htrans).trans e).trans
-    (admissibleRayFiberEquiv W S Q' m F b (fun a j => i (w a j)) A source htrans).symm, ?_⟩
+    (fun a j => i (w a j)) A source).trans e).trans
+    (admissibleRayFiberEquiv W S Q' m F b (fun a j => i (w a j)) A source).symm, ?_⟩
   intro r
   rfl
 
