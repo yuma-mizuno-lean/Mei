@@ -6,7 +6,6 @@ Authors: Codex
 module
 
 public import Mei.Topology.Algebra.ContinuousAffineMap
-public import Mei.Topology.Maps.Proper
 public import Mathlib.Data.Finsupp.Basic
 public import Mathlib.Order.Filter.Finite
 import Mathlib.Tactic.Module
@@ -362,7 +361,7 @@ omit [IsTopologicalAddGroup V] in
 @[simp]
 theorem incomingLine_velocity (β : FiniteAffineRay V P) :
     β.incomingLine.linear 1 = -β.incomingDirection := by
-  simp [incomingLine, ContinuousAffineMap.lineMap_toAffineMap, AffineMap.lineMap_linear]
+  simp [incomingLine]
 
 end Topology
 
@@ -375,21 +374,9 @@ variable [TopologicalSpace V] [IsTopologicalAddGroup V] [ContinuousSMul ℝ V]
 Finitely many bends may include zero-velocity segments without affecting properness. -/
 theorem isProperMap_restrict_Iic (β : FiniteAffineRay V P) (hv : β.incomingDirection ≠ 0)
     (b : ℝ) : IsProperMap (fun t : Iic b => β t) := by
-  let : T2Space P := (Homeomorph.vaddConst β.endpoint).t2Space
-  obtain ⟨a, ha⟩ := eventually_atBot.mp β.eventuallyEq_incomingLine
-  have hv' : β.incomingLine.contLinear 1 ≠ 0 := by
-    simpa only [ContinuousAffineMap.coe_contLinear, incomingLine_velocity, ne_eq,
-      neg_eq_zero] using hv
-  refine (β.incomingLine.isProperMap_restrict_Iic hv' b).of_eqOn_compl_isCompact
-    (K := Subtype.val ⁻¹' Icc a b)
-    (β.continuous.comp continuous_subtype_val)
-    (isClosed_Iic.isClosedEmbedding_subtypeVal.isCompact_preimage isCompact_Icc) ?_
-  intro t ht
-  apply ha t.val
-  have hn : ¬ a ≤ t.val := by
-    intro hat
-    exact ht ⟨hat, t.property⟩
-  exact (lt_of_not_ge hn).le
+  apply β.incomingLine.isProperMap_restrict_Iic_of_eventuallyEq β.continuous
+    β.eventuallyEq_incomingLine _ b
+  simpa only [ContinuousAffineMap.coe_contLinear, incomingLine_velocity, neg_ne_zero] using hv
 
 end Proper
 

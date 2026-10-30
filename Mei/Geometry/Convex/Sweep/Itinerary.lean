@@ -210,13 +210,6 @@ theorem isClosed_weakBackwardDomain {P : Fin n → Set V} (hP : ∀ i, IsClosed 
     (isClosed_Ici.preimage (backwardTime f c v i).continuous).inter
       ((hP i).preimage (backwardPoint f c v i.succ).continuous)
 
-/-- Closing any weak itinerary subdomain retains closed support incidences
-and nonnegative elapsed times. -/
-theorem closure_subset_weakBackwardDomain {D : Set V} {P : Fin n → Set V}
-    (hD : D ⊆ weakBackwardDomain f c v P) (hP : ∀ j, IsClosed (P j)) :
-    closure D ⊆ weakBackwardDomain f c v P :=
-  closure_minimal hD (isClosed_weakBackwardDomain f c v hP)
-
 /-- Elapsed times remain nonnegative on the closure of any endpoint family
 with nonnegative elapsed times, without support constraints. -/
 theorem backwardTime_nonneg_of_mem_closure {D : Set V}

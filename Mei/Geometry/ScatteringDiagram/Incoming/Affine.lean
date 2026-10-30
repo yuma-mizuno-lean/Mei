@@ -153,7 +153,7 @@ def line (Q : V) : ℝ →ᴬ[ℝ] V := ContinuousAffineMap.lineMap Q (Q - v S.d
 /-- The canonical incoming line has the prescribed velocity. -/
 @[simp]
 theorem line_velocity (Q : V) : (S.line Q).linear 1 = -v S.degree := by
-  simp [line, ContinuousAffineMap.lineMap_toAffineMap, AffineMap.lineMap_linear]
+  simp [line]
 
 /-- Evaluate a canonical incoming representative. -/
 @[simp]

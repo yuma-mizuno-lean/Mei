@@ -8,7 +8,7 @@ module
 public import Mathlib.Topology.Algebra.ContinuousAffineMap
 public import Mathlib.Topology.Algebra.Ring.Real
 public import Mathlib.Topology.Algebra.Module.FiniteDimension
-public import Mathlib.Topology.Maps.Proper.Basic
+public import Mei.Topology.Maps.Proper
 
 /-!
 # Evaluation and properness of continuous affine maps
@@ -16,8 +16,10 @@ public import Mathlib.Topology.Maps.Proper.Basic
 This module gives the evaluation of a real continuous affine functional along
 an affine ray in terms of its linear part. Nonzero-velocity real affine lines
 are closed embeddings, and their restrictions to closed incoming half-lines are
-proper. The embedding criterion is inherited from the linear part using
-Mathlib's `AffineMap.isClosedEmbedding_linear_iff`.
+proper. Continuous paths with the same incoming affine germ are also proper
+on closed incoming half-lines, using `IsProperMap.of_eqOn_compl_isCompact`.
+The embedding criterion is inherited from the linear part using Mathlib's
+`AffineMap.isClosedEmbedding_linear_iff`.
 -/
 
 public section
@@ -60,5 +62,18 @@ theorem isProperMap_restrict_Iic (hv : f.contLinear 1 ≠ 0) (a : ℝ) :
     IsProperMap (fun t : Iic a => f t) :=
   ((f.isClosedEmbedding_of_velocity_ne_zero hv).comp
     isClosed_Iic.isClosedEmbedding_subtypeVal).isProperMap
+
+/-- A continuous path with a nonzero-velocity incoming affine germ is proper
+on every closed incoming half-line. -/
+theorem isProperMap_restrict_Iic_of_eventuallyEq {γ : ℝ → P}
+    (hγ : Continuous γ) (heq : γ =ᶠ[Filter.atBot] f) (hv : f.contLinear 1 ≠ 0)
+    (b : ℝ) : IsProperMap (fun t : Iic b => γ t) := by
+  let : T2Space P := (Homeomorph.vaddConst (f 0)).t2Space
+  obtain ⟨a, ha⟩ := Filter.eventually_atBot.mp heq
+  refine (f.isProperMap_restrict_Iic hv b).of_eqOn_compl_isCompact
+    (K := Subtype.val ⁻¹' Icc a b) (hγ.comp continuous_subtype_val)
+    (isClosed_Iic.isClosedEmbedding_subtypeVal.isCompact_preimage isCompact_Icc) ?_
+  intro t ht
+  exact ha t.val (lt_of_not_ge (fun hat => ht ⟨hat, t.property⟩)).le
 
 end ContinuousAffineMap

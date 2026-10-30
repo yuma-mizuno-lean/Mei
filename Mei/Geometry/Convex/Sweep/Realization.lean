@@ -7,6 +7,7 @@ module
 
 public import Mei.Geometry.Convex.Sweep.Itinerary
 public import Mei.Geometry.Affine.FiniteRay.Basic
+public import Mei.Order.Filter.AtTopBot
 public import Mathlib.Algebra.BigOperators.Intervals
 
 /-!
@@ -275,32 +276,14 @@ theorem backwardRay_eventually_mem_iff (C : Set V) :
     (∀ᶠ t : ℝ in atBot, backwardRay f c v Q hpos t ∈ C) ↔
       ∀ᶠ s : ℝ in atTop,
         backwardPoint f c (fun j => v j.castSucc) (Fin.last n) Q + s • v (Fin.last n) ∈ C := by
-  have htop : Tendsto
-      (fun s : ℝ => backwardParameter f c (fun j => v j.castSucc) (Fin.last n) Q - s)
-      atTop atBot := by
-    simpa only [sub_eq_add_neg] using
-      tendsto_atBot_add_const_left atTop
-        (backwardParameter f c (fun j => v j.castSucc) (Fin.last n) Q) tendsto_neg_atTop_atBot
-  have hbot : Tendsto
-      (fun t : ℝ => backwardParameter f c (fun j => v j.castSucc) (Fin.last n) Q - t)
-      atBot atTop := by
-    simpa only [sub_eq_add_neg] using
-      tendsto_atTop_add_const_left atBot
-        (backwardParameter f c (fun j => v j.castSucc) (Fin.last n) Q) tendsto_neg_atBot_atTop
   have he : ∀ᶠ t : ℝ in atBot,
       backwardRay f c v Q hpos t =
         backwardPoint f c (fun j => v j.castSucc) (Fin.last n) Q +
           (backwardParameter f c (fun j => v j.castSucc) (Fin.last n) Q - t) • v (Fin.last n) :=
     (eventually_le_atBot _).mono fun t ht =>
       backwardRay_apply_incoming f c v Q hpos t ht
-  constructor
-  · intro h
-    filter_upwards [htop.eventually h, htop.eventually he] with s hs he'
-    rw [he'] at hs
-    simpa only [sub_sub_cancel] using hs
-  · intro h
-    filter_upwards [hbot.eventually h, he] with t ht he'
-    rwa [he']
+  exact (eventually_congr (he.mono fun t ht => by rw [ht])).trans
+    (eventually_const_sub_atBot _)
 
 /-- Every computed encounter is attained at its cumulative negative parameter. -/
 @[simp]

@@ -49,9 +49,17 @@ theorem closure_admissibleBackwardDomain_subset_weakBackwardDomain
     (hP : ∀ j, IsClosed (P j)) :
     closure (admissibleBackwardDomain f c v P W S C) ⊆
       weakBackwardDomain f c (fun j => v j.castSucc) P :=
-  closure_subset_weakBackwardDomain f c _
+  closure_minimal
     ((admissibleBackwardDomain_subset_backwardDomain f c v P W S C).trans
-      (backwardDomain_subset_weakBackwardDomain f c _ P)) hP
+      (backwardDomain_subset_weakBackwardDomain f c _ P))
+    (isClosed_weakBackwardDomain f c _ hP)
+
+/-- Every admitted endpoint has nonnegative elapsed times. -/
+theorem backwardTime_nonneg_of_mem_admissibleBackwardDomain
+    {Q : V} (hQ : Q ∈ admissibleBackwardDomain f c v P W S C) (j : Fin n) :
+    0 ≤ backwardTime f c (fun j => v j.castSucc) j Q :=
+  ((mem_backwardDomain f c _ P Q).mp
+    (admissibleBackwardDomain_subset_backwardDomain f c v P W S C hQ) j).1.le
 
 /-- Every limiting elapsed time is nonnegative, even if the selected supports
 are not closed. -/
@@ -59,9 +67,7 @@ theorem backwardTime_nonneg_of_mem_closure_admissibleBackwardDomain
     {Q : V} (hQ : Q ∈ closure (admissibleBackwardDomain f c v P W S C)) (j : Fin n) :
     0 ≤ backwardTime f c (fun j => v j.castSucc) j Q :=
   backwardTime_nonneg_of_mem_closure f c _
-    (fun Q hQ j =>
-      ((mem_backwardDomain f c _ P Q).mp
-        (admissibleBackwardDomain_subset_backwardDomain f c v P W S C hQ) j).1.le) hQ j
+    (fun _ hQ => backwardTime_nonneg_of_mem_admissibleBackwardDomain f c v P W S C hQ) hQ j
 
 /-- The extended path at an admitted endpoint is the actual admissible ray. -/
 @[simp]
@@ -98,9 +104,7 @@ theorem closure_image_backwardPath_admissibleBackwardDomain :
     closure (backwardPath f c v '' admissibleBackwardDomain f c v P W S C) =
       backwardPath f c v '' closure (admissibleBackwardDomain f c v P W S C) :=
   closure_image_backwardPath f c v
-    (fun Q hQ j =>
-      ((mem_backwardDomain f c _ P Q).mp
-        (admissibleBackwardDomain_subset_backwardDomain f c v P W S C hQ) j).1.le)
+    (fun _ hQ => backwardTime_nonneg_of_mem_admissibleBackwardDomain f c v P W S C hQ)
 
 variable {N : Type*} [AddCommGroup N] {i : N →+ V}
   {h : TauCeti.Toric.IsIntegralLattice i}
