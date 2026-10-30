@@ -15,7 +15,8 @@ The incoming diagram of a BLM polynomial input splits each initial polynomial
 `fᵢ = 1 + ∑ₛ pᵢₛ z^(s wᵢ)` into ray walls on the full cylinder over `eᵢ⊥`, one for every
 tangent supported ray of the finite alphabet lattice. Grouping these walls by the original
 index `i` is a function-wall grouping: the walls of a group share the cylinder and its
-primitive normal, the products of their labels at each cutoff reassemble the unsplit label
+primitive normal and projected monomial direction in `M`. The products of their labels
+at each cutoff reassemble the unsplit label
 `exp(log(fᵢ) ∂_(eᵢ))`, and this label acts on monomials by `z^p ↦ fᵢ^(⟨eᵢ, p⟩) z^p`.
 
 The polynomial `fᵢ` is the image of the polynomial with natural-number coefficients
@@ -51,10 +52,17 @@ local notation "ℒ" => tropicalVertexGrading (R := R) 𝒅 ρ
 
 /-- The grouping of the incoming ray walls by their initial polynomial. -/
 def incomingGrouping :
-    (I.incomingDiagram (R := R) h).FunctionWallGrouping B.unfrozenIndex where
+    (I.incomingDiagram (R := R) h).FunctionWallGrouping (AddMonoidHom.fst _ _) B.unfrozenIndex where
   group := Sigma.fst
   support_eq hj := by simp only [incomingDiagram_support, hj]
   normal_eq hj := by simp only [incomingDiagram_normal, hj]
+  projectedDirection_eq {j j'} hj hj0 hj'0 := by
+    simp only [incomingDiagram_label] at hj0 hj'0
+    obtain ⟨a, b, ha, hb, he⟩ := I.rayFactor_initialLabel_projectedDirection j.1 j.2.val hj0
+    obtain ⟨a', b', ha', hb', he'⟩ := I.rayFactor_initialLabel_projectedDirection j'.1 j'.2.val hj'0
+    refine ⟨b' * a, b * a', Nat.mul_pos hb' ha, Nat.mul_pos hb ha', ?_⟩
+    simp only [incomingDiagram_ray, AddMonoidHom.coe_fst]
+    rw [mul_smul, he, mul_smul, he', ← hj, smul_comm b' b]
   isPrimitive_normal j := by
     simpa only [incomingDiagram_normal] using I.isPrimitive_alphabetNormal j.1
 
@@ -101,23 +109,6 @@ variable (Q : AddSubmonoid (Module.Dual ℤ N × (I.Letter → ℤ)))
 
 local notation "G" => TropicalVertexCoefficientAction.filtration (R := R) 𝒅 Q
 
-/-- The initial polynomial `1 + ∑ₛ z^(letter (i, s))` as a unit of the completed
-coefficient algebra. -/
-def completedInitialFunction (i : B.unfrozenIndex) : (G).completionˣ :=
-  (isUnit_completedTropicalTangentInclusion 𝒅 ρ (χ i) Q
-    (I.toCompletion_tangentInitialFunction_sub_one_mem i)).unit
-
-omit [DecidableEq (Module.Dual ℤ N)] [Algebra ℚ R] [Module.Finite ℤ N] in
-/-- The initial function is the image of the initial polynomial. -/
-theorem coe_completedInitialFunction (i : B.unfrozenIndex) :
-    (I.completedInitialFunction (R := R) Q i : (G).completion) = (G).toCompletion
-      (1 + ∑ s : Fin (I.multiplicity i),
-        single (⟨PositiveDegrees.letter I.letterExponent ⟨i, s⟩,
-          (Fact.out : (PositiveDegrees.finiteAlphabet I.letterExponent).monoid ≤ Q)
-            (PositiveDegrees.letter_mem _ _)⟩ : Q) 1) := by
-  rw [completedInitialFunction, IsUnit.unit_spec, completedTropicalTangentInclusion_toCompletion,
-    I.tropicalTangentInclusion_tangentInitialFunction Q i]
-
 /-- The initial polynomial is the wall function of the grouped ray walls over it. -/
 theorem isWallFunction_incomingGrouping (i : B.unfrozenIndex) :
     (I.incomingGrouping (R := R) h).IsWallFunction ((G).completedBCHAction 𝒅 ℒ) i
@@ -128,20 +119,6 @@ theorem isWallFunction_incomingGrouping (i : B.unfrozenIndex) :
   rw [label_incomingGrouping]
   simpa only [incomingDiagram_normal, AddMonoidHom.id_apply] using
     I.completedBCHAction_initialLabel Q j.1 _ (I.coe_completedInitialFunction Q j.1) p c
-
-omit [DecidableEq (Module.Dual ℤ N)] [Algebra ℚ R] [Module.Finite ℤ N] in
-/-- The initial functions have natural-number coefficients, hence are positive for the
-image of `S[Q]` under any coefficient map. -/
-theorem isPositive_completedInitialFunction {S : Type*} [Semiring S] (φ : S →+* R)
-    (i : B.unfrozenIndex) :
-    (G).IsPositive (AddMonoidAlgebra.mapRingHom Q φ).rangeS
-      (I.completedInitialFunction Q i).val := by
-  rw [I.coe_completedInitialFunction Q i]
-  refine AlgFiltration.isPositive_toCompletion ⟨1 + ∑ s : Fin (I.multiplicity i),
-    single (⟨PositiveDegrees.letter I.letterExponent ⟨i, s⟩,
-      (Fact.out : (PositiveDegrees.finiteAlphabet I.letterExponent).monoid ≤ Q)
-        (PositiveDegrees.letter_mem _ _)⟩ : Q) 1, ?_⟩
-  simp only [map_add, map_one, map_sum, mapRingHom_single]
 
 /-- The grouping of the incoming diagram by initial polynomial is positive. -/
 theorem isPositive_incomingGrouping {S : Type*} [Semiring S] (φ : S →+* R) :
@@ -155,7 +132,8 @@ theorem isPositive_incomingGrouping {S : Type*} [Semiring S] (φ : S →+* R) :
 theorem isPositiveWallRepresentative_incomingDiagram {S : Type*} [Semiring S]
     (φ : S →+* R) :
     (I.incomingDiagram (R := R) h).IsPositiveWallRepresentative
-      ((G).completedBCHAction 𝒅 ℒ) (AddMonoidAlgebra.mapRingHom Q φ).rangeS :=
+      ((G).completedBCHAction 𝒅 ℒ) (AddMonoidAlgebra.mapRingHom Q φ).rangeS
+      (AddMonoidHom.fst _ _) :=
   (I.isPositive_incomingGrouping h Q φ).isPositiveWallRepresentative
 
 end Action

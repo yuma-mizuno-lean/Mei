@@ -6,20 +6,21 @@ Authors: Claude Code
 module
 
 public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.LocalCrossing
-public import Mei.RingTheory.FilteredAlgebra.Algebra
 public import Mei.RingTheory.FilteredAlgebra.Positive.Basic
-public import TauCeti.Algebra.Module.Primitive
 
 /-!
 # Function-wall groupings and positive wall representatives
 
 A directed diagram presents its walls one supported ray at a time. Positivity statements
 for scattering diagrams are instead stated for *function walls*: commuting ray walls on a
-common support with a common primitive coorientation are grouped, and the group acts on
-coefficient monomials by a single wall function `f`, as `z^p ↦ f^(ν(ρ p)) z^p`.
+common support with a common primitive coorientation and projected monomial direction
+are grouped. The group acts on coefficient monomials by a single wall function `f`,
+as `z^p ↦ f^(ν(ρ p)) z^p`.
 
 A `DirectedDiagram.FunctionWallGrouping` assigns each wall to a group, such that walls in
-one group have the same support and the same primitive normal. Their labels then commute.
+one group have the same support and the same primitive normal. Their nontrivial labels
+also have a common monomial direction under a fixed spatial projection `π`. Their labels
+then commute.
 At each cutoff the *group label* is the product of the projected labels of the active
 walls of the group (`FunctionWallGrouping.groupLabel`). These are compatible under
 truncation, and their limit is the completed *label* of the group
@@ -37,10 +38,11 @@ monomial `z^p` by multiplication by `f^(ν(ρ p))`, where `ν` is the group's no
 a grouping is positive if every group has a wall function that is positive in the sense
 of `AlgFiltration.IsPositive`, and a diagram is a *positive wall representative* if it
 admits a positive grouping (`DirectedDiagram.IsPositiveWallRepresentative`). Walls in
-one group may have different degree rays: only the common support and coorientation are
-used. For instance, the full cylinder over a polynomial with several monomial terms
-splits into ray walls of different directions in the lattice of independent coefficient
-variables, which reassemble into one function wall.
+one group may have different degree rays, but their nontrivial labels must have positively
+proportional projected generators. Identity labels impose no direction constraint. For
+instance, the full cylinder over a polynomial in a single spatial monomial splits into
+ray walls of different directions in the lattice of independent coefficient variables,
+which reassemble into one function wall under projection to the spatial lattice.
 
 These definitions follow the grouped wall functions of Gross–Hacking–Keel–Kontsevich,
 *Canonical bases for cluster algebras*, §1.1 and Theorem 1.13 (arXiv:1411.1394v2), and
@@ -71,24 +73,32 @@ variable {Γ Λ R L V : Type*} [AddCommGroup Γ] [AddCommGroup Λ]
   {i : Λ →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
   {H : DirectedWallSpaces ρ ℒ} {ι : Type u}
   (D : DirectedDiagram (d := d) h H ι)
+  {M : Type*} [AddCommGroup M]
 
 /-- A grouping of the walls of a directed diagram into function walls, indexed by `κ`.
 Walls in one group have the same support and the same normal, and every normal is
-primitive. Distinct groups may share a support. -/
+primitive. The nontrivial walls in a group have positively proportional monomial
+directions under the spatial projection `π`. Distinct groups may share a support. -/
 @[ext]
-structure FunctionWallGrouping (κ : Type*) where
+structure FunctionWallGrouping (π : Γ →+ M) (κ : Type*) where
   /-- The function wall containing each indexed ray wall. -/
   group : ι → κ
   /-- Walls in one group have the same support. -/
   support_eq {j j' : ι} : group j = group j' → (D.wall j).support = (D.wall j').support
   /-- Walls in one group have the same coorientation. -/
   normal_eq {j j' : ι} : group j = group j' → (D.wall j).normal = (D.wall j').normal
+  /-- Nontrivial walls in a group have the same projected monomial direction.
+  Positive integer multiples express equality of rational rays, including zero directions. -/
+  projectedDirection_eq {j j' : ι} : group j = group j' →
+    (D.wall j).label ≠ 1 → (D.wall j').label ≠ 1 →
+    ∃ a b : ℕ, 0 < a ∧ 0 < b ∧
+      a • π (D.wall j).ray.generator = b • π (D.wall j').ray.generator
   /-- The coorientations are primitive, so that wall functions are normalized. -/
   isPrimitive_normal (j : ι) : TauCeti.IsPrimitive (D.wall j).normal
 
 namespace FunctionWallGrouping
 
-variable {D} {κ : Type*} (G : D.FunctionWallGrouping κ)
+variable {D} {π : Γ →+ M} {κ : Type*} (G : D.FunctionWallGrouping π κ)
 
 /-- Walls in one group have commuting completed labels. -/
 theorem commute_label {j j' : ι} (hj : G.group j = G.group j') :
@@ -160,8 +170,9 @@ theorem combinedLabel_eq_groupLabel_inv {k : ℕ} {θ v : V}
   rw [← hneg, D.combinedLabel_neg k θ v hθ fun j hj => (hv j ((hg j).mp hj)).ne', inv_inv]
 
 /-- The group labels are compatible with the truncation maps of the BCH tower. -/
+@[simp]
 theorem map_groupLabel (g : κ) {k l : ℕ} (hkl : k ≤ l) :
-    (d.groupTower ℒ).map (homOfLE hkl).op (G.groupLabel g l) = G.groupLabel g k := by
+    (d.truncationMap ℒ hkl).bchGroupMap (G.groupLabel g l) = G.groupLabel g k := by
   classical
   let s := (Set.toFinite (D.active l)).toFinset.filter fun j => G.group j = g
   have hs : ∀ j ∈ s, G.group j = g := fun j hj => (Finset.mem_filter.mp hj).2
@@ -169,8 +180,9 @@ theorem map_groupLabel (g : κ) {k l : ℕ} (hkl : k ≤ l) :
     Finset.mem_filter.mpr ⟨(Set.toFinite _).mem_toFinset.mpr hj, hg⟩
   rw [G.groupLabel_eq_noncommProd g l s hs hl,
     G.groupLabel_eq_noncommProd g k s hs fun j hj hg => hl j (D.active_mono hkl hj) hg]
-  exact (Finset.map_noncommProd s _ _ _).trans
-    (Finset.noncommProd_congr rfl (fun j _ => CompletedGroup.map_projection k l hkl _) _)
+  refine (Finset.map_noncommProd s _ _ _).trans (Finset.noncommProd_congr rfl ?_ _)
+  intro j _
+  exact CompletedGroup.map_projection k l hkl (D.wall j).label
 
 /-- The completed label of the group `g`: the convergent product of the commuting labels
 of its walls, whose order-`k` projection is the group label. -/
@@ -206,7 +218,8 @@ theorem levelPathProduct_toPath_eq_projection_label {g : κ} {k : ℕ}
     G.combinedLabel_eq_groupLabel hθ hg hv, G.projection_label g k]
 
 /-- Two groups with the same walls have the same group label. -/
-theorem groupLabel_congr {κ' : Type*} (G' : D.FunctionWallGrouping κ') {g : κ} {g' : κ'}
+theorem groupLabel_congr {M' : Type*} [AddCommGroup M'] {π' : Γ →+ M'} {κ' : Type*}
+    (G' : D.FunctionWallGrouping π' κ') {g : κ} {g' : κ'}
     (hgg' : ∀ j, G.group j = g ↔ G'.group j = g') (k : ℕ) :
     G.groupLabel g k = G'.groupLabel g' k :=
   Finset.noncommProd_congr (by ext j; simp [hgg']) (fun _ _ => rfl) _
@@ -217,10 +230,12 @@ theorem groupLabel_eq_one {g : κ} (hg : ∀ j, G.group j ≠ g) (k : ℕ) : G.g
     (Finset.noncommProd_empty _ _)
 
 /-- The same grouping, with each group indexed by its set of walls. -/
-def toSet : D.FunctionWallGrouping (Set ι) where
+def toSet : D.FunctionWallGrouping π (Set ι) where
   group j := {j' | G.group j' = G.group j}
   support_eq {j _} hj := G.support_eq ((Set.ext_iff.mp hj j).mp rfl)
   normal_eq {j _} hj := G.normal_eq ((Set.ext_iff.mp hj j).mp rfl)
+  projectedDirection_eq {j _} hj :=
+    G.projectedDirection_eq ((Set.ext_iff.mp hj j).mp rfl)
   isPrimitive_normal := G.isPrimitive_normal
 
 @[simp]
@@ -238,6 +253,7 @@ theorem toSet_group_eq_iff (j : ι) (g : κ) :
     rw [toSet_group, hj]
 
 /-- The set-indexed group of the walls of `g` has the label of `g`. -/
+@[simp]
 theorem toSet_label (g : κ) : G.toSet.label {j | G.group j = g} = G.label g :=
   ((G.toSet.eq_label_iff _ _).mpr fun k => by
     rw [G.projection_label g k]
@@ -304,24 +320,25 @@ section WallFunction
 
 variable {Q : AddSubmonoid Γ} {F : AlgFiltration (AddMonoidAlgebra R Q)}
   (σ : d.completedBCHGroup ℒ →* (F.completion ≃ₐ[R] F.completion))
-  (P : Subsemiring (AddMonoidAlgebra R Q))
+  (P : Subsemiring (AddMonoidAlgebra R Q)) (π : Γ →+ M)
 
 /-- A positive wall representative: a directed diagram admitting a function-wall grouping
-all of whose wall functions are positive for `P`, for the coefficient action `σ`. -/
+all of whose wall functions are positive for `P`, for the coefficient action `σ` and
+fixed spatial projection `π`. -/
 def IsPositiveWallRepresentative : Prop :=
-  ∃ (κ : Type u) (G : D.FunctionWallGrouping κ), G.IsPositive σ P
+  ∃ (κ : Type u) (G : D.FunctionWallGrouping π κ), G.IsPositive σ P
 
 /-- The defining condition of a positive wall representative. -/
 theorem isPositiveWallRepresentative_iff :
-    D.IsPositiveWallRepresentative σ P ↔
-      ∃ (κ : Type u) (G : D.FunctionWallGrouping κ), G.IsPositive σ P :=
+    D.IsPositiveWallRepresentative σ P π ↔
+      ∃ (κ : Type u) (G : D.FunctionWallGrouping π κ), G.IsPositive σ P :=
   Iff.rfl
 
 /-- A positive grouping, indexed by a type in any universe, makes the diagram a positive
 wall representative. -/
 theorem FunctionWallGrouping.IsPositive.isPositiveWallRepresentative {κ : Type*}
-    {G : D.FunctionWallGrouping κ} (hG : G.IsPositive σ P) :
-    D.IsPositiveWallRepresentative σ P :=
+    {G : D.FunctionWallGrouping π κ} (hG : G.IsPositive σ P) :
+    D.IsPositiveWallRepresentative σ P π :=
   ⟨Set ι, G.toSet, hG.toSet⟩
 
 end WallFunction
