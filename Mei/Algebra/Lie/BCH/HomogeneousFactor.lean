@@ -82,6 +82,19 @@ theorem logComponent_eq_decompose (g : d.completedBCHGroup ℒ) {n : N} {k : ℕ
     LieIdeal.mkQ_apply]
   exact d.quotientComponent_mk ℒ F _ k n hn x
 
+/-- A trivial finite projection has zero logarithmic coefficient in every
+retained degree. -/
+theorem logComponent_eq_zero_of_projection_eq_one {g : d.completedBCHGroup ℒ}
+    {n : N} {k : ℕ} (hn : d.degree n ≤ k)
+    (hg : CompletedGroup.projection k g = 1) : d.logComponent ℒ g n = 0 := by
+  have hl : BCHGroup.log (L := d.truncatedLie ℒ k)
+      (CompletedGroup.projection k g) = 0 :=
+    (congrArg (BCHGroup.log (L := d.truncatedLie ℒ k)) hg).trans
+      (BCHGroup.log_one (L := d.truncatedLie ℒ k))
+  rw [d.logComponent_eq_decompose ℒ g hn (x := 0) ((map_zero _).trans hl.symm),
+    DirectSum.decompose_zero]
+  rfl
+
 /-- A completed label is determined by its logarithmic coefficients. -/
 theorem ext_logComponent {g g' : d.completedBCHGroup ℒ}
     (h : ∀ n, d.logComponent ℒ g n = d.logComponent ℒ g' n) : g = g' := by
