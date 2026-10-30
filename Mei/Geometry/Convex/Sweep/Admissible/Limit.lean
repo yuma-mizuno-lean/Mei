@@ -49,22 +49,16 @@ theorem closure_admissibleBackwardDomain_subset_weakBackwardDomain
     (hP : ∀ j, IsClosed (P j)) :
     closure (admissibleBackwardDomain f c v P W S C) ⊆
       weakBackwardDomain f c (fun j => v j.castSucc) P :=
-  closure_minimal
-    ((admissibleBackwardDomain_subset_backwardDomain f c v P W S C).trans
-      (backwardDomain_subset_weakBackwardDomain f c _ P))
-    (isClosed_weakBackwardDomain f c _ hP)
+  closure_subset_weakBackwardDomain f c _
+    (admissibleBackwardDomain_subset_backwardDomain f c v P W S C) hP
 
 /-- Every limiting elapsed time is nonnegative, even if the selected supports
 are not closed. -/
 theorem backwardTime_nonneg_of_mem_closure_admissibleBackwardDomain
     {Q : V} (hQ : Q ∈ closure (admissibleBackwardDomain f c v P W S C)) (j : Fin n) :
-    0 ≤ backwardTime f c (fun j => v j.castSucc) j Q := by
-  apply closure_minimal (s := admissibleBackwardDomain f c v P W S C)
-    (t := (backwardTime f c (fun j => v j.castSucc) j) ⁻¹' Ici 0) _
-    (isClosed_Ici.preimage (backwardTime f c (fun j => v j.castSucc) j).continuous) hQ
-  intro Q hQ
-  exact ((mem_backwardDomain _ _ _ _ _).mp
-    (admissibleBackwardDomain_subset_backwardDomain f c v P W S C hQ) j).1.le
+    0 ≤ backwardTime f c (fun j => v j.castSucc) j Q :=
+  backwardTime_nonneg_of_mem_closure f c _
+    (admissibleBackwardDomain_subset_backwardDomain f c v P W S C) hQ j
 
 /-- The extended path at an admitted endpoint is the actual admissible ray. -/
 @[simp]
@@ -90,36 +84,18 @@ evaluation at time zero recovers its endpoint. This is properness of the
 family in compact-open path space, without a nonzero-direction hypothesis. -/
 theorem isProperMap_backwardPath_closure_admissibleBackwardDomain :
     IsProperMap (fun Q : closure (admissibleBackwardDomain f c v P W S C) =>
-      backwardPath f c v Q.val) := by
-  have he : (fun Q : closure (admissibleBackwardDomain f c v P W S C) =>
-      backwardPath f c v Q.val 0) = Subtype.val := by
-    funext Q
-    exact backwardPath_apply_zero f c v
-      (backwardTime_nonneg_of_mem_closure_admissibleBackwardDomain f c v P W S C Q.property)
-  apply isProperMap_of_comp_of_t2
-    ((backwardPath f c v).continuous.comp continuous_subtype_val)
-    (continuous_eval_const (0 : ℝ))
-  -- Expose evaluation after composition to apply the endpoint identity `he`.
-  change IsProperMap (fun Q : closure (admissibleBackwardDomain f c v P W S C) =>
-    backwardPath f c v Q.val 0)
-  rw [he]
-  exact isClosed_closure.isClosedEmbedding_subtypeVal.isProperMap
+      backwardPath f c v Q.val) :=
+  isProperMap_backwardPath_restrict f c v isClosed_closure
+    (fun _ hQ => backwardTime_nonneg_of_mem_closure_admissibleBackwardDomain f c v P W S C hQ)
 
 /-- Every compact-open limiting path, and only such a path, is obtained by
 extending backward propagation to the closure of the full admissible domain.
 In particular there are no additional limits from escaping endpoints. -/
 theorem closure_image_backwardPath_admissibleBackwardDomain :
     closure (backwardPath f c v '' admissibleBackwardDomain f c v P W S C) =
-      backwardPath f c v '' closure (admissibleBackwardDomain f c v P W S C) := by
-  apply le_antisymm
-  · apply closure_minimal (image_mono subset_closure)
-    have hc := (isProperMap_backwardPath_closure_admissibleBackwardDomain
-      f c v P W S C).isClosedMap.isClosed_range
-    -- Present the restricted path family as a composition with the subtype inclusion.
-    change IsClosed (range ((backwardPath f c v) ∘
-      (Subtype.val : closure (admissibleBackwardDomain f c v P W S C) → V))) at hc
-    simpa only [range_comp, Subtype.range_coe_subtype, ofPred_mem_eq] using hc
-  · exact image_closure_subset_closure_image (backwardPath f c v).continuous
+      backwardPath f c v '' closure (admissibleBackwardDomain f c v P W S C) :=
+  closure_image_backwardPath f c v
+    (admissibleBackwardDomain_subset_backwardDomain f c v P W S C)
 
 variable {N : Type*} [AddCommGroup N] {i : N →+ V}
   {h : TauCeti.Toric.IsIntegralLattice i}
@@ -131,13 +107,7 @@ theorem backwardPath_eventually_mem_of_mem_closure_admissibleBackwardDomain
     (hC : IsRationalNormalPolyhedron h C)
     {Q : V} (hQ : Q ∈ closure (admissibleBackwardDomain f c v P W S C)) :
     ∀ᶠ t : ℝ in atBot, backwardPath f c v Q t ∈ C := by
-  apply (backwardPath_eventually_mem_iff f c v C).mpr
-  have hc : IsClosed {Q : V | ∀ᶠ s : ℝ in atTop,
-      backwardPoint f c (fun j => v j.castSucc) (Fin.last n) Q +
-        s • v (Fin.last n) ∈ C} :=
-    (hC.eventually_add_smul_mem (v (Fin.last n))).isClosed.preimage
-      (backwardPoint f c (fun j => v j.castSucc) (Fin.last n)).continuous
-  apply closure_minimal (s := admissibleBackwardDomain f c v P W S C) _ hc hQ
+  apply backwardPath_eventually_mem_of_mem_closure f c v C hC _ hQ
   intro Q hQ
   exact (mem_backwardIncomingDomain _ _ _ _ _ _ _ _).mp
     ((mem_admissibleBackwardDomain f c v P W S C Q).mp hQ).2.1 |>.2.2

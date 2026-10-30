@@ -7,6 +7,7 @@ module
 
 public import Mei.Geometry.Convex.Sweep.Realization
 public import Mei.Geometry.Convex.Polyhedron.Rational.Stratification
+public import Mei.Geometry.Convex.Polyhedron.Rational.Ray
 public import Mathlib.Topology.CompactOpen
 
 /-!
@@ -22,13 +23,16 @@ Every rational semilinear subdomain of a selected itinerary admits finitely many
 disjoint charts that are relative interiors of closed rational-normal polyhedra.
 On their closures the selected support incidences persist and elapsed times are
 nonnegative. Each closed chart has a proper inclusion into endpoint space
-because it is closed. Extra semilinear validity constraints may be imposed before
+because it is closed. Its path family is proper as well: evaluation at time zero
+recovers the endpoint. Extra semilinear validity constraints may be imposed before
 taking these charts; their boundary points need not satisfy strict avoidance
 conditions.
 
 Every extended path agrees eventually with its incoming affine line, regardless
 of time order. A nonzero incoming direction therefore makes each half-line proper;
 this compact-perturbation argument follows `FiniteAffineRay.isProperMap_restrict_Iic`.
+Eventual admission to a rational-normal polyhedral source persists at limiting
+endpoints, using `IsRationalNormalPolyhedron.eventually_add_smul_mem`.
 
 The backward parameterization follows Carl–Pumperla–Siebert, *A tropical view on
 Landau–Ginzburg models*, §4 (arXiv:2205.07753v2).
@@ -147,6 +151,37 @@ theorem backwardPath_apply_zero {Q : V}
     id_eq] using
     backwardPath_apply_parameter f c v hQ 0
 
+/-- The path family on any closed set with nonnegative elapsed times is proper
+in compact-open path space: evaluation at time zero recovers the endpoint. -/
+theorem isProperMap_backwardPath_restrict {K : Set V} (hK : IsClosed K)
+    (h0 : ∀ Q ∈ K, ∀ j, 0 ≤ backwardTime f c (fun j => v j.castSucc) j Q) :
+    IsProperMap (fun Q : K => backwardPath f c v Q.val) := by
+  have he : (fun Q : K => backwardPath f c v Q.val 0) = Subtype.val := by
+    funext Q
+    exact backwardPath_apply_zero f c v (h0 Q.val Q.property)
+  apply isProperMap_of_comp_of_t2
+    ((backwardPath f c v).continuous.comp continuous_subtype_val)
+    (continuous_eval_const (0 : ℝ))
+  -- Expose evaluation after composition to apply the endpoint identity `he`.
+  change IsProperMap (fun Q : K => backwardPath f c v Q.val 0)
+  rw [he]
+  exact hK.isClosedEmbedding_subtypeVal.isProperMap
+
+/-- The compact-open closure of any strict itinerary family consists exactly of
+extended paths at its limiting endpoints; no extra limits arise from escaping endpoints. -/
+theorem closure_image_backwardPath {D : Set V} {P : Fin n → Set V}
+    (hD : D ⊆ backwardDomain f c (fun j => v j.castSucc) P) :
+    closure (backwardPath f c v '' D) = backwardPath f c v '' closure D := by
+  apply le_antisymm
+  · apply closure_minimal (image_mono subset_closure)
+    have hc := (isProperMap_backwardPath_restrict f c v isClosed_closure
+      (fun _ hQ => backwardTime_nonneg_of_mem_closure f c _ hD hQ)).isClosedMap.isClosed_range
+    -- Present the restricted path family as a composition with the subtype inclusion.
+    change IsClosed (range ((backwardPath f c v) ∘
+      (Subtype.val : closure D → V))) at hc
+    simpa only [range_comp, Subtype.range_coe_subtype, ofPred_mem_eq] using hc
+  · exact image_closure_subset_closure_image (backwardPath f c v).continuous
+
 /-- With nonnegative elapsed times, the extended path retains the entire incoming
 half-line from the last encounter, even when encounters coincide. -/
 theorem backwardPath_apply_incoming {Q : V}
@@ -243,10 +278,25 @@ variable (P : Fin n → Set V)
 variable {N : Type*} [AddCommGroup N] {i : N →+ V}
   {h : TauCeti.Toric.IsIntegralLattice i}
 
+/-- Eventual admission to a rational-normal polyhedral source persists at
+limiting endpoints of any family whose incoming affine tails are admitted.
+No support, avoidance or time-order constraints are needed. -/
+theorem backwardPath_eventually_mem_of_mem_closure (C : Set V)
+    (hC : IsRationalNormalPolyhedron h C) {D : Set V}
+    (hD : D ⊆ {Q : V | ∀ᶠ s : ℝ in atTop,
+      backwardPoint f c (fun j => v j.castSucc) (Fin.last n) Q +
+        s • v (Fin.last n) ∈ C})
+    {Q : V} (hQ : Q ∈ closure D) :
+    ∀ᶠ t : ℝ in atBot, backwardPath f c v Q t ∈ C := by
+  apply (backwardPath_eventually_mem_iff f c v C).mpr
+  exact closure_minimal hD
+    ((hC.eventually_add_smul_mem (v (Fin.last n))).isClosed.preimage
+      (backwardPoint f c (fun j => v j.castSucc) (Fin.last n)).continuous) hQ
+
 /-- Any rational semilinear validity subdomain has finite closed degeneration
 charts. Their relative interiors partition precisely that domain; their closures retain
 nonnegative times and all selected closed-support incidences. Each chart inclusion
-into endpoint space is proper because the chart is closed. -/
+into endpoint space and its family of extended paths are proper. -/
 theorem exists_backwardClosedCharts {D : Set V}
     (hD : IsRationalSemilinear h D)
     (hvalid : D ⊆ backwardDomain f c (fun j => v j.castSucc) P)
@@ -254,17 +304,18 @@ theorem exists_backwardClosedCharts {D : Set V}
     ∃ (κ : Type) (_ : Finite κ) (K : κ → Set V),
       (∀ a, (K a).Nonempty ∧ IsRationalNormalPolyhedron h (K a) ∧
         K a ⊆ closure D ∧ K a ⊆ weakBackwardDomain f c (fun j => v j.castSucc) P ∧
-          IsProperMap (fun Q : K a => (Q : V))) ∧
+          IsProperMap (fun Q : K a => (Q : V)) ∧
+          IsProperMap (fun Q : K a => backwardPath f c v Q.val)) ∧
       (Pairwise fun a b => Disjoint (intrinsicInterior ℝ (K a))
         (intrinsicInterior ℝ (K b))) ∧ ⋃ a, intrinsicInterior ℝ (K a) = D := by
   obtain ⟨κ, hκ, K, hK, hdisj, hcover⟩ := hD.exists_disjoint_intrinsicInteriors
   refine ⟨κ, hκ, K, ?_, hdisj, hcover⟩
   intro a
-  have hweak : closure D ⊆ weakBackwardDomain f c (fun j => v j.castSucc) P :=
-    closure_minimal
-      (hvalid.trans (backwardDomain_subset_weakBackwardDomain f c _ P))
-      (isClosed_weakBackwardDomain f c _ hclosed)
+  have hweak := closure_subset_weakBackwardDomain f c _ hvalid hclosed
   exact ⟨(hK a).1, (hK a).2.1, (hK a).2.2, (hK a).2.2.trans hweak,
-    (hK a).2.1.isClosed.isProperMap_subtypeVal⟩
+    (hK a).2.1.isClosed.isProperMap_subtypeVal,
+    isProperMap_backwardPath_restrict f c v (hK a).2.1.isClosed
+      (fun Q hQ j => ((mem_weakBackwardDomain _ _ _ _ _).mp
+        (hweak ((hK a).2.2 hQ)) j).1)⟩
 
 end Mei.Convex
