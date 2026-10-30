@@ -73,11 +73,8 @@ theorem toCompletedDiagram_homogeneousPresentation_equivalent :
 original completed diagram is consistent. -/
 @[simp]
 theorem consistent_homogeneousPresentation_iff :
-    D.homogeneousPresentation.toCompletedDiagram.Consistent ↔ D.Consistent := by
-  have hrec := D.toCompletedDiagram_homogeneousPresentation_equivalent
-  simp only [equivalent_iff, ← FiniteWallDiagram.equivalent_def] at hrec
-  rw [consistent_iff, consistent_iff]
-  exact forall_congr' fun k => (hrec k).consistent_iff
+    D.homogeneousPresentation.toCompletedDiagram.Consistent ↔ D.Consistent :=
+  D.toCompletedDiagram_homogeneousPresentation_equivalent.consistent_iff
 
 /-- An arbitrary indexed presentation represents a completed diagram exactly
 when it is equivalent to that diagram's homogeneous presentation. This compares
