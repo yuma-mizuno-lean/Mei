@@ -43,6 +43,7 @@ theorem mem_normalWeight_iff (n : ℤ) (z : NodeAlgebra R a) :
   Submodule.mem_span_singleton
 
 /-- The normal monomial has its prescribed weight. -/
+@[simp high]
 theorem signedMonomial_mem_normalWeight (n : ℤ) :
     signedMonomial a n ∈ normalWeight a n :=
   Submodule.mem_span_singleton_self _
@@ -69,24 +70,6 @@ instance : SetLike.GradedMonoid (normalWeight a) where
 /-- The signed normal forms give the multiplicative normal-weight decomposition. -/
 instance : GradedAlgebra (normalWeight a) :=
   DirectSum.IsInternal.gradedAlgebra (isInternal_normalWeight a)
-
-/-- On an incoming left weight, the Laurent image reads the scalar coefficient
-without a factor of the nodal parameter. -/
-theorem leftLaurentMap_smul_signedMonomial_of_nonpos (n : ℤ) (hn : n ≤ 0) (c : R) :
-    leftLaurentMap a (c • signedMonomial a n) = AddMonoidAlgebra.single (-n) c := by
-  obtain ⟨d, hd⟩ := Int.eq_ofNat_of_zero_le (neg_nonneg.mpr hn)
-  have he : n = -(d : ℤ) := by omega
-  rw [he]
-  simp [Algebra.smul_def, ← C_eq_algebraMap, C, T,
-    AddMonoidAlgebra.single_mul_single, -single_eq_C_mul_T]
-
-/-- On an incoming right weight, the Laurent image reads the scalar coefficient
-without a factor of the nodal parameter. -/
-theorem rightLaurentMap_smul_signedMonomial_of_nonneg (n : ℤ) (hn : 0 ≤ n) (c : R) :
-    rightLaurentMap a (c • signedMonomial a n) = AddMonoidAlgebra.single n c := by
-  obtain ⟨d, rfl⟩ := Int.eq_ofNat_of_zero_le hn
-  simp [Algebra.smul_def, ← C_eq_algebraMap, C, T,
-    AddMonoidAlgebra.single_mul_single, -single_eq_C_mul_T]
 
 /-- The left chamber detects equality within every incoming normal weight. -/
 theorem leftLaurentMap_injOn_normalWeight (n : ℤ) (hn : n ≤ 0) :

@@ -113,6 +113,7 @@ variable (K : Type*) [CommRing K]
 local notation "τ" => AdjoinRoot.root (Polynomial.X ^ (k + 1) : Polynomial K)
 
 /-- Every left incoming lift has the horizontal weight of its full exponent. -/
+@[simp high]
 theorem leftChamberLift_mem_horizontalWeight (q : {q : ℤ × ℤ × ℤ | q.1 ≤ 0})
     (u : truncatedExponentChamberGrade K k 1 q.val) :
     leftChamberLift K k q u ∈ horizontalWeight τ k (AdjoinRoot.root_X_pow_pow (k + 1)) q.val.1 := by
@@ -126,6 +127,7 @@ theorem leftChamberLift_mem_horizontalWeight (q : {q : ℤ × ℤ × ℤ | q.1 �
   rw [hm]
 
 /-- Every right incoming lift has the horizontal weight of its full exponent. -/
+@[simp high]
 theorem rightChamberLift_mem_horizontalWeight (q : {q : ℤ × ℤ × ℤ | 0 ≤ q.1})
     (u : truncatedExponentChamberGrade K k 0 q.val) :
     rightChamberLift K k q u ∈
