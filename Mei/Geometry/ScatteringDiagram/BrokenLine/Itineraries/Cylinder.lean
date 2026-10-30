@@ -140,6 +140,59 @@ theorem cutoffDecoratedRayCylinderEquiv_parameter (r : Lifted) :
     (fun j => sign (r.itinerary.get j)) (fun j => A (r.itinerary.get j))
     W S C Q r.realization)
 
+/-- Lifting keeps the degree history. -/
+@[simp]
+theorem cutoffDecoratedRayCylinderEquiv_symm_history (r : Projected) :
+    HEq ((cutoffDecoratedRayCylinderEquiv ℳ v w W S C Q d U b g h sign A k).symm
+      r).realization.1.val r.realization.1.val := by
+  have hh := decoratedRayCylinderEquiv_history ℳ (fun j => U (r.itinerary.get j))
+    0 b v w (fun j => g (r.itinerary.get j)) (fun j => h (r.itinerary.get j))
+    (fun j => sign (r.itinerary.get j)) (fun j => A (r.itinerary.get j))
+    W S C Q ((decoratedRayCylinderEquiv ℳ (fun j => U (r.itinerary.get j)) 0 b v w
+      (fun j => g (r.itinerary.get j)) (fun j => h (r.itinerary.get j))
+      (fun j => sign (r.itinerary.get j)) (fun j => A (r.itinerary.get j))
+      W S C Q).symm r.realization)
+  rw [Equiv.apply_symm_apply] at hh
+  exact heq_of_eq hh.symm
+
+/-- Lifting keeps whole final decorations. -/
+@[simp↓]
+theorem cutoffDecoratedRayCylinderEquiv_symm_decoration (r : Projected) :
+    ((cutoffDecoratedRayCylinderEquiv ℳ v w W S C Q d U b g h sign A k).symm r).decoration =
+      r.decoration := by
+  rw [← cutoffDecoratedRayCylinderEquiv_decoration ℳ v w W S C Q d U b g h sign A k,
+    Equiv.apply_symm_apply]
+
+/-- The lift of a cutoff ray projects back to its complete path. -/
+@[simp]
+theorem cutoffDecoratedRayCylinderEquiv_symm_ray (r : Projected) :
+    ((cutoffDecoratedRayCylinderEquiv ℳ v w W S C Q d U b g h sign A k).symm
+      r).realization.2.ray.map (AffineMap.fst : V × V' →ᵃ[ℝ] V) = r.realization.2.ray := by
+  have hr := decoratedRayCylinderEquiv_ray ℳ (fun j => U (r.itinerary.get j)) 0 b v w
+    (fun j => g (r.itinerary.get j)) (fun j => h (r.itinerary.get j))
+    (fun j => sign (r.itinerary.get j)) (fun j => A (r.itinerary.get j))
+    W S C Q ((decoratedRayCylinderEquiv ℳ (fun j => U (r.itinerary.get j)) 0 b v w
+      (fun j => g (r.itinerary.get j)) (fun j => h (r.itinerary.get j))
+      (fun j => sign (r.itinerary.get j)) (fun j => A (r.itinerary.get j))
+      W S C Q).symm r.realization)
+  rw [Equiv.apply_symm_apply] at hr
+  exact hr.symm
+
+/-- Lifting keeps the entire encounter-parameter list at the cutoff. -/
+@[simp]
+theorem cutoffDecoratedRayCylinderEquiv_symm_parameter (r : Projected) :
+    HEq ((cutoffDecoratedRayCylinderEquiv ℳ v w W S C Q d U b g h sign A k).symm
+      r).realization.2.parameter r.realization.2.parameter := by
+  have hp := decoratedRayCylinderEquiv_parameter ℳ (fun j => U (r.itinerary.get j)) 0 b v w
+    (fun j => g (r.itinerary.get j)) (fun j => h (r.itinerary.get j))
+    (fun j => sign (r.itinerary.get j)) (fun j => A (r.itinerary.get j))
+    W S C Q ((decoratedRayCylinderEquiv ℳ (fun j => U (r.itinerary.get j)) 0 b v w
+      (fun j => g (r.itinerary.get j)) (fun j => h (r.itinerary.get j))
+      (fun j => sign (r.itinerary.get j)) (fun j => A (r.itinerary.get j))
+      W S C Q).symm r.realization)
+  rw [Equiv.apply_symm_apply] at hp
+  exact heq_of_eq hp.symm
+
 /-- The finite weighted sum over every cutoff itinerary is independent of the
 forgotten endpoint and equals the projected evaluation, with multiplicity retained. -/
 @[simp]
