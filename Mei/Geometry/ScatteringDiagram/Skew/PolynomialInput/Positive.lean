@@ -6,6 +6,7 @@ Authors: Claude Code
 module
 
 public import Mei.Geometry.ScatteringDiagram.Skew.PolynomialInput.Coefficient
+public import Mei.Algebra.MonoidAlgebra.Range
 public import Mei.Algebra.Lie.Logarithmic.Positive
 
 /-!
@@ -43,12 +44,9 @@ local notation "e" => I.principalDatum.principalPositiveDegrees
 local notation "𝒬" => I.principalDatum.principalCoefficientMonoid
   I.principalBasis.unfrozenBasis.positiveDegrees
 
-section Specialization
+section CoefficientImage
 
-variable {A R : Type*} [CommSemiring A] [CommRing R] (σ : A →+* R)
-
-local notation "F" => TropicalVertexCoefficientAction.filtration (R := R) d I.coefficientMonoid
-local notation "G" => TropicalVertexCoefficientAction.filtration (R := MvPolynomial I.Letter R) e 𝒬
+variable {A R : Type*} [CommSemiring A] [CommSemiring R] (σ : A →+* R)
 
 /-- The principal substitution sends `σ(A)[Q]` into the image of `A[a_{i,s}][Q']`. -/
 theorem principalCoefficientMap_mem_rangeS {x : R[I.coefficientMonoid]}
@@ -59,6 +57,15 @@ theorem principalCoefficientMap_mem_rangeS {x : R[I.coefficientMonoid]}
       ⟨single (I.principalCoefficientExponent q)
         (MvPolynomial.C a * MvPolynomial.monomial (I.coefficientMultiplicity q) 1),
         by simp⟩) hx
+
+end CoefficientImage
+
+section Specialization
+
+variable {A R : Type*} [CommSemiring A] [CommRing R] (σ : A →+* R)
+
+local notation "F" => TropicalVertexCoefficientAction.filtration (R := R) d I.coefficientMonoid
+local notation "G" => TropicalVertexCoefficientAction.filtration (R := MvPolynomial I.Letter R) e 𝒬
 
 /-- The principal substitution as a positive specialization from `σ(A)[Q]` to the image of
 `A[a_{i,s}][Q']`, with identity cutoff modulus. -/

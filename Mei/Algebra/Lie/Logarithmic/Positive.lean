@@ -5,6 +5,7 @@ Authors: Claude Code
 -/
 module
 
+public import Mei.Algebra.MonoidAlgebra.Range
 public import Mei.Algebra.Lie.Logarithmic.Pairing.Specialization
 public import Mei.RingTheory.FilteredAlgebra.Positive.Basic
 
@@ -16,11 +17,14 @@ A twisted coefficient change `r z^q ↦ φ(r) χ(q) z^q` on a coefficient monoid
 filtered for the positive-increment filtrations, with the identity cutoff modulus
 respectively the cutoff modulus of `T`. If it also maps a chosen positive subsemiring of
 `R[Q]` into one of the target, it is a positive specialization
-(`Mei.PositiveSpecialization`). Its completion map then intertwines the completed BCH
-actions of the coefficient Lie algebras with the induced map of labels. In particular it
-sends the represented action of a path product to the represented action of the
-transported path product. Consequently, if a label carries an element to a positive
-element, then the transported label carries the specialized element to a positive element.
+(`Mei.PositiveSpecialization`). For a tropical pairing, assume additionally that the
+pairing's evaluation identity holds on every coefficient exponent in `Q`. Under this
+hypothesis, its completion map intertwines the completed BCH actions of the coefficient
+Lie algebras with the induced map of labels. In particular it sends the represented action
+of a path product to the represented action of the transported path product. Consequently,
+if a label carries an element to a positive element, then the transported label carries the
+specialized element to a positive element. The monoid-local case needs no additional
+evaluation hypothesis.
 
 The positive subsemirings of interest are images `ι(A)[Q]` of coefficient semirings, such
 as `ℕ[A][Q] ⊆ ℚ[A][Q]`. The twisted maps send `ι(A)[Q]` into `ι'(A')[Q']` when `φ` sends
@@ -39,10 +43,12 @@ variables `A` by elements of a positive subsemiring, as at `a = 1`, are of this 
 
 * `Mei.LogarithmicVectorField.coefficientMonoidPositiveSpecialization_completedBCHAction`
   and `Mei.TropicalPairing.coefficientPositiveSpecialization_completedBCHAction`: the
-  completion maps intertwine completed BCH actions.
+  completion maps intertwine completed BCH actions, assuming evaluation compatibility
+  on every coefficient exponent for the tropical pairing case.
 * `Mei.LogarithmicVectorField.isPositive_completedBCHAction_coefficientMonoidGradedLieHom` and
   `Mei.TropicalPairing.isPositive_completedBCHAction_coefficientGradedLieHom`: positivity of
-  the action of a label is preserved by specialization.
+  the action of a label is preserved by specialization, under the same evaluation
+  compatibility hypothesis in the tropical pairing case.
 
 The coefficient maps are the twisted coefficient changes of Mandel, *Scattering diagrams,
 theta functions, and refined tropical curve counts*, Example 2.1(i), arXiv:1503.06183v5.
@@ -56,28 +62,31 @@ public section
 
 noncomputable section
 
-namespace AddMonoidAlgebra
-
-variable {A A' R S M M' : Type*} [Semiring A] [Semiring A'] [Semiring R] [Semiring S]
-  [AddMonoid M] [AddMonoid M']
-
-/-- An additive map between monoid algebras sends the image `ι(A)[M]` of the coefficients
-`A` into the image `ι'(A')[M']` as soon as it does so on the monomials `ι(a) z^m`. -/
-theorem map_mem_rangeS_mapRingHom (ι : A →+* R) (ι' : A' →+* S) (f : R[M] →+ S[M'])
-    (hf : ∀ (m : M) (a : A), f (single m (ι a)) ∈ (mapRingHom M' ι').rangeS)
-    {x : R[M]} (hx : x ∈ (mapRingHom M ι).rangeS) :
-    f x ∈ (mapRingHom M' ι').rangeS := by
-  obtain ⟨y, rfl⟩ := hx
-  induction y using AddMonoidAlgebra.induction_linear with
-  | zero => simp
-  | add y z hy hz => simpa only [map_add] using add_mem hy hz
-  | single m a => simpa only [mapRingHom_single] using hf m a
-
-end AddMonoidAlgebra
-
 namespace Mei.LogarithmicVectorField
 
 open _root_.AddMonoidAlgebra
+
+section CoefficientImage
+
+variable {K R S Γ : Type*} [CommSemiring K] [CommSemiring R] [CommSemiring S]
+  [Algebra K R] [Algebra K S] [AddCommMonoid Γ]
+  (Q : AddSubmonoid Γ) (φ : R →ₐ[K] S) (χ : Multiplicative Q →* S)
+  (f : R[Q] →ₐ[K] S[Q])
+  (hf : ∀ (p : Q) r, f (_root_.AddMonoidAlgebra.single p r) =
+    _root_.AddMonoidAlgebra.single p (φ r * χ (.ofAdd p)))
+
+include hf in
+/-- If `φ` sends `ι(A)` into `ι'(A')` and every weight `χ(q)` lies in `ι'(A')`, the twisted
+coefficient change sends `ι(A)[Q]` into `ι'(A')[Q]`. -/
+theorem map_mem_rangeS_mapRingHom_coefficientMonoidMap {A A' : Type*} [Semiring A]
+    [Semiring A'] (ι : A →+* R) (ι' : A' →+* S) (hφ : ∀ a, φ (ι a) ∈ ι'.rangeS)
+    (hχ : ∀ q, χ q ∈ ι'.rangeS) {x : R[Q]} (hx : x ∈ (mapRingHom Q ι).rangeS) :
+    f x ∈ (mapRingHom Q ι').rangeS := by
+  refine AddMonoidAlgebra.map_mem_rangeS_mapRingHom ι ι' f.toAddMonoidHom (fun q a => ?_) hx
+  obtain ⟨c, hc⟩ := ι'.rangeS.mul_mem (hφ a) (hχ (.ofAdd q))
+  exact ⟨_root_.AddMonoidAlgebra.single q c, by simp [hf, hc]⟩
+
+end CoefficientImage
 
 section Specialization
 
@@ -116,17 +125,6 @@ theorem coe_completionMap_coefficientMonoidPositiveSpecialization :
   rw [PositiveSpecialization.completionMap_eq_mapCompletion _ id monotone_id
     (fun k => filtration_ideal_le_comap_coefficientMonoidMap d Q φ χ f hf (k + 1))]
   exact congrArg DFunLike.coe (AlgFiltration.coe_mapCompletionₐ _ _ f id monotone_id _).symm
-
-include hf in
-/-- If `φ` sends `ι(A)` into `ι'(A')` and every weight `χ(q)` lies in `ι'(A')`, the twisted
-coefficient change sends `ι(A)[Q]` into `ι'(A')[Q]`. -/
-theorem map_mem_rangeS_mapRingHom_coefficientMonoidMap {A A' : Type*} [Semiring A]
-    [Semiring A'] (ι : A →+* R) (ι' : A' →+* S) (hφ : ∀ a, φ (ι a) ∈ ι'.rangeS)
-    (hχ : ∀ q, χ q ∈ ι'.rangeS) {x : R[Q]} (hx : x ∈ (mapRingHom Q ι).rangeS) :
-    f x ∈ (mapRingHom Q ι').rangeS := by
-  refine AddMonoidAlgebra.map_mem_rangeS_mapRingHom ι ι' f.toAddMonoidHom (fun q a => ?_) hx
-  obtain ⟨c, hc⟩ := ι'.rangeS.mul_mem (hφ a) (hχ (.ofAdd q))
-  exact ⟨_root_.AddMonoidAlgebra.single q c, by simp [hf, hc]⟩
 
 end Specialization
 
@@ -195,6 +193,41 @@ namespace Mei.TropicalPairing
 
 open LogarithmicVectorField _root_.AddMonoidAlgebra
 
+section CoefficientImage
+
+variable {K R S Γ Λ Γ' Λ' : Type*} [CommSemiring K] [CommSemiring R] [CommRing S]
+  [Algebra K R] [Algebra K S] [AddCommMonoid Γ] [AddCommMonoid Λ]
+  [AddCommMonoid Γ'] [AddCommMonoid Λ']
+  {d : PositiveDegrees Γ} {e : PositiveDegrees Γ'}
+  {ρ : Γ →+ Λ} {ρ' : Γ' →+ Λ'} {Q : AddSubmonoid Γ} {Q' : AddSubmonoid Γ'}
+  {V : Submodule S (Λ →+ S)}
+  (p : TropicalPairing (d := d) (e := e) (ρ := ρ) (ρ' := ρ') V)
+  (φ : R →ₐ[K] S) (χ : Multiplicative Q →* S)
+  (hT : Q.map p.degreeMap.toAddMonoidHom ≤ Q')
+  (f : R[Q] →ₐ[K] S[Q])
+  (hf : ∀ (q : Q) r, f (_root_.AddMonoidAlgebra.single q r) =
+    _root_.AddMonoidAlgebra.single q (φ r * χ (.ofAdd q)))
+
+local notation "ψ" => AlgHom.comp (AlgHom.restrictScalars K (mapDomainAlgHom S S
+  (AddMonoidHom.comp (AddSubmonoid.inclusion hT)
+    (AddMonoidHom.addSubmonoidMap p.degreeMap.toAddMonoidHom Q)))) f
+
+include hf in
+/-- If `φ` sends `ι(A)` into `ι'(A')` and every weight `χ(q)` lies in `ι'(A')`, the twisted
+tropical coefficient map sends `ι(A)[Q]` into `ι'(A')[Q']`. -/
+theorem map_mem_rangeS_mapRingHom_coefficientMap {A A' : Type*} [Semiring A] [Semiring A']
+    (ι : A →+* R) (ι' : A' →+* S) (hφ : ∀ a, φ (ι a) ∈ ι'.rangeS)
+    (hχ : ∀ q, χ q ∈ ι'.rangeS) {x : R[Q]} (hx : x ∈ (mapRingHom Q ι).rangeS) :
+    ψ x ∈ (mapRingHom Q' ι').rangeS := by
+  refine AddMonoidAlgebra.map_mem_rangeS_mapRingHom ι ι' (ψ).toAddMonoidHom
+    (fun q a => ?_) hx
+  obtain ⟨c, hc⟩ := ι'.rangeS.mul_mem (hφ a) (hχ (.ofAdd q))
+  refine ⟨single (AddSubmonoid.inclusion hT
+    (p.degreeMap.toAddMonoidHom.addSubmonoidMap Q q)) c, ?_⟩
+  simp [hf, hc]
+
+end CoefficientImage
+
 section Specialization
 
 variable {K R S Γ Λ Γ' Λ' : Type*} [CommRing K] [CommRing R] [CommRing S]
@@ -243,21 +276,6 @@ theorem coe_completionMap_coefficientPositiveSpecialization (hP : ∀ a ∈ P, �
     p.degreeMap.monotone_modulus
     (filtration_ideal_le_comap_coefficientDegreeMap d Q φ χ f hf p.degreeMap hT)]
   exact congrArg DFunLike.coe (AlgFiltration.coe_mapCompletionₐ _ _ (ψ) _ _ _).symm
-
-omit P P' in
-include hf in
-/-- If `φ` sends `ι(A)` into `ι'(A')` and every weight `χ(q)` lies in `ι'(A')`, the twisted
-tropical coefficient map sends `ι(A)[Q]` into `ι'(A')[Q']`. -/
-theorem map_mem_rangeS_mapRingHom_coefficientMap {A A' : Type*} [Semiring A] [Semiring A']
-    (ι : A →+* R) (ι' : A' →+* S) (hφ : ∀ a, φ (ι a) ∈ ι'.rangeS)
-    (hχ : ∀ q, χ q ∈ ι'.rangeS) {x : R[Q]} (hx : x ∈ (mapRingHom Q ι).rangeS) :
-    ψ x ∈ (mapRingHom Q' ι').rangeS := by
-  refine AddMonoidAlgebra.map_mem_rangeS_mapRingHom ι ι' (ψ).toAddMonoidHom
-    (fun q a => ?_) hx
-  obtain ⟨c, hc⟩ := ι'.rangeS.mul_mem (hφ a) (hχ (.ofAdd q))
-  refine ⟨single (AddSubmonoid.inclusion hT
-    (p.degreeMap.toAddMonoidHom.addSubmonoidMap Q q)) c, ?_⟩
-  simp [hf, hc]
 
 end Specialization
 
@@ -320,8 +338,9 @@ theorem coefficientPositiveSpecialization_completedBCHAction (hP : ∀ a ∈ P, 
   simp only [coe_completionMap_coefficientPositiveSpecialization]
   exact p.mapCompletionₐ_coefficientGradedLieHom φ χ hφ hT f hf heval g a
 
-/-- If a label carries a coefficient to an element positive for `P`, then the transported
-label carries the specialized coefficient to an element positive for `P'`. -/
+/-- If the pairing's evaluation identity holds on every coefficient exponent and a label
+carries a coefficient to an element positive for `P`, then the transported label carries
+the specialized coefficient to an element positive for `P'`. -/
 theorem isPositive_completedBCHAction_coefficientGradedLieHom (hP : ∀ a ∈ P, ψ a ∈ P')
     (heval : ∀ (m : V) {q : Γ}, q ∈ Q →
       p.characterMap m (ρ' (p.degreeMap q)) = m.val (ρ q))
