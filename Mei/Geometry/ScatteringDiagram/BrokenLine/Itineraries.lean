@@ -281,6 +281,13 @@ def cutoffDecoratedEvaluation [Finite J] (k : ℕ) (Q : V) : M :=
   let := Fintype.ofFinite (CutoffDecoratedRay d ℳ T a v f c ε P W S C k Q)
   ∑ r : CutoffDecoratedRay d ℳ T a v f c ε P W S C k Q, r.decoration
 
+/-- The complete evaluation is the sum of final decorations over its actual
+finite ray fiber. -/
+theorem cutoffDecoratedEvaluation_def [Finite J] (k : ℕ) (Q : V) :
+    cutoffDecoratedEvaluation d ℳ T a v f c ε P W S C k Q =
+      let := Fintype.ofFinite (CutoffDecoratedRay d ℳ T a v f c ε P W S C k Q)
+      ∑ r : CutoffDecoratedRay d ℳ T a v f c ε P W S C k Q, r.decoration := (rfl)
+
 /-- Vanished incoming coefficient has zero total weighted evaluation. -/
 @[simp]
 theorem cutoffDecoratedEvaluation_zero [Finite J] (k : ℕ) (Q : V) :
