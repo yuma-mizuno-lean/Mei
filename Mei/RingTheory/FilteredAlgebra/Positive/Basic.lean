@@ -101,6 +101,19 @@ theorem IsPositive.pow {x : F.completion} (hx : F.IsPositive P x) (n : ℕ) :
 theorem isPositive_toCompletion {a : B} (ha : a ∈ P) : F.IsPositive P (F.toCompletion a) :=
   fun k => ⟨a, ha, (F.projection_toCompletion k a).symm⟩
 
+/-- A map of the completion whose order-`k` projection depends only on the order-`k`
+projection of its argument preserves positivity once it sends the canonical image of every
+element of `P` to a positive element. Levelwise completed actions are of this kind. -/
+theorem IsPositive.apply_of_projection_congr (σ : F.completion → F.completion)
+    (hσ : ∀ k x y, F.projection k x = F.projection k y →
+      F.projection k (σ x) = F.projection k (σ y))
+    (hP : ∀ a ∈ P, F.IsPositive P (σ (F.toCompletion a))) {x : F.completion}
+    (hx : F.IsPositive P x) : F.IsPositive P (σ x) := by
+  intro k
+  obtain ⟨a, ha, hax⟩ := hx k
+  obtain ⟨b, hb, hb'⟩ := hP a ha k
+  exact ⟨b, hb, hb'.trans (hσ k _ _ (by rw [projection_toCompletion, hax]))⟩
+
 variable (F P)
 
 /-- The canonical map sends `P` into the positive subsemiring. -/

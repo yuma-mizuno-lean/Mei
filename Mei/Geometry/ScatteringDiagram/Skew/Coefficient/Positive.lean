@@ -8,6 +8,7 @@ module
 public import Mei.Geometry.ScatteringDiagram.Skew.Coefficient.Completion
 public import Mei.RingTheory.FilteredAlgebra.Positive.Equiv
 public import Mei.RingTheory.MvPowerSeries.Positive
+public import Mei.RingTheory.FilteredAlgebra.Positive.PowerSeries
 
 /-!
 # Positive principal coefficients
@@ -31,6 +32,11 @@ matches the image of `S[Q_pr]` with the image of `S[M°][t]` because it is natur
 the scalar ring. In the coordinates of an adapted basis this reads positivity in
 `ℚ[A][M°][[t_i]]`. Coefficient maps need not be injective, characters have
 filtration order zero, and the skew form may be degenerate.
+
+A scalar power series evaluated at a monomial `z^q` of nonzero unfrozen degree is positive
+exactly when all of its coefficients lie in the image of `S`
+(`isPositive_completedAeval_single_iff`); this needs no free coordinates. The coefficient of
+`z^(i q)` is read at the order `i deg q`, where it survives.
 -/
 
 public section
@@ -112,5 +118,68 @@ theorem AdaptedBasis.isPositive_principalCoefficientCompletion_natPolynomial_iff
           a = c := by
   rw [AdaptedBasis.principalCoefficientCompletionEquiv_def]
   exact D.isPositive_principalCoefficientCompletion_natPolynomial_iff _ _ _ x
+
+omit he in
+/-- A power series evaluated at a principal monomial `z^q` of nonzero unfrozen degree is
+positive for the image of `S[Q_pr]` exactly when all of its coefficients lie in the image
+of `S`. The coefficient of `z^(i q)` is read at the order `i deg q`, where it survives. -/
+theorem isPositive_completedAeval_single_iff (φ : S →+* R) (q : Q) (hq : q.val.2 ≠ 0)
+    (f : PowerSeries R) :
+    (F).IsPositive (mapRingHom Q φ).rangeS
+        ((F).completedAeval ⟨_, D.toCompletion_single_mem_completionIdeal_one d q hq⟩ f) ↔
+      ∀ i, PowerSeries.coeff i f ∈ φ.rangeS := by
+  classical
+  constructor
+  · intro hf i
+    rw [AlgFiltration.isPositive_iff] at hf
+    have hq₁ := d.degree_pos ((D.mem_principalCoefficientMonoid d _).mp q.property) hq
+    set δ := (d.degree q.val.2).toNat with hδ
+    have hδ₁ : 1 ≤ δ := by omega
+    have hδz : (δ : ℤ) = d.degree q.val.2 := Int.toNat_of_nonneg (by omega)
+    obtain ⟨a, ha, hax⟩ := hf (i * δ)
+    rw [AlgFiltration.projection_completedAeval_eq_sum] at hax
+    -- The order-`i δ` projection is the class of the finite polynomial `∑ⱼ fⱼ z^(j q)`.
+    have hsum : ∑ j ∈ Finset.range (i * δ + 1), PowerSeries.coeff j f •
+          (F).projection (i * δ) ((F).toCompletion (single q 1)) ^ j =
+        Ideal.Quotient.mk _
+          (∑ j ∈ Finset.range (i * δ + 1), single (j • q) (PowerSeries.coeff j f)) := by
+      rw [map_sum]
+      refine Finset.sum_congr rfl fun j _ => ?_
+      rw [AlgFiltration.projection_toCompletion, ← map_pow, single_pow, one_pow]
+      simpa only [smul_single, smul_eq_mul, mul_one, Ideal.Quotient.mkₐ_eq_mk] using
+        (map_smul (Ideal.Quotient.mkₐ R ((F).ideal (i * δ + 1))) (PowerSeries.coeff j f)
+          (single (j • q) (1 : R))).symm
+    rw [hsum, Ideal.Quotient.eq] at hax
+    -- The monomial `z^(i q)` has order `i δ`, so it does not occur in the difference.
+    have hcoeff : (a - ∑ j ∈ Finset.range (i * δ + 1),
+        single (j • q) (PowerSeries.coeff j f)).coeff (i • q) = 0 := by
+      by_contra h
+      have := (D.mem_principalCoefficientFiltration_ideal_iff d _ _).mp hax (i • q)
+        (Finsupp.mem_support_iff.mpr h)
+      simp only [AddSubmonoidClass.coe_nsmul, Prod.smul_snd, map_nsmul, nsmul_eq_mul,
+        ← hδz] at this
+      push_cast at this
+      omega
+    have hinj : ∀ j, j • q = i • q ↔ j = i := by
+      intro j
+      refine ⟨fun h => ?_, fun h => h ▸ rfl⟩
+      have h₂ := congrArg (fun x : Q => d.degree x.val.2) h
+      simp only [AddSubmonoidClass.coe_nsmul, Prod.smul_snd, map_nsmul, nsmul_eq_mul,
+        ← hδz] at h₂
+      exact_mod_cast (Int.eq_of_mul_eq_mul_right (by omega) h₂)
+    have hi : i ∈ Finset.range (i * δ + 1) := Finset.mem_range.mpr (by nlinarith)
+    rw [coeff_sub, Finsupp.sub_apply, sub_eq_zero, coeff_sum, Finset.sum_apply'] at hcoeff
+    simp only [coeff_single, Finsupp.single_apply, hinj, Finset.sum_ite_eq', hi,
+      ite_true] at hcoeff
+    obtain ⟨a, rfl⟩ := RingHom.mem_rangeS.mp ha
+    rw [coeff_mapRingHom] at hcoeff
+    exact RingHom.mem_rangeS.mpr ⟨_, hcoeff⟩
+  · intro hf
+    refine AlgFiltration.IsPositive.completedAeval
+      (AlgFiltration.isPositive_toCompletion
+        (RingHom.mem_rangeS.mpr ⟨single q 1, by simp [mapRingHom_single]⟩))
+      fun i => ?_
+    obtain ⟨s, hs⟩ := RingHom.mem_rangeS.mp (hf i)
+    exact RingHom.mem_rangeS.mpr ⟨single 0 s, by simp [mapRingHom_single, hs]⟩
 
 end Mei.SkewLatticeDatum

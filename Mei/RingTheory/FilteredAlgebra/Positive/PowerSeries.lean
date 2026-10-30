@@ -7,6 +7,7 @@ module
 
 public import Mei.RingTheory.FilteredAlgebra.Positive.Basic
 public import Mei.RingTheory.FilteredAlgebra.PowerSeries.Basic
+import TauCeti.RingTheory.PowerSeries.Geometric
 
 /-!
 # Positivity of completed power series evaluations
@@ -17,7 +18,7 @@ positive element: at order `k` the evaluation is a finite sum of coefficient mul
 powers of a representative in `P`. In particular every power series with natural-number
 coefficients, such as a geometric series `∑ xʲ` or a power `(1 + x) ^ s`, evaluates
 to a positive element, although such a series need not be the canonical image of an
-element of `P`.
+element of `P`. When `-1 ∈ P`, the inverse `∑ (-x)ʲ` of the unit `1 + x` is positive.
 -/
 
 public section
@@ -47,5 +48,19 @@ theorem IsPositive.completedAeval_map_castRingHom {x : F.completionIdeal 1}
     (hx : F.IsPositive P (x : F.completion)) (g : PowerSeries ℕ) :
     F.IsPositive P (F.completedAeval x (PowerSeries.map (Nat.castRingHom R) g)) :=
   hx.completedAeval fun i => by simp
+
+/-- If `P` contains `-1` and `x` is a positive element of the first completed ideal, then the
+inverse of the unit `1 + x` is positive: it is the evaluation of the geometric series
+`∑ (-1)ʲ Xʲ` at `x`. -/
+theorem IsPositive.inv_of_val_eq_one_add {x : F.completionIdeal 1}
+    (hx : F.IsPositive P (x : F.completion)) (hP : (-1 : B) ∈ P) {U : F.completionˣ}
+    (hU : (U : F.completion) = 1 + x) : F.IsPositive P ((U⁻¹ : F.completionˣ) : F.completion) := by
+  have hgeom : PowerSeries.mk (fun j => (-1 : ℤ) ^ j) * (1 + PowerSeries.X) = 1 := by
+    simpa only [map_neg, map_one, neg_mul, one_mul, sub_neg_eq_add] using
+      TauCeti.powerSeries_mk_pow_mul_one_sub_C_mul_X_eq_one (-1 : ℤ)
+  have h := congrArg (F.completedAeval (R := ℤ) x) hgeom
+  rw [map_mul, map_add, map_one, completedAeval_X, ← hU] at h
+  rw [Units.inv_eq_of_mul_eq_one_left h]
+  exact hx.completedAeval fun j => by simpa using _root_.pow_mem hP j
 
 end Mei.AlgFiltration

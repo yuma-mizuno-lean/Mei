@@ -120,6 +120,24 @@ theorem mem_principalCoefficientFiltration_ideal_iff [Semiring R] (k : ℕ) (a :
       simp [n, q]
 
 omit [CommRing R] [Algebra ℚ R] in
+/-- A principal coefficient monomial of nonzero unfrozen degree lies in the first completed
+ideal. -/
+theorem toCompletion_single_mem_completionIdeal_one {R : Type*} [Ring R] (q : Qpr)
+    (hq : q.val.2 ≠ 0) :
+    (TropicalVertexCoefficientAction.filtration
+        (R := R) (D.principalPositiveDegrees d) Qpr).toCompletion (single q 1) ∈
+      (TropicalVertexCoefficientAction.filtration
+        (R := R) (D.principalPositiveDegrees d) Qpr).completionIdeal 1 := by
+  rw [AlgFiltration.toCompletion_mem_completionIdeal_iff,
+    mem_principalCoefficientFiltration_ideal_iff]
+  intro p hp
+  obtain rfl : p = q := by
+    by_contra h
+    exact (Finsupp.mem_support_iff.mp hp) (by simp [Ne.symm h])
+  have := d.degree_pos ((D.mem_principalCoefficientMonoid d _).mp p.property) hq
+  omega
+
+omit [CommRing R] [Algebra ℚ R] in
 /-- A principal coefficient monomial of nonzero unfrozen degree is congruent to `0`, so
 `1 + z^q` is a unit of the principal coefficient completion. -/
 theorem exists_units_eq_one_add_single {R : Type*} [Ring R] (q : Qpr) (hq : q.val.2 ≠ 0) :
@@ -128,20 +146,10 @@ theorem exists_units_eq_one_add_single {R : Type*} [Ring R] (q : Qpr) (hq : q.va
       (U : (TropicalVertexCoefficientAction.filtration
         (R := R) (D.principalPositiveDegrees d) Qpr).completion) =
       1 + (TropicalVertexCoefficientAction.filtration
-        (R := R) (D.principalPositiveDegrees d) Qpr).toCompletion (single q 1) := by
-  let F := TropicalVertexCoefficientAction.filtration
-    (R := R) (D.principalPositiveDegrees d) Qpr
-  have hmem : F.toCompletion (single q 1) ∈ F.completionIdeal 1 := by
-    rw [AlgFiltration.toCompletion_mem_completionIdeal_iff,
-      mem_principalCoefficientFiltration_ideal_iff]
-    intro p hp
-    have hpq : p = q := by
-      by_contra h
-      exact (Finsupp.mem_support_iff.mp hp) (by simp [Ne.symm h])
-    rw [hpq]
-    have := d.degree_pos ((D.mem_principalCoefficientMonoid d _).mp q.property) hq
-    omega
-  exact ⟨(F.isUnit_of_sub_one_mem (by simpa only [add_sub_cancel_left] using hmem)).unit,
+        (R := R) (D.principalPositiveDegrees d) Qpr).toCompletion (single q 1) :=
+  ⟨(AlgFiltration.isUnit_of_sub_one_mem _ (by
+      simpa only [add_sub_cancel_left] using
+        D.toCompletion_single_mem_completionIdeal_one (R := R) d q hq)).unit,
     IsUnit.unit_spec _⟩
 
 omit [CommRing R] [Algebra ℚ R] in
