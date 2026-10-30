@@ -39,7 +39,7 @@ local notation "S" => AdjoinRoot (Polynomial.X ^ (k + 1) : Polynomial K)
 local notation "τ" => AdjoinRoot.root (Polynomial.X ^ (k + 1) : Polynomial K)
 
 /-- A chamber monomial in left Laurent coordinates retains its smoothing power. -/
-theorem leftChamberLaurentMap_single (q : exponentMonoid) (c : K) :
+@[simp↓] theorem leftChamberLaurentMap_single (q : exponentMonoid) (c : K) :
     leftChamberLaurentMap (C_root_X_pow_pow K (k + 1))
         (truncatedExponentChamberEquiv K k 1 (Ideal.Quotient.mk _ (single q c))) =
       single (-q.val.1) (single q.val.2.1 (AdjoinRoot.of _ c) * C τ ^ leftOrder q) := by
@@ -55,7 +55,7 @@ theorem leftChamberLaurentMap_single (q : exponentMonoid) (c : K) :
   omega
 
 /-- A chamber monomial in right Laurent coordinates retains its smoothing power. -/
-theorem rightChamberLaurentMap_single (q : exponentMonoid) (c : K) :
+@[simp↓] theorem rightChamberLaurentMap_single (q : exponentMonoid) (c : K) :
     rightChamberLaurentMap (C_root_X_pow_pow K (k + 1))
         (truncatedExponentChamberEquiv K k 0 (Ideal.Quotient.mk _ (single q c))) =
       single q.val.1 (single q.val.2.1 (AdjoinRoot.of _ c) * C τ ^ rightOrder q) := by
