@@ -26,6 +26,10 @@ because it is closed. Extra semilinear validity constraints may be imposed befor
 taking these charts; their boundary points need not satisfy strict avoidance
 conditions.
 
+Every extended path agrees eventually with its incoming affine line, regardless
+of time order. A nonzero incoming direction therefore makes each half-line proper;
+this compact-perturbation argument follows `FiniteAffineRay.isProperMap_restrict_Iic`.
+
 The backward parameterization follows Carl–Pumperla–Siebert, *A tropical view on
 Landau–Ginzburg models*, §4 (arXiv:2205.07753v2).
 -/
@@ -161,6 +165,78 @@ theorem backwardPath_apply_incoming {Q : V}
   simp only [Fin.val_last, Finset.filter_true_of_mem (fun (a : Fin n) _ => a.isLt)] at he
   rw [he]
   module
+
+/-- For every endpoint, the extended path eventually agrees with its incoming
+affine line at negative infinity, even without ordered encounter parameters. -/
+theorem backwardPath_eventuallyEq_incoming (Q : V) :
+    backwardPath f c v Q =ᶠ[atBot] fun t =>
+      backwardPoint f c (fun j => v j.castSucc) (Fin.last n) Q +
+        (backwardParameter f c (fun j => v j.castSucc) (Fin.last n) Q - t) •
+          v (Fin.last n) := by
+  have hle : ∀ᶠ t : ℝ in atBot, ∀ j : Fin n,
+      t ≤ backwardParameter f c (fun j => v j.castSucc) j.succ Q :=
+    eventually_all.mpr fun j => eventually_le_atBot _
+  filter_upwards [hle] with t ht
+  rw [backwardPath_apply]
+  simp_rw [max_eq_left (sub_nonneg.mpr (ht _))]
+  have he := backwardPath_partial_sum f c v Q (Fin.last n) t
+  simp only [Fin.val_last, Finset.filter_true_of_mem (fun (a : Fin n) _ => a.isLt)] at he
+  rw [he]
+  module
+
+/-- Eventual admission of the extended path is exactly eventual admission of its
+incoming affine half-line, without a time-order hypothesis. -/
+theorem backwardPath_eventually_mem_iff (C : Set V) {Q : V} :
+    (∀ᶠ t : ℝ in atBot, backwardPath f c v Q t ∈ C) ↔
+      ∀ᶠ s : ℝ in atTop,
+        backwardPoint f c (fun j => v j.castSucc) (Fin.last n) Q +
+          s • v (Fin.last n) ∈ C := by
+  let b := backwardParameter f c (fun j => v j.castSucc) (Fin.last n) Q
+  have htop : Tendsto (fun s : ℝ => b - s) atTop atBot := by
+    simpa only [sub_eq_add_neg] using
+      tendsto_atBot_add_const_left atTop b tendsto_neg_atTop_atBot
+  have hbot : Tendsto (fun t : ℝ => b - t) atBot atTop := by
+    simpa only [sub_eq_add_neg] using
+      tendsto_atTop_add_const_left atBot b tendsto_neg_atBot_atTop
+  have he := backwardPath_eventuallyEq_incoming f c v Q
+  constructor
+  · intro h
+    filter_upwards [htop.eventually h, htop.eventually he] with s hs heq
+    -- Expand the local parameter abbreviation before cancelling the subtractions.
+    simpa only [heq, b, sub_sub_cancel] using hs
+  · intro h
+    filter_upwards [hbot.eventually h, he] with t ht heq
+    rwa [heq]
+
+/-- A nonzero incoming direction makes every extended half-line proper, without
+a time-order hypothesis. Stationary intermediate segments are allowed. -/
+theorem isProperMap_backwardPath_restrict_Iic {Q : V}
+    (hv : v (Fin.last n) ≠ 0) (b : ℝ) :
+    IsProperMap (fun t : Iic b => backwardPath f c v Q t) := by
+  let a := backwardParameter f c (fun j => v j.castSucc) (Fin.last n) Q
+  let X := backwardPoint f c (fun j => v j.castSucc) (Fin.last n) Q
+  let l : ℝ →ᴬ[ℝ] V := ContinuousAffineMap.lineMap (X + a • v (Fin.last n))
+    (X + a • v (Fin.last n) - v (Fin.last n))
+  have hl (t : ℝ) : l t = X + (a - t) • v (Fin.last n) := by
+    simp only [l, ContinuousAffineMap.coe_lineMap_eq, AffineMap.lineMap_apply,
+      vadd_eq_add, vsub_eq_sub]
+    module
+  have hlv : l.contLinear 1 ≠ 0 := by
+    simpa only [l, ContinuousAffineMap.coe_contLinear,
+      ContinuousAffineMap.lineMap_toAffineMap, AffineMap.lineMap_linear,
+      LinearMap.smulRight_apply, LinearMap.id_apply, one_smul,
+      vsub_eq_sub, sub_sub_cancel_left, neg_ne_zero] using hv
+  obtain ⟨d, hd⟩ := eventually_atBot.mp (backwardPath_eventuallyEq_incoming f c v Q)
+  refine (l.isProperMap_restrict_Iic hlv b).of_eqOn_compl_isCompact
+    (K := Subtype.val ⁻¹' Icc d b)
+    ((backwardPath f c v Q).continuous.comp continuous_subtype_val)
+    (isClosed_Iic.isClosedEmbedding_subtypeVal.isCompact_preimage isCompact_Icc) ?_
+  intro t ht
+  have hle : t.val ≤ d := by
+    have hn : ¬ d ≤ t.val := fun h => ht ⟨h, t.property⟩
+    exact (lt_of_not_ge hn).le
+  simp only [hl]
+  exact hd t.val hle
 
 variable (P : Fin n → Set V)
 

@@ -24,10 +24,10 @@ even if several encounters collapse. Boundary paths need not avoid the walls
 or singular sets, and are not asserted to be transverse realizations.
 
 We use `backwardPath`, the local characterization of
-`AdmissibleRayRealization`, `backwardRay_eventually_mem_iff`, and
-`IsRationalNormalPolyhedron.eventually_add_smul_mem`. The properness argument
-follows `FiniteAffineRay.isProperMap_restrict_Iic` by comparison with the
-incoming affine line. The backward parameterization is that of
+`AdmissibleRayRealization`, `backwardPath_eventually_mem_iff`, and
+`IsRationalNormalPolyhedron.eventually_add_smul_mem`. Individual half-line
+properness is supplied by `isProperMap_backwardPath_restrict_Iic`.
+The backward parameterization is that of
 Carl–Pumperla–Siebert, *A tropical view on Landau–Ginzburg models*, §4
 (arXiv:2205.07753v2).
 -/
@@ -42,64 +42,6 @@ variable {V J K : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
   {n : ℕ} (f : Fin n → V →L[ℝ] ℝ) (c : Fin n → ℝ)
   (v : Fin (n + 1) → V) (P : Fin n → Set V)
   (W : J → Set V) (S : K → Set V) (C : Set V)
-
-/-- With weak time order, eventual admission of the extended path is exactly
-eventual admission of its incoming affine half-line. -/
-theorem backwardPath_eventually_mem_iff {Q : V}
-    (hQ : ∀ j, 0 ≤ backwardTime f c (fun j => v j.castSucc) j Q) :
-    (∀ᶠ t : ℝ in atBot, backwardPath f c v Q t ∈ C) ↔
-      ∀ᶠ s : ℝ in atTop,
-        backwardPoint f c (fun j => v j.castSucc) (Fin.last n) Q +
-          s • v (Fin.last n) ∈ C := by
-  let b := backwardParameter f c (fun j => v j.castSucc) (Fin.last n) Q
-  have htop : Tendsto (fun s : ℝ => b - s) atTop atBot := by
-    simpa only [sub_eq_add_neg] using
-      tendsto_atBot_add_const_left atTop b tendsto_neg_atTop_atBot
-  have hbot : Tendsto (fun t : ℝ => b - t) atBot atTop := by
-    simpa only [sub_eq_add_neg] using
-      tendsto_atTop_add_const_left atBot b tendsto_neg_atBot_atTop
-  constructor
-  · intro h
-    filter_upwards [htop.eventually h, eventually_ge_atTop (0 : ℝ)] with s hs hnonneg
-    rwa [backwardPath_apply_incoming f c v hQ hnonneg] at hs
-  · intro h
-    filter_upwards [hbot.eventually h, eventually_le_atBot b] with t ht hle
-    have he := backwardPath_apply_incoming f c v hQ (sub_nonneg.mpr hle)
-    -- Expand the local abbreviation so the two subtractions can cancel.
-    dsimp only [b] at he
-    rw [sub_sub_cancel] at he
-    rwa [he]
-
-/-- A nonzero incoming direction makes each limiting half-line proper.
-Collapsed encounters and stationary intermediate segments are allowed. -/
-theorem isProperMap_backwardPath_restrict_Iic {Q : V}
-    (hQ : ∀ j, 0 ≤ backwardTime f c (fun j => v j.castSucc) j Q)
-    (hv : v (Fin.last n) ≠ 0) (b : ℝ) :
-    IsProperMap (fun t : Iic b => backwardPath f c v Q t) := by
-  let a := backwardParameter f c (fun j => v j.castSucc) (Fin.last n) Q
-  let X := backwardPoint f c (fun j => v j.castSucc) (Fin.last n) Q
-  let l : ℝ →ᴬ[ℝ] V := ContinuousAffineMap.lineMap (X + a • v (Fin.last n))
-    (X + a • v (Fin.last n) - v (Fin.last n))
-  have hl (t : ℝ) : l t = X + (a - t) • v (Fin.last n) := by
-    simp only [l, ContinuousAffineMap.coe_lineMap_eq, AffineMap.lineMap_apply,
-      vadd_eq_add, vsub_eq_sub]
-    module
-  have hlv : l.contLinear 1 ≠ 0 := by
-    simpa only [l, ContinuousAffineMap.coe_contLinear,
-      ContinuousAffineMap.lineMap_toAffineMap, AffineMap.lineMap_linear,
-      LinearMap.smulRight_apply, LinearMap.id_apply, one_smul,
-      vsub_eq_sub, sub_sub_cancel_left, neg_ne_zero] using hv
-  refine (l.isProperMap_restrict_Iic hlv b).of_eqOn_compl_isCompact
-    (K := Subtype.val ⁻¹' Icc a b)
-    ((backwardPath f c v Q).continuous.comp continuous_subtype_val)
-    (isClosed_Iic.isClosedEmbedding_subtypeVal.isCompact_preimage isCompact_Icc) ?_
-  intro t ht
-  have hle : t.val ≤ a := by
-    have hn : ¬ a ≤ t.val := fun h => ht ⟨h, t.property⟩
-    exact (lt_of_not_ge hn).le
-  simp only [hl]
-  simpa only [a, X, sub_sub_cancel] using
-    backwardPath_apply_incoming f c v hQ (sub_nonneg.mpr hle)
 
 /-- Closing the full admissible domain retains all selected closed supports
 and weakens strict time order to nonnegative elapsed times. -/
@@ -189,8 +131,7 @@ theorem backwardPath_eventually_mem_of_mem_closure_admissibleBackwardDomain
     (hC : IsRationalNormalPolyhedron h C)
     {Q : V} (hQ : Q ∈ closure (admissibleBackwardDomain f c v P W S C)) :
     ∀ᶠ t : ℝ in atBot, backwardPath f c v Q t ∈ C := by
-  apply (backwardPath_eventually_mem_iff f c v C
-    (backwardTime_nonneg_of_mem_closure_admissibleBackwardDomain f c v P W S C hQ)).mpr
+  apply (backwardPath_eventually_mem_iff f c v C).mpr
   have hc : IsClosed {Q : V | ∀ᶠ s : ℝ in atTop,
       backwardPoint f c (fun j => v j.castSucc) (Fin.last n) Q +
         s • v (Fin.last n) ∈ C} :=
