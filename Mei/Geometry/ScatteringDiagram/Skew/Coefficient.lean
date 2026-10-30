@@ -79,6 +79,13 @@ def principalCoefficientAction : 𝔤 →ₗ⁅R⁆ Derivation R R[Qpr] R[Qpr] :
     (AddMonoidHom.id Lpr) Qpr (D.principalPositiveDegrees_le_coefficientMonoid d)).comp
       (D.principalGradedLieHom d).toLieHom
 
+/-- The tropical vertex action of a principal image is the principal coefficient action. -/
+@[simp]
+theorem tropicalVertexCoefficientAction_principalGradedLieHom
+    (h : (D.principalPositiveDegrees d).monoid ≤ Qpr) (x : 𝔤) :
+    tropicalVertexCoefficientAction (D.principalPositiveDegrees d) (AddMonoidHom.id Lpr) Qpr h
+      (D.principalGradedLieHom d x) = D.principalCoefficientAction d x := (rfl)
+
 /-- Inclusion in the full group algebra intertwines the principal coefficient
 action with the formal principal logarithmic action. -/
 theorem mapDomain_principalCoefficientAction (x : 𝔤) (a : R[Qpr]) :

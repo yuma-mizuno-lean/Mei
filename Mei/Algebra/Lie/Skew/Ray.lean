@@ -207,6 +207,17 @@ theorem logComponent_rayExp_eq_zero_of_forall_ne (f : R⟦X⟧) {m : Γ}
     (DirectSum.decompose_of_mem_ne ℒ (rayGenerator_mem β hβ hn hn0 j _) (hm j)).trans
       (ZeroMemClass.coe_zero _).symm
 
+/-- A ray label lies in the degree filtration above every order below the degree of `n`:
+its logarithmic coefficients vanish in all smaller degrees. -/
+theorem rayExp_mem_degreeFiltration (f : R⟦X⟧) {a : ℕ} (ha : (a : ℤ) < d.degree n) :
+    rayExp β hβ hn hn0 f ∈ CompletedGroup.degreeFiltration (d.groupTower ℒ) (a + 1) := by
+  refine d.mem_degreeFiltration_succ_iff.mpr fun m hm => ?_
+  refine logComponent_rayExp_eq_zero_of_forall_ne β hβ hn hn0 f fun j hj => ?_
+  have h := d.degree_pos hn hn0
+  rw [← hj, map_nsmul, nsmul_eq_mul] at hm
+  push_cast at hm
+  nlinarith
+
 /-- A ray label lies in the completed subgroup of the supported ray through `n`. -/
 theorem rayExp_mem_completedRaySubgroup {w : SupportedRay d} (hw : n ∈ w.rayDegrees)
     (f : R⟦X⟧) : rayExp β hβ hn hn0 f ∈ d.completedRaySubgroup ℒ w := by

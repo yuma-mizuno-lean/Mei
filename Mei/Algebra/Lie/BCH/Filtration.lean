@@ -47,7 +47,7 @@ theorem commute_exp_mk_of_mem_degreeIdeal {a b : ℕ} {x y : L}
 
 /-- A representative of the logarithm at a higher order lies above cutoff `a`
 exactly when the completed element vanishes at order `a`. -/
-private theorem mem_degreeIdeal_iff_of_mkQ_eq_log_projection {a k : ℕ} (hak : a ≤ k)
+theorem mem_degreeIdeal_iff_of_mkQ_eq_log_projection {a k : ℕ} (hak : a ≤ k)
     (g : d.completedBCHGroup ℒ) {x : L}
     (hx : (d.degreeIdeal ℒ k).mkQ x =
       BCHGroup.log (L := d.truncatedLie ℒ k) (CompletedGroup.projection k g)) :
