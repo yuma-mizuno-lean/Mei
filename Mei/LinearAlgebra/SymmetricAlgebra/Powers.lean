@@ -45,7 +45,8 @@ theorem span_range_ι_pow (n : ℕ) :
   let : Algebra ℚ (SymmetricAlgebra R M) :=
     Algebra.compHom (SymmetricAlgebra R M) (algebraMap ℚ R)
   let : IsScalarTower ℚ R (SymmetricAlgebra R M) :=
-    IsScalarTower.of_algebraMap_smul fun _ _ => rfl
+    IsScalarTower.of_algebraMap_smul fun q x =>
+      (Algebra.compHom_smul_def (SymmetricAlgebra R M) (algebraMap ℚ R) q x).symm
   apply le_antisymm
   · refine Submodule.span_le.mpr ?_
     rintro _ ⟨x, rfl⟩
@@ -68,30 +69,25 @@ theorem span_range_ι_pow (n : ℕ) :
           (fun j _ => MvPolynomial.isHomogeneous_X ℚ j)
     rw [← hspan] at hp
     -- Evaluation carries that rational span into the desired span over R.
-    have he : ∀ q ∈ Submodule.span ℚ
-        ((fun x : Fin l.length → ℚ => (∑ j, x j • MvPolynomial.X j) ^ l.length) '' Set.univ),
-        e q ∈ Submodule.span R
-          (Set.range fun x : M => SymmetricAlgebra.ι R M x ^ l.length) := by
+    have he : e '' ↑(Submodule.span ℚ
+        ((fun x : Fin l.length → ℚ =>
+          (∑ j, x j • MvPolynomial.X (R := ℚ) j) ^ l.length) '' Set.univ))
+        ⊆ (Submodule.span R
+          (Set.range fun x : M => SymmetricAlgebra.ι R M x ^ l.length)).restrictScalars ℚ := by
+      apply (Submodule.image_span_subset e.toLinearMap _ _).2
       intro q hq
-      induction hq using Submodule.span_induction with
-      | mem q hq =>
-        obtain ⟨x, _, rfl⟩ := hq
-        have heq : e ((∑ j, x j • MvPolynomial.X j) ^ l.length) =
-            SymmetricAlgebra.ι R M (∑ j, (algebraMap ℚ R (x j)) • l.get j) ^ l.length := by
-          rw [map_pow, map_sum, map_sum]
-          congr 1
-          apply Finset.sum_congr rfl
-          intro j _
-          rw [map_smul, MvPolynomial.aeval_X, map_smul]
-          rfl
-        rw [heq]
-        exact Submodule.subset_span (Set.mem_range_self _)
-      | zero => simp
-      | add q r _ _ hq hr => simpa using Submodule.add_mem _ hq hr
-      | smul r q _ hq =>
-        simpa only [map_smul, algebraMap_smul] using
-          Submodule.smul_mem _ (algebraMap ℚ R r) hq
-    have hep := he _ hp
+      obtain ⟨x, _, rfl⟩ := hq
+      have heq : e ((∑ j, x j • MvPolynomial.X j) ^ l.length) =
+          SymmetricAlgebra.ι R M (∑ j, (algebraMap ℚ R (x j)) • l.get j) ^ l.length := by
+        rw [map_pow, map_sum, map_sum]
+        congr 1
+        apply Finset.sum_congr rfl
+        intro j _
+        rw [map_smul, MvPolynomial.aeval_X, map_smul]
+        exact (IsScalarTower.algebraMap_smul R (x j) _).symm
+      rw [AlgHom.toLinearMap_apply, heq]
+      exact Submodule.subset_span (Set.mem_range_self _)
+    have hep := he ⟨_, hp, rfl⟩
     simp only [e, map_prod, MvPolynomial.aeval_X] at hep
     have hprod : (List.ofFn fun j : Fin l.length => SymmetricAlgebra.ι R M (l.get j)) =
         l.map (SymmetricAlgebra.ι R M) := List.ofFn_getElem_eq_map l _
