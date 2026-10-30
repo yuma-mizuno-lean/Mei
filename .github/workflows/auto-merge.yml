@@ -114,3 +114,22 @@ jobs:
     secrets:
       APP_ID: ${{ secrets.APP_ID }}
       APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
+
+  reconcile-after-failed-admission:
+    needs: merge
+    if: ${{ always() && needs.merge.result == 'failure' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      actions: write
+    steps:
+      # The shared engine clears other entries before admitting a Lake-pin PR.
+      # If GitHub rejects that admission (for example, missing code-owner review),
+      # no dequeued event exists for the pin PR to wake queue-release.yml.
+      # Reconcile through the existing bounded policy; never retry admission here.
+      - name: Reconsider PRs displaced before a failed admission
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: gh workflow run merge-sweep.yml --repo "$REPO" --ref main -f dry-run=false -f full-scan=false
