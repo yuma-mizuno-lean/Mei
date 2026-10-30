@@ -110,15 +110,9 @@ theorem mem_support_iff_of_mem_intrinsicInterior_adaptedComplex (k : ℕ)
 theorem affineSpan_eq_of_adaptedWall_subset {k : ℕ}
     {Q : Set V} (hQ : Q ∈ (D.adaptedComplex k).walls) (j : D.active k)
     (hsub : Q ⊆ (D.wall j).support) :
-    affineSpan ℝ Q = affineSpan ℝ (D.wall j).support := by
-  have := h.finiteDimensional
-  have hle := affineSpan_mono ℝ hsub
-  have hdQ := (D.adaptedComplex k).finrank_direction_add_one_of_mem_walls hQ
-  have hdj := (D.wall j).finrank_direction_add_one
-  exact AffineSubspace.eq_of_direction_eq_of_nonempty_of_le
-    (Submodule.eq_of_le_of_finrank_eq (AffineSubspace.direction_le hle) (by omega))
-    (((D.adaptedComplex k).nonempty Q
-      ((D.adaptedComplex k).mem_cells_of_mem_walls hQ)).mono (subset_affineSpan ℝ Q)) hle
+    affineSpan ℝ Q = affineSpan ℝ (D.wall j).support :=
+  (D.adaptedComplex k).affineSpan_eq_of_mem_walls_subset hQ hsub
+    (D.wall j).finrank_direction_add_one
 
 /-- Forget the extra cuts of the adapted complex without moving the path.
 Every active support is covered by adapted wall cells with its affine span. -/

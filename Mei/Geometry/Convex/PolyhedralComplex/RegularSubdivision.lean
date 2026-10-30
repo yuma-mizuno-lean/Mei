@@ -35,15 +35,9 @@ variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ 
 /-- Contained walls in two finite complexes have the same affine span. -/
 theorem affineSpan_eq_of_walls_subset (Q : C.walls) (P : D.walls)
     (hQP : (Q : Set V) ⊆ P) :
-    affineSpan ℝ (Q : Set V) = affineSpan ℝ (P : Set V) := by
-  have := h.finiteDimensional
-  have hle := affineSpan_mono ℝ hQP
-  have hQ := C.finrank_direction_add_one_of_mem_walls Q.property
-  have hP := D.finrank_direction_add_one_of_mem_walls P.property
-  exact AffineSubspace.eq_of_direction_eq_of_nonempty_of_le
-    (Submodule.eq_of_le_of_finrank_eq (AffineSubspace.direction_le hle) (by omega))
-    ((C.nonempty Q (C.mem_cells_of_mem_walls Q.property)).mono
-      (subset_affineSpan ℝ (Q : Set V))) hle
+    affineSpan ℝ (Q : Set V) = affineSpan ℝ (P : Set V) :=
+  C.affineSpan_eq_of_mem_walls_subset Q.property hQP
+    (D.finrank_direction_add_one_of_mem_walls P.property)
 
 namespace IsSubdivision
 

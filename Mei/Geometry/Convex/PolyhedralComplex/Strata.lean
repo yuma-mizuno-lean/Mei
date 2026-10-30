@@ -76,6 +76,19 @@ theorem finrank_direction_add_one_of_mem_walls (C : FinitePolyhedralComplex h)
     Module.finrank ℝ (affineSpan ℝ P).direction + 1 = Module.finrank ℝ V :=
   ((C.mem_cellsOfCodimension 1 P).mp hP).2
 
+/-- A wall contained in a set whose affine span also has codimension one has the
+same affine span as that set. -/
+theorem affineSpan_eq_of_mem_walls_subset (C : FinitePolyhedralComplex h)
+    {Q S : Set V} (hQ : Q ∈ C.walls) (hQS : Q ⊆ S)
+    (hS : Module.finrank ℝ (affineSpan ℝ S).direction + 1 = Module.finrank ℝ V) :
+    affineSpan ℝ Q = affineSpan ℝ S := by
+  have := h.finiteDimensional
+  have hle := affineSpan_mono ℝ hQS
+  have hQ' := C.finrank_direction_add_one_of_mem_walls hQ
+  exact AffineSubspace.eq_of_direction_eq_of_nonempty_of_le
+    (Submodule.eq_of_le_of_finrank_eq (AffineSubspace.direction_le hle) (by omega))
+    ((C.nonempty Q (C.mem_cells_of_mem_walls hQ)).mono (subset_affineSpan ℝ Q)) hle
+
 /-- A complement to the affine direction of a subset of a wall is transverse
 to that wall. No dimension hypothesis on the subset is required. -/
 theorem not_le_wall_direction_of_isCompl (C : FinitePolyhedralComplex h)

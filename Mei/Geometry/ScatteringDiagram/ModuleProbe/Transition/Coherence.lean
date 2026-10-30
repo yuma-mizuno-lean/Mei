@@ -63,9 +63,7 @@ theorem coefficientLocalTransition_refl (k : ℕ)
   apply T.section_ext_image T σ.regularInclusion σ.isOpenEmbedding_regularInclusion
     σ.coefficientPointMap (fun _ => rfl) le_rfl
   intro x hx
-  have hxU : x.val ∈ U := by
-    obtain ⟨y, hy, he⟩ := hx
-    exact σ.isOpenEmbedding_regularInclusion.injective he ▸ hy
+  have hxU : x.val ∈ U := σ.isOpenEmbedding_regularInclusion.injective.mem_set_image.mp hx
   rw [value_coefficientLocalTransition d ℳ p ℒ H h B (le_refl k) ν hν ν hν s x hxU,
     DenseBasisTransport.value_restrict]
   simp only [ModuleFiltration.transition_refl, LinearMap.id_apply]
@@ -105,9 +103,7 @@ theorem coefficientLocalTransition_comp {k l m : ℕ} (hkl : k ≤ l) (hlm : l �
   apply Tm.section_ext_image Tk σmk.regularInclusion σmk.isOpenEmbedding_regularInclusion
     σmk.coefficientPointMap (fun _ => rfl) le_rfl
   intro x hx
-  have hxU : x.val ∈ U := by
-    obtain ⟨y, hy, he⟩ := hx
-    exact σmk.isOpenEmbedding_regularInclusion.injective he ▸ hy
+  have hxU : x.val ∈ U := σmk.isOpenEmbedding_regularInclusion.injective.mem_set_image.mp hx
   rw [value_coefficientLocalTransition d ℳ p ℒ H h B (hkl.trans hlm)
     νk hνk νm hνm s x hxU]
   dsimp only [Tk]

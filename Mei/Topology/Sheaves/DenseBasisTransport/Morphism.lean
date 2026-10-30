@@ -113,16 +113,6 @@ private theorem value_chartSection {U : Opens X} {s : T.sheaf.presheaf.obj (op U
   rw [prelocal_pred_iff] at hp
   rw [hp B.carrier B.mem_basis le_rfl (T.chartAnchor B) x (T.chartAnchor_mem B) hx]
 
-include hq in
-private theorem point_mem_image_iff (U : Opens X) (x : S) :
-    (q x).val ∈ hj.functor.obj U ↔ x.val ∈ U := by
-  rw [hq]
-  constructor
-  · rintro ⟨y, hy, he⟩
-    exact hj.injective he ▸ hy
-  · intro hx
-    exact ⟨x.val, hx, rfl⟩
-
 include htransport in
 private theorem existsUnique_mapSection {U : Opens X} (s : T.sheaf.presheaf.obj (op U)) :
     ∃! t : T'.sheaf.presheaf.obj (op (hj.functor.obj U)),
@@ -141,8 +131,8 @@ private theorem existsUnique_mapSection {U : Opens X} (s : T.sheaf.presheaf.obj 
     apply T.section_ext_image T' j hj q hq (U := U)
       (inf_le_left.trans (inclusion B).le)
     intro x hx
-    have hxB := (point_mem_image_iff j hj q hq B.carrier x).mp hx.1
-    have hxC := (point_mem_image_iff j hj q hq C.carrier x).mp hx.2
+    have hxB := hj.injective.mem_set_image.mp (hq x ▸ hx.1)
+    have hxC := hj.injective.mem_set_image.mp (hq x ▸ hx.2)
     exact (T'.value_restrict inf_le_left _ _ hx).trans
       ((T.value_chartSection T' j hj q hq φ hchart htransport B x hxB).trans
         ((T.value_chartSection T' j hj q hq φ hchart htransport C x hxC).symm.trans
@@ -159,7 +149,7 @@ private theorem existsUnique_mapSection {U : Opens X} (s : T.sheaf.presheaf.obj 
   · intro t' ht'
     apply T.section_ext_image T' j hj q hq le_rfl
     intro x hx
-    have hxU := (point_mem_image_iff j hj q hq U x).mp hx
+    have hxU := hj.injective.mem_set_image.mp (hq x ▸ hx)
     obtain ⟨B, hxB⟩ := T.exists_sectionChart s x.val hxU
     have hxB' : (q x).val ∈ cover B := by rw [hq]; exact ⟨x.val, hxB, rfl⟩
     have he := (T'.value_restrict (inclusion B).le t (q x) hxB').symm.trans
@@ -178,11 +168,14 @@ private theorem value_mapSection {U : Opens X} (s : T.sheaf.presheaf.obj (op U))
   (T.existsUnique_mapSection T' j hj q hq φ hchart htransport s).choose_spec.1 x hx
 
 /-- The canonical target sheaf on the source space, with sections on the image
-of each source open. This is the naive open-embedding pullback, allowing a larger
-universe of coefficient values than that of the ambient spaces. -/
+of each source open. This is Mathlib's pushforward along the continuous functor
+`hj.functor`, i.e. the naive open-embedding pullback. Mathlib's
+`IsOpenEmbedding.sheafPullback` requires the value category's morphisms to live
+in the universe of the spaces, while coefficient values here may live in a
+larger universe. -/
 @[expose] def imageRestriction : X.Sheaf (Type (max u v)) :=
-  ⟨hj.functor.op ⋙ T'.sheaf.presheaf,
-    TopCat.Presheaf.isSheaf_of_isOpenEmbedding hj T'.sheaf.property⟩
+  haveI := hj.functor_isContinuous
+  (hj.functor.sheafPushforwardContinuous _ _ _).obj T'.sheaf
 
 /-- A coefficient map intertwining chart transport induces a morphism to the
 existing target sheaf restricted along the ambient open embedding. -/
@@ -194,7 +187,7 @@ def mapOfIntertwining : T.sheaf ⟶ T'.imageRestriction j hj := by
   intro s
   apply T.section_ext_image T' j hj q hq le_rfl
   intro x hx
-  have hxV := (point_mem_image_iff j hj q hq V.unop x).mp hx
+  have hxV := hj.injective.mem_set_image.mp (hq x ▸ hx)
   simp only [ConcreteCategory.comp_apply]
   -- The component homs are `mapSection`; `imageRestriction` maps `i` by the target
   -- restriction along the image-open map `hj.functor.map i.unop`.
@@ -233,7 +226,7 @@ theorem mapOfIntertwining_unique
   intro s
   apply T.section_ext_image T' j hj q hq le_rfl
   intro x hx
-  have hxU := (point_mem_image_iff j hj q hq U.unop x).mp hx
+  have hxU := hj.injective.mem_set_image.mp (hq x ▸ hx)
   exact (hα U.unop s x hxU).trans
     (T.value_mapOfIntertwining T' j hj q hq φ hchart htransport s x hxU).symm
 
