@@ -242,6 +242,16 @@ theorem rayExp_mem_degreeFiltration (f : R⟦X⟧) {a : ℕ} (ha : (a : ℤ) < d
   push_cast at hm
   nlinarith
 
+/-- A ray exponential projects to the identity at every cutoff below its degree,
+regardless of the coefficients of its power series. -/
+@[simp↓] -- Discard high-degree rays before expanding their partial sums.
+theorem projection_rayExp_eq_one_of_lt (f : R⟦X⟧) {k : ℕ}
+    (hk : (k : ℤ) < d.degree n) :
+    CompletedGroup.projection k (rayExp β hβ hn hn0 f) = 1 := by
+  exact MonoidHom.mem_ker.mp (by
+    simpa only [CompletedGroup.degreeFiltration_succ] using
+      rayExp_mem_degreeFiltration β hβ hn hn0 f hk)
+
 /-- A ray label lies in the completed subgroup of the supported ray through `n`. -/
 theorem rayExp_mem_completedRaySubgroup {w : SupportedRay d} (hw : n ∈ w.rayDegrees)
     (f : R⟦X⟧) : rayExp β hβ hn hn0 f ∈ d.completedRaySubgroup ℒ w := by
