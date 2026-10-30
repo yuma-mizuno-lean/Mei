@@ -5,6 +5,7 @@ Authors: Codex
 -/
 module
 
+import Mei.Algebra.MonoidAlgebra.Monomial
 public import Mathlib.Algebra.MonoidAlgebra.Grading
 
 /-!
@@ -78,15 +79,11 @@ variable {R M N : Type*} [CommSemiring R] [AddMonoid M]
 @[simp]
 theorem coe_decompose_grade [DecidableEq M] (x : R[M]) (m : M) :
     (DirectSum.decompose (grade R) x m : R[M]) = single m (x.coeff m) := by
-  induction x using DirectSum.Decomposition.inductionOn (grade R : M → Submodule R R[M]) with
-  | zero => simp
-  | add x y hx hy => simp [hx, hy, single_add]
-  | @homogeneous j x =>
-    obtain ⟨c, hc⟩ := (mem_grade_iff' R j x.val).mp x.property
-    rw [← hc, lsingle_apply, grade.decompose_single]
-    by_cases h : j = m
-    · subst m; simp
-    · simp [DirectSum.of_eq_of_ne _ _ _ (Ne.symm h), Ne.symm h]
+  -- The standard basis is defined by the coefficient equivalence.
+  have hrepr : (basis M R).repr x m = x.coeff m := rfl
+  simpa only [Mei.AddMonoidAlgebra.monomialPresentation_basis, hrepr,
+    basis_apply, smul_single, smul_eq_mul, mul_one] using
+    (Mei.AddMonoidAlgebra.monomialPresentation (R := R) (Γ := M)).coe_decompose x m
 
 /-- Uncurrying reads the two nested coefficients at the product exponent. -/
 @[simp]
