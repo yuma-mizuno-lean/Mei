@@ -201,6 +201,18 @@ theorem existsUnique_germLabel_mem_completedRaySubgroup [Module.Free ℤ N]
   exact (D.diagram k).label_mem_bchSubgroup_rayLieSubalgebra P
     ((D.diagram k).degree_mem_wallRay P)
 
+/-- Under abelian rays, the logarithmic coefficients of a regular completed germ
+have zero Lie bracket. -/
+theorem lie_logComponent_germLabel [Module.Free ℤ N] [IsAbelianRays d ℒ] (n m : N) :
+    ⁅(d.logComponent ℒ (D.germLabel θ hθ) n : L),
+      (d.logComponent ℒ (D.germLabel θ hθ) m : L)⁆ = 0 := by
+  by_cases hg : D.germLabel θ hθ = 1
+  · simp [hg]
+  · obtain ⟨w, hw, _⟩ := D.existsUnique_germLabel_mem_completedRaySubgroup θ hθ hg
+    exact lie_eq_zero_of_mem_rayLieSubalgebra ℒ
+      (d.logComponent_mem_rayLieSubalgebra ℒ hw n)
+      (d.logComponent_mem_rayLieSubalgebra ℒ hw m)
+
 /-- Any nonidentity finite wall label determines the ray of the entire completed
 germ, regardless of the walls used at other cutoffs. -/
 theorem germLabel_mem_completedRaySubgroup [Module.Free ℤ N]
