@@ -7,7 +7,7 @@ module
 
 public import Mei.RingTheory.FilteredAlgebra.Positive.Basic
 public import Mei.RingTheory.FilteredAlgebra.PowerSeries.Basic
-import TauCeti.RingTheory.PowerSeries.Geometric
+import Mathlib.RingTheory.PowerSeries.WellKnown
 
 /-!
 # Positivity of completed power series evaluations
@@ -55,10 +55,8 @@ inverse of the unit `1 + x` is positive: it is the evaluation of the geometric s
 theorem IsPositive.inv_of_val_eq_one_add {x : F.completionIdeal 1}
     (hx : F.IsPositive P (x : F.completion)) (hP : (-1 : B) ∈ P) {U : F.completionˣ}
     (hU : (U : F.completion) = 1 + x) : F.IsPositive P ((U⁻¹ : F.completionˣ) : F.completion) := by
-  have hgeom : PowerSeries.mk (fun j => (-1 : ℤ) ^ j) * (1 + PowerSeries.X) = 1 := by
-    simpa only [map_neg, map_one, neg_mul, one_mul, sub_neg_eq_add] using
-      TauCeti.powerSeries_mk_pow_mul_one_sub_C_mul_X_eq_one (-1 : ℤ)
-  have h := congrArg (F.completedAeval (R := ℤ) x) hgeom
+  have h := congrArg (F.completedAeval (R := ℤ) x)
+    (PowerSeries.mk_neg_one_pow_mul_one_add_eq_one ℤ)
   rw [map_mul, map_add, map_one, completedAeval_X, ← hU] at h
   rw [Units.inv_eq_of_mul_eq_one_left h]
   exact hx.completedAeval fun j => by simpa using _root_.pow_mem hP j

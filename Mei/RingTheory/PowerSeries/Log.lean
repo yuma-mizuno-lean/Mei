@@ -34,6 +34,7 @@ theorem map_logOf (φ : R →+* S) (f : PowerSeries R) (hf : constantCoeff f = 1
   simpa only [PowerSeries.map, logOf_eq, map_sub, map_one] using hs
 
 /-- A constant-one series and its formal logarithm have the same linear coefficient. -/
+@[simp]
 theorem coeff_one_logOf {f : PowerSeries R} (hf : constantCoeff f = 1) :
     coeff 1 (logOf f) = coeff 1 f := by
   have h := congrArg (coeff 0) (logDeriv_mul f hf)

@@ -164,7 +164,7 @@ end Monoid
 
 section Principal
 
-variable {S : Type*} [CommSemiring S]
+variable {S : Type*} [Semiring S]
   [Fact ((D.principalPositiveDegrees d).monoid ≤ D.principalCoefficientMonoid d)]
 
 /-- **Integrality detects the exponent.** If the principal action of `Ψ[n]^c`, for a

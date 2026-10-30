@@ -47,7 +47,7 @@ namespace Mei.SkewLatticeDatum
 
 open _root_.AddMonoidAlgebra
 
-variable {N S R ι : Type*} [AddCommGroup N] [CommSemiring S] [CommRing R] [Finite ι]
+variable {N S R ι : Type*} [AddCommGroup N] [CommRing R] [Finite ι]
   (D : SkewLatticeDatum N) (d : PositiveDegrees D.unfrozen)
   (e : d.monoid ≃+ (ι →₀ ℕ)) (he : ∀ n : d.monoid, d.degree n = ((e n).degree : ℤ))
 
@@ -61,7 +61,8 @@ include he
 /-- Positivity in the completed principal coefficient algebra, for the image of
 `S[Q_pr]`, is coefficientwise: every coefficient of every monomial `z^m t^n` lies in
 the image of `S`. No common finite lift of the whole series is required. -/
-theorem isPositive_principalCoefficientCompletion_iff (φ : S →+* R) (x : (F).completion) :
+theorem isPositive_principalCoefficientCompletion_iff [CommSemiring S]
+    (φ : S →+* R) (x : (F).completion) :
     (F).IsPositive (mapRingHom Q φ).rangeS x ↔
       ∀ (n : ι →₀ ℕ) (m : M),
         (MvPowerSeries.coeff n (D.principalCoefficientCompletionEquiv d e he x)).coeff m ∈
@@ -123,7 +124,8 @@ omit he in
 /-- A power series evaluated at a principal monomial `z^q` of nonzero unfrozen degree is
 positive for the image of `S[Q_pr]` exactly when all of its coefficients lie in the image
 of `S`. The coefficient of `z^(i q)` is read at the order `i deg q`, where it survives. -/
-theorem isPositive_completedAeval_single_iff (φ : S →+* R) (q : Q) (hq : q.val.2 ≠ 0)
+theorem isPositive_completedAeval_single_iff [Semiring S]
+    (φ : S →+* R) (q : Q) (hq : q.val.2 ≠ 0)
     (f : PowerSeries R) :
     (F).IsPositive (mapRingHom Q φ).rangeS
         ((F).completedAeval ⟨_, D.toCompletion_single_mem_completionIdeal_one d q hq⟩ f) ↔
