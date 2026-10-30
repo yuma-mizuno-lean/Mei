@@ -106,7 +106,8 @@ theorem localLabel_truncate {l : ℕ} (hkl : l ≤ k) :
   by_cases hP : ∃ P : C.walls, θ ∈ (P : Set V)
   · obtain ⟨P, hP⟩ := hP
     simp only [localLabel_of_mem _ θ hθ P hP, truncate_label]
-  · simp [localLabel_of_notMem, show ∀ P : C.walls, θ ∉ (P : Set V) by simpa using hP]
+  · have hP' : ∀ P : C.walls, θ ∉ (P : Set V) := by simpa using hP
+    simp [localLabel_of_notMem, hP']
 
 end KSComplex
 
@@ -216,7 +217,7 @@ theorem germLabel_mem_completedRaySubgroup [Module.Free ℤ N]
   have hwk := (d.mem_completedRaySubgroup ℒ w _).mp hw k
   rw [D.projection_germLabel_of_mem θ hθ k P hP] at hwk
   have heq : w = (D.diagram k).wallRay P :=
-    d.eq_of_mem_bchSubgroup_rayLieSubalgebra ℒ hlabel
+    d.eq_of_mem_bchSubgroup_rayLieSubalgebra (d.truncatedGrading ℒ k) hlabel
       ((LieSubalgebra.mem_bchSubgroup _ _).mpr hwk)
       ((D.diagram k).label_mem_bchSubgroup_rayLieSubalgebra P
         ((D.diagram k).degree_mem_wallRay P))

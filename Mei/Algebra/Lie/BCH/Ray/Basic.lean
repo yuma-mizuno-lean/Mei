@@ -42,6 +42,27 @@ noncomputable section
 
 namespace Mei.PositiveDegrees
 
+section Nilpotent
+
+variable {N R L : Type*} [AddCommGroup N] [CommRing R]
+  [LieRing L] [LieAlgebra R L] [DecidableEq N]
+  (d : PositiveDegrees N) (ℒ : N → Submodule R L)
+  [SetLike.GradedBracket ℒ ℒ] [DirectSum.Decomposition ℒ]
+  [Algebra ℚ R] [LieAlgebra ℚ L] [IsScalarTower ℚ R L] [LieRing.IsNilpotent L]
+
+/-- A nonidentity BCH label belongs to at most one supported-ray subgroup. -/
+theorem eq_of_mem_bchSubgroup_rayLieSubalgebra [HasUniqueDiv N]
+    {v w : SupportedRay d} {g : BCHGroup L} (hg : g ≠ 1)
+    (hv : g ∈ (rayLieSubalgebra ℒ v).bchSubgroup)
+    (hw : g ∈ (rayLieSubalgebra ℒ w).bchSubgroup) : v = w := by
+  by_contra hne
+  have hz := (disjoint_rayLieSubalgebra ℒ hne).le_bot
+    ⟨(LieSubalgebra.mem_bchSubgroup _ _).mp hv,
+      (LieSubalgebra.mem_bchSubgroup _ _).mp hw⟩
+  exact hg (BCHGroup.log_injective (hz.trans BCHGroup.log_one.symm))
+
+end Nilpotent
+
 variable {N R L : Type*} [AddCommGroup N] [CommRing R]
   [LieRing L] [LieAlgebra R L] [DecidableEq N]
   (d : PositiveDegrees N) (ℒ : N → Submodule R L)
@@ -124,17 +145,6 @@ theorem disjoint_completedRaySubgroup [HasUniqueDiv N] {v w : SupportedRay d} (h
         (d.mem_completedRaySubgroup ℒ w g).mp hg.2 k⟩
   exact hz.trans (BCHGroup.log_one (L := d.truncatedLie ℒ k)).symm
 
-/-- A nonidentity finite label belongs to at most one supported-ray subgroup. -/
-theorem eq_of_mem_bchSubgroup_rayLieSubalgebra [HasUniqueDiv N]
-    {k : ℕ} {v w : SupportedRay d} {g : d.truncatedGroup ℒ k} (hg : g ≠ 1)
-    (hv : g ∈ (rayLieSubalgebra (d.truncatedGrading ℒ k) v).bchSubgroup)
-    (hw : g ∈ (rayLieSubalgebra (d.truncatedGrading ℒ k) w).bchSubgroup) : v = w := by
-  by_contra hne
-  have hz := (disjoint_rayLieSubalgebra (d.truncatedGrading ℒ k) hne).le_bot
-    ⟨(LieSubalgebra.mem_bchSubgroup _ _).mp hv,
-      (LieSubalgebra.mem_bchSubgroup _ _).mp hw⟩
-  exact hg (BCHGroup.log_injective (hz.trans BCHGroup.log_one.symm))
-
 /-- If every nonidentity finite projection lies on some supported ray, a nonidentity
 completed label lies on one unique supported ray. The ray may initially depend on
 the cutoff; compatibility forces it to stabilize as soon as a projection is nontrivial. -/
@@ -167,7 +177,7 @@ theorem existsUnique_mem_completedRaySubgroup [HasUniqueDiv N]
         (rayLieSubalgebra (d.truncatedGrading ℒ k) v).bchSubgroup := by
       rw [← d.map_bchSubgroup_rayLieSubalgebra ℒ v hkl]
       exact ⟨_, hv, hproj hkl⟩
-    have hvw : v = w := d.eq_of_mem_bchSubgroup_rayLieSubalgebra ℒ hk hvk hw
+    have hvw : v = w := d.eq_of_mem_bchSubgroup_rayLieSubalgebra (d.truncatedGrading ℒ k) hk hvk hw
     exact hvw ▸ hv
   have hmem : g ∈ d.completedRaySubgroup ℒ w := by
     rw [mem_completedRaySubgroup]
