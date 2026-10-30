@@ -6,7 +6,6 @@ Authors: Codex
 module
 
 public import Mei.Geometry.ScatteringDiagram.Coefficient.LocalSystem
-import Mathlib.Topology.Perfect
 
 /-!
 # Transport of coefficient sections along polygonal paths
