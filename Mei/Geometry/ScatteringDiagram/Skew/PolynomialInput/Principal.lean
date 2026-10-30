@@ -424,16 +424,11 @@ theorem degree_principalLift_le {c : ℕ} (hc : ∀ i, I.multiplicity i ≤ c)
     (I.principalDatum.principalPositiveDegrees
         I.principalBasis.unfrozenBasis.positiveDegrees).degree (I.principalLift x) ≤
       c * (PositiveDegrees.finiteAlphabet I.letterExponent).degree x := by
-  obtain ⟨hpos, hsum⟩ := (PositiveDegrees.mem_finiteAlphabet_monoid I.letterExponent).mp hx
-  have h := PositiveDegrees.degree_map_eq_sum I.letterExponent
-    (e := I.principalDatum.principalPositiveDegrees I.principalBasis.unfrozenBasis.positiveDegrees)
-    (τ := I.principalLift.toAddMonoidHom) hsum
-  simp only [LinearMap.toAddMonoidHom_coe, degree_principalLift_letter] at h
-  rw [h, PositiveDegrees.finiteAlphabet_degree, Finset.mul_sum]
-  refine Finset.sum_le_sum fun α _ => ?_
+  refine PositiveDegrees.finiteAlphabet_degree_map_le_mul I.letterExponent
+    (τ := I.principalLift.toAddMonoidHom) (fun α => ?_) hx
+  simp only [LinearMap.toAddMonoidHom_coe, degree_principalLift_letter]
   have hs : (α.2 : ℕ) + 1 ≤ c := (Nat.succ_le_of_lt α.2.2).trans (hc α.1)
-  have hs' : ((α.2 : ℕ) + 1 : ℤ) ≤ c := by exact_mod_cast hs
-  nlinarith [hpos α]
+  exact_mod_cast hs
 
 end Lift
 
