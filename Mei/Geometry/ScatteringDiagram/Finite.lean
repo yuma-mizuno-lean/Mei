@@ -96,6 +96,35 @@ theorem pathProduct_eq_of_isSubdivision {p q : AdmissiblePLPath x y}
     (hpq : p.IsSubdivision q) : D.pathProduct q = D.pathProduct p := by
   rw [pathProduct_def, pathProduct_def, hpq.crossingWord_eq]
 
+/-- Splitting a segment at an off-wall point places the second segment's product
+on the left. -/
+theorem pathProduct_subdivide
+    {a : WallComplement (fun P : C.walls => (P : Set V))}
+    (e : x ⟶ y) (e₁ : x ⟶ a) (e₂ : a ⟶ y) {t : ℝ}
+    (ht : t ∈ Icc (0 : ℝ) 1) (ha : a.val = AffineMap.lineMap x.val y.val t) :
+    D.pathProduct e.toPath = D.pathProduct e₂.toPath * D.pathProduct e₁.toPath := by
+  simp only [pathProduct_def, Quiver.Hom.toPath, Quiver.Path.crossingWord_cons,
+    Quiver.Path.crossingWord_nil, mul_one]
+  rw [C.segmentCrossingWord_subdivide D.normal e e₁ e₂ ht ha, map_mul]
+
+/-- For two ordered off-wall points on a segment, transport to the later point
+factors through transport to the earlier point. -/
+theorem pathProduct_prefix
+    {a b : WallComplement (fun P : C.walls => (P : Set V))}
+    {s t : ℝ} (hs : s ∈ Icc (0 : ℝ) 1) (ht : t ∈ Icc (0 : ℝ) 1) (hst : s ≤ t)
+    (ha : a.val = AffineMap.lineMap x.val y.val s)
+    (hb : b.val = AffineMap.lineMap x.val y.val t)
+    (e₁ : x ⟶ a) (e₂ : x ⟶ b) (e₁₂ : a ⟶ b) :
+    D.pathProduct e₂.toPath = D.pathProduct e₁₂.toPath * D.pathProduct e₁.toPath := by
+  by_cases hz : t = 0
+  · have hs0 : s = 0 := le_antisymm (hst.trans_eq hz) hs.1
+    apply D.pathProduct_subdivide e₂ e₁ e₁₂ (t := 0) ⟨le_rfl, zero_le_one⟩
+    simp only [AffineMap.lineMap_apply_zero, ha, hs0]
+  · have hpos : 0 < t := lt_of_le_of_ne ht.1 (Ne.symm hz)
+    apply D.pathProduct_subdivide e₂ e₁ e₁₂ (t := s / t)
+      ⟨div_nonneg hs.1 hpos.le, (div_le_one hpos).mpr hst⟩
+    rw [ha, hb, AffineMap.lineMap_lineMap_right, div_mul_cancel₀ _ hz]
+
 /-- Reversal inverts the entire path product. -/
 @[simp]
 theorem pathProduct_reverse (p : AdmissiblePLPath x y) :

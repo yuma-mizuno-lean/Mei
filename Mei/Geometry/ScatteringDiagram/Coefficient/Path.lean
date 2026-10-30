@@ -13,11 +13,11 @@ import Mathlib.Topology.Perfect
 
 A section of the coefficient local system obeys transport along every admissible
 segment contained in its open domain, even when no single convex chart contains
-that segment. Normalize its off-wall values by the initial segment product.
-The local chart equations and the crossing-word subdivision law make these values
-constant near every parameter, including wall crossings. Dense extension to the
-whole interval then proves the segment equation. Concatenation gives the equation
-for arbitrary contained admissible polygonal paths.
+that segment. Use `coefficientLocalSystem_segment_of_subset` to compute the value
+at the final off-wall endpoint by applying the signed segment transport to the
+initial value. For a contained admissible polygonal path, use
+`coefficientLocalSystem_path` with the same endpoint values and the path transport.
+Both results apply to arbitrary open domains in the regular space.
 
 The sheaf, its local equations and coefficient evaluation are the existing
 `coefficientLocalSystem`, `coefficientLocalSystem_segment` and
@@ -37,39 +37,6 @@ variable {N : Type u} {V : Type v} [AddCommGroup N] [NormedAddCommGroup V]
   [NormedSpace ℝ V] {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
   {C : FinitePolyhedralComplex h} {H : Type w} [Group H]
   (D : FiniteWallDiagram C H)
-
-private theorem pathProduct_subdivide
-    {x y a : WallComplement (fun P : C.walls => (P : Set V))}
-    (e : x ⟶ y) (e₁ : x ⟶ a) (e₂ : a ⟶ y) {t : ℝ}
-    (ht : t ∈ Icc (0 : ℝ) 1) (ha : a.val = AffineMap.lineMap x.val y.val t) :
-    D.pathProduct e.toPath = D.pathProduct e₂.toPath * D.pathProduct e₁.toPath := by
-  simp only [pathProduct_def, Quiver.Hom.toPath, Quiver.Path.crossingWord_cons,
-    Quiver.Path.crossingWord_nil, mul_one]
-  rw [C.segmentCrossingWord_subdivide D.normal e e₁ e₂ ht ha, map_mul]
-
-private theorem pathProduct_prefix
-    {x y a b : WallComplement (fun P : C.walls => (P : Set V))}
-    {s t : ℝ} (hs : s ∈ Icc (0 : ℝ) 1) (ht : t ∈ Icc (0 : ℝ) 1) (hst : s ≤ t)
-    (ha : a.val = AffineMap.lineMap x.val y.val s)
-    (hb : b.val = AffineMap.lineMap x.val y.val t)
-    (e₁ : x ⟶ a) (e₂ : x ⟶ b) (e₁₂ : a ⟶ b) :
-    D.pathProduct e₂.toPath = D.pathProduct e₁₂.toPath * D.pathProduct e₁.toPath := by
-  by_cases hz : t = 0
-  · have hs0 : s = 0 := le_antisymm (hst.trans_eq hz) hs.1
-    apply D.pathProduct_subdivide e₂ e₁ e₁₂ (t := 0) ⟨le_rfl, zero_le_one⟩
-    simp only [AffineMap.lineMap_apply_zero, ha, hs0]
-  · have hpos : 0 < t := lt_of_le_of_ne ht.1 (Ne.symm hz)
-    apply D.pathProduct_subdivide e₂ e₁ e₁₂ (t := s / t)
-      ⟨div_nonneg hs.1 hpos.le, (div_le_one hpos).mpr hst⟩
-    rw [ha, hb, AffineMap.lineMap_lineMap_right, div_mul_cancel₀ _ hz]
-
-private theorem dense_compl_finite_interval {S : Set unitInterval} (hS : S.Finite) :
-    Dense Sᶜ := by
-  induction S, hS using Set.Finite.induction_on with
-  | empty => simpa only [compl_empty] using dense_univ
-  | @insert a s _ _ ih =>
-    simpa only [insert_eq, compl_union] using
-      (dense_compl_singleton a).inter_of_isOpen_left ih isOpen_compl_singleton
 
 section Segment
 
@@ -111,7 +78,8 @@ private theorem dense_segment_parameters :
         (⟨x.val.val, x.property⟩ : WallComplement (fun P : C.walls => (P : Set V)))
         ⟨y.val.val, y.property⟩) : Set unitInterval).Finite :=
     (e.down.finite_crossings.image Prod.snd).preimage Subtype.val_injective.injOn
-  have hd := dense_compl_finite_interval hfin
+  have hd := dense_univ.sdiff_finite hfin
+  rw [univ_sdiff] at hd
   apply hd.mono
   intro t ht P hp
   apply ht
@@ -202,7 +170,7 @@ private theorem normalizedValue_eq_in_chart {B : Opens C.regularSpace}
         (parameterPoint x y e hseg r.val r.property) hq hr =
         betweenSegment x y e hseg q.val r.val q.property r.property :=
       PLift.ext (Subsingleton.elim _ _)
-    rwa [heq] at hv' 
+    rwa [heq] at hv'
   by_cases hab : a.val ≤ b.val
   · exact D.normalizedValue_eq_of_le x y e hseg M s a b hab (hv a b ha hb)
   · exact (D.normalizedValue_eq_of_le x y e hseg M s b a
@@ -286,7 +254,9 @@ theorem coefficientLocalSystem_segment_of_subset :
         (D.coefficientTransport M).value s a.val a.property =
         (D.coefficientTransport M).value s b.val b.property := by
     intro d
-    exact hv
+    have heq : betweenSegment x y e hseg 0 1 hz ho = PLift.up d :=
+      PLift.ext (Subsingleton.elim _ _)
+    rwa [heq] at hv
   have ha : a = ⟨x, hx⟩ :=
     by
       dsimp only [a, parameterPoint]
