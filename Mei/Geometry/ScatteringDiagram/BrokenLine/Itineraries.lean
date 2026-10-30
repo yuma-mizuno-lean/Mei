@@ -322,6 +322,18 @@ variable {Λ : Type*} [AddCommGroup Λ] {i : Λ →+ V}
 
 include hf hP hW hS hC
 
+variable {d ℳ T a f ε} in
+/-- Rational encounter data give each decorated type a rational semilinear
+endpoint domain, including all avoidance and incoming-source conditions. -/
+theorem CutoffDecoratedType.isRationalSemilinear_domain {k : ℕ}
+    (t : CutoffDecoratedType d ℳ T a (fun q => i (w q)) f ε k) :
+    IsRationalSemilinear h (CutoffDecoratedType.domain c P W S C t) :=
+  isRationalSemilinear_admissibleBackwardDomain
+    (fun j => f (t.itinerary.val.get j)) (fun j => c (t.itinerary.val.get j))
+    (fun j => P (t.itinerary.val.get j)) W S C
+    (fun j => w (Fin.snoc (α := fun _ => Γ) t.history.val 0 j))
+    (fun j => hf (t.itinerary.val.get j)) (fun j => hP (t.itinerary.val.get j)) hW hS hC
+
 /-- One finite exceptional arrangement controls every encounter itinerary at the
 cutoff. All type-domain frontiers are exceptional, and nearby actual ray fibers
 are bijective with the same whole decorations. -/
@@ -335,11 +347,7 @@ theorem exists_cutoffDecoratedRay_membershipArrangement (k : ℕ) :
           ∀ r, (e r).itinerary = r.itinerary ∧ (e r).decoration = r.decoration := by
   have hdom (t : CutoffDecoratedType d ℳ T a (fun q => i (w q)) f ε k) :
       IsRationalSemilinear h (CutoffDecoratedType.domain c P W S C t) :=
-    isRationalSemilinear_admissibleBackwardDomain
-      (fun j => f (t.itinerary.val.get j)) (fun j => c (t.itinerary.val.get j))
-      (fun j => P (t.itinerary.val.get j)) W S C
-      (fun j => w (Fin.snoc (α := fun _ => Γ) t.history.val 0 j))
-      (fun j => hf _) (fun j => hP _) hW hS hC
+    t.isRationalSemilinear_domain c P W S C h w hf hP hW hS hC
   obtain ⟨E, hfrontier, hstable⟩ := IsRationalSemilinear.exists_membershipArrangement hdom
   refine ⟨E, hfrontier, fun Q hQ => (hstable Q hQ).mono fun Q' hQQ' => ?_⟩
   let eQ (Q : V) := cutoffDecoratedRayFiberEquiv d ℳ T a (fun q => i (w q))

@@ -23,8 +23,8 @@ is the sum of the fixed chart weights over the charts containing the endpoint.
 
 The construction combines `cutoffDecoratedRayFiberEquiv` with
 `IsRationalSemilinear.exists_disjoint_intrinsicInteriors`, using Mathlib’s
-`Set.sigmaToiUnion_injective` for uniqueness of the chart piece. The endpoint-chart
-description follows Carl–Pumperla–Siebert, *A tropical view on Landau–Ginzburg
+`Set.unionEqSigmaOfDisjoint` to identify each domain with its chart pieces. The
+endpoint-chart description follows Carl–Pumperla–Siebert, *A tropical view on Landau–Ginzburg
 models*, §4 (arXiv:2205.07753v2).
 -/
 
@@ -98,40 +98,25 @@ theorem exists_cutoffDecoratedRay_polyhedralCharts (k : ℕ) :
         ∀ z, (e z).2.decoration = z.1.decoration := by
   classical
   let D := CutoffDecoratedType d ℳ T a (fun q => i (w q)) f ε k
-  have hdom (t : D) : IsRationalSemilinear h (domain t) := by
-    rw [Set.ext (CutoffDecoratedType.mem_domain c P W S C t)]
-    exact isRationalSemilinear_admissibleBackwardDomain
-      (fun j => f (t.itinerary.val.get j)) (fun j => c (t.itinerary.val.get j))
-      (fun j => P (t.itinerary.val.get j)) W S C
-      (fun j => w (Fin.snoc (α := fun _ => Γ) t.history.val 0 j))
-      (fun j => hf _) (fun j => hP _) hW hS hC
+  have hdom (t : D) : IsRationalSemilinear h (domain t) :=
+    t.isRationalSemilinear_domain c P W S C h w hf hP hW hS hC
   choose ι hι B hB hdisj hcover using fun t => (hdom t).exists_disjoint_intrinsicInteriors
   let E (Q : V) := cutoffDecoratedRayFiberEquiv d ℳ T a (fun q => i (w q))
     f c ε P W S C k Q
-  let g (z : Σ t : D, Σ j : ι t, intrinsicInterior ℝ (B t j)) :
-      Σ Q, CutoffDecoratedRay d ℳ T a (fun q => i (w q)) f c ε P W S C k Q :=
-    ⟨z.2.2.val, (E z.2.2.val).symm
-      ⟨z.1, (hcover z.1) ▸ Set.mem_iUnion.mpr ⟨z.2.1, z.2.2.property⟩⟩⟩
-  have hg (z) : (E (g z).1 (g z).2).val = z.1 := by simp [g]
-  have hinj : Function.Injective g := by
-    rintro ⟨t, j, Q, hQ⟩ ⟨u, l, Q', hQ'⟩ he
-    have hQeq : Q = Q' := congrArg Sigma.fst he
-    have hteq : t = u := (hg _).symm.trans
-      ((congrArg (fun r => (E r.1 r.2).val) he).trans (hg _))
-    subst u
-    subst Q'
-    exact congrArg (Sigma.mk t)
-      (Set.sigmaToiUnion_injective _ (hdisj t) (Subtype.ext rfl))
-  have hsurj : Function.Surjective g := by
-    rintro ⟨Q, r⟩
-    obtain ⟨j, hj⟩ := Set.mem_iUnion.mp ((hcover (E Q r).val).symm ▸ (E Q r).property)
-    refine ⟨⟨(E Q r).val, j, Q, hj⟩, ?_⟩
-    exact congrArg (Sigma.mk Q) ((E Q).injective (by simp))
-  refine ⟨ι, hι, B, hB, hdisj, hcover, Equiv.ofBijective g ⟨hinj, hsurj⟩,
-    fun _ => rfl, hg, fun z => ?_⟩
+  let swap : (Σ t : D, domain t) ≃ (Σ Q, {t : D // Q ∈ domain t}) :=
+    { toFun := fun z => ⟨z.2.val, z.1, z.2.property⟩
+      invFun := fun z => ⟨z.2.val, z.1, z.2.property⟩
+      left_inv := fun _ => rfl
+      right_inv := fun _ => rfl }
+  let e := (Equiv.sigmaCongrRight fun t =>
+    (Set.unionEqSigmaOfDisjoint (hdisj t)).symm.trans (Set.equivOfEq (hcover t))).trans
+      (swap.trans (Equiv.sigmaCongrRight fun Q => (E Q).symm))
+  have he (z) : (E (e z).1 (e z).2).val = z.1 := by
+    exact congrArg Subtype.val ((E _).apply_symm_apply _)
+  refine ⟨ι, hι, B, hB, hdisj, hcover, e, fun _ => rfl, he, fun z => ?_⟩
   exact (cutoffDecoratedRayFiberEquiv_decoration d ℳ T a (fun q => i (w q))
-    f c ε P W S C k (g z).1 (g z).2).symm.trans
-      (congrArg CutoffDecoratedType.decoration (hg z))
+    f c ε P W S C k (e z).1 (e z).2).symm.trans
+      (congrArg CutoffDecoratedType.decoration (he z))
 
 end Rational
 
