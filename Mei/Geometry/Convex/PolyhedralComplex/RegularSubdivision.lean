@@ -105,10 +105,6 @@ theorem coefficientPointMap_trans (hDE : D.IsSubdivision E) (x : C.coefficientPo
 abbrev regularOpenImage (U : Opens C.regularSpace) : Opens D.regularSpace :=
   hCD.isOpenEmbedding_regularInclusion.functor.obj U
 
-/-- A coarse regular point lies in the open image exactly when it comes from the fine open. -/
-theorem mem_regularOpenImage_iff (U : Opens C.regularSpace) (y : D.regularSpace) :
-    y ∈ hCD.regularOpenImage U ↔ ∃ x ∈ U, hCD.regularInclusion x = y := (Iff.rfl)
-
 /-- Regular-locus inclusion reflects membership in open images. -/
 @[simp]
 theorem regularInclusion_mem_regularOpenImage_iff (U : Opens C.regularSpace)
