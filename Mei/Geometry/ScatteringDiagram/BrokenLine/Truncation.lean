@@ -122,6 +122,7 @@ theorem projection_completedBCHDecoratedRayEvaluation
 
 /-- An input above a cutoff contributes no ray sum in that quotient, even
 when its decoration and its rays survive at higher orders. -/
+@[simp high] -- Apply before expanding the projection to a finite ray sum.
 theorem projection_completedBCHDecoratedRayEvaluation_eq_zero_of_lt
     (g : Fin n → d.completedBCHGroup ℒ) (r : Γ)
     (a : shiftedGrading ℳ d.monoid p r) {k : ℕ} (hk : (k : ℤ) < d.degree r) :
