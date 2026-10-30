@@ -93,6 +93,14 @@ theorem mem_jointTriangleWords (ν : C.walls → V →ₗ[ℝ] ℝ) (J U : Set V
           (∀ Q ∈ C.cells, (convexHull ℝ {x.val, y.val, z.val} ∩ Q).Nonempty → J ⊆ Q) ∧
           g = ((e.toPath.cons f).cons r).crossingWord ν := Iff.rfl
 
+/-- Enlarging the region keeps every isolating meridian of a joint. -/
+theorem jointTriangleWords_mono (ν : C.walls → V →ₗ[ℝ] ℝ) (J : Set V) {U U' : Set V}
+    (hUU' : U ⊆ U') : C.jointTriangleWords ν J U ⊆ C.jointTriangleWords ν J U' := by
+  intro g hg
+  obtain ⟨x, y, z, e, f, r, q, hq, hedge, hU, hrest⟩ := (C.mem_jointTriangleWords ν J U g).mp hg
+  exact (C.mem_jointTriangleWords ν J U' g).mpr
+    ⟨x, y, z, e, f, r, q, hq, hedge, hU.trans hUU', hrest⟩
+
 /-- Isolating joint meridians are triangular relations in the same region. -/
 theorem jointTriangleWords_subset_triangleWords (ν : C.walls → V →ₗ[ℝ] ℝ) (J U : Set V) :
     C.jointTriangleWords ν J U ⊆ C.triangleWords ν U := by
@@ -100,6 +108,26 @@ theorem jointTriangleWords_subset_triangleWords (ν : C.walls → V →ₗ[ℝ] 
   exact (C.mem_triangleWords ν U _).mpr ⟨x, y, z, e, f, r,
     hU (subset_convexHull ℝ _ (by simp)), hU (subset_convexHull ℝ _ (by simp)),
     hU (subset_convexHull ℝ _ (by simp)), rfl⟩
+
+/-- Words of the isolating triangular meridians, in `U`, of all joints of the complex. -/
+def jointMeridianWords (ν : C.walls → V →ₗ[ℝ] ℝ) (U : Set V) : Set (FreeGroup C.walls) :=
+  {g | ∃ J ∈ C.joints, g ∈ C.jointTriangleWords ν J U}
+
+@[simp]
+theorem mem_jointMeridianWords (ν : C.walls → V →ₗ[ℝ] ℝ) (U : Set V) (g : FreeGroup C.walls) :
+    g ∈ C.jointMeridianWords ν U ↔ ∃ J ∈ C.joints, g ∈ C.jointTriangleWords ν J U := Iff.rfl
+
+/-- Enlarging the region keeps every joint meridian. -/
+theorem jointMeridianWords_mono (ν : C.walls → V →ₗ[ℝ] ℝ) {U U' : Set V} (hUU' : U ⊆ U') :
+    C.jointMeridianWords ν U ⊆ C.jointMeridianWords ν U' := by
+  rintro g ⟨J, hJ, hg⟩
+  exact ⟨J, hJ, C.jointTriangleWords_mono ν J hUU' hg⟩
+
+/-- Joint meridians are triangular relations in the same region. -/
+theorem jointMeridianWords_subset_triangleWords (ν : C.walls → V →ₗ[ℝ] ℝ) (U : Set V) :
+    C.jointMeridianWords ν U ⊆ C.triangleWords ν U := by
+  rintro g ⟨J, -, hg⟩
+  exact C.jointTriangleWords_subset_triangleWords ν J U hg
 
 variable {C} {J U : Set V}
 

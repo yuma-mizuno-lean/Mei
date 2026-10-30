@@ -5,8 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.Convex.PolyhedralComplex.PathSubdivision
-public import Mei.Geometry.Convex.PolyhedralComplex.TriangleReduction
+public import Mei.Geometry.Convex.PolyhedralComplex.Filling.Joint
 public import Mei.Geometry.Convex.Polyhedron.Path.Product
 
 /-!
@@ -21,7 +20,8 @@ Positive rescaling of normals, or reversing chosen normals while inverting their
 labels, preserves every path product. Consistency means endpoint independence;
 it is equivalent to triviality of all admissible loop products.
 It suffices to test three-edge loops: admissible spokes to a common apex reduce
-every polygonal loop to triangular relations.
+every polygonal loop to triangular relations. When the complex covers the ambient space,
+it suffices to test the isolating triangular meridians of its joints.
 
 The construction uses Mathlib's `FreeGroup.lift` and the signed polygonal crossing
 words in `Mei.Geometry.Convex.PolyhedralComplex.CrossingWord`.
@@ -315,7 +315,7 @@ theorem consistent_iff_loops : D.Consistent ↔
     exact (inv_mul_eq_one.mp (by simpa only [pathProduct_comp, pathProduct_reverse] using he)).symm
 
 /-- Consistency can be tested on admissible three-edge loops. The triangles may
-contain several joints; reducing them to local meridians is a further step. -/
+contain several joints; `consistent_iff_jointMeridianWords` reduces them to local meridians. -/
 theorem consistent_iff_triangles : D.Consistent ↔
     ∀ (x y z : WallComplement (fun P : C.walls => (P : Set V)))
       (e : x ⟶ y) (f : y ⟶ z) (r : z ⟶ x),
@@ -334,6 +334,26 @@ theorem consistent_iff_triangles : D.Consistent ↔
     obtain ⟨a, b, c, e, f, r, _, _, _, rfl⟩ := (C.mem_triangleWords D.normal univ g).mp hg
     apply MonoidHom.mem_ker.mpr
     simpa only [pathProduct_def] using htri a b c e f r
+
+/-- For a complex covering the ambient space, a diagram is consistent exactly when its
+labels kill the words of the isolating triangular meridians of all joints. -/
+theorem consistent_iff_jointMeridianWords (hC : C.support = univ) :
+    D.Consistent ↔ ∀ g ∈ C.jointMeridianWords D.normal univ, FreeGroup.lift D.label g = 1 := by
+  constructor
+  · intro hD g hg
+    obtain ⟨x, y, z, e, f, r, hx, hy, hz, rfl⟩ :=
+      (C.mem_triangleWords D.normal univ g).mp
+        (C.jointMeridianWords_subset_triangleWords D.normal univ hg)
+    simpa only [pathProduct_def] using
+      D.consistent_iff_loops.mp hD x ((e.toPath.cons f).cons r)
+  · intro hmer
+    apply D.consistent_iff_loops.mpr
+    intro x p
+    rw [pathProduct_def, ← MonoidHom.mem_ker]
+    exact Subgroup.normalClosure_le_normal (N := (FreeGroup.lift D.label).ker)
+      (fun g hg => MonoidHom.mem_ker.mpr (hmer g hg))
+      (p.crossingWord_mem_normalClosure_jointMeridianWords hC D.normal D.ker_normal
+        isOpen_univ convex_univ (fun _ _ => mem_univ _))
 
 variable {D} in
 /-- A homomorphism of label groups preserves consistency. -/

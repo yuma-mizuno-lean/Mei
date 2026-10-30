@@ -201,8 +201,9 @@ theorem existsUnique_germLabel_mem_completedRaySubgroup [Module.Free ℤ N]
   exact (D.diagram k).label_mem_bchSubgroup_rayLieSubalgebra P
     ((D.diagram k).degree_mem_wallRay P)
 
-/-- Under abelian rays, the logarithmic coefficients of a regular completed germ
-have zero Lie bracket. -/
+/-- The logarithmic coefficients of a regular completed germ commute pairwise
+when ray Lie algebras are abelian. -/
+@[simp]
 theorem lie_logComponent_germLabel [Module.Free ℤ N] [IsAbelianRays d ℒ] (n m : N) :
     ⁅(d.logComponent ℒ (D.germLabel θ hθ) n : L),
       (d.logComponent ℒ (D.germLabel θ hθ) m : L)⁆ = 0 := by
