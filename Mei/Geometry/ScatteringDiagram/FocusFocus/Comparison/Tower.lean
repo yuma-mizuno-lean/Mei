@@ -45,6 +45,39 @@ private abbrev coefficientReduction {k l : ℕ} (hl : l ≤ k) :
   mapAlgHom (ℤ × ℤ) (AdjoinRoot.mapAlgHom (AlgHom.id K K) _ _
     (by simpa using pow_dvd_pow (Polynomial.X : Polynomial K) (Nat.add_le_add_right hl 1)))
 
+-- Paste the comparison naturality squares with the chamber reduction square.
+private theorem laurentIncidenceReduction_square {k l : ℕ} (hl : l ≤ k)
+    {j : WalkingSpan} (f : WalkingSpan.zero ⟶ j)
+    (r : (laurentSlabIncidence K k).obj j ⟶ (laurentSlabIncidence K l).obj j)
+    (hcoeff : ∀ a : (slabIncidence K k).obj j,
+      r.hom (((chamberLaurentIncidenceComparison K k).app j).hom a) =
+        ((chamberLaurentIncidenceComparison K l).app j).hom
+          (((slabIncidenceReduction K hl).app j).hom a)) :
+    (laurentSlabIncidence K k).map f ≫ r =
+      (AlgCat.ofHom ((e(k)).toAlgHom.restrictScalars K) ≫
+        (slabIncidenceReduction K hl).app .zero ≫
+        (chamberLaurentIncidenceComparison K l).app .zero) ≫
+          (laurentSlabIncidence K l).map f := by
+  apply AlgCat.hom_ext
+  apply AlgHom.ext
+  intro z
+  have hv := congrArg (fun g => g.hom ((e(k)) z))
+    ((chamberLaurentIncidenceComparison K k).naturality f)
+  have hv' := congrArg (fun g => g.hom
+    (((slabIncidenceReduction K hl).app .zero).hom ((e(k)) z)))
+    ((chamberLaurentIncidenceComparison K l).naturality f)
+  have hvr := congrArg (fun g => g.hom ((e(k)) z))
+    ((slabIncidenceReduction K hl).naturality f)
+  simp only [AlgCat.hom_comp, AlgHom.comp_apply,
+    chamberLaurentIncidenceComparison_app_zero, AlgEquiv.symm_apply_apply] at hv hv'
+  simp only [AlgCat.hom_comp, AlgHom.comp_apply] at hvr
+  simpa only [AlgCat.hom_comp, AlgHom.comp_apply, AlgCat.hom_ofHom,
+    AlgHom.restrictScalars_apply, AlgEquiv.toAlgHom_apply,
+    chamberLaurentIncidenceComparison_app_zero] using
+    (hv'.symm.trans
+      ((congrArg (((chamberLaurentIncidenceComparison K l).app j).hom) hvr.symm).trans
+        ((hcoeff _).symm.trans (congrArg r.hom hv)))).symm
+
 /-- Cutoff reduction of the Laurent slab span. The face map is transported by
 the slab dictionary and the chamber maps reduce coefficients. -/
 def laurentSlabIncidenceReduction {k l : ℕ} (hl : l ≤ k) :
@@ -55,68 +88,32 @@ def laurentSlabIncidenceReduction {k l : ℕ} (hl : l ≤ k) :
       (chamberLaurentIncidenceComparison K l).app .zero)
     (AlgCat.ofHom (coefficientReduction K hl))
     (AlgCat.ofHom (coefficientReduction K hl))
-    (by
-      apply AlgCat.hom_ext
-      apply AlgHom.ext
-      intro z
-      have h := NatTrans.naturality (chamberLaurentIncidenceComparison K k)
-        WalkingSpan.Hom.fst
-      have h' := NatTrans.naturality (chamberLaurentIncidenceComparison K l)
-        WalkingSpan.Hom.fst
-      have hr := NatTrans.naturality (slabIncidenceReduction K hl) WalkingSpan.Hom.fst
-      have hv := congrArg (fun f => f.hom ((e(k)) z)) h
-      have hv' := congrArg (fun f => f.hom
-        (((slabIncidenceReduction K hl).app .zero).hom ((e(k)) z))) h'
-      have hvr := congrArg (fun f => f.hom ((e(k)) z)) hr
-      have hcoeff (a : TruncatedExponentChamber K k 1) :
-          coefficientReduction K hl (leftChamberExponentMap K k a) =
-            leftChamberExponentMap K l
-              (((slabIncidenceReduction K hl).app .left).hom a) := by
-        simpa only [slabIncidenceReduction_app_left, coefficientReduction,
-          ← AlgHom.coe_toRingHom, toRingHom_mapAlgHom, AdjoinRoot.mapAlgHom,
-          AlgHom.toRingHom_eq_coe, AlgHom.id_toRingHom] using
-          (leftChamberExponentMap_truncatedExponentChamberMap (RingHom.id K) hl a).symm
-      simp only [AlgCat.hom_comp, AlgHom.comp_apply,
-        chamberLaurentIncidenceComparison_app_zero,
-        chamberLaurentIncidenceComparison_app_left, AlgEquiv.symm_apply_apply] at hv hv'
-      simp only [AlgCat.hom_comp, AlgHom.comp_apply] at hvr
-      simpa only [AlgCat.hom_comp, AlgHom.comp_apply, AlgCat.hom_ofHom,
-        AlgHom.restrictScalars_apply, AlgEquiv.toAlgHom_apply,
-        chamberLaurentIncidenceComparison_app_zero] using
-        (hv'.symm.trans ((congrArg (leftChamberExponentMap K l) hvr.symm).trans
-          ((hcoeff _).symm.trans
-            (congrArg (coefficientReduction K hl) hv)))).symm)
-    (by
-      apply AlgCat.hom_ext
-      apply AlgHom.ext
-      intro z
-      have h := NatTrans.naturality (chamberLaurentIncidenceComparison K k)
-        WalkingSpan.Hom.snd
-      have h' := NatTrans.naturality (chamberLaurentIncidenceComparison K l)
-        WalkingSpan.Hom.snd
-      have hr := NatTrans.naturality (slabIncidenceReduction K hl) WalkingSpan.Hom.snd
-      have hv := congrArg (fun f => f.hom ((e(k)) z)) h
-      have hv' := congrArg (fun f => f.hom
-        (((slabIncidenceReduction K hl).app .zero).hom ((e(k)) z))) h'
-      have hvr := congrArg (fun f => f.hom ((e(k)) z)) hr
-      have hcoeff (a : TruncatedExponentChamber K k 0) :
-          coefficientReduction K hl (rightChamberExponentMap K k a) =
-            rightChamberExponentMap K l
-              (((slabIncidenceReduction K hl).app .right).hom a) := by
-        simpa only [slabIncidenceReduction_app_right, coefficientReduction,
-          ← AlgHom.coe_toRingHom, toRingHom_mapAlgHom, AdjoinRoot.mapAlgHom,
-          AlgHom.toRingHom_eq_coe, AlgHom.id_toRingHom] using
-          (rightChamberExponentMap_truncatedExponentChamberMap (RingHom.id K) hl a).symm
-      simp only [AlgCat.hom_comp, AlgHom.comp_apply,
-        chamberLaurentIncidenceComparison_app_zero,
-        chamberLaurentIncidenceComparison_app_right, AlgEquiv.symm_apply_apply] at hv hv'
-      simp only [AlgCat.hom_comp, AlgHom.comp_apply] at hvr
-      simpa only [AlgCat.hom_comp, AlgHom.comp_apply, AlgCat.hom_ofHom,
-        AlgHom.restrictScalars_apply, AlgEquiv.toAlgHom_apply,
-        chamberLaurentIncidenceComparison_app_zero] using
-        (hv'.symm.trans ((congrArg (rightChamberExponentMap K l) hvr.symm).trans
-          ((hcoeff _).symm.trans
-            (congrArg (coefficientReduction K hl) hv)))).symm)
+    (laurentIncidenceReduction_square K hl WalkingSpan.Hom.fst
+      (AlgCat.ofHom (coefficientReduction K hl)) (by
+        have hcoeff (a : TruncatedExponentChamber K k 1) :
+            coefficientReduction K hl (leftChamberExponentMap K k a) =
+              leftChamberExponentMap K l
+                (((slabIncidenceReduction K hl).app .left).hom a) := by
+          simpa only [slabIncidenceReduction_app_left, coefficientReduction,
+            ← AlgHom.coe_toRingHom, toRingHom_mapAlgHom, AdjoinRoot.mapAlgHom,
+            AlgHom.toRingHom_eq_coe, AlgHom.id_toRingHom] using
+            (leftChamberExponentMap_truncatedExponentChamberMap (RingHom.id K) hl a).symm
+        intro a
+        simpa only [chamberLaurentIncidenceComparison_app_left, AlgCat.hom_ofHom]
+          using hcoeff a))
+    (laurentIncidenceReduction_square K hl WalkingSpan.Hom.snd
+      (AlgCat.ofHom (coefficientReduction K hl)) (by
+        have hcoeff (a : TruncatedExponentChamber K k 0) :
+            coefficientReduction K hl (rightChamberExponentMap K k a) =
+              rightChamberExponentMap K l
+                (((slabIncidenceReduction K hl).app .right).hom a) := by
+          simpa only [slabIncidenceReduction_app_right, coefficientReduction,
+            ← AlgHom.coe_toRingHom, toRingHom_mapAlgHom, AdjoinRoot.mapAlgHom,
+            AlgHom.toRingHom_eq_coe, AlgHom.id_toRingHom] using
+            (rightChamberExponentMap_truncatedExponentChamberMap (RingHom.id K) hl a).symm
+        intro a
+        simpa only [chamberLaurentIncidenceComparison_app_right, AlgCat.hom_ofHom]
+          using hcoeff a))
 
 /-- The face reduction is the canonical reduction in nodal coordinates. -/
 @[simp↓]
@@ -216,9 +213,8 @@ theorem laurentSlabIncidenceReduction_comp {k l m : ℕ} (hl : l ≤ k) (hm : m 
   all_goals
     simp only [NatTrans.comp_app, AlgCat.hom_comp, AlgHom.comp_apply,
       laurentSlabIncidenceReduction_app_left, laurentSlabIncidenceReduction_app_right]
-    rw [← RingHom.comp_apply, ← mapRingHom_comp]
-    congr 2
-    ext <;> simp
+    rw [← RingHom.comp_apply, ← mapRingHom_comp, AdjoinRoot.map_comp_map]
+    rfl
 
 /-- The full-exponent Laurent slab diagrams form a tower over the original
 coefficient ring. -/
