@@ -88,20 +88,24 @@ theorem IsRationalSemilinear.exists_common_partition
     exact hmem σ x y hx hy
 
 /-- A rational semilinear set is a finite disjoint union of relative interiors of
-nonempty closed rational-normal polyhedra. Each closed chart lies in the closure
-of the original set, so it adds only limits of valid points. -/
+nonempty closed rational-normal polyhedra with locally closed polyhedral interiors.
+Each closed chart lies in the closure of the original set, so it adds only limits
+of valid points. -/
 theorem IsRationalSemilinear.exists_disjoint_intrinsicInteriors
     {S : Set V} (hS : IsRationalSemilinear h S) :
     ∃ (κ : Type) (_ : Finite κ) (K : κ → Set V),
-      (∀ a, (K a).Nonempty ∧ IsRationalNormalPolyhedron h (K a) ∧ K a ⊆ closure S) ∧
+      (∀ a, (K a).Nonempty ∧ IsRationalNormalPolyhedron h (K a) ∧
+        IsLocallyClosedPolyhedron h (intrinsicInterior ℝ (K a)) ∧ K a ⊆ closure S) ∧
         (Pairwise fun a b => Disjoint (intrinsicInterior ℝ (K a))
           (intrinsicInterior ℝ (K b))) ∧ ⋃ a, intrinsicInterior ℝ (K a) = S := by
   obtain ⟨ι, _, g, hg, s, hs⟩ := hS.exists_eq_biUnion_signCell
   let κ := {σ : ι → SignType // σ ∈ s ∧ (Convex.signCell g σ).Nonempty}
   refine ⟨κ, inferInstance, fun σ => closure (Convex.signCell g σ), ?_, ?_, ?_⟩
   · intro σ
-    refine ⟨σ.property.2.mono subset_closure, ?_, ?_⟩
+    refine ⟨σ.property.2.mono subset_closure, ?_, ?_, ?_⟩
     · exact (isLocallyClosedPolyhedron_signCell g hg σ).isRationalNormalPolyhedron_closure
+    · rw [Convex.intrinsicInterior_closure_signCell]
+      exact isLocallyClosedPolyhedron_signCell g hg σ
     · apply closure_mono
       rw [← hs]
       exact Set.subset_iUnion₂_of_subset σ.val σ.property.1 Set.Subset.rfl
