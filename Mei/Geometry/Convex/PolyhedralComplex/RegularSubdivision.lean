@@ -105,12 +105,27 @@ theorem coefficientPointMap_trans (hDE : D.IsSubdivision E) (x : C.coefficientPo
 abbrev regularOpenImage (U : Opens C.regularSpace) : Opens D.regularSpace :=
   hCD.isOpenEmbedding_regularInclusion.functor.obj U
 
+/-- A coarse regular point lies in the open image exactly when it comes from the fine open. -/
+theorem mem_regularOpenImage_iff (U : Opens C.regularSpace) (y : D.regularSpace) :
+    y ∈ hCD.regularOpenImage U ↔ ∃ x ∈ U, hCD.regularInclusion x = y := (Iff.rfl)
+
+/-- Regular-locus inclusion reflects membership in open images. -/
+@[simp]
+theorem regularInclusion_mem_regularOpenImage_iff (U : Opens C.regularSpace)
+    (x : C.regularSpace) : hCD.regularInclusion x ∈ hCD.regularOpenImage U ↔ x ∈ U :=
+  hCD.isOpenEmbedding_regularInclusion.injective.mem_set_image
+
+/-- Coefficient-point inclusion reflects membership in open images. -/
+theorem coefficientPointMap_mem_regularOpenImage_iff (U : Opens C.regularSpace)
+    (x : C.coefficientPoints) :
+    (hCD.coefficientPointMap x).val ∈ hCD.regularOpenImage U ↔ x.val ∈ U := by
+  rw [coefficientPointMap_val, regularInclusion_mem_regularOpenImage_iff]
+
 /-- A fine coefficient point maps into the image of every regular open containing it. -/
 theorem coefficientPointMap_mem_regularOpenImage (U : Opens C.regularSpace)
     (x : C.coefficientPoints) (hx : x.val ∈ U) :
-    (hCD.coefficientPointMap x).val ∈ hCD.regularOpenImage U := by
-  rw [coefficientPointMap_val]
-  exact ⟨x.val, hx, rfl⟩
+    (hCD.coefficientPointMap x).val ∈ hCD.regularOpenImage U :=
+  (hCD.coefficientPointMap_mem_regularOpenImage_iff U x).mpr hx
 
 omit hCD in
 /-- Reflexive subdivision fixes each regular open. -/
