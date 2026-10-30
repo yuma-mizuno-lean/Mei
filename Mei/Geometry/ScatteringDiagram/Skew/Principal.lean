@@ -85,6 +85,14 @@ theorem principalNormal_apply (n : D.unfrozen)
     (x : Module.Dual ℤ D.sublattice × D.unfrozen) :
     D.principalNormal n x = x.1 (D.sublattice.toAddSubgroup.rayVector n) := (rfl)
 
+/-- Positive multiples have the same normalized principal normal. -/
+theorem principalNormal_zsmul {a : ℤ} (ha : 0 < a) (n : D.unfrozen) :
+    D.principalNormal (a • n) = D.principalNormal n := by
+  apply LinearMap.ext
+  intro x
+  simp only [principalNormal_apply, Submodule.coe_smul,
+    AddSubgroup.rayVector_zsmul _ ha]
+
 /-- The integral principal normal is primitive for each nonzero unfrozen exponent.
 The sublattice freeness assumption follows automatically from finite ambient rank. -/
 theorem isPrimitive_principalNormal [Module.Free ℤ D.sublattice]
