@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.ScatteringDiagram.KS.Basic
+public import Mei.Geometry.ScatteringDiagram.KS.Ray
 
 /-!
 # Coefficient maps of finite KS complexes
@@ -64,6 +64,17 @@ def map (D : KSComplex s d ℒ C k)
 @[simp]
 theorem map_degree (D : KSComplex s d ℒ C k)
     (f : GradedLieHom (PositiveDegreeMap.id d) ℒ ℳ) : (D.map f).degree = D.degree := (rfl)
+
+/-- Coefficient change preserves the supported primitive ray of each wall,
+including walls whose labels become trivial. -/
+@[simp]
+theorem map_wallRay [Module.Free ℤ N] (D : KSComplex s d ℒ C k)
+    (f : GradedLieHom (PositiveDegreeMap.id d) ℒ ℳ) (P : C.walls) :
+    (D.map f).wallRay P = D.wallRay P := by
+  let : HasUniqueDiv N := .of_isTorsionFree ℤ N
+  exact SupportedRay.eq_of_mem_rayDegrees
+    (by simpa only [map_degree] using (D.map f).degree_mem_wallRay P)
+    (D.degree_mem_wallRay P)
 
 /-- Each label is mapped by the induced homomorphism of finite BCH groups. -/
 @[simp]
