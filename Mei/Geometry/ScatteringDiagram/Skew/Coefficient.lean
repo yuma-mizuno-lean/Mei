@@ -8,6 +8,7 @@ module
 public import Mei.Geometry.ScatteringDiagram.Skew.Embedding
 public import Mei.Algebra.Lie.Logarithmic.Coefficient
 public import Mei.Algebra.Lie.Filtered.Map
+public import Mei.Algebra.Lie.BCH.Filtration
 
 /-!
 # Principal coefficient actions
@@ -331,6 +332,60 @@ theorem completedBCHAction_eq_completedMap (g : d.completedBCHGroup 𝓛) :
     (D.principalGradedLieHom d) (AlgHom.id R R[Qpr]) (fun _ _ => rfl) id monotone_id
     (fun _ => by simp) g z
   simpa only [AlgFiltration.mapCompletionₐ_id, AlgHom.id_apply] using h
+
+section FilteredAction
+
+local notation "e" => D.principalPositiveDegrees d
+local notation "ℳ" => tropicalVertexGrading (R := R) e (AddMonoidHom.id Lpr)
+
+/-- On a label in the degree filtration above order `a`, the principal action at order `a + 1`
+sends a monomial `z^p` to `z^p + y · z^p`, for any representative `y` of the logarithm of the
+label at that order: the square of the action of `y` raises the order beyond `a + 1`. -/
+theorem projection_completedBCHAction_single_of_mem_degreeFiltration
+    {g : d.completedBCHGroup 𝓛} {a : ℕ}
+    (hg : g ∈ CompletedGroup.degreeFiltration (d.groupTower 𝓛) (a + 1)) {y : 𝔤}
+    (hylog : (d.degreeIdeal 𝓛 (a + 1)).mkQ y =
+      BCHGroup.log (L := d.truncatedLie 𝓛 (a + 1)) (CompletedGroup.projection (a + 1) g))
+    (p : Qpr) :
+    (Fpr).projection (a + 1) ((Fpr).completedBCHAction (R := R) e ℳ
+        ((D.principalGradedLieHom d).completedMap g) ((Fpr).toCompletion (single p 1))) =
+      Ideal.Quotient.mk _ (single p 1 + D.principalCoefficientAction d y (single p 1)) := by
+  have hya : y ∈ d.degreeIdeal 𝓛 a :=
+    (d.mem_degreeIdeal_iff_of_mkQ_eq_log_projection 𝓛 (Nat.le_succ a) g hylog).mpr hg
+  have hfy : D.principalGradedLieHom d y ∈ (e).degreeSubmodule ℳ a := by
+    rw [← PositiveDegrees.degreeIdeal_toSubmodule]
+    exact (LieSubmodule.mem_toSubmodule _).mpr
+      ((D.principalGradedLieHom d).map_mem_degreeIdeal a (by
+        rwa [PositiveDegrees.graphMap_modulus]))
+  have hsq : (Fpr).quotientLieAction e ℳ (a + 1) (D.principalGradedLieHom d y) ^ 2 = 0 := by
+    apply LinearMap.ext
+    intro q
+    obtain ⟨b, rfl⟩ := Ideal.Quotient.mk_surjective q
+    rw [pow_two, Module.End.mul_apply, AlgFiltration.quotientLieAction_mk,
+      AlgFiltration.quotientLieAction_mk, LinearMap.zero_apply, Ideal.Quotient.eq_zero_iff_mem]
+    have h₀ : b ∈ ((Fpr).toModuleFiltration R).submodule 0 := by
+      simp
+    have h₁ := IsFiltrationRaising.lie_mem (d := e) (ℒ := ℳ) (F := (Fpr).toModuleFiltration R)
+      hfy h₀
+    have h₂ := IsFiltrationRaising.lie_mem (d := e) (ℒ := ℳ) (F := (Fpr).toModuleFiltration R)
+      hfy h₁
+    rw [AlgFiltration.toModuleFiltration_submodule, Submodule.restrictScalars_mem] at h₂
+    exact (Fpr).antitone (by omega) h₂
+  have hle : (d.graphMap D.principalCharacter.toAddMonoidHom).modulus (a + 1) ≤ a + 1 :=
+    (PositiveDegrees.graphMap_modulus _ _ _).le
+  have hmap := ((D.principalGradedLieHom d).truncatedMap (a + 1) hle).log_bchGroupMap
+    (CompletedGroup.projection (a + 1) g)
+  have hmk := GradedLieHom.truncatedMap_mk (D.principalGradedLieHom d) (a + 1) hle y
+  simp only [AlgFiltration.projection_completedBCHAction, AlgFiltration.projection_toCompletion]
+  rw [GradedLieHom.projection_completedMap_of_le _ (a + 1) hle, hmap, ← hylog, LieIdeal.mkQ_apply,
+    hmk, AlgFiltration.truncatedExpLieAction_mk, AlgFiltration.quotientExpLieAction_apply,
+    IsNilpotent.exp_eq_sum hsq]
+  simp only [Finset.sum_range_succ, Finset.range_zero, Finset.sum_empty, zero_add,
+    Nat.factorial_zero, Nat.factorial_one, Nat.cast_one, inv_one, one_smul, pow_zero, pow_one,
+    LinearMap.add_apply, Module.End.one_apply, AlgFiltration.quotientLieAction_mk, map_add,
+    TropicalVertexCoefficientAction.lie_eq, tropicalVertexCoefficientAction_principalGradedLieHom]
+
+end FilteredAction
 
 variable [Module.Projective ℤ N] in
 /-- Monomials detect the completed skew group: elements whose principal images act

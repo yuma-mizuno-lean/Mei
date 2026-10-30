@@ -26,8 +26,9 @@ This splits a label whose logarithm is supported on an abelian family of degrees
 as a supported ray with abelian ray Lie algebra, into labels of pure degree.
 
 A label lies in the degree filtration above order `a` exactly when its coefficients vanish in
-degrees at most `a`. On that filtration term the coefficients in degrees at most `2a + 1` add
-under multiplication and are invariant under conjugation. Consequently, removing from a finite
+degrees at most `a`. For labels above orders `a` and `b`, the coefficients in degrees at most
+`a + b + 1` add under multiplication. Conjugation preserves the coefficients of a label above
+order `a` in degrees at most `a + 1`. Consequently, removing from a finite
 product the factors lying in the filtration term changes the coefficients in degrees at most
 `a + 1` by the sum of theirs, whatever the remaining factors are.
 
@@ -304,36 +305,38 @@ theorem mem_degreeFiltration_succ_iff {g : d.completedBCHGroup ℒ} {a : ℕ} :
     rw [map_zero]
     rfl
 
-/-- Logarithmic coefficients add on the degree filtration above order `a`, in every degree
-at most `2 a + 1`: there the two labels commute, and their logarithms add. -/
-theorem logComponent_mul_of_mem_degreeFiltration {g h : d.completedBCHGroup ℒ} {a : ℕ}
+/-- Logarithmic coefficients add for labels above orders `a` and `b`, in every degree
+at most `a + b + 1`: there the two labels commute, and their logarithms add. -/
+theorem logComponent_mul_of_mem_degreeFiltration {g h : d.completedBCHGroup ℒ} {a b : ℕ}
     (hg : g ∈ CompletedGroup.degreeFiltration (d.groupTower ℒ) (a + 1))
-    (hh : h ∈ CompletedGroup.degreeFiltration (d.groupTower ℒ) (a + 1))
-    {n : N} (hn : d.degree n ≤ a + a + 1) :
+    (hh : h ∈ CompletedGroup.degreeFiltration (d.groupTower ℒ) (b + 1))
+    {n : N} (hn : d.degree n ≤ a + b + 1) :
     d.logComponent ℒ (g * h) n = d.logComponent ℒ g n + d.logComponent ℒ h n := by
-  obtain ⟨x, hx⟩ := (d.degreeIdeal ℒ (a + a + 1)).surjective_mkQ
-    (BCHGroup.log (L := d.truncatedLie ℒ (a + a + 1))
-      (CompletedGroup.projection (a + a + 1) g))
-  obtain ⟨y, hy⟩ := (d.degreeIdeal ℒ (a + a + 1)).surjective_mkQ
-    (BCHGroup.log (L := d.truncatedLie ℒ (a + a + 1))
-      (CompletedGroup.projection (a + a + 1) h))
-  have hxa := (d.mem_degreeIdeal_iff_of_mkQ_eq_log_projection ℒ (by omega) g hx).mpr hg
-  have hya := (d.mem_degreeIdeal_iff_of_mkQ_eq_log_projection ℒ (by omega) h hy).mpr hh
-  have hlie : ⁅(d.degreeIdeal ℒ (a + a + 1)).mkQ x, (d.degreeIdeal ℒ (a + a + 1)).mkQ y⁆ = 0 := by
+  obtain ⟨x, hx⟩ := (d.degreeIdeal ℒ (a + b + 1)).surjective_mkQ
+    (BCHGroup.log (L := d.truncatedLie ℒ (a + b + 1))
+      (CompletedGroup.projection (a + b + 1) g))
+  obtain ⟨y, hy⟩ := (d.degreeIdeal ℒ (a + b + 1)).surjective_mkQ
+    (BCHGroup.log (L := d.truncatedLie ℒ (a + b + 1))
+      (CompletedGroup.projection (a + b + 1) h))
+  have hxa := (d.mem_degreeIdeal_iff_of_mkQ_eq_log_projection ℒ
+    (by omega : a ≤ a + b + 1) g hx).mpr hg
+  have hya := (d.mem_degreeIdeal_iff_of_mkQ_eq_log_projection ℒ
+    (by omega : b ≤ a + b + 1) h hy).mpr hh
+  have hlie : ⁅(d.degreeIdeal ℒ (a + b + 1)).mkQ x, (d.degreeIdeal ℒ (a + b + 1)).mkQ y⁆ = 0 := by
     rw [← LieHom.map_lie, LieIdeal.mkQ_eq_zero]
-    exact d.lie_degreeIdeal_le ℒ a a (LieSubmodule.lie_mem_lie hxa hya)
-  have hexp : BCHGroup.exp ((d.degreeIdeal ℒ (a + a + 1)).mkQ (x + y)) =
-      CompletedGroup.projection (a + a + 1) g * CompletedGroup.projection (a + a + 1) h := by
+    exact d.lie_degreeIdeal_le ℒ a b (LieSubmodule.lie_mem_lie hxa hya)
+  have hexp : BCHGroup.exp ((d.degreeIdeal ℒ (a + b + 1)).mkQ (x + y)) =
+      CompletedGroup.projection (a + b + 1) g * CompletedGroup.projection (a + b + 1) h := by
     rw [map_add, BCHGroup.exp_add_of_lie_eq_zero _ _ hlie, hx, hy,
-      BCHGroup.exp_log (L := d.truncatedLie ℒ (a + a + 1))
-        (CompletedGroup.projection (a + a + 1) g),
-      BCHGroup.exp_log (L := d.truncatedLie ℒ (a + a + 1))
-        (CompletedGroup.projection (a + a + 1) h)]
+      BCHGroup.exp_log (L := d.truncatedLie ℒ (a + b + 1))
+        (CompletedGroup.projection (a + b + 1) g),
+      BCHGroup.exp_log (L := d.truncatedLie ℒ (a + b + 1))
+        (CompletedGroup.projection (a + b + 1) h)]
     -- The products in the group tower and in the BCH group are the same operation.
     rfl
-  have hxy : (d.degreeIdeal ℒ (a + a + 1)).mkQ (x + y) =
-      BCHGroup.log (L := d.truncatedLie ℒ (a + a + 1))
-        (CompletedGroup.projection (a + a + 1) (g * h)) := by
+  have hxy : (d.degreeIdeal ℒ (a + b + 1)).mkQ (x + y) =
+      BCHGroup.log (L := d.truncatedLie ℒ (a + b + 1))
+        (CompletedGroup.projection (a + b + 1) (g * h)) := by
     rw [map_mul]
     exact (BCHGroup.log_exp _).symm.trans (congrArg BCHGroup.log hexp)
   rw [d.logComponent_eq_decompose ℒ _ hn hxy, d.logComponent_eq_decompose ℒ g hn hx,
@@ -358,20 +361,18 @@ theorem logComponent_conj_of_mem_degreeFiltration (u : d.completedBCHGroup ℒ)
     d.mem_degreeFiltration_succ_iff.mp hc n hn, zero_add]
 
 /-- Removing the factors that lie in the degree filtration above order `a` from a finite
-product leaves the logarithmic coefficients in every degree at most `a + 1` equal to the sum
-of those of the removed factors: modulo the next filtration step, the removed factors are
-central and their coefficients add. The remaining factors are arbitrary. -/
-theorem logComponent_inv_prod_filter_mul_prod {ι : Type*} (l : List ι)
+product leaves a label in that filtration term whose logarithmic coefficients in every degree
+at most `a + 1` equal the sum of those of the removed factors: modulo the next filtration
+step, the removed factors are central and their coefficients add. The remaining factors are
+arbitrary. -/
+theorem inv_prod_filter_mul_prod_mem_degreeFiltration_and_logComponent {ι : Type*} (l : List ι)
     (x : ι → d.completedBCHGroup ℒ) (p : ι → Prop) [DecidablePred p] {a : ℕ}
-    (hx : ∀ i ∈ l, ¬p i → x i ∈ CompletedGroup.degreeFiltration (d.groupTower ℒ) (a + 1))
-    {n : N} (hn : d.degree n ≤ a + 1) :
-    d.logComponent ℒ (((l.filter p).map x).prod⁻¹ * (l.map x).prod) n =
-      ((l.filter fun i => ¬p i).map fun i => d.logComponent ℒ (x i) n).sum := by
-  suffices h : ((l.filter p).map x).prod⁻¹ * (l.map x).prod ∈
+    (hx : ∀ i ∈ l, ¬p i → x i ∈ CompletedGroup.degreeFiltration (d.groupTower ℒ) (a + 1)) :
+    ((l.filter p).map x).prod⁻¹ * (l.map x).prod ∈
       CompletedGroup.degreeFiltration (d.groupTower ℒ) (a + 1) ∧
-      ∀ m, d.degree m ≤ a + 1 →
-        d.logComponent ℒ (((l.filter p).map x).prod⁻¹ * (l.map x).prod) m =
-          ((l.filter fun i => ¬p i).map fun i => d.logComponent ℒ (x i) m).sum from h.2 n hn
+      ∀ n, d.degree n ≤ a + 1 →
+        d.logComponent ℒ (((l.filter p).map x).prod⁻¹ * (l.map x).prod) n =
+          ((l.filter fun i => ¬p i).map fun i => d.logComponent ℒ (x i) n).sum := by
   induction l with
   | nil => simp
   | cons i l ih =>
