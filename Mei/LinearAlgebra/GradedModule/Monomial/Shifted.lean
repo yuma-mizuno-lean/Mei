@@ -31,7 +31,10 @@ public noncomputable section
 namespace Mei.MonomialPresentation
 
 variable {R M Γ : Type*} [Semiring R] [AddCommMonoid M] [Module R M]
-  [AddCommGroup Γ] {ℳ : Γ → Submodule R M} (P : MonomialPresentation ℳ)
+
+section AddCancelCommMonoid
+
+variable [AddCancelCommMonoid Γ] {ℳ : Γ → Submodule R M} (P : MonomialPresentation ℳ)
   (S : AddSubmonoid Γ) (p : Γ)
 
 /-- The monomials supported on `p + S`, indexed by their relative degrees in `S`. -/
@@ -57,7 +60,10 @@ theorem shifted_repr (x : shiftedSubmodule ℳ S p) (n : S) :
     (P.shifted S p).basis.repr x n = P.basis.repr (x : M) (p + n) :=
   P.subfamily_repr _ _ _ _ x n
 
-variable [DecidableEq Γ] [DirectSum.Decomposition ℳ]
+end AddCancelCommMonoid
+
+variable [AddCommGroup Γ] {ℳ : Γ → Submodule R M} (P : MonomialPresentation ℳ)
+  [DecidableEq Γ] [DirectSum.Decomposition ℳ]
 
 /-- A relative filtration term discards exactly the shifted coordinates below its order. -/
 theorem mem_shiftedFiltration_iff (d : PositiveDegrees Γ) (p : Γ) (k : ℕ)
