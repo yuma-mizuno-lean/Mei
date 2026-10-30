@@ -93,6 +93,7 @@ deployment = "docker" # docker | cloudflare
 
 [services.cache]
 ci_bundle = true # CI restores one GitHub archive, never individual Mei objects from R2.
+worker_public = true # Host workers use standard Lake reads independently of CI transport.
 mode = "custom"
 name = "mei-public"
 artifact_url = "https://mei-cache-reader.ymizuno-lean-cache.workers.dev/artifacts"

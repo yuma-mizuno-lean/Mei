@@ -1,14 +1,14 @@
 # Mei public Lake cache reader
 
-Status: the reader is deployed and enabled. R2 initialization and real
-TauCetiTools publication-plan validation succeeded. Publication remains paused
-until existing objects are accounted for and the main-only writer is deployed.
-Do not claim completed end-to-end rollout until a real Lake restore succeeds.
-
 ## One writer, shared readers
 
-Main CI is the only R2 writer and uses the guarded local publisher. PR and
-merge-group CI read the same public Lake cache but receive no upload key.
+Main CI is the only R2 writer and uses the guarded local publisher. CI restores
+one GitHub Actions bundle and never reads individual Mei objects from this reader.
+Host workers opt in separately with `services.cache.worker_public = true` and
+use standard `lake cache get`; external users can use the same public service.
+The host retains verified archives and revision maps between workers and rounds.
+A root cache outage falls back to local building, without immediate retry.
+
 Keep `LAKE_CACHE_ARTIFACT_ENDPOINT` and `LAKE_CACHE_REVISION_ENDPOINT` unset:
 those legacy variables enable the shared Tools publisher, which does not use
 Mei's budget guard. Main derives its write URLs from `MEI_R2_BUCKET_ENDPOINT`.
@@ -64,7 +64,12 @@ behavior, or a complete `lake cache get` execution.
   10 GB. Other writers and manual uploads are outside this guarantee.
 - Reserve at most 20,000 publication PUT operations per UTC day, including the
   reservation and completion writes. No automatic retries or multipart uploads.
-- One budget GET is used per publication attempt. Rejected/contending attempts
+- Publication stages all bytes locally without per-artifact public probes. The
+  isolated writer deduplicates against an immutable SHA-256-pinned catalog of
+  successful writes. It uploads only new artifacts, then the revision map.
+  The first catalog publication uploads the current artifacts once. Never delete
+  cataloged objects externally: the catalog assumes this exclusive writer.
+- One budget GET and at most one private catalog GET are used per publication attempt. Rejected/contending attempts
   also incur control-plane operations; these are NOT a provider-enforced daily
   cap. Public verification remains behind the Free Worker. The earlier proposed
   10,000 direct Class B cap is not implemented; do not claim a total bill cap.

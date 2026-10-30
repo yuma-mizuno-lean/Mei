@@ -323,7 +323,10 @@ private theorem symm_dualMap_principalSublatticeEquiv_exponent (i : B.unfrozenIn
   rw [← LinearEquiv.dualMap_symm, LinearEquiv.symm_apply_eq,
     dualMap_principalSublatticeEquiv_principalCharacter]
 
-private theorem unfrozenBasis_principalBasis (i : B.unfrozenIndex) :
+/-- The unfrozen basis of the normalized principal datum consists of its standard
+coordinate vectors. -/
+@[simp]
+theorem unfrozenBasis_principalBasis (i : B.unfrozenIndex) :
     I.principalBasis.unfrozenBasis ⟨i, by simp⟩ =
       ⟨Finsupp.single (i : ι) 1, I.single_mem_principalDatum_unfrozen i⟩ :=
   Subtype.ext (by simp [coe_unfrozenBasis])
