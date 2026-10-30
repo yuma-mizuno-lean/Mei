@@ -14,9 +14,10 @@ public import Mei.Algebra.Lie.Graded.Shifted.Support
 For signed BCH propagation on a finite shifted coefficient quotient, every
 contributing decorated ray automatically satisfies the positive cutoff and
 monotone degree conditions. Thus the unrestricted family over all finite
-encounter words is exactly the existing cutoff family. In particular its
-endpoint fibers and its realized degree itineraries across all endpoints are
-finite, without assuming a bound on the number of encounters.
+encounter words is exactly the existing cutoff family, for any encounter
+alphabet `J`. When `J` is finite, its endpoint fibers and its realized degree
+itineraries across all endpoints are finite, without assuming a bound on the
+number of encounters.
 
 The equivalence keeps the full geometric realization, incoming source, encounter
 parameters and whole decorations. Labels may include inverses and combined
@@ -53,13 +54,18 @@ variable (g : J → d.truncatedGroup ℒ k) (a : (d.shiftedQuotientGrading ℳ p
   (f : J → V →L[ℝ] ℝ) (c : J → ℝ) (ε : J → SignType)
   (P W : J → Set V) (S : K → Set V) (C : Set V)
 
+/-- Actual BCH-decorated rays at an endpoint, over all finite encounter words,
+without imposing cutoff constraints on their degree histories. -/
+abbrev ShiftedBCHDecoratedRays (Q : V) :=
+    Σ l : List J, DecoratedAdmissibleRay (d.shiftedQuotientGrading ℳ p k).piece
+      (fun j => ((F).truncatedBCHAction d ℒ k (g (l.get j))).toLinearMap) 0 a v
+      (fun j => f (l.get j)) (fun j => c (l.get j))
+      (fun j => ε (l.get j)) (fun j => P (l.get j)) W S C Q
+
 /-- The unrestricted family over all finite encounter words is exactly the
 cutoff family for actual BCH propagation. Both cutoff constraints are derived. -/
 def shiftedBCHRayCutoffEquiv (Q : V) :
-    (Σ l : List J, DecoratedAdmissibleRay (d.shiftedQuotientGrading ℳ p k).piece
-      (fun j => ((F).truncatedBCHAction d ℒ k (g (l.get j))).toLinearMap) 0 a v
-      (fun j => f (l.get j)) (fun j => c (l.get j))
-      (fun j => ε (l.get j)) (fun j => P (l.get j)) W S C Q) ≃
+    (d.ShiftedBCHDecoratedRays ℒ ℳ p k g a v f c ε P W S C Q) ≃
       CutoffDecoratedRay d (d.shiftedQuotientGrading ℳ p k).piece
         (fun j => ((F).truncatedBCHAction d ℒ k (g j)).toLinearMap)
         a v f c ε P W S C k Q where
@@ -81,10 +87,7 @@ def shiftedBCHRayCutoffEquiv (Q : V) :
 /-- Exhaustion retains the exact encounter word. -/
 @[simp]
 theorem shiftedBCHRayCutoffEquiv_itinerary (Q : V)
-    (β : Σ l : List J, DecoratedAdmissibleRay (d.shiftedQuotientGrading ℳ p k).piece
-      (fun j => ((F).truncatedBCHAction d ℒ k (g (l.get j))).toLinearMap) 0 a v
-      (fun j => f (l.get j)) (fun j => c (l.get j))
-      (fun j => ε (l.get j)) (fun j => P (l.get j)) W S C Q) :
+    (β : d.ShiftedBCHDecoratedRays ℒ ℳ p k g a v f c ε P W S C Q) :
     (d.shiftedBCHRayCutoffEquiv ℒ ℳ p k g a v f c ε P W S C Q β).itinerary = β.1 :=
   (rfl)
 
@@ -92,10 +95,7 @@ theorem shiftedBCHRayCutoffEquiv_itinerary (Q : V)
 tail, crossing times, paths and all intermediate decorations. -/
 @[simp]
 theorem shiftedBCHRayCutoffEquiv_realization (Q : V)
-    (β : Σ l : List J, DecoratedAdmissibleRay (d.shiftedQuotientGrading ℳ p k).piece
-      (fun j => ((F).truncatedBCHAction d ℒ k (g (l.get j))).toLinearMap) 0 a v
-      (fun j => f (l.get j)) (fun j => c (l.get j))
-      (fun j => ε (l.get j)) (fun j => P (l.get j)) W S C Q) :
+    (β : d.ShiftedBCHDecoratedRays ℒ ℳ p k g a v f c ε P W S C Q) :
     HEq (d.shiftedBCHRayCutoffEquiv ℒ ℳ p k g a v f c ε P W S C Q β).realization β.2 :=
   (HEq.rfl)
 
@@ -111,22 +111,18 @@ theorem shiftedBCHRayCutoffEquiv_symm_apply (Q : V)
 /-- Exhaustion preserves the whole final coefficient. -/
 @[simp↓]
 theorem shiftedBCHRayCutoffEquiv_decoration (Q : V)
-    (β : Σ l : List J, DecoratedAdmissibleRay (d.shiftedQuotientGrading ℳ p k).piece
-      (fun j => ((F).truncatedBCHAction d ℒ k (g (l.get j))).toLinearMap) 0 a v
-      (fun j => f (l.get j)) (fun j => c (l.get j))
-      (fun j => ε (l.get j)) (fun j => P (l.get j)) W S C Q) :
+    (β : d.ShiftedBCHDecoratedRays ℒ ℳ p k g a v f c ε P W S C Q) :
     (d.shiftedBCHRayCutoffEquiv ℒ ℳ p k g a v f c ε P W S C Q β).decoration =
       β.2.decoration 0 := by
+  -- Both decoration definitions are unexposed, so use their public evaluation lemmas.
   rw [CutoffDecoratedRay.decoration_eq, DecoratedAdmissibleRay.decoration_zero]
+  -- The equivalence stores β.2 as its realization, without changing its history.
   rfl
 
 /-- At a fixed endpoint there are finitely many actual BCH-decorated rays over
 all encounter words. Neither a word-length bound nor degree bounds are assumed. -/
 instance finite_shiftedBCHDecoratedRays [Finite J] (Q : V) :
-    Finite (Σ l : List J, DecoratedAdmissibleRay (d.shiftedQuotientGrading ℳ p k).piece
-      (fun j => ((F).truncatedBCHAction d ℒ k (g (l.get j))).toLinearMap) 0 a v
-      (fun j => f (l.get j)) (fun j => c (l.get j))
-      (fun j => ε (l.get j)) (fun j => P (l.get j)) W S C Q) :=
+    Finite (d.ShiftedBCHDecoratedRays ℒ ℳ p k g a v f c ε P W S C Q) :=
   Finite.of_equiv _ (d.shiftedBCHRayCutoffEquiv ℒ ℳ p k g a v f c ε P W S C Q).symm
 
 /-- Every actual BCH-decorated ray obeys a uniform bound on its total number of
@@ -163,20 +159,11 @@ theorem cutoffDecoratedEvaluation_shiftedBCH_eq_sum [Finite J] (Q : V) :
       (fun j => ((F).truncatedBCHAction d ℒ k (g j)).toLinearMap)
       a v f c ε P W S C k Q =
       let := Fintype.ofFinite
-        (Σ l : List J, DecoratedAdmissibleRay (d.shiftedQuotientGrading ℳ p k).piece
-          (fun j => ((F).truncatedBCHAction d ℒ k (g (l.get j))).toLinearMap) 0 a v
-          (fun j => f (l.get j)) (fun j => c (l.get j))
-          (fun j => ε (l.get j)) (fun j => P (l.get j)) W S C Q)
-      ∑ β : (Σ l : List J, DecoratedAdmissibleRay (d.shiftedQuotientGrading ℳ p k).piece
-          (fun j => ((F).truncatedBCHAction d ℒ k (g (l.get j))).toLinearMap) 0 a v
-          (fun j => f (l.get j)) (fun j => c (l.get j))
-          (fun j => ε (l.get j)) (fun j => P (l.get j)) W S C Q),
+        (d.ShiftedBCHDecoratedRays ℒ ℳ p k g a v f c ε P W S C Q)
+      ∑ β : (d.ShiftedBCHDecoratedRays ℒ ℳ p k g a v f c ε P W S C Q),
         β.2.decoration 0 := by
   let := Fintype.ofFinite
-    (Σ l : List J, DecoratedAdmissibleRay (d.shiftedQuotientGrading ℳ p k).piece
-      (fun j => ((F).truncatedBCHAction d ℒ k (g (l.get j))).toLinearMap) 0 a v
-      (fun j => f (l.get j)) (fun j => c (l.get j))
-      (fun j => ε (l.get j)) (fun j => P (l.get j)) W S C Q)
+    (d.ShiftedBCHDecoratedRays ℒ ℳ p k g a v f c ε P W S C Q)
   let := Fintype.ofFinite (CutoffDecoratedRay d (d.shiftedQuotientGrading ℳ p k).piece
     (fun j => ((F).truncatedBCHAction d ℒ k (g j)).toLinearMap) a v f c ε P W S C k Q)
   rw [cutoffDecoratedEvaluation_def]
