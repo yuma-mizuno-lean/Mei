@@ -47,12 +47,7 @@ private theorem bends_outside_encounter_interval (j : Fin n) :
     ∀ s ∈ β.bends.support, s ≤ t j.succ ∨ t j.castSucc ≤ s := by
   intro s hs
   obtain ⟨a, rfl⟩ := hb s hs
-  by_cases hja : j ≤ a
-  · exact Or.inl (ht (Fin.succ_le_succ_iff.mpr hja))
-  · apply Or.inr
-    apply ht
-    simpa only [Fin.le_iff_val_le_val, Fin.val_succ, Fin.val_castSucc] using
-      Nat.succ_le_iff.mpr (lt_of_not_ge hja)
+  exact (Fin.succ_le_or_le_castSucc a.succ j).imp (fun h => ht h) (fun h => ht h)
 
 variable (h0 : t 0 = 0) (hv : ∀ j, β.directionAt (t j) = v j)
   (hf : ∀ j, f j (v j.castSucc) ≠ 0)
