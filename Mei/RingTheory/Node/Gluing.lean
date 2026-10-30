@@ -247,6 +247,17 @@ theorem rightGluing_mk (z : NodeAlgebra R t) :
     rightGluing t f k (Ideal.Quotient.mk _ z) =
       algebraMap (Overlap t k) _ (Ideal.Quotient.mk _ z) := (rfl)
 
+/-- Ring maps out of the localized overlap agree if they agree after right gluing. -/
+theorem localizedOverlap_ringHom_ext {A : Type*} [Semiring A]
+    {φ ψ : LocalizedOverlap t f k →+* A}
+    (h : ∀ z, φ (rightGluing t f k z) = ψ (rightGluing t f k z)) : φ = ψ := by
+  apply IsLocalization.ringHom_ext
+    (Submonoid.powers (algebraMap R (Overlap t k) f))
+  apply Ideal.Quotient.ringHom_ext
+  apply RingHom.ext
+  intro z
+  simpa only [RingHom.comp_apply, ← rightGluing_mk] using h (Ideal.Quotient.mk _ z)
+
 /-- The slab algebra: the fiber product of the two chambers over the localized overlap. -/
 def slabAlgebra : Subalgebra R (LeftChamber t k × RightChamber t k) :=
   AlgHom.equalizer ((leftGluing t f k).comp (AlgHom.fst R _ _))

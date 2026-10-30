@@ -6,8 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.ScatteringDiagram.FocusFocus.Naturality
-public import Mathlib.Algebra.Category.AlgCat.Limits
-public import Mathlib.CategoryTheory.Limits.Shapes.Pullback.PullbackCone
+public import Mei.RingTheory.Node.Diagram
 
 /-!
 # The focus-focus gluing diagram across coefficient orders
@@ -43,9 +42,7 @@ local notation "D(" k ")" => LocalizedOverlap (C (τ(k))) (1 + T 1) k
 
 /-- The chamber gluing cospan over `K`, with the left incidence twisted by `1+w`. -/
 abbrev gluingCospan (k : ℕ) : WalkingCospan ⥤ AlgCat K :=
-  cospan
-    (AlgCat.ofHom ((leftGluing (C (τ(k))) (1 + T 1) k).restrictScalars K))
-    (AlgCat.ofHom ((rightGluing (C (τ(k))) (1 + T 1) k).restrictScalars K))
+  Mei.NodeAlgebra.gluingCospan K (C (τ(k))) (1 + T 1) k
 
 /-- The left object is the actual nodal left chamber. -/
 @[simp]
@@ -167,13 +164,9 @@ theorem gluingCospanReduction_refl (k : ℕ) : gluingCospanReduction K (k := k) 
   rcases j with (_ | _ | _)
   · apply AlgCat.hom_ext
     apply AlgHom.toRingHom_injective
-    apply IsLocalization.ringHom_ext (S := D(k))
-      (Submonoid.powers (algebraMap S(k)[ℤ] (Overlap (C (τ(k))) k) (1 + T 1)))
-    apply Ideal.Quotient.ringHom_ext
-    apply RingHom.ext
+    apply localizedOverlap_ringHom_ext
     intro z
-    simp only [RingHom.comp_apply, AlgHom.coe_toRingHom,
-      NatTrans.id_app, AlgCat.hom_id, ← rightGluing_mk]
+    simp only [AlgHom.coe_toRingHom, NatTrans.id_app, AlgCat.hom_id]
     rw [gluingCospanReduction_app_one_rightGluing, truncatedExponentChamberMap_id]
     rfl
   · apply AlgCat.hom_ext
@@ -196,13 +189,9 @@ theorem gluingCospanReduction_comp {k l m : ℕ} (hl : l ≤ k) (hm : m ≤ l) :
   rcases j with (_ | _ | _)
   · apply AlgCat.hom_ext
     apply AlgHom.toRingHom_injective
-    apply IsLocalization.ringHom_ext (S := D(k))
-      (Submonoid.powers (algebraMap S(k)[ℤ] (Overlap (C (τ(k))) k) (1 + T 1)))
-    apply Ideal.Quotient.ringHom_ext
-    apply RingHom.ext
+    apply localizedOverlap_ringHom_ext
     intro z
-    simp only [RingHom.comp_apply, AlgHom.coe_toRingHom,
-      NatTrans.comp_app, AlgCat.hom_comp, AlgHom.comp_apply, ← rightGluing_mk]
+    simp only [AlgHom.coe_toRingHom, NatTrans.comp_app, AlgCat.hom_comp, AlgHom.comp_apply]
     rw [gluingCospanReduction_app_one_rightGluing, gluingCospanReduction_app_one_rightGluing,
       gluingCospanReduction_app_one_rightGluing]
     exact congrArg (rightGluing (C (τ(m))) (1 + T 1) m)
@@ -242,60 +231,33 @@ theorem gluingCospanTower_map {k l : ℕᵒᵖ} (f : k ⟶ l) :
 
 /-- The existing slab projections give a cone on the gluing cospan. -/
 abbrev slabCone (k : ℕ) : Cone (gluingCospan K k) :=
-  PullbackCone.mk
-    (AlgCat.ofHom (((AlgHom.fst S(k)[ℤ] _ _).comp (A(k)).val).restrictScalars K))
-    (AlgCat.ofHom (((AlgHom.snd S(k)[ℤ] _ _).comp (A(k)).val).restrictScalars K))
-    (by ext z; exact (mem_slabAlgebra_iff _ _ _).mp z.property)
+  Mei.NodeAlgebra.slabCone K (C (τ(k))) (1 + T 1) k
 
 /-- The cone point is the original fiber-product slab, with its original `K`-action. -/
 @[simp]
 theorem slabCone_pt (k : ℕ) : (slabCone K k).pt = AlgCat.of K A(k) := (rfl)
 
-/-- The first cone leg is the actual left projection. -/
-@[simp↓]
-theorem slabCone_π_left (k : ℕ) (z : A(k)) : ((slabCone K k).π.app .left).hom z = z.val.1 := (rfl)
-
-/-- The second cone leg is the actual right projection. -/
-@[simp↓]
-theorem slabCone_π_right (k : ℕ) (z : A(k)) : ((slabCone K k).π.app .right).hom z = z.val.2 := (rfl)
-
 /-- Matching chamber coefficients are precisely the elements of the slab algebra. -/
-def slabConeIsLimit (k : ℕ) : IsLimit (slabCone K k) := by
-  refine PullbackCone.IsLimit.mk _ (fun s => ?_) ?_ ?_ ?_
-  · exact AlgCat.ofHom ((s.fst.hom.prod s.snd.hom).codRestrict ((A(k)).restrictScalars K)
-      (fun x => by
-        rw [Subalgebra.mem_restrictScalars, mem_slabAlgebra_iff]
-        exact ConcreteCategory.congr_hom s.condition x))
-  · intro s
-    ext x
-    rfl
-  · intro s
-    ext x
-    rfl
-  · intro s f hL hR
-    apply AlgCat.hom_ext
-    apply AlgHom.ext
-    intro x
-    apply Subtype.ext
-    exact Prod.ext (ConcreteCategory.congr_hom hL x) (ConcreteCategory.congr_hom hR x)
+def slabConeIsLimit (k : ℕ) : IsLimit (slabCone K k) :=
+  Mei.NodeAlgebra.slabConeIsLimit K (C (τ(k))) (1 + T 1) k
 
 /-- The categorical matching algebra is canonically the existing slab algebra. -/
 def slabLimitIso (k : ℕ) : AlgCat.of K A(k) ≅ limit (gluingCospan K k) :=
-  (slabConeIsLimit K k).conePointUniqueUpToIso (limit.isLimit _)
+  Mei.NodeAlgebra.slabLimitIso K (C (τ(k))) (1 + T 1) k
 
 /-- The comparison to the chosen categorical limit preserves every evaluation. -/
 @[reassoc (attr := simp)]
 theorem slabLimitIso_hom_π (k : ℕ) (j : WalkingCospan) :
     (slabLimitIso K k).hom ≫ limit.π (gluingCospan K k) j =
-      (slabCone K k).π.app j := by
-  simp [slabLimitIso, IsLimit.conePointUniqueUpToIso]
+      (slabCone K k).π.app j :=
+  Mei.NodeAlgebra.slabLimitIso_hom_π K (C (τ(k))) (1 + T 1) k j
 
 /-- The inverse comparison also preserves every evaluation. -/
 @[reassoc (attr := simp↓)]
 theorem slabLimitIso_inv_π (k : ℕ) (j : WalkingCospan) :
     (slabLimitIso K k).inv ≫ (slabCone K k).π.app j =
-      limit.π (gluingCospan K k) j := by
-  rw [← slabLimitIso_hom_π K k j, Iso.inv_hom_id_assoc]
+      limit.π (gluingCospan K k) j :=
+  Mei.NodeAlgebra.slabLimitIso_inv_π K (C (τ(k))) (1 + T 1) k j
 
 /-- Categorical reduction of matching coefficients is the existing slab reduction. -/
 @[simp↓]
@@ -306,14 +268,16 @@ theorem slabConeIsLimit_map_apply {k l : ℕ} (hl : l ≤ k) (z : A(k)) :
   apply Prod.ext
   · have h := AlgHom.congr_fun (congrArg AlgCat.Hom.hom
       (IsLimit.map_π (slabCone K k) (slabConeIsLimit K l) (gluingCospanReduction K hl) .left)) z
-    simpa only [AlgCat.hom_comp, AlgHom.comp_apply, slabCone_π_left K l, slabCone_π_left K k,
-      truncatedSlabMap_fst,
-      gluingCospanReduction_app_left] using h
+    simpa only [AlgCat.hom_comp, AlgHom.comp_apply,
+      Mei.NodeAlgebra.slabCone_π_left K (C (τ(l))) (1 + T 1) l,
+      Mei.NodeAlgebra.slabCone_π_left K (C (τ(k))) (1 + T 1) k,
+      truncatedSlabMap_fst, gluingCospanReduction_app_left] using h
   · have h := AlgHom.congr_fun (congrArg AlgCat.Hom.hom
       (IsLimit.map_π (slabCone K k) (slabConeIsLimit K l) (gluingCospanReduction K hl) .right)) z
-    simpa only [AlgCat.hom_comp, AlgHom.comp_apply, slabCone_π_right K l, slabCone_π_right K k,
-      truncatedSlabMap_snd,
-      gluingCospanReduction_app_right] using h
+    simpa only [AlgCat.hom_comp, AlgHom.comp_apply,
+      Mei.NodeAlgebra.slabCone_π_right K (C (τ(l))) (1 + T 1) l,
+      Mei.NodeAlgebra.slabCone_π_right K (C (τ(k))) (1 + T 1) k,
+      truncatedSlabMap_snd, gluingCospanReduction_app_right] using h
 
 /-- The slab-to-limit comparison is natural under every cutoff reduction. -/
 @[reassoc]
