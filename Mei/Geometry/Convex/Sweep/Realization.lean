@@ -7,6 +7,7 @@ module
 
 public import Mei.Geometry.Convex.Sweep.Itinerary
 public import Mei.Geometry.Affine.FiniteRay.Basic
+public import Mathlib.Algebra.BigOperators.Intervals
 
 /-!
 # Realizing backward itineraries as finite affine rays
@@ -320,6 +321,30 @@ theorem bends_backwardRay :
   rw [backwardRay, stage_bends_eq]
   congr 1
   exact Finset.filter_true_of_mem fun j _ => by simp
+
+/-- At each encounter parameter, the incoming direction is the corresponding
+prescribed direction. This includes recorded encounters with no geometric bend. -/
+@[simp]
+theorem directionAt_backwardRay_parameter (j : Fin (n + 1)) :
+    (backwardRay f c v Q hpos).directionAt
+      (backwardParameter f c (fun j => v j.castSucc) j Q) = v j := by
+  classical
+  have hanti := strictAnti_backwardParameter f c (fun j => v j.castSucc) Q hpos
+  let τ := fun j => backwardParameter f c (fun j => v j.castSucc) j Q
+  rw [FiniteAffineRay.directionAt_def, direction_backwardRay, bends_backwardRay,
+    ← Finsupp.sum_finsetSum_index (h := fun b x => if τ j ≤ b then x else 0)
+      (fun _ => by simp) (fun _ _ _ => by split_ifs <;> simp)]
+  simp only [Finsupp.sum_single_index, ite_self, τ, hanti.le_iff_ge]
+  cases j using Fin.cases with
+  | zero => simp
+  | succ j =>
+    simp only [Fin.succ_le_succ_iff]
+    rw [← Finset.sum_filter]
+    have he : Finset.univ.filter (fun a : Fin n => a ≤ j) = Finset.Iic j := by
+      ext a
+      simp
+    rw [he, Fin.sum_Iic_sub]
+    abel
 
 /-- An empty itinerary realizes the straight ray with its prescribed direction. -/
 @[simp]
