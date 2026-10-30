@@ -44,6 +44,7 @@ theorem section_ext_of_dense {U : Opens X} {s t : T.sheaf.presheaf.obj (op U)}
   obtain ⟨V, hxV, iV, hsV⟩ := T.locallyParallel_value s ⟨x.val, hx⟩
   obtain ⟨W, hxW, iW, htW⟩ := T.locallyParallel_value t ⟨x.val, hx⟩
   rw [prelocal_pred_iff] at hsV htW
+  -- Specify the intersection so the basis-neighborhood API can infer its open set.
   obtain ⟨B, hB, hxB, hBVW⟩ :=
     Opens.isBasis_iff_nbhd.mp T.isBasis (show x.val ∈ V ⊓ W from ⟨hxV, hxW⟩)
   have hBV : B ≤ V := hBVW.trans inf_le_left
@@ -66,6 +67,7 @@ private theorem transport_generic_eq {B C : Opens X} (hB : B ∈ T.basis) (hC : 
     (a b : A) (ha : (q a).val ∈ B) (hb : (q b).val ∈ C) :
     T.transport B hB (q a) x ha hxB (f a) =
       T.transport C hC (q b) x hb hxC (f b) := by
+  -- Specify the intersection so the basis-neighborhood API can infer its open set.
   obtain ⟨W, hW, hxW, hWBC⟩ :=
     Opens.isBasis_iff_nbhd.mp T.isBasis (show x.val ∈ B ⊓ C from ⟨hxB, hxC⟩)
   have hWB : W ≤ B := hWBC.trans inf_le_left
@@ -75,10 +77,7 @@ private theorem transport_generic_eq {B C : Opens X} (hB : B ∈ T.basis) (hC : 
     (T.transport_trans B hB (q a) (q c) x ha (hWB hc) hxB)
   have hCbc := congrArg (fun e => e (f b))
     (T.transport_trans C hC (q b) (q c) x hb (hWC hc) hxC)
-  change T.transport B hB (q c) x (hWB hc) hxB
-    (T.transport B hB (q a) (q c) ha (hWB hc) (f a)) = _ at hBac
-  change T.transport C hC (q c) x (hWC hc) hxC
-    (T.transport C hC (q b) (q c) hb (hWC hc) (f b)) = _ at hCbc
+  simp only [Equiv.trans_apply] at hBac hCbc
   rw [hf B hB a c ha (hWB hc)] at hBac
   rw [hf C hC b c hb (hWC hc)] at hCbc
   calc
@@ -110,7 +109,7 @@ theorem existsUnique_section_of_dense :
         rw [prelocal_pred_iff]
         intro B hB _ x y hx hy
         obtain ⟨a, ha⟩ := hd.exists_mem_open B.isOpen ⟨x.val, hx⟩
-        change T.transport B hB x y hx hy (g x) = g y
+        simp only [Subtype.coe_eta]
         rw [hg B hB x hx a ha, hg B hB y hy a ha]
         exact congrArg (fun e => e (f a)) (T.transport_trans B hB (q a) x y ha hx hy)))
   refine ⟨s, ?_, ?_⟩
@@ -119,8 +118,8 @@ theorem existsUnique_section_of_dense :
       Opens.isBasis_iff_nbhd.mp T.isBasis (Opens.mem_top (q a).val)
     dsimp only [s]
     rw [value_sectionOfLocallyParallel]
-    change g (q a) = f a
-    simpa only [T.transport_self, Equiv.refl_apply] using hg B hB (q a) haB a haB
+    simpa only [Subtype.coe_eta, T.transport_self, Equiv.refl_apply] using
+      hg B hB (q a) haB a haB
   · intro t ht
     apply T.section_ext_of_dense q hd
     intro a ha
@@ -129,8 +128,7 @@ theorem existsUnique_section_of_dense :
         Opens.isBasis_iff_nbhd.mp T.isBasis (Opens.mem_top (q a).val)
       dsimp only [s]
       rw [value_sectionOfLocallyParallel]
-      change f a = g (q a)
-      simpa only [T.transport_self, Equiv.refl_apply] using
+      simpa only [Subtype.coe_eta, T.transport_self, Equiv.refl_apply] using
         (hg B hB (q a) haB a haB).symm)
 
 end Mei.DenseBasisTransport

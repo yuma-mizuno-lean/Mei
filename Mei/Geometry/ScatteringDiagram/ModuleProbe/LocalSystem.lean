@@ -80,7 +80,7 @@ theorem denseRange_coefficientGenericPoints (k : ℕ) :
   have hoA : IsOpen {x : C.regularSpace | A.IsGeneric x.val} :=
     A.isOpen_isGeneric.preimage continuous_subtype_val
   have hd := C.dense_coefficientPoints.inter_of_isOpen_right hdA hoA
-  change Dense (Set.range _)
+  unfold DenseRange
   apply hd.mono
   rintro x ⟨hx, hA⟩
   exact ⟨⟨⟨x, hx⟩, hA⟩, rfl⟩
@@ -174,7 +174,7 @@ theorem value_coefficientLocalSection_eq_extendedCoefficientField
     rw [B.levelTransport_eq_levelPathProduct hBc
       ((B.adaptedPathPrefunctor k).mapPath γ.toPath),
       B.levelPathProduct_eq_adaptedDiagram ν hν γ.toPath] at he
-    change T.transport U hU a b ha hb (g a) = g b
+    simp only [Subtype.coe_eta]
     dsimp only [T]
     rw [FiniteWallDiagram.coefficientTransport_transport,
       FiniteWallDiagram.coefficientPathTransport_apply]

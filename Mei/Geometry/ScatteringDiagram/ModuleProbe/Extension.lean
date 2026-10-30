@@ -100,11 +100,9 @@ theorem extendedCoefficientField_eq_action (k : ℕ) (hBc : B.LevelConsistent k)
     d ℳ p ℒ H h h' D B k hD hB γ
     (coefficientAnchor_generic d ℳ p ℒ H h h' D B k x) hz
   rw [← B.levelTransport_eq_levelPathProduct hBc γ] at he
+  unfold extendedCoefficientField
   rw [he, ← LinearEquiv.mul_apply, ← MonoidHom.map_mul]
-  change _ = (A).truncatedBCHAction d ℒ k
-    (B.levelTransport k hBc z x * B.levelTransport k hBc a z) _
   rw [← B.levelTransport_comp]
-  rfl
 
 /-- The extension recovers the original finite probe coefficient wherever that
 coefficient was defined. -/
@@ -140,20 +138,15 @@ theorem extendedCoefficientField_eq_transport (k : ℕ) (hBc : B.LevelConsistent
 /-- The extension is the unique family obeying base transport and recovering
 the actual generic probe coefficients. -/
 theorem extendedCoefficientField_unique (k : ℕ) (hBc : B.LevelConsistent k)
-    (hD : D.LevelConsistent (k + 1))
-    (hB : (D.map (chargeZeroGradedLieHom d ℳ p ℒ)
-      (chargeZeroGradedLieHom_mem_wall d ℳ p ℒ H)).LevelEquivalent
-      (cylinderDiagram d ℳ p ℒ H h h' B) k)
     (f : WallComplement (fun c : B.active k => (B.wall c).support) → (F).quotient k)
     (hf : ∀ x y, f y = (A).truncatedBCHAction d ℒ k (B.levelTransport k hBc x y) (f x))
     (hgeneric : ∀ x (hx : (coefficientArrangement d ℳ p ℒ H h h' D k).IsGeneric x.val),
       f x = coefficientField d ℳ p ℒ H h h' D k x.val hx) :
     f = extendedCoefficientField d ℳ p ℒ H h h' D B k hBc := by
   funext x
-  obtain ⟨z, hz⟩ := exists_generic_allowed (d := d) (ℒ := ℒ) (H := H) (h := h) (B := B) k
-    (coefficientArrangement d ℳ p ℒ H h h' D k) x
-  rw [hf z x, hgeneric z hz,
-    extendedCoefficientField_eq_action d ℳ p ℒ H h h' D B k hBc hD hB x z hz]
+  rw [hf (coefficientAnchor d ℳ p ℒ H h h' D B k x) x,
+    hgeneric _ (coefficientAnchor_generic d ℳ p ℒ H h h' D B k x)]
+  rfl
 
 /-- On the finite active-wall complement, the extended coefficients are locally
 constant. The transport equation also specifies their change across base walls. -/
