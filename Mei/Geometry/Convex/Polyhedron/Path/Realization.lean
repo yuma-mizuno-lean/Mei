@@ -80,9 +80,9 @@ theorem toContinuousPath_notMem_of_eq_half_pow (p : AdmissiblePLPath x y) (k : �
       rw [toContinuousPath_cons_apply_of_le p e hle]
       exact ih k (by simp only [hs, pow_succ]; field_simp)
 
-/-- An admissible chain for finitely many walls meets them at only countably many
+/-- An admissible chain for countably many walls meets them at only countably many
 parameters of its realization. -/
-theorem countable_setOf_toContinuousPath_mem [Finite ι] (p : AdmissiblePLPath x y) :
+theorem countable_setOf_toContinuousPath_mem [Countable ι] (p : AdmissiblePLPath x y) :
     {s : ℝ | ∃ hs : s ∈ Icc (0 : ℝ) 1, ∃ i, toContinuousPath p ⟨s, hs⟩ ∈ W i}.Countable := by
   induction p with
   | nil =>
@@ -92,7 +92,7 @@ theorem countable_setOf_toContinuousPath_mem [Finite ι] (p : AdmissiblePLPath x
   | @cons u v p e ih =>
     -- Parameters on the first half come from `p`, the others from crossings of `e`.
     refine ((ih.image fun s => s / 2).union
-      (e.down.finite_crossings.countable.image fun a => (a.2 + 1) / 2)).mono ?_
+      (e.down.countable_crossings.image fun a => (a.2 + 1) / 2)).mono ?_
     rintro s ⟨hs, i, hi⟩
     by_cases hle : s ≤ 1 / 2
     · rw [toContinuousPath_cons_apply_of_le p e (s := ⟨s, hs⟩) hle] at hi
