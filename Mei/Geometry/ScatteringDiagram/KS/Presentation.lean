@@ -189,6 +189,11 @@ theorem pathPrefunctor_obj_val (k : ℕ)
     ((D.pathPrefunctor k).obj x).val = x.val := by
   rw [pathPrefunctor, WallComplement.wallCoverPrefunctor_obj_val]
 
+/-- Forgetting the extra cuts commutes with path reversal. -/
+instance (k : ℕ) : (D.pathPrefunctor k).MapReverse := by
+  unfold pathPrefunctor
+  infer_instance
+
 /-- The active indices whose supports contain a set. -/
 def wallIndices (k : ℕ) (Q : Set V) : Finset (D.active k) :=
   (Set.toFinite {j : D.active k | Q ⊆ (D.wall j).support}).toFinset
