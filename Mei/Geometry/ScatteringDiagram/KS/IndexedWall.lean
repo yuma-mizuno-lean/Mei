@@ -7,8 +7,6 @@ module
 
 public import Mei.Geometry.ScatteringDiagram.KS.Ray
 public import Mei.Algebra.Lie.BCH.Ray.Basic
-public import Mei.Geometry.Convex.Polyhedron.Path.Product
-public import Mei.Geometry.Convex.Polyhedron.Rational
 public import Mei.Geometry.Convex.Polyhedron.Rational.Cone
 import Mei.Geometry.Convex.Polyhedron.Path.Completion
 

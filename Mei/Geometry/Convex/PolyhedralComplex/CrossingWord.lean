@@ -6,9 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.Convex.PolyhedralComplex.Strata
-public import Mei.Geometry.Convex.Polyhedron.AdmissiblePath
 public import Mei.Geometry.Convex.Polyhedron.CrossingEvents
-public import Mathlib.Data.Finset.Sort
 public import Mathlib.GroupTheory.FreeGroup.Basic
 
 /-!

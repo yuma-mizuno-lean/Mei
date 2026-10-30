@@ -11,7 +11,6 @@ public import Mei.Geometry.Convex.PolyhedralComplex.AmbientSubdivision
 public import Mei.Geometry.Convex.PolyhedralComplex.Subcomplex
 public import Mei.Geometry.Convex.Polyhedron.Path.Coarsening
 public import Mei.Geometry.Convex.Polyhedron.Path.Comparison
-import Mei.Data.Finset.NoncommProd
 
 /-!
 # Finite KS complexes of indexed wall presentations
