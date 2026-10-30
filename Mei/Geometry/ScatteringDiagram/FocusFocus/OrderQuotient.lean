@@ -239,18 +239,12 @@ def truncatedExponentChamberEquiv :
     ExponentOrderQuotient K k i ≃ₐ[K] TruncatedExponentChamber K k i :=
   AlgEquiv.ofRingEquiv (f := orderRingEquiv K k i) (by
     intro r
-    have hs : algebraMap K (ExponentOrderQuotient K k i) r =
-        π (single 0 r) := by
-      -- The quotient scalar map is the composite coefficient map.
-      rfl
-    rw [hs]
-    have hC : mapRingHom ℤ (AdjoinRoot.of _) (_root_.LaurentPolynomial.C r) =
-        algebraMap K S[ℤ] r := by
-      simp only [← _root_.LaurentPolynomial.single_eq_C, mapRingHom_single,
-        coe_algebraMap, Function.comp_apply, AdjoinRoot.algebraMap_eq]
-    have h := congrArg (algebraMap S[ℤ] (TruncatedExponentChamber K k i)) hC
-    rw [← IsScalarTower.algebraMap_apply K S[ℤ]] at h
-    simpa [orderRingEquiv, forward, toChamber] using h)
+    have h := forward_scalarBack K k i (AdjoinRoot.of _ r)
+    simp only [scalarBack, AdjoinRoot.lift_of] at h
+    rw [IsScalarTower.algebraMap_apply S S[ℤ], ← AdjoinRoot.algebraMap_eq,
+      ← IsScalarTower.algebraMap_apply K S,
+      ← IsScalarTower.algebraMap_apply K S[ℤ]] at h
+    simpa only [orderRingEquiv, RingEquiv.ofRingHom_apply] using h)
 
 /-- On arbitrary representatives, the comparison is the polynomial dictionary,
 coefficient reduction, and the nodal and chamber quotient maps. -/
@@ -299,13 +293,8 @@ theorem truncatedExponentChamberEquiv_symm_parameter :
     (truncatedExponentChamberEquiv K k i).symm
         (algebraMap S (TruncatedExponentChamber K k i) τ) =
       Ideal.Quotient.mk _ (single smoothingDegree 1) := by
-  apply (truncatedExponentChamberEquiv K k i).symm_apply_eq.mpr
-  rw [truncatedExponentChamberEquiv_mk]
-  simp only [exponentPolynomialEquiv_smoothingDegree, map_mul, MvPolynomial.map_X,
-    NodeAlgebra.mk_X, NodeAlgebra.coord_zero_mul_coord_one, Ideal.Quotient.mk_algebraMap]
-  rw [IsScalarTower.algebraMap_apply S S[ℤ]]
-  exact (congrArg (algebraMap S[ℤ] (TruncatedExponentChamber K k i))
-    (_root_.LaurentPolynomial.C_eq_algebraMap τ)).symm
+  simpa only [AdjoinRoot.mk_X, Polynomial.eval₂_X] using
+    truncatedExponentChamberEquiv_symm_scalar_mk K k i Polynomial.X
 
 /-- The inverse fixes all tangential Laurent monomials. -/
 @[simp]
