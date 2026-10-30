@@ -1,0 +1,169 @@
+/-
+Copyright (c) 2026 Mei contributors. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Codex
+-/
+module
+
+public import Mei.Geometry.ScatteringDiagram.FocusFocus.Upper
+public import Mei.Geometry.ScatteringDiagram.FocusFocus.Overlap
+
+/-!
+# Upper gluing of the focus-focus chambers
+
+The upper shear of a chamber descends to the upper change on its doubly
+truncated overlap. Consequently the lower left incidence equals the upper
+wall incidence after shearing the left chamber. The right chamber stays in
+its original frame. These equations identify the fiber products defined by
+the two crossing descriptions, including their actual chamber projections.
+
+The construction uses `upperTruncatedExponentChamber`, `upperOverlap` and
+`lowerWallMap_eq_upperWallMap_comp_upperOverlap`, with Mathlib's equalizer
+subalgebras and `AlgEquiv.ofBijective`. The coordinate and gluing conventions
+follow Gross–Siebert, *An Invitation to Toric Degenerations*, §2.2–2.3
+(arXiv:0808.2749v2).
+-/
+
+public noncomputable section
+
+namespace Mei.FocusFocus
+
+open TauCeti Mei.NodeAlgebra _root_.LaurentPolynomial
+open scoped Mei.NodeAlgebra
+
+section UpperPresentation
+
+variable {S : Type*} [CommRing S] (t : S) (k : ℕ)
+
+local notation "R" => S[T;T⁻¹]
+local notation "D" => LocalizedOverlap (C t) (1 + T 1) k
+
+/-- The left chamber incidence in the upper frame, with wall function `1+w⁻¹`
+and values in the common localization at `1+w`. -/
+def upperLeftGluing : LeftChamber (C t) k →ₐ[R] D :=
+  (upperWallMap t k).comp (leftToOverlap (C t) k)
+
+/-- The upper incidence on a chamber representative is the upper wall map. -/
+@[simp]
+theorem upperLeftGluing_mk (z : NodeAlgebra R (C t)) :
+    upperLeftGluing t k (Ideal.Quotient.mk _ z) =
+      upperWallMap t k (Ideal.Quotient.mk _ z) := by
+  simp only [upperLeftGluing, AlgHom.comp_apply, leftToOverlap_mk]
+
+/-- The slab coefficient algebra in the upper left frame and the unchanged
+right frame, glued in the common localized overlap. -/
+def upperSlabAlgebra : Subalgebra R (LeftChamber (C t) k × RightChamber (C t) k) :=
+  AlgHom.equalizer ((upperLeftGluing t k).comp (AlgHom.fst R _ _))
+    ((rightGluing (C t) (1 + T 1) k).comp (AlgHom.snd R _ _))
+
+/-- Upper slab coefficients are exactly pairs with equal upper incidence images. -/
+@[simp]
+theorem mem_upperSlabAlgebra_iff (z : LeftChamber (C t) k × RightChamber (C t) k) :
+    z ∈ upperSlabAlgebra t k ↔
+      upperLeftGluing t k z.1 = rightGluing (C t) (1 + T 1) k z.2 := (Iff.rfl)
+
+end UpperPresentation
+
+variable (K : Type*) [CommRing K] (k : ℕ)
+
+local notation "S" => AdjoinRoot (Polynomial.X ^ (k + 1) : Polynomial K)
+local notation "τ" => AdjoinRoot.root (Polynomial.X ^ (k + 1) : Polynomial K)
+local notation "R" => S[T;T⁻¹]
+
+/-- The left chamber shear commutes with the actual quotient to the overlap. -/
+@[simp]
+theorem leftToOverlap_upper (x : TruncatedExponentChamber K k 1) :
+    leftToOverlap (C τ) k (upperTruncatedExponentChamber K k 1 x) =
+      upperOverlap τ k (leftToOverlap (C τ) k x) := by
+  let e : TruncatedExponentChamber K k 1 ≃ₐ[R] TruncatedExponentChamber K k 1 :=
+    AlgEquiv.ofRingEquiv (f := (upperTruncatedExponentChamber K k 1).toRingEquiv)
+      (upperTruncatedExponentChamber_algebraMap K k 1)
+  have he : (leftToOverlap (C τ) k).comp e.toAlgHom =
+      (upperOverlap τ k).toAlgHom.comp (leftToOverlap (C τ) k) := by
+    apply Ideal.Quotient.algHom_ext
+    ext <;> simp [e]
+  exact AlgHom.congr_fun he x
+
+/-- The right chamber shear also commutes with its quotient to the overlap.
+This is the overlap square for a change of the right frame. -/
+@[simp]
+theorem rightToOverlap_upper (x : TruncatedExponentChamber K k 0) :
+    rightToOverlap (C τ) k (upperTruncatedExponentChamber K k 0 x) =
+      upperOverlap τ k (rightToOverlap (C τ) k x) := by
+  let e : TruncatedExponentChamber K k 0 ≃ₐ[R] TruncatedExponentChamber K k 0 :=
+    AlgEquiv.ofRingEquiv (f := (upperTruncatedExponentChamber K k 0).toRingEquiv)
+      (upperTruncatedExponentChamber_algebraMap K k 0)
+  have he : (rightToOverlap (C τ) k).comp e.toAlgHom =
+      (upperOverlap τ k).toAlgHom.comp (rightToOverlap (C τ) k) := by
+    apply Ideal.Quotient.algHom_ext
+    ext <;> simp [e]
+  exact AlgHom.congr_fun he x
+
+/-- The upper crossing after the left chamber shear equals the lower incidence
+on every chamber element, including classes killed by the overlap quotient. -/
+@[simp]
+theorem upperLeftGluing_upper (x : TruncatedExponentChamber K k 1) :
+    upperLeftGluing τ k (upperTruncatedExponentChamber K k 1 x) =
+      leftGluing (C τ) (1 + T 1) k x := by
+  calc
+    _ = upperWallMap τ k (upperOverlap τ k (leftToOverlap (C τ) k x)) := by
+      simp only [upperLeftGluing, AlgHom.comp_apply, leftToOverlap_upper]
+    _ = lowerWallMap τ k (leftToOverlap (C τ) k x) :=
+      (AlgHom.congr_fun (lowerWallMap_eq_upperWallMap_comp_upperOverlap τ k) _).symm
+    _ = _ := AlgHom.congr_fun (lowerWallMap_comp_leftToOverlap τ k) x
+
+/-- A lower matching pair becomes an upper matching pair by shearing its left
+entry. This characterizes the change of gluing on the original chamber carriers. -/
+theorem mem_upperSlabAlgebra_upper_iff
+    (z : TruncatedExponentChamber K k 1 × TruncatedExponentChamber K k 0) :
+    (upperTruncatedExponentChamber K k 1 z.1, z.2) ∈ upperSlabAlgebra τ k ↔
+      z ∈ slabAlgebra (C τ) (1 + T 1) k := by
+  simp only [mem_upperSlabAlgebra_iff, upperLeftGluing_upper, mem_slabAlgebra_iff]
+
+/-- The lower and upper slab presentations are isomorphic by the upper shear
+on the left chamber and the identity on the right. The equivalence fixes the
+entire Laurent coefficient algebra over the truncated smoothing ring. -/
+def upperSlabEquiv :
+    slabAlgebra (C τ) (1 + T 1) k ≃ₐ[R] upperSlabAlgebra τ k := by
+  let e : TruncatedExponentChamber K k 1 ≃ₐ[R] TruncatedExponentChamber K k 1 :=
+    AlgEquiv.ofRingEquiv (f := (upperTruncatedExponentChamber K k 1).toRingEquiv)
+      (upperTruncatedExponentChamber_algebraMap K k 1)
+  let f := AlgEquiv.prodCongr e (AlgEquiv.refl :
+    TruncatedExponentChamber K k 0 ≃ₐ[R] TruncatedExponentChamber K k 0)
+  let g : slabAlgebra (C τ) (1 + T 1) k →ₐ[R] upperSlabAlgebra τ k :=
+    (f.toAlgHom.comp (slabAlgebra (C τ) (1 + T 1) k).val).codRestrict _ fun z =>
+      (mem_upperSlabAlgebra_upper_iff K k z.val).mpr z.property
+  refine AlgEquiv.ofBijective g ⟨?_, ?_⟩
+  · intro x y hxy
+    exact Subtype.ext (f.injective (congrArg Subtype.val hxy))
+  · intro y
+    have hy : f.symm y.val ∈ slabAlgebra (C τ) (1 + T 1) k := by
+      apply (mem_upperSlabAlgebra_upper_iff K k (f.symm y.val)).mp
+      have hf : f (f.symm y.val) ∈ upperSlabAlgebra τ k := by
+        rw [f.apply_symm_apply]
+        exact y.property
+      exact hf
+    exact ⟨⟨f.symm y.val, hy⟩, Subtype.ext (f.apply_symm_apply y.val)⟩
+
+/-- The upper gluing comparison shears precisely the left entry. -/
+@[simp]
+theorem coe_upperSlabEquiv (z : slabAlgebra (C τ) (1 + T 1) k) :
+    (upperSlabEquiv K k z).val =
+      (upperTruncatedExponentChamber K k 1 z.val.1, z.val.2) := (rfl)
+
+/-- Returning to the lower presentation applies the inverse shear on the left. -/
+@[simp]
+theorem coe_upperSlabEquiv_symm (z : upperSlabAlgebra τ k) :
+    ((upperSlabEquiv K k).symm z).val =
+      ((upperTruncatedExponentChamber K k 1).symm z.val.1, z.val.2) := by
+  have he := congrArg Subtype.val ((upperSlabEquiv K k).apply_symm_apply z)
+  rw [coe_upperSlabEquiv] at he
+  have h₁ : (((upperSlabEquiv K k).symm z).val).1 =
+      (upperTruncatedExponentChamber K k 1).symm z.val.1 := by
+    apply (upperTruncatedExponentChamber K k 1).injective
+    rw [AlgEquiv.apply_symm_apply]
+    exact congrArg Prod.fst he
+  have h₂ := congrArg Prod.snd he
+  exact Prod.ext h₁ h₂
+
+end Mei.FocusFocus
