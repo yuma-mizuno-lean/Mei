@@ -58,16 +58,20 @@ variable (h0 : t 0 = 0) (hv : ∀ j, β.directionAt (t j) = v j)
   (hf : ∀ j, f j (v j.castSucc) ≠ 0)
   (hheight : ∀ j, f j (β (t j.succ)) = c j)
 
-include ht hb h0 hv hf hheight in
+include ht h0 hf hheight in
 /-- Actual transverse encounters recover both the affine encounter positions
-and their cumulative parameters, without prescribing either backward formula. -/
-theorem backward_eq_of_ray_encounters :
+and their cumulative parameters, without prescribing either backward formula.
+Only the recorded intervals need be free of interior bends; the earlier
+incoming tail and its direction are unrestricted. -/
+theorem backward_eq_of_ray_encounters
+    (hb : ∀ j : Fin n, ∀ s ∈ β.bends.support, s ≤ t j.succ ∨ t j.castSucc ≤ s)
+    (hv : ∀ j : Fin n, β.directionAt (t j.castSucc) = v j.castSucc) :
     (∀ j, β (t j) = backwardPoint f c (fun j => v j.castSucc) j β.endpoint) ∧
       ∀ j, t j = backwardParameter f c (fun j => v j.castSucc) j β.endpoint := by
   have hstep (j : Fin n) :
       β (t j.succ) = β (t j.castSucc) + (t j.castSucc - t j.succ) • v j.castSucc := by
     have he := β.eval_vsub_eval (ht Fin.castSucc_lt_succ).le
-      (bends_outside_encounter_interval β t ht hb j)
+      (hb j)
     -- Vector subtraction on the affine space over itself is ordinary subtraction.
     rw [hv, vsub_eq_sub] at he
     calc
@@ -95,7 +99,8 @@ theorem eq_backwardRay_of_encounters :
       (∀ j, t j = backwardParameter f c (fun j => v j.castSucc) j β.endpoint) ∧
         β = backwardRay f c v β.endpoint hpos := by
   classical
-  have hparameter := (backward_eq_of_ray_encounters f c v β t ht hb h0 hv hf hheight).2
+  have hparameter := (backward_eq_of_ray_encounters f c v β t ht h0 hf hheight
+    (bends_outside_encounter_interval β t ht hb) (fun j => hv j.castSucc)).2
   have hpos (j : Fin n) :
       0 < backwardTime f c (fun j => v j.castSucc) j β.endpoint := by
     have he := hparameter j.succ
@@ -107,22 +112,11 @@ theorem eq_backwardRay_of_encounters :
       (bends_outside_encounter_interval β t ht hb j), hv, hv]
   have hbends : β.bends =
       ∑ j : Fin n, Finsupp.single (t j.succ) (v j.succ - v j.castSucc) := by
-    ext s
-    simp only [Finsupp.finsetSum_apply]
-    by_cases hs : ∃ j : Fin n, s = t j.succ
-    · obtain ⟨j, rfl⟩ := hs
-      rw [Finset.sum_eq_single j]
-      · simp [hjump]
-      · intro a _ haj
-        exact Finsupp.single_eq_of_ne (fun he => haj
-          (Fin.succ_injective _ (ht.injective he.symm)))
-      · simp
-    · have hnot : s ∉ β.bends.support := fun h => hs (hb s h)
-      rw [Finsupp.notMem_support_iff.mp hnot]
-      symm
-      apply Finset.sum_eq_zero
-      intro j _
-      exact Finsupp.single_eq_of_ne (fun he => hs ⟨j, he⟩)
+    have hinj : Function.Injective (fun j : Fin n => t j.succ) :=
+      ht.injective.comp (Fin.succ_injective n)
+    rw [← Finsupp.mapDomain_comapDomain (fun j : Fin n => t j.succ) hinj β.bends
+      (fun s hs => (hb s hs).imp fun _ he => he.symm), Finsupp.mapDomain_fintype]
+    simp only [Finsupp.comapDomain_apply, hjump]
   apply FiniteAffineRay.ext
   · simp
   · rw [direction_backwardRay, ← hv 0, h0, FiniteAffineRay.directionAt_def]

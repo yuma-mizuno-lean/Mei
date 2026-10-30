@@ -260,12 +260,12 @@ theorem directionAt_sub_eq_bends (β : FiniteAffineRay V P) {s t : ℝ} (hst : s
       · simp [h.not_ge, (h.trans hst).not_ge, h.ne]
       · simp [hst.not_ge]
     · simp [hst.le.trans h, h, (hst.trans_le h).ne']
-  rw [directionAt_def, directionAt_def, Finsupp.sum, Finsupp.sum,
-    Finset.sum_congr rfl hterm, Finset.sum_add_distrib, Finset.sum_ite_eq']
-  split_ifs with hs
-  · abel
-  · rw [Finsupp.notMem_support_iff.mp hs]
-    abel
+  have hsum : β.bends.sum (fun b w => if s ≤ b then w else 0) =
+      β.bends.sum (fun b w => (if t ≤ b then w else 0) + if b = s then w else 0) :=
+    Finsupp.sum_congr hterm
+  rw [directionAt_def, directionAt_def, hsum,
+    Finsupp.sum_add, Finsupp.sum_ite_self_eq']
+  abel
 
 /-- On any interval without an interior bend, realization has the stated constant velocity. -/
 theorem eval_vsub_eval (β : FiniteAffineRay V P) {s t : ℝ} (hst : s ≤ t)
