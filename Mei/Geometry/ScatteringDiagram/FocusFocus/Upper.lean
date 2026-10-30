@@ -194,19 +194,18 @@ theorem upperTruncatedExponentChamber_algebraMap (r : S[ℤ]) :
       (IsScalarTower.toAlgHom K S _) = IsScalarTower.toAlgHom K S _ := by
     apply AdjoinRoot.algHom_ext
     exact upperTruncatedExponentChamber_parameter K k i
-  induction r using AddMonoidAlgebra.induction_linear with
-  | zero => simp
-  | add r s hr hs => simp only [map_add, hr, hs]
-  | single b c =>
-    rw [_root_.LaurentPolynomial.single_eq_C_mul_T]
-    simp only [map_mul, upperTruncatedExponentChamber_tangent]
-    congr 1
-    have hc : algebraMap S[ℤ] (TruncatedExponentChamber K k i)
-        (_root_.LaurentPolynomial.C c) =
-        algebraMap S (TruncatedExponentChamber K k i) c :=
-      (IsScalarTower.algebraMap_apply S S[ℤ] (TruncatedExponentChamber K k i) c).symm
-    rw [hc]
-    exact AlgHom.congr_fun hS c
+  have h : (upperTruncatedExponentChamber K k i).toAlgHom.toRingHom.comp
+      (algebraMap S[ℤ] (TruncatedExponentChamber K k i)) =
+      algebraMap S[ℤ] (TruncatedExponentChamber K k i) := by
+    apply AddMonoidAlgebra.ringHom_ext
+    · intro c
+      have hc : algebraMap S[ℤ] (TruncatedExponentChamber K k i) (single 0 c) =
+          algebraMap S (TruncatedExponentChamber K k i) c :=
+        (IsScalarTower.algebraMap_apply S S[ℤ] (TruncatedExponentChamber K k i) c).symm
+      simp only [RingHom.comp_apply, hc]
+      exact AlgHom.congr_fun hS c
+    · exact upperTruncatedExponentChamber_tangent K k i
+  exact RingHom.congr_fun h r
 
 /-- The upper chamber change as an equivalence over the entire tangential
 Laurent coefficient algebra, including the truncated smoothing parameter. -/
