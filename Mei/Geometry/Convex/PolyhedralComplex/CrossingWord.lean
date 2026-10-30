@@ -6,8 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.Convex.PolyhedralComplex.Strata
-public import Mei.Geometry.Convex.Polyhedron.AdmissiblePath
-public import Mathlib.Data.Finset.Sort
+public import Mei.Geometry.Convex.Polyhedron.CrossingEvents
 public import Mathlib.GroupTheory.FreeGroup.Basic
 
 /-!
@@ -15,9 +14,10 @@ public import Mathlib.GroupTheory.FreeGroup.Basic
 
 An admissible segment through the walls of a finite polyhedral complex has a
 strictly time-ordered list of crossings. Regular-wall uniqueness ensures that
-simultaneous crossings cannot occur, even for coplanar cells. Reading the signed
-wall generators gives a free-group word; the first crossing is the rightmost
-factor, so labels acting on the left compose in traversal order.
+simultaneous crossings cannot occur, even for coplanar cells, so each signed
+crossing event is a singleton. Reading the signed wall generators gives a
+free-group word; the first crossing is the rightmost factor, so labels acting on
+the left compose in traversal order.
 
 Polygonal crossing words respect concatenation and reversal. Coorientations are
 linear functionals with kernel the wall direction. Positive rescaling preserves
@@ -57,6 +57,22 @@ theorem crossing_time_injective (e : x ⟶ y) :
   · exact C.eq_of_mem_wall_of_notMem_singularSupport ha.2
       (by simpa only [hab] using hb.2) (e.down.regular _ ha.1)
   · exact hab
+
+/-- At a crossing of an admissible segment through a complex, the signed crossing event
+consists of the crossed wall alone, with its crossing exponent. -/
+theorem signedCrossingEvent_eq_singleton (ν : C.walls → V →ₗ[ℝ] ℝ) (e : x ⟶ y)
+    {Q : C.walls} {t : ℝ} (hQ : (Q, t) ∈ WallComplement.crossings x y) :
+    WallComplement.signedCrossingEvent ν x y t =
+      {(Q, if 0 < ν Q (y.val - x.val) then -1 else 1)} := by
+  ext ⟨Q', z⟩
+  rw [WallComplement.mem_signedCrossingEvent, Finset.mem_singleton, Prod.mk.injEq]
+  constructor
+  · rintro ⟨hQ', hz⟩
+    obtain rfl : Q' = Q := congrArg (fun b => b.val.1)
+      (C.crossing_time_injective e (a₁ := ⟨(Q', t), hQ'⟩) (a₂ := ⟨(Q, t), hQ⟩) rfl)
+    exact ⟨rfl, hz⟩
+  · rintro ⟨rfl, rfl⟩
+    exact ⟨hQ, rfl⟩
 
 /-- The crossings of an admissible segment in strictly increasing time order. -/
 def orderedCrossings (e : x ⟶ y) : List (C.walls × ℝ) := by

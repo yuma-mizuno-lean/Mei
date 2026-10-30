@@ -67,6 +67,11 @@ theorem ofFinite_wall [Finite ι] (W : ι → DirectedWall (d := d) h H) (j : ι
 def active (k : ℕ) : Set ι :=
   Function.mulSupport (fun j => CompletedGroup.projection k (D.wall j).label)
 
+/-- The active indices are the support of the projected labels. -/
+theorem active_def (k : ℕ) :
+    D.active k = Function.mulSupport (fun j => CompletedGroup.projection k (D.wall j).label) :=
+  (rfl)
+
 /-- Activity is exactly nontriviality of the projected label. -/
 @[simp]
 theorem mem_active (k : ℕ) (j : ι) :
@@ -84,14 +89,8 @@ instance finiteActive (k : ℕ) : Finite (D.active k) :=
   Set.finite_coe_iff.mpr (D.finite_active k)
 
 /-- A label active at a lower order is also active at every higher order. -/
-theorem active_mono : Monotone D.active := by
-  intro k l hkl j hj
-  simp only [mem_active] at hj ⊢
-  intro he
-  apply hj
-  have hp := CompletedGroup.map_projection k l hkl (D.wall j).label
-  rw [he, map_one] at hp
-  exact hp.symm
+theorem active_mono : Monotone D.active :=
+  CompletedGroup.monotone_mulSupport_projection (fun j => (D.wall j).label)
 
 /-- The projected labels of active walls with the same affine span commute. -/
 theorem activeLabels_commute (k : ℕ) (a b : D.active k)

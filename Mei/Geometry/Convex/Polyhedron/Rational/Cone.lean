@@ -115,6 +115,26 @@ theorem IsRationalNormalPolyhedron.isLatticeRational
   rw [heq]
   exact hD _
 
+variable {h} in
+/-- A rational-normal polyhedral cone has a presentation by linear inequalities: replacing every
+inequality of any presentation by its linear part keeps the carrier. -/
+theorem IsRationalNormalPolyhedron.exists_presentation_map_zero
+    (hC : IsRationalNormalPolyhedron h (C : Set V)) :
+    ∃ P : RationalAffinePolyhedron h, P.carrier = C ∧ ∀ j, P.inequality j 0 = 0 := by
+  obtain ⟨P, hP⟩ := isRationalNormalPolyhedron_iff.mp hC
+  have hne : {x | ∀ j, P.inequality j x ≤ 0}.Nonempty :=
+    ⟨0, RationalAffinePolyhedron.mem_carrier.mp (hP ▸ C.zero_mem)⟩
+  have hlin (j) : ((P.inequality j).contLinear.toContinuousAffineMap : V →ᴬ[ℝ] ℝ).linear =
+      (P.inequality j).linear := by
+    simp only [← ContinuousAffineMap.coe_contLinear_eq_linear,
+      ContinuousLinearMap.toContinuousAffineMap_contLinear]
+  refine ⟨⟨P.numConstraints, fun j => (P.inequality j).contLinear.toContinuousAffineMap,
+    fun j => by rw [hlin]; exact P.rational_linear j⟩, ?_, fun j => by simp⟩
+  ext x
+  rw [RationalAffinePolyhedron.mem_carrier, SetLike.mem_coe, ← C.recessionCone_coe, ← hP]
+  exact (Set.mem_recessionCone_setOf_forall_iff (g := fun j => (P.inequality j).toAffineMap)
+    hne).symm.trans (by simp)
+
 /-- A lattice-rational cone is a rational affine polyhedron. -/
 theorem isRationalPolyhedron_of_isLatticeRational (hC : IsLatticeRational i C) :
     IsRationalPolyhedron h (C : Set V) := by

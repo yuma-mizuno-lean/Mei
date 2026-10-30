@@ -111,7 +111,7 @@ theorem affineSpan_eq_of_adaptedWall_subset {k : ℕ}
     {Q : Set V} (hQ : Q ∈ (D.adaptedComplex k).walls) (j : D.active k)
     (hsub : Q ⊆ (D.wall j).support) :
     affineSpan ℝ Q = affineSpan ℝ (D.wall j).support :=
-  (D.adaptedComplex k).affineSpan_eq_of_mem_walls_subset hQ hsub
+  (D.adaptedComplex k).affineSpan_eq_of_subset_of_mem_walls hQ hsub
     (D.wall j).finrank_direction_add_one
 
 /-- Forget the extra cuts of the adapted complex without moving the path.

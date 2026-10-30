@@ -76,26 +76,6 @@ theorem finrank_direction_add_one_of_mem_walls (C : FinitePolyhedralComplex h)
     Module.finrank ℝ (affineSpan ℝ P).direction + 1 = Module.finrank ℝ V :=
   ((C.mem_cellsOfCodimension 1 P).mp hP).2
 
-/-- A wall contained in a set whose affine span also has codimension one has the
-same affine span as that set. -/
-theorem affineSpan_eq_of_mem_walls_subset (C : FinitePolyhedralComplex h)
-    {Q S : Set V} (hQ : Q ∈ C.walls) (hQS : Q ⊆ S)
-    (hS : Module.finrank ℝ (affineSpan ℝ S).direction + 1 = Module.finrank ℝ V) :
-    affineSpan ℝ Q = affineSpan ℝ S := by
-  have := h.finiteDimensional
-  have hle := affineSpan_mono ℝ hQS
-  have hQ' := C.finrank_direction_add_one_of_mem_walls hQ
-  exact AffineSubspace.eq_of_direction_eq_of_nonempty_of_le
-    (Submodule.eq_of_le_of_finrank_eq (AffineSubspace.direction_le hle) (by omega))
-    ((C.nonempty Q (C.mem_cells_of_mem_walls hQ)).mono (subset_affineSpan ℝ Q)) hle
-
-/-- Contained walls in two finite complexes have the same affine span. -/
-theorem affineSpan_eq_of_walls_subset {C D : FinitePolyhedralComplex h} (Q : C.walls) (P : D.walls)
-    (hQP : (Q : Set V) ⊆ P) :
-    affineSpan ℝ (Q : Set V) = affineSpan ℝ (P : Set V) :=
-  C.affineSpan_eq_of_mem_walls_subset Q.property hQP
-    (D.finrank_direction_add_one_of_mem_walls P.property)
-
 /-- A complement to the affine direction of a subset of a wall is transverse
 to that wall. No dimension hypothesis on the subset is required. -/
 theorem not_le_wall_direction_of_isCompl (C : FinitePolyhedralComplex h)
@@ -112,6 +92,26 @@ theorem not_le_wall_direction_of_isCompl (C : FinitePolyhedralComplex h)
   have hdim := C.finrank_direction_add_one_of_mem_walls hP
   rw [htop, finrank_top] at hdim
   omega
+
+/-- A wall contained in a set whose affine span has codimension one has the affine span of
+that set. -/
+theorem affineSpan_eq_of_subset_of_mem_walls (C : FinitePolyhedralComplex h) {Q S : Set V}
+    (hQ : Q ∈ C.walls) (hQS : Q ⊆ S)
+    (hS : Module.finrank ℝ (affineSpan ℝ S).direction + 1 = Module.finrank ℝ V) :
+    affineSpan ℝ Q = affineSpan ℝ S := by
+  have := h.finiteDimensional
+  have hle := affineSpan_mono ℝ hQS
+  have hdQ := C.finrank_direction_add_one_of_mem_walls hQ
+  exact AffineSubspace.eq_of_direction_eq_of_nonempty_of_le
+    (Submodule.eq_of_le_of_finrank_eq (AffineSubspace.direction_le hle) (by omega))
+    ((C.nonempty Q (C.mem_cells_of_mem_walls hQ)).mono (subset_affineSpan ℝ Q)) hle
+
+/-- Contained walls in two finite complexes have the same affine span. -/
+theorem affineSpan_eq_of_walls_subset {C D : FinitePolyhedralComplex h} (Q : C.walls) (P : D.walls)
+    (hQP : (Q : Set V) ⊆ P) :
+    affineSpan ℝ (Q : Set V) = affineSpan ℝ (P : Set V) :=
+  C.affineSpan_eq_of_subset_of_mem_walls Q.property hQP
+    (D.finrank_direction_add_one_of_mem_walls P.property)
 
 /-- A wall of any complex lies in at most one wall of `D`. -/
 theorem eq_of_subset_of_mem_walls {C D : FinitePolyhedralComplex h} {Q P P' : Set V}

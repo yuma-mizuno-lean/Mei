@@ -21,7 +21,9 @@ left and right order cutoffs with powers of `y` and `x`.
 
 The construction uses Mathlib's `AddMonoidAlgebra.domCongr`, `curryAlgEquiv`
 and double-quotient isomorphism, the free coordinates `exponentEquiv`, and
-the quotient-map universal property of `TauCeti.NodeAlgebra.mk`.
+the quotient-map universal property of `TauCeti.NodeAlgebra.mk`. Mathlib's
+`Ideal.quotientEquivAlg` descends the exponent shear to every quotient whose
+ideal it preserves.
 The coordinate conventions follow Gross–Siebert, *An Invitation to Toric
 Degenerations*, §2.2–2.3 (arXiv:0808.2749v2).
 -/
@@ -231,6 +233,34 @@ theorem exponentChamberEquiv_symm_mk (t : R) (k : ℕ) (i : Fin 2)
       Ideal.Quotient.mk _ ((exponentPolynomialEquiv R).symm p) := by
   apply (exponentChamberEquiv R t k i).injective
   rw [AlgEquiv.apply_symm_apply, exponentChamberEquiv_mk, AlgEquiv.apply_symm_apply]
+
+/-- The exponent shear `(a,b,h) ↦ (a,b-a,h)` descends to the quotient by any
+ideal whose membership it preserves. -/
+def upperQuotient (I : Ideal (AddMonoidAlgebra R exponentMonoid))
+    (hI : ∀ a, domCongr R R upperMonoid a ∈ I ↔ a ∈ I) :
+    (AddMonoidAlgebra R exponentMonoid ⧸ I) ≃ₐ[R] (AddMonoidAlgebra R exponentMonoid ⧸ I) :=
+  Ideal.quotientEquivAlg _ _ (domCongr R R upperMonoid) <| by
+    refine ((Ideal.map_comap_of_equiv (domCongr R R upperMonoid).toRingEquiv).trans
+      (Ideal.ext fun a => ?_)).symm
+    rw [Ideal.mem_comap, ← hI, AlgEquiv.toRingEquiv_symm, AlgEquiv.coe_toRingEquiv,
+      AlgEquiv.apply_symm_apply]
+
+/-- The descended shear acts on every representative by the exponent shear. -/
+@[simp]
+theorem upperQuotient_mk (I : Ideal (AddMonoidAlgebra R exponentMonoid))
+    (hI : ∀ a, domCongr R R upperMonoid a ∈ I ↔ a ∈ I) (a : AddMonoidAlgebra R exponentMonoid) :
+    upperQuotient R I hI (Ideal.Quotient.mk _ a) =
+      Ideal.Quotient.mk _ (domCongr R R upperMonoid a) :=
+  Ideal.quotientEquivAlg_mk _ _ _ a
+
+/-- The inverse of the descended shear is induced by the inverse exponent shear. -/
+@[simp]
+theorem upperQuotient_symm_mk (I : Ideal (AddMonoidAlgebra R exponentMonoid))
+    (hI : ∀ a, domCongr R R upperMonoid a ∈ I ↔ a ∈ I) (a : AddMonoidAlgebra R exponentMonoid) :
+    (upperQuotient R I hI).symm (Ideal.Quotient.mk _ a) =
+      Ideal.Quotient.mk _ (domCongr R R upperMonoid.symm a) := by
+  apply (upperQuotient R I hI).injective
+  rw [AlgEquiv.apply_symm_apply, upperQuotient_mk, ← domCongr_symm, AlgEquiv.apply_symm_apply]
 
 end Ring
 
