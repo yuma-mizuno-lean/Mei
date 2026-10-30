@@ -142,6 +142,7 @@ theorem cutoffDecoratedRayCylinderEquiv_parameter (r : Lifted) :
 
 /-- The finite weighted sum over every cutoff itinerary is independent of the
 forgotten endpoint and equals the projected evaluation, with multiplicity retained. -/
+@[simp]
 theorem cutoffDecoratedEvaluation_cylinder [Finite J] :
     cutoffDecoratedEvaluation d ℳ U b vw G h sign
         (fun j => Prod.fst ⁻¹' A j) (fun j => Prod.fst ⁻¹' W j)
