@@ -6,7 +6,6 @@ Authors: Codex
 module
 
 public import Mei.Algebra.Lie.Skew.Dilogarithm
-public import Mei.Algebra.BigOperators.Group.Finset.Ordered
 
 /-!
 # Uniqueness of dilogarithm exponents through a cutoff

@@ -6,7 +6,6 @@ Authors: Codex
 module
 
 public import Mei.Algebra.Lie.Skew.Factorization.Basic
-public import Mei.GroupTheory.CompletedGroup.OrderedProduct
 
 /-!
 # Assembling dilogarithm factorizations across cutoffs
