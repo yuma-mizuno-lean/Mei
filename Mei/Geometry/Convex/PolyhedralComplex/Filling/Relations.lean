@@ -113,11 +113,11 @@ theorem exists_filling_grid_boundary_mem_normalClosure_jointNeighborhoodWords
         (fun hs => hθ (C.singularSupport_walls_subset_support_codimensionAtLeast hs))
       exact ⟨r, hr, Or.inl hword⟩
   choose r hr hmodel using hlocal
-  obtain ⟨n, t, hn, ht0, htmono, ht1, -, ε, hε, hpatch⟩ :=
+  obtain ⟨n, t, hn, ht0, htmono, ht1, -, -, ε, hε, hpatch⟩ :=
     f.exists_grid_subdivision_convexHull
       (fun θ : range f => Metric.ball θ.val (r θ)) (fun _ => Metric.isOpen_ball)
       (fun x => ⟨⟨f x, mem_range_self x⟩, Metric.mem_ball_self (hr _)⟩)
-      ∅ countable_empty (notMem_empty _) (notMem_empty _)
+      ∅ countable_empty (notMem_empty _) (notMem_empty _) ∅ (by simp)
   obtain ⟨v, hv0, hvnear, ⟨e₁⟩, ⟨e₂⟩⟩ :=
     C.exists_admissible_grid_perturbation (fun c : Fin (n + 1) × Fin (n + 1) =>
       f (t c.1, t c.2)) (by simpa only [Fin.val_zero, ht0] using hbase) (lt_min hε hη)

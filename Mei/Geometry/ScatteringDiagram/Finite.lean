@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.Convex.PolyhedralComplex.Filling.Joint
+public import Mei.Geometry.Convex.PolyhedralComplex.Filling.Homotopy
 public import Mei.Geometry.Convex.Polyhedron.Path.Product
 
 /-!
@@ -21,7 +21,9 @@ labels, preserves every path product. Consistency means endpoint independence;
 it is equivalent to triviality of all admissible loop products.
 It suffices to test three-edge loops: admissible spokes to a common apex reduce
 every polygonal loop to triangular relations. When the complex covers the ambient space,
-it suffices to test the isolating triangular meridians of its joints.
+it suffices to test the isolating triangular meridians of its joints. If the labels kill the
+meridians of the joints in an open region, path products along paths homotopic in that
+region agree (`FiniteWallDiagram.pathProduct_eq_of_homotopy`).
 
 The construction uses Mathlib's `FreeGroup.lift` and the signed polygonal crossing
 words in `Mei.Geometry.Convex.PolyhedralComplex.CrossingWord`.
@@ -354,6 +356,20 @@ theorem consistent_iff_jointMeridianWords (hC : C.support = univ) :
       (fun g hg => MonoidHom.mem_ker.mpr (hmer g hg))
       (p.crossingWord_mem_normalClosure_jointMeridianWords hC D.normal D.ker_normal
         isOpen_univ convex_univ (fun _ _ => mem_univ _))
+
+/-- **Homotopy invariance of path products.** For a complex covering the ambient space, if the
+labels kill the words of the joint meridians in an open region `U`, then admissible paths whose
+realizations are homotopic in `U` relative to their endpoints have the same path product. -/
+theorem pathProduct_eq_of_homotopy (hC : C.support = univ) {U : Set V} (hUo : IsOpen U)
+    (hmer : ∀ g ∈ C.jointMeridianWords D.normal U, FreeGroup.lift D.label g = 1)
+    (p q : AdmissiblePLPath x y) (F : p.toContinuousPath.Homotopy q.toContinuousPath)
+    (hF : ∀ z, F z ∈ U) : D.pathProduct p = D.pathProduct q := by
+  have hmem := Subgroup.normalClosure_le_normal (N := (FreeGroup.lift D.label).ker)
+    (fun g hg => MonoidHom.mem_ker.mpr (hmer g hg))
+    (p.inv_crossingWord_mul_crossingWord_mem_normalClosure_jointMeridianWords hC D.normal
+      D.ker_normal hUo q F hF)
+  rw [MonoidHom.mem_ker, map_mul, map_inv, inv_mul_eq_one] at hmem
+  simpa only [pathProduct_def] using hmem
 
 variable {D} in
 /-- A homomorphism of label groups preserves consistency. -/
