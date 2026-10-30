@@ -17,7 +17,9 @@ degree, and its coefficients retain both exponent coordinates. These formulas
 relate full exponent gradings to coarser gradings over a monoid coefficient algebra.
 
 Changing coefficients also preserves the pieces of any grading given by a degree
-function on monomials, including when coefficients vanish under the map.
+function on monomials, including when coefficients vanish under the map. For an
+injective degree function, the piece at the degree of an exponent is the
+corresponding piece of the exponent grading.
 
 We use Mathlib's `AddMonoidAlgebra.grade` and `curryAlgEquiv`.
 -/
@@ -27,6 +29,15 @@ public section
 noncomputable section
 
 namespace AddMonoidAlgebra
+
+/-- Grading by an injective degree function agrees with the exponent grading at
+the degree of each exponent. -/
+theorem gradeBy_apply_of_injective {M ι : Type*} (R : Type*) [CommSemiring R]
+    {f : M → ι} (hf : Function.Injective f) (m : M) :
+    gradeBy R f (f m) = grade R m := by
+  ext a
+  simp only [mem_gradeBy_iff, Set.subset_def, Set.mem_preimage, Set.mem_singleton_iff,
+    hf.eq_iff, id_eq]
 
 section CoefficientChange
 

@@ -66,19 +66,14 @@ instance : SetLike.GradedMonoid (exponentOrderGrade K k i) := by
 instance : GradedAlgebra (exponentOrderGrade K k i) :=
   DirectSum.IsInternal.gradedAlgebra (isInternal_exponentOrderGrade K k i)
 
-private theorem sourceGrade_coe (q : exponentMonoid) :
-    gradeBy K exponentMonoid.subtype q.val = grade K q := by
-  ext f
-  simp only [mem_gradeBy_iff, Set.subset_def, Set.mem_preimage, Set.mem_singleton_iff,
-    AddSubmonoid.coe_subtype, Subtype.val_inj, id_eq]
-
 /-- A piece is exactly the scalar multiples of the class of its monomial. -/
 @[simp]
 theorem mem_exponentOrderGrade_iff (q : exponentMonoid) (x : ExponentOrderQuotient K k i) :
     x ∈ exponentOrderGrade K k i q.val ↔
       ∃ r : K, Ideal.Quotient.mk _ (single q r) = x := by
   rw [exponentOrderGrade, TauCeti.GradedAlgebra.mem_quotientPiece_iff]
-  simp only [sourceGrade_coe, mem_grade_iff', LinearMap.mem_range, lsingle_apply]
+  simp only [AddSubmonoid.coe_subtype, gradeBy_apply_of_injective K Subtype.val_injective,
+    mem_grade_iff', LinearMap.mem_range, lsingle_apply]
   exact ⟨fun ⟨_, ⟨r, rfl⟩, hx⟩ => ⟨r, hx⟩, fun ⟨r, hr⟩ => ⟨_, ⟨r, rfl⟩, hr⟩⟩
 
 /-- Degrees beyond the chamber cutoff have zero homogeneous piece. -/
@@ -113,7 +108,7 @@ theorem coe_decompose_exponentOrderGrade_mk (f : AddMonoidAlgebra K exponentMono
   have h := DirectSum.map_decompose_shift (grade K) (exponentOrderGrade K k i)
     (Ideal.Quotient.mk _).toAddMonoidHom Subtype.val Subtype.val_injective
     (fun q x hx => TauCeti.GradedAlgebra.mk_mem_quotientPiece _ _
-      (by rwa [sourceGrade_coe])) q f
+      ((gradeBy_apply_of_injective K exponentMonoid.subtype_injective q).ge hx)) q f
   simpa using h.symm
 
 /-- The monomial-class map from coefficients into a full exponent piece. -/
