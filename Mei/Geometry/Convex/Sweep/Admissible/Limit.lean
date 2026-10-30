@@ -50,7 +50,8 @@ theorem closure_admissibleBackwardDomain_subset_weakBackwardDomain
     closure (admissibleBackwardDomain f c v P W S C) ⊆
       weakBackwardDomain f c (fun j => v j.castSucc) P :=
   closure_subset_weakBackwardDomain f c _
-    (admissibleBackwardDomain_subset_backwardDomain f c v P W S C) hP
+    ((admissibleBackwardDomain_subset_backwardDomain f c v P W S C).trans
+      (backwardDomain_subset_weakBackwardDomain f c _ P)) hP
 
 /-- Every limiting elapsed time is nonnegative, even if the selected supports
 are not closed. -/
@@ -58,7 +59,9 @@ theorem backwardTime_nonneg_of_mem_closure_admissibleBackwardDomain
     {Q : V} (hQ : Q ∈ closure (admissibleBackwardDomain f c v P W S C)) (j : Fin n) :
     0 ≤ backwardTime f c (fun j => v j.castSucc) j Q :=
   backwardTime_nonneg_of_mem_closure f c _
-    (admissibleBackwardDomain_subset_backwardDomain f c v P W S C) hQ j
+    (fun Q hQ j =>
+      ((mem_backwardDomain f c _ P Q).mp
+        (admissibleBackwardDomain_subset_backwardDomain f c v P W S C hQ) j).1.le) hQ j
 
 /-- The extended path at an admitted endpoint is the actual admissible ray. -/
 @[simp]
@@ -95,7 +98,9 @@ theorem closure_image_backwardPath_admissibleBackwardDomain :
     closure (backwardPath f c v '' admissibleBackwardDomain f c v P W S C) =
       backwardPath f c v '' closure (admissibleBackwardDomain f c v P W S C) :=
   closure_image_backwardPath f c v
-    (admissibleBackwardDomain_subset_backwardDomain f c v P W S C)
+    (fun Q hQ j =>
+      ((mem_backwardDomain f c _ P Q).mp
+        (admissibleBackwardDomain_subset_backwardDomain f c v P W S C hQ) j).1.le)
 
 variable {N : Type*} [AddCommGroup N] {i : N →+ V}
   {h : TauCeti.Toric.IsIntegralLattice i}

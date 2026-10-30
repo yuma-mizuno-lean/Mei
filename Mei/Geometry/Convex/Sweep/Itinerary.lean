@@ -210,24 +210,24 @@ theorem isClosed_weakBackwardDomain {P : Fin n → Set V} (hP : ∀ i, IsClosed 
     (isClosed_Ici.preimage (backwardTime f c v i).continuous).inter
       ((hP i).preimage (backwardPoint f c v i.succ).continuous)
 
-/-- Closing any strict itinerary subdomain retains closed support incidences
-and permits zero elapsed times. -/
+/-- Closing any weak itinerary subdomain retains closed support incidences
+and nonnegative elapsed times. -/
 theorem closure_subset_weakBackwardDomain {D : Set V} {P : Fin n → Set V}
-    (hD : D ⊆ backwardDomain f c v P) (hP : ∀ j, IsClosed (P j)) :
+    (hD : D ⊆ weakBackwardDomain f c v P) (hP : ∀ j, IsClosed (P j)) :
     closure D ⊆ weakBackwardDomain f c v P :=
-  closure_minimal (hD.trans (backwardDomain_subset_weakBackwardDomain f c v P))
-    (isClosed_weakBackwardDomain f c v hP)
+  closure_minimal hD (isClosed_weakBackwardDomain f c v hP)
 
-/-- Elapsed times remain nonnegative on the closure of any strict itinerary
-subdomain, without a closedness assumption on its supports. -/
-theorem backwardTime_nonneg_of_mem_closure {D : Set V} {P : Fin n → Set V}
-    (hD : D ⊆ backwardDomain f c v P) {Q : V} (hQ : Q ∈ closure D) (j : Fin n) :
+/-- Elapsed times remain nonnegative on the closure of any endpoint family
+with nonnegative elapsed times, without support constraints. -/
+theorem backwardTime_nonneg_of_mem_closure {D : Set V}
+    (hD : ∀ Q ∈ D, ∀ j, 0 ≤ backwardTime f c v j Q)
+    {Q : V} (hQ : Q ∈ closure D) (j : Fin n) :
     0 ≤ backwardTime f c v j Q := by
   apply closure_minimal (s := D)
     (t := (backwardTime f c v j) ⁻¹' Set.Ici 0) _
     (isClosed_Ici.preimage (backwardTime f c v j).continuous) hQ
   intro Q hQ
-  exact ((mem_backwardDomain _ _ _ _ _).mp (hD hQ) j).1.le
+  exact hD Q hQ j
 
 /-- Locally closed support constraints give a locally closed strict endpoint domain. -/
 theorem isLocallyClosed_backwardDomain {P : Fin n → Set V}

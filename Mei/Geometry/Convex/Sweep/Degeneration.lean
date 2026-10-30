@@ -167,10 +167,11 @@ theorem isProperMap_backwardPath_restrict {K : Set V} (hK : IsClosed K)
   rw [he]
   exact hK.isClosedEmbedding_subtypeVal.isProperMap
 
-/-- The compact-open closure of any strict itinerary family consists exactly of
-extended paths at its limiting endpoints; no extra limits arise from escaping endpoints. -/
-theorem closure_image_backwardPath {D : Set V} {P : Fin n → Set V}
-    (hD : D ⊆ backwardDomain f c (fun j => v j.castSucc) P) :
+/-- The compact-open closure of any family with nonnegative elapsed times consists
+exactly of extended paths at its limiting endpoints; no extra limits arise from
+escaping endpoints. No support constraints are needed. -/
+theorem closure_image_backwardPath {D : Set V}
+    (hD : ∀ Q ∈ D, ∀ j, 0 ≤ backwardTime f c (fun j => v j.castSucc) j Q) :
     closure (backwardPath f c v '' D) = backwardPath f c v '' closure D := by
   apply le_antisymm
   · apply closure_minimal (image_mono subset_closure)
@@ -311,7 +312,8 @@ theorem exists_backwardClosedCharts {D : Set V}
   obtain ⟨κ, hκ, K, hK, hdisj, hcover⟩ := hD.exists_disjoint_intrinsicInteriors
   refine ⟨κ, hκ, K, ?_, hdisj, hcover⟩
   intro a
-  have hweak := closure_subset_weakBackwardDomain f c _ hvalid hclosed
+  have hweak := closure_subset_weakBackwardDomain f c _
+    (hvalid.trans (backwardDomain_subset_weakBackwardDomain f c _ P)) hclosed
   exact ⟨(hK a).1, (hK a).2.1, (hK a).2.2.2, (hK a).2.2.2.trans hweak,
     (hK a).2.1.isClosed.isProperMap_subtypeVal,
     isProperMap_backwardPath_restrict f c v (hK a).2.1.isClosed
