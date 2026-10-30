@@ -37,7 +37,9 @@ public noncomputable section
 
 namespace Mei
 
-variable {Γ R L M : Type*} [AddCommGroup Γ] [CommRing R] [Algebra ℚ R]
+section Monoid
+
+variable {Γ R L M : Type*} [AddCommMonoid Γ] [CommRing R] [Algebra ℚ R]
   [LieRing L] [LieAlgebra R L] [AddCommGroup M] [Module R M]
   [LieRingModule L M] [LieModule R L M] [DecidableEq Γ]
   (d : PositiveDegrees Γ) (ℒ : Γ → Submodule R L) (ℳ : Γ → Submodule R M)
@@ -87,6 +89,21 @@ theorem truncatedBCHAction_mem_map_shiftedSubmodule_iff
   exact ⟨fun ha => by
     simpa only [map_inv, LinearEquiv.coe_inv, LinearEquiv.symm_apply_apply] using h g⁻¹ ha,
     fun ha => h g ha⟩
+
+end ModuleFiltration
+
+end Monoid
+
+variable {Γ R L M : Type*} [AddCommGroup Γ] [CommRing R] [Algebra ℚ R]
+  [LieRing L] [LieAlgebra R L] [AddCommGroup M] [Module R M]
+  [LieRingModule L M] [LieModule R L M] [DecidableEq Γ]
+  (d : PositiveDegrees Γ) (ℒ : Γ → Submodule R L) (ℳ : Γ → Submodule R M)
+  [GradedLieAlgebra ℒ] [IsPositiveGrading d ℒ] [SetLike.GradedBracket ℒ ℳ]
+  [LieAlgebra ℚ L] [IsScalarTower ℚ R L]
+
+namespace ModuleFiltration
+
+variable (F : ModuleFiltration R M) [IsFiltrationRaising d ℒ F]
 
 /-- Every surviving quotient component of a homogeneous input has an allowed
 degree increment. This uses the inherited quotient decomposition, with no
@@ -206,13 +223,14 @@ theorem length_filter_bne_zero_homogeneousHistory_shiftedBCHAction_le
     obtain ⟨j, rfl⟩ := List.mem_ofFn.mp hx
     exact d.homogeneousHistory_shiftedBCHAction_sub_mem_monoid ℒ ℳ p k g r r₀ a hne j
   · have hsum : (List.ofFn fun j => r j - b j.succ).sum = b 0 - r₀ := by
-      rw [Fin.sum_ofFn, Finset.sum_sub_distrib]
-      have he := (Fin.sum_univ_succ b).symm.trans (Fin.sum_univ_castSucc b)
-      simp only [b, Fin.snoc_castSucc, Fin.snoc_last] at he
-      -- The difference of the two endpoint decompositions is the telescoping sum.
-      calc
-        _ = ((∑ j, r j) + r₀) - (b 0 + ∑ j : Fin n, b j.succ) + (b 0 - r₀) := by abel
-        _ = _ := by rw [← he]; abel
+      cases n with
+      | zero => simp [b, Fin.snoc_zero]
+      | succ m =>
+        rw [Fin.sum_ofFn]
+        have hIic : Finset.Iic (Fin.last m) = Finset.univ := Finset.Iic_top
+        simpa only [hIic, neg_sub_neg, b,
+          Fin.snoc_castSucc, Fin.succ_last, Fin.snoc_last, Fin.snoc_apply_zero] using
+          Fin.sum_Iic_sub (Fin.last m) (fun i => -b i)
     rw [hsum, map_sub]
     have hlast := d.degree_nonneg (d.mem_cutoff.mp (hcut (Fin.last n))).1
     have hfirst := (d.mem_cutoff.mp (hcut 0)).2
