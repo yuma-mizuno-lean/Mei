@@ -9,21 +9,25 @@ public import Mei.Geometry.ScatteringDiagram.FocusFocus.Evaluation
 public import Mei.RingTheory.Node.ExponentMap
 
 /-!
-# Coefficient specialization of decorated focus-focus rays
+# Specializing decorated focus-focus rays
 
-A coefficient homomorphism retains exactly the crossing rays whose entire
-decorations survive. The surviving source fiber is equivalent to the target
-fiber, with the same degrees, geometric paths and incoming tails. In particular,
-specialization commutes with the actual finite weighted evaluation, even at
-endpoints on some crossing-height exceptions. No injectivity or characteristic
-assumption is imposed on the coefficients or the smoothing parameter.
+A coefficient homomorphism retains exactly those slab rays whose whole decoration
+has nonzero image. It changes neither their degrees nor their geometric paths.
+Every ray over the target coefficients comes from a unique surviving source ray.
+Consequently finite weighted evaluation commutes with specialization, including
+at nongeneric endpoints, where rays through the singular origin are absent on
+both sides. The full evaluation also includes the incoming and stationary sectors.
+In particular these results apply to reductions of truncated smoothing rings;
+no injectivity of the coefficient map or regularity of the smoothing parameter
+is required.
 
-We use the existing exhaustive binomial enumeration `slabBrokenLineEquiv`,
-`NodeAlgebra.exponentCorrespondenceMap`, transfer naturality and Mathlib's
-coefficient homomorphism `AddMonoidAlgebra.mapRingHom`. The geometric and slab
-conventions follow Gross–Siebert, *An Invitation to Toric Degenerations*,
-§2.2–2.3 (arXiv:0808.2749v2), and Gross–Hacking–Siebert, *Theta functions on
-varieties with effective anti-canonical class*, §3 (arXiv:1601.07081v4).
+The construction uses `SlabBrokenLine.ext`, the binomial transfer enumeration,
+`NodeAlgebra.exponentCorrespondenceMap` and transfer naturality,
+and `Finset.sum_congr_set` to discard zero image decorations. The geometric and
+coefficient conventions follow Gross–Siebert, *An Invitation to Toric
+Degenerations*, §2.2–2.3 (arXiv:0808.2749v2), and Gross–Hacking–Siebert,
+*Theta functions on varieties with effective anti-canonical class*, §3
+(arXiv:1601.07081v4).
 -/
 
 public noncomputable section
@@ -38,7 +42,9 @@ variable {R S T : Type*} [CommRing R] [CommRing S] [CommRing T]
 namespace SlabBrokenLine
 
 open scoped AlgebraMonoidAlgebra in
-private theorem map_transfer (φ : R →+* S) (β : SlabBrokenLine t c n b Q) :
+/-- Coefficient change sends a ray's whole decoration to the transfer at the
+same degree in the target slab, whether or not that transfer survives. -/
+theorem map_decoration_eq_transfer (β : SlabBrokenLine t c n b Q) (φ : R →+* S) :
     mapRingHom (ℤ × ℤ) φ β.decoration =
       ((exponentCorrespondence (single 0 (φ t) + single 1 (φ t))).transfer
         ⟨((n.natAbs : ℤ), b), by simp⟩ β.degree
@@ -71,9 +77,9 @@ private theorem map_transfer (φ : R →+* S) (β : SlabBrokenLine t c n b Q) :
       ⟨single (n.natAbs, b) (φ c), single_mem_grade _ _⟩ : S[ℤ × ℤ]))
     (by simp only [AddMonoidAlgebra.algebraMap_def, hφ, map_add, mapRingHom_single])
 
-/-- Specialize a crossing ray when its entire output decoration survives.
-The geometric ray and its developed incoming germ are retained verbatim. -/
-def mapCoefficients (β : SlabBrokenLine t c n b Q) (φ : R →+* S)
+/-- Specialize a ray whose entire decoration has nonzero image. The geometric
+ray and both developed directions are retained verbatim. -/
+def map (β : SlabBrokenLine t c n b Q) (φ : R →+* S)
     (h : mapRingHom (ℤ × ℤ) φ β.decoration ≠ 0) :
     SlabBrokenLine (φ t) (φ c) n b Q where
   degree := β.degree
@@ -82,8 +88,8 @@ def mapCoefficients (β : SlabBrokenLine t c n b Q) (φ : R →+* S)
   transfer_ne_zero := by
     intro hz
     apply h
-    rw [map_transfer φ β, hz]
-    rfl
+    rw [β.map_decoration_eq_transfer φ]
+    exact congrArg Subtype.val hz
   endpoint_eq := β.endpoint_eq
   direction_eq := β.direction_eq
   incomingDirection_eq := β.incomingDirection_eq
@@ -91,140 +97,126 @@ def mapCoefficients (β : SlabBrokenLine t c n b Q) (φ : R →+* S)
   slab_bends := β.slab_bends
   avoids_origin := β.avoids_origin
 
-/-- Specialization does not change the selected output degree. -/
+/-- Specialization preserves the full outgoing Laurent degree. -/
 @[simp]
-theorem degree_mapCoefficients (β : SlabBrokenLine t c n b Q) (φ : R →+* S)
+theorem degree_map (β : SlabBrokenLine t c n b Q) (φ : R →+* S)
     (h : mapRingHom (ℤ × ℤ) φ β.decoration ≠ 0) :
-    (β.mapCoefficients φ h).degree = β.degree := (rfl)
+    (β.map φ h).degree = β.degree := (rfl)
 
-/-- Specialization retains the whole geometric path, including its incoming tail. -/
+/-- Specialization preserves the actual finite affine ray, including its tail. -/
 @[simp]
-theorem ray_mapCoefficients (β : SlabBrokenLine t c n b Q) (φ : R →+* S)
+theorem ray_map (β : SlabBrokenLine t c n b Q) (φ : R →+* S)
     (h : mapRingHom (ℤ × ℤ) φ β.decoration ≠ 0) :
-    (β.mapCoefficients φ h).ray = β.ray := (rfl)
+    (β.map φ h).ray = β.ray := (rfl)
 
-/-- The decoration of the specialized ray is the coefficientwise image of the
-whole source decoration. -/
+/-- The retained ray carries the image of the entire source decoration. -/
 @[simp]
-theorem decoration_mapCoefficients (β : SlabBrokenLine t c n b Q) (φ : R →+* S)
+theorem decoration_map (β : SlabBrokenLine t c n b Q) (φ : R →+* S)
     (h : mapRingHom (ℤ × ℤ) φ β.decoration ≠ 0) :
-    (β.mapCoefficients φ h).decoration = mapRingHom (ℤ × ℤ) φ β.decoration := by
-  rw [decoration_def, degree_mapCoefficients]
-  exact (map_transfer φ β).symm
+    (β.map φ h).decoration = mapRingHom (ℤ × ℤ) φ β.decoration := by
+  rw [β.map_decoration_eq_transfer φ, decoration_def, degree_map]
 
-/-- Every target ray comes from a surviving source ray, even when specialization
-kills other binomial terms or the smoothing parameter. -/
-private theorem exists_mapCoefficients (φ : R →+* S)
-    (γ : SlabBrokenLine (φ t) (φ c) n b Q) :
-    ∃ (β : SlabBrokenLine t c n b Q)
-      (h : mapRingHom (ℤ × ℤ) φ β.decoration ≠ 0), β.mapCoefficients φ h = γ := by
-  let j := (slabBrokenLineEquiv (φ t) (φ c) n b Q γ.opposite).symm γ
-  have hj : c * t ^ n.natAbs * (n.natAbs.choose j.val.val : R) ≠ 0 := by
-    intro hz
-    apply j.property.1
-    simpa only [map_mul, map_pow, map_natCast, map_zero] using congrArg φ hz
-  let i : SlabBranchIndex t c n b Q := ⟨j.val, hj, j.property.2⟩
-  let β := slabBrokenLine t c n b Q γ.opposite i
-  have hβ : mapRingHom (ℤ × ℤ) φ β.decoration ≠ 0 := by
-    rw [decoration_slabBrokenLine, mapRingHom_single]
-    intro hz
-    apply j.property.1
-    simpa only [map_mul, map_pow, map_natCast] using (single_eq_zero.mp hz)
-  refine ⟨β, hβ, ?_⟩
+/-- Changing no coefficients fixes every decorated ray. -/
+@[simp]
+theorem map_id (β : SlabBrokenLine t c n b Q) :
+    β.map (RingHom.id R) (by simp) = β := by
   apply SlabBrokenLine.ext
-  have he := congrArg SlabBrokenLine.degree
-    ((slabBrokenLineEquiv (φ t) (φ c) n b Q γ.opposite).apply_symm_apply γ)
-  simpa only [degree_mapCoefficients, β, degree_slabBrokenLine,
-    slabBrokenLineEquiv_apply] using he
+  rfl
 
-/-- The surviving source fiber is exactly the specialized fiber. This records
-deletion of zero decorations, rather than requiring a bijection of all rays. -/
-def coefficientEquiv (φ : R →+* S) :
+/-- Successive specializations agree with their composite. Survival of the final
+image already implies survival at the intermediate coefficient ring. -/
+theorem map_map (β : SlabBrokenLine t c n b Q) (φ : R →+* S) (ψ : S →+* T)
+    (h : mapRingHom (ℤ × ℤ) (ψ.comp φ) β.decoration ≠ 0) :
+    (β.map φ (by
+      intro hz
+      apply h
+      rw [mapRingHom_comp, RingHom.comp_apply, hz, map_zero])).map ψ
+        (by simpa only [decoration_map, mapRingHom_comp, RingHom.comp_apply] using h) =
+      β.map (ψ.comp φ) h := by
+  apply SlabBrokenLine.ext
+  rfl
+
+/-- Every ray after specialization has a unique source ray with nonzero image
+decoration. This equivalence discards exactly the decorations killed by the map. -/
+def mapEquiv (φ : R →+* S) :
     {β : SlabBrokenLine t c n b Q // mapRingHom (ℤ × ℤ) φ β.decoration ≠ 0} ≃
-      SlabBrokenLine (φ t) (φ c) n b Q :=
-  Equiv.ofBijective (fun β => β.val.mapCoefficients φ β.property) ⟨by
-    intro β γ he
+      SlabBrokenLine (φ t) (φ c) n b Q where
+  toFun β := β.val.map φ β.property
+  invFun γ := by
+    let β : SlabBrokenLine t c n b Q := {
+      degree := γ.degree
+      ray := γ.ray
+      opposite := γ.opposite
+      transfer_ne_zero := by
+        obtain ⟨j, hj, he, hc⟩ :=
+          (exponentCorrespondence_transfer_ne_zero_iff (φ t) (φ c) n.natAbs b 1
+            (by decide) γ.degree).mp γ.transfer_ne_zero
+        refine (exponentCorrespondence_transfer_ne_zero_iff t c n.natAbs b 1
+          (by decide) γ.degree).mpr ⟨j, hj, he, ?_⟩
+        intro hz
+        apply hc
+        simpa only [map_mul, map_pow, map_natCast, map_zero] using congrArg φ hz
+      endpoint_eq := γ.endpoint_eq
+      direction_eq := γ.direction_eq
+      incomingDirection_eq := γ.incomingDirection_eq
+      vertical_bends := γ.vertical_bends
+      slab_bends := γ.slab_bends
+      avoids_origin := γ.avoids_origin }
+    exact ⟨β, by
+      rw [β.map_decoration_eq_transfer φ]
+      exact fun hz => γ.transfer_ne_zero (Subtype.ext hz)⟩
+  left_inv β := by
     apply Subtype.ext
     apply SlabBrokenLine.ext
-    simpa only [degree_mapCoefficients] using congrArg SlabBrokenLine.degree he, by
-    intro γ
-    obtain ⟨β, h, he⟩ := exists_mapCoefficients φ γ
-    exact ⟨⟨β, h⟩, he⟩⟩
+    rfl
+  right_inv γ := by
+    apply SlabBrokenLine.ext
+    rfl
 
-/-- The fiber comparison uses coefficient specialization on each surviving ray. -/
+/-- The specialization equivalence is the coefficient map on surviving rays. -/
 @[simp]
-theorem coefficientEquiv_apply (φ : R →+* S)
+theorem mapEquiv_apply (φ : R →+* S)
     (β : {β : SlabBrokenLine t c n b Q // mapRingHom (ℤ × ℤ) φ β.decoration ≠ 0}) :
-    coefficientEquiv φ β = β.val.mapCoefficients φ β.property := (rfl)
+    mapEquiv φ β = β.val.map φ β.property := (rfl)
 
-/-- The inverse comparison recovers the same outgoing degree in the source. -/
+/-- Recovering the source of a target ray retains its full degree. -/
 @[simp]
-theorem degree_coefficientEquiv_symm (φ : R →+* S)
+theorem degree_mapEquiv_symm (φ : R →+* S)
     (γ : SlabBrokenLine (φ t) (φ c) n b Q) :
-    ((coefficientEquiv φ).symm γ).val.degree = γ.degree := by
-  simpa only [coefficientEquiv_apply, degree_mapCoefficients] using
-    congrArg SlabBrokenLine.degree ((coefficientEquiv φ).apply_symm_apply γ)
+    ((mapEquiv φ).symm γ).val.degree = γ.degree := (rfl)
 
-/-- The inverse comparison recovers the identical geometric ray in the source. -/
+/-- Recovering the source retains the whole geometric path. -/
 @[simp]
-theorem ray_coefficientEquiv_symm (φ : R →+* S)
+theorem ray_mapEquiv_symm (φ : R →+* S)
     (γ : SlabBrokenLine (φ t) (φ c) n b Q) :
-    ((coefficientEquiv φ).symm γ).val.ray = γ.ray := by
-  simpa only [coefficientEquiv_apply, ray_mapCoefficients] using
-    congrArg SlabBrokenLine.ray ((coefficientEquiv φ).apply_symm_apply γ)
+    ((mapEquiv φ).symm γ).val.ray = γ.ray := (rfl)
 
-/-- The inverse comparison lifts the entire target decoration. -/
+/-- The recovered source decoration specializes to the prescribed target decoration. -/
 @[simp]
-theorem map_decoration_coefficientEquiv_symm (φ : R →+* S)
+theorem map_decoration_mapEquiv_symm (φ : R →+* S)
     (γ : SlabBrokenLine (φ t) (φ c) n b Q) :
-    mapRingHom (ℤ × ℤ) φ ((coefficientEquiv φ).symm γ).val.decoration = γ.decoration := by
-  simpa only [coefficientEquiv_apply, decoration_mapCoefficients] using
-    congrArg SlabBrokenLine.decoration ((coefficientEquiv φ).apply_symm_apply γ)
-
-/-- Identity specialization fixes every ray. -/
-@[simp]
-theorem mapCoefficients_id (β : SlabBrokenLine t c n b Q)
-    (h : mapRingHom (ℤ × ℤ) (RingHom.id R) β.decoration ≠ 0) :
-    β.mapCoefficients (RingHom.id R) h = β := by
-  apply SlabBrokenLine.ext
-  rfl
-
-/-- Successive specializations agree with their composite on surviving rays. -/
-theorem mapCoefficients_comp (β : SlabBrokenLine t c n b Q)
-    (φ : R →+* S) (ψ : S →+* T)
-    (h : mapRingHom (ℤ × ℤ) φ β.decoration ≠ 0)
-    (h' : mapRingHom (ℤ × ℤ) ψ (β.mapCoefficients φ h).decoration ≠ 0) :
-    (β.mapCoefficients φ h).mapCoefficients ψ h' =
-      β.mapCoefficients (ψ.comp φ) (by
-        simpa only [decoration_mapCoefficients, mapRingHom_comp, RingHom.comp_apply]
-          using h') := by
-  apply SlabBrokenLine.ext
-  rfl
+    mapRingHom (ℤ × ℤ) φ ((mapEquiv φ).symm γ).val.decoration = γ.decoration := by
+  have he := congrArg SlabBrokenLine.decoration ((mapEquiv φ).apply_symm_apply γ)
+  simpa only [mapEquiv_apply, decoration_map] using he
 
 end SlabBrokenLine
 
-/-- Coefficient specialization commutes with the sum over actual crossing rays.
-This holds at every endpoint: singular branches are omitted on both sides,
-and branches killed by specialization contribute zero. -/
+/-- The sum over actual crossing rays commutes with any coefficient specialization.
+No genericity assumption on the endpoint is needed. -/
 @[simp]
-theorem map_slabWeightedEvaluation (φ : R →+* S) (t c : R) (n b : ℤ) (Q : ℝ × ℝ) :
+theorem mapRingHom_slabWeightedEvaluation (φ : R →+* S) (t c : R)
+    (n b : ℤ) (Q : ℝ × ℝ) :
     mapRingHom (ℤ × ℤ) φ (slabWeightedEvaluation t c n b Q) =
       slabWeightedEvaluation (φ t) (φ c) n b Q := by
   classical
   rw [slabWeightedEvaluation_def, map_sum, slabWeightedEvaluation_def]
-  apply Finset.sum_bij_ne_zero (fun β _ h => β.mapCoefficients φ h)
-  · intro β _ h
-    exact Finset.mem_univ _
-  · intro β _ hβ γ _ hγ he
-    apply SlabBrokenLine.ext
-    simpa only [SlabBrokenLine.degree_mapCoefficients] using
-      congrArg SlabBrokenLine.degree he
-  · intro γ _ _
-    obtain ⟨β, he⟩ := (SlabBrokenLine.coefficientEquiv
-      (t := t) (c := c) (n := n) (b := b) (Q := Q) φ).surjective γ
-    exact ⟨β.val, Finset.mem_univ _, β.property, he⟩
-  · intro β _ h
-    exact (SlabBrokenLine.decoration_mapCoefficients β φ h).symm
+  let survivors := {β : SlabBrokenLine t c n b Q |
+    mapRingHom (ℤ × ℤ) φ β.decoration ≠ 0}
+  calc
+    _ = ∑ β : survivors, mapRingHom (ℤ × ℤ) φ β.val.decoration :=
+      Finset.sum_congr_set survivors _ _ (fun _ _ => rfl) (fun _ h => not_ne_iff.mp h)
+    _ = _ := Fintype.sum_equiv (SlabBrokenLine.mapEquiv φ) _ _
+      (fun β => (β.val.decoration_map φ β.property).symm)
 
 /-- Incoming proper rays specialize coefficientwise, including when the
 specialization kills the incoming coefficient. -/
@@ -236,14 +228,15 @@ theorem map_incomingSlabWeightedEvaluation {R S : Type*} [Semiring R] [Semiring 
   simp only [incomingSlabWeightedEvaluation_eq]
   split_ifs <;> simp
 
-/-- The full geometric theta evaluation commutes with specialization, including
-the stationary incoming section and both crossing directions. -/
+/-- The complete focus-focus evaluation, with its incoming, crossing and stationary
+sectors, commutes with coefficient maps and hence with smoothing-order reduction. -/
 @[simp]
-theorem map_slabThetaEvaluation (φ : R →+* S) (t c : R) (n b : ℤ) (Q : ℝ × ℝ) :
+theorem mapRingHom_slabThetaEvaluation (φ : R →+* S) (t c : R)
+    (n b : ℤ) (Q : ℝ × ℝ) :
     mapRingHom (ℤ × ℤ) φ (slabThetaEvaluation t c n b Q) =
       slabThetaEvaluation (φ t) (φ c) n b Q := by
-  simp only [slabThetaEvaluation_def, map_add, map_slabWeightedEvaluation,
-    map_incomingSlabWeightedEvaluation]
+  simp only [slabThetaEvaluation_def, map_add, map_incomingSlabWeightedEvaluation,
+    mapRingHom_slabWeightedEvaluation]
   split_ifs <;> simp
 
 end Mei.FocusFocus

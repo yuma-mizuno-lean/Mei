@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.Convex.Sweep.Rational
-public import Mei.Geometry.Convex.Polyhedron.Rational.Stratification
+public import Mei.Geometry.Convex.Polyhedron.Rational.Generic
 
 /-!
 # Evaluation fibers of finite backward-itinerary families
@@ -14,8 +14,10 @@ public import Mei.Geometry.Convex.Polyhedron.Rational.Stratification
 For a finite collection of selected itineraries, a realization is its label and an
 endpoint in its backward domain. Backward propagation uniquely determines all
 encounter points and elapsed times from these data. Evaluation forgets the label.
-Its fibers are finite at every endpoint, and a common locally closed rational-normal
-partition makes the admitted labels, hence fiber cardinalities, constant.
+Its fibers are finite at every endpoint. Off one finite exceptional arrangement,
+a neighborhood has label-preserving identifications of all evaluation fibers.
+A common locally closed rational-normal partition makes the admitted labels,
+hence fiber cardinalities, constant.
 
 Labels remain distinct when their endpoint domains overlap. Supports may be
 semilinear and nonclosed; no properness or genericity hypothesis is used. These
@@ -109,6 +111,28 @@ theorem exists_backwardEvaluation_stratification :
   let e := Equiv.subtypeEquivRight (hmem a x hx y hy)
   refine ⟨((backwardEvaluationFiberEquiv n f c (fun j b => i (w j b)) P x).trans e).trans
     (backwardEvaluationFiberEquiv n f c (fun j b => i (w j b)) P y).symm, ?_⟩
+  intro z
+  simp [e]
+
+/-- A common finite exceptional arrangement contains all endpoint-domain frontiers.
+At a generic endpoint, the evaluation fibers over every nearby endpoint have a
+label-preserving identification. Unlike a stratumwise statement, this uses an
+ambient neighborhood and imposes no extra genericity assumption on its points. -/
+theorem exists_backwardEvaluation_membershipArrangement :
+    ∃ E : ExceptionalArrangement V,
+      (∀ j, frontier (backwardDomain (f j) (c j) (fun b => i (w j b)) (P j)) ⊆
+        {Q | ¬ E.IsGeneric Q}) ∧
+      ∀ Q, E.IsGeneric Q → ∀ᶠ Q' in nhds Q,
+        ∃ e : {z // backwardEvaluation n f c (fun j b => i (w j b)) P z = Q} ≃
+            {z // backwardEvaluation n f c (fun j b => i (w j b)) P z = Q'},
+          ∀ z, (e z).val.1 = z.val.1 := by
+  have hD j := isRationalSemilinear_backwardDomain
+    (f j) (c j) (w j) (hf j) (hP j)
+  obtain ⟨E, hfrontier, hstable⟩ := IsRationalSemilinear.exists_membershipArrangement hD
+  refine ⟨E, hfrontier, fun Q hQ => (hstable Q hQ).mono fun Q' hQQ' => ?_⟩
+  let e := Equiv.subtypeEquivRight (fun j => (hQQ' j).symm)
+  refine ⟨((backwardEvaluationFiberEquiv n f c (fun j b => i (w j b)) P Q).trans e).trans
+    (backwardEvaluationFiberEquiv n f c (fun j b => i (w j b)) P Q').symm, ?_⟩
   intro z
   simp [e]
 

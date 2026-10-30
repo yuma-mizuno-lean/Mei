@@ -66,6 +66,38 @@ theorem rightChamberExponentMap_apply (x : TruncatedExponentChamber K k 0) :
     rightChamberExponentMap K k x =
       (curryAlgEquiv S).symm (rightChamberLaurentMap (C_root_X_pow_pow K (k + 1)) x) := (rfl)
 
+/-- The uncurried left realization is faithful over the original coefficient ring. -/
+theorem leftChamberExponentMap_injective : Function.Injective (leftChamberExponentMap K k) :=
+  (curryAlgEquiv S).symm.injective.comp
+    (leftChamberLaurentMap_injective_truncatedPolynomial K k)
+
+/-- The uncurried right realization is faithful over the original coefficient ring. -/
+theorem rightChamberExponentMap_injective : Function.Injective (rightChamberExponentMap K k) :=
+  (curryAlgEquiv S).symm.injective.comp
+    (rightChamberLaurentMap_injective_truncatedPolynomial K k)
+
+/-- The left realization puts the entire smoothing power into the Laurent coefficient. -/
+@[simp↓]
+theorem leftChamberExponentMap_single (q : exponentMonoid) (c : K) :
+    leftChamberExponentMap K k
+        (truncatedExponentChamberEquiv K k 1 (Ideal.Quotient.mk _ (single q c))) =
+      single (-q.val.1, q.val.2.1) (AdjoinRoot.of _ c * τ ^ leftOrder q) := by
+  rw [leftChamberExponentMap_apply, leftChamberLaurentMap_single]
+  apply (curryAlgEquiv S).injective
+  rw [AlgEquiv.apply_symm_apply, curryAlgEquiv_single]
+  simp [← single_eq_C, -single_eq_C_mul_T]
+
+/-- The right realization puts the entire smoothing power into the Laurent coefficient. -/
+@[simp↓]
+theorem rightChamberExponentMap_single (q : exponentMonoid) (c : K) :
+    rightChamberExponentMap K k
+        (truncatedExponentChamberEquiv K k 0 (Ideal.Quotient.mk _ (single q c))) =
+      single (q.val.1, q.val.2.1) (AdjoinRoot.of _ c * τ ^ rightOrder q) := by
+  rw [rightChamberExponentMap_apply, rightChamberLaurentMap_single]
+  apply (curryAlgEquiv S).injective
+  rw [AlgEquiv.apply_symm_apply, curryAlgEquiv_single]
+  simp [← single_eq_C, -single_eq_C_mul_T]
+
 /-- Laurent realization of each full left-to-right component preserves its whole
 coefficient, absorbing precisely the incoming and crossing smoothing powers. -/
 theorem rightChamberExponentMap_transfer_single (q : exponentMonoid)
@@ -124,13 +156,9 @@ theorem chamberCorrespondence_transfer_single_ne_zero_iff_laurent (q : exponentM
         (mem_truncatedExponentChamberGrade_iff_exists K k 1 q _).mpr ⟨c, rfl⟩⟩ ≠ 0 ↔
         (ι c * τ ^ leftOrder q) * τ ^ q.val.1.natAbs *
           (q.val.1.natAbs.choose j : S) ≠ 0 := by
-  have hinj : Function.Injective (rightChamberExponentMap K k) := by
-    intro x y hxy
-    apply rightChamberLaurentMap_injective_truncatedPolynomial K k
-    apply (curryAlgEquiv S).symm.injective
-    simpa only [rightChamberExponentMap_apply] using hxy
   simp only [ne_eq, ← Submodule.coe_eq_zero]
-  rw [← map_eq_zero_iff (rightChamberExponentMap K k) hinj,
+  rw [← map_eq_zero_iff (rightChamberExponentMap K k)
+    (rightChamberExponentMap_injective K k),
     rightChamberExponentMap_transfer_single, AddMonoidAlgebra.single_eq_zero]
 
 /-- A full right-to-left component survives exactly when its Laurent coefficient
@@ -143,13 +171,9 @@ theorem chamberCorrespondence_symm_transfer_single_ne_zero_iff_laurent (q : expo
         (mem_truncatedExponentChamberGrade_iff_exists K k 0 q _).mpr ⟨c, rfl⟩⟩ ≠ 0 ↔
         (ι c * τ ^ rightOrder q) * τ ^ q.val.1.natAbs *
           (q.val.1.natAbs.choose j : S) ≠ 0 := by
-  have hinj : Function.Injective (leftChamberExponentMap K k) := by
-    intro x y hxy
-    apply leftChamberLaurentMap_injective_truncatedPolynomial K k
-    apply (curryAlgEquiv S).symm.injective
-    simpa only [leftChamberExponentMap_apply] using hxy
   simp only [ne_eq, ← Submodule.coe_eq_zero]
-  rw [← map_eq_zero_iff (leftChamberExponentMap K k) hinj,
+  rw [← map_eq_zero_iff (leftChamberExponentMap K k)
+    (leftChamberExponentMap_injective K k),
     leftChamberExponentMap_symm_transfer_single, AddMonoidAlgebra.single_eq_zero]
 
 /-- The inverse slab dictionary preserves every admissible left lift, with
