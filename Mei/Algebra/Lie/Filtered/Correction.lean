@@ -38,6 +38,7 @@ private local instance correctionQuotientRatModule (k : ℕ) : Module ℚ (F.quo
   Module.compHom _ (algebraMap ℚ R)
 
 /-- The finite BCH action fixes the highest retained filtration term pointwise. -/
+@[simp↓]
 theorem truncatedBCHAction_mk_eq_self_of_mem (k : ℕ) (g : d.truncatedGroup ℒ k)
     {m : M} (hm : m ∈ F.submodule k) :
     F.truncatedBCHAction d ℒ k g (Submodule.Quotient.mk m) =

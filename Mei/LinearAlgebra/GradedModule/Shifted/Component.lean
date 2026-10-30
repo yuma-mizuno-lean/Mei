@@ -66,6 +66,7 @@ theorem shiftedQuotientComponent_mk (q : Γ) (k : ℕ) (h : d.degree (q - p) ≤
   congr 2 <;> abel_nf
 
 /-- An included homogeneous coefficient has zero quotient component in every other degree. -/
+@[simp↓]
 theorem shiftedQuotientComponent_mk_shiftedInclusion_of_ne (q : Γ) (k : ℕ)
     (h : d.degree (q - p) ≤ k) (n : d.monoid) (hnq : p + n ≠ q)
     (x : ℳ (p + n)) :
