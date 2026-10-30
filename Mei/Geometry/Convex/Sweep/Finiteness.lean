@@ -69,6 +69,35 @@ theorem mem_realizedDegreeItineraries (k : ℕ) (l : List (Γ × J)) :
         0 < backwardTime (fun j => f (l.get j).2) (fun j => c (l.get j).2)
           (fun j => v (l.get j).1) a Q := Iff.rfl
 
+/-- Fin-indexed encounter data give a realized degree-wall list. The elapsed
+positivity is tested using the supplied arrays, without list-length casts. -/
+theorem mem_realizedDegreeItineraries_ofFn {n : ℕ} (k : ℕ) (g : Fin n → Γ × J)
+    (hm : ∀ j, (g j).1 ∈ d.cutoff k ∧ f (g j).2 (v (g j).1) ≠ 0)
+    (hd : ∀ i j, i ≤ j → (g i).1 - (g j).1 ∈ d.monoid)
+    (Q : V) (hp : ∀ j, 0 < backwardTime (fun j => f (g j).2)
+      (fun j => c (g j).2) (fun j => v (g j).1) j Q) :
+    List.ofFn g ∈ realizedDegreeItineraries d f c v k := by
+  -- Transport the entire indexed condition together, so recursive backward
+  -- propagation keeps the same index type as its normals and directions.
+  let A (m : ℕ) (g : Fin m → Γ × J) : Prop :=
+    (∀ j, (g j).1 ∈ d.cutoff k ∧ f (g j).2 (v (g j).1) ≠ 0) ∧
+      (∀ i j, i ≤ j → (g i).1 - (g j).1 ∈ d.monoid) ∧
+        ∀ j, 0 < backwardTime (fun j => f (g j).2)
+          (fun j => c (g j).2) (fun j => v (g j).1) j Q
+  have transport {m n : ℕ} (h : m = n) (g : Fin n → Γ × J) (hg : A n g) :
+      A m (fun j => g (Fin.cast h j)) := by
+    subst n
+    exact hg
+  have hh := transport (List.length_ofFn (f := g)) g ⟨hm, hd, hp⟩
+  have he : (fun j => (List.ofFn g).get j) =
+      (fun j => g (Fin.cast (List.length_ofFn (f := g)) j)) :=
+    funext (List.get_ofFn g)
+  rw [← he] at hh
+  refine ⟨?_, hh.2.1, Q, hh.2.2⟩
+  intro b hb
+  obtain ⟨j, rfl⟩ := List.get_of_mem hb
+  exact hh.1 j
+
 /-- Enlarging the relative-degree cutoff retains every realized itinerary. -/
 theorem realizedDegreeItineraries_mono : Monotone (realizedDegreeItineraries d f c v) := by
   intro k l hkl L hL
