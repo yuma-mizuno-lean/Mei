@@ -51,6 +51,16 @@ def admissibleBackwardDomain : Set V :=
     backwardIncomingDomain f c (fun j => v j.castSucc) P (v (Fin.last n)) C W) ∩
       backwardSingularAvoidanceDomain f c v P S ∩ {Q | ∀ a, Q ∉ W a}
 
+/-- The endpoint domain is the intersection of the wall-avoidance, incoming-source
+and singular-avoidance domains with the endpoints off every wall. -/
+@[simp]
+theorem mem_admissibleBackwardDomain (Q : V) :
+    Q ∈ admissibleBackwardDomain f c v P W S C ↔
+      Q ∈ backwardAvoidanceDomain f c (fun j => v j.castSucc) P W ∧
+      Q ∈ backwardIncomingDomain f c (fun j => v j.castSucc) P (v (Fin.last n)) C W ∧
+      Q ∈ backwardSingularAvoidanceDomain f c v P S ∧ ∀ a, Q ∉ W a := by
+  simp only [admissibleBackwardDomain, mem_inter_iff, mem_ofPred_eq, and_assoc]
+
 /-- Admissible endpoints satisfy the selected support and positive-time constraints. -/
 theorem admissibleBackwardDomain_subset_backwardDomain :
     admissibleBackwardDomain f c v P W S C ⊆
