@@ -181,13 +181,15 @@ end Action
 
 /-- Each ray factor is an actual wall-group label, even when the ray generator
 does not belong to the positive monoid. -/
+@[simp high]
 theorem rayFactor_initialLabel_mem_wallGroup (i : B.unfrozenIndex) (w : SupportedRay 𝒅) :
     (𝒅).rayFactor ℒ (I.initialLabel (R := R) i) w ∈ (H).wallGroup w (I.alphabetNormal i) :=
   rayFactor_completedBCHExp_completedTropicalTangentField_mem_wallGroup _ _ _ _ _
 
 /-- Nontangent rays have identity labels and can be omitted from the diagram. -/
+@[simp]
 theorem rayFactor_initialLabel_eq_one (i : B.unfrozenIndex) {w : SupportedRay 𝒅}
-    (hw : I.alphabetNormal i w.generator ≠ 0) :
+    (hw : w.generator.1 (B.basis i) ≠ 0) :
     (𝒅).rayFactor ℒ (I.initialLabel (R := R) i) w = 1 :=
   rayFactor_completedBCHExp_completedTropicalTangentField_eq_one _ _ _ _ hw
 
