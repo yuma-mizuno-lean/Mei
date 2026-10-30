@@ -62,20 +62,9 @@ theorem cutoffDecoratedEvaluation_eq_sum_charts (k : ℕ)
   rw [cutoffDecoratedEvaluation_eq_sum]
   apply Finset.sum_congr rfl
   intro t _
-  by_cases hQ : Q ∈ domain t
-  · obtain ⟨j, hj⟩ := Set.mem_iUnion.mp ((hcover t).symm ▸ hQ)
-    rw [ite_eq_left hQ]
-    symm
-    rw [Finset.sum_eq_single j]
-    · exact ite_eq_left hj
-    · intro l _ hlj
-      exact ite_eq_right fun hl => Set.disjoint_left.mp (hdisj t hlj) hl hj
-    · simp
-  · rw [ite_eq_right hQ]
-    symm
-    apply Finset.sum_eq_zero
-    intro j _
-    exact ite_eq_right fun hj => hQ ((hcover t) ▸ Set.mem_iUnion.mpr ⟨j, hj⟩)
+  simpa [Set.indicator, hcover t] using
+    (Finset.indicator_biUnion_apply Finset.univ (A t) (f := fun _ => t.decoration)
+      ((hdisj t).set_pairwise _) Q)
 
 section Rational
 
