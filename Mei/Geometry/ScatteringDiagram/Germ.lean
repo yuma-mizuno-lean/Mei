@@ -102,16 +102,11 @@ theorem Equivalent.label_eq_one {D : FiniteWallDiagram C H} {E : FiniteWallDiagr
     hshort).exists
   obtain ⟨x, y, e, hx, hy, he⟩ := haD
   obtain ⟨x', y', e', hx', hy', hcross⟩ := haE
-  have hnil : C'.orderedCrossings e' = [] := by
-    symm
-    apply (C'.orderedCrossings_eq_iff e' []).mpr
-    refine ⟨by simp, ?_⟩
-    intro b
-    simp only [List.not_mem_nil, false_iff, hcross]
-    exact fun hb => hθE b.1 hb.1
+  have hempty : WallComplement.crossings x' y' = ∅ :=
+    Set.eq_empty_iff_forall_notMem.mpr fun ⟨j, t⟩ hjt => hθE j ((hcross j t).mp hjt).1
   have hprod := (equivalent_def D E).mp hDE e.toPath e'.toPath (by
     simp [Quiver.Path.vertices_toPath, hx, hy, hx', hy', sub_eq_add_neg])
-  rw [he, E.pathProduct_toPath, hnil] at hprod
-  simpa using hprod
+  rw [he, E.pathProduct_toPath_eq_one e' hempty] at hprod
+  exact hprod
 
 end Mei.FiniteWallDiagram

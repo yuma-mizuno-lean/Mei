@@ -57,14 +57,10 @@ theorem label_eq_of_equivalent
     (hθD : θ ∉ singularSupport (fun S : C.walls => (S : Set V)))
     (hθE : θ ∉ singularSupport (fun S : C'.walls => (S : Set V))) :
     D.label P = E.label Q := by
-  have hposD : 0 < D.toFiniteWallDiagram.normal P (s.degreePoint d) := by
-    simpa only [toFiniteWallDiagram_normal, KSSpace.normal_apply] using
-      s.evaluation_degreePoint_pos d (D.degree_mem P) (D.degree_ne_zero P)
-  have hposE : 0 < E.toFiniteWallDiagram.normal Q (s.degreePoint d) := by
-    simpa only [toFiniteWallDiagram_normal, KSSpace.normal_apply] using
-      s.evaluation_degreePoint_pos d (E.degree_mem Q) (E.degree_ne_zero Q)
   simpa only [toFiniteWallDiagram_label] using
-    hDE.label_eq P Q hθP hθQ hθD hθE hposD hposE
+    hDE.label_eq P Q hθP hθQ hθD hθE
+      (D.toFiniteWallDiagram_normal_degreePoint_pos P)
+      (E.toFiniteWallDiagram_normal_degreePoint_pos Q)
 
 /-- A regular KS wall missing from an equivalent complex has identity label. -/
 theorem label_eq_one_of_equivalent
@@ -91,18 +87,18 @@ theorem truncation_label_eq {k l : ℕ} (hkl : k ≤ l)
     (d.truncationMap ℒ hkl).bchGroupMap ((D.diagram l).label Q) =
       (D.diagram k).label P := by
   simpa only [KSComplex.truncate_label] using
-    KSComplex.label_eq_of_equivalent _ _ (D.truncate_equivalent hkl)
+    KSComplex.label_eq_of_equivalent _ _ (D.equivalent_truncate hkl)
       Q P hθQ hθP hθQ_reg hθP_reg
 
-/-- A higher-order wall absent at a point of a lower-order wall family has
-identity projected label there. The higher-order point must be regular. -/
+/-- If a regular point of a level-`l` wall lies on no wall of level `k ≤ l`,
+the projected label of that wall to level `k` is the identity. -/
 theorem truncation_label_eq_one {k l : ℕ} (hkl : k ≤ l)
     (Q : (C l).walls) {θ : V} (hθQ : θ ∈ (Q : Set V))
     (hθQ_reg : θ ∉ singularSupport (fun S : (C l).walls => (S : Set V)))
     (hθP : ∀ P : (C k).walls, θ ∉ (P : Set V)) :
     (d.truncationMap ℒ hkl).bchGroupMap ((D.diagram l).label Q) = 1 := by
   simpa only [KSComplex.truncate_label] using
-    KSComplex.label_eq_one_of_equivalent _ _ (D.truncate_equivalent hkl) Q hθQ hθQ_reg hθP
+    KSComplex.label_eq_one_of_equivalent _ _ (D.equivalent_truncate hkl) Q hθQ hθQ_reg hθP
 
 end CompletedDiagram
 end Mei

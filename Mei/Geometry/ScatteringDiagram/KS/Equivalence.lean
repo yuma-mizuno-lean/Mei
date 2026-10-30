@@ -21,7 +21,7 @@ the resulting complete-product equality.
 projected products are the two prescribed finite products.
 
 Truncating a higher level to any lower cutoff gives an equivalent finite diagram
-(`CompletedDiagram.truncate_equivalent`).
+(`CompletedDiagram.equivalent_truncate`).
 
 No relation between the two sequences of complexes is required. In particular,
 the complexes need not stabilize or refine one another, and neither diagram needs
@@ -53,7 +53,7 @@ variable {N V R L : Type*} [AddCommGroup N]
 
 /-- A higher level, truncated to any lower cutoff, is equivalent to the lower
 level on its own complex. No nesting of the complexes is required. -/
-theorem truncate_equivalent {k l : ℕ} (hkl : k ≤ l) :
+theorem equivalent_truncate {k l : ℕ} (hkl : k ≤ l) :
     ((D.diagram l).truncate hkl).toFiniteWallDiagram.Equivalent
       (D.diagram k).toFiniteWallDiagram := by
   induction l with

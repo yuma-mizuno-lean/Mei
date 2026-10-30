@@ -161,6 +161,12 @@ theorem consistent_truncate (D : KSComplex s d ℒ C l) (hkl : k ≤ l)
   rw [toFiniteWallDiagram_truncate]
   exact hD.relabel _
 
+/-- Every KS wall normal is positive at the degree point. -/
+theorem toFiniteWallDiagram_normal_degreePoint_pos (P : C.walls) :
+    0 < D.toFiniteWallDiagram.normal P (s.degreePoint d) := by
+  simpa only [toFiniteWallDiagram_normal, KSSpace.normal_apply] using
+    s.evaluation_degreePoint_pos d (D.degree_mem P) (D.degree_ne_zero P)
+
 /-- The positive degree point misses every wall, at every cutoff. -/
 theorem degreePoint_not_mem (D : KSComplex s d ℒ C k) (P : C.walls) :
     s.degreePoint d ∉ (P : Set V) := by

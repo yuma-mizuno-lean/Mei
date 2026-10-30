@@ -58,13 +58,11 @@ theorem label_eq_signFactorizationEquiv_symm_zero (hD : D.Consistent) (k : ℕ)
       ((signFactorizationEquiv ℒ (s.evaluation θ) d k).symm
         (CompletedGroup.projection k (D.transport hD D.degreePoint D.negDegreePoint)) .zero :
           d.truncatedGroup ℒ k) := by
-  have hp := s.evaluation_degreePoint_pos d
-    ((D.diagram k).degree_mem P) ((D.diagram k).degree_ne_zero P)
   have hs := s.eventually_sign_evaluation_add_smul_degreePoint d k θ
   have hn : Tendsto (fun a : ℝ => -a) (𝓝 0) (𝓝 0) := by
     simpa using continuous_neg.tendsto (0 : ℝ)
   have hshort := (D.diagram k).toFiniteWallDiagram.eventually_exists_pathProduct_eq_label
-    P hθP hθ (by simpa only [KSComplex.toFiniteWallDiagram_normal, KSSpace.normal_apply] using hp)
+    P hθP hθ ((D.diagram k).toFiniteWallDiagram_normal_degreePoint_pos P)
   have hapos : ∀ᶠ a : ℝ in 𝓝[>] 0, 0 < a := self_mem_nhdsWithin
   obtain ⟨a, ha, ⟨x, y, e, hx, hy, he⟩, hpos, hneg⟩ :=
     (hapos.and
