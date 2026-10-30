@@ -129,7 +129,9 @@ private theorem exists_pos_forall_exists_levelPathProduct_eq (k : ℕ) :
     (fun a : D.active k => (D.wall a).isConvexPolyhedron)
     (fun a => (D.wall a).finrank_direction_add_one)
     (hIo.preimage ζ.continuous_of_finiteDimensional) hz hw
-  refine ⟨q, D.bchGroupMap_levelPathProduct_eq_self _ k (hIc.convex.linear_preimage ζ) q hq ?_⟩
+  refine ⟨q, D.map_levelPathProduct_eq_self k
+    ((chargeZeroGradedLieHom d ℳ p ℒ).truncatedMap (a := k) k (by simp)).bchGroupMap
+    (hIc.convex.linear_preimage ζ) q hq ?_⟩
   rintro a ⟨u, huI, hu⟩
   rw [← (chargeZeroGradedLieHom d ℳ p ℒ).projection_completedMap_of_le k (a := k) (by simp)]
   congr 1
