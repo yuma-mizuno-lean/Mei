@@ -199,7 +199,7 @@ jobs:
           # Candidate files remain inert; artifacts complete before the full map.
           PLAN="$RUNNER_TEMP/lake-publication-plan"
           started=$SECONDS
-          python3 trusted-r2/scripts/mei_r2_publish.py publish --plan "$PLAN" \
+          python3 trusted-r2/scripts/mei_r2_publish.py publish-incremental --plan "$PLAN" \
             || skip_or_fail 'R2 publication stopped by the guard; inspect its budget before retrying'
           echo "Lake publication upload seconds: $((SECONDS - started))"
 

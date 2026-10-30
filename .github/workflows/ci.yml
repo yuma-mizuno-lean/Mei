@@ -339,7 +339,9 @@ jobs:
           LAKE_NO_CACHE: "true"
           LAKE_CACHE_DIR: ${{ github.workspace }}/.lake/cache
           PUBLIC_ARTIFACT_ENDPOINT: ${{ vars.LAKE_CACHE_ARTIFACT_ENDPOINT_PUBLIC }}
-          LAKE_CACHE_FULL_PUBLICATION: ${{ vars.LAKE_CACHE_FULL_PUBLICATION }}
+          # Stage local bytes without per-object public HEADs. The isolated,
+          # budgeted publisher deduplicates against its private upload catalog.
+          LAKE_CACHE_FULL_PUBLICATION: '1'
         run: |
           # Pack the already-built oleans into the local Lake cache (no recompile, since the
           # health-check build above left matching traces), emit the root-package

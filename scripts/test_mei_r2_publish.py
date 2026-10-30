@@ -7,7 +7,7 @@ from types import SimpleNamespace
 import unittest
 from unittest.mock import patch
 
-from mei_r2_publish import A_LIMIT, LIMIT, STATE_ALLOWANCE, STATE_KEY, Stop, adopt_existing, initial_state, initialize, load_plan, publish, reserve
+from mei_r2_publish import A_LIMIT, LIMIT, STATE_ALLOWANCE, STATE_KEY, Stop, adopt_existing, initial_state, initialize, load_plan, publish, publish_incremental, reserve
 
 TODAY = dt.datetime.now(dt.timezone.utc).date().isoformat()
 
@@ -242,6 +242,73 @@ class BudgetTests(unittest.TestCase):
             with self.assertRaises(Stop):
                 load_plan(root, endpoint)
 
+
+
+class IncrementalTests(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        root = Path(self.tmp.name)
+        art = root / 'a'; art.write_bytes(b'archive')
+        mapping = root / 'map'; mapping.write_bytes(b'mapping')
+        self.art = art
+        self.key = 'artifacts/yuma-mizuno-lean/Mei/' + 'a' * 16 + '.art'
+        self.mapkey = 'revisions/yuma-mizuno-lean/Mei/tc/leanprover--lean4---v4.36.0/' + 'b'*40 + '.jsonl'
+        self.objects = [(self.key, art), (self.mapkey, mapping)]
+        self.client = FakeR2()
+        self.store = {}
+        original = self.client.request
+        def request(method, key='', data=None, headers=None, query=None):
+            result = original(method, key, data, headers, query)
+            if key != STATE_KEY and method == 'PUT':
+                self.store[key] = data.read_bytes() if isinstance(data, Path) else data
+            if key != STATE_KEY and method == 'GET':
+                return 200, self.store.get(key, b''), {}
+            return result
+        self.client.request = request
+
+    def test_repeat_uses_catalog_without_artifact_reads_or_writes(self):
+        publish_incremental(self.client, self.objects)
+        before = self.client.state['reserved_bytes']
+        self.client.calls.clear()
+        publish_incremental(self.client, self.objects)
+        self.assertEqual(self.client.state['reserved_bytes']-before, 7)
+        self.assertNotIn(('PUT', self.key), self.client.calls)
+        self.assertEqual([c for c in self.client.calls if c[0]=='GET'],
+            [('GET', STATE_KEY), ('GET', '_control/catalog/' + self.client.state['catalog'] + '.json')])
+        self.assertIsNone(self.client.state['active'])
+
+    def test_collision_and_corrupted_catalog_stop_before_writes(self):
+        publish_incremental(self.client, self.objects)
+        self.art.write_bytes(b'changed')
+        self.client.calls.clear()
+        with self.assertRaisesRegex(Stop, 'collision'):
+            publish_incremental(self.client, self.objects)
+        self.assertFalse(any(m=='PUT' for m,k in self.client.calls))
+        self.store.clear()
+        with self.assertRaisesRegex(Stop, 'corrupted'):
+            publish_incremental(self.client, self.objects)
+
+    def test_failed_revision_keeps_lock_and_old_catalog(self):
+        self.client.fail_key = self.mapkey
+        with self.assertRaises(Stop):
+            publish_incremental(self.client, self.objects)
+        self.assertIsNotNone(self.client.state['active'])
+        self.assertNotIn('catalog', self.client.state)
+
+    def test_new_artifact_only_and_budget_refusal(self):
+        publish_incremental(self.client, self.objects)
+        new = self.art.parent/'new'; new.write_bytes(b'new')
+        key = self.key.replace('a'*16, 'c'*16)
+        self.client.calls.clear()
+        publish_incremental(self.client, [(key,new), *self.objects])
+        self.assertIn(('PUT',key),self.client.calls)
+        self.assertNotIn(('PUT',self.key),self.client.calls)
+        self.client.state['reserved_bytes'] = LIMIT
+        self.client.calls.clear()
+        with self.assertRaises(Stop):
+            publish_incremental(self.client,self.objects)
+        self.assertFalse(any(m=='PUT' for m,k in self.client.calls))
 
 if __name__ == '__main__':
     unittest.main()
