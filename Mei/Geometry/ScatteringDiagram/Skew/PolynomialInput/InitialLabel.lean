@@ -7,6 +7,7 @@ module
 
 public import Mei.Geometry.ScatteringDiagram.Skew.PolynomialInput.Coefficient
 public import Mei.Algebra.Lie.Logarithmic.TangentRestriction
+public import Mei.Algebra.Lie.Logarithmic.Pairing.Completion
 
 /-!
 # Principal comparison of the initial polynomial labels

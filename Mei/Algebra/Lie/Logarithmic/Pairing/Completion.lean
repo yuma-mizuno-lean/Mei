@@ -6,6 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Algebra.Lie.Logarithmic.Pairing.Coefficient
+public import Mei.Algebra.Lie.Logarithmic.Pairing.Composition
 public import Mei.Algebra.Lie.Filtered.Map
 
 /-!
@@ -69,3 +70,33 @@ theorem mapCompletionₐ_completedBCHAction
   exact p.mapDomainAlgHom_tropicalVertexCoefficientAction Fact.out Fact.out hT heval x a
 
 end Mei.TropicalPairing
+
+namespace Mei.LogarithmicVectorField
+
+open _root_.AddMonoidAlgebra
+open scoped TropicalVertexCoefficientAction
+
+variable {R Γ Λ : Type*} [CommRing R] [Algebra ℚ R]
+  [AddCommMonoid Γ] [AddCommMonoid Λ] [DecidableEq Γ]
+  (d : PositiveDegrees Γ) (ρ : Γ →+ Λ) (U : Submodule R (Λ →+ R))
+
+local notation "ℒ" => tropicalVertexGrading (R := R) d ρ
+local notation "ℳ" => tropicalSubalgebraGrading ρ U d
+
+/-- The inherited completed action agrees with the ambient action after inclusion. -/
+theorem completedBCHAction_tropicalSubalgebraInclusion (Q : AddSubmonoid Γ)
+    [Fact (d.monoid ≤ Q)]
+    (g : d.completedBCHGroup ℳ)
+    (a : (TropicalVertexCoefficientAction.filtration (R := R) d Q).completion) :
+    (TropicalVertexCoefficientAction.filtration (R := R) d Q).completedBCHAction d ℳ g a =
+      (TropicalVertexCoefficientAction.filtration (R := R) d Q).completedBCHAction d ℒ
+        ((TropicalPairing.id d ρ U).gradedLieHom.completedMap g) a := by
+  let J := TropicalVertexCoefficientAction.filtration (R := R) d Q
+  have he := J.mapCompletionₐ_completedBCHAction_of_gradedLieHom J
+    (TropicalPairing.id d ρ U).gradedLieHom (AlgHom.id R R[Q])
+    (fun x _ => by
+      simp only [AlgHom.id_apply, TropicalPairing.gradedLieHom_id_apply]
+      rfl) id monotone_id (fun _ => by simp) g a
+  simpa only [AlgFiltration.mapCompletionₐ_id, AlgHom.id_apply] using he
+
+end Mei.LogarithmicVectorField

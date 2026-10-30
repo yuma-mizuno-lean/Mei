@@ -6,7 +6,6 @@ Authors: Codex
 module
 
 public import Mei.Algebra.Lie.Logarithmic.WallFunction
-public import Mei.Algebra.Lie.Filtered.Map
 public import Mei.Algebra.Lie.Logarithmic.Pairing.Composition
 
 /-!
@@ -75,12 +74,13 @@ theorem tropicalTangentFieldToSubalgebra_mem_degreeIdeal (m : U) {k : ℕ}
     (hu : u ∈ (TropicalVertexCoefficientAction.filtration
       (R := R) d (tropicalTangentMonoid d ρ m.val)).ideal (k + 1)) :
     tropicalTangentFieldToSubalgebra d ρ U m u ∈ d.degreeIdeal ℳ k := by
-  have he := d.degreeSubmodule_comap ℒ ℳ
-    (tropicalSubalgebra ρ U d).incl.toLinearMap Subtype.val_injective
-    (fun _ _ hx => by
-      simpa only [tropicalSubalgebraGrading_def, Submodule.mem_comap,
-        LieHom.coe_toLinearMap] using hx) k
-  rw [← LieSubmodule.mem_toSubmodule, PositiveDegrees.degreeIdeal_toSubmodule, he]
+  -- Compare submodules to rewrite the grading without transporting its Lie algebra instance.
+  have he := congrArg LieSubmodule.toSubmodule
+    ((tropicalSubalgebra ρ U d).degreeIdeal_eq_comap ℒ d
+      (tropicalSubalgebra_isHomogeneous ρ U d) k)
+  simp only [PositiveDegrees.degreeIdeal_toSubmodule, LieIdeal.comap_toSubmodule] at he
+  rw [← LieSubmodule.mem_toSubmodule, PositiveDegrees.degreeIdeal_toSubmodule,
+    tropicalSubalgebraGrading_def, he]
   simpa only [Submodule.mem_comap, LieHom.coe_toLinearMap, LieSubalgebra.coe_incl,
     coe_tropicalTangentFieldToSubalgebra, ← PositiveDegrees.degreeIdeal_toSubmodule,
     LieSubmodule.mem_toSubmodule] using
@@ -121,13 +121,13 @@ theorem completedTropicalTangentFieldToSubalgebra_toCompletion
     completedTropicalTangentFieldToSubalgebra d ρ U m ((H).toCompletion u) =
       LieIdeal.toCompletion (d.degreeIdeal ℳ) (d.degreeIdeal_antitone ℳ)
         (tropicalTangentFieldToSubalgebra d ρ U m u) := by
+  simp only [completedTropicalTangentFieldToSubalgebra, LinearMap.comp_apply,
+    LinearEquiv.coe_coe, AlgFiltration.moduleCompletionEquiv_symm_toCompletion,
+    ModuleFiltration.completionMap_of]
   apply (G).completion_ext
   intro k
-  rw [projection_completedTropicalTangentFieldToSubalgebra d ρ U m k _ u
-    ((H).projection_toCompletion k u)]
-  simpa only [LieIdeal.completionProjection_apply] using
-    (LieIdeal.completionProjection_toCompletion (d.degreeIdeal ℳ)
-      (d.degreeIdeal_antitone ℳ) k _).symm
+  simp only [ModuleFiltration.projection_of, ← LieIdeal.completionProjection_apply,
+    LieIdeal.completionProjection_toCompletion, LieIdeal.mkQ_apply]
 
 /-- Forgetting restricted characters after completion gives the original completed field. -/
 theorem completionMap_completedTropicalTangentFieldToSubalgebra (u : (H).completion) :
@@ -167,22 +167,5 @@ theorem completedMap_completedBCHExp_completedTropicalTangentFieldToSubalgebra
     funext (fun k => PositiveDegreeMap.id_modulus (d := d) k)
   simpa only [TropicalPairing.id_degreeMap, hmod] using
       completionMap_completedTropicalTangentFieldToSubalgebra d ρ U m u
-
-omit m in
-/-- The inherited completed action agrees with the ambient action after inclusion. -/
-theorem completedBCHAction_tropicalSubalgebraInclusion (Q : AddSubmonoid Γ)
-    [Fact (d.monoid ≤ Q)]
-    (g : d.completedBCHGroup ℳ)
-    (a : (TropicalVertexCoefficientAction.filtration (R := R) d Q).completion) :
-    (TropicalVertexCoefficientAction.filtration (R := R) d Q).completedBCHAction d ℳ g a =
-      (TropicalVertexCoefficientAction.filtration (R := R) d Q).completedBCHAction d ℒ
-        ((TropicalPairing.id d ρ U).gradedLieHom.completedMap g) a := by
-  let J := TropicalVertexCoefficientAction.filtration (R := R) d Q
-  have he := J.mapCompletionₐ_completedBCHAction_of_gradedLieHom J
-    (TropicalPairing.id d ρ U).gradedLieHom (AlgHom.id R R[Q])
-    (fun x _ => by
-      simp only [AlgHom.id_apply, TropicalPairing.gradedLieHom_id_apply]
-      rfl) id monotone_id (fun _ => by simp) g a
-  simpa only [AlgFiltration.mapCompletionₐ_id, AlgHom.id_apply] using he
 
 end Mei.LogarithmicVectorField
