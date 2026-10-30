@@ -70,14 +70,20 @@ theorem coe_rayGenerator (j : ℕ) (c : R) :
 theorem rayGenerator_mem (j : ℕ) (c : R) : rayGenerator β hβ hn hn0 j c ∈ ℒ ((j + 1) • n) :=
   (mem_positiveGrading_iff β hβ d _ _).mpr ((mem_grade_iff β hβ _ _).mpr ⟨c, rfl⟩)
 
+/-- Generators on the rays of two degrees on which the skew form vanishes commute. -/
+@[simp]
+theorem rayGenerator_bracket_rayGenerator_of_eq_zero {n' : Γ} (hn' : n' ∈ d.monoid)
+    (hn0' : n' ≠ 0) (h : β n n' = 0) (i j : ℕ) (b c : R) :
+    ⁅rayGenerator β hβ hn hn0 i b, rayGenerator β hβ hn' hn0' j c⁆ = 0 := by
+  apply Subtype.ext
+  rw [LieSubalgebra.coe_bracket, coe_rayGenerator, coe_rayGenerator, single_bracket_single]
+  simp [← hβ.neg n n', h]
+
 /-- Generators on one ray commute. -/
 @[simp]
 theorem rayGenerator_bracket_rayGenerator (i j : ℕ) (b c : R) :
-    ⁅rayGenerator β hβ hn hn0 i b, rayGenerator β hβ hn hn0 j c⁆ = 0 := by
-  apply Subtype.ext
-  rw [LieSubalgebra.coe_bracket, coe_rayGenerator, coe_rayGenerator, ← natCast_zsmul,
-    ← natCast_zsmul]
-  exact single_zsmul_bracket_single_zsmul β hβ n _ _ b c
+    ⁅rayGenerator β hβ hn hn0 i b, rayGenerator β hβ hn hn0 j c⁆ = 0 :=
+  rayGenerator_bracket_rayGenerator_of_eq_zero β hβ hn hn0 hn hn0 (hβ.self_eq_zero n) i j b c
 
 /-- The finite sum `∑_{j < k} f_{j+1} X_{(j+1)n}`. -/
 def rayPartialSum (k : ℕ) : R⟦X⟧ →ₗ[R] 𝔤 :=
@@ -119,17 +125,24 @@ theorem completionProjection_raySeries (k : ℕ) (f : R⟦X⟧) :
   -- The submodule quotient map is the underlying map of the Lie quotient map.
   rfl
 
-/-- Ray series pairwise commute. -/
+/-- Ray series of two degrees on which the skew form vanishes commute. -/
 @[simp]
-theorem raySeries_bracket_raySeries (f g : R⟦X⟧) :
-    ⁅raySeries β hβ hn hn0 f, raySeries β hβ hn hn0 g⁆ = 0 := by
+theorem raySeries_bracket_raySeries_of_eq_zero {n' : Γ} (hn' : n' ∈ d.monoid) (hn0' : n' ≠ 0)
+    (h : β n n' = 0) (f g : R⟦X⟧) :
+    ⁅raySeries β hβ hn hn0 f, raySeries β hβ hn' hn0' g⁆ = 0 := by
   apply Mei.ModuleFiltration.completion_ext
   intro k
   rw [LieIdeal.projection_bracket, map_zero, ← LieIdeal.completionProjection_apply,
     ← LieIdeal.completionProjection_apply, completionProjection_raySeries,
     completionProjection_raySeries, ← LieHom.map_lie, rayPartialSum_apply,
     rayPartialSum_apply, sum_lie]
-  simp [lie_sum]
+  simp [lie_sum, rayGenerator_bracket_rayGenerator_of_eq_zero β hβ hn hn0 hn' hn0' h]
+
+/-- Ray series pairwise commute. -/
+@[simp]
+theorem raySeries_bracket_raySeries (f g : R⟦X⟧) :
+    ⁅raySeries β hβ hn hn0 f, raySeries β hβ hn hn0 g⁆ = 0 :=
+  raySeries_bracket_raySeries_of_eq_zero β hβ hn hn0 hn hn0 (hβ.self_eq_zero n) f g
 
 variable [Algebra ℚ R]
 
@@ -170,6 +183,17 @@ theorem rayExp_zsmul (m : ℤ) (f : R⟦X⟧) :
 theorem commute_rayExp (f g : R⟦X⟧) :
     Commute (rayExp β hβ hn hn0 f) (rayExp β hβ hn hn0 g) := by
   rw [Commute, SemiconjBy, ← rayExp_add, ← rayExp_add, add_comm]
+
+/-- Ray labels of two degrees on which the skew form vanishes commute. -/
+theorem commute_rayExp_of_eq_zero {n' : Γ} (hn' : n' ∈ d.monoid) (hn0' : n' ≠ 0)
+    (h : β n n' = 0) (f g : R⟦X⟧) :
+    Commute (rayExp β hβ hn hn0 f) (rayExp β hβ hn' hn0' g) := by
+  have h' : β n' n = 0 := by rw [← hβ.neg n n', h, neg_zero]
+  rw [Commute, SemiconjBy, rayExp_def, rayExp_def,
+    ← PositiveDegrees.completedBCHExp_add_of_lie_eq_zero _ _
+      (raySeries_bracket_raySeries_of_eq_zero β hβ hn hn0 hn' hn0' h f g),
+    ← PositiveDegrees.completedBCHExp_add_of_lie_eq_zero _ _
+      (raySeries_bracket_raySeries_of_eq_zero β hβ hn' hn0' hn hn0 h' g f), add_comm]
 
 /-- Logarithm of the order-`k` projection, for reading coefficients. -/
 private theorem log_projection_rayExp (k : ℕ) (f : R⟦X⟧) :

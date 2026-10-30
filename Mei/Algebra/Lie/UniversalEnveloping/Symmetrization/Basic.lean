@@ -64,6 +64,17 @@ theorem pbwSymmetrization_of_mem {n : ℕ} {p : SymmetricAlgebra R L} (hp : p �
     DirectSum.decomposeLinearEquiv_apply, DirectSum.decompose_of_mem 𝒮 hp,
     ← DirectSum.lof_eq_of R, DirectSum.toModule_lof]
 
+/-- Multiplying a symmetric tensor and then applying the global map gives the
+degreewise permutation average. -/
+@[simp]
+theorem pbwSymmetrization_toSymmetricAlgebra (n : ℕ) (x : Sym[R]^n L) :
+    pbwSymmetrization R L (TauCeti.SymmetricPower.toSymmetricAlgebra R L n x) =
+      TauCeti.UniversalEnvelopingAlgebra.pbwSymmetrization R L n
+        (IsUnit.natCast_factorial_of_algebra ℚ n) x := by
+  rw [← TauCeti.SymmetricPower.coe_equivHomogeneous_apply,
+    pbwSymmetrization_of_mem R L (TauCeti.SymmetricPower.equivHomogeneous n x).property,
+    pbwHomogeneousSymmetrization_equivHomogeneous]
+
 /-- Symmetrization sends a product of generators to the average of their
 ordered products, with the usual rational factorial denominator. -/
 theorem pbwSymmetrization_prod_ι (n : ℕ) (x : Fin n → L) :
