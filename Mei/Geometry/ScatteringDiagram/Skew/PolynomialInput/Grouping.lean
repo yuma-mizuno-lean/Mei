@@ -22,7 +22,8 @@ at each cutoff reassemble the unsplit label
 The polynomial `fᵢ` is the image of the polynomial with natural-number coefficients
 `1 + ∑ₛ z^(letter (i, s))` in the independent variables, so its wall function is positive
 for the image of `S[Q]` under every coefficient map `S →+* R`. Hence the incoming diagram is
-a positive wall representative.
+a positive wall representative when the coefficient monoid contains the positive and negative
+basis characters, so the normal-weight-one monomials are invertible.
 
 We use `BLMPolynomialInput.projection_initialLabel_eq_noncommProd_incomingDiagram` and
 `BLMPolynomialInput.completedBCHAction_initialLabel`. The polynomial inputs and their
@@ -109,32 +110,48 @@ variable (Q : AddSubmonoid (Module.Dual ℤ N × (I.Letter → ℤ)))
 
 local notation "G" => TropicalVertexCoefficientAction.filtration (R := R) 𝒅 Q
 
+variable (hQ : ∀ i : B.unfrozenIndex,
+  (B.basis.coord i, 0) ∈ Q ∧ (-B.basis.coord i, 0) ∈ Q)
+
+include hQ
+
 /-- The initial polynomial is the wall function of the grouped ray walls over it. -/
 theorem isWallFunction_incomingGrouping (i : B.unfrozenIndex) :
     (I.incomingGrouping (R := R) h).IsWallFunction ((G).completedBCHAction 𝒅 ℒ) i
       (I.completedInitialFunction Q i) := by
-  refine ((I.incomingGrouping h).isWallFunction_iff _ i _).mpr fun j hj p c => ?_
+  refine ((I.incomingGrouping h).isWallFunction_iff _ i _).mpr fun j hj => ?_
   rw [incomingGrouping_group] at hj
   subst hj
-  rw [label_incomingGrouping]
-  simpa only [incomingDiagram_normal, AddMonoidHom.id_apply] using
-    I.completedBCHAction_initialLabel Q j.1 _ (I.coe_completedInitialFunction Q j.1) p c
+  constructor
+  · let p : Q := ⟨(B.basis.coord j.1, 0), (hQ j.1).1⟩
+    let p' : Q := ⟨(-B.basis.coord j.1, 0), (hQ j.1).2⟩
+    have hpp' : p + p' = 0 := Subtype.ext (by simp [p, p'])
+    have hmul : (single p 1 * single p' 1 : R[Q]) = 1 := by
+      rw [single_mul_single, hpp', mul_one, one_def]
+    refine ⟨p, by simp [p], ?_⟩
+    exact (isUnit_iff_exists_inv.mpr ⟨single p' 1, hmul⟩).map (G).toCompletion
+  · intro p c
+    rw [label_incomingGrouping]
+    simpa only [incomingDiagram_normal, AddMonoidHom.id_apply] using
+      I.completedBCHAction_initialLabel Q j.1 _ (I.coe_completedInitialFunction Q j.1) p c
 
-/-- The grouping of the incoming diagram by initial polynomial is positive. -/
+/-- The grouping of the incoming diagram by initial polynomial is positive when the
+coefficient monoid contains both signs of the spatial basis characters. -/
 theorem isPositive_incomingGrouping {S : Type*} [Semiring S] (φ : S →+* R) :
     (I.incomingGrouping (R := R) h).IsPositive ((G).completedBCHAction 𝒅 ℒ)
       (AddMonoidAlgebra.mapRingHom Q φ).rangeS :=
   ((I.incomingGrouping h).isPositive_iff _ _).mpr fun i =>
-    ⟨I.completedInitialFunction Q i, I.isWallFunction_incomingGrouping h Q i,
+    ⟨I.completedInitialFunction Q i, I.isWallFunction_incomingGrouping h Q hQ i,
       I.isPositive_completedInitialFunction Q φ i⟩
 
-/-- The incoming diagram of a BLM polynomial input is a positive wall representative. -/
+/-- The incoming diagram of a BLM polynomial input is a positive wall representative when
+the coefficient monoid contains both signs of the spatial basis characters. -/
 theorem isPositiveWallRepresentative_incomingDiagram {S : Type*} [Semiring S]
     (φ : S →+* R) :
     (I.incomingDiagram (R := R) h).IsPositiveWallRepresentative
       ((G).completedBCHAction 𝒅 ℒ) (AddMonoidAlgebra.mapRingHom Q φ).rangeS
       (AddMonoidHom.fst _ _) :=
-  (I.isPositive_incomingGrouping h Q φ).isPositiveWallRepresentative
+  (I.isPositive_incomingGrouping h Q hQ φ).isPositiveWallRepresentative
 
 end Action
 

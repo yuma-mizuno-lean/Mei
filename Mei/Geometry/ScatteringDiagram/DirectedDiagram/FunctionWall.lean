@@ -34,7 +34,9 @@ its path product (`FunctionWallGrouping.levelPathProduct_toPath_eq_projection_la
 For an action `σ` of the completed group on the completion of a filtered monoid algebra
 `R[Q]`, a unit `f` is a *wall function* of a group when its label acts on every
 monomial `z^p` by multiplication by `f^(ν(ρ p))`, where `ν` is the group's normal
-(`FunctionWallGrouping.IsWallFunction`). For a chosen positive subsemiring `P ⊆ R[Q]`,
+(`FunctionWallGrouping.IsWallFunction`). We require an invertible monomial of normal
+weight one for each nonempty group, so that this action uniquely determines `f`. For a chosen
+positive subsemiring `P ⊆ R[Q]`,
 a grouping is positive if every group has a wall function that is positive in the sense
 of `AlgFiltration.IsPositive`, and a diagram is a *positive wall representative* if it
 admits a positive grouping (`DirectedDiagram.IsPositiveWallRepresentative`). Walls in
@@ -272,19 +274,35 @@ variable {Q : AddSubmonoid Γ} {F : AlgFiltration (AddMonoidAlgebra R Q)}
 
 /-- A unit `f` is a wall function of the group `g` for the action `σ` when the label of `g`
 acts on every monomial `z^p` by multiplication by `f^(ν(ρ p))`, where `ν` is the common
-normal of the walls of `g`. -/
+normal of the walls of `g`. Each such normal must admit a monomial of weight one
+whose image in the completion is invertible; this lets the action recover `f`. -/
 def IsWallFunction (g : κ) (f : F.completionˣ) : Prop :=
-  ∀ j, G.group j = g → ∀ (p : Q) (c : R),
+  ∀ j, G.group j = g →
+    (∃ p : Q, (D.wall j).normal (ρ p) = 1 ∧ IsUnit (F.toCompletion (single p (1 : R)))) ∧
+    ∀ (p : Q) (c : R),
     σ (G.label g) (F.toCompletion (single p c)) =
       ((f ^ (D.wall j).normal (ρ p) : F.completionˣ) : F.completion) *
         F.toCompletion (single p c)
 
 /-- The defining monomial action of a wall function. -/
 theorem isWallFunction_iff (g : κ) (f : F.completionˣ) :
-    G.IsWallFunction σ g f ↔ ∀ j, G.group j = g → ∀ (p : Q) (c : R),
+    G.IsWallFunction σ g f ↔ ∀ j, G.group j = g →
+      (∃ p : Q, (D.wall j).normal (ρ p) = 1 ∧ IsUnit (F.toCompletion (single p (1 : R)))) ∧
+      ∀ (p : Q) (c : R),
       σ (G.label g) (F.toCompletion (single p c)) =
         ((f ^ (D.wall j).normal (ρ p) : F.completionˣ) : F.completion) *
           F.toCompletion (single p c) := Iff.rfl
+
+variable {G σ} in
+/-- The action determines the wall function of a nonempty group uniquely, by cancellation
+of an invertible monomial of normal weight one. -/
+theorem IsWallFunction.unique {g : κ} {f f' : F.completionˣ}
+    (hf : G.IsWallFunction σ g f) (hf' : G.IsWallFunction σ g f')
+    {j : ι} (hj : G.group j = g) : f = f' := by
+  obtain ⟨p, hp, hu⟩ := ((G.isWallFunction_iff σ g f).mp hf j hj).1
+  have he := (((G.isWallFunction_iff σ g f).mp hf j hj).2 p 1).symm.trans
+    (((G.isWallFunction_iff σ g f').mp hf' j hj).2 p 1)
+  exact Units.ext (hu.mul_right_cancel (by simpa only [hp, zpow_one] using he))
 
 variable (P : Subsemiring (AddMonoidAlgebra R Q))
 
