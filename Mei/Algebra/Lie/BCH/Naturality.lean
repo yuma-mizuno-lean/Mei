@@ -47,27 +47,6 @@ local notation "F" =>
 local notation "G" =>
   LieIdeal.completionFiltration (e.degreeIdeal ℳ) (e.degreeIdeal_antitone ℳ)
 
-/-- In exponential coordinates, a completed BCH map is the filtered linear
-completion map of the underlying Lie homomorphism. -/
-theorem completedBCHExp_symm_completedMap (g : d.completedBCHGroup ℒ) :
-    (e.completedBCHExp ℳ).symm (f.completedMap g) =
-      (F).completionMap G f.toLieHom.toLinearMap T.modulus T.monotone_modulus
-        (fun k _ hx => f.map_mem_degreeIdeal k hx) ((d.completedBCHExp ℒ).symm g) := by
-  apply (G).completion_ext
-  intro k
-  rw [ModuleFiltration.projection_completionMap]
-  rw [← LieIdeal.completionProjection_apply,
-    e.completionProjection_completedBCHExp_symm ℳ, projection_completedMap]
-  refine ((f.truncatedMap k le_rfl).log_bchGroupMap
-    (CompletedGroup.projection (T.modulus k) g)).trans ?_
-  rw [← d.completionProjection_completedBCHExp_symm ℒ,
-    LieIdeal.completionProjection_apply]
-  obtain ⟨x, hx⟩ := (d.degreeIdeal ℒ (T.modulus k)).toSubmodule.mkQ_surjective
-    ((F).projection (T.modulus k) ((d.completedBCHExp ℒ).symm g))
-  rw [Submodule.mkQ_apply] at hx
-  simp only [← hx, truncatedMap_mk, Submodule.mapQ_apply, LieHom.coe_toLinearMap,
-    coe_toLieHom]
-
 open Classical in
 /-- Under arbitrary regrading, a target logarithmic coefficient is the sum over
 its source degree fiber inside the cutoff prescribed by the modulus. Any target

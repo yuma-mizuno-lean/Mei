@@ -7,6 +7,7 @@ module
 
 public import Mei.Algebra.Lie.BCH.Completion
 public import Mei.Algebra.Lie.Graded.Completion
+public import Mei.LinearAlgebra.ModuleFiltration.Map
 
 /-!
 # Exponential coordinates on completed BCH groups
@@ -14,7 +15,8 @@ public import Mei.Algebra.Lie.Graded.Completion
 Levelwise exponential and logarithm identify the compatible-family Lie completion
 with the completed BCH group as sets. This comparison lets Lie maps out of the
 completion describe group representations in exponential coordinates, without
-requiring the original Lie algebra to be nilpotent.
+requiring the original Lie algebra to be nilpotent. Completed graded BCH maps
+correspond to filtered linear completion maps in these coordinates.
 
 The carriers and transition laws are those of `LieIdeal.completion` and
 `Mei.CompletedGroup`; the finite coordinate maps are `Mei.BCHGroup.exp` and
@@ -135,3 +137,45 @@ theorem completedBCHExp_symm_inv (g : d.completedBCHGroup ℒ) :
   simp only [Equiv.apply_symm_apply, completedBCHExp_neg]
 
 end Mei.PositiveDegrees
+
+namespace Mei.GradedLieHom
+
+universe u
+
+variable {N M R : Type*} {L L' : Type u}
+  [AddCommMonoid N] [AddCommMonoid M] [CommRing R] [Algebra ℚ R]
+  [LieRing L] [LieAlgebra R L] [LieAlgebra ℚ L] [IsScalarTower ℚ R L]
+  [LieRing L'] [LieAlgebra R L'] [LieAlgebra ℚ L'] [IsScalarTower ℚ R L']
+  [DecidableEq N] [DecidableEq M]
+  {d : PositiveDegrees N} {e : PositiveDegrees M}
+  {ℒ : N → Submodule R L} {ℳ : M → Submodule R L'}
+  [GradedLieAlgebra ℒ] [GradedLieAlgebra ℳ]
+  [IsPositiveGrading d ℒ] [IsPositiveGrading e ℳ]
+  {T : PositiveDegreeMap d e} (f : GradedLieHom T ℒ ℳ)
+
+local notation "F" =>
+  LieIdeal.completionFiltration (d.degreeIdeal ℒ) (d.degreeIdeal_antitone ℒ)
+local notation "G" =>
+  LieIdeal.completionFiltration (e.degreeIdeal ℳ) (e.degreeIdeal_antitone ℳ)
+
+/-- In exponential coordinates, a completed BCH map is the filtered linear
+completion map of the underlying Lie homomorphism. -/
+theorem completedBCHExp_symm_completedMap (g : d.completedBCHGroup ℒ) :
+    (e.completedBCHExp ℳ).symm (f.completedMap g) =
+      (F).completionMap G f.toLieHom.toLinearMap T.modulus T.monotone_modulus
+        (fun k _ hx => f.map_mem_degreeIdeal k hx) ((d.completedBCHExp ℒ).symm g) := by
+  apply (G).completion_ext
+  intro k
+  rw [ModuleFiltration.projection_completionMap]
+  rw [← LieIdeal.completionProjection_apply,
+    e.completionProjection_completedBCHExp_symm ℳ, projection_completedMap]
+  refine ((f.truncatedMap k le_rfl).log_bchGroupMap
+    (CompletedGroup.projection (T.modulus k) g)).trans ?_
+  rw [← d.completionProjection_completedBCHExp_symm ℒ,
+    LieIdeal.completionProjection_apply]
+  rw [truncatedMap_def]
+  exact LinearMap.congr_fun
+    ((d.degreeIdeal ℒ (T.modulus k)).toLinearMap_mapQ (e.degreeIdeal ℳ k)
+      f.toLieHom (fun _ hx => f.map_mem_degreeIdeal k hx)) _
+
+end Mei.GradedLieHom
