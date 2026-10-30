@@ -202,6 +202,26 @@ theorem decoratedRayEvaluation_eq_sum (Q : V) :
         Q ∈ A p.val) (by intro p; simp only [Finset.mem_filter, Finset.mem_univ, true_and])
       (fun p => homogeneousHistory ℳ T p.val a)).symm
 
+open Classical in
+/-- Sum over all nonzero coefficient histories, selecting precisely those with
+the prescribed normal velocities, signs and full geometric endpoint admission. -/
+theorem decoratedRayEvaluation_eq_sum_homogeneousHistory (Q : V) :
+    decoratedRayEvaluation ℳ T p₀ a velocity f c ε P W S C Q =
+      ∑ p ∈ homogeneousHistorySupport ℳ T (a : M),
+        if (∀ j, f j (velocity (p j)) =
+            f j (velocity (Fin.snoc (α := fun _ => Γ) p p₀ j.succ)) ∧
+              SignType.sign (f j (velocity (p j))) = ε j) ∧ Q ∈ A p
+        then homogeneousHistory ℳ T p a else 0 := by
+  rw [decoratedRayEvaluation_eq_sum]
+  trans ∑ p ∈ decoratedHistorySupport ℳ T p₀ a velocity f ε,
+    if Q ∈ A p then homogeneousHistory ℳ T p a else 0
+  · exact Finset.sum_coe_sort _ (fun p =>
+      if Q ∈ A p then homogeneousHistory ℳ T p a else 0)
+  · rw [decoratedHistorySupport, Finset.sum_filter]
+    apply Finset.sum_congr rfl
+    intro p _
+    exact (ite_and _ _ _ _).symm
+
 /-- Vanished input has zero weighted evaluation. -/
 @[simp]
 theorem decoratedRayEvaluation_zero (Q : V) :

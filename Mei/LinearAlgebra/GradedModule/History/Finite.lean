@@ -21,7 +21,9 @@ refinements; neither the degree map nor its fibers need be finite.
 This supplies finite coefficient-history sums for lattice-graded modules without
 replacing their grading by a finite type. It uses `homogeneousHistory`, Mathlib's
 finite homogeneous supports and `DirectSum.sum_support_decompose`, and the
-one-step regrading formula `DirectSum.decompose_map_eq_sum`.
+one-step regrading formula `DirectSum.decompose_map_eq_sum`. Selecting histories
+after regrading uses `Finset.sum_fiberwise_of_maps_to` to group the source
+histories with the same image, including groups whose total decoration vanishes.
 -/
 
 public noncomputable section
@@ -239,6 +241,56 @@ theorem exists_homogeneousHistory_ne_zero_of_map_ne_zero {n : ℕ}
   split_ifs at hp with h
   · exact ⟨p, h, hp⟩
   · exact (hp rfl).elim
+
+open Classical in
+/-- Selecting target histories commutes with coefficient change when source
+histories are selected by their regraded history. Source histories with the same
+image are added before vanishing target histories are discarded. -/
+theorem map_sum_ite_homogeneousHistory {n : ℕ}
+    (T : Fin n → Module.End R M) (U : Fin n → Module.End R N)
+    (hT : ∀ j, r.comp (T j) = (U j).comp r)
+    (E : (Fin n → κ) → Prop) (a : M) :
+    r (∑ p ∈ homogeneousHistorySupport ℳ T a,
+      if E (σ ∘ p) then homogeneousHistory ℳ T p a else 0) =
+      ∑ q ∈ homogeneousHistorySupport 𝓝 U (r a),
+        if E q then homogeneousHistory 𝓝 U q (r a) else 0 := by
+  classical
+  let S := homogeneousHistorySupport ℳ T a
+  let Q := S.image (fun p => σ ∘ p)
+  have hsub : homogeneousHistorySupport 𝓝 U (r a) ⊆ Q := by
+    intro q hq
+    obtain ⟨p, hp, hn⟩ := exists_homogeneousHistory_ne_zero_of_map_ne_zero
+      ℳ 𝓝 r σ hr T U hT q ((mem_homogeneousHistorySupport ..).mp hq)
+    exact Finset.mem_image.mpr ⟨p,
+      (mem_homogeneousHistorySupport ..).mpr (fun hz => hn (by simp [hz])), funext hp⟩
+  rw [map_sum]
+  calc
+    _ = ∑ q ∈ Q, ∑ p ∈ S with σ ∘ p = q,
+        r (if E (σ ∘ p) then homogeneousHistory ℳ T p a else 0) :=
+      (Finset.sum_fiberwise_of_maps_to
+        (fun p hp => Finset.mem_image_of_mem (fun p => σ ∘ p) hp) _).symm
+    _ = ∑ q ∈ Q, if E q then homogeneousHistory 𝓝 U q (r a) else 0 := by
+      apply Finset.sum_congr rfl
+      intro q _
+      rw [homogeneousHistory_map_eq_sum ℳ 𝓝 r σ hr T U hT q a,
+        Finset.sum_filter]
+      by_cases hq : E q
+      · simp only [hq, ↓reduceIte]
+        apply Finset.sum_congr rfl
+        intro p _
+        by_cases hp : σ ∘ p = q
+        · have hp' : ∀ j, σ (p j) = q j := congrFun hp
+          simp [hp, hp', hq]
+        · have hp' : ¬ ∀ j, σ (p j) = q j := by simpa [funext_iff] using hp
+          simp [hp, hp']
+      · simp only [hq, ↓reduceIte]
+        apply Finset.sum_eq_zero
+        intro p _
+        by_cases hp : σ ∘ p = q <;> simp [hp, hq]
+    _ = _ := (Finset.sum_subset hsub fun q _ hq => by
+      have hz : homogeneousHistory 𝓝 U q (r a) = 0 := by
+        simpa only [mem_homogeneousHistorySupport, not_not] using hq
+      simp [hz]).symm
 
 end Regrading
 
