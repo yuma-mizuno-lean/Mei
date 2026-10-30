@@ -95,6 +95,11 @@ theorem comp_mem_alphabetNormalSpan {S : Type*} [CommRing S] (φ : R →+* S)
     ext q
     simp
 
+private theorem alphabetNormalSpan_principalLift (m : I.alphabetNormalSpan R) (q : Γ) :
+    m.val (I.principalSublatticeEquiv.dualMap (I.principalLift q).1, 0) = m.val q := by
+  rw [principalLift_apply, ← LinearEquiv.dualMap_symm, LinearEquiv.apply_symm_apply]
+  exact (I.alphabetNormalSpan_apply R m q).symm
+
 /-- The principal lift and inverse spatial dual preserve all selected normal
 pairings, on the whole alphabet lattice, including Laurent coefficient degrees. -/
 def principalTropicalPairing :
@@ -102,24 +107,12 @@ def principalTropicalPairing :
       (ρ' := AddMonoidHom.id Γ') (I.alphabetNormalSpan R) where
   degreeMap := I.principalFiniteAlphabetLift
   characterMap :=
-    { toFun m :=
-        { toFun q := m.val (I.principalSublatticeEquiv.dualMap q.1, 0)
-          map_zero' := by
-            rw [Prod.fst_zero, map_zero]
-            exact m.val.map_zero
-          map_add' q r := by
-            simpa only [Prod.fst_add, map_add, Prod.mk_add_mk, add_zero] using
-              (m.val.map_add (I.principalSublatticeEquiv.dualMap q.1, 0)
-                (I.principalSublatticeEquiv.dualMap r.1, 0)) }
+    { toFun m := m.val.comp ((AddMonoidHom.inl _ _).comp
+        (I.principalSublatticeEquiv.dualMap.toAddMonoidHom.comp (AddMonoidHom.fst _ _)))
       map_add' _ _ := by ext; simp
       map_smul' _ _ := by ext; simp }
   eval_eq m n _ := by
-    simp only [AddMonoidHom.id_apply, principalFiniteAlphabetLift_apply]
-    -- Evaluate the explicitly constructed character map before its public
-    -- characteristic equation is available.
-    change m.val (I.principalSublatticeEquiv.dualMap (I.principalLift n).1, 0) = m.val n
-    rw [principalLift_apply, ← LinearEquiv.dualMap_symm, LinearEquiv.apply_symm_apply]
-    exact (I.alphabetNormalSpan_apply R m n).symm
+    simpa using I.alphabetNormalSpan_principalLift R m n
 
 @[simp]
 theorem principalTropicalPairing_degreeMap :
@@ -138,9 +131,8 @@ positive monoid required by the pairing contract. -/
 @[simp high]
 theorem principalTropicalPairing_eval (m : I.alphabetNormalSpan R) (q : Γ) :
     (I.principalTropicalPairing R).characterMap m (I.principalLift q) = m.val q := by
-  rw [principalTropicalPairing_characterMap_apply, principalLift_apply,
-    ← LinearEquiv.dualMap_symm, LinearEquiv.apply_symm_apply]
-  exact (I.alphabetNormalSpan_apply R m q).symm
+  rw [principalTropicalPairing_characterMap_apply]
+  exact I.alphabetNormalSpan_principalLift R m q
 
 /-- Each original normal becomes exactly the normalized primitive principal
 normal of its unfrozen basis vector. -/

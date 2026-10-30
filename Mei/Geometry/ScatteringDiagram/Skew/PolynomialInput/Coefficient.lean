@@ -263,6 +263,25 @@ theorem coe_principalCoefficientGradedLieHom_tropicalSingle
     (Algebra.ofId R 𝒮) (I.coefficientWeight R) I.positiveDegrees_le_coefficientMonoid
     (I.comp_mem_alphabetNormalSpan R (algebraMap R 𝒮)) hn hne m hm
 
+private theorem principalCoefficientMap_eq_comp_coefficientTwist
+    (hQ : I.coefficientMonoid.map
+      (I.principalTropicalPairing 𝒮).degreeMap.toAddMonoidHom ≤ 𝒬) :
+    I.principalCoefficientMap R =
+      (AlgHom.restrictScalars R (mapDomainAlgHom 𝒮 𝒮
+        ((AddSubmonoid.inclusion hQ).comp
+          ((I.principalTropicalPairing 𝒮).degreeMap.toAddMonoidHom.addSubmonoidMap
+            I.coefficientMonoid)))).comp (I.coefficientTwist R) := by
+  refine AddMonoidAlgebra.algHom_ext ?_ (Subsingleton.elim _ _)
+  intro q
+  simp only [principalCoefficientMap_single, AlgHom.comp_apply, coefficientTwist_single,
+    AlgHom.restrictScalars_apply, mapDomainAlgHom_apply, mapDomain_single,
+    coefficientWeight_apply]
+  congr 1
+  apply Subtype.ext
+  simp only [coe_principalCoefficientExponent, AddMonoidHom.comp_apply,
+    AddSubmonoid.coe_inclusion, AddMonoidHom.addSubmonoidMap_apply_coe,
+    principalTropicalPairing_degreeMap, principalFiniteAlphabetLift_apply]
+
 /-- The actual principal coefficient substitution intertwines the Lie actions
 on the native coefficient monoid algebras. -/
 theorem principalCoefficientMap_coefficientAction
@@ -274,30 +293,20 @@ theorem principalCoefficientMap_coefficientAction
         (I.principalDatum.principalPositiveDegrees_le_coefficientMonoid
           I.principalBasis.unfrozenBasis.positiveDegrees)
         (I.principalCoefficientGradedLieHom R x) (I.principalCoefficientMap R a) := by
+  have hQ : I.coefficientMonoid.map
+      (I.principalTropicalPairing 𝒮).degreeMap.toAddMonoidHom ≤ 𝒬 := by
+    simpa only [principalTropicalPairing_degreeMap] using I.map_coefficientMonoid_le
   have h := (I.principalTropicalPairing 𝒮).map_coefficientAction
     (U := 𝒰) (Q := I.coefficientMonoid) (Q' := 𝒬)
     (Algebra.ofId R 𝒮) (I.coefficientWeight R) I.positiveDegrees_le_coefficientMonoid
     (I.comp_mem_alphabetNormalSpan R (algebraMap R 𝒮))
     (I.principalDatum.principalPositiveDegrees_le_coefficientMonoid
       I.principalBasis.unfrozenBasis.positiveDegrees)
-    (by simpa only [principalTropicalPairing_degreeMap] using I.map_coefficientMonoid_le)
+    hQ
     (I.coefficientTwist R) (I.coefficientTwist_single R)
     (fun m _ _ => by simp) x a
-  have hmap : (AlgHom.restrictScalars R
-      (mapDomainAlgHom 𝒮 𝒮
-        ((AddSubmonoid.inclusion (by
-          simpa only [principalTropicalPairing_degreeMap] using I.map_coefficientMonoid_le)).comp
-          ((I.principalTropicalPairing 𝒮).degreeMap.toAddMonoidHom.addSubmonoidMap
-            I.coefficientMonoid)))).comp (I.coefficientTwist R) =
-        I.principalCoefficientMap R := by
-    unfold principalCoefficientMap
-    congr 3
-    ext q : 1
-    apply Subtype.ext
-    simp only [AddMonoidHom.comp_apply, AddSubmonoid.coe_inclusion,
-      AddMonoidHom.addSubmonoidMap_apply_coe, principalTropicalPairing_degreeMap]
-  rw [hmap] at h
-  exact h
+  simpa only [← I.principalCoefficientMap_eq_comp_coefficientTwist R hQ,
+    ← GradedLieHom.coe_toLieHom, principalCoefficientGradedLieHom] using h
 
 end Action
 
