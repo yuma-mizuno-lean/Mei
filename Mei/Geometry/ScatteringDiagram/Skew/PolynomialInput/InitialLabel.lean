@@ -124,18 +124,19 @@ local notation "F" => TropicalVertexCoefficientAction.filtration (R := R) d I.co
 local notation "G" => TropicalVertexCoefficientAction.filtration
   (R := MvPolynomial I.Letter R) e 𝒬
 
-local instance : Fact ((d).monoid ≤ I.coefficientMonoid) :=
+local instance initialLabelCoefficientMonoidFact : Fact ((d).monoid ≤ I.coefficientMonoid) :=
   ⟨I.positiveDegrees_le_coefficientMonoid⟩
 
-local instance : Fact ((e).monoid ≤ 𝒬) :=
+local instance initialLabelPrincipalCoefficientMonoidFact : Fact ((e).monoid ≤ 𝒬) :=
   ⟨I.principalDatum.principalPositiveDegrees_le_coefficientMonoid
     I.principalBasis.unfrozenBasis.positiveDegrees⟩
 
-local instance : LieModule R (tropicalVertexLieAlgebra
+local instance initialLabelPrincipalLieModule : LieModule R (tropicalVertexLieAlgebra
     (R := MvPolynomial I.Letter R) e ρ') (MvPolynomial I.Letter R)[𝒬] :=
   LieModule.restrictScalars R (MvPolynomial I.Letter R) _ _
 
-local instance : IsFiltrationRaising e ℳ' ((G).toModuleFiltration R) :=
+local instance initialLabelPrincipalIsFiltrationRaising :
+    IsFiltrationRaising e ℳ' ((G).toModuleFiltration R) :=
   IsFiltrationRaising.restrictScalars_algebra (R := R) (S := MvPolynomial I.Letter R) (G) e
     (tropicalVertexGrading (R := MvPolynomial I.Letter R) e ρ')
 
