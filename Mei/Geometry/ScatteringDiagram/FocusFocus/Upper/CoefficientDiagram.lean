@@ -20,7 +20,8 @@ chambers. The comparison is therefore natural at every cutoff, rather than only
 an isomorphism of the individual slab algebras.
 
 We use `upperSlabEquiv`, `upperChamberCorrespondence`, `slabIncidenceReduction`,
-`truncatedUpperSlabMap` and Mathlib's `spanIsoMk` and `NatIso.ofComponents`.
+`truncatedUpperSlabMap` and Mathlib's `spanIsoMk`, `Functor.copyObj` and
+`Functor.isoCopyObj`.
 The two crossing descriptions follow Gross–Siebert, *An Invitation to Toric
 Degenerations*, §2.2–2.3 (arXiv:0808.2749v2).
 -/
@@ -125,6 +126,11 @@ theorem slabIncidenceIso_inv_app_right (k : ℕ)
     (z : TruncatedExponentChamber K k 0) :
     ((slabIncidenceIso K k).inv.app .right).hom z = z := (rfl)
 
+/-- The upper incidence diagrams form a tower over the original coefficient ring. -/
+abbrev upperSlabIncidenceTower : ℕᵒᵖ ⥤ (WalkingSpan ⥤ AlgCat K) :=
+  (slabIncidenceTower K).copyObj (fun k => upperSlabIncidence K k.unop)
+    (fun k => slabIncidenceIso K k.unop)
+
 /-- Cutoff reduction of the upper span, transported from the lower span. -/
 def upperSlabIncidenceReduction {k l : ℕ} (hl : l ≤ k) :
     upperSlabIncidence K k ⟶ upperSlabIncidence K l :=
@@ -167,28 +173,14 @@ theorem upperSlabIncidenceReduction_app_right {k l : ℕ} (hl : l ≤ k)
 /-- Reducing to the same cutoff fixes the entire upper incidence diagram. -/
 @[simp]
 theorem upperSlabIncidenceReduction_refl (k : ℕ) :
-    upperSlabIncidenceReduction K (k := k) le_rfl = 𝟙 _ := by
-  simp [upperSlabIncidenceReduction]
+    upperSlabIncidenceReduction K (k := k) le_rfl = 𝟙 _ :=
+  (upperSlabIncidenceTower K).map_id (op k)
 
 /-- Successive upper cutoff reductions compose. -/
 theorem upperSlabIncidenceReduction_comp {k l m : ℕ} (hl : l ≤ k) (hm : m ≤ l) :
     upperSlabIncidenceReduction K hl ≫ upperSlabIncidenceReduction K hm =
-      upperSlabIncidenceReduction K (hm.trans hl) := by
-  simp only [upperSlabIncidenceReduction, Category.assoc, Iso.hom_inv_id_assoc]
-  rw [← Category.assoc (slabIncidenceReduction K hl), slabIncidenceReduction_comp]
-
-/-- The upper incidence diagrams form a tower over the original coefficient ring. -/
-abbrev upperSlabIncidenceTower : ℕᵒᵖ ⥤ (WalkingSpan ⥤ AlgCat K) where
-  obj k := upperSlabIncidence K k.unop
-  map f := upperSlabIncidenceReduction K (leOfHom f.unop)
-  map_id k := upperSlabIncidenceReduction_refl K k.unop
-  map_comp f g :=
-    (upperSlabIncidenceReduction_comp K (leOfHom f.unop) (leOfHom g.unop)).symm
-
-/-- At each cutoff the upper tower is its explicit incidence span. -/
-@[simp]
-theorem upperSlabIncidenceTower_obj (k : ℕᵒᵖ) :
-    (upperSlabIncidenceTower K).obj k = upperSlabIncidence K k.unop := (rfl)
+      upperSlabIncidenceReduction K (hm.trans hl) :=
+  ((upperSlabIncidenceTower K).map_comp (homOfLE hl).op (homOfLE hm).op).symm
 
 /-- The arrows of the upper tower are the transported cutoff reductions. -/
 @[simp]
@@ -205,8 +197,8 @@ theorem slabIncidenceIso_hom_reduction {k l : ℕ} (hl : l ≤ k) :
 
 /-- The two crossing descriptions give naturally isomorphic coefficient towers. -/
 def slabIncidenceTowerIso : slabIncidenceTower K ≅ upperSlabIncidenceTower K :=
-  NatIso.ofComponents (fun k => slabIncidenceIso K k.unop)
-    (fun f => (slabIncidenceIso_hom_reduction K (leOfHom f.unop)).symm)
+  (slabIncidenceTower K).isoCopyObj (fun k => upperSlabIncidence K k.unop)
+    (fun k => slabIncidenceIso K k.unop)
 
 /-- Evaluation of the tower comparison is the explicit comparison of spans. -/
 @[simp]
