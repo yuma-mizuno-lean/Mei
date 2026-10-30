@@ -27,7 +27,7 @@ no finiteness or freeness of the homogeneous modules is required.
 
 The construction uses Mathlib's internal direct-sum decomposition and
 `Fin.consEquiv`; the one-step regrading formula is
-`DirectSum.decompose_map_eq_sum`.
+`DirectSum.decompose_map_eq_sum_univ`.
 -/
 
 public noncomputable section
@@ -94,18 +94,9 @@ theorem sum_homogeneousHistory {n : ℕ} (T : Fin n → Module.End R M) (a : M) 
       (fun (p : ι × (Fin n → ι)) => homogeneousHistory ℳ T (Fin.cons p.1 p.2) a) _ (fun _ => rfl),
       Fintype.sum_prod_type, Finset.sum_comm]
     simp only [homogeneousHistory_succ_apply, Fin.cons_succ]
-    have hsum (x : M) : ∑ i, (DirectSum.decompose ℳ x i : M) = x := by
-      calc
-        _ = ∑ i ∈ (DirectSum.decompose ℳ x).support,
-            (DirectSum.decompose ℳ x i : M) :=
-          (Finset.sum_subset (Finset.subset_univ _) fun i _ hi => by
-            have hz := DFinsupp.notMem_support_iff.mp hi
-            simp [hz]).symm
-        _ = x := DirectSum.sum_support_decompose ℳ x
     trans ∑ p : Fin n → ι, T 0 (homogeneousHistory ℳ (fun j => T j.succ) p a)
-    · exact Finset.sum_congr rfl fun p _ => hsum _
-    · rw [← map_sum, ih, List.ofFn_succ, List.prod_cons]
-      rfl
+    · exact Finset.sum_congr rfl fun p _ => DirectSum.sum_univ_decompose ℳ _
+    · rw [← map_sum, ih, List.ofFn_succ, List.prod_cons, Module.End.mul_apply]
 
 section Regrading
 
@@ -127,16 +118,6 @@ theorem homogeneousHistory_map_eq_sum {n : ℕ}
       ∑ p : Fin n → ι, if ∀ j, σ (p j) = q j then
         r (homogeneousHistory ℳ T p a) else 0 := by
   classical
-  have hcomponent (x : M) (j : κ) :
-      (DirectSum.decompose 𝓝 (r x) j : N) =
-        ∑ i, if σ i = j then r (DirectSum.decompose ℳ x i : M) else 0 := by
-    have he := DirectSum.decompose_map_eq_sum ℳ 𝓝 r.toAddMonoidHom σ hr x j
-    simp only [LinearMap.toAddMonoidHom_coe, Finset.sum_filter] at he
-    refine he.trans ?_
-    apply Finset.sum_subset (Finset.subset_univ _)
-    intro i _ hi
-    have hz := DFinsupp.notMem_support_iff.mp hi
-    simp [hz]
   induction n with
   | zero => simp
   | succ n ih =>
@@ -158,7 +139,7 @@ theorem homogeneousHistory_map_eq_sum {n : ℕ}
         (homogeneousHistory ℳ (fun j : Fin n => T j.succ) p a)
       simp only [LinearMap.comp_apply] at hcomm
       rw [← hcomm]
-      exact hcomponent _ _
+      exact DirectSum.decompose_map_eq_sum_univ ℳ 𝓝 r.toAddMonoidHom σ hr _ _
     · simp [hp]
 
 open Classical in
