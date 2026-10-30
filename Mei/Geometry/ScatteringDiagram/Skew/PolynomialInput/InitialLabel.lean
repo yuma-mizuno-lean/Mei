@@ -71,7 +71,7 @@ theorem completedBCHExp_symm_initialSubalgebraLabel (i : B.unfrozenIndex) :
 label specified only by its coefficient action. -/
 @[simp]
 theorem completedMap_initialSubalgebraLabel (i : B.unfrozenIndex) :
-    (tropicalSubalgebraInclusion d ρ U).completedMap
+    (TropicalPairing.id d ρ U).gradedLieHom.completedMap
         (I.initialSubalgebraLabel (R := R) i) = I.initialLabel i := by
   dsimp only [initialSubalgebraLabel]
   exact (completedMap_completedBCHExp_completedTropicalTangentFieldToSubalgebra d ρ U
@@ -89,7 +89,7 @@ theorem completedBCHAction_initialSubalgebraLabel (Q : AddSubmonoid
         d ℒ (I.initialLabel i ^ z) a := by
   have he := completedBCHAction_tropicalSubalgebraInclusion d ρ U Q
     (I.initialSubalgebraLabel (R := R) i ^ z) a
-  have hg : (tropicalSubalgebraInclusion d ρ U).completedMap
+  have hg : (TropicalPairing.id d ρ U).gradedLieHom.completedMap
       (I.initialSubalgebraLabel (R := R) i ^ z) = I.initialLabel i ^ z :=
     (map_zpow _ _ _).trans
       (congrArg (fun g => g ^ z) (I.completedMap_initialSubalgebraLabel (R := R) i))
