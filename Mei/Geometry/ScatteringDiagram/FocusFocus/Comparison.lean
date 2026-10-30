@@ -64,6 +64,38 @@ theorem rightChamberExponentMap_apply (x : TruncatedExponentChamber K k 0) :
     rightChamberExponentMap K k x =
       (curryAlgEquiv S).symm (rightChamberLaurentMap (C_root_X_pow_pow K (k + 1)) x) := (rfl)
 
+/-- The uncurried left realization is faithful over the original coefficient ring. -/
+theorem leftChamberExponentMap_injective : Function.Injective (leftChamberExponentMap K k) :=
+  (curryAlgEquiv S).symm.injective.comp
+    (leftChamberLaurentMap_injective_truncatedPolynomial K k)
+
+/-- The uncurried right realization is faithful over the original coefficient ring. -/
+theorem rightChamberExponentMap_injective : Function.Injective (rightChamberExponentMap K k) :=
+  (curryAlgEquiv S).symm.injective.comp
+    (rightChamberLaurentMap_injective_truncatedPolynomial K k)
+
+/-- The left realization puts the entire smoothing power into the Laurent coefficient. -/
+@[simp↓]
+theorem leftChamberExponentMap_single (q : exponentMonoid) (c : K) :
+    leftChamberExponentMap K k
+        (truncatedExponentChamberEquiv K k 1 (Ideal.Quotient.mk _ (single q c))) =
+      single (-q.val.1, q.val.2.1) (AdjoinRoot.of _ c * τ ^ leftOrder q) := by
+  rw [leftChamberExponentMap_apply, leftChamberLaurentMap_single]
+  apply (curryAlgEquiv S).injective
+  rw [AlgEquiv.apply_symm_apply, curryAlgEquiv_single]
+  simp [← single_eq_C, -single_eq_C_mul_T]
+
+/-- The right realization puts the entire smoothing power into the Laurent coefficient. -/
+@[simp↓]
+theorem rightChamberExponentMap_single (q : exponentMonoid) (c : K) :
+    rightChamberExponentMap K k
+        (truncatedExponentChamberEquiv K k 0 (Ideal.Quotient.mk _ (single q c))) =
+      single (q.val.1, q.val.2.1) (AdjoinRoot.of _ c * τ ^ rightOrder q) := by
+  rw [rightChamberExponentMap_apply, rightChamberLaurentMap_single]
+  apply (curryAlgEquiv S).injective
+  rw [AlgEquiv.apply_symm_apply, curryAlgEquiv_single]
+  simp [← single_eq_C, -single_eq_C_mul_T]
+
 /-- The inverse slab dictionary preserves every admissible left lift, with
 the whole smoothing coefficient retained in the Laurent input. -/
 theorem algebraEquiv_symm_leftChamberLift (q : {q : ℤ × ℤ × ℤ | q.1 ≤ 0})

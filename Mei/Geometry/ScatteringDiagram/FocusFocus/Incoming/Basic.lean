@@ -18,14 +18,16 @@ The same argument includes the vertical rays of the invariant monomials.
 
 For a nonzero incoming monomial of nonzero spatial degree, the evaluation fiber
 has exactly one decorated ray and its weighted evaluation is that monomial.
-Zero coefficients give empty fibers. The zero spatial degree is excluded from
-these proper rays: the unit is instead a constant incoming section.
+Zero coefficients give empty fibers. Changing coefficients while preserving
+vanishing preserves the actual rays and their incoming tails. The zero spatial
+degree is excluded from these proper rays: the unit is instead a constant incoming section.
 
 The two incoming Laurent coordinates both use normal exponent `|n|`, whereas
 the spatial horizontal exponent is the signed integer `n`. These conventions
 agree with `FocusFocus.SlabBrokenLine` in the opposite chamber. We use
 `FiniteAffineRay.eq_straight_of_nonneg_hyperplane_time` and
-`FiniteAffineRay.eq_straight_of_parallel`. The slab interpretation follows
+`FiniteAffineRay.eq_straight_of_parallel`. Coefficient comparisons use Mathlib’s
+`equivOfSubsingletonOfSubsingleton`. The slab interpretation follows
 Gross–Siebert, *An Invitation to Toric Degenerations*, §2.2–2.3
 (arXiv:0808.2749v2), and Gross–Hacking–Siebert, *Theta functions on varieties
 with effective anti-canonical class*, §3 (arXiv:1601.07081v4).
@@ -137,6 +139,14 @@ theorem isProperMap (β : IncomingSlabBrokenLine c n b Q) (a : ℝ) :
   have hn : (n : ℝ) = 0 := congrArg Prod.fst he
   have hb : (b : ℝ) = 0 := congrArg Prod.snd he
   exact Prod.ext (Int.cast_eq_zero.mp hn) (Int.cast_eq_zero.mp hb)
+
+/-- Changing an incoming coefficient without changing whether it vanishes
+preserves the whole geometric evaluation fiber. -/
+def coefficientEquiv {S : Type*} [Zero S] {d : S} (hcd : c = 0 ↔ d = 0) :
+    IncomingSlabBrokenLine c n b Q ≃ IncomingSlabBrokenLine d n b Q :=
+  equivOfSubsingletonOfSubsingleton
+    (fun β => { β with coefficient_ne_zero := hcd.not.mp β.coefficient_ne_zero })
+    (fun β => { β with coefficient_ne_zero := hcd.not.mpr β.coefficient_ne_zero })
 
 end IncomingSlabBrokenLine
 
