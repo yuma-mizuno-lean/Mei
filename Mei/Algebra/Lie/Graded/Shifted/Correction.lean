@@ -63,25 +63,18 @@ theorem shiftedHomogeneousComponent_completedBCHAction_eq_add_sum
   have hc := congrArg c he
   simp only [Submodule.mkQ_apply, map_sub, map_sum,
     ModuleFiltration.truncatedBCHCorrection_mk] at hc
-  have hzero (n : (d.finite_cutoff k).toFinset) :
-      c (Submodule.Quotient.mk
-        (shiftedInclusion ℳ d.monoid p
-          ⟨n.val, (d.mem_cutoff.mp
-            ((d.finite_cutoff k).mem_toFinset.mp n.property)).1⟩
-          (d.shiftedHomogeneousComponent ℳ p (p + n.val) x))) = 0 := by
-    rw [shiftedQuotientComponent_mk]
-    apply Subtype.ext
-    simp only [coe_shiftedInclusion, ZeroMemClass.coe_zero]
-    apply DirectSum.decompose_of_mem_ne ℳ
-      (d.shiftedHomogeneousComponent ℳ p (p + n.val) x).property
+  have hne (n : (d.finite_cutoff k).toFinset) : p + n.val ≠ q := by
     intro hnq
     have hn := (d.mem_cutoff.mp
       ((d.finite_cutoff k).mem_toFinset.mp n.property)).2
     have heq : q - p = n.val := by rw [← hnq]; abel
     rw [heq] at hq
     omega
-  simp only [hzero, sub_zero] at hc
-  dsimp only [c] at hc
+  have hzero (n : (d.finite_cutoff k).toFinset) :=
+    d.shiftedQuotientComponent_mk_shiftedInclusion_of_ne ℳ p q (k + 1) (by omega)
+      ⟨n.val, (d.mem_cutoff.mp ((d.finite_cutoff k).mem_toFinset.mp n.property)).1⟩
+      (hne n) (d.shiftedHomogeneousComponent ℳ p (p + n.val) x)
+  simp only [c, hzero, sub_zero] at hc
   rw [← d.shiftedHomogeneousComponent_eq ℳ p q (k + 1) (by omega),
     ← d.shiftedHomogeneousComponent_eq ℳ p q (k + 1) (by omega)] at hc
   exact (sub_eq_iff_eq_add.mp hc).trans (add_comm _ _)

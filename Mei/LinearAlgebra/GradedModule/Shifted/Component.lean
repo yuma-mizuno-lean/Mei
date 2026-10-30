@@ -65,6 +65,17 @@ theorem shiftedQuotientComponent_mk (q : Γ) (k : ℕ) (h : d.degree (q - p) ≤
   rw [coe_shiftedPieceToAmbient, coe_decompose_shiftedGrading]
   congr 2 <;> abel_nf
 
+/-- An included homogeneous coefficient has zero quotient component in every other degree. -/
+theorem shiftedQuotientComponent_mk_shiftedInclusion_of_ne (q : Γ) (k : ℕ)
+    (h : d.degree (q - p) ≤ k) (n : d.monoid) (hnq : p + n ≠ q)
+    (x : ℳ (p + n)) :
+    d.shiftedQuotientComponent ℳ p q k h
+      (Submodule.Quotient.mk (shiftedInclusion ℳ d.monoid p n x)) = 0 := by
+  rw [shiftedQuotientComponent_mk]
+  apply Subtype.ext
+  simp only [coe_shiftedInclusion, ZeroMemClass.coe_zero]
+  exact DirectSum.decompose_of_mem_ne ℳ x.property hnq
+
 /-- Lowering the cutoff leaves every retained homogeneous component unchanged. -/
 @[simp]
 theorem shiftedQuotientComponent_transition (q : Γ) {k l : ℕ} (hkl : k ≤ l)

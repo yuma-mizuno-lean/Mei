@@ -68,8 +68,8 @@ theorem truncatedBCHCorrection_mk (k : ℕ) (g : d.truncatedGroup ℒ (k + 1)) (
     F.truncatedBCHCorrection d ℒ k g (Submodule.Quotient.mk m) =
       F.truncatedBCHAction d ℒ (k + 1) g (Submodule.Quotient.mk m) -
         Submodule.Quotient.mk m := by
-  rw [truncatedBCHCorrection, Submodule.liftQ_apply]
-  rfl
+  simp only [truncatedBCHCorrection, Submodule.liftQ_apply, LinearMap.comp_apply,
+    LinearMap.sub_apply, LinearEquiv.coe_coe, LinearMap.id_apply, Submodule.mkQ_apply]
 
 /-- Every finite BCH action is the input plus a correction determined one order
 earlier. -/
@@ -141,11 +141,8 @@ theorem projection_completedBCHAction_sub (g : d.completedBCHGroup ℒ)
     F.projection (k + 1) (F.completedBCHAction d ℒ g a - a) =
       F.truncatedBCHCorrection d ℒ k (CompletedGroup.projection (k + 1) g)
         (F.projection k a) := by
-  let gk : d.truncatedGroup ℒ (k + 1) := CompletedGroup.projection (k + 1) g
-  have he := F.truncatedBCHAction_eq_add_correction d ℒ k gk (F.projection (k + 1) a)
-  rw [map_sub, projection_completedBCHAction]
-  exact (congrArg (fun x => x - F.projection (k + 1) a) he).trans (by
-    simp only [transition_projection, add_sub_cancel_left]
-    rfl)
+  simp only [map_sub, projection_completedBCHAction,
+    F.truncatedBCHAction_eq_add_correction d ℒ k (CompletedGroup.projection (k + 1) g),
+    transition_projection, add_sub_cancel_left]
 
 end Mei.ModuleFiltration
