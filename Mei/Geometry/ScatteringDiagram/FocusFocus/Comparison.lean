@@ -6,7 +6,6 @@ Authors: Codex
 module
 
 public import Mei.Geometry.ScatteringDiagram.FocusFocus.ChamberTransfer
-public import Mei.RingTheory.Node.Tangential
 public import Mei.LinearAlgebra.GradedCorrespondence.Hom
 public import Mei.LinearAlgebra.GradedCorrespondence.RestrictScalars
 
