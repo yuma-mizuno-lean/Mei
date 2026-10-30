@@ -179,6 +179,21 @@ theorem commute_label [Module.Free ℤ N] [IsAbelianRays d ℒ]
     (D E : KSComplex s d ℒ C k) (P : C.walls) : Commute (D.label P) (E.label P) :=
   D.commute_of_mem_bchSubgroup P (D.label_mem P) (E.label_mem P)
 
+/-- With abelian rays, wall labels of a KS complex commute when their walls have the same
+affine span. -/
+theorem commute_label_of_affineSpan_eq [Module.Free ℤ N] [IsAbelianRays d ℒ]
+    (P P' : C.walls) (hPP' : affineSpan ℝ (P : Set V) = affineSpan ℝ (P' : Set V)) :
+    Commute (D.label P) (D.label P') := by
+  obtain ⟨w, hw⟩ := d.exists_supportedRay (D.degree_mem P) (D.degree_ne_zero P)
+  obtain ⟨w', hw'⟩ := d.exists_supportedRay (D.degree_mem P') (D.degree_ne_zero P')
+  obtain rfl : w = w' := s.eq_of_mem_rayDegrees_of_ker_normal_le hw hw'
+    (by rw [D.ker_normal P, D.ker_normal P', hPP'])
+  have hg := D.label_mem_bchSubgroup_rayLieSubalgebra P hw
+  have hg' := D.label_mem_bchSubgroup_rayLieSubalgebra P' hw'
+  rw [LieSubalgebra.mem_bchSubgroup] at hg hg'
+  exact BCHGroup.commute_of_lie_log_eq_zero _ _
+    (lie_eq_zero_of_mem_rayLieSubalgebra (d.truncatedGrading ℒ k) hg hg')
+
 end KSComplex
 
 end Mei

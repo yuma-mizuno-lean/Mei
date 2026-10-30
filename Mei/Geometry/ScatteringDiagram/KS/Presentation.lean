@@ -264,31 +264,12 @@ theorem toKSComplex_degree_mem_rayDegrees (k : ℕ) (Q : (D.levelComplex k).wall
     (D.toKSComplex k).degree Q ∈ (D.wallRay Q).rayDegrees :=
   (D.wallRay Q).rayDegrees_nonempty.some_mem
 
-/-- Walls of the order-`k` complex with the same affine span have commuting labels. -/
-theorem commute_toKSComplex_label (k : ℕ) (Q Q' : (D.levelComplex k).walls)
-    (hQQ' : affineSpan ℝ (Q : Set V) = affineSpan ℝ (Q' : Set V)) :
-    Commute ((D.toKSComplex k).label Q) ((D.toKSComplex k).label Q') := by
-  obtain ⟨j, hj⟩ := D.exists_subset_support_of_mem_levelComplex_walls Q.property
-  obtain ⟨j', hj'⟩ := D.exists_subset_support_of_mem_levelComplex_walls Q'.property
-  have hray : D.wallRay Q = D.wallRay Q' := by
-    rw [D.wallRay_eq Q hj, D.wallRay_eq Q' hj']
-    exact (D.wall j).ray_eq_of_affineSpan_eq (D.wall j')
-      ((D.affineSpan_eq_of_subset Q.property j hj).symm.trans
-        (hQQ'.trans (D.affineSpan_eq_of_subset Q'.property j' hj')))
-  have hg := (D.toKSComplex k).label_mem_bchSubgroup_rayLieSubalgebra Q
-    (D.toKSComplex_degree_mem_rayDegrees k Q)
-  have hg' := (D.toKSComplex k).label_mem_bchSubgroup_rayLieSubalgebra Q'
-    (D.toKSComplex_degree_mem_rayDegrees k Q')
-  rw [← hray, LieSubalgebra.mem_bchSubgroup] at hg'
-  rw [LieSubalgebra.mem_bchSubgroup] at hg
-  exact BCHGroup.commute_of_lie_log_eq_zero _ _
-    (lie_eq_zero_of_mem_rayLieSubalgebra (d.truncatedGrading ℒ k) hg hg')
-
 private theorem commute_toFiniteWallDiagram_label (k : ℕ) (Q Q' : (D.levelComplex k).walls)
     (hQQ' : affineSpan ℝ (Q : Set V) = affineSpan ℝ (Q' : Set V)) :
     Commute ((D.toKSComplex k).toFiniteWallDiagram.label Q)
       ((D.toKSComplex k).toFiniteWallDiagram.label Q') := by
-  simpa only [KSComplex.toFiniteWallDiagram_label] using D.commute_toKSComplex_label k Q Q' hQQ'
+  simpa only [KSComplex.toFiniteWallDiagram_label] using
+    (D.toKSComplex k).commute_label_of_affineSpan_eq Q Q' hQQ'
 
 /-- An active indexed wall containing a wall of the order-`k` complex is crossed with the sign
 of that wall's coorientation. -/
