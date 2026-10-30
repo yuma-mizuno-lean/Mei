@@ -216,7 +216,9 @@ theorem coe_principalBLMExtensionCoefficientExponent_letter
     coe_principalBLMExtensionCoefficientLetter, PositiveDegrees.letter_fst] using
     B.principalBLMExtensionLift_letter ℓ α
 
-private theorem map_principalBLMExtensionCoefficientMonoid_le :
+/-- The principal degree map sends every allowed coefficient exponent to the
+original principal coefficient monoid. -/
+theorem map_principalBLMExtensionCoefficientMonoid_le :
     (P).map (B.principalBLMExtensionDegreeMap ℓ).toAddMonoidHom ≤ Q := by
   rintro _ ⟨q, hq, rfl⟩
   simpa only [coe_principalBLMExtensionCoefficientExponent,
@@ -227,9 +229,19 @@ section Semiring
 
 variable (R : Type*) [CommSemiring R]
 
-private def extensionWeight : Multiplicative P →* MvPolynomial E R :=
+/-- The independent polynomial weight restricted to the extension coefficient monoid. -/
+def principalBLMExtensionCoefficientWeight : Multiplicative P →* MvPolynomial E R :=
   ((B.principalBLMExtension ℓ).coefficientWeight R).comp
     (AddSubmonoid.inclusion (B.principalBLMExtensionCoefficientMonoid_le ℓ)).toMultiplicative
+
+@[simp]
+theorem principalBLMExtensionCoefficientWeight_apply (q : P) :
+    B.principalBLMExtensionCoefficientWeight ℓ R (.ofAdd q) =
+      MvPolynomial.monomial
+        ((B.principalBLMExtension ℓ).coefficientMultiplicity
+          (AddSubmonoid.inclusion (B.principalBLMExtensionCoefficientMonoid_le ℓ) q))
+        (1 : R) := by
+  simp [principalBLMExtensionCoefficientWeight]
 
 /-- Substitute the independent variables into the original principal
 coefficient algebra; the polynomial weights need not be units. -/
@@ -237,7 +249,7 @@ def principalBLMExtensionCoefficientMap : R[P] →ₐ[R] (MvPolynomial E R)[Q] :
   (AlgHom.restrictScalars R (mapDomainAlgHom (MvPolynomial E R) (MvPolynomial E R)
     ((AddSubmonoid.inclusion (B.map_principalBLMExtensionCoefficientMonoid_le ℓ)).comp
       ((B.principalBLMExtensionDegreeMap ℓ).toAddMonoidHom.addSubmonoidMap P)))).comp
-    (AddMonoidAlgebra.coefficientTwist R (B.extensionWeight ℓ R))
+    (AddMonoidAlgebra.coefficientTwist R (B.principalBLMExtensionCoefficientWeight ℓ R))
 
 /-- Each monomial keeps its full polynomial weight before exponents merge. -/
 @[simp]
@@ -250,7 +262,8 @@ theorem principalBLMExtensionCoefficientMap_single (q : P) (r : R) :
   simp only [principalBLMExtensionCoefficientMap, AlgHom.comp_apply,
     AddMonoidAlgebra.coefficientTwist_single, AlgHom.restrictScalars_apply,
     mapDomainAlgHom_apply, mapDomain_single,
-    extensionWeight, MonoidHom.comp_apply, AddMonoidHom.coe_toMultiplicative, Function.comp_apply,
+    principalBLMExtensionCoefficientWeight, MonoidHom.comp_apply,
+    AddMonoidHom.coe_toMultiplicative, Function.comp_apply,
     BLMPolynomialInput.coefficientWeight_apply]
   congr 1
   apply Subtype.ext
@@ -304,8 +317,9 @@ theorem filtration_ideal_le_comap_principalBLMExtensionCoefficientMap (k : ℕ) 
   simpa only [principalBLMExtensionDegreeMap_modulus, principalBLMExtensionCoefficientMap] using
     LogarithmicVectorField.filtration_ideal_le_comap_coefficientDegreeMap
       d P (Algebra.ofId R (MvPolynomial E R))
-      (B.extensionWeight ℓ R) (AddMonoidAlgebra.coefficientTwist R (B.extensionWeight ℓ R))
-      (AddMonoidAlgebra.coefficientTwist_single R (B.extensionWeight ℓ R))
+      (B.principalBLMExtensionCoefficientWeight ℓ R)
+      (AddMonoidAlgebra.coefficientTwist R (B.principalBLMExtensionCoefficientWeight ℓ R))
+      (AddMonoidAlgebra.coefficientTwist_single R (B.principalBLMExtensionCoefficientWeight ℓ R))
       (B.principalBLMExtensionDegreeMap ℓ) (B.map_principalBLMExtensionCoefficientMonoid_le ℓ) k
 
 end Semiring
@@ -323,6 +337,12 @@ the identity cutoff modulus. -/
 def principalBLMExtensionCompletionMap : (F).completion →ₐ[R] (G).completion :=
   (F).mapCompletionₐ G (B.principalBLMExtensionCoefficientMap ℓ R) id monotone_id
     (B.filtration_ideal_le_comap_principalBLMExtensionCoefficientMap ℓ R)
+
+/-- The completed substitution is the filtered extension of the polynomial map. -/
+theorem principalBLMExtensionCompletionMap_def :
+    B.principalBLMExtensionCompletionMap ℓ (R := R) =
+      (F).mapCompletionₐ G (B.principalBLMExtensionCoefficientMap ℓ R) id monotone_id
+        (B.filtration_ideal_le_comap_principalBLMExtensionCoefficientMap ℓ R) := (rfl)
 
 /-- Every finite projection is the same-order quotient substitution. -/
 @[simp]
