@@ -192,6 +192,23 @@ theorem normal_eq_of_decompose_truncatedExpLieAction_ne_zero
 
 variable [LieAlgebra ℚ L] [IsScalarTower ℚ R L]
 
+/-- A surviving homogeneous component of a finite BCH wall action preserves
+normal degree. The coefficient grading is any inherited quotient grading, and
+the input may be an arbitrary homogeneous quotient class. -/
+theorem normal_eq_of_decompose_truncatedBCHAction_ne_zero
+    {w : SupportedRay d} {m : Λ →+ ℤ} {k : ℕ} {g : d.truncatedGroup ℒ k}
+    (hg : BCHGroup.log g ∈ H.truncatedRayLieSubalgebra w m k)
+    (𝓝 : Γ → Submodule R (F.quotient k)) [DirectSum.Decomposition 𝓝]
+    (h𝓝 : ∀ n, 𝓝 n = (𝒜 n).map (F.submodule (k + 1)).mkQ)
+    {p q : Γ} {a : F.quotient k} (ha : a ∈ 𝓝 p)
+    (hq : DirectSum.decompose 𝓝 (F.truncatedBCHAction d ℒ k g a) q ≠ 0) :
+    m (ρ q) = m (ρ p) := by
+  obtain ⟨b, hb, rfl⟩ := (Submodule.mem_map.mp (h𝓝 p ▸ ha))
+  have he : 𝓝 = fun n => (𝒜 n).map (F.submodule (k + 1)).mkQ := funext h𝓝
+  subst 𝓝
+  rw [ModuleFiltration.truncatedBCHAction_apply] at hq
+  exact H.normal_eq_of_decompose_truncatedExpLieAction_ne_zero 𝒜 F hg hb hq
+
 /-- A completed wall label preserves and reflects normal degree at every finite
 projection, for arbitrary completed inputs rather than only original coefficients. -/
 theorem projection_completedBCHAction_mem_normalDegreeSubmodule_iff
