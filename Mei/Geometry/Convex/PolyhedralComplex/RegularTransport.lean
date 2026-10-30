@@ -205,7 +205,8 @@ theorem exists_ball_crossingWord_loop_eq_one (C : FinitePolyhedralComplex h)
   refine ⟨r, hr, fun y p hp => ?_⟩
   -- Compare with the constant loop at the base point.
   refine (hword y y p .nil hp fun w hw => ?_).trans (Quiver.Path.crossingWord_nil ν)
-  rw [show w = y by simpa using hw]
+  simp only [Quiver.Path.vertices_nil, List.mem_singleton] at hw
+  subst w
   exact hp _ p.start_mem_vertices
 
 end Mei.FinitePolyhedralComplex
