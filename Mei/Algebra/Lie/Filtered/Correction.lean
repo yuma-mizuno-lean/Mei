@@ -21,9 +21,6 @@ On the completion, every BCH correction raises coefficient order by at least one
 Thus two inputs agreeing below order `b` have corrections agreeing through order
 `b`. These statements provide the algebraic triangularity used in degree
 recursions for transported coefficients.
-
-We use the existing finite BCH representation, quotient lifting, and
-`Module.End.exp_apply_eq_self` for vectors killed by the finite Lie action.
 -/
 
 public noncomputable section
@@ -75,7 +72,7 @@ theorem truncatedBCHCorrection_mk (k : ℕ) (g : d.truncatedGroup ℒ (k + 1)) (
   rfl
 
 /-- Every finite BCH action is the input plus a correction determined one order
-earlier. This includes changes of degree with zero spatial projection. -/
+earlier. -/
 theorem truncatedBCHAction_eq_add_correction (k : ℕ)
     (g : d.truncatedGroup ℒ (k + 1)) (a : F.quotient (k + 1)) :
     F.truncatedBCHAction d ℒ (k + 1) g a =
