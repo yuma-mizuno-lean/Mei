@@ -68,21 +68,6 @@ theorem coe_decompose [DecidableEq ι] [DirectSum.Decomposition ℳ] (x : M) (i 
     · rw [DirectSum.decompose_of_mem_ne ℳ hx h]
       simp [Module.Basis.repr_self, h]
 
-/-- A degree tail discards exactly the basis coordinates below its bound. -/
-theorem mem_degreeTail_iff [DecidableEq ι] [DirectSum.Decomposition ℳ]
-    (d : ι → ℤ) (k : ℕ) (x : M) :
-    x ∈ Mei.DirectSum.degreeTail ℳ d k ↔ ∀ i, d i < k → P.basis.repr x i = 0 := by
-  rw [Mei.DirectSum.mem_degreeTail_iff]
-  apply forall_congr'
-  intro i
-  rw [P.coe_decompose]
-  refine imp_congr_right fun _ => ?_
-  constructor
-  · intro h
-    exact P.basis.linearIndependent.smul_left_injective i (by simpa using h)
-  · intro h
-    simp [h]
-
 include P in
 /-- The monomial pieces form an internal direct sum. -/
 theorem isInternal [DecidableEq ι] : DirectSum.IsInternal ℳ := by
@@ -104,6 +89,23 @@ theorem isInternal [DecidableEq ι] : DirectSum.IsInternal ℳ := by
     simp [f]
   let := DirectSum.Decomposition.ofLinearMap ℳ f hl hr
   exact DirectSum.Decomposition.isInternal ℳ
+
+/-- A degree tail discards exactly the basis coordinates below its bound. -/
+theorem mem_degreeTail_iff
+    (d : ι → ℤ) (k : ℕ) (x : M) :
+    x ∈ Mei.DirectSum.degreeTail ℳ d k ↔ ∀ i, d i < k → P.basis.repr x i = 0 := by
+  classical
+  let := P.isInternal.chooseDecomposition
+  rw [Mei.DirectSum.mem_degreeTail_iff]
+  apply forall_congr'
+  intro i
+  rw [P.coe_decompose]
+  refine imp_congr_right fun _ => ?_
+  constructor
+  · intro h
+    exact P.basis.linearIndependent.smul_left_injective i (by simpa using h)
+  · intro h
+    simp [h]
 
 end MonomialPresentation
 
@@ -140,7 +142,7 @@ theorem quotient_repr_mk (U : Submodule R M) (s : Set ι)
 
 /-- The monomial presentation of a quotient retaining degrees at most `k`.
 Only the surviving degrees index its basis. -/
-def degreeQuotient [DecidableEq ι] [DirectSum.Decomposition ℳ]
+def degreeQuotient
     (d : ι → ℤ) (k : ℕ) :
     MonomialPresentation (fun i : {i // d i ≤ k} =>
       (ℳ i).map (Mei.DirectSum.degreeTail ℳ d (k + 1)).mkQ) :=
@@ -152,7 +154,7 @@ def degreeQuotient [DecidableEq ι] [DirectSum.Decomposition ℳ]
 
 /-- Every retained monomial is the quotient class of the original monomial. -/
 @[simp]
-theorem degreeQuotient_basis [DecidableEq ι] [DirectSum.Decomposition ℳ]
+theorem degreeQuotient_basis
     (d : ι → ℤ) (k : ℕ) (i : {i // d i ≤ k}) :
     (P.degreeQuotient d k).basis i = Submodule.Quotient.mk (P.basis i) := by
   unfold degreeQuotient
@@ -161,7 +163,7 @@ theorem degreeQuotient_basis [DecidableEq ι] [DirectSum.Decomposition ℳ]
 
 /-- Taking coordinates commutes with a degree truncation on every retained degree. -/
 @[simp]
-theorem degreeQuotient_repr_mk [DecidableEq ι] [DirectSum.Decomposition ℳ]
+theorem degreeQuotient_repr_mk
     (d : ι → ℤ) (k : ℕ) (x : M) (i : {i // d i ≤ k}) :
     (P.degreeQuotient d k).basis.repr (Submodule.Quotient.mk x) i = P.basis.repr x i := by
   unfold degreeQuotient
