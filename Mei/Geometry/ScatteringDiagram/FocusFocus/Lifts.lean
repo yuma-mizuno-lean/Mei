@@ -19,6 +19,8 @@ lift through powers of `Y`. These are linear maps on whole homogeneous pieces,
 including the zero pieces. Their source projections are the identity, and their
 opposite projections define a graded correspondence on the actual truncated
 chambers, rather than only on their Laurent realizations.
+The realizations retain normal and tangential exponents, with smoothing powers
+absorbed into the truncated scalar coefficients.
 
 The construction uses `NodeAlgebra.incomingLift`, the faithful chamber Laurent
 maps, `truncatedExponentChamberGrade`, and the fiber-product comparison
@@ -68,33 +70,55 @@ private theorem rightLaurent_single (q : exponentMonoid) (c : K) :
   congr 1
   omega
 
+/-- The left Laurent realization retains normal and tangential exponents;
+the smoothing power becomes part of its coefficient in the truncated scalar ring. -/
+theorem leftChamberLaurentMap_mem_exponentGrade (q : ℤ × ℤ × ℤ)
+    (x : TruncatedExponentChamber K k 1)
+    (hx : x ∈ truncatedExponentChamberGrade K k 1 q) :
+    (curryAlgEquiv S).symm (leftChamberLaurentMap (C_root_X_pow_pow K (k + 1)) x) ∈
+      grade S (-q.1, q.2.1) := by
+  by_cases hq : q ∈ exponentMonoid
+  · obtain ⟨c, rfl⟩ := (mem_truncatedExponentChamberGrade_iff_exists K k 1 ⟨q, hq⟩ x).mp hx
+    rw [leftLaurent_single]
+    simp only [← single_eq_C, single_pow, single_mul_single, nsmul_zero, add_zero]
+    rw [← curryAlgEquiv_single (R := S), AlgEquiv.symm_apply_apply]
+    exact single_mem_grade _ _
+  · have hx' : x = 0 := by
+      simpa only [truncatedExponentChamberGrade_eq_bot_of_notMem K k 1 q hq,
+        Submodule.mem_bot] using hx
+    simp only [hx', map_zero, Submodule.zero_mem]
+
+/-- The right realization retains the two Laurent exponents and absorbs the
+smoothing power in the coefficient ring. -/
+theorem rightChamberLaurentMap_mem_exponentGrade (q : ℤ × ℤ × ℤ)
+    (x : TruncatedExponentChamber K k 0)
+    (hx : x ∈ truncatedExponentChamberGrade K k 0 q) :
+    (curryAlgEquiv S).symm (rightChamberLaurentMap (C_root_X_pow_pow K (k + 1)) x) ∈
+      grade S (q.1, q.2.1) := by
+  by_cases hq : q ∈ exponentMonoid
+  · obtain ⟨c, rfl⟩ := (mem_truncatedExponentChamberGrade_iff_exists K k 0 ⟨q, hq⟩ x).mp hx
+    rw [rightLaurent_single]
+    simp only [← single_eq_C, single_pow, single_mul_single, nsmul_zero, add_zero]
+    rw [← curryAlgEquiv_single (R := S), AlgEquiv.symm_apply_apply]
+    exact single_mem_grade _ _
+  · have hx' : x = 0 := by
+      simpa only [truncatedExponentChamberGrade_eq_bot_of_notMem K k 0 q hq,
+        Submodule.mem_bot] using hx
+    simp only [hx', map_zero, Submodule.zero_mem]
+
 private theorem leftLaurent_mem_grade (q : ℤ × ℤ × ℤ)
     (u : truncatedExponentChamberGrade K k 1 q) :
     leftChamberLaurentMap (C_root_X_pow_pow K (k + 1)) u.val ∈ grade S[T;T⁻¹] (-q.1) := by
-  by_cases hq : q ∈ exponentMonoid
-  · obtain ⟨c, hc⟩ := (mem_truncatedExponentChamberGrade_iff_exists K k 1 ⟨q, hq⟩ u.val).mp
-      u.property
-    rw [← hc, leftLaurent_single]
-    exact single_mem_grade _ _
-  · have hu : u.val = 0 := by
-      simpa only [truncatedExponentChamberGrade_eq_bot_of_notMem K k 1 q hq,
-        Submodule.mem_bot] using u.property
-    rw [hu, map_zero]
-    exact zero_mem _
+  simpa only [AlgEquiv.apply_symm_apply] using
+    curryAlgEquiv_mem_grade (-q.1, q.2.1) _
+      (leftChamberLaurentMap_mem_exponentGrade K k q u.val u.property)
 
 private theorem rightLaurent_mem_grade (q : ℤ × ℤ × ℤ)
     (u : truncatedExponentChamberGrade K k 0 q) :
     rightChamberLaurentMap (C_root_X_pow_pow K (k + 1)) u.val ∈ grade S[T;T⁻¹] q.1 := by
-  by_cases hq : q ∈ exponentMonoid
-  · obtain ⟨c, hc⟩ := (mem_truncatedExponentChamberGrade_iff_exists K k 0 ⟨q, hq⟩ u.val).mp
-      u.property
-    rw [← hc, rightLaurent_single]
-    exact single_mem_grade _ _
-  · have hu : u.val = 0 := by
-      simpa only [truncatedExponentChamberGrade_eq_bot_of_notMem K k 0 q hq,
-        Submodule.mem_bot] using u.property
-    rw [hu, map_zero]
-    exact zero_mem _
+  simpa only [AlgEquiv.apply_symm_apply] using
+    curryAlgEquiv_mem_grade (q.1, q.2.1) _
+      (rightChamberLaurentMap_mem_exponentGrade K k q u.val u.property)
 
 private def leftGradeToLaurent (q : ℤ × ℤ × ℤ) :
     truncatedExponentChamberGrade K k 1 q →ₗ[K]
