@@ -1,11 +1,12 @@
 /-
 Copyright (c) 2026 Mei contributors. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Claude
+Authors: Claude, Codex
 -/
 module
 
 public import Mei.Algebra.Lie.BCH.Coordinates
+public import Mei.Algebra.PositiveDegrees.Naturality
 public import Mei.Data.Finset.NoncommProd
 
 /-!
@@ -23,7 +24,13 @@ label at every order are its coefficients.
 
 This splits a label whose logarithm is supported on an abelian family of degrees, such
 as a supported ray with abelian ray Lie algebra, into labels of pure degree. The
-coefficients are `Mei.PositiveDegrees.completionComponent` of the exponential
+splitting commutes with degree-preserving coefficient maps and injective regradings.
+For noninjective regradings, logarithmic coefficients instead add over degree fibers.
+These comparisons use `PositiveDegrees.completionComponent_completionMap_eq_sum`
+and `PositiveDegrees.completionComponent_completionMap_of_injective` through
+`GradedLieHom.completedBCHExp_symm_completedMap`.
+
+The coefficients are `Mei.PositiveDegrees.completionComponent` of the exponential
 coordinate `Mei.PositiveDegrees.completedBCHExp`; the finite products are Mathlib's
 `Finset.noncommProd`, related to finite sums by `Mei.BCHGroup.exp_sum_of_lie_eq_zero`.
 -/
@@ -279,3 +286,84 @@ theorem logComponent_eq_of_projection_eq_noncommProd {g : d.completedBCHGroup �
     exact (h0 _).trans (h0 _).symm
 
 end Mei.PositiveDegrees
+
+namespace Mei.GradedLieHom
+
+universe u
+
+variable {N M R : Type*} {L L' : Type u} [AddCommMonoid N] [AddCommMonoid M]
+  [CommRing R] [Algebra ℚ R]
+  [LieRing L] [LieAlgebra R L] [LieAlgebra ℚ L] [IsScalarTower ℚ R L]
+  [LieRing L'] [LieAlgebra R L'] [LieAlgebra ℚ L'] [IsScalarTower ℚ R L']
+  [DecidableEq N] [DecidableEq M]
+  {d : PositiveDegrees N} {e : PositiveDegrees M}
+  {ℒ : N → Submodule R L} {ℳ : M → Submodule R L'}
+  [GradedLieAlgebra ℒ] [GradedLieAlgebra ℳ]
+  [IsPositiveGrading d ℒ] [IsPositiveGrading e ℳ]
+  {T : PositiveDegreeMap d e}
+
+local notation "F" => LieIdeal.completionFiltration (d.degreeIdeal ℒ) (d.degreeIdeal_antitone ℒ)
+local notation "G" => LieIdeal.completionFiltration (e.degreeIdeal ℳ) (e.degreeIdeal_antitone ℳ)
+
+open Classical in
+/-- Under an arbitrary regrading, a target logarithmic coefficient is the finite
+sum of the images of the source coefficients in its degree fiber. The source
+cutoff is prescribed by the original modulus. -/
+theorem logComponent_completedMap_eq_sum (f : GradedLieHom T ℒ ℳ)
+    (g : d.completedBCHGroup ℒ) (m : M) (k : ℕ) (hm : e.degree m ≤ k) :
+    (e.logComponent ℳ (f.completedMap g) m : L') =
+      ∑ n ∈ (d.finite_cutoff (T.modulus k)).toFinset with T n = m,
+        f (d.logComponent ℒ g n : L) := by
+  simp only [PositiveDegrees.logComponent, f.completedBCHExp_symm_completedMap]
+  exact d.completionComponent_completionMap_eq_sum e ℒ ℳ F G
+    (fun k => d.degreeIdeal_toSubmodule ℒ k) (fun k => e.degreeIdeal_toSubmodule ℳ k)
+    f.toLieHom.toLinearMap T (fun _ _ hx => f.map_mem hx) T.modulus T.monotone_modulus
+    (fun k _ hx => f.map_mem_degreeIdeal k hx)
+    (fun n hn => IsPositiveGrading.eq_bot n (Or.inl hn)) m k hm _
+
+/-- An injective regrading carries each logarithmic coefficient to its image
+coefficient. No injectivity of the Lie homomorphism is required. -/
+theorem logComponent_completedMap_of_injective (f : GradedLieHom T ℒ ℳ)
+    (hT : Function.Injective T) (g : d.completedBCHGroup ℒ) (n : N) :
+    (e.logComponent ℳ (f.completedMap g) (T n) : L') =
+      f (d.logComponent ℒ g n : L) := by
+  simp only [PositiveDegrees.logComponent, f.completedBCHExp_symm_completedMap]
+  exact d.completionComponent_completionMap_of_injective e ℒ ℳ F G
+    (fun k => d.degreeIdeal_toSubmodule ℒ k) (fun k => e.degreeIdeal_toSubmodule ℳ k)
+    f.toLieHom.toLinearMap T (fun _ _ hx => f.map_mem hx) T.modulus T.monotone_modulus
+    (fun k _ hx => f.map_mem_degreeIdeal k hx) hT n _
+
+/-- Homogeneous splitting commutes with completed maps along injective degree
+maps, with the homogeneous factor reindexed by the image degree. -/
+theorem completedMap_homogeneousFactor_of_injective (f : GradedLieHom T ℒ ℳ)
+    (hT : Function.Injective T) (g : d.completedBCHGroup ℒ) (n : N) :
+    f.completedMap (d.homogeneousFactor ℒ g n) =
+      e.homogeneousFactor ℳ (f.completedMap g) (T n) := by
+  simp only [PositiveDegrees.homogeneousFactor_def, completedMap_expToCompletion,
+    f.logComponent_completedMap_of_injective hT]
+
+variable {𝓝 : N → Submodule R L'} [GradedLieAlgebra 𝓝] [IsPositiveGrading d 𝓝]
+
+/-- A degree-preserving coefficient map commutes with logarithmic coefficients,
+including coefficients killed by specialization. -/
+@[simp]
+theorem logComponent_completedMap (f : GradedLieHom (PositiveDegreeMap.id d) ℒ 𝓝)
+    (g : d.completedBCHGroup ℒ) (n : N) :
+    (d.logComponent 𝓝 (f.completedMap g) n : L') = f (d.logComponent ℒ g n : L) := by
+  have hid : (PositiveDegreeMap.id d).toAddMonoidHom n = n := PositiveDegreeMap.id_apply n
+  exact (congrArg (fun m => (d.logComponent 𝓝 (f.completedMap g) m : L')) hid).symm.trans
+    (f.logComponent_completedMap_of_injective
+      (fun _ _ h => by simpa only [PositiveDegreeMap.id_apply] using h) g n)
+
+/-- Homogeneous factors commute with degree-preserving coefficient maps. -/
+@[simp]
+theorem completedMap_homogeneousFactor
+    (f : GradedLieHom (PositiveDegreeMap.id d) ℒ 𝓝)
+    (g : d.completedBCHGroup ℒ) (n : N) :
+    f.completedMap (d.homogeneousFactor ℒ g n) =
+      d.homogeneousFactor 𝓝 (f.completedMap g) n := by
+  have hid : (PositiveDegreeMap.id d).toAddMonoidHom n = n := PositiveDegreeMap.id_apply n
+  simpa only [hid] using f.completedMap_homogeneousFactor_of_injective
+    (fun _ _ h => by simpa only [PositiveDegreeMap.id_apply] using h) g n
+
+end Mei.GradedLieHom
