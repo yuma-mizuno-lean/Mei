@@ -25,8 +25,9 @@ domains. For lattice directions and rational-normal obstacles and sources, one
 finite exceptional arrangement makes these actual decorated fibers, and hence
 their weighted evaluations, locally constant.
 
-This combines `homogeneousHistory` and its finite support with
-`Convex.AdmissibleRayRealization` and the rational semilinear domain theorem.
+This combines `homogeneousHistory` and its finite support with the
+`Convex.AdmissibleRayRealization` family indexed by contributing histories, via
+`Convex.admissibleRayFiberEquiv` and `Convex.exists_admissibleRayFiber_membershipArrangement`.
 The geometric and whole-component conventions follow Carl–Pumperla–Siebert,
 *A tropical view on Landau–Ginzburg models*, §4 (arXiv:2205.07753v2), and
 Gross–Hacking–Keel–Kontsevich, *Canonical bases for cluster algebras*,
@@ -87,27 +88,53 @@ theorem ext {r s : HomogeneousRayRealization ℳ T p₀ a v f c P W S C Q}
 
 end HomogeneousRayRealization
 
+/-- Actual decorated rays are the admissible realization family indexed by
+contributing histories, with constant encounter data and history-dependent directions. -/
+def homogeneousRayRealizationEquivSigma (Q : V) :
+    HomogeneousRayRealization ℳ T p₀ a v f c P W S C Q ≃
+      Σ p : {p // p ∈ homogeneousHistorySupport ℳ T (a : M)},
+        Convex.AdmissibleRayRealization f c
+          (Fin.snoc (fun j => v (p.val j)) (v p₀)) P W S C Q where
+  toFun r := ⟨⟨r.history, (mem_homogeneousHistorySupport ..).mpr r.nonzero⟩, r.realization⟩
+  invFun p := ⟨p.1.val, (mem_homogeneousHistorySupport ..).mp p.1.property, p.2⟩
+  left_inv _ := rfl
+  right_inv _ := rfl
+
+/-- The family index of a decorated ray is its degree history. -/
+@[simp]
+theorem homogeneousRayRealizationEquivSigma_apply_fst (Q : V)
+    (r : HomogeneousRayRealization ℳ T p₀ a v f c P W S C Q) :
+    (homogeneousRayRealizationEquivSigma ℳ T p₀ a v f c P W S C Q r).1.val = r.history :=
+  (rfl)
+
+/-- Recovering a decorated ray from a family member keeps its history index. -/
+@[simp]
+theorem homogeneousRayRealizationEquivSigma_symm_history (Q : V)
+    (p : Σ p : {p // p ∈ homogeneousHistorySupport ℳ T (a : M)},
+      Convex.AdmissibleRayRealization f c
+        (Fin.snoc (fun j => v (p.val j)) (v p₀)) P W S C Q) :
+    ((homogeneousRayRealizationEquivSigma ℳ T p₀ a v f c P W S C Q).symm p).history =
+      p.1.val := (rfl)
+
 /-- The finite contributing histories admitted by the full geometric endpoint
 domain. There is no genericity restriction. -/
 def homogeneousRayFiberEquiv (Q : V) :
     HomogeneousRayRealization ℳ T p₀ a v f c P W S C Q ≃
       {p : {p // p ∈ homogeneousHistorySupport ℳ T (a : M)} //
         Q ∈ Convex.admissibleBackwardDomain f c
-          (Fin.snoc (fun j => v (p.val j)) (v p₀)) P W S C} where
-  toFun r := ⟨⟨r.history, (mem_homogeneousHistorySupport ..).mpr r.nonzero⟩,
-    r.realization.mem_admissibleBackwardDomain⟩
-  invFun p := {
-    history := p.val.val
-    nonzero := (mem_homogeneousHistorySupport ..).mp p.val.property
-    realization := Convex.admissibleRayRealization _ _ _ _ _ _ _ _ p.property }
-  left_inv _ := HomogeneousRayRealization.ext rfl
-  right_inv _ := rfl
+          (Fin.snoc (fun j => v (p.val j)) (v p₀)) P W S C} :=
+  (homogeneousRayRealizationEquivSigma ℳ T p₀ a v f c P W S C Q).trans
+    (Convex.admissibleRayFiberEquiv W S Q (fun _ => n) (fun _ => f) (fun _ => c)
+      (fun p : {p // p ∈ homogeneousHistorySupport ℳ T (a : M)} =>
+        Fin.snoc (fun j => v (p.val j)) (v p₀)) (fun _ => P) (fun _ => C))
 
 /-- The endpoint-domain parameterization retains the entire degree history. -/
 @[simp]
 theorem homogeneousRayFiberEquiv_apply_val (Q : V)
     (r : HomogeneousRayRealization ℳ T p₀ a v f c P W S C Q) :
-    (homogeneousRayFiberEquiv ℳ T p₀ a v f c P W S C Q r).val.val = r.history := (rfl)
+    (homogeneousRayFiberEquiv ℳ T p₀ a v f c P W S C Q r).val.val = r.history := by
+  rw [homogeneousRayFiberEquiv, Equiv.trans_apply, Convex.admissibleRayFiberEquiv_apply_val]
+  rfl
 
 /-- Recovering an actual ray from an admitted history retains its degree history. -/
 @[simp]
@@ -115,8 +142,9 @@ theorem homogeneousRayFiberEquiv_symm_history (Q : V)
     (p : {p : {p // p ∈ homogeneousHistorySupport ℳ T (a : M)} //
       Q ∈ Convex.admissibleBackwardDomain f c
         (Fin.snoc (fun j => v (p.val j)) (v p₀)) P W S C}) :
-    ((homogeneousRayFiberEquiv ℳ T p₀ a v f c P W S C Q).symm p).history = p.val.val :=
-  (rfl)
+    ((homogeneousRayFiberEquiv ℳ T p₀ a v f c P W S C Q).symm p).history = p.val.val := by
+  rw [homogeneousRayFiberEquiv, Equiv.symm_trans_apply, Convex.admissibleRayFiberEquiv_symm_apply]
+  rfl
 
 /-- A fixed endpoint has finitely many contributing decorated rays, even for an
 infinite grading and without a genericity hypothesis. -/
@@ -132,6 +160,15 @@ instance (Q : V) :
 def homogeneousRayEvaluation (Q : V) : M :=
   let := Fintype.ofFinite (HomogeneousRayRealization ℳ T p₀ a v f c P W S C Q)
   ∑ r : HomogeneousRayRealization ℳ T p₀ a v f c P W S C Q, r.decoration
+
+/-- Weighted evaluation is the sum of the whole final decorations over the finite
+fiber of actual admissible rays, for any enumeration of that fiber. -/
+theorem homogeneousRayEvaluation_def (Q : V)
+    [Fintype (HomogeneousRayRealization ℳ T p₀ a v f c P W S C Q)] :
+    homogeneousRayEvaluation ℳ T p₀ a v f c P W S C Q =
+      ∑ r : HomogeneousRayRealization ℳ T p₀ a v f c P W S C Q, r.decoration := by
+  unfold homogeneousRayEvaluation
+  congr!
 
 open Classical in
 /-- Weighted evaluation is the finite sum of decorations on admitted history domains.
@@ -150,7 +187,7 @@ theorem homogeneousRayEvaluation_eq_sum (Q : V) :
           (Fin.snoc (fun j => v (p.val j)) (v p₀)) P W S C},
         homogeneousHistory ℳ T p.val.val a :=
       Fintype.sum_equiv (homogeneousRayFiberEquiv ℳ T p₀ a v f c P W S C Q) _ _
-        (fun _ => rfl)
+        (fun _ => by simp)
     _ = _ := by
       rw [← Finset.sum_filter]
       exact (Finset.sum_subtype
@@ -188,21 +225,25 @@ theorem exists_homogeneousRay_membershipArrangement
         ∃ e : HomogeneousRayRealization ℳ T p₀ a (fun p => i (ρ p)) f c P W S C Q ≃
           HomogeneousRayRealization ℳ T p₀ a (fun p => i (ρ p)) f c P W S C Q',
           ∀ r, (e r).history = r.history := by
-  have hD (p : {p // p ∈ homogeneousHistorySupport ℳ T (a : M)}) :
-      IsRationalSemilinear h (Convex.admissibleBackwardDomain f c
-        (Fin.snoc (fun j => i (ρ (p.val j))) (i (ρ p₀))) P W S C) := by
-    convert Convex.isRationalSemilinear_admissibleBackwardDomain f c P W S C
-      (Fin.snoc (fun j => ρ (p.val j)) (ρ p₀)) hf hP hW hS hC using 1
-    congr 1
-    ext j
-    exact Fin.lastCases (by simp) (fun j => by simp) j
-  obtain ⟨E, hfrontier, hstable⟩ := IsRationalSemilinear.exists_membershipArrangement hD
-  refine ⟨E, fun p hp => hfrontier ⟨p, hp⟩, ?_⟩
-  intro Q hQ
-  exact (hstable Q hQ).mono fun Q' hQQ' => by
-    let e := Equiv.subtypeEquivRight (fun p => (hQQ' p).symm)
-    refine ⟨((homogeneousRayFiberEquiv ℳ T p₀ a _ f c P W S C Q).trans e).trans
-      (homogeneousRayFiberEquiv ℳ T p₀ a _ f c P W S C Q').symm, fun _ => rfl⟩
+  have hdir (p : Fin n → Γ) :
+      (fun j => i ((Fin.snoc (fun j => ρ (p j)) (ρ p₀) : Fin (n + 1) → N) j)) =
+        Fin.snoc (fun j => i (ρ (p j))) (i (ρ p₀)) :=
+    Fin.comp_snoc i (fun j => ρ (p j)) (ρ p₀)
+  obtain ⟨E, hfrontier, hstable⟩ := Convex.exists_admissibleRayFiber_membershipArrangement
+    W S (fun _ => n) (fun _ => f) (fun _ => c) (fun _ => P) (fun _ => C)
+    (fun p : {p // p ∈ homogeneousHistorySupport ℳ T (a : M)} =>
+      Fin.snoc (fun j => ρ (p.val j)) (ρ p₀)) (fun _ => hf) (fun _ => hP) hW hS
+    (fun _ => hC)
+  refine ⟨E, fun p hp => by simpa only [hdir] using hfrontier ⟨p, hp⟩, fun Q hQ =>
+    (hstable Q hQ).mono fun Q' ⟨e, he⟩ => ?_⟩
+  -- Transport each family fiber along `i ∘ Fin.snoc = Fin.snoc (i ∘ _)`.
+  let g (Q : V) := Equiv.sigmaCongrRight
+    fun p : {p // p ∈ homogeneousHistorySupport ℳ T (a : M)} => Equiv.cast (congrArg
+      (fun u => Convex.AdmissibleRayRealization f c u P W S C Q) (hdir p.val))
+  exact ⟨(homogeneousRayRealizationEquivSigma ℳ T p₀ a (fun p => i (ρ p)) f c P W S C Q).trans
+    ((g Q).symm.trans (e.trans ((g Q').trans
+      (homogeneousRayRealizationEquivSigma ℳ T p₀ a (fun p => i (ρ p)) f c P W S C Q').symm))),
+    fun r => congrArg Subtype.val (he _)⟩
 
 /-- Finite weighted evaluation of the actual rays is locally constant away from
 one finite exceptional arrangement. This holds over semirings, without additive inverses. -/
