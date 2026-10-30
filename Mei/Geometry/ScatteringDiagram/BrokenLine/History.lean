@@ -64,6 +64,8 @@ namespace HomogeneousRayRealization
 
 variable {ℳ T p₀ a v f c P W S C} {Q : V}
 
+attribute [simp] nonzero
+
 /-- The whole final homogeneous decoration, retaining its scalar coefficient. -/
 def decoration (r : HomogeneousRayRealization ℳ T p₀ a v f c P W S C Q) : M :=
   homogeneousHistory ℳ T r.history a
