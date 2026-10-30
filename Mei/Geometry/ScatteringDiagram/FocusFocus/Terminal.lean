@@ -26,7 +26,7 @@ inputs, zero coefficients, torsion and nilpotent smoothing parameters. It is the
 terminal-face identity; singular-origin resolution and global gluing are separate.
 
 We use the existing closed branch charts, decorated-fiber weighted evaluations,
-their Laurent formulas and `exponentMaps_jointly_injective`. The local slab
+their Laurent formulas and `eq_smul_theta_iff_chamber_values`. The local slab
 interpretation follows Gross–Siebert, *An Invitation to Toric Degenerations*,
 §2.2–2.3 (arXiv:0808.2749v2), and Gross–Hacking–Siebert, *Theta functions on
 varieties with effective anti-canonical class*, §3 (arXiv:1601.07081v4).
@@ -83,17 +83,6 @@ theorem mem_slabBranchDomain_iff_of_mem_slabTerminalDomain {n b : ℤ} {v : ℝ}
   rcases mul_pos_iff.mp hs with ⟨hv, hh⟩ | ⟨hv, hh⟩
   all_goals cases upper <;> grind
 
-/-- The closed crossing path at a terminal slab point is the incoming affine
-half-line. Its outgoing degree has disappeared because the final segment has
-length zero. This includes unchanged-direction crossings. -/
-@[simp↓]
-theorem slabBranchPath_terminal (n b q : ℤ) (v s : ℝ) (hs : s ≤ 0) :
-    slabBranchPath n b q (0, v) s = (-(s * n), v - s * b) := by
-  rw [slabBranchPath_apply]
-  simp only [zero_div, zero_sub, max_eq_left (neg_nonneg.mpr hs)]
-  congr 1
-  ring
-
 private theorem slabTerminalDomain_meets_chambers (n b : ℤ) {v : ℝ} (hv : v ≠ 0) :
     ∃ L U : ℝ × ℝ, L ∈ slabTerminalDomain n b v ∧
       U ∈ slabTerminalDomain n b v ∧ L.1 < 0 ∧ 0 < U.1 := by
@@ -142,12 +131,11 @@ theorem slabTerminal_commonLift_iff (t : R) (n b : ℤ) {v : ℝ} (hv : v ≠ 0)
   · rintro ⟨hL, hU⟩
     obtain ⟨L, U, hLD, hUD, hLside, hUside⟩ := slabTerminalDomain_meets_chambers n b hv
     ext a
-    apply exponentMaps_jointly_injective (C t * (1 + T 1))
-    apply Prod.ext
-    · simpa only [LinearMap.comp_apply, LinearMap.toSpanSingleton_apply] using
-        (hL L hLD hLside a).trans (hleft L hLD hLside a)
-    · simpa only [LinearMap.comp_apply, LinearMap.toSpanSingleton_apply] using
-        (hU U hUD hUside a).trans (hright U hUD hUside a)
+    simpa only [LinearMap.comp_apply, LinearMap.toSpanSingleton_apply] using
+      (eq_smul_theta_iff_chamber_values t (α a) n b L U hLside hUside
+        (fun _ j _ => slabTerminalDomain_crossingHeight_ne_zero hLD j)
+        (fun _ j _ => slabTerminalDomain_crossingHeight_ne_zero hUD j) (ℓ a)).mpr
+          ⟨hL L hLD hLside a, hU U hUD hUside a⟩
   · rintro rfl
     constructor
     · intro Q hQ hside a
