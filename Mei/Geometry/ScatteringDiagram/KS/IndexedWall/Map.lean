@@ -23,7 +23,7 @@ Gross–Hacking–Keel–Kontsevich, *Canonical bases for cluster algebras*, §1
 (arXiv:1411.1394v2). The construction uses
 `GradedLieHom.completedMap_mem_completedRaySubgroup` and
 `GradedLieHom.hasFiniteSupport_completedMap`. The product calculation uses
-`Quiver.Path.map_wallPathProduct` and `Quiver.Path.wallPathProduct_restrict`, as in
+`Quiver.Path.map_wallPathProduct_restrict`, as in
 `DirectedDiagram.levelPathProduct_mapPathPrefunctor`.
 -/
 
@@ -81,19 +81,11 @@ theorem map_id : W.map (GradedLieHom.id ℒ) = W := by
 /-- Successive coefficient maps agree with the composite on indexed walls. -/
 @[simp]
 theorem map_map (g : GradedLieHom (PositiveDegreeMap.id d) ℳ ℋ) :
-    (W.map f).map g = W.map
-      { toLieHom := g.toLieHom.comp f.toLieHom
-        map_mem hx := by simpa using g.map_mem (f.map_mem hx) } := by
+    (W.map f).map g = W.map (g.compId f) := by
   apply IndexedWall.ext
   · rfl
   · rfl
-  · simp only [map_label]
-    rw [← MonoidHom.comp_apply, ← GradedLieHom.completedMap_comp]
-    exact DFunLike.congr_fun
-      (GradedLieHom.completedMap_eq_of_toLieHom_eq (g.comp f)
-        ({ toLieHom := g.toLieHom.comp f.toLieHom
-           map_mem hx := by simpa using g.map_mem (f.map_mem hx) } :
-          GradedLieHom (PositiveDegreeMap.id d) ℒ ℋ) (by simp)) W.label
+  · simp only [map_label, GradedLieHom.completedMap_compId, MonoidHom.comp_apply]
 
 end IndexedWall
 
@@ -119,17 +111,14 @@ theorem mem_active_map (k : ℕ) (j : ι) :
         (CompletedGroup.projection k (D.wall j).label) ≠ 1 := by
   rw [mem_active, map_wall, IndexedWall.map_label,
     f.projection_completedMap_of_le k (a := k) (by simp)]
+  -- The tower-group identity is definitionally the concrete BCH-group identity.
   rfl
 
 /-- Coefficient change can only remove active walls. -/
 theorem active_map_subset (k : ℕ) : (D.map f).active k ⊆ D.active k := by
-  simp only [Set.subset_def, mem_active, map_wall, IndexedWall.map_label,
-    f.projection_completedMap_of_le k (a := k) (by simp)]
-  -- Read categorical tower objects as the concrete finite BCH groups.
-  convert Function.mulSupport_comp_subset
-    (f.truncatedMap k (a := k) (by simp)).bchGroupMap.map_one
-    (fun j => CompletedGroup.projection k (D.wall j).label) using 1
-  rfl
+  simpa only [Set.subset_def, mem_active, Function.mem_mulSupport, map_wall,
+    IndexedWall.map_label] using
+    f.mulSupport_projection_completedMap_subset (fun j => (D.wall j).label) k (a := k) (by simp)
 
 /-- The identity coefficient map fixes the whole presentation. -/
 @[simp]
@@ -141,9 +130,7 @@ theorem map_id : D.map (GradedLieHom.id ℒ) = D := by
 /-- Successive coefficient changes agree with the composite on presentations. -/
 @[simp]
 theorem map_map (g : GradedLieHom (PositiveDegreeMap.id d) ℳ ℋ) :
-    (D.map f).map g = D.map
-      { toLieHom := g.toLieHom.comp f.toLieHom
-        map_mem hx := by simpa using g.map_mem (f.map_mem hx) } := by
+    (D.map f).map g = D.map (g.compId f) := by
   apply IndexedWallPresentation.ext
   funext j
   simp only [map_wall, IndexedWall.map_map]
@@ -179,7 +166,6 @@ theorem levelPathProduct_mapPathPrefunctor (k : ℕ)
     (p : AdmissiblePLPath x y) :
     (D.map f).levelPathProduct k ((D.mapPathPrefunctor f k).mapPath p) =
       (f.truncatedMap (a := k) k (by simp)).bchGroupMap (D.levelPathProduct k p) := by
-  let a := Set.inclusion (D.active_map_subset f k)
   -- Fix the concrete tower-group instances before composing geometric products.
   let F : d.truncatedGroup ℒ k →* d.truncatedGroup ℳ k :=
     (f.truncatedMap (a := k) k (by simp)).bchGroupMap
@@ -187,30 +173,20 @@ theorem levelPathProduct_mapPathPrefunctor (k : ℕ)
       F (CompletedGroup.projection k (D.wall j).label) := by
     rw [IndexedWall.map_label,
       f.projection_completedMap_of_le k (a := k) (by simp)]
-  have hzero (j : D.active k) (hj : j ∉ range a) :
-      F (CompletedGroup.projection k (D.wall j).label) = 1 := by
-    rw [← hlabel]
-    by_contra hne
-    exact hj ⟨⟨j.val, ((D.map f).mem_active k j.val).mpr hne⟩, Subtype.ext rfl⟩
-  have hr := p.wallPathProduct_restrict
-    (fun j : D.active k => s.normal (D.wall j).ray.generator)
-    (fun j => F (CompletedGroup.projection k (D.wall j).label))
-    (fun j l hab => (D.activeLabels_commute k j l hab).map F)
-    a (Set.inclusion_injective _) hzero
-  have hm := p.map_wallPathProduct
-    (fun j : D.active k => s.normal (D.wall j).ray.generator)
+  have hm := p.map_wallPathProduct_restrict (fun j => (D.wall j).support)
+    (fun j => s.normal (D.wall j).ray.generator)
     (fun j => CompletedGroup.projection k (D.wall j).label)
-    (D.activeLabels_commute k) F
+    (D.active k) ((D.map f).active k) (D.active_map_subset f k)
+    (D.activeLabels_commute k) F (D.mem_active_map f k)
   calc
     _ = _ := (D.map f).levelPathProduct_eq_wallPathProduct k _
       ((D.map f).activeLabels_commute k)
     _ = _ := by
       -- The same labels use the categorical group's inherited instances on the left.
-      convert hr using 1
+      convert hm using 1
       simp only [Function.comp_def, Set.coe_inclusion, map_wall, IndexedWall.map_ray,
-        hlabel, mapPathPrefunctor, a]
+        hlabel, mapPathPrefunctor]
       rfl
-    _ = _ := hm.symm
     _ = _ := congrArg F (D.levelPathProduct_eq_wallPathProduct k p
       (D.activeLabels_commute k)).symm
 

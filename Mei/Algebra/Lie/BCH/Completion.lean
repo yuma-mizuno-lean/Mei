@@ -394,6 +394,17 @@ theorem completedMap_eq_of_toLieHom_eq {T' : PositiveDegreeMap d e}
   simpa only [LieIdeal.mkQ_apply, truncatedMap_mk, coe_toLieHom] using
     congrArg (fun h : L →ₗ⁅R⁆ L' => (e.degreeIdeal ℳ k).mkQ (h a)) hfg
 
+/-- Completed maps respect composition at the fixed identity degree map. -/
+@[simp]
+theorem completedMap_compId {ℳ : N → Submodule R L'} {ℋ : N → Submodule R L''}
+    [GradedLieAlgebra ℳ] [GradedLieAlgebra ℋ]
+    [IsPositiveGrading d ℳ] [IsPositiveGrading d ℋ]
+    (g : GradedLieHom (PositiveDegreeMap.id d) ℳ ℋ)
+    (f : GradedLieHom (PositiveDegreeMap.id d) ℒ ℳ) :
+    (g.compId f).completedMap = g.completedMap.comp f.completedMap :=
+  (completedMap_eq_of_toLieHom_eq (g.compId f) (g.comp f) (by simp)).trans
+    (completedMap_comp g f)
+
 variable {ι : Type*}
 
 /-- A graded completed map preserves finite support at every order. -/
@@ -403,6 +414,17 @@ theorem hasFiniteSupport_completedMap (f : GradedLieHom T ℒ ℳ)
   simpa only [completedMap] using
     hx.map ⟨T.modulus, T.monotone_modulus⟩
       (f.groupTowerMap ⟨T.modulus, T.monotone_modulus⟩ (fun _ => le_rfl))
+
+/-- A completed coefficient map can only remove projected nonidentity labels,
+using any source cutoff large enough for the target order. -/
+theorem mulSupport_projection_completedMap_subset (f : GradedLieHom T ℒ ℳ)
+    (c : ι → d.completedBCHGroup ℒ) (k : ℕ) {a : ℕ} (ha : T.modulus k ≤ a) :
+    Function.mulSupport (fun j => CompletedGroup.projection k (f.completedMap (c j))) ⊆
+      Function.mulSupport (fun j => CompletedGroup.projection a (c j)) := by
+  simp only [f.projection_completedMap_of_le k ha]
+  -- Identify categorical tower identities with the concrete BCH quotient identities.
+  convert Function.mulSupport_comp_subset (f.truncatedMap k ha).bchGroupMap.map_one
+    (fun j => CompletedGroup.projection a (c j)) using 1 <;> rfl
 
 /-- Graded maps preserve convergent ordered products, with the smallest index leftmost. -/
 @[simp]

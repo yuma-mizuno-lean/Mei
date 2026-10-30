@@ -24,7 +24,7 @@ the product of a path in a convex region if it fixes the labels of the walls
 meeting that region.
 
 The transport calculation combines `GradedLieHom.completedMap` with
-`Quiver.Path.map_wallPathProduct` and `Quiver.Path.wallPathProduct_restrict`,
+`Quiver.Path.map_wallPathProduct_restrict`,
 following the restriction-and-transport calculation in
 `DirectedDiagram.levelPathProduct_image`.
 The all-order path map and its completed product formula follow the projection
@@ -74,13 +74,9 @@ theorem map_wall (j : ι) : (D.map f hf).wall j = (D.wall j).map f hf := (rfl)
 
 /-- Coefficient maps can only remove active walls. -/
 theorem active_map_subset (k : ℕ) : (D.map f hf).active k ⊆ D.active k := by
-  simp only [Set.subset_def, mem_active, map_wall, DirectedWall.map_label,
-    f.projection_completedMap_of_le k (a := k) (by simp)]
-  -- Identify categorical tower identities with the concrete BCH quotient identities.
-  convert Function.mulSupport_comp_subset
-    (f.truncatedMap k (a := k) (by simp)).bchGroupMap.map_one
-    (fun j => CompletedGroup.projection k (D.wall j).label) using 1
-  rfl
+  simpa only [Set.subset_def, mem_active, Function.mem_mulSupport, map_wall,
+    DirectedWall.map_label] using
+    f.mulSupport_projection_completedMap_subset (fun j => (D.wall j).label) k (a := k) (by simp)
 
 /-- The identity coefficient map fixes the indexed diagram. -/
 @[simp]
@@ -94,13 +90,12 @@ theorem map_id : D.map (GradedLieHom.id ℒ) (fun _ _ _ hx => by simpa using hx)
 theorem map_map (g : GradedLieHom (PositiveDegreeMap.id d) ℳ ℋ)
     (hg : ∀ n m, ∀ x ∈ H'.wall n m, g x ∈ H''.wall n m) :
     (D.map f hf).map g hg = D.map
-      { toLieHom := g.toLieHom.comp f.toLieHom
-        map_mem hx := by simpa using g.map_mem (f.map_mem hx) }
-      (fun n m x hx => hg n m _ (hf n m x hx)) := by
+      (g.compId f)
+      (fun n m x hx => by
+        simpa only [GradedLieHom.compId_apply] using hg n m _ (hf n m x hx)) := by
   apply DirectedDiagram.ext
   funext j
   simp only [map_wall, DirectedWall.map_map]
-  rfl
 
 /-- Forget the walls whose labels the coefficient map kills at the chosen cutoff. -/
 def mapPathPrefunctor (k : ℕ) :
@@ -144,17 +139,15 @@ theorem levelPathProduct_mapPathPrefunctor (k : ℕ)
       F (CompletedGroup.projection k (D.wall j).label) := by
     rw [map_wall, DirectedWall.map_label,
       f.projection_completedMap_of_le k (a := k) (by simp)]
-  have hzero (j : D.active k) (hj : j ∉ range a) :
-      F (CompletedGroup.projection k (D.wall j).label) = 1 := by
-    rw [← hlabel]
-    by_contra hne
-    exact hj ⟨⟨j.val, ((D.map f hf).mem_active k j.val).mpr hne⟩, Subtype.ext rfl⟩
-  -- Delete the source-active labels whose finite images are trivial.
-  have hr := p.wallPathProduct_restrict
-    (fun j : D.active k => h.realCharacter (D.wall j).normal)
-    (fun j => F (CompletedGroup.projection k (D.wall j).label))
-    (fun j l hab => (D.activeLabels_commute k j l hab).map F)
-    a (Set.inclusion_injective _) hzero
+  have hm := p.map_wallPathProduct_restrict (fun j => (D.wall j).support)
+    (fun j => h.realCharacter (D.wall j).normal)
+    (fun j => CompletedGroup.projection k (D.wall j).label)
+    (D.active k) ((D.map f hf).active k) (D.active_map_subset f hf k)
+    (D.activeLabels_commute k) F (by
+      intro j
+      rw [mem_active, hlabel]
+      -- Identify the tower identity with the concrete BCH-group identity.
+      rfl)
   -- The identity affine map identifies the surviving supports without exposing wall bodies.
   have hi := q.wallPathProduct_wallComplementMap (ContinuousAffineEquiv.refl ℝ V)
     (Equiv.refl _)
@@ -168,16 +161,12 @@ theorem levelPathProduct_mapPathPrefunctor (k : ℕ)
     (fun j l hab => (D.activeLabels_commute k (a j) (a l) hab).map F)
     ((D.map f hf).activeLabels_commute k) (MonoidHom.id _)
     (fun j => hlabel j)
-  have hm' := p.map_wallPathProduct
-    (fun j : D.active k => h.realCharacter (D.wall j).normal)
-    (fun j => CompletedGroup.projection k (D.wall j).label)
-    (D.activeLabels_commute k) F
   calc
     _ = _ := (D.map f hf).levelPathProduct_eq_wallPathProduct k _
       ((D.map f hf).activeLabels_commute k)
     _ = _ := by
       -- Identify the composed prefunctor with its two successive path maps.
-      convert (hi.trans hr).trans hm'.symm using 1
+      convert hi.trans hm using 1
       simp only [mapPathPrefunctor, Prefunctor.mapPath_comp_apply, q, a]
       rfl
     _ = _ := congrArg F (D.levelPathProduct_eq_wallPathProduct k p

@@ -15,6 +15,8 @@ An injective restriction of a finite indexed wall family preserves transport if
 every deleted label is the identity. At simultaneous crossings, only the deleted
 factors disappear; an entire event disappears when none of its walls remain.
 Vertices, segments, crossing parameters and the order of surviving events stay fixed.
+Mapping the labels by a group homomorphism also commutes with restriction to the
+indices whose images remain nontrivial.
 
 The construction uses `WallComplement.restrictPrefunctor`,
 `Finset.noncommProd_subset` for simultaneous factors, and
@@ -145,5 +147,27 @@ theorem wallPathProduct_restrict (ν : ι → V →ₗ[ℝ] ℝ) (label : ι →
   | cons p e ih =>
     simp only [Prefunctor.mapPath_cons, wallPathProduct_cons, ih,
       segmentPathProduct_restrict ν label hcomm f hf hlabel]
+
+/-- Mapping labels and restricting to the indices with nontrivial images commutes
+with polygonal transport, including simultaneous crossings. The active sets are supplied
+with their inclusion and membership characterization so callers need not unfold them. -/
+theorem map_wallPathProduct_restrict {η K : Type*} [Group K]
+    (W : η → Set V) (ν : η → V →ₗ[ℝ] ℝ) (label : η → G)
+    (A B : Set η) [Finite A] [Finite B] (hBA : B ⊆ A)
+    (hcomm : ∀ i j : A, affineSpan ℝ (W i) = affineSpan ℝ (W j) →
+      Commute (label i) (label j)) (F : G →* K)
+    (hB : ∀ j, j ∈ B ↔ F (label j) ≠ 1)
+    {x y : WallComplement (fun j : A => W j)} (p : AdmissiblePLPath x y) :
+    ((restrictPrefunctor _ (Set.inclusion hBA)).mapPath p).wallPathProduct
+      (fun j : B => ν j) (fun j => F (label j))
+      (fun i j h => (hcomm (Set.inclusion hBA i) (Set.inclusion hBA j) h).map F) =
+        F (p.wallPathProduct (fun j : A => ν j) (fun j => label j) hcomm) := by
+  let a := Set.inclusion hBA
+  have hzero (j : A) (hj : j ∉ range a) : F (label j) = 1 := by
+    by_contra hne
+    exact hj ⟨⟨j.val, (hB j).mpr hne⟩, Subtype.ext rfl⟩
+  exact (p.wallPathProduct_restrict (fun j : A => ν j) (fun j => F (label j))
+    (fun i j h => (hcomm i j h).map F) a (Set.inclusion_injective _) hzero).trans
+      (p.map_wallPathProduct (fun j : A => ν j) (fun j => label j) hcomm F).symm
 
 end Quiver.Path
