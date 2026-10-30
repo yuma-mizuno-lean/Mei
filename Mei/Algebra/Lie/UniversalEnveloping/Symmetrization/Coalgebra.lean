@@ -41,6 +41,7 @@ local notation "U" => _root_.UniversalEnvelopingAlgebra R L
 
 /-- PBW symmetrization intertwines the symmetric and enveloping coproducts,
 without freeness or flatness assumptions on the Lie algebra. -/
+@[simp]
 theorem comul_pbwSymmetrization (p : S) :
     Coalgebra.comul (R := R) (pbwSymmetrization R L p) =
       TensorProduct.map (pbwSymmetrization R L) (pbwSymmetrization R L)
@@ -49,8 +50,8 @@ theorem comul_pbwSymmetrization (p : S) :
       (pbwSymmetrization R L) =
       (TensorProduct.map (pbwSymmetrization R L) (pbwSymmetrization R L)).comp
         (Coalgebra.comul (R := R) : S →ₗ[R] S ⊗[R] S) := by
-    apply LinearMap.ext_on_range (Mei.SymmetricAlgebra.span_range_ι_pow_eq_top R L)
-    rintro ⟨x, n⟩
+    apply Mei.SymmetricAlgebra.linearMap_ext_ι_pow R L
+    intro x n
     simp only [LinearMap.comp_apply, pbwSymmetrization_ι_pow]
     rw [TauCeti.UniversalEnvelopingAlgebra.comul_ι_pow,
       TauCeti.Bialgebra.comul_pow_of_primitive _ (SymmetricAlgebra.comul_ι R L x)]
@@ -63,8 +64,8 @@ theorem counit_pbwSymmetrization (p : S) :
     Coalgebra.counit (R := R) (pbwSymmetrization R L p) = Coalgebra.counit p := by
   have he : (Coalgebra.counit (R := R) : U →ₗ[R] R).comp
       (pbwSymmetrization R L) = (Coalgebra.counit (R := R) : S →ₗ[R] R) := by
-    apply LinearMap.ext_on_range (Mei.SymmetricAlgebra.span_range_ι_pow_eq_top R L)
-    rintro ⟨x, n⟩
+    apply Mei.SymmetricAlgebra.linearMap_ext_ι_pow R L
+    intro x n
     simp
   exact LinearMap.congr_fun he p
 

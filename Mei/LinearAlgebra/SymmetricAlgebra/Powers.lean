@@ -15,7 +15,8 @@ import TauCeti.LinearAlgebra.Multilinear.Polarization
 When `n!` is invertible, the degree-`n` homogeneous submodule of a symmetric
 algebra is spanned by powers `ι(x)^n`. Over a commutative rational algebra,
 pure powers in all degrees therefore span the whole symmetric algebra, without
-freeness or finite generation assumptions on the module. This permits checking
+freeness or finite generation assumptions on the module.
+`linearMap_ext_ι_pow` compares linear maps on these spanning powers. This permits checking
 linear identities, such as compatibility with a coproduct, on pure powers.
 
 The proof applies Tau Ceti's
@@ -91,5 +92,14 @@ theorem span_range_ι_pow_eq_top [Algebra ℚ R] :
   apply Submodule.span_mono
   rintro _ ⟨x, rfl⟩
   exact ⟨(x, n), rfl⟩
+
+/-- Two linear maps from a symmetric algebra over a rational algebra agree
+if they agree on every pure power of every generator. -/
+theorem linearMap_ext_ι_pow [Algebra ℚ R] {N : Type*} [AddCommMonoid N] [Module R N]
+    {f g : SymmetricAlgebra R M →ₗ[R] N}
+    (h : ∀ x : M, ∀ n : ℕ, f (ι R M x ^ n) = g (ι R M x ^ n)) : f = g := by
+  apply LinearMap.ext_on_range (span_range_ι_pow_eq_top R M)
+  rintro ⟨x, n⟩
+  exact h x n
 
 end Mei.SymmetricAlgebra
