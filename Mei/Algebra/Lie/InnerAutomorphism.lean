@@ -8,40 +8,18 @@ module
 public import TauCeti.Algebra.Lie.InnerAutomorphism
 
 /-!
-# Naturality of exponential adjoint automorphisms
+# Scalar independence of exponential adjoint automorphisms
 
-Lie homomorphisms intertwine the exponential adjoint automorphisms whenever both
-adjoint operators are nilpotent. This permits identities proved in free nilpotent
-Lie algebras to be evaluated in arbitrary Lie algebras. Its action on vectors is
-independent of the scalar ring used to form the adjoint endomorphism.
+The action of exponential adjoint automorphisms on vectors is independent of the
+scalar ring used to form the adjoint endomorphism.
 
-The construction uses `TauCeti.expAd` and Mathlib's
-`Module.End.commute_exp_left_of_commute` for intertwining nilpotent exponentials.
+The imported `LieHom.map_expAd` intertwines these automorphisms with Lie
+homomorphisms whenever both adjoint operators are nilpotent.
 -/
 
 public section
 
-namespace LieHom
-
-variable {R L L' : Type*} [CommRing R]
-  [LieRing L] [LieAlgebra R L] [LieAlgebra ℚ L]
-  [LieRing L'] [LieAlgebra R L'] [LieAlgebra ℚ L']
-
-/-- Lie homomorphisms intertwine exponential adjoint automorphisms.
-No global nilpotence or injectivity assumption is needed. -/
-@[simp]
-theorem map_expAd (f : L →ₗ⁅R⁆ L') (x y : L)
-    (hx : IsNilpotent (LieAlgebra.ad R L x))
-    (hfx : IsNilpotent (LieAlgebra.ad R L' (f x))) :
-    f (TauCeti.expAd x hx y) = TauCeti.expAd (f x) hfx (f y) := by
-  have h : (LieAlgebra.ad R L' (f x)).comp f.toLinearMap =
-      f.toLinearMap.comp (LieAlgebra.ad R L x) := by
-    ext z
-    exact (f.map_lie x z).symm
-  simpa only [TauCeti.expAd_apply, LinearMap.comp_apply, LieHom.coe_toLinearMap] using
-    (LinearMap.congr_fun (Module.End.commute_exp_left_of_commute hx hfx h) y).symm
-
-end LieHom
+attribute [simp] LieHom.map_expAd
 
 namespace Mei
 

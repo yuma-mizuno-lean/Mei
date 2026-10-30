@@ -59,7 +59,7 @@ theorem bchOfClass_conj (c : ℕ) (hc : lowerCentralSeries ℚ L L c = ⊥)
     have hconj : IsNilpotent.exp (i a) * IsNilpotent.exp (i b) *
         IsNilpotent.exp (-i a) =
           IsNilpotent.exp (i (TauCeti.expAd a (hnil a) b)) := by
-      rw [i.map_expAd a b _ (LieAlgebra.ad_nilpotent_of_nilpotent (R := ℚ) ha),
+      rw [i.map_expAd (hnil a) (LieAlgebra.ad_nilpotent_of_nilpotent (R := ℚ) ha) b,
         TauCeti.expAd_apply_eq_exp_mul_exp_neg ha]
       simpa only [ConjAct.units_smul_def, ConjAct.ofConjAct_toConjAct,
         TauCeti.coe_nilpotentExpUnit, TauCeti.coe_inv_nilpotentExpUnit] using
@@ -82,7 +82,7 @@ theorem bchOfClass_conj (c : ℕ) (hc : lowerCentralSeries ℚ L L c = ⊥)
     simp
   have h := congrArg f (hfree a b)
   rw [f.map_bchOfClass c c hQ hc, f.map_bchOfClass c c hQ hc, map_neg,
-    f.map_expAd a b _ (by rw [hfa]; exact hx)] at h
+    f.map_expAd (hnil a) (by rw [hfa]; exact hx) b] at h
   simpa only [hfa, hfb] using h
 
 variable [LieRing.IsNilpotent L] {R : Type*} [CommRing R] [LieAlgebra R L]
