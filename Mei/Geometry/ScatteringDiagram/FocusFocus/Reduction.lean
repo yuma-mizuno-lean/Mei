@@ -89,6 +89,9 @@ theorem truncatedSlabMap_leftChamberLift (q : {q : ℤ × ℤ × ℤ | q.1 ≤ 0
       leftChamberLift K' l q
         ((truncatedExponentChamberGradedMap φ hl 1).gradedAddHom q.val u) := by
   let : Algebra S[ℤ] S'[ℤ] := (truncatedScalarMap φ hl).toAlgebra
+  have htf : algebraMap S[ℤ] S'[ℤ] (C τ * (1 + T 1)) = C τ' * (1 + T 1) := by
+    simp only [map_mul, map_add, map_one, RingHom.algebraMap_toAlgebra,
+      truncatedScalarMap_C_root, truncatedScalarMap_T]
   have he := leftChamberLaurentMap_leftChamberMap (t := C τ)
     (truncatedScalarMap_C_root φ hl) hl (C_root_X_pow_pow K (k + 1))
     (C_root_X_pow_pow K' (l + 1)) u.val
@@ -97,16 +100,18 @@ theorem truncatedSlabMap_leftChamberLift (q : {q : ℤ × ℤ × ℤ | q.1 ≤ 0
       ((truncatedExponentChamberGradedMap φ hl 1).gradedAddHom q.val u)]
   simp only [truncatedSlabMap, AlgHom.toRingHom_eq_coe, AlgHom.coe_toRingHom]
   rw [slabAlgebraMap_toSlabAlgebra]
-  simp only [map_smul, map_pow, mapOfEq_coord]
   simp only [GradedRingHom.gradedAddHom_apply_coe,
     ← GradedRingHom.coe_toRingHom, truncatedExponentChamberGradedMap_toRingHom,
     truncatedExponentChamberMap_def,
     AlgHom.toRingHom_eq_coe, AlgHom.coe_toRingHom]
   simp only [he]
-  simp only [Algebra.smul_def, map_mul, map_pow,
-    AddMonoidAlgebra.coeff_mapAlgHom, Algebra.ofId_apply]
-  simp only [IsScalarTower.algebraMap_apply S[ℤ] S'[ℤ]
-    (NodeAlgebra S'[ℤ] (C τ' * (1 + T 1))), AlgHom.commutes]
+  apply congrArg (toSlabAlgebra (C τ') (1 + T 1) l)
+  simpa only [incomingLift_apply] using
+    mapOfEq_incomingLift (C τ * (1 + T 1)) htf 0
+      ⟨-q.val.1, by simpa only [Set.mem_ofPred_eq] using
+        (neg_nonneg.mpr (q.property : q.val.1 ≤ 0))⟩
+      ⟨leftChamberLaurentMap (C_root_X_pow_pow K (k + 1)) u.val,
+        leftLaurent_mem_grade K k q.val u⟩
 
 /-- Reduction preserves the entire incoming right lift, including zero target pieces. -/
 @[simp]
@@ -116,6 +121,9 @@ theorem truncatedSlabMap_rightChamberLift (q : {q : ℤ × ℤ × ℤ | 0 ≤ q.
       rightChamberLift K' l q
         ((truncatedExponentChamberGradedMap φ hl 0).gradedAddHom q.val u) := by
   let : Algebra S[ℤ] S'[ℤ] := (truncatedScalarMap φ hl).toAlgebra
+  have htf : algebraMap S[ℤ] S'[ℤ] (C τ * (1 + T 1)) = C τ' * (1 + T 1) := by
+    simp only [map_mul, map_add, map_one, RingHom.algebraMap_toAlgebra,
+      truncatedScalarMap_C_root, truncatedScalarMap_T]
   have he := rightChamberLaurentMap_rightChamberMap (t := C τ)
     (truncatedScalarMap_C_root φ hl) hl (C_root_X_pow_pow K (k + 1))
     (C_root_X_pow_pow K' (l + 1)) u.val
@@ -124,16 +132,17 @@ theorem truncatedSlabMap_rightChamberLift (q : {q : ℤ × ℤ × ℤ | 0 ≤ q.
       ((truncatedExponentChamberGradedMap φ hl 0).gradedAddHom q.val u)]
   simp only [truncatedSlabMap, AlgHom.toRingHom_eq_coe, AlgHom.coe_toRingHom]
   rw [slabAlgebraMap_toSlabAlgebra]
-  simp only [map_smul, map_pow, mapOfEq_coord]
   simp only [GradedRingHom.gradedAddHom_apply_coe,
     ← GradedRingHom.coe_toRingHom, truncatedExponentChamberGradedMap_toRingHom,
     truncatedExponentChamberMap_def,
     AlgHom.toRingHom_eq_coe, AlgHom.coe_toRingHom]
   simp only [he]
-  simp only [Algebra.smul_def, map_mul, map_pow,
-    AddMonoidAlgebra.coeff_mapAlgHom, Algebra.ofId_apply]
-  simp only [IsScalarTower.algebraMap_apply S[ℤ] S'[ℤ]
-    (NodeAlgebra S'[ℤ] (C τ' * (1 + T 1))), AlgHom.commutes]
+  apply congrArg (toSlabAlgebra (C τ') (1 + T 1) l)
+  simpa only [incomingLift_apply] using
+    mapOfEq_incomingLift (C τ * (1 + T 1)) htf 1
+      ⟨q.val.1, q.property⟩
+      ⟨rightChamberLaurentMap (C_root_X_pow_pow K (k + 1)) u.val,
+        rightLaurent_mem_grade K k q.val u⟩
 
 /-- Every left-to-right homogeneous transfer commutes with coefficient change
 and cutoff reduction. No survival or nonzero hypothesis is needed. -/

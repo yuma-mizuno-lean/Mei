@@ -68,7 +68,8 @@ private theorem rightLaurent_single (q : exponentMonoid) (c : K) :
   congr 1
   omega
 
-private theorem leftLaurent_mem_grade (q : ℤ × ℤ × ℤ)
+/-- The left Laurent realization has normal weight opposite to the horizontal exponent. -/
+theorem leftLaurent_mem_grade (q : ℤ × ℤ × ℤ)
     (u : truncatedExponentChamberGrade K k 1 q) :
     leftChamberLaurentMap (C_root_X_pow_pow K (k + 1)) u.val ∈ grade S[T;T⁻¹] (-q.1) := by
   by_cases hq : q ∈ exponentMonoid
@@ -82,7 +83,8 @@ private theorem leftLaurent_mem_grade (q : ℤ × ℤ × ℤ)
     rw [hu, map_zero]
     exact zero_mem _
 
-private theorem rightLaurent_mem_grade (q : ℤ × ℤ × ℤ)
+/-- The right Laurent realization has normal weight equal to the horizontal exponent. -/
+theorem rightLaurent_mem_grade (q : ℤ × ℤ × ℤ)
     (u : truncatedExponentChamberGrade K k 0 q) :
     rightChamberLaurentMap (C_root_X_pow_pow K (k + 1)) u.val ∈ grade S[T;T⁻¹] q.1 := by
   by_cases hq : q ∈ exponentMonoid

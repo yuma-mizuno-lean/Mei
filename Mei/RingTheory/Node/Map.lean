@@ -118,6 +118,20 @@ theorem map_incomingLift (i : Fin 2) (n : {n : ℤ | 0 ≤ n}) (u : grade R n.va
           AddMonoidAlgebra.mapAlgHom_mem_gradeBy (Algebra.ofId R S) u.property⟩ := by
   simp [incomingLift_apply, Algebra.smul_def, coeff_mapAlgHom]
 
+omit [Algebra R (NodeAlgebra S (algebraMap R S a))]
+  [IsScalarTower R S (NodeAlgebra S (algebraMap R S a))] in
+/-- Incoming lifts commute with coefficient change to any equal smoothing parameter. -/
+@[simp]
+theorem mapOfEq_incomingLift {a' : S} [Algebra R (NodeAlgebra S a')]
+    [IsScalarTower R S (NodeAlgebra S a')] (h : algebraMap R S a = a')
+    (i : Fin 2) (n : {n : ℤ | 0 ≤ n}) (u : grade R n.val) :
+    mapOfEq a h (incomingLift a i n u) =
+      incomingLift a' i n
+        ⟨AddMonoidAlgebra.mapAlgHom ℤ (Algebra.ofId R S) u,
+          AddMonoidAlgebra.mapAlgHom_mem_gradeBy (Algebra.ofId R S) u.property⟩ := by
+  subst a'
+  simpa only [mapOfEq_rfl, mapAlgHom_apply] using map_incomingLift a i n u
+
 /-- Coefficient change is a morphism of normal-weight slab correspondences.
 It preserves both chamber maps and the chosen admissible lifts. -/
 def normalWeightCorrespondenceMap :
