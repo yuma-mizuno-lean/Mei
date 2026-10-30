@@ -87,9 +87,7 @@ theorem homogeneousHistoryStage_castSucc_eq_succ_of_decompose_self
   rw [homogeneousHistoryStage_castSucc_apply]
   apply hT
   rw [hj]
-  refine Fin.lastCases ?_ (fun i => ?_) j.succ
-  · simpa only [Fin.snoc_last, homogeneousHistoryStage_last, LinearMap.id_apply] using ha
-  · simpa only [Fin.snoc_castSucc] using homogeneousHistoryStage_mem ℳ T r a i
+  exact homogeneousHistoryStage_mem_snoc ℳ T r r₀ ⟨a, ha⟩ j.succ
 
 /-- If every map fixes the same-degree component of each homogeneous input,
 every segment of a constant-degree history carries its incoming decoration. -/

@@ -244,23 +244,17 @@ theorem decompose_truncatedBCHAction_same (k : ℕ) (g : d.truncatedGroup ℒ k)
     {r : Γ} {a : (F).quotient k} (ha : a ∈ G(k) r) :
     (DirectSum.decompose G(k) ((F).truncatedBCHAction d ℒ k g a) r :
       (F).quotient k) = a := by
-  by_cases hr : r ∈ d.monoid
-  · by_cases hk : d.degree r ≤ k
-    · obtain ⟨b, hb, rfl⟩ := (d.mem_shiftedQuotientGrading_iff ℳ p).mp ha
-      rw [d.decompose_shiftedQuotientGrading ℳ p k ⟨r, hr⟩ hk]
-      rw [d.shiftedQuotientComponent_truncatedBCHAction_of_mem_same ℒ ℳ p
-        (by simpa using hr) k g b ((mem_shiftedGrading ℳ d.monoid p).mp hb)]
-      congr 1
-      apply Subtype.ext
-      exact coe_shiftedInclusion ℳ d.monoid p ⟨r, hr⟩ _
-    · have ha0 : a = 0 := by
-        simpa only [shiftedQuotientGrading_piece,
-          d.map_shiftedGrading_eq_bot ℳ p (lt_of_not_ge hk), Submodule.mem_bot] using ha
-      simp [ha0]
-  · have ha0 : a = 0 := by
-      simpa only [shiftedQuotientGrading_piece, shiftedGrading_eq_bot ℳ d.monoid p hr,
-        Submodule.map_bot, Submodule.mem_bot] using ha
-    simp [ha0]
+  by_cases hne : a = 0
+  · simp [hne]
+  obtain ⟨hr, hk⟩ := d.mem_cutoff.mp
+    (d.mem_cutoff_of_mem_shiftedQuotientGrading_ne_zero ℳ p ha hne)
+  obtain ⟨b, hb, rfl⟩ := (d.mem_shiftedQuotientGrading_iff ℳ p).mp ha
+  rw [d.decompose_shiftedQuotientGrading ℳ p k ⟨r, hr⟩ hk]
+  rw [d.shiftedQuotientComponent_truncatedBCHAction_of_mem_same ℒ ℳ p
+    (by simpa using hr) k g b ((mem_shiftedGrading ℳ d.monoid p).mp hb)]
+  congr 1
+  apply Subtype.ext
+  exact coe_shiftedInclusion ℳ d.monoid p ⟨r, hr⟩ _
 
 end
 
