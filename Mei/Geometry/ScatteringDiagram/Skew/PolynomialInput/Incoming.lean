@@ -63,6 +63,14 @@ theorem alphabetNormal_ne_zero (i : B.unfrozenIndex) : I.alphabetNormal i ≠ 0 
   have h := DFunLike.congr_fun he (B.basis.coord i, 0)
   simp at h
 
+omit [DecidableEq ι] in
+/-- The cylinder normal is primitive: it takes the value one on the character
+`(eᵢ*, 0)`, and evaluation at that character is an integral functional on normals. -/
+theorem isPrimitive_alphabetNormal (i : B.unfrozenIndex) :
+    TauCeti.IsPrimitive (I.alphabetNormal i) :=
+  TauCeti.isPrimitive_def.mpr ⟨AddMonoidHom.toIntLinearMap
+    (AddMonoidHom.eval (B.basis.coord i, 0)), by simp⟩
+
 variable [CommRing R]
 
 local notation "χ" i => AddMonoidHom.comp (Int.castAddHom R) (I.alphabetNormal i)
