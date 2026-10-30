@@ -38,15 +38,6 @@ namespace Mei.CompletedGroup
 
 variable {F G : ℕᵒᵖ ⥤ GrpCat.{u}} {ι κ : Type*}
 
-/-- The support of a family's projections grows with the cutoff. -/
-theorem monotone_mulSupport_projection (x : ι → completedGroup F) :
-    Monotone (fun k => Function.mulSupport fun i => projection k (x i)) := by
-  intro k l hkl i hi he
-  apply hi
-  change projection l (x i) = 1 at he
-  change projection k (x i) = 1
-  rw [← map_projection k l hkl (x i), he, map_one]
-
 /-- A family has finite support at each order if only finitely many factors have
 nonidentity projection to any fixed tower group. -/
 abbrev HasFiniteSupport (x : ι → completedGroup F) : Prop :=

@@ -48,15 +48,15 @@ theorem truncation_levelPathProduct {k l : ℕ} (hkl : k ≤ l)
       D.levelPathProduct k
         ((WallComplement.restrictPrefunctor (fun j : D.active l => (D.wall j).support)
           (Set.inclusion (D.active_mono hkl))).mapPath p) := by
-  let : Finite (Function.mulSupport fun j => CompletedGroup.projection k (D.wall j).label) :=
-    Set.finite_coe_iff.mpr (D.finite_active k)
-  let : Finite (Function.mulSupport fun j => CompletedGroup.projection l (D.wall j).label) :=
-    Set.finite_coe_iff.mpr (D.finite_active l)
-  simp only [levelPathProduct, active] at *
-  exact p.map_wallPathProduct_projection (fun j => (D.wall j).support)
-    (fun j => h.realCharacter (D.wall j).normal) (fun j => (D.wall j).label)
-    (fun a b hab => (D.wall a).commute_label_of_direction_eq (D.wall b)
-      (congrArg AffineSubspace.direction hab)) hkl
+  have hcomm a b (hab : affineSpan ℝ (D.wall a).support = affineSpan ℝ (D.wall b).support) :=
+    (D.wall a).commute_label_of_direction_eq (D.wall b) (congrArg AffineSubspace.direction hab)
+  have he := p.map_wallPathProduct_projection (fun j => (D.wall j).support)
+    (fun j => h.realCharacter (D.wall j).normal) (fun j => (D.wall j).label) hcomm
+    D.active D.active_def hkl
+  simp only [PositiveDegrees.groupTower_map_hom] at he
+  rw [D.levelPathProduct_eq_wallPathProduct l p fun a b hab => (hcomm a b hab).map _,
+    D.levelPathProduct_eq_wallPathProduct k _ fun a b hab => (hcomm a b hab).map _]
+  exact he
 
 /-- Endpoints lying on no wall active at any cutoff. Identity-labelled walls impose
 no condition on endpoints or paths. -/

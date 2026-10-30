@@ -6,6 +6,7 @@ Authors: Codex
 module
 
 public import Mathlib.Algebra.Category.Grp.Limits
+public import Mathlib.Algebra.Group.Support
 public import Mathlib.CategoryTheory.Limits.Types.Images
 public import Mathlib.GroupTheory.QuotientGroup.Basic
 
@@ -71,6 +72,15 @@ theorem projection_apply (k : ℕ) (x : completedGroup F) : projection k x = x.v
 theorem map_projection (k l : ℕ) (h : k ≤ l) (x : completedGroup F) :
     F.map (homOfLE h).op (projection l x) = projection k x :=
   (mem_completedGroup_iff F x.val).mp x.property k l h
+
+/-- The support of a family's projections grows with the cutoff. -/
+theorem monotone_mulSupport_projection {ι : Type*} (x : ι → completedGroup F) :
+    Monotone (fun k => Function.mulSupport fun i => projection k (x i)) := by
+  intro k l hkl i
+  simp only [Function.mem_mulSupport]
+  intro hi he
+  apply hi
+  rw [← map_projection k l hkl (x i), he, map_one]
 
 /-- Completed elements are determined by their projections. -/
 @[ext]

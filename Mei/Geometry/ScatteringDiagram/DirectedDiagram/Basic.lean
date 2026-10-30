@@ -64,9 +64,13 @@ theorem ofFinite_wall [Finite ι] (W : ι → DirectedWall (d := d) h H) (j : ι
     (ofFinite W).wall j = W j := (rfl)
 
 /-- The indices whose labels survive the order-`k` projection. -/
-@[expose]
 def active (k : ℕ) : Set ι :=
   Function.mulSupport (fun j => CompletedGroup.projection k (D.wall j).label)
+
+/-- The active indices are the support of the projected labels. -/
+theorem active_def (k : ℕ) :
+    D.active k = Function.mulSupport (fun j => CompletedGroup.projection k (D.wall j).label) :=
+  (rfl)
 
 /-- Activity is exactly nontriviality of the projected label. -/
 @[simp]
@@ -107,7 +111,6 @@ theorem exists_level_path (k : ℕ)
   exact ⟨p⟩
 
 /-- The order-`k` transport along a path admissible for the finite active wall family. -/
-@[expose]
 def levelPathProduct (k : ℕ)
     {x y : WallComplement (fun j : D.active k => (D.wall j).support)}
     (p : AdmissiblePLPath x y) : d.truncatedGroup ℒ k :=

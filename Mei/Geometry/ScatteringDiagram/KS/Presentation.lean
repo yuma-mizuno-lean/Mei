@@ -25,7 +25,7 @@ and with abelian rays it carries the `Finset.noncommProd` of the projected label
 indexed walls containing it. This is a `KSComplex` whose path products are the presentation's
 finite-order path products on every common vertex list: at each crossing, the active supports
 met are exactly those containing the crossed wall, and they are crossed with the same sign.
-Raising the cutoff projects these path products and forgets the walls that become inactive, so
+Lowering the cutoff projects these path products and forgets the walls that become inactive, so
 the finite KS complexes form the `CompletedDiagram` of the presentation. The linear presentations
 of the supports are auxiliary choices; the stated properties concern actual cells and supports.
 
@@ -148,6 +148,7 @@ theorem exists_mem_levelComplex_walls_subset (k : ℕ) (j : D.active k) {x : V}
   exact ⟨Q, D.mem_levelComplex_walls.mpr ⟨hQ, j, hsub⟩, hxQ, hsub⟩
 
 /-- The order-`k` complex covers exactly the active supports. -/
+@[simp]
 theorem support_levelComplex (k : ℕ) :
     (D.levelComplex k).support = ⋃ j : D.active k, (D.wall j).support := by
   ext x

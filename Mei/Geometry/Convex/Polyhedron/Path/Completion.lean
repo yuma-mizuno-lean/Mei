@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.Convex.Polyhedron.Path.Restriction
-public import Mei.GroupTheory.CompletedGroup.OrderedProduct
+public import Mei.GroupTheory.CompletedGroup.Basic
 
 /-!
 # Cutoff compatibility of wall products
@@ -31,28 +31,26 @@ variable {V ι : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
   {F : ℕᵒᵖ ⥤ GrpCat.{u}}
 
 /-- Lowering the cutoff of completed wall labels projects transport and forgets exactly
-the walls whose labels become the identity. -/
+the walls whose labels become the identity. The active index sets `A` are given with their
+defining equations, so that a caller with its own name for them need not unfold it. -/
 theorem map_wallPathProduct_projection (W : ι → Set V) (ν : ι → V →ₗ[ℝ] ℝ)
     (label : ι → completedGroup F)
     (hcomm : ∀ a b, affineSpan ℝ (W a) = affineSpan ℝ (W b) →
       Commute (label a) (label b))
-    {k l : ℕ} (hkl : k ≤ l)
-    [Finite (Function.mulSupport fun j => CompletedGroup.projection k (label j))]
-    [Finite (Function.mulSupport fun j => CompletedGroup.projection l (label j))]
-    {x y : WallComplement
-      (fun j : Function.mulSupport (fun j => CompletedGroup.projection l (label j)) => W j)}
-    (p : AdmissiblePLPath x y) :
+    (A : ℕ → Set ι)
+    (hA : ∀ k, A k = Function.mulSupport fun j => CompletedGroup.projection k (label j))
+    {k l : ℕ} (hkl : k ≤ l) [Finite (A k)] [Finite (A l)]
+    {x y : WallComplement (fun j : A l => W j)} (p : AdmissiblePLPath x y) :
     F.map (homOfLE hkl).op
-        (p.wallPathProduct
-          (fun j : Function.mulSupport (fun j => CompletedGroup.projection l (label j)) => ν j)
-          (fun j => CompletedGroup.projection l (label j))
+        (p.wallPathProduct (fun j : A l => ν j) (fun j => CompletedGroup.projection l (label j))
           (fun a b hab => (hcomm a b hab).map (CompletedGroup.projection l))) =
       ((WallComplement.restrictPrefunctor _
-        (Set.inclusion
-          (CompletedGroup.monotone_mulSupport_projection label hkl))).mapPath p).wallPathProduct
-            (fun j : Function.mulSupport (fun j => CompletedGroup.projection k (label j)) => ν j)
-            (fun j => CompletedGroup.projection k (label j))
+        (Set.inclusion ((hA k).trans_subset
+          ((CompletedGroup.monotone_mulSupport_projection label hkl).trans_eq
+            (hA l).symm)))).mapPath p).wallPathProduct
+            (fun j : A k => ν j) (fun j => CompletedGroup.projection k (label j))
             (fun a b hab => (hcomm a b hab).map (CompletedGroup.projection k)) := by
+  obtain rfl : A = _ := funext hA
   let f := Set.inclusion (CompletedGroup.monotone_mulSupport_projection label hkl)
   let φ := (F.map (homOfLE hkl).op).hom
   have hproj (j : Function.mulSupport fun j => CompletedGroup.projection l (label j)) :

@@ -73,6 +73,7 @@ namespace IndexedWall
 variable {s d ℒ} (W : IndexedWall s d ℒ)
 
 /-- The apex of the cone lies in the support. -/
+@[simp]
 theorem zero_mem_support : (0 : V) ∈ W.support := by
   obtain ⟨σ, hσ⟩ := W.isCone
   exact hσ ▸ σ.zero_mem
@@ -212,14 +213,13 @@ theorem truncation_levelPathProduct {k l : ℕ} (hkl : k ≤ l)
       D.levelPathProduct k
         ((WallComplement.restrictPrefunctor (fun j : D.active l => (D.wall j).support)
           (Set.inclusion (D.active_mono hkl))).mapPath p) := by
-  let : Finite (Function.mulSupport fun j => CompletedGroup.projection k (D.wall j).label) :=
-    Set.finite_coe_iff.mpr (D.finite_active k)
-  let : Finite (Function.mulSupport fun j => CompletedGroup.projection l (D.wall j).label) :=
-    Set.finite_coe_iff.mpr (D.finite_active l)
-  simp only [levelPathProduct, active] at *
-  exact p.map_wallPathProduct_projection (fun j => (D.wall j).support)
+  have he := p.map_wallPathProduct_projection (fun j => (D.wall j).support)
     (fun j => s.normal (D.wall j).ray.generator) (fun j => (D.wall j).label)
-    (fun a b hab => (D.wall a).commute_label (D.wall b) hab) hkl
+    (fun a b hab => (D.wall a).commute_label (D.wall b) hab) D.active (fun _ => rfl) hkl
+  simp only [PositiveDegrees.groupTower_map_hom] at he
+  rw [D.levelPathProduct_eq_wallPathProduct l p (D.activeLabels_commute l),
+    D.levelPathProduct_eq_wallPathProduct k _ (D.activeLabels_commute k)]
+  exact he
 
 end IndexedWallPresentation
 
