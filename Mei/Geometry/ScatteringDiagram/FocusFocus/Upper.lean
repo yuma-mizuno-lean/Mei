@@ -18,7 +18,7 @@ upper coordinate changes `x ↦ wx`, `y ↦ w⁻¹y` in the nodal presentations 
 truncated polynomial scalars. Coefficient change and cutoff reduction commute
 with this transport, even when they kill homogeneous coefficients.
 
-We use Mathlib's `AddMonoidAlgebra.domCongr` and `Ideal.quotientEquivAlg`,
+We use Mathlib's `AddMonoidAlgebra.domCongr`, the shear descent `upperQuotient`,
 Tau Ceti's `DirectSum.map_decompose_shift`, and the chamber dictionary
 `truncatedExponentChamberEquiv`. The coordinate conventions follow
 Gross–Siebert, *An Invitation to Toric Degenerations*, §2.2–2.3
@@ -34,44 +34,32 @@ open scoped _root_.LaurentPolynomial Mei.NodeAlgebra
 
 variable (K : Type*) [CommRing K] (k : ℕ) (i : Fin 2)
 
-private theorem map_upperMonoid_orderIdeal :
-    (Ideal.span {(single (![xDegree, yDegree] i) (1 : K)) ^ (k + 1)}).map
-        (domCongr K K upperMonoid : AddMonoidAlgebra K exponentMonoid →+*
-          AddMonoidAlgebra K exponentMonoid) =
-      Ideal.span {(single (![xDegree, yDegree] i) (1 : K)) ^ (k + 1)} := by
-  have hmem (f : AddMonoidAlgebra K exponentMonoid) :
-      domCongr K K upperMonoid f ∈
-          Ideal.span {(single (![xDegree, yDegree] i) (1 : K)) ^ (k + 1)} ↔
-        f ∈ Ideal.span {(single (![xDegree, yDegree] i) (1 : K)) ^ (k + 1)} := by
-    have ho (q : exponentMonoid) : chamberOrder i (upperMonoid q) = chamberOrder i q := by
-      fin_cases i <;> simp
-    simp only [mem_span_single_pow_iff, domCongr_support, Finset.forall_mem_map,
-      Equiv.toEmbedding_apply, AddEquiv.coe_toEquiv, ho]
-  refine (Ideal.map_comap_of_equiv (domCongr K K upperMonoid).toRingEquiv).trans
-    (Ideal.ext fun f => ?_)
-  rw [Ideal.mem_comap, ← hmem, AlgEquiv.toRingEquiv_symm, AlgEquiv.coe_toRingEquiv,
-    AlgEquiv.apply_symm_apply]
+private theorem upperMonoid_mem_orderIdeal (f : AddMonoidAlgebra K exponentMonoid) :
+    domCongr K K upperMonoid f ∈
+        Ideal.span {(single (![xDegree, yDegree] i) (1 : K)) ^ (k + 1)} ↔
+      f ∈ Ideal.span {(single (![xDegree, yDegree] i) (1 : K)) ^ (k + 1)} := by
+  have ho (q : exponentMonoid) : chamberOrder i (upperMonoid q) = chamberOrder i q := by
+    fin_cases i <;> simp
+  simp only [mem_span_single_pow_iff, domCongr_support, Finset.forall_mem_map,
+    Equiv.toEmbedding_apply, AddEquiv.coe_toEquiv, ho]
 
 /-- Upper exponent transport on either absolute chamber order quotient. -/
 def upperExponentOrder : ExponentOrderQuotient K k i ≃ₐ[K] ExponentOrderQuotient K k i :=
-  Ideal.quotientEquivAlg _ _ (domCongr K K upperMonoid)
-    (map_upperMonoid_orderIdeal K k i).symm
+  upperQuotient K _ (upperMonoid_mem_orderIdeal K k i)
 
 /-- The upper change acts on every representative by the exponent shear. -/
 @[simp]
 theorem upperExponentOrder_mk (f : AddMonoidAlgebra K exponentMonoid) :
     upperExponentOrder K k i (Ideal.Quotient.mk _ f) =
       Ideal.Quotient.mk _ (domCongr K K upperMonoid f) :=
-  Ideal.quotientEquivAlg_mk _ _ _ f
+  upperQuotient_mk _ _ _ f
 
 /-- Inverse transport uses the inverse exponent shear. -/
 @[simp]
 theorem upperExponentOrder_symm_mk (f : AddMonoidAlgebra K exponentMonoid) :
     (upperExponentOrder K k i).symm (Ideal.Quotient.mk _ f) =
-      Ideal.Quotient.mk _ (domCongr K K upperMonoid.symm f) := by
-  apply (upperExponentOrder K k i).injective
-  rw [AlgEquiv.apply_symm_apply, upperExponentOrder_mk, ← domCongr_symm,
-    AlgEquiv.apply_symm_apply]
+      Ideal.Quotient.mk _ (domCongr K K upperMonoid.symm f) :=
+  upperQuotient_symm_mk _ _ _ f
 
 /-- Every homogeneous chamber element is transported to the sheared exponent. -/
 private theorem upperExponentOrder_mem_grade (q : ℤ × ℤ × ℤ)

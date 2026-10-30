@@ -123,46 +123,35 @@ private theorem upperOverlap_exponentOverlapEquiv_mk (a : AddMonoidAlgebra R exp
   | single q r =>
     rw [domCongr_single, upperOverlap_exponentOverlapEquiv_single]
 
-private theorem map_upperMonoid_exponentOverlapIdeal :
-    (exponentOverlapIdeal R t k).map
-        (domCongr R R upperMonoid : AddMonoidAlgebra R exponentMonoid →+*
-          AddMonoidAlgebra R exponentMonoid) =
-      exponentOverlapIdeal R t k := by
-  have hmem (a : AddMonoidAlgebra R exponentMonoid) :
-      domCongr R R upperMonoid a ∈ exponentOverlapIdeal R t k ↔
-        a ∈ exponentOverlapIdeal R t k := by
-    rw [← Ideal.Quotient.eq_zero_iff_mem, ← Ideal.Quotient.eq_zero_iff_mem,
-      ← map_eq_zero_iff _ (exponentOverlapEquiv R t k).injective,
-      ← map_eq_zero_iff _ (exponentOverlapEquiv R t k).injective,
-      ← upperOverlap_exponentOverlapEquiv_mk, map_eq_zero_iff _ (upperOverlap t k).injective]
-  refine (Ideal.map_comap_of_equiv (domCongr R R upperMonoid).toRingEquiv).trans
-    (Ideal.ext fun a => ?_)
-  rw [Ideal.mem_comap, ← hmem, AlgEquiv.toRingEquiv_symm, AlgEquiv.coe_toRingEquiv,
-    AlgEquiv.apply_symm_apply]
+private theorem upperMonoid_mem_exponentOverlapIdeal (a : AddMonoidAlgebra R exponentMonoid) :
+    domCongr R R upperMonoid a ∈ exponentOverlapIdeal R t k ↔
+      a ∈ exponentOverlapIdeal R t k := by
+  rw [← Ideal.Quotient.eq_zero_iff_mem, ← Ideal.Quotient.eq_zero_iff_mem,
+    ← map_eq_zero_iff _ (exponentOverlapEquiv R t k).injective,
+    ← map_eq_zero_iff _ (exponentOverlapEquiv R t k).injective,
+    ← upperOverlap_exponentOverlapEquiv_mk, map_eq_zero_iff _ (upperOverlap t k).injective]
 
 /-- The exponent shear descends to an automorphism after imposing the smoothing
 relation and both chamber cutoffs. -/
 def upperExponentOverlap :
     (AddMonoidAlgebra R exponentMonoid ⧸ exponentOverlapIdeal R t k) ≃ₐ[R]
       (AddMonoidAlgebra R exponentMonoid ⧸ exponentOverlapIdeal R t k) :=
-  Ideal.quotientEquivAlg _ _ (domCongr R R upperMonoid)
-    (map_upperMonoid_exponentOverlapIdeal R t k).symm
+  upperQuotient R _ (upperMonoid_mem_exponentOverlapIdeal R t k)
 
 /-- On quotient representatives the descended transition is the original
 monoid-algebra shear. -/
 @[simp]
 theorem upperExponentOverlap_mk (a : AddMonoidAlgebra R exponentMonoid) :
     upperExponentOverlap R t k (Ideal.Quotient.mk _ a) =
-      Ideal.Quotient.mk _ (domCongr R R upperMonoid a) := by
-  exact Ideal.quotientEquivAlg_mk _ _ _ a
+      Ideal.Quotient.mk _ (domCongr R R upperMonoid a) :=
+  upperQuotient_mk _ _ _ a
 
 /-- The inverse transition is induced by the inverse exponent shear. -/
 @[simp]
 theorem upperExponentOverlap_symm_mk (a : AddMonoidAlgebra R exponentMonoid) :
     (upperExponentOverlap R t k).symm (Ideal.Quotient.mk _ a) =
-      Ideal.Quotient.mk _ ((domCongr R R upperMonoid).symm a) := by
-  apply (upperExponentOverlap R t k).injective
-  rw [AlgEquiv.apply_symm_apply, upperExponentOverlap_mk, AlgEquiv.apply_symm_apply]
+      Ideal.Quotient.mk _ ((domCongr R R upperMonoid).symm a) :=
+  upperQuotient_symm_mk _ _ _ a
 
 /-- The overlap dictionary intertwines the two actual quotient automorphisms. -/
 @[simp]
