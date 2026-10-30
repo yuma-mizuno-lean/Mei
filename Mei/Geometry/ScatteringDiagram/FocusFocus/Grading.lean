@@ -38,57 +38,48 @@ open scoped Mei.NodeAlgebra
 
 variable (K : Type*) [CommRing K] (k : ℕ) (i : Fin 2)
 
-/-- The order used for the right (`i=0`) or left (`i=1`) chamber cutoff. -/
-def chamberOrder : exponentMonoid →+ ℕ := ![rightOrder, leftOrder] i
-
-@[simp] theorem chamberOrder_zero : chamberOrder 0 = rightOrder := (rfl)
-@[simp] theorem chamberOrder_one : chamberOrder 1 = leftOrder := (rfl)
-
 /-- Full exponent pieces in the absolute chamber order quotient. -/
-abbrev exponentOrderGrade (q : ℤ × ℤ × ℤ) : Submodule K (ExponentOrderQuotient K k i) :=
+def exponentOrderGrade (q : ℤ × ℤ × ℤ) : Submodule K (ExponentOrderQuotient K k i) :=
   TauCeti.GradedAlgebra.quotientPiece (gradeBy K exponentMonoid.subtype)
     (Ideal.span {(single (![xDegree, yDegree] i) (1 : K)) ^ (k + 1)}) q
 
-/-- The chamber quotient retains a multiplicative direct-sum exponent grading. -/
-instance : GradedAlgebra (exponentOrderGrade K k i) := by
-  apply TauCeti.GradedAlgebra.gradedAlgebraQuotientPiece (gradeBy K exponentMonoid.subtype)
+/-- Each piece is the image of the corresponding monoid-algebra grade. -/
+theorem exponentOrderGrade_def :
+    exponentOrderGrade K k i = TauCeti.GradedAlgebra.quotientPiece
+      (gradeBy K exponentMonoid.subtype)
+      (Ideal.span {(single (![xDegree, yDegree] i) (1 : K)) ^ (k + 1)}) := (rfl)
+
+/-- The exponent pieces form an internal direct sum decomposition of the chamber. -/
+theorem isInternal_exponentOrderGrade : DirectSum.IsInternal (exponentOrderGrade K k i) := by
+  rw [exponentOrderGrade_def]
+  apply TauCeti.GradedAlgebra.isInternal_quotientPiece
   apply Ideal.homogeneous_span
   rintro x (rfl : x = _)
   rw [single_pow, one_pow]
   exact ⟨_, single_mem_gradeBy _ _ _⟩
 
+instance : SetLike.GradedMonoid (exponentOrderGrade K k i) := by
+  rw [exponentOrderGrade_def]
+  infer_instance
+
+/-- The chamber quotient retains a multiplicative direct-sum exponent grading. -/
+instance : GradedAlgebra (exponentOrderGrade K k i) :=
+  DirectSum.IsInternal.gradedAlgebra (isInternal_exponentOrderGrade K k i)
+
 private theorem sourceGrade_coe (q : exponentMonoid) :
     gradeBy K exponentMonoid.subtype q.val = grade K q := by
   ext f
-  exact forall_congr' fun s => imp_congr_right fun _ => Subtype.coe_inj
+  simp only [mem_gradeBy_iff, Set.subset_def, Set.mem_preimage, Set.mem_singleton_iff,
+    AddSubmonoid.coe_subtype, Subtype.val_inj, id_eq]
 
 /-- A piece is exactly the scalar multiples of the class of its monomial. -/
-@[simp↓]
+@[simp]
 theorem mem_exponentOrderGrade_iff (q : exponentMonoid) (x : ExponentOrderQuotient K k i) :
     x ∈ exponentOrderGrade K k i q.val ↔
       ∃ r : K, Ideal.Quotient.mk _ (single q r) = x := by
   rw [exponentOrderGrade, TauCeti.GradedAlgebra.mem_quotientPiece_iff]
   simp only [sourceGrade_coe, mem_grade_iff', LinearMap.mem_range, lsingle_apply]
   exact ⟨fun ⟨_, ⟨r, rfl⟩, hx⟩ => ⟨r, hx⟩, fun ⟨r, hr⟩ => ⟨_, ⟨r, rfl⟩, hr⟩⟩
-
-/-- The cutoff ideal consists precisely of the terms beyond the chamber order. -/
-theorem mem_chamberCutoff_iff (f : AddMonoidAlgebra K exponentMonoid) :
-    f ∈ Ideal.span {(single (![xDegree, yDegree] i) (1 : K)) ^ (k + 1)} ↔
-      ∀ q ∈ f.coeff.support, k < chamberOrder i q := by
-  fin_cases i
-  · exact (mem_span_xDegree_pow_iff f (k + 1)).trans
-      (forall_congr' fun q => forall_congr' fun _ => Nat.lt_iff_add_one_le.symm)
-  · exact (mem_span_yDegree_pow_iff f (k + 1)).trans
-      (forall_congr' fun q => forall_congr' fun _ => Nat.lt_iff_add_one_le.symm)
-
-/-- A monomial class vanishes exactly when its coefficient vanishes or its
-exponent is removed by the chamber cutoff. -/
-@[simp]
-theorem exponentOrderQuotient_single_eq_zero_iff (q : exponentMonoid) (r : K) :
-    (Ideal.Quotient.mk _ (single q r) : ExponentOrderQuotient K k i) = 0 ↔
-      r = 0 ∨ k < chamberOrder i q := by
-  rw [Ideal.Quotient.eq_zero_iff_mem, mem_chamberCutoff_iff]
-  by_cases hr : r = 0 <;> simp [hr]
 
 /-- Degrees beyond the chamber cutoff have zero homogeneous piece. -/
 @[simp]
@@ -105,12 +96,12 @@ theorem exponentOrderGrade_eq_bot_of_notMem (q : ℤ × ℤ × ℤ) (hq : q ∉ 
     exponentOrderGrade K k i q = ⊥ := by
   apply TauCeti.GradedAlgebra.quotientPiece_eq_bot_of_le
   intro f hf
-  have hf0 : f = 0 := by
-    apply coeff_inj.mp
-    ext s
-    by_contra hs
-    exact hq ((hf s (Finsupp.mem_support_iff.mpr hs)) ▸ s.property)
-  simp [hf0]
+  -- Every exponent in the support of `f` would map to `q`, which lies outside the monoid.
+  have hsupp : f.coeff.support = ∅ := Finset.eq_empty_of_forall_notMem fun s hs =>
+    hq (((mem_gradeBy_iff K _ _ f).mp hf hs : s.val = q) ▸ s.property)
+  rw [Finsupp.support_eq_empty, ← coeff_zero, coeff_inj] at hsupp
+  rw [hsupp]
+  exact zero_mem _
 
 /-- Projection of a chamber class at a monoid exponent keeps the original
 coefficient, including when that monomial is killed by the cutoff. -/
@@ -125,57 +116,111 @@ theorem coe_decompose_exponentOrderGrade_mk (f : AddMonoidAlgebra K exponentMono
       (by rwa [sourceGrade_coe])) q f
   simpa using h.symm
 
-/-- Every retained exponent piece is free of rank one over the original
-coefficient ring, with generator the monomial class. -/
-def exponentOrderGradeEquiv (q : exponentMonoid) (hq : chamberOrder i q ≤ k) :
-    K ≃ₗ[K] exponentOrderGrade K k i q.val := by
-  let f : K →ₗ[K] exponentOrderGrade K k i q.val :=
-    (((Ideal.Quotient.mkₐ K _).toLinearMap).comp (lsingle q)).codRestrict _
-      (fun r => (mem_exponentOrderGrade_iff K k i q _).mpr ⟨r, rfl⟩)
-  apply LinearEquiv.ofBijective f
+/-- The monomial-class map from coefficients into a full exponent piece. -/
+private def exponentOrderGradeMk (q : exponentMonoid) :
+    K →ₗ[K] exponentOrderGrade K k i q.val :=
+  (((Ideal.Quotient.mkₐ K _).toLinearMap).comp (lsingle q)).codRestrict _
+    (fun r => (mem_exponentOrderGrade_iff K k i q _).mpr ⟨r, rfl⟩)
+
+private theorem coe_exponentOrderGradeMk_apply (q : exponentMonoid) (r : K) :
+    (exponentOrderGradeMk K k i q r : ExponentOrderQuotient K k i) =
+      Ideal.Quotient.mk _ (single q r) := by
+  simp only [exponentOrderGradeMk, LinearMap.codRestrict_apply, LinearMap.comp_apply,
+    AlgHom.toLinearMap_apply, Ideal.Quotient.mkₐ_eq_mk, lsingle_apply]
+
+private theorem exponentOrderGradeMk_bijective (q : exponentMonoid)
+    (hq : chamberOrder i q ≤ k) : Function.Bijective (exponentOrderGradeMk K k i q) := by
   constructor
-  · apply (LinearMap.ker_eq_bot).mp
-    apply eq_bot_iff.mpr
+  · rw [← LinearMap.ker_eq_bot, eq_bot_iff]
     intro r hr
-    have hr' : (Ideal.Quotient.mk _ (single q r) : ExponentOrderQuotient K k i) = 0 :=
-      congrArg Subtype.val hr
-    exact ((exponentOrderQuotient_single_eq_zero_iff K k i q r).mp hr').resolve_right
+    rw [LinearMap.mem_ker, Subtype.ext_iff, coe_exponentOrderGradeMk_apply,
+      Submodule.coe_zero] at hr
+    exact ((exponentOrderQuotient_single_eq_zero_iff K k i q r).mp hr).resolve_right
       (Nat.not_lt.mpr hq)
   · intro x
     obtain ⟨r, hr⟩ := (mem_exponentOrderGrade_iff K k i q x).mp x.property
-    exact ⟨r, Subtype.ext hr⟩
+    exact ⟨r, Subtype.ext ((coe_exponentOrderGradeMk_apply K k i q r).trans hr)⟩
+
+/-- Every retained exponent piece is free of rank one over the original
+coefficient ring, with generator the monomial class. -/
+def exponentOrderGradeEquiv (q : exponentMonoid) (hq : chamberOrder i q ≤ k) :
+    K ≃ₗ[K] exponentOrderGrade K k i q.val :=
+  LinearEquiv.ofBijective (exponentOrderGradeMk K k i q) (exponentOrderGradeMk_bijective K k i q hq)
 
 /-- The rank-one parameterization uses the whole monomial coefficient. -/
 @[simp]
-theorem coe_exponentOrderGradeEquiv (q : exponentMonoid) (hq : chamberOrder i q ≤ k)
+theorem coe_exponentOrderGradeEquiv_apply (q : exponentMonoid) (hq : chamberOrder i q ≤ k)
     (r : K) :
     (exponentOrderGradeEquiv K k i q hq r : ExponentOrderQuotient K k i) =
-      Ideal.Quotient.mk _ (single q r) := (rfl)
+      Ideal.Quotient.mk _ (single q r) := by
+  rw [exponentOrderGradeEquiv, LinearEquiv.ofBijective_apply, coe_exponentOrderGradeMk_apply]
+
+/-- The coefficient of a retained homogeneous monomial class is read off by the
+inverse of the rank-one parameterization. -/
+@[simp]
+theorem exponentOrderGradeEquiv_symm_mk (q : exponentMonoid) (hq : chamberOrder i q ≤ k)
+    (r : K) (h : Ideal.Quotient.mk _ (single q r) ∈ exponentOrderGrade K k i q.val) :
+    (exponentOrderGradeEquiv K k i q hq).symm ⟨Ideal.Quotient.mk _ (single q r), h⟩ = r := by
+  rw [LinearEquiv.symm_apply_eq]
+  exact Subtype.ext (coe_exponentOrderGradeEquiv_apply K k i q hq r).symm
 
 /-- The full exponent grading on the nodal chamber, transported from the
 absolute monoid order quotient. Scalars in `K[t]/(t^(k+1))` are graded over `K`. -/
-abbrev truncatedExponentChamberGrade (q : ℤ × ℤ × ℤ) :
+def truncatedExponentChamberGrade (q : ℤ × ℤ × ℤ) :
     Submodule K (TruncatedExponentChamber K k i) :=
   (exponentOrderGrade K k i q).comap (truncatedExponentChamberEquiv K k i).symm.toLinearMap
 
+/-- A nodal class is homogeneous exactly when its absolute representative is. -/
+theorem mem_truncatedExponentChamberGrade_iff (q : ℤ × ℤ × ℤ)
+    (x : TruncatedExponentChamber K k i) :
+    x ∈ truncatedExponentChamberGrade K k i q ↔
+      (truncatedExponentChamberEquiv K k i).symm x ∈ exponentOrderGrade K k i q :=
+  Submodule.mem_comap
+
+/-- A nodal piece at a monoid exponent consists of the images of the monomial classes. -/
+@[simp]
+theorem mem_truncatedExponentChamberGrade_iff_exists (q : exponentMonoid)
+    (x : TruncatedExponentChamber K k i) :
+    x ∈ truncatedExponentChamberGrade K k i q.val ↔
+      ∃ r : K, truncatedExponentChamberEquiv K k i (Ideal.Quotient.mk _ (single q r)) = x := by
+  simp only [mem_truncatedExponentChamberGrade_iff, mem_exponentOrderGrade_iff,
+    ← (truncatedExponentChamberEquiv K k i).eq_symm_apply]
+
+/-- Degrees beyond the chamber cutoff have zero nodal piece. -/
+@[simp]
+theorem truncatedExponentChamberGrade_eq_bot_of_lt (q : exponentMonoid)
+    (hq : k < chamberOrder i q) : truncatedExponentChamberGrade K k i q.val = ⊥ := by
+  rw [truncatedExponentChamberGrade, exponentOrderGrade_eq_bot_of_lt K k i q hq,
+    Submodule.comap_bot, LinearMap.ker_eq_bot]
+  exact (truncatedExponentChamberEquiv K k i).symm.injective
+
+/-- No exponent outside the coefficient monoid occurs in a nodal chamber. -/
+@[simp]
+theorem truncatedExponentChamberGrade_eq_bot_of_notMem (q : ℤ × ℤ × ℤ)
+    (hq : q ∉ exponentMonoid) : truncatedExponentChamberGrade K k i q = ⊥ := by
+  rw [truncatedExponentChamberGrade, exponentOrderGrade_eq_bot_of_notMem K k i q hq,
+    Submodule.comap_bot, LinearMap.ker_eq_bot]
+  exact (truncatedExponentChamberEquiv K k i).symm.injective
+
 instance : SetLike.GradedMonoid (truncatedExponentChamberGrade K k i) where
   one_mem := by
-    simp only [Submodule.mem_comap, AlgEquiv.toLinearMap_apply, map_one]
+    rw [mem_truncatedExponentChamberGrade_iff, map_one]
     exact SetLike.GradedOne.one_mem
   mul_mem a b x y hx hy := by
-    simp only [Submodule.mem_comap, AlgEquiv.toLinearMap_apply, map_mul]
+    rw [mem_truncatedExponentChamberGrade_iff] at hx hy ⊢
+    rw [map_mul]
     exact SetLike.mul_mem_graded hx hy
 
 /-- The relative nodal presentation carries the same multiplicative exponent
 decomposition as the absolute chamber. -/
-instance : GradedAlgebra (truncatedExponentChamberGrade K k i) := by
-  apply DirectSum.IsInternal.gradedAlgebra
-  exact TauCeti.DirectSum.isInternal_comap (exponentOrderGrade K k i)
-    (truncatedExponentChamberGrade K k i)
-    (truncatedExponentChamberEquiv K k i).symm.toLinearMap
-    (truncatedExponentChamberEquiv K k i).symm.injective
-    (fun _ _ => Iff.rfl)
-    (fun _ _ => (truncatedExponentChamberEquiv K k i).symm.surjective _)
+instance : GradedAlgebra (truncatedExponentChamberGrade K k i) :=
+  DirectSum.IsInternal.gradedAlgebra <|
+    TauCeti.DirectSum.isInternal_comap (exponentOrderGrade K k i)
+      (truncatedExponentChamberGrade K k i)
+      (truncatedExponentChamberEquiv K k i).symm.toLinearMap
+      (truncatedExponentChamberEquiv K k i).symm.injective
+      (fun _ _ => mem_truncatedExponentChamberGrade_iff K k i _ _)
+      (fun _ _ => (truncatedExponentChamberEquiv K k i).symm.surjective _)
 
 /-- Homogeneous projection in a nodal chamber is projection in the absolute
 exponent quotient followed by the chamber dictionary. -/
@@ -190,7 +235,8 @@ theorem coe_decompose_truncatedExponentChamberGrade (q : ℤ × ℤ × ℤ)
   have h := DirectSum.map_decompose_shift (truncatedExponentChamberGrade K k i)
     (exponentOrderGrade K k i)
     (truncatedExponentChamberEquiv K k i).symm.toRingEquiv.toAddEquiv.toAddMonoidHom
-    id Function.injective_id (fun _ _ hx => hx) q x
+    id Function.injective_id
+    (fun _ _ hx => (mem_truncatedExponentChamberGrade_iff K k i _ _).mp hx) q x
   exact (truncatedExponentChamberEquiv K k i).symm_apply_eq.mp h
 
 end Mei.FocusFocus
