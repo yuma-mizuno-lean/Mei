@@ -33,11 +33,11 @@ variable {X : TopCat.{u}} {S : Set X} {M : Type v}
   (T : DenseBasisTransport S M) {A : Type w} (q : A → S)
   (hd : DenseRange (fun a => (q a).val))
 
-include hd
-
-/-- A section is determined by its values on any ambient-dense collection of
-coefficient points, even when the coefficient domain is larger. -/
-theorem section_ext_of_dense {U : Opens X} {s t : T.sheaf.presheaf.obj (op U)}
+/-- A section over `U` is determined by its values on any collection of
+coefficient points meeting every nonempty open subset of `U`. -/
+theorem section_ext_of_exists_mem_open {U : Opens X}
+    (hU : ∀ V : Opens X, V ≤ U → (V : Set X).Nonempty → ∃ a, (q a).val ∈ V)
+    {s t : T.sheaf.presheaf.obj (op U)}
     (h : ∀ a ha, T.value s (q a) ha = T.value t (q a) ha) : s = t := by
   apply T.section_ext
   intro x hx
@@ -49,10 +49,18 @@ theorem section_ext_of_dense {U : Opens X} {s t : T.sheaf.presheaf.obj (op U)}
     Opens.isBasis_iff_nbhd.mp T.isBasis (show x.val ∈ V ⊓ W from ⟨hxV, hxW⟩)
   have hBV : B ≤ V := hBVW.trans inf_le_left
   have hBW : B ≤ W := hBVW.trans inf_le_right
-  obtain ⟨a, ha⟩ := hd.exists_mem_open B.isOpen ⟨x.val, hxB⟩
+  obtain ⟨a, ha⟩ := hU B (hBV.trans iV.le) ⟨x.val, hxB⟩
   apply (T.transport B hB x (q a) hxB ha).injective
   exact (hsV B hB hBV x (q a) hxB ha).trans
     ((h a (iV.le (hBV ha))).trans (htW B hB hBW x (q a) hxB ha).symm)
+
+include hd
+
+/-- A section is determined by its values on any ambient-dense collection of
+coefficient points, even when the coefficient domain is larger. -/
+theorem section_ext_of_dense {U : Opens X} {s t : T.sheaf.presheaf.obj (op U)}
+    (h : ∀ a ha, T.value s (q a) ha = T.value t (q a) ha) : s = t :=
+  T.section_ext_of_exists_mem_open q (fun V _ hV => hd.exists_mem_open V.isOpen hV) h
 
 variable (f : A → M)
   (hf : ∀ B (hB : B ∈ T.basis) a b ha hb,

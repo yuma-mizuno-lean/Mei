@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Topology.Sheaves.DenseBasisTransport
+public import Mei.Topology.Sheaves.DenseBasisTransport.Extension
 public import Mathlib.Topology.Sheaves.Functors
 
 /-!
@@ -36,37 +36,22 @@ variable {X Y : TopCat.{u}} {S : Set X} {S' : Set Y} {M N : Type v}
 include T hq in
 private theorem exists_coefficient_in_image {U : Opens X} {V : Opens Y}
     (hVU : V ≤ hj.functor.obj U) (hne : (V : Set Y).Nonempty) :
-    ∃ x : S, x.val ∈ U ∧ (q x).val ∈ V := by
+    ∃ x : S, (q x).val ∈ V := by
   obtain ⟨y, hy⟩ := hne
   obtain ⟨z, hz, rfl⟩ := hVU hy
   obtain ⟨x, hxV, hxS⟩ := T.dense.inter_open_nonempty
     ((Opens.map j).obj V) ((Opens.map j).obj V).isOpen ⟨z, hy⟩
   simp only [Opens.map_coe, Set.mem_preimage] at hxV
-  have hxU : x ∈ U := by
-    obtain ⟨w, hw, he⟩ := hVU hxV
-    exact hj.injective he ▸ hw
-  exact ⟨⟨x, hxS⟩, hxU, by rw [hq]; exact hxV⟩
+  exact ⟨⟨x, hxS⟩, by rw [hq]; exact hxV⟩
 
 include T hq in
 /-- On the image of a source open, target sections are determined by their values
 at the mapped source coefficient points. -/
 theorem section_ext_image {U : Opens X} {V : Opens Y} (hVU : V ≤ hj.functor.obj U)
     {s t : T'.sheaf.presheaf.obj (op V)}
-    (h : ∀ x hx, T'.value s (q x) hx = T'.value t (q x) hx) : s = t := by
-  apply T'.section_ext
-  intro y hy
-  obtain ⟨V, hyV, iV, hsV⟩ := T'.locallyParallel_value s ⟨y.val, hy⟩
-  obtain ⟨W, hyW, iW, htW⟩ := T'.locallyParallel_value t ⟨y.val, hy⟩
-  rw [prelocal_pred_iff] at hsV htW
-  obtain ⟨B, hB, hyB, hBVW⟩ :=
-    Opens.isBasis_iff_nbhd.mp T'.isBasis (U := V ⊓ W) ⟨hyV, hyW⟩
-  have hBV : B ≤ V := hBVW.trans inf_le_left
-  have hBW : B ≤ W := hBVW.trans inf_le_right
-  obtain ⟨x, hxU, hxB⟩ := T.exists_coefficient_in_image j hj q hq
-    ((hBV.trans iV.le).trans hVU) ⟨y.val, hyB⟩
-  apply (T'.transport B hB y (q x) hyB hxB).injective
-  exact (hsV B hB hBV y (q x) hyB hxB).trans
-    ((h x (iV.le (hBV hxB))).trans (htW B hB hBW y (q x) hyB hxB).symm)
+    (h : ∀ x hx, T'.value s (q x) hx = T'.value t (q x) hx) : s = t :=
+  T'.section_ext_of_exists_mem_open q
+    (fun _ hW hne => T.exists_coefficient_in_image j hj q hq (hW.trans hVU) hne) h
 
 include hq in
 /-- A mapped coefficient point belongs to the image of every source open
@@ -138,12 +123,6 @@ private theorem point_mem_image_iff (U : Opens X) (x : S) :
   · intro hx
     exact ⟨x.val, hx, rfl⟩
 
-private theorem value_map {U V : Opens Y} (i : V ⟶ U)
-    (s : T'.sheaf.presheaf.obj (op U)) (x : S') (hx : x.val ∈ V) :
-    T'.value (T'.sheaf.presheaf.map i.op s) x hx = T'.value s x (i.le hx) := by
-  have hi : i = homOfLE i.le := Subsingleton.elim _ _
-  rw [hi, value_restrict]
-
 include htransport in
 private theorem existsUnique_mapSection {U : Opens X} (s : T.sheaf.presheaf.obj (op U)) :
     ∃! t : T'.sheaf.presheaf.obj (op (hj.functor.obj U)),
@@ -164,17 +143,18 @@ private theorem existsUnique_mapSection {U : Opens X} (s : T.sheaf.presheaf.obj 
     intro x hx
     have hxB := (point_mem_image_iff j hj q hq B.carrier x).mp hx.1
     have hxC := (point_mem_image_iff j hj q hq C.carrier x).mp hx.2
-    rw [value_map, value_map]
-    exact (T.value_chartSection T' j hj q hq φ hchart htransport B x hxB).trans
-      (T.value_chartSection T' j hj q hq φ hchart htransport C x hxC).symm
+    exact (T'.value_restrict inf_le_left _ _ hx).trans
+      ((T.value_chartSection T' j hj q hq φ hchart htransport B x hxB).trans
+        ((T.value_chartSection T' j hj q hq φ hchart htransport C x hxC).symm.trans
+          (T'.value_restrict inf_le_right _ _ hx).symm))
   obtain ⟨t, ht, _⟩ := T'.sheaf.existsUnique_gluing' cover
     (hj.functor.obj U) inclusion hcover localSection hcompatible
   refine ⟨t, ?_, ?_⟩
   · intro x hx
     obtain ⟨B, hxB⟩ := T.exists_sectionChart s x.val hx
     have hxB' : (q x).val ∈ cover B := by rw [hq]; exact ⟨x.val, hxB, rfl⟩
-    have he := congrArg (fun r => T'.value r (q x) hxB') (ht B)
-    rw [value_map] at he
+    have he := (T'.value_restrict (inclusion B).le t (q x) hxB').symm.trans
+      (congrArg (fun r => T'.value r (q x) hxB') (ht B))
     exact he.trans (T.value_chartSection T' j hj q hq φ hchart htransport B x hxB)
   · intro t' ht'
     apply T.section_ext_image T' j hj q hq le_rfl
@@ -182,8 +162,8 @@ private theorem existsUnique_mapSection {U : Opens X} (s : T.sheaf.presheaf.obj 
     have hxU := (point_mem_image_iff j hj q hq U x).mp hx
     obtain ⟨B, hxB⟩ := T.exists_sectionChart s x.val hxU
     have hxB' : (q x).val ∈ cover B := by rw [hq]; exact ⟨x.val, hxB, rfl⟩
-    have he := congrArg (fun r => T'.value r (q x) hxB') (ht B)
-    rw [value_map] at he
+    have he := (T'.value_restrict (inclusion B).le t (q x) hxB').symm.trans
+      (congrArg (fun r => T'.value r (q x) hxB') (ht B))
     exact (ht' x hxU).trans
       (he.trans (T.value_chartSection T' j hj q hq φ hchart htransport B x hxB)).symm
 
@@ -222,10 +202,11 @@ def mapOfIntertwining : T.sheaf ⟶ T'.imageRestriction j hj := by
       (T.sheaf.presheaf.map i s)) (q x) hx =
     T'.value (T'.sheaf.presheaf.map (hj.functor.map i.unop).op
       (T.mapSection T' j hj q hq φ hchart htransport s)) (q x) hx
-  rw [T.value_mapSection T' j hj q hq φ hchart htransport
-    (T.sheaf.presheaf.map i s) x hxV, value_map,
-    T.value_mapSection T' j hj q hq φ hchart htransport s x (i.unop.le hxV)]
-  exact congrArg φ (T.value_map i.unop s x hxV)
+  refine (T.value_mapSection T' j hj q hq φ hchart htransport
+    (T.sheaf.presheaf.map i s) x hxV).trans
+      (Eq.trans ?_ (T'.value_restrict (hj.functor.map i.unop).le _ (q x) hx).symm)
+  rw [T.value_mapSection T' j hj q hq φ hchart htransport s x (i.unop.le hxV)]
+  exact congrArg φ (T.value_restrict i.unop.le s x hxV)
 
 /-- On every source coefficient point, the sheaf morphism applies the prescribed
 coefficient map. Its target value exists even when other target points are missing
