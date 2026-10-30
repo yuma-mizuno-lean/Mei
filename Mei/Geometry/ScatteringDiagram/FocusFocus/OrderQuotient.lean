@@ -148,10 +148,8 @@ private theorem backward_toChamber_single (q : exponentMonoid) (r : K) :
   congr 1
   simp only [single_pow, one_pow, single_mul_single, mul_one]
   congr 1
-  apply exponentEquiv.injective
-  simp only [map_add, map_nsmul, exponentEquiv_apply, coe_tangentDegree,
-    coe_xDegree, coe_yDegree, leftOrder_apply, rightOrder_apply]
-  ext <;> simp
+  simpa [leftOrder_apply, rightOrder_apply, add_comm, add_left_comm, add_assoc] using
+    (exponentEquiv_symm_eq (exponentEquiv q)).symm.trans (exponentEquiv.symm_apply_apply q)
 
 private theorem forward_scalarBack (r : S) :
     forward K k i (scalarBack K k i r) = algebraMap S (TruncatedExponentChamber K k i) r := by
@@ -178,7 +176,8 @@ private theorem forward_scalarBack (r : S) :
       have hS : algebraMap S[ℤ] (TruncatedExponentChamber K k i)
           (_root_.LaurentPolynomial.C τ) = algebraMap S (TruncatedExponentChamber K k i) τ := by
         rw [IsScalarTower.algebraMap_apply S S[ℤ]]
-        rfl
+        exact congrArg (algebraMap S[ℤ] (TruncatedExponentChamber K k i))
+          (_root_.LaurentPolynomial.C_eq_algebraMap τ)
       simpa [toChamber] using hS
   exact RingHom.congr_fun he r
 
@@ -305,7 +304,8 @@ theorem truncatedExponentChamberEquiv_symm_parameter :
   simp only [exponentPolynomialEquiv_smoothingDegree, map_mul, MvPolynomial.map_X,
     NodeAlgebra.mk_X, NodeAlgebra.coord_zero_mul_coord_one, Ideal.Quotient.mk_algebraMap]
   rw [IsScalarTower.algebraMap_apply S S[ℤ]]
-  rfl
+  exact (congrArg (algebraMap S[ℤ] (TruncatedExponentChamber K k i))
+    (_root_.LaurentPolynomial.C_eq_algebraMap τ)).symm
 
 /-- The inverse fixes all tangential Laurent monomials. -/
 @[simp]
