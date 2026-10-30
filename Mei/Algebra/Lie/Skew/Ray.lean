@@ -71,6 +71,7 @@ theorem rayGenerator_mem (j : ℕ) (c : R) : rayGenerator β hβ hn hn0 j c ∈ 
   (mem_positiveGrading_iff β hβ d _ _).mpr ((mem_grade_iff β hβ _ _).mpr ⟨c, rfl⟩)
 
 /-- Generators on the rays of two degrees on which the skew form vanishes commute. -/
+@[simp]
 theorem rayGenerator_bracket_rayGenerator_of_eq_zero {n' : Γ} (hn' : n' ∈ d.monoid)
     (hn0' : n' ≠ 0) (h : β n n' = 0) (i j : ℕ) (b c : R) :
     ⁅rayGenerator β hβ hn hn0 i b, rayGenerator β hβ hn' hn0' j c⁆ = 0 := by
@@ -125,6 +126,7 @@ theorem completionProjection_raySeries (k : ℕ) (f : R⟦X⟧) :
   rfl
 
 /-- Ray series of two degrees on which the skew form vanishes commute. -/
+@[simp]
 theorem raySeries_bracket_raySeries_of_eq_zero {n' : Γ} (hn' : n' ∈ d.monoid) (hn0' : n' ≠ 0)
     (h : β n n' = 0) (f g : R⟦X⟧) :
     ⁅raySeries β hβ hn hn0 f, raySeries β hβ hn' hn0' g⁆ = 0 := by

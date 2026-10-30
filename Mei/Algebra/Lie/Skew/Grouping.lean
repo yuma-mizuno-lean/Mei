@@ -102,14 +102,23 @@ theorem exists_nodup_prod_rayExp_eq [PartialOrder R] [IsOrderedAddMonoid R] (l :
           Commute.list_prod_right _ _ fun x hx => by
             obtain ⟨h, hh, rfl⟩ := List.mem_map.mp hx
             exact commute_rayExp_of_eq_zero β hβ _ _ _ _ (hA h hh) _ _
-        rw [List.map_cons, List.prod_cons, hGprod, List.map_append, List.prod_append,
-          ← mul_assoc, hcomm.eq, mul_assoc, List.map_append, List.prod_append, hmap A hAne]
+        have hmerge :
+            rayExp β hβ (hdeg a) (hdeg0 a) (f a) *
+                rayExp β hβ (hdeg g) (hdeg0 g)
+                  ((l.filter fun j => deg j = deg g).map f).sum =
+              rayExp β hβ (hdeg g) (hdeg0 g)
+                (((a :: l).filter fun j => deg j = deg g).map f).sum := by
+          rw [rayExp_congr_degree β hβ hga.symm (hdeg a) (hdeg0 a) (hdeg g) (hdeg0 g),
+            ← rayExp_add]
+          simp [hga]
+        simp only [List.map_cons, List.prod_cons]
+        rw [hGprod]
+        simp only [List.map_append, List.prod_append, List.map_cons, List.prod_cons,
+          hmap A hAne, hmap B hBne]
+        -- Move the first factor past the prefix, then merge the equal-degree factors.
+        rw [hcomm.left_comm]
         congr 1
-        rw [List.map_cons, List.map_cons, List.prod_cons, List.prod_cons, ← mul_assoc,
-          hmap B hBne,
-          rayExp_congr_degree β hβ hga.symm (hdeg a) (hdeg0 a) (hdeg g) (hdeg0 g),
-          ← rayExp_add, List.filter_cons_of_pos (by simpa using hga.symm), List.map_cons,
-          List.sum_cons]
+        rw [← mul_assoc, hmerge]
     · push Not at hex
       have hnil : l.filter (fun j => deg j = deg a) = [] := by
         refine List.filter_eq_nil_iff.mpr fun j hj hja => ?_
@@ -123,8 +132,8 @@ theorem exists_nodup_prod_rayExp_eq [PartialOrder R] [IsOrderedAddMonoid R] (l :
           exact ⟨j, List.mem_cons_of_mem a hj, hji⟩
       · rw [List.map_cons, List.nodup_cons]
         exact ⟨fun h => by obtain ⟨g, hg, hga⟩ := List.mem_map.mp h; exact hex g hg hga, hGnd⟩
-      · rw [List.map_cons, List.prod_cons, hGprod, List.map_cons, List.prod_cons,
-          List.filter_cons_of_pos (by simp), List.map_cons, List.sum_cons, hnil, List.map_nil,
-          List.sum_nil, add_zero, hmap G hex]
+      · simp only [List.map_cons, List.prod_cons]
+        rw [hGprod]
+        simp [hnil, hmap G hex]
 
 end Mei.SkewLieAlgebra
