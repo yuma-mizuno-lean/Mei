@@ -176,6 +176,7 @@ theorem truncatedExponentChamberMap_algebraMap (a : S[ℤ]) :
     Ideal.quotientMap_mk, nodeReduction_algebraMap, Ideal.Quotient.mk_algebraMap]
 
 /-- Coefficient change and cutoff reduction commute with the chamber dictionary. -/
+@[simp]
 theorem truncatedExponentChamberMap_equiv (a : ExponentOrderQuotient K k i) :
     truncatedExponentChamberMap φ hl i (truncatedExponentChamberEquiv K k i a) =
       truncatedExponentChamberEquiv K' l i (exponentOrderMap φ hl i a) := by
@@ -193,6 +194,7 @@ theorem truncatedExponentChamberMap_equiv (a : ExponentOrderQuotient K k i) :
   rw [h]
 
 /-- The inverse chamber dictionary commutes with the same reductions. -/
+@[simp]
 theorem truncatedExponentChamberEquiv_symm_map (a : TruncatedExponentChamber K k i) :
     (truncatedExponentChamberEquiv K' l i).symm (truncatedExponentChamberMap φ hl i a) =
       exponentOrderMap φ hl i ((truncatedExponentChamberEquiv K k i).symm a) := by
