@@ -8,6 +8,7 @@ module
 public import Mei.Algebra.PositiveDegrees.Basic
 public import Mei.Analysis.Convex.Sign
 public import Mei.Geometry.Toric.Algebraic.DualLattice
+public import Mei.LinearAlgebra.Dual.Order
 public import Mathlib.Topology.Instances.Sign
 
 /-!
@@ -19,6 +20,8 @@ real extensions of integral evaluation. The degree functional gives a point
 strictly on the positive side of every allowed-degree hyperplane. Small
 displacements in its direction preserve nonzero retained evaluation signs
 and move all vanishing retained evaluations to the sign of the displacement.
+In a projective degree group a degree is determined by its normal, so two nonzero
+allowed degrees with nested normal kernels have equal positive multiples.
 
 `KSSpace.ofLattice` constructs the model for any finite free degree lattice.
 It uses `Module.evalEquiv` for integral double duality and
@@ -161,6 +164,50 @@ theorem normal_ne_zero (d : PositiveDegrees N) {n : N}
   have hp : (0 : ℝ) < d.degree n := Int.cast_pos.mpr (d.degree_pos hn hn0)
   rw [normal_apply, evaluation_degreePoint, LinearMap.zero_apply] at hz
   exact hp.ne' hz
+
+/-- The zero degree has the zero normal. -/
+@[simp]
+theorem normal_zero : s.normal 0 = 0 := by
+  ext θ
+  simp
+
+/-- In a projective degree group, for instance a free one, a degree with zero normal is zero:
+real characters separate its points. -/
+@[simp]
+theorem normal_eq_zero_iff [Module.Projective ℤ N] {n : N} : s.normal n = 0 ↔ n = 0 := by
+  refine ⟨fun hn => ?_, fun hn => hn ▸ s.normal_zero⟩
+  by_contra hne
+  obtain ⟨f, hf⟩ := Module.Projective.exists_dual_ne_zero ℤ hne
+  have he := LinearMap.congr_fun hn
+    (s.evaluation.symm ((Int.castAddHom ℝ).comp f.toAddMonoidHom))
+  simp only [normal_apply, LinearEquiv.apply_symm_apply, AddMonoidHom.coe_comp,
+    Function.comp_apply, LinearMap.toAddMonoidHom_coe, Int.coe_castAddHom,
+    LinearMap.zero_apply, Int.cast_eq_zero] at he
+  exact hf he
+
+/-- Two nonzero allowed degrees whose normals have nested kernels have equal positive
+natural multiples. The multipliers are read off at the degree point, on which both normals
+are positive. -/
+theorem exists_nsmul_eq_nsmul_of_ker_normal_le [Module.Projective ℤ N] (d : PositiveDegrees N)
+    {n m : N} (hn : n ∈ d.monoid) (hn0 : n ≠ 0) (hm : m ∈ d.monoid) (hm0 : m ≠ 0)
+    (hker : LinearMap.ker (s.normal n) ≤ LinearMap.ker (s.normal m)) :
+    ∃ a b : ℕ, 0 < a ∧ 0 < b ∧ a • m = b • n := by
+  obtain ⟨c, -, hc⟩ := LinearMap.exists_pos_smul_eq_of_ker_le_ker (s.normal n) (s.normal m)
+    hker (s.evaluation_degreePoint_pos d hn hn0) (s.evaluation_degreePoint_pos d hm hm0)
+  have hdn := d.degree_pos hn hn0
+  have hdm := d.degree_pos hm hm0
+  have hcd : c * d.degree n = d.degree m := by
+    simpa using LinearMap.congr_fun hc (s.degreePoint d)
+  refine ⟨(d.degree n).toNat, (d.degree m).toNat, by omega, by omega, ?_⟩
+  rw [← sub_eq_zero, ← s.normal_eq_zero_iff]
+  ext θ
+  have hθ : c * s.evaluation θ n = s.evaluation θ m := by
+    simpa using LinearMap.congr_fun hc θ
+  have hn' : ((d.degree n).toNat : ℝ) = d.degree n := by exact_mod_cast Int.toNat_of_nonneg hdn.le
+  have hm' : ((d.degree m).toNat : ℝ) = d.degree m := by exact_mod_cast Int.toNat_of_nonneg hdm.le
+  simp only [normal_apply, map_sub, map_nsmul, nsmul_eq_mul, hn', hm', ← hθ, ← hcd,
+    LinearMap.zero_apply]
+  ring
 
 /-- In rank one, vanishing on any nonzero degree forces the spatial point to be zero. -/
 theorem evaluation_eq_zero_iff_of_int_ne_zero
