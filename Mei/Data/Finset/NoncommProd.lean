@@ -7,7 +7,6 @@ module
 
 public import Mathlib.Data.Finset.NoncommProd
 import Mathlib.GroupTheory.Submonoid.Centralizer
-import Mathlib.Algebra.Group.IsCommutative
 
 /-!
 # Reindexing and regrouping products of commuting elements
