@@ -12,7 +12,7 @@ public import Mei.Geometry.Toric.Algebraic.DualLattice
 /-!
 # Decorated histories of actual wall actions
 
-For finite shifted BCH actions of completed wall labels, every surviving whole
+For finite shifted BCH actions of truncated wall labels, every surviving whole
 coefficient history already preserves normal velocity. The existing decorated
 history support therefore filters only by the crossing signs. Its weighted ray
 evaluation can be computed from these histories and their full geometric
@@ -47,20 +47,29 @@ variable {Γ : Type} {Λ R L M V J K : Type*}
   [DirectSum.Decomposition ℳ] [SetLike.GradedBracket ℒ ℳ] (p : Γ)
   [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : Λ →+ V} (h : TauCeti.Toric.IsIntegralLattice i)
-  (k : ℕ) {n : ℕ} (g : Fin n → d.completedBCHGroup ℒ)
+  (k : ℕ) {n : ℕ} (g : Fin n → d.truncatedGroup ℒ k)
   (w : Fin n → SupportedRay d) (m : Fin n → Λ →+ ℤ)
-  (hg : ∀ j, g j ∈ H.wallGroup (w j) (m j))
+  (hg : ∀ j, BCHGroup.log (g j) ∈ H.truncatedRayLieSubalgebra (w j) (m j) k)
   (r₀ : Γ) (a : (d.shiftedQuotientGrading ℳ p k).piece r₀)
   (ε : Fin n → SignType)
 
 local notation "𝓝" => TauCeti.InternalGrading.piece (d.shiftedQuotientGrading ℳ p k)
 local notation "T" => fun j => LinearEquiv.toLinearMap
   (ModuleFiltration.truncatedBCHAction (d.shiftedLieFiltration ℒ ℳ p)
-    d ℒ k (CompletedGroup.projection k (g j)))
+    d ℒ k (g j))
 local notation "v" => fun r => i (ρ (p + r))
 local notation "f" => fun j => h.continuousRealCharacter (m j)
 
 include hg
+
+/-- A surviving shifted BCH wall history preserves the real normal velocity
+at every encounter, with velocities computed from the ambient degrees. -/
+theorem continuousRealCharacter_shiftedBCHAction_normal_eq
+    (r : Fin n → Γ) (hne : homogeneousHistory 𝓝 T r a ≠ 0) (j : Fin n) :
+    f j (v (r j)) = f j (v (Fin.snoc (α := fun _ => Γ) r r₀ j.succ)) := by
+  have he := H.homogeneousHistory_shiftedBCHAction_normal_eq ℳ p k g w m hg r r₀ a hne j
+  simpa only [h.continuousRealCharacter_apply, h.realCharacter_apply] using
+    congrArg (Int.cast : ℤ → ℝ) he
 
 /-- Actual wall actions impose no extra normal-velocity filter on nonzero
 homogeneous histories. Only the prescribed crossing signs remain to be checked. -/
@@ -72,12 +81,9 @@ theorem mem_decoratedHistorySupport_shiftedBCHAction_iff (r : Fin n → Γ) :
   constructor
   · exact fun hr => ⟨hr.1, fun j => (hr.2 j).2⟩
   · rintro ⟨hne, hs⟩
-    refine ⟨hne, fun j => ⟨?_, hs j⟩⟩
-    have he := H.homogeneousHistory_shiftedBCHAction_normal_eq ℳ p k
-      (fun j => CompletedGroup.projection k (g j)) w m
-      (fun j => (H.mem_wallGroup _ _ _).mp (hg j) k) r r₀ a hne j
-    simpa only [h.continuousRealCharacter_apply, h.realCharacter_apply] using
-      congrArg (Int.cast : ℤ → ℝ) he
+    exact ⟨hne, fun j =>
+      ⟨H.continuousRealCharacter_shiftedBCHAction_normal_eq ℳ p h k g w m hg r₀ a r hne j,
+        hs j⟩⟩
 
 open Classical in
 /-- Compute the weighted ray evaluation of actual wall actions using only
@@ -92,17 +98,11 @@ theorem decoratedRayEvaluation_shiftedBCHAction_eq_sum
             Q ∈ admissibleBackwardDomain f c
               (fun j => v (Fin.snoc (α := fun _ => Γ) r r₀ j)) P W S C
         then homogeneousHistory 𝓝 T r a else 0 := by
-  classical
   rw [decoratedRayEvaluation_eq_sum_homogeneousHistory]
   apply Finset.sum_congr rfl
   intro r hr
   have hne := (mem_homogeneousHistorySupport ..).mp hr
-  have he := H.mem_decoratedHistorySupport_shiftedBCHAction_iff ℳ p h k g w m hg r₀ a ε r
-  rw [mem_decoratedHistorySupport] at he
-  have hc : (∀ j, f j (v (r j)) = f j (v (Fin.snoc (α := fun _ => Γ) r r₀ j.succ)) ∧
-      SignType.sign (f j (v (r j))) = ε j) ↔
-      ∀ j, SignType.sign (f j (v (r j))) = ε j :=
-    ⟨fun hr => (he.mp ⟨hne, hr⟩).2, fun hr => (he.mpr ⟨hne, hr⟩).2⟩
-  simp only [hc]
+  simp only [H.continuousRealCharacter_shiftedBCHAction_normal_eq
+    ℳ p h k g w m hg r₀ a r hne, true_and]
 
 end Mei.DirectedWallSpaces

@@ -21,7 +21,7 @@ degree, even though the quotient grading records relative degrees.
 
 The argument combines
 `DirectedWallSpaces.normal_eq_of_decompose_truncatedBCHAction_ne_zero` with
-`homogeneousHistoryStage_mem_snoc` and `homogeneousHistoryStage_ne_zero`.
+`homogeneousHistory_rel_of_ne_zero`.
 No wall-annihilation hypothesis is needed: normal conservation follows from
 homogeneity and the tangent degrees of wall logarithms. Inverse labels and
 nonzero shifts of zero spatial direction are included.
@@ -61,13 +61,10 @@ theorem homogeneousHistory_truncatedBCHAction_normal_eq
       (fun j => (F.truncatedBCHAction d ℒ k (g j)).toLinearMap) r a ≠ 0)
     (j : Fin n) :
     m j (ρ (r j)) = m j (ρ (Fin.snoc (α := fun _ => Γ) r r₀ j.succ)) := by
-  let T := fun j => (F.truncatedBCHAction d ℒ k (g j)).toLinearMap
-  apply H.normal_eq_of_decompose_truncatedBCHAction_ne_zero ℳ F (hg j) 𝓝 h𝓝
-    (homogeneousHistoryStage_mem_snoc 𝓝 T r r₀ a j.succ)
-  intro hz
-  apply homogeneousHistoryStage_ne_zero 𝓝 T r hne j.castSucc
-  rw [homogeneousHistoryStage_castSucc_apply]
-  exact congrArg Subtype.val hz
+  exact homogeneousHistory_rel_of_ne_zero 𝓝 _
+    (fun j _ _ _ ha hq =>
+      H.normal_eq_of_decompose_truncatedBCHAction_ne_zero ℳ F (hg j) 𝓝 h𝓝 ha hq)
+    r r₀ a hne j
 
 end Quotient
 
