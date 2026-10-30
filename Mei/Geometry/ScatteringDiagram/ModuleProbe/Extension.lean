@@ -180,9 +180,6 @@ finite generic point is needed; the two exceptional arrangements need not nest. 
 theorem transition_extendedCoefficientField {k l : ℕ} (hkl : k ≤ l)
     (hBk : B.LevelConsistent k) (hBl : B.LevelConsistent l)
     (hD : D.LevelConsistent (l + 1))
-    (hBk' : (D.map (chargeZeroGradedLieHom d ℳ p ℒ)
-      (chargeZeroGradedLieHom_mem_wall d ℳ p ℒ H)).LevelEquivalent
-      (cylinderDiagram d ℳ p ℒ H h h' B) k)
     (hBl' : (D.map (chargeZeroGradedLieHom d ℳ p ℒ)
       (chargeZeroGradedLieHom_mem_wall d ℳ p ℒ H)).LevelEquivalent
       (cylinderDiagram d ℳ p ℒ H h h' B) l)
@@ -203,7 +200,7 @@ theorem transition_extendedCoefficientField {k l : ℕ} (hkl : k ≤ l)
     B.truncation_levelTransport hkl hBk hBl,
     transition_coefficientField d ℳ p ℒ H h h' D hkl hD z.val hzk hzl,
     extendedCoefficientField_eq_action d ℳ p ℒ H h h' D B k hBk
-      (hD.mono (Nat.add_le_add_right hkl 1)) hBk' (r.obj x) (r.obj z) hzk]
+      (hD.mono (Nat.add_le_add_right hkl 1)) (hBl'.mono hkl) (r.obj x) (r.obj z) hzk]
   rfl
 
 /-- Compatible extended coefficients at an all-order allowed endpoint. No
@@ -217,7 +214,7 @@ def completedExtendedCoefficientField (hD : D.Consistent) (hBc : B.Consistent)
     ((F).mem_completionSubmodule_iff _).mpr fun k l hkl =>
       transition_extendedCoefficientField d ℳ p ℒ H h h' D B hkl
         ((B.consistent_iff.mp hBc) k) ((B.consistent_iff.mp hBc) l)
-        ((D.consistent_iff.mp hD) (l + 1)) ((DirectedDiagram.equivalent_iff _ _).mp hB k)
+        ((D.consistent_iff.mp hD) (l + 1))
         ((DirectedDiagram.equivalent_iff _ _).mp hB l)
         (CommonWallComplement.projection l x)⟩
 
