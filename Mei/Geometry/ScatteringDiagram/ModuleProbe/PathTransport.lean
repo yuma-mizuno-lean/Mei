@@ -12,10 +12,10 @@ public import Mei.Geometry.ScatteringDiagram.ModuleProbe.Transport
 /-!
 # Transport of probe coefficients along base paths
 
-Suppose the charge-zero part of a probe diagram is equivalent, at a relative cutoff,
-to the cylinder over a base diagram. Then base projection carries every probe
-transport to the base transport between the projected endpoints, whatever the
-auxiliary coordinates of those endpoints.
+Suppose the charge-zero part of a probe diagram is consistent at a relative cutoff
+and equivalent at that cutoff to the cylinder over a base diagram. Then base projection
+carries every probe transport to the base transport between the projected endpoints,
+whatever the auxiliary coordinates of those endpoints.
 
 For a consistent probe diagram the endpoint field of probe coefficients is then
 transported by the base action: for an admissible base path `γ` between generic
