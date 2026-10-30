@@ -59,16 +59,6 @@ theorem gluingCospan_obj_right (k : ℕ) :
 theorem gluingCospan_obj_one (k : ℕ) :
     (gluingCospan K k).obj .one = AlgCat.of K (D(k)) := (rfl)
 
-private def scalarReduction {k l : ℕ} (hl : l ≤ k) : S(k)[ℤ] →ₐ[K] S(l)[ℤ] :=
-  { truncatedScalarMap (RingHom.id K) hl with
-    toFun := truncatedScalarMap (RingHom.id K) hl
-    commutes' := fun r => by
-      simpa only [IsScalarTower.algebraMap_apply K (S(k)) (S(k)[ℤ]),
-        IsScalarTower.algebraMap_apply K (S(l)) (S(l)[ℤ]),
-        ← _root_.LaurentPolynomial.C_eq_algebraMap, AdjoinRoot.algebraMap_eq,
-        RingHom.id_apply] using
-          truncatedScalarMap_C_of (RingHom.id K) hl r }
-
 private def chamberReduction {k l : ℕ} (hl : l ≤ k) (i : Fin 2) :
     TruncatedExponentChamber K k i →ₐ[K] TruncatedExponentChamber K l i :=
   { truncatedExponentChamberMap (RingHom.id K) hl i with
@@ -76,7 +66,9 @@ private def chamberReduction {k l : ℕ} (hl : l ≤ k) (i : Fin 2) :
     commutes' := fun r => by
       rw [IsScalarTower.algebraMap_apply K (S(k)[ℤ]) (TruncatedExponentChamber K k i),
         truncatedExponentChamberMap_algebraMap]
-      exact congrArg (algebraMap (S(l)[ℤ]) _) ((scalarReduction K hl).commutes r) }
+      apply congrArg (algebraMap (S(l)[ℤ]) _)
+      rw [← truncatedScalarAlgHom_toRingHom]
+      exact (truncatedScalarAlgHom K hl).commutes r }
 
 private def overlapReductionRing {k l : ℕ} (hl : l ≤ k) : D(k) →+* D(l) :=
   letI : Algebra (S(k)[ℤ]) (S(l)[ℤ]) := (truncatedScalarMap (RingHom.id K) hl).toAlgebra
@@ -98,7 +90,9 @@ private def overlapReduction {k l : ℕ} (hl : l ≤ k) : D(k) →ₐ[K] D(l) :=
     commutes' := fun r => by
       rw [IsScalarTower.algebraMap_apply K (S(k)[ℤ]) (D(k)), overlapReductionRing_scalar]
       rw [IsScalarTower.algebraMap_apply K (S(l)[ℤ]) (D(l))]
-      exact congrArg (algebraMap (S(l)[ℤ]) _) ((scalarReduction K hl).commutes r) }
+      apply congrArg (algebraMap (S(l)[ℤ]) _)
+      rw [← truncatedScalarAlgHom_toRingHom]
+      exact (truncatedScalarAlgHom K hl).commutes r }
 
 private theorem overlapReduction_left {k l : ℕ} (hl : l ≤ k)
     (z : TruncatedExponentChamber K k 1) :

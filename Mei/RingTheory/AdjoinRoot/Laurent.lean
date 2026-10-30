@@ -89,6 +89,19 @@ private theorem X_pow_dvd_map_X_pow :
 noncomputable def truncatedScalarMap : S[ℤ] →+* S'[ℤ] :=
   mapRingHom ℤ (AdjoinRoot.map φ _ _ (X_pow_dvd_map_X_pow φ hl))
 
+/-- Cutoff reduction of truncated Laurent rings as an algebra homomorphism over
+the unchanged coefficient ring. -/
+noncomputable def truncatedScalarAlgHom (K : Type*) [CommRing K] {k l : ℕ} (hl : l ≤ k) :
+    (AdjoinRoot (Polynomial.X ^ (k + 1) : Polynomial K))[ℤ] →ₐ[K]
+      (AdjoinRoot (Polynomial.X ^ (l + 1) : Polynomial K))[ℤ] :=
+  mapAlgHom ℤ (AdjoinRoot.mapAlgHom (AlgHom.id K K) _ _
+    (X_pow_dvd_map_X_pow (RingHom.id K) hl))
+
+/-- The algebra cutoff reduction has the existing scalar reduction as its underlying ring map. -/
+@[simp]
+theorem truncatedScalarAlgHom_toRingHom :
+    (truncatedScalarAlgHom K hl : _ →+* _) = truncatedScalarMap (RingHom.id K) hl := (rfl)
+
 /-- The truncated scalar reduction sends the truncated parameter to the truncated parameter. -/
 @[simp]
 theorem truncatedScalarMap_C_root :
