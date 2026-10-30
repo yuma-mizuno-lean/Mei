@@ -96,20 +96,8 @@ theorem form_eval_eval (hω : ω.IsAlt) (β : FiniteAffineRay V V)
     ω (β s) (β t) = (s - t) * ω β.endpoint β.direction := by
   classical
   -- across `[s, t)` the direction changes only by the increment at `s`
-  have hdir : β.directionAt s = β.directionAt t + β.bends s := by
-    have hterm : ∀ b ∈ β.bends.support, (if s ≤ b then β.bends b else 0) =
-        (if t ≤ b then β.bends b else 0) + if b = s then β.bends b else 0 := by
-      intro b hb'
-      rcases hb b hb' with h | h
-      · rcases h.lt_or_eq with h | rfl
-        · simp [h.not_ge, (h.trans hst).not_ge, h.ne]
-        · simp [hst.not_ge]
-      · simp [hst.le.trans h, h, (hst.trans_le h).ne']
-    rw [directionAt_def, directionAt_def, add_assoc, Finsupp.sum, Finsupp.sum,
-      Finset.sum_congr rfl hterm, Finset.sum_add_distrib, Finset.sum_ite_eq']
-    split_ifs with hs
-    · rfl
-    · rw [Finsupp.notMem_support_iff.mp hs]
+  have hdir : β.directionAt s = β.directionAt t + β.bends s :=
+    (sub_eq_iff_eq_add.mp (β.directionAt_sub_eq_bends hst hb)).trans (add_comm _ _)
   have hβs : ω (β s) (β.bends s) = 0 := by
     by_cases hs : s ∈ β.bends.support
     · exact hβ s hs

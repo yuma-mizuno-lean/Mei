@@ -244,6 +244,29 @@ theorem directionAt_of_le_bends (β : FiniteAffineRay V P) (t : ℝ)
   congr 1
   exact Finsupp.sum_congr fun b hb => ite_eq_left (ht b hb)
 
+omit [Module ℝ V] [AddTorsor V P] in
+/-- Across an interval with no interior bend, the change of direction is exactly
+the increment at its left endpoint. A bend at the right endpoint is already
+included in both incoming directions. -/
+theorem directionAt_sub_eq_bends (β : FiniteAffineRay V P) {s t : ℝ} (hst : s < t)
+    (hb : ∀ b ∈ β.bends.support, b ≤ s ∨ t ≤ b) :
+    β.directionAt s - β.directionAt t = β.bends s := by
+  classical
+  have hterm : ∀ b ∈ β.bends.support, (if s ≤ b then β.bends b else 0) =
+      (if t ≤ b then β.bends b else 0) + if b = s then β.bends b else 0 := by
+    intro b hb'
+    rcases hb b hb' with h | h
+    · rcases h.lt_or_eq with h | rfl
+      · simp [h.not_ge, (h.trans hst).not_ge, h.ne]
+      · simp [hst.not_ge]
+    · simp [hst.le.trans h, h, (hst.trans_le h).ne']
+  rw [directionAt_def, directionAt_def, Finsupp.sum, Finsupp.sum,
+    Finset.sum_congr rfl hterm, Finset.sum_add_distrib, Finset.sum_ite_eq']
+  split_ifs with hs
+  · abel
+  · rw [Finsupp.notMem_support_iff.mp hs]
+    abel
+
 /-- On any interval without an interior bend, realization has the stated constant velocity. -/
 theorem eval_vsub_eval (β : FiniteAffineRay V P) {s t : ℝ} (hst : s ≤ t)
     (hb : ∀ b ∈ β.bends.support, b ≤ s ∨ t ≤ b) :
