@@ -89,6 +89,15 @@ def truncatedExponentChamberMap :
   | 0 => (Mei.NodeAlgebra.rightChamberMap _ (truncatedScalarMap_C_root φ hl) hl).toRingHom
   | 1 => (Mei.NodeAlgebra.leftChamberMap _ (truncatedScalarMap_C_root φ hl) hl).toRingHom
 
+/-- The nodal chamber reduction is the corresponding quotient map over the
+truncated Laurent scalar reduction. -/
+theorem truncatedExponentChamberMap_def :
+    letI : Algebra S[ℤ] S'[ℤ] := RingHom.toAlgebra (truncatedScalarMap φ hl)
+    truncatedExponentChamberMap φ hl i = match i with
+      | 0 => (Mei.NodeAlgebra.rightChamberMap _ (truncatedScalarMap_C_root φ hl) hl).toRingHom
+      | 1 => (Mei.NodeAlgebra.leftChamberMap _ (truncatedScalarMap_C_root φ hl) hl).toRingHom :=
+  (rfl)
+
 /-- Both nodal coordinates retain their quotient classes. -/
 @[simp]
 theorem truncatedExponentChamberMap_coord (j : Fin 2) :
