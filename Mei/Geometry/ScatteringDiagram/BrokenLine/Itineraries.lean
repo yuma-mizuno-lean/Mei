@@ -83,6 +83,11 @@ theorem decoration_ne_zero (r : CutoffDecoratedRay d ℳ T a v f c ε P W S C k 
 def degreeItinerary (r : CutoffDecoratedRay d ℳ T a v f c ε P W S C k Q) : List (Γ × J) :=
   List.ofFn fun j => (r.realization.1.val j, r.itinerary.get j)
 
+/-- Recording degrees pairs each selected relative degree with its encounter. -/
+theorem degreeItinerary_eq (r : CutoffDecoratedRay d ℳ T a v f c ε P W S C k Q) :
+    r.degreeItinerary = List.ofFn fun j =>
+      (r.realization.1.val j, r.itinerary.get j) := (rfl)
+
 /-- Recording degrees retains every encounter. -/
 @[simp]
 theorem length_degreeItinerary (r : CutoffDecoratedRay d ℳ T a v f c ε P W S C k Q) :
@@ -214,6 +219,42 @@ def cutoffDecoratedRayFiberEquiv [Finite J] (k : ℕ) (Q : V) :
     · rfl
     exact heq_of_eq (congrArg (Sigma.mk r.realization.1) (Subsingleton.elim _ _))
   right_inv _ := rfl
+
+/-- Forgetting the geometric realization retains the encounter word and its
+entire degree history, together with the cutoff and positive-shift conditions. -/
+@[simp]
+theorem cutoffDecoratedRayFiberEquiv_apply_val [Finite J] (k : ℕ) (Q : V)
+    (r : CutoffDecoratedRay d ℳ T a v f c ε P W S C k Q) :
+    (cutoffDecoratedRayFiberEquiv d ℳ T a v f c ε P W S C k Q r).val =
+      ⟨⟨r.itinerary, r.length_le⟩, r.realization.1, r.degree_mem,
+        r.degree_sub_mem⟩ := (rfl)
+
+/-- The forward equivalence preserves the history indexed by the encounter word. -/
+@[simp]
+theorem cutoffDecoratedRayFiberEquiv_apply_history [Finite J] (k : ℕ) (Q : V)
+    (r : CutoffDecoratedRay d ℳ T a v f c ε P W S C k Q) :
+    HEq (cutoffDecoratedRayFiberEquiv d ℳ T a v f c ε P W S C k Q r).val.history
+      r.realization.1 := (HEq.rfl)
+
+/-- An admitted type is sent back to its unique admissible realization with
+the same encounter word and degree history. -/
+@[simp]
+theorem cutoffDecoratedRayFiberEquiv_symm_apply [Finite J] (k : ℕ) (Q : V)
+    (t : {t : CutoffDecoratedType d ℳ T a v f ε k //
+      Q ∈ CutoffDecoratedType.domain c P W S C t}) :
+    (cutoffDecoratedRayFiberEquiv d ℳ T a v f c ε P W S C k Q).symm t =
+      ⟨t.val.itinerary.val, ⟨t.val.history,
+        admissibleRayRealization _ _ _ _ _ _ _ _
+          ((CutoffDecoratedType.mem_domain c P W S C t.val Q).mp t.property)⟩,
+        t.val.degree_mem, t.val.degree_sub_mem⟩ := (rfl)
+
+/-- Realizing an admitted type preserves its encounter-indexed degree history. -/
+@[simp]
+theorem cutoffDecoratedRayFiberEquiv_symm_apply_history [Finite J] (k : ℕ) (Q : V)
+    (t : {t : CutoffDecoratedType d ℳ T a v f ε k //
+      Q ∈ CutoffDecoratedType.domain c P W S C t}) :
+    HEq ((cutoffDecoratedRayFiberEquiv d ℳ T a v f c ε P W S C k Q).symm t).realization.1
+      t.val.history := (HEq.rfl)
 
 /-- The fiber equivalence preserves the final whole decoration. -/
 @[simp↓] -- Compare decorations before expanding them into homogeneous histories.
