@@ -178,6 +178,24 @@ instance : Fintype (IncomingSlabBrokenLine c n b Q) := Fintype.ofFinite _
 
 end Rays
 
+/-- In the incoming chamber, the proper-ray decoration sum together with the
+constant section in zero spatial degree recovers any additive decoration. -/
+theorem incomingSlab_sum_add_constant {R : Type*} [AddCommMonoid R]
+    (c : R) (n b : ℤ) (Q : ℝ × ℝ)
+    (hoff : Q.1 ≠ 0) (hside : 0 ≤ Q.1 * (n : ℝ)) :
+    (∑ _β : IncomingSlabBrokenLine c n b Q, c) +
+        (if (n, b) = 0 then c else 0) = c := by
+  classical
+  by_cases hv : (n, b) = 0
+  · have : IsEmpty (IncomingSlabBrokenLine c n b Q) :=
+      ⟨fun β => β.exponent_ne_zero hv⟩
+    simp [hv]
+  · by_cases hc : c = 0
+    · simp [hc]
+    · let β := incomingSlabBrokenLine c n b Q hc hv hoff hside
+      let : Unique (IncomingSlabBrokenLine c n b Q) := ⟨⟨β⟩, fun _ => Subsingleton.elim _ _⟩
+      simp [hv]
+
 variable {R : Type*} [Semiring R] (c : R) (n b : ℤ) (Q : ℝ × ℝ)
 
 open AddMonoidAlgebra in

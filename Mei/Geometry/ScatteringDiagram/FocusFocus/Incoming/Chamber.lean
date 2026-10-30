@@ -97,38 +97,15 @@ This includes invariant vertical monomials and monomials killed by truncation. -
 theorem leftChamber_sum_incoming_add_constant (hq : q.val.1 ≤ 0) (hQ : Q.1 < 0) :
     (∑ _β : IncomingSlabBrokenLine u₋ q.val.1 q.val.2.1 Q, u₋) +
         (if (q.val.1, q.val.2.1) = 0 then u₋ else 0) = u₋ := by
-  classical
-  apply leftChamberExponentMap_injective K k
-  rw [map_add, leftChamberExponentMap_sum_incoming K k q c Q hq,
-    incomingSlabWeightedEvaluation_eq]
-  have hside : 0 ≤ Q.1 * (q.val.1 : ℝ) :=
-    mul_nonneg_of_nonpos_of_nonpos hQ.le (by exact_mod_cast hq)
-  have ha : -q.val.1 = (q.val.1.natAbs : ℤ) := by omega
-  have hsingle : leftChamberExponentMap K k u₋ =
-      single ((q.val.1.natAbs : ℤ), q.val.2.1) a₋ :=
-    (leftChamberExponentMap_single K k q c).trans
-      (congrArg (fun n : ℤ => single (n, q.val.2.1) a₋) ha)
-  by_cases hv : (q.val.1, q.val.2.1) = 0
-  · rw [ite_eq_right (fun h => h.1 hv), ite_eq_left hv, zero_add]
-  · rw [ite_eq_left ⟨hv, hQ.ne, hside⟩, ite_eq_right hv, map_zero, add_zero, hsingle]
+  exact incomingSlab_sum_add_constant u₋ q.val.1 q.val.2.1 Q hQ.ne
+    (mul_nonneg_of_nonpos_of_nonpos hQ.le (by exact_mod_cast hq))
 
 /-- The analogous right incoming sum includes its stationary sector and gives
 the whole original monomial, without a nonzero-coefficient assumption. -/
 theorem rightChamber_sum_incoming_add_constant (hq : 0 ≤ q.val.1) (hQ : 0 < Q.1) :
     (∑ _β : IncomingSlabBrokenLine u₊ q.val.1 q.val.2.1 Q, u₊) +
         (if (q.val.1, q.val.2.1) = 0 then u₊ else 0) = u₊ := by
-  classical
-  apply rightChamberExponentMap_injective K k
-  rw [map_add, rightChamberExponentMap_sum_incoming K k q c Q hq,
-    incomingSlabWeightedEvaluation_eq]
-  have hside : 0 ≤ Q.1 * (q.val.1 : ℝ) := mul_nonneg hQ.le (by exact_mod_cast hq)
-  have ha : q.val.1 = (q.val.1.natAbs : ℤ) := by omega
-  have hsingle : rightChamberExponentMap K k u₊ =
-      single ((q.val.1.natAbs : ℤ), q.val.2.1) a₊ :=
-    (rightChamberExponentMap_single K k q c).trans
-      (congrArg (fun n : ℤ => single (n, q.val.2.1) a₊) ha)
-  by_cases hv : (q.val.1, q.val.2.1) = 0
-  · rw [ite_eq_right (fun h => h.1 hv), ite_eq_left hv, zero_add]
-  · rw [ite_eq_left ⟨hv, hQ.ne', hside⟩, ite_eq_right hv, map_zero, add_zero, hsingle]
+  exact incomingSlab_sum_add_constant u₊ q.val.1 q.val.2.1 Q hQ.ne'
+    (mul_nonneg hQ.le (by exact_mod_cast hq))
 
 end Mei.FocusFocus
