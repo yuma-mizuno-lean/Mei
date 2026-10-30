@@ -22,10 +22,11 @@ unchanged spatial velocity are retained.
 
 There are finitely many contributing rays at every endpoint, even for infinite
 gradings. Their weighted evaluation is a finite sum over exactly the nonzero
-histories whose full geometric domain admits the endpoint. For rational walls,
-obstacles and source, these actual decorated fibers and their weighted sums are
-locally constant away from a finite exceptional arrangement. This concerns one
-fixed signed wall itinerary; it does not bound the number of wall itineraries.
+histories whose full geometric domain admits the endpoint. For lattice-valued
+velocities and rational functionals, supports, walls, obstacles and source, these
+actual decorated fibers and their weighted sums are locally constant away from a
+finite exceptional arrangement. This concerns one fixed signed wall itinerary;
+it does not bound the number of wall itineraries.
 
 The construction combines `homogeneousHistorySupport` with
 `Convex.admissibleRayFiberEquiv`, retaining all wall avoidance, singular avoidance
@@ -116,7 +117,7 @@ theorem decoration_castSucc
     (r : DecoratedAdmissibleRay ℳ T p₀ a velocity f c ε P W S C Q) (j : Fin n) :
     r.decoration j.castSucc =
       (DirectSum.decompose ℳ (T j (r.decoration j.succ)) (r.1.val j) : M) :=
-  homogeneousHistoryStage_castSucc ℳ T r.1.val j a
+  homogeneousHistoryStage_castSucc_apply ℳ T r.1.val j a
 
 /-- A selected segment is homogeneous of its recorded degree. -/
 theorem decoration_mem (r : DecoratedAdmissibleRay ℳ T p₀ a velocity f c ε P W S C Q)
@@ -151,8 +152,9 @@ local notation "D" Q => DecoratedAdmissibleRay ℳ T p₀ a velocity f c ε P W 
 local notation "A" p => admissibleBackwardDomain f c
   (fun j => velocity (Fin.snoc (α := fun _ => Γ) p p₀ j)) P W S C
 
-/-- A ray exists exactly when a nonzero homogeneous history has an admitted
-endpoint. No genericity or rationality assumption is needed. -/
+/-- A ray exists exactly when some nonzero homogeneous history with the prescribed
+crossing signs and preserved normal velocities has an admitted endpoint.
+No genericity or rationality assumption is needed. -/
 theorem nonempty_decoratedAdmissibleRay_iff (Q : V) :
     Nonempty (D Q) ↔ ∃ p ∈ decoratedHistorySupport ℳ T p₀ a velocity f ε, Q ∈ A p := by
   constructor

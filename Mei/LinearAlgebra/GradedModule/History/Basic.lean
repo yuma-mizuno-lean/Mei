@@ -104,7 +104,7 @@ theorem homogeneousHistoryStage_last {n : ℕ}
 
 /-- At an encounter the entire output component of its propagation map is
 retained. Adjacent segments may have the same degree. -/
-theorem homogeneousHistoryStage_castSucc {n : ℕ}
+theorem homogeneousHistoryStage_castSucc_apply {n : ℕ}
     (T : Fin n → Module.End R M) (p : Fin n → ι) (j : Fin n) (a : M) :
     homogeneousHistoryStage ℳ T p j.castSucc a =
       (DirectSum.decompose ℳ (T j (homogeneousHistoryStage ℳ T p j.succ a)) (p j) : M) := by
@@ -132,7 +132,7 @@ theorem homogeneousHistoryStage_ne_zero {n : ℕ}
 theorem homogeneousHistoryStage_mem {n : ℕ}
     (T : Fin n → Module.End R M) (p : Fin n → ι) (a : M) (j : Fin n) :
     homogeneousHistoryStage ℳ T p j.castSucc a ∈ ℳ (p j) := by
-  rw [homogeneousHistoryStage_castSucc]
+  rw [homogeneousHistoryStage_castSucc_apply]
   exact Subtype.property _
 
 end Mei
