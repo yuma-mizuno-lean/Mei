@@ -40,7 +40,8 @@ variable (K : Type*) [CommRing K] (k : ℕ)
 local notation "S" => AdjoinRoot (Polynomial.X ^ (k + 1) : Polynomial K)
 local notation "τ" => AdjoinRoot.root (Polynomial.X ^ (k + 1) : Polynomial K)
 
-private theorem leftLaurent_single (q : exponentMonoid) (c : K) :
+/-- A chamber monomial in left Laurent coordinates retains its smoothing power. -/
+@[simp↓] theorem leftChamberLaurentMap_single (q : exponentMonoid) (c : K) :
     leftChamberLaurentMap (C_root_X_pow_pow K (k + 1))
         (truncatedExponentChamberEquiv K k 1 (Ideal.Quotient.mk _ (single q c))) =
       single (-q.val.1) (single q.val.2.1 (AdjoinRoot.of _ c) * C τ ^ leftOrder q) := by
@@ -55,7 +56,8 @@ private theorem leftLaurent_single (q : exponentMonoid) (c : K) :
   congr 1
   omega
 
-private theorem rightLaurent_single (q : exponentMonoid) (c : K) :
+/-- A chamber monomial in right Laurent coordinates retains its smoothing power. -/
+@[simp↓] theorem rightChamberLaurentMap_single (q : exponentMonoid) (c : K) :
     rightChamberLaurentMap (C_root_X_pow_pow K (k + 1))
         (truncatedExponentChamberEquiv K k 0 (Ideal.Quotient.mk _ (single q c))) =
       single q.val.1 (single q.val.2.1 (AdjoinRoot.of _ c) * C τ ^ rightOrder q) := by
@@ -79,7 +81,7 @@ theorem leftChamberLaurentMap_mem_exponentGrade (q : ℤ × ℤ × ℤ)
       grade S (-q.1, q.2.1) := by
   by_cases hq : q ∈ exponentMonoid
   · obtain ⟨c, rfl⟩ := (mem_truncatedExponentChamberGrade_iff_exists K k 1 ⟨q, hq⟩ x).mp hx
-    rw [leftLaurent_single]
+    rw [leftChamberLaurentMap_single]
     simp only [← single_eq_C, single_pow, single_mul_single, nsmul_zero, add_zero]
     rw [← curryAlgEquiv_single (R := S), AlgEquiv.symm_apply_apply]
     exact single_mem_grade _ _
@@ -97,7 +99,7 @@ theorem rightChamberLaurentMap_mem_exponentGrade (q : ℤ × ℤ × ℤ)
       grade S (q.1, q.2.1) := by
   by_cases hq : q ∈ exponentMonoid
   · obtain ⟨c, rfl⟩ := (mem_truncatedExponentChamberGrade_iff_exists K k 0 ⟨q, hq⟩ x).mp hx
-    rw [rightLaurent_single]
+    rw [rightChamberLaurentMap_single]
     simp only [← single_eq_C, single_pow, single_mul_single, nsmul_zero, add_zero]
     rw [← curryAlgEquiv_single (R := S), AlgEquiv.symm_apply_apply]
     exact single_mem_grade _ _
@@ -106,14 +108,16 @@ theorem rightChamberLaurentMap_mem_exponentGrade (q : ℤ × ℤ × ℤ)
         Submodule.mem_bot] using hx
     simp only [hx', map_zero, Submodule.zero_mem]
 
-private theorem leftLaurent_mem_grade (q : ℤ × ℤ × ℤ)
+/-- The left Laurent realization has normal weight opposite to the horizontal exponent. -/
+theorem leftLaurent_mem_grade (q : ℤ × ℤ × ℤ)
     (u : truncatedExponentChamberGrade K k 1 q) :
     leftChamberLaurentMap (C_root_X_pow_pow K (k + 1)) u.val ∈ grade S[T;T⁻¹] (-q.1) := by
   simpa only [AlgEquiv.apply_symm_apply] using
     curryAlgEquiv_mem_grade (-q.1, q.2.1) _
       (leftChamberLaurentMap_mem_exponentGrade K k q u.val u.property)
 
-private theorem rightLaurent_mem_grade (q : ℤ × ℤ × ℤ)
+/-- The right Laurent realization has normal weight equal to the horizontal exponent. -/
+theorem rightLaurent_mem_grade (q : ℤ × ℤ × ℤ)
     (u : truncatedExponentChamberGrade K k 0 q) :
     rightChamberLaurentMap (C_root_X_pow_pow K (k + 1)) u.val ∈ grade S[T;T⁻¹] q.1 := by
   simpa only [AlgEquiv.apply_symm_apply] using
@@ -231,7 +235,7 @@ theorem leftChamberLift_single (q : exponentMonoid) (hq : q.val.1 ≤ 0) (c : K)
       toSlabAlgebra (C τ) (1 + T 1) k
         ((single q.val.2.1 (AdjoinRoot.of _ c) * C τ ^ leftOrder q) •
           NodeAlgebra.coord (C τ * (1 + T 1)) 0 ^ (-q.val.1).toNat) := by
-  rw [leftChamberLift_apply K k (C_root_X_pow_pow K (k + 1)), leftLaurent_single]
+  rw [leftChamberLift_apply K k (C_root_X_pow_pow K (k + 1)), leftChamberLaurentMap_single]
   simp only [coeff_single, Finsupp.single_eq_same]
 
 /-- A right monomial `c t^r y^d w^b` lifts to `c t^r Y^d W^b`, where `r=h-a`. -/
@@ -244,7 +248,7 @@ theorem rightChamberLift_single (q : exponentMonoid) (hq : 0 ≤ q.val.1) (c : K
       toSlabAlgebra (C τ) (1 + T 1) k
         ((single q.val.2.1 (AdjoinRoot.of _ c) * C τ ^ rightOrder q) •
           NodeAlgebra.coord (C τ * (1 + T 1)) 1 ^ q.val.1.toNat) := by
-  rw [rightChamberLift_apply K k (C_root_X_pow_pow K (k + 1)), rightLaurent_single]
+  rw [rightChamberLift_apply K k (C_root_X_pow_pow K (k + 1)), rightChamberLaurentMap_single]
   simp only [coeff_single, Finsupp.single_eq_same]
 
 /-- At horizontal degree zero, the two incoming lifts give the same common

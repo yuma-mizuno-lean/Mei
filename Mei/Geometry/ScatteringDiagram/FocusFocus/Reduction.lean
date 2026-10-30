@@ -18,8 +18,9 @@ coefficient map kills the input. These equations compare the actual chamber
 correspondences used for propagation of decorated lines.
 
 We use `NodeAlgebra.slabAlgebraMap`, `FocusFocus.leftChamberLift` and
-`FocusFocus.rightChamberLift`, the graded chamber reductions, and
-Mathlib's `GradedRingHom.map_directSumDecompose`. The slab coordinates follow
+`FocusFocus.rightChamberLift`, `NodeAlgebra.mapOfEq_incomingLift`, the graded
+chamber reductions, and Mathlib's `GradedRingHom.map_directSumDecompose`.
+The slab coordinates follow
 Gross–Siebert,
 *An Invitation to Toric Degenerations*, §2.3 (arXiv:0808.2749v2).
 -/
@@ -48,28 +49,29 @@ theorem truncatedSlabMap_leftChamberLift (q : {q : ℤ × ℤ × ℤ | q.1 ≤ 0
     truncatedSlabMap φ hl (leftChamberLift K k q u) =
       leftChamberLift K' l q
         ((truncatedExponentChamberGradedMap φ hl 1).gradedAddHom q.val u) := by
-  let : Algebra S[ℤ] S'[ℤ] := RingHom.toAlgebra (truncatedScalarMap φ hl)
-  have he := leftChamberLaurentMap_leftChamberMap
+  let : Algebra S[ℤ] S'[ℤ] := (truncatedScalarMap φ hl).toAlgebra
+  have htf : algebraMap S[ℤ] S'[ℤ] (C τ * (1 + T 1)) = C τ' * (1 + T 1) := by
+    simp only [map_mul, map_add, map_one, RingHom.algebraMap_toAlgebra,
+      truncatedScalarMap_C_root, truncatedScalarMap_T]
+  have he := leftChamberLaurentMap_leftChamberMap (t := C τ)
     (truncatedScalarMap_C_root φ hl) hl (C_root_X_pow_pow K (k + 1))
     (C_root_X_pow_pow K' (l + 1)) u.val
-  conv_lhs => arg 2; rw [leftChamberLift_apply K k (C_root_X_pow_pow K (k + 1)) q u]
-  conv_lhs => rw [truncatedSlabMap_toSlabAlgebra φ hl
-    ((leftChamberLaurentMap (C_root_X_pow_pow K (k + 1)) u.val).coeff (-q.val.1) •
-      NodeAlgebra.coord (C τ * (1 + T 1)) 0 ^ (-q.val.1).toNat)]
-  conv_rhs => rw [leftChamberLift_apply K' l (C_root_X_pow_pow K' (l + 1)) q
-    ((truncatedExponentChamberGradedMap φ hl 1).gradedAddHom q.val u)]
-  simp only [GradedRingHom.gradedAddHom_apply_coe, ← GradedRingHom.coe_toRingHom,
-    truncatedExponentChamberGradedMap_toRingHom, truncatedExponentChamberMap_one,
+  simp only [leftChamberLift_apply K k (C_root_X_pow_pow K (k + 1)) q u,
+    leftChamberLift_apply K' l (C_root_X_pow_pow K' (l + 1)) q
+      ((truncatedExponentChamberGradedMap φ hl 1).gradedAddHom q.val u)]
+  rw [truncatedSlabMap_toSlabAlgebra]
+  simp only [GradedRingHom.gradedAddHom_apply_coe,
+    ← GradedRingHom.coe_toRingHom, truncatedExponentChamberGradedMap_toRingHom,
+    truncatedExponentChamberMap_one,
     AlgHom.toRingHom_eq_coe, AlgHom.coe_toRingHom]
-  rw [he]
-  simp only [Algebra.smul_def, map_mul, map_pow, mapOfEq_coord, AlgHom.commutes,
-    AddMonoidAlgebra.coeff_mapAlgHom, Algebra.ofId_apply]
-  apply congrArg (fun z => z *
-    toSlabAlgebra (C τ') (1 + T 1) l
-      (NodeAlgebra.coord (C τ' * (1 + T 1)) 0) ^ (-q.val.1).toNat)
-  exact ((toSlabAlgebra (C τ') (1 + T 1) l).map_algebraMap
-    ((leftChamberLaurentMap (C_root_X_pow_pow K (k + 1)) u.val).coeff (-q.val.1))).trans
-      (IsScalarTower.algebraMap_apply S[ℤ] S'[ℤ] _ _)
+  simp only [he]
+  apply congrArg (toSlabAlgebra (C τ') (1 + T 1) l)
+  simpa only [incomingLift_apply] using
+    mapOfEq_incomingLift (C τ * (1 + T 1)) htf 0
+      ⟨-q.val.1, by simpa only [Set.mem_ofPred_eq] using
+        (neg_nonneg.mpr (q.property : q.val.1 ≤ 0))⟩
+      ⟨leftChamberLaurentMap (C_root_X_pow_pow K (k + 1)) u.val,
+        leftLaurent_mem_grade K k q.val u⟩
 
 /-- Every whole admissible right piece has the same lift before or after
 coefficient change and cutoff reduction, including discarded pieces. -/
@@ -79,28 +81,28 @@ theorem truncatedSlabMap_rightChamberLift (q : {q : ℤ × ℤ × ℤ | 0 ≤ q.
     truncatedSlabMap φ hl (rightChamberLift K k q u) =
       rightChamberLift K' l q
         ((truncatedExponentChamberGradedMap φ hl 0).gradedAddHom q.val u) := by
-  let : Algebra S[ℤ] S'[ℤ] := RingHom.toAlgebra (truncatedScalarMap φ hl)
-  have he := rightChamberLaurentMap_rightChamberMap
+  let : Algebra S[ℤ] S'[ℤ] := (truncatedScalarMap φ hl).toAlgebra
+  have htf : algebraMap S[ℤ] S'[ℤ] (C τ * (1 + T 1)) = C τ' * (1 + T 1) := by
+    simp only [map_mul, map_add, map_one, RingHom.algebraMap_toAlgebra,
+      truncatedScalarMap_C_root, truncatedScalarMap_T]
+  have he := rightChamberLaurentMap_rightChamberMap (t := C τ)
     (truncatedScalarMap_C_root φ hl) hl (C_root_X_pow_pow K (k + 1))
     (C_root_X_pow_pow K' (l + 1)) u.val
-  conv_lhs => arg 2; rw [rightChamberLift_apply K k (C_root_X_pow_pow K (k + 1)) q u]
-  conv_lhs => rw [truncatedSlabMap_toSlabAlgebra φ hl
-    ((rightChamberLaurentMap (C_root_X_pow_pow K (k + 1)) u.val).coeff (q.val.1) •
-      NodeAlgebra.coord (C τ * (1 + T 1)) 1 ^ (q.val.1).toNat)]
-  conv_rhs => rw [rightChamberLift_apply K' l (C_root_X_pow_pow K' (l + 1)) q
-    ((truncatedExponentChamberGradedMap φ hl 0).gradedAddHom q.val u)]
-  simp only [GradedRingHom.gradedAddHom_apply_coe, ← GradedRingHom.coe_toRingHom,
-    truncatedExponentChamberGradedMap_toRingHom, truncatedExponentChamberMap_zero,
+  simp only [rightChamberLift_apply K k (C_root_X_pow_pow K (k + 1)) q u,
+    rightChamberLift_apply K' l (C_root_X_pow_pow K' (l + 1)) q
+      ((truncatedExponentChamberGradedMap φ hl 0).gradedAddHom q.val u)]
+  rw [truncatedSlabMap_toSlabAlgebra]
+  simp only [GradedRingHom.gradedAddHom_apply_coe,
+    ← GradedRingHom.coe_toRingHom, truncatedExponentChamberGradedMap_toRingHom,
+    truncatedExponentChamberMap_zero,
     AlgHom.toRingHom_eq_coe, AlgHom.coe_toRingHom]
-  rw [he]
-  simp only [Algebra.smul_def, map_mul, map_pow, mapOfEq_coord, AlgHom.commutes,
-    AddMonoidAlgebra.coeff_mapAlgHom, Algebra.ofId_apply]
-  apply congrArg (fun z => z *
-    toSlabAlgebra (C τ') (1 + T 1) l
-      (NodeAlgebra.coord (C τ' * (1 + T 1)) 1) ^ (q.val.1).toNat)
-  exact ((toSlabAlgebra (C τ') (1 + T 1) l).map_algebraMap
-    ((rightChamberLaurentMap (C_root_X_pow_pow K (k + 1)) u.val).coeff (q.val.1))).trans
-      (IsScalarTower.algebraMap_apply S[ℤ] S'[ℤ] _ _)
+  simp only [he]
+  apply congrArg (toSlabAlgebra (C τ') (1 + T 1) l)
+  simpa only [incomingLift_apply] using
+    mapOfEq_incomingLift (C τ * (1 + T 1)) htf 1
+      ⟨q.val.1, q.property⟩
+      ⟨rightChamberLaurentMap (C_root_X_pow_pow K (k + 1)) u.val,
+        rightLaurent_mem_grade K k q.val u⟩
 
 /-- Left-to-right propagation commutes with coefficient change and cutoff
 reduction on each whole homogeneous output, without an injectivity assumption. -/

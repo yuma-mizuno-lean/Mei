@@ -5,10 +5,9 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.ScatteringDiagram.Skew.PolynomialInput.Principal
+public import Mei.Geometry.ScatteringDiagram.Skew.PolynomialInput.Pairing
 public import Mei.Geometry.ScatteringDiagram.Skew.Coefficient.Completion
-public import Mei.Algebra.Lie.Logarithmic.MonoidSpecialization
-public import Mei.RingTheory.FilteredAlgebra.AlgHom
+public import Mei.Algebra.Lie.Logarithmic.Pairing.Specialization
 
 /-!
 # Principal coefficient specialization of polynomial inputs
@@ -22,9 +21,18 @@ positive-increment filtration with identity cutoff modulus, and therefore extend
 to the coefficient completions. Its initial functions become the principal
 polynomials with coefficients `a_{i,s}`.
 
+On positive tangent fields whose characters lie in the span of the initial
+cylinder normals (`alphabetNormalSpan`), the weighted principal Lie map
+intertwines the coefficient actions. Over a rational algebra,
+the same substitution intertwines completed BCH actions on arbitrary completed
+coefficients. The normal pairing holds on the entire coefficient monoid, so
+Laurent spatial characters require no additional hypotheses.
+
 We use `BLMPolynomialInput.principalLift`, Mathlib's
 `AddMonoidAlgebra.lift`, `MvPolynomial.monomialOneHom`, and the filtered
-coefficient-monoid specialization and completion APIs. The substitution follows
+coefficient-monoid specialization and completion APIs, together with
+`TropicalPairing.coefficientGradedLieHom` and the naturality of filtered BCH
+actions. The substitution follows
 Burcroff–Lee–Mou, *Positivity of generalized cluster scattering diagrams*,
 §8.1 and §9.2 (arXiv:2503.03719v1).
 -/
@@ -41,12 +49,12 @@ variable {N ι : Type*} [AddCommGroup N] {D : SkewLatticeDatum N} {B : D.Adapted
 local notation "d" => PositiveDegrees.finiteAlphabet I.letterExponent
 local notation "e" => I.principalDatum.principalPositiveDegrees
   I.principalBasis.unfrozenBasis.positiveDegrees
-local notation "Q'" => I.principalDatum.principalCoefficientMonoid
+local notation "𝒬" => I.principalDatum.principalCoefficientMonoid
   I.principalBasis.unfrozenBasis.positiveDegrees
 
 /-- Restrict the principal lattice lift to the two coefficient monoids. -/
-def principalCoefficientExponent : I.coefficientMonoid →+ Q' :=
-  (I.principalLift.toAddMonoidHom.comp I.coefficientMonoid.subtype).codRestrict Q' (fun q => by
+def principalCoefficientExponent : I.coefficientMonoid →+ 𝒬 :=
+  (I.principalLift.toAddMonoidHom.comp I.coefficientMonoid.subtype).codRestrict 𝒬 (fun q => by
     rw [I.principalDatum.mem_principalCoefficientMonoid]
     simp only [AddMonoidHom.comp_apply, LinearMap.toAddMonoidHom_coe,
       AddSubmonoid.subtype_apply, I.principalLift_apply]
@@ -65,7 +73,7 @@ theorem coe_principalCoefficientExponent (q : I.coefficientMonoid) :
 
 /-- The lift carries every coefficient exponent into the principal coefficient monoid. -/
 theorem map_coefficientMonoid_le :
-    I.coefficientMonoid.map I.principalFiniteAlphabetLift.toAddMonoidHom ≤ Q' := by
+    I.coefficientMonoid.map I.principalFiniteAlphabetLift.toAddMonoidHom ≤ 𝒬 := by
   rintro _ ⟨q, hq, rfl⟩
   simpa only [coe_principalCoefficientExponent, I.principalFiniteAlphabetLift_apply] using
     (I.principalCoefficientExponent ⟨q, hq⟩).property
@@ -104,7 +112,7 @@ private theorem coefficientTwist_single (q : I.coefficientMonoid) (r : R) :
 
 /-- Substitute `p_{i,s} ↦ a_{i,s} t_i^s` in the native coefficient monoid algebras.
 The spatial character is transported by the normalized principal lattice map. -/
-def principalCoefficientMap : R[I.coefficientMonoid] →ₐ[R] (MvPolynomial I.Letter R)[Q'] :=
+def principalCoefficientMap : R[I.coefficientMonoid] →ₐ[R] (MvPolynomial I.Letter R)[𝒬] :=
   (AlgHom.restrictScalars R (mapDomainAlgHom (MvPolynomial I.Letter R) (MvPolynomial I.Letter R)
     ((AddSubmonoid.inclusion I.map_coefficientMonoid_le).comp
       (I.principalFiniteAlphabetLift.toAddMonoidHom.addSubmonoidMap I.coefficientMonoid)))).comp
@@ -165,7 +173,7 @@ The modulus is the identity, although a letter of multiplicity `s` acquires
 principal order `s`. -/
 theorem filtration_ideal_le_comap_principalCoefficientMap (k : ℕ) :
     (TropicalVertexCoefficientAction.filtration (R := R) d I.coefficientMonoid).ideal (k + 1) ≤
-      ((TropicalVertexCoefficientAction.filtration (R := MvPolynomial I.Letter R) e Q').ideal
+      ((TropicalVertexCoefficientAction.filtration (R := MvPolynomial I.Letter R) e 𝒬).ideal
         (k + 1)).comap (I.principalCoefficientMap R) := by
   simpa only [I.principalFiniteAlphabetLift_modulus, principalCoefficientMap] using
     LogarithmicVectorField.filtration_ideal_le_comap_coefficientDegreeMap
@@ -180,7 +188,7 @@ section Completion
 variable {R : Type*} [CommRing R]
 
 local notation "F" => TropicalVertexCoefficientAction.filtration (R := R) d I.coefficientMonoid
-local notation "G" => TropicalVertexCoefficientAction.filtration (R := MvPolynomial I.Letter R) e Q'
+local notation "G" => TropicalVertexCoefficientAction.filtration (R := MvPolynomial I.Letter R) e 𝒬
 
 /-- The completed principal substitution, with identity cutoff modulus. -/
 def principalCoefficientCompletionMap : (F).completion →ₐ[R] (G).completion :=
@@ -203,5 +211,167 @@ theorem principalCoefficientCompletionMap_toCompletion (a : R[I.coefficientMonoi
   (F).mapCompletionₐ_toCompletion G _ id monotone_id _ a
 
 end Completion
+
+section Action
+
+open LogarithmicVectorField
+
+variable (R : Type*) [CommRing R]
+
+local notation "𝒮" => MvPolynomial I.Letter R
+local notation "ρ" => AddMonoidHom.id (Module.Dual ℤ N × (I.Letter → ℤ))
+local notation "ρ'" => AddMonoidHom.id
+  (Module.Dual ℤ I.principalDatum.sublattice × I.principalDatum.unfrozen)
+local notation "𝒰" => I.alphabetNormalSpan R
+
+/-- The coefficient-weighted principal Lie map. The original cylinder-normal
+subalgebra is transported over `R`, and its degrees use the identity cutoff
+modulus of the principal lift. -/
+def principalCoefficientGradedLieHom :
+    GradedLieHom (R := R) (L := tropicalSubalgebra ρ 𝒰 d)
+      (L' := tropicalVertexLieAlgebra (R := 𝒮) e ρ')
+      I.principalFiniteAlphabetLift (tropicalSubalgebraGrading ρ 𝒰 d)
+      (fun n => Submodule.restrictScalars R (tropicalVertexGrading (R := 𝒮) e ρ' n)) where
+  toLieHom := ((I.principalTropicalPairing 𝒮).coefficientGradedLieHom (U := 𝒰)
+    (Algebra.ofId R 𝒮) (I.coefficientWeight R) I.positiveDegrees_le_coefficientMonoid
+    (I.comp_mem_alphabetNormalSpan R (algebraMap R 𝒮))).toLieHom
+  map_mem hx := by
+    simpa only [principalTropicalPairing_degreeMap, Submodule.restrictScalars_mem] using
+      ((I.principalTropicalPairing 𝒮).coefficientGradedLieHom (U := 𝒰)
+        (Algebra.ofId R 𝒮) (I.coefficientWeight R) I.positiveDegrees_le_coefficientMonoid
+        (I.comp_mem_alphabetNormalSpan R (algebraMap R 𝒮))).map_mem hx
+
+/-- A tangent generator acquires its entire independent-variable weight before
+its exponent is transported. In particular, merging exponents does not merge
+their polynomial coefficients prematurely. -/
+@[simp]
+theorem coe_principalCoefficientGradedLieHom_tropicalSingle
+    {n : Module.Dual ℤ N × (I.Letter → ℤ)} (hn : n ∈ (d).monoid) (hne : n ≠ 0)
+    (m : 𝒰) (hm : m.val n = 0) :
+    (I.principalCoefficientGradedLieHom R (tropicalSingle d ρ 𝒰 hn hne m hm)).val =
+      LogarithmicVectorField.single ρ' (I.principalLift n)
+        (MvPolynomial.monomial
+            (I.coefficientMultiplicity ⟨n, I.positiveDegrees_le_coefficientMonoid hn⟩) (1 : R) •
+          (I.principalTropicalPairing 𝒮).characterMap
+            ⟨((Algebra.ofId R 𝒮 : R →ₐ[R] 𝒮) : R →+ 𝒮).comp m.val,
+              I.comp_mem_alphabetNormalSpan R (algebraMap R 𝒮) m⟩) := by
+  simpa only [← GradedLieHom.coe_toLieHom, principalCoefficientGradedLieHom,
+    principalTropicalPairing_degreeMap, principalFiniteAlphabetLift_apply,
+    coefficientWeight_apply] using
+    (I.principalTropicalPairing 𝒮).coe_coefficientGradedLieHom_tropicalSingle
+    (Algebra.ofId R 𝒮) (I.coefficientWeight R) I.positiveDegrees_le_coefficientMonoid
+    (I.comp_mem_alphabetNormalSpan R (algebraMap R 𝒮)) hn hne m hm
+
+private theorem principalCoefficientMap_eq_comp_coefficientTwist
+    (hQ : I.coefficientMonoid.map
+      (I.principalTropicalPairing 𝒮).degreeMap.toAddMonoidHom ≤ 𝒬) :
+    I.principalCoefficientMap R =
+      (AlgHom.restrictScalars R (mapDomainAlgHom 𝒮 𝒮
+        ((AddSubmonoid.inclusion hQ).comp
+          ((I.principalTropicalPairing 𝒮).degreeMap.toAddMonoidHom.addSubmonoidMap
+            I.coefficientMonoid)))).comp (I.coefficientTwist R) := by
+  refine AddMonoidAlgebra.algHom_ext ?_ (Subsingleton.elim _ _)
+  intro q
+  simp only [principalCoefficientMap_single, AlgHom.comp_apply, coefficientTwist_single,
+    AlgHom.restrictScalars_apply, mapDomainAlgHom_apply, mapDomain_single,
+    coefficientWeight_apply]
+  congr 1
+  apply Subtype.ext
+  simp only [coe_principalCoefficientExponent, AddMonoidHom.comp_apply,
+    AddSubmonoid.coe_inclusion, AddMonoidHom.addSubmonoidMap_apply_coe,
+    principalTropicalPairing_degreeMap, principalFiniteAlphabetLift_apply]
+
+/-- The actual principal coefficient substitution intertwines the Lie actions
+on the native coefficient monoid algebras. -/
+theorem principalCoefficientMap_coefficientAction
+    (x : tropicalSubalgebra ρ 𝒰 d) (a : R[I.coefficientMonoid]) :
+    I.principalCoefficientMap R
+        (tropicalVertexCoefficientAction d ρ I.coefficientMonoid
+          I.positiveDegrees_le_coefficientMonoid x.val a) =
+      tropicalVertexCoefficientAction e ρ' 𝒬
+        (I.principalDatum.principalPositiveDegrees_le_coefficientMonoid
+          I.principalBasis.unfrozenBasis.positiveDegrees)
+        (I.principalCoefficientGradedLieHom R x) (I.principalCoefficientMap R a) := by
+  have hQ : I.coefficientMonoid.map
+      (I.principalTropicalPairing 𝒮).degreeMap.toAddMonoidHom ≤ 𝒬 := by
+    simpa only [principalTropicalPairing_degreeMap] using I.map_coefficientMonoid_le
+  have h := (I.principalTropicalPairing 𝒮).map_coefficientAction
+    (U := 𝒰) (Q := I.coefficientMonoid) (Q' := 𝒬)
+    (Algebra.ofId R 𝒮) (I.coefficientWeight R) I.positiveDegrees_le_coefficientMonoid
+    (I.comp_mem_alphabetNormalSpan R (algebraMap R 𝒮))
+    (I.principalDatum.principalPositiveDegrees_le_coefficientMonoid
+      I.principalBasis.unfrozenBasis.positiveDegrees)
+    hQ
+    (I.coefficientTwist R) (I.coefficientTwist_single R)
+    (fun m _ _ => by simp) x a
+  simpa only [← I.principalCoefficientMap_eq_comp_coefficientTwist R hQ,
+    ← GradedLieHom.coe_toLieHom, principalCoefficientGradedLieHom] using h
+
+end Action
+
+end Mei.SkewLatticeDatum.AdaptedBasis.BLMPolynomialInput
+
+namespace Mei.SkewLatticeDatum.AdaptedBasis.BLMPolynomialInput
+
+universe u
+
+variable {N ι : Type u} [AddCommGroup N] {D : SkewLatticeDatum N} {B : D.AdaptedBasis ι}
+  (I : B.BLMPolynomialInput) [DecidableEq ι] [Fintype ι]
+
+local notation "d" => PositiveDegrees.finiteAlphabet I.letterExponent
+local notation "e" => I.principalDatum.principalPositiveDegrees
+  I.principalBasis.unfrozenBasis.positiveDegrees
+local notation "𝒬" => I.principalDatum.principalCoefficientMonoid
+  I.principalBasis.unfrozenBasis.positiveDegrees
+
+section CompletedAction
+
+open LogarithmicVectorField _root_.AddMonoidAlgebra
+open scoped TropicalVertexCoefficientAction
+
+variable (R : Type*) [CommRing R] [Algebra ℚ R]
+  [DecidableEq (Module.Dual ℤ N)]
+  [DecidableEq (Module.Dual ℤ I.principalDatum.sublattice)]
+
+local notation "𝒮" => MvPolynomial I.Letter R
+local notation "ρ" => AddMonoidHom.id (Module.Dual ℤ N × (I.Letter → ℤ))
+local notation "ρ'" => AddMonoidHom.id
+  (Module.Dual ℤ I.principalDatum.sublattice × I.principalDatum.unfrozen)
+local notation "𝓛" => tropicalSubalgebraGrading ρ (I.alphabetNormalSpan R) d
+local notation "𝓛'" => (fun n =>
+  Submodule.restrictScalars R (tropicalVertexGrading (R := 𝒮) e ρ' n))
+local notation "F" => TropicalVertexCoefficientAction.filtration (R := R) d I.coefficientMonoid
+local notation "G" => TropicalVertexCoefficientAction.filtration (R := 𝒮) e 𝒬
+
+local instance : Fact ((d).monoid ≤ I.coefficientMonoid) :=
+  ⟨I.positiveDegrees_le_coefficientMonoid⟩
+
+local instance : Fact ((e).monoid ≤ 𝒬) :=
+  ⟨I.principalDatum.principalPositiveDegrees_le_coefficientMonoid
+    I.principalBasis.unfrozenBasis.positiveDegrees⟩
+
+local instance : LieModule R (tropicalVertexLieAlgebra (R := 𝒮) e ρ') 𝒮[𝒬] :=
+  LieModule.restrictScalars R 𝒮 _ _
+
+local instance : IsFiltrationRaising e 𝓛' ((G).toModuleFiltration R) :=
+  IsFiltrationRaising.restrictScalars_algebra (R := R) (S := 𝒮) (G) e
+    (tropicalVertexGrading (R := 𝒮) e ρ')
+
+/-- The completed principal substitution intertwines arbitrary completed BCH
+labels from the cylinder-normal subalgebra and arbitrary completed coefficients.
+This is the same coefficient map as the finite polynomial substitution. -/
+theorem principalCoefficientCompletionMap_completedBCHAction
+    (g : (d).completedBCHGroup 𝓛) (a : (F).completion) :
+    I.principalCoefficientCompletionMap
+        ((F).completedBCHAction d 𝓛 g a) =
+      (G).completedBCHAction (R := R) e 𝓛'
+        ((I.principalCoefficientGradedLieHom R).completedMap g)
+        (I.principalCoefficientCompletionMap a) := by
+  apply (F).mapCompletionₐ_completedBCHAction_of_gradedLieHom G
+    (I.principalCoefficientGradedLieHom R) (I.principalCoefficientMap R)
+  intro x b
+  exact I.principalCoefficientMap_coefficientAction R x b
+
+end CompletedAction
 
 end Mei.SkewLatticeDatum.AdaptedBasis.BLMPolynomialInput
