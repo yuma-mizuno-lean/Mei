@@ -6,6 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.ScatteringDiagram.FocusFocus.ChamberTransfer
+public import Mei.Geometry.ScatteringDiagram.FocusFocus.Naturality
 public import Mei.LinearAlgebra.GradedCorrespondence.Hom
 public import Mei.LinearAlgebra.GradedCorrespondence.RestrictScalars
 
@@ -288,5 +289,67 @@ theorem chamberLaurentComparison_left :
 @[simp]
 theorem chamberLaurentComparison_right :
     (chamberLaurentComparison K k).right = (rightChamberExponentMap K k).toLinearMap := (rfl)
+
+variable {K k} {K' : Type*} [CommRing K'] {l : ℕ}
+  (φ : K →+* K') (hl : l ≤ k)
+
+open Mei.LaurentPolynomial
+
+local notation "S'" => AdjoinRoot (Polynomial.X ^ (l + 1) : Polynomial K')
+
+/-- The left comparison commutes with arbitrary coefficient maps and lower cutoffs,
+including maps that kill homogeneous coefficients. -/
+@[simp↓]
+theorem leftChamberExponentMap_truncatedExponentChamberMap
+    (z : TruncatedExponentChamber K k 1) :
+    leftChamberExponentMap K' l (truncatedExponentChamberMap φ hl 1 z) =
+      mapRingHom (ℤ × ℤ)
+        (AdjoinRoot.map φ _ _ (by
+          simpa using pow_dvd_pow (Polynomial.X : Polynomial K') (Nat.add_le_add_right hl 1)))
+        (leftChamberExponentMap K k z) := by
+  let ψ : S →+* S' := AdjoinRoot.map φ _ _ (by
+    simpa using pow_dvd_pow (Polynomial.X : Polynomial K') (Nat.add_le_add_right hl 1))
+  let : Algebra S S' := ψ.toAlgebra
+  let : Algebra S[ℤ] S'[ℤ] := (truncatedScalarMap φ hl).toAlgebra
+  apply (curryAlgEquiv S').injective
+  rw [leftChamberExponentMap_apply, AlgEquiv.apply_symm_apply]
+  have hc := curryAlgEquiv_mapAlgHom_ofId (R := S) («S» := S')
+    (leftChamberExponentMap K k z)
+  rw [leftChamberExponentMap_apply, AlgEquiv.apply_symm_apply] at hc
+  rw [truncatedExponentChamberMap_one]
+  refine (leftChamberLaurentMap_leftChamberMap
+    (truncatedScalarMap_C_root φ hl) hl (C_root_X_pow_pow K (k + 1))
+    (C_root_X_pow_pow K' (l + 1)) z).trans ?_
+  simpa only [← AlgHom.coe_toRingHom, _root_.AddMonoidAlgebra.toRingHom_mapAlgHom,
+    Algebra.ofId,
+    RingHom.algebraMap_toAlgebra, AddMonoidAlgebra.algebraMap_def, truncatedScalarMap_def, ψ,
+    leftChamberExponentMap_apply] using hc.symm
+
+/-- The right comparison obeys the same coefficient and cutoff square. -/
+@[simp↓]
+theorem rightChamberExponentMap_truncatedExponentChamberMap
+    (z : TruncatedExponentChamber K k 0) :
+    rightChamberExponentMap K' l (truncatedExponentChamberMap φ hl 0 z) =
+      mapRingHom (ℤ × ℤ)
+        (AdjoinRoot.map φ _ _ (by
+          simpa using pow_dvd_pow (Polynomial.X : Polynomial K') (Nat.add_le_add_right hl 1)))
+        (rightChamberExponentMap K k z) := by
+  let ψ : S →+* S' := AdjoinRoot.map φ _ _ (by
+    simpa using pow_dvd_pow (Polynomial.X : Polynomial K') (Nat.add_le_add_right hl 1))
+  let : Algebra S S' := ψ.toAlgebra
+  let : Algebra S[ℤ] S'[ℤ] := (truncatedScalarMap φ hl).toAlgebra
+  apply (curryAlgEquiv S').injective
+  rw [rightChamberExponentMap_apply, AlgEquiv.apply_symm_apply]
+  have hc := curryAlgEquiv_mapAlgHom_ofId (R := S) («S» := S')
+    (rightChamberExponentMap K k z)
+  rw [rightChamberExponentMap_apply, AlgEquiv.apply_symm_apply] at hc
+  rw [truncatedExponentChamberMap_zero]
+  refine (rightChamberLaurentMap_rightChamberMap
+    (truncatedScalarMap_C_root φ hl) hl (C_root_X_pow_pow K (k + 1))
+    (C_root_X_pow_pow K' (l + 1)) z).trans ?_
+  simpa only [← AlgHom.coe_toRingHom, _root_.AddMonoidAlgebra.toRingHom_mapAlgHom,
+    Algebra.ofId,
+    RingHom.algebraMap_toAlgebra, AddMonoidAlgebra.algebraMap_def, truncatedScalarMap_def, ψ,
+    rightChamberExponentMap_apply] using hc.symm
 
 end Mei.FocusFocus

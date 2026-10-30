@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.ScatteringDiagram.FocusFocus.Comparison
+public import Mei.Geometry.ScatteringDiagram.FocusFocus.Comparison.Basic
 public import Mei.Geometry.ScatteringDiagram.FocusFocus.Decorated
 
 /-!
