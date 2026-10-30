@@ -135,4 +135,14 @@ theorem homogeneousHistoryStage_mem {n : ℕ}
   rw [homogeneousHistoryStage_castSucc_apply]
   exact Subtype.property _
 
+/-- All segment decorations are homogeneous in the recorded degrees, including
+the incoming degree appended after the selected output degrees. -/
+theorem homogeneousHistoryStage_mem_snoc {n : ℕ}
+    (T : Fin n → Module.End R M) (p : Fin n → ι) (p₀ : ι) (a : ℳ p₀)
+    (j : Fin (n + 1)) :
+    homogeneousHistoryStage ℳ T p j a ∈ ℳ (Fin.snoc (α := fun _ => ι) p p₀ j) := by
+  refine Fin.lastCases ?_ (fun i => ?_) j
+  · simpa only [Fin.snoc_last, homogeneousHistoryStage_last, LinearMap.id_apply] using a.property
+  · simpa only [Fin.snoc_castSucc] using homogeneousHistoryStage_mem ℳ T p a i
+
 end Mei
