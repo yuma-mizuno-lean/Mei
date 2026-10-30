@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.ScatteringDiagram.FocusFocus.Lifts
+public import Mei.Geometry.ScatteringDiagram.FocusFocus.ChamberTransfer
 public import Mei.RingTheory.Node.Tangential
 public import Mei.LinearAlgebra.GradedCorrespondence.Hom
 public import Mei.LinearAlgebra.GradedCorrespondence.RestrictScalars
@@ -17,7 +17,9 @@ The faithful Laurent realizations of the truncated chambers, together with the
 inverse slab algebra isomorphism, form a morphism of graded correspondences.
 Normal and tangential exponents are retained; the smoothing exponent becomes
 part of the coefficient in `K[t]/(t^(k+1))`. Both admissible incoming lifts are
-preserved, including when their whole homogeneous source piece is zero.
+preserved, including when their whole homogeneous source piece is zero. Full
+chamber transfer components realize as Laurent monomials with the same binomial
+coefficient and smoothing powers, so their survival is detected by that coefficient.
 
 We use `FocusFocus.algebraEquiv`, the chamber Laurent realization squares,
 `NodeAlgebra.exponentCorrespondence`, and Mathlib's `curryAlgEquiv`. This is the
@@ -37,6 +39,7 @@ variable (K : Type*) [CommRing K] (k : ℕ)
 
 local notation "S" => AdjoinRoot (Polynomial.X ^ (k + 1) : Polynomial K)
 local notation "τ" => AdjoinRoot.root (Polynomial.X ^ (k + 1) : Polynomial K)
+local notation "ι" => AdjoinRoot.of (Polynomial.X ^ (k + 1) : Polynomial K)
 
 -- Compose the existing coefficient actions through the tangential Laurent algebra.
 local instance : IsScalarTower K S (SlabNode τ) :=
@@ -63,6 +66,92 @@ def rightChamberExponentMap : TruncatedExponentChamber K k 0 →ₐ[K] S[ℤ × 
 theorem rightChamberExponentMap_apply (x : TruncatedExponentChamber K k 0) :
     rightChamberExponentMap K k x =
       (curryAlgEquiv S).symm (rightChamberLaurentMap (C_root_X_pow_pow K (k + 1)) x) := (rfl)
+
+/-- Laurent realization of each full left-to-right component preserves its whole
+coefficient, absorbing precisely the incoming and crossing smoothing powers. -/
+theorem rightChamberExponentMap_transfer_single (q : exponentMonoid)
+    (hq : q.val.1 ≤ 0) (c : K) (j : ℕ) :
+    rightChamberExponentMap K k
+      ((chamberCorrespondence K k).transfer ⟨q.val, hq⟩
+        (q + tangentDegree j).val
+        ⟨truncatedExponentChamberEquiv K k 1 (Ideal.Quotient.mk _ (single q c)),
+        (mem_truncatedExponentChamberGrade_iff_exists K k 1 q _).mpr ⟨c, rfl⟩⟩) =
+      single (q.val.1, q.val.2.1 + j)
+        ((ι c * τ ^ leftOrder q) * τ ^ q.val.1.natAbs *
+          (q.val.1.natAbs.choose j : S)) := by
+  rw [chamberCorrespondence_transfer_single, rightChamberExponentMap_apply,
+    rightChamberLaurentMap_single]
+  have habs : (-q.val.1).toNat = q.val.1.natAbs := by omega
+  simp only [AddSubmonoid.coe_add, coe_tangentDegree, Prod.fst_add, Prod.snd_add,
+    add_zero, map_add, rightOrder_apply, sub_zero, Int.toNat_zero, habs]
+  rw [← rightOrder_apply, rightOrder_eq_leftOrder_add_natAbs q hq]
+  simp only [map_mul, map_natCast, ← single_eq_C, single_pow, nsmul_zero,
+    single_mul_single, add_zero]
+  rw [← curryAlgEquiv_single (R := S), AlgEquiv.symm_apply_apply, pow_add τ]
+  congr 1
+  ring
+
+/-- The reverse crossing has the same scalar coefficient and opposite normal
+Laurent exponent. Its smoothing exponent remains in the full chamber degree. -/
+theorem leftChamberExponentMap_symm_transfer_single (q : exponentMonoid)
+    (hq : 0 ≤ q.val.1) (c : K) (j : ℕ) :
+    leftChamberExponentMap K k
+      ((chamberCorrespondence K k).symm.transfer ⟨q.val, hq⟩
+        (q + tangentDegree j).val
+        ⟨truncatedExponentChamberEquiv K k 0 (Ideal.Quotient.mk _ (single q c)),
+        (mem_truncatedExponentChamberGrade_iff_exists K k 0 q _).mpr ⟨c, rfl⟩⟩) =
+      single (-q.val.1, q.val.2.1 + j)
+        ((ι c * τ ^ rightOrder q) * τ ^ q.val.1.natAbs *
+          (q.val.1.natAbs.choose j : S)) := by
+  rw [chamberCorrespondence_symm_transfer_single, leftChamberExponentMap_apply,
+    leftChamberLaurentMap_single]
+  have habs : q.val.1.toNat = q.val.1.natAbs := by omega
+  simp only [AddSubmonoid.coe_add, coe_tangentDegree, Prod.fst_add, Prod.snd_add,
+    add_zero, map_add, leftOrder_apply, Int.toNat_zero, habs]
+  rw [← leftOrder_apply, leftOrder_eq_rightOrder_add_natAbs q hq]
+  simp only [map_mul, map_natCast, ← single_eq_C, single_pow, nsmul_zero,
+    single_mul_single, add_zero]
+  rw [← curryAlgEquiv_single (R := S), AlgEquiv.symm_apply_apply, pow_add τ]
+  congr 1
+  ring
+
+/-- A full left-to-right component survives exactly when its Laurent coefficient
+is nonzero, including all smoothing powers and the binomial factor. -/
+theorem chamberCorrespondence_transfer_single_ne_zero_iff_laurent (q : exponentMonoid)
+    (hq : q.val.1 ≤ 0) (c : K) (j : ℕ) :
+    (chamberCorrespondence K k).transfer ⟨q.val, hq⟩
+      (q + tangentDegree j).val
+        ⟨truncatedExponentChamberEquiv K k 1 (Ideal.Quotient.mk _ (single q c)),
+        (mem_truncatedExponentChamberGrade_iff_exists K k 1 q _).mpr ⟨c, rfl⟩⟩ ≠ 0 ↔
+        (ι c * τ ^ leftOrder q) * τ ^ q.val.1.natAbs *
+          (q.val.1.natAbs.choose j : S) ≠ 0 := by
+  have hinj : Function.Injective (rightChamberExponentMap K k) := by
+    intro x y hxy
+    apply rightChamberLaurentMap_injective_truncatedPolynomial K k
+    apply (curryAlgEquiv S).symm.injective
+    simpa only [rightChamberExponentMap_apply] using hxy
+  simp only [ne_eq, ← Submodule.coe_eq_zero]
+  rw [← map_eq_zero_iff (rightChamberExponentMap K k) hinj,
+    rightChamberExponentMap_transfer_single, AddMonoidAlgebra.single_eq_zero]
+
+/-- A full right-to-left component survives exactly when its Laurent coefficient
+is nonzero, including all smoothing powers and the binomial factor. -/
+theorem chamberCorrespondence_symm_transfer_single_ne_zero_iff_laurent (q : exponentMonoid)
+    (hq : 0 ≤ q.val.1) (c : K) (j : ℕ) :
+    (chamberCorrespondence K k).symm.transfer ⟨q.val, hq⟩
+      (q + tangentDegree j).val
+        ⟨truncatedExponentChamberEquiv K k 0 (Ideal.Quotient.mk _ (single q c)),
+        (mem_truncatedExponentChamberGrade_iff_exists K k 0 q _).mpr ⟨c, rfl⟩⟩ ≠ 0 ↔
+        (ι c * τ ^ rightOrder q) * τ ^ q.val.1.natAbs *
+          (q.val.1.natAbs.choose j : S) ≠ 0 := by
+  have hinj : Function.Injective (leftChamberExponentMap K k) := by
+    intro x y hxy
+    apply leftChamberLaurentMap_injective_truncatedPolynomial K k
+    apply (curryAlgEquiv S).symm.injective
+    simpa only [leftChamberExponentMap_apply] using hxy
+  simp only [ne_eq, ← Submodule.coe_eq_zero]
+  rw [← map_eq_zero_iff (leftChamberExponentMap K k) hinj,
+    leftChamberExponentMap_symm_transfer_single, AddMonoidAlgebra.single_eq_zero]
 
 /-- The inverse slab dictionary preserves every admissible left lift, with
 the whole smoothing coefficient retained in the Laurent input. -/

@@ -5,7 +5,6 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.ScatteringDiagram.FocusFocus.ChamberTransfer
 public import Mei.Geometry.ScatteringDiagram.FocusFocus.Comparison
 public import Mei.Geometry.ScatteringDiagram.FocusFocus.Decorated
 
@@ -13,7 +12,8 @@ public import Mei.Geometry.ScatteringDiagram.FocusFocus.Decorated
 # Realizing full chamber transfers by decorated slab rays
 
 A surviving full exponent component of a truncated chamber crossing, whose
-crossing height is nonzero, determines exactly one decorated slab ray in the
+crossing height is nonzero and whose endpoint lies on the opposite side
+(`Q.1 / (q.val.1 : ℝ) < 0`), determines exactly one decorated slab ray in the
 Laurent presentation. The equivalence retains the smoothing exponent in the
 chamber degree and absorbs its power into the Laurent coefficient. It preserves
 the entire decoration, including torsion and nilpotent coefficients. Both
@@ -61,103 +61,6 @@ abbrev RightChamberRayDegree (q : exponentMonoid) (hq : 0 ≤ q.val.1) (c : K)
         (mem_truncatedExponentChamberGrade_iff_exists K k 0 q _).mpr ⟨c, rfl⟩⟩ ≠ 0 ∧
       Q.2 - (η.2.1 : ℝ) * Q.1 / q.val.1 ≠ 0}
 
-private theorem left_order_add_abs (q : exponentMonoid) (hq : q.val.1 ≤ 0) :
-    rightOrder q = leftOrder q + q.val.1.natAbs := by
-  have := natCast_leftOrder q
-  have := natCast_rightOrder q
-  have := Int.natAbs_of_nonneg (neg_nonneg.mpr hq)
-  rw [Int.natAbs_neg] at this
-  omega
-
-private theorem right_order_add_abs (q : exponentMonoid) (hq : 0 ≤ q.val.1) :
-    leftOrder q = rightOrder q + q.val.1.natAbs := by
-  have := natCast_leftOrder q
-  have := natCast_rightOrder q
-  have := Int.natAbs_of_nonneg hq
-  omega
-
-/-- Laurent realization of each full left-to-right component preserves its whole
-coefficient, absorbing precisely the incoming and crossing smoothing powers. -/
-theorem rightChamberExponentMap_transfer_single (q : exponentMonoid)
-    (hq : q.val.1 ≤ 0) (c : K) (j : ℕ) :
-    rightChamberExponentMap K k
-      ((chamberCorrespondence K k).transfer ⟨q.val, hq⟩
-        (q + tangentDegree j).val
-        ⟨truncatedExponentChamberEquiv K k 1 (Ideal.Quotient.mk _ (single q c)),
-        (mem_truncatedExponentChamberGrade_iff_exists K k 1 q _).mpr ⟨c, rfl⟩⟩) =
-      single (q.val.1, q.val.2.1 + j)
-        ((ι c * τ ^ leftOrder q) * τ ^ q.val.1.natAbs *
-          (q.val.1.natAbs.choose j : S)) := by
-  rw [chamberCorrespondence_transfer_single, rightChamberExponentMap_apply,
-    rightChamberLaurentMap_single]
-  have habs : (-q.val.1).toNat = q.val.1.natAbs := by omega
-  simp only [AddSubmonoid.coe_add, coe_tangentDegree, Prod.fst_add, Prod.snd_add,
-    add_zero, map_add, rightOrder_apply, sub_zero, Int.toNat_zero, habs]
-  rw [← rightOrder_apply, left_order_add_abs q hq]
-  simp only [map_mul, map_natCast, ← single_eq_C, single_pow, nsmul_zero,
-    single_mul_single, add_zero]
-  rw [← curryAlgEquiv_single (R := S), AlgEquiv.symm_apply_apply, pow_add τ]
-  congr 1
-  ring
-
-/-- The reverse crossing has the same scalar coefficient and opposite normal
-Laurent exponent. Its smoothing exponent remains in the full chamber degree. -/
-theorem leftChamberExponentMap_symm_transfer_single (q : exponentMonoid)
-    (hq : 0 ≤ q.val.1) (c : K) (j : ℕ) :
-    leftChamberExponentMap K k
-      ((chamberCorrespondence K k).symm.transfer ⟨q.val, hq⟩
-        (q + tangentDegree j).val
-        ⟨truncatedExponentChamberEquiv K k 0 (Ideal.Quotient.mk _ (single q c)),
-        (mem_truncatedExponentChamberGrade_iff_exists K k 0 q _).mpr ⟨c, rfl⟩⟩) =
-      single (-q.val.1, q.val.2.1 + j)
-        ((ι c * τ ^ rightOrder q) * τ ^ q.val.1.natAbs *
-          (q.val.1.natAbs.choose j : S)) := by
-  rw [chamberCorrespondence_symm_transfer_single, leftChamberExponentMap_apply,
-    leftChamberLaurentMap_single]
-  have habs : q.val.1.toNat = q.val.1.natAbs := by omega
-  simp only [AddSubmonoid.coe_add, coe_tangentDegree, Prod.fst_add, Prod.snd_add,
-    add_zero, map_add, leftOrder_apply, Int.toNat_zero, habs]
-  rw [← leftOrder_apply, right_order_add_abs q hq]
-  simp only [map_mul, map_natCast, ← single_eq_C, single_pow, nsmul_zero,
-    single_mul_single, add_zero]
-  rw [← curryAlgEquiv_single (R := S), AlgEquiv.symm_apply_apply, pow_add τ]
-  congr 1
-  ring
-
-private theorem left_transfer_ne_zero (q : exponentMonoid) (hq : q.val.1 ≤ 0)
-    (c : K) (j : ℕ) :
-    (chamberCorrespondence K k).transfer ⟨q.val, hq⟩
-      (q + tangentDegree j).val
-        ⟨truncatedExponentChamberEquiv K k 1 (Ideal.Quotient.mk _ (single q c)),
-        (mem_truncatedExponentChamberGrade_iff_exists K k 1 q _).mpr ⟨c, rfl⟩⟩ ≠ 0 ↔
-        (ι c * τ ^ leftOrder q) * τ ^ q.val.1.natAbs *
-          (q.val.1.natAbs.choose j : S) ≠ 0 := by
-  have hinj : Function.Injective (rightChamberExponentMap K k) := by
-    intro x y hxy
-    apply rightChamberLaurentMap_injective_truncatedPolynomial K k
-    apply (curryAlgEquiv S).symm.injective
-    simpa only [rightChamberExponentMap_apply] using hxy
-  simp only [ne_eq, ← Submodule.coe_eq_zero]
-  rw [← map_eq_zero_iff (rightChamberExponentMap K k) hinj,
-    rightChamberExponentMap_transfer_single, AddMonoidAlgebra.single_eq_zero]
-
-private theorem right_transfer_ne_zero (q : exponentMonoid) (hq : 0 ≤ q.val.1)
-    (c : K) (j : ℕ) :
-    (chamberCorrespondence K k).symm.transfer ⟨q.val, hq⟩
-      (q + tangentDegree j).val
-        ⟨truncatedExponentChamberEquiv K k 0 (Ideal.Quotient.mk _ (single q c)),
-        (mem_truncatedExponentChamberGrade_iff_exists K k 0 q _).mpr ⟨c, rfl⟩⟩ ≠ 0 ↔
-        (ι c * τ ^ rightOrder q) * τ ^ q.val.1.natAbs *
-          (q.val.1.natAbs.choose j : S) ≠ 0 := by
-  have hinj : Function.Injective (leftChamberExponentMap K k) := by
-    intro x y hxy
-    apply leftChamberLaurentMap_injective_truncatedPolynomial K k
-    apply (curryAlgEquiv S).symm.injective
-    simpa only [leftChamberExponentMap_apply] using hxy
-  simp only [ne_eq, ← Submodule.coe_eq_zero]
-  rw [← map_eq_zero_iff (leftChamberExponentMap K k) hinj,
-    leftChamberExponentMap_symm_transfer_single, AddMonoidAlgebra.single_eq_zero]
-
 private theorem leftChamberBranch_image (q : exponentMonoid) (hq : q.val.1 ≤ 0)
     (c : K) (Q : ℝ × ℝ) :
     (fun j : Fin (q.val.1.natAbs + 1) => (q + tangentDegree j.val).val) ''
@@ -171,7 +74,7 @@ private theorem leftChamberBranch_image (q : exponentMonoid) (hq : q.val.1 ≤ 0
   ext η
   constructor
   · rintro ⟨j, ⟨hc, hh⟩, rfl⟩
-    exact ⟨(left_transfer_ne_zero K k q hq c j.val).mpr hc, by
+    exact ⟨(chamberCorrespondence_transfer_single_ne_zero_iff_laurent K k q hq c j.val).mpr hc, by
       simpa only [AddSubmonoid.coe_add, coe_tangentDegree, Prod.snd_add, Prod.fst_add]
         using hh⟩
   · rintro ⟨hη, hh⟩
@@ -179,7 +82,7 @@ private theorem leftChamberBranch_image (q : exponentMonoid) (hq : q.val.1 ≤ 0
       (chamberCorrespondence_transfer_ne_zero_iff K k q hq c η).mp hη
     have hj' : j < q.val.1.natAbs + 1 := by omega
     refine ⟨⟨j, hj'⟩, ⟨?_, ?_⟩, he.symm⟩
-    · apply (left_transfer_ne_zero K k q hq c j).mp
+    · apply (chamberCorrespondence_transfer_single_ne_zero_iff_laurent K k q hq c j).mp
       rw [← he]
       exact hη
     · rw [he] at hh
@@ -212,7 +115,8 @@ private theorem rightChamberBranch_image (q : exponentMonoid) (hq : 0 ≤ q.val.
   ext η
   constructor
   · rintro ⟨j, ⟨hc, hh⟩, rfl⟩
-    exact ⟨(right_transfer_ne_zero K k q hq c j.val).mpr hc, by
+    exact ⟨(chamberCorrespondence_symm_transfer_single_ne_zero_iff_laurent
+      K k q hq c j.val).mpr hc, by
       simpa only [AddSubmonoid.coe_add, coe_tangentDegree, Prod.snd_add, Prod.fst_add]
         using hh⟩
   · rintro ⟨hη, hh⟩
@@ -220,7 +124,7 @@ private theorem rightChamberBranch_image (q : exponentMonoid) (hq : 0 ≤ q.val.
       (chamberCorrespondence_symm_transfer_ne_zero_iff K k q hq c η).mp hη
     have hj' : j < q.val.1.natAbs + 1 := by omega
     refine ⟨⟨j, hj'⟩, ⟨?_, ?_⟩, he.symm⟩
-    · apply (right_transfer_ne_zero K k q hq c j).mp
+    · apply (chamberCorrespondence_symm_transfer_single_ne_zero_iff_laurent K k q hq c j).mp
       rw [← he]
       exact hη
     · rw [he] at hh

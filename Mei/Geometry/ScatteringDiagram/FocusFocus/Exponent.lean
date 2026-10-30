@@ -143,6 +143,25 @@ theorem natCast_leftOrder (q : exponentMonoid) :
 theorem natCast_rightOrder (q : exponentMonoid) :
     (rightOrder q : ℤ) = q.val.2.2 - q.val.1 := Int.toNat_of_nonneg q.property.2
 
+/-- For a nonpositive horizontal exponent, the right order is the left order
+plus its absolute value. -/
+theorem rightOrder_eq_leftOrder_add_natAbs (q : exponentMonoid) (hq : q.val.1 ≤ 0) :
+    rightOrder q = leftOrder q + q.val.1.natAbs := by
+  have := natCast_leftOrder q
+  have := natCast_rightOrder q
+  have := Int.natAbs_of_nonneg (neg_nonneg.mpr hq)
+  rw [Int.natAbs_neg] at this
+  omega
+
+/-- For a nonnegative horizontal exponent, the left order is the right order
+plus its absolute value. -/
+theorem leftOrder_eq_rightOrder_add_natAbs (q : exponentMonoid) (hq : 0 ≤ q.val.1) :
+    leftOrder q = rightOrder q + q.val.1.natAbs := by
+  have := natCast_leftOrder q
+  have := natCast_rightOrder q
+  have := Int.natAbs_of_nonneg hq
+  omega
+
 /-- The left order cutoff is exactly divisibility by the corresponding power of `y`. -/
 theorem le_leftOrder_iff (q : exponentMonoid) (k : ℕ) :
     k ≤ leftOrder q ↔ ∃ r : exponentMonoid, q = k • yDegree + r := by
