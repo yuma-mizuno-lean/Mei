@@ -1,0 +1,179 @@
+/-
+Copyright (c) 2026 Mei contributors. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Claude
+-/
+module
+
+public import Mei.Geometry.Convex.PolyhedralComplex.Filling.Reduction
+public import Mei.Geometry.Convex.PolyhedralComplex.Filling.Regular
+public import Mei.Geometry.Convex.PolyhedralComplex.Star
+
+/-!
+# Generation of loop words by joint meridians
+
+For a finite polyhedral complex covering its ambient space, the crossing word of every
+admissible polygonal loop lies in the normal closure of the words of small loops around the
+joints, the cells of codimension two. More precisely, the generators `jointMeridianWords ν U`
+are the words of admissible triangular meridians whose filled triangles lie in a convex open
+region `U`, meet the codimension-two skeleton at one relative interior point of a joint, avoid
+the relative boundary of that joint and all other joints, and meet only cells containing that
+joint. Every admissible loop in `U` has its word in their normal closure; with `U` the whole
+space this is the generation of loop words by joint meridians. Consequently a group labelling
+of the walls has endpoint-independent path products exactly when it kills these meridian words.
+
+Each filled triangle avoiding the codimension-at-least-three skeleton is covered by two kinds
+of neighbourhoods. Off the codimension-two skeleton, admissible loops in the regular balls of
+`FinitePolyhedralComplex.exists_ball_crossingWord_loop_eq_one` have trivial words. At a
+relative interior point of a joint, an isolating ball of
+`FinitePolyhedralComplex.exists_isolating_ball` meets only cells containing the joint, and
+`Quiver.Path.crossingWord_mem_normalClosure_jointTriangleWords` reduces its loops to meridians.
+`FinitePolyhedralComplex.crossingWord_triangle_mem_of_cover` assembles these local relations,
+and `Quiver.Path.crossingWord_mem_normalClosure_transverse_triangles` reduces an arbitrary loop
+to such triangles.
+-/
+
+public section
+
+noncomputable section
+
+open Set Mei.Convex
+
+namespace Mei.FinitePolyhedralComplex
+
+variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
+  {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
+  (C : FinitePolyhedralComplex h)
+
+/-- Words of the isolating triangular meridians, in `U`, of all joints of the complex. -/
+def jointMeridianWords (ν : C.walls → V →ₗ[ℝ] ℝ) (U : Set V) : Set (FreeGroup C.walls) :=
+  {g | ∃ J ∈ C.joints, g ∈ C.jointTriangleWords ν J U}
+
+@[simp]
+theorem mem_jointMeridianWords (ν : C.walls → V →ₗ[ℝ] ℝ) (U : Set V) (g : FreeGroup C.walls) :
+    g ∈ C.jointMeridianWords ν U ↔ ∃ J ∈ C.joints, g ∈ C.jointTriangleWords ν J U := Iff.rfl
+
+/-- Enlarging the region keeps every isolating meridian of a joint. -/
+theorem jointTriangleWords_mono (ν : C.walls → V →ₗ[ℝ] ℝ) (J : Set V) {U U' : Set V}
+    (hUU' : U ⊆ U') : C.jointTriangleWords ν J U ⊆ C.jointTriangleWords ν J U' := by
+  intro g hg
+  obtain ⟨x, y, z, e, f, r, q, hq, hedge, hU, hrest⟩ := (C.mem_jointTriangleWords ν J U g).mp hg
+  exact (C.mem_jointTriangleWords ν J U' g).mpr
+    ⟨x, y, z, e, f, r, q, hq, hedge, hU.trans hUU', hrest⟩
+
+/-- Enlarging the region keeps every joint meridian. -/
+theorem jointMeridianWords_mono (ν : C.walls → V →ₗ[ℝ] ℝ) {U U' : Set V} (hUU' : U ⊆ U') :
+    C.jointMeridianWords ν U ⊆ C.jointMeridianWords ν U' := by
+  rintro g ⟨J, hJ, hg⟩
+  exact ⟨J, hJ, C.jointTriangleWords_mono ν J hUU' hg⟩
+
+/-- Joint meridians are triangular relations in the same region. -/
+theorem jointMeridianWords_subset_triangleWords (ν : C.walls → V →ₗ[ℝ] ℝ) (U : Set V) :
+    C.jointMeridianWords ν U ⊆ C.triangleWords ν U := by
+  rintro g ⟨J, -, hg⟩
+  exact C.jointTriangleWords_subset_triangleWords ν J U hg
+
+variable {C}
+
+/-- In a convex open region, every point off the codimension-at-least-three skeleton has an
+open neighbourhood in which every admissible loop has its word in the normal closure of the
+joint meridians in the region. -/
+theorem exists_isOpen_crossingWord_mem_normalClosure_jointMeridianWords
+    (ν : C.walls → V →ₗ[ℝ] ℝ)
+    (hν : ∀ P, LinearMap.ker (ν P) = (affineSpan ℝ (P : Set V)).direction)
+    {U : Set V} (hUo : IsOpen U) (hU : Convex ℝ U) {θ : V} (hθU : θ ∈ U)
+    (hθ : θ ∉ (C.codimensionAtLeast 3).support) :
+    ∃ O : Set V, IsOpen O ∧ θ ∈ O ∧
+      ∀ (y : WallComplement (fun P : C.walls => (P : Set V))) (p : AdmissiblePLPath y y),
+        (∀ w ∈ p.vertices, w.val ∈ O) →
+          p.crossingWord ν ∈ Subgroup.normalClosure (C.jointMeridianWords ν U) := by
+  by_cases hθ₂ : θ ∈ (C.codimensionAtLeast 2).support
+  · -- At a relative interior point of a joint, use an isolating ball inside the region.
+    obtain ⟨J, ⟨hJ, hθJ⟩, -⟩ := C.existsUnique_mem_cellsOfCodimension_of_notMem_succ hθ₂ hθ
+    obtain ⟨r, hr, -, -, -, hinc⟩ := C.exists_isolating_ball hJ hθJ
+    refine ⟨Metric.ball θ r ∩ U, Metric.isOpen_ball.inter hUo,
+      ⟨Metric.mem_ball_self hr, hθU⟩, fun y p hp => ?_⟩
+    exact Subgroup.normalClosure_mono
+      (fun g hg => (C.mem_jointMeridianWords ν U g).mpr
+        ⟨J, hJ, C.jointTriangleWords_mono ν J inter_subset_right hg⟩)
+      (p.crossingWord_mem_normalClosure_jointTriangleWords ν hν hJ
+        (Metric.isOpen_ball.inter hUo) ((convex_ball θ r).inter hU)
+        ⟨θ, ⟨Metric.mem_ball_self hr, hθU⟩, intrinsicInterior_subset hθJ⟩
+        (fun Q hQ hQU => hinc Q hQ (hQU.mono (inter_subset_inter_left _ inter_subset_left)))
+        hp)
+  · -- Off the codimension-two skeleton, loop words in a regular ball are trivial.
+    obtain ⟨r, hr, hword⟩ := C.exists_ball_crossingWord_loop_eq_one ν hν
+      (fun hs => hθ₂ (C.singularSupport_walls_subset_support_codimensionAtLeast hs))
+    exact ⟨Metric.ball θ r, Metric.isOpen_ball, Metric.mem_ball_self hr,
+      fun y p hp => (hword y p hp).symm ▸ one_mem _⟩
+
+/-- The word of an admissible triangular loop in a convex open region, whose filled triangle
+avoids the codimension-at-least-three skeleton, lies in the normal closure of the joint
+meridians in the region. No transversality of the triangle is needed. -/
+theorem crossingWord_triangle_mem_normalClosure_jointMeridianWords
+    (ν : C.walls → V →ₗ[ℝ] ℝ)
+    (hν : ∀ P, LinearMap.ker (ν P) = (affineSpan ℝ (P : Set V)).direction)
+    {U : Set V} (hUo : IsOpen U) (hU : Convex ℝ U)
+    {x y z : WallComplement (fun P : C.walls => (P : Set V))}
+    (e : x ⟶ y) (f : y ⟶ z) (r : z ⟶ x) (hx : x.val ∈ U) (hy : y.val ∈ U) (hz : z.val ∈ U)
+    (havoid : Disjoint (convexHull ℝ {x.val, y.val, z.val}) (C.codimensionAtLeast 3).support) :
+    ((e.toPath.cons f).cons r).crossingWord ν ∈
+      Subgroup.normalClosure (C.jointMeridianWords ν U) := by
+  have hhull : convexHull ℝ {x.val, y.val, z.val} ⊆ U :=
+    convexHull_min (by simp [insert_subset_iff, hx, hy, hz]) hU
+  choose O hO hθO hlocal using fun θ : convexHull ℝ {x.val, y.val, z.val} =>
+    exists_isOpen_crossingWord_mem_normalClosure_jointMeridianWords ν hν hUo hU
+      (hhull θ.property) (disjoint_left.mp havoid θ.property)
+  exact C.crossingWord_triangle_mem_of_cover ν hν _ e f r O hO
+    (fun θ hθ => mem_iUnion.mpr ⟨⟨θ, hθ⟩, hθO _⟩) hlocal
+
+end Mei.FinitePolyhedralComplex
+
+namespace Quiver.Path
+
+variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
+  {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
+  {C : Mei.FinitePolyhedralComplex h}
+  {x : Mei.Convex.WallComplement (fun P : C.walls => (P : Set V))}
+
+/-- **Generation of loop words by joint meridians.** For a complex covering the ambient space,
+the crossing word of every admissible polygonal loop in a convex open region lies in the
+normal closure of the words of the isolating triangular meridians of joints in that region. -/
+theorem crossingWord_mem_normalClosure_jointMeridianWords (p : Mei.Convex.AdmissiblePLPath x x)
+    (hC : C.support = Set.univ) (ν : C.walls → V →ₗ[ℝ] ℝ)
+    (hν : ∀ P, LinearMap.ker (ν P) = (affineSpan ℝ (P : Set V)).direction)
+    {U : Set V} (hUo : IsOpen U) (hU : Convex ℝ U) (hp : ∀ u ∈ p.vertices, u.val ∈ U) :
+    p.crossingWord ν ∈ Subgroup.normalClosure (C.jointMeridianWords ν U) := by
+  refine Subgroup.normalClosure_le_normal (fun g hg => ?_)
+    (p.crossingWord_mem_normalClosure_transverse_triangles hC ν hν hUo hp)
+  obtain ⟨x, y, z, e, f, r, hx, hy, hz, havoid, -, rfl⟩ :=
+    (C.mem_transverseTriangleWords ν U g).mp hg
+  exact Mei.FinitePolyhedralComplex.crossingWord_triangle_mem_normalClosure_jointMeridianWords
+    ν hν hUo hU e f r hx hy hz havoid
+
+end Quiver.Path
+
+namespace Mei.FinitePolyhedralComplex
+
+variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
+  {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
+
+/-- For a complex covering the ambient space, the joint meridians in a convex open region
+normally generate the same subgroup as all triangular relations in the region. -/
+theorem normalClosure_jointMeridianWords_eq (C : FinitePolyhedralComplex h)
+    (hC : C.support = univ) (ν : C.walls → V →ₗ[ℝ] ℝ)
+    (hν : ∀ P, LinearMap.ker (ν P) = (affineSpan ℝ (P : Set V)).direction)
+    {U : Set V} (hUo : IsOpen U) (hU : Convex ℝ U) :
+    Subgroup.normalClosure (C.jointMeridianWords ν U) =
+      Subgroup.normalClosure (C.triangleWords ν U) := by
+  apply le_antisymm (Subgroup.normalClosure_mono (C.jointMeridianWords_subset_triangleWords ν U))
+  apply Subgroup.normalClosure_le_normal
+  intro g hg
+  obtain ⟨x, y, z, e, f, r, hx, hy, hz, rfl⟩ := (C.mem_triangleWords ν U g).mp hg
+  apply Quiver.Path.crossingWord_mem_normalClosure_jointMeridianWords _ hC ν hν hUo hU
+  intro u hu
+  simp only [Quiver.Path.vertices_cons, Quiver.Path.vertices_toPath,
+    List.concat_eq_append, List.mem_append, List.mem_cons, List.not_mem_nil, or_false] at hu
+  rcases hu with (((rfl | rfl) | rfl) | rfl) <;> assumption
+
+end Mei.FinitePolyhedralComplex
