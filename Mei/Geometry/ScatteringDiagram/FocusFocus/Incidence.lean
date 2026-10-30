@@ -19,7 +19,7 @@ the two crossing descriptions, including their actual chamber projections.
 
 The construction uses `upperTruncatedExponentChamber`, `upperOverlap` and
 `lowerWallMap_eq_upperWallMap_comp_upperOverlap`, with Mathlib's equalizer
-subalgebras and `AlgEquiv.ofBijective`. The coordinate and gluing conventions
+subalgebras and `AlgEquiv.subalgebraMap`. The coordinate and gluing conventions
 follow Gross–Siebert, *An Invitation to Toric Degenerations*, §2.2–2.3
 (arXiv:0808.2749v2).
 -/
@@ -130,20 +130,15 @@ def upperSlabEquiv :
       (upperTruncatedExponentChamber_algebraMap K k 1)
   let f := AlgEquiv.prodCongr e (AlgEquiv.refl :
     TruncatedExponentChamber K k 0 ≃ₐ[R] TruncatedExponentChamber K k 0)
-  let g : slabAlgebra (C τ) (1 + T 1) k →ₐ[R] upperSlabAlgebra τ k :=
-    (f.toAlgHom.comp (slabAlgebra (C τ) (1 + T 1) k).val).codRestrict _ fun z =>
-      (mem_upperSlabAlgebra_upper_iff K k z.val).mpr z.property
-  refine AlgEquiv.ofBijective g ⟨?_, ?_⟩
-  · intro x y hxy
-    exact Subtype.ext (f.injective (congrArg Subtype.val hxy))
-  · intro y
-    have hy : f.symm y.val ∈ slabAlgebra (C τ) (1 + T 1) k := by
-      apply (mem_upperSlabAlgebra_upper_iff K k (f.symm y.val)).mp
-      have hf : f (f.symm y.val) ∈ upperSlabAlgebra τ k := by
-        rw [f.apply_symm_apply]
-        exact y.property
-      exact hf
-    exact ⟨⟨f.symm y.val, hy⟩, Subtype.ext (f.apply_symm_apply y.val)⟩
+  have hcomap : slabAlgebra (C τ) (1 + T 1) k =
+      (upperSlabAlgebra τ k).comap f.toAlgHom := by
+    ext z
+    exact (mem_upperSlabAlgebra_upper_iff K k z).symm
+  have hmap : (slabAlgebra (C τ) (1 + T 1) k).map f.toAlgHom =
+      upperSlabAlgebra τ k := by
+    rw [hcomap]
+    exact Subalgebra.map_comap_eq_self_of_surjective f.surjective _
+  exact (f.subalgebraMap _).trans (Subalgebra.equivOfEq _ _ hmap)
 
 /-- The upper gluing comparison shears precisely the left entry. -/
 @[simp]
@@ -155,15 +150,6 @@ theorem coe_upperSlabEquiv (z : slabAlgebra (C τ) (1 + T 1) k) :
 @[simp]
 theorem coe_upperSlabEquiv_symm (z : upperSlabAlgebra τ k) :
     ((upperSlabEquiv K k).symm z).val =
-      ((upperTruncatedExponentChamber K k 1).symm z.val.1, z.val.2) := by
-  have he := congrArg Subtype.val ((upperSlabEquiv K k).apply_symm_apply z)
-  rw [coe_upperSlabEquiv] at he
-  have h₁ : (((upperSlabEquiv K k).symm z).val).1 =
-      (upperTruncatedExponentChamber K k 1).symm z.val.1 := by
-    apply (upperTruncatedExponentChamber K k 1).injective
-    rw [AlgEquiv.apply_symm_apply]
-    exact congrArg Prod.fst he
-  have h₂ := congrArg Prod.snd he
-  exact Prod.ext h₁ h₂
+      ((upperTruncatedExponentChamber K k 1).symm z.val.1, z.val.2) := (rfl)
 
 end Mei.FocusFocus
