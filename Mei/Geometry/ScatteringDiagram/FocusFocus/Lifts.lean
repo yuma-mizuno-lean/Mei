@@ -38,14 +38,8 @@ variable (K : Type*) [CommRing K] (k : ℕ)
 local notation "S" => AdjoinRoot (Polynomial.X ^ (k + 1) : Polynomial K)
 local notation "τ" => AdjoinRoot.root (Polynomial.X ^ (k + 1) : Polynomial K)
 
-private theorem parameter_pow : τ ^ (k + 1) = 0 := by
-  rw [← AdjoinRoot.mk_X, ← map_pow, AdjoinRoot.mk_self]
-
-private theorem laurent_parameter_pow : (C τ : S[T;T⁻¹]) ^ (k + 1) = 0 := by
-  rw [← map_pow, parameter_pow, map_zero]
-
 private theorem leftLaurent_single (q : exponentMonoid) (c : K) :
-    leftChamberLaurentMap (laurent_parameter_pow K k)
+    leftChamberLaurentMap (C_root_X_pow_pow K (k + 1))
         (truncatedExponentChamberEquiv K k 1 (Ideal.Quotient.mk _ (single q c))) =
       single (-q.val.1) (single q.val.2.1 (AdjoinRoot.of _ c) * C τ ^ leftOrder q) := by
   rw [truncatedExponentChamberEquiv_single, leftChamberLaurentMap_mk]
@@ -60,7 +54,7 @@ private theorem leftLaurent_single (q : exponentMonoid) (c : K) :
   omega
 
 private theorem rightLaurent_single (q : exponentMonoid) (c : K) :
-    rightChamberLaurentMap (laurent_parameter_pow K k)
+    rightChamberLaurentMap (C_root_X_pow_pow K (k + 1))
         (truncatedExponentChamberEquiv K k 0 (Ideal.Quotient.mk _ (single q c))) =
       single q.val.1 (single q.val.2.1 (AdjoinRoot.of _ c) * C τ ^ rightOrder q) := by
   rw [truncatedExponentChamberEquiv_single, rightChamberLaurentMap_mk]
@@ -76,7 +70,7 @@ private theorem rightLaurent_single (q : exponentMonoid) (c : K) :
 
 private theorem leftLaurent_mem_grade (q : ℤ × ℤ × ℤ)
     (u : truncatedExponentChamberGrade K k 1 q) :
-    leftChamberLaurentMap (laurent_parameter_pow K k) u.val ∈ grade S[T;T⁻¹] (-q.1) := by
+    leftChamberLaurentMap (C_root_X_pow_pow K (k + 1)) u.val ∈ grade S[T;T⁻¹] (-q.1) := by
   by_cases hq : q ∈ exponentMonoid
   · obtain ⟨c, hc⟩ := (mem_truncatedExponentChamberGrade_iff_exists K k 1 ⟨q, hq⟩ u.val).mp
       u.property
@@ -90,7 +84,7 @@ private theorem leftLaurent_mem_grade (q : ℤ × ℤ × ℤ)
 
 private theorem rightLaurent_mem_grade (q : ℤ × ℤ × ℤ)
     (u : truncatedExponentChamberGrade K k 0 q) :
-    rightChamberLaurentMap (laurent_parameter_pow K k) u.val ∈ grade S[T;T⁻¹] q.1 := by
+    rightChamberLaurentMap (C_root_X_pow_pow K (k + 1)) u.val ∈ grade S[T;T⁻¹] q.1 := by
   by_cases hq : q ∈ exponentMonoid
   · obtain ⟨c, hc⟩ := (mem_truncatedExponentChamberGrade_iff_exists K k 0 ⟨q, hq⟩ u.val).mp
       u.property
@@ -105,7 +99,7 @@ private theorem rightLaurent_mem_grade (q : ℤ × ℤ × ℤ)
 private def leftGradeToLaurent (q : ℤ × ℤ × ℤ) :
     truncatedExponentChamberGrade K k 1 q →ₗ[K]
       (grade S[T;T⁻¹] (-q.1)).restrictScalars K :=
-  (((leftChamberLaurentMap (laurent_parameter_pow K k)).toLinearMap.restrictScalars K).comp
+  (((leftChamberLaurentMap (C_root_X_pow_pow K (k + 1))).toLinearMap.restrictScalars K).comp
     (truncatedExponentChamberGrade K k 1 q).subtype).codRestrict _
     (fun u => by
       simpa only [LinearMap.comp_apply, LinearMap.restrictScalars_apply,
@@ -115,7 +109,7 @@ private def leftGradeToLaurent (q : ℤ × ℤ × ℤ) :
 private def rightGradeToLaurent (q : ℤ × ℤ × ℤ) :
     truncatedExponentChamberGrade K k 0 q →ₗ[K]
       (grade S[T;T⁻¹] q.1).restrictScalars K :=
-  (((rightChamberLaurentMap (laurent_parameter_pow K k)).toLinearMap.restrictScalars K).comp
+  (((rightChamberLaurentMap (C_root_X_pow_pow K (k + 1))).toLinearMap.restrictScalars K).comp
     (truncatedExponentChamberGrade K k 0 q).subtype).codRestrict _
     (fun u => by
       simpa only [LinearMap.comp_apply, LinearMap.restrictScalars_apply,
@@ -127,7 +121,7 @@ The domain contains every degree with horizontal exponent at most zero. -/
 def leftChamberLift (q : {q : ℤ × ℤ × ℤ | q.1 ≤ 0}) :
     truncatedExponentChamberGrade K k 1 q.val →ₗ[K]
       slabAlgebra (C τ) (1 + T 1) k :=
-  ((algebraEquiv τ k (parameter_pow K k)).toLinearMap.restrictScalars K).comp
+  ((algebraEquiv τ k (AdjoinRoot.root_X_pow_pow (k + 1))).toLinearMap.restrictScalars K).comp
     ((((incomingLift (C τ * (1 + T 1)) 0
       ⟨-q.val.1, by simpa only [Set.mem_ofPred_eq] using
         (neg_nonneg.mpr (q.property : q.val.1 ≤ 0))⟩).comp
@@ -139,7 +133,7 @@ def leftChamberLift (q : {q : ℤ × ℤ × ℤ | q.1 ≤ 0}) :
 def rightChamberLift (q : {q : ℤ × ℤ × ℤ | 0 ≤ q.1}) :
     truncatedExponentChamberGrade K k 0 q.val →ₗ[K]
       slabAlgebra (C τ) (1 + T 1) k :=
-  ((algebraEquiv τ k (parameter_pow K k)).toLinearMap.restrictScalars K).comp
+  ((algebraEquiv τ k (AdjoinRoot.root_X_pow_pow (k + 1))).toLinearMap.restrictScalars K).comp
     ((((incomingLift (C τ * (1 + T 1)) 1 ⟨q.val.1, q.property⟩).comp
       (Submodule.restrictScalarsEquiv K S[T;T⁻¹] _
         (grade S[T;T⁻¹] q.val.1)).toLinearMap).restrictScalars K).comp
@@ -170,6 +164,38 @@ theorem rightChamberLift_apply (h : (C τ : S[T;T⁻¹]) ^ (k + 1) = 0)
   rw [algebraEquiv_apply, incomingLift_apply]
   rfl
 
+/-- Left lifts preserve products of arbitrary admissible homogeneous inputs,
+including pieces annihilated by the cutoff. -/
+theorem leftChamberLift_mul (q r : {q : ℤ × ℤ × ℤ | q.1 ≤ 0})
+    (u : truncatedExponentChamberGrade K k 1 q.val)
+    (v : truncatedExponentChamberGrade K k 1 r.val) :
+    leftChamberLift K k
+      ⟨q.val + r.val, add_nonpos (a := r.val.1) (b := q.val.1) q.property r.property⟩
+      ⟨u.val * v.val, SetLike.mul_mem_graded u.property v.property⟩ =
+        leftChamberLift K k q u * leftChamberLift K k r v := by
+  simpa only [leftChamberLift_apply K k (C_root_X_pow_pow K (k + 1)),
+    incomingLift_apply, map_mul, Prod.fst_add, neg_add] using
+    congrArg (toSlabAlgebra (C τ) (1 + T 1) k)
+      (incomingLift_mul (C τ * (1 + T 1)) 0
+        ⟨-q.val.1, by simpa only [Set.mem_ofPred_eq, neg_nonneg] using q.property⟩
+        ⟨-r.val.1, by simpa only [Set.mem_ofPred_eq, neg_nonneg] using r.property⟩
+        ⟨_, leftLaurent_mem_grade K k q.val u⟩ ⟨_, leftLaurent_mem_grade K k r.val v⟩)
+
+/-- Right lifts preserve products of arbitrary admissible homogeneous inputs,
+including pieces annihilated by the cutoff. -/
+theorem rightChamberLift_mul (q r : {q : ℤ × ℤ × ℤ | 0 ≤ q.1})
+    (u : truncatedExponentChamberGrade K k 0 q.val)
+    (v : truncatedExponentChamberGrade K k 0 r.val) :
+    rightChamberLift K k
+      ⟨q.val + r.val, add_nonneg (a := q.val.1) (b := r.val.1) q.property r.property⟩
+      ⟨u.val * v.val, SetLike.mul_mem_graded u.property v.property⟩ =
+        rightChamberLift K k q u * rightChamberLift K k r v := by
+  simpa only [rightChamberLift_apply K k (C_root_X_pow_pow K (k + 1)),
+    incomingLift_apply, map_mul, Prod.fst_add] using
+    congrArg (toSlabAlgebra (C τ) (1 + T 1) k)
+      (incomingLift_mul (C τ * (1 + T 1)) 1 ⟨q.val.1, q.property⟩ ⟨r.val.1, r.property⟩
+        ⟨_, rightLaurent_mem_grade K k q.val u⟩ ⟨_, rightLaurent_mem_grade K k r.val v⟩)
+
 /-- A left monomial `c t^h x^d w^b` lifts to `c t^h X^d W^b`.
 This also applies when the cutoff kills the whole piece. -/
 @[simp↓]
@@ -181,7 +207,7 @@ theorem leftChamberLift_single (q : exponentMonoid) (hq : q.val.1 ≤ 0) (c : K)
       toSlabAlgebra (C τ) (1 + T 1) k
         ((single q.val.2.1 (AdjoinRoot.of _ c) * C τ ^ leftOrder q) •
           NodeAlgebra.coord (C τ * (1 + T 1)) 0 ^ (-q.val.1).toNat) := by
-  rw [leftChamberLift_apply K k (laurent_parameter_pow K k), leftLaurent_single]
+  rw [leftChamberLift_apply K k (C_root_X_pow_pow K (k + 1)), leftLaurent_single]
   simp only [coeff_single, Finsupp.single_eq_same]
 
 /-- A right monomial `c t^r y^d w^b` lifts to `c t^r Y^d W^b`, where `r=h-a`. -/
@@ -194,7 +220,7 @@ theorem rightChamberLift_single (q : exponentMonoid) (hq : 0 ≤ q.val.1) (c : K
       toSlabAlgebra (C τ) (1 + T 1) k
         ((single q.val.2.1 (AdjoinRoot.of _ c) * C τ ^ rightOrder q) •
           NodeAlgebra.coord (C τ * (1 + T 1)) 1 ^ q.val.1.toNat) := by
-  rw [rightChamberLift_apply K k (laurent_parameter_pow K k), rightLaurent_single]
+  rw [rightChamberLift_apply K k (C_root_X_pow_pow K (k + 1)), rightLaurent_single]
   simp only [coeff_single, Finsupp.single_eq_same]
 
 /-- At horizontal degree zero, the two incoming lifts give the same common

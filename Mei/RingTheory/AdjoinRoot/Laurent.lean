@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import TauCeti.RingTheory.AdjoinRoot.Basic
+public import Mei.RingTheory.AdjoinRoot.Basic
 public import Mei.Algebra.Polynomial.Laurent
 
 /-!
@@ -33,6 +33,13 @@ open AddMonoidAlgebra
 
 variable {R : Type*} [CommRing R] {n i : ℕ}
 
+/-- Laurent extension preserves the vanishing power of the truncated polynomial parameter. -/
+@[simp]
+theorem C_root_X_pow_pow (R : Type*) [CommRing R] (n : ℕ) :
+    (C (AdjoinRoot.root (Polynomial.X ^ n : Polynomial R)) :
+      (AdjoinRoot (Polynomial.X ^ n : Polynomial R))[T;T⁻¹]) ^ n = 0 := by
+  rw [← map_pow, AdjoinRoot.root_X_pow_pow, map_zero]
+
 /-- Laurent extension preserves the annihilator of a power of the truncated
 polynomial parameter. -/
 theorem C_root_X_pow_pow_mul_eq_zero_iff
@@ -54,7 +61,7 @@ theorem C_root_X_pow_pow_mul_eq_zero_iff
       exact (AdjoinRoot.root_X_pow_pow_mul_eq_zero_iff hi _).mpr (h j)
   · have hn : (C (AdjoinRoot.root (Polynomial.X ^ n : Polynomial R)) :
         (AdjoinRoot (Polynomial.X ^ n : Polynomial R))[T;T⁻¹]) ^ n = 0 := by
-      rw [← map_pow, ← AdjoinRoot.mk_X, ← map_pow, AdjoinRoot.mk_self, map_zero]
+      exact C_root_X_pow_pow R n
     have hni : n ≤ i := by omega
     simp [pow_eq_zero_of_le hni hn, Nat.sub_eq_zero_of_le hni]
 
