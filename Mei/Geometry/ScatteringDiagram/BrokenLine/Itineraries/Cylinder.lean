@@ -23,7 +23,7 @@ are preserved by projection. Properness follows separately when the projected
 incoming direction is nonzero. The coefficient grading is retained; grouping
 histories after coefficient regrading is a separate comparison.
 
-We use `cutoffDecoratedRayFiberEquiv`, its finite-type evaluation formula,
+We use `cutoffDecoratedRayFiberEquiv` for finiteness of the ray family,
 `AdmissibleRayRealization.eq_backwardRay` and the backward cylinder-domain
 identities. The geometric lifting follows Carl–Pumperla–Siebert, *A tropical
 view on Landau–Ginzburg models*, §4 (arXiv:2205.07753v2); the whole-component
@@ -155,29 +155,12 @@ theorem cutoffDecoratedEvaluation_cylinder [Finite J] :
         (fun j => Prod.fst ⁻¹' S j) (Prod.fst ⁻¹' C) k Q =
       cutoffDecoratedEvaluation d ℳ U b v g h sign A W S C k Q.1 := by
   classical
-  let e : CutoffDecoratedType d ℳ U b vw G sign k ≃
-      CutoffDecoratedType d ℳ U b v g sign k := {
-    toFun := fun t => ⟨t.itinerary,
-      ⟨t.history.val, by simpa only [mem_decoratedHistorySupport,
-        ContinuousLinearMap.comp_apply, ContinuousLinearMap.coe_fst'] using t.history.property⟩,
-      t.degree_mem, t.degree_sub_mem⟩
-    invFun := fun t => ⟨t.itinerary,
-      ⟨t.history.val, by simpa only [mem_decoratedHistorySupport,
-        ContinuousLinearMap.comp_apply, ContinuousLinearMap.coe_fst'] using t.history.property⟩,
-      t.degree_mem, t.degree_sub_mem⟩
-    left_inv := fun _ => rfl
-    right_inv := fun _ => rfl }
-  let := Fintype.ofFinite (CutoffDecoratedType d ℳ U b vw G sign k)
-  let := Fintype.ofFinite (CutoffDecoratedType d ℳ U b v g sign k)
-  rw [cutoffDecoratedEvaluation_eq_sum, cutoffDecoratedEvaluation_eq_sum]
-  apply Fintype.sum_equiv e
-  intro t
-  have hdom : Q ∈ CutoffDecoratedType.domain h (fun j => Prod.fst ⁻¹' A j)
-        (fun j => Prod.fst ⁻¹' W j) (fun j => Prod.fst ⁻¹' S j) (Prod.fst ⁻¹' C) t ↔
-      Q.1 ∈ CutoffDecoratedType.domain h A W S C (e t) := by
-    simp only [CutoffDecoratedType.mem_domain, e, Equiv.coe_fn_mk,
-      mem_admissibleBackwardDomain, backwardAvoidanceDomain_cylinder,
-      backwardIncomingDomain_cylinder, backwardSingularAvoidanceDomain_cylinder, mem_preimage]
-  simp only [hdom, CutoffDecoratedType.decoration_eq, e, Equiv.coe_fn_mk]
+  let := Fintype.ofFinite Lifted
+  let := Fintype.ofFinite Projected
+  rw [cutoffDecoratedEvaluation_eq_sum_decoration, cutoffDecoratedEvaluation_eq_sum_decoration]
+  exact Fintype.sum_equiv
+    (cutoffDecoratedRayCylinderEquiv ℳ v w W S C Q d U b g h sign A k)
+    _ _ (fun r =>
+      (cutoffDecoratedRayCylinderEquiv_decoration ℳ v w W S C Q d U b g h sign A k r).symm)
 
 end Mei
