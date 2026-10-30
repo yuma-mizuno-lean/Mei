@@ -295,6 +295,25 @@ theorem isConical_ofArrangement (g : ι → (V →L[ℝ] ℝ))
   rw [closure_signCell hσ]
   exact ⟨weakSignCellCone g σ, coe_weakSignCellCone g σ⟩
 
+/-- Inputs whose inequalities all vanish at the origin have a conical ambient subdivision,
+with lineality allowed. -/
+theorem isConical_ambientSubdivision (P : ι → RationalAffinePolyhedron h)
+    (hP : ∀ a j, (P a).inequality j 0 = 0) : (ambientSubdivision P).IsConical := by
+  let g := fun j : Σ a, Fin (P a).numConstraints => ((P j.1).inequality j.2).contLinear
+  have hg : ∀ j, Toric.IsRationalFunctional h (g j).toLinearMap := fun j => by
+    rw [ContinuousAffineMap.coe_contLinear_eq_linear]
+    exact (P j.1).rational_linear j.2
+  have hrow : ∀ j : Σ a, Fin (P a).numConstraints,
+      (g j).toContinuousAffineMap = (P j.1).inequality j.2 := fun j => by
+    ext x
+    simpa [g, hP] using ((P j.1).inequality j.2 : V →ᵃ[ℝ] ℝ).linear_apply_vsub x 0
+  have heq : ambientSubdivision P = ofArrangement (fun j => (g j).toContinuousAffineMap) hg := by
+    apply FinitePolyhedralComplex.ext
+    ext Q
+    simp only [mem_ambientSubdivision_cells, mem_ofArrangement_cells, hrow]
+  rw [heq]
+  exact isConical_ofArrangement g hg
+
 /-- If the relative interior of an ambient subdivision cell meets an input
 polyhedron, the entire closed cell is contained in that input. -/
 theorem subset_carrier_of_mem_intrinsicInterior_ambientSubdivision

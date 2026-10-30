@@ -66,6 +66,14 @@ theorem evaluation_eq_zero_of_mem_rayDegrees {σ : Set V} {w : SupportedRay d} {
   rw [map_zsmul, zsmul_eq_mul, mul_eq_zero, Int.cast_eq_zero] at hg
   rw [map_zsmul, hg.resolve_left ha.ne', smul_zero]
 
+/-- The normal of a degree on a supported ray is a positive multiple of the normal of the
+primitive generator. -/
+theorem exists_normal_eq_smul_of_mem_rayDegrees {w : SupportedRay d} {n : N}
+    (hn : n ∈ w.rayDegrees) : ∃ a : ℝ, 0 < a ∧ s.normal n = a • s.normal w.generator := by
+  obtain ⟨-, a, ha, rfl⟩ := SupportedRay.mem_rayDegrees.mp hn
+  refine ⟨a, Int.cast_pos.mpr ha, LinearMap.ext fun θ => ?_⟩
+  simp [zsmul_eq_mul]
+
 variable {R L : Type*} [CommRing R] [LieRing L] [LieAlgebra R L]
   (ℒ : N → Submodule R L) [SetLike.GradedBracket ℒ ℒ]
 
