@@ -370,7 +370,8 @@ theorem degree_principalLift_letter (α : I.Letter) :
     ← unfrozenBasis_principalBasis, Module.Basis.positiveDegrees_degree, Basis.repr_self]
   simp [Finsupp.single_apply]
 
-/-- The lift of every letter is a nonzero allowed principal degree. -/
+/-- The lift of every letter is an allowed principal degree.
+See `principalLift_letter_ne_zero` for nonzeroness. -/
 @[simp]
 theorem principalLift_letter_mem (α : I.Letter) :
     I.principalLift (PositiveDegrees.letter I.letterExponent α) ∈
