@@ -7,7 +7,7 @@ module
 
 public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Basic
 public import Mei.Geometry.Convex.Polyhedron.CommonPath
-import Mei.Geometry.Convex.Polyhedron.Path.Restriction
+import Mei.Geometry.Convex.Polyhedron.Path.Completion
 
 /-!
 # Compatible directed path products
@@ -48,40 +48,15 @@ theorem truncation_levelPathProduct {k l : ℕ} (hkl : k ≤ l)
       D.levelPathProduct k
         ((WallComplement.restrictPrefunctor (fun j : D.active l => (D.wall j).support)
           (Set.inclusion (D.active_mono hkl))).mapPath p) := by
-  let f := Set.inclusion (D.active_mono hkl)
-  let q := (WallComplement.restrictPrefunctor
-    (fun j : D.active l => (D.wall j).support) f).mapPath p
-  let F := (d.truncationMap ℒ hkl).bchGroupMap
-  have hproj (j : D.active l) : F (CompletedGroup.projection l (D.wall j).label) =
-      CompletedGroup.projection k (D.wall j).label :=
-    CompletedGroup.map_projection k l hkl (D.wall j).label
-  have hlabel : ∀ j : D.active l, j ∉ range f →
-      F (CompletedGroup.projection l (D.wall j).label) = 1 := by
-    intro j hj
-    rw [hproj]
-    by_contra hne
-    exact hj ⟨⟨j.val, (D.mem_active k j.val).mpr hne⟩, Subtype.ext rfl⟩
-  have he := p.wallPathProduct_restrict (G := d.truncatedGroup ℒ k)
-    (fun j : D.active l => h.realCharacter (D.wall j).normal)
-    (fun j => F (CompletedGroup.projection l (D.wall j).label))
-    (fun a b hab => (D.activeLabels_commute l a b hab).map F)
-    f (Set.inclusion_injective _) hlabel
-  have hq := D.levelPathProduct_eq_wallPathProduct k q
-    (D.activeLabels_commute k)
-  calc
-    _ = F (p.wallPathProduct (G := d.truncatedGroup ℒ l)
-        (fun j : D.active l => h.realCharacter (D.wall j).normal)
-        (fun j => CompletedGroup.projection l (D.wall j).label)
-        (D.activeLabels_commute l)) :=
-      congrArg F (D.levelPathProduct_eq_wallPathProduct l p (D.activeLabels_commute l))
-    _ = _ := Quiver.Path.map_wallPathProduct (G := d.truncatedGroup ℒ l)
-      (K := d.truncatedGroup ℒ k) _ _ _ F p
-    _ = _ := he.symm
-    _ = _ := by
-      simp only [Function.comp_def, hproj]
-      convert hq.symm using 1
-      -- Restricted indices coerce to the original wall; tower operations are BCH operations.
-      rfl
+  let : Finite (Function.mulSupport fun j => CompletedGroup.projection k (D.wall j).label) :=
+    Set.finite_coe_iff.mpr (D.finite_active k)
+  let : Finite (Function.mulSupport fun j => CompletedGroup.projection l (D.wall j).label) :=
+    Set.finite_coe_iff.mpr (D.finite_active l)
+  simp only [levelPathProduct, active] at *
+  exact p.map_wallPathProduct_projection (fun j => (D.wall j).support)
+    (fun j => h.realCharacter (D.wall j).normal) (fun j => (D.wall j).label)
+    (fun a b hab => (D.wall a).commute_label_of_direction_eq (D.wall b)
+      (congrArg AffineSubspace.direction hab)) hkl
 
 /-- Endpoints lying on no wall active at any cutoff. Identity-labelled walls impose
 no condition on endpoints or paths. -/

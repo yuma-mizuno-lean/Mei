@@ -64,6 +64,7 @@ theorem ofFinite_wall [Finite ι] (W : ι → DirectedWall (d := d) h H) (j : ι
     (ofFinite W).wall j = W j := (rfl)
 
 /-- The indices whose labels survive the order-`k` projection. -/
+@[expose]
 def active (k : ℕ) : Set ι :=
   Function.mulSupport (fun j => CompletedGroup.projection k (D.wall j).label)
 
@@ -84,14 +85,8 @@ instance finiteActive (k : ℕ) : Finite (D.active k) :=
   Set.finite_coe_iff.mpr (D.finite_active k)
 
 /-- A label active at a lower order is also active at every higher order. -/
-theorem active_mono : Monotone D.active := by
-  intro k l hkl j hj
-  simp only [mem_active] at hj ⊢
-  intro he
-  apply hj
-  have hp := CompletedGroup.map_projection k l hkl (D.wall j).label
-  rw [he, map_one] at hp
-  exact hp.symm
+theorem active_mono : Monotone D.active :=
+  CompletedGroup.monotone_mulSupport_projection (fun j => (D.wall j).label)
 
 /-- The projected labels of active walls with the same affine span commute. -/
 theorem activeLabels_commute (k : ℕ) (a b : D.active k)
@@ -112,6 +107,7 @@ theorem exists_level_path (k : ℕ)
   exact ⟨p⟩
 
 /-- The order-`k` transport along a path admissible for the finite active wall family. -/
+@[expose]
 def levelPathProduct (k : ℕ)
     {x y : WallComplement (fun j : D.active k => (D.wall j).support)}
     (p : AdmissiblePLPath x y) : d.truncatedGroup ℒ k :=

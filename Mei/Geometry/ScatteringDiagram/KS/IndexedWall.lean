@@ -9,7 +9,7 @@ public import Mei.Geometry.ScatteringDiagram.KS.Ray
 public import Mei.Algebra.Lie.BCH.Ray.Basic
 public import Mei.Geometry.Convex.Polyhedron.Path.Product
 public import Mei.Geometry.Convex.Polyhedron.Rational
-import Mei.Geometry.Convex.Polyhedron.Path.Restriction
+import Mei.Geometry.Convex.Polyhedron.Path.Completion
 
 /-!
 # Indexed walls and abelian-ray presentations of KS diagrams
@@ -149,14 +149,8 @@ instance finiteActive (k : ℕ) : Finite (D.active k) :=
   Set.finite_coe_iff.mpr (D.finite_active k)
 
 /-- A label active at a lower order is also active at every higher order. -/
-theorem active_mono : Monotone D.active := by
-  intro k l hkl j hj
-  simp only [mem_active] at hj ⊢
-  intro he
-  apply hj
-  have hp := CompletedGroup.map_projection k l hkl (D.wall j).label
-  rw [he, map_one] at hp
-  exact hp.symm
+theorem active_mono : Monotone D.active :=
+  CompletedGroup.monotone_mulSupport_projection (fun j => (D.wall j).label)
 
 variable [Module.Free ℤ N] [IsAbelianRays d ℒ]
 
@@ -218,34 +212,14 @@ theorem truncation_levelPathProduct {k l : ℕ} (hkl : k ≤ l)
       D.levelPathProduct k
         ((WallComplement.restrictPrefunctor (fun j : D.active l => (D.wall j).support)
           (Set.inclusion (D.active_mono hkl))).mapPath p) := by
-  let f := Set.inclusion (D.active_mono hkl)
-  let F := (d.truncationMap ℒ hkl).bchGroupMap
-  have hproj (j : D.active l) : F (CompletedGroup.projection l (D.wall j).label) =
-      CompletedGroup.projection k (D.wall j).label :=
-    CompletedGroup.map_projection k l hkl (D.wall j).label
-  have hlabel : ∀ j : D.active l, j ∉ range f →
-      F (CompletedGroup.projection l (D.wall j).label) = 1 := by
-    intro j hj
-    rw [hproj]
-    by_contra hne
-    exact hj ⟨⟨j.val, (D.mem_active k j.val).mpr hne⟩, Subtype.ext rfl⟩
-  have he := p.wallPathProduct_restrict (G := d.truncatedGroup ℒ k)
-    (fun j : D.active l => s.normal (D.wall j).ray.generator)
-    (fun j => F (CompletedGroup.projection l (D.wall j).label))
-    (fun a b hab => (D.activeLabels_commute l a b hab).map F)
-    f (Set.inclusion_injective _) hlabel
-  calc
-    _ = F (p.wallPathProduct (G := d.truncatedGroup ℒ l)
-        (fun j : D.active l => s.normal (D.wall j).ray.generator)
-        (fun j => CompletedGroup.projection l (D.wall j).label)
-        (D.activeLabels_commute l)) :=
-      congrArg F (D.levelPathProduct_eq_wallPathProduct l p (D.activeLabels_commute l))
-    _ = _ := Quiver.Path.map_wallPathProduct (G := d.truncatedGroup ℒ l)
-      (K := d.truncatedGroup ℒ k) _ _ _ F p
-    _ = _ := he.symm
-    _ = _ := by
-      simp only [Function.comp_def, hproj, f, Set.coe_inclusion]
-      exact (D.levelPathProduct_eq_wallPathProduct k _ _).symm
+  let : Finite (Function.mulSupport fun j => CompletedGroup.projection k (D.wall j).label) :=
+    Set.finite_coe_iff.mpr (D.finite_active k)
+  let : Finite (Function.mulSupport fun j => CompletedGroup.projection l (D.wall j).label) :=
+    Set.finite_coe_iff.mpr (D.finite_active l)
+  simp only [levelPathProduct, active] at *
+  exact p.map_wallPathProduct_projection (fun j => (D.wall j).support)
+    (fun j => s.normal (D.wall j).ray.generator) (fun j => (D.wall j).label)
+    (fun a b hab => (D.wall a).commute_label (D.wall b) hab) hkl
 
 end IndexedWallPresentation
 
