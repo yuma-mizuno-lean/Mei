@@ -77,6 +77,15 @@ abbrev shiftedLieSubmodule : LieSubmodule R L M where
 theorem shiftedLieSubmodule_toSubmodule :
     (d.shiftedLieSubmodule ℒ ℳ p).toSubmodule = shiftedSubmodule ℳ d.monoid p := (rfl)
 
+/-- The restricted action shifts relative degrees by the original Lie degree. -/
+instance shiftedGrading_gradedBracket :
+    SetLike.GradedBracket (M := d.shiftedLieSubmodule ℒ ℳ p)
+      ℒ (shiftedGrading ℳ d.monoid p) where
+  bracket_mem _ _ _ _ hx ha := by
+    rw [mem_shiftedGrading, LieSubmodule.coe_bracket]
+    simpa only [vadd_eq_add, add_left_comm, add_assoc] using
+      SetLike.GradedBracket.bracket_mem hx ((mem_shiftedGrading ℳ d.monoid p).mp ha)
+
 end Monoid
 
 variable [AddCommGroup Γ]
