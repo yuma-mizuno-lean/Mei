@@ -79,7 +79,7 @@ private theorem dense_segment_parameters :
         ⟨y.val.val, y.property⟩) : Set unitInterval).Finite :=
     (e.down.finite_crossings.image Prod.snd).preimage Subtype.val_injective.injOn
   have hd := dense_univ.sdiff_finite hfin
-  rw [univ_sdiff] at hd
+  rw [← compl_eq_univ_sdiff] at hd
   apply hd.mono
   intro t ht P hp
   apply ht
