@@ -346,7 +346,8 @@ theorem consistent_iff_jointMeridianWords (hC : C.support = univ) :
     obtain ⟨x, y, z, e, f, r, hx, hy, hz, rfl⟩ :=
       (C.mem_triangleWords D.normal univ g).mp
         (C.jointMeridianWords_subset_triangleWords D.normal univ hg)
-    exact D.consistent_iff_loops.mp hD x _
+    simpa only [pathProduct_def] using
+      D.consistent_iff_loops.mp hD x ((e.toPath.cons f).cons r)
   · intro hmer
     apply D.consistent_iff_loops.mpr
     intro x p

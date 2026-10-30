@@ -192,4 +192,20 @@ theorem exists_ball_crossingWord_eq (C : FinitePolyhedralComplex h)
         rw [Quiver.Path.crossingWord_cons, C.segmentCrossingWord_eq_one ν e he, ih hp', mul_one]
     exact ⟨r, hr, fun _ _ p q hp hq => (hword p hp).trans (hword q hq).symm⟩
 
+/-- Every point off singular support has a ball in which every admissible loop has trivial
+crossing word. -/
+theorem exists_ball_crossingWord_loop_eq_one (C : FinitePolyhedralComplex h)
+    (ν : C.walls → V →ₗ[ℝ] ℝ)
+    (hν : ∀ P, (ν P).ker = (affineSpan ℝ (P : Set V)).direction)
+    {θ : V} (hθ : θ ∉ singularSupport (fun P : C.walls => (P : Set V))) :
+    ∃ r > 0, ∀ (y : WallComplement (fun P : C.walls => (P : Set V)))
+      (p : AdmissiblePLPath y y), (∀ w ∈ p.vertices, w.val ∈ Metric.ball θ r) →
+        p.crossingWord ν = 1 := by
+  obtain ⟨r, hr, hword⟩ := C.exists_ball_crossingWord_eq ν hν hθ
+  refine ⟨r, hr, fun y p hp => ?_⟩
+  -- Compare with the constant loop at the base point.
+  refine (hword y y p .nil hp fun w hw => ?_).trans (Quiver.Path.crossingWord_nil ν)
+  rw [show w = y by simpa using hw]
+  exact hp _ p.start_mem_vertices
+
 end Mei.FinitePolyhedralComplex

@@ -37,21 +37,6 @@ variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ 
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
   (C : FinitePolyhedralComplex h) (ν : C.walls → V →ₗ[ℝ] ℝ)
 
-/-- Every point off singular support has a ball in which every admissible loop has trivial
-crossing word. -/
-theorem exists_ball_crossingWord_loop_eq_one
-    (hν : ∀ P, (ν P).ker = (affineSpan ℝ (P : Set V)).direction)
-    {θ : V} (hθ : θ ∉ singularSupport (fun P : C.walls => (P : Set V))) :
-    ∃ r > 0, ∀ (y : WallComplement (fun P : C.walls => (P : Set V)))
-      (p : AdmissiblePLPath y y), (∀ w ∈ p.vertices, w.val ∈ Metric.ball θ r) →
-        p.crossingWord ν = 1 := by
-  obtain ⟨r, hr, hword⟩ := C.exists_ball_crossingWord_eq ν hν hθ
-  refine ⟨r, hr, fun y p hp => ?_⟩
-  -- Compare with the constant loop at the base point.
-  refine (hword y y p .nil hp fun w hw => ?_).trans (Quiver.Path.crossingWord_nil ν)
-  rw [show w = y by simpa using hw]
-  exact hp _ p.start_mem_vertices
-
 /-- A square filled in the complement of singular support has trivial boundary
 word. Its sides are the given affine segments; neither the square nor its sides
 need be embedded or nondegenerate. No consistency or label relations are assumed. -/

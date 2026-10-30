@@ -93,6 +93,14 @@ theorem mem_jointTriangleWords (ν : C.walls → V →ₗ[ℝ] ℝ) (J U : Set V
           (∀ Q ∈ C.cells, (convexHull ℝ {x.val, y.val, z.val} ∩ Q).Nonempty → J ⊆ Q) ∧
           g = ((e.toPath.cons f).cons r).crossingWord ν := Iff.rfl
 
+/-- Enlarging the region keeps every isolating meridian of a joint. -/
+theorem jointTriangleWords_mono (ν : C.walls → V →ₗ[ℝ] ℝ) (J : Set V) {U U' : Set V}
+    (hUU' : U ⊆ U') : C.jointTriangleWords ν J U ⊆ C.jointTriangleWords ν J U' := by
+  intro g hg
+  obtain ⟨x, y, z, e, f, r, q, hq, hedge, hU, hrest⟩ := (C.mem_jointTriangleWords ν J U g).mp hg
+  exact (C.mem_jointTriangleWords ν J U' g).mpr
+    ⟨x, y, z, e, f, r, q, hq, hedge, hU.trans hUU', hrest⟩
+
 /-- Isolating joint meridians are triangular relations in the same region. -/
 theorem jointTriangleWords_subset_triangleWords (ν : C.walls → V →ₗ[ℝ] ℝ) (J U : Set V) :
     C.jointTriangleWords ν J U ⊆ C.triangleWords ν U := by
