@@ -11,7 +11,6 @@ public import Mei.Geometry.Convex.PolyhedralComplex.AmbientSubdivision
 public import Mei.Geometry.Convex.PolyhedralComplex.Subcomplex
 public import Mei.Geometry.Convex.Polyhedron.Path.Coarsening
 public import Mei.Geometry.Convex.Polyhedron.Path.Comparison
-public import Mei.Geometry.Convex.Polyhedron.Rational.Cone
 import Mei.Data.Finset.NoncommProd
 
 /-!
@@ -55,18 +54,6 @@ variable {N V R L : Type*} [AddCommGroup N]
   {i : (N →+ ℤ) →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
   {s : KSSpace h} {d : PositiveDegrees N} {ℒ : N → Submodule R L}
   [GradedLieAlgebra ℒ] [IsPositiveGrading d ℒ]
-
-namespace IndexedWall
-
-/-- The support of an indexed wall has a presentation by linear inequalities. -/
-private theorem exists_presentation_map_zero (W : IndexedWall s d ℒ) :
-    ∃ P : RationalAffinePolyhedron h, P.carrier = W.support ∧ ∀ j, P.inequality j 0 = 0 := by
-  obtain ⟨σ, hσ⟩ := W.isCone
-  have hC : IsRationalNormalPolyhedron h (σ : Set V) := hσ ▸ W.rational_support
-  obtain ⟨P, hP, h0⟩ := hC.exists_presentation_map_zero
-  exact ⟨P, hP.trans hσ, h0⟩
-
-end IndexedWall
 
 namespace IndexedWallPresentation
 
@@ -355,20 +342,9 @@ private theorem crossingEventProduct_toKSComplex (k : ℕ)
     have hint := (e.down.crossing_mem_intrinsicInterior ht hzQ).2
     set σ : ℤ := if 0 < s.normal ((D.toKSComplex k).degree Q) (y.val - x.val) then -1 else 1
       with hσ
-    have hKS : signedCrossingEvent (D.toKSComplex k).toFiniteWallDiagram.normal x y t =
-        {(Q, σ)} := by
-      ext ⟨Q', s'⟩
-      rw [mem_signedCrossingEvent, Finset.mem_singleton, mem_crossings, Prod.mk.injEq,
-        KSComplex.toFiniteWallDiagram_normal]
-      constructor
-      · rintro ⟨⟨-, hzQ'⟩, rfl⟩
-        obtain rfl : Q' = Q := Subtype.ext ((D.levelComplex k).eq_of_mem_intrinsicInterior
-          ((D.levelComplex k).mem_cells_of_mem_walls Q'.property)
-          ((D.levelComplex k).mem_cells_of_mem_walls Q.property)
-          (e.down.crossing_mem_intrinsicInterior ht hzQ').2 hint)
-        exact ⟨rfl, rfl⟩
-      · rintro ⟨rfl, rfl⟩
-        exact ⟨⟨ht, hzQ⟩, rfl⟩
+    have hKS := (D.levelComplex k).signedCrossingEvent_eq_singleton
+      (D.toKSComplex k).toFiniteWallDiagram.normal e ((mem_crossings _ _ _ _).mpr ⟨ht, hzQ⟩)
+    rw [KSComplex.toFiniteWallDiagram_normal, ← hσ] at hKS
     have hpres := D.signedCrossingEvent_eq_map_wallIndices ht Q (hz ▸ hint)
     rw [← hx, ← hy] at hpres
     rw [crossingEventProduct_singleton _ _ _ e t _ hKS,

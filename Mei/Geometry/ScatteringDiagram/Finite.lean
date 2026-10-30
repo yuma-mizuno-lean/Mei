@@ -134,19 +134,8 @@ theorem pathProduct_eq_wallPathProduct
     apply List.map_congr_left
     intro a ha
     have ha' := (C.mem_orderedCrossings e a).mp ha
-    have hs : signedCrossingEvent D.normal x y a.2 =
-        {(a.1, if 0 < D.normal a.1 (y.val - x.val) then -1 else 1)} := by
-      ext ⟨Q, z⟩
-      rw [mem_signedCrossingEvent, Finset.mem_singleton, Prod.mk.injEq]
-      constructor
-      · rintro ⟨hQ, hz⟩
-        have he : Q = a.1 := congrArg (fun b => b.val.1)
-          (C.crossing_time_injective e (a₁ := ⟨(Q, a.2), hQ⟩) (a₂ := ⟨a, ha'⟩) rfl)
-        subst Q
-        exact ⟨rfl, hz⟩
-      · rintro ⟨rfl, rfl⟩
-        exact ⟨ha', rfl⟩
-    rw [crossingEventProduct_singleton D.normal D.label comm e a.2 _ hs]
+    rw [crossingEventProduct_singleton D.normal D.label comm e a.2 _
+      (C.signedCrossingEvent_eq_singleton D.normal e ha')]
     split_ifs <;> simp
   induction p with
   | nil => simp

@@ -9,6 +9,7 @@ public import Mei.Geometry.ScatteringDiagram.KS.Ray
 public import Mei.Algebra.Lie.BCH.Ray.Basic
 public import Mei.Geometry.Convex.Polyhedron.Path.Product
 public import Mei.Geometry.Convex.Polyhedron.Rational
+public import Mei.Geometry.Convex.Polyhedron.Rational.Cone
 import Mei.Geometry.Convex.Polyhedron.Path.Completion
 
 /-!
@@ -83,6 +84,14 @@ theorem isConvexPolyhedron : TauCeti.IsConvexPolyhedron W.support := by
   obtain ⟨P, hP⟩ := isRationalNormalPolyhedron_iff.mp W.rational_support
   rw [← hP]
   exact P.isConvexPolyhedron
+
+/-- The support has a presentation by linear inequalities. -/
+theorem exists_presentation_map_zero :
+    ∃ P : RationalAffinePolyhedron h, P.carrier = W.support ∧ ∀ j, P.inequality j 0 = 0 := by
+  obtain ⟨σ, hσ⟩ := W.isCone
+  have hC : IsRationalNormalPolyhedron h (σ : Set V) := hσ ▸ W.rational_support
+  obtain ⟨P, hP, h0⟩ := hC.exists_presentation_map_zero
+  exact ⟨P, hP.trans hσ, h0⟩
 
 /-- The normal of every degree on the ray cuts out the direction of the support. -/
 theorem ker_normal_of_mem_rayDegrees {n : N} (hn : n ∈ W.ray.rayDegrees) :
