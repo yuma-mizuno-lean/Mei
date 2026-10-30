@@ -197,6 +197,7 @@ theorem projection_eq_noncommProd_homogeneousPresentation (k : ℕ) (j : ι) :
         exact hn (d.logComponent_eq_zero_of_notMem_rayDegrees ℒ (D.wall j).label_mem hr)
       exact Finset.mem_map.mpr ⟨⟨n, hr⟩, (D.mem_homogeneousIndices k j _).mpr
         ((D.mem_active_homogeneousPresentation k _).mpr ⟨hk, hn⟩), rfl⟩)
+  simp only [homogeneousPresentation_wall, IndexedWall.homogeneousFactor_label]
   exact he.trans (Finset.noncommProd_map _ e _ _)
 
 omit [IsAbelianRays d ℒ] in
@@ -209,10 +210,12 @@ theorem iUnion_active_support_homogeneousPresentation (k : ℕ) :
   simp only [Set.mem_iUnion]
   constructor
   · rintro ⟨a, hx⟩
-    exact ⟨⟨a.val.1, D.active_homogeneousPresentation_parent a.property⟩, hx⟩
+    refine ⟨⟨a.val.1, D.active_homogeneousPresentation_parent a.property⟩, ?_⟩
+    simpa only [homogeneousPresentation_wall, IndexedWall.homogeneousFactor_support] using hx
   · rintro ⟨j, hx⟩
     obtain ⟨n, hn⟩ := (D.mem_active_iff_exists_homogeneous k j).mp j.property
-    exact ⟨⟨⟨j, n⟩, hn⟩, hx⟩
+    refine ⟨⟨⟨j, n⟩, hn⟩, ?_⟩
+    simpa only [homogeneousPresentation_wall, IndexedWall.homogeneousFactor_support] using hx
 
 end IndexedWallPresentation
 end Mei
