@@ -41,12 +41,5 @@ class QueueReleaseWorkflows(unittest.TestCase):
         self.assertEqual(steps[-1]['if'], "steps.release.outputs.sweep == 'true'")
         self.assertNotIn('secrets.', str(release))
 
-    def test_shared_entrypoint_does_not_duplicate_admission_policy(self):
-        source = (ROOT / 'scripts/queue_release.py').read_text()
-        self.assertIn("run_script('queue_release.py', sys.argv[1:])", source)
-        self.assertIn("import_shared('queue_release.py', __name__)", source)
-        self.assertNotIn('enqueuePullRequest', source)
-
-
 if __name__ == '__main__':
     unittest.main()

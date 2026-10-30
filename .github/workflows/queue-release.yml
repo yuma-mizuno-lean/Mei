@@ -1,5 +1,9 @@
 name: Merge queue release
 
+# Adapted from Tau Ceti's queue-release workflow:
+# https://github.com/TauCetiProject/TauCeti/blob/ff33d5f0811d2ec351fc04ab46c34d1bff53df8a/.github/workflows/queue-release.yml
+# Mei retains its configured Tools pin and fixed checkout action revision.
+
 # A Lake-pin bump clears the queue and defers other enqueues. Its departure must
 # wake those PRs even if their heads, builds, and review comments never change.
 on:
@@ -49,6 +53,7 @@ jobs:
           REPO: ${{ github.repository }}
           RELEASED_PR: ${{ github.event.pull_request.number || inputs.released_pr }}
           RELEASE_ACTION: ${{ github.event.action || 'manual' }}
+        # The pinned setup action materializes the canonical shared script here.
         run: python3 scripts/queue_release.py
       - name: Wake the existing queue reconciler
         if: steps.release.outputs.sweep == 'true'
