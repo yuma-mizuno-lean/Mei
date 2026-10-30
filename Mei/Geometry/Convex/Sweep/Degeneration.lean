@@ -188,7 +188,7 @@ theorem exists_backwardClosedCharts {D : Set V}
     closure_minimal
       (hvalid.trans (backwardDomain_subset_weakBackwardDomain f c _ P))
       (isClosed_weakBackwardDomain f c _ hclosed)
-  exact ⟨(hK a).1, (hK a).2.1, (hK a).2.2, (hK a).2.2.trans hweak,
+  exact ⟨(hK a).1, (hK a).2.1, (hK a).2.2.2, (hK a).2.2.2.trans hweak,
     (hK a).2.1.isClosed.isProperMap_subtypeVal⟩
 
 end Mei.Convex
