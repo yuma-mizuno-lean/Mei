@@ -152,8 +152,7 @@ theorem tropicalTangentInclusion_tangentInitialFunction (i : B.unfrozenIndex) :
           (Fact.out : (PositiveDegrees.finiteAlphabet I.letterExponent).monoid ≤ Q)
             (PositiveDegrees.letter_mem _ _)⟩ : Q) 1 := by
   simp only [tangentInitialFunction, map_add, map_one, map_sum,
-    tropicalTangentInclusion, mapDomainAlgHom_apply, mapDomain_single]
-  rfl
+    tropicalTangentInclusion_single, coe_tangentLetter]
 
 /-- The combined initial label acts by the original polynomial raised to the
 integral cylinder-normal pairing. Negative pairings use inverse unit powers. -/
@@ -297,8 +296,8 @@ theorem projection_initialLabel_eq_noncommProd_incomingDiagram
   rw [I.projection_initialLabel_eq_noncommProd i k (s.map e ∪ t) (by simp [t])]
   rw [← Finset.noncommProd_subset Finset.subset_union_left f comm (fun w hw hn => ?_),
     Finset.noncommProd_map]
-  · simp only [incomingDiagram_label]
-    rfl
+  · exact Finset.noncommProd_congr rfl (fun w _ => by
+      simp [f, e, incomingDiagram_label]) _
   · have hwt : w ∈ (𝒅).raysAtOrder k := by
       simpa only [Finset.mem_union, hn, false_or, t, Set.Finite.mem_toFinset] using hw
     have hnormal : I.alphabetNormal i w.generator ≠ 0 := by
@@ -316,6 +315,8 @@ theorem incomingDiagram_incoming (j : I.IncomingIndex) :
 theorem incomingDiagram_full (j : I.IncomingIndex) :
     ∃ c : ℝ, ((I.incomingDiagram (R := R) h).wall j).support =
       {x | h.realCharacter ((I.incomingDiagram (R := R) h).wall j).normal x = c} :=
-  ⟨0, by simp only [incomingDiagram_support, incomingDiagram_normal]; rfl⟩
+  ⟨0, by
+    simp only [incomingDiagram_support, incomingDiagram_normal]
+    exact Set.ext fun _ => LinearMap.mem_ker⟩
 
 end Mei.SkewLatticeDatum.AdaptedBasis.BLMPolynomialInput
