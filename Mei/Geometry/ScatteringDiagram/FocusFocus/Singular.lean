@@ -170,13 +170,10 @@ theorem slabWeightedEvaluation_singular_resolution :
 end Coefficients
 
 /-- Both closed encounter charts of the singular branch meet the origin at the
-same strictly negative crossing time. The incoming developed directions may differ. -/
-theorem slabBranchPath_singular_crossing (hQ : Q.1 / (n : ℝ) < 0)
+same affine crossing time. The incoming developed directions may differ. -/
+theorem slabBranchPath_singular_crossing (hn : n ≠ 0)
     (hj : Q.2 - ((b + j : ℤ) : ℝ) * Q.1 / n = 0) (b₀ : ℤ) :
     slabBranchPath n b₀ (b + j) Q (Q.1 / (n : ℝ)) = 0 := by
-  have hn : n ≠ 0 := by
-    intro hn
-    simp [hn] at hQ
   rw [slabBranchPath_crossing hn, hj]
   rfl
 
