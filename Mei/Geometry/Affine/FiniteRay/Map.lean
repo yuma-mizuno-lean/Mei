@@ -47,10 +47,7 @@ theorem bends_map_apply (β : FiniteAffineRay V P) (f : P →ᵃ[ℝ] Q) (t : �
 /-- An affine map can remove bends but cannot introduce new bend times. -/
 theorem support_bends_map_subset (β : FiniteAffineRay V P) (f : P →ᵃ[ℝ] Q) :
     (β.map f).bends.support ⊆ β.bends.support := by
-  intro s hs
-  by_contra hn
-  have hz := Finsupp.notMem_support_iff.mp hn
-  exact (Finsupp.mem_support_iff.mp hs) (by rw [bends_map_apply, hz, map_zero])
+  exact Finsupp.support_mapRange (hf := map_zero _)
 
 /-- An affine image is straight exactly when its linear part kills every increment. -/
 @[simp]

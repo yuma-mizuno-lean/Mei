@@ -6,7 +6,6 @@ Authors: Codex
 module
 
 public import Mei.Geometry.ScatteringDiagram.FocusFocus.Evaluation
-public import Mei.Geometry.Affine.FiniteRay.Map
 
 /-!
 # Shearing the decorated focus-focus ray fibers
@@ -23,8 +22,9 @@ and gives a bijection of the actual decorated crossing rays. The choices `r=-1`
 and `r=1` give the two linear coordinate changes above. No genericity is needed:
 branches through the singular origin are omitted on both sides.
 
-We transport whole homogeneous decorations, including coefficients killed by
-binomial arithmetic or the smoothing parameter. Normal Laurent exponents use
+We transport whole nonzero homogeneous decorations. Decorations killed by
+binomial arithmetic or the smoothing parameter are omitted on both sides and
+contribute zero. Normal Laurent exponents use
 `-|n|` on the outgoing side, so at fixed spatial horizontal exponent `n` the
 coefficient comparison is translation of the tangential exponent by `r*n`.
 The finite weighted sums commute with that linear translation. Incoming rays
@@ -297,8 +297,9 @@ theorem shearEquiv_symm_apply_ray (r : ℤ)
 
 end IncomingSlabBrokenLine
 
-/-- Incoming weighted sums obey the same exponent translation. The invariant
-vertical and zero spatial directions are retained. -/
+/-- Incoming weighted sums obey the same exponent translation, including invariant
+vertical rays. Zero spatial degree has empty ray fibers and contributes zero here;
+its constant section occurs only in `slabThetaEvaluation`. -/
 theorem incomingSlabWeightedEvaluation_shear {S : Type*} [Semiring S]
     (c : S) (n b r : ℤ) (Q : ℝ × ℝ) :
     incomingSlabWeightedEvaluation c n (b + r * n) (Q.1, Q.2 + r * Q.1) =
