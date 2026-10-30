@@ -15,8 +15,9 @@ divisible by `a`, as for `Polynomial.C_dvd_iff_dvd_coeff`. Consequently `1 + T` 
 nonzerodivisor modulo every constant: if `C a` divides `(1 + T) * p`, then it divides `p`.
 This is the regularity of a gluing function `1 + w` on truncated Laurent coefficient rings.
 
-We also record how the coefficient change `R[T;T⁻¹] → S[T;T⁻¹]` along an `R`-algebra `S`, the
-scoped algebra `AddMonoidAlgebra.algebraAddMonoidAlgebra`, acts on constants and on monomials.
+We also expand `C a * (1 + T n)` into its two monomials and record how the coefficient change
+`R[T;T⁻¹] → S[T;T⁻¹]` along an `R`-algebra `S`, the scoped algebra
+`AddMonoidAlgebra.algebraAddMonoidAlgebra`, acts on constants and on monomials.
 -/
 
 public section
@@ -26,6 +27,12 @@ namespace Mei.LaurentPolynomial
 open AddMonoidAlgebra _root_.LaurentPolynomial
 
 variable {R : Type*}
+
+/-- Multiplying `1 + T n` by a constant gives the two corresponding monomials. -/
+theorem C_mul_one_add_T [Semiring R] (a : R) (n : ℤ) :
+    (C a * (1 + T n) : R[T;T⁻¹]) = single 0 a + single n a := by
+  rw [mul_add, mul_one, ← single_eq_C_mul_T]
+  rfl
 
 /-- A Laurent polynomial is divisible by a constant exactly when all its coefficients are. -/
 theorem C_dvd_iff_dvd_coeff [Semiring R] (a : R) (p : R[T;T⁻¹]) :

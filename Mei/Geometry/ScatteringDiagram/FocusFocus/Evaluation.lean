@@ -5,6 +5,7 @@ Authors: Codex
 -/
 module
 
+public import Mei.Algebra.Polynomial.Laurent
 public import Mei.Geometry.ScatteringDiagram.FocusFocus.Decorated
 public import Mei.Geometry.ScatteringDiagram.FocusFocus.Incoming.Basic
 public import Mei.Geometry.ScatteringDiagram.FocusFocus.Theta
@@ -34,7 +35,7 @@ public noncomputable section
 
 namespace Mei.FocusFocus
 
-open TauCeti AddMonoidAlgebra Mei.NodeAlgebra LaurentPolynomial
+open TauCeti AddMonoidAlgebra Mei.NodeAlgebra _root_.LaurentPolynomial
 open scoped Mei.NodeAlgebra
 
 variable {R : Type*} [CommRing R] (t c : R) (n b : ℤ) (Q : ℝ × ℝ)
@@ -45,6 +46,12 @@ coordinates are positive on the incoming side in either chamber. -/
 def slabThetaEvaluation : R[ℤ × ℤ] :=
   incomingSlabWeightedEvaluation c n b Q + slabWeightedEvaluation t c n b Q +
     if (n, b) = 0 then single (0, 0) c else 0
+
+/-- The full evaluation consists of the two ray fibers and the constant sector. -/
+theorem slabThetaEvaluation_def :
+    slabThetaEvaluation t c n b Q =
+      incomingSlabWeightedEvaluation c n b Q + slabWeightedEvaluation t c n b Q +
+        if (n, b) = 0 then single (0, 0) c else 0 := (rfl)
 
 /-- Spatial degree zero contributes the constant section, rather than a proper ray. -/
 @[simp]
@@ -83,34 +90,6 @@ theorem slabThetaEvaluation_of_neg (hside : Q.1 / (n : ℝ) < 0) :
     simp [hn] at hside
   simp [slabThetaEvaluation, hmul, hv]
 
-/-- An algebraic theta monomial, with arbitrary scalar coefficient, is the
-admissible homogeneous lift from its incoming chamber. -/
-theorem smul_theta_eq_exponentIncomingLift (i : Fin 2)
-    (hi : if i = 0 then n ≤ 0 else 0 ≤ n) :
-    c • theta t n b =
-      exponentIncomingLift (C t * (1 + T 1)) i
-        ⟨((n.natAbs : ℤ), b), by simp⟩
-        ⟨single (n.natAbs, b) c, single_mem_grade _ _⟩ := by
-  rw [exponentIncomingLift_single]
-  have hcoeff : (single b c : R[ℤ]) = c • (T b : R[T;T⁻¹]) := by
-    simp [T, -single_eq_C_mul_T]
-  rw [hcoeff, smul_assoc, theta_def]
-  congr 1
-  fin_cases i
-  · norm_num at hi
-    have hn : n = -(n.natAbs : ℤ) := by omega
-    conv_lhs => rw [hn, signedMonomial_neg_natCast]
-    rfl
-  · norm_num at hi
-    have hn : n = (n.natAbs : ℤ) := by omega
-    conv_lhs => rw [hn, signedMonomial_natCast]
-    rfl
-
-private theorem parameter_eq_binomial :
-    (C t * (1 + T 1) : R[T;T⁻¹]) = single 0 t + single 1 t := by
-  rw [mul_add, mul_one, ← single_eq_C_mul_T]
-  rfl
-
 /-- At a generic endpoint in the left chamber, the actual weighted sum is the
 left Laurent value of the theta monomial. Only surviving branches impose a
 crossing-height exception. The incoming and constant cases need no exceptions. -/
@@ -129,7 +108,7 @@ theorem slabThetaEvaluation_eq_exponentLeftMap (hQ : Q.1 < 0)
     have hdiv := div_neg_of_neg_of_pos hQ hn'
     rw [slabThetaEvaluation_of_neg t c n b Q hdiv,
       smul_theta_eq_exponentIncomingLift t c n b 1 (by simpa using (le_of_not_ge hn)),
-      parameter_eq_binomial]
+      Mei.LaurentPolynomial.C_mul_one_add_T]
     exact slabWeightedEvaluation_eq_exponentLeftMap_exponentIncomingLift
       t c n b Q hdiv (hgeneric hdiv)
 
@@ -151,7 +130,7 @@ theorem slabThetaEvaluation_eq_exponentRightMap (hQ : 0 < Q.1)
     have hdiv := div_neg_of_pos_of_neg hQ hn'
     rw [slabThetaEvaluation_of_neg t c n b Q hdiv,
       smul_theta_eq_exponentIncomingLift t c n b 0 (by simpa using (le_of_not_ge hn)),
-      parameter_eq_binomial]
+      Mei.LaurentPolynomial.C_mul_one_add_T]
     exact slabWeightedEvaluation_eq_exponentRightMap_exponentIncomingLift
       t c n b Q hdiv (hgeneric hdiv)
 
