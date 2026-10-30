@@ -220,7 +220,7 @@ theorem adaptedPolynomialInput_normal (i : B.unfrozenIndex) :
       (D.principalNormal (B.unfrozenBasis i)).toAddMonoidHom := by
   simp [adaptedPolynomialInput]
 
-/-- The wall lies on the principal ray through `r(eᵢ)`. -/
+/-- The wall's associated degree ray is the principal ray through `r(eᵢ)`. -/
 @[simp]
 theorem adaptedPolynomialInput_ray (i : B.unfrozenIndex) :
     ((B.adaptedPolynomialInput (V := V) ℓ a h).wall i).ray =
@@ -241,6 +241,7 @@ theorem adaptedPolynomialInput_label (i : B.unfrozenIndex) :
   simp [adaptedPolynomialInput]
 
 /-- All initial walls are incoming, even when their degrees are radical. -/
+@[simp]
 theorem adaptedPolynomialInput_incoming (i : B.unfrozenIndex) :
     ((B.adaptedPolynomialInput (V := V) ℓ a h).wall i).Incoming := by
   simp [adaptedPolynomialInput]
