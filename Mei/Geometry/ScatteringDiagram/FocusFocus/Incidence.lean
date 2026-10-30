@@ -106,14 +106,6 @@ theorem upperLeftGluing_upper (x : TruncatedExponentChamber K k 1) :
       (AlgHom.congr_fun (lowerWallMap_eq_upperWallMap_comp_upperOverlap τ k) _).symm
     _ = _ := AlgHom.congr_fun (lowerWallMap_comp_leftToOverlap τ k) x
 
-/-- A lower matching pair becomes an upper matching pair by shearing its left
-entry. This characterizes the change of gluing on the original chamber carriers. -/
-theorem mem_upperSlabAlgebra_upper_iff
-    (z : TruncatedExponentChamber K k 1 × TruncatedExponentChamber K k 0) :
-    (upperTruncatedExponentChamber K k 1 z.1, z.2) ∈ upperSlabAlgebra τ k ↔
-      z ∈ slabAlgebra (C τ) (1 + T 1) k := by
-  simp only [mem_upperSlabAlgebra_iff, upperLeftGluing_upper, mem_slabAlgebra_iff]
-
 /-- The lower and upper slab presentations are isomorphic by the upper shear
 on the left chamber and the identity on the right. The equivalence fixes the
 entire Laurent coefficient algebra over the truncated smoothing ring. -/
