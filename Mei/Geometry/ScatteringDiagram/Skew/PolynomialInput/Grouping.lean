@@ -15,7 +15,8 @@ The incoming diagram of a BLM polynomial input splits each initial polynomial
 `fᵢ = 1 + ∑ₛ pᵢₛ z^(s wᵢ)` into ray walls on the full cylinder over `eᵢ⊥`, one for every
 tangent supported ray of the finite alphabet lattice. Grouping these walls by the original
 index `i` is a function-wall grouping: the walls of a group share the cylinder and its
-primitive normal and projected monomial direction in `M`. The products of their labels
+primitive normal. Walls with nontrivial labels also share a projected monomial direction
+in `M`; identity labels impose no direction constraint. The products of their labels
 at each cutoff reassemble the unsplit label
 `exp(log(fᵢ) ∂_(eᵢ))`, and this label acts on monomials by `z^p ↦ fᵢ^(⟨eᵢ, p⟩) z^p`.
 
