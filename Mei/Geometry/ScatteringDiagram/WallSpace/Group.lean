@@ -8,7 +8,7 @@ module
 public import Mei.Geometry.ScatteringDiagram.WallSpace.Ray
 public import Mei.Algebra.Lie.BCH.Subgroup
 public import Mei.Algebra.Lie.BCH.Completion
-public import Mei.Algebra.Lie.BCH.Ray.Basic
+public import Mei.Algebra.Lie.BCH.Ray.Factor
 
 /-!
 # Completed wall groups
@@ -19,7 +19,9 @@ subgroups, and wall groups with rationally proportional normals commute
 elementwise, including groups belonging to different supported rays.
 
 Finite images commute with all truncation transitions. Membership retains the
-actual allowed ray degrees through `Mei.DirectedWallSpaces.raySubmodule`.
+actual allowed ray degrees through `Mei.DirectedWallSpaces.raySubmodule`. A label whose
+logarithmic coefficients on a ray lie in the wall spaces of one normal has its ray factor
+(`Mei.PositiveDegrees.rayFactor`) in the corresponding wall group.
 The construction uses `LieSubalgebra.map`, `LieSubalgebra.bchSubgroup`, and
 inverse images and intersections of subgroups from Mathlib.
 -/
@@ -138,6 +140,20 @@ theorem expToCompletion_mem_wallGroup {w : SupportedRay d} {m : Λ →+ ℤ} {x 
     mem_truncatedRayLieSubalgebra]
   exact ⟨x, hx, rfl⟩
 
+/-- The ray factor of a completed label is a wall label as soon as the logarithmic
+coefficients of the label in the actual degrees of the ray lie in the wall spaces. -/
+theorem rayFactor_mem_wallGroup {g : d.completedBCHGroup ℒ} {w : SupportedRay d}
+    {m : Λ →+ ℤ} (hg : ∀ n ∈ w.rayDegrees, (d.logComponent ℒ g n : L) ∈ H.wall n m) :
+    d.rayFactor ℒ g w ∈ H.wallGroup w m := by
+  classical
+  rw [mem_wallGroup]
+  intro k
+  rw [d.log_projection_rayFactor ℒ g w k, mem_truncatedRayLieSubalgebra]
+  refine ⟨_, Submodule.sum_mem _ fun n _ => ?_, rfl⟩
+  split_ifs with hn
+  · exact H.wall_le_raySubmodule w m hn (hg n hn)
+  · exact zero_mem _
+
 /-- A finite wall logarithm has no homogeneous component off its actual supported ray.
 The primitive generator need not itself belong to the positive monoid. -/
 theorem decompose_log_projection_eq_zero_of_notMem_rayDegrees
@@ -175,6 +191,19 @@ theorem wallGroup_eq_bot_of_raySubmodule_eq_bot (w : SupportedRay d) (m : Λ →
   subst y
   exact ((map_zero (d.degreeIdeal ℒ k).mkQ).symm.trans heq).symm.trans
     (BCHGroup.log_one (L := d.truncatedLie ℒ k)).symm
+
+/-- A normal that does not annihilate the geometric direction of a supported ray has
+trivial wall group on that ray. -/
+theorem wallGroup_eq_bot_of_normal_ne_zero {w : SupportedRay d} {m : Λ →+ ℤ}
+    (hm : m (ρ w.generator) ≠ 0) : H.wallGroup w m = ⊥ := by
+  apply H.wallGroup_eq_bot_of_raySubmodule_eq_bot
+  rw [raySubmodule_def]
+  refine iSup_eq_bot.mpr fun n => H.nontangent _ m ?_
+  obtain ⟨a, ha, hna⟩ := (SupportedRay.mem_rayDegrees.mp n.property).2
+  have h := map_zsmul (m.comp ρ) a w.generator
+  simp only [AddMonoidHom.comp_apply, smul_eq_mul] at h
+  rw [hna, h]
+  exact mul_ne_zero ha.ne' hm
 
 /-- A nonidentity wall label requires a nonzero homogeneous wall space at some
 actual allowed degree on its supported ray. -/

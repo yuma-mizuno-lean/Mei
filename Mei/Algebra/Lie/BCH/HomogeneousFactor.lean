@@ -12,7 +12,8 @@ public import Mei.Data.Finset.NoncommProd
 # Homogeneous factors of completed BCH labels
 
 A completed BCH label has a homogeneous logarithmic coefficient in every degree, read
-from its exponential coordinate in the degree completion. Exponentiating the degree-`n`
+from its exponential coordinate in the degree completion, and these coefficients determine
+the label. Labels whose coefficients commute pairwise commute. Exponentiating the degree-`n`
 coefficient gives the homogeneous factor of degree `n`. At every cutoff only finitely
 many of these factors are nontrivial. When the coefficients commute pairwise, the label
 projects at every order to the unordered product of its projected factors, computed on
@@ -80,6 +81,15 @@ theorem logComponent_eq_decompose (g : d.completedBCHGroup ℒ) {n : N} {k : ℕ
     ← LieIdeal.completionProjection_apply, completionProjection_completedBCHExp_symm, ← hx,
     LieIdeal.mkQ_apply]
   exact d.quotientComponent_mk ℒ F _ k n hn x
+
+/-- A completed label is determined by its logarithmic coefficients. -/
+theorem ext_logComponent {g g' : d.completedBCHGroup ℒ}
+    (h : ∀ n, d.logComponent ℒ g n = d.logComponent ℒ g' n) : g = g' := by
+  apply (d.completedBCHExp ℒ).symm.injective
+  apply (d.completionEquivPi ℒ F (fun k => d.degreeIdeal_toSubmodule ℒ k)
+    (fun n hn => IsPositiveGrading.eq_bot n (Or.inl hn))).injective
+  funext n
+  simpa only [completionEquivPi_apply, logComponent] using h n
 
 /-- The logarithmic coefficients of a completed exponential are the homogeneous
 components of the original Lie element. -/
@@ -165,6 +175,21 @@ theorem log_projection_eq_mkQ_sum (g : d.completedBCHGroup ℒ) (k : ℕ) :
     ← e.symm_apply_apply ((d.completedBCHExp ℒ).symm g),
     projection_completionEquivPi_symm]
   simp only [e, completionEquivPi_apply, LieIdeal.mkQ_apply, logComponent]
+
+variable {ℒ} in
+/-- Completed labels commute when all their logarithmic coefficients do. -/
+theorem commute_of_lie_logComponent_eq_zero {g g' : d.completedBCHGroup ℒ}
+    (h : ∀ n m, ⁅(d.logComponent ℒ g n : L), (d.logComponent ℒ g' m : L)⁆ = 0) :
+    Commute g g' := by
+  apply CompletedGroup.ext
+  intro k
+  rw [map_mul, map_mul,
+    ← BCHGroup.exp_log (L := d.truncatedLie ℒ k) (CompletedGroup.projection k g),
+    ← BCHGroup.exp_log (L := d.truncatedLie ℒ k) (CompletedGroup.projection k g'),
+    log_projection_eq_mkQ_sum, log_projection_eq_mkQ_sum]
+  refine (BCHGroup.commute_exp_of_lie_eq_zero _ _ ?_).eq
+  rw [← LieHom.map_lie, sum_lie]
+  simp only [lie_sum, h, Finset.sum_const_zero, map_zero]
 
 variable {ℒ} in
 /-- Pairwise commuting coefficients split a completed label at every order into the

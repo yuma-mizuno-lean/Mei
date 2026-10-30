@@ -16,8 +16,10 @@ public import Mei.Algebra.Lie.BCH.HomogeneousFactor
 The completed ray subgroup consists of compatible BCH labels whose finite
 logarithms are supported on one primitive ray. Finite quotient maps carry ray
 algebras and their BCH subgroups onto the corresponding lower-order objects.
-Distinct ray subgroups have trivial intersection. Under `IsAbelianRays`, labels
-in one completed ray subgroup commute, so coincident supports can be merged
+A completed label lies on a ray exactly when its logarithmic coefficients vanish off the
+actual ray degrees. Distinct ray subgroups have trivial intersection. Under
+`IsAbelianRays`, labels in one completed ray subgroup commute, so coincident supports
+can be merged
 without choosing an order, including labels indexed by different nonprimitive
 multiples of the same ray. Such a label then splits at every order into the
 unordered product of its homogeneous factors, which are trivial off the actual ray
@@ -176,6 +178,22 @@ theorem logComponent_mem_rayLieSubalgebra {w : SupportedRay d}
   by_cases hn : n ∈ w.rayDegrees
   · exact le_rayLieSubalgebra ℒ hn (d.logComponent ℒ g n).property
   · rw [d.logComponent_eq_zero_of_notMem_rayDegrees ℒ hg hn, ZeroMemClass.coe_zero]
+    exact zero_mem _
+
+/-- A completed label lies on a supported ray exactly when its logarithmic coefficients
+vanish off the actual ray degrees. -/
+theorem mem_completedRaySubgroup_iff_logComponent (w : SupportedRay d)
+    (g : d.completedBCHGroup ℒ) :
+    g ∈ d.completedRaySubgroup ℒ w ↔ ∀ n, n ∉ w.rayDegrees → d.logComponent ℒ g n = 0 := by
+  refine ⟨fun hg _ hn => d.logComponent_eq_zero_of_notMem_rayDegrees ℒ hg hn, fun h => ?_⟩
+  rw [mem_completedRaySubgroup]
+  intro k
+  rw [log_projection_eq_mkQ_sum, ← d.map_rayLieSubalgebra_mkQ ℒ w k]
+  refine (LieSubalgebra.mem_map _ _ _).mpr ⟨_, Submodule.sum_mem (rayLieSubalgebra ℒ w).toSubmodule
+    fun n _ => ?_, rfl⟩
+  by_cases hn : n ∈ w.rayDegrees
+  · exact le_rayLieSubalgebra ℒ hn (d.logComponent ℒ g n).property
+  · rw [h n hn, ZeroMemClass.coe_zero]
     exact zero_mem _
 
 /-- The homogeneous factors of a completed ray label are completed ray labels. -/
