@@ -31,7 +31,6 @@ open scoped Mei.NodeAlgebra
 namespace Mei.FocusFocus
 
 open TauCeti AddMonoidAlgebra Mei.NodeAlgebra _root_.LaurentPolynomial
-open Mei.LaurentPolynomial
 
 variable (K : Type*) [CommRing K]
 
@@ -128,92 +127,5 @@ theorem chamberLaurentIncidenceComparison_app_right (k : ℕ)
     (z : TruncatedExponentChamber K k 0) :
     ((chamberLaurentIncidenceComparison K k).app .right).hom z =
       rightChamberExponentMap K k z := (rfl)
-
-variable {K} {K' : Type*} [CommRing K'] {k l : ℕ}
-  (φ : K →+* K') (hl : l ≤ k)
-
-local notation "S'" => AdjoinRoot (Polynomial.X ^ (l + 1) : Polynomial K')
-local notation "τ'" => AdjoinRoot.root (Polynomial.X ^ (l + 1) : Polynomial K')
-
-/-- The left comparison commutes with arbitrary coefficient maps and lower cutoffs,
-including maps that kill homogeneous coefficients. -/
-@[simp↓]
-theorem leftChamberExponentMap_truncatedExponentChamberMap
-    (z : TruncatedExponentChamber K k 1) :
-    leftChamberExponentMap K' l (truncatedExponentChamberMap φ hl 1 z) =
-      mapRingHom (ℤ × ℤ)
-        (AdjoinRoot.map φ _ _ (by
-          simpa using pow_dvd_pow (Polynomial.X : Polynomial K') (Nat.add_le_add_right hl 1)))
-        (leftChamberExponentMap K k z) := by
-  let ψ : S(k) →+* S' := AdjoinRoot.map φ _ _ (by
-    simpa using pow_dvd_pow (Polynomial.X : Polynomial K') (Nat.add_le_add_right hl 1))
-  let : Algebra (S(k)) S' := ψ.toAlgebra
-  let : Algebra (S(k))[ℤ] S'[ℤ] := (truncatedScalarMap φ hl).toAlgebra
-  apply (curryAlgEquiv S').injective
-  rw [leftChamberExponentMap_apply, AlgEquiv.apply_symm_apply]
-  have hc := curryAlgEquiv_mapAlgHom_ofId (R := S(k)) (S := S')
-    (leftChamberExponentMap K k z)
-  rw [leftChamberExponentMap_apply, AlgEquiv.apply_symm_apply] at hc
-  rw [truncatedExponentChamberMap_one]
-  refine (leftChamberLaurentMap_leftChamberMap
-    (truncatedScalarMap_C_root φ hl) hl (C_root_X_pow_pow K (k + 1))
-    (C_root_X_pow_pow K' (l + 1)) z).trans ?_
-  simpa only [← AlgHom.coe_toRingHom, _root_.AddMonoidAlgebra.toRingHom_mapAlgHom,
-    Algebra.ofId,
-    RingHom.algebraMap_toAlgebra, AddMonoidAlgebra.algebraMap_def, truncatedScalarMap_def, ψ,
-    leftChamberExponentMap_apply] using hc.symm
-
-/-- The right comparison obeys the same coefficient and cutoff square. -/
-@[simp↓]
-theorem rightChamberExponentMap_truncatedExponentChamberMap
-    (z : TruncatedExponentChamber K k 0) :
-    rightChamberExponentMap K' l (truncatedExponentChamberMap φ hl 0 z) =
-      mapRingHom (ℤ × ℤ)
-        (AdjoinRoot.map φ _ _ (by
-          simpa using pow_dvd_pow (Polynomial.X : Polynomial K') (Nat.add_le_add_right hl 1)))
-        (rightChamberExponentMap K k z) := by
-  let ψ : S(k) →+* S' := AdjoinRoot.map φ _ _ (by
-    simpa using pow_dvd_pow (Polynomial.X : Polynomial K') (Nat.add_le_add_right hl 1))
-  let : Algebra (S(k)) S' := ψ.toAlgebra
-  let : Algebra (S(k))[ℤ] S'[ℤ] := (truncatedScalarMap φ hl).toAlgebra
-  apply (curryAlgEquiv S').injective
-  rw [rightChamberExponentMap_apply, AlgEquiv.apply_symm_apply]
-  have hc := curryAlgEquiv_mapAlgHom_ofId (R := S(k)) (S := S')
-    (rightChamberExponentMap K k z)
-  rw [rightChamberExponentMap_apply, AlgEquiv.apply_symm_apply] at hc
-  rw [truncatedExponentChamberMap_zero]
-  refine (rightChamberLaurentMap_rightChamberMap
-    (truncatedScalarMap_C_root φ hl) hl (C_root_X_pow_pow K (k + 1))
-    (C_root_X_pow_pow K' (l + 1)) z).trans ?_
-  simpa only [← AlgHom.coe_toRingHom, _root_.AddMonoidAlgebra.toRingHom_mapAlgHom,
-    Algebra.ofId,
-    RingHom.algebraMap_toAlgebra, AddMonoidAlgebra.algebraMap_def, truncatedScalarMap_def, ψ,
-    rightChamberExponentMap_apply] using hc.symm
-
-/-- The inverse slab dictionary commutes with coefficient changes and cutoff
-reductions, on every matching pair. -/
-@[simp↓]
-theorem algebraEquiv_symm_truncatedSlabMap
-    (z : slabAlgebra (C (τ(k))) (1 + T 1) k) :
-    (algebraEquiv τ' l (AdjoinRoot.root_X_pow_pow (l + 1))).symm
-        (truncatedSlabMap φ hl z) =
-      (letI : Algebra (S(k))[ℤ] S'[ℤ] := (truncatedScalarMap φ hl).toAlgebra
-       mapOfEq (C (τ(k)) * (1 + T 1))
-         (by simp only [map_mul, map_add, map_one, RingHom.algebraMap_toAlgebra,
-           truncatedScalarMap_C_root, truncatedScalarMap_T])
-         ((algebraEquiv (τ(k)) k (AdjoinRoot.root_X_pow_pow (k + 1))).symm z)) := by
-  apply (algebraEquiv τ' l (AdjoinRoot.root_X_pow_pow (l + 1))).symm_apply_eq.mpr
-  let e := algebraEquiv (τ(k)) k (AdjoinRoot.root_X_pow_pow (k + 1))
-  let e' := algebraEquiv τ' l (AdjoinRoot.root_X_pow_pow (l + 1))
-  let : Algebra (S(k))[ℤ] S'[ℤ] := (truncatedScalarMap φ hl).toAlgebra
-  let htf : algebraMap (S(k))[ℤ] S'[ℤ] (C (τ(k)) * (1 + T 1)) =
-      C τ' * (1 + T 1) := by
-    simp only [map_mul, map_add, map_one, RingHom.algebraMap_toAlgebra,
-      truncatedScalarMap_C_root, truncatedScalarMap_T]
-  have he : truncatedSlabMap φ hl (e (e.symm z)) =
-      e' (mapOfEq (C (τ(k)) * (1 + T 1)) htf (e.symm z)) := by
-    simpa only [e, e', algebraEquiv_apply] using
-      truncatedSlabMap_toSlabAlgebra φ hl (e.symm z)
-  simpa only [AlgEquiv.apply_symm_apply] using he
 
 end Mei.FocusFocus

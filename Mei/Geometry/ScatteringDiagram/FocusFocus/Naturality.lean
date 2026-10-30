@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.ScatteringDiagram.FocusFocus.OrderQuotient
-public import Mei.RingTheory.Node.SlabMap
+public import Mei.Geometry.ScatteringDiagram.FocusFocus.Algebra
 public import Mei.RingTheory.AdjoinRoot.Laurent
 
 /-!
@@ -259,5 +259,31 @@ theorem truncatedSlabMap_toSlabAlgebra (z : NodeAlgebra S[ℤ] (C τ * (1 + T 1)
   let : Algebra S[ℤ] S'[ℤ] := RingHom.toAlgebra (truncatedScalarMap φ hl)
   exact slabAlgebraMap_toSlabAlgebra (C τ) (1 + T 1)
     (truncatedScalarMap_C_root φ hl) (by simp [RingHom.algebraMap_toAlgebra]) hl z
+
+/-- The inverse slab dictionary commutes with coefficient changes and cutoff
+reductions, on every matching pair. -/
+@[simp↓]
+theorem algebraEquiv_symm_truncatedSlabMap
+    (z : slabAlgebra (C τ) (1 + T 1) k) :
+    (algebraEquiv τ' l (AdjoinRoot.root_X_pow_pow (l + 1))).symm
+        (truncatedSlabMap φ hl z) =
+      (letI : Algebra S[ℤ] S'[ℤ] := (truncatedScalarMap φ hl).toAlgebra
+       mapOfEq (C τ * (1 + T 1))
+         (by simp only [map_mul, map_add, map_one, RingHom.algebraMap_toAlgebra,
+           truncatedScalarMap_C_root, truncatedScalarMap_T])
+         ((algebraEquiv τ k (AdjoinRoot.root_X_pow_pow (k + 1))).symm z)) := by
+  apply (algebraEquiv τ' l (AdjoinRoot.root_X_pow_pow (l + 1))).symm_apply_eq.mpr
+  let e := algebraEquiv τ k (AdjoinRoot.root_X_pow_pow (k + 1))
+  let e' := algebraEquiv τ' l (AdjoinRoot.root_X_pow_pow (l + 1))
+  let : Algebra S[ℤ] S'[ℤ] := (truncatedScalarMap φ hl).toAlgebra
+  let htf : algebraMap S[ℤ] S'[ℤ] (C τ * (1 + T 1)) =
+      C τ' * (1 + T 1) := by
+    simp only [map_mul, map_add, map_one, RingHom.algebraMap_toAlgebra,
+      truncatedScalarMap_C_root, truncatedScalarMap_T]
+  have he : truncatedSlabMap φ hl (e (e.symm z)) =
+      e' (mapOfEq (C τ * (1 + T 1)) htf (e.symm z)) := by
+    simpa only [e, e', algebraEquiv_apply] using
+      truncatedSlabMap_toSlabAlgebra φ hl (e.symm z)
+  simpa only [AlgEquiv.apply_symm_apply] using he
 
 end Mei.FocusFocus
