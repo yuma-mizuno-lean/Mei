@@ -61,47 +61,42 @@ theorem gluingCospan_obj_one (k : ℕ) :
 
 private def chamberReduction {k l : ℕ} (hl : l ≤ k) (i : Fin 2) :
     TruncatedExponentChamber K k i →ₐ[K] TruncatedExponentChamber K l i :=
-  { truncatedExponentChamberMap (RingHom.id K) hl i with
-    toFun := truncatedExponentChamberMap (RingHom.id K) hl i
-    commutes' := fun r => by
-      rw [IsScalarTower.algebraMap_apply K (S(k)[ℤ]) (TruncatedExponentChamber K k i),
-        truncatedExponentChamberMap_algebraMap]
-      apply congrArg (algebraMap (S(l)[ℤ]) _)
-      rw [← truncatedScalarAlgHom_toRingHom]
-      exact (truncatedScalarAlgHom K hl).commutes r }
-
-private def overlapReductionRing {k l : ℕ} (hl : l ≤ k) : D(k) →+* D(l) :=
   letI : Algebra (S(k)[ℤ]) (S(l)[ℤ]) := (truncatedScalarMap (RingHom.id K) hl).toAlgebra
-  (localizedOverlapMap (C (τ(k))) (1 + T 1)
-    (f' := (1 + T 1 : S(l)[ℤ])) (truncatedScalarMap_C_root (RingHom.id K) hl)
-    (by simp [RingHom.algebraMap_toAlgebra]) hl).toRingHom
-
-private theorem overlapReductionRing_scalar {k l : ℕ} (hl : l ≤ k) (r : S(k)[ℤ]) :
-    overlapReductionRing K hl (algebraMap (S(k)[ℤ]) (D(k)) r) =
-      algebraMap (S(l)[ℤ]) (D(l)) (truncatedScalarMap (RingHom.id K) hl r) := by
-  let : Algebra (S(k)[ℤ]) (S(l)[ℤ]) := (truncatedScalarMap (RingHom.id K) hl).toAlgebra
-  simp only [overlapReductionRing, AlgHom.toRingHom_eq_coe, AlgHom.coe_toRingHom]
-  rw [AlgHom.commutes, IsScalarTower.algebraMap_apply (S(k)[ℤ]) (S(l)[ℤ]) (D(l))]
-  rfl
+  letI : IsScalarTower K (S(k)[ℤ]) (S(l)[ℤ]) := by
+    have h := congrArg (fun g : S(k)[ℤ] →+* S(l)[ℤ] => g.toAlgebra.toSMul)
+      (truncatedScalarAlgHom_toRingHom (K := K) (hl := hl))
+    exact h ▸ IsScalarTower.of_algHom (truncatedScalarAlgHom K hl)
+  match i with
+  | 0 =>
+    letI := IsScalarTower.to₁₂₄ K (S(k)[ℤ]) (S(l)[ℤ]) (TruncatedExponentChamber K l 0)
+    (rightChamberMap (C (τ(k))) (truncatedScalarMap_C_root (RingHom.id K) hl)
+      hl).restrictScalars K
+  | 1 =>
+    letI := IsScalarTower.to₁₂₄ K (S(k)[ℤ]) (S(l)[ℤ]) (TruncatedExponentChamber K l 1)
+    (leftChamberMap (C (τ(k))) (truncatedScalarMap_C_root (RingHom.id K) hl)
+      hl).restrictScalars K
 
 private def overlapReduction {k l : ℕ} (hl : l ≤ k) : D(k) →ₐ[K] D(l) :=
-  { overlapReductionRing K hl with
-    toFun := overlapReductionRing K hl
-    commutes' := fun r => by
-      rw [IsScalarTower.algebraMap_apply K (S(k)[ℤ]) (D(k)), overlapReductionRing_scalar]
-      rw [IsScalarTower.algebraMap_apply K (S(l)[ℤ]) (D(l))]
-      apply congrArg (algebraMap (S(l)[ℤ]) _)
-      rw [← truncatedScalarAlgHom_toRingHom]
-      exact (truncatedScalarAlgHom K hl).commutes r }
+  letI : Algebra (S(k)[ℤ]) (S(l)[ℤ]) := (truncatedScalarMap (RingHom.id K) hl).toAlgebra
+  letI : IsScalarTower K (S(k)[ℤ]) (S(l)[ℤ]) := by
+    have h := congrArg (fun g : S(k)[ℤ] →+* S(l)[ℤ] => g.toAlgebra.toSMul)
+      (truncatedScalarAlgHom_toRingHom (K := K) (hl := hl))
+    exact h ▸ IsScalarTower.of_algHom (truncatedScalarAlgHom K hl)
+  letI : IsScalarTower K (S(k)[ℤ]) (D(l)) :=
+    IsScalarTower.to₁₂₄ K (S(k)[ℤ]) (S(l)[ℤ]) (D(l))
+  let g : D(k) →ₐ[S(k)[ℤ]] D(l) :=
+    localizedOverlapMap (C (τ(k))) (1 + T 1)
+      (f' := (1 + T 1 : S(l)[ℤ])) (truncatedScalarMap_C_root (RingHom.id K) hl)
+      (by simp [RingHom.algebraMap_toAlgebra]) hl
+  g.restrictScalars K
 
 private theorem overlapReduction_left {k l : ℕ} (hl : l ≤ k)
     (z : TruncatedExponentChamber K k 1) :
     overlapReduction K hl (leftGluing (C (τ(k))) (1 + T 1) k z) =
       leftGluing (C (τ(l))) (1 + T 1) l (chamberReduction K hl 1 z) := by
   let : Algebra (S(k)[ℤ]) (S(l)[ℤ]) := (truncatedScalarMap (RingHom.id K) hl).toAlgebra
-  simpa only [overlapReduction, overlapReductionRing, chamberReduction,
-    AlgHom.coe_mks, AlgHom.toRingHom_eq_coe, AlgHom.coe_toRingHom,
-    truncatedExponentChamberMap_one] using
+  simpa only [overlapReduction, chamberReduction,
+    AlgHom.restrictScalars_apply] using
     localizedOverlapMap_leftGluing (C (τ(k))) (1 + T 1)
     (f' := (1 + T 1 : S(l)[ℤ])) (truncatedScalarMap_C_root (RingHom.id K) hl)
     (by simp [RingHom.algebraMap_toAlgebra]) hl z
@@ -111,9 +106,8 @@ private theorem overlapReduction_right {k l : ℕ} (hl : l ≤ k)
     overlapReduction K hl (rightGluing (C (τ(k))) (1 + T 1) k z) =
       rightGluing (C (τ(l))) (1 + T 1) l (chamberReduction K hl 0 z) := by
   let : Algebra (S(k)[ℤ]) (S(l)[ℤ]) := (truncatedScalarMap (RingHom.id K) hl).toAlgebra
-  simpa only [overlapReduction, overlapReductionRing, chamberReduction,
-    AlgHom.coe_mks, AlgHom.toRingHom_eq_coe, AlgHom.coe_toRingHom,
-    truncatedExponentChamberMap_zero] using
+  simpa only [overlapReduction, chamberReduction,
+    AlgHom.restrictScalars_apply] using
     localizedOverlapMap_rightGluing (C (τ(k))) (1 + T 1)
     (f' := (1 + T 1 : S(l)[ℤ])) (truncatedScalarMap_C_root (RingHom.id K) hl)
     (by simp [RingHom.algebraMap_toAlgebra]) hl z
@@ -131,14 +125,18 @@ def gluingCospanReduction {k l : ℕ} (hl : l ≤ k) :
 theorem gluingCospanReduction_app_left {k l : ℕ} (hl : l ≤ k)
     (z : TruncatedExponentChamber K k 1) :
     ((gluingCospanReduction K hl).app .left).hom z =
-      truncatedExponentChamberMap (RingHom.id K) hl 1 z := (rfl)
+      truncatedExponentChamberMap (RingHom.id K) hl 1 z := by
+  rw [truncatedExponentChamberMap_one]
+  rfl
 
 /-- The right component is the existing chamber reduction. -/
 @[simp↓]
 theorem gluingCospanReduction_app_right {k l : ℕ} (hl : l ≤ k)
     (z : TruncatedExponentChamber K k 0) :
     ((gluingCospanReduction K hl).app .right).hom z =
-      truncatedExponentChamberMap (RingHom.id K) hl 0 z := (rfl)
+      truncatedExponentChamberMap (RingHom.id K) hl 0 z := by
+  rw [truncatedExponentChamberMap_zero]
+  rfl
 
 /-- Overlap reduction intertwines the right gluing incidence with the existing
 right chamber reduction. Its values on this image determine the localization map. -/
@@ -147,8 +145,9 @@ theorem gluingCospanReduction_app_one_rightGluing {k l : ℕ} (hl : l ≤ k)
     (z : TruncatedExponentChamber K k 0) :
     ((gluingCospanReduction K hl).app .one).hom (rightGluing (C (τ(k))) (1 + T 1) k z) =
       rightGluing (C (τ(l))) (1 + T 1) l
-        (truncatedExponentChamberMap (RingHom.id K) hl 0 z) :=
-  overlapReduction_right K hl z
+        (truncatedExponentChamberMap (RingHom.id K) hl 0 z) := by
+  rw [← gluingCospanReduction_app_right K hl z]
+  exact overlapReduction_right K hl z
 
 /-- Reduction to the same order is the identity of the entire gluing diagram. -/
 @[simp]
