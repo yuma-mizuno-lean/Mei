@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.LinearAlgebra.GradedModule.Shifted.Basic
+public import Mei.LinearAlgebra.GradedModule.Shifted.Component
 public import TauCeti.Algebra.Module.GradedModule.Quotient
 
 /-!
@@ -15,7 +15,8 @@ The relative-degree filtration of a shifted module is homogeneous, so each
 finite quotient inherits its internal grading. Its degree-`n` piece is the
 image of the original relative piece; it vanishes above the cutoff. Retained
 homogeneous coefficients embed faithfully, and quotient transitions preserve
-the homogeneous pieces.
+the homogeneous pieces. Projections in the inherited grading are the quotient
+classes of the retained ambient components.
 
 The construction uses `TauCeti.InternalGrading.quotient` for the existing
 shifted filtration, keeping the quotient carrier used by filtered Lie actions.
@@ -57,6 +58,27 @@ theorem mem_shiftedQuotientGrading_iff {k : ℕ} {n : Γ}
       ∃ a ∈ shiftedGrading ℳ d.monoid p n, Submodule.Quotient.mk a = x := by
   rw [shiftedQuotientGrading_piece]
   exact Submodule.mem_map
+
+/-- Projection in the inherited quotient grading is the quotient class of the
+retained ambient component. The relative degree is `n`, and its ambient degree
+is `p + n`. -/
+@[simp↓]
+theorem decompose_shiftedQuotientGrading (k : ℕ) (n : d.monoid)
+    (hn : d.degree n ≤ k) (x : (d.shiftedFiltration ℳ p).quotient k) :
+    (DirectSum.decompose (d.shiftedQuotientGrading ℳ p k).piece x n :
+        (d.shiftedFiltration ℳ p).quotient k) =
+      Submodule.Quotient.mk (shiftedInclusion ℳ d.monoid p n
+        (d.shiftedQuotientComponent ℳ p (p + n) k (by simpa using hn) x)) := by
+  obtain ⟨a, rfl⟩ := ((d.shiftedFiltration ℳ p).submodule (k + 1)).mkQ_surjective x
+  simp only [Submodule.mkQ_apply, shiftedQuotientComponent_mk]
+  have hproj := DirectSum.map_decompose_shift (shiftedGrading ℳ d.monoid p)
+    (d.shiftedQuotientGrading ℳ p k).piece
+    ((d.shiftedFiltration ℳ p).submodule (k + 1)).mkQ.toAddMonoidHom
+    id Function.injective_id
+    (fun n a ha => (d.mem_shiftedQuotientGrading_iff ℳ p).mpr ⟨a, ha, rfl⟩) n a
+  refine hproj.symm.trans (congrArg Submodule.Quotient.mk ?_)
+  apply Subtype.ext
+  simpa only [coe_shiftedInclusion] using coe_decompose_shiftedGrading ℳ d.monoid p a n
 
 /-- The quotient image of a relative piece above the retained order vanishes.
 This is the simplifier normal form of the finite-piece vanishing law. -/
