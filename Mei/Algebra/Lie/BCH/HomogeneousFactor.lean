@@ -105,6 +105,16 @@ theorem logComponent_eq_decompose (g : d.completedBCHGroup ℒ) {n : N} {k : ℕ
     LieIdeal.mkQ_apply]
   exact d.quotientComponent_mk ℒ F _ k n hn x
 
+/-- A finite projection determines every logarithmic coefficient it retains. -/
+theorem logComponent_eq_of_projection_eq {g g' : d.completedBCHGroup ℒ}
+    {n : N} {k : ℕ} (hn : d.degree n ≤ k)
+    (hg : CompletedGroup.projection k g = CompletedGroup.projection k g') :
+    d.logComponent ℒ g n = d.logComponent ℒ g' n := by
+  obtain ⟨x, hx⟩ := (d.degreeIdeal ℒ k).surjective_mkQ
+    (BCHGroup.log (L := d.truncatedLie ℒ k) (CompletedGroup.projection k g))
+  rw [d.logComponent_eq_decompose ℒ g hn hx,
+    d.logComponent_eq_decompose ℒ g' hn (hx.trans (congrArg BCHGroup.log hg))]
+
 /-- A trivial finite projection has zero logarithmic coefficient in every
 retained degree. -/
 theorem logComponent_eq_zero_of_projection_eq_one {g : d.completedBCHGroup ℒ}
