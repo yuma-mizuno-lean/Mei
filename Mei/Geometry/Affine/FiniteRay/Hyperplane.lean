@@ -6,14 +6,18 @@ Authors: Codex
 module
 
 public import Mei.Geometry.Affine.FiniteRay.Map
+public import Mathlib.Data.Set.Card.Arithmetic
 
 /-!
-# Finite rays bending on one affine hyperplane
+# Hyperplane encounters of finite affine rays
 
 If an affine functional kills every direction increment of a finite ray, its value
 along the ray is affine in time. A nonzero normal velocity therefore permits only
 one encounter with each level hyperplane. When all bends lie on that hyperplane,
-their support is contained in this single encounter time. Independently of
+their support is contained in this single encounter time. With arbitrary direction
+changes, nonzero incoming normal velocity at each encounter bounds the number of
+hyperplane hits by one plus the number of bends.
+This also proves finiteness of all such encounter times. Independently of
 conservation, bends confined to a hyperplane force straightness if the final
 affine segment meets it only at or after the endpoint, or is parallel and off it.
 
@@ -101,5 +105,85 @@ theorem eq_straight_of_parallel (c : ℝ)
   obtain ⟨t, _, he⟩ := exists_neg_hyperplane_time β f c hwall
     (Finset.nonempty_iff_ne_empty.mpr hne)
   exact hoff (by simpa [hparallel] using he)
+
+
+omit hf
+
+private theorem eq_of_hyperplane_eq_of_rank_eq (A : Set ℝ) (c : ℝ)
+    (htrans : ∀ t ∈ A, f (β t) = c → f.linear (β.directionAt t) ≠ 0)
+    {s t : ℝ} (hs : s ∈ A ∧ f (β s) = c) (ht : t ∈ A ∧ f (β t) = c)
+    (hrank : (β.bends.support.filter (· < s)).card =
+      (β.bends.support.filter (· < t)).card) : s = t := by
+  classical
+  wlog hst : s ≤ t generalizing s t
+  · exact (this ht hs hrank.symm (le_of_not_ge hst)).symm
+  have hsub : β.bends.support.filter (· < s) ⊆ β.bends.support.filter (· < t) := by
+    intro b hb
+    exact Finset.mem_filter.mpr ⟨(Finset.mem_filter.mp hb).1,
+      (Finset.mem_filter.mp hb).2.trans_le hst⟩
+  have heq := Finset.eq_of_subset_of_card_le hsub hrank.ge
+  have hb : ∀ b ∈ β.bends.support, b ≤ s ∨ t ≤ b := by
+    intro b hb
+    by_cases hbs : b ≤ s
+    · exact Or.inl hbs
+    · right
+      apply le_of_not_gt
+      intro hbt
+      have hm : b ∈ β.bends.support.filter (· < t) := Finset.mem_filter.mpr ⟨hb, hbt⟩
+      rw [← heq] at hm
+      exact hbs (Finset.mem_filter.mp hm).2.le
+  have hz : (s - t) * f.linear (β.directionAt t) = 0 := by
+    have he := congrArg f.linear (β.eval_vsub_eval hst hb)
+    simpa only [AffineMap.linear_apply_vsub, hs.2, ht.2, vsub_self, map_smul,
+      smul_eq_mul] using he.symm
+  exact sub_eq_zero.mp ((mul_eq_zero.mp hz).resolve_right (htrans t ht.1 ht.2))
+
+/-- A finite affine ray meets a hyperplane at most once per affine piece, on any
+parameter subset. Only the actual encounters need nonzero incoming normal velocity;
+parallel pieces disjoint from the hyperplane are allowed. The bound includes hits
+at bends and at the endpoint. -/
+theorem encard_hyperplane_times_le (A : Set ℝ) (c : ℝ)
+    (htrans : ∀ t ∈ A, f (β t) = c → f.linear (β.directionAt t) ≠ 0) :
+    {t | t ∈ A ∧ f (β t) = c}.encard ≤ β.bends.support.card + 1 := by
+  classical
+  let rank : ℝ → Fin (β.bends.support.card + 1) := fun t =>
+    ⟨(β.bends.support.filter (· < t)).card,
+      Nat.lt_succ_of_le (Finset.card_filter_le _ _)⟩
+  have hinj : Set.InjOn rank {t | t ∈ A ∧ f (β t) = c} := by
+    intro s hs t ht he
+    exact eq_of_hyperplane_eq_of_rank_eq β f A c htrans hs ht (congrArg Fin.val he)
+  simpa using Set.encard_le_encard_of_injOn (Set.mapsTo_univ rank _) hinj
+
+/-- Transverse encounters of a finite affine ray with a hyperplane form a finite set. -/
+theorem finite_hyperplane_times (A : Set ℝ) (c : ℝ)
+    (htrans : ∀ t ∈ A, f (β t) = c → f.linear (β.directionAt t) ≠ 0) :
+    Set.Finite {t | t ∈ A ∧ f (β t) = c} :=
+  (Set.encard_le_coe_iff_finite_ncard_le.mp (β.encard_hyperplane_times_le f A c htrans)).1
+
+
+/-- With finitely many hyperplanes, labelled transverse encounters are bounded by
+one plus the number of bends, multiplied by the number of hyperplanes. Distinct
+hyperplanes encountered simultaneously are counted separately. -/
+theorem encard_hyperplane_encounters_le {ι : Type*} [Finite ι]
+    (F : ι → P →ᵃ[ℝ] ℝ) (A : Set ℝ) (c : ι → ℝ)
+    (htrans : ∀ j t, t ∈ A → F j (β t) = c j → (F j).linear (β.directionAt t) ≠ 0) :
+    {p : ι × ℝ | p.2 ∈ A ∧ F p.1 (β p.2) = c p.1}.encard ≤
+      Nat.card ι * (β.bends.support.card + 1) := by
+  classical
+  let := Fintype.ofFinite ι
+  have he : {p : ι × ℝ | p.2 ∈ A ∧ F p.1 (β p.2) = c p.1} =
+      ⋃ j, ({j} ×ˢ {t | t ∈ A ∧ F j (β t) = c j}) := by
+    ext ⟨j, t⟩
+    simp
+  rw [he]
+  calc
+    _ ≤ ∑ j : ι, ({j} ×ˢ {t | t ∈ A ∧ F j (β t) = c j}).encard :=
+      Set.encard_iUnion_le_of_fintype _
+    _ = ∑ j : ι, {t | t ∈ A ∧ F j (β t) = c j}.encard := by
+      simp only [Set.encard_prod, Set.encard_singleton, one_mul]
+    _ ≤ ∑ _j : ι, ((β.bends.support.card : ℕ∞) + 1) :=
+      Finset.sum_le_sum fun j _ => β.encard_hyperplane_times_le (F j) A (c j) (htrans j)
+    _ = Nat.card ι * (β.bends.support.card + 1) := by
+      simp only [Finset.sum_const, Finset.card_univ, nsmul_eq_mul, Nat.card_eq_fintype_card]
 
 end Mei.FiniteAffineRay
