@@ -231,8 +231,8 @@ theorem exponentOrderMap_upperExponentOrder (x : ExponentOrderQuotient K k i) :
   obtain ⟨f, rfl⟩ := Ideal.Quotient.mk_surjective x
   simp only [upperExponentOrder_mk, exponentOrderMap_mk]
   congr 1
-  ext q
-  simp
+  exact RingHom.congr_fun
+    (AddMonoidAlgebra.mapRingHom_comp_mapDomainRingHom φ upperMonoid.toAddMonoidHom) f
 
 /-- The nodal upper change is compatible with the same coefficient and cutoff maps. -/
 theorem truncatedExponentChamberMap_upper (x : TruncatedExponentChamber K k i) :
