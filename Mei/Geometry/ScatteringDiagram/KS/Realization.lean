@@ -46,14 +46,6 @@ variable {N V R L : Type*} [AddCommGroup N]
   [GradedLieAlgebra ℒ] [IsPositiveGrading d ℒ] [Module.Free ℤ N]
   {C : FinitePolyhedralComplex h} {k : ℕ} (D : KSComplex s d ℒ C k)
 
-/-- The supported primitive ray of the coorienting degree of a KS wall. -/
-def wallRay (P : C.walls) : SupportedRay d :=
-  (d.exists_supportedRay (D.degree_mem P) (D.degree_ne_zero P)).choose
-
-/-- The original coorienting degree is an actual degree of its supported ray. -/
-theorem degree_mem_wallRay (P : C.walls) : D.degree P ∈ (D.wallRay P).rayDegrees :=
-  (d.exists_supportedRay (D.degree_mem P) (D.degree_ne_zero P)).choose_spec
-
 private theorem exists_label_lift (P : C.walls) :
     ∃ G ∈ d.completedRaySubgroup ℒ (D.wallRay P),
       CompletedGroup.projection k G = D.label P :=
