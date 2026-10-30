@@ -47,6 +47,12 @@ def logComponent (g : d.completedBCHGroup ℒ) (n : N) : ℒ n :=
   d.completionComponent ℒ F (fun k => d.degreeIdeal_toSubmodule ℒ k) n
     ((d.completedBCHExp ℒ).symm g)
 
+/-- Read a logarithmic coefficient from the completed exponential coordinate. -/
+theorem logComponent_def (g : d.completedBCHGroup ℒ) (n : N) :
+    d.logComponent ℒ g n =
+      d.completionComponent ℒ F (fun k => d.degreeIdeal_toSubmodule ℒ k) n
+        ((d.completedBCHExp ℒ).symm g) := (rfl)
+
 /-- The homogeneous factor of degree `n`: the completed exponential of the degree-`n`
 logarithmic coefficient. -/
 def homogeneousFactor (g : d.completedBCHGroup ℒ) (n : N) : d.completedBCHGroup ℒ :=
