@@ -290,27 +290,16 @@ projection. This formula also characterizes its effect on local sections. -/
   let i := exponentBundleCore.indexAt z.proj
   have hz : z ∈ (exponentBundleCore.localTriv i).source :=
     exponentBundleCore.mem_baseSet_at z.proj
-  -- Both cores have the same chart domains and preferred index, so this source
-  -- is also the preimage of the target trivialization's source.
-  have hn : latticeProjection ⁻¹' (tangentLatticeBundleCore.localTriv i).source ∈ 𝓝 z :=
-    by
-      convert (exponentBundleCore.localTriv i).open_source.mem_nhds hz using 1
-      ext w
-      simp only [mem_preimage, Trivialization.mem_source,
-        latticeProjection_proj]
-      cases i <;> simp only [exponentBundleCore_localTriv_baseSet_false,
-        exponentBundleCore_localTriv_baseSet_true, tangentLatticeBundleCore_localTriv_baseSet_false,
-        tangentLatticeBundleCore_localTriv_baseSet_true]
-  let e := (tangentLatticeBundleCore.localTriv i).toOpenPartialHomeomorph
-  apply (e.continuousAt_iff_continuousAt_comp_left hn).mpr
+  have hz' : latticeProjection z ∈ (tangentLatticeBundleCore.localTriv i).source := by
+    simpa only [Trivialization.mem_source, latticeProjection_proj,
+      ← FiberBundleCore.baseSet_at, i, exponentBundleCore_indexAt] using
+      tangentLatticeBundleCore.mem_baseSet_at z.proj
+  apply ((tangentLatticeBundleCore.localTriv i).tendsto_nhds_iff hz').mpr
+  refine ⟨exponentBundleCore.continuous_proj.continuousAt, ?_⟩
+  simp only [latticeProjection_localTriv]
   have hc := (exponentBundleCore.localTriv i).continuousAt hz
   have hp : Continuous (exponentProjection : (ℤ × ℤ × ℤ) → ℤ × ℤ) :=
     continuous_of_discreteTopology
-  convert (exponentBundleCore.continuous_proj.continuousAt.prodMk
-    (hp.continuousAt.comp hc.snd)) using 1
-  funext w
-  apply Prod.ext
-  · rfl
-  · exact latticeProjection_localTriv i w
+  exact hp.continuousAt.comp hc.snd
 
 end Mei.FocusFocus
