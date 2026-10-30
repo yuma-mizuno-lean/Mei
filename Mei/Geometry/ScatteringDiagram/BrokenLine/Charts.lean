@@ -111,9 +111,12 @@ theorem exists_cutoffDecoratedRay_polyhedralCharts (k : ℕ) :
   let e := (Equiv.sigmaCongrRight fun t =>
     (Set.unionEqSigmaOfDisjoint (hdisj t)).symm.trans (Set.equivOfEq (hcover t))).trans
       (swap.trans (Equiv.sigmaCongrRight fun Q => (E Q).symm))
+  have hendpoint (z) : (e z).1 = z.2.2.val := by
+    simp only [e, Equiv.trans_apply, Equiv.sigmaCongrRight_apply, swap,
+      Equiv.coe_fn_mk, Set.equivOfEq_apply, Set.coe_unionEqSigmaOfDisjoint_symm_apply]
   have he (z) : (E (e z).1 (e z).2).val = z.1 := by
     exact congrArg Subtype.val ((E _).apply_symm_apply _)
-  refine ⟨ι, hι, B, hB, hdisj, hcover, e, fun _ => rfl, he, fun z => ?_⟩
+  refine ⟨ι, hι, B, hB, hdisj, hcover, e, hendpoint, he, fun z => ?_⟩
   exact (cutoffDecoratedRayFiberEquiv_decoration d ℳ T a (fun q => i (w q))
     f c ε P W S C k (e z).1 (e z).2).symm.trans
       (congrArg CutoffDecoratedType.decoration (he z))
