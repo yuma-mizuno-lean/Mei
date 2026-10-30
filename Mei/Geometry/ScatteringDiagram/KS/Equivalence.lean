@@ -20,6 +20,9 @@ the resulting complete-product equality.
 `CompletedDiagram.exists_common_pathProduct_eq` exposes these all-order paths, whose
 projected products are the two prescribed finite products.
 
+Truncating a higher level to any lower cutoff gives an equivalent finite diagram
+(`CompletedDiagram.truncate_equivalent`).
+
 No relation between the two sequences of complexes is required. In particular,
 the complexes need not stabilize or refine one another, and neither diagram needs
 to be consistent. The geometric input is
@@ -47,6 +50,32 @@ variable {N V R L : Type*} [AddCommGroup N]
   [GradedLieAlgebra ℒ] [IsPositiveGrading d ℒ]
   {C E : ℕ → FinitePolyhedralComplex h}
   (D : CompletedDiagram s d ℒ C) (F : CompletedDiagram s d ℒ E)
+
+/-- A higher level, truncated to any lower cutoff, is equivalent to the lower
+level on its own complex. No nesting of the complexes is required. -/
+theorem truncate_equivalent {k l : ℕ} (hkl : k ≤ l) :
+    ((D.diagram l).truncate hkl).toFiniteWallDiagram.Equivalent
+      (D.diagram k).toFiniteWallDiagram := by
+  induction l with
+  | zero =>
+    obtain rfl : k = 0 := Nat.eq_zero_of_le_zero hkl
+    simp only [KSComplex.truncate_refl]
+    exact FiniteWallDiagram.Equivalent.refl _
+  | succ l ih =>
+    by_cases hle : k ≤ l
+    · have hs : ((D.diagram (l + 1)).truncate (Nat.le_succ l)).toFiniteWallDiagram.Equivalent
+          (D.diagram l).toFiniteWallDiagram := by
+        rw [FiniteWallDiagram.equivalent_def]
+        intro x y x' y' p q hpq
+        rw [KSComplex.toFiniteWallDiagram_truncate, FiniteWallDiagram.pathProduct_relabel]
+        exact D.compatible l q p hpq.symm
+      have ht := hs.relabel (d.truncationMap ℒ hle).bchGroupMap
+      rw [← KSComplex.toFiniteWallDiagram_truncate,
+        ← KSComplex.toFiniteWallDiagram_truncate, KSComplex.truncate_truncate] at ht
+      exact ht.trans (ih hle)
+    · obtain rfl : k = l + 1 := by omega
+      simp only [KSComplex.truncate_refl]
+      exact FiniteWallDiagram.Equivalent.refl _
 
 /-- Completed diagrams are equivalent if their finite diagrams are equivalent
 at each order: their actual geometric products agree on every vertex list
