@@ -111,24 +111,20 @@ theorem existsUnique_section_of_dense :
         obtain ⟨a, ha⟩ := hd.exists_mem_open B.isOpen ⟨x.val, hx⟩
         simp only [Subtype.coe_eta]
         rw [hg B hB x hx a ha, hg B hB y hy a ha]
-        exact congrArg (fun e => e (f a)) (T.transport_trans B hB (q a) x y ha hx hy)))
-  refine ⟨s, ?_, ?_⟩
-  · intro a
+        simpa only [Equiv.trans_apply] using
+          congrArg (fun e => e (f a)) (T.transport_trans B hB (q a) x y ha hx hy)))
+  have hs (a : A) : T.value s (q a) (by trivial) = f a := by
     obtain ⟨B, hB, haB, _⟩ :=
       Opens.isBasis_iff_nbhd.mp T.isBasis (Opens.mem_top (q a).val)
-    dsimp only [s]
-    rw [value_sectionOfLocallyParallel]
-    simpa only [Subtype.coe_eta, T.transport_self, Equiv.refl_apply] using
-      hg B hB (q a) haB a haB
-  · intro t ht
-    apply T.section_ext_of_dense q hd
-    intro a ha
-    exact (ht a).trans (by
-      obtain ⟨B, hB, haB, _⟩ :=
-        Opens.isBasis_iff_nbhd.mp T.isBasis (Opens.mem_top (q a).val)
-      dsimp only [s]
-      rw [value_sectionOfLocallyParallel]
-      simpa only [Subtype.coe_eta, T.transport_self, Equiv.refl_apply] using
-        (hg B hB (q a) haB a haB).symm)
+    calc
+      T.value s (q a) (by trivial) = g (q a) :=
+        T.value_sectionOfLocallyParallel _ _ _ _
+      _ = f a := by
+        simpa only [T.transport_self, Equiv.refl_apply] using hg B hB (q a) haB a haB
+  refine ⟨s, hs, ?_⟩
+  intro t ht
+  apply T.section_ext_of_dense q hd
+  intro a ha
+  exact (ht a).trans (hs a).symm
 
 end Mei.DenseBasisTransport
