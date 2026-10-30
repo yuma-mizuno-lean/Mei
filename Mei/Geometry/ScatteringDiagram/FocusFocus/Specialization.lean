@@ -6,6 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.ScatteringDiagram.FocusFocus.Evaluation
+public import Mei.RingTheory.Node.ExponentMap
 
 /-!
 # Coefficient specialization of decorated focus-focus rays
@@ -18,7 +19,7 @@ endpoints on some crossing-height exceptions. No injectivity or characteristic
 assumption is imposed on the coefficients or the smoothing parameter.
 
 We use the existing exhaustive binomial enumeration `slabBrokenLineEquiv`,
-`NodeAlgebra.exponentCorrespondence_transfer_ne_zero_iff` and Mathlib's
+`NodeAlgebra.exponentCorrespondenceMap`, transfer naturality and Mathlib's
 coefficient homomorphism `AddMonoidAlgebra.mapRingHom`. The geometric and slab
 conventions follow Gross–Siebert, *An Invitation to Toric Degenerations*,
 §2.2–2.3 (arXiv:0808.2749v2), and Gross–Hacking–Siebert, *Theta functions on
@@ -36,17 +37,39 @@ variable {R S T : Type*} [CommRing R] [CommRing S] [CommRing T]
 
 namespace SlabBrokenLine
 
+open scoped AlgebraMonoidAlgebra in
 private theorem map_transfer (φ : R →+* S) (β : SlabBrokenLine t c n b Q) :
     mapRingHom (ℤ × ℤ) φ β.decoration =
       ((exponentCorrespondence (single 0 (φ t) + single 1 (φ t))).transfer
         ⟨((n.natAbs : ℤ), b), by simp⟩ β.degree
         ⟨single (n.natAbs, b) (φ c), single_mem_grade _ _⟩ : S[ℤ × ℤ]) := by
-  obtain ⟨j, _, he, _⟩ := (exponentCorrespondence_transfer_ne_zero_iff
-    t c n.natAbs b 1 (by decide) β.degree).mp β.transfer_ne_zero
-  rw [decoration_def, he]
-  rw [exponentCorrespondence_transfer_binomial t c n.natAbs b 1 (by decide) j,
-    exponentCorrespondence_transfer_binomial (φ t) (φ c) n.natAbs b 1 (by decide) j]
-  simp
+  let := φ.toAlgebra
+  have hφ : algebraMap R S = φ := RingHom.algebraMap_toAlgebra φ
+  have h := (exponentCorrespondenceMap (S := S) (single 0 t + single 1 t)).transfer_map_of_injective
+      Function.injective_id
+      ⟨((n.natAbs : ℤ), b), by simp⟩
+      ⟨single (n.natAbs, b) c, single_mem_grade _ _⟩ β.degree
+  -- First forget the restricted scalar action, then normalize the slab parameter.
+  have h' : mapRingHom (ℤ × ℤ) φ β.decoration =
+      ((exponentCorrespondence (algebraMap R[ℤ] S[ℤ] (single 0 t + single 1 t))).transfer
+        ⟨((n.natAbs : ℤ), b), by simp⟩ β.degree
+        ⟨single (n.natAbs, b) (φ c), single_mem_grade _ _⟩ : S[ℤ × ℤ]) := by
+    ext p
+    have hp := congrArg (fun x : S[ℤ × ℤ] => x.coeff p) h.symm
+    simp only [decoration_def, exponentCorrespondenceMap_left,
+      exponentCorrespondenceMap_right, AlgHom.toLinearMap_apply, id_eq,
+      ← AlgHom.coe_toRingHom, toRingHom_mapAlgHom, AlgHom.toRingHom_eq_coe,
+      Algebra.toRingHom_ofId, hφ, mapRingHom_single, GradedCorrespondence.transfer_apply,
+      GradedCorrespondence.restrictScalars_right,
+      GradedCorrespondence.restrictScalars_liftLeft_apply, LinearMap.restrictScalars_apply,
+      DirectSum.coe_decompose_restrictScalars, coeff_mapRingHom] at hp ⊢
+    convert hp using 1
+    congr 6
+  refine h'.trans ?_
+  exact congrArg (fun a : S[ℤ] =>
+    ((exponentCorrespondence a).transfer ⟨((n.natAbs : ℤ), b), by simp⟩ β.degree
+      ⟨single (n.natAbs, b) (φ c), single_mem_grade _ _⟩ : S[ℤ × ℤ]))
+    (by simp only [AddMonoidAlgebra.algebraMap_def, hφ, map_add, mapRingHom_single])
 
 /-- Specialize a crossing ray when its entire output decoration survives.
 The geometric ray and its developed incoming germ are retained verbatim. -/
@@ -205,7 +228,8 @@ theorem map_slabWeightedEvaluation (φ : R →+* S) (t c : R) (n b : ℤ) (Q : �
 
 /-- Incoming proper rays specialize coefficientwise, including when the
 specialization kills the incoming coefficient. -/
-theorem map_incomingSlabWeightedEvaluation (φ : R →+* S) (c : R) (n b : ℤ)
+theorem map_incomingSlabWeightedEvaluation {R S : Type*} [Semiring R] [Semiring S]
+    (φ : R →+* S) (c : R) (n b : ℤ)
     (Q : ℝ × ℝ) :
     mapRingHom (ℤ × ℤ) φ (incomingSlabWeightedEvaluation c n b Q) =
       incomingSlabWeightedEvaluation (φ c) n b Q := by
