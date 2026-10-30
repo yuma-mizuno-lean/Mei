@@ -143,8 +143,8 @@ theorem homogeneousFactor_germLabel_eq_one_of_notMem (n : N)
     (hP : ∀ P : (C (d.degree n).toNat).walls, θ ∉ (P : Set V)) :
     d.homogeneousFactor ℒ (D.germLabel θ hθ) n = 1 := by
   have hg : CompletedGroup.projection (d.degree n).toNat (D.germLabel θ hθ) = 1 := by
-    rw [projection_germLabel, KSComplex.localLabel_of_notMem _ θ (hθ _) hP]
-    rfl
+    rw [projection_germLabel, KSComplex.localLabel_of_notMem _ θ (hθ _) hP,
+      d.groupTower_obj_one ℒ]
   rw [PositiveDegrees.homogeneousFactor_def,
     d.logComponent_eq_zero_of_projection_eq_one ℒ (Int.self_le_toNat _) hg,
     ZeroMemClass.coe_zero, PositiveDegrees.expToCompletion_zero]

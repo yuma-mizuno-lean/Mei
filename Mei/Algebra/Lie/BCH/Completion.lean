@@ -67,6 +67,11 @@ def groupTower : ℕᵒᵖ ⥤ GrpCat where
       congrArg (fun h => h.bchGroupMap)
         (d.truncationMap_comp ℒ (leOfHom g.unop) (leOfHom f.unop)).symm
 
+/-- The identity in a categorical tower object is the identity of the concrete
+BCH quotient at the same cutoff. -/
+theorem groupTower_obj_one (k : ℕ) :
+    (1 : (d.groupTower ℒ).obj (op k)) = (1 : d.truncatedGroup ℒ k) := (rfl)
+
 /-- Tower transitions are induced by the Lie quotient transitions. -/
 @[simp]
 theorem groupTower_map_hom {k l : ℕᵒᵖ} (f : k ⟶ l) :
