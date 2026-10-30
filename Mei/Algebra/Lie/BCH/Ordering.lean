@@ -11,7 +11,7 @@ public import Mei.Algebra.BigOperators.Group.List.Exchange
 /-!
 # Ordering finite products in completed BCH groups
 
-Let `g : F → Ĝ` assign to each factor an element of the completed BCH group of a positively
+Let `g : F → G` assign to each factor an element of the completed BCH group of a positively
 graded Lie algebra lying in the degree filtration term of order `deg x`. At order `k`,
 factors with `deg x > k` project to `1`, and two factors with `deg x + deg y > k` commute
 by `commutator_degreeFiltration_le`. So when ordering a finite product at order `k`, only
