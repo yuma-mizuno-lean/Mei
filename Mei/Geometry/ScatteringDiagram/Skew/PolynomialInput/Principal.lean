@@ -361,6 +361,7 @@ theorem principalLift_letter (α : I.Letter) :
 
 /-- The letter of `p_{i,s}` lifts to principal degree `s`, the coordinate sum in the basis
 `(ε_i)` of `N'_uf`. -/
+@[simp]
 theorem degree_principalLift_letter (α : I.Letter) :
     (I.principalDatum.principalPositiveDegrees
         I.principalBasis.unfrozenBasis.positiveDegrees).degree
@@ -370,6 +371,7 @@ theorem degree_principalLift_letter (α : I.Letter) :
   simp [Finsupp.single_apply]
 
 /-- The lift of every letter is a nonzero allowed principal degree. -/
+@[simp]
 theorem principalLift_letter_mem (α : I.Letter) :
     I.principalLift (PositiveDegrees.letter I.letterExponent α) ∈
       (I.principalDatum.principalPositiveDegrees
@@ -382,6 +384,7 @@ theorem principalLift_letter_mem (α : I.Letter) :
   exact fun j => by simp [Finsupp.single_apply, apply_ite]
 
 /-- The lift of a letter is nonzero. -/
+@[simp]
 theorem principalLift_letter_ne_zero (α : I.Letter) :
     I.principalLift (PositiveDegrees.letter I.letterExponent α) ≠ 0 := fun h => by
   have hd := I.degree_principalLift_letter α
