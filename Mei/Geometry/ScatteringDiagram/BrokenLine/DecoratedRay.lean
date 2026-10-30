@@ -94,6 +94,12 @@ def decoration (r : DecoratedAdmissibleRay ℳ T p₀ a velocity f c ε P W S C 
     (j : Fin (n + 1)) : M :=
   homogeneousHistoryStage ℳ T r.1.val j a
 
+/-- The decoration on each segment is its whole propagated homogeneous component. -/
+@[simp low]
+theorem decoration_def (r : DecoratedAdmissibleRay ℳ T p₀ a velocity f c ε P W S C Q)
+    (j : Fin (n + 1)) :
+    r.decoration j = homogeneousHistoryStage ℳ T r.1.val j a := (rfl)
+
 /-- The incoming decoration is exactly the given input. -/
 @[simp]
 theorem decoration_last (r : DecoratedAdmissibleRay ℳ T p₀ a velocity f c ε P W S C Q) :

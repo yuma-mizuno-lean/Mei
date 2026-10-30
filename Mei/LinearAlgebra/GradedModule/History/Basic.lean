@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mathlib.Algebra.DirectSum.Decomposition
+public import TauCeti.Algebra.DirectSum.Internal
 
 /-!
 # Finite homogeneous propagation histories
@@ -134,5 +134,38 @@ theorem homogeneousHistoryStage_mem {n : ℕ}
     homogeneousHistoryStage ℳ T p j.castSucc a ∈ ℳ (p j) := by
   rw [homogeneousHistoryStage_castSucc_apply]
   exact Subtype.property _
+
+section Regrading
+
+variable {N κ : Type*} [AddCommMonoid N] [Module R N] [DecidableEq κ]
+  (𝓝 : κ → Submodule R N) [DirectSum.Decomposition 𝓝]
+  (r : M →ₗ[R] N) (σ : ι → κ)
+  (hr : ∀ i x, x ∈ ℳ i → r x ∈ 𝓝 (σ i))
+
+include hr
+
+/-- Along an injective map of degrees, an intertwining coefficient map sends
+each whole homogeneous history to the history with the reindexed degrees. -/
+theorem map_homogeneousHistory_of_injective (hσ : Function.Injective σ) {n : ℕ}
+    (T : Fin n → Module.End R M) (U : Fin n → Module.End R N)
+    (hT : ∀ j, r.comp (T j) = (U j).comp r) (p : Fin n → ι) (a : M) :
+    r (homogeneousHistory ℳ T p a) = homogeneousHistory 𝓝 U (σ ∘ p) (r a) := by
+  induction n with
+  | zero => simp
+  | succ n ih =>
+    simp only [homogeneousHistory_succ_apply]
+    have hcomm := LinearMap.congr_fun (hT 0)
+      (homogeneousHistory ℳ (fun j : Fin n => T j.succ) (fun j => p j.succ) a)
+    simp only [LinearMap.comp_apply] at hcomm
+    calc
+      _ = (DirectSum.decompose 𝓝
+          (r (T 0 (homogeneousHistory ℳ (fun j : Fin n => T j.succ)
+            (fun j => p j.succ) a))) (σ (p 0)) : N) :=
+        DirectSum.map_decompose_shift ℳ 𝓝 r.toAddMonoidHom σ hσ hr _ _
+      _ = _ := by
+        rw [hcomm, ih (fun j => T j.succ) (fun j => U j.succ) (fun j => hT j.succ)]
+        rfl
+
+end Regrading
 
 end Mei

@@ -157,7 +157,7 @@ theorem cutoffDecoratedEvaluation_cylinder [Finite J] :
   classical
   let := Fintype.ofFinite Lifted
   let := Fintype.ofFinite Projected
-  rw [cutoffDecoratedEvaluation_eq_sum_decoration, cutoffDecoratedEvaluation_eq_sum_decoration]
+  rw [cutoffDecoratedEvaluation_def, cutoffDecoratedEvaluation_def]
   exact Fintype.sum_equiv
     (cutoffDecoratedRayCylinderEquiv ℳ v w W S C Q d U b g h sign A k)
     _ _ (fun r =>
