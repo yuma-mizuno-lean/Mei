@@ -78,6 +78,7 @@ private theorem sum_bends_truncate (β : FiniteAffineRay V P) (t : ℝ)
 
 /-- On the retained half-line, cutting translates time and preserves every
 point of the original path, including the new endpoint. -/
+@[simp]
 theorem truncate_apply (β : FiniteAffineRay V P) (t : ℝ) {s : ℝ} (hs : s ≤ 0) :
     β.truncate t s = β (s + t) := by
   classical
@@ -108,6 +109,7 @@ theorem truncate_apply (β : FiniteAffineRay V P) (t : ℝ) {s : ℝ} (hs : s �
 
 /-- Directions on the retained half-line are the original incoming directions
 at the translated parameters. -/
+@[simp]
 theorem directionAt_truncate (β : FiniteAffineRay V P) (t : ℝ) {s : ℝ} (hs : s ≤ 0) :
     (β.truncate t).directionAt s = β.directionAt (s + t) := by
   classical
@@ -160,6 +162,7 @@ theorem truncate_zero (β : FiniteAffineRay V P) : β.truncate 0 = β := by
 
 /-- Cutting twice in the retained half-line is the same as cutting once at the
 sum of the two parameters. -/
+@[simp]
 theorem truncate_truncate (β : FiniteAffineRay V P) (t : ℝ) {s : ℝ} (hs : s ≤ 0) :
     (β.truncate t).truncate s = β.truncate (s + t) := by
   apply FiniteAffineRay.ext
@@ -173,6 +176,7 @@ theorem truncate_truncate (β : FiniteAffineRay V P) (t : ℝ) {s : ℝ} (hs : s
 
 /-- Source admission of the incoming tail is preserved in both directions.
 The source is an arbitrary subset of the affine space. -/
+@[simp↓]
 theorem eventually_truncate_mem_iff (β : FiniteAffineRay V P) (t : ℝ) (C : Set P) :
     (∀ᶠ s : ℝ in atBot, β.truncate t s ∈ C) ↔ ∀ᶠ s : ℝ in atBot, β s ∈ C := by
   simp only [eventually_atBot]
