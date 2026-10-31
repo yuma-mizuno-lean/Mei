@@ -101,7 +101,7 @@ theorem exists_eventually_lastChange_incoming_generic
   simp only [z, sweepProjection_apply, smul_smul, ← div_eq_mul_inv] at hgeneric
   rw [← hx] at hgeneric
   refine ⟨hgeneric, ?_⟩
-  obtain ⟨s, hw, hs, ha, hpath⟩ := hcut ⟨r, hq⟩
+  obtain ⟨s, hw, hs, ha, _, hpath⟩ := hcut ⟨r, hq⟩
   exact ⟨s, hw, hs, by rw [hs]; exact hlt, ha, hpath⟩
 
 end Mei.CutoffDecoratedRay
