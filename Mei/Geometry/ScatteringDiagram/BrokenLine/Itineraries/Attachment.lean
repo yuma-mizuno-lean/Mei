@@ -182,8 +182,47 @@ theorem finalDegree_finalEncounterEmbedding (r : A) :
   rw [finalEncounterEmbedding_apply, finalDegree_def]
   rfl
 
-/-- The attached final weight is the whole selected component of the incoming
-weight, without splitting it into monomials. -/
+/-- Attachment retains the complete incoming path by the canonical finite-ray
+extension, including all old bend increments and the incoming tail. -/
+@[simp]
+theorem ray_finalEncounterEmbedding (r : A) :
+    (finalEncounterEmbedding w p q Y s t hs ht hq hqp hnormal htrans hsign hheight hinc
+      hW₁ hW₂ hS₁ hS₂ r).realization.2.ray =
+      r.val.realization.2.ray.extend s t (v q) hs ht := by
+  rw [← DecoratedAdmissibleRay.ray_finalEncounterEmbedding
+    (T w) p q Y s t hs ht (f w) (c w) (P w) hnormal htrans hheight hinc hW₁ hW₂ hS₁ hS₂
+    ⟨r.val.realization, by
+      simpa only [← finalDegree_def, decoration_eq, DecoratedAdmissibleRay.decoration_zero]
+        using r.property⟩]
+  rw [finalEncounterEmbedding_apply]
+  simp only [attach, eq_mpr_eq_cast, eq_mp_eq_cast, cast_cast]
+  -- The list and history transports change only the realization's indices.
+  congr 1 <;> simp only [List.get_cons_eq_cons, ← Function.comp_def, Fin.comp_cons,
+    DecoratedAdmissibleRay.history_finalEncounterEmbedding, cast_heq]
+
+/-- The endpoint parameter remains zero, the new encounter occurs at `-t`,
+and all earlier encounter times are translated by `s + t`. -/
+@[simp↓] -- Rewrite the packaged parameters before `List.ofFn_succ` expands them.
+theorem parameter_finalEncounterEmbedding (r : A) :
+    List.ofFn (finalEncounterEmbedding w p q Y s t hs ht hq hqp hnormal htrans hsign
+      hheight hinc hW₁ hW₂ hS₁ hS₂ r).realization.2.parameter =
+      0 :: -t :: List.ofFn (fun j => r.val.realization.2.parameter j.succ - (s + t)) := by
+  rw [← List.ofFn_cons, ← List.ofFn_cons,
+    ← DecoratedAdmissibleRay.parameter_finalEncounterEmbedding
+      (T w) p q Y s t hs ht (f w) (c w) (P w) hnormal htrans hheight hinc hW₁ hW₂ hS₁ hS₂
+      ⟨r.val.realization, by
+        simpa only [← finalDegree_def, decoration_eq, DecoratedAdmissibleRay.decoration_zero]
+          using r.property⟩]
+  rw [finalEncounterEmbedding_apply]
+  simp only [attach, eq_mpr_eq_cast, eq_mp_eq_cast, cast_cast]
+  apply congrArg List.ofFn
+  -- As for the ray, the index transports preserve the underlying parameter data.
+  funext i
+  congr 1 <;> simp only [List.get_cons_eq_cons, ← Function.comp_def, Fin.comp_cons,
+    DecoratedAdmissibleRay.history_finalEncounterEmbedding, cast_heq]
+
+/-- The attached final weight is the whole degree-`q` component after applying
+the wall action `T w` to the incoming weight, without splitting it into monomials. -/
 @[simp↓]
 theorem decoration_finalEncounterEmbedding (r : A) :
     (finalEncounterEmbedding w p q Y s t hs ht hq hqp hnormal htrans hsign hheight hinc
