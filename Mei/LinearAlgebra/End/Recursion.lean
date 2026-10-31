@@ -18,8 +18,8 @@ of the nilpotency bound, and natural under intertwining linear maps.
 The proofs work over a semiring on an additive commutative monoid: neither
 subtraction nor additive cancellation is needed. In particular, the comparison
 of two independently established recursions applies to semimodule coefficients.
-Filtration-raising operators on finite module quotients supply ring instances
-in `Mei.LinearAlgebra.ModuleFiltration.Recursion`.
+The filtration-raising operators on finite module quotients in
+`Mei.LinearAlgebra.ModuleFiltration.Recursion` are an application of this over rings.
 -/
 
 public section
@@ -39,17 +39,20 @@ theorem finiteRecursion_apply (r : ℕ) (a : M) :
     U.finiteRecursion r a = ∑ j ∈ Finset.range r, (U ^ j) a := by
   simp only [finiteRecursion, LinearMap.sum_apply]
 
+/-- A nilpotency bound makes the solution operator satisfy `1 + U * S = S`. -/
+theorem finiteRecursion_eq_one_add_mul {r : ℕ} (hU : U ^ r = 0) :
+    U.finiteRecursion r = 1 + U * U.finiteRecursion r := by
+  rw [finiteRecursion, add_comm 1, ← geom_sum_succ, Finset.sum_range_succ, hU, add_zero]
+
 /-- A nilpotency bound makes the finite geometric sum solve the recursion. -/
 theorem finiteRecursion_eq_add {r : ℕ} (hU : U ^ r = 0) (a : M) :
-    U.finiteRecursion r a = a + U (U.finiteRecursion r a) := by
-  have h := congrArg (fun f : Module.End R M => f a)
-    (geom_sum_succ (x := U) (n := r))
-  simpa [Finset.sum_range_succ, hU, finiteRecursion, add_comm] using h
+    U.finiteRecursion r a = a + U (U.finiteRecursion r a) :=
+  LinearMap.congr_fun (U.finiteRecursion_eq_one_add_mul hU) a
 
-/-- Any solution equals the finite geometric sum. Unrolling the recursion
-retains a remainder `U ^ n x`, so no cancellation hypothesis is needed. -/
+/-- Any solution equals the finite geometric sum. -/
 theorem eq_finiteRecursion_of_eq_add {r : ℕ} (hU : U ^ r = 0)
     {a x : M} (hx : x = a + U x) : x = U.finiteRecursion r a := by
+  -- Unrolling retains the remainder `U ^ n x`, so no cancellation is needed.
   have expand (n : ℕ) :
       x = (∑ j ∈ Finset.range n, (U ^ j) a) + (U ^ n) x := by
     induction n with

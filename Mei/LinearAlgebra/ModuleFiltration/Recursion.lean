@@ -6,6 +6,7 @@ Authors: Codex
 module
 
 public import Mei.LinearAlgebra.End.Recursion
+public import Mei.LinearAlgebra.ModuleFiltration.Map
 public import Mei.LinearAlgebra.ModuleFiltration.Nilpotent
 
 /-!
@@ -15,6 +16,8 @@ A filtration-raising endomorphism gives a nilpotent recursion at each order.
 The shared semimodule theorem `Module.End.eq_finiteRecursion_of_eq_add` identifies
 every solution with the sum of its iterates. The solution operators commute with
 all quotient transitions and hence assemble into a linear map on the completion.
+That map solves the recursion for the endomorphism of the completion induced by
+`completionMap`, and every solution of that recursion equals it.
 
 The original module need not be complete or separated, and its endomorphism need
 not be nilpotent. This supplies the algebraic uniqueness step for comparing
@@ -32,6 +35,11 @@ variable {R M : Type*} [Ring R] [AddCommGroup M] [Module R M]
 /-- The linear solution operator on the order-`k` quotient. -/
 def quotientRecursion (k : ℕ) : Module.End R (F.quotient k) :=
   (F.quotientRaisingEnd f hf k).finiteRecursion (k + 1)
+
+/-- The quotient solution operator is the generic finite recursion operator. -/
+theorem quotientRecursion_eq_finiteRecursion (k : ℕ) :
+    F.quotientRecursion f hf k = (F.quotientRaisingEnd f hf k).finiteRecursion (k + 1) :=
+  (rfl)
 
 /-- The quotient solution is the finite sum retaining powers zero through `k`. -/
 theorem quotientRecursion_apply (k : ℕ) (a : F.quotient k) :
@@ -95,5 +103,27 @@ theorem eq_completionRecursion_of_eq_add {a x : F.completion}
   intro k
   rw [projection_completionRecursion]
   exact F.eq_quotientRecursion_of_eq_add f hf k (hx k)
+
+/-- The completed solution solves the recursion for the endomorphism of the
+completion induced by `f`. -/
+theorem completionRecursion_eq_add_completionMap (a : F.completion) :
+    F.completionRecursion f hf a = a + F.completionMap F f id monotone_id
+      (fun k _ hx => F.antitone (Nat.le_succ (k + 1)) (hf (k + 1) hx))
+      (F.completionRecursion f hf a) := by
+  apply F.completion_ext
+  intro k
+  simpa only [map_add, projection_completionMap, id_eq, quotientRaisingEnd_eq_mapQ] using
+    F.completionRecursion_eq_add f hf k a
+
+/-- Every solution of the recursion for the endomorphism of the completion
+induced by `f` is the completed solution. -/
+theorem eq_completionRecursion_of_eq_add_completionMap {a x : F.completion}
+    (hx : x = a + F.completionMap F f id monotone_id
+      (fun k _ hx => F.antitone (Nat.le_succ (k + 1)) (hf (k + 1) hx)) x) :
+    x = F.completionRecursion f hf a := by
+  apply F.eq_completionRecursion_of_eq_add f hf
+  intro k
+  simpa only [map_add, projection_completionMap, id_eq, quotientRaisingEnd_eq_mapQ] using
+    congrArg (F.projection k) hx
 
 end Mei.ModuleFiltration
