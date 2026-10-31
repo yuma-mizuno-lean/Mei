@@ -7,7 +7,6 @@ module
 
 public import Mei.Geometry.ScatteringDiagram.ModuleProbe.Extension
 public import Mei.Geometry.Convex.Polyhedron.Path.Germ
-public import Mei.Geometry.Affine.IncomingGerm
 
 /-!
 # Probe values on generic incoming germs
