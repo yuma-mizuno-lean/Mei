@@ -86,30 +86,32 @@ theorem exists_ray_admissibilityArrangement
   have hfinite (j : ι) : {t : ℝ | Q + t • v ∈ W j}.Finite := by
     apply Set.Subsingleton.finite
     intro s hs t ht
-    by_contra hst
-    have hd := (affineSpan ℝ (W j)).vsub_mem_direction
-      (subset_affineSpan ℝ _ hs) (subset_affineSpan ℝ _ ht)
-    have he : (Q + s • v) -ᵥ (Q + t • v) = (s - t) • v := by
-      simp only [vsub_eq_sub]
-      module
-    rw [he] at hd
-    exact htrans j hs ((Submodule.smul_mem_iff _ (sub_ne_zero.mpr hst)).mp hd)
+    apply (affineSpan ℝ (W j)).subsingleton_preimage_lineMap
+      (x := Q) (y := v +ᵥ Q) (by simpa using htrans j hs)
+    · rw [mem_preimage, AffineMap.lineMap_vadd_apply]
+      exact subset_affineSpan ℝ (W j)
+        (by simpa only [mem_ofPred_eq, vadd_eq_add, add_comm] using hs)
+    · rw [mem_preimage, AffineMap.lineMap_vadd_apply]
+      exact subset_affineSpan ℝ (W j)
+        (by simpa only [mem_ofPred_eq, vadd_eq_add, add_comm] using ht)
   have hfar : ∀ᶠ T : ℝ in atTop, ∀ j, Q + T • v ∉ W j := by
     apply eventually_all.mpr
     intro j
     obtain ⟨b, hb⟩ := (hfinite j).bddAbove
     filter_upwards [eventually_gt_atTop b] with T hT hmem
     exact (not_le_of_gt hT) (hb hmem)
-  filter_upwards [hfar, eventually_gt_atTop (0 : ℝ)] with T hT hT0
+  filter_upwards [hfar] with T hT
   let x : WallComplement W := ⟨Q + T • v, hT⟩
   have hline (s : ℝ) : AffineMap.lineMap x.val y.val s = Q + ((1 - s) * T) • v := by
     simp only [x, y, AffineMap.lineMap_apply_module']
     module
-  refine ⟨x, rfl, ⟨?_, fun s _ => by rw [hline]; exact hregular _⟩⟩
-  rintro j ⟨s, _, hs⟩ hd
-  rw [hline] at hs
-  have he : y.val - x.val = (-T) • v := by dsimp [x, y]; module
-  rw [he] at hd
-  exact htrans j hs ((Submodule.smul_mem_iff _ (by linarith : -T ≠ 0)).mp hd)
+  refine ⟨x, rfl, (convex_segment x.val y.val).admissibleSegment_of_disjoint_singularSupport
+    ?_ (left_mem_segment ℝ _ _) (right_mem_segment ℝ _ _)⟩
+  apply Set.disjoint_left.mpr
+  intro z hz
+  rw [segment_eq_image_lineMap] at hz
+  obtain ⟨s, _, rfl⟩ := hz
+  rw [hline]
+  exact hregular _
 
 end Mei.Convex
