@@ -40,13 +40,9 @@ theorem eventually_exists_crossings_eq_empty_of_mul_pos
     ∀ᶠ ε : ℝ in 𝓝[>] 0,
       ∃ x y : WallComplement W, x.val = θ + ε • v ∧ y.val = θ + ε • w ∧
         crossings x y = ∅ := by
-  have hc : Continuous (fun ε : ℝ => (θ + ε • v, θ + ε • w)) := by fun_prop
-  have ht : Tendsto (fun ε : ℝ => (θ + ε • v, θ + ε • w))
-      (𝓝 0) (𝓝 (θ, θ)) := by
-    simpa using hc.tendsto 0
-  filter_upwards [(ht.eventually
-    (eventually_forall_lineMap_notMem_of_mul_pos hclosed ν hν θ)).filter_mono
-      nhdsWithin_le_nhds, self_mem_nhdsWithin] with ε hε hεpos
+  filter_upwards [eventually_add_smul_pair θ v w
+    (eventually_forall_lineMap_notMem_of_mul_pos hclosed ν hν θ),
+    self_mem_nhdsWithin] with ε hε hεpos
   have hεpos : 0 < ε := hεpos
   have hnot := hε (fun j hj => by
     simpa only [add_sub_cancel_left, map_smul, smul_eq_mul,

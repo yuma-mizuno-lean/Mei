@@ -58,6 +58,30 @@ open Filter Topology
 variable {V ι : Type*} [AddCommGroup V] [Module ℝ V] [TopologicalSpace V]
   [IsTopologicalAddGroup V] [ContinuousSMul ℝ V] [Finite ι] {W : ι → Set V}
 
+/-- Near a point, segments avoid every member of a finite family of closed
+sets that does not contain that point. -/
+theorem eventually_forall_lineMap_notMem_of_notMem
+    (hclosed : ∀ j, IsClosed (W j)) (θ : V) :
+    ∀ᶠ z : V × V in 𝓝 (θ, θ), ∀ j, θ ∉ W j →
+      ∀ t ∈ Icc (0 : ℝ) 1, AffineMap.lineMap z.1 z.2 t ∉ W j := by
+  apply eventually_all.mpr
+  intro j
+  apply eventually_imp_distrib_left.mpr
+  intro hj
+  exact (hclosed j).isOpen_setOf_lineMap_notMem.mem_nhds
+    (by simpa using fun (t : ℝ) (_ht : t ∈ Icc (0 : ℝ) 1) => hj)
+
+/-- An eventual property of endpoint pairs near a diagonal point holds along
+two affine germs at every sufficiently small positive parameter. -/
+theorem eventually_add_smul_pair (θ v w : V) {p : V × V → Prop}
+    (hp : ∀ᶠ z in 𝓝 (θ, θ), p z) :
+    ∀ᶠ ε : ℝ in 𝓝[>] 0, p (θ + ε • v, θ + ε • w) := by
+  have hc : Continuous (fun ε : ℝ => (θ + ε • v, θ + ε • w)) := by fun_prop
+  have ht : Tendsto (fun ε : ℝ => (θ + ε • v, θ + ε • w))
+      (𝓝 0) (𝓝 (θ, θ)) := by
+    simpa using hc.tendsto 0
+  exact (ht.eventually hp).filter_mono nhdsWithin_le_nhds
+
 /-- Near a point, matching strict normal sides at its incident supports suffice
 for the entire connecting segment to miss all supports. -/
 theorem eventually_forall_lineMap_notMem_of_mul_pos
@@ -66,15 +90,7 @@ theorem eventually_forall_lineMap_notMem_of_mul_pos
     ∀ᶠ z : V × V in 𝓝 (θ, θ),
       (∀ j, θ ∈ W j → 0 < ν j (z.1 - θ) * ν j (z.2 - θ)) →
       ∀ j t, t ∈ Icc (0 : ℝ) 1 → AffineMap.lineMap z.1 z.2 t ∉ W j := by
-  have hmiss : ∀ᶠ z : V × V in 𝓝 (θ, θ), ∀ j, θ ∉ W j →
-      ∀ t ∈ Icc (0 : ℝ) 1, AffineMap.lineMap z.1 z.2 t ∉ W j := by
-    apply eventually_all.mpr
-    intro j
-    apply eventually_imp_distrib_left.mpr
-    intro hj
-    exact (hclosed j).isOpen_setOf_lineMap_notMem.mem_nhds
-      (by simpa using fun (t : ℝ) (_ht : t ∈ Icc (0 : ℝ) 1) => hj)
-  filter_upwards [hmiss] with z hz hsign j t ht
+  filter_upwards [eventually_forall_lineMap_notMem_of_notMem hclosed θ] with z hz hsign j t ht
   by_cases hj : θ ∈ W j
   · intro hmem
     have hzero : ν j (AffineMap.lineMap z.1 z.2 t - θ) = 0 :=
