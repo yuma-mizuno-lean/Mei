@@ -36,50 +36,6 @@ namespace Mei
 variable {R M ι : Type*} [Semiring R] [AddCommMonoid M] [Module R M]
   [DecidableEq ι] (ℳ : ι → Submodule R M) [DirectSum.Decomposition ℳ]
 
-/-- A homogeneous history is the ordered product of its one-step component maps.
-The step with index zero acts last. -/
-theorem homogeneousHistory_eq_prod {n : ℕ}
-    (T : Fin n → Module.End R M) (p : Fin n → ι) :
-    homogeneousHistory ℳ T p =
-      (List.ofFn fun j => homogeneousHistory ℳ (fun _ : Fin 1 => T j)
-        (fun _ => p j)).prod := by
-  induction n with
-  | zero => ext a; simp
-  | succ n ih =>
-    ext a
-    rw [List.ofFn_succ, List.prod_cons, Module.End.mul_apply, ← ih]
-    simp only [homogeneousHistory_succ_apply, homogeneousHistory_zero,
-      LinearMap.id_apply]
-
-/-- Concatenating degree histories composes their component propagation maps.
-The right block acts first, in accordance with the backward indexing. -/
-@[simp]
-theorem homogeneousHistory_append {n m : ℕ}
-    (T : Fin n → Module.End R M) (U : Fin m → Module.End R M)
-    (p : Fin n → ι) (q : Fin m → ι) :
-    homogeneousHistory ℳ (Fin.append T U) (Fin.append p q) =
-      (homogeneousHistory ℳ T p).comp (homogeneousHistory ℳ U q) := by
-  rw [homogeneousHistory_eq_prod, homogeneousHistory_eq_prod ℳ T p,
-    homogeneousHistory_eq_prod ℳ U q]
-  have he : (fun j => homogeneousHistory ℳ (fun _ : Fin 1 => Fin.append T U j)
-      (fun _ => Fin.append p q j)) =
-      Fin.append (fun j => homogeneousHistory ℳ (fun _ : Fin 1 => T j) (fun _ => p j))
-        (fun j => homogeneousHistory ℳ (fun _ : Fin 1 => U j) (fun _ => q j)) := by
-    funext j
-    exact Fin.addCases (by intro i; simp) (by intro i; simp) j
-  rw [he, List.ofFn_fin_append, List.prod_append]
-  rfl
-
-/-- A nonzero concatenated history forces the entire first block to survive,
-even when the later block kills other intermediate decorations. -/
-theorem homogeneousHistory_right_ne_zero {n m : ℕ}
-    (T : Fin n → Module.End R M) (U : Fin m → Module.End R M)
-    (p : Fin n → ι) (q : Fin m → ι) {a : M}
-    (ha : homogeneousHistory ℳ (Fin.append T U) (Fin.append p q) a ≠ 0) :
-    homogeneousHistory ℳ U q a ≠ 0 := by
-  rw [homogeneousHistory_append, LinearMap.comp_apply] at ha
-  exact fun hz => ha (by rw [hz, map_zero])
-
 variable {n m : ℕ} (T : Fin n → Module.End R M) (U : Fin m → Module.End R M) (a : M)
 
 /-- Surviving histories of two consecutive blocks are exactly pairs of
