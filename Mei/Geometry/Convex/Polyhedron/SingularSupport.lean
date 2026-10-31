@@ -54,6 +54,15 @@ theorem mem_singularSupport {W : ι → Set V} {x : V} :
   simp only [singularSupport, Set.mem_union, Set.mem_iUnion, Set.mem_ofPred_eq,
     Set.mem_inter_iff, exists_prop]
 
+/-- Members through a point outside singular support have the same affine span. -/
+theorem affineSpan_eq_of_notMem_singularSupport {W : ι → Set V} {i j : ι} {x : V}
+    (hx : x ∉ singularSupport W) (hi : x ∈ W i) (hj : x ∈ W j) :
+    affineSpan ℝ (W i) = affineSpan ℝ (W j) := by
+  apply AffineSubspace.ext_of_direction_eq _
+    ⟨x, subset_affineSpan ℝ _ hi, subset_affineSpan ℝ _ hj⟩
+  by_contra hne
+  exact hx (mem_singularSupport.mpr (Or.inr ⟨i, j, hne, hi, hj⟩))
+
 /-- The singular support of finitely many closed walls is closed in finite
 dimension. No polyhedral or codimension hypothesis is needed. -/
 theorem isClosed_singularSupport [FiniteDimensional ℝ V] [Finite ι]

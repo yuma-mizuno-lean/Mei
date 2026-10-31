@@ -14,10 +14,10 @@ permissions:
 
 jobs:
   publish:
-    uses: yuma-mizuno-lean/TauCetiTools/.github/workflows/retry-ci-status.yml@225ccb1a25e3051edce54faa94fe8f44e0340b34
+    uses: yuma-mizuno-lean/TauCetiTools/.github/workflows/retry-ci-status.yml@80f1df5f160a568f27e453649781ac8da6584be5
     with:
       tools_repository: yuma-mizuno-lean/TauCetiTools
-      tools_ref: 225ccb1a25e3051edce54faa94fe8f44e0340b34
+      tools_ref: 80f1df5f160a568f27e453649781ac8da6584be5
       project_ref: ${{ github.workflow_sha }}
     secrets:
       CI_READ_APP_ID: ${{ secrets.CI_READ_APP_ID }}

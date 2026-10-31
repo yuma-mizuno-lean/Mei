@@ -21,7 +21,7 @@ Restriction from `U` to an open subset `O` is bijective when every point of `U` 
 arbitrarily small preconnected neighborhoods meeting `O` in nonempty preconnected sets. In a
 finite-dimensional real normed space this holds when the points of `U` outside `O` lie in a
 countable family of affine subspaces of codimension at least two; see
-`Mei.Topology.Sheaves.LocallyConstant.FacetDescent`.
+`Mei.Topology.Sheaves.LocallyConstant.FacetDescent.Basic`.
 
 Gluing uses Mathlib's `TopCat.Presheaf.IsSheaf.isSheafUniqueGluing_types`, and connected
 neighborhoods come from `LocallyConnectedSpace.open_connected_basis`.

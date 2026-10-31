@@ -16,12 +16,15 @@ homogeneous degrees preserves every finite-order path product. The comparison
 holds on common admissible vertex lists, including simultaneous crossings of
 repeated or overlapping supports. Consequently the original and split
 presentations are equivalent and give equivalent completed KS diagrams.
+Coefficient change commutes with this splitting, and the transport comparison
+allows coefficient maps that kill active labels.
 
 The proof uses `IndexedWallPresentation.projection_eq_noncommProd_homogeneousPresentation`
 and the crossing-event comparison
 `WallComplement.segmentPathProduct_eq_of_crossingEventProduct_eq`.
-Finite commuting products are regrouped by their original wall indices. This
-is homogeneous splitting of the abelian-ray presentations in
+Finite commuting products are regrouped by their original wall indices.
+Coefficient naturality uses `IndexedWallPresentation.levelPathProduct_mapPathPrefunctor`.
+This is homogeneous splitting of the abelian-ray presentations in
 Gross–Hacking–Keel–Kontsevich, *Canonical bases for cluster algebras*, §1.1
 (arXiv:1411.1394v2).
 -/
@@ -32,7 +35,9 @@ open Set Mei.Convex Mei.Convex.WallComplement
 
 namespace Mei.IndexedWallPresentation
 
-variable {N V R L ι : Type*} [AddCommGroup N]
+universe u
+
+variable {N V R ι : Type*} {L : Type u} [AddCommGroup N]
   [NormedAddCommGroup V] [NormedSpace ℝ V]
   [CommRing R] [Algebra ℚ R] [LieRing L] [LieAlgebra R L]
   [LieAlgebra ℚ L] [IsScalarTower ℚ R L] [DecidableEq N]
@@ -181,4 +186,31 @@ theorem toCompletedDiagram_homogeneousPresentation_equivalent :
   (D.homogeneousPresentation.equivalent_iff_toCompletedDiagram D).mp
     D.homogeneousPresentation_equivalent
 
+section Map
+
+variable {L' : Type u} [LieRing L'] [LieAlgebra R L']
+  [LieAlgebra ℚ L'] [IsScalarTower ℚ R L']
+  {ℳ : N → Submodule R L'} [GradedLieAlgebra ℳ] [IsPositiveGrading d ℳ]
+  [IsAbelianRays d ℳ]
+
+/-- Splitting after coefficient change maps the original transport on every
+common admissible vertex list. Killed labels and simultaneous crossings are
+allowed; no injectivity or consistency is assumed. -/
+theorem levelPathProduct_homogeneousPresentation_map
+    (f : GradedLieHom (PositiveDegreeMap.id d) ℒ ℳ) (k : ℕ)
+    {x y : WallComplement (fun j : D.active k => (D.wall j).support)}
+    {x' y' : WallComplement
+      (fun a : (D.map f).homogeneousPresentation.active k =>
+        ((D.map f).homogeneousPresentation.wall a).support)}
+    (p : AdmissiblePLPath x y) (q : AdmissiblePLPath x' y')
+    (hpq : p.vertices.map WallComplement.val = q.vertices.map WallComplement.val) :
+    (D.map f).homogeneousPresentation.levelPathProduct k q =
+      (f.truncatedMap (a := k) k (by simp)).bchGroupMap (D.levelPathProduct k p) := by
+  let r := (D.mapPathPrefunctor f k).mapPath p
+  have hrq : r.vertices.map WallComplement.val = q.vertices.map WallComplement.val :=
+    (D.vertices_mapPathPrefunctor f k p).trans hpq
+  exact ((D.map f).levelPathProduct_homogeneousPresentation k r q hrq).symm.trans
+    (D.levelPathProduct_mapPathPrefunctor f k p)
+
+end Map
 end Mei.IndexedWallPresentation

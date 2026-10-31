@@ -1,12 +1,12 @@
 /-
 Copyright (c) 2026 Mei contributors. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Claude
+Authors: Claude, Codex
 -/
 module
 
 public import Mei.Geometry.ScatteringDiagram.KS.Basic
-public import Mei.Algebra.Lie.Graded.Ray
+public import Mei.Algebra.Lie.BCH.Ray.Basic
 
 /-!
 # Label groups of KS walls are supported-ray groups
@@ -170,6 +170,23 @@ theorem label_mem_bchSubgroup_rayLieSubalgebra [Module.Free ℤ N] (P : C.walls)
     {w : SupportedRay d} (hw : D.degree P ∈ w.rayDegrees) :
     D.label P ∈ (rayLieSubalgebra (d.truncatedGrading ℒ k) w).bchSubgroup :=
   D.bchSubgroup_orthogonalLieSubalgebra_eq P hw ▸ D.label_mem P
+
+/-- Equal nonidentity wall labels have coorientations with the same sign on
+every vector, even when the walls belong to different complexes. -/
+theorem normal_pos_iff_of_label_eq [Module.Free ℤ N]
+    {C' : FinitePolyhedralComplex h} (E : KSComplex s d ℒ C' k)
+    (P : C.walls) (Q : C'.walls) (hne : D.label P ≠ 1)
+    (heq : D.label P = E.label Q) (v : V) :
+    0 < s.normal (D.degree P) v ↔ 0 < s.normal (E.degree Q) v := by
+  let : HasUniqueDiv N := .of_isTorsionFree ℤ N
+  have hray : D.wallRay P = E.wallRay Q :=
+    d.eq_of_mem_bchSubgroup_rayLieSubalgebra (d.truncatedGrading ℒ k) hne
+      (D.label_mem_bchSubgroup_rayLieSubalgebra P (D.degree_mem_wallRay P))
+      (heq ▸ E.label_mem_bchSubgroup_rayLieSubalgebra Q (E.degree_mem_wallRay Q))
+  obtain ⟨a, ha, hDa⟩ := s.exists_normal_eq_smul_of_mem_rayDegrees (D.degree_mem_wallRay P)
+  obtain ⟨b, hb, hEb⟩ := s.exists_normal_eq_smul_of_mem_rayDegrees (E.degree_mem_wallRay Q)
+  simp only [hDa, hEb, hray, LinearMap.smul_apply, smul_eq_mul,
+    mul_pos_iff_of_pos_left ha, mul_pos_iff_of_pos_left hb]
 
 /-- With abelian rays, any two elements of the label group of a wall commute. -/
 theorem commute_of_mem_bchSubgroup [Module.Free ℤ N] [IsAbelianRays d ℒ]

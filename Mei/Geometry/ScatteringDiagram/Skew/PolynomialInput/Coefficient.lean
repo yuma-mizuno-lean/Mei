@@ -8,6 +8,7 @@ module
 public import Mei.Geometry.ScatteringDiagram.Skew.PolynomialInput.Pairing
 public import Mei.Geometry.ScatteringDiagram.Skew.Coefficient.Completion
 public import Mei.Algebra.Lie.Logarithmic.Pairing.Specialization
+public import Mei.Algebra.MonoidAlgebra.Coefficient
 
 /-!
 # Principal coefficient specialization of polynomial inputs
@@ -99,24 +100,13 @@ theorem coefficientWeight_apply (q : I.coefficientMonoid) :
     I.coefficientWeight R (.ofAdd q) =
       MvPolynomial.monomial (I.coefficientMultiplicity q) (1 : R) := (rfl)
 
-private def coefficientTwist : R[I.coefficientMonoid] →ₐ[R]
-    (MvPolynomial I.Letter R)[I.coefficientMonoid] :=
-  lift R _ _ (singleHom.comp
-    ((I.coefficientWeight R).prod (MonoidHom.id _)))
-
-omit [DecidableEq ι] in
-private theorem coefficientTwist_single (q : I.coefficientMonoid) (r : R) :
-    I.coefficientTwist R (single q r) =
-      single q (MvPolynomial.C r * I.coefficientWeight R (.ofAdd q)) := by
-  simp [coefficientTwist, lift_single, Algebra.smul_def, singleHom, single_mul_single]
-
 /-- Substitute `p_{i,s} ↦ a_{i,s} t_i^s` in the native coefficient monoid algebras.
 The spatial character is transported by the normalized principal lattice map. -/
 def principalCoefficientMap : R[I.coefficientMonoid] →ₐ[R] (MvPolynomial I.Letter R)[𝒬] :=
   (AlgHom.restrictScalars R (mapDomainAlgHom (MvPolynomial I.Letter R) (MvPolynomial I.Letter R)
     ((AddSubmonoid.inclusion I.map_coefficientMonoid_le).comp
       (I.principalFiniteAlphabetLift.toAddMonoidHom.addSubmonoidMap I.coefficientMonoid)))).comp
-    (I.coefficientTwist R)
+    (AddMonoidAlgebra.coefficientTwist R (I.coefficientWeight R))
 
 /-- The substitution retains the entire scalar and independent-variable weight
 before distinct source exponents can merge under the principal lift. -/
@@ -125,7 +115,7 @@ theorem principalCoefficientMap_single (q : I.coefficientMonoid) (r : R) :
     I.principalCoefficientMap R (single q r) =
       single (I.principalCoefficientExponent q)
         (MvPolynomial.C r * MvPolynomial.monomial (I.coefficientMultiplicity q) 1) := by
-  simp only [principalCoefficientMap, AlgHom.comp_apply, coefficientTwist_single,
+  simp only [principalCoefficientMap, AlgHom.comp_apply, AddMonoidAlgebra.coefficientTwist_single,
     AlgHom.restrictScalars_apply, mapDomainAlgHom_apply, mapDomain_single, coefficientWeight_apply]
   congr 1
   apply Subtype.ext
@@ -178,7 +168,8 @@ theorem filtration_ideal_le_comap_principalCoefficientMap (k : ℕ) :
   simpa only [I.principalFiniteAlphabetLift_modulus, principalCoefficientMap] using
     LogarithmicVectorField.filtration_ideal_le_comap_coefficientDegreeMap
       d I.coefficientMonoid (Algebra.ofId R (MvPolynomial I.Letter R))
-      (I.coefficientWeight R) (I.coefficientTwist R) (I.coefficientTwist_single R)
+      (I.coefficientWeight R) (AddMonoidAlgebra.coefficientTwist R (I.coefficientWeight R))
+      (AddMonoidAlgebra.coefficientTwist_single R (I.coefficientWeight R))
       I.principalFiniteAlphabetLift I.map_coefficientMonoid_le k
 
 end Semiring
@@ -269,11 +260,13 @@ private theorem principalCoefficientMap_eq_comp_coefficientTwist
       (AlgHom.restrictScalars R (mapDomainAlgHom 𝒮 𝒮
         ((AddSubmonoid.inclusion hQ).comp
           ((I.principalTropicalPairing 𝒮).degreeMap.toAddMonoidHom.addSubmonoidMap
-            I.coefficientMonoid)))).comp (I.coefficientTwist R) := by
+            I.coefficientMonoid)))).comp
+        (AddMonoidAlgebra.coefficientTwist R (I.coefficientWeight R)) := by
   refine AddMonoidAlgebra.algHom_ext ?_ (Subsingleton.elim _ _)
   intro q
-  simp only [principalCoefficientMap_single, AlgHom.comp_apply, coefficientTwist_single,
-    AlgHom.restrictScalars_apply, mapDomainAlgHom_apply, mapDomain_single,
+  simp only [principalCoefficientMap_single, AlgHom.comp_apply,
+    AddMonoidAlgebra.coefficientTwist_single, AlgHom.restrictScalars_apply,
+    mapDomainAlgHom_apply, mapDomain_single,
     coefficientWeight_apply]
   congr 1
   apply Subtype.ext
@@ -302,7 +295,8 @@ theorem principalCoefficientMap_coefficientAction
     (I.principalDatum.principalPositiveDegrees_le_coefficientMonoid
       I.principalBasis.unfrozenBasis.positiveDegrees)
     hQ
-    (I.coefficientTwist R) (I.coefficientTwist_single R)
+    (AddMonoidAlgebra.coefficientTwist R (I.coefficientWeight R))
+    (AddMonoidAlgebra.coefficientTwist_single R (I.coefficientWeight R))
     (fun m _ _ => by simp) x a
   simpa only [← I.principalCoefficientMap_eq_comp_coefficientTwist R hQ,
     ← GradedLieHom.coe_toLieHom, principalCoefficientGradedLieHom] using h

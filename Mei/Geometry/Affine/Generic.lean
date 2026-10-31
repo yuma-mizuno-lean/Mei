@@ -16,8 +16,11 @@ public import Mathlib.Topology.Baire.CompleteMetrizable
 The common complement of countably many proper affine subspaces of a
 finite-dimensional real normed space is dense and is a Gδ set. For a finite
 family the complement is open. These statements allow arbitrarily small
-perturbations avoiding all the prescribed affine exceptions. Relatively, finitely many
-affine subspaces covering all points of an affine subspace `A` near one of its points
+perturbations avoiding all the prescribed affine exceptions. Countably many affine
+subspaces not containing `A` can also be avoided in any nonempty relatively open subset
+of `A`, using `AffineIsometryEquiv.constVSub` to pass to its direction space.
+Relatively, finitely many affine subspaces covering all points of an affine subspace `A`
+near one of its points
 include one whose direction contains that of `A`.
 
 For affine obstacles of codimension at least two, a freely chosen intermediate
@@ -129,6 +132,42 @@ theorem exists_mem_open_genericLocus {ι : Sort*} [Countable ι]
     ∃ x ∈ U, ∀ i, x ∉ A i := by
   obtain ⟨x, hxU, hxA⟩ := (dense_genericLocus A hA).inter_open_nonempty U hU hne
   exact ⟨x, hxU, hxA⟩
+
+/-- A nonempty relatively open set in an affine subspace contains a point
+outside any countable family of affine subspaces none of which contains it. -/
+theorem exists_mem_open_avoid_of_not_le {ι : Sort*} [Countable ι]
+    (A : AffineSubspace ℝ V)
+    (E : ι → AffineSubspace ℝ V)
+    (hE : ∀ j, ¬ A ≤ E j)
+    {U : Set A} (hU : IsOpen U) (hne : U.Nonempty) :
+    ∃ x ∈ U, ∀ j, (x : V) ∉ E j := by
+  obtain ⟨p, hp⟩ := hne
+  let : Nonempty A := ⟨p⟩
+  let e := (AffineIsometryEquiv.constVSub ℝ p).symm
+  let f := A.subtype.comp e.toAffineEquiv.toAffineMap
+  have hproper (j : ι) : (E j).comap f ≠ ⊤ := by
+    intro hj
+    have hle : A ≤ E j := by
+      intro y hy
+      have hv : e.symm ⟨y, hy⟩ ∈ (E j).comap f := by rw [hj]; trivial
+      simpa only [mem_comap, f, AffineMap.comp_apply, coe_subtype,
+        AffineEquiv.coe_toAffineMap, AffineIsometryEquiv.coe_toAffineEquiv,
+        e.apply_symm_apply] using hv
+    exact hE j hle
+  obtain ⟨v, hv, havoid⟩ := exists_mem_open_genericLocus
+    (fun j => (E j).comap f) hproper
+    (hU.preimage e.continuous) ⟨e.symm p, by simpa using hp⟩
+  exact ⟨e v, hv, havoid⟩
+
+/-- A nonempty relatively open set in an affine subspace contains a point
+outside any countable family of affine subspaces of smaller dimension. -/
+theorem exists_mem_open_avoid_of_finrank_lt {ι : Sort*} [Countable ι]
+    (A : AffineSubspace ℝ V) (E : ι → AffineSubspace ℝ V)
+    (hE : ∀ j, Module.finrank ℝ (E j).direction < Module.finrank ℝ A.direction)
+    {U : Set A} (hU : IsOpen U) (hne : U.Nonempty) :
+    ∃ x ∈ U, ∀ j, (x : V) ∉ E j :=
+  A.exists_mem_open_avoid_of_not_le E
+    (fun j hle => (not_le_of_gt (hE j)) (Submodule.finrank_mono (direction_le hle))) hU hne
 
 /-- Generic points can be chosen arbitrarily close to any point. -/
 theorem exists_dist_lt_genericLocus {ι : Sort*} [Countable ι]

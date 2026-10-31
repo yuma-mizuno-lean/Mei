@@ -172,6 +172,17 @@ theorem slabBranchPath_apply (n b q : ℤ) (Q : ℝ × ℝ) (s : ℝ) :
     smul_eq_mul, mul_comm, zero_mul]
   apply Prod.ext <;> dsimp <;> ring
 
+/-- The closed crossing path at a terminal slab point is the incoming affine
+half-line. Its outgoing degree has disappeared because the final segment has
+length zero. This includes unchanged-direction crossings. -/
+@[simp↓]
+theorem slabBranchPath_terminal (n b q : ℤ) (v s : ℝ) (hs : s ≤ 0) :
+    slabBranchPath n b q (0, v) s = (-(s * n), v - s * b) := by
+  rw [slabBranchPath_apply]
+  simp only [zero_div, zero_sub, max_eq_left (neg_nonneg.mpr hs)]
+  congr 1
+  ring
+
 /-- On its valid endpoint domain the extended path is the existing finite affine ray. -/
 theorem slabBranchPath_eq_slabBranch (n b q : ℤ) (Q : ℝ × ℝ)
     (hQ : Q.1 / (n : ℝ) < 0) :

@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.ScatteringDiagram.KS.IndexedWall
+public import Mei.Geometry.ScatteringDiagram.KS.IndexedWall.Map
 
 /-!
 # Splitting indexed walls into homogeneous labels
@@ -16,10 +16,13 @@ support and primitive coorientation, and its label is the exponential of the
 corresponding logarithmic coefficient. Only finitely many split walls survive any
 cutoff. At that cutoff the active split supports cover exactly the active original
 supports. With abelian rays, multiplying the active factors over each original
-index recovers its label, so splitting retains the local wall data.
+index recovers its label, so splitting retains the local wall data. Splitting
+commutes with degree-preserving coefficient maps under the canonical
+identification of indices, without injectivity or abelian-ray assumptions.
 
 The construction uses `PositiveDegrees.homogeneousFactor`, its support bounds and
-`PositiveDegrees.projection_eq_noncommProd_homogeneousFactor`. It implements the
+`PositiveDegrees.projection_eq_noncommProd_homogeneousFactor`. Coefficient
+naturality uses `GradedLieHom.completedMap_homogeneousFactor`. It implements the
 homogeneous splitting of abelian-ray labels in Gross–Hacking–Keel–Kontsevich,
 *Canonical bases for cluster algebras*, §1.1 (arXiv:1411.1394v2).
 -/
@@ -30,7 +33,9 @@ open Set Mei.Convex
 
 namespace Mei
 
-variable {N V R L : Type*} [AddCommGroup N]
+universe u
+
+variable {N V R : Type*} {L : Type u} [AddCommGroup N]
   [NormedAddCommGroup V] [NormedSpace ℝ V]
   [CommRing R] [Algebra ℚ R] [LieRing L] [LieAlgebra R L]
   [LieAlgebra ℚ L] [IsScalarTower ℚ R L] [DecidableEq N]
@@ -218,4 +223,57 @@ theorem iUnion_active_support_homogeneousPresentation (k : ℕ) :
     simpa only [homogeneousPresentation_wall, IndexedWall.homogeneousFactor_support] using hx
 
 end IndexedWallPresentation
+
+section Map
+
+variable {L' : Type u} [LieRing L'] [LieAlgebra R L']
+  [LieAlgebra ℚ L'] [IsScalarTower ℚ R L']
+  {ℳ : N → Submodule R L'} [GradedLieAlgebra ℳ] [IsPositiveGrading d ℳ]
+
+/-- Changing coefficients commutes with splitting an indexed wall into its
+homogeneous logarithmic factors, including factors killed by the map. -/
+@[simp]
+theorem IndexedWall.map_homogeneousFactor (W : IndexedWall s d ℒ)
+    (f : GradedLieHom (PositiveDegreeMap.id d) ℒ ℳ) (n : N) :
+    (W.homogeneousFactor n).map f = (W.map f).homogeneousFactor n := by
+  apply IndexedWall.ext <;> simp
+
+namespace IndexedWallPresentation
+
+variable {ι : Type*} (D : IndexedWallPresentation s d ℒ ι)
+  (f : GradedLieHom (PositiveDegreeMap.id d) ℒ ℳ)
+
+/-- Coefficient change preserves the original wall index and its actual ray
+degree. This identifies the two index types used when mapping and splitting. -/
+def homogeneousIndexEquiv : D.HomogeneousIndex ≃ (D.map f).HomogeneousIndex :=
+  Equiv.sigmaCongrRight fun j => Set.equivOfEq (by simp)
+
+@[simp]
+theorem homogeneousIndexEquiv_fst (a : D.HomogeneousIndex) :
+    (D.homogeneousIndexEquiv f a).1 = a.1 := (rfl)
+
+@[simp]
+theorem homogeneousIndexEquiv_degree (a : D.HomogeneousIndex) :
+    (D.homogeneousIndexEquiv f a).2.val = a.2.val := (rfl)
+
+@[simp]
+theorem homogeneousIndexEquiv_symm_fst (a : (D.map f).HomogeneousIndex) :
+    ((D.homogeneousIndexEquiv f).symm a).1 = a.1 := (rfl)
+
+@[simp]
+theorem homogeneousIndexEquiv_symm_degree (a : (D.map f).HomogeneousIndex) :
+    ((D.homogeneousIndexEquiv f).symm a).2.val = a.2.val := (rfl)
+
+/-- Splitting and changing coefficients give exactly the same indexed walls
+under the canonical identification of their indices. No abelian-ray or
+injectivity hypothesis is needed. -/
+@[simp↓]
+theorem homogeneousPresentation_map_wall (a : D.HomogeneousIndex) :
+    (D.map f).homogeneousPresentation.wall (D.homogeneousIndexEquiv f a) =
+      (D.homogeneousPresentation.wall a).map f := by
+  simp
+
+end IndexedWallPresentation
+
+end Map
 end Mei

@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.Affine.FiniteRay.Hyperplane
-public import Mathlib.Algebra.MonoidAlgebra.Defs
+public import Mathlib.Algebra.MonoidAlgebra.MapDomain
 
 /-!
 # Incoming-chamber rays for the focus-focus slab
@@ -18,14 +18,16 @@ The same argument includes the vertical rays of the invariant monomials.
 
 For a nonzero incoming monomial of nonzero spatial degree, the evaluation fiber
 has exactly one decorated ray and its weighted evaluation is that monomial.
-Zero coefficients give empty fibers. The zero spatial degree is excluded from
-these proper rays: the unit is instead a constant incoming section.
+Zero coefficients give empty fibers. Changing coefficients while preserving
+vanishing preserves the actual rays and their incoming tails. The zero spatial
+degree is excluded from these proper rays: the unit is instead a constant incoming section.
 
 The two incoming Laurent coordinates both use normal exponent `|n|`, whereas
 the spatial horizontal exponent is the signed integer `n`. These conventions
 agree with `FocusFocus.SlabBrokenLine` in the opposite chamber. We use
 `FiniteAffineRay.eq_straight_of_nonneg_hyperplane_time` and
-`FiniteAffineRay.eq_straight_of_parallel`. The slab interpretation follows
+`FiniteAffineRay.eq_straight_of_parallel`. Coefficient comparisons use Mathlib’s
+`equivOfSubsingletonOfSubsingleton`. The slab interpretation follows
 Gross–Siebert, *An Invitation to Toric Degenerations*, §2.2–2.3
 (arXiv:0808.2749v2), and Gross–Hacking–Siebert, *Theta functions on varieties
 with effective anti-canonical class*, §3 (arXiv:1601.07081v4).
@@ -138,6 +140,14 @@ theorem isProperMap (β : IncomingSlabBrokenLine c n b Q) (a : ℝ) :
   have hb : (b : ℝ) = 0 := congrArg Prod.snd he
   exact Prod.ext (Int.cast_eq_zero.mp hn) (Int.cast_eq_zero.mp hb)
 
+/-- Changing an incoming coefficient without changing whether it vanishes
+preserves the whole geometric evaluation fiber. -/
+def coefficientEquiv {S : Type*} [Zero S] {d : S} (hcd : c = 0 ↔ d = 0) :
+    IncomingSlabBrokenLine c n b Q ≃ IncomingSlabBrokenLine d n b Q :=
+  equivOfSubsingletonOfSubsingleton
+    (fun β => { β with coefficient_ne_zero := hcd.not.mp β.coefficient_ne_zero })
+    (fun β => { β with coefficient_ne_zero := hcd.not.mpr β.coefficient_ne_zero })
+
 end IncomingSlabBrokenLine
 
 /-- The incoming monomial has one unbent line when its coefficient and spatial
@@ -167,6 +177,24 @@ theorem nonempty_incomingSlabBrokenLine_iff :
 instance : Fintype (IncomingSlabBrokenLine c n b Q) := Fintype.ofFinite _
 
 end Rays
+
+/-- In the incoming chamber, the proper-ray decoration sum together with the
+constant section in zero spatial degree recovers any additive decoration. -/
+theorem incomingSlab_sum_add_constant {R : Type*} [AddCommMonoid R]
+    (c : R) (n b : ℤ) (Q : ℝ × ℝ)
+    (hoff : Q.1 ≠ 0) (hside : 0 ≤ Q.1 * (n : ℝ)) :
+    (∑ _β : IncomingSlabBrokenLine c n b Q, c) +
+        (if (n, b) = 0 then c else 0) = c := by
+  classical
+  by_cases hv : (n, b) = 0
+  · have : IsEmpty (IncomingSlabBrokenLine c n b Q) :=
+      ⟨fun β => β.exponent_ne_zero hv⟩
+    simp [hv]
+  · by_cases hc : c = 0
+    · simp [hc]
+    · let β := incomingSlabBrokenLine c n b Q hc hv hoff hside
+      let : Unique (IncomingSlabBrokenLine c n b Q) := ⟨⟨β⟩, fun _ => Subsingleton.elim _ _⟩
+      simp [hv]
 
 variable {R : Type*} [Semiring R] (c : R) (n b : ℤ) (Q : ℝ × ℝ)
 
@@ -201,5 +229,16 @@ theorem incomingSlabWeightedEvaluation_eq :
   · have : IsEmpty (IncomingSlabBrokenLine c n b Q) :=
       ⟨fun β => h ⟨β.exponent_ne_zero, β.off_slab, β.incoming_side⟩⟩
     simp [incomingSlabWeightedEvaluation]
+
+open AddMonoidAlgebra in
+/-- Incoming proper rays specialize coefficientwise, including when the
+specialization kills the incoming coefficient. -/
+theorem map_incomingSlabWeightedEvaluation {R S : Type*} [Semiring R] [Semiring S]
+    (φ : R →+* S) (c : R) (n b : ℤ)
+    (Q : ℝ × ℝ) :
+    mapRingHom (ℤ × ℤ) φ (incomingSlabWeightedEvaluation c n b Q) =
+      incomingSlabWeightedEvaluation (φ c) n b Q := by
+  simp only [incomingSlabWeightedEvaluation_eq]
+  split_ifs <;> simp
 
 end Mei.FocusFocus

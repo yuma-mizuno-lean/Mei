@@ -86,6 +86,17 @@ theorem projection_homogeneousFactor (g : d.completedBCHGroup ℒ) (n : N) (k : 
       BCHGroup.exp ((d.degreeIdeal ℒ k).mkQ (d.logComponent ℒ g n)) :=
   d.projection_expToCompletion ℒ k _
 
+/-- A homogeneous factor survives a cutoff exactly when its degree is retained
+and its logarithmic coefficient is nonzero. -/
+@[simp↓]
+theorem projection_homogeneousFactor_ne_one_iff (g : d.completedBCHGroup ℒ) (n : N)
+    (k : ℕ) :
+    CompletedGroup.projection k (d.homogeneousFactor ℒ g n) ≠ 1 ↔
+      d.degree n ≤ k ∧ d.logComponent ℒ g n ≠ 0 := by
+  rw [homogeneousFactor_def, ne_eq,
+    d.projection_expToCompletion_eq_one_iff ℒ (d.logComponent ℒ g n).property]
+  simp only [not_or, not_lt, Submodule.coe_eq_zero, and_comm]
+
 /-- The coefficients of a completed exponential are the coefficients of its coordinate. -/
 @[simp]
 theorem logComponent_completedBCHExp (x : d.completedLie ℒ) (n : N) :
@@ -104,6 +115,16 @@ theorem logComponent_eq_decompose (g : d.completedBCHGroup ℒ) {n : N} {k : ℕ
     ← LieIdeal.completionProjection_apply, completionProjection_completedBCHExp_symm, ← hx,
     LieIdeal.mkQ_apply]
   exact d.quotientComponent_mk ℒ F _ k n hn x
+
+/-- A finite projection determines every logarithmic coefficient it retains. -/
+theorem logComponent_eq_of_projection_eq {g g' : d.completedBCHGroup ℒ}
+    {n : N} {k : ℕ} (hn : d.degree n ≤ k)
+    (hg : CompletedGroup.projection k g = CompletedGroup.projection k g') :
+    d.logComponent ℒ g n = d.logComponent ℒ g' n := by
+  obtain ⟨x, hx⟩ := (d.degreeIdeal ℒ k).surjective_mkQ
+    (BCHGroup.log (L := d.truncatedLie ℒ k) (CompletedGroup.projection k g))
+  rw [d.logComponent_eq_decompose ℒ g hn hx,
+    d.logComponent_eq_decompose ℒ g' hn (hx.trans (congrArg BCHGroup.log hg))]
 
 /-- A trivial finite projection has zero logarithmic coefficient in every
 retained degree. -/
@@ -169,6 +190,14 @@ theorem logComponent_eq_zero_of_notMem_monoid (g : d.completedBCHGroup ℒ) {n :
   apply Subtype.ext
   rw [ZeroMemClass.coe_zero]
   exact (Submodule.eq_bot_iff _).mp hb _ (d.logComponent ℒ g n).property
+
+/-- A nonzero logarithmic coefficient has a nonzero degree in the positive monoid. -/
+theorem mem_monoid_and_ne_zero_of_logComponent_ne_zero {g : d.completedBCHGroup ℒ}
+    {n : N} (hn : d.logComponent ℒ g n ≠ 0) : n ∈ d.monoid ∧ n ≠ 0 := by
+  by_contra hp
+  have hb : ℒ n = ⊥ := IsPositiveGrading.eq_bot (d := d) n (by tauto)
+  exact hn (Subtype.ext ((Submodule.eq_bot_iff _).mp hb _
+    (d.logComponent ℒ g n).property))
 
 /-- A homogeneous factor above the cutoff projects trivially. -/
 theorem projection_homogeneousFactor_of_lt (g : d.completedBCHGroup ℒ) {n : N} {k : ℕ}

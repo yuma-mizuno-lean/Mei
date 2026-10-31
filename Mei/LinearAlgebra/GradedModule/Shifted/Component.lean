@@ -65,6 +65,18 @@ theorem shiftedQuotientComponent_mk (q : Γ) (k : ℕ) (h : d.degree (q - p) ≤
   rw [coe_shiftedPieceToAmbient, coe_decompose_shiftedGrading]
   congr 2 <;> abel_nf
 
+/-- An included homogeneous coefficient has zero quotient component in every other degree. -/
+@[simp↓]
+theorem shiftedQuotientComponent_mk_shiftedInclusion_of_ne (q : Γ) (k : ℕ)
+    (h : d.degree (q - p) ≤ k) (n : d.monoid) (hnq : p + n ≠ q)
+    (x : ℳ (p + n)) :
+    d.shiftedQuotientComponent ℳ p q k h
+      (Submodule.Quotient.mk (shiftedInclusion ℳ d.monoid p n x)) = 0 := by
+  rw [shiftedQuotientComponent_mk]
+  apply Subtype.ext
+  simp only [coe_shiftedInclusion, ZeroMemClass.coe_zero]
+  exact DirectSum.decompose_of_mem_ne ℳ x.property hnq
+
 /-- Lowering the cutoff leaves every retained homogeneous component unchanged. -/
 @[simp]
 theorem shiftedQuotientComponent_transition (q : Γ) {k l : ℕ} (hkl : k ≤ l)
@@ -133,6 +145,24 @@ theorem projection_eq_sum_shiftedHomogeneousComponent (k : ℕ)
   intro n hn
   simpa only [e, completionEquivPi_apply] using
     d.coe_completionComponent_shiftedGrading ℳ p n.val x
+
+/-- A finite shifted coefficient is the sum of its retained homogeneous components.
+The sum runs over actual degrees of the positive monoid. -/
+theorem quotient_eq_sum_shiftedQuotientComponent (k : ℕ)
+    (x : (d.shiftedFiltration ℳ p).quotient k) :
+    x = Submodule.Quotient.mk
+      (∑ n ∈ (d.finite_cutoff k).toFinset.attach,
+        shiftedInclusion ℳ d.monoid p ⟨n.val, (d.mem_cutoff.mp
+          ((d.finite_cutoff k).mem_toFinset.mp n.property)).1⟩
+          (d.shiftedQuotientComponent ℳ p (p + n.val) k
+            (by simpa only [add_sub_cancel_left] using
+              (d.mem_cutoff.mp ((d.finite_cutoff k).mem_toFinset.mp n.property)).2) x)) := by
+  classical
+  obtain ⟨m, rfl⟩ := (d.shiftedFiltration ℳ p).submodule (k + 1) |>.mkQ_surjective x
+  have he := d.projection_eq_sum_shiftedHomogeneousComponent ℳ p k
+    ((d.shiftedFiltration ℳ p).of m)
+  simpa only [ModuleFiltration.projection_of, Submodule.mkQ_apply, shiftedQuotientComponent_mk,
+    shiftedHomogeneousComponent_of] using he
 
 /-- Completed coefficients have no components outside the shifted support. -/
 @[simp]

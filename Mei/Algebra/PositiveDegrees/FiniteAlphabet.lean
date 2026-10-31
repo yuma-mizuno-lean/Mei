@@ -176,6 +176,20 @@ theorem degree_map_eq_sum {x : M × (E → ℤ)} (hx : x.1 = ∑ α, x.2 α • 
     e.degree (τ x) = ∑ α, x.2 α * e.degree (τ (letter m α)) := by
   simp [map_eq_sum_letter m τ hx, map_sum]
 
+/-- A uniform upper bound on the image degrees of letters bounds the degree of
+every allowed alphabet element by that bound times its alphabet degree. -/
+theorem finiteAlphabet_degree_map_le_mul {c : ℤ}
+    (hc : ∀ α, e.degree (τ (letter m α)) ≤ c)
+    {x : M × (E → ℤ)} (hx : x ∈ (finiteAlphabet m).monoid) :
+    e.degree (τ x) ≤ c * (finiteAlphabet m).degree x := by
+  obtain ⟨hpos, hsum⟩ := (mem_finiteAlphabet_monoid m).mp hx
+  rw [degree_map_eq_sum m hsum, finiteAlphabet_degree, Finset.mul_sum]
+  refine Finset.sum_le_sum fun α _ => ?_
+  calc
+    x.2 α * e.degree (τ (letter m α)) ≤ x.2 α * c :=
+      mul_le_mul_of_nonneg_left (hc α) (hpos α)
+    _ = c * x.2 α := mul_comm _ _
+
 variable (hτ : ∀ α, τ (letter m α) ∈ e.monoid) (hτ0 : ∀ α, τ (letter m α) ≠ 0)
 include hτ hτ0
 

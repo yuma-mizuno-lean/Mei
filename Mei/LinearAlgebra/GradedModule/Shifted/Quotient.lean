@@ -67,6 +67,23 @@ theorem map_shiftedGrading_eq_bot {k : ℕ} {n : Γ} (hn : (k : ℤ) < d.degree 
   rw [← LinearMap.le_ker_iff_map, Submodule.ker_mkQ, shiftedFiltration_succ]
   exact d.le_degreeSubmodule _ hn
 
+/-- Nonzero finite shifted homogeneous pieces have degrees in the positive
+cutoff, even when the original ambient shift has negative degree. -/
+theorem mem_cutoff_of_mem_shiftedQuotientGrading_ne_zero
+    {k : ℕ} {n : Γ} {a : (d.shiftedFiltration ℳ p).quotient k}
+    (ha : a ∈ (d.shiftedQuotientGrading ℳ p k).piece n) (hne : a ≠ 0) :
+    n ∈ d.cutoff k := by
+  rw [d.mem_cutoff]
+  constructor
+  · by_contra hn
+    simp only [shiftedQuotientGrading_piece,
+      shiftedGrading_eq_bot ℳ d.monoid p hn, Submodule.map_bot, Submodule.mem_bot] at ha
+    exact hne ha
+  · by_contra hn
+    rw [shiftedQuotientGrading_piece,
+      d.map_shiftedGrading_eq_bot ℳ p (lt_of_not_ge hn), Submodule.mem_bot] at ha
+    exact hne ha
+
 /-- Changing the cutoff preserves the ambient relative degree of every coefficient. -/
 theorem transition_mem_shiftedQuotientGrading {k l : ℕ} (h : k ≤ l) {n : Γ}
     {x : (d.shiftedFiltration ℳ p).quotient l}

@@ -17,7 +17,9 @@ The completed ray subgroup consists of compatible BCH labels whose finite
 logarithms are supported on one primitive ray. Finite quotient maps carry ray
 algebras and their BCH subgroups onto the corresponding lower-order objects.
 A completed label lies on a ray exactly when its logarithmic coefficients vanish off the
-actual ray degrees. Distinct ray subgroups have trivial intersection. Under
+actual ray degrees. Distinct ray subgroups have trivial intersection. A nonidentity
+completed label whose nonidentity projections lie on rays belongs to one unique
+completed ray subgroup, even if those finite rays were chosen independently. Under
 `IsAbelianRays`, labels in one completed ray subgroup commute, so coincident supports
 can be merged
 without choosing an order, including labels indexed by different nonprimitive
@@ -39,6 +41,27 @@ public section
 noncomputable section
 
 namespace Mei.PositiveDegrees
+
+section Nilpotent
+
+variable {N R L : Type*} [AddCommGroup N] [CommRing R]
+  [LieRing L] [LieAlgebra R L] [DecidableEq N]
+  (d : PositiveDegrees N) (ℒ : N → Submodule R L)
+  [SetLike.GradedBracket ℒ ℒ] [DirectSum.Decomposition ℒ]
+  [Algebra ℚ R] [LieAlgebra ℚ L] [IsScalarTower ℚ R L] [LieRing.IsNilpotent L]
+
+/-- A nonidentity BCH label belongs to at most one supported-ray subgroup. -/
+theorem eq_of_mem_bchSubgroup_rayLieSubalgebra [HasUniqueDiv N]
+    {v w : SupportedRay d} {g : BCHGroup L} (hg : g ≠ 1)
+    (hv : g ∈ (rayLieSubalgebra ℒ v).bchSubgroup)
+    (hw : g ∈ (rayLieSubalgebra ℒ w).bchSubgroup) : v = w := by
+  by_contra hne
+  have hz := (disjoint_rayLieSubalgebra ℒ hne).le_bot
+    ⟨(LieSubalgebra.mem_bchSubgroup _ _).mp hv,
+      (LieSubalgebra.mem_bchSubgroup _ _).mp hw⟩
+  exact hg (BCHGroup.log_injective (hz.trans BCHGroup.log_one.symm))
+
+end Nilpotent
 
 variable {N R L : Type*} [AddCommGroup N] [CommRing R]
   [LieRing L] [LieAlgebra R L] [DecidableEq N]
@@ -121,6 +144,55 @@ theorem disjoint_completedRaySubgroup [HasUniqueDiv N] {v w : SupportedRay d} (h
       ⟨(d.mem_completedRaySubgroup ℒ v g).mp hg.1 k,
         (d.mem_completedRaySubgroup ℒ w g).mp hg.2 k⟩
   exact hz.trans (BCHGroup.log_one (L := d.truncatedLie ℒ k)).symm
+
+/-- If every nonidentity finite projection lies on some supported ray, a nonidentity
+completed label lies on one unique supported ray. The ray may initially depend on
+the cutoff; compatibility forces it to stabilize as soon as a projection is nontrivial. -/
+theorem existsUnique_mem_completedRaySubgroup [HasUniqueDiv N]
+    {g : d.completedBCHGroup ℒ} (hg : g ≠ 1)
+    (h : ∀ k, CompletedGroup.projection k g ≠ 1 →
+      ∃ w : SupportedRay d,
+        CompletedGroup.projection k g ∈
+          (rayLieSubalgebra (d.truncatedGrading ℒ k) w).bchSubgroup) :
+    ∃! w : SupportedRay d, g ∈ d.completedRaySubgroup ℒ w := by
+  classical
+  obtain ⟨k, hk⟩ : ∃ k, CompletedGroup.projection k g ≠ 1 := by
+    by_contra! he
+    exact hg (CompletedGroup.ext (fun k => (he k).trans (map_one _).symm))
+  obtain ⟨w, hw⟩ := h k hk
+  have hproj {a b : ℕ} (hab : a ≤ b) :
+      (d.truncationMap ℒ hab).bchGroupMap (CompletedGroup.projection b g) =
+        CompletedGroup.projection a g := CompletedGroup.map_projection a b hab g
+  -- At every higher order the ray is forced by its nonidentity image at order `k`.
+  have hhigh (l : ℕ) (hkl : k ≤ l) :
+      CompletedGroup.projection l g ∈
+        (rayLieSubalgebra (d.truncatedGrading ℒ l) w).bchSubgroup := by
+    have hl : CompletedGroup.projection l g ≠ 1 := by
+      intro he
+      apply hk
+      rw [← hproj hkl, he]
+      exact map_one (d.truncationMap ℒ hkl).bchGroupMap
+    obtain ⟨v, hv⟩ := h l hl
+    have hvk : CompletedGroup.projection k g ∈
+        (rayLieSubalgebra (d.truncatedGrading ℒ k) v).bchSubgroup := by
+      rw [← d.map_bchSubgroup_rayLieSubalgebra ℒ v hkl]
+      exact ⟨_, hv, hproj hkl⟩
+    have hvw : v = w := d.eq_of_mem_bchSubgroup_rayLieSubalgebra (d.truncatedGrading ℒ k) hk hvk hw
+    exact hvw ▸ hv
+  have hmem : g ∈ d.completedRaySubgroup ℒ w := by
+    rw [mem_completedRaySubgroup]
+    intro l
+    by_cases hkl : k ≤ l
+    · exact (LieSubalgebra.mem_bchSubgroup _ _).mp (hhigh l hkl)
+    · have hlk : l ≤ k := by omega
+      have hl : CompletedGroup.projection l g ∈
+          (rayLieSubalgebra (d.truncatedGrading ℒ l) w).bchSubgroup := by
+        rw [← d.map_bchSubgroup_rayLieSubalgebra ℒ w hlk]
+        exact ⟨_, hw, hproj hlk⟩
+      exact (LieSubalgebra.mem_bchSubgroup _ _).mp hl
+  refine ⟨w, hmem, fun v hv => ?_⟩
+  by_contra hne
+  exact hg ((d.disjoint_completedRaySubgroup ℒ hne).le_bot ⟨hv, hmem⟩)
 
 /-- A ray with no actual degree at or below the cutoff has trivial projection there. -/
 theorem projection_eq_one_of_notMem_raysAtOrder {w : SupportedRay d}
