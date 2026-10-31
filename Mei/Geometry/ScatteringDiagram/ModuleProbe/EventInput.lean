@@ -68,33 +68,34 @@ local notation "cutoffRestriction" hkl:max => (WallComplement.restrictPrefunctor
   (Set.inclusion (B.active_mono hkl)))
 
 /-- Each algebraic event input is the actual lower-cutoff probe field at points
-of the initial segment arbitrarily close to that event from the incoming side.
-Only consistency of the base diagram is needed for this identification. -/
+of the initial segment arbitrarily close to that event from the incoming side,
+at any smaller cutoff. Only consistency of the base diagram is needed for this
+identification. -/
 theorem eventually_exists_extendedCoefficientField_eq_eventInput
-    (k : ℕ) (hBc : B.LevelConsistent k)
-    {x y : WallComplement (fun c : B.active (k + 1) => (B.wall c).support)}
+    {k l : ℕ} (hkl : k ≤ l) (hBc : B.LevelConsistent k)
+    {x y : WallComplement (fun c : B.active l => (B.wall c).support)}
     (e : x ⟶ y) (j : Fin (orderedCrossingTimes e).length) :
     let T := (orderedCrossingTimes e).reverse
-    let g := labels (k + 1) e
+    let g := labels l e
     ∀ᶠ t : ℝ in 𝓝[<] T[j.val]'(by simpa only [T, List.length_reverse] using j.isLt),
       t ∈ Ioo (0 : ℝ) 1 ∧
-      ∃ z : WallComplement (fun c : B.active (k + 1) => (B.wall c).support),
+      ∃ z : WallComplement (fun c : B.active l => (B.wall c).support),
         z.val = AffineMap.lineMap x.val y.val t ∧
-        field k hBc ((restriction k).obj z) =
+        field k hBc ((cutoffRestriction hkl).obj z) =
           (A).truncatedBCHAction d ℒ k
-            ((d.truncationMap ℒ (Nat.le_succ k)).bchGroupMap (g.drop (j.val + 1)).prod)
-            (field k hBc ((restriction k).obj x)) := by
+            ((d.truncationMap ℒ hkl).bchGroupMap (g.drop (j.val + 1)).prod)
+            (field k hBc ((cutoffRestriction hkl).obj x)) := by
   dsimp only
   filter_upwards [eventually_exists_segmentPathProduct_eq_drop
-    (fun c : B.active (k + 1) => h.realCharacter (B.wall c).normal)
-    (fun c => CompletedGroup.projection (k + 1) (B.wall c).label)
-    (B.activeLabels_commute (k + 1)) e j] with t ht
+    (fun c : B.active l => h.realCharacter (B.wall c).normal)
+    (fun c => CompletedGroup.projection l (B.wall c).label)
+    (B.activeLabels_commute l) e j] with t ht
   obtain ⟨ht, z, a, hz, ha⟩ := ht
   refine ⟨ht, z, hz, ?_⟩
   rw [extendedCoefficientField_eq_transport d ℳ p ℒ H h h' D B k
-      hBc ((restriction k).obj x) ((restriction k).obj z),
-    B.levelTransport_eq_levelPathProduct hBc ((restriction k).mapPath a.toPath),
-    ← B.truncation_levelPathProduct (Nat.le_succ k) a.toPath,
+      hBc ((cutoffRestriction hkl).obj x) ((cutoffRestriction hkl).obj z),
+    B.levelTransport_eq_levelPathProduct hBc ((cutoffRestriction hkl).mapPath a.toPath),
+    ← B.truncation_levelPathProduct hkl a.toPath,
     B.levelPathProduct_eq_wallPathProduct _ _ (B.activeLabels_commute _),
     Quiver.Path.wallPathProduct_toPath, ha]
   -- The tower projection carries the same group structure as the truncated BCH group.
@@ -152,7 +153,7 @@ theorem exists_shiftedQuotientComponent_extendedCoefficientField_eq_add_sum_even
       simpa only [g, List.length_map, List.length_reverse] using j.isLt
     have hjT : j.val < T.length := by simpa only [T, List.length_reverse] using hj
     have hevent := eventually_exists_extendedCoefficientField_eq_eventInput
-      d ℳ p ℒ H h h' D B k (hBc.mono (Nat.le_succ k)) e ⟨j.val, hj⟩
+      d ℳ p ℒ H h h' D B (Nat.le_succ k) (hBc.mono (Nat.le_succ k)) e ⟨j.val, hj⟩
     have hnear : ∀ᶠ t : ℝ in 𝓝[<] T[j.val], T[j.val] - ε < t :=
       (eventually_gt_nhds (by linarith : T[j.val] - ε < T[j.val])).filter_mono
         nhdsWithin_le_nhds
@@ -194,24 +195,11 @@ theorem eventually_exists_extendedCoefficientField_eq_drop
             (𝓝[>] 0) (𝓝 ((orderedCrossingTimes e).reverse[j.val] - 0)))
     · filter_upwards [self_mem_nhdsWithin] with ε hε
       exact sub_lt_self _ hε
-  filter_upwards [htendsto.eventually (eventually_exists_segmentPathProduct_eq_drop
-    (fun c : B.active l => h.realCharacter
-      (DirectedWall.normal (DirectedDiagram.wall B c)))
-    (fun c => CompletedGroup.projection l
-      (DirectedWall.label (DirectedDiagram.wall B c)))
-    (B.activeLabels_commute l) e
+  filter_upwards [htendsto.eventually (eventually_exists_extendedCoefficientField_eq_eventInput
+    d ℳ p ℒ H h h' D B hkl hBc e
     ⟨j.val, by simpa only [List.length_reverse] using j.isLt⟩)] with ε hε
-  obtain ⟨_, z, e₁, hz, he⟩ := hε
-  refine ⟨z, hz, ?_⟩
-  have hprod : B.levelPathProduct l e₁.toPath = ((labels l e).drop (j.val + 1)).prod := by
-    rw [B.levelPathProduct_eq_wallPathProduct _ _ (B.activeLabels_commute _),
-      Quiver.Path.wallPathProduct_toPath, he]
-    -- Tower projections and Lie truncations use the same BCH group structure.
-    rfl
-  rw [extendedCoefficientField_eq_transport d ℳ p ℒ H h h' D B k hBc
-    ((cutoffRestriction hkl).obj x) ((cutoffRestriction hkl).obj z),
-    B.levelTransport_eq_levelPathProduct hBc ((cutoffRestriction hkl).mapPath e₁.toPath),
-    ← B.truncation_levelPathProduct hkl e₁.toPath, hprod]
+  obtain ⟨_, z, hz, he⟩ := hε
+  exact ⟨z, hz, he⟩
 
 /-- For every sufficiently small common displacement, the segment correction
 sum reads the actual probe field immediately before each crossing. Only the
