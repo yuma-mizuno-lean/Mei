@@ -76,8 +76,9 @@ theorem toContinuousPath_notMem_of_eq_half_pow (p : AdmissiblePLPath x y) (k : �
       exact u.notMem i
     · have hle : (s : ℝ) ≤ 1 / 2 := by
         rw [hs]
+        have hk : 1 ≤ k + 1 + 1 := by omega
         exact one_div_le_one_div_of_le (by norm_num) (by
-          simpa using pow_le_pow_right₀ (by norm_num : (1 : ℝ) ≤ 2) (show 1 ≤ k + 1 + 1 by omega))
+          simpa using pow_le_pow_right₀ (by norm_num : (1 : ℝ) ≤ 2) hk)
       rw [toContinuousPath_cons_apply_of_le p e hle]
       exact ih k (by simp only [hs, pow_succ]; field_simp)
 

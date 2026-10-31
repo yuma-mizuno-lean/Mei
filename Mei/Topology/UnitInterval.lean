@@ -100,7 +100,8 @@ theorem exists_monotone_refinement (t : ℕ → I) (ht0 : t 0 = 0) {m : ℕ}
       exact le_one _
   have htail' (n : ℕ) (hn : A.card - 1 ≤ n) : t' n = 1 := by
     by_cases h : n < A.card
-    · rw [show n = A.card - 1 by omega, hlast]
+    · have hn : n = A.card - 1 := by omega
+      rw [hn, hlast]
     · exact hge h
   have hmem' (n : ℕ) : t' n ∈ A := by
     by_cases h : n < A.card
@@ -114,7 +115,8 @@ theorem exists_monotone_refinement (t : ℕ → I) (ht0 : t 0 = 0) {m : ℕ}
     by_cases ha : a < A.card
     · rw [hlt ha] at hlt'
       have haj : a < j.val := Fin.lt_def.mp (g.lt_iff_lt.mp hlt')
-      rw [hlt (show a + 1 < A.card by omega)]
+      have ha_next : a + 1 < A.card := by omega
+      rw [hlt ha_next]
       exact g.monotone (Fin.mk_le_mk.mpr haj)
     · rw [hge ha] at hlt'
       exact absurd hlt' (not_lt.mpr (le_one _))

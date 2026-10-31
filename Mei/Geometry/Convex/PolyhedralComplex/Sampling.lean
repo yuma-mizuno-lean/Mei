@@ -163,8 +163,10 @@ private theorem crossingWord_eq_prod_range_sampling (ν : C.walls → V →ₗ[�
         (Subtype.ext (by rw [hs]; simp [hj₀]))
         (Subtype.ext (by rw [hs]; norm_num [htn]))
         (fun a b hab => monotone_projIcc zero_le_one (by
-          have : (t (j₀ + a) : ℝ) ≤ t (j₀ + b) :=
-            hmono (show j₀ + (a : ℕ) ≤ j₀ + b by have := Fin.le_def.mp hab; omega)
+          have hab' : j₀ + (a : ℕ) ≤ j₀ + b := by
+            have := Fin.le_def.mp hab
+            omega
+          have : (t (j₀ + a) : ℝ) ≤ t (j₀ + b) := hmono hab'
           linarith))
         (fun a => by
           rw [hv _ (by omega), toContinuousPath_cons_apply_of_ge p e (hge _ (by omega)), hs])
