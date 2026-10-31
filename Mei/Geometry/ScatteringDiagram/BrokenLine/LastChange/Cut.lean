@@ -6,6 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.ScatteringDiagram.BrokenLine.Itineraries.Cut
+public import Mei.Geometry.ScatteringDiagram.BrokenLine.Itineraries.Cut.Incoming
 public import Mei.Geometry.ScatteringDiagram.BrokenLine.LastChange.Localization
 
 /-!
@@ -24,10 +25,10 @@ This includes changes with unchanged spatial velocity and later unchanged-degree
 encounters.
 
 We use `CutoffDecoratedRay.exists_cutoff_truncate_lt` to retain the encounter
-suffix at its intrinsic cutoff, then `PositiveDegrees.cutoff_mono` to place it
-at one lower cutoff. The affine segment formula
-`Convex.AdmissibleRayRealization.ray_eq_add_smul_of_before_parameter` identifies
-the endpoint on the incoming germ.
+suffix at its intrinsic cutoff, and
+`CutoffDecoratedRay.eventually_exists_incoming_truncate` for uniform cuts.
+Positivity of degree increments places the incoming ray at one lower cutoff;
+the general cut already identifies its endpoint on the incoming germ.
 -/
 
 public noncomputable section
@@ -111,42 +112,26 @@ theorem eventually_exists_lastChange_incoming (r : Rays) (hq : r.finalDegree ≠
           r.realization.2.ray (u + (r.realization.2.parameter j.succ - η)) := by
   dsimp only
   let j := r.lastChangeIndex hq
-  have hsmall : ∀ᶠ η : ℝ in 𝓝 0, ∀ i : Fin (r.itinerary.length + 1),
-      j.succ < i → r.realization.2.parameter i < r.realization.2.parameter j.succ - η := by
-    apply eventually_all.mpr
-    intro i
-    by_cases hi : j.succ < i
-    · have hgap := r.realization.2.strictAnti_parameter hi
-      filter_upwards [eventually_lt_nhds (sub_pos.mpr hgap)] with η hη _
-      linarith
-    · exact Eventually.of_forall (fun _ h => (hi h).elim)
-  filter_upwards [hsmall.filter_mono nhdsWithin_le_nhds, self_mem_nhdsWithin] with η hη hpos
-  have hpos : 0 < η := Set.mem_Ioi.mp hpos
-  let t := r.realization.2.parameter j.succ - η
-  have hu : t < r.realization.2.parameter j.succ := sub_lt_self _ hpos
-  obtain ⟨l, hlt, b, hw, hr, ha, hp, hd⟩ := r.exists_cutoff_truncate_lt j t hu
-    (fun i hi => hη i.succ (Fin.succ_lt_succ_iff.mpr hi)) (r.lastChangeIndex_spec hq).1
-  have hfinal : r.realization.1.val j = r.finalDegree := by
-    simpa only [Fin.snoc_castSucc] using (r.lastChangeIndex_spec hq).2 j.castSucc le_rfl
-  have hbound := (d.mem_cutoff.mp (r.degree_mem j)).2
-  rw [hfinal] at hbound
-  have hle : l ≤ k - 1 := by omega
-  let s : CutoffDecoratedRay d ℳ T a v f c ε P W S C (k - 1) (r.realization.2.ray t) :=
-    ⟨b.itinerary, b.realization, fun i => d.cutoff_mono hle (b.degree_mem i), b.degree_sub_mem⟩
-  have hx := r.realization.2.ray_eq_add_smul_of_before_parameter j.succ hu.le
-    (fun i hi => (hη i hi).le)
-  have ht : r.realization.2.ray t =
-      r.realization.2.ray (r.realization.2.parameter j.succ) +
-        η • v (Fin.snoc (α := fun _ => Γ) r.realization.1.val 0 j.succ) := by
-    simpa only [t, sub_sub_cancel] using hx
-  rw [← ht]
-  refine ⟨s, hw, ?_, ?_, ?_, fun u hu => ?_⟩
-  · simpa only [finalDegree_def] using hp
-  · simpa only [decoration_eq] using ha
-  · simpa only [degreeItinerary_eq] using hd
-  · -- `s` reuses `b.realization`; only the cutoff proof fields have changed.
-    change b.realization.2.ray u = _
-    rw [hr, FiniteAffineRay.truncate_apply _ _ hu]
+  filter_upwards [r.eventually_exists_incoming_truncate j.succ] with η hη
+  obtain ⟨b, hw, hp, ha, hd, hr⟩ := hη
+  -- The general cut keeps the original cutoff. At a genuine degree change,
+  -- positivity bounds its complete incoming history by one lower cutoff.
+  have hlt := r.degree_lt_finalDegree_of_ne j (r.lastChangeIndex_spec hq).1
+  have hbound := (d.mem_cutoff.mp r.finalDegree_mem_cutoff).2
+  have hin : d.degree b.finalDegree ≤ (k - 1 : ℕ) := by
+    rw [hp]
+    omega
+  let s : CutoffDecoratedRay d ℳ T a v f c ε P W S C (k - 1)
+      (r.realization.2.ray (r.realization.2.parameter j.succ) +
+        η • v (Fin.snoc (α := fun _ => Γ) r.realization.1.val 0 j.succ)) :=
+    ⟨b.itinerary, b.realization,
+      fun i => d.mem_cutoff.mpr ⟨(d.mem_cutoff.mp (b.degree_mem i)).1,
+        (b.degree_le_finalDegree i).trans hin⟩, b.degree_sub_mem⟩
+  -- Only the degree-bound proof fields change; the entire realization is reused.
+  refine ⟨s, hw, ?_, ?_, ?_, hr⟩
+  · simpa only [s, finalDegree_def] using hp
+  · simpa only [s, decoration_eq] using ha
+  · simpa only [s, degreeItinerary_eq, Fin.val_succ] using hd
 
 end CutoffDecoratedRay
 
