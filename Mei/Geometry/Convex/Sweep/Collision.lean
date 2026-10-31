@@ -41,27 +41,6 @@ variable {V ι : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
 
 include hheight
 
-/-- Consecutive encounters of a strict itinerary have different affine spans,
-even when the itinerary uses repeated wall indices. -/
-theorem affineSpan_ne_of_mem_backwardDomain {Q : V}
-    (hQ : Q ∈ backwardDomain f c u (fun j => W (wall j)))
-    {i j : Fin n} (hij : i.succ = j.castSucc) :
-    affineSpan ℝ (W (wall i)) ≠ affineSpan ℝ (W (wall j)) := by
-  have hm := (mem_backwardDomain f c u _ Q).mp hQ
-  intro he
-  have hx : backwardPoint f c u j.castSucc Q ∈ affineSpan ℝ (W (wall j)) := by
-    rw [← hij, ← he]
-    exact subset_affineSpan ℝ _ (hm i).2
-  have hspan := AffineMap.eqOn_affineSpan
-    (f := (f j).toLinearMap.toAffineMap) (g := AffineMap.const ℝ V (c j))
-    (hheight j)
-  have hval : f j (backwardPoint f c u j.castSucc Q) = c j := by
-    simpa only [LinearMap.coe_toAffineMap, ContinuousLinearMap.coe_coe,
-      AffineMap.const_apply] using hspan hx
-  have hz : backwardTime f c u j Q = 0 := by
-    rw [backwardTime_apply, hval, sub_self, zero_div]
-  exact (ne_of_gt (hm j).1) hz
-
 /-- A zero elapsed time between two consecutive encounters in a limit of
 strict itineraries places their common point in singular support. Closedness
 is required only of the ambient walls, not of the endpoint family. -/
