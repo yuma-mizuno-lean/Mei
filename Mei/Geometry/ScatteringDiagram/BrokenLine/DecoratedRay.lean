@@ -155,6 +155,23 @@ theorem velocity_ne_zero_of_pos
   · intro hv
     exact r.2.transverse j (by rw [hv, map_zero])
 
+/-- A stationary incoming degree admits no transverse encounters: the first
+encounter would have both zero and nonzero normal velocity. -/
+theorem encounter_count_eq_zero_of_velocity_eq_zero
+    {n : ℕ} {T : Fin n → Module.End R M} {p₀ : Γ} {a : ℳ p₀}
+    {v : Γ → V} {f : Fin n → V →L[ℝ] ℝ} {c : Fin n → ℝ}
+    {ε : Fin n → SignType} {P : Fin n → Set V} {W : J → Set V}
+    {S : K → Set V} {C : Set V} {Q : V}
+    (r : DecoratedAdmissibleRay ℳ T p₀ a v f c ε P W S C Q)
+    (hv : v p₀ = 0) : n = 0 := by
+  cases n with
+  | zero => rfl
+  | succ n =>
+    have he := r.normal_velocity_eq (Fin.last n)
+    have ht := r.2.transverse (Fin.last n)
+    simp only [Fin.snoc_castSucc] at ht
+    exact False.elim (ht (by simpa [hv] using he))
+
 /-- The direction determines exactly the prescribed signed crossing. -/
 theorem crossing_sign
     (r : DecoratedAdmissibleRay ℳ T p₀ a velocity f c ε P W S C Q) (j : Fin n) :
