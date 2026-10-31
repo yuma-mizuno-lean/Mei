@@ -78,7 +78,7 @@ theorem decoratedAdmissibleRay_eq_input_or_existsUnique_last_degree_change
       intro i
       exact (hc i).trans (by simpa only [b, Fin.snoc_last] using (hc (Fin.last n)).symm)
     exact Or.inl ⟨hconst, r.decoration_eq_input_and_ray_eq_of_degrees_eq hT hconst⟩
-  · obtain ⟨j, ⟨hne, hp, hw, hpath⟩, hu⟩ := r.existsUnique_last_degree_change hT hc
+  · obtain ⟨j, ⟨hne, hp, hw, hpath⟩, hu⟩ := r.existsUnique_last_degree_change (fun j => hT j _) hc
     have hstep := d.homogeneousHistory_shiftedBCHAction_sub_mem_monoid ℒ ℳ p k g
       r.1.val r₀ a ((mem_decoratedHistorySupport ..).mp r.1.property).1 j
     have hj : r.1.val j = b 0 := by

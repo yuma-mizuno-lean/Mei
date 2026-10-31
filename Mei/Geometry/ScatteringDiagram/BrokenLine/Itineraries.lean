@@ -64,6 +64,15 @@ namespace CutoffDecoratedRay
 
 variable {d ℳ T a v f c ε P W S C} {k : ℕ} {Q : V}
 
+/-- The relative degree on the final segment, including an empty encounter word. -/
+def finalDegree (r : CutoffDecoratedRay d ℳ T a v f c ε P W S C k Q) : Γ :=
+  Fin.snoc (α := fun _ => Γ) r.realization.1.val 0 0
+
+/-- The final degree is the first entry of the degree history with its incoming
+zero degree appended. -/
+theorem finalDegree_def (r : CutoffDecoratedRay d ℳ T a v f c ε P W S C k Q) :
+    r.finalDegree = Fin.snoc (α := fun _ => Γ) r.realization.1.val 0 0 := (rfl)
+
 /-- The final whole homogeneous decoration. -/
 def decoration (r : CutoffDecoratedRay d ℳ T a v f c ε P W S C k Q) : M :=
   r.realization.decoration 0
@@ -74,6 +83,12 @@ theorem decoration_eq (r : CutoffDecoratedRay d ℳ T a v f c ε P W S C k Q) :
     r.decoration = homogeneousHistory ℳ (fun j => T (r.itinerary.get j))
       r.realization.1.val a := by
   rw [decoration, DecoratedAdmissibleRay.decoration_zero]
+
+/-- Every final decoration is homogeneous of the final recorded relative degree. -/
+theorem decoration_mem (r : CutoffDecoratedRay d ℳ T a v f c ε P W S C k Q) :
+    r.decoration ∈ ℳ r.finalDegree := by
+  rw [decoration_eq, finalDegree_def, ← homogeneousHistoryStage_zero]
+  exact homogeneousHistoryStage_mem_snoc ℳ _ _ 0 a 0
 
 /-- The final decoration is nonzero. -/
 theorem decoration_ne_zero (r : CutoffDecoratedRay d ℳ T a v f c ε P W S C k Q) :
