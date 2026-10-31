@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.ScatteringDiagram.BrokenLine.ZeroDirection
+public import Mei.Geometry.ScatteringDiagram.BrokenLine.Itineraries
 public import Mei.LinearAlgebra.GradedModule.Shifted.Quotient
 
 /-!
