@@ -130,6 +130,30 @@ theorem itinerary_take_lastChangeIndex_eq
     (by simpa only [hdegree', ← hq] using s.realization.crossing_sign u')
   simpa only [List.getElem_take, List.get_eq_getElem] using he
 
+/-- The terminal degree-labelled block repeats the final degree on the complete
+terminal encounter word, including the last change itself. -/
+theorem degreeItinerary_take_lastChangeIndex_eq
+    (r : CutoffDecoratedRay d ℳ T a v f c ε P W S C k Q) (hq : r.finalDegree ≠ 0) :
+    r.degreeItinerary.take ((r.lastChangeIndex hq).val + 1) =
+      (r.itinerary.take ((r.lastChangeIndex hq).val + 1)).map
+        (fun w => (r.finalDegree, w)) := by
+  let j := r.lastChangeIndex hq
+  apply List.ext_getElem
+  · simp only [List.length_take, length_degreeItinerary, List.length_map]
+  · intro i hi hi'
+    have hir : i < r.itinerary.length := by
+      have h := List.length_take_le' (j.val + 1) r.degreeItinerary
+      rw [length_degreeItinerary] at h
+      exact hi.trans_le h
+    have hij : i ≤ j.val := by
+      exact Nat.le_of_lt_succ (hi.trans_le
+        (List.length_take_le ((r.lastChangeIndex hq).val + 1) r.degreeItinerary))
+    have hd := (r.lastChangeIndex_spec hq).2 (⟨i, hir⟩ : Fin r.itinerary.length).castSucc
+      (by simpa only [Fin.le_def, Fin.val_castSucc] using hij)
+    simpa only [degreeItinerary_eq, List.getElem_take, List.getElem_map,
+      List.getElem_ofFn, List.get_eq_getElem, Fin.snoc_castSucc] using
+      congrArg (fun q => (q, r.itinerary[i])) hd
+
 section WallEvents
 
 variable {ι : Type*} {T : WallEvent ι → Module.End R M}
