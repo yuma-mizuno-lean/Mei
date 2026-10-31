@@ -24,6 +24,8 @@ nonzero signs at every incident support. Nonincident supports are excluded by
 `IsClosed.isOpen_setOf_lineMap_notMem`, and incident ones by convexity of the
 open scalar half-lines. A transverse incoming segment may instead end on an
 incident wall while avoiding every singular set through its regular endpoint.
+Extending a marked segment uses the same short incoming piece. Its argument is
+extracted from `DecoratedAdmissibleRay.eventually_sum_straightTerminal_eq_sum`.
 -/
 
 public section
@@ -123,6 +125,52 @@ theorem eventually_incomingSegment_notMem {κ : Type*} [Finite κ]
       ⟨(div_pos hu hη).le, (div_le_one hη).mpr huη⟩
     rw [hline] at hh
     exact hh
+
+/-- Extend a segment a short distance beyond its last marked point. Closed
+obstacles still miss the extended segment away from the marked wall encounters;
+singular sets miss the whole segment, including every encounter. Only the
+normal of the last encounter is needed for the new short piece. -/
+theorem eventually_extendSegment_notMem {κ : Type*} [Finite κ]
+    {S : κ → Set V} {n : ℕ} (Q v : V) (s : Fin (n + 1) → ℝ)
+    (hs : 0 ≤ s (Fin.last n)) (m : V →ₗ[ℝ] ℝ) (b : ℝ)
+    (htrans : m v ≠ 0) (hheight : m (Q + s (Fin.last n) • v) = b)
+    (hclosedW : ∀ j, IsClosed (W j))
+    (hplane : ∀ j, Q + s (Fin.last n) • v ∈ W j → ∀ y ∈ W j, m y = b)
+    (hclosedS : ∀ j, IsClosed (S j))
+    (hW : ∀ j t, 0 ≤ t → t < s (Fin.last n) →
+      (∀ i, t ≠ s i) → Q + t • v ∉ W j)
+    (hS : ∀ j t, 0 ≤ t → t ≤ s (Fin.last n) → Q + t • v ∉ S j) :
+    ∀ᶠ η : ℝ in 𝓝[>] 0,
+      (∀ j u, 0 < u → u ≤ s (Fin.last n) + η →
+        (∀ i, u ≠ s (Fin.last n) + η - s i) →
+        Q + (s (Fin.last n) + η) • v - u • v ∉ W j) ∧
+      (∀ j u, 0 < u → u ≤ s (Fin.last n) + η →
+        Q + (s (Fin.last n) + η) • v - u • v ∉ S j) := by
+  let t := s (Fin.last n)
+  let x := Q + t • v
+  have hnear := eventually_incomingSegment_notMem x v m b htrans hheight
+    hclosedW hplane hclosedS (fun j => hS j t hs le_rfl)
+  filter_upwards [hnear] with η hnear
+  have hpoint (u : ℝ) : Q + (t + η) • v - u • v = Q + (t + η - u) • v := by module
+  have hshort (u : ℝ) : x + η • v - u • v = Q + (t + η - u) • v := by
+    dsimp only [x]
+    module
+  constructor
+  · intro j u hu huL huτ
+    rw [hpoint]
+    by_cases huη : η < u
+    · apply hW j (t + η - u) (by linarith) (by linarith)
+      intro i he
+      exact huτ i (by linarith)
+    · have hule : u ≤ η := le_of_not_gt huη
+      have hstrict : u < η := lt_of_le_of_ne hule (by
+        simpa only [t, add_sub_cancel_left] using huτ (Fin.last n))
+      simpa only [hshort] using hnear.1 j u hu hstrict
+  · intro j u hu huL
+    rw [hpoint]
+    by_cases huη : η ≤ u
+    · exact hS j (t + η - u) (by linarith) (by linarith)
+    · simpa only [hshort] using hnear.2 j u hu (le_of_not_ge huη)
 
 /-- Near a point, matching strict normal sides at its incident supports suffice
 for the entire connecting segment to miss all supports. -/

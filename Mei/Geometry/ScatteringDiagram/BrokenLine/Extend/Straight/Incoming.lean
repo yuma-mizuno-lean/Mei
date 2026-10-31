@@ -113,9 +113,9 @@ theorem eventually_sum_straightTerminal_eq_sum [Finite J] [Finite K]
   simp only [j, Fin.append_left, Fin.append_right, htime] at hcut
   -- For the converse attachment, closed nonincident obstacles miss a short
   -- incoming segment; incident walls are excluded by their transverse normal.
-  have hnear := eventually_incomingSegment_notMem x (v q) (g (Fin.last m)).toLinearMap
-    (b (Fin.last m)) (htrans _) (hheight _) hclosedW hplane hclosedS
-    (fun w => hS w t (hpos _).le le_rfl)
+  have hnear := eventually_extendSegment_notMem Q (v q) s (hpos _).le
+    (g (Fin.last m)).toLinearMap (b (Fin.last m)) (htrans _)
+    (hheight _) hclosedW hplane hclosedS hW hS
   filter_upwards [hcut, hnear, self_mem_nhdsWithin] with η hcut hnear hη
   have hη : 0 < η := hη
   let L := t + η
@@ -125,26 +125,6 @@ theorem eventually_sum_straightTerminal_eq_sum [Finite J] [Finite K]
   have hpoint (u : ℝ) : Y - u • v q = Q + (L - u) • v q := by
     dsimp only [Y]
     module
-  have hshort (u : ℝ) : x + η • v q - u • v q = Q + (L - u) • v q := by
-    dsimp only [x, L]
-    module
-  have havoidW : ∀ w u, 0 < u → u ≤ L → (∀ i, u ≠ τ i) → Y - u • v q ∉ W w := by
-    intro w u hu huL huτ
-    rw [hpoint]
-    by_cases huη : η < u
-    · apply hW w (L - u) (by linarith) (by dsimp only [L]; linarith)
-      intro i he
-      exact huτ i (by dsimp only [τ]; linarith)
-    · have hule : u ≤ η := le_of_not_gt huη
-      have hstrict : u < η := lt_of_le_of_ne hule (by
-        simpa only [τ, L, t, add_sub_cancel_left] using huτ (Fin.last m))
-      simpa only [hshort] using hnear.1 w u hu hstrict
-  have havoidS : ∀ w u, 0 < u → u ≤ L → Y - u • v q ∉ S w := by
-    intro w u hu huL
-    rw [hpoint]
-    by_cases huη : η ≤ u
-    · exact hS w (L - u) (by linarith) (by dsimp only [L]; linarith)
-    · simpa only [hshort] using hnear.2 w u hu (le_of_not_ge huη)
   -- Apply the exact weighted-image theorem to the complete terminal block,
   -- then use the uniform cut to remove its incoming-admission condition.
   have hsum := sum_ite_decoration_straightTerminal_eq_sum
@@ -155,7 +135,7 @@ theorem eventually_sum_straightTerminal_eq_sum [Finite J] [Finite K]
     (fun i => by dsimp only [τ]; linarith [hpos i]) g b H htrans
     (fun i => by simpa only [hpoint, τ, sub_sub_cancel] using hheight i)
     (fun i => by simpa only [hpoint, τ, sub_sub_cancel] using hinc i)
-    havoidW havoidS B
+    hnear.1 hnear.2 B
   rw [hend] at hsum
   rw [← hsum]
   apply Finset.sum_congr rfl
