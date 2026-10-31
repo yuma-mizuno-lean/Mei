@@ -181,6 +181,12 @@ def decoratedRayEvaluation (Q : V) : M :=
   let := Fintype.ofFinite (D Q)
   ∑ r : D Q, r.decoration 0
 
+/-- Weighted evaluation sums the final whole decorations on the actual finite ray fiber. -/
+theorem decoratedRayEvaluation_def (Q : V) :
+    decoratedRayEvaluation ℳ T p₀ a velocity f c ε P W S C Q =
+      let := Fintype.ofFinite (D Q)
+      ∑ r : D Q, r.decoration 0 := (rfl)
+
 open Classical in
 /-- Evaluate by summing exactly the surviving histories admitted by the full
 geometric endpoint domain. Coincident domains retain distinct histories. -/
