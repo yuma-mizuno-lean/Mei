@@ -46,12 +46,8 @@ theorem segmentPathProduct_subdivide_left (e : x ⟶ y) (a : x ⟶ z)
         (crossingEventProduct ν label comm e)).prod := by
   have hevent (s : ℝ) (hs : s ∈ orderedCrossingTimes a) :
       signedCrossingEvent ν x z s = signedCrossingEvent ν x y (s * t) := by
-    ext ⟨i, r⟩
-    have hv : z.val - x.val = t • (y.val - x.val) := by
-      rw [hz, AffineMap.lineMap_apply_module', add_sub_cancel_right]
-    simp only [mem_signedCrossingEvent, mem_crossings_subdivide_left hz ⟨ht.1, ht.2.le⟩,
-      (mem_Ioo_of_mem_orderedCrossingTimes a hs).2.le, and_true,
-      hv, map_smul, smul_eq_mul, mul_pos_iff_of_pos_left ht.1]
+    exact (signedCrossingEvent_subdivide_left ν hz ⟨ht.1, ht.2.le⟩
+      (mem_Ioo_of_mem_orderedCrossingTimes a hs).2.le).symm
   rw [segmentPathProduct_def, ← orderedCrossingTimes_subdivide_left e a ht hz,
     ← List.map_reverse, List.map_map]
   congr 1
