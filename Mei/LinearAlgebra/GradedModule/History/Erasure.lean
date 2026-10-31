@@ -152,6 +152,23 @@ theorem homogeneousHistory_const_of_decompose_self {r : ι} {a : M} (ha : a ∈ 
   simpa only [homogeneousHistoryStage_zero] using
     homogeneousHistoryStage_const_of_decompose_self hT ha 0
 
+/-- If the recorded degrees from the output through a chosen segment agree,
+that segment carries the final whole decoration. Encounters before the chosen
+segment may change degree and decoration. -/
+theorem homogeneousHistoryStage_eq_of_degrees_eq
+    (r : Fin n → ι) {r₀ : ι} {a : M} (ha : a ∈ ℳ r₀) (j : Fin (n + 1))
+    (hr : ∀ i ≤ j, Fin.snoc (α := fun _ => ι) r r₀ i =
+      Fin.snoc (α := fun _ => ι) r r₀ 0) :
+    homogeneousHistoryStage ℳ T r j a = homogeneousHistory ℳ T r a := by
+  induction j using Fin.inductionOn with
+  | zero => rw [homogeneousHistoryStage_zero]
+  | succ j ih =>
+    have hfix := homogeneousHistoryStage_castSucc_eq_succ_of_decompose_self hT r ha j
+      (by simpa only [Fin.snoc_castSucc] using
+        (hr j.castSucc j.castSucc_le_succ).trans (hr j.succ le_rfl).symm)
+    rw [← hfix]
+    exact ih (fun i hi => hr i (hi.trans j.castSucc_le_succ))
+
 end DecomposeSelf
 
 end Mei

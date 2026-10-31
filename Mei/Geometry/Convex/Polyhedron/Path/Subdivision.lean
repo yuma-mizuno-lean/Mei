@@ -75,6 +75,32 @@ theorem signedCrossingEvent_subdivide_left (ν : ι → V →ₗ[ℝ] ℝ)
     hs, and_true, hz, AffineMap.lineMap_apply_module', add_sub_cancel_right,
     map_smul, smul_eq_mul, mul_pos_iff_of_pos_left ht.1]
 
+/-- Rescaling an initial piece gives exactly the original crossing times before
+its allowed endpoint. -/
+theorem orderedCrossingTimes_subdivide_left (e : x ⟶ y) (a : x ⟶ z)
+    {t : ℝ} (ht : t ∈ Ioo (0 : ℝ) 1)
+    (hz : z.val = AffineMap.lineMap x.val y.val t) :
+    (orderedCrossingTimes a).map (fun s => s * t) =
+      (orderedCrossingTimes e).filter (fun s => decide (s < t)) := by
+  apply (List.pairwise_map.mpr ((pairwise_orderedCrossingTimes a).imp
+    (fun h => mul_lt_mul_of_pos_right h ht.1))).eq_of_mem_iff
+      ((pairwise_orderedCrossingTimes e).filter _)
+  intro s
+  simp only [List.mem_map, List.mem_filter, decide_eq_true_eq]
+  constructor
+  · rintro ⟨u, hu, rfl⟩
+    obtain ⟨i, hi⟩ := (mem_orderedCrossingTimes a u).mp hu
+    have hcross := ((mem_crossings_subdivide_left hz ⟨ht.1, ht.2.le⟩ i u).mp hi).1
+    exact ⟨(mem_orderedCrossingTimes e _).mpr ⟨i, hcross⟩,
+      mul_lt_of_lt_one_left ht.1 (mem_Ioo_of_mem_orderedCrossingTimes a hu).2⟩
+  · rintro ⟨hs, hst⟩
+    obtain ⟨i, hi⟩ := (mem_orderedCrossingTimes e s).mp hs
+    refine ⟨s / t, (mem_orderedCrossingTimes a _).mpr ⟨i, ?_⟩,
+      div_mul_cancel₀ _ ht.1.ne'⟩
+    rw [mem_crossings_subdivide_left hz ⟨ht.1, ht.2.le⟩]
+    exact ⟨by simpa only [div_mul_cancel₀ _ ht.1.ne'] using hi,
+      (div_le_one ht.1).mpr hst.le⟩
+
 /-- Subdivision retains exactly the ordered signed simultaneous events. -/
 theorem segmentCrossingEvents_subdivide (ν : ι → V →ₗ[ℝ] ℝ)
     (e : x ⟶ y) (e₁ : x ⟶ z) (e₂ : z ⟶ y)

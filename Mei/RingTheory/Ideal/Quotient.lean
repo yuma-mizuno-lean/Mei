@@ -8,7 +8,7 @@ module
 public import Mathlib.RingTheory.Ideal.Quotient.Operations
 
 /-!
-# Comparing ideal and submodule quotient maps
+# Ideal quotient maps
 
 An algebra map preserving two ideals induces the same map on quotient rings as
 its underlying linear map on the scalar-restricted quotient modules. This lets
