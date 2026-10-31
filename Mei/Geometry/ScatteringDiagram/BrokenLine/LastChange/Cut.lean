@@ -7,6 +7,7 @@ module
 
 public import Mei.Geometry.ScatteringDiagram.BrokenLine.Itineraries.Cut
 public import Mei.Geometry.ScatteringDiagram.BrokenLine.Itineraries.Cut.Incoming
+public import Mei.Geometry.ScatteringDiagram.BrokenLine.Itineraries.Cutoff
 public import Mei.Geometry.ScatteringDiagram.BrokenLine.LastChange.Localization
 
 /-!
@@ -124,14 +125,15 @@ theorem eventually_exists_lastChange_incoming (r : Rays) (hq : r.finalDegree ≠
   let s : CutoffDecoratedRay d ℳ T a v f c ε P W S C (k - 1)
       (r.realization.2.ray (r.realization.2.parameter j.succ) +
         η • v (Fin.snoc (α := fun _ => Γ) r.realization.1.val 0 j.succ)) :=
-    ⟨b.itinerary, b.realization,
-      fun i => d.mem_cutoff.mpr ⟨(d.mem_cutoff.mp (b.degree_mem i)).1,
-        (b.degree_le_finalDegree i).trans hin⟩, b.degree_sub_mem⟩
+    b.ofCutoff fun i => d.mem_cutoff.mpr ⟨(d.mem_cutoff.mp (b.degree_mem i)).1,
+      (b.degree_le_finalDegree i).trans hin⟩
   -- Only the degree-bound proof fields change; the entire realization is reused.
-  refine ⟨s, hw, ?_, ?_, ?_, hr⟩
-  · simpa only [s, finalDegree_def] using hp
-  · simpa only [s, decoration_eq] using ha
-  · simpa only [s, degreeItinerary_eq, Fin.val_succ] using hd
+  refine ⟨s, ?_, ?_, ?_, ?_, ?_⟩
+  · simpa only [s, ofCutoff_itinerary, Fin.val_succ] using hw
+  · simpa only [s, ofCutoff_finalDegree] using hp
+  · simpa only [s, ofCutoff_decoration] using ha
+  · simpa only [s, ofCutoff_degreeItinerary, Fin.val_succ] using hd
+  · simpa only [s, ofCutoff_ray] using hr
 
 end CutoffDecoratedRay
 

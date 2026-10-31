@@ -65,6 +65,13 @@ theorem ofCutoff_itinerary (r : CutoffDecoratedRay d ℳ T a v f c ε P W S C k 
     (h : ∀ j, r.realization.1.val j ∈ d.cutoff l) :
     (r.ofCutoff h).itinerary = r.itinerary := (rfl)
 
+/-- Changing the cutoff retains every degree-labelled encounter. -/
+@[simp]
+theorem ofCutoff_degreeItinerary (r : CutoffDecoratedRay d ℳ T a v f c ε P W S C k Q)
+    (h : ∀ j, r.realization.1.val j ∈ d.cutoff l) :
+    (r.ofCutoff h).degreeItinerary = r.degreeItinerary := by
+  simp only [degreeItinerary_eq, ofCutoff]
+
 /-- Changing the cutoff retains the entire decorated realization. -/
 @[simp]
 theorem ofCutoff_realization (r : CutoffDecoratedRay d ℳ T a v f c ε P W S C k Q)
