@@ -210,6 +210,18 @@ theorem isClosed_weakBackwardDomain {P : Fin n → Set V} (hP : ∀ i, IsClosed 
     (isClosed_Ici.preimage (backwardTime f c v i).continuous).inter
       ((hP i).preimage (backwardPoint f c v i.succ).continuous)
 
+/-- Elapsed times remain nonnegative on the closure of any endpoint family
+with nonnegative elapsed times, without support constraints. -/
+theorem backwardTime_nonneg_of_mem_closure {D : Set V}
+    (hD : ∀ Q ∈ D, ∀ j, 0 ≤ backwardTime f c v j Q)
+    {Q : V} (hQ : Q ∈ closure D) (j : Fin n) :
+    0 ≤ backwardTime f c v j Q := by
+  apply closure_minimal (s := D)
+    (t := (backwardTime f c v j) ⁻¹' Set.Ici 0) _
+    (isClosed_Ici.preimage (backwardTime f c v j).continuous) hQ
+  intro Q hQ
+  exact hD Q hQ j
+
 /-- Locally closed support constraints give a locally closed strict endpoint domain. -/
 theorem isLocallyClosed_backwardDomain {P : Fin n → Set V}
     (hP : ∀ i, IsLocallyClosed (P i)) : IsLocallyClosed (backwardDomain f c v P) := by
