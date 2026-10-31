@@ -6,6 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.Convex.Polyhedron.Rational.LocallyClosed
+public import Mei.Geometry.Convex.Polyhedron.SingularSupport
 
 /-!
 # Simultaneous wall events
@@ -15,6 +16,8 @@ crossing sign. Its support requires exactly that incidence set, retaining every
 index of coincident walls. Choosing one incident wall supplies a normal and an
 offset. Supports with the same incidence set and opposite signs coincide; the
 normal velocity distinguishes their signed encounters.
+Realizability records a regular point and a transverse velocity with the
+prescribed event sign, independently of any labels assigned to the walls.
 
 These events give a finite encounter alphabet for rays through a finite wall
 family. Their supports are rational semilinear whenever the original supports
@@ -92,6 +95,21 @@ theorem normal_ne_zero_of_mem_support (e : WallEvent ι) (W : ι → Set V)
     (f : ι → V →L[ℝ] ℝ) {x v : V} (hx : x ∈ e.support W)
     (hv : ∀ j, x ∈ W j → f j v ≠ 0) : e.normal f v ≠ 0 :=
   hv _ (e.support_subset W e.1.property.choose_spec hx)
+
+/-- A signed event has a regular point and a transverse velocity with its prescribed sign. -/
+def IsRealizedEvent (e : WallEvent ι) (W : ι → Set V) (f : ι → V →L[ℝ] ℝ) : Prop :=
+  ∃ x : {x : V // x ∉ singularSupport W}, ∃ v : V,
+    x.val ∈ e.support W ∧
+      (∀ j, x.val ∈ W j → f j v ≠ 0) ∧
+      SignType.sign (e.normal f v) = e.2
+
+/-- Realizability is characterized by regular incidence, transversality and the event sign. -/
+theorem isRealizedEvent_iff (e : WallEvent ι) (W : ι → Set V) (f : ι → V →L[ℝ] ℝ) :
+    e.IsRealizedEvent W f ↔
+      ∃ x : {x : V // x ∉ singularSupport W}, ∃ v : V,
+        x.val ∈ e.support W ∧
+          (∀ j, x.val ∈ W j → f j v ≠ 0) ∧
+          SignType.sign (e.normal f v) = e.2 := Iff.rfl
 
 variable [Finite ι]
 

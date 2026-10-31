@@ -184,27 +184,13 @@ theorem eventually_exists_levelPathProduct_eq_wallEventLabel (k : ℕ)
   · simpa only [smul_neg, sub_eq_add_neg] using hy
   · exact hb.trans (D.wallEventLabel_eq_combinedLabel k e hθ hreg hs hv).symm
 
-/-- A signed event has a regular point and a transverse velocity with its prescribed sign. -/
-def IsRealizedEvent (k : ℕ) (e : WallEvent (D.active k)) : Prop :=
-  ∃ x : {x : V // x ∉ singularSupport (W k)}, ∃ v : V,
-    x.val ∈ e.support (W k) ∧
-      (∀ j : D.active k, x.val ∈ (D.wall j).support → (f k) j v ≠ 0) ∧
-      SignType.sign (e.normal (f k) v) = e.2
-
-/-- Realizability is characterized by regular incidence, transversality and the event sign. -/
-theorem isRealizedEvent_iff (k : ℕ) (e : WallEvent (D.active k)) :
-    D.IsRealizedEvent k e ↔
-      ∃ x : {x : V // x ∉ singularSupport (W k)}, ∃ v : V,
-        x.val ∈ e.support (W k) ∧
-          (∀ j : D.active k, x.val ∈ (D.wall j).support → (f k) j v ≠ 0) ∧
-          SignType.sign (e.normal (f k) v) = e.2 := Iff.rfl
-
 /-- An event without a regular transverse realization has identity label. -/
 theorem wallEventLabel_eq_one_of_not_isRealizedEvent (k : ℕ) (e : WallEvent (D.active k))
-    (he : ¬ D.IsRealizedEvent k e) : D.wallEventLabel k e = 1 := by
+    (he : ¬ e.IsRealizedEvent (W k) (f k)) : D.wallEventLabel k e = 1 := by
   apply D.wallEventLabel_eq_one_of_not_exists
   rintro ⟨x, v, hx, hreg, hs, hv⟩
   apply he
+  rw [WallEvent.isRealizedEvent_iff]
   refine ⟨⟨x, hreg⟩, v, hx, ?_, hs⟩
   intro j hj
   simpa only [h.continuousRealCharacter_apply] using
