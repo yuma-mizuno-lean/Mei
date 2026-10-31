@@ -36,6 +36,48 @@ variable {Γ R L M : Type*} [AddCommGroup Γ] [CommRing R] [Algebra ℚ R]
 
 local notation "F" => d.shiftedLieFiltration ℒ ℳ p
 
+/-- The highest retained component of a BCH correction is the finite sum of
+the action on all strictly lower homogeneous input components. The
+coefficient is supplied only at the preceding cutoff. -/
+theorem shiftedQuotientComponent_truncatedBCHCorrection_eq_sum
+    (k : ℕ) (g : d.truncatedGroup ℒ (k + 1)) (x : (F).quotient k)
+    (q : Γ) (hq : d.degree (q - p) = k + 1) :
+    d.shiftedQuotientComponent ℳ p q (k + 1) (by omega)
+        ((F).truncatedBCHCorrection d ℒ k g x) =
+        ∑ n ∈ (d.finite_cutoff k).toFinset.attach,
+          d.shiftedQuotientComponent ℳ p q (k + 1) (by omega)
+            ((F).truncatedBCHAction d ℒ (k + 1) g
+              (Submodule.Quotient.mk
+                (shiftedInclusion ℳ d.monoid p
+                  ⟨n.val, (d.mem_cutoff.mp
+                    ((d.finite_cutoff k).mem_toFinset.mp n.property)).1⟩
+                  (d.shiftedQuotientComponent ℳ p (p + n.val) k
+                    (by simpa only [add_sub_cancel_left] using
+                      (d.mem_cutoff.mp ((d.finite_cutoff k).mem_toFinset.mp
+                        n.property)).2)
+                    x)))) := by
+  classical
+  conv_lhs => rw [d.quotient_eq_sum_shiftedQuotientComponent ℳ p k x]
+  simp only [ModuleFiltration.truncatedBCHCorrection_mk]
+  simp only [← Submodule.mkQ_apply, map_sum]
+  simp only [Submodule.mkQ_apply, map_sub]
+  have hne (n : (d.finite_cutoff k).toFinset) : p + n.val ≠ q := by
+    intro hnq
+    have hn := (d.mem_cutoff.mp
+      ((d.finite_cutoff k).mem_toFinset.mp n.property)).2
+    have heq : q - p = n.val := by rw [← hnq]; abel
+    rw [heq] at hq
+    omega
+  have hzero (n : (d.finite_cutoff k).toFinset) (y : ℳ (p + n.val)) :
+      d.shiftedQuotientComponent ℳ p q (k + 1) (by omega)
+        (Submodule.Quotient.mk (shiftedInclusion ℳ d.monoid p
+        ⟨n.val, (d.mem_cutoff.mp
+          ((d.finite_cutoff k).mem_toFinset.mp n.property)).1⟩ y)) = 0 :=
+    d.shiftedQuotientComponent_mk_shiftedInclusion_of_ne ℳ p q (k + 1)
+      (by omega) ⟨n.val, (d.mem_cutoff.mp
+        ((d.finite_cutoff k).mem_toFinset.mp n.property)).1⟩ (hne n) y
+  simp only [map_sum, hzero, Finset.sum_const_zero, sub_zero]
+
 /-- At finite order, a transported component of relative degree `k + 1` is its
 original value plus contributions from input components retained at order `k`.
 No lift of the group element or coefficient to a completion is needed. -/
@@ -57,30 +99,8 @@ theorem shiftedQuotientComponent_truncatedBCHAction_eq_add_sum
                       (d.mem_cutoff.mp ((d.finite_cutoff k).mem_toFinset.mp
                         n.property)).2)
                     ((d.shiftedFiltration ℳ p).transition (Nat.le_succ k) x))))) := by
-  classical
-  let c := d.shiftedQuotientComponent ℳ p q (k + 1) (by omega)
-  have he := (F).truncatedBCHAction_eq_add_correction d ℒ k g x
-  rw [d.quotient_eq_sum_shiftedQuotientComponent ℳ p k
-    ((d.shiftedFiltration ℳ p).transition (Nat.le_succ k) x)] at he
-  simp only [← Submodule.mkQ_apply, map_sum] at he
-  have hc := congrArg c he
-  simp only [Submodule.mkQ_apply, map_add, map_sum,
-    ModuleFiltration.truncatedBCHCorrection_mk, map_sub] at hc
-  have hne (n : (d.finite_cutoff k).toFinset) : p + n.val ≠ q := by
-    intro hnq
-    have hn := (d.mem_cutoff.mp
-      ((d.finite_cutoff k).mem_toFinset.mp n.property)).2
-    have heq : q - p = n.val := by rw [← hnq]; abel
-    rw [heq] at hq
-    omega
-  have hzero (n : (d.finite_cutoff k).toFinset) (y : ℳ (p + n.val)) :
-      c (Submodule.Quotient.mk (shiftedInclusion ℳ d.monoid p
-        ⟨n.val, (d.mem_cutoff.mp
-          ((d.finite_cutoff k).mem_toFinset.mp n.property)).1⟩ y)) = 0 :=
-    d.shiftedQuotientComponent_mk_shiftedInclusion_of_ne ℳ p q (k + 1)
-      (by omega) ⟨n.val, (d.mem_cutoff.mp
-        ((d.finite_cutoff k).mem_toFinset.mp n.property)).1⟩ (hne n) y
-  simpa only [hzero, sub_zero] using hc
+  rw [(F).truncatedBCHAction_eq_add_correction d ℒ k g x, map_add,
+    d.shiftedQuotientComponent_truncatedBCHCorrection_eq_sum ℒ ℳ p k g _ q hq]
 
 /-- A transported component of relative degree `k + 1` is the original component
 plus contributions from strictly lower input degrees. The sum is finite on the
