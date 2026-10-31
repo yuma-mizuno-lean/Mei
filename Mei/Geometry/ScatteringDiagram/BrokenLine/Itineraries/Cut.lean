@@ -54,6 +54,39 @@ variable {word : Fin (m + n) → J}
   (hmem : ∀ j, r.1.val j ∈ d.monoid)
   (hmono : ∀ i j, i ≤ j → r.1.val i - r.1.val j ∈ d.monoid)
 
+include hmono in
+/-- A decorated ray whose degree history is that of `r` after its first `m`
+encounters belongs to every cutoff inventory containing these degrees. Its
+complete path, whole decoration and encounter parameters are those of the
+supplied ray `s`. Its degree-labelled encounter itinerary is the suffix of `r`
+after its first `m` encounters, and its final degree is `r`'s degree at that
+boundary. -/
+theorem exists_cutoff_of_history_eq {l : ℕ} {Q' : V}
+    (s : DecoratedAdmissibleRay ℳ (fun j => T (word (Fin.natAdd m j))) 0 a v
+      (fun j => f (word (Fin.natAdd m j))) (fun j => c (word (Fin.natAdd m j)))
+      (fun j => ε (word (Fin.natAdd m j))) (fun j => P (word (Fin.natAdd m j))) W S C Q')
+    (hs : s.1.val = fun j => r.1.val (Fin.natAdd m j))
+    (hcut : ∀ j : Fin n, r.1.val (Fin.natAdd m j) ∈ d.cutoff l) :
+    ∃ b : CutoffDecoratedRay d ℳ T a v f c ε P W S C l Q',
+      b.itinerary = List.ofFn (fun j : Fin n => word (Fin.natAdd m j)) ∧
+      b.realization.2.ray = s.2.ray ∧
+      b.decoration = s.decoration 0 ∧
+      b.finalDegree = Fin.snoc (α := fun _ => Γ) r.1.val 0 (Fin.natAdd m (0 : Fin (n + 1))) ∧
+      b.degreeItinerary = List.ofFn (fun j : Fin n =>
+        (r.1.val (Fin.natAdd m j), word (Fin.natAdd m j))) ∧
+      List.ofFn b.realization.2.parameter = List.ofFn s.2.parameter := by
+  have hsub : ∀ i j, i ≤ j → s.1.val i - s.1.val j ∈ d.monoid := by
+    intro i j hij
+    rw [hs]
+    exact hmono _ _ (by simpa only [Fin.le_def, Fin.val_natAdd, Nat.add_le_add_iff_left] using hij)
+  obtain ⟨b, hw, hr, ha, hq, hd, hp⟩ :=
+    CutoffDecoratedRay.exists_of_word (fun j : Fin n => word (Fin.natAdd m j)) s
+      (by simpa only [hs] using hcut) hsub
+  refine ⟨b, hw, hr, ha, ?_, ?_, hp⟩
+  · rw [hq, hs]
+    exact (congrFun (Fin.snoc_comp_natAdd r.1.val 0) 0).symm
+  · rw [hd, hs]
+
 include hupper hlower hmem hmono in
 /-- The entire incoming piece belongs to the full inventory at its own final
 degree cutoff. Its encounter word, complete incoming path (the ray truncated
@@ -72,11 +105,10 @@ theorem exists_cutoff_truncate :
         List.ofFn (fun j : Fin n => r.2.parameter (Fin.natAdd m j).succ - t) := by
   dsimp only
   let s := r.truncate t hupper hlower
-  have hcut : ∀ j : Fin n, s.1.val j ∈ d.cutoff
+  have hcut : ∀ j : Fin n, r.1.val (Fin.natAdd m j) ∈ d.cutoff
       (d.degree (Fin.snoc (α := fun _ => Γ) r.1.val 0
         (Fin.natAdd m (0 : Fin (n + 1))))).toNat := by
     intro j
-    rw [history_truncate]
     refine d.mem_cutoff.mpr ⟨hmem _, ?_⟩
     let z : Fin n := ⟨0, Nat.zero_lt_of_lt j.isLt⟩
     have hle := d.degree_nonneg (hmono (Fin.natAdd m z) (Fin.natAdd m j)
@@ -90,17 +122,10 @@ theorem exists_cutoff_truncate :
     rw [map_sub] at hle
     rw [hz]
     exact (sub_nonneg.mp hle).trans (Int.self_le_toNat _)
-  have hsub : ∀ i j, i ≤ j → s.1.val i - s.1.val j ∈ d.monoid := by
-    intro i j hij
-    simp only [s, history_truncate]
-    exact hmono _ _ (by simpa only [Fin.le_def, Fin.val_natAdd, Nat.add_le_add_iff_left] using hij)
   obtain ⟨b, hw, hr, ha, hq, hd, hp⟩ :=
-    CutoffDecoratedRay.exists_of_word (fun j : Fin n => word (Fin.natAdd m j)) s hcut hsub
-  refine ⟨b, hw, hr.trans (r.ray_truncate t hupper hlower), ?_, ?_, ?_, ?_⟩
+    r.exists_cutoff_of_history_eq hmono s (r.history_truncate t hupper hlower) hcut
+  refine ⟨b, hw, hr.trans (r.ray_truncate t hupper hlower), ?_, hq, hd, ?_⟩
   · exact ha.trans (r.decoration_truncate t hupper hlower 0)
-  · rw [hq, history_truncate]
-    exact (congrFun (Fin.snoc_comp_natAdd r.1.val 0) 0).symm
-  · simpa only [s, history_truncate] using hd
   · have he : List.ofFn (fun j => b.realization.2.parameter j.succ) =
         List.ofFn (fun j : Fin n => s.2.parameter j.succ) := by
       have he := congrArg List.tail hp
