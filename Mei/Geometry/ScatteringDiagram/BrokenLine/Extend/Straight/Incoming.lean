@@ -27,8 +27,8 @@ avoidance, whole decorations and multiplicities remain in both fibers.
 
 We combine `sum_ite_decoration_straightTerminal_eq_sum` with
 `eventually_forall_mem_admissibleBackwardDomain` and the stability of segments
-avoiding closed sets. The short incoming-segment argument follows
-`eventually_sum_finalEncounter_eq_component_sum`. This is the unchanged terminal
+avoiding closed sets. The transverse incoming segment is supplied by
+`eventually_incomingSegment_notMem`. This is the unchanged terminal
 part of the last-change recursion in Mandel, *Scattering diagrams, theta functions,
 and refined tropical
 curve counts*, §3.3.3 (arXiv:1503.06183v5).
@@ -113,9 +113,9 @@ theorem eventually_sum_straightTerminal_eq_sum [Finite J] [Finite K]
   simp only [j, Fin.append_left, Fin.append_right, htime] at hcut
   -- For the converse attachment, closed nonincident obstacles miss a short
   -- incoming segment; incident walls are excluded by their transverse normal.
-  have hnear := eventually_add_smul_pair x (v q) 0
-    ((eventually_forall_lineMap_notMem_of_notMem hclosedW x).and
-      (eventually_forall_lineMap_notMem_of_notMem hclosedS x))
+  have hnear := eventually_incomingSegment_notMem x (v q) (g (Fin.last m)).toLinearMap
+    (b (Fin.last m)) (htrans _) (hheight _) hclosedW hplane hclosedS
+    (fun w => hS w t (hpos _).le le_rfl)
   filter_upwards [hcut, hnear, self_mem_nhdsWithin] with η hcut hnear hη
   have hη : 0 < η := hη
   let L := t + η
@@ -125,12 +125,8 @@ theorem eventually_sum_straightTerminal_eq_sum [Finite J] [Finite K]
   have hpoint (u : ℝ) : Y - u • v q = Q + (L - u) • v q := by
     dsimp only [Y]
     module
-  have hline (u : ℝ) :
-      AffineMap.lineMap (x + η • v q) (x + η • (0 : V)) (u / η) =
-        Q + (t + η - u) • v q := by
-    simp only [AffineMap.lineMap_apply_module', smul_zero, add_zero, smul_sub,
-      smul_add, smul_smul, div_mul_cancel₀ u hη.ne']
-    dsimp only [x]
+  have hshort (u : ℝ) : x + η • v q - u • v q = Q + (L - u) • v q := by
+    dsimp only [x, L]
     module
   have havoidW : ∀ w u, 0 < u → u ≤ L → (∀ i, u ≠ τ i) → Y - u • v q ∉ W w := by
     intro w u hu huL huτ
@@ -142,31 +138,13 @@ theorem eventually_sum_straightTerminal_eq_sum [Finite J] [Finite K]
     · have hule : u ≤ η := le_of_not_gt huη
       have hstrict : u < η := lt_of_le_of_ne hule (by
         simpa only [τ, L, t, add_sub_cancel_left] using huτ (Fin.last m))
-      intro hy
-      by_cases hw : x ∈ W w
-      · have he := hplane w hw _ hy
-        have he' : g (Fin.last m) (Q + (L - u) • v q) =
-            b (Fin.last m) + (η - u) * g (Fin.last m) (v q) := by
-          have hh := hheight (Fin.last m)
-          simp only [map_add, map_smul, smul_eq_mul] at hh ⊢
-          dsimp only [L, t]
-          nlinarith
-        rw [he'] at he
-        exact (mul_ne_zero (sub_pos.mpr hstrict).ne' (htrans _)) (by linarith)
-      · apply hnear.1 w hw (u / η)
-          ⟨(div_pos hu hη).le, (div_le_one hη).mpr hule⟩
-        rw [hline]
-        exact hy
+      simpa only [hshort] using hnear.1 w u hu hstrict
   have havoidS : ∀ w u, 0 < u → u ≤ L → Y - u • v q ∉ S w := by
     intro w u hu huL
     rw [hpoint]
     by_cases huη : η ≤ u
     · exact hS w (L - u) (by linarith) (by dsimp only [L]; linarith)
-    · have hw : x ∉ S w := hS w t (hpos _).le le_rfl
-      have hh := hnear.2 w hw (u / η)
-        ⟨(div_pos hu hη).le, (div_le_one hη).mpr (le_of_lt (lt_of_not_ge huη))⟩
-      rw [hline] at hh
-      exact hh
+    · simpa only [hshort] using hnear.2 w u hu (le_of_not_ge huη)
   -- Apply the exact weighted-image theorem to the complete terminal block,
   -- then use the uniform cut to remove its incoming-admission condition.
   have hsum := sum_ite_decoration_straightTerminal_eq_sum

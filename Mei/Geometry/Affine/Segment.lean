@@ -22,7 +22,8 @@ For a finite family of closed supports, endpoints sufficiently near one point
 also have an avoiding segment whenever their normal evaluations have matching
 nonzero signs at every incident support. Nonincident supports are excluded by
 `IsClosed.isOpen_setOf_lineMap_notMem`, and incident ones by convexity of the
-open scalar half-lines.
+open scalar half-lines. A transverse incoming segment may instead end on an
+incident wall while avoiding every singular set through its regular endpoint.
 -/
 
 public section
@@ -81,6 +82,47 @@ theorem eventually_add_smul_pair (θ v w : V) {p : V × V → Prop}
       (𝓝 0) (𝓝 (θ, θ)) := by
     simpa using hc.tendsto 0
   exact (ht.eventually hp).filter_mono nhdsWithin_le_nhds
+
+/-- For sufficiently small incoming displacements, the segment with parameter
+`0 < u < η` avoids closed walls and singular sets. Singular sets are also avoided
+at `u = η` when the transverse endpoint `x` is regular. Incident walls lie in
+the crossing hyperplane. -/
+theorem eventually_incomingSegment_notMem {κ : Type*} [Finite κ]
+    {S : κ → Set V} (x v : V) (m : V →ₗ[ℝ] ℝ) (b : ℝ)
+    (htrans : m v ≠ 0) (hheight : m x = b)
+    (hclosedW : ∀ j, IsClosed (W j))
+    (hplane : ∀ j, x ∈ W j → ∀ y ∈ W j, m y = b)
+    (hclosedS : ∀ j, IsClosed (S j)) (hregular : ∀ j, x ∉ S j) :
+    ∀ᶠ η : ℝ in 𝓝[>] 0,
+      (∀ j u, 0 < u → u < η → x + η • v - u • v ∉ W j) ∧
+      (∀ j u, 0 < u → u ≤ η → x + η • v - u • v ∉ S j) := by
+  have hnear := eventually_add_smul_pair x v 0
+    ((eventually_forall_lineMap_notMem_of_notMem hclosedW x).and
+      (eventually_forall_lineMap_notMem_of_notMem hclosedS x))
+  filter_upwards [hnear, self_mem_nhdsWithin] with η hnear hη
+  have hη : 0 < η := hη
+  have hline (u : ℝ) : AffineMap.lineMap (x + η • v) (x + η • (0 : V)) (u / η) =
+      x + η • v - u • v := by
+    simp only [AffineMap.lineMap_apply_module', smul_zero, add_zero, smul_sub,
+      smul_add, smul_smul, div_mul_cancel₀ u hη.ne']
+    module
+  constructor
+  · intro j u hu huη hy
+    by_cases hj : x ∈ W j
+    · have he := hplane j hj _ hy
+      have he' : m (x + η • v - u • v) = b + (η - u) * m v := by
+        rw [map_sub, map_add, map_smul, map_smul, smul_eq_mul, smul_eq_mul, hheight]
+        ring
+      rw [he'] at he
+      exact (mul_ne_zero (sub_pos.mpr huη).ne' htrans) (by linarith)
+    · apply hnear.1 j hj (u / η) ⟨(div_pos hu hη).le, (div_lt_one hη).mpr huη |>.le⟩
+      rw [hline]
+      exact hy
+  · intro j u hu huη
+    have hh := hnear.2 j (hregular j) (u / η)
+      ⟨(div_pos hu hη).le, (div_le_one hη).mpr huη⟩
+    rw [hline] at hh
+    exact hh
 
 /-- Near a point, matching strict normal sides at its incident supports suffice
 for the entire connecting segment to miss all supports. -/

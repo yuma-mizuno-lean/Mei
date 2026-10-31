@@ -25,10 +25,10 @@ arbitrary semiring. No diagonal-preservation assumption is needed.
 
 We combine `sum_ite_decoration_finalEncounter_eq_component_sum` with
 `eventually_forall_mem_admissibleBackwardDomain`. Closed nonincident obstacles
-are excluded using `eventually_forall_lineMap_notMem_of_notMem`; incident walls
-lie in the selected hyperplane. This is the final-encounter step of the
-backward-ray recursion in Mandel, *Scattering diagrams, theta functions, and
-refined tropical curve counts*, §3.3.3 (arXiv:1503.06183v5).
+and incident walls are excluded using `eventually_incomingSegment_notMem`. This
+is the final-encounter step of the backward-ray recursion in Mandel, *Scattering
+diagrams, theta functions, and refined tropical curve counts*, §3.3.3
+(arXiv:1503.06183v5).
 -/
 
 public noncomputable section
@@ -142,46 +142,19 @@ theorem eventually_sum_finalEncounter_eq_component_sum [Finite J] [Finite K]
   rw [htime] at hcut
   -- Closed nonincident obstacles are avoided on a short incoming segment.
   -- Transversality excludes the incident hyperplane away from the encounter.
-  have hnear := eventually_add_smul_pair x (v p) 0
-    ((eventually_forall_lineMap_notMem_of_notMem hclosedW x).and
-      (eventually_forall_lineMap_notMem_of_notMem hclosedS x))
+  have hnear := eventually_incomingSegment_notMem x (v p) m.toLinearMap b
+    (hnormal ▸ htrans) hheight hclosedW hplane hclosedS hregular
   filter_upwards [hcut, hnear, self_mem_nhdsWithin] with η hcut hnear hη
   have hη : 0 < η := hη
   let Y := x + η • v p
   have hend : Y - η • v p - t • v q = Q := by simp [Y, x]
-  have hline (u : ℝ) : AffineMap.lineMap (x + η • v p) (x + η • (0 : V)) (u / η) =
-      Y - u • v p := by
-    simp only [AffineMap.lineMap_apply_module', smul_zero, add_zero, smul_sub,
-      smul_add, smul_smul, div_mul_cancel₀ u hη.ne']
-    dsimp only [Y]
-    module
-  have hW₁ : ∀ j u, 0 < u → u < η → Y - u • v p ∉ W j := by
-    intro j u hu huη hy
-    by_cases hj : x ∈ W j
-    · have he := hplane j hj _ hy
-      have he' : m (Y - u • v p) = b + (η - u) * m (v p) := by
-        dsimp only [Y]
-        rw [map_sub, map_add, map_smul, map_smul, smul_eq_mul, smul_eq_mul, hheight]
-        ring
-      rw [he'] at he
-      have hn : m (v p) ≠ 0 := hnormal ▸ htrans
-      exact (mul_ne_zero (sub_pos.mpr huη).ne' hn) (by linarith)
-    · apply hnear.1 j hj (u / η) ⟨(div_pos hu hη).le, (div_lt_one hη).mpr huη |>.le⟩
-      rw [hline]
-      exact hy
-  have hS₁ : ∀ j u, 0 < u → u ≤ η → Y - u • v p ∉ S j := by
-    intro j u hu huη
-    have hh := hnear.2 j (hregular j) (u / η)
-      ⟨(div_pos hu hη).le, (div_le_one hη).mpr huη⟩
-    rw [hline] at hh
-    exact hh
   -- Attachment accounts for every surviving incoming component. The common cut
   -- now removes the admission test from its exact weighted image formula.
   have hh := sum_ite_decoration_finalEncounter_eq_component_sum
     (T := T) (a := a) (v := v) (f := f) (c := c) (ε := ε) (P := P)
     (W := W) (S := S) (C := C) U p q Y η t hη.le ht m b H hnormal htrans
-    (by simpa only [Y, add_sub_cancel_right] using hheight) (by simpa [Y] using hinc) hW₁
-    (by simpa only [hend] using hW) hS₁ (by simpa only [hend] using hS)
+    (by simpa only [Y, add_sub_cancel_right] using hheight) (by simpa [Y] using hinc) hnear.1
+    (by simpa only [hend] using hW) hnear.2 (by simpa only [hend] using hS)
   rw [hend] at hh
   rw [← hh]
   apply Finset.sum_congr rfl
