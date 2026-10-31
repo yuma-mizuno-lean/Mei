@@ -151,6 +151,7 @@ theorem homogeneousHistory_wallEventLabel_normal_eq {n : ℕ}
 /-- For actual signed simultaneous event labels, the decorated-history filter
 requires only survival and the prescribed crossing signs: normal conservation
 is automatic, even when several supported rays contribute to the event. -/
+@[simp↓]
 theorem mem_decoratedHistorySupport_wallEventLabel_iff {n : ℕ}
     (e : Fin n → WallEvent (D.active k)) (r : Fin n → Γ) (r₀ : Γ)
     (a : G r₀) :

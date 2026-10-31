@@ -47,6 +47,7 @@ local notation "walls" k => fun j : D.active k => DirectedWall.support (Directed
 /-- A combined regular wall label preserves and reflects every normal-degree
 submodule of a filtered quotient. The normal may be chosen from any incident
 wall, even when the incident labels lie on different supported rays. -/
+@[simp↓]
 theorem truncatedBCHAction_combinedLabel_mem_normalDegreeSubmodule_iff
     (F : ModuleFiltration R M) [IsFiltrationRaising d ℒ F] (k : ℕ)
     (θ v : V) (hθ : θ ∉ singularSupport (walls k))
