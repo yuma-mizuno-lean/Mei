@@ -40,7 +40,7 @@ theorem antipode_mem_homogeneousSubmodule {n : Γ} {a : U}
       have hι : S (_root_.UniversalEnvelopingAlgebra.ι R (x.2 : L)) =
           -_root_.UniversalEnvelopingAlgebra.ι R (x.2 : L) := by
         rw [TauCeti.UniversalEnvelopingAlgebra.hopfAlgebraStructAntipode_eq_antipode,
-          TauCeti.UniversalEnvelopingAlgebra.antipode_ι]
+          _root_.UniversalEnvelopingAlgebra.antipode_ι]
       simp only [List.map_cons, List.prod_cons, List.sum_cons]
       rw [_root_.HopfAlgebra.antipode_mul_antidistrib, hι]
       simpa only [add_comm] using SetLike.mul_mem_graded ih
