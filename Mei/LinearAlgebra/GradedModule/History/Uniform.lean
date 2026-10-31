@@ -14,17 +14,16 @@ public import Mathlib.RingTheory.Finiteness.Defs
 A finite set containing all contributing histories on the range of an input
 linear map gives an identity of linear maps. The ambient grading can have
 infinitely many nonzero pieces, and the input module need not be finite.
-Finite generation of the input range is a sufficient condition: take the union
-of the histories supported by finitely many generators. Linearity then gives
-uniform vanishing on their span.
+Finite generation of the input range is a sufficient condition for such a
+finite set to exist.
 
 Selected history sums are independent of the chosen uniform support and commute
 with coefficient specialization after grouping by the degree map. Cancellations
 are allowed; no bijection of surviving histories is asserted.
 
-The proofs use `sum_homogeneousHistory` and
-`map_sum_ite_homogeneousHistory` for individual inputs, then use uniform
-support to identify the resulting sums as linear maps.
+These are the linear-map versions of the pointwise results
+`sum_homogeneousHistory` and `map_sum_ite_homogeneousHistory` in
+`History/Finite.lean`.
 -/
 
 public noncomputable section
@@ -118,7 +117,7 @@ theorem sum_ite_homogeneousHistory_comp_apply (S : Finset (Fin n → ι))
       simp [hz])).symm
 
 open Classical in
-/-- Selected linear-map sums do not depend on how a uniform support was enlarged. -/
+/-- Selected linear-map sums agree over any two uniform supports. -/
 theorem sum_ite_homogeneousHistory_comp_eq (S S' : Finset (Fin n → ι))
     (hS : ∀ p ∉ S, (homogeneousHistory ℳ T p).comp a = 0)
     (hS' : ∀ p ∉ S', (homogeneousHistory ℳ T p).comp a = 0)

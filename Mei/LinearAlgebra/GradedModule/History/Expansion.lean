@@ -18,9 +18,9 @@ for every coefficient, without a finite generation assumption on the modules.
 Thus the expansion is an identity of linear maps, suitable for coefficient
 identities with a variable incoming parameter.
 
-This is a specialization of `sum_homogeneousHistory_comp_eq`: global grading
-support supplies a uniform support on the identity input map. The shared
-expansion also applies to infinitely supported gradings on smaller input ranges.
+`sum_homogeneousHistory_comp_eq` in `History/Uniform.lean` gives the version
+for a uniform support on the range of an input map, which also covers
+infinitely supported gradings.
 -/
 
 public noncomputable section
