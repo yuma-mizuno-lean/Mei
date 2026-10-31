@@ -28,7 +28,8 @@ avoidance, whole decorations and multiplicities remain in both fibers.
 We combine `sum_ite_decoration_straightTerminal_eq_sum` with
 `eventually_forall_mem_admissibleBackwardDomain` and the stability of segments
 avoiding closed sets. The transverse incoming segment is supplied by
-`eventually_incomingSegment_notMem`. This is the unchanged terminal
+`eventually_extendSegment_notMem`, with reversed encounter times from
+`eventually_extendSegment`. This is the unchanged terminal
 part of the last-change recursion in Mandel, *Scattering diagrams, theta functions,
 and refined tropical
 curve counts*, §3.3.3 (arXiv:1503.06183v5).
@@ -113,29 +114,18 @@ theorem eventually_sum_straightTerminal_eq_sum [Finite J] [Finite K]
   simp only [j, Fin.append_left, Fin.append_right, htime] at hcut
   -- For the converse attachment, closed nonincident obstacles miss a short
   -- incoming segment; incident walls are excluded by their transverse normal.
-  have hnear := eventually_extendSegment_notMem Q (v q) s (hpos _).le
-    (g (Fin.last m)).toLinearMap (b (Fin.last m)) (htrans _)
-    (hheight _) hclosedW hplane hclosedS hW hS
-  filter_upwards [hcut, hnear, self_mem_nhdsWithin] with η hcut hnear hη
-  have hη : 0 < η := hη
-  let L := t + η
-  let Y := Q + L • v q
-  let τ (i : Fin (m + 1)) := L - s i
-  have hend : Y - L • v q = Q := by simp [Y]
-  have hpoint (u : ℝ) : Y - u • v q = Q + (L - u) • v q := by
-    dsimp only [Y]
-    module
-  -- Apply the exact weighted-image theorem to the complete terminal block,
+  have hsegment := eventually_extendSegment Q (v q) s hs hpos
+    (fun j => (g j).toLinearMap) b H (htrans _) hheight hinc
+    hclosedW hplane hclosedS hW hS
+  filter_upwards [hcut, hsegment] with η hcut hsegment
+  obtain ⟨hend, hL, hτ, hτpos, hτlt, hheight', hinc', hW', hS'⟩ := hsegment
+  let Y := Q + (t + η) • v q
+  -- Apply the exact weighted-image theorem with the shared reversed segment,
   -- then use the uniform cut to remove its incoming-admission condition.
   have hsum := sum_ite_decoration_straightTerminal_eq_sum
     (T := T) (a := a) (v := v) (f := f) (c := c) (ε := ε) (P := P)
-    (W := W) (S := S) (C := C) U q Y hU L (by dsimp only [L]; linarith [hpos (Fin.last m)])
-    τ (fun i i' hi => by dsimp only [τ]; linarith [hs hi])
-    (fun i => by dsimp only [τ, L]; linarith [hs.monotone (Fin.le_last i)])
-    (fun i => by dsimp only [τ]; linarith [hpos i]) g b H htrans
-    (fun i => by simpa only [hpoint, τ, sub_sub_cancel] using hheight i)
-    (fun i => by simpa only [hpoint, τ, sub_sub_cancel] using hinc i)
-    hnear.1 hnear.2 B
+    (W := W) (S := S) (C := C) U q Y hU (t + η) hL
+    (fun i => t + η - s i) hτ hτpos hτlt g b H htrans hheight' hinc' hW' hS' B
   rw [hend] at hsum
   rw [← hsum]
   apply Finset.sum_congr rfl
@@ -150,10 +140,7 @@ theorem eventually_sum_straightTerminal_eq_sum [Finite J] [Finite K]
         dsimp only [j] at hl'
         simp only [Fin.val_castSucc, Fin.val_castAdd, Fin.val_last] at hl'
         omega
-      have he : l = (Fin.castAdd n (⟨l.val, hlt⟩ : Fin (m + 1))).castSucc := by
-        ext
-        rfl
-      rw [he, Fin.snoc_castSucc, hz.1]
+      rw [Fin.snoc_eq_of_const_prefix hz.1 p₀ l hlt]
     -- Mathlib's snoc_comp_natAdd identifies the incoming boundary degree,
     -- including when the older encounter word is empty.
     have hp : v (Fin.snoc (α := fun _ => Γ) z.1.val p₀ j.succ) = v q := by
@@ -161,7 +148,7 @@ theorem eventually_sum_straightTerminal_eq_sum [Finite J] [Finite K]
       rw [he]
       exact congrArg v ((congrFun (Fin.snoc_comp_natAdd z.1.val p₀) 0).trans hz.2.1)
     have hd := hcut z hv hp
-    have hY : x + η • v q = Y := by dsimp only [x, Y, L]; module
+    have hY : x + η • v q = Y := by dsimp only [x, Y]; module
     rw [hY] at hd
     rw [ite_eq_left hz, ite_eq_left ⟨hz.1, hz.2.1, hd, hz.2.2⟩]
   · rw [ite_eq_right hz, ite_eq_right (fun h => hz ⟨h.1, h.2.1, h.2.2.2⟩)]

@@ -19,9 +19,11 @@ obstacles, and permits an arbitrary selection on the older degree-labelled histo
 Thus a preceding degree-changing encounter can be selected without fixing the
 older word. Whole decorations and multiplicities are preserved.
 
+This generalizes `DecoratedAdmissibleRay.eventually_sum_straightTerminal_eq_sum`
+from a fixed older encounter word to all older words, and follows its proof.
 We combine `CutoffDecoratedRay.sum_ite_decoration_straightTerminal_eq_sum` with
 `DecoratedAdmissibleRay.eventually_exists_incoming_truncate` and
-`eventually_extendSegment_notMem`. This is the unchanged-terminal-block part
+`eventually_extendSegment`. This is the unchanged-terminal-block part
 of the backward-ray recursion in Mandel, *Scattering diagrams, theta functions,
 and refined tropical curve counts*, §3.3.3 (arXiv:1503.06183v5).
 -/
@@ -60,19 +62,15 @@ private theorem eventually_suffix {n : ℕ} (u : Fin (m + 1 + n) → J)
           List.ofFn (fun j : Fin n => (r.1.val (Fin.natAdd (m + 1) j),
             u (Fin.natAdd (m + 1) j))) := by
   let i := Fin.natAdd (m + 1) (0 : Fin (n + 1))
-  have hzero : Fin.snoc (α := fun _ => Γ) r.1.val 0 0 = q := by
-    have he : (0 : Fin (m + 1 + n + 1)) =
-        (Fin.castAdd n (0 : Fin (m + 1))).castSucc := Fin.ext rfl
-    rw [he, Fin.snoc_castSucc, hp]
+  have hzero : Fin.snoc (α := fun _ => Γ) r.1.val 0 0 = q :=
+    Fin.snoc_eq_of_const_prefix hp 0 0 (Nat.succ_pos m)
   have hpoint := r.2.ray_eq_endpoint_sub_smul i
     (fun j hj => by
       have hj' : j.val < m + 1 := by
         have := Fin.lt_def.mp hj
         simp only [i, Fin.val_natAdd, Fin.val_zero, add_zero] at this
         exact this
-      have he : j = (Fin.castAdd n (⟨j.val, hj'⟩ : Fin (m + 1))).castSucc := Fin.ext rfl
-      rw [he, Fin.snoc_castSucc, hp]
-      exact (congrArg v hzero).symm)
+      rw [Fin.snoc_eq_of_const_prefix hp 0 j hj', hzero])
     (t := r.2.parameter i)
     ⟨le_rfl, by simpa only [r.2.parameter_zero] using
       r.2.strictAnti_parameter.antitone (Fin.zero_le i)⟩
@@ -95,6 +93,66 @@ private theorem eventually_suffix {n : ℕ} (u : Fin (m + 1 + n) → J)
     exact (congrFun (Fin.snoc_comp_natAdd r.1.val 0) 0).symm.trans hb
   · simpa only [hh] using hw
 
+-- Read the constant block from the recorded word, identify its geometric cut
+-- time by transversality, then truncate the actual realization there.
+private theorem eventually_suffix_of_prefix
+    (word : Fin (m + 1) → J) (q : Γ) (t : ℝ)
+    (htrans : f (word (Fin.last m)) (v q) ≠ 0)
+    (hheight : f (word (Fin.last m)) (Q + t • v q) = c (word (Fin.last m)))
+    {N : ℕ} (u : Fin N → J)
+    (r : DecoratedAdmissibleRay ℳ (fun j => T (u j)) 0 a v
+      (fun j => f (u j)) (fun j => c (u j))
+      (fun j => ε (u j)) (fun j => P (u j)) W S C Q)
+    (hm : ∀ j, r.1.val j ∈ d.cutoff k)
+    (hmono : ∀ i j, i ≤ j → r.1.val i - r.1.val j ∈ d.monoid)
+    (hpre : (List.ofFn (fun j => (r.1.val j, u j))).take (m + 1) =
+      List.ofFn (fun j => (q, word j)))
+    (hb : (((List.ofFn (fun j => (r.1.val j, u j))).drop (m + 1)).map
+      Prod.fst).headD 0 = q) :
+    ∀ᶠ η : ℝ in 𝓝[>] 0,
+      ∃ b : CutoffDecoratedRay d ℳ T a v f c ε P W S C k (Q + (t + η) • v q),
+        b.finalDegree = q ∧ b.degreeItinerary =
+          (List.ofFn (fun j => (r.1.val j, u j))).drop (m + 1) := by
+  have hlen : m + 1 ≤ N := by
+    have hh := congrArg List.length hpre
+    simp only [List.length_take, List.length_ofFn] at hh
+    omega
+  obtain ⟨n, rfl⟩ := Nat.exists_eq_add_of_le hlen
+  rw [List.ofFn_add] at hpre hb ⊢
+  simp only [List.length_ofFn, List.take_left', List.drop_left'] at hpre hb ⊢
+  have htuple := List.ofFn_injective hpre
+  have hp (i : Fin (m + 1)) : r.1.val (Fin.castAdd n i) = q :=
+    congrArg Prod.fst (congrFun htuple i)
+  have hw (i : Fin (m + 1)) : u (Fin.castAdd n i) = word i :=
+    congrArg Prod.snd (congrFun htuple i)
+  have hboundary : Fin.snoc (α := fun _ => Γ) r.1.val 0
+      (Fin.natAdd (m + 1) (0 : Fin (n + 1))) = q := by
+    have he := congrFun (Fin.snoc_comp_natAdd r.1.val 0) 0
+    simp only [Function.comp_apply] at he
+    rw [he]
+    cases n with
+    | zero => simpa [Fin.snoc_zero] using hb
+    | succ n => simpa [List.ofFn_succ] using hb
+  let j := Fin.castAdd n (Fin.last m)
+  have hzero : Fin.snoc (α := fun _ => Γ) r.1.val 0 0 = q :=
+    Fin.snoc_eq_of_const_prefix hp 0 0 (Nat.succ_pos m)
+  -- Constant terminal degree identifies the common geometric cut point.
+  have htime := r.2.parameter_eq_div_of_directions_eq j (fun i hi => by
+    have hi' : i.val < m + 1 := by
+      have hi' := Fin.le_iff_val_le_val.mp hi
+      simp only [j, Fin.val_castSucc, Fin.val_castAdd, Fin.val_last] at hi'
+      omega
+    rw [Fin.snoc_eq_of_const_prefix hp 0 i hi', hzero])
+  have hj : j.succ = Fin.natAdd (m + 1) (0 : Fin (n + 1)) := by
+    ext
+    simp [j]
+  have hdiv : (f (word (Fin.last m)) Q - c (word (Fin.last m))) /
+      f (word (Fin.last m)) (v q) = -t := by
+    apply (div_eq_iff htrans).mpr
+    rw [map_add, map_smul, smul_eq_mul] at hheight
+    linarith
+  rw [hj, hzero, hw, hdiv] at htime
+  exact eventually_suffix u r hm hmono q t hp hboundary htime
 
 private theorem eventually_admits_suffix [Finite J]
     (word : Fin (m + 1) → J) (q : Γ) (t : ℝ)
@@ -106,69 +164,12 @@ private theorem eventually_admits_suffix [Finite J]
         ((z.degreeItinerary.drop (m + 1)).map Prod.fst).headD 0 = q →
         ∃ r : CutoffDecoratedRay d ℳ T a v f c ε P W S C k (Q + (t + η) • v q),
           r.finalDegree = q ∧ r.degreeItinerary = z.degreeItinerary.drop (m + 1) := by
-  -- Split only the tuple length; retain the actual realization throughout.
-  have cut {N : ℕ} (u : Fin N → J)
-      (r : DecoratedAdmissibleRay ℳ (fun j => T (u j)) 0 a v
-        (fun j => f (u j)) (fun j => c (u j))
-        (fun j => ε (u j)) (fun j => P (u j)) W S C Q)
-      (hm : ∀ j, r.1.val j ∈ d.cutoff k)
-      (hmono : ∀ i j, i ≤ j → r.1.val i - r.1.val j ∈ d.monoid)
-      (hpre : (List.ofFn (fun j => (r.1.val j, u j))).take (m + 1) =
-        List.ofFn (fun j => (q, word j)))
-      (hb : (((List.ofFn (fun j => (r.1.val j, u j))).drop (m + 1)).map
-        Prod.fst).headD 0 = q) :
-      ∀ᶠ η : ℝ in 𝓝[>] 0,
-        ∃ b : CutoffDecoratedRay d ℳ T a v f c ε P W S C k (Q + (t + η) • v q),
-          b.finalDegree = q ∧ b.degreeItinerary =
-            (List.ofFn (fun j => (r.1.val j, u j))).drop (m + 1) := by
-    have hlen : m + 1 ≤ N := by
-      have hh := congrArg List.length hpre
-      simp only [List.length_take, List.length_ofFn] at hh
-      omega
-    obtain ⟨n, rfl⟩ := Nat.exists_eq_add_of_le hlen
-    rw [List.ofFn_add] at hpre hb ⊢
-    simp only [List.length_ofFn, List.take_left', List.drop_left'] at hpre hb ⊢
-    have htuple := List.ofFn_injective hpre
-    have hp (i : Fin (m + 1)) : r.1.val (Fin.castAdd n i) = q :=
-      congrArg Prod.fst (congrFun htuple i)
-    have hw (i : Fin (m + 1)) : u (Fin.castAdd n i) = word i :=
-      congrArg Prod.snd (congrFun htuple i)
-    have hboundary : Fin.snoc (α := fun _ => Γ) r.1.val 0
-        (Fin.natAdd (m + 1) (0 : Fin (n + 1))) = q := by
-      have he := congrFun (Fin.snoc_comp_natAdd r.1.val 0) 0
-      simp only [Function.comp_apply] at he
-      rw [he]
-      cases n with
-      | zero => simpa [Fin.snoc_zero] using hb
-      | succ n => simpa [List.ofFn_succ] using hb
-    let j := Fin.castAdd n (Fin.last m)
-    have hzero : Fin.snoc (α := fun _ => Γ) r.1.val 0 0 = q := by
-      have he : (0 : Fin (m + 1 + n + 1)) =
-          (Fin.castAdd n (0 : Fin (m + 1))).castSucc := Fin.ext rfl
-      rw [he, Fin.snoc_castSucc, hp]
-    -- Constant terminal degree identifies the common geometric cut point.
-    have htime := r.2.parameter_eq_div_of_directions_eq j (fun i hi => by
-      have hi' : i.val < m + 1 := by
-        have hi' := Fin.le_iff_val_le_val.mp hi
-        simp only [j, Fin.val_castSucc, Fin.val_castAdd, Fin.val_last] at hi'
-        omega
-      have he : i = (Fin.castAdd n (⟨i.val, hi'⟩ : Fin (m + 1))).castSucc := Fin.ext rfl
-      rw [he, Fin.snoc_castSucc, hp, hzero])
-    have hj : j.succ = Fin.natAdd (m + 1) (0 : Fin (n + 1)) := by
-      ext
-      simp [j]
-    have hdiv : (f (word (Fin.last m)) Q - c (word (Fin.last m))) /
-        f (word (Fin.last m)) (v q) = -t := by
-      apply (div_eq_iff htrans).mpr
-      rw [map_add, map_smul, smul_eq_mul] at hheight
-      linarith
-    rw [hj, hzero, hw, hdiv] at htime
-    exact eventually_suffix u r hm hmono q t hp hboundary htime
   apply eventually_all.mpr
   intro z
   by_cases hp : z.degreeItinerary.take (m + 1) = List.ofFn (fun j => (q, word j)) ∧
       ((z.degreeItinerary.drop (m + 1)).map Prod.fst).headD 0 = q
-  · filter_upwards [cut z.itinerary.get z.realization z.degree_mem z.degree_sub_mem
+  · filter_upwards [eventually_suffix_of_prefix word q t htrans hheight
+      z.itinerary.get z.realization z.degree_mem z.degree_sub_mem
       (by simpa only [← degreeItinerary_eq] using hp.1)
       (by simpa only [← degreeItinerary_eq] using hp.2)]
       with η hη _ _
@@ -214,28 +215,16 @@ theorem eventually_sum_straightTerminal_eq_sum [Finite J] [Finite K]
   have hcut := eventually_admits_suffix (d := d) (ℳ := ℳ) (T := T) (a := a)
     (v := v) (f := f) (c := c) (ε := ε) (P := P) (W := W) (S := S) (C := C)
     (k := k) word q t (htrans _) (hheight _)
-  have hnear := eventually_extendSegment_notMem Q (v q) s (hpos _).le
-    (f (word (Fin.last m))).toLinearMap (c (word (Fin.last m))) (htrans _)
-    (hheight _) hclosedW hplane hclosedS hW hS
-  filter_upwards [hcut, hnear, self_mem_nhdsWithin] with η hcut hnear hη
-  have hη : 0 < η := hη
-  let L := t + η
-  let Y := Q + L • v q
-  let τ (i : Fin (m + 1)) := L - s i
-  have hend : Y - L • v q = Q := by simp [Y]
-  have hpoint (u : ℝ) : Y - u • v q = Q + (L - u) • v q := by
-    dsimp only [Y]
-    module
+  have hsegment := eventually_extendSegment Q (v q) s hs hpos
+    (fun j => (f (word j)).toLinearMap) (fun j => c (word j)) (fun j => P (word j))
+    (htrans _) hheight hinc hclosedW hplane hclosedS hW hS
+  filter_upwards [hcut, hsegment] with η hcut hsegment
+  obtain ⟨hend, hL, hτ, hτpos, hτlt, hheight', hinc', hW', hS'⟩ := hsegment
   have hsum := sum_ite_decoration_straightTerminal_eq_sum
     (d := d) (ℳ := ℳ) (T := T) (a := a) (v := v) (f := f) (c := c) (ε := ε)
     (P := P) (W := W) (S := S) (C := C) (k := k)
-    word q Y hT L (by dsimp only [L]; linarith [hpos (Fin.last m)]) τ
-    (fun i j hij => by dsimp only [τ]; linarith [hs hij])
-    (fun i => by dsimp only [τ, L]; linarith [hs.monotone (Fin.le_last i)])
-    (fun i => by dsimp only [τ]; linarith [hpos i]) htrans hsign
-    (fun i => by simpa only [hpoint, τ, sub_sub_cancel] using hheight i)
-    (fun i => by simpa only [hpoint, τ, sub_sub_cancel] using hinc i)
-    hnear.1 hnear.2 B
+    word q (Q + (t + η) • v q) hT (t + η) hL (fun i => t + η - s i)
+    hτ hτpos hτlt htrans hsign hheight' hinc' hW' hS' B
   rw [hend] at hsum
   rw [← hsum]
   apply Finset.sum_congr rfl

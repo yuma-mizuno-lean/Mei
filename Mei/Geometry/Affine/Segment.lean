@@ -24,8 +24,10 @@ nonzero signs at every incident support. Nonincident supports are excluded by
 `IsClosed.isOpen_setOf_lineMap_notMem`, and incident ones by convexity of the
 open scalar half-lines. A transverse incoming segment may instead end on an
 incident wall while avoiding every singular set through its regular endpoint.
-Extending a marked segment uses the same short incoming piece. Its argument is
-extracted from `DecoratedAdmissibleRay.eventually_sum_straightTerminal_eq_sum`.
+Extending beyond the last marked encounter keeps closed obstacles off unmarked
+points and singular sets off the whole segment, using only the last encounter's
+transverse normal. Reversing the extended segment gives decreasing encounter
+times measured from its new endpoint.
 -/
 
 public section
@@ -171,6 +173,50 @@ theorem eventually_extendSegment_notMem {κ : Type*} [Finite κ]
     by_cases huη : η ≤ u
     · exact hS j (t + η - u) (by linarith) (by linarith)
     · simpa only [hshort] using hnear.2 j u hu (le_of_not_ge huη)
+
+/-- Extend a marked straight segment and measure its encounter times backward
+from the new endpoint. The reversed times are positive, strictly decreasing and
+less than the segment length; the marked points remain on their prescribed
+supports, while walls and singular sets are avoided between encounters. -/
+theorem eventually_extendSegment {κ : Type*} [Finite κ]
+    {S : κ → Set V} {n : ℕ} (Q v : V) (s : Fin (n + 1) → ℝ)
+    (hs : StrictMono s) (hpos : ∀ i, 0 < s i)
+    (g : Fin (n + 1) → V →ₗ[ℝ] ℝ) (b : Fin (n + 1) → ℝ)
+    (H : Fin (n + 1) → Set V)
+    (htrans : g (Fin.last n) v ≠ 0)
+    (hheight : ∀ i, g i (Q + s i • v) = b i)
+    (hinc : ∀ i, Q + s i • v ∈ H i)
+    (hclosedW : ∀ j, IsClosed (W j))
+    (hplane : ∀ j, Q + s (Fin.last n) • v ∈ W j →
+      ∀ y ∈ W j, g (Fin.last n) y = b (Fin.last n))
+    (hclosedS : ∀ j, IsClosed (S j))
+    (hW : ∀ j t, 0 ≤ t → t < s (Fin.last n) →
+      (∀ i, t ≠ s i) → Q + t • v ∉ W j)
+    (hS : ∀ j t, 0 ≤ t → t ≤ s (Fin.last n) → Q + t • v ∉ S j) :
+    ∀ᶠ η : ℝ in 𝓝[>] 0,
+      let L := s (Fin.last n) + η
+      let Y := Q + L • v
+      let τ := fun i => L - s i
+      Y - L • v = Q ∧ 0 ≤ L ∧ StrictAnti τ ∧
+        (∀ i, 0 < τ i) ∧ (∀ i, τ i < L) ∧
+        (∀ i, g i (Y - τ i • v) = b i) ∧
+        (∀ i, Y - τ i • v ∈ H i) ∧
+        (∀ j u, 0 < u → u ≤ L → (∀ i, u ≠ τ i) → Y - u • v ∉ W j) ∧
+        (∀ j u, 0 < u → u ≤ L → Y - u • v ∉ S j) := by
+  have hnear := eventually_extendSegment_notMem Q v s (hpos _).le
+    (g (Fin.last n)) (b (Fin.last n)) htrans (hheight _)
+    hclosedW hplane hclosedS hW hS
+  filter_upwards [hnear, self_mem_nhdsWithin] with η hnear hη
+  have hη : 0 < η := hη
+  have hpoint (i : Fin (n + 1)) :
+      Q + (s (Fin.last n) + η) • v - (s (Fin.last n) + η - s i) • v =
+        Q + s i • v := by module
+  exact ⟨by simp, by linarith [hpos (Fin.last n)],
+    fun i j hij => by dsimp only; linarith [hs hij],
+    fun i => by dsimp only; linarith [hs.monotone (Fin.le_last i)],
+    fun i => by dsimp only; linarith [hpos i],
+    fun i => by simpa only [hpoint] using hheight i,
+    fun i => by simpa only [hpoint] using hinc i, hnear⟩
 
 /-- Near a point, matching strict normal sides at its incident supports suffice
 for the entire connecting segment to miss all supports. -/
