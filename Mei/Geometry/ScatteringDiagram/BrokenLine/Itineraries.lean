@@ -131,6 +131,17 @@ theorem degreeItinerary_eq (r : CutoffDecoratedRay d ℳ T a v f c ε P W S C k 
     r.degreeItinerary = List.ofFn fun j =>
       (r.realization.1.val j, r.itinerary.get j) := (rfl)
 
+/-- The first recorded degree is the final degree. An empty itinerary has
+incoming degree zero. -/
+@[simp↓] -- Recover the degree before `headD` and `head?_map` expand the word.
+theorem headD_map_fst_degreeItinerary
+    (r : CutoffDecoratedRay d ℳ T a v f c ε P W S C k Q) :
+    (r.degreeItinerary.map Prod.fst).headD 0 = r.finalDegree := by
+  rcases r with ⟨l, r, hm, hmono⟩
+  cases l with
+  | nil => simp [degreeItinerary_eq, finalDegree_def, Fin.snoc_zero]
+  | cons j l => simp [degreeItinerary_eq, finalDegree_def, List.ofFn_succ]
+
 /-- Forgetting the degrees recovers the entire recorded encounter word. -/
 @[simp]
 theorem map_snd_degreeItinerary
