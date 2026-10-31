@@ -65,7 +65,7 @@ local notation "restriction" k:max => (WallComplement.restrictPrefunctor
 of the initial segment arbitrarily close to that event from the incoming side.
 Only consistency of the base diagram is needed for this identification. -/
 theorem eventually_exists_extendedCoefficientField_eq_eventInput
-    (k : ℕ) (hBc : B.LevelConsistent (k + 1))
+    (k : ℕ) (hBc : B.LevelConsistent k)
     {x y : WallComplement (fun c : B.active (k + 1) => (B.wall c).support)}
     (e : x ⟶ y) (j : Fin (orderedCrossingTimes e).length) :
     let T := (orderedCrossingTimes e).reverse
@@ -74,10 +74,10 @@ theorem eventually_exists_extendedCoefficientField_eq_eventInput
       t ∈ Ioo (0 : ℝ) 1 ∧
       ∃ z : WallComplement (fun c : B.active (k + 1) => (B.wall c).support),
         z.val = AffineMap.lineMap x.val y.val t ∧
-        field k (hBc.mono (Nat.le_succ k)) ((restriction k).obj z) =
+        field k hBc ((restriction k).obj z) =
           (A).truncatedBCHAction d ℒ k
             ((d.truncationMap ℒ (Nat.le_succ k)).bchGroupMap (g.drop (j.val + 1)).prod)
-            (field k (hBc.mono (Nat.le_succ k)) ((restriction k).obj x)) := by
+            (field k hBc ((restriction k).obj x)) := by
   dsimp only
   filter_upwards [eventually_exists_segmentPathProduct_eq_drop
     (fun c : B.active (k + 1) => h.realCharacter (B.wall c).normal)
@@ -86,17 +86,17 @@ theorem eventually_exists_extendedCoefficientField_eq_eventInput
   obtain ⟨ht, z, a, hz, ha⟩ := ht
   refine ⟨ht, z, hz, ?_⟩
   rw [extendedCoefficientField_eq_transport d ℳ p ℒ H h h' D B k
-      (hBc.mono (Nat.le_succ k)) ((restriction k).obj x) ((restriction k).obj z),
-    ← B.truncation_levelTransport (Nat.le_succ k) (hBc.mono (Nat.le_succ k)) hBc x z,
-    B.levelTransport_eq_levelPathProduct hBc a.toPath,
+      hBc ((restriction k).obj x) ((restriction k).obj z),
+    B.levelTransport_eq_levelPathProduct hBc ((restriction k).mapPath a.toPath),
+    ← B.truncation_levelPathProduct (Nat.le_succ k) a.toPath,
     B.levelPathProduct_eq_wallPathProduct _ _ (B.activeLabels_commute _),
     Quiver.Path.wallPathProduct_toPath, ha]
   -- The tower projection carries the same group structure as the truncated BCH group.
   rfl
 
-/-- The highest retained component is a finite sum over crossings and strictly
-lower input degrees, read from the actual probe field at a point on the incoming
-side of every event. All these points may be chosen
+/-- The change in the highest retained component is a finite sum over crossings
+and strictly lower input degrees, read from the actual probe field at a point on
+the incoming side of every event. All these points may be chosen
 within any prescribed positive parameter distance of their respective events.
 No genericity or commutation between different events is required. -/
 theorem exists_shiftedQuotientComponent_extendedCoefficientField_eq_add_sum_eventInputs
@@ -146,7 +146,7 @@ theorem exists_shiftedQuotientComponent_extendedCoefficientField_eq_add_sum_even
       simpa only [g, List.length_map, List.length_reverse] using j.isLt
     have hjT : j.val < T.length := by simpa only [T, List.length_reverse] using hj
     have hevent := eventually_exists_extendedCoefficientField_eq_eventInput
-      d ℳ p ℒ H h h' D B k hBc e ⟨j.val, hj⟩
+      d ℳ p ℒ H h h' D B k (hBc.mono (Nat.le_succ k)) e ⟨j.val, hj⟩
     have hnear : ∀ᶠ t : ℝ in 𝓝[<] T[j.val], T[j.val] - ε < t :=
       (eventually_gt_nhds (by linarith : T[j.val] - ε < T[j.val])).filter_mono
         nhdsWithin_le_nhds
@@ -155,12 +155,11 @@ theorem exists_shiftedQuotientComponent_extendedCoefficientField_eq_add_sum_even
     exact ⟨t, z, ⟨ht.1, htτ⟩, by linarith, hz, he⟩
   choose t z ht hnear hz he using hchoose
   refine ⟨t, z, fun j => ⟨ht j, hnear j, hz j⟩, ?_⟩
-  rw [extendedCoefficientField_eq_add_sum_crossings d ℳ p ℒ H h h' D B k hBc hD hB e,
-    map_add, map_sum]
+  rw [shiftedQuotientComponent_extendedCoefficientField_eq_add_sum_crossings
+    d ℳ p ℒ H h h' D B k hBc hD hB e q hq]
   congr 1
   apply Finset.sum_congr rfl
   intro j _
   rw [← he j]
-  exact d.shiftedQuotientComponent_truncatedBCHCorrection_eq_sum ℒ ℳ p k _ _ q hq
 
 end Mei.ModuleProbe
