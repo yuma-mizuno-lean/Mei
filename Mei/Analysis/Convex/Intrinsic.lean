@@ -25,7 +25,8 @@ For any set, membership is locally constant off the relative boundary within the
 Consequently a convex set meeting a set and missing its relative boundary meets its
 affine span only inside the set. Intrinsic closure commutes with products, and
 the relative boundary of a cylinder is the cylinder over the relative boundary.
-Relative interiors are monotone for sets with equal affine spans. A direction with a positive
+Relative interiors are monotone for sets with equal affine spans, and the relative interior
+of a convex set is convex. A direction with a positive
 component towards an interior point and an arbitrary component along a relative interior
 set enters the interior of a convex set. This uses Mathlib's
 `Convex.combo_interior_self_mem_interior`.
@@ -249,5 +250,13 @@ theorem inter_affineSpan_subset {P U : Set V} (hU : Convex ℝ U) (hUP : (U ∩ 
     filter_upwards [(hg.tendsto r).eventually hr] with r' hr'
     exact propext hr'
   simpa [g] using (hloc.apply_eq_of_preconnectedSpace 1 0).mpr (by simpa [g] using hwP)
+
+/-- The relative interior of a convex set is convex: open segments from a relative interior
+point to a point of the set stay in the relative interior. -/
+protected theorem intrinsicInterior {s : Set V} (hs : Convex ℝ s) :
+    Convex ℝ (intrinsicInterior ℝ s) :=
+  convex_iff_openSegment_subset.mpr fun _ hx _ hy =>
+    hs.openSegment_intrinsicInterior_intrinsicClosure_subset_intrinsicInterior hx
+      (subset_intrinsicClosure (intrinsicInterior_subset hy))
 
 end Convex
