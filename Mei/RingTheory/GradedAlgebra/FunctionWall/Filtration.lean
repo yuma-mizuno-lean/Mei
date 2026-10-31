@@ -35,7 +35,23 @@ public noncomputable section
 
 namespace Mei.GradedAlgebra
 
-variable {R A : Type*} [CommRing R] [CommRing A] [Algebra R A]
+variable {R A : Type*} [CommSemiring R]
+
+section Semiring
+
+variable [CommSemiring A] [Algebra R A]
+  (𝒜 : ℤ → Submodule R A) [GradedAlgebra 𝒜] (I : Ideal A)
+
+/-- Function walls preserve the ideal order of a weight-homogeneous input. -/
+theorem functionWallAction_mem_pow (f : (𝒜 0)ˣ) {w : ℤ} {a : A}
+    (ha : a ∈ 𝒜 w) {b : ℕ} (hb : a ∈ I ^ b) :
+    functionWallAction 𝒜 f a ∈ I ^ b := by
+  rw [functionWallAction_apply_of_mem 𝒜 f ha]
+  exact Ideal.mul_mem_right _ _ hb
+
+end Semiring
+
+variable [CommRing A] [Algebra R A]
   (𝒜 : ℤ → Submodule R A) [GradedAlgebra 𝒜] (I : Ideal A)
 
 /-- On a weight-homogeneous input of ideal order `b`, a function wall congruent
@@ -50,13 +66,6 @@ theorem functionWallAction_sub_mem_pow (f : (𝒜 0)ˣ)
   rw [functionWallAction_apply_of_mem 𝒜 f ha]
   convert Ideal.mul_mem_mul hb hp using 1 <;> simp [pow_succ, mul_sub]
 
-/-- Function walls preserve the ideal order of a weight-homogeneous input. -/
-theorem functionWallAction_mem_pow (f : (𝒜 0)ˣ) {w : ℤ} {a : A}
-    (ha : a ∈ 𝒜 w) {b : ℕ} (hb : a ∈ I ^ b) :
-    functionWallAction 𝒜 f a ∈ I ^ b := by
-  rw [functionWallAction_apply_of_mem 𝒜 f ha]
-  exact Ideal.mul_mem_right _ _ hb
-
 variable {Γ : Type*} [AddMonoid Γ] [DecidableEq Γ]
   (𝒢 : Γ → Submodule R A) [GradedAlgebra 𝒢]
 
@@ -70,8 +79,11 @@ theorem decompose_functionWallAction_mem_pow_succ
     (DirectSum.decompose 𝒢 (functionWallAction 𝒜 f a) q : A) ∈ I ^ (b + 1) := by
   have hh := ((hI.pow (b + 1)).mem_iff.mp
     (functionWallAction_sub_mem_pow 𝒜 I f hf ha hb)) q
-  simpa only [DirectSum.decompose_sub, DirectSum.sub_apply, Submodule.coe_sub,
-    DirectSum.decompose_of_mem_ne 𝒢 hp hpq, sub_zero] using hh
+  have he := congrArg (fun x : A => (DirectSum.decompose 𝒢 x q : A))
+    (sub_add_cancel (functionWallAction 𝒜 f a) a)
+  simp only [DirectSum.decompose_add, DirectSum.add_apply, Submodule.coe_add,
+    DirectSum.decompose_of_mem_ne 𝒢 hp hpq, add_zero] at he
+  rwa [he] at hh
 
 section Histories
 
@@ -103,9 +115,9 @@ theorem homogeneousHistory_functionWallAction_mem_pow
     have hsnoc (j : Fin (n + 1)) :
         Fin.snoc (α := fun _ => Γ) r p j.succ =
           Fin.snoc (α := fun _ => Γ) (fun k : Fin n => r k.succ) p j := by
-      refine Fin.lastCases ?_ (fun k => ?_) j
-      · simp only [Fin.succ_last, Fin.snoc_last]
-      · simp only [Fin.succ_castSucc, Fin.snoc_castSucc]
+      have h := congrFun (Fin.cons_snoc_eq_snoc_cons (r 0) (Fin.tail r) p) j.succ
+      rw [Fin.cons_self_tail, Fin.cons_succ] at h
+      simpa only [Fin.tail_def] using h.symm
     simp only [← hsnoc] at hi
     rw [homogeneousHistory_succ_apply, Fin.sum_univ_succ]
     by_cases he : r 0 = q
