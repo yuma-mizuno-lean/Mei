@@ -8,6 +8,8 @@ module
 public import Mei.Geometry.ScatteringDiagram.ModuleProbe.Segment
 public import Mei.Geometry.Convex.Polyhedron.Path.Incoming
 
+import Mathlib.Topology.Algebra.Group.Order
+
 /-!
 # Geometric inputs to the segment probe recursion
 
@@ -187,14 +189,9 @@ theorem eventually_exists_extendedCoefficientField_eq_drop
   dsimp only
   have htendsto : Tendsto (fun ε : ℝ => (orderedCrossingTimes e).reverse[j.val] - ε)
       (𝓝[>] 0) (𝓝[<] (orderedCrossingTimes e).reverse[j.val]) := by
-    apply tendsto_nhdsWithin_iff.mpr
-    constructor
-    · simpa only [sub_zero] using
-        (tendsto_const_nhds.sub (tendsto_id.mono_left nhdsWithin_le_nhds) :
-          Tendsto (fun ε : ℝ => (orderedCrossingTimes e).reverse[j.val] - ε)
-            (𝓝[>] 0) (𝓝 ((orderedCrossingTimes e).reverse[j.val] - 0)))
-    · filter_upwards [self_mem_nhdsWithin] with ε hε
-      exact sub_lt_self _ hε
+    simpa only [Tendsto, sub_zero] using
+      (Filter.map_subLeft_nhdsGT
+        (c := (orderedCrossingTimes e).reverse[j.val]) (a := (0 : ℝ))).le
   filter_upwards [htendsto.eventually (eventually_exists_extendedCoefficientField_eq_eventInput
     d ℳ p ℒ H h h' D B hkl hBc e
     ⟨j.val, by simpa only [List.length_reverse] using j.isLt⟩)] with ε hε
