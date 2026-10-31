@@ -6,7 +6,6 @@ Authors: Codex
 module
 
 public import Mathlib.Analysis.Convex.Basic
-public import Mathlib.Analysis.Normed.Module.Basic
 public import Mathlib.Topology.Algebra.Affine
 public import Mathlib.Topology.Maps.Proper.Basic
 public import Mathlib.Topology.Instances.Real.Lemmas
@@ -56,8 +55,8 @@ namespace Mei
 
 open Filter Topology
 
-variable {V ι : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V] [Finite ι]
-  {W : ι → Set V}
+variable {V ι : Type*} [AddCommGroup V] [Module ℝ V] [TopologicalSpace V]
+  [IsTopologicalAddGroup V] [ContinuousSMul ℝ V] [Finite ι] {W : ι → Set V}
 
 /-- Near a point, matching strict normal sides at its incident supports suffice
 for the entire connecting segment to miss all supports. -/
