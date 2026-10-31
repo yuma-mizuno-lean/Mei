@@ -55,8 +55,8 @@ private theorem parameter_lt_cut_iff (a : Fin (m + n)) :
       omega
     exact (not_lt_of_ge (r.strictAnti_parameter.antitone hi)) (ha.trans hupper)
   · intro ha
-    let j : Fin n := ⟨a.val - m, by omega⟩
-    have he : Fin.natAdd m j = a := by apply Fin.ext; simp only [Fin.val_natAdd, j]; omega
+    obtain ⟨j, he⟩ : a ∈ range (Fin.natAdd m : Fin n → Fin (m + n)) := by
+      rwa [Fin.range_natAdd]
     simpa only [he] using hlower j
 
 include hupper hlower in
@@ -100,20 +100,12 @@ def truncate :
   parameter := Fin.cons 0 (fun j => r.parameter (Fin.natAdd m j).succ - t)
   parameter_zero := by simp
   strictAnti_parameter := by
-    intro a b hab
-    cases a using Fin.cases with
-    | zero =>
-      cases b using Fin.cases with
-      | zero => exact (lt_irrefl _ hab).elim
-      | succ b => simpa using sub_neg.mpr (hlower b)
-    | succ a =>
-      cases b using Fin.cases with
-      | zero => exact (not_lt_of_ge (Fin.zero_le _) hab).elim
-      | succ b =>
-        simp only [Fin.cons_succ, sub_lt_sub_iff_right]
-        apply r.strictAnti_parameter
-        simp only [Fin.lt_def, Fin.val_succ, Fin.val_natAdd] at hab ⊢
-        omega
+    refine (Fin.strictMono_cons (α := ℝᵒᵈ)).mpr ⟨?_, ?_⟩
+    · intro j
+      exact sub_neg.mpr (hlower j)
+    · intro a b hab
+      exact sub_lt_sub_right
+        (r.strictAnti_parameter (Fin.strictMono_succ (Fin.strictMono_natAdd m hab))) t
   transverse j := r.transverse (Fin.natAdd m j)
   endpoint_eq := FiniteAffineRay.endpoint_truncate _ _
   directionAt_eq := by
@@ -136,8 +128,8 @@ def truncate :
     obtain ⟨a, ha⟩ := r.bends_recorded (s + t) (Finsupp.mem_support_iff.mpr hne)
     have ham : m ≤ a.val := (r.parameter_lt_cut_iff t hupper hlower a).mp
       (by rw [← ha]; linarith)
-    let j : Fin n := ⟨a.val - m, by omega⟩
-    have he : Fin.natAdd m j = a := by apply Fin.ext; simp only [Fin.val_natAdd, j]; omega
+    obtain ⟨j, he⟩ : a ∈ range (Fin.natAdd m : Fin n → Fin (m + n)) := by
+      rwa [Fin.range_natAdd]
     refine ⟨j, ?_⟩
     simp only [Fin.cons_succ, he]
     linarith
@@ -159,8 +151,8 @@ def truncate :
     intro b hb
     have hbm : m ≤ b.val := (r.parameter_lt_cut_iff t hupper hlower b).mp
       (by rw [← hb]; linarith)
-    let j : Fin n := ⟨b.val - m, by omega⟩
-    have he : Fin.natAdd m j = b := by apply Fin.ext; simp only [Fin.val_natAdd, j]; omega
+    obtain ⟨j, he⟩ : b ∈ range (Fin.natAdd m : Fin n → Fin (m + n)) := by
+      rwa [Fin.range_natAdd]
     apply hrecord j
     simp only [Fin.cons_succ, he]
     linarith
