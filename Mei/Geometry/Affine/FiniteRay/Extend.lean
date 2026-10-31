@@ -75,8 +75,8 @@ theorem bends_extend (β : FiniteAffineRay V P) (s t : ℝ) (w : V)
       β.bends.mapDomain (fun b => b - (s + t)) +
         Finsupp.single (-t) (β.direction - w) := (rfl)
 
-/-- An extended bend is the translated old increment, plus the new direction
-change at time `-t`. The formula also applies when that change is zero. -/
+/-- At each time the extended increment is the translated old increment plus
+the new direction change, which may be zero. -/
 @[simp↓]
 theorem bends_extend_apply (β : FiniteAffineRay V P) (s t : ℝ) (w : V)
     (hs : 0 ≤ s) (ht : 0 < t) (u : ℝ) :

@@ -45,19 +45,17 @@ variable {R M Γ V J K : Type*} [Semiring R] [AddCommMonoid M] [Module R M]
   {ε : Fin n → SignType} {P : Fin n → Set V}
   {W : J → Set V} {S : K → Set V} {C : Set V} {Q : V}
   (r : DecoratedAdmissibleRay ℳ T p₀ a velocity f c ε P W S C Q)
-  (hT : ∀ j s x, x ∈ ℳ s → (DirectSum.decompose ℳ (T j x) s : M) = x)
 
 local notation "b" => Fin.snoc (α := fun _ => Γ) (Subtype.val (Sigma.fst r)) p₀
-
-include hT
 
 /-- If all segment degrees equal the incoming degree, the whole final
 decoration is the input and the entire negative half-line is straight.
 Recorded unchanged-degree encounters are allowed. -/
 theorem decoration_eq_input_and_ray_eq_of_degrees_eq
+    (hT : ∀ j s x, x ∈ ℳ s → (DirectSum.decompose ℳ (T j x) s : M) = x)
     (hr : ∀ i, b i = p₀) :
     r.decoration 0 = (a : M) ∧ ∀ t ≤ 0, r.2.ray t = Q - t • velocity p₀ := by
-  have hstage := homogeneousHistoryStage_eq_of_degrees_eq hT r.1.val a.property
+  have hstage := homogeneousHistoryStage_eq_of_degrees_eq r.1.val (fun j => hT j _) a.property
     (Fin.last n) (fun i _ => (hr i).trans (hr 0).symm)
   refine ⟨?_, fun t ht => ?_⟩
   · simpa only [homogeneousHistoryStage_last, LinearMap.id_apply,
@@ -68,8 +66,10 @@ theorem decoration_eq_input_and_ray_eq_of_degrees_eq
 /-- A nonconstant degree history has a unique last changing encounter. Its
 incoming degree differs from the final degree; every later segment has the final
 degree, its whole output is the final decoration, and the closed terminal piece
-is straight. Degree changes of zero spatial velocity are included. -/
+is straight. Only diagonal preservation at the final degree is required.
+Degree changes of zero spatial velocity are included. -/
 theorem existsUnique_last_degree_change
+    (hT : ∀ j x, x ∈ ℳ (b 0) → (DirectSum.decompose ℳ (T j x) (b 0) : M) = x)
     (hr : ¬ ∀ i, b i = b 0) :
     ∃! j : Fin n, b j.succ ≠ b 0 ∧
       (∀ i ≤ j.castSucc, b i = b 0) ∧
@@ -78,7 +78,7 @@ theorem existsUnique_last_degree_change
   obtain ⟨j, ⟨hne, hp⟩, hu⟩ := Fin.existsUnique_first_change b hr
   have hweight : r.decoration 0 = r.decoration j.castSucc := by
     simpa only [decoration_def, homogeneousHistoryStage_zero] using
-      (homogeneousHistoryStage_eq_of_degrees_eq hT r.1.val a.property j.castSucc hp).symm
+      (homogeneousHistoryStage_eq_of_degrees_eq r.1.val hT a.property j.castSucc hp).symm
   refine ⟨j, ⟨hne, hp, ?_, ?_⟩, fun l hl => hu l ⟨hl.1, hl.2.1⟩⟩
   · have hj : r.1.val j = b 0 := by
       simpa only [Fin.snoc_castSucc] using hp j.castSucc le_rfl
