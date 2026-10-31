@@ -13,6 +13,7 @@ public import Mathlib.Order.Basic
 A list whose elements are sorted by a key `τ` is the concatenation of its fibres
 `l.filter (τ · = t)`, taken along any strictly increasing list `T` of keys containing
 every value of `τ` on `l`. Elements with equal keys keep their relative order.
+For a strictly decreasing list, filtering below one entry gives the suffix after it.
 
 This is used to compare products of time-sorted enumerations of wall crossings with
 products of their simultaneous crossing events.
@@ -23,6 +24,26 @@ public section
 namespace List
 
 variable {α β : Type*}
+
+/-- In a strictly decreasing list, the entries below a given entry are exactly
+the suffix after it. -/
+theorem Pairwise.filter_lt_getElem_eq_drop [Preorder α] [DecidableLT α] {l : List α}
+    (hl : l.Pairwise (fun a b => b < a)) (j : Fin l.length) :
+    l.filter (fun a => decide (a < l[j.val])) = l.drop (j.val + 1) := by
+  induction l with
+  | nil => exact Fin.elim0 j
+  | cons a l ih =>
+    obtain ⟨j, hj⟩ := j
+    obtain ⟨ha, hl⟩ := List.pairwise_cons.mp hl
+    cases j with
+    | zero =>
+      have hf : l.filter (fun b => decide (b < a)) = l :=
+        filter_eq_self.mpr fun b hb => by simpa using ha b hb
+      simp [hf]
+    | succ j =>
+      have hj' : j < l.length := by simpa using hj
+      have hnot : ¬ a < l[j] := not_lt_of_gt (ha _ (getElem_mem hj'))
+      simpa [hnot] using ih hl ⟨j, hj'⟩
 
 /-- If no element failing `p` precedes an element satisfying `p`, then the list is the
 elements satisfying `p` followed by the remaining elements. -/
