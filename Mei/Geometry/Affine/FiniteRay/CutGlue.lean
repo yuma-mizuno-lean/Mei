@@ -50,6 +50,14 @@ theorem truncate_extend (β : FiniteAffineRay V P) (s t : ℝ) (w : V)
     · rw [ite_eq_right hu]
       exact (Finsupp.notMem_support_iff.mp (fun h => hu (β.bend_neg u h))).symm
 
+/-- Attachment with fixed durations and outgoing direction is injective on
+incoming rays. This retains the full incoming path, rather than just its tail. -/
+theorem extend_injective (s t : ℝ) (w : V) (hs : 0 ≤ s) (ht : 0 < t) :
+    Function.Injective (fun β : FiniteAffineRay V P => β.extend s t w hs ht) := by
+  intro β γ h
+  have := congrArg (fun δ : FiniteAffineRay V P => δ.truncate (-(s + t))) h
+  simpa only [truncate_extend] using this
+
 /-- Reattach the final encounter after a cut in the preceding segment or at the encounter.
 The two lengths and the final direction are recovered from the original ray.
 The result is equality of finite rays, rather than just equality on the retained tail. -/
