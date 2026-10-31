@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.ScatteringDiagram.BrokenLine.LastChange.Localization
-public import Mei.Geometry.ScatteringDiagram.BrokenLine.Cut
+public import Mei.Geometry.ScatteringDiagram.BrokenLine.Itineraries.Cut
 
 /-!
 # Lower-cutoff incoming rays at the last degree change
@@ -22,9 +22,11 @@ This supplies actual lower-degree rays for a last-change recursion, including
 changes with unchanged spatial velocity and later unchanged-degree encounters.
 It does not perturb the incoming germ or assert a cut/glue bijection.
 
-We use `DecoratedAdmissibleRay.truncate`,
-`CutoffDecoratedRay.exists_cutoff_truncate` and
-`CutoffDecoratedRay.lastChangeIndex_localization` to retain the encounter suffix.
+We use `CutoffDecoratedRay.exists_cutoff_truncate_lt` to retain the encounter
+suffix at its intrinsic cutoff, then `PositiveDegrees.cutoff_mono` to place it
+at one lower cutoff. The affine segment formula
+`Convex.AdmissibleRayRealization.ray_eq_add_smul_of_before_parameter` identifies
+the endpoint on the incoming germ.
 The last-change recursion and incoming-germ conventions follow Mandel,
 *Scattering diagrams, theta functions, and refined tropical curve counts*,
 §3.3.3 (arXiv:1503.06183v5).
@@ -48,27 +50,6 @@ variable {R M Γ V J K : Type*} [Semiring R] [AddCommMonoid M] [Module R M]
 namespace CutoffDecoratedRay
 
 local notation "Rays" => CutoffDecoratedRay d ℳ T a v f c ε P W S C k Q
-
-private theorem lastChange_incoming_degree_bound (r : Rays) (hq : r.finalDegree ≠ 0)
-    (i : Fin r.itinerary.length) (hi : (r.lastChangeIndex hq).val + 1 ≤ i.val) :
-    r.realization.1.val i ∈ d.cutoff (k - 1) := by
-  let j := r.lastChangeIndex hq
-  have hnext : j.val + 1 < r.itinerary.length := lt_of_le_of_lt hi i.isLt
-  let next : Fin r.itinerary.length := ⟨j.val + 1, hnext⟩
-  have hfinal : r.realization.1.val j = r.finalDegree := by
-    simpa only [Fin.snoc_castSucc] using (r.lastChangeIndex_spec hq).2 j.castSucc le_rfl
-  have hin : Fin.snoc (α := fun _ => Γ) r.realization.1.val 0 j.succ =
-      r.realization.1.val next := by
-    have he : j.succ = next.castSucc := Fin.ext rfl
-    rw [he, Fin.snoc_castSucc]
-  obtain ⟨-, -, -, -, -, -, hinc⟩ := r.lastChangeIndex_localization hq
-  rw [hin] at hinc
-  have hmono := d.degree_nonneg (r.degree_sub_mem next i hi)
-  have hbound := (d.mem_cutoff.mp (r.degree_mem j)).2
-  rw [hfinal] at hbound
-  have hmem := (d.mem_cutoff.mp (r.degree_mem i)).1
-  simp only [map_sub] at hmono
-  exact d.mem_cutoff.mpr ⟨hmem, by omega⟩
 
 /-- Immediately before the last degree change, the entire incoming piece is an
 actual ray at one lower cutoff. Retain its whole incoming decoration, all earlier
@@ -100,11 +81,15 @@ theorem eventually_exists_lastChange_incoming (r : Rays) (hq : r.finalDegree ≠
   have hpos : 0 < η := hpos
   let t := r.realization.2.parameter j.succ - η
   have hu : t < r.realization.2.parameter j.succ := sub_lt_self _ hpos
-  have hl : ∀ i : Fin (r.itinerary.length + 1),
-      j.val + 1 < i.val → r.realization.2.parameter i < t := fun i hi => hη i hi
-  obtain ⟨s, hw, hp, ha, hr⟩ := exists_cutoff_truncate r.itinerary.get r.realization
-    (j.val + 1) (r.itinerary.length - (j.val + 1)) (k - 1) (by omega) t hu hl
-    (r.lastChange_incoming_degree_bound hq) r.degree_sub_mem
+  obtain ⟨l, hlt, b, hw, hr, ha, hp⟩ := r.exists_cutoff_truncate_lt j t hu
+    (fun i hi => hη i.succ (Fin.succ_lt_succ_iff.mpr hi)) (r.lastChangeIndex_spec hq).1
+  have hfinal : r.realization.1.val j = r.finalDegree := by
+    simpa only [Fin.snoc_castSucc] using (r.lastChangeIndex_spec hq).2 j.castSucc le_rfl
+  have hbound := (d.mem_cutoff.mp (r.degree_mem j)).2
+  rw [hfinal] at hbound
+  have hle : l ≤ k - 1 := by omega
+  let s : CutoffDecoratedRay d ℳ T a v f c ε P W S C (k - 1) (r.realization.2.ray t) :=
+    ⟨b.itinerary, b.realization, fun i => d.cutoff_mono hle (b.degree_mem i), b.degree_sub_mem⟩
   have hx := r.realization.2.ray_eq_add_smul_of_before_parameter j.succ hu.le
     (fun i hi => (hη i hi).le)
   have ht : r.realization.2.ray t =
@@ -112,7 +97,11 @@ theorem eventually_exists_lastChange_incoming (r : Rays) (hq : r.finalDegree ≠
         η • v (Fin.snoc (α := fun _ => Γ) r.realization.1.val 0 j.succ) := by
     simpa only [t, sub_sub_cancel] using hx
   rw [← ht]
-  exact ⟨s, by simpa only [List.ofFn_get] using hw, hp, ha, hr⟩
+  refine ⟨s, hw, ?_, ?_, fun u hu => ?_⟩
+  · simpa only [finalDegree_def] using hp
+  · simpa only [decoration_eq] using ha
+  · change b.realization.2.ray u = _
+    rw [hr, FiniteAffineRay.truncate_apply _ _ hu]
 
 end CutoffDecoratedRay
 

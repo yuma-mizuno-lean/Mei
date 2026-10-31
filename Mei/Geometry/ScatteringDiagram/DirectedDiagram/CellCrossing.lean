@@ -6,10 +6,9 @@ Authors: Codex
 module
 
 public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Adapted
-public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.LocalCrossing
+public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.LocalCrossing.Constancy
 public import Mei.Geometry.Convex.PolyhedralComplex.Chamber
 public import Mei.Geometry.Convex.PolyhedralComplex.Incidence
-public import Mei.LinearAlgebra.Dual.Order
 
 /-!
 # Oriented crossing labels on adapted wall cells
@@ -80,25 +79,20 @@ theorem combinedLabel_eq_of_mem_intrinsicInterior_adaptedWall {k : ℕ}
         (D.notMem_singularSupport_of_mem_intrinsicInterior_adaptedWall hQ hθ) =
       D.combinedLabel k η w
         (D.notMem_singularSupport_of_mem_intrinsicInterior_adaptedWall hQ hη) := by
-  classical
   have hcell := (D.adaptedComplex k).mem_cells_of_mem_walls hQ
-  let S := (Set.toFinite {j : D.active k | Q ⊆ (D.wall j).support}).toFinset
-  let l := S.toList
-  have hl (x : V) (hx : x ∈ intrinsicInterior ℝ Q) (j : D.active k) :
-      j ∈ l ↔ x ∈ (D.wall j).support := by
-    simpa [l, S] using
-      (D.mem_support_iff_of_mem_intrinsicInterior_adaptedComplex k hcell hx j).symm
-  rw [D.combinedLabel_eq_prod k θ v _ l S.nodup_toList (hl θ hθ),
-    D.combinedLabel_eq_prod k η w _ l S.nodup_toList (hl η hη)]
-  apply congrArg List.prod
-  apply List.map_congr_left
-  intro j hj
-  have hsub := (D.mem_support_iff_of_mem_intrinsicInterior_adaptedComplex
-    k hcell hθ j).mp ((hl θ hθ j).mp hj)
-  have hker : ν.ker ≤ (h.realCharacter (D.wall j).normal).ker := by
-    rw [hν, ← (D.wall j).direction_support,
-      D.affineSpan_eq_of_adaptedWall_subset hQ j hsub]
-  simp only [ν.apply_pos_iff_of_ker_le_ker _ hker hv hw]
+  apply D.combinedLabel_eq_of_incident_iff_of_pos_iff
+    (D.notMem_singularSupport_of_mem_intrinsicInterior_adaptedWall hQ hθ)
+    (D.notMem_singularSupport_of_mem_intrinsicInterior_adaptedWall hQ hη)
+  · intro j
+    exact (D.mem_support_iff_of_mem_intrinsicInterior_adaptedComplex k hcell hθ j).trans
+      (D.mem_support_iff_of_mem_intrinsicInterior_adaptedComplex k hcell hη j).symm
+  · intro j hj
+    have hsub := (D.mem_support_iff_of_mem_intrinsicInterior_adaptedComplex
+      k hcell hθ j).mp hj
+    have hker : ν.ker ≤ (h.realCharacter (D.wall j).normal).ker := by
+      rw [hν, ← (D.wall j).direction_support,
+        D.affineSpan_eq_of_adaptedWall_subset hQ j hsub]
+    exact ν.apply_pos_iff_of_ker_le_ker _ hker hv hw
 
 private theorem existsUnique_wallCrossingLabel {k : ℕ} (Q : (D.adaptedComplex k).walls)
     (ν : V →ₗ[ℝ] ℝ) (hν : ν.ker = (affineSpan ℝ (Q : Set V)).direction) :
