@@ -8,7 +8,7 @@ module
 public import Mei.RingTheory.GradedAlgebra.FunctionWall.Basic
 public import Mei.RingTheory.GradedAlgebra.Homogeneous.Ideal
 public import Mei.LinearAlgebra.GradedModule.History.Basic
-public import Mei.RingTheory.Ideal.Quotient
+public import Mei.RingTheory.Ideal.Operations
 public import Mei.Algebra.Group.Units.Hom
 
 /-!
@@ -28,7 +28,7 @@ with effective anti-canonical class*, Proposition 3.5 and Lemma 3.7
 (arXiv:1601.07081v4).
 
 We use `functionWallAction_apply_of_mem`, Mathlib's homogeneous ideals and ideal
-quotients, and the existing whole-component maps `Mei.homogeneousHistory`.
+powers, and the existing whole-component maps `Mei.homogeneousHistory`.
 -/
 
 public noncomputable section
