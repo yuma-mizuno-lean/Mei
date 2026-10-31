@@ -88,14 +88,14 @@ theorem projection_completionRecursion (k : ℕ) (a : F.completion) :
   F.projection_lift _ _ k a
 
 /-- The completed solution satisfies the recursion at every finite order. -/
-theorem completionRecursion_eq_add (k : ℕ) (a : F.completion) :
+theorem projection_completionRecursion_eq_add (k : ℕ) (a : F.completion) :
     F.projection k (F.completionRecursion f hf a) = F.projection k a +
       F.quotientRaisingEnd f hf k (F.projection k (F.completionRecursion f hf a)) := by
   simpa only [projection_completionRecursion] using
     F.quotientRecursion_eq_add f hf k (F.projection k a)
 
 /-- A compatible solution is uniquely determined by its finite-order recursions. -/
-theorem eq_completionRecursion_of_eq_add {a x : F.completion}
+theorem eq_completionRecursion_of_forall_projection_eq_add {a x : F.completion}
     (hx : ∀ k, F.projection k x =
       F.projection k a + F.quotientRaisingEnd f hf k (F.projection k x)) :
     x = F.completionRecursion f hf a := by
@@ -113,7 +113,7 @@ theorem completionRecursion_eq_add_completionMap (a : F.completion) :
   apply F.completion_ext
   intro k
   simpa only [map_add, projection_completionMap, id_eq, quotientRaisingEnd_eq_mapQ] using
-    F.completionRecursion_eq_add f hf k a
+    F.projection_completionRecursion_eq_add f hf k a
 
 /-- Every solution of the recursion for the endomorphism of the completion
 induced by `f` is the completed solution. -/
@@ -121,7 +121,7 @@ theorem eq_completionRecursion_of_eq_add_completionMap {a x : F.completion}
     (hx : x = a + F.completionMap F f id monotone_id
       (fun k _ hx => F.antitone (Nat.le_succ (k + 1)) (hf (k + 1) hx)) x) :
     x = F.completionRecursion f hf a := by
-  apply F.eq_completionRecursion_of_eq_add f hf
+  apply F.eq_completionRecursion_of_forall_projection_eq_add f hf
   intro k
   simpa only [map_add, projection_completionMap, id_eq, quotientRaisingEnd_eq_mapQ] using
     congrArg (F.projection k) hx
