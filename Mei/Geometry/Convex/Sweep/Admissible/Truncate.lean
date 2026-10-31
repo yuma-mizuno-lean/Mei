@@ -174,16 +174,11 @@ theorem parameter_truncate_succ (j : Fin n) :
     (r.truncate t hupper hlower).parameter j.succ =
       r.parameter (Fin.natAdd m j).succ - t := (rfl)
 
-/-- Every point of the retained incoming path is unchanged, with translated time. -/
-theorem truncate_ray_apply {s : ℝ} (hs : s ≤ 0) :
-    (r.truncate t hupper hlower).ray s = r.ray (s + t) :=
-  r.ray.truncate_apply t hs
-
 /-- The retained encounter occurs at exactly its original geometric point. -/
 theorem truncate_ray_parameter_succ (j : Fin n) :
     (r.truncate t hupper hlower).ray ((r.truncate t hupper hlower).parameter j.succ) =
       r.ray (r.parameter (Fin.natAdd m j).succ) := by
-  rw [parameter_truncate_succ, truncate_ray_apply _ _ _ _ (sub_nonpos.mpr (hlower j).le),
-    sub_add_cancel]
+  rw [parameter_truncate_succ, ray_truncate,
+    FiniteAffineRay.truncate_apply _ _ (sub_nonpos.mpr (hlower j).le), sub_add_cancel]
 
 end Mei.Convex.AdmissibleRayRealization
