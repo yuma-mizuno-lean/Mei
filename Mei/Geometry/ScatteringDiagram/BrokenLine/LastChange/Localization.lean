@@ -120,24 +120,12 @@ theorem lastChangeIndex_localization (r : Rays) (hq : r.finalDegree ≠ 0) :
     ⟨le_rfl, ht.le⟩
   rw [← finalDegree_def, htime, neg_smul, sub_neg_eq_add] at hpoint
   rw [← htime] at hpoint
-  -- Extend monotonicity to the incoming zero degree when this is the first encounter.
-  have hstep : r.finalDegree - b j.succ ∈ d.monoid := by
-    by_cases hlast : j.succ = Fin.last r.itinerary.length
-    · have hi := r.degree_mem j
-      simpa only [b, hlast, Fin.snoc_last, sub_zero, hj] using (d.mem_cutoff.mp hi).1
-    · obtain ⟨i, hi⟩ := Fin.eq_castSucc_of_ne_last hlast
-      have hs := r.degree_sub_mem j i (by
-        have he := congrArg Fin.val hi
-        simp only [Fin.val_castSucc, Fin.val_succ] at he
-        omega)
-      simpa only [b, ← hi, Fin.snoc_castSucc, hj] using hs
-  have hdeg := d.degree_pos hstep (sub_ne_zero.mpr hne.symm)
   refine ⟨?_, ?_, htime, hpoint, ?_, ?_, ?_⟩
   · simpa only [Fin.snoc_castSucc, hj] using r.realization.2.transverse j
   · linarith [htime]
   · exact hpoint ▸ r.realization.2.incidence j
   · simpa only [hj] using r.realization.crossing_sign j
-  · simpa only [map_sub, sub_pos] using hdeg
+  · exact r.degree_lt_finalDegree_of_ne j hne
 
 end CutoffDecoratedRay
 
