@@ -64,6 +64,17 @@ theorem orderedCrossingTimes_subdivide (e : x ⟶ y) (e₁ : x ⟶ z) (e₂ : z 
     Prod.exists, Prod.mk.injEq, List.mem_append, List.mem_map]
   aesop
 
+/-- The first subsegment retains each signed event after rescaling its parameter
+to the original segment. Positive rescaling preserves the crossing exponents. -/
+theorem signedCrossingEvent_subdivide_left (ν : ι → V →ₗ[ℝ] ℝ)
+    (hz : z.val = AffineMap.lineMap x.val y.val t) (ht : t ∈ Ioc (0 : ℝ) 1)
+    {s : ℝ} (hs : s ≤ 1) :
+    signedCrossingEvent ν x y (s * t) = signedCrossingEvent ν x z s := by
+  ext ⟨j, r⟩
+  simp only [mem_signedCrossingEvent, mem_crossings_subdivide_left hz ht,
+    hs, and_true, hz, AffineMap.lineMap_apply_module', add_sub_cancel_right,
+    map_smul, smul_eq_mul, mul_pos_iff_of_pos_left ht.1]
+
 /-- Subdivision retains exactly the ordered signed simultaneous events. -/
 theorem segmentCrossingEvents_subdivide (ν : ι → V →ₗ[ℝ] ℝ)
     (e : x ⟶ y) (e₁ : x ⟶ z) (e₂ : z ⟶ y)
@@ -71,11 +82,8 @@ theorem segmentCrossingEvents_subdivide (ν : ι → V →ₗ[ℝ] ℝ)
     segmentCrossingEvents ν e = segmentCrossingEvents ν e₁ ++ segmentCrossingEvents ν e₂ := by
   have hleft (s : ℝ) (hs : s ∈ orderedCrossingTimes e₁) :
       signedCrossingEvent ν x y (s * t) = signedCrossingEvent ν x z s := by
-    have hs' := mem_Ioo_of_mem_orderedCrossingTimes e₁ hs
-    ext ⟨j, r⟩
-    simp only [mem_signedCrossingEvent, mem_crossings_subdivide_left hz ⟨ht.1, ht.2.le⟩,
-      hs'.2.le, and_true, hz, AffineMap.lineMap_apply_module', add_sub_cancel_right,
-      map_smul, smul_eq_mul, mul_pos_iff_of_pos_left ht.1]
+    exact signedCrossingEvent_subdivide_left ν hz ⟨ht.1, ht.2.le⟩
+      (mem_Ioo_of_mem_orderedCrossingTimes e₁ hs).2.le
   have hright (s : ℝ) (hs : s ∈ orderedCrossingTimes e₂) :
       signedCrossingEvent ν x y (1 - (1 - s) * (1 - t)) = signedCrossingEvent ν z y s := by
     have hs' := mem_Ioo_of_mem_orderedCrossingTimes e₂ hs

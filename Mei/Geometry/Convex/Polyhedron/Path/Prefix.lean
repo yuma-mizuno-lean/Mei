@@ -66,11 +66,7 @@ theorem segmentPathProduct_subdivide_left_eq_filter (e : x ⟶ y) (e₁ : x ⟶ 
   apply List.map_congr_left
   intro s hs
   have hs := mem_Ioo_of_mem_orderedCrossingTimes e₁ (List.mem_reverse.mp hs)
-  have hevent : signedCrossingEvent ν x y (s * t) = signedCrossingEvent ν x z s := by
-    ext ⟨j, r⟩
-    simp only [mem_signedCrossingEvent, mem_crossings_subdivide_left hz ⟨ht.1, ht.2.le⟩,
-      hs.2.le, and_true, hz, AffineMap.lineMap_apply_module', add_sub_cancel_right,
-      map_smul, smul_eq_mul, mul_pos_iff_of_pos_left ht.1]
+  have hevent := signedCrossingEvent_subdivide_left ν hz ⟨ht.1, ht.2.le⟩ hs.2.le
   rw [crossingEventProduct_eq_noncommProd ν label hcomm e₁ s
     (signedCrossingEvent_pairwise ν label hcomm e₁ s),
     crossingEventProduct_eq_noncommProd ν label hcomm e (s * t)
