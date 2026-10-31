@@ -36,19 +36,53 @@ variable {V J K : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
   {v : Fin (n + 1) → V} {P : Fin n → Set V}
   {W : J → Set V} {S : K → Set V} {C : Set V} {Q : V}
   (r : AdmissibleRayRealization f c v P W S C Q)
-  (s t : ℝ) (w : V) (hs : 0 < s) (ht : 0 < t)
+  (s t : ℝ) (w : V) (hs : 0 ≤ s) (ht : 0 < t)
 
-/-- Attach an encounter after continuing the old final segment for positive
+include hs ht in
+private theorem strictAnti_extend_parameter :
+    StrictAnti (Fin.cons 0 (Fin.cons (-t) (fun j => r.parameter j.succ - (s + t)))) := by
+  have hp (j : Fin n) : r.parameter j.succ < 0 := by
+    simpa only [r.parameter_zero] using r.strictAnti_parameter (Fin.succ_pos j)
+  apply (Fin.liftFun_cons (fun a b : ℝ => b < a)).mpr
+  refine ⟨?_, (Fin.liftFun_cons (fun a b : ℝ => b < a)).mpr ⟨?_, ?_⟩⟩
+  · intro j
+    cases j using Fin.cases with
+    | zero => simpa using neg_neg_of_pos ht
+    | succ j => simp only [Fin.cons_succ]; linarith [hp j]
+  · intro j
+    linarith [hp j]
+  · intro i j hij
+    dsimp
+    linarith [r.strictAnti_parameter (Fin.succ_lt_succ_iff.mpr hij)]
+
+-- A time-dependent property of the extension follows from its three pieces:
+-- the old half-line, the continuation of the old final segment, and the new segment.
+private theorem forall_extend_of_segments (F : ℝ → V → Prop)
+    (hOld : ∀ a, a ≤ 0 → F (a - (s + t)) (r.ray a))
+    (h₁ : ∀ a, 0 ≤ a → a ≤ s → F (a - (s + t)) (r.ray a))
+    (h₂ : ∀ u, -t < u → u ≤ 0 →
+      F u ((-u • w) +ᵥ (r.ray.extend s t w hs ht).endpoint)) :
+    ∀ u, u ≤ 0 → F u (r.ray.extend s t w hs ht u) := by
+  intro u hu
+  by_cases hbefore : u ≤ -t
+  · rw [FiniteAffineRay.extend_apply_of_le _ _ _ _ hs ht hbefore]
+    by_cases hold : u + (s + t) ≤ 0
+    · simpa using hOld (u + (s + t)) hold
+    · simpa using h₁ (u + (s + t)) (le_of_not_ge hold) (by linarith)
+  · rw [FiniteAffineRay.extend_apply_of_ge _ _ _ _ hs ht (le_of_not_ge hbefore)]
+    exact h₂ u (lt_of_not_ge hbefore) hu
+
+/-- Attach an encounter after continuing the old final segment for nonnegative
 time `s`, and then continue for positive time `t` in direction `w`. The hypotheses
 check incidence and avoidance only on the newly attached segments. -/
 def extend (m : V →L[ℝ] ℝ) (b : ℝ) (H : Set V)
     (htrans : m w ≠ 0) (hheight : m (r.ray s) = b) (hinc : r.ray s ∈ H)
     (hW₁ : ∀ a u, 0 ≤ u → u < s → r.ray u ∉ W a)
-    (hW₂ : ∀ a u, -t < u → u ≤ 0 → (-u • w) +ᵥ (r.ray.extend s t w hs.le ht).endpoint ∉ W a)
+    (hW₂ : ∀ a u, -t < u → u ≤ 0 → (-u • w) +ᵥ (r.ray.extend s t w hs ht).endpoint ∉ W a)
     (hS₁ : ∀ a u, 0 ≤ u → u ≤ s → r.ray u ∉ S a)
-    (hS₂ : ∀ a u, -t ≤ u → u ≤ 0 → (-u • w) +ᵥ (r.ray.extend s t w hs.le ht).endpoint ∉ S a) :
+    (hS₂ : ∀ a u, -t ≤ u → u ≤ 0 → (-u • w) +ᵥ (r.ray.extend s t w hs ht).endpoint ∉ S a) :
     AdmissibleRayRealization (Fin.cons m f) (Fin.cons b c) (Fin.cons w v)
-      (Fin.cons H P) W S C (r.ray.extend s t w hs.le ht).endpoint := by
+      (Fin.cons H P) W S C (r.ray.extend s t w hs ht).endpoint := by
   classical
   let τ : Fin (n + 2) → ℝ :=
     Fin.cons 0 (Fin.cons (-t) (fun j => r.parameter j.succ - (s + t)))
@@ -56,18 +90,13 @@ def extend (m : V →L[ℝ] ℝ) (b : ℝ) (H : Set V)
     simpa only [r.parameter_zero] using r.strictAnti_parameter (Fin.succ_pos j)
   have hdir : r.ray.directionAt s = v 0 := by
     rw [← r.directionAt_eq 0, r.parameter_zero]
-    simp only [FiniteAffineRay.directionAt_def]
-    congr 1
-    apply Finsupp.sum_congr
-    intro a ha
-    have hn := r.ray.bend_neg a ha
-    simp [hn.not_ge, (hn.trans hs).not_ge]
+    rw [r.ray.directionAt_of_nonneg hs, r.ray.directionAt_of_nonneg le_rfl]
   -- Translate every old encounter and put the new encounter before the endpoint.
   refine {
-    ray := r.ray.extend s t w hs.le ht
+    ray := r.ray.extend s t w hs ht
     parameter := τ
     parameter_zero := by simp [τ]
-    strictAnti_parameter := ?_
+    strictAnti_parameter := r.strictAnti_extend_parameter s t hs ht
     transverse := ?_
     endpoint_eq := rfl
     directionAt_eq := ?_
@@ -78,104 +107,88 @@ def extend (m : V →L[ℝ] ℝ) (b : ℝ) (H : Set V)
     incoming := ?_
     avoids_singular := ?_
     off_walls := ?_ }
-  · apply (Fin.liftFun_cons (fun a b : ℝ => b < a)).mpr
-    refine ⟨?_, (Fin.liftFun_cons (fun a b : ℝ => b < a)).mpr ⟨?_, ?_⟩⟩
-    · intro j
-      cases j using Fin.cases with
-      | zero => simpa using neg_neg_of_pos ht
-      | succ j => simp only [Fin.cons_succ]; linarith [hp j]
-    · intro j
-      linarith [hp j]
-    · intro i j hij
-      dsimp
-      linarith [r.strictAnti_parameter (Fin.succ_lt_succ_iff.mpr hij)]
   · intro j
     cases j using Fin.cases with
     | zero => simpa using htrans
     | succ j => simpa using r.transverse j
   · intro j
     cases j using Fin.cases with
-    | zero => simpa [τ] using
-        r.ray.directionAt_extend_of_gt s t w hs.le ht (by linarith : -t < 0)
+    | zero => simp [τ]
     | succ j =>
       cases j using Fin.cases with
       | zero =>
         simpa [τ] using
-          (r.ray.directionAt_extend_of_le s t w hs.le ht (le_refl (-t))).trans
+          (r.ray.directionAt_extend_of_le s t w hs ht (le_refl (-t))).trans
             (by simpa using hdir)
       | succ j =>
-        have he := r.ray.directionAt_extend_of_le s t w hs.le ht
+        have he := r.ray.directionAt_extend_of_le s t w hs ht
           (by linarith [hp j] : r.parameter j.succ - (s + t) ≤ -t)
         simpa [τ] using he.trans (by simpa using r.directionAt_eq j.succ)
   · intro u hu
-    rw [FiniteAffineRay.bends_extend] at hu
-    rcases Finset.mem_union.mp (Finsupp.support_add hu) with hu | hu
-    · rw [Finsupp.mapDomain_support_of_injective
-        (fun _ _ h => sub_left_injective h)] at hu
-      obtain ⟨a, ha, rfl⟩ := Finset.mem_image.mp hu
-      obtain ⟨j, rfl⟩ := r.bends_recorded a ha
+    rcases r.ray.mem_support_bends_extend s t w hs ht hu with ⟨a, ha, rfl⟩ | rfl
+    · obtain ⟨j, rfl⟩ := r.bends_recorded a ha
       exact ⟨j.succ, by simp [τ]⟩
-    · exact ⟨0, by simpa [τ] using
-        Finset.mem_singleton.mp (Finsupp.support_single_subset hu)⟩
+    · exact ⟨0, by simp [τ]⟩
   · intro j
     cases j using Fin.cases with
     | zero =>
-      simpa [τ, FiniteAffineRay.extend_apply_of_le _ _ _ _ hs.le ht (le_refl (-t))]
+      simpa [τ, FiniteAffineRay.extend_apply_of_le _ _ _ _ hs ht (le_refl (-t))]
         using hheight
     | succ j =>
-      simpa [τ, FiniteAffineRay.extend_apply_sub _ _ _ _ hs.le ht (hp j).le]
+      simpa [τ, FiniteAffineRay.extend_apply_sub _ _ _ _ hs ht (hp j).le]
         using r.height_eq j
   · intro j
     cases j using Fin.cases with
     | zero =>
-      simpa [τ, FiniteAffineRay.extend_apply_of_le _ _ _ _ hs.le ht (le_refl (-t))]
+      simpa [τ, FiniteAffineRay.extend_apply_of_le _ _ _ _ hs ht (le_refl (-t))]
         using hinc
     | succ j =>
-      simpa [τ, FiniteAffineRay.extend_apply_sub _ _ _ _ hs.le ht (hp j).le]
+      simpa [τ, FiniteAffineRay.extend_apply_sub _ _ _ _ hs ht (hp j).le]
         using r.incidence j
-  -- On the old half-line reuse admissibility; check only the attached intervals.
+  -- Wall avoidance excludes recorded times; in particular the new encounter.
   · intro a u hu hnot
-    by_cases hbefore : u ≤ -t
-    · rw [FiniteAffineRay.extend_apply_of_le _ _ _ _ hs.le ht hbefore]
-      have hne : u ≠ -t := by simpa [τ] using hnot 0
-      by_cases hold : u + (s + t) < 0
-      · apply r.avoids_walls a _ hold
+    apply r.forall_extend_of_segments s t w hs ht
+      (fun z x => (∀ j : Fin (n + 1), z ≠ τ j.succ) → x ∉ W a) ?_ ?_ ?_ u hu.le hnot
+    · intro z hz hn
+      by_cases hz₀ : z < 0
+      · apply r.avoids_walls a z hz₀
         intro j he
-        apply hnot j.succ
-        simpa [τ] using (eq_sub_iff_add_eq.mpr he)
-      · exact hW₁ a _ (le_of_not_gt hold) (by
-          have hlt : u < -t := lt_of_le_of_ne hbefore hne
-          linarith)
-    · rw [FiniteAffineRay.extend_apply_of_ge _ _ _ _ hs.le ht (le_of_not_ge hbefore)]
-      exact hW₂ a u (lt_of_not_ge hbefore) hu.le
+        exact hn j.succ (by simp [τ, he])
+      · have he : z = 0 := le_antisymm hz (le_of_not_gt hz₀)
+        subst z
+        simpa [r.endpoint_eq] using r.off_walls a
+    · intro z hz hzs hn
+      have hne : z ≠ s := by
+        intro he
+        subst z
+        exact hn 0 (by simp [τ])
+      exact hW₁ a z hz (lt_of_le_of_ne hzs hne)
+    · intro z hz hz₀ _
+      exact hW₂ a z hz hz₀
   · obtain ⟨a, ha⟩ := eventually_atBot.mp r.incoming
     filter_upwards [eventually_le_atBot (min (-t) (a - (s + t)))] with u hu
-    rw [FiniteAffineRay.extend_apply_of_le _ _ _ _ hs.le ht (hu.trans (min_le_left _ _))]
+    rw [FiniteAffineRay.extend_apply_of_le _ _ _ _ hs ht (hu.trans (min_le_left _ _))]
     exact ha _ (by linarith [hu.trans (min_le_right (-t) (a - (s + t)))])
-  · intro a u hu
-    by_cases hbefore : u ≤ -t
-    · rw [FiniteAffineRay.extend_apply_of_le _ _ _ _ hs.le ht hbefore]
-      by_cases hold : u + (s + t) ≤ 0
-      · exact r.avoids_singular a _ hold
-      · exact hS₁ a _ (le_of_not_ge hold) (by linarith)
-    · rw [FiniteAffineRay.extend_apply_of_ge _ _ _ _ hs.le ht (le_of_not_ge hbefore)]
-      exact hS₂ a u (le_of_not_ge hbefore) hu
+  -- Singular avoidance includes encounter times and the endpoint.
+  · intro a
+    exact r.forall_extend_of_segments s t w hs ht (fun _ x => x ∉ S a)
+      (r.avoids_singular a) (hS₁ a) (fun u hu hu₀ => hS₂ a u hu.le hu₀)
   · intro a
     simpa using hW₂ a 0 (by linarith) le_rfl
 
 variable (m : V →L[ℝ] ℝ) (b : ℝ) (H : Set V)
   (htrans : m w ≠ 0) (hheight : m (r.ray s) = b) (hinc : r.ray s ∈ H)
   (hW₁ : ∀ a u, 0 ≤ u → u < s → r.ray u ∉ W a)
-  (hW₂ : ∀ a u, -t < u → u ≤ 0 → (-u • w) +ᵥ (r.ray.extend s t w hs.le ht).endpoint ∉ W a)
+  (hW₂ : ∀ a u, -t < u → u ≤ 0 → (-u • w) +ᵥ (r.ray.extend s t w hs ht).endpoint ∉ W a)
   (hS₁ : ∀ a u, 0 ≤ u → u ≤ s → r.ray u ∉ S a)
-  (hS₂ : ∀ a u, -t ≤ u → u ≤ 0 → (-u • w) +ᵥ (r.ray.extend s t w hs.le ht).endpoint ∉ S a)
+  (hS₂ : ∀ a u, -t ≤ u → u ≤ 0 → (-u • w) +ᵥ (r.ray.extend s t w hs ht).endpoint ∉ S a)
 
 /-- The admissible extension uses the finite-ray attachment, so its full path,
 bend increments and incoming direction are given by that operation's equations. -/
 @[simp]
 theorem ray_extend :
     (r.extend s t w hs ht m b H htrans hheight hinc hW₁ hW₂ hS₁ hS₂).ray =
-      r.ray.extend s t w hs.le ht := (rfl)
+      r.ray.extend s t w hs ht := (rfl)
 
 /-- The new encounter is at `-t`; all old encounters are translated by `s + t`.
 The leading parameter remains the endpoint at time zero. -/
