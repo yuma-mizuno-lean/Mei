@@ -1,0 +1,52 @@
+name: Queue release regression tests
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/auto-merge.yml
+      - .github/workflows/queue-release*.yml
+      - scripts/test_queue_release*.py
+      - tauceti.toml
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/auto-merge.yml
+      - .github/workflows/queue-release*.yml
+      - scripts/test_queue_release*.py
+      - tauceti.toml
+
+permissions:
+  contents: read
+
+jobs:
+  regression:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          repository: yuma-mizuno-lean/TauCetiTools
+          ref: 80f1df5f160a568f27e453649781ac8da6584be5
+          path: .tauceti-tools
+          persist-credentials: false
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          repository: TauCetiProject/TauCetiReview
+          ref: 3999677031829254b4cbb27e9156c33672c61d0d
+          path: .tauceti-review
+          persist-credentials: false
+      - name: Test shared release policy and trusted caller wiring
+        env:
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: |
+          set -euo pipefail
+          python3 -m venv "$RUNNER_TEMP/queue-release-tests"
+          "$RUNNER_TEMP/queue-release-tests/bin/python" -m pip install 'PyYAML==6.0.3'
+          PYTHONPATH="$GITHUB_WORKSPACE/.tauceti-tools" \
+            "$RUNNER_TEMP/queue-release-tests/bin/python" -m unittest discover \
+            -s .tauceti-tools/tauceti_tools/assets/scripts -p test_queue_release.py -v
+          "$RUNNER_TEMP/queue-release-tests/bin/python" -m unittest discover \
+            -s scripts -p test_queue_release_workflows.py -v

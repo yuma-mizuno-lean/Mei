@@ -1,0 +1,68 @@
+name: Merge queue release
+
+# Adapted from Tau Ceti's queue-release workflow:
+# https://github.com/TauCetiProject/TauCeti/blob/ff33d5f0811d2ec351fc04ab46c34d1bff53df8a/.github/workflows/queue-release.yml
+# Mei retains its configured Tools pin and fixed checkout action revision.
+
+# A Lake-pin bump clears the queue and defers other enqueues. Its departure must
+# wake those PRs even if their heads, builds, and review comments never change.
+on:
+  pull_request_target:
+    branches: [main]
+    types: [closed, dequeued]
+  workflow_dispatch:
+    inputs:
+      released_pr:
+        description: "Pin-changing PR that has left the queue"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  pull-requests: read
+  actions: write
+
+concurrency:
+  group: queue-release-${{ github.event.pull_request.number || inputs.released_pr }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    if: >-
+      vars.MERGE_BACKEND != 'bors'
+      && (github.event_name == 'workflow_dispatch'
+        || github.event.action == 'dequeued'
+        || github.event.pull_request.merged == true)
+    steps:
+      # Only trusted main code runs here; no PR checkout or App credentials.
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: main
+          sparse-checkout: scripts
+          persist-credentials: false
+      - name: Prepare pinned shared tools
+        uses: yuma-mizuno-lean/TauCetiTools/.github/actions/setup@80f1df5f160a568f27e453649781ac8da6584be5
+        with:
+          tools-repository: yuma-mizuno-lean/TauCetiTools
+          tools-ref: 80f1df5f160a568f27e453649781ac8da6584be5
+          project-directory: .
+      - id: release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          RELEASED_PR: ${{ github.event.pull_request.number || inputs.released_pr }}
+          RELEASE_ACTION: ${{ github.event.action || 'manual' }}
+        # The pinned setup action materializes the canonical shared script here.
+        run: python3 scripts/queue_release.py
+      - name: Wake the existing queue reconciler
+        if: steps.release.outputs.sweep == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        # workflow_dispatch may trigger another workflow using GITHUB_TOKEN.
+        # The sweep's existing concurrency group serializes scheduled and release runs.
+        # It owns head-pinned review/CI checks, reservations, and eviction recovery.
+        # Displaced PRs may lack ready/recovery labels; include the background tier.
+        # The shared sweep still bounds API work and checks every admission.
+        run: gh workflow run merge-sweep.yml --repo "$REPO" --ref main -f dry-run=false -f full-scan=true
