@@ -39,7 +39,7 @@ namespace AddMonoidAlgebra
 
 section Scalar
 
-variable {R M : Type*} [CommSemiring R] [AddMonoid M]
+variable {R M : Type*} [Semiring R] [AddMonoid M]
 
 /-- The scalar coefficient map of a slab transfer from admissible exponent `p`
 to exponent `q`. The same map describes either crossing orientation. -/
