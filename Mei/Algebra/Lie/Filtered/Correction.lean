@@ -102,6 +102,28 @@ theorem truncatedBCHCorrection_mul (k : ℕ) (g h : d.truncatedGroup ℒ (k + 1)
     LinearEquiv.mul_apply, map_sub]
   abel
 
+/-- A finite BCH word acts by adding its individual corrections. The input to
+each correction is transported by the factors to its right, at one lower
+coefficient order. The rightmost entry acts first. No commutation or
+nonidentity assumption is needed. -/
+theorem truncatedBCHAction_list_prod_eq_add_sum (k : ℕ)
+    (g : List (d.truncatedGroup ℒ (k + 1))) (a : F.quotient (k + 1)) :
+    F.truncatedBCHAction d ℒ (k + 1) g.prod a = a +
+      ∑ j : Fin g.length, F.truncatedBCHCorrection d ℒ k g[j]
+        (F.truncatedBCHAction d ℒ k
+          ((d.truncationMap ℒ (Nat.le_succ k)).bchGroupMap
+            (g.drop (j.val + 1)).prod) (F.transition (Nat.le_succ k) a)) := by
+  induction g with
+  | nil => simp
+  | cons g gs ih =>
+    rw [List.prod_cons, map_mul, LinearEquiv.mul_apply,
+      F.truncatedBCHAction_eq_add_correction d ℒ k g,
+      F.transition_truncatedBCHAction d ℒ (Nat.le_succ k), ih]
+    simp only [List.length_cons, Fin.sum_univ_succ]
+    simp only [Fin.getElem_fin, Fin.val_zero, zero_add, List.drop_succ_cons,
+      List.drop_zero, Fin.val_succ, List.getElem_cons_zero, List.getElem_cons_succ]
+    abel
+
 /-- Lowering both cutoffs commutes with correction maps. -/
 theorem transition_truncatedBCHCorrection {k l : ℕ} (hkl : k ≤ l)
     (g : d.truncatedGroup ℒ (l + 1)) (a : F.quotient l) :
