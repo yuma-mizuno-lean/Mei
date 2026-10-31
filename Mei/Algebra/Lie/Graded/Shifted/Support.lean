@@ -227,6 +227,37 @@ theorem shiftedQuotientComponent_truncatedBCHAction_of_mem_same
     ModuleFiltration.projection_completedBCHAction, ModuleFiltration.projection_of] using
     d.shiftedHomogeneousComponent_completedBCHAction_of_mem_same ℒ ℳ p hrp g a ha
 
+section
+
+variable {Γ : Type} [AddCommGroup Γ] [DecidableEq Γ]
+  (d : PositiveDegrees Γ) (ℒ : Γ → Submodule R L) (ℳ : Γ → Submodule R M)
+  [GradedLieAlgebra ℒ] [IsPositiveGrading d ℒ] [DirectSum.Decomposition ℳ]
+  [SetLike.GradedBracket ℒ ℳ] (p : Γ)
+
+local notation "F" => d.shiftedLieFiltration ℒ ℳ p
+local notation "G(" k ")" => TauCeti.InternalGrading.piece (d.shiftedQuotientGrading ℳ p k)
+
+/-- The unchanged relative-degree component of a finite BCH action fixes every
+homogeneous input, including inputs of positive relative order. Vanishing
+homogeneous pieces and degrees outside the cutoff need no special hypotheses. -/
+theorem decompose_truncatedBCHAction_same (k : ℕ) (g : d.truncatedGroup ℒ k)
+    {r : Γ} {a : (F).quotient k} (ha : a ∈ G(k) r) :
+    (DirectSum.decompose G(k) ((F).truncatedBCHAction d ℒ k g a) r :
+      (F).quotient k) = a := by
+  by_cases hne : a = 0
+  · simp [hne]
+  obtain ⟨hr, hk⟩ := d.mem_cutoff.mp
+    (d.mem_cutoff_of_mem_shiftedQuotientGrading_ne_zero ℳ p ha hne)
+  obtain ⟨b, hb, rfl⟩ := (d.mem_shiftedQuotientGrading_iff ℳ p).mp ha
+  rw [d.decompose_shiftedQuotientGrading ℳ p k ⟨r, hr⟩ hk]
+  rw [d.shiftedQuotientComponent_truncatedBCHAction_of_mem_same ℒ ℳ p
+    (by simpa using hr) k g b ((mem_shiftedGrading ℳ d.monoid p).mp hb)]
+  congr 1
+  apply Subtype.ext
+  exact coe_shiftedInclusion ℳ d.monoid p ⟨r, hr⟩ _
+
+end
+
 end Mei.PositiveDegrees
 
 namespace Mei
