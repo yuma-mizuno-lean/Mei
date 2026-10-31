@@ -312,6 +312,13 @@ theorem eval_vsub_eval (β : FiniteAffineRay V P) {s t : ℝ} (hst : s ≤ t)
       module
     _ = (s - t) • β.directionAt t := by rw [h, directionAt, smul_add]
 
+/-- Past the endpoint, realization continues in the final direction. -/
+theorem eval_of_nonneg (β : FiniteAffineRay V P) {t : ℝ} (ht : 0 ≤ t) :
+    β t = (-t • β.direction) +ᵥ β.endpoint := by
+  have he := β.eval_vsub_eval ht (fun b hb => Or.inl (β.bend_neg b hb).le)
+  rw [eval_zero, directionAt_of_nonneg β ht, zero_sub] at he
+  rw [← he, vsub_vadd]
+
 /-- Before all bends, realization is the incoming affine formula. -/
 theorem eval_of_le_bends (β : FiniteAffineRay V P) (t : ℝ)
     (ht : ∀ b ∈ β.bends.support, t ≤ b) :
