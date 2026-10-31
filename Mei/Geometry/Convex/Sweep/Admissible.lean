@@ -128,6 +128,27 @@ namespace AdmissibleRayRealization
 
 variable {f c v P W S C Q}
 
+/-- Transport a realization along an equality of its prescribed velocities,
+retaining the entire ray and all encounter parameters. -/
+def congrVelocity (r : AdmissibleRayRealization f c v P W S C Q)
+    {v' : Fin (n + 1) → V} (h : v = v') :
+    AdmissibleRayRealization f c v' P W S C Q :=
+  { r with
+    transverse := fun j => by rw [← h]; exact r.transverse j
+    directionAt_eq := fun j => (r.directionAt_eq j).trans (congrFun h j) }
+
+/-- Velocity transport preserves the entire geometric ray. -/
+@[simp]
+theorem ray_congrVelocity (r : AdmissibleRayRealization f c v P W S C Q)
+    {v' : Fin (n + 1) → V} (h : v = v') :
+    (r.congrVelocity h).ray = r.ray := (rfl)
+
+/-- Velocity transport preserves every encounter parameter. -/
+@[simp]
+theorem parameter_congrVelocity (r : AdmissibleRayRealization f c v P W S C Q)
+    {v' : Fin (n + 1) → V} (h : v = v') :
+    (r.congrVelocity h).parameter = r.parameter := (rfl)
+
 /-- In the open segment immediately before a recorded parameter, the incoming
 ray direction is the prescribed segment direction. This includes the infinite tail. -/
 theorem directionAt_eq_between (r : AdmissibleRayRealization f c v P W S C Q)

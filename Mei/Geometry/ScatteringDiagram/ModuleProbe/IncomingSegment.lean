@@ -15,8 +15,9 @@ One finite exceptional arrangement of endpoints works for every coefficient
 degree retained at a fixed order. From a generic endpoint, all sufficiently
 distant points in each degree's positive spatial direction are joined back to
 the endpoint by an actual admissible straight segment. At its starting point,
-the probe component already has its incoming value. Thus finite segment
-transport can start at the incoming value in the backward-ray recursion.
+the probe component already has its incoming value, and the whole ray beyond
+that point misses the active walls. Thus finite segment transport can start at
+the incoming value in the backward-ray recursion.
 
 Zero spatial directions give constant segments and the same incoming component
 identity. Distinct coefficient degrees with the same direction remain distinct.
@@ -54,21 +55,26 @@ variable {R Γ Λ V E ι κ κ' : Type*} {M L : Type u} [CommRing R] [Algebra �
   (B : DirectedDiagram (d := d) h H κ')
 
 /-- A common finite arrangement supplies admissible backward segments with the
-incoming probe component at their distant starting points, for every retained
-degree. Only additional active probe walls carrying that degree must be outgoing. -/
+incoming probe component at their distant starting points and no active wall
+encounters beyond those points, for every retained degree. The arrangement is
+independent of outgoingness; the incoming identity for each degree requires only
+that additional active probe walls carrying that degree be outgoing. -/
 theorem exists_incomingSegmentArrangement
     (hinitial : ∀ b, D.wall (.inl b) =
       (initialDiagram d ℳ p ℒ H h h' D₀ a).wall b)
     (k : ℕ) (hD : D.LevelConsistent (k + 1)) (hBc : B.LevelConsistent k)
     (hB : (D.map (chargeZeroGradedLieHom d ℳ p ℒ)
       (chargeZeroGradedLieHom_mem_wall d ℳ p ℒ H)).LevelEquivalent
-      (cylinderDiagram d ℳ p ℒ H h h' B) k)
-    (hout : ∀ n : d.cutoff k, ∀ b, Sum.inr b ∈ D.active (k + 1) →
-      (p + n.val, 1, 0) ∈ (D.wall (.inr b)).ray.rayDegrees →
-        (D.wall (.inr b)).Outgoing) :
+      (cylinderDiagram d ℳ p ℒ H h h' B) k) :
     ∃ A : ExceptionalArrangement V, ∀ Q, A.IsGeneric Q →
       ∃ y : WallComplement (fun c : B.active k => (B.wall c).support),
-        y.val = Q ∧ ∀ n : d.cutoff k, ∀ᶠ T : ℝ in atTop,
+        y.val = Q ∧ ∀ n : d.cutoff k,
+          (∀ b, Sum.inr b ∈ D.active (k + 1) →
+            (p + n.val, 1, 0) ∈ (D.wall (.inr b)).ray.rayDegrees →
+              (D.wall (.inr b)).Outgoing) →
+          ∀ᶠ T : ℝ in atTop,
+          (∀ s ≥ T, ∀ c : B.active k,
+            Q + s • i (ρ (p + n.val)) ∉ (B.wall c).support) ∧
           ∃ (x : WallComplement (fun c : B.active k => (B.wall c).support)) (_e : x ⟶ y),
             x.val = Q + T • i (ρ (p + n.val)) ∧
               d.shiftedQuotientComponent ℳ p (p + n.val) k
@@ -84,17 +90,22 @@ theorem exists_incomingSegmentArrangement
     (fun c => (B.wall c).finrank_direction_add_one) vectors
   refine ⟨A, fun Q hQ => ?_⟩
   obtain ⟨y, hy, hsegment⟩ := hA Q hQ
-  refine ⟨y, hy, fun n => ?_⟩
+  refine ⟨y, hy, fun n hout => ?_⟩
   have hn : i (ρ (p + n.val)) ∈ vectors :=
     Finset.mem_image.mpr ⟨n.val, (d.finite_cutoff k).mem_toFinset.mpr n.property, rfl⟩
+  have htail : ∀ᶠ T : ℝ in atTop, ∀ s ≥ T, ∀ c : B.active k,
+      Q + s • i (ρ (p + n.val)) ∉ (B.wall c).support :=
+    (eventually_forall_ge_atTop.mpr (hsegment _ hn)).mono fun T hT s hs c hmem => by
+      obtain ⟨x, hx, _⟩ := hT s hs
+      exact x.notMem c (hx ▸ hmem)
   have hk : d.degree ((p + n.val) - p) ≤ k := by
     simpa only [add_sub_cancel_left] using (d.mem_cutoff.mp n.property).2
-  filter_upwards [hsegment _ hn,
+  filter_upwards [htail, hsegment _ hn,
     eventually_shiftedQuotientComponent_extendedCoefficientField_eq
       d ℳ p ℒ H h h' D₀ a D B hinitial k hD hBc hB (p + n.val) hk
-      (hout n) (isCompact_singleton (x := Q))] with T hT hvalue
+      hout (isCompact_singleton (x := Q))] with T htail hT hvalue
   obtain ⟨x, hx, he⟩ := hT
-  refine ⟨x, ⟨he⟩, hx, ?_⟩
+  refine ⟨htail, x, ⟨he⟩, hx, ?_⟩
   have heq : (⟨Q + T • i (ρ (p + n.val)), by rw [← hx]; exact x.notMem⟩ :
       WallComplement (fun c : B.active k => (B.wall c).support)) = x :=
     WallComplement.ext hx.symm

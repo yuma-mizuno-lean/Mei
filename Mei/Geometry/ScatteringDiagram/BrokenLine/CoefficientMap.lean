@@ -116,10 +116,9 @@ theorem DecoratedAdmissibleRay.exists_coefficient_refinement
     have hout : v (p j) = w (β.1.val j) := (hv _).trans (congrArg w (hp j))
     rw [hout, hdir]
     exact ⟨β.normal_velocity_eq j, β.crossing_sign j⟩
-  refine ⟨⟨⟨p, hsupport⟩, { β.2 with
-    transverse := fun j => by rw [hdir]; exact β.2.transverse j
-    directionAt_eq := fun j => (β.2.directionAt_eq j).trans (hdir j).symm }⟩,
-    hp, ?_, rfl, rfl⟩
+  refine ⟨⟨⟨p, hsupport⟩, β.2.congrVelocity (funext hdir).symm⟩,
+    hp, ?_, AdmissibleRayRealization.ray_congrVelocity ..,
+    AdmissibleRayRealization.parameter_congrVelocity ..⟩
   simpa only [DecoratedAdmissibleRay.decoration_zero] using hn
 
 end Mei
