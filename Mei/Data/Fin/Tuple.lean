@@ -21,6 +21,14 @@ public section
 
 namespace Fin
 
+/-- Applying a function to an appended tuple applies it to each block. -/
+@[simp]
+theorem comp_append {α β : Sort*} {m n : ℕ} (f : α → β)
+    (a : Fin m → α) (b : Fin n → α) :
+    f ∘ append a b = append (f ∘ a) (f ∘ b) := by
+  funext j
+  refine addCases (fun _ => ?_) (fun _ => ?_) j <;> simp
+
 /-- The entry after an index in the left block, including the block junction. -/
 @[simp]
 theorem snoc_append_castAdd_succ {α : Sort*} {n m : ℕ}
