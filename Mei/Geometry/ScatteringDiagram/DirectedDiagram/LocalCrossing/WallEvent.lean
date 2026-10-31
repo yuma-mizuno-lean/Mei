@@ -50,15 +50,39 @@ local notation "W" k:max => (fun j : D.active k => DirectedWall.support (Directe
 local notation "f" k:max =>
   (fun j : D.active k => h.continuousRealCharacter (DirectedWall.normal (DirectedDiagram.wall D j)))
 
+/-- A signed event has a regular point and a transverse velocity with its prescribed sign. -/
+def IsRealizedEvent (k : ℕ) (e : WallEvent (D.active k)) : Prop :=
+  ∃ x : {x : V // x ∉ singularSupport (W k)}, ∃ v : V,
+    x.val ∈ e.support (W k) ∧
+      (∀ j : D.active k, x.val ∈ (D.wall j).support → (f k) j v ≠ 0) ∧
+      SignType.sign (e.normal (f k) v) = e.2
+
+/-- Realizability is characterized by regular incidence, transversality and the event sign. -/
+theorem isRealizedEvent_iff (k : ℕ) (e : WallEvent (D.active k)) :
+    D.IsRealizedEvent k e ↔
+      ∃ x : {x : V // x ∉ singularSupport (W k)}, ∃ v : V,
+        x.val ∈ e.support (W k) ∧
+          (∀ j : D.active k, x.val ∈ (D.wall j).support → (f k) j v ≠ 0) ∧
+          SignType.sign (e.normal (f k) v) = e.2 := Iff.rfl
+
+private theorem wallEvent_realization_neg (k : ℕ) (e : WallEvent (D.active k))
+    {x v : V} (he : x ∈ e.support (W k))
+    (hv : ∀ j : D.active k, x ∈ (D.wall j).support → (f k) j v ≠ 0)
+    (hs : SignType.sign (e.normal (f k) v) = e.2) :
+    x ∈ WallEvent.support (e.1, -e.2) (W k) ∧
+      (∀ j : D.active k, x ∈ (D.wall j).support → (f k) j (-v) ≠ 0) ∧
+      SignType.sign (WallEvent.normal (e.1, -e.2) (f k) (-v)) = -e.2 := by
+  refine ⟨?_, ?_, ?_⟩
+  · simpa only [WallEvent.mem_support] using he
+  · intro j hj
+    simpa only [map_neg, neg_ne_zero] using hv j hj
+  · simpa only [WallEvent.normal_def, map_neg, Left.sign_neg] using congrArg Neg.neg hs
+
 /-- The fixed signed label of a simultaneous event. Its sign uses the negative
 of forward velocity. Events with no regular transverse realization have label one. -/
 def wallEventLabel (k : ℕ) (e : WallEvent (D.active k)) : d.truncatedGroup ℒ k := by
   classical
-  let realizable := ∃ x : {x : V // x ∉ singularSupport (W k)}, ∃ v : V,
-    x.val ∈ e.support (W k) ∧
-      (∀ j : D.active k, x.val ∈ (D.wall j).support → (f k) j v ≠ 0) ∧
-      SignType.sign (e.normal (f k) v) = e.2
-  exact if he : realizable then
+  exact if he : D.IsRealizedEvent k e then
     D.combinedLabel k he.choose.val (-he.choose_spec.choose) he.choose.property
   else 1
 
@@ -71,7 +95,6 @@ theorem wallEventLabel_eq_combinedLabel (k : ℕ) (e : WallEvent (D.active k))
     D.wallEventLabel k e = D.combinedLabel k x (-v) hx := by
   classical
   unfold wallEventLabel
-  dsimp only
   split_ifs with hr
   · obtain ⟨hpoint, _, hsign⟩ := hr.choose_spec.choose_spec
     apply D.combinedLabel_eq_of_incident_iff_of_mul_pos
@@ -82,15 +105,9 @@ theorem wallEventLabel_eq_combinedLabel (k : ℕ) (e : WallEvent (D.active k))
     have heq : SignType.sign (e.normal (f k) hr.choose_spec.choose) =
         SignType.sign (e.normal (f k) v) := hsign.trans hs.symm
     have hpos : 0 < e.normal (f k) hr.choose_spec.choose * e.normal (f k) v := by
-      rcases lt_or_gt_of_ne hne with hn | hp
-      · have hn' : e.normal (f k) hr.choose_spec.choose < 0 := by
-          apply sign_eq_neg_one_iff.mp
-          exact heq.trans (sign_neg hn)
-        exact mul_pos_of_neg_of_neg hn' hn
-      · have hp' : 0 < e.normal (f k) hr.choose_spec.choose := by
-          apply sign_eq_one_iff.mp
-          exact heq.trans (sign_pos hp)
-        exact mul_pos hp' hp
+      apply sign_eq_one_iff.mp
+      rw [sign_mul, heq, ← sign_mul]
+      exact sign_pos (mul_self_pos.mpr hne)
     simpa only [map_neg, neg_mul_neg, WallEvent.normal_def,
       h.continuousRealCharacter_apply] using hpos
   · exact False.elim (hr ⟨⟨x, hx⟩, v, he, hv, hs⟩)
@@ -98,10 +115,7 @@ theorem wallEventLabel_eq_combinedLabel (k : ℕ) (e : WallEvent (D.active k))
 /-- An event admitting no regular transverse realization has identity label,
 including incidence sets that never occur away from singular support. -/
 theorem wallEventLabel_eq_one_of_not_exists (k : ℕ) (e : WallEvent (D.active k))
-    (he : ¬ ∃ x : {x : V // x ∉ singularSupport (W k)}, ∃ v : V,
-      x.val ∈ e.support (W k) ∧
-        (∀ j : D.active k, x.val ∈ (D.wall j).support → (f k) j v ≠ 0) ∧
-        SignType.sign (e.normal (f k) v) = e.2) :
+    (he : ¬ D.IsRealizedEvent k e) :
     D.wallEventLabel k e = 1 := by
   classical
   simp only [wallEventLabel, dite_eq_right he]
@@ -136,12 +150,8 @@ private theorem wallEventLabel_neg_of_mem_support (k : ℕ) (e : WallEvent (D.ac
     (hv : ∀ j : D.active k, x ∈ (D.wall j).support → (f k) j v ≠ 0)
     (hs : SignType.sign (e.normal (f k) v) = e.2) :
     D.wallEventLabel k (e.1, -e.2) = (D.wallEventLabel k e)⁻¹ := by
-  have hs' : SignType.sign (WallEvent.normal (e.1, -e.2) (f k) (-v)) =
-      -e.2 := by simpa only [WallEvent.normal_def, map_neg, Left.sign_neg] using congrArg Neg.neg hs
-  have he' : x ∈ WallEvent.support (e.1, -e.2) (W k) := by
-    simpa only [WallEvent.mem_support] using he
-  rw [D.wallEventLabel_eq_combinedLabel k (e.1, -e.2) hx he'
-    (fun j hj => by simpa only [map_neg, neg_ne_zero] using hv j hj) hs', neg_neg,
+  obtain ⟨he', hv', hs'⟩ := D.wallEvent_realization_neg k e he hv hs
+  rw [D.wallEventLabel_eq_combinedLabel k (e.1, -e.2) hx he' hv' hs', neg_neg,
     D.wallEventLabel_eq_combinedLabel k e hx he hv hs,
     D.combinedLabel_neg k x v hx
       (fun j hj => by simpa only [h.continuousRealCharacter_apply] using hv j hj), inv_inv]
@@ -152,22 +162,16 @@ sign-zero events, whose labels are the identity. -/
 theorem wallEventLabel_neg (k : ℕ) (e : WallEvent (D.active k)) :
     D.wallEventLabel k (e.1, -e.2) = (D.wallEventLabel k e)⁻¹ := by
   classical
-  by_cases hr : ∃ x : {x : V // x ∉ singularSupport (W k)}, ∃ v : V,
-      x.val ∈ e.support (W k) ∧
-        (∀ j : D.active k, x.val ∈ (D.wall j).support → (f k) j v ≠ 0) ∧
-        SignType.sign (e.normal (f k) v) = e.2
+  by_cases hr : D.IsRealizedEvent k e
   · obtain ⟨x, v, he, hv, hs⟩ := hr
     exact D.wallEventLabel_neg_of_mem_support k e x.property he hv hs
   · rw [D.wallEventLabel_eq_one_of_not_exists k e hr, inv_one]
     apply D.wallEventLabel_eq_one_of_not_exists
     rintro ⟨x, v, he, hv, hs⟩
     apply hr
-    refine ⟨x, -v, ?_, ?_, ?_⟩
-    · simpa only [WallEvent.mem_support] using he
-    · intro j hj
-      simpa only [map_neg, neg_ne_zero] using hv j hj
-    · simpa only [WallEvent.normal_def, map_neg, Left.sign_neg, neg_neg] using
-        congrArg Neg.neg hs
+    have hr' : D.IsRealizedEvent k (e.1, -(-e.2)) :=
+      ⟨x, -v, D.wallEvent_realization_neg k (e.1, -e.2) he hv hs⟩
+    simpa only [neg_neg] using hr'
 
 /-- Lowering the cutoff removes inactive indexed factors from the event label.
 The two events record the incidence and sign of the same regular transverse germ;
