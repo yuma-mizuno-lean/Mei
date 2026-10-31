@@ -313,6 +313,7 @@ theorem eval_vsub_eval (β : FiniteAffineRay V P) {s t : ℝ} (hst : s ≤ t)
     _ = (s - t) • β.directionAt t := by rw [h, directionAt, smul_add]
 
 /-- Past the endpoint, realization continues in the final direction. -/
+@[simp low] -- Prefer the unconditional endpoint rule at time zero.
 theorem eval_of_nonneg (β : FiniteAffineRay V P) {t : ℝ} (ht : 0 ≤ t) :
     β t = (-t • β.direction) +ᵥ β.endpoint := by
   have he := β.eval_vsub_eval ht (fun b hb => Or.inl (β.bend_neg b hb).le)

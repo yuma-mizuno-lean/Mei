@@ -18,8 +18,8 @@ admits the incoming endpoint. The image criterion retains the complete source,
 wall and singular avoidance conditions; it does not assume that every outgoing
 ray can be cut at a fixed incoming endpoint.
 
-The finite sum over this image is the sum of the selected whole components of
-the incoming decorations. This preserves multiplicities and cancellation, and
+The finite sum over this image is the sum of the selected whole components after
+applying `U` to the incoming decorations. This preserves multiplicities and cancellation, and
 is the fiberwise attachment step in the backward-ray recursion of Mandel,
 *Scattering diagrams, theta functions, and refined tropical curve counts*,
 §3.3.3 (arXiv:1503.06183v5).
@@ -132,8 +132,8 @@ theorem history_finalEncounterEmbedding (r : A) :
       hW₁ hW₂ hS₁ hS₂ r).1.val = Fin.cons (α := fun _ => Γ) q r.val.1.val := by
   exact history_attach U p q Y s t hs ht m b H hnormal htrans hheight hinc hW₁ hW₂ hS₁ hS₂ r
 
-/-- The attached final weight is the whole selected component of the incoming
-weight, with no splitting of coefficients into individual monomials. -/
+/-- The attached final weight is the whole selected component after applying `U`
+to the incoming weight, with no splitting of coefficients into individual monomials. -/
 @[simp↓]
 theorem decoration_finalEncounterEmbedding (r : A) :
     (finalEncounterEmbedding U p q Y s t hs ht m b H hnormal htrans hheight hinc
