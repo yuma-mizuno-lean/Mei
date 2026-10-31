@@ -27,7 +27,7 @@ for concatenation, inverted by reversal, unchanged by path subdivision, and natu
 for functors between groupoids. For a group `H`, viewed as the one-object groupoid
 `SingleObj H`, every chamber carries the unique object and transport is the path
 product of the corresponding group-labelled diagram
-(`GroupoidWallDiagram.transport_toGroupoidWallDiagram`). This follows the crossing-word
+(`Mei.FiniteWallDiagram.transport_toGroupoidWallDiagram`). This follows the crossing-word
 evaluation of `Mei.FiniteWallDiagram.pathProduct`, with Bridgeland's sign and order
 convention for path-ordered products (Bridgeland, *Scattering diagrams, Hall algebras
 and stability conditions*, §2, arXiv:1603.00416v4).
@@ -73,10 +73,12 @@ def letterHom : (l : C.walls × Bool) →
   | (P, false) => D.label P
 
 /-- Along the coorientation a crossing uses the inverse label. -/
+@[simp]
 theorem letterHom_true (P : C.walls) : D.letterHom (P, true) = inv (D.label P) :=
   Groupoid.inv_eq_inv _
 
 /-- Against the coorientation a crossing uses the label. -/
+@[simp]
 theorem letterHom_false (P : C.walls) : D.letterHom (P, false) = D.label P := (rfl)
 
 /-- The composite of the letter arrows along a chain of crossings, in traversal order. -/
@@ -87,6 +89,19 @@ def chainHom : (L : List (C.walls × Bool)) → {a b : Chamber (fun P : C.walls 
       D.letterHom l ≫ chainHom L ((isCrossingChain_cons l L).mp hL).2
 
 variable {a b c : Chamber (fun P : C.walls => (P : Set V))}
+
+/-- The empty chain composes to the equality arrow between its endpoint objects. -/
+@[simp]
+theorem chainHom_nil (hL : C.IsCrossingChain D.normal D.ker_normal a b []) :
+    D.chainHom [] hL = eqToHom (congrArg D.obj (isCrossingChain_nil.mp hL)) := (rfl)
+
+/-- Prepending a crossing composes its arrow with the composite of the remaining chain. -/
+@[simp]
+theorem chainHom_cons (l : C.walls × Bool) (L : List (C.walls × Bool))
+    (hL : C.IsCrossingChain D.normal D.ker_normal a b (l :: L)) :
+    D.chainHom (l :: L) hL =
+      eqToHom (congrArg D.obj ((isCrossingChain_cons l L).mp hL).1) ≫
+        D.letterHom l ≫ D.chainHom L ((isCrossingChain_cons l L).mp hL).2 := (rfl)
 
 /-- The composite along a chain depends only on the list of letters. -/
 theorem chainHom_congr {L L' : List (C.walls × Bool)}
@@ -153,10 +168,7 @@ theorem transport_def (p : AdmissiblePLPath x y) :
 /-- A constant path transports by the identity. -/
 @[simp]
 theorem transport_nil : D.transport (Quiver.Path.nil : AdmissiblePLPath x x) = 𝟙 _ := by
-  rw [transport_def, D.chainHom_congr _ (show C.IsCrossingChain D.normal D.ker_normal
-    (chamber x) (chamber x) [] from isCrossingChain_nil.mpr rfl)
-    (Quiver.Path.crossingLetters_nil _)]
-  simp [chainHom]
+  simp [transport_def]
 
 /-- Transport along a concatenation is the composite of the transports, the first path
 acting first. -/

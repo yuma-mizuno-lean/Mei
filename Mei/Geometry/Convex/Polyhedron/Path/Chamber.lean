@@ -29,7 +29,9 @@ open Set
 
 namespace Mei.Convex.WallComplement
 
-variable {V ι : Type*} [NormedAddCommGroup V] {W : ι → Set V}
+section Topological
+
+variable {V ι : Type*} [TopologicalSpace V] {W : ι → Set V}
 
 /-- The chambers of a wall family: the connected components of the complement of
 all walls, with the subspace topology. -/
@@ -40,6 +42,7 @@ def chamber (x : WallComplement W) : Chamber W :=
   ConnectedComponents.mk ⟨x.val, x.notMem⟩
 
 /-- An allowed endpoint lies in the carrier of its own chamber. -/
+@[simp]
 theorem val_mem_carrier_chamber (x : WallComplement W) : x.val ∈ (chamber x).carrier :=
   ConnectedComponents.mem_carrier_iff.mpr ⟨x.notMem, rfl⟩
 
@@ -49,31 +52,17 @@ theorem chamber_surjective : Function.Surjective (chamber (W := W)) := by
   obtain ⟨x, rfl⟩ := ConnectedComponents.surjective_coe c
   exact ⟨⟨x.val, x.property⟩, rfl⟩
 
-/-- A point lies in the carriers of at most one chamber. -/
-theorem eq_of_mem_carrier {c c' : Chamber W} {z : V} (hz : z ∈ c.carrier)
-    (hz' : z ∈ c'.carrier) : c = c' := by
-  obtain ⟨_, rfl⟩ := ConnectedComponents.mem_carrier_iff.mp hz
-  obtain ⟨_, rfl⟩ := ConnectedComponents.mem_carrier_iff.mp hz'
-  rfl
-
-/-- A preconnected set avoiding all walls lies in the carrier of the chamber of any
-of its points. -/
-theorem subset_carrier_of_isPreconnected {A : Set V} (hA : IsPreconnected A)
-    (hAW : ∀ a ∈ A, ∀ i, a ∉ W i) {z : V} (hz : z ∈ A) {c : Chamber W}
-    (hzc : z ∈ c.carrier) : A ⊆ c.carrier := by
-  obtain ⟨hzW, rfl⟩ := ConnectedComponents.mem_carrier_iff.mp hzc
-  rw [ConnectedComponents.carrier_mk]
-  exact hA.subset_connectedComponentIn hz fun a ha => hAW a ha
-
 /-- A preconnected set avoiding all walls lies in one chamber: an allowed endpoint in
 it has the chamber of any of its points. -/
 theorem chamber_eq_of_isPreconnected {A : Set V} (hA : IsPreconnected A)
     (hAW : ∀ a ∈ A, ∀ i, a ∉ W i) {x : WallComplement W} (hx : x.val ∈ A) {z : V}
     (hz : z ∈ A) {c : Chamber W} (hzc : z ∈ c.carrier) : chamber x = c :=
-  eq_of_mem_carrier (val_mem_carrier_chamber x)
-    (subset_carrier_of_isPreconnected hA hAW hz hzc hx)
+  ConnectedComponents.eq_of_mem_carrier (val_mem_carrier_chamber x)
+    (ConnectedComponents.subset_carrier_of_isPreconnected hA (fun a ha => hAW a ha) hz hzc hx)
 
-variable [NormedSpace ℝ V]
+end Topological
+
+variable {V ι : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V] {W : ι → Set V}
 
 /-- A segment meeting no wall joins two endpoints of the same chamber. -/
 theorem chamber_eq_of_crossings_eq_empty {x y : WallComplement W}

@@ -57,6 +57,21 @@ theorem carrier_mk (x : s) :
   ext y
   exact ConnectedComponents.coe_eq_coe'
 
+/-- A point lies in the carriers of at most one connected component of a subset. -/
+theorem eq_of_mem_carrier {c c' : ConnectedComponents s} {z : X} (hz : z ∈ c.carrier)
+    (hz' : z ∈ c'.carrier) : c = c' := by
+  obtain ⟨_, rfl⟩ := mem_carrier_iff.mp hz
+  obtain ⟨_, rfl⟩ := mem_carrier_iff.mp hz'
+  rfl
+
+/-- A preconnected subset lies in the carrier of any component containing one of its points. -/
+theorem subset_carrier_of_isPreconnected {A : Set X} (hA : IsPreconnected A)
+    (hAs : A ⊆ s) {z : X} (hz : z ∈ A) {c : ConnectedComponents s}
+    (hzc : z ∈ c.carrier) : A ⊆ c.carrier := by
+  obtain ⟨hzs, rfl⟩ := mem_carrier_iff.mp hzc
+  rw [carrier_mk]
+  exact hA.subset_connectedComponentIn hz hAs
+
 /-- Equality of component vertices is membership in the ambient component carrier. -/
 theorem mk_eq_mk_iff_mem_connectedComponentIn {x y : s} :
     ConnectedComponents.mk x = ConnectedComponents.mk y ↔

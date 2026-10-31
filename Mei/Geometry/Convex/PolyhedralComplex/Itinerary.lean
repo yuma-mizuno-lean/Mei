@@ -6,8 +6,9 @@ Authors: Claude
 module
 
 public import Mei.Geometry.Convex.PolyhedralComplex.SideChamber
-public import Mei.Geometry.Convex.PolyhedralComplex.PathSubdivision
 public import Mei.Geometry.Convex.PolyhedralComplex.SingleCrossing
+public import Mathlib.Combinatorics.Quiver.Path.Weight
+public import Mathlib.Algebra.FreeMonoid.Basic
 
 /-!
 # Chamber itineraries of admissible paths
@@ -29,6 +30,7 @@ of chambers visited by the path. Chamber-valued
 data, such as the objects and arrows of a groupoid-labelled wall diagram, can
 therefore be composed along admissible paths.
 
+The crossing list uses Mathlib's `Quiver.Path.weight` in the free monoid of signed walls.
 The chain property is checked on a subdivision into segments with at most one crossing
 (`Quiver.Path.exists_subdivision_subsingleton_crossings`), using the incident chambers
 of `FinitePolyhedralComplex.chamber_eq_of_crossings_eq_singleton`. Subdivision
@@ -225,22 +227,22 @@ variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ 
   {x y z : WallComplement (fun P : C.walls => (P : Set V))}
 
 /-- The crossing letters of a polygonal path, in traversal order. -/
-def crossingLetters : {y : WallComplement (fun P : C.walls => (P : Set V))} →
-    AdmissiblePLPath x y → (C.walls → V →ₗ[ℝ] ℝ) → List (C.walls × Bool)
-  | _, .nil, _ => []
-  | _, .cons q e, ν => crossingLetters q ν ++ C.segmentCrossingLetters ν e
+def crossingLetters (p : AdmissiblePLPath x y) (ν : C.walls → V →ₗ[ℝ] ℝ) :
+    List (C.walls × Bool) :=
+  FreeMonoid.toList (p.weight (fun e => FreeMonoid.ofList (C.segmentCrossingLetters ν e)))
 
 /-- Constant paths have no crossing letters. -/
 @[simp]
 theorem crossingLetters_nil (ν : C.walls → V →ₗ[ℝ] ℝ) :
-    (Quiver.Path.nil : AdmissiblePLPath x x).crossingLetters ν = [] := (rfl)
+    (Quiver.Path.nil : AdmissiblePLPath x x).crossingLetters ν = [] := by
+  simp [crossingLetters, weight_nil]
 
 /-- Appending a segment appends its crossing letters. -/
 @[simp]
 theorem crossingLetters_cons (p : AdmissiblePLPath x y) (e : y ⟶ z)
     (ν : C.walls → V →ₗ[ℝ] ℝ) :
-    (p.cons e).crossingLetters ν = p.crossingLetters ν ++ C.segmentCrossingLetters ν e :=
-  (rfl)
+    (p.cons e).crossingLetters ν = p.crossingLetters ν ++ C.segmentCrossingLetters ν e := by
+  simp [crossingLetters, weight_cons]
 
 /-- A one-segment path has the crossing letters of its segment. -/
 @[simp]
@@ -253,9 +255,7 @@ theorem crossingLetters_toPath (e : x ⟶ y) (ν : C.walls → V →ₗ[ℝ] ℝ
 theorem crossingLetters_comp (p : AdmissiblePLPath x y) (q : AdmissiblePLPath y z)
     (ν : C.walls → V →ₗ[ℝ] ℝ) :
     (p.comp q).crossingLetters ν = p.crossingLetters ν ++ q.crossingLetters ν := by
-  induction q with
-  | nil => simp
-  | cons q e ih => simp [ih]
+  simp [crossingLetters, weight_comp]
 
 /-- Reversing a path reverses its crossing letters and flips their signs. -/
 theorem crossingLetters_reverse (p : AdmissiblePLPath x y) (ν : C.walls → V →ₗ[ℝ] ℝ)

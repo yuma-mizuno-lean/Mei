@@ -21,21 +21,11 @@ needs to be finite-dimensional.
 
 A nonzero functional vanishing on a codimension-one set has its affine
 direction as kernel, by Mathlib's `Module.Dual.finrank_ker_add_one_of_ne_zero`.
-Conversely, a linear map whose kernel contains the direction of a set is constant on it.
 -/
 
 public section
 
 namespace LinearMap
-
-/-- A linear map whose kernel contains the direction of a set is constant on that set. -/
-theorem apply_eq_of_direction_le_ker {K V W : Type*} [Ring K] [AddCommGroup V] [Module K V]
-    [AddCommGroup W] [Module K W] (f : V →ₗ[K] W) {P : Set V}
-    (hf : (affineSpan K P).direction ≤ f.ker) {x y : V} (hx : x ∈ P) (hy : y ∈ P) :
-    f x = f y := by
-  have hd := hf (AffineSubspace.vsub_mem_direction (subset_affineSpan K P hx)
-    (subset_affineSpan K P hy))
-  rwa [LinearMap.mem_ker, vsub_eq_sub, map_sub, sub_eq_zero] at hd
 
 variable {K V : Type*} [DivisionRing K] [AddCommGroup V] [Module K V]
   [FiniteDimensional K V]

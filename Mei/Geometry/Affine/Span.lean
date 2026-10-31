@@ -13,11 +13,25 @@ public import Mathlib.LinearAlgebra.AffineSpace.AffineSubspace.Basic
 The direction of the affine span of an image is the linear image of the original
 direction. This formula supports transport of transversality and codimension
 without requiring an invertible map or a nonempty set.
+A linear map whose kernel contains the direction of a set is constant on it.
 Adding unrestricted coordinates preserves and reflects equality of affine spans.
 For nonempty sets it also preserves and reflects equality of their directions.
 -/
 
 public section
+
+namespace LinearMap
+
+/-- A linear map whose kernel contains the direction of a set is constant on that set. -/
+theorem apply_eq_of_direction_le_ker {K V W : Type*} [Ring K] [AddCommGroup V] [Module K V]
+    [AddCommGroup W] [Module K W] (f : V →ₗ[K] W) {P : Set V}
+    (hf : (affineSpan K P).direction ≤ f.ker) {x y : V} (hx : x ∈ P) (hy : y ∈ P) :
+    f x = f y := by
+  have hd := hf (AffineSubspace.vsub_mem_direction (subset_affineSpan K P hx)
+    (subset_affineSpan K P hy))
+  rwa [LinearMap.mem_ker, vsub_eq_sub, map_sub, sub_eq_zero] at hd
+
+end LinearMap
 
 namespace AffineMap
 

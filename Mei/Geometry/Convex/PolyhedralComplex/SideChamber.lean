@@ -5,10 +5,7 @@ Authors: Claude
 -/
 module
 
-public import Mei.Analysis.Convex.Intrinsic
-public import Mei.Geometry.Affine.Codimension
 public import Mei.Geometry.Convex.Polyhedron.Path.Chamber
-public import Mei.Geometry.Convex.PolyhedralComplex.CrossingWord
 public import Mei.Geometry.Convex.PolyhedralComplex.Strata
 
 /-!
@@ -60,21 +57,16 @@ private def IsPositiveSideAt (ν : V →ₗ[ℝ] ℝ) (q : V)
     (c : Chamber (fun P : C.walls => (P : Set V))) : Prop :=
   ∃ r > 0, ∀ z ∈ Metric.ball q r, ν q < ν z → z ∈ c.carrier
 
-/-- Small positive multiples of a velocity stay in any ball around the base point. -/
-private theorem eventually_add_smul_mem_ball {q v : V} {r : ℝ} (hr : 0 < r) :
-    ∀ᶠ t : ℝ in 𝓝[>] 0, q + t • v ∈ Metric.ball q r := by
-  apply nhdsWithin_le_nhds
-  have hc : Continuous fun t : ℝ => q + t • v := continuous_const.add
-    (continuous_id.smul continuous_const)
-  exact (hc.tendsto' 0 q (by simp)).eventually
-    (Metric.isOpen_ball.mem_nhds (Metric.mem_ball_self hr))
-
 /-- On a positive side, the chamber contains all short positively transverse rays. -/
 private theorem IsPositiveSideAt.eventually {ν : V →ₗ[ℝ] ℝ} {q : V}
     {c : Chamber (fun P : C.walls => (P : Set V))} (hc : IsPositiveSideAt ν q c)
     {v : V} (hv : 0 < ν v) : ∀ᶠ t : ℝ in 𝓝[>] 0, q + t • v ∈ c.carrier := by
   obtain ⟨r, hr, hball⟩ := hc
-  filter_upwards [eventually_add_smul_mem_ball (v := v) hr, self_mem_nhdsWithin] with t ht htp
+  have htend : Tendsto (fun t : ℝ => q + t • v) (𝓝[>] 0) (𝓝 q) := by
+    simpa only [add_zero, id_eq] using tendsto_const_nhds.add
+      ((tendsto_nhdsWithin_of_tendsto_nhds
+        (tendsto_id : Tendsto (fun t : ℝ => t) (𝓝 0) (𝓝 0))).zero_smul_const v)
+  filter_upwards [htend.eventually (Metric.ball_mem_nhds q hr), self_mem_nhdsWithin] with t ht htp
   refine hball _ ht ?_
   rw [map_add, map_smul, smul_eq_mul]
   exact lt_add_of_pos_right _ (mul_pos htp hv)
@@ -97,7 +89,7 @@ private theorem IsPositiveSideAt.unique {P : C.walls} {ν : V →ₗ[ℝ] ℝ}
   obtain ⟨v, hv⟩ := exists_normal_eq_one hν
   obtain ⟨t, ht, ht'⟩ := ((hc.eventually (v := v) (by rw [hv]; exact one_pos)).and
     (hc'.eventually (v := v) (by rw [hv]; exact one_pos))).exists
-  exact eq_of_mem_carrier ht ht'
+  exact ConnectedComponents.eq_of_mem_carrier ht ht'
 
 /-- At a relative interior point of a wall, the positive half of a small ball lies in
 one chamber. -/
@@ -116,14 +108,18 @@ private theorem exists_isPositiveSideAt {P : C.walls} {ν : V →ₗ[ℝ] ℝ}
     obtain rfl := hwall Q a ha haQ
     exact hlt.ne' (ν.apply_eq_of_direction_le_ker hν.ge haQ hqP)
   obtain ⟨v, hv⟩ := exists_normal_eq_one hν
-  obtain ⟨t, ht, htp⟩ := ((eventually_add_smul_mem_ball (v := v) hr).and
+  have htend : Tendsto (fun t : ℝ => q + t • v) (𝓝[>] 0) (𝓝 q) := by
+    simpa only [add_zero, id_eq] using tendsto_const_nhds.add
+      ((tendsto_nhdsWithin_of_tendsto_nhds
+        (tendsto_id : Tendsto (fun t : ℝ => t) (𝓝 0) (𝓝 0))).zero_smul_const v)
+  obtain ⟨t, ht, htp⟩ := ((htend.eventually (Metric.ball_mem_nhds q hr)).and
     (self_mem_nhdsWithin : ∀ᶠ t : ℝ in 𝓝[>] 0, 0 < t)).exists
   have hzA : q + t • v ∈ A := ⟨ht, by simpa [hv] using htp⟩
   let z : {x : V | ∀ Q : C.walls, x ∉ (Q : Set V)} := ⟨q + t • v, hAW _ hzA⟩
   have hz : q + t • v ∈ (ConnectedComponents.mk z).carrier :=
     ConnectedComponents.mem_carrier_iff.mpr ⟨z.property, rfl⟩
   exact ⟨ConnectedComponents.mk z, r, hr, fun a ha hlt =>
-    subset_carrier_of_isPreconnected hA hAW hzA hz ⟨ha, hlt⟩⟩
+    ConnectedComponents.subset_carrier_of_isPreconnected hA (fun a ha => hAW a ha) hzA hz ⟨ha, hlt⟩⟩
 
 /-- A positive side persists at nearby relative interior points of the wall. -/
 private theorem IsPositiveSideAt.of_mem_ball {P : C.walls} {ν : V →ₗ[ℝ] ℝ}
@@ -158,8 +154,8 @@ theorem existsUnique_positiveChamber (P : C.walls) (ν : V →ₗ[ℝ] ℝ)
   have hloc : IsLocallyConstant f := by
     refine (IsLocallyConstant.iff_eventually_eq f).mpr fun q => ?_
     obtain ⟨r, hr, hball⟩ := hf q
-    filter_upwards [(Metric.isOpen_ball.preimage continuous_subtype_val).mem_nhds
-      (show q.val ∈ Metric.ball q.val r from Metric.mem_ball_self hr)] with q' hq'
+    have hqr : q.val ∈ Metric.ball q.val r := Metric.mem_ball_self hr
+    filter_upwards [(Metric.isOpen_ball.preimage continuous_subtype_val).mem_nhds hqr] with q' hq'
     exact (hf q').unique hν (IsPositiveSideAt.of_mem_ball hν
       (intrinsicInterior_subset q.property) (intrinsicInterior_subset q'.property) hball hq')
   have : PreconnectedSpace (intrinsicInterior ℝ (P : Set V)) :=
@@ -168,7 +164,7 @@ theorem existsUnique_positiveChamber (P : C.walls) (ν : V →ₗ[ℝ] ℝ)
   · rw [hloc.apply_eq_of_preconnectedSpace ⟨q₀, hq₀⟩ ⟨q, hq⟩]
     exact (hf ⟨q, hq⟩).eventually hw
   · obtain ⟨t, ht, ht'⟩ := ((hc q₀ hq₀ v hv').and ((hf ⟨q₀, hq₀⟩).eventually hv')).exists
-    exact eq_of_mem_carrier ht ht'
+    exact ConnectedComponents.eq_of_mem_carrier ht ht'
 
 variable (C) in
 /-- The chamber on the side of a wall where its coorientation increases. -/
@@ -211,7 +207,7 @@ theorem eq_positiveChamber_of_frequently {P : C.walls} {ν : V →ₗ[ℝ] ℝ}
     (hc : ∃ᶠ t : ℝ in 𝓝[>] 0, q + t • v ∈ c.carrier) : c = C.positiveChamber P ν hν := by
   obtain ⟨t, ht, ht'⟩ := (hc.and_eventually
     (eventually_add_smul_mem_positiveChamber hν hq hv)).exists
-  exact eq_of_mem_carrier ht ht'
+  exact ConnectedComponents.eq_of_mem_carrier ht ht'
 
 /-- An admissible segment crossing exactly one wall, with positive normal velocity,
 starts in the negative chamber of that wall and ends in its positive chamber. -/

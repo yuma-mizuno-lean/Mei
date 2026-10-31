@@ -251,10 +251,18 @@ theorem inter_affineSpan_subset {P U : Set V} (hU : Convex ℝ U) (hUP : (U ∩ 
     exact propext hr'
   simpa [g] using (hloc.apply_eq_of_preconnectedSpace 1 0).mpr (by simpa [g] using hwP)
 
-/-- The relative interior of a convex set is convex: open segments from a relative interior
-point to a point of the set stay in the relative interior. -/
-protected theorem intrinsicInterior {s : Set V} (hs : Convex ℝ s) :
-    Convex ℝ (intrinsicInterior ℝ s) :=
+end Convex
+
+namespace Convex
+
+variable {𝕜 E : Type*} [Field 𝕜] [LinearOrder 𝕜] [IsStrictOrderedRing 𝕜]
+  [AddCommGroup E] [Module 𝕜 E] [TopologicalSpace E]
+  [IsTopologicalAddGroup E] [ContinuousConstSMul 𝕜 E]
+
+/-- The relative interior of a convex set is convex: segments with both endpoints in
+its relative interior stay in the relative interior. -/
+protected theorem intrinsicInterior {s : Set E} (hs : Convex 𝕜 s) :
+    Convex 𝕜 (intrinsicInterior 𝕜 s) :=
   convex_iff_openSegment_subset.mpr fun _ hx _ hy =>
     hs.openSegment_intrinsicInterior_intrinsicClosure_subset_intrinsicInterior hx
       (subset_intrinsicClosure (intrinsicInterior_subset hy))
