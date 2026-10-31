@@ -137,6 +137,19 @@ theorem eq_backwardRay (r : AdmissibleRayRealization f c v P W S C Q) :
     r.strictAnti_parameter r.bends_recorded r.parameter_zero r.directionAt_eq
     r.transverse r.height_eq
 
+/-- The bend at a recorded encounter is the difference of its adjacent
+incoming directions. In particular, recording an unchanged direction adds no bend. -/
+@[simp]
+theorem bends_parameter (r : AdmissibleRayRealization f c v P W S C Q) (j : Fin n) :
+    r.ray.bends (r.parameter j.succ) = v j.succ - v j.castSucc := by
+  rw [← r.ray.directionAt_sub_eq_bends (r.strictAnti_parameter Fin.castSucc_lt_succ),
+    r.directionAt_eq, r.directionAt_eq]
+  intro t ht
+  obtain ⟨a, rfl⟩ := r.bends_recorded t ht
+  exact (Fin.succ_le_or_le_castSucc a.succ j).imp
+    (fun h => r.strictAnti_parameter.antitone h)
+    (fun h => r.strictAnti_parameter.antitone h)
+
 /-- At a fixed endpoint, every part of a realization is forced by its itinerary. -/
 instance : Subsingleton (AdmissibleRayRealization f c v P W S C Q) where
   allEq r s := by
