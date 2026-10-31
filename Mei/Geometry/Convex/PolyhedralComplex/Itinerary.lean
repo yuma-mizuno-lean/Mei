@@ -7,8 +7,6 @@ module
 
 public import Mei.Geometry.Convex.PolyhedralComplex.SideChamber
 public import Mei.Geometry.Convex.PolyhedralComplex.SingleCrossing
-public import Mathlib.Combinatorics.Quiver.Path.Weight
-public import Mathlib.Algebra.FreeMonoid.Basic
 
 /-!
 # Chamber itineraries of admissible paths

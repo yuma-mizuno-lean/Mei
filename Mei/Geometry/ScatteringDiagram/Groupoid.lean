@@ -7,7 +7,6 @@ module
 
 public import Mei.Geometry.Convex.PolyhedralComplex.Itinerary
 public import Mei.Geometry.ScatteringDiagram.Finite
-public import Mathlib.CategoryTheory.SingleObj
 
 /-!
 # Groupoid-labelled wall diagrams and their transport
