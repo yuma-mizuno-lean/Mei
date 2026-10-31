@@ -12,7 +12,7 @@ public import Mei.Geometry.Affine.FiniteRay.CutGlue
 # Reconstructing admissible rays from incoming cuts
 
 Suppose the directions after a selected encounter all agree with the final
-direction. Cutting just before that encounter and attaching the two straight
+direction. Cutting at or just before that encounter and attaching the two straight
 pieces recovers the entire finite affine ray. Later recorded encounters are
 allowed: their equal adjacent directions force their bend increments to vanish.
 The selected encounter can itself have zero bend.
@@ -35,11 +35,11 @@ variable {V J K : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
   {v : Fin (n + 1) → V} {P : Fin n → Set V}
   {W : J → Set V} {S : K → Set V} {C : Set V} {Q : V}
 
-/-- Reattach an incoming cut before an encounter followed only by unchanged
+/-- Reattach an incoming cut at or before an encounter followed only by unchanged
 directions. Recover the full path, including every earlier bend and the entire
 incoming half-line. No nonzero bend at the chosen encounter is required. -/
 theorem ray_extend_truncate (r : AdmissibleRayRealization f c v P W S C Q)
-    (j : Fin n) {u : ℝ} (hbefore : u < r.parameter j.succ)
+    (j : Fin n) {u : ℝ} (hbefore : u ≤ r.parameter j.succ)
     (hafter : ∀ k : Fin n, j < k → r.parameter k.succ < u)
     (hv : ∀ i ≤ j.castSucc, v i = v 0) :
     (r.ray.truncate u).extend (r.parameter j.succ - u) (-r.parameter j.succ)

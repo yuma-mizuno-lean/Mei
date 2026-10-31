@@ -12,7 +12,7 @@ public import Mei.Geometry.Affine.FiniteRay.Truncate
 # Inverse laws for cutting and attaching finite affine rays
 
 Cutting an attached ray at the original endpoint recovers the entire incoming
-ray. Conversely, a cut before the final possible bend can be reattached to
+ray. Conversely, a cut at or before the final possible bend can be reattached to
 recover the original ray. The encounter need not be an actual bend: equal
 incoming and outgoing directions, and stationary segments, are allowed.
 
@@ -60,34 +60,36 @@ theorem extend_injective (s t : ℝ) (w : V) (hs : 0 ≤ s) (ht : 0 < t) :
   have := congrArg (fun δ : FiniteAffineRay V P => δ.truncate (-(s + t))) h
   simpa only [truncate_extend] using this
 
-/-- A ray can be reconstructed from a cut before its last possible bend. Every
+/-- A ray can be reconstructed from a cut at or before its last possible bend. Every
 other bend must precede the cut; no nonzero increment at `b` is required. -/
 theorem extend_truncate (β : FiniteAffineRay V P) {u b : ℝ}
-    (hub : u < b) (hb : b < 0)
+    (hub : u ≤ b) (hb : b < 0)
     (hbends : ∀ a ∈ β.bends.support, a < u ∨ a = b) :
     (β.truncate u).extend (b - u) (-b) β.direction
       (by linarith) (by linarith) = β := by
   classical
-  -- The cut lies in a straight piece. Its direction differs from the final
-  -- direction by precisely the increment at the selected encounter.
-  have hu₀ : β.bends u = 0 := by
-    apply Finsupp.notMem_support_iff.mp
-    intro hu
-    rcases hbends u hu with h | h
-    · exact h.false
-    · exact hub.ne h
+  -- The incoming direction at the cut equals that at the selected encounter,
+  -- including when the cut coincides with that encounter.
   have hgap : ∀ a ∈ β.bends.support, a ≤ u ∨ b ≤ a := by
     intro a ha
     rcases hbends a ha with h | rfl
     · exact Or.inl h.le
     · exact Or.inr le_rfl
   have hdir : β.directionAt u = β.directionAt b := by
-    have he := β.directionAt_sub_eq_bends hub hgap
-    rwa [hu₀, sub_eq_zero] at he
+    rcases hub.lt_or_eq with hub | rfl
+    · have hu₀ : β.bends u = 0 := by
+        apply Finsupp.notMem_support_iff.mp
+        intro hu
+        rcases hbends u hu with h | h
+        · exact h.false
+        · exact hub.ne h
+      have he := β.directionAt_sub_eq_bends hub hgap
+      rwa [hu₀, sub_eq_zero] at he
+    · rfl
   have hlast : ∀ a ∈ β.bends.support, a ≤ b := by
     intro a ha
     rcases hbends a ha with h | rfl
-    · exact h.le.trans hub.le
+    · exact h.le.trans hub
     · exact le_rfl
   have hinc : β.directionAt u - β.direction = β.bends b := by
     rw [hdir, ← β.directionAt_of_nonneg (u := 0) le_rfl]
@@ -95,7 +97,7 @@ theorem extend_truncate (β : FiniteAffineRay V P) {u b : ℝ}
   apply FiniteAffineRay.ext
   -- The two straight displacements recover the original endpoint.
   · rw [endpoint_extend, endpoint_truncate, direction_truncate]
-    have h₁ := β.eval_vsub_eval hub.le hgap
+    have h₁ := β.eval_vsub_eval hub hgap
     have h₂ := β.eval_vsub_eval hb.le (fun a ha => Or.inl (hlast a ha))
     simp only [eval_zero, sub_zero, directionAt_of_nonneg β le_rfl] at h₂
     calc
@@ -114,7 +116,7 @@ theorem extend_truncate (β : FiniteAffineRay V P) {u b : ℝ}
     rw [htime]
     simp only [neg_neg]
     by_cases hau : a < u
-    · have hne : a ≠ b := (hau.trans hub).ne
+    · have hne : a ≠ b := (hau.trans_le hub).ne
       simp [sub_neg.mpr hau, hne]
     · rw [ite_eq_right (by linarith : ¬a - u < 0)]
       by_cases hab : a = b
