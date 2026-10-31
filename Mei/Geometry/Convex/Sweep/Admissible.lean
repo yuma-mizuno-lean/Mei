@@ -169,6 +169,18 @@ theorem directionAt_eq_between (r : AdmissibleRayRealization f c v P W S C Q)
     have hq := r.strictAnti_parameter (lt_of_not_ge hj)
     simp [hp.not_ge, hq.not_ge]
 
+/-- The final direction of the realized ray is the prescribed endpoint direction. -/
+@[simp]
+theorem ray_direction (r : AdmissibleRayRealization f c v P W S C Q) :
+    r.ray.direction = v 0 := by
+  have he := r.directionAt_eq 0
+  rwa [r.parameter_zero, FiniteAffineRay.directionAt_of_nonneg _ le_rfl] at he
+
+/-- Past the endpoint, the realized ray continues straight in the endpoint direction. -/
+@[simp]
+theorem ray_of_nonneg (r : AdmissibleRayRealization f c v P W S C Q) {u : ℝ} (hu : 0 ≤ u) :
+    r.ray u = (-u • v 0) +ᵥ Q := by
+  rw [FiniteAffineRay.eval_of_nonneg _ hu, r.ray_direction, r.endpoint_eq]
 /-- Before a recorded parameter and after every earlier encounter, the path is
 the straight incoming germ in the prescribed direction. Both ends of a finite
 segment are allowed, as is the unbounded incoming segment. -/
