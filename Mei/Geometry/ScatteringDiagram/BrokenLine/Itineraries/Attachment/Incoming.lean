@@ -96,7 +96,9 @@ open Classical in
 sufficiently short incoming cut. The incoming degree component may be evaluated
 at any enumeration cutoff `l` retaining `p`; in particular, a degree-raising
 encounter allows a strictly lower cutoff. Killed components contribute zero,
-while distinct histories with equal or cancelling weights remain distinct. -/
+while distinct histories with equal or cancelling weights remain distinct.
+Obstacle supports need not be closed: only their closures incident to the crossing
+must lie in its supporting hyperplane. -/
 theorem eventually_sum_finalEncounter_eq_component [Finite J] [Finite K]
     (w : J) (p q : Γ) (l : ℕ) (hp : d.degree p ≤ l)
     (hq : q ∈ d.cutoff k) (hqp : q - p ∈ d.monoid)
@@ -104,8 +106,8 @@ theorem eventually_sum_finalEncounter_eq_component [Finite J] [Finite K]
     (hnormal : f w (v q) = f w (v p)) (htrans : f w (v q) ≠ 0)
     (hsign : SignType.sign (f w (v q)) = ε w)
     (hheight : f w (Q + t • v q) = c w) (hinc : Q + t • v q ∈ P w)
-    (hclosedW : ∀ j, IsClosed (W j))
-    (hplane : ∀ j, Q + t • v q ∈ W j → ∀ y ∈ W j, f w y = c w)
+    (hplane : ∀ j, Q + t • v q ∈ closure (W j) →
+      ∀ y ∈ closure (W j), f w y = c w)
     (hclosedS : ∀ j, IsClosed (S j)) (hregular : ∀ j, Q + t • v q ∉ S j)
     (hW : ∀ j u, -t < u → u ≤ 0 → Q - u • v q ∉ W j)
     (hS : ∀ j u, -t < u → u ≤ 0 → Q - u • v q ∉ S j) :
@@ -132,8 +134,9 @@ theorem eventually_sum_finalEncounter_eq_component [Finite J] [Finite K]
     (v := v) (f := f) (c := c) (ε := ε) (P := P) (W := W) (S := S) (C := C)
     (k := k) (Q := Q) w p q hsign
   rw [htime] at hcut
-  have hnear := eventually_incomingSegment_notMem x (v p) (f w).toLinearMap (c w)
-    (hnormal ▸ htrans) hheight hclosedW hplane hclosedS hregular
+  have hnear := eventually_incomingSegment_notMem
+    (W := fun j => closure (W j)) x (v p) (f w).toLinearMap (c w)
+    (hnormal ▸ htrans) hheight (fun _ => isClosed_closure) hplane hclosedS hregular
   filter_upwards [hcut, hnear, self_mem_nhdsWithin] with η hcut hnear hη
   have hη : 0 < η := hη
   let Y := x + η • v p
@@ -144,7 +147,8 @@ theorem eventually_sum_finalEncounter_eq_component [Finite J] [Finite K]
     (d := d) (ℳ := ℳ) (T := T) (a := a) (v := v) (f := f) (c := c) (ε := ε)
     (P := P) (W := W) (S := S) (C := C) w p q Y η t hη.le ht hq hqp
     hnormal htrans hsign (by simpa [Y, x] using hheight) (by simpa [Y] using hinc)
-    hnear.1 (by simpa only [hend] using hW) hnear.2 (by simpa only [hend] using hS)
+    (fun j u hu huη hmem => hnear.1 j u hu huη (subset_closure hmem))
+    (by simpa only [hend] using hW) hnear.2 (by simpa only [hend] using hS)
   simp only [mem_range_finalEncounterEmbedding] at hh
   -- Give the selection an independent endpoint argument. The matcher in the
   -- image theorem otherwise ties its ambient ray type to `Y - η • v p - t • v q`,
