@@ -155,7 +155,6 @@ theorem decompose_cutoffDecoratedEvaluation_eq_sum_lastChange [Finite J]
   dsimp only
   let Rays := CutoffDecoratedRay d ℳ T a v f c ε P W S C k Q
   let F := {r : Rays // r.finalDegree = q}
-  let := Fintype.ofFinite Rays
   let := Fintype.ofFinite F
   let := Fintype.ofFinite J
   let index (r : F) := r.val.lastChangeIndex (r.property.symm ▸ hq)
@@ -180,20 +179,9 @@ theorem decompose_cutoffDecoratedEvaluation_eq_sum_lastChange [Finite J]
       (DirectSum.decompose ℳ (T (r.val.itinerary.get (index r))
         (r.val.realization.decoration (index r).succ)) s : M))
       (r.val.finalDegree_def.symm.trans r.property))
-  have hcomponent (r : Rays) :
-      (DirectSum.decompose ℳ r.decoration q : M) =
-        if r.finalDegree = q then r.decoration else 0 := by
-    split_ifs with hr
-    · exact DirectSum.decompose_of_mem_same ℳ (hr ▸ r.decoration_mem)
-    · exact DirectSum.decompose_of_mem_ne ℳ r.decoration_mem hr
   calc
-    _ = ∑ r : Rays, if r.finalDegree = q then r.decoration else 0 := by
-      rw [cutoffDecoratedEvaluation_def, DirectSum.decompose_sum,
-        DFinsupp.finsetSum_apply, AddSubmonoidClass.coe_finsetSum]
-      exact Finset.sum_congr rfl (fun r _ => hcomponent r)
-    _ = ∑ r : F, r.val.decoration := by
-      rw [← Finset.sum_filter]
-      exact Finset.sum_subtype _ (by simp) _
+    _ = ∑ r : F, r.val.decoration :=
+      decompose_cutoffDecoratedEvaluation_eq_sum_finalDegree q
     _ = ∑ w : J, ∑ r : F,
         if r.val.itinerary.get (index r) = w then r.val.decoration else 0 := by
       rw [Finset.sum_comm]

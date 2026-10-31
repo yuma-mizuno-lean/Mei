@@ -24,6 +24,11 @@ Its propagation maps and signs are fixed before choosing an itinerary. The gradi
 is by relative degree, so the incoming homogeneous piece has index zero; spatial
 directions may include a fixed initial exponent.
 
+Every selected degree is bounded by the final degree, and a homogeneous
+component of the weighted evaluation sums exactly the rays of that final degree.
+We use `PositiveDegrees.degree_le_of_add_eq` and Mathlib's homogeneous projections
+and finite-sum reindexing.
+
 This joins `DecoratedAdmissibleRay` to the finite geometric itinerary inventory.
 Word-indexed rays are packaged as lists using Mathlib's `List.equivSigmaTuple`.
 The backward parameterization follows Carl–Pumperla–Siebert, *A tropical view on
@@ -73,6 +78,28 @@ def finalDegree (r : CutoffDecoratedRay d ℳ T a v f c ε P W S C k Q) : Γ :=
 zero degree appended. -/
 theorem finalDegree_def (r : CutoffDecoratedRay d ℳ T a v f c ε P W S C k Q) :
     r.finalDegree = Fin.snoc (α := fun _ => Γ) r.realization.1.val 0 0 := (rfl)
+
+/-- The final degree survives the enumeration cutoff, including for a ray with
+no encounters, whose final degree is zero. -/
+theorem finalDegree_mem_cutoff
+    (r : CutoffDecoratedRay d ℳ T a v f c ε P W S C k Q) :
+    r.finalDegree ∈ d.cutoff k := by
+  rw [finalDegree_def]
+  exact Fin.lastCases (by simp) (fun j => by simpa using r.degree_mem j) 0
+
+/-- Every selected segment degree is bounded by the final degree. Positivity
+rules out an excursion to a higher degree followed by a return. -/
+theorem degree_le_finalDegree
+    (r : CutoffDecoratedRay d ℳ T a v f c ε P W S C k Q)
+    (j : Fin r.itinerary.length) :
+    d.degree (r.realization.1.val j) ≤ d.degree r.finalDegree := by
+  let z : Fin r.itinerary.length := ⟨0, Nat.zero_lt_of_lt j.isLt⟩
+  have hz : r.finalDegree = r.realization.1.val z := by
+    have h0 : (0 : Fin (r.itinerary.length + 1)) = z.castSucc := Fin.ext rfl
+    rw [finalDegree_def, h0, Fin.snoc_castSucc]
+  rw [hz]
+  exact d.degree_le_of_add_eq (r.degree_sub_mem z j (by simp [z, Fin.le_def]))
+    (add_sub_cancel _ _)
 
 /-- The final whole homogeneous decoration. -/
 def decoration (r : CutoffDecoratedRay d ℳ T a v f c ε P W S C k Q) : M :=
@@ -394,6 +421,53 @@ theorem cutoffDecoratedEvaluation_eq_sum [Finite J] (k : ℕ) (Q : V) :
         Q ∈ CutoffDecoratedType.domain c P W S C t)
       (Finset.univ.filter fun t : CutoffDecoratedType d ℳ T a v f ε k =>
       Q ∈ CutoffDecoratedType.domain c P W S C t) (by simp) (fun t => t.decoration)).symm
+
+section Components
+
+variable {d ℳ T a v f c ε P W S C} {k : ℕ} {Q : V}
+
+open Classical in
+/-- A homogeneous component of the complete weighted evaluation sums exactly
+the rays of that final degree. Distinct histories with equal or cancelling
+weights remain separate summands. -/
+theorem decompose_cutoffDecoratedEvaluation_eq_sum_finalDegree [Finite J] (q : Γ) :
+    (DirectSum.decompose ℳ
+      (cutoffDecoratedEvaluation d ℳ T a v f c ε P W S C k Q) q : M) =
+      let := Fintype.ofFinite
+        {r : CutoffDecoratedRay d ℳ T a v f c ε P W S C k Q // r.finalDegree = q}
+      ∑ r : {r : CutoffDecoratedRay d ℳ T a v f c ε P W S C k Q // r.finalDegree = q},
+        r.val.decoration := by
+  classical
+  let Rays := CutoffDecoratedRay d ℳ T a v f c ε P W S C k Q
+  let := Fintype.ofFinite Rays
+  let := Fintype.ofFinite {r : Rays // r.finalDegree = q}
+  have hcomponent (r : Rays) :
+      (DirectSum.decompose ℳ r.decoration q : M) =
+        if r.finalDegree = q then r.decoration else 0 := by
+    split_ifs with hr
+    · exact DirectSum.decompose_of_mem_same ℳ (hr ▸ r.decoration_mem)
+    · exact DirectSum.decompose_of_mem_ne ℳ r.decoration_mem hr
+  rw [cutoffDecoratedEvaluation_def, DirectSum.decompose_sum,
+    DFinsupp.finsetSum_apply, AddSubmonoidClass.coe_finsetSum]
+  simp_rw [hcomponent]
+  rw [← Finset.sum_filter]
+  exact Finset.sum_subtype _ (by simp) _
+
+/-- An output degree outside the enumeration cutoff contributes zero. This
+also covers degrees outside the positive monoid. -/
+@[simp]
+theorem decompose_cutoffDecoratedEvaluation_eq_zero_of_notMem_cutoff [Finite J]
+    {q : Γ} (hq : q ∉ d.cutoff k) :
+    DirectSum.decompose ℳ
+      (cutoffDecoratedEvaluation d ℳ T a v f c ε P W S C k Q) q = 0 := by
+  apply Subtype.val_injective
+  rw [decompose_cutoffDecoratedEvaluation_eq_sum_finalDegree]
+  have : IsEmpty
+      {r : CutoffDecoratedRay d ℳ T a v f c ε P W S C k Q // r.finalDegree = q} :=
+    ⟨fun r => hq (r.property ▸ r.val.finalDegree_mem_cutoff)⟩
+  simp
+
+end Components
 
 section Rational
 
