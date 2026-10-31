@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.ScatteringDiagram.BrokenLine.DecoratedRay
+public import Mei.Geometry.ScatteringDiagram.BrokenLine.Itineraries
 public import Mei.Geometry.Convex.Sweep.Admissible.Truncate
 
 /-!
@@ -15,7 +15,8 @@ Cut an actual decorated ray inside any open segment and retain its incoming
 piece, including the whole decoration on every retained segment. The discarded
 encounters are the first entries in the backward itinerary. The cut keeps the
 original incoming coefficient, source admission, crossing signs, normal velocities
-and all wall and singular avoidance conditions. Degree changes with equal spatial
+and all wall and singular avoidance conditions. Retained degrees in a cutoff
+also give a member of the full `CutoffDecoratedRay` family. Degree changes with equal spatial
 velocity and encounters with unchanged degree are retained.
 
 This lifts `Convex.AdmissibleRayRealization.truncate` through whole homogeneous
@@ -116,3 +117,57 @@ theorem decoration_truncate (j : Fin (n + 1)) :
   simp only [decoration_def, history_truncate, homogeneousHistoryStage_natAdd]
 
 end Mei.DecoratedAdmissibleRay
+
+namespace Mei.CutoffDecoratedRay
+
+variable {R M Γ V J K : Type*} [Semiring R] [AddCommMonoid M] [Module R M]
+  [AddCommGroup Γ] [DecidableEq Γ] {d : PositiveDegrees Γ}
+  {ℳ : Γ → Submodule R M} [DirectSum.Decomposition ℳ]
+  [NormedAddCommGroup V] [NormedSpace ℝ V]
+  {T : J → Module.End R M} {a : ℳ 0} {v : Γ → V}
+  {f : J → V →L[ℝ] ℝ} {c : J → ℝ} {ε : J → SignType}
+  {P W : J → Set V} {S : K → Set V} {C : Set V} {k : ℕ} {Q : V}
+
+/-- Cutting a fixed-word decorated ray between encounters gives a member of
+the full family at any cutoff containing the retained degrees. The incoming
+encounter suffix, final degree, whole decoration and translated path are retained. -/
+theorem exists_cutoff_truncate {N : ℕ} (word : Fin N → J)
+    (r : DecoratedAdmissibleRay ℳ (fun j => T (word j)) 0 a v
+      (fun j => f (word j)) (fun j => c (word j))
+      (fun j => ε (word j)) (fun j => P (word j)) W S C Q)
+    (m n l : ℕ) (hlen : N = m + n) (t : ℝ)
+    (hupper : t < r.2.parameter ⟨m, by omega⟩)
+    (hlower : ∀ i : Fin (N + 1), m < i.val → r.2.parameter i < t)
+    (hcut : ∀ i : Fin N, m ≤ i.val → r.1.val i ∈ d.cutoff l)
+    (hsub : ∀ i j : Fin N, i ≤ j → r.1.val i - r.1.val j ∈ d.monoid) :
+    ∃ s : CutoffDecoratedRay d ℳ T a v f c ε P W S C l (r.2.ray t),
+      s.itinerary = (List.ofFn word).drop m ∧
+      s.finalDegree = Fin.snoc (α := fun _ => Γ) r.1.val 0 ⟨m, by omega⟩ ∧
+      s.decoration = r.decoration ⟨m, by omega⟩ ∧
+      ∀ u ≤ 0, s.realization.2.ray u = r.2.ray (u + t) := by
+  subst N
+  have hl' (j : Fin n) : r.2.parameter (Fin.natAdd m j).succ < t :=
+    hlower _ (by simp)
+  let cut := r.truncate t hupper hl'
+  have hh := r.history_truncate (m := m) (n := n) t hupper hl'
+  have hmem (i : Fin n) : cut.1.val i ∈ d.cutoff l := by
+    simpa only [cut, congrFun hh i] using
+      hcut (Fin.natAdd m i) (by simp)
+  have hmono (i j : Fin n) (hij : i ≤ j) :
+      cut.1.val i - cut.1.val j ∈ d.monoid := by
+    simpa only [cut, congrFun hh i, congrFun hh j] using
+      hsub (Fin.natAdd m i) (Fin.natAdd m j) (by simpa using hij)
+  obtain ⟨s, hw, hp, ha, hr⟩ := exists_cutoff_of_realization
+    (fun j => word (Fin.natAdd m j)) cut hmem hmono
+  refine ⟨s, ?_, ?_, ?_, ?_⟩
+  · simpa [List.ofFn_add] using hw
+  · rw [hp]
+    dsimp only [cut]
+    rw [hh]
+    exact (congrFun (Fin.snoc_comp_natAdd r.1.val 0) 0).symm
+  · exact ha.trans (r.decoration_truncate t hupper hl' 0)
+  · intro u hu
+    rw [hr]
+    exact r.truncate_apply t hupper hl' u hu
+
+end Mei.CutoffDecoratedRay

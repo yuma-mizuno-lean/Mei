@@ -7,7 +7,6 @@ module
 
 public import Mei.Geometry.ScatteringDiagram.BrokenLine.LastChange.Localization
 public import Mei.Geometry.ScatteringDiagram.BrokenLine.Cut
-public import Mei.Geometry.Convex.Sweep.Admissible.Segment
 
 /-!
 # Lower-cutoff incoming rays at the last degree change
@@ -24,10 +23,11 @@ changes with unchanged spatial velocity and later unchanged-degree encounters.
 It does not perturb the incoming germ or assert a cut/glue bijection.
 
 We use `DecoratedAdmissibleRay.truncate`,
-`CutoffDecoratedRay.lastChangeIndex_localization` and Mathlib's
-`List.equivSigmaTuple` to retain the encounter suffix. The last-change recursion and
-incoming-germ conventions follow Mandel, *Scattering diagrams, theta functions,
-and refined tropical curve counts*, §3.3.3 (arXiv:1503.06183v5).
+`CutoffDecoratedRay.exists_cutoff_truncate` and
+`CutoffDecoratedRay.lastChangeIndex_localization` to retain the encounter suffix.
+The last-change recursion and incoming-germ conventions follow Mandel,
+*Scattering diagrams, theta functions, and refined tropical curve counts*,
+§3.3.3 (arXiv:1503.06183v5).
 -/
 
 public noncomputable section
@@ -45,63 +45,6 @@ variable {R M Γ V J K : Type*} [Semiring R] [AddCommMonoid M] [Module R M]
   {f : J → V →L[ℝ] ℝ} {c : J → ℝ} {ε : J → SignType}
   {P W : J → Set V} {S : K → Set V} {C : Set V} {k : ℕ} {Q : V}
 
--- Convert the tuple indexing of a cut to the list indexing of the full family.
-private theorem exists_cutoff_of_realization {n : ℕ} (word : Fin n → J)
-    (r : DecoratedAdmissibleRay ℳ (fun j => T (word j)) 0 a v
-      (fun j => f (word j)) (fun j => c (word j))
-      (fun j => ε (word j)) (fun j => P (word j)) W S C Q)
-    (hcut : ∀ i, r.1.val i ∈ d.cutoff k)
-    (hsub : ∀ i j, i ≤ j → r.1.val i - r.1.val j ∈ d.monoid) :
-    ∃ s : CutoffDecoratedRay d ℳ T a v f c ε P W S C k Q,
-      s.itinerary = List.ofFn word ∧
-      s.finalDegree = Fin.snoc (α := fun _ => Γ) r.1.val 0 0 ∧
-      s.decoration = r.decoration 0 ∧ s.realization.2.ray = r.2.ray := by
-  obtain ⟨l, he⟩ := List.equivSigmaTuple.surjective ⟨n, word⟩
-  cases he
-  refine ⟨⟨l, r, hcut, hsub⟩, (List.ofFn_get l).symm, ?_, ?_, rfl⟩
-  · rw [CutoffDecoratedRay.finalDegree_def]
-  · rw [CutoffDecoratedRay.decoration_eq, DecoratedAdmissibleRay.decoration_zero]
-
--- Assemble a fixed-itinerary cut into the family over all encounter words.
-private theorem exists_cutoff_truncate {N : ℕ} (word : Fin N → J)
-    (r : DecoratedAdmissibleRay ℳ (fun j => T (word j)) 0 a v
-      (fun j => f (word j)) (fun j => c (word j))
-      (fun j => ε (word j)) (fun j => P (word j)) W S C Q)
-    (m n l : ℕ) (hlen : N = m + n) (t : ℝ)
-    (hupper : t < r.2.parameter ⟨m, by omega⟩)
-    (hlower : ∀ i : Fin (N + 1), m < i.val → r.2.parameter i < t)
-    (hcut : ∀ i : Fin N, m ≤ i.val → r.1.val i ∈ d.cutoff l)
-    (hsub : ∀ i j : Fin N, i ≤ j → r.1.val i - r.1.val j ∈ d.monoid) :
-    ∃ s : CutoffDecoratedRay d ℳ T a v f c ε P W S C l (r.2.ray t),
-      s.itinerary = (List.ofFn word).drop m ∧
-      s.finalDegree = Fin.snoc (α := fun _ => Γ) r.1.val 0 ⟨m, by omega⟩ ∧
-      s.decoration = r.decoration ⟨m, by omega⟩ ∧
-      ∀ u ≤ 0, s.realization.2.ray u = r.2.ray (u + t) := by
-  subst N
-  have hl' (j : Fin n) : r.2.parameter (Fin.natAdd m j).succ < t :=
-    hlower _ (by simp)
-  let cut := r.truncate t hupper hl'
-  have hh := r.history_truncate (m := m) (n := n) t hupper hl'
-  have hmem (i : Fin n) : cut.1.val i ∈ d.cutoff l := by
-    simpa only [cut, congrFun hh i] using
-      hcut (Fin.natAdd m i) (by simp)
-  have hmono (i j : Fin n) (hij : i ≤ j) :
-      cut.1.val i - cut.1.val j ∈ d.monoid := by
-    simpa only [cut, congrFun hh i, congrFun hh j] using
-      hsub (Fin.natAdd m i) (Fin.natAdd m j) (by simpa using hij)
-  obtain ⟨s, hw, hp, ha, hr⟩ := exists_cutoff_of_realization
-    (fun j => word (Fin.natAdd m j)) cut hmem hmono
-  refine ⟨s, ?_, ?_, ?_, ?_⟩
-  · simpa [List.ofFn_add] using hw
-  · rw [hp]
-    dsimp only [cut]
-    rw [hh]
-    exact (congrFun (Fin.snoc_comp_natAdd r.1.val 0) 0).symm
-  · exact ha.trans (r.decoration_truncate t hupper hl' 0)
-  · intro u hu
-    rw [hr]
-    exact r.truncate_apply t hupper hl' u hu
-
 namespace CutoffDecoratedRay
 
 local notation "Rays" => CutoffDecoratedRay d ℳ T a v f c ε P W S C k Q
@@ -118,7 +61,7 @@ private theorem lastChange_incoming_degree_bound (r : Rays) (hq : r.finalDegree 
       r.realization.1.val next := by
     have he : j.succ = next.castSucc := Fin.ext rfl
     rw [he, Fin.snoc_castSucc]
-  have hinc := (r.lastChangeIndex_localization hq).2.2.2.2.2.2
+  obtain ⟨-, -, -, -, -, -, hinc⟩ := r.lastChangeIndex_localization hq
   rw [hin] at hinc
   have hmono := d.degree_nonneg (r.degree_sub_mem next i hi)
   have hbound := (d.mem_cutoff.mp (r.degree_mem j)).2
@@ -168,14 +111,8 @@ theorem eventually_exists_lastChange_incoming (r : Rays) (hq : r.finalDegree ≠
       r.realization.2.ray (r.realization.2.parameter j.succ) +
         η • v (Fin.snoc (α := fun _ => Γ) r.realization.1.val 0 j.succ) := by
     simpa only [t, sub_sub_cancel] using hx
-  have hs : ∃ s : CutoffDecoratedRay d ℳ T a v f c ε P W S C (k - 1)
-      (r.realization.2.ray t),
-      s.itinerary = r.itinerary.drop (j.val + 1) ∧
-      s.finalDegree = Fin.snoc (α := fun _ => Γ) r.realization.1.val 0 j.succ ∧
-      s.decoration = r.realization.decoration j.succ ∧
-      ∀ u ≤ 0, s.realization.2.ray u = r.realization.2.ray (u + t) :=
-    ⟨s, by simpa only [List.ofFn_get] using hw, hp, ha, hr⟩
-  rwa [ht] at hs
+  rw [← ht]
+  exact ⟨s, by simpa only [List.ofFn_get] using hw, hp, ha, hr⟩
 
 end CutoffDecoratedRay
 

@@ -25,6 +25,7 @@ is by relative degree, so the incoming homogeneous piece has index zero; spatial
 directions may include a fixed initial exponent.
 
 This joins `DecoratedAdmissibleRay` to the finite geometric itinerary inventory.
+`List.equivSigmaTuple` assembles fixed-word realizations into the full family.
 The backward parameterization follows Carl–Pumperla–Siebert, *A tropical view on
 Landau–Ginzburg models*, §4 (arXiv:2205.07753v2), and the finite-type argument
 follows Mandel, *Scattering diagrams, theta functions, and refined tropical curve
@@ -83,6 +84,27 @@ theorem decoration_eq (r : CutoffDecoratedRay d ℳ T a v f c ε P W S C k Q) :
     r.decoration = homogeneousHistory ℳ (fun j => T (r.itinerary.get j))
       r.realization.1.val a := by
   rw [decoration, DecoratedAdmissibleRay.decoration_zero]
+
+/-- A fixed-word decorated realization with cutoff degrees and positive shifts
+belongs to the family over all encounter lists, retaining its final degree,
+whole decoration and entire path. -/
+theorem exists_cutoff_of_realization {n : ℕ} (word : Fin n → J)
+    (r : DecoratedAdmissibleRay ℳ (fun j => T (word j)) 0 a v
+      (fun j => f (word j)) (fun j => c (word j))
+      (fun j => ε (word j)) (fun j => P (word j)) W S C Q)
+    (hcut : ∀ i, r.1.val i ∈ d.cutoff k)
+    (hsub : ∀ i j, i ≤ j → r.1.val i - r.1.val j ∈ d.monoid) :
+    ∃ s : CutoffDecoratedRay d ℳ T a v f c ε P W S C k Q,
+      s.itinerary = List.ofFn word ∧
+      s.finalDegree = Fin.snoc (α := fun _ => Γ) r.1.val 0 0 ∧
+      s.decoration = r.decoration 0 ∧ s.realization.2.ray = r.2.ray := by
+  obtain ⟨l, he⟩ := List.equivSigmaTuple.surjective ⟨n, word⟩
+  -- By definition, `List.equivSigmaTuple l = ⟨l.length, l.get⟩`, so this
+  -- substitution identifies the fixed tuple with the list-indexed realization.
+  cases he
+  refine ⟨⟨l, r, hcut, hsub⟩, (List.ofFn_get l).symm, ?_, ?_, rfl⟩
+  · rw [CutoffDecoratedRay.finalDegree_def]
+  · rw [CutoffDecoratedRay.decoration_eq, DecoratedAdmissibleRay.decoration_zero]
 
 /-- Every final decoration is homogeneous of the final recorded relative degree. -/
 theorem decoration_mem (r : CutoffDecoratedRay d ℳ T a v f c ε P W S C k Q) :
