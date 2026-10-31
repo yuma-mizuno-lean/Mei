@@ -138,6 +138,38 @@ theorem homogeneousHistoryStage_succ {n : ℕ}
     homogeneousHistoryStage ℳ T p j.succ =
       homogeneousHistoryStage ℳ (fun j => T j.succ) (fun j => p j.succ) j := (rfl)
 
+/-- Discarding the final `m` propagation steps preserves every earlier segment
+map. The retained maps keep their backward order. -/
+@[simp]
+theorem homogeneousHistoryStage_natAdd {m n : ℕ}
+    (T : Fin (m + n) → Module.End R M) (p : Fin (m + n) → ι)
+    (j : Fin (n + 1)) :
+    homogeneousHistoryStage ℳ T p (Fin.natAdd m j) =
+      homogeneousHistoryStage ℳ (fun i => T (Fin.natAdd m i))
+        (fun i => p (Fin.natAdd m i)) j := by
+  have transport {s t : ℕ} (h : s = t)
+      (T : Fin s → Module.End R M) (p : Fin s → ι) (i : Fin (s + 1)) :
+      homogeneousHistoryStage ℳ T p i =
+        homogeneousHistoryStage ℳ (fun j => T (j.cast h.symm))
+          (fun j => p (j.cast h.symm)) (i.cast (congrArg (· + 1) h)) := by
+    subst t
+    rfl
+  induction m with
+  | zero =>
+    rw [transport (Nat.zero_add n)]
+    congr 1
+    · funext i; congr 1; apply Fin.ext; simp
+    · funext i; congr 1; apply Fin.ext; simp
+    · apply Fin.ext; simp
+  | succ m ih =>
+    rw [transport (Nat.succ_add m n)]
+    have hi : (Fin.natAdd (m + 1) j).cast
+        (congrArg (· + 1) (Nat.succ_add m n)) = (Fin.natAdd m j).succ := by
+      ext
+      simp [Nat.succ_add]
+    rw [hi, homogeneousHistoryStage_succ, ih]
+    congr 1 <;> funext i <;> congr 1 <;> apply Fin.ext <;> simp [Nat.succ_add]
+
 /-- The incoming segment carries the original input. -/
 @[simp]
 theorem homogeneousHistoryStage_last {n : ℕ}
@@ -189,6 +221,21 @@ theorem homogeneousHistoryStage_mem_snoc {n : ℕ}
   refine Fin.lastCases ?_ (fun i => ?_) j
   · simpa only [Fin.snoc_last, homogeneousHistoryStage_last, LinearMap.id_apply] using a.property
   · simpa only [Fin.snoc_castSucc] using homogeneousHistoryStage_mem ℳ T p a i
+
+/-- The whole output of a history, bundled in its homogeneous piece. For the
+empty history the piece is the incoming one. -/
+def homogeneousHistoryResult {n : ℕ} (T : Fin n → Module.End R M)
+    (p : Fin n → ι) {p₀ : ι} (a : ℳ p₀) :
+    ℳ (Fin.snoc (α := fun _ => ι) p p₀ 0) :=
+  ⟨homogeneousHistory ℳ T p a, by
+    simpa only [homogeneousHistoryStage_zero] using
+      homogeneousHistoryStage_mem_snoc ℳ T p p₀ a 0⟩
+
+/-- Forgetting the output piece gives the original whole history decoration. -/
+@[simp]
+theorem coe_homogeneousHistoryResult {n : ℕ} (T : Fin n → Module.End R M)
+    (p : Fin n → ι) {p₀ : ι} (a : ℳ p₀) :
+    (homogeneousHistoryResult ℳ T p a : M) = homogeneousHistory ℳ T p a := (rfl)
 
 /-- Any relation satisfied by the input and nonzero output degrees of each
 propagation map holds at every step of a surviving homogeneous history,

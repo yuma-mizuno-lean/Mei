@@ -134,41 +134,58 @@ theorem homogeneousHistoryStage_castSucc_eq_succ_of_decompose_self
   rw [hj]
   exact homogeneousHistoryStage_mem_snoc ℳ T r r₀ ⟨a, ha⟩ j.succ
 
-/-- If every map fixes the same-degree component of each homogeneous input,
+omit hT in
+/-- If every map fixes the component in a fixed degree of inputs in that degree,
 every segment of a constant-degree history carries its incoming decoration. -/
-theorem homogeneousHistoryStage_const_of_decompose_self {r : ι} {a : M} (ha : a ∈ ℳ r)
+theorem homogeneousHistoryStage_const_of_decompose_self {r : ι}
+    (hfix : ∀ j x, x ∈ ℳ r → (DirectSum.decompose ℳ (T j x) r : M) = x)
+    {a : M} (ha : a ∈ ℳ r)
     (j : Fin (n + 1)) :
     homogeneousHistoryStage ℳ T (fun _ => r) j a = a := by
   induction j using Fin.reverseInduction with
   | last => simp only [homogeneousHistoryStage_last, LinearMap.id_apply]
   | cast j ih =>
-    rw [homogeneousHistoryStage_castSucc_eq_succ_of_decompose_self hT (fun _ => r) ha j (by
-      refine Fin.lastCases ?_ (fun i => ?_) j.succ <;> simp), ih]
+    rw [homogeneousHistoryStage_castSucc_apply, ih]
+    exact hfix j a ha
 
-/-- If every map fixes the same-degree component of each homogeneous input,
+omit hT in
+/-- If every map fixes the component in a fixed degree of inputs in that degree,
 a constant-degree history fixes its input. -/
-theorem homogeneousHistory_const_of_decompose_self {r : ι} {a : M} (ha : a ∈ ℳ r) :
+theorem homogeneousHistory_const_of_decompose_self {r : ι}
+    (hfix : ∀ j x, x ∈ ℳ r → (DirectSum.decompose ℳ (T j x) r : M) = x)
+    {a : M} (ha : a ∈ ℳ r) :
     homogeneousHistory ℳ T (fun _ => r) a = a := by
   simpa only [homogeneousHistoryStage_zero] using
-    homogeneousHistoryStage_const_of_decompose_self hT ha 0
+    homogeneousHistoryStage_const_of_decompose_self hfix ha 0
 
-/-- If the recorded degrees from the output through a chosen segment agree,
-that segment carries the final whole decoration. Encounters before the chosen
-segment may change degree and decoration. -/
+end DecomposeSelf
+
+variable {ℳ} {n : ℕ} {T : Fin n → Module.End R M}
+
+/-- If the maps fix diagonal components at the final degree and the recorded
+degrees from the output through a chosen segment agree, that segment carries
+the final whole decoration. Encounters before the chosen segment may change
+degree and decoration. -/
 theorem homogeneousHistoryStage_eq_of_degrees_eq
-    (r : Fin n → ι) {r₀ : ι} {a : M} (ha : a ∈ ℳ r₀) (j : Fin (n + 1))
+    (r : Fin n → ι) {r₀ : ι} {a : M}
+    (hT : ∀ j x, x ∈ ℳ (Fin.snoc (α := fun _ => ι) r r₀ 0) →
+      (DirectSum.decompose ℳ (T j x) (Fin.snoc (α := fun _ => ι) r r₀ 0) : M) = x)
+    (ha : a ∈ ℳ r₀) (j : Fin (n + 1))
     (hr : ∀ i ≤ j, Fin.snoc (α := fun _ => ι) r r₀ i =
       Fin.snoc (α := fun _ => ι) r r₀ 0) :
     homogeneousHistoryStage ℳ T r j a = homogeneousHistory ℳ T r a := by
   induction j using Fin.inductionOn with
   | zero => rw [homogeneousHistoryStage_zero]
   | succ j ih =>
-    have hfix := homogeneousHistoryStage_castSucc_eq_succ_of_decompose_self hT r ha j
-      (by simpa only [Fin.snoc_castSucc] using
-        (hr j.castSucc j.castSucc_le_succ).trans (hr j.succ le_rfl).symm)
+    have hj : r j = Fin.snoc (α := fun _ => ι) r r₀ 0 := by
+      simpa only [Fin.snoc_castSucc] using hr j.castSucc j.castSucc_le_succ
+    have hfix : homogeneousHistoryStage ℳ T r j.castSucc a =
+        homogeneousHistoryStage ℳ T r j.succ a := by
+      rw [homogeneousHistoryStage_castSucc_apply, hj]
+      apply hT
+      rw [← hr j.succ le_rfl]
+      exact homogeneousHistoryStage_mem_snoc ℳ T r r₀ ⟨a, ha⟩ j.succ
     rw [← hfix]
     exact ih (fun i hi => hr i (hi.trans j.castSucc_le_succ))
-
-end DecomposeSelf
 
 end Mei

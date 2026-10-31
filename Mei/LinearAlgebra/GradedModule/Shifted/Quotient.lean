@@ -59,6 +59,18 @@ theorem mem_shiftedQuotientGrading_iff {k : ℕ} {n : Γ}
   rw [shiftedQuotientGrading_piece]
   exact Submodule.mem_map
 
+/-- A finite homogeneous coefficient has zero ambient component in a different
+degree. The source piece may itself vanish above the cutoff. -/
+theorem shiftedQuotientComponent_eq_zero_of_mem {k : ℕ} {n q : Γ}
+    {x : (d.shiftedFiltration ℳ p).quotient k}
+    (hx : x ∈ (d.shiftedQuotientGrading ℳ p k).piece n)
+    (hnq : p + n ≠ q) (hq : d.degree (q - p) ≤ k) :
+    d.shiftedQuotientComponent ℳ p q k hq x = 0 := by
+  obtain ⟨a, ha, rfl⟩ := (d.mem_shiftedQuotientGrading_iff ℳ p).mp hx
+  rw [shiftedQuotientComponent_mk]
+  apply Subtype.ext
+  exact DirectSum.decompose_of_mem_ne ℳ ((mem_shiftedGrading ℳ d.monoid p).mp ha) hnq
+
 /-- Projection in the inherited quotient grading is the quotient class of the
 retained ambient component. The relative degree is `n`, and its ambient degree
 is `p + n`. -/

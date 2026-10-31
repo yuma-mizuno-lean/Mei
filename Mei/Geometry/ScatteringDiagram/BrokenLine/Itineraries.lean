@@ -25,6 +25,7 @@ is by relative degree, so the incoming homogeneous piece has index zero; spatial
 directions may include a fixed initial exponent.
 
 This joins `DecoratedAdmissibleRay` to the finite geometric itinerary inventory.
+Word-indexed rays are packaged as lists using Mathlib's `List.equivSigmaTuple`.
 The backward parameterization follows Carl–Pumperla–Siebert, *A tropical view on
 Landau–Ginzburg models*, §4 (arXiv:2205.07753v2), and the finite-type argument
 follows Mandel, *Scattering diagrams, theta functions, and refined tropical curve
@@ -64,6 +65,15 @@ namespace CutoffDecoratedRay
 
 variable {d ℳ T a v f c ε P W S C} {k : ℕ} {Q : V}
 
+/-- The relative degree on the final segment, including an empty encounter word. -/
+def finalDegree (r : CutoffDecoratedRay d ℳ T a v f c ε P W S C k Q) : Γ :=
+  Fin.snoc (α := fun _ => Γ) r.realization.1.val 0 0
+
+/-- The final degree is the first entry of the degree history with its incoming
+zero degree appended. -/
+theorem finalDegree_def (r : CutoffDecoratedRay d ℳ T a v f c ε P W S C k Q) :
+    r.finalDegree = Fin.snoc (α := fun _ => Γ) r.realization.1.val 0 0 := (rfl)
+
 /-- The final whole homogeneous decoration. -/
 def decoration (r : CutoffDecoratedRay d ℳ T a v f c ε P W S C k Q) : M :=
   r.realization.decoration 0
@@ -74,6 +84,12 @@ theorem decoration_eq (r : CutoffDecoratedRay d ℳ T a v f c ε P W S C k Q) :
     r.decoration = homogeneousHistory ℳ (fun j => T (r.itinerary.get j))
       r.realization.1.val a := by
   rw [decoration, DecoratedAdmissibleRay.decoration_zero]
+
+/-- Every final decoration is homogeneous of the final recorded relative degree. -/
+theorem decoration_mem (r : CutoffDecoratedRay d ℳ T a v f c ε P W S C k Q) :
+    r.decoration ∈ ℳ r.finalDegree := by
+  rw [decoration_eq, finalDegree_def, ← homogeneousHistoryStage_zero]
+  exact homogeneousHistoryStage_mem_snoc ℳ _ _ 0 a 0
 
 /-- The final decoration is nonzero. -/
 theorem decoration_ne_zero (r : CutoffDecoratedRay d ℳ T a v f c ε P W S C k Q) :
@@ -93,6 +109,59 @@ theorem degreeItinerary_eq (r : CutoffDecoratedRay d ℳ T a v f c ε P W S C k 
 theorem length_degreeItinerary (r : CutoffDecoratedRay d ℳ T a v f c ε P W S C k Q) :
     r.degreeItinerary.length = r.itinerary.length := by
   simp [degreeItinerary]
+
+section OfWord
+
+variable {n : ℕ} (word : Fin n → J)
+  (r : DecoratedAdmissibleRay ℳ (fun j => T (word j)) 0 a v
+    (fun j => f (word j)) (fun j => c (word j))
+    (fun j => ε (word j)) (fun j => P (word j)) W S C Q)
+  (hmem : ∀ j, r.1.val j ∈ d.cutoff k)
+  (hmono : ∀ i j, i ≤ j → r.1.val i - r.1.val j ∈ d.monoid)
+include hmem hmono in
+/-- Package a word-indexed decorated ray as a cutoff inventory ray, preserving
+its entire path, whole decoration, degree history and encounter parameters. -/
+theorem exists_of_word : ∃ b : CutoffDecoratedRay d ℳ T a v f c ε P W S C k Q,
+  b.itinerary = List.ofFn word ∧ b.realization.2.ray = r.2.ray ∧
+  b.decoration = r.decoration 0 ∧
+  b.finalDegree = Fin.snoc (α := fun _ => Γ) r.1.val 0 0 ∧
+  b.degreeItinerary = List.ofFn (fun j => (r.1.val j, word j)) ∧
+  List.ofFn b.realization.2.parameter = List.ofFn r.2.parameter := by
+  obtain ⟨l, hl⟩ := List.equivSigmaTuple.surjective (⟨n, word⟩ : Σ n, Fin n → J)
+  -- The equivalence sends a list to its length and lookup function. Make this
+  -- dependent identification explicit before transporting the realization.
+  change (⟨l.length, l.get⟩ : Σ n, Fin n → J) = ⟨n, word⟩ at hl
+  cases hl
+  refine ⟨⟨l, r, hmem, hmono⟩, ?_, rfl, ?_, ?_, ?_, rfl⟩
+  · exact (List.ofFn_get l).symm
+  · rw [CutoffDecoratedRay.decoration_eq, DecoratedAdmissibleRay.decoration_zero]
+  · rw [CutoffDecoratedRay.finalDegree_def]
+  · rw [CutoffDecoratedRay.degreeItinerary_eq]
+
+end OfWord
+
+/-- An incoming segment whose degree differs from the final degree has
+strictly smaller degree, including the incoming segment of degree zero. -/
+theorem degree_lt_finalDegree_of_ne
+    (r : CutoffDecoratedRay d ℳ T a v f c ε P W S C k Q)
+    (j : Fin r.itinerary.length)
+    (hne : Fin.snoc (α := fun _ => Γ) r.realization.1.val 0 j.succ ≠ r.finalDegree) :
+    d.degree (Fin.snoc (α := fun _ => Γ) r.realization.1.val 0 j.succ) <
+      d.degree r.finalDegree := by
+  let z : Fin r.itinerary.length := ⟨0, Nat.zero_lt_of_lt j.isLt⟩
+  have hz : z.castSucc = (0 : Fin (r.itinerary.length + 1)) := Fin.ext rfl
+  have hfinal : r.realization.1.val z = r.finalDegree := by
+    rw [finalDegree_def, ← hz, Fin.snoc_castSucc]
+  have hstep : r.finalDegree -
+      Fin.snoc (α := fun _ => Γ) r.realization.1.val 0 j.succ ∈ d.monoid := by
+    by_cases hlast : j.succ = Fin.last r.itinerary.length
+    · simpa only [hlast, Fin.snoc_last, sub_zero, ← hfinal] using
+        (d.mem_cutoff.mp (r.degree_mem z)).1
+    · obtain ⟨i, hi⟩ := Fin.eq_castSucc_of_ne_last hlast
+      simpa only [← hi, Fin.snoc_castSucc, hfinal] using
+        r.degree_sub_mem z i (by simp [Fin.le_def, z])
+  have hdeg := d.degree_pos hstep (sub_ne_zero.mpr hne.symm)
+  simpa only [map_sub, sub_pos] using hdeg
 
 /-- Every actual decorated ray gives a member of the finite geometric inventory.
 This derives realization from its actual path, rather than assuming a bound. -/
