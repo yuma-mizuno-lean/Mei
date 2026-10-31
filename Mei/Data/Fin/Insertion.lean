@@ -41,4 +41,22 @@ theorem insertNth_succ_castSucc {α : Sort*} {n : ℕ} (i : Fin (n + 1))
       simp at this ⊢
       omega
 
+/-- Repeating an entry before appending a final entry agrees with repeating
+the corresponding entry in the extended tuple. -/
+theorem snoc_insertNth_self {α : Sort*} {n : ℕ} (r : Fin n → α) (a : α)
+    (i : Fin (n + 1)) :
+    snoc (α := fun _ => α) (i.insertNth (snoc (α := fun _ => α) r a i) r) a =
+      i.succ.insertNth (α := fun _ => α) (snoc (α := fun _ => α) r a i)
+        (snoc (α := fun _ => α) r a) := by
+  funext j
+  refine lastCases ?_ (fun j => ?_) j
+  · cases i using lastCases with
+    | last => simp
+    | cast i =>
+      rw [insertNth_apply_above (by
+        simpa only [Fin.lt_def, Fin.val_succ, Fin.val_castSucc, Fin.val_last,
+          Nat.add_lt_add_iff_right] using i.isLt)]
+      simp [Fin.pred_last]
+  · simp only [snoc_castSucc, insertNth_succ_castSucc]
+
 end Fin

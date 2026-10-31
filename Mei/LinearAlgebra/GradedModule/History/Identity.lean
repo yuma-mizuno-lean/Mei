@@ -7,6 +7,7 @@ module
 
 public import Mei.LinearAlgebra.GradedModule.History.Erasure
 public import Mei.LinearAlgebra.GradedModule.History.Finite
+public import Mei.Data.Fin.Insertion
 
 /-!+# Identity encounters in homogeneous histories
 
@@ -63,6 +64,30 @@ theorem homogeneousHistory_insertNth_id {n : ℕ}
       simp only [Fin.cons_zero, Fin.cons_succ]
       rw [ih]
       rfl
+
+/-- Inserting an identity encounter preserves the whole decoration on every
+retained segment. Segment indices are transported by `i.castSucc.succAbove`;
+the incoming degree is repeated at the inserted encounter. -/
+@[simp↓]
+theorem homogeneousHistoryStage_insertNth_id {n : ℕ}
+    (T : Fin n → Module.End R M) (r : Fin n → ι) (p₀ : ι) (a : ℳ p₀)
+    (i j : Fin (n + 1)) :
+    homogeneousHistoryStage ℳ (i.insertNth LinearMap.id T)
+      (i.insertNth (Fin.snoc (α := fun _ => ι) r p₀ i) r)
+      (i.castSucc.succAbove j) a = homogeneousHistoryStage ℳ T r j a := by
+  let p := i.insertNth (α := fun _ => ι) (Fin.snoc (α := fun _ => ι) r p₀ i) r
+  have hfix : homogeneousHistoryStage ℳ (i.insertNth LinearMap.id T) p i.castSucc a =
+      homogeneousHistoryStage ℳ (i.insertNth LinearMap.id T) p i.succ a := by
+    rw [homogeneousHistoryStage_castSucc_apply, Fin.insertNth_apply_same,
+      LinearMap.id_apply]
+    have hmem := homogeneousHistoryStage_mem_snoc ℳ
+      (i.insertNth LinearMap.id T) p p₀ a i.succ
+    rw [Fin.snoc_insertNth_self, Fin.insertNth_apply_same] at hmem
+    dsimp only [p]
+    rw [Fin.insertNth_apply_same]
+    exact DirectSum.decompose_of_mem_same ℳ hmem
+  simpa only [p, Fin.removeNth_insertNth] using
+    (homogeneousHistoryStage_removeNth ℳ (i.insertNth LinearMap.id T) p a i hfix j).symm
 
 /-- A surviving identity encounter has equal incoming and outgoing degrees.
 The statement includes the encounter next to the original homogeneous input. -/
