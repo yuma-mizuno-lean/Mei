@@ -91,6 +91,15 @@ private theorem eventually_admits_older_words [Finite J]
       exact hη zz hq hp
     · exact Eventually.of_forall fun _ he => (hj he).elim
 
+/-- The cutoff ray `z` has final encounter `w`, final degree `q` and incoming
+degree `p` at that encounter. Its older encounter word is unrestricted. -/
+def HasFinalEncounter (z : CutoffDecoratedRay d ℳ T a v f c ε P W S C k Q)
+    (w : J) (p q : Γ) : Prop :=
+  match z with
+  | ⟨[], _, _, _⟩ => False
+  | ⟨j :: l, z, _, _⟩ => j = w ∧ z.1.val 0 = q ∧
+    Fin.snoc (α := fun _ => Γ) (fun i : Fin l.length => z.1.val i.succ) 0 0 = p
+
 open Classical in
 /-- Sum the complete final-encounter fiber over all older words at every
 sufficiently short incoming cut. The incoming degree component may be evaluated
@@ -114,12 +123,7 @@ theorem eventually_sum_finalEncounter_eq_component [Finite J] [Finite K]
     let Out := CutoffDecoratedRay d ℳ T a v f c ε P W S C k Q
     let := Fintype.ofFinite Out
     ∀ᶠ η : ℝ in 𝓝[>] 0,
-      (∑ z : Out,
-        if (match z with
-          | ⟨[], _, _, _⟩ => False
-          | ⟨j :: l, z, _, _⟩ => j = w ∧ z.1.val 0 = q ∧
-            Fin.snoc (α := fun _ => Γ) (fun i : Fin l.length => z.1.val i.succ) 0 0 = p)
-        then z.decoration else 0) =
+      (∑ z : Out, if z.HasFinalEncounter w p q then z.decoration else 0) =
       (DirectSum.decompose ℳ (T w (DirectSum.decompose ℳ
         (cutoffDecoratedEvaluation d ℳ T a v f c ε P W S C l
           (Q + t • v q + η • v p)) p)) q : M) := by
@@ -184,12 +188,12 @@ theorem eventually_sum_finalEncounter_eq_component [Finite J] [Finite K]
   rintro ⟨word, z, hm, hmono⟩ _
   dsimp only [admitted]
   cases word with
-  | nil => simp
+  | nil => simp [HasFinalEncounter]
   | cons j word =>
-    by_cases hz : j = w ∧ z.1.val 0 = q ∧
-        Fin.snoc (α := fun _ => Γ) (fun i : Fin word.length => z.1.val i.succ) 0 0 = p
-    · rw [ite_eq_left hz, ite_eq_left ⟨hz.1, hz.2.1, hz.2.2,
-        hcut ⟨j :: word, z, hm, hmono⟩ hz.1 hz.2.1 hz.2.2⟩]
-    · rw [ite_eq_right hz, ite_eq_right (fun h => hz ⟨h.1, h.2.1, h.2.2.1⟩)]
+    split_ifs with h₁ h₂ h₂
+    · rfl
+    · exact (h₂ ⟨h₁.1, h₁.2.1, h₁.2.2, hcut ⟨j :: word, z, hm, hmono⟩ h₁.1 h₁.2.1 h₁.2.2⟩).elim
+    · exact (h₁ ⟨h₂.1, h₂.2.1, h₂.2.2.1⟩).elim
+    · rfl
 
 end Mei.CutoffDecoratedRay

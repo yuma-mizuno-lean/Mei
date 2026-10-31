@@ -80,12 +80,7 @@ theorem exists_eventually_sum_finalEncounter_eq_component_generic
           E.IsGeneric (Q + t • v q.val + η • v p.val) ∧
           ∀ l : ℕ, d.degree p.val ≤ l →
             (∑ z : Out,
-              if (match z with
-                | ⟨[], _, _, _⟩ => False
-                | ⟨j :: word, z, _, _⟩ => j = w ∧ z.1.val 0 = q.val ∧
-                  Fin.snoc (α := fun _ => Γ)
-                    (fun i : Fin word.length => z.1.val i.succ) 0 0 = p.val)
-              then z.decoration else 0) =
+              if z.HasFinalEncounter w p.val q.val then z.decoration else 0) =
             (DirectSum.decompose ℳ (T w (DirectSum.decompose ℳ
               (cutoffDecoratedEvaluation d ℳ T a v f c ε P W S C l
                 (Q + t • v q.val + η • v p.val)) p.val)) q.val : M) := by
@@ -121,11 +116,7 @@ theorem exists_eventually_sum_finalEncounter_eq_component_generic
   refine ⟨hgen, fun l hl => ?_⟩
   rw [← decompose_cutoffDecoratedEvaluation_eq_of_degree_le p.val
     (d.mem_cutoff.mp p.property).2 hl]
-  -- The two dependent list matchers agree after exposing the encounter word.
-  convert heq using 1
-  apply Finset.sum_congr rfl
-  rintro ⟨word, r, hm, hmono⟩ _
-  cases word <;> rfl
+  exact heq
 
 section WallEvents
 
@@ -161,12 +152,7 @@ theorem exists_eventually_sum_finalEncounter_eq_component_generic_wallEvents
           E.IsGeneric (Q + t • v q.val + η • v p.val) ∧
           ∀ l : ℕ, d.degree p.val ≤ l →
             (∑ z : Out,
-              if (match z with
-                | ⟨[], _, _, _⟩ => False
-                | ⟨j :: word, z, _, _⟩ => j = e ∧ z.1.val 0 = q.val ∧
-                  Fin.snoc (α := fun _ => Γ)
-                    (fun i : Fin word.length => z.1.val i.succ) 0 0 = p.val)
-              then z.decoration else 0) =
+              if z.HasFinalEncounter e p.val q.val then z.decoration else 0) =
             (DirectSum.decompose ℳ (T e (DirectSum.decompose ℳ
               (cutoffDecoratedEvaluation d ℳ T a v (fun e => e.normal f)
                 (fun e => e.offset c) (fun e => e.2) P P
@@ -205,12 +191,7 @@ theorem exists_eventually_sum_finalEncounter_eq_component_generic_wallEvents
     (fun e' u hu hu0 hy => hW e'.1.property.choose u hu hu0
       (e'.support_subset W e'.1.property.choose_spec hy))
     (fun _ u hu hu0 => hS u hu.le hu0)
-  refine ⟨hh.1, fun l hl => ?_⟩
-  -- Expose the word to identify the dependent selection matchers.
-  convert hh.2 l hl using 1
-  apply Finset.sum_congr rfl
-  rintro ⟨word, r, hm, hmono⟩ _
-  cases word <;> rfl
+  exact hh
 
 end WallEvents
 
