@@ -179,6 +179,15 @@ def domain (t : CutoffDecoratedType d ℳ T a v f ε k) : Set V :=
     (fun j => c (t.itinerary.val.get j)) (fun j => v (Fin.snoc (α := fun _ => Γ) t.history.val 0 j))
     (fun j => P (t.itinerary.val.get j)) W S C
 
+/-- The type domain is the full admissible backward domain of its recorded
+encounters and degree history. -/
+theorem domain_def (t : CutoffDecoratedType d ℳ T a v f ε k) :
+    domain c P W S C t =
+      admissibleBackwardDomain (fun j => f (t.itinerary.val.get j))
+        (fun j => c (t.itinerary.val.get j))
+        (fun j => v (Fin.snoc (α := fun _ => Γ) t.history.val 0 j))
+        (fun j => P (t.itinerary.val.get j)) W S C := (rfl)
+
 /-- Membership is the existing complete admissible backward endpoint condition. -/
 @[simp]
 theorem mem_domain (t : CutoffDecoratedType d ℳ T a v f ε k) (Q : V) :
