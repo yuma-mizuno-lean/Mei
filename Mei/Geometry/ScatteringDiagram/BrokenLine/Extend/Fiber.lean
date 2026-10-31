@@ -60,15 +60,11 @@ variable (hnormal : m (v q) = m (v p)) (htrans : m (v q) ≠ 0)
   (hS₂ : ∀ j u, -t < u → u ≤ 0 → (Y - s • v p - t • v q) - u • v q ∉ S j)
 
 private theorem incoming_direction (r : A) : r.val.2.ray.direction = v p := by
-  have he := r.val.2.directionAt_eq 0
-  rw [r.val.2.parameter_zero, FiniteAffineRay.directionAt_of_nonneg _ le_rfl,
-    r.property.1] at he
-  exact he
+  rw [r.val.2.ray_direction, r.property.1]
 
 private theorem incoming_continuation (r : A) {u : ℝ} (hu : 0 ≤ u) :
     r.val.2.ray u = Y - u • v p := by
-  rw [FiniteAffineRay.eval_of_nonneg _ hu, incoming_direction U p q Y r,
-    r.val.2.endpoint_eq]
+  rw [r.val.2.ray_of_nonneg hu, r.property.1]
   simp only [neg_smul, vadd_eq_add, sub_eq_add_neg, add_comm]
 
 private theorem attached_endpoint (r : A) :
@@ -142,6 +138,14 @@ theorem decoration_finalEncounterEmbedding (r : A) :
   simp only [decoration_zero, history_finalEncounterEmbedding,
     homogeneousHistory_succ_apply, Fin.cons_zero, Fin.cons_succ]
   rfl
+
+/-- Every earlier segment retains its entire incoming decoration. -/
+@[simp]
+theorem decoration_succ_finalEncounterEmbedding (r : A) (j : Fin (n + 1)) :
+    (finalEncounterEmbedding U p q Y s t hs ht m b H hnormal htrans hheight hinc
+      hW₁ hW₂ hS₁ hS₂ r).decoration j.succ = r.val.decoration j := by
+  simp only [decoration_def, history_finalEncounterEmbedding, homogeneousHistoryStage_succ,
+    Fin.cons_succ]
 
 /-- Attachment retains the complete incoming path by the canonical finite-ray
 extension, including all old bend increments and the incoming tail. -/
