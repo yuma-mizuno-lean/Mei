@@ -12,7 +12,7 @@ public import Mei.Geometry.Affine.FiniteRay.Truncate
 # Cutting and reattaching finite affine rays
 
 Cutting an extended ray at its old endpoint recovers the original ray. Conversely,
-cutting strictly before its final encounter and reattaching the two discarded
+cutting before or at its final encounter and reattaching the two discarded
 straight segments recovers the entire ray, including its bend increments.
 The final encounter need not be an actual bend: equal spatial directions are allowed.
 
@@ -50,27 +50,29 @@ theorem truncate_extend (β : FiniteAffineRay V P) (s t : ℝ) (w : V)
     · rw [ite_eq_right hu]
       exact (Finsupp.notMem_support_iff.mp (fun h => hu (β.bend_neg u h))).symm
 
-/-- Reattach the final encounter after a cut in the preceding open segment.
+/-- Reattach the final encounter after a cut in the preceding segment or at the encounter.
 The two lengths and the final direction are recovered from the original ray.
 The result is equality of finite rays, rather than just equality on the retained tail. -/
 @[simp]
 theorem extend_truncate (β : FiniteAffineRay V P) {a b : ℝ}
-    (hab : a < b) (hb₀ : b < 0)
+    (hab : a ≤ b) (hb₀ : b < 0)
     (hb : ∀ u ∈ β.bends.support, u < a ∨ u = b) :
     (β.truncate a).extend (b - a) (-b) β.direction
-      (sub_nonneg.mpr hab.le) (neg_pos.mpr hb₀) = β := by
+      (sub_nonneg.mpr hab) (neg_pos.mpr hb₀) = β := by
   classical
-  have hcut : β.bends a = 0 := Finsupp.notMem_support_iff.mp (by
-    intro ha
-    exact (hb a ha).elim (lt_irrefl a) (fun h => hab.ne h))
   have hdir : β.directionAt a = β.directionAt b := by
-    have h := β.directionAt_sub_eq_bends hab (fun u hu =>
-      (hb u hu).imp (fun h => h.le) (fun h => h.ge))
-    rwa [hcut, sub_eq_zero] at h
-  have hstep₁ := β.eval_vsub_eval hab.le (fun u hu =>
+    rcases hab.eq_or_lt with rfl | hlt
+    · rfl
+    · have hcut : β.bends a = 0 := Finsupp.notMem_support_iff.mp (by
+        intro ha
+        exact (hb a ha).elim (lt_irrefl a) (fun h => hlt.ne h))
+      have h := β.directionAt_sub_eq_bends hlt (fun u hu =>
+        (hb u hu).imp (fun h => h.le) (fun h => h.ge))
+      rwa [hcut, sub_eq_zero] at h
+  have hstep₁ := β.eval_vsub_eval hab (fun u hu =>
     (hb u hu).imp (fun h => h.le) (fun h => h.ge))
   have hstep₂ := β.eval_vsub_eval hb₀.le (fun u hu =>
-    (hb u hu).elim (fun h => Or.inl (h.le.trans hab.le)) (fun h => Or.inl h.le))
+    (hb u hu).elim (fun h => Or.inl (h.le.trans hab)) (fun h => Or.inl h.le))
   rw [eval_zero, directionAt_of_nonneg _ le_rfl] at hstep₂
   have hpoint : β.endpoint = ((a - b) • β.directionAt a +
       b • β.direction) +ᵥ β a := by
@@ -79,7 +81,7 @@ theorem extend_truncate (β : FiniteAffineRay V P) {a b : ℝ}
   have hincrement : β.directionAt a - β.direction = β.bends b := by
     rw [hdir, ← β.directionAt_of_nonneg (u := 0) le_rfl]
     exact β.directionAt_sub_eq_bends hb₀ (fun u hu =>
-      (hb u hu).elim (fun h => Or.inl (h.le.trans hab.le)) (fun h => Or.inl h.le))
+      (hb u hu).elim (fun h => Or.inl (h.le.trans hab)) (fun h => Or.inl h.le))
   apply FiniteAffineRay.ext
   · rw [endpoint_extend, endpoint_truncate, direction_truncate, hpoint]
     congr 1

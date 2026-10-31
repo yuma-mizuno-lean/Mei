@@ -72,7 +72,7 @@ theorem extend_truncate_ray :
     simpa only [r.parameter_zero, FiniteAffineRay.directionAt_of_nonneg _ le_rfl] using
       r.directionAt_eq 0
   rw [ray_truncate, ← hdir]
-  exact r.ray.extend_truncate hupper (by
+  exact r.ray.extend_truncate hupper.le (by
     simpa only [r.parameter_zero] using
       r.strictAnti_parameter (a := 0) (b := Fin.natAdd 1 (0 : Fin (n + 1)))
         (by simp [Fin.lt_def]))
