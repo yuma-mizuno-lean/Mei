@@ -8,6 +8,7 @@ module
 public import Mei.Geometry.ScatteringDiagram.WallSpace.Action
 public import Mei.Algebra.Lie.Graded.Shifted.Basic
 public import Mei.LinearAlgebra.GradedModule.Shifted.Component
+public import Mei.LinearAlgebra.GradedModule.Shifted.Quotient
 
 /-!
 # Tangent components of completed shifted wall actions
@@ -17,7 +18,9 @@ annihilated by its normal. This holds on finite shifted quotients and on arbitra
 completed shifted coefficients, even when the wall logarithm has infinitely many
 homogeneous terms. In particular, a homogeneous input cannot acquire a distinct
 output degree with zero geometric direction. Such components can therefore be
-handled separately in recursions for broken-line coefficients.
+handled separately in recursions for broken-line coefficients. Homogeneous
+quotient classes tangent to the wall are fixed, with normal degree computed
+after adding the ambient shift.
 
 The finite comparison uses `DirectedWallSpaces.decompose_lie_eq_zero_of_mem_ray_of_normal_eq_zero`
 and Mathlib's `Module.End.commute_exp_left_of_commute`. The completed comparison
@@ -119,5 +122,44 @@ theorem shiftedHomogeneousComponent_completedBCHAction_eq_zero_of_direction_eq_z
     (by simp [hq]), d.shiftedHomogeneousComponent_of]
   apply Subtype.ext
   exact DirectSum.decompose_of_mem_ne ℳ ha hrq
+
+end Mei.DirectedWallSpaces
+
+namespace Mei.DirectedWallSpaces
+
+-- The finite internal-grading supplier takes its degree type in `Type`.
+variable {Γ : Type} {Λ R L M : Type*} [AddCommGroup Γ] [AddCommMonoid Λ]
+  [CommRing R] [Algebra ℚ R] [LieRing L] [LieAlgebra R L]
+  [LieAlgebra ℚ L] [IsScalarTower ℚ R L]
+  [AddCommGroup M] [Module R M] [LieRingModule L M] [LieModule R L M]
+  [DecidableEq Γ] {ρ : Γ →+ Λ} {d : PositiveDegrees Γ}
+  {ℒ : Γ → Submodule R L} [GradedLieAlgebra ℒ] [IsPositiveGrading d ℒ]
+  (H : DirectedWallSpaces ρ ℒ) (ℳ : Γ → Submodule R M)
+  [DirectSum.Decomposition ℳ] [SetLike.GradedBracket ℒ ℳ]
+  [IsWallAnnihilating H ℳ] (p : Γ)
+
+/-- A finite BCH wall action fixes a homogeneous quotient coefficient tangent
+to the wall. Normal degree is evaluated after adding the ambient shift. -/
+theorem shiftedBCHAction_eq_self_of_normal_eq_zero
+    {w : SupportedRay d} {m : Λ →+ ℤ} {k : ℕ} {g : d.truncatedGroup ℒ k}
+    (hg : BCHGroup.log g ∈ H.truncatedRayLieSubalgebra w m k)
+    {r : Γ} {a : (d.shiftedLieFiltration ℒ ℳ p).quotient k}
+    (ha : a ∈ (d.shiftedQuotientGrading ℳ p k).piece r)
+    (hr : m (ρ (p + r)) = 0) :
+    (d.shiftedLieFiltration ℒ ℳ p).truncatedBCHAction d ℒ k g a = a := by
+  let F := d.shiftedLieFiltration ℒ ℳ p
+  let : Module ℚ (F.quotient k) := Module.compHom _ (algebraMap ℚ R)
+  obtain ⟨b, hb, rfl⟩ := (d.mem_shiftedQuotientGrading_iff ℳ p).mp ha
+  rw [ModuleFiltration.truncatedBCHAction_apply, ModuleFiltration.truncatedExpLieAction_apply]
+  apply Module.End.exp_apply_eq_self _
+    ⟨k + 1, F.truncatedLieAction_pow_eq_zero d ℒ k (BCHGroup.log g)⟩
+  obtain ⟨y, hy, he⟩ := (H.mem_truncatedRayLieSubalgebra w m k (BCHGroup.log g)).mp hg
+  rw [← he, LieIdeal.mkQ_apply, ModuleFiltration.truncatedLieAction_mk,
+    ModuleFiltration.quotientLieAction_mk]
+  have hbr : (⁅y, b⁆ : d.shiftedLieSubmodule ℒ ℳ p) = 0 := by
+    apply Subtype.ext
+    exact H.lie_eq_zero_of_mem_ray_of_normal_eq_zero ℳ hy
+      ((mem_shiftedGrading ℳ d.monoid p).mp hb) hr
+  rw [hbr, Submodule.Quotient.mk_zero]
 
 end Mei.DirectedWallSpaces
