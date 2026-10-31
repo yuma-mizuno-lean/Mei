@@ -255,7 +255,7 @@ end Convex
 
 namespace Convex
 
-variable {𝕜 E : Type*} [Field 𝕜] [LinearOrder 𝕜] [IsStrictOrderedRing 𝕜]
+variable {𝕜 E : Type*} [Field 𝕜] [PartialOrder 𝕜]
   [AddCommGroup E] [Module 𝕜 E] [TopologicalSpace E]
   [IsTopologicalAddGroup E] [ContinuousConstSMul 𝕜 E]
 
@@ -263,8 +263,8 @@ variable {𝕜 E : Type*} [Field 𝕜] [LinearOrder 𝕜] [IsStrictOrderedRing �
 its relative interior stay in the relative interior. -/
 protected theorem intrinsicInterior {s : Set E} (hs : Convex 𝕜 s) :
     Convex 𝕜 (intrinsicInterior 𝕜 s) :=
-  convex_iff_openSegment_subset.mpr fun _ hx _ hy =>
+  convex_iff_forall_pos.mpr fun _ hx _ hy _ _ ha hb hab =>
     hs.openSegment_intrinsicInterior_intrinsicClosure_subset_intrinsicInterior hx
-      (subset_intrinsicClosure (intrinsicInterior_subset hy))
+      (subset_intrinsicClosure (intrinsicInterior_subset hy)) ⟨_, _, ha, hb, hab, rfl⟩
 
 end Convex

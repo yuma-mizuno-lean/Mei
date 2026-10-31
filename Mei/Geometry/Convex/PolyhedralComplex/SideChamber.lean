@@ -41,15 +41,6 @@ namespace Mei.FinitePolyhedralComplex
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i} (C : FinitePolyhedralComplex h)
 
-/-- Near a relative interior point of a wall, a ball meets no other wall. -/
-theorem exists_ball_eq_wall_of_mem_intrinsicInterior (P : C.walls) {q : V}
-    (hq : q ∈ intrinsicInterior ℝ (P : Set V)) :
-    ∃ r > 0, ∀ Q : C.walls, ∀ z ∈ Metric.ball q r, z ∈ (Q : Set V) → Q = P := by
-  obtain ⟨r, hr, -, -, hdisj, -⟩ := C.exists_isolating_ball P.property hq
-  refine ⟨r, hr, fun Q z hz hzQ => ?_⟩
-  by_contra hne
-  exact disjoint_left.mp (hdisj Q Q.property fun he => hne (Subtype.ext he)) hz hzQ
-
 variable {C}
 
 /-- The chamber `c` contains the positive half of a small ball centered at `q`. -/
@@ -180,6 +171,20 @@ def negativeChamber (P : C.walls) (ν : V →ₗ[ℝ] ℝ)
     Chamber (fun P : C.walls => (P : Set V)) :=
   C.positiveChamber P (-ν) (by rwa [LinearMap.ker_neg])
 
+/-- Reversing the coorientation exchanges the positive and negative chambers. -/
+@[simp]
+theorem positiveChamber_neg {P : C.walls} {ν : V →ₗ[ℝ] ℝ}
+    (hν : LinearMap.ker ν = (affineSpan ℝ (P : Set V)).direction) :
+    C.positiveChamber P (-ν) (by rwa [LinearMap.ker_neg]) = C.negativeChamber P ν hν :=
+  (rfl)
+
+/-- Reversing the coorientation exchanges the negative and positive chambers. -/
+@[simp]
+theorem negativeChamber_neg {P : C.walls} {ν : V →ₗ[ℝ] ℝ}
+    (hν : LinearMap.ker ν = (affineSpan ℝ (P : Set V)).direction) :
+    C.negativeChamber P (-ν) (by rwa [LinearMap.ker_neg]) = C.positiveChamber P ν hν := by
+  simp only [negativeChamber, neg_neg]
+
 /-- Short positively transverse rays from the relative interior of a wall enter its
 positive chamber. -/
 theorem eventually_add_smul_mem_positiveChamber {P : C.walls} {ν : V →ₗ[ℝ] ℝ}
@@ -207,6 +212,16 @@ theorem eq_positiveChamber_of_frequently {P : C.walls} {ν : V →ₗ[ℝ] ℝ}
     (hc : ∃ᶠ t : ℝ in 𝓝[>] 0, q + t • v ∈ c.carrier) : c = C.positiveChamber P ν hν := by
   obtain ⟨t, ht, ht'⟩ := (hc.and_eventually
     (eventually_add_smul_mem_positiveChamber hν hq hv)).exists
+  exact ConnectedComponents.eq_of_mem_carrier ht ht'
+
+/-- The negative chamber is characterized by a single short negatively transverse ray. -/
+theorem eq_negativeChamber_of_frequently {P : C.walls} {ν : V →ₗ[ℝ] ℝ}
+    (hν : LinearMap.ker ν = (affineSpan ℝ (P : Set V)).direction) {q : V}
+    (hq : q ∈ intrinsicInterior ℝ (P : Set V)) {v : V} (hv : 0 < ν v)
+    {c : Chamber (fun P : C.walls => (P : Set V))}
+    (hc : ∃ᶠ t : ℝ in 𝓝[>] 0, q - t • v ∈ c.carrier) : c = C.negativeChamber P ν hν := by
+  obtain ⟨t, ht, ht'⟩ := (hc.and_eventually
+    (eventually_sub_smul_mem_negativeChamber hν hq hv)).exists
   exact ConnectedComponents.eq_of_mem_carrier ht ht'
 
 /-- An admissible segment crossing exactly one wall, with positive normal velocity,
