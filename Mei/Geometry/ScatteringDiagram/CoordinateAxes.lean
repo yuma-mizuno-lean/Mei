@@ -92,27 +92,6 @@ private theorem commute_coordinateAxesFactor {a b : H} (hab : Commute a b) (v w 
   simp only [coordinateAxesFactor_def]
   split_ifs <;> simp [hab.inv_inv]
 
-variable {h} in
-/-- A segment along which the coordinate `!j` keeps its sign crosses only walls of the axis
-`j`: at a crossing the coordinate `!j` cannot vanish. -/
-private theorem coordinateAxesWallAxis_eq_of_mem_crossings {j : Bool}
-    {x y : WallComplement
-      (fun P : (FinitePolyhedralComplex.coordinateAxes h).walls => (P : Set (ℝ × ℝ)))}
-    (hxy : SignType.sign (axisRow (!j) x.val) = SignType.sign (axisRow (!j) y.val))
-    {P : (FinitePolyhedralComplex.coordinateAxes h).walls} {t : ℝ}
-    (hc : (P, t) ∈ WallComplement.crossings x y) : coordinateAxesWallAxis h P = j := by
-  obtain ⟨ht, hP⟩ := (WallComplement.mem_crossings _ _ _ _).mp hc
-  by_contra hne
-  have hzero := subset_axisRow_coordinateAxesWallAxis h P hP
-  have hl : axisRow (!j) (AffineMap.lineMap x.val y.val t) =
-      AffineMap.lineMap (axisRow (!j) x.val) (axisRow (!j) y.val) t :=
-    (axisRow (!j)).toLinearMap.toAffineMap.apply_lineMap x.val y.val t
-  rw [Bool.eq_not.mpr hne] at hzero
-  have hs := (convex_setOf_sign_eq (SignType.sign (axisRow (!j) x.val))).lineMap_mem
-    rfl hxy.symm ht
-  rw [Set.mem_ofPred_eq, ← hl, hzero, sign_zero, eq_comm, sign_eq_zero_iff] at hs
-  exact axisRow_val_ne_zero h x (!j) hs
-
 /-- A segment along which the coordinate `!j` keeps its sign crosses only walls of the axis
 `j`, at most once. Its product is therefore determined by the sides of the axis `j` containing
 its endpoints: crossing to the positive side contributes the inverse label, crossing to the
@@ -187,41 +166,13 @@ theorem pathProduct_coordinateAxes_toPath (a b : H) (j : Bool)
     rw [(hzero (c := c') (by simp [hlist])).1, zero_mul] at hlt
     exact absurd hlt (lt_irrefl 0)
 
-end Mei.FiniteWallDiagram
-
-namespace Mei.FinitePolyhedralComplex
-
-variable (h : TauCeti.Toric.IsIntegralLattice ((Int.castAddHom ℝ).prodMap (Int.castAddHom ℝ)))
-
-/-- The counterclockwise square loop `(1,1) → (-1,1) → (-1,-1) → (1,-1) → (1,1)` around the
-origin, as an admissible path through the coordinate axes. Each edge keeps one coordinate
-fixed, so it crosses one half-axis transversally. -/
-noncomputable def coordinateAxesSquareLoop :
-    AdmissiblePLPath (offAxisPoint h (1, 1) one_ne_zero one_ne_zero)
-      (offAxisPoint h (1, 1) one_ne_zero one_ne_zero) :=
-  (((Quiver.Hom.toPath
-    (⟨admissibleSegment_coordinateAxes_of_sign_eq h (j := true) (by simp)⟩ :
-      offAxisPoint h (1, 1) one_ne_zero one_ne_zero ⟶
-        offAxisPoint h (-1, 1) (by norm_num) one_ne_zero)).cons
-    (⟨admissibleSegment_coordinateAxes_of_sign_eq h (j := false) (by simp)⟩ :
-      _ ⟶ offAxisPoint h (-1, -1) (by norm_num) (by norm_num))).cons
-    (⟨admissibleSegment_coordinateAxes_of_sign_eq h (j := true) (by simp)⟩ :
-      _ ⟶ offAxisPoint h (1, -1) one_ne_zero (by norm_num))).cons
-    (⟨admissibleSegment_coordinateAxes_of_sign_eq h (j := false) (by simp)⟩ :
-      _ ⟶ offAxisPoint h (1, 1) one_ne_zero one_ne_zero)
-
-end Mei.FinitePolyhedralComplex
-
-namespace Mei.FiniteWallDiagram
-
-variable (h : TauCeti.Toric.IsIntegralLattice ((Int.castAddHom ℝ).prodMap (Int.castAddHom ℝ)))
-  {H : Type*} [Group H]
-
 /-- The square loop crosses `b, a, b⁻¹, a⁻¹` in this order, so its product is the commutator
 `a⁻¹ * b⁻¹ * a * b`. -/
+@[simp]
 theorem pathProduct_coordinateAxes_squareLoop (a b : H) :
     (coordinateAxes h a b).pathProduct (coordinateAxesSquareLoop h) = a⁻¹ * b⁻¹ * a * b := by
-  simp only [coordinateAxesSquareLoop, pathProduct_cons]
+  rw [coordinateAxesSquareLoop_def]
+  simp only [pathProduct_cons]
   rw [pathProduct_coordinateAxes_toPath h a b true _ (by simp),
     pathProduct_coordinateAxes_toPath h a b false _ (by simp),
     pathProduct_coordinateAxes_toPath h a b true _ (by simp),
@@ -262,6 +213,7 @@ private theorem pathProduct_coordinateAxes_toPath_of_commute {a b : H} (hab : Co
   · group
 
 /-- The coordinate-axes diagram is consistent exactly when its two labels commute. -/
+@[simp]
 theorem consistent_coordinateAxes_iff (a b : H) :
     (coordinateAxes h a b).Consistent ↔ Commute a b := by
   constructor

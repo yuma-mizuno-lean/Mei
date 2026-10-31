@@ -53,6 +53,23 @@ theorem axisRow_ne_zero (j : Bool) : axisRow j ≠ 0 := by
   have := congrArg (fun f : (ℝ × ℝ) →L[ℝ] ℝ => f (1, 1)) h0
   cases j <;> simp at this
 
+/-- A coordinate with equal nonzero signs at the endpoints stays nonzero along the segment. -/
+theorem axisRow_lineMap_ne_zero_of_sign_eq {j : Bool} {v w : ℝ × ℝ} {t : ℝ}
+    (hvw : SignType.sign (axisRow j v) = SignType.sign (axisRow j w))
+    (hv : axisRow j v ≠ 0) (ht : t ∈ Icc (0 : ℝ) 1) :
+    axisRow j (AffineMap.lineMap v w t) ≠ 0 := by
+  have hs : SignType.sign (axisRow j (AffineMap.lineMap v w t)) =
+      SignType.sign (axisRow j v) := by
+    have hl : axisRow j (AffineMap.lineMap v w t) =
+        AffineMap.lineMap (axisRow j v) (axisRow j w) t :=
+      (axisRow j).toLinearMap.toAffineMap.apply_lineMap v w t
+    rw [hl]
+    exact (convex_setOf_sign_eq (SignType.sign (axisRow j v))).lineMap_mem rfl hvw.symm ht
+  intro hz
+  apply hv
+  apply sign_eq_zero_iff.mp
+  rw [← hs, hz, sign_zero]
+
 /-- Points closer to `θ` than `θ` is to a coordinate axis lie on the same side of that axis. -/
 theorem sign_axisRow_eq_of_dist_lt {j : Bool} {v θ : ℝ × ℝ} (hv : dist v θ < |axisRow j θ|) :
     SignType.sign (axisRow j v) = SignType.sign (axisRow j θ) := by
@@ -112,11 +129,8 @@ theorem exists_subset_axisRow_eq_zero_of_mem_coordinateAxes_walls {P : Set (ℝ 
   rw [coordinateAxes_eq_ofArrangement] at hPC
   obtain ⟨σ, hσ, rfl⟩ := mem_ofArrangement_cells.mp hPC
   have hspan : affineSpan ℝ
-      (closure (signCell (fun j => (axisRow j).toContinuousAffineMap) σ)) ≠ ⊤ := by
-    intro htop
-    rw [htop, AffineSubspace.direction_top, finrank_top, Module.finrank_prod,
-      Module.finrank_self] at hd
-    omega
+      (closure (signCell (fun j => (axisRow j).toContinuousAffineMap) σ)) ≠ ⊤ :=
+    AffineSubspace.ne_top_of_finrank_direction_add_one_eq _ hd
   obtain ⟨j, hj⟩ := exists_zero_sign_of_affineSpan_ne_top hσ hspan
   refine ⟨j, fun v hv => ?_⟩
   rw [closure_signCell hσ] at hv
@@ -141,14 +155,9 @@ theorem direction_eq_ker_of_mem_coordinateAxes_walls {P : Set (ℝ × ℝ)}
     (hP : P ∈ (coordinateAxes h).walls)
     {j : Bool} (hPj : P ⊆ {v | axisRow j v = 0}) :
     (affineSpan ℝ P).direction = LinearMap.ker (axisRow j).toLinearMap := by
-  have hle : (affineSpan ℝ P).direction ≤ LinearMap.ker (axisRow j).toLinearMap := by
-    rw [direction_affineSpan, vectorSpan_def, Submodule.span_le]
-    rintro _ ⟨v, hv, w, hw, rfl⟩
-    simp [show axisRow j v = 0 from hPj hv, show axisRow j w = 0 from hPj hw]
-  have hd := (coordinateAxes h).finrank_direction_add_one_of_mem_walls hP
-  have hlt := Submodule.finrank_lt (s := LinearMap.ker (axisRow j).toLinearMap)
-    (by rw [Ne, LinearMap.ker_eq_top]; exact_mod_cast axisRow_ne_zero j)
-  exact Submodule.eq_of_le_of_finrank_le hle (by omega)
+  exact ((axisRow j).toLinearMap.ker_eq_direction_affineSpan
+    (by exact_mod_cast axisRow_ne_zero j) (fun v hv => hPj hv)
+    ((coordinateAxes h).finrank_direction_add_one_of_mem_walls hP)).symm
 
 /-- No wall lies in both coordinate axes. -/
 private theorem not_subset_axisRow_true_and_false {P : Set (ℝ × ℝ)}
@@ -193,6 +202,7 @@ theorem exists_mem_coordinateAxes_walls_iff {v : ℝ × ℝ} :
     exact ⟨⟨P, hP⟩, hv⟩
 
 /-- The only singular point of the walls of the coordinate axes is the origin. -/
+@[simp]
 theorem singularSupport_coordinateAxes :
     singularSupport (fun P : (coordinateAxes h).walls => (P : Set (ℝ × ℝ))) = {0} := by
   apply Subset.antisymm
@@ -244,12 +254,8 @@ theorem admissibleSegment_coordinateAxes_of_sign_eq
     (left_mem_segment ℝ _ _) (right_mem_segment ℝ _ _)
   rw [singularSupport_coordinateAxes, disjoint_singleton_right, segment_eq_image_lineMap]
   rintro ⟨t, ht, h0⟩
-  have hs := (convex_setOf_sign_eq (SignType.sign (axisRow j x.val))).lineMap_mem rfl hxy.symm ht
-  have hl : axisRow j (AffineMap.lineMap x.val y.val t) =
-      AffineMap.lineMap (axisRow j x.val) (axisRow j y.val) t :=
-    (axisRow j).toLinearMap.toAffineMap.apply_lineMap x.val y.val t
-  rw [Set.mem_ofPred_eq, ← hl, h0, map_zero, sign_zero, eq_comm, sign_eq_zero_iff] at hs
-  exact axisRow_val_ne_zero h x j hs
+  apply axisRow_lineMap_ne_zero_of_sign_eq hxy (axisRow_val_ne_zero h x j) ht
+  rw [h0, map_zero]
 
 /-- A point of the plane with both coordinates nonzero, as a vertex of admissible paths
 through the coordinate axes. -/
@@ -266,5 +272,58 @@ def offAxisPoint (v : ℝ × ℝ) (h₁ : v.1 ≠ 0) (h₂ : v.2 ≠ 0) :
 @[simp]
 theorem offAxisPoint_val (v : ℝ × ℝ) (h₁ : v.1 ≠ 0) (h₂ : v.2 ≠ 0) :
     (offAxisPoint h v h₁ h₂).val = v := (rfl)
+
+variable {h} in
+/-- A segment along which the coordinate `!j` keeps its sign crosses only walls of the axis
+`j`: at a crossing the coordinate `!j` cannot vanish. -/
+theorem coordinateAxesWallAxis_eq_of_mem_crossings {j : Bool}
+    {x y : WallComplement
+      (fun P : (FinitePolyhedralComplex.coordinateAxes h).walls => (P : Set (ℝ × ℝ)))}
+    (hxy : SignType.sign (axisRow (!j) x.val) = SignType.sign (axisRow (!j) y.val))
+    {P : (FinitePolyhedralComplex.coordinateAxes h).walls} {t : ℝ}
+    (hc : (P, t) ∈ WallComplement.crossings x y) : coordinateAxesWallAxis h P = j := by
+  obtain ⟨ht, hP⟩ := (WallComplement.mem_crossings _ _ _ _).mp hc
+  by_contra hne
+  have hzero := subset_axisRow_coordinateAxesWallAxis h P hP
+  rw [Bool.eq_not.mpr hne] at hzero
+  exact axisRow_lineMap_ne_zero_of_sign_eq hxy (axisRow_val_ne_zero h x (!j)) ht hzero
+
+/-- The counterclockwise square loop `(1,1) → (-1,1) → (-1,-1) → (1,-1) → (1,1)` around the
+origin, as an admissible path through the coordinate axes. Each edge keeps one coordinate
+fixed, so it crosses one half-axis transversally. -/
+noncomputable def coordinateAxesSquareLoop :
+    AdmissiblePLPath (offAxisPoint h (1, 1) one_ne_zero one_ne_zero)
+      (offAxisPoint h (1, 1) one_ne_zero one_ne_zero) :=
+  (((Quiver.Hom.toPath
+    (⟨admissibleSegment_coordinateAxes_of_sign_eq h (j := true) (by simp)⟩ :
+      offAxisPoint h (1, 1) one_ne_zero one_ne_zero ⟶
+        offAxisPoint h (-1, 1) (by norm_num) one_ne_zero)).cons
+    (⟨admissibleSegment_coordinateAxes_of_sign_eq h (j := false) (by simp)⟩ :
+      _ ⟶ offAxisPoint h (-1, -1) (by norm_num) (by norm_num))).cons
+    (⟨admissibleSegment_coordinateAxes_of_sign_eq h (j := true) (by simp)⟩ :
+      _ ⟶ offAxisPoint h (1, -1) one_ne_zero (by norm_num))).cons
+    (⟨admissibleSegment_coordinateAxes_of_sign_eq h (j := false) (by simp)⟩ :
+      _ ⟶ offAxisPoint h (1, 1) one_ne_zero one_ne_zero)
+
+/-- The square loop is the concatenation of its four counterclockwise edges. -/
+theorem coordinateAxesSquareLoop_def :
+    coordinateAxesSquareLoop h =
+      (((Quiver.Hom.toPath
+        (⟨admissibleSegment_coordinateAxes_of_sign_eq h (j := true) (by simp)⟩ :
+          offAxisPoint h (1, 1) one_ne_zero one_ne_zero ⟶
+            offAxisPoint h (-1, 1) (by norm_num) one_ne_zero)).cons
+        (⟨admissibleSegment_coordinateAxes_of_sign_eq h (j := false) (by simp)⟩ :
+          _ ⟶ offAxisPoint h (-1, -1) (by norm_num) (by norm_num))).cons
+        (⟨admissibleSegment_coordinateAxes_of_sign_eq h (j := true) (by simp)⟩ :
+          _ ⟶ offAxisPoint h (1, -1) one_ne_zero (by norm_num))).cons
+        (⟨admissibleSegment_coordinateAxes_of_sign_eq h (j := false) (by simp)⟩ :
+          _ ⟶ offAxisPoint h (1, 1) one_ne_zero one_ne_zero) := (rfl)
+
+/-- The ambient vertices of the counterclockwise square loop around the origin. -/
+@[simp]
+theorem coordinateAxesSquareLoop_vertices :
+    (coordinateAxesSquareLoop h).vertices.map WallComplement.val =
+      [(1, 1), (-1, 1), (-1, -1), (1, -1), (1, 1)] := by
+  simp [coordinateAxesSquareLoop, Quiver.Path.vertices_cons, Quiver.Path.vertices_toPath]
 
 end Mei.FinitePolyhedralComplex
