@@ -8,14 +8,15 @@ module
 public import Mathlib.Order.Basic
 
 /-!
-# Grouping sorted lists by a key
+# Filtering sorted lists
 
 A list whose elements are sorted by a key `τ` is the concatenation of its fibres
 `l.filter (τ · = t)`, taken along any strictly increasing list `T` of keys containing
 every value of `τ` on `l`. Elements with equal keys keep their relative order.
 
 This is used to compare products of time-sorted enumerations of wall crossings with
-products of their simultaneous crossing events.
+products of their simultaneous crossing events. For a strictly decreasing list,
+filtering below a selected entry recovers the suffix after it.
 -/
 
 public section
@@ -70,5 +71,25 @@ theorem flatten_map_filter_eq_of_pairwise [PartialOrder β] [DecidableEq β] {τ
         exact (mem_cons.mp (hmem a ha)).resolve_left (by simpa using hat))]
     refine filter_append_filter_not_of_pairwise (hl.imp_of_mem fun {a b} ha _ hab hb => ?_)
     simpa using le_antisymm ((of_decide_eq_true hb).symm ▸ hab) (hmin a ha)
+
+/-- In a strictly decreasing list, the entries below a selected entry are exactly
+those following it. -/
+theorem Pairwise.filter_lt_getElem_eq_drop [Preorder α] [DecidableLT α] {l : List α}
+    (hl : l.Pairwise (· > ·)) (j : ℕ) (hj : j < l.length) :
+    l.filter (fun a => decide (a < l[j])) = l.drop (j + 1) := by
+  induction l generalizing j with
+  | nil => simp at hj
+  | cons a l ih =>
+    obtain ⟨ha, hl⟩ := pairwise_cons.mp hl
+    cases j with
+    | zero =>
+      simp only [getElem_cons_zero, lt_self_iff_false, decide_false,
+        filter_cons_of_neg, Bool.false_eq_true, not_false_eq_true, drop_succ_cons, drop_zero]
+      exact filter_eq_self.mpr fun b hb => by simpa using ha b hb
+    | succ j =>
+      have hj' : j < l.length := by simpa using hj
+      have hnot : ¬ a < l[j] := not_lt_of_gt (ha _ (getElem_mem hj'))
+      simpa only [getElem_cons_succ, hnot, decide_false, filter_cons_of_neg,
+        Bool.false_eq_true, not_false_eq_true, drop_succ_cons] using ih hl j hj'
 
 end List
