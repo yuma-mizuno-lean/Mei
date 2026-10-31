@@ -136,12 +136,11 @@ private theorem exists_straightTerminal (r : A) :
     · have hzero : (0 : Fin (m + (r.val.itinerary.length + 1))) =
           Fin.castAdd (r.val.itinerary.length + 1) ⟨0, Nat.pos_of_ne_zero hm⟩ := Fin.ext rfl
       rw [hzero, Fin.append_left]
-  · rw [hdec, DecoratedAdmissibleRay.decoration_zero, hhist]
-    simp only [← Function.comp_def, Fin.comp_append, homogeneousHistory_append,
-      LinearMap.comp_apply]
-    rw [homogeneousHistory_const_of_decompose_self (T := T ∘ word) hT]
-    · exact r.val.decoration_eq.symm
-    · simpa only [decoration_eq, Function.comp_def, r.property] using r.val.decoration_mem
+  · have hweight : z.decoration 0 = r.val.realization.decoration 0 :=
+      DecoratedAdmissibleRay.decoration_zero_extendStraight ..
+    rw [hdec]
+    simpa only [DecoratedAdmissibleRay.decoration_zero, hh, hhist,
+      ← Function.comp_def, Fin.comp_append, hq, decoration_eq] using hweight
   · rw [hpath, ← DecoratedAdmissibleRay.ray_extendStraight
       r.val.realization (fun j => T (word j))
       (by
