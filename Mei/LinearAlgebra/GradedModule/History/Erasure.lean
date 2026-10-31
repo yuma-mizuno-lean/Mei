@@ -71,6 +71,51 @@ theorem homogeneousHistory_removeNth {n : ℕ}
         simp only [Fin.removeNth_apply, Fin.succ_succAbove_succ]
       rw [hT, hr, Fin.removeNth_apply, Fin.removeNth_apply, Fin.succ_succAbove_zero]
 
+/-- Omitting a step whose whole decoration is unchanged preserves every retained
+segment decoration, with indices transported past the deleted output segment. -/
+@[simp]
+theorem homogeneousHistoryStage_removeNth {n : ℕ}
+    (T : Fin (n + 1) → Module.End R M) (r : Fin (n + 1) → ι) (a : M)
+    (i : Fin (n + 1))
+    (hfix : homogeneousHistoryStage ℳ T r i.castSucc a =
+      homogeneousHistoryStage ℳ T r i.succ a) (j : Fin (n + 1)) :
+    homogeneousHistoryStage ℳ (i.removeNth T) (i.removeNth r) j a =
+      homogeneousHistoryStage ℳ T r (i.castSucc.succAbove j) a := by
+  induction n with
+  | zero =>
+    have hi : i = 0 := Fin.eq_zero i
+    have hj : j = 0 := Fin.eq_zero j
+    subst i
+    subst j
+    simp only [Fin.castSucc_zero, Fin.zero_succAbove, homogeneousHistoryStage_succ,
+      homogeneousHistoryStage_zero, homogeneousHistory_zero, LinearMap.id_apply]
+  | succ n ih =>
+    revert hfix
+    refine Fin.cases ?_ (fun i => ?_) i
+    · intro _
+      simp only [Fin.castSucc_zero, Fin.zero_succAbove, Fin.removeNth_zero,
+        Fin.tail_def, homogeneousHistoryStage_succ]
+    · intro hfix
+      have htail : homogeneousHistoryStage ℳ (fun k => T k.succ)
+          (fun k => r k.succ) i.castSucc a =
+        homogeneousHistoryStage ℳ (fun k => T k.succ) (fun k => r k.succ) i.succ a := by
+        simpa only [← Fin.succ_castSucc, homogeneousHistoryStage_succ] using hfix
+      refine Fin.cases ?_ (fun j => ?_) j
+      · rw [← Fin.succ_castSucc, Fin.succ_succAbove_zero,
+          homogeneousHistoryStage_zero, homogeneousHistoryStage_zero]
+        exact (homogeneousHistory_removeNth ℳ T r a i.succ hfix).symm
+      · have hT : i.removeNth (fun k => T k.succ) =
+            fun k => i.succ.removeNth T k.succ := by
+          funext k
+          simp only [Fin.removeNth_apply, Fin.succ_succAbove_succ]
+        have hr : i.removeNth (fun k => r k.succ) =
+            fun k => i.succ.removeNth r k.succ := by
+          funext k
+          simp only [Fin.removeNth_apply, Fin.succ_succAbove_succ]
+        simpa only [← Fin.succ_castSucc, Fin.succ_succAbove_succ,
+          homogeneousHistoryStage_succ, hT, hr] using
+          ih (fun k => T k.succ) (fun k => r k.succ) i htail j
+
 section DecomposeSelf
 
 variable {ℳ} {n : ℕ} {T : Fin n → Module.End R M}

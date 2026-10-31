@@ -115,9 +115,18 @@ theorem parameter_removeEncounter (j : Fin (n + 1)) :
       r.2.parameter (i.succ.succAbove j) := by
   simp only [removeEncounter, Convex.AdmissibleRayRealization.parameter_removeEncounter]
 
+/-- Every retained segment keeps its whole decoration after encounter deletion. -/
+@[simp]
+theorem decoration_removeEncounter (j : Fin (n + 1)) :
+    (r.removeEncounter i hfix W' e hW hoff).decoration j =
+      r.decoration (i.castSucc.succAbove j) := by
+  simp only [decoration_def, history_removeEncounter]
+  exact homogeneousHistoryStage_removeNth ℳ T r.1.val a i
+    (by simpa only [decoration_def] using hfix) j
+
 /-- The final whole coefficient is preserved by geometric encounter deletion. -/
 @[simp↓]
-theorem decoration_removeEncounter :
+theorem decoration_zero_removeEncounter :
     (r.removeEncounter i hfix W' e hW hoff).decoration 0 = r.decoration 0 := by
   rw [decoration_zero, decoration_zero, history_removeEncounter]
   exact (homogeneousHistory_removeNth ℳ T r.1.val a i
