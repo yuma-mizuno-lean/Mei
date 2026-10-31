@@ -7,7 +7,8 @@ module
 
 public import Mei.Geometry.ScatteringDiagram.BrokenLine.Itineraries.Attachment
 public import Mei.Geometry.ScatteringDiagram.BrokenLine.Itineraries.Cutoff
-public import Mei.Geometry.ScatteringDiagram.BrokenLine.Extend.Incoming
+public import Mei.Geometry.ScatteringDiagram.BrokenLine.Cut.Incoming
+public import Mei.Geometry.Affine.Segment
 import Mei.Data.List.OfFn
 
 /-!
@@ -131,35 +132,19 @@ theorem eventually_sum_finalEncounter_eq_component [Finite J] [Finite K]
     (v := v) (f := f) (c := c) (ε := ε) (P := P) (W := W) (S := S) (C := C)
     (k := k) (Q := Q) w p q hsign
   rw [htime] at hcut
-  have hnearW := eventually_forall_pos_le_add_smul_notMem hclosedW x (v p)
-    (f w).toLinearMap (hnormal ▸ htrans)
-    (fun j hj y hy => (hplane j hj y hy).trans hheight.symm)
-  have hnearS := eventually_forall_pos_le_add_smul_notMem hclosedS x (v p)
-    (f w).toLinearMap (hnormal ▸ htrans) (fun j hj => (hregular j hj).elim)
-  filter_upwards [hcut, hnearW, hnearS, self_mem_nhdsWithin] with η hcut hnearW hnearS hη
+  have hnear := eventually_incomingSegment_notMem x (v p) (f w).toLinearMap (c w)
+    (hnormal ▸ htrans) hheight hclosedW hplane hclosedS hregular
+  filter_upwards [hcut, hnear, self_mem_nhdsWithin] with η hcut hnear hη
   have hη : 0 < η := hη
   let Y := x + η • v p
   have hend : Y - η • v p - t • v q = Q := by simp [Y, x]
-  have hline (u : ℝ) : Y - u • v p = x + (η - u) • v p := by
-    dsimp only [Y]
-    module
-  have hW₁ : ∀ j u, 0 < u → u < η → Y - u • v p ∉ W j := by
-    intro j u hu huη
-    rw [hline]
-    exact hnearW j (η - u) (sub_pos.mpr huη) (by linarith)
-  have hS₁ : ∀ j u, 0 < u → u ≤ η → Y - u • v p ∉ S j := by
-    intro j u hu huη
-    rw [hline]
-    rcases huη.eq_or_lt with rfl | huη
-    · simpa using hregular j
-    · exact hnearS j (η - u) (sub_pos.mpr huη) (by linarith)
   -- The exact attachment image already accounts for every surviving incoming
   -- component. Uniform cuts now remove its admission test across all words.
   have hh := sum_ite_decoration_finalEncounter_eq_component
     (d := d) (ℳ := ℳ) (T := T) (a := a) (v := v) (f := f) (c := c) (ε := ε)
     (P := P) (W := W) (S := S) (C := C) w p q Y η t hη.le ht hq hqp
     hnormal htrans hsign (by simpa [Y, x] using hheight) (by simpa [Y] using hinc)
-    hW₁ (by simpa only [hend] using hW) hS₁ (by simpa only [hend] using hS)
+    hnear.1 (by simpa only [hend] using hW) hnear.2 (by simpa only [hend] using hS)
   simp only [mem_range_finalEncounterEmbedding] at hh
   -- Give the selection an independent endpoint argument. The matcher in the
   -- image theorem otherwise ties its ambient ray type to `Y - η • v p - t • v q`,

@@ -25,10 +25,10 @@ arbitrary semiring. No diagonal-preservation assumption is needed.
 
 We combine `sum_ite_decoration_finalEncounter_eq_component_sum` with
 `eventually_forall_mem_admissibleBackwardDomain`. Closed nonincident obstacles
-and incident obstacles are excluded together by
-`eventually_forall_pos_le_add_smul_notMem`. This is the final-encounter step of the
-backward-ray recursion in Mandel, *Scattering diagrams, theta functions, and
-refined tropical curve counts*, §3.3.3 (arXiv:1503.06183v5).
+and incident walls are excluded using `eventually_incomingSegment_notMem`. This
+is the final-encounter step of the backward-ray recursion in Mandel, *Scattering
+diagrams, theta functions, and refined tropical curve counts*, §3.3.3
+(arXiv:1503.06183v5).
 -/
 
 public noncomputable section
@@ -45,62 +45,6 @@ variable {R M Γ V J K : Type*} [Semiring R] [AddCommMonoid M] [Module R M]
   {v : Γ → V} {f : Fin n → V →L[ℝ] ℝ} {c : Fin n → ℝ}
   {ε : Fin n → SignType} {P : Fin n → Set V}
   {W : J → Set V} {S : K → Set V} {C : Set V}
-
-/-- A common sufficiently short incoming cut is admitted by the entire older
-history of every ray with prescribed final adjacent degrees. The newly prepended
-encounter is removed; arbitrary source and obstacle conditions persist. -/
-theorem eventually_forall_mem_admissibleBackwardDomain_cons (U : Module.End R M) (p q : Γ)
-    (Q : V) (m : V →L[ℝ] ℝ) (b : ℝ) (H : Set V) :
-    let x := Q + ((b - m Q) / m (v q)) • v q
-    ∀ᶠ η : ℝ in 𝓝[>] 0,
-      ∀ z : DecoratedAdmissibleRay ℳ (Fin.cons U T) p₀ a v
-        (Fin.cons m f) (Fin.cons b c) (Fin.cons (SignType.sign (m (v q))) ε)
-        (Fin.cons H P) W S C Q,
-      z.1.val 0 = q →
-      Fin.snoc (α := fun _ => Γ) (fun j : Fin n => z.1.val j.succ) p₀ 0 = p →
-      x + η • v p ∈ admissibleBackwardDomain f c
-        (fun j => v (Fin.snoc (α := fun _ => Γ)
-          (fun i : Fin n => z.1.val i.succ) p₀ j)) P W S C := by
-  -- Transport the block-cutting theorem from `Fin (1 + n)` to the `Fin.cons`
-  -- convention `Fin (n + 1)` before specializing the signed encounter data.
-  have cut (N : ℕ) (hN : 1 + n = N)
-      (T' : Fin N → Module.End R M) (f' : Fin N → V →L[ℝ] ℝ)
-      (c' : Fin N → ℝ) (ε' : Fin N → SignType) (P' : Fin N → Set V) :
-      let j := Fin.cast hN (0 : Fin (1 + n))
-      let x := Q + ((c' j - f' j Q) / f' j (v q)) • v q
-      ∀ᶠ η : ℝ in 𝓝[>] 0,
-        ∀ z : DecoratedAdmissibleRay ℳ T' p₀ a v f' c' ε' P' W S C Q,
-        (∀ l ≤ j.castSucc, v (Fin.snoc (α := fun _ => Γ) z.1.val p₀ l) = v q) →
-        v (Fin.snoc (α := fun _ => Γ) z.1.val p₀ j.succ) = v p →
-        x + η • v p ∈ admissibleBackwardDomain
-          (fun i => f' (Fin.cast hN (Fin.natAdd 1 i)))
-          (fun i => c' (Fin.cast hN (Fin.natAdd 1 i)))
-          (fun j => v (Fin.snoc (α := fun _ => Γ)
-            (fun i : Fin n => z.1.val (Fin.cast hN (Fin.natAdd 1 i))) p₀ j))
-          (fun i => P' (Fin.cast hN (Fin.natAdd 1 i))) W S C := by
-    subst N
-    exact eventually_forall_mem_admissibleBackwardDomain
-      (m := 1) (n := n) 0 rfl p q
-  have hh := cut (n + 1) (Nat.add_comm 1 n) (Fin.cons U T) (Fin.cons m f) (Fin.cons b c)
-    (Fin.cons (SignType.sign (m (v q))) ε) (Fin.cons H P)
-  have hind (j : Fin n) :
-      Fin.cast (Nat.add_comm 1 n) (Fin.natAdd 1 j) = j.succ := by
-    apply Fin.ext
-    simp only [Fin.val_cast, Fin.val_natAdd, Fin.val_succ]
-    omega
-  have hzero : Fin.cast (Nat.add_comm 1 n) (0 : Fin (1 + n)) = 0 := by
-    apply Fin.ext
-    rfl
-  simp only [hzero, hind, Fin.cons_zero, Fin.cons_succ] at hh
-  filter_upwards [hh] with η hη z hq hp
-  have hsnoc : Fin.snoc (α := fun _ => Γ) z.1.val p₀ (0 : Fin (n + 1)).succ =
-      Fin.snoc (α := fun _ => Γ) (fun i : Fin n => z.1.val i.succ) p₀ 0 := by
-    rw [← Fin.cons_self_tail z.1.val, ← Fin.cons_snoc_eq_snoc_cons]
-    rfl
-  exact hη z (fun l hl => by
-    have hl : l = 0 := by simpa using hl
-    subst l
-    simpa using congrArg v hq) (by rw [hsnoc]; exact congrArg v hp)
 
 open Classical in
 /-- At every sufficiently short incoming germ, the complete outgoing fiber
@@ -145,34 +89,19 @@ theorem eventually_sum_finalEncounter_eq_component_sum [Finite J] [Finite K]
   rw [htime] at hcut
   -- Closed nonincident obstacles are avoided on a short incoming segment.
   -- Transversality excludes the incident hyperplane away from the encounter.
-  have hnearW := eventually_forall_pos_le_add_smul_notMem hclosedW x (v p) m.toLinearMap
-    (hnormal ▸ htrans) (fun j hj y hy => (hplane j hj y hy).trans hheight.symm)
-  have hnearS := eventually_forall_pos_le_add_smul_notMem hclosedS x (v p) m.toLinearMap
-    (hnormal ▸ htrans) (fun j hj => (hregular j hj).elim)
-  filter_upwards [hcut, hnearW, hnearS, self_mem_nhdsWithin] with η hcut hnearW hnearS hη
+  have hnear := eventually_incomingSegment_notMem x (v p) m.toLinearMap b
+    (hnormal ▸ htrans) hheight hclosedW hplane hclosedS hregular
+  filter_upwards [hcut, hnear, self_mem_nhdsWithin] with η hcut hnear hη
   have hη : 0 < η := hη
   let Y := x + η • v p
   have hend : Y - η • v p - t • v q = Q := by simp [Y, x]
-  have hline (u : ℝ) : Y - u • v p = x + (η - u) • v p := by
-    dsimp only [Y]
-    module
-  have hW₁ : ∀ j u, 0 < u → u < η → Y - u • v p ∉ W j := by
-    intro j u hu huη
-    rw [hline]
-    exact hnearW j (η - u) (sub_pos.mpr huη) (by linarith)
-  have hS₁ : ∀ j u, 0 < u → u ≤ η → Y - u • v p ∉ S j := by
-    intro j u hu huη
-    rw [hline]
-    rcases huη.eq_or_lt with rfl | huη
-    · simpa using hregular j
-    · exact hnearS j (η - u) (sub_pos.mpr huη) (by linarith)
   -- Attachment accounts for every surviving incoming component. The common cut
   -- now removes the admission test from its exact weighted image formula.
   have hh := sum_ite_decoration_finalEncounter_eq_component_sum
     (T := T) (a := a) (v := v) (f := f) (c := c) (ε := ε) (P := P)
     (W := W) (S := S) (C := C) U p q Y η t hη.le ht m b H hnormal htrans
-    (by simpa only [Y, add_sub_cancel_right] using hheight) (by simpa [Y] using hinc) hW₁
-    (by simpa only [hend] using hW) hS₁ (by simpa only [hend] using hS)
+    (by simpa only [Y, add_sub_cancel_right] using hheight) (by simpa [Y] using hinc) hnear.1
+    (by simpa only [hend] using hW) hnear.2 (by simpa only [hend] using hS)
   rw [hend] at hh
   rw [← hh]
   apply Finset.sum_congr rfl

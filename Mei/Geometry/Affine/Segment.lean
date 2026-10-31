@@ -22,8 +22,8 @@ For a finite family of closed supports, endpoints sufficiently near one point
 also have an avoiding segment whenever their normal evaluations have matching
 nonzero signs at every incident support. Nonincident supports are excluded by
 `IsClosed.isOpen_setOf_lineMap_notMem`, and incident ones by convexity of the
-open scalar half-lines. A short positive ray also avoids the whole family when
-all incident supports lie in one hyperplane transverse to its direction.
+open scalar half-lines. A transverse incoming segment may instead end on an
+incident wall while avoiding every singular set through its regular endpoint.
 -/
 
 public section
@@ -83,30 +83,46 @@ theorem eventually_add_smul_pair (θ v w : V) {p : V × V → Prop}
     simpa using hc.tendsto 0
   exact (ht.eventually hp).filter_mono nhdsWithin_le_nhds
 
-/-- A sufficiently short positive ray misses a finite closed family if every
-incident member lies in one hyperplane transverse to the ray. The bound holds
-uniformly on the whole punctured segment, including its far endpoint. -/
-theorem eventually_forall_pos_le_add_smul_notMem
-    (hclosed : ∀ j, IsClosed (W j)) (x v : V) (m : V →ₗ[ℝ] ℝ)
-    (htrans : m v ≠ 0)
-    (hplane : ∀ j, x ∈ W j → ∀ y ∈ W j, m y = m x) :
-    ∀ᶠ η : ℝ in 𝓝[>] 0, ∀ j r, 0 < r → r ≤ η → x + r • v ∉ W j := by
-  have hpoint : ∀ᶠ r : ℝ in 𝓝[>] 0, ∀ j, x + r • v ∉ W j := by
-    apply eventually_all.mpr
-    intro j
+/-- For sufficiently small incoming displacements, the segment with parameter
+`0 < u < η` avoids closed walls and singular sets. Singular sets are also avoided
+at `u = η` when the transverse endpoint `x` is regular. Incident walls lie in
+the crossing hyperplane. -/
+theorem eventually_incomingSegment_notMem {κ : Type*} [Finite κ]
+    {S : κ → Set V} (x v : V) (m : V →ₗ[ℝ] ℝ) (b : ℝ)
+    (htrans : m v ≠ 0) (hheight : m x = b)
+    (hclosedW : ∀ j, IsClosed (W j))
+    (hplane : ∀ j, x ∈ W j → ∀ y ∈ W j, m y = b)
+    (hclosedS : ∀ j, IsClosed (S j)) (hregular : ∀ j, x ∉ S j) :
+    ∀ᶠ η : ℝ in 𝓝[>] 0,
+      (∀ j u, 0 < u → u < η → x + η • v - u • v ∉ W j) ∧
+      (∀ j u, 0 < u → u ≤ η → x + η • v - u • v ∉ S j) := by
+  have hnear := eventually_add_smul_pair x v 0
+    ((eventually_forall_lineMap_notMem_of_notMem hclosedW x).and
+      (eventually_forall_lineMap_notMem_of_notMem hclosedS x))
+  filter_upwards [hnear, self_mem_nhdsWithin] with η hnear hη
+  have hη : 0 < η := hη
+  have hline (u : ℝ) : AffineMap.lineMap (x + η • v) (x + η • (0 : V)) (u / η) =
+      x + η • v - u • v := by
+    simp only [AffineMap.lineMap_apply_module', smul_zero, add_zero, smul_sub,
+      smul_add, smul_smul, div_mul_cancel₀ u hη.ne']
+    module
+  constructor
+  · intro j u hu huη hy
     by_cases hj : x ∈ W j
-    · filter_upwards [self_mem_nhdsWithin] with r hr hy
-      have he := hplane j hj _ hy
-      simp only [map_add, map_smul, smul_eq_mul, add_eq_left] at he
-      exact (mul_ne_zero (Set.mem_Ioi.mp hr).ne' htrans) he
-    · have hc : Continuous (fun r : ℝ => x + r • v) := by fun_prop
-      have ht : Tendsto (fun r : ℝ => x + r • v) (𝓝 0) (𝓝 x) := by
-        simpa using hc.tendsto 0
-      exact (ht.eventually ((hclosed j).isOpen_compl.mem_nhds hj)).filter_mono
-        nhdsWithin_le_nhds
-  obtain ⟨δ, hδ, hbound⟩ := mem_nhdsGT_iff_exists_Ioc_subset.mp hpoint
-  filter_upwards [(eventually_lt_nhds hδ).filter_mono nhdsWithin_le_nhds] with η hη j r hr hrη
-  exact hbound ⟨hr, hrη.trans hη.le⟩ j
+    · have he := hplane j hj _ hy
+      have he' : m (x + η • v - u • v) = b + (η - u) * m v := by
+        rw [map_sub, map_add, map_smul, map_smul, smul_eq_mul, smul_eq_mul, hheight]
+        ring
+      rw [he'] at he
+      exact (mul_ne_zero (sub_pos.mpr huη).ne' htrans) (by linarith)
+    · apply hnear.1 j hj (u / η) ⟨(div_pos hu hη).le, (div_lt_one hη).mpr huη |>.le⟩
+      rw [hline]
+      exact hy
+  · intro j u hu huη
+    have hh := hnear.2 j (hregular j) (u / η)
+      ⟨(div_pos hu hη).le, (div_le_one hη).mpr huη⟩
+    rw [hline] at hh
+    exact hh
 
 /-- Near a point, matching strict normal sides at its incident supports suffice
 for the entire connecting segment to miss all supports. -/

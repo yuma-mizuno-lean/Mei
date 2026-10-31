@@ -38,6 +38,8 @@ open scoped Topology
 
 namespace Mei.DecoratedAdmissibleRay
 
+section
+
 variable {R M Γ V J K : Type*} [Semiring R] [AddCommMonoid M] [Module R M]
   [DecidableEq Γ] {ℳ : Γ → Submodule R M} [DirectSum.Decomposition ℳ]
   [NormedAddCommGroup V] [NormedSpace ℝ V]
@@ -138,5 +140,71 @@ theorem eventually_forall_mem_admissibleBackwardDomain (j : Fin (m + n)) (hj : j
   have hd := s.2.mem_admissibleBackwardDomain
   rw [hs] at hd
   simpa only [← hi, hx, hp] using hd
+
+end
+
+variable {R M Γ V J K : Type*} [Semiring R] [AddCommMonoid M] [Module R M]
+  [DecidableEq Γ] {ℳ : Γ → Submodule R M} [DirectSum.Decomposition ℳ]
+  [NormedAddCommGroup V] [NormedSpace ℝ V]
+  {n : ℕ} {T : Fin n → Module.End R M} {p₀ : Γ} {a : ℳ p₀}
+  {v : Γ → V} {f : Fin n → V →L[ℝ] ℝ} {c : Fin n → ℝ}
+  {ε : Fin n → SignType} {P : Fin n → Set V}
+  {W : J → Set V} {S : K → Set V} {C : Set V}
+
+/-- A common sufficiently short incoming cut is admitted by the entire older
+history of every ray with prescribed final adjacent degrees. The newly prepended
+encounter is removed; arbitrary source and obstacle conditions persist. -/
+theorem eventually_forall_mem_admissibleBackwardDomain_cons (U : Module.End R M) (p q : Γ)
+    (Q : V) (m : V →L[ℝ] ℝ) (b : ℝ) (H : Set V) :
+    let x := Q + ((b - m Q) / m (v q)) • v q
+    ∀ᶠ η : ℝ in 𝓝[>] 0,
+      ∀ z : DecoratedAdmissibleRay ℳ (Fin.cons U T) p₀ a v
+        (Fin.cons m f) (Fin.cons b c) (Fin.cons (SignType.sign (m (v q))) ε)
+        (Fin.cons H P) W S C Q,
+      z.1.val 0 = q →
+      Fin.snoc (α := fun _ => Γ) (fun j : Fin n => z.1.val j.succ) p₀ 0 = p →
+      x + η • v p ∈ admissibleBackwardDomain f c
+        (fun j => v (Fin.snoc (α := fun _ => Γ)
+          (fun i : Fin n => z.1.val i.succ) p₀ j)) P W S C := by
+  -- Transport the block-cutting theorem from `Fin (1 + n)` to the `Fin.cons`
+  -- convention `Fin (n + 1)` before specializing the signed encounter data.
+  have cut (N : ℕ) (hN : 1 + n = N)
+      (T' : Fin N → Module.End R M) (f' : Fin N → V →L[ℝ] ℝ)
+      (c' : Fin N → ℝ) (ε' : Fin N → SignType) (P' : Fin N → Set V) :
+      let j := Fin.cast hN (0 : Fin (1 + n))
+      let x := Q + ((c' j - f' j Q) / f' j (v q)) • v q
+      ∀ᶠ η : ℝ in 𝓝[>] 0,
+        ∀ z : DecoratedAdmissibleRay ℳ T' p₀ a v f' c' ε' P' W S C Q,
+        (∀ l ≤ j.castSucc, v (Fin.snoc (α := fun _ => Γ) z.1.val p₀ l) = v q) →
+        v (Fin.snoc (α := fun _ => Γ) z.1.val p₀ j.succ) = v p →
+        x + η • v p ∈ admissibleBackwardDomain
+          (fun i => f' (Fin.cast hN (Fin.natAdd 1 i)))
+          (fun i => c' (Fin.cast hN (Fin.natAdd 1 i)))
+          (fun j => v (Fin.snoc (α := fun _ => Γ)
+            (fun i : Fin n => z.1.val (Fin.cast hN (Fin.natAdd 1 i))) p₀ j))
+          (fun i => P' (Fin.cast hN (Fin.natAdd 1 i))) W S C := by
+    subst N
+    exact eventually_forall_mem_admissibleBackwardDomain
+      (m := 1) (n := n) 0 rfl p q
+  have hh := cut (n + 1) (Nat.add_comm 1 n) (Fin.cons U T) (Fin.cons m f) (Fin.cons b c)
+    (Fin.cons (SignType.sign (m (v q))) ε) (Fin.cons H P)
+  have hind (j : Fin n) :
+      Fin.cast (Nat.add_comm 1 n) (Fin.natAdd 1 j) = j.succ := by
+    apply Fin.ext
+    simp only [Fin.val_cast, Fin.val_natAdd, Fin.val_succ]
+    omega
+  have hzero : Fin.cast (Nat.add_comm 1 n) (0 : Fin (1 + n)) = 0 := by
+    apply Fin.ext
+    rfl
+  simp only [hzero, hind, Fin.cons_zero, Fin.cons_succ] at hh
+  filter_upwards [hh] with η hη z hq hp
+  have hsnoc : Fin.snoc (α := fun _ => Γ) z.1.val p₀ (0 : Fin (n + 1)).succ =
+      Fin.snoc (α := fun _ => Γ) (fun i : Fin n => z.1.val i.succ) p₀ 0 := by
+    rw [← Fin.cons_self_tail z.1.val, ← Fin.cons_snoc_eq_snoc_cons]
+    rfl
+  exact hη z (fun l hl => by
+    have hl : l = 0 := by simpa using hl
+    subst l
+    simpa using congrArg v hq) (by rw [hsnoc]; exact congrArg v hp)
 
 end Mei.DecoratedAdmissibleRay
