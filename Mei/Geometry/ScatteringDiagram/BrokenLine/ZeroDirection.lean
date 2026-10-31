@@ -42,24 +42,6 @@ variable {R M Γ V J K : Type*} [Semiring R] [AddCommMonoid M] [Module R M]
 
 namespace DecoratedAdmissibleRay
 
-/-- Every segment of a ray with an encounter has nonzero spatial velocity,
-including the incoming tail. This uses the actual transverse encounters. -/
-theorem velocity_ne_zero_of_pos
-    (r : DecoratedAdmissibleRay ℳ T p₀ a v f c ε P W S C Q)
-    (hn : 0 < n) (i : Fin (n + 1)) :
-    v (Fin.snoc (α := fun _ => Γ) r.1.val p₀ i) ≠ 0 := by
-  refine Fin.lastCases ?_ (fun j => ?_) i
-  · intro hv
-    have he := r.normal_velocity_eq ⟨n - 1, by omega⟩
-    have hj : (⟨n - 1, by omega⟩ : Fin n).succ = Fin.last n := by
-      ext
-      simp
-      omega
-    rw [hj, hv, map_zero] at he
-    exact r.2.transverse ⟨n - 1, by omega⟩ (by simpa only [Fin.snoc_castSucc] using he)
-  · intro hv
-    exact r.2.transverse j (by rw [hv, map_zero])
-
 /-- A final decoration has zero component in every stationary degree other
 than the incoming degree. Empty itineraries and stationary inputs are allowed. -/
 theorem decompose_decoration_eq_zero_of_velocity_eq_zero
