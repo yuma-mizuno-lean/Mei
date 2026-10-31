@@ -21,8 +21,8 @@ namespace Filter
 
 /-- Subtracting the parameter from a constant exchanges eventual predicates
 at negative and positive infinity. -/
-theorem eventually_const_sub_atBot {G : Type*} [AddCommGroup G] [LinearOrder G]
-    [IsOrderedAddMonoid G] (b : G) {p : G → Prop} :
+theorem eventually_const_sub_atBot {G : Type*} [AddCommGroup G] [PartialOrder G]
+    [IsOrderedAddMonoid G] [IsDirectedOrder G] (b : G) {p : G → Prop} :
     (∀ᶠ t in atBot, p (b - t)) ↔ ∀ᶠ s in atTop, p s := by
   have hm : map (fun t : G => b - t) atBot = atTop := calc
     map (fun t : G => b - t) atBot =
