@@ -18,10 +18,17 @@ base point, the resulting incoming germs eventually avoid the arrangement,
 simultaneously for all the velocities. The base point itself may be exceptional.
 Applying the result to a union of arrangements allows further finite refinements.
 
+For affine families whose images together with their germ directions cover the
+target, one can instead refine the source arrangement and retain the exact
+straight germs. Proper affine preimages exclude parallel exceptions; transverse
+exceptions are left immediately. This also applies when an affine map collapses
+the source onto a hyperplane contained in the target arrangement.
+
 The construction uses `AffineSubspace.exists_direction_le_of_forall_mem` to avoid
 finitely many translates of the exceptional directions, without requiring finite
 dimensionality. Empty exceptions impose no constraint, and zero normal evaluations
-are deliberately left unconstrained.
+are deliberately left unconstrained. The source-refinement argument uses Mathlib's
+`AffineSubspace.comap` and `vadd_mem_iff_mem_of_mem_direction`.
 -/
 
 public section
@@ -56,6 +63,51 @@ theorem eventually_smul_vadd_notMem (S : AffineSubspace ℝ P)
 end AffineSubspace
 
 namespace Mei.ExceptionalArrangement
+
+section AffineFamilies
+
+variable {U V ι : Type*} [AddCommGroup U] [Module ℝ U]
+  [AddCommGroup V] [Module ℝ V] [Finite ι]
+
+/-- If each affine family together with its germ direction covers the target,
+one exceptional arrangement in the source makes all its straight germs generic.
+The affine maps need not be surjective, and no perturbation of the directions
+or finite-dimensionality assumption is required. -/
+theorem exists_forall_eventually_isGeneric_smul_vadd
+    (E : ExceptionalArrangement V) (g : ι → U →ᵃ[ℝ] V) (v : ι → V)
+    (hg : ∀ j, Function.Surjective (fun z : U × ℝ => z.2 • v j +ᵥ g j z.1)) :
+    ∃ F : ExceptionalArrangement U, ∀ x, F.IsGeneric x →
+      ∀ᶠ t : ℝ in 𝓝[>] 0, ∀ j, E.IsGeneric (t • v j +ᵥ g j x) := by
+  classical
+  let := Fintype.ofFinite ι
+  let F : ExceptionalArrangement U :=
+    ⟨((Finset.univ.product E.exceptions).image
+      (fun z : ι × AffineSubspace ℝ V => z.2.comap (g z.1))).erase ⊤,
+      fun _ h => (Finset.mem_erase.mp h).1⟩
+  refine ⟨F, fun x hx => eventually_all.mpr fun j => ?_⟩
+  simp_rw [isGeneric_iff]
+  apply E.exceptions.eventually_all.mpr
+  intro S hS
+  by_cases hv : v j ∈ S.direction
+  · have hproper : S.comap (g j) ≠ ⊤ := by
+      intro htop
+      apply E.proper S hS
+      apply top_unique
+      intro y _
+      obtain ⟨⟨z, t⟩, rfl⟩ := hg j y
+      apply S.vadd_mem_of_mem_direction (S.direction.smul_mem t hv)
+      exact AffineSubspace.mem_comap.mp (htop ▸ AffineSubspace.mem_top ℝ U z)
+    have hbase : g j x ∉ S := by
+      intro hmem
+      apply (isGeneric_iff.mp hx) (S.comap (g j))
+      · exact Finset.mem_erase.mpr ⟨hproper, Finset.mem_image.mpr
+          ⟨(j, S), Finset.mem_product.mpr ⟨Finset.mem_univ _, hS⟩, rfl⟩⟩
+      · exact AffineSubspace.mem_comap.mpr hmem
+    exact Eventually.of_forall fun t ht => hbase
+      ((S.vadd_mem_iff_mem_of_mem_direction (S.direction.smul_mem t hv)).mp ht)
+  · exact S.eventually_smul_vadd_notMem hv (g j x)
+
+end AffineFamilies
 
 variable {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
 
