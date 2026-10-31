@@ -13,7 +13,8 @@ public import Mei.Geometry.Convex.Polyhedron.SingularSupport
 # Canonical signed events of admissible rays
 
 Replace a ray's chosen representative wall at each encounter by the complete
-set of incident indexed walls and its chosen normal-velocity sign. The canonical
+set of incident indexed walls and the sign of its chosen normal on the prescribed
+outgoing direction, which is the negative of forward velocity. The canonical
 finite event alphabet distinguishes simultaneous encounters without losing
 coincident wall indices. The path, every encounter parameter, local directions,
 incoming source and singular avoidance are retained.
@@ -41,7 +42,8 @@ variable {V ι K : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V] [Finite ι]
 
 open Classical in
 /-- At each recorded encounter, retain every incident indexed wall and the sign
-of its chosen normal on the outgoing segment. -/
+of its chosen normal on the prescribed outgoing direction `v j.castSucc`,
+which is the negative of forward velocity on the outgoing segment. -/
 def wallEvents (j : Fin n) : WallEvent ι := by
   let s := (Set.toFinite {b | r.ray (r.parameter j.succ) ∈ W b}).toFinset
   have hs : s.Nonempty := ⟨a j, by simpa [s] using r.incidence j⟩
@@ -54,7 +56,8 @@ theorem mem_wallEvents (j : Fin n) (b : ι) :
   classical
   simp [wallEvents]
 
-/-- The sign carried by a canonical event is the actual normal-velocity sign. -/
+/-- The sign carried by a canonical event evaluates its chosen normal on the
+prescribed outgoing direction, which is the negative of forward velocity. -/
 @[simp↓]
 theorem normal_sign_wallEvents (j : Fin n) :
     SignType.sign ((r.wallEvents j).normal f (v j.castSucc)) = (r.wallEvents j).2 := by
