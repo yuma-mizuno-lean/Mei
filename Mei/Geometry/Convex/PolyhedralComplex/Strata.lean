@@ -265,6 +265,17 @@ theorem exists_isolating_ball (C : FinitePolyhedralComplex h) {P : Set V} {k : �
   · rintro Q hQ ⟨y, hy, hyQ⟩
     exact (hball hy).2.2 Q hQ hyQ
 
+open Set in
+/-- Near a relative interior point of a wall, a ball meets no other wall. -/
+theorem exists_ball_eq_wall_of_mem_intrinsicInterior (C : FinitePolyhedralComplex h)
+    (P : C.walls) {q : V}
+    (hq : q ∈ intrinsicInterior ℝ (P : Set V)) :
+    ∃ r > 0, ∀ Q : C.walls, ∀ z ∈ Metric.ball q r, z ∈ (Q : Set V) → Q = P := by
+  obtain ⟨r, hr, -, -, hdisj, -⟩ := C.exists_isolating_ball P.property hq
+  refine ⟨r, hr, fun Q z hz hzQ => ?_⟩
+  by_contra hne
+  exact disjoint_left.mp (hdisj Q Q.property fun he => hne (Subtype.ext he)) hz hzQ
+
 /-- The relative boundary of a cell of codimension at least `k` lies in the
 subcomplex of codimension at least `k + 1`. -/
 theorem intrinsicFrontier_subset_support_codimensionAtLeast (C : FinitePolyhedralComplex h)
