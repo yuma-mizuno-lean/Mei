@@ -120,15 +120,17 @@ private theorem exists_cutoff_truncate_lt
         b.realization.2.ray = r.2.ray.truncate t ∧
         b.decoration = r.decoration (Fin.natAdd m (0 : Fin (n + 1))) ∧
         b.finalDegree = Fin.snoc (α := fun _ => Γ) r.1.val 0
-          (Fin.natAdd m (0 : Fin (n + 1))) := by
+          (Fin.natAdd m (0 : Fin (n + 1))) ∧
+        b.degreeItinerary = List.ofFn (fun j : Fin n =>
+          (r.1.val (Fin.natAdd m j), word (Fin.natAdd m j))) := by
   let b := Fin.snoc (α := fun _ => Γ) r.1.val 0
   let i := Fin.natAdd m (0 : Fin (n + 1))
   have hnonneg : 0 ≤ d.degree (b i) := by
     refine Fin.lastCases ?_ (fun j => ?_) i
     · simp [b]
     · simpa only [b, Fin.snoc_castSucc] using d.degree_nonneg (hmem j)
-  obtain ⟨s, hw, hr, ha, hq, _, _⟩ := r.exists_cutoff_truncate t hupper hlower hmem hmono
-  refine ⟨(d.degree (b i)).toNat, ?_, s, hw, hr, ha, hq⟩
+  obtain ⟨s, hw, hr, ha, hq, hd, _⟩ := r.exists_cutoff_truncate t hupper hlower hmem hmono
+  refine ⟨(d.degree (b i)).toNat, ?_, s, hw, hr, ha, hq, hd⟩
   dsimp only [b, i] at hnonneg ⊢
   omega
 
@@ -152,7 +154,8 @@ theorem exists_cutoff_truncate_lt
         b.itinerary = r.itinerary.drop (j.val + 1) ∧
         b.realization.2.ray = r.realization.2.ray.truncate t ∧
         b.decoration = r.realization.decoration j.succ ∧
-        b.finalDegree = Fin.snoc (α := fun _ => Γ) r.realization.1.val 0 j.succ := by
+        b.finalDegree = Fin.snoc (α := fun _ => Γ) r.realization.1.val 0 j.succ ∧
+        b.degreeItinerary = r.degreeItinerary.drop (j.val + 1) := by
   -- Abstract the length-indexed data before splitting at the selected encounter.
   have cut {N : ℕ} (word : Fin N → J)
       (s : DecoratedAdmissibleRay ℳ (fun i => T (word i)) 0 a v
@@ -170,17 +173,21 @@ theorem exists_cutoff_truncate_lt
           b.itinerary = (List.ofFn word).drop (j.val + 1) ∧
           b.realization.2.ray = s.2.ray.truncate t ∧
           b.decoration = s.decoration j.succ ∧
-          b.finalDegree = Fin.snoc (α := fun _ => Γ) s.1.val 0 j.succ := by
+          b.finalDegree = Fin.snoc (α := fun _ => Γ) s.1.val 0 j.succ ∧
+          b.degreeItinerary =
+            (List.ofFn (fun i => (s.1.val i, word i))).drop (j.val + 1) := by
     obtain ⟨j, hj⟩ := j
     obtain ⟨n, rfl⟩ := Nat.exists_eq_add_of_le (Nat.succ_le_of_lt hj)
-    obtain ⟨l, hlt, b, hw, hr, ha, hq⟩ :=
+    obtain ⟨l, hlt, b, hw, hr, ha, hq, hd⟩ :=
       s.exists_cutoff_truncate_lt (m := j + 1) (n := n) t hu
         (fun i => hl (Fin.natAdd (j + 1) i) (by simp only [Fin.lt_def, Fin.val_natAdd]; omega))
         hmem hmono hlt
-    refine ⟨l, hlt, b, hw.trans ?_, hr, ha, hq⟩
-    rw [List.ofFn_add]
-    simp
-  simpa only [List.ofFn_get, ← r.finalDegree_def] using
+    refine ⟨l, hlt, b, hw.trans ?_, hr, ha, hq, hd.trans ?_⟩
+    · rw [List.ofFn_add]
+      simp
+    · rw [List.ofFn_add]
+      simp
+  simpa only [List.ofFn_get, ← r.finalDegree_def, ← r.degreeItinerary_eq] using
     cut r.itinerary.get r.realization
       (fun i => (d.mem_cutoff.mp (r.degree_mem i)).1)
       r.degree_sub_mem j hupper hlower

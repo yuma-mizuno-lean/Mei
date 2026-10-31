@@ -87,7 +87,7 @@ theorem exists_lastChange_cutoff_truncate
       have hval : j.val < l.val := hl
       omega
   obtain ⟨t, hu, hl⟩ := cut
-  obtain ⟨l, hlt, b, hw, hr, ha, hd⟩ :=
+  obtain ⟨l, hlt, b, hw, hr, ha, hd, _⟩ :=
     r.exists_cutoff_truncate_lt j t hu hl (r.lastChangeIndex_spec hq).1
   exact ⟨t, hu, l, hlt, b, hw, hr, ha, hd⟩
 
@@ -106,6 +106,7 @@ theorem eventually_exists_lastChange_incoming (r : Rays) (hq : r.finalDegree ≠
       ∃ s : CutoffDecoratedRay d ℳ T a v f c ε P W S C (k - 1) (x + η • v p),
         s.itinerary = r.itinerary.drop (j.val + 1) ∧
         s.finalDegree = p ∧ s.decoration = r.realization.decoration j.succ ∧
+        s.degreeItinerary = r.degreeItinerary.drop (j.val + 1) ∧
         ∀ u ≤ 0, s.realization.2.ray u =
           r.realization.2.ray (u + (r.realization.2.parameter j.succ - η)) := by
   dsimp only
@@ -123,7 +124,7 @@ theorem eventually_exists_lastChange_incoming (r : Rays) (hq : r.finalDegree ≠
   have hpos : 0 < η := Set.mem_Ioi.mp hpos
   let t := r.realization.2.parameter j.succ - η
   have hu : t < r.realization.2.parameter j.succ := sub_lt_self _ hpos
-  obtain ⟨l, hlt, b, hw, hr, ha, hp⟩ := r.exists_cutoff_truncate_lt j t hu
+  obtain ⟨l, hlt, b, hw, hr, ha, hp, hd⟩ := r.exists_cutoff_truncate_lt j t hu
     (fun i hi => hη i.succ (Fin.succ_lt_succ_iff.mpr hi)) (r.lastChangeIndex_spec hq).1
   have hfinal : r.realization.1.val j = r.finalDegree := by
     simpa only [Fin.snoc_castSucc] using (r.lastChangeIndex_spec hq).2 j.castSucc le_rfl
@@ -139,9 +140,10 @@ theorem eventually_exists_lastChange_incoming (r : Rays) (hq : r.finalDegree ≠
         η • v (Fin.snoc (α := fun _ => Γ) r.realization.1.val 0 j.succ) := by
     simpa only [t, sub_sub_cancel] using hx
   rw [← ht]
-  refine ⟨s, hw, ?_, ?_, fun u hu => ?_⟩
+  refine ⟨s, hw, ?_, ?_, ?_, fun u hu => ?_⟩
   · simpa only [finalDegree_def] using hp
   · simpa only [decoration_eq] using ha
+  · simpa only [degreeItinerary_eq] using hd
   · -- `s` reuses `b.realization`; only the cutoff proof fields have changed.
     change b.realization.2.ray u = _
     rw [hr, FiniteAffineRay.truncate_apply _ _ hu]

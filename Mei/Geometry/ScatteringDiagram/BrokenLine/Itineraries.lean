@@ -131,6 +131,13 @@ theorem degreeItinerary_eq (r : CutoffDecoratedRay d ℳ T a v f c ε P W S C k 
     r.degreeItinerary = List.ofFn fun j =>
       (r.realization.1.val j, r.itinerary.get j) := (rfl)
 
+/-- Forgetting the degrees recovers the entire recorded encounter word. -/
+@[simp]
+theorem map_snd_degreeItinerary
+    (r : CutoffDecoratedRay d ℳ T a v f c ε P W S C k Q) :
+    r.degreeItinerary.map Prod.snd = r.itinerary := by
+  simp only [degreeItinerary_eq, List.map_ofFn, Function.comp_def, List.ofFn_get]
+
 /-- Recording degrees retains every encounter. -/
 @[simp]
 theorem length_degreeItinerary (r : CutoffDecoratedRay d ℳ T a v f c ε P W S C k Q) :
@@ -221,6 +228,26 @@ theorem ext {r s : CutoffDecoratedRay d ℳ T a v f c ε P W S C k Q}
   cases s
   cases h
   cases hr
+  rfl
+
+/-- The endpoint and the complete degree-labelled encounter word determine an
+actual decorated ray. Whole decorations are fixed by propagation, and transverse
+backward realization is unique. No genericity assumption is needed. -/
+theorem degreeItinerary_injective :
+    Function.Injective
+      (degreeItinerary : CutoffDecoratedRay d ℳ T a v f c ε P W S C k Q → _) := by
+  intro r s h
+  have hw : r.itinerary = s.itinerary := by
+    simpa only [map_snd_degreeItinerary] using congrArg (List.map Prod.snd) h
+  obtain ⟨word, r, hr, hm⟩ := r
+  obtain ⟨word', s, hs, hn⟩ := s
+  cases hw
+  have hp : r.1 = s.1 := by
+    apply Subtype.ext
+    have he := List.ofFn_injective h
+    exact funext fun j => congrArg Prod.fst (congrFun he j)
+  have he : r = s := Sigma.ext hp (Subsingleton.helim (by rw [hp]) _ _)
+  cases he
   rfl
 
 /-- A nonstationary incoming direction makes every admitted ray proper. -/
