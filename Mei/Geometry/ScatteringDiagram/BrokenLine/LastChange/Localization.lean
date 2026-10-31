@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.ScatteringDiagram.BrokenLine.Itineraries.Cutoff.Component
+public import Mei.Geometry.ScatteringDiagram.BrokenLine.Itineraries
 public import Mei.Geometry.ScatteringDiagram.BrokenLine.LastChange
 import Mei.Data.Fin.LastChange
 
