@@ -16,7 +16,8 @@ is zero. This allows polynomial identities in such elements to truncate at degre
 even in a noncommutative semiring. Surjective homomorphisms preserve products and
 powers of left ideals, so nilpotency bounds descend to quotient rings. These
 statements extend Mathlib's `Ideal.map_mul` and `Ideal.map_pow` beyond commutative
-targets, using `Ideal.mem_map_iff_of_surjective`.
+targets, using `Ideal.mem_map_iff_of_surjective`. Units congruent to one modulo
+a left ideal retain that congruence under all integer powers, including inversion.
 -/
 
 public section
@@ -72,5 +73,22 @@ theorem map_pow_of_surjective (I : Ideal A) (f : A →+* B)
   | zero => simp only [Submodule.pow_zero, Ideal.one_eq_top, map_top]
   | succ n ih => rw [Submodule.pow_succ, map_mul_of_surjective _ _ f hf, ih,
       Submodule.pow_succ]
+
+/-- A unit congruent to one modulo a left ideal remains so under every
+integer power. In particular the congruence is preserved by inversion. -/
+theorem zpow_sub_one_mem {A : Type*} [Ring A] (I : Ideal A)
+    (u : Aˣ) (hu : (u : A) - 1 ∈ I) (n : ℤ) :
+    ((u ^ n : Aˣ) : A) - 1 ∈ I := by
+  have hinv : (↑u⁻¹ : A) - 1 ∈ I := by
+    simpa only [mul_sub, mul_one, Units.inv_mul, neg_sub] using
+      I.neg_mem (I.mul_mem_left (↑u⁻¹ : A) hu)
+  refine zpow_induction_left (P := fun v : Aˣ => (v : A) - 1 ∈ I)
+    (by simp) ?_ ?_ n
+  · intro v hv
+    simpa only [Units.val_mul, mul_sub, mul_one, sub_add_sub_cancel] using
+      I.add_mem (I.mul_mem_left (u : A) hv) hu
+  · intro v hv
+    simpa only [Units.val_mul, mul_sub, mul_one, sub_add_sub_cancel] using
+      I.add_mem (I.mul_mem_left (↑u⁻¹ : A) hv) hinv
 
 end Ideal
