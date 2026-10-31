@@ -46,59 +46,6 @@ variable {R M Γ V J K : Type*} [Semiring R] [AddCommMonoid M] [Module R M]
   {ε : Fin n → SignType} {P : Fin n → Set V}
   {W : J → Set V} {S : K → Set V} {C : Set V}
 
-private theorem eventually_admits_tail (U : Module.End R M) (p q : Γ)
-    (Q : V) (m : V →L[ℝ] ℝ) (b : ℝ) (H : Set V) :
-    let x := Q + ((b - m Q) / m (v q)) • v q
-    ∀ᶠ η : ℝ in 𝓝[>] 0,
-      ∀ z : DecoratedAdmissibleRay ℳ (Fin.cons U T) p₀ a v
-        (Fin.cons m f) (Fin.cons b c) (Fin.cons (SignType.sign (m (v q))) ε)
-        (Fin.cons H P) W S C Q,
-      z.1.val 0 = q →
-      Fin.snoc (α := fun _ => Γ) (fun j : Fin n => z.1.val j.succ) p₀ 0 = p →
-      x + η • v p ∈ admissibleBackwardDomain f c
-        (fun j => v (Fin.snoc (α := fun _ => Γ)
-          (fun i : Fin n => z.1.val i.succ) p₀ j)) P W S C := by
-  -- Transport the block-cutting theorem from `Fin (1 + n)` to the `Fin.cons`
-  -- convention `Fin (n + 1)` before specializing the signed encounter data.
-  have cut (N : ℕ) (hN : 1 + n = N)
-      (T' : Fin N → Module.End R M) (f' : Fin N → V →L[ℝ] ℝ)
-      (c' : Fin N → ℝ) (ε' : Fin N → SignType) (P' : Fin N → Set V) :
-      let j := Fin.cast hN (0 : Fin (1 + n))
-      let x := Q + ((c' j - f' j Q) / f' j (v q)) • v q
-      ∀ᶠ η : ℝ in 𝓝[>] 0,
-        ∀ z : DecoratedAdmissibleRay ℳ T' p₀ a v f' c' ε' P' W S C Q,
-        (∀ l ≤ j.castSucc, v (Fin.snoc (α := fun _ => Γ) z.1.val p₀ l) = v q) →
-        v (Fin.snoc (α := fun _ => Γ) z.1.val p₀ j.succ) = v p →
-        x + η • v p ∈ admissibleBackwardDomain
-          (fun i => f' (Fin.cast hN (Fin.natAdd 1 i)))
-          (fun i => c' (Fin.cast hN (Fin.natAdd 1 i)))
-          (fun j => v (Fin.snoc (α := fun _ => Γ)
-            (fun i : Fin n => z.1.val (Fin.cast hN (Fin.natAdd 1 i))) p₀ j))
-          (fun i => P' (Fin.cast hN (Fin.natAdd 1 i))) W S C := by
-    subst N
-    exact eventually_forall_mem_admissibleBackwardDomain
-      (m := 1) (n := n) 0 rfl p q
-  have hh := cut (n + 1) (Nat.add_comm 1 n) (Fin.cons U T) (Fin.cons m f) (Fin.cons b c)
-    (Fin.cons (SignType.sign (m (v q))) ε) (Fin.cons H P)
-  have hind (j : Fin n) :
-      Fin.cast (Nat.add_comm 1 n) (Fin.natAdd 1 j) = j.succ := by
-    apply Fin.ext
-    simp only [Fin.val_cast, Fin.val_natAdd, Fin.val_succ]
-    omega
-  have hzero : Fin.cast (Nat.add_comm 1 n) (0 : Fin (1 + n)) = 0 := by
-    apply Fin.ext
-    rfl
-  simp only [hzero, hind, Fin.cons_zero, Fin.cons_succ] at hh
-  filter_upwards [hh] with η hη z hq hp
-  have hsnoc : Fin.snoc (α := fun _ => Γ) z.1.val p₀ (0 : Fin (n + 1)).succ =
-      Fin.snoc (α := fun _ => Γ) (fun i : Fin n => z.1.val i.succ) p₀ 0 := by
-    rw [← Fin.cons_self_tail z.1.val, ← Fin.cons_snoc_eq_snoc_cons]
-    rfl
-  exact hη z (fun l hl => by
-    have hl : l = 0 := by simpa using hl
-    subst l
-    simpa using congrArg v hq) (by rw [hsnoc]; exact congrArg v hp)
-
 open Classical in
 /-- At every sufficiently short incoming germ, the complete outgoing fiber
 with prescribed last two degrees is obtained by propagating the incoming
@@ -137,7 +84,7 @@ theorem eventually_sum_finalEncounter_eq_component_sum [Finite J] [Finite K]
     rw [map_add, map_smul, smul_eq_mul] at hh
     linarith
   -- A common cut admits the complete earlier history of every outgoing ray.
-  have hcut := eventually_admits_tail (T := T) (a := a) (v := v)
+  have hcut := eventually_forall_mem_admissibleBackwardDomain_cons (T := T) (a := a) (v := v)
     (f := f) (c := c) (ε := ε) (P := P) (W := W) (S := S) (C := C) U p q Q m b H
   rw [htime] at hcut
   -- Closed nonincident obstacles are avoided on a short incoming segment.
