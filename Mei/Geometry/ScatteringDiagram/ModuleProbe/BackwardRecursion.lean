@@ -5,8 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.ScatteringDiagram.ModuleProbe.Asymptotic.Extension
-public import Mei.Geometry.Convex.Polyhedron.Path.Ray
+public import Mei.Geometry.ScatteringDiagram.ModuleProbe.IncomingSegment
 public import Mei.Geometry.ScatteringDiagram.ModuleProbe.EventInput
 
 /-!
@@ -24,8 +23,7 @@ work for every retained degree. Coincident indexed walls remain in the combined
 event label; changes of coefficient degree with unchanged spatial direction
 remain in the lower-degree sum. Spatially stationary degrees are allowed too.
 
-We combine `Convex.exists_ray_admissibilityArrangement`, the asymptotic incoming
-condition `ModuleProbe.eventually_shiftedQuotientComponent_extendedCoefficientField_eq`,
+We combine `ModuleProbe.exists_incomingSegmentArrangement`
 and `ModuleProbe.exists_shiftedQuotientComponent_extendedCoefficientField_eq_add_sum_eventInputs`.
 This is the probe-side recursion in Mandel, *Scattering diagrams, theta
 functions, and refined tropical curve counts*, §3.3.3 (arXiv:1503.06183v5).
@@ -120,42 +118,16 @@ theorem exists_backwardRecursionArrangement
                                 (field k (hBc.mono (Nat.le_succ k))
                                   ((restriction k).obj (z j))))))) := by
   classical
-  let := h.finiteDimensional
-  let vectors := (d.finite_cutoff (k + 1)).toFinset.image (fun n => i (ρ (p + n)))
-  obtain ⟨C, hC⟩ := exists_ray_admissibilityArrangement
-    (fun c : B.active (k + 1) => (B.wall c).support)
-    (fun c => (B.wall c).isConvexPolyhedron)
-    (fun c => (B.wall c).finrank_direction_add_one) vectors
+  obtain ⟨C, hC⟩ := exists_incomingSegmentArrangement
+    d ℳ p ℒ H h h' D₀ a D B hinitial (k + 1) hD hBc hB
+    (fun n => d.degree n.val = k + 1) hout
   refine ⟨C, fun Q hQ => ?_⟩
-  obtain ⟨y, hy, hgeometry⟩ := hC Q hQ
+  obtain ⟨y, hy, hsegment⟩ := hC Q hQ
   -- First choose distant incoming segments and coefficients, with a common bound.
-  have hsegment (n : d.cutoff (k + 1)) : ∀ᶠ T : ℝ in atTop,
-      d.degree n.val = k + 1 →
-        ∃ (x : WallComplement (fun c : B.active (k + 1) => (B.wall c).support))
-          (_e : x ⟶ y), x.val = Q + T • i (ρ (p + n.val)) ∧
-            d.shiftedQuotientComponent ℳ p (p + n.val) (k + 1)
-              (by simpa only [add_sub_cancel_left] using (d.mem_cutoff.mp n.property).2)
-              (field (k + 1) hBc x) = DirectSum.decompose ℳ (a : M) (p + n.val) := by
-    by_cases hn : d.degree n.val = k + 1
-    · have hv : i (ρ (p + n.val)) ∈ vectors :=
-        Finset.mem_image.mpr ⟨n.val,
-          (d.finite_cutoff (k + 1)).mem_toFinset.mpr n.property, rfl⟩
-      filter_upwards [hgeometry _ hv,
-        eventually_shiftedQuotientComponent_extendedCoefficientField_eq
-          d ℳ p ℒ H h h' D₀ a D B hinitial (k + 1) hD hBc hB (p + n.val)
-          (by simpa only [add_sub_cancel_left] using (d.mem_cutoff.mp n.property).2)
-          (hout n hn) (isCompact_singleton (x := Q))] with T hgeom hin _
-      obtain ⟨x, hx, he⟩ := hgeom
-      refine ⟨x, ⟨he⟩, hx, ?_⟩
-      have heq : (⟨Q + T • i (ρ (p + n.val)), by rw [← hx]; exact x.notMem⟩ :
-          WallComplement (fun c : B.active (k + 1) => (B.wall c).support)) = x :=
-        WallComplement.ext hx.symm
-      simpa only [heq] using hin Q (mem_singleton Q)
-        (by rw [← hx]; exact x.notMem)
-    · exact Filter.Eventually.of_forall (fun _ h => (hn h).elim)
   let : Finite (d.cutoff (k + 1)) := (d.finite_cutoff (k + 1)).to_subtype
   refine ⟨y, hy, ?_⟩
-  filter_upwards [Filter.eventually_all.mpr hsegment, eventually_gt_atTop (0 : ℝ)]
+  filter_upwards [Filter.eventually_all.mpr
+    (fun n => eventually_imp_distrib_left.mpr (hsegment n)), eventually_gt_atTop (0 : ℝ)]
     with T hT hTpos
   refine ⟨hTpos, fun n hn => ?_⟩
   obtain ⟨x, e, hx, hin⟩ := hT n hn

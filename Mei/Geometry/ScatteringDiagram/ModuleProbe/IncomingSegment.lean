@@ -11,7 +11,7 @@ public import Mei.Geometry.Convex.Polyhedron.Path.Ray
 /-!
 # Backward segments with the incoming probe coefficient
 
-One finite exceptional arrangement of endpoints works for every coefficient
+One finite exceptional arrangement of endpoints works for every selected coefficient
 degree retained at a fixed order. From a generic endpoint, all sufficiently
 distant points in each degree's positive spatial direction are joined back to
 the endpoint by an actual admissible straight segment. At its starting point,
@@ -55,7 +55,8 @@ variable {R Γ Λ V E ι κ κ' : Type*} {M L : Type u} [CommRing R] [Algebra �
 
 /-- A common finite arrangement supplies admissible backward segments with the
 incoming probe component at their distant starting points, for every retained
-degree. Only additional active probe walls carrying that degree must be outgoing. -/
+degree satisfying `P`. Only additional active probe walls carrying a selected
+degree must be outgoing. -/
 theorem exists_incomingSegmentArrangement
     (hinitial : ∀ b, D.wall (.inl b) =
       (initialDiagram d ℳ p ℒ H h h' D₀ a).wall b)
@@ -63,12 +64,13 @@ theorem exists_incomingSegmentArrangement
     (hB : (D.map (chargeZeroGradedLieHom d ℳ p ℒ)
       (chargeZeroGradedLieHom_mem_wall d ℳ p ℒ H)).LevelEquivalent
       (cylinderDiagram d ℳ p ℒ H h h' B) k)
-    (hout : ∀ n : d.cutoff k, ∀ b, Sum.inr b ∈ D.active (k + 1) →
+    (P : d.cutoff k → Prop)
+    (hout : ∀ n : d.cutoff k, P n → ∀ b, Sum.inr b ∈ D.active (k + 1) →
       (p + n.val, 1, 0) ∈ (D.wall (.inr b)).ray.rayDegrees →
         (D.wall (.inr b)).Outgoing) :
     ∃ A : ExceptionalArrangement V, ∀ Q, A.IsGeneric Q →
       ∃ y : WallComplement (fun c : B.active k => (B.wall c).support),
-        y.val = Q ∧ ∀ n : d.cutoff k, ∀ᶠ T : ℝ in atTop,
+        y.val = Q ∧ ∀ n : d.cutoff k, P n → ∀ᶠ T : ℝ in atTop,
           ∃ (x : WallComplement (fun c : B.active k => (B.wall c).support)) (_e : x ⟶ y),
             x.val = Q + T • i (ρ (p + n.val)) ∧
               d.shiftedQuotientComponent ℳ p (p + n.val) k
@@ -84,7 +86,7 @@ theorem exists_incomingSegmentArrangement
     (fun c => (B.wall c).finrank_direction_add_one) vectors
   refine ⟨A, fun Q hQ => ?_⟩
   obtain ⟨y, hy, hsegment⟩ := hA Q hQ
-  refine ⟨y, hy, fun n => ?_⟩
+  refine ⟨y, hy, fun n hnP => ?_⟩
   have hn : i (ρ (p + n.val)) ∈ vectors :=
     Finset.mem_image.mpr ⟨n.val, (d.finite_cutoff k).mem_toFinset.mpr n.property, rfl⟩
   have hk : d.degree ((p + n.val) - p) ≤ k := by
@@ -92,7 +94,7 @@ theorem exists_incomingSegmentArrangement
   filter_upwards [hsegment _ hn,
     eventually_shiftedQuotientComponent_extendedCoefficientField_eq
       d ℳ p ℒ H h h' D₀ a D B hinitial k hD hBc hB (p + n.val) hk
-      (hout n) (isCompact_singleton (x := Q))] with T hT hvalue
+      (hout n hnP) (isCompact_singleton (x := Q))] with T hT hvalue
   obtain ⟨x, hx, he⟩ := hT
   refine ⟨x, ⟨he⟩, hx, ?_⟩
   have heq : (⟨Q + T • i (ρ (p + n.val)), by rw [← hx]; exact x.notMem⟩ :
