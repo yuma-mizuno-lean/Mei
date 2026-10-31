@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.ScatteringDiagram.ModuleProbe.IncomingSegment
-public import Mei.Geometry.ScatteringDiagram.ModuleProbe.EventInput
+public import Mei.Geometry.ScatteringDiagram.ModuleProbe.GenericRecursion
 
 /-!
 # The probe recursion along complete backward rays
@@ -16,8 +16,9 @@ sum of the crossing contributions on its backward ray. A sufficiently long
 admissible segment contains every encounter on that half-ray and starts where
 the component has its prescribed incoming value, which is zero in positive
 relative degree. Each contribution reads whole coefficients at the preceding
-cutoff, at actual incoming points arbitrarily close to its simultaneous event.
-The proximity bound is in the ray parameter, independently of segment length.
+cutoff, at generic incoming points arbitrarily close to its simultaneous event.
+One arbitrarily small perturbation works for all endpoints, all retained degrees
+and all sufficiently long segments, for any prescribed exceptional refinement.
 
 The finite arrangement works simultaneously for every degree of a given order.
 Coincident indexed walls remain one combined event, and no commutation between
@@ -26,7 +27,7 @@ included. Only additional probe walls carrying the component in question must
 be outgoing.
 
 We assemble `ModuleProbe.exists_incomingSegmentArrangement` and
-`ModuleProbe.exists_shiftedQuotientComponent_extendedCoefficientField_eq_add_sum_eventInputs`.
+`ModuleProbe.exists_norm_lt_forall_eventually_extendedCoefficientField_eq_add_sum_genericInputs`.
 The backward-ray recursion follows Mandel, *Scattering diagrams, theta functions,
 and refined tropical curve counts*, §3.3.3 (arXiv:1503.06183v5).
 -/
@@ -65,15 +66,13 @@ local notation "labels" k:max e:max => (List.map
     (fun c => CompletedGroup.projection k (DirectedWall.label (DirectedDiagram.wall B c)))
     (B.activeLabels_commute k) e)
       (List.reverse (orderedCrossingTimes e)))
-local notation "restriction" k:max => (WallComplement.restrictPrefunctor
-  (fun c : B.active (k + 1) => DirectedWall.support (DirectedDiagram.wall B c))
-  (Set.inclusion (B.active_mono (Nat.le_succ k))))
 
 /-- One arrangement gives the positive-degree backward-ray recursion for every
 retained degree of order `k + 1`. All sufficiently long segments contain every
 backward encounter: the entire ray beyond their starting point misses all active
-walls. For any positive ray-parameter tolerance, the finite sum reads lower-order
-probe values at incoming points within that tolerance of each crossing.
+walls. At every sufficiently small common positive displacement, the finite sum
+reads lower-order probe values at incoming germs generic for the prescribed
+arrangement. One arbitrarily small perturbation works for all these rays.
 
 The output degree is `p + n`; the sum uses relative input degrees at most `k`.
 The crossing list is in multiplication order, with the first crossing rightmost.
@@ -89,8 +88,14 @@ theorem exists_backwardRayRecursionArrangement
     (hout : ∀ n : d.cutoff (k + 1), d.degree n.val = k + 1 →
       ∀ b, Sum.inr b ∈ D.active (k + 2) →
         (p + n.val, 1, 0) ∈ (D.wall (.inr b)).ray.rayDegrees →
-          (D.wall (.inr b)).Outgoing) :
-    ∃ E : ExceptionalArrangement V, ∀ Q, E.IsGeneric Q →
+          (D.wall (.inr b)).Outgoing)
+    (F : ExceptionalArrangement V) {s : ℝ} (hs : 0 < s) :
+    ∃ (E : ExceptionalArrangement V) (r : V), ‖r‖ < s ∧
+      (∀ (n : d.cutoff (k + 1)) (c : B.active (k + 1)),
+        h.realCharacter (B.wall c).normal (i (ρ (p + n.val))) ≠ 0 →
+          0 < h.realCharacter (B.wall c).normal (i (ρ (p + n.val)) + r) *
+            h.realCharacter (B.wall c).normal (i (ρ (p + n.val)))) ∧
+      ∀ Q, E.IsGeneric Q →
       ∃ y : WallComplement (fun c : B.active (k + 1) => (B.wall c).support),
         y.val = Q ∧ ∀ n : d.cutoff (k + 1), d.degree n.val = k + 1 →
           ∀ᶠ T : ℝ in atTop, 0 < T ∧
@@ -100,16 +105,14 @@ theorem exists_backwardRayRecursionArrangement
               (e : x ⟶ y), x.val = Q + T • i (ρ (p + n.val)) ∧
               let τ := (orderedCrossingTimes e).reverse
               let g := labels (k + 1) e
-              ∀ ε : ℝ, 0 < ε →
-                ∃ (t : Fin g.length → ℝ)
-                  (z : Fin g.length →
-                    WallComplement (fun c : B.active (k + 1) => (B.wall c).support)),
+              ∀ᶠ δ : ℝ in 𝓝[>] 0,
+                ∃ z : Fin g.length →
+                    WallComplement (fun c : B.active k => (B.wall c).support),
                   (∀ j : Fin g.length,
-                    t j ∈ Ioo (0 : ℝ) (τ[j.val]'(by
-                      simpa only [g, List.length_map] using j.isLt)) ∧
-                    T * (τ[j.val]'(by
-                      simpa only [g, List.length_map] using j.isLt) - t j) < ε ∧
-                    (z j).val = Q + ((1 - t j) * T) • i (ρ (p + n.val))) ∧
+                    (z j).val = Q + ((1 - τ[j.val]'(by
+                      simpa only [g, List.length_map] using j.isLt)) * T) •
+                        i (ρ (p + n.val)) + δ • (i (ρ (p + n.val)) + r) ∧
+                      F.IsGeneric (z j).val) ∧
                   d.shiftedQuotientComponent ℳ p (p + n.val) (k + 1)
                     (by simpa only [add_sub_cancel_left] using
                       (d.mem_cutoff.mp n.property).2) (field (k + 1) hBc y) =
@@ -127,11 +130,15 @@ theorem exists_backwardRayRecursionArrangement
                                   (d.mem_cutoff.mp
                                     ((d.finite_cutoff k).mem_toFinset.mp m.property)).2)
                                 (field k (hBc.mono (Nat.le_succ k))
-                                  ((restriction k).obj (z j))))))) := by
+                                  (z j)))))) := by
   classical
   obtain ⟨E, hE⟩ := exists_incomingSegmentArrangement
     d ℳ p ℒ H h h' D₀ a D B hinitial (k + 1) hD hBc hB
-  refine ⟨E, fun Q hQ => ?_⟩
+  obtain ⟨r, hr, hsign, hrec⟩ :=
+    exists_norm_lt_forall_eventually_extendedCoefficientField_eq_add_sum_genericInputs
+      d ℳ p ℒ H h h' D B k hBc hD hB F
+      (fun n : d.cutoff (k + 1) => i (ρ (p + n.val))) hs
+  refine ⟨E, r, hr, hsign, fun Q hQ => ?_⟩
   obtain ⟨y, hy, hsegment⟩ := hE Q hQ
   refine ⟨y, hy, fun n hn => ?_⟩
   have hq : d.degree ((p + n.val) - p) = k + 1 := by
@@ -148,13 +155,11 @@ theorem exists_backwardRayRecursionArrangement
     hvalue.trans (Subtype.ext (DirectSum.decompose_of_mem_ne ℳ a.property hne))
   refine ⟨hT, htail, x, e, hx, ?_⟩
   dsimp only
-  intro ε hε
-  obtain ⟨t, z, hz, hsum⟩ :=
-    exists_shiftedQuotientComponent_extendedCoefficientField_eq_add_sum_eventInputs
-      d ℳ p ℒ H h h' D B k hBc hD hB e (p + n.val) hq (div_pos hε hT)
-  refine ⟨t, z, fun j => ⟨(hz j).1, ?_, ?_⟩, ?_⟩
-  · simpa only [mul_comm] using (lt_div_iff₀ hT).mp ((hz j).2.1)
-  · rw [(hz j).2.2, hx, hy, AffineMap.lineMap_apply_module']
+  have hxy : x.val - y.val = T • i (ρ (p + n.val)) := by rw [hx, hy]; module
+  filter_upwards [hrec x y e n T hT hxy (p + n.val) hq] with δ hδ
+  obtain ⟨z, hz, hsum⟩ := hδ
+  refine ⟨z, fun j => ⟨?_, (hz j).2⟩, ?_⟩
+  · rw [(hz j).1, hx, hy, AffineMap.lineMap_apply_module']
     module
   · simpa only [hzero, zero_add] using hsum
 
