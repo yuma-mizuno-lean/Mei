@@ -165,22 +165,24 @@ theorem exists_insertIdentityEncounter_iff :
           (∀ j : Fin n, s ≠ r.2.parameter j.succ) → r.2.ray s ∉ H) ∧ Q ∉ H := by
   constructor
   · rintro ⟨s, hh, hr, hp⟩
-    have ht : s.2.parameter i.succ = t := by simp [hp]
-    refine ⟨?_, ?_, ?_, ?_, s.2.off_walls (.inr ())⟩
-    · have hs := s.2.transverse i
-      rw [hh, Fin.snoc_castSucc, Fin.insertNth_apply_same,
-        Fin.insertNth_apply_same] at hs
-      exact hs
-    · simpa only [Fin.insertNth_apply_same, ht, hr] using s.2.height_eq i
-    · simpa only [Fin.insertNth_apply_same, ht, hr] using s.2.incidence i
-    · intro u hu hut huold
-      rw [← hr]
-      apply s.2.avoids_walls (.inr ()) u hu
-      intro j
-      cases j using Fin.succAboveCases i
-      · simpa only [ht] using hut
-      · simpa only [hp, ← Fin.succ_succAbove_succ, Fin.insertNth_apply_succAbove]
-          using huold _
+    have hv : (fun j => velocity (Fin.snoc (α := fun _ => Γ) s.1.val p₀ j)) =
+        i.succ.insertNth (α := fun _ => V) (velocity q)
+          (fun j => velocity (Fin.snoc (α := fun _ => Γ) r.1.val p₀ j)) := by
+      funext j
+      rw [hh, Fin.snoc_insertNth_self]
+      cases j using Fin.succAboveCases i.succ <;> simp
+    let g : AdmissibleRayRealization (i.insertNth m f) (i.insertNth b c)
+        (i.succ.insertNth (α := fun _ => V) (velocity q)
+          (fun j => velocity (Fin.snoc (α := fun _ => Γ) r.1.val p₀ j)))
+        (i.insertNth H P) (Sum.elim W (fun _ : Unit => H)) S C Q :=
+      { s.2 with
+        transverse := fun j => by
+          rw [← congrFun hv j.castSucc]
+          exact s.2.transverse j
+        directionAt_eq := fun j => by
+          rw [← congrFun hv j]
+          exact s.2.directionAt_eq j }
+    exact (r.2.exists_insertEncounter_iff i t hbefore hafter m b H).mp ⟨g, hr, hp⟩
   · rintro ⟨htrans, hheight, hinc, havoid, hoff⟩
     exact ⟨r.insertIdentityEncounter i t hbefore hafter m b H htrans hheight hinc havoid hoff,
       history_insertIdentityEncounter .., ray_insertIdentityEncounter ..,
