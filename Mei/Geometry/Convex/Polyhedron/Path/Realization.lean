@@ -17,10 +17,11 @@ is constant on `[0, 1/2^ℓ]`. Consequently:
 
 * at every dyadic time `1/2^(k+1)` the realization is at an allowed point
   (`Quiver.Path.toContinuousPath_notMem_of_eq_half_pow`);
-* it meets the walls at only countably many parameters
+* for a countable wall family, it meets the walls at only countably many parameters
   (`Quiver.Path.countable_setOf_toContinuousPath_mem`);
-* between two allowed parameters that no dyadic time `1/2^(k+1)`, `k < ℓ`, separates, it is
-  an admissible straight segment (`Quiver.Path.toContinuousPath_mem_admissiblePairs`).
+* if every wall is closed, between two allowed parameters that no dyadic time `1/2^(k+1)`,
+  `k < ℓ`, separates, it is an admissible straight segment
+  (`Quiver.Path.toContinuousPath_mem_admissiblePairs`).
 
 These facts let a continuous square whose sides are realized admissible chains be subdivided
 by an admissible grid whose boundary edges lie on those sides.
