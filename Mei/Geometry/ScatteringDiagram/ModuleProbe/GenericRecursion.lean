@@ -5,8 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.ScatteringDiagram.ModuleProbe.EventInput
-public import Mei.Geometry.ScatteringDiagram.ModuleProbe.IncomingGerm
+public import Mei.Geometry.ScatteringDiagram.ModuleProbe.EventInput.Straight
 
 /-!
 # Probe correction sums at generic incoming points
@@ -23,7 +22,7 @@ bound depends on the segment. Thus degree induction can use generic incoming
 values even when the crossing itself lies on the exceptional arrangement.
 Coincident wall indices remain a single event, with their combined signed label.
 
-We combine `eventually_exists_extendedCoefficientField_eq_eventInput`,
+We combine `eventually_exists_extendedCoefficientField_eq_eventInput_of_mul_pos`,
 `eventually_exists_extendedCoefficientField_eq_of_mul_pos`, and
 `ExceptionalArrangement.exists_norm_lt_forall_eventually_isGeneric` with the
 existing finite component correction formula. The recursion follows Mandel,
@@ -65,69 +64,6 @@ local notation "labels" k:max e:max => (List.map
 local notation "restriction" k:max => (WallComplement.restrictPrefunctor
   (fun c : B.active (k + 1) => DirectedWall.support (DirectedDiagram.wall B c))
   (Set.inclusion (B.active_mono (Nat.le_succ k))))
-
-private theorem eventually_exists_perturbed_eventInput
-    (k : ℕ) (hBc : B.LevelConsistent k)
-    {x y : WallComplement (fun c : B.active (k + 1) => (B.wall c).support)}
-    (e : x ⟶ y) (v r : V) {l : ℝ} (hl : 0 < l)
-    (hxy : x.val - y.val = l • v)
-    (hsign : ∀ c : B.active k, h.realCharacter (B.wall c).normal v ≠ 0 →
-      0 < h.realCharacter (B.wall c).normal (v + r) *
-        h.realCharacter (B.wall c).normal v)
-    (b : Fin (orderedCrossingTimes e).length) :
-    let τ := (orderedCrossingTimes e).reverse
-    let g := labels (k + 1) e
-    ∀ᶠ δ : ℝ in 𝓝[>] 0,
-      ∃ z : WallComplement (fun c : B.active k => (B.wall c).support),
-        z.val = AffineMap.lineMap x.val y.val
-          (τ[b.val]'(by simpa only [τ, List.length_reverse] using b.isLt)) + δ • (v + r) ∧
-        field k hBc z = (A).truncatedBCHAction d ℒ k
-          ((d.truncationMap ℒ (Nat.le_succ k)).bchGroupMap (g.drop (b.val + 1)).prod)
-          (field k hBc ((restriction k).obj x)) := by
-  dsimp only
-  let τ := (orderedCrossingTimes e).reverse
-  have hb : b.val < τ.length := by simpa only [τ, List.length_reverse] using b.isLt
-  let θ := AffineMap.lineMap x.val y.val τ[b.val]
-  have hyx : y.val - x.val = -l • v := by rw [← neg_sub x.val y.val, hxy, neg_smul]
-  have hτ := mem_Ioo_of_mem_orderedCrossingTimes e
-    (List.mem_reverse.mp (List.getElem_mem hb))
-  have hv (c : B.active k) (hc : θ ∈ (B.wall c).support) :
-      h.realCharacter (B.wall c).normal v ≠ 0 := by
-    have ht := e.down.transverse
-      ⟨c.val, B.active_mono (Nat.le_succ k) c.property⟩
-      ⟨τ[b.val], Ioo_subset_Icc_self hτ, hc⟩
-    rw [(B.wall c).direction_support, LinearMap.mem_ker] at ht
-    intro hz
-    exact ht (by simp [hyx, hz])
-  have hsame := eventually_exists_extendedCoefficientField_eq_of_mul_pos
-    d ℳ p ℒ H h h' D B k hBc θ v (v + r)
-      (fun c hc => by simpa only [mul_comm] using hsign c (hv c hc))
-  -- Positive normalized ray displacement corresponds to approaching the event
-  -- from below in the segment parameter, regardless of the segment length.
-  have hlim : Tendsto (fun δ : ℝ => τ[b.val] - δ / l)
-      (𝓝[>] 0) (𝓝[<] τ[b.val]) := by
-    apply tendsto_nhdsWithin_iff.mpr
-    constructor
-    · have ht : Tendsto (fun δ : ℝ => τ[b.val] - δ / l) (𝓝 0) (𝓝 τ[b.val]) := by
-        have hc : ContinuousAt (fun δ : ℝ => τ[b.val] - δ / l) 0 := by fun_prop
-        simpa only [zero_div, sub_zero] using hc.tendsto
-      exact ht.mono_left nhdsWithin_le_nhds
-    · filter_upwards [self_mem_nhdsWithin] with δ hδ
-      exact sub_lt_self _ (div_pos hδ hl)
-  have hin := hlim.eventually (eventually_exists_extendedCoefficientField_eq_eventInput
-    d ℳ p ℒ H h h' D B (Nat.le_succ k) hBc e b)
-  filter_upwards [hsame, hin] with δ hs hi
-  obtain ⟨z₀, z, hz₀, hz, heq⟩ := hs
-  obtain ⟨-, w, hw, hinput⟩ := hi
-  have hpos : w.val = θ + δ • v := by
-    rw [hw, AffineMap.lineMap_apply_module']
-    dsimp only [θ]
-    rw [AffineMap.lineMap_apply_module']
-    rw [hyx, smul_smul, smul_smul]
-    field_simp
-    module
-  have hwz : ((restriction k).obj w) = z₀ := WallComplement.ext (hpos.trans hz₀.symm)
-  exact ⟨z, hz, heq.trans (hwz ▸ hinput)⟩
 
 /-- A single arbitrarily small perturbation, chosen for a finite set of normalized
 incoming directions, makes every lower-order event input generic for a prescribed
@@ -200,10 +136,22 @@ theorem exists_norm_lt_forall_eventually_extendedCoefficientField_eq_add_sum_gen
               (field k (hBc.mono (Nat.le_succ k)) ((restriction k).obj x)) := by
     have hb : b.val < (orderedCrossingTimes e).length := by
       simpa only [g, List.length_map, List.length_reverse] using b.isLt
-    filter_upwards [eventually_exists_perturbed_eventInput d ℳ p ℒ H h h' D B k
-      (hBc.mono (Nat.le_succ k)) e (v a) r hl hxy
-      (fun c hc => hsign a ⟨c.val, B.active_mono (Nat.le_succ k) c.property⟩ hc)
-      ⟨b.val, hb⟩,
+    have hbτ : b.val < τ.length := by simpa only [τ, List.length_reverse] using hb
+    have hτ := mem_Ioo_of_mem_orderedCrossingTimes e
+      (List.mem_reverse.mp (List.getElem_mem hbτ))
+    filter_upwards [eventually_exists_extendedCoefficientField_eq_eventInput_of_mul_pos
+      d ℳ p ℒ H h h' D B
+      (Nat.le_succ k) (hBc.mono (Nat.le_succ k)) e (v a) (v a + r) hl hxy
+      ⟨b.val, hb⟩ (fun c hc => by
+        have ht := e.down.transverse
+          ⟨c.val, B.active_mono (Nat.le_succ k) c.property⟩
+          ⟨τ[b.val], Ioo_subset_Icc_self hτ, hc⟩
+        have hv : h.realCharacter (B.wall c).normal (v a) ≠ 0 := by
+          rw [(B.wall c).direction_support, LinearMap.mem_ker] at ht
+          intro hz
+          exact ht (by rw [← neg_sub, hxy]; simp [hz])
+        simpa only [mul_comm] using
+          hsign a ⟨c.val, B.active_mono (Nat.le_succ k) c.property⟩ hv),
       hgeneric (AffineMap.lineMap x.val y.val
         (τ[b.val]'(by simpa only [g, List.length_map] using b.isLt)))] with δ hi hgen
     obtain ⟨z, hz, he⟩ := hi
