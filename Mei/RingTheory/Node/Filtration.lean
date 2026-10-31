@@ -19,8 +19,8 @@ of `I`. A surviving sequence therefore has fewer than `r` transverse slab
 crossings when `I ^ r = 0`. Tangential crossings have weight zero and need
 not raise order.
 
-`slabComponentMap` records a selected whole-component transfer on its scalar
-coefficient. Both orientations of `exponentCorrespondence` induce this same
+`AddMonoidAlgebra.slabComponentMap` records a selected whole-component transfer
+on its scalar coefficient. Both orientations of `exponentCorrespondence` induce this same
 map. Its finite composites allow different slab parameters and independent
 source and target exponents at each step, and arbitrary intervening scalar-linear
 component maps, as needed when the chamber coordinates change between faces.
@@ -35,11 +35,11 @@ and Lemma 3.7 (arXiv:1601.07081v4).
 
 public noncomputable section
 
-namespace Mei.NodeAlgebra
+namespace AddMonoidAlgebra
 
-open AddMonoidAlgebra
+section Scalar
 
-variable {R M : Type*} [CommRing R] [AddCommMonoid M]
+variable {R M : Type*} [CommSemiring R] [AddMonoid M]
 
 /-- The scalar coefficient map of a slab transfer from admissible exponent `p`
 to exponent `q`. The same map describes either crossing orientation. -/
@@ -50,8 +50,9 @@ def slabComponentMap (a : R[M]) (p : {p : ℤ × M | 0 ≤ p.1}) (q : ℤ × M) 
       ((LinearMap.mulRight R (a ^ p.val.1.toNat)).comp (lsingle p.val.2))
   else 0
 
-/-- A selected component multiplies by the appropriate coefficient of `a ^ d`;
-components of the wrong normal weight vanish. -/
+/-- A selected component extracts the target coefficient of
+`single p.val.2 c * a ^ p.val.1.toNat`, combining coincident translated exponents.
+Components of the wrong normal weight vanish. -/
 @[simp]
 theorem slabComponentMap_apply (a : R[M]) (p : {p : ℤ × M | 0 ≤ p.1})
     (q : ℤ × M) (c : R) :
@@ -59,6 +60,14 @@ theorem slabComponentMap_apply (a : R[M]) (p : {p : ℤ × M | 0 ≤ p.1})
       if q.1 = -p.val.1 then (single p.val.2 c * a ^ p.val.1.toNat).coeff q.2 else 0 := by
   simp only [slabComponentMap]
   split_ifs <;> rfl
+
+end Scalar
+
+section Correspondence
+
+open Mei.NodeAlgebra
+
+variable {R M : Type*} [CommRing R] [AddCommMonoid M]
 
 /-- The scalar component map recovers the entire forward homogeneous transfer. -/
 theorem exponentCorrespondence_transfer_eq_single [DecidableEq M]
@@ -75,6 +84,16 @@ theorem exponentCorrespondence_symm_transfer_eq_single [DecidableEq M]
       single q (slabComponentMap a p q (u.val.coeff p.val)) := by
   rw [exponentCorrespondence_symm_transfer, slabComponentMap_apply]
   split_ifs <;> simp
+
+end Correspondence
+
+end AddMonoidAlgebra
+
+namespace Ideal
+
+open AddMonoidAlgebra
+
+variable {R M : Type*} [CommSemiring R] [AddMonoid M]
 
 /-- A slab crossing of normal weight `d` raises coefficient ideal order by `d`.
 This includes zero and nonreduced slab parameters and weight-zero inputs. -/
@@ -158,4 +177,4 @@ theorem card_transverse_lt_of_slabComponentMap_ne_zero (I : Ideal R) {n r : ℕ}
     exact Finset.sum_le_sum fun j _ => by split_ifs <;> omega
   omega
 
-end Mei.NodeAlgebra
+end Ideal
