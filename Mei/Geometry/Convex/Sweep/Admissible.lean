@@ -128,6 +128,24 @@ namespace AdmissibleRayRealization
 
 variable {f c v P W S C Q}
 
+/-- In the open segment immediately before a recorded parameter, the incoming
+ray direction is the prescribed segment direction. This includes the infinite tail. -/
+theorem directionAt_eq_between (r : AdmissibleRayRealization f c v P W S C Q)
+    (i : Fin (n + 1)) (t : ℝ) (hbefore : t < r.parameter i)
+    (hafter : ∀ j, i < j → r.parameter j < t) : r.ray.directionAt t = v i := by
+  rw [← r.directionAt_eq i]
+  simp only [FiniteAffineRay.directionAt_def]
+  congr 1
+  apply Finsupp.sum_congr
+  intro b hb
+  obtain ⟨j, rfl⟩ := r.bends_recorded b hb
+  by_cases hj : j.succ ≤ i
+  · have hp := r.strictAnti_parameter.antitone hj
+    simp [hp, hbefore.le.trans hp]
+  · have hp := hafter j.succ (lt_of_not_ge hj)
+    have hq := r.strictAnti_parameter (lt_of_not_ge hj)
+    simp [hp.not_ge, hq.not_ge]
+
 /-- Local encounter data recover the cumulative parameters and the entire ray. -/
 theorem eq_backwardRay (r : AdmissibleRayRealization f c v P W S C Q) :
     ∃ hpos : ∀ j, 0 < backwardTime f c (fun j => v j.castSucc) j Q,

@@ -25,23 +25,20 @@ theorem insertNth_succ_castSucc {α : Sort*} {n : ℕ} (i : Fin (n + 1))
     i.succ.insertNth (α := fun _ => α) (v i) v j.castSucc =
       i.insertNth (α := fun _ => α) (v i) (fun k => v k.castSucc) j := by
   rcases lt_trichotomy j i with h | rfl | h
-  · obtain ⟨k, rfl⟩ := j.eq_castSucc_of_ne_last (Fin.ne_last_of_lt h)
-    have h' : k.castSucc.castSucc < i.succ :=
-      Fin.castSucc_lt_succ_iff.mpr h.le
-    rw [← succAbove_of_castSucc_lt i.succ k.castSucc h', insertNth_apply_succAbove,
-      ← succAbove_of_castSucc_lt i k h, insertNth_apply_succAbove]
-    simp [succAbove_of_castSucc_lt i k h]
-  · rw [← succAbove_succ_self j, insertNth_apply_succAbove, insertNth_apply_same]
-  · obtain ⟨k, rfl⟩ := j.eq_succ_of_ne_zero (Fin.ne_zero_of_lt h)
-    have hik : i ≤ k.castSucc := Fin.le_castSucc_iff.mpr h
-    by_cases he : i = k.castSucc
-    · subst i
-      simp only [Fin.castSucc_succ, insertNth_apply_same]
-      rw [← succAbove_castSucc_self k, insertNth_apply_succAbove]
-    · have h' : i.succ ≤ k.castSucc.castSucc :=
-        Fin.succ_le_castSucc_iff.mpr (lt_of_le_of_ne hik he)
-      rw [← Fin.succ_castSucc, ← succAbove_of_le_castSucc i.succ k.castSucc h',
-        insertNth_apply_succAbove, ← succAbove_of_le_castSucc i k hik,
-        insertNth_apply_succAbove]
+  · simp only [insertNth_apply_below (Fin.castSucc_lt_succ_iff.mpr h.le),
+      insertNth_apply_below h]
+    grind [Fin.castPred_castSucc, Fin.castSucc_castPred]
+  · simp only [insertNth_apply_below (Fin.castSucc_lt_succ_iff.mpr le_rfl),
+      insertNth_apply_same]
+    grind [Fin.castPred_castSucc]
+  · rcases lt_or_eq_of_le (Fin.succ_le_castSucc_iff.mpr h) with h' | h'
+    · simp only [insertNth_apply_above h', insertNth_apply_above h, eq_rec_constant]
+      grind [Fin.castSucc_pred_eq_pred_castSucc]
+    · simp only [← h', insertNth_apply_same, insertNth_apply_above h, eq_rec_constant]
+      congr 1
+      apply Fin.ext
+      have := congrArg Fin.val h'
+      simp at this ⊢
+      omega
 
 end Fin

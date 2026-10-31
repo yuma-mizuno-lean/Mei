@@ -40,22 +40,6 @@ variable {V J K : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
 
 include hbefore hafter
 
-/-- In the open segment immediately before a recorded parameter, the incoming
-ray direction is the prescribed segment direction. This includes the infinite tail. -/
-theorem directionAt_eq_between : r.ray.directionAt t = v i := by
-  rw [← r.directionAt_eq i]
-  simp only [FiniteAffineRay.directionAt_def]
-  congr 1
-  apply Finsupp.sum_congr
-  intro b hb
-  obtain ⟨j, rfl⟩ := r.bends_recorded b hb
-  by_cases hj : j.succ ≤ i
-  · have hp := r.strictAnti_parameter.antitone hj
-    simp [hp, hbefore.le.trans hp]
-  · have hp := hafter j.succ (lt_of_not_ge hj)
-    have hq := r.strictAnti_parameter (lt_of_not_ge hj)
-    simp [hp.not_ge, hq.not_ge]
-
 /-- Insert a transverse encounter in a straight segment, retaining the actual
 ray and every previous parameter. The added wall must have no unrecorded hit;
 it may also meet the path at already recorded encounters. -/
