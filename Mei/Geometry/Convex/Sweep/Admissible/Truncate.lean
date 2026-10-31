@@ -70,23 +70,24 @@ private theorem cut_ne_parameter (a : Fin (m + n)) : t ≠ r.parameter a.succ :=
 
 include hupper hlower in
 private theorem directionAt_cut : r.ray.directionAt t = v (Fin.natAdd m (0 : Fin (n + 1))) := by
-  rw [← r.directionAt_eq (Fin.natAdd m (0 : Fin (n + 1))), FiniteAffineRay.directionAt_def,
-    FiniteAffineRay.directionAt_def]
-  congr 1
-  apply Finsupp.sum_congr
-  intro b hb
-  obtain ⟨a, rfl⟩ := r.bends_recorded b hb
-  by_cases ha : m ≤ a.val
-  · have ht := (r.parameter_lt_cut_iff t hupper hlower a).mpr ha
-    have hi : Fin.natAdd m (0 : Fin (n + 1)) < a.succ := by
-      simp only [Fin.lt_def, Fin.val_succ, Fin.val_natAdd, Fin.val_zero, add_zero]
-      omega
-    simp only [ite_eq_right ht.not_ge, ite_eq_right (r.strictAnti_parameter hi).not_ge]
-  · have hi : a.succ ≤ Fin.natAdd m (0 : Fin (n + 1)) := by
+  have hb : ∀ b ∈ r.ray.bends.support,
+      b ≤ t ∨ r.parameter (Fin.natAdd m (0 : Fin (n + 1))) ≤ b := by
+    intro b hb
+    obtain ⟨a, rfl⟩ := r.bends_recorded b hb
+    by_cases ha : m ≤ a.val
+    · exact Or.inl ((r.parameter_lt_cut_iff t hupper hlower a).mpr ha).le
+    · apply Or.inr
+      apply r.strictAnti_parameter.antitone
       simp only [Fin.le_def, Fin.val_succ, Fin.val_natAdd, Fin.val_zero, add_zero]
       omega
-    have hp := r.strictAnti_parameter.antitone hi
-    simp only [ite_eq_left hp, ite_eq_left (hupper.trans_le hp).le]
+  have ht : r.ray.bends t = 0 := by
+    apply Finsupp.notMem_support_iff.mp
+    intro ht
+    obtain ⟨a, ha⟩ := r.bends_recorded t ht
+    exact r.cut_ne_parameter t hupper hlower a ha
+  have hdir := r.ray.directionAt_sub_eq_bends hupper hb
+  rw [ht, sub_eq_zero, r.directionAt_eq] at hdir
+  exact hdir
 
 /-- Cut inside the segment after the first `m` backward encounters. The remaining
 `n` encounters and the incoming tail are retained, with the new endpoint at time
