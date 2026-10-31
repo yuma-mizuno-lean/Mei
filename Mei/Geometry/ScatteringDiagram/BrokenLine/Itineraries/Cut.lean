@@ -57,8 +57,10 @@ variable {word : Fin (m + n) → J}
 include hmono in
 /-- A decorated ray whose degree history is that of `r` after its first `m`
 encounters belongs to every cutoff inventory containing these degrees. Its
-encounter word, complete path, whole decoration, final degree, degree history
-and encounter parameters are those of the older encounters of `r`. -/
+complete path, whole decoration and encounter parameters are those of the
+supplied ray `s`. Its degree-labelled encounter itinerary is the suffix of `r`
+after its first `m` encounters, and its final degree is `r`'s degree at that
+boundary. -/
 theorem exists_cutoff_of_history_eq {l : ℕ} {Q' : V}
     (s : DecoratedAdmissibleRay ℳ (fun j => T (word (Fin.natAdd m j))) 0 a v
       (fun j => f (word (Fin.natAdd m j))) (fun j => c (word (Fin.natAdd m j)))
