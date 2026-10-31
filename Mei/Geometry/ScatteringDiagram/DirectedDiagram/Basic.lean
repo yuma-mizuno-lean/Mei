@@ -77,6 +77,13 @@ theorem active_def (k : ℕ) :
 theorem mem_active (k : ℕ) (j : ι) :
     j ∈ D.active k ↔ CompletedGroup.projection k (D.wall j).label ≠ 1 := Iff.rfl
 
+/-- No wall is active at order zero, since the order-zero group is trivial. -/
+theorem not_mem_active_zero (j : ι) : j ∉ D.active 0 := by
+  intro hj
+  apply (D.mem_active 0 j).mp hj
+  rw [d.groupTower_obj_one]
+  exact Subsingleton.elim (α := d.truncatedGroup ℒ 0) _ _
+
 /-- A wall active at some order has a nonidentity completed label. -/
 theorem label_ne_one_of_mem_active {k : ℕ} {j : ι} (hj : j ∈ D.active k) :
     (D.wall j).label ≠ 1 := by
