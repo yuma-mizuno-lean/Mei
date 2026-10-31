@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.ScatteringDiagram.BrokenLine.Itineraries
+public import Mei.Geometry.ScatteringDiagram.BrokenLine.Itineraries.Cut
 public import Mei.Geometry.ScatteringDiagram.BrokenLine.Cut.Incoming
 
 /-!
@@ -25,7 +25,7 @@ when removing admission tests from weighted terminal-block comparisons, without
 assuming that arbitrary incoming rays extend.
 
 We use `DecoratedAdmissibleRay.eventually_exists_incoming_truncate` and
-`CutoffDecoratedRay.exists_of_word`, preserving their source and obstacle
+`DecoratedAdmissibleRay.exists_cutoff_of_history_eq`, preserving their source and obstacle
 conditions, and Mathlib's `Filter.eventually_all` for the finite inventory.
 The cutting convention follows Mandel, *Scattering diagrams, theta functions,
 and refined tropical curve counts*, §3.3.3 (arXiv:1503.06183v5).
@@ -89,26 +89,13 @@ theorem eventually_exists_incoming_truncate (r : Rays)
     rw [hi]
     filter_upwards [z.eventually_exists_incoming_truncate (m := j) (n := n)] with η hη
     obtain ⟨s, hs, ha, _, hr⟩ := hη
-    -- Restrict the existing cutoff and monotonicity bounds to the older tuple.
-    have hmem : ∀ l : Fin n, s.1.val l ∈ d.cutoff k := by
-      intro l
-      rw [hs]
-      exact hm _
-    have hsub : ∀ l l', l ≤ l' → s.1.val l - s.1.val l' ∈ d.monoid := by
-      intro l l' hll'
-      rw [hs]
-      exact hmono _ _ (by simpa only [Fin.le_def, Fin.val_natAdd,
-        Nat.add_le_add_iff_left] using hll')
-    -- The packaging theorem preserves the whole path and all degree labels.
+    -- The shared packaging lemma preserves the whole path and all degree labels.
     obtain ⟨b, hw, hb, hd, hp, hword, _⟩ :=
-      exists_of_word (fun l : Fin n => word (Fin.natAdd j l)) s hmem hsub
-    refine ⟨b, ?_, ?_, hd.trans (ha 0), ?_, fun u hu => ?_⟩
+      z.exists_cutoff_of_history_eq hmono s hs (fun l => hm _)
+    refine ⟨b, ?_, hp, hd.trans (ha 0), ?_, fun u hu => ?_⟩
     · rw [List.ofFn_add]
       simpa [i] using hw
-    · rw [hp, hs]
-      exact (congrFun (Fin.snoc_comp_natAdd z.1.val 0) 0).symm
-    · rw [hs] at hword
-      rw [List.ofFn_add]
+    · rw [List.ofFn_add]
       simpa [i] using hword
     · rw [hb]
       exact hr u hu
