@@ -39,25 +39,6 @@ namespace Mei.Convex
 
 variable {V ι : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V] [Finite ι]
 
-/-- A sweep projection followed by displacement in a transverse direction
-covers the whole space. No condition on the sweeping vector is needed: the
-projection fixes the hyperplane, and the displacement supplies its complement. -/
-theorem _root_.ContinuousLinearMap.surjective_smul_add_sweepProjection
-    (f : V →L[ℝ] ℝ) (c : ℝ) (n v : V)
-    (hv : f v ≠ 0) :
-    Function.Surjective (fun z : V × ℝ => z.2 • v + sweepProjection f c n z.1) := by
-  intro y
-  let t := (f y - c) / f v
-  let x := y - t • v
-  have hx : f x = c := by
-    simp only [x, map_sub, map_smul, smul_eq_mul, t, div_mul_cancel₀ _ hv]
-    ring
-  refine ⟨(x, t), ?_⟩
-  dsimp only
-  rw [sweepProjection_eq_self f c hx]
-  dsimp only [x]
-  module
-
 /-- A finite refinement of endpoint exceptions makes every short incoming germ
 at a projected crossing generic, simultaneously for a finite family. Only the
 incoming normal velocities must be nonzero; sweeping vectors are arbitrary. -/
