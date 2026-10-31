@@ -22,7 +22,8 @@ For a finite family of closed supports, endpoints sufficiently near one point
 also have an avoiding segment whenever their normal evaluations have matching
 nonzero signs at every incident support. Nonincident supports are excluded by
 `IsClosed.isOpen_setOf_lineMap_notMem`, and incident ones by convexity of the
-open scalar half-lines.
+open scalar half-lines. A short positive ray also avoids the whole family when
+all incident supports lie in one hyperplane transverse to its direction.
 -/
 
 public section
@@ -81,6 +82,31 @@ theorem eventually_add_smul_pair (θ v w : V) {p : V × V → Prop}
       (𝓝 0) (𝓝 (θ, θ)) := by
     simpa using hc.tendsto 0
   exact (ht.eventually hp).filter_mono nhdsWithin_le_nhds
+
+/-- A sufficiently short positive ray misses a finite closed family if every
+incident member lies in one hyperplane transverse to the ray. The bound holds
+uniformly on the whole punctured segment, including its far endpoint. -/
+theorem eventually_forall_pos_le_add_smul_notMem
+    (hclosed : ∀ j, IsClosed (W j)) (x v : V) (m : V →ₗ[ℝ] ℝ)
+    (htrans : m v ≠ 0)
+    (hplane : ∀ j, x ∈ W j → ∀ y ∈ W j, m y = m x) :
+    ∀ᶠ η : ℝ in 𝓝[>] 0, ∀ j r, 0 < r → r ≤ η → x + r • v ∉ W j := by
+  have hpoint : ∀ᶠ r : ℝ in 𝓝[>] 0, ∀ j, x + r • v ∉ W j := by
+    apply eventually_all.mpr
+    intro j
+    by_cases hj : x ∈ W j
+    · filter_upwards [self_mem_nhdsWithin] with r hr hy
+      have he := hplane j hj _ hy
+      simp only [map_add, map_smul, smul_eq_mul, add_eq_left] at he
+      exact (mul_ne_zero (Set.mem_Ioi.mp hr).ne' htrans) he
+    · have hc : Continuous (fun r : ℝ => x + r • v) := by fun_prop
+      have ht : Tendsto (fun r : ℝ => x + r • v) (𝓝 0) (𝓝 x) := by
+        simpa using hc.tendsto 0
+      exact (ht.eventually ((hclosed j).isOpen_compl.mem_nhds hj)).filter_mono
+        nhdsWithin_le_nhds
+  obtain ⟨δ, hδ, hbound⟩ := mem_nhdsGT_iff_exists_Ioc_subset.mp hpoint
+  filter_upwards [(eventually_lt_nhds hδ).filter_mono nhdsWithin_le_nhds] with η hη j r hr hrη
+  exact hbound ⟨hr, hrη.trans hη.le⟩ j
 
 /-- Near a point, matching strict normal sides at its incident supports suffice
 for the entire connecting segment to miss all supports. -/

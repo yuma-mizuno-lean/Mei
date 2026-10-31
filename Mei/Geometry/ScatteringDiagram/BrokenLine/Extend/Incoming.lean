@@ -25,8 +25,8 @@ arbitrary semiring. No diagonal-preservation assumption is needed.
 
 We combine `sum_ite_decoration_finalEncounter_eq_component_sum` with
 `eventually_forall_mem_admissibleBackwardDomain`. Closed nonincident obstacles
-are excluded using `eventually_forall_lineMap_notMem_of_notMem`; incident walls
-lie in the selected hyperplane. This is the final-encounter step of the
+and incident obstacles are excluded together by
+`eventually_forall_pos_le_add_smul_notMem`. This is the final-encounter step of the
 backward-ray recursion in Mandel, *Scattering diagrams, theta functions, and
 refined tropical curve counts*, §3.3.3 (arXiv:1503.06183v5).
 -/
@@ -46,7 +46,10 @@ variable {R M Γ V J K : Type*} [Semiring R] [AddCommMonoid M] [Module R M]
   {ε : Fin n → SignType} {P : Fin n → Set V}
   {W : J → Set V} {S : K → Set V} {C : Set V}
 
-private theorem eventually_admits_tail (U : Module.End R M) (p q : Γ)
+/-- A common sufficiently short incoming cut is admitted by the entire older
+history of every ray with prescribed final adjacent degrees. The newly prepended
+encounter is removed; arbitrary source and obstacle conditions persist. -/
+theorem eventually_forall_mem_admissibleBackwardDomain_cons (U : Module.End R M) (p q : Γ)
     (Q : V) (m : V →L[ℝ] ℝ) (b : ℝ) (H : Set V) :
     let x := Q + ((b - m Q) / m (v q)) • v q
     ∀ᶠ η : ℝ in 𝓝[>] 0,
@@ -137,44 +140,32 @@ theorem eventually_sum_finalEncounter_eq_component_sum [Finite J] [Finite K]
     rw [map_add, map_smul, smul_eq_mul] at hh
     linarith
   -- A common cut admits the complete earlier history of every outgoing ray.
-  have hcut := eventually_admits_tail (T := T) (a := a) (v := v)
+  have hcut := eventually_forall_mem_admissibleBackwardDomain_cons (T := T) (a := a) (v := v)
     (f := f) (c := c) (ε := ε) (P := P) (W := W) (S := S) (C := C) U p q Q m b H
   rw [htime] at hcut
   -- Closed nonincident obstacles are avoided on a short incoming segment.
   -- Transversality excludes the incident hyperplane away from the encounter.
-  have hnear := eventually_add_smul_pair x (v p) 0
-    ((eventually_forall_lineMap_notMem_of_notMem hclosedW x).and
-      (eventually_forall_lineMap_notMem_of_notMem hclosedS x))
-  filter_upwards [hcut, hnear, self_mem_nhdsWithin] with η hcut hnear hη
+  have hnearW := eventually_forall_pos_le_add_smul_notMem hclosedW x (v p) m.toLinearMap
+    (hnormal ▸ htrans) (fun j hj y hy => (hplane j hj y hy).trans hheight.symm)
+  have hnearS := eventually_forall_pos_le_add_smul_notMem hclosedS x (v p) m.toLinearMap
+    (hnormal ▸ htrans) (fun j hj => (hregular j hj).elim)
+  filter_upwards [hcut, hnearW, hnearS, self_mem_nhdsWithin] with η hcut hnearW hnearS hη
   have hη : 0 < η := hη
   let Y := x + η • v p
   have hend : Y - η • v p - t • v q = Q := by simp [Y, x]
-  have hline (u : ℝ) : AffineMap.lineMap (x + η • v p) (x + η • (0 : V)) (u / η) =
-      Y - u • v p := by
-    simp only [AffineMap.lineMap_apply_module', smul_zero, add_zero, smul_sub,
-      smul_add, smul_smul, div_mul_cancel₀ u hη.ne']
+  have hline (u : ℝ) : Y - u • v p = x + (η - u) • v p := by
     dsimp only [Y]
     module
   have hW₁ : ∀ j u, 0 < u → u < η → Y - u • v p ∉ W j := by
-    intro j u hu huη hy
-    by_cases hj : x ∈ W j
-    · have he := hplane j hj _ hy
-      have he' : m (Y - u • v p) = b + (η - u) * m (v p) := by
-        dsimp only [Y]
-        rw [map_sub, map_add, map_smul, map_smul, smul_eq_mul, smul_eq_mul, hheight]
-        ring
-      rw [he'] at he
-      have hn : m (v p) ≠ 0 := hnormal ▸ htrans
-      exact (mul_ne_zero (sub_pos.mpr huη).ne' hn) (by linarith)
-    · apply hnear.1 j hj (u / η) ⟨(div_pos hu hη).le, (div_lt_one hη).mpr huη |>.le⟩
-      rw [hline]
-      exact hy
+    intro j u hu huη
+    rw [hline]
+    exact hnearW j (η - u) (sub_pos.mpr huη) (by linarith)
   have hS₁ : ∀ j u, 0 < u → u ≤ η → Y - u • v p ∉ S j := by
     intro j u hu huη
-    have hh := hnear.2 j (hregular j) (u / η)
-      ⟨(div_pos hu hη).le, (div_le_one hη).mpr huη⟩
-    rw [hline] at hh
-    exact hh
+    rw [hline]
+    rcases huη.eq_or_lt with rfl | huη
+    · simpa using hregular j
+    · exact hnearS j (η - u) (sub_pos.mpr huη) (by linarith)
   -- Attachment accounts for every surviving incoming component. The common cut
   -- now removes the admission test from its exact weighted image formula.
   have hh := sum_ite_decoration_finalEncounter_eq_component_sum
