@@ -18,6 +18,15 @@ public section
 
 namespace Fin
 
+/-- Applying a function entrywise commutes with insertion into a finite tuple. -/
+@[simp]
+theorem comp_insertNth {α β : Sort*} {n : ℕ} (i : Fin (n + 1))
+    (f : α → β) (a : α) (p : Fin n → α) :
+    f ∘ i.insertNth (α := fun _ => α) a p =
+      i.insertNth (α := fun _ => β) (f a) (f ∘ p) := by
+  funext j
+  cases j using Fin.succAboveCases i <;> simp
+
 /-- Duplicating an entry after itself and dropping the final entry is the same
 as inserting it before itself in the tuple with its final entry dropped. -/
 theorem insertNth_succ_castSucc {α : Sort*} {n : ℕ} (i : Fin (n + 1))

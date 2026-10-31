@@ -65,27 +65,21 @@ def insertIdentityEncounter :
   have hv : (fun j => velocity (Fin.snoc (α := fun _ => Γ) p p₀ j)) =
       i.succ.insertNth (α := fun _ => V) (velocity q)
         (fun j => velocity (Fin.snoc (α := fun _ => Γ) r.1.val p₀ j)) := by
-    funext j
+    dsimp only [p]
     rw [Fin.snoc_insertNth_self]
-    cases j using Fin.succAboveCases i.succ <;> simp
+    exact i.succ.comp_insertNth velocity q (Fin.snoc (α := fun _ => Γ) r.1.val p₀)
   let g := r.2.insertEncounter i t hbefore hafter m b H htrans hheight hinc havoid hoff
   have hg : AdmissibleRayRealization (i.insertNth m f) (i.insertNth b c)
       (fun j => velocity (Fin.snoc (α := fun _ => Γ) p p₀ j))
-      (i.insertNth H P) (Sum.elim W (fun _ : Unit => H)) S C Q := by
-    exact { g with
-      transverse := fun j => by
-        rw [congrFun hv j.castSucc]
-        exact g.transverse j
-      directionAt_eq := fun j => by
-        rw [congrFun hv j]
-        exact g.directionAt_eq j }
+      (i.insertNth H P) (Sum.elim W (fun _ : Unit => H)) S C Q :=
+    g.congrVelocity hv.symm
   refine ⟨⟨p, (mem_decoratedHistorySupport ..).mpr ⟨?_, ?_⟩⟩, hg⟩
   · rw [homogeneousHistory_insertNth_id]
     exact (mem_decoratedHistorySupport ..).mp r.1.property |>.1
   · intro j
     have hout : velocity (p j) =
-        i.insertNth (α := fun _ => V) (velocity q) (fun k => velocity (r.1.val k)) j := by
-      cases j using Fin.succAboveCases i <;> simp [p]
+        i.insertNth (α := fun _ => V) (velocity q) (fun k => velocity (r.1.val k)) j :=
+      congrFun (i.comp_insertNth velocity q r.1.val) j
     rw [hout, congrFun hv j.succ]
     cases j using Fin.succAboveCases i with
     | x => simp
@@ -104,14 +98,16 @@ theorem history_insertIdentityEncounter :
 theorem ray_insertIdentityEncounter :
     (r.insertIdentityEncounter i t hbefore hafter m b H htrans hheight hinc havoid hoff).2.ray =
       r.2.ray := by
-  simp only [insertIdentityEncounter, AdmissibleRayRealization.ray_insertEncounter]
+  simp only [insertIdentityEncounter, AdmissibleRayRealization.ray_congrVelocity,
+    AdmissibleRayRealization.ray_insertEncounter]
 
 /-- The enlarged parameter tuple retains the old times and records the new one. -/
 @[simp]
 theorem parameter_insertIdentityEncounter :
     (r.insertIdentityEncounter i t hbefore hafter m b H htrans hheight hinc havoid hoff).2.parameter
       = i.succ.insertNth (α := fun _ => ℝ) t r.2.parameter := by
-  simp only [insertIdentityEncounter, AdmissibleRayRealization.parameter_insertEncounter]
+  simp only [insertIdentityEncounter, AdmissibleRayRealization.parameter_congrVelocity,
+    AdmissibleRayRealization.parameter_insertEncounter]
 
 /-- Every retained segment keeps its whole homogeneous decoration. At the
 inserted encounter the same degree and decoration occur on both sides. -/
@@ -127,15 +123,9 @@ theorem decoration_insertIdentityEncounter (j : Fin (n + 1)) :
 theorem decoration_castSucc_insertIdentityEncounter :
     (r.insertIdentityEncounter i t hbefore hafter m b H htrans hheight hinc havoid hoff).decoration
       i.castSucc = r.decoration i := by
-  rw [decoration_castSucc, Fin.insertNth_apply_same, LinearMap.id_apply,
-    history_insertIdentityEncounter, Fin.insertNth_apply_same]
-  have hi := r.decoration_insertIdentityEncounter i t hbefore hafter
-    m b H htrans hheight hinc havoid hoff i
-  rw [Fin.succAbove_castSucc_self] at hi
-  rw [hi]
-  rw [decoration_def]
-  exact DirectSum.decompose_of_mem_same ℳ
-    (homogeneousHistoryStage_mem_snoc ℳ T r.1.val p₀ a i)
+  rw [decoration_def, history_insertIdentityEncounter,
+    homogeneousHistoryStage_insertNth_id_castSucc, ← Fin.succAbove_castSucc_self,
+    homogeneousHistoryStage_insertNth_id, decoration_def]
 
 /-- Restoring an identity encounter preserves the final whole decoration. -/
 @[simp↓]
@@ -168,21 +158,16 @@ theorem exists_insertIdentityEncounter_iff :
     have hv : (fun j => velocity (Fin.snoc (α := fun _ => Γ) s.1.val p₀ j)) =
         i.succ.insertNth (α := fun _ => V) (velocity q)
           (fun j => velocity (Fin.snoc (α := fun _ => Γ) r.1.val p₀ j)) := by
-      funext j
       rw [hh, Fin.snoc_insertNth_self]
-      cases j using Fin.succAboveCases i.succ <;> simp
+      exact i.succ.comp_insertNth velocity q (Fin.snoc (α := fun _ => Γ) r.1.val p₀)
     let g : AdmissibleRayRealization (i.insertNth m f) (i.insertNth b c)
         (i.succ.insertNth (α := fun _ => V) (velocity q)
           (fun j => velocity (Fin.snoc (α := fun _ => Γ) r.1.val p₀ j)))
         (i.insertNth H P) (Sum.elim W (fun _ : Unit => H)) S C Q :=
-      { s.2 with
-        transverse := fun j => by
-          rw [← congrFun hv j.castSucc]
-          exact s.2.transverse j
-        directionAt_eq := fun j => by
-          rw [← congrFun hv j]
-          exact s.2.directionAt_eq j }
-    exact (r.2.exists_insertEncounter_iff i t hbefore hafter m b H).mp ⟨g, hr, hp⟩
+      s.2.congrVelocity hv
+    exact (r.2.exists_insertEncounter_iff i t hbefore hafter m b H).mp ⟨g,
+      by simpa only [g, AdmissibleRayRealization.ray_congrVelocity] using hr,
+      by simpa only [g, AdmissibleRayRealization.parameter_congrVelocity] using hp⟩
   · rintro ⟨htrans, hheight, hinc, havoid, hoff⟩
     exact ⟨r.insertIdentityEncounter i t hbefore hafter m b H htrans hheight hinc havoid hoff,
       history_insertIdentityEncounter .., ray_insertIdentityEncounter ..,

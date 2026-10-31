@@ -76,14 +76,8 @@ def removeEncounter :
     exact (mem_decoratedHistorySupport ℳ T p₀ a velocity f ε _).mp r.1.property |>.1
   have hgeom : AdmissibleRayRealization (i.removeNth f) (i.removeNth c)
       (fun j => velocity (Fin.snoc (α := fun _ => Γ) (i.removeNth r.1.val) p₀ j))
-      (i.removeNth P) W' S C Q := by
-    exact { g with
-      transverse := fun j => by
-        rw [← congrFun hv j.castSucc]
-        exact g.transverse j
-      directionAt_eq := fun j => by
-        rw [← congrFun hv j]
-        exact g.directionAt_eq j }
+      (i.removeNth P) W' S C Q :=
+    g.congrVelocity hv
   refine ⟨⟨i.removeNth r.1.val, (mem_decoratedHistorySupport _ _ _ _ _ _ _ _).mpr
     ⟨hsurv, fun j => ?_⟩⟩, hgeom⟩
   have hj : velocity (Fin.snoc (α := fun _ => Γ) (i.removeNth r.1.val) p₀ j.succ) =
@@ -106,14 +100,16 @@ theorem history_removeEncounter :
 /-- Deleting an unchanged decoration leaves the entire geometric path intact. -/
 @[simp]
 theorem ray_removeEncounter : (r.removeEncounter i hfix W' e hW hoff).2.ray = r.2.ray := by
-  simp only [removeEncounter, Convex.AdmissibleRayRealization.ray_removeEncounter]
+  simp only [removeEncounter, AdmissibleRayRealization.ray_congrVelocity,
+    Convex.AdmissibleRayRealization.ray_removeEncounter]
 
 /-- Every remaining encounter keeps its parameter on the original path. -/
 @[simp]
 theorem parameter_removeEncounter (j : Fin (n + 1)) :
     (r.removeEncounter i hfix W' e hW hoff).2.parameter j =
       r.2.parameter (i.succ.succAbove j) := by
-  simp only [removeEncounter, Convex.AdmissibleRayRealization.parameter_removeEncounter]
+  simp only [removeEncounter, AdmissibleRayRealization.parameter_congrVelocity,
+    Convex.AdmissibleRayRealization.parameter_removeEncounter]
 
 /-- Every retained segment keeps its whole decoration after encounter deletion. -/
 @[simp]
