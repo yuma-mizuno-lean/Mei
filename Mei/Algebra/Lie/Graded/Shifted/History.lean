@@ -80,7 +80,7 @@ theorem homogeneousHistoryStage_truncatedBCHAction_const
     homogeneousHistoryStage G(k)
       (fun j => ((F).truncatedBCHAction d ℒ k (g j)).toLinearMap) (fun _ => r) j a = a :=
   homogeneousHistoryStage_const_of_decompose_self
-    (fun j _ _ hx => d.decompose_truncatedBCHAction_same ℒ ℳ p k (g j) hx) a.property j
+    (fun j _ hx => d.decompose_truncatedBCHAction_same ℒ ℳ p k (g j) hx) a.property j
 
 /-- A constant-degree finite BCH history fixes its incoming decoration,
 independently of all labels and of the number of encounters. -/
@@ -91,6 +91,6 @@ theorem homogeneousHistory_truncatedBCHAction_const
     homogeneousHistory G(k)
       (fun j => ((F).truncatedBCHAction d ℒ k (g j)).toLinearMap) (fun _ => r) a = a :=
   homogeneousHistory_const_of_decompose_self
-    (fun j _ _ hx => d.decompose_truncatedBCHAction_same ℒ ℳ p k (g j) hx) a.property
+    (fun j _ hx => d.decompose_truncatedBCHAction_same ℒ ℳ p k (g j) hx) a.property
 
 end Mei.PositiveDegrees
