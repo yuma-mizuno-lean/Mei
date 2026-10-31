@@ -49,6 +49,25 @@ variable {Γ Γ' R M M' : Type*} {L L' : Type u}
 
 include hequiv
 
+/-- Homogeneous equivariant coefficient maps intertwine finite shifted BCH
+actions at the source cutoff prescribed by the positive degree map. -/
+theorem shiftedQuotientMap_truncatedBCHAction
+    (k : ℕ) (g : d.truncatedGroup ℒ (T.modulus k))
+    (a : (d.shiftedLieFiltration ℒ ℳ p).quotient (T.modulus k)) :
+    T.shiftedQuotientMap ℳ 𝓝 p f hf k
+        ((d.shiftedLieFiltration ℒ ℳ p).truncatedBCHAction d ℒ (T.modulus k) g a) =
+      (e.shiftedLieFiltration ℒ' 𝓝 (T p)).truncatedBCHAction e ℒ' k
+        ((φ.truncatedMap k le_rfl).bchGroupMap g)
+        (T.shiftedQuotientMap ℳ 𝓝 p f hf k a) := by
+  have hcoe (z : d.shiftedLieSubmodule ℒ ℳ p) :
+      (T.shiftedMap ℳ 𝓝 p f hf z : M') = f z := T.coe_shiftedMap ℳ 𝓝 p f hf z
+  rw [shiftedQuotientMap_def]
+  apply (d.shiftedLieFiltration ℒ ℳ p).mapQ_truncatedBCHAction_of_gradedLieHom
+    (e.shiftedLieFiltration ℒ' 𝓝 (T p)) φ
+  intro x z
+  apply Subtype.ext
+  simp only [hcoe, LieSubmodule.coe_bracket, hequiv]
+
 /-- Shifted coefficient maps intertwine completed BCH actions along the existing
 completed map of the graded Lie homomorphism, on arbitrary completed inputs. -/
 theorem shiftedCompletionMap_completedBCHAction
