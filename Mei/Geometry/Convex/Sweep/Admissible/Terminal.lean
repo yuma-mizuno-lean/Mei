@@ -72,4 +72,22 @@ theorem ray_eq_endpoint_sub_smul_of_directions_eq
     sub_zero] at he
   exact (eq_sub_iff_add_eq').mpr (sub_eq_iff_eq_add.mp he).symm
 
+/-- If the terminal piece is straight, its initial encounter parameter is the
+intersection parameter of that straight line with the encounter hyperplane.
+All later encounters, including those with zero bend, are allowed. -/
+theorem parameter_eq_div_of_directions_eq
+    (r : AdmissibleRayRealization f c v P W S C Q) (j : Fin n)
+    (hv : ∀ i ≤ j.castSucc, v i = v 0) :
+    r.parameter j.succ = (f j Q - c j) / f j (v 0) := by
+  have ht : r.parameter j.succ < 0 := by
+    simpa only [r.parameter_zero] using r.strictAnti_parameter (Fin.succ_pos j)
+  have hp := r.ray_eq_endpoint_sub_smul j.succ
+    (fun i hi => hv i (Fin.le_castSucc_iff.mpr hi)) ⟨le_rfl, ht.le⟩
+  have he := r.height_eq j
+  rw [hp, map_sub, map_smul, smul_eq_mul] at he
+  have hn : f j (v 0) ≠ 0 := by
+    simpa only [hv j.castSucc le_rfl] using r.transverse j
+  apply (eq_div_iff hn).mpr
+  linarith
+
 end Mei.Convex.AdmissibleRayRealization
