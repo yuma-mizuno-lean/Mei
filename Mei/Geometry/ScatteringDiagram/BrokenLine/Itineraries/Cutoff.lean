@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.ScatteringDiagram.BrokenLine.Itineraries.Map
+public import Mei.Geometry.ScatteringDiagram.BrokenLine.Itineraries
 
 /-!
 # Changing the cutoff of a decorated ray inventory

@@ -6,6 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.ScatteringDiagram.BrokenLine.Itineraries.Cutoff
+public import Mei.Geometry.ScatteringDiagram.BrokenLine.Itineraries.Map
 public import Mei.Algebra.Lie.Graded.Shifted.Basic
 public import Mei.Algebra.Lie.Filtered.BCH
 public import Mei.LinearAlgebra.GradedModule.Shifted.Quotient
@@ -31,6 +32,11 @@ We combine `map_cutoffDecoratedEvaluation` and
 quotient gradings. The inverse-limit interpretation follows Mandel,
 *Scattering diagrams, theta functions, and refined tropical curve counts*,
 Definition 2.10 and Theorem 2.14 (arXiv:1503.06183v5).
+
+The input construction, completed-label compatibility, completion definition,
+projection theorem and zero proof adapt the fixed-itinerary construction
+`PositiveDegrees.completedBCHDecoratedRayEvaluation` in
+`Mei.Geometry.ScatteringDiagram.BrokenLine.Truncation` to all encounter itineraries.
 -/
 
 public noncomputable section
