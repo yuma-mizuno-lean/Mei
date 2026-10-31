@@ -13,11 +13,12 @@ import Mei.Data.Fin.LastChange
 # Localizing the last degree change on a backward ray
 
 For a cutoff decorated ray of nonzero final relative degree, locate its last
-change of degree canonically. Its incoming degree is strictly smaller, its
-whole output is the final decoration, and its position is the intersection of
-the fixed backward ray from the endpoint with the selected wall hyperplane.
-Thus the position depends only on the endpoint, final degree and wall, even
-when the ray has later unchanged-degree encounters.
+change of degree canonically. Its incoming degree is strictly smaller, and its
+position is the intersection of the fixed backward ray from the endpoint with
+the selected wall hyperplane. Thus the position depends only on the endpoint,
+final degree and wall, even when the ray has later unchanged-degree encounters.
+When propagation maps fix diagonal homogeneous components at the final degree,
+its whole output is the final decoration.
 
 Regroup the full weighted evaluation, over all encounter itineraries, by these
 last walls. This is the finite coefficient partition used before cutting the
@@ -145,10 +146,12 @@ open Classical in
 wall of its last change. Each summand is the selected whole component of the
 actual incoming decoration, at the position and smaller degree described by
 `CutoffDecoratedRay.lastChangeIndex_localization`. The sum retains every
-encounter itinerary and imposes no genericity or coefficient basis hypothesis. -/
+encounter itinerary and requires diagonal preservation only at `q`, with no
+genericity or coefficient basis hypothesis. -/
 theorem decompose_cutoffDecoratedEvaluation_eq_sum_lastChange [Finite J]
-    (hT : ∀ j s x, x ∈ ℳ s → (DirectSum.decompose ℳ (T j x) s : M) = x)
-    (q : Γ) (hq : q ≠ 0) :
+    (q : Γ)
+    (hT : ∀ j x, x ∈ ℳ q → (DirectSum.decompose ℳ (T j x) q : M) = x)
+    (hq : q ≠ 0) :
     let F := {r : CutoffDecoratedRay d ℳ T a v f c ε P W S C k Q // r.finalDegree = q}
     let index := fun r : F => r.val.lastChangeIndex (r.property.symm ▸ hq)
     let := Fintype.ofFinite F
@@ -172,9 +175,13 @@ theorem decompose_cutoffDecoratedEvaluation_eq_sum_lastChange [Finite J]
   have hweight (r : F) : r.val.decoration =
       (DirectSum.decompose ℳ (T (r.val.itinerary.get (index r))
         (r.val.realization.decoration (index r).succ)) q : M) := by
+    have hfinal : Fin.snoc (α := fun _ => Γ) r.val.realization.1.val 0 0 = q :=
+      r.val.finalDegree_def.symm.trans r.property
     obtain ⟨j, ⟨hne, hp, hw, _⟩, _⟩ :=
       r.val.realization.existsUnique_last_degree_change
-        (fun j => hT (r.val.itinerary.get j))
+        (fun j x hx => by
+          rw [hfinal] at hx ⊢
+          exact hT (r.val.itinerary.get j) x hx)
         (r.val.nonconstant_degrees (r.property.symm ▸ hq))
     have hj := r.val.lastChangeIndex_eq (r.property.symm ▸ hq) j
       (by simpa only [r.val.finalDegree_def] using hne)
