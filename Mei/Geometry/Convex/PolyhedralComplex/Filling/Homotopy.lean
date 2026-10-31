@@ -6,7 +6,6 @@ Authors: Claude
 module
 
 public import Mei.Geometry.Convex.PolyhedralComplex.Filling.Joint
-public import Mathlib.Topology.Homotopy.Path
 
 /-!
 # Homotopy invariance of crossing words modulo joint meridians
