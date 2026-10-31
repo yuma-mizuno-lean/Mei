@@ -190,6 +190,21 @@ theorem homogeneousHistoryStage_mem_snoc {n : ℕ}
   · simpa only [Fin.snoc_last, homogeneousHistoryStage_last, LinearMap.id_apply] using a.property
   · simpa only [Fin.snoc_castSucc] using homogeneousHistoryStage_mem ℳ T p a i
 
+/-- The whole output of a history, bundled in its homogeneous piece. For the
+empty history the piece is the incoming one. -/
+def homogeneousHistoryResult {n : ℕ} (T : Fin n → Module.End R M)
+    (p : Fin n → ι) {p₀ : ι} (a : ℳ p₀) :
+    ℳ (Fin.snoc (α := fun _ => ι) p p₀ 0) :=
+  ⟨homogeneousHistory ℳ T p a, by
+    simpa only [homogeneousHistoryStage_zero] using
+      homogeneousHistoryStage_mem_snoc ℳ T p p₀ a 0⟩
+
+/-- Forgetting the output piece gives the original whole history decoration. -/
+@[simp]
+theorem coe_homogeneousHistoryResult {n : ℕ} (T : Fin n → Module.End R M)
+    (p : Fin n → ι) {p₀ : ι} (a : ℳ p₀) :
+    (homogeneousHistoryResult ℳ T p a : M) = homogeneousHistory ℳ T p a := (rfl)
+
 /-- Any relation satisfied by the input and nonzero output degrees of each
 propagation map holds at every step of a surviving homogeneous history,
 including the step adjacent to the incoming coefficient. -/
