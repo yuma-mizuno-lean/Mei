@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.LinearAlgebra.GradedModule.Shifted.Basic
+public import Mei.LinearAlgebra.GradedModule.Shifted.Quotient
 public import Mei.LinearAlgebra.ModuleFiltration.Map
 
 /-!
@@ -16,6 +16,8 @@ module and extends to its completion. The degree map's cutoff modulus controls
 which source quotient computes a target quotient, allowing changes of the degree
 function and maps that merge degrees. Neither the degree map nor the linear map
 needs to be injective.
+
+The induced finite quotient maps preserve the inherited homogeneous pieces.
 
 The completion is the existing `ModuleFiltration.completionMap`; its defining
 projection and coefficient-image laws determine the shifted extension. This is
@@ -176,5 +178,30 @@ theorem shiftedCompletionMap_of (x : shiftedSubmodule ℳ d.monoid p) :
     (T.shiftedMap ℳ 𝓝 p f hf) T.modulus T.monotone_modulus _ x
 
 end Group
+
+section QuotientGrading
+
+variable {Γ Γ' : Type} {R M M' : Type*} [AddCommGroup Γ] [AddCommGroup Γ']
+  [Ring R] [AddCommGroup M] [Module R M] [AddCommGroup M'] [Module R M']
+  [DecidableEq Γ] [DecidableEq Γ']
+  {d : PositiveDegrees Γ} {e : PositiveDegrees Γ'} (T : PositiveDegreeMap d e)
+  (ℳ : Γ → Submodule R M) (𝓝 : Γ' → Submodule R M')
+  [DirectSum.Decomposition ℳ] [DirectSum.Decomposition 𝓝] (p : Γ)
+  (f : M →ₗ[R] M') (hf : ∀ q, ℳ q ≤ (𝓝 (T q)).comap f)
+
+/-- The induced finite coefficient map preserves relative homogeneous pieces
+along the degree map, at the source order specified by its cutoff modulus. -/
+theorem shiftedQuotientMap_mem_shiftedQuotientGrading
+    (k : ℕ) {n : Γ}
+    {x : (d.shiftedFiltration ℳ p).quotient (T.modulus k)}
+    (hx : x ∈ (d.shiftedQuotientGrading ℳ p (T.modulus k)).piece n) :
+    T.shiftedQuotientMap ℳ 𝓝 p f hf k x ∈
+      (e.shiftedQuotientGrading 𝓝 (T p) k).piece (T n) := by
+  obtain ⟨a, ha, rfl⟩ := (d.mem_shiftedQuotientGrading_iff ℳ p).mp hx
+  exact (e.mem_shiftedQuotientGrading_iff 𝓝 (T p)).mpr
+    ⟨T.shiftedMap ℳ 𝓝 p f hf a,
+      T.shiftedMap_mem_shiftedGrading ℳ 𝓝 p f hf ha, (T.shiftedQuotientMap_mk ..).symm⟩
+
+end QuotientGrading
 
 end Mei.PositiveDegreeMap
