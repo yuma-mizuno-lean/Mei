@@ -5,13 +5,14 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.ScatteringDiagram.BrokenLine.Stationary
+public import Mei.Geometry.ScatteringDiagram.BrokenLine.Itineraries.Stationary
 public import Mei.Geometry.ScatteringDiagram.BrokenLine.Itineraries.Completion
 
 /-!
 # Completed stationary evaluation
 
-For stationary incoming coefficients, the compatible full BCH ray sums are the
+For stationary incoming coefficients, at endpoints admitted by the source and
+avoiding every wall and singular set, the compatible full BCH ray sums are the
 canonical image of the incoming coefficient in the shifted completion. This
 includes zero coefficients and inputs whose images vanish at individual cutoffs.
 Only the incoming spatial direction must vanish; other degree directions and
@@ -39,7 +40,8 @@ variable {Γ : Type} {R L M V J K : Type*}
   (v : Γ → V) (f : J → V →L[ℝ] ℝ) (c : J → ℝ)
   (ε : J → SignType) (P W : J → Set V) (S : K → Set V) (C : Set V) (Q : V)
 
-/-- The full completed evaluation of a stationary incoming coefficient is its
+/-- At an endpoint admitted by the source and avoiding every wall and singular
+set, the full completed evaluation of a stationary incoming coefficient is its
 canonical image in the shifted completion, for arbitrary completed BCH labels. -/
 @[simp]
 theorem completedBCHCutoffEvaluation_of_velocity_eq_zero

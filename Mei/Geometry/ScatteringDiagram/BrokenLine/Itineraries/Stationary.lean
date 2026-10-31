@@ -37,23 +37,6 @@ variable {R M Γ V J K : Type*} [Semiring R] [AddCommMonoid M] [Module R M]
   [DecidableEq Γ] {ℳ : Γ → Submodule R M} [DirectSum.Decomposition ℳ]
   [NormedAddCommGroup V] [NormedSpace ℝ V]
 
-/-- A stationary incoming degree admits no transverse encounters: the first
-encounter would have both zero and nonzero normal velocity. -/
-theorem DecoratedAdmissibleRay.encounter_count_eq_zero_of_velocity_eq_zero
-    {n : ℕ} {T : Fin n → Module.End R M} {p₀ : Γ} {a : ℳ p₀}
-    {v : Γ → V} {f : Fin n → V →L[ℝ] ℝ} {c : Fin n → ℝ}
-    {ε : Fin n → SignType} {P : Fin n → Set V} {W : J → Set V}
-    {S : K → Set V} {C : Set V} {Q : V}
-    (r : DecoratedAdmissibleRay ℳ T p₀ a v f c ε P W S C Q)
-    (hv : v p₀ = 0) : n = 0 := by
-  cases n with
-  | zero => rfl
-  | succ n =>
-    have he := r.normal_velocity_eq (Fin.last n)
-    have ht := r.2.transverse (Fin.last n)
-    simp only [Fin.snoc_castSucc] at ht
-    exact False.elim (ht (by simpa [hv] using he))
-
 variable [AddCommGroup Γ] {d : PositiveDegrees Γ}
   {T : J → Module.End R M} {a : ℳ 0} {v : Γ → V}
   {f : J → V →L[ℝ] ℝ} {c : J → ℝ} {ε : J → SignType}
@@ -63,12 +46,14 @@ namespace CutoffDecoratedRay
 
 /-- Every cutoff ray with stationary incoming degree has empty encounter word,
 even when the alphabet includes nonidentity propagation maps. -/
+@[simp]
 theorem itinerary_eq_nil_of_velocity_eq_zero
     (r : CutoffDecoratedRay d ℳ T a v f c ε P W S C k Q) (hv : v 0 = 0) :
     r.itinerary = [] :=
   List.length_eq_zero_iff.mp (r.realization.encounter_count_eq_zero_of_velocity_eq_zero hv)
 
 /-- With stationary incoming degree, the entire realized path is constant. -/
+@[simp]
 theorem ray_eq_straight_of_velocity_eq_zero
     (r : CutoffDecoratedRay d ℳ T a v f c ε P W S C k Q) (hv : v 0 = 0) :
     r.realization.2.ray = FiniteAffineRay.straight Q 0 := by
@@ -80,6 +65,7 @@ theorem ray_eq_straight_of_velocity_eq_zero
   simpa only [backwardRay_zero, Fin.snoc_zero, hv] using hr
 
 /-- Stationary rays retain the whole incoming coefficient. -/
+@[simp↓] -- Retain the stationary normal form before expanding homogeneous histories.
 theorem decoration_eq_input_of_velocity_eq_zero
     (r : CutoffDecoratedRay d ℳ T a v f c ε P W S C k Q) (hv : v 0 = 0) :
     r.decoration = (a : M) := by
@@ -117,14 +103,14 @@ def stationary (ha : (a : M) ≠ 0) (hv : v 0 = 0)
   degree_sub_mem := fun j => Fin.elim0 j
 
 /-- The stationary constructor records no encounters. -/
-@[simp]
+@[simp high]
 theorem itinerary_stationary (ha : (a : M) ≠ 0) (hv : v 0 = 0)
     (hC : Q ∈ C) (hW : ∀ j, Q ∉ W j) (hS : ∀ j, Q ∉ S j) :
     (stationary (d := d) (T := T) (f := f) (c := c) (ε := ε) (P := P)
       (k := k) ha hv hC hW hS).itinerary = [] := (rfl)
 
 /-- The stationary constructor realizes the constant path at the endpoint. -/
-@[simp]
+@[simp high]
 theorem ray_stationary (ha : (a : M) ≠ 0) (hv : v 0 = 0)
     (hC : Q ∈ C) (hW : ∀ j, Q ∉ W j) (hS : ∀ j, Q ∉ S j) :
     (stationary (d := d) (T := T) (f := f) (c := c) (ε := ε) (P := P)
@@ -153,6 +139,7 @@ theorem subsingleton_of_velocity_eq_zero (hv : v 0 = 0) :
 
 /-- Exact existence criterion for a stationary contribution: nonzero input,
 source admission, and avoidance of every wall and singular set. -/
+@[simp]
 theorem nonempty_iff_of_velocity_eq_zero (hv : v 0 = 0) :
     Nonempty (CutoffDecoratedRay d ℳ T a v f c ε P W S C k Q) ↔
       (a : M) ≠ 0 ∧ Q ∈ C ∧ (∀ j, Q ∉ W j) ∧ ∀ j, Q ∉ S j := by
