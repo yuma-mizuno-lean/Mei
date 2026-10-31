@@ -27,7 +27,9 @@ Zero incoming directions and encounters with unchanged direction are retained;
 properness and coefficient propagation are separate conditions.
 
 The construction combines `eq_backwardRay_of_encounters` with the full-path
-characterizations of the avoidance and incoming domains. The geometric
+characterizations of the avoidance and incoming domains.
+`FiniteAffineRay.eval_vsub_eval` gives the affine position formula between
+recorded encounters, including the unbounded incoming segment. The geometric
 parameterization follows Carl–Pumperla–Siebert, *A tropical view on Landau–Ginzburg
 models*, §4 (arXiv:2205.07753v2).
 -/
@@ -179,6 +181,25 @@ theorem ray_direction (r : AdmissibleRayRealization f c v P W S C Q) :
 theorem ray_of_nonneg (r : AdmissibleRayRealization f c v P W S C Q) {u : ℝ} (hu : 0 ≤ u) :
     r.ray u = (-u • v 0) +ᵥ Q := by
   rw [FiniteAffineRay.eval_of_nonneg _ hu, r.ray_direction, r.endpoint_eq]
+/-- Before a recorded parameter and after every earlier encounter, the path is
+the straight incoming germ in the prescribed direction. Both ends of a finite
+segment are allowed, as is the unbounded incoming segment. -/
+theorem ray_eq_add_smul_of_before_parameter
+    (r : AdmissibleRayRealization f c v P W S C Q) (i : Fin (n + 1))
+    {t : ℝ} (ht : t ≤ r.parameter i)
+    (hafter : ∀ j, i < j → r.parameter j ≤ t) :
+    r.ray t = r.ray (r.parameter i) + (r.parameter i - t) • v i := by
+  have hb : ∀ b ∈ r.ray.bends.support, b ≤ t ∨ r.parameter i ≤ b := by
+    intro b hb
+    obtain ⟨j, rfl⟩ := r.bends_recorded b hb
+    by_cases hj : i < j.succ
+    · exact Or.inl (hafter j.succ hj)
+    · exact Or.inr (r.strictAnti_parameter.antitone (le_of_not_gt hj))
+  have he := r.ray.eval_vsub_eval ht hb
+  rw [r.directionAt_eq, vsub_eq_sub] at he
+  calc
+    r.ray t = r.ray (r.parameter i) - (r.ray (r.parameter i) - r.ray t) := by abel
+    _ = _ := by rw [he, ← neg_sub (r.parameter i) t, neg_smul, sub_neg_eq_add]
 
 /-- Local encounter data recover the cumulative parameters and the entire ray. -/
 theorem eq_backwardRay (r : AdmissibleRayRealization f c v P W S C Q) :
