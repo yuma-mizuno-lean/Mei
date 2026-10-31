@@ -115,7 +115,7 @@ private theorem eventually_exists_perturbed_eventInput
     · filter_upwards [self_mem_nhdsWithin] with δ hδ
       exact sub_lt_self _ (div_pos hδ hl)
   have hin := hlim.eventually (eventually_exists_extendedCoefficientField_eq_eventInput
-    d ℳ p ℒ H h h' D B k hBc e b)
+    d ℳ p ℒ H h h' D B (Nat.le_succ k) hBc e b)
   filter_upwards [hsame, hin] with δ hs hi
   obtain ⟨z₀, z, hz₀, hz, heq⟩ := hs
   obtain ⟨-, w, hw, hinput⟩ := hi
