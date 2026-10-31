@@ -96,6 +96,23 @@ theorem levelTransport_comp {k : ℕ} (hD : D.LevelConsistent k)
   rw [D.levelTransport_eq_levelPathProduct hD (p.comp q), levelPathProduct_comp,
     D.levelTransport_eq_levelPathProduct hD p, D.levelTransport_eq_levelPathProduct hD q]
 
+/-- The ordered product of a finite chain of path transports is endpoint
+transport. Indices run backwards, so index zero is the last path traversed. -/
+theorem prod_levelPathProduct_eq_levelTransport {k : ℕ} (hD : D.LevelConsistent k)
+    {n : ℕ} (x : Fin (n + 1) →
+      WallComplement (fun j : D.active k => (D.wall j).support))
+    (γ : (j : Fin n) → AdmissiblePLPath (x j.succ) (x j.castSucc)) :
+    (List.ofFn (fun j => D.levelPathProduct k (γ j))).prod =
+      D.levelTransport k hD (x (Fin.last n)) (x 0) := by
+  induction n with
+  | zero => simp
+  | succ n ih =>
+    rw [List.ofFn_succ, List.prod_cons,
+      ← D.levelTransport_eq_levelPathProduct hD (γ 0),
+      ih (fun j => x j.succ) (fun j => γ j.succ),
+      ← D.levelTransport_comp]
+    simp only [Fin.succ_last, Fin.castSucc_zero]
+
 /-- Interchanging finite-order endpoints inverts transport. -/
 theorem levelTransport_swap {k : ℕ} (hD : D.LevelConsistent k)
     (x y : WallComplement (fun j : D.active k => (D.wall j).support)) :
