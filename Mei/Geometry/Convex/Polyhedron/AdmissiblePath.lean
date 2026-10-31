@@ -190,6 +190,16 @@ theorem nodup_crossing_indices (h : AdmissibleSegment x y) {l : List (ι × ℝ)
   exact Prod.ext rfl (h.subsingleton_crossing i
     ((mem_crossings x y i t).mp (hmem _ ht)) ((mem_crossings x y i s).mp (hmem _ hs)))
 
+/-- A segment has countably many indexed crossings for a countable wall family. -/
+theorem countable_crossings [Countable ι] (h : AdmissibleSegment x y) :
+    (crossings x y).Countable := by
+  refine Set.countable_of_injective_of_countable_image (f := Prod.fst) ?_ (Set.to_countable _)
+  rintro ⟨i, t⟩ ht ⟨j, s⟩ hs hij
+  dsimp at hij
+  subst j
+  exact Prod.ext rfl (h.subsingleton_crossing i
+    ((mem_crossings x y i t).mp ht) ((mem_crossings x y i s).mp hs))
+
 /-- A segment has finitely many indexed crossings for a finite wall family. -/
 theorem finite_crossings [Finite ι] (h : AdmissibleSegment x y) : (crossings x y).Finite := by
   have heq : crossings x y = ⋃ i, Prod.mk i ''

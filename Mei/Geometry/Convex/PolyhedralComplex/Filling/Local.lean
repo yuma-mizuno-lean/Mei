@@ -13,20 +13,22 @@ import Mathlib.Tactic.FunProp
 # Boundary words of fillings from local relations
 
 Fix a normal subgroup `K` of the free group on the walls of a finite polyhedral complex.
-Suppose a continuous square with affine admissible sides is covered by open sets, in each of
-which every admissible polygonal loop has crossing word in `K`. Then the boundary word of the
-square lies in `K`. A filled triangle, viewed as a square with one constant side, has the
-same property. Neither the square nor the triangle needs to be embedded or nondegenerate,
-and their boundary edges are kept fixed.
+Suppose a continuous square with realized admissible polygonal sides is covered by open sets,
+in each of which every admissible polygonal loop has crossing word in `K`. Then the boundary
+word of the square lies in `K`. A filled triangle, viewed as a square with one constant side,
+has the same property. Neither the square nor the triangle needs to be embedded or nondegenerate,
+and their boundary paths are kept fixed.
 
 This reduces global relations among crossing words to local ones. Regular neighbourhoods,
 where crossing words are path independent, give `K = ⊥`; isolating joint neighbourhoods give
 the normal closure of the joint meridians.
 
-The proof subdivides the square by `Mei.Convex.exists_admissible_filling_grid_fixed_boundary`,
-places each grid cell in one of the open sets, and combines
+The proof of `FinitePolyhedralComplex.crossingWord_boundary_mem_of_cover_of_realization`
+subdivides the square by `Mei.Convex.exists_admissible_filling_grid_of_sides` through the dyadic
+breakpoints of its sides, places each grid cell in one of the open sets, and combines
 `FinitePolyhedralComplex.crossingWord_grid_boundary_mem_normalClosure` with
-`FinitePolyhedralComplex.segmentCrossingWord_eq_prod_sampling_of_endpoints` on the four sides.
+`Quiver.Path.crossingWord_eq_prod_ofFn_sampling`. The affine boundary theorem follows by
+reparametrizing each side as the realization of a single-edge path.
 -/
 
 public noncomputable section
@@ -39,6 +41,146 @@ namespace Mei.FinitePolyhedralComplex
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
   (C : FinitePolyhedralComplex h) (ν : C.walls → V →ₗ[ℝ] ℝ)
+
+/-- Let a continuous square whose four sides are the realizations of admissible polygonal paths
+be covered by open sets in which every admissible loop has crossing word in a normal subgroup
+`K`. Then the word of its boundary loop lies in `K`. The square need not be embedded, and its
+sides are kept fixed. -/
+theorem crossingWord_boundary_mem_of_cover_of_realization
+    (hν : ∀ P, (ν P).ker = (affineSpan ℝ (P : Set V)).direction)
+    (K : Subgroup (FreeGroup C.walls)) [K.Normal]
+    {x₀₀ x₁₀ x₀₁ x₁₁ : WallComplement (fun P : C.walls => (P : Set V))}
+    (p₀ : AdmissiblePLPath x₀₀ x₁₀) (p₁ : AdmissiblePLPath x₀₁ x₁₁)
+    (r₀ : AdmissiblePLPath x₀₀ x₀₁) (r₁ : AdmissiblePLPath x₁₀ x₁₁)
+    (f : C(I × I, V))
+    (hp₀ : ∀ s, f (s, 0) = p₀.toContinuousPath s) (hp₁ : ∀ s, f (s, 1) = p₁.toContinuousPath s)
+    (hr₀ : ∀ s, f (0, s) = r₀.toContinuousPath s) (hr₁ : ∀ s, f (1, s) = r₁.toContinuousPath s)
+    {κ : Type*} (U : κ → Set V) (hU : ∀ j, IsOpen (U j)) (hcover : ∀ z, ∃ j, f z ∈ U j)
+    (hlocal : ∀ j (y : WallComplement (fun P : C.walls => (P : Set V)))
+      (p : AdmissiblePLPath y y), (∀ w ∈ p.vertices, w.val ∈ U j) → p.crossingWord ν ∈ K) :
+    ((p₀.comp r₁).comp (p₁.reverse.comp r₀.reverse)).crossingWord ν ∈ K := by
+  classical
+  have := h.finiteDimensional
+  have hclosed (P : C.walls) : IsClosed (P : Set V) :=
+    (C.isConvexPolyhedron (C.mem_cells_of_mem_walls P.property)).isClosed
+  -- The dyadic breakpoints of all four sides.
+  let L := p₀.length + p₁.length + r₀.length + r₁.length
+  let τ : ℕ → I := fun k => ⟨1 / 2 ^ (k + 1), by positivity,
+    by rw [div_le_one (by positivity)]; exact one_le_pow₀ (by norm_num)⟩
+  let T : Finset I := (Finset.range L).image τ
+  -- The countably many parameters at which some side meets a wall.
+  let A : ∀ {a b : WallComplement (fun P : C.walls => (P : Set V))},
+      AdmissiblePLPath a b → Set ℝ := fun q =>
+    {s | ∃ hs : s ∈ Icc (0 : ℝ) 1, ∃ P : C.walls, q.toContinuousPath ⟨s, hs⟩ ∈ (P : Set V)}
+  let S : Set ℝ := ((A p₀ ∪ A p₁) ∪ A r₀) ∪ A r₁
+  have hS : S.Countable :=
+    ((p₀.countable_setOf_toContinuousPath_mem.union
+      p₁.countable_setOf_toContinuousPath_mem).union
+      r₀.countable_setOf_toContinuousPath_mem).union r₁.countable_setOf_toContinuousPath_mem
+  have hoff {a b : WallComplement (fun P : C.walls => (P : Set V))}
+      (q : AdmissiblePLPath a b) (hq : A q ⊆ S) (s : I) (hs : (s : ℝ) ∉ S)
+      (P : C.walls) : q.toContinuousPath s ∉ (P : Set V) :=
+    fun hP => hs (hq ⟨s.2, P, hP⟩)
+  have hsub₀ : A p₀ ⊆ S := fun _ hs => Or.inl (Or.inl (Or.inl hs))
+  have hsub₁ : A p₁ ⊆ S := fun _ hs => Or.inl (Or.inl (Or.inr hs))
+  have hsub₂ : A r₀ ⊆ S := fun _ hs => Or.inl (Or.inr hs)
+  have hsub₃ : A r₁ ⊆ S := fun _ hs => Or.inr hs
+  -- The endpoints and the dyadic breakpoints of every side are allowed.
+  have hstart {a b : WallComplement (fun P : C.walls => (P : Set V))}
+      (q : AdmissiblePLPath a b) : (0 : ℝ) ∉ A q := by
+    rintro ⟨hs, P, hP⟩
+    rw [Set.Icc.mk_zero, Path.source] at hP
+    exact a.notMem P hP
+  have hend {a b : WallComplement (fun P : C.walls => (P : Set V))}
+      (q : AdmissiblePLPath a b) : (1 : ℝ) ∉ A q := by
+    rintro ⟨hs, P, hP⟩
+    rw [Set.Icc.mk_one, Path.target] at hP
+    exact b.notMem P hP
+  have hdyadic {a b : WallComplement (fun P : C.walls => (P : Set V))}
+      (q : AdmissiblePLPath a b) (k : ℕ) : (τ k : ℝ) ∉ A q := by
+    rintro ⟨hs, P, hP⟩
+    exact q.toContinuousPath_notMem_of_eq_half_pow k (s := ⟨_, hs⟩) rfl P hP
+  have h0 : (0 : ℝ) ∉ S := by
+    simp only [S, mem_union, not_or]
+    exact ⟨⟨⟨hstart p₀, hstart p₁⟩, hstart r₀⟩, hstart r₁⟩
+  have h1 : (1 : ℝ) ∉ S := by
+    simp only [S, mem_union, not_or]
+    exact ⟨⟨⟨hend p₀, hend p₁⟩, hend r₀⟩, hend r₁⟩
+  have hT (τ' : I) (hτ' : τ' ∈ T) : (τ' : ℝ) ∉ S := by
+    obtain ⟨k, -, rfl⟩ := Finset.mem_image.mp hτ'
+    simp only [S, mem_union, not_or]
+    exact ⟨⟨⟨hdyadic p₀ k, hdyadic p₁ k⟩, hdyadic r₀ k⟩, hdyadic r₁ k⟩
+  have hSside (s r : I) (hr : r = 0 ∨ r = 1) (hs : (s : ℝ) ∉ S) (P : C.walls) :
+      f (s, r) ∉ (P : Set V) ∧ f (r, s) ∉ (P : Set V) := by
+    rcases hr with rfl | rfl
+    · rw [hp₀, hr₀]
+      exact ⟨hoff p₀ hsub₀ s hs P, hoff r₀ hsub₂ s hs P⟩
+    · rw [hp₁, hr₁]
+      exact ⟨hoff p₁ hsub₁ s hs P, hoff r₁ hsub₃ s hs P⟩
+  -- Between unseparated allowed parameters, each side is an admissible segment.
+  have hpair {a b : WallComplement (fun P : C.walls => (P : Set V))}
+      (q : AdmissiblePLPath a b) (hq : q.length ≤ L) (hqS : A q ⊆ S)
+      {s₁ s₂ : I} (h₁₂ : s₁ ≤ s₂) (hs₁ : (s₁ : ℝ) ∉ S) (hs₂ : (s₂ : ℝ) ∉ S)
+      (hsep : ∀ τ' ∈ T, τ' ≤ s₁ ∨ s₂ ≤ τ') :
+      (q.toContinuousPath s₁, q.toContinuousPath s₂) ∈
+        admissiblePairs (fun P : C.walls => (P : Set V)) :=
+    q.toContinuousPath_mem_admissiblePairs hclosed hq h₁₂
+      (fun k hk => hsep (τ k) (Finset.mem_image_of_mem τ (Finset.mem_range.mpr hk)))
+      (hoff q hqS s₁ hs₁) (hoff q hqS s₂ hs₂)
+  have hside (s₁ s₂ r : I) (hr : r = 0 ∨ r = 1) (h₁₂ : s₁ ≤ s₂) (hs₁ : (s₁ : ℝ) ∉ S)
+      (hs₂ : (s₂ : ℝ) ∉ S) (hsep : ∀ τ' ∈ T, τ' ≤ s₁ ∨ s₂ ≤ τ') :
+      (f (s₁, r), f (s₂, r)) ∈ admissiblePairs (fun P : C.walls => (P : Set V)) ∧
+        (f (r, s₁), f (r, s₂)) ∈ admissiblePairs (fun P : C.walls => (P : Set V)) := by
+    rcases hr with rfl | rfl
+    · rw [hp₀, hp₀, hr₀, hr₀]
+      exact ⟨hpair p₀ (by omega) hsub₀ h₁₂ hs₁ hs₂ hsep,
+        hpair r₀ (by omega) hsub₂ h₁₂ hs₁ hs₂ hsep⟩
+    · rw [hp₁, hp₁, hr₁, hr₁]
+      exact ⟨hpair p₁ (by omega) hsub₁ h₁₂ hs₁ hs₂ hsep,
+        hpair r₁ (by omega) hsub₃ h₁₂ hs₁ hs₂ hsep⟩
+  obtain ⟨n, t, -, ht0, htmono, ht1, htT, v, hvfix, -, e, g, hgrid⟩ :=
+    exists_admissible_filling_grid_of_sides (fun P : C.walls => (P : Set V))
+      (fun P => C.isConvexPolyhedron (C.mem_cells_of_mem_walls P.property))
+      (fun P => C.finrank_direction_add_one_of_mem_walls P.property)
+      f S hS h0 h1 hSside T hT hside U hU hcover (η := 1) zero_lt_one
+  -- Every grid cell lies in one of the open sets, where the local hypothesis applies.
+  let cell := fun a b => (((e a b.castSucc).toPath.cons (g a.succ b)).cons
+    (Quiver.reverse (e a b.succ))).cons (Quiver.reverse (g a.castSucc b))
+  have hnormal : Subgroup.normalClosure
+      {w | ∃ a b : Fin n, w = (cell a b).crossingWord ν} ≤ K := by
+    apply Subgroup.normalClosure_le_normal
+    rintro w ⟨a, b, rfl⟩
+    obtain ⟨j, -, hj⟩ := hgrid a b
+    refine hlocal j _ (cell a b) fun z hz => ?_
+    obtain ⟨c, rfl⟩ := Quiver.Path.grid_cell_vertices_subset_range v e g a b z hz
+    exact hj (subset_convexHull ℝ _ (mem_range_self c))
+  have hmem := hnormal (C.crossingWord_grid_boundary_mem_normalClosure ν hν v e g)
+  -- The four sides of the grid sample the four given paths through their breakpoints.
+  have hbreak {a b : WallComplement (fun P : C.walls => (P : Set V))}
+      (q : AdmissiblePLPath a b) (hq : q.length ≤ L) :
+      ∀ k < q.length, ∃ j ≤ n, (t j : ℝ) = 1 / 2 ^ (k + 1) := fun k hk => by
+    obtain ⟨j, hj, htj⟩ := htT (τ k) (Finset.mem_image_of_mem τ (Finset.mem_range.mpr
+      (by omega)))
+    exact ⟨j, hj, congrArg Subtype.val htj⟩
+  have hrow0 := p₀.crossingWord_eq_prod_ofFn_sampling ν (fun c => v (c, 0)) t htmono ht0 ht1
+    (hbreak p₀ (by omega)) (fun c => by
+      rw [hvfix _ (Or.inr (Or.inr (Or.inl rfl))), Fin.val_zero, ht0, hp₀]) (fun a => e a 0)
+  have hrow1 := p₁.crossingWord_eq_prod_ofFn_sampling ν (fun c => v (c, Fin.last n)) t htmono
+    ht0 ht1 (hbreak p₁ (by omega)) (fun c => by
+      rw [hvfix _ (Or.inr (Or.inr (Or.inr rfl))), Fin.val_last, ht1, hp₁])
+    (fun a => e a (Fin.last n))
+  have hcol0 := r₀.crossingWord_eq_prod_ofFn_sampling ν (fun c => v (0, c)) t htmono ht0 ht1
+    (hbreak r₀ (by omega)) (fun c => by
+      rw [hvfix _ (Or.inl rfl), Fin.val_zero, ht0, hr₀]) (fun b => g 0 b)
+  have hcol1 := r₁.crossingWord_eq_prod_ofFn_sampling ν (fun c => v (Fin.last n, c)) t htmono
+    ht0 ht1 (hbreak r₁ (by omega)) (fun c => by
+      rw [hvfix _ (Or.inr (Or.inl rfl)), Fin.val_last, ht1, hr₁])
+    (fun b => g (Fin.last n) b)
+  dsimp only at hmem
+  rw [← hrow0, ← hrow1, ← hcol0, ← hcol1] at hmem
+  simpa only [Quiver.Path.crossingWord_comp, Quiver.Path.crossingWord_reverse _ ν hν,
+    mul_assoc] using hmem
+
 
 /-- Let a continuous square with the given affine admissible sides be covered by open sets in
 which every admissible loop has crossing word in a normal subgroup `K`. Then the boundary word
@@ -61,63 +203,38 @@ theorem crossingWord_boundary_mem_of_cover
       (p : AdmissiblePLPath y y), (∀ w ∈ p.vertices, w.val ∈ U j) → p.crossingWord ν ∈ K) :
     ((((e₁ 0).toPath.cons (e₂ 1)).cons (Quiver.reverse (e₁ 1))).cons
       (Quiver.reverse (e₂ 0))).crossingWord ν ∈ K := by
-  classical
-  have := h.finiteDimensional
-  obtain ⟨n, t, -, ht0, htmono, ht1, v, hboundary, -, e, g, hgrid⟩ :=
-    exists_admissible_filling_grid_fixed_boundary
-      (fun P : C.walls => (P : Set V))
-      (fun P => C.isConvexPolyhedron (C.mem_cells_of_mem_walls P.property))
-      (fun P => C.finrank_direction_add_one_of_mem_walls P.property)
-      x e₁ e₂ f hf₁ hf₂ U hU hcover (η := 1) zero_lt_one
-  let cell := fun a b => (((e a b.castSucc).toPath.cons (g a.succ b)).cons
-    (Quiver.reverse (e a b.succ))).cons (Quiver.reverse (g a.castSucc b))
-  -- Every grid cell lies in one of the open sets, where the local hypothesis applies.
-  have hnormal : Subgroup.normalClosure
-      {w | ∃ a b : Fin n, w = (cell a b).crossingWord ν} ≤ K := by
-    apply Subgroup.normalClosure_le_normal
-    rintro w ⟨a, b, rfl⟩
-    obtain ⟨j, -, hj⟩ := hgrid a b
-    refine hlocal j _ (cell a b) fun z hz => ?_
-    obtain ⟨c, rfl⟩ := Quiver.Path.grid_cell_vertices_subset_range v e g a b z hz
-    exact hj (subset_convexHull ℝ _ (mem_range_self c))
-  have hmem := hnormal (C.crossingWord_grid_boundary_mem_normalClosure ν hν v e g)
-  -- The four sides of the grid sample the four original edges.
-  have hrow (b : Fin 2) : C.segmentCrossingWord ν (e₁ b) =
-      (List.ofFn (fun a : Fin n => C.segmentCrossingWord ν
-        (e a (if b = 0 then 0 else Fin.last n)))).reverse.prod := by
-    apply C.segmentCrossingWord_eq_prod_sampling_of_endpoints ν (e₁ b)
-      (fun a => v (a, if b = 0 then 0 else Fin.last n)) (fun a => t a.val)
-      ht0 ht1 (fun _ _ hab => htmono hab)
-    intro a
-    rw [hboundary _ (by split_ifs <;> simp)]
-    by_cases hb : b = 0
-    · simpa [hb, ht0] using hf₁ b (t a.val)
-    · simpa [hb, ht1] using hf₁ b (t a.val)
-  have hcol (a : Fin 2) : C.segmentCrossingWord ν (e₂ a) =
-      (List.ofFn (fun b : Fin n => C.segmentCrossingWord ν
-        (g (if a = 0 then 0 else Fin.last n) b))).reverse.prod := by
-    apply C.segmentCrossingWord_eq_prod_sampling_of_endpoints ν (e₂ a)
-      (fun b => v (if a = 0 then 0 else Fin.last n, b)) (fun b => t b.val)
-      ht0 ht1 (fun _ _ hab => htmono hab)
-    intro b
-    rw [hboundary _ (by split_ifs <;> simp)]
-    by_cases ha : a = 0
-    · simpa [ha, ht0] using hf₂ a (t b.val)
-    · simpa [ha, ht1] using hf₂ a (t b.val)
-  have hrow0 : C.segmentCrossingWord ν (e₁ 0) =
-      (List.ofFn (fun a : Fin n => C.segmentCrossingWord ν (e a 0))).reverse.prod := hrow 0
-  have hrow1 : C.segmentCrossingWord ν (e₁ 1) =
-      (List.ofFn (fun a : Fin n => C.segmentCrossingWord ν (e a (Fin.last n)))).reverse.prod :=
-    hrow 1
-  have hcol0 : C.segmentCrossingWord ν (e₂ 0) =
-      (List.ofFn (fun b : Fin n => C.segmentCrossingWord ν (g 0 b))).reverse.prod := hcol 0
-  have hcol1 : C.segmentCrossingWord ν (e₂ 1) =
-      (List.ofFn (fun b : Fin n => C.segmentCrossingWord ν (g (Fin.last n) b))).reverse.prod :=
-    hcol 1
-  dsimp only at hmem
-  rw [← hrow0, ← hrow1, ← hcol0, ← hcol1] at hmem
-  simpa only [Quiver.Path.crossingWord_cons, Quiver.Hom.toPath, Quiver.Path.crossingWord_nil,
-    mul_one, C.segmentCrossingWord_reverse ν hν, mul_assoc] using hmem
+  -- A single-edge realization pauses for half the interval before traversing the edge.
+  let ρ : C(I, I) := ⟨fun s => ⟨max 0 (2 * (s : ℝ) - 1), le_max_left _ _,
+    max_le zero_le_one (by linarith [s.2.2])⟩, by fun_prop⟩
+  have hρ0 : ρ 0 = 0 := by ext; norm_num [ρ]
+  have hρ1 : ρ 1 = 1 := by ext; norm_num [ρ]
+  have hedge {a b : WallComplement (fun P : C.walls => (P : Set V))}
+      (e : a ⟶ b) (s : I) :
+      e.toPath.toContinuousPath s = AffineMap.lineMap a.val b.val (ρ s : ℝ) := by
+    by_cases hs : (s : ℝ) ≤ 1 / 2
+    · rw [Quiver.Hom.toPath, Quiver.Path.toContinuousPath_cons_apply_of_le _ _ hs]
+      simp [Quiver.Path.toContinuousPath_nil, ρ, max_eq_left (by linarith :
+        2 * (s : ℝ) - 1 ≤ 0)]
+    · rw [Quiver.Hom.toPath,
+        Quiver.Path.toContinuousPath_cons_apply_of_ge _ _ (by linarith)]
+      simp only [ρ, ContinuousMap.coe_mk, max_eq_right (by linarith :
+        0 ≤ 2 * (s : ℝ) - 1)]
+  -- Reparametrize both coordinates so all four sides are single-edge realizations.
+  let F := f.comp (ρ.prodMap ρ)
+  have hF₀ (s : I) : F (s, 0) = (e₁ 0).toPath.toContinuousPath s := by
+    simpa [F, hρ0, hedge] using hf₁ 0 (ρ s)
+  have hF₁ (s : I) : F (s, 1) = (e₁ 1).toPath.toContinuousPath s := by
+    simpa [F, hρ1, hedge] using hf₁ 1 (ρ s)
+  have hG₀ (s : I) : F (0, s) = (e₂ 0).toPath.toContinuousPath s := by
+    simpa [F, hρ0, hedge] using hf₂ 0 (ρ s)
+  have hG₁ (s : I) : F (1, s) = (e₂ 1).toPath.toContinuousPath s := by
+    simpa [F, hρ1, hedge] using hf₂ 1 (ρ s)
+  have hb := C.crossingWord_boundary_mem_of_cover_of_realization ν hν K
+    (e₁ 0).toPath (e₁ 1).toPath (e₂ 0).toPath (e₂ 1).toPath F
+    hF₀ hF₁ hG₀ hG₁ U hU (fun z => hcover (ρ.prodMap ρ z)) hlocal
+  simpa only [Quiver.Path.crossingWord_comp, Quiver.Path.crossingWord_reverse _ ν hν,
+    Quiver.Path.crossingWord_cons, Quiver.Hom.toPath, Quiver.Path.crossingWord_nil,
+    C.segmentCrossingWord_reverse ν hν, mul_one, mul_assoc] using hb
 
 /-- Let the filled triangle of an admissible triangular loop be covered by open sets in which
 every admissible loop has crossing word in a normal subgroup `K`. Then the word of the

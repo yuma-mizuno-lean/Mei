@@ -1,15 +1,16 @@
 /-
 Copyright (c) 2026 Mei contributors. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Codex
+Authors: Codex, Claude
 -/
 module
 
 public import Mei.Geometry.Convex.PolyhedralComplex.PathSubdivision
 public import Mei.Geometry.Convex.PolyhedralComplex.Grid
+public import Mei.Geometry.Convex.Polyhedron.Path.Realization
 
 /-!
-# Crossing words of sampled affine segments
+# Crossing words of sampled affine segments and polygonal paths
 
 Sampling an admissible affine segment at a finite monotone sequence of allowed
 points preserves its crossing word. The parameter sequence need not be strictly
@@ -17,6 +18,10 @@ increasing: repeated samples contribute stationary edges with empty words. The
 formula uses the reverse ordered product, with the first crossing on the right.
 It compares the boundary edges of an affine filling with the sampled sides of
 an admissible grid without imposing any relations on the wall labels.
+
+`Quiver.Path.crossingWord_eq_prod_ofFn_sampling` extends this comparison to the
+continuous realization of an admissible polygonal chain. The samples must pass
+through its dyadic breakpoints.
 
 `FinitePolyhedralComplex.crossingWord_boundary_mem_normalClosure_of_sampling`
 places the original four-edge boundary word in the normal closure of the grid
@@ -107,6 +112,131 @@ namespace Quiver.Path
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
   {C : Mei.FinitePolyhedralComplex h}
+
+variable {x y : WallComplement (fun P : C.walls => (P : Set V))}
+
+/-- The sampling formula for an indexed sequence of vertices: the word of an admissible chain is
+the reverse ordered product of the words `w a` of the sampled edges. -/
+private theorem crossingWord_eq_prod_range_sampling (ν : C.walls → V →ₗ[ℝ] ℝ)
+    (p : AdmissiblePLPath x y) (n : ℕ)
+    (v : ℕ → WallComplement (fun P : C.walls => (P : Set V))) (t : ℕ → I)
+    (hmono : Monotone t) (ht0 : t 0 = 0) (htn : t n = 1)
+    (hbreak : ∀ k < p.length, ∃ j ≤ n, (t j : ℝ) = 1 / 2 ^ (k + 1))
+    (hv : ∀ j ≤ n, (v j).val = toContinuousPath p (t j)) (w : ℕ → FreeGroup C.walls)
+    (hw : ∀ a < n, ∃ e : v a ⟶ v (a + 1), C.segmentCrossingWord ν e = w a) :
+    p.crossingWord ν = ((List.range n).map w).reverse.prod := by
+  induction p generalizing n v t w with
+  | nil =>
+    -- Every sampled edge of a constant chain is stationary.
+    rw [crossingWord_nil]
+    refine (List.prod_eq_one (l := ((List.range n).map w).reverse) fun g hg => ?_).symm
+    obtain ⟨a, ha, rfl⟩ := List.mem_map.mp (List.mem_reverse.mp hg)
+    have ha' := List.mem_range.mp ha
+    obtain ⟨e, he⟩ := hw a ha'
+    rw [← he]
+    have hx (j : ℕ) (hj : j ≤ n) : v j = x := by
+      apply WallComplement.ext
+      simpa only [toContinuousPath_nil, Path.refl_apply] using hv j hj
+    suffices ∀ e : v a ⟶ v (a + 1), C.segmentCrossingWord ν e = 1 from this e
+    rw [hx a ha'.le, hx (a + 1) ha']
+    exact C.segmentCrossingWord_self ν
+  | @cons u z p e ih =>
+    -- Split the samples at the parameter `1 / 2` where the last edge begins.
+    obtain ⟨j₀, hj₀n, hj₀⟩ := hbreak 0 (by simp)
+    norm_num at hj₀
+    have hle (j : ℕ) (hj : j ≤ j₀) : (t j : ℝ) ≤ 1 / 2 := hj₀ ▸ hmono hj
+    have hge (j : ℕ) (hj : j₀ ≤ j) : 1 / 2 ≤ (t j : ℝ) := hj₀ ▸ hmono hj
+    obtain ⟨m, rfl⟩ : ∃ m, n = j₀ + m := ⟨n - j₀, by omega⟩
+    rw [List.range_add, List.map_append, List.reverse_append, List.prod_append,
+      crossingWord_cons, List.map_map]
+    congr 1
+    · -- The second half samples the last edge.
+      let s : Fin (m + 1) → I := fun a => projIcc 0 1 zero_le_one (2 * (t (j₀ + a) : ℝ) - 1)
+      have hs (a : Fin (m + 1)) : (s a : ℝ) = 2 * (t (j₀ + a) : ℝ) - 1 := by
+        rw [coe_projIcc]
+        have := hge (j₀ + a) (by omega)
+        have := (t (j₀ + a)).2.2
+        rw [min_eq_right (by linarith), max_eq_right (by linarith)]
+      choose edge hedge using fun a : Fin m => hw (j₀ + a) (by omega)
+      have hsample := C.segmentCrossingWord_eq_prod_sampling_of_endpoints ν e
+        (fun a : Fin (m + 1) => v (j₀ + a)) s
+        (Subtype.ext (by rw [hs]; simp [hj₀]))
+        (Subtype.ext (by rw [hs]; norm_num [htn]))
+        (fun a b hab => monotone_projIcc zero_le_one (by
+          have hab' : j₀ + (a : ℕ) ≤ j₀ + b := by
+            have := Fin.le_def.mp hab
+            omega
+          have : (t (j₀ + a) : ℝ) ≤ t (j₀ + b) := hmono hab'
+          linarith))
+        (fun a => by
+          rw [hv _ (by omega), toContinuousPath_cons_apply_of_ge p e (hge _ (by omega)), hs])
+        edge
+      rw [hsample]
+      congr 2
+      have hl : (List.ofFn fun a : Fin m => w (j₀ + a.val)) =
+          (List.range m).map fun a => w (j₀ + a) := by
+        simpa only [List.getElem_range, List.length_range, Fin.val_cast] using
+          List.ofFn_getElem_eq_map (List.range m) fun a => w (j₀ + a)
+      exact (congrArg List.ofFn (funext hedge)).trans hl
+    · -- The first half samples the realization of `p` at double speed.
+      let s : ℕ → I := fun j => projIcc 0 1 zero_le_one (2 * (t j : ℝ))
+      have hs (j : ℕ) (hj : j ≤ j₀) : s j = ⟨2 * t j, (unitInterval.mul_pos_mem_iff
+          zero_lt_two).2 ⟨(t j).2.1, hle j hj⟩⟩ := by
+        refine projIcc_of_mem _ ⟨?_, ?_⟩ <;> nlinarith [(t j).2.1, hle j hj]
+      refine ih j₀ v s (fun a b hab => monotone_projIcc zero_le_one (by
+          have : (t a : ℝ) ≤ t b := hmono hab
+          linarith))
+        (Subtype.ext (by simp [s, ht0])) (Subtype.ext (by simp [s, hj₀]))
+        (fun k hk => ?_) (fun j hj => ?_) w (fun a ha => hw a (by omega))
+      · obtain ⟨j, hjn, hj⟩ := hbreak (k + 1) (by rw [length_cons]; omega)
+        have hjj₀ : j ≤ j₀ := by
+          by_contra hlt
+          have h1 := hge j (by omega)
+          rw [hj] at h1
+          have : (1 : ℝ) / 2 ^ (k + 1 + 1) < 1 / 2 := by
+            apply one_div_lt_one_div_of_lt (by norm_num)
+            calc (2 : ℝ) = 2 ^ 1 := by norm_num
+              _ < 2 ^ (k + 1 + 1) := pow_lt_pow_right₀ (by norm_num) (by omega)
+          linarith
+        refine ⟨j, hjj₀, ?_⟩
+        rw [hs j hjj₀]
+        simp only [hj, pow_succ]
+        field_simp
+      · rw [hv j (by omega), toContinuousPath_cons_apply_of_le p e (hle j hj), hs j hj]
+
+/-- **Sampling a realized admissible chain.** Sample the realization of an admissible chain
+at monotone parameters from `0` to `1` passing through its dyadic breakpoints `1/2^(k+1)`,
+`k < p.length`, by allowed vertices joined by admissible edges. Then its word is the reverse
+ordered product of the edge words. Samples may repeat. -/
+theorem crossingWord_eq_prod_ofFn_sampling (ν : C.walls → V →ₗ[ℝ] ℝ)
+    (p : AdmissiblePLPath x y) {n : ℕ}
+    (v : Fin (n + 1) → WallComplement (fun P : C.walls => (P : Set V))) (t : ℕ → I)
+    (hmono : Monotone t) (ht0 : t 0 = 0) (htn : t n = 1)
+    (hbreak : ∀ k < p.length, ∃ j ≤ n, (t j : ℝ) = 1 / 2 ^ (k + 1))
+    (hv : ∀ j, (v j).val = toContinuousPath p (t j))
+    (edge : ∀ a : Fin n, v a.castSucc ⟶ v a.succ) :
+    p.crossingWord ν =
+      (List.ofFn fun a => C.segmentCrossingWord ν (edge a)).reverse.prod := by
+  classical
+  -- Extend the samples and the edge words to all natural indices.
+  let clamp : ℕ → Fin (n + 1) := fun j => ⟨min j n, by omega⟩
+  let w : ℕ → FreeGroup C.walls := fun a =>
+    if ha : a < n then C.segmentCrossingWord ν (edge ⟨a, ha⟩) else 1
+  have hw (a : ℕ) (ha : a < n) :
+      ∃ e : v (clamp a) ⟶ v (clamp (a + 1)), C.segmentCrossingWord ν e = w a := by
+    have h₁ : clamp a = Fin.castSucc ⟨a, ha⟩ := Fin.ext (by simp [clamp]; omega)
+    have h₂ : clamp (a + 1) = Fin.succ ⟨a, ha⟩ := Fin.ext (by simp [clamp]; omega)
+    rw [h₁, h₂]
+    exact ⟨edge ⟨a, ha⟩, by simp [w, ha]⟩
+  have hsample := crossingWord_eq_prod_range_sampling ν p n (fun j => v (clamp j)) t hmono ht0
+    htn hbreak (fun j hj => by rw [hv]; simp [clamp, min_eq_left hj]) w hw
+  rw [hsample]
+  congr 2
+  have hl : (List.ofFn fun a : Fin n => w a.val) = (List.range n).map w := by
+    simpa only [List.getElem_range, List.length_range, Fin.val_cast] using
+      List.ofFn_getElem_eq_map (List.range n) w
+  rw [← hl]
+  exact congrArg List.ofFn (funext fun a => by simp [w, a.isLt])
 
 /-- An initial sequence of admissible edges sampling an affine segment has the
 same word as that segment. Only samples through the specified endpoint matter. -/
