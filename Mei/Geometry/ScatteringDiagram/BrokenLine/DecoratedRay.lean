@@ -28,6 +28,11 @@ actual decorated fibers and their weighted sums are locally constant away from a
 finite exceptional arrangement. This concerns one fixed signed wall itinerary;
 it does not bound the number of wall itineraries.
 
+A final decoration and its fixed-itinerary evaluation have zero component in
+every stationary degree distinct from the incoming degree. The stationary-output
+convention follows Mandel, *Scattering diagrams, theta functions, and refined
+tropical curve counts*, Definition 2.10 and §3.3.3 (arXiv:1503.06183v5).
+
 The construction combines `homogeneousHistorySupport` with
 `Convex.admissibleRayFiberEquiv`, retaining all wall avoidance, singular avoidance
 and incoming-source conditions. Endpoint parameterization follows
@@ -137,6 +142,24 @@ theorem normal_velocity_eq
       f j (velocity (Fin.snoc (α := fun _ => Γ) r.1.val p₀ j.succ)) :=
   ((mem_decoratedHistorySupport ℳ T p₀ a velocity f ε r.1.val).mp r.1.property).2 j |>.1
 
+/-- Every segment of a ray with an encounter has nonzero spatial velocity,
+including the incoming tail. This uses the actual transverse encounters. -/
+theorem velocity_ne_zero_of_pos
+    (r : DecoratedAdmissibleRay ℳ T p₀ a velocity f c ε P W S C Q)
+    (hn : 0 < n) (i : Fin (n + 1)) :
+    velocity (Fin.snoc (α := fun _ => Γ) r.1.val p₀ i) ≠ 0 := by
+  refine Fin.lastCases ?_ (fun j => ?_) i
+  · intro hv
+    have he := r.normal_velocity_eq ⟨n - 1, by omega⟩
+    have hj : (⟨n - 1, by omega⟩ : Fin n).succ = Fin.last n := by
+      ext
+      simp
+      omega
+    rw [hj, hv, map_zero] at he
+    exact r.2.transverse ⟨n - 1, by omega⟩ (by simpa only [Fin.snoc_castSucc] using he)
+  · intro hv
+    exact r.2.transverse j (by rw [hv, map_zero])
+
 /-- A stationary incoming degree admits no transverse encounters: the first
 encounter would have both zero and nonzero normal velocity. -/
 theorem encounter_count_eq_zero_of_velocity_eq_zero
@@ -153,6 +176,26 @@ theorem encounter_count_eq_zero_of_velocity_eq_zero
     have ht := r.2.transverse (Fin.last n)
     simp only [Fin.snoc_castSucc] at ht
     exact False.elim (ht (by simpa [hv] using he))
+
+/-- A final decoration has zero component in every stationary degree other
+than the incoming degree. Empty itineraries and stationary inputs are allowed. -/
+theorem decompose_decoration_eq_zero_of_velocity_eq_zero
+    {v : Γ → V}
+    (r : DecoratedAdmissibleRay ℳ T p₀ a v f c ε P W S C Q)
+    {q : Γ} (hq : v q = 0) (hne : q ≠ p₀) :
+    DirectSum.decompose ℳ (r.decoration 0) q = 0 := by
+  apply Subtype.ext
+  cases n with
+  | zero =>
+    have hi : (0 : Fin 1) = Fin.last 0 := rfl
+    rw [hi, r.decoration_last]
+    exact DirectSum.decompose_of_mem_ne ℳ a.property hne.symm
+  | succ n =>
+    have hv := r.velocity_ne_zero_of_pos (Nat.succ_pos n) 0
+    have hdeg : r.1.val 0 ≠ q := by
+      intro he
+      exact hv (by simpa only [← Fin.castSucc_zero, Fin.snoc_castSucc, he] using hq)
+    exact DirectSum.decompose_of_mem_ne ℳ (r.decoration_mem 0) hdeg
 
 /-- The direction determines exactly the prescribed signed crossing. -/
 theorem crossing_sign
@@ -203,6 +246,26 @@ theorem decoratedRayEvaluation_def (Q : V) :
     decoratedRayEvaluation ℳ T p₀ a velocity f c ε P W S C Q =
       let := Fintype.ofFinite (D Q)
       ∑ r : D Q, r.decoration 0 := (rfl)
+
+section
+
+variable {ℳ T p₀ a f c ε P W S C} {v : Γ → V} {Q : V}
+
+/-- For a fixed encounter itinerary, the weighted sum has no stationary
+output component distinct from the input. Cancellation is unrestricted. -/
+@[simp]
+theorem decompose_decoratedRayEvaluation_eq_zero_of_velocity_eq_zero
+    {q : Γ} (hq : v q = 0) (hne : q ≠ p₀) :
+    DirectSum.decompose ℳ
+      (decoratedRayEvaluation ℳ T p₀ a v f c ε P W S C Q) q = 0 := by
+  classical
+  let := Fintype.ofFinite (DecoratedAdmissibleRay ℳ T p₀ a v f c ε P W S C Q)
+  rw [decoratedRayEvaluation_def]
+  simp only [DirectSum.decompose_sum, DirectSum.sum_apply]
+  exact Finset.sum_eq_zero fun r _ =>
+    r.decompose_decoration_eq_zero_of_velocity_eq_zero hq hne
+
+end
 
 open Classical in
 /-- Evaluate by summing exactly the surviving histories admitted by the full
