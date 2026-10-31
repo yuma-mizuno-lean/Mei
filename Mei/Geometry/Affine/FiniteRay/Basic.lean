@@ -244,6 +244,19 @@ theorem directionAt_of_le_bends (β : FiniteAffineRay V P) (t : ℝ)
   exact Finsupp.sum_congr fun b hb => ite_eq_left (ht b hb)
 
 omit [Module ℝ V] [AddTorsor V P] in
+/-- At and after the endpoint, the interval direction is the final direction. -/
+@[simp]
+theorem directionAt_of_nonneg (β : FiniteAffineRay V P) {u : ℝ} (hu : 0 ≤ u) :
+    β.directionAt u = β.direction := by
+  classical
+  rw [directionAt_def]
+  have h : β.bends.sum (fun b v => if u ≤ b then v else 0) = 0 := by
+    apply Finset.sum_eq_zero
+    intro b hb
+    exact ite_eq_right ((β.bend_neg b hb).trans_le hu).not_ge
+  rw [h, add_zero]
+
+omit [Module ℝ V] [AddTorsor V P] in
 /-- Across an interval with no interior bend, the change of direction is exactly
 the increment at its left endpoint. A bend at the right endpoint is already
 included in both incoming directions. -/
