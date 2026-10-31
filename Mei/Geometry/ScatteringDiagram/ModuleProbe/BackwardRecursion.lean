@@ -5,9 +5,8 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.ScatteringDiagram.ModuleProbe.Asymptotic.Extension
+public import Mei.Geometry.ScatteringDiagram.ModuleProbe.IncomingSegment
 public import Mei.Geometry.ScatteringDiagram.ModuleProbe.EventInput
-public import Mei.Geometry.Convex.Polyhedron.Path.Ray
 
 /-!
 # The probe recursion along complete backward rays
@@ -26,9 +25,8 @@ different events is assumed. Zero spatial directions and empty event lists are
 included. Only additional probe walls carrying the component in question must
 be outgoing.
 
-We assemble `Convex.exists_ray_admissibilityArrangement`,
-`ModuleProbe.eventually_shiftedQuotientComponent_extendedCoefficientField_eq`
-and `ModuleProbe.exists_shiftedQuotientComponent_extendedCoefficientField_eq_add_sum_eventInputs`.
+We assemble `ModuleProbe.exists_incomingSegmentArrangement` and
+`ModuleProbe.exists_shiftedQuotientComponent_extendedCoefficientField_eq_add_sum_eventInputs`.
 The backward-ray recursion follows Mandel, *Scattering diagrams, theta functions,
 and refined tropical curve counts*, §3.3.3 (arXiv:1503.06183v5).
 -/
@@ -131,45 +129,23 @@ theorem exists_backwardRayRecursionArrangement
                                 (field k (hBc.mono (Nat.le_succ k))
                                   ((restriction k).obj (z j))))))) := by
   classical
-  let := h.finiteDimensional
-  -- The geometric arrangement works for the whole finite degree inventory.
-  let vectors := (d.finite_cutoff (k + 1)).toFinset.image (fun n => i (ρ (p + n)))
-  obtain ⟨E, hE⟩ := exists_ray_admissibilityArrangement
-    (fun c : B.active (k + 1) => (B.wall c).support)
-    (fun c => (B.wall c).isConvexPolyhedron)
-    (fun c => (B.wall c).finrank_direction_add_one) vectors
+  obtain ⟨E, hE⟩ := exists_incomingSegmentArrangement
+    d ℳ p ℒ H h h' D₀ a D B hinitial (k + 1) hD hBc hB
   refine ⟨E, fun Q hQ => ?_⟩
   obtain ⟨y, hy, hsegment⟩ := hE Q hQ
   refine ⟨y, hy, fun n hn => ?_⟩
-  have hv : i (ρ (p + n.val)) ∈ vectors :=
-    Finset.mem_image.mpr ⟨n.val, (d.finite_cutoff (k + 1)).mem_toFinset.mpr n.property, rfl⟩
-  -- Eventual admissibility also excludes every encounter beyond the starting point.
-  have htail : ∀ᶠ T : ℝ in atTop, ∀ s ≥ T, ∀ c : B.active (k + 1),
-      Q + s • i (ρ (p + n.val)) ∉ (B.wall c).support :=
-    (eventually_forall_ge_atTop.mpr (hsegment _ hv)).mono fun T hT s hs c hmem => by
-      obtain ⟨x, hx, _⟩ := hT s hs
-      exact x.notMem c (hx ▸ hmem)
   have hq : d.degree ((p + n.val) - p) = k + 1 := by
     simpa only [add_sub_cancel_left] using hn
   have hne : p ≠ p + n.val := by
     intro he
     rw [← he, sub_self, map_zero] at hq
     omega
-  filter_upwards [eventually_gt_atTop (0 : ℝ), htail, hsegment _ hv,
-    eventually_shiftedQuotientComponent_extendedCoefficientField_eq
-      d ℳ p ℒ H h h' D₀ a D B hinitial (k + 1) hD hBc hB (p + n.val)
-      (by omega) (hout n hn) (isCompact_singleton (x := Q))] with T hT htail hseg hvalue
-  obtain ⟨x, hx, he⟩ := hseg
-  let e : x ⟶ y := ⟨he⟩
+  filter_upwards [eventually_gt_atTop (0 : ℝ), hsegment n (hout n hn)] with T hT hseg
+  obtain ⟨htail, x, e, hx, hvalue⟩ := hseg
   -- The distant initial component vanishes because the output has positive relative degree.
   have hzero : d.shiftedQuotientComponent ℳ p (p + n.val) (k + 1) (by omega)
-      (field (k + 1) hBc x) = 0 := by
-    have hx' : (⟨Q + T • i (ρ (p + n.val)), by rw [← hx]; exact x.notMem⟩ :
-        WallComplement (fun c : B.active (k + 1) => (B.wall c).support)) = x :=
-      WallComplement.ext hx.symm
-    have hv := hvalue Q (mem_singleton Q) (by rw [← hx]; exact x.notMem)
-    rw [hx'] at hv
-    exact hv.trans (Subtype.ext (DirectSum.decompose_of_mem_ne ℳ a.property hne))
+      (field (k + 1) hBc x) = 0 :=
+    hvalue.trans (Subtype.ext (DirectSum.decompose_of_mem_ne ℳ a.property hne))
   refine ⟨hT, htail, x, e, hx, ?_⟩
   dsimp only
   intro ε hε
