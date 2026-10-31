@@ -174,17 +174,22 @@ theorem outgoing_exists_iff (D : DirectedWall (d := d) h H) : D.Outgoing ↔
     ∃ x ∈ D.support, ∃ t : ℝ, 0 ≤ t ∧ x + t • i (ρ D.ray.generator) ∉ D.support := by
   simp only [Outgoing, incoming_iff, not_forall, exists_prop]
 
+/-- Walls with the same affine tangent direction have integral normals with equal kernels. -/
+theorem normal_ker_eq_of_direction_eq (D E : DirectedWall (d := d) h H)
+    (he : (affineSpan ℝ D.support).direction = (affineSpan ℝ E.support).direction) :
+    D.normal.ker = E.normal.ker := by
+  ext n
+  have hn := SetLike.ext_iff.mp
+    (D.direction_support.symm.trans (he.trans E.direction_support)) (i n)
+  simpa only [LinearMap.mem_ker, h.realCharacter_apply, Int.cast_eq_zero,
+    AddMonoidHom.mem_ker] using hn
+
 /-- Walls with the same affine tangent direction have proportional integral normals. -/
 private theorem exists_ne_zero_zsmul_eq_normal_of_direction_eq (D E : DirectedWall (d := d) h H)
     (he : (affineSpan ℝ D.support).direction = (affineSpan ℝ E.support).direction) :
     ∃ c e : ℤ, c ≠ 0 ∧ e ≠ 0 ∧ c • D.normal = e • E.normal := by
-  have hk : D.normal.ker = E.normal.ker := by
-    ext n
-    have hn := SetLike.ext_iff.mp
-      (D.direction_support.symm.trans (he.trans E.direction_support)) (i n)
-    simpa only [LinearMap.mem_ker, h.realCharacter_apply, Int.cast_eq_zero,
-      AddMonoidHom.mem_ker] using hn
-  exact D.normal.exists_ne_zero_zsmul_eq_of_ker_eq E.normal D.normal_ne_zero hk
+  exact D.normal.exists_ne_zero_zsmul_eq_of_ker_eq E.normal D.normal_ne_zero
+    (D.normal_ker_eq_of_direction_eq E he)
 
 /-- Labels commute whenever the affine tangent hyperplanes have the same direction.
 The wall supports need not meet and the supported primitive degrees may differ. -/
