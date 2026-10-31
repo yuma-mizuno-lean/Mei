@@ -37,21 +37,11 @@ theorem eventually_lineMap_notMem_other_walls (hθP : θ ∈ (P : Set V))
     (hθ : θ ∉ singularSupport (fun Q : C.walls => (Q : Set V))) :
     ∀ᶠ q : V × V in 𝓝 (θ, θ), ∀ Q : C.walls, Q ≠ P →
       ∀ t ∈ Icc (0 : ℝ) 1, AffineMap.lineMap q.1 q.2 t ∉ (Q : Set V) := by
-  classical
-  have hQ (Q : C.walls) : ∀ᶠ q : V × V in 𝓝 (θ, θ),
-      Q ≠ P → ∀ t ∈ Icc (0 : ℝ) 1, AffineMap.lineMap q.1 q.2 t ∉ (Q : Set V) := by
-    by_cases he : Q = P
-    · exact Eventually.of_forall fun _ hne => (hne he).elim
-    · have hnot : θ ∉ (Q : Set V) := fun hQ =>
-        he (C.eq_of_mem_wall_of_notMem_singularSupport hQ hθP hθ)
-      have hc := (C.isConvexPolyhedron (C.mem_cells_of_mem_walls Q.property)).isClosed
-      have hbase : (θ, θ) ∈ {q : V × V |
-          ∀ t ∈ Icc (0 : ℝ) 1, AffineMap.lineMap q.1 q.2 t ∉ (Q : Set V)} := by
-        simpa using fun (t : ℝ) (_ht : t ∈ Icc (0 : ℝ) 1) => hnot
-      have hn := hc.isOpen_setOf_lineMap_notMem.mem_nhds hbase
-      filter_upwards [hn] with q hq
-      exact fun _ => hq
-  exact eventually_all.mpr hQ
+  filter_upwards [eventually_forall_lineMap_notMem_of_notMem
+    (fun Q : C.walls =>
+      (C.isConvexPolyhedron (C.mem_cells_of_mem_walls Q.property)).isClosed) θ]
+    with q hq Q hne
+  exact hq Q (fun hQ => hne (C.eq_of_mem_wall_of_notMem_singularSupport hQ hθP hθ))
 
 /-- Close to a regular point on a wall, a segment crossing that wall crosses
 no other wall; its ordered crossing list consists of that single event. -/

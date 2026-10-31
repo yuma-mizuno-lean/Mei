@@ -49,26 +49,14 @@ theorem eventually_exists_crossings_iff [FiniteDimensional ℝ V]
         ∀ j t, (j, t) ∈ crossings x y ↔ θ ∈ W j ∧ t = (1 / 2 : ℝ) := by
   classical
   -- Closed nonincident supports and singular support are avoided uniformly nearby.
-  have hmiss : ∀ᶠ q : V × V in 𝓝 (θ, θ), ∀ j, θ ∉ W j →
-      ∀ t ∈ Icc (0 : ℝ) 1, AffineMap.lineMap q.1 q.2 t ∉ W j := by
-    apply eventually_all.mpr
-    intro j
-    by_cases hj : θ ∈ W j
-    · exact Eventually.of_forall fun _ hn => (hn hj).elim
-    · have hbase : (θ, θ) ∈ {q : V × V |
-          ∀ t ∈ Icc (0 : ℝ) 1, AffineMap.lineMap q.1 q.2 t ∉ W j} := by
-        simpa using fun (t : ℝ) (_ht : t ∈ Icc (0 : ℝ) 1) => hj
-      filter_upwards [(hclosed j).isOpen_setOf_lineMap_notMem.mem_nhds hbase] with q hq
-      exact fun _ => hq
+  have hmiss := eventually_forall_lineMap_notMem_of_notMem hclosed θ
   have hreg : ∀ᶠ q : V × V in 𝓝 (θ, θ), ∀ t ∈ Icc (0 : ℝ) 1,
       AffineMap.lineMap q.1 q.2 t ∉ singularSupport W :=
     (isClosed_singularSupport W hclosed).isOpen_setOf_lineMap_notMem.mem_nhds
       (by simpa using fun (t : ℝ) (_ht : t ∈ Icc (0 : ℝ) 1) => hθ)
-  have hc : Continuous (fun a : ℝ => (θ - a • v, θ + a • v)) := by fun_prop
-  have ht : Tendsto (fun a : ℝ => (θ - a • v, θ + a • v)) (𝓝 0) (𝓝 (θ, θ)) := by
-    simpa using hc.tendsto 0
-  filter_upwards [(ht.eventually (hmiss.and hreg)).filter_mono nhdsWithin_le_nhds,
-    self_mem_nhdsWithin] with a ha ha0
+  have hnear := eventually_add_smul_pair θ (-v) v (hmiss.and hreg)
+  simp only [smul_neg, ← sub_eq_add_neg] at hnear
+  filter_upwards [hnear, self_mem_nhdsWithin] with a ha ha0
   have ha0 : 0 < a := ha0
   -- Transversality excludes incident supports at the endpoints and gives unique crossings.
   have hnot {b : ℝ} (hb : b ≠ 0) {j : ι} (hj : θ ∈ W j) : θ + b • v ∉ W j := by
