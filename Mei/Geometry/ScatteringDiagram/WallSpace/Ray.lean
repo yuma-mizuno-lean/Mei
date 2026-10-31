@@ -59,6 +59,13 @@ theorem raySubmodule_rescale (w : SupportedRay d) (m : Λ →+ ℤ)
     (c : ℤ) (hc : c ≠ 0) : H.raySubmodule w (c • m) = H.raySubmodule w m := by
   simp only [raySubmodule_def, H.rescale _ _ c hc]
 
+/-- Normals with the same kernel give the same supported-ray wall sum. -/
+theorem raySubmodule_eq_of_ker_eq {Λ : Type*} [AddCommGroup Λ]
+    {ρ : Γ →+ Λ} {ℒ : Γ → Submodule R L} (H : DirectedWallSpaces ρ ℒ)
+    (w : SupportedRay d) {m m' : Λ →+ ℤ} (hker : m.ker = m'.ker) :
+    H.raySubmodule w m = H.raySubmodule w m' := by
+  simp only [raySubmodule_def, H.wall_eq_of_ker_eq _ hker]
+
 /-- A zero normal has zero ray submodule. -/
 @[simp]
 theorem raySubmodule_zero (w : SupportedRay d) : H.raySubmodule w 0 = ⊥ := by
