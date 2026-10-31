@@ -79,26 +79,6 @@ variable {V J K : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
   (hupper : a < r.parameter (Fin.natAdd 1 (0 : Fin (n + 1))))
   (hlower : ∀ j : Fin n, r.parameter (Fin.natAdd 1 j).succ < a)
 
-include hlower in
-private theorem bends_before_cut_or_final :
-    ∀ u ∈ r.ray.bends.support,
-      u < a ∨ u = r.parameter (Fin.natAdd 1 (0 : Fin (n + 1))) := by
-  intro u hu
-  obtain ⟨j, rfl⟩ := r.bends_recorded u hu
-  by_cases hj : j.val = 0
-  · right
-    congr 1
-    apply Fin.ext
-    simp [hj]
-  · left
-    let k : Fin n := ⟨j.val - 1, by omega⟩
-    have he : j = Fin.natAdd 1 k := by
-      apply Fin.ext
-      simp only [Fin.val_natAdd]
-      dsimp [k]
-      omega
-    simpa only [he] using hlower k
-
 /-- Reattaching the final encounter to its actual incoming truncation restores
 the full ray. The only cut hypotheses place the cut in the preceding open segment;
 the recorded-encounter axioms supply the required absence of other bends. -/
@@ -112,14 +92,15 @@ theorem extend_truncate_ray :
           r.strictAnti_parameter (a := 0) (b := Fin.natAdd 1 (0 : Fin (n + 1)))
             (by simp [Fin.lt_def]))) =
         r.ray := by
-  have hdir : r.ray.direction = v 0 := by
-    simpa only [r.parameter_zero, FiniteAffineRay.directionAt_of_nonneg _ le_rfl] using
-      r.directionAt_eq 0
-  rw [ray_truncate, ← hdir]
-  exact r.ray.extend_truncate hupper.le (by
-    simpa only [r.parameter_zero] using
-      r.strictAnti_parameter (a := 0) (b := Fin.natAdd 1 (0 : Fin (n + 1)))
-        (by simp [Fin.lt_def]))
-    (r.bends_before_cut_or_final a hlower)
+  rw [ray_truncate]
+  apply r.ray_extend_truncate (0 : Fin (1 + n)) hupper.le
+  · intro k
+    refine Fin.addCases ?_ (fun j _ => hlower j) k
+    intro i hi
+    have hi0 : i = 0 := Subsingleton.elim _ _
+    subst i
+    exact (lt_irrefl _ hi).elim
+  · intro i hi
+    exact congrArg v (le_antisymm hi (Fin.zero_le i))
 
 end Mei.Convex.AdmissibleRayRealization
