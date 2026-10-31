@@ -122,18 +122,9 @@ theorem eventually_forall_mem_admissibleBackwardDomain (j : Fin (m + n)) (hj : j
   -- between this ray's recorded parameters control how small it must be.
   filter_upwards [r.eventually_exists_incoming_truncate (m := m) (n := n)] with η hη hq hp
   have hzero := hq 0 (Fin.zero_le _)
-  have ht := r.2.parameter_eq_div_of_directions_eq j
+  have hx := r.2.ray_parameter_succ_eq_of_directions_eq j
     (fun l hl => (hq l hl).trans hzero.symm)
-  have hpoint := r.2.ray_eq_endpoint_sub_smul j.succ
-    (fun l hl => (hq l (Fin.le_castSucc_iff.mpr hl)).trans hzero.symm)
-    (t := r.2.parameter j.succ)
-    ⟨le_rfl, by simpa only [r.2.parameter_zero] using
-      r.2.strictAnti_parameter.antitone (Fin.zero_le j.succ)⟩
-  rw [hzero] at ht hpoint
-  have hx : r.2.ray (r.2.parameter j.succ) =
-      Q + ((c j - f j Q) / f j (v q)) • v q := by
-    rw [hpoint, ht]
-    simp only [← neg_sub (c j) (f j Q), neg_div, neg_smul, sub_neg_eq_add]
+  rw [hzero] at hx
   obtain ⟨s, hs, _, _, _⟩ := hη
   have hd := s.2.mem_admissibleBackwardDomain
   rw [hs] at hd

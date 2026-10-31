@@ -90,4 +90,16 @@ theorem parameter_eq_div_of_directions_eq
   apply (eq_div_iff hn).mpr
   linarith
 
+/-- If the terminal piece is straight, its initial encounter lies at the explicit
+intersection of the straight backward line with the encounter hyperplane. -/
+theorem ray_parameter_succ_eq_of_directions_eq
+    (r : AdmissibleRayRealization f c v P W S C Q) (j : Fin n)
+    (hv : ∀ i ≤ j.castSucc, v i = v 0) :
+    r.ray (r.parameter j.succ) = Q + ((c j - f j Q) / f j (v 0)) • v 0 := by
+  have ht : r.parameter j.succ < 0 := by
+    simpa only [r.parameter_zero] using r.strictAnti_parameter (Fin.succ_pos j)
+  rw [r.ray_eq_endpoint_sub_smul j.succ (fun i hi => hv i (Fin.le_castSucc_iff.mpr hi))
+    ⟨le_rfl, ht.le⟩, r.parameter_eq_div_of_directions_eq j hv, ← neg_sub (c j) (f j Q),
+    neg_div, neg_smul, sub_neg_eq_add]
+
 end Mei.Convex.AdmissibleRayRealization

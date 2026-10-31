@@ -138,20 +138,9 @@ theorem eventually_exists_straightTerminal_incoming [Finite J] :
       r.eventually_exists_incoming_truncate j.succ))
   filter_upwards [hcuts] with η hη r j p q hv hp
   have hzero := hv 0 (Fin.zero_le _)
-  have ht := r.realization.2.parameter_eq_div_of_directions_eq j
+  have hpoint := r.realization.2.ray_parameter_succ_eq_of_directions_eq j
     (fun i hi => (hv i hi).trans hzero.symm)
-  have hx := r.realization.2.ray_eq_endpoint_sub_smul j.succ
-    (fun i hi => (hv i (Fin.le_castSucc_iff.mpr hi)).trans hzero.symm)
-    (t := r.realization.2.parameter j.succ)
-    ⟨le_rfl, by simpa only [r.realization.2.parameter_zero] using
-      r.realization.2.strictAnti_parameter.antitone (Fin.zero_le j.succ)⟩
-  rw [hzero] at ht hx
-  have hpoint : r.realization.2.ray (r.realization.2.parameter j.succ) =
-      Q + ((c (r.itinerary.get j) - f (r.itinerary.get j) Q) /
-        f (r.itinerary.get j) (v q)) • v q := by
-    rw [hx, ht]
-    simp only [← neg_sub (c (r.itinerary.get j)) (f (r.itinerary.get j) Q),
-      neg_div, neg_smul, sub_neg_eq_add]
+  rw [hzero] at hpoint
   have hcut := hη r j
   rw [hpoint, hp] at hcut
   simpa only [Fin.val_succ] using hcut
