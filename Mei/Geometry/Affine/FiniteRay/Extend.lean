@@ -75,6 +75,20 @@ theorem bends_extend (β : FiniteAffineRay V P) (s t : ℝ) (w : V)
       β.bends.mapDomain (fun b => b - (s + t)) +
         Finsupp.single (-t) (β.direction - w) := (rfl)
 
+/-- At each time the extended increment is the translated old increment plus
+the new direction change, which may be zero. -/
+@[simp↓]
+theorem bends_extend_apply (β : FiniteAffineRay V P) (s t : ℝ) (w : V)
+    (hs : 0 ≤ s) (ht : 0 < t) (u : ℝ) :
+    (β.extend s t w hs ht).bends u =
+      β.bends (u + (s + t)) + if u = -t then β.direction - w else 0 := by
+  classical
+  rw [bends_extend, Finsupp.add_apply]
+  have he : u = (u + (s + t)) - (s + t) := by abel
+  conv_lhs => arg 1; arg 2; rw [he]
+  rw [Finsupp.mapDomain_apply_of_injective sub_left_injective]
+  simp only [Finsupp.single_apply, eq_comm]
+
 /-- Every actual extended bend is either a translated old bend or the new encounter.
 The new encounter is omitted from the support when its increment is zero. -/
 theorem mem_support_bends_extend (β : FiniteAffineRay V P) (s t : ℝ) (w : V)
