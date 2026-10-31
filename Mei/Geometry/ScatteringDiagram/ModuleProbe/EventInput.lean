@@ -103,101 +103,6 @@ theorem eventually_exists_extendedCoefficientField_eq_eventInput
   -- The tower projection carries the same group structure as the truncated BCH group.
   rfl
 
-/-- The change in the highest retained component is a finite sum over crossings
-and strictly lower input degrees, read from the actual probe field at a point on
-the incoming side of every event. All these points may be chosen
-within any prescribed positive parameter distance of their respective events.
-No genericity or commutation between different events is required. -/
-theorem exists_shiftedQuotientComponent_extendedCoefficientField_eq_add_sum_eventInputs
-    (k : ℕ) (hBc : B.LevelConsistent (k + 1))
-    (hD : D.LevelConsistent (k + 2))
-    (hB : (D.map (chargeZeroGradedLieHom d ℳ p ℒ)
-      (chargeZeroGradedLieHom_mem_wall d ℳ p ℒ H)).LevelEquivalent
-      (cylinderDiagram d ℳ p ℒ H h h' B) (k + 1))
-    {x y : WallComplement (fun c : B.active (k + 1) => (B.wall c).support)}
-    (e : x ⟶ y) (q : Γ) (hq : d.degree (q - p) = k + 1)
-    {ε : ℝ} (hε : 0 < ε) :
-    let T := (orderedCrossingTimes e).reverse
-    let g := labels (k + 1) e
-    ∃ (t : Fin g.length → ℝ)
-      (z : Fin g.length → WallComplement (fun c : B.active (k + 1) => (B.wall c).support)),
-      (∀ j : Fin g.length,
-        t j ∈ Ioo (0 : ℝ) (T[j.val]'(by simpa only [g, List.length_map] using j.isLt)) ∧
-        T[j.val]'(by simpa only [g, List.length_map] using j.isLt) - t j < ε ∧
-        (z j).val = AffineMap.lineMap x.val y.val (t j)) ∧
-      d.shiftedQuotientComponent ℳ p q (k + 1) (by omega) (field (k + 1) hBc y) =
-        d.shiftedQuotientComponent ℳ p q (k + 1) (by omega) (field (k + 1) hBc x) +
-          ∑ j : Fin g.length, ∑ n ∈ (d.finite_cutoff k).toFinset.attach,
-            d.shiftedQuotientComponent ℳ p q (k + 1) (by omega)
-              ((A).truncatedBCHAction d ℒ (k + 1) g[j]
-                (Submodule.Quotient.mk
-                  (shiftedInclusion ℳ d.monoid p
-                    ⟨n.val, (d.mem_cutoff.mp
-                      ((d.finite_cutoff k).mem_toFinset.mp n.property)).1⟩
-                    (d.shiftedQuotientComponent ℳ p (p + n.val) k
-                      (by simpa only [add_sub_cancel_left] using
-                        (d.mem_cutoff.mp
-                          ((d.finite_cutoff k).mem_toFinset.mp n.property)).2)
-                      (field k (hBc.mono (Nat.le_succ k)) ((restriction k).obj (z j))))))) := by
-  dsimp only
-  let T := (orderedCrossingTimes e).reverse
-  let g := labels (k + 1) e
-  have hchoose (j : Fin g.length) :
-      ∃ (t : ℝ) (z : WallComplement (fun c : B.active (k + 1) => (B.wall c).support)),
-        t ∈ Ioo (0 : ℝ) (T[j.val]'(by simpa only [g, List.length_map] using j.isLt)) ∧
-        T[j.val]'(by simpa only [g, List.length_map] using j.isLt) - t < ε ∧
-        z.val = AffineMap.lineMap x.val y.val t ∧
-        field k (hBc.mono (Nat.le_succ k)) ((restriction k).obj z) =
-          (A).truncatedBCHAction d ℒ k
-            ((d.truncationMap ℒ (Nat.le_succ k)).bchGroupMap (g.drop (j.val + 1)).prod)
-            (field k (hBc.mono (Nat.le_succ k)) ((restriction k).obj x)) := by
-    have hj : j.val < (orderedCrossingTimes e).length := by
-      simpa only [g, List.length_map, List.length_reverse] using j.isLt
-    have hjT : j.val < T.length := by simpa only [T, List.length_reverse] using hj
-    have hevent := eventually_exists_extendedCoefficientField_eq_eventInput
-      d ℳ p ℒ H h h' D B (Nat.le_succ k) (hBc.mono (Nat.le_succ k)) e ⟨j.val, hj⟩
-    have hnear : ∀ᶠ t : ℝ in 𝓝[<] T[j.val], T[j.val] - ε < t :=
-      (eventually_gt_nhds (by linarith : T[j.val] - ε < T[j.val])).filter_mono
-        nhdsWithin_le_nhds
-    obtain ⟨t, ⟨⟨ht, z, hz, he⟩, hnear⟩, htτ⟩ :=
-      (hevent.and hnear |>.and self_mem_nhdsWithin).exists
-    exact ⟨t, z, ⟨ht.1, htτ⟩, by linarith, hz, he⟩
-  choose t z ht hnear hz he using hchoose
-  refine ⟨t, z, fun j => ⟨ht j, hnear j, hz j⟩, ?_⟩
-  rw [shiftedQuotientComponent_extendedCoefficientField_eq_add_sum_crossings
-    d ℳ p ℒ H h h' D B k hBc hD hB e q hq]
-  congr 1
-  apply Finset.sum_congr rfl
-  intro j _
-  rw [← he j]
-
-/-- At any smaller cutoff, the suffix transport before an event equals the
-actual probe field on every sufficiently short incoming subsegment. No
-consistency of the probe diagram is required for this transport identity. -/
-theorem eventually_exists_extendedCoefficientField_eq_drop
-    {k l : ℕ} (hkl : k ≤ l) (hBc : B.LevelConsistent k)
-    {x y : WallComplement (fun c : B.active l => (B.wall c).support)}
-    (e : x ⟶ y) (j : Fin (orderedCrossingTimes e).reverse.length) :
-    let g := labels l e
-    ∀ᶠ ε : ℝ in 𝓝[>] 0,
-      ∃ z : WallComplement (fun c : B.active l => (B.wall c).support),
-        z.val = AffineMap.lineMap x.val y.val ((orderedCrossingTimes e).reverse[j.val] - ε) ∧
-        field k hBc ((cutoffRestriction hkl).obj z) =
-          (A).truncatedBCHAction d ℒ k
-            ((d.truncationMap ℒ hkl).bchGroupMap (g.drop (j.val + 1)).prod)
-            (field k hBc ((cutoffRestriction hkl).obj x)) := by
-  dsimp only
-  have htendsto : Tendsto (fun ε : ℝ => (orderedCrossingTimes e).reverse[j.val] - ε)
-      (𝓝[>] 0) (𝓝[<] (orderedCrossingTimes e).reverse[j.val]) := by
-    simpa only [Tendsto, sub_zero] using
-      (Filter.map_subLeft_nhdsGT
-        (c := (orderedCrossingTimes e).reverse[j.val]) (a := (0 : ℝ))).le
-  filter_upwards [htendsto.eventually (eventually_exists_extendedCoefficientField_eq_eventInput
-    d ℳ p ℒ H h h' D B hkl hBc e
-    ⟨j.val, by simpa only [List.length_reverse] using j.isLt⟩)] with ε hε
-  obtain ⟨_, z, hz, he⟩ := hε
-  exact ⟨z, hz, he⟩
-
 /-- For every sufficiently small common displacement, the segment correction
 sum reads the actual probe field immediately before each crossing. Only the
 preceding-cutoff values at these allowed incoming points enter the corrections. -/
@@ -220,10 +125,30 @@ theorem eventually_exists_extendedCoefficientField_eq_add_sum_incoming
           (field k (hBc.mono (Nat.le_succ k)) ((restriction k).obj (z j))) := by
   classical
   dsimp only
-  have hg (j : Fin (labels (k + 1) e).length) :=
-    eventually_exists_extendedCoefficientField_eq_drop d ℳ p ℒ H h h' D B
-      (Nat.le_succ k) (hBc.mono (Nat.le_succ k)) e
-      ⟨j.val, by simpa only [List.length_map] using j.isLt⟩
+  have hg (j : Fin (labels (k + 1) e).length) :
+      ∀ᶠ ε : ℝ in 𝓝[>] 0,
+        ∃ z : WallComplement (fun c : B.active (k + 1) => (B.wall c).support),
+          z.val = AffineMap.lineMap x.val y.val
+            ((orderedCrossingTimes e).reverse[j.val]'(by
+              simpa only [List.length_map] using j.isLt) - ε) ∧
+          field k (hBc.mono (Nat.le_succ k)) ((restriction k).obj z) =
+            (A).truncatedBCHAction d ℒ k
+              ((d.truncationMap ℒ (Nat.le_succ k)).bchGroupMap
+                ((labels (k + 1) e).drop (j.val + 1)).prod)
+              (field k (hBc.mono (Nat.le_succ k)) ((restriction k).obj x)) := by
+    have hj : j.val < (orderedCrossingTimes e).reverse.length := by
+      simpa only [List.length_map] using j.isLt
+    have htendsto : Tendsto
+        (fun ε : ℝ => (orderedCrossingTimes e).reverse[j.val] - ε)
+        (𝓝[>] 0) (𝓝[<] (orderedCrossingTimes e).reverse[j.val]) := by
+      simpa only [Tendsto, sub_zero] using
+        (Filter.map_subLeft_nhdsGT
+          (c := (orderedCrossingTimes e).reverse[j.val]) (a := (0 : ℝ))).le
+    filter_upwards [htendsto.eventually
+      (eventually_exists_extendedCoefficientField_eq_eventInput d ℳ p ℒ H h h' D B
+        (Nat.le_succ k) (hBc.mono (Nat.le_succ k)) e
+        ⟨j.val, by simpa only [List.length_reverse] using hj⟩)] with ε hε
+    exact hε.2
   filter_upwards [Filter.eventually_all.mpr hg] with ε hε
   choose z hz hvalue using hε
   refine ⟨z, hz, ?_⟩
