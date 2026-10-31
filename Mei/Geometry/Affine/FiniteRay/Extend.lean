@@ -76,23 +76,32 @@ theorem bends_extend (β : FiniteAffineRay V P) (s t : ℝ) (w : V)
         Finsupp.single (-t) (β.direction - w) := (rfl)
 
 /-- Every actual extended bend is either a translated old bend or the new encounter.
-Cancellation of increments can remove either kind from the support. -/
+The new encounter is omitted from the support when its increment is zero. -/
 theorem mem_support_bends_extend (β : FiniteAffineRay V P) (s t : ℝ) (w : V)
     (hs : 0 ≤ s) (ht : 0 < t) {u : ℝ}
     (hu : u ∈ (β.extend s t w hs ht).bends.support) :
     (∃ a ∈ β.bends.support, u = a - (s + t)) ∨ u = -t :=
   mem_support_shift_add_single β s t w hu
 
-/-- Summing an additive function over the extended bends separates the translated
-old increments from the new increment. -/
+/-- Summing a function that vanishes on zero increments over the extended bends
+separates the translated old increments from the new increment. -/
 theorem sum_bends_extend (β : FiniteAffineRay V P) (s t : ℝ) (w : V)
     (hs : 0 ≤ s) (ht : 0 < t) {M : Type*} [AddCommMonoid M] (g : ℝ → V → M)
-    (hzero : ∀ b, g b 0 = 0) (hadd : ∀ b v w, g b (v + w) = g b v + g b w) :
+    (hzero : ∀ b, g b 0 = 0) :
     (β.extend s t w hs ht).bends.sum g =
       β.bends.sum (fun b v => g (b - (s + t)) v) + g (-t) (β.direction - w) := by
   classical
-  rw [bends_extend, Finsupp.sum_add_index' hzero hadd,
-    Finsupp.sum_mapDomain_index hzero hadd, Finsupp.sum_single_index (hzero _)]
+  have hd : Disjoint (β.bends.mapDomain (fun b => b - (s + t))).support
+      (Finsupp.single (-t) (β.direction - w)).support := by
+    refine Finset.disjoint_of_subset_right Finsupp.support_single_subset ?_
+    rw [Finset.disjoint_singleton_right,
+      Finsupp.mapDomain_support_of_injective (fun _ _ h => sub_left_injective h)]
+    intro h
+    obtain ⟨b, hb, he⟩ := Finset.mem_image.mp h
+    linarith [β.bend_neg b hb]
+  rw [bends_extend, Finsupp.sum_add_index_of_disjoint hd,
+    Finsupp.sum_mapDomain_index_inj (fun _ _ h => sub_left_injective h),
+    Finsupp.sum_single_index (hzero _)]
 
 /-- Before the new encounter, the entire path is the original ray with its
 time coordinate translated. This includes the straight continuation to the encounter. -/
@@ -100,8 +109,8 @@ theorem extend_apply_of_le (β : FiniteAffineRay V P) (s t : ℝ) (w : V)
     (hs : 0 ≤ s) (ht : 0 < t) {u : ℝ} (hu : u ≤ -t) :
     β.extend s t w hs ht u = β (u + (s + t)) := by
   classical
-  rw [eval_def, sum_bends_extend _ _ _ _ hs ht _ (fun _ => smul_zero _)
-      (fun _ _ _ => smul_add _ _ _), direction_extend, endpoint_extend,
+  rw [eval_def, sum_bends_extend _ _ _ _ hs ht _ (fun _ => smul_zero _),
+    direction_extend, endpoint_extend,
     max_eq_left (by linarith : 0 ≤ -t - u), eval_def, vadd_vadd]
   have he : β.bends.sum (fun b v => max (b - (s + t) - u) 0 • v) =
       β.bends.sum (fun b v => max (b - (u + (s + t))) 0 • v) := by
@@ -118,8 +127,7 @@ theorem extend_apply_of_ge (β : FiniteAffineRay V P) (s t : ℝ) (w : V)
     (hs : 0 ≤ s) (ht : 0 < t) {u : ℝ} (hu : -t ≤ u) :
     β.extend s t w hs ht u = (-u • w) +ᵥ (β.extend s t w hs ht).endpoint := by
   classical
-  rw [eval_def, sum_bends_extend _ _ _ _ hs ht _ (fun _ => smul_zero _)
-      (fun _ _ _ => smul_add _ _ _), direction_extend,
+  rw [eval_def, sum_bends_extend _ _ _ _ hs ht _ (fun _ => smul_zero _), direction_extend,
     max_eq_right (by linarith : -t - u ≤ 0), zero_smul, add_zero]
   have he : β.bends.sum (fun b v => max (b - (s + t) - u) 0 • v) = 0 := by
     apply Finset.sum_eq_zero
@@ -140,8 +148,8 @@ theorem directionAt_extend_of_le (β : FiniteAffineRay V P) (s t : ℝ) (w : V)
     (hs : 0 ≤ s) (ht : 0 < t) {u : ℝ} (hu : u ≤ -t) :
     (β.extend s t w hs ht).directionAt u = β.directionAt (u + (s + t)) := by
   classical
-  rw [directionAt_def, sum_bends_extend _ _ _ _ hs ht _ (fun _ => by split <;> rfl)
-      (fun _ _ _ => by split <;> simp), direction_extend, ite_eq_left hu, directionAt_def]
+  rw [directionAt_def, sum_bends_extend _ _ _ _ hs ht _ (fun _ => by split <;> rfl),
+    direction_extend, ite_eq_left hu, directionAt_def]
   have he : β.bends.sum (fun b v => if u ≤ b - (s + t) then v else 0) =
       β.bends.sum (fun b v => if u + (s + t) ≤ b then v else 0) := by
     congr 1
@@ -155,8 +163,8 @@ theorem directionAt_extend_of_gt (β : FiniteAffineRay V P) (s t : ℝ) (w : V)
     (hs : 0 ≤ s) (ht : 0 < t) {u : ℝ} (hu : -t < u) :
     (β.extend s t w hs ht).directionAt u = w := by
   classical
-  rw [directionAt_def, sum_bends_extend _ _ _ _ hs ht _ (fun _ => by split <;> rfl)
-      (fun _ _ _ => by split <;> simp), direction_extend, ite_eq_right hu.not_ge]
+  rw [directionAt_def, sum_bends_extend _ _ _ _ hs ht _ (fun _ => by split <;> rfl),
+    direction_extend, ite_eq_right hu.not_ge]
   have he : β.bends.sum (fun b v => if u ≤ b - (s + t) then v else 0) = 0 := by
     apply Finset.sum_eq_zero
     intro b hb
@@ -170,8 +178,8 @@ theorem incomingDirection_extend (β : FiniteAffineRay V P) (s t : ℝ) (w : V)
     (hs : 0 ≤ s) (ht : 0 < t) :
     (β.extend s t w hs ht).incomingDirection = β.incomingDirection := by
   classical
-  rw [incomingDirection_def, sum_bends_extend _ _ _ _ hs ht _
-    (fun _ => rfl) (fun _ _ _ => rfl), direction_extend, incomingDirection_def]
+  rw [incomingDirection_def, sum_bends_extend _ _ _ _ hs ht _ (fun _ => rfl),
+    direction_extend, incomingDirection_def]
   abel
 
 /-- Translating the time coordinate shifts the reference point of the incoming
@@ -182,8 +190,8 @@ theorem incomingReference_extend (β : FiniteAffineRay V P) (s t : ℝ) (w : V)
     (β.extend s t w hs ht).incomingReference =
       (-(s + t) • β.incomingDirection) +ᵥ β.incomingReference := by
   classical
-  rw [incomingReference_def, sum_bends_extend _ _ _ _ hs ht _
-    (fun _ => smul_zero _) (fun _ _ _ => smul_add _ _ _), endpoint_extend,
+  rw [incomingReference_def, sum_bends_extend _ _ _ _ hs ht _ (fun _ => smul_zero _),
+    endpoint_extend,
     incomingReference_def, incomingDirection_def, vadd_vadd, vadd_vadd]
   simp only [sub_smul, Finsupp.sum, Finset.sum_sub_distrib, ← Finset.smul_sum]
   congr 1
