@@ -13,7 +13,7 @@ public import Mei.Geometry.Convex.Sweep.Admissible.Terminal
 
 Cutting just before a recorded encounter retains its complete incoming history,
 whole decorations and incoming tail. For a fixed final encounter and prescribed
-adjacent degrees, the encounter position is independent of the history. One
+adjacent spatial velocities, the encounter position is independent of the history. One
 sufficiently small positive displacement therefore gives an incoming endpoint
 admitted by every outgoing ray in that finite fiber. This discharges the
 incoming endpoint test when comparing weighted attachment fibers.
@@ -95,7 +95,7 @@ theorem eventually_exists_incoming_truncate
 
 local notation "E" => DecoratedAdmissibleRay ℳ T p₀ a v f c ε P W S C Q
 
-/-- For a straight terminal block with prescribed degrees on its two sides,
+/-- For a straight terminal block with prescribed spatial velocities on its two sides,
 one common positive displacement admits every outgoing history's incoming
 part. The boundary point is the explicit intersection of the outgoing line
 and the last discarded encounter's hyperplane. Later unchanged encounters
@@ -105,8 +105,8 @@ theorem eventually_forall_mem_admissibleBackwardDomain (j : Fin (m + n)) (hj : j
     (p q : Γ) :
     let x := Q + ((c j - f j Q) / f j (v q)) • v q
     ∀ᶠ η : ℝ in 𝓝[>] 0, ∀ r : E,
-      (∀ l ≤ j.castSucc, Fin.snoc (α := fun _ => Γ) r.1.val p₀ l = q) →
-      Fin.snoc (α := fun _ => Γ) r.1.val p₀ j.succ = p →
+      (∀ l ≤ j.castSucc, v (Fin.snoc (α := fun _ => Γ) r.1.val p₀ l) = v q) →
+      v (Fin.snoc (α := fun _ => Γ) r.1.val p₀ j.succ) = v p →
         x + η • v p ∈ admissibleBackwardDomain
           (fun l : Fin n => f (Fin.natAdd m l)) (fun l => c (Fin.natAdd m l))
           (fun l => v (Fin.snoc (α := fun _ => Γ)
@@ -118,14 +118,14 @@ theorem eventually_forall_mem_admissibleBackwardDomain (j : Fin (m + n)) (hj : j
     simpa only [Fin.val_succ, Fin.val_natAdd, Fin.val_zero, add_zero] using hj
   apply eventually_all.mpr
   intro r
-  -- Choose the cut bound before prescribing the two degrees. Only the gaps
+  -- Choose the cut bound before prescribing the two spatial velocities. Only the gaps
   -- between this ray's recorded parameters control how small it must be.
   filter_upwards [r.eventually_exists_incoming_truncate (m := m) (n := n)] with η hη hq hp
   have hzero := hq 0 (Fin.zero_le _)
   have ht := r.2.parameter_eq_div_of_directions_eq j
-    (fun l hl => congrArg v ((hq l hl).trans hzero.symm))
+    (fun l hl => (hq l hl).trans hzero.symm)
   have hpoint := r.2.ray_eq_endpoint_sub_smul j.succ
-    (fun l hl => congrArg v ((hq l (Fin.le_castSucc_iff.mpr hl)).trans hzero.symm))
+    (fun l hl => (hq l (Fin.le_castSucc_iff.mpr hl)).trans hzero.symm)
     (t := r.2.parameter j.succ)
     ⟨le_rfl, by simpa only [r.2.parameter_zero] using
       r.2.strictAnti_parameter.antitone (Fin.zero_le j.succ)⟩
