@@ -148,18 +148,10 @@ theorem shiftedBCHAction_eq_self_of_normal_eq_zero
     (hr : m (ρ (p + r)) = 0) :
     (d.shiftedLieFiltration ℒ ℳ p).truncatedBCHAction d ℒ k g a = a := by
   let F := d.shiftedLieFiltration ℒ ℳ p
-  let : Module ℚ (F.quotient k) := Module.compHom _ (algebraMap ℚ R)
   obtain ⟨b, hb, rfl⟩ := (d.mem_shiftedQuotientGrading_iff ℳ p).mp ha
-  rw [ModuleFiltration.truncatedBCHAction_apply, ModuleFiltration.truncatedExpLieAction_apply]
-  apply Module.End.exp_apply_eq_self _
-    ⟨k + 1, F.truncatedLieAction_pow_eq_zero d ℒ k (BCHGroup.log g)⟩
-  obtain ⟨y, hy, he⟩ := (H.mem_truncatedRayLieSubalgebra w m k (BCHGroup.log g)).mp hg
-  rw [← he, LieIdeal.mkQ_apply, ModuleFiltration.truncatedLieAction_mk,
-    ModuleFiltration.quotientLieAction_mk]
-  have hbr : (⁅y, b⁆ : d.shiftedLieSubmodule ℒ ℳ p) = 0 := by
-    apply Subtype.ext
-    exact H.lie_eq_zero_of_mem_ray_of_normal_eq_zero ℳ hy
-      ((mem_shiftedGrading ℳ d.monoid p).mp hb) hr
-  rw [hbr, Submodule.Quotient.mk_zero]
+  rw [ModuleFiltration.truncatedBCHAction_apply]
+  exact H.truncatedExpLieAction_mk_eq_self_of_normal_eq_zero
+    (fun q => (ℳ q).comap (d.shiftedLieSubmodule ℒ ℳ p).incl.toLinearMap) F hg
+    ((mem_shiftedGrading ℳ d.monoid p).mp hb) hr
 
 end Mei.DirectedWallSpaces

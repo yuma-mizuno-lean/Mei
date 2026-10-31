@@ -63,6 +63,13 @@ theorem terminalGraphLift_of_mem {i : ι} {a : M} (ha : a ∈ ℳ i) :
   split_ifs <;> rfl
 
 open Classical in
+/-- The terminal lift on a homogeneous subtype input is its inverse transport
+in positive normal degree and the input itself otherwise. -/
+@[simp] theorem terminalGraphLift_coe {i : ι} (a : ℳ i) :
+    terminalGraphLift ℳ e w a = if 0 < w i then e.symm a else a :=
+  terminalGraphLift_of_mem ℳ e w a.property
+
+open Classical in
 /-- On one homogeneous input the positive-side value is the incoming value
 or its forward transport, according to its normal degree. -/
 theorem terminalGraphRight_of_mem {i : ι} {a : M} (ha : a ∈ ℳ i) :
@@ -71,6 +78,13 @@ theorem terminalGraphRight_of_mem {i : ι} {a : M} (ha : a ∈ ℳ i) :
     DirectSum.decomposeLinearEquiv_apply, DirectSum.decompose_of_mem ℳ ha,
     ← DirectSum.lof_eq_of R, DirectSum.toModule_lof]
   split_ifs <;> rfl
+
+open Classical in
+/-- The positive-side terminal value on a homogeneous subtype input is its
+forward transport in negative normal degree and the input itself otherwise. -/
+@[simp] theorem terminalGraphRight_coe {i : ι} (a : ℳ i) :
+    terminalGraphRight ℳ e w a = if w i < 0 then e a else a :=
+  terminalGraphRight_of_mem ℳ e w a.property
 
 open Classical in
 /-- The lift candidate is the finite sum of inverse-transferred positive inputs
