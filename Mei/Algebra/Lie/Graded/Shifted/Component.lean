@@ -44,17 +44,12 @@ theorem shiftedHomogeneousComponent_completedBCHAction (g : d.completedBCHGroup 
     d.shiftedHomogeneousComponent ℳ p p
         ((d.shiftedLieFiltration ℒ ℳ p).completedBCHAction d ℒ g x) =
       d.shiftedHomogeneousComponent ℳ p p x := by
-  let : Module ℚ ((d.shiftedLieFiltration ℒ ℳ p).quotient 0) :=
-    Module.compHom _ (algebraMap ℚ R)
   let g0 : BCHGroup (d.truncatedLie ℒ 0) := CompletedGroup.projection 0 g
-  have h0 (a : (d.shiftedLieFiltration ℒ ℳ p).quotient 0) :
-      (d.shiftedLieFiltration ℒ ℳ p).truncatedBCHAction d ℒ 0 g0 a = a := by
-    rw [Subsingleton.elim g0 1, map_one]
-    rfl
   have ha : (d.shiftedLieFiltration ℒ ℳ p).projection 0
       ((d.shiftedLieFiltration ℒ ℳ p).completedBCHAction d ℒ g x) =
       (d.shiftedLieFiltration ℒ ℳ p).projection 0 x :=
-    ((d.shiftedLieFiltration ℒ ℳ p).projection_completedBCHAction d ℒ g x 0).trans (h0 _)
+    ((d.shiftedLieFiltration ℒ ℳ p).projection_completedBCHAction d ℒ g x 0).trans
+      ((d.shiftedLieFiltration ℒ ℳ p).truncatedBCHAction_zero d ℒ g0 _)
   exact (d.shiftedHomogeneousComponent_eq ℳ p p 0 (by simp) _).trans
     ((congrArg (d.shiftedQuotientComponent ℳ p p 0 (by simp)) ha).trans
       (d.shiftedHomogeneousComponent_eq ℳ p p 0 (by simp) x).symm)

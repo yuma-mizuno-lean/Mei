@@ -60,6 +60,11 @@ noncomputable def truncatedBCHAction (k : ℕ) :
     ((Units.map (F.truncatedEnvelopingAction d ℒ k).toMonoidHom).comp
       (truncatedBCHToUnits d ℒ k))
 
+/-- The order-zero BCH group acts trivially on the coefficient quotient. -/
+theorem truncatedBCHAction_zero (g : BCHGroup (d.truncatedLie ℒ 0))
+    (a : F.quotient 0) : F.truncatedBCHAction d ℒ 0 g a = a := by
+  rw [Subsingleton.elim g 1, map_one, LinearEquiv.one_eq_refl, LinearEquiv.refl_apply]
+
 /-- The finite BCH representation is the exponential of the truncated Lie representation. -/
 @[simp]
 theorem truncatedBCHAction_apply (k : ℕ) (g : BCHGroup (d.truncatedLie ℒ k))
