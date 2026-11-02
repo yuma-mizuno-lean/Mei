@@ -190,10 +190,7 @@ theorem isCrossingChain_segmentCrossingLetters_of_subsingleton (e : x ⟶ y)
       apply List.eq_nil_iff_forall_not_mem.mpr
       simp [he]
     simpa [segmentCrossingLetters_def, hl] using chamber_eq_of_crossings_eq_empty he
-  · have hl : C.orderedCrossings e = [(P, t)] := by
-      symm
-      apply (C.orderedCrossings_eq_iff e _).mpr
-      simp [he]
+  · have hl : C.orderedCrossings e = [(P, t)] := C.orderedCrossings_eq_singleton e he
     have hne := C.normal_velocity_ne_zero (ν P) e (a := (P, t))
       (by rw [hl]; exact List.mem_singleton_self _) (hν P)
     simp only [segmentCrossingLetters_def, hl, List.map_cons, List.map_nil,

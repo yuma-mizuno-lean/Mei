@@ -201,6 +201,28 @@ theorem pathProduct_toPath_eq_one (e : x ⟶ y) (he : WallComplement.crossings x
     simp [he]
   simp [pathProduct_toPath, hl]
 
+/-- An admissible segment whose crossing set is a singleton has the product of that
+single letter: the label of the crossed wall, inverted exactly when the traversal meets
+it with positive normal velocity. -/
+theorem pathProduct_toPath_eq_of_crossings_eq_singleton (e : x ⟶ y) {P : C.walls} {t : ℝ}
+    (he : WallComplement.crossings x y = {(P, t)}) :
+    D.pathProduct e.toPath =
+      if 0 < D.normal P (y.val - x.val) then (D.label P)⁻¹ else D.label P := by
+  rw [pathProduct_toPath, C.orderedCrossings_eq_singleton e he]
+  simp
+
+/-- A single crossing with positive normal velocity contributes the inverse label. -/
+theorem pathProduct_toPath_eq_inv_of_crossings_eq_singleton (e : x ⟶ y) {P : C.walls}
+    {t : ℝ} (he : WallComplement.crossings x y = {(P, t)})
+    (hv : 0 < D.normal P (y.val - x.val)) : D.pathProduct e.toPath = (D.label P)⁻¹ := by
+  rw [D.pathProduct_toPath_eq_of_crossings_eq_singleton e he, ite_eq_left hv]
+
+/-- A single crossing with negative normal velocity contributes the label itself. -/
+theorem pathProduct_toPath_eq_label_of_crossings_eq_singleton (e : x ⟶ y) {P : C.walls}
+    {t : ℝ} (he : WallComplement.crossings x y = {(P, t)})
+    (hv : D.normal P (y.val - x.val) < 0) : D.pathProduct e.toPath = D.label P := by
+  rw [D.pathProduct_toPath_eq_of_crossings_eq_singleton e he, ite_eq_right hv.not_gt]
+
 /-- Change every wall label by a group homomorphism. -/
 def relabel (f : H →* K) : FiniteWallDiagram C K where
   normal := D.normal
