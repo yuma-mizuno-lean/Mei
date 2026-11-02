@@ -17,11 +17,12 @@ This file provides that constructor. A finite family of affine subspaces is an
 exceptional arrangement once the ambient space is dropped, the empty family is
 allowed, and a generic point is a point outside every member.
 
-The constructor is the same lattice operation as `Mei.ExceptionalArrangement.union`:
-the exceptions are the union of the given finsets. Genericity of a point is
-therefore the conjunction over the family, and the generic locus is open in finite
-dimension. No affine functional representing a member is required, and members may
-have any codimension, including zero before the ambient space is removed.
+The exceptions are the given finset with the ambient space removed, so a family that
+contains a full-dimensional cell is admissible: `⊤` is the only member the `proper`
+field forbids, and erasing it is the only totalisation the structure admits. Genericity
+of a point is the conjunction over the remaining members. No affine functional
+representing a member is required, and members may have any codimension, including zero
+before the ambient space is removed.
 -/
 
 public section
