@@ -19,6 +19,12 @@ are locally constant at a generic point. This turns finite continuous affine
 inequalities into stable local membership tests, even when some inequalities
 vanish identically.
 
+A finite arrangement has an open generic locus, and a countable family of finite
+arrangements only has a dense common generic locus. The family `{x = 1/(j+1)}` of the
+line is the sharp example: `0` is generic for every member and every finite subfamily is
+generic on a neighbourhood of `0`, but no neighbourhood of `0` is generic for the whole
+family. Local uniformity is therefore an extra condition in the countable case.
+
 We use Mathlib's affine-subspace preimages and the existing generic-locus and
 open-sign-region APIs.
 -/
@@ -82,5 +88,68 @@ theorem eventually_sign_eq_of_isGeneric (g : ι → V →ᴬ[ℝ] ℝ) {x : V}
     exact Filter.Eventually.of_forall fun y => by rw [heq y, heq x]
   · exact ((isOpen_setOf_sign_eq (sign_ne_zero.mpr (hx j hj))).preimage
       (g j).continuous).mem_nhds rfl
+
+
+section LocalUniformity
+
+/-- The exceptional arrangement of a single point `c` of the real line, given by the
+nonconstant condition `x ↦ x - c`. -/
+noncomputable def ofPoint (c : ℝ) : ExceptionalArrangement ℝ :=
+  ofAffineForms fun _ : Unit =>
+    (LinearMap.id : ℝ →ₗ[ℝ] ℝ).toAffineMap - AffineMap.const ℝ ℝ c
+
+/-- A point is generic for the arrangement of a single point exactly when it is a
+different point. -/
+@[simp]
+theorem isGeneric_ofPoint_iff (c x : ℝ) : (ofPoint c).IsGeneric x ↔ x ≠ c := by
+  rw [ofPoint, isGeneric_ofAffineForms_iff]
+  have hlin : ((LinearMap.id : ℝ →ₗ[ℝ] ℝ).toAffineMap -
+      AffineMap.const ℝ ℝ c).linear ≠ 0 := by
+    intro hzero
+    have h1 : (LinearMap.id : ℝ →ₗ[ℝ] ℝ) = 0 := by simpa using hzero
+    exact (one_ne_zero : (1 : ℝ) ≠ 0) (by simpa using LinearMap.congr_fun h1 1)
+  constructor
+  · intro h hxc
+    exact h () hlin (by simp [hxc])
+  · intro hx j hj
+    simpa using sub_ne_zero.mpr hx
+
+/-- The arrangement `{x = 1/(j+1)}` of the line. -/
+noncomputable def ofInvSucc (j : ℕ) : ExceptionalArrangement ℝ :=
+  ofPoint ((j + 1 : ℝ)⁻¹)
+
+/-- The origin is a common generic point of the family `{x = 1/(j+1)}`. -/
+@[simp]
+theorem isGeneric_zero_ofInvSucc (j : ℕ) : (ofInvSucc j).IsGeneric 0 := by
+  rw [ofInvSucc, isGeneric_ofPoint_iff]
+  exact (inv_ne_zero (by positivity : (j : ℝ) + 1 ≠ 0)).symm
+
+/-- No neighbourhood of the origin is contained in the common generic locus of the
+family `{x = 1/(j+1)}`: the common generic locus is dense but not a neighbourhood of
+any of its points. -/
+theorem not_exists_nhds_forall_isGeneric_ofInvSucc :
+    ¬ ∃ U ∈ 𝓝 (0 : ℝ), ∀ y ∈ U, ∀ j : ℕ, (ofInvSucc j).IsGeneric y := by
+  rintro ⟨U, hU, hgen⟩
+  obtain ⟨ε, hε, hball⟩ := Metric.mem_nhds_iff.mp hU
+  obtain ⟨j, hj⟩ := exists_nat_one_div_lt hε
+  have hmem : ((j + 1 : ℝ)⁻¹) ∈ U := by
+    apply hball
+    rw [Metric.mem_ball, Real.dist_eq, sub_zero, abs_of_pos (by positivity)]
+    simpa only [one_div] using hj
+  have hnot := hgen _ hmem j
+  rw [ofInvSucc, isGeneric_ofPoint_iff] at hnot
+  exact hnot rfl
+
+/-- Every finite subfamily of `{x = 1/(j+1)}` is generic on a neighbourhood of the
+origin, so only the countable family fails to be locally uniform. -/
+theorem exists_mem_nhds_forall_isGeneric_ofInvSucc_finset (s : Finset ℕ) :
+    ∃ U ∈ 𝓝 (0 : ℝ), ∀ y ∈ U, ∀ j ∈ s, (ofInvSucc j).IsGeneric y := by
+  have hopen : IsOpen {y : ℝ | ∀ j ∈ s, (ofInvSucc j).IsGeneric y} := by
+    have h : IsOpen (⋂ j ∈ s, {y : ℝ | (ofInvSucc j).IsGeneric y}) :=
+      isOpen_biInter_finset fun j _ => isOpen_isGeneric _
+    simpa only [Set.ofPred_forall, Set.mem_iInter] using h
+  exact ⟨_, hopen.mem_nhds fun j _ => isGeneric_zero_ofInvSucc j, fun _ hy => hy⟩
+
+end LocalUniformity
 
 end Mei.ExceptionalArrangement
