@@ -31,10 +31,12 @@ dilogarithm factors.
 
 The file records the exchange for an arbitrary segment of a list, the orderedness of the
 adjacent pairs of the exchanged triple, and the zero-form case, in which every pair is ordered
-and no exchange is needed. The rank-two wall-crossing formula of Nakanishi, *Cluster algebras
-and scattering diagrams, Part III*, §5.2 (arXiv:2111.00800v6), and Burcroff–Lee–Mou,
-*Positivity of generalized cluster scattering diagrams*, §8.1 (arXiv:2503.03719v1), applies this
-exchange repeatedly; the statements here are that exchange and its base case.
+and no exchange is needed. The exchange is the shared-coefficient one supplied by the pentagon:
+it applies to an adjacent pair whose coefficients agree, which is the shape the pentagon has,
+and it does not by itself exchange a pair with two different coefficients. The rank-two
+wall-crossing formula of Nakanishi, *Cluster algebras and scattering diagrams, Part III*, §5.2
+(arXiv:2111.00800v6), and Burcroff–Lee–Mou, *Positivity of generalized cluster scattering
+diagrams*, §8.1 (arXiv:2503.03719v1), applies an adjacent exchange of this shape repeatedly.
 -/
 
 public section
@@ -99,12 +101,17 @@ theorem antiordered_iff {a b : NonzeroDegree d} : Antiordered β d a b ↔ β (a
   (Iff.rfl)
 
 omit [PartialOrder R] [IsOrderedAddMonoid R] in
-/-- **Adjacent exchange.** If `c {a,b} = -1`, the product of `l₁ ++ (a,c) :: (b,c) :: l₂` is
-unchanged when the adjacent pair `a, b` is replaced by the triple `b, b+a, a`, all at the same
-coefficient. At `l₁ = l₂ = []` this is `Ψ[a]^c Ψ[b]^c = Ψ[b]^c Ψ[b+a]^c Ψ[a]^c`, the pentagon
-identity of `Mei.Geometry.ScatteringDiagram.Skew.Pentagon`; for an antiordered pair the
-replacement is the ordered one of `Antiordered.ordered_add_left` and
-`Antiordered.ordered_add_right`. -/
+/-- **Adjacent exchange, shared coefficient.** If `c {a,b} = -1`, the product of
+`l₁ ++ (a,c) :: (b,c) :: l₂` is unchanged when the adjacent pair `a, b` is replaced by the triple
+`b, b+a, a`, all at that same coefficient. At `l₁ = l₂ = []` this is
+`Ψ[a]^c Ψ[b]^c = Ψ[b]^c Ψ[b+a]^c Ψ[a]^c`, the pentagon identity of
+`Mei.Geometry.ScatteringDiagram.Skew.Pentagon`; for an antiordered pair the replacement is the
+ordered one of `Antiordered.ordered_add_left` and `Antiordered.ordered_add_right`.
+
+The hypothesis is the pentagon's own: `Pentagon.rayExp_smul_negDilogNeg_pentagon` carries one
+coefficient `c` on `a`, `b` and `a + b`, so this lemma exchanges a pair whose two coefficients
+already agree. An exchange of a pair with different coefficients is not a consequence of that
+identity and is not proved here. -/
 theorem dilogFactorProduct_append_cons_cons_eq_of_mul_form_eq_neg_one (hβ : β.IsAlt)
     (l₁ l₂ : List (NonzeroDegree d × R)) {a b : NonzeroDegree d} {c : R}
     (hc : c * β (a : Γ) (b : Γ) = -1) :
