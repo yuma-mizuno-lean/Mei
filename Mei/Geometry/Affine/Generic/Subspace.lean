@@ -32,7 +32,7 @@ open Set
 
 namespace Mei.ExceptionalArrangement
 
-variable {V W : Type*} [AddCommGroup V] [Module ℝ V] [AddCommGroup W] [Module ℝ W]
+variable {V : Type*} [AddCommGroup V] [Module ℝ V]
 
 /-- The arrangement of a finite family of affine subspaces. The ambient space
 contributes no exception, so a family of spans is admissible without a constraint
@@ -76,23 +76,5 @@ theorem isGeneric_ofFinset_iff {ι : Type*} [Fintype ι] (T : ι → AffineSubsp
   · rintro h U hU hUtop
     obtain ⟨i, -, rfl⟩ := Finset.mem_image.mp hU
     exact h i hUtop
-
-section Topology
-
-variable {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V] [FiniteDimensional ℝ V]
-
-/-- The generic points of the arrangement of a finite family of spans form an open
-set, so a point outside every proper member has a neighbourhood outside them. -/
-theorem isOpen_isGeneric_ofSubspaces (S : Finset (AffineSubspace ℝ V)) :
-    IsOpen {x | (ofSubspaces S).IsGeneric x} :=
-  isOpen_isGeneric _
-
-/-- The generic points of the arrangement of a finite family of spans form a dense
-set. -/
-theorem dense_isGeneric_ofSubspaces (S : Finset (AffineSubspace ℝ V)) :
-    Dense {x | (ofSubspaces S).IsGeneric x} :=
-  dense_isGeneric _
-
-end Topology
 
 end Mei.ExceptionalArrangement
