@@ -24,6 +24,10 @@ naturality, in particular for comparisons preserving degrees such as truncations
 The component formulas use `DirectSum.decompose_map_eq_sum` and Tau Ceti's
 `DirectSum.map_decompose_shift` for arbitrary and injective regradings, respectively.
 No additive structure on the degree types is needed for these linear constructions.
+
+The zero-extended lifts intertwine with a morphism on inputs whose homogeneous
+support is admissible, and on the whole module when the degree map also preserves
+inadmissible degrees.
 -/
 
 public section
@@ -213,5 +217,71 @@ theorem transfer_map_of_injective (f : Hom C D σ τ) (hτ : Function.Injective 
     f.right_mem j (C.right (C.liftLeft i a))).symm
 
 end Transfer
+
+section TotalLift
+
+variable [DecidableEq ι] [DecidableEq ι']
+  [DirectSum.Decomposition 𝒰] [DirectSum.Decomposition 𝒰']
+
+/-- The middle map sends the zero-extended lift of an admissible homogeneous
+input to the zero-extended lift of its image. -/
+theorem middle_liftLeftTotal (f : Hom C D σ τ) (i : I) (a : 𝒰 i) :
+    f.middle (C.liftLeftTotal a) = D.liftLeftTotal (f.left a) := by
+  rw [C.liftLeftTotal_coe, f.middle_liftLeft]
+  exact (D.liftLeftTotal_coe ⟨σ i, f.admissible_left i.property⟩
+    ⟨f.left a, f.left_mem i a a.property⟩).symm
+
+/-- A morphism intertwines the zero-extended lifts on every input whose
+homogeneous support is admissible. The degree map need not be injective;
+only the input's finite homogeneous support is summed. -/
+theorem middle_liftLeftTotal_of_support (f : Hom C D σ τ)
+    (a : U) (ha : ∀ i, DirectSum.decompose 𝒰 a i ≠ 0 → i ∈ I) :
+    f.middle (C.liftLeftTotal a) = D.liftLeftTotal (f.left a) := by
+  classical
+  conv_lhs => rw [← DirectSum.sum_support_decompose 𝒰 a]
+  conv_rhs => rw [← DirectSum.sum_support_decompose 𝒰 a]
+  simp only [map_sum]
+  refine Finset.sum_congr rfl fun i hi => ?_
+  obtain hiI : i ∈ I := ha i (DFinsupp.mem_support_iff.mp hi)
+  exact f.middle_liftLeftTotal ⟨i, hiI⟩ (DirectSum.decompose 𝒰 a i)
+
+/-- A morphism that also maps inadmissible degrees to inadmissible degrees
+intertwines the zero-extended lifts on the whole module. Without that extra
+hypothesis an inadmissible degree may land on an admissible one, where the
+right-hand extension retains a nonzero lift while the left-hand side vanishes. -/
+theorem liftLeftTotal_comp_of_mapsTo_compl (f : Hom C D σ τ)
+    (hI : Set.MapsTo σ Iᶜ I'ᶜ) :
+    D.liftLeftTotal.comp f.left = f.middle.comp C.liftLeftTotal := by
+  classical
+  ext a
+  simp only [LinearMap.comp_apply]
+  conv_lhs => rw [← DirectSum.sum_support_decompose 𝒰 a]
+  conv_rhs => rw [← DirectSum.sum_support_decompose 𝒰 a]
+  simp only [map_sum]
+  refine Finset.sum_congr rfl fun i hi => ?_
+  by_cases hiI : i ∈ I
+  · exact (f.middle_liftLeftTotal ⟨i, hiI⟩ (DirectSum.decompose 𝒰 a i)).symm
+  · have hσ : σ i ∉ I' := hI hiI
+    rw [C.liftLeftTotal_of_not_mem hiI (DirectSum.decompose 𝒰 a i).property,
+      map_zero,
+      D.liftLeftTotal_of_not_mem hσ
+        (f.left_mem i (DirectSum.decompose 𝒰 a i) (DirectSum.decompose 𝒰 a i).property)]
+
+/-- Under inadmissibility preservation the whole zero-extended transfer also
+intertwines: extending an admissible input, crossing the span and then mapping
+commutes with the morphism. -/
+theorem right_comp_liftLeftTotal_comp_of_mapsTo_compl (f : Hom C D σ τ)
+    (hI : Set.MapsTo σ Iᶜ I'ᶜ) :
+    f.right.comp (C.right.comp C.liftLeftTotal) =
+      D.right.comp (D.liftLeftTotal.comp f.left) := by
+  calc f.right.comp (C.right.comp C.liftLeftTotal)
+      = (D.right.comp f.middle).comp C.liftLeftTotal := by
+        rw [← LinearMap.comp_assoc, f.right_comm]
+    _ = D.right.comp (f.middle.comp C.liftLeftTotal) := LinearMap.comp_assoc _ _ _
+    _ = D.right.comp (D.liftLeftTotal.comp f.left) := by
+        rw [f.liftLeftTotal_comp_of_mapsTo_compl hI]
+
+end TotalLift
+
 end Hom
 end Mei.GradedCorrespondence
