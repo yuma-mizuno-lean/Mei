@@ -16,6 +16,8 @@ module. Order `k` retains the quotient by the submodule at `k + 1`.
 The same family on order-dual natural numbers carries Mathlib's `IsFiltration`.
 Compatibility with a ring filtration can be imposed separately using
 `IsModuleFiltration`; it is not needed to construct the module completion.
+Endomorphisms that preserve the filtration, or raise it by one order, are
+recorded by `PreservesFiltration` and `RaisesFiltration`.
 Scalar restriction acts termwise and preserves the underlying filtration sets.
 -/
 
@@ -75,13 +77,25 @@ theorem RaisesFiltration.map_mem {F : ModuleFiltration R M} {T : Module.End R M}
     (hT : F.RaisesFiltration T) {k : ℕ} {x : M} (hx : x ∈ F.submodule k) :
     T x ∈ F.submodule (k + 1) := hT k hx
 
-/-- Membership form of `PreservesFiltration`. -/
+/-- Membership form of `PreservesFiltration`: `T` maps every filtration term into
+itself. -/
 theorem preservesFiltration_iff {F : ModuleFiltration R M} {T : Module.End R M} :
-    F.PreservesFiltration T ↔ ∀ k, F.submodule k ≤ (F.submodule k).comap T := Iff.rfl
+    F.PreservesFiltration T ↔ ∀ k x, x ∈ F.submodule k → T x ∈ F.submodule k := by
+  constructor
+  · intro h k x hx
+    exact h k hx
+  · intro h k x hx
+    exact h k x hx
 
-/-- Membership form of `RaisesFiltration`. -/
+/-- Membership form of `RaisesFiltration`: `T` maps filtration order `k` into
+filtration order `k + 1`. -/
 theorem raisesFiltration_iff {F : ModuleFiltration R M} {T : Module.End R M} :
-    F.RaisesFiltration T ↔ ∀ k, F.submodule k ≤ (F.submodule (k + 1)).comap T := Iff.rfl
+    F.RaisesFiltration T ↔ ∀ k x, x ∈ F.submodule k → T x ∈ F.submodule (k + 1) := by
+  constructor
+  · intro h k x hx
+    exact h k hx
+  · intro h k x hx
+    exact h k x hx
 
 /-- The identity endomorphism preserves every filtration. -/
 theorem PreservesFiltration.id (F : ModuleFiltration R M) :

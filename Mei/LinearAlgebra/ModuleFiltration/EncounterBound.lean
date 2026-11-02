@@ -105,19 +105,59 @@ def RunsBoundedAux (h run : ℕ) : List Bool → Prop
 /-- Every maximal block of preserving (`false`) steps has length at most `h`. -/
 def RunsBounded (h : ℕ) (l : List Bool) : Prop := RunsBoundedAux h 0 l
 
+/-- The run counter read off the marks: prepending `run` preserving steps to `l`,
+every block of preserving steps has length at most `h`. -/
+private theorem runsBoundedAux_iff_splitOnPPrepend (h run : ℕ) (l : List Bool) :
+    RunsBoundedAux h run l ↔
+      ∀ b ∈ List.splitOnPPrepend (fun x : Bool => x == true) l (List.replicate run false),
+        b.length ≤ h := by
+  induction l generalizing run with
+  | nil => simp [RunsBoundedAux, List.splitOnPPrepend_nil]
+  | cons b l ih =>
+      cases b with
+      | false =>
+          rw [show List.splitOnPPrepend (fun x : Bool => x == true) (false :: l)
+                (List.replicate run false)
+              = List.splitOnPPrepend (fun x : Bool => x == true) l
+                (List.replicate (run + 1) false) from by
+            rw [List.splitOnPPrepend_cons_neg (p := fun x : Bool => x == true) (a := false)
+              (l := l) (acc := List.replicate run false) (by decide), ← List.replicate_succ]]
+          exact ih (run + 1)
+      | true =>
+          rw [show List.splitOnPPrepend (fun x : Bool => x == true) (true :: l)
+                (List.replicate run false)
+              = List.replicate run false ::
+                List.splitOnP (fun x : Bool => x == true) l from by
+            rw [List.splitOnPPrepend_cons_pos (p := fun x : Bool => x == true) (a := true)
+              (l := l) (acc := List.replicate run false) (by decide), List.reverse_replicate]]
+          rw [RunsBoundedAux, List.forall_mem_cons, List.length_replicate]
+          have hih := ih 0
+          simp only [List.replicate, List.splitOnP_eq_splitOnPPrepend] at hih ⊢
+          exact and_congr_right (fun _ => hih)
+
 /-- The empty history is run-bounded. -/
 @[simp]
 theorem RunsBounded.nil (h : ℕ) : RunsBounded h [] := by
   simp [RunsBounded, RunsBoundedAux]
 
+/-- `RunsBounded h l` holds exactly when every maximal block of preserving (`false`)
+steps in `l`, as split off by the raising (`true`) steps, has length at most `h`. -/
+theorem runsBounded_iff_splitOn {h : ℕ} {l : List Bool} :
+    RunsBounded h l ↔ ∀ b ∈ l.splitOn true, b.length ≤ h := by
+  change RunsBoundedAux h 0 l ↔ ∀ b ∈ l.splitOn true, b.length ≤ h
+  have hmain := runsBoundedAux_iff_splitOnPPrepend h 0 l
+  simp only [List.splitOn_eq_splitOnP, List.splitOnP_eq_splitOnPPrepend, List.replicate]
+    at hmain ⊢
+  exact hmain
+
 /-- A raising step starts a fresh block, so it does not affect the block bound. -/
-theorem RunsBounded.cons_true {h : ℕ} {l : List Bool} :
+theorem runsBounded_cons_true {h : ℕ} {l : List Bool} :
     RunsBounded h (true :: l) ↔ RunsBounded h l := by
   simp [RunsBounded, RunsBoundedAux]
 
 /-- A preserving step extends the current block, which is then checked by the
 run counter. -/
-theorem RunsBounded.cons_false {h : ℕ} {l : List Bool} :
+theorem runsBounded_cons_false {h : ℕ} {l : List Bool} :
     RunsBounded h (false :: l) ↔ RunsBoundedAux h 1 l := by
   simp [RunsBounded, RunsBoundedAux]
 
@@ -156,7 +196,7 @@ theorem RunsBounded.length_le {h : ℕ} {l : List Bool} (hb : RunsBounded h l) :
 /-- **Filtration encounter bound.** A nonzero composite of a finite marked history
 has at most `r - 1` filtration-raising steps and at most `r * h + r - 1` steps in
 total, provided filtration order `r` is zero and every maximal block of preserving
-steps has length at most `h`. This is the roadmap target `filtrationEncounterBound`. -/
+steps has length at most `h`. -/
 theorem count_true_le_sub_one_and_length_le_of_prod_ne_zero (F : ModuleFiltration R M)
     {r h n : ℕ} (hr : F.submodule r = ⊥) (T : Fin n → Module.End R M)
     (mark : Fin n → Bool) (hstep : ∀ i, F.FiltrationStep (T i, mark i))
