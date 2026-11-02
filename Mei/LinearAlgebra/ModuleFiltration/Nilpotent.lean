@@ -5,6 +5,7 @@ Authors: Codex
 -/
 module
 
+public import Mei.LinearAlgebra.End.Recursion
 public import Mei.LinearAlgebra.ModuleFiltration.Completion
 public import TauCeti.LinearAlgebra.Submodule.CompleteFiltration
 public import Mathlib.RingTheory.Nilpotent.Defs
@@ -16,6 +17,12 @@ An endomorphism raising a module filtration by one induces an endomorphism on
 each finite quotient. Its `(k + 1)`st power vanishes on the order-`k` quotient.
 The original endomorphism need not be nilpotent. No separatedness, completeness,
 finiteness, or characteristic-zero hypothesis is used.
+
+When the filtration itself vanishes at a finite order, the original endomorphism
+is globally nilpotent (`pow_eq_zero_of_submodule_eq_bot`), and the shared
+semimodule recursion `Module.End.finiteRecursion` then supplies solutions and
+uniqueness for `x = a + f x` on the module itself
+(`eq_finiteRecursion_of_submodule_eq_bot` and its consequences).
 
 These compatible nilpotent endomorphisms turn power series into finite sums at
 each order, so evaluations can be assembled across the quotient tower. In particular,
@@ -73,6 +80,55 @@ theorem quotientRaisingEnd_pow_eq_zero (k : ℕ) :
 /-- Every induced finite endomorphism is nilpotent. -/
 theorem isNilpotent_quotientRaisingEnd (k : ℕ) : IsNilpotent (F.quotientRaisingEnd f hf k) :=
   ⟨k + 1, F.quotientRaisingEnd_pow_eq_zero f hf k⟩
+
+include hf in
+/-- A filtration that vanishes at order `r` makes a filtration-raising
+endomorphism globally nilpotent: the `r`-th power vanishes on the whole module,
+not only on a quotient. No separatedness, completeness or finiteness hypothesis
+is used beyond the raising hypothesis itself. -/
+theorem pow_eq_zero_of_submodule_eq_bot {r : ℕ} (hr : F.submodule r = ⊥) :
+    f ^ r = 0 := by
+  apply LinearMap.ext
+  intro x
+  rw [LinearMap.zero_apply]
+  have h := Module.End.pow_apply_mem_of_map_le (T := f) (F := F.submodule)
+    (fun n => by rintro _ ⟨y, hy, rfl⟩; exact hf n hy)
+    (by simp : x ∈ F.submodule 0) r
+  rw [Nat.zero_add, hr] at h
+  exact (Submodule.mem_bot R).mp h
+
+include hf in
+/-- A finite-length filtration makes a filtration-raising endomorphism nilpotent
+on the original module. -/
+theorem isNilpotent_of_submodule_eq_bot {r : ℕ} (hr : F.submodule r = ⊥) :
+    IsNilpotent f :=
+  ⟨r, F.pow_eq_zero_of_submodule_eq_bot f hf hr⟩
+
+include hf in
+/-- With a finite-length filtration, the recursion `x = a + f x` on the module
+itself is solved by the shared finite geometric sum; the proof applies that
+shared solution to the global nilpotence above and carries no second expansion
+argument. -/
+theorem eq_finiteRecursion_of_submodule_eq_bot {r : ℕ} (hr : F.submodule r = ⊥)
+    {a x : M} (hx : x = a + f x) :
+    x = f.finiteRecursion r a :=
+  f.eq_finiteRecursion_of_eq_add (F.pow_eq_zero_of_submodule_eq_bot f hf hr) hx
+
+include hf in
+/-- With a finite-length filtration, two solutions of the same filtration-recursion
+agree. -/
+theorem eq_of_eq_add_of_submodule_eq_bot {r : ℕ} (hr : F.submodule r = ⊥)
+    {a x y : M} (hx : x = a + f x) (hy : y = a + f y) :
+    x = y :=
+  f.eq_of_eq_add_of_pow_eq_zero (F.pow_eq_zero_of_submodule_eq_bot f hf hr) hx hy
+
+include hf in
+/-- With a finite-length filtration, the filtration-recursion `x = a + f x` has
+exactly one solution. -/
+theorem existsUnique_eq_add_of_submodule_eq_bot {r : ℕ} (hr : F.submodule r = ⊥)
+    (a : M) :
+    ∃! x : M, x = a + f x :=
+  f.existsUnique_eq_add_of_pow_eq_zero (F.pow_eq_zero_of_submodule_eq_bot f hf hr) a
 
 /-- The quotient endomorphisms commute with all transition maps. -/
 @[simp]
