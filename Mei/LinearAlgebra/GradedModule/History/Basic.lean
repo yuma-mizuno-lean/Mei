@@ -63,6 +63,47 @@ theorem homogeneousHistory_mem {n : ℕ} (T : Fin (n + 1) → Module.End R M)
   rw [homogeneousHistory_succ_apply]
   exact Subtype.property _
 
+/-- Selection of a whole homogeneous piece as an endomorphism of the ambient
+module: the `η`-component of the direct-sum decomposition, included back into
+`M`. -/
+def homogeneousComponent (η : ι) : Module.End R M :=
+  (ℳ η).subtype.comp
+    ((DirectSum.component R ι (fun i => ℳ i) η).comp
+      (DirectSum.decomposeLinearEquiv ℳ).toLinearMap)
+
+/-- Selecting a piece takes the corresponding component of the decomposition. -/
+@[simp]
+theorem homogeneousComponent_apply (η : ι) (a : M) :
+    homogeneousComponent ℳ η a = (DirectSum.decompose ℳ a η : M) := (rfl)
+
+/-- Piece selection is a projection: selecting the same piece twice has no
+further effect. -/
+theorem homogeneousComponent_idem (η : ι) :
+    (homogeneousComponent ℳ η).comp (homogeneousComponent ℳ η) =
+      homogeneousComponent ℳ η := by
+  ext a
+  simp only [LinearMap.comp_apply, homogeneousComponent_apply]
+  exact DirectSum.decompose_of_mem_same ℳ (Subtype.property (DirectSum.decompose ℳ a η))
+
+/-- A nonempty history has no component in a degree different from its terminal
+degree. -/
+theorem homogeneousComponent_comp_homogeneousHistory_of_ne {n : ℕ}
+    (T : Fin (n + 1) → Module.End R M) (p : Fin (n + 1) → ι) (η : ι)
+    (hη : p 0 ≠ η) :
+    (homogeneousComponent ℳ η).comp (homogeneousHistory ℳ T p) = 0 := by
+  ext a
+  simp only [LinearMap.comp_apply, homogeneousComponent_apply, LinearMap.zero_apply]
+  rw [DirectSum.decompose_of_mem_ne ℳ (homogeneousHistory_mem ℳ T p a) hη]
+
+/-- Selecting the terminal degree of a nonempty history returns that history. -/
+theorem homogeneousComponent_comp_homogeneousHistory {n : ℕ}
+    (T : Fin (n + 1) → Module.End R M) (p : Fin (n + 1) → ι) :
+    (homogeneousComponent ℳ (p 0)).comp (homogeneousHistory ℳ T p) =
+      homogeneousHistory ℳ T p := by
+  ext a
+  simp only [LinearMap.comp_apply, homogeneousComponent_apply]
+  exact DirectSum.decompose_of_mem_same ℳ (homogeneousHistory_mem ℳ T p a)
+
 /-- A vanished intermediate decoration cannot yield a nonzero final history. -/
 theorem homogeneousHistory_tail_ne_zero {n : ℕ}
     (T : Fin (n + 1) → Module.End R M) (p : Fin (n + 1) → ι) {a : M}
