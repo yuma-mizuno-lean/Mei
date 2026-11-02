@@ -102,6 +102,20 @@ def RunsBoundedAux (h run : ℕ) : List Bool → Prop
   | true :: l => run ≤ h ∧ RunsBoundedAux h 0 l
   | false :: l => RunsBoundedAux h (run + 1) l
 
+/-- The empty list leaves only the run counter to check. -/
+@[simp]
+theorem runsBoundedAux_nil (h run : ℕ) : RunsBoundedAux h run [] ↔ run ≤ h := Iff.rfl
+
+/-- A raising step closes the current block and starts a fresh one. -/
+@[simp]
+theorem runsBoundedAux_cons_true (h run : ℕ) (l : List Bool) :
+    RunsBoundedAux h run (true :: l) ↔ run ≤ h ∧ RunsBoundedAux h 0 l := Iff.rfl
+
+/-- A preserving step extends the current block by one. -/
+@[simp]
+theorem runsBoundedAux_cons_false (h run : ℕ) (l : List Bool) :
+    RunsBoundedAux h run (false :: l) ↔ RunsBoundedAux h (run + 1) l := Iff.rfl
+
 /-- Every maximal block of preserving (`false`) steps has length at most `h`. -/
 def RunsBounded (h : ℕ) (l : List Bool) : Prop := RunsBoundedAux h 0 l
 
@@ -151,6 +165,7 @@ theorem runsBounded_iff_splitOn {h : ℕ} {l : List Bool} :
   exact hmain
 
 /-- A raising step starts a fresh block, so it does not affect the block bound. -/
+@[simp]
 theorem runsBounded_cons_true {h : ℕ} {l : List Bool} :
     RunsBounded h (true :: l) ↔ RunsBounded h l := by
   simp [RunsBounded, RunsBoundedAux]
