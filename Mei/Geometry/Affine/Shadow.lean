@@ -36,7 +36,7 @@ open Set
 
 namespace Mei
 
-variable {V W : Type*} [AddCommGroup V] [Module ℝ V]
+variable {V : Type*} [AddCommGroup V] [Module ℝ V]
 
 /-- The shadow of a set along a direction `w`: the points reached from a point of the
 set by moving backwards along the ray `-ℝ≥0 • w`. -/
@@ -52,28 +52,16 @@ theorem mem_shadow {σ : Set V} {w v : V} :
 theorem subset_shadow (σ : Set V) (w : V) : σ ⊆ shadow σ w :=
   fun s hs => ⟨s, hs, 0, le_rfl, by rw [zero_smul, sub_zero]⟩
 
-/-- The translate of a set by `w`: the image under the translation by `-w`. -/
-def shadowTranslate (σ : Set V) (w : V) : Set V := {v | ∃ s ∈ σ, v = s - w}
-
-omit [Module ℝ V] in
-/-- Membership in the translate. -/
-@[simp]
-theorem mem_shadowTranslate {σ : Set V} {w v : V} :
-    v ∈ shadowTranslate σ w ↔ ∃ s ∈ σ, v = s - w := (Iff.rfl)
-
-/-- The translate of a set by `w` is contained in its shadow along `w`. -/
-theorem shadowTranslate_subset_shadow (σ : Set V) (w : V) : shadowTranslate σ w ⊆ shadow σ w :=
-  fun _ ⟨s, hs, hsv⟩ => ⟨s, hs, 1, zero_le_one, by rw [one_smul]; exact hsv⟩
+/-- The translate of a set by `-w` lies in its shadow along `w`. -/
+theorem image_sub_subset_shadow (σ : Set V) (w : V) :
+    (fun s => s - w) '' σ ⊆ shadow σ w := by
+  rintro v ⟨s, hs, rfl⟩
+  exact ⟨s, hs, 1, zero_le_one, by rw [one_smul]⟩
 
 /-- Shadows are monotone in the set. -/
 theorem shadow_mono {σ τ : Set V} (h : σ ⊆ τ) (w : V) : shadow σ w ⊆ shadow τ w := by
   rintro v ⟨s, hs, t, ht, rfl⟩
   exact ⟨s, h hs, t, ht, rfl⟩
-
-/-- Shadows are monotone in the direction on the same ray. -/
-theorem shadow_congr_direction {w w' : V} (h : w' = w) (σ : Set V) :
-    shadow σ w' = shadow σ w := by
-  rw [h]
 
 /-- The empty set has empty shadow. -/
 @[simp]
@@ -110,41 +98,6 @@ theorem shadow_shadow (σ : Set V) (w : V) : shadow (shadow σ w) w = shadow σ 
   rw [add_smul]
   abel
 
-/-- The shadow of a point is the closed ray from that point in the direction `-w`. -/
-@[simp]
-theorem shadow_singleton (s w : V) :
-    shadow ({s} : Set V) w = {v | ∃ t : ℝ, 0 ≤ t ∧ v = s - t • w} := by
-  ext v
-  simp only [mem_shadow, mem_singleton_iff, exists_eq_left, Set.mem_ofPred_eq]
-
-/-- The shadow spans the same affine subspace as the set together with its translate by
-`w`: every shadow point is an affine combination of a point and that point moved by `w`,
-and both copies of the set lie in the shadow. -/
-theorem affineSpan_shadow (σ : Set V) (w : V) :
-    affineSpan ℝ (shadow σ w) = affineSpan ℝ (σ ∪ shadowTranslate σ w) := by
-  refine le_antisymm ?_ ?_
-  · rw [affineSpan_le]
-    rintro v ⟨s, hs, t, ht, rfl⟩
-    have hmem : s - t • w ∈ affineSpan ℝ (σ ∪ shadowTranslate σ w) := by
-      set A := affineSpan ℝ (σ ∪ shadowTranslate σ w) with hA
-      have hs' : s ∈ A := subset_affineSpan ℝ _ (Or.inl hs)
-      have hsw : s - w ∈ A := subset_affineSpan ℝ _ (Or.inr ⟨s, hs, rfl⟩)
-      have hdir : -w ∈ A.direction := by
-        have h := AffineSubspace.vsub_mem_direction hsw hs'
-        simpa using h
-      have hvadd : t • (-w) + s ∈ A :=
-        AffineSubspace.vadd_mem_of_mem_direction (Submodule.smul_mem _ t hdir) hs'
-      have hrew : t • (-w) + s = s - t • w := by
-        rw [smul_neg]
-        abel
-      rwa [hrew] at hvadd
-    exact hmem
-  · rw [affineSpan_le]
-    intro v hv
-    rcases hv with hv | hv
-    · exact subset_affineSpan ℝ _ (subset_shadow σ w hv)
-    · exact subset_affineSpan ℝ _ (shadowTranslate_subset_shadow σ w hv)
-
 /-- The shadow of a convex set is convex. -/
 theorem convex_shadow {σ : Set V} (hσ : Convex ℝ σ) (w : V) :
     Convex ℝ (shadow σ w) := by
@@ -153,6 +106,32 @@ theorem convex_shadow {σ : Set V} (hσ : Convex ℝ σ) (w : V) :
     add_nonneg (mul_nonneg ha ht) (mul_nonneg hb ht'), ?_⟩
   module
 
+
+/-- The shadow spans the same affine subspace as the set together with its translate by
+`w`: every shadow point is an affine combination of `s` and `s - w`, and conversely both
+copies of the set lie in the shadow. -/
+theorem affineSpan_shadow (σ : Set V) (w : V) :
+    affineSpan ℝ (shadow σ w) = affineSpan ℝ (σ ∪ (fun s => s - w) '' σ) := by
+  refine le_antisymm ?_ ?_
+  · rw [affineSpan_le]
+    rintro v ⟨s, hs, t, ht, rfl⟩
+    set A := affineSpan ℝ (σ ∪ (fun s => s - w) '' σ) with hA
+    have hs' : s ∈ A := subset_affineSpan ℝ _ (Or.inl hs)
+    have hsw : s - w ∈ A := subset_affineSpan ℝ _ (Or.inr ⟨s, hs, rfl⟩)
+    have hdir : -w ∈ A.direction := by
+      have h := AffineSubspace.vsub_mem_direction hsw hs'
+      simpa using h
+    have hvadd : t • (-w) + s ∈ A :=
+      AffineSubspace.vadd_mem_of_mem_direction (Submodule.smul_mem _ t hdir) hs'
+    have hrew : t • (-w) + s = s - t • w := by
+      rw [smul_neg]
+      abel
+    rwa [hrew] at hvadd
+  · rw [affineSpan_le]
+    intro v hv
+    rcases hv with hv | hv
+    · exact subset_affineSpan ℝ _ (subset_shadow σ w hv)
+    · exact subset_affineSpan ℝ _ (image_sub_subset_shadow σ w hv)
 
 end Mei
 
