@@ -53,6 +53,58 @@ instance : IsFiltration F.filtration (fun k => F.submodule (k.ofDual + 1)) where
   is_le h := F.antitone (Nat.succ_le_of_lt h)
   is_sup _ k h := h (OrderDual.toDual (k.ofDual + 1)) (Nat.lt_succ_self _)
 
+section End
+
+/-- An endomorphism preserves a module filtration if it maps each filtration
+term into itself. -/
+def PreservesFiltration (F : ModuleFiltration R M) (T : Module.End R M) : Prop :=
+  ∀ k, F.submodule k ≤ (F.submodule k).comap T
+
+/-- An endomorphism raises a module filtration by one if it maps filtration
+order `k` into filtration order `k + 1`. -/
+def RaisesFiltration (F : ModuleFiltration R M) (T : Module.End R M) : Prop :=
+  ∀ k, F.submodule k ≤ (F.submodule (k + 1)).comap T
+
+/-- A filtration-preserving endomorphism maps each filtration term into itself. -/
+theorem PreservesFiltration.map_mem {F : ModuleFiltration R M} {T : Module.End R M}
+    (hT : F.PreservesFiltration T) {k : ℕ} {x : M} (hx : x ∈ F.submodule k) :
+    T x ∈ F.submodule k := hT k hx
+
+/-- A filtration-raising endomorphism maps filtration order `k` into order `k + 1`. -/
+theorem RaisesFiltration.map_mem {F : ModuleFiltration R M} {T : Module.End R M}
+    (hT : F.RaisesFiltration T) {k : ℕ} {x : M} (hx : x ∈ F.submodule k) :
+    T x ∈ F.submodule (k + 1) := hT k hx
+
+/-- Membership form of `PreservesFiltration`. -/
+theorem preservesFiltration_iff {F : ModuleFiltration R M} {T : Module.End R M} :
+    F.PreservesFiltration T ↔ ∀ k, F.submodule k ≤ (F.submodule k).comap T := Iff.rfl
+
+/-- Membership form of `RaisesFiltration`. -/
+theorem raisesFiltration_iff {F : ModuleFiltration R M} {T : Module.End R M} :
+    F.RaisesFiltration T ↔ ∀ k, F.submodule k ≤ (F.submodule (k + 1)).comap T := Iff.rfl
+
+/-- The identity endomorphism preserves every filtration. -/
+theorem PreservesFiltration.id (F : ModuleFiltration R M) :
+    F.PreservesFiltration (1 : Module.End R M) := fun _ _ hx => by simpa using hx
+
+/-- A composite of filtration-preserving endomorphisms preserves the filtration. -/
+theorem PreservesFiltration.comp {F : ModuleFiltration R M} {S T : Module.End R M}
+    (hS : F.PreservesFiltration S) (hT : F.PreservesFiltration T) :
+    F.PreservesFiltration (S * T) := fun k _ hx => hS k (hT k hx)
+
+/-- A filtration-raising endomorphism followed by a filtration-preserving one still
+raises the filtration. -/
+theorem RaisesFiltration.comp_preserves {F : ModuleFiltration R M} {S T : Module.End R M}
+    (hS : F.PreservesFiltration S) (hT : F.RaisesFiltration T) :
+    F.RaisesFiltration (S * T) := fun k _ hx => hS (k + 1) (hT k hx)
+
+/-- A filtration-raising endomorphism also preserves the filtration. -/
+theorem RaisesFiltration.preservesFiltration {F : ModuleFiltration R M} {T : Module.End R M}
+    (hT : F.RaisesFiltration T) : F.PreservesFiltration T :=
+  fun k _ hx => F.antitone (Nat.le_succ k) (hT k hx)
+
+end End
+
 section Compatibility
 
 variable {R M : Type*} [Semiring R] [AddCommMonoid M] [Module R M]

@@ -30,7 +30,7 @@ namespace Mei.ModuleFiltration
 
 variable {R M : Type*} [Ring R] [AddCommGroup M] [Module R M]
   (F : ModuleFiltration R M) (f : Module.End R M)
-  (hf : ∀ k, F.submodule k ≤ (F.submodule (k + 1)).comap f)
+  (hf : F.RaisesFiltration f)
 
 /-- The linear solution operator on the order-`k` quotient. -/
 def quotientRecursion (k : ℕ) : Module.End R (F.quotient k) :=
@@ -108,7 +108,7 @@ theorem eq_completionRecursion_of_forall_projection_eq_add {a x : F.completion}
 completion induced by `f`. -/
 theorem completionRecursion_eq_add_completionMap (a : F.completion) :
     F.completionRecursion f hf a = a + F.completionMap F f id monotone_id
-      (fun k _ hx => F.antitone (Nat.le_succ (k + 1)) (hf (k + 1) hx))
+      (fun k _ hx => F.antitone (Nat.le_succ (k + 1)) (RaisesFiltration.map_mem hf hx))
       (F.completionRecursion f hf a) := by
   apply F.completion_ext
   intro k
@@ -119,7 +119,7 @@ theorem completionRecursion_eq_add_completionMap (a : F.completion) :
 induced by `f` is the completed solution. -/
 theorem eq_completionRecursion_of_eq_add_completionMap {a x : F.completion}
     (hx : x = a + F.completionMap F f id monotone_id
-      (fun k _ hx => F.antitone (Nat.le_succ (k + 1)) (hf (k + 1) hx)) x) :
+      (fun k _ hx => F.antitone (Nat.le_succ (k + 1)) (RaisesFiltration.map_mem hf hx)) x) :
     x = F.completionRecursion f hf a := by
   apply F.eq_completionRecursion_of_forall_projection_eq_add f hf
   intro k

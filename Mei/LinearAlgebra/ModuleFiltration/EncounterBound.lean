@@ -29,32 +29,22 @@ namespace Mei.ModuleFiltration
 
 variable {R M : Type*} [Semiring R] [AddCommMonoid M] [Module R M]
 
-/-- An endomorphism preserves a module filtration if it maps each filtration
-term into itself. -/
-def PreservesFiltration (F : ModuleFiltration R M) (T : Module.End R M) : Prop :=
-  ∀ k, F.submodule k ≤ (F.submodule k).comap T
-
-/-- An endomorphism raises a module filtration by one if it maps filtration
-order `k` into filtration order `k + 1`. -/
-def RaisesFiltration (F : ModuleFiltration R M) (T : Module.End R M) : Prop :=
-  ∀ k, F.submodule k ≤ (F.submodule (k + 1)).comap T
-
-/-- A filtration-preserving endomorphism maps each filtration term into itself. -/
-theorem PreservesFiltration.map_mem {F : ModuleFiltration R M} {T : Module.End R M}
-    (hT : F.PreservesFiltration T) {k : ℕ} {x : M} (hx : x ∈ F.submodule k) :
-    T x ∈ F.submodule k := hT k hx
-
-/-- A filtration-raising endomorphism maps filtration order `k` into order `k + 1`. -/
-theorem RaisesFiltration.map_mem {F : ModuleFiltration R M} {T : Module.End R M}
-    (hT : F.RaisesFiltration T) {k : ℕ} {x : M} (hx : x ∈ F.submodule k) :
-    T x ∈ F.submodule (k + 1) := hT k hx
-
 /-- The filtration action of a marked endomorphism: `false` preserves and `true`
 raises the filtration by one. -/
 def FiltrationStep (F : ModuleFiltration R M) (p : Module.End R M × Bool) : Prop :=
   match p.2 with
   | false => F.PreservesFiltration p.1
   | true => F.RaisesFiltration p.1
+
+/-- A `false` mark preserves the filtration. -/
+@[simp]
+theorem filtrationStep_false {F : ModuleFiltration R M} {T : Module.End R M} :
+    F.FiltrationStep (T, false) ↔ F.PreservesFiltration T := Iff.rfl
+
+/-- A `true` mark raises the filtration by one. -/
+@[simp]
+theorem filtrationStep_true {F : ModuleFiltration R M} {T : Module.End R M} :
+    F.FiltrationStep (T, true) ↔ F.RaisesFiltration T := Iff.rfl
 
 /-- A marked step maps an element of filtration order `k` into the order increased
 by its mark. -/
@@ -64,8 +54,8 @@ theorem FiltrationStep.map_mem {F : ModuleFiltration R M}
     p.1 x ∈ F.submodule (k + if p.2 then 1 else 0) := by
   obtain ⟨T, mark⟩ := p
   cases mark
-  · simpa [FiltrationStep] using (PreservesFiltration.map_mem hp hx)
-  · simpa [FiltrationStep] using (RaisesFiltration.map_mem hp hx)
+  · simpa using (PreservesFiltration.map_mem hp hx)
+  · simpa using (RaisesFiltration.map_mem hp hx)
 
 /-- Along a finite marked history, the composite maps filtration order `k` into
 order `k` increased by the number of marked steps. -/
@@ -81,11 +71,9 @@ theorem map_prod_mem (F : ModuleFiltration R M) (s : List (Module.End R M × Boo
       obtain ⟨T, b⟩ := p
       have hmem := FiltrationStep.map_mem (p := (T, b)) hp
         (k := k + (s.map Prod.snd).count true) (ih hs' k hx)
-      -- Unfold the cons product definitionally so that the induction hypothesis applies.
-      change T ((s.map Prod.fst).prod x) ∈
-        F.submodule (k + (List.map Prod.snd ((T, b) :: s)).count true)
-      have hidx : k + (List.map Prod.snd ((T, b) :: s)).count true =
-          (k + (List.map Prod.snd s).count true) + if b then 1 else 0 := by
+      simp only [List.map_cons, List.prod_cons, Module.End.mul_apply]
+      have hidx : k + (b :: s.map Prod.snd).count true =
+          (k + (s.map Prod.snd).count true) + if b then 1 else 0 := by
         cases b
         · simp
         · simp
@@ -106,9 +94,9 @@ theorem map_prod_eq_zero_of_le_count (F : ModuleFiltration R M) {r : ℕ}
     F.antitone hcount (by simpa using hmem)
   simpa [hr] using hmem'
 
-/-- Auxiliary run counter: `run` is the length of the current block of `false`
-entries, every completed block already has length at most `h`, and `false` entries
-after the current block are still to be checked. -/
+/-- `RunsBoundedAux h run l`: given that the current block of `false` entries
+already has length `run`, this block and every later maximal block of `false`
+entries in `l` have length at most `h`. -/
 def RunsBoundedAux (h run : ℕ) : List Bool → Prop
   | [] => run ≤ h
   | true :: l => run ≤ h ∧ RunsBoundedAux h 0 l
@@ -117,46 +105,61 @@ def RunsBoundedAux (h run : ℕ) : List Bool → Prop
 /-- Every maximal block of preserving (`false`) steps has length at most `h`. -/
 def RunsBounded (h : ℕ) (l : List Bool) : Prop := RunsBoundedAux h 0 l
 
-private theorem count_true_cons_true (l : List Bool) :
-    (true :: l).count true = l.count true + 1 := by simp
+/-- The empty history is run-bounded. -/
+@[simp]
+theorem RunsBounded.nil (h : ℕ) : RunsBounded h [] := by
+  simp [RunsBounded, RunsBoundedAux]
 
-private theorem count_true_cons_false (l : List Bool) :
-    (false :: l).count true = l.count true := by simp
+/-- A raising step starts a fresh block, so it does not affect the block bound. -/
+theorem RunsBounded.cons_true {h : ℕ} {l : List Bool} :
+    RunsBounded h (true :: l) ↔ RunsBounded h l := by
+  simp [RunsBounded, RunsBoundedAux]
 
-/-- A run-bounded list of marks has length at most `(r + 1) * h + r`, where `r` is
-the number of marked entries. -/
+/-- A preserving step extends the current block, which is then checked by the
+run counter. -/
+theorem RunsBounded.cons_false {h : ℕ} {l : List Bool} :
+    RunsBounded h (false :: l) ↔ RunsBoundedAux h 1 l := by
+  simp [RunsBounded, RunsBoundedAux]
+
+/-- If `RunsBoundedAux h run l`, then `run + l.length ≤ (r + 1) * h + r`, where
+`r = l.count true`; with `run = 0` this bounds the length of a `RunsBounded h`
+list. -/
 theorem RunsBoundedAux.length_le (h run : ℕ) (l : List Bool)
     (hb : RunsBoundedAux h run l) :
     run + l.length ≤ (l.count true + 1) * h + l.count true := by
   induction l generalizing run with
   | nil =>
-      -- Unfold the run counter at the end of the list.
-      change run ≤ h at hb
+      simp only [RunsBoundedAux] at hb
       simpa using hb
   | cons b l ih =>
       cases b
-      · -- Unfold the run counter at a preserving step.
-        change RunsBoundedAux h (run + 1) l at hb
+      · simp only [RunsBoundedAux] at hb
         have hlen := ih (run + 1) hb
-        rw [List.length_cons, count_true_cons_false]
+        rw [List.length_cons, List.count_cons_of_ne (by decide : (false : Bool) ≠ true)]
         omega
-      · -- Unfold the run counter at a raising step and reset the current run.
-        change run ≤ h ∧ RunsBoundedAux h 0 l at hb
+      · simp only [RunsBoundedAux] at hb
         obtain ⟨hrun, hrest⟩ := hb
         have hlen := ih 0 hrest
-        rw [List.length_cons, count_true_cons_true]
+        rw [List.length_cons, List.count_cons_self]
         have hrewrite : (l.count true + 1 + 1) * h + (l.count true + 1) =
             ((l.count true + 1) * h + l.count true) + h + 1 := by ring
         rw [hrewrite]
         omega
 
+/-- A run-bounded list of marks has length at most `(r + 1) * h + r`, where `r` is
+the number of marked entries. -/
+theorem RunsBounded.length_le {h : ℕ} {l : List Bool} (hb : RunsBounded h l) :
+    l.length ≤ (l.count true + 1) * h + l.count true := by
+  have hlen := RunsBoundedAux.length_le h 0 l hb
+  simpa using hlen
+
 /-- **Filtration encounter bound.** A nonzero composite of a finite marked history
 has at most `r - 1` filtration-raising steps and at most `r * h + r - 1` steps in
 total, provided filtration order `r` is zero and every maximal block of preserving
-steps has length at most `h`. -/
-theorem filtrationEncounterBound (F : ModuleFiltration R M) {r h n : ℕ}
-    (hr : F.submodule r = ⊥) (T : Fin n → Module.End R M) (mark : Fin n → Bool)
-    (hstep : ∀ i, F.FiltrationStep (T i, mark i))
+steps has length at most `h`. This is the roadmap target `filtrationEncounterBound`. -/
+theorem count_true_le_sub_one_and_length_le_of_prod_ne_zero (F : ModuleFiltration R M)
+    {r h n : ℕ} (hr : F.submodule r = ⊥) (T : Fin n → Module.End R M)
+    (mark : Fin n → Bool) (hstep : ∀ i, F.FiltrationStep (T i, mark i))
     (hblock : RunsBounded h (List.ofFn mark))
     (hne : (List.ofFn T).prod ≠ 0) :
     (List.ofFn mark).count true ≤ r - 1 ∧ n ≤ r * h + r - 1 := by
@@ -178,7 +181,7 @@ theorem filtrationEncounterBound (F : ModuleFiltration R M) {r h n : ℕ}
         exact Nat.le_of_not_lt h)
     exact hne hzero
   refine ⟨Nat.le_sub_one_of_lt hlt, ?_⟩
-  have hlen := RunsBoundedAux.length_le h 0 (List.ofFn mark) hblock
+  have hlen := RunsBounded.length_le hblock
   have hlen' : n ≤ ((List.ofFn mark).count true + 1) * h +
       (List.ofFn mark).count true := by
     simpa using hlen

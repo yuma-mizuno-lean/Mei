@@ -29,18 +29,18 @@ namespace Mei.ModuleFiltration
 
 variable {R M : Type*} [Ring R] [AddCommGroup M] [Module R M]
   (F : ModuleFiltration R M) (f : Module.End R M)
-  (hf : ∀ k, F.submodule k ≤ (F.submodule (k + 1)).comap f)
+  (hf : F.RaisesFiltration f)
 
 /-- A filtration-raising endomorphism induces an endomorphism at each finite order. -/
 def quotientRaisingEnd (k : ℕ) : Module.End R (F.quotient k) :=
   (F.submodule (k + 1)).mapQ (F.submodule (k + 1)) f
-    (fun _ hx => F.antitone (Nat.le_succ (k + 1)) (hf (k + 1) hx))
+    (fun _ hx => F.antitone (Nat.le_succ (k + 1)) (RaisesFiltration.map_mem hf hx))
 
 /-- The finite endomorphism is the standard quotient map of the original endomorphism. -/
 theorem quotientRaisingEnd_eq_mapQ (k : ℕ) :
     F.quotientRaisingEnd f hf k =
       (F.submodule (k + 1)).mapQ (F.submodule (k + 1)) f
-        (fun _ hx => F.antitone (Nat.le_succ (k + 1)) (hf (k + 1) hx)) := (rfl)
+        (fun _ hx => F.antitone (Nat.le_succ (k + 1)) (RaisesFiltration.map_mem hf hx)) := (rfl)
 
 /-- On a representative, the finite endomorphism applies the original endomorphism. -/
 @[simp]
@@ -66,7 +66,7 @@ theorem quotientRaisingEnd_pow_eq_zero (k : ℕ) :
   rw [Submodule.mkQ_apply, quotientRaisingEnd_pow_mk, LinearMap.zero_apply,
     Submodule.Quotient.mk_eq_zero]
   have h := Module.End.pow_apply_mem_of_map_le (T := f) (F := F.submodule)
-    (fun n => by rintro _ ⟨y, hy, rfl⟩; exact hf n hy)
+    (fun n => by rintro _ ⟨y, hy, rfl⟩; exact RaisesFiltration.map_mem hf hy)
     (by simp : x ∈ F.submodule 0) (k + 1)
   simpa only [Nat.zero_add] using h
 
