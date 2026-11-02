@@ -17,12 +17,11 @@ spans of the shadows of the singular-support cells along the backward rays of th
 admissible directions: the shadow of a set `σ` along `w` consists of the points reached
 by moving from a point of `σ` backwards along the ray `-ℝ≥0 • w`.
 
-The shadow contains the set and its translate by `w`, is monotone, is unchanged by
+The shadow contains the set and its translate by `-w`, is monotone, is unchanged by
 repeating it, is convex when the set is convex, and — the form in which the
 discriminant uses it — spans the same affine subspace as the set together with its
-translate by `w`. So the span of a shadow can be computed from two copies of the set,
-and a full-dimensional cell contributes the ambient space, which no exceptional
-arrangement records.
+translate by `-w`. So the span of a shadow can be computed from two copies of the set,
+and a full-dimensional shadow contributes the ambient space.
 
 The construction uses only the real vector-space structure; no polyhedrality,
 closedness or boundedness of `σ` is assumed.
@@ -57,6 +56,22 @@ theorem image_sub_subset_shadow (σ : Set V) (w : V) :
     (fun s => s - w) '' σ ⊆ shadow σ w := by
   rintro v ⟨s, hs, rfl⟩
   exact ⟨s, hs, 1, zero_le_one, by rw [one_smul]⟩
+
+
+/-- The shadow is the set of points that reach the set by a nonnegative multiple of `w`:
+`y ∈ shadow σ w` exactly when `y + t • w ∈ σ` for some `t ≥ 0`. This is the form in which
+`Mei.Convex.isConvexPolyhedron_setOf_exists_nonneg_add_smul_mem` states polyhedrality of the
+same construction. -/
+theorem shadow_eq_setOf_exists_nonneg_add_smul_mem (σ : Set V) (w : V) :
+    shadow σ w = {y | ∃ t : ℝ, 0 ≤ t ∧ y + t • w ∈ σ} := by
+  ext y
+  constructor
+  · rintro ⟨s, hs, t, ht, rfl⟩
+    refine ⟨t, ht, ?_⟩
+    have h : s - t • w + t • w = s := by abel
+    rwa [h]
+  · rintro ⟨t, ht, h⟩
+    exact ⟨y + t • w, h, t, ht, by abel⟩
 
 /-- Shadows are monotone in the set. -/
 theorem shadow_mono {σ τ : Set V} (h : σ ⊆ τ) (w : V) : shadow σ w ⊆ shadow τ w := by
