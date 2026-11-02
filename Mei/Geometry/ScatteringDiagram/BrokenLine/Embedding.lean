@@ -5,8 +5,7 @@ Authors: DeepSeek
 -/
 module
 
-public import Mei.Geometry.ScatteringDiagram.BrokenLine.CoefficientMap
-public import Mei.Geometry.ScatteringDiagram.BrokenLine.Itineraries
+public import Mei.Geometry.ScatteringDiagram.BrokenLine.DecoratedRay
 
 /-!
 # Coefficient embeddings of decorated broken lines
@@ -69,15 +68,6 @@ omit [DecidableEq Γ] [DecidableEq Δ] [DirectSum.Decomposition ℳ] [DirectSum.
 theorem coefficientImage_coe (a : ℳ p₀) :
     (coefficientImage (r := r) (σ := σ) (hr := hr) (𝓝 := 𝓝) a : N) = r a := (rfl)
 
-omit [DecidableEq Γ] [DecidableEq Δ] [DirectSum.Decomposition ℳ] [DirectSum.Decomposition 𝓝]
-  [NormedAddCommGroup V] [NormedSpace ℝ V] hT hv in
-/-- The degree equivalence sends `Fin.snoc` to the corresponding `Fin.snoc` of the
-pointwise image history. -/
-theorem map_snoc (p : Fin n → Γ) (i : Fin (n + 1)) :
-    σ (Fin.snoc (α := fun _ => Γ) p p₀ i) =
-      Fin.snoc (α := fun _ => Δ) (fun j => σ (p j)) (σ p₀) i := by
-  cases i using Fin.lastCases <;> simp
-
 /-- An injective intertwining coefficient map sends each surviving history of the
 source support to the pointwise reindexed target history. -/
 theorem decoratedHistoryEmbedding (hr_injective : Function.Injective r) (p : Fin n → Γ)
@@ -100,7 +90,8 @@ theorem decoratedHistoryEmbedding (hr_injective : Function.Injective r) (p : Fin
         _ = f j (v (Fin.snoc (α := fun _ => Γ) p p₀ j.succ)) := (hp.2 j).1
         _ = f j (w (σ (Fin.snoc (α := fun _ => Γ) p p₀ j.succ))) := by rw [hv]
         _ = f j (w (Fin.snoc (α := fun _ => Δ) (fun j => σ (p j)) (σ p₀) j.succ)) :=
-          congrArg (fun x => f j (w x)) (map_snoc (σ := σ) (p := p) (p₀ := p₀) j.succ)
+          congrArg (fun x => f j (w x))
+            (congrFun (Fin.comp_snoc (g := σ) (q := p) (y := p₀)) j.succ)
     · simpa only [hv] using (hp.2 j).2
 
 /-- A target surviving history has the inverse degree history as a preimage in the
@@ -131,8 +122,13 @@ theorem decoratedHistoryPreimage (q : Fin n → Δ)
         _ = f j (w (Fin.snoc (α := fun _ => Δ) q (σ p₀) j.succ)) := (hq.2 j).1
         _ = f j (w (σ (Fin.snoc (α := fun _ => Γ)
               (fun j => σ.symm (q j)) p₀ j.succ))) := by
-          rw [map_snoc]
-          simp
+          rw [show Fin.snoc (α := fun _ => Δ) q (σ p₀) j.succ =
+            σ (Fin.snoc (α := fun _ => Γ) (fun j => σ.symm (q j)) p₀ j.succ) from by
+            have h : ∀ i, σ (Fin.snoc (α := fun _ => Γ) (fun j => σ.symm (q j)) p₀ i) =
+                Fin.snoc (α := fun _ => Δ) q (σ p₀) i := by
+              intro i
+              cases i using Fin.lastCases <;> simp
+            exact (h j.succ).symm]
         _ = f j (v (Fin.snoc (α := fun _ => Γ)
               (fun j => σ.symm (q j)) p₀ j.succ)) := by rw [hv]
     · calc
@@ -155,8 +151,8 @@ def decoratedRayMap (hr_injective : Function.Injective r)
       calc
         v (Fin.snoc (α := fun _ => Γ) β.1.val p₀ i) =
             w (σ (Fin.snoc (α := fun _ => Γ) β.1.val p₀ i)) := hv _
-        _ = w (Fin.snoc (α := fun _ => Δ) (fun j => σ (β.1.val j)) (σ p₀) i) := by
-          rw [map_snoc])⟩
+        _ = w (Fin.snoc (α := fun _ => Δ) (fun j => σ (β.1.val j)) (σ p₀) i) :=
+          congrArg w (congrFun (Fin.comp_snoc (g := σ) (q := β.1.val) (y := p₀)) i))⟩
 
 /-- The map retains the entire geometric realization. -/
 @[simp]
@@ -223,8 +219,13 @@ theorem decoratedRayMap_surjective (hr_injective : Function.Injective r) :
       calc
         w (Fin.snoc (α := fun _ => Δ) y.1.val (σ p₀) i) =
             w (σ (Fin.snoc (α := fun _ => Γ) (fun j => σ.symm (y.1.val j)) p₀ i)) := by
-          rw [map_snoc]
-          simp
+          rw [show Fin.snoc (α := fun _ => Δ) y.1.val (σ p₀) i =
+            σ (Fin.snoc (α := fun _ => Γ) (fun j => σ.symm (y.1.val j)) p₀ i) from by
+            have h : ∀ k, σ (Fin.snoc (α := fun _ => Γ) (fun j => σ.symm (y.1.val j)) p₀ k) =
+                Fin.snoc (α := fun _ => Δ) y.1.val (σ p₀) k := by
+              intro k
+              cases k using Fin.lastCases <;> simp
+            exact (h i).symm]
         _ = v (Fin.snoc (α := fun _ => Γ) (fun j => σ.symm (y.1.val j)) p₀ i) :=
           (hv _).symm)⟩
   refine ⟨z, ?_⟩
