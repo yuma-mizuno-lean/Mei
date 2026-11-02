@@ -21,6 +21,10 @@ Selected history sums are independent of the chosen uniform support and commute
 with coefficient specialization after grouping by the degree map. Cancellations
 are allowed; no bijection of surviving histories is asserted.
 
+Restricting the expansion to histories with a prescribed terminal degree
+isolates the final component of the composite along any linear input
+(`sum_homogeneousHistory_terminal_comp_eq`).
+
 These are the linear-map versions of the pointwise results
 `sum_homogeneousHistory` and `map_sum_ite_homogeneousHistory` in
 `History/Finite.lean`.
@@ -115,6 +119,40 @@ theorem sum_ite_homogeneousHistory_comp_apply (S : Finset (Fin n → ι))
     (fun p _ hp => by
       have hz : homogeneousHistory ℳ T p (a x) = 0 := by simpa using hp
       simp [hz])).symm
+
+/-- With a uniform finite contributing support on the input range, the final
+`η`-component along the composite is the sum of the histories with terminal
+degree `η`, written as an identity of linear maps. The ambient grading may be
+infinite. -/
+theorem sum_homogeneousHistory_terminal_comp_eq
+    (T : Fin (n + 1) → Module.End R M) (S : Finset (Fin (n + 1) → ι))
+    (hS : ∀ p ∉ S, (homogeneousHistory ℳ T p).comp a = 0) (η : ι) :
+    ∑ p ∈ S.filter (fun p => p 0 = η), (homogeneousHistory ℳ T p).comp a =
+      ((homogeneousComponent ℳ η).comp (List.ofFn T).prod).comp a := by
+  classical
+  rw [Finset.sum_filter]
+  calc ∑ p ∈ S, (if p 0 = η then (homogeneousHistory ℳ T p).comp a else 0)
+      = ∑ p ∈ S, (homogeneousComponent ℳ η).comp
+          ((homogeneousHistory ℳ T p).comp a) := by
+        refine Finset.sum_congr rfl fun p _ => ?_
+        split_ifs with hp
+        · rw [← LinearMap.comp_assoc, ← hp,
+            homogeneousComponent_comp_homogeneousHistory]
+        · rw [← LinearMap.comp_assoc,
+            homogeneousComponent_comp_homogeneousHistory_of_ne ℳ T p η hp,
+            LinearMap.zero_comp]
+    _ = ((homogeneousComponent ℳ η).comp (List.ofFn T).prod).comp a := by
+        let φ : (E →ₗ[R] M) →+ (E →ₗ[R] M) :=
+          { toFun := (homogeneousComponent ℳ η).comp
+            map_zero' := LinearMap.ext fun x => by simp
+            map_add' := fun g h => LinearMap.ext fun x => by simp }
+        have h : (homogeneousComponent ℳ η).comp
+              (∑ p ∈ S, (homogeneousHistory ℳ T p).comp a) =
+            ∑ p ∈ S, (homogeneousComponent ℳ η).comp
+              ((homogeneousHistory ℳ T p).comp a) :=
+          map_sum φ (fun p => (homogeneousHistory ℳ T p).comp a) S
+        rw [sum_homogeneousHistory_comp_eq ℳ T a S hS] at h
+        exact h.symm
 
 open Classical in
 /-- Selected linear-map sums agree over any two uniform supports. -/

@@ -5,6 +5,7 @@ Authors: Codex
 -/
 module
 
+public import Mei.Algebra.DirectSum.Component
 public import TauCeti.Algebra.DirectSum.Internal
 import Mathlib.Data.List.OfFn
 
@@ -37,9 +38,7 @@ def homogeneousHistory : {n : ℕ} → (Fin n → Module.End R M) →
     (Fin n → ι) → Module.End R M
   | 0, _, _ => LinearMap.id
   | n + 1, T, p =>
-    ((ℳ (p 0)).subtype.comp
-      ((DirectSum.component R ι (fun i => ℳ i) (p 0)).comp
-        (DirectSum.decomposeLinearEquiv ℳ).toLinearMap)).comp
+    (homogeneousComponent ℳ (p 0)).comp
       ((T 0).comp (homogeneousHistory (fun j : Fin n => T j.succ) (fun j => p j.succ)))
 
 /-- No propagation steps give the identity map. -/
@@ -53,8 +52,8 @@ theorem homogeneousHistory_succ_apply {n : ℕ}
     (T : Fin (n + 1) → Module.End R M) (p : Fin (n + 1) → ι) (a : M) :
     homogeneousHistory ℳ T p a =
       (DirectSum.decompose ℳ (T 0
-        (homogeneousHistory ℳ (fun j : Fin n => T j.succ) (fun j => p j.succ) a)) (p 0) : M) :=
-  (rfl)
+        (homogeneousHistory ℳ (fun j : Fin n => T j.succ) (fun j => p j.succ) a)) (p 0) : M) := by
+  simp only [homogeneousHistory, homogeneousComponent_apply, LinearMap.comp_apply]
 
 /-- The output of a nonempty history lies in its last selected homogeneous piece. -/
 theorem homogeneousHistory_mem {n : ℕ} (T : Fin (n + 1) → Module.End R M)
@@ -63,28 +62,6 @@ theorem homogeneousHistory_mem {n : ℕ} (T : Fin (n + 1) → Module.End R M)
   rw [homogeneousHistory_succ_apply]
   exact Subtype.property _
 
-/-- Selection of a whole homogeneous piece as an endomorphism of the ambient
-module: the `η`-component of the direct-sum decomposition, included back into
-`M`. -/
-def homogeneousComponent (η : ι) : Module.End R M :=
-  (ℳ η).subtype.comp
-    ((DirectSum.component R ι (fun i => ℳ i) η).comp
-      (DirectSum.decomposeLinearEquiv ℳ).toLinearMap)
-
-/-- Selecting a piece takes the corresponding component of the decomposition. -/
-@[simp]
-theorem homogeneousComponent_apply (η : ι) (a : M) :
-    homogeneousComponent ℳ η a = (DirectSum.decompose ℳ a η : M) := (rfl)
-
-/-- Piece selection is a projection: selecting the same piece twice has no
-further effect. -/
-theorem homogeneousComponent_idem (η : ι) :
-    (homogeneousComponent ℳ η).comp (homogeneousComponent ℳ η) =
-      homogeneousComponent ℳ η := by
-  ext a
-  simp only [LinearMap.comp_apply, homogeneousComponent_apply]
-  exact DirectSum.decompose_of_mem_same ℳ (Subtype.property (DirectSum.decompose ℳ a η))
-
 /-- A nonempty history has no component in a degree different from its terminal
 degree. -/
 theorem homogeneousComponent_comp_homogeneousHistory_of_ne {n : ℕ}
@@ -92,17 +69,31 @@ theorem homogeneousComponent_comp_homogeneousHistory_of_ne {n : ℕ}
     (hη : p 0 ≠ η) :
     (homogeneousComponent ℳ η).comp (homogeneousHistory ℳ T p) = 0 := by
   ext a
-  simp only [LinearMap.comp_apply, homogeneousComponent_apply, LinearMap.zero_apply]
-  rw [DirectSum.decompose_of_mem_ne ℳ (homogeneousHistory_mem ℳ T p a) hη]
+  simp only [LinearMap.comp_apply, LinearMap.zero_apply]
+  exact homogeneousComponent_apply_of_mem_ne ℳ (homogeneousHistory_mem ℳ T p a) hη
 
-/-- Selecting the terminal degree of a nonempty history returns that history. -/
+/-- Selecting the terminal degree of a nonempty history returns that history:
+the history already ends in the `p 0` selection, which is idempotent. -/
+@[simp]
 theorem homogeneousComponent_comp_homogeneousHistory {n : ℕ}
     (T : Fin (n + 1) → Module.End R M) (p : Fin (n + 1) → ι) :
     (homogeneousComponent ℳ (p 0)).comp (homogeneousHistory ℳ T p) =
       homogeneousHistory ℳ T p := by
-  ext a
-  simp only [LinearMap.comp_apply, homogeneousComponent_apply]
-  exact DirectSum.decompose_of_mem_same ℳ (homogeneousHistory_mem ℳ T p a)
+  rw [show homogeneousHistory ℳ T p =
+      (homogeneousComponent ℳ (p 0)).comp
+        ((T 0).comp (homogeneousHistory ℳ (fun j => T j.succ) (fun j => p j.succ)))
+    from rfl, ← LinearMap.comp_assoc, homogeneousComponent_idem]
+
+/-- The final `η`-selection of a nonempty history keeps it when `η` is the
+terminal degree and kills it otherwise. -/
+theorem homogeneousComponent_homogeneousHistory_apply {n : ℕ}
+    (T : Fin (n + 1) → Module.End R M) (p : Fin (n + 1) → ι) (η : ι) (a : M) :
+    homogeneousComponent ℳ η (homogeneousHistory ℳ T p a) =
+      if p 0 = η then homogeneousHistory ℳ T p a else 0 := by
+  split_ifs with h
+  · rw [← h]
+    exact homogeneousComponent_apply_of_mem ℳ (homogeneousHistory_mem ℳ T p a)
+  · exact homogeneousComponent_apply_of_mem_ne ℳ (homogeneousHistory_mem ℳ T p a) h
 
 /-- A vanished intermediate decoration cannot yield a nonzero final history. -/
 theorem homogeneousHistory_tail_ne_zero {n : ℕ}
