@@ -153,11 +153,7 @@ theorem completionMap_completedTropicalTangentFieldToSubalgebra (u : (H).complet
 variable [Algebra ℚ R]
 
 /-- The completed label formed inside the character restriction maps to the original
-function-wall label. This permits applying pairings whose character domain is `U`.
-The identity pairing is the case `p = TropicalPairing.id` of the general-pairing
-transport
-`Mei.TropicalPairing.completedMap_completedBCHExp_completedTropicalTangentFieldToSubalgebra`,
-which carries the `simp` attribute in its place. -/
+function-wall label. This permits applying pairings whose character domain is `U`. -/
 theorem completedMap_completedBCHExp_completedTropicalTangentFieldToSubalgebra
     (u : (H).completion) :
     (TropicalPairing.id d ρ U).gradedLieHom.completedMap
