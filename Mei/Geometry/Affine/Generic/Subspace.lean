@@ -57,24 +57,4 @@ theorem isGeneric_ofSubspaces_iff (S : Finset (AffineSubspace ℝ V)) (x : V) :
   simp only [Finset.mem_erase, ne_eq, and_imp]
   exact ⟨fun h T hT htop => h T htop hT, fun h T htop hT => h T hT htop⟩
 
-/-- The arrangement of a finite index family of subspaces. -/
-def ofFinset {ι : Type*} [Fintype ι] (T : ι → AffineSubspace ℝ V) :
-    ExceptionalArrangement V := by
-  classical
-  exact ofSubspaces (Finset.univ.image T)
-
-/-- A point is generic for the arrangement of a finite index family exactly when it
-lies in none of the proper members. -/
-@[simp]
-theorem isGeneric_ofFinset_iff {ι : Type*} [Fintype ι] (T : ι → AffineSubspace ℝ V)
-    (x : V) : (ofFinset T).IsGeneric x ↔ ∀ i, T i ≠ ⊤ → x ∉ T i := by
-  classical
-  rw [ofFinset, isGeneric_ofSubspaces_iff]
-  constructor
-  · intro h i hi
-    exact h (T i) (Finset.mem_image.mpr ⟨i, Finset.mem_univ i, rfl⟩) hi
-  · rintro h U hU hUtop
-    obtain ⟨i, -, rfl⟩ := Finset.mem_image.mp hU
-    exact h i hUtop
-
 end Mei.ExceptionalArrangement
