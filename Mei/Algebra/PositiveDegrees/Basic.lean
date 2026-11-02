@@ -84,6 +84,31 @@ theorem add_ne_zero {n m : N} (hn : n ∈ d.monoid) (hm : m ∈ d.monoid) (hn0 :
   simp only [map_add, map_zero] at this
   omega
 
+/-- A nonzero allowed degree of `d`. -/
+abbrev NonzeroDegree (d : PositiveDegrees N) : Type _ := {n : N // n ∈ d.monoid ∧ n ≠ 0}
+
+namespace NonzeroDegree
+
+@[simp]
+theorem coe_mk {d : PositiveDegrees N} {n : N} (hn : n ∈ d.monoid) (hn0 : n ≠ 0) :
+    ((⟨n, hn, hn0⟩ : NonzeroDegree d) : N) = n := (rfl)
+
+theorem mem {d : PositiveDegrees N} (n : NonzeroDegree d) : (n : N) ∈ d.monoid := n.property.1
+
+theorem ne_zero {d : PositiveDegrees N} (n : NonzeroDegree d) : (n : N) ≠ 0 := n.property.2
+
+/-- Nonzero allowed degrees are closed under addition, because the degree is positive on
+them. -/
+instance {d : PositiveDegrees N} : Add (NonzeroDegree d) where
+  add a b :=
+    ⟨(a : N) + (b : N), d.monoid.add_mem a.mem b.mem, d.add_ne_zero a.mem b.mem a.ne_zero⟩
+
+@[simp]
+theorem coe_add {d : PositiveDegrees N} (a b : NonzeroDegree d) :
+    ((a + b : NonzeroDegree d) : N) = (a : N) + (b : N) := (rfl)
+
+end NonzeroDegree
+
 /-- The degree of the `(j + 1)`st multiple of a nonzero allowed degree exceeds `j`. -/
 theorem lt_degree_succ_nsmul {n : N} (hn : n ∈ d.monoid) (hn0 : n ≠ 0) (j : ℕ) :
     (j : ℤ) < d.degree ((j + 1) • n) := by
