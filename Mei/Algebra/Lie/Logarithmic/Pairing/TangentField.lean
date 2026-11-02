@@ -101,7 +101,7 @@ theorem map_tropicalTangentMonoid_le :
 omit [Algebra ℚ R] [DecidableEq Γ] [DecidableEq Γ'] in
 /-- The transported coefficient map respects the tangent filtrations, with the
 modulus of the paired degree map. -/
-theorem tangentCoefficientMap_filtration (k : ℕ) :
+theorem filtration_ideal_le_comap_tangentCoefficientMap (k : ℕ) :
     (TropicalVertexCoefficientAction.filtration (R := R) d
         (tropicalTangentMonoid d ρ m.val)).ideal (p.degreeMap.modulus k + 1) ≤
       ((TropicalVertexCoefficientAction.filtration (R := R) e
@@ -131,7 +131,7 @@ def completedTangentCoefficientMap :
     (TropicalVertexCoefficientAction.filtration (R := R) e
       (tropicalTangentMonoid e ρ' (p.characterMap m)))
     (p.tangentCoefficientMap m) p.degreeMap.modulus p.degreeMap.monotone_modulus
-    (p.tangentCoefficientMap_filtration m)
+    (p.filtration_ideal_le_comap_tangentCoefficientMap m)
 
 omit [Algebra ℚ R] [DecidableEq Γ] [DecidableEq Γ'] in
 /-- The completed coefficient map extends the transported finite coefficient map. -/
@@ -191,14 +191,14 @@ theorem coe_gradedLieHom_tropicalTangentFieldToSubalgebra
         p.degreeMap.map_ne_zero ((mem_tropicalTangentMonoid (d := d) (ρ := ρ)
           (m := m.val) q.val).mp q.property).1 hq'
       -- The restricted field of a single coefficient is a single positive generator.
-      have hm : single ρ q.val (c • m.val) =
+      have hm : single ρ q.val (c • m).val =
           (tropicalTangentFieldToSubalgebra d ρ U m (single q c)).val.val := by
-        rw [coe_tropicalTangentFieldToSubalgebra,
+        rw [Submodule.coe_smul, coe_tropicalTangentFieldToSubalgebra,
           coe_tropicalTangentField_single d ρ m.val hq']
       rw [p.coe_gradedLieHom_of_homogeneous _ (c • m) hm, map_smul,
         tangentCoefficientMap_single,
         coe_tropicalTangentField_single e ρ' (p.characterMap m) hq0]
-      rfl
+      simp
 
 omit [Algebra ℚ R] in
 /-- A tropical pairing transports a completed tangent field, in the character
@@ -240,6 +240,7 @@ theorem completionMap_completedTropicalTangentFieldToSubalgebra
 /-- A tropical pairing transports the completed exponential, in the character
 restriction, of a completed tangent field to the completed exponential of the
 transported completed coefficient and the paired character. -/
+@[simp]
 theorem completedMap_completedBCHExp_completedTropicalTangentFieldToSubalgebra
     (u : (TropicalVertexCoefficientAction.filtration (R := R) d
       (tropicalTangentMonoid d ρ m.val)).completion) :
@@ -255,7 +256,9 @@ theorem completedMap_completedBCHExp_completedTropicalTangentFieldToSubalgebra
   exact p.completionMap_completedTropicalTangentFieldToSubalgebra m u
 
 /-- A tropical pairing transports the completed exponential of a finite tangent
-field: the image is the exponential of the transported finite field. -/
+field: the image is the exponential of the transported finite field. The `simp`
+normal form of the statement is the more fundamental
+`GradedLieHom.completedMap_expToCompletion`, so this lemma carries no attribute. -/
 theorem completedMap_expToCompletion_tropicalTangentFieldToSubalgebra
     (u : R[tropicalTangentMonoid d ρ m.val]) :
     p.gradedLieHom.completedMap
