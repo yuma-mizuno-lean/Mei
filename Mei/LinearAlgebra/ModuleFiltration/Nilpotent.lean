@@ -5,6 +5,7 @@ Authors: Codex
 -/
 module
 
+public import Mei.LinearAlgebra.End.Recursion
 public import Mei.LinearAlgebra.ModuleFiltration.Completion
 public import TauCeti.LinearAlgebra.Submodule.CompleteFiltration
 public import Mathlib.RingTheory.Nilpotent.Defs
@@ -21,6 +22,11 @@ These compatible nilpotent endomorphisms turn power series into finite sums at
 each order, so evaluations can be assembled across the quotient tower. In particular,
 filtration-raising Lie actions use this construction for their finite-order
 representations before exponentiation.
+
+When the filtration itself has finite length, an endomorphism raising it is
+nilpotent on the whole module, not only at each order. The recursion `x = a + f x`
+is then solved by the shared semimodule theorem `Module.End.finiteRecursion`, so no
+second existence or uniqueness argument is needed for this case.
 -/
 
 public section
@@ -81,5 +87,37 @@ theorem transition_quotientRaisingEnd {k l : ℕ} (hkl : k ≤ l) (x : F.quotien
       F.quotientRaisingEnd f hf k (F.transition hkl x) := by
   obtain ⟨a, rfl⟩ := (F.submodule (l + 1)).mkQ_surjective x
   simp
+
+include hf in
+/-- A raising endomorphism of a filtration that vanishes at order `r` is nilpotent. -/
+theorem pow_eq_zero_of_submodule_eq_bot (hr : F.submodule r = ⊥) : f ^ r = 0 := by
+  apply LinearMap.ext
+  intro x
+  have h := Module.End.pow_apply_mem_of_map_le (T := f) (F := F.submodule)
+    (fun n => by rintro _ ⟨y, hy, rfl⟩; exact hf n hy)
+    (show x ∈ F.submodule 0 by simp) r
+  rw [Nat.zero_add, hr] at h
+  simpa only [LinearMap.zero_apply, Submodule.mem_bot] using h
+
+include hf in
+/-- The shared semimodule recursion solves the recursion of a raising endomorphism
+of a finite-length filtration. -/
+theorem eq_finiteRecursion_of_submodule_eq_bot (hr : F.submodule r = ⊥) {a x : M}
+    (hx : x = a + f x) : x = f.finiteRecursion r a :=
+  Module.End.eq_finiteRecursion_of_eq_add f (F.pow_eq_zero_of_submodule_eq_bot f hf hr) hx
+
+include hf in
+/-- Two solutions of the recursion agree, for a raising endomorphism of a
+finite-length filtration. -/
+theorem eq_of_eq_add_of_submodule_eq_bot (hr : F.submodule r = ⊥) {a x y : M}
+    (hx : x = a + f x) (hy : y = a + f y) : x = y :=
+  Module.End.eq_of_eq_add_of_pow_eq_zero f (F.pow_eq_zero_of_submodule_eq_bot f hf hr) hx hy
+
+include hf in
+/-- The recursion of a raising endomorphism of a finite-length filtration has a
+unique solution. -/
+theorem existsUnique_eq_add_of_submodule_eq_bot (hr : F.submodule r = ⊥) (a : M) :
+    ∃! x, x = a + f x :=
+  Module.End.existsUnique_eq_add_of_pow_eq_zero f (F.pow_eq_zero_of_submodule_eq_bot f hf hr) a
 
 end Mei.ModuleFiltration
