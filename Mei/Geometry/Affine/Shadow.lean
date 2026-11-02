@@ -123,7 +123,7 @@ theorem convex_shadow {σ : Set V} (hσ : Convex ℝ σ) (w : V) :
 
 
 /-- The shadow spans the same affine subspace as the set together with its translate by
-`w`: every shadow point is an affine combination of `s` and `s - w`, and conversely both
+`-w`: every shadow point is an affine combination of `s` and `s - w`, and conversely both
 copies of the set lie in the shadow. -/
 theorem affineSpan_shadow (σ : Set V) (w : V) :
     affineSpan ℝ (shadow σ w) = affineSpan ℝ (σ ∪ (fun s => s - w) '' σ) := by
