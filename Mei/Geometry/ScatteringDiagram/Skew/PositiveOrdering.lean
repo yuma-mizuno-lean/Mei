@@ -8,28 +8,39 @@ module
 public import Mei.Geometry.ScatteringDiagram.Skew.Pentagon
 
 /-!
-# Ordered and antiordered products of normalized dilogarithm factors
+# Ordered and antiordered products of dilogarithm factors
 
-In the completed skew group of a positively graded skew Lie algebra, a *normalized
-dilogarithm factor* is a ray label `Ψ[n]^c = exp(c ∑_{j ≥ 1} (-1)^(j+1) X_{jn}/j²)`
-at a nonzero allowed degree `n`. Such factors are the normalized positive factors of
-the ordinary binomial scattering input.
+In the completed skew group of a positively graded skew Lie algebra, the ray label
+`Ψ[n]^c = exp(c ∑_{j ≥ 1} (-1)^(j+1) X_{jn}/j²)` at a nonzero allowed degree `n` and a
+coefficient `c` is a *dilogarithm factor*. The coefficient is not determined by the degree: the
+normalized factor `Ψ[tn]^(s κ(tn))` of the ordinary binomial scattering input is the special
+case at a positive multiple `t • n` of a primitive degree with `s, t > 0` and `c = s κ(tn)`,
+where `κ` is the rational ray index of the degree with respect to the finite-index sublattice on
+which the form is integral (`SkewLatticeDatum.sublattice.toAddSubgroup.rayIndex`, used in
+`Mei.Geometry.ScatteringDiagram.Skew.Dilogarithm`). The ordering theory below is stated for an
+arbitrary coefficient, because the exchange uses `c` only through the scalar equation
+`c {a,b} = -1`; a normalized factor is obtained by instantiating `c` at its normalized
+coefficient.
 
-Ordering is read from the skew form: a pair `a, b` is ordered when `{a,b} ≥ 0` and
-antiordered when `{a,b} < 0`. For an antiordered pair whose normalization satisfies
-`c {a,b} = -1`, the pentagon identity of `Mei.Geometry.ScatteringDiagram.Skew.Pentagon` rewrites the
-product `Ψ[a]^c Ψ[b]^c` as the ordered product `Ψ[b]^c Ψ[b+a]^c Ψ[a]^c`. This is the
-adjacent exchange used when ordering a finite product of normalized positive factors.
-The file records the exchange for an arbitrary segment of a list, together with the
-commutative case in which all pairings vanish; in that case the original product is
-already ordered and no exchange is needed.
+Ordering is read from the skew form: a pair `a, b` is ordered when `{a,b} ≥ 0` and antiordered
+when `{a,b} ≤ 0`. The two readings overlap at `{a,b} = 0`; such a pair is collinear, its factors
+commute (`SkewLieAlgebra.commute_rayExp_of_eq_zero`) and may be kept in a fixed tie order. For a
+pair whose coefficient satisfies `c {a,b} = -1`, the pentagon identity of
+`Mei.Geometry.ScatteringDiagram.Skew.Pentagon` rewrites the product `Ψ[a]^c Ψ[b]^c` as the
+product `Ψ[b]^c Ψ[b+a]^c Ψ[a]^c`, and for an antiordered pair the replacement `b, b+a, a` has
+both adjacent pairs ordered. This is the exchange used when ordering a finite product of
+dilogarithm factors.
+
+The file records the exchange for an arbitrary segment of a list, the orderedness of the
+adjacent pairs of the exchanged triple, and the zero-form case, in which every pair is ordered
+and no exchange is needed.
 
 The rank-two wall-crossing formula of Nakanishi, *Cluster algebras and scattering
 diagrams, Part III*, §5.2 (arXiv:2111.00800v6), and Burcroff–Lee–Mou,
 *Positivity of generalized cluster scattering diagrams*, §8.1 (arXiv:2503.03719v1),
-applies this exchange repeatedly. The statements here are the single-exchange and
-commutative base cases; they retain the exact completed label, hence every finite
-truncation and the assembly of the truncations.
+applies this exchange repeatedly. The statements here are the segment exchange and the zero-form
+base case; they retain the exact completed label, hence every finite truncation and the assembly
+of the truncations.
 -/
 
 public section
@@ -44,7 +55,7 @@ section Degrees
 
 variable {Γ : Type*} [AddCommGroup Γ] {d : PositiveDegrees Γ}
 
-/-- A nonzero allowed degree of `d`, used to index a normalized dilogarithm factor. -/
+/-- A nonzero allowed degree of `d`, used to index a dilogarithm factor. -/
 abbrev DilogDegree (d : PositiveDegrees Γ) : Type _ := {n : Γ // n ∈ d.monoid ∧ n ≠ 0}
 
 @[simp]
@@ -55,23 +66,14 @@ theorem DilogDegree.mem (n : DilogDegree d) : (n : Γ) ∈ d.monoid := n.propert
 
 theorem DilogDegree.ne_zero (n : DilogDegree d) : (n : Γ) ≠ 0 := n.property.2
 
-/-- The sum of two dilogarithm degrees, with an explicit nonzero proof. -/
-def DilogDegree.add (a b : DilogDegree d) (h : (a : Γ) + (b : Γ) ≠ 0) : DilogDegree d :=
-  ⟨(a : Γ) + (b : Γ), d.monoid.add_mem a.mem b.mem, h⟩
+/-- The sum of two dilogarithm degrees, which is a nonzero allowed degree because the degree is
+positive on nonzero allowed degrees. -/
+def DilogDegree.add (a b : DilogDegree d) : DilogDegree d :=
+  ⟨(a : Γ) + (b : Γ), d.monoid.add_mem a.mem b.mem, d.add_ne_zero a.mem b.mem a.ne_zero⟩
 
 @[simp]
-theorem DilogDegree.coe_add (a b : DilogDegree d) (h : (a : Γ) + (b : Γ) ≠ 0) :
-    ((DilogDegree.add a b h : DilogDegree d) : Γ) = (a : Γ) + (b : Γ) := (rfl)
-
-/-- A pair whose pairing is nonzero has nonzero sum. -/
-theorem add_ne_zero_of_form_ne_zero {R : Type*} [CommRing R]
-    (β : Γ →ₗ[ℤ] Γ →ₗ[ℤ] R) (hβ : β.IsAlt) {a b : DilogDegree d}
-    (h : β (a : Γ) (b : Γ) ≠ 0) : (a : Γ) + (b : Γ) ≠ 0 := by
-  intro hzero
-  have hb : (b : Γ) = -(a : Γ) := eq_neg_of_add_eq_zero_right hzero
-  apply h
-  rw [hb]
-  simpa using (neg_eq_zero.mpr (LinearMap.IsAlt.self_eq_zero hβ (a : Γ)))
+theorem DilogDegree.coe_add (a b : DilogDegree d) :
+    ((DilogDegree.add a b : DilogDegree d) : Γ) = (a : Γ) + (b : Γ) := (rfl)
 
 end Degrees
 
@@ -79,17 +81,19 @@ variable {R Γ : Type*} [CommRing R] [Algebra ℚ R] [AddCommGroup Γ] [Decidabl
   [PartialOrder R] [IsOrderedAddMonoid R]
   (β : Γ →ₗ[ℤ] Γ →ₗ[ℤ] R) (hβ : β.IsAlt) (d : PositiveDegrees Γ)
 
-/-- The normalized dilogarithm factor `Ψ[n]^c` at a nonzero allowed degree `n`. -/
+/-- The dilogarithm factor `Ψ[n]^c` at a nonzero allowed degree `n` with coefficient `c`. The
+normalized factor `Ψ[tn]^(s κ(tn))` of the ordinary binomial scattering input is the special case
+at a positive multiple `t • n` of a primitive degree with `c = s κ(tn)`. -/
 def dilogFactor (n : DilogDegree d) (c : R) : d.completedBCHGroup (positiveGrading β hβ d) :=
   rayExp β hβ n.mem n.ne_zero (c • negDilogNeg R)
 
 omit [PartialOrder R] [IsOrderedAddMonoid R] in
-/-- The defining ray label of a normalized dilogarithm factor. -/
+/-- The defining ray label of a dilogarithm factor. -/
 @[simp]
 theorem dilogFactor_def (n : DilogDegree d) (c : R) :
     dilogFactor β hβ d n c = rayExp β hβ n.mem n.ne_zero (c • negDilogNeg R) := (rfl)
 
-/-- The product of the normalized dilogarithm factors of a finite list. -/
+/-- The product of the dilogarithm factors of a finite list, all at the same coefficient. -/
 def dilogFactorProduct (l : List (DilogDegree d)) (c : R) :
     d.completedBCHGroup (positiveGrading β hβ d) :=
   (l.map fun n => dilogFactor β hβ d n c).prod
@@ -106,74 +110,65 @@ theorem dilogFactorProduct_cons (a : DilogDegree d) (l : List (DilogDegree d)) (
       dilogFactor β hβ d a c * dilogFactorProduct β hβ d l c := by
   simp [dilogFactorProduct]
 
-/-- A pair is ordered when its skew pairing is nonnegative. -/
+/-- A pair of dilogarithm degrees is ordered when its skew pairing is nonnegative; this is the
+adjacent-pair relation of an ordered sequence of degrees. -/
 def Ordered (β : Γ →ₗ[ℤ] Γ →ₗ[ℤ] R) (d : PositiveDegrees Γ)
     (a b : DilogDegree d) : Prop := 0 ≤ β (a : Γ) (b : Γ)
 
-/-- A pair is antiordered when its skew pairing is negative. -/
-def Antiordered (β : Γ →ₗ[ℤ] Γ →ₗ[ℤ] R) (d : PositiveDegrees Γ)
-    (a b : DilogDegree d) : Prop := β (a : Γ) (b : Γ) < 0
-
 omit [Algebra ℚ R] [DecidableEq Γ] [IsOrderedAddMonoid R] in
-/-- The sum of an antiordered pair is a nonzero allowed degree. -/
-def antiorderedAdd (β : Γ →ₗ[ℤ] Γ →ₗ[ℤ] R) (hβ : β.IsAlt) (d : PositiveDegrees Γ)
-    {a b : DilogDegree d} (h : Antiordered β d a b) : DilogDegree d :=
-  DilogDegree.add a b (add_ne_zero_of_form_ne_zero β hβ h.ne)
+@[simp]
+theorem ordered_iff {a b : DilogDegree d} : Ordered β d a b ↔ 0 ≤ β (a : Γ) (b : Γ) := (Iff.rfl)
+
+/-- A pair of dilogarithm degrees is antiordered when its skew pairing is nonpositive; this is the
+adjacent-pair relation of an antiordered sequence of degrees. A collinear pair is both ordered and
+antiordered; its factors commute and may be kept in a fixed tie order. -/
+def Antiordered (β : Γ →ₗ[ℤ] Γ →ₗ[ℤ] R) (d : PositiveDegrees Γ)
+    (a b : DilogDegree d) : Prop := β (a : Γ) (b : Γ) ≤ 0
 
 omit [Algebra ℚ R] [DecidableEq Γ] [IsOrderedAddMonoid R] in
 @[simp]
-theorem coe_antiorderedAdd {a b : DilogDegree d} (h : Antiordered β d a b) :
-    ((antiorderedAdd β hβ d h : DilogDegree d) : Γ) = (a : Γ) + (b : Γ) := (rfl)
+theorem antiordered_iff {a b : DilogDegree d} : Antiordered β d a b ↔ β (a : Γ) (b : Γ) ≤ 0 :=
+  (Iff.rfl)
 
-omit [IsOrderedAddMonoid R] in
-/-- **Adjacent exchange.** If `a, b` is antiordered and the common normalization
-satisfies `c {a,b} = -1`, then `Ψ[a]^c Ψ[b]^c = Ψ[b]^c Ψ[b+a]^c Ψ[a]^c`. -/
-theorem dilogFactor_mul_dilogFactor_eq_of_antiordered {a b : DilogDegree d}
-    (hanti : Antiordered β d a b) {c : R} (hc : c * β (a : Γ) (b : Γ) = -1) :
-    dilogFactor β hβ d a c * dilogFactor β hβ d b c =
-      dilogFactor β hβ d b c * dilogFactor β hβ d (antiorderedAdd β hβ d hanti) c *
-        dilogFactor β hβ d a c := by
+omit [PartialOrder R] [IsOrderedAddMonoid R] in
+/-- **Adjacent exchange.** If `c {a,b} = -1`, the product of `l₁ ++ a :: b :: l₂` is unchanged
+when the adjacent pair `a, b` is replaced by the triple `b, b+a, a`. At `l₁ = l₂ = []` this is
+`Ψ[a]^c Ψ[b]^c = Ψ[b]^c Ψ[b+a]^c Ψ[a]^c`, the pentagon identity of
+`Mei.Geometry.ScatteringDiagram.Skew.Pentagon`; for an antiordered pair the replacement is the
+ordered one of `ordered_of_antiordered_add`. -/
+theorem dilogFactorProduct_append_cons_cons_eq_of_mul_form_eq_neg_one (hβ : β.IsAlt)
+    (l₁ l₂ : List (DilogDegree d)) {a b : DilogDegree d} {c : R}
+    (hc : c * β (a : Γ) (b : Γ) = -1) :
+    dilogFactorProduct β hβ d (l₁ ++ a :: b :: l₂) c =
+      dilogFactorProduct β hβ d (l₁ ++ b :: DilogDegree.add a b :: a :: l₂) c := by
   have hba : c * β (b : Γ) (a : Γ) = 1 := by
     rw [← hβ.neg (a : Γ) (b : Γ), mul_neg, hc, neg_neg]
-  have hp := rayExp_smul_negDilogNeg_pentagon β hβ d b.mem a.mem b.ne_zero a.ne_zero
-    (c := c) hba
-  simpa only [dilogFactor, DilogDegree.coe_add, antiorderedAdd, add_comm] using hp
+  -- The pentagon is stated for the reversed pair, at the ray label of `b + a`; the subtype
+  -- proofs of the summed degree are irrelevant, and `add_comm` reconciles the order.
+  have hex : dilogFactor β hβ d a c * dilogFactor β hβ d b c =
+      dilogFactor β hβ d b c * dilogFactor β hβ d (DilogDegree.add a b) c *
+        dilogFactor β hβ d a c := by
+    simpa only [dilogFactor, DilogDegree.coe_add, DilogDegree.mem, DilogDegree.ne_zero,
+      add_comm] using
+      rayExp_smul_negDilogNeg_pentagon β hβ d b.mem a.mem b.ne_zero a.ne_zero (c := c) hba
+  simp only [dilogFactorProduct, List.map_append, List.map_cons, List.prod_append,
+    List.prod_cons]
+  rw [← mul_assoc (dilogFactor β hβ d a c) (dilogFactor β hβ d b c), hex]
+  ac_rfl
 
 omit [Algebra ℚ R] [DecidableEq Γ] in
 /-- The two adjacent pairs of the exchanged triple are ordered. -/
-theorem ordered_of_antiordered_add {a b : DilogDegree d} (hanti : Antiordered β d a b) :
-    Ordered β d b (antiorderedAdd β hβ d hanti) ∧
-      Ordered β d (antiorderedAdd β hβ d hanti) a := by
-  have hba : 0 < β (b : Γ) (a : Γ) := by
+theorem ordered_of_antiordered_add (hβ : β.IsAlt) {a b : DilogDegree d}
+    (hanti : Antiordered β d a b) :
+    Ordered β d b (DilogDegree.add a b) ∧ Ordered β d (DilogDegree.add a b) a := by
+  have hba : 0 ≤ β (b : Γ) (a : Γ) := by
     rw [← LinearMap.IsAlt.neg hβ (a : Γ) (b : Γ)]
-    exact neg_pos.mpr hanti
+    exact neg_nonneg.mpr hanti
   constructor
-  · rw [Ordered, coe_antiorderedAdd β hβ d hanti]
-    simpa [map_add, LinearMap.IsAlt.self_eq_zero hβ] using hba.le
-  · rw [Ordered, coe_antiorderedAdd β hβ d hanti]
-    simpa [map_add, LinearMap.IsAlt.self_eq_zero hβ] using hba.le
-
-omit [IsOrderedAddMonoid R] in
-/-- Replacing an antiordered adjacent pair by its ordered exchange preserves the
-product of the whole finite list. -/
-theorem dilogFactorProduct_append_cons_cons_eq_of_antiordered (l₁ l₂ : List (DilogDegree d))
-    {a b : DilogDegree d} (hanti : Antiordered β d a b) {c : R}
-    (hc : c * β (a : Γ) (b : Γ) = -1) :
-    dilogFactorProduct β hβ d (l₁ ++ a :: b :: l₂) c =
-      dilogFactorProduct β hβ d
-        (l₁ ++ b :: antiorderedAdd β hβ d hanti :: a :: l₂) c := by
-  simp only [dilogFactorProduct, List.map_append, List.map_cons, List.prod_append,
-    List.prod_cons]
-  rw [← mul_assoc (dilogFactor β hβ d a c) (dilogFactor β hβ d b c)]
-  rw [dilogFactor_mul_dilogFactor_eq_of_antiordered β hβ d hanti hc]
-  ac_rfl
-
-omit [PartialOrder R] [IsOrderedAddMonoid R] in
-/-- Factors whose skew pairing vanishes commute. -/
-theorem dilogFactor_commute_of_form_eq_zero {a b : DilogDegree d}
-    (h : β (a : Γ) (b : Γ) = 0) (c : R) :
-    Commute (dilogFactor β hβ d a c) (dilogFactor β hβ d b c) :=
-  commute_rayExp_of_eq_zero β hβ a.mem a.ne_zero b.mem b.ne_zero h _ _
+  · simpa only [ordered_iff, DilogDegree.coe_add, map_add,
+      LinearMap.IsAlt.self_eq_zero hβ, add_zero] using hba
+  · simpa only [ordered_iff, DilogDegree.coe_add, map_add, LinearMap.add_apply,
+      LinearMap.IsAlt.self_eq_zero hβ, zero_add] using hba
 
 end Mei.SkewLieAlgebra
 
@@ -182,12 +177,11 @@ namespace Mei.SkewLieAlgebra
 variable {R Γ : Type*} [CommRing R] [PartialOrder R] [AddCommGroup Γ]
   {d : PositiveDegrees Γ}
 
-/-- In the zero-form case every pair is ordered, so every list of normalized factors
-is already an ordered factorization. -/
+/-- In the zero-form case every pair of degrees is ordered, so a list of dilogarithm factors
+needs no exchange. -/
 theorem ordered_of_form_eq_zero (β : Γ →ₗ[ℤ] Γ →ₗ[ℤ] R) (hform : β = 0)
     (a b : DilogDegree d) : Ordered β d a b := by
-  rw [Ordered, hform]
+  rw [ordered_iff, hform]
   simp
 
 end Mei.SkewLieAlgebra
-
