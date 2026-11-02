@@ -15,12 +15,11 @@ correspondence spans differ from edge to edge.  `pathTransfer` composes the
 selected homogeneous transfers in traversal order.  Concatenation of
 itineraries is the composition of their path transfers, with the second
 itinerary's transfer on the left.  These equations make the propagation map
-computable without unfolding the path-category functor.
+computable by rewriting along the path.
 
-The construction is the finite component expansion and concatenation law of
-the homogeneous coefficient correspondences in ScatteringDiagrams §0.8.  It
-retains the full selected degree at every vertex and does not assume that the
-intermediate correspondence is a graph or that its transfer is invertible.
+The construction retains the full selected degree at every vertex and does not
+assume that the intermediate correspondence is a graph or that its transfer is
+invertible.
 The component interpretation follows Gross–Hacking–Siebert, *Theta functions
 on varieties with effective anti-canonical class*, §3.2
 (arXiv:1601.07081v4).
@@ -29,6 +28,8 @@ on varieties with effective anti-canonical class*, §3.2
 public noncomputable section
 
 namespace Mei.GradedCorrespondence
+
+open CategoryTheory
 
 universe v
 
@@ -50,15 +51,19 @@ variable {R Q : Type*} [Semiring R] [Quiver Q]
 /-- Concatenating two itineraries composes their propagation maps, with the
 propagation map of the second itinerary on the left.  This is the
 concatenation law for finite homogeneous component expansions. -/
+@[simp]
 theorem pathTransfer_comp {u v w : Q} (f : Quiver.Path u v) (g : Quiver.Path v w) :
     pathTransfer (𝒜 := 𝒜) (C := C) (p := p) (hp := hp) (f.comp g) =
       (pathTransfer (𝒜 := 𝒜) (C := C) (p := p) (hp := hp) g).comp
         (pathTransfer (𝒜 := 𝒜) (C := C) (p := p) (hp := hp) f) := by
-  induction g with
-  | nil => simp
-  | cons g e ih =>
-      rw [Quiver.Path.comp_cons, pathTransfer_cons, pathTransfer_cons, ih,
-        LinearMap.comp_assoc]
+  let φ : Q ⥤q SemimoduleCat R := {
+    obj q := SemimoduleCat.of R (𝒜 q (p q))
+    map e := SemimoduleCat.ofHom ((C e).transfer ⟨p _, hp e⟩ (p _))
+  }
+  change (SemimoduleCat.Hom.hom ((Paths.lift φ).map (f.comp g))) =
+    (SemimoduleCat.Hom.hom ((Paths.lift φ).map g)).comp
+      (SemimoduleCat.Hom.hom ((Paths.lift φ).map f))
+  exact congrArg SemimoduleCat.Hom.hom ((Paths.lift φ).map_comp f g)
 
 /-- Evaluating the concatenated propagation map first propagates through the
 first itinerary and then through the second. -/
@@ -67,8 +72,7 @@ theorem pathTransfer_comp_apply {u v w : Q} (f : Quiver.Path u v) (g : Quiver.Pa
     pathTransfer (𝒜 := 𝒜) (C := C) (p := p) (hp := hp) (f.comp g) a =
       pathTransfer (𝒜 := 𝒜) (C := C) (p := p) (hp := hp) g
         (pathTransfer (𝒜 := 𝒜) (C := C) (p := p) (hp := hp) f a) := by
-  rw [pathTransfer_comp]
-  rfl
+  rw [pathTransfer_comp, LinearMap.comp_apply]
 
 section Naturality
 
@@ -89,10 +93,7 @@ variable {M' : Q → Type v} [∀ q, AddCommMonoid (M' q)] [∀ q, Module R (M' 
 
 include f hl hv
 
-/-- Chamber maps intertwine a selected homogeneous transfer at every crossing.
-The selected degree is preserved, and the two chamber maps are the left and
-right maps of the corresponding correspondence morphism. -/
-theorem transfer_map_restrict {u v : Q} (e : u ⟶ v) :
+private theorem edge_restrict_comp_transfer {u v : Q} (e : u ⟶ v) :
     ((r v).restrict (hr v (p v))).comp ((C e).transfer ⟨p u, hp e⟩ (p v)) =
       ((D e).transfer ⟨p u, (f e).admissible_left (hp e)⟩ (p v)).comp
         ((r u).restrict (hr u (p u))) := by
@@ -104,22 +105,41 @@ theorem transfer_map_restrict {u v : Q} (e : u ⟶ v) :
   simpa only [LinearMap.comp_apply, LinearMap.coe_restrict_apply,
     LinearMap.restrict_apply, transfer_apply, id_eq, hl e, hv e] using he.symm
 
-/-- The explicit path transfer is natural under degree-preserving chamber maps.
-Every edge transfer is intertwined by the restricted chamber map, and the
-identity propagates through the whole itinerary. -/
-theorem pathTransfer_natural {u v : Q} (fpath : Quiver.Path u v) :
+/-- The restricted chamber maps at the endpoints intertwine the path transfers
+of the two families of correspondences. -/
+theorem restrict_comp_pathTransfer {u v : Q} (fpath : Quiver.Path u v) :
     ((r v).restrict (hr v (p v))).comp
         (pathTransfer (𝒜 := 𝒜) (C := C) (p := p) (hp := hp) fpath) =
       (pathTransfer (𝒜 := 𝒜') (C := D) (p := p)
         (hp := fun {_ _} e ↦ (f e).admissible_left (hp e)) fpath).comp
         ((r u).restrict (hr u (p u))) := by
-  induction fpath with
-  | nil => simp
-  | cons g e ih =>
-      rw [pathTransfer_cons, pathTransfer_cons]
-      have he := transfer_map_restrict 𝒜 C p hp 𝒜' D r hr f hl hv e
-      rw [← LinearMap.comp_assoc, he, LinearMap.comp_assoc, ih,
-        ← LinearMap.comp_assoc]
+  let φ : Q ⥤q SemimoduleCat R := {
+    obj q := SemimoduleCat.of R (𝒜 q (p q))
+    map e := SemimoduleCat.ofHom ((C e).transfer ⟨p _, hp e⟩ (p _))
+  }
+  let ψ : Q ⥤q SemimoduleCat R := {
+    obj q := SemimoduleCat.of R (𝒜' q (p q))
+    map e := SemimoduleCat.ofHom ((D e).transfer ⟨p _, (f e).admissible_left (hp e)⟩ (p _))
+  }
+  let α : (q : Q) → SemimoduleCat.of R (𝒜 q (p q)) ⟶
+      SemimoduleCat.of R (𝒜' q (p q)) :=
+    fun q => SemimoduleCat.ofHom ((r q).restrict (hr q (p q)))
+  have hα : ∀ {u v : Q} (e : u ⟶ v),
+      (Paths.lift φ).map e.toPath ≫ α v = α u ≫ (Paths.lift ψ).map e.toPath := by
+    intro u v e
+    have he := edge_restrict_comp_transfer 𝒜 C p hp 𝒜' D r hr f hl hv e
+    apply SemimoduleCat.Hom.ext
+    change ((r v).restrict (hr v (p v))).comp ((C e).transfer ⟨p u, hp e⟩ (p v)) =
+      ((D e).transfer ⟨p u, (f e).admissible_left (hp e)⟩ (p v)).comp
+        ((r u).restrict (hr u (p u)))
+    exact he
+  have hnat := (Paths.liftNatTrans (F := Paths.lift φ) (G := Paths.lift ψ) α hα).naturality fpath
+  have hh := congrArg SemimoduleCat.Hom.hom hnat
+  change ((r v).restrict (hr v (p v))).comp
+      (SemimoduleCat.Hom.hom ((Paths.lift φ).map fpath)) =
+    (SemimoduleCat.Hom.hom ((Paths.lift ψ).map fpath)).comp
+      ((r u).restrict (hr u (p u)))
+  exact hh
 
 end Naturality
 

@@ -6,6 +6,7 @@ Authors: Codex
 module
 
 public import Mei.LinearAlgebra.GradedCorrespondence.Hom
+public import Mathlib.Algebra.Category.ModuleCat.Semi
 public import Mathlib.CategoryTheory.PathCategory.MorphismProperty
 
 /-!
@@ -30,6 +31,8 @@ public noncomputable section
 
 namespace Mei.GradedCorrespondence
 
+open CategoryTheory
+
 universe v
 
 variable {R Q : Type*} [Semiring R] [Quiver Q]
@@ -46,16 +49,23 @@ variable {R Q : Type*} [Semiring R] [Quiver Q]
   (p : ∀ q, ι q)
   (hp : ∀ {u v : Q} (e : u ⟶ v), p u ∈ I e)
 
+/-- The prefunctor selecting the homogeneous transfer on each quiver edge. -/
+@[expose]
+noncomputable def pathTransferPrefunctor :
+    Q ⥤q SemimoduleCat R where
+  obj q := SemimoduleCat.of R (𝒜 q (p q))
+  map e := SemimoduleCat.ofHom
+    ((C e).transfer ⟨p _, hp e⟩ (p _))
+
 /-- The linear propagation map along a finite itinerary.  The transfer on the
 last edge is composed on the left with the propagation map on the preceding
 path.  Thus edge transfers are applied in traversal order. -/
+@[expose]
 noncomputable def pathTransfer {u v : Q} (f : Quiver.Path u v) :
-    𝒜 u (p u) →ₗ[R] 𝒜 v (p v) :=
-  @Quiver.Path.rec Q _ u (fun v _ => 𝒜 u (p u) →ₗ[R] 𝒜 v (p v))
-    LinearMap.id
-    (fun {b c} _g e ih =>
-      ((C e).transfer ⟨p b, hp e⟩ (p c)).comp
-        (ih : 𝒜 u (p u) →ₗ[R] 𝒜 b (p b))) v f
+    𝒜 u (p u) →ₗ[R] 𝒜 v (p v) := by
+  change (SemimoduleCat.of R {x // x ∈ 𝒜 u (p u)} →ₗ[R]
+    SemimoduleCat.of R {x // x ∈ 𝒜 v (p v)})
+  exact ((Paths.lift (pathTransferPrefunctor (𝒜 := 𝒜) (C := C) (p := p) (hp := hp))).map f).hom
 
 /-- The propagation map on an empty itinerary is the identity. -/
 @[simp]
@@ -64,15 +74,22 @@ theorem pathTransfer_nil (u : Q) :
       (Quiver.Path.nil : Quiver.Path u u) = LinearMap.id := by
   rfl
 
-/-- Appending one edge to an itinerary composes its edge transfer on the right
-with the propagation map on the preceding path. -/
+/-- The propagation map on a one-edge itinerary is the corresponding edge
+transfer. -/
+@[simp]
+theorem pathTransfer_toPath {u v : Q} (e : u ⟶ v) :
+    pathTransfer (𝒜 := 𝒜) (C := C) (p := p) (hp := hp) e.toPath =
+      (C e).transfer ⟨p u, hp e⟩ (p v) := by
+  rw [pathTransfer, Paths.lift_toPath]
+  rfl
+
+/-- Appending one edge to an itinerary applies its edge transfer after the
+propagation map on the preceding path (composition on the left). -/
 @[simp]
 theorem pathTransfer_cons {u v w : Q} (g : Quiver.Path u v) (e : v ⟶ w) :
     pathTransfer (𝒜 := 𝒜) (C := C) (p := p) (hp := hp) (g.cons e) =
       ((C e).transfer ⟨p v, hp e⟩ (p w)).comp
         (pathTransfer (𝒜 := 𝒜) (C := C) (p := p) (hp := hp) g) := by
   rfl
-
-
 
 end Mei.GradedCorrespondence

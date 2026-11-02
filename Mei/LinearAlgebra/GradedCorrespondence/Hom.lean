@@ -212,6 +212,20 @@ theorem transfer_map_of_injective (f : Hom C D σ τ) (hτ : Function.Injective 
   exact (DirectSum.map_decompose_shift 𝒱 𝒱' f.right.toAddMonoidHom τ hτ
     f.right_mem j (C.right (C.liftLeft i a))).symm
 
+/-- Restricted endpoint maps intertwine a selected homogeneous transfer.  This
+is the one-edge compatibility law for a degree-preserving correspondence
+morphism. -/
+theorem restrict_comp_transfer (f : Hom C D σ τ) (hτ : Function.Injective τ)
+    (i : I) (j : κ) :
+    (f.right.restrict (f.right_mem j)).comp (C.transfer i j) =
+      (D.transfer ⟨σ i, f.admissible_left i.property⟩ (τ j)).comp
+        (f.left.restrict (f.left_mem i)) := by
+  apply LinearMap.ext
+  intro x
+  apply Subtype.ext
+  have he := f.transfer_map_of_injective hτ i x j
+  simpa only [LinearMap.comp_apply, LinearMap.restrict_apply] using he.symm
+
 end Transfer
 end Hom
 end Mei.GradedCorrespondence
