@@ -125,8 +125,9 @@ theorem isGeneric_zero_ofInvSucc (j : ℕ) : (ofInvSucc j).IsGeneric 0 := by
   exact (inv_ne_zero (by positivity : (j : ℝ) + 1 ≠ 0)).symm
 
 /-- No neighbourhood of the origin is contained in the common generic locus of the
-family `{x = 1/(j+1)}`: the common generic locus is dense but not a neighbourhood of
-any of its points. -/
+family `{x = 1/(j+1)}`. Together with `dense_iInter_isGeneric`, which makes that locus
+dense, this shows that density does not make it a neighbourhood of a common generic
+point. -/
 theorem not_exists_nhds_forall_isGeneric_ofInvSucc :
     ¬ ∃ U ∈ 𝓝 (0 : ℝ), ∀ y ∈ U, ∀ j : ℕ, (ofInvSucc j).IsGeneric y := by
   rintro ⟨U, hU, hgen⟩
