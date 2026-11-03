@@ -11,7 +11,7 @@ public import Mei.Geometry.ScatteringDiagram.BrokenLine.Itineraries.FinalEncount
 # The last-change recursion for weighted ray sums
 
 Let the backward line `Q + s • v q` in the direction of a final degree `q ≠ 0` meet
-finitely many regular transverse encounters, listed by `E` at distances `s e`, and
+finitely many regular transverse encounters, listed by `E` at ray parameters `s e`, and
 suppose that the wall supports meet the line only at them. Suppose also that the
 propagation maps fix the degree-`q` component. Then the degree-`q` component of the
 full weighted cutoff evaluation at `Q` is the sum, over the encounters `e` and the
@@ -20,12 +20,10 @@ component of `T e` applied to the degree-`p` evaluation at an incoming germ
 `Q + s e • v q + η e • v p`. The germs can be taken arbitrarily close to the
 encounters, and every adjacent degree is strictly lower than `q`.
 
-The proof peels off the nearest encounter with the one-step decomposition of
-`CutoffDecoratedRay.eventually_decompose_cutoffDecoratedEvaluation_eq_sum_finalEncounter`.
-Its adjacent degree `p = q` is again a weighted evaluation of degree `q`, now
-further along the line, so induction on the number of remaining encounters
-removes the unchanged degrees. All encounter words, whole decorations, and
-the incoming tails and sources of the older rays are retained. This is the
+Thus the evaluation at the endpoint is expressed through evaluations of strictly lower
+degree at incoming germs, with the unchanged degrees removed. All encounter words,
+whole decorations, and the incoming tails and sources of the older rays are retained.
+This is the
 decomposition of the weighted evaluation at the last change of degree in the
 backward-ray recursion of Mandel, *Scattering diagrams, theta functions, and
 refined tropical curve counts*, §3.3.3 (arXiv:1503.06183v5).
@@ -49,9 +47,9 @@ open Classical in
 /-- The degree-`q` component of the weighted evaluation at `Q` is the sum over the
 encounters `e` of the backward line and the lower adjacent degrees `p` of the
 degree-`q` component of `T e` applied to the degree-`p` evaluation at incoming germs.
-Here `E` lists all the encounters of the line, at distances `s`, and the wall supports
-meet the line only at them. The germs `Q + s e • v q + η e • v p` can be taken within
-any prescribed distance `θ` of the encounters. -/
+Here `E` lists all the encounters of the line, at ray parameters `s`, and the wall supports
+meet the line only at them. The germs `Q + s e • v q + η e • v p` can be taken with
+incoming parameters `η e` below any prescribed bound `θ`. -/
 theorem exists_decompose_cutoffDecoratedEvaluation_eq_sum_lastChange
     [Finite J] [Finite K] {q : Γ} (hq : q ∈ d.cutoff k) (hq0 : q ≠ 0)
     (E : Finset J) (hT : ∀ e ∈ E, ∀ x ∈ ℳ q, (DirectSum.decompose ℳ (T e x) q : M) = x)

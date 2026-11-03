@@ -14,7 +14,8 @@ Deleting an entry before an appended final entry commutes with appending that
 entry. This lets encounter-indexed degree histories retain their incoming degree
 when an encounter is deleted. The adjacent entry in an appended tuple is computed
 within its block, using the first entry of the right block at the junction.
-Appending a final entry also preserves every constant prefix.
+Appending a final entry also preserves every constant prefix, and commutes with
+dropping the first entry of a tuple.
 We use Mathlib's `Fin.removeNth`, `Fin.snoc` and `Fin.append`.
 -/
 
@@ -29,6 +30,13 @@ theorem snoc_eq_of_const_prefix {α : Sort*} {m n : ℕ} {x : Fin (m + n) → α
     snoc (α := fun _ => α) x a l = q := by
   have he : l = (castAdd n (⟨l.val, hl⟩ : Fin m)).castSucc := Fin.ext rfl
   rw [he, snoc_castSucc, hx]
+
+/-- Dropping the first entry of a tuple commutes with appending a final entry. -/
+theorem snoc_succ {α : Sort*} {n : ℕ} (g : Fin (n + 1) → α) (x : α) (i : Fin (n + 1)) :
+    snoc (α := fun _ => α) g x i.succ = snoc (α := fun _ => α) (fun j : Fin n => g j.succ) x i := by
+  refine lastCases ?_ (fun j => ?_) i
+  · simp
+  · rw [succ_castSucc, snoc_castSucc, snoc_castSucc]
 
 /-- Applying a function to an appended tuple applies it to each block. -/
 @[simp]

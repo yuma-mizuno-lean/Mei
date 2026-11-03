@@ -7,14 +7,14 @@ module
 
 public import Mei.Geometry.ScatteringDiagram.BrokenLine.Itineraries.Attachment.Incoming
 public import Mei.Geometry.Convex.Sweep.Admissible.FinalEncounter
-public import Mei.Data.Fin.Snoc
+public import Mei.Data.Fin.Tuple
 
 /-!
 # Decomposing a cutoff evaluation by its final encounter
 
 Fix a degree `q ≠ 0` and an endpoint `Q`, and suppose that the backward line
 `Q + s • v q` first meets the wall supports at a single regular transverse encounter
-`w`, at distance `t`. Every cutoff ray of final degree `q` then ends with the
+`w`, at ray parameter `t`. Every cutoff ray of final degree `q` then ends with the
 encounter `w`, the one nearest its endpoint, preceded by a segment of some degree
 `p`. Hence, for all sufficiently short incoming displacements `η`, the degree-`q`
 component of the full weighted evaluation at `Q` is the sum over the adjacent
@@ -28,10 +28,7 @@ older rays are retained. The argument needs neither genericity of `Q` nor any
 property of the propagation maps. If the line has no encounter at all, the
 degree-`q` component vanishes.
 
-We combine `Convex.AdmissibleRayRealization.exists_finalEncounter`, which places the
-final encounter of an actual ray on the straight line from its endpoint, with
-`CutoffDecoratedRay.eventually_sum_finalEncounter_eq_component`. This is the
-nearest-encounter step of the backward-ray recursion in Mandel, *Scattering
+This is the nearest-encounter step of the backward-ray recursion in Mandel, *Scattering
 diagrams, theta functions, and refined tropical curve counts*, §3.3.3
 (arXiv:1503.06183v5).
 -/
@@ -156,7 +153,7 @@ theorem decompose_cutoffDecoratedEvaluation_eq_zero_of_forall_not_encounter
 
 open Classical in
 /-- Let the backward line from `Q` in the direction of the final degree `q ≠ 0`
-meet a wall support first at the regular encounter `w`, at distance `t`. For all
+meet a wall support first at the regular encounter `w`, at ray parameter `t`. For all
 sufficiently short incoming displacements, the degree-`q` component of the full
 weighted evaluation at `Q` is the sum, over the adjacent degrees `p` preserving
 the normal velocity at `w`, of the degree-`q` component of `T w` applied to the

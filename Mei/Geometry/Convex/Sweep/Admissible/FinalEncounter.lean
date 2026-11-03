@@ -12,14 +12,10 @@ public import Mei.Geometry.Convex.Sweep.Admissible.Terminal
 
 A ray with at least one recorded encounter meets its final encounter, the one
 nearest the endpoint, on the straight line through the endpoint in the final
-direction. The encounter lies at positive distance, on its hyperplane and
+direction. The encounter lies at a positive ray parameter, on its hyperplane and
 in its selected support, and no wall support meets the open segment before it
 (nor the endpoint itself). The encounter may leave the direction unchanged, and
 the incoming tail is unrestricted.
-
-We use `AdmissibleRayRealization.ray_eq_endpoint_sub_smul` for the straight
-terminal segment and `AdmissibleRayRealization.parameter_eq_div_of_directions_eq`
-for its length.
 -/
 
 public noncomputable section
@@ -33,7 +29,7 @@ variable {V J K : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
   {v : Fin (n + 2) → V} {P : Fin (n + 1) → Set V}
   {W : J → Set V} {S : K → Set V} {C : Set V} {Q : V}
 
-/-- The final encounter of a ray lies at a positive distance `τ` along the
+/-- The final encounter of a ray lies at a positive ray parameter `τ` along the
 backward line `Q + s • v 0`, on its hyperplane and in its support. The wall supports
 miss the half-open segment `s ∈ [0, τ)` before it, including the endpoint. -/
 theorem exists_finalEncounter (r : AdmissibleRayRealization f c v P W S C Q) :
