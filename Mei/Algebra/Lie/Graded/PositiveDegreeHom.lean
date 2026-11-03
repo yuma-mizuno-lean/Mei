@@ -308,6 +308,7 @@ theorem idSubSectionComp_apply (k : ℕ) (x : d.truncatedLie ℒ k) :
       x - s.truncatedMap k (by simp) (π.truncatedMap k (by simp) x) := (rfl)
 
 /-- The map fixes every element of the truncated kernel of `π`. -/
+@[simp]
 theorem idSubSectionComp_of_map_eq_zero (k : ℕ) {x : d.truncatedLie ℒ k}
     (hx : π.truncatedMap k (by simp) x = 0) : π.idSubSectionComp s k x = x := by
   rw [idSubSectionComp_apply, hx, map_zero, sub_zero]
@@ -316,6 +317,7 @@ variable {π s} (hsπ : ∀ x, π (s x) = x)
 include hsπ
 
 /-- On truncations, `π` is a retraction of its section. -/
+@[simp]
 theorem truncatedMap_truncatedMap_of_section (k : ℕ) (y : d.truncatedLie ℳ' k) :
     π.truncatedMap k (by simp) (s.truncatedMap k (by simp) y) = y := by
   have hid : (π.truncatedMap k (by simp)).comp (s.truncatedMap k (by simp)) = LieHom.id := by
@@ -325,11 +327,13 @@ theorem truncatedMap_truncatedMap_of_section (k : ℕ) (y : d.truncatedLie ℳ' 
   exact DFunLike.congr_fun hid y
 
 /-- For a section, the map kills the truncation of every lifted element. -/
+@[simp]
 theorem idSubSectionComp_truncatedMap (k : ℕ) (y : d.truncatedLie ℳ' k) :
     π.idSubSectionComp s k (s.truncatedMap k (by simp) y) = 0 := by
   rw [idSubSectionComp_apply, truncatedMap_truncatedMap_of_section hsπ, sub_self]
 
 /-- For a section, the map lands in the truncated kernel of `π`. -/
+@[simp]
 theorem truncatedMap_idSubSectionComp (k : ℕ) (x : d.truncatedLie ℒ k) :
     π.truncatedMap k (by simp) (π.idSubSectionComp s k x) = 0 := by
   rw [idSubSectionComp_apply, map_sub, truncatedMap_truncatedMap_of_section hsπ, sub_self]
