@@ -5,7 +5,6 @@ Authors: Codex
 -/
 module
 
-public import Mathlib.Algebra.BigOperators.Pi
 public import Mathlib.Algebra.Group.Subgroup.Ker
 public import Mathlib.Algebra.Group.Int.Defs
 
@@ -18,8 +17,7 @@ without choosing a basis or extending scalars to a field. Kernel containment
 also gives proportionality when the second character can vanish. For two
 characters, contracting against a vector outside their common kernel detects
 every character annihilating both that kernel and the vector. Characters on a
-product with two integer factors, or on a finite power of the integers, are determined
-by their coordinate restrictions.
+product with two integer factors are determined by their coordinate restrictions.
 -/
 
 public section
@@ -39,19 +37,6 @@ theorem apply_prod_int_int {Λ : Type*} [AddMonoid Λ]
   have hl' : m (0, 0, l) = l * m (0, 0, 1) := by simpa using hl
   rw [← hc', ← hl', ← map_add, ← map_add]
   simp
-
-/-- A character on a finite power of the integers is determined by its values on the
-standard basis. -/
-theorem apply_pi_eq_sum_zsmul {ι M : Type*} [Fintype ι] [DecidableEq ι] [AddCommGroup M]
-    (m : (ι → ℤ) →+ M) (n : ι → ℤ) :
-    m n = ∑ i, n i • m (Pi.single i 1) := by
-  conv_lhs => rw [← Finset.univ_sum_single n]
-  rw [map_sum]
-  refine Finset.sum_congr rfl fun i _ => ?_
-  rw [← map_zsmul]
-  congr 1
-  ext j
-  by_cases h : j = i <;> simp [h]
 
 variable {A : Type*} [AddGroup A]
 

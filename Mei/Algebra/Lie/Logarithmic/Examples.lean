@@ -248,7 +248,11 @@ def doublePairing :
   characterMap := inverseDualDouble.comp (Submodule.subtype _)
   eval_eq m n _ := by
     simp only [AddMonoidHom.id_apply, LinearMap.comp_apply, Submodule.subtype_apply]
-    rw [AddMonoidHom.apply_pi_eq_sum_zsmul m.val n]
+    have h := LinearMap.pi_apply_eq_sum_univ m.val.toIntLinearMap n
+    have e (i : Fin 2) : (fun j => if i = j then (1 : ℤ) else 0) = Pi.single i 1 :=
+      funext fun j => by simp [Pi.single_apply, eq_comm]
+    simp only [AddMonoidHom.coe_toIntLinearMap, e] at h
+    rw [h]
     simp [inverseDualDouble, Fin.sum_univ_two]
     ring
 
