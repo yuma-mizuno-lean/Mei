@@ -24,7 +24,8 @@ Restricting the rows of an arrangement coarsens its complex, each row hyperplane
 is a union of cells, and a linear arrangement has conical cells, with lineality
 allowed. A row hyperplane with nonzero linear part is moreover covered by walls:
 moving off a point of it in a direction avoiding the other row hyperplanes
-through that point reaches a sign cell spanning the hyperplane.
+through that point reaches a sign cell spanning the hyperplane. Conversely, every wall lies
+in some row hyperplane.
 Each codimension-one input carrier is covered by walls contained in it, and
 membership in any input is constant on the relative interior of every cell.
 
@@ -284,6 +285,19 @@ theorem exists_mem_ofArrangement_walls_subset_zeroLocus (g : ι → (V →ᴬ[�
   · intro y hy
     rw [closure_signCell hτne] at hy
     exact (mem_weakSignCell.mp hy j).1 (by simp [τ, hx, hwj])
+
+/-- Every wall of an arrangement complex lies in a row hyperplane: a cell of codimension one
+spans a proper affine subspace, so one of its sign conditions is an equality. -/
+theorem exists_subset_zeroLocus_of_mem_ofArrangement_walls (g : ι → (V →ᴬ[ℝ] ℝ))
+    (hg : ∀ j, Toric.IsRationalFunctional h (g j).toAffineMap.linear) {P : Set V}
+    (hP : P ∈ (ofArrangement g hg).walls) : ∃ j, P ⊆ {x | g j x = 0} := by
+  have hd := (ofArrangement g hg).finrank_direction_add_one_of_mem_walls hP
+  obtain ⟨σ, hσ, rfl⟩ := mem_ofArrangement_cells.mp ((ofArrangement g hg).mem_cells_of_mem_walls hP)
+  obtain ⟨j, hj⟩ := exists_zero_sign_of_affineSpan_ne_top hσ
+    (AffineSubspace.ne_top_of_finrank_direction_add_one_eq _ hd)
+  refine ⟨j, fun x hx => ?_⟩
+  rw [closure_signCell hσ] at hx
+  exact (mem_weakSignCell.mp hx j).1 hj
 
 /-- A linear arrangement has conical cells, with lineality allowed. -/
 theorem isConical_ofArrangement (g : ι → (V →L[ℝ] ℝ))
