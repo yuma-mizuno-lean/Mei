@@ -20,7 +20,7 @@ closed, the signed boundary of the logarithmic correction presentation is the
 entire joint obstruction cochain, with its original orientations and coefficients.
 Thus the different geometric sweeping directions can be used simultaneously.
 
-The construction combines `DirectedDiagram.exists_pos_joint_loop_obstruction`,
+The construction combines `DirectedDiagram.LoopProjection.exists_pos_joint_loop_obstruction`,
 `DirectedWall.exists_cooriented_sweep`, and the componentwise sweep homotopy
 formula. The source is reconstructed with `DirectSum.sum_support_decompose`;
 coefficient projections from `DirectSum.decomposeLinearEquiv` commute with the

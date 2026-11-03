@@ -21,7 +21,8 @@ has finite activity because walls added after order `k` are invisible at order
 `k`; restriction to the order-`k` prefix therefore proves consistency.
 
 The construction uses `exists_chamber_trivialization` and
-`exists_consistent_outgoing_extension` for the geometric correction, and
+`LoopProjection.exists_consistent_outgoing_extension` with the identity projection
+`LoopProjection.ofFullPure` for the geometric correction, and
 `ofBirthFamily`, `ofBirthFamily_consistent_iff` and `Refinement.ofEquiv` for
 passage to the union.
 Finite correction families are enumerated solely to obtain one countable index
@@ -71,8 +72,7 @@ private theorem exists_next_stage
   obtain ⟨σ, hσ, cross, b, _, t, ht, τ, hτ, _⟩ :=
     E.exists_chamber_trivialization s.property.1 (fun _ => 1) (fun _ => zero_lt_one)
   obtain ⟨κ, _, F, hleft, hconsistent, _, hnew⟩ :=
-    exists_consistent_outgoing_extension σ hσ cross s.property.1 b t ht τ hτ
-      (range (Sum.inl : ι → ι ⊕ Fin s.val.length))
+    (LoopProjection.ofFullPure E (range (Sum.inl : ι → ι ⊕ Fin s.val.length))
       (by rintro (j | j) hj
           · simpa only [E, listDiagram, append_wall_inl] using hfull j
           · simp at hj)
@@ -81,7 +81,8 @@ private theorem exists_next_stage
           · obtain ⟨_, n, _, hn, a, ha, he⟩ :=
               s.property.2 s.val[j] (List.getElem_mem j.isLt)
             refine ⟨n, by omega, a, ha, ?_⟩
-            simpa only [E, listDiagram, append_wall_inr, ofFinite_wall] using he.1)
+            simpa only [E, listDiagram, append_wall_inr, ofFinite_wall] using
+              he.1)).exists_consistent_outgoing_extension σ hσ cross s.property.1 b t ht τ hτ
   -- Enumerate only the new corrections and append them, preserving every old position.
   let e := (Fintype.equivFin κ).symm
   let r := List.ofFn (fun j => F.wall (.inr (e j)))
@@ -106,12 +107,12 @@ private theorem exists_next_stage
       obtain ⟨ho, n, hn, hd, a, ha, he⟩ := (hnew (e j)).1, (hnew (e j)).2.1
       refine ⟨ho, n, hn, by omega, a, ha, he, ?_⟩
       intro l
-      have hb := (hnew (e j)).2.2 l
+      have hb := (hnew (e j)).2.2.1 l
       simp only [mem_active] at hb
       exact hb.trans (by omega)
   · intro j hj hsj
     have hjr : j - s.val.length < r.length := by simp only [q, List.length_append] at hj; omega
-    have hborn := (hnew (e ⟨j - s.val.length, by simpa [r] using hjr⟩)).2.2 k
+    have hborn := (hnew (e ⟨j - s.val.length, by simpa [r] using hjr⟩)).2.2.1 k
     have hinactive : CompletedGroup.projection k
         (F.wall (.inr (e ⟨j - s.val.length, by simpa [r] using hjr⟩))).label = 1 := by
       simpa only [mem_active, Nat.not_succ_le_self, iff_false, not_not] using hborn

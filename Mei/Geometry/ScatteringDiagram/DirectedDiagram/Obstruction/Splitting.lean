@@ -48,35 +48,6 @@ variable {Γ Λ R V ι : Type*} {L L' : Type u}
   [GradedLieAlgebra ℒ] [GradedLieAlgebra ℳ] [IsPositiveGrading d ℒ] [IsPositiveGrading d ℳ]
   {H : DirectedWallSpaces ρ ℒ} {H' : DirectedWallSpaces ρ ℳ}
 
-section Truncated
-
-variable (f : GradedLieHom (PositiveDegreeMap.id d) ℒ ℳ) (k : ℕ)
-
-/-- The truncation of a fixed-degree graded homomorphism commutes with homogeneous
-components. -/
-private theorem decompose_truncatedMap (x : d.truncatedLie ℒ k) (n : Γ) :
-    (DirectSum.decompose (d.truncatedGrading ℳ k)
-      (f.truncatedMap k (by simp) x) n : d.truncatedLie ℳ k) =
-      f.truncatedMap k (by simp)
-        (DirectSum.decompose (d.truncatedGrading ℒ k) x n : d.truncatedLie ℒ k) :=
-  (DirectSum.map_decompose_shift (d.truncatedGrading ℒ k) (d.truncatedGrading ℳ k)
-    (f.truncatedMap k (by simp)).toLinearMap.toAddMonoidHom _root_.id Function.injective_id
-    (fun _ _ hx => by simpa using f.truncatedMap_mem k (by simp) hx) n x).symm
-
-/-- The truncation of a wall-preserving graded homomorphism preserves truncated
-wall spaces. -/
-private theorem truncatedMap_mem_wall
-    (hf : ∀ n m, ∀ x ∈ H.wall n m, f x ∈ H'.wall n m)
-    {n : Γ} {m : Λ →+ ℤ} {x : d.truncatedLie ℒ k} (hx : x ∈ (H.truncated d k).wall n m) :
-    f.truncatedMap k (by simp) x ∈ (H'.truncated d k).wall n m := by
-  rw [DirectedWallSpaces.truncated_wall] at hx ⊢
-  obtain ⟨y, hy, rfl⟩ := Submodule.mem_map.mp hx
-  refine Submodule.mem_map.mpr ⟨f y, hf n m y hy, ?_⟩
-  simpa only [LieIdeal.mkQ_apply, LieHom.coe_toLinearMap] using
-    (f.truncatedMap_mk k (by simp) y).symm
-
-end Truncated
-
 variable (π : GradedLieHom (PositiveDegreeMap.id d) ℒ ℳ)
   (s : GradedLieHom (PositiveDegreeMap.id d) ℳ ℒ) (hsπ : ∀ x, π (s x) = x)
 
@@ -142,10 +113,11 @@ def LoopProjection.ofSplitting {k : ℕ} (hq : (D.map π hπ).LevelConsistent k)
   toLinearMap := splittingProjection π s k
   decompose_map x n := by
     rw [splittingProjection_apply, DirectSum.decompose_sub, DFinsupp.sub_apply,
-      Submodule.coe_sub, decompose_truncatedMap, decompose_truncatedMap,
+      Submodule.coe_sub, s.decompose_truncatedMap, π.decompose_truncatedMap,
       splittingProjection_apply]
   map_wall n m x hx :=
-    Submodule.sub_mem _ hx (truncatedMap_mem_wall s k hs (truncatedMap_mem_wall π k hπ hx))
+    Submodule.sub_mem _ hx (s.truncatedMap_mem_truncated_wall hs k
+      (π.truncatedMap_mem_truncated_wall hπ k hx))
   map_log_loop {x} p := by
     apply splittingProjection_of_map_eq_zero
     rw [← LieHom.log_bchGroupMap, ← D.levelPathProduct_mapPathPrefunctor π hπ k p,
@@ -158,7 +130,7 @@ def LoopProjection.ofSplitting {k : ℕ} (hq : (D.map π hπ).LevelConsistent k)
           s.truncatedMap k (by simp) (log (CompletedGroup.projection k y)) := by
         rw [hy, s.projection_completedMap_of_le k (a := k) (by simp)]
         exact LieHom.log_bchGroupMap _ _
-      rw [hl, decompose_truncatedMap, splittingProjection_truncatedMap π s hsπ]
+      rw [hl, s.decompose_truncatedMap, splittingProjection_truncatedMap π s hsπ]
     · have hk : π.truncatedMap k (by simp)
           (log (CompletedGroup.projection k (D.wall j).label)) = 0 := by
         have h1 := LieHom.log_bchGroupMap (π.truncatedMap k (by simp))
@@ -174,7 +146,7 @@ def LoopProjection.ofSplitting {k : ℕ} (hq : (D.map π hπ).LevelConsistent k)
         refine (hne ?_).elim
         have hk' : π.truncatedMap k (by simp) (DirectSum.decompose (d.truncatedGrading ℒ k)
             (log (CompletedGroup.projection k (D.wall j).label)) n : d.truncatedLie ℒ k) = 0 := by
-          rw [← decompose_truncatedMap, hk, DirectSum.decompose_zero]
+          rw [← π.decompose_truncatedMap, hk, DirectSum.decompose_zero]
           rfl
         rw [splittingProjection_of_map_eq_zero π s k hk', he,
           PositiveDegrees.projection_expToCompletion, log_exp]

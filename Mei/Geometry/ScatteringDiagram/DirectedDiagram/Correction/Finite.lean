@@ -23,7 +23,8 @@ This result supplies finite stages for constructing an all-order outgoing
 completion. It gives existence separately at each cutoff; compatibility between
 the chosen stages requires additional data. For the underlying chamber and
 correction constructions, see `DirectedDiagram.exists_chamber_trivialization`
-and `DirectedDiagram.exists_consistent_outgoing_extension`.
+and `DirectedDiagram.LoopProjection.exists_consistent_outgoing_extension` with the
+identity projection `LoopProjection.ofFullPure`.
 
 The mathematical construction follows
 Mandel, *Scattering diagrams, theta functions, and refined tropical curve counts*,
@@ -99,8 +100,8 @@ theorem exists_finite_outgoing_completion (D : DirectedDiagram (d := d) h H ι)
       · obtain ⟨_, n, _, hn, ⟨z, hz, he⟩, _⟩ := hpure a
         exact ⟨n, by omega, z, hz, he⟩
     obtain ⟨κ', _, G, hG, hnext, hprevious, hnew⟩ :=
-      exists_consistent_outgoing_extension σ hσ cross hk b t ht τ hτ
-        (range (Sum.inl : ι → ι ⊕ κ)) hfullE hpureE
+      (LoopProjection.ofFullPure E (range (Sum.inl : ι → ι ⊕ κ)) hfullE
+        hpureE).exists_consistent_outgoing_extension σ hσ cross hk b t ht τ hτ
     -- Reassociate indices without identifying any coincident wall occurrences.
     let e : ι ⊕ (κ ⊕ κ') ≃ (ι ⊕ κ) ⊕ κ' := (Equiv.sumAssoc ι κ κ').symm
     let F : DirectedDiagram (d := d) h H (ι ⊕ (κ ⊕ κ')) :=
@@ -126,7 +127,7 @@ theorem exists_finite_outgoing_completion (D : DirectedDiagram (d := d) h H ι)
         intro l
         simpa only [mem_active, hold] using hborn l
       · rw [hright]
-        obtain ⟨hout, ⟨n, hn, hnk, z, hz, he⟩, hborn⟩ := hnew a
+        obtain ⟨hout, ⟨n, hn, hnk, z, hz, he⟩, hborn, -⟩ := hnew a
         refine ⟨hout, n, hn, by omega, ⟨z, hz, he⟩, ?_⟩
         intro l
         have hact : Sum.inr (.inr a) ∈ F.active l ↔ k + 1 ≤ l := by

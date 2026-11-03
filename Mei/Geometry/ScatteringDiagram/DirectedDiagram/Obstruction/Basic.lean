@@ -28,8 +28,9 @@ wall space when those eligible normals form a cyclic group.
 
 If the initial walls are full hyperplanes and all other labels are exponentials of
 homogeneous elements of lower degree, the identity is a loop projection
-(`LoopProjection.ofFullPure`). For a split extension, `id - s ∘ π` is one whose
-lifted walls may have arbitrary supports (`Obstruction/Splitting.lean`).
+(`LoopProjection.ofFullPure`), which gives the full-hyperplane statements. For a
+split extension, `id - s ∘ π` is one whose lifted walls may have arbitrary supports
+(`Obstruction/Splitting.lean`).
 
 No consistency assumption is needed for these vanishing and membership results.
 Under lower-order consistency, `loopObstruction` places the loop logarithm in
@@ -289,73 +290,5 @@ def ofFullPure (initial : Set ι)
         ((d.mem_truncatedGrading_iff ℒ).mpr ⟨a, ha, rfl⟩) hmn
 
 end LoopProjection
-
-/-- In the correction degree, the linear crossing sum vanishes: initial full
-hyperplanes cancel, and the other homogeneous logarithms have smaller degree. -/
-theorem decompose_crossingSum_loop_eq_zero
-    (p : AdmissiblePLPath x x) (initial : Set ι)
-    (hfull : ∀ j ∈ initial, ∃ b : ℝ,
-      (D.wall j).support = {v | h.realCharacter (D.wall j).normal v = b})
-    (hpure : ∀ j ∉ initial, ∃ m : Γ, d.degree m < k ∧
-      ∃ a ∈ ℒ m, (D.wall j).label = d.expToCompletion ℒ a)
-    {n : Γ} (hn : d.degree n = k) :
-    (DirectSum.decompose (d.truncatedGrading ℒ k)
-      (p.wallCrossingSum (fun j : D.active k => h.realCharacter (D.wall j).normal)
-        (fun j => log (CompletedGroup.projection k (D.wall j).label))) n :
-      d.truncatedLie ℒ k) = 0 :=
-  (LoopProjection.ofFullPure D initial hfull hpure).map_decompose_crossingSum_loop_eq_zero p hn
-
-/-- At the correction order, the loop obstruction vanishes in every degree
-whose geometric direction is tangent to the joint. Zero directions are included. -/
-theorem decompose_log_levelPathProduct_loop_eq_zero_of_tangent
-    (p : AdmissiblePLPath x x) (W : AddSubmonoid Λ)
-    (hnormal : ∀ S ∈ p.signedCrossingEvents
-      (fun j : D.active k => h.realCharacter (D.wall j).normal),
-      ∀ a ∈ S, ∀ v ∈ W, (D.wall a.1).normal v = 0)
-    (initial : Set ι)
-    (hfull : ∀ j ∈ initial, ∃ b : ℝ,
-      (D.wall j).support = {v | h.realCharacter (D.wall j).normal v = b})
-    (hpure : ∀ j ∉ initial, ∃ m : Γ, d.degree m < k ∧
-      ∃ a ∈ ℒ m, (D.wall j).label = d.expToCompletion ℒ a)
-    {n : Γ} (hn : d.degree n = k) (htangent : ρ n ∈ W) :
-    (DirectSum.decompose (d.truncatedGrading ℒ k)
-      (log (D.levelPathProduct k p)) n : d.truncatedLie ℒ k) = 0 :=
-  LoopProjection.decompose_log_levelPathProduct_loop_eq_zero_of_tangent
-    (.ofFullPure D initial hfull hpure)
-    p W hnormal hn htangent
-
-/-- At the correction order, each degree component of a loop obstruction belongs
-to the sum of the wall spaces whose normals annihilate the joint. -/
-theorem decompose_log_levelPathProduct_loop_mem
-    (p : AdmissiblePLPath x x) (W : AddSubmonoid Λ)
-    (hnormal : ∀ S ∈ p.signedCrossingEvents
-      (fun j : D.active k => h.realCharacter (D.wall j).normal),
-      ∀ a ∈ S, ∀ v ∈ W, (D.wall a.1).normal v = 0)
-    (initial : Set ι)
-    (hfull : ∀ j ∈ initial, ∃ b : ℝ,
-      (D.wall j).support = {v | h.realCharacter (D.wall j).normal v = b})
-    (hpure : ∀ j ∉ initial, ∃ m : Γ, d.degree m < k ∧
-      ∃ a ∈ ℒ m, (D.wall j).label = d.expToCompletion ℒ a)
-    {n : Γ} (hn : d.degree n = k) :
-    (DirectSum.decompose (d.truncatedGrading ℒ k)
-      (log (D.levelPathProduct k p)) n : d.truncatedLie ℒ k) ∈
-      ⨆ (m : Λ →+ ℤ) (_ : ∀ v ∈ W, m v = 0), (H.truncated d k).wall n m :=
-  (LoopProjection.ofFullPure D initial hfull hpure).decompose_log_levelPathProduct_loop_mem
-    p W hnormal hn
-
-/-- Zero-direction components of the correction-order loop logarithm vanish.
-This requires no joint or local normal condition: every normal annihilates zero. -/
-theorem decompose_log_levelPathProduct_loop_eq_zero_of_direction_eq_zero
-    (p : AdmissiblePLPath x x) (initial : Set ι)
-    (hfull : ∀ j ∈ initial, ∃ b : ℝ,
-      (D.wall j).support = {v | h.realCharacter (D.wall j).normal v = b})
-    (hpure : ∀ j ∉ initial, ∃ m : Γ, d.degree m < k ∧
-      ∃ a ∈ ℒ m, (D.wall j).label = d.expToCompletion ℒ a)
-    {n : Γ} (hn : d.degree n = k) (hzero : ρ n = 0) :
-    (DirectSum.decompose (d.truncatedGrading ℒ k)
-      (log (D.levelPathProduct k p)) n : d.truncatedLie ℒ k) = 0 :=
-  LoopProjection.decompose_log_levelPathProduct_loop_eq_zero_of_direction_eq_zero
-    (.ofFullPure D initial hfull hpure)
-    p hn hzero
 
 end Mei.DirectedDiagram

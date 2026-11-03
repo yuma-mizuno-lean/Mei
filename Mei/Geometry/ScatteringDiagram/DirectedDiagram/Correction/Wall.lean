@@ -19,7 +19,7 @@ label. The label is trivial below the correction order and nontrivial at that
 order, with logarithm equal to the negative obstruction component.
 
 The normal and transversality come from
-`DirectedDiagram.exists_pos_joint_loop_obstruction`; positive-degree support
+`DirectedDiagram.LoopProjection.exists_pos_joint_loop_obstruction`; positive-degree support
 comes from the truncated grading. `DirectedWall.exists_outgoing_sweep` supplies
 the wall. This implements the individual homogeneous-wall construction in
 Mandel, *Scattering diagrams, theta functions, and refined tropical curve counts*,

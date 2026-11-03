@@ -197,6 +197,18 @@ theorem truncatedMap_mem (f : GradedLieHom T ℒ ℳ) {a : ℕ} (k : ℕ)
   refine (e.mem_truncatedGrading_iff ℳ).mpr ⟨f y, f.map_mem hy, ?_⟩
   simpa only [LieIdeal.mkQ_apply] using (f.truncatedMap_mk k h y).symm
 
+/-- The truncation of a fixed-degree homomorphism commutes with homogeneous components. -/
+theorem decompose_truncatedMap {ℳ' : N → Submodule R L'} [GradedLieAlgebra ℳ']
+    [IsPositiveGrading d ℳ'] (f : GradedLieHom (PositiveDegreeMap.id d) ℒ ℳ') (k : ℕ)
+    (x : d.truncatedLie ℒ k) (n : N) :
+    (DirectSum.decompose (d.truncatedGrading ℳ' k) (f.truncatedMap k (by simp) x) n :
+      d.truncatedLie ℳ' k) =
+      f.truncatedMap k (by simp)
+        (DirectSum.decompose (d.truncatedGrading ℒ k) x n : d.truncatedLie ℒ k) :=
+  (DirectSum.map_decompose_shift (d.truncatedGrading ℒ k) (d.truncatedGrading ℳ' k)
+    (f.truncatedMap k (by simp)).toLinearMap.toAddMonoidHom _root_.id Function.injective_id
+    (fun _ _ hx => by simpa using f.truncatedMap_mem k (by simp) hx) n x).symm
+
 /-- Truncation sends the identity graded homomorphism to the identity. -/
 @[simp]
 theorem truncatedMap_id (k : ℕ) :

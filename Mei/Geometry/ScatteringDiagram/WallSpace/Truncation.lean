@@ -14,7 +14,8 @@ public import Mei.Algebra.Lie.Graded.PositiveDegreeHom
 The images of directed wall spaces in a degree quotient satisfy the same normal
 and bracket laws. Lowering the cutoff sends each wall space onto its lower-order
 image. Thus the finite-order spaces are compatible with the Lie truncation tower,
-without a freeness or flatness assumption.
+without a freeness or flatness assumption. Fixed-degree homomorphisms preserving wall
+spaces preserve them at every finite order.
 
 The construction uses `DirectedWallSpaces.map` on the canonical quotient maps.
 -/
@@ -59,3 +60,26 @@ theorem map_truncationMap_wall {k l : ℕ} (h : k ≤ l) (n : Γ) (m : Λ →+ �
   rw [truncated_wall, ← Submodule.map_comp, square, truncated_wall]
 
 end Mei.DirectedWallSpaces
+
+namespace Mei.GradedLieHom
+
+variable {Γ Λ R L L' : Type*} [AddCommMonoid Γ] [AddCommMonoid Λ] [CommRing R]
+  [LieRing L] [LieAlgebra R L] [LieRing L'] [LieAlgebra R L'] [DecidableEq Γ]
+  {ρ : Γ →+ Λ} {ℒ : Γ → Submodule R L} {ℳ : Γ → Submodule R L'}
+  [GradedLieAlgebra ℒ] [GradedLieAlgebra ℳ] {d : PositiveDegrees Γ}
+  [IsPositiveGrading d ℒ] [IsPositiveGrading d ℳ]
+  {H : DirectedWallSpaces ρ ℒ} {H' : DirectedWallSpaces ρ ℳ}
+
+/-- A fixed-degree homomorphism preserving wall spaces preserves the wall spaces at every
+finite order. -/
+theorem truncatedMap_mem_truncated_wall (f : GradedLieHom (PositiveDegreeMap.id d) ℒ ℳ)
+    (hf : ∀ n m, ∀ x ∈ H.wall n m, f x ∈ H'.wall n m) (k : ℕ) {n : Γ} {m : Λ →+ ℤ}
+    {x : d.truncatedLie ℒ k} (hx : x ∈ (H.truncated d k).wall n m) :
+    f.truncatedMap k (by simp) x ∈ (H'.truncated d k).wall n m := by
+  rw [DirectedWallSpaces.truncated_wall] at hx ⊢
+  obtain ⟨y, hy, rfl⟩ := Submodule.mem_map.mp hx
+  refine Submodule.mem_map.mpr ⟨f y, hf n m y hy, ?_⟩
+  simpa only [LieIdeal.mkQ_apply, LieHom.coe_toLinearMap] using
+    (f.truncatedMap_mk k (by simp) y).symm
+
+end Mei.GradedLieHom

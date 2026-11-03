@@ -21,7 +21,7 @@ degree it lies in one wall space. The computed integral normal is nonzero and
 its real kernel is the joint direction plus the degree direction. Thus it spans
 the required one-dimensional conormal space without choosing a primitive normal.
 
-The results combine `DirectedDiagram.decompose_log_levelPathProduct_loop_mem`,
+The results combine `DirectedDiagram.LoopProjection.decompose_log_levelPathProduct_loop_mem`,
 `DirectedWallSpaces.iSup_wall_eq_wall_of_inf_ker`, the adapted support coverage,
 and `FinitePolyhedralComplex.eventually_subset_of_mem_cell`. The geometric attachment is
 the local obstruction calculation in Mandel, *Scattering diagrams, theta functions,
@@ -119,29 +119,5 @@ theorem LoopProjection.exists_pos_joint_loop_obstruction {k : ℕ} (P : D.LoopPr
     rw [hW] at hmem
     simpa only [AddSubgroup.mem_toAddSubmonoid,
       (H.truncated d k).iSup_wall_eq_wall_of_inf_ker f g hnot] using hmem
-
-/-- At any actual joint, local correction-order loop logarithms vanish in all
-tangent degrees and lie in the computed single wall space in every transverse
-degree. Initial supports are full hyperplanes; all other logarithms have pure
-birth strictly below the correction order. -/
-theorem exists_pos_joint_loop_obstruction {k : ℕ} {J : Set V}
-    (hJ : J ∈ (D.adaptedComplex k).joints) {q : V}
-    (hq : q ∈ intrinsicInterior ℝ J) (initial : Set ι)
-    (hfull : ∀ j ∈ initial, ∃ b : ℝ,
-      (D.wall j).support = {v | h.realCharacter (D.wall j).normal v = b})
-    (hpure : ∀ j ∉ initial, ∃ m : Γ, d.degree m < k ∧
-      ∃ a ∈ ℒ m, (D.wall j).label = d.expToCompletion ℒ a) :
-    ∃ r > 0, ∀ (x : WallComplement (fun j : D.active k => (D.wall j).support))
-      (p : AdmissiblePLPath x x), (∀ z ∈ p.vertices, z.val ∈ Metric.ball q r) →
-      ∀ n : Γ, d.degree n = k →
-        (i (ρ n) ∈ (affineSpan ℝ J).direction →
-          (DirectSum.decompose (d.truncatedGrading ℒ k)
-            (log (D.levelPathProduct k p)) n : d.truncatedLie ℒ k) = 0) ∧
-        (i (ρ n) ∉ (affineSpan ℝ J).direction → ∃ m : Λ →+ ℤ, m ≠ 0 ∧
-          (h.realCharacter m).ker = (affineSpan ℝ J).direction ⊔ ℝ ∙ i (ρ n) ∧
-          (DirectSum.decompose (d.truncatedGrading ℒ k)
-            (log (D.levelPathProduct k p)) n : d.truncatedLie ℒ k) ∈
-              (H.truncated d k).wall n m) :=
-  (LoopProjection.ofFullPure D initial hfull hpure).exists_pos_joint_loop_obstruction hJ hq
 
 end Mei.DirectedDiagram

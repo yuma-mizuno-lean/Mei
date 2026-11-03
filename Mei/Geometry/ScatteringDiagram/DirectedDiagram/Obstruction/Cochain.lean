@@ -34,7 +34,7 @@ meridians. Independence of those choices and comparison with the coboundary of
 crossing defects are separate geometric statements.
 
 The construction combines `DirectedDiagram.exists_positive_isolating_joint_triangle`,
-`DirectedDiagram.exists_pos_joint_loop_obstruction`, and
+`DirectedDiagram.LoopProjection.exists_pos_joint_loop_obstruction`, and
 `PolyhedralCochain.transverseSubmodule`. It follows the central obstruction
 construction in Mandel, *Scattering diagrams, theta functions, and refined
 tropical curve counts*, proof of Theorem 2.6, and Gross–Hacking–Keel–Kontsevich,
