@@ -17,7 +17,8 @@ in the base quotient, and the probe wall is a full hyperplane whose label the pr
 kills. The relative completion of `DirectedDiagram.exists_isRelativeOutgoingCompletion`
 therefore applies, with no condition on the supports of `D`: it adds outgoing walls with
 pure birth logarithms in the module summand to the cylinder and the probe wall, keeping
-the cylinder fixed. The charge-zero part of the result is the cylinder over `D`.
+the cylinder walls as the leading summands of the index type. The charge-zero part of the
+result is equivalent to the cylinder over `D`.
 
 We use `ModuleProbe.baseProjection`, `ModuleProbe.baseSection`, `ModuleProbe.cylinderDiagram`
 and `ModuleProbe.initialDiagram`. The construction follows Mandel, *Scattering diagrams,
@@ -67,6 +68,14 @@ def cylinderQuotientDiagram {ι : Type*} (D : DirectedDiagram (d := d) h H ι) :
     DirectedDiagram (d := positiveDegrees d p) (h.prod h') (baseWallSpaces d ℳ p ℒ H) ι :=
   (cylinderDiagram d ℳ p ℒ H h h' D).map (baseProjection d ℳ p ℒ)
     fun _ _ _ hx => baseProjection_mem_baseWallSpaces d ℳ p ℒ H hx
+
+/-- Each wall of the quotient cylinder is the projection of the corresponding cylinder wall. -/
+@[simp]
+theorem cylinderQuotientDiagram_wall {ι : Type*} (D : DirectedDiagram (d := d) h H ι) (b : ι) :
+    (cylinderQuotientDiagram d ℳ p ℒ H h h' D).wall b =
+      ((cylinderDiagram d ℳ p ℒ H h h' D).wall b).map (baseProjection d ℳ p ℒ)
+        (fun _ _ _ hx => baseProjection_mem_baseWallSpaces d ℳ p ℒ H hx) :=
+  DirectedDiagram.map_wall _ _ _ _
 
 /-- Projecting a probe diagram to the base quotient and lifting it along the section forgets
 the module summand of every label. -/

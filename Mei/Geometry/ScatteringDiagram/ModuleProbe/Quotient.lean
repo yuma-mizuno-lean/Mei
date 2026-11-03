@@ -192,8 +192,7 @@ theorem baseProjection_baseSection (x : L) : baseProjection d ℳ p ℒ (baseSec
 /-- Including the base in the probe after projecting forgets the module summand. -/
 theorem baseSection_baseProjection (x : ProbeLie d ℳ p ℒ) :
     baseSection d ℳ p ℒ (baseProjection d ℳ p ℒ x) = chargeZeroGradedLieHom d ℳ p ℒ x := by
-  rw [chargeZeroGradedLieHom_apply]
-  rfl
+  rw [baseSection_apply, baseProjection_apply, chargeZeroGradedLieHom_apply]
 
 /-- The composite of projection and section is the identity on the base quotient. -/
 theorem baseProjection_compId_baseSection :
