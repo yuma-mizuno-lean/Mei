@@ -301,7 +301,12 @@ private theorem transport_eq_inv_comp_of_triangles
     rw [Category.assoc, hT]
 
 /-- A diagram is consistent exactly when its transport around every admissible triangle is
-trivial. The triangles may contain several joints. -/
+trivial. The triangles may contain several joints.
+
+This generalizes `Mei.FiniteWallDiagram.consistent_iff_triangles` from group labels to
+groupoid labels, and adapts its common-apex reduction
+(`Quiver.Path.crossingWord_mem_normalClosure_triangles`), joining a point `z` to every
+vertex of the loop by an admissible spoke, to transport in a groupoid. -/
 theorem consistent_iff_triangles : D.Consistent ↔
     ∀ (x y z : WallComplement (fun P : C.walls => (P : Set V)))
       (e : x ⟶ y) (f : y ⟶ z) (r : z ⟶ x),
@@ -330,6 +335,7 @@ theorem Consistent.map (hc : D.Consistent) (F : G ⥤ G') : (D.map F).Consistent
   simpa only [transport_map] using congrArg F.map (hc p q)
 
 /-- A faithful functor of groupoids reflects consistency. -/
+@[simp]
 theorem consistent_map_iff (F : G ⥤ G') [F.Faithful] : (D.map F).Consistent ↔ D.Consistent := by
   constructor
   · intro hc x y p q
@@ -386,6 +392,7 @@ theorem transport_toGroupoidWallDiagram (p : AdmissiblePLPath x y) :
 
 /-- A group-labelled diagram is consistent exactly when the diagram in the one-object
 groupoid it determines is. -/
+@[simp]
 theorem consistent_toGroupoidWallDiagram : D.toGroupoidWallDiagram.Consistent ↔ D.Consistent := by
   rw [consistent_def, GroupoidWallDiagram.consistent_def]
   refine forall_congr' fun x => forall_congr' fun y => forall_congr' fun p =>
