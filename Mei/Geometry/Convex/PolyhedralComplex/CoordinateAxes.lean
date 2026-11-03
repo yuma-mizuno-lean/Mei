@@ -6,6 +6,7 @@ Authors: Claude
 module
 
 public import Mei.Geometry.Convex.PolyhedralComplex.AmbientSubdivision
+public import Mei.Geometry.Convex.PolyhedralComplex.Star
 public import Mei.Geometry.Convex.Polyhedron.AdmissiblePath
 public import Mei.Analysis.Convex.Sign
 public import Mei.LinearAlgebra.AffineSpace.Ordered
@@ -384,5 +385,48 @@ theorem coordinateAxesSquareLoop_vertices :
     (coordinateAxesSquareLoop h).vertices.map WallComplement.val =
       [(1, 1), (-1, 1), (-1, -1), (1, -1), (1, 1)] := by
   simp [coordinateAxesSquareLoop, Quiver.Path.vertices_cons, Quiver.Path.vertices_toPath]
+
+/-- A wall through a point off the horizontal axis lies in the vertical axis, so it misses
+`(1, 0)`. -/
+theorem one_zero_notMem_of_mem_coordinateAxes_walls_of_snd_ne_zero
+    {P : (coordinateAxes h).walls} {v : ℝ × ℝ} (hv : v ∈ (P : Set _)) (h₂ : v.2 ≠ 0) :
+    ((1, 0) : ℝ × ℝ) ∉ (P : Set _) := by
+  intro h10
+  have hv0 := subset_axisRow_coordinateAxesWallAxis h P hv
+  have h10' := subset_axisRow_coordinateAxesWallAxis h P h10
+  cases hj : coordinateAxesWallAxis h P <;> simp_all
+
+/-- No wall of the coordinate axes contains both `(1, 0)` and `(-1, 0)`. -/
+theorem one_zero_notMem_of_neg_one_zero_mem_coordinateAxes_walls
+    {P : (coordinateAxes h).walls} (hv : ((-1, 0) : ℝ × ℝ) ∈ (P : Set _)) :
+    ((1, 0) : ℝ × ℝ) ∉ (P : Set _) := by
+  intro h10
+  rcases fst_nonneg_or_fst_nonpos_of_mem_coordinateAxes_walls h P.property with hP | hP
+  · linarith [hP _ hv]
+  · linarith [hP _ h10]
+
+/-- A wall of the coordinate axes through `(1, 0)` lies in the horizontal axis, whose
+coordinate is the second one. -/
+theorem coordinateAxesWallAxis_eq_true_of_one_zero_mem
+    {P : (coordinateAxes h).walls} (hv : ((1, 0) : ℝ × ℝ) ∈ (P : Set _)) :
+    coordinateAxesWallAxis h P = true := by
+  have := subset_axisRow_coordinateAxesWallAxis h P hv
+  cases hj : coordinateAxesWallAxis h P <;> simp_all
+
+/-- The coordinate-axes complex has no joint meridian in the punctured plane: its only joint is
+the origin, which every isolating triangle must meet. -/
+@[simp]
+theorem jointMeridianWords_coordinateAxes_compl_zero
+    (ν : (coordinateAxes h).walls → ℝ × ℝ →ₗ[ℝ] ℝ) :
+    (coordinateAxes h).jointMeridianWords ν ({0}ᶜ : Set (ℝ × ℝ)) = ∅ := by
+  refine eq_empty_of_forall_notMem fun g hg => ?_
+  obtain ⟨J, -, hJ⟩ := ((coordinateAxes h).mem_jointMeridianWords ν _ g).mp hg
+  obtain ⟨x, y, z, e, f, r, q, -, -, hU, -, hinter, -⟩ :=
+    ((coordinateAxes h).mem_jointTriangleWords ν J _ g).mp hJ
+  have hq : q ∈ convexHull ℝ {x.val, y.val, z.val} ∩
+      ((coordinateAxes h).codimensionAtLeast 2).support := by
+    rw [hinter]
+    rfl
+  exact hU hq.1 (support_codimensionAtLeast_two_coordinateAxes_subset h hq.2)
 
 end Mei.FinitePolyhedralComplex

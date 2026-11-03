@@ -35,6 +35,14 @@ def row : Bool → (ℝ × ℝ) →L[ℝ] ℝ
   | false => ContinuousLinearMap.fst ℝ ℝ ℝ
   | true => ContinuousLinearMap.fst ℝ ℝ ℝ - ContinuousLinearMap.snd ℝ ℝ ℝ
 
+/-- The functional of the line `x = 0` is the first coordinate. -/
+@[simp]
+theorem row_false_apply (v : ℝ × ℝ) : row false v = v.1 := (rfl)
+
+/-- The functional of the line `x = y` is the difference of the coordinates. -/
+@[simp]
+theorem row_true_apply (v : ℝ × ℝ) : row true v = v.1 - v.2 := (rfl)
+
 /-- The two lines `x = 0` and `x = y` of the plane, as a family of walls. -/
 def lines (i : Bool) : Set (ℝ × ℝ) := LinearMap.ker (row i).toLinearMap
 
@@ -70,6 +78,14 @@ def left : WallComplement lines :=
 /-- The point `(1, -1)`, on neither line. -/
 def right : WallComplement lines :=
   ⟨(1, -1), fun i => by cases i <;> norm_num [row]⟩
+
+/-- The coordinates of the point `(-1, 1)`. -/
+@[simp]
+theorem left_val : left.val = (-1, 1) := (rfl)
+
+/-- The coordinates of the point `(1, -1)`. -/
+@[simp]
+theorem right_val : right.val = (1, -1) := (rfl)
 
 /-- The segment from `(-1, 1)` to `(1, -1)` passes through the origin. -/
 theorem lineMap_left_right : AffineMap.lineMap left.val right.val (1 / 2 : ℝ) = 0 := by
