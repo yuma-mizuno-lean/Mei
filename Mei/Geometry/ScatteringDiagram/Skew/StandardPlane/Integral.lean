@@ -32,14 +32,13 @@ open SkewLatticeDatum.Examples PowerSeries
 local notation "β" => E.coefficientForm ℚ
 local notation "hβ" => E.isAlt_coefficientForm ℚ
 
-/-- Equality of characters of the plane is decidable, classically. -/
-noncomputable instance : DecidableEq (Module.Dual ℤ E.sublattice) := Classical.decEq _
-
+/-- The principal positive degrees lie in the principal coefficient monoid, as the integrality
+API requires. -/
 instance factPrincipal (w : Weight) :
     Fact ((E.principalPositiveDegrees (plane w)).monoid ≤ E.principalCoefficientMonoid (plane w)) :=
   ⟨E.principalPositiveDegrees_le_coefficientMonoid _⟩
 
-variable {w : Weight}
+variable {w : Weight} [DecidableEq (Module.Dual ℤ E.sublattice)]
 
 /-- Unit factors act integrally on the principal coefficients. -/
 theorem isIntegralLabel_unitFactor (m : PlaneDegree w) :
@@ -47,11 +46,6 @@ theorem isIntegralLabel_unitFactor (m : PlaneDegree w) :
   rw [unitFactor_def, dilogPow_def]
   exact E.isIntegralLabel_rayExp (plane w) m.mem m.ne_zero (c := rayIndex m.vec) (s := 1)
     (by rw [Int.cast_one, one_mul])
-
-/-- Integral labels are closed under products. -/
-theorem isIntegralLabel_mul {g h : Label w} (hg : E.IsIntegralLabel (plane w) g)
-    (hh : E.IsIntegralLabel (plane w) h) : E.IsIntegralLabel (plane w) (g * h) :=
-  SkewLatticeDatum.IsIntegralLabel.mul E (plane w) hg hh
 
 /-- The inverse of a unit factor acts integrally on the principal coefficients. -/
 theorem isIntegralLabel_unitFactor_inv (m : PlaneDegree w) :
@@ -104,9 +98,7 @@ theorem exists_units_prod_eq_of_isChain {ι : Type*} (I : List ι) (δ : ι → 
     have hdeg : (plane w).degree (δ i).vec ≤ k := by
       have := (δ i).deg_eq_degree
       omega
-    have hκ : 0 < rayIndex (δ i).vec :=
-      AddSubgroup.rayIndex_pos (H := E.sublattice.toAddSubgroup)
-        fun h => (δ i).ne_zero (Subtype.ext h)
+    have hκ : 0 < rayIndex (δ i).vec := (δ i).rayIndex_pos
     have hspos : 0 < s i := by
       have h1 := hσpos i hi
       rw [hs i hi hdeg] at h1

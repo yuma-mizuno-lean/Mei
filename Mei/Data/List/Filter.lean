@@ -92,4 +92,29 @@ theorem Pairwise.filter_lt_getElem_eq_drop [Preorder α] [DecidableLT α] {l : L
       simpa only [getElem_cons_succ, hnot, decide_false, filter_cons_of_neg,
         Bool.false_eq_true, not_false_eq_true, drop_succ_cons] using ih hl j hj'
 
+/-- A list that is weakly increasing for a rank with values `0, 1, 2` is the concatenation of its
+elements of rank `0`, `1` and `2`. -/
+theorem eq_filter_append_of_pairwise (r : α → ℕ) (hr : ∀ a, r a ≤ 2)
+    (l : List α) (h : l.Pairwise fun a b => r a ≤ r b) :
+    l = l.filter (fun a => r a = 0) ++ l.filter (fun a => r a = 1) ++
+      l.filter (fun a => r a = 2) := by
+  induction l with
+  | nil => simp
+  | cons a t ih =>
+    obtain ⟨hat, ht⟩ := List.pairwise_cons.mp h
+    have ih := ih ht
+    have h0 : r a = 0 ∨ r a = 1 ∨ r a = 2 := by have := hr a; omega
+    rcases h0 with h0 | h0 | h0
+    · simpa [List.filter_cons, h0] using congrArg (a :: ·) ih
+    · have hf0 : t.filter (fun b => r b = 0) = [] :=
+        List.filter_eq_nil_iff.mpr fun b hb => by have := hat b hb; simp; omega
+      rw [hf0] at ih
+      simpa [List.filter_cons, h0, hf0] using ih
+    · have hf0 : t.filter (fun b => r b = 0) = [] :=
+        List.filter_eq_nil_iff.mpr fun b hb => by have := hat b hb; simp; omega
+      have hf1 : t.filter (fun b => r b = 1) = [] :=
+        List.filter_eq_nil_iff.mpr fun b hb => by have := hat b hb; have := hr b; simp; omega
+      rw [hf0, hf1] at ih
+      simpa [List.filter_cons, h0, hf0, hf1] using ih
+
 end List

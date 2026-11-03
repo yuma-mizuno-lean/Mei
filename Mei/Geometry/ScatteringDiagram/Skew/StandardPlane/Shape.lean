@@ -7,6 +7,7 @@ module
 
 public import Mei.Geometry.ScatteringDiagram.Skew.StandardPlane.Basic
 public import Mei.Data.List.Chain
+public import Mei.Data.List.Filter
 public import Mei.LinearAlgebra.SesquilinearForm.Alternating
 
 /-!
@@ -36,33 +37,35 @@ theorem vec_mem_closure (m : PlaneDegree w) :
 /-- The angular order `0 ≤ {m, m'}` is transitive on nonzero plane degrees. -/
 theorem not_inverted_trans {a b c : PlaneDegree w} (hab : ¬ Inverted a b) (hbc : ¬ Inverted b c) :
     ¬ Inverted a c := by
-  rw [inverted_def, not_lt] at hab hbc ⊢
+  unfold Inverted at hab hbc ⊢
+  rw [not_lt] at hab hbc ⊢
   exact LinearMap.IsAlt.nonneg_trans_of_mem_closure_pair (E.isAlt_coefficientForm ℚ)
     a.vec_mem_closure b.vec_mem_closure c.vec_mem_closure b.ne_zero hab hbc
 
 /-- The position of a plane degree in the angular order: `0` on the ray of `e₁`, `2` on the ray
 of `e₂` and `1` in the open quadrant. -/
-def rank (m : PlaneDegree w) : ℕ := if m.snd = 0 then 0 else if m.fst = 0 then 2 else 1
+private def rank (m : PlaneDegree w) : ℕ := if m.snd = 0 then 0 else if m.fst = 0 then 2 else 1
 
-theorem rank_le_two (m : PlaneDegree w) : m.rank ≤ 2 := by
+private theorem rank_le_two (m : PlaneDegree w) : m.rank ≤ 2 := by
   unfold rank
   split_ifs <;> omega
 
-theorem rank_eq_zero_iff (m : PlaneDegree w) : m.rank = 0 ↔ m.snd = 0 := by
+private theorem rank_eq_zero_iff (m : PlaneDegree w) : m.rank = 0 ↔ m.snd = 0 := by
   unfold rank
   split_ifs <;> simp_all
 
-theorem rank_eq_two_iff (m : PlaneDegree w) : m.rank = 2 ↔ m.snd ≠ 0 ∧ m.fst = 0 := by
+private theorem rank_eq_two_iff (m : PlaneDegree w) : m.rank = 2 ↔ m.snd ≠ 0 ∧ m.fst = 0 := by
   unfold rank
   split_ifs <;> simp_all
 
-theorem rank_eq_one_iff (m : PlaneDegree w) : m.rank = 1 ↔ ¬ m.Boundary := by
+private theorem rank_eq_one_iff (m : PlaneDegree w) : m.rank = 1 ↔ ¬ m.Boundary := by
   unfold rank
-  rw [boundary_iff]
+  unfold Boundary
   split_ifs <;> simp_all
 
 /-- Ordered pairs of plane degrees do not decrease the rank. -/
-theorem rank_le_of_not_bad {a b : PlaneDegree w} (h : ¬ Inverted a b) : a.rank ≤ b.rank := by
+private theorem rank_le_of_not_inverted {a b : PlaneDegree w} (h : ¬ Inverted a b) :
+    a.rank ≤ b.rank := by
   rw [inverted_iff] at h
   push Not at h
   have ha1 := a.fst_nonneg
@@ -100,31 +103,6 @@ theorem rank_le_of_not_bad {a b : PlaneDegree w} (h : ¬ Inverted a b) : a.rank 
 
 end PlaneDegree
 
-/-- A list that is weakly increasing for a rank with values `0, 1, 2` is the concatenation of its
-elements of rank `0`, `1` and `2`. -/
-private theorem eq_filter_append_of_pairwise_rank {α : Type*} (r : α → ℕ) (hr : ∀ a, r a ≤ 2)
-    (l : List α) (h : l.Pairwise fun a b => r a ≤ r b) :
-    l = l.filter (fun a => r a = 0) ++ l.filter (fun a => r a = 1) ++
-      l.filter (fun a => r a = 2) := by
-  induction l with
-  | nil => simp
-  | cons a t ih =>
-    obtain ⟨hat, ht⟩ := List.pairwise_cons.mp h
-    have ih := ih ht
-    have h0 : r a = 0 ∨ r a = 1 ∨ r a = 2 := by have := hr a; omega
-    rcases h0 with h0 | h0 | h0
-    · simpa [List.filter_cons, h0] using congrArg (a :: ·) ih
-    · have hf0 : t.filter (fun b => r b = 0) = [] :=
-        List.filter_eq_nil_iff.mpr fun b hb => by have := hat b hb; simp; omega
-      rw [hf0] at ih
-      simpa [List.filter_cons, h0, hf0] using ih
-    · have hf0 : t.filter (fun b => r b = 0) = [] :=
-        List.filter_eq_nil_iff.mpr fun b hb => by have := hat b hb; simp; omega
-      have hf1 : t.filter (fun b => r b = 1) = [] :=
-        List.filter_eq_nil_iff.mpr fun b hb => by have := hat b hb; have := hr b; simp; omega
-      rw [hf0, hf1] at ih
-      simpa [List.filter_cons, h0, hf0, hf1] using ih
-
 /-- **Shape of an ordered list.** An ordered list of plane degrees whose boundary degrees are a
 permutation of `e₂^A e₁^B` is `e₁^B I e₂^A`, where `I` consists of degrees of the open
 quadrant. -/
@@ -139,17 +117,17 @@ theorem exists_eq_append_of_isChain (A B : ℕ) (l : List (PlaneDegree w))
   have hpw : l.Pairwise fun a b => ¬ PlaneDegree.Inverted a b :=
     hl.pairwise_of_forall_mem (p := fun _ => True) (fun _ _ => trivial)
       fun _ _ _ _ _ _ => PlaneDegree.not_inverted_trans
-  have hsplit := eq_filter_append_of_pairwise_rank PlaneDegree.rank PlaneDegree.rank_le_two l
-    (hpw.imp fun h => PlaneDegree.rank_le_of_not_bad h)
+  have hsplit := List.eq_filter_append_of_pairwise PlaneDegree.rank PlaneDegree.rank_le_two l
+    (hpw.imp fun h => PlaneDegree.rank_le_of_not_inverted h)
   obtain ⟨f₀, f₁, f₂, rfl, h₀, h₁, h₂⟩ : ∃ f₀ f₁ f₂ : List (PlaneDegree w), l = f₀ ++ f₁ ++ f₂ ∧
       (∀ m ∈ f₀, m.rank = 0) ∧ (∀ m ∈ f₁, m.rank = 1) ∧ (∀ m ∈ f₂, m.rank = 2) :=
     ⟨_, _, _, hsplit, fun m hm => by simpa using (List.mem_filter.mp hm).2,
       fun m hm => by simpa using (List.mem_filter.mp hm).2,
       fun m hm => by simpa using (List.mem_filter.mp hm).2⟩
   have hb₀ : ∀ m ∈ f₀, m.Boundary := fun m hm =>
-    (PlaneDegree.boundary_iff m).mpr (Or.inr ((PlaneDegree.rank_eq_zero_iff m).mp (h₀ m hm)))
+    (Or.inr ((PlaneDegree.rank_eq_zero_iff m).mp (h₀ m hm)))
   have hb₂ : ∀ m ∈ f₂, m.Boundary := fun m hm =>
-    (PlaneDegree.boundary_iff m).mpr (Or.inl ((PlaneDegree.rank_eq_two_iff m).mp (h₂ m hm)).2)
+    (Or.inl ((PlaneDegree.rank_eq_two_iff m).mp (h₂ m hm)).2)
   have hb₁ : ∀ m ∈ f₁, ¬ m.Boundary := fun m hm => (PlaneDegree.rank_eq_one_iff m).mp (h₁ m hm)
   refine ⟨f₁, ?_, hb₁⟩
   have hfilter : (f₀ ++ f₁ ++ f₂).filter (fun m => decide m.Boundary) = f₀ ++ f₂ := by

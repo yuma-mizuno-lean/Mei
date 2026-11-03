@@ -40,10 +40,14 @@ abbrev rayIndex (m : Γ) : ℚ := E.sublattice.toAddSubgroup.rayIndex m
 
 variable {w : Weight}
 
+theorem PlaneDegree.rayIndex_pos (m : PlaneDegree w) : 0 < rayIndex m.vec :=
+  AddSubgroup.rayIndex_pos (H := E.sublattice.toAddSubgroup) fun h => m.ne_zero (Subtype.ext h)
+
 /-- The dilogarithm label `Ψ[m]^c` of a nonzero plane degree. -/
 def dilogPow (m : PlaneDegree w) (c : ℚ) : Label w :=
   SkewLieAlgebra.rayExp β hβ m.mem m.ne_zero (c • negDilogNeg ℚ)
 
+/-- Unfolds `dilogPow`, which holds by definition. -/
 theorem dilogPow_def (m : PlaneDegree w) (c : ℚ) :
     dilogPow m c = SkewLieAlgebra.rayExp β hβ m.mem m.ne_zero (c • negDilogNeg ℚ) := (rfl)
 
@@ -69,6 +73,7 @@ theorem dilogPow_natCast_mul (m : PlaneDegree w) (s : ℕ) (c : ℚ) :
 /-- The unit factor `Ψ[m]^{κ(m)}` of a nonzero plane degree. -/
 def unitFactor (m : PlaneDegree w) : Label w := dilogPow m (rayIndex m.vec)
 
+/-- Unfolds `unitFactor`, which holds by definition. -/
 theorem unitFactor_def (m : PlaneDegree w) : unitFactor m = dilogPow m (rayIndex m.vec) := (rfl)
 
 /-- The unit factor of a plane degree of ray index one is the dilogarithm element `Ψ[m]`. -/

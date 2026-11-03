@@ -36,9 +36,9 @@ open SkewLatticeDatum.Examples
 
 variable {w : Weight}
 
-/-- **Ordering in the standard plane.** At every finite order `k`, a finite product of unitFactor
-factors `Ψ[m]^{κ(m)}` of plane degrees agrees with a product of unit factors in which all
-adjacent pairings `{m, m'}` are nonnegative. -/
+/-- **Ordering in the standard plane.** At every finite order `k`, a finite product of unit
+factors `Ψ[m]^{κ(m)}` of plane degrees agrees with a product of unit factors, each of weighted
+degree at most `k`, in which all adjacent pairings `{m, m'}` are nonnegative. -/
 theorem exists_isChain_projection_prod_unit_eq (k : ℕ) (l : List (PlaneDegree w)) :
     ∃ l' : List (PlaneDegree w), (l'.IsChain fun a b => 0 ≤ E.coefficientForm ℚ a.vec b.vec) ∧
       (∀ m ∈ l', m.deg ≤ k) ∧
@@ -50,13 +50,11 @@ theorem exists_isChain_projection_prod_unit_eq (k : ℕ) (l : List (PlaneDegree 
       (SkewLieAlgebra.positiveGrading (E.coefficientForm ℚ) (E.isAlt_coefficientForm ℚ)
         (plane w)) l unitFactor PlaneDegree.deg PlaneDegree.Inverted (fun _ => False) k
       (fun m => unitFactor_mem_degreeFiltration m)
-      (fun a b hab hba => by
-        rw [PlaneDegree.inverted_iff] at hab hba
-        nlinarith)
+      (fun _ _ => PlaneDegree.Inverted.not_symm)
       (fun x y hxy hk => (exists_exchange k x y hxy hk).imp fun M hM =>
         ⟨fun m hm => ⟨(hM.1 m hm).1, (hM.1 m hm).2.1, fun h => h⟩, hM.2⟩)
   refine ⟨l', hchain.imp fun a b hab => not_lt.mp fun h => ?_, hdeg, hprod⟩
-  exact hab ((PlaneDegree.inverted_def a b).mpr h)
+  exact hab h
 
 /-- **Positive ordering in the standard plane.** At every finite order `k`, a finite product of
 normalized positive factors `Ψ[m]^{s κ(m)}`, `s ∈ ℕ`, of plane degrees agrees with an ordered

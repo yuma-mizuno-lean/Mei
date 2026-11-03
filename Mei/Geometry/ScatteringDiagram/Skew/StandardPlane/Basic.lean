@@ -55,6 +55,8 @@ def degreeHom (w : Weight) : Γ →+ ℤ where
     simp only [AddMemClass.coe_add, Prod.fst_add, Prod.snd_add]
     ring
 
+-- The coordinates of `Γ` are those of the underlying subtype of `ℤ × ℤ`, so the next lemmas hold
+-- by unfolding the definitions.
 @[simp]
 theorem degreeHom_apply (w : Weight) (v : Γ) : w.degreeHom v = w.fst * v.1.1 + w.snd * v.1.2 :=
   (rfl)
@@ -158,16 +160,14 @@ theorem deg_pos (m : PlaneDegree w) : 0 < m.deg := by
   omega
 
 /-- Plane degrees on the boundary of the quadrant: those with a vanishing coordinate. -/
-def Boundary (m : PlaneDegree w) : Prop := m.fst = 0 ∨ m.snd = 0
-
-theorem boundary_iff (m : PlaneDegree w) : m.Boundary ↔ m.fst = 0 ∨ m.snd = 0 := Iff.rfl
+@[expose] def Boundary (m : PlaneDegree w) : Prop := m.fst = 0 ∨ m.snd = 0
 
 instance : DecidablePred (Boundary (w := w)) := fun m =>
   inferInstanceAs (Decidable (m.fst = 0 ∨ m.snd = 0))
 
 /-- A pair of plane degrees is an *inversion* when its skew pairing `{m, m'}` is negative: it is
 out of order and needs an exchange. -/
-def Inverted (m m' : PlaneDegree w) : Prop := E.coefficientForm ℚ m.vec m'.vec < 0
+@[expose] def Inverted (m m' : PlaneDegree w) : Prop := E.coefficientForm ℚ m.vec m'.vec < 0
 
 private theorem mem_unfrozen (v : ℤ × ℤ) : v ∈ E.unfrozen := by
   simp only [E, unimodularRankTwo_unfrozen]
@@ -207,9 +207,6 @@ theorem deg_e₂ (w : Weight) : (e₂ w).deg = w.snd := by
   rw [deg_eq]
   simp
 
-theorem inverted_def (m m' : PlaneDegree w) :
-    Inverted m m' ↔ E.coefficientForm ℚ m.vec m'.vec < 0 := Iff.rfl
-
 theorem inverted_iff (m m' : PlaneDegree w) : Inverted m m' ↔ m.fst * m'.snd < m.snd * m'.fst := by
   rw [Inverted, coefficientForm_apply]
   have : ((m.fst * m'.snd - m.snd * m'.fst : ℤ) : ℚ) < 0 ↔ m.fst * m'.snd - m.snd * m'.fst < 0 :=
@@ -248,7 +245,13 @@ theorem one_le_fst_and_one_le_snd {x y : PlaneDegree w} (h : 0 < x.det y) :
 
 theorem coefficientForm_det (x y : PlaneDegree w) :
     E.coefficientForm ℚ y.vec x.vec = (x.det y : ℚ) := by
-  rw [coefficientForm_apply, det_eq]
+  rw [SkewLatticeDatum.coefficientForm_apply, Algebra.algebraMap_self, RingHom.id_apply, form_det]
+
+/-- The pairing of an inversion is not an inversion in the other direction. -/
+theorem Inverted.not_symm {a b : PlaneDegree w} (hab : Inverted a b) : ¬ Inverted b a :=
+  fun hba => by
+    rw [inverted_iff] at hab hba
+    nlinarith
 
 end PlaneDegree
 

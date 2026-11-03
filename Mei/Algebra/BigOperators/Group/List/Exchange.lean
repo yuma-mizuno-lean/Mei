@@ -23,7 +23,7 @@ larger degree:
 Then `List.exists_isChain_prod_map_eq_of_exchange` rewrites every finite product to one
 with no bad adjacent pair, using only factors of degree at most `k`. If the inserted factors
 all avoid a predicate `keep`, the factors satisfying `keep` are only permuted: the new
-product has the same multiset of `keep` factors as the old one.
+product has the same multiset of `keep` factors of degree at most `k` as the old one.
 
 Repeated exchanges terminate. Call a bad pair `(a, b)` of a list, with `a` before `b`,
 an inversion, and weight it by `k + 1 - max (deg a) (deg b)`. An exchange removes the
