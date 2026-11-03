@@ -44,7 +44,7 @@ universe u v w z
 
 namespace Mei.DirectedDiagram
 
-variable {Γ : Type u} {V : Type v} {Λ R : Type*} {L L' : Type w} {ι κ : Type z}
+variable {Γ : Type u} {V : Type v} {Λ R : Type*} {L L' : Type w}
   [AddCommGroup Γ] [AddCommGroup Λ] [CommRing R] [Algebra ℚ R]
   [LieRing L] [LieAlgebra R L] [LieAlgebra ℚ L] [IsScalarTower ℚ R L]
   [LieRing L'] [LieAlgebra R L'] [LieAlgebra ℚ L'] [IsScalarTower ℚ R L']
@@ -57,16 +57,11 @@ variable {Γ : Type u} {V : Type v} {Λ R : Type*} {L L' : Type w} {ι κ : Type
   (hπ : ∀ n m, ∀ x ∈ H.wall n m, π x ∈ H'.wall n m)
   (sec : GradedLieHom (PositiveDegreeMap.id d) ℳ ℒ)
   (hs : ∀ n m, ∀ x ∈ H'.wall n m, sec x ∈ H.wall n m)
-  (G : DirectedDiagram (d := d) h H' ι) (W : DirectedDiagram (d := d) h H κ)
 
-/-- Mapping coefficients commutes with adjoining wall families. -/
-theorem map_append {κ' : Type*} (E : DirectedDiagram (d := d) h H κ')
-    (f : GradedLieHom (PositiveDegreeMap.id d) ℒ ℳ)
-    (hf : ∀ n m, ∀ x ∈ H.wall n m, f x ∈ H'.wall n m) :
-    (W.append E).map f hf = (W.map f hf).append (E.map f hf) := by
-  apply DirectedDiagram.ext
-  funext j
-  cases j <;> simp
+section General
+
+variable {ι κ : Type*}
+  (G : DirectedDiagram (d := d) h H' ι) (W : DirectedDiagram (d := d) h H κ)
 
 /-- The data of a relative completion problem: a consistent quotient diagram `G`, and ideal
 inputs `W` which are full affine hyperplanes whose labels are killed by `π`. -/
@@ -136,7 +131,7 @@ end Existence
 /-- Two relative outgoing completions of equivalent quotient diagrams and equivalent ideal
 inputs are equivalent. With `G = G'` and `W = W'` this is the uniqueness of the relative
 outgoing completion. -/
-theorem IsRelativeOutgoingCompletion.equivalent_of_equivalent {ι' κ' : Type z} {η η' : Type*}
+theorem IsRelativeOutgoingCompletion.equivalent_of_equivalent {ι' κ' η η' : Type*}
     {G' : DirectedDiagram (d := d) h H' ι'} {W' : DirectedDiagram (d := d) h H κ'}
     {F : DirectedDiagram (d := d) h H ((ι ⊕ κ) ⊕ η)}
     {F' : DirectedDiagram (d := d) h H ((ι' ⊕ κ') ⊕ η')}
@@ -147,10 +142,9 @@ theorem IsRelativeOutgoingCompletion.equivalent_of_equivalent {ι' κ' : Type z}
     ((hG.map sec hs).append_congr hW)
 
 /-- The finite-order form of `IsRelativeOutgoingCompletion.equivalent_of_equivalent`: relative
-outgoing completions consistent at order `k` of order-`k` equivalent inputs agree at
-order `k`. -/
+outgoing completions of order-`k` equivalent inputs agree at order `k`. -/
 theorem IsRelativeOutgoingCompletion.levelEquivalent_of_levelEquivalent
-    {ι' κ' : Type z} {η η' : Type*}
+    {ι' κ' η η' : Type*}
     {G' : DirectedDiagram (d := d) h H' ι'} {W' : DirectedDiagram (d := d) h H κ'}
     {F : DirectedDiagram (d := d) h H ((ι ⊕ κ) ⊕ η)}
     {F' : DirectedDiagram (d := d) h H ((ι' ⊕ κ') ⊕ η')} {k : ℕ}
@@ -164,6 +158,15 @@ theorem IsRelativeOutgoingCompletion.levelEquivalent_of_levelEquivalent
     ((consistent_iff F').mp hF'.isOutgoingCompletion.consistent k)
     (fun j _ => hF.isOutgoingCompletion.outgoing_inr j)
     (fun j _ => hF'.isOutgoingCompletion.outgoing_inr j)
+
+end General
+
+section Specialized
+
+variable {ι κ : Type z}
+  (G : DirectedDiagram (d := d) h H' ι) (W : DirectedDiagram (d := d) h H κ)
+
+variable {π hπ sec hs G W}
 
 section Class
 
@@ -293,5 +296,7 @@ theorem map_relativeScat (hπ₁ : ∀ n m, ∀ x ∈ H₁.wall n m, π₁ x ∈
   exact outgoingCompletion_unique hF₀ hF'.isOutgoingCompletion
 
 end Map
+
+end Specialized
 
 end Mei.DirectedDiagram
