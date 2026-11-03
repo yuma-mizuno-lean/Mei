@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.LinearAlgebra.GradedModule.History.Chain
+public import Mei.LinearAlgebra.GradedModule.History.Path
 import Mathlib.Data.List.OfFn
 
 /-!
@@ -19,10 +19,12 @@ decoration forces every intermediate decoration to be nonzero.
 `homogeneousHistoryStage` records all segment decorations and their component
 propagation equations, for attachment to geometric realizations.
 
-A history on one module is the chain history `chainHistory` of the constant
-chain (`Mei.LinearAlgebra.GradedModule.History.Chain`). Its finite-support
-expansion and regrading comparison specialize to the forms in
-`Mei.LinearAlgebra.GradedModule.History.Finite` and `History/Uniform.lean`.
+The construction uses Mathlib's internal direct-sum decomposition and component
+maps. A sequence `T` is a path in a one-object quiver, and its histories are the path
+histories of `Mei.LinearAlgebra.GradedModule.History.Path`
+(`homogeneousHistory_eq_pathOfFn`). The finite-support expansion and its regrading
+comparison specialize from there to the forms in
+`Mei.LinearAlgebra.GradedModule.History.Finite`.
 -/
 
 public noncomputable section
@@ -33,24 +35,18 @@ variable {R M ι : Type*} [Semiring R] [AddCommMonoid M] [Module R M]
   [DecidableEq ι] (ℳ : ι → Submodule R M) [DirectSum.Decomposition ℳ]
 
 /-- Propagation along a chosen homogeneous degree history. Index zero records
-its final component; the empty history leaves the input unchanged. It is the
-chain history of the constant chain on `M`. -/
-def homogeneousHistory {n : ℕ} (T : Fin n → Module.End R M) (p : Fin n → ι) :
-    Module.End R M :=
-  chainHistory (M := fun _ => M) (ι := fun _ => ι) (fun _ => ℳ) T p
-
-/-- A single-module history is the history of the constant chain. -/
-theorem homogeneousHistory_eq_chainHistory {n : ℕ} (T : Fin n → Module.End R M)
-    (p : Fin n → ι) :
-    homogeneousHistory ℳ T p =
-      chainHistory (M := fun _ => M) (ι := fun _ => ι) (fun _ => ℳ) T p :=
-  (rfl)
+its final component; the empty history leaves the input unchanged. -/
+def homogeneousHistory : {n : ℕ} → (Fin n → Module.End R M) →
+    (Fin n → ι) → Module.End R M
+  | 0, _, _ => LinearMap.id
+  | n + 1, T, p =>
+    (homogeneousComponent ℳ (p 0)).comp
+      ((T 0).comp (homogeneousHistory (fun j : Fin n => T j.succ) (fun j => p j.succ)))
 
 /-- No propagation steps give the identity map. -/
 @[simp]
 theorem homogeneousHistory_zero (T : Fin 0 → Module.End R M) (p : Fin 0 → ι) :
-    homogeneousHistory ℳ T p = LinearMap.id :=
-  chainHistory_zero (fun _ => ℳ) T p
+    homogeneousHistory ℳ T p = LinearMap.id := (rfl)
 
 /-- One more history entry applies its map and selects the entire output component. -/
 @[simp]
@@ -58,8 +54,8 @@ theorem homogeneousHistory_succ_apply {n : ℕ}
     (T : Fin (n + 1) → Module.End R M) (p : Fin (n + 1) → ι) (a : M) :
     homogeneousHistory ℳ T p a =
       (DirectSum.decompose ℳ (T 0
-        (homogeneousHistory ℳ (fun j : Fin n => T j.succ) (fun j => p j.succ) a)) (p 0) : M) :=
-  chainHistory_succ_apply (fun _ => ℳ) T p a
+        (homogeneousHistory ℳ (fun j : Fin n => T j.succ) (fun j => p j.succ) a)) (p 0) : M) := by
+  simp only [homogeneousHistory, homogeneousComponent_apply, LinearMap.comp_apply]
 
 /-- The output of a nonempty history lies in its last selected homogeneous piece. -/
 theorem homogeneousHistory_mem {n : ℕ} (T : Fin (n + 1) → Module.End R M)
@@ -75,8 +71,9 @@ theorem homogeneousComponent_comp_homogeneousHistory_of_ne {n : ℕ}
     (T : Fin (n + 1) → Module.End R M) (p : Fin (n + 1) → ι) (η : ι)
     (hη : p 0 ≠ η) :
     (homogeneousComponent ℳ η).comp (homogeneousHistory ℳ T p) = 0 := by
-  rw [homogeneousHistory_eq_chainHistory]
-  exact homogeneousComponent_comp_chainHistory_of_ne (fun _ => ℳ) T p η hη
+  ext a
+  simp only [LinearMap.comp_apply, LinearMap.zero_apply]
+  exact homogeneousComponent_apply_of_mem_ne ℳ (homogeneousHistory_mem ℳ T p a) hη
 
 /-- Selecting the terminal degree of a nonempty history returns that history:
 the history already ends in the `p 0` selection, which fixes its output. -/
@@ -85,8 +82,9 @@ theorem homogeneousComponent_comp_homogeneousHistory {n : ℕ}
     (T : Fin (n + 1) → Module.End R M) (p : Fin (n + 1) → ι) :
     (homogeneousComponent ℳ (p 0)).comp (homogeneousHistory ℳ T p) =
       homogeneousHistory ℳ T p := by
-  rw [homogeneousHistory_eq_chainHistory]
-  exact homogeneousComponent_comp_chainHistory (fun _ => ℳ) T p
+  ext a
+  simp only [LinearMap.comp_apply]
+  exact homogeneousComponent_apply_of_mem ℳ (homogeneousHistory_mem ℳ T p a)
 
 /-- The final `η`-selection of a nonempty history keeps it when `η` is the
 terminal degree and kills it otherwise. -/
@@ -94,8 +92,10 @@ theorem homogeneousComponent_homogeneousHistory_apply {n : ℕ}
     (T : Fin (n + 1) → Module.End R M) (p : Fin (n + 1) → ι) (η : ι) (a : M) :
     homogeneousComponent ℳ η (homogeneousHistory ℳ T p a) =
       if p 0 = η then homogeneousHistory ℳ T p a else 0 := by
-  rw [homogeneousHistory_eq_chainHistory]
-  exact homogeneousComponent_chainHistory_apply (fun _ => ℳ) T p η a
+  split_ifs with h
+  · rw [← h]
+    exact homogeneousComponent_apply_of_mem ℳ (homogeneousHistory_mem ℳ T p a)
+  · exact homogeneousComponent_apply_of_mem_ne ℳ (homogeneousHistory_mem ℳ T p a) h
 
 /-- A vanished intermediate decoration cannot yield a nonzero final history. -/
 theorem homogeneousHistory_tail_ne_zero {n : ℕ}
@@ -163,9 +163,7 @@ def homogeneousHistoryStage : {n : ℕ} → (Fin n → Module.End R M) →
 theorem homogeneousHistoryStage_zero {n : ℕ}
     (T : Fin n → Module.End R M) (p : Fin n → ι) :
     homogeneousHistoryStage ℳ T p 0 = homogeneousHistory ℳ T p := by
-  cases n with
-  | zero => exact (homogeneousHistory_zero ℳ T p).symm
-  | succ => rfl
+  cases n <;> rfl
 
 /-- Removing the terminal segment removes the last propagation step. -/
 @[simp]
@@ -235,9 +233,7 @@ theorem homogeneousHistoryStage_ne_zero {n : ℕ}
     (ha : homogeneousHistory ℳ T p a ≠ 0) (j : Fin (n + 1)) :
     homogeneousHistoryStage ℳ T p j a ≠ 0 := by
   induction n with
-  | zero =>
-    rw [homogeneousHistory_zero] at ha
-    exact ha
+  | zero => exact ha
   | succ n ih =>
     refine Fin.cases ha (fun j => ?_) j
     exact ih (fun j => T j.succ) (fun j => p j.succ)
@@ -291,6 +287,45 @@ theorem homogeneousHistory_rel_of_ne_zero {n : ℕ}
   rw [homogeneousHistoryStage_castSucc_apply]
   exact congrArg Subtype.val hz
 
+section Path
+
+open Quiver
+
+/-- A single-module history along arrow labels `P`, interpreted by `f`, is the path
+history of `SingleObj.pathOfFn P` in the one-object quiver on the labels. -/
+theorem homogeneousHistory_eq_pathOfFn {α : Type*} (f : α → Module.End R M) :
+    ∀ {n : ℕ} (P : Fin n → α) (p : Fin n → ι),
+      homogeneousHistory ℳ (fun j => f (P j)) p =
+        (SingleObj.pathOfFn P).homogeneousHistory (M := fun _ => M) (fun e => f e)
+          (fun _ => ℳ) (SingleObj.degreesPathOfFn ι P p)
+  | 0, _, p => by
+    rw [homogeneousHistory_zero]
+    exact (Path.homogeneousHistory_nil (M := fun _ => M) _ _ _).symm
+  | n + 1, P, p => by
+    ext a
+    rw [homogeneousHistory_succ_apply, homogeneousHistory_eq_pathOfFn f (fun j => P j.succ),
+      SingleObj.degreesPathOfFn_succ_apply]
+    exact (Path.homogeneousHistory_cons_apply (M := fun _ => M) (fun e => f e) (fun _ => ℳ)
+      (SingleObj.pathOfFn fun j => P j.succ) (P 0 : SingleObj.star α ⟶ SingleObj.star α) _
+      (p 0) a).symm
+
+omit [DecidableEq ι] in
+/-- The composite along `SingleObj.pathOfFn P` is the ordered product of the interpreted
+labels; index zero acts last. -/
+theorem composeLinear_pathOfFn {α : Type*} (f : α → Module.End R M) :
+    ∀ {n : ℕ} (P : Fin n → α),
+      (SingleObj.pathOfFn P).composeLinear (M := fun _ => M) (fun e => f e) =
+        (List.ofFn fun j => f (P j)).prod
+  | 0, _ => by
+    rw [SingleObj.pathOfFn_zero, Path.composeLinear_nil, List.ofFn_zero, List.prod_nil]
+    rfl
+  | n + 1, P => by
+    rw [SingleObj.pathOfFn_succ, Path.composeLinear_cons,
+      composeLinear_pathOfFn f (fun j => P j.succ), List.ofFn_succ, List.prod_cons]
+    rfl
+
+end Path
+
 section Regrading
 
 variable {N κ : Type*} [AddCommMonoid N] [Module R N] [DecidableEq κ]
@@ -305,9 +340,16 @@ each whole homogeneous history to the history with the reindexed degrees. -/
 theorem map_homogeneousHistory_of_injective (hσ : Function.Injective σ) {n : ℕ}
     (T : Fin n → Module.End R M) (U : Fin n → Module.End R N)
     (hT : ∀ j, r.comp (T j) = (U j).comp r) (p : Fin n → ι) (a : M) :
-    r (homogeneousHistory ℳ T p a) = homogeneousHistory 𝓝 U (σ ∘ p) (r a) :=
-  map_chainHistory_of_injective (fun _ => ℳ) (fun _ => 𝓝) (fun _ => r) (fun _ => σ)
-    (fun _ => hr) (fun _ => hσ) T U hT p a
+    r (homogeneousHistory ℳ T p a) = homogeneousHistory 𝓝 U (σ ∘ p) (r a) := by
+  have h := Quiver.Path.map_homogeneousHistory_of_injective (M := fun _ => M)
+    (N := fun _ => N) (T := fun j => T j) (ℳ := fun _ => ℳ) (U := fun j => U j)
+    (𝓝 := fun _ => 𝓝) (r := fun _ => r) (σ := fun _ => σ) (fun _ => hr) (fun j => hT j)
+    (fun _ => hσ) (Quiver.SingleObj.pathOfFn fun j : Fin n => j)
+    (Quiver.SingleObj.degreesPathOfFn ι (fun j : Fin n => j) p) a
+  rw [Quiver.SingleObj.map_degreesPathOfFn] at h
+  rw [homogeneousHistory_eq_pathOfFn ℳ T (fun j => j),
+    homogeneousHistory_eq_pathOfFn 𝓝 U (fun j => j)]
+  exact h
 
 end Regrading
 

@@ -6,7 +6,7 @@ Authors: Claude
 module
 
 public import Mei.LinearAlgebra.GradedCorrespondence.Basic
-public import Mei.LinearAlgebra.GradedModule.History.Chain
+public import Mei.LinearAlgebra.GradedModule.History.Path
 
 /-!
 # Component expansions of zero-extended transfers
@@ -14,66 +14,61 @@ public import Mei.LinearAlgebra.GradedModule.History.Chain
 The *total transfer* of a graded correspondence is its total left lift followed by
 the right leg. On an admissible homogeneous piece it is the lift across the span,
 whose homogeneous components are the transfers; it vanishes on inadmissible pieces.
-It is linear on mixed inputs, so a sequence of correspondences `C k` from `M (k + 1)`
-to `M k` forms a chain of linear maps between differently graded chamber modules.
+It is linear on mixed inputs, so graded correspondences on the arrows of a quiver,
+between the decomposed modules at their endpoints, give linear arrow maps between
+differently graded chamber modules.
 
-The chain histories of total transfers are the finite component expansion of
+The path histories of total transfers are the finite component expansion of
 transfer compositions. Each step selects one transfer component of the whole previous
 decoration, and the step is zero when that decoration has inadmissible degree. For a fixed
 input the nonzero histories are finite and sum to the composite of total transfers, by
-`sum_chainHistory`.
+`Quiver.Path.sum_homogeneousHistory`.
 
-Correspondence morphisms with common chamber maps at incident steps intertwine total
-transfers provided target total lifts kill the images of inadmissible source pieces.
-Reflecting admissible degrees suffices. With `comp_totalTransfer_of_hom`, the regrading
-theorems `chainHistory_map_eq_sum` and `map_chainHistory_of_injective` apply to transfer
-histories: a target history is the grouped sum of its source refinements, and injective
-degree maps give componentwise naturality, for example under coefficient truncation.
+Correspondence morphisms with common chamber maps at incident arrows intertwine total
+transfers provided target total lifts kill the images of inadmissible source pieces
+(`Hom.right_comp_totalTransfer`); reflecting admissible degrees suffices. The regrading
+theorems `Quiver.Path.homogeneousHistory_map_eq_sum` and
+`Quiver.Path.map_homogeneousHistory_of_injective` then apply to transfer histories: a
+target history is the grouped sum of its source refinements, and injective degree maps
+give componentwise naturality, for example under coefficient truncation.
 
-The single-step API, `totalTransfer` and its naturality `Hom.right_comp_totalTransfer` and
-`comp_totalTransfer_of_hom`, lives in `GradedCorrespondence/Basic.lean` and
-`GradedCorrespondence/Hom.lean`; the single-step formula is
-`decompose_right_liftLeftTotal_of_mem`.
+The single-step formula is `decompose_right_liftLeftTotal_of_mem`.
 -/
 
 public noncomputable section
 
 namespace Mei.GradedCorrespondence
 
-section Chain
-
-variable {R : Type*} [Semiring R]
-  {M : ℕ → Type*} [∀ k, AddCommMonoid (M k)] [∀ k, Module R (M k)]
-  {ι : ℕ → Type*} [∀ k, DecidableEq (ι k)] (ℳ : ∀ k, ι k → Submodule R (M k))
-  [∀ k, DirectSum.Decomposition (ℳ k)]
-  {B : ℕ → Type*} [∀ k, AddCommMonoid (B k)] [∀ k, Module R (B k)]
-  {I : ∀ k, Set (ι (k + 1))} {J : ∀ k, Set (ι k)}
-  (C : ∀ k, GradedCorrespondence (B := B k) (ℳ (k + 1)) (ℳ k) (I k) (J k))
+variable {R : Type*} [Semiring R] {Q : Type*} [Quiver Q]
+  {M : Q → Type*} [∀ q, AddCommMonoid (M q)] [∀ q, Module R (M q)]
+  {ι : Q → Type*} [∀ q, DecidableEq (ι q)] (ℳ : ∀ q, ι q → Submodule R (M q))
+  [∀ q, DirectSum.Decomposition (ℳ q)]
+  {B : ∀ {b c : Q}, (b ⟶ c) → Type*} [∀ (b c : Q) (e : b ⟶ c), AddCommMonoid (B e)]
+  [∀ (b c : Q) (e : b ⟶ c), Module R (B e)]
+  {I : ∀ {b c : Q}, (b ⟶ c) → Set (ι b)} {J : ∀ {b c : Q}, (b ⟶ c) → Set (ι c)}
+  (C : ∀ {b c : Q} (e : b ⟶ c), GradedCorrespondence (B := B e) (ℳ b) (ℳ c) (I e) (J e))
 
 /-- Each step of a transfer history selects one transfer component of the whole
 previous decoration. A decoration of inadmissible degree contributes zero. -/
-theorem chainHistory_totalTransfer_succ_apply {n : ℕ} (p : (j : Fin (n + 1)) → ι j)
-    (a : M (n + 1)) {i : ι 1} [Decidable (i ∈ I 0)]
-    (hx : chainHistory (M := fun k => M (k + 1)) (ι := fun k => ι (k + 1))
-      (fun k => ℳ (k + 1)) (fun j => (C (j + 1)).totalTransfer) (fun j => p (j.chainSucc)) a ∈
-        ℳ 1 i) :
-    chainHistory ℳ (fun j => (C j).totalTransfer) p a =
-      if hi : i ∈ I 0 then ((C 0).transfer ⟨i, hi⟩ (p (n.chainHead)) ⟨_, hx⟩ : M 0) else 0 := by
-  rw [chainHistory_succ_apply, totalTransfer_apply,
-    (C 0).decompose_right_liftLeftTotal_of_mem hx]
+theorem homogeneousHistory_totalTransfer_cons_apply {a b c : Q} (p : Quiver.Path a b)
+    (e : b ⟶ c) (d : p.Degrees ι) (j : ι c) (x : M a) {i : ι b} [Decidable (i ∈ I e)]
+    (hx : p.homogeneousHistory (fun e => (C e).totalTransfer) ℳ d x ∈ ℳ b i) :
+    (p.cons e).homogeneousHistory (fun e => (C e).totalTransfer) ℳ
+        ((d, j) : (p.cons e).Degrees ι) x =
+      if hi : i ∈ I e then ((C e).transfer ⟨i, hi⟩ j ⟨_, hx⟩ : M c) else 0 := by
+  rw [Quiver.Path.homogeneousHistory_cons_apply, totalTransfer_apply,
+    (C e).decompose_right_liftLeftTotal_of_mem hx]
   split_ifs <;> rfl
 
 /-- A transfer history whose decoration before the final crossing has inadmissible
 degree vanishes. -/
-theorem chainHistory_totalTransfer_eq_zero_of_not_mem {n : ℕ} (p : (j : Fin (n + 1)) → ι j)
-    (a : M (n + 1)) {i : ι 1} (hi : i ∉ I 0)
-    (hx : chainHistory (M := fun k => M (k + 1)) (ι := fun k => ι (k + 1))
-      (fun k => ℳ (k + 1)) (fun j => (C (j + 1)).totalTransfer) (fun j => p (j.chainSucc)) a ∈
-        ℳ 1 i) :
-    chainHistory ℳ (fun j => (C j).totalTransfer) p a = 0 := by
+theorem homogeneousHistory_totalTransfer_cons_eq_zero_of_not_mem {a b c : Q}
+    (p : Quiver.Path a b) (e : b ⟶ c) (d : p.Degrees ι) (j : ι c) (x : M a) {i : ι b}
+    (hi : i ∉ I e)
+    (hx : p.homogeneousHistory (fun e => (C e).totalTransfer) ℳ d x ∈ ℳ b i) :
+    (p.cons e).homogeneousHistory (fun e => (C e).totalTransfer) ℳ
+        ((d, j) : (p.cons e).Degrees ι) x = 0 := by
   classical
-  rw [chainHistory_totalTransfer_succ_apply ℳ C p a hx, dite_eq_right hi]
-
-end Chain
+  rw [homogeneousHistory_totalTransfer_cons_apply ℳ C p e d j x hx, dite_eq_right hi]
 
 end Mei.GradedCorrespondence
