@@ -13,11 +13,13 @@ import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Refinement
 /-!
 # A consistent outgoing correction at the next order
 
-Given lower-order chamber lifts, full initial hyperplanes and lower homogeneous
-noninitial logarithms, add finitely many outgoing walls and obtain consistency
-at the next order. Every added wall has a homogeneous logarithm born exactly at
-that order. The original indexed walls are retained literally, and all previous
-finite-order transports are preserved.
+Given lower-order chamber lifts and a loop projection at the next order, add
+finitely many outgoing walls and obtain consistency at the next order. Every added
+wall has a homogeneous logarithm born exactly at that order and fixed by the
+projection. The original indexed walls are retained literally, and all previous
+finite-order transports are preserved. For full initial hyperplanes and lower
+homogeneous noninitial logarithms the projection is the identity, which recovers
+`exists_consistent_outgoing_extension`.
 
 The construction combines `DirectedDiagram.exists_joint_correction_potential`
 with `DirectedDiagram.levelConsistent_succ_of_closed_residual`. The potential
@@ -51,12 +53,13 @@ variable {Γ : Type u} {V : Type v} {Λ R L ι : Type*}
   {i : Λ →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
   {H : DirectedWallSpaces ρ ℒ} {D : DirectedDiagram (d := d) h H ι} {k : ℕ}
 
-/-- A lower-order consistent diagram with full initial hyperplanes and lower
-pure birth logarithms admits a finite outgoing extension consistent at the next
-order. The extension preserves all lower-order transport, retains every old
-indexed wall, and adds only homogeneous walls born exactly at the new order.
-The chamber data are for the original diagram at the successive cutoffs. -/
-theorem exists_consistent_outgoing_extension
+/-- A lower-order consistent diagram with a loop projection at the next order admits a
+finite outgoing extension consistent at the next order. The extension preserves all
+lower-order transport, retains every old indexed wall, and adds only homogeneous walls
+born exactly at the new order, whose logarithms the projection fixes. Walls whose labels
+the projection kills may have arbitrary supports. The chamber data are for the original
+diagram at the successive cutoffs. -/
+theorem LoopProjection.exists_consistent_outgoing_extension
     (σ : (D.adaptedComplex (k + 1)).walls → OrientedCell h 1)
     (hσ : ∀ Q, (σ Q).carrier = (Q : Set V))
     (cross : ∀ Q, D.AdaptedWallCrossing (l := k + 1) (σ Q) ((hσ Q).symm ▸ Q.property))
@@ -69,11 +72,7 @@ theorem exists_consistent_outgoing_extension
       (d.truncationMap ℒ (Nat.le_succ k)).bchGroupMap (t P) = D.levelTransport k hk b x)
     (τ : (D.adaptedComplex (k + 1)).joints → OrientedCell h 2)
     (hτ : ∀ J, (τ J).carrier = (J : Set V))
-    (initial : Set ι)
-    (hfull : ∀ j ∈ initial, ∃ a : ℝ,
-      (D.wall j).support = {v | h.realCharacter (D.wall j).normal v = a})
-    (hpure : ∀ j ∉ initial, ∃ n : Γ, d.degree n < k + 1 ∧
-      ∃ a ∈ ℒ n, (D.wall j).label = d.expToCompletion ℒ a) :
+    (P : D.LoopProjection (k + 1)) :
     ∃ (κ : Type (max u v)) (_ : Fintype κ)
       (F : DirectedDiagram (d := d) h H (ι ⊕ κ)),
       (∀ j, F.wall (.inl j) = D.wall j) ∧
@@ -82,10 +81,12 @@ theorem exists_consistent_outgoing_extension
       ∀ a, (F.wall (.inr a)).Outgoing ∧
         (∃ n ∈ (F.wall (.inr a)).ray.rayDegrees, d.degree n = (k : ℤ) + 1 ∧
           ∃ z ∈ ℒ n, (F.wall (.inr a)).label = d.expToCompletion ℒ z) ∧
-        ∀ l, Sum.inr a ∈ F.active l ↔ k + 1 ≤ l := by
+        (∀ l, Sum.inr a ∈ F.active l ↔ k + 1 ≤ l) ∧
+        P.toLinearMap (log (CompletedGroup.projection (k + 1) (F.wall (.inr a)).label)) =
+          log (CompletedGroup.projection (k + 1) (F.wall (.inr a)).label) := by
   classical
   obtain ⟨κ, _, E, η, c, f, hE, hpotential⟩ :=
-    exists_joint_correction_potential σ hσ cross hk b t ht τ hτ initial hfull hpure
+    exists_joint_correction_potential σ hσ cross hk b t ht τ hτ P
   -- The sum index keeps every old wall and each new correction as separate occurrences.
   let F : DirectedDiagram (d := d) h H (ι ⊕ κ) :=
     { wall := Sum.elim D.wall E.wall
@@ -152,7 +153,7 @@ theorem exists_consistent_outgoing_extension
       · exact (hj ⟨a, Subtype.ext rfl⟩).elim
     · intro a
       have hn : (e a).val ∉ s := by simp [e, s]
-      simp only [newCoeff, hn, ite_false, e, ω, hright, (hE a).2.2.2.2.2]
+      simp only [newCoeff, hn, ite_false, e, ω, hright, (hE a).2.2.2.2.2.1]
   have hA : (∑ Q, PolyhedralCochain.mk (R := R) (σ Q)
       ((cross Q).defect hk b t ht : d.truncatedLie ℒ (k + 1))) =
       PolyhedralCochain.map π.ker.subtype A := by
@@ -171,7 +172,45 @@ theorem exists_consistent_outgoing_extension
   · intro l hl
     exact (F.levelEquivalent_restrict (hactive l hl)).trans (hretained l)
   · intro a
-    obtain ⟨_, _, hout, hpureE, hborn, _⟩ := hE a
-    exact ⟨hout, hpureE, fun l => by simpa only [mem_active, hright] using hborn l⟩
+    obtain ⟨_, _, hout, hpureE, hborn, _, hfix⟩ := hE a
+    exact ⟨hout, hpureE, fun l => by simpa only [mem_active, hright] using hborn l, hfix⟩
+
+/-- A lower-order consistent diagram with full initial hyperplanes and lower
+pure birth logarithms admits a finite outgoing extension consistent at the next
+order. The extension preserves all lower-order transport, retains every old
+indexed wall, and adds only homogeneous walls born exactly at the new order.
+The chamber data are for the original diagram at the successive cutoffs. -/
+theorem exists_consistent_outgoing_extension
+    (σ : (D.adaptedComplex (k + 1)).walls → OrientedCell h 1)
+    (hσ : ∀ Q, (σ Q).carrier = (Q : Set V))
+    (cross : ∀ Q, D.AdaptedWallCrossing (l := k + 1) (σ Q) ((hσ Q).symm ▸ Q.property))
+    (hk : D.LevelConsistent k)
+    (b : WallComplement (fun j : D.active k => (D.wall j).support))
+    (t : (D.adaptedComplex (k + 1)).cellsOfCodimension 0 → d.truncatedGroup ℒ (k + 1))
+    (ht : ∀ (P : (D.adaptedComplex (k + 1)).cellsOfCodimension 0)
+      (x : WallComplement (fun j : D.active k => (D.wall j).support)),
+      x.val ∈ interior (P : Set V) →
+      (d.truncationMap ℒ (Nat.le_succ k)).bchGroupMap (t P) = D.levelTransport k hk b x)
+    (τ : (D.adaptedComplex (k + 1)).joints → OrientedCell h 2)
+    (hτ : ∀ J, (τ J).carrier = (J : Set V))
+    (initial : Set ι)
+    (hfull : ∀ j ∈ initial, ∃ a : ℝ,
+      (D.wall j).support = {v | h.realCharacter (D.wall j).normal v = a})
+    (hpure : ∀ j ∉ initial, ∃ n : Γ, d.degree n < k + 1 ∧
+      ∃ a ∈ ℒ n, (D.wall j).label = d.expToCompletion ℒ a) :
+    ∃ (κ : Type (max u v)) (_ : Fintype κ)
+      (F : DirectedDiagram (d := d) h H (ι ⊕ κ)),
+      (∀ j, F.wall (.inl j) = D.wall j) ∧
+      F.LevelConsistent (k + 1) ∧
+      (∀ l ≤ k, F.LevelEquivalent D l) ∧
+      ∀ a, (F.wall (.inr a)).Outgoing ∧
+        (∃ n ∈ (F.wall (.inr a)).ray.rayDegrees, d.degree n = (k : ℤ) + 1 ∧
+          ∃ z ∈ ℒ n, (F.wall (.inr a)).label = d.expToCompletion ℒ z) ∧
+        ∀ l, Sum.inr a ∈ F.active l ↔ k + 1 ≤ l := by
+  obtain ⟨κ, _, F, hleft, hF, heq, hnew⟩ :=
+    (LoopProjection.ofFullPure D initial hfull hpure).exists_consistent_outgoing_extension
+      σ hσ cross hk b t ht τ hτ
+  exact ⟨κ, inferInstance, F, hleft, hF, heq, fun a =>
+    ⟨(hnew a).1, (hnew a).2.1, (hnew a).2.2.1⟩⟩
 
 end Mei.DirectedDiagram

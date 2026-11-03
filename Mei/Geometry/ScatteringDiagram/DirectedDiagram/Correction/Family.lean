@@ -116,11 +116,7 @@ theorem exists_joint_correction_family [Module.Free ℤ Γ]
     (hk : D.LevelConsistent k)
     (q : (D.adaptedComplex (k + 1)).joints → V)
     (hq : ∀ J : (D.adaptedComplex (k + 1)).joints, q J ∈ intrinsicInterior ℝ (J : Set V))
-    (initial : Set ι)
-    (hfull : ∀ j ∈ initial, ∃ b : ℝ,
-      (D.wall j).support = {v | h.realCharacter (D.wall j).normal v = b})
-    (hpure : ∀ j ∉ initial, ∃ m : Γ, d.degree m < k + 1 ∧
-      ∃ a ∈ ℒ m, (D.wall j).label = d.expToCompletion ℒ a) :
+    (P : D.LoopProjection (k + 1)) :
     ∃ r : (D.adaptedComplex (k + 1)).joints → ℝ, (∀ J, 0 < r J) ∧
       ∀ (x : (D.adaptedComplex (k + 1)).joints →
           WallComplement (fun j : D.active (k + 1) => (D.wall j).support))
@@ -145,7 +141,7 @@ theorem exists_joint_correction_family [Module.Free ℤ Γ]
                 -log (D.levelPathProduct (k + 1) (p J)) := by
   classical
   have hlocal := fun J : (D.adaptedComplex (k + 1)).joints =>
-    D.exists_outgoingWall_joint_obstruction J.property (hq J) initial hfull hpure
+    D.exists_outgoingWall_joint_obstruction J.property (hq J) P
   choose r hr hwall using hlocal
   refine ⟨r, hr, fun x p hp => ?_⟩
   have hex (a : D.JointCorrectionIndex x p) :=

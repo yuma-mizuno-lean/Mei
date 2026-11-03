@@ -66,7 +66,7 @@ variable {Γ : Type u} {V : Type v} {Λ R L ι : Type*}
     x.val ∈ interior (P : Set V) →
     (d.truncationMap ℒ (Nat.le_succ k)).bchGroupMap (t P) = D.levelTransport k hk b x)
 
-/-- For full initial hyperplanes and lower pure birth logarithms, construct
+/-- For a loop projection at the next order, construct
 outgoing correction walls born exactly at order `k + 1`, together with a central
 polyhedral potential for the corrected crossing-defect cochain. The finite
 presentation of the potential is supplied for endpoint evaluation. No
@@ -74,11 +74,7 @@ closedness, meridian comparison or higher-order consistency is assumed. -/
 theorem exists_joint_correction_potential
     (τ : (D.adaptedComplex (k + 1)).joints → OrientedCell h 2)
     (hτ : ∀ J, (τ J).carrier = (J : Set V))
-    (initial : Set ι)
-    (hfull : ∀ j ∈ initial, ∃ a : ℝ,
-      (D.wall j).support = {v | h.realCharacter (D.wall j).normal v = a})
-    (hpure : ∀ j ∉ initial, ∃ n : Γ, d.degree n < k + 1 ∧
-      ∃ a ∈ ℒ n, (D.wall j).label = d.expToCompletion ℒ a) :
+    (P : D.LoopProjection (k + 1)) :
     ∃ (κ : Type (max u v)) (_ : Fintype κ)
       (E : DirectedDiagram (d := d) h H κ) (η : κ → OrientedCell h 1)
       (c : κ → (d.truncationMap ℒ (Nat.le_succ k)).ker)
@@ -92,6 +88,8 @@ theorem exists_joint_correction_potential
           ∃ z ∈ ℒ n, (E.wall a).label = d.expToCompletion ℒ z) ∧
         (∀ l : ℕ, a ∈ E.active l ↔ k + 1 ≤ l) ∧
         (c a : d.truncatedLie ℒ (k + 1)) =
+          log (CompletedGroup.projection (k + 1) (E.wall a).label) ∧
+        P.toLinearMap (log (CompletedGroup.projection (k + 1) (E.wall a).label)) =
           log (CompletedGroup.projection (k + 1) (E.wall a).label)) ∧
       PolyhedralCochain.coboundary (PolyhedralCochain.ofFinsupp (R := R) f) =
         crossingDefectCochain σ hσ cross hk b t ht -
@@ -106,7 +104,7 @@ theorem exists_joint_correction_potential
   choose q hq using hpoint
   -- The local wall-space estimates prescribe radii before the meridians are chosen.
   obtain ⟨r, hr, hcorrection⟩ :=
-    D.exists_joint_sweep_correction_family hk τ hτ q hq initial hfull hpure
+    D.exists_joint_sweep_correction_family hk τ hτ q hq P
   obtain ⟨s, x, p, hgeometry, hobstruction⟩ :=
     exists_jointObstructionCochain_eq_coboundary σ hσ cross hk b t ht τ hτ q hq r hr
   have hvertices (J : C.joints) (z) (hz : z ∈ (p J).vertices) :
@@ -158,10 +156,11 @@ theorem exists_joint_correction_potential
     rw [map_sub, hcancel, sub_self])
   refine ⟨D.JointCorrectionIndex x p, inferInstance, E, η, c, f, ?_, hf⟩
   intro a
-  obtain ⟨hs, hsign, hray, hpureE, hout, _, hactive⟩ := hE a
-  refine ⟨hs, hsign, hout, ?_, hactive, hc a⟩
-  obtain ⟨z, hz, hlabel⟩ := hpureE
-  exact ⟨a.2.val, hray, D.degree_jointCorrectionIndex x p hk a,
-    -z, (ℒ a.2.val).neg_mem hz, hlabel⟩
+  obtain ⟨hs, hsign, hray, hpureE, hout, hlog, hactive⟩ := hE a
+  refine ⟨hs, hsign, hout, ?_, hactive, hc a, ?_⟩
+  · obtain ⟨z, hz, hlabel⟩ := hpureE
+    exact ⟨a.2.val, hray, D.degree_jointCorrectionIndex x p hk a,
+      -z, (ℒ a.2.val).neg_mem hz, hlabel⟩
+  · rw [hlog, map_neg, P.map_decompose_log_loop]
 
 end Mei.DirectedDiagram

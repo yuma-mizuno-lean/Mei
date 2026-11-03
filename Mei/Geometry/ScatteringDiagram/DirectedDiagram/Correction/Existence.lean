@@ -52,8 +52,8 @@ variable {Γ Λ R L V ι : Type*} [AddCommGroup Γ] [AddCommGroup Λ]
 /-- For every lower-order chamber trivialization, construct positive isolating
 meridians and finite outgoing corrections whose logarithmic cochain bounds the
 actual joint obstruction. Subtracting it from the ambient crossing-defect
-cochain is closed. Initial walls are full hyperplanes and the remaining labels
-are pure of lower birth order; neither closedness of the obstruction nor
+cochain is closed. The walls are constrained only by a loop projection at the
+correction order; neither closedness of the obstruction nor
 consistency at the correction order is assumed. Centers and positive upper
 bounds on the meridian radii may be prescribed independently at every joint. -/
 theorem exists_joint_correction_boundary
@@ -73,11 +73,7 @@ theorem exists_joint_correction_boundary
     (hq : ∀ J : (D.adaptedComplex (k + 1)).joints,
       q J ∈ intrinsicInterior ℝ (J : Set V))
     (ε : (D.adaptedComplex (k + 1)).joints → ℝ) (hε : ∀ J, 0 < ε J)
-    (initial : Set ι)
-    (hfull : ∀ j ∈ initial, ∃ a : ℝ,
-      (D.wall j).support = {v | h.realCharacter (D.wall j).normal v = a})
-    (hpure : ∀ j ∉ initial, ∃ n : Γ, d.degree n < k + 1 ∧
-      ∃ a ∈ ℒ n, (D.wall j).label = d.expToCompletion ℒ a) :
+    (P : D.LoopProjection (k + 1)) :
     ∃ (s : (D.adaptedComplex (k + 1)).joints → Affine.Triangle ℝ V)
       (x : (D.adaptedComplex (k + 1)).joints →
         WallComplement (fun j : D.active (k + 1) => (D.wall j).support))
@@ -123,7 +119,7 @@ theorem exists_joint_correction_boundary
   classical
   -- First obtain the radii required by the local homogeneous obstruction theorem.
   obtain ⟨r, hr, hcorrection⟩ :=
-    D.exists_joint_sweep_correction_family hk τ hτ q hq initial hfull hpure
+    D.exists_joint_sweep_correction_family hk τ hτ q hq P
   obtain ⟨s, x, γ, hs, hcomparison⟩ :=
     exists_jointObstructionCochain_eq_coboundary σ hσ cross hk b t ht τ hτ q hq
       (fun J => min (ε J) (r J)) (fun J => lt_min (hε J) (hr J))
