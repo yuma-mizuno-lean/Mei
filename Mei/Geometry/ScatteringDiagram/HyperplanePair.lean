@@ -61,7 +61,7 @@ theorem hyperplaneDiagram_label (hf0 : f ≠ 0) (a : H)
 open scoped Classical in
 /-- The diagram on the two hyperplanes `ker f` and `ker g` whose walls inside `ker f` carry
 `a` and are cooriented by `f`, and whose other walls carry `1` and are cooriented by `g`. -/
-noncomputable def hyperplanePairDiagram [Group H] (hf0 : f ≠ 0) (hg0 : g ≠ 0) (a : H) :
+noncomputable def hyperplanePairDiagram [One H] (hf0 : f ≠ 0) (hg0 : g ≠ 0) (a : H) :
     FiniteWallDiagram (FinitePolyhedralComplex.hyperplanePairComplex f g hf hg) H where
   normal Q := if (Q : Set V) ⊆ {θ | f θ = 0} then f.toLinearMap else g.toLinearMap
   ker_normal Q := by
@@ -79,9 +79,12 @@ noncomputable def hyperplanePairDiagram [Group H] (hf0 : f ≠ 0) (hg0 : g ≠ 0
         (fun x hx => hQg hx) hd
   label Q := if (Q : Set V) ⊆ {θ | f θ = 0} then a else 1
 
-variable [Group H] [Group K] (hf0 : f ≠ 0) (hg0 : g ≠ 0) (a : H)
+section One
+
+variable [One H] (hf0 : f ≠ 0) (hg0 : g ≠ 0) (a : H)
 
 /-- A wall of the pair inside `ker f` is cooriented by `f`. -/
+@[simp]
 theorem hyperplanePairDiagram_normal_of_subset
     {Q : (FinitePolyhedralComplex.hyperplanePairComplex f g hf hg).walls}
     (hQ : (Q : Set V) ⊆ {θ | f θ = 0}) :
@@ -90,6 +93,7 @@ theorem hyperplanePairDiagram_normal_of_subset
   simp [hyperplanePairDiagram, hQ]
 
 /-- A wall of the pair not inside `ker f` is cooriented by `g`. -/
+@[simp]
 theorem hyperplanePairDiagram_normal_of_not_subset
     {Q : (FinitePolyhedralComplex.hyperplanePairComplex f g hf hg).walls}
     (hQ : ¬(Q : Set V) ⊆ {θ | f θ = 0}) :
@@ -98,6 +102,7 @@ theorem hyperplanePairDiagram_normal_of_not_subset
   simp [hyperplanePairDiagram, hQ]
 
 /-- A wall of the pair inside `ker f` carries `a`. -/
+@[simp]
 theorem hyperplanePairDiagram_label_of_subset
     {Q : (FinitePolyhedralComplex.hyperplanePairComplex f g hf hg).walls}
     (hQ : (Q : Set V) ⊆ {θ | f θ = 0}) :
@@ -106,12 +111,17 @@ theorem hyperplanePairDiagram_label_of_subset
   simp [hyperplanePairDiagram, hQ]
 
 /-- A wall of the pair not inside `ker f` carries the identity. -/
+@[simp]
 theorem hyperplanePairDiagram_label_of_not_subset
     {Q : (FinitePolyhedralComplex.hyperplanePairComplex f g hf hg).walls}
     (hQ : ¬(Q : Set V) ⊆ {θ | f θ = 0}) :
     (hyperplanePairDiagram hf hg hf0 hg0 a).label Q = 1 := by
   classical
   simp [hyperplanePairDiagram, hQ]
+
+end One
+
+variable [Group H] [Group K] (hf0 : f ≠ 0) (hg0 : g ≠ 0) (a : H)
 
 /-- Relabelling the one-hyperplane diagram relabels its wall. -/
 @[simp]

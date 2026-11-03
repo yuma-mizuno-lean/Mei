@@ -13,13 +13,14 @@ public import Mei.Geometry.ScatteringDiagram.HyperplanePair
 
 Fix nonzero allowed degrees `a` and `b` and a completed BCH group element `x` whose every
 cutoff projection lies in the group of the Lie algebra orthogonal to the hyperplane
-`ker (evaluation at b)`. Cut the dual space by that hyperplane at even cutoffs, and by it and
+`ker (evaluation at b)` of the continuous dual.
+Cut the dual space by that hyperplane at even cutoffs, and by it and
 the hyperplane `ker (evaluation at a)` at odd cutoffs. The projection of `x` labels the
 walls inside the first hyperplane and `1` labels the rest. This is a `CompletedDiagram`
 (`CompletedDiagram.alternating`): the diagrams at successive cutoffs agree on common
 admissible paths because the diagram on two hyperplanes is a compatible refinement of the one
-on a single hyperplane with the same labels. When some functional vanishing on
-`ker (evaluation at b)` is nonzero on `a`, the complexes do not stabilize
+on a single hyperplane with the same labels. When some continuous linear functional `θ`
+satisfies `θ (j b) = 0` and `θ (j a) ≠ 0`, the complexes do not stabilize
 (`CompletedDiagram.not_eventually_alternatingComplex_eq`), so a completed diagram need not be
 presented by a single complex. For `N = ℤ²` and the positive monoid `ℕ²` this gives
 `CompletedDiagram.exists_completedDiagram_not_eventually_eq_orthant`.
@@ -59,7 +60,7 @@ abbrev alternatingComplex (k : ℕ) : FinitePolyhedralComplex h.continuousDual :
 
 variable {h a b}
 
-/-- The only wall of the one-hyperplane stage is the hyperplane `ker (evaluation at b)`. -/
+/-- Every wall of the one-hyperplane stage is the hyperplane `ker (evaluation at b)`. -/
 theorem eq_ker_of_mem_stageComplex_true_walls {P : Set (W →L[ℝ] ℝ)}
     (hP : P ∈ (stageComplex h a b true).walls) : P = {θ | θ (j b) = 0} :=
   eq_ker_of_mem_hyperplaneComplex_walls _ hP
@@ -70,9 +71,9 @@ theorem subset_ker_of_mem_stageComplex_false_walls {P : Set (W →L[ℝ] ℝ)}
     P ⊆ {θ | θ (j b) = 0} ∨ P ⊆ {θ | θ (j a) = 0} :=
   exists_subset_ker_of_mem_hyperplanePairComplex_walls _ _ hP
 
-/-- The complexes of the alternating completed diagram never stabilize when some functional
-vanishing on `ker (evaluation at b)` is nonzero on `a`: the hyperplane `ker (evaluation at b)`
-is a cell of the even complexes but not of the odd ones. -/
+/-- The complexes of the alternating completed diagram never stabilize when some continuous
+linear functional `θ` satisfies `θ (j b) = 0` and `θ (j a) ≠ 0`: the hyperplane
+`ker (evaluation at b)` is a cell of the even complexes but not of the odd ones. -/
 theorem not_eventually_alternatingComplex_eq
     (hb : ContinuousLinearMap.apply ℝ ℝ (j b) ≠ 0)
     (hab : ∃ θ : W →L[ℝ] ℝ, θ (j b) = 0 ∧ θ (j a) ≠ 0) :
@@ -107,6 +108,21 @@ def hyperplaneLabels (b : N) (k : ℕ) : Subgroup (d.truncatedGroup ℒ k) :=
     ((KSSpace.continuousDual h).evaluation '' {θ : W →L[ℝ] ℝ | θ (j b) = 0})).bchSubgroup
 
 variable {h d ℒ}
+
+theorem hyperplaneLabels_def (b : N) (k : ℕ) :
+    hyperplaneLabels j h d ℒ b k =
+      (orthogonalLieSubalgebra (d.truncatedGrading ℒ k)
+        ((KSSpace.continuousDual h).evaluation '' {θ : W →L[ℝ] ℝ | θ (j b) = 0})).bchSubgroup :=
+  (rfl)
+
+/-- A group element is an admissible label on the hyperplane `ker (evaluation at b)` exactly
+when its logarithm lies in the orthogonal Lie subalgebra. -/
+@[simp]
+theorem mem_hyperplaneLabels {b : N} {k : ℕ} (g : d.truncatedGroup ℒ k) :
+    g ∈ hyperplaneLabels j h d ℒ b k ↔
+      BCHGroup.log g ∈ orthogonalLieSubalgebra (d.truncatedGrading ℒ k)
+        ((KSSpace.continuousDual h).evaluation '' {θ : W →L[ℝ] ℝ | θ (j b) = 0}) :=
+  LieSubalgebra.mem_bchSubgroup _ _
 
 open scoped Classical in
 /-- The KS complex of a stage at cutoff `k`. At `true`, the unique wall `ker (evaluation at b)`
@@ -146,16 +162,6 @@ def stageKS (hb : b ∈ d.monoid) (hb0 : b ≠ 0) (ha : a ∈ d.monoid) (ha0 : a
         · simp only [hQ, ↓reduceIte]
           exact one_mem _ }
 
-omit [DecidableEq N] in
-include h in
-/-- Evaluation at a nonzero allowed degree is a nonzero functional on the continuous dual. -/
-theorem apply_ne_zero_of_mem_monoid {n : N} (hn : n ∈ d.monoid) (hn0 : n ≠ 0) :
-    ContinuousLinearMap.apply ℝ ℝ (j n) ≠ 0 := by
-  intro he
-  apply (KSSpace.continuousDual h).normal_ne_zero d hn hn0
-  ext θ
-  simpa using DFunLike.congr_fun he θ
-
 variable (hb : b ∈ d.monoid) (hb0 : b ≠ 0) (ha : a ∈ d.monoid) (ha0 : a ≠ 0) {k : ℕ}
   (g : d.truncatedGroup ℒ k) (hg : g ∈ hyperplaneLabels j h d ℒ b k)
 
@@ -164,7 +170,13 @@ variable (hb : b ∈ d.monoid) (hb0 : b ≠ 0) (ha : a ∈ d.monoid) (ha0 : a �
 theorem stageKS_true_label (P : (stageComplex h a b true).walls) :
     (stageKS hb hb0 ha ha0 g hg true).label P = g := (rfl)
 
+/-- At the one-hyperplane stage the wall is cooriented by `b`. -/
+@[simp]
+theorem stageKS_true_degree (P : (stageComplex h a b true).walls) :
+    (stageKS hb hb0 ha ha0 g hg true).degree P = b := (rfl)
+
 /-- At the two-hyperplane stage, a wall inside `ker (evaluation at b)` carries `g`. -/
+@[simp]
 theorem stageKS_false_label_of_subset {Q : (stageComplex h a b false).walls}
     (hQ : (Q : Set (W →L[ℝ] ℝ)) ⊆ {θ | θ (j b) = 0}) :
     (stageKS hb hb0 ha ha0 g hg false).label Q = g := by
@@ -172,6 +184,7 @@ theorem stageKS_false_label_of_subset {Q : (stageComplex h a b false).walls}
   simp [stageKS, hQ]
 
 /-- At the two-hyperplane stage, a wall not inside `ker (evaluation at b)` carries `1`. -/
+@[simp]
 theorem stageKS_false_label_of_not_subset
     {Q : (stageComplex h a b false).walls}
     (hQ : ¬(Q : Set (W →L[ℝ] ℝ)) ⊆ {θ | θ (j b) = 0}) :
@@ -179,23 +192,43 @@ theorem stageKS_false_label_of_not_subset
   classical
   simp [stageKS, hQ]
 
+/-- At the two-hyperplane stage, a wall inside `ker (evaluation at b)` is cooriented by `b`. -/
+@[simp]
+theorem stageKS_false_degree_of_subset {Q : (stageComplex h a b false).walls}
+    (hQ : (Q : Set (W →L[ℝ] ℝ)) ⊆ {θ | θ (j b) = 0}) :
+    (stageKS hb hb0 ha ha0 g hg false).degree Q = b := by
+  classical
+  simp [stageKS, hQ]
+
+/-- At the two-hyperplane stage, a wall not inside `ker (evaluation at b)` is cooriented
+by `a`. -/
+@[simp]
+theorem stageKS_false_degree_of_not_subset
+    {Q : (stageComplex h a b false).walls}
+    (hQ : ¬(Q : Set (W →L[ℝ] ℝ)) ⊆ {θ | θ (j b) = 0}) :
+    (stageKS hb hb0 ha ha0 g hg false).degree Q = a := by
+  classical
+  simp [stageKS, hQ]
+
 /-- The one-hyperplane stage forgets to the diagram with a single wall. -/
+@[simp]
 theorem toFiniteWallDiagram_stageKS_true :
     (stageKS hb hb0 ha ha0 g hg true).toFiniteWallDiagram =
       FiniteWallDiagram.hyperplaneDiagram (h.isRationalFunctional_continuousDual_eval b)
-        (apply_ne_zero_of_mem_monoid (h := h) hb hb0) g := by
+        (h.apply_ne_zero hb0) g := by
   refine FiniteWallDiagram.ext (funext fun P => ?_) (funext fun P => ?_)
   · ext θ
     simp [stageKS]
   · simp [stageKS]
 
 /-- The two-hyperplane stage forgets to the diagram with labels `g` and `1`. -/
+@[simp]
 theorem toFiniteWallDiagram_stageKS_false :
     (stageKS hb hb0 ha ha0 g hg false).toFiniteWallDiagram =
       FiniteWallDiagram.hyperplanePairDiagram (h.isRationalFunctional_continuousDual_eval b)
         (h.isRationalFunctional_continuousDual_eval a)
-        (apply_ne_zero_of_mem_monoid (h := h) hb hb0)
-        (apply_ne_zero_of_mem_monoid (h := h) ha ha0) g := by
+        (h.apply_ne_zero hb0)
+        (h.apply_ne_zero ha0) g := by
   refine FiniteWallDiagram.ext (funext fun Q => ?_) (funext fun Q => ?_) <;>
     by_cases hQ : (Q : Set (W →L[ℝ] ℝ)) ⊆ {θ | θ (j b) = 0}
   · rw [FiniteWallDiagram.hyperplanePairDiagram_normal_of_subset _ _ _ _ _ hQ]
@@ -288,11 +321,7 @@ variable {R L : Type*} [CommRing R] [Algebra ℚ R] [LieRing L] [LieAlgebra R L]
   (ℒ : (Fin 2 → ℤ) → Submodule R L) [GradedLieAlgebra ℒ]
   [IsPositiveGrading (PositiveDegrees.orthant (Fin 2)) ℒ]
 
-/-- The standard lattice `ℤ² ⊆ ℝ²`. -/
-theorem isIntegralLattice_compLeft_castAddHom :
-    TauCeti.Toric.IsIntegralLattice ((Int.castAddHom ℝ).compLeft (Fin 2)) :=
-  TauCeti.Toric.isIntegralLattice_of_basis (Pi.basisFun ℤ (Fin 2)) (Pi.basisFun ℝ (Fin 2))
-    fun i => by ext; simp [Pi.single_apply]
+local notation "Λ₂" => TauCeti.Toric.isIntegralLattice_compLeft_castAddHom (Fin 2)
 
 /-- For `N = ℤ²` and `P = ℕ²`, a completed diagram whose complexes do not stabilize, built
 from any completed group element `x` whose projections lie in the group of the Lie algebra
@@ -301,11 +330,11 @@ that hyperplane and the complex of the odd cutoffs by it and `θ(e₁) = 0`. -/
 theorem exists_completedDiagram_not_eventually_eq_orthant
     (x : (PositiveDegrees.orthant (Fin 2)).completedBCHGroup ℒ)
     (hx : ∀ k, CompletedGroup.projection k x ∈ hyperplaneLabels
-      ((Int.castAddHom ℝ).compLeft (Fin 2)) isIntegralLattice_compLeft_castAddHom
+      ((Int.castAddHom ℝ).compLeft (Fin 2)) Λ₂
       (PositiveDegrees.orthant (Fin 2)) ℒ (Pi.single 1 1) k) :
-    ∃ (C : ℕ → FinitePolyhedralComplex isIntegralLattice_compLeft_castAddHom.continuousDual)
-      (_ : CompletedDiagram (KSSpace.continuousDual isIntegralLattice_compLeft_castAddHom)
-        (PositiveDegrees.orthant (Fin 2)) ℒ C), ¬∃ n, ∀ k ≥ n, C k = C (k + 1) := by
+    ∃ (C : ℕ → FinitePolyhedralComplex (Λ₂).continuousDual)
+      (_ : CompletedDiagram (KSSpace.continuousDual Λ₂) (PositiveDegrees.orthant (Fin 2)) ℒ C),
+      ¬∃ n, ∀ k ≥ n, C k = C (k + 1) := by
   have hmem (i : Fin 2) :
       (Pi.single i 1 : Fin 2 → ℤ) ∈ (PositiveDegrees.orthant (Fin 2)).monoid := by
     rw [PositiveDegrees.mem_orthant_monoid]
@@ -313,11 +342,11 @@ theorem exists_completedDiagram_not_eventually_eq_orthant
     by_cases hi : i' = i <;> simp [hi]
   have hne (i : Fin 2) : (Pi.single i 1 : Fin 2 → ℤ) ≠ 0 := by
     simp [Pi.single_eq_zero_iff]
-  refine ⟨alternatingComplex isIntegralLattice_compLeft_castAddHom (Pi.single 0 1) (Pi.single 1 1),
+  refine ⟨alternatingComplex Λ₂ 
+      (Pi.single 0 1) (Pi.single 1 1),
     alternating (hmem 1) (hne 1) (hmem 0) (hne 0) x hx,
     not_eventually_alternatingComplex_eq
-      (apply_ne_zero_of_mem_monoid (h := isIntegralLattice_compLeft_castAddHom)
-        (hmem 1) (hne 1))
+      ((Λ₂).apply_ne_zero (hne 1))
       ⟨ContinuousLinearMap.proj 0, by simp, by simp⟩⟩
 
 end Orthant

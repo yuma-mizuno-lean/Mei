@@ -10,11 +10,13 @@ public import Mei.Geometry.Convex.PolyhedralComplex.AmbientSubdivision
 /-!
 # The complexes cut out by one and by two linear hyperplanes
 
-For a rational continuous linear functional `f`, the complex `hyperplaneComplex f` has the
-hyperplane `ker f` as its only wall. Adding a second rational functional `g` gives
+For a rational continuous linear functional `f`, the complex `hyperplaneComplex f` has every wall
+equal to the hyperplane `ker f`; when `f ≠ 0` the hyperplane is a wall
+(`mem_hyperplaneComplex_walls_iff`), while for `f = 0` the complex is the ambient cell and has
+no walls. Adding a second rational functional `g` gives
 `hyperplanePairComplex f g`, which subdivides it (`isSubdivision_hyperplanePairComplex`).
 Every wall of the pair lies in `ker f` or in `ker g`
-(`exists_subset_ker_of_mem_hyperplanePairComplex_walls`). When `g` does not vanish on
+(`exists_subset_ker_of_mem_hyperplanePairComplex_walls`). When `f ≠ 0` and `g` does not vanish on
 `ker f`, the hyperplane `ker f` is a cell of the first complex but not of the second, so the
 two complexes differ (`hyperplaneComplex_ne_hyperplanePairComplex`).
 
@@ -31,8 +33,9 @@ namespace Mei.FinitePolyhedralComplex
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i} {f g : V →L[ℝ] ℝ}
 
-/-- The complex of the closures of the sign cells of the single hyperplane `ker f`: the
-hyperplane and its two closed half-spaces. -/
+/-- The complex of the closures of the sign cells of the single hyperplane `ker f`. For
+`f ≠ 0` its cells are the hyperplane and its two closed half-spaces; for `f = 0` it is the
+ambient cell alone. -/
 noncomputable def hyperplaneComplex (f : V →L[ℝ] ℝ)
     (hf : Toric.IsRationalFunctional h f.toLinearMap) : FinitePolyhedralComplex h :=
   ofArrangement (fun _ : Unit => f.toContinuousAffineMap) (fun _ => hf)
@@ -68,9 +71,10 @@ theorem eq_ker_of_mem_hyperplaneComplex_walls {P : Set V}
   obtain ⟨-, hPZ⟩ := exists_subset_zeroLocus_of_mem_ofArrangement_walls _ _ hP
   obtain ⟨σ, ⟨p, hp⟩, rfl⟩ := mem_ofArrangement_cells.mp
     ((hyperplaneComplex f hf).mem_cells_of_mem_walls hP)
+  have hfp : f p = 0 := by simpa using hPZ (subset_closure hp)
   have hσ : σ () = 0 := by
     rw [← mem_signCell.mp hp ()]
-    simp [show f p = 0 from hPZ (subset_closure hp)]
+    simp [hfp]
   ext θ
   rw [closure_signCell ⟨p, hp⟩]
   simp [mem_weakSignCell, hσ]
