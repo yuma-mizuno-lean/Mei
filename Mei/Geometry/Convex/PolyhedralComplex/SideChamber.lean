@@ -62,8 +62,8 @@ private theorem IsPositiveSideAt.eventually {ν : V →ₗ[ℝ] ℝ} {q : V}
   rw [map_add, map_smul, smul_eq_mul]
   exact lt_add_of_pos_right _ (mul_pos htp hv)
 
-/-- A cooriented wall is cut out by a nonzero normal. -/
-private theorem exists_normal_eq_one {P : C.walls} {ν : V →ₗ[ℝ] ℝ}
+/-- A normal cutting out the direction of a wall takes the value one on some vector. -/
+theorem exists_normal_eq_one {P : C.walls} {ν : V →ₗ[ℝ] ℝ}
     (hν : LinearMap.ker ν = (affineSpan ℝ (P : Set V)).direction) : ∃ v : V, ν v = 1 := by
   have hne : ν ≠ 0 := by
     intro hz

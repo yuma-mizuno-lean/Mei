@@ -152,11 +152,12 @@ variable {x y : WallComplement (fun P : C.walls => (P : Set V))}
   {x' y' : WallComplement (fun P : D.walls => (P : Set V))}
 
 /-- The wall of `D` containing a wall of `C`, if any, with the same crossing time. -/
-private def coarsenCrossing (a : C.walls × ℝ) : Option (D.walls × ℝ) := by
+def coarsenCrossing (a : C.walls × ℝ) : Option (D.walls × ℝ) := by
   classical
   exact if hQ : ∃ P : D.walls, (a.1 : Set V) ⊆ P then some (hQ.choose, a.2) else none
 
-private theorem coarsenCrossing_eq_some {a : C.walls × ℝ} {b : D.walls × ℝ} :
+/-- A crossing coarsens to a crossing of a wall containing it, at the same time. -/
+theorem coarsenCrossing_eq_some {a : C.walls × ℝ} {b : D.walls × ℝ} :
     coarsenCrossing a = some b ↔ (a.1 : Set V) ⊆ b.1 ∧ a.2 = b.2 := by
   classical
   rcases b with ⟨P, t⟩
@@ -174,7 +175,7 @@ private theorem coarsenCrossing_eq_some {a : C.walls × ℝ} {b : D.walls × ℝ
 
 /-- A segment admissible for both complexes crosses each wall of `D` exactly when it
 crosses a wall of `C` contained in it, at the same time. -/
-private theorem orderedCrossings_coarsen (hCD : C.IsSubdivision D) (e : x ⟶ y) (e' : x' ⟶ y')
+theorem orderedCrossings_coarsen (hCD : C.IsSubdivision D) (e : x ⟶ y) (e' : x' ⟶ y')
     (hx : x.val = x'.val) (hy : y.val = y'.val) :
     D.orderedCrossings e' = (C.orderedCrossings e).filterMap coarsenCrossing := by
   symm
