@@ -6,17 +6,17 @@ Authors: Kimi K3
 module
 
 public import Mei.LinearAlgebra.ModuleFiltration.Basic
-public import TauCeti.LinearAlgebra.Submodule.CompleteFiltration
 
 /-!
 # Global nilpotence from a finite-length filtration
 
 An endomorphism raising a module filtration by one sends every input into the
-`n`-th filtration step after `n` applications. When the filtration itself
-vanishes at a finite order — the finite-length case — the endomorphism is
-globally nilpotent on the whole module, not only on each finite quotient.
-That bound is what the shared semimodule recursion needs; over rings this
-case supplies the recursion's filtration-raising instances.
+`n`-th filtration step after `n` applications (`pow_apply_mem` in
+`ModuleFiltration/Basic`). When the filtration itself vanishes at a finite
+order — the finite-length case — the endomorphism is globally nilpotent on the
+whole module, not only on each finite quotient. That bound is what the shared
+semimodule recursion needs; over rings this case supplies the recursion's
+filtration-raising instances.
 -/
 
 public section
@@ -26,16 +26,6 @@ namespace Mei.ModuleFiltration
 variable {R M : Type*} [Semiring R] [AddCommMonoid M] [Module R M]
   (F : ModuleFiltration R M) (f : Module.End R M)
   (hf : ∀ k, F.submodule k ≤ (F.submodule (k + 1)).comap f)
-
-include hf in
-/-- A filtration-raising endomorphism sends every input into the `n`-th
-filtration step after `n` applications, even when each quotient image is all
-that vanishes. -/
-theorem pow_apply_mem (n : ℕ) (x : M) : (f ^ n) x ∈ F.submodule n := by
-  simpa only [Nat.zero_add] using
-    Module.End.pow_apply_mem_of_map_le (T := f) (F := F.submodule)
-      (fun k => Submodule.map_le_iff_le_comap.mpr (hf k))
-      (by simp : x ∈ F.submodule 0) n
 
 include hf in
 /-- A filtration that vanishes at order `r` makes a filtration-raising

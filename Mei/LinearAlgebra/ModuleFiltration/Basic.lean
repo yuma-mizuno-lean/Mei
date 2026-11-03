@@ -6,6 +6,7 @@ Authors: Codex
 module
 
 public import Mei.RingTheory.FilteredAlgebra.Basic
+public import TauCeti.LinearAlgebra.Submodule.CompleteFiltration
 public import Mathlib.Algebra.Module.Submodule.RestrictScalars
 
 /-!
@@ -52,6 +53,17 @@ instance : IsFiltration F.filtration (fun k => F.submodule (k.ofDual + 1)) where
   mono := fun _ _ h => F.antitone h
   is_le h := F.antitone (Nat.succ_le_of_lt h)
   is_sup _ k h := h (OrderDual.toDual (k.ofDual + 1)) (Nat.lt_succ_self _)
+
+/-- An endomorphism that raises the filtration by one sends every input into
+the `n`-th filtration step after `n` applications, even when only the quotient
+image vanishes. -/
+theorem pow_apply_mem (F : ModuleFiltration R M) (f : Module.End R M)
+    (hf : ∀ k, F.submodule k ≤ (F.submodule (k + 1)).comap f) (n : ℕ) (x : M) :
+    (f ^ n) x ∈ F.submodule n := by
+  simpa only [Nat.zero_add] using
+    Module.End.pow_apply_mem_of_map_le (T := f) (F := F.submodule)
+      (fun k => Submodule.map_le_iff_le_comap.mpr (hf k))
+      (by simp : x ∈ F.submodule 0) n
 
 section Compatibility
 

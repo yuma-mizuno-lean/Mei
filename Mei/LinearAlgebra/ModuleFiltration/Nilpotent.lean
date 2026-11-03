@@ -7,7 +7,6 @@ module
 
 public import Mei.LinearAlgebra.ModuleFiltration.Completion
 public import Mei.LinearAlgebra.ModuleFiltration.FiniteLength
-public import TauCeti.LinearAlgebra.Submodule.CompleteFiltration
 public import Mathlib.RingTheory.Nilpotent.Defs
 
 /-!
