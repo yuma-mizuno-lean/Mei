@@ -118,6 +118,11 @@ theorem coefficientForm_apply (v v' : Γ) :
   rw [SkewLatticeDatum.coefficientForm_apply, form_apply, Algebra.algebraMap_self,
     RingHom.id_apply]
 
+/-- Every vector of `ℤ²` is unfrozen in the standard plane. -/
+theorem mem_unfrozen (v : ℤ × ℤ) : v ∈ E.unfrozen := by
+  simp only [E, unimodularRankTwo_unfrozen]
+  exact Submodule.mem_top
+
 /-- The nonzero degrees of the plane for the weight `w`. -/
 @[ext]
 structure PlaneDegree (w : Weight) where
@@ -175,10 +180,6 @@ def Inverted (m m' : PlaneDegree w) : Prop := E.coefficientForm ℚ m.vec m'.vec
 
 theorem inverted_iff_coefficientForm_lt (m m' : PlaneDegree w) :
     Inverted m m' ↔ E.coefficientForm ℚ m.vec m'.vec < 0 := Iff.rfl
-
-private theorem mem_unfrozen (v : ℤ × ℤ) : v ∈ E.unfrozen := by
-  simp only [E, unimodularRankTwo_unfrozen]
-  exact Submodule.mem_top
 
 /-- The first basis vector of the plane. -/
 def e₁ (w : Weight) : PlaneDegree w where

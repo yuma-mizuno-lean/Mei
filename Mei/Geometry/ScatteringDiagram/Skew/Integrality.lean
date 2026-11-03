@@ -413,6 +413,21 @@ theorem IsIntegralLabel.mul {g h : d.completedBCHGroup 𝓛ℚ} (hg : D.IsIntegr
     (hh : D.IsIntegralLabel d h) : D.IsIntegralLabel d (g * h) := fun x hx => by
   simpa only [map_mul, AlgEquiv.mul_apply] using hg _ (hh x hx)
 
+omit [Module.Free ℤ N] in
+/-- The identity label is integral. -/
+theorem IsIntegralLabel.one : D.IsIntegralLabel d 1 := fun x hx => by
+  simpa only [map_one, AlgEquiv.one_apply] using hx
+
+omit [Module.Free ℤ N] in
+/-- Integral labels are closed under finite products. -/
+theorem IsIntegralLabel.list_prod {L : List (d.completedBCHGroup 𝓛ℚ)}
+    (hL : ∀ g ∈ L, D.IsIntegralLabel d g) : D.IsIntegralLabel d L.prod := by
+  induction L with
+  | nil => exact IsIntegralLabel.one D d
+  | cons g L ih =>
+    exact IsIntegralLabel.mul D d (hL g List.mem_cons_self)
+      (ih fun h hh => hL h (List.mem_cons_of_mem g hh))
+
 include hn hn0 in
 /-- A dilogarithm power `Ψ[n]^c` with `c ∈ κ(n) ℤ` is integral. -/
 theorem isIntegralLabel_rayExp {c : ℚ} {s : ℤ}

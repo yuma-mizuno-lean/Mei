@@ -96,6 +96,43 @@ theorem rayIndex_e₂ : rayIndex (PlaneDegree.e₂ w).vec = 1 :=
     rw [PlaneDegree.form_det]
     simp [PlaneDegree.det_eq])
 
+/-- The ray index of a nonzero vector of `ℤ²` is the reciprocal of the gcd of its coordinates. -/
+theorem rayIndex_eq_inv_gcd {m : Γ} (hm : m ≠ 0) :
+    rayIndex m = ((Int.gcd m.1.1 m.1.2 : ℕ) : ℚ)⁻¹ := by
+  have hne : m.1.1 ≠ 0 ∨ m.1.2 ≠ 0 := by
+    by_contra h
+    push Not at h
+    exact hm (Subtype.ext (Prod.ext h.1 h.2))
+  have hg : 0 < Int.gcd m.1.1 m.1.2 := Int.gcd_pos_iff.mpr hne
+  obtain ⟨a, ha⟩ := Int.gcd_dvd_left (a := m.1.1) (b := m.1.2)
+  obtain ⟨b, hb⟩ := Int.gcd_dvd_right (a := m.1.1) (b := m.1.2)
+  set g := Int.gcd m.1.1 m.1.2 with hgdef
+  have hcop : Int.gcd a b = 1 := by
+    have h := Int.gcd_mul_left (g : ℤ) a b
+    rw [← ha, ← hb, ← hgdef] at h
+    simp only [Int.natAbs_natCast] at h
+    nlinarith
+  let m₀ : Γ := ⟨(a, b), mem_unfrozen _⟩
+  have hm₀ : m = (g : ℤ) • m₀ :=
+    Subtype.ext (Prod.ext (by simpa [m₀] using ha) (by simpa [m₀] using hb))
+  have hbez : Int.gcdA a b * a + Int.gcdB a b * b = 1 := by
+    have := Int.gcd_eq_gcd_ab a b
+    rw [hcop] at this
+    push_cast at this
+    linarith
+  have h1 : rayIndex m₀ = 1 := by
+    refine rayIndex_eq_one_of_form_eq_one (⟨(Int.gcdB a b, -Int.gcdA a b), mem_unfrozen _⟩ : Γ) ?_
+    rw [form_apply]
+    simp only [m₀]
+    exact_mod_cast (by linarith : Int.gcdB a b * b - -Int.gcdA a b * a = 1)
+  have h2 : rayIndex m = rayIndex m₀ / ((g : ℤ) : ℚ) := by
+    rw [hm₀]
+    unfold rayIndex
+    rw [Submodule.coe_smul]
+    exact AddSubgroup.rayIndex_zsmul _ (by exact_mod_cast hg) _
+  rw [h2, h1]
+  simp
+
 /-- A ray label of a plane degree lies in the degree filtration of its order. -/
 theorem dilogPow_mem_degreeFiltration (m : PlaneDegree w) (c : ℚ) :
     dilogPow m c ∈ CompletedGroup.degreeFiltration
