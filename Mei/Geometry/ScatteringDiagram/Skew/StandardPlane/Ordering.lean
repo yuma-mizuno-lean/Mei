@@ -54,7 +54,7 @@ theorem exists_isChain_projection_prod_unit_eq (k : ℕ) (l : List (PlaneDegree 
       (fun x y hxy hk => (exists_exchange k x y hxy hk).imp fun M hM =>
         ⟨fun m hm => ⟨(hM.1 m hm).1, (hM.1 m hm).2.1, fun h => h⟩, hM.2⟩)
   refine ⟨l', hchain.imp fun a b hab => not_lt.mp fun h => ?_, hdeg, hprod⟩
-  exact hab h
+  exact hab ((PlaneDegree.inverted_iff_coefficientForm_lt a b).mpr h)
 
 /-- **Positive ordering in the standard plane.** At every finite order `k`, a finite product of
 normalized positive factors `Ψ[m]^{s κ(m)}`, `s ∈ ℕ`, of plane degrees agrees with an ordered

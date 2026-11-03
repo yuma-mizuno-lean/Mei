@@ -37,7 +37,7 @@ theorem vec_mem_closure (m : PlaneDegree w) :
 /-- The angular order `0 ≤ {m, m'}` is transitive on nonzero plane degrees. -/
 theorem not_inverted_trans {a b c : PlaneDegree w} (hab : ¬ Inverted a b) (hbc : ¬ Inverted b c) :
     ¬ Inverted a c := by
-  unfold Inverted at hab hbc ⊢
+  rw [inverted_iff_coefficientForm_lt] at hab hbc ⊢
   rw [not_lt] at hab hbc ⊢
   exact LinearMap.IsAlt.nonneg_trans_of_mem_closure_pair (E.isAlt_coefficientForm ℚ)
     a.vec_mem_closure b.vec_mem_closure c.vec_mem_closure b.ne_zero hab hbc
@@ -60,7 +60,7 @@ private theorem rank_eq_two_iff (m : PlaneDegree w) : m.rank = 2 ↔ m.snd ≠ 0
 
 private theorem rank_eq_one_iff (m : PlaneDegree w) : m.rank = 1 ↔ ¬ m.Boundary := by
   unfold rank
-  unfold Boundary
+  rw [boundary_iff]
   split_ifs <;> simp_all
 
 /-- Ordered pairs of plane degrees do not decrease the rank. -/
@@ -103,6 +103,16 @@ private theorem rank_le_of_not_inverted {a b : PlaneDegree w} (h : ¬ Inverted a
 
 end PlaneDegree
 
+/-- If `e₁^p e₂^q` is a permutation of `e₂^A e₁^B` for distinct `e₁, e₂`, then `p = B` and
+`q = A`. -/
+private theorem length_eq_of_perm_replicate {α : Type*} {a b : α} (hab : a ≠ b)
+    {p q A B : ℕ} (h : (List.replicate p a ++ List.replicate q b).Perm
+      (List.replicate A b ++ List.replicate B a)) : p = B ∧ q = A := by
+  classical
+  have c₁ := h.count_eq a
+  have c₂ := h.count_eq b
+  simpa [List.count_replicate, hab, hab.symm] using And.intro c₁ c₂
+
 /-- **Shape of an ordered list.** An ordered list of plane degrees whose boundary degrees are a
 permutation of `e₂^A e₁^B` is `e₁^B I e₂^A`, where `I` consists of degrees of the open
 quadrant. -/
@@ -125,9 +135,9 @@ theorem exists_eq_append_of_isChain (A B : ℕ) (l : List (PlaneDegree w))
       fun m hm => by simpa using (List.mem_filter.mp hm).2,
       fun m hm => by simpa using (List.mem_filter.mp hm).2⟩
   have hb₀ : ∀ m ∈ f₀, m.Boundary := fun m hm =>
-    (Or.inr ((PlaneDegree.rank_eq_zero_iff m).mp (h₀ m hm)))
+    (PlaneDegree.boundary_iff m).mpr (Or.inr ((PlaneDegree.rank_eq_zero_iff m).mp (h₀ m hm)))
   have hb₂ : ∀ m ∈ f₂, m.Boundary := fun m hm =>
-    (Or.inl ((PlaneDegree.rank_eq_two_iff m).mp (h₂ m hm)).2)
+    (PlaneDegree.boundary_iff m).mpr (Or.inl ((PlaneDegree.rank_eq_two_iff m).mp (h₂ m hm)).2)
   have hb₁ : ∀ m ∈ f₁, ¬ m.Boundary := fun m hm => (PlaneDegree.rank_eq_one_iff m).mp (h₁ m hm)
   refine ⟨f₁, ?_, hb₁⟩
   have hfilter : (f₀ ++ f₁ ++ f₂).filter (fun m => decide m.Boundary) = f₀ ++ f₂ := by
@@ -156,14 +166,12 @@ theorem exists_eq_append_of_isChain (A B : ℕ) (l : List (PlaneDegree w))
     · simpa using ((PlaneDegree.rank_eq_two_iff _).mp (h₂ _ hm)).2
   have hne : PlaneDegree.e₁ w ≠ PlaneDegree.e₂ w := fun h => by
     simpa using congrArg PlaneDegree.fst h
-  have c₁ := hperm.count_eq (PlaneDegree.e₁ w)
-  have c₂ := hperm.count_eq (PlaneDegree.e₂ w)
-  rw [List.count_append, List.count_append, List.count_replicate, List.count_replicate,
-    hf₀, hf₂] at c₁ c₂
-  have hne' : PlaneDegree.e₂ w ≠ PlaneDegree.e₁ w := hne.symm
-  simp only [List.count_replicate, beq_iff_eq, hne, hne', ite_true, ite_false] at c₁ c₂
-  have hB : f₀.length = B := by simpa using c₁
-  have hA : f₂.length = A := by simpa using c₂
+  have hperm' : (List.replicate f₀.length (PlaneDegree.e₁ w) ++
+      List.replicate f₂.length (PlaneDegree.e₂ w)).Perm
+      (List.replicate A (PlaneDegree.e₂ w) ++ List.replicate B (PlaneDegree.e₁ w)) := by
+    rw [← hf₀, ← hf₂]
+    exact hperm
+  obtain ⟨hB, hA⟩ := length_eq_of_perm_replicate hne hperm'
   subst hA hB
   rw [← hf₀, ← hf₂]
 

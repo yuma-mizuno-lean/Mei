@@ -87,7 +87,7 @@ def rebaseMap : PositiveDegreeMap (plane (Weight.rebase x y)) (plane w) :=
 
 theorem form_rebase (v v' : Γ) :
     E.coefficientForm ℚ (rebase x.vec y.vec v) (rebase x.vec y.vec v') =
-      (x.det y : ℚ) * E.coefficientForm ℚ v v' := by
+      (y.det x : ℚ) * E.coefficientForm ℚ v v' := by
   rw [coefficientForm_apply, coefficientForm_apply, PlaneDegree.det_eq, rebase_fst, rebase_snd,
     rebase_fst, rebase_snd]
   push_cast
@@ -130,9 +130,9 @@ theorem deg_rebasePos (m : PlaneDegree (Weight.rebase x y)) : (rebasePos x y m).
 
 variable {x y}
 
-theorem coefficientForm_eq_inv_mul_rebaseMap (hD : x.det y ≠ 0) (n m : Γ) :
+theorem coefficientForm_eq_inv_mul_rebaseMap (hD : y.det x ≠ 0) (n m : Γ) :
     E.coefficientForm ℚ n m =
-      (x.det y : ℚ)⁻¹ * E.coefficientForm ℚ (rebaseMap x y n) (rebaseMap x y m) := by
+      (y.det x : ℚ)⁻¹ * E.coefficientForm ℚ (rebaseMap x y n) (rebaseMap x y m) := by
   rw [rebaseMap_apply, rebaseMap_apply, form_rebase, ← mul_assoc,
     inv_mul_cancel₀ (Int.cast_ne_zero.mpr hD), one_mul]
 
@@ -145,36 +145,36 @@ theorem rebaseMap_modulus_le (k : ℕ) : (rebaseMap x y).modulus k ≤ k := by
 /-- The finite-order projection of a ray label of the rescaled plane, carried to the plane by the
 rescaling, is the projection of the ray label of the image degree with exponent divided by
 `{y, x}`. -/
-theorem map_projection_dilogPow (hD : x.det y ≠ 0) (k : ℕ) (m : PlaneDegree (Weight.rebase x y))
+theorem map_projection_dilogPow (hD : y.det x ≠ 0) (k : ℕ) (m : PlaneDegree (Weight.rebase x y))
     (c : ℚ) :
-    ((SkewLieAlgebra.gradedMap β hβ β hβ (x.det y : ℚ)⁻¹ (rebaseMap x y)
+    ((SkewLieAlgebra.gradedMap β hβ β hβ (y.det x : ℚ)⁻¹ (rebaseMap x y)
           (coefficientForm_eq_inv_mul_rebaseMap hD)).truncatedMap k
         (rebaseMap_modulus_le x y k)).bchGroupMap
         (CompletedGroup.projection k (dilogPow m c)) =
-      CompletedGroup.projection k (dilogPow (rebasePos x y m) ((x.det y : ℚ)⁻¹ * c)) := by
+      CompletedGroup.projection k (dilogPow (rebasePos x y m) ((y.det x : ℚ)⁻¹ * c)) := by
   rw [dilogPow_def, dilogPow_def, mul_smul]
-  exact SkewLieAlgebra.truncatedMap_gradedMap_projection_rayExp β hβ β hβ (x.det y : ℚ)⁻¹
+  exact SkewLieAlgebra.truncatedMap_gradedMap_projection_rayExp β hβ β hβ (y.det x : ℚ)⁻¹
     (rebaseMap x y) (coefficientForm_eq_inv_mul_rebaseMap hD) m.mem m.ne_zero
     (c • negDilogNeg ℚ) k k (rebaseMap_modulus_le x y k)
 
 /-- **Transport of identities between unit factors.** An identity at order `k` between products
 of unit factors of the rescaled plane gives the same identity in the plane between the
 products of the labels `Ψ[T m]^{κ(m) / D}`, where `D = {y, x}`. -/
-theorem projection_prod_rebasePos_eq (hD : x.det y ≠ 0) (k : ℕ)
+theorem projection_prod_rebasePos_eq (hD : y.det x ≠ 0) (k : ℕ)
     {L₁ L₂ : List (PlaneDegree (Weight.rebase x y))}
     (h : CompletedGroup.projection k (L₁.map unitFactor).prod =
       CompletedGroup.projection k (L₂.map unitFactor).prod) :
     CompletedGroup.projection k
-        (L₁.map fun m => dilogPow (rebasePos x y m) ((x.det y : ℚ)⁻¹ * rayIndex m.vec)).prod =
+        (L₁.map fun m => dilogPow (rebasePos x y m) ((y.det x : ℚ)⁻¹ * rayIndex m.vec)).prod =
       CompletedGroup.projection k
-        (L₂.map fun m => dilogPow (rebasePos x y m) ((x.det y : ℚ)⁻¹ * rayIndex m.vec)).prod := by
-  let ψ := ((SkewLieAlgebra.gradedMap β hβ β hβ (x.det y : ℚ)⁻¹ (rebaseMap x y)
+        (L₂.map fun m => dilogPow (rebasePos x y m) ((y.det x : ℚ)⁻¹ * rayIndex m.vec)).prod := by
+  let ψ := ((SkewLieAlgebra.gradedMap β hβ β hβ (y.det x : ℚ)⁻¹ (rebaseMap x y)
     (coefficientForm_eq_inv_mul_rebaseMap hD)).truncatedMap k
       (rebaseMap_modulus_le x y k)).bchGroupMap
   have key : ∀ L : List (PlaneDegree (Weight.rebase x y)),
       ψ (CompletedGroup.projection k (L.map unitFactor).prod) =
       CompletedGroup.projection k
-        (L.map fun m => dilogPow (rebasePos x y m) ((x.det y : ℚ)⁻¹ * rayIndex m.vec)).prod := by
+        (L.map fun m => dilogPow (rebasePos x y m) ((y.det x : ℚ)⁻¹ * rayIndex m.vec)).prod := by
     intro L
     induction L with
     | nil =>
@@ -182,7 +182,7 @@ theorem projection_prod_rebasePos_eq (hD : x.det y ≠ 0) (k : ℕ)
       exact map_one ψ
     | cons m L ih =>
       have h1 : ψ (CompletedGroup.projection k (unitFactor m)) = CompletedGroup.projection k
-          (dilogPow (rebasePos x y m) ((x.det y : ℚ)⁻¹ * rayIndex m.vec)) := by
+          (dilogPow (rebasePos x y m) ((y.det x : ℚ)⁻¹ * rayIndex m.vec)) := by
         rw [unitFactor_def]
         exact map_projection_dilogPow x y hD k m _
       simp only [List.map_cons, List.prod_cons, map_mul (CompletedGroup.projection k)]

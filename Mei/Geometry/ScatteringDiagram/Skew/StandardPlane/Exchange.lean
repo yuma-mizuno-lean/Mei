@@ -66,6 +66,8 @@ private def PlaneDegree.add (x y : PlaneDegree w) : PlaneDegree w where
     have := x.snd_nonneg
     rcases y.fst_ne_zero_or with h | h <;> omega
 
+-- The sum has vector `x.vec + y.vec` by construction and the coordinates of a sum in `ℤ × ℤ` are
+-- the sums of the coordinates, so the next three lemmas hold by unfolding `PlaneDegree.add`.
 @[simp]
 private theorem PlaneDegree.add_fst (x y : PlaneDegree w) :
     (PlaneDegree.add x y).fst = x.fst + y.fst := (rfl)
@@ -86,17 +88,17 @@ private theorem PlaneDegree.add_vec (x y : PlaneDegree w) :
     (PlaneDegree.add x y).vec = x.vec + y.vec := (rfl)
 
 private theorem PlaneDegree.form_add_det (x y : PlaneDegree w) :
-    E.form y.vec (PlaneDegree.add y x).vec = (x.det y : ℚ) := by
+    E.form y.vec (PlaneDegree.add y x).vec = (y.det x : ℚ) := by
   rw [PlaneDegree.add_vec, Submodule.coe_add, map_add, E.form_self, zero_add,
     PlaneDegree.form_det]
 
 /-- **The pentagon exchange.** If `{y, x} = 1`, then `Ψ[x] Ψ[y] = Ψ[y] Ψ[y + x] Ψ[x]` for the
 unit factors, and `y + x` lies in the open quadrant. -/
-private theorem exists_exchange_of_det_eq_one (x y : PlaneDegree w) (h : x.det y = 1) :
+private theorem exists_exchange_of_det_eq_one (x y : PlaneDegree w) (h : y.det x = 1) :
     ∃ m : PlaneDegree w, x.deg < m.deg ∧ y.deg < m.deg ∧ ¬ m.Boundary ∧
       unitFactor x * unitFactor y = unitFactor y * unitFactor m * unitFactor x := by
-  have hdetQ : (x.det y : ℚ) = 1 := by exact_mod_cast h
-  obtain ⟨hy1, hx2⟩ := PlaneDegree.one_le_fst_and_one_le_snd (x := x) (y := y) (by omega)
+  have hdetQ : (y.det x : ℚ) = 1 := by exact_mod_cast h
+  obtain ⟨hy1, hx2⟩ := PlaneDegree.one_le_fst_and_one_le_snd (x := y) (y := x) (by omega)
   have hκx : rayIndex x.vec = 1 :=
     rayIndex_eq_one_of_form_eq_one y.vec (by rw [PlaneDegree.form_det, hdetQ])
   have hκy : rayIndex y.vec = 1 :=
@@ -106,7 +108,7 @@ private theorem exists_exchange_of_det_eq_one (x y : PlaneDegree w) (h : x.det y
   refine ⟨PlaneDegree.add y x, ?_, ?_, ?_, ?_⟩
   · rw [PlaneDegree.deg_add]; have := y.deg_pos; omega
   · rw [PlaneDegree.deg_add]; have := x.deg_pos; omega
-  · unfold PlaneDegree.Boundary
+  · rw [PlaneDegree.boundary_iff]
     simp only [PlaneDegree.add_fst, PlaneDegree.add_snd]
     have := y.snd_nonneg
     have := x.fst_nonneg
@@ -159,7 +161,7 @@ private theorem exists_isChain_rebase (k A B : ℕ) (x y : PlaneDegree w) (hk : 
         omega
     · intro m hm
       simp only [List.mem_filter, List.mem_append, List.mem_replicate] at hm
-      rcases hm with ⟨⟨-, rfl⟩ | ⟨-, rfl⟩, -⟩ <;> simp [PlaneDegree.Boundary]
+      rcases hm with ⟨⟨-, rfl⟩ | ⟨-, rfl⟩, -⟩ <;> simp [PlaneDegree.boundary_iff]
   obtain ⟨I, hl', hI⟩ := exists_eq_append_of_isChain A B l' hchain (by rwa [hW] at hperm)
   refine ⟨I, hI, hchain.infix ?_, ?_⟩
   · rw [hl']
@@ -171,9 +173,9 @@ private theorem exists_isChain_rebase (k A B : ℕ) (x y : PlaneDegree w) (hk : 
 `Ψ[x] Ψ[y] = Ψ[y] (∏ Ψ[T i]^{κ(i)/D}) Ψ[x]` at order `k`, because `Ψ[e₂]^A` and `Ψ[e₁]^B` are
 carried to the unit factors of `x` and `y`. -/
 private theorem projection_mul_eq_of_rebase (k A B : ℕ) (x y : PlaneDegree w)
-    (hD : x.det y ≠ 0)
-    (hAx : (A : ℚ) * (x.det y : ℚ)⁻¹ = rayIndex x.vec)
-    (hBy : (B : ℚ) * (x.det y : ℚ)⁻¹ = rayIndex y.vec)
+    (hD : y.det x ≠ 0)
+    (hAx : (A : ℚ) * (y.det x : ℚ)⁻¹ = rayIndex x.vec)
+    (hBy : (B : ℚ) * (y.det x : ℚ)⁻¹ = rayIndex y.vec)
     (I : List (PlaneDegree (Weight.rebase x y)))
     (h : CompletedGroup.projection k
         ((List.replicate A (PlaneDegree.e₂ (Weight.rebase x y)) ++
@@ -183,11 +185,11 @@ private theorem projection_mul_eq_of_rebase (k A B : ℕ) (x y : PlaneDegree w)
           List.replicate A (PlaneDegree.e₂ (Weight.rebase x y))).map unitFactor).prod) :
     CompletedGroup.projection k (unitFactor x * unitFactor y) =
       CompletedGroup.projection k (unitFactor y * ((I.map fun m =>
-        dilogPow (rebasePos x y m) ((x.det y : ℚ)⁻¹ * rayIndex m.vec)).prod *
+        dilogPow (rebasePos x y m) ((y.det x : ℚ)⁻¹ * rayIndex m.vec)).prod *
           unitFactor x)) := by
   have hT := projection_prod_rebasePos_eq x y hD k h
   set f : PlaneDegree (Weight.rebase x y) → Label w := fun m =>
-    dilogPow (rebasePos x y m) ((x.det y : ℚ)⁻¹ * rayIndex m.vec) with hf
+    dilogPow (rebasePos x y m) ((y.det x : ℚ)⁻¹ * rayIndex m.vec) with hf
   have hfx : (f (PlaneDegree.e₂ (Weight.rebase x y))) ^ A = unitFactor x := by
     rw [hf]
     simp only [rebasePos_e₂, rayIndex_e₂, mul_one, ← dilogPow_natCast_mul, unitFactor_def, hAx]
@@ -199,11 +201,11 @@ private theorem projection_mul_eq_of_rebase (k A B : ℕ) (x y : PlaneDegree w)
 
 /-- When `{y, x} > 0` the rescaling carries the open quadrant into the open quadrant, strictly
 increasing the degree beyond those of `x` and `y`. -/
-private theorem rebasePos_interior (x y : PlaneDegree w) (hdet : 0 < x.det y)
+private theorem rebasePos_interior (x y : PlaneDegree w) (hdet : 0 < y.det x)
     (i : PlaneDegree (Weight.rebase x y)) (hi : ¬ i.Boundary) :
     x.deg < (rebasePos x y i).deg ∧ y.deg < (rebasePos x y i).deg ∧
       ¬ (rebasePos x y i).Boundary := by
-  unfold PlaneDegree.Boundary at hi
+  rw [PlaneDegree.boundary_iff] at hi
   push Not at hi
   have hi1 : 1 ≤ i.fst := by have := i.fst_nonneg; omega
   have hi2 : 1 ≤ i.snd := by have := i.snd_nonneg; omega
@@ -219,7 +221,7 @@ private theorem rebasePos_interior (x y : PlaneDegree w) (hdet : 0 < x.det y)
   · rw [deg_rebasePos x y]
     have : (y.deg : ℤ) < i.deg := by rw [hdegi]; nlinarith
     exact_mod_cast this
-  · unfold PlaneDegree.Boundary
+  · rw [PlaneDegree.boundary_iff]
     rw [rebasePos_fst, rebasePos_snd]
     have := x.fst_nonneg
     have := y.snd_nonneg
@@ -229,25 +231,25 @@ private theorem rebasePos_interior (x y : PlaneDegree w) (hdet : 0 < x.det y)
 /-- The middle factors `Ψ[T i]^{κ(i) / D}` of the exchange regroup into unit factors of the
 plane. -/
 private theorem exists_units_prod_eq_rebase (k : ℕ) (x y : PlaneDegree w)
-    (hdet : 0 < x.det y)
+    (hdet : 0 < y.det x)
     (I : List (PlaneDegree (Weight.rebase x y)))
     (hchain : I.IsChain fun a b => ¬ PlaneDegree.Inverted a b)
     (hmid : CompletedGroup.projection k
       ((unitFactor y)⁻¹ * unitFactor x * unitFactor y * (unitFactor x)⁻¹) =
       CompletedGroup.projection k (I.map fun m =>
-        dilogPow (rebasePos x y m) ((x.det y : ℚ)⁻¹ * rayIndex m.vec)).prod) :
+        dilogPow (rebasePos x y m) ((y.det x : ℚ)⁻¹ * rayIndex m.vec)).prod) :
     ∃ M : List (PlaneDegree w), (∀ m ∈ M, ∃ i ∈ I, rebasePos x y i = m) ∧
       CompletedGroup.projection k (M.map unitFactor).prod =
         CompletedGroup.projection k (I.map fun m =>
-          dilogPow (rebasePos x y m) ((x.det y : ℚ)⁻¹ * rayIndex m.vec)).prod := by
+          dilogPow (rebasePos x y m) ((y.det x : ℚ)⁻¹ * rayIndex m.vec)).prod := by
   classical
-  have hDpos : 0 < (x.det y : ℚ) := by exact_mod_cast hdet
-  have hDinv : 0 < (x.det y : ℚ)⁻¹ := inv_pos.mpr hDpos
+  have hDpos : 0 < (y.det x : ℚ) := by exact_mod_cast hdet
+  have hDinv : 0 < (y.det x : ℚ)⁻¹ := inv_pos.mpr hDpos
   have hg : E.IsIntegralLabel (plane w)
       ((unitFactor y)⁻¹ * unitFactor x * unitFactor y * (unitFactor x)⁻¹) :=
     (((isIntegralLabel_unitFactor_inv y).mul E (plane w) (isIntegralLabel_unitFactor x)).mul E
       (plane w) (isIntegralLabel_unitFactor y)).mul E (plane w) (isIntegralLabel_unitFactor_inv x)
-  have hcpos : ∀ i ∈ I, 0 < (x.det y : ℚ)⁻¹ * rayIndex i.vec := fun i _ =>
+  have hcpos : ∀ i ∈ I, 0 < (y.det x : ℚ)⁻¹ * rayIndex i.vec := fun i _ =>
     mul_pos hDinv i.rayIndex_pos
   have hxy : ∀ i ∈ I, (rebasePos x y i).vec ∈ AddSubmonoid.closure {x.vec, y.vec} := by
     intro i _
@@ -259,15 +261,37 @@ private theorem exists_units_prod_eq_rebase (k : ℕ) (x y : PlaneDegree w)
       (rebasePos x y j).vec := by
     refine hchain.imp (fun a b hab => ?_)
     rw [rebasePos_vec, rebasePos_vec, form_rebase]
-    exact mul_nonneg hDpos.le (not_lt.mp hab)
+    exact mul_nonneg hDpos.le
+      (not_lt.mp (mt (PlaneDegree.inverted_iff_coefficientForm_lt a b).mpr hab))
   exact (exists_units_prod_eq_of_isChain I (rebasePos x y)
-    (fun i => (x.det y : ℚ)⁻¹ * rayIndex i.vec) hcpos x y hxy hIchain hg (k := k) hmid).imp
+    (fun i => (y.det x : ℚ)⁻¹ * rayIndex i.vec) hcpos x y hxy hIchain hg (k := k) hmid).imp
       fun M hM => ⟨hM.1, hM.2.trans hmid⟩
+
+/-- For a plane degree `x`, a vector `a` and `D > 0` with `{a, x} = D`, the ray index of `x` is
+`A / D` for some natural number `A`. -/
+private theorem exists_nat_mul_inv_eq_rayIndex (x : PlaneDegree w) (a : ℤ × ℤ) {D : ℚ}
+    (hD : 0 < D) (hform : E.form a x.vec = D) : ∃ A : ℕ, (A : ℚ) * D⁻¹ = rayIndex x.vec := by
+  obtain ⟨z, hz⟩ := E.exists_int_eq_rayIndex_mul_form x.vec.property a
+  rw [hform] at hz
+  have hzpos : 0 < z := by
+    have : (0 : ℚ) < z := by rw [← hz]; exact mul_pos x.rayIndex_pos hD
+    exact_mod_cast this
+  obtain ⟨A, rfl⟩ : ∃ A : ℕ, (A : ℤ) = z := ⟨z.toNat, Int.toNat_of_nonneg hzpos.le⟩
+  refine ⟨A, ?_⟩
+  push_cast at hz
+  rw [← hz]
+  field_simp
+
+/-- Conjugating the exchange `X Y = Y T X` gives `Y⁻¹ X Y X⁻¹ = T`. -/
+private theorem conj_eq_of_mul_eq {G : Type*} [Group G] {X Y T : G} (h : X * Y = Y * (T * X)) :
+    Y⁻¹ * X * Y * X⁻¹ = T := by
+  calc Y⁻¹ * X * Y * X⁻¹ = Y⁻¹ * (X * Y) * X⁻¹ := by group
+    _ = T := by rw [h]; group
 
 /-- The recursive step of the exchange: for `{y, x} ≥ 2` the exchange of the unit factors of `x`
 and `y` follows from the exchanges in the plane rescaled along `x, y`. -/
 private theorem exists_exchange_of_two_le_det (k : ℕ) (x y : PlaneDegree w)
-    (hdet : 2 ≤ x.det y) (hk : x.deg + y.deg ≤ k)
+    (hdet : 2 ≤ y.det x) (hk : x.deg + y.deg ≤ k)
     (IH : ∀ x' y' : PlaneDegree (Weight.rebase x y), PlaneDegree.Inverted x' y' →
       x'.deg + y'.deg ≤ k →
       ∃ M : List (PlaneDegree (Weight.rebase x y)),
@@ -277,46 +301,23 @@ private theorem exists_exchange_of_two_le_det (k : ℕ) (x y : PlaneDegree w)
     ∃ M : List (PlaneDegree w), (∀ m ∈ M, x.deg < m.deg ∧ y.deg < m.deg ∧ ¬ m.Boundary) ∧
       CompletedGroup.projection k (unitFactor x * unitFactor y) =
         CompletedGroup.projection k (unitFactor y * (M.map unitFactor).prod * unitFactor x) := by
-  have hdet0 : 0 < x.det y := by omega
-  have hDpos : 0 < (x.det y : ℚ) := by exact_mod_cast hdet0
-  have hD : x.det y ≠ 0 := hdet0.ne'
+  have hdet0 : 0 < y.det x := by omega
+  have hDpos : 0 < (y.det x : ℚ) := by exact_mod_cast hdet0
+  have hD : y.det x ≠ 0 := hdet0.ne'
   -- The unit factors of `x` and `y` are powers `Ψ[x]^{A/D}`, `Ψ[y]^{B/D}`.
-  obtain ⟨zA, hzA⟩ := E.exists_int_eq_rayIndex_mul_form x.vec.property (y.vec : ℤ × ℤ)
-  obtain ⟨zB, hzB⟩ := E.exists_int_eq_rayIndex_mul_form y.vec.property (-(x.vec : ℤ × ℤ))
-  have hform1 : E.form y.vec x.vec = (x.det y : ℚ) := PlaneDegree.form_det x y
-  have hform2 : E.form (-(x.vec : ℤ × ℤ)) y.vec = (x.det y : ℚ) := by
+  obtain ⟨A, hAx⟩ := exists_nat_mul_inv_eq_rayIndex x (y.vec : ℤ × ℤ) hDpos
+    (PlaneDegree.form_det y x)
+  obtain ⟨B, hBy⟩ := exists_nat_mul_inv_eq_rayIndex y (-(x.vec : ℤ × ℤ)) hDpos (by
     rw [map_neg, LinearMap.neg_apply, E.form_swap, neg_neg]
-    exact PlaneDegree.form_det x y
-  rw [hform1] at hzA
-  rw [hform2] at hzB
-  have hκx := x.rayIndex_pos
-  have hκy := y.rayIndex_pos
-  have hzApos : 0 < zA := by
-    have : (0 : ℚ) < zA := by rw [← hzA]; exact mul_pos hκx hDpos
-    exact_mod_cast this
-  have hzBpos : 0 < zB := by
-    have : (0 : ℚ) < zB := by rw [← hzB]; exact mul_pos hκy hDpos
-    exact_mod_cast this
-  obtain ⟨A, rfl⟩ : ∃ A : ℕ, (A : ℤ) = zA := ⟨zA.toNat, Int.toNat_of_nonneg hzApos.le⟩
-  obtain ⟨B, rfl⟩ : ∃ B : ℕ, (B : ℤ) = zB := ⟨zB.toNat, Int.toNat_of_nonneg hzBpos.le⟩
-  push_cast at hzA hzB
-  have hAx : (A : ℚ) * (x.det y : ℚ)⁻¹ = rayIndex x.vec := by
-    rw [← hzA]
-    field_simp
-  have hBy : (B : ℚ) * (x.det y : ℚ)⁻¹ = rayIndex y.vec := by
-    rw [← hzB]
-    field_simp
+    exact PlaneDegree.form_det y x)
   obtain ⟨I, hI, hchain, hprod⟩ := exists_isChain_rebase k A B x y hk IH
   have hT := projection_mul_eq_of_rebase k A B x y hD hAx hBy I hprod
   have hmid : CompletedGroup.projection k
       ((unitFactor y)⁻¹ * unitFactor x * unitFactor y * (unitFactor x)⁻¹) =
       CompletedGroup.projection k (I.map fun m =>
-        dilogPow (rebasePos x y m) ((x.det y : ℚ)⁻¹ * rayIndex m.vec)).prod := by
-    simp only [map_mul, map_inv] at hT ⊢
-    set X := CompletedGroup.projection k (unitFactor x)
-    set Y := CompletedGroup.projection k (unitFactor y)
-    calc _ = Y⁻¹ * (X * Y) * X⁻¹ := by group
-      _ = _ := by rw [hT]; group
+        dilogPow (rebasePos x y m) ((y.det x : ℚ)⁻¹ * rayIndex m.vec)).prod := by
+    simp only [map_mul, map_inv]
+    exact conj_eq_of_mul_eq (by simpa only [map_mul] using hT)
   obtain ⟨M, hMmem, hMprod⟩ := exists_units_prod_eq_rebase k x y hdet0 I hchain hmid
   refine ⟨M, fun m hm => ?_, ?_⟩
   · obtain ⟨i, hiI, rfl⟩ := hMmem m hm
@@ -326,9 +327,9 @@ private theorem exists_exchange_of_two_le_det (k : ℕ) (x y : PlaneDegree w)
     rw [hMprod, mul_assoc]
 
 /-- The rescaled plane has strictly larger weights when `{y, x} ≥ 2`. -/
-private theorem fst_add_snd_lt_deg_add_deg (x y : PlaneDegree w) (hdet : 2 ≤ x.det y) :
+private theorem fst_add_snd_lt_deg_add_deg (x y : PlaneDegree w) (hdet : 2 ≤ y.det x) :
     w.fst + w.snd < x.deg + y.deg := by
-  obtain ⟨hy1, hx2⟩ := PlaneDegree.one_le_fst_and_one_le_snd (x := x) (y := y) (by omega)
+  obtain ⟨hy1, hx2⟩ := PlaneDegree.one_le_fst_and_one_le_snd (x := y) (y := x) (by omega)
   have hdet' : y.fst * x.snd - y.snd * x.fst ≥ 2 := by rwa [PlaneDegree.det_eq] at hdet
   have h1 := y.fst_nonneg
   have h2 := x.snd_nonneg
@@ -371,15 +372,18 @@ theorem exists_exchange (k : ℕ) {w : Weight} (x y : PlaneDegree w)
   induction n using Nat.strong_induction_on with
   | _ n ih =>
   intro w x y hn hbad hk
-  have hdet0 : 0 < x.det y := (PlaneDegree.inverted_iff_det_pos x y).mp hbad
-  by_cases h1 : x.det y = 1
+  have hdet0 : 0 < y.det x := by
+    have := (PlaneDegree.inverted_iff_det_neg x y).mp hbad
+    simp only [PlaneDegree.det_eq] at this ⊢
+    linarith
+  by_cases h1 : y.det x = 1
   · obtain ⟨m, hm1, hm2, hm3, hm4⟩ := exists_exchange_of_det_eq_one x y h1
     refine ⟨[m], fun m' hm' => ?_, ?_⟩
     · rw [List.mem_singleton] at hm'
       subst hm'
       exact ⟨hm1, hm2, hm3⟩
     · simp only [List.map_cons, List.map_nil, List.prod_cons, List.prod_nil, mul_one, hm4]
-  · have hdet : 2 ≤ x.det y := by omega
+  · have hdet : 2 ≤ y.det x := by omega
     have hlt := fst_add_snd_lt_deg_add_deg x y hdet
     refine exists_exchange_of_two_le_det k x y hdet hk fun x' y' hb hk' => ?_
     refine ih (k + 1 - ((Weight.rebase x y).fst + (Weight.rebase x y).snd)) ?_

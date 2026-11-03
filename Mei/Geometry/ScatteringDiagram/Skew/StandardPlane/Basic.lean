@@ -96,6 +96,8 @@ def plane (w : Weight) : PositiveDegrees Γ where
     simp only [Weight.degreeHom_apply] at h3
     refine ⟨h1, ?_, h2, ?_⟩ <;> nlinarith
 
+-- `(plane w).monoid` has the carrier `{v | 0 ≤ v.1.1 ∧ 0 ≤ v.1.2}` and `(plane w).degree` is
+-- `w.degreeHom` by construction, so the next two lemmas hold by unfolding `plane`.
 @[simp]
 theorem mem_plane_monoid {w : Weight} {v : Γ} :
     v ∈ (plane w).monoid ↔ 0 ≤ v.1.1 ∧ 0 ≤ v.1.2 := Iff.rfl
@@ -160,14 +162,19 @@ theorem deg_pos (m : PlaneDegree w) : 0 < m.deg := by
   omega
 
 /-- Plane degrees on the boundary of the quadrant: those with a vanishing coordinate. -/
-@[expose] def Boundary (m : PlaneDegree w) : Prop := m.fst = 0 ∨ m.snd = 0
+def Boundary (m : PlaneDegree w) : Prop := m.fst = 0 ∨ m.snd = 0
+
+theorem boundary_iff (m : PlaneDegree w) : m.Boundary ↔ m.fst = 0 ∨ m.snd = 0 := Iff.rfl
 
 instance : DecidablePred (Boundary (w := w)) := fun m =>
   inferInstanceAs (Decidable (m.fst = 0 ∨ m.snd = 0))
 
 /-- A pair of plane degrees is an *inversion* when its skew pairing `{m, m'}` is negative: it is
 out of order and needs an exchange. -/
-@[expose] def Inverted (m m' : PlaneDegree w) : Prop := E.coefficientForm ℚ m.vec m'.vec < 0
+def Inverted (m m' : PlaneDegree w) : Prop := E.coefficientForm ℚ m.vec m'.vec < 0
+
+theorem inverted_iff_coefficientForm_lt (m m' : PlaneDegree w) :
+    Inverted m m' ↔ E.coefficientForm ℚ m.vec m'.vec < 0 := Iff.rfl
 
 private theorem mem_unfrozen (v : ℤ × ℤ) : v ∈ E.unfrozen := by
   simp only [E, unimodularRankTwo_unfrozen]
@@ -185,15 +192,18 @@ def e₂ (w : Weight) : PlaneDegree w where
   mem := ⟨le_rfl, by simp⟩
   ne_zero h := by simpa using congrArg (fun v : Γ => v.1.2) h
 
+-- The basis vectors are built from the pairs `(1, 0)` and `(0, 1)`, and `fst`, `snd` are the
+-- coordinates of `vec`, so the next four lemmas hold by unfolding `e₁`, `e₂`.
 @[simp] theorem e₁_fst : (e₁ w).fst = 1 := (rfl)
 @[simp] theorem e₁_snd : (e₁ w).snd = 0 := (rfl)
 @[simp] theorem e₂_fst : (e₂ w).fst = 0 := (rfl)
 @[simp] theorem e₂_snd : (e₂ w).snd = 1 := (rfl)
 
-/-- The integer `{y, x} = y₁ x₂ - y₂ x₁` of a pair of plane degrees. -/
-def det (x y : PlaneDegree w) : ℤ := y.fst * x.snd - y.snd * x.fst
+/-- The integer `{x, y} = x₁ y₂ - x₂ y₁` of a pair of plane degrees. -/
+def det (x y : PlaneDegree w) : ℤ := x.fst * y.snd - x.snd * y.fst
 
-theorem det_eq (x y : PlaneDegree w) : x.det y = y.fst * x.snd - y.snd * x.fst := (rfl)
+-- `det` is defined by this formula, so the lemma holds by unfolding it.
+theorem det_eq (x y : PlaneDegree w) : x.det y = x.fst * y.snd - x.snd * y.fst := (rfl)
 
 @[simp]
 theorem deg_e₁ (w : Weight) : (e₁ w).deg = w.fst := by
@@ -208,43 +218,42 @@ theorem deg_e₂ (w : Weight) : (e₂ w).deg = w.snd := by
   simp
 
 theorem inverted_iff (m m' : PlaneDegree w) : Inverted m m' ↔ m.fst * m'.snd < m.snd * m'.fst := by
-  rw [Inverted, coefficientForm_apply]
+  rw [inverted_iff_coefficientForm_lt, coefficientForm_apply]
   have : ((m.fst * m'.snd - m.snd * m'.fst : ℤ) : ℚ) < 0 ↔ m.fst * m'.snd - m.snd * m'.fst < 0 :=
     Int.cast_lt_zero
   rw [this]
   omega
 
-theorem inverted_iff_det_pos (x y : PlaneDegree w) : Inverted x y ↔ 0 < x.det y := by
-  rw [inverted_iff, det_eq]
-  constructor <;> intro h <;> nlinarith
+theorem inverted_iff_det_neg (x y : PlaneDegree w) : Inverted x y ↔ x.det y < 0 := by
+  rw [inverted_iff, det_eq, sub_neg]
 
-theorem form_det (x y : PlaneDegree w) : E.form y.vec x.vec = (x.det y : ℚ) := by
+theorem form_det (x y : PlaneDegree w) : E.form x.vec y.vec = (x.det y : ℚ) := by
   rw [form_apply, det_eq]
 
-theorem form_neg_det (x y : PlaneDegree w) : E.form ↑(-x.vec) y.vec = (x.det y : ℚ) := by
+theorem form_neg_det (x y : PlaneDegree w) : E.form ↑(-x.vec) y.vec = (y.det x : ℚ) := by
   rw [NegMemClass.coe_neg, map_neg, LinearMap.neg_apply, E.form_swap, neg_neg]
-  exact form_det x y
+  exact form_det y x
 
-/-- If `{y, x} > 0`, then `y` has a positive first and `x` a positive second coordinate. -/
+/-- If `{x, y} > 0`, then `x` has a positive first and `y` a positive second coordinate. -/
 theorem one_le_fst_and_one_le_snd {x y : PlaneDegree w} (h : 0 < x.det y) :
-    1 ≤ y.fst ∧ 1 ≤ x.snd := by
+    1 ≤ x.fst ∧ 1 ≤ y.snd := by
   rw [det_eq] at h
-  have := y.fst_nonneg
-  have := x.snd_nonneg
   have := x.fst_nonneg
   have := y.snd_nonneg
+  have := x.snd_nonneg
+  have := y.fst_nonneg
   constructor
   · by_contra hc
-    have h0 : y.fst = 0 := by omega
+    have h0 : x.fst = 0 := by omega
     rw [h0] at h
     nlinarith
   · by_contra hc
-    have h0 : x.snd = 0 := by omega
+    have h0 : y.snd = 0 := by omega
     rw [h0] at h
     nlinarith
 
 theorem coefficientForm_det (x y : PlaneDegree w) :
-    E.coefficientForm ℚ y.vec x.vec = (x.det y : ℚ) := by
+    E.coefficientForm ℚ x.vec y.vec = (x.det y : ℚ) := by
   rw [SkewLatticeDatum.coefficientForm_apply, Algebra.algebraMap_self, RingHom.id_apply, form_det]
 
 /-- The pairing of an inversion is not an inversion in the other direction. -/

@@ -38,6 +38,35 @@ instance factPrincipal (w : Weight) :
     Fact ((E.principalPositiveDegrees (plane w)).monoid ≤ E.principalCoefficientMonoid (plane w)) :=
   ⟨E.principalPositiveDegrees_le_coefficientMonoid _⟩
 
+/-- Labels of degree above the cutoff `k` project to the identity at order `k`. -/
+theorem projection_prod_dilogPow_filter {w : Weight} {ι : Type*} (l : List ι)
+    (δ : ι → PlaneDegree w) (σ : ι → ℚ) (k : ℕ) :
+    CompletedGroup.projection k (l.map fun i => dilogPow (δ i) (σ i)).prod =
+      CompletedGroup.projection k
+        ((l.filter fun i => (δ i).deg ≤ k).map fun i => dilogPow (δ i) (σ i)).prod := by
+  rw [map_list_prod, map_list_prod, List.map_map, List.map_map]
+  refine (List.prod_map_filter_of_ne l fun i _ hi => ?_).symm
+  by_contra hik
+  refine hi ?_
+  rw [Function.comp_apply, dilogPow_def]
+  apply SkewLieAlgebra.projection_rayExp_eq_one_of_lt
+  have := (δ i).deg_eq_degree
+  omega
+
+/-- If each label `Ψ[δ i]^{σ i}` is the `s i`-th power of the unit factor of `δ i`, then the unit
+factors of the flattened list of `s i` copies of each `δ i` multiply to the product of the
+labels. -/
+theorem prod_unitFactor_flatten_replicate {w : Weight} {ι : Type*} (l : List ι)
+    (δ : ι → PlaneDegree w) (s : ι → ℕ) (σ : ι → ℚ)
+    (h : ∀ i ∈ l, dilogPow (δ i) (σ i) = unitFactor (δ i) ^ s i) :
+    ((l.map fun i => List.replicate (s i) (δ i)).flatten.map unitFactor).prod =
+      (l.map fun i => dilogPow (δ i) (σ i)).prod := by
+  rw [List.map_flatten, List.prod_flatten, List.map_map, List.map_map]
+  congr 1
+  refine List.map_congr_left fun i hi => ?_
+  simp only [Function.comp_apply, List.map_replicate, List.prod_replicate]
+  exact (h i hi).symm
+
 variable {w : Weight} [DecidableEq (Module.Dual ℤ E.sublattice)]
 
 /-- Unit factors act integrally on the principal coefficients. -/
@@ -111,30 +140,13 @@ theorem exists_units_prod_eq_of_isChain {ι : Type*} (I : List ι) (δ : ι → 
     simp only [List.mem_flatten, List.mem_map, List.mem_filter] at hm
     obtain ⟨L, ⟨i, ⟨hi, -⟩, rfl⟩, hmL⟩ := hm
     exact ⟨i, hl'I hi, (List.eq_of_mem_replicate hmL).symm⟩
-  · have hflat : ((((l'.filter fun i => (δ i).deg ≤ k).map fun i =>
-        List.replicate (s i).toNat (δ i)).flatten).map unitFactor).prod =
-        ((l'.filter fun i => (δ i).deg ≤ k).map fun i => dilogPow (δ i) (σ i)).prod := by
-      rw [List.map_flatten, List.prod_flatten, List.map_map, List.map_map]
-      congr 1
-      refine List.map_congr_left fun i hi => ?_
-      rw [List.mem_filter, decide_eq_true_eq] at hi
-      simp only [Function.comp_apply, List.map_replicate, List.prod_replicate]
-      exact (hpow i hi.1 hi.2).symm
-    -- Labels of degree above the cutoff project to the identity.
-    have hdrop : CompletedGroup.projection k (l'.map fun i => dilogPow (δ i) (σ i)).prod =
-        CompletedGroup.projection k
-          ((l'.filter fun i => (δ i).deg ≤ k).map fun i => dilogPow (δ i) (σ i)).prod := by
-      rw [map_list_prod, map_list_prod, List.map_map, List.map_map]
-      refine (List.prod_map_filter_of_ne l' fun i _ hi => ?_).symm
-      by_contra hik
-      refine hi ?_
-      rw [Function.comp_apply, dilogPow_def]
-      apply SkewLieAlgebra.projection_rayExp_eq_one_of_lt
-      have := (δ i).deg_eq_degree
-      omega
+  · have hflat := prod_unitFactor_flatten_replicate (l'.filter fun i => (δ i).deg ≤ k) δ
+      (fun i => (s i).toNat) σ fun i hi => by
+        rw [List.mem_filter, decide_eq_true_eq] at hi
+        exact hpow i hi.1 hi.2
     have hl' : (l'.map fun i => dilogPow (δ i) (σ i)).prod =
         (I.map fun i => dilogPow (δ i) (c i)).prod := by
       simpa only [dilogPow_def] using hprod.symm
-    rw [hflat, ← hdrop, hl', ← hk]
+    rw [hflat, ← projection_prod_dilogPow_filter, hl', ← hk]
 
 end Mei.StandardPlane
