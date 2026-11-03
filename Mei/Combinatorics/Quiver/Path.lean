@@ -5,6 +5,7 @@ Authors: Codex
 -/
 module
 
+public import Mathlib.Combinatorics.Quiver.SingleObj
 public import Mathlib.Combinatorics.Quiver.Symmetric
 public import Mathlib.Combinatorics.Quiver.Path.Vertices
 public import Mathlib.Data.List.Chain
@@ -29,6 +30,7 @@ weight of the entire path. Arrow weights agreeing at matching mapped endpoints
 compare paths in different quivers with the same mapped vertex list.
 Additive endpoint weights also distribute over subtraction.
 Four-edge grid loops have vertices among their four indexed corners.
+In a one-object quiver, a finite sequence of arrows defines a path (`Quiver.SingleObj.pathOfFn`).
 
 The sequence-path API is adapted from Codex,
 [Mei PR #325](https://github.com/yuma-mizuno-lean/Mei/pull/325).
@@ -234,3 +236,24 @@ theorem vertices_reverse {x y : V} (p : Path x y) :
   | cons p e ih => simp [Path.reverse, ih]
 
 end Quiver.Path
+
+namespace Quiver.SingleObj
+
+variable {α : Type*}
+
+/-- The path of a finite sequence of arrows in a one-object quiver. Index zero is the last
+arrow, as for `listToPath (List.ofFn T)`; the recursion on the length makes every step a
+definitional `Path.cons`, and the body is exposed so that degree histories of
+`pathOfFn T` unfold to pairs. -/
+@[expose]
+def pathOfFn : {n : ℕ} → (Fin n → α) → Path (star α) (star α)
+  | 0, _ => Path.nil
+  | _ + 1, T => (pathOfFn fun j => T j.succ).cons (T 0)
+
+@[simp]
+theorem pathOfFn_zero (T : Fin 0 → α) : pathOfFn T = Path.nil := (rfl)
+
+theorem pathOfFn_succ {n : ℕ} (T : Fin (n + 1) → α) :
+    pathOfFn T = (pathOfFn fun j => T j.succ).cons (T 0) := (rfl)
+
+end Quiver.SingleObj

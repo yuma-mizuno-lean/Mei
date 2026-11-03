@@ -6,7 +6,6 @@ Authors: Codex
 module
 
 public import Mei.LinearAlgebra.GradedModule.History.Basic
-public import Mathlib.Data.Fin.Tuple.Basic
 
 /-!
 # Finite support of homogeneous histories

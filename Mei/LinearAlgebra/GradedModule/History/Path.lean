@@ -7,6 +7,7 @@ module
 
 public import Mei.Algebra.DirectSum.Component
 public import Mei.Algebra.DirectSum.Map
+public import Mei.Combinatorics.Quiver.Path
 public import TauCeti.Algebra.DirectSum.Internal
 public import Mathlib.Algebra.Category.ModuleCat.Semi
 public import Mathlib.CategoryTheory.PathCategory.Basic
@@ -627,21 +628,6 @@ end Quiver.Path
 namespace Quiver.SingleObj
 
 variable {α : Type x}
-
-/-- The path of a finite sequence of arrows in a one-object quiver. Index zero is the last
-arrow, as for `listToPath (List.ofFn T)`; the recursion on the length makes every step a
-definitional `Path.cons`, and the body is exposed so that degree histories of
-`pathOfFn T` unfold to pairs. -/
-@[expose]
-def pathOfFn : {n : ℕ} → (Fin n → α) → Path (star α) (star α)
-  | 0, _ => Path.nil
-  | _ + 1, T => (pathOfFn fun j => T j.succ).cons (T 0)
-
-@[simp]
-theorem pathOfFn_zero (T : Fin 0 → α) : pathOfFn T = Path.nil := (rfl)
-
-theorem pathOfFn_succ {n : ℕ} (T : Fin (n + 1) → α) :
-    pathOfFn T = (pathOfFn fun j => T j.succ).cons (T 0) := (rfl)
 
 /-- With a constant degree type, a degree history of `pathOfFn T` is a function on the
 positions of `T`; index zero is the degree after the last arrow. -/
