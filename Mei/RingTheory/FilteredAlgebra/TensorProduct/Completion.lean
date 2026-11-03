@@ -7,19 +7,23 @@ module
 
 public import Mei.RingTheory.FilteredAlgebra.TensorProduct.Basic
 public import Mei.RingTheory.FilteredAlgebra.Map
-public import Mei.RingTheory.FilteredAlgebra.Algebra
+public import Mei.RingTheory.FilteredAlgebra.Module
+public import Mei.LinearAlgebra.ModuleFiltration.Bilinear
 
 /-!
 # Pure tensors in completed tensor products
 
 The inclusions of two filtered algebras in their tensor product extend to their
-completions. Their images commute, so their product defines an `R`-bilinear,
+completions. Their images commute, and their product agrees with the `R`-bilinear,
 multiplicative pure-tensor map into the completion for the total-degree filtration.
 At each order this map depends only on the two finite-order classes. In particular,
 it can be used to state group-like and primitive identities for completed coproducts.
 
-The construction uses `Mei.AlgFiltration.mapCompletion` and Mathlib's algebra tensor
-inclusions, rather than choosing representatives of elements of either completion.
+The pure-tensor map is the generic `ModuleFiltration.completionBilinear` for
+`TensorProduct.mk`, transported by the canonical module/algebra completion
+equivalences. It agrees pointwise with the product of the completed left and
+right inclusions (`completedTensor_apply`), from which multiplicativity and the
+unit formulas follow. Filtration orders of the two inputs add.
 The two algebras may be noncommutative; no flatness or separatedness is required.
 -/
 
@@ -120,15 +124,66 @@ theorem commute_includeLeftCompletion_includeRightCompletion
 /-- The bilinear pure-tensor map from the completions into the completed tensor product. -/
 noncomputable def completedTensor :
     F.completion →ₗ[R] G.completion →ₗ[R] (F.tensorProduct R G).completion :=
-  (LinearMap.mul R (F.tensorProduct R G).completion).compl₁₂
-    (F.includeLeftCompletion (R := R) G).toLinearMap
-    (F.includeRightCompletion (R := R) G).toLinearMap
+  ((ModuleFiltration.completionBilinear
+    (F.toModuleFiltration R) (G.toModuleFiltration R) ((F.tensorProduct R G).toModuleFiltration R)
+    (TensorProduct.mk R A B) (F.tmul_mem_tensorProduct R G)).compr₂
+      ((F.tensorProduct R G).moduleCompletionEquiv (R := R)).toLinearMap).compl₁₂
+    (F.moduleCompletionEquiv (R := R)).symm.toLinearMap
+    (G.moduleCompletionEquiv (R := R)).symm.toLinearMap
+
+/-- The completed tensor is the generic completed bilinear pairing under the
+canonical module/algebra completion comparisons. -/
+theorem completedTensor_apply_eq_completionBilinear (x : F.completion) (y : G.completion) :
+    F.completedTensor (R := R) G x y =
+      (F.tensorProduct R G).moduleCompletionEquiv
+        (ModuleFiltration.completionBilinear
+          (F.toModuleFiltration R) (G.toModuleFiltration R)
+          ((F.tensorProduct R G).toModuleFiltration R)
+          (TensorProduct.mk R A B) (F.tmul_mem_tensorProduct R G)
+          ((F.moduleCompletionEquiv (R := R)).symm x)
+          ((G.moduleCompletionEquiv (R := R)).symm y)) := by
+  simp only [completedTensor, LinearMap.compl₁₂_apply, LinearMap.compr₂_apply,
+    LinearEquiv.coe_toLinearMap]
+
+/-- Completed pure tensors add the filtration orders of their factors. -/
+@[grind .]
+theorem completedTensor_mem_completionIdeal {a b : ℕ}
+    {x : F.completion} {y : G.completion}
+    (hx : x ∈ F.completionIdeal a) (hy : y ∈ G.completionIdeal b) :
+    F.completedTensor (R := R) G x y ∈ (F.tensorProduct R G).completionIdeal (a + b) := by
+  rw [completedTensor_apply_eq_completionBilinear, moduleCompletionEquiv_mem_completionIdeal_iff]
+  apply ModuleFiltration.completionBilinear_mem_completedFiltration
+  · apply (F.moduleCompletionEquiv_mem_completionIdeal_iff a _).mp
+    simpa only [LinearEquiv.apply_symm_apply] using hx
+  · apply (G.moduleCompletionEquiv_mem_completionIdeal_iff b _).mp
+    simpa only [LinearEquiv.apply_symm_apply] using hy
+
+/-- Any representatives of the two finite-order classes compute the projected tensor. -/
+theorem projection_completedTensor_of_representatives (k : ℕ)
+    (x : F.completion) (y : G.completion) (a : A) (b : B)
+    (ha : Ideal.Quotient.mk (F.ideal (k + 1)) a = F.projection k x)
+    (hb : Ideal.Quotient.mk (G.ideal (k + 1)) b = G.projection k y) :
+    (F.tensorProduct R G).projection k (F.completedTensor (R := R) G x y) =
+      Ideal.Quotient.mk ((F.tensorProduct R G).ideal (k + 1)) (a ⊗ₜ[R] b) := by
+  rw [completedTensor_apply_eq_completionBilinear, projection_moduleCompletionEquiv,
+    ModuleFiltration.projection_completionBilinear _ _ _ _ (F.tmul_mem_tensorProduct R G),
+    F.projection_moduleCompletionEquiv_symm_of_mk k x a ha,
+    G.projection_moduleCompletionEquiv_symm_of_mk k y b hb,
+    ModuleFiltration.quotientBilinear_mk _ _ _ _ (F.tmul_mem_tensorProduct R G)]
+  simp only [Submodule.Quotient.restrictScalarsEquiv_mk, Ideal.Quotient.mk_eq_mk,
+    TensorProduct.mk_apply]
 
 /-- A completed pure tensor is the product of its completed tensor inclusions. -/
 theorem completedTensor_apply (x : F.completion) (y : G.completion) :
     F.completedTensor (R := R) G x y =
-      F.includeLeftCompletion (R := R) G x * F.includeRightCompletion (R := R) G y :=
-  (rfl)
+      F.includeLeftCompletion (R := R) G x * F.includeRightCompletion (R := R) G y := by
+  apply (F.tensorProduct R G).completion_ext
+  intro k
+  obtain ⟨a, ha⟩ := Ideal.Quotient.mk_surjective (F.projection k x)
+  obtain ⟨b, hb⟩ := Ideal.Quotient.mk_surjective (G.projection k y)
+  rw [projection_completedTensor_of_representatives F G k x y a b ha hb,
+    map_mul, projection_includeLeftCompletion, projection_includeRightCompletion, ← ha, ← hb]
+  simp [← map_mul, Algebra.TensorProduct.tmul_mul_tmul]
 
 /-- Projection of a completed pure tensor is computed using only the order-`k` classes. -/
 @[simp]
@@ -141,16 +196,6 @@ theorem projection_completedTensor (k : ℕ) (x : F.completion) (y : G.completio
         (Algebra.TensorProduct.includeRight : B →ₐ[R] A ⊗[R] B).toRingHom
         (fun _ hy => F.includeRight_mem_tensorProduct R G hy) (G.projection k y) := by
   simp [completedTensor_apply]
-
-/-- Any representatives of the two finite-order classes compute the projected tensor. -/
-theorem projection_completedTensor_of_representatives (k : ℕ)
-    (x : F.completion) (y : G.completion) (a : A) (b : B)
-    (ha : Ideal.Quotient.mk (F.ideal (k + 1)) a = F.projection k x)
-    (hb : Ideal.Quotient.mk (G.ideal (k + 1)) b = G.projection k y) :
-    (F.tensorProduct R G).projection k (F.completedTensor (R := R) G x y) =
-      Ideal.Quotient.mk ((F.tensorProduct R G).ideal (k + 1)) (a ⊗ₜ[R] b) := by
-  simp [projection_completedTensor, ← ha, ← hb, ← map_mul,
-    Algebra.TensorProduct.tmul_mul_tmul]
 
 /-- Completing an ordinary pure tensor agrees with tensoring the canonical images. -/
 @[simp]

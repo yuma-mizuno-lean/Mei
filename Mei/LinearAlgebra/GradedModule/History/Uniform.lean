@@ -21,6 +21,10 @@ Selected history sums are independent of the chosen uniform support and commute
 with coefficient specialization after grouping by the degree map. Cancellations
 are allowed; no bijection of surviving histories is asserted.
 
+Restricting the expansion to histories with a prescribed terminal degree
+isolates the final component of the composite along any linear input
+(`sum_homogeneousHistory_terminal_comp_eq`).
+
 These are the constant-chain cases of the uniform expansion theorems for
 `chainHistory` in `Mei.LinearAlgebra.GradedModule.History.Chain`, and the
 linear-map versions of `sum_homogeneousHistory` and `map_sum_ite_homogeneousHistory`.
@@ -89,6 +93,31 @@ theorem sum_ite_homogeneousHistory_comp_apply (S : Finset (Fin n → ι))
   simp only [homogeneousHistory_eq_chainHistory,
     homogeneousHistorySupport_eq_chainHistorySupport] at hS ⊢
   exact sum_ite_chainHistory_comp_apply (fun _ => ℳ) T a S hS P x
+
+/-- With a uniform finite contributing support on the input range, the final
+`η`-component along the composite is the sum of the histories with terminal
+degree `η`, written as an identity of linear maps. The ambient grading may be
+infinite. -/
+theorem sum_homogeneousHistory_terminal_comp_eq
+    (T : Fin (n + 1) → Module.End R M) (S : Finset (Fin (n + 1) → ι))
+    (hS : ∀ p ∉ S, (homogeneousHistory ℳ T p).comp a = 0) (η : ι) :
+    ∑ p ∈ S.filter (fun p => p 0 = η), (homogeneousHistory ℳ T p).comp a =
+      ((homogeneousComponent ℳ η).comp (List.ofFn T).prod).comp a := by
+  classical
+  rw [Finset.sum_filter]
+  calc ∑ p ∈ S, (if p 0 = η then (homogeneousHistory ℳ T p).comp a else 0)
+      = ∑ p ∈ S, (homogeneousComponent ℳ η).comp
+          ((homogeneousHistory ℳ T p).comp a) := by
+        refine Finset.sum_congr rfl fun p _ => ?_
+        split_ifs with hp
+        · rw [← LinearMap.comp_assoc, ← hp,
+            homogeneousComponent_comp_homogeneousHistory]
+        · rw [← LinearMap.comp_assoc,
+            homogeneousComponent_comp_homogeneousHistory_of_ne ℳ T p η hp,
+            LinearMap.zero_comp]
+    _ = ((homogeneousComponent ℳ η).comp (List.ofFn T).prod).comp a := by
+        simpa only [LinearMap.comp_assoc] using
+          sum_comp_homogeneousHistory_comp_eq ℳ T a (homogeneousComponent ℳ η) S hS
 
 open Classical in
 /-- Selected linear-map sums agree over any two uniform supports. -/

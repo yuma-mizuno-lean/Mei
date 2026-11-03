@@ -135,6 +135,14 @@ theorem projection_moduleCompletionEquiv_symm (k : ℕ) (x : F.completion) :
       projection_moduleCompletionEquiv]
   rw [LinearEquiv.symm_apply_apply]
 
+/-- An algebra quotient representative also represents the inverse module comparison. -/
+theorem projection_moduleCompletionEquiv_symm_of_mk (k : ℕ) (x : F.completion) (a : A)
+    (ha : Ideal.Quotient.mk (F.ideal (k + 1)) a = F.projection k x) :
+    (F.toModuleFiltration R).projection k ((F.moduleCompletionEquiv (R := R)).symm x) =
+      Submodule.Quotient.mk a := by
+  rw [projection_moduleCompletionEquiv_symm, ← ha, ← Ideal.Quotient.mk_eq_mk,
+    Submodule.Quotient.restrictScalarsEquiv_symm_mk]
+
 /-- The comparison sends original elements to their canonical algebra completion images. -/
 @[simp]
 theorem moduleCompletionEquiv_of (x : A) :

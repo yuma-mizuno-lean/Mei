@@ -108,10 +108,9 @@ theorem projection_completedTropicalTangentFieldToSubalgebra (k : ℕ)
     (G).projection k (completedTropicalTangentFieldToSubalgebra d ρ U m u) =
       (d.degreeIdeal ℳ k).mkQ (tropicalTangentFieldToSubalgebra d ρ U m v) := by
   simp only [completedTropicalTangentFieldToSubalgebra, LinearMap.comp_apply,
-    LinearEquiv.coe_coe, ModuleFiltration.projection_completionMap, id_eq,
-    AlgFiltration.projection_moduleCompletionEquiv_symm, hv]
-  rw [← Ideal.Quotient.mk_eq_mk,
-    Submodule.Quotient.restrictScalarsEquiv_symm_mk, Submodule.mapQ_apply]
+    LinearEquiv.coe_coe, ModuleFiltration.projection_completionMap, id_eq]
+  rw [AlgFiltration.projection_moduleCompletionEquiv_symm_of_mk _ _ _ _ hv.symm,
+    Submodule.mapQ_apply]
   rfl
 
 /-- Forming a restricted tangent field commutes with completing a finite coefficient. -/

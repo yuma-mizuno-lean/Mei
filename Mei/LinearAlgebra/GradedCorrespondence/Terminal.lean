@@ -23,8 +23,10 @@ include all three normal signs simultaneously. This is the coefficient identity
 at a terminal ordinary-wall crossing.
 
 The two totals commute with grading-preserving coefficient maps that intertwine
-the wall actions and preserve the relevant normal sign. These maps may kill
-coefficients or identify degrees; only their finite homogeneous sums are used.
+the wall actions. Normal-sign branches may differ exactly when the target wall
+action fixes the corresponding coefficient images. In particular, preserving the
+relevant normal sign is sufficient. These maps may kill coefficients or identify
+degrees; only their finite homogeneous sums are used.
 The totals preserve chosen additive positive monoids when the transports used
 in their respective normal-sign branches do so.
 
@@ -148,6 +150,81 @@ variable {N κ : Type*} [AddCommMonoid N] [Module R N] [DecidableEq κ]
   (𝓝 : κ → Submodule R N) [DirectSum.Decomposition 𝓝]
   (e' : N ≃ₗ[R] N) (w' : κ → ℤ) (r : M →ₗ[R] N) (σ : ι → κ)
 
+/-- Negative-side terminal totals commute with an intertwining coefficient map
+exactly when the target wall action fixes the image of every homogeneous input
+whose positive-normal branch changes. The fixed images need not vanish. -/
+theorem terminalGraphLift_naturality_iff
+    (hr : ∀ i a, a ∈ ℳ i → r a ∈ 𝓝 (σ i))
+    (he : r.comp e.toLinearMap = e'.toLinearMap.comp r) :
+    r.comp (terminalGraphLift ℳ e w) = (terminalGraphLift 𝓝 e' w').comp r ↔
+      ∀ i (a : ℳ i), ¬ (0 < w i ↔ 0 < w' (σ i)) → e' (r a) = r a := by
+  have hinv (a : M) : r (e.symm a) = e'.symm (r a) := by
+    apply e'.injective
+    simpa only [LinearMap.comp_apply, LinearEquiv.coe_coe,
+      LinearEquiv.apply_symm_apply] using (LinearMap.congr_fun he (e.symm a)).symm
+  constructor
+  · intro h i a hsign
+    have hv := LinearMap.congr_fun h a
+    simp only [LinearMap.comp_apply, terminalGraphLift_coe,
+      terminalGraphLift_of_mem 𝓝 e' w' (hr i a a.property)] at hv
+    by_cases hi : 0 < w i <;> by_cases hj : 0 < w' (σ i)
+    · exact (hsign (by simp [hi, hj])).elim
+    · simp only [hi, hj, ite_true, ite_false, hinv] at hv
+      simpa only [LinearEquiv.apply_symm_apply] using (congrArg e' hv).symm
+    · simp only [hi, hj, ite_true, ite_false] at hv
+      simpa only [LinearEquiv.apply_symm_apply] using congrArg e' hv
+    · exact (hsign (by simp [hi, hj])).elim
+  · intro hfix
+    apply DirectSum.decompose_lhom_ext ℳ
+    intro i
+    apply LinearMap.ext
+    intro a
+    simp only [LinearMap.comp_apply, Submodule.subtype_apply, terminalGraphLift_coe,
+      terminalGraphLift_of_mem 𝓝 e' w' (hr i a a.property)]
+    by_cases hi : 0 < w i <;> by_cases hj : 0 < w' (σ i)
+    · simpa only [hi, hj, ite_true] using hinv a
+    · simp only [hi, hj, ite_true, ite_false]
+      rw [hinv]
+      apply e'.injective
+      simpa only [LinearEquiv.apply_symm_apply] using
+        (hfix i a (by simp [hi, hj])).symm
+    · simp only [hi, hj, ite_true, ite_false]
+      apply e'.injective
+      simpa only [LinearEquiv.apply_symm_apply] using hfix i a (by simp [hi, hj])
+    · simp only [hi, hj, ite_false]
+
+/-- Positive-side terminal totals commute with an intertwining coefficient map
+exactly when the target wall action fixes coefficient images on homogeneous
+inputs whose negative-normal branch changes. -/
+theorem terminalGraphRight_naturality_iff
+    (hr : ∀ i a, a ∈ ℳ i → r a ∈ 𝓝 (σ i))
+    (he : r.comp e.toLinearMap = e'.toLinearMap.comp r) :
+    r.comp (terminalGraphRight ℳ e w) = (terminalGraphRight 𝓝 e' w').comp r ↔
+      ∀ i (a : ℳ i), ¬ (w i < 0 ↔ w' (σ i) < 0) → e' (r a) = r a := by
+  have hmap (a : M) : r (e a) = e' (r a) := LinearMap.congr_fun he a
+  constructor
+  · intro h i a hsign
+    have hv := LinearMap.congr_fun h a
+    simp only [LinearMap.comp_apply, terminalGraphRight_coe,
+      terminalGraphRight_of_mem 𝓝 e' w' (hr i a a.property)] at hv
+    by_cases hi : w i < 0 <;> by_cases hj : w' (σ i) < 0
+    · exact (hsign (by simp [hi, hj])).elim
+    · simpa only [hi, hj, ite_true, ite_false, hmap] using hv
+    · simpa only [hi, hj, ite_true, ite_false] using hv.symm
+    · exact (hsign (by simp [hi, hj])).elim
+  · intro hfix
+    apply DirectSum.decompose_lhom_ext ℳ
+    intro i
+    apply LinearMap.ext
+    intro a
+    simp only [LinearMap.comp_apply, Submodule.subtype_apply, terminalGraphRight_coe,
+      terminalGraphRight_of_mem 𝓝 e' w' (hr i a a.property)]
+    by_cases hi : w i < 0 <;> by_cases hj : w' (σ i) < 0
+    · simpa only [hi, hj, ite_true] using hmap a
+    · simpa only [hi, hj, ite_true, ite_false, hmap] using hfix i a (by simp [hi, hj])
+    · simpa only [hi, hj, ite_true, ite_false] using (hfix i a (by simp [hi, hj])).symm
+    · simp only [hi, hj, ite_false]
+
 /-- A coefficient map intertwining the wall actions also intertwines the
 negative-side terminal totals. Only positivity of normal degrees must agree;
 the coefficient map and degree map may have kernels or identify degrees. -/
@@ -156,20 +233,9 @@ theorem terminalGraphLift_naturality
     (he : r.comp e.toLinearMap = e'.toLinearMap.comp r)
     (hpos : ∀ i, 0 < w i ↔ 0 < w' (σ i)) :
     r.comp (terminalGraphLift ℳ e w) = (terminalGraphLift 𝓝 e' w').comp r := by
-  apply LinearMap.ext
-  intro a
-  induction a using DirectSum.Decomposition.inductionOn ℳ with
-  | zero => simp
-  | @homogeneous i a =>
-    simp only [LinearMap.comp_apply, terminalGraphLift_of_mem ℳ e w a.property,
-      terminalGraphLift_of_mem 𝓝 e' w' (hr i a a.property), ← hpos i]
-    split_ifs
-    · apply e'.injective
-      simpa only [LinearMap.comp_apply, LinearEquiv.coe_coe,
-        LinearEquiv.apply_symm_apply] using
-        (LinearMap.congr_fun he (e.symm a)).symm
-    · rfl
-  | add a b ha hb => simp_all
+  apply (terminalGraphLift_naturality_iff ℳ e w 𝓝 e' w' r σ hr he).mpr
+  intro i a hsign
+  exact (hsign (hpos i)).elim
 
 /-- A coefficient map intertwining the wall actions also intertwines the
 positive-side terminal totals. Only negativity of normal degrees must agree;
@@ -179,17 +245,9 @@ theorem terminalGraphRight_naturality
     (he : r.comp e.toLinearMap = e'.toLinearMap.comp r)
     (hneg : ∀ i, w i < 0 ↔ w' (σ i) < 0) :
     r.comp (terminalGraphRight ℳ e w) = (terminalGraphRight 𝓝 e' w').comp r := by
-  apply LinearMap.ext
-  intro a
-  induction a using DirectSum.Decomposition.inductionOn ℳ with
-  | zero => simp
-  | @homogeneous i a =>
-    simp only [LinearMap.comp_apply, terminalGraphRight_of_mem ℳ e w a.property,
-      terminalGraphRight_of_mem 𝓝 e' w' (hr i a a.property), ← hneg i]
-    split_ifs
-    · exact LinearMap.congr_fun he a
-    · rfl
-  | add a b ha hb => simp_all
+  apply (terminalGraphRight_naturality_iff ℳ e w 𝓝 e' w' r σ hr he).mpr
+  intro i a hsign
+  exact (hsign (hneg i)).elim
 
 end Naturality
 

@@ -167,6 +167,12 @@ noncomputable def tensorProduct : Mei.AlgFiltration (A ⊗[R] B) where
 theorem tensorProduct_ideal (k : ℕ) :
     (F.tensorProduct R G).ideal k = Ideal.tensorFiltration R F.ideal G.ideal k := (rfl)
 
+/-- Pure tensors add the filtration orders of their two factors. -/
+theorem tmul_mem_tensorProduct (a b : ℕ) {x : A} {y : B}
+    (hx : x ∈ F.ideal a) (hy : y ∈ G.ideal b) :
+    x ⊗ₜ[R] y ∈ (F.tensorProduct R G).ideal (a + b) :=
+  Ideal.tmul_mem_tensorFiltration R le_rfl hx hy
+
 /-- The left inclusion preserves filtration orders. -/
 theorem includeLeft_mem_tensorProduct {k : ℕ} {a : A} (ha : a ∈ F.ideal k) :
     Algebra.TensorProduct.includeLeft (R := R) (S := R) (B := B) a ∈

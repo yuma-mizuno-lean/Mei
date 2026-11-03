@@ -51,6 +51,14 @@ theorem quotientRecursion_apply (k : ℕ) (a : F.quotient k) :
       ∑ j ∈ Finset.range (k + 1), (F.quotientRaisingEnd f hf k ^ j) a :=
   Module.End.finiteRecursion_apply _ _ _
 
+/-- A finite quotient recursion is represented by the same finite sum in the original module. -/
+@[simp]
+theorem quotientRecursion_mk (k : ℕ) (a : M) :
+    F.quotientRecursion f hf k (Submodule.Quotient.mk a) =
+      (F.submodule (k + 1)).mkQ (f.finiteRecursion (k + 1) a) := by
+  simp only [quotientRecursion_apply, Module.End.finiteRecursion_apply, map_sum,
+    Submodule.mkQ_apply, quotientRaisingEnd_pow_mk]
+
 /-- The finite sum solves the quotient recursion. -/
 theorem quotientRecursion_eq_add (k : ℕ) (a : F.quotient k) :
     F.quotientRecursion f hf k a =

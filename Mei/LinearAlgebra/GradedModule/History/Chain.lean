@@ -6,6 +6,7 @@ Authors: Claude
 module
 
 public import Mei.Algebra.DirectSum.Map
+public import Mei.Algebra.DirectSum.Component
 public import TauCeti.Algebra.DirectSum.Internal
 public import Mathlib.RingTheory.Finiteness.Defs
 
@@ -106,9 +107,7 @@ def chainHistory : {n : ℕ} → {M : ℕ → Type v} → [∀ k, AddCommMonoid 
     ((j : Fin n) → M (j + 1) →ₗ[R] M j) → ((j : Fin n) → ι j) → M n →ₗ[R] M 0
   | 0, _, _, _, _, _, _, _, _, _ => LinearMap.id
   | n + 1, M, _, _, ι, _, ℳ, _, T, p =>
-    ((ℳ 0 (p (chainHead n))).subtype.comp
-      ((DirectSum.component R (ι 0) (fun i => ℳ 0 i) (p (chainHead n))).comp
-        (DirectSum.decomposeLinearEquiv (ℳ 0)).toLinearMap)).comp
+    (homogeneousComponent (ℳ 0) (p (chainHead n))).comp
       ((T (chainHead n)).comp (chainHistory (M := fun k => M (k + 1)) (ι := fun k => ι (k + 1))
         (fun k => ℳ (k + 1)) (fun j => T (chainSucc j)) (fun j => p (chainSucc j))))
 
@@ -156,7 +155,8 @@ theorem chainHistory_succ_apply {n : ℕ} (T : (j : Fin (n + 1)) → M (j + 1) �
     chainHistory ℳ T p a =
       (DirectSum.decompose (ℳ 0) (T (chainHead n) (chainHistory (M := fun k => M (k + 1))
         (ι := fun k => ι (k + 1)) (fun k => ℳ (k + 1)) (fun j => T (chainSucc j))
-        (fun j => p (chainSucc j)) a)) (p (chainHead n)) : M 0) := (rfl)
+        (fun j => p (chainSucc j)) a)) (p (chainHead n)) : M 0) := by
+  simp only [chainHistory, homogeneousComponent_apply, LinearMap.comp_apply]
 
 /-- The output of a nonempty history lies in its last selected homogeneous piece. -/
 theorem chainHistory_mem {n : ℕ} (T : (j : Fin (n + 1)) → M (j + 1) →ₗ[R] M j)
@@ -331,7 +331,7 @@ theorem map_chainHistory_of_injective (hσ : ∀ k, Function.Injective (σ k)) {
     rw [chainHistory_succ_apply]
     refine (DirectSum.map_decompose_shift (ℳ 0) (𝓝 0) (r 0).toAddMonoidHom (σ 0) (hσ 0)
       (hr 0) _ _).trans ?_
-    rw [LinearMap.toAddMonoidHom_coe, hcomm]
+    rw [LinearMap.toAddMonoidHom_coe, hcomm, chainHistory_succ_apply 𝓝 U]
     exact congrArg (fun x => (DirectSum.decompose (𝓝 0) (U (chainHead n) x)
       (σ 0 (p (chainHead n))) : N 0)) htail
 

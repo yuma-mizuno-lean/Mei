@@ -123,9 +123,9 @@ theorem projection_principalModuleCompletionEquiv_symm (k : ℕ) (p : MvPowerSer
       ((principalModuleCompletionEquiv σ R).symm p) =
       Submodule.Quotient.mk (p.truncTotal (k + 1)) := by
   rw [principalModuleCompletionEquiv, LinearEquiv.symm_trans_apply,
-    projection_moduleCompletionEquiv_symm, ← AlgEquiv.toLinearEquiv_symm,
-    AlgEquiv.toLinearEquiv_apply, projection_principalCompletionEquiv_symm,
-    ← Ideal.Quotient.mk_eq_mk, Submodule.Quotient.restrictScalarsEquiv_symm_mk]
+    ← AlgEquiv.toLinearEquiv_symm, AlgEquiv.toLinearEquiv_apply]
+  apply projection_moduleCompletionEquiv_symm_of_mk
+  exact (projection_principalCompletionEquiv_symm σ R k p).symm
 
 end Mei
 
