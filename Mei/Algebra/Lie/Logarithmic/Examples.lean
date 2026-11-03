@@ -5,7 +5,6 @@ Authors: Claude Code
 -/
 module
 
-public import Mei.Algebra.Group.Hom.Int
 public import Mei.Algebra.Lie.Logarithmic.Coefficient
 public import Mei.Algebra.Lie.Logarithmic.Pairing.Basic
 public import Mathlib.Algebra.MvPolynomial.PDeriv
