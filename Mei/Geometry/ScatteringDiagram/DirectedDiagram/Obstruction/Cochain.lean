@@ -23,19 +23,18 @@ with any kernel-valued cochain using the actual loop logarithms in the ambient
 truncated Lie algebra. Injectivity of coefficient maps on cochains ensures that
 this ambient comparison loses no information through subdivision relations.
 
-If initial walls are full hyperplanes and all other walls have pure logarithms
-of degree below `k + 1`, positive isolating triangular meridians can be chosen
-so that every homogeneous component of correction degree is transverse to its
-geometric degree direction. Their vertices also avoid the affine spans of
-incident adapted wall cells and active supports, so these same choices can
-serve as local Stokes tests.
+Given a loop projection at order `k + 1`, positive isolating triangular meridians
+can be chosen so that every homogeneous component of correction degree is
+transverse to its geometric degree direction. Their vertices also avoid the affine
+spans of incident adapted wall cells and active supports, so these same choices
+can serve as local Stokes tests.
 Consequently these components belong to the domain of the negative-ray sweep;
 zero spatial directions give zero components. The cochain retains its specified
 meridians. Independence of those choices and comparison with the coboundary of
 crossing defects are separate geometric statements.
 
 The construction combines `DirectedDiagram.exists_positive_isolating_joint_triangle`,
-`DirectedDiagram.exists_pos_joint_loop_obstruction`, and
+`DirectedDiagram.LoopProjection.exists_pos_joint_loop_obstruction`, and
 `PolyhedralCochain.transverseSubmodule`. It follows the central obstruction
 construction in Mandel, *Scattering diagrams, theta functions, and refined
 tropical curve counts*, proof of Theorem 2.6, and Gross–Hacking–Keel–Kontsevich,
@@ -145,19 +144,15 @@ theorem jointObstructionCochain_eq_zero (hσ : ∀ J, (σ J).carrier = (J : Set 
     ((D.levelConsistent_iff_loops (k + 1)).mp hk' _ _), map_zero]
 
 /-- Choose actual positive isolating meridians on all oriented adapted joints,
-arbitrarily small at each joint. For full initial hyperplanes and lower pure
-birth logarithms, every correction-degree component of their central cochain
+arbitrarily small at each joint. For a loop projection at the next order,
+every correction-degree component of their central cochain
 is transverse to its geometric direction, hence can be swept. No consistency
 at order `k + 1` is assumed. The chosen vertices avoid the affine spans of
 all incident adapted walls and active directed supports. -/
 theorem exists_jointObstructionCochain (hk : D.LevelConsistent k)
     (hσ : ∀ J, (σ J).carrier = (J : Set V))
     (ε : (D.adaptedComplex (k + 1)).joints → ℝ) (hε : ∀ J, 0 < ε J)
-    (initial : Set ι)
-    (hfull : ∀ j ∈ initial, ∃ b : ℝ,
-      (D.wall j).support = {v | h.realCharacter (D.wall j).normal v = b})
-    (hpure : ∀ j ∉ initial, ∃ m : Γ, d.degree m < k + 1 ∧
-      ∃ a ∈ ℒ m, (D.wall j).label = d.expToCompletion ℒ a) :
+    (P : D.LoopProjection (k + 1)) :
     ∃ (x : (D.adaptedComplex (k + 1)).joints →
         WallComplement (fun j : D.active (k + 1) => (D.wall j).support))
       (γ : ∀ J, AdmissiblePLPath (x J) (x J)),
@@ -196,7 +191,7 @@ theorem exists_jointObstructionCochain (hk : D.LevelConsistent k)
   -- Choose a center and a radius where the local obstruction theorem applies.
   choose q hq using hpoint
   choose r hr hlocal using fun J =>
-    D.exists_pos_joint_loop_obstruction J.property (hq J) initial hfull hpure
+    P.exists_pos_joint_loop_obstruction J.property (hq J)
   have ho (J : C.joints) : (σ J).orientation.IsConormal (affineSpan ℝ (J : Set V)).direction := by
     rw [← hσ J]
     exact (σ J).isConormal

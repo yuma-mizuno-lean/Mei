@@ -6,8 +6,10 @@ Authors: Claude
 module
 
 public import Mei.Geometry.Convex.PolyhedralComplex.AmbientSubdivision
+public import Mei.Geometry.Convex.PolyhedralComplex.Star
 public import Mei.Geometry.Convex.Polyhedron.AdmissiblePath
 public import Mei.Analysis.Convex.Sign
+public import Mei.LinearAlgebra.AffineSpace.Ordered
 
 /-!
 # The coordinate axes of the plane
@@ -201,31 +203,51 @@ theorem exists_mem_coordinateAxes_walls_iff {v : ℝ × ℝ} :
     obtain ⟨P, hP, hv, -⟩ := exists_mem_coordinateAxes_walls_subset_of_axisRow_eq_zero h hj
     exact ⟨⟨P, hP⟩, hv⟩
 
+/-- Every wall of the coordinate-axes complex lies in a closed half-plane bounded by the
+vertical axis: no wall crosses from one half-axis to the opposite one. -/
+theorem fst_nonneg_or_fst_nonpos_of_mem_coordinateAxes_walls {P : Set (ℝ × ℝ)}
+    (hP : P ∈ (coordinateAxes h).walls) : (∀ v ∈ P, 0 ≤ v.1) ∨ ∀ v ∈ P, v.1 ≤ 0 := by
+  have hPC := (coordinateAxes h).mem_cells_of_mem_walls hP
+  rw [coordinateAxes_eq_ofArrangement] at hPC
+  obtain ⟨σ, hσ, rfl⟩ := mem_ofArrangement_cells.mp hPC
+  rw [closure_signCell hσ]
+  have hrow (v : ℝ × ℝ) (hv : v ∈ weakSignCell (fun j => (axisRow j).toContinuousAffineMap) σ) :=
+    mem_weakSignCell.mp hv false
+  cases hs : σ false
+  · exact Or.inl fun v hv => by simpa using ((hrow v hv).1 hs).ge
+  · exact Or.inr fun v hv => by simpa using (hrow v hv).2.1 hs
+  · exact Or.inl fun v hv => by simpa using (hrow v hv).2.2 hs
+
+/-- The codimension-two skeleton of the coordinate-axes complex is contained in the origin. -/
+theorem support_codimensionAtLeast_two_coordinateAxes_subset :
+    ((coordinateAxes h).codimensionAtLeast 2).support ⊆ {0} := by
+  intro x hx
+  obtain ⟨Q, hQ, hxQ⟩ := mem_support.mp hx
+  obtain ⟨hQC, hdim⟩ := ((coordinateAxes h).mem_codimensionAtLeast_cells 2 Q).mp hQ
+  have hbot : (affineSpan ℝ Q).direction = ⊥ :=
+    Submodule.finrank_eq_zero.mp (by
+      rw [Module.finrank_prod, Module.finrank_self] at hdim
+      omega)
+  rw [coordinateAxes_eq_ofArrangement] at hQC
+  obtain ⟨σ, hσ, rfl⟩ := mem_ofArrangement_cells.mp hQC
+  -- Cells of a linear arrangement contain the origin.
+  have h0 : (0 : ℝ × ℝ) ∈
+      closure (signCell (fun j => (axisRow j).toContinuousAffineMap) σ) := by
+    rw [closure_signCell hσ, mem_weakSignCell]
+    intro j
+    simp
+  have hmem := AffineSubspace.vsub_mem_direction (subset_affineSpan ℝ _ hxQ)
+    (subset_affineSpan ℝ _ h0)
+  rw [hbot, Submodule.mem_bot, vsub_eq_sub, sub_zero] at hmem
+  exact hmem
+
 /-- The only singular point of the walls of the coordinate axes is the origin. -/
 @[simp]
 theorem singularSupport_coordinateAxes :
     singularSupport (fun P : (coordinateAxes h).walls => (P : Set (ℝ × ℝ))) = {0} := by
   apply Subset.antisymm
-  · intro x hx
-    obtain ⟨Q, hQ, hxQ⟩ :=
-      mem_support.mp ((coordinateAxes h).singularSupport_walls_subset_support_codimensionAtLeast hx)
-    obtain ⟨hQC, hdim⟩ := ((coordinateAxes h).mem_codimensionAtLeast_cells 2 Q).mp hQ
-    have hbot : (affineSpan ℝ Q).direction = ⊥ :=
-      Submodule.finrank_eq_zero.mp (by
-        rw [Module.finrank_prod, Module.finrank_self] at hdim
-        omega)
-    rw [coordinateAxes_eq_ofArrangement] at hQC
-    obtain ⟨σ, hσ, rfl⟩ := mem_ofArrangement_cells.mp hQC
-    -- Cells of a linear arrangement contain the origin.
-    have h0 : (0 : ℝ × ℝ) ∈
-        closure (signCell (fun j => (axisRow j).toContinuousAffineMap) σ) := by
-      rw [closure_signCell hσ, mem_weakSignCell]
-      intro j
-      simp
-    have hmem := AffineSubspace.vsub_mem_direction (subset_affineSpan ℝ _ hxQ)
-      (subset_affineSpan ℝ _ h0)
-    rw [hbot, Submodule.mem_bot, vsub_eq_sub, sub_zero] at hmem
-    exact hmem
+  · exact fun x hx => support_codimensionAtLeast_two_coordinateAxes_subset h
+      ((coordinateAxes h).singularSupport_walls_subset_support_codimensionAtLeast hx)
   · rintro x rfl
     obtain ⟨P, hP, hP0, hPt⟩ :=
       exists_mem_coordinateAxes_walls_subset_of_axisRow_eq_zero h (j := true) (v := 0) (by simp)
@@ -288,6 +310,44 @@ theorem coordinateAxesWallAxis_eq_of_mem_crossings {j : Bool}
   rw [Bool.eq_not.mpr hne] at hzero
   exact axisRow_lineMap_ne_zero_of_sign_eq hxy (axisRow_val_ne_zero h x (!j)) ht hzero
 
+variable {h} in
+/-- A segment along which the coordinate `!j` keeps its sign meets at most one wall: if it
+crosses the wall `P` at the parameter `t`, then `(P, t)` is its only crossing. -/
+theorem crossings_eq_singleton_of_mem_crossings {j : Bool}
+    {x y : WallComplement
+      (fun P : (FinitePolyhedralComplex.coordinateAxes h).walls => (P : Set (ℝ × ℝ)))}
+    (hxy : SignType.sign (axisRow (!j) x.val) = SignType.sign (axisRow (!j) y.val))
+    {P : (FinitePolyhedralComplex.coordinateAxes h).walls} {t : ℝ}
+    (hc : (P, t) ∈ WallComplement.crossings x y) :
+    WallComplement.crossings x y = {(P, t)} := by
+  ext ⟨Q, s⟩
+  rw [Set.mem_singleton_iff, Prod.mk.injEq]
+  refine ⟨fun hs => ?_, ?_⟩
+  · have hs' := (WallComplement.mem_crossings _ _ _ _).mp hs
+    have ht' := (WallComplement.mem_crossings _ _ _ _).mp hc
+    have hzs : axisRow j (AffineMap.lineMap x.val y.val s) = 0 := by
+      have := subset_axisRow_coordinateAxesWallAxis h Q hs'.2
+      rwa [coordinateAxesWallAxis_eq_of_mem_crossings hxy hs] at this
+    have hzt : axisRow j (AffineMap.lineMap x.val y.val t) = 0 := by
+      have := subset_axisRow_coordinateAxesWallAxis h P ht'.2
+      rwa [coordinateAxesWallAxis_eq_of_mem_crossings hxy hc] at this
+    -- Along the segment the coordinate `j` vanishes at one parameter only.
+    have hst : s = t := by
+      have hmul := (axisRow j).toLinearMap.apply_lineMap_sub_mul (c := 0) hzt s
+      simp only [ContinuousLinearMap.coe_coe, hzs, sub_zero, zero_mul] at hmul
+      have := mul_eq_zero.mp hmul.symm
+      exact (sub_eq_zero.mp (this.resolve_left (axisRow_val_ne_zero h x j))).symm
+    subst hst
+    refine ⟨?_, rfl⟩
+    refine FinitePolyhedralComplex.eq_of_mem_wall_of_notMem_singularSupport
+      (C := FinitePolyhedralComplex.coordinateAxes h) hs'.2 ht'.2 ?_
+    rw [singularSupport_coordinateAxes, mem_singleton_iff]
+    intro h0
+    exact axisRow_lineMap_ne_zero_of_sign_eq hxy (axisRow_val_ne_zero h x (!j)) hs'.1
+      (by rw [h0, map_zero])
+  · rintro ⟨rfl, rfl⟩
+    exact hc
+
 /-- The counterclockwise square loop `(1,1) → (-1,1) → (-1,-1) → (1,-1) → (1,1)` around the
 origin, as an admissible path through the coordinate axes. Each edge keeps one coordinate
 fixed, so it crosses one half-axis transversally. -/
@@ -325,5 +385,48 @@ theorem coordinateAxesSquareLoop_vertices :
     (coordinateAxesSquareLoop h).vertices.map WallComplement.val =
       [(1, 1), (-1, 1), (-1, -1), (1, -1), (1, 1)] := by
   simp [coordinateAxesSquareLoop, Quiver.Path.vertices_cons, Quiver.Path.vertices_toPath]
+
+/-- A wall through a point off the horizontal axis lies in the vertical axis, so it misses
+`(1, 0)`. -/
+theorem one_zero_notMem_of_mem_coordinateAxes_walls_of_snd_ne_zero
+    {P : (coordinateAxes h).walls} {v : ℝ × ℝ} (hv : v ∈ (P : Set _)) (h₂ : v.2 ≠ 0) :
+    ((1, 0) : ℝ × ℝ) ∉ (P : Set _) := by
+  intro h10
+  have hv0 := subset_axisRow_coordinateAxesWallAxis h P hv
+  have h10' := subset_axisRow_coordinateAxesWallAxis h P h10
+  cases hj : coordinateAxesWallAxis h P <;> simp_all
+
+/-- No wall of the coordinate axes contains both `(1, 0)` and `(-1, 0)`. -/
+theorem one_zero_notMem_of_neg_one_zero_mem_coordinateAxes_walls
+    {P : (coordinateAxes h).walls} (hv : ((-1, 0) : ℝ × ℝ) ∈ (P : Set _)) :
+    ((1, 0) : ℝ × ℝ) ∉ (P : Set _) := by
+  intro h10
+  rcases fst_nonneg_or_fst_nonpos_of_mem_coordinateAxes_walls h P.property with hP | hP
+  · linarith [hP _ hv]
+  · linarith [hP _ h10]
+
+/-- A wall of the coordinate axes through `(1, 0)` lies in the horizontal axis, whose
+coordinate is the second one. -/
+theorem coordinateAxesWallAxis_eq_true_of_one_zero_mem
+    {P : (coordinateAxes h).walls} (hv : ((1, 0) : ℝ × ℝ) ∈ (P : Set _)) :
+    coordinateAxesWallAxis h P = true := by
+  have := subset_axisRow_coordinateAxesWallAxis h P hv
+  cases hj : coordinateAxesWallAxis h P <;> simp_all
+
+/-- The coordinate-axes complex has no joint meridian in the punctured plane: its only joint is
+the origin, which every isolating triangle must meet. -/
+@[simp]
+theorem jointMeridianWords_coordinateAxes_compl_zero
+    (ν : (coordinateAxes h).walls → ℝ × ℝ →ₗ[ℝ] ℝ) :
+    (coordinateAxes h).jointMeridianWords ν ({0}ᶜ : Set (ℝ × ℝ)) = ∅ := by
+  refine eq_empty_of_forall_notMem fun g hg => ?_
+  obtain ⟨J, -, hJ⟩ := ((coordinateAxes h).mem_jointMeridianWords ν _ g).mp hg
+  obtain ⟨x, y, z, e, f, r, q, -, -, hU, -, hinter, -⟩ :=
+    ((coordinateAxes h).mem_jointTriangleWords ν J _ g).mp hJ
+  have hq : q ∈ convexHull ℝ {x.val, y.val, z.val} ∩
+      ((coordinateAxes h).codimensionAtLeast 2).support := by
+    rw [hinter]
+    rfl
+  exact hU hq.1 (support_codimensionAtLeast_two_coordinateAxes_subset h hq.2)
 
 end Mei.FinitePolyhedralComplex

@@ -7,7 +7,8 @@ module
 
 public import Mei.LinearAlgebra.ModuleFiltration.RestrictScalars
 public import Mei.LinearAlgebra.ModuleFiltration.Bilinear
-public import Mei.RingTheory.FilteredAlgebra.Algebra
+public import Mei.RingTheory.FilteredAlgebra.AlgHom
+public import Mei.RingTheory.Ideal.Quotient
 public import Mathlib.RingTheory.Ideal.Quotient.PowTransition
 
 /-!
@@ -15,7 +16,9 @@ public import Mathlib.RingTheory.Ideal.Quotient.PowTransition
 
 Restricting scalars in the ideals of an algebra filtration gives a module filtration over
 the coefficient semiring. This allows results on filtered modules to apply to coefficient
-algebras without losing their original ideal filtration. In particular, the quotient
+algebras without losing their original ideal filtration. The canonical comparison
+with the algebra completion intertwines filtered algebra maps with the completion
+of their underlying linear maps, in both directions. In particular, the quotient
 representation of a filtration-raising Lie action can be used on the original quotient rings.
 
 The underlying module completion is canonically linearly equivalent to the algebra
@@ -151,6 +154,41 @@ theorem moduleCompletionEquiv_of (x : A) :
   intro k
   simp [projection_moduleCompletionEquiv, ModuleFiltration.projection_of,
     projection_toCompletion]
+
+/-- Completing an algebra map agrees with completing its underlying linear map. -/
+theorem moduleCompletionEquiv_completionMap {B : Type*} [Ring B] [Algebra R B]
+    (G : AlgFiltration B) (f : A →ₐ[R] B) (ρ : ℕ → ℕ) (hρ : Monotone ρ)
+    (hf : ∀ k, F.ideal (ρ k + 1) ≤ (G.ideal (k + 1)).comap f)
+    (x : (F.toModuleFiltration R).completion) :
+    G.moduleCompletionEquiv
+      ((F.toModuleFiltration R).completionMap (G.toModuleFiltration R) f.toLinearMap
+        ρ hρ (by
+          intro k a ha
+          simp only [Submodule.mem_comap] at ha ⊢
+          exact hf k ha) x) =
+      F.mapCompletionₐ G f ρ hρ hf (F.moduleCompletionEquiv x) := by
+  apply G.completion_ext
+  intro k
+  rw [projection_moduleCompletionEquiv, ModuleFiltration.projection_completionMap,
+    projection_mapCompletionₐ, projection_moduleCompletionEquiv]
+  exact (Ideal.quotientMapₐ_restrictScalarsEquiv (F.ideal (ρ k + 1))
+    (G.ideal (k + 1)) f (hf k) ((F.toModuleFiltration R).projection (ρ k) x)).symm
+
+/-- The inverse comparison also intertwines algebra and linear completion maps. -/
+@[simp]
+theorem moduleCompletionEquiv_symm_mapCompletionₐ {B : Type*} [Ring B] [Algebra R B]
+    (G : AlgFiltration B) (f : A →ₐ[R] B) (ρ : ℕ → ℕ) (hρ : Monotone ρ)
+    (hf : ∀ k, F.ideal (ρ k + 1) ≤ (G.ideal (k + 1)).comap f)
+    (x : F.completion) :
+    (G.moduleCompletionEquiv (R := R)).symm (F.mapCompletionₐ G f ρ hρ hf x) =
+      (F.toModuleFiltration R).completionMap (G.toModuleFiltration R) f.toLinearMap
+        ρ hρ (by
+          intro k a ha
+          simp only [Submodule.mem_comap] at ha ⊢
+          exact hf k ha) ((F.moduleCompletionEquiv (R := R)).symm x) := by
+  apply (G.moduleCompletionEquiv (R := R)).injective
+  rw [LinearEquiv.apply_symm_apply,
+    F.moduleCompletionEquiv_completionMap G f ρ hρ hf, LinearEquiv.apply_symm_apply]
 
 /-- Every completed module filtration term corresponds exactly to the completion ideal. -/
 @[simp]

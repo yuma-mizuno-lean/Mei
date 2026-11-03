@@ -201,6 +201,16 @@ theorem pathProduct_toPath_eq_one (e : x ⟶ y) (he : WallComplement.crossings x
     simp [he]
   simp [pathProduct_toPath, hl]
 
+/-- A segment crossing a single wall `P`, once, has the label of `P` as its product, inverted
+exactly when the velocity is positive on the coorientation of `P`. -/
+theorem pathProduct_toPath_eq_of_crossings_eq_singleton (e : x ⟶ y) {P : C.walls} {t : ℝ}
+    (he : WallComplement.crossings x y = {(P, t)}) :
+    D.pathProduct e.toPath =
+      if 0 < D.normal P (y.val - x.val) then (D.label P)⁻¹ else D.label P := by
+  have hl : C.orderedCrossings e = [(P, t)] :=
+    ((C.orderedCrossings_eq_iff e _).mpr ⟨List.pairwise_singleton _ _, by simp [he]⟩).symm
+  simp [pathProduct_toPath, hl]
+
 /-- Change every wall label by a group homomorphism. -/
 def relabel (f : H →* K) : FiniteWallDiagram C K where
   normal := D.normal

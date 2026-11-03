@@ -6,6 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Uniqueness
+public import Mei.Geometry.ScatteringDiagram.DirectedWall.PureBirth
 import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Correction.Step
 import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Obstruction.Existence
 import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Append
@@ -21,11 +22,19 @@ has finite activity because walls added after order `k` are invisible at order
 `k`; restriction to the order-`k` prefix therefore proves consistency.
 
 The construction uses `exists_chamber_trivialization` and
-`exists_consistent_outgoing_extension` for the geometric correction, and
+`LoopProjection.exists_consistent_outgoing_extension` with the identity projection
+`LoopProjection.ofFullPure` for the geometric correction, and
 `ofBirthFamily`, `ofBirthFamily_consistent_iff` and `Refinement.ofEquiv` for
 passage to the union.
 Finite correction families are enumerated solely to obtain one countable index
 type for the union; repeated walls remain separate occurrences.
+
+The inductive assembly is independent of the geometric correction: a `CorrectionStep`
+supplies, for every finite stage consistent at order `k`, a finite outgoing extension
+consistent at order `k + 1` whose new walls are invisible at order `k` and have pure birth
+logarithms. `exists_outgoingCompletion_of_step` iterates any such step to all orders, with
+the logarithms constrained to a chosen set `S`; the full-hyperplane completion takes `S` to
+be everything.
 
 This is the compatible induction in Mandel, *Scattering diagrams, theta functions,
 and refined tropical curve counts*, proof of Theorem 2.6, and
@@ -36,52 +45,75 @@ public section
 
 noncomputable section
 
-open Set Mei.Convex
+open Set Mei Mei.Convex
+
+universe u v
 
 namespace Mei.DirectedDiagram
 
-variable {Γ Λ R L V ι : Type*} [AddCommGroup Γ] [AddCommGroup Λ]
+variable {Γ : Type u} {V : Type v} {Λ R L ι : Type*} [AddCommGroup Γ] [AddCommGroup Λ]
   [CommRing R] [Algebra ℚ R] [LieRing L] [LieAlgebra R L]
-  [LieAlgebra ℚ L] [IsScalarTower ℚ R L] [DecidableEq Γ] [Module.Free ℤ Γ]
+  [LieAlgebra ℚ L] [IsScalarTower ℚ R L] [DecidableEq Γ]
   [NormedAddCommGroup V] [NormedSpace ℝ V]
   {ρ : Γ →+ Λ} {ℒ : Γ → Submodule R L} {d : PositiveDegrees Γ}
   [GradedLieAlgebra ℒ] [IsPositiveGrading d ℒ]
   {i : Λ →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
   {H : DirectedWallSpaces ρ ℒ} (D : DirectedDiagram (d := d) h H ι)
 
-private def listDiagram (s : List (DirectedWall (d := d) h H)) :=
+/-- The diagram obtained by adjoining the walls of a finite list to `D`, keeping repeated
+walls as separate occurrences. -/
+def listDiagram (s : List (DirectedWall (d := d) h H)) :
+    DirectedDiagram (d := d) h H (ι ⊕ Fin s.length) :=
   D.append (ofFinite (fun j : Fin s.length => s[j]))
 
-private def CompletionStage (k : ℕ) :=
-  {s : List (DirectedWall (d := d) h H) //
-    (D.listDiagram s).LevelConsistent k ∧
-    ∀ w ∈ s, w.Outgoing ∧ ∃ n ∈ w.ray.rayDegrees,
-      d.degree n ≤ k ∧ ∃ a ∈ ℒ n, w.label = d.expToCompletion ℒ a ∧
-        ∀ l : ℕ, CompletedGroup.projection l w.label ≠ 1 ↔ d.degree n ≤ l}
+@[simp]
+theorem listDiagram_wall_inl (s : List (DirectedWall (d := d) h H)) (j : ι) :
+    (D.listDiagram s).wall (.inl j) = D.wall j := by simp [listDiagram]
 
-private theorem exists_next_stage
-    (hfull : ∀ j, ∃ a : ℝ,
-      (D.wall j).support = {v | h.realCharacter (D.wall j).normal v = a})
-    {k : ℕ} (s : D.CompletionStage k) :
-    ∃ t : D.CompletionStage (k + 1), s.val <+: t.val ∧
+@[simp]
+theorem listDiagram_wall_inr (s : List (DirectedWall (d := d) h H)) (j : Fin s.length) :
+    (D.listDiagram s).wall (.inr j) = s[j] := by simp [listDiagram]
+
+/-- A one-order correction step for `D` with logarithms in `S`. Every finite list `s` of
+outgoing walls with pure birth logarithms in `S` of order at most `k`, adjoined to `D` so
+that the result is consistent at order `k`, admits a finite outgoing extension consistent at
+order `k + 1`. The extension keeps the walls of `D` and `s`; each added wall is outgoing, has a
+pure birth logarithm in `S` of order at most `k + 1`, and is invisible at order `k`. -/
+def CorrectionStep (S : Set L) : Prop :=
+  ∀ (k : ℕ) (s : List (DirectedWall (d := d) h H)),
+    (D.listDiagram s).LevelConsistent k →
+    (∀ w ∈ s, w.Outgoing ∧ w.HasPureBirthLog S k) →
+    ∃ (κ : Type (max u v)) (_ : Fintype κ)
+      (F : DirectedDiagram (d := d) h H ((ι ⊕ Fin s.length) ⊕ κ)),
+      (∀ j, F.wall (.inl j) = (D.listDiagram s).wall j) ∧
+      F.LevelConsistent (k + 1) ∧
+      ∀ a, (F.wall (.inr a)).Outgoing ∧ (F.wall (.inr a)).HasPureBirthLog S (k + 1) ∧
+        CompletedGroup.projection k (F.wall (.inr a)).label = 1
+
+/-- Unfolding `CorrectionStep`. -/
+theorem correctionStep_def {S : Set L} :
+    D.CorrectionStep S ↔
+    ∀ (k : ℕ) (s : List (DirectedWall (d := d) h H)),
+      (D.listDiagram s).LevelConsistent k →
+      (∀ w ∈ s, w.Outgoing ∧ w.HasPureBirthLog S k) →
+      ∃ (κ : Type (max u v)) (_ : Fintype κ)
+        (F : DirectedDiagram (d := d) h H ((ι ⊕ Fin s.length) ⊕ κ)),
+        (∀ j, F.wall (.inl j) = (D.listDiagram s).wall j) ∧
+        F.LevelConsistent (k + 1) ∧
+        ∀ a, (F.wall (.inr a)).Outgoing ∧ (F.wall (.inr a)).HasPureBirthLog S (k + 1) ∧
+          CompletedGroup.projection k (F.wall (.inr a)).label = 1 := Iff.rfl
+
+private def CompletionStage (S : Set L) (k : ℕ) :=
+  {s : List (DirectedWall (d := d) h H) //
+    (D.listDiagram s).LevelConsistent k ∧ ∀ w ∈ s, w.Outgoing ∧ w.HasPureBirthLog S k}
+
+private theorem exists_next_stage {S : Set L} (step : D.CorrectionStep S)
+    {k : ℕ} (s : D.CompletionStage S k) :
+    ∃ t : D.CompletionStage S (k + 1), s.val <+: t.val ∧
       ∀ (j : ℕ) (hj : j < t.val.length), s.val.length ≤ j →
         CompletedGroup.projection k t.val[j].label = 1 := by
   classical
-  let E := D.listDiagram s.val
-  obtain ⟨σ, hσ, cross, b, _, t, ht, τ, hτ, _⟩ :=
-    E.exists_chamber_trivialization s.property.1 (fun _ => 1) (fun _ => zero_lt_one)
-  obtain ⟨κ, _, F, hleft, hconsistent, _, hnew⟩ :=
-    exists_consistent_outgoing_extension σ hσ cross s.property.1 b t ht τ hτ
-      (range (Sum.inl : ι → ι ⊕ Fin s.val.length))
-      (by rintro (j | j) hj
-          · simpa only [E, listDiagram, append_wall_inl] using hfull j
-          · simp at hj)
-      (by rintro (j | j) hj
-          · exact (hj ⟨j, rfl⟩).elim
-          · obtain ⟨_, n, _, hn, a, ha, he⟩ :=
-              s.property.2 s.val[j] (List.getElem_mem j.isLt)
-            refine ⟨n, by omega, a, ha, ?_⟩
-            simpa only [E, listDiagram, append_wall_inr, ofFinite_wall] using he.1)
+  obtain ⟨κ, _, F, hleft, hconsistent, hnew⟩ := step k s.val s.property.1 s.property.2
   -- Enumerate only the new corrections and append them, preserving every old position.
   let e := (Fintype.equivFin κ).symm
   let r := List.ofFn (fun j => F.wall (.inr (e j)))
@@ -92,49 +124,38 @@ private theorem exists_next_stage
         (Fintype.equivFin κ)).trans (finSumFinEquiv.trans (finCongr (by simp [q, r])))))
   have hw (j) : F.wall j = (D.listDiagram q).wall (eqv j) := by
     rcases j with (j | j) | j
-    · simpa [eqv, E, listDiagram] using hleft (.inl j)
-    · simpa [eqv, E, listDiagram, q, List.getElem_append_left] using hleft (.inr j)
+    · simpa [eqv] using hleft (.inl j)
+    · simpa [eqv, q, List.getElem_append_left] using hleft (.inr j)
     · simp [eqv, listDiagram, q, r, List.getElem_append_right, e]
   have hq : (D.listDiagram q).LevelConsistent (k + 1) :=
     ((Refinement.ofEquiv eqv hw).levelEquivalent (k + 1)).symm.consistent hconsistent
   refine ⟨⟨q, hq, ?_⟩, ⟨r, rfl⟩, ?_⟩
   · intro w hwq
     rcases List.mem_append.mp hwq with hw | hw
-    · obtain ⟨ho, n, hn, hd, a, ha, he⟩ := s.property.2 w hw
-      exact ⟨ho, n, hn, hd.trans (by omega), a, ha, he⟩
+    · exact ⟨(s.property.2 w hw).1, (s.property.2 w hw).2.mono (Nat.le_succ k)⟩
     · obtain ⟨j, rfl⟩ := List.mem_ofFn.mp hw
-      obtain ⟨ho, n, hn, hd, a, ha, he⟩ := (hnew (e j)).1, (hnew (e j)).2.1
-      refine ⟨ho, n, hn, by omega, a, ha, he, ?_⟩
-      intro l
-      have hb := (hnew (e j)).2.2 l
-      simp only [mem_active] at hb
-      exact hb.trans (by omega)
+      exact ⟨(hnew (e j)).1, (hnew (e j)).2.1⟩
   · intro j hj hsj
     have hjr : j - s.val.length < r.length := by simp only [q, List.length_append] at hj; omega
-    have hborn := (hnew (e ⟨j - s.val.length, by simpa [r] using hjr⟩)).2.2 k
-    have hinactive : CompletedGroup.projection k
-        (F.wall (.inr (e ⟨j - s.val.length, by simpa [r] using hjr⟩))).label = 1 := by
-      simpa only [mem_active, Nat.not_succ_le_self, iff_false, not_not] using hborn
+    have hinactive := (hnew (e ⟨j - s.val.length, by simpa [r] using hjr⟩)).2.2
     simpa [q, r, List.getElem_append_right hsj] using hinactive
 
-private theorem exists_completion_stages
-    (hfull : ∀ j, ∃ a : ℝ,
-      (D.wall j).support = {v | h.realCharacter (D.wall j).normal v = a}) :
-    ∃ stages : ∀ k, D.CompletionStage k,
+private theorem exists_completion_stages {S : Set L} (step : D.CorrectionStep S) :
+    ∃ stages : ∀ k, D.CompletionStage S k,
       (∀ k m, k ≤ m → (stages k).val <+: (stages m).val) ∧
       ∀ k m, k ≤ m → ∀ (j : ℕ) (hj : j < (stages m).val.length),
         (stages k).val.length ≤ j →
           CompletedGroup.projection k (stages m).val[j].label = 1 := by
   classical
-  let base : D.CompletionStage 0 := ⟨[], by
+  let base : D.CompletionStage S 0 := ⟨[], by
     refine ⟨(levelConsistent_def _ 0).mpr (fun _ _ _ _ => Subsingleton.elim _ _), ?_⟩
     simp⟩
-  let next := fun k (s : D.CompletionStage k) => (D.exists_next_stage hfull s).choose
-  let stages : ∀ k, D.CompletionStage k := Nat.rec base next
+  let next := fun k (s : D.CompletionStage S k) => (D.exists_next_stage step s).choose
+  let stages : ∀ k, D.CompletionStage S k := Nat.rec base next
   have hstep (k : ℕ) : (stages k).val <+: (stages (k + 1)).val ∧
       ∀ (j : ℕ) (hj : j < (stages (k + 1)).val.length), (stages k).val.length ≤ j →
         CompletedGroup.projection k (stages (k + 1)).val[j].label = 1 :=
-    (D.exists_next_stage hfull (stages k)).choose_spec
+    (D.exists_next_stage step (stages k)).choose_spec
   have hprefix {k m : ℕ} (hkm : k ≤ m) : (stages k).val <+: (stages m).val := by
     induction m, hkm using Nat.le_induction with
     | base => exact ⟨[], by simp⟩
@@ -153,20 +174,14 @@ private theorem exists_completion_stages
       rw [(hstep m).2 j hj (by omega), map_one] at he
       exact he.symm
 
-/-- A finitely active family of full affine hyperplanes has a consistent outgoing
-completion with countably many additional walls. Each added label has a homogeneous
-logarithm in an actual degree of its supported ray and is active exactly from that
-degree onward. No consistency of the initial family is assumed. -/
-theorem exists_outgoingCompletion
-    (hfull : ∀ j, ∃ a : ℝ,
-      (D.wall j).support = {v | h.realCharacter (D.wall j).normal v = a}) :
+/-- Iterating a one-order correction step with logarithms in `S` gives a consistent outgoing
+completion with countably many additional walls, each with a pure birth logarithm in `S`.
+No consistency of the initial family is assumed. -/
+theorem exists_outgoingCompletion_of_step {S : Set L} (step : D.CorrectionStep S) :
     ∃ (κ : Type) (_ : Countable κ) (F : DirectedDiagram (d := d) h H (ι ⊕ κ)),
-      IsOutgoingCompletion D.wall F ∧
-      ∀ j, ∃ n ∈ (F.wall (.inr j)).ray.rayDegrees,
-        ∃ a ∈ ℒ n, (F.wall (.inr j)).label = d.expToCompletion ℒ a ∧
-          ∀ k : ℕ, Sum.inr j ∈ F.active k ↔ d.degree n ≤ k := by
+      IsOutgoingCompletion D.wall F ∧ ∀ j, ∃ k, (F.wall (.inr j)).HasPureBirthLog S k := by
   classical
-  obtain ⟨stages, hprefix, hinvisible⟩ := D.exists_completion_stages hfull
+  obtain ⟨stages, hprefix, hinvisible⟩ := D.exists_completion_stages step
   have hlength : Monotone (fun k => (stages k).val.length) :=
     fun k m hkm => (hprefix k m hkm).length_le
   -- An occurrence is a natural-number position that appears in some finite prefix.
@@ -255,9 +270,60 @@ theorem exists_outgoingCompletion
         simp only [F, Function.comp_apply, Equiv.symm_apply_apply])).equivalent.consistent_iff).mpr
       hconsistent
   · intro j
-    obtain ⟨_, n, hn, _, a, ha, he, hb⟩ :=
-      (stages (Nat.find j.property)).property.2 (W j)
-        (List.getElem_mem (Nat.find_spec j.property))
-    simpa only [hF, Sum.elim_inr, mem_active] using ⟨n, hn, a, ha, he, hb⟩
+    exact ⟨Nat.find j.property, by
+      simpa only [hF, Sum.elim_inr] using
+        ((stages (Nat.find j.property)).property.2 (W j)
+          (List.getElem_mem (Nat.find_spec j.property))).2⟩
+
+variable [Module.Free ℤ Γ]
+
+/-- Over full affine hyperplanes, the one-order correction at any consistent finite stage
+admits a finite outgoing extension, with no restriction on the logarithms. -/
+private theorem correctionStep_univ
+    (hfull : ∀ j, ∃ a : ℝ,
+      (D.wall j).support = {v | h.realCharacter (D.wall j).normal v = a}) :
+    D.CorrectionStep (Set.univ : Set L) := by
+  classical
+  intro k s hk hs
+  let E := D.listDiagram s
+  obtain ⟨σ, hσ, cross, b, _, t, ht, τ, hτ, _⟩ :=
+    E.exists_chamber_trivialization hk (fun _ => 1) (fun _ => zero_lt_one)
+  obtain ⟨κ, _, F, hleft, hconsistent, _, hnew⟩ :=
+    (LoopProjection.ofFullPure E (range (Sum.inl : ι → ι ⊕ Fin s.length))
+      (by rintro (j | j) hj
+          · simpa only [E, listDiagram_wall_inl] using hfull j
+          · simp at hj)
+      (by rintro (j | j) hj
+          · exact (hj ⟨j, rfl⟩).elim
+          · obtain ⟨n, hn, hd, a, ha, _, he, _⟩ := DirectedWall.hasPureBirthLog_def.mp
+              (hs s[j] (List.getElem_mem j.isLt)).2
+            exact ⟨n, by omega, a, ha, by simpa only [E, listDiagram_wall_inr] using he⟩)
+      ).exists_consistent_outgoing_extension
+      σ hσ cross hk b t ht τ hτ
+  refine ⟨κ, inferInstance, F, hleft, hconsistent, fun a => ?_⟩
+  obtain ⟨hout, ⟨n, hn, hd, z, hz, hlabel⟩, hborn, _⟩ := hnew a
+  refine ⟨hout, DirectedWall.hasPureBirthLog_def.mpr
+    ⟨n, hn, by omega, z, hz, trivial, hlabel, fun l => ?_⟩, ?_⟩
+  · simpa only [mem_active] using (hborn l).trans (by omega : k + 1 ≤ l ↔ d.degree n ≤ l)
+  · simpa only [mem_active, Nat.not_succ_le_self, iff_false, not_not] using hborn k
+
+/-- A finitely active family of full affine hyperplanes has a consistent outgoing
+completion with countably many additional walls. Each added label has a homogeneous
+logarithm in an actual degree of its supported ray and is active exactly from that
+degree onward. No consistency of the initial family is assumed. -/
+theorem exists_outgoingCompletion
+    (hfull : ∀ j, ∃ a : ℝ,
+      (D.wall j).support = {v | h.realCharacter (D.wall j).normal v = a}) :
+    ∃ (κ : Type) (_ : Countable κ) (F : DirectedDiagram (d := d) h H (ι ⊕ κ)),
+      IsOutgoingCompletion D.wall F ∧
+      ∀ j, ∃ n ∈ (F.wall (.inr j)).ray.rayDegrees,
+        ∃ a ∈ ℒ n, (F.wall (.inr j)).label = d.expToCompletion ℒ a ∧
+          ∀ k : ℕ, Sum.inr j ∈ F.active k ↔ d.degree n ≤ k := by
+  obtain ⟨κ, hκ, F, hF, hbirth⟩ :=
+    D.exists_outgoingCompletion_of_step (D.correctionStep_univ hfull)
+  refine ⟨κ, hκ, F, hF, fun j => ?_⟩
+  obtain ⟨k, hk⟩ := hbirth j
+  obtain ⟨n, hn, _, a, ha, _, hlabel, hproj⟩ := DirectedWall.hasPureBirthLog_def.mp hk
+  exact ⟨n, hn, a, ha, hlabel, fun l => by simpa only [mem_active] using hproj l⟩
 
 end Mei.DirectedDiagram

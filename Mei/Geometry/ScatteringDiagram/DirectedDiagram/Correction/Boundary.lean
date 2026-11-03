@@ -20,7 +20,7 @@ closed, the signed boundary of the logarithmic correction presentation is the
 entire joint obstruction cochain, with its original orientations and coefficients.
 Thus the different geometric sweeping directions can be used simultaneously.
 
-The construction combines `DirectedDiagram.exists_pos_joint_loop_obstruction`,
+The construction combines `DirectedDiagram.LoopProjection.exists_pos_joint_loop_obstruction`,
 `DirectedWall.exists_cooriented_sweep`, and the componentwise sweep homotopy
 formula. The source is reconstructed with `DirectSum.sum_support_decompose`;
 coefficient projections from `DirectSum.decomposeLinearEquiv` commute with the
@@ -64,11 +64,7 @@ theorem exists_joint_sweep_correction_family {k : ℕ}
     (q : (D.adaptedComplex (k + 1)).joints → V)
     (hq : ∀ J : (D.adaptedComplex (k + 1)).joints,
       q J ∈ intrinsicInterior ℝ (J : Set V))
-    (initial : Set ι)
-    (hfull : ∀ j ∈ initial, ∃ b : ℝ,
-      (D.wall j).support = {v | h.realCharacter (D.wall j).normal v = b})
-    (hpure : ∀ j ∉ initial, ∃ m : Γ, d.degree m < k + 1 ∧
-      ∃ a ∈ ℒ m, (D.wall j).label = d.expToCompletion ℒ a) :
+    (P : D.LoopProjection (k + 1)) :
     ∃ r : (D.adaptedComplex (k + 1)).joints → ℝ, (∀ J, 0 < r J) ∧
       ∀ (x : (D.adaptedComplex (k + 1)).joints →
           WallComplement (fun j : D.active (k + 1) => (D.wall j).support))
@@ -100,7 +96,7 @@ theorem exists_joint_sweep_correction_family {k : ℕ}
                 PolyhedralCochain.mk (σ J) (log (D.levelPathProduct (k + 1) (p J)))) := by
   classical
   choose r hr hlocal using fun J : (D.adaptedComplex (k + 1)).joints =>
-    D.exists_pos_joint_loop_obstruction J.property (hq J) initial hfull hpure
+    P.exists_pos_joint_loop_obstruction J.property (hq J)
   refine ⟨r, hr, fun x p hp => ?_⟩
   dsimp only
   let := Fintype.ofFinite (D.adaptedComplex (k + 1)).joints

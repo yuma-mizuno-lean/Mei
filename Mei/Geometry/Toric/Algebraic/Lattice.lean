@@ -17,7 +17,7 @@ integral lattices extends to a real linear equivalence. Its
 linear map is the existing scalar extension, and extension respects identity,
 inverse and composition without choosing a new basis.
 On a product lattice, evaluation on a lattice point of the second factor recovers
-the corresponding integer character value.
+the corresponding integer character value. The standard lattice `ℤⁿ ⊆ ℝⁿ` is an integral lattice.
 -/
 
 public section
@@ -119,3 +119,15 @@ theorem extendEquiv_trans (h : IsIntegralLattice i) (h' : IsIntegralLattice i')
 end Equiv
 
 end TauCeti.Toric.IsIntegralLattice
+
+namespace TauCeti.Toric
+
+/-- The standard lattice `ℤⁿ ⊆ ℝⁿ` is an integral lattice. -/
+theorem isIntegralLattice_compLeft_castAddHom (ι : Type*) [Finite ι] :
+    IsIntegralLattice ((Int.castAddHom ℝ).compLeft ι) := by
+  classical
+  have := Fintype.ofFinite ι
+  exact isIntegralLattice_of_basis (Pi.basisFun ℤ ι) (Pi.basisFun ℝ ι)
+    fun i => by ext; simp [Pi.single_apply]
+
+end TauCeti.Toric

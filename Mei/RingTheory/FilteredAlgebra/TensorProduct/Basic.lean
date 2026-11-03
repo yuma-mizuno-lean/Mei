@@ -88,6 +88,19 @@ theorem tensorFiltration_mono {I I' : ℕ → Ideal A} {J J' : ℕ → Ideal B}
   intro a b hab x hx y hy
   exact tmul_mem_tensorFiltration R hab (hI a hx) (hJ b hy)
 
+/-- Tensoring maps that preserve the two ideal families preserves total order. -/
+theorem tensorFiltration_le_comap_map {C D : Type*} [Semiring C] [Semiring D]
+    [Algebra R C] [Algebra R D]
+    (I : ℕ → Ideal A) (J : ℕ → Ideal B) (K : ℕ → Ideal C) (L : ℕ → Ideal D)
+    (f : A →ₐ[R] C) (g : B →ₐ[R] D)
+    (hf : ∀ a, I a ≤ (K a).comap f) (hg : ∀ b, J b ≤ (L b).comap g) (k : ℕ) :
+    tensorFiltration R I J k ≤
+      (tensorFiltration R K L k).comap (Algebra.TensorProduct.map f g) := by
+  apply (tensorFiltration_le_iff R I J k _).mpr
+  intro a b hab x hx y hy
+  rw [Ideal.mem_comap, Algebra.TensorProduct.map_tmul]
+  exact tmul_mem_tensorFiltration R hab (hf a hx) (hg b hy)
+
 /-- Swapping the factors preserves total filtration order, even for arbitrary
 ideal families. -/
 theorem comm_mem_tensorFiltration (I : ℕ → Ideal A) (J : ℕ → Ideal B) (k : ℕ)
@@ -193,6 +206,17 @@ noncomputable def tensorProduct : Mei.AlgFiltration (A ⊗[R] B) where
 @[simp]
 theorem tensorProduct_ideal (k : ℕ) :
     (F.tensorProduct R G).ideal k = Ideal.tensorFiltration R F.ideal G.ideal k := (rfl)
+
+/-- The tensor of filtration-preserving algebra maps preserves the bundled filtration. -/
+theorem tensorProduct_le_comap_map {C D : Type*} [Semiring C] [Semiring D]
+    [Algebra R C] [Algebra R D] (H : Mei.AlgFiltration C) (K : Mei.AlgFiltration D)
+    (f : A →ₐ[R] C) (g : B →ₐ[R] D)
+    (hf : ∀ k, F.ideal k ≤ (H.ideal k).comap f)
+    (hg : ∀ k, G.ideal k ≤ (K.ideal k).comap g) (k : ℕ) :
+    (F.tensorProduct R G).ideal k ≤
+      ((H.tensorProduct R K).ideal k).comap (Algebra.TensorProduct.map f g) := by
+  simp only [tensorProduct_ideal]
+  exact Ideal.tensorFiltration_le_comap_map R F.ideal G.ideal H.ideal K.ideal f g hf hg k
 
 /-- Factor exchange identifies the ideals of the two bundled tensor filtrations. -/
 theorem tensorProduct_comap_comm (k : ℕ) :

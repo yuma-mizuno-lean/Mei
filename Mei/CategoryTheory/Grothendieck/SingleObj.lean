@@ -291,6 +291,25 @@ instance singleObjRepresentation_hasLimit :
     HasLimit (F.singleObjSection.toFunctor ⋙ F.singleObjRepresentation X ρ hρ) :=
   hasLimit_of_iso (F.singleObjRepresentationIso X ρ hρ).symm
 
+/-- The comparison of limits followed by the projection to a level is that projection. -/
+@[reassoc]
+theorem isoOfNatIso_singleObjRepresentationIso_hom_π (d : D) :
+    (HasLimit.isoOfNatIso (F.singleObjRepresentationIso X ρ hρ)).hom ≫ limit.π X d =
+      limit.π (F.singleObjSection.toFunctor ⋙ F.singleObjRepresentation X ρ hρ) d := by
+  rw [HasLimit.isoOfNatIso_hom_π, singleObjRepresentationIso_hom_app]
+  -- The comparison component is the identity of the original coefficient object.
+  exact Category.comp_id _
+
+/-- The inverse comparison of limits followed by the projection to a level is that projection. -/
+@[reassoc]
+theorem isoOfNatIso_singleObjRepresentationIso_inv_π (d : D) :
+    (HasLimit.isoOfNatIso (F.singleObjRepresentationIso X ρ hρ)).inv ≫
+      limit.π (F.singleObjSection.toFunctor ⋙ F.singleObjRepresentation X ρ hρ) d =
+        limit.π X d := by
+  rw [HasLimit.isoOfNatIso_inv_π, singleObjRepresentationIso_inv_app]
+  -- The comparison component is the identity of the original coefficient object.
+  exact Category.comp_id _
+
 /-- The section-label action, transported to the original coefficient limit. -/
 noncomputable def singleObjLimitAction : GrpCat.sectionsSubgroup F →* Aut (limit X) :=
   (Aut.autMulEquivOfIso
@@ -311,22 +330,11 @@ theorem singleObjLimitAction_hom_π (g : GrpCat.sectionsSubgroup F) (d : D) :
     rw [GrothendieckSection.completedAut_hom_π, singleObjSectionAutEquiv_hom_app]
     -- The section object is the unique object, so the vertical-action formula applies.
     exact congrArg _ (F.singleObjRepresentation_map_ι X ρ hρ d (g.val d))
-  have hom_π : (HasLimit.isoOfNatIso (F.singleObjRepresentationIso X ρ hρ)).hom ≫
-      limit.π X d =
-        limit.π (F.singleObjSection.toFunctor ⋙ F.singleObjRepresentation X ρ hρ) d := by
-    rw [HasLimit.isoOfNatIso_hom_π, singleObjRepresentationIso_hom_app]
-    -- The comparison component is the identity of the original coefficient object.
-    exact Category.comp_id _
-  have inv_π : (HasLimit.isoOfNatIso (F.singleObjRepresentationIso X ρ hρ)).inv ≫
-      limit.π (F.singleObjSection.toFunctor ⋙ F.singleObjRepresentation X ρ hρ) d =
-        limit.π X d := by
-    rw [HasLimit.isoOfNatIso_inv_π, singleObjRepresentationIso_inv_app]
-    -- The comparison component is the identity of the original coefficient object.
-    exact Category.comp_id _
   -- Expand the transported action separately from its effect on projections.
   simp only [singleObjLimitAction, MonoidHom.comp_apply, MulEquiv.coe_toMonoidHom,
     Aut.autMulEquivOfIso_apply_asIso, Iso.trans_hom, Iso.symm_hom]
-  simp only [Category.assoc, hom_π, h, reassoc_of% inv_π]
+  simp only [Category.assoc, isoOfNatIso_singleObjRepresentationIso_hom_π, h,
+    isoOfNatIso_singleObjRepresentationIso_inv_π_assoc]
 
 /-- A levelwise action on the coefficient limit agrees with the represented section action. -/
 theorem singleObjLimitAction_unique (σ : GrpCat.sectionsSubgroup F →* Aut (limit X))

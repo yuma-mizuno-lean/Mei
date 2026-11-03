@@ -19,7 +19,7 @@ label. The label is trivial below the correction order and nontrivial at that
 order, with logarithm equal to the negative obstruction component.
 
 The normal and transversality come from
-`DirectedDiagram.exists_pos_joint_loop_obstruction`; positive-degree support
+`DirectedDiagram.LoopProjection.exists_pos_joint_loop_obstruction`; positive-degree support
 comes from the truncated grading. `DirectedWall.exists_outgoing_sweep` supplies
 the wall. This implements the individual homogeneous-wall construction in
 Mandel, *Scattering diagrams, theta functions, and refined tropical curve counts*,
@@ -51,11 +51,7 @@ correction order. No lower-order consistency hypothesis is needed for this
 individual-wall construction. -/
 theorem exists_outgoingWall_joint_obstruction {k : ℕ} {J : Set V}
     (hJ : J ∈ (D.adaptedComplex k).joints) {q : V}
-    (hq : q ∈ intrinsicInterior ℝ J) (initial : Set ι)
-    (hfull : ∀ j ∈ initial, ∃ b : ℝ,
-      (D.wall j).support = {v | h.realCharacter (D.wall j).normal v = b})
-    (hpure : ∀ j ∉ initial, ∃ m : Γ, d.degree m < k ∧
-      ∃ a ∈ ℒ m, (D.wall j).label = d.expToCompletion ℒ a) :
+    (hq : q ∈ intrinsicInterior ℝ J) (P : D.LoopProjection k) :
     ∃ r > 0, ∀ (x : WallComplement (fun j : D.active k => (D.wall j).support))
       (p : AdmissiblePLPath x x), (∀ z ∈ p.vertices, z.val ∈ Metric.ball q r) →
       ∀ n : Γ, d.degree n = k →
@@ -69,7 +65,7 @@ theorem exists_outgoingWall_joint_obstruction {k : ℕ} {J : Set V}
           (∀ l : ℕ, l < k → CompletedGroup.projection l W.label = 1) ∧
           log (CompletedGroup.projection k W.label) = -c ∧
           CompletedGroup.projection k W.label ≠ 1 := by
-  obtain ⟨r, hr, hlocal⟩ := D.exists_pos_joint_loop_obstruction hJ hq initial hfull hpure
+  obtain ⟨r, hr, hlocal⟩ := P.exists_pos_joint_loop_obstruction hJ hq
   refine ⟨r, hr, fun x p hp n hn => ?_⟩
   dsimp only
   intro hc

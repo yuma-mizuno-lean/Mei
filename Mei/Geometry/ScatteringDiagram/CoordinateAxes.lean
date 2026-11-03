@@ -166,6 +166,26 @@ theorem pathProduct_coordinateAxes_toPath (a b : H) (j : Bool)
     rw [(hzero (c := c') (by simp [hlist])).1, zero_mul] at hlt
     exact absurd hlt (lt_irrefl 0)
 
+/-- A segment along which one coordinate keeps its sign and which meets the other axis at an
+interior parameter crosses exactly one wall, through that point, and its product is the
+corresponding signed label. -/
+theorem exists_pathProduct_toPath_eq_of_axisRow_eq_zero
+    (D : FiniteWallDiagram (FinitePolyhedralComplex.coordinateAxes h) H) {j : Bool}
+    {x y : WallComplement
+      (fun P : (FinitePolyhedralComplex.coordinateAxes h).walls => (P : Set (ℝ × ℝ)))}
+    (e : x ⟶ y) (hxy : SignType.sign (axisRow (!j) x.val) = SignType.sign (axisRow (!j) y.val))
+    {t : ℝ} (ht : t ∈ Ioo (0 : ℝ) 1) {q : ℝ × ℝ} (hq : AffineMap.lineMap x.val y.val t = q)
+    (hz : axisRow j q = 0) :
+    ∃ P : (FinitePolyhedralComplex.coordinateAxes h).walls, q ∈ (P : Set (ℝ × ℝ)) ∧
+      D.pathProduct e.toPath =
+        if 0 < D.normal P (y.val - x.val) then (D.label P)⁻¹ else D.label P := by
+  subst hq
+  obtain ⟨P, hP, hmem, -⟩ := exists_mem_coordinateAxes_walls_subset_of_axisRow_eq_zero h hz
+  have hc : (⟨P, hP⟩, t) ∈ WallComplement.crossings x y :=
+    (WallComplement.mem_crossings _ _ _ _).mpr ⟨Ioo_subset_Icc_self ht, hmem⟩
+  exact ⟨⟨P, hP⟩, hmem, D.pathProduct_toPath_eq_of_crossings_eq_singleton e
+    (crossings_eq_singleton_of_mem_crossings hxy hc)⟩
+
 /-- The square loop crosses `b, a, b⁻¹, a⁻¹` in this order, so its product is the commutator
 `a⁻¹ * b⁻¹ * a * b`. -/
 @[simp]

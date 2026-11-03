@@ -24,6 +24,9 @@ The pure-tensor map is the generic `ModuleFiltration.completionBilinear` for
 equivalences. It agrees pointwise with the product of the completed left and
 right inclusions (`completedTensor_apply`), from which multiplicativity and the
 unit formulas follow. Filtration orders of the two inputs add.
+Tensoring filtration-preserving algebra maps preserves the total-degree filtration.
+The induced completion map sends pure tensors of arbitrary completed elements to
+the pure tensor of their images under the two completion maps.
 The two algebras may be noncommutative; no flatness or separatedness is required.
 Exchanging the factors gives a canonical algebra equivalence of completed tensor
 products. At each finite cutoff it is the factor exchange on quotient classes,
@@ -269,6 +272,29 @@ theorem completedTensorComm_completedTensor (x : F.completion) (y : G.completion
     G.projection_completedTensor_of_representatives F k y x b a hb ha]
   simp only [Ideal.quotient_map_mkₐ, Ideal.Quotient.mkₐ_eq_mk,
     AlgEquiv.coe_toAlgHom, Algebra.TensorProduct.comm_tmul]
+
+/-- Tensoring filtered algebra maps commutes with pure tensors of arbitrary completed elements. -/
+theorem mapCompletionₐ_completedTensor {C D : Type*} [Ring C] [Ring D]
+    [Algebra R C] [Algebra R D] (H : Mei.AlgFiltration C) (K : Mei.AlgFiltration D)
+    (f : A →ₐ[R] C) (g : B →ₐ[R] D)
+    (hf : ∀ k, F.ideal k ≤ (H.ideal k).comap f)
+    (hg : ∀ k, G.ideal k ≤ (K.ideal k).comap g)
+    (x : F.completion) (y : G.completion) :
+    (F.tensorProduct R G).mapCompletionₐ (H.tensorProduct R K)
+      (Algebra.TensorProduct.map f g) id monotone_id
+      (fun k => F.tensorProduct_le_comap_map R G H K f g hf hg (k + 1))
+      (F.completedTensor (R := R) G x y) =
+      H.completedTensor (R := R) K
+        (F.mapCompletionₐ H f id monotone_id (fun k => hf (k + 1)) x)
+        (G.mapCompletionₐ K g id monotone_id (fun k => hg (k + 1)) y) := by
+  simp only [completedTensor_apply_eq_completionBilinear,
+    moduleCompletionEquiv_symm_mapCompletionₐ]
+  rw [← moduleCompletionEquiv_completionMap]
+  congr 1
+  apply ModuleFiltration.completionMap_completionBilinear
+  intro a b
+  exact Algebra.TensorProduct.map_tmul f g a b
+
 
 /-- The inverse completed exchange is the exchange in the opposite order. -/
 @[simp]

@@ -197,6 +197,18 @@ theorem truncatedMap_mem (f : GradedLieHom T ℒ ℳ) {a : ℕ} (k : ℕ)
   refine (e.mem_truncatedGrading_iff ℳ).mpr ⟨f y, f.map_mem hy, ?_⟩
   simpa only [LieIdeal.mkQ_apply] using (f.truncatedMap_mk k h y).symm
 
+/-- The truncation of a fixed-degree homomorphism commutes with homogeneous components. -/
+theorem decompose_truncatedMap {ℳ' : N → Submodule R L'} [GradedLieAlgebra ℳ']
+    [IsPositiveGrading d ℳ'] (f : GradedLieHom (PositiveDegreeMap.id d) ℒ ℳ') (k : ℕ)
+    (x : d.truncatedLie ℒ k) (n : N) :
+    (DirectSum.decompose (d.truncatedGrading ℳ' k) (f.truncatedMap k (by simp) x) n :
+      d.truncatedLie ℳ' k) =
+      f.truncatedMap k (by simp)
+        (DirectSum.decompose (d.truncatedGrading ℒ k) x n : d.truncatedLie ℒ k) :=
+  (DirectSum.map_decompose_shift (d.truncatedGrading ℒ k) (d.truncatedGrading ℳ' k)
+    (f.truncatedMap k (by simp)).toLinearMap.toAddMonoidHom _root_.id Function.injective_id
+    (fun _ _ hx => by simpa using f.truncatedMap_mem k (by simp) hx) n x).symm
+
 /-- Truncation sends the identity graded homomorphism to the identity. -/
 @[simp]
 theorem truncatedMap_id (k : ℕ) :
@@ -277,6 +289,69 @@ theorem truncatedMap_truncation (k : ℕ) :
   apply (d.degreeIdeal ℒ k).lieHom_qext
   intro x
   simp [LieIdeal.mkQ_apply]
+
+section SectionComplement
+
+variable {ℳ' : N → Submodule R L'} [GradedLieAlgebra ℳ'] [IsPositiveGrading d ℳ']
+  (π : GradedLieHom (PositiveDegreeMap.id d) ℒ ℳ')
+  (s : GradedLieHom (PositiveDegreeMap.id d) ℳ' ℒ)
+
+/-- The order-`k` endomorphism `id - s ∘ π` of the truncation of `ℒ`. When `s` is a section
+of `π`, it is idempotent with image the truncated kernel of `π`
+(`isIdempotentElem_idSubSectionComp`, `truncatedMap_idSubSectionComp`). -/
+def idSubSectionComp (k : ℕ) : Module.End R (d.truncatedLie ℒ k) :=
+  LinearMap.id - (s.truncatedMap k (by simp)).toLinearMap.comp
+    (π.truncatedMap k (by simp)).toLinearMap
+
+theorem idSubSectionComp_apply (k : ℕ) (x : d.truncatedLie ℒ k) :
+    π.idSubSectionComp s k x =
+      x - s.truncatedMap k (by simp) (π.truncatedMap k (by simp) x) := (rfl)
+
+/-- The map fixes every element of the truncated kernel of `π`. -/
+@[simp]
+theorem idSubSectionComp_of_map_eq_zero (k : ℕ) {x : d.truncatedLie ℒ k}
+    (hx : π.truncatedMap k (by simp) x = 0) : π.idSubSectionComp s k x = x := by
+  rw [idSubSectionComp_apply, hx, map_zero, sub_zero]
+
+variable {π s} (hsπ : ∀ x, π (s x) = x)
+include hsπ
+
+/-- On truncations, `π` is a retraction of its section. -/
+@[simp]
+theorem truncatedMap_truncatedMap_of_section (k : ℕ) (y : d.truncatedLie ℳ' k) :
+    π.truncatedMap k (by simp) (s.truncatedMap k (by simp) y) = y := by
+  have hid : (π.truncatedMap k (by simp)).comp (s.truncatedMap k (by simp)) = LieHom.id := by
+    apply (d.degreeIdeal ℳ' k).lieHom_qext
+    intro x
+    simp [LieIdeal.mkQ_apply, hsπ]
+  exact DFunLike.congr_fun hid y
+
+/-- For a section, the map kills the truncation of every lifted element. -/
+@[simp]
+theorem idSubSectionComp_truncatedMap (k : ℕ) (y : d.truncatedLie ℳ' k) :
+    π.idSubSectionComp s k (s.truncatedMap k (by simp) y) = 0 := by
+  rw [idSubSectionComp_apply, truncatedMap_truncatedMap_of_section hsπ, sub_self]
+
+/-- For a section, the map lands in the truncated kernel of `π`. -/
+@[simp]
+theorem truncatedMap_idSubSectionComp (k : ℕ) (x : d.truncatedLie ℒ k) :
+    π.truncatedMap k (by simp) (π.idSubSectionComp s k x) = 0 := by
+  rw [idSubSectionComp_apply, map_sub, truncatedMap_truncatedMap_of_section hsπ, sub_self]
+
+/-- For a section, the map is idempotent: it is the projection onto the truncated kernel
+of `π` along the image of `s`. -/
+theorem isIdempotentElem_idSubSectionComp (k : ℕ) :
+    IsIdempotentElem (π.idSubSectionComp s k) := by
+  ext x
+  exact idSubSectionComp_of_map_eq_zero π s k (truncatedMap_idSubSectionComp hsπ k x)
+
+/-- For a section, an element fixed by the map lies in the truncated kernel of `π`. -/
+theorem truncatedMap_eq_zero_of_idSubSectionComp_eq (k : ℕ) {x : d.truncatedLie ℒ k}
+    (hx : π.idSubSectionComp s k x = x) : π.truncatedMap k (by simp) x = 0 := by
+  rw [← hx]
+  exact truncatedMap_idSubSectionComp hsπ k x
+
+end SectionComplement
 
 end GradedLieHom
 end Mei
