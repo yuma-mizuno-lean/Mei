@@ -50,6 +50,21 @@ def dilogPow (n : D.NonzeroDegree d) (c : ℚ) : d.completedBCHGroup 𝓛ℚ :=
 theorem dilogPow_def (n : D.NonzeroDegree d) (c : ℚ) :
     D.dilogPow d n c = SkewLieAlgebra.rayExp βℚ hβℚ n.2.1 n.2.2 (c • negDilogNeg ℚ) := (rfl)
 
+/-- The exponent `c + c'` gives the product of the labels with exponents `c` and `c'`. -/
+theorem dilogPow_add (n : D.NonzeroDegree d) (c c' : ℚ) :
+    D.dilogPow d n (c + c') = D.dilogPow d n c * D.dilogPow d n c' := by
+  rw [dilogPow_def, dilogPow_def, dilogPow_def, add_smul, SkewLieAlgebra.rayExp_add]
+
+/-- The exponent `0` gives the identity. -/
+@[simp]
+theorem dilogPow_zero (n : D.NonzeroDegree d) : D.dilogPow d n 0 = 1 := by
+  rw [dilogPow_def, zero_smul, SkewLieAlgebra.rayExp_zero]
+
+/-- The exponent `-c` gives the inverse of the label with exponent `c`. -/
+theorem dilogPow_neg (n : D.NonzeroDegree d) (c : ℚ) :
+    D.dilogPow d n (-c) = (D.dilogPow d n c)⁻¹ := by
+  rw [dilogPow_def, dilogPow_def, neg_smul, SkewLieAlgebra.rayExp_neg]
+
 /-- Integer multiples of the exponent give integer powers of the label. -/
 theorem dilogPow_intCast_mul (n : D.NonzeroDegree d) (s : ℤ) (c : ℚ) :
     D.dilogPow d n (s * c) = D.dilogPow d n c ^ s := by
