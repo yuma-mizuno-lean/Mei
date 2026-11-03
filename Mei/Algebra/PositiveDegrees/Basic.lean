@@ -259,6 +259,12 @@ def orthant (ι : Type*) [Fintype ι] : PositiveDegrees (ι → ℤ) where
 theorem mem_orthant_monoid {ι : Type*} [Fintype ι] {n : ι → ℤ} :
     n ∈ (orthant ι).monoid ↔ ∀ i, 0 ≤ n i := Iff.rfl
 
+/-- A standard basis vector is an allowed degree of the orthant. -/
+theorem single_mem_orthant_monoid {ι : Type*} [Fintype ι] [DecidableEq ι] (i : ι) :
+    (Pi.single i 1 : ι → ℤ) ∈ (orthant ι).monoid :=
+  mem_orthant_monoid.mpr fun j => by
+    by_cases h : j = i <;> simp [h]
+
 /-- The standard degree is the coordinate sum. -/
 @[simp]
 theorem orthant_degree {ι : Type*} [Fintype ι] (n : ι → ℤ) :

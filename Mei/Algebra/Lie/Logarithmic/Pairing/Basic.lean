@@ -49,6 +49,14 @@ structure TropicalPairing where
 
 namespace LogarithmicVectorField
 
+/-- The `i`-th coordinate character of `ℤⁿ`, with rational values. -/
+def coordinate {n : ℕ} (i : Fin n) : (Fin n → ℤ) →+ ℚ :=
+  (Int.castAddHom ℚ).comp (Pi.evalAddMonoidHom (fun _ => ℤ) i)
+
+@[simp]
+theorem coordinate_apply {n : ℕ} (i : Fin n) (x : Fin n → ℤ) : coordinate i x = (x i : ℚ) :=
+  (rfl)
+
 variable (d ρ)
 
 private def characterCoefficients : tropicalSubalgebra ρ U d →ₗ[R] Γ →₀ U where

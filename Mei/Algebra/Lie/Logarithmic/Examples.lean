@@ -5,6 +5,7 @@ Authors: Claude Code
 -/
 module
 
+public import Mei.Algebra.Group.Hom.Int
 public import Mei.Algebra.Lie.Logarithmic.Coefficient
 public import Mei.Algebra.Lie.Logarithmic.Pairing.Basic
 public import Mathlib.Algebra.MvPolynomial.PDeriv
@@ -44,29 +45,6 @@ namespace Mei.LogarithmicVectorField.Examples
 
 open _root_.AddMonoidAlgebra Polynomial
 
-/-- The `i`-th coordinate character of `ℤⁿ`, with rational values. -/
-def coordinate {n : ℕ} (i : Fin n) : (Fin n → ℤ) →+ ℚ :=
-  (Int.castAddHom ℚ).comp (Pi.evalAddMonoidHom (fun _ => ℤ) i)
-
-@[simp]
-theorem coordinate_apply {n : ℕ} (i : Fin n) (x : Fin n → ℤ) : coordinate i x = (x i : ℚ) :=
-  (rfl)
-
-/-- A character of `ℤ²` is determined by its values on the standard basis. -/
-theorem character_apply (m : (Fin 2 → ℤ) →+ ℚ) (n : Fin 2 → ℤ) :
-    m n = n 0 * m (Pi.single 0 1) + n 1 * m (Pi.single 1 1) := by
-  have hn : n = n 0 • (Pi.single 0 1 : Fin 2 → ℤ) + n 1 • (Pi.single 1 1 : Fin 2 → ℤ) := by
-    ext i
-    fin_cases i <;> simp
-  conv_lhs => rw [hn]
-  rw [map_add, map_zsmul, map_zsmul, zsmul_eq_mul, zsmul_eq_mul]
-
-/-- A standard basis vector is an allowed degree of the orthant. -/
-theorem single_mem_orthant {n : ℕ} (i : Fin n) :
-    (Pi.single i 1 : Fin n → ℤ) ∈ (PositiveDegrees.orthant (Fin n)).monoid :=
-  PositiveDegrees.mem_orthant_monoid.mpr fun j => by
-    by_cases h : j = i <;> simp [h]
-
 section Rank3
 
 /-- The standard basis vector `e_i` of `ℤ³`. -/
@@ -90,7 +68,8 @@ theorem linearIndependent_single_coordinate :
 theorem single_coordinate_mem_tropicalVertexLieAlgebra (i : Fin 3) (hi : i ≠ 0) :
     single ρ₃ e[0] (coordinate i) ∈
       tropicalVertexLieAlgebra (R := ℚ) (PositiveDegrees.orthant (Fin 3)) ρ₃ :=
-  single_mem_tropicalVertexLieAlgebra _ _ (single_mem_orthant 0) (by simp) _ (by simp [hi])
+  single_mem_tropicalVertexLieAlgebra _ _ (PositiveDegrees.single_mem_orthant_monoid 0) (by simp) _
+    (by simp [hi])
 
 /-- The bracket of `z^{e₁} ∂_{e₃*}` with `z^{e₂} ∂_{e₁*}` is `-z^{e₁+e₂} ∂_{e₃*}`, even though
 `e₃*(e₂) = 0`. -/
@@ -195,7 +174,8 @@ theorem degreeMap_ne_sumDegreeMap {U : Submodule ℚ ((Fin 2 → ℤ) →+ ℚ)}
   intro h
   have key : ∀ i : Fin 2, p.characterMap ⟨coordinate 0, hU⟩ (sumDegreeMap (Pi.single i 1)) =
       coordinate 0 (Pi.single i 1) := fun i => by
-    have := p.eval_eq ⟨coordinate 0, hU⟩ (n := Pi.single i 1) (single_mem_orthant i)
+    have := p.eval_eq ⟨coordinate 0, hU⟩ (n := Pi.single i 1)
+      (PositiveDegrees.single_mem_orthant_monoid i)
     rwa [AddMonoidHom.id_apply, AddMonoidHom.id_apply, DFunLike.congr_fun h] at this
   have h0 : p.characterMap ⟨coordinate 0, hU⟩ 1 = 1 := by simpa using key 0
   have h1 : p.characterMap ⟨coordinate 0, hU⟩ 1 = 0 := by simpa using key 1
@@ -268,15 +248,16 @@ def doublePairing :
   characterMap := inverseDualDouble.comp (Submodule.subtype _)
   eval_eq m n _ := by
     simp only [AddMonoidHom.id_apply, LinearMap.comp_apply, Submodule.subtype_apply]
-    rw [character_apply m.val n]
-    simp [inverseDualDouble]
+    rw [AddMonoidHom.apply_pi_eq_sum_zsmul m.val n]
+    simp [inverseDualDouble, Fin.sum_univ_two]
     ring
 
 /-- The pairing of the doubling sends `z^{e₂} ∂_{e₁*}` to `(1/2) z^{e₂} ∂_{e₁*}`. -/
 theorem doublePairing_gradedLieHom_single :
     (doublePairing.gradedLieHom (tropicalSingle
       (PositiveDegrees.orthant (Fin 2)) (AddMonoidHom.id (Fin 2 → ℤ)) ⊤
-      (n := Pi.single 1 1) (single_mem_orthant 1) (by simp) ⟨coordinate 0, trivial⟩
+      (n := Pi.single 1 1) (PositiveDegrees.single_mem_orthant_monoid 1) (by simp)
+      ⟨coordinate 0, trivial⟩
       (by simp))).val =
       (1 / 2 : ℚ) • single (AddMonoidHom.id (Fin 2 → ℤ)) (Pi.single 1 1) (coordinate 0) := by
   have hT : doublePairing.degreeMap (Pi.single 1 1) = Pi.single 1 1 := by
