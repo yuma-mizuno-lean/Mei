@@ -152,19 +152,23 @@ theorem segmentCrossingWord_pathImage
     List.map_map, Function.comp_def, crossingLetter_pathImage C e ν ν' hν,
     MonoidHom.map_list_prod]
 
+/-- The homeomorphism underlying an integral affine equivalence acts as the equivalence. -/
+theorem coe_toHomeomorph [FiniteDimensional ℝ V] :
+    ⇑e.toAffineEquiv.toContinuousAffineEquiv.toHomeomorph = ⇑e.toAffineEquiv := rfl
+
 /-- Affine transport identifies the chambers of a complex with those of its image. -/
 def chamberEquiv : Chamber (fun P : C.walls => (P : Set V)) ≃
     Chamber (fun Q : (C.image e).walls => (Q : Set V')) := by
   letI := h.finiteDimensional
   exact WallComplement.chamberEquiv e.toAffineEquiv.toContinuousAffineEquiv.toHomeomorph
-    (C.wallImageEquiv e) (fun P => (C.wallImageEquiv_coe e P).trans (by rfl))
+    (C.wallImageEquiv e) (fun P => (C.wallImageEquiv_coe e P).trans (by rw [coe_toHomeomorph]))
 
 /-- The identification of chambers sends the chamber of an allowed point to the chamber of
 its image. -/
 theorem chamberEquiv_chamber (x : WallComplement (fun P : C.walls => (P : Set V))) :
     (C.chamberEquiv e) (chamber x) = chamber ((C.pathImage e).obj x) := by
   let := h.finiteDimensional
-  exact WallComplement.chamberEquiv_chamber _ _ _ x _ (by rw [pathImage_obj_val]; rfl)
+  exact WallComplement.chamberEquiv_chamber _ _ _ x _ (by rw [pathImage_obj_val, coe_toHomeomorph])
 
 /-- A point of the carrier of a chamber is carried into the carrier of the identified
 chamber. -/
@@ -195,7 +199,8 @@ theorem chamberEquiv_positiveChamber (P : C.walls) (ν : V →ₗ[ℝ] ℝ)
   have hmap := C.image_mem_carrier_chamberEquiv e ht
   have hvadd := e.toAffineEquiv.map_vadd q (t • e.toAffineEquiv.linear.symm v')
   simp only [vadd_eq_add, map_smul, LinearEquiv.apply_symm_apply] at hvadd
-  rwa [add_comm q, hvadd, add_comm] at hmap
+  rw [add_comm q, hvadd, add_comm] at hmap
+  exact hmap
 
 /-- Affine transport sends the negative chamber of a wall to the negative chamber of its
 image wall, for coorientations related by pulling back along the linear part. -/
@@ -206,7 +211,7 @@ theorem chamberEquiv_negativeChamber (P : C.walls) (ν : V →ₗ[ℝ] ℝ)
     (C.chamberEquiv e) (C.negativeChamber P ν hν) =
       (C.image e).negativeChamber (C.wallImageEquiv e P) ν' hν' := by
   rw [← positiveChamber_neg hν, ← positiveChamber_neg hν']
-  exact C.chamberEquiv_positiveChamber e P (-ν) _ (-ν') _ (by rw [← hνν']; rfl)
+  exact C.chamberEquiv_positiveChamber e P (-ν) _ (-ν') _ (by rw [← hνν', LinearMap.neg_comp])
 
 /-- The inverse identification sends the positive chamber of an image wall to the positive
 chamber of the wall it comes from. -/

@@ -23,10 +23,12 @@ variable {X Y : Type*} [TopologicalSpace X] [TopologicalSpace Y]
 
 /-- A homeomorphism induces a bijection of connected components. -/
 def connectedComponentsEquiv (e : X ≃ₜ Y) : ConnectedComponents X ≃ ConnectedComponents Y where
-  toFun := (ConnectedComponents.continuous_coe.comp e.continuous).connectedComponentsLift
-  invFun := (ConnectedComponents.continuous_coe.comp e.symm.continuous).connectedComponentsLift
-  left_inv := ConnectedComponents.surjective_coe.forall.2 fun x => by simp
-  right_inv := ConnectedComponents.surjective_coe.forall.2 fun y => by simp
+  toFun := e.continuous.connectedComponentsMap
+  invFun := e.symm.continuous.connectedComponentsMap
+  left_inv := ConnectedComponents.surjective_coe.forall.2 fun x => by
+    simp [Continuous.connectedComponentsMap_mk]
+  right_inv := ConnectedComponents.surjective_coe.forall.2 fun y => by
+    simp [Continuous.connectedComponentsMap_mk]
 
 /-- The bijection of connected components sends the component of a point to the component of
 its image. -/

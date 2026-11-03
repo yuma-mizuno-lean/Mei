@@ -52,9 +52,6 @@ theorem label_eq_of_eq {P P' : C.walls} (hP : P = P') :
 /-- The affine image of a groupoid-labelled diagram: the objects and arrows of `D`, placed on
 the identified chambers and image walls, with coorientations pulled back along the inverse
 linear part. -/
--- Reducible and exposed, so that the image objects compute to those of `D` in the types of
--- arrows and equalities of objects.
-@[expose, reducible]
 def image : GroupoidWallDiagram (C.image e) G where
   normal := C.imageNormal e D.normal
   ker_normal := C.ker_imageNormal e D.normal D.ker_normal
@@ -80,32 +77,77 @@ theorem image_obj_chamberEquiv (c : Chamber (fun P : C.walls => (P : Set V))) :
     (D.image e).obj (C.chamberEquiv e c) = D.obj c := by
   rw [image_obj, Equiv.symm_apply_apply]
 
+/-- The coorientations of the image diagram pull back along the linear part to those of `D`. -/
+theorem image_normal_comp (P : C.walls) :
+    ((D.image e).normal (C.wallImageEquiv e P)).comp e.toAffineEquiv.linear.toLinearMap =
+      D.normal P :=
+  C.imageNormal_comp e _ P
+
+/-- The positive side object of an image wall is the positive side object of the wall it comes
+from. -/
+theorem image_obj_positiveChamber (P : C.walls) (Q : (C.image e).walls)
+    (hPQ : C.wallImageEquiv e P = Q) :
+    (D.image e).obj ((C.image e).positiveChamber Q ((D.image e).normal Q)
+        ((D.image e).ker_normal Q)) =
+      D.obj (C.positiveChamber P (D.normal P) (D.ker_normal P)) := by
+  subst hPQ
+  exact (image_obj ..).trans (congrArg D.obj (C.chamberEquiv_symm_positiveChamber e P _ rfl _
+    (D.ker_normal P) _ _ (D.image_normal_comp e P)))
+
+/-- The negative side object of an image wall is the negative side object of the wall it comes
+from. -/
+theorem image_obj_negativeChamber (P : C.walls) (Q : (C.image e).walls)
+    (hPQ : C.wallImageEquiv e P = Q) :
+    (D.image e).obj ((C.image e).negativeChamber Q ((D.image e).normal Q)
+        ((D.image e).ker_normal Q)) =
+      D.obj (C.negativeChamber P (D.normal P) (D.ker_normal P)) := by
+  subst hPQ
+  exact (image_obj ..).trans (congrArg D.obj (C.chamberEquiv_symm_negativeChamber e P _ rfl _
+    (D.ker_normal P) _ _ (D.image_normal_comp e P)))
+
+/-- The wall arrow of an image wall, in terms of the arrow of the wall it comes from, up to the
+equalities of the side objects. -/
+theorem image_label (Q : (C.image e).walls) :
+    (D.image e).label Q =
+      eqToHom (D.image_obj_positiveChamber e _ Q (Equiv.apply_symm_apply _ _)) ≫
+      D.label ((C.wallImageEquiv e).symm Q) ≫
+      eqToHom (D.image_obj_negativeChamber e _ Q (Equiv.apply_symm_apply _ _)).symm := (rfl)
+
 /-- The wall arrow of an image wall, in terms of the arrow of the wall it comes from. -/
 theorem image_label_wallImageEquiv (P : C.walls) :
     (D.image e).label (C.wallImageEquiv e P) =
-      eqToHom (congrArg D.obj (C.chamberEquiv_symm_positiveChamber e P _ rfl _ (D.ker_normal P) _ _
-        (C.imageNormal_comp e _ P))) ≫ D.label P ≫
-      eqToHom (congrArg D.obj (C.chamberEquiv_symm_negativeChamber e P _ rfl _ (D.ker_normal P) _ _
-        (C.imageNormal_comp e _ P))).symm := by
-  dsimp only [image]
-  rw [label_eq_of_eq D (Equiv.symm_apply_apply (C.wallImageEquiv e) P)]
+      eqToHom (D.image_obj_positiveChamber e P _ rfl) ≫ D.label P ≫
+      eqToHom (D.image_obj_negativeChamber e P _ rfl).symm := by
+  rw [image_label, label_eq_of_eq D (Equiv.symm_apply_apply (C.wallImageEquiv e) P)]
   simp only [eqToHom_trans_assoc, eqToHom_trans, Category.assoc]
+
+/-- The source object of an image crossing letter is the source object of the original letter. -/
+theorem image_obj_crossingSource (l : C.walls × Bool) :
+    (D.image e).obj ((C.image e).crossingSource (D.image e).normal (D.image e).ker_normal
+        (Prod.map (C.wallImageEquiv e) id l)) =
+      D.obj (C.crossingSource D.normal D.ker_normal l) :=
+  (image_obj ..).trans (congrArg D.obj (C.chamberEquiv_symm_crossingSource e D.normal
+    D.ker_normal _ (D.image e).ker_normal (D.image_normal_comp e) l))
+
+/-- The target object of an image crossing letter is the target object of the original letter. -/
+theorem image_obj_crossingTarget (l : C.walls × Bool) :
+    (D.image e).obj ((C.image e).crossingTarget (D.image e).normal (D.image e).ker_normal
+        (Prod.map (C.wallImageEquiv e) id l)) =
+      D.obj (C.crossingTarget D.normal D.ker_normal l) :=
+  (image_obj ..).trans (congrArg D.obj (C.chamberEquiv_symm_crossingTarget e D.normal
+    D.ker_normal _ (D.image e).ker_normal (D.image_normal_comp e) l))
 
 /-- A crossing letter of the image diagram has the arrow of the original letter, up to the
 equalities of its side objects. -/
 theorem letterHom_image (l : C.walls × Bool) :
     (D.image e).letterHom (Prod.map (C.wallImageEquiv e) id l) =
-      eqToHom (congrArg D.obj (C.chamberEquiv_symm_crossingSource e D.normal D.ker_normal _
-        (C.ker_imageNormal e D.normal D.ker_normal) (C.imageNormal_comp e _) l)) ≫
-      D.letterHom l ≫
-      eqToHom (congrArg D.obj (C.chamberEquiv_symm_crossingTarget e D.normal D.ker_normal _
-        (C.ker_imageNormal e D.normal D.ker_normal) (C.imageNormal_comp e _) l)).symm := by
+      eqToHom (D.image_obj_crossingSource e l) ≫ D.letterHom l ≫
+        eqToHom (D.image_obj_crossingTarget e l).symm := by
   obtain ⟨P, _ | _⟩ := l
   · simpa using D.image_label_wallImageEquiv e P
   · simp only [Prod.map_apply, id_eq, letterHom_true]
+    rw [D.image_label_wallImageEquiv e P]
     simp only [IsIso.inv_comp, inv_eqToHom, Category.assoc]
-    rw [label_eq_of_eq D (Equiv.symm_apply_apply (C.wallImageEquiv e) P)]
-    simp only [IsIso.inv_comp, inv_eqToHom, Category.assoc, eqToHom_trans, eqToHom_trans_assoc]
 
 variable {x y z : WallComplement (fun P : C.walls => (P : Set V))}
 
@@ -131,7 +173,7 @@ theorem chainHom_image {a b : Chamber (fun P : C.walls => (P : Set V))}
     subst ha
     simp only [List.map_cons, chainHom_cons, letterHom_image]
     rw [ih (C.chamberEquiv_crossingTarget e D.normal D.ker_normal _
-      (C.ker_imageNormal e D.normal D.ker_normal) (C.imageNormal_comp e _) l) hL₁]
+      (D.image e).ker_normal (D.image_normal_comp e) l) hL₁]
     simp only [Category.assoc, eqToHom_trans_assoc, eqToHom_refl, Category.id_comp]
 
 /-- The object of the image diagram at the chamber of an image point is the object of `D` at
@@ -148,8 +190,12 @@ theorem transport_image (p : AdmissiblePLPath x y) :
         eqToHom (D.image_obj_chamber e y).symm := by
   have hlet := Quiver.Path.crossingLetters_pathImage p e D.normal (D.image e).normal
     (C.imageNormal_comp e D.normal)
-  have hL' := hlet ▸ ((C.pathImage e).mapPath p).isCrossingChain_crossingLetters
-    (D.image e).normal (D.image e).ker_normal
+  have hL' : (C.image e).IsCrossingChain (D.image e).normal (D.image e).ker_normal
+      (chamber ((C.pathImage e).obj x)) (chamber ((C.pathImage e).obj y))
+      ((p.crossingLetters D.normal).map (Prod.map (C.wallImageEquiv e) id)) := by
+    rw [← hlet]
+    exact ((C.pathImage e).mapPath p).isCrossingChain_crossingLetters
+      (D.image e).normal (D.image e).ker_normal
   rw [transport_def, (D.image e).chainHom_congr _ hL' hlet, transport_def,
     D.chainHom_image e (C.chamberEquiv_chamber e x) (C.chamberEquiv_chamber e y)
       (p.isCrossingChain_crossingLetters D.normal D.ker_normal) hL']
