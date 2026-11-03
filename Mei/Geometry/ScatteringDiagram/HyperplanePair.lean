@@ -6,7 +6,7 @@ Authors: Claude
 module
 
 public import Mei.Geometry.Convex.PolyhedralComplex.HyperplanePair
-public import Mei.Geometry.ScatteringDiagram.Refinement
+public import Mei.Geometry.ScatteringDiagram.Refinement.Basic
 
 /-!
 # Wall diagrams on one and on two hyperplanes
