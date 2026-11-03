@@ -16,9 +16,10 @@ Let `D` be a consistent diagram on the base. Its cylinder in the module probe li
 in the base quotient, and the probe wall is a full hyperplane whose label the projection
 kills. The relative completion of `DirectedDiagram.exists_isRelativeOutgoingCompletion`
 therefore applies, with no condition on the supports of `D`: it adds outgoing walls with
-pure birth logarithms in the module summand to the cylinder and the probe wall, keeping
-the cylinder walls as the leading summands of the index type. The charge-zero part of the
-result is equivalent to the cylinder over `D`.
+pure birth logarithms in the module summand to the cylinder and the probe wall, so the
+index type of the completion is `(ι ⊕ Unit) ⊕ η`, with the cylinder walls and the probe wall
+as the leading summands. The charge-zero part of the result is equivalent to the cylinder
+over `D`.
 
 We use `ModuleProbe.baseProjection`, `ModuleProbe.baseSection`, `ModuleProbe.cylinderDiagram`
 and `ModuleProbe.initialDiagram`. The construction follows Mandel, *Scattering diagrams,
@@ -142,7 +143,8 @@ theorem _root_.Mei.DirectedDiagram.IsRelativeOutgoingCompletion.isOutgoingComple
 /-- A consistent base diagram and a coefficient at degree `p` have a relative outgoing
 completion of the probe that keeps the cylinder fixed and adds only outgoing walls with pure
 birth logarithms in the module summand. Its projection to the base quotient is equivalent
-to the cylinder quotient, and its charge-zero part is the cylinder over the base diagram. -/
+to the cylinder quotient, and its charge-zero part is equivalent to the cylinder over the base
+diagram. -/
 theorem exists_isRelativeOutgoingCompletion_probe [Module.Free ℤ Γ] {ι : Type*}
     {D : DirectedDiagram (d := d) h H ι} (hD : D.Consistent) (a : ℳ p) :
     ∃ (η : Type) (_ : Countable η)
