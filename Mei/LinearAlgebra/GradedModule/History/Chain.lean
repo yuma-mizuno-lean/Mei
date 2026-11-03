@@ -71,11 +71,7 @@ variable {ι : ℕ → Type w} {n : ℕ}
 abbrev chainCons (i : ι 0) (p : (j : Fin n) → ι (j + 1)) : (j : Fin (n + 1)) → ι j :=
   Fin.cons (α := fun j : Fin (n + 1) => ι j) i p
 
-@[simp]
-theorem chainCons_zero (i : ι 0) (p : (j : Fin n) → ι (j + 1)) :
-    chainCons i p 0 = i :=
-  Fin.cons_zero (α := fun j : Fin (n + 1) => ι j) i p
-
+/-- Prepending a degree shifts the remaining degrees by one position. -/
 @[simp]
 theorem chainCons_succ (i : ι 0) (p : (j : Fin n) → ι (j + 1)) (j : Fin n) :
     chainCons i p (chainSucc j) = p j :=

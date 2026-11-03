@@ -25,10 +25,10 @@ input the nonzero histories are finite and sum to the composite of total transfe
 
 Correspondence morphisms with common chamber maps at incident steps intertwine total
 transfers provided target total lifts kill the images of inadmissible source pieces.
-Reflecting admissible degrees suffices. Then the regrading theorems for `chainHistory`
-apply to transfer histories: a target history is the grouped sum of its source
-refinements, and injective degree maps give componentwise naturality, for example
-under coefficient truncation.
+Reflecting admissible degrees suffices. With `comp_totalTransfer_of_hom`, the regrading
+theorems `chainHistory_map_eq_sum` and `map_chainHistory_of_injective` apply to transfer
+histories: a target history is the grouped sum of its source refinements, and injective
+degree maps give componentwise naturality, for example under coefficient truncation.
 
 The single-step formulas are `decompose_right_liftLeftTotal_of_mem` and
 `Hom.middle_comp_liftLeftTotal_iff`.
@@ -56,26 +56,6 @@ def totalTransfer (C : GradedCorrespondence (B := B) 𝒰 𝒱 I J) : U →ₗ[R
 
 theorem totalTransfer_apply (C : GradedCorrespondence (B := B) 𝒰 𝒱 I J) (a : U) :
     C.totalTransfer a = C.right (C.liftLeftTotal a) := (rfl)
-
-/-- On an admissible piece the total transfer is the image of the chosen lift. -/
-@[simp]
-theorem totalTransfer_coe (C : GradedCorrespondence (B := B) 𝒰 𝒱 I J) (i : I) (a : 𝒰 i) :
-    C.totalTransfer a = C.right (C.liftLeft i a) := by
-  rw [totalTransfer_apply, liftLeftTotal_coe]
-
-/-- An inadmissible homogeneous input has zero total transfer. -/
-theorem totalTransfer_of_not_mem (C : GradedCorrespondence (B := B) 𝒰 𝒱 I J)
-    {i : ι} (hi : i ∉ I) {a : U} (ha : a ∈ 𝒰 i) : C.totalTransfer a = 0 := by
-  rw [totalTransfer_apply, C.liftLeftTotal_of_not_mem hi ha, map_zero]
-
-/-- The homogeneous components of the total transfer of a homogeneous input are its
-transfers, or zero when the input degree is inadmissible. -/
-theorem decompose_totalTransfer_of_mem [DecidableEq κ] [DirectSum.Decomposition 𝒱]
-    (C : GradedCorrespondence (B := B) 𝒰 𝒱 I J) {i : ι} [Decidable (i ∈ I)] {a : U}
-    (ha : a ∈ 𝒰 i) (j : κ) :
-    DirectSum.decompose 𝒱 (C.totalTransfer a) j =
-      if hi : i ∈ I then C.transfer ⟨i, hi⟩ j ⟨a, ha⟩ else 0 :=
-  C.decompose_right_liftLeftTotal_of_mem ha j
 
 /-- The total transfer of a graph correspondence is its equivalence. -/
 @[simp]
@@ -123,7 +103,8 @@ theorem chainHistory_totalTransfer_succ_apply {n : ℕ} (p : (j : Fin (n + 1)) �
         ℳ 1 i) :
     chainHistory ℳ (fun j => (C j).totalTransfer) p a =
       if hi : i ∈ I 0 then ((C 0).transfer ⟨i, hi⟩ (p (chainHead n)) ⟨_, hx⟩ : M 0) else 0 := by
-  rw [chainHistory_succ_apply, decompose_totalTransfer_of_mem (C 0) hx]
+  rw [chainHistory_succ_apply, totalTransfer_apply,
+    (C 0).decompose_right_liftLeftTotal_of_mem hx]
   split_ifs <;> rfl
 
 /-- A transfer history whose decoration before the final crossing has inadmissible
@@ -158,28 +139,6 @@ theorem comp_totalTransfer_of_hom (k : ℕ) :
     (r k).comp (C k).totalTransfer = (D k).totalTransfer.comp (r (k + 1)) := by
   rw [← hv k, ← hl k]
   exact (f k).right_comp_totalTransfer fun i hi a => by rw [hl k]; exact hzero k i hi a
-
-open Classical in
-/-- A target transfer history is the grouped sum of its source refinements. Source
-degrees merging under the degree maps are added before taking the target component. -/
-theorem chainHistory_totalTransfer_map_eq_sum {n : ℕ} (q : (j : Fin n) → κ j) (a : M n) :
-    chainHistory 𝓝 (fun j : Fin n => (D j).totalTransfer) q (r n a) =
-      ∑ p ∈ chainHistorySupport ℳ (fun j : Fin n => (C j).totalTransfer) a,
-        if ∀ j : Fin n, σ j (p j) = q j then
-          r 0 (chainHistory ℳ (fun j : Fin n => (C j).totalTransfer) p a) else 0 :=
-  chainHistory_map_eq_sum ℳ 𝓝 r σ
-    (fun k i x hx => by rw [← hv k]; exact (f k).right_mem i x hx) _ _
-    (fun j => comp_totalTransfer_of_hom ℳ C 𝓝 D r σ f hl hv hzero j) q a
-
-/-- Along injective degree maps, for example coefficient truncations, the chamber maps
-send each transfer history to the reindexed target transfer history. -/
-theorem map_chainHistory_totalTransfer_of_injective (hσ : ∀ k, Function.Injective (σ k))
-    {n : ℕ} (p : (j : Fin n) → ι j) (a : M n) :
-    r 0 (chainHistory ℳ (fun j : Fin n => (C j).totalTransfer) p a) =
-      chainHistory 𝓝 (fun j : Fin n => (D j).totalTransfer) (fun j => σ j (p j)) (r n a) :=
-  map_chainHistory_of_injective ℳ 𝓝 r σ
-    (fun k i x hx => by rw [← hv k]; exact (f k).right_mem i x hx) hσ _ _
-    (fun j => comp_totalTransfer_of_hom ℳ C 𝓝 D r σ f hl hv hzero j) p a
 
 end Naturality
 
