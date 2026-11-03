@@ -10,11 +10,11 @@ public import Mei.Geometry.ScatteringDiagram.DirectedWall.Basic
 /-!
 # Walls with a pure birth logarithm
 
-A correction wall added at order `k` of a scattering diagram is the exponential of a
-homogeneous element `a ∈ ℒ n`, where `n` is an actual degree of the wall's supported ray,
-and it first becomes visible in the truncation at order `δ(n)`. `DirectedWall.HasPureBirthLog`
-records this shape, with the logarithm constrained to a set `S` of allowed elements (for
-example a kernel of a coefficient map), together with the bound `δ(n) ≤ k` on its birth order.
+`DirectedWall.HasPureBirthLog W S k` says that the label of `W` is `exp a` for a homogeneous
+element `a ∈ S` of degree `n ∈ ℒ`, where `n` is an actual degree of the wall's supported ray
+and the label is nontrivial in the truncation at order `l` exactly when `δ(n) ≤ l`. The set `S`
+constrains the logarithm (for example to a kernel of a coefficient map), and `k` is an upper
+bound for the birth order `δ(n)`.
 -/
 
 public section
@@ -40,8 +40,8 @@ def HasPureBirthLog (W : DirectedWall (d := d) h H) (S : Set L) (k : ℕ) : Prop
     W.label = d.expToCompletion ℒ a ∧
     ∀ l : ℕ, CompletedGroup.projection l W.label ≠ 1 ↔ d.degree n ≤ l
 
-/-- The unfolded form of `HasPureBirthLog`. -/
-theorem hasPureBirthLog_iff {W : DirectedWall (d := d) h H} {S : Set L} {k : ℕ} :
+/-- Unfolding `HasPureBirthLog`. -/
+theorem hasPureBirthLog_def {W : DirectedWall (d := d) h H} {S : Set L} {k : ℕ} :
     W.HasPureBirthLog S k ↔ ∃ n ∈ W.ray.rayDegrees, d.degree n ≤ k ∧ ∃ a ∈ ℒ n, a ∈ S ∧
       W.label = d.expToCompletion ℒ a ∧
       ∀ l : ℕ, CompletedGroup.projection l W.label ≠ 1 ↔ d.degree n ≤ l := Iff.rfl

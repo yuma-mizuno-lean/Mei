@@ -79,7 +79,7 @@ outgoing walls with pure birth logarithms in `S` of order at most `k`, adjoined 
 that the result is consistent at order `k`, admits a finite outgoing extension consistent at
 order `k + 1`. The extension keeps the walls of `D` and `s`; each added wall is outgoing, has a
 pure birth logarithm in `S` of order at most `k + 1`, and is invisible at order `k`. -/
-abbrev CorrectionStep (S : Set L) : Prop :=
+def CorrectionStep (S : Set L) : Prop :=
   ∀ (k : ℕ) (s : List (DirectedWall (d := d) h H)),
     (D.listDiagram s).LevelConsistent k →
     (∀ w ∈ s, w.Outgoing ∧ w.HasPureBirthLog S k) →
@@ -89,6 +89,19 @@ abbrev CorrectionStep (S : Set L) : Prop :=
       F.LevelConsistent (k + 1) ∧
       ∀ a, (F.wall (.inr a)).Outgoing ∧ (F.wall (.inr a)).HasPureBirthLog S (k + 1) ∧
         CompletedGroup.projection k (F.wall (.inr a)).label = 1
+
+/-- Unfolding `CorrectionStep`. -/
+theorem correctionStep_def {S : Set L} :
+    D.CorrectionStep S ↔
+    ∀ (k : ℕ) (s : List (DirectedWall (d := d) h H)),
+      (D.listDiagram s).LevelConsistent k →
+      (∀ w ∈ s, w.Outgoing ∧ w.HasPureBirthLog S k) →
+      ∃ (κ : Type (max u v)) (_ : Fintype κ)
+        (F : DirectedDiagram (d := d) h H ((ι ⊕ Fin s.length) ⊕ κ)),
+        (∀ j, F.wall (.inl j) = (D.listDiagram s).wall j) ∧
+        F.LevelConsistent (k + 1) ∧
+        ∀ a, (F.wall (.inr a)).Outgoing ∧ (F.wall (.inr a)).HasPureBirthLog S (k + 1) ∧
+          CompletedGroup.projection k (F.wall (.inr a)).label = 1 := Iff.rfl
 
 private def CompletionStage (S : Set L) (k : ℕ) :=
   {s : List (DirectedWall (d := d) h H) //
@@ -282,14 +295,14 @@ private theorem correctionStep_univ
           · simp at hj)
       (by rintro (j | j) hj
           · exact (hj ⟨j, rfl⟩).elim
-          · obtain ⟨n, hn, hd, a, ha, _, he, _⟩ := DirectedWall.hasPureBirthLog_iff.mp
+          · obtain ⟨n, hn, hd, a, ha, _, he, _⟩ := DirectedWall.hasPureBirthLog_def.mp
               (hs s[j] (List.getElem_mem j.isLt)).2
             exact ⟨n, by omega, a, ha, by simpa only [E, listDiagram_wall_inr] using he⟩)
       ).exists_consistent_outgoing_extension
       σ hσ cross hk b t ht τ hτ
   refine ⟨κ, inferInstance, F, hleft, hconsistent, fun a => ?_⟩
   obtain ⟨hout, ⟨n, hn, hd, z, hz, hlabel⟩, hborn, _⟩ := hnew a
-  refine ⟨hout, DirectedWall.hasPureBirthLog_iff.mpr
+  refine ⟨hout, DirectedWall.hasPureBirthLog_def.mpr
     ⟨n, hn, by omega, z, hz, trivial, hlabel, fun l => ?_⟩, ?_⟩
   · simpa only [mem_active] using (hborn l).trans (by omega : k + 1 ≤ l ↔ d.degree n ≤ l)
   · simpa only [mem_active, Nat.not_succ_le_self, iff_false, not_not] using hborn k
@@ -310,7 +323,7 @@ theorem exists_outgoingCompletion
     D.exists_outgoingCompletion_of_step (D.correctionStep_univ hfull)
   refine ⟨κ, hκ, F, hF, fun j => ?_⟩
   obtain ⟨k, hk⟩ := hbirth j
-  obtain ⟨n, hn, _, a, ha, _, hlabel, hproj⟩ := DirectedWall.hasPureBirthLog_iff.mp hk
+  obtain ⟨n, hn, _, a, ha, _, hlabel, hproj⟩ := DirectedWall.hasPureBirthLog_def.mp hk
   exact ⟨n, hn, a, ha, hlabel, fun l => by simpa only [mem_active] using hproj l⟩
 
 end Mei.DirectedDiagram
