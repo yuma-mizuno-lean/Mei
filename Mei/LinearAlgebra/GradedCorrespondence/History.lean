@@ -62,7 +62,7 @@ theorem homogeneousHistory_totalTransfer_cons_apply {a b c : Q} (p : Quiver.Path
 
 /-- A transfer history whose decoration before the final crossing has inadmissible
 degree vanishes. -/
-theorem homogeneousHistory_totalTransfer_cons_eq_zero_of_not_mem {a b c : Q}
+theorem homogeneousHistory_totalTransfer_cons_eq_zero_of_notMem {a b c : Q}
     (p : Quiver.Path a b) (e : b ⟶ c) (d : p.Degrees ι) (j : ι c) (x : M a) {i : ι b}
     (hi : i ∉ I e)
     (hx : p.homogeneousHistory (fun e => (C e).totalTransfer) ℳ d x ∈ ℳ b i) :
