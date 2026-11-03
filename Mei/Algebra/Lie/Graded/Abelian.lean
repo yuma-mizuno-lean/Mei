@@ -39,6 +39,24 @@ of degree `n`. -/
 def grading (n : Γ) : Submodule R (AbelianLie (S →₀ R)) :=
   ⨆ s, ⨆ _ : deg s = n, R ∙ basis R s
 
+/-- The standard basis vector of `s` is `Finsupp.single s 1`. -/
+@[simp] theorem linearEquiv_basis (s : S) : linearEquiv R (basis R s) = Finsupp.single s 1 := by
+  simp [basis]
+
+/-- The degree-`n` piece is the span of the basis vectors of degree `n`. -/
+theorem grading_eq_span (n : Γ) :
+    grading R deg n = Submodule.span R (basis R '' {s | deg s = n}) := by
+  rw [Submodule.span_eq_iSup_of_singleton_spans]
+  simp only [grading, Set.mem_image, Set.mem_ofPred_eq, iSup_exists, iSup_and]
+  rw [iSup_comm]
+  refine iSup_congr fun s => ?_
+  by_cases h : deg s = n <;> simp [h]
+
+/-- Membership in the degree-`n` piece: `x` lies in the span of the basis vectors of degree `n`. -/
+theorem mem_grading_iff {n : Γ} {x : AbelianLie (S →₀ R)} :
+    x ∈ grading R deg n ↔ x ∈ Submodule.span R (basis R '' {s | deg s = n}) := by
+  rw [grading_eq_span]
+
 variable {R deg}
 
 /-- The basis vector `basis R s` lies in the piece of degree `deg s`. -/
