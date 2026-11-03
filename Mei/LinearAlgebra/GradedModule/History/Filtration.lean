@@ -27,10 +27,6 @@ unmarked steps, whether before the first marked step, between two of them or aft
 has at most `h` arrows, then the path has at most `r * h + r - 1` arrows, since
 `length + 1 ≤ r * (h + 1)`.
 
-Marking that depends on the degrees selected by a history, such as the steps that change degree,
-fits this setting by taking the pairs of a vertex and a homogeneous degree as the vertices of the
-quiver, and the component transfers between them as its arrows.
-
 ## Main declarations
 
 * `Mei.ComponentTransfersRaise`: the component transfers along each arrow `e` raise the

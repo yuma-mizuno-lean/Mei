@@ -21,6 +21,8 @@ most `h`; so its length is at most `(W + 1) * h + W`.
 ## Main declarations
 
 * `Quiver.Path.IsZeroRunBounded`: every subpath of weight zero has at most `h` arrows.
+* `Quiver.Path.isZeroRunBounded_cons_iff`, `Quiver.Path.IsZeroRunBounded.of_comp_left`,
+  `Quiver.Path.IsZeroRunBounded.of_comp_right`: introduction and restriction lemmas.
 * `Quiver.Path.length_add_one_le_of_isZeroRunBounded`: the length of such a path satisfies
   `length + 1 ≤ (addWeight w p + 1) * (h + 1)`.
 -/
@@ -57,7 +59,46 @@ theorem isZeroRunBounded_nil : IsZeroRunBounded w h (nil : Path a a) := by
 theorem IsZeroRunBounded.of_cons {b c : V} {p : Path a b} {e : b ⟶ c}
     (hp : IsZeroRunBounded w h (p.cons e)) : IsZeroRunBounded w h p := by
   intro u v p₁ q p₂ hdec hq
-  exact hp p₁ q (p₂.cons e) (by rw [hdec]; rfl) hq
+  exact hp p₁ q (p₂.cons e) (by rw [hdec, comp_cons]) hq
+
+/-- A subpath at the start of a path with short zero-weight runs has short zero-weight runs. -/
+theorem IsZeroRunBounded.of_comp_left {b c : V} {p : Path a b} {q : Path b c}
+    (hp : IsZeroRunBounded w h (p.comp q)) : IsZeroRunBounded w h p := by
+  intro u v p₁ r p₂ hdec hr
+  exact hp p₁ r (p₂.comp q) (by rw [hdec, comp_assoc]) hr
+
+/-- A subpath at the end of a path with short zero-weight runs has short zero-weight runs. -/
+theorem IsZeroRunBounded.of_comp_right {b c : V} {p : Path a b} {q : Path b c}
+    (hp : IsZeroRunBounded w h (p.comp q)) : IsZeroRunBounded w h q := by
+  intro u v p₁ r p₂ hdec hr
+  exact hp (p.comp p₁) r p₂ (by rw [hdec]; simp only [comp_assoc]) hr
+
+/-- The path `p.cons e` has short zero-weight runs exactly when `p` does and every suffix `q` of `p`
+for which `q` followed by `e` has weight zero has fewer than `h` arrows. -/
+theorem isZeroRunBounded_cons_iff {b c : V} {p : Path a b} {e : b ⟶ c} :
+    IsZeroRunBounded w h (p.cons e) ↔ IsZeroRunBounded w h p ∧
+      ∀ {u : V} (p₁ : Path a u) (q : Path u b),
+        p = p₁.comp q → addWeight w q + w e = 0 → q.length + 1 ≤ h := by
+  refine ⟨fun hp => ⟨hp.of_cons, fun p₁ q hpq hq => ?_⟩, fun hh => ?_⟩
+  · have := hp p₁ (q.cons e) nil (by rw [hpq, comp_cons, comp_nil]) (by simpa using hq)
+    simpa using this
+  · obtain ⟨hp, hs⟩ := hh
+    intro u v p₁ q p₂ hdec hq
+    cases p₂ with
+    | nil =>
+      cases q with
+      | nil => simp
+      | cons q' e' =>
+        rw [comp_nil, comp_cons] at hdec
+        obtain rfl := obj_eq_of_cons_eq_cons hdec
+        obtain ⟨-, hpq, he⟩ := Path.cons.inj hdec
+        obtain rfl := eq_of_heq he
+        have := hs p₁ q' (eq_of_heq hpq) (by simpa using hq)
+        simpa using this
+    | cons p₂' e' =>
+      obtain rfl := obj_eq_of_cons_eq_cons hdec
+      obtain ⟨-, hpq, -⟩ := Path.cons.inj hdec
+      exact hp p₁ q p₂' (eq_of_heq hpq) hq
 
 /-- A path with short zero-weight runs ends with a weightless stretch `q` of at most `h` arrows,
 and its length is bounded by `h + 1` for each unit of weight, plus the length of `q`. -/
@@ -70,8 +111,8 @@ theorem IsZeroRunBounded.exists_suffix {b : V} {p : Path a b}
   | @cons b' c p e ih =>
     obtain ⟨u, p₁, q, hpq, hq, hqh, hlen⟩ := ih hp.of_cons
     by_cases he : w e = 0
-    · refine ⟨u, p₁, q.cons e, by rw [hpq]; rfl, by simp [hq, he], ?_, ?_⟩
-      · exact hp p₁ (q.cons e) nil (by rw [hpq]; rfl) (by simp [hq, he])
+    · refine ⟨u, p₁, q.cons e, by rw [hpq, comp_cons], by simp [hq, he], ?_, ?_⟩
+      · exact hp p₁ (q.cons e) nil (by rw [hpq, comp_cons, comp_nil]) (by simp [hq, he])
       · simp only [length_cons, addWeight_cons, he, Nat.add_zero]
         omega
     · refine ⟨c, p.cons e, nil, rfl, addWeight_nil w c, Nat.zero_le _, ?_⟩
