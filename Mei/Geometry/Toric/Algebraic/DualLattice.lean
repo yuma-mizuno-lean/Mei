@@ -8,6 +8,7 @@ module
 public import TauCeti.Geometry.Toric.Algebraic.Lattice
 public import Mathlib.LinearAlgebra.Dual.Lemmas
 public import Mathlib.Analysis.Normed.Module.FiniteDimension
+public import Mathlib.Analysis.Normed.Module.HahnBanach
 public import Mei.Geometry.Toric.Algebraic.RationalFunctional
 
 /-!
@@ -22,7 +23,8 @@ Evaluation on lattice vectors is compatible with this dual lattice. In
 particular, evaluating a real functional on an original lattice vector is the
 real extension, for the dual lattice, of integral evaluation at that vector.
 For normed spaces, the same construction supplies the integral lattice in the
-continuous dual, where these evaluation maps are rational functionals.
+continuous dual, where these evaluation maps are rational functionals, and evaluation at a
+nonzero lattice point is a nonzero functional on the continuous dual.
 It transports the algebraic dual lattice along Mathlib's
 `LinearMap.toContinuousLinearMap` using `TauCeti.Toric.isIntegralLattice_congr`.
 -/
@@ -114,5 +116,16 @@ theorem isRationalFunctional_continuousDual_eval (h : IsIntegralLattice i) (n : 
   rw [← continuousDual_realCharacter_eval]
   exact Mei.Toric.IsRationalFunctional.realCharacter h.continuousDual
     (AddMonoidHom.eval n).toIntLinearMap
+
+/-- Evaluation at a nonzero lattice point is a nonzero functional on the continuous dual. -/
+theorem apply_ne_zero (h : IsIntegralLattice i) {n : N} (hn : n ≠ 0) :
+    ContinuousLinearMap.apply ℝ ℝ (i n) ≠ 0 := by
+  intro he
+  refine hn (h.injective ?_)
+  rw [map_zero]
+  obtain ⟨θ, -, hθ⟩ := exists_dual_vector'' ℝ (i n)
+  have h0 : θ (i n) = 0 := by simpa using DFunLike.congr_fun he θ
+  rw [h0] at hθ
+  exact norm_eq_zero.mp hθ.symm
 
 end TauCeti.Toric.IsIntegralLattice

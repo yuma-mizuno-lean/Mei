@@ -229,28 +229,29 @@ theorem toFiniteWallDiagram_stageKS_false :
         (h.isRationalFunctional_continuousDual_eval a)
         (h.apply_ne_zero hb0)
         (h.apply_ne_zero ha0) g := by
-  refine FiniteWallDiagram.ext (funext fun Q => ?_) (funext fun Q => ?_) <;>
-    by_cases hQ : (Q : Set (W →L[ℝ] ℝ)) ⊆ {θ | θ (j b) = 0}
-  · rw [FiniteWallDiagram.hyperplanePairDiagram_normal_of_subset _ _ _ _ _ hQ]
-    ext θ
-    simp [stageKS, hQ]
-  · rw [FiniteWallDiagram.hyperplanePairDiagram_normal_of_not_subset _ _ _ _ _ hQ]
-    ext θ
-    simp [stageKS, hQ]
-  · rw [FiniteWallDiagram.hyperplanePairDiagram_label_of_subset _ _ _ _ _ hQ]
-    simp [stageKS, hQ]
-  · rw [FiniteWallDiagram.hyperplanePairDiagram_label_of_not_subset _ _ _ _ _ hQ]
-    simp [stageKS, hQ]
+  refine FiniteWallDiagram.ext (funext fun Q => ?_) (funext fun Q => ?_)
+  · by_cases hQ : (Q : Set (W →L[ℝ] ℝ)) ⊆ {θ | θ (j b) = 0}
+    · rw [FiniteWallDiagram.hyperplanePairDiagram_normal_of_subset _ _ _ _ _ hQ]
+      ext θ
+      simp [stageKS, hQ]
+    · rw [FiniteWallDiagram.hyperplanePairDiagram_normal_of_not_subset _ _ _ _ _ hQ]
+      ext θ
+      simp [stageKS, hQ]
+  · by_cases hQ : (Q : Set (W →L[ℝ] ℝ)) ⊆ {θ | θ (j b) = 0}
+    · rw [FiniteWallDiagram.hyperplanePairDiagram_label_of_subset _ _ _ _ _ hQ]
+      simp [stageKS, hQ]
+    · rw [FiniteWallDiagram.hyperplanePairDiagram_label_of_not_subset _ _ _ _ _ hQ]
+      simp [stageKS, hQ]
 
 variable {g} {g' : d.truncatedGroup ℒ (k + 1)} (hg' : g' ∈ hyperplaneLabels j h d ℒ b (k + 1))
   (hπ : (d.truncationMap ℒ (Nat.le_succ k)).bchGroupMap g' = g)
-  {x y : WallComplement (fun P : (stageComplex h a b true).walls => (P : Set (W →L[ℝ] ℝ)))}
-  {x' y' : WallComplement (fun P : (stageComplex h a b false).walls => (P : Set (W →L[ℝ] ℝ)))}
 
 include hπ in
 /-- Projecting the two-hyperplane diagram of `g'` agrees with the one-hyperplane diagram of
 its projection `g` on paths with the same vertices. -/
 theorem truncationMap_pathProduct_stageKS_false
+    {x y : WallComplement (fun P : (stageComplex h a b true).walls => (P : Set (W →L[ℝ] ℝ)))}
+    {x' y' : WallComplement (fun P : (stageComplex h a b false).walls => (P : Set (W →L[ℝ] ℝ)))}
     (p : AdmissiblePLPath x y) (q : AdmissiblePLPath x' y')
     (hpq : p.vertices.map WallComplement.val = q.vertices.map WallComplement.val) :
     (d.truncationMap ℒ (Nat.le_succ k)).bchGroupMap
@@ -342,8 +343,7 @@ theorem exists_completedDiagram_not_eventually_eq_orthant
     by_cases hi : i' = i <;> simp [hi]
   have hne (i : Fin 2) : (Pi.single i 1 : Fin 2 → ℤ) ≠ 0 := by
     simp [Pi.single_eq_zero_iff]
-  refine ⟨alternatingComplex Λ₂ 
-      (Pi.single 0 1) (Pi.single 1 1),
+  refine ⟨alternatingComplex Λ₂ (Pi.single 0 1) (Pi.single 1 1),
     alternating (hmem 1) (hne 1) (hmem 0) (hne 0) x hx,
     not_eventually_alternatingComplex_eq
       ((Λ₂).apply_ne_zero (hne 1))

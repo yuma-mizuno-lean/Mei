@@ -40,16 +40,36 @@ noncomputable def hyperplaneComplex (f : V →L[ℝ] ℝ)
     (hf : Toric.IsRationalFunctional h f.toLinearMap) : FinitePolyhedralComplex h :=
   ofArrangement (fun _ : Unit => f.toContinuousAffineMap) (fun _ => hf)
 
+/-- The two defining functionals of a hyperplane pair, indexed by `Bool`: row `false` is `f`
+and row `true` is `g`. -/
+def hyperplanePairRows (f g : V →L[ℝ] ℝ) : Bool → V →L[ℝ] ℝ := fun j => cond j g f
+
+/-- Row `false` of a hyperplane pair is `f`. -/
+@[simp]
+theorem hyperplanePairRows_false (f g : V →L[ℝ] ℝ) : hyperplanePairRows f g false = f := (rfl)
+
+/-- Row `true` of a hyperplane pair is `g`. -/
+@[simp]
+theorem hyperplanePairRows_true (f g : V →L[ℝ] ℝ) : hyperplanePairRows f g true = g := (rfl)
+
+variable (hf : Toric.IsRationalFunctional h f.toLinearMap)
+  (hg : Toric.IsRationalFunctional h g.toLinearMap)
+
+include hf hg in
+/-- Both rows of a hyperplane pair of rational functionals are rational. -/
+theorem isRationalFunctional_hyperplanePairRows (j : Bool) :
+    Toric.IsRationalFunctional h (hyperplanePairRows f g j).toLinearMap := by
+  cases j
+  · exact hf
+  · exact hg
+
 /-- The complex of the closures of the sign cells of the two hyperplanes `ker f` and `ker g`.
 Its row `false` is `f` and its row `true` is `g`. -/
 noncomputable def hyperplanePairComplex (f g : V →L[ℝ] ℝ)
     (hf : Toric.IsRationalFunctional h f.toLinearMap)
     (hg : Toric.IsRationalFunctional h g.toLinearMap) : FinitePolyhedralComplex h :=
-  ofArrangement (fun j : Bool => (cond j g f).toContinuousAffineMap)
-    (fun j => by cases j <;> assumption)
-
-variable (hf : Toric.IsRationalFunctional h f.toLinearMap)
-  (hg : Toric.IsRationalFunctional h g.toLinearMap)
+  ofArrangement (fun j => (hyperplanePairRows f g j).toContinuousAffineMap)
+    (isRationalFunctional_hyperplanePairRows hf hg)
 
 /-- Every cell of the hyperplane complex is conical. -/
 theorem isConical_hyperplaneComplex : (hyperplaneComplex f hf).IsConical :=
@@ -57,13 +77,13 @@ theorem isConical_hyperplaneComplex : (hyperplaneComplex f hf).IsConical :=
 
 /-- Every cell of the hyperplane-pair complex is conical. -/
 theorem isConical_hyperplanePairComplex : (hyperplanePairComplex f g hf hg).IsConical :=
-  isConical_ofArrangement (fun j : Bool => cond j g f) (fun j => by cases j <;> assumption)
+  isConical_ofArrangement (hyperplanePairRows f g) (isRationalFunctional_hyperplanePairRows hf hg)
 
 /-- Adding a hyperplane subdivides the complex of the first one. -/
 theorem isSubdivision_hyperplanePairComplex :
     (hyperplanePairComplex f g hf hg).IsSubdivision (hyperplaneComplex f hf) :=
-  ofArrangement_isSubdivision_comp (fun j : Bool => (cond j g f).toContinuousAffineMap)
-    (fun j => by cases j <;> assumption) (fun _ : Unit => false)
+  ofArrangement_isSubdivision_comp (fun j => (hyperplanePairRows f g j).toContinuousAffineMap)
+    (isRationalFunctional_hyperplanePairRows hf hg) (fun _ : Unit => false)
 
 /-- Every wall of the hyperplane complex is the hyperplane `ker f`. -/
 theorem eq_ker_of_mem_hyperplaneComplex_walls {P : Set V}
@@ -99,8 +119,8 @@ theorem exists_subset_ker_of_mem_hyperplanePairComplex_walls {P : Set V}
     P ⊆ {θ | f θ = 0} ∨ P ⊆ {θ | g θ = 0} := by
   obtain ⟨j, hj⟩ := exists_subset_zeroLocus_of_mem_ofArrangement_walls _ _ hP
   cases j
-  · exact Or.inl hj
-  · exact Or.inr hj
+  · exact Or.inl (by simpa using hj)
+  · exact Or.inr (by simpa using hj)
 
 /-- The hyperplane `ker f` is not a cell of the hyperplane-pair complex when `g` takes
 nonzero values on it, since it contains points on both sides of `ker g`. -/
@@ -109,12 +129,13 @@ theorem ker_notMem_hyperplanePairComplex_cells {θ₀ : V} (hf₀ : f θ₀ = 0)
   intro hcell
   obtain ⟨σ, hσ, hZ⟩ := mem_ofArrangement_cells.mp hcell
   have hmem (θ : V) (hθ : f θ = 0) : θ ∈ weakSignCell
-      (fun j : Bool => (cond j g f).toContinuousAffineMap) σ := by
+      (fun j => (hyperplanePairRows f g j).toContinuousAffineMap) σ := by
     rw [← closure_signCell hσ, ← hZ]
-    exact hθ
+    simpa using hθ
   have h₁ := mem_weakSignCell.mp (hmem θ₀ hf₀) true
   have h₂ := mem_weakSignCell.mp (hmem (-θ₀) (by simp [hf₀])) true
-  simp only [Bool.cond_true, ContinuousLinearMap.coe_toContinuousAffineMap, map_neg] at h₁ h₂
+  simp only [hyperplanePairRows_true, ContinuousLinearMap.coe_toContinuousAffineMap,
+    map_neg] at h₁ h₂
   cases hs : σ true
   · exact hg₀ (h₁.1 hs)
   · exact hg₀ (le_antisymm (h₁.2.1 hs) (by linarith [h₂.2.1 hs]))

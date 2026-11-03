@@ -6,7 +6,6 @@ Authors: Codex
 module
 
 public import TauCeti.Geometry.Toric.Algebraic.Lattice
-public import Mathlib.Analysis.Normed.Module.HahnBanach
 
 /-!
 # Real extension of integral lattices
@@ -18,9 +17,7 @@ integral lattices extends to a real linear equivalence. Its
 linear map is the existing scalar extension, and extension respects identity,
 inverse and composition without choosing a new basis.
 On a product lattice, evaluation on a lattice point of the second factor recovers
-the corresponding integer character value. In a normed space, evaluation at a nonzero lattice
-point is a nonzero continuous functional on the continuous dual, and the standard lattice
-`ℤⁿ ⊆ ℝⁿ` is an integral lattice.
+the corresponding integer character value. The standard lattice `ℤⁿ ⊆ ℝⁿ` is an integral lattice.
 -/
 
 public section
@@ -120,22 +117,6 @@ theorem extendEquiv_trans (h : IsIntegralLattice i) (h' : IsIntegralLattice i')
       (h.extend_comp h' σ.toAddMonoidHom τ.toAddMonoidHom)
 
 end Equiv
-
-end TauCeti.Toric.IsIntegralLattice
-
-namespace TauCeti.Toric.IsIntegralLattice
-
-/-- Evaluation at a nonzero lattice point is a nonzero functional on the continuous dual. -/
-theorem apply_ne_zero {N W : Type*} [AddCommGroup N] [NormedAddCommGroup W] [NormedSpace ℝ W]
-    {j : N →+ W} (h : IsIntegralLattice j) {n : N} (hn : n ≠ 0) :
-    ContinuousLinearMap.apply ℝ ℝ (j n) ≠ 0 := by
-  intro he
-  refine hn (h.injective ?_)
-  rw [map_zero]
-  obtain ⟨θ, -, hθ⟩ := exists_dual_vector'' ℝ (j n)
-  have h0 : θ (j n) = 0 := by simpa using DFunLike.congr_fun he θ
-  rw [h0] at hθ
-  exact norm_eq_zero.mp hθ.symm
 
 end TauCeti.Toric.IsIntegralLattice
 

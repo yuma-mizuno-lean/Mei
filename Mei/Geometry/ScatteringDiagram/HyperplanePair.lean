@@ -134,12 +134,13 @@ theorem relabel_hyperplaneDiagram (φ : H →* K) :
 theorem relabel_hyperplanePairDiagram (φ : H →* K) :
     (hyperplanePairDiagram hf hg hf0 hg0 a).relabel φ =
       hyperplanePairDiagram hf hg hf0 hg0 (φ a) := by
-  refine FiniteWallDiagram.ext (funext fun Q => ?_) (funext fun Q => ?_) <;>
-    by_cases hQ : (Q : Set V) ⊆ {θ | f θ = 0}
-  · simp [hyperplanePairDiagram_normal_of_subset hf hg hf0 hg0 _ hQ]
-  · simp only [relabel_normal, hyperplanePairDiagram_normal_of_not_subset hf hg hf0 hg0 _ hQ]
-  · simp [hyperplanePairDiagram_label_of_subset hf hg hf0 hg0 _ hQ]
-  · simp [hyperplanePairDiagram_label_of_not_subset hf hg hf0 hg0 _ hQ]
+  refine FiniteWallDiagram.ext (funext fun Q => ?_) (funext fun Q => ?_)
+  · by_cases hQ : (Q : Set V) ⊆ {θ | f θ = 0}
+    · simp [hyperplanePairDiagram_normal_of_subset hf hg hf0 hg0 _ hQ]
+    · simp only [relabel_normal, hyperplanePairDiagram_normal_of_not_subset hf hg hf0 hg0 _ hQ]
+  · by_cases hQ : (Q : Set V) ⊆ {θ | f θ = 0}
+    · simp [hyperplanePairDiagram_label_of_subset hf hg hf0 hg0 _ hQ]
+    · simp [hyperplanePairDiagram_label_of_not_subset hf hg hf0 hg0 _ hQ]
 
 /-- A second hyperplane with the trivial label refines the diagram of the first one. -/
 theorem isCompatibleRefinement_hyperplanePairDiagram :
