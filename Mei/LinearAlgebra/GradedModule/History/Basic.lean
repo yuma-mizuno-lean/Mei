@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import TauCeti.Algebra.DirectSum.Internal
+public import Mei.LinearAlgebra.GradedModule.History.Chain
 import Mathlib.Data.List.OfFn
 
 /-!
@@ -19,9 +19,10 @@ decoration forces every intermediate decoration to be nonzero.
 `homogeneousHistoryStage` records all segment decorations and their component
 propagation equations, for attachment to geometric realizations.
 
-The construction uses Mathlib's internal direct-sum decomposition and component
-maps. The finite-support expansion and its regrading comparison are developed in
-`Mei.LinearAlgebra.GradedModule.History.Finite`.
+A history on one module is the chain history `chainHistory` of the constant
+chain (`Mei.LinearAlgebra.GradedModule.History.Chain`). Its finite-support
+expansion and regrading comparison specialize to the forms in
+`Mei.LinearAlgebra.GradedModule.History.Finite` and `History/Uniform.lean`.
 -/
 
 public noncomputable section
@@ -32,20 +33,24 @@ variable {R M ι : Type*} [Semiring R] [AddCommMonoid M] [Module R M]
   [DecidableEq ι] (ℳ : ι → Submodule R M) [DirectSum.Decomposition ℳ]
 
 /-- Propagation along a chosen homogeneous degree history. Index zero records
-its final component; the empty history leaves the input unchanged. -/
-def homogeneousHistory : {n : ℕ} → (Fin n → Module.End R M) →
-    (Fin n → ι) → Module.End R M
-  | 0, _, _ => LinearMap.id
-  | n + 1, T, p =>
-    ((ℳ (p 0)).subtype.comp
-      ((DirectSum.component R ι (fun i => ℳ i) (p 0)).comp
-        (DirectSum.decomposeLinearEquiv ℳ).toLinearMap)).comp
-      ((T 0).comp (homogeneousHistory (fun j : Fin n => T j.succ) (fun j => p j.succ)))
+its final component; the empty history leaves the input unchanged. It is the
+chain history of the constant chain on `M`. -/
+def homogeneousHistory {n : ℕ} (T : Fin n → Module.End R M) (p : Fin n → ι) :
+    Module.End R M :=
+  chainHistory (M := fun _ => M) (ι := fun _ => ι) (fun _ => ℳ) T p
+
+/-- A single-module history is the history of the constant chain. -/
+theorem homogeneousHistory_eq_chainHistory {n : ℕ} (T : Fin n → Module.End R M)
+    (p : Fin n → ι) :
+    homogeneousHistory ℳ T p =
+      chainHistory (M := fun _ => M) (ι := fun _ => ι) (fun _ => ℳ) T p :=
+  (rfl)
 
 /-- No propagation steps give the identity map. -/
 @[simp]
 theorem homogeneousHistory_zero (T : Fin 0 → Module.End R M) (p : Fin 0 → ι) :
-    homogeneousHistory ℳ T p = LinearMap.id := (rfl)
+    homogeneousHistory ℳ T p = LinearMap.id :=
+  chainHistory_zero (fun _ => ℳ) T p
 
 /-- One more history entry applies its map and selects the entire output component. -/
 @[simp]
@@ -54,7 +59,7 @@ theorem homogeneousHistory_succ_apply {n : ℕ}
     homogeneousHistory ℳ T p a =
       (DirectSum.decompose ℳ (T 0
         (homogeneousHistory ℳ (fun j : Fin n => T j.succ) (fun j => p j.succ) a)) (p 0) : M) :=
-  (rfl)
+  chainHistory_succ_apply (fun _ => ℳ) T p a
 
 /-- The output of a nonempty history lies in its last selected homogeneous piece. -/
 theorem homogeneousHistory_mem {n : ℕ} (T : Fin (n + 1) → Module.End R M)
@@ -129,7 +134,9 @@ def homogeneousHistoryStage : {n : ℕ} → (Fin n → Module.End R M) →
 theorem homogeneousHistoryStage_zero {n : ℕ}
     (T : Fin n → Module.End R M) (p : Fin n → ι) :
     homogeneousHistoryStage ℳ T p 0 = homogeneousHistory ℳ T p := by
-  cases n <;> rfl
+  cases n with
+  | zero => exact (homogeneousHistory_zero ℳ T p).symm
+  | succ => rfl
 
 /-- Removing the terminal segment removes the last propagation step. -/
 @[simp]
@@ -199,7 +206,9 @@ theorem homogeneousHistoryStage_ne_zero {n : ℕ}
     (ha : homogeneousHistory ℳ T p a ≠ 0) (j : Fin (n + 1)) :
     homogeneousHistoryStage ℳ T p j a ≠ 0 := by
   induction n with
-  | zero => exact ha
+  | zero =>
+    rw [homogeneousHistory_zero] at ha
+    exact ha
   | succ n ih =>
     refine Fin.cases ha (fun j => ?_) j
     exact ih (fun j => T j.succ) (fun j => p j.succ)
@@ -267,22 +276,9 @@ each whole homogeneous history to the history with the reindexed degrees. -/
 theorem map_homogeneousHistory_of_injective (hσ : Function.Injective σ) {n : ℕ}
     (T : Fin n → Module.End R M) (U : Fin n → Module.End R N)
     (hT : ∀ j, r.comp (T j) = (U j).comp r) (p : Fin n → ι) (a : M) :
-    r (homogeneousHistory ℳ T p a) = homogeneousHistory 𝓝 U (σ ∘ p) (r a) := by
-  induction n with
-  | zero => simp
-  | succ n ih =>
-    simp only [homogeneousHistory_succ_apply]
-    have hcomm := LinearMap.congr_fun (hT 0)
-      (homogeneousHistory ℳ (fun j : Fin n => T j.succ) (fun j => p j.succ) a)
-    simp only [LinearMap.comp_apply] at hcomm
-    calc
-      _ = (DirectSum.decompose 𝓝
-          (r (T 0 (homogeneousHistory ℳ (fun j : Fin n => T j.succ)
-            (fun j => p j.succ) a))) (σ (p 0)) : N) :=
-        DirectSum.map_decompose_shift ℳ 𝓝 r.toAddMonoidHom σ hσ hr _ _
-      _ = _ := by
-        rw [hcomm, ih (fun j => T j.succ) (fun j => U j.succ) (fun j => hT j.succ)]
-        rfl
+    r (homogeneousHistory ℳ T p a) = homogeneousHistory 𝓝 U (σ ∘ p) (r a) :=
+  map_chainHistory_of_injective (fun _ => ℳ) (fun _ => 𝓝) (fun _ => r) (fun _ => σ)
+    (fun _ => hr) (fun _ => hσ) T U hT p a
 
 end Regrading
 
