@@ -331,13 +331,6 @@ section Checks
 
 variable (h : TauCeti.Toric.IsIntegralLattice (Int.castAddHom ℝ))
 
-/-- The identity of `ℝ` is a rational affine embedding of the whole line. -/
-theorem isFiniteBranchOn_id_univ :
-    IsFiniteBranchOn h h (Set.univ : Set ℝ) (Subtype.val : ↥(Set.univ : Set ℝ) → ℝ) :=
-  ⟨Unit, inferInstance, fun _ => Set.univ, fun _ => AffineMap.id ℝ ℝ, Set.iUnion_const _,
-    fun _ => ⟨.univ h, Toric.IsRationalLinearMap.id h, Function.injective_id.injOn,
-      fun _ _ => rfl⟩⟩
-
 /-- The inclusion `(0,1) → ℝ` is a finite branch although its domain is not closed. -/
 theorem isFiniteBranchOn_id_Ioo :
     IsFiniteBranchOn h h (Set.Ioo 0 1 : Set ℝ) (Subtype.val : ↥(Set.Ioo 0 1 : Set ℝ) → ℝ) := by
