@@ -18,6 +18,7 @@ linear map is the existing scalar extension, and extension respects identity,
 inverse and composition without choosing a new basis.
 On a product lattice, evaluation on a lattice point of the second factor recovers
 the corresponding integer character value.
+The coordinatewise integer cast `ℤ → ℝ` is the standard integral lattice of the real line.
 -/
 
 public section
@@ -119,3 +120,12 @@ theorem extendEquiv_trans (h : IsIntegralLattice i) (h' : IsIntegralLattice i')
 end Equiv
 
 end TauCeti.Toric.IsIntegralLattice
+
+namespace TauCeti.Toric
+
+/-- The standard lattice `ℤ ⊆ ℝ` is an integral lattice. -/
+theorem isIntegralLattice_intCast_real : IsIntegralLattice (Int.castAddHom ℝ) :=
+  isIntegralLattice_of_basis (Module.Basis.singleton Unit ℤ)
+    (Module.Basis.singleton Unit ℝ) fun _ => by simp
+
+end TauCeti.Toric
