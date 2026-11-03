@@ -5,7 +5,7 @@ Authors: Claude
 -/
 module
 
-public import Mei.LinearAlgebra.GradedCorrespondence.Hom
+public import Mei.LinearAlgebra.GradedCorrespondence.Basic
 public import Mei.LinearAlgebra.GradedModule.History.Chain
 
 /-!
@@ -30,59 +30,15 @@ theorems `chainHistory_map_eq_sum` and `map_chainHistory_of_injective` apply to 
 histories: a target history is the grouped sum of its source refinements, and injective
 degree maps give componentwise naturality, for example under coefficient truncation.
 
-The single-step formulas are `decompose_right_liftLeftTotal_of_mem` and
-`Hom.middle_comp_liftLeftTotal_iff`.
+The single-step API, `totalTransfer` and its naturality `Hom.right_comp_totalTransfer` and
+`comp_totalTransfer_of_hom`, lives in `GradedCorrespondence/Basic.lean` and
+`GradedCorrespondence/Hom.lean`; the single-step formula is
+`decompose_right_liftLeftTotal_of_mem`.
 -/
 
 public noncomputable section
 
 namespace Mei.GradedCorrespondence
-
-section TotalTransfer
-
-variable {R B U V B' U' V' ι κ ι' κ' : Type*} [Semiring R]
-  [AddCommMonoid B] [Module R B] [AddCommMonoid U] [Module R U]
-  [AddCommMonoid V] [Module R V]
-  [AddCommMonoid B'] [Module R B'] [AddCommMonoid U'] [Module R U']
-  [AddCommMonoid V'] [Module R V']
-  {𝒰 : ι → Submodule R U} {𝒱 : κ → Submodule R V} {I : Set ι} {J : Set κ}
-  {𝒰' : ι' → Submodule R U'} {𝒱' : κ' → Submodule R V'} {I' : Set ι'} {J' : Set κ'}
-  [DecidableEq ι] [DirectSum.Decomposition 𝒰]
-
-/-- Lift each admissible homogeneous component across the span and forget the
-inadmissible ones. -/
-def totalTransfer (C : GradedCorrespondence (B := B) 𝒰 𝒱 I J) : U →ₗ[R] V :=
-  C.right.comp C.liftLeftTotal
-
-theorem totalTransfer_apply (C : GradedCorrespondence (B := B) 𝒰 𝒱 I J) (a : U) :
-    C.totalTransfer a = C.right (C.liftLeftTotal a) := (rfl)
-
-/-- The total transfer of a graph correspondence is its equivalence. -/
-@[simp]
-theorem graph_totalTransfer (e : U ≃ₗ[R] V) :
-    (graph 𝒰 𝒱 e).totalTransfer = e.toLinearMap := by
-  rw [totalTransfer, graph_liftLeftTotal, graph_right, LinearMap.comp_id]
-
-variable [DecidableEq ι'] [DirectSum.Decomposition 𝒰']
-  {C : GradedCorrespondence (B := B) 𝒰 𝒱 I J} {D : GradedCorrespondence (B := B') 𝒰' 𝒱' I' J'}
-  {σ : ι → ι'} {τ : κ → κ'}
-
-/-- A morphism intertwines total transfers once target total lifts kill the images
-of inadmissible source pieces. -/
-theorem Hom.right_comp_totalTransfer (f : Hom C D σ τ)
-    (hzero : ∀ i, i ∉ I → ∀ a : 𝒰 i, D.liftLeftTotal (f.left a) = 0) :
-    f.right.comp C.totalTransfer = D.totalTransfer.comp f.left := by
-  rw [totalTransfer, totalTransfer, ← LinearMap.comp_assoc, f.right_comm, LinearMap.comp_assoc,
-    f.middle_comp_liftLeftTotal_iff.mpr hzero, LinearMap.comp_assoc]
-
-/-- Reflecting admissible degrees suffices for naturality of total transfers. -/
-theorem Hom.right_comp_totalTransfer_of_reflects_admissible (f : Hom C D σ τ)
-    (hI : ∀ i, σ i ∈ I' → i ∈ I) :
-    f.right.comp C.totalTransfer = D.totalTransfer.comp f.left := by
-  rw [totalTransfer, totalTransfer, ← LinearMap.comp_assoc, f.right_comm, LinearMap.comp_assoc,
-    f.middle_comp_liftLeftTotal_of_reflects_admissible hI, LinearMap.comp_assoc]
-
-end TotalTransfer
 
 section Chain
 
@@ -99,10 +55,10 @@ previous decoration. A decoration of inadmissible degree contributes zero. -/
 theorem chainHistory_totalTransfer_succ_apply {n : ℕ} (p : (j : Fin (n + 1)) → ι j)
     (a : M (n + 1)) {i : ι 1} [Decidable (i ∈ I 0)]
     (hx : chainHistory (M := fun k => M (k + 1)) (ι := fun k => ι (k + 1))
-      (fun k => ℳ (k + 1)) (fun j => (C (j + 1)).totalTransfer) (fun j => p (chainSucc j)) a ∈
+      (fun k => ℳ (k + 1)) (fun j => (C (j + 1)).totalTransfer) (fun j => p (j.chainSucc)) a ∈
         ℳ 1 i) :
     chainHistory ℳ (fun j => (C j).totalTransfer) p a =
-      if hi : i ∈ I 0 then ((C 0).transfer ⟨i, hi⟩ (p (chainHead n)) ⟨_, hx⟩ : M 0) else 0 := by
+      if hi : i ∈ I 0 then ((C 0).transfer ⟨i, hi⟩ (p (n.chainHead)) ⟨_, hx⟩ : M 0) else 0 := by
   rw [chainHistory_succ_apply, totalTransfer_apply,
     (C 0).decompose_right_liftLeftTotal_of_mem hx]
   split_ifs <;> rfl
@@ -112,35 +68,11 @@ degree vanishes. -/
 theorem chainHistory_totalTransfer_eq_zero_of_not_mem {n : ℕ} (p : (j : Fin (n + 1)) → ι j)
     (a : M (n + 1)) {i : ι 1} (hi : i ∉ I 0)
     (hx : chainHistory (M := fun k => M (k + 1)) (ι := fun k => ι (k + 1))
-      (fun k => ℳ (k + 1)) (fun j => (C (j + 1)).totalTransfer) (fun j => p (chainSucc j)) a ∈
+      (fun k => ℳ (k + 1)) (fun j => (C (j + 1)).totalTransfer) (fun j => p (j.chainSucc)) a ∈
         ℳ 1 i) :
     chainHistory ℳ (fun j => (C j).totalTransfer) p a = 0 := by
   classical
   rw [chainHistory_totalTransfer_succ_apply ℳ C p a hx, dite_eq_right hi]
-
-section Naturality
-
-variable {N : ℕ → Type*} [∀ k, AddCommMonoid (N k)] [∀ k, Module R (N k)]
-  {κ : ℕ → Type*} [∀ k, DecidableEq (κ k)] (𝓝 : ∀ k, κ k → Submodule R (N k))
-  [∀ k, DirectSum.Decomposition (𝓝 k)]
-  {B' : ℕ → Type*} [∀ k, AddCommMonoid (B' k)] [∀ k, Module R (B' k)]
-  {I' : ∀ k, Set (κ (k + 1))} {J' : ∀ k, Set (κ k)}
-  (D : ∀ k, GradedCorrespondence (B := B' k) (𝓝 (k + 1)) (𝓝 k) (I' k) (J' k))
-  (r : ∀ k, M k →ₗ[R] N k) (σ : ∀ k, ι k → κ k)
-  (f : ∀ k, Hom (C k) (D k) (σ (k + 1)) (σ k))
-  (hl : ∀ k, (f k).left = r (k + 1)) (hv : ∀ k, (f k).right = r k)
-  (hzero : ∀ k, ∀ i, i ∉ I k → ∀ a : ℳ (k + 1) i, (D k).liftLeftTotal (r (k + 1) a) = 0)
-
-include f hl hv hzero
-
-/-- Chamber maps of correspondence morphisms intertwine every step of the chain of
-total transfers. -/
-theorem comp_totalTransfer_of_hom (k : ℕ) :
-    (r k).comp (C k).totalTransfer = (D k).totalTransfer.comp (r (k + 1)) := by
-  rw [← hv k, ← hl k]
-  exact (f k).right_comp_totalTransfer fun i hi a => by rw [hl k]; exact hzero k i hi a
-
-end Naturality
 
 end Chain
 

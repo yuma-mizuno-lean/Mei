@@ -75,9 +75,8 @@ theorem homogeneousComponent_comp_homogeneousHistory_of_ne {n : ℕ}
     (T : Fin (n + 1) → Module.End R M) (p : Fin (n + 1) → ι) (η : ι)
     (hη : p 0 ≠ η) :
     (homogeneousComponent ℳ η).comp (homogeneousHistory ℳ T p) = 0 := by
-  ext a
-  simp only [LinearMap.comp_apply, LinearMap.zero_apply]
-  exact homogeneousComponent_apply_of_mem_ne ℳ (homogeneousHistory_mem ℳ T p a) hη
+  rw [homogeneousHistory_eq_chainHistory]
+  exact homogeneousComponent_comp_chainHistory_of_ne (fun _ => ℳ) T p η hη
 
 /-- Selecting the terminal degree of a nonempty history returns that history:
 the history already ends in the `p 0` selection, which fixes its output. -/
@@ -86,9 +85,8 @@ theorem homogeneousComponent_comp_homogeneousHistory {n : ℕ}
     (T : Fin (n + 1) → Module.End R M) (p : Fin (n + 1) → ι) :
     (homogeneousComponent ℳ (p 0)).comp (homogeneousHistory ℳ T p) =
       homogeneousHistory ℳ T p := by
-  ext a
-  simp only [LinearMap.comp_apply]
-  exact homogeneousComponent_apply_of_mem ℳ (homogeneousHistory_mem ℳ T p a)
+  rw [homogeneousHistory_eq_chainHistory]
+  exact homogeneousComponent_comp_chainHistory (fun _ => ℳ) T p
 
 /-- The final `η`-selection of a nonempty history keeps it when `η` is the
 terminal degree and kills it otherwise. -/
@@ -96,10 +94,8 @@ theorem homogeneousComponent_homogeneousHistory_apply {n : ℕ}
     (T : Fin (n + 1) → Module.End R M) (p : Fin (n + 1) → ι) (η : ι) (a : M) :
     homogeneousComponent ℳ η (homogeneousHistory ℳ T p a) =
       if p 0 = η then homogeneousHistory ℳ T p a else 0 := by
-  split_ifs with h
-  · rw [← h]
-    exact homogeneousComponent_apply_of_mem ℳ (homogeneousHistory_mem ℳ T p a)
-  · exact homogeneousComponent_apply_of_mem_ne ℳ (homogeneousHistory_mem ℳ T p a) h
+  rw [homogeneousHistory_eq_chainHistory]
+  exact homogeneousComponent_chainHistory_apply (fun _ => ℳ) T p η a
 
 /-- A vanished intermediate decoration cannot yield a nonzero final history. -/
 theorem homogeneousHistory_tail_ne_zero {n : ℕ}

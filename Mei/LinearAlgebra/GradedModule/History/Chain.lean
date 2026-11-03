@@ -60,10 +60,11 @@ positions below are the same elements of `Fin (n + 1)` with literal values, so t
 agree reducibly. Degree sequences are prepended with `Fin.cons`. -/
 
 /-- The position `0` of a nonempty chain, with literal value zero. -/
-abbrev chainHead (n : ℕ) : Fin (n + 1) := ⟨0, Nat.succ_pos n⟩
+abbrev _root_.Nat.chainHead (n : ℕ) : Fin (n + 1) := ⟨0, Nat.succ_pos n⟩
 
 /-- The position `Fin.succ j`, with literal value `j + 1`. -/
-abbrev chainSucc {n : ℕ} (j : Fin n) : Fin (n + 1) := ⟨j + 1, Nat.succ_lt_succ j.isLt⟩
+abbrev _root_.Fin.chainSucc {n : ℕ} (j : Fin n) : Fin (n + 1) :=
+  ⟨j + 1, Nat.succ_lt_succ j.isLt⟩
 
 variable {ι : ℕ → Type w} {n : ℕ}
 
@@ -74,12 +75,12 @@ abbrev chainCons (i : ι 0) (p : (j : Fin n) → ι (j + 1)) : (j : Fin (n + 1))
 /-- Prepending a degree shifts the remaining degrees by one position. -/
 @[simp]
 theorem chainCons_succ (i : ι 0) (p : (j : Fin n) → ι (j + 1)) (j : Fin n) :
-    chainCons i p (chainSucc j) = p j :=
+    chainCons i p (j.chainSucc) = p j :=
   Fin.cons_succ (α := fun j : Fin (n + 1) => ι j) i p j
 
 /-- `Fin.forall_fin_succ` at the literal positions. -/
 theorem chainHead_forall {P : Fin (n + 1) → Prop} :
-    (∀ j, P j) ↔ P (chainHead n) ∧ ∀ j : Fin n, P (chainSucc j) :=
+    (∀ j, P j) ↔ P (n.chainHead) ∧ ∀ j : Fin n, P (j.chainSucc) :=
   Fin.forall_fin_succ
 
 end Index
@@ -92,7 +93,7 @@ def chainComp : {n : ℕ} → {M : ℕ → Type v} → [∀ k, AddCommMonoid (M 
     [∀ k, Module R (M k)] → ((j : Fin n) → M (j + 1) →ₗ[R] M j) → M n →ₗ[R] M 0
   | 0, _, _, _, _ => LinearMap.id
   | n + 1, M, _, _, T =>
-    (T (chainHead n)).comp (chainComp (M := fun k => M (k + 1)) fun j => T (chainSucc j))
+    (T (n.chainHead)).comp (chainComp (M := fun k => M (k + 1)) fun j => T (j.chainSucc))
 
 /-- Propagation along a chain, keeping only the chosen homogeneous component after
 each step. The degree `p j` is the degree selected in `M j`, the output of `T j`.
@@ -103,9 +104,9 @@ def chainHistory : {n : ℕ} → {M : ℕ → Type v} → [∀ k, AddCommMonoid 
     ((j : Fin n) → M (j + 1) →ₗ[R] M j) → ((j : Fin n) → ι j) → M n →ₗ[R] M 0
   | 0, _, _, _, _, _, _, _, _, _ => LinearMap.id
   | n + 1, M, _, _, ι, _, ℳ, _, T, p =>
-    (homogeneousComponent (ℳ 0) (p (chainHead n))).comp
-      ((T (chainHead n)).comp (chainHistory (M := fun k => M (k + 1)) (ι := fun k => ι (k + 1))
-        (fun k => ℳ (k + 1)) (fun j => T (chainSucc j)) (fun j => p (chainSucc j))))
+    (homogeneousComponent (ℳ 0) (p (n.chainHead))).comp
+      ((T (n.chainHead)).comp (chainHistory (M := fun k => M (k + 1)) (ι := fun k => ι (k + 1))
+        (fun k => ℳ (k + 1)) (fun j => T (j.chainSucc)) (fun j => p (j.chainSucc))))
 
 section Composite
 
@@ -119,7 +120,7 @@ theorem chainComp_zero (T : (j : Fin 0) → M (j + 1) →ₗ[R] M j) :
 /-- A nonempty chain composite applies its final step after the remaining chain. -/
 theorem chainComp_succ {n : ℕ} (T : (j : Fin (n + 1)) → M (j + 1) →ₗ[R] M j) :
     chainComp T =
-      (T (chainHead n)).comp (chainComp (M := fun k => M (k + 1)) fun j => T (chainSucc j)) :=
+      (T (n.chainHead)).comp (chainComp (M := fun k => M (k + 1)) fun j => T (j.chainSucc)) :=
   (rfl)
 
 /-- On a constant chain the composite is the ordered product of endomorphisms. -/
@@ -149,15 +150,15 @@ output component of the recorded degree. -/
 theorem chainHistory_succ_apply {n : ℕ} (T : (j : Fin (n + 1)) → M (j + 1) →ₗ[R] M j)
     (p : (j : Fin (n + 1)) → ι j) (a : M (n + 1)) :
     chainHistory ℳ T p a =
-      (DirectSum.decompose (ℳ 0) (T (chainHead n) (chainHistory (M := fun k => M (k + 1))
-        (ι := fun k => ι (k + 1)) (fun k => ℳ (k + 1)) (fun j => T (chainSucc j))
-        (fun j => p (chainSucc j)) a)) (p (chainHead n)) : M 0) := by
+      (DirectSum.decompose (ℳ 0) (T (n.chainHead) (chainHistory (M := fun k => M (k + 1))
+        (ι := fun k => ι (k + 1)) (fun k => ℳ (k + 1)) (fun j => T (j.chainSucc))
+        (fun j => p (j.chainSucc)) a)) (p (n.chainHead)) : M 0) := by
   simp only [chainHistory, homogeneousComponent_apply, LinearMap.comp_apply]
 
 /-- The output of a nonempty history lies in its last selected homogeneous piece. -/
 theorem chainHistory_mem {n : ℕ} (T : (j : Fin (n + 1)) → M (j + 1) →ₗ[R] M j)
     (p : (j : Fin (n + 1)) → ι j) (a : M (n + 1)) :
-    chainHistory ℳ T p a ∈ ℳ 0 (p (chainHead n)) := by
+    chainHistory ℳ T p a ∈ ℳ 0 (p (n.chainHead)) := by
   rw [chainHistory_succ_apply]
   exact Subtype.property _
 
@@ -165,11 +166,42 @@ theorem chainHistory_mem {n : ℕ} (T : (j : Fin (n + 1)) → M (j + 1) →ₗ[R
 theorem chainHistory_tail_ne_zero {n : ℕ} (T : (j : Fin (n + 1)) → M (j + 1) →ₗ[R] M j)
     (p : (j : Fin (n + 1)) → ι j) {a : M (n + 1)} (ha : chainHistory ℳ T p a ≠ 0) :
     chainHistory (M := fun k => M (k + 1)) (ι := fun k => ι (k + 1))
-      (fun k => ℳ (k + 1)) (fun j => T (chainSucc j)) (fun j => p (chainSucc j)) a ≠ 0 := by
+      (fun k => ℳ (k + 1)) (fun j => T (j.chainSucc)) (fun j => p (j.chainSucc)) a ≠ 0 := by
   intro hz
   apply ha
   rw [chainHistory_succ_apply, hz, map_zero, DirectSum.decompose_zero]
   rfl
+
+/-- Selecting the terminal degree of a nonempty history returns that history. -/
+@[simp]
+theorem homogeneousComponent_comp_chainHistory {n : ℕ}
+    (T : (j : Fin (n + 1)) → M (j + 1) →ₗ[R] M j) (p : (j : Fin (n + 1)) → ι j) :
+    (homogeneousComponent (ℳ 0) (p 0)).comp (chainHistory ℳ T p) = chainHistory ℳ T p := by
+  ext a
+  exact homogeneousComponent_apply_of_mem (ℳ 0) (chainHistory_mem ℳ T p a)
+
+/-- A nonempty history has no component in a degree other than its terminal degree.
+Not a simp lemma: simp rewrites the hypothesis to `p 0 ≠ η`, whose two sides have types
+that agree only up to unfolding, so it could never discharge it. The constant-module form
+`homogeneousComponent_comp_homogeneousHistory_of_ne` is a simp lemma. -/
+theorem homogeneousComponent_comp_chainHistory_of_ne {n : ℕ}
+    (T : (j : Fin (n + 1)) → M (j + 1) →ₗ[R] M j) (p : (j : Fin (n + 1)) → ι j) (η : ι 0)
+    (hη : p n.chainHead ≠ η) :
+    (homogeneousComponent (ℳ 0) η).comp (chainHistory ℳ T p) = 0 := by
+  ext a
+  exact homogeneousComponent_apply_of_mem_ne (ℳ 0) (chainHistory_mem ℳ T p a) hη
+
+/-- The final selection of a degree keeps a nonempty history when that degree is its
+terminal degree and kills it otherwise. -/
+theorem homogeneousComponent_chainHistory_apply {n : ℕ}
+    (T : (j : Fin (n + 1)) → M (j + 1) →ₗ[R] M j) (p : (j : Fin (n + 1)) → ι j) (η : ι 0)
+    (a : M (n + 1)) :
+    homogeneousComponent (ℳ 0) η (chainHistory ℳ T p a) =
+      if p n.chainHead = η then chainHistory ℳ T p a else 0 := by
+  split_ifs with h
+  · rw [← h]
+    exact homogeneousComponent_apply_of_mem (ℳ 0) (chainHistory_mem ℳ T p a)
+  · exact homogeneousComponent_apply_of_mem_ne (ℳ 0) (chainHistory_mem ℳ T p a) h
 
 section Finite
 
@@ -184,23 +216,23 @@ theorem finite_support_chainHistory {n : ℕ} (T : (j : Fin n) → M (j + 1) →
   | zero => exact Set.toFinite _
   | succ n ih =>
     have hS := ih (M := fun k => M (k + 1)) (ι := fun k => ι (k + 1))
-      (fun k => ℳ (k + 1)) (fun j => T (chainSucc j)) a
-    let B := fun p' : (j : Fin n) → ι (j + 1) => (DirectSum.decompose (ℳ 0) (T (chainHead n)
+      (fun k => ℳ (k + 1)) (fun j => T (j.chainSucc)) a
+    let B := fun p' : (j : Fin n) → ι (j + 1) => (DirectSum.decompose (ℳ 0) (T (n.chainHead)
       (chainHistory (M := fun k => M (k + 1)) (ι := fun k => ι (k + 1))
-        (fun k => ℳ (k + 1)) (fun j => T (chainSucc j)) p' a))).support
+        (fun k => ℳ (k + 1)) (fun j => T (j.chainSucc)) p' a))).support
     apply (Finset.finite_toSet (hS.toFinset.biUnion fun p' => (B p').image
       fun i => (chainCons i p' : (j : Fin (n + 1)) → ι j))).subset
     intro p hp
-    have hc : p (chainHead n) ∈ B (fun j => p (chainSucc j)) := by
+    have hc : p (n.chainHead) ∈ B (fun j => p (j.chainSucc)) := by
       apply DFinsupp.mem_support_iff.mpr
       intro he
       have hp' : chainHistory ℳ T p a ≠ 0 := hp
       apply hp'
       rw [chainHistory_succ_apply]
       exact congrArg Subtype.val he
-    exact Finset.mem_biUnion.mpr ⟨fun j => p (chainSucc j),
+    exact Finset.mem_biUnion.mpr ⟨fun j => p (j.chainSucc),
       (Set.Finite.mem_toFinset _).mpr (chainHistory_tail_ne_zero ℳ T p hp),
-      Finset.mem_image.mpr ⟨p (chainHead n), hc, Fin.cons_self_tail p⟩⟩
+      Finset.mem_image.mpr ⟨p (n.chainHead), hc, Fin.cons_self_tail p⟩⟩
 
 /-- The finite set of degree histories whose final whole decoration is nonzero. -/
 def chainHistorySupport {n : ℕ} (T : (j : Fin n) → M (j + 1) →ₗ[R] M j) (a : M n) :
@@ -228,16 +260,16 @@ theorem chainHistorySupport_succ {n : ℕ} (T : (j : Fin (n + 1)) → M (j + 1) 
     (a : M (n + 1)) :
     chainHistorySupport ℳ T a =
       (chainHistorySupport (M := fun k => M (k + 1)) (ι := fun k => ι (k + 1))
-        (fun k => ℳ (k + 1)) (fun j => T (chainSucc j)) a).biUnion fun p' =>
-        (DirectSum.decompose (ℳ 0) (T (chainHead n) (chainHistory (M := fun k => M (k + 1))
-          (ι := fun k => ι (k + 1)) (fun k => ℳ (k + 1)) (fun j => T (chainSucc j))
+        (fun k => ℳ (k + 1)) (fun j => T (j.chainSucc)) a).biUnion fun p' =>
+        (DirectSum.decompose (ℳ 0) (T (n.chainHead) (chainHistory (M := fun k => M (k + 1))
+          (ι := fun k => ι (k + 1)) (fun k => ℳ (k + 1)) (fun j => T (j.chainSucc))
             p' a))).support.image
           fun i => (chainCons i p' : (j : Fin (n + 1)) → ι j) := by
   ext p
   simp only [mem_chainHistorySupport, Finset.mem_biUnion, Finset.mem_image]
   constructor
   · intro hp
-    refine ⟨fun j => p (chainSucc j), chainHistory_tail_ne_zero ℳ T p hp, p (chainHead n), ?_,
+    refine ⟨fun j => p (j.chainSucc), chainHistory_tail_ne_zero ℳ T p hp, p (n.chainHead), ?_,
       Fin.cons_self_tail p⟩
     rw [chainHistory_succ_apply] at hp
     exact DFinsupp.mem_support_iff.mpr fun he => hp (congrArg Subtype.val he)
@@ -252,9 +284,9 @@ private theorem chainHistorySupport_extensions_disjoint {n : ℕ}
     (T : (j : Fin (n + 1)) → M (j + 1) →ₗ[R] M j) (a : M (n + 1)) :
     Set.PairwiseDisjoint
       (↑(chainHistorySupport (M := fun k => M (k + 1)) (ι := fun k => ι (k + 1))
-        (fun k => ℳ (k + 1)) (fun j => T (chainSucc j)) a) : Set ((j : Fin n) → ι (j + 1)))
-      fun p' => (DirectSum.decompose (ℳ 0) (T (chainHead n) (chainHistory (M := fun k => M (k + 1))
-        (ι := fun k => ι (k + 1)) (fun k => ℳ (k + 1)) (fun j => T (chainSucc j))
+        (fun k => ℳ (k + 1)) (fun j => T (j.chainSucc)) a) : Set ((j : Fin n) → ι (j + 1)))
+      fun p' => (DirectSum.decompose (ℳ 0) (T (n.chainHead) (chainHistory (M := fun k => M (k + 1))
+        (ι := fun k => ι (k + 1)) (fun k => ℳ (k + 1)) (fun j => T (j.chainSucc))
           p' a))).support.image
           fun i => (chainCons i p' : (j : Fin (n + 1)) → ι j) := by
   intro p _ q _ hpq
@@ -281,16 +313,16 @@ theorem sum_chainHistory {n : ℕ} (T : (j : Fin n) → M (j + 1) →ₗ[R] M j)
     rw [chainHistorySupport_succ, Finset.sum_biUnion
       (chainHistorySupport_extensions_disjoint ℳ T a)]
     trans ∑ p' ∈ chainHistorySupport (M := fun k => M (k + 1)) (ι := fun k => ι (k + 1))
-        (fun k => ℳ (k + 1)) (fun j => T (chainSucc j)) a,
-        T (chainHead n) (chainHistory (M := fun k => M (k + 1)) (ι := fun k => ι (k + 1))
-          (fun k => ℳ (k + 1)) (fun j => T (chainSucc j)) p' a)
+        (fun k => ℳ (k + 1)) (fun j => T (j.chainSucc)) a,
+        T (n.chainHead) (chainHistory (M := fun k => M (k + 1)) (ι := fun k => ι (k + 1))
+          (fun k => ℳ (k + 1)) (fun j => T (j.chainSucc)) p' a)
     · refine Finset.sum_congr rfl fun p' _ => ?_
       rw [Finset.sum_image (g := fun i => chainCons i p') fun i _ j _ hij =>
         (Fin.cons_inj.mp hij).1]
       simp only [chainHistory_succ_apply, chainCons_succ]
       exact DirectSum.sum_support_decompose (ℳ 0) _
     · rw [← map_sum, ih (M := fun k => M (k + 1)) (ι := fun k => ι (k + 1))
-        (fun k => ℳ (k + 1)) (fun j => T (chainSucc j)) a]
+        (fun k => ℳ (k + 1)) (fun j => T (j.chainSucc)) a]
       rfl
 
 end Finite
@@ -301,13 +333,12 @@ variable {N : ℕ → Type*} [∀ k, AddCommMonoid (N k)] [∀ k, Module R (N k)
   {κ : ℕ → Type*} [∀ k, DecidableEq (κ k)] (𝓝 : ∀ k, κ k → Submodule R (N k))
   [∀ k, DirectSum.Decomposition (𝓝 k)]
   (r : ∀ k, M k →ₗ[R] N k) (σ : ∀ k, ι k → κ k)
-  (hr : ∀ k i x, x ∈ ℳ k i → r k x ∈ 𝓝 k (σ k i))
-
-include hr
 
 /-- Along injective degree maps, intertwining chamber maps send each whole history
 to the history with the reindexed degrees. -/
-theorem map_chainHistory_of_injective (hσ : ∀ k, Function.Injective (σ k)) {n : ℕ}
+theorem map_chainHistory_of_injective {n : ℕ}
+    (hr : ∀ (j : Fin n) i x, x ∈ ℳ j i → r j x ∈ 𝓝 j (σ j i))
+    (hσ : ∀ j : Fin n, Function.Injective (σ j))
     (T : (j : Fin n) → M (j + 1) →ₗ[R] M j) (U : (j : Fin n) → N (j + 1) →ₗ[R] N j)
     (hT : ∀ j : Fin n, (r j).comp (T j) = (U j).comp (r (j + 1)))
     (p : (j : Fin n) → ι j) (a : M n) :
@@ -315,27 +346,28 @@ theorem map_chainHistory_of_injective (hσ : ∀ k, Function.Injective (σ k)) {
   induction n generalizing M ι N κ with
   | zero => rfl
   | succ n ih =>
-    have hcomm := LinearMap.congr_fun (hT (chainHead n)) (chainHistory (M := fun k => M (k + 1))
-      (ι := fun k => ι (k + 1)) (fun k => ℳ (k + 1)) (fun j => T (chainSucc j))
-      (fun j => p (chainSucc j)) a)
+    have hcomm := LinearMap.congr_fun (hT (n.chainHead)) (chainHistory (M := fun k => M (k + 1))
+      (ι := fun k => ι (k + 1)) (fun k => ℳ (k + 1)) (fun j => T (j.chainSucc))
+      (fun j => p (j.chainSucc)) a)
     have htail := ih (M := fun k => M (k + 1)) (ι := fun k => ι (k + 1))
       (N := fun k => N (k + 1)) (κ := fun k => κ (k + 1)) (fun k => ℳ (k + 1))
-      (fun k => 𝓝 (k + 1)) (fun k => r (k + 1)) (fun k => σ (k + 1)) (fun k => hr (k + 1))
-      (fun k => hσ (k + 1)) (fun j => T (chainSucc j)) (fun j => U (chainSucc j))
-      (fun j => hT (chainSucc j)) (fun j => p (chainSucc j)) a
+      (fun k => 𝓝 (k + 1)) (fun k => r (k + 1)) (fun k => σ (k + 1)) (fun j => hr j.chainSucc)
+      (fun j => hσ j.chainSucc) (fun j => T (j.chainSucc)) (fun j => U (j.chainSucc))
+      (fun j => hT (j.chainSucc)) (fun j => p (j.chainSucc)) a
     simp only [LinearMap.comp_apply] at hcomm
     rw [chainHistory_succ_apply]
-    refine (DirectSum.map_decompose_shift (ℳ 0) (𝓝 0) (r 0).toAddMonoidHom (σ 0) (hσ 0)
-      (hr 0) _ _).trans ?_
+    refine (DirectSum.map_decompose_shift (ℳ 0) (𝓝 0) (r 0).toAddMonoidHom (σ 0) (hσ n.chainHead)
+      (hr n.chainHead) _ _).trans ?_
     rw [LinearMap.toAddMonoidHom_coe, hcomm, chainHistory_succ_apply 𝓝 U]
-    exact congrArg (fun x => (DirectSum.decompose (𝓝 0) (U (chainHead n) x)
-      (σ 0 (p (chainHead n))) : N 0)) htail
+    exact congrArg (fun x => (DirectSum.decompose (𝓝 0) (U (n.chainHead) x)
+      (σ 0 (p (n.chainHead))) : N 0)) htail
 
 open Classical in
 /-- A target history is the finite sum of the images of its source refinements.
 Neither the degree maps nor their fibers need be finite, and refinements with the
 same image are added before the target component is formed. -/
 theorem chainHistory_map_eq_sum {n : ℕ}
+    (hr : ∀ (j : Fin n) i x, x ∈ ℳ j i → r j x ∈ 𝓝 j (σ j i))
     (T : (j : Fin n) → M (j + 1) →ₗ[R] M j) (U : (j : Fin n) → N (j + 1) →ₗ[R] N j)
     (hT : ∀ j : Fin n, (r j).comp (T j) = (U j).comp (r (j + 1)))
     (q : (j : Fin n) → κ j) (a : M n) :
@@ -350,9 +382,9 @@ theorem chainHistory_map_eq_sum {n : ℕ}
   | succ n ih =>
     have htail := ih (M := fun k => M (k + 1)) (ι := fun k => ι (k + 1))
       (N := fun k => N (k + 1)) (κ := fun k => κ (k + 1)) (fun k => ℳ (k + 1))
-      (fun k => 𝓝 (k + 1)) (fun k => r (k + 1)) (fun k => σ (k + 1)) (fun k => hr (k + 1))
-      (fun j => T (chainSucc j)) (fun j => U (chainSucc j)) (fun j => hT (chainSucc j))
-      (fun j => q (chainSucc j)) a
+      (fun k => 𝓝 (k + 1)) (fun k => r (k + 1)) (fun k => σ (k + 1)) (fun j => hr j.chainSucc)
+      (fun j => T (j.chainSucc)) (fun j => U (j.chainSucc)) (fun j => hT (j.chainSucc))
+      (fun j => q (j.chainSucc)) a
     beta_reduce at htail
     rw [chainHistory_succ_apply, htail]
     simp only [map_sum, DirectSum.decompose_sum, DirectSum.sum_apply, Submodule.coe_sum]
@@ -361,15 +393,16 @@ theorem chainHistory_map_eq_sum {n : ℕ}
     refine Finset.sum_congr rfl fun p' _ => ?_
     rw [Finset.sum_image (g := fun i => chainCons i p') fun i _ j _ hij => (Fin.cons_inj.mp hij).1]
     simp only [chainHead_forall, chainCons_succ, chainHistory_succ_apply]
-    by_cases hp : ∀ j : Fin n, σ (j + 1) (p' j) = q (chainSucc j)
+    by_cases hp : ∀ j : Fin n, σ (j + 1) (p' j) = q (j.chainSucc)
     · simp only [hp, implies_true, and_true, ↓reduceIte]
-      have hcomm := LinearMap.congr_fun (hT (chainHead n)) (chainHistory (M := fun k => M (k + 1))
-        (ι := fun k => ι (k + 1)) (fun k => ℳ (k + 1)) (fun j => T (chainSucc j)) p' a)
+      have hcomm := LinearMap.congr_fun (hT (n.chainHead)) (chainHistory (M := fun k => M (k + 1))
+        (ι := fun k => ι (k + 1)) (fun k => ℳ (k + 1)) (fun j => T (j.chainSucc)) p' a)
       simp only [LinearMap.comp_apply] at hcomm
       rw [← hcomm]
-      have h := DirectSum.decompose_map_eq_sum (ℳ 0) (𝓝 0) (r 0).toAddMonoidHom (σ 0) (hr 0)
-        (T (chainHead n) (chainHistory (M := fun k => M (k + 1)) (ι := fun k => ι (k + 1))
-          (fun k => ℳ (k + 1)) (fun j => T (chainSucc j)) p' a)) (q (chainHead n))
+      have h := DirectSum.decompose_map_eq_sum (ℳ 0) (𝓝 0) (r 0).toAddMonoidHom (σ 0)
+        (hr n.chainHead)
+        (T (n.chainHead) (chainHistory (M := fun k => M (k + 1)) (ι := fun k => ι (k + 1))
+          (fun k => ℳ (k + 1)) (fun j => T (j.chainSucc)) p' a)) (q (n.chainHead))
       rw [Finset.sum_filter] at h
       exact h
     · simp only [hp, and_false, ↓reduceIte, Finset.sum_const_zero]
@@ -380,6 +413,7 @@ open Classical in
 /-- Refinements killed by the chamber map are omitted from the regrouped sum.
 The remaining finite set retains entire decorations. -/
 theorem chainHistory_map_eq_sum_surviving {n : ℕ}
+    (hr : ∀ (j : Fin n) i x, x ∈ ℳ j i → r j x ∈ 𝓝 j (σ j i))
     (T : (j : Fin n) → M (j + 1) →ₗ[R] M j) (U : (j : Fin n) → N (j + 1) →ₗ[R] N j)
     (hT : ∀ j : Fin n, (r j).comp (T j) = (U j).comp (r (j + 1)))
     (q : (j : Fin n) → κ j) (a : M n) :
@@ -395,6 +429,7 @@ theorem chainHistory_map_eq_sum_surviving {n : ℕ}
 /-- A nonzero target history admits a source refinement whose whole decoration
 survives the chamber map. -/
 theorem exists_chainHistory_ne_zero_of_map_ne_zero {n : ℕ}
+    (hr : ∀ (j : Fin n) i x, x ∈ ℳ j i → r j x ∈ 𝓝 j (σ j i))
     (T : (j : Fin n) → M (j + 1) →ₗ[R] M j) (U : (j : Fin n) → N (j + 1) →ₗ[R] N j)
     (hT : ∀ j : Fin n, (r j).comp (T j) = (U j).comp (r (j + 1)))
     (q : (j : Fin n) → κ j) {a : M n} (ha : chainHistory 𝓝 U q (r n a) ≠ 0) :
@@ -411,6 +446,7 @@ open Classical in
 are selected by their regraded history. Source histories with the same image are
 added before vanishing target histories are discarded. -/
 theorem map_sum_ite_chainHistory {n : ℕ}
+    (hr : ∀ (j : Fin n) i x, x ∈ ℳ j i → r j x ∈ 𝓝 j (σ j i))
     (T : (j : Fin n) → M (j + 1) →ₗ[R] M j) (U : (j : Fin n) → N (j + 1) →ₗ[R] N j)
     (hT : ∀ j : Fin n, (r j).comp (T j) = (U j).comp (r (j + 1)))
     (E : ((j : Fin n) → κ j) → Prop) (a : M n) :
@@ -532,7 +568,7 @@ variable {N : ℕ → Type*} [∀ k, AddCommMonoid (N k)] [∀ k, Module R (N k)
   {κ : ℕ → Type*} [∀ k, DecidableEq (κ k)] (𝓝 : ∀ k, κ k → Submodule R (N k))
   [∀ k, DirectSum.Decomposition (𝓝 k)]
   (r : ∀ k, M k →ₗ[R] N k) (σ : ∀ k, ι k → κ k)
-  (hr : ∀ k i x, x ∈ ℳ k i → r k x ∈ 𝓝 k (σ k i))
+  (hr : ∀ (j : Fin n) i x, x ∈ ℳ j i → r j x ∈ 𝓝 j (σ j i))
   (U : (j : Fin n) → N (j + 1) →ₗ[R] N j)
   (hT : ∀ j : Fin n, (r j).comp (T j) = (U j).comp (r (j + 1)))
 

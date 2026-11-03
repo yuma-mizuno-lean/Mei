@@ -6,7 +6,6 @@ Authors: Codex
 module
 
 public import Mei.LinearAlgebra.GradedModule.History.Basic
-public import Mei.Algebra.DirectSum.Map
 public import Mathlib.Data.Fin.Tuple.Basic
 
 /-!

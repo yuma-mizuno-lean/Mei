@@ -24,7 +24,9 @@ naturality, in particular for comparisons preserving degrees such as truncations
 The component formulas use `DirectSum.decompose_map_eq_sum` and Tau Ceti's
 `DirectSum.map_decompose_shift` for arbitrary and injective regradings, respectively.
 Total lifts are natural precisely when target total lifts kill the images of
-inadmissible source pieces; reflecting admissibility is sufficient.
+inadmissible source pieces; reflecting admissibility is sufficient. The same condition
+makes total transfers natural, including along chains of correspondences with common
+chamber maps at incident steps.
 No additive structure on the degree types is needed for these linear constructions.
 -/
 
@@ -230,6 +232,24 @@ theorem middle_comp_liftLeftTotal_of_reflects_admissible (f : Hom C D σ τ)
   intro i hi a
   exact D.liftLeftTotal_of_not_mem (fun h => hi (hI i h)) (f.left_mem i a a.property)
 
+/-- A morphism intertwines total transfers once target total lifts kill the images
+of inadmissible source pieces. -/
+theorem right_comp_totalTransfer (f : Hom C D σ τ)
+    (hzero : ∀ i, i ∉ I → ∀ a : 𝒰 i, D.liftLeftTotal (f.left a) = 0) :
+    f.right.comp C.totalTransfer = D.totalTransfer.comp f.left := by
+  refine LinearMap.ext fun x => ?_
+  simp only [LinearMap.comp_apply, totalTransfer_apply, right_comm_apply,
+    f.middle_liftLeftTotal hzero]
+
+/-- Reflecting admissible degrees suffices for naturality of total transfers. -/
+theorem right_comp_totalTransfer_of_reflects_admissible (f : Hom C D σ τ)
+    (hI : ∀ i, σ i ∈ I' → i ∈ I) :
+    f.right.comp C.totalTransfer = D.totalTransfer.comp f.left := by
+  refine LinearMap.ext fun x => ?_
+  simp only [LinearMap.comp_apply, totalTransfer_apply, right_comm_apply]
+  exact congrArg D.right (LinearMap.congr_fun
+    (f.middle_comp_liftLeftTotal_of_reflects_admissible hI) x)
+
 end TotalLift
 
 section Transfer
@@ -264,4 +284,37 @@ theorem transfer_map_of_injective (f : Hom C D σ τ) (hτ : Function.Injective 
 
 end Transfer
 end Hom
+
+section Chain
+
+variable {R : Type*} [Semiring R]
+  {M : ℕ → Type*} [∀ k, AddCommMonoid (M k)] [∀ k, Module R (M k)]
+  {ι : ℕ → Type*} [∀ k, DecidableEq (ι k)] {ℳ : ∀ k, ι k → Submodule R (M k)}
+  [∀ k, DirectSum.Decomposition (ℳ k)]
+  {B : ℕ → Type*} [∀ k, AddCommMonoid (B k)] [∀ k, Module R (B k)]
+  {I : ∀ k, Set (ι (k + 1))} {J : ∀ k, Set (ι k)}
+  (C : ∀ k, GradedCorrespondence (B := B k) (ℳ (k + 1)) (ℳ k) (I k) (J k))
+  {N : ℕ → Type*} [∀ k, AddCommMonoid (N k)] [∀ k, Module R (N k)]
+  {κ : ℕ → Type*} [∀ k, DecidableEq (κ k)] {𝓝 : ∀ k, κ k → Submodule R (N k)}
+  [∀ k, DirectSum.Decomposition (𝓝 k)]
+  {B' : ℕ → Type*} [∀ k, AddCommMonoid (B' k)] [∀ k, Module R (B' k)]
+  {I' : ∀ k, Set (κ (k + 1))} {J' : ∀ k, Set (κ k)}
+  (D : ∀ k, GradedCorrespondence (B := B' k) (𝓝 (k + 1)) (𝓝 k) (I' k) (J' k))
+  (r : ∀ k, M k →ₗ[R] N k) (σ : ∀ k, ι k → κ k)
+  (f : ∀ k, Hom (C k) (D k) (σ (k + 1)) (σ k))
+  (hl : ∀ k, (f k).left = r (k + 1)) (hv : ∀ k, (f k).right = r k)
+  (hzero : ∀ k, ∀ i, i ∉ I k → ∀ a : ℳ (k + 1) i, (D k).liftLeftTotal (r (k + 1) a) = 0)
+
+include f hl hv hzero
+
+/-- Chamber maps of correspondence morphisms intertwine every step of the chain of
+total transfers. -/
+theorem comp_totalTransfer_of_hom (k : ℕ) :
+    (r k).comp (C k).totalTransfer = (D k).totalTransfer.comp (r (k + 1)) := by
+  rw [← hv k, ← hl k]
+  exact (f k).right_comp_totalTransfer fun i hi a => by rw [hl k]; exact hzero k i hi a
+
+
+end Chain
+
 end Mei.GradedCorrespondence

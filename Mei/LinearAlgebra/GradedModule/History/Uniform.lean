@@ -6,7 +6,6 @@ Authors: Codex
 module
 
 public import Mei.LinearAlgebra.GradedModule.History.Finite
-public import Mathlib.RingTheory.Finiteness.Defs
 
 /-!
 # Uniform history expansions on an input submodule

@@ -24,7 +24,9 @@ without requiring that identification to preserve degrees.
 The admissible left lifts extend linearly to the whole source by zero on every
 inadmissible piece. This extension is a section on inputs supported in admissible
 degrees; its opposite homogeneous components are the existing transfers. Applying
-the same construction to `C.symm` gives the extension from the right.
+the same construction to `C.symm` gives the extension from the right. Following it by
+the right leg gives the total transfer, which for a graph correspondence is its
+equivalence.
 
 The constructions use Mathlib's `DirectSum.decomposeLinearEquiv` and `DirectSum.component`.
 -/
@@ -188,6 +190,14 @@ theorem eq_liftLeftTotal (C : GradedCorrespondence (B := B) 𝒰 𝒱 I J) (f : 
   · exact hpos ⟨i, hi⟩
   · exact hneg i hi
 
+/-- Lift each admissible homogeneous component across the span and forget the
+inadmissible ones. -/
+noncomputable def totalTransfer (C : GradedCorrespondence (B := B) 𝒰 𝒱 I J) : U →ₗ[R] V :=
+  C.right.comp C.liftLeftTotal
+
+theorem totalTransfer_apply (C : GradedCorrespondence (B := B) 𝒰 𝒱 I J) (a : U) :
+    C.totalTransfer a = C.right (C.liftLeftTotal a) := (rfl)
+
 end TotalLift
 
 section Transfer
@@ -270,6 +280,12 @@ theorem graph_liftLeftTotal [DecidableEq ι] [DirectSum.Decomposition 𝒰]
     simp
   · intro i hi
     exact (hi (Set.mem_univ i)).elim
+
+/-- The total transfer of a graph correspondence is its equivalence. -/
+@[simp]
+theorem graph_totalTransfer [DecidableEq ι] [DirectSum.Decomposition 𝒰] (e : U ≃ₗ[R] V) :
+    (graph 𝒰 𝒱 e).totalTransfer = e.toLinearMap := by
+  rw [totalTransfer, graph_liftLeftTotal, graph_right, LinearMap.comp_id]
 
 /-- The two maps of a graph correspondence are jointly injective. -/
 theorem graph_injective (e : U ≃ₗ[R] V) :
