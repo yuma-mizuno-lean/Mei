@@ -274,4 +274,18 @@ theorem isRationalNormalPolyhedron_setOf_forall {h : TauCeti.Toric.IsIntegralLat
     ext x
     exact RationalAffinePolyhedron.mem_carrier_ofFinite hg⟩
 
+/-- A closed half-space `{x | ℓ x ≤ b}` bounded by a hyperplane with rational normal is a
+rational-normal polyhedron, for any real offset `b`. -/
+theorem isRationalNormalPolyhedron_setOf_le {h : TauCeti.Toric.IsIntegralLattice i}
+    (ℓ : V →L[ℝ] ℝ) (hℓ : Toric.IsRationalFunctional h ℓ.toLinearMap) (b : ℝ) :
+    IsRationalNormalPolyhedron h {x | ℓ x ≤ b} := by
+  let g : V →ᴬ[ℝ] ℝ := ℓ.toContinuousAffineMap - ContinuousAffineMap.const ℝ V b
+  have hg : g.toAffineMap.linear = ℓ.toLinearMap := by
+    refine LinearMap.ext fun v => ?_
+    simpa [g] using AffineMap.linear_apply_vsub g.toAffineMap v 0
+  convert isRationalNormalPolyhedron_setOf_forall (h := h) (ι := Unit) (fun _ => g)
+    (fun _ => hg ▸ hℓ) using 1
+  ext x
+  simp [g]
+
 end Mei

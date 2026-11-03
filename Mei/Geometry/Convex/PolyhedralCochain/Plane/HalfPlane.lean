@@ -6,8 +6,7 @@ Authors: Claude Code
 module
 
 public import Mei.Geometry.Convex.PolyhedralCochain.Plane.Basic
-public import Mei.Geometry.Convex.PolyhedralCochain.Coboundary
-public import Mei.Geometry.Convex.PolyhedralCochain.Pairing
+public import Mei.Geometry.Convex.PolyhedralCochain.CoboundaryPairing
 
 /-!
 # The coboundary of the upper half-plane
@@ -59,15 +58,14 @@ variable (h) in
 /-- The horizontal axis `{y = 0}`, oriented by the conormal form `+dy`. -/
 noncomputable def horizontalLine : OrientedCell h 1 where
   carrier := {p | p.2 = 0}
-  rational := Plane.isRationalNormalPolyhedron_axis h
+  rational := Plane.isRationalNormalPolyhedron_horizontalLine h
   nonempty := ⟨(0, 0), rfl⟩
   finrank_direction_add := by
-    rw [direction_affineSpan, Plane.vectorSpan_eq_horizontal (fun _ hp => hp) rfl rfl,
-      Plane.finrank_horizontal]
+    rw [direction_affineSpan, Plane.vectorSpan_horizontalLine, Plane.finrank_horizontal]
     simp
   orientation := rayOfNeZero ℝ Plane.dy Plane.dy_ne_zero
   isConormal := by
-    rw [direction_affineSpan, Plane.vectorSpan_eq_horizontal (fun _ hp => hp) rfl rfl]
+    rw [direction_affineSpan, Plane.vectorSpan_horizontalLine]
     exact (Module.Ray.isConormal_rayOfNeZero_iff _).mpr Plane.dy_mem_conormalForms
 
 @[simp]
@@ -77,8 +75,20 @@ theorem horizontalLine_carrier : (horizontalLine h).carrier = {p | p.2 = 0} := (
 theorem horizontalLine_orientation :
     (horizontalLine h).orientation = rayOfNeZero ℝ Plane.dy Plane.dy_ne_zero := (rfl)
 
+/-- A functional `(x, y) ↦ x * a + y * b` that attains its maximum over the upper half-plane at a
+point `w` has `a = 0` and `b ≤ 0`: moving `w` horizontally by `±1` or up by `1` stays in the
+half-plane. -/
+private theorem eq_zero_and_le_zero_of_forall_le {a b : ℝ} {w : ℝ × ℝ} (hw : 0 ≤ w.2)
+    (hmax : ∀ p : ℝ × ℝ, 0 ≤ p.2 → p.1 * a + p.2 * b ≤ w.1 * a + w.2 * b) :
+    a = 0 ∧ b ≤ 0 := by
+  have h₁ := hmax (w.1 + 1, w.2) hw
+  have h₂ := hmax (w.1 - 1, w.2) hw
+  have h₃ := hmax (w.1, w.2 + 1) (by simpa using hw.trans (by linarith))
+  refine ⟨le_antisymm ?_ ?_, ?_⟩ <;> simp only at h₁ h₂ h₃ <;> linarith
+
 /-- Every nonempty exposed set of the upper half-plane whose span has codimension one is the
-horizontal axis. -/
+horizontal axis. A supporting functional `a * x + b * y` has `a = 0` and `b ≤ 0`; `b = 0` exposes
+the whole half-plane, which has the wrong dimension, and `b < 0` exposes the axis. -/
 private theorem eq_axis_of_isExposed_upperHalfPlane {F : Set (ℝ × ℝ)}
     (hF : IsExposed ℝ (upperHalfPlane h).carrier F) (hne : F.Nonempty)
     (hdim : finrank ℝ (vectorSpan ℝ F) + 1 = finrank ℝ (vectorSpan ℝ (upperHalfPlane h).carrier)) :
@@ -92,15 +102,9 @@ private theorem eq_axis_of_isExposed_upperHalfPlane {F : Set (ℝ × ℝ)}
     rw [map_add, map_smul, map_smul, smul_eq_mul, smul_eq_mul]
   rw [hl] at hw
   obtain ⟨hw0, hwmax⟩ := hw
-  have ha₁ := hwmax (w.1 + 1, w.2) hw0
-  have ha₂ := hwmax (w.1 - 1, w.2) hw0
-  have hb := hwmax (w.1, w.2 + 1) (by
-    simp only [upperHalfPlane_carrier, mem_ofPred_eq] at hw0 ⊢
-    linarith)
-  simp only [hlp] at ha₁ ha₂ hb
-  have ha : a = 0 := by nlinarith
-  have hb' : b ≤ 0 := by nlinarith
-  rcases hb'.eq_or_lt with hb0 | hb0
+  obtain ⟨ha, hb⟩ := eq_zero_and_le_zero_of_forall_le (a := a) (b := b) hw0 fun p hp => by
+    simpa only [hlp] using hwmax p hp
+  rcases hb.eq_or_lt with hb0 | hb0
   · exfalso
     have hl0 : F = (upperHalfPlane h).carrier := by
       rw [hl]
@@ -114,13 +118,13 @@ private theorem eq_axis_of_isExposed_upperHalfPlane {F : Set (ℝ × ℝ)}
       zero_add]
     constructor
     · rintro ⟨hx0, hx⟩
-      have := hx (x.1, 0) (le_refl _)
-      simp only at this
-      nlinarith
+      have := hx (x.1, 0) le_rfl
+      dsimp only at this
+      exact le_antisymm ((mul_le_mul_right_of_neg hb0).mp (by simpa using this)) hx0
     · intro hx
       refine ⟨hx.ge, fun y hy => ?_⟩
       rw [hx]
-      nlinarith
+      exact mul_le_mul_of_nonpos_right (by simpa using hy) hb0.le
 
 /-- The horizontal axis is an exposed set of the upper half-plane. -/
 private theorem isExposed_horizontalLine :
@@ -130,22 +134,20 @@ private theorem isExposed_horizontalLine :
   ext x
   simp only [horizontalLine_carrier, upperHalfPlane_carrier, mem_ofPred_eq, neg_apply,
     FinitePolyhedralComplex.axisRow_true_apply, neg_le_neg_iff]
-  exact ⟨fun hx => ⟨hx.ge, fun y hy => hx ▸ hy⟩, fun ⟨hx0, hx⟩ =>
+  exact ⟨fun hx => ⟨hx.ge, fun y hy => by rwa [hx]⟩, fun ⟨hx0, hx⟩ =>
     le_antisymm (by simpa using hx (0, 0) le_rfl) hx0⟩
 
 /-- The horizontal axis has the horizontal direction. -/
 theorem direction_affineSpan_horizontalLine :
     (affineSpan ℝ (horizontalLine h).carrier).direction = Plane.horizontal := by
-  rw [direction_affineSpan, horizontalLine_carrier,
-    Plane.vectorSpan_eq_horizontal (fun _ hp => hp) rfl rfl]
+  rw [direction_affineSpan, horizontalLine_carrier, Plane.vectorSpan_horizontalLine]
 
 /-- The horizontal axis has dimension one less than the upper half-plane. -/
 private theorem finrank_vectorSpan_horizontalLine_add_one :
     finrank ℝ (vectorSpan ℝ (horizontalLine h).carrier) + 1 =
       finrank ℝ (vectorSpan ℝ (upperHalfPlane h).carrier) := by
-  rw [horizontalLine_carrier, upperHalfPlane_carrier,
-    Plane.vectorSpan_eq_horizontal (fun _ hp => hp) rfl rfl, Plane.vectorSpan_upperHalfPlane,
-    Plane.finrank_horizontal]
+  rw [horizontalLine_carrier, upperHalfPlane_carrier, Plane.vectorSpan_horizontalLine,
+    Plane.vectorSpan_upperHalfPlane, Plane.finrank_horizontal]
   simp
 
 /-- The horizontal axis with orientation `+dy` is the signed boundary facet of the upper
@@ -248,19 +250,16 @@ theorem intersectionPairing_coboundaryPresentation_upperHalfPlane (c : E) :
 open Classical in
 /-- Every presentation of the coboundary of the upper half-plane by cells transverse to the
 segment from `(0, 1)` to `(0, -1)` pairs with it to give `-c`. -/
-theorem intersectionPairing_eq_neg_of_ofFinsupp_eq_coboundary (c : E)
+theorem intersectionPairing_eq_neg_of_ofFinsupp_eq_coboundary_upperHalfPlane (c : E)
     {y : OrientedCell h 1 →₀ E}
     (hy : ofFinsupp (R := R) y = coboundaryOfFinsupp (Finsupp.single (upperHalfPlane h) c))
     (hT : ∀ τ ∈ y.support, τ.IsTransverse ![((0 : ℝ), (1 : ℝ)), (0, -1)]) :
     intersectionPairing (R := R) ![((0 : ℝ), (1 : ℝ)), (0, -1)] y = -c := by
   rw [← intersectionPairing_coboundaryPresentation_upperHalfPlane (R := R) (h := h) c]
-  refine intersectionPairing_eq_of_ofFinsupp_eq
-    (by rw [hy, ofFinsupp_coboundaryPresentation]) hT fun τ hτ => ?_
-  obtain ⟨σ, hσ, hτσ⟩ := Finset.mem_biUnion.mp
-    (support_coboundaryPresentation_subset (R := R) (Finsupp.single (upperHalfPlane h) c) hτ)
-  rw [Finset.mem_singleton.mp (Finsupp.support_single_subset hσ), upperHalfPlane_boundaryFacets,
-    Finset.mem_singleton] at hτσ
-  exact hτσ ▸ isTransverse_horizontalLine_verticalSegment
+  refine intersectionPairing_eq_coboundaryPresentation_of_ofFinsupp_eq c hy (fun τ hτ => ?_) hT
+  rw [upperHalfPlane_boundaryFacets, Finset.mem_singleton] at hτ
+  rw [hτ]
+  exact isTransverse_horizontalLine_verticalSegment
 
 end PolyhedralCochain
 

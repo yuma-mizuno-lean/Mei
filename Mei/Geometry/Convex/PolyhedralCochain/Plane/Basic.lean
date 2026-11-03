@@ -7,7 +7,7 @@ module
 
 public import Mei.Geometry.Convex.PolyhedralCochain.Basic
 public import Mei.Geometry.Convex.PolyhedralComplex.CoordinateAxes
-public import Mei.Geometry.Convex.Polyhedron.Rational.Halfspace
+public import Mei.Geometry.Convex.Polyhedron.Rational
 
 /-!
 # Orientation data and rational polyhedra of the standard plane
@@ -53,9 +53,7 @@ noncomputable def area : (ℝ × ℝ) [⋀^Fin 2]→ₗ[ℝ] ℝ := (Basis.finTw
 /-- The area form is the determinant of the two arguments. -/
 theorem area_apply (v : Fin 2 → ℝ × ℝ) :
     area v = (v 0).1 * (v 1).2 - (v 0).2 * (v 1).1 := by
-  simp only [area, Basis.det_apply, Matrix.det_fin_two, Basis.toMatrix_apply]
-  simp
-  ring
+  simp [area, Basis.det_apply, Matrix.det_fin_two, Basis.toMatrix_apply, mul_comm]
 
 /-- The area form is nonzero. -/
 theorem area_ne_zero : area ≠ 0 := fun h0 => by
@@ -89,6 +87,10 @@ theorem vectorSpan_eq_horizontal {A : Set (ℝ × ℝ)} (hA : ∀ p ∈ A, p.2 =
     rw [this]
     exact Submodule.smul_mem _ _ (vsub_mem_vectorSpan ℝ h1 h0)
 
+/-- The horizontal axis spans the horizontal direction. -/
+theorem vectorSpan_horizontalLine : vectorSpan ℝ {p : ℝ × ℝ | p.2 = 0} = horizontal :=
+  vectorSpan_eq_horizontal (fun _ hp => hp) rfl rfl
+
 /-- The form `dy` is conormal to the horizontal direction. -/
 theorem dy_mem_conormalForms : dy ∈ horizontal.conormalForms (Fin 1) :=
   Submodule.mem_conormalForms.mpr fun v j hv => by
@@ -103,7 +105,8 @@ theorem vectorSpan_upperHalfPlane : vectorSpan ℝ {p : ℝ × ℝ | 0 ≤ p.2} 
   refine eq_top_iff.mpr fun v _ => ?_
   have : v = v.1 • ((1, 0) - (0, 0) : ℝ × ℝ) + v.2 • ((0, 1) - (0, 0) : ℝ × ℝ) := by
     ext <;> simp
-  exact this ▸ Submodule.add_mem _ (Submodule.smul_mem _ _ h1) (Submodule.smul_mem _ _ h2)
+  rw [this]
+  exact Submodule.add_mem _ (Submodule.smul_mem _ _ h1) (Submodule.smul_mem _ _ h2)
 
 /-- The upper half-plane is a rational-normal polyhedron. -/
 theorem isRationalNormalPolyhedron_upperHalfPlane
@@ -115,7 +118,7 @@ theorem isRationalNormalPolyhedron_upperHalfPlane
   simp
 
 /-- The horizontal axis is a rational-normal polyhedron. -/
-theorem isRationalNormalPolyhedron_axis
+theorem isRationalNormalPolyhedron_horizontalLine
     (h : TauCeti.Toric.IsIntegralLattice ((Int.castAddHom ℝ).prodMap (Int.castAddHom ℝ))) :
     IsRationalNormalPolyhedron h {p : ℝ × ℝ | p.2 = 0} := by
   convert (isRationalNormalPolyhedron_upperHalfPlane h).inter
@@ -126,7 +129,7 @@ theorem isRationalNormalPolyhedron_axis
 
 /-- The closed segment from `(0, 0)` to `(1, 0)` consists of the points of the axis with
 first coordinate in `[0, 1]`. -/
-theorem mem_segment_iff {p : ℝ × ℝ} :
+theorem mem_segment_zero_one_iff {p : ℝ × ℝ} :
     p ∈ segment ℝ ((0 : ℝ), (0 : ℝ)) (1, 0) ↔ p.2 = 0 ∧ 0 ≤ p.1 ∧ p.1 ≤ 1 := by
   refine ⟨?_, fun ⟨h2, h0, h1⟩ => ⟨1 - p.1, p.1, by linarith, h0, by ring, ?_⟩⟩
   · rintro ⟨a, b, ha, hb, hab, rfl⟩
@@ -134,16 +137,22 @@ theorem mem_segment_iff {p : ℝ × ℝ} :
     simpa using (by linarith : b ≤ 1)
   · ext <;> simp [h2]
 
+/-- The closed segment from `(0, 0)` to `(1, 0)` spans the horizontal direction. -/
+theorem vectorSpan_segment :
+    vectorSpan ℝ (segment ℝ ((0 : ℝ), (0 : ℝ)) (1, 0)) = horizontal :=
+  vectorSpan_eq_horizontal (fun _ hp => (mem_segment_zero_one_iff.mp hp).1)
+    (left_mem_segment _ _ _) (right_mem_segment _ _ _)
+
 /-- The closed unit segment on the axis is a rational-normal polyhedron. -/
 theorem isRationalNormalPolyhedron_segment
     (h : TauCeti.Toric.IsIntegralLattice ((Int.castAddHom ℝ).prodMap (Int.castAddHom ℝ))) :
     IsRationalNormalPolyhedron h (segment ℝ ((0 : ℝ), (0 : ℝ)) (1, 0)) := by
-  convert ((isRationalNormalPolyhedron_axis h).inter
+  convert ((isRationalNormalPolyhedron_horizontalLine h).inter
     (isRationalNormalPolyhedron_setOf_le (-axisRow false)
       (by simpa using (isRationalFunctional_axisRow h false).neg) 0)).inter
     (isRationalNormalPolyhedron_setOf_le (axisRow false)
       (isRationalFunctional_axisRow h false) 1) using 1
   ext p
-  simp [mem_segment_iff, and_assoc]
+  simp [mem_segment_zero_one_iff, and_assoc]
 
 end Mei.Plane

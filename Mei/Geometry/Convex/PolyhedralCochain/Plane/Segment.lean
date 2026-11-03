@@ -6,8 +6,7 @@ Authors: Claude Code
 module
 
 public import Mei.Geometry.Convex.PolyhedralCochain.Plane.Basic
-public import Mei.Geometry.Convex.PolyhedralCochain.Coboundary
-public import Mei.Geometry.Convex.PolyhedralCochain.Pairing
+public import Mei.Geometry.Convex.PolyhedralCochain.CoboundaryPairing
 
 /-!
 # The coboundary of a segment in the plane
@@ -43,15 +42,11 @@ noncomputable def unitSegment : OrientedCell h 1 where
   rational := Plane.isRationalNormalPolyhedron_segment h
   nonempty := ⟨(0, 0), left_mem_segment _ _ _⟩
   finrank_direction_add := by
-    rw [direction_affineSpan, Plane.vectorSpan_eq_horizontal
-      (fun _ hp => (Plane.mem_segment_iff.mp hp).1) (left_mem_segment _ _ _)
-      (right_mem_segment _ _ _), Plane.finrank_horizontal]
+    rw [direction_affineSpan, Plane.vectorSpan_segment, Plane.finrank_horizontal]
     simp
   orientation := rayOfNeZero ℝ Plane.dy Plane.dy_ne_zero
   isConormal := by
-    rw [direction_affineSpan, Plane.vectorSpan_eq_horizontal
-      (fun _ hp => (Plane.mem_segment_iff.mp hp).1) (left_mem_segment _ _ _)
-      (right_mem_segment _ _ _)]
+    rw [direction_affineSpan, Plane.vectorSpan_segment]
     exact (Module.Ray.isConormal_rayOfNeZero_iff _).mpr Plane.dy_mem_conormalForms
 
 @[simp]
@@ -63,7 +58,11 @@ theorem unitSegment_orientation :
     (unitSegment h).orientation = rayOfNeZero ℝ Plane.dy Plane.dy_ne_zero := (rfl)
 
 variable (h) in
-/-- The point `x` of the plane as a cell of codimension two, oriented by `+dx ∧ dy`. -/
+/-- The point `x` of the plane as a cell of codimension two, oriented by `+dx ∧ dy`. This is
+`OrientedCell.point` for the area orientation, except that its codimension is the literal `2`
+rather than `finrank ℝ (ℝ × ℝ)`, which is not definitionally `2`: the boundary facets of the
+unit segment live in codimension `1 + 1`, so `point` cannot be used for them without a cast
+of the codimension index. -/
 noncomputable def planePoint (x : ℝ × ℝ) : OrientedCell h 2 where
   carrier := {x}
   rational := isRationalNormalPolyhedron_singleton h x
@@ -100,15 +99,13 @@ private theorem eq_or_eq_of_isExposed_unitSegment {F : Set (ℝ × ℝ)}
     (hdim : finrank ℝ (vectorSpan ℝ F) + 1 = finrank ℝ (vectorSpan ℝ (unitSegment h).carrier)) :
     F = (planePoint h (0, 0)).carrier ∨ F = (planePoint h (1, 0)).reverse.carrier := by
   simp only [planePoint_carrier, reverse_carrier]
-  rw [unitSegment_carrier, Plane.vectorSpan_eq_horizontal
-    (fun _ hp => (Plane.mem_segment_iff.mp hp).1) (left_mem_segment _ _ _)
-    (right_mem_segment _ _ _), Plane.finrank_horizontal] at hdim
+  rw [unitSegment_carrier, Plane.vectorSpan_segment, Plane.finrank_horizontal] at hdim
   have hsub : F.Subsingleton := by
     rw [← vectorSpan_eq_bot_iff_subsingleton ℝ]
     exact Submodule.finrank_eq_zero.mp (by omega)
   obtain ⟨x, hx⟩ := hne
   have hFx : F = {x} := hsub.eq_singleton_of_mem hx
-  obtain ⟨hx2, hx0, hx1⟩ := Plane.mem_segment_iff.mp (hF.subset hx)
+  obtain ⟨hx2, hx0, hx1⟩ := Plane.mem_segment_zero_one_iff.mp (hF.subset hx)
   rcases hx0.eq_or_lt with h0 | h0
   · left
     rw [hFx]
@@ -187,13 +184,13 @@ private theorem isExposed_unitSegment_zero :
   refine ⟨-FinitePolyhedralComplex.axisRow false, ?_⟩
   ext x
   simp only [planePoint_carrier, unitSegment_carrier, mem_singleton_iff, mem_ofPred_eq,
-    Plane.mem_segment_iff, neg_apply, FinitePolyhedralComplex.axisRow_false_apply,
+    Plane.mem_segment_zero_one_iff, neg_apply, FinitePolyhedralComplex.axisRow_false_apply,
     neg_le_neg_iff]
   refine ⟨?_, fun ⟨⟨hx2, hx0, _⟩, hx⟩ => ?_⟩
   · rintro rfl
     exact ⟨⟨rfl, le_rfl, zero_le_one⟩, fun y hy => hy.2.1⟩
-  · have := hx (0, 0) ⟨rfl, le_rfl, zero_le_one⟩
-    ext <;> simp at this ⊢ <;> linarith
+  · have h0 : x.1 ≤ 0 := by simpa using hx (0, 0) ⟨rfl, le_rfl, zero_le_one⟩
+    exact Prod.ext (le_antisymm h0 hx0) hx2
 
 /-- The right endpoint is an exposed set of the unit segment. -/
 private theorem isExposed_unitSegment_one :
@@ -202,21 +199,20 @@ private theorem isExposed_unitSegment_one :
   refine ⟨FinitePolyhedralComplex.axisRow false, ?_⟩
   ext x
   simp only [reverse_carrier, planePoint_carrier, unitSegment_carrier, mem_singleton_iff,
-    mem_ofPred_eq, Plane.mem_segment_iff, FinitePolyhedralComplex.axisRow_false_apply]
+    mem_ofPred_eq, Plane.mem_segment_zero_one_iff, FinitePolyhedralComplex.axisRow_false_apply]
   refine ⟨?_, fun ⟨⟨hx2, _, hx1⟩, hx⟩ => ?_⟩
   · rintro rfl
     exact ⟨⟨rfl, zero_le_one, le_rfl⟩, fun y hy => hy.2.2⟩
-  · have := hx (1, 0) ⟨rfl, zero_le_one, le_rfl⟩
-    ext <;> simp at this ⊢ <;> linarith
+  · have h1 : 1 ≤ x.1 := by simpa using hx (1, 0) ⟨rfl, zero_le_one, le_rfl⟩
+    exact Prod.ext (le_antisymm hx1 h1) hx2
 
 /-- A point has dimension one less than the unit segment. -/
 private theorem finrank_vectorSpan_add_one_of_carrier_eq_singleton
     {τ : OrientedCell h 2} {x : ℝ × ℝ}
     (hτ : τ.carrier = {x}) :
     finrank ℝ (vectorSpan ℝ τ.carrier) + 1 = finrank ℝ (vectorSpan ℝ (unitSegment h).carrier) := by
-  rw [hτ, unitSegment_carrier, Plane.vectorSpan_eq_horizontal
-    (fun _ hp => (Plane.mem_segment_iff.mp hp).1) (left_mem_segment _ _ _)
-    (right_mem_segment _ _ _), vectorSpan_singleton, Plane.finrank_horizontal]
+  rw [hτ, unitSegment_carrier, Plane.vectorSpan_segment, vectorSpan_singleton,
+    Plane.finrank_horizontal]
   simp
 
 open Classical in
@@ -264,6 +260,15 @@ namespace Plane
 noncomputable def smallTriangle (p : ℝ × ℝ) : Fin 3 → ℝ × ℝ :=
   ![p + (-1 / 2, -1 / 2), p + (1 / 2, -1 / 2), p + (0, 1 / 2)]
 
+@[simp]
+theorem smallTriangle_zero (p : ℝ × ℝ) : smallTriangle p 0 = p + (-1 / 2, -1 / 2) := (rfl)
+
+@[simp]
+theorem smallTriangle_one (p : ℝ × ℝ) : smallTriangle p 1 = p + (1 / 2, -1 / 2) := (rfl)
+
+@[simp]
+theorem smallTriangle_two (p : ℝ × ℝ) : smallTriangle p 2 = p + (0, 1 / 2) := (rfl)
+
 /-- A point lies in the triangle around it: it is the barycenter with weights `1/4, 1/4, 1/2`. -/
 theorem mem_convexHull_smallTriangle (p : ℝ × ℝ) :
     p ∈ convexHull ℝ (range (smallTriangle p)) := by
@@ -272,7 +277,7 @@ theorem mem_convexHull_smallTriangle (p : ℝ × ℝ) :
     (fun i _ => by fin_cases i <;> norm_num) (by simp [Fin.sum_univ_three]; norm_num)
     (fun i _ => subset_convexHull ℝ _ (mem_range_self i))
   convert hmem using 1
-  ext <;> simp [Fin.sum_univ_three, smallTriangle] <;> ring
+  ext <;> simp [Fin.sum_univ_three] <;> ring
 
 /-- The triangle around `p` lies within horizontal distance `1/2` of `p`. -/
 theorem fst_mem_Icc_of_mem_convexHull_smallTriangle (p : ℝ × ℝ) {q : ℝ × ℝ}
@@ -282,13 +287,13 @@ theorem fst_mem_Icc_of_mem_convexHull_smallTriangle (p : ℝ × ℝ) {q : ℝ ×
       (LinearMap.fst ℝ ℝ ℝ) ⁻¹' Icc (p.1 - 1 / 2) (p.1 + 1 / 2) := by
     refine convexHull_min ?_ ((convex_Icc _ _).linear_preimage _)
     rintro _ ⟨i, rfl⟩
-    fin_cases i <;> refine ⟨?_, ?_⟩ <;> simp [smallTriangle] <;> linarith
+    fin_cases i <;> refine ⟨?_, ?_⟩ <;> simp <;> linarith
   exact hsub hq
 
 /-- The triangle around `p` is positively oriented: its edge frame has area `1`. -/
 theorem area_smallTriangle_frame (p : ℝ × ℝ) :
     area (fun j : Fin 2 => smallTriangle p j.succ - smallTriangle p 0) = 1 := by
-  simp [area_apply, smallTriangle]
+  simp [area_apply]
   norm_num
 
 /-- The edge frame of the triangle around `p` is linearly independent. -/
@@ -352,26 +357,19 @@ theorem isTransverse_planePoint_smallTriangle_of_notMem {p q : ℝ × ℝ}
   isTransverse_of_disjoint _ (by simpa using hq)
 
 open Classical in
-/-- The triangle around `p₀ = (0, 0)` is transverse to both boundary facets of the unit
-segment. -/
-theorem isTransverse_smallTriangle_zero_of_mem_boundaryFacets {τ : OrientedCell h (1 + 1)}
-    (hτ : τ ∈ (unitSegment h).boundaryFacets) : τ.IsTransverse (Plane.smallTriangle (0, 0)) := by
+/-- The triangle around an endpoint `(0, 0)` or `(1, 0)` of the unit segment is transverse to
+both boundary facets of the segment. -/
+theorem isTransverse_smallTriangle_of_mem_boundaryFacets {p : ℝ × ℝ}
+    (hp : p = (0, 0) ∨ p = (1, 0)) {τ : OrientedCell h (1 + 1)}
+    (hτ : τ ∈ (unitSegment h).boundaryFacets) : τ.IsTransverse (Plane.smallTriangle p) := by
   rw [unitSegment_boundaryFacets, Finset.mem_insert, Finset.mem_singleton] at hτ
-  rcases hτ with rfl | rfl
+  rcases hτ with rfl | rfl <;> rcases hp with rfl | rfl
   · exact isTransverse_planePoint_smallTriangle_self _
+  · refine isTransverse_planePoint_smallTriangle_of_notMem fun hq => ?_
+    linarith [(Plane.fst_mem_Icc_of_mem_convexHull_smallTriangle _ hq).1]
   · rw [isTransverse_reverse_iff]
     refine isTransverse_planePoint_smallTriangle_of_notMem fun hq => ?_
     linarith [(Plane.fst_mem_Icc_of_mem_convexHull_smallTriangle _ hq).2]
-
-open Classical in
-/-- The triangle around `p₁ = (1, 0)` is transverse to both boundary facets of the unit
-segment. -/
-theorem isTransverse_smallTriangle_one_of_mem_boundaryFacets {τ : OrientedCell h (1 + 1)}
-    (hτ : τ ∈ (unitSegment h).boundaryFacets) : τ.IsTransverse (Plane.smallTriangle (1, 0)) := by
-  rw [unitSegment_boundaryFacets, Finset.mem_insert, Finset.mem_singleton] at hτ
-  rcases hτ with rfl | rfl
-  · refine isTransverse_planePoint_smallTriangle_of_notMem fun hq => ?_
-    linarith [(Plane.fst_mem_Icc_of_mem_convexHull_smallTriangle _ hq).1]
   · rw [isTransverse_reverse_iff]
     exact isTransverse_planePoint_smallTriangle_self _
 
@@ -382,34 +380,39 @@ namespace PolyhedralCochain
 open OrientedCell
 
 open Classical in
+/-- The pairing of the signed boundary presentation of the coboundary of the unit segment with a
+test triangle is the difference of the intersection indices of the two endpoint cells. -/
+theorem intersectionPairing_coboundaryPresentation_unitSegment (c : E) (T : Fin 3 → ℝ × ℝ) :
+    intersectionPairing (R := R) T
+      (coboundaryPresentation (R := R) (Finsupp.single (unitSegment h) c)) =
+      ((planePoint h (0, 0)).intersectionIndex T -
+        (planePoint h (1, 0)).intersectionIndex T) • c := by
+  rw [coboundaryPresentation_single, unitSegment_boundaryFacets, map_sum, Finset.sum_pair,
+    intersectionPairing_single, intersectionPairing_single, intersectionIndex_reverse,
+    sub_eq_add_neg, add_smul, neg_smul]
+  intro heq
+  simpa using congrArg OrientedCell.carrier heq
+
 /-- The coboundary of the unit segment with coefficient `c` pairs with the small positively
 oriented triangle around `p₀ = (0, 0)` to give `c`, for the signed boundary presentation. -/
 theorem intersectionPairing_coboundaryPresentation_unitSegment_zero (c : E) :
     intersectionPairing (R := R) (Plane.smallTriangle (0, 0))
       (coboundaryPresentation (R := R) (Finsupp.single (unitSegment h) c)) = c := by
-  rw [coboundaryPresentation_single, unitSegment_boundaryFacets, map_sum, Finset.sum_pair,
-    intersectionPairing_single, intersectionPairing_single, intersectionIndex_reverse,
+  rw [intersectionPairing_coboundaryPresentation_unitSegment,
     planePoint_intersectionIndex_smallTriangle_self,
     planePoint_intersectionIndex_smallTriangle_of_lt (h := h) (q := (1, 0)) (by norm_num)]
-  · simp
-  · intro heq
-    simpa using congrArg OrientedCell.carrier heq
+  simp
 
-open Classical in
 /-- The coboundary of the unit segment with coefficient `c` pairs with the small positively
 oriented triangle around `p₁ = (1, 0)` to give `-c`, for the signed boundary presentation. -/
 theorem intersectionPairing_coboundaryPresentation_unitSegment_one (c : E) :
     intersectionPairing (R := R) (Plane.smallTriangle (1, 0))
       (coboundaryPresentation (R := R) (Finsupp.single (unitSegment h) c)) = -c := by
-  rw [coboundaryPresentation_single, unitSegment_boundaryFacets, map_sum, Finset.sum_pair,
-    intersectionPairing_single, intersectionPairing_single, intersectionIndex_reverse,
+  rw [intersectionPairing_coboundaryPresentation_unitSegment,
     planePoint_intersectionIndex_smallTriangle_self,
     planePoint_intersectionIndex_smallTriangle_of_gt (h := h) (q := (0, 0)) (by norm_num)]
-  · simp
-  · intro heq
-    simpa using congrArg OrientedCell.carrier heq
+  simp
 
-open Classical in
 /-- Every presentation of the coboundary of the unit segment by cells transverse to the triangle
 around `p₀` pairs with it to give `c`. -/
 theorem intersectionPairing_eq_of_ofFinsupp_eq_coboundary_unitSegment_zero (c : E)
@@ -418,14 +421,9 @@ theorem intersectionPairing_eq_of_ofFinsupp_eq_coboundary_unitSegment_zero (c : 
     (hT : ∀ τ ∈ y.support, τ.IsTransverse (Plane.smallTriangle (0, 0))) :
     intersectionPairing (R := R) (Plane.smallTriangle (0, 0)) y = c := by
   rw [← intersectionPairing_coboundaryPresentation_unitSegment_zero (R := R) (h := h) c]
-  refine intersectionPairing_eq_of_ofFinsupp_eq
-    (by rw [hy, ofFinsupp_coboundaryPresentation]) hT fun τ hτ => ?_
-  obtain ⟨σ, hσ, hτσ⟩ := Finset.mem_biUnion.mp
-    (support_coboundaryPresentation_subset (R := R) (Finsupp.single (unitSegment h) c) hτ)
-  rw [Finset.mem_singleton.mp (Finsupp.support_single_subset hσ)] at hτσ
-  exact isTransverse_smallTriangle_zero_of_mem_boundaryFacets hτσ
+  exact intersectionPairing_eq_coboundaryPresentation_of_ofFinsupp_eq c hy
+    (fun _ hτ => isTransverse_smallTriangle_of_mem_boundaryFacets (Or.inl rfl) hτ) hT
 
-open Classical in
 /-- Every presentation of the coboundary of the unit segment by cells transverse to the triangle
 around `p₁` pairs with it to give `-c`. -/
 theorem intersectionPairing_eq_neg_of_ofFinsupp_eq_coboundary_unitSegment_one (c : E)
@@ -434,12 +432,8 @@ theorem intersectionPairing_eq_neg_of_ofFinsupp_eq_coboundary_unitSegment_one (c
     (hT : ∀ τ ∈ y.support, τ.IsTransverse (Plane.smallTriangle (1, 0))) :
     intersectionPairing (R := R) (Plane.smallTriangle (1, 0)) y = -c := by
   rw [← intersectionPairing_coboundaryPresentation_unitSegment_one (R := R) (h := h) c]
-  refine intersectionPairing_eq_of_ofFinsupp_eq
-    (by rw [hy, ofFinsupp_coboundaryPresentation]) hT fun τ hτ => ?_
-  obtain ⟨σ, hσ, hτσ⟩ := Finset.mem_biUnion.mp
-    (support_coboundaryPresentation_subset (R := R) (Finsupp.single (unitSegment h) c) hτ)
-  rw [Finset.mem_singleton.mp (Finsupp.support_single_subset hσ)] at hτσ
-  exact isTransverse_smallTriangle_one_of_mem_boundaryFacets hτσ
+  exact intersectionPairing_eq_coboundaryPresentation_of_ofFinsupp_eq c hy
+    (fun _ hτ => isTransverse_smallTriangle_of_mem_boundaryFacets (Or.inr rfl) hτ) hT
 
 end PolyhedralCochain
 
