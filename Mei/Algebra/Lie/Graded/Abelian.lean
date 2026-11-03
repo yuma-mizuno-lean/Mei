@@ -16,7 +16,7 @@ public import TauCeti.Algebra.DirectSum.Internal
 The abelian Lie algebra `Mei.AbelianLie (S →₀ R)` on the free module with basis `S` is graded by
 any degree function `deg : S → Γ`: the piece of degree `n` is spanned by the basis vectors
 `Finsupp.single s 1` with `deg s = n`. The pieces form an internal decomposition, and the zero
-bracket is trivially homogeneous. A piece is zero exactly when no basis vector has that degree.
+bracket is trivially homogeneous. A piece is zero when no basis vector has that degree.
 
 This is the model of an abelian Lie algebra with independent generators in prescribed degrees,
 for instance one generator in each positive degree.
@@ -41,9 +41,11 @@ def grading (n : Γ) : Submodule R (AbelianLie (S →₀ R)) :=
 
 variable {R deg}
 
+/-- The basis vector `basis R s` lies in the piece of degree `deg s`. -/
 theorem basis_mem_grading (s : S) : basis R s ∈ grading R deg (deg s) :=
   Submodule.mem_iSup_of_mem s (Submodule.mem_iSup_of_mem rfl (Submodule.mem_span_singleton_self _))
 
+/-- The piece of degree `n` is zero when no `s` has `deg s = n`. -/
 theorem grading_eq_bot_of_forall_ne {n : Γ} (h : ∀ s, deg s ≠ n) : grading R deg n = ⊥ := by
   simp [grading, h]
 

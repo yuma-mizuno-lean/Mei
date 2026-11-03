@@ -53,6 +53,7 @@ instance : LieAlgebra R (AbelianLie V) where
   __ := (inferInstance : Module R (AbelianLie V))
   lie_smul r _ _ := (smul_zero r).symm
 
+/-- `AbelianLie V` is definitionally `V`, so the central scalar action is inherited. -/
 instance [Module Rᵐᵒᵖ V] [IsCentralScalar R V] : IsCentralScalar R (AbelianLie V) where
   op_smul_eq_smul r v := IsCentralScalar.op_smul_eq_smul r (show V from v)
 
