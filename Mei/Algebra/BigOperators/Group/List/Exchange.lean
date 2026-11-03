@@ -21,7 +21,9 @@ pair of degree at most `k` can be exchanged at the cost of inserting factors of 
 larger degree:
 `e x * e y = e y * (M.map e).prod * e x` with `deg x, deg y < deg m` for `m ∈ M`.
 Then `List.exists_isChain_prod_map_eq_of_exchange` rewrites every finite product to one
-with no bad adjacent pair, using only factors of degree at most `k`.
+with no bad adjacent pair, using only factors of degree at most `k`. If the inserted factors
+all avoid a predicate `keep`, the factors satisfying `keep` are only permuted: the new
+product has the same multiset of `keep` factors as the old one.
 
 Repeated exchanges terminate. Call a bad pair `(a, b)` of a list, with `a` before `b`,
 an inversion, and weight it by `k + 1 - max (deg a) (deg b)`. An exchange removes the
@@ -146,22 +148,27 @@ end Inversions
 /-- **Exchange ordering.** Suppose that factors of degree above `k` evaluate to `1`, that
 `bad` is asymmetric, and that each bad adjacent pair `x y` of degree at most `k` can be
 exchanged as `e x * e y = e y * (M.map e).prod * e x`, inserting only factors of degree
-larger than both `deg x` and `deg y`. Then every finite product equals a product of
-factors of degree at most `k` with no bad adjacent pair. -/
+larger than both `deg x` and `deg y`, none of which satisfies `keep`. Then every finite
+product equals a product of factors of degree at most `k` with no bad adjacent pair, whose
+factors satisfying `keep` are a permutation of those of the original list of degree at most
+`k`. -/
 theorem exists_isChain_prod_map_eq_of_exchange (l : List F) (e : F → G) (deg : F → ℕ)
-    (bad : F → F → Prop) (k : ℕ) (hbad : ∀ x y, bad x y → ¬ bad y x)
+    (bad : F → F → Prop) (keep : F → Prop) [DecidablePred keep] (k : ℕ)
+    (hbad : ∀ x y, bad x y → ¬ bad y x)
     (hhigh : ∀ x, k < deg x → e x = 1)
     (hex : ∀ x y, bad x y → deg x ≤ k → deg y ≤ k → ∃ M : List F,
-      (∀ m ∈ M, deg x < deg m ∧ deg y < deg m) ∧ e x * e y = e y * (M.map e).prod * e x) :
+      (∀ m ∈ M, deg x < deg m ∧ deg y < deg m ∧ ¬ keep m) ∧
+        e x * e y = e y * (M.map e).prod * e x) :
     ∃ l' : List F, l'.IsChain (fun x y => ¬ bad x y) ∧ (∀ x ∈ l', deg x ≤ k) ∧
-      (l'.map e).prod = (l.map e).prod := by
+      (l'.map e).prod = (l.map e).prod ∧
+      (l'.filter keep).Perm ((l.filter fun x => deg x ≤ k).filter keep) := by
   classical
   suffices H : ∀ l : List F, (∀ x ∈ l, deg x ≤ k) → ∃ l' : List F,
       l'.IsChain (fun x y => ¬ bad x y) ∧ (∀ x ∈ l', deg x ≤ k) ∧
-        (l'.map e).prod = (l.map e).prod by
-    obtain ⟨l', h₁, h₂, h₃⟩ := H (l.filter fun x => deg x ≤ k) (by simp)
+        (l'.map e).prod = (l.map e).prod ∧ (l'.filter keep).Perm (l.filter keep) by
+    obtain ⟨l', h₁, h₂, h₃, h₄⟩ := H (l.filter fun x => deg x ≤ k) (by simp)
     exact ⟨l', h₁, h₂, h₃.trans (prod_map_filter_of_ne l fun x _ hx => by
-      by_contra hk; exact hx (hhigh x (by simpa using hk)))⟩
+      by_contra hk; exact hx (hhigh x (by simpa using hk))), h₄⟩
   -- The weight of an inversion; it is positive and decreases as the degrees grow.
   let ω : F × F → ℕ := fun p => k + 1 - max (deg p.1) (deg p.2)
   intro l
@@ -170,7 +177,7 @@ theorem exists_isChain_prod_map_eq_of_exchange (l : List F) (e : F → G) (deg :
   | _ l IH =>
   intro hL
   by_cases hc : l.IsChain fun x y => ¬ bad x y
-  · exact ⟨l, hc, hL, rfl⟩
+  · exact ⟨l, hc, hL, rfl, Perm.refl _⟩
   obtain ⟨x, y, A, B, rfl, hxy⟩ : ∃ x y A B, l = A ++ x :: y :: B ∧ bad x y := by
     rw [isChain_iff_forall_rel_of_append_cons_cons] at hc
     push Not at hc
@@ -182,7 +189,7 @@ theorem exists_isChain_prod_map_eq_of_exchange (l : List F) (e : F → G) (deg :
   set M' := M.filter fun m => deg m ≤ k
   have hM'deg : ∀ m ∈ M', deg x < deg m ∧ deg y < deg m ∧ deg m ≤ k := fun m hm => by
     rw [mem_filter, decide_eq_true_eq] at hm
-    exact ⟨(hMdeg m hm.1).1, (hMdeg m hm.1).2, hm.2⟩
+    exact ⟨(hMdeg m hm.1).1, (hMdeg m hm.1).2.1, hm.2⟩
   have hL' : ∀ z ∈ A ++ y :: (M' ++ x :: B), deg z ≤ k := by
     intro z hz
     simp only [mem_append, mem_cons] at hz
@@ -203,14 +210,24 @@ theorem exists_isChain_prod_map_eq_of_exchange (l : List F) (e : F → G) (deg :
     · have := hM'deg _ hm
       simp only [ω]
       omega
-  obtain ⟨l', hc', hdeg', hprod'⟩ := IH (A ++ y :: (M' ++ x :: B))
+  -- The inserted factors do not satisfy `keep`, so the exchange only permutes the others.
+  have hkeep : ((A ++ y :: (M' ++ x :: B)).filter keep).Perm ((A ++ x :: y :: B).filter keep) := by
+    have hM'keep : M'.filter keep = [] :=
+      filter_eq_nil_iff.mpr fun m hm => by simpa using (hMdeg m (mem_filter.mp hm).1).2.2
+    have hperm : (A ++ y :: (M' ++ x :: B)).Perm (M' ++ (A ++ x :: y :: B)) := by
+      rw [perm_iff_count]
+      intro a
+      simp only [count_append, count_cons]
+      omega
+    simpa [filter_append, hM'keep] using hperm.filter keep
+  obtain ⟨l', hc', hdeg', hprod', hperm'⟩ := IH (A ++ y :: (M' ++ x :: B))
     ⟨X.map ω, Z.map ω, {ω (x, y)}, by simp, by simp only [hinv', Multiset.map_add],
       by simp only [hinv, Multiset.map_add, Multiset.map_singleton],
       fun q hq => by
         obtain ⟨p, hp, rfl⟩ := Multiset.mem_map.mp hq
         exact ⟨ω (x, y), Multiset.mem_singleton_self _, hZω p hp⟩⟩
     hL'
-  refine ⟨l', hc', hdeg', hprod'.trans ?_⟩
+  refine ⟨l', hc', hdeg', hprod'.trans ?_, hperm'.trans hkeep⟩
   have hM'prod : (M'.map e).prod = (M.map e).prod := prod_map_filter_of_ne M fun m _ hm => by
     by_contra hk; exact hm (hhigh m (by simpa using hk))
   simp only [map_append, map_cons, prod_append, prod_cons, hM'prod]

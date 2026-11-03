@@ -398,15 +398,27 @@ local notation "𝓛ℚ" => SkewLieAlgebra.positiveGrading βℚ hβℚ d
 local notation "Fℚ" => TropicalVertexCoefficientAction.filtration
   (R := ℚ) (D.principalPositiveDegrees d) Qpr
 
+/-- A completed label is *integral* if its principal action preserves the completed
+coefficients with integer monomial coefficients. -/
+def IsIntegralLabel (g : d.completedBCHGroup 𝓛ℚ) : Prop :=
+  ∀ x : (Fℚ).completion,
+    (Fℚ).IsPositive (mapRingHom Qpr (Int.castRingHom ℚ)).rangeS x →
+      (Fℚ).IsPositive (mapRingHom Qpr (Int.castRingHom ℚ)).rangeS
+        ((Fℚ).completedBCHAction (R := ℚ) e (tropicalVertexGrading (R := ℚ) e ρ)
+          ((D.principalGradedLieHom (R := ℚ) d).completedMap g) x)
+
+omit [Module.Free ℤ N] in
+/-- Integral labels are closed under products. -/
+theorem IsIntegralLabel.mul {g h : d.completedBCHGroup 𝓛ℚ} (hg : D.IsIntegralLabel d g)
+    (hh : D.IsIntegralLabel d h) : D.IsIntegralLabel d (g * h) := fun x hx => by
+  simpa only [map_mul, AlgEquiv.mul_apply] using hg _ (hh x hx)
+
 include hn hn0 in
-/-- A dilogarithm power `Ψ[n]^c` with `c ∈ κ(n) ℤ` preserves integral principal coefficients. -/
-private theorem isPositive_completedBCHAction_rayExp_of_eq {c : ℚ} {s : ℤ}
-    (hs : c = s * D.sublattice.toAddSubgroup.rayIndex n) {x : (Fℚ).completion}
-    (hx : (Fℚ).IsPositive (mapRingHom Qpr (Int.castRingHom ℚ)).rangeS x) :
-    (Fℚ).IsPositive (mapRingHom Qpr (Int.castRingHom ℚ)).rangeS
-      ((Fℚ).completedBCHAction (R := ℚ) e (tropicalVertexGrading (R := ℚ) e ρ)
-        ((D.principalGradedLieHom (R := ℚ) d).completedMap
-          (SkewLieAlgebra.rayExp βℚ hβℚ hn hn0 (c • negDilogNeg ℚ))) x) := by
+/-- A dilogarithm power `Ψ[n]^c` with `c ∈ κ(n) ℤ` is integral. -/
+theorem isIntegralLabel_rayExp {c : ℚ} {s : ℤ}
+    (hs : c = s * D.sublattice.toAddSubgroup.rayIndex n) :
+    D.IsIntegralLabel d (SkewLieAlgebra.rayExp βℚ hβℚ hn hn0 (c • negDilogNeg ℚ)) :=
+  fun x hx => by
   subst hs
   simpa only [Algebra.algebraMap_self, RingHom.id_apply] using
     D.isPositive_completedBCHAction_rayExp_zsmul (R := ℚ) d hn hn0 Qpr (Int.castRingHom ℚ) s hx
@@ -441,11 +453,7 @@ removing them leaves a label whose lowest coefficient in degree `mᵢ` is `cᵢ 
 theorem exists_eq_intCast_mul_rayIndex_of_projection_eq_prod [Module.Free ℤ D.sublattice]
     {r : ℕ} (m : Fin r → D.unfrozen) (hm : ∀ i, m i ∈ d.monoid) (hm0 : ∀ i, m i ≠ 0)
     (hinj : Function.Injective m) (c : Fin r → ℚ) {g : d.completedBCHGroup 𝓛ℚ}
-    (hg : ∀ x : (Fℚ).completion,
-      (Fℚ).IsPositive (mapRingHom Qpr (Int.castRingHom ℚ)).rangeS x →
-        (Fℚ).IsPositive (mapRingHom Qpr (Int.castRingHom ℚ)).rangeS
-          ((Fℚ).completedBCHAction (R := ℚ) e (tropicalVertexGrading (R := ℚ) e ρ)
-            ((D.principalGradedLieHom (R := ℚ) d).completedMap g) x))
+    (hg : D.IsIntegralLabel d g)
     {k : ℕ}
     (hk : CompletedGroup.projection k g = CompletedGroup.projection k
       (List.ofFn fun i => SkewLieAlgebra.rayExp βℚ hβℚ (hm i) (hm0 i) (c i • negDilogNeg ℚ)).prod)
@@ -491,8 +499,8 @@ theorem exists_eq_intCast_mul_rayIndex_of_projection_eq_prod [Module.Free ℤ D.
     have := d.degree_pos (hm j) (hm0 j)
     obtain ⟨s, hs⟩ := IH _ (by omega) j rfl (by omega)
     rw [hΨ, ← SkewLieAlgebra.rayExp_neg, ← neg_smul, hP]
-    exact fun z hz => D.isPositive_completedBCHAction_rayExp_of_eq d (hm j) (hm0 j)
-      (s := -s) (by rw [hs, Int.cast_neg, neg_mul]) hz
+    exact fun z hz => D.isIntegralLabel_rayExp d (hm j) (hm0 j)
+      (s := -s) (by rw [hs, Int.cast_neg, neg_mul]) z hz
   have hPh : P (w⁻¹ * g) := by
     have h₂ := hPprod [w⁻¹, g] fun y hy => by
       simp only [List.mem_cons, List.not_mem_nil, or_false] at hy
@@ -525,8 +533,7 @@ private theorem isPositive_completedBCHAction_ofFn_prod_rayExp {r : ℕ} (m : Fi
           ((Fℚ).completedBCHAction (R := ℚ) e (tropicalVertexGrading (R := ℚ) e ρ)
             ((D.principalGradedLieHom (R := ℚ) d).completedMap
               (SkewLieAlgebra.rayExp βℚ hβℚ (hm j) (hm0 j) (c j • negDilogNeg ℚ))) z) :=
-    fun j z hz => (h j).elim fun s hs =>
-      D.isPositive_completedBCHAction_rayExp_of_eq d (hm j) (hm0 j) hs hz
+    fun j z hz => (h j).elim fun s hs => D.isIntegralLabel_rayExp d (hm j) (hm0 j) hs z hz
   refine D.isPositive_completedBCHAction_list_prod d _ (fun y hy => ?_) hx
   rw [List.ofFn_eq_map, List.mem_map] at hy
   obtain ⟨j, -, rfl⟩ := hy
@@ -540,12 +547,8 @@ integer monomial coefficients if and only if every exponent `cᵢ` is an integer
 theorem forall_isPositive_completedBCHAction_prod_rayExp_iff [Module.Free ℤ D.sublattice]
     {r : ℕ} (m : Fin r → D.unfrozen) (hm : ∀ i, m i ∈ d.monoid) (hm0 : ∀ i, m i ≠ 0)
     (hinj : Function.Injective m) (c : Fin r → ℚ) :
-    (∀ x : (Fℚ).completion,
-      (Fℚ).IsPositive (mapRingHom Qpr (Int.castRingHom ℚ)).rangeS x →
-        (Fℚ).IsPositive (mapRingHom Qpr (Int.castRingHom ℚ)).rangeS
-          ((Fℚ).completedBCHAction (R := ℚ) e (tropicalVertexGrading (R := ℚ) e ρ)
-            ((D.principalGradedLieHom (R := ℚ) d).completedMap (List.ofFn fun i =>
-              SkewLieAlgebra.rayExp βℚ hβℚ (hm i) (hm0 i) (c i • negDilogNeg ℚ)).prod) x)) ↔
+    D.IsIntegralLabel d (List.ofFn fun i =>
+        SkewLieAlgebra.rayExp βℚ hβℚ (hm i) (hm0 i) (c i • negDilogNeg ℚ)).prod ↔
       ∀ i, ∃ s : ℤ, c i = s * D.sublattice.toAddSubgroup.rayIndex (m i) := by
   constructor
   · intro h i
@@ -566,11 +569,7 @@ theorem exists_nodup_prod_eq_and_intCast_mul_rayIndex_of_isChain [Module.Free �
     (hdeg0 : ∀ i, deg i ≠ 0) (c : ι → ℚ) {x y : D.unfrozen}
     (hxy : ∀ i ∈ l, deg i ∈ AddSubmonoid.closure {x, y})
     (hl : l.IsChain fun i j => 0 ≤ βℚ (deg i) (deg j)) {g : d.completedBCHGroup 𝓛ℚ}
-    (hg : ∀ x : (Fℚ).completion,
-      (Fℚ).IsPositive (mapRingHom Qpr (Int.castRingHom ℚ)).rangeS x →
-        (Fℚ).IsPositive (mapRingHom Qpr (Int.castRingHom ℚ)).rangeS
-          ((Fℚ).completedBCHAction (R := ℚ) e (tropicalVertexGrading (R := ℚ) e ρ)
-            ((D.principalGradedLieHom (R := ℚ) d).completedMap g) x))
+    (hg : D.IsIntegralLabel d g)
     {k : ℕ}
     (hk : CompletedGroup.projection k g = CompletedGroup.projection k
       (l.map fun i => SkewLieAlgebra.rayExp βℚ hβℚ (hdeg i) (hdeg0 i) (c i • negDilogNeg ℚ)).prod) :
