@@ -77,6 +77,18 @@ theorem projection_orderedProd_rayExp_smul_negDilogNeg (hinj : Function.Injectiv
     exact projection_rayExp_eq_one_of_lt β hβ (hm i) (hm0 i)
       (c i • PowerSeries.negDilogNeg R) hk
 
+/-- The exponents of an assembled family agree, in every degree retained by a cutoff, with the
+exponents of any finite factorization of the same label through that cutoff. -/
+theorem eq_of_orderedProd_rayExp_smul_negDilogNeg_eq (hinj : Function.Injective m)
+    (c : ι → R) (a : ι →₀ R) {g : d.completedBCHGroup ℒ}
+    (hc : CompletedGroup.orderedProd (fun i => factor c i)
+      (hasFiniteSupport_rayExp_smul_negDilogNeg β hβ m hm hm0 hinj c) = g) {k : ℕ}
+    (ha : CompletedGroup.projection k
+      (orderedDilogProduct β hβ m hm hm0 a.support a) = CompletedGroup.projection k g)
+    (i : ι) (hi : d.degree (m i) ≤ k) : c i = a i :=
+  eq_of_projection_orderedDilogProduct_cutoff β hβ m hm hm0 hinj c a
+    (by rw [← projection_orderedProd_rayExp_smul_negDilogNeg β hβ m hm hm0 hinj c, hc, ha]) i hi
+
 /-- Independently chosen finite factorizations of one completed label assemble
 to a unique exponent family in the fixed index order. No compatibility of the
 inventories or of the choices is assumed. The product of the assembled family
