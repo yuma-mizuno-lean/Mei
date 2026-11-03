@@ -234,9 +234,9 @@ theorem middle_liftLeftTotal (f : Hom C D σ τ) (i : I) (a : 𝒰 i) :
 /-- A morphism sends an inadmissible homogeneous input to zero under both
 extended lifts when its image degree is inadmissible too. -/
 theorem middle_liftLeftTotal_of_not_mem (f : Hom C D σ τ)
-    {i : ι} (hi : i ∉ I) (hσ : σ i ∉ I') {a : U} (ha : a ∈ 𝒰 i) :
+    {i : ι} (hσ : σ i ∉ I') {a : U} (ha : a ∈ 𝒰 i) :
     f.middle (C.liftLeftTotal a) = D.liftLeftTotal (f.left a) := by
-  rw [C.liftLeftTotal_of_not_mem hi ha, map_zero,
+  rw [C.liftLeftTotal_of_not_mem (fun h => hσ (f.admissible_left h)) ha, map_zero,
     D.liftLeftTotal_of_not_mem hσ (f.left_mem i a ha)]
 
 /-- A morphism intertwines the zero-extended lifts on every input whose nonzero
@@ -252,8 +252,7 @@ theorem middle_liftLeftTotal_of_support (f : Hom C D σ τ)
   refine Finset.sum_congr rfl fun i hi => ?_
   obtain hiI | hσ := ha i (DFinsupp.mem_support_iff.mp hi)
   · exact f.middle_liftLeftTotal ⟨i, hiI⟩ (DirectSum.decompose 𝒰 a i)
-  · exact f.middle_liftLeftTotal_of_not_mem
-      (fun h => hσ (f.admissible_left h)) hσ (DirectSum.decompose 𝒰 a i).property
+  · exact f.middle_liftLeftTotal_of_not_mem hσ (DirectSum.decompose 𝒰 a i).property
 
 /-- A morphism that also maps inadmissible degrees to inadmissible degrees
 intertwines the zero-extended lifts on every input. Without that extra
