@@ -297,4 +297,64 @@ theorem transport_toGroupoidWallDiagram (p : AdmissiblePLPath x y) :
 
 end FiniteWallDiagram
 
+namespace GroupoidWallDiagram
+
+variable {C : FinitePolyhedralComplex h} {x y : WallComplement (fun P : C.walls => (P : Set V))}
+
+/-- A group-labelled diagram from a diagram in the one-object groupoid of a group. -/
+def toFiniteWallDiagram {H : Type*} [Group H]
+    (D : GroupoidWallDiagram C (SingleObj H)) : FiniteWallDiagram C H where
+  normal := D.normal
+  ker_normal := D.ker_normal
+  label P := (D.label P : H)
+
+/-- The coorientations of the group-labelled diagram are those of the original. -/
+@[simp]
+theorem toFiniteWallDiagram_normal {H : Type*} [Group H]
+    (D : GroupoidWallDiagram C (SingleObj H)) : D.toFiniteWallDiagram.normal = D.normal := by
+  unfold toFiniteWallDiagram
+  rfl
+
+/-- The labels of the group-labelled diagram are the arrows of the original. -/
+@[simp]
+theorem toFiniteWallDiagram_label {H : Type*} [Group H]
+    (D : GroupoidWallDiagram C (SingleObj H)) (P : C.walls) :
+    D.toFiniteWallDiagram.label P = (D.label P : H) := by
+  unfold toFiniteWallDiagram
+  rfl
+
+/-- Passing to the group-labelled diagram and back is the identity. -/
+@[simp]
+theorem toFiniteWallDiagram_toGroupoidWallDiagram {H : Type*} [Group H]
+    (D : GroupoidWallDiagram C (SingleObj H)) :
+    D.toFiniteWallDiagram.toGroupoidWallDiagram = D := (rfl)
+
+/-- In the one-object groupoid of a group, transport along an admissible path is the path
+product of the corresponding group-labelled diagram. -/
+@[simp]
+theorem pathProduct_toFiniteWallDiagram {H : Type*} [Group H]
+    (D : GroupoidWallDiagram C (SingleObj H)) (p : AdmissiblePLPath x y) :
+    D.toFiniteWallDiagram.pathProduct p = (D.transport p : H) := by
+  rw [← D.toFiniteWallDiagram.transport_toGroupoidWallDiagram p]
+  rfl
+
+/-- Relabelling along a functor to a group: the path products of the resulting group-labelled
+diagram are the images of the transports. -/
+theorem pathProduct_map_toFiniteWallDiagram {G : Type*} [Groupoid G] {H : Type*} [Group H]
+    (D : GroupoidWallDiagram C G) (Φ : G ⥤ SingleObj H) (p : AdmissiblePLPath x y) :
+    (D.map Φ).toFiniteWallDiagram.pathProduct p = (Φ.map (D.transport p) : H) := by
+  rw [pathProduct_toFiniteWallDiagram, transport_map]
+
+end GroupoidWallDiagram
+
+namespace FiniteWallDiagram
+
+/-- Passing to the diagram in the one-object groupoid and back is the identity. -/
+@[simp]
+theorem toGroupoidWallDiagram_toFiniteWallDiagram {H : Type*} [Group H]
+    {C : FinitePolyhedralComplex h} (D : FiniteWallDiagram C H) :
+    D.toGroupoidWallDiagram.toFiniteWallDiagram = D := (rfl)
+
+end FiniteWallDiagram
+
 end Mei

@@ -6,7 +6,6 @@ Authors: Claude
 module
 
 public import Mei.CategoryTheory.Groupoid.SingleObj
-public import Mei.Geometry.Convex.PolyhedralComplex.Filling.Homotopy
 public import Mei.Geometry.ScatteringDiagram.Groupoid
 
 /-!
@@ -49,44 +48,28 @@ def JointMeridiansTrivial (U : Set V) : Prop :=
     ((e.toPath.cons f).cons r).crossingWord D.normal ∈ C.jointMeridianWords D.normal U →
       D.transport ((e.toPath.cons f).cons r) = 𝟙 _
 
-/-- A group-labelled diagram from a diagram in the one-object groupoid of a group. -/
-def toFiniteWallDiagram {H : Type*} [Group H] (D : GroupoidWallDiagram C (SingleObj H)) :
-    FiniteWallDiagram C H where
-  normal := D.normal
-  ker_normal := D.ker_normal
-  label P := (D.label P : H)
-
-/-- Passing to the group-labelled diagram and back is the identity. -/
-theorem toFiniteWallDiagram_toGroupoidWallDiagram {H : Type*} [Group H]
-    (D : GroupoidWallDiagram C (SingleObj H)) :
-    D.toFiniteWallDiagram.toGroupoidWallDiagram = D := (rfl)
-
-/-- In the one-object groupoid of a group, transport along an admissible path is the path
-product of the corresponding group-labelled diagram. -/
-theorem pathProduct_toFiniteWallDiagram {H : Type*} [Group H]
-    (D : GroupoidWallDiagram C (SingleObj H)) (p : AdmissiblePLPath x y) :
-    D.toFiniteWallDiagram.pathProduct p = (D.transport p : H) := by
-  rw [← D.toFiniteWallDiagram.transport_toGroupoidWallDiagram p]
-  rfl
-
-/-- Relabelling along a functor to a group: the path products of the resulting group-labelled
-diagram are the images of the transports. -/
-private theorem pathProduct_map_toFiniteWallDiagram {H : Type*} [Group H] (Φ : G ⥤ SingleObj H)
-    (p : AdmissiblePLPath x y) :
-    (D.map Φ).toFiniteWallDiagram.pathProduct p = (Φ.map (D.transport p) : H) := by
-  rw [pathProduct_toFiniteWallDiagram, transport_map]
+/-- The defining condition of `JointMeridiansTrivial`. -/
+theorem jointMeridiansTrivial_def (U : Set V) :
+    D.JointMeridiansTrivial U ↔
+      ∀ (x y z : WallComplement (fun P : C.walls => (P : Set V)))
+        (e : x ⟶ y) (f : y ⟶ z) (r : z ⟶ x),
+        ((e.toPath.cons f).cons r).crossingWord D.normal ∈ C.jointMeridianWords D.normal U →
+          D.transport ((e.toPath.cons f).cons r) = 𝟙 _ := Iff.rfl
 
 /-- If the transport of a diagram around the joint meridians in `U` is trivial, the labels of
 its image under a functor to a group kill the words of those meridians. -/
 private theorem lift_label_eq_one_of_jointMeridiansTrivial {H : Type*} [Group H] {U : Set V}
     (hD : D.JointMeridiansTrivial U) (Φ : G ⥤ SingleObj H)
-    {g : FreeGroup C.walls} (hg : g ∈ C.jointMeridianWords (D.map Φ).normal U) :
+    {g : FreeGroup C.walls}
+    (hg : g ∈ C.jointMeridianWords (D.map Φ).toFiniteWallDiagram.normal U) :
     FreeGroup.lift (D.map Φ).toFiniteWallDiagram.label g = 1 := by
+  rw [GroupoidWallDiagram.toFiniteWallDiagram_normal] at hg
   obtain ⟨x, y, z, e, f, r, -, -, -, rfl⟩ :=
     (C.mem_triangleWords _ U g).mp (C.jointMeridianWords_subset_triangleWords _ U hg)
   have h := pathProduct_map_toFiniteWallDiagram D Φ ((e.toPath.cons f).cons r)
   rw [hD x y z e f r hg, CategoryTheory.Functor.map_id] at h
-  exact (FiniteWallDiagram.pathProduct_def _ _).symm.trans (h.trans (SingleObj.id_as_one _ _))
+  rw [FiniteWallDiagram.pathProduct_def, GroupoidWallDiagram.toFiniteWallDiagram_normal] at h
+  exact h.trans (SingleObj.id_as_one _ _)
 
 /-- **Homotopy invariance of transport.** For a complex covering the ambient space, if the
 transport around the isolating triangular meridians of the joints in an open region `U` is
@@ -121,14 +104,5 @@ theorem forall_transport_eq_id_iff_jointMeridiansTrivial (hC : C.support = univ)
     exact (SingleObj.id_as_one _ _).symm
 
 end GroupoidWallDiagram
-
-namespace FiniteWallDiagram
-
-/-- Passing to the diagram in the one-object groupoid and back is the identity. -/
-theorem toGroupoidWallDiagram_toFiniteWallDiagram {H : Type*} [Group H]
-    {C : FinitePolyhedralComplex h} (D : FiniteWallDiagram C H) :
-    D.toGroupoidWallDiagram.toFiniteWallDiagram = D := (rfl)
-
-end FiniteWallDiagram
 
 end Mei

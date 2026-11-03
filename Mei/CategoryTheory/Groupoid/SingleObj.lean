@@ -6,8 +6,6 @@ Authors: Claude
 module
 
 public import Mathlib.Algebra.Group.Pi.Basic
-public import Mathlib.CategoryTheory.Endomorphism
-public import Mathlib.CategoryTheory.Groupoid
 public import Mathlib.CategoryTheory.SingleObj
 
 /-!
