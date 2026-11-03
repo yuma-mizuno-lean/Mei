@@ -128,19 +128,8 @@ theorem levelPathProduct_eq_zpow_of_support_eq
     have hside : ∀ z, 0 < F j₀ z ↔ c < h.realCharacter W.normal z := fun z => by
       simp [F, sub_pos]
     simp only [zpowersHom_apply, toAdd_ofAdd, zpow_one, hside] at hmap
-    -- Only `ν` and the labels enter `wallPathProduct`; the commutation proof is irrelevant.
-    have hcongr : ∀ (ν₁ ν₂ : D.active k → V →ₗ[ℝ] ℝ) (l₁ l₂ : D.active k → d.truncatedGroup ℒ k)
-        (hc₁ : ∀ a b : D.active k,
-          affineSpan ℝ (D.wall a).support = affineSpan ℝ (D.wall b).support →
-            Commute (l₁ a) (l₁ b))
-        (hc₂ : ∀ a b : D.active k,
-          affineSpan ℝ (D.wall a).support = affineSpan ℝ (D.wall b).support →
-            Commute (l₂ a) (l₂ b)), ν₁ = ν₂ → l₁ = l₂ →
-        p.wallPathProduct ν₁ l₁ hc₁ = p.wallPathProduct ν₂ l₂ hc₂ := by
-      rintro _ _ _ _ _ _ rfl rfl
-      rfl
     rw [D.levelPathProduct_eq_wallPathProduct k p (D.activeLabels_commute k)]
-    exact (hcongr _ _ _ _ _ _ hν.symm hl.symm).trans hmap.symm
+    exact (p.wallPathProduct_congr hν.symm hl.symm).trans hmap.symm
 
 include hD in
 /-- A diagram whose single indexed wall is a full affine hyperplane `{ℓ = c}` is consistent,
@@ -190,8 +179,9 @@ theorem not_equivalent_of_isEmpty_of_support_eq {κ : Type*} [IsEmpty κ]
   rw [htrans, map_one, D.levelPathProduct_eq_zpow_of_support_eq hD c hW k p] at hproj
   have hxc : c < c + 1 := by linarith
   have hyc : ¬ c < c - 1 := by linarith
-  simp [xD, yD, hu, hxc, hyc] at hproj
-  exact hk hproj.symm
+  have hexp : CompletedGroup.projection k W.label ^ (1 : ℤ) = 1 := by
+    simpa [xD, yD, hu, hxc, hyc] using hproj.symm
+  exact hk (by simpa using hexp)
 
 end Hyperplane
 
