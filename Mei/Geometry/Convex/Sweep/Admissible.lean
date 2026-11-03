@@ -91,6 +91,20 @@ theorem mem_admissibleBackwardDomain_iff :
 
 end Characterization
 
+/-- With no selected hyperplanes, walls or singular sets, every endpoint is admissible when the
+incoming source is the whole space. -/
+theorem mem_admissibleBackwardDomain_of_isEmpty [IsEmpty J] [IsEmpty K]
+    (f : Fin 0 → V →L[ℝ] ℝ) (c : Fin 0 → ℝ) {v : Fin 1 → V} (P : Fin 0 → Set V)
+    (W : J → Set V) (S : K → Set V) (Q : V) :
+    Q ∈ admissibleBackwardDomain f c v P W S univ := by
+  have hpos : ∀ j : Fin 0, 0 < backwardTime f c (fun j => v j.castSucc) j Q := fun j => j.elim0
+  refine (mem_admissibleBackwardDomain_iff f c v P W S univ Q hpos).mpr
+    ⟨fun j => j.elim0, ?_, ?_, ?_, ?_⟩
+  · exact fun a => isEmptyElim a
+  · simp
+  · exact fun a => isEmptyElim a
+  · exact fun a => isEmptyElim a
+
 variable (Q : V)
 
 /-- An actual transverse ray with all wall encounters recorded. Directions are
