@@ -23,11 +23,16 @@ chamber to chamber, for instance in a fiber of a functor to groupoids.
 Transport is defined on the crossing letters of the path, which form a chain of
 incident chambers (`Quiver.Path.isCrossingChain_crossingLetters`). It is functorial
 for concatenation, inverted by reversal, unchanged by path subdivision, and natural
-for functors between groupoids. For a group `H`, viewed as the one-object groupoid
-`SingleObj H`, every chamber carries the unique object and transport is the path
-product of the corresponding group-labelled diagram
-(`Mei.FiniteWallDiagram.transport_toGroupoidWallDiagram`). This follows the crossing-word
-evaluation of `Mei.FiniteWallDiagram.pathProduct`, with Bridgeland's sign and order
+for functors between groupoids. A diagram is consistent when transport depends only on the
+endpoints of a path; this holds exactly when the transport around every admissible loop, or
+around every admissible triangle, is trivial (`Mei.GroupoidWallDiagram.consistent_iff_triangles`).
+Consistency is preserved by functors and reflected by faithful ones.
+
+For a group `H`, viewed as the one-object groupoid `SingleObj H`, every chamber carries the
+unique object and transport is the path product of the corresponding group-labelled diagram
+(`Mei.FiniteWallDiagram.transport_toGroupoidWallDiagram`); the two diagrams are consistent
+simultaneously. This follows the crossing-word evaluation of
+`Mei.FiniteWallDiagram.pathProduct`, with Bridgeland's sign and order
 convention for path-ordered products (Bridgeland, *Scattering diagrams, Hall algebras
 and stability conditions*, §2, arXiv:1603.00416v4).
 -/
@@ -248,6 +253,90 @@ theorem transport_map (F : G ⥤ G') (p : AdmissiblePLPath x y) :
     (D.map F).transport p = F.map (D.transport p) :=
   D.chainHom_map F _
 
+/-- A groupoid-labelled diagram is consistent when its transport depends only on the
+endpoints of an admissible path. -/
+def Consistent : Prop :=
+  ∀ ⦃x y : WallComplement (fun P : C.walls => (P : Set V))⦄
+    (p q : AdmissiblePLPath x y), D.transport p = D.transport q
+
+/-- The endpoint-independence characterization of consistency. -/
+theorem consistent_def : D.Consistent ↔
+    ∀ ⦃x y : WallComplement (fun P : C.walls => (P : Set V))⦄
+      (p q : AdmissiblePLPath x y), D.transport p = D.transport q := Iff.rfl
+
+/-- Consistency is equivalent to the triviality of the transport around every admissible
+loop. -/
+theorem consistent_iff_loops : D.Consistent ↔
+    ∀ (x : WallComplement (fun P : C.walls => (P : Set V))) (p : AdmissiblePLPath x x),
+      D.transport p = 𝟙 _ := by
+  constructor
+  · intro hc x p
+    simpa using hc p .nil
+  · intro hc x y p q
+    have he := hc x (p.comp q.reverse)
+    rw [transport_comp, transport_reverse, IsIso.comp_inv_eq, Category.id_comp] at he
+    exact he
+
+variable {z : WallComplement (fun P : C.walls => (P : Set V))}
+
+/-- If every admissible triangle has trivial transport, the transport along an admissible
+path is the inverse of the transport along the spoke to its start, followed by the transport
+along the spoke to its end, where `z` is joined to every vertex of the path by a spoke. -/
+private theorem transport_eq_inv_comp_of_triangles
+    (htri : ∀ (x y z : WallComplement (fun P : C.walls => (P : Set V)))
+      (e : x ⟶ y) (f : y ⟶ z) (r : z ⟶ x),
+      D.transport ((e.toPath.cons f).cons r) = 𝟙 _)
+    (p : AdmissiblePLPath x y) (s : ∀ u ∈ p.vertices, z ⟶ u) :
+    D.transport p = inv (D.transport (s x p.start_mem_vertices).toPath) ≫
+      D.transport (s y p.end_mem_vertices).toPath := by
+  induction p with
+  | nil => simp
+  | @cons y' y p e ih =>
+    have hy' : y' ∈ (p.cons e).vertices := by simp
+    have hy : y ∈ (p.cons e).vertices := by simp
+    have hT := htri z y' y (s y' hy') e (Quiver.reverse (s y hy))
+    rw [transport_cons, transport_cons, ← Quiver.Path.reverse_toPath, transport_reverse] at hT
+    rw [transport_cons, ih fun u hu => s u (by simp [hu])]
+    rw [IsIso.comp_inv_eq, Category.id_comp] at hT
+    rw [Category.assoc, hT]
+
+/-- A diagram is consistent exactly when its transport around every admissible triangle is
+trivial. The triangles may contain several joints. -/
+theorem consistent_iff_triangles : D.Consistent ↔
+    ∀ (x y z : WallComplement (fun P : C.walls => (P : Set V)))
+      (e : x ⟶ y) (f : y ⟶ z) (r : z ⟶ x),
+      D.transport ((e.toPath.cons f).cons r) = 𝟙 _ := by
+  classical
+  constructor
+  · intro hc x y z e f r
+    exact D.consistent_iff_loops.mp hc x _
+  · intro htri
+    refine D.consistent_iff_loops.mpr fun x p => ?_
+    have := h.finiteDimensional
+    obtain ⟨z, -, hz⟩ := WallComplement.exists_mem_open_admissible_spokes
+      (fun P : C.walls => (P : Set V))
+      (fun P => C.isConvexPolyhedron (C.mem_cells_of_mem_walls P.property))
+      (fun P => C.finrank_direction_add_one_of_mem_walls P.property)
+      (fun u : p.vertices.toFinset => u.val) isOpen_univ ⟨x.val, Set.mem_univ _⟩
+    have hs (u) (hu : u ∈ p.vertices) : Nonempty (z ⟶ u) :=
+      hz ⟨u, List.mem_toFinset.mpr hu⟩
+    rw [D.transport_eq_inv_comp_of_triangles htri p fun u hu => (hs u hu).some]
+    simp
+
+variable {D} in
+/-- A functor of groupoids preserves consistency. -/
+theorem Consistent.map (hc : D.Consistent) (F : G ⥤ G') : (D.map F).Consistent := by
+  intro x y p q
+  simpa only [transport_map] using congrArg F.map (hc p q)
+
+/-- A faithful functor of groupoids reflects consistency. -/
+theorem consistent_map_iff (F : G ⥤ G') [F.Faithful] : (D.map F).Consistent ↔ D.Consistent := by
+  constructor
+  · intro hc x y p q
+    apply F.map_injective
+    simpa only [transport_map] using hc p q
+  · exact fun hc => hc.map F
+
 end GroupoidWallDiagram
 
 namespace FiniteWallDiagram
@@ -294,6 +383,14 @@ theorem transport_toGroupoidWallDiagram (p : AdmissiblePLPath x y) :
   apply List.map_congr_left
   intro l _
   by_cases hl : l.2 <;> simp [hl]
+
+/-- A group-labelled diagram is consistent exactly when the diagram in the one-object
+groupoid it determines is. -/
+theorem consistent_toGroupoidWallDiagram : D.toGroupoidWallDiagram.Consistent ↔ D.Consistent := by
+  rw [consistent_def, GroupoidWallDiagram.consistent_def]
+  refine forall_congr' fun x => forall_congr' fun y => forall_congr' fun p =>
+    forall_congr' fun q => ?_
+  rw [← transport_toGroupoidWallDiagram, ← transport_toGroupoidWallDiagram]
 
 end FiniteWallDiagram
 
