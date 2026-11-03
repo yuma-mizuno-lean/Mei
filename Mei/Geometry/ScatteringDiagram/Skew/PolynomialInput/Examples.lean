@@ -20,9 +20,9 @@ Two checks on `BLMPolynomialInput`.
   rays of the finite alphabet, those of the letters `v_s` and `v_t`
   (`Mei.PositiveDegrees.letterRay_injective`). The product `p_s p_t z^((s+t) w)` lies on a third
   ray, that of `v_s + v_t` (`Mei.PositiveDegrees.letterPairRay_ne_letterRay`). The logarithm of
-  the initial function has coefficient `-1` there, minus the coefficient of `p_s p_t` in the
-  square of `∑ pₛ z^(s w)` divided by two. So the ray factor of the initial label on this ray
-  has wall function `f_u` with `[u] f_u = -1`
+  the initial function is `g - g²/2` modulo cubic terms, where `g = ∑ pₛ z^(s w)`. The
+  coefficient of `p_s p_t` in `g²` is `2`, so the coefficient on this ray is `-2/2 = -1`. So the
+  ray factor of the initial label on this ray has wall function `f_u` with `[u] f_u = -1`
   (`logComponent_initialLabel_letter_add_letter`,
   `logComponent_rayFactor_initialLabel_letterPairRay`). For the polynomial `1 + p₁ x + p₂ x²`
   of the rank-two datum, at the second index of
@@ -43,171 +43,6 @@ generalized cluster scattering diagrams*, §8.1 and §9.2 (arXiv:2503.03719v1).
 public section
 
 noncomputable section
-
-namespace Mei.SkewLatticeDatum.AdaptedBasis.BLMPolynomialInput
-
-open _root_.AddMonoidAlgebra
-
-variable {N ι R : Type*} [AddCommGroup N] {D : SkewLatticeDatum N} {B : D.AdaptedBasis ι}
-  (I : B.BLMPolynomialInput) [DecidableEq ι] [CommRing R] [Algebra ℚ R]
-
-local notation "Γ" => Module.Dual ℤ N × (I.Letter → ℤ)
-local notation "𝒅" => PositiveDegrees.finiteAlphabet I.letterExponent
-local notation "ρ" => AddMonoidHom.id Γ
-local notation "χ" i => AddMonoidHom.comp (Int.castAddHom R) (I.alphabetNormal i)
-local notation "T" i => tropicalTangentMonoid 𝒅 ρ (χ i)
-local notation "F" i => TropicalVertexCoefficientAction.filtration (R := R) 𝒅 (T i)
-local notation "ℒ" => tropicalVertexGrading (R := R) 𝒅 ρ
-
-section Pair
-
-variable (i : B.unfrozenIndex)
-
-/-- The sum of the monomials of the variables of the initial polynomial at `i`, that is, the
-initial polynomial minus one, in the tangent coefficient algebra. -/
-private abbrev variableSum : R[T i] :=
-  ∑ r : Fin (I.multiplicity i), single (I.tangentLetter i r) 1
-
-/-- Modulo the third filtration ideal, the logarithm of the initial polynomial is `g - g² / 2`,
-where `g` is the sum of its variable monomials. -/
-private theorem projection_two_completedLog :
-    (F i).projection 2 ((F i).completedLog
-      ⟨(F i).toCompletion (I.tangentInitialFunction i),
-        I.toCompletion_tangentInitialFunction_sub_one_mem i⟩) =
-      Ideal.Quotient.mk _
-        (variableSum (R := R) I i + (-1 / 2 : ℚ) • variableSum (R := R) I i ^ 2) := by
-  have hn : ((F i).projection 2 ((F i).toCompletion (I.tangentInitialFunction i)) - 1) ^ 3 = 0 := by
-    rw [AlgFiltration.projection_toCompletion, ← map_one (Ideal.Quotient.mk _), ← map_sub,
-      ← map_pow, Ideal.Quotient.eq_zero_iff_mem]
-    have := (F i).pow_mem (I.tangentInitialFunction_sub_one_mem (R := R) i) 3
-    exact (F i).antitone (by norm_num) this
-  rw [AlgFiltration.projection_completedLog, IsNilpotent.log_eq_sum hn]
-  simp [Finset.sum_range_succ, AlgFiltration.projection_toCompletion,
-    tangentInitialFunction_def, map_add, map_sum, map_rat_smul, map_pow]
-  norm_num
-
-omit [Algebra ℚ R] in
-/-- Two sums of two tangent letters of one initial polynomial agree exactly when they consist of
-the same letters. -/
-private theorem tangentLetter_add_tangentLetter_eq_iff {r r' s t : Fin (I.multiplicity i)} :
-    I.tangentLetter (R := R) i r + I.tangentLetter i r' =
-        I.tangentLetter i s + I.tangentLetter i t ↔
-      (r = s ∧ r' = t) ∨ (r = t ∧ r' = s) := by
-  rw [Subtype.ext_iff]
-  simp [PositiveDegrees.letter_add_letter_eq_iff]
-
-omit [Algebra ℚ R] in
-/-- The alphabet degree of a tangent letter is one. -/
-private theorem degree_tangentLetter (r : Fin (I.multiplicity i)) :
-    (𝒅).degree (I.tangentLetter (R := R) i r : Γ) = 1 := by
-  rw [coe_tangentLetter, PositiveDegrees.finiteAlphabet_degree_letter]
-
-omit [Algebra ℚ R] in
-/-- The alphabet degree of a sum of two tangent letters is two. -/
-private theorem degree_tangentLetter_add (s t : Fin (I.multiplicity i)) :
-    (𝒅).degree ((I.tangentLetter (R := R) i s + I.tangentLetter i t : T i) : Γ) = 2 := by
-  rw [AddSubmonoid.coe_add, coe_tangentLetter, coe_tangentLetter,
-    PositiveDegrees.finiteAlphabet_degree_letter_add_letter]
-
-omit [Algebra ℚ R] in
-/-- A tangent letter is not a sum of two tangent letters, since their alphabet degrees are
-one and two. -/
-private theorem tangentLetter_ne_add (r s t : Fin (I.multiplicity i)) :
-    I.tangentLetter (R := R) i r ≠ I.tangentLetter i s + I.tangentLetter i t := by
-  intro h
-  have := congrArg (fun q : T i => (𝒅).degree (q : Γ)) h
-  simp only [degree_tangentLetter, degree_tangentLetter_add] at this
-  omega
-
-/-- The coefficient of the tangent degree `v_s + v_t` in the order-two logarithm of the initial
-polynomial is `-1` for distinct letters `s ≠ t`: it is minus the coefficient of the monomial
-`p_s p_t` in `g² / 2`. -/
-private theorem coeff_logTwo_letter_add_letter {s t : Fin (I.multiplicity i)} (hst : s ≠ t) :
-    (variableSum (R := R) I i + (-1 / 2 : ℚ) • variableSum (R := R) I i ^ 2).coeff
-      (I.tangentLetter i s + I.tangentLetter i t) = (-1 : R) := by
-  classical
-  have hsq : variableSum (R := R) I i ^ 2 = ∑ r, ∑ r',
-      single (I.tangentLetter (R := R) i r + I.tangentLetter i r') (1 : R) := by
-    simp [sq, variableSum, Finset.sum_mul_sum, single_mul_single]
-  have h1 : (variableSum (R := R) I i).coeff (I.tangentLetter i s + I.tangentLetter i t) = 0 := by
-    rw [variableSum, coeff_sum, Finsupp.finsetSum_apply]
-    exact Finset.sum_eq_zero fun r _ => by
-      rw [coeff_single, Finsupp.single_apply]
-      simp [I.tangentLetter_ne_add i r s t]
-  have h2 : (variableSum (R := R) I i ^ 2).coeff
-      (I.tangentLetter i s + I.tangentLetter i t) = 2 := by
-    rw [hsq]
-    simp only [coeff_sum, coeff_single, Finsupp.finsetSum_apply, Finsupp.single_apply,
-      tangentLetter_add_tangentLetter_eq_iff]
-    rw [← Finset.sum_product' (f := fun r r' =>
-      if r = s ∧ r' = t ∨ r = t ∧ r' = s then (1 : R) else 0), Finset.sum_boole]
-    have : ((Finset.univ ×ˢ Finset.univ).filter fun p : Fin (I.multiplicity i) × Fin _ =>
-        p.1 = s ∧ p.2 = t ∨ p.1 = t ∧ p.2 = s) = {(s, t), (t, s)} := by
-      ext ⟨a, b⟩
-      simp
-    rw [this, Finset.card_pair (by simp [hst])]
-    norm_num
-  rw [coeff_add, Finsupp.add_apply, coeff_smul, Finsupp.smul_apply, h1, h2, zero_add]
-  rw [show (2 : R) = (2 : ℚ) • (1 : R) by rw [Algebra.smul_def, map_ofNat, mul_one], smul_smul]
-  norm_num
-
-variable [DecidableEq (Module.Dual ℤ N)]
-
-/-- The logarithm of the initial label at `i` has the coefficient `-1` in the degree
-`v_s + v_t` of the monomial `p_s p_t`, for distinct variables `p_s`, `p_t` of the initial
-polynomial: the logarithmic vector field `-z^(v_s + v_t) ∂_n` with the cylinder normal `n`. -/
-theorem logComponent_initialLabel_letter_add_letter {s t : Fin (I.multiplicity i)}
-    (hst : s ≠ t) :
-    (((𝒅).logComponent ℒ (I.initialLabel (R := R) i)
-        (PositiveDegrees.letter I.letterExponent ⟨i, s⟩ +
-          PositiveDegrees.letter I.letterExponent ⟨i, t⟩) :
-        tropicalVertexLieAlgebra (R := R) 𝒅 ρ) : LogarithmicVectorField R Γ Γ ρ) =
-      LogarithmicVectorField.single ρ (PositiveDegrees.letter I.letterExponent ⟨i, s⟩ +
-        PositiveDegrees.letter I.letterExponent ⟨i, t⟩) ((-1 : R) • χ i) := by
-  have hu : PositiveDegrees.letter I.letterExponent ⟨i, s⟩ +
-      PositiveDegrees.letter I.letterExponent ⟨i, t⟩ =
-        ((I.tangentLetter (R := R) i s + I.tangentLetter i t : T i) : Γ) := by simp
-  rw [hu]
-  have hdeg : (𝒅).degree ((I.tangentLetter (R := R) i s + I.tangentLetter i t : T i) : Γ) ≤
-      ((2 : ℕ) : ℤ) := (I.degree_tangentLetter_add i s t).le
-  have hne : ((I.tangentLetter (R := R) i s + I.tangentLetter i t : T i) : Γ) ≠ 0 :=
-    fun h => by
-      have := congrArg (𝒅).degree h
-      rw [I.degree_tangentLetter_add i s t, map_zero] at this
-      omega
-  rw [initialLabel_def,
-    logComponent_completedBCHExp_completedTropicalTangentField_eq_decompose 𝒅 ρ
-      (I.alphabetNormal i) _ (I.projection_two_completedLog i) hdeg,
-    decompose_tropicalTangentField_apply 𝒅 ρ (I.alphabetNormal i),
-    I.coeff_logTwo_letter_add_letter i hst, coe_tropicalTangentField_single _ _ _ hne]
-
-/-- The ray factor of the initial label on the ray of `v_s + v_t` has the same logarithmic
-coefficient `-1` there: its wall function `f_u` has `[u] f_u = -1`, for the primitive generator
-`u = v_s + v_t` of its ray. -/
-theorem logComponent_rayFactor_initialLabel_letterPairRay {s t : Fin (I.multiplicity i)}
-    (hst : s ≠ t) :
-    (((𝒅).logComponent ℒ ((𝒅).rayFactor ℒ (I.initialLabel (R := R) i)
-        (PositiveDegrees.letterPairRay I.letterExponent
-          (α := ⟨i, s⟩) (β := ⟨i, t⟩) (by simpa using hst)))
-        (PositiveDegrees.letter I.letterExponent ⟨i, s⟩ +
-          PositiveDegrees.letter I.letterExponent ⟨i, t⟩) :
-        tropicalVertexLieAlgebra (R := R) 𝒅 ρ) : LogarithmicVectorField R Γ Γ ρ) =
-      LogarithmicVectorField.single ρ (PositiveDegrees.letter I.letterExponent ⟨i, s⟩ +
-        PositiveDegrees.letter I.letterExponent ⟨i, t⟩) ((-1 : R) • χ i) := by
-  have hαβ : (⟨i, s⟩ : I.Letter) ≠ ⟨i, t⟩ := by simpa using hst
-  have hmem : PositiveDegrees.letter I.letterExponent ⟨i, s⟩ +
-      PositiveDegrees.letter I.letterExponent ⟨i, t⟩ ∈
-        (PositiveDegrees.letterPairRay I.letterExponent hαβ).rayDegrees := by
-    simpa using (SupportedRay.generator_mem_rayDegrees_iff
-      (PositiveDegrees.letterPairRay I.letterExponent hαβ)).mpr (by
-        simpa using add_mem (PositiveDegrees.letter_mem I.letterExponent ⟨i, s⟩)
-          (PositiveDegrees.letter_mem I.letterExponent ⟨i, t⟩))
-  rw [PositiveDegrees.logComponent_rayFactor_of_mem 𝒅 ℒ _ hmem]
-  exact I.logComponent_initialLabel_letter_add_letter i hst
-
-end Pair
-
-end Mei.SkewLatticeDatum.AdaptedBasis.BLMPolynomialInput
 
 namespace Mei.SkewLatticeDatum.Examples
 
@@ -296,9 +131,11 @@ noncomputable def zeroFormAdaptedBasis : zeroForm.AdaptedBasis Unit where
   multiplier_pos _ := one_pos
   unfrozen_eq_span := by
     rw [Finset.coe_univ, Set.image_univ, Module.Basis.span_eq]
+    -- the goal is `zeroForm.unfrozen = ⊤`, which is the definition of `zeroForm`
     rfl
   sublattice_eq_span := by
     simp only [one_smul, Module.Basis.span_eq]
+    -- the goal is `zeroForm.sublattice = ⊤`, which is the definition of `zeroForm`
     rfl
 
 @[simp]
@@ -329,8 +166,7 @@ theorem principalBLMDatum_form_ne_zero (ℓ : zeroFormAdaptedBasis.unfrozenIndex
   have hd : zeroFormAdaptedBasis.multiplier () ≠ 0 := (zeroFormAdaptedBasis.multiplier_pos ()).ne'
   simp only [principalBLMDatum_form, LinearMap.zero_apply] at this
   rw [principalBLMForm_single_inl_single_inr] at this
-  simp at this
-  exact this.elim hc hd
+  simp [hc, hd] at this
 
 end ZeroForm
 

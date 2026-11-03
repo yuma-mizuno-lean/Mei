@@ -167,6 +167,13 @@ theorem letterPairRay_generator {α β : E} (hαβ : α ≠ β) :
     (letterPairRay m hαβ).generator = letter m α + letter m β := by
   simp [letterPairRay]
 
+/-- The sum of two distinct letters is a degree of its ray. -/
+theorem letter_add_letter_mem_rayDegrees_letterPairRay {α β : E} (hαβ : α ≠ β) :
+    letter m α + letter m β ∈ (letterPairRay m hαβ).rayDegrees := by
+  have h := (SupportedRay.generator_mem_rayDegrees_iff (letterPairRay m hαβ)).mpr
+    (by simpa using add_mem (letter_mem m α) (letter_mem m β))
+  simpa using h
+
 /-- The ray of a sum of two distinct letters is not the ray of a letter: the letter counts of
 the generators have total two and one. -/
 theorem letterPairRay_ne_letterRay {α β : E} (hαβ : α ≠ β) (γ : E) :
