@@ -86,6 +86,25 @@ def degreesComp {b : Q} (p : Path a b) :
   | _, nil => (Equiv.prodPUnit _).symm
   | _, cons q _ => ((degreesComp p q).prodCongr (Equiv.refl _)).trans (Equiv.prodAssoc _ _ _)
 
+/-- Concatenating with the empty path appends the trivial history. Not a simp lemma:
+simp already normalizes `p.comp nil` in the type of the equivalence. -/
+theorem degreesComp_nil {b : Q} (p : Path a b) (d : (p.comp nil).Degrees ι) :
+    degreesComp (ι := ι) p (nil : Path b b) d = (d, PUnit.unit) := (rfl)
+
+theorem degreesComp_symm_nil {b : Q} (p : Path a b) (d : p.Degrees ι) (u : PUnit) :
+    (degreesComp (ι := ι) p (nil : Path b b)).symm (d, u) = d := (rfl)
+
+/-- Concatenating with a path ending in an arrow splits off its last degree. -/
+theorem degreesComp_cons {b c e : Q} (p : Path a b) (q : Path b c) (f : c ⟶ e)
+    (d : (p.comp q).Degrees ι) (i : ι e) :
+    degreesComp (ι := ι) p (q.cons f) ((d, i) : ((p.comp q).cons f).Degrees ι) =
+      ((degreesComp (ι := ι) p q d).1, ((degreesComp (ι := ι) p q d).2, i)) := (rfl)
+
+theorem degreesComp_symm_cons {b c e : Q} (p : Path a b) (q : Path b c) (f : c ⟶ e)
+    (d : p.Degrees ι) (d' : q.Degrees ι) (i : ι e) :
+    (degreesComp (ι := ι) p (q.cons f)).symm (d, (d', i)) =
+      (((degreesComp (ι := ι) p q).symm (d, d'), i) : ((p.comp q).cons f).Degrees ι) := (rfl)
+
 /-- Transport degree histories along vertexwise degree maps. -/
 def Degrees.map {κ : Q → Type*} (σ : ∀ q, ι q → κ q) :
     ∀ {b : Q} (p : Path a b), p.Degrees ι → p.Degrees κ

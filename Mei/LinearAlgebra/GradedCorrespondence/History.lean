@@ -25,7 +25,7 @@ input the nonzero histories are finite and sum to the composite of total transfe
 `Quiver.Path.sum_homogeneousHistory`.
 
 Correspondence morphisms with common chamber maps at incident arrows intertwine total
-transfers provided target total lifts kill the images of inadmissible source pieces
+transfers provided target total transfers kill the images of inadmissible source pieces
 (`Hom.right_comp_totalTransfer`); reflecting admissible degrees suffices. The regrading
 theorems `Quiver.Path.homogeneousHistory_map_eq_sum` and
 `Quiver.Path.map_homogeneousHistory_of_injective` then apply to transfer histories: a
