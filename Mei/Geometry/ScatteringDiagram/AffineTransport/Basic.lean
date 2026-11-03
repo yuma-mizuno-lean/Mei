@@ -40,22 +40,15 @@ variable {N N' V V' H : Type*} [AddCommGroup N] [AddCommGroup N']
 
 /-- Transport labels by the wall bijection and normals by the inverse linear part. -/
 def image : FiniteWallDiagram (C.image e) H where
-  normal Q := (D.normal ((C.wallImageEquiv e).symm Q)).comp
-    e.toAffineEquiv.linear.symm.toLinearMap
-  ker_normal Q := by
-    obtain ⟨P, rfl⟩ := (C.wallImageEquiv e).surjective Q
-    rw [Equiv.symm_apply_apply, LinearMap.ker_comp, D.ker_normal, C.wallImageEquiv_coe]
-    have hd : (affineSpan ℝ (e '' (P : Set V))).direction =
-        ((affineSpan ℝ (P : Set V)).direction).map e.toAffineEquiv.linear.toLinearMap := by
-      simpa only [AffineEquiv.linear_toAffineMap, AffineEquiv.coe_coe] using
-        e.toAffineEquiv.toAffineMap.direction_affineSpan_image (P : Set V)
-    rw [hd, Submodule.map_equiv_eq_comap_symm]
+  normal := C.imageNormal e D.normal
+  ker_normal := C.ker_imageNormal e D.normal D.ker_normal
   label Q := D.label ((C.wallImageEquiv e).symm Q)
 
 @[simp]
 theorem image_normal (Q : (C.image e).walls) :
     (D.image e).normal Q = (D.normal ((C.wallImageEquiv e).symm Q)).comp
-      e.toAffineEquiv.linear.symm.toLinearMap := (rfl)
+      e.toAffineEquiv.linear.symm.toLinearMap :=
+  C.imageNormal_apply e D.normal Q
 
 @[simp]
 theorem image_label (Q : (C.image e).walls) :
@@ -64,9 +57,8 @@ theorem image_label (Q : (C.image e).walls) :
 /-- Pulling a transported normal back by the forward linear map recovers it. -/
 theorem image_normal_comp (P : C.walls) :
     ((D.image e).normal (C.wallImageEquiv e P)).comp e.toAffineEquiv.linear.toLinearMap =
-      D.normal P := by
-  ext v
-  simp
+      D.normal P :=
+  C.imageNormal_comp e D.normal P
 
 variable [Group H]
   {x y : WallComplement (fun P : C.walls => (P : Set V))}

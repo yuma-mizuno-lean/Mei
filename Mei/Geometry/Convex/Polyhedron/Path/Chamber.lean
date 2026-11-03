@@ -7,6 +7,7 @@ module
 
 public import Mei.Geometry.Convex.Polyhedron.AdmissiblePath
 public import Mei.Topology.Connected.Adjacency
+public import Mei.Topology.Connected.Homeomorph
 
 /-!
 # Chambers of allowed endpoints
@@ -21,6 +22,10 @@ Chambers are Mathlib's `ConnectedComponents` of the complement. Their ambient
 carriers are `ConnectedComponents.carrier`, so membership of a point that is not
 itself an allowed endpoint can be stated without choosing a proof that it avoids the
 walls. No closedness, finiteness or local finiteness of the walls is needed.
+
+A homeomorphism carrying one wall family onto another, with the indices matched by a
+bijection, identifies the chambers (`chamberEquiv`), compatibly with the chambers of
+allowed endpoints and with the ambient carriers.
 -/
 
 public section
@@ -59,6 +64,48 @@ theorem chamber_eq_of_isPreconnected {A : Set V} (hA : IsPreconnected A)
     (hz : z ∈ A) {c : Chamber W} (hzc : z ∈ c.carrier) : chamber x = c :=
   ConnectedComponents.eq_of_mem_carrier (val_mem_carrier_chamber x)
     (ConnectedComponents.subset_carrier_of_isPreconnected hA (fun a ha => hAW a ha) hz hzc hx)
+
+section Transport
+
+variable {V' ι' : Type*} [TopologicalSpace V'] {W' : ι' → Set V'}
+  (e : V ≃ₜ V') (r : ι ≃ ι') (hW : ∀ j, W' (r j) = e '' W j)
+
+/-- A homeomorphism carrying a wall family onto another, with the wall indices matched by
+a bijection, identifies the chambers of the two families. -/
+def chamberEquiv : Chamber W ≃ Chamber W' :=
+  (e.sets (s := {x : V | ∀ i, x ∉ W i}) (t := {y : V' | ∀ j, y ∉ W' j})
+    (Set.ext fun x => by
+      refine ⟨fun hx j hj => ?_, fun hx i hi => hx (r i) ?_⟩
+      · obtain ⟨i, rfl⟩ := r.surjective j
+        rw [hW, e.injective.mem_set_image] at hj
+        exact hx i hj
+      · rw [hW]
+        exact mem_image_of_mem e hi)).connectedComponentsEquiv
+
+include hW in
+/-- The identification of chambers sends the chamber of an allowed endpoint to the chamber
+of any allowed endpoint at its image. -/
+theorem chamberEquiv_chamber (x : WallComplement W) (x' : WallComplement W')
+    (hx : x'.val = e x.val) : chamberEquiv e r hW (chamber x) = chamber x' := by
+  obtain ⟨v, hv⟩ := x'
+  dsimp only at hx
+  subst hx
+  simp only [chamberEquiv, chamber, Homeomorph.connectedComponentsEquiv_mk]
+  exact congrArg ConnectedComponents.mk (Subtype.ext (rfl))
+
+include hW in
+/-- A point of the carrier of a chamber is carried into the carrier of the identified chamber. -/
+theorem image_mem_carrier_chamberEquiv {c : Chamber W} {z : V} (hz : z ∈ c.carrier) :
+    e z ∈ (chamberEquiv e r hW c).carrier := by
+  obtain ⟨hz', rfl⟩ := ConnectedComponents.mem_carrier_iff.mp hz
+  have hz'' : ∀ j, e z ∉ W' j := fun j hj => by
+    obtain ⟨i, rfl⟩ := r.surjective j
+    rw [hW, e.injective.mem_set_image] at hj
+    exact hz' i hj
+  exact ConnectedComponents.mem_carrier_iff.mpr
+    ⟨hz'', (chamberEquiv_chamber e r hW ⟨z, hz'⟩ ⟨e z, hz''⟩ rfl).symm⟩
+
+end Transport
 
 end Topological
 
