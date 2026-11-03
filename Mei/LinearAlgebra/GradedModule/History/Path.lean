@@ -11,7 +11,6 @@ public import Mei.Combinatorics.Quiver.Path
 public import TauCeti.Algebra.DirectSum.Internal
 public import Mathlib.Algebra.Category.ModuleCat.Semi
 public import Mathlib.CategoryTheory.PathCategory.Basic
-public import Mathlib.Combinatorics.Quiver.SingleObj
 public import Mathlib.Data.Fin.Tuple.Basic
 public import Mathlib.RingTheory.Finiteness.Defs
 

@@ -6,7 +6,6 @@ Authors: Codex
 module
 
 public import Mathlib.Combinatorics.Quiver.SingleObj
-public import Mathlib.Combinatorics.Quiver.Symmetric
 public import Mathlib.Combinatorics.Quiver.Path.Vertices
 public import Mathlib.Data.List.Chain
 public import Mathlib.Combinatorics.Quiver.Path.Weight
