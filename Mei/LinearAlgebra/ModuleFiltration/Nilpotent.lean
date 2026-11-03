@@ -6,7 +6,6 @@ Authors: Codex
 module
 
 public import Mei.LinearAlgebra.ModuleFiltration.Completion
-public import Mei.LinearAlgebra.ModuleFiltration.FiniteLength
 public import Mathlib.RingTheory.Nilpotent.Defs
 
 /-!
