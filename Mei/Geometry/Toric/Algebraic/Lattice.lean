@@ -17,7 +17,8 @@ integral lattices extends to a real linear equivalence. Its
 linear map is the existing scalar extension, and extension respects identity,
 inverse and composition without choosing a new basis.
 On a product lattice, evaluation on a lattice point of the second factor recovers
-the corresponding integer character value. The standard lattice `ℤⁿ ⊆ ℝⁿ` is an integral lattice.
+the corresponding integer character value. The two coordinate characters of `ℤ²` extend to the
+two real coordinates. The standard lattice `ℤⁿ ⊆ ℝⁿ` is an integral lattice.
 -/
 
 public section
@@ -49,6 +50,20 @@ theorem realCharacter_prod_apply_inr (h : IsIntegralLattice (i.prodMap i'))
     h.realCharacter m (0, i' n) = (m (0, n) : ℝ) := by
   simpa only [AddMonoidHom.coe_prodMap, Prod.map_apply, map_zero] using
     h.realCharacter_apply m (0, n)
+
+/-- The first coordinate character of `ℤ²` extends to the first real coordinate. -/
+@[simp]
+theorem realCharacter_fst
+    (h : IsIntegralLattice ((Int.castAddHom ℝ).prodMap (Int.castAddHom ℝ))) :
+    h.realCharacter (AddMonoidHom.fst ℤ ℤ) = LinearMap.fst ℝ ℝ ℝ :=
+  (h.eq_realCharacter (by intro x; simp)).symm
+
+/-- The second coordinate character of `ℤ²` extends to the second real coordinate. -/
+@[simp]
+theorem realCharacter_snd
+    (h : IsIntegralLattice ((Int.castAddHom ℝ).prodMap (Int.castAddHom ℝ))) :
+    h.realCharacter (AddMonoidHom.snd ℤ ℤ) = LinearMap.snd ℝ ℝ ℝ :=
+  (h.eq_realCharacter (by intro x; simp)).symm
 
 end Prod
 

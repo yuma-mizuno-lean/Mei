@@ -13,8 +13,7 @@ public import Mathlib.LinearAlgebra.Determinant
 
 The swap `(x, y) ↦ (y, x)` of `ℤ² ⊆ ℝ²` is an integral affine self-equivalence of the
 standard lattice with zero translation. It reverses orientation: its linear part has
-determinant `-1`. The two coordinate characters of `ℤ²` extend to the two real coordinates.
--/
+determinant `-1`. -/
 
 public section
 
@@ -33,10 +32,14 @@ def swap : IntegralAffineEquiv h h := ofLatticeEquiv h h AddEquiv.prodComm
 /-- The swap exchanges the two coordinates. -/
 @[simp]
 theorem swap_apply (x : ℝ × ℝ) : swap h x = x.swap := by
-  have hx := congrArg (fun g : ℝ × ℝ →ₗ[ℝ] ℝ × ℝ => g x)
-    (h.eq_extend (i' := (Int.castAddHom ℝ).prodMap (Int.castAddHom ℝ))
+  -- the coordinate exchange of `ℝ²` extends the swap of `ℤ²`, so it is the extension
+  have hext : (LinearMap.snd ℝ ℝ ℝ).prod (LinearMap.fst ℝ ℝ ℝ) =
+      h.extend ((Int.castAddHom ℝ).prodMap (Int.castAddHom ℝ))
+        AddEquiv.prodComm.toAddMonoidHom :=
+    h.eq_extend (i' := (Int.castAddHom ℝ).prodMap (Int.castAddHom ℝ))
       (f := AddEquiv.prodComm.toAddMonoidHom)
-      (g := (LinearMap.snd ℝ ℝ ℝ).prod (LinearMap.fst ℝ ℝ ℝ)) (fun n => Prod.ext rfl rfl))
+      (g := (LinearMap.snd ℝ ℝ ℝ).prod (LinearMap.fst ℝ ℝ ℝ)) (fun n => Prod.ext rfl rfl)
+  have hx := congrArg (fun g : ℝ × ℝ →ₗ[ℝ] ℝ × ℝ => g x) hext
   simpa [swap, Prod.swap] using hx.symm
 
 /-- The swap exchanges the two lattice coordinates. -/
@@ -56,21 +59,5 @@ theorem det_swap : LinearMap.det ((swap h).toAffineEquiv.linear : ℝ × ℝ →
   simp [LinearMap.toMatrix_apply, b]
 
 end Mei.Toric.IntegralAffineEquiv
-
-namespace TauCeti.Toric.IsIntegralLattice
-
-variable (h : IsIntegralLattice ((Int.castAddHom ℝ).prodMap (Int.castAddHom ℝ)))
-
-/-- The first coordinate character of `ℤ²` extends to the first real coordinate. -/
-@[simp]
-theorem realCharacter_fst : h.realCharacter (AddMonoidHom.fst ℤ ℤ) = LinearMap.fst ℝ ℝ ℝ :=
-  (h.eq_realCharacter (by intro x; simp)).symm
-
-/-- The second coordinate character of `ℤ²` extends to the second real coordinate. -/
-@[simp]
-theorem realCharacter_snd : h.realCharacter (AddMonoidHom.snd ℤ ℤ) = LinearMap.snd ℝ ℝ ℝ :=
-  (h.eq_realCharacter (by intro x; simp)).symm
-
-end TauCeti.Toric.IsIntegralLattice
 
 end

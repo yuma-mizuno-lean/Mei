@@ -59,7 +59,8 @@ theorem swapImage_normal :
 theorem swapImage_normal_eq_snd (hW : W.normal = AddMonoidHom.fst ℤ ℤ) :
     W.swapImage.normal = AddMonoidHom.snd ℤ ℤ := by
   rw [swapImage_normal, hW]
-  rfl
+  ext x
+  simp
 
 /-- The support of the swapped wall is the swap of the support. -/
 theorem swapImage_support : W.swapImage.support = Prod.swap ⁻¹' W.support := by
@@ -69,7 +70,8 @@ theorem swapImage_support : W.swapImage.support = Prod.swap ⁻¹' W.support := 
 theorem swapImage_support_eq (hW : W.support = {x | x.1 = 0}) :
     W.swapImage.support = {x | x.2 = 0} := by
   rw [swapImage_support, hW]
-  rfl
+  ext x
+  simp
 
 /-- The swap keeps the degree ray of a wall. -/
 @[simp]
@@ -116,17 +118,21 @@ variable {Γ R ι : Type*} {L : Type u} [AddCommGroup Γ] [CommRing R] [Algebra 
   {h : IsIntegralLattice ((Int.castAddHom ℝ).prodMap (Int.castAddHom ℝ))}
   (D : DirectedDiagram (d := d) h H ι)
 
+/-- Transport a directed diagram along the coordinate swap of the plane. -/
+def swapImage : DirectedDiagram (d := d) h (H.mapTangent AddEquiv.prodComm) ι :=
+  D.image (Toric.IntegralAffineEquiv.swap h)
+    (DirectedWallSpaces.CoordinateChange.ofTangentEquiv H AddEquiv.prodComm) (by simp)
+
+/-- Transport the points and paths of a directed diagram along the coordinate swap. -/
+def swapPathImage : D.Point ⥤q D.swapImage.Point :=
+  D.pathImage (Toric.IntegralAffineEquiv.swap h)
+    (DirectedWallSpaces.CoordinateChange.ofTangentEquiv H AddEquiv.prodComm) (by simp)
+
 /-- The coordinate swap does not change path products: the completed product along a
 path and along its swapped path agree, although the swap reverses orientation. -/
-theorem pathProduct_image_swap {x y : D.Point} (p : Quiver.Path x y) :
-    (D.image (Toric.IntegralAffineEquiv.swap h)
-        (DirectedWallSpaces.CoordinateChange.ofTangentEquiv H AddEquiv.prodComm)
-        (by simp)).pathProduct
-      ((D.pathImage (Toric.IntegralAffineEquiv.swap h)
-        (DirectedWallSpaces.CoordinateChange.ofTangentEquiv H AddEquiv.prodComm)
-        (by simp)).mapPath p) = D.pathProduct p := by
-  rw [pathProduct_image]
-  simp
+theorem pathProduct_swapImage {x y : D.Point} (p : Quiver.Path x y) :
+    D.swapImage.pathProduct (D.swapPathImage.mapPath p) = D.pathProduct p := by
+  exact (D.pathProduct_image _ _ _ p).trans (by simp)
 
 end Mei.DirectedDiagram
 
