@@ -262,6 +262,37 @@ theorem Inverted.not_symm {a b : PlaneDegree w} (hab : Inverted a b) : ¬ Invert
     rw [inverted_iff] at hab hba
     nlinarith
 
+/-- The sum `x + y` of two plane degrees. -/
+instance : Add (PlaneDegree w) where
+  add x y :=
+    { vec := x.vec + y.vec
+      mem := add_mem x.mem y.mem
+      ne_zero := fun h => by
+        have h1 : x.fst + y.fst = 0 := congrArg (fun v : Γ => v.1.1) h
+        have h2 : x.snd + y.snd = 0 := congrArg (fun v : Γ => v.1.2) h
+        have := y.fst_nonneg
+        have := x.fst_nonneg
+        have := y.snd_nonneg
+        have := x.snd_nonneg
+        rcases y.fst_ne_zero_or with h | h <;> omega }
+
+-- The sum has vector `x.vec + y.vec` by construction and the coordinates of a sum in `ℤ × ℤ` are
+-- the sums of the coordinates, so the next three lemmas hold by unfolding the sum.
+@[simp]
+theorem vec_add (x y : PlaneDegree w) : (x + y).vec = x.vec + y.vec := (rfl)
+
+@[simp]
+theorem fst_add (x y : PlaneDegree w) : (x + y).fst = x.fst + y.fst := (rfl)
+
+@[simp]
+theorem snd_add (x y : PlaneDegree w) : (x + y).snd = x.snd + y.snd := (rfl)
+
+theorem deg_add (x y : PlaneDegree w) : (x + y).deg = x.deg + y.deg := by
+  apply Nat.cast_injective (R := ℤ)
+  push_cast
+  rw [deg_eq, deg_eq, deg_eq, fst_add, snd_add]
+  ring
+
 end PlaneDegree
 
 end Mei.StandardPlane

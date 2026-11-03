@@ -54,43 +54,9 @@ local notation "hβ" => E.isAlt_coefficientForm ℚ
 
 variable {w : Weight}
 
-/-- The sum `x + y` of two plane degrees. -/
-private def PlaneDegree.add (x y : PlaneDegree w) : PlaneDegree w where
-  vec := x.vec + y.vec
-  mem := add_mem x.mem y.mem
-  ne_zero h := by
-    have h1 : x.fst + y.fst = 0 := congrArg (fun v : Γ => v.1.1) h
-    have h2 : x.snd + y.snd = 0 := congrArg (fun v : Γ => v.1.2) h
-    have := y.fst_nonneg
-    have := x.fst_nonneg
-    have := y.snd_nonneg
-    have := x.snd_nonneg
-    rcases y.fst_ne_zero_or with h | h <;> omega
-
--- The sum has vector `x.vec + y.vec` by construction and the coordinates of a sum in `ℤ × ℤ` are
--- the sums of the coordinates, so the next three lemmas hold by unfolding `PlaneDegree.add`.
-@[simp]
-private theorem PlaneDegree.add_fst (x y : PlaneDegree w) :
-    (PlaneDegree.add x y).fst = x.fst + y.fst := (rfl)
-@[simp]
-private theorem PlaneDegree.add_snd (x y : PlaneDegree w) :
-    (PlaneDegree.add x y).snd = x.snd + y.snd := (rfl)
-
-private theorem PlaneDegree.deg_add (x y : PlaneDegree w) :
-    (PlaneDegree.add x y).deg = x.deg + y.deg := by
-  apply Nat.cast_injective (R := ℤ)
-  push_cast
-  rw [PlaneDegree.deg_eq, PlaneDegree.deg_eq, PlaneDegree.deg_eq, PlaneDegree.add_fst,
-    PlaneDegree.add_snd]
-  ring
-
-@[simp]
-private theorem PlaneDegree.add_vec (x y : PlaneDegree w) :
-    (PlaneDegree.add x y).vec = x.vec + y.vec := (rfl)
-
 private theorem PlaneDegree.form_add_det (x y : PlaneDegree w) :
-    E.form y.vec (PlaneDegree.add y x).vec = (y.det x : ℚ) := by
-  rw [PlaneDegree.add_vec, Submodule.coe_add, map_add, E.form_self, zero_add,
+    E.form y.vec (y + x).vec = (y.det x : ℚ) := by
+  rw [PlaneDegree.vec_add, Submodule.coe_add, map_add, E.form_self, zero_add,
     PlaneDegree.form_det]
 
 /-- **The pentagon exchange.** If `{y, x} = 1`, then `Ψ[x] Ψ[y] = Ψ[y] Ψ[y + x] Ψ[x]` for the
@@ -104,18 +70,18 @@ private theorem exists_exchange_of_det_eq_one (x y : PlaneDegree w) (h : y.det x
     rayIndex_eq_one_of_form_eq_one y.vec (by rw [PlaneDegree.form_det, hdetQ])
   have hκy : rayIndex y.vec = 1 :=
     rayIndex_eq_one_of_form_eq_one (-x.vec) (by rw [PlaneDegree.form_neg_det, hdetQ])
-  have hκm : rayIndex (PlaneDegree.add y x).vec = 1 :=
+  have hκm : rayIndex (y + x).vec = 1 :=
     rayIndex_eq_one_of_form_eq_one y.vec (by rw [PlaneDegree.form_add_det, hdetQ])
-  refine ⟨PlaneDegree.add y x, ?_, ?_, ?_, ?_⟩
+  refine ⟨y + x, ?_, ?_, ?_, ?_⟩
   · rw [PlaneDegree.deg_add]; have := y.deg_pos; omega
   · rw [PlaneDegree.deg_add]; have := x.deg_pos; omega
   · rw [PlaneDegree.boundary_iff]
-    simp only [PlaneDegree.add_fst, PlaneDegree.add_snd]
+    simp only [PlaneDegree.fst_add, PlaneDegree.snd_add]
     have := y.snd_nonneg
     have := x.fst_nonneg
     omega
   · rw [unitFactor_eq_dilogElement x hκx, unitFactor_eq_dilogElement y hκy,
-      unitFactor_eq_dilogElement (PlaneDegree.add y x) hκm]
+      unitFactor_eq_dilogElement (y + x) hκm]
     exact Mei.SkewLieAlgebra.dilogElement_pentagon β hβ (plane w) y.mem x.mem y.ne_zero
       x.ne_zero (by rw [PlaneDegree.coefficientForm_det, hdetQ])
 
