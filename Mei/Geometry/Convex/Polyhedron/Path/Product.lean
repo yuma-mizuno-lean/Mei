@@ -414,6 +414,15 @@ theorem wallPathProduct_eq_of_signedCrossingEvents_eq
   rw [wallPathProduct_eq_prod_signedCrossingEvents,
     wallPathProduct_eq_prod_signedCrossingEvents, hpq]
 
+/-- Wall transport depends only on the normals and labels, not on the commutation proof. -/
+theorem wallPathProduct_congr {ν₁ ν₂ : ι → V →ₗ[ℝ] ℝ} {l₁ l₂ : ι → G}
+    {hc₁ : ∀ i j, affineSpan ℝ (W i) = affineSpan ℝ (W j) → Commute (l₁ i) (l₁ j)}
+    {hc₂ : ∀ i j, affineSpan ℝ (W i) = affineSpan ℝ (W j) → Commute (l₂ i) (l₂ j)}
+    (p : AdmissiblePLPath x y) (hν : ν₁ = ν₂) (hl : l₁ = l₂) :
+    p.wallPathProduct ν₁ l₁ hc₁ = p.wallPathProduct ν₂ l₂ hc₂ := by
+  subst hν hl
+  rfl
+
 /-- Group homomorphisms preserve all polygonal transports. -/
 @[simp]
 theorem map_wallPathProduct (f : G →* K) (p : AdmissiblePLPath x y) :
