@@ -20,7 +20,8 @@ to `M k` forms a chain of linear maps between differently graded chamber modules
 The chain histories of total transfers are the finite component expansion of
 transfer compositions. Each step selects one transfer component of the whole previous
 decoration, and the step is zero when that decoration has inadmissible degree. For a fixed
-input the nonzero histories are finite and sum to the composite of total transfers.
+input the nonzero histories are finite and sum to the composite of total transfers, by
+`sum_chainHistory`.
 
 Correspondence morphisms with common chamber maps at incident steps intertwine total
 transfers provided target total lifts kill the images of inadmissible source pieces.
@@ -135,14 +136,6 @@ theorem chainHistory_totalTransfer_eq_zero_of_not_mem {n : ℕ} (p : (j : Fin (n
     chainHistory ℳ (fun j => (C j).totalTransfer) p a = 0 := by
   classical
   rw [chainHistory_totalTransfer_succ_apply ℳ C p a hx, dite_eq_right hi]
-
-/-- The nonzero transfer histories of an input sum to the composite of the
-total transfers. -/
-theorem sum_chainHistory_totalTransfer {n : ℕ} (a : M n) :
-    ∑ p ∈ chainHistorySupport ℳ (fun j : Fin n => (C j).totalTransfer) a,
-      chainHistory ℳ (fun j : Fin n => (C j).totalTransfer) p a =
-        chainComp (fun j : Fin n => (C j).totalTransfer) a :=
-  sum_chainHistory ℳ _ a
 
 section Naturality
 

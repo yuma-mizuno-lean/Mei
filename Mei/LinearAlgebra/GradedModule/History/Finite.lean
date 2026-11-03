@@ -78,7 +78,7 @@ theorem homogeneousHistorySupport_succ {n : ℕ}
           (T 0 (homogeneousHistory ℳ (fun j : Fin n => T j.succ) p a))).support.image
             (fun i => (Fin.cons i p : Fin (n + 1) → ι)) := by
   have h := chainHistorySupport_succ (fun _ => ℳ) T a
-  simp only [chainCons_eq_cons, ← homogeneousHistory_eq_chainHistory,
+  simp only [← homogeneousHistory_eq_chainHistory,
     ← homogeneousHistorySupport_eq_chainHistorySupport] at h
   exact h
 

@@ -50,58 +50,40 @@ universe u v w
 
 section Index
 
-/-- The first index of a nonempty chain. Its value is literally zero, so the module
-`M (chainHead n)` reduces to `M 0` without unfolding numerals. -/
+/-! The modules and degree types of a chain are indexed by `ℕ`, and its tail is the shifted
+family `fun k => M (k + 1)`. The positions `0` and `Fin.succ j` of Mathlib's `Fin` API have
+values `↑(0 : Fin (n + 1))` and `↑j.succ`, which are not reducibly `0` and `↑j + 1`. Terms
+such as `ℳ 0 (p 0)` or `T 0` applied to an element of `M (0 + 1)` are then type-correct
+only up to unfolding, and rewriting, simp and instance search fail on them. The two
+positions below are the same elements of `Fin (n + 1)` with literal values, so these types
+agree reducibly. Degree sequences are prepended with `Fin.cons`. -/
+
+/-- The position `0` of a nonempty chain, with literal value zero. -/
 abbrev chainHead (n : ℕ) : Fin (n + 1) := ⟨0, Nat.succ_pos n⟩
 
-/-- The index after `j`. Its value is literally `j + 1`, so the module
-`M (chainSucc j)` reduces to `M (j + 1)`. -/
+/-- The position `Fin.succ j`, with literal value `j + 1`. -/
 abbrev chainSucc {n : ℕ} (j : Fin n) : Fin (n + 1) := ⟨j + 1, Nat.succ_lt_succ j.isLt⟩
-
-/-- Prepend a degree in `ι 0` to a degree sequence of the remaining chain. -/
-def chainCons {ι : ℕ → Type w} {n : ℕ} (i : ι 0) (p : (j : Fin n) → ι (j + 1)) :
-    (j : Fin (n + 1)) → ι j
-  | ⟨0, _⟩ => i
-  | ⟨k + 1, h⟩ => p ⟨k, Nat.lt_of_succ_lt_succ h⟩
 
 variable {ι : ℕ → Type w} {n : ℕ}
 
+/-- `Fin.cons` for a degree sequence whose tail is typed by the shifted family. -/
+abbrev chainCons (i : ι 0) (p : (j : Fin n) → ι (j + 1)) : (j : Fin (n + 1)) → ι j :=
+  Fin.cons (α := fun j : Fin (n + 1) => ι j) i p
+
 @[simp]
-theorem chainCons_head (i : ι 0) (p : (j : Fin n) → ι (j + 1)) :
-    chainCons i p 0 = i := (rfl)
+theorem chainCons_zero (i : ι 0) (p : (j : Fin n) → ι (j + 1)) :
+    chainCons i p 0 = i :=
+  Fin.cons_zero (α := fun j : Fin (n + 1) => ι j) i p
 
 @[simp]
 theorem chainCons_succ (i : ι 0) (p : (j : Fin n) → ι (j + 1)) (j : Fin n) :
-    chainCons i p (chainSucc j) = p j := (rfl)
+    chainCons i p (chainSucc j) = p j :=
+  Fin.cons_succ (α := fun j : Fin (n + 1) => ι j) i p j
 
-/-- A degree sequence is the prepending of its first degree to its tail. -/
-theorem chainCons_head_succ (p : (j : Fin (n + 1)) → ι j) :
-    chainCons (p (chainHead n)) (fun j => p (chainSucc j)) = p := by
-  funext j
-  obtain ⟨_ | k, h⟩ := j <;> rfl
-
-theorem chainCons_inj {i i' : ι 0} {p p' : (j : Fin n) → ι (j + 1)} :
-    chainCons i p = chainCons i' p' ↔ i = i' ∧ p = p' := by
-  constructor
-  · intro h
-    exact ⟨congrFun h (chainHead n), funext fun j => congrFun h (chainSucc j)⟩
-  · rintro ⟨rfl, rfl⟩
-    rfl
-
-/-- On a constant degree type, prepending is `Fin.cons`. -/
-theorem chainCons_eq_cons {κ : Type w} (i : κ) (p : Fin n → κ) :
-    chainCons (ι := fun _ => κ) i p = Fin.cons i p := by
-  funext j
-  obtain ⟨_ | k, h⟩ := j <;> rfl
-
-/-- A property of all indices of a nonempty chain splits into its first index and
-the shifted remaining indices. -/
+/-- `Fin.forall_fin_succ` at the literal positions. -/
 theorem chainHead_forall {P : Fin (n + 1) → Prop} :
-    (∀ j, P j) ↔ P (chainHead n) ∧ ∀ j : Fin n, P (chainSucc j) := by
-  refine ⟨fun h => ⟨h _, fun j => h _⟩, fun ⟨h0, hs⟩ j => ?_⟩
-  obtain ⟨_ | k, h⟩ := j
-  · exact h0
-  · exact hs ⟨k, Nat.lt_of_succ_lt_succ h⟩
+    (∀ j, P j) ↔ P (chainHead n) ∧ ∀ j : Fin n, P (chainSucc j) :=
+  Fin.forall_fin_succ
 
 end Index
 
@@ -222,7 +204,7 @@ theorem finite_support_chainHistory {n : ℕ} (T : (j : Fin n) → M (j + 1) →
       exact congrArg Subtype.val he
     exact Finset.mem_biUnion.mpr ⟨fun j => p (chainSucc j),
       (Set.Finite.mem_toFinset _).mpr (chainHistory_tail_ne_zero ℳ T p hp),
-      Finset.mem_image.mpr ⟨p (chainHead n), hc, chainCons_head_succ p⟩⟩
+      Finset.mem_image.mpr ⟨p (chainHead n), hc, Fin.cons_self_tail p⟩⟩
 
 /-- The finite set of degree histories whose final whole decoration is nonzero. -/
 def chainHistorySupport {n : ℕ} (T : (j : Fin n) → M (j + 1) →ₗ[R] M j) (a : M n) :
@@ -260,7 +242,7 @@ theorem chainHistorySupport_succ {n : ℕ} (T : (j : Fin (n + 1)) → M (j + 1) 
   constructor
   · intro hp
     refine ⟨fun j => p (chainSucc j), chainHistory_tail_ne_zero ℳ T p hp, p (chainHead n), ?_,
-      chainCons_head_succ p⟩
+      Fin.cons_self_tail p⟩
     rw [chainHistory_succ_apply] at hp
     exact DFinsupp.mem_support_iff.mpr fun he => hp (congrArg Subtype.val he)
   · rintro ⟨q, _, i, hi, rfl⟩
@@ -284,7 +266,7 @@ private theorem chainHistorySupport_extensions_disjoint {n : ℕ}
   intro x hx hy
   obtain ⟨i, _, rfl⟩ := Finset.mem_image.mp hx
   obtain ⟨j, _, he⟩ := Finset.mem_image.mp hy
-  exact hpq (chainCons_inj.mp he).2.symm
+  exact hpq (Fin.cons_inj.mp he).2.symm
 
 /-- Summing exactly the nonzero histories recovers the composite of the chain. -/
 @[simp]
@@ -307,7 +289,8 @@ theorem sum_chainHistory {n : ℕ} (T : (j : Fin n) → M (j + 1) →ₗ[R] M j)
         T (chainHead n) (chainHistory (M := fun k => M (k + 1)) (ι := fun k => ι (k + 1))
           (fun k => ℳ (k + 1)) (fun j => T (chainSucc j)) p' a)
     · refine Finset.sum_congr rfl fun p' _ => ?_
-      rw [Finset.sum_image fun i _ j _ hij => (chainCons_inj.mp hij).1]
+      rw [Finset.sum_image (g := fun i => chainCons i p') fun i _ j _ hij =>
+        (Fin.cons_inj.mp hij).1]
       simp only [chainHistory_succ_apply, chainCons_succ]
       exact DirectSum.sum_support_decompose (ℳ 0) _
     · rw [← map_sum, ih (M := fun k => M (k + 1)) (ι := fun k => ι (k + 1))
@@ -385,7 +368,7 @@ theorem chainHistory_map_eq_sum {n : ℕ}
     rw [chainHistorySupport_succ, Finset.sum_biUnion
       (chainHistorySupport_extensions_disjoint ℳ T a)]
     refine Finset.sum_congr rfl fun p' _ => ?_
-    rw [Finset.sum_image fun i _ j _ hij => (chainCons_inj.mp hij).1]
+    rw [Finset.sum_image (g := fun i => chainCons i p') fun i _ j _ hij => (Fin.cons_inj.mp hij).1]
     simp only [chainHead_forall, chainCons_succ, chainHistory_succ_apply]
     by_cases hp : ∀ j : Fin n, σ (j + 1) (p' j) = q (chainSucc j)
     · simp only [hp, implies_true, and_true, ↓reduceIte]
