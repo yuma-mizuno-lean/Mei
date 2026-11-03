@@ -53,6 +53,9 @@ instance : LieAlgebra R (AbelianLie V) where
   __ := (inferInstance : Module R (AbelianLie V))
   lie_smul r _ _ := (smul_zero r).symm
 
+instance [Module Rᵐᵒᵖ V] [IsCentralScalar R V] : IsCentralScalar R (AbelianLie V) where
+  op_smul_eq_smul r v := IsCentralScalar.op_smul_eq_smul r (show V from v)
+
 /-- Forget the zero Lie bracket and recover the original module. -/
 def linearEquiv : AbelianLie V ≃ₗ[R] V := LinearEquiv.refl R _
 
