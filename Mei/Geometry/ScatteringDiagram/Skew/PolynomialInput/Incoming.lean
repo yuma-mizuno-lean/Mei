@@ -81,13 +81,13 @@ local notation "ℒ" => tropicalVertexGrading (R := R) 𝒅 ρ
 local notation "H" => tropicalVertexWallSpaces (R := R) 𝒅 ρ
 
 /-- A variable monomial, regarded as a tangent degree of its initial wall. -/
-private def tangentLetter (i : B.unfrozenIndex) (s : Fin (I.multiplicity i)) : T i :=
+def tangentLetter (i : B.unfrozenIndex) (s : Fin (I.multiplicity i)) : T i :=
   ⟨PositiveDegrees.letter I.letterExponent ⟨i, s⟩,
     (mem_tropicalTangentMonoid _ _ _ _).mpr
       ⟨PositiveDegrees.letter_mem _ _, by simp⟩⟩
 
 @[simp]
-private theorem coe_tangentLetter (i : B.unfrozenIndex) (s : Fin (I.multiplicity i)) :
+theorem coe_tangentLetter (i : B.unfrozenIndex) (s : Fin (I.multiplicity i)) :
     (I.tangentLetter (R := R) i s : Γ) =
       PositiveDegrees.letter I.letterExponent ⟨i, s⟩ := (rfl)
 
@@ -95,6 +95,11 @@ private theorem coe_tangentLetter (i : B.unfrozenIndex) (s : Fin (I.multiplicity
 in the ambient alphabet algebra is `initialFunction`. -/
 def tangentInitialFunction (i : B.unfrozenIndex) : R[T i] :=
   1 + ∑ s : Fin (I.multiplicity i), single (I.tangentLetter i s) 1
+
+/-- The initial polynomial is one plus the sum of the monomials of its variables. -/
+theorem tangentInitialFunction_def (i : B.unfrozenIndex) :
+    I.tangentInitialFunction (R := R) i =
+      1 + ∑ s : Fin (I.multiplicity i), single (I.tangentLetter i s) 1 := (rfl)
 
 /-- Forgetting the tangent subtype recovers the original polynomial, including
 all independent coefficient letters. -/

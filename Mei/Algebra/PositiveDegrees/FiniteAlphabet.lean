@@ -60,6 +60,23 @@ theorem letter_ne_zero [Zero M] (α : E) : letter m α ≠ 0 :=
 theorem linearIndependent_letter [AddCommGroup M] : LinearIndependent ℤ (letter m) :=
   LinearIndependent.of_comp (LinearMap.snd ℤ M (E → ℤ)) (Pi.linearIndependent_single_one E ℤ)
 
+variable [AddCommMonoid M] in
+/-- A sum of two letters is a sum of the same two letters, in either order. -/
+theorem letter_add_letter_eq_iff {α β γ δ : E} :
+    letter m α + letter m β = letter m γ + letter m δ ↔
+      (α = γ ∧ β = δ) ∨ (α = δ ∧ β = γ) := by
+  refine ⟨fun h => ?_, ?_⟩
+  · have h' := congrArg Prod.snd h
+    have hα := congrFun h' α
+    have hβ := congrFun h' β
+    have hγ := congrFun h' γ
+    have hδ := congrFun h' δ
+    simp only [letter_snd, Prod.snd_add, Pi.add_apply, Pi.single_apply] at hα hβ hγ hδ
+    grind
+  · rintro (⟨rfl, rfl⟩ | ⟨rfl, rfl⟩)
+    · rfl
+    · exact add_comm _ _
+
 end Letter
 
 variable {M : Type*} [AddCommGroup M] {E : Type*} [Fintype E] (m : E → M)
@@ -84,6 +101,17 @@ theorem finiteAlphabet_degree (x : M × (E → ℤ)) :
     (finiteAlphabet m).degree x = ∑ α, x.2 α := by
   obtain ⟨a, b⟩ := x
   simp [finiteAlphabet]
+
+/-- The finite alphabet degree of a letter is one. -/
+theorem finiteAlphabet_degree_letter [DecidableEq E] (α : E) :
+    (finiteAlphabet m).degree (letter m α) = 1 := by
+  simp [Pi.single_apply]
+
+/-- The finite alphabet degree of a sum of two letters is two. -/
+theorem finiteAlphabet_degree_letter_add_letter [DecidableEq E] (α β : E) :
+    (finiteAlphabet m).degree (letter m α + letter m β) = 2 := by
+  rw [map_add, finiteAlphabet_degree_letter, finiteAlphabet_degree_letter]
+  norm_num
 
 /-- Over a torsion-free group of exponents, the finite alphabet monoid is saturated. -/
 theorem finiteAlphabet_monoid_nsmulSaturated [IsAddTorsionFree M] :
@@ -125,6 +153,31 @@ proportional. -/
 theorem letterRay_injective : Function.Injective (letterRay m) := fun α β h =>
   (linearIndependent_letter m).injective <| by
     simpa using congrArg SupportedRay.generator h
+
+/-- The ray of the sum of two distinct letters. Its generator has letter counts one at the two
+letters, hence is primitive. -/
+def letterPairRay {α β : E} (hαβ : α ≠ β) : SupportedRay (finiteAlphabet m) :=
+  SupportedRay.ofMem (letter m α + letter m β)
+    (add_mem (letter_mem m α) (letter_mem m β)) <|
+    TauCeti.isPrimitive_def.mpr
+      ⟨(LinearMap.proj α).comp (LinearMap.snd ℤ M (E → ℤ)), by simp [letter, hαβ.symm]⟩
+
+@[simp]
+theorem letterPairRay_generator {α β : E} (hαβ : α ≠ β) :
+    (letterPairRay m hαβ).generator = letter m α + letter m β := by
+  simp [letterPairRay]
+
+/-- The ray of a sum of two distinct letters is not the ray of a letter: the letter counts of
+the generators have total two and one. -/
+theorem letterPairRay_ne_letterRay {α β : E} (hαβ : α ≠ β) (γ : E) :
+    letterPairRay m hαβ ≠ letterRay m γ := by
+  intro h
+  have h' := congrArg Prod.snd (congrArg SupportedRay.generator h)
+  have hα := congrFun h' α
+  have hβ := congrFun h' β
+  simp only [letterPairRay_generator, letterRay_generator, letter_snd, Prod.snd_add, Pi.add_apply,
+    Pi.single_apply] at hα hβ
+  grind
 
 /-- An element whose first coordinate is the sum of exponents prescribed by its letter
 counts is the corresponding integer combination of letters. -/

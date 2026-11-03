@@ -89,6 +89,36 @@ theorem decompose_tropicalTangentField_mem_wall (v : R[T]) (q : Γ) :
     · rw [DirectSum.decompose_of_mem_ne ℒ (((H).wall_le_piece _ _) ht) htq]
       exact zero_mem _
 
+/-- The homogeneous component of a tangent field in a tangent degree `q` is the tangent field of
+the coefficient of `q`. -/
+theorem decompose_tropicalTangentField_apply (v : R[T]) (q : T) :
+    (DirectSum.decompose ℒ (tropicalTangentField d ρ χ v) (q : Γ) :
+      tropicalVertexLieAlgebra d ρ) = tropicalTangentField d ρ χ (single q (v.coeff q)) := by
+  induction v using induction_linear with
+  | zero => simp
+  | add a b ha hb =>
+    simp only [map_add, DirectSum.decompose_add, DirectSum.add_apply, Submodule.coe_add, ha, hb,
+      coeff_add, Finsupp.add_apply, single_add]
+  | single t c =>
+    have ht := ((H).wall_le_piece _ _) (tropicalTangentField_single_mem_wall d ρ n t c)
+    by_cases htq : t = q
+    · subst htq
+      rw [DirectSum.decompose_of_mem_same ℒ ht, coeff_single, Finsupp.single_eq_same]
+    · rw [DirectSum.decompose_of_mem_ne ℒ ht (fun h => htq (Subtype.ext h)), coeff_single,
+        Finsupp.single_eq_of_ne' htq, single_zero, map_zero]
+
+/-- In a degree of order at most `k`, the logarithmic coefficient of a completed tangent label
+`exp(u ∂_n)` is the homogeneous component of the tangent field of any representative `v` of the
+order-`k` truncation of `u`. -/
+theorem logComponent_completedBCHExp_completedTropicalTangentField_eq_decompose
+    (u : (G).completion) {k : ℕ} {v : R[T]} (hv : (G).projection k u = Ideal.Quotient.mk _ v)
+    {q : Γ} (hq : d.degree q ≤ k) :
+    d.logComponent ℒ (d.completedBCHExp ℒ (completedTropicalTangentField d ρ χ u)) q =
+      DirectSum.decompose ℒ (tropicalTangentField d ρ χ v) q :=
+  d.logComponent_eq_decompose ℒ _ hq (x := tropicalTangentField d ρ χ v) (by
+    rw [PositiveDegrees.projection_completedBCHExp, BCHGroup.log_exp,
+      completionProjection_completedTropicalTangentField d ρ χ _ u v hv])
+
 /-- The logarithmic coefficients of a completed tangent label `exp(u ∂_n)` lie in the
 wall spaces of their degrees and the normal `n`. -/
 theorem logComponent_completedBCHExp_completedTropicalTangentField_mem_wall
@@ -96,10 +126,8 @@ theorem logComponent_completedBCHExp_completedTropicalTangentField_mem_wall
     (d.logComponent ℒ (d.completedBCHExp ℒ (completedTropicalTangentField d ρ χ u)) q :
       tropicalVertexLieAlgebra d ρ) ∈ (H).wall q n := by
   obtain ⟨v, hv⟩ := Ideal.Quotient.mk_surjective ((G).projection (d.degree q).toNat u)
-  rw [d.logComponent_eq_decompose ℒ _ (Int.self_le_toNat _)
-    (x := tropicalTangentField d ρ χ v) (by
-      rw [PositiveDegrees.projection_completedBCHExp, BCHGroup.log_exp,
-        completionProjection_completedTropicalTangentField d ρ χ _ u v hv.symm])]
+  rw [logComponent_completedBCHExp_completedTropicalTangentField_eq_decompose d ρ n u hv.symm
+    (Int.self_le_toNat _)]
   exact decompose_tropicalTangentField_mem_wall d ρ n v q
 
 end Monoid

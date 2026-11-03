@@ -128,6 +128,10 @@ theorem rankTwoAdaptedBasis_basis : rankTwoAdaptedBasis.basis = Module.Basis.fin
   (rfl)
 
 @[simp]
+theorem rankTwoAdaptedBasis_unfrozenIndex : rankTwoAdaptedBasis.unfrozenIndex = Finset.univ :=
+  (rfl)
+
+@[simp]
 theorem rankTwoAdaptedBasis_multiplier : rankTwoAdaptedBasis.multiplier = ![1, 2] :=
   (rfl)
 
