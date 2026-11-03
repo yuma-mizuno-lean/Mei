@@ -317,12 +317,12 @@ theorem composeLinear_pathOfFn {α : Type*} (f : α → Module.End R M) :
       (SingleObj.pathOfFn P).composeLinear (M := fun _ => M) (fun e => f e) =
         (List.ofFn fun j => f (P j)).prod
   | 0, _ => by
-    rw [SingleObj.pathOfFn_zero, Path.composeLinear_nil, List.ofFn_zero, List.prod_nil]
-    rfl
+    rw [SingleObj.pathOfFn_zero, Path.composeLinear_nil, List.ofFn_zero, List.prod_nil,
+      Module.End.one_eq_id]
   | n + 1, P => by
     rw [SingleObj.pathOfFn_succ, Path.composeLinear_cons,
-      composeLinear_pathOfFn f (fun j => P j.succ), List.ofFn_succ, List.prod_cons]
-    rfl
+      composeLinear_pathOfFn f (fun j => P j.succ), List.ofFn_succ, List.prod_cons,
+      Module.End.mul_eq_comp]
 
 end Path
 

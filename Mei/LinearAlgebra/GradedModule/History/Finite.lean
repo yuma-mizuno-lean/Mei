@@ -151,7 +151,7 @@ private theorem map_degreesPathOfFn_eq_iff {n : ℕ} (p : Fin n → ι) (q : Fin
         (SingleObj.degreesPathOfFn ι (fun j : Fin n => j) p) =
       SingleObj.degreesPathOfFn κ (fun j : Fin n => j) q ↔ ∀ j, σ (p j) = q j := by
   rw [SingleObj.map_degreesPathOfFn, Equiv.apply_eq_iff_eq, funext_iff]
-  rfl
+  simp only [Function.comp_apply]
 
 include hr
 
@@ -225,7 +225,7 @@ theorem map_sum_ite_homogeneousHistory {n : ℕ}
     (fun d => E ((SingleObj.degreesPathOfFn κ (fun j : Fin n => j)).symm d)) a
   rw [sum_homogeneousHistorySupport, sum_homogeneousHistorySupport]
   simp only [homogeneousHistory_degreesPathOfFn_symm]
-  convert h using 3 with d
+  refine Eq.trans (congrArg r (Finset.sum_congr rfl fun d _ => ?_)) h
   obtain ⟨p, rfl⟩ := (SingleObj.degreesPathOfFn ι (fun j : Fin n => j)).surjective d
   rw [Equiv.symm_apply_apply, SingleObj.map_degreesPathOfFn, Equiv.symm_apply_apply]
 
