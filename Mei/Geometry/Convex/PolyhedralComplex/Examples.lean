@@ -8,6 +8,7 @@ module
 public import Mei.Geometry.Convex.PolyhedralComplex.CoordinateAxes
 public import Mei.Geometry.Convex.Polyhedron.Rational.Cone
 public import Mei.Geometry.Convex.Recession
+public import Mei.Topology.Algebra.Module.Prod
 public import Mathlib.NumberTheory.Real.Irrational
 
 /-!
@@ -51,13 +52,6 @@ def horizontalRay (a : ℝ) : Set (ℝ × ℝ) := {p | p.2 = 0 ∧ a ≤ p.1}
 theorem mem_horizontalRay {a : ℝ} {p : ℝ × ℝ} : p ∈ horizontalRay a ↔ p.2 = 0 ∧ a ≤ p.1 :=
   (Iff.rfl)
 
-/-- A continuous linear functional on the plane is determined by its values on the basis. -/
-private theorem apply_eq (l : (ℝ × ℝ) →L[ℝ] ℝ) (p : ℝ × ℝ) :
-    l p = p.1 * l (1, 0) + p.2 * l (0, 1) := by
-  have hp : p = p.1 • ((1, 0) : ℝ × ℝ) + p.2 • ((0, 1) : ℝ × ℝ) := by ext <;> simp
-  calc l p = l (p.1 • ((1, 0) : ℝ × ℝ) + p.2 • ((0, 1) : ℝ × ℝ)) := congrArg l hp
-    _ = _ := by rw [map_add, map_smul, map_smul, smul_eq_mul, smul_eq_mul]
-
 /-- An affine line has no proper nonempty exposed face. -/
 theorem isExposed_horizontalLine_iff {c : ℝ} {F : Set (ℝ × ℝ)} :
     IsExposed ℝ (horizontalLine c) F ↔ F = ∅ ∨ F = horizontalLine c := by
@@ -82,6 +76,29 @@ theorem isExposed_horizontalLine_iff {c : ℝ} {F : Set (ℝ × ℝ)} :
     · exact isExposed_empty
     · exact IsExposed.refl _
 
+/-- A functional that decreases along the ray is maximal exactly at the vertex. -/
+theorem toExposed_horizontalRay_of_lt {a : ℝ} {l : (ℝ × ℝ) →L[ℝ] ℝ} (hl : l (1, 0) < 0) :
+    {x ∈ horizontalRay a | ∀ y ∈ horizontalRay a, l y ≤ l x} = {(a, 0)} := by
+  ext p
+  refine ⟨fun ⟨hp, hmax⟩ => ?_, ?_⟩
+  · have hv := hmax (a, 0) (by simp)
+    rw [l.apply_eq_fst_smul_of_snd_eq_zero (mem_horizontalRay.mp hp).1,
+      l.apply_eq_fst_smul_of_snd_eq_zero (p := (a, 0)) rfl, smul_eq_mul, smul_eq_mul] at hv
+    have hp1 : p.1 ≤ a := by nlinarith
+    exact Prod.ext (le_antisymm hp1 (mem_horizontalRay.mp hp).2) (mem_horizontalRay.mp hp).1
+  · rintro rfl
+    refine ⟨by simp, fun y hy => ?_⟩
+    rw [l.apply_eq_fst_smul_of_snd_eq_zero (mem_horizontalRay.mp hy).1,
+      l.apply_eq_fst_smul_of_snd_eq_zero (p := (a, 0)) rfl, smul_eq_mul, smul_eq_mul]
+    nlinarith [(mem_horizontalRay.mp hy).2]
+
+/-- A functional vanishing along the ray is constant on it, so it cuts out the whole ray. -/
+theorem toExposed_horizontalRay_of_eq_zero {a : ℝ} {l : (ℝ × ℝ) →L[ℝ] ℝ} (hl : l (1, 0) = 0) :
+    {x ∈ horizontalRay a | ∀ y ∈ horizontalRay a, l y ≤ l x} = horizontalRay a := by
+  refine Set.Subset.antisymm (fun p hp => hp.1) fun p hp => ⟨hp, fun z hz => ?_⟩
+  rw [l.apply_eq_fst_smul_of_snd_eq_zero (mem_horizontalRay.mp hz).1,
+    l.apply_eq_fst_smul_of_snd_eq_zero (mem_horizontalRay.mp hp).1, hl, smul_zero, smul_zero]
+
 /-- The faces of a ray are the empty face, the ray itself and its vertex. -/
 theorem isExposed_horizontalRay_iff {a : ℝ} {F : Set (ℝ × ℝ)} :
     IsExposed ℝ (horizontalRay a) F ↔ F = ∅ ∨ F = horizontalRay a ∨ F = {(a, 0)} := by
@@ -91,46 +108,23 @@ theorem isExposed_horizontalRay_iff {a : ℝ} {F : Set (ℝ × ℝ)} :
     right
     obtain ⟨l, hl⟩ := hF ⟨x₀, hx₀⟩
     have hx₀' := hl ▸ hx₀
-    have hlp : ∀ p ∈ horizontalRay a, l p = p.1 * l (1, 0) := by
-      intro p hp
-      rw [apply_eq l p, (mem_horizontalRay.mp hp).1, zero_mul, add_zero]
-    have hstep : (x₀.1 + 1, 0) ∈ horizontalRay a := by
-      simpa using (mem_horizontalRay.mp hx₀'.1).2.trans (le_add_of_nonneg_right zero_le_one)
+    -- `l` is nonpositive along the ray, since `x₀` maximizes it and the ray continues past `x₀`
+    have hstep : (x₀.1 + 1, 0) ∈ horizontalRay a :=
+      ⟨rfl, (mem_horizontalRay.mp hx₀'.1).2.trans (le_add_of_nonneg_right zero_le_one)⟩
     have hle := hx₀'.2 _ hstep
-    rw [hlp _ hstep, hlp _ hx₀'.1] at hle
+    rw [l.apply_eq_fst_smul_of_snd_eq_zero (p := (x₀.1 + 1, 0)) rfl,
+      l.apply_eq_fst_smul_of_snd_eq_zero (mem_horizontalRay.mp hx₀'.1).1, smul_eq_mul,
+      smul_eq_mul] at hle
     have hneg : l (1, 0) ≤ 0 := by simp only at hle; nlinarith
     rcases hneg.lt_or_eq with hlt | h0
-    · -- a strictly decreasing functional is maximal exactly at the vertex
-      right
-      rw [hl]
-      ext p
-      refine ⟨fun ⟨hp, hmax⟩ => ?_, ?_⟩
-      · have hv := hmax (a, 0) (by simp)
-        rw [hlp _ hp, hlp (a, 0) (by simp)] at hv
-        have hp1 : p.1 ≤ a := by simp only at hv; nlinarith
-        exact Prod.ext (le_antisymm hp1 (mem_horizontalRay.mp hp).2) (mem_horizontalRay.mp hp).1
-      · rintro rfl
-        refine ⟨by simp, fun y hy => ?_⟩
-        rw [hlp _ hy, hlp (a, 0) (by simp)]
-        nlinarith [(mem_horizontalRay.mp hy).2]
-    · -- a functional vanishing on the axis does not cut the ray
-      left
-      refine Set.Subset.antisymm hF.subset fun p hp => ?_
-      rw [hl]
-      exact ⟨hp, fun z hz => by rw [hlp z hz, hlp p hp, h0, mul_zero, mul_zero]⟩
+    · exact Or.inr (hl.trans (toExposed_horizontalRay_of_lt hlt))
+    · exact Or.inl (hl.trans (toExposed_horizontalRay_of_eq_zero h0))
   · rintro (rfl | rfl | rfl)
     · exact isExposed_empty
     · exact IsExposed.refl _
     · intro _
       refine ⟨-ContinuousLinearMap.fst ℝ ℝ ℝ, ?_⟩
-      ext p
-      refine ⟨?_, fun ⟨hp, hmax⟩ => ?_⟩
-      · rintro rfl
-        exact ⟨by simp, fun y hy => by simpa using (mem_horizontalRay.mp hy).2⟩
-      · have hv := hmax (a, 0) (by simp)
-        simp only [neg_apply, ContinuousLinearMap.coe_fst'] at hv
-        exact Prod.ext (le_antisymm (by linarith) (mem_horizontalRay.mp hp).2)
-          (mem_horizontalRay.mp hp).1
+      exact (toExposed_horizontalRay_of_lt (l := -ContinuousLinearMap.fst ℝ ℝ ℝ) (by simp)).symm
 
 section Complexes
 
@@ -157,14 +151,11 @@ private theorem isRationalNormalPolyhedron_setOf_forall_affineRow {ι : Type*} [
   simpa only [affineRow_apply] using isRationalNormalPolyhedron_setOf_forall (h := h)
     (fun j => affineRow (f j) (c j)) (fun j => by rw [linear_affineRow]; exact hf j)
 
-private theorem isRationalNormalPolyhedron_horizontalLine (c : ℝ) :
-    IsRationalNormalPolyhedron h (horizontalLine c) := by
-  have hrow := isRationalFunctional_axisRow h true
-  convert isRationalNormalPolyhedron_setOf_forall_affineRow h
-    (fun b : Bool => cond b (axisRow true) (-axisRow true)) (fun b => cond b (-c) c)
-    (fun b => by cases b; exacts [by simpa using hrow.neg, by simpa using hrow]) using 1
+private theorem horizontalLine_eq_setOf_forall (c : ℝ) :
+    horizontalLine c = {p | ∀ b : Bool, (cond b (axisRow true) (-axisRow true)) p +
+      cond b (-c) c ≤ 0} := by
   ext p
-  simp only [horizontalLine, mem_ofPred_eq, Bool.forall_bool, Bool.cond_false, Bool.cond_true,
+  simp only [mem_horizontalLine, mem_ofPred_eq, Bool.forall_bool, Bool.cond_false, Bool.cond_true,
     neg_apply, axisRow_true_apply]
   constructor
   · intro hp
@@ -172,24 +163,37 @@ private theorem isRationalNormalPolyhedron_horizontalLine (c : ℝ) :
   · rintro ⟨h₁, h₂⟩
     linarith
 
-private theorem isRationalNormalPolyhedron_horizontalRay (a : ℝ) :
-    IsRationalNormalPolyhedron h (horizontalRay a) := by
-  have hrow := fun j => isRationalFunctional_axisRow h j
-  convert isRationalNormalPolyhedron_setOf_forall_affineRow h
-    ![axisRow true, -axisRow true, -axisRow false] ![0, 0, a] (fun j => by
-      fin_cases j
-      · simpa using hrow true
-      · simpa using (hrow true).neg
-      · simpa using (hrow false).neg) using 1
+private theorem horizontalRay_eq_setOf_forall (a : ℝ) :
+    horizontalRay a = {p | ∀ j : Fin 3,
+      (![axisRow true, -axisRow true, -axisRow false] j) p + ![0, 0, a] j ≤ 0} := by
   ext p
-  simp only [horizontalRay, mem_ofPred_eq, Fin.forall_fin_succ, IsEmpty.forall_iff, and_true]
-  simp only [Matrix.cons_val_zero, Matrix.cons_val_succ, neg_apply, axisRow_true_apply,
+  simp only [mem_horizontalRay, mem_ofPred_eq, Fin.forall_fin_succ, IsEmpty.forall_iff, and_true,
+    Matrix.cons_val_zero, Matrix.cons_val_succ, neg_apply, axisRow_true_apply,
     axisRow_false_apply]
   constructor
   · rintro ⟨h₁, h₂⟩
     refine ⟨by linarith, by linarith, by linarith⟩
   · rintro ⟨h₁, h₂, h₃⟩
     exact ⟨by linarith, by linarith⟩
+
+private theorem isRationalNormalPolyhedron_horizontalLine (c : ℝ) :
+    IsRationalNormalPolyhedron h (horizontalLine c) := by
+  have hrow := isRationalFunctional_axisRow h true
+  rw [horizontalLine_eq_setOf_forall]
+  exact isRationalNormalPolyhedron_setOf_forall_affineRow h
+    (fun b : Bool => cond b (axisRow true) (-axisRow true)) (fun b => cond b (-c) c)
+    (fun b => by cases b; exacts [by simpa using hrow.neg, by simpa using hrow])
+
+private theorem isRationalNormalPolyhedron_horizontalRay (a : ℝ) :
+    IsRationalNormalPolyhedron h (horizontalRay a) := by
+  have hrow := fun j => isRationalFunctional_axisRow h j
+  rw [horizontalRay_eq_setOf_forall]
+  exact isRationalNormalPolyhedron_setOf_forall_affineRow h
+    ![axisRow true, -axisRow true, -axisRow false] ![0, 0, a] (fun j => by
+      fin_cases j
+      · simpa using hrow true
+      · simpa using (hrow true).neg
+      · simpa using (hrow false).neg)
 
 /-- The complex whose only cell is the horizontal line at height `c`. The cell has nonzero
 lineality (`lineal_recessionCone_horizontalLine_ne_bot`). -/
