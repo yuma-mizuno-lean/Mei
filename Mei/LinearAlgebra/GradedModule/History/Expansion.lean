@@ -105,10 +105,8 @@ section Terminal
 
 /-- Within a grading with finite support, selecting the histories with terminal
 degree `η` isolates the final `η`-component of the composite. Histories with a
-different terminal degree contribute zero. Derived from the uniform-support
-linear-map version `sum_homogeneousHistory_terminal_comp_eq` in
-`History/Uniform.lean`, by the same reindexing `sum_homogeneousHistory_eq_prod`
-uses. -/
+different terminal degree contribute zero. Proved by applying the piece
+selection termwise to the shared expansion `sum_homogeneousHistory_eq_prod`. -/
 theorem sum_homogeneousHistory_terminal_eq_homogeneousComponent_comp_prod
     (S : Finset ι) (hS : ∀ i, i ∉ S → ℳ i = ⊥) {n : ℕ}
     (T : Fin (n + 1) → Module.End R M) (η : ι) :
@@ -116,24 +114,23 @@ theorem sum_homogeneousHistory_terminal_eq_homogeneousComponent_comp_prod
         homogeneousHistory ℳ T (fun j => (p j).val) =
       (homogeneousComponent ℳ η).comp (List.ofFn T).prod := by
   classical
-  let embed : (Fin (n + 1) → S) → (Fin (n + 1) → ι) := fun p j => (p j).val
-  have hinj : Function.Injective embed := by
-    intro p q hpq
-    funext j
-    exact Subtype.ext (congrFun hpq j)
-  have hzero (p : Fin (n + 1) → ι) (hp : p ∉ Finset.univ.image embed) :
-      (homogeneousHistory ℳ T p).comp LinearMap.id = 0 := by
-    have hp' : p ∉ Fintype.piFinset (fun _ => S) := by
-      intro hmem
-      exact hp (Finset.mem_image.mpr
-        ⟨fun j => ⟨p j, (Fintype.mem_piFinset.mp hmem) j⟩, Finset.mem_univ _, rfl⟩)
-    rw [homogeneousHistory_eq_zero_of_notMem_piFinset ℳ S hS T p hp',
-      LinearMap.zero_comp]
-  have h := sum_homogeneousHistory_terminal_comp_eq ℳ LinearMap.id T
-    (Finset.univ.image embed) hzero η
-  rw [Finset.filter_image] at h
-  rw [Finset.sum_image (fun p _ q _ hpq => hinj hpq)] at h
-  simpa only [Function.comp_apply, LinearMap.comp_id] using h
+  ext a
+  simp only [LinearMap.sum_apply, LinearMap.comp_apply]
+  have h := LinearMap.congr_fun (sum_homogeneousHistory_eq_prod ℳ S hS T) a
+  rw [LinearMap.sum_apply] at h
+  rw [Finset.sum_filter]
+  calc ∑ p : Fin (n + 1) → S,
+        (if (p 0 : ι) = η then homogeneousHistory ℳ T (fun j => (p j).val) a else 0)
+      = ∑ p : Fin (n + 1) → S,
+          homogeneousComponent ℳ η
+            (homogeneousHistory ℳ T (fun j => (p j).val) a) := by
+        refine Finset.sum_congr rfl fun p _ => ?_
+        exact (homogeneousComponent_homogeneousHistory_apply ℳ T (fun j => (p j).val) η a).symm
+    _ = homogeneousComponent ℳ η
+          (∑ p : Fin (n + 1) → S, homogeneousHistory ℳ T (fun j => (p j).val) a) :=
+        (map_sum _ _ _).symm
+    _ = homogeneousComponent ℳ η ((List.ofFn T).prod a) :=
+        congrArg (homogeneousComponent ℳ η) h
 
 end Terminal
 

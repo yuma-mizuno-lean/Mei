@@ -66,6 +66,7 @@ theorem homogeneousComponent_idem (η : ι) :
   exact DirectSum.decompose_of_mem_same ℳ (Subtype.property (DirectSum.decompose ℳ a η))
 
 /-- Selections of two different pieces are orthogonal. -/
+@[simp]
 theorem homogeneousComponent_comp_of_ne {i j : ι} (h : i ≠ j) :
     (homogeneousComponent ℳ i).comp (homogeneousComponent ℳ j) = 0 := by
   ext a

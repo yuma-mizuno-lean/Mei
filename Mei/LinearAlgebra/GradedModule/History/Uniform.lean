@@ -142,17 +142,8 @@ theorem sum_homogeneousHistory_terminal_comp_eq
             homogeneousComponent_comp_homogeneousHistory_of_ne ℳ T p η hp,
             LinearMap.zero_comp]
     _ = ((homogeneousComponent ℳ η).comp (List.ofFn T).prod).comp a := by
-        let φ : (E →ₗ[R] M) →+ (E →ₗ[R] M) :=
-          { toFun := (homogeneousComponent ℳ η).comp
-            map_zero' := LinearMap.ext fun x => by simp
-            map_add' := fun g h => LinearMap.ext fun x => by simp }
-        have h : (homogeneousComponent ℳ η).comp
-              (∑ p ∈ S, (homogeneousHistory ℳ T p).comp a) =
-            ∑ p ∈ S, (homogeneousComponent ℳ η).comp
-              ((homogeneousHistory ℳ T p).comp a) :=
-          map_sum φ (fun p => (homogeneousHistory ℳ T p).comp a) S
-        rw [sum_homogeneousHistory_comp_eq ℳ T a S hS] at h
-        exact h.symm
+        simpa only [LinearMap.comp_assoc] using
+          sum_comp_homogeneousHistory_comp_eq ℳ T a (homogeneousComponent ℳ η) S hS
 
 open Classical in
 /-- Selected linear-map sums agree over any two uniform supports. -/

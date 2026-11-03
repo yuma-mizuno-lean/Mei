@@ -64,6 +64,7 @@ theorem homogeneousHistory_mem {n : ℕ} (T : Fin (n + 1) → Module.End R M)
 
 /-- A nonempty history has no component in a degree different from its terminal
 degree. -/
+@[simp]
 theorem homogeneousComponent_comp_homogeneousHistory_of_ne {n : ℕ}
     (T : Fin (n + 1) → Module.End R M) (p : Fin (n + 1) → ι) (η : ι)
     (hη : p 0 ≠ η) :
@@ -73,16 +74,15 @@ theorem homogeneousComponent_comp_homogeneousHistory_of_ne {n : ℕ}
   exact homogeneousComponent_apply_of_mem_ne ℳ (homogeneousHistory_mem ℳ T p a) hη
 
 /-- Selecting the terminal degree of a nonempty history returns that history:
-the history already ends in the `p 0` selection, which is idempotent. -/
+the history already ends in the `p 0` selection, which fixes its output. -/
 @[simp]
 theorem homogeneousComponent_comp_homogeneousHistory {n : ℕ}
     (T : Fin (n + 1) → Module.End R M) (p : Fin (n + 1) → ι) :
     (homogeneousComponent ℳ (p 0)).comp (homogeneousHistory ℳ T p) =
       homogeneousHistory ℳ T p := by
-  rw [show homogeneousHistory ℳ T p =
-      (homogeneousComponent ℳ (p 0)).comp
-        ((T 0).comp (homogeneousHistory ℳ (fun j => T j.succ) (fun j => p j.succ)))
-    from rfl, ← LinearMap.comp_assoc, homogeneousComponent_idem]
+  ext a
+  simp only [LinearMap.comp_apply]
+  exact homogeneousComponent_apply_of_mem ℳ (homogeneousHistory_mem ℳ T p a)
 
 /-- The final `η`-selection of a nonempty history keeps it when `η` is the
 terminal degree and kills it otherwise. -/
