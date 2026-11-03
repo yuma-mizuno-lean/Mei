@@ -8,6 +8,7 @@ module
 public import Mei.Geometry.ScatteringDiagram.Skew.StandardPlane.Basic
 public import Mei.Data.List.Chain
 public import Mei.Data.List.Filter
+public import Mei.Data.List.Replicate
 public import Mei.LinearAlgebra.SesquilinearForm.Alternating
 
 /-!
@@ -103,16 +104,6 @@ private theorem rank_le_of_not_inverted {a b : PlaneDegree w} (h : ¬ Inverted a
 
 end PlaneDegree
 
-/-- If `e₁^p e₂^q` is a permutation of `e₂^A e₁^B` for distinct `e₁, e₂`, then `p = B` and
-`q = A`. -/
-private theorem length_eq_of_perm_replicate {α : Type*} {a b : α} (hab : a ≠ b)
-    {p q A B : ℕ} (h : (List.replicate p a ++ List.replicate q b).Perm
-      (List.replicate A b ++ List.replicate B a)) : p = B ∧ q = A := by
-  classical
-  have c₁ := h.count_eq a
-  have c₂ := h.count_eq b
-  simpa [List.count_replicate, hab, hab.symm] using And.intro c₁ c₂
-
 /-- **Shape of an ordered list.** An ordered list of plane degrees whose boundary degrees are a
 permutation of `e₂^A e₁^B` is `e₁^B I e₂^A`, where `I` consists of degrees of the open
 quadrant. -/
@@ -171,7 +162,7 @@ theorem exists_eq_append_of_isChain (A B : ℕ) (l : List (PlaneDegree w))
       (List.replicate A (PlaneDegree.e₂ w) ++ List.replicate B (PlaneDegree.e₁ w)) := by
     rw [← hf₀, ← hf₂]
     exact hperm
-  obtain ⟨hB, hA⟩ := length_eq_of_perm_replicate hne hperm'
+  obtain ⟨hB, hA⟩ := List.eq_and_eq_of_perm_replicate_append_replicate hne hperm'
   subst hA hB
   rw [← hf₀, ← hf₂]
 

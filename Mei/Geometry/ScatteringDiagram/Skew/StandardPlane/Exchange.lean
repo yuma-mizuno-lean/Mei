@@ -9,6 +9,7 @@ public import Mei.Geometry.ScatteringDiagram.Skew.StandardPlane.Integral
 public import Mei.Geometry.ScatteringDiagram.Skew.StandardPlane.Rebase
 public import Mei.Geometry.ScatteringDiagram.Skew.StandardPlane.Shape
 public import Mei.Geometry.ScatteringDiagram.Skew.Pentagon
+public import Mei.Algebra.Group.Conjugate
 public import Mei.Algebra.Lie.BCH.Ordering
 
 /-!
@@ -282,12 +283,6 @@ private theorem exists_nat_mul_inv_eq_rayIndex (x : PlaneDegree w) (a : ℤ × �
   rw [← hz]
   field_simp
 
-/-- Conjugating the exchange `X Y = Y T X` gives `Y⁻¹ X Y X⁻¹ = T`. -/
-private theorem conj_eq_of_mul_eq {G : Type*} [Group G] {X Y T : G} (h : X * Y = Y * (T * X)) :
-    Y⁻¹ * X * Y * X⁻¹ = T := by
-  calc Y⁻¹ * X * Y * X⁻¹ = Y⁻¹ * (X * Y) * X⁻¹ := by group
-    _ = T := by rw [h]; group
-
 /-- The recursive step of the exchange: for `{y, x} ≥ 2` the exchange of the unit factors of `x`
 and `y` follows from the exchanges in the plane rescaled along `x, y`. -/
 private theorem exists_exchange_of_two_le_det (k : ℕ) (x y : PlaneDegree w)
@@ -317,7 +312,7 @@ private theorem exists_exchange_of_two_le_det (k : ℕ) (x y : PlaneDegree w)
       CompletedGroup.projection k (I.map fun m =>
         dilogPow (rebasePos x y m) ((y.det x : ℚ)⁻¹ * rayIndex m.vec)).prod := by
     simp only [map_mul, map_inv]
-    exact conj_eq_of_mul_eq (by simpa only [map_mul] using hT)
+    exact inv_mul_mul_mul_inv_eq_of_mul_eq (by simpa only [map_mul] using hT)
   obtain ⟨M, hMmem, hMprod⟩ := exists_units_prod_eq_rebase k x y hdet0 I hchain hmid
   refine ⟨M, fun m hm => ?_, ?_⟩
   · obtain ⟨i, hiI, rfl⟩ := hMmem m hm
