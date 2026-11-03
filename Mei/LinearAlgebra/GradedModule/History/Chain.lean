@@ -331,9 +331,7 @@ theorem map_chainHistory_of_injective (hσ : ∀ k, Function.Injective (σ k)) {
     rw [chainHistory_succ_apply]
     refine (DirectSum.map_decompose_shift (ℳ 0) (𝓝 0) (r 0).toAddMonoidHom (σ 0) (hσ 0)
       (hr 0) _ _).trans ?_
-    change (DirectSum.decompose (𝓝 0) (r 0 (T (chainHead n) _)) (σ 0 (p (chainHead n))) :
-      N 0) = _
-    rw [hcomm]
+    rw [LinearMap.toAddMonoidHom_coe, hcomm]
     exact congrArg (fun x => (DirectSum.decompose (𝓝 0) (U (chainHead n) x)
       (σ 0 (p (chainHead n))) : N 0)) htail
 
@@ -359,11 +357,8 @@ theorem chainHistory_map_eq_sum {n : ℕ}
       (fun k => 𝓝 (k + 1)) (fun k => r (k + 1)) (fun k => σ (k + 1)) (fun k => hr (k + 1))
       (fun j => T (chainSucc j)) (fun j => U (chainSucc j)) (fun j => hT (chainSucc j))
       (fun j => q (chainSucc j)) a
-    rw [chainHistory_succ_apply]
-    change (DirectSum.decompose (𝓝 0) (U (chainHead n) (chainHistory (M := fun k => N (k + 1))
-      (ι := fun k => κ (k + 1)) (fun k => 𝓝 (k + 1)) (fun j => U (chainSucc j))
-      (fun j => q (chainSucc j)) (r (n + 1) a))) (q (chainHead n)) : N 0) = _
-    rw [htail]
+    beta_reduce at htail
+    rw [chainHistory_succ_apply, htail]
     simp only [map_sum, DirectSum.decompose_sum, DirectSum.sum_apply, Submodule.coe_sum]
     rw [chainHistorySupport_succ, Finset.sum_biUnion
       (chainHistorySupport_extensions_disjoint ℳ T a)]
