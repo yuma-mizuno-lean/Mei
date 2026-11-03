@@ -157,6 +157,8 @@ structure LoopProjection (k : ℕ) where
   map_log_loop : ∀ {x : WallComplement (fun j : D.active k => (D.wall j).support)}
     (p : AdmissiblePLPath x x),
     toLinearMap (log (D.levelPathProduct k p)) = log (D.levelPathProduct k p)
+  /-- The map is a projection. -/
+  isIdempotentElem : IsIdempotentElem toLinearMap
   /-- A wall whose projected correction-degree label component is nonzero has a full
   hyperplane support. -/
   full_of_ne_zero : ∀ (j : D.active k) {n : Γ}, d.degree n = k →
@@ -279,6 +281,7 @@ def ofFullPure (initial : Set ι)
   decompose_map _ _ := rfl
   map_wall _ _ _ hx := hx
   map_log_loop _ := rfl
+  isIdempotentElem := IsIdempotentElem.one
   full_of_ne_zero j n hn hne := by
     by_cases hj : j.val ∈ initial
     · exact hfull j hj
@@ -288,6 +291,14 @@ def ofFullPure (initial : Set ι)
       rw [he, PositiveDegrees.projection_expToCompletion, log_exp, LinearMap.id_apply]
       exact DirectSum.decompose_of_mem_ne (d.truncatedGrading ℒ k)
         ((d.mem_truncatedGrading_iff ℒ).mpr ⟨a, ha, rfl⟩) hmn
+
+@[simp]
+theorem ofFullPure_toLinearMap (initial : Set ι)
+    (hfull : ∀ j ∈ initial, ∃ b : ℝ,
+      (D.wall j).support = {v | h.realCharacter (D.wall j).normal v = b})
+    (hpure : ∀ j ∉ initial, ∃ m : Γ, d.degree m < k ∧
+      ∃ a ∈ ℒ m, (D.wall j).label = d.expToCompletion ℒ a) :
+    (ofFullPure D initial hfull hpure).toLinearMap = LinearMap.id := (rfl)
 
 end LoopProjection
 
