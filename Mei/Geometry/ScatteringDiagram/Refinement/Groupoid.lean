@@ -207,6 +207,16 @@ def refinement : GroupoidWallDiagram C' G where
       eqToHom (congrArg D.obj (hCD.restrictChamber_positiveChamber_eq_negativeChamber
         (not_exists.mp hQ) (hν Q)))
 
+/-- The coorientations of the refinement are the given ones. -/
+@[simp]
+theorem refinement_normal : (D.refinement hCD ν hν hνD).normal = ν := rfl
+
+/-- The object of a chamber of the refinement is the object of the chamber of `D` containing
+it. -/
+@[simp]
+theorem refinement_obj (c : Chamber (fun Q : C'.walls => (Q : Set V))) :
+    (D.refinement hCD ν hν hνD).obj c = D.obj (hCD.restrictChamber c) := rfl
+
 /-- The arrow of a wall inside a wall `P` of `D` is the arrow of `P`, up to the
 identifications of the objects. -/
 theorem refinement_label_of_subset {Q : C'.walls} {P : C.walls} (hQP : (Q : Set V) ⊆ P) :
@@ -246,5 +256,12 @@ def CompatibleRefinement.refinement :
   label_comp_objIso_of_forall_not_subset Q hQ := by
     rw [D.refinement_label_of_forall_not_subset hCD ν hν hνD hQ]
     simp only [Iso.refl_hom, Category.comp_id, Category.id_comp]
+
+/-- The identification of the objects of the compatible refinement of `D` is the identity. -/
+@[simp]
+theorem CompatibleRefinement.refinement_objIso (c : Chamber (fun Q : C'.walls => (Q : Set V))) :
+    (CompatibleRefinement.refinement D hCD ν hν hνD).objIso c =
+      eqToIso (D.refinement_obj hCD ν hν hνD c) := by
+  simp [CompatibleRefinement.refinement]
 
 end Mei.GroupoidWallDiagram

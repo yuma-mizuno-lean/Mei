@@ -141,31 +141,27 @@ theorem IsSubdivision.restrictChamber_positiveChamber_eq_negativeChamber
       (D.isConvexPolyhedron (D.mem_cells_of_mem_walls P.property)).isClosed).isOpen_compl
   obtain ⟨v, hv⟩ := exists_normal_eq_one hν
   have hv' : 0 < ν v := by rw [hv]; exact one_pos
-  have hline : Continuous fun s : ℝ => q + s • v := by fun_prop
-  obtain ⟨ε, hε, hεD⟩ := Metric.eventually_nhds_iff.mp
-    ((hline.tendsto 0).eventually (hopen.mem_nhds (by simpa using hqD)))
-  obtain ⟨t, ⟨hpos, hneg⟩, htε, ht0⟩ :=
-    (((eventually_add_smul_mem_positiveChamber hν hq hv').and
-      (eventually_sub_smul_mem_negativeChamber hν hq hv')).and
-        ((show ∀ᶠ t : ℝ in 𝓝[>] 0, t ∈ Metric.ball 0 ε from
-          nhdsWithin_le_nhds (Metric.ball_mem_nhds 0 hε)).and self_mem_nhdsWithin)).exists
-  have ht0' : 0 < t := ht0
-  have hseg : ∀ s ∈ Icc (-t) t, q + s • v ∈ {z : V | ∀ P : D.walls, z ∉ (P : Set V)} :=
-    fun s hs => hεD (by
-      rw [Metric.mem_ball, Real.dist_eq, sub_zero, abs_lt] at htε
-      rw [Real.dist_eq, sub_zero, abs_lt]
-      constructor <;> linarith [hs.1, hs.2, htε.1, htε.2])
-  have hA : IsPreconnected ((fun s : ℝ => q + s • v) '' Icc (-t) t) :=
-    isPreconnected_Icc.image _ hline.continuousOn
-  have hAs : (fun s : ℝ => q + s • v) '' Icc (-t) t ⊆
-      {z : V | ∀ P : D.walls, z ∉ (P : Set V)} := by
-    rintro _ ⟨s, hs, rfl⟩
-    exact hseg s hs
-  have hmem := ConnectedComponents.subset_carrier_of_isPreconnected hA hAs
-    ⟨t, ⟨by linarith, le_rfl⟩, rfl⟩ (hCD.mem_carrier_restrictChamber hpos)
-  exact ConnectedComponents.eq_of_mem_carrier
-    (hmem ⟨-t, ⟨le_rfl, by linarith⟩, by simp [sub_eq_add_neg]⟩)
-    (hCD.mem_carrier_restrictChamber hneg)
+  -- The chamber of `D` containing `q` is a neighborhood of `q`, so both short transverse rays
+  -- from `q` eventually lie in it.
+  have hcar : (ConnectedComponents.mk (⟨q, hqD⟩ : {x : V | ∀ P : D.walls, x ∉ (P : Set V)})).carrier
+      ∈ 𝓝 q := by
+    rw [ConnectedComponents.carrier_mk]
+    exact connectedComponentIn_mem_nhds (hopen.mem_nhds hqD)
+  have hadd : ∀ᶠ t : ℝ in 𝓝[>] 0, q + t • v ∈ (ConnectedComponents.mk
+      (⟨q, hqD⟩ : {x : V | ∀ P : D.walls, x ∉ (P : Set V)})).carrier :=
+    nhdsWithin_le_nhds
+      (((by fun_prop : Continuous fun t : ℝ => q + t • v).tendsto' 0 q (by simp)).eventually
+        hcar)
+  have hsub : ∀ᶠ t : ℝ in 𝓝[>] 0, q - t • v ∈ (ConnectedComponents.mk
+      (⟨q, hqD⟩ : {x : V | ∀ P : D.walls, x ∉ (P : Set V)})).carrier :=
+    nhdsWithin_le_nhds
+      (((by fun_prop : Continuous fun t : ℝ => q - t • v).tendsto' 0 q (by simp)).eventually
+        hcar)
+  obtain ⟨t, ⟨hpos, hpc⟩, hneg, hnc⟩ :=
+    (((eventually_add_smul_mem_positiveChamber hν hq hv').and hadd).and
+      ((eventually_sub_smul_mem_negativeChamber hν hq hv').and hsub)).exists
+  exact (hCD.restrictChamber_eq_of_mem_carrier hpos hpc).trans
+    (hCD.restrictChamber_eq_of_mem_carrier hneg hnc).symm
 
 /-- The crossing source of a letter restricts to the crossing source of the letter of the
 wall containing it. -/
@@ -212,6 +208,7 @@ def coarsenLetter (D : FinitePolyhedralComplex h) (l : C.walls × Bool) :
   (coarsenCrossing (D := D) (l.1, (0 : ℝ))).map fun b => (b.1, l.2)
 
 /-- A letter coarsens to a letter of a wall containing its wall, with the same sign. -/
+@[simp]
 theorem coarsenLetter_eq_some {l : C.walls × Bool} {m : D.walls × Bool} :
     coarsenLetter D l = some m ↔ (l.1 : Set V) ⊆ m.1 ∧ l.2 = m.2 := by
   rw [coarsenLetter, Option.map_eq_some_iff]
@@ -222,6 +219,7 @@ theorem coarsenLetter_eq_some {l : C.walls × Bool} {m : D.walls × Bool} :
     exact ⟨(m.1, 0), coarsenCrossing_eq_some.mpr ⟨hQP, rfl⟩, Prod.ext rfl hs⟩
 
 /-- A letter coarsens to nothing exactly when its wall lies in no wall of `D`. -/
+@[simp]
 theorem coarsenLetter_eq_none {l : C.walls × Bool} :
     coarsenLetter D l = none ↔ ∀ P : D.walls, ¬(l.1 : Set V) ⊆ P := by
   cases hl : coarsenLetter D l with
@@ -274,16 +272,6 @@ variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ 
 
 open Mei Mei.FinitePolyhedralComplex
 
-/-- Polygonal paths with the same vertex list have the same endpoints. -/
-theorem endpoints_val_eq_of_vertices_eq {ι κ : Type*} {W : ι → Set V} {W' : κ → Set V}
-    {x y : WallComplement W} {x' y' : WallComplement W'} (p : AdmissiblePLPath x y)
-    (q : AdmissiblePLPath x' y')
-    (hpq : p.vertices.map WallComplement.val = q.vertices.map WallComplement.val) :
-    x.val = x'.val ∧ y.val = y'.val :=
-  ⟨by simpa using congrArg List.head? hpq,
-    by simpa [List.getLast?_eq_getLast_of_ne_nil p.vertices_ne_nil,
-      List.getLast?_eq_getLast_of_ne_nil q.vertices_ne_nil] using congrArg List.getLast? hpq⟩
-
 /-- For a polygonal path admissible for both a complex and a complex it subdivides, the
 crossing letters for the coarser complex are the coarsened crossing letters for the finer
 one, when coorientations of contained walls are positively proportional. -/
@@ -307,11 +295,7 @@ theorem crossingLetters_coarsen (hCD : C.IsSubdivision D) (ν : C.walls → V �
       simp only [vertices_cons, List.concat_eq_append, List.map_append, List.map_cons,
         List.map_nil] at hpq
       obtain ⟨hpq, hw⟩ := List.append_inj' hpq rfl
-      have hz : z.val = z'.val := by
-        have hpq' := hpq
-        rw [← p.dropLast_append_end_eq, ← q.dropLast_append_end_eq, List.map_append,
-          List.map_append, List.map_singleton, List.map_singleton] at hpq'
-        simpa using (List.append_inj' hpq' rfl).2
+      have hz : z.val = z'.val := (endpoints_val_eq_of_vertices_eq p q hpq).2
       rw [crossingLetters_cons, crossingLetters_cons, List.filterMap_append, ih q hpq,
         segmentCrossingLetters_coarsen hCD ν μ hνμ e e' hz (by simpa using hw)]
 

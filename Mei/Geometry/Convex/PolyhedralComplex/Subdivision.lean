@@ -157,6 +157,7 @@ def coarsenCrossing (a : C.walls × ℝ) : Option (D.walls × ℝ) := by
   exact if hQ : ∃ P : D.walls, (a.1 : Set V) ⊆ P then some (hQ.choose, a.2) else none
 
 /-- A crossing coarsens to a crossing of a wall containing it, at the same time. -/
+@[simp]
 theorem coarsenCrossing_eq_some {a : C.walls × ℝ} {b : D.walls × ℝ} :
     coarsenCrossing a = some b ↔ (a.1 : Set V) ⊆ b.1 ∧ a.2 = b.2 := by
   classical

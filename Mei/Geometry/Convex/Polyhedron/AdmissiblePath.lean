@@ -456,6 +456,16 @@ theorem finite_crossingEvents [Finite ι] (p : AdmissiblePLPath x y) :
   | cons p e ih =>
     exact ih.union (e.down.finite_crossings.image (Prod.mk p.length))
 
+/-- Polygonal paths with the same vertex list have the same endpoints, even for different
+wall families. -/
+theorem endpoints_val_eq_of_vertices_eq {κ : Type*} {W' : κ → Set V}
+    {x' y' : WallComplement W'} (p : AdmissiblePLPath x y) (q : AdmissiblePLPath x' y')
+    (hpq : p.vertices.map WallComplement.val = q.vertices.map WallComplement.val) :
+    x.val = x'.val ∧ y.val = y'.val :=
+  ⟨by simpa using congrArg List.head? hpq,
+    by simpa [List.getLast?_eq_getLast_of_ne_nil p.vertices_ne_nil,
+      List.getLast?_eq_getLast_of_ne_nil q.vertices_ne_nil] using congrArg List.getLast? hpq⟩
+
 end Quiver.Path
 
 namespace Mei.Convex.AdmissiblePLPath
