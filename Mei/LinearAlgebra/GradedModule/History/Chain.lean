@@ -68,7 +68,7 @@ variable {ι : ℕ → Type w} {n : ℕ}
 
 @[simp]
 theorem chainCons_head (i : ι 0) (p : (j : Fin n) → ι (j + 1)) :
-    chainCons i p (chainHead n) = i := (rfl)
+    chainCons i p 0 = i := (rfl)
 
 @[simp]
 theorem chainCons_succ (i : ι 0) (p : (j : Fin n) → ι (j + 1)) (j : Fin n) :
@@ -386,7 +386,7 @@ theorem chainHistory_map_eq_sum {n : ℕ}
       (chainHistorySupport_extensions_disjoint ℳ T a)]
     refine Finset.sum_congr rfl fun p' _ => ?_
     rw [Finset.sum_image fun i _ j _ hij => (chainCons_inj.mp hij).1]
-    simp only [chainHead_forall, chainCons_head, chainCons_succ, chainHistory_succ_apply]
+    simp only [chainHead_forall, chainCons_succ, chainHistory_succ_apply]
     by_cases hp : ∀ j : Fin n, σ (j + 1) (p' j) = q (chainSucc j)
     · simp only [hp, implies_true, and_true, ↓reduceIte]
       have hcomm := LinearMap.congr_fun (hT (chainHead n)) (chainHistory (M := fun k => M (k + 1))
