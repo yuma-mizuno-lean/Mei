@@ -244,13 +244,31 @@ theorem cylinderDiagram_wall {ι : Type*} (D : DirectedDiagram (d := d) h H ι) 
     (cylinderDiagram d ℳ p ℒ H h h' D).wall b =
       baseCylinder d ℳ p ℒ H h h' (D.wall b) := (rfl)
 
+omit [LieAlgebra ℚ L] [IsScalarTower ℚ R L] in
+/-- The probe wall as a one-wall diagram. -/
+def probeDiagram (a : ℳ p) :
+    DirectedDiagram (d := positiveDegrees d p) (h.prod h') (wallSpaces d ℳ p ℒ H) Unit :=
+  DirectedDiagram.ofFinite (fun _ : Unit => probeWall d ℳ p ℒ H h h' a)
+
+omit [LieAlgebra ℚ L] [IsScalarTower ℚ R L] in
+/-- The only wall of the one-wall probe diagram is the probe wall. -/
+@[simp]
+theorem probeDiagram_wall (a : ℳ p) (u : Unit) :
+    (probeDiagram d ℳ p ℒ H h h' a).wall u = probeWall d ℳ p ℒ H h h' a := by
+  simp [probeDiagram]
+
 /-- The actual finitely active initial family for the module probe: base cylinders
 and one full probe wall. The coefficient is allowed to vanish. -/
 def initialDiagram {ι : Type*} (D : DirectedDiagram (d := d) h H ι) (a : ℳ p) :
     DirectedDiagram (d := positiveDegrees d p) (h.prod h') (wallSpaces d ℳ p ℒ H)
       (ι ⊕ Unit) :=
-  (cylinderDiagram d ℳ p ℒ H h h' D).append
-    (DirectedDiagram.ofFinite (fun _ : Unit => probeWall d ℳ p ℒ H h h' a))
+  (cylinderDiagram d ℳ p ℒ H h h' D).append (probeDiagram d ℳ p ℒ H h h' a)
+
+/-- The initial diagram of the probe is the cylinder together with the probe wall. -/
+theorem initialDiagram_eq_append_probeDiagram {ι : Type*} (D : DirectedDiagram (d := d) h H ι)
+    (a : ℳ p) :
+    initialDiagram d ℳ p ℒ H h h' D a =
+      (cylinderDiagram d ℳ p ℒ H h h' D).append (probeDiagram d ℳ p ℒ H h h' a) := (rfl)
 
 @[simp]
 theorem initialDiagram_wall_inl {ι : Type*} (D : DirectedDiagram (d := d) h H ι)
