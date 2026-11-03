@@ -304,9 +304,7 @@ private theorem transport_eq_inv_comp_of_triangles
 trivial. The triangles may contain several joints.
 
 This generalizes `Mei.FiniteWallDiagram.consistent_iff_triangles` from group labels to
-groupoid labels, and adapts its common-apex reduction
-(`Quiver.Path.crossingWord_mem_normalClosure_triangles`), joining a point `z` to every
-vertex of the loop by an admissible spoke, to transport in a groupoid. -/
+groupoid labels. -/
 theorem consistent_iff_triangles : D.Consistent ↔
     ∀ (x y z : WallComplement (fun P : C.walls => (P : Set V)))
       (e : x ⟶ y) (f : y ⟶ z) (r : z ⟶ x),
@@ -316,6 +314,8 @@ theorem consistent_iff_triangles : D.Consistent ↔
   · intro hc x y z e f r
     exact D.consistent_iff_loops.mp hc x _
   · intro htri
+    -- Adapts the common-apex reduction `Quiver.Path.crossingWord_mem_normalClosure_triangles`:
+    -- join a point `z` to every vertex of the loop by an admissible spoke, then telescope.
     refine D.consistent_iff_loops.mpr fun x p => ?_
     have := h.finiteDimensional
     obtain ⟨z, -, hz⟩ := WallComplement.exists_mem_open_admissible_spokes
