@@ -8,6 +8,7 @@ module
 public import Mei.Algebra.Lie.Skew.Factorization.Basic
 public import Mei.Algebra.Lie.Skew.Grouping
 public import Mei.Data.List.InsertionSort
+public import Mei.Data.List.Replicate
 
 /-!
 # Sorted products of dilogarithm factors as ordered products
@@ -32,13 +33,6 @@ variable {R Γ ι : Type*} [CommRing R] [Algebra ℚ R] [PartialOrder R] [IsOrde
   (β : Γ →ₗ[ℤ] Γ →ₗ[ℤ] R) (hβ : β.IsAlt) {d : PositiveDegrees Γ}
   (m : ι → Γ) (hm : ∀ i, m i ∈ d.monoid) (hm0 : ∀ i, m i ≠ 0)
 
-/-- Under injectivity of `m`, the indices `j` of `l` with `m j = m i` are the copies of `i`. -/
-private theorem filter_eq_replicate_count {α β : Type*} [DecidableEq α] [DecidableEq β]
-    {m : α → β} (hinj : Function.Injective m) (i : α) (l : List α) :
-    l.filter (fun j => m j = m i) = List.replicate (l.count i) i := by
-  rw [← List.filter_beq]
-  exact List.filter_congr fun j _ => by simp [hinj.eq_iff, beq_eq_decide]
-
 /-- **A sorted product is an ordered product.** Let the index order be compatible with the
 pairing, `i ≤ j` whenever `β(mᵢ, mⱼ) > 0`, on distinct degrees. A product of dilogarithm
 factors `Ψ[mᵢ]^{eᵢ}` over a list `l` with `β(mᵢ, mⱼ) ≥ 0` for `i` before `j` equals the
@@ -60,7 +54,8 @@ theorem exists_prod_rayExp_eq_orderedDilogProduct (hinj : Function.Injective m)
   have hsum (i : ι) :
       ((l.filter fun j => m j = m i).map fun j => e j • negDilogNeg R).sum =
         a i • negDilogNeg R := by
-    rw [filter_eq_replicate_count hinj, List.map_replicate, List.sum_replicate, ha, smul_assoc]
+    rw [List.filter_eq_replicate_count_of_injective hinj, List.map_replicate,
+      List.sum_replicate, ha, smul_assoc]
   simp only [hsum] at hprod
   have hLnd : L.Nodup := List.Nodup.of_map m hnd
   have hLmem (i : ι) : i ∈ L ↔ i ∈ l := by
