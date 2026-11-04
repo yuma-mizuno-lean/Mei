@@ -20,11 +20,9 @@ degrees by angle, counterclockwise from the first axis, and among collinear degr
 (`PlaneDegree.key`). Every finite product of normalized positive factors `Ψ[m]^{s κ(m)}`,
 `s ∈ ℕ`, of plane degrees then has a unique ordered factorization
 `∏ₘ Ψ[m]^{s'(m) κ(m)}` over all plane degrees in this order, where the exponents `s'(m)`
-are natural numbers (`existsUnique_orderedProd_dilogPow`). The factorization is compatible
-under truncation: at every order only finitely many factors are nonidentity (this is what makes
-the infinite ordered product well defined), and the exponents of the factors of degree at most
-`k` are determined by the product at order `k`
-(`SkewLieAlgebra.eq_of_orderedProd_rayExp_smul_negDilogNeg_eq`).
+are natural numbers (`existsUnique_orderedProd_dilogPow`). The factorization has finitely many
+nonidentity factors at every order, which is what makes the infinite ordered product well
+defined.
 
 ## References
 

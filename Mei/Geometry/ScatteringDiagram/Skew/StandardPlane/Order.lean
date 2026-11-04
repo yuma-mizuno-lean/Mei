@@ -11,8 +11,10 @@ public import Mei.Geometry.ScatteringDiagram.Skew.StandardPlane.Basic
 # The angular order on plane degrees
 
 The degrees of the standard plane are ordered by angle, counterclockwise from the first axis,
-and among collinear degrees by size (`PlaneDegree.key`). A pair `x, y` with positive pairing
-`{x, y} > 0` is in this order, `x < y` (`PlaneDegree.lt_of_det_pos`).
+and among collinear degrees by size (`PlaneDegree.key`). A pair `x, y` with positive
+determinant `0 < x.det y` is in this order, `x < y` (`PlaneDegree.lt_of_det_pos`), and a pair
+with positive coefficient-form pairing `0 < E.coefficientForm ℚ x.vec y.vec` satisfies
+`x ≤ y` (`PlaneDegree.le_of_coefficientForm_pos`).
 -/
 
 public section
