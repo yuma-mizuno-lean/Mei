@@ -287,6 +287,9 @@ theorem fst_add (x y : PlaneDegree w) : (x + y).fst = x.fst + y.fst := (rfl)
 @[simp]
 theorem snd_add (x y : PlaneDegree w) : (x + y).snd = x.snd + y.snd := (rfl)
 
+/-- Plane degrees are determined by their vectors. -/
+theorem vec_injective : Function.Injective (vec (w := w)) := fun _ _ h => PlaneDegree.ext h
+
 theorem deg_add (x y : PlaneDegree w) : (x + y).deg = x.deg + y.deg := by
   apply Nat.cast_injective (R := ℤ)
   push_cast

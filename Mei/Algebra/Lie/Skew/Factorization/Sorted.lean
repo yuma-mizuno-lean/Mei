@@ -32,6 +32,13 @@ variable {R Γ ι : Type*} [CommRing R] [Algebra ℚ R] [PartialOrder R] [IsOrde
   (β : Γ →ₗ[ℤ] Γ →ₗ[ℤ] R) (hβ : β.IsAlt) {d : PositiveDegrees Γ}
   (m : ι → Γ) (hm : ∀ i, m i ∈ d.monoid) (hm0 : ∀ i, m i ≠ 0)
 
+/-- Under injectivity of `m`, the indices `j` of `l` with `m j = m i` are the copies of `i`. -/
+private theorem filter_eq_replicate_count {α β : Type*} [DecidableEq α] [DecidableEq β]
+    {m : α → β} (hinj : Function.Injective m) (i : α) (l : List α) :
+    l.filter (fun j => m j = m i) = List.replicate (l.count i) i := by
+  rw [← List.filter_beq]
+  exact List.filter_congr fun j _ => by simp [hinj.eq_iff, beq_eq_decide]
+
 /-- **A sorted product is an ordered product.** Let the index order be compatible with the
 pairing, `i ≤ j` whenever `β(mᵢ, mⱼ) > 0`, on distinct degrees. A product of dilogarithm
 factors `Ψ[mᵢ]^{eᵢ}` over a list `l` with `β(mᵢ, mⱼ) ≥ 0` for `i` before `j` equals the
@@ -45,7 +52,7 @@ theorem exists_prod_rayExp_eq_orderedDilogProduct (hinj : Function.Injective m)
   let a : ι →₀ R := Finsupp.onFinset l.toFinset (fun i => l.count i • e i) fun i hi => by
     by_contra hil
     exact hi (by rw [List.count_eq_zero_of_not_mem (by simpa using hil), zero_smul])
-  have ha (i : ι) : a i = l.count i • e i := rfl
+  have ha (i : ι) : a i = l.count i • e i := Finsupp.onFinset_apply ..
   refine ⟨a, ha, ?_⟩
   obtain ⟨L, hLl, hcov, hnd, hLpw, hprod⟩ := exists_nodup_prod_rayExp_eq β hβ m hm hm0
     (fun i => e i • negDilogNeg R) l hl
@@ -53,9 +60,7 @@ theorem exists_prod_rayExp_eq_orderedDilogProduct (hinj : Function.Injective m)
   have hsum (i : ι) :
       ((l.filter fun j => m j = m i).map fun j => e j • negDilogNeg R).sum =
         a i • negDilogNeg R := by
-    rw [List.filter_congr (q := fun j => j == i) (fun j _ => by simp [hinj.eq_iff, beq_eq_decide]),
-      List.filter_beq, List.map_replicate,
-      List.sum_replicate, ha, smul_assoc]
+    rw [filter_eq_replicate_count hinj, List.map_replicate, List.sum_replicate, ha, smul_assoc]
   simp only [hsum] at hprod
   have hLnd : L.Nodup := List.Nodup.of_map m hnd
   have hLmem (i : ι) : i ∈ L ↔ i ∈ l := by

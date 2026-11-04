@@ -7,6 +7,7 @@ module
 
 public import Mei.Algebra.Lie.Skew.Factorization.Completion
 public import Mei.Algebra.Lie.Skew.Factorization.Sorted
+public import Mei.Geometry.ScatteringDiagram.Skew.StandardPlane.Order
 public import Mei.Geometry.ScatteringDiagram.Skew.StandardPlane.Ordering
 
 /-!
@@ -20,8 +21,10 @@ degrees by angle, counterclockwise from the first axis, and among collinear degr
 `s ∈ ℕ`, of plane degrees then has a unique ordered factorization
 `∏ₘ Ψ[m]^{s'(m) κ(m)}` over all plane degrees in this order, where the exponents `s'(m)`
 are natural numbers (`existsUnique_orderedProd_dilogPow`). The factorization is compatible
-under truncation: at every order only finitely many factors are nonidentity, and the exponents
-are determined by the product through any cutoff above their degree.
+under truncation: at every order only finitely many factors are nonidentity (this is what makes
+the infinite ordered product well defined), and the exponents of the factors of degree at most
+`k` are determined by the product at order `k`
+(`SkewLieAlgebra.eq_of_orderedProd_rayExp_smul_negDilogNeg_eq`).
 
 ## References
 
@@ -39,55 +42,6 @@ open SkewLatticeDatum.Examples
 
 variable {w : Weight}
 
-namespace PlaneDegree
-
-/-- The sort key of a plane degree: the angle coordinate `m₂ / (m₁ + m₂)`, which increases
-with the slope of `m`, followed by the size `m₁ + m₂` to separate collinear degrees. -/
-def key (m : PlaneDegree w) : ℚ ×ₗ ℤ := toLex ((m.snd : ℚ) / (m.fst + m.snd), m.fst + m.snd)
-
-theorem fst_add_snd_pos (m : PlaneDegree w) : 0 < m.fst + m.snd := by
-  have := m.fst_nonneg
-  have := m.snd_nonneg
-  rcases m.fst_ne_zero_or <;> omega
-
-theorem key_injective : Function.Injective (key (w := w)) := by
-  intro x y h
-  simp only [key, toLex_inj, Prod.mk.injEq] at h
-  obtain ⟨h1, h2⟩ := h
-  have hx : (0 : ℚ) < x.fst + x.snd := by exact_mod_cast x.fst_add_snd_pos
-  have hy : (0 : ℚ) < y.fst + y.snd := by exact_mod_cast y.fst_add_snd_pos
-  rw [div_eq_div_iff hx.ne' hy.ne'] at h1
-  have h1' : x.snd * (y.fst + y.snd) = y.snd * (x.fst + x.snd) := by exact_mod_cast h1
-  rw [← h2] at h1'
-  have hsnd : x.snd = y.snd := mul_right_cancel₀ x.fst_add_snd_pos.ne' h1'
-  have hfst : x.fst = y.fst := by omega
-  exact PlaneDegree.ext (Subtype.ext (Prod.ext hfst hsnd))
-
-/-- Plane degrees are sorted counterclockwise from the first axis, collinear ones by size. -/
-instance : LinearOrder (PlaneDegree w) := LinearOrder.lift' key key_injective
-
--- The order is lifted along `key`, so the next lemma holds by unfolding the lifted order.
-theorem lt_iff_key_lt {x y : PlaneDegree w} : x < y ↔ x.key < y.key := Iff.rfl
-
-/-- A pair of plane degrees with positive pairing `{x, y}` is in order. -/
-theorem lt_of_det_pos {x y : PlaneDegree w} (h : 0 < x.det y) : x < y := by
-  have hx : (0 : ℚ) < x.fst + x.snd := by exact_mod_cast x.fst_add_snd_pos
-  have hy : (0 : ℚ) < y.fst + y.snd := by exact_mod_cast y.fst_add_snd_pos
-  have h' : x.snd * y.fst < x.fst * y.snd := by rw [det_eq] at h; linarith
-  have h'' : (x.snd : ℚ) * y.fst < x.fst * y.snd := by exact_mod_cast h'
-  rw [lt_iff_key_lt, key, key, Prod.Lex.toLex_lt_toLex]
-  refine Or.inl ?_
-  rw [div_lt_div_iff₀ hx hy]
-  linarith
-
-theorem le_of_coefficientForm_pos {x y : PlaneDegree w}
-    (h : 0 < E.coefficientForm ℚ x.vec y.vec) : x ≤ y := by
-  rw [coefficientForm_det] at h
-  exact (lt_of_det_pos (by exact_mod_cast h)).le
-
-theorem vec_injective : Function.Injective (vec (w := w)) := fun _ _ h => PlaneDegree.ext h
-
-end PlaneDegree
 
 local notation "β" => E.coefficientForm ℚ
 local notation "hβ" => E.isAlt_coefficientForm ℚ
@@ -127,9 +81,7 @@ private theorem exists_finsupp_projection_orderedDilogProduct_eq (l : List (Plan
 positive factors `Ψ[m]^{s κ(m)}`, `s ∈ ℕ`, of plane degrees equals, for exactly one family of
 natural numbers `s'`, the ordered product `∏ₘ Ψ[m]^{s'(m) κ(m)}` over all plane degrees in the
 angular order (`PlaneDegree.key`), smallest degree leftmost. Only finitely many factors are
-nonidentity at every order, and the exponents of the factors of degree at most `k` are those of
-any finite ordered factorization of the product at order `k`, such as the one given by
-`exists_isChain_projection_prod_pow_eq`. -/
+nonidentity at every order (`hasFiniteSupport_dilogPow`), so the infinite product is defined. -/
 theorem existsUnique_orderedProd_dilogPow (l : List (PlaneDegree w × ℕ)) :
     ∃! s : PlaneDegree w → ℕ,
       CompletedGroup.orderedProd (fun m => dilogPow m (s m * rayIndex m.vec))
