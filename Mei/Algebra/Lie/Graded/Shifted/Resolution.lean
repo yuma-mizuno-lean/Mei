@@ -18,7 +18,9 @@ degree cutoff vanish. Expanding a word of BCH actions over histories in this
 cutoff therefore gives an identity of linear maps, simultaneously for every
 incoming coefficient. Equal BCH words, including words of different lengths,
 have equal sums of component maps in each retained outgoing degree. Two blocks
-also admit a nested finite expansion before any output linear map.
+also admit a nested finite expansion before any output linear map, using either
+the full finite cutoff or independent supports on the two relevant input ranges.
+The independent-support statement directly applies the shared two-block expansion.
 
 These are the coefficient identities needed when comparing local histories
 through a consistent wall configuration. They do not assert that every algebraic
@@ -90,6 +92,36 @@ theorem sum_component_homogeneousHistory_eq_of_prod_eq
     ← map_sum, ← LinearMap.sum_apply,
     d.sum_homogeneousHistory_truncatedBCHAction ℒ ℳ p k g', hg]
 
+/-- Independent uniform supports on the input and on the range of the right
+BCH block give a nested expansion of the two-block composite. The right block
+acts first, and the ambient shifted grading need not have finite support. -/
+theorem sum_sum_comp_homogeneousHistory_comp_truncatedBCHAction_of_support
+    {E O : Type*} [AddCommMonoid E] [Module R E] [AddCommMonoid O] [Module R O]
+    (k : ℕ) {n m : ℕ} (g : Fin n → d.truncatedGroup ℒ k)
+    (u : Fin m → d.truncatedGroup ℒ k)
+    (a : E →ₗ[R] (F).quotient k) (b : (F).quotient k →ₗ[R] O)
+    (ST : Finset (Fin n → Γ)) (SU : Finset (Fin m → Γ))
+    (hT : ∀ s ∉ ST, (homogeneousHistory G(k)
+      (fun j => ((F).truncatedBCHAction d ℒ k (g j)).toLinearMap) s).comp
+        (((F).truncatedBCHAction d ℒ k (List.ofFn u).prod).toLinearMap.comp a) = 0)
+    (hU : ∀ r ∉ SU, (homogeneousHistory G(k)
+      (fun j => ((F).truncatedBCHAction d ℒ k (u j)).toLinearMap) r).comp a = 0) :
+    (∑ s ∈ ST, ∑ r ∈ SU, b.comp ((homogeneousHistory G(k)
+      (fun j => ((F).truncatedBCHAction d ℒ k (g j)).toLinearMap) s).comp
+        ((homogeneousHistory G(k)
+          (fun j => ((F).truncatedBCHAction d ℒ k (u j)).toLinearMap) r).comp a))) =
+      b.comp
+        (((F).truncatedBCHAction d ℒ k (List.ofFn g).prod).toLinearMap.comp
+          (((F).truncatedBCHAction d ℒ k (List.ofFn u).prod).toLinearMap.comp a)) := by
+  simpa only [(F).truncatedBCHAction_list_ofFn_prod_toLinearMap d ℒ k g,
+    (F).truncatedBCHAction_list_ofFn_prod_toLinearMap d ℒ k u] using
+    sum_sum_comp_homogeneousHistory_comp_eq_of_support G(k)
+      (fun j => ((F).truncatedBCHAction d ℒ k (g j)).toLinearMap)
+      (fun j => ((F).truncatedBCHAction d ℒ k (u j)).toLinearMap)
+      a b ST SU (fun s hs => by
+        simpa only [(F).truncatedBCHAction_list_ofFn_prod_toLinearMap d ℒ k u]
+        using hT s hs) hU
+
 /-- The nested finite sums of two BCH blocks recover their composite action in
 the whole quotient, followed by any output linear map. The right block acts first,
 and both finite index sets are independent of the incoming input. -/
@@ -108,11 +140,14 @@ theorem sum_sum_comp_homogeneousHistory_comp_truncatedBCHAction
       b.comp
         (((F).truncatedBCHAction d ℒ k (List.ofFn g).prod).toLinearMap.comp
           (((F).truncatedBCHAction d ℒ k (List.ofFn u).prod).toLinearMap.comp a)) := by
-  simpa only [(F).truncatedBCHAction_list_ofFn_prod_toLinearMap d ℒ k g,
-    (F).truncatedBCHAction_list_ofFn_prod_toLinearMap d ℒ k u] using
-    sum_sum_comp_homogeneousHistory_comp_eq G(k) (d.finite_cutoff k).toFinset
-      (d.shiftedQuotientGrading_piece_eq_bot ℳ p)
-      (fun j => ((F).truncatedBCHAction d ℒ k (g j)).toLinearMap)
-      (fun j => ((F).truncatedBCHAction d ℒ k (u j)).toLinearMap) a b
+  classical
+  rw [Finset.sum_comm]
+  apply d.sum_sum_comp_homogeneousHistory_comp_truncatedBCHAction_of_support ℒ ℳ p k g u a b
+  · intro s hs
+    rw [homogeneousHistory_eq_zero_of_notMem_piFinset G(k) (d.finite_cutoff k).toFinset
+      (d.shiftedQuotientGrading_piece_eq_bot ℳ p) _ s hs, LinearMap.zero_comp]
+  · intro r hr
+    rw [homogeneousHistory_eq_zero_of_notMem_piFinset G(k) (d.finite_cutoff k).toFinset
+      (d.shiftedQuotientGrading_piece_eq_bot ℳ p) _ r hr, LinearMap.zero_comp]
 
 end Mei.PositiveDegrees
