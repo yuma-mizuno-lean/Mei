@@ -18,7 +18,9 @@ degree cutoff vanish. Expanding a word of BCH actions over histories in this
 cutoff therefore gives an identity of linear maps, simultaneously for every
 incoming coefficient. Equal BCH words, including words of different lengths,
 have equal sums of component maps in each retained outgoing degree. Two blocks
-also admit a nested finite expansion before any output linear map.
+also admit a nested finite expansion before any output linear map. For one word,
+a finite contributing support on the range of the input suffices; the full
+finite cutoff is only one instance of that uniform-support expansion.
 
 These are the coefficient identities needed when comparing local histories
 through a consistent wall configuration. They do not assert that every algebraic
@@ -26,8 +28,10 @@ history admits a geometric broken-line realization. Whole components and shifts
 of zero spatial direction are retained, and no freeness or finite generation of
 homogeneous pieces is required.
 
-The expansion combines `sum_homogeneousHistory_eq_prod`,
+The finite-support expansion combines `sum_homogeneousHistory_eq_prod`,
 `PositiveDegrees.mem_cutoff_of_mem_shiftedQuotientGrading_ne_zero`, and the monoid
+homomorphism. Its uniform-support version uses `sum_comp_homogeneousHistory_comp_eq`
+and `exists_uniform_homogeneousHistory_support`. The monoid
 homomorphism `ModuleFiltration.truncatedBCHAction`. The local component-map
 interpretation follows Gross–Hacking–Siebert, *Theta functions on varieties with
 effective anti-canonical class*, §3.2 (arXiv:1601.07081v4).
@@ -61,6 +65,41 @@ theorem sum_homogeneousHistory_truncatedBCHAction (k : ℕ) {n : ℕ}
   rw [sum_homogeneousHistory_eq_prod G(k) _
     (d.shiftedQuotientGrading_piece_eq_bot ℳ p)]
   exact (F).truncatedBCHAction_list_ofFn_prod_toLinearMap d ℒ k g
+
+/-- A uniform finite contributing support on the range of an input map expands a
+BCH word before any linear output map. The ambient shifted grading need not have
+finite support. -/
+theorem sum_comp_homogeneousHistory_comp_truncatedBCHAction
+    {E O : Type*} [AddCommMonoid E] [Module R E] [AddCommMonoid O] [Module R O]
+    (k : ℕ) {n : ℕ} (g : Fin n → d.truncatedGroup ℒ k)
+    (a : E →ₗ[R] (F).quotient k) (b : (F).quotient k →ₗ[R] O)
+    (S : Finset (Fin n → Γ))
+    (hS : ∀ r ∉ S, (homogeneousHistory G(k)
+      (fun j => ((F).truncatedBCHAction d ℒ k (g j)).toLinearMap) r).comp a = 0) :
+    ∑ r ∈ S, b.comp ((homogeneousHistory G(k)
+      (fun j => ((F).truncatedBCHAction d ℒ k (g j)).toLinearMap) r).comp a) =
+      b.comp (((F).truncatedBCHAction d ℒ k (List.ofFn g).prod).toLinearMap.comp a) := by
+  simpa only [(F).truncatedBCHAction_list_ofFn_prod_toLinearMap d ℒ k g] using
+    sum_comp_homogeneousHistory_comp_eq G(k)
+      (fun j => ((F).truncatedBCHAction d ℒ k (g j)).toLinearMap) a b S hS
+
+/-- A finitely generated input range supplies a uniform BCH-history expansion
+before any linear output map, without assuming finite generation of the ambient
+homogeneous pieces. -/
+theorem exists_uniform_homogeneousHistory_expansion_truncatedBCHAction
+    {E O : Type*} [AddCommMonoid E] [Module R E] [AddCommMonoid O] [Module R O]
+    (k : ℕ) {n : ℕ} (g : Fin n → d.truncatedGroup ℒ k)
+    (a : E →ₗ[R] (F).quotient k) (ha : (LinearMap.range a).FG)
+    (b : (F).quotient k →ₗ[R] O) :
+    ∃ S : Finset (Fin n → Γ),
+      (∀ r ∉ S, (homogeneousHistory G(k)
+        (fun j => ((F).truncatedBCHAction d ℒ k (g j)).toLinearMap) r).comp a = 0) ∧
+      (∑ r ∈ S, b.comp ((homogeneousHistory G(k)
+        (fun j => ((F).truncatedBCHAction d ℒ k (g j)).toLinearMap) r).comp a) =
+        b.comp (((F).truncatedBCHAction d ℒ k (List.ofFn g).prod).toLinearMap.comp a)) := by
+  obtain ⟨S, hS⟩ := exists_uniform_homogeneousHistory_support G(k)
+    (fun j => ((F).truncatedBCHAction d ℒ k (g j)).toLinearMap) a ha
+  exact ⟨S, hS, d.sum_comp_homogeneousHistory_comp_truncatedBCHAction ℒ ℳ p k g a b S hS⟩
 
 /-- BCH factorizations with the same product have identical finite sums of
 component maps in any retained outgoing degree. Precomposition allows an
