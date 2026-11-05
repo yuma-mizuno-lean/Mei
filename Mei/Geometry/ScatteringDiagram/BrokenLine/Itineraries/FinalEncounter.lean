@@ -39,13 +39,13 @@ open Set Filter Topology Mei.Convex
 
 namespace Mei.CutoffDecoratedRay
 
-variable {R M Γ V J K : Type*} [Semiring R] [AddCommMonoid M] [Module R M]
+variable {R M Γ V J K I : Type*} [Semiring R] [AddCommMonoid M] [Module R M]
   [AddCommGroup Γ] [DecidableEq Γ] {d : PositiveDegrees Γ}
   {ℳ : Γ → Submodule R M} [DirectSum.Decomposition ℳ]
   [NormedAddCommGroup V] [NormedSpace ℝ V]
   {T : J → Module.End R M} {a : ℳ 0} {v : Γ → V}
   {f : J → V →L[ℝ] ℝ} {c : J → ℝ} {ε : J → SignType}
-  {P W : J → Set V} {S : K → Set V} {C : Set V} {k : ℕ} {Q : V}
+  {P : J → Set V} {W : I → Set V} {S : K → Set V} {C : Set V} {k : ℕ} {Q : V}
 
 /-- A ray whose final encounter is `w`, with degree `p` immediately before and `q`
 immediately after it. -/
@@ -160,7 +160,7 @@ the normal velocity at `w`, of the degree-`q` component of `T w` applied to the
 degree-`p` evaluation at the incoming germ `Q + t • v q + η • v p`. The degree
 `p = q` of an unchanged coefficient is included. -/
 theorem eventually_decompose_cutoffDecoratedEvaluation_eq_sum_finalEncounter
-    [Finite J] [Finite K] (hq : q ∈ d.cutoff k) (hq0 : q ≠ 0)
+    [Finite J] [Finite K] [Finite I] (hq : q ∈ d.cutoff k) (hq0 : q ≠ 0)
     (hP : ∀ j, P j ⊆ ⋃ b, W b) (ht : 0 < t)
     (htrans : f w (v q) ≠ 0) (hsign : SignType.sign (f w (v q)) = ε w)
     (hheight : f w (Q + t • v q) = c w) (hinc : Q + t • v q ∈ P w)

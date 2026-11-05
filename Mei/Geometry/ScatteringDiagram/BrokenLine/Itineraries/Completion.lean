@@ -48,7 +48,7 @@ public noncomputable section
 
 namespace Mei.PositiveDegrees
 
-variable {Γ : Type} {R L M V J K : Type*}
+variable {Γ : Type} {R L M V J K I : Type*}
   [AddCommGroup Γ] [CommRing R] [Algebra ℚ R]
   [LieRing L] [LieAlgebra R L] [LieAlgebra ℚ L] [IsScalarTower ℚ R L]
   [AddCommGroup M] [Module R M] [LieRingModule L M] [LieModule R L M]
@@ -57,7 +57,7 @@ variable {Γ : Type} {R L M V J K : Type*}
   [DirectSum.Decomposition ℳ] [SetLike.GradedBracket ℒ ℳ] (p : Γ)
   [NormedAddCommGroup V] [NormedSpace ℝ V] [Finite J]
   (v : Γ → V) (f : J → V →L[ℝ] ℝ) (c : J → ℝ)
-  (ε : J → SignType) (P W : J → Set V) (S : K → Set V) (C : Set V) (Q : V)
+  (ε : J → SignType) (P : J → Set V) (W : I → Set V) (S : K → Set V) (C : Set V) (Q : V)
 
 local notation "F" => d.shiftedLieFiltration ℒ ℳ p
 local notation "G" => fun k : ℕ =>
@@ -77,7 +77,7 @@ theorem transition_cutoffDecoratedEvaluation_shiftedBCHAction
         (T k (fun j => (d.truncationMap ℒ h).bchGroupMap (g j)))
         ⟨(F).transition h a, d.transition_mem_shiftedQuotientGrading ℳ p h a.property⟩
         v f c ε P W S C k Q := by
-  rw [map_cutoffDecoratedEvaluation d (G l) (G k) ((F).transition h)
+  rw [map_cutoffDecoratedEvaluation (W := W) d (G l) (G k) ((F).transition h)
     (fun _ _ hx => d.transition_mem_shiftedQuotientGrading ℳ p h hx)
     (T l g) (T k (fun j => (d.truncationMap ℒ h).bchGroupMap (g j)))
     (fun j => LinearMap.ext fun x => (F).transition_truncatedBCHAction d ℒ h (g j) x)]

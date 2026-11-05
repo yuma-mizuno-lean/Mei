@@ -42,13 +42,13 @@ open Set Filter Topology Mei.Convex
 
 namespace Mei.CutoffDecoratedRay
 
-variable {R M Γ V J K : Type*} [Semiring R] [AddCommMonoid M] [Module R M]
+variable {R M Γ V J K I : Type*} [Semiring R] [AddCommMonoid M] [Module R M]
   [AddCommGroup Γ] [DecidableEq Γ] {d : PositiveDegrees Γ}
   {ℳ : Γ → Submodule R M} [DirectSum.Decomposition ℳ]
   [NormedAddCommGroup V] [NormedSpace ℝ V]
   {T : J → Module.End R M} {a : ℳ 0} {v : Γ → V}
   {f : J → V →L[ℝ] ℝ} {c : J → ℝ} {ε : J → SignType}
-  {P W : J → Set V} {S : K → Set V} {C : Set V} {k : ℕ} {Q : V}
+  {P : J → Set V} {W : I → Set V} {S : K → Set V} {C : Set V} {k : ℕ} {Q : V}
 
 private theorem eventually_admits_older_words [Finite J]
     (w : J) (p q : Γ) (hsign : SignType.sign (f w (v q)) = ε w) :
@@ -97,7 +97,7 @@ sufficiently short incoming cut. The incoming degree component may be evaluated
 at any enumeration cutoff `l` retaining `p`; in particular, a degree-raising
 encounter allows a strictly lower cutoff. Killed components contribute zero,
 while distinct histories with equal or cancelling weights remain distinct. -/
-theorem eventually_sum_finalEncounter_eq_component [Finite J] [Finite K]
+theorem eventually_sum_finalEncounter_eq_component [Finite J] [Finite K] [Finite I]
     (w : J) (p q : Γ) (l : ℕ) (hp : d.degree p ≤ l)
     (hq : q ∈ d.cutoff k) (hqp : q - p ∈ d.monoid)
     (t : ℝ) (ht : 0 < t)

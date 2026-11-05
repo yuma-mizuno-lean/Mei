@@ -35,13 +35,13 @@ open Set Filter Topology
 
 namespace Mei.CutoffDecoratedRay
 
-variable {R M Γ V J K : Type*} [Semiring R] [AddCommMonoid M] [Module R M]
+variable {R M Γ V J K I : Type*} [Semiring R] [AddCommMonoid M] [Module R M]
   [AddCommGroup Γ] [DecidableEq Γ] {d : PositiveDegrees Γ}
   {ℳ : Γ → Submodule R M} [DirectSum.Decomposition ℳ]
   [NormedAddCommGroup V] [NormedSpace ℝ V]
   {T : J → Module.End R M} {a : ℳ 0} {v : Γ → V}
   {f : J → V →L[ℝ] ℝ} {c : J → ℝ} {ε : J → SignType}
-  {P W : J → Set V} {S : K → Set V} {C : Set V} {k : ℕ} {Q : V}
+  {P : J → Set V} {W : I → Set V} {S : K → Set V} {C : Set V} {k : ℕ} {Q : V}
 
 open Classical in
 /-- The degree-`q` component of the weighted evaluation at `Q` is the sum over the
@@ -51,7 +51,7 @@ Here `E` lists all the encounters of the line, at ray parameters `s`, and the wa
 meet the line only at them. The germs `Q + s e • v q + η e • v p` can be taken with
 incoming parameters `η e` below any prescribed bound `θ`. -/
 theorem exists_decompose_cutoffDecoratedEvaluation_eq_sum_lastChange
-    [Finite J] [Finite K] {q : Γ} (hq : q ∈ d.cutoff k) (hq0 : q ≠ 0)
+    [Finite J] [Finite K] [Finite I] {q : Γ} (hq : q ∈ d.cutoff k) (hq0 : q ≠ 0)
     (E : Finset J) (hT : ∀ e ∈ E, ∀ x ∈ ℳ q, (DirectSum.decompose ℳ (T e x) q : M) = x)
     (hP : ∀ j, P j ⊆ ⋃ b, W b) (hclosedW : ∀ j, IsClosed (W j))
     (hclosedS : ∀ j, IsClosed (S j)) (s : J → ℝ) (hinj : Set.InjOn s E)

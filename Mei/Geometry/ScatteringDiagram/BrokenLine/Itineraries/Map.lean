@@ -34,7 +34,7 @@ namespace Mei
 
 open Mei.Convex
 
-variable {R M N Γ V J K : Type*}
+variable {R M N Γ V J K I : Type*}
   [Semiring R] [AddCommMonoid M] [Module R M]
   [AddCommMonoid N] [Module R N]
   [AddCommGroup Γ] [DecidableEq Γ] (d : PositiveDegrees Γ)
@@ -45,7 +45,7 @@ variable {R M N Γ V J K : Type*}
   (T : J → Module.End R M) (U : J → Module.End R N)
   (hT : ∀ j, r.comp (T j) = (U j).comp r)
   (a : ℳ 0) (v : Γ → V) (f : J → V →L[ℝ] ℝ) (c : J → ℝ)
-  (ε : J → SignType) (P W : J → Set V) (S : K → Set V) (C : Set V)
+  (ε : J → SignType) (P : J → Set V) (W : I → Set V) (S : K → Set V) (C : Set V)
   (k : ℕ) (Q : V)
 
 local notation "a'" => regradeBase ℳ 𝓝 r (AddMonoidHom.id Γ) hr a

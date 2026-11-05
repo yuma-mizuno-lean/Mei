@@ -6,6 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.Convex.Sweep.Admissible
+public import Mei.Geometry.Convex.Polyhedron.CrossingEvents
 public import Mei.Geometry.Convex.Polyhedron.WallEvent
 public import Mei.Geometry.Convex.Polyhedron.SingularSupport
 
@@ -17,7 +18,9 @@ set of incident indexed walls and the sign of its chosen normal on the prescribe
 outgoing direction, which is the negative of forward velocity. The canonical
 finite event alphabet distinguishes simultaneous encounters without losing
 coincident wall indices. The path, every encounter parameter, local directions,
-incoming source and singular avoidance are retained.
+incoming source and singular avoidance are retained. Ordered crossing times of
+an admissible segment determine the same kind of event, and distinct such times
+have distinct canonical events.
 
 At a regular encounter all incident walls have the same affine direction.
 Consequently the normal chosen by the event remains transverse even when it
@@ -132,3 +135,51 @@ theorem parameter_withWallEvents :
     (r.withWallEvents hker hregular hW).parameter = r.parameter := (rfl)
 
 end Mei.Convex.AdmissibleRayRealization
+
+namespace Mei.Convex.WallComplement
+
+variable {V ι : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V] [Finite ι]
+  {W : ι → Set V} {x y : WallComplement W}
+
+/-- The simultaneous event at a genuine crossing time of an admissible segment.
+Its incidence set contains all indexed walls through the event, and its sign is
+computed on the backward displacement. -/
+def crossingWallEvent (f : ι → V →L[ℝ] ℝ) (e : x ⟶ y) (t : ℝ)
+    (ht : t ∈ orderedCrossingTimes e) : WallEvent ι :=
+  let s : {s : Finset ι // s.Nonempty} :=
+    ⟨crossingWalls x y t, crossingWalls_nonempty e ht⟩
+  (s, SignType.sign (f s.property.choose (x.val - y.val)))
+
+/-- The sign of a crossing event is computed by its chosen normal on the
+backward displacement. -/
+@[simp↓]
+theorem normal_sign_crossingWallEvent (f : ι → V →L[ℝ] ℝ)
+    (e : x ⟶ y) (t : ℝ) (ht : t ∈ orderedCrossingTimes e) :
+    SignType.sign ((crossingWallEvent f e t ht).normal f (x.val - y.val)) =
+      (crossingWallEvent f e t ht).2 := by
+  simp [crossingWallEvent, WallEvent.normal_def]
+
+/-- An indexed wall contains a crossing point exactly when it belongs to the
+canonical event at that crossing. -/
+theorem mem_crossingWallEvent (f : ι → V →L[ℝ] ℝ)
+    (e : x ⟶ y) (t : ℝ) (ht : t ∈ orderedCrossingTimes e) (j : ι) :
+    AffineMap.lineMap x.val y.val t ∈ W j ↔ j ∈ (crossingWallEvent f e t ht).1.val := by
+  change _ ↔ j ∈ crossingWalls x y t
+  rw [mem_crossingWalls, mem_crossings]
+  exact (and_iff_right (Ioo_subset_Icc_self (mem_Ioo_of_mem_orderedCrossingTimes e ht))).symm
+
+/-- Distinct genuine crossing times determine distinct canonical simultaneous
+events, independently of the normals used to compute their signs. -/
+theorem crossingWallEvent_injective (f : ι → V →L[ℝ] ℝ) (e : x ⟶ y)
+    {s t : ℝ} (hs : s ∈ orderedCrossingTimes e) (ht : t ∈ orderedCrossingTimes e)
+    (he : crossingWallEvent f e s hs = crossingWallEvent f e t ht) : s = t := by
+  by_contra hne
+  have hd := disjoint_crossingWalls e hne
+  obtain ⟨b, hb⟩ := crossingWalls_nonempty e hs
+  have hb' : b ∈ crossingWalls x y t := by
+    have heq : crossingWalls x y s = crossingWalls x y t :=
+      congrArg (fun z : WallEvent ι => z.1.val) he
+    exact (Finset.ext_iff.mp heq b).mp hb
+  exact (Finset.disjoint_left.mp hd hb) hb'
+
+end Mei.Convex.WallComplement

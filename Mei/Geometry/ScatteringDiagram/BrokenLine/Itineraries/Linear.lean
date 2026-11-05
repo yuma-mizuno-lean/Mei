@@ -38,13 +38,13 @@ namespace Mei
 
 open Mei.Convex
 
-variable {R M Γ V J K : Type*} [Semiring R] [AddCommMonoid M] [Module R M]
+variable {R M Γ V J K I : Type*} [Semiring R] [AddCommMonoid M] [Module R M]
   [AddCommGroup Γ] [DecidableEq Γ] (d : PositiveDegrees Γ)
   (ℳ : Γ → Submodule R M) [DirectSum.Decomposition ℳ]
   [NormedAddCommGroup V] [NormedSpace ℝ V]
   (T : J → Module.End R M) (v : Γ → V)
   (f : J → V →L[ℝ] ℝ) (c : J → ℝ) (ε : J → SignType)
-  (P W : J → Set V) (S : K → Set V) (C : Set V)
+  (P : J → Set V) (W : I → Set V) (S : K → Set V) (C : Set V)
 
 -- This inventory retains zero decorations, so it does not depend on the input.
 private abbrev CutoffEvaluationIndex (k : ℕ) :=
@@ -186,7 +186,7 @@ theorem cutoffDecoratedEvaluation_smul [Finite J] (k : ℕ) (Q : V) (r : R) (a :
 section Rational
 
 variable {Λ : Type*} [AddCommGroup Λ] {i : Λ →+ V}
-  (h : TauCeti.Toric.IsIntegralLattice i) (w : Γ → Λ) [Finite J] [Finite K]
+  (h : TauCeti.Toric.IsIntegralLattice i) (w : Γ → Λ) [Finite J] [Finite K] [Finite I]
   (hf : ∀ j, Toric.IsRationalFunctional h (f j).toLinearMap)
   (hP : ∀ j, IsRationalSemilinear h (P j))
   (hW : ∀ j, IsRationalNormalPolyhedron h (W j))

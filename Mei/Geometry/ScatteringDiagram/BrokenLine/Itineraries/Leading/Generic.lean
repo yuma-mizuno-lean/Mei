@@ -143,8 +143,9 @@ theorem exists_leadingEvaluationArrangement_shiftedBCHAction [FiniteDimensional 
       (DirectSum.decompose (d.shiftedQuotientGrading ℳ p k).piece
         (cutoffDecoratedEvaluation d (d.shiftedQuotientGrading ℳ p k).piece
           (fun e => ((d.shiftedLieFiltration ℒ ℳ p).truncatedBCHAction d ℒ k (g e)).toLinearMap)
-          a v (fun e => e.normal f) (fun e => e.offset c) (fun e => e.2)
-          (fun e => e.support W) (fun e => e.support W)
+          a v (fun e : WallEvent ι => e.normal f) (fun e : WallEvent ι => e.offset c)
+          (fun e : WallEvent ι => e.2) (fun e : WallEvent ι => e.support W)
+          (fun e : WallEvent ι => e.support W)
           (fun _ : Unit => singularSupport W) univ k Q) 0 :
         (d.shiftedLieFiltration ℒ ℳ p).quotient k) = a := by
   classical

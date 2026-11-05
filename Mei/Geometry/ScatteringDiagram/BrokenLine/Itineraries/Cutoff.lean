@@ -35,13 +35,13 @@ public noncomputable section
 
 namespace Mei
 
-variable {R M Γ V J K : Type*} [Semiring R] [AddCommMonoid M] [Module R M]
+variable {R M Γ V J K I : Type*} [Semiring R] [AddCommMonoid M] [Module R M]
   [AddCommGroup Γ] [DecidableEq Γ] (d : PositiveDegrees Γ)
   (ℳ : Γ → Submodule R M) [DirectSum.Decomposition ℳ]
   [NormedAddCommGroup V] [NormedSpace ℝ V]
   (T : J → Module.End R M) (a : ℳ 0) (v : Γ → V)
   (f : J → V →L[ℝ] ℝ) (c : J → ℝ) (ε : J → SignType)
-  (P W : J → Set V) (S : K → Set V) (C : Set V)
+  (P : J → Set V) (W : I → Set V) (S : K → Set V) (C : Set V)
   {k l : ℕ} (h : k ≤ l)
   (hℳ : ∀ q (x : M), x ∈ ℳ q → x ≠ 0 → q ∈ d.cutoff k) (Q : V)
 

@@ -36,7 +36,7 @@ public noncomputable section
 
 namespace Mei.PositiveDegrees
 
-variable {Γ : Type} {R M N V J K : Type*} {L L' : Type u}
+variable {Γ : Type} {R M N V J K A : Type*} {L L' : Type u}
   [AddCommGroup Γ] [DecidableEq Γ] [CommRing R] [Algebra ℚ R]
   [LieRing L] [LieAlgebra R L] [LieAlgebra ℚ L] [IsScalarTower ℚ R L]
   [LieRing L'] [LieAlgebra R L'] [LieAlgebra ℚ L'] [IsScalarTower ℚ R L']
@@ -54,7 +54,7 @@ variable {Γ : Type} {R M N V J K : Type*} {L L' : Type u}
   (hequiv : ∀ (x : L) (a : M), ψ ⁅x, a⁆ = ⁅φ x, ψ a⁆)
   [NormedAddCommGroup V] [NormedSpace ℝ V] [Finite J]
   (v : Γ → V) (f : J → V →L[ℝ] ℝ) (c : J → ℝ)
-  (ε : J → SignType) (P W : J → Set V) (S : K → Set V) (C : Set V) (Q : V)
+  (ε : J → SignType) (P : J → Set V) (W : A → Set V) (S : K → Set V) (C : Set V) (Q : V)
 
 local notation "I" => PositiveDegreeMap.id d
 -- Use the public identity-map equations rather than unfolding its opaque definition.

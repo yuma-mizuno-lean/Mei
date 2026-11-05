@@ -34,7 +34,7 @@ namespace Mei
 
 open Mei.Convex
 
-variable {R M N Γ Δ V J K : Type*}
+variable {R M N Γ Δ V J K I : Type*}
   [Semiring R] [AddCommMonoid M] [Module R M] [AddCommMonoid N] [Module R N]
   [AddCommGroup Γ] [DecidableEq Γ] [AddCommGroup Δ] [DecidableEq Δ]
   (d : PositiveDegrees Γ) (e : PositiveDegrees Δ)
@@ -47,7 +47,7 @@ variable {R M N Γ Δ V J K : Type*}
   (hT : ∀ j, r.comp (T j) = (U j).comp r)
   (a : ℳ 0) (v : Γ → V) (w : Δ → V) (hv : ∀ p, v p = w (σ p))
   (f : J → V →L[ℝ] ℝ) (c : J → ℝ) (ε : J → SignType)
-  (P W : J → Set V) (S : K → Set V) (C : Set V)
+  (P : J → Set V) (W : I → Set V) (S : K → Set V) (C : Set V)
   (k l : ℕ) (hcut : ∀ p, p ∈ d.cutoff k ↔ σ p ∈ e.cutoff l)
   (hpos : ∀ p, p ∈ d.monoid ↔ σ p ∈ e.monoid) (Q : V)
 
