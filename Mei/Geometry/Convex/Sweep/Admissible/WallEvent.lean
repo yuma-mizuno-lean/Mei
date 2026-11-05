@@ -269,7 +269,7 @@ theorem segmentEventParameter_pos (f : ι → V →L[ℝ] ℝ) (e : x ⟶ y)
 
 /-- Event parameters are injective on the genuine inventory for a positively
 scaled ray. -/
-theorem segmentEventParameter_injective (f : ι → V →L[ℝ] ℝ) (e : x ⟶ y)
+theorem segmentEventParameter_injOn (f : ι → V →L[ℝ] ℝ) (e : x ⟶ y)
     (T : ℝ) (hT : 0 < T) : Set.InjOn (segmentEventParameter f e T) (segmentWallEvents f e) := by
   intro b hb b' hb' he
   obtain ⟨t, ht, rfl⟩ := (mem_segmentWallEvents_iff f e b).mp hb

@@ -6,6 +6,8 @@ Authors: Claude
 module
 
 public import Mathlib.Basic.Sign.Basic
+public import Mathlib.Basic.Real.Basic
+public import Mathlib.LinearAlgebra.Dual.Defs
 public import Mei.Algebra.Order.Field.Ray
 import Mathlib.Tactic.LinearCombination
 
@@ -69,3 +71,15 @@ theorem sign_mul_add_mul_of_mul_sub_mul_eq_zero (ha : a ≠ 0) (h : a * q - b * 
 end Field
 
 end Mei
+
+namespace LinearMap
+
+variable {V : Type*} [AddCommGroup V] [Module ℝ V]
+
+/-- The sign of a real linear functional is invariant under strictly positive
+real scalar multiplication. -/
+theorem sign_pos_smul (f : V →ₗ[ℝ] ℝ) (v : V) {t : ℝ} (ht : 0 < t) :
+    SignType.sign (f (t • v)) = SignType.sign (f v) := by
+  simp [sign_mul, sign_pos ht]
+
+end LinearMap

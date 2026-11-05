@@ -5,16 +5,18 @@ Authors: Kimi K3.1 Pro
 -/
 module
 
-public import Mei.Geometry.Convex.Polyhedron.AdmissiblePath
+public import Mathlib.LinearAlgebra.AffineSpace.AffineMap
+public import Mathlib.Analysis.Normed.Module.Basic
+import Mathlib.Tactic.FieldSimp
+import Mathlib.Tactic.Module
 
 /-!
 # Reparametrization of affine lines
 
 `AffineMap.lineMap` has an elementary form using the terminal displacement from
 an endpoint. When a positive scalar multiple of a nonzero displacement is used,
-interior ray parameters have an explicit unit-interval parameter. Positive scaling
-of a normal-functional value also preserves its sign. These lemmas keep the
-conversion in one place for crossing-time constructions.
+interior ray parameters have an explicit unit-interval parameter. These lemmas
+keep the conversion in one place for crossing-time constructions.
 -/
 
 public section
@@ -23,7 +25,7 @@ namespace Mei.Convex
 
 open Set
 
-variable {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
+variable {V : Type*} [AddCommGroup V] [Module ℝ V]
 
 /-- A point on an affine line is expressed by its terminal displacement from the
 final endpoint. -/
@@ -54,15 +56,3 @@ theorem lineMap_eq_add_smul_of_pos_of_lt {x y w : V} {T u : ℝ}
     _ = _ := (lineMap_eq_add_smul (t := t) hxy).symm
 
 end Mei.Convex
-
-namespace ContinuousLinearMap
-
-variable {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
-
-/-- The sign of a continuous real linear functional is invariant under a
-strictly positive real scalar multiplication. -/
-theorem sign_pos_smul (f : V →L[ℝ] ℝ) (v : V) {t : ℝ} (ht : 0 < t) :
-    SignType.sign (f (t • v)) = SignType.sign (f v) := by
-  simp [sign_mul, sign_pos ht]
-
-end ContinuousLinearMap

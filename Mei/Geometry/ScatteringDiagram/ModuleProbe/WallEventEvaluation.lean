@@ -14,6 +14,7 @@ public import Mei.Geometry.ScatteringDiagram.BrokenLine.Itineraries.ZeroDirectio
 public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.WallEvent.Action
 public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.WallEvent.Parameters
 public import Mei.Geometry.Convex.Polyhedron.Line
+public import Mei.Algebra.Order.Sign
 public import Mei.Geometry.Convex.Sweep.Admissible.WallEvent
 
 /-!
@@ -136,7 +137,7 @@ omit [IsWallAnnihilating H ℳ] in
 /-- A genuine crossing gives a positive ray parameter, nonzero transversality,
 both signs used by the backward action, the event height, and its precise incident
 wall set. The common proof does not depend on weighted evaluation. -/
-theorem crossing_event_data (k : ℕ) {n : Γ}
+private theorem crossing_event_data (k : ℕ) {n : Γ}
     {x y : WallComplement (B.activeSupport k)}
     (e : x ⟶ y) (T : ℝ) (hTpos : 0 < T)
     (hxy : x.val - y.val = T • i (ρ (p + n)))
@@ -189,7 +190,7 @@ theorem crossing_event_data (k : ℕ) {n : Γ}
           SignType.sign (c.normal
             (B.activeNormal k) (x.val - y.val)) := by
         rw [hxy]
-        exact (ContinuousLinearMap.sign_pos_smul _ _ hTpos).symm
+        exact (LinearMap.sign_pos_smul (c.normal (B.activeNormal k)).toLinearMap _ hTpos).symm
       _ = _ := by simpa only using hn
   have hinc : y.val + segmentEventParameter (B.activeNormal k) e T
       c • i (ρ (p + n)) ∈
@@ -209,18 +210,27 @@ theorem crossing_event_data (k : ℕ) {n : Γ}
 omit [IsWallAnnihilating H ℳ] in
 /-- A wall point on a positive interior ray gives the genuine ordered crossing
 time at which the ray meets that wall, together with the computed event parameter. -/
-theorem exists_crossingTime_of_pos_of_wall (k : ℕ) {n : Γ}
+private theorem exists_crossingTime_of_pos_of_wall (k : ℕ) {n : Γ}
     {x y : WallComplement (B.activeSupport k)}
     (e : x ⟶ y) {T u : ℝ} (hTpos : 0 < T)
     (hxy : x.val - y.val = T • i (ρ (p + n)))
-    (hu : 0 < u) (huT : u < T) (c : B.active k)
+    (htail : ∀ s ≥ T, ∀ c : B.active k,
+      y.val + s • i (ρ (p + n)) ∉ (B.wall c).support)
+    (hu : 0 ≤ u) (c : B.active k)
     (hc : y.val + u • i (ρ (p + n)) ∈ B.activeSupport k c) :
     ∃ t : ℝ, ∃ ht : t ∈ orderedCrossingTimes e,
       segmentEventParameter (B.activeNormal k) e T
         (crossingWallEvent (B.activeNormal k) e t ht) = u ∧
       y.val + u • i (ρ (p + n)) = AffineMap.lineMap x.val y.val t := by
+  have hu0 : 0 < u := by
+    rcases hu.eq_or_lt with rfl | hu
+    · exact (y.notMem c (by simpa using hc)).elim
+    · exact hu
+  have huT : u < T := by
+    by_contra hnT
+    exact htail u (le_of_not_gt hnT) c hc
   obtain ⟨t, hti, htu, hline⟩ :=
-    lineMap_eq_add_smul_of_pos_of_lt (w := i (ρ (p + n))) hTpos hxy hu huT
+    lineMap_eq_add_smul_of_pos_of_lt (w := i (ρ (p + n))) hTpos hxy hu0 huT
   have ht : t ∈ orderedCrossingTimes e := by
     rw [mem_orderedCrossingTimes]
     exact ⟨c, (mem_crossings x y c t).mpr
@@ -231,11 +241,13 @@ theorem exists_crossingTime_of_pos_of_wall (k : ℕ) {n : Γ}
 omit [IsWallAnnihilating H ℳ] in
 /-- A supported wall point on the ray, with matching sign, is the canonical
 simultaneous event at its genuine crossing time. -/
-theorem eq_crossingWallEvent_of_mem_support_of_sign (k : ℕ) {n : Γ}
+private theorem eq_crossingWallEvent_of_mem_support_of_sign (k : ℕ) {n : Γ}
     {x y : WallComplement (B.activeSupport k)}
     (e : x ⟶ y) {T u : ℝ} (hTpos : 0 < T)
     (hxy : x.val - y.val = T • i (ρ (p + n)))
-    (b : WallEvent (B.active k)) (hu : 0 < u) (huT : u < T)
+    (htail : ∀ s ≥ T, ∀ c : B.active k,
+      y.val + s • i (ρ (p + n)) ∉ (B.wall c).support)
+    (b : WallEvent (B.active k)) (hu : 0 ≤ u)
     (hsg : SignType.sign (b.normal (B.activeNormal k) (i (ρ (p + n)))) = b.2)
     (hm : y.val + u • i (ρ (p + n)) ∈ b.support (B.activeSupport k)) :
     ∃ t : ℝ, ∃ ht : t ∈ orderedCrossingTimes e,
@@ -243,7 +255,7 @@ theorem eq_crossingWallEvent_of_mem_support_of_sign (k : ℕ) {n : Γ}
       segmentEventParameter (B.activeNormal k) e T b = u := by
   obtain ⟨c, hc⟩ := b.1.property
   obtain ⟨t, ht, htu, hline⟩ := exists_crossingTime_of_pos_of_wall d p ℒ H h B k
-    (c := b.1.property.choose) e hTpos hxy hu huT
+    (c := b.1.property.choose) e hTpos hxy htail hu
       (b.support_subset (B.activeSupport k) b.1.property.choose_spec hm)
   have hmem : ∀ c : B.active k,
       AffineMap.lineMap x.val y.val t ∈ B.activeSupport k c ↔ c ∈ b.1.val := by
@@ -263,7 +275,7 @@ theorem eq_crossingWallEvent_of_mem_support_of_sign (k : ℕ) {n : Γ}
           SignType.sign (b.normal (B.activeNormal k) (x.val - y.val)) =
               SignType.sign (b.normal (B.activeNormal k) (i (ρ (p + n)))) := by
             rw [hxy]
-            exact ContinuousLinearMap.sign_pos_smul _ _ hTpos
+            exact LinearMap.sign_pos_smul (b.normal (B.activeNormal k)).toLinearMap _ hTpos
           _ = b.2 := hsg)
       (normal_sign_crossingWallEvent _ e t ht)
   exact ⟨t, ht, hbeq, hbeq.symm ▸ htu⟩
@@ -271,7 +283,7 @@ theorem eq_crossingWallEvent_of_mem_support_of_sign (k : ℕ) {n : Γ}
 omit [IsWallAnnihilating H ℳ] in
 /-- At a regular crossing, the selected event normal agrees with its offset at
 any point of an incident wall. -/
-theorem normal_crossingWallEvent_eq_of_mem (k : ℕ)
+private theorem normal_crossingWallEvent_eq_of_mem (k : ℕ)
     {x y : WallComplement (B.activeSupport k)} (e : x ⟶ y) {t : ℝ}
     (ht : t ∈ orderedCrossingTimes e) (c : B.active k)
     (hc : AffineMap.lineMap x.val y.val t ∈ (B.wall c).support)
@@ -372,7 +384,7 @@ theorem exists_decompose_cutoffWallEventEvaluation_eq_sum_lastChange (k : ℕ)
     hn hn0 E (fun b _ => decompose_wallEventPropagation_self d ℳ p ℒ H h B (k + 1) b)
       hP hclosedW hclosedS s ?_ ?_ ?_ ?_ ?_ ?_
   -- Event parameters are injective on the finite event inventory.
-  · exact segmentEventParameter_injective ((B.activeNormal (k + 1))) e T hTpos
+  · exact segmentEventParameter_injOn ((B.activeNormal (k + 1))) e T hTpos
   -- Genuine events have positivity, transversality, signs, height and support.
   · intro b hb
     obtain ⟨t, ht, rfl⟩ := ft b hb
@@ -381,13 +393,9 @@ theorem exists_decompose_cutoffWallEventEvaluation_eq_sum_lastChange (k : ℕ)
     exact ⟨hs, hv, hsg, hoff, hmem⟩
   -- A matching wall point and sign determine its canonical event.
   · intro b u hu htr hsg hh hm
-    have huT : u < T := by
-      by_contra hnT
-      apply htail u (le_of_not_gt hnT) b.1.property.choose
-      exact b.support_subset walls b.1.property.choose_spec hm
     obtain ⟨t, ht, hbeq, htu⟩ :=
-      eq_crossingWallEvent_of_mem_support_of_sign d p ℒ H h B (k + 1) e hTpos hxy b
-        hu huT (by simpa only [f, vel] using hsg) (by simpa only [walls, vel] using hm)
+      eq_crossingWallEvent_of_mem_support_of_sign d p ℒ H h B (k + 1) e hTpos hxy htail b
+        hu.le (by simpa only [f, vel] using hsg) (by simpa only [walls, vel] using hm)
     rw [hbeq] at htu
     rw [hbeq]
     exact ⟨crossingWallEvent_mem_segmentWallEvents ((B.activeNormal (k + 1))) e ht, htu⟩
@@ -400,34 +408,17 @@ theorem exists_decompose_cutoffWallEventEvaluation_eq_sum_lastChange (k : ℕ)
     simpa only [s, segmentEventParameter_of_mem, walls, B.activeSupport_apply] using hc
   -- Every ambient-wall hit along the ray comes from a genuine crossing event.
   · intro c u hu hmem
-    have hu0 : 0 < u := by
-      rcases hu.eq_or_lt with rfl | hu
-      · exact (y.notMem c (by simpa using hmem)).elim
-      · exact hu
-    have huT : u < T := by
-      by_contra hnT
-      exact htail u (le_of_not_gt hnT) c hmem
     obtain ⟨t, ht, htu, _⟩ := exists_crossingTime_of_pos_of_wall d p ℒ H h B (k + 1)
-      e hTpos hxy hu0 huT c hmem
+      e hTpos hxy htail hu c hmem
     exact ⟨crossingWallEvent (B.activeNormal (k + 1)) e t ht,
       crossingWallEvent_mem_segmentWallEvents (B.activeNormal (k + 1)) e ht, htu⟩
   -- The tail does not intersect the singular support.
   · intro _ u hu hsing
-    by_cases huT : u < T
-    · have hu0 : 0 < u := by
-        rcases hu.eq_or_lt with rfl | hu0
-        · exfalso
-          obtain ⟨c, hc⟩ := Set.mem_iUnion.mp
-            (singularSupport_subset_iUnion walls hclosedW hsing)
-          exact y.notMem c (by simpa only [walls, zero_smul, add_zero] using hc)
-        · exact hu0
-      obtain ⟨c, hc⟩ := Set.mem_iUnion.mp (singularSupport_subset_iUnion walls hclosedW hsing)
-      obtain ⟨t, ht, htu, hline⟩ := exists_crossingTime_of_pos_of_wall d p ℒ H h B (k + 1)
-        e hTpos hxy hu0 huT c hc
-      exact e.down.regular t (Ioo_subset_Icc_self
-        (mem_Ioo_of_mem_orderedCrossingTimes e ht)) (hline ▸ hsing)
-    · obtain ⟨c, hc⟩ := Set.mem_iUnion.mp (singularSupport_subset_iUnion walls hclosedW hsing)
-      exact htail u (le_of_not_gt huT) c hc
+    obtain ⟨c, hc⟩ := Set.mem_iUnion.mp (singularSupport_subset_iUnion walls hclosedW hsing)
+    obtain ⟨t, ht, htu, hline⟩ := exists_crossingTime_of_pos_of_wall d p ℒ H h B (k + 1)
+      e hTpos hxy htail hu c hc
+    exact e.down.regular t (Ioo_subset_Icc_self
+      (mem_Ioo_of_mem_orderedCrossingTimes e ht)) (hline ▸ hsing)
 
 omit [IsWallAnnihilating H ℳ] in
 /-- Truncating the coefficient quotient commutes with the whole wall-event
