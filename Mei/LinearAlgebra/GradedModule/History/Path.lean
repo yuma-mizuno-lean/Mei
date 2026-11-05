@@ -41,7 +41,8 @@ This is the finite component expansion of transfer compositions between graded m
   needed only at targets of arrows. A target history is the sum of the images of the
   source histories over it, where several source degrees may merge and cancel;
   injective degree maps give componentwise naturality. An injective final map reflects
-  selected linear-map identities from the target expansion to the source.
+  selected linear-map identities from the target expansion to the source. Consecutive
+  paths have nested expansions with independent supports on their two input ranges.
 
 In a one-object quiver, `Quiver.SingleObj.pathOfFn` turns a finite sequence of arrows
 into a path, and `Quiver.SingleObj.degreesPathOfFn` identifies its degree histories with
@@ -494,6 +495,32 @@ theorem sum_homogeneousHistory_comp_eq (S : Finset (p.Degrees ι))
   rw [← sum_homogeneousHistory T ℳ p (f y)]
   exact (Finset.sum_subset (historySupport_subset_of_comp_eq_zero T ℳ p f S hS y)
     fun d _ hd => by simpa using hd).symm
+
+/-- Two consecutive paths have a nested expansion from independent uniform
+supports on the initial input and on the range of the first composite. The right
+block acts first in the sum, and the modules and degree types may vary by vertex. -/
+theorem sum_sum_comp_homogeneousHistory_comp_eq_of_support {b c : Q} (p : Path a b)
+    (q : Path b c) {O : Type*} [AddCommMonoid O] [Module R O] (g : M c →ₗ[R] O)
+    (Sp : Finset (q.Degrees ι)) (Sq : Finset (p.Degrees ι))
+    (hP : ∀ d ∉ Sp, (q.homogeneousHistory T ℳ d).comp ((p.composeLinear T).comp f) = 0)
+    (hQ : ∀ d ∉ Sq, (p.homogeneousHistory T ℳ d).comp f = 0) :
+    (∑ dq ∈ Sp, ∑ dp ∈ Sq, g.comp ((q.homogeneousHistory T ℳ dq).comp
+      ((p.homogeneousHistory T ℳ dp).comp f))) =
+      g.comp (((p.comp q).composeLinear T).comp f) := by
+  calc
+    _ = ∑ dq ∈ Sp, g.comp ((q.homogeneousHistory T ℳ dq).comp
+        ((p.composeLinear T).comp f)) := by
+      apply Finset.sum_congr rfl
+      intro dq hdq
+      rw [← sum_homogeneousHistory_comp_eq T ℳ p f Sq hQ]
+      ext y
+      simp
+    _ = g.comp ((q.composeLinear T).comp ((p.composeLinear T).comp f)) := by
+      rw [← sum_homogeneousHistory_comp_eq T ℳ q ((p.composeLinear T).comp f) Sp hP]
+      ext y
+      simp
+    _ = g.comp (((p.comp q).composeLinear T).comp f) := by
+      rw [composeLinear_comp, LinearMap.comp_assoc]
 
 /-- A finite generating set of inputs gives a uniform finite history support on its span. -/
 theorem exists_uniform_historySupport_of_fg (P : Submodule R (M a)) (hP : P.FG) :
