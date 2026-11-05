@@ -30,7 +30,8 @@ decorations: a nonzero final value forces every intermediate decoration to be no
 This is the finite component expansion of transfer compositions between graded modules.
 * For a fixed input only finitely many histories are nonzero, and they sum to the
   composite; no finiteness of the degree types is needed.
-* Concatenation of paths concatenates histories and composes their maps, and an arrow
+* Concatenation of paths composes finite sums of history pairs as well as individual
+  histories, and an arrow
   carrying the identity selects a component of the previous decoration. The final
   selection of a degree keeps a history of that terminal degree and kills the others.
 * A finite set containing the contributing histories of every input in the range of a
@@ -245,6 +246,19 @@ theorem homogeneousHistory_comp {b : Q} (p : Path a b) :
       _ = _ := by
         rw [homogeneousHistory_comp p q d d'.1, homogeneousHistory_cons T ℳ q e d'.1 d'.2]
         rfl
+
+/-- A finite family of degree-history pairs reindexes to histories of the
+concatenated path. The second block acts on the output of the first, and the
+family may impose any condition on either block by its choice of pairs. -/
+theorem sum_homogeneousHistory_comp {b c : Q} (p : Path a b) (q : Path b c)
+    (S : Finset (p.Degrees ι × q.Degrees ι)) :
+    ∑ d ∈ S.map (degreesComp (ι := ι) p q).symm.toEmbedding,
+      (p.comp q).homogeneousHistory T ℳ d =
+      ∑ d ∈ S, (q.homogeneousHistory T ℳ d.2).comp
+        (p.homogeneousHistory T ℳ d.1) := by
+  rw [Finset.sum_map]
+  refine Finset.sum_congr rfl fun ⟨d, d'⟩ _ => ?_
+  exact homogeneousHistory_comp T ℳ p q d d'
 
 section Finite
 
