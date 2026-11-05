@@ -45,6 +45,18 @@ every wall function of that group is `1 + c z^{2e₁}`, with coefficients in `�
 `DirectedDiagram.FunctionWallGrouping.IsWallFunction.eq_of_equivalent` and
 `DirectedDiagram.FunctionWallGrouping.IsWallFunction.isPositive_of_equivalent`.
 
+No grouping of the other representative is needed. Every nonempty relatively open subset of the
+line `{y = 0}` (`RankTwoPolynomialInput.Examples.horizontalLine`) contains points that are generic
+for any given diagram `E` (`RankTwoPolynomialInput.Examples.exists_isGenericPoint_horizontalLine`).
+If `E` is equivalent to the incoming diagram and `θ` is such a point, then the germ wall
+functions of `E` at `θ`, in a direction crossing the line negatively and for the normal of the
+line, are exactly `1 + c z^{2e₁}`
+(`RankTwoPolynomialInput.Examples.isGermWallFunction_iff_of_equivalent`), which has coefficients
+in `ℕ[c]` (`RankTwoPolynomialInput.Examples.isPositive_completedInitialFunction`). So the wall
+function on the line of the completed class is `1 + c z^{2e₁}` in every representative, at every
+point of the line that is generic for it. This uses
+`DirectedDiagram.FunctionWallGrouping.IsWallFunction.eq_of_isGermWallFunction`.
+
 ## Enlarging the positive degrees
 
 The identity of `ℤ²` is a positive degree map from the even quadrant to the quadrant
@@ -241,6 +253,39 @@ theorem isCrossingGerm_incomingGrouping {θ v : ℝ × ℝ}
   mem_support_iff j := by simp [hθ]
   realCharacter_normal_neg j _ := by simpa using hv
 
+/-- The horizontal line `{y = 0}` of `ℝ²`, the kernel of the real extension of the normal. -/
+def horizontalLine : AffineSubspace ℝ (ℝ × ℝ) :=
+  (LinearMap.ker (h.realCharacter (horizontalInput.wallNormal ()))).toAffineSubspace
+
+/-- A point lies on the horizontal line when the normal vanishes on it. -/
+@[simp]
+theorem mem_horizontalLine {θ : ℝ × ℝ} :
+    θ ∈ horizontalLine h ↔ h.realCharacter (horizontalInput.wallNormal ()) θ = 0 := by
+  rw [horizontalLine, Submodule.mem_toAffineSubspace, LinearMap.mem_ker]
+
+/-- The support of the wall of the horizontal input spans the horizontal line. -/
+theorem affineSpan_incomingDiagram_support (j : horizontalInput.IncomingIndex) :
+    affineSpan ℝ ((horizontalInput.incomingDiagram h c).wall j).support = horizontalLine h := by
+  rw [← AffineSubspace.affineSpan_coe (horizontalLine h)]
+  congr 1
+  ext θ
+  simp
+
+/-- The horizontal line is an affine hyperplane of `ℝ²`. -/
+theorem finrank_horizontalLine_direction :
+    Module.finrank ℝ (horizontalLine h).direction + 1 = Module.finrank ℝ (ℝ × ℝ) := by
+  rw [← affineSpan_incomingDiagram_support (R := ℚ) 0 h default]
+  exact ((horizontalInput.incomingDiagram h (0 : horizontalInput.Variable → ℚ)).wall
+    default).finrank_direction_add_one
+
+/-- Every nonempty relatively open subset of the horizontal line contains a generic point of the
+line for any directed diagram `E` over the even quadrant. -/
+theorem exists_isGenericPoint_horizontalLine {ι' : Type*}
+    (E : DirectedDiagram (d := evenOrthant) h (H) ι') {U : Set (ℝ × ℝ)} (hU : IsOpen U)
+    (hne : (U ∩ horizontalLine h).Nonempty) :
+    ∃ θ ∈ U ∩ horizontalLine h, E.IsGenericPoint (horizontalLine h) θ :=
+  E.exists_isGenericPoint _ (finrank_horizontalLine_direction h) hU hne
+
 section Representatives
 
 /-- The completed coefficients `ℚ[c][[ℤ²]]` of the horizontal input over the even quadrant. -/
@@ -284,6 +329,56 @@ theorem eq_completedInitialFunction_of_equivalent {ι' κ' : Type*}
   exact hf'.isPositive_of_equivalent (horizontalInput.isPositive_incomingGrouping h
     MvPolynomial.X ⊤ hQ _ fun v => ⟨MvPolynomial.X v, MvPolynomial.map_X _ v⟩) hDE hgerm'
       (by simp) hj' hν'
+
+/-- **The wall function on the line in every representative.** Let `E` be any directed diagram
+equivalent to the incoming diagram of the horizontal input over `ℚ[c]`, that is, any
+representative of its completed class, and let `θ` be a generic point of the horizontal line for
+`E`, which exists in every open set meeting the line
+(`RankTwoPolynomialInput.Examples.exists_isGenericPoint_horizontalLine`). For a direction `v`
+crossing the line negatively, the germ wall functions of `E` at `θ` and `v` for the normal of
+the line are exactly `1 + c z^{2e₁}`. No grouping of `E` is involved. -/
+theorem isGermWallFunction_iff_of_equivalent {ι' : Type*}
+    {E : DirectedDiagram (d := evenOrthant) h
+      (tropicalVertexWallSpaces (R := MvPolynomial horizontalInput.Variable ℚ) evenOrthant ρ) ι'}
+    (hDE : (horizontalInput.incomingDiagram h MvPolynomial.X).Equivalent E) {θ v : ℝ × ℝ}
+    (hE : E.IsGenericPoint (horizontalLine h) θ)
+    (hv : h.realCharacter (horizontalInput.wallNormal ()) v < 0) (f' : (Fc).completionˣ) :
+    E.IsGermWallFunction ((Fc).completedBCHAction evenOrthant
+        (tropicalVertexGrading (R := MvPolynomial horizontalInput.Variable ℚ) evenOrthant ρ))
+        θ v hE.isRegular (horizontalInput.wallNormal ()) f' ↔
+      f' = horizontalInput.completedInitialFunction MvPolynomial.X ⊤ () := by
+  have hθ : h.realCharacter (horizontalInput.wallNormal ()) θ = 0 :=
+    (mem_horizontalLine h).mp hE.mem
+  have hspan := affineSpan_incomingDiagram_support (MvPolynomial.X (R := ℚ)) h default
+  have hgerm (k : ℕ) := isCrossingGerm_incomingGrouping (MvPolynomial.X (R := ℚ)) h hθ hv k
+  have hθj : θ ∈ ((horizontalInput.incomingDiagram h (MvPolynomial.X (R := ℚ))).wall
+      default).support := by
+    simp [hθ]
+  have hvj : v ∉ (affineSpan ℝ ((horizontalInput.incomingDiagram h
+      (MvPolynomial.X (R := ℚ))).wall default).support).direction := by
+    rw [hspan, horizontalLine, Submodule.toAffineSubspace_direction, LinearMap.mem_ker]
+    exact hv.ne
+  have hE' : E.IsGenericPoint (affineSpan ℝ ((horizontalInput.incomingDiagram h
+      (MvPolynomial.X (R := ℚ))).wall default).support) θ := by
+    rwa [hspan]
+  have hf := horizontalInput.isWallFunction_incomingGrouping h (MvPolynomial.X (R := ℚ)) ⊤ ()
+    ((horizontalInput.exists_wallNormal_eq_one ()).imp fun _ hp => ⟨hp, trivial, trivial⟩)
+  have hν : ((horizontalInput.incomingDiagram h (MvPolynomial.X (R := ℚ))).wall default).normal =
+      horizontalInput.wallNormal () := by
+    rw [incomingDiagram_normal]
+  constructor
+  · intro hf'
+    exact hf.eq_of_isGermWallFunction hgerm (by simp) hθj hvj hDE hE' (hν ▸ hf')
+  · rintro rfl
+    exact hν ▸ hf.isGermWallFunction_of_equivalent hgerm (by simp) hθj hvj hDE hE'
+
+/-- The wall function `1 + c z^{2e₁}` of the horizontal line has coefficients in `ℕ[c]`. -/
+theorem isPositive_completedInitialFunction :
+    (Fc).IsPositive (AddMonoidAlgebra.mapRingHom (⊤ : AddSubmonoid (ℤ × ℤ))
+      (MvPolynomial.map (σ := horizontalInput.Variable) (Nat.castRingHom ℚ))).rangeS
+      (horizontalInput.completedInitialFunction MvPolynomial.X ⊤ ()).val :=
+  horizontalInput.isPositive_completedInitialFunction MvPolynomial.X ⊤ _
+    (fun v => ⟨MvPolynomial.X v, MvPolynomial.map_X _ v⟩) ()
 
 end Representatives
 
