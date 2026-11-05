@@ -230,6 +230,16 @@ theorem crossingWallEvent_mem_segmentWallEvents (f : ι → V →L[ℝ] ℝ)
   apply Finset.mem_map.mpr
   exact ⟨⟨t, List.mem_toFinset.mpr ht⟩, Finset.mem_attach _ _, rfl⟩
 
+/-- The crossing point lies on the wall chosen as the normal representative of
+its canonical simultaneous event. -/
+theorem mem_chosenWall_crossingWallEvent (f : ι → V →L[ℝ] ℝ)
+    (e : x ⟶ y) (t : ℝ) (ht : t ∈ orderedCrossingTimes e) :
+    AffineMap.lineMap x.val y.val t ∈ W (crossingWallEvent f e t ht).1.property.choose := by
+  have hs : AffineMap.lineMap x.val y.val t ∈ (crossingWallEvent f e t ht).support W := by
+    exact (WallEvent.mem_support _ _ _).2 (fun j => mem_crossingWallEvent f e t ht j)
+  exact (WallEvent.mem_support _ _ _).mp hs _ |>.mpr
+    (crossingWallEvent f e t ht).1.property.choose_spec
+
 /-- Inventory membership is exactly representation by a genuine crossing time. -/
 theorem mem_segmentWallEvents_iff (f : ι → V →L[ℝ] ℝ) (e : x ⟶ y)
     (b : WallEvent ι) :

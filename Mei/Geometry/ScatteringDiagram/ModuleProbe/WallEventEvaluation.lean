@@ -12,6 +12,8 @@ public import Mei.Geometry.ScatteringDiagram.BrokenLine.Itineraries.Linear
 public import Mei.Geometry.ScatteringDiagram.BrokenLine.Itineraries.Completion
 public import Mei.Geometry.ScatteringDiagram.BrokenLine.Itineraries.ZeroDirection.Quotient
 public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.WallEvent.Action
+public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.WallEvent.Parameters
+public import Mei.Geometry.Convex.Polyhedron.Line
 public import Mei.Geometry.Convex.Sweep.Admissible.WallEvent
 
 /-!
@@ -95,12 +97,11 @@ def cutoffWallEventEvaluation (k K : ℕ) (hkK : k ≤ K)
   cutoffDecoratedEvaluation d (d.shiftedQuotientGrading ℳ p k).piece
     (fun e : WallEvent (B.active K) => wallEventPropagation d ℳ p ℒ H h B k K hkK e)
     a (fun n => i (ρ (p + n)))
-    (fun e => e.normal ((fun c : B.active K =>
-        h.continuousRealCharacter (B.wall c).normal)))
-    (fun e => e.offset ((fun c : B.active K => (B.wall c).offset)))
-    (fun e => e.2) (fun e => e.support ((fun c : B.active K => (B.wall c).support)))
-    ((fun c : B.active K => (B.wall c).support))
-    (fun _ : Unit => singularSupport ((fun c : B.active K => (B.wall c).support))) C k Q
+    (fun e => e.normal ((B.activeNormal K)))
+    (fun e => e.offset ((B.activeOffset K)))
+    (fun e => e.2) (fun e => e.support ((B.activeSupport K)))
+    ((B.activeSupport K))
+    (fun _ : Unit => singularSupport ((B.activeSupport K))) C k Q
 
 omit [IsWallAnnihilating H ℳ] in
 /-- Defining equation for canonical simultaneous-event weighted evaluation. -/
@@ -111,14 +112,13 @@ theorem cutoffWallEventEvaluation_def (k K : ℕ) (hkK : k ≤ K)
         (fun e : WallEvent (B.active K) => wallEventPropagation d ℳ p ℒ H h B k K hkK e)
         a (fun n => i (ρ (p + n)))
         (fun e => e.normal
-          ((fun c : B.active K =>
-        h.continuousRealCharacter (B.wall c).normal)))
-        (fun e => e.offset ((fun c : B.active K => (B.wall c).offset)))
+          ((B.activeNormal K)))
+        (fun e => e.offset ((B.activeOffset K)))
         (fun e => e.2)
-        (fun e => e.support ((fun c : B.active K => (B.wall c).support)))
-        ((fun c : B.active K => (B.wall c).support))
+        (fun e => e.support ((B.activeSupport K)))
+        ((B.activeSupport K))
         (fun _ : Unit =>
-          singularSupport ((fun c : B.active K => (B.wall c).support))) C k Q := (rfl)
+          singularSupport ((B.activeSupport K))) C k Q := (rfl)
 
 omit [IsWallAnnihilating H ℳ] in
 /-- A fixed event preserves a homogeneous component of the current coefficient
@@ -132,29 +132,145 @@ theorem decompose_wallEventPropagation_self (k : ℕ) (b : WallEvent (B.active k
   rw [wallEventPropagation_self]
   exact d.decompose_truncatedBCHAction_same ℒ ℳ p k (B.wallEventLabel k b) hz
 
-private theorem lineMap_eq_add_smul {x y w : V} {T t : ℝ} (hxy : x - y = T • w) :
-    AffineMap.lineMap x y t = y + (T * (1 - t)) • w := by
-  calc
-    AffineMap.lineMap x y t = y + (1 - t) • (x - y) := by
-      rw [AffineMap.lineMap_apply_module']
-      module
-    _ = _ := by rw [hxy]; module
+omit [IsWallAnnihilating H ℳ] in
+/-- A genuine crossing gives a positive ray parameter, nonzero transversality,
+both signs used by the backward action, the event height, and its precise incident
+wall set. The common proof does not depend on weighted evaluation. -/
+theorem crossing_event_data (k : ℕ) {n : Γ}
+    {x y : WallComplement (B.activeSupport k)}
+    (e : x ⟶ y) (T : ℝ) (hTpos : 0 < T)
+    (hxy : x.val - y.val = T • i (ρ (p + n)))
+    {b : WallEvent (B.active k)} {t : ℝ} (ht : t ∈ orderedCrossingTimes e)
+    (hb : b = crossingWallEvent (B.activeNormal k) e t ht) :
+    0 < segmentEventParameter (B.activeNormal k) e T b ∧
+      (b.normal (B.activeNormal k)) (i (ρ (p + n))) ≠ 0 ∧
+      SignType.sign ((b.normal (B.activeNormal k)) (i (ρ (p + n)))) = b.2 ∧
+      SignType.sign ((b.normal (B.activeNormal k)) (x.val - y.val)) = b.2 ∧
+      (b.normal (B.activeNormal k)) (y.val +
+        segmentEventParameter (B.activeNormal k) e T b • i (ρ (p + n))) =
+        b.offset (B.activeOffset k) ∧
+      y.val + segmentEventParameter (B.activeNormal k) e T b • i (ρ (p + n)) ∈
+        b.support (B.activeSupport k) := by
+  subst b
+  have hs := segmentEventParameter_pos (B.activeNormal k) e T hTpos ht
+  have hline : AffineMap.lineMap x.val y.val t = y.val +
+      segmentEventParameter (B.activeNormal k) e T
+        (crossingWallEvent (B.activeNormal k) e t ht) • i (ρ (p + n)) := by
+    rw [lineMap_eq_add_smul (t := t) hxy, segmentEventParameter_of_mem]
+  have hmem : AffineMap.lineMap x.val y.val t ∈
+      (B.wall (crossingWallEvent (B.activeNormal k) e t ht).1.property.choose).support :=
+    mem_chosenWall_crossingWallEvent (B.activeNormal k) e t ht
+  have hdir := e.down.transverse
+    (crossingWallEvent (B.activeNormal k) e t ht).1.property.choose
+    ⟨t, Ioo_subset_Icc_self (mem_Ioo_of_mem_orderedCrossingTimes e ht), hmem⟩
+  rw [(B.wall (crossingWallEvent (B.activeNormal k) e t ht).1.property.choose).direction_support,
+    LinearMap.mem_ker] at hdir
+  have htrans : (crossingWallEvent (B.activeNormal k) e t ht).normal
+      (B.activeNormal k) (y.val - x.val) ≠ 0 := by
+    simpa only [B.activeNormal_apply, WallEvent.normal_def,
+      h.continuousRealCharacter_apply] using hdir
+  have hv : (crossingWallEvent (B.activeNormal k) e t ht).normal
+      (B.activeNormal k) (i (ρ (p + n))) ≠ 0 := by
+    intro hz
+    apply htrans
+    have hyx : y.val - x.val = (-T) • i (ρ (p + n)) := by
+      calc
+        y.val - x.val = -(x.val - y.val) := by abel
+        _ = -T • i (ρ (p + n)) := by rw [hxy]; module
+    simp only [hyx, map_smul, hz, smul_zero]
+  have hsign : SignType.sign ((crossingWallEvent (B.activeNormal k) e t ht).normal
+      (B.activeNormal k) (i (ρ (p + n)))) =
+      (crossingWallEvent (B.activeNormal k) e t ht).2 := by
+    have hn := normal_sign_crossingWallEvent (B.activeNormal k) e t ht
+    calc
+      SignType.sign ((crossingWallEvent (B.activeNormal k) e t ht).normal
+        (B.activeNormal k) (i (ρ (p + n)))) =
+          SignType.sign ((crossingWallEvent (B.activeNormal k) e t ht).normal
+            (B.activeNormal k) (x.val - y.val)) := by
+        rw [hxy]
+        have hs : SignType.sign ((crossingWallEvent (B.activeNormal k) e t ht).normal
+          (B.activeNormal k) (T • i (ρ (p + n)))) =
+          SignType.sign ((crossingWallEvent (B.activeNormal k) e t ht).normal
+            (B.activeNormal k) (i (ρ (p + n)))) := by
+          simp [← mul_add, sign_mul, sign_pos hTpos]
+        exact hs.symm
+      _ = _ := by simpa only using hn
+  have hinc : y.val + segmentEventParameter (B.activeNormal k) e T
+      (crossingWallEvent (B.activeNormal k) e t ht) • i (ρ (p + n)) ∈
+      (crossingWallEvent (B.activeNormal k) e t ht).support (B.activeSupport k) := by
+    rw [← hline]
+    exact (WallEvent.mem_support _ _ _).2 (fun j => by
+      simpa only [B.activeSupport_apply] using mem_crossingWallEvent _ e t ht j)
+  have hoff := WallEvent.normal_apply_of_mem_support
+    (crossingWallEvent (B.activeNormal k) e t ht) (B.activeSupport k)
+    (B.activeNormal k) (B.activeOffset k)
+    (fun c z hz => by
+      rw [B.activeNormal_apply, B.activeOffset_apply]
+      exact (B.wall c).offset_eq hz) hinc
+  exact ⟨hs, hv, hsign, (normal_sign_crossingWallEvent (B.activeNormal k) e t ht), hoff,
+    hinc⟩
 
-private theorem lineMap_eq_add_smul_of_pos_of_lt {x y w : V} {T u : ℝ}
-    (hT : 0 < T) (hxy : x - y = T • w) (hu : 0 < u) (huT : u < T) :
-    ∃ t ∈ Set.Ioo (0 : ℝ) 1,
-      u = T * (1 - t) ∧ y + u • w = AffineMap.lineMap x y t := by
-  let t := 1 - u / T
-  have ht0 : 0 < t := sub_pos.mpr ((div_lt_one hT).mpr huT)
-  have ht1 : t < 1 := by
-    have hup : 0 < u / T := div_pos hu hT
-    dsimp only [t]
-    linarith
-  have htu : u = T * (1 - t) := by dsimp only [t]; field_simp; ring
-  refine ⟨t, ⟨ht0, ht1⟩, htu, ?_⟩
-  calc
-    y + u • w = y + (T * (1 - t)) • w := by rw [htu]
-    _ = _ := (lineMap_eq_add_smul (t := t) hxy).symm
+omit [IsWallAnnihilating H ℳ] in
+/-- A wall point on a positive interior ray gives the genuine ordered crossing
+time at which the ray meets that wall, together with the computed event parameter. -/
+theorem exists_crossingTime_of_pos_of_wall (k : ℕ) {n : Γ}
+    {x y : WallComplement (B.activeSupport k)}
+    (e : x ⟶ y) {T u : ℝ} (hTpos : 0 < T)
+    (hxy : x.val - y.val = T • i (ρ (p + n)))
+    (hu : 0 < u) (huT : u < T) (c : B.active k)
+    (hc : y.val + u • i (ρ (p + n)) ∈ B.activeSupport k c) :
+    ∃ t : ℝ, ∃ ht : t ∈ orderedCrossingTimes e,
+      segmentEventParameter (B.activeNormal k) e T
+        (crossingWallEvent (B.activeNormal k) e t ht) = u ∧
+      y.val + u • i (ρ (p + n)) = AffineMap.lineMap x.val y.val t := by
+  obtain ⟨t, hti, htu, hline⟩ :=
+    lineMap_eq_add_smul_of_pos_of_lt (w := i (ρ (p + n))) hTpos hxy hu huT
+  have ht : t ∈ orderedCrossingTimes e := by
+    rw [mem_orderedCrossingTimes]
+    exact ⟨c, (mem_crossings x y c t).mpr
+      ⟨Set.Ioo_subset_Icc_self hti, by rw [← hline]; exact hc⟩⟩
+  exact ⟨t, ht, (segmentEventParameter_of_mem (B.activeNormal k) e T ht).trans htu.symm,
+    hline⟩
+
+omit [IsWallAnnihilating H ℳ] in
+/-- At a regular crossing, the selected event normal agrees with its offset at
+any point of an incident wall. -/
+theorem normal_crossingWallEvent_eq_of_mem (k : ℕ)
+    {x y : WallComplement (B.activeSupport k)} (e : x ⟶ y) {t : ℝ}
+    (ht : t ∈ orderedCrossingTimes e) (c : B.active k)
+    (hc : AffineMap.lineMap x.val y.val t ∈ (B.wall c).support)
+    {Q : V} (hQ : Q ∈ (B.wall c).support) :
+    (crossingWallEvent (B.activeNormal k) e t ht).normal (B.activeNormal k) Q =
+      (crossingWallEvent (B.activeNormal k) e t ht).offset (B.activeOffset k) := by
+  have hmem := mem_chosenWall_crossingWallEvent (B.activeNormal k) e t ht
+  have hreg := e.down.regular t (Ioo_subset_Icc_self
+    (mem_Ioo_of_mem_orderedCrossingTimes e ht))
+  have hd : affineSpan ℝ
+      (B.wall (crossingWallEvent (B.activeNormal k) e t ht).1.property.choose).support =
+      affineSpan ℝ (B.wall c).support :=
+    affineSpan_eq_of_notMem_singularSupport (W := B.activeSupport k) hreg hmem hc
+  have hQspan : Q ∈ affineSpan ℝ
+      (B.wall (crossingWallEvent (B.activeNormal k) e t ht).1.property.choose).support := by
+    rw [hd]
+    exact subset_affineSpan ℝ _ hQ
+  have hm := AffineSubspace.vsub_mem_direction
+    (subset_affineSpan ℝ _ hmem) hQspan
+  rw [(B.wall (crossingWallEvent (B.activeNormal k) e t ht).1.property.choose).direction_support,
+    LinearMap.mem_ker, vsub_eq_sub, map_sub, sub_eq_zero] at hm
+  rw [WallEvent.normal_def]
+  have hm' : h.continuousRealCharacter
+      (B.wall (crossingWallEvent (B.activeNormal k) e t ht).1.property.choose).normal
+        (AffineMap.lineMap x.val y.val t) =
+      h.continuousRealCharacter
+        (B.wall (crossingWallEvent (B.activeNormal k) e t ht).1.property.choose).normal Q := by
+    simpa only [h.continuousRealCharacter_apply] using hm
+  have hoff : (B.wall (crossingWallEvent (B.activeNormal k) e t ht).1.property.choose).offset =
+      (crossingWallEvent (B.activeNormal k) e t ht).offset (B.activeOffset k) :=
+    (WallEvent.offset_def (crossingWallEvent (B.activeNormal k) e t ht)
+      (B.activeOffset k)).symm
+  exact hm'.symm.trans
+    (((B.wall (crossingWallEvent (B.activeNormal k) e t ht).1.property.choose).offset_eq
+      hmem).trans hoff)
 
 omit [IsWallAnnihilating H ℳ] in
 open Classical in
@@ -164,131 +280,45 @@ at each event is an arbitrarily close incoming germ of the indicated lower
 relative degree; unchanged-degree encounters are removed. -/
 theorem exists_decompose_cutoffWallEventEvaluation_eq_sum_lastChange (k : ℕ)
     (a : (d.shiftedQuotientGrading ℳ p (k + 1)).piece 0) (C : Set V)
-    {n : Γ} {x y : WallComplement ((fun c : B.active (k + 1) => (B.wall c).support))}
+    {n : Γ} {x y : WallComplement ((B.activeSupport (k + 1)))}
     (e : x ⟶ y) (T : ℝ) (hTpos : 0 < T)
     (hxy : x.val - y.val = T • i (ρ (p + n)))
     (htail : ∀ s ≥ T, ∀ c : B.active (k + 1),
       y.val + s • i (ρ (p + n)) ∉ (B.wall c).support)
     (hn : n ∈ d.cutoff (k + 1)) (hn0 : n ≠ 0) :
     ∀ θ > 0, ∃ η : WallEvent (B.active (k + 1)) → ℝ,
-      (∀ b ∈ segmentWallEvents ((fun c : B.active (k + 1) =>
-        h.continuousRealCharacter (B.wall c).normal)) e,
+      (∀ b ∈ segmentWallEvents ((B.activeNormal (k + 1))) e,
         0 < η b ∧ η b < θ) ∧
       (DirectSum.decompose (d.shiftedQuotientGrading ℳ p (k + 1)).piece
         (cutoffWallEventEvaluation d ℳ p ℒ H h B (k + 1) (k + 1)
           (Nat.le_refl (k + 1)) a C y.val) n :
           (d.shiftedLieFiltration ℒ ℳ p).quotient (k + 1)) =
-      ∑ b ∈ segmentWallEvents ((fun c : B.active (k + 1) =>
-        h.continuousRealCharacter (B.wall c).normal)) e,
+      ∑ b ∈ segmentWallEvents ((B.activeNormal (k + 1))) e,
         ∑ m ∈ (d.finite_cutoff (k + 1)).toFinset with
           m ≠ n ∧ n - m ∈ d.monoid ∧
-            b.normal ((fun c : B.active (k + 1) =>
-        h.continuousRealCharacter (B.wall c).normal)) (i (ρ (p + n))) =
-            b.normal ((fun c : B.active (k + 1) =>
-        h.continuousRealCharacter (B.wall c).normal)) (i (ρ (p + m))),
+            b.normal ((B.activeNormal (k + 1))) (i (ρ (p + n))) =
+            b.normal ((B.activeNormal (k + 1))) (i (ρ (p + m))),
         (DirectSum.decompose (d.shiftedQuotientGrading ℳ p (k + 1)).piece
           (wallEventPropagation d ℳ p ℒ H h B (k + 1) (k + 1)
             (Nat.le_refl (k + 1)) b
             (DirectSum.decompose (d.shiftedQuotientGrading ℳ p (k + 1)).piece
               (cutoffWallEventEvaluation d ℳ p ℒ H h B (k + 1) (k + 1)
           (Nat.le_refl (k + 1)) a C
-                (y.val + segmentEventParameter ((fun c : B.active (k + 1) =>
-        h.continuousRealCharacter (B.wall c).normal)) e T b • i (ρ (p + n)) +
+                (y.val + segmentEventParameter ((B.activeNormal (k + 1))) e T b • i (ρ (p + n)) +
                   η b • i (ρ (p + m)))) m)) n :
           (d.shiftedLieFiltration ℒ ℳ p).quotient (k + 1)) := by
   classical
   let := h.finiteDimensional
-  let E := segmentWallEvents ((fun c : B.active (k + 1) =>
-        h.continuousRealCharacter (B.wall c).normal)) e
-  let s := segmentEventParameter ((fun c : B.active (k + 1) =>
-        h.continuousRealCharacter (B.wall c).normal)) e T
+  let E := segmentWallEvents ((B.activeNormal (k + 1))) e
+  let s := segmentEventParameter ((B.activeNormal (k + 1))) e T
   let f : WallEvent (B.active (k + 1)) → V →L[ℝ] ℝ := fun b =>
-    b.normal ((fun c : B.active (k + 1) =>
-        h.continuousRealCharacter (B.wall c).normal))
-  let off : WallEvent (B.active (k + 1)) → ℝ := fun b =>
-    b.offset ((fun c : B.active (k + 1) => (B.wall c).offset))
+    b.normal ((B.activeNormal (k + 1)))
   let vel : Γ → V := fun m => i (ρ (p + m))
-  let walls : B.active (k + 1) → Set V := fun c => (B.wall c).support
+  let walls := B.activeSupport (k + 1)
   have ft (b : WallEvent (B.active (k + 1))) (hb : b ∈ E) :
       ∃ t, ∃ ht : t ∈ orderedCrossingTimes e,
-        b = crossingWallEvent ((fun c : B.active (k + 1) =>
-        h.continuousRealCharacter (B.wall c).normal)) e t ht :=
-    (mem_segmentWallEvents_iff ((fun c : B.active (k + 1) =>
-        h.continuousRealCharacter (B.wall c).normal)) e b).mp hb
-  have hpoint {b : WallEvent (B.active (k + 1))} {t : ℝ}
-      (ht : t ∈ orderedCrossingTimes e)
-      (hb : b = crossingWallEvent ((fun c : B.active (k + 1) =>
-        h.continuousRealCharacter (B.wall c).normal)) e t ht) :
-      AffineMap.lineMap x.val y.val t = y.val + s b • vel n := by
-    subst b
-    rw [lineMap_eq_add_smul (t := t) hxy]
-    simp only [s, vel, segmentEventParameter_of_mem]
-  have hpos {b : WallEvent (B.active (k + 1))} {t : ℝ}
-      (ht : t ∈ orderedCrossingTimes e)
-      (hb : b = crossingWallEvent ((fun c : B.active (k + 1) =>
-        h.continuousRealCharacter (B.wall c).normal)) e t ht) :
-      0 < s b := by
-    subst b
-    exact segmentEventParameter_pos ((fun c : B.active (k + 1) =>
-        h.continuousRealCharacter (B.wall c).normal)) e T hTpos ht
-  have hinc {b : WallEvent (B.active (k + 1))} {t : ℝ}
-      (ht : t ∈ orderedCrossingTimes e)
-      (hb : b = crossingWallEvent ((fun c : B.active (k + 1) =>
-        h.continuousRealCharacter (B.wall c).normal)) e t ht) :
-      y.val + s b • vel n ∈ b.support walls := by
-    subst b
-    rw [← hpoint ht rfl]
-    exact (WallEvent.mem_support _ _ _).2 (fun j => by
-      simpa only [walls] using mem_crossingWallEvent _ e t ht j)
-  have hplane' {b : WallEvent (B.active (k + 1))} {t : ℝ}
-      (ht : t ∈ orderedCrossingTimes e)
-      (hb : b = crossingWallEvent ((fun c : B.active (k + 1) =>
-        h.continuousRealCharacter (B.wall c).normal)) e t ht) :
-      f b (y.val + s b • vel n) = off b :=
-    WallEvent.normal_apply_of_mem_support b walls
-      ((fun c : B.active (k + 1) =>
-        h.continuousRealCharacter (B.wall c).normal))
-      ((fun c : B.active (k + 1) => (B.wall c).offset))
-      (fun c z hz => (B.wall c).offset_eq hz) (hinc ht hb)
-  have htrans {b : WallEvent (B.active (k + 1))} {t : ℝ}
-      (ht : t ∈ orderedCrossingTimes e)
-      (hb : b = crossingWallEvent ((fun c : B.active (k + 1) =>
-        h.continuousRealCharacter (B.wall c).normal)) e t ht) :
-      f b (vel n) ≠ 0 := by
-    have hmem : AffineMap.lineMap x.val y.val t ∈
-        (B.wall b.1.property.choose).support := by
-      rw [hpoint ht hb]
-      exact (WallEvent.mem_support _ _ _).mp (hinc ht hb) _ |>.mpr
-        b.1.property.choose_spec
-    have hdir := e.down.transverse b.1.property.choose
-      ⟨t, Ioo_subset_Icc_self (mem_Ioo_of_mem_orderedCrossingTimes e ht), hmem⟩
-    rw [(B.wall b.1.property.choose).direction_support, LinearMap.mem_ker] at hdir
-    have hdir' : f b (y.val - x.val) ≠ 0 := by
-      simpa only [f, WallEvent.normal_def, h.continuousRealCharacter_apply] using hdir
-    intro hz
-    apply hdir'
-    have hyx : y.val - x.val = (-T) • vel n := by
-      dsimp only [vel]
-      calc
-        y.val - x.val = -(x.val - y.val) := by abel
-        _ = -T • i (ρ (p + n)) := by rw [hxy]; module
-    simp only [hyx, map_smul, hz, smul_zero]
-  have hsign {b : WallEvent (B.active (k + 1))} {t : ℝ}
-      (ht : t ∈ orderedCrossingTimes e)
-      (hb : b = crossingWallEvent ((fun c : B.active (k + 1) =>
-        h.continuousRealCharacter (B.wall c).normal)) e t ht) :
-      SignType.sign (f b (vel n)) = b.2 := by
-    have hs := normal_sign_crossingWallEvent
-      ((fun c : B.active (k + 1) =>
-        h.continuousRealCharacter (B.wall c).normal)) e t ht
-    rw [← hb] at hs
-    calc
-      SignType.sign (f b (vel n)) = SignType.sign (f b (x.val - y.val)) := by
-        rw [hxy]
-        have hs : SignType.sign (f b (T • vel n)) = SignType.sign (f b (vel n)) := by
-          simp [sign_mul, sign_pos hTpos]
-        exact hs.symm
-      _ = b.2 := by simpa only [f] using hs
+        b = crossingWallEvent ((B.activeNormal (k + 1))) e t ht :=
+    (mem_segmentWallEvents_iff ((B.activeNormal (k + 1))) e b).mp hb
   have hP (b : WallEvent (B.active (k + 1))) :
       b.support walls ⊆ ⋃ c, walls c := by
     intro Q hQ
@@ -304,36 +334,31 @@ theorem exists_decompose_cutoffWallEventEvaluation_eq_sum_lastChange (k : ℕ)
   refine CutoffDecoratedRay.exists_decompose_cutoffDecoratedEvaluation_eq_sum_lastChange
     hn hn0 E (fun b _ => decompose_wallEventPropagation_self d ℳ p ℒ H h B (k + 1) b)
       hP hclosedW hclosedS s ?_ ?_ ?_ ?_ ?_ ?_
-  · exact segmentEventParameter_injective ((fun c : B.active (k + 1) =>
-        h.continuousRealCharacter (B.wall c).normal)) e T hTpos
+  · exact segmentEventParameter_injective ((B.activeNormal (k + 1))) e T hTpos
   · intro b hb
     obtain ⟨t, ht, rfl⟩ := ft b hb
-    exact ⟨hpos ht rfl, htrans ht rfl, hsign ht rfl, hplane' ht rfl, hinc ht rfl⟩
+    obtain ⟨hs, hv, hsg, -, hoff, hmem⟩ :=
+      crossing_event_data d p ℒ H h B (k + 1) e T hTpos hxy ht rfl
+    exact ⟨hs, hv, hsg, hoff, hmem⟩
   · intro b u hu htr hsg hh hm
     have huT : u < T := by
       by_contra hnT
       apply htail u (le_of_not_gt hnT) b.1.property.choose
       exact b.support_subset walls b.1.property.choose_spec hm
-    obtain ⟨t, hti, htu, hline⟩ :=
-      lineMap_eq_add_smul_of_pos_of_lt (w := vel n) hTpos hxy hu huT
-    have htIcc : t ∈ Set.Icc (0 : ℝ) 1 := Set.Ioo_subset_Icc_self hti
+    obtain ⟨c, hc⟩ := b.1.property
+    obtain ⟨t, ht, htu, hline⟩ := exists_crossingTime_of_pos_of_wall d p ℒ H h B (k + 1)
+      (c :=
+        b.1.property.choose) e hTpos hxy hu huT (b.support_subset walls b.1.property.choose_spec hm)
     have hmem : ∀ c : B.active (k + 1),
         AffineMap.lineMap x.val y.val t ∈ walls c ↔ c ∈ b.1.val := by
       intro c
       rw [← hline]
       exact (WallEvent.mem_support b walls _).mp hm c
-    obtain ⟨c, hc⟩ := b.1.property
-    have ht : t ∈ orderedCrossingTimes e := by
-      rw [mem_orderedCrossingTimes]
-      exact ⟨c, (mem_crossings x y c t).mpr ⟨htIcc, (hmem c).mpr hc⟩⟩
-    have hbeq : b = crossingWallEvent ((fun c : B.active (k + 1) =>
-        h.continuousRealCharacter (B.wall c).normal)) e t ht :=
+    have hbeq : b = crossingWallEvent ((B.activeNormal (k + 1))) e t ht :=
       WallEvent.eq_of_mem_support_of_normal_sign_eq
         (x := AffineMap.lineMap x.val y.val t)
-        b (crossingWallEvent ((fun c : B.active (k + 1) =>
-        h.continuousRealCharacter (B.wall c).normal)) e t ht) walls
-        ((fun c : B.active (k + 1) =>
-        h.continuousRealCharacter (B.wall c).normal))
+        b (crossingWallEvent ((B.activeNormal (k + 1))) e t ht) walls
+        ((B.activeNormal (k + 1)))
         (x.val - y.val)
         ((WallEvent.mem_support b walls _).2 (fun c => hmem c))
         ((WallEvent.mem_support _ walls _).2 (fun c =>
@@ -342,47 +367,17 @@ theorem exists_decompose_cutoffWallEventEvaluation_eq_sum_lastChange (k : ℕ)
           calc
             SignType.sign (f b (x.val - y.val)) = SignType.sign (f b (vel n)) := by
               rw [hxy]
-              exact (by
-                simp [sign_mul, sign_pos hTpos] :
-                SignType.sign (f b (T • vel n)) = SignType.sign (f b (vel n)))
+              exact (ContinuousLinearMap.sign_pos_smul (f b) (vel n) hTpos)
             _ = b.2 := by simpa only [f] using hsg)
         (normal_sign_crossingWallEvent _ e t ht)
     rw [hbeq]
-    exact ⟨crossingWallEvent_mem_segmentWallEvents ((fun c : B.active (k + 1) =>
-        h.continuousRealCharacter (B.wall c).normal)) e ht,
-      (segmentEventParameter_of_mem ((fun c : B.active (k + 1) =>
-        h.continuousRealCharacter (B.wall c).normal)) e T ht).trans htu.symm⟩
+    exact ⟨crossingWallEvent_mem_segmentWallEvents ((B.activeNormal (k + 1))) e ht, htu⟩
   · intro b hb c hc Q hQ
     obtain ⟨t, ht, hb⟩ := ft b hb
-    have hmem : AffineMap.lineMap x.val y.val t ∈
-        (B.wall b.1.property.choose).support := by
-      rw [hpoint ht hb]
-      exact (WallEvent.mem_support _ _ _).mp (hinc ht hb) _ |>.mpr
-        b.1.property.choose_spec
-    have hreg := e.down.regular t (Ioo_subset_Icc_self
-      (mem_Ioo_of_mem_orderedCrossingTimes e ht))
-    have hc' : AffineMap.lineMap x.val y.val t ∈ walls c := by
-      rw [hpoint ht hb]
-      exact hc
-    have hd : affineSpan ℝ (B.wall b.1.property.choose).support =
-        affineSpan ℝ (B.wall c).support :=
-      affineSpan_eq_of_notMem_singularSupport (W := walls) hreg hmem hc'
-    have hQspan : Q ∈ affineSpan ℝ (B.wall b.1.property.choose).support := by
-      rw [hd]
-      exact subset_affineSpan ℝ _ hQ
-    have hm := AffineSubspace.vsub_mem_direction
-      (subset_affineSpan ℝ _ hmem) hQspan
-    rw [(B.wall b.1.property.choose).direction_support, LinearMap.mem_ker,
-      vsub_eq_sub, map_sub, sub_eq_zero] at hm
-    rw [WallEvent.normal_def]
-    have hoff : (B.wall b.1.property.choose).offset =
-        b.offset ((fun c : B.active (k + 1) => (B.wall c).offset)) :=
-      (WallEvent.offset_def b ((fun c : B.active (k + 1) => (B.wall c).offset))).symm
-    have hm' : h.continuousRealCharacter (B.wall b.1.property.choose).normal
-        (AffineMap.lineMap x.val y.val t) =
-        h.continuousRealCharacter (B.wall b.1.property.choose).normal Q := by
-      simpa only [h.continuousRealCharacter_apply] using hm
-    exact hm'.symm.trans (((B.wall b.1.property.choose).offset_eq hmem).trans hoff)
+    subst b
+    apply normal_crossingWallEvent_eq_of_mem d ℒ H h B (k + 1) e ht c ?_ hQ
+    rw [lineMap_eq_add_smul (t := t) hxy]
+    simpa only [s, segmentEventParameter_of_mem, walls, B.activeSupport_apply] using hc
   · intro c u hu hmem
     have hu0 : 0 < u := by
       rcases hu.eq_or_lt with rfl | hu
@@ -391,18 +386,10 @@ theorem exists_decompose_cutoffWallEventEvaluation_eq_sum_lastChange (k : ℕ)
     have huT : u < T := by
       by_contra hnT
       exact htail u (le_of_not_gt hnT) c hmem
-    obtain ⟨t, hti, htu, hline⟩ :=
-      lineMap_eq_add_smul_of_pos_of_lt (w := vel n) hTpos hxy hu0 huT
-    have ht : t ∈ orderedCrossingTimes e := by
-      rw [mem_orderedCrossingTimes]
-      exact ⟨c, (mem_crossings x y c t).mpr
-        ⟨Set.Ioo_subset_Icc_self hti, by rw [← hline]; exact hmem⟩⟩
-    refine ⟨crossingWallEvent ((fun c : B.active (k + 1) =>
-        h.continuousRealCharacter (B.wall c).normal)) e t ht,
-      crossingWallEvent_mem_segmentWallEvents ((fun c : B.active (k + 1) =>
-        h.continuousRealCharacter (B.wall c).normal)) e ht, ?_⟩
-    exact (segmentEventParameter_of_mem ((fun c : B.active (k + 1) =>
-      h.continuousRealCharacter (B.wall c).normal)) e T ht).trans htu.symm
+    obtain ⟨t, ht, htu, _⟩ := exists_crossingTime_of_pos_of_wall d p ℒ H h B (k + 1)
+      e hTpos hxy hu0 huT c hmem
+    exact ⟨crossingWallEvent (B.activeNormal (k + 1)) e t ht,
+      crossingWallEvent_mem_segmentWallEvents (B.activeNormal (k + 1)) e ht, htu⟩
   · intro _ u hu hsing
     by_cases huT : u < T
     · have hu0 : 0 < u := by
@@ -412,11 +399,12 @@ theorem exists_decompose_cutoffWallEventEvaluation_eq_sum_lastChange (k : ℕ)
             (singularSupport_subset_iUnion walls hclosedW hsing)
           exact y.notMem c (by simpa only [walls, zero_smul, add_zero] using hc)
         · exact hu0
-      obtain ⟨t, hti, htu, hline⟩ :=
-        lineMap_eq_add_smul_of_pos_of_lt (w := vel n) hTpos hxy hu0 huT
-      exact e.down.regular t (Set.Ioo_subset_Icc_self hti) (hline ▸ hsing)
-    · obtain ⟨c, hc⟩ := Set.mem_iUnion.mp
-        (singularSupport_subset_iUnion walls hclosedW hsing)
+      obtain ⟨c, hc⟩ := Set.mem_iUnion.mp (singularSupport_subset_iUnion walls hclosedW hsing)
+      obtain ⟨t, ht, htu, hline⟩ := exists_crossingTime_of_pos_of_wall d p ℒ H h B (k + 1)
+        e hTpos hxy hu0 huT c hc
+      exact e.down.regular t (Ioo_subset_Icc_self
+        (mem_Ioo_of_mem_orderedCrossingTimes e ht)) (hline ▸ hsing)
+    · obtain ⟨c, hc⟩ := Set.mem_iUnion.mp (singularSupport_subset_iUnion walls hclosedW hsing)
       exact htail u (le_of_not_gt huT) c hc
 
 omit [IsWallAnnihilating H ℳ] in
@@ -435,14 +423,13 @@ theorem transition_cutoffWallEventEvaluation {k K : ℕ} (hk : k ≤ K)
     (d.transition_cutoffDecoratedEvaluation_shiftedBCHAction ℒ ℳ p
       (fun n => i (ρ (p + n)))
       (fun e : WallEvent (B.active K) =>
-        e.normal ((fun c : B.active K =>
-        h.continuousRealCharacter (B.wall c).normal)))
+        e.normal ((B.activeNormal K)))
       (fun e : WallEvent (B.active K) =>
-        e.offset ((fun c : B.active K => (B.wall c).offset)))
+        e.offset ((B.activeOffset K)))
       (fun e : WallEvent (B.active K) => e.2)
-      (fun e : WallEvent (B.active K) => e.support ((fun c : B.active K => (B.wall c).support)))
-      ((fun c : B.active K => (B.wall c).support))
-      (fun _ : Unit => singularSupport ((fun c : B.active K => (B.wall c).support)))
+      (fun e : WallEvent (B.active K) => e.support ((B.activeSupport K)))
+      ((B.activeSupport K))
+      (fun _ : Unit => singularSupport ((B.activeSupport K)))
       C Q hk (fun e : WallEvent (B.active K) => B.wallEventLabel K e) a)
 
 end Mei.ModuleProbe
