@@ -44,7 +44,8 @@ This is the finite component expansion of transfer compositions between graded m
   needed only at targets of arrows. A target history is the sum of the images of the
   source histories over it, where several source degrees may merge and cancel;
   degree maps also commute with the decomposition of histories along concatenation;
-  injective degree maps give componentwise naturality. An injective final map reflects
+  injective degree maps give componentwise naturality. Identity and composition of
+  degree maps preserve histories. An injective final map reflects
   selected linear-map identities from the target expansion to the source.
 
 In a one-object quiver, `Quiver.SingleObj.pathOfFn` turns a finite sequence of arrows
@@ -141,6 +142,28 @@ theorem Degrees.map_comp {κ : Q → Type*} (σ : ∀ q, ι q → κ q) {b : Q} 
           ((d, i) : ((p.comp q).cons e).Degrees ι)).2)
     rw [Degrees.map_cons, degreesComp_cons, Degrees.map_comp σ p q d]
     rw [degreesComp_cons p q e d i, Degrees.map_cons σ q e _ i]
+
+/-- Mapping every degree by the identity preserves a path history. -/
+@[simp]
+theorem Degrees.map_id_apply {b : Q} (p : Path a b) (d : p.Degrees ι) :
+    Degrees.map (fun _ => id) p d = d := by
+  induction p with
+  | nil => rfl
+  | cons p e ih =>
+    obtain ⟨d, i⟩ := d
+    simp [Degrees.map, ih]
+
+/-- Vertexwise composition of degree maps preserves their action on path histories. -/
+@[simp]
+theorem Degrees.map_trans_apply {κ η : Q → Type*} (σ : ∀ q, ι q → κ q)
+    (τ : ∀ q, κ q → η q) {b : Q} (p : Path a b) (d : p.Degrees ι) :
+    Degrees.map τ p (Degrees.map σ p d) = Degrees.map (fun q => τ q ∘ σ q) p d := by
+  induction p with
+  | nil => rfl
+  | cons p e ih =>
+    obtain ⟨d, i⟩ := d
+    simp only [Degrees.map, ih]
+    rfl
 
 section Linear
 
