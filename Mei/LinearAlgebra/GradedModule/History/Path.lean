@@ -44,7 +44,9 @@ This is the finite component expansion of transfer compositions between graded m
   needed only at targets of arrows. A target history is the sum of the images of the
   source histories over it, where several source degrees may merge and cancel;
   degree maps also commute with the decomposition of histories along concatenation;
-  injective degree maps give componentwise naturality. An injective final map reflects
+  injective degree maps give componentwise naturality. Families of degree
+  isomorphisms lift to isomorphisms of histories, including their inverses.
+  An injective final map reflects
   selected linear-map identities from the target expansion to the source.
 
 In a one-object quiver, `Quiver.SingleObj.pathOfFn` turns a finite sequence of arrows
@@ -141,6 +143,37 @@ theorem Degrees.map_comp {κ : Q → Type*} (σ : ∀ q, ι q → κ q) {b : Q} 
           ((d, i) : ((p.comp q).cons e).Degrees ι)).2)
     rw [Degrees.map_cons, degreesComp_cons, Degrees.map_comp σ p q d]
     rw [degreesComp_cons p q e d i, Degrees.map_cons σ q e _ i]
+
+/-- Lift a family of degree isomorphisms to an isomorphism of all histories
+of a path. -/
+def Degrees.mapEquiv {κ : Q → Type*} (σ : ∀ q, ι q ≃ κ q) :
+    ∀ {b : Q} (p : Path a b), p.Degrees ι ≃ p.Degrees κ
+  | _, nil => Equiv.ofUnique _ _
+  | _, cons p _ => (Degrees.mapEquiv σ p).prodCongr (σ _)
+
+/-- The forward map of a lifted degree isomorphism is the existing degree map. -/
+@[simp]
+theorem Degrees.mapEquiv_apply {κ : Q → Type*} (σ : ∀ q, ι q ≃ κ q)
+    {b : Q} (p : Path a b) (d : p.Degrees ι) :
+    Degrees.mapEquiv σ p d = Degrees.map (fun q => σ q) p d := by
+  induction p with
+  | nil => rfl
+  | cons p e ih =>
+    obtain ⟨d, i⟩ := d
+    simp only [Degrees.mapEquiv, Equiv.prodCongr_apply, Prod.map_apply,
+      Degrees.map_cons, ih]
+
+/-- The inverse of a lifted degree isomorphism is the inverse degree map. -/
+@[simp]
+theorem Degrees.mapEquiv_symm_apply {κ : Q → Type*} (σ : ∀ q, ι q ≃ κ q)
+    {b : Q} (p : Path a b) (d : p.Degrees κ) :
+    (Degrees.mapEquiv σ p).symm d = Degrees.map (fun q => (σ q).symm) p d := by
+  induction p with
+  | nil => rfl
+  | cons p e ih =>
+    obtain ⟨d, i⟩ := d
+    simp only [Degrees.mapEquiv, Equiv.prodCongr_symm, Equiv.prodCongr_apply,
+      Prod.map_apply, Degrees.map_cons, ih]
 
 section Linear
 
