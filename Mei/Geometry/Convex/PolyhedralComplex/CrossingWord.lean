@@ -122,6 +122,14 @@ theorem orderedCrossings_eq_iff (e : x ⟶ y) (l : List (C.walls × ℝ)) :
     exact hpair.eq_of_mem_iff (C.pairwise_orderedCrossings e)
       (fun a => (hmem a).trans (C.mem_orderedCrossings e a).symm)
 
+/-- A segment whose geometric crossing set is a singleton has that singleton as its
+crossing list. -/
+theorem orderedCrossings_eq_singleton (e : x ⟶ y) {P : C.walls} {t : ℝ}
+    (he : WallComplement.crossings x y = {(P, t)}) : C.orderedCrossings e = [(P, t)] := by
+  symm
+  apply (C.orderedCrossings_eq_iff e _).mpr
+  simp [he]
+
 /-- Reversing a segment reverses its crossing list and replaces `t` by `1 - t`. -/
 theorem orderedCrossings_reverse (e : x ⟶ y) :
     C.orderedCrossings (Quiver.reverse e) =

@@ -53,6 +53,15 @@ def coefficientPathTransport (p : AdmissiblePLPath x y) : M ≃ M :=
 theorem coefficientPathTransport_apply (p : AdmissiblePLPath x y) (a : M) :
     D.coefficientPathTransport M p a = D.pathProduct p • a := (rfl)
 
+/-- Coefficient transport along a segment crossing a single wall is the signed action of
+that wall's label on the coefficient. -/
+theorem coefficientPathTransport_toPath_eq_smul_of_crossings_eq_singleton
+    (e : x ⟶ y) {P : C.walls} {t : ℝ}
+    (he : WallComplement.crossings x y = {(P, t)}) (a : M) :
+    D.coefficientPathTransport M e.toPath a =
+      (if 0 < D.normal P (y.val - x.val) then (D.label P)⁻¹ else D.label P) • a := by
+  rw [coefficientPathTransport_apply, D.pathProduct_toPath_eq_of_crossings_eq_singleton e he]
+
 /-- Inverse coefficient transport acts by the inverse path product. -/
 @[simp]
 theorem coefficientPathTransport_symm_apply (p : AdmissiblePLPath x y) (a : M) :
