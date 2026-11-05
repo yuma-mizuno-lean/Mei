@@ -30,17 +30,6 @@ variable {R Γ : Type*} [CommRing R] [AddCommGroup Γ]
 
 local notation "F" => positiveFiltration q β d.monoid d.degree (fun _ h => d.degree_nonneg h)
 
-private local instance : Ring (positiveSubalgebra q β d.monoid) := inferInstance
-private local instance : Algebra R (positiveSubalgebra q β d.monoid) := inferInstance
-private local instance : Ring (F).completion := inferInstance
-private local instance : Semiring (F).completion := (inferInstance : Ring (F).completion).toSemiring
-private local instance : Monoid (F).completion := (inferInstance : Ring (F).completion).toMonoid
-private local instance : Semigroup (F).completion :=
-  (inferInstance : Ring (F).completion).toSemigroup
-private local instance : Mul (F).completion := ⟨(inferInstance : Ring (F).completion).mul⟩
-private local instance : Algebra R (F).completion := inferInstance
-private local instance : Module R (F).completion := inferInstance
-
 /-- Ray actions commute with ambient-coefficient-preserving inclusions of translated supports. -/
 private theorem inclusion_action_coordinates
     (n : d.monoid) (hn : 0 < d.degree n) (p s : Γ) (hps : p - s ∈ d.monoid)

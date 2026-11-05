@@ -27,12 +27,6 @@ variable {R Γ : Type*} [CommRing R] [AddCommGroup Γ]
 
 local notation "F" => positiveFiltration q β P δ hδ
 
-private local instance : Ring (positiveSubalgebra q β P) := inferInstance
-private local instance : Algebra R (positiveSubalgebra q β P) := inferInstance
-private local instance : Ring (F).completion := inferInstance
-private local instance : Algebra R (F).completion := inferInstance
-private local instance : Module R (F).completion := inferInstance
-
 /-- A positive ray automorphism is the identity modulo the next ideal order. -/
 theorem completedRayAction_sub_mem (n : P) (hn : 0 < δ n)
     (H : (PowerSeries R)ˣ) (k : ℕ) {a : (F).completion}

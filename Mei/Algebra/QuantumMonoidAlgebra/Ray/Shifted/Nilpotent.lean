@@ -30,11 +30,6 @@ variable {R Γ : Type*} [CommRing R] [AddCommGroup Γ]
 
 local notation "S" => d.shiftedFiltration (grade q β) p
 
-private local instance : AddCommGroup (S).completion := inferInstance
-private local instance : Module R (S).completion := inferInstance
-private local instance (k : ℕ) : AddCommGroup ((S).quotient k) := inferInstance
-private local instance (k : ℕ) : Module R ((S).quotient k) := inferInstance
-
 /-- The difference of the completed shifted ray action and the identity. -/
 abbrev shiftedRayDifference (H : (PowerSeries R)ˣ) : Module.End R (S).completion :=
   (shiftedRayAction q β d n hn p H).toLinearMap - LinearMap.id

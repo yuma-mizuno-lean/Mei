@@ -39,14 +39,6 @@ variable {R Γ : Type*} [CommRing R] [AddCommGroup Γ]
 
 local notation "F" => positiveFiltration q β P δ hδ
 
-private local instance : Ring (positiveSubalgebra q β P) := inferInstance
-private local instance : Algebra R (positiveSubalgebra q β P) := inferInstance
-private local instance : Module R (positiveSubalgebra q β P) := inferInstance
-private local instance : Ring (F).completion := inferInstance
-private local instance : Algebra R (F).completion := inferInstance
-private local instance : Module R (F).completion := inferInstance
-private local instance : Mul (F).completion := ⟨(inferInstance : Ring (F).completion).mul⟩
-
 /-- A strictly positive degree quantum monomial defines a positive completed element. -/
 def completedRayGenerator (n : P) (hn : 0 < δ n) : (F).completionIdeal 1 :=
   ⟨(F).toCompletion (positiveMonomial q β P n), by

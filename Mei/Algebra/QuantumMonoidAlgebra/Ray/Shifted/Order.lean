@@ -26,17 +26,6 @@ variable {R Γ : Type*} [CommRing R] [AddCommGroup Γ]
 
 local notation "F" => positiveFiltration q β d.monoid d.degree (fun _ h => d.degree_nonneg h)
 
-private local instance : Ring (positiveSubalgebra q β d.monoid) := inferInstance
-private local instance : Algebra R (positiveSubalgebra q β d.monoid) := inferInstance
-private local instance : Ring (F).completion := inferInstance
-private local instance : AddCommGroup (F).completion :=
-  (inferInstance : Ring (F).completion).toAddCommGroup
-private local instance : Sub (F).completion := ⟨(inferInstance : Ring (F).completion).sub⟩
-private local instance : Algebra R (F).completion := inferInstance
-private local instance : Module R (F).completion := inferInstance
-private local instance (p : Γ) : AddCommGroup (d.ShiftedCoefficients (grade q β) p) := inferInstance
-private local instance (p : Γ) : Module R (d.ShiftedCoefficients (grade q β) p) := inferInstance
-
 private theorem shiftedRayAction_sub_mem_coordinates (n : d.monoid)
     (hn : 0 < d.degree n) (p : Γ) (H : (PowerSeries R)ˣ) (k : ℕ)
     {b : (F).completion} (hb : b ∈ (F).completionIdeal k) :

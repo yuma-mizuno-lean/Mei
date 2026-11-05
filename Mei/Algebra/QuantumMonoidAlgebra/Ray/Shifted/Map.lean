@@ -34,34 +34,6 @@ local notation "G" => positiveFiltration q' β' e.monoid e.degree (fun _ h => e.
 local notation "Ψ" => mapPositiveCompletion d e T φ h
 local notation "ψ" => positiveMap φ T.toAddMonoidHom h d.monoid e.monoid (fun _ hn => T.map_mem hn)
 
-private local instance : Ring (positiveSubalgebra q β d.monoid) := inferInstance
-private local instance : Ring (positiveSubalgebra q' β' e.monoid) := inferInstance
-private local instance : Algebra R (positiveSubalgebra q β d.monoid) := inferInstance
-private local instance : Algebra S (positiveSubalgebra q' β' e.monoid) := inferInstance
-private local instance : Ring (F).completion := inferInstance
-private local instance : Ring (G).completion := inferInstance
-private local instance : Algebra R (F).completion := inferInstance
-private local instance : Algebra S (G).completion := inferInstance
-private local instance : Module R (F).completion := inferInstance
-private local instance : Module S (G).completion := inferInstance
-
-private local instance : Semiring (F).completion :=
-  (inferInstance : Ring (F).completion).toSemiring
-private local instance : Monoid (F).completion :=
-  (inferInstance : Ring (F).completion).toMonoid
-private local instance : AddCommGroup (F).completion :=
-  (inferInstance : Ring (F).completion).toAddCommGroup
-private local instance : AddCommMonoid (F).completion :=
-  (inferInstance : Ring (F).completion).toAddCommMonoid
-private local instance : Semiring (G).completion :=
-  (inferInstance : Ring (G).completion).toSemiring
-private local instance : Monoid (G).completion :=
-  (inferInstance : Ring (G).completion).toMonoid
-private local instance : AddCommGroup (G).completion :=
-  (inferInstance : Ring (G).completion).toAddCommGroup
-private local instance : AddCommMonoid (G).completion :=
-  (inferInstance : Ring (G).completion).toAddCommMonoid
-
 private theorem mapPositiveCompletion_apply_eq (a : (F).completion) :
     Ψ a = (F).mapCompletion G ψ T.modulus T.monotone_modulus
       (positiveMap_ideal_le d e T φ h) a := by

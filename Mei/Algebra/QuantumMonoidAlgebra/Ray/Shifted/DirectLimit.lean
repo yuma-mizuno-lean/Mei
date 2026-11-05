@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.LinearAlgebra.GradedModule.Shifted.DirectLimit
+public import Mei.Algebra.QuantumMonoidAlgebra.Shifted.DirectLimit.Basic
 public import Mei.Algebra.QuantumMonoidAlgebra.Ray.Shifted.Inclusion
 
 /-!
@@ -26,9 +26,6 @@ namespace Mei.QuantumMonoidAlgebra
 variable {R Γ : Type*} [CommRing R] [AddCommGroup Γ] [DecidableEq Γ]
   (q : Rˣ) (β : LinearMap.BilinForm ℤ Γ) (d : PositiveDegrees Γ)
   (n : d.monoid) (hn : 0 < d.degree n)
-
-private local instance : AddCommMonoid (d.ShiftedDirectLimit (grade q β)) := inferInstance
-private local instance : Module R (d.ShiftedDirectLimit (grade q β)) := inferInstance
 
 private def rayDirectLimitEquiv (H : (PowerSeries R)ˣ) :
     d.ShiftedDirectLimit (grade q β) ≃ₗ[R] d.ShiftedDirectLimit (grade q β) :=

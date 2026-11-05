@@ -28,13 +28,6 @@ variable {R Γ : Type*} [CommRing R] [AddCommGroup Γ]
 
 local notation "F" => positiveFiltration q β P δ hδ
 
-private local instance : Ring (positiveSubalgebra q β P) := inferInstance
-private local instance : Algebra R (positiveSubalgebra q β P) := inferInstance
-private local instance : Ring (F).completion := inferInstance
-private local instance : Algebra R (F).completion := inferInstance
-private local instance : Module R (F).completion := inferInstance
-private local instance : Mul (F).completion := ⟨(inferInstance : Ring (F).completion).mul⟩
-
 /-- Unit series on one positive quantum ray form a group of coefficient automorphisms. -/
 abbrev completedRayAction (n : P) (hn : 0 < δ n) :
     (PowerSeries R)ˣ →* ((F).completion ≃ₐ[R] (F).completion) :=
@@ -74,12 +67,6 @@ variable {S Γ' : Type*} [CommRing S] [AddCommGroup Γ']
 
 local notation "G" => positiveFiltration q' β' P' δ' hδ'
 
-private local instance : Ring (positiveSubalgebra q' β' P') := inferInstance
-private local instance : Algebra S (positiveSubalgebra q' β' P') := inferInstance
-private local instance : Ring (G).completion := inferInstance
-private local instance : Algebra S (G).completion := inferInstance
-private local instance : Module S (G).completion := inferInstance
-private local instance : Mul (G).completion := ⟨(inferInstance : Ring (G).completion).mul⟩
 local notation "Ψ" => mapPositiveCompletionOfDegree φ f h P P' hP δ δ' hδ hδ' l hl hcut
 
 /-- Coefficient and exponent transport intertwines the completed ray automorphisms. -/

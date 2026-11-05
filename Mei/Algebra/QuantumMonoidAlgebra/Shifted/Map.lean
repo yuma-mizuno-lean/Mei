@@ -41,30 +41,6 @@ local notation "Ψ" => mapPositiveCompletion d e T φ h
 local notation "E" => positiveCompletionShiftEquiv q β d p
 local notation "E'" => positiveCompletionShiftEquiv q' β' e (T p)
 
-private local instance : Ring (positiveSubalgebra q β d.monoid) := inferInstance
-private local instance : Ring (positiveSubalgebra q' β' e.monoid) := inferInstance
-private local instance : Algebra R (positiveSubalgebra q β d.monoid) := inferInstance
-private local instance : Algebra S (positiveSubalgebra q' β' e.monoid) := inferInstance
-private local instance : Ring (F).completion := inferInstance
-private local instance : Ring (G).completion := inferInstance
-private local instance : Algebra R (F).completion := inferInstance
-private local instance : Algebra S (G).completion := inferInstance
-private local instance : Module R (F).completion := inferInstance
-private local instance : Module S (G).completion := inferInstance
-
-private local instance : Semiring (F).completion :=
-  (inferInstance : Ring (F).completion).toSemiring
-private local instance : AddCommGroup (F).completion :=
-  (inferInstance : Ring (F).completion).toAddCommGroup
-private local instance : AddCommMonoid (F).completion :=
-  (inferInstance : Ring (F).completion).toAddCommMonoid
-private local instance : Semiring (G).completion :=
-  (inferInstance : Ring (G).completion).toSemiring
-private local instance : AddCommGroup (G).completion :=
-  (inferInstance : Ring (G).completion).toAddCommGroup
-private local instance : AddCommMonoid (G).completion :=
-  (inferInstance : Ring (G).completion).toAddCommMonoid
-
 /-- Transport shifted quantum coefficients along compatible scalar and positive degree maps. -/
 def mapShiftedCompletion :
     d.ShiftedCoefficients (grade q β) p →ₛₗ[φ]
@@ -125,11 +101,6 @@ theorem mapShiftedCompletion_mem_completedFiltration (k : ℕ)
     rw [projection_mapPositiveCompletion, hx, map_zero]
   have he := (positiveCompletionShiftEquiv_mem_iff q' β' e (T p) (k + 1) (Ψ x)).mpr hy
   simpa only [mapShiftedCompletion_coordinates] using he
-
-private local instance (k : ℕ) : AddCommGroup ((S₀).quotient k) := inferInstance
-private local instance (k : ℕ) : Module R ((S₀).quotient k) := inferInstance
-private local instance (k : ℕ) : AddCommGroup ((S₁).quotient k) := inferInstance
-private local instance (k : ℕ) : Module S ((S₁).quotient k) := inferInstance
 
 /-- Transport original finite shifted quotients using the prescribed source cutoff. -/
 def mapShiftedQuotient (k : ℕ) :

@@ -27,9 +27,6 @@ variable {R Γ : Type*} [CommRing R] [AddCommGroup Γ]
 
 local notation "S" => d.shiftedFiltration (grade q β) p
 
-private local instance (k : ℕ) : AddCommGroup ((S).quotient k) := inferInstance
-private local instance (k : ℕ) : Module R ((S).quotient k) := inferInstance
-
 private def quotientRayMap (H : (PowerSeries R)ˣ) (k : ℕ) :
     Module.End R ((S).quotient k) :=
   LinearMap.id + shiftedRayQuotientDifference q β d n hn p H k

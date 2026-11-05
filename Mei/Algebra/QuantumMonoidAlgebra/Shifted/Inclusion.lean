@@ -45,15 +45,6 @@ theorem shiftedSupportInclusion_positiveShiftEquiv (p s : Γ)
 
 local notation "F" => positiveFiltration q β d.monoid d.degree (fun _ h => d.degree_nonneg h)
 
-private local instance : Ring (positiveSubalgebra q β d.monoid) := inferInstance
-private local instance : Algebra R (positiveSubalgebra q β d.monoid) := inferInstance
-private local instance : Ring (F).completion := inferInstance
-private local instance : Semiring (F).completion := (inferInstance : Ring (F).completion).toSemiring
-private local instance : Monoid (F).completion := (inferInstance : Ring (F).completion).toMonoid
-private local instance : Mul (F).completion := ⟨(inferInstance : Ring (F).completion).mul⟩
-private local instance : Algebra R (F).completion := inferInstance
-private local instance : Module R (F).completion := inferInstance
-
 /-- Completed support inclusion has the same quantum scalar correction as finite inclusion. -/
 theorem shiftedCompletedInclusion_positiveCompletionShiftEquiv (p s : Γ)
     (hps : p - s ∈ d.monoid) (a : (F).completion) :

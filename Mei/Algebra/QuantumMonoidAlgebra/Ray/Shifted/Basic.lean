@@ -34,16 +34,6 @@ variable (d : PositiveDegrees Γ)
 
 local notation "F" => positiveFiltration q β d.monoid d.degree (fun _ h => d.degree_nonneg h)
 
-private local instance : Ring (positiveSubalgebra q β d.monoid) := inferInstance
-private local instance : Algebra R (positiveSubalgebra q β d.monoid) := inferInstance
-private local instance : Ring (F).completion := inferInstance
-private local instance : Semiring (F).completion := (inferInstance : Ring (F).completion).toSemiring
-private local instance : Monoid (F).completion := (inferInstance : Ring (F).completion).toMonoid
-private local instance : One (F).completion := ⟨(inferInstance : Ring (F).completion).one⟩
-private local instance : Algebra R (F).completion := inferInstance
-private local instance : Module R (F).completion := inferInstance
-private local instance : Mul (F).completion := ⟨(inferInstance : Ring (F).completion).mul⟩
-
 /-- Unit ray series act linearly on every translated coefficient completion. -/
 def shiftedRayAction (n : d.monoid) (hn : 0 < d.degree n) (p : Γ) :
     (PowerSeries R)ˣ →*

@@ -7,6 +7,7 @@ module
 
 public import Mei.LinearAlgebra.DirectLimit.Semilinear
 public import Mei.Algebra.QuantumMonoidAlgebra.Shifted.Inclusion
+public import Mei.Algebra.QuantumMonoidAlgebra.Shifted.DirectLimit.Basic
 public import Mei.LinearAlgebra.GradedModule.Shifted.DirectLimit.Inclusion
 
 /-!
@@ -29,27 +30,6 @@ variable {R S Γ Γ' : Type*} [CommRing R] [CommRing S]
   (d : PositiveDegrees Γ) (e : PositiveDegrees Γ') (T : PositiveDegreeMap d e)
   (φ : R →+* S)
   (h : ∀ p r, Units.map φ.toMonoidHom (q ^ β p r) = q' ^ β' (T p) (T r))
-
-private local instance : Ring (QuantumMonoidAlgebra q β) := inferInstance
-private local instance : Algebra R (QuantumMonoidAlgebra q β) := inferInstance
-private local instance : AddCommGroup (QuantumMonoidAlgebra q β) := inferInstance
-private local instance : Module R (QuantumMonoidAlgebra q β) := inferInstance
-private local instance : DirectSum.Decomposition (grade q β) := inferInstance
-private local instance : Ring (QuantumMonoidAlgebra q' β') := inferInstance
-private local instance : Algebra S (QuantumMonoidAlgebra q' β') := inferInstance
-private local instance : AddCommGroup (QuantumMonoidAlgebra q' β') := inferInstance
-private local instance : Module S (QuantumMonoidAlgebra q' β') := inferInstance
-private local instance : DirectSum.Decomposition (grade q' β') := inferInstance
-private local instance (p : Γ) : AddCommGroup (d.ShiftedCoefficients (grade q β) p) := inferInstance
-private local instance (p : Γ) : Module R (d.ShiftedCoefficients (grade q β) p) := inferInstance
-private local instance (p : Γ') : AddCommGroup (e.ShiftedCoefficients (grade q' β') p) :=
-  inferInstance
-private local instance (p : Γ') : Module S (e.ShiftedCoefficients (grade q' β') p) :=
-  inferInstance
-private local instance : AddCommMonoid (d.ShiftedDirectLimit (grade q β)) := inferInstance
-private local instance : Module R (d.ShiftedDirectLimit (grade q β)) := inferInstance
-private local instance : AddCommMonoid (e.ShiftedDirectLimit (grade q' β')) := inferInstance
-private local instance : Module S (e.ShiftedDirectLimit (grade q' β')) := inferInstance
 
 private def targetChart (s : Multiset d.monoid) : Multiset e.monoid :=
   {⟨T (s.sum : Γ), T.map_mem s.sum.property⟩}
@@ -191,18 +171,6 @@ variable {U Γ'' : Type*} [CommRing U] [AddCommGroup Γ''] [DecidableEq Γ'']
   {q'' : Uˣ} {β'' : LinearMap.BilinForm ℤ Γ''}
   (a : PositiveDegrees Γ'') (T' : PositiveDegreeMap e a) (ψ : S →+* U)
   (h' : ∀ u v, Units.map ψ.toMonoidHom (q' ^ β' u v) = q'' ^ β'' (T' u) (T' v))
-
-private local instance : Ring (QuantumMonoidAlgebra q'' β'') := inferInstance
-private local instance : Algebra U (QuantumMonoidAlgebra q'' β'') := inferInstance
-private local instance : AddCommGroup (QuantumMonoidAlgebra q'' β'') := inferInstance
-private local instance : Module U (QuantumMonoidAlgebra q'' β'') := inferInstance
-private local instance : DirectSum.Decomposition (grade q'' β'') := inferInstance
-private local instance (p : Γ'') : AddCommGroup (a.ShiftedCoefficients (grade q'' β'') p) :=
-  inferInstance
-private local instance (p : Γ'') : Module U (a.ShiftedCoefficients (grade q'' β'') p) :=
-  inferInstance
-private local instance : AddCommMonoid (a.ShiftedDirectLimit (grade q'' β'')) := inferInstance
-private local instance : Module U (a.ShiftedDirectLimit (grade q'' β'')) := inferInstance
 
 /-- Scalar and exponent transport compose on all global coefficients. -/
 theorem mapShiftedDirectLimit_comp (x : d.ShiftedDirectLimit (grade q β)) :

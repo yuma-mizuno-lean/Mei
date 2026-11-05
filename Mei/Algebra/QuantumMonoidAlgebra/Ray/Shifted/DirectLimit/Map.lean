@@ -29,27 +29,6 @@ variable {R S Γ Γ' : Type*} [CommRing R] [CommRing S]
   (φ : R →+* S)
   (h : ∀ p r, Units.map φ.toMonoidHom (q ^ β p r) = q' ^ β' (T p) (T r))
 
-private local instance : Ring (QuantumMonoidAlgebra q β) := inferInstance
-private local instance : Algebra R (QuantumMonoidAlgebra q β) := inferInstance
-private local instance : AddCommGroup (QuantumMonoidAlgebra q β) := inferInstance
-private local instance : Module R (QuantumMonoidAlgebra q β) := inferInstance
-private local instance : DirectSum.Decomposition (grade q β) := inferInstance
-private local instance : Ring (QuantumMonoidAlgebra q' β') := inferInstance
-private local instance : Algebra S (QuantumMonoidAlgebra q' β') := inferInstance
-private local instance : AddCommGroup (QuantumMonoidAlgebra q' β') := inferInstance
-private local instance : Module S (QuantumMonoidAlgebra q' β') := inferInstance
-private local instance : DirectSum.Decomposition (grade q' β') := inferInstance
-private local instance (p : Γ) : AddCommGroup (d.ShiftedCoefficients (grade q β) p) := inferInstance
-private local instance (p : Γ) : Module R (d.ShiftedCoefficients (grade q β) p) := inferInstance
-private local instance (p : Γ') : AddCommGroup (e.ShiftedCoefficients (grade q' β') p) :=
-  inferInstance
-private local instance (p : Γ') : Module S (e.ShiftedCoefficients (grade q' β') p) :=
-  inferInstance
-private local instance : AddCommMonoid (d.ShiftedDirectLimit (grade q β)) := inferInstance
-private local instance : Module R (d.ShiftedDirectLimit (grade q β)) := inferInstance
-private local instance : AddCommMonoid (e.ShiftedDirectLimit (grade q' β')) := inferInstance
-private local instance : Module S (e.ShiftedDirectLimit (grade q' β')) := inferInstance
-
 /-- Global scalar and exponent transport intertwines quantum ray actions. -/
 theorem mapShiftedDirectLimit_directLimitRayAction
     (n : d.monoid) (hn : 0 < d.degree n) (H : (PowerSeries R)ˣ)

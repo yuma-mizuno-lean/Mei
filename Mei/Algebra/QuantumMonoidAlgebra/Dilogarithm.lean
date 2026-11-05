@@ -53,23 +53,6 @@ local notation "x" => (Subtype.mk (z n)
   (completedMonomial_mem_first q β P δ hδ n hn) : AlgFiltration.completionIdeal F 1)
 local notation "D" => AlgFiltration.completedAeval F x (Units.quantumDilogarithm q hq)
 
--- Direct inherited instances avoid searching through the quotient, product and
--- subring layers each time a finite sum in the completion is elaborated.
-private instance positiveCompletionSemiring : Semiring (F).completion :=
-  (inferInstance : Ring (F).completion).toSemiring
-
-private instance positiveCompletionMonoid : Monoid (F).completion :=
-  (inferInstance : Semiring (F).completion).toMonoid
-
-private instance positiveCompletionPow : Pow (F).completion ℕ :=
-  ⟨fun a j => (inferInstance : Monoid (F).completion).npow j a⟩
-
-private instance positiveCompletionAddCommMonoid : AddCommMonoid (F).completion :=
-  (inferInstance : Semiring (F).completion).toAddCommMonoid
-
-private instance positiveCompletionAddSemigroup : AddSemigroup (F).completion :=
-  (inferInstance : AddCommMonoid (F).completion).toAddSemigroup
-
 private theorem pairing_two_sum {M : Type*} [AddCommMonoid M] [Module R M] (v : ℕ → M) :
     (∑ s ∈ (Finset.range 2).powerset,
       ((q ^ ((∑ j ∈ s, (2 * (j : ℤ) + 1)) - (2 : ℤ) * s.card) : Rˣ) : R) •
