@@ -109,7 +109,6 @@ theorem mapAtOne_algebraMap (r : R) :
   map_algebraMap φ (AddMonoidHom.id Γ) _ r
 
 /-- The specialization is semilinear for `φ`. -/
-@[simp]
 theorem mapAtOne_smul (r : R) (x : QuantumMonoidAlgebra q β) :
     mapAtOne β φ hφ (r • x) = φ r • mapAtOne β φ hφ x :=
   map_smul φ (AddMonoidHom.id Γ) _ r x
