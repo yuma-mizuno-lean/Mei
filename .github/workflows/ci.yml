@@ -33,6 +33,7 @@ env:
   MATHLIB_CACHE_DEBUG_USE_LEGACY: ${{ vars.MATHLIB_CACHE_DEBUG_USE_LEGACY }}
 
 jobs:
+  # Infrastructure regression suites run separately in infrastructure-tests.yml.
   build:
     runs-on: ubuntu-latest
     # Read by publish-lake-cache below, the only job that ever holds the upload secret.
@@ -69,10 +70,10 @@ jobs:
           fetch-depth: 0
 
       - name: Prepare pinned shared tools
-        uses: yuma-mizuno-lean/TauCetiTools/.github/actions/setup@80f1df5f160a568f27e453649781ac8da6584be5
+        uses: yuma-mizuno-lean/TauCetiTools/.github/actions/setup@f42a425ab56d2a23e4f69f83c1ebe9a6d18de085
         with:
           tools-repository: yuma-mizuno-lean/TauCetiTools
-          tools-ref: 80f1df5f160a568f27e453649781ac8da6584be5
+          tools-ref: f42a425ab56d2a23e4f69f83c1ebe9a6d18de085
           project-directory: .
       - name: Import-boundary guard (Mei/ and Mei.lean ⊬ roadmap/review)
         run: |
@@ -408,7 +409,7 @@ jobs:
     uses: ./.github/workflows/publish-lake-cache.yml
     with:
       tools_repository: yuma-mizuno-lean/TauCetiTools
-      tools_ref: 80f1df5f160a568f27e453649781ac8da6584be5
+      tools_ref: f42a425ab56d2a23e4f69f83c1ebe9a6d18de085
       revision: ${{ github.sha }}
       artifact-name: lake-cache-staging
       reported-toolchain: ${{ needs.build.outputs.reported-toolchain }}

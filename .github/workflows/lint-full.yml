@@ -76,10 +76,10 @@ jobs:
           fetch-depth: 100
 
       - name: Prepare pinned shared tools
-        uses: yuma-mizuno-lean/TauCetiTools/.github/actions/setup@80f1df5f160a568f27e453649781ac8da6584be5
+        uses: yuma-mizuno-lean/TauCetiTools/.github/actions/setup@f42a425ab56d2a23e4f69f83c1ebe9a6d18de085
         with:
           tools-repository: yuma-mizuno-lean/TauCetiTools
-          tools-ref: 80f1df5f160a568f27e453649781ac8da6584be5
+          tools-ref: f42a425ab56d2a23e4f69f83c1ebe9a6d18de085
           project-directory: .
       - name: Import-boundary guard (Mei/ and Mei.lean ⊬ roadmap/review)
         run: |

@@ -1,23 +1,26 @@
 name: Retry CI status publication
 
-# Replay retained terminal statuses only; never rerun the source build.
+# Replay retained statuses, and recover abandoned PR builds on the existing workflow.
 on:
   workflow_run:
     workflows: [pr-build]
     types: [completed]
+  schedule:
+    - cron: '17 * * * *'
+  workflow_dispatch: {}
 
 permissions:
   contents: read
-  actions: read
+  actions: write
   pull-requests: read
   statuses: write
 
 jobs:
   publish:
-    uses: yuma-mizuno-lean/TauCetiTools/.github/workflows/retry-ci-status.yml@80f1df5f160a568f27e453649781ac8da6584be5
+    uses: yuma-mizuno-lean/TauCetiTools/.github/workflows/retry-ci-status.yml@f42a425ab56d2a23e4f69f83c1ebe9a6d18de085
     with:
       tools_repository: yuma-mizuno-lean/TauCetiTools
-      tools_ref: 80f1df5f160a568f27e453649781ac8da6584be5
+      tools_ref: f42a425ab56d2a23e4f69f83c1ebe9a6d18de085
       project_ref: ${{ github.workflow_sha }}
     secrets:
       CI_READ_APP_ID: ${{ secrets.CI_READ_APP_ID }}
