@@ -33,6 +33,8 @@ This is the finite component expansion of transfer compositions between graded m
 * Concatenation of paths concatenates histories and composes their maps, and an arrow
   carrying the identity selects a component of the previous decoration. The final
   selection of a degree keeps a history of that terminal degree and kills the others.
+* Linear output maps preserve a uniformly supported expansion. Along a nonempty path,
+  restricting that sum to a last degree gives its terminal homogeneous component.
 * A finite set containing the contributing histories of every input in the range of a
   linear map gives an identity of linear maps; finite generation of the input range is
   a sufficient condition.
@@ -494,6 +496,46 @@ theorem sum_homogeneousHistory_comp_eq (S : Finset (p.Degrees ι))
   rw [← sum_homogeneousHistory T ℳ p (f y)]
   exact (Finset.sum_subset (historySupport_subset_of_comp_eq_zero T ℳ p f S hS y)
     fun d _ hd => by simpa using hd).symm
+
+/-- A linear output map commutes with the uniformly supported history expansion.
+The support bound is imposed before the output map. -/
+theorem sum_comp_homogeneousHistory_comp_eq {O : Type*} [AddCommMonoid O] [Module R O]
+    (g : M b →ₗ[R] O) (S : Finset (p.Degrees ι))
+    (hS : ∀ d ∉ S, (p.homogeneousHistory T ℳ d).comp f = 0) :
+    ∑ d ∈ S, g.comp ((p.homogeneousHistory T ℳ d).comp f) =
+      g.comp ((p.composeLinear T).comp f) := by
+  rw [← sum_homogeneousHistory_comp_eq T ℳ p f S hS]
+  ext y
+  simp
+
+open Classical in
+/-- Within a uniformly supported expansion along a nonempty path, selecting the
+histories with last degree `η` isolates the final `η`-component of the composite.
+The ambient gradings and the intermediate degree types need not be finite. -/
+theorem sum_homogeneousHistory_cons_terminal_comp_eq {b c : Q} (p : Path a b)
+    (e : b ⟶ c) (η : ι c) (S : Finset ((p.cons e).Degrees ι))
+    (hS : ∀ d ∉ S, ((p.cons e).homogeneousHistory T ℳ d).comp f = 0) :
+    ∑ d ∈ S.filter (fun d => d.2 = η),
+      ((p.cons e).homogeneousHistory T ℳ d).comp f =
+        ((homogeneousComponent (ℳ c) η).comp ((p.cons e).composeLinear T)).comp f := by
+  rw [Finset.sum_filter]
+  calc
+    _ = ∑ d ∈ S, (homogeneousComponent (ℳ c) η).comp
+        (((p.cons e).homogeneousHistory T ℳ d).comp f) := by
+      refine Finset.sum_congr rfl fun d _ => ?_
+      obtain ⟨d, i⟩ := d
+      by_cases hi : i = η
+      · subst η
+        simp only [↓reduceIte]
+        rw [← LinearMap.comp_assoc, homogeneousComponent_comp_homogeneousHistory_cons]
+      · simp only [hi, ↓reduceIte]
+        rw [← LinearMap.comp_assoc,
+          homogeneousComponent_comp_homogeneousHistory_cons_of_ne T ℳ p e d i η hi,
+          LinearMap.zero_comp]
+    _ = _ := by
+      simpa only [LinearMap.comp_assoc] using
+        sum_comp_homogeneousHistory_comp_eq T ℳ (p.cons e) f
+          (homogeneousComponent (ℳ c) η) S hS
 
 /-- A finite generating set of inputs gives a uniform finite history support on its span. -/
 theorem exists_uniform_historySupport_of_fg (P : Submodule R (M a)) (hP : P.FG) :
