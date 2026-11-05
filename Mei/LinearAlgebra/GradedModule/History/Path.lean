@@ -42,6 +42,7 @@ This is the finite component expansion of transfer compositions between graded m
   pieces along degree maps preserve the expansion; homogeneity and injectivity are
   needed only at targets of arrows. A target history is the sum of the images of the
   source histories over it, where several source degrees may merge and cancel;
+  degree maps also commute with the decomposition of histories along concatenation;
   injective degree maps give componentwise naturality. An injective final map reflects
   selected linear-map identities from the target expansion to the source.
 
@@ -118,6 +119,27 @@ theorem Degrees.map_cons {κ : Q → Type*} (σ : ∀ q, ι q → κ q) {b c : Q
     (e : b ⟶ c) (d : p.Degrees ι) (i : ι c) :
     Degrees.map σ (p.cons e) ((d, i) : (p.cons e).Degrees ι) =
       ((Degrees.map σ p d, σ c i) : (p.cons e).Degrees κ) := (rfl)
+
+/-- Degree maps commute with the decomposition of histories along a
+concatenation. The two outer pair components retain the degrees of the two
+blocks after regrading. -/
+theorem Degrees.map_comp {κ : Q → Type*} (σ : ∀ q, ι q → κ q) {b : Q} (p : Path a b) :
+    ∀ {c : Q} (q : Path b c) (d : (p.comp q).Degrees ι),
+      degreesComp (ι := κ) p q (Degrees.map σ (p.comp q) d) =
+        (Degrees.map σ p (degreesComp (ι := ι) p q d).1,
+          Degrees.map σ q (degreesComp (ι := ι) p q d).2)
+  | _, nil, _ => rfl
+  | _, cons q e, d => by
+    obtain ⟨d, i⟩ := d
+    -- Fix the dependent path and history types before applying the induction hypothesis.
+    change degreesComp (ι := κ) p (q.cons e) (Degrees.map σ ((p.comp q).cons e)
+      ((d, i) : ((p.comp q).cons e).Degrees ι)) =
+      (Degrees.map σ p (degreesComp (ι := ι) p (q.cons e)
+        ((d, i) : ((p.comp q).cons e).Degrees ι)).1,
+        Degrees.map σ (q.cons e) (degreesComp (ι := ι) p (q.cons e)
+          ((d, i) : ((p.comp q).cons e).Degrees ι)).2)
+    rw [Degrees.map_cons, degreesComp_cons, Degrees.map_comp σ p q d]
+    rw [degreesComp_cons p q e d i, Degrees.map_cons σ q e _ i]
 
 section Linear
 
