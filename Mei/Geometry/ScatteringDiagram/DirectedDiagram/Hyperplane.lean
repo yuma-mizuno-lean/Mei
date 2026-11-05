@@ -26,6 +26,10 @@ consistent, at each order where its active projected labels commute; in particul
 for every diagram of full hyperplanes over an abelian Lie algebra. The coefficient Lie algebra
 of the zero skew form is such an algebra.
 
+If all walls share one full affine hyperplane as support, every point is regular for the walls
+active at every order (`DirectedDiagram.notMem_singularSupport_of_support_eq`): the hyperplane has
+empty relative boundary.
+
 The commutative hyperplane transport `Quiver.Path.wallPathProduct_eq_prod_of_hyperplanes` is
 applied to the abelian group of integer powers of the label, which is mapped into the truncated
 group by `zpowersHom`. For commuting labels it is applied in the commutative subgroup generated
@@ -245,6 +249,38 @@ theorem consistent_of_isLieAbelian_of_full [IsLieAbelian L]
     d.commute_of_lie_logComponent_eq_zero fun _ _ => trivial_lie_zero _ _ _ _
 
 end Commuting
+
+section Regular
+
+variable (D : DirectedDiagram (d := d) h H ι)
+
+/-- Suppose that all walls of `D` have the support of the wall `j₀`, and that this support is
+the full affine hyperplane `{ℓ = c}` for the real extension `ℓ` of the normal of `j₀`. Then no
+point is singular for the walls active at any order. Indeed, the hyperplane has empty relative
+boundary, and all walls have the same affine direction. -/
+theorem notMem_singularSupport_of_support_eq {j₀ : ι} {c : ℝ}
+    (hj₀ : (D.wall j₀).support = {z | h.realCharacter (D.wall j₀).normal z = c})
+    (hD : ∀ j, (D.wall j).support = (D.wall j₀).support) (k : ℕ) (θ : V) :
+    θ ∉ singularSupport (fun j : D.active k => (D.wall j).support) := by
+  have hfr : intrinsicFrontier ℝ (D.wall j₀).support = ∅ := by
+    obtain ⟨x, hx⟩ := (D.wall j₀).support_nonempty
+    have hpre : ((↑) : affineSpan ℝ (D.wall j₀).support → V) ⁻¹' (D.wall j₀).support =
+        univ := by
+      refine eq_univ_of_forall fun y => ?_
+      have hyx : (y : V) - x ∈ LinearMap.ker (h.realCharacter (D.wall j₀).normal) := by
+        rw [← (D.wall j₀).direction_support]
+        exact AffineSubspace.vsub_mem_direction y.property (subset_affineSpan ℝ _ hx)
+      rw [hj₀] at hx
+      rw [LinearMap.mem_ker, map_sub, sub_eq_zero] at hyx
+      exact (Set.ext_iff.mp hj₀ y).mpr (hyx.trans hx)
+    rw [intrinsicFrontier, hpre, frontier_univ, image_empty]
+  rw [mem_singularSupport]
+  rintro (⟨j, hj⟩ | ⟨j, j', hne, -, -⟩)
+  · rw [hD, hfr] at hj
+    exact hj
+  · exact hne (by rw [hD, hD j'])
+
+end Regular
 
 section AffineHyperplane
 

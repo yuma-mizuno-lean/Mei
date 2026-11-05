@@ -115,6 +115,24 @@ variable {R A Γ : Type*} [CommRing R] [Ring A] [Algebra R A]
   (𝒜 : Γ → Submodule R A) [SetLike.GradedMul 𝒜]
   (p q : Γ)
 
+/-- Products of shifted coefficients in a fixed finite quotient. -/
+def shiftedQuotientMul (k : ℕ) :
+    (d.shiftedFiltration 𝒜 p).quotient k →ₗ[R]
+      (d.shiftedFiltration 𝒜 q).quotient k →ₗ[R]
+        (d.shiftedFiltration 𝒜 (p + q)).quotient k :=
+  ModuleFiltration.quotientBilinear
+    (d.shiftedFiltration 𝒜 p) (d.shiftedFiltration 𝒜 q) (d.shiftedFiltration 𝒜 (p + q))
+    (shiftedMul 𝒜 d.monoid p q)
+    (fun _ _ _ _ => d.shiftedMul_mem_shiftedFiltration 𝒜 p q) k
+
+/-- The finite shifted product is computed on representatives. -/
+@[simp]
+theorem shiftedQuotientMul_mk (k : ℕ)
+    (x : shiftedSubmodule 𝒜 d.monoid p) (y : shiftedSubmodule 𝒜 d.monoid q) :
+    d.shiftedQuotientMul 𝒜 p q k (Submodule.Quotient.mk x) (Submodule.Quotient.mk y) =
+      Submodule.Quotient.mk (shiftedMul 𝒜 d.monoid p q x y) :=
+  ModuleFiltration.quotientBilinear_mk _ _ _ _ _ k x y
+
 /-- Products of completed shifted coefficients, with shifts added. -/
 def shiftedCompletionMul : d.ShiftedCoefficients 𝒜 p →ₗ[R]
     d.ShiftedCoefficients 𝒜 q →ₗ[R] d.ShiftedCoefficients 𝒜 (p + q) :=
@@ -130,6 +148,15 @@ theorem shiftedCompletionMul_def :
       (shiftedMul 𝒜 d.monoid p q)
       (fun _ _ _ _ => d.shiftedMul_mem_shiftedFiltration 𝒜 p q) := (rfl)
 
+/-- Projecting a completed shifted product gives the product of its projections. -/
+theorem projection_shiftedCompletionMul_eq_quotient (k : ℕ)
+    (x : d.ShiftedCoefficients 𝒜 p) (y : d.ShiftedCoefficients 𝒜 q) :
+    (d.shiftedFiltration 𝒜 (p + q)).projection k (d.shiftedCompletionMul 𝒜 p q x y) =
+      d.shiftedQuotientMul 𝒜 p q k
+        ((d.shiftedFiltration 𝒜 p).projection k x)
+        ((d.shiftedFiltration 𝒜 q).projection k y) :=
+  ModuleFiltration.projection_completionBilinear _ _ _ _ _ k x y
+
 /-- Products of representatives compute each projection of a completed product. -/
 theorem projection_shiftedCompletionMul (k : ℕ)
     (x : d.ShiftedCoefficients 𝒜 p) (y : d.ShiftedCoefficients 𝒜 q)
@@ -138,8 +165,7 @@ theorem projection_shiftedCompletionMul (k : ℕ)
     (hv : Submodule.Quotient.mk v = (d.shiftedFiltration 𝒜 q).projection k y) :
     (d.shiftedFiltration 𝒜 (p + q)).projection k (d.shiftedCompletionMul 𝒜 p q x y) =
       Submodule.Quotient.mk (shiftedMul 𝒜 d.monoid p q u v) := by
-  rw [shiftedCompletionMul, ModuleFiltration.projection_completionBilinear, ← hu, ← hv,
-    ModuleFiltration.quotientBilinear_mk]
+  rw [projection_shiftedCompletionMul_eq_quotient, ← hu, ← hv, shiftedQuotientMul_mk]
 
 /-- Original coefficients multiply before or after passage to the completion. -/
 @[simp]

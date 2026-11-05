@@ -39,12 +39,17 @@ with comparison scalar `r = 2`. So if a diagram over `M` has a function-wall gro
 normals stay primitive under `primitiveLatticeChangeNormal`, and one of its groups has the label
 of `(1 + a z^{(1,1)})²` with normal `n°`, then the pushed group has the label of `1 + a z^{(1,1)}`
 with normal `n°` over `½M₀` (`diagonal_label_pushforward`); the grouping and the label are
-hypotheses.
+hypotheses. If the diagram over `M` represents the scattering class over `M`, the same label is
+carried by any representative of the scattering class over `½M₀` on a group whose crossing
+germs at every order are the images of crossing germs of the diagonal group
+(`diagonal_label_of_toClass_eq`); these crossing germs are hypotheses. This uses
+`DirectedDiagram.FunctionWallGrouping.label_eq_of_equivalent_pushforward_ofFiniteIndex`.
 
 So for this lattice the file proves: the pushforward of the ray presentation of the lines, the
-pushforward of their scattering class and of its representatives, and the transport of a given
-function-wall label on the diagonal. It does not compute the scattering class, and it does not
-compare the pushed group with a group of an independently chosen representative over `½M₀`.
+pushforward of their scattering class and of its representatives, the transport of a given
+function-wall label on the diagonal, and its comparison with groups of representatives over
+`½M₀` that are matched with it by crossing germs. It does not compute the scattering class, and
+it does not prove that matched crossing germs exist.
 
 The lattice change is motivated by Burcroff–Lee–Mou, *Positivity of generalized cluster
 scattering diagrams*, Theorem 9.5 (arXiv:2503.03719v1).
@@ -366,5 +371,51 @@ theorem diagonal_label_pushforward {κ M κ' : Type*} [AddCommGroup M] {π : ℤ
       rw [primitiveLatticeChangeScalar_diagonalNormal]
       exact diagonalNormal_latticeChange x)
     (r := 2) (by simp) _ _ _ _ hg (completedTropicalTangentMap_squaredDiagonalFunction _ a)
+
+/-- **The diagonal label in matched representatives over `½M₀`.** Let `D` represent the scattering
+class of the lines over `M`, with a function-wall grouping whose normals stay primitive under
+`primitiveLatticeChangeNormal`, and let its group `g` have the function-wall label of
+`(1 + a z^{(1,1)})²` with normal `n°`. Let `E` be any representative of the scattering class of
+the lines over `½M₀`, with a function-wall grouping `G'`. Suppose that at every order `k` the
+group `g` has a crossing germ at order `k` (the cutoff modulus is the identity), at a point `θ`
+and a direction `v`, and that the group `g'` of `G'` has a crossing germ at order `k` at their
+images under the spatial map. Then `g'` has the function-wall label of `1 + a z^{(1,1)}` with
+normal `n°`. -/
+theorem diagonal_label_of_toClass_eq {κ M κ' ι' M' κ'' : Type} [AddCommGroup M]
+    [AddCommGroup M'] {π : ℤ × ℤ →+ M} {π' : ℤ × ℤ →+ M'} (c : Fin 2 × Fin K → ℚ)
+    {D : DirectedDiagram (d := ℕ²) h (tropicalVertexWallSpaces (R := ℚ) ℕ² latticeCoord) κ}
+    (hD : D.toClass =
+      ((latticeLineInput K).diagram h c).Scat (fun _ => ofHyperplaneRayFactors_full ..))
+    (G : D.FunctionWallGrouping π κ')
+    (hprim : ∀ j, TauCeti.IsPrimitive (primitiveLatticeChangeNormal (D.wall j).normal))
+    {g : κ'} (a : ℚ)
+    (hg : G.label g = ℕ².completedBCHExp _ (completedTropicalTangentField ℕ² latticeCoord
+      ((Int.castAddHom ℚ).comp diagonalNormal)
+      ((F latticeCoord).completedLog (squaredDiagonalFunction a))))
+    {E : DirectedDiagram (d := ℕ²) h (tropicalVertexWallSpaces (R := ℚ) ℕ² halfLatticeCoord) ι'}
+    (hE : E.toClass =
+      ((halfLatticeLineInput K).diagram h c).Scat (fun _ => ofHyperplaneRayFactors_full ..))
+    (G' : E.FunctionWallGrouping π' κ'') {g' : κ''}
+    (hgerm : ∀ k, ∃ θ v, G.IsCrossingGerm g k θ v ∧
+      G'.IsCrossingGerm g' k ((primitiveLatticeChangePushforward ℚ h).spatialMap θ)
+        ((primitiveLatticeChangePushforward ℚ h).spatialMap.toAffineEquiv.linear v)) :
+    G'.label g' =
+      ℕ².completedBCHExp _ (completedTropicalTangentField ℕ² halfLatticeCoord
+        ((Int.castAddHom ℚ).comp diagonalNormal) ((F halfLatticeCoord).completedLog
+          (diagonalFunction halfLatticeCoord diagonalNormal_halfLatticeCoord a))) :=
+  FunctionWallGrouping.label_eq_of_equivalent_pushforward_ofFiniteIndex _ _
+    latticeChange_injective halfLatticeCoord_eq_latticeChange primitiveLatticeChangeNormal
+    primitiveLatticeChangeScalar primitiveLatticeChangeScalar_pos
+    primitiveLatticeChangeNormal_apply_latticeChange G
+    (fun x => by
+      rw [primitiveLatticeChangeScalar_diagonalNormal]
+      exact diagonalNormal_latticeChange x)
+    (r := 2) (by simp) (π' := π) (fun x _ => by simp)
+    (fun j => by simpa using hprim j) _ _ hg
+    (completedTropicalTangentMap_squaredDiagonalFunction _ a)
+    ((toClass_eq_iff _ _).mp ((latticeLineInput_toClass_pushforward ℚ h c hD).trans hE.symm)) G'
+    fun k => by
+      obtain ⟨θ, v, hθ, hθ'⟩ := hgerm k
+      exact ⟨θ, v, by rwa [PositiveDegreeMap.id_modulus], hθ'⟩
 
 end Mei.HyperplaneTermInput.FiniteIndex.Examples

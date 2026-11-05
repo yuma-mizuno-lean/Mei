@@ -25,6 +25,10 @@ and face lifts may depend on each incoming input and need not vary linearly in
 that input. The existing
 `MultispanIndex.existsUnique_sections_lift_iff` then assembles the linear matching
 family, so no matching-family reconstruction is repeated here.
+
+It is enough to supply local common lifts on a spanning set of incoming inputs.
+This gives a finite-input test when the incoming semimodule is finitely generated,
+without requiring a common neighborhood for different generators.
 -/
 
 public section
@@ -135,5 +139,64 @@ theorem existsUnique_sections_lift_of_local (E : SemimoduleCat.{v} R)
   have hface := (I.sectionsIndex U).mem_sectionsSubmodule_multispan.mp (ℓ aP).property
   exact ⟨(ℓ aP).val (.left b), Prod.ext ((hface.1 b).trans (hright _))
     ((hface.2 b).trans (hright _))⟩
+
+/-- It suffices to check local common face lifts on a spanning set of incoming
+inputs. Neighborhoods and lifts may depend on the generator and the face;
+no compatibility between the chosen lifts, and no lifts for individual summands
+of a chamber map, are required. A finite generating set therefore gives a
+finite-input criterion for the unique linear matching family. -/
+theorem existsUnique_sections_lift_of_local_on_generators
+    (E : SemimoduleCat.{v} R) (U : Opens X)
+    (α : ∀ j, E ⟶ (I.right j).obj.obj (op U))
+    (s : Set E) (hs : Submodule.span R s = ⊤)
+    (hinj : ∀ (W : Opens X), W ≤ U → ∀ b,
+      Function.Injective (((I.sectionsIndex W).fst b).hom.prod
+        ((I.sectionsIndex W).snd b).hom))
+    (hloc : ∀ a ∈ s, ∀ b x, x ∈ U → ∃ (N : Opens X) (hNU : N ≤ U)
+      (t : (I.left b).obj.obj (op N)), x ∈ N ∧
+        (I.fst b).hom.app (op N) t =
+          (I.right (J.fst b)).obj.map (homOfLE hNU).op ((α (J.fst b)).hom a) ∧
+        (I.snd b).hom.app (op N) t =
+          (I.right (J.snd b)).obj.map (homOfLE hNU).op ((α (J.snd b)).hom a)) :
+    ∃! ℓ : E →ₗ[R] SemimoduleCat.sectionsSubmodule (I.sectionsIndex U).multispan,
+      ∀ a j, (ℓ a).val (.right j) = (α j).hom a := by
+  apply ((I.sectionsIndex U).existsUnique_sections_lift_iff
+    (fun j => (α j).hom) (hinj U le_rfl)).mpr
+  have hspan : Submodule.span R s ≤
+      ((I.sectionsIndex U).compatibleFamilies).comap (LinearMap.pi fun j => (α j).hom) := by
+    apply Submodule.span_le.mpr
+    intro a ha
+    -- A generator supplies local lifts on its cyclic submodule; span closure
+    -- of compatible chamber families then handles all incoming inputs.
+    let P : Submodule R E := Submodule.span R {a}
+    let β (j : J.R) : SemimoduleCat.of R P ⟶ (I.right j).obj.obj (op U) :=
+      SemimoduleCat.ofHom ((α j).hom.comp P.subtype)
+    obtain ⟨ℓ, hℓ, -⟩ := I.existsUnique_sections_lift_of_local
+      (SemimoduleCat.of R P) U β hinj (by
+        intro p b x hx
+        obtain ⟨N, hNU, t, hxN, hf, hg⟩ := hloc a ha b x hx
+        let f := ((I.fst b).hom.app (op N)).hom
+        let g := ((I.snd b).hom.app (op N)).hom
+        let δ j := ((I.right j).obj.map (homOfLE hNU).op).hom.comp (α j).hom
+        have hP : P ≤ (LinearMap.range (f.prod g)).comap ((δ (J.fst b)).prod (δ (J.snd b))) :=
+          (Submodule.span_singleton_le_iff_mem _ _).mpr ⟨t, Prod.ext hf hg⟩
+        obtain ⟨z, hz⟩ := hP p.property
+        refine ⟨N, hNU, z, hxN, ?_⟩
+        simpa only [f, g, δ, β, LinearMap.prod_apply, LinearMap.comp_apply,
+          SemimoduleCat.hom_ofHom, Submodule.subtype_apply, Function.prod_apply,
+          LinearMap.coe_comp, Function.comp_apply, Prod.mk.injEq] using hz)
+    let aP : P := ⟨a, Submodule.mem_span_singleton_self a⟩
+    have hright (j : J.R) : (ℓ aP).val (.right j) = (α j).hom a := by
+      simpa only [β, SemimoduleCat.hom_ofHom, LinearMap.comp_apply,
+        Submodule.subtype_apply] using hℓ aP j
+    have hmem := ((I.sectionsIndex U).restrictSections (ℓ aP)).property
+    apply (Submodule.mem_comap (f := LinearMap.pi fun j => (α j).hom)
+      (p := (I.sectionsIndex U).compatibleFamilies) (x := a)).mpr
+    apply (I.sectionsIndex U).mem_compatibleFamilies.mpr
+    simpa only [mem_compatibleFamilies, restrictSections_apply, hright,
+      LinearMap.pi_apply] using hmem
+  intro a
+  exact (I.sectionsIndex U).mem_compatibleFamilies_iff_forall_mem_range.mp
+    (hspan (hs.ge Submodule.mem_top))
 
 end CategoryTheory.Limits.MultispanIndex

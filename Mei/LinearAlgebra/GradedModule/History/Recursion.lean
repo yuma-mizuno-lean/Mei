@@ -113,20 +113,26 @@ theorem homogeneousHistory_eq_zero_of_filtration
       homogeneousComponent ℳ i (U x) ∈ F.submodule (k + 1))
     {r n : ℕ} (hr : F.submodule r = ⊥) (hn : r ≤ n) (p : Fin n → ι) :
     homogeneousHistory ℳ (fun _ : Fin n => U) p = 0 := by
+  have hraise : ComponentTransfersRaise
+      (M := fun _ : Quiver.SingleObj Unit => M) (T := fun _ => U) (ℳ := fun _ => ℳ)
+      (F := fun _ => F) (w := fun _ _ _ => 1) := by
+    rw [componentTransfersRaise_iff]
+    intro b c e i j k y _ hy
+    exact hU j k y hy
   apply LinearMap.ext
   intro x
   rw [LinearMap.zero_apply]
-  by_contra hne
-  rw [homogeneousHistory_eq_pathOfFn ℳ (fun _ : Unit => U) (fun _ : Fin n => ())] at hne
-  have hraise : ComponentTransfersRaise
-      (M := fun _ : Quiver.SingleObj Unit => M) (fun _ => U) (fun _ => ℳ)
-      (fun _ => F) (fun _ => 1) := by
-    rw [componentTransfersRaise_iff]
-    intro b c e i k y hy
-    exact hU i k y hy
-  have hlt := Quiver.Path.addWeight_lt_of_homogeneousHistory_ne_zero hraise hr hne
-  rw [Quiver.SingleObj.addWeight_one_pathOfFn] at hlt
-  exact (not_lt_of_ge hn) hlt
+  induction x using DirectSum.Decomposition.inductionOn ℳ with
+  | zero => exact map_zero _
+  | add x y hx hy => rw [map_add, hx, hy, add_zero]
+  | @homogeneous i x =>
+    by_contra hne
+    rw [homogeneousHistory_eq_pathOfFn ℳ (fun _ : Unit => U) (fun _ : Fin n => ())] at hne
+    have hlt := Quiver.Path.componentWeight_lt_of_homogeneousHistory_ne_zero
+      (Quiver.SingleObj.pathOfFn (fun _ : Fin n => ())) hraise i x.property hr hne
+    rw [Quiver.Path.Degrees.addWeight_componentWeight_liftPath,
+      Quiver.SingleObj.addWeight_one_pathOfFn] at hlt
+    exact (not_lt_of_ge hn) hlt
 
 open Classical in
 /-- Incidence-selected history sums stabilize once their cutoff reaches the

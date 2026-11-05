@@ -37,11 +37,19 @@ monomial `z^p` by multiplication by `f^(ν(ρ p))`, where `ν` is the group's no
 (`FunctionWallGrouping.IsWallFunction`). The coefficient ring `A` is any algebra over the
 scalars `R` of the Lie algebra; for instance `R = ℚ` when tropical vertex coefficients are
 compared along a change of coefficient ring. We require an invertible monomial of normal
-weight one for each nonempty group, so that this action uniquely determines `f`. For a chosen
+weight one for each nonempty group, so that this action uniquely determines `f`
+(`FunctionWallGrouping.IsWallFunction.unique`). More generally, groups of groupings of two
+diagrams with the same completed label and a common normal have the same wall function
+(`FunctionWallGrouping.IsWallFunction.eq_of_label_eq`). For a chosen
 positive subsemiring `P ⊆ A[Q]`,
 a grouping is positive if every group has a wall function that is positive in the sense
 of `AlgFiltration.IsPositive`, and a diagram is a *positive wall representative* if it
-admits a positive grouping (`DirectedDiagram.IsPositiveWallRepresentative`). Walls in
+admits a positive grouping (`DirectedDiagram.IsPositiveWallRepresentative`). A ring map of
+completed coefficients that sends monomials onto monomials, intertwines the actions of two
+group labels, preserves the normal pairings and whose target label fixes constants carries
+wall functions to wall functions (`FunctionWallGrouping.IsWallFunction.of_intertwining`). A
+positive specialization doing so for every group carries positive groupings to positive
+groupings (`FunctionWallGrouping.IsPositive.of_isWallFunction_completionMap`). Walls in
 one group may have different degree rays, but their nontrivial labels must have positively
 proportional projected generators. Identity labels impose no direction constraint. For
 instance, the full cylinder over a polynomial in a single spatial monomial splits into
@@ -297,15 +305,27 @@ theorem isWallFunction_iff (g : κ) (f : F.completionˣ) :
           F.toCompletion (single p c) := Iff.rfl
 
 variable {G σ} in
+/-- Wall functions of groups with the same completed label are equal, provided some wall of the
+first group has the same normal as some wall of the second group. The groups may belong to
+groupings of two different diagrams, with different spatial projections. The proof cancels an
+invertible monomial of normal weight one. -/
+theorem IsWallFunction.eq_of_label_eq {ι' κ' M' : Type*} [AddCommGroup M'] {π' : Γ →+ M'}
+    {E : DirectedDiagram (d := d) h H ι'} {G' : E.FunctionWallGrouping π' κ'} {g : κ} {g' : κ'}
+    {f f' : F.completionˣ} (hf : G.IsWallFunction σ g f) (hf' : G'.IsWallFunction σ g' f')
+    (hl : G.label g = G'.label g') {j : ι} {j' : ι'} (hj : G.group j = g)
+    (hj' : G'.group j' = g') (hν : (D.wall j).normal = (E.wall j').normal) : f = f' := by
+  obtain ⟨p, hp, hu⟩ := ((G.isWallFunction_iff σ g f).mp hf j hj).1
+  have he := (((G.isWallFunction_iff σ g f).mp hf j hj).2 p 1).symm.trans
+    (hl ▸ ((G'.isWallFunction_iff σ g' f').mp hf' j' hj').2 p 1)
+  exact Units.ext (hu.mul_right_cancel (by simpa only [← hν, hp, zpow_one] using he))
+
+variable {G σ} in
 /-- The action determines the wall function of a nonempty group uniquely, by cancellation
 of an invertible monomial of normal weight one. -/
 theorem IsWallFunction.unique {g : κ} {f f' : F.completionˣ}
     (hf : G.IsWallFunction σ g f) (hf' : G.IsWallFunction σ g f')
-    {j : ι} (hj : G.group j = g) : f = f' := by
-  obtain ⟨p, hp, hu⟩ := ((G.isWallFunction_iff σ g f).mp hf j hj).1
-  have he := (((G.isWallFunction_iff σ g f).mp hf j hj).2 p 1).symm.trans
-    (((G.isWallFunction_iff σ g f').mp hf' j hj).2 p 1)
-  exact Units.ext (hu.mul_right_cancel (by simpa only [hp, zpow_one] using he))
+    {j : ι} (hj : G.group j = g) : f = f' :=
+  hf.eq_of_label_eq hf' rfl hj hj rfl
 
 variable (P : Subsemiring (AddMonoidAlgebra A Q))
 
@@ -334,6 +354,69 @@ theorem IsPositive.toSet (hG : G.IsPositive σ P) : G.toSet.IsPositive σ P := b
       AlgFiltration.isPositive_one⟩
 
 end WallFunction
+
+section Transfer
+
+open AddMonoidAlgebra
+
+variable {Γ' Λ' L' V' M' : Type*} [AddCommGroup Γ'] [AddCommGroup Λ']
+  [LieRing L'] [LieAlgebra R L'] [LieAlgebra ℚ L'] [IsScalarTower ℚ R L'] [DecidableEq Γ']
+  [NormedAddCommGroup V'] [NormedSpace ℝ V'] [AddCommGroup M']
+  {ρ' : Γ' →+ Λ'} {ℳ : Γ' → Submodule R L'} {d' : PositiveDegrees Γ'}
+  [GradedLieAlgebra ℳ] [IsPositiveGrading d' ℳ]
+  {i' : Λ' →+ V'} {h' : TauCeti.Toric.IsIntegralLattice i'} {H' : DirectedWallSpaces ρ' ℳ}
+  {ι' : Type*} {D' : DirectedDiagram (d := d') h' H' ι'} {π' : Γ' →+ M'} {κ' : Type*}
+  {A A' : Type*} [CommRing A] [CommRing A'] [Algebra R A] [Algebra R A']
+  {Q : AddSubmonoid Γ} {Q' : AddSubmonoid Γ'}
+  {F : AlgFiltration (AddMonoidAlgebra A Q)} {F' : AlgFiltration (AddMonoidAlgebra A' Q')}
+  {σ : d.completedBCHGroup ℒ →* (F.completion ≃ₐ[R] F.completion)}
+  {σ' : d'.completedBCHGroup ℳ →* (F'.completion ≃ₐ[R] F'.completion)}
+
+variable {G} in
+/-- **Transfer of wall functions.** Let `Φ` be a ring map of completed coefficient algebras
+sending each monomial `z^p` to `z^{τ p}` for a surjection `τ : Q → Q'` of exponents, and
+intertwining the action of the label of a group `g` of `D` with the action of the label of a
+group `g'` of another diagram `D'`. Assume that the label of `g'` fixes the constants of `A'`,
+and that every wall of `g'` has a wall of `g` whose normal `ν` satisfies
+`ν'(ρ'(τ p)) = ν(ρ p)` for all `p ∈ Q`, where `ν'` is the normal of the wall of `g'`. Then the
+image `Φ(u)` of a wall function `u` of `g` is a wall function of `g'`. -/
+theorem IsWallFunction.of_intertwining {g : κ} {u : F.completionˣ}
+    (hu : G.IsWallFunction σ g u) (G' : D'.FunctionWallGrouping π' κ') (g' : κ')
+    (Φ : F.completion →+* F'.completion) (τ : Q → Q') (hτ : Function.Surjective τ)
+    (hmono : ∀ p : Q, Φ (F.toCompletion (single p 1)) = F'.toCompletion (single (τ p) 1))
+    (hΦ : ∀ x, Φ (σ (G.label g) x) = σ' (G'.label g') (Φ x))
+    (hconst : ∀ c : A',
+      σ' (G'.label g') (F'.toCompletion (single 0 c)) = F'.toCompletion (single 0 c))
+    (hwall : ∀ j', G'.group j' = g' → ∃ j, G.group j = g ∧
+      ∀ p : Q, (D'.wall j').normal (ρ' (τ p)) = (D.wall j).normal (ρ p)) :
+    G'.IsWallFunction σ' g' (Units.map Φ.toMonoidHom u) := by
+  refine (G'.isWallFunction_iff σ' g' _).mpr fun j' hj' => ?_
+  obtain ⟨j, hj, hν⟩ := hwall j' hj'
+  obtain ⟨⟨p, hp, hunit⟩, hact⟩ := (G.isWallFunction_iff σ g u).mp hu j hj
+  refine ⟨⟨τ p, by rw [hν, hp], ?_⟩, fun p' c => ?_⟩
+  · rw [← hmono]
+    exact hunit.map Φ
+  · obtain ⟨q, rfl⟩ := hτ p'
+    rw [AlgFiltration.toCompletion_single_eq_mul, map_mul, hconst, ← hmono, ← hΦ, hact q 1, hν,
+      ← map_zpow, Units.coe_map]
+    simp [mul_assoc]
+
+variable {G} {S : Subsemiring (AddMonoidAlgebra A Q)} {S' : Subsemiring (AddMonoidAlgebra A' Q')}
+
+/-- **Transfer of positivity.** Let `G'` be a grouping of another diagram `D'` with the same
+index type of groups, and `φ` a positive specialization of completed coefficients. If the
+completion map of `φ` sends every wall function of a group `g` of `G` to a wall function of the
+group `g` of `G'`, then `G'` is positive for `S'` whenever `G` is positive for `S`. -/
+theorem IsPositive.of_isWallFunction_completionMap (G' : D'.FunctionWallGrouping π' κ)
+    (φ : PositiveSpecialization F F' S S')
+    (hwf : ∀ (g : κ) (u : F.completionˣ), G.IsWallFunction σ g u →
+      G'.IsWallFunction σ' g (Units.map φ.completionMap.toMonoidHom u))
+    (hG : G.IsPositive σ S) : G'.IsPositive σ' S' := by
+  refine (G'.isPositive_iff σ' S').mpr fun g => ?_
+  obtain ⟨u, hu, hpos⟩ := (G.isPositive_iff σ S).mp hG g
+  exact ⟨_, hwf g u hu, φ.map_isPositive hpos⟩
+
+end Transfer
 
 end FunctionWallGrouping
 

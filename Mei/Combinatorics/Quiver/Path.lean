@@ -255,6 +255,13 @@ theorem pathOfFn_zero (T : Fin 0 → α) : pathOfFn T = Path.nil := (rfl)
 theorem pathOfFn_succ {n : ℕ} (T : Fin (n + 1) → α) :
     pathOfFn T = (pathOfFn fun j => T j.succ).cons (T 0) := (rfl)
 
+/-- A finite sequence contributes exactly one arrow for each position. -/
+@[simp]
+theorem length_pathOfFn {n : ℕ} (T : Fin n → α) : (pathOfFn T).length = n := by
+  induction n with
+  | zero => rfl
+  | succ n ih => rw [pathOfFn_succ, Path.length_cons, ih]
+
 /-- Unit arrow weights count the steps of the one-object path of a sequence. -/
 @[simp]
 theorem addWeight_one_pathOfFn {n : ℕ} (T : Fin n → α) :

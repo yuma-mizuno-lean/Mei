@@ -19,7 +19,9 @@ degrees decrease in a positive monoid as we move backwards from the endpoint.
 If a degree occurs twice, every intermediate degree is equal to it. Those
 encounters therefore lie on a single straight segment, on which a transverse
 hyperplane can occur at most once. Consequently the degree-wall pairs have no
-repetitions.
+repetitions. In fact, height-wall pairs have no repetitions either: two ordered
+degrees of the same height coincide. Hence the number of encounters is at most
+`(k + 1) * Nat.card J`, independently of the number of degrees at each height.
 
 At a fixed degree cutoff and for finitely many walls, there are only finitely
 many such lists across all endpoints. No bound on the number of encounters is
@@ -187,6 +189,48 @@ theorem length_le_card_of_mem_realizedDegreeItineraries [Finite J]
   obtain ⟨L, rfl⟩ := exists_nodup_lift_of_mem_realizedDegreeItineraries d f c v hl
   simpa only [List.length_map, Fintype.card_prod, Nat.card_eq_fintype_card]
     using L.property.length_le_card
+
+/-- The encounter count is linear in the filtration cutoff, independently of
+how many distinct degrees occur at each order. Equal-height encounters have the
+same degree, so a wall occurs at most once at each height. Unchanged-degree
+encounters and degree changes with unchanged spatial direction are retained. -/
+theorem length_le_order_mul_card_of_mem_realizedDegreeItineraries [Finite J]
+    {k : ℕ} {l : List (Γ × J)} (hl : l ∈ realizedDegreeItineraries d f c v k) :
+    l.length ≤ (k + 1) * Nat.card J := by
+  classical
+  have hcut (j : Fin l.length) :
+      0 ≤ d.degree (l.get j).1 ∧ d.degree (l.get j).1 ≤ k := by
+    have hm := d.mem_cutoff.mp (hl.1 _ (List.get_mem l j)).1
+    exact ⟨d.degree_nonneg hm.1, hm.2⟩
+  let height (j : Fin l.length) : Fin (k + 1) :=
+    ⟨(d.degree (l.get j).1).toNat, by
+      obtain ⟨hn, hb⟩ := hcut j
+      omega⟩
+  let encode (j : Fin l.length) := (height j, (l.get j).2)
+  have hinj : Function.Injective encode := by
+    intro a b hab
+    have hd : d.degree (l.get a).1 = d.degree (l.get b).1 := by
+      have he : (d.degree (l.get a).1).toNat = (d.degree (l.get b).1).toNat := by
+        simpa only [encode, height] using
+          congrArg (fun x : Fin (k + 1) × J => x.1.val) hab
+      have ha := (hcut a).1
+      have hb := (hcut b).1
+      omega
+    have hdegree {a b : Fin l.length} (hab : a ≤ b)
+        (hd : d.degree (l.get a).1 = d.degree (l.get b).1) :
+        (l.get a).1 = (l.get b).1 := by
+      apply sub_eq_zero.mp
+      apply (d.degree_eq_zero_iff (hl.2.1 a b hab)).mp
+      rw [map_sub, hd, sub_self]
+    have he : (l.get a).1 = (l.get b).1 := by
+      rcases le_total a b with h | h
+      · exact hdegree h hd
+      · exact (hdegree h hd.symm).symm
+    exact (List.nodup_iff_injective_get.mp
+      (nodup_of_mem_realizedDegreeItineraries d f c v hl))
+        (Prod.ext he (congrArg (fun z : Fin (k + 1) × J => z.2) hab))
+  have hc := Nat.card_le_card_of_injective encode hinj
+  simpa only [Nat.card_fin, Nat.card_prod] using hc
 
 /-- At any fixed order, only finitely many transverse decreasing-degree
 itineraries are realized, even as the endpoint varies over the entire space.

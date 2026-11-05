@@ -12,7 +12,7 @@ public import Mei.Geometry.ScatteringDiagram.FocusFocus.Family
 # Terminal slab resolution for focus-focus rays
 
 At a nonzero point of the slab, one open neighborhood controls all binomial
-branches of a fixed incoming exponent. Every possible crossing height has the
+branches of a fixed finite list of incoming exponents. Every possible crossing height has the
 sign of that slab point. Thus no singular encounter enters this neighborhood,
 and the upper or lower chart is fixed even as the encounter time tends to zero.
 The closed branch path then becomes the incoming affine half-line ending on the
@@ -20,14 +20,13 @@ slab, independently of its outgoing exponent.
 
 On the two sides of this neighborhood, the actual weighted ray evaluations
 have a unique common linear lift through the nodal slab correspondence. Its
-formula is the theta monomial times the incoming coefficient map. The statement
-allows an arbitrary module of incoming parameters, tangential and stationary
-inputs, zero coefficients, torsion and nilpotent smoothing parameters. It is the
-terminal-face identity; singular-origin resolution and global gluing are separate.
+formula is the sum of theta monomials with their incoming coefficient maps.
+The single-exponent identity is the singleton case. The statements allow an
+arbitrary module of incoming parameters, tangential and stationary inputs, zero
+coefficients, torsion and nilpotent smoothing parameters. All endpoint assertions
+concern regular slab points.
 
-We use the existing closed branch charts, decorated-fiber weighted evaluations,
-their Laurent formulas and `eq_smul_theta_iff_chamber_values`. The local slab
-interpretation follows Gross–Siebert, *An Invitation to Toric Degenerations*,
+The local slab interpretation follows Gross–Siebert, *An Invitation to Toric Degenerations*,
 §2.2–2.3 (arXiv:0808.2749v2), and Gross–Hacking–Siebert, *Theta functions on
 varieties with effective anti-canonical class*, §3 (arXiv:1601.07081v4).
 -/
@@ -83,11 +82,39 @@ theorem mem_slabBranchDomain_iff_of_mem_slabTerminalDomain {n b : ℤ} {v : ℝ}
   rcases mul_pos_iff.mp hs with ⟨hv, hh⟩ | ⟨hv, hh⟩
   all_goals cases upper <;> grind
 
-private theorem slabTerminalDomain_meets_chambers (n b : ℤ) {v : ℝ} (hv : v ≠ 0) :
-    ∃ L U : ℝ × ℝ, L ∈ slabTerminalDomain n b v ∧
-      U ∈ slabTerminalDomain n b v ∧ L.1 < 0 ∧ 0 < U.1 := by
-  obtain ⟨ε, hε, hball⟩ := Metric.isOpen_iff.mp (isOpen_slabTerminalDomain n b v)
-    (0, v) (by simpa using hv)
+variable {ι : Type*} (s : Finset ι) (n b : ι → ℤ)
+
+/-- One coefficient-independent terminal neighborhood for all incoming records
+in a finite input list, including every candidate binomial branch. -/
+def slabTerminalFiniteDomain (v : ℝ) : Set (ℝ × ℝ) :=
+  ⋂ i ∈ s, slabTerminalDomain (n i) (b i) v
+
+/-- The uniform neighborhood imposes the original terminal test on every record. -/
+theorem mem_slabTerminalFiniteDomain (v : ℝ) (Q : ℝ × ℝ) :
+    Q ∈ slabTerminalFiniteDomain s n b v ↔
+      ∀ i ∈ s, Q ∈ slabTerminalDomain (n i) (b i) v := by
+  simp [slabTerminalFiniteDomain]
+
+/-- The common terminal domain is open, without a bound on the exponents. -/
+theorem isOpen_slabTerminalFiniteDomain (v : ℝ) :
+    IsOpen (slabTerminalFiniteDomain s n b v) :=
+  isOpen_biInter_finset fun i _ => isOpen_slabTerminalDomain (n i) (b i) v
+
+/-- Every regular slab point belongs to the common terminal neighborhood. -/
+theorem slabPoint_mem_slabTerminalFiniteDomain {v : ℝ} (hv : v ≠ 0) :
+    (0, v) ∈ slabTerminalFiniteDomain s n b v := by
+  rw [mem_slabTerminalFiniteDomain]
+  intro i _
+  simpa using hv
+
+/-- The uniform domain contains endpoints in both chambers, including when the
+finite incoming list is empty or contains only tangential inputs. -/
+theorem slabTerminalFiniteDomain_meets_chambers {v : ℝ} (hv : v ≠ 0) :
+    ∃ L U : ℝ × ℝ, L ∈ slabTerminalFiniteDomain s n b v ∧
+      U ∈ slabTerminalFiniteDomain s n b v ∧ L.1 < 0 ∧ 0 < U.1 := by
+  obtain ⟨ε, hε, hball⟩ := Metric.isOpen_iff.mp
+    (isOpen_slabTerminalFiniteDomain s n b v) (0, v)
+    (slabPoint_mem_slabTerminalFiniteDomain s n b hv)
   refine ⟨(-ε / 2, v), (ε / 2, v), hball ?_, hball ?_, by linarith, by linarith⟩
   all_goals
     simp only [Metric.mem_ball, Prod.dist_eq, Real.dist_eq, sub_zero, sub_self, abs_zero]
@@ -96,6 +123,78 @@ private theorem slabTerminalDomain_meets_chambers (n b : ℤ) {v : ℝ} (hv : v 
     · rw [abs_lt]
       constructor <;> linarith
     · exact hε
+
+section Coefficients
+
+variable {R H : Type*} [CommRing R] [AddCommMonoid H] [Module R H]
+  (t : R) (α : ι → H →ₗ[R] R)
+
+/-- The common lift of a finite family of complete incoming records. -/
+def slabTerminalFiniteLift :
+    H →ₗ[R] TauCeti.NodeAlgebra R[T;T⁻¹] (C t * (1 + T 1)) :=
+  ∑ i ∈ s, (LinearMap.toSpanSingleton R _ (theta t (n i) (b i))).comp (α i)
+
+/-- Evaluation of the total lift retains every incoming record and coefficient. -/
+@[simp]
+theorem slabTerminalFiniteLift_apply (a : H) :
+    slabTerminalFiniteLift s n b t α a = ∑ i ∈ s, α i a • theta t (n i) (b i) := by
+  simp only [slabTerminalFiniteLift, LinearMap.sum_apply, LinearMap.comp_apply,
+    LinearMap.toSpanSingleton_apply]
+
+/-- The negative chamber value of the total lift is the total actual weighted
+evaluation throughout the uniform terminal neighborhood. -/
+theorem exponentLeftMap_slabTerminalFiniteLift {v : ℝ} {Q : ℝ × ℝ}
+    (hQ : Q ∈ slabTerminalFiniteDomain s n b v) (hside : Q.1 < 0) (a : H) :
+    exponentLeftMap (C t * (1 + T 1)) (slabTerminalFiniteLift s n b t α a) =
+      ∑ i ∈ s, slabThetaEvaluation t (α i a) (n i) (b i) Q := by
+  simp only [slabTerminalFiniteLift_apply, map_sum]
+  apply Finset.sum_congr rfl
+  intro i hi
+  exact (slabThetaEvaluation_eq_exponentLeftMap t (α i a) (n i) (b i) Q hside
+    (fun _ j _ => slabTerminalDomain_crossingHeight_ne_zero
+      ((mem_slabTerminalFiniteDomain s n b v Q).mp hQ i hi) j)).symm
+
+/-- The positive chamber value uses the same total lift and the same uniform
+neighborhood, even for mixed normal signs or coefficients that vanish. -/
+theorem exponentRightMap_slabTerminalFiniteLift {v : ℝ} {Q : ℝ × ℝ}
+    (hQ : Q ∈ slabTerminalFiniteDomain s n b v) (hside : 0 < Q.1) (a : H) :
+    exponentRightMap (C t * (1 + T 1)) (slabTerminalFiniteLift s n b t α a) =
+      ∑ i ∈ s, slabThetaEvaluation t (α i a) (n i) (b i) Q := by
+  simp only [slabTerminalFiniteLift_apply, map_sum]
+  apply Finset.sum_congr rfl
+  intro i hi
+  exact (slabThetaEvaluation_eq_exponentRightMap t (α i a) (n i) (b i) Q hside
+    (fun _ j _ => slabTerminalDomain_crossingHeight_ne_zero
+      ((mem_slabTerminalFiniteDomain s n b v Q).mp hQ i hi) j)).symm
+
+/-- The two total chamber evaluations determine one common linear face lift.
+There is no requirement that the individual branches have face lifts. -/
+theorem slabTerminalFinite_commonLift_iff {v : ℝ} (hv : v ≠ 0)
+    (l : H →ₗ[R] TauCeti.NodeAlgebra R[T;T⁻¹] (C t * (1 + T 1))) :
+    ((∀ Q ∈ slabTerminalFiniteDomain s n b v, Q.1 < 0 → ∀ a,
+        exponentLeftMap (C t * (1 + T 1)) (l a) =
+          ∑ i ∈ s, slabThetaEvaluation t (α i a) (n i) (b i) Q) ∧
+      (∀ Q ∈ slabTerminalFiniteDomain s n b v, 0 < Q.1 → ∀ a,
+        exponentRightMap (C t * (1 + T 1)) (l a) =
+          ∑ i ∈ s, slabThetaEvaluation t (α i a) (n i) (b i) Q)) ↔
+      l = slabTerminalFiniteLift s n b t α := by
+  constructor
+  · rintro ⟨hL, hU⟩
+    obtain ⟨L, U, hLD, hUD, hLside, hUside⟩ :=
+      slabTerminalFiniteDomain_meets_chambers s n b hv
+    apply LinearMap.ext
+    intro a
+    apply exponentMaps_jointly_injective (C t * (1 + T 1))
+    exact Prod.ext
+      ((hL L hLD hLside a).trans
+        (exponentLeftMap_slabTerminalFiniteLift s n b t α hLD hLside a).symm)
+      ((hU U hUD hUside a).trans
+        (exponentRightMap_slabTerminalFiniteLift s n b t α hUD hUside a).symm)
+  · rintro rfl
+    exact ⟨fun _ hQ hs a => exponentLeftMap_slabTerminalFiniteLift s n b t α hQ hs a,
+      fun _ hQ hs a => exponentRightMap_slabTerminalFiniteLift s n b t α hQ hs a⟩
+
+end Coefficients
 
 section Coefficients
 
@@ -119,31 +218,19 @@ theorem slabTerminal_commonLift_iff (t : R) (n b : ℤ) {v : ℝ} (hv : v ≠ 0)
         exponentRightMap (C t * (1 + T 1)) (ℓ a) =
           slabThetaEvaluation t (α a) n b Q)) ↔
       ℓ = (LinearMap.toSpanSingleton R _ (theta t n b)).comp α := by
-  have hleft (Q : ℝ × ℝ) (hQ : Q ∈ slabTerminalDomain n b v) (hside : Q.1 < 0)
-      (a : H) :=
-    slabThetaEvaluation_eq_exponentLeftMap t (α a) n b Q hside
-      (fun _ j _ => slabTerminalDomain_crossingHeight_ne_zero hQ j)
-  have hright (Q : ℝ × ℝ) (hQ : Q ∈ slabTerminalDomain n b v) (hside : 0 < Q.1)
-      (a : H) :=
-    slabThetaEvaluation_eq_exponentRightMap t (α a) n b Q hside
-      (fun _ j _ => slabTerminalDomain_crossingHeight_ne_zero hQ j)
-  constructor
-  · rintro ⟨hL, hU⟩
-    obtain ⟨L, U, hLD, hUD, hLside, hUside⟩ := slabTerminalDomain_meets_chambers n b hv
+  have hdomain : slabTerminalFiniteDomain ({()} : Finset Unit)
+      (fun _ => n) (fun _ => b) v = slabTerminalDomain n b v := by
+    ext Q
+    simp [mem_slabTerminalFiniteDomain]
+  have hlift : slabTerminalFiniteLift ({()} : Finset Unit)
+      (fun _ => n) (fun _ => b) t (fun _ => α) =
+        (LinearMap.toSpanSingleton R _ (theta t n b)).comp α := by
     ext a
-    simpa only [LinearMap.comp_apply, LinearMap.toSpanSingleton_apply] using
-      (eq_smul_theta_iff_chamber_values t (α a) n b L U hLside hUside
-        (fun _ j _ => slabTerminalDomain_crossingHeight_ne_zero hLD j)
-        (fun _ j _ => slabTerminalDomain_crossingHeight_ne_zero hUD j) (ℓ a)).mpr
-          ⟨hL L hLD hLside a, hU U hUD hUside a⟩
-  · rintro rfl
-    constructor
-    · intro Q hQ hside a
-      simpa only [LinearMap.comp_apply, LinearMap.toSpanSingleton_apply] using
-        (hleft Q hQ hside a).symm
-    · intro Q hQ hside a
-      simpa only [LinearMap.comp_apply, LinearMap.toSpanSingleton_apply] using
-        (hright Q hQ hside a).symm
+    simp only [slabTerminalFiniteLift_apply, Finset.sum_singleton,
+      LinearMap.comp_apply, LinearMap.toSpanSingleton_apply]
+  simpa only [hdomain, hlift, Finset.sum_singleton] using
+    (slabTerminalFinite_commonLift_iff ({()} : Finset Unit)
+      (fun _ => n) (fun _ => b) t (fun _ => α) hv ℓ)
 
 end Coefficients
 

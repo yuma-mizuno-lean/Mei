@@ -29,14 +29,16 @@ The coefficients `c_{j,n}` are independent variables over `ℚ`; we index them b
 `RankTwoPolynomialInput.Variable` and allow any coefficient family in a commutative ring, the
 independent variables being the generators of `MvPolynomial I.Variable ℚ`. The index type of the
 lines is arbitrary; for every `k`, only finitely many lines have a term of degree at most `k`
-(`RankTwoPolynomialInput.finite_nontrivial`). The wall of line `j` is the cylinder over it in
-`L_ℝ`, cooriented by the primitive integral normal `ν_j ∘ π` (`RankTwoPolynomialInput.wallNormal`),
-and acts by `z^q ↦ z^q f_j^{⟨ν_j, π(q)⟩}`. Reversing `ν_j` and `c_j` presents the same line.
+(`RankTwoPolynomialInput.finite_nontrivial`); these form the set
+`RankTwoPolynomialInput.linesAtOrder k`. The wall of line `j` is the cylinder over it in `L_ℝ`,
+cooriented by the primitive integral normal `ν_j ∘ π` (`RankTwoPolynomialInput.wallNormal`), and
+acts by `z^q ↦ z^q f_j^{⟨ν_j, π(q)⟩}`. Reversing `ν_j` and `c_j` presents the same line.
 
 The incoming diagram, its function-wall grouping and its positivity are in
 `Mei.Geometry.ScatteringDiagram.RankTwoPolynomialInput.Incoming` and
-`Mei.Geometry.ScatteringDiagram.RankTwoPolynomialInput.Grouping`. Primitivity uses
-`TauCeti.IsPrimitive` and Mathlib's `Module.evalEquiv`.
+`Mei.Geometry.ScatteringDiagram.RankTwoPolynomialInput.Grouping`; translations of the lines into
+general position are in `Mei.Geometry.ScatteringDiagram.RankTwoPolynomialInput.Translation`.
+Primitivity uses `TauCeti.IsPrimitive` and Mathlib's `Module.evalEquiv`.
 -/
 
 public section
@@ -91,6 +93,25 @@ variable {L M ι : Type*} [AddCommGroup L] [AddCommGroup M] {d : PositiveDegrees
 /-- The independent coefficient variables `c_{j,n}`, one for each line `j` and exponent
 `n` of its wall function. -/
 abbrev Variable : Type _ := Σ j : ι, I.exponents j
+
+/-- The lines with a term of degree at most `k`, the only lines whose walls are active at
+order `k`. -/
+def linesAtOrder (k : ℕ) : Set ι :=
+  {j | ∃ n ∈ I.exponents j, d.degree n ≤ k}
+
+/-- A line belongs to `linesAtOrder k` when it has a term of degree at most `k`. -/
+@[simp]
+theorem mem_linesAtOrder {k : ℕ} {j : ι} :
+    j ∈ I.linesAtOrder k ↔ ∃ n ∈ I.exponents j, d.degree n ≤ k :=
+  Iff.rfl
+
+/-- Only finitely many lines have a term of degree at most `k`. -/
+theorem finite_linesAtOrder (k : ℕ) : (I.linesAtOrder k).Finite :=
+  I.finite_nontrivial k
+
+/-- A line active at some order stays active at every higher order. -/
+theorem linesAtOrder_mono : Monotone I.linesAtOrder := fun _ _ hkl _ ⟨n, hn, hnk⟩ =>
+  ⟨n, hn, hnk.trans (by exact_mod_cast hkl)⟩
 
 /-- The primitive integral normal `ν_j ∘ π` of the cylinder over the incoming line `j`. -/
 def wallNormal (j : ι) : L →+ ℤ :=

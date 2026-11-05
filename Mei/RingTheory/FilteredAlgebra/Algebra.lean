@@ -20,6 +20,10 @@ ring completion, for use in complete coefficient algebras.
 
 The construction refines the existing ring completion using Mathlib's `AlgCat.sectionsSubalgebra`
 and quotient-algebra interfaces, in particular `Ideal.Quotient.factorₐ`.
+
+For completions of monoid algebras `R[Q]`, the completed monomial `c z^p` factors as `z^p · c z^0`
+(`Mei.AlgFiltration.toCompletion_single_eq_mul`), and algebra automorphisms of the completion
+over `R` fix the constants `c z^0` (`Mei.AlgFiltration.algEquiv_toCompletion_single_zero`).
 -/
 
 public section
@@ -144,6 +148,15 @@ theorem algEquiv_toCompletion_single_zero {Q : Type*} [AddMonoid Q]
       RingHom.id_apply]
   rw [hc]
   exact F.algEquiv_toCompletion_algebraMap e c
+
+/-- In the completion of a monoid algebra `B[N]`, a monomial `c z^p` is the product of the
+monomial `z^p` and the constant `c z^0`. -/
+theorem toCompletion_single_eq_mul {B N : Type*} [Ring B] [AddMonoid N]
+    (E : Mei.AlgFiltration (AddMonoidAlgebra B N)) (p : N) (c : B) :
+    E.toCompletion (AddMonoidAlgebra.single p c) =
+      E.toCompletion (AddMonoidAlgebra.single p 1) *
+        E.toCompletion (AddMonoidAlgebra.single 0 c) := by
+  rw [← map_mul, AddMonoidAlgebra.single_mul_single, add_zero, one_mul]
 
 variable {B : Type*} [Semiring B] [Algebra R B]
 
@@ -312,5 +325,18 @@ theorem liftₐ_restrictScalars (f : ∀ k, B →ₐ[R] A ⧸ F.ideal (k + 1)) (
   simp only [AlgHom.restrictScalars_apply, F.projection_liftₐ]
 
 end RestrictScalars
+
+/-- A projected scalar multiple of a product is computed from any quotient representative. -/
+theorem projection_smul_mul_of_projection {R A : Type*} [CommRing R] [Ring A]
+    [Algebra R A] (F : AlgFiltration A) (r : R) (u b : A) (a : F.completion) (k : ℕ)
+    (hb : F.projection k a = Ideal.Quotient.mk (F.ideal (k + 1)) b) :
+    F.projection k (r • (F.toCompletion u * a)) =
+      Ideal.Quotient.mk (F.ideal (k + 1)) (r • (u * b)) := by
+  have hs : F.projection k (r • (F.toCompletion u * a)) =
+      r • F.projection k (F.toCompletion u * a) := by
+    simpa only [AlgHom.toLinearMap_apply, projectionₐ_apply] using
+      (F.projectionₐ (R := R) k).toLinearMap.map_smul r (F.toCompletion u * a)
+  rw [hs, map_mul, F.projection_toCompletion, hb, ← map_mul]
+  exact ((Ideal.Quotient.mkₐ R (F.ideal (k + 1))).toLinearMap.map_smul _ _).symm
 
 end Mei.AlgFiltration

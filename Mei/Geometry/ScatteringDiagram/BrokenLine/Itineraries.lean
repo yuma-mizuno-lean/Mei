@@ -230,6 +230,15 @@ theorem length_le [Finite J]
   simpa only [length_degreeItinerary] using
     length_le_card_of_mem_realizedDegreeItineraries d f c v r.degreeItinerary_mem
 
+/-- The number of encounters is at most one per wall and filtration height.
+This bound does not depend on the number of relative degrees at each order;
+unchanged-degree encounters and changes of zero spatial direction still count. -/
+theorem length_le_order_mul_card [Finite J]
+    (r : CutoffDecoratedRay d ℳ T a v f c ε P W S C k Q) :
+    r.itinerary.length ≤ (k + 1) * Nat.card J := by
+  simpa only [length_degreeItinerary] using
+    length_le_order_mul_card_of_mem_realizedDegreeItineraries d f c v r.degreeItinerary_mem
+
 /-- The itinerary and its decorated realization determine the cutoff ray.
 The remaining fields carry only the cutoff and positive-shift proofs. -/
 @[ext]

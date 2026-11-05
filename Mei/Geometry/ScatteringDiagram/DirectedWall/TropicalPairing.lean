@@ -147,6 +147,14 @@ theorem ofTropicalDegreeMap_degreeMap :
     (ofTropicalDegreeMap (R := R) (h := h) T hT).degreeMap = T := by
   rw [ofTropicalDegreeMap, ofTropicalPairing_degreeMap, TropicalPairing.ofDegreeMap_degreeMap]
 
+/-- The Lie map is that of the pairing `TropicalPairing.ofDegreeMap` on the full tropical vertex
+Lie algebra. -/
+@[simp]
+theorem ofTropicalDegreeMap_lieHom_apply (x : tropicalVertexLieAlgebra (R := R) d ρ) :
+    (ofTropicalDegreeMap (h := h) T hT).lieHom x =
+      (TropicalPairing.ofDegreeMap T hT ⊤).tropicalVertexGradedLieHom x := by
+  rw [ofTropicalDegreeMap, ofTropicalPairing_lieHom_apply]
+
 /-- On a homogeneous field `z^n ∂_m`, the Lie map gives `z^{T n} ∂_m`. -/
 theorem coe_ofTropicalDegreeMap_lieHom_of_homogeneous {n : Γ}
     (x : tropicalVertexLieAlgebra (R := R) d ρ) (m : Λ →+ R) (hm : single ρ n m = x.val) :
@@ -172,6 +180,27 @@ theorem ofTropicalDegreeMap_normalMap (m : Λ →+ ℤ) :
 theorem ofTropicalDegreeMap_spatialMap :
     (ofTropicalDegreeMap (R := R) (h := h) T hT).spatialMap = ContinuousAffineEquiv.refl ℝ V :=
   (rfl)
+
+/-- The pushforward along a degree map over a common tangent lattice is the pushforward along
+the pairing `TropicalPairing.ofDegreeMap` with the identity map of normals and the identity
+spatial map. -/
+theorem ofTropicalDegreeMap_eq_ofTropicalPairing :
+    ofTropicalDegreeMap (R := R) (h := h) T hT =
+      ofTropicalPairing (TropicalPairing.ofDegreeMap T hT ⊤) id
+        (fun _ => by
+          rw [TropicalPairing.ofDegreeMap_characterMap]
+          exact Submodule.mem_span_singleton_self _)
+        (ContinuousAffineEquiv.refl ℝ V)
+        (fun n hn => by
+          rw [ContinuousAffineEquiv.toAffineEquiv_refl, AffineEquiv.linear_refl,
+            LinearEquiv.refl_apply, TropicalPairing.ofDegreeMap_degreeMap, hT n hn])
+        (fun _ => ⟨1, one_pos, by ext; simp⟩) := by
+  refine Pushforward.ext ?_ (fun x => ?_) (funext fun w => ?_) (funext fun m => ?_) ?_
+  · simp
+  · simp
+  · simp
+  · simp
+  · simp
 
 end OfTropicalDegreeMap
 

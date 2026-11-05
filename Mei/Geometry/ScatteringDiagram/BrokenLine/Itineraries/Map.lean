@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.ScatteringDiagram.BrokenLine.Itineraries
+public import Mei.Geometry.ScatteringDiagram.BrokenLine.Itineraries.Regrading
 
 /-!
 # Coefficient change across all cutoff encounter itineraries
@@ -18,7 +18,7 @@ geometric path and encounter times. No injectivity of the coefficient map or
 endpoint genericity is required.
 
 The construction uses `CutoffDecoratedRay` and its finite all-itinerary
-inventory, together with `map_homogeneousHistory_of_injective`. Since the
+inventory and the injective-degree comparison in `Itineraries.Regrading`. Since the
 degrees are fixed, no histories merge, and linear propagation ensures that a
 vanished intermediate decoration cannot contribute later. This is the
 coefficient-specialization comparison for whole-component broken lines of
@@ -48,45 +48,19 @@ variable {R M N Γ V J K : Type*}
   (ε : J → SignType) (P W : J → Set V) (S : K → Set V) (C : Set V)
   (k : ℕ) (Q : V)
 
-local notation "a'" => (Subtype.mk (r a) (hr 0 a a.property) : 𝓝 0)
+local notation "a'" => regradeBase ℳ 𝓝 r (AddMonoidHom.id Γ) hr a
 local notation "Source" => CutoffDecoratedRay d ℳ T a v f c ε P W S C k Q
 local notation "Target" => CutoffDecoratedRay d 𝓝 U a' v f c ε P W S C k Q
 
+-- Fix the identity degree data once; the wrappers consume regrading projection laws.
+local notation "idRegrading" =>
+  cutoffDecoratedRayRegradingEquiv d d ℳ 𝓝 r (AddMonoidHom.id Γ) Function.injective_id
+    hr T U hT a v v (fun _ => rfl) f c ε P W S C k k (fun _ => Iff.rfl) (fun _ => Iff.rfl) Q
+
 /-- Specialization identifies precisely the source rays whose whole final
 coefficient survives with the target rays, over every encounter itinerary. -/
-def cutoffDecoratedRayCoefficientEquiv : {β : Source // r β.decoration ≠ 0} ≃ Target where
-  toFun β :=
-    { itinerary := β.val.itinerary
-      realization := ⟨⟨β.val.realization.1.val, by
-        rw [mem_decoratedHistorySupport]
-        refine ⟨?_, (mem_decoratedHistorySupport ..).mp β.val.realization.1.property |>.2⟩
-        have he := map_homogeneousHistory_of_injective ℳ 𝓝 r id hr Function.injective_id
-          (fun j => T (β.val.itinerary.get j)) (fun j => U (β.val.itinerary.get j))
-          (fun j => hT _) β.val.realization.1.val a
-        simp only [Function.id_comp] at he
-        rw [← he]
-        simpa only [CutoffDecoratedRay.decoration_eq] using β.property⟩,
-        β.val.realization.2⟩
-      degree_mem := β.val.degree_mem
-      degree_sub_mem := β.val.degree_sub_mem }
-  invFun β := by
-    have he := map_homogeneousHistory_of_injective ℳ 𝓝 r id hr Function.injective_id
-      (fun j => T (β.itinerary.get j)) (fun j => U (β.itinerary.get j))
-      (fun j => hT _) β.realization.1.val a
-    simp only [Function.id_comp] at he
-    have hn := (mem_decoratedHistorySupport ..).mp β.realization.1.property
-    have hsource : β.realization.1.val ∈
-        decoratedHistorySupport ℳ (fun j => T (β.itinerary.get j)) 0 a v
-          (fun j => f (β.itinerary.get j)) (fun j => ε (β.itinerary.get j)) := by
-      rw [mem_decoratedHistorySupport]
-      exact ⟨fun hz => hn.1 (by rw [← he, hz, map_zero]), hn.2⟩
-    exact ⟨{ itinerary := β.itinerary
-             realization := ⟨⟨β.realization.1.val, hsource⟩, β.realization.2⟩
-             degree_mem := β.degree_mem
-             degree_sub_mem := β.degree_sub_mem }, by
-      simpa only [CutoffDecoratedRay.decoration_eq, he] using hn.1⟩
-  left_inv _ := rfl
-  right_inv _ := rfl
+def cutoffDecoratedRayCoefficientEquiv : {β : Source // r β.decoration ≠ 0} ≃ Target :=
+  idRegrading
 
 /-- Specialization retains every recorded encounter, including identity
 components and nonzero degree changes with zero spatial projection. -/
@@ -94,7 +68,8 @@ components and nonzero degree changes with zero spatial projection. -/
 theorem cutoffDecoratedRayCoefficientEquiv_itinerary
     (β : {β : Source // r β.decoration ≠ 0}) :
     (cutoffDecoratedRayCoefficientEquiv d ℳ 𝓝 r hr T U hT a v f c ε P W S C k Q β).itinerary =
-      β.val.itinerary := (rfl)
+      β.val.itinerary :=
+  cutoffDecoratedRayRegradingEquiv_itinerary ..
 
 /-- The selected degrees of every segment are unchanged by specialization. -/
 @[simp]
@@ -102,7 +77,12 @@ theorem cutoffDecoratedRayCoefficientEquiv_history
     (β : {β : Source // r β.decoration ≠ 0}) :
     HEq (cutoffDecoratedRayCoefficientEquiv d ℳ 𝓝 r hr T U hT a
       v f c ε P W S C k Q β).realization.1.val
-      β.val.realization.1.val := (HEq.rfl)
+      β.val.realization.1.val := by
+  have hh : HEq (idRegrading β).realization.1.val
+      ((AddMonoidHom.id Γ) ∘ β.val.realization.1.val) :=
+    cutoffDecoratedRayRegradingEquiv_history ..
+  -- The identity additive hom and composition reduce pointwise to the original history.
+  exact hh
 
 /-- Specialization preserves the entire geometric ray, including its incoming tail. -/
 @[simp]
@@ -110,7 +90,8 @@ theorem cutoffDecoratedRayCoefficientEquiv_ray
     (β : {β : Source // r β.decoration ≠ 0}) :
     (cutoffDecoratedRayCoefficientEquiv d ℳ 𝓝 r hr T U hT a
       v f c ε P W S C k Q β).realization.2.ray =
-      β.val.realization.2.ray := (rfl)
+      β.val.realization.2.ray :=
+  cutoffDecoratedRayRegradingEquiv_ray ..
 
 /-- All encounter times are preserved, including unchanged-direction encounters. -/
 @[simp]
@@ -118,18 +99,16 @@ theorem cutoffDecoratedRayCoefficientEquiv_parameter
     (β : {β : Source // r β.decoration ≠ 0}) :
     HEq (cutoffDecoratedRayCoefficientEquiv d ℳ 𝓝 r hr T U hT a
       v f c ε P W S C k Q β).realization.2.parameter
-      β.val.realization.2.parameter := (HEq.rfl)
+      β.val.realization.2.parameter :=
+  cutoffDecoratedRayRegradingEquiv_parameter ..
 
 /-- The final whole decoration specializes by the given coefficient map. -/
 @[simp↓]
 theorem cutoffDecoratedRayCoefficientEquiv_decoration
     (β : {β : Source // r β.decoration ≠ 0}) :
     (cutoffDecoratedRayCoefficientEquiv d ℳ 𝓝 r hr T U hT a v f c ε P W S C k Q β).decoration =
-      r β.val.decoration := by
-  simp only [CutoffDecoratedRay.decoration_eq]
-  exact (map_homogeneousHistory_of_injective ℳ 𝓝 r id hr Function.injective_id
-    (fun j => T (β.val.itinerary.get j)) (fun j => U (β.val.itinerary.get j))
-    (fun j => hT _) β.val.realization.1.val a).symm
+      r β.val.decoration :=
+  cutoffDecoratedRayRegradingEquiv_decoration ..
 
 include hT
 
@@ -137,19 +116,10 @@ include hT
 coefficient specialization. Vanished decorations are discarded automatically. -/
 theorem map_cutoffDecoratedEvaluation [Finite J] :
     r (cutoffDecoratedEvaluation d ℳ T a v f c ε P W S C k Q) =
-      cutoffDecoratedEvaluation d 𝓝 U a' v f c ε P W S C k Q := by
-  classical
-  let := Fintype.ofFinite Source
-  let := Fintype.ofFinite Target
-  let e := cutoffDecoratedRayCoefficientEquiv d ℳ 𝓝 r hr T U hT a v f c ε P W S C k Q
-  simp only [cutoffDecoratedEvaluation_def, map_sum]
-  refine Finset.sum_bij_ne_zero (fun β _ hβ => e ⟨β, hβ⟩) (by simp) ?_ ?_ ?_
-  · intro β _ hβ γ _ hγ he
-    exact congrArg Subtype.val (e.injective he)
-  · intro β _ _
-    exact ⟨(e.symm β).val, Finset.mem_univ _, (e.symm β).property, e.apply_symm_apply β⟩
-  · intro β _ hβ
-    exact (cutoffDecoratedRayCoefficientEquiv_decoration d ℳ 𝓝 r hr T U hT a v f c ε
-      P W S C k Q ⟨β, hβ⟩).symm
+      cutoffDecoratedEvaluation d 𝓝 U ⟨r a, hr 0 a a.property⟩ v f c ε P W S C k Q := by
+  simpa only [regradeBase_id] using
+    map_cutoffDecoratedEvaluation_regrading d d ℳ 𝓝 r (AddMonoidHom.id Γ)
+      Function.injective_id hr T U hT a v v (fun _ => rfl) f c ε P W S C
+      k k (fun _ => Iff.rfl) (fun _ => Iff.rfl) Q
 
 end Mei

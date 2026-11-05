@@ -13,7 +13,9 @@ public import Mathlib.Geometry.Manifold.HasGroupoid
 An atlas map `f : Mei.AtlasMap H M M'` between charted spaces modelled on `H` is a map
 `f : M → M'` with a chart `f.chart e` of `M'` for each chart `e` of `M`, such that `e` is the
 pullback of `f.chart e` along `f`: the domain of `e` is the preimage of the domain of
-`f.chart e`, and `e = f.chart e ∘ f` there. Such a map is continuous
+`f.chart e`, and `e = f.chart e ∘ f` there. Dually, the target of `e` lies in the target of
+`f.chart e` (`Mei.AtlasMap.target_subset_chart_target`), and on it
+`f ∘ e⁻¹ = (f.chart e)⁻¹` (`Mei.AtlasMap.apply_symm_eq_chart_symm`). Such a map is continuous
 (`Mei.AtlasMap.continuous`), and every chart change `e⁻¹ ≫ e'` of `M` is the restriction of the
 chart change of the corresponding charts of `M'` (`Mei.AtlasMap.symm_trans_eqOn`); hence `M`
 inherits every structure groupoid of `M'` that is closed under restriction
@@ -104,6 +106,18 @@ theorem chart_symm_apply (e : atlas H M) {x : M} (hx : x ∈ e.1.source) :
     (f.chart e).1.symm (e.1 x) = f x := by
   rw [← f.chart_apply e hx, OpenPartialHomeomorph.left_inv _ ((f.mem_source_iff e).mp hx)]
 
+/-- The target of a chart is contained in the target of its target chart. -/
+theorem target_subset_chart_target (e : atlas H M) : e.1.target ⊆ (f.chart e).1.target := by
+  intro y hy
+  rw [← e.1.right_inv hy, ← f.chart_apply e (e.1.map_target hy)]
+  exact (f.chart e).1.map_source ((f.mem_source_iff e).mp (e.1.map_target hy))
+
+/-- On the target of a chart, the map composed with the inverse chart is the inverse of the
+target chart. -/
+theorem apply_symm_eq_chart_symm (e : atlas H M) {y : H} (hy : y ∈ e.1.target) :
+    f (e.1.symm y) = (f.chart e).1.symm y := by
+  rw [← f.chart_symm_apply e (e.1.map_target hy), e.1.right_inv hy]
+
 /-- An atlas map is continuous. -/
 @[fun_prop]
 theorem continuous : Continuous f := by
@@ -125,13 +139,9 @@ theorem symm_trans_source_subset_of_coe_eq (g : AtlasMap H M M') (hfg : ⇑f = �
     (e.1.symm ≫ₕ e'.1).source ⊆ ((f.chart e).1.symm ≫ₕ (g.chart e').1).source := by
   intro y hy
   rw [OpenPartialHomeomorph.trans_source, OpenPartialHomeomorph.symm_source] at hy ⊢
-  have hz := e.1.map_target hy.1
-  have hzy : (f.chart e).1 (f (e.1.symm y)) = y := by rw [f.chart_apply e hz, e.1.right_inv hy.1]
-  refine ⟨?_, ?_⟩
-  · rw [← hzy]
-    exact (f.chart e).1.map_source ((f.mem_source_iff e).mp hz)
-  · rw [mem_preimage, ← hzy, (f.chart e).1.left_inv ((f.mem_source_iff e).mp hz), hfg]
-    exact (g.mem_source_iff e').mp hy.2
+  refine ⟨f.target_subset_chart_target e hy.1, ?_⟩
+  rw [mem_preimage, ← f.apply_symm_eq_chart_symm e hy.1, hfg]
+  exact (g.mem_source_iff e').mp hy.2
 
 /-- The chart change between two charts of the source is defined wherever the chart change
 between their target charts is. -/
@@ -147,11 +157,8 @@ theorem symm_trans_eqOn_of_coe_eq (g : AtlasMap H M M') (hfg : ⇑f = ⇑g) (e e
       (e.1.symm ≫ₕ e'.1).source := by
   intro y hy
   rw [OpenPartialHomeomorph.trans_source, OpenPartialHomeomorph.symm_source] at hy
-  have hz := e.1.map_target hy.1
-  have hzy : (f.chart e).1.symm y = f (e.1.symm y) := by
-    rw [← f.chart_symm_apply e hz, e.1.right_inv hy.1]
-  rw [OpenPartialHomeomorph.trans_apply, OpenPartialHomeomorph.trans_apply, hzy, hfg,
-    g.chart_apply e' hy.2]
+  rw [OpenPartialHomeomorph.trans_apply, OpenPartialHomeomorph.trans_apply,
+    ← f.apply_symm_eq_chart_symm e hy.1, hfg, g.chart_apply e' hy.2]
 
 /-- The chart change between two charts of the source is the restriction of the chart change
 between their target charts. -/

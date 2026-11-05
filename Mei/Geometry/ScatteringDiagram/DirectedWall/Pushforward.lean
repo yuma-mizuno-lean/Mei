@@ -29,6 +29,9 @@ merge degrees and carry its own cutoff modulus:
 * preservation of homogeneous wall spaces: the image of a wall element of degree `n` and
   normal `ν` is a wall element of degree `T n` and normal `S(ν)`.
 
+Two such data agree when their degree maps, ray maps, normal maps and spatial maps agree and
+their Lie maps agree pointwise (`DirectedWall.Pushforward.ext`).
+
 The positive rational scalar is what a tropical pairing provides: for the rational
 inverse dual of a finite-index embedding, `S(ν)` is only a rational multiple of a
 primitive integral normal. Positivity keeps the crossing signs, so path products are
@@ -103,6 +106,22 @@ variable {d d' h h' H H'} {h'' : TauCeti.Toric.IsIntegralLattice i''}
   {H'' : DirectedWallSpaces ρ'' ℋ}
 
 namespace Pushforward
+
+/-- Pushforward data are determined by the degree map, the values of the Lie map, the ray map,
+the normal map and the spatial map. -/
+@[ext]
+theorem ext {P Q : Pushforward d d' h h' H H'} (hdeg : P.degreeMap = Q.degreeMap)
+    (hlie : ∀ x, P.lieHom x = Q.lieHom x) (hray : P.rayMap = Q.rayMap)
+    (hnormal : P.normalMap = Q.normalMap) (hspatial : P.spatialMap = Q.spatialMap) :
+    P = Q := by
+  cases P
+  cases Q
+  cases hdeg
+  cases hray
+  cases hnormal
+  cases hspatial
+  congr
+  exact GradedLieHom.ext hlie
 
 variable (P : Pushforward d d' h h' H H')
 

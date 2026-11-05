@@ -99,6 +99,17 @@ theorem map_id :
   simpa only [map, AddMonoidHom.toMultiplicative_id] using
     (TwistedMonoidAlgebra.map_id (α := factorSet q β))
 
+/-- Factor-set compatibility is preserved by composition of scalar and exponent maps. -/
+theorem map_comp_compat (φ : R →+* S) (ψ : S →+* T) (f : Γ →+ Γ') (g : Γ' →+ Γ'')
+    (h : ∀ p r, Units.map φ.toMonoidHom (q ^ β p r) = q' ^ β' (f p) (f r))
+    (h' : ∀ p r, Units.map ψ.toMonoidHom (q' ^ β' p r) = q'' ^ β'' (g p) (g r))
+    (p r : Γ) :
+    Units.map (ψ.comp φ).toMonoidHom (q ^ β p r) = q'' ^ β'' ((g.comp f) p) ((g.comp f) r) := by
+  -- The multiplicative projection of a ring-hom composition is the monoid-hom composition.
+  change Units.map (ψ.toMonoidHom.comp φ.toMonoidHom) (q ^ β p r) = _
+  rw [Units.map_comp, MonoidHom.comp_apply, h, h']
+  simp only [AddMonoidHom.comp_apply]
+
 /-- Simultaneous quantum maps compose in both coefficients and exponents. -/
 theorem map_comp (φ : R →+* S) (ψ : S →+* T) (f : Γ →+ Γ') (g : Γ' →+ Γ'')
     (h : ∀ p r, Units.map φ.toMonoidHom (q ^ β p r) = q' ^ β' (f p) (f r))

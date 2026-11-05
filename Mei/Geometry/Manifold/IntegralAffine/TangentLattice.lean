@@ -5,7 +5,7 @@ Authors: Claude Code
 -/
 module
 
-public import Mei.Geometry.Manifold.IntegralAffine
+public import Mei.Geometry.Manifold.IntegralAffine.Basic
 public import Mathlib.Geometry.Manifold.HasGroupoid
 
 /-!

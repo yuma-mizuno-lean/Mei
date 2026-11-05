@@ -49,7 +49,7 @@ local notation "A" => d.shiftedLieFiltration ℒ ℳ p
 /-- Any finite exceptional arrangement has a generic point allowed by the base
 diagram at the prescribed cutoff. An existing allowed endpoint witnesses that
 the open base complement is nonempty. -/
-private theorem exists_generic_allowed (k : ℕ) (T : ExceptionalArrangement V)
+theorem exists_generic_allowed (k : ℕ) (T : ExceptionalArrangement V)
     (x : WallComplement (fun c : B.active k => (B.wall c).support)) :
     ∃ z : WallComplement (fun c : B.active k => (B.wall c).support), T.IsGeneric z.val := by
   let := h.finiteDimensional

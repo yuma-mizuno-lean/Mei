@@ -23,7 +23,10 @@ Let `Φ : A[Q]^ → A'[Q]^` be a map of completed coefficient algebras that inte
 coefficient actions `σ` and `σ'` along `f`, fixes the monomials `z^p`, and such that the
 target action fixes the constants of `A'`. Then a wall function `u` of a group is sent to the
 wall function `Φ(u)` of the image group (`FunctionWallGrouping.IsWallFunction.map`): a
-fixed-degree map preserves the normals, so the exponent `ν(ρ p)` is unchanged. For a positive
+fixed-degree map preserves the normals, so the exponent `ν(ρ p)` is unchanged. This is the case
+of the identity on exponents of `FunctionWallGrouping.IsWallFunction.of_intertwining`; the
+degree-changing case is in
+`Mei.Geometry.ScatteringDiagram.DirectedDiagram.FunctionWall.Pushforward`. For a positive
 specialization `φ` of the coefficient algebras with these compatibilities, positivity of wall
 functions is preserved by `PositiveSpecialization.map_isPositive`, so positive groupings and
 positive wall representatives are carried to the image diagram
@@ -145,18 +148,10 @@ theorem IsWallFunction.map (Φ : F.completion →+* F'.completion)
     (hconst : ∀ g (c : A'),
       σ' g (F'.toCompletion (single 0 c)) = F'.toCompletion (single 0 c))
     {g : κ} {u : F.completionˣ} (hu : G.IsWallFunction σ g u) :
-    (G.map f hf).IsWallFunction σ' g (Units.map Φ.toMonoidHom u) := by
-  refine ((G.map f hf).isWallFunction_iff σ' g _).mpr fun j hj => ?_
-  obtain ⟨⟨p, hp, hunit⟩, hact⟩ := (G.isWallFunction_iff σ g u).mp hu j (by simpa using hj)
-  refine ⟨⟨p, by simpa only [map_wall, DirectedWall.map_normal] using hp, ?_⟩,
-    fun q c => ?_⟩
-  · rw [← hmono]
-    exact hunit.map Φ
-  · have hsingle : (single q c : AddMonoidAlgebra A' Q) = single q 1 * single 0 c := by
-      rw [single_mul_single, add_zero, one_mul]
-    rw [label_map, hsingle, map_mul, map_mul, hconst, ← hmono, ← hΦ, hact q 1, map_mul,
-      map_wall, DirectedWall.map_normal, ← map_zpow, Units.coe_map, RingHom.toMonoidHom_eq_coe,
-      MonoidHom.coe_ofClass, mul_assoc]
+    (G.map f hf).IsWallFunction σ' g (Units.map Φ.toMonoidHom u) :=
+  hu.of_intertwining (G.map f hf) g Φ id Function.surjective_id hmono
+    (fun x => by rw [label_map]; exact hΦ _ x) (hconst _)
+    fun j hj => ⟨j, by simpa using hj, fun p => by rw [map_wall, DirectedWall.map_normal, id_eq]⟩
 
 variable {P : Subsemiring (AddMonoidAlgebra A Q)} {P' : Subsemiring (AddMonoidAlgebra A' Q)}
 
@@ -169,11 +164,9 @@ theorem IsPositive.map (φ : PositiveSpecialization F F' P P')
     (hφ : ∀ p : Q, φ.toRingHom (single p 1) = single p 1)
     (hconst : ∀ g (c : A'),
       σ' g (F'.toCompletion (single 0 c)) = F'.toCompletion (single 0 c))
-    (hG : G.IsPositive σ P) : (G.map f hf).IsPositive σ' P' := by
-  refine ((G.map f hf).isPositive_iff σ' P').mpr fun g => ?_
-  obtain ⟨u, hu, hpos⟩ := (G.isPositive_iff σ P).mp hG g
-  exact ⟨_, hu.map φ.completionMap hφσ
-    (fun p => by rw [φ.completionMap_toCompletion, hφ]) hconst, φ.map_isPositive hpos⟩
+    (hG : G.IsPositive σ P) : (G.map f hf).IsPositive σ' P' :=
+  hG.of_isWallFunction_completionMap (G.map f hf) φ fun _ _ hu => hu.map φ.completionMap hφσ
+    (fun p => by rw [φ.completionMap_toCompletion, hφ]) hconst
 
 end WallFunction
 

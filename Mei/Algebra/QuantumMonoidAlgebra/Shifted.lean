@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Algebra.QuantumMonoidAlgebra.Basic
+public import Mei.Algebra.QuantumMonoidAlgebra.Units
 public import Mei.RingTheory.GradedAlgebra.Shifted.Basic
 public import Mei.LinearAlgebra.ModuleFiltration.Equiv
 public import Mei.Algebra.DirectSum.Degree.Map
@@ -42,20 +42,26 @@ theorem monomial_mul_mem_shiftedSubmodule {x : QuantumMonoidAlgebra q β}
 def shiftedMonomialEquiv :
     shiftedSubmodule (grade q β) P s ≃ₗ[R]
       shiftedSubmodule (grade q β) P (p + s) where
-  toFun x := ⟨monomial q β p * x, monomial_mul_mem_shiftedSubmodule q β P p s x.property⟩
-  invFun y := ⟨((q ^ β p p : Rˣ) : R) • (monomial q β (-p) * y), by
+  toFun x := ⟨(monomialUnit q β p : QuantumMonoidAlgebra q β) * x, by
+    rw [coe_monomialUnit]
+    exact monomial_mul_mem_shiftedSubmodule q β P p s x.property⟩
+  invFun y := ⟨(↑(monomialUnit q β p)⁻¹ : QuantumMonoidAlgebra q β) * y, by
+    rw [coe_monomialUnit_inv, smul_mul_assoc]
     apply Submodule.smul_mem
     simpa only [neg_add_cancel_left] using
       monomial_mul_mem_shiftedSubmodule q β P (-p) (p + s) y.property⟩
   left_inv x := by
     apply Subtype.ext
-    dsimp
-    rw [← mul_assoc, ← smul_mul_assoc, diagonal_smul_monomial_neg_mul, one_mul]
+    -- Unfold the nested subtype to expose multiplication by the inverse unit.
+    change (↑(monomialUnit q β p)⁻¹ : QuantumMonoidAlgebra q β) *
+      ((monomialUnit q β p : QuantumMonoidAlgebra q β) * x) = x
+    rw [← mul_assoc, Units.inv_mul, one_mul]
   right_inv y := by
     apply Subtype.ext
-    dsimp
-    rw [mul_smul_comm, ← mul_assoc, ← smul_mul_assoc,
-      diagonal_smul_monomial_mul_neg, one_mul]
+    -- Unfold the nested subtype to expose multiplication by the unit and its inverse.
+    change (monomialUnit q β p : QuantumMonoidAlgebra q β) *
+      ((↑(monomialUnit q β p)⁻¹ : QuantumMonoidAlgebra q β) * y) = y
+    rw [← mul_assoc, Units.mul_inv, one_mul]
   map_add' x y := Subtype.ext (mul_add _ _ _)
   map_smul' r x := Subtype.ext (mul_smul_comm _ _ _)
 
@@ -64,14 +70,20 @@ def shiftedMonomialEquiv :
 theorem coe_shiftedMonomialEquiv
     (x : shiftedSubmodule (grade q β) P s) :
     (shiftedMonomialEquiv q β P p s x : QuantumMonoidAlgebra q β) =
-      monomial q β p * x := (rfl)
+      monomial q β p * x := by
+  -- Unfold the LinearEquiv application and subtype value to rewrite the defining unit.
+  change (monomialUnit q β p : QuantumMonoidAlgebra q β) * x = _
+  rw [coe_monomialUnit]
 
 /-- Inverse translation includes the diagonal scalar for an arbitrary bilinear form. -/
 @[simp]
 theorem coe_shiftedMonomialEquiv_symm
     (y : shiftedSubmodule (grade q β) P (p + s)) :
     ((shiftedMonomialEquiv q β P p s).symm y : QuantumMonoidAlgebra q β) =
-      ((q ^ β p p : Rˣ) : R) • (monomial q β (-p) * y) := (rfl)
+      ((q ^ β p p : Rˣ) : R) • (monomial q β (-p) * y) := by
+  -- Unfold the inverse LinearEquiv application and subtype value to rewrite its unit.
+  change (↑(monomialUnit q β p)⁻¹ : QuantumMonoidAlgebra q β) * y = _
+  rw [coe_monomialUnit_inv, smul_mul_assoc]
 
 /-- For an alternating form the inverse is multiplication by the opposite monomial. -/
 theorem coe_shiftedMonomialEquiv_symm_of_isAlt (hβ : β.IsAlt)

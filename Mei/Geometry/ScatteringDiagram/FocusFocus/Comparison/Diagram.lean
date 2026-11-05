@@ -38,8 +38,7 @@ local notation "S(" k ")" => AdjoinRoot (Polynomial.X ^ (k + 1) : Polynomial K)
 local notation "τ(" k ")" => AdjoinRoot.root (Polynomial.X ^ (k + 1) : Polynomial K)
 
 -- Use the original K-action through the tangential Laurent coefficient ring.
-local instance (k : ℕ) : IsScalarTower K (S(k)) (SlabNode (τ(k))) :=
-  IsScalarTower.to₁₂₄ K (S(k)) (S(k))[ℤ] _
+attribute [local instance] instScalarTowerSlabNode
 
 /-- The Laurent slab maps, with the coefficient ring and both exponent coordinates retained. -/
 abbrev laurentSlabIncidence (k : ℕ) : WalkingSpan ⥤ AlgCat K :=

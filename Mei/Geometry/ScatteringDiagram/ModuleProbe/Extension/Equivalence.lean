@@ -63,22 +63,17 @@ theorem extendedCoefficientField_eq_of_levelEquivalent {ι' : Type*}
     (x : WallComplement (fun c : B.active k => (B.wall c).support)) :
     extendedCoefficientField d ℳ p ℒ H h h' D B k hBc x =
       extendedCoefficientField d ℳ p ℒ H h h' D' B k hBc x := by
-  let := h.finiteDimensional
   let T := (coefficientArrangement d ℳ p ℒ H h h' D k).union
     (coefficientArrangement d ℳ p ℒ H h h' D' k)
-  have hopen : IsOpen {z : V | ∀ c : B.active k, z ∉ (B.wall c).support} := by
-    simpa only [ofPred_forall, compl_def] using
-      isOpen_iInter_of_finite
-        (fun c : B.active k => (B.wall c).isConvexPolyhedron.isClosed.isOpen_compl)
-  obtain ⟨z, hz, hzT⟩ := T.dense_isGeneric.inter_open_nonempty _ hopen ⟨x.val, x.notMem⟩
+  obtain ⟨z', hzT⟩ := exists_generic_allowed (d := d) (ℒ := ℒ) (H := H)
+    (h := h) (B := B) k T x
   obtain ⟨hzD, hzD'⟩ := ExceptionalArrangement.isGeneric_union.mp hzT
-  let z' : WallComplement (fun c : B.active k => (B.wall c).support) := ⟨z, hz⟩
   have hB' := ((hDD'.mono (Nat.le_succ k)).map (chargeZeroGradedLieHom d ℳ p ℒ)
     (chargeZeroGradedLieHom_mem_wall d ℳ p ℒ H)).symm.trans hB
   rw [extendedCoefficientField_eq_action d ℳ p ℒ H h h' D B k hBc hD hB x z' hzD,
     extendedCoefficientField_eq_action d ℳ p ℒ H h h' D' B k hBc
       (hDD'.consistent hD) hB' x z' hzD',
-    coefficientField_eq_of_levelEquivalent d ℳ p ℒ H h h' D D' k hDD' z hzD hzD']
+    coefficientField_eq_of_levelEquivalent d ℳ p ℒ H h h' D D' k hDD' z'.val hzD hzD']
 
 /-- Equivalent probe presentations define the same completed coefficient at every
 all-order allowed base endpoint. Only finite common generic anchors are used. -/

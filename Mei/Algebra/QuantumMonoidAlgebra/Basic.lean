@@ -147,27 +147,46 @@ theorem diagonal_smul_monomial_mul_neg (p : Γ) :
     smul_smul, ← Units.val_mul, ← zpow_add, add_neg_cancel, zpow_zero, Units.val_one,
     one_smul]
 
+/-- Moving a ray generator past a monomial is controlled by the skew part of the form. -/
+theorem monomial_semiconjBy_skew (n p : Γ) :
+    SemiconjBy (monomial q β p)
+      (((q ^ (β n p - β p n) : Rˣ) : R) • monomial q β n) (monomial q β n) := by
+  unfold SemiconjBy
+  rw [mul_smul_comm, monomial_mul, monomial_mul, smul_smul,
+    ← Units.val_mul, ← zpow_add, sub_add_cancel, add_comm p n]
+
 /-- Moving a quantum ray generator past a monomial rescales it by `q^(2β(n,p))`. -/
 theorem monomial_semiconjBy (hβ : β.IsAlt) (n p : Γ) :
     SemiconjBy (monomial q β p)
       (((q ^ (2 * β n p) : Rˣ) : R) • monomial q β n) (monomial q β n) := by
-  unfold SemiconjBy
-  rw [mul_smul_comm, monomial_mul, monomial_mul, smul_smul,
-    ← Units.val_mul, ← zpow_add, ← hβ.neg_eq n p]
-  congr 2
-  · congr 1
-    omega
-  · exact add_comm p n
+  simpa only [← hβ.neg_eq n p, sub_neg_eq_add, ← two_mul] using
+    monomial_semiconjBy_skew q β n p
+
+/-- Powers of one quantum monomial accumulate the diagonal bilinear factor. -/
+theorem monomial_pow_eq_smul (p : Γ) (j : ℕ) :
+    monomial q β p ^ j =
+      ((q ^ ((j.choose 2 : ℤ) * β p p) : Rˣ) : R) • monomial q β (j • p) := by
+  induction j with
+  | zero => simp
+  | succ j ih =>
+    rw [pow_succ, ih, smul_mul_assoc, monomial_mul, smul_smul,
+      ← Units.val_mul, ← zpow_add]
+    simp only [map_nsmul, LinearMap.smul_apply, nsmul_eq_mul]
+    have hexp : (j.choose 2 : ℤ) * β p p + (j : ℤ) * β p p =
+        ((j + 1).choose 2 : ℤ) * β p p := by
+      rw [Nat.choose_succ_succ, Nat.choose_one_right]
+      push_cast
+      ring
+    have hdeg : j • p + p = (j + 1) • p := by
+      simp only [succ_nsmul]
+    rw [hexp, hdeg]
 
 /-- Along a single alternating ray, ordinary powers multiply only the exponent. -/
 @[simp]
 theorem monomial_pow (hβ : β.IsAlt) (p : Γ) (n : ℕ) :
     monomial q β p ^ n = monomial q β (n • p) := by
-  induction n with
-  | zero => simp
-  | succ n ih =>
-    rw [pow_succ, ih, monomial_mul]
-    simp [succ_nsmul, hβ.self_eq_zero]
+  simpa only [hβ.self_eq_zero, mul_zero, zpow_zero, Units.val_one, one_smul] using
+    monomial_pow_eq_smul q β p n
 
 /-- The untwisting equivalence for the zero form. -/
 def zeroFormEquiv : QuantumMonoidAlgebra q (0 : LinearMap.BilinForm ℤ Γ) ≃ₐ[R]

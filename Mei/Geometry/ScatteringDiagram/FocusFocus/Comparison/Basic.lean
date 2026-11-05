@@ -42,7 +42,7 @@ local notation "τ" => AdjoinRoot.root (Polynomial.X ^ (k + 1) : Polynomial K)
 local notation "ι" => AdjoinRoot.of (Polynomial.X ^ (k + 1) : Polynomial K)
 
 -- Compose the existing coefficient actions through the tangential Laurent algebra.
-local instance : IsScalarTower K S (SlabNode τ) :=
+local instance instScalarTowerSlabNode : IsScalarTower K S (SlabNode τ) :=
   IsScalarTower.to₁₂₄ K S S[ℤ] _
 
 /-- The left Laurent embedding with normal and tangential exponents uncurried. -/

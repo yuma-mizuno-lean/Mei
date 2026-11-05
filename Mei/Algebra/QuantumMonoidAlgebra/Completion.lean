@@ -41,6 +41,22 @@ variable {R S U Γ Γ' Γ'' : Type*}
   {β : LinearMap.BilinForm ℤ Γ} {β' : LinearMap.BilinForm ℤ Γ'}
   {β'' : LinearMap.BilinForm ℤ Γ''}
 
+section Instances
+
+variable {P : AddSubmonoid Γ} {δ : Γ →+ ℤ} {hδ : ∀ n ∈ P, 0 ≤ δ n}
+
+local notation "F" => positiveFiltration q β P δ hδ
+
+-- Direct instances for the inherited structures: searching through the positive subalgebra,
+-- quotient, product, and subring layers each time exceeds the instance search budget.
+instance : Ring (F).completion := inferInstance
+
+instance : Semigroup (F).completion := (inferInstance : Ring (F).completion).toSemigroup
+
+instance : AddCommMonoid (F).completion := inferInstance
+
+end Instances
+
 section General
 
 variable (φ : R →+* S) (f : Γ →+ Γ')
@@ -52,18 +68,6 @@ variable (φ : R →+* S) (f : Γ →+ Γ')
 local notation "F" => positiveFiltration q β P δ hδ
 local notation "G" => positiveFiltration q' β' P' δ' hδ'
 local notation "ψ" => positiveMap φ f h P P' hP
-
-private local instance : Ring (positiveSubalgebra q β P) := inferInstance
-private local instance : Ring (F).completion := inferInstance
-
--- These are the inherited structures. Direct instances avoid repeatedly searching
--- through the positive subalgebra, quotient, product, and subring layers.
-private instance positiveCompletionSemiring : Semiring (F).completion :=
-  (inferInstance : Ring (F).completion).toSemiring
-
-private instance positiveQuotientSemiring (k : ℕ) :
-    Semiring (positiveSubalgebra q β P ⧸ (F).ideal k) :=
-  (inferInstance : Ring (positiveSubalgebra q β P ⧸ (F).ideal k)).toSemiring
 
 variable (l : ℕ → ℕ) (hl : Monotone l)
   (hcut : ∀ k n, n ∈ P → (l k : ℤ) < δ n → (k : ℤ) < δ' (f n))
@@ -265,10 +269,18 @@ theorem mapPositiveCompletion_id :
 variable (a : PositiveDegrees Γ'') (T' : PositiveDegreeMap e a) (ψ : S →+* U)
   (h' : ∀ p r, Units.map ψ.toMonoidHom (q' ^ β' p r) = q'' ^ β'' (T' p) (T' r))
 
+include h h' in
+/-- The factor-set condition for completed transport is preserved by positive degree composition. -/
+theorem mapPositiveCompletion_comp_compat (p r : Γ) :
+    Units.map (ψ.comp φ).toMonoidHom (q ^ β p r) =
+      q'' ^ β'' ((T'.comp T) p) ((T'.comp T) r) := by
+  simpa only [PositiveDegreeMap.comp_apply, AddMonoidHom.comp_apply] using
+    map_comp_compat φ ψ T.toAddMonoidHom T'.toAddMonoidHom h h' p r
+
 /-- Completed coefficient and exponent maps compose with the composed cutoff modulus. -/
 theorem mapPositiveCompletion_comp :
-    mapPositiveCompletion d a (T'.comp T) (ψ.comp φ) (fun p r => by
-      rw [PositiveDegreeMap.comp_apply, PositiveDegreeMap.comp_apply, ← h', ← h]; rfl) =
+    mapPositiveCompletion d a (T'.comp T) (ψ.comp φ)
+      (mapPositiveCompletion_comp_compat d e T φ h a T' ψ h') =
       (mapPositiveCompletion e a T' ψ h').comp (mapPositiveCompletion d e T φ h) := by
   have hf : (T'.comp T).toAddMonoidHom = T'.toAddMonoidHom.comp T.toAddMonoidHom := by
     ext n
