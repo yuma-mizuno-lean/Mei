@@ -9,6 +9,7 @@ public import Mei.Algebra.Group.Hom.Int
 public import Mei.Geometry.ScatteringDiagram.WallSpace.Group
 public import Mei.Geometry.Convex.Polyhedron.Rational
 public import Mei.Geometry.Convex.Recession
+public import Mei.Geometry.Toric.Algebraic.DualLattice
 public import Mathlib.LinearAlgebra.AffineSpace.AffineSubspace.Basic
 public import Mathlib.LinearAlgebra.Dual.Lemmas
 
@@ -163,6 +164,18 @@ theorem normal_apply_eq (D : DirectedWall (d := d) h H) {x y : V}
     rw [← D.direction_support]
     exact AffineSubspace.vsub_mem_direction (subset_affineSpan ℝ _ hx) (subset_affineSpan ℝ _ hy)
   simpa only [LinearMap.mem_ker, map_sub, sub_eq_zero] using hm
+
+/-- The real height of the wall, computed from a point of its nonempty support.
+The result does not depend on the chosen point because the normal vanishes on
+its affine direction. -/
+noncomputable def offset : ℝ :=
+  h.continuousRealCharacter W.normal W.support_nonempty.choose
+
+/-- Every point of the support has the wall's real offset. -/
+theorem offset_eq {x : V} (hx : x ∈ W.support) :
+    h.continuousRealCharacter W.normal x = W.offset := by
+  simpa only [offset, h.continuousRealCharacter_apply] using
+    W.normal_apply_eq hx W.support_nonempty.choose_spec
 
 /-- The spatial velocity is tangent to the supporting hyperplane, also when it is zero. -/
 theorem direction_mem : W.direction ∈ (affineSpan ℝ W.support).direction := by
