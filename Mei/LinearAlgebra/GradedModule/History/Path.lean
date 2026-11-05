@@ -33,6 +33,7 @@ This is the finite component expansion of transfer compositions between graded m
 * Concatenation of paths concatenates histories and composes their maps, and an arrow
   carrying the identity selects a component of the previous decoration. The final
   selection of a degree keeps a history of that terminal degree and kills the others.
+  Appending an identity to a nonempty path preserves its uniformly supported expansion.
 * A finite set containing the contributing histories of every input in the range of a
   linear map gives an identity of linear maps; finite generation of the input range is
   a sufficient condition.
@@ -494,6 +495,44 @@ theorem sum_homogeneousHistory_comp_eq (S : Finset (p.Degrees ι))
   rw [← sum_homogeneousHistory T ℳ p (f y)]
   exact (Finset.sum_subset (historySupport_subset_of_comp_eq_zero T ℳ p f S hS y)
     fun d _ hd => by simpa using hd).symm
+
+/-- Appending an identity arrow to a nonempty path requires no new support for
+an identity in the last recorded degree. Other terminal degrees vanish, while a
+history removed from the image was already outside the original support. -/
+theorem homogeneousHistory_cons_cons_comp_eq_zero_of_eq_id_of_notMem_image
+    {b c : Q} (p : Path a b) (e : b ⟶ c) (e' : c ⟶ c) (he : T e' = LinearMap.id)
+    (S : Finset ((p.cons e).Degrees ι))
+    (hS : ∀ d ∉ S, ((p.cons e).homogeneousHistory T ℳ d).comp f = 0)
+    (d : ((p.cons e).cons e').Degrees ι)
+    (hd : d ∉ S.image (fun d => (d, d.2))) :
+    (((p.cons e).cons e').homogeneousHistory T ℳ d).comp f = 0 := by
+  obtain ⟨d, i⟩ := d
+  by_cases hi : d.2 = i
+  · subst i
+    by_cases hdS : d ∈ S
+    · exact (hd (Finset.mem_image.mpr ⟨d, hdS, rfl⟩)).elim
+    · simpa only [homogeneousHistory_cons_cons_of_eq_id T ℳ p e e' he d.1 d.2 d.2,
+        ↓reduceIte] using hS d hdS
+  · simp only [homogeneousHistory_cons_cons_of_eq_id T ℳ p e e' he d.1 d.2 i,
+      hi, ↓reduceIte, LinearMap.zero_comp]
+
+/-- Appending an identity arrow to a nonempty path preserves a uniformly
+supported history expansion. With zero new histories, the new support reindexes
+the old histories by repeating their last selected degree. -/
+theorem sum_homogeneousHistory_cons_cons_comp_eq_of_eq_id {b c : Q} (p : Path a b)
+    (e : b ⟶ c) (e' : c ⟶ c) (he : T e' = LinearMap.id)
+    (S : Finset ((p.cons e).Degrees ι))
+    (hS : ∀ d ∉ S, ((p.cons e).homogeneousHistory T ℳ d).comp f = 0) :
+    ∑ d ∈ S.image (fun d => (d, d.2)),
+      (((p.cons e).cons e').homogeneousHistory T ℳ d).comp f =
+        ((p.cons e).composeLinear T).comp f := by
+  have hinj : Function.Injective (fun d : (p.cons e).Degrees ι =>
+      ((d, d.2) : ((p.cons e).cons e').Degrees ι)) := by
+    intro d d' hdd'
+    exact congrArg Prod.fst hdd'
+  rw [Finset.sum_image (fun d _ d' _ hdd' => hinj hdd')]
+  simpa only [homogeneousHistory_cons_cons_of_eq_id T ℳ p e e' he, ↓reduceIte] using
+    sum_homogeneousHistory_comp_eq T ℳ (p.cons e) f S hS
 
 /-- A finite generating set of inputs gives a uniform finite history support on its span. -/
 theorem exists_uniform_historySupport_of_fg (P : Submodule R (M a)) (hP : P.FG) :
