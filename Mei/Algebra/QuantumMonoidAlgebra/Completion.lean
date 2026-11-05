@@ -51,9 +51,13 @@ local notation "F" => positiveFiltration q β P δ hδ
 -- quotient, product, and subring layers each time exceeds the instance search budget.
 instance : Ring (F).completion := inferInstance
 
+instance : Semiring (F).completion := (inferInstance : Ring (F).completion).toSemiring
+
 instance : Semigroup (F).completion := (inferInstance : Ring (F).completion).toSemigroup
 
 instance : AddCommMonoid (F).completion := inferInstance
+
+instance (k : ℕ) : Semiring (positiveSubalgebra q β P ⧸ (F).ideal k) := inferInstance
 
 end Instances
 
@@ -80,6 +84,7 @@ def mapPositiveCompletionOfDegree : (F).completion →+* (G).completion :=
       (fun n hn hd => by have := hcut k n hn (by omega); omega))
 
 /-- The order-`k` component uses the prescribed source cutoff. -/
+@[simp]
 theorem projection_mapPositiveCompletionOfDegree (k : ℕ) (x : (F).completion) :
     (G).projection k
         (mapPositiveCompletionOfDegree φ f h P P' hP δ δ' hδ hδ' l hl hcut x) =
@@ -90,12 +95,14 @@ theorem projection_mapPositiveCompletionOfDegree (k : ℕ) (x : (F).completion) 
   (F).projection_mapCompletion _ _ _ _ _ k x
 
 /-- Completed transport agrees with the original map on finite coefficients. -/
+@[simp]
 theorem mapPositiveCompletionOfDegree_toCompletion (x : positiveSubalgebra q β P) :
     mapPositiveCompletionOfDegree φ f h P P' hP δ δ' hδ hδ' l hl hcut
         ((F).toCompletion x) = (G).toCompletion (ψ x) :=
   (F).mapCompletion_toCompletion _ _ _ _ _ x
 
 /-- Completed transport applies the specified coefficient homomorphism to scalars. -/
+@[simp]
 theorem mapPositiveCompletionOfDegree_algebraMap (r : R) :
     mapPositiveCompletionOfDegree φ f h P P' hP δ δ' hδ hδ' l hl hcut
         (algebraMap R (F).completion r) = algebraMap S (G).completion (φ r) := by
@@ -185,6 +192,7 @@ def mapPositiveCompletion : (F).completion →+* (G).completion :=
     T.modulus T.monotone_modulus (fun k _ hn hd => T.degree_gt k hn hd)
 
 /-- The order-`k` component is the induced quotient map at the prescribed source cutoff. -/
+@[simp]
 theorem projection_mapPositiveCompletion (k : ℕ) (x : (F).completion) :
     (G).projection k (mapPositiveCompletion d e T φ h x) =
       Ideal.quotientMap ((G).ideal (k + 1))
@@ -196,6 +204,7 @@ theorem projection_mapPositiveCompletion (k : ℕ) (x : (F).completion) :
     T.modulus T.monotone_modulus (fun k _ hn hd => T.degree_gt k hn hd) k x
 
 /-- Completed quantum maps agree with the original map on finite positive coefficients. -/
+@[simp]
 theorem mapPositiveCompletion_toCompletion (x : positiveSubalgebra q β d.monoid) :
     mapPositiveCompletion d e T φ h ((F).toCompletion x) =
       (G).toCompletion (positiveMap φ T.toAddMonoidHom h d.monoid e.monoid
@@ -206,6 +215,7 @@ theorem mapPositiveCompletion_toCompletion (x : positiveSubalgebra q β d.monoid
     T.modulus T.monotone_modulus (fun k _ hn hd => T.degree_gt k hn hd) x
 
 /-- The completed map applies the specified coefficient homomorphism to scalars. -/
+@[simp]
 theorem mapPositiveCompletion_algebraMap (r : R) :
     mapPositiveCompletion d e T φ h (algebraMap R (F).completion r) =
       algebraMap S (G).completion (φ r) :=
