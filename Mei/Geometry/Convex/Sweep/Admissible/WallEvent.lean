@@ -189,37 +189,11 @@ theorem crossingWallEvent_injective (f : ι → V →L[ℝ] ℝ) (e : x ⟶ y)
   exact (Finset.disjoint_left.mp hd hb) hb'
 
 
-/-- The embedding of genuine crossing times as canonical simultaneous events. -/
-def segmentWallEventEmbedding (f : ι → V →L[ℝ] ℝ) (e : x ⟶ y) :
-    (orderedCrossingTimes e).toFinset ↪ WallEvent ι where
-  toFun t := crossingWallEvent f e t.val (List.mem_toFinset.mp t.property)
-  inj' s t h := Subtype.ext (crossingWallEvent_injective f e
-    (List.mem_toFinset.mp s.property) (List.mem_toFinset.mp t.property) h)
-
 /-- The finite inventory of canonical simultaneous events on one admissible segment. -/
 def segmentWallEvents (f : ι → V →L[ℝ] ℝ) (e : x ⟶ y) : Finset (WallEvent ι) := by
   classical
-  exact (orderedCrossingTimes e).toFinset.attach.map (segmentWallEventEmbedding f e)
-
-/-- The genuine crossing times are equivalent to the event inventory. -/
-noncomputable def orderedCrossingEventEquiv (f : ι → V →L[ℝ] ℝ) (e : x ⟶ y) :
-    (orderedCrossingTimes e).toFinset.attach ≃ segmentWallEvents f e :=
-  Finset.equivMap (segmentWallEventEmbedding f e) (orderedCrossingTimes e).toFinset.attach
-
-@[simp]
-theorem orderedCrossingEventEquiv_apply_val (f : ι → V →L[ℝ] ℝ) (e : x ⟶ y)
-    (t : (orderedCrossingTimes e).toFinset.attach) :
-    (orderedCrossingEventEquiv f e t : WallEvent ι) =
-      crossingWallEvent f e t.val.val (List.mem_toFinset.mp t.val.property) := (rfl)
-
-/-- The parameter of a segment event is its displacement to the specified ray's
-starting scale. Events outside the genuine inventory have the default value zero. -/
-noncomputable def segmentEventParameter (f : ι → V →L[ℝ] ℝ) (e : x ⟶ y)
-    (T : ℝ) (b : WallEvent ι) : ℝ := by
-  classical
-  exact if hb : b ∈ segmentWallEvents f e then
-    T * (1 - ((orderedCrossingEventEquiv f e).symm ⟨b, hb⟩).val.val)
-  else 0
+  exact (orderedCrossingTimes e).toFinset.attach.image fun t =>
+    crossingWallEvent f e t.val (List.mem_toFinset.mp t.property)
 
 /-- A genuine segment crossing belongs to its finite simultaneous-event inventory. -/
 @[simp]
@@ -227,7 +201,7 @@ theorem crossingWallEvent_mem_segmentWallEvents (f : ι → V →L[ℝ] ℝ)
     (e : x ⟶ y) {t : ℝ} (ht : t ∈ orderedCrossingTimes e) :
     crossingWallEvent f e t ht ∈ segmentWallEvents f e := by
   classical
-  apply Finset.mem_map.mpr
+  apply Finset.mem_image.mpr
   exact ⟨⟨t, List.mem_toFinset.mpr ht⟩, Finset.mem_attach _ _, rfl⟩
 
 /-- The crossing point lies on the wall chosen as the normal representative of
@@ -245,34 +219,45 @@ theorem mem_segmentWallEvents_iff (f : ι → V →L[ℝ] ℝ) (e : x ⟶ y)
     (b : WallEvent ι) :
     b ∈ segmentWallEvents f e ↔ ∃ t, ∃ ht : t ∈ orderedCrossingTimes e,
       b = crossingWallEvent f e t ht := by
+  classical
   constructor
   · intro hb
-    obtain ⟨t, _, he⟩ := Finset.mem_map.mp hb
+    obtain ⟨t, _, he⟩ := Finset.mem_image.mp hb
     exact ⟨t.val, List.mem_toFinset.mp t.property, he.symm⟩
   · rintro ⟨t, ht, rfl⟩
     exact crossingWallEvent_mem_segmentWallEvents f e ht
 
+/-- The parameter of a segment event is its displacement to the specified ray's
+starting scale. Events outside the genuine inventory have the default value zero. -/
+noncomputable def segmentEventParameter (f : ι → V →L[ℝ] ℝ) (e : x ⟶ y)
+    (T : ℝ) (b : WallEvent ι) : ℝ := by
+  classical
+  exact if hb : b ∈ segmentWallEvents f e then
+    T * (1 - ((mem_segmentWallEvents_iff f e b).mp hb).choose)
+  else 0
+
 /-- An event's ray parameter is the terminal displacement at its genuine
-crossing time, computed without selecting an arbitrary membership witness. -/
+crossing time, computed from the unique crossing-time witness. -/
 @[simp]
 theorem segmentEventParameter_of_mem (f : ι → V →L[ℝ] ℝ) (e : x ⟶ y)
     (T : ℝ) {t : ℝ} (ht : t ∈ orderedCrossingTimes e) :
     segmentEventParameter f e T (crossingWallEvent f e t ht) = T * (1 - t) := by
+  classical
   have hb := crossingWallEvent_mem_segmentWallEvents f e ht
   rw [segmentEventParameter, dite_eq_left hb]
   congr 2
   apply crossingWallEvent_injective f e
-    (List.mem_toFinset.mp ((orderedCrossingEventEquiv f e).symm
-      ⟨crossingWallEvent f e t ht, hb⟩).val.property) ht
-  have he := congrArg (fun z : segmentWallEvents f e => (z : WallEvent ι))
-    ((orderedCrossingEventEquiv f e).apply_symm_apply ⟨crossingWallEvent f e t ht, hb⟩)
-  simpa only [orderedCrossingEventEquiv_apply_val] using he
+    ((mem_segmentWallEvents_iff f e
+      (crossingWallEvent f e t ht)).mp hb).choose_spec.choose ht
+  exact ((mem_segmentWallEvents_iff f e
+    (crossingWallEvent f e t ht)).mp hb).choose_spec.choose_spec.symm
 
 /-- The ray parameter vanishes for an event outside the genuine inventory. -/
 @[simp]
 theorem segmentEventParameter_of_not_mem (f : ι → V →L[ℝ] ℝ) (e : x ⟶ y)
     (T : ℝ) {b : WallEvent ι} (hb : b ∉ segmentWallEvents f e) :
     segmentEventParameter f e T b = 0 := by
+  classical
   rw [segmentEventParameter, dite_eq_right hb]
 
 /-- A genuine event has positive parameter for a positively scaled ray. -/
