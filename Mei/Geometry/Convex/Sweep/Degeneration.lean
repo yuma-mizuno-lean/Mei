@@ -264,6 +264,24 @@ theorem backwardPath_eventually_mem_iff (C : Set V) {Q : V} :
   exact (eventually_congr ((backwardPath_eventuallyEq_incoming f c v Q).mono
     fun t ht => by rw [ht])).trans (eventually_const_sub_atBot _)
 
+/-- Every extended backward path eventually lies in the open half-space
+selected by a nonzero normal component of its incoming direction. This retains
+full half-space source admission even when the limiting encounter times collapse. -/
+theorem backwardPath_eventually_mem_halfspace (ν : V →L[ℝ] ℝ) (b : ℝ)
+    (hv : ν (v (Fin.last n)) ≠ 0) (Q : V) :
+    ∀ᶠ s : ℝ in atBot, backwardPath f c v Q s ∈
+      {x | 0 < (ν x - b) / ν (v (Fin.last n))} := by
+  rw [backwardPath_eventually_mem_iff]
+  let X := backwardPoint f c (fun j => v j.castSucc) (Fin.last n) Q
+  filter_upwards [eventually_gt_atTop (-((ν X - b) / ν (v (Fin.last n))))] with s hs
+  have he : (ν (X + s • v (Fin.last n)) - b) / ν (v (Fin.last n)) =
+      (ν X - b) / ν (v (Fin.last n)) + s := by
+    simp only [map_add, map_smul, smul_eq_mul]
+    field_simp
+    ring
+  rw [he]
+  linarith
+
 /-- A nonzero incoming direction makes every extended half-line proper, without
 a time-order hypothesis. Stationary intermediate segments are allowed. -/
 theorem isProperMap_backwardPath_restrict_Iic {Q : V}

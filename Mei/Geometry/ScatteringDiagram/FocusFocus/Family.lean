@@ -7,7 +7,7 @@ module
 
 public import Mei.Geometry.ScatteringDiagram.FocusFocus.Decorated
 public import Mei.Analysis.Convex.Sign
-public import Mei.Geometry.Convex.Sweep.Degeneration
+public import Mei.Geometry.Convex.Sweep.Admissible.SingleFace.Limit
 
 /-!
 # Closed endpoint charts for decorated slab rays
@@ -170,14 +170,8 @@ theorem slabBranchPath_def (n b q : ℤ) :
 theorem slabBranchPath_apply (n b q : ℤ) (Q : ℝ × ℝ) (s : ℝ) :
     slabBranchPath n b q Q s =
       (Q.1 - s * n, Q.2 - s * q + max (Q.1 / (n : ℝ) - s) 0 * (b - q)) := by
-  simp only [slabBranchPath, Convex.backwardPath_apply, Finset.univ_unique, Fin.default_eq_zero,
-    Fin.isValue, Convex.backwardParameter_succ, Convex.backwardTime_apply,
-    ContinuousLinearMap.coe_fst', zero_sub, neg_div, sub_neg_eq_add, Matrix.cons_val_succ,
-    Matrix.cons_val_fin_one, Finset.sum_singleton, Fin.castSucc_zero,
-    Convex.backwardParameter_zero, Convex.backwardPoint_zero, ContinuousAffineMap.coe_id,
-    id_eq, Matrix.cons_val_zero, zero_add, Prod.mk_sub_mk, sub_self, Prod.smul_mk,
-    smul_eq_mul, mul_comm, zero_mul]
-  apply Prod.ext <;> dsimp <;> ring
+  rw [slabBranchPath_def, Convex.backwardPath_singleFace_apply]
+  apply Prod.ext <;> simp <;> ring
 
 /-- The closed crossing path at a terminal slab point is the incoming affine
 half-line. Its outgoing degree has disappeared because the final segment has
@@ -185,10 +179,9 @@ length zero. This includes unchanged-direction crossings. -/
 @[simp↓]
 theorem slabBranchPath_terminal (n b q : ℤ) (v s : ℝ) (hs : s ≤ 0) :
     slabBranchPath n b q (0, v) s = (-(s * n), v - s * b) := by
-  rw [slabBranchPath_apply]
-  simp only [zero_div, zero_sub, max_eq_left (neg_nonneg.mpr hs)]
-  congr 1
-  ring
+  rw [slabBranchPath_def, Convex.backwardPath_singleFace_terminal
+    (ContinuousLinearMap.fst ℝ ℝ ℝ) 0 ((n : ℝ), (b : ℝ)) ((n : ℝ), (q : ℝ)) rfl hs]
+  simp
 
 /-- On its valid endpoint domain the extended path is the existing finite affine ray. -/
 theorem slabBranchPath_eq_slabBranch (n b q : ℤ) (Q : ℝ × ℝ)
