@@ -43,7 +43,7 @@ theorem shiftedQuotientInclusion_apply (k : ℕ) (n : d.cutoff k) (x : ℳ (p + 
 
 /-- Reading the component just included recovers the entire coefficient. -/
 @[simp↓]
-theorem shiftedQuotientComponent_inclusion (k : ℕ) (n : d.cutoff k)
+theorem shiftedQuotientComponent_shiftedQuotientInclusion (k : ℕ) (n : d.cutoff k)
     (hn : d.degree (p + n.val - p) ≤ k) (x : ℳ (p + n.val)) :
     d.shiftedQuotientComponent ℳ p (p + n.val) k hn
       (d.shiftedQuotientInclusion ℳ p k n x) = x := by
@@ -52,7 +52,7 @@ theorem shiftedQuotientComponent_inclusion (k : ℕ) (n : d.cutoff k)
 
 /-- Included coefficients have zero component at any different retained degree. -/
 @[simp↓]
-theorem shiftedQuotientComponent_inclusion_of_ne (k : ℕ) (n m : d.cutoff k)
+theorem shiftedQuotientComponent_shiftedQuotientInclusion_of_ne (k : ℕ) (n m : d.cutoff k)
     (hm : d.degree (p + m.val - p) ≤ k) (hnm : n ≠ m) (x : ℳ (p + n.val)) :
     d.shiftedQuotientComponent ℳ p (p + m.val) k hm
       (d.shiftedQuotientInclusion ℳ p k n x) = 0 := by
@@ -63,7 +63,7 @@ theorem shiftedQuotientComponent_inclusion_of_ne (k : ℕ) (n m : d.cutoff k)
 private def finiteShiftedComponents (k : ℕ) :
     (d.shiftedFiltration ℳ p).quotient k →ₗ[R] (n : d.cutoff k) → ℳ (p + n.val) :=
   LinearMap.pi fun n => d.shiftedQuotientComponent ℳ p (p + n.val) k
-    (by simpa only [add_sub_cancel_left] using (d.mem_cutoff.mp n.property).2)
+    (d.degree_add_val_sub_self_le p k n)
 
 private def finiteShiftedEquivPi (k : ℕ) :
     (d.shiftedFiltration ℳ p).quotient k ≃ₗ[R] (n : d.cutoff k) → ℳ (p + n.val) :=
@@ -76,9 +76,9 @@ private def finiteShiftedEquivPi (k : ℕ) :
       simp only [LinearMap.comp_apply, LinearMap.sum_apply, LinearMap.proj_apply,
         LinearMap.id_apply, finiteShiftedComponents, LinearMap.pi_apply, map_sum]
       rw [Finset.sum_eq_single m]
-      · exact d.shiftedQuotientComponent_inclusion ℳ p k m _ _
+      · exact d.shiftedQuotientComponent_shiftedQuotientInclusion ℳ p k m _ _
       · intro n _ hnm
-        exact d.shiftedQuotientComponent_inclusion_of_ne ℳ p k n m _ hnm _
+        exact d.shiftedQuotientComponent_shiftedQuotientInclusion_of_ne ℳ p k n m _ hnm _
       · simp)
     (by
       apply LinearMap.ext
@@ -91,7 +91,7 @@ private def finiteShiftedEquivPi (k : ℕ) :
         (∑ n : d.cutoff k, shiftedInclusion ℳ d.monoid p
           ⟨n.val, (d.mem_cutoff.mp n.property).1⟩
           (d.shiftedQuotientComponent ℳ p (p + n.val) k
-            (by simpa using (d.mem_cutoff.mp n.property).2) x))
+            (d.degree_add_val_sub_self_le p k n) x))
       · convert d.quotient_eq_sum_shiftedQuotientComponent ℳ p k x using 1
         congr 1
         exact Fintype.sum_equiv
@@ -110,7 +110,18 @@ theorem shiftedQuotientEquivDirectSum_apply (k : ℕ)
     (x : (d.shiftedFiltration ℳ p).quotient k) (n : d.cutoff k) :
     d.shiftedQuotientEquivDirectSum ℳ p k x n =
       d.shiftedQuotientComponent ℳ p (p + n.val) k
-        (by simpa only [add_sub_cancel_left] using (d.mem_cutoff.mp n.property).2) x := (rfl)
+        (d.degree_add_val_sub_self_le p k n) x := (rfl)
+
+/-- Two finite shifted quotient elements agree if all retained components agree. -/
+theorem shiftedQuotient_ext {k : ℕ} {x y : (d.shiftedFiltration ℳ p).quotient k}
+    (h : ∀ n : d.cutoff k,
+      d.shiftedQuotientComponent ℳ p (p + n.val) k (d.degree_add_val_sub_self_le p k n) x =
+        d.shiftedQuotientComponent ℳ p (p + n.val) k
+          (d.degree_add_val_sub_self_le p k n) y) : x = y := by
+  apply (d.shiftedQuotientEquivDirectSum ℳ p k).injective
+  apply DFinsupp.ext
+  intro n
+  simpa only [shiftedQuotientEquivDirectSum_apply] using h n
 
 /-- Reassembling a direct sum inserts and sums all retained homogeneous coefficients. -/
 theorem shiftedQuotientEquivDirectSum_symm_apply (k : ℕ)
@@ -119,8 +130,8 @@ theorem shiftedQuotientEquivDirectSum_symm_apply (k : ℕ)
       ∑ n : d.cutoff k, d.shiftedQuotientInclusion ℳ p k n (x n) := by
   simp only [shiftedQuotientEquivDirectSum, LinearEquiv.symm_trans_apply,
     finiteShiftedEquivPi, LinearEquiv.symm_ofLinearMap, LinearEquiv.coe_ofLinearMap,
-    LinearMap.sum_apply, LinearMap.comp_apply, LinearMap.proj_apply]
-  rfl
+    LinearMap.sum_apply, LinearMap.comp_apply, LinearMap.proj_apply,
+    LinearEquiv.symm_symm, DirectSum.linearEquivFunOnFintype_apply]
 
 /-- A singleton direct sum corresponds to the homogeneous quotient inclusion. -/
 @[simp]
@@ -129,15 +140,15 @@ theorem shiftedQuotientEquivDirectSum_symm_lof (k : ℕ) (n : d.cutoff k)
     (d.shiftedQuotientEquivDirectSum ℳ p k).symm
       (DirectSum.lof R (d.cutoff k) (fun n => ℳ (p + n.val)) n x) =
         d.shiftedQuotientInclusion ℳ p k n x := by
-  apply (d.shiftedQuotientEquivDirectSum ℳ p k).injective
-  ext m
-  rw [LinearEquiv.apply_symm_apply, shiftedQuotientEquivDirectSum_apply]
+  apply d.shiftedQuotient_ext ℳ p
+  intro m
+  rw [← shiftedQuotientEquivDirectSum_apply, LinearEquiv.apply_symm_apply]
   by_cases hnm : n = m
   · subst m
     simp
-  · rw [d.shiftedQuotientComponent_inclusion_of_ne ℳ p k n m _ hnm]
+  · rw [d.shiftedQuotientComponent_shiftedQuotientInclusion_of_ne ℳ p k n m _ hnm]
     rw [DirectSum.lof_eq_of]
-    exact congrArg Subtype.val (DirectSum.of_eq_of_ne
-      (β := fun n : d.cutoff k => ℳ (p + n.val)) n m x (Ne.symm hnm))
+    exact DirectSum.of_eq_of_ne
+      (β := fun n : d.cutoff k => ℳ (p + n.val)) n m x (Ne.symm hnm)
 
 end Mei.PositiveDegrees

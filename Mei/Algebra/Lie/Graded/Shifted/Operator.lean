@@ -44,22 +44,17 @@ local notation "O(" k ")" => (⨁ n : d.cutoff k, H →ₗ[R] ℳ (p + (n : Γ))
 
 /-- The truncated BCH action on homogeneous operator coefficients, by postcomposition
 on the associated linear family. -/
-def operatorBCHAction (k : ℕ) : d.truncatedGroup ℒ k →* (O(k) ≃ₗ[R] O(k)) where
-  toFun g := (operatorCoefficientsEquiv d ℳ p k).trans
-    ((LinearEquiv.congrRight ((F).truncatedBCHAction d ℒ k g)).trans
-      (operatorCoefficientsEquiv d ℳ p k).symm)
-  map_one' := by
-    ext1 f
-    apply (operatorCoefficientsEquiv d ℳ p k).injective
-    apply LinearMap.ext
-    intro x
-    simp [LinearEquiv.congrRight, LinearEquiv.arrowCongr_apply]
-  map_mul' g g' := by
-    ext1 f
-    apply (operatorCoefficientsEquiv d ℳ p k).injective
-    apply LinearMap.ext
-    intro x
-    simp [LinearEquiv.congrRight, LinearEquiv.arrowCongr_apply]
+def operatorBCHAction (k : ℕ) : d.truncatedGroup ℒ k →* (O(k) ≃ₗ[R] O(k)) :=
+  MonoidHom.mk'
+    (fun g => (operatorCoefficientsEquiv d ℳ p k).trans
+      ((LinearEquiv.congrRight ((F).truncatedBCHAction d ℒ k g)).trans
+        (operatorCoefficientsEquiv d ℳ p k).symm))
+    (by
+      intro g g'
+      ext1 f
+      apply (operatorCoefficientsEquiv d ℳ p k).injective
+      ext x
+      simp)
 
 /-- Evaluation of operator coefficients intertwines their BCH action with the ordinary
 truncated coefficient action. -/
@@ -68,7 +63,7 @@ theorem operatorCoefficientsEquiv_operatorBCHAction (k : ℕ) (g : d.truncatedGr
     (f : O(k)) (x : H) :
     operatorCoefficientsEquiv d ℳ p k (operatorBCHAction d ℳ p ℒ k g f) x =
       (F).truncatedBCHAction d ℒ k g (operatorCoefficientsEquiv d ℳ p k f x) := by
-  simp [operatorBCHAction, LinearEquiv.congrRight, LinearEquiv.arrowCongr_apply]
+  simp [operatorBCHAction]
 
 /-- The component of the operator action is the whole component of the ordinary
 action on the evaluated input. No basis for `H` or its coefficient pieces is needed. -/
@@ -76,7 +71,7 @@ theorem operatorBCHAction_apply (k : ℕ) (g : d.truncatedGroup ℒ k)
     (f : O(k)) (n : d.cutoff k) (x : H) :
     operatorBCHAction d ℳ p ℒ k g f n x =
       d.shiftedQuotientComponent ℳ p (p + n.val) k
-        (by simpa only [add_sub_cancel_left] using (d.mem_cutoff.mp n.property).2)
+        (d.degree_add_val_sub_self_le p k n)
           ((F).truncatedBCHAction d ℒ k g (operatorCoefficientsEquiv d ℳ p k f x)) := by
   rw [← operatorCoefficientsEquiv_operatorBCHAction,
     shiftedQuotientComponent_operatorCoefficientsEquiv]

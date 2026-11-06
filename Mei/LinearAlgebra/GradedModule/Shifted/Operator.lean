@@ -42,16 +42,25 @@ def operatorCoefficientsEquiv (k : ℕ) :
   (DirectSum.linearMapEquivOfFintype (fun n : d.cutoff k => ℳ (p + n.val))).trans
     (LinearEquiv.congrRight (d.shiftedQuotientEquivDirectSum ℳ p k).symm)
 
+/-- Evaluating an assembled family sums the included homogeneous coefficients. -/
+theorem operatorCoefficientsEquiv_apply (k : ℕ)
+    (f : ⨁ n : d.cutoff k, H →ₗ[R] ℳ (p + n.val)) (x : H) :
+    operatorCoefficientsEquiv d ℳ p k f x =
+      ∑ n : d.cutoff k, d.shiftedQuotientInclusion ℳ p k n (f n x) := by
+  simp only [operatorCoefficientsEquiv, LinearEquiv.trans_apply,
+    LinearEquiv.congrRight_apply_apply, shiftedQuotientEquivDirectSum_symm_apply,
+    DirectSum.linearMapEquivOfFintype_apply]
+
 /-- Decomposing a linear family reads its ambient components pointwise. -/
 @[simp]
 theorem operatorCoefficientsEquiv_symm_apply (k : ℕ)
     (f : H →ₗ[R] (d.shiftedFiltration ℳ p).quotient k) (n : d.cutoff k) (x : H) :
     (operatorCoefficientsEquiv d ℳ p k).symm f n x =
       d.shiftedQuotientComponent ℳ p (p + n.val) k
-        (by simpa only [add_sub_cancel_left] using (d.mem_cutoff.mp n.property).2) (f x) := by
+        (d.degree_add_val_sub_self_le p k n) (f x) := by
   simp only [operatorCoefficientsEquiv, LinearEquiv.symm_trans_apply,
-    DirectSum.linearMapEquivOfFintype_symm_apply, LinearEquiv.congrRight,
-    LinearEquiv.arrowCongr_symm_apply, LinearEquiv.refl_apply, LinearEquiv.symm_symm,
+    DirectSum.linearMapEquivOfFintype_symm_apply,
+    LinearEquiv.congrRight_symm_apply_apply, LinearEquiv.symm_symm,
     PositiveDegrees.shiftedQuotientEquivDirectSum_apply]
 
 /-- Evaluation of an assembled family recovers each prescribed homogeneous map. -/
@@ -59,7 +68,7 @@ theorem operatorCoefficientsEquiv_symm_apply (k : ℕ)
 theorem shiftedQuotientComponent_operatorCoefficientsEquiv (k : ℕ)
     (f : ⨁ n : d.cutoff k, H →ₗ[R] ℳ (p + n.val)) (n : d.cutoff k) (x : H) :
     d.shiftedQuotientComponent ℳ p (p + n.val) k
-      (by simpa only [add_sub_cancel_left] using (d.mem_cutoff.mp n.property).2)
+      (d.degree_add_val_sub_self_le p k n)
         (operatorCoefficientsEquiv d ℳ p k f x) = f n x := by
   rw [← operatorCoefficientsEquiv_symm_apply, LinearEquiv.symm_apply_apply]
 
@@ -70,20 +79,9 @@ theorem operatorCoefficientsEquiv_lof (k : ℕ) (n : d.cutoff k)
     operatorCoefficientsEquiv d ℳ p k
       (DirectSum.lof R (d.cutoff k) (fun n => H →ₗ[R] ℳ (p + n.val)) n f) x =
         d.shiftedQuotientInclusion ℳ p k n (f x) := by
-  apply (d.shiftedQuotientEquivDirectSum ℳ p k).injective
-  apply DFinsupp.ext
-  intro m
-  simp only [PositiveDegrees.shiftedQuotientEquivDirectSum_apply,
-    shiftedQuotientComponent_operatorCoefficientsEquiv]
-  by_cases hnm : n = m
-  · subst m
-    rw [d.shiftedQuotientComponent_inclusion ℳ p k n]
-    exact congrArg (fun g : H →ₗ[R] ℳ (p + n.val) => g x)
-      (DirectSum.lof_apply (M := fun n : d.cutoff k => H →ₗ[R] ℳ (p + n.val)) R n f)
-  · rw [d.shiftedQuotientComponent_inclusion_of_ne ℳ p k n m _ hnm,
-      DirectSum.lof_eq_of, DirectSum.of_eq_of_ne
-        (β := fun n : d.cutoff k => H →ₗ[R] ℳ (p + n.val)) n m f (Ne.symm hnm),
-      LinearMap.zero_apply]
+  simp only [operatorCoefficientsEquiv, LinearEquiv.trans_apply,
+    LinearEquiv.congrRight_apply_apply, DirectSum.linearMapEquivOfFintype_lof,
+    shiftedQuotientEquivDirectSum_symm_lof]
 
 /-- Lower the cutoff of homogeneous operator coefficients using the existing quotient
 transition. All input parameters are retained. -/

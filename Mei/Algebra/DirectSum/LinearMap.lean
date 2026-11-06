@@ -44,4 +44,15 @@ theorem linearMapEquivOfFintype_apply (f : ⨁ i, H →ₗ[R] M i) (x : H) (i : 
 theorem linearMapEquivOfFintype_symm_apply (f : H →ₗ[R] ⨁ i, M i) (i : ι) (x : H) :
     (linearMapEquivOfFintype M).symm f i x = f x i := (rfl)
 
+/-- Evaluating a singleton family includes the value of its only homogeneous map. -/
+@[simp]
+theorem linearMapEquivOfFintype_lof [DecidableEq ι] (i : ι) (f : H →ₗ[R] M i) (x : H) :
+    linearMapEquivOfFintype M (lof R ι (fun i => H →ₗ[R] M i) i f) x =
+      lof R ι M i (f x) := by
+  ext j
+  by_cases hij : i = j
+  · subst j
+    simp
+  · simp [lof_eq_of, of_eq_of_ne, Ne.symm hij]
+
 end DirectSum
