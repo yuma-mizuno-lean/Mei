@@ -195,6 +195,34 @@ theorem degree_lt_of_eventBlock_ne_zero (k K : ℕ) (hkK : k ≤ K)
     d.degree m.val < d.degree n.val :=
   degree_lt_of_labelBlock_ne_zero (d := d) (ℳ := ℳ) (p := p) (ℒ := ℒ) k _ h
 
+open Classical in
+/-- The canonical event inventory drives the endpoint step with a different
+finite event set at every endpoint and output degree, and with a read point
+that may depend on both relative degrees. The normal-velocity condition used
+by the last-change recursion filters the action carried by each event. -/
+def eventEndpointStep (k K : ℕ) (hkK : k ≤ K)
+    (events : V → (d.cutoff k) → Finset (WallEvent (B.active K)))
+    (point : WallEvent (B.active K) → V → (n m : d.cutoff k) → V) :
+    Endpoint d ℳ p V k →ₗ[R] Endpoint d ℳ p V k := by
+  let := Fintype.ofFinite (WallEvent (B.active K))
+  exact endpointStep d ℳ p k events
+    (fun b n m _ =>
+      if b.normal (B.activeNormal K) (i (ρ (p + n.val))) =
+          b.normal (B.activeNormal K) (i (ρ (p + m.val))) then
+        eventBlock d ℳ p ℒ H h B k K hkK b n m
+      else 0) point
+
+omit [IsWallAnnihilating H ℳ] in
+/-- The canonical event endpoint operator is nilpotent by the strict degree
+descent proved for the generic endpoint operator. -/
+theorem eventEndpointStep_pow_eq_zero (k K : ℕ) (hkK : k ≤ K)
+    (events : V → (d.cutoff k) → Finset (WallEvent (B.active K)))
+    (point : WallEvent (B.active K) → V → (n m : d.cutoff k) → V) :
+    (eventEndpointStep d ℳ p ℒ H h B k K hkK events point) ^ (k + 1) = 0 := by
+  let := Fintype.ofFinite (WallEvent (B.active K))
+  rw [eventEndpointStep]
+  apply endpointStep_pow_eq_zero
+
 end Label
 
 end Mei.ModuleProbe

@@ -104,19 +104,20 @@ abbrev Endpoint (d : PositiveDegrees Γ) (ℳ : Γ → Submodule R M) (p : Γ) (
 
 /-- The common backward-ray step of the broken-line and probe recursions.
 
-The finite inventory `ι` indexes simultaneous wall events. Event `b` reads its
-input at the base point `point b Q`, at the relative degree `m`, and transports
-it to the relative degree `n` of the output through `block`. Only strictly
-lower relative degrees contribute, which is what removes the unchanged-degree
-encounters. -/
+The inventory `ι` indexes simultaneous wall events. It may depend on the base
+point `Q` and output degree `n`. Event `b` reads its input at `point b Q n m`,
+where both the output degree `n` and the input degree `m` may vary, and transports
+it to the output through `block b`. Only strictly lower relative degrees
+contribute, which is what removes the unchanged-degree encounters. -/
 def endpointStep (d : PositiveDegrees Γ) (ℳ : Γ → Submodule R M) (p : Γ) (k : ℕ)
-    {ι : Type*} [Fintype ι]
-    (block : (n m : d.cutoff k) → d.Precedes m.val n.val →
+    {ι : Type*} (events : V → (d.cutoff k) → Finset ι)
+    (block : ι → (n m : d.cutoff k) → d.Precedes m.val n.val →
       ℳ (p + m.val) →ₗ[R] ℳ (p + n.val))
-    (point : ι → V → V) : Endpoint d ℳ p V k →ₗ[R] Endpoint d ℳ p V k where
+    (point : ι → V → (n m : d.cutoff k) → V) :
+      Endpoint d ℳ p V k →ₗ[R] Endpoint d ℳ p V k where
   toFun F Q n :=
-    ∑ b : ι, ∑ m : d.cutoff k,
-      if h : d.Precedes m.val n.val then block n m h (F (point b Q) m) else 0
+    ∑ b ∈ events Q n, ∑ m : d.cutoff k,
+      if h : d.Precedes m.val n.val then block b n m h (F (point b Q n m) m) else 0
   map_add' F G := by
     classical
     funext Q n
@@ -142,13 +143,14 @@ def endpointStep (d : PositiveDegrees Γ) (ℳ : Γ → Submodule R M) (p : Γ) 
 
 omit [DecidableEq Γ] in
 /-- The defining formula of the backward-ray step. -/
-theorem endpointStep_apply {ι : Type*} [Fintype ι]
-    (block : (n m : d.cutoff k) → d.Precedes m.val n.val →
+theorem endpointStep_apply {ι : Type*} (events : V → (d.cutoff k) → Finset ι)
+    (block : ι → (n m : d.cutoff k) → d.Precedes m.val n.val →
       ℳ (p + m.val) →ₗ[R] ℳ (p + n.val))
-    (point : ι → V → V) (F : Endpoint d ℳ p V k) (Q : V) (n : d.cutoff k) :
-    endpointStep d ℳ p k block point F Q n =
-      ∑ b : ι, ∑ m : d.cutoff k,
-        if h : d.Precedes m.val n.val then block n m h (F (point b Q) m) else 0 := (rfl)
+    (point : ι → V → (n m : d.cutoff k) → V) (F : Endpoint d ℳ p V k) (Q : V)
+    (n : d.cutoff k) :
+    endpointStep d ℳ p k events block point F Q n =
+      ∑ b ∈ events Q n, ∑ m : d.cutoff k,
+        if h : d.Precedes m.val n.val then block b n m h (F (point b Q n m) m) else 0 := (rfl)
 
 /-- Endpoint functions vanishing in every relative degree at most `j`. These are
 the terms of the degree filtration that a last change leaves behind. -/
@@ -169,12 +171,12 @@ omit [DecidableEq Γ] in
 /-- The backward-ray step strictly raises the degree filtration: an endpoint
 function vanishing in all relative degrees at most `j` is sent to one vanishing
 in all relative degrees at most `j + 1`. -/
-theorem endpointStep_mem_endpointHigh {ι : Type*} [Fintype ι]
-    (block : (n m : d.cutoff k) → d.Precedes m.val n.val →
+theorem endpointStep_mem_endpointHigh {ι : Type*} (events : V → (d.cutoff k) → Finset ι)
+    (block : ι → (n m : d.cutoff k) → d.Precedes m.val n.val →
       ℳ (p + m.val) →ₗ[R] ℳ (p + n.val))
-    (point : ι → V → V) {j : ℕ} {F : Endpoint d ℳ p V k}
+    (point : ι → V → (n m : d.cutoff k) → V) {j : ℕ} {F : Endpoint d ℳ p V k}
     (hF : F ∈ endpointHigh d ℳ p V k j) :
-    endpointStep d ℳ p k block point F ∈ endpointHigh d ℳ p V k (j + 1) := by
+    endpointStep d ℳ p k events block point F ∈ endpointHigh d ℳ p V k (j + 1) := by
   classical
   intro Q n hn
   rw [endpointStep_apply]
@@ -197,13 +199,13 @@ theorem endpointHigh_eq_bot : endpointHigh d ℳ p V k (k + 1) = ⊥ := by
 omit [DecidableEq Γ] in
 /-- Iterates of the backward-ray step vanish on relative degrees below the
 iterate count: after `j` steps the value read has lost at least `j` degrees. -/
-theorem endpointStep_pow_apply_eq_zero {ι : Type*} [Fintype ι]
-    (block : (n m : d.cutoff k) → d.Precedes m.val n.val →
+theorem endpointStep_pow_apply_eq_zero {ι : Type*} (events : V → (d.cutoff k) → Finset ι)
+    (block : ι → (n m : d.cutoff k) → d.Precedes m.val n.val →
       ℳ (p + m.val) →ₗ[R] ℳ (p + n.val))
-    (point : ι → V → V) :
+    (point : ι → V → (n m : d.cutoff k) → V) :
     ∀ (j : ℕ) (F : Endpoint d ℳ p V k) (Q : V) (n : d.cutoff k),
       d.degree n.val < j →
-        ((endpointStep d ℳ p k block point) ^ j) F Q n = 0 := by
+        ((endpointStep d ℳ p k events block point) ^ j) F Q n = 0 := by
   classical
   intro j
   induction j with
@@ -225,23 +227,23 @@ theorem endpointStep_pow_apply_eq_zero {ι : Type*} [Fintype ι]
 omit [DecidableEq Γ] in
 /-- Nilpotence of the common backward-ray operator: its `k + 1`-st iterate is
 zero on endpoint functions of relative order `k`. -/
-theorem endpointStep_pow_eq_zero {ι : Type*} [Fintype ι]
-    (block : (n m : d.cutoff k) → d.Precedes m.val n.val →
+theorem endpointStep_pow_eq_zero {ι : Type*} (events : V → (d.cutoff k) → Finset ι)
+    (block : ι → (n m : d.cutoff k) → d.Precedes m.val n.val →
       ℳ (p + m.val) →ₗ[R] ℳ (p + n.val))
-    (point : ι → V → V) :
-    (endpointStep d ℳ p k block point) ^ (k + 1) = 0 := by
+    (point : ι → V → (n m : d.cutoff k) → V) :
+    (endpointStep d ℳ p k events block point) ^ (k + 1) = 0 := by
   refine LinearMap.ext fun F => ?_
   refine funext fun Q => ?_
   refine funext fun n => ?_
-  exact endpointStep_pow_apply_eq_zero d ℳ p k block point (k + 1) F Q n
+  exact endpointStep_pow_apply_eq_zero d ℳ p k events block point (k + 1) F Q n
     (by have := (d.mem_cutoff.mp n.property).2; omega)
 
 section Recursion
 
-variable {ι : Type*} [Fintype ι]
-  (block : (n m : d.cutoff k) → d.Precedes m.val n.val →
+variable {ι : Type*} (events : V → (d.cutoff k) → Finset ι)
+  (block : ι → (n m : d.cutoff k) → d.Precedes m.val n.val →
     ℳ (p + m.val) →ₗ[R] ℳ (p + n.val))
-  (point : ι → V → V)
+  (point : ι → V → (n m : d.cutoff k) → V)
 
 omit [DecidableEq Γ] in
 /-- Two endpoint functions satisfying the same last-change recursion with the
@@ -249,35 +251,39 @@ same source are equal. This is the comparison principle for the probe field and
 the broken-line sum: it applies to both once each is shown to solve the
 recursion of the common backward-ray operator. -/
 theorem eq_of_endpointStep_eq_add {source x y : Endpoint d ℳ p V k}
-    (hx : x = source + endpointStep d ℳ p k block point x)
-    (hy : y = source + endpointStep d ℳ p k block point y) : x = y :=
-  Module.End.eq_of_eq_add_of_pow_eq_zero _ (endpointStep_pow_eq_zero d ℳ p k block point) hx hy
+    (hx : x = source + endpointStep d ℳ p k events block point x)
+    (hy : y = source + endpointStep d ℳ p k events block point y) : x = y :=
+  Module.End.eq_of_eq_add_of_pow_eq_zero _
+    (endpointStep_pow_eq_zero d ℳ p k events block point) hx hy
 
 omit [DecidableEq Γ] in
 /-- Every solution of the common recursion is the finite sum of the iterates of
 the source, below the nilpotency bound. -/
 theorem eq_finiteRecursion_endpointStep {source x : Endpoint d ℳ p V k}
-    (hx : x = source + endpointStep d ℳ p k block point x) :
-    x = Module.End.finiteRecursion (endpointStep d ℳ p k block point) (k + 1) source :=
-  Module.End.eq_finiteRecursion_of_eq_add _ (endpointStep_pow_eq_zero d ℳ p k block point) hx
+    (hx : x = source + endpointStep d ℳ p k events block point x) :
+    x = Module.End.finiteRecursion (endpointStep d ℳ p k events block point) (k + 1) source :=
+  Module.End.eq_finiteRecursion_of_eq_add _
+    (endpointStep_pow_eq_zero d ℳ p k events block point) hx
 
 omit [DecidableEq Γ] in
 /-- The common recursion has exactly one solution. -/
 theorem existsUnique_endpointStep_eq_add (source : Endpoint d ℳ p V k) :
-    ∃! x, x = source + endpointStep d ℳ p k block point x :=
+    ∃! x, x = source + endpointStep d ℳ p k events block point x :=
   Module.End.existsUnique_eq_add_of_pow_eq_zero _
-    (endpointStep_pow_eq_zero d ℳ p k block point) source
+    (endpointStep_pow_eq_zero d ℳ p k events block point) source
 
 omit [DecidableEq Γ] in
 /-- The unique solution is the explicit finite sum of iterates of the source. -/
 theorem existsUnique_endpointStep_eq_add_solution (source : Endpoint d ℳ p V k) :
-    Module.End.finiteRecursion (endpointStep d ℳ p k block point) (k + 1) source =
-        source + endpointStep d ℳ p k block point
-          (Module.End.finiteRecursion (endpointStep d ℳ p k block point) (k + 1) source) ∧
-      ∀ x, x = source + endpointStep d ℳ p k block point x →
-        x = Module.End.finiteRecursion (endpointStep d ℳ p k block point) (k + 1) source :=
-  ⟨Module.End.finiteRecursion_eq_add _ (endpointStep_pow_eq_zero d ℳ p k block point) source,
-    fun _ hx => eq_finiteRecursion_endpointStep d ℳ p k block point hx⟩
+    Module.End.finiteRecursion (endpointStep d ℳ p k events block point) (k + 1) source =
+        source + endpointStep d ℳ p k events block point
+          (Module.End.finiteRecursion
+            (endpointStep d ℳ p k events block point) (k + 1) source) ∧
+      ∀ x, x = source + endpointStep d ℳ p k events block point x →
+        x = Module.End.finiteRecursion (endpointStep d ℳ p k events block point) (k + 1) source :=
+  ⟨Module.End.finiteRecursion_eq_add _
+    (endpointStep_pow_eq_zero d ℳ p k events block point) source,
+    fun _ hx => eq_finiteRecursion_endpointStep d ℳ p k events block point hx⟩
 
 end Recursion
 
