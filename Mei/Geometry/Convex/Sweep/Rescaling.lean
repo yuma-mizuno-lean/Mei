@@ -5,6 +5,7 @@ Authors: Codex
 -/
 module
 
+public import Mei.Analysis.Normed.Affine.ContinuousAffineMap
 public import Mei.Geometry.Convex.Sweep.Degeneration
 public import Mei.Geometry.Convex.Polyhedron.Tangent
 
@@ -94,15 +95,6 @@ theorem backwardPath_add_smul {r : ℝ} (hr : 0 ≤ r) (t : ℝ) :
 
 variable (P : Fin n → Set V)
 
-/-- Continuous affine maps send bounded sets to bounded sets. -/
-private theorem isBounded_image_continuousAffineMap (A : V →ᴬ[ℝ] V) {K : Set V}
-    (hK : Bornology.IsBounded K) : Bornology.IsBounded (A '' K) := by
-  refine ((Bornology.isBounded_singleton (x := A 0)).add
-    (A.contLinear.lipschitzWith.isBounded_image hK)).subset ?_
-  rintro _ ⟨x, hx, rfl⟩
-  refine ⟨A 0, mem_singleton _, A.contLinear x, mem_image_of_mem _ hx, ?_⟩
-  simpa [add_comm] using (A.map_vadd 0 x).symm
-
 /-- Every reconstructed encounter has the same support incidence as its tangent
 counterpart, uniformly on a bounded endpoint set at small positive scales. -/
 theorem eventually_forall_backwardPoint_mem_add_smul_iff
@@ -115,7 +107,7 @@ theorem eventually_forall_backwardPoint_mem_add_smul_iff
       ∀ᶠ r : ℝ in 𝓝[>] 0, ∀ Q ∈ K,
         z + r • backwardPoint f 0 u j.succ Q ∈ P j ↔
           backwardPoint f 0 u j.succ Q ∈ posTangentConeAt (P j) z := by
-    have hb := isBounded_image_continuousAffineMap (backwardPoint f 0 u j.succ) hK
+    have hb := (backwardPoint f 0 u j.succ).isBounded_image hK
     have he := eventually_singleton_add_smul_subset (𝕜 := ℝ) hb
       ((hP j).eventually_mem_iff_sub_mem_posTangentConeAt (hz j))
     filter_upwards [he.filter_mono nhdsWithin_le_nhds, self_mem_nhdsWithin] with r hr hrpos
