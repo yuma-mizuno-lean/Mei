@@ -25,7 +25,7 @@ permissions:
   actions: read
 jobs:
   validate:
-    uses: yuma-mizuno-lean/TauCetiTools/.github/workflows/pr-build.yml@80f1df5f160a568f27e453649781ac8da6584be5
+    uses: yuma-mizuno-lean/TauCetiTools/.github/workflows/pr-build.yml@b72a80c4a3f30413fa0c25517e1bcd52f9f24006
     with:
       pr: ${{ inputs.pr || '' }}
       tools_repository: yuma-mizuno-lean/TauCetiTools
