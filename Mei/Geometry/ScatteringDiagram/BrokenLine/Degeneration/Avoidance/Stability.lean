@@ -99,17 +99,8 @@ theorem eventually_avoids_walls_of_regular
     have heq := affineSpan_eq_of_notMem_singularSupport hreg ha (hinc j)
     constructor
     · intro hz
-      have hx : X j.succ Q + q ∈ affineSpan ℝ (W (wall (t.itinerary.val.get j))) := by
-        rw [← heq]
-        apply (hspan a).symm.subset
-        simpa only [mem_ofPred_eq, map_add, hz, add_zero] using
-          (hspan a).subset (subset_affineSpan ℝ _ ha)
-      have hh := AffineMap.eqOn_affineSpan
-        (f := (F j).toLinearMap.toAffineMap) (g := AffineMap.const ℝ V (b j))
-        (hheight (t.itinerary.val.get j)) hx
-      apply hq
-      simpa only [LinearMap.coe_toAffineMap, ContinuousLinearMap.coe_coe,
-        AffineMap.const_apply, map_add, hheight _ _ (hinc j), add_eq_left] using hh
+      exact hq (map_eq_zero_of_affineSpan_eq (F j) (ν a) (hheight _) (hspan a) heq.symm
+        (hinc j) hz)
     · intro Y hY
       apply (hspan a).subset
       rw [heq]
@@ -128,7 +119,6 @@ theorem eventually_avoids_walls_of_regular
     apply (ν a).eventually_forall_notMem_of_openSegment (hclosed a)
       (fun x hx => (hspan a).subset (subset_affineSpan ℝ _ hx))
       (X j.castSucc).continuous.continuousAt (backwardTime F b w j).continuous.continuousAt
-      (hpos j)
     · exact fun s hs hs' => havoid.1 j a s hs hs'
     · intro ha
       rcases Fin.eq_zero_or_eq_succ j.castSucc with hj | ⟨e, he⟩

@@ -80,12 +80,12 @@ private theorem eventually_forall_pos_notMem_of_contact_nonpos
 
 /-- Avoidance on an open finite segment is stable relative to constraints fixing
 any limiting endpoint contact in the supporting hyperplane. Such contacts must
-be transverse. No convexity or polyhedrality of the closed wall is needed. -/
+be transverse. The limiting segment may be collapsed. No convexity or polyhedrality of the
+closed wall is needed. -/
 theorem eventually_forall_notMem_of_openSegment
     (ν : V →L[ℝ] ℝ) {c : ℝ} {W : Set V} (hW : IsClosed W)
     (hheight : ∀ y ∈ W, ν y = c) {v : V} {x : X → V} {b : X → ℝ}
     {Q : X} {D : Set X} (hx : ContinuousAt x Q) (hb : ContinuousAt b Q)
-    (hpos : 0 < b Q)
     (havoid : ∀ t : ℝ, 0 < t → t < b Q → x Q + t • v ∉ W)
     (hstart : x Q ∈ W → ν v ≠ 0 ∧ ∀ Y ∈ D, ν (x Y) = c)
     (hend : x Q + b Q • v ∈ W →
@@ -93,9 +93,15 @@ theorem eventually_forall_notMem_of_openSegment
     ∀ᶠ Y in 𝓝 Q, Y ∈ D → ∀ t : ℝ, 0 < t → t < b Y → x Y + t • v ∉ W := by
   by_cases hv : ν v = 0
   · -- Tangent segments have no boundary contacts, so compact avoidance applies.
+    rcases lt_or_ge (b Q) 0 with hneg | hnn
+    · filter_upwards [hb.eventually_lt continuousAt_const hneg] with Y hY _ t ht ht'
+      linarith
     have hall : ∀ t ∈ Icc (0 : ℝ) 1,
         AffineMap.lineMap (x Q) (x Q + b Q • v) t ∉ W := by
       intro t ht
+      rcases eq_or_lt_of_le hnn with hb0 | hpos
+      · simpa only [← hb0, zero_smul, add_zero, AffineMap.lineMap_same_apply] using
+          fun h => (hstart h).1 hv
       rw [AffineMap.lineMap_apply_module']
       simp only [add_sub_cancel_left, smul_smul]
       rw [add_comm]
@@ -106,7 +112,8 @@ theorem eventually_forall_notMem_of_openSegment
       · exact havoid _ (mul_pos ht0 hpos) (mul_lt_of_lt_one_left hpos ht1)
     have hp := (hx.prodMk (hx.add (hb.smul continuousAt_const))).eventually
       (hW.isOpen_setOf_lineMap_notMem.mem_nhds hall)
-    filter_upwards [hp, continuousAt_const.eventually_lt hb hpos] with Y hY hYpos _ t ht ht'
+    filter_upwards [hp] with Y hY _ t ht ht'
+    have hYpos : 0 < b Y := ht.trans ht'
     have he := hY (t / b Y) ⟨(div_pos ht hYpos).le, (div_lt_one hYpos).mpr ht' |>.le⟩
     simpa only [AffineMap.lineMap_apply_module', Pi.add_apply, Pi.smul_apply, Pi.smul_apply',
       add_sub_cancel_left, smul_smul,
