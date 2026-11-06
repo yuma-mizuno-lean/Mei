@@ -377,6 +377,23 @@ theorem domain_def (t : CutoffDecoratedType d ℳ T a v f ε k) :
         (fun j => v (Fin.snoc (α := fun _ => Γ) t.history.val 0 j))
         (fun j => P (t.itinerary.val.get j)) W S C := (rfl)
 
+/-- The full type domain satisfies the strict incidence constraints for any
+larger selected supports. No avoidance or source condition is discarded from
+the domain on the left. -/
+theorem domain_subset_backwardDomain (t : CutoffDecoratedType d ℳ T a v f ε k)
+    {A : J → Set V} (hPA : ∀ j, P j ⊆ A j) :
+    domain c P W S C t ⊆ backwardDomain
+      (fun j => f (t.itinerary.val.get j)) (fun j => c (t.itinerary.val.get j))
+      (fun j => v (t.history.val j)) (fun j => A (t.itinerary.val.get j)) := by
+  intro Q hQ
+  rw [domain_def] at hQ
+  have hm := (mem_backwardDomain ..).mp
+    (admissibleBackwardDomain_subset_backwardDomain _ _ _ _ _ _ _ hQ)
+  simp only [Fin.snoc_castSucc] at hm
+  apply (mem_backwardDomain ..).mpr
+  intro j
+  exact ⟨(hm j).1, hPA _ (hm j).2⟩
+
 /-- Membership is the existing complete admissible backward endpoint condition. -/
 @[simp]
 theorem mem_domain (t : CutoffDecoratedType d ℳ T a v f ε k) (Q : V) :

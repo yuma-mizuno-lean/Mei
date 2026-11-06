@@ -68,13 +68,7 @@ theorem backwardTime_eq_zero_imp_terminal_or_singularSupport
       t.path c Q (τ j.succ Q) ∈ singularSupport A := by
   have hD : D ⊆ backwardDomain F b (fun j => u j.castSucc)
       (fun j => A (wall (t.itinerary.val.get j))) := by
-    intro X hX
-    rw [domain_def] at hX
-    have hm := (mem_backwardDomain ..).mp
-      (admissibleBackwardDomain_subset_backwardDomain _ _ _ _ _ _ _ hX)
-    apply (mem_backwardDomain ..).mpr
-    intro l
-    exact ⟨(hm l).1, hP _ (hm l).2⟩
+    simpa only [Fin.snoc_castSucc] using t.domain_subset_backwardDomain c P W S C hP
   have he := Convex.backwardTime_eq_zero_imp_terminal_or_singularSupport F b
     (fun j => u j.castSucc) A (fun j => wall (t.itinerary.val.get j))
     (fun j => hheight (t.itinerary.val.get j)) hclosed hD hQ j ht
