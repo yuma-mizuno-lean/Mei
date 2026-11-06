@@ -59,7 +59,7 @@ def eventBlock (k K : ℕ) (hkK : k ≤ K) (b : WallEvent (B.active K)) (n m : d
 
 omit [IsWallAnnihilating H ℳ] in
 /-- The event block is the generic label block at the event's truncated label. -/
-theorem eventBlock_eq (k K : ℕ) (hkK : k ≤ K) (b : WallEvent (B.active K))
+theorem eventBlock_def (k K : ℕ) (hkK : k ≤ K) (b : WallEvent (B.active K))
     (n m : d.cutoff k) :
     eventBlock d ℳ p ℒ H h B k K hkK b n m =
       PositiveDegrees.labelBlock d ℳ p ℒ k
@@ -70,7 +70,7 @@ omit [IsWallAnnihilating H ℳ] in
 theorem eventBlock_eq_zero_of_not_precedes (k K : ℕ) (hkK : k ≤ K)
     (b : WallEvent (B.active K)) {n m : d.cutoff k} (hnm : ¬ d.Precedes m.val n.val) :
     eventBlock d ℳ p ℒ H h B k K hkK b n m = 0 := by
-  rw [eventBlock_eq]
+  rw [eventBlock_def]
   exact PositiveDegrees.labelBlock_eq_zero_of_not_precedes d ℳ p ℒ k _ hnm
 
 open Classical in
