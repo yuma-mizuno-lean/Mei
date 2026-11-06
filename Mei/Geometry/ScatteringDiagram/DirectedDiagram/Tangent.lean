@@ -27,7 +27,8 @@ labels at cutoff `k` agree in each crossing direction. The singular supports the
 under translation locally. On every bounded set of tangent displacements this comparison holds
 uniformly under sufficiently small positive rescaling.
 These local identifications compare the crossings of a diagram near a joint with those of its
-tangent diagram. Consistency of the tangent diagram is not asserted here.
+tangent diagram. The path-product comparison and consistency are developed in
+`DirectedDiagram.Tangent.Transport` and `DirectedDiagram.Tangent.Consistency`.
 -/
 
 public section
