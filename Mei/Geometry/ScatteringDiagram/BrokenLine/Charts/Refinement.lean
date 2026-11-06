@@ -113,7 +113,11 @@ theorem exists_cutoffDecoratedRay_common_closedCharts
       rw [← hAcover t]
       exact subset_iUnion (A t) (left t j)
     exact ⟨hne, hpoly, hlc, hsub, hclosure, hsubdomain,
-      t.isProperMap_path_restrict_and_exists_limitRay c P W S C hC hpoly.isClosed hsubdomain⟩
+      (t.isProperMap_path_closure c P W S C).comp
+        (Topology.IsClosedEmbedding.inclusion hsubdomain
+          (hpoly.isClosed.preimage continuous_subtype_val)).isProperMap,
+      fun Q hQ => ⟨t.path_eventually_mem c P W S C hC (hsubdomain hQ),
+        t.exists_limitRay c P W S C (hsubdomain hQ)⟩⟩
   · intro Q
     exact cutoffDecoratedEvaluation_eq_sum_charts d ℳ T a v f c ε P W S C
       k μ (fun t j => intrinsicInterior ℝ (D t j)) hdisj hdomain Q

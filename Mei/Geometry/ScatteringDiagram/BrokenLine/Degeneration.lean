@@ -122,21 +122,6 @@ theorem path_eventually_mem (hC : IsRationalNormalPolyhedron h C)
   exact backwardPath_eventually_mem_of_mem_closure_admissibleBackwardDomain F b u A W S C hC
     (by simpa only [domain_def] using hQ)
 
-/-- On any closed subset of the closed type domain, the path map is proper.
-Every endpoint retains the incoming source tail and a finite limit ray with
-the original incoming direction. -/
-theorem isProperMap_path_restrict_and_exists_limitRay (hC : IsRationalNormalPolyhedron h C)
-    {B : Set V} (hB : IsClosed B) (hsub : B ⊆ closure D) :
-    IsProperMap (fun Q : B => t.path c Q.val) ∧
-      ∀ Q ∈ B, (∀ᶠ s : ℝ in atBot, t.path c Q s ∈ C) ∧
-        ∃ β : FiniteAffineRay V V, β.endpoint = Q ∧ β.incomingDirection = v 0 ∧
-          ∀ s : ℝ, s ≤ 0 → β s = t.path c Q s := by
-  refine ⟨?_, fun Q hQ => ⟨t.path_eventually_mem c P W S C hC (hsub hQ),
-    t.exists_limitRay c P W S C (hsub hQ)⟩⟩
-  rw [path_def]
-  exact isProperMap_backwardPath_restrict F b u hB
-    (fun Q hQ => t.backwardTime_nonneg c P W S C (hsub hQ))
-
 end CutoffDecoratedType
 
 /-- The path of an actual cutoff ray is the extension of its exact decorated
@@ -218,10 +203,12 @@ theorem exists_cutoffDecoratedRay_closedCharts (k : ℕ) :
   refine ⟨ι, hι, B, ?_, hdisj, hcover⟩
   intro t j
   obtain ⟨hne, hpoly, hlc, hsub⟩ := hB t j
-  obtain ⟨hproper, hpath⟩ :=
-    t.isProperMap_path_restrict_and_exists_limitRay c P W S C hC hpoly.isClosed hsub
-  refine ⟨hne, hpoly, hlc, hsub, hpoly.isClosed.isProperMap_subtypeVal, hproper,
-    fun Q hQ => ⟨?_, hpath Q hQ⟩⟩
+  refine ⟨hne, hpoly, hlc, hsub, hpoly.isClosed.isProperMap_subtypeVal,
+    (t.isProperMap_path_closure c P W S C).comp
+      (Topology.IsClosedEmbedding.inclusion hsub
+        (hpoly.isClosed.preimage continuous_subtype_val)).isProperMap,
+    fun Q hQ => ⟨?_, t.path_eventually_mem c P W S C hC (hsub hQ),
+      t.exists_limitRay c P W S C (hsub hQ)⟩⟩
   intro e
   simpa only [Fin.snoc_castSucc] using
     t.path_parameter_mem c P W S C hclosed (hsub hQ) e
