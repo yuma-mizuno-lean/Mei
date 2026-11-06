@@ -131,18 +131,14 @@ theorem nodup_of_mem_realizedDegreeItineraries {k : ℕ} {l : List (Γ × J)}
         simpa only [neg_sub, hq] using hdegree j b hjb'
       exact congrArg v (sub_eq_zero.mp
         (d.eq_zero_of_mem_of_neg_mem (hdegree a j haj') hneg)).symm
-    have hline := backwardPoint_eq_add_of_constant F C U Q a.succ b.succ
-      (by simpa using hab.le) (U a) hconstant
-    have ha := backwardPoint_height F C U a (htrans a) Q
     have hb := backwardPoint_height F C U b (htrans b) Q
     have hsame : F a = F b := congrArg f hwall
     have hlevel : C a = C b := congrArg c hwall
     have hheight : F a (backwardPoint F C U b.succ Q) = C a := by
       rw [hsame, hlevel]
       exact hb
-    rw [hline, map_add, map_smul, smul_eq_mul, ha] at hheight
-    have ht := strictAnti_backwardParameter F C U Q hpos (Fin.succ_lt_succ_iff.mpr hab)
-    exact (mul_ne_zero (sub_pos.mpr ht).ne' (htrans a)) (by linarith)
+    exact backwardPoint_height_ne_of_constant F C U Q hpos a b hab (htrans a)
+      (U a) hconstant (htrans a) hheight
   apply List.nodup_iff_injective_get.mpr
   intro a b he
   rcases lt_trichotomy a b with hab | hab | hab

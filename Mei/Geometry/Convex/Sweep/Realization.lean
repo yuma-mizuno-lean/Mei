@@ -98,6 +98,20 @@ theorem backwardPoint_eq_add_of_constant (Q : V) (a b : Fin (n + 1))
         backwardParameter_succ]
       module
 
+/-- After a transverse encounter, a later point on the same straight piece
+cannot lie on its supporting hyperplane. The intervening encounters may have
+different normals and may preserve direction. -/
+theorem backwardPoint_height_ne_of_constant (Q : V)
+    (hpos : ∀ j, 0 < backwardTime f c u j Q)
+    (a b : Fin n) (hab : a < b) (ha : f a (u a) ≠ 0) (w : V)
+    (hw : ∀ j : Fin n, a.succ ≤ j.castSucc → j.succ ≤ b.succ → u j = w)
+    (hfw : f a w ≠ 0) : f a (backwardPoint f c u b.succ Q) ≠ c a := by
+  rw [backwardPoint_eq_add_of_constant f c u Q a.succ b.succ
+    (Fin.succ_le_succ_iff.mpr hab.le) w hw, map_add, map_smul, smul_eq_mul,
+    backwardPoint_height f c u a ha Q]
+  have ht := strictAnti_backwardParameter f c u Q hpos (Fin.succ_lt_succ_iff.mpr hab)
+  exact fun h => (mul_ne_zero (sub_pos.mpr ht).ne' hfw) (by linarith)
+
 variable (v : Fin (n + 1) → V) (Q : V)
   (hpos : ∀ j, 0 < backwardTime f c (fun j => v j.castSucc) j Q)
 
