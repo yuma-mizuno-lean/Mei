@@ -51,6 +51,49 @@ theorem weightedEvaluation_zero (Q : W) [Finite (F.fiber Q)] :
     F.weightedEvaluation (fun _ => (0 : M)) Q = 0 := by
   simp [weightedEvaluation_def]
 
+/-- Weighted evaluation is additive in the chart weights. -/
+@[simp]
+theorem weightedEvaluation_add (weight₁ weight₂ : ι → M) (Q : W) [Finite (F.fiber Q)] :
+    F.weightedEvaluation (weight₁ + weight₂) Q =
+      F.weightedEvaluation weight₁ Q + F.weightedEvaluation weight₂ Q := by
+  simp [weightedEvaluation_def, Finset.sum_add_distrib]
+
+/-- Weighted evaluation adds over a disjoint union of families. -/
+@[simp]
+theorem weightedEvaluation_sum {κ : Type*} [Finite κ]
+    (G : Mei.FiniteSemilinearFamily h h' κ) (weightF : ι → M) (weightG : κ → M)
+    (Q : W) [Finite (F.fiber Q)] [Finite (G.fiber Q)] :
+    (F.sum G).weightedEvaluation (Sum.elim weightF weightG) Q =
+      F.weightedEvaluation weightF Q + G.weightedEvaluation weightG Q := by
+  let := Fintype.ofFinite (F.fiber Q)
+  let := Fintype.ofFinite (G.fiber Q)
+  let := Fintype.ofFinite ((F.sum G).fiber Q)
+  rw [weightedEvaluation_def, weightedEvaluation_def, weightedEvaluation_def]
+  trans ∑ z : F.fiber Q ⊕ G.fiber Q,
+    Sum.elim (fun z => weightF z.1) (fun z => weightG z.1) z
+  · apply (Fintype.sum_equiv (F.fiberSumEquiv G Q).symm _ _ ?_).symm
+    intro z
+    simp only [fiberSumEquiv_symm_apply_fst]
+    cases z <;> rfl
+  · exact Fintype.sum_sum_type _
+
+open Classical in
+/-- Restriction sums the original fiber weights only at parameter points in the
+restricting set. Evaluation need not identify those points with the endpoint. -/
+theorem weightedEvaluation_restrict {U : Set V} (hU : IsRationalSemilinear h U)
+    (weight : ι → M) (Q : W) [Finite (F.fiber Q)] :
+    (F.restrict hU).weightedEvaluation weight Q =
+      let := Fintype.ofFinite (F.fiber Q)
+      ∑ z : F.fiber Q, if (z.2.1 : V) ∈ U then weight z.1 else 0 := by
+  let := Fintype.ofFinite (F.fiber Q)
+  let := Fintype.ofFinite ((F.restrict hU).fiber Q)
+  rw [weightedEvaluation_def]
+  trans ∑ z : {z : F.fiber Q // (z.2.1 : V) ∈ U}, weight z.val.1
+  · exact Fintype.sum_equiv (F.fiberRestrictEquiv hU Q) _ _ (fun _ => by simp)
+  · rw [← Finset.sum_filter]
+    exact (Finset.sum_subtype (Finset.univ.filter fun z : F.fiber Q => (z.2.1 : V) ∈ U)
+      (by simp) (fun z => weight z.1)).symm
+
 variable (D : ι → Set V) (hD : ∀ t, IsRationalSemilinear h (D t))
 
 open Classical in
@@ -69,41 +112,6 @@ theorem weightedEvaluation_ofDomains (weight : ι → M) (Q : V) :
 
 variable {D hD}
 
-/-- Endpoint restriction of an inclusion family retains precisely the original
-labels whose domains contain the endpoint and the restricting set. -/
-def fiberOfDomainsRestrictEquiv {U : Set V} (hU : IsRationalSemilinear h U) (Q : V) :
-    ((ofDomains D hD).restrict hU).fiber Q ≃ {t // Q ∈ D t ∧ Q ∈ U} :=
-  ((ofDomains D hD).fiberRestrictEquiv hU Q).trans
-    (((fiberOfDomainsEquiv D hD Q).subtypeEquiv (q := fun _ => Q ∈ U) fun z => by
-      have hxQ : z.2.1.val = Q := (ofDomains_eval D hD _ _).symm.trans z.2.2
-      simp only [hxQ]).trans
-        (Equiv.subtypeSubtypeEquivSubtypeInter (fun t => Q ∈ D t) (fun _ : ι => Q ∈ U)))
-
-@[simp]
-theorem fiberOfDomainsRestrictEquiv_apply_val {U : Set V}
-    (hU : IsRationalSemilinear h U) (Q : V)
-    (z : ((ofDomains D hD).restrict hU).fiber Q) :
-    (fiberOfDomainsRestrictEquiv hU Q z).val = z.1 := by
-  calc
-    (fiberOfDomainsRestrictEquiv hU Q z).val =
-        (fiberOfDomainsEquiv D hD Q ((ofDomains D hD).fiberRestrictEquiv hU Q z).val).val :=
-      rfl
-    _ = ((ofDomains D hD).fiberRestrictEquiv hU Q z).val.1 :=
-      fiberOfDomainsEquiv_apply_val ..
-    _ = z.1 := fiberRestrictEquiv_apply_val_fst ..
-
-@[simp]
-theorem fiberOfDomainsRestrictEquiv_symm_apply_fst {U : Set V}
-    (hU : IsRationalSemilinear h U) (Q : V) (z : {t // Q ∈ D t ∧ Q ∈ U}) :
-    ((fiberOfDomainsRestrictEquiv (hD := hD) hU Q).symm z).1 = z.val := by
-  have ht := fiberOfDomainsRestrictEquiv_apply_val (hD := hD) hU Q
-    ((fiberOfDomainsRestrictEquiv (hD := hD) hU Q).symm z)
-  simpa only [Equiv.apply_symm_apply] using ht.symm
-
-instance {U : Set V} (hU : IsRationalSemilinear h U) (Q : V) :
-    Finite (((ofDomains D hD).restrict hU).fiber Q) :=
-  Finite.of_equiv _ (fiberOfDomainsRestrictEquiv hU Q).symm
-
 open Classical in
 /-- Endpoint restriction multiplies the original evaluation by the membership
 indicator. The labels and their weights remain global. -/
@@ -111,15 +119,11 @@ theorem weightedEvaluation_ofDomains_restrict {U : Set V}
     (hU : IsRationalSemilinear h U) (weight : ι → M) (Q : V) :
     ((ofDomains D hD).restrict hU).weightedEvaluation weight Q =
       if Q ∈ U then (ofDomains D hD).weightedEvaluation weight Q else 0 := by
-  let := Fintype.ofFinite ι
-  let := Fintype.ofFinite (((ofDomains D hD).restrict hU).fiber Q)
-  rw [weightedEvaluation_def, weightedEvaluation_ofDomains]
-  trans ∑ t : {t // Q ∈ D t ∧ Q ∈ U}, weight t.val
-  · exact Fintype.sum_equiv (fiberOfDomainsRestrictEquiv hU Q) _ _ (fun _ => by simp)
-  · trans ∑ t : ι, if Q ∈ D t ∧ Q ∈ U then weight t else 0
-    · rw [← Finset.sum_filter]
-      exact (Finset.sum_subtype (Finset.univ.filter fun t => Q ∈ D t ∧ Q ∈ U)
-        (by simp) weight).symm
-    · by_cases hQ : Q ∈ U <;> simp [hQ]
+  let := Fintype.ofFinite ((ofDomains D hD).fiber Q)
+  rw [weightedEvaluation_restrict]
+  have hxQ (z : (ofDomains D hD).fiber Q) : (z.2.1 : V) = Q :=
+    (ofDomains_eval D hD _ _).symm.trans z.2.2
+  simp only [hxQ]
+  by_cases hQ : Q ∈ U <;> simp [hQ, weightedEvaluation_def]
 
 end Mei.FiniteSemilinearFamily

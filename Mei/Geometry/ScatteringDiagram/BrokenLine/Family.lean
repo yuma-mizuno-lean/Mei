@@ -144,35 +144,6 @@ theorem cutoffBrokenLineFamily_weightedEvaluation (Q : V) :
 
 variable {U : Set V} (hU : IsRationalSemilinear h U)
 
-/-- Restricting endpoint parameters keeps exactly the original global rays
-whose endpoint lies in the restricting set. Their incoming data are unchanged. -/
-def cutoffBrokenLineFamilyRestrictFiberEquiv (Q : V) :
-    ((F).restrict hU).fiber Q ≃ {_r : Rays Q // Q ∈ U} :=
-  (FiniteSemilinearFamily.fiberOfDomainsRestrictEquiv hU Q).trans
-    ((Equiv.subtypeSubtypeEquivSubtypeInter _ _).symm.trans
-      ((cutoffDecoratedRayFiberEquiv d ℳ T a (fun q => i (w q))
-        f c ε P W S C k Q).symm.subtypeEquiv fun _ => Iff.rfl))
-
-/-- Restricting endpoint domains preserves the full type of each reconstructed
-global ray, rather than replacing its incoming history by local data. -/
-@[simp↓] -- Read the type before the original equivalence expands its structure fields.
-theorem cutoffBrokenLineFamilyRestrictFiberEquiv_type (Q : V)
-    (z : ((F).restrict hU).fiber Q) :
-    (cutoffDecoratedRayFiberEquiv d ℳ T a (fun q => i (w q)) f c ε P W S C k Q
-      (cutoffBrokenLineFamilyRestrictFiberEquiv d ℳ T a f c ε P W S C
-        h w hf hP hW hS hC k hU Q z).val).val = z.1 := by
-  let t := FiniteSemilinearFamily.fiberOfDomainsRestrictEquiv hU Q z
-  have ht := (cutoffDecoratedRayFiberEquiv d ℳ T a (fun q => i (w q))
-    f c ε P W S C k Q).apply_symm_apply ⟨t.val, t.property.1⟩
-  exact (congrArg Subtype.val ht).trans
-    (FiniteSemilinearFamily.fiberOfDomainsRestrictEquiv_apply_val hU Q z)
-
-/-- Endpoint restriction preserves finiteness of the actual ray fibers. -/
-instance (Q : V) : Finite (((F).restrict hU).fiber Q) :=
-  Finite.of_equiv {_r : Rays Q // Q ∈ U}
-    (cutoffBrokenLineFamilyRestrictFiberEquiv d ℳ T a f c ε P W S C
-      h w hf hP hW hS hC k hU Q).symm
-
 open Classical in
 /-- Endpoint restriction leaves the affine evaluation unchanged inside the set
 and gives zero outside. No local replacement of the incoming source is made. -/
