@@ -103,6 +103,20 @@ theorem labelBlock_apply (k : ℕ) (g : d.truncatedGroup ℒ k) (n m : d.cutoff 
             ⟨m.val, (d.mem_cutoff.mp m.property).1⟩ x))) := by
   simp only [labelBlock, LinearMap.comp_apply, Submodule.mkQ_apply]
 
+/-- Between distinct relative degrees, a label block is the component of the
+truncated BCH action itself: the subtracted identity has no such component. -/
+theorem labelBlock_apply_of_ne (k : ℕ) (g : d.truncatedGroup ℒ k)
+    (n m : d.cutoff k) (hmn : m.val ≠ n.val) (x : ℳ (p + m.val)) :
+    labelBlock d ℳ p ℒ k g n m x =
+      d.shiftedQuotientComponent ℳ p (p + n.val) k (degree_add_val_sub_self_le d p k n)
+        ((A).truncatedBCHAction d ℒ k g
+          (Submodule.Quotient.mk (shiftedInclusion ℳ d.monoid p
+            ⟨m.val, (d.mem_cutoff.mp m.property).1⟩ x))) := by
+  simp [labelBlock_apply,
+    d.shiftedQuotientComponent_mk_shiftedInclusion_of_ne ℳ p
+      (p + n.val) k _ ⟨m.val, (d.mem_cutoff.mp m.property).1⟩
+      (fun he => hmn (add_left_cancel he))]
+
 /-- A block outside the strict relative-degree relation vanishes. -/
 theorem labelBlock_eq_zero_of_not_precedes (k : ℕ) (g : d.truncatedGroup ℒ k)
     {n m : d.cutoff k} (hnm : ¬ d.Precedes m.val n.val) :
