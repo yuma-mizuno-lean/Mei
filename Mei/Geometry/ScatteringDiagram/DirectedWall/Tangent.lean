@@ -101,6 +101,17 @@ theorem smul_mem_tangentAt_support (hx : x ∈ W.support) {v : V}
     t • v ∈ (W.tangentAt x hx).support :=
   smul_mem_posTangentConeAt hv ht
 
+/-- Positive scaling preserves and reflects membership in a tangent wall. -/
+@[simp↓]
+theorem smul_mem_tangentAt_support_iff (hx : x ∈ W.support) {v : V}
+    {t : ℝ} (ht : 0 < t) :
+    t • v ∈ (W.tangentAt x hx).support ↔ v ∈ (W.tangentAt x hx).support := by
+  constructor
+  · intro hv
+    simpa [ht.ne'] using W.smul_mem_tangentAt_support hx hv (inv_pos.mpr ht).le
+  · intro hv
+    exact W.smul_mem_tangentAt_support hx hv ht.le
+
 /-- Near `x`, a point lies in the support exactly when its displacement from `x` lies in the
 support of the tangent wall. -/
 theorem eventually_mem_support_iff (hx : x ∈ W.support) :

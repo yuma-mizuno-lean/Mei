@@ -177,4 +177,38 @@ theorem eventually_combinedLabel_tangentAt (k : ℕ) :
     · rintro ⟨hj, hjy⟩
       exact ⟨⟨⟨j.1, hj⟩, (D.mem_active_tangentAt x k ⟨j.1, hj⟩).mpr j.2⟩, (hm _).mpr hjy, rfl⟩
 
+/-- On bounded sets, sufficiently small positive dilations identify active supports
+with the incident tangent supports, uniformly in the displacement. -/
+theorem eventually_forall_mem_support_add_smul_iff (k : ℕ) {K : Set V}
+    (hK : Bornology.IsBounded K) :
+    ∀ᶠ t : ℝ in 𝓝[>] 0, ∀ v ∈ K, ∀ j : D.active k,
+      x + t • v ∈ (D.wall j).support ↔
+        ∃ hj : x ∈ (D.wall j).support, v ∈ ((D.wall j).tangentAt x hj).support := by
+  have huniform := eventually_singleton_add_smul_subset (𝕜 := ℝ) hK
+    (D.eventually_forall_mem_support_iff (x := x) k)
+  filter_upwards [huniform.filter_mono nhdsWithin_le_nhds, self_mem_nhdsWithin] with t ht htpos
+  intro v hv j
+  have hc := ht (Set.add_mem_add (Set.mem_singleton x) (Set.smul_mem_smul_set hv)) j
+  simpa only [Set.mem_ofPred_eq, add_sub_cancel_left,
+    DirectedWall.smul_mem_tangentAt_support_iff _ _ htpos] using hc
+
+/-- Dilating the position by a positive factor preserves the tangent combined label.
+The crossing velocity is unchanged. -/
+@[simp]
+theorem combinedLabel_tangentAt_smul_pos (k : ℕ) (v w : V) {t : ℝ} (ht : 0 < t)
+    (htv : t • v ∉ singularSupport (fun j : (D.tangentAt x).active k =>
+      ((D.tangentAt x).wall j).support)) :
+    (D.tangentAt x).combinedLabel k (t • v) w htv =
+      (D.tangentAt x).combinedLabel k v w
+        (fun hv => htv ((D.smul_mem_singularSupport_tangentAt_iff k ht v).mpr hv)) := by
+  classical
+  let S := (Set.toFinite {j : (D.tangentAt x).active k |
+    v ∈ ((D.tangentAt x).wall j).support}).toFinset
+  have hm : ∀ j, j ∈ S.toList ↔ v ∈ ((D.tangentAt x).wall j).support := by simp [S]
+  rw [(D.tangentAt x).combinedLabel_eq_prod k _ _ htv S.toList S.nodup_toList
+    (fun j => by
+      simpa only [tangentAt_wall, DirectedWall.smul_mem_tangentAt_support_iff _ _ ht]
+        using hm j),
+    (D.tangentAt x).combinedLabel_eq_prod k _ _ _ S.toList S.nodup_toList hm]
+
 end Mei.DirectedDiagram
