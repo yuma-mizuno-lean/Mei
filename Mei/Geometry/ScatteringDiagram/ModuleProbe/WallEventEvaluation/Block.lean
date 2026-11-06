@@ -73,6 +73,24 @@ theorem eventBlock_eq_zero_of_not_precedes (k K : ℕ) (hkK : k ≤ K)
   rw [eventBlock_def]
   exact PositiveDegrees.labelBlock_eq_zero_of_not_precedes d ℳ p ℒ k _ hnm
 
+omit [IsWallAnnihilating H ℳ] in
+/-- Between distinct relative degrees, the event block is the component of the
+signed event action itself: the subtracted identity has no such component. -/
+theorem eventBlock_self_apply_of_ne (k : ℕ) (b : WallEvent (B.active k))
+    (n m : d.cutoff k) (hmn : m.val ≠ n.val) (x : ℳ (p + m.val)) :
+    eventBlock d ℳ p ℒ H h B k k (Nat.le_refl k) b n m x =
+      d.shiftedQuotientComponent ℳ p (p + n.val) k
+        (PositiveDegrees.degree_add_val_sub_self_le d p k n)
+        ((d.shiftedLieFiltration ℒ ℳ p).truncatedBCHAction d ℒ k
+          (B.wallEventLabel k b)
+          (Submodule.Quotient.mk (shiftedInclusion ℳ d.monoid p
+            ⟨m.val, (d.mem_cutoff.mp m.property).1⟩ x))) := by
+  rw [eventBlock_def, d.truncationMap_refl, LieHom.bchGroupMap_id,
+    MonoidHom.id_apply, PositiveDegrees.labelBlock_apply, LinearMap.sub_apply,
+    Module.End.one_apply, map_sub,
+    d.shiftedQuotientComponent_mk_shiftedInclusion_of_ne ℳ p
+      (p + n.val) k _ _ (fun he => hmn (add_left_cancel he)), sub_zero, LinearEquiv.coe_coe]
+
 open Classical in
 /-- The lower-degree step carried by the diagram's event blocks. An event is
 used only between degrees with matching normal velocities; the event sets and
