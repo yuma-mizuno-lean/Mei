@@ -49,6 +49,7 @@ local notation "D" => CutoffDecoratedType.domain c P W S C
 
 /-- The continuous path extensions transform affinely at every endpoint,
 including singular boundary paths, collapsed encounters and empty-domain types. -/
+@[simp]
 theorem cutoffDecoratedTypeAffineEquiv_path (t : Types) (Q : V) (s : ℝ) :
     (E t).path b (e Q) s = e (t.path c Q s) := by
   have hi := cutoffDecoratedTypeAffineEquiv_itinerary d ℳ T a v f ε e k t

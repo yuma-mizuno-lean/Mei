@@ -83,6 +83,7 @@ local notation "u" => fun j => e.toAffineEquiv.linear (v j)
 
 /-- The hinge extension transforms affinely at every endpoint, without any
 admissibility or time-order assumption, including at tangent encounters. -/
+@[simp↓]
 theorem backwardPath_affine (Q : V) (t : ℝ) :
     backwardPath g b u (e Q) t = e (backwardPath f c v Q t) := by
   have hlinear (j : Fin n) (x : V) : g j (e.toAffineEquiv.linear x) = f j x := by
