@@ -156,6 +156,7 @@ theorem length_degreeItinerary (r : CutoffDecoratedRay d ℳ T a v f c ε P W S 
   simp [degreeItinerary]
 
 /-- A ray without encounters carries the incoming coefficient. -/
+@[simp↓]
 theorem decoration_eq_of_itinerary_eq_nil (r : CutoffDecoratedRay d ℳ T a v f c ε P W S C k Q)
     (h : r.itinerary = []) : r.decoration = (a : M) := by
   obtain ⟨l, β, hmem, hsub⟩ := r
@@ -164,6 +165,7 @@ theorem decoration_eq_of_itinerary_eq_nil (r : CutoffDecoratedRay d ℳ T a v f 
   simp
 
 /-- A ray without encounters is the straight ray in the incoming direction. -/
+@[simp]
 theorem ray_eq_straight_of_itinerary_eq_nil (r : CutoffDecoratedRay d ℳ T a v f c ε P W S C k Q)
     (h : r.itinerary = []) : r.realization.2.ray = FiniteAffineRay.straight Q (v 0) := by
   obtain ⟨l, β, hmem, hsub⟩ := r

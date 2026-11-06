@@ -53,14 +53,12 @@ theorem itinerary_eq_nil_of_velocity_eq_zero
   List.length_eq_zero_iff.mp (r.realization.encounter_count_eq_zero_of_velocity_eq_zero hv)
 
 /-- With stationary incoming degree, the entire realized path is constant. -/
-@[simp]
 theorem ray_eq_straight_of_velocity_eq_zero
     (r : CutoffDecoratedRay d ℳ T a v f c ε P W S C k Q) (hv : v 0 = 0) :
     r.realization.2.ray = FiniteAffineRay.straight Q 0 := by
   rw [r.ray_eq_straight_of_itinerary_eq_nil (r.itinerary_eq_nil_of_velocity_eq_zero hv), hv]
 
 /-- Stationary rays retain the whole incoming coefficient. -/
-@[simp↓] -- Retain the stationary normal form before expanding homogeneous histories.
 theorem decoration_eq_input_of_velocity_eq_zero
     (r : CutoffDecoratedRay d ℳ T a v f c ε P W S C k Q) (hv : v 0 = 0) :
     r.decoration = (a : M) :=

@@ -55,7 +55,10 @@ namespace CutoffDecoratedRay
 
 /-- A cutoff decorated ray through a single face records at most one encounter, even when
 the encounter changes neither the degree nor the spatial velocity. -/
-theorem itinerary_length_le_one_singleFace (r : SingleFaceRay) : r.itinerary.length ≤ 1 :=
+theorem itinerary_length_le_one_singleFace {I K : Type*} {P : J → Set V}
+    {W : I → Set V} {S : K → Set V} {C : Set V}
+    (r : CutoffDecoratedRay d ℳ T a v (fun _ => ν) (fun _ => b) ε P W S C k Q) :
+    r.itinerary.length ≤ 1 :=
   r.realization.encounter_count_le_one_singleFace
 
 /-- Without an encounter, the ray exists exactly when the coefficient is nonzero and the
@@ -246,8 +249,10 @@ theorem cutoffDecoratedEvaluation_singleFace [Fintype J] (hZ : Z ⊆ {x | ν x =
       exact absurd (CutoffDecoratedRay.exists_degreeItinerary_eq_singleton_singleFace_iff hZ
         (y r _).1 (y r _).2 |>.mp ⟨r, hy r (Finset.mem_filter.mp hr).2⟩).2.2.2.2.1 hτ
 
-/-- On the source side of the face the weighted evaluation is the incoming coefficient: the only
-ray is the unbent incoming ray. -/
+/-- On the source side of the face the weighted evaluation is the incoming coefficient.
+When `a ≠ 0`, the only ray is the unbent incoming ray. When `a = 0`, the ray family is empty
+and the evaluation is zero. -/
+@[simp]
 theorem cutoffDecoratedEvaluation_singleFace_of_pos [Finite J] (hZ : Z ⊆ {x | ν x = b})
     (hQ : 0 < (ν Q - b) / ν (v 0)) :
     cutoffDecoratedEvaluation d ℳ T a v (fun _ : J => ν) (fun _ : J => b) ε
