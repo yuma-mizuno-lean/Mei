@@ -154,6 +154,21 @@ instance (Q : ℝ × ℝ) : Finite ((slabThetaFamily t c n b h).fiber Q) :=
     (slabThetaChartDomain t c n b)
     (isRationalSemilinear_slabThetaChartDomain t c n b h)).fiber Q))
 
+/-- The fiber of the common family at `Q` is the set of complete charts whose
+domain contains `Q`. -/
+def slabThetaFamilyChartFiberEquiv (Q : ℝ × ℝ) :
+    {α : SlabThetaChartIndex t c n b // Q ∈ slabThetaChartDomain t c n b α} ≃
+      (slabThetaFamily t c n b h).fiber Q :=
+  (FiniteSemilinearFamily.fiberOfDomainsEquiv _ _ Q).symm
+
+/-- The chart-to-fiber comparison preserves the chart label. -/
+@[simp]
+theorem slabThetaFamilyChartFiberEquiv_fst (Q : ℝ × ℝ)
+    (z : {α : SlabThetaChartIndex t c n b // Q ∈ slabThetaChartDomain t c n b α}) :
+    (slabThetaFamilyChartFiberEquiv t c n b h Q z).1 = z.val := by
+  unfold slabThetaFamilyChartFiberEquiv slabThetaFamily
+  simp
+
 /-- Exact chart comparison with actual incoming and crossing rays, including
 one nonzero constant contribution in zero spatial degree. -/
 private def slabThetaExplicitChartEquiv (Q : ℝ × ℝ) :
