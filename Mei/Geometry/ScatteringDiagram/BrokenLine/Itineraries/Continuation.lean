@@ -46,7 +46,8 @@ local notation "typeOf(" Q ")" => cutoffDecoratedRayFiberEquiv d ℳ T a v f c �
 
 /-- A family of actual rays of one complete type depends continuously on its
 endpoints in compact-open path space. No rationality or genericity is required;
-the parameter space and the encounter and obstacle index types are arbitrary. -/
+the encounter index type is arbitrary finite, while the parameter space and
+obstacle index types are unrestricted. -/
 theorem CutoffDecoratedRay.continuous_of_type_eq {X : Type*} [TopologicalSpace X]
     {Q : X → V} (r : ∀ x, Rays(Q x)) (t : Types) (hQ : Continuous Q)
     (ht : ∀ x, (typeOf(Q x) (r x)).val = t) :
