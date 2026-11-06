@@ -60,6 +60,17 @@ local notation "Rays" Q:max => C.SingleFaceTransferRay i a u v ν b Z Q
 local notation "crosses" Q:max q:max =>
   ((ν Q - b) / ν (v q) < 0 ∧ Q - ((ν Q - b) / ν (v q)) • v q ∉ Z)
 
+variable {C i a u v ν b Z} in
+/-- The output degree determines an actual one-crossing ray at a fixed endpoint. -/
+@[ext]
+theorem SingleFaceTransferRay.ext {Q : V} (r s : (Rays Q))
+    (h : r.1.val = s.1.val) : r = s := by
+  obtain ⟨q, r⟩ := r
+  obtain ⟨q', s⟩ := s
+  have hq : q = q' := Subtype.ext h
+  subst q'
+  exact congrArg (Sigma.mk q) (Subsingleton.elim r s)
+
 /-- The ray fiber is indexed exactly by the nonzero transfers whose normal
 velocities match and whose computed crossings are negative and nonsingular. -/
 def singleFaceTransferRayEquiv (hZ : Z ⊆ {x | ν x = b}) (Q : V) : (Rays Q) ≃
@@ -74,11 +85,7 @@ def singleFaceTransferRayEquiv (hZ : Z ⊆ {x | ν x = b}) (Q : V) : (Rays Q) �
   constructor
   · intro r s hrs
     have he := congrArg Subtype.val hrs
-    obtain ⟨q, r⟩ := r
-    obtain ⟨q', s⟩ := s
-    have hq : q = q' := Subtype.ext he
-    subst q'
-    exact congrArg (Sigma.mk q) (Subsingleton.elim r s)
+    exact SingleFaceTransferRay.ext _ _ he
   · rintro ⟨q, hq, hv, ht, hx⟩
     have hmem : q ∈ (DirectSum.decompose ℳ (C.right (C.liftLeft i a))).support := by
       simpa only [DFinsupp.mem_support_iff, transfer_apply] using hq
@@ -157,6 +164,15 @@ def singleFaceTransferEvaluationLinear (Q : V) : E →ₗ[R] M :=
   (DirectSum.homogeneousExtend ℳ (fun q =>
     if ν (v q) = ν u ∧ (crosses Q q) then (ℳ q).subtype else 0)).comp
       (C.right.comp ((C.liftLeft i).comp α))
+
+open Classical in
+/-- Linear evaluation is homogeneous extension of the geometrically admitted
+component maps, followed by the opposite image of the incoming lift. -/
+theorem singleFaceTransferEvaluationLinear_def (Q : V) :
+    C.singleFaceTransferEvaluationLinear i u v ν b Z α Q =
+      (DirectSum.homogeneousExtend ℳ (fun q =>
+        if ν (v q) = ν u ∧ (crosses Q q) then (ℳ q).subtype else 0)).comp
+          (C.right.comp ((C.liftLeft i).comp α)) := (rfl)
 
 open Classical in
 /-- The linear evaluation retains zero component terms and selects crossings
