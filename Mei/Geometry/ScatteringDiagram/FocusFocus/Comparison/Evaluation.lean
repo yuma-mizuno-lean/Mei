@@ -35,7 +35,7 @@ variable (K : Type*) [CommRing K] (k : ℕ)
 
 local notation "S" => AdjoinRoot (Polynomial.X ^ (k + 1) : Polynomial K)
 local notation "τ" => AdjoinRoot.root (Polynomial.X ^ (k + 1) : Polynomial K)
-local instance : IsScalarTower K S (SlabNode τ) :=
+local instance isScalarTower_slabNode_evaluation : IsScalarTower K S (SlabNode τ) :=
   IsScalarTower.to₁₂₄ K S S[ℤ] _
 
 local notation "D" =>
