@@ -114,18 +114,14 @@ theorem shiftedQuotientComponent_self_decompose_zero (k : ℕ)
     d.shiftedQuotientComponent ℳ p p k (by simp)
       (DirectSum.decompose (d.shiftedQuotientGrading ℳ p k).piece x 0) =
       d.shiftedQuotientComponent ℳ p p k (by simp) x := by
-  -- Work on representatives to normalize the dependent ambient index `p + 0`.
-  obtain ⟨a, rfl⟩ := ((d.shiftedFiltration ℳ p).submodule (k + 1)).mkQ_surjective x
-  rw [Submodule.mkQ_apply]
-  have hd := d.decompose_shiftedQuotientGrading ℳ p k (0 : d.monoid) (by simp)
-    (Submodule.Quotient.mk a)
-  simp only [ZeroMemClass.coe_zero] at hd
-  rw [hd]
-  apply Subtype.ext
-  simp only [shiftedQuotientComponent_mk, coe_shiftedInclusion, ZeroMemClass.coe_zero]
-  have he := congrArg (fun q => (DirectSum.decompose ℳ (a : M) q : M)) (add_zero p)
-  rw [he]
-  exact DirectSum.decompose_of_mem_same ℳ (DirectSum.decompose ℳ (a : M) p).property
+  have h := d.shiftedQuotientComponent_decompose_same ℳ p k 0 (by simp) x
+  simp only [ZeroMemClass.coe_zero] at h
+  -- Generalize the ambient index together with its dependent cutoff proof.
+  generalize_proofs hcut at h
+  generalize hq : p + 0 = q at hcut h
+  rw [add_zero] at hq
+  subst q
+  exact h
 
 /-- The quotient image of a relative piece above the retained order vanishes.
 This is the simplifier normal form of the finite-piece vanishing law. -/
