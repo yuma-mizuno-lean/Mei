@@ -111,7 +111,7 @@ theorem exists_cutoffWallEventEvaluation_eq_sum_eventBlock_generic
   -- Admissibility makes the outgoing normal velocity nonzero, and matching
   -- velocities give the incoming transversality required by the arrangement.
   obtain ⟨_, hv, _, _, hheight, _⟩ :=
-    crossing_event_data d p ℒ H h B (k + 1) e T hT hxy ht rfl
+    B.crossing_event_data (k + 1) e T hT hxy ht rfl
   have hw : b.normal (B.activeNormal (k + 1)) (i (ρ (p + m.val))) ≠ 0 :=
     hnormal ▸ hv
   let z : Z := ⟨(b, n, m), hw⟩

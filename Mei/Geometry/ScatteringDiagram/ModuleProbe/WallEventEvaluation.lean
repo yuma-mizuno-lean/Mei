@@ -134,80 +134,6 @@ theorem decompose_wallEventPropagation_self (k : ℕ) (b : WallEvent (B.active k
   exact d.decompose_truncatedBCHAction_same ℒ ℳ p k (B.wallEventLabel k b) hz
 
 omit [IsWallAnnihilating H ℳ] in
-/-- A genuine crossing gives a positive ray parameter, nonzero transversality,
-both signs used by the backward action, the event height, and its precise incident
-wall set. The common proof does not depend on weighted evaluation. -/
-theorem crossing_event_data (k : ℕ) {n : Γ}
-    {x y : WallComplement (B.activeSupport k)}
-    (e : x ⟶ y) (T : ℝ) (hTpos : 0 < T)
-    (hxy : x.val - y.val = T • i (ρ (p + n)))
-    {b : WallEvent (B.active k)} {t : ℝ} (ht : t ∈ orderedCrossingTimes e)
-    (hb : b = crossingWallEvent (B.activeNormal k) e t ht) :
-    0 < segmentEventParameter (B.activeNormal k) e T b ∧
-      (b.normal (B.activeNormal k)) (i (ρ (p + n))) ≠ 0 ∧
-      SignType.sign ((b.normal (B.activeNormal k)) (i (ρ (p + n)))) = b.2 ∧
-      SignType.sign ((b.normal (B.activeNormal k)) (x.val - y.val)) = b.2 ∧
-      (b.normal (B.activeNormal k)) (y.val +
-        segmentEventParameter (B.activeNormal k) e T b • i (ρ (p + n))) =
-        b.offset (B.activeOffset k) ∧
-      y.val + segmentEventParameter (B.activeNormal k) e T b • i (ρ (p + n)) ∈
-        b.support (B.activeSupport k) := by
-  subst b
-  set c := crossingWallEvent (B.activeNormal k) e t ht with hc
-  have hs := segmentEventParameter_pos (B.activeNormal k) e T hTpos ht
-  have hline : AffineMap.lineMap x.val y.val t = y.val +
-      segmentEventParameter (B.activeNormal k) e T
-        c • i (ρ (p + n)) := by
-    rw [lineMap_eq_add_smul (t := t) hxy, segmentEventParameter_of_mem]
-  have hmem : AffineMap.lineMap x.val y.val t ∈
-      (B.wall c.1.property.choose).support :=
-    mem_chosenWall_crossingWallEvent (B.activeNormal k) e t ht
-  have hdir := e.down.transverse
-    c.1.property.choose
-    ⟨t, Ioo_subset_Icc_self (mem_Ioo_of_mem_orderedCrossingTimes e ht), hmem⟩
-  rw [(B.wall c.1.property.choose).direction_support,
-    LinearMap.mem_ker] at hdir
-  have htrans : c.normal
-      (B.activeNormal k) (y.val - x.val) ≠ 0 := by
-    simpa only [B.activeNormal_apply, WallEvent.normal_def,
-      h.continuousRealCharacter_apply] using hdir
-  have hv : c.normal
-      (B.activeNormal k) (i (ρ (p + n))) ≠ 0 := by
-    intro hz
-    apply htrans
-    have hyx : y.val - x.val = (-T) • i (ρ (p + n)) := by
-      calc
-        y.val - x.val = -(x.val - y.val) := by abel
-        _ = -T • i (ρ (p + n)) := by rw [hxy]; module
-    simp only [hyx, map_smul, hz, smul_zero]
-  have hsign : SignType.sign (c.normal
-      (B.activeNormal k) (i (ρ (p + n)))) =
-      c.2 := by
-    have hn := normal_sign_crossingWallEvent (B.activeNormal k) e t ht
-    calc
-      SignType.sign (c.normal
-        (B.activeNormal k) (i (ρ (p + n)))) =
-          SignType.sign (c.normal
-            (B.activeNormal k) (x.val - y.val)) := by
-        rw [hxy]
-        exact (LinearMap.sign_pos_smul (c.normal (B.activeNormal k)).toLinearMap _ hTpos).symm
-      _ = _ := by simpa only using hn
-  have hinc : y.val + segmentEventParameter (B.activeNormal k) e T
-      c • i (ρ (p + n)) ∈
-      c.support (B.activeSupport k) := by
-    rw [← hline]
-    exact (WallEvent.mem_support _ _ _).2 (fun j => by
-      simpa only [B.activeSupport_apply] using mem_crossingWallEvent _ e t ht j)
-  have hoff := WallEvent.normal_apply_of_mem_support
-    c (B.activeSupport k)
-    (B.activeNormal k) (B.activeOffset k)
-    (fun c z hz => by
-      rw [B.activeNormal_apply, B.activeOffset_apply]
-      exact (B.wall c).offset_eq hz) hinc
-  exact ⟨hs, hv, hsign, (normal_sign_crossingWallEvent (B.activeNormal k) e t ht), hoff,
-    hinc⟩
-
-omit [IsWallAnnihilating H ℳ] in
 /-- A wall point on a positive interior ray gives the genuine ordered crossing
 time at which the ray meets that wall, together with the computed event parameter. -/
 private theorem exists_crossingTime_of_pos_of_wall (k : ℕ) {n : Γ}
@@ -389,7 +315,7 @@ theorem exists_decompose_cutoffWallEventEvaluation_eq_sum_lastChange (k : ℕ)
   · intro b hb
     obtain ⟨t, ht, rfl⟩ := ft b hb
     obtain ⟨hs, hv, hsg, -, hoff, hmem⟩ :=
-      crossing_event_data d p ℒ H h B (k + 1) e T hTpos hxy ht rfl
+      B.crossing_event_data (k + 1) e T hTpos hxy ht rfl
     exact ⟨hs, hv, hsg, hoff, hmem⟩
   -- A matching wall point and sign determine its canonical event.
   · intro b u hu htr hsg hh hm
