@@ -71,6 +71,45 @@ theorem backwardPath_apply (Q : V) (t : ℝ) :
       (∑ j : Fin n, max (backwardParameter f c (fun j => v j.castSucc) j.succ Q - t) 0 •
         (v j.succ - v j.castSucc)) - t • v 0 + Q := (rfl)
 
+section SingleFace
+
+variable (ν : V →L[ℝ] ℝ) (b : ℝ) (u w : V)
+
+local notation "β" => backwardPath (fun _ : Fin 1 => ν) (fun _ => b) ![w, u]
+local notation "τ" Q:max => (ν Q - b) / ν w
+
+/-- The one-crossing extension has one hinge at the computed encounter time,
+including when that time is zero or the two velocities coincide. -/
+@[simp↓]
+theorem backwardPath_singleFace_apply (Q : V) (s : ℝ) :
+    β Q s = max (τ Q - s) 0 • (u - w) - s • w + Q := by
+  simp only [backwardPath_apply, Finset.univ_unique, Fin.default_eq_zero,
+    Finset.sum_singleton, Fin.castSucc_zero, Matrix.cons_val_zero,
+    Matrix.cons_val_succ, Matrix.cons_val_fin_one, backwardParameter_succ,
+    backwardParameter_zero, backwardTime_apply, backwardPoint_zero,
+    ContinuousAffineMap.coe_id, id_eq, zero_sub, ← neg_sub (ν Q) b, neg_div, neg_neg]
+
+/-- The closed path passes through its computed crossing point even when the
+encounter is terminal. This point lies on the face when `ν w ≠ 0`; otherwise
+the formula is totalized. No strict time-order assumption is needed. -/
+@[simp↓ high]
+theorem backwardPath_singleFace_crossing (Q : V) :
+    β Q (τ Q) = Q - (τ Q) • w := by
+  rw [backwardPath_singleFace_apply]
+  simp only [sub_self, max_self, zero_smul, zero_sub]
+  abel
+
+/-- A terminal crossing collapses the outgoing interval; the entire negative
+half-line is the original incoming affine tail. -/
+@[simp↓ high]
+theorem backwardPath_singleFace_terminal {Q : V} (hQ : ν Q = b)
+    {s : ℝ} (hs : s ≤ 0) : β Q s = Q - s • u := by
+  rw [backwardPath_singleFace_apply]
+  simp only [hQ, sub_self, zero_div, zero_sub, max_eq_left (neg_nonneg.mpr hs)]
+  module
+
+end SingleFace
+
 /-- On a strict itinerary the extended path is the actual finite affine ray,
 including its affine continuation beyond time zero. -/
 theorem backwardPath_eq_backwardRay (Q : V)

@@ -12,9 +12,11 @@ public import Mei.Geometry.Convex.Sweep.Admissible.Limit
 # Closed paths through a single face
 
 The continuous hinge extension of a one-crossing path retains its computed
-crossing point at every endpoint. At a terminal crossing its negative half-line
-is exactly the incoming affine line. These formulas include unchanged spatial
-directions and singular crossings.
+crossing point at every endpoint. This point lies on the face when `ν w ≠ 0`;
+otherwise the formula is totalized. At a terminal crossing its negative half-line
+is exactly the incoming affine line. The formulas in
+`Mei.Geometry.Convex.Sweep.Degeneration` include unchanged spatial directions
+and singular crossings.
 
 The boundary of the admissible endpoint domain is realized on these same paths:
 every excluded limiting endpoint is terminal or has a negative-time singular
@@ -32,38 +34,6 @@ namespace Mei.Convex
 
 variable {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
   (ν : V →L[ℝ] ℝ) (b : ℝ) (u w : V)
-
-local notation "β" => backwardPath (fun _ : Fin 1 => ν) (fun _ => b) ![w, u]
-local notation "τ" Q:max => (ν Q - b) / ν w
-
-/-- The one-crossing extension has one hinge at the computed encounter time,
-including when that time is zero or the two velocities coincide. -/
-@[simp↓]
-theorem backwardPath_singleFace_apply (Q : V) (s : ℝ) :
-    β Q s = max (τ Q - s) 0 • (u - w) - s • w + Q := by
-  simp only [backwardPath_apply, Finset.univ_unique, Fin.default_eq_zero,
-    Finset.sum_singleton, Fin.castSucc_zero, Matrix.cons_val_zero,
-    Matrix.cons_val_succ, Matrix.cons_val_fin_one, backwardParameter_succ,
-    backwardParameter_zero, backwardTime_apply, backwardPoint_zero,
-    ContinuousAffineMap.coe_id, id_eq, zero_sub, ← neg_sub (ν Q) b, neg_div, neg_neg]
-
-/-- The closed path passes through its computed face intersection even when
-the encounter is terminal. No strict time-order assumption is needed. -/
-@[simp↓ high]
-theorem backwardPath_singleFace_crossing (Q : V) :
-    β Q (τ Q) = Q - (τ Q) • w := by
-  rw [backwardPath_singleFace_apply]
-  simp only [sub_self, max_self, zero_smul, zero_sub]
-  abel
-
-/-- A terminal crossing collapses the outgoing interval; the entire negative
-half-line is the original incoming affine tail. -/
-@[simp↓ high]
-theorem backwardPath_singleFace_terminal {Q : V} (hQ : ν Q = b)
-    {s : ℝ} (hs : s ≤ 0) : β Q s = Q - s • u := by
-  rw [backwardPath_singleFace_apply]
-  simp only [hQ, sub_self, zero_div, zero_sub, max_eq_left (neg_nonneg.mpr hs)]
-  module
 
 variable {ν b u w} {Z : Set V}
 
