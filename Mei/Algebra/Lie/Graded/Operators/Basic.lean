@@ -105,6 +105,12 @@ def evalLieModuleHom (a : H) : lieSubmodule (H := H) ℳ ℒ →ₗ⁅R,L⁆ M w
   toLinearMap := eval ℳ ((TrivialLieModule.equiv R L H).symm a)
   map_lie' := fun {x f} => eval_lie ℳ ℒ x f _
 
+/-- Forgetting equivariance recovers evaluation on the trivial source module. -/
+@[simp]
+theorem evalLieModuleHom_toLinearMap (a : H) :
+    (evalLieModuleHom ℳ ℒ a).toLinearMap =
+      eval ℳ ((TrivialLieModule.equiv R L H).symm a) := (rfl)
+
 @[simp]
 theorem evalLieModuleHom_apply (a : H) (f : lieSubmodule (H := H) ℳ ℒ) :
     evalLieModuleHom ℳ ℒ a f = f.val ((TrivialLieModule.equiv R L H).symm a) :=
