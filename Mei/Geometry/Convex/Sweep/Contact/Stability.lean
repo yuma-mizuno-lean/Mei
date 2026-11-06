@@ -5,7 +5,6 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.Convex.Sweep.Topology
 public import Mei.Analysis.Convex.Polyhedron.Projection
 public import Mei.Geometry.Affine.Segment
 import Mathlib.Tactic.Linarith
@@ -28,11 +27,56 @@ Carl–Pumperla–Siebert, *A tropical view on Landau–Ginzburg models*, §4
 
 public section
 
-open Set Filter Topology Mei.Convex
+open Set Filter Topology
 
 namespace ContinuousLinearMap
 
-variable {V X : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V] [TopologicalSpace X]
+variable {V X : Type*} [AddCommGroup V] [Module ℝ V] [TopologicalSpace V]
+  [IsTopologicalAddGroup V] [ContinuousSMul ℝ V] [TopologicalSpace X]
+
+omit [IsTopologicalAddGroup V] [ContinuousSMul ℝ V] in
+/-- A transverse line meets the supporting hyperplane of a wall at one parameter. -/
+private theorem eq_div_of_add_smul_mem
+    {ν : V →L[ℝ] ℝ} {c : ℝ} {W : Set V} (hheight : ∀ y ∈ W, ν y = c) {v : V}
+    (hv : ν v ≠ 0) {y : V} {t : ℝ} (ht : y + t • v ∈ W) : t = (c - ν y) / ν v := by
+  apply (eq_div_iff hv).mpr
+  have hh := hheight _ ht
+  simp only [map_add, map_smul, smul_eq_mul] at hh
+  linarith
+
+/-- If the unique possible contact of a transverse line misses a closed wall,
+nearby lines miss it entirely. -/
+private theorem eventually_forall_notMem_of_contact_notMem
+    (ν : V →L[ℝ] ℝ) {c : ℝ} {W : Set V} (hW : IsClosed W)
+    (hheight : ∀ y ∈ W, ν y = c) {v : V} (hv : ν v ≠ 0) {x : X → V} {Q : X}
+    (hx : ContinuousAt x Q) (hQ : x Q + ((c - ν (x Q)) / ν v) • v ∉ W) :
+    ∀ᶠ Y in 𝓝 Q, ∀ t : ℝ, x Y + t • v ∉ W := by
+  have hp : ContinuousAt (fun Y => x Y + ((c - ν (x Y)) / ν v) • v) Q :=
+    hx.add (((continuousAt_const.sub (ν.continuous.continuousAt.comp hx)).div_const _).smul
+      continuousAt_const)
+  filter_upwards [hp.eventually (hW.isOpen_compl.mem_nhds hQ)] with Y hY t hmem
+  rw [eq_div_of_add_smul_mem hheight hv hmem] at hmem
+  exact hY hmem
+
+omit [IsTopologicalAddGroup V] [ContinuousSMul ℝ V] in
+/-- If the contact parameter of a transverse line is negative, or is zero with the
+base point pinned to the supporting hyperplane, nearby lines have no contact at a
+positive time. -/
+private theorem eventually_forall_pos_notMem_of_contact_nonpos
+    (ν : V →L[ℝ] ℝ) {c : ℝ} {W : Set V} (hheight : ∀ y ∈ W, ν y = c) {v : V}
+    (hv : ν v ≠ 0) {x : X → V} {Q : X} {D : Set X} (hx : ContinuousAt x Q)
+    (hr : (c - ν (x Q)) / ν v ≤ 0)
+    (hpin : (c - ν (x Q)) / ν v = 0 → ∀ Y ∈ D, ν (x Y) = c) :
+    ∀ᶠ Y in 𝓝 Q, Y ∈ D → ∀ t : ℝ, 0 < t → x Y + t • v ∉ W := by
+  rcases eq_or_lt_of_le hr with he | he
+  · exact Eventually.of_forall fun Y hY t ht hmem => by
+      have hh := eq_div_of_add_smul_mem hheight hv hmem
+      simp only [hpin he Y hY, sub_self, zero_div] at hh
+      linarith
+  · have hr' : ContinuousAt (fun Y => (c - ν (x Y)) / ν v) Q :=
+      (continuousAt_const.sub (ν.continuous.continuousAt.comp hx)).div_const _
+    filter_upwards [hr'.eventually_lt continuousAt_const he] with Y hY _ t ht hmem
+    linarith [eq_div_of_add_smul_mem hheight hv hmem]
 
 /-- Avoidance on an open finite segment is stable relative to constraints fixing
 any limiting endpoint contact in the supporting hyperplane. Such contacts must
@@ -69,44 +113,29 @@ theorem eventually_forall_notMem_of_openSegment
       div_mul_cancel₀ _ hYpos.ne', add_comm] using he
   · -- For a transverse line the unique possible contact either misses the wall,
     -- stays outside the interval, or remains pinned to one of its ends.
-    let r : X → ℝ := fun Y => (c - ν (x Y)) / ν v
-    let p : X → V := fun Y => sweepProjection ν c ((ν v)⁻¹ • v) (x Y)
-    have hr : ContinuousAt r Q :=
-      (continuousAt_const.sub (ν.continuous.continuousAt.comp hx)).div_const _
-    have hp : ContinuousAt p Q := (sweepProjection ν c _).continuous.continuousAt.comp hx
-    have hroot (Y : X) (t : ℝ) (ht : x Y + t • v ∈ W) : r Y = t := by
-      apply (div_eq_iff hv).mpr
-      have hh := hheight _ ht
-      simp only [map_add, map_smul, smul_eq_mul] at hh
-      linarith
-    by_cases hpW : p Q ∈ W
-    · have hformula : p Q = x Q + r Q • v := by
-        simp only [p, r, sweepProjection_apply, smul_smul, div_eq_mul_inv]
-      have hout : r Q ≤ 0 ∨ b Q ≤ r Q := by
+    by_cases hpW : x Q + ((c - ν (x Q)) / ν v) • v ∈ W
+    · have hout : (c - ν (x Q)) / ν v ≤ 0 ∨ b Q ≤ (c - ν (x Q)) / ν v := by
         by_contra hn
         push Not at hn
-        exact havoid _ hn.1 hn.2 (hformula ▸ hpW)
+        exact havoid _ hn.1 hn.2 hpW
       rcases hout with hr0 | hbr
-      · rcases eq_or_lt_of_le hr0 with he | he
-        · have hs := (hstart (by simpa only [hformula, he, zero_smul, add_zero] using hpW)).2
-          exact Eventually.of_forall fun Y hY t ht _ hmem => by
-            have hh := hroot Y t hmem
-            simp only [r, hs Y hY, sub_self, zero_div] at hh
-            linarith
-        · filter_upwards [hr.eventually_lt continuousAt_const he] with Y hY _ t ht _ hmem
-          linarith [hroot Y t hmem]
+      · refine (eventually_forall_pos_notMem_of_contact_nonpos ν hheight hv hx hr0 fun he =>
+          (hstart (by simpa only [he, zero_smul, add_zero] using hpW)).2).mono ?_
+        exact fun Y h hY t ht _ => h hY t ht
       · rcases eq_or_lt_of_le hbr with he | he
-        · have hs := (hend (by simpa only [hformula, ← he] using hpW)).2
+        · have hs := (hend (by simpa only [← he] using hpW)).2
           exact Eventually.of_forall fun Y hY t _ ht hmem => by
             have hh := hs Y hY
             have hh' := hheight _ hmem
             simp only [map_add, map_smul, smul_eq_mul] at hh hh'
             exact ht.ne (mul_right_cancel₀ hv (by linarith : t * ν v = b Y * ν v))
-        · filter_upwards [hb.eventually_lt hr he] with Y hY _ t _ ht hmem
-          linarith [hroot Y t hmem]
-    · filter_upwards [hp.eventually (hW.isOpen_compl.mem_nhds hpW)] with Y hY _ t _ _ hmem
-      apply hY
-      simpa only [p, ν.sweepProjection_inv_smul_eq_add_smul hv (hheight _ hmem)] using hmem
+        · have hr : ContinuousAt (fun Y => (c - ν (x Y)) / ν v) Q :=
+            (continuousAt_const.sub (ν.continuous.continuousAt.comp hx)).div_const _
+          filter_upwards [hb.eventually_lt hr he] with Y hY _ t _ ht hmem
+          linarith [eq_div_of_add_smul_mem hheight hv hmem]
+    · filter_upwards [eventually_forall_notMem_of_contact_notMem ν hW hheight hv hx hpW]
+        with Y hY _ t _ _
+      exact hY t
 
 /-- Avoidance on an open incoming half-line is stable relative to constraints
 fixing a limiting base contact in its supporting hyperplane. Polyhedrality
@@ -125,34 +154,16 @@ theorem eventually_forall_notMem_of_openRay
       rcases eq_or_lt_of_le ht with rfl | ht
       · exact (hstart (by simpa using hmem)).1 hv
       · exact havoid t ht hmem
-    have hc := (isConvexPolyhedron_setOf_exists_nonneg_add_smul_mem hW v).isClosed
+    have hc := (Mei.Convex.isConvexPolyhedron_setOf_exists_nonneg_add_smul_mem hW v).isClosed
     filter_upwards [hx.eventually (hc.isOpen_compl.mem_nhds hmiss)] with Y hY _ t ht
     exact fun hmem => hY ⟨t, ht.le, hmem⟩
   · -- A transverse ray has a unique possible contact, varying continuously.
-    let r : X → ℝ := fun Y => (c - ν (x Y)) / ν v
-    let p : X → V := fun Y => sweepProjection ν c ((ν v)⁻¹ • v) (x Y)
-    have hr : ContinuousAt r Q :=
-      (continuousAt_const.sub (ν.continuous.continuousAt.comp hx)).div_const _
-    have hp : ContinuousAt p Q := (sweepProjection ν c _).continuous.continuousAt.comp hx
-    have hroot (Y : X) (t : ℝ) (ht : x Y + t • v ∈ W) : r Y = t := by
-      apply (div_eq_iff hv).mpr
-      have hh := hheight _ ht
-      simp only [map_add, map_smul, smul_eq_mul] at hh
-      linarith
-    by_cases hpW : p Q ∈ W
-    · have hformula : p Q = x Q + r Q • v := by
-        simp only [p, r, sweepProjection_apply, smul_smul, div_eq_mul_inv]
-      have hr0 : r Q ≤ 0 := le_of_not_gt fun ht => havoid _ ht (hformula ▸ hpW)
-      rcases eq_or_lt_of_le hr0 with he | he
-      · have hs := (hstart (by simpa only [hformula, he, zero_smul, add_zero] using hpW)).2
-        exact Eventually.of_forall fun Y hY t ht hmem => by
-          have hh := hroot Y t hmem
-          simp only [r, hs Y hY, sub_self, zero_div] at hh
-          linarith
-      · filter_upwards [hr.eventually_lt continuousAt_const he] with Y hY _ t ht hmem
-        linarith [hroot Y t hmem]
-    · filter_upwards [hp.eventually (hW.isClosed.isOpen_compl.mem_nhds hpW)] with Y hY _ t _ hmem
-      apply hY
-      simpa only [p, ν.sweepProjection_inv_smul_eq_add_smul hv (hheight _ hmem)] using hmem
+    by_cases hpW : x Q + ((c - ν (x Q)) / ν v) • v ∈ W
+    · exact eventually_forall_pos_notMem_of_contact_nonpos ν hheight hv hx
+        (le_of_not_gt fun ht => havoid _ ht hpW) fun he =>
+          (hstart (by simpa only [he, zero_smul, add_zero] using hpW)).2
+    · filter_upwards [eventually_forall_notMem_of_contact_notMem ν hW.isClosed hheight hv hx hpW]
+        with Y hY _ t _
+      exact hY t
 
 end ContinuousLinearMap

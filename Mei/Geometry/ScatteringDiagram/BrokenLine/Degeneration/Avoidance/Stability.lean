@@ -114,8 +114,11 @@ theorem eventually_avoids_walls_of_regular
       apply (hspan a).subset
       rw [heq]
       exact subset_affineSpan ℝ _ (hP _ (((mem_backwardDomain ..).mp hY j).2))
-  have havoid := t.path_avoids_walls_of_regular c P W S C wall hclosed hP hheight ν z hspan
-    hQ hoff hregular
+  have havoid := (backwardRay_avoids_iff F b u Q hpos W).mp fun a s hs hne => by
+    simpa only [path_def, backwardPath_eq_backwardRay F b u Q hpos,
+      FiniteAffineRay.toContinuousMap_apply] using
+      t.path_avoids_walls_of_regular c P W S C wall hclosed hP hheight ν z hspan
+        hQ hoff hregular a s hs hne
   -- The regular limiting ray avoids each open piece. Pinning boundary contacts
   -- lets the finite-segment stability theorem retain precisely these exclusions.
   have hfinite : ∀ᶠ Y in 𝓝 Q, ∀ (j : Fin t.itinerary.val.length) a,
@@ -126,17 +129,7 @@ theorem eventually_avoids_walls_of_regular
       (fun x hx => (hspan a).subset (subset_affineSpan ℝ _ hx))
       (X j.castSucc).continuous.continuousAt (backwardTime F b w j).continuous.continuousAt
       (hpos j)
-    · intro s hs hs'
-      have he := backwardPath_apply_segment F b u h0 j hs.le hs'.le
-      have ht : τ j.castSucc Q - s < 0 := lt_of_lt_of_le (sub_lt_self _ hs) (hτ _)
-      have hne (e : Fin t.itinerary.val.length) : τ j.castSucc Q - s ≠ τ e.succ Q := by
-        have hanti := strictAnti_backwardParameter F b w Q hpos
-        rcases le_or_gt j e with hej | hej
-        · have hh := hanti.antitone (show j.succ ≤ e.succ by simpa using hej)
-          linarith [backwardParameter_succ F b w j Q]
-        · have hh := hanti.antitone (show e.succ ≤ j.castSucc by simpa using hej)
-          linarith
-      simpa only [path_def, he] using havoid a _ ht hne
+    · exact fun s hs hs' => havoid.1 j a s hs hs'
     · intro ha
       rcases Fin.eq_zero_or_eq_succ j.castSucc with hj | ⟨e, he⟩
       · exact (hoff a (by simpa only [hj, backwardPoint_zero,
@@ -155,13 +148,7 @@ theorem eventually_avoids_walls_of_regular
     apply (ν a).eventually_forall_notMem_of_openRay (hW a)
       (fun x hx => (hspan a).subset (subset_affineSpan ℝ _ hx))
       (X (Fin.last t.itinerary.val.length)).continuous.continuousAt
-    · intro s hs
-      have ht : τ (Fin.last _) Q - s < 0 := lt_of_lt_of_le (sub_lt_self _ hs) (hτ _)
-      have hne (e : Fin t.itinerary.val.length) :
-          τ (Fin.last _) Q - s ≠ τ e.succ Q := by
-        have hh := (strictAnti_backwardParameter F b w Q hpos).antitone (Fin.le_last e.succ)
-        linarith
-      simpa only [path_def, backwardPath_apply_incoming F b u h0 hs.le] using havoid a _ ht hne
+    · exact fun s hs => havoid.2 a s hs
     · intro ha
       rcases Fin.eq_zero_or_eq_succ (Fin.last t.itinerary.val.length) with hj | ⟨e, he⟩
       · exact (hoff a (by simpa only [hj, backwardPoint_zero,
