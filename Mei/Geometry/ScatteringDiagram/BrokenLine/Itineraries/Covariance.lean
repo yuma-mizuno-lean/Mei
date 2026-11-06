@@ -245,6 +245,24 @@ theorem cutoffDecoratedTypeAffineEquiv_decoration (t : Types) :
     (E t).decoration = t.decoration := by
   simp only [CutoffDecoratedType.decoration_eq, cutoffDecoratedTypeAffineEquiv, Equiv.coe_fn_mk]
 
+/-- Inverse coordinate changes retain the full encounter itinerary. -/
+@[simp]
+theorem cutoffDecoratedTypeAffineEquiv_symm_itinerary (t : Types') :
+    ((E).symm t).itinerary = t.itinerary := (rfl)
+
+/-- Inverse coordinate changes retain every degree label in the history. -/
+@[simp]
+theorem cutoffDecoratedTypeAffineEquiv_symm_history (t : Types') :
+    HEq ((E).symm t).history.val t.history.val := (HEq.rfl)
+
+/-- The weight attached to a closed chart is unchanged by inverse affine transport. -/
+@[simp↓]
+theorem cutoffDecoratedTypeAffineEquiv_symm_decoration (t : Types') :
+    ((E).symm t).decoration = t.decoration := by
+  have he := cutoffDecoratedTypeAffineEquiv_decoration d ℳ T a v f ε e k ((E).symm t)
+  rw [Equiv.apply_symm_apply] at he
+  exact he.symm
+
 variable (c : J → ℝ) (P W : J → Set V) (S : K → Set V) (C : Set V)
 
 local notation "b" => fun j => c j - f j (e.symm 0)
