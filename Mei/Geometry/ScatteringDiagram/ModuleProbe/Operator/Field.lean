@@ -135,10 +135,10 @@ theorem operatorExtendedCoefficientField_eq_of_isRelativeOutgoingCompletion
     (fun z f => LieModuleHom.map_lie (GradedOperators.evalLieModuleHom ℳ ℒ a) z f)
     B (GradedOperators.homogeneousFamily ℳ ℒ p α) P P' hP hP' k hB x
 
-/-- The fields of all relative completions of a homogeneous incoming linear
-family are evaluations of exactly one linear map. Existence of both operator
-and ordinary completions is proved, so the characterization is nonvacuous.
-The source module may be infinitely generated. -/
+/-- For a consistent base and a free degree lattice, at each finite cutoff `k` and
+allowed endpoint `x` there is exactly one linear map whose evaluation at `a` is the
+extended coefficient field of every relative completion of the probe diagram
+`α a`. The source module may be infinitely generated. -/
 theorem existsUnique_extendedCoefficientField_linear [Module.Free ℤ Γ]
     (hB : B.Consistent) (k : ℕ)
     (x : WallComplement (fun c : B.active k => (B.wall c).support)) :
