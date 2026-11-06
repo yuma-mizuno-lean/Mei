@@ -14,15 +14,14 @@ public import Mathlib.Algebra.BigOperators.Finprod
 
 A finite semilinear family of finite branches has a finite exceptional arrangement
 outside which nearby fibers are in bijection, preserving chart labels. The domain
-points may move with the endpoint; the bijection retains their branch multiplicities,
-including overlapping images and several branches of one chart. Neither closed domains
-nor proper evaluation maps are required.
+points may move with the endpoint; distinct domain points of one chart and points
+of different charts with the same image remain distinct fiber points. Neither closed
+domains nor proper evaluation maps are required.
 
 The construction uses a branch stratification and the common membership arrangement
 of its target strata. It upgrades the stratumwise cardinality formula to stability of
 the actual fibers. Consequently fiber cardinalities and sums of chart-constant weights
-are locally constant on the generic locus. This applies to weighted endpoint families
-whose charts record complete discrete histories.
+are locally constant on the generic locus.
 
 This combines `BranchStratification.exists_fiberEquiv_of_mem_target` with
 `IsRationalSemilinear.exists_membershipArrangement`; no topology on the fibers or
@@ -64,7 +63,7 @@ end BranchStratification
 namespace IsFiniteBranch
 
 /-- Off a finite exceptional arrangement, the actual fibers of a finite-branch
-family are locally in bijection, retaining all chart labels and their multiplicities. -/
+family are locally in bijection, preserving the chart label of each fiber point. -/
 theorem exists_fiberEquivArrangement (hF : F.IsFiniteBranch) :
     ∃ E : ExceptionalArrangement W,
       ∀ w, E.IsGeneric w → ∀ᶠ w' in 𝓝 w,
@@ -79,27 +78,27 @@ theorem exists_isLocallyConstant_nat_card_fiber (hF : F.IsFiniteBranch) :
     ∃ E : ExceptionalArrangement W,
       IsLocallyConstant (fun w : {w // E.IsGeneric w} => Nat.card (F.fiber w.val)) := by
   obtain ⟨E, hE⟩ := hF.exists_fiberEquivArrangement
-  refine ⟨E, (IsLocallyConstant.iff_eventually_eq _).mpr fun w => ?_⟩
-  exact (continuous_subtype_val.continuousAt.tendsto.eventually
-    (hE w.val w.property)).mono fun w' hw' => by
-      obtain ⟨e, -⟩ := hw'
-      exact (Nat.card_congr e).symm
+  refine ⟨E, Set.isLocallyConstant_domRestrict_of_eventually_eq
+    {w | E.IsGeneric w} (f := fun w => Nat.card (F.fiber w)) fun w hw => ?_⟩
+  exact (hE w hw).mono fun w' hw' => by
+    obtain ⟨e, -⟩ := hw'
+    exact (Nat.card_congr e).symm
 
 /-- One exceptional arrangement works for all chart-constant weights in any additive
 commutative monoid. Nearby fibers retain their labels, so their finite weighted sums
 are locally constant. Zero weights and coincident branch images are permitted. -/
-theorem exists_isLocallyConstant_fiber_sum (hF : F.IsFiniteBranch) :
+theorem exists_isLocallyConstant_finsum_fiber (hF : F.IsFiniteBranch) :
     ∃ E : ExceptionalArrangement W,
       ∀ {A : Type*} [AddCommMonoid A] (weight : ι → A),
         IsLocallyConstant (fun w : {w // E.IsGeneric w} =>
           ∑ᶠ x : F.fiber w.val, weight x.1) := by
   obtain ⟨E, hE⟩ := hF.exists_fiberEquivArrangement
   refine ⟨E, fun {A} _ weight =>
-    (IsLocallyConstant.iff_eventually_eq _).mpr fun w => ?_⟩
-  exact (continuous_subtype_val.continuousAt.tendsto.eventually
-    (hE w.val w.property)).mono fun w' hw' => by
-      obtain ⟨e, he⟩ := hw'
-      exact (finsum_eq_of_bijective e e.bijective fun x => congrArg weight (he x).symm).symm
+    Set.isLocallyConstant_domRestrict_of_eventually_eq {w | E.IsGeneric w}
+      (f := fun w => ∑ᶠ x : F.fiber w, weight x.1) fun w hw => ?_⟩
+  exact (hE w hw).mono fun w' hw' => by
+    obtain ⟨e, he⟩ := hw'
+    exact (finsum_eq_of_bijective e e.bijective fun x => congrArg weight (he x).symm).symm
 
 end IsFiniteBranch
 

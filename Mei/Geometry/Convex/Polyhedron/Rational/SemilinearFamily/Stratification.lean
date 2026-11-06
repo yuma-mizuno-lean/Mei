@@ -155,7 +155,7 @@ theorem exists_fiberEquiv {b : κ} {w : W} (hw : w ∈ S.target b) :
     S.domain_eq _ ▸ mem_iUnion₂.mpr ⟨a, rfl, hx a⟩
   let e (a : {a // S.stratum a = b}) : F.fiber w :=
     ⟨S.chart a, ⟨x a, hdom a⟩, (heval a ⟨x a, hdom a⟩ (hx a)).trans (hxw a)⟩
-  have hbij : Function.Bijective e := by
+  have he_bij : Function.Bijective e := by
     refine ⟨fun a a' he => ?_, ?_⟩
     · by_contra hne
       have hxx : x a = x a' := congrArg (fun p : F.fiber w => (p.2.1 : V)) he
@@ -173,7 +173,7 @@ theorem exists_fiberEquiv {b : κ} {w : W} (hw : w ∈ S.target b) :
       have hxy : x ⟨a, hab⟩ = y :=
         (hbij a).injOn (hx ⟨a, hab⟩) hya ((hxw ⟨a, hab⟩).trans (hy.symm.trans (heval a y hya)))
       exact ⟨⟨a, hab⟩, Sigma.ext rfl (heq_of_eq (Subtype.ext (Subtype.ext hxy)))⟩
-  exact ⟨Equiv.ofBijective e hbij, fun a => ⟨rfl, hx a⟩⟩
+  exact ⟨Equiv.ofBijective e he_bij, fun a => ⟨rfl, hx a⟩⟩
 
 /-- Over a point `w` of the target stratum `b`, the fiber cardinality is the number
 of source strata mapped onto `b`. -/
@@ -183,7 +183,8 @@ theorem nat_card_fiber {b : κ} {w : W} (hw : w ∈ S.target b) :
   exact (Nat.card_congr e).symm
 
 /-- Two fibers over one target stratum are in bijection, preserving every chart
-label. Distinct branches in the same chart are still distinct fiber points. -/
+label. Distinct domain points of one chart, and points of different charts with the
+same image, remain distinct fiber points. -/
 theorem exists_fiberEquiv_of_mem_target {b : κ} {w w' : W}
     (hw : w ∈ S.target b) (hw' : w' ∈ S.target b) :
     ∃ e : F.fiber w ≃ F.fiber w', ∀ x, (e x).1 = x.1 := by

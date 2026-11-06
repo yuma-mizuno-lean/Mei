@@ -7,7 +7,7 @@ module
 
 public import Mei.Geometry.Convex.Polyhedron.Rational.Stratification
 public import Mei.Geometry.Affine.Arrangement
-public import Mathlib.Topology.LocallyConstant.Basic
+public import Mei.Topology.LocallyConstant.Basic
 
 /-!
 # Generic stability of finite semilinear families
@@ -71,8 +71,8 @@ theorem IsRationalSemilinear.exists_isLocallyConstant_labels
       (∀ j, frontier (S j) ⊆ {x | ¬ E.IsGeneric x}) ∧
         IsLocallyConstant (fun x : {x // E.IsGeneric x} => {j | x.val ∈ S j}) := by
   obtain ⟨E, hfrontier, hstable⟩ := IsRationalSemilinear.exists_membershipArrangement hS
-  refine ⟨E, hfrontier, (IsLocallyConstant.iff_eventually_eq _).mpr fun x => ?_⟩
-  exact (continuous_subtype_val.continuousAt.tendsto.eventually
-    (hstable x.val x.property)).mono fun y hy => Set.ext hy
+  refine ⟨E, hfrontier, Set.isLocallyConstant_domRestrict_of_eventually_eq
+    {x | E.IsGeneric x} (f := fun x => {j | x ∈ S j}) fun x hx => ?_⟩
+  exact (hstable x hx).mono fun y hy => Set.ext hy
 
 end Mei
