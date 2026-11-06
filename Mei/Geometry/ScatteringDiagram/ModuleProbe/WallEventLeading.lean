@@ -26,10 +26,9 @@ are never overcounted. The backward segment plays no role, so this term is
 independent of the segment and of its incoming-germ choices.
 
 The ingredients are the leading-ray analysis of
-`Mei.decompose_cutoffDecoratedEvaluation_zero_eq_ite`, the fact that a
-simultaneous event propagation fixes the constant-degree class
-(`decompose_wallEventPropagation_zero`, which covers differing geometric and
-coefficient cutoffs), and `WallEvent.eq_of_mem_support_of_normal_sign_eq` for
+`Mei.decompose_cutoffDecoratedEvaluation_zero_eq_ite`, the component-preservation fact
+`decompose_wallEventPropagation_self`, valid when geometric and coefficient
+cutoffs differ, and `WallEvent.eq_of_mem_support_of_normal_sign_eq` for
 the signed separation. The recursion is that of Mandel, *Scattering diagrams,
 theta functions, and refined tropical curve counts*, §3.3.3
 (arXiv:1503.06183v5).
@@ -39,45 +38,6 @@ public noncomputable section
 
 open Set Filter Topology Mei.Convex Mei.Convex.WallComplement
 
-namespace Mei.Convex.AdmissibleRayRealization
-
-variable {V ι K : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V] [Finite ι]
-  {n : ℕ} {W : ι → Set V} {f : ι → V →L[ℝ] ℝ} {c : ι → ℝ}
-  {a : Fin n → ι} {v : Fin (n + 1) → V} {S : K → Set V} {C : Set V} {Q : V}
-
-/-- Relabel the recorded encounters of a realization by their canonical signed
-events while keeping the *ambient* wall family and singular sets unchanged.
-`AdmissibleRayRealization.withWallEvents` instead replaces the ambient family by
-the event supports themselves. That is enough for a free-standing decorated-ray
-sum, but not for a sum whose admissibility family is a fixed wall inventory, as
-in the canonical simultaneous wall-event evaluation. -/
-def withWallEventsAmbient
-    (r : AdmissibleRayRealization (fun j => f (a j)) (fun j => c (a j)) v
-      (fun j => W (a j)) W S C Q)
-    (hker : ∀ b, (f b).toLinearMap.ker = (affineSpan ℝ (W b)).direction)
-    (hregular : ∀ j : Fin n, r.ray (r.parameter j.succ) ∉ singularSupport W)
-    (hc : ∀ b x, x ∈ W b → f b x = c b) :
-    AdmissibleRayRealization (fun j => (r.wallEvents j).normal f)
-      (fun j => (r.wallEvents j).offset c) v (fun j => (r.wallEvents j).support W)
-      W S C Q where
-  ray := r.ray
-  parameter := r.parameter
-  parameter_zero := r.parameter_zero
-  strictAnti_parameter := r.strictAnti_parameter
-  transverse j := (r.wallEvents j).normal_ne_zero_of_mem_support W f
-    (by simp) (fun b hb => r.normal_ne_zero_of_mem_wallEvents hker hregular j
-      ((r.mem_wallEvents j b).mpr hb))
-  endpoint_eq := r.endpoint_eq
-  directionAt_eq := r.directionAt_eq
-  bends_recorded := r.bends_recorded
-  height_eq j := (r.wallEvents j).normal_apply_of_mem_support W f c hc (by simp)
-  incidence j := by simp
-  avoids_walls := r.avoids_walls
-  incoming := r.incoming
-  avoids_singular := r.avoids_singular
-  off_walls := r.off_walls
-
-end Mei.Convex.AdmissibleRayRealization
 
 namespace Mei.ModuleProbe
 
@@ -99,21 +59,6 @@ variable {R Λ V E ι κ κ' : Type*} {Γ : Type} {M L : Type u} [CommRing R] [A
 
 local notation "A" => d.shiftedLieFiltration ℒ ℳ p
 
-omit [IsWallAnnihilating H ℳ] in
-/-- A simultaneous wall event fixes the whole constant-degree class of the
-coefficient quotient: unchanged-degree encounters do not contribute. The
-geometric wall inventory and the coefficient quotient may use different
-cutoffs; the canonical evaluation needs this case. -/
-theorem decompose_wallEventPropagation_zero (k K : ℕ) (hkK : k ≤ K)
-    (b : WallEvent (B.active K)) {z : (d.shiftedLieFiltration ℒ ℳ p).quotient k}
-    (hz : z ∈ (d.shiftedQuotientGrading ℳ p k).piece 0) :
-    (DirectSum.decompose (d.shiftedQuotientGrading ℳ p k).piece
-        (wallEventPropagation d ℳ p ℒ H h B k K hkK b z) 0 :
-      (d.shiftedLieFiltration ℒ ℳ p).quotient k) = z := by
-  rw [wallEventPropagation_apply]
-  exact d.decompose_truncatedBCHAction_same ℒ ℳ p k _ hz
-
-omit [IsWallAnnihilating H ℳ] in
 omit [IsWallAnnihilating H ℳ] in
 open Classical in
 /-- The constant term of the canonical simultaneous wall-event evaluation. At an
@@ -151,8 +96,8 @@ theorem decompose_cutoffWallEventEvaluation_zero_eq_ite (k : ℕ)
     (W := B.activeSupport (k + 1))
     (S := fun _ : Unit => singularSupport (B.activeSupport (k + 1)))
     (C := C) (k := k + 1) (Q := Q)
-    (fun e x hx => decompose_wallEventPropagation_zero d ℳ p ℒ H h B (k + 1) (k + 1)
-      (Nat.le_refl (k + 1)) e hx)
+    (fun e x hx => decompose_wallEventPropagation_self d ℳ p ℒ H h B (k + 1) (k + 1)
+      (Nat.le_refl (k + 1)) e x hx)
     (fun e => (e.support_subset (B.activeSupport (k + 1))
       e.1.property.choose_spec).trans (Set.subset_iUnion _ _))
     (fun t _ b b' hb hb' hs hs' =>
@@ -201,8 +146,8 @@ theorem decompose_cutoffWallEventEvaluation_zero_of_realization (k : ℕ) {n : �
         (wallEventPropagation d ℳ p ℒ H h B (k + 1) (k + 1)
           (Nat.le_refl (k + 1)) e x) 0 :
         (d.shiftedLieFiltration ℒ ℳ p).quotient (k + 1)) = x) :=
-    fun e x hx => decompose_wallEventPropagation_zero d ℳ p ℒ H h B (k + 1) (k + 1)
-      (Nat.le_refl (k + 1)) e hx
+    fun e x hx => decompose_wallEventPropagation_self d ℳ p ℒ H h B (k + 1) (k + 1)
+      (Nat.le_refl (k + 1)) e x hx
   have hlead : ∀ z : Σ m, Fin m → WallEvent (B.active (k + 1)),
       (AdmissibleRayRealization (fun j => (z.2 j).normal (B.activeNormal (k + 1)))
         (fun j => (z.2 j).offset (B.activeOffset (k + 1))) (fun _ => i (ρ (p + 0)))

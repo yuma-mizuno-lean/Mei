@@ -16,12 +16,11 @@ finite BCH action of any label is the identity plus an endomorphism that raises 
 filtration by one. By `Mei.LinearAlgebra.ModuleFiltration.Raising` that raising part is
 nilpotent at finite order and the inverse of the action is its finite geometric series.
 
-This identifies the backward-ray operator of the recursions of `Mei.ModuleProbe` at the
+This identifies the backward-ray operator of probe recurrence at the
 coefficient level: the correction terms of
 `shiftedQuotientComponent_truncatedBCHAction_eq_add_sum` are the raising part, and the
-recursion terminates after `k + 1` steps at order `k`. The corresponding uniqueness and
-expansion statements are `truncatedBCHAction_eq_of_eq_add` and
-`truncatedBCHAction_symm_apply_eq_sum`.
+recursion terminates after `k + 1` steps at order `k`.
+and recursion theorems wherever a truncated BCH action is applied.
 -/
 
 public noncomputable section
@@ -65,57 +64,5 @@ theorem truncatedBCHAction_isAdapted (k : ℕ) (g : d.truncatedGroup ℒ k) :
     F.IsAdapted k (F.truncatedBCHAction d ℒ k g : Module.End R (F.quotient k)) :=
   F.isAdapted_iff.mpr (F.isRaisingEnd_iff.mpr (fun _b _ hx =>
     F.truncatedBCHAction_raisingPart_mem d ℒ g hx))
-
-/-- At order `k + 1` the backward operator of a truncated BCH action is the correction
-map: the difference from the identity is computed at one lower order. -/
-theorem truncatedBCHAction_raisingPart_eq_correction (k : ℕ) (g : d.truncatedGroup ℒ (k + 1))
-    (x : F.quotient (k + 1)) :
-    F.raisingPart (F.truncatedBCHAction d ℒ (k + 1) g : Module.End R (F.quotient (k + 1))) x =
-      F.truncatedBCHCorrection d ℒ k g (F.transition (Nat.le_succ k) x) := by
-  rw [raisingPart_apply, LinearEquiv.coe_coe, F.truncatedBCHAction_eq_add_correction d ℒ k g]
-  abel
-
-/-- A word of wall crossings is the identity plus a raising part. -/
-theorem isAdapted_truncatedBCHAction_list_prod (k : ℕ) (l : List (d.truncatedGroup ℒ k)) :
-    F.IsAdapted k ((l.map fun g =>
-      (F.truncatedBCHAction d ℒ k g : Module.End R (F.quotient k))).prod) := by
-  induction l with
-  | nil => simpa using (IsAdapted.one (F := F) (k := k))
-  | cons g gs ih =>
-    rw [List.map_cons, List.prod_cons]
-    exact IsAdapted.mul (F.truncatedBCHAction_isAdapted d ℒ k g) ih
-
-/-- At order `k` the backward operator of a truncated BCH action is nilpotent with the
-`(k + 1)`st power zero. -/
-theorem truncatedBCHAction_backwardPart_pow_eq_zero (k : ℕ) (g : d.truncatedGroup ℒ k) :
-    (F.backwardPart (F.truncatedBCHAction d ℒ k g : Module.End R (F.quotient k))) ^ (k + 1) = 0 :=
-  (F.truncatedBCHAction_isAdapted d ℒ k g).backwardPart_pow_eq_zero
-
-/-- Every solution of the component recursion of a truncated BCH action is the finite sum of
-the iterates of its backward operator. -/
-theorem truncatedBCHAction_eq_of_eq_add (k : ℕ) (g : d.truncatedGroup ℒ k)
-    {a x : F.quotient k}
-    (hx : x = a + F.backwardPart
-      (F.truncatedBCHAction d ℒ k g : Module.End R (F.quotient k)) x) :
-    x = ∑ j ∈ Finset.range (k + 1),
-      ((F.backwardPart (F.truncatedBCHAction d ℒ k g : Module.End R (F.quotient k))) ^ j) a :=
-  (F.truncatedBCHAction_isAdapted d ℒ k g).eq_sum_of_eq_add hx
-
-/-- The inverse of a truncated BCH action is the finite geometric series of its backward
-operator. -/
-theorem truncatedBCHAction_symm_eq_finiteRecursion (k : ℕ) (g : d.truncatedGroup ℒ k) :
-    ((F.truncatedBCHAction d ℒ k g).symm : Module.End R (F.quotient k)) =
-      (F.backwardPart
-        (F.truncatedBCHAction d ℒ k g : Module.End R (F.quotient k))).finiteRecursion (k + 1) :=
-  F.symm_eq_finiteRecursion _ (F.truncatedBCHAction_isAdapted d ℒ k g)
-
-/-- The inverse of a truncated BCH action is the finite geometric series of its backward
-operator, evaluated on a coefficient. -/
-theorem truncatedBCHAction_symm_apply_eq_sum (k : ℕ) (g : d.truncatedGroup ℒ k)
-    (a : F.quotient k) :
-    (F.truncatedBCHAction d ℒ k g).symm a =
-      ∑ j ∈ Finset.range (k + 1),
-        ((F.backwardPart (F.truncatedBCHAction d ℒ k g : Module.End R (F.quotient k))) ^ j) a :=
-  F.symm_apply_eq_sum _ (F.truncatedBCHAction_isAdapted d ℒ k g) a
 
 end Mei.ModuleFiltration

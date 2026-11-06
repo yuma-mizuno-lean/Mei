@@ -272,19 +272,6 @@ theorem existsUnique_endpointStep_eq_add (source : Endpoint d ℳ p V k) :
   Module.End.existsUnique_eq_add_of_pow_eq_zero _
     (endpointStep_pow_eq_zero d ℳ p k events block point) source
 
-omit [DecidableEq Γ] in
-/-- The unique solution is the explicit finite sum of iterates of the source. -/
-theorem existsUnique_endpointStep_eq_add_solution (source : Endpoint d ℳ p V k) :
-    Module.End.finiteRecursion (endpointStep d ℳ p k events block point) (k + 1) source =
-        source + endpointStep d ℳ p k events block point
-          (Module.End.finiteRecursion
-            (endpointStep d ℳ p k events block point) (k + 1) source) ∧
-      ∀ x, x = source + endpointStep d ℳ p k events block point x →
-        x = Module.End.finiteRecursion (endpointStep d ℳ p k events block point) (k + 1) source :=
-  ⟨Module.End.finiteRecursion_eq_add _
-    (endpointStep_pow_eq_zero d ℳ p k events block point) source,
-    fun _ hx => eq_finiteRecursion_endpointStep d ℳ p k events block point hx⟩
-
 end Recursion
 
 end Mei

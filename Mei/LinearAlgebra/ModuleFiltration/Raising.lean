@@ -67,16 +67,10 @@ theorem quotientImage_antitone (k : ℕ) : Antitone (F.quotientImage k) :=
 theorem quotientImage_succ_le (k b : ℕ) : F.quotientImage k (b + 1) ≤ F.quotientImage k b :=
   F.quotientImage_antitone k (Nat.le_succ b)
 
-theorem map_mkQ_self_eq_bot (p : Submodule R M) : p.map p.mkQ = ⊥ := by
-  rw [Submodule.eq_bot_iff]
-  rintro x ⟨m, hm, rfl⟩
-  rw [Submodule.mkQ_apply]
-  exact (Submodule.Quotient.mk_eq_zero p).mpr hm
-
 /-- The order-`k + 1` term vanishes in the order-`k` quotient. -/
 @[simp]
 theorem quotientImage_self_eq_bot (k : ℕ) : F.quotientImage k (k + 1) = ⊥ :=
-  map_mkQ_self_eq_bot (F.submodule (k + 1))
+  Submodule.mkQ_map_self (F.submodule (k + 1))
 
 /-- A transition kills exactly the classes represented by the finer filtration term. -/
 theorem mem_ker_transition_iff {k l : ℕ} (h : k ≤ l) {z : M} :

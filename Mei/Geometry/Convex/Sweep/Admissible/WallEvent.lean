@@ -100,12 +100,16 @@ theorem normal_ne_zero_of_mem_wallEvents (j : Fin n) {b : ι}
 
 variable (hW : ∀ b x, x ∈ W b → f b x = c b)
 
-/-- Relabel all recorded encounters by their canonical signed simultaneous events.
-The complete actual ray, parameter tuple and source conditions are preserved. -/
-def withWallEvents :
+/-- Relabel recorded encounters by canonical simultaneous events while keeping
+the ambient wall family unchanged. -/
+def withWallEventsAmbient (r : AdmissibleRayRealization (fun j => f (a j)) (fun j => c (a j)) v
+      (fun j => W (a j)) W S C Q)
+    (hker : ∀ b, (f b).toLinearMap.ker = (affineSpan ℝ (W b)).direction)
+    (hregular : ∀ j : Fin n, r.ray (r.parameter j.succ) ∉ singularSupport W)
+    (hW : ∀ b x, x ∈ W b → f b x = c b) :
     AdmissibleRayRealization (fun j => (r.wallEvents j).normal f)
       (fun j => (r.wallEvents j).offset c) v (fun j => (r.wallEvents j).support W)
-      (fun e : WallEvent ι => e.support W) S C Q where
+      W S C Q where
   ray := r.ray
   parameter := r.parameter
   parameter_zero := r.parameter_zero
@@ -119,11 +123,39 @@ def withWallEvents :
   height_eq j := (r.wallEvents j).normal_apply_of_mem_support W f c hW
     (by simp)
   incidence j := by simp
-  avoids_walls e t ht hne hm := r.avoids_walls _ t ht hne
-    (e.support_subset W e.1.property.choose_spec hm)
+  avoids_walls := r.avoids_walls
   incoming := r.incoming
   avoids_singular := r.avoids_singular
-  off_walls e hm := r.off_walls _ (e.support_subset W e.1.property.choose_spec hm)
+  off_walls := r.off_walls
+
+/-- Reindex the ambient wall family to event supports. This produces the usual
+canonical-event realization while sharing the incident transversality, height,
+path and incoming conditions with the ambient-preserving construction. -/
+def withWallEvents (r : AdmissibleRayRealization (fun j => f (a j)) (fun j => c (a j)) v
+      (fun j => W (a j)) W S C Q)
+    (hker : ∀ b, (f b).toLinearMap.ker = (affineSpan ℝ (W b)).direction)
+    (hregular : ∀ j : Fin n, r.ray (r.parameter j.succ) ∉ singularSupport W)
+    (hW : ∀ b x, x ∈ W b → f b x = c b) :
+    AdmissibleRayRealization (fun j => (r.wallEvents j).normal f)
+      (fun j => (r.wallEvents j).offset c) v (fun j => (r.wallEvents j).support W)
+      (fun e : WallEvent ι => e.support W) S C Q := by
+  let g := r.withWallEventsAmbient hker hregular hW
+  exact {
+    ray := g.ray
+    parameter := g.parameter
+    parameter_zero := g.parameter_zero
+    strictAnti_parameter := g.strictAnti_parameter
+    transverse := g.transverse
+    endpoint_eq := g.endpoint_eq
+    directionAt_eq := g.directionAt_eq
+    bends_recorded := g.bends_recorded
+    height_eq := g.height_eq
+    incidence := g.incidence
+    avoids_walls := fun e t ht hne hm => g.avoids_walls _ t ht hne
+      (e.support_subset W e.1.property.choose_spec hm)
+    incoming := g.incoming
+    avoids_singular := g.avoids_singular
+    off_walls := fun e hm => g.off_walls _ (e.support_subset W e.1.property.choose_spec hm) }
 
 /-- Canonical event relabelling preserves the entire path and incoming tail. -/
 @[simp]
