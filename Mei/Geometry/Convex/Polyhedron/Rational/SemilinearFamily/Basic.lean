@@ -192,6 +192,13 @@ theorem ext {F G : FiniteSemilinearFamily h h' ι} (hd : ∀ c, F.domain c = G.d
 `w`. Points of different charts are never identified. -/
 @[expose] def fiber (w : W) : Type _ := Σ c, {x : F.domain c // F.eval c x = w}
 
+/-- Transporting a fiber point along equality of families preserves its chart label. -/
+theorem fiber_cast_fst {F G : FiniteSemilinearFamily h h' ι} (e : F = G)
+    (w : W) (z : F.fiber w) :
+    (cast (congrArg (fun F : FiniteSemilinearFamily h h' ι => F.fiber w) e) z).1 = z.1 := by
+  subst G
+  rfl
+
 /-- A family whose charts are all finite branches. -/
 def IsFiniteBranch : Prop := ∀ c, IsFiniteBranchOn h h' (F.domain c) (F.eval c)
 

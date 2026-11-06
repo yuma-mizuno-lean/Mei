@@ -167,6 +167,18 @@ theorem mapAlgHom_apply {k : Type*} [CommRing k] [Algebra k R] [Algebra k S]
     (x : QuantumMonoidAlgebra q β) :
     mapAlgHom φ f h x = map φ.toRingHom f h x := (rfl)
 
+/-- Restricting scalars to the common base preserves homogeneity of coefficient change. -/
+theorem coefficientMap_mem_grade {k : Type*} {β' : LinearMap.BilinForm ℤ Γ}
+    [CommRing k] [Algebra k R] [Algebra k S]
+    (φ : R →ₐ[k] S)
+    (h : ∀ p r, Units.map φ.toMonoidHom (q ^ β p r) = q' ^ β' p r) (u : Γ) :
+    (grade q β u).restrictScalars k ≤ ((grade q' β' u).restrictScalars k).comap
+      (mapAlgHom φ (AddMonoidHom.id Γ) h).toLinearMap := by
+  intro x hx
+  rw [Submodule.mem_comap, Submodule.restrictScalars_mem, AlgHom.toLinearMap_apply,
+    mapAlgHom_apply]
+  exact map_mem_grade φ.toRingHom (AddMonoidHom.id Γ) h hx
+
 /-- An exponent map compatible with the factor sets, with fixed coefficients,
 is an algebra map. -/
 def mapDomainAlgHom (f : Γ →+ Γ') (h : ∀ p r, q ^ β p r = q ^ β' (f p) (f r)) :

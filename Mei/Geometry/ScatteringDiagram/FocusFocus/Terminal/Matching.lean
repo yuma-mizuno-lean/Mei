@@ -5,8 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.ScatteringDiagram.FocusFocus.Terminal
-public import Mei.Geometry.ScatteringDiagram.FocusFocus.Family.Theta
+public import Mei.Geometry.ScatteringDiagram.FocusFocus.Terminal.Resolution
 public import Mei.Algebra.Category.SemimoduleCat.Multispan.Basic
 
 /-!
@@ -14,7 +13,8 @@ public import Mei.Algebra.Category.SemimoduleCat.Multispan.Basic
 
 The common semilinear families of actual incoming, crossing and constant
 contributions near a regular slab point assemble into
-one matching coefficient family on the slab span. The common total terminal lift
+one matching coefficient family on the slab span. The chamber identities use
+the complete closed-chart incident resolutions on the two sides. The common total terminal lift
 determines its face value, the sum of theta monomials with their original incoming
 parameter maps.
 
@@ -88,13 +88,29 @@ private theorem terminalChamberMap_eq
     terminalChamberMap s n b t α side a =
       ∑ i ∈ s, (slabThetaFamily t (α i a) (n i) (b i) h).weightedEvaluation
           (slabThetaChartWeight t (α i a) (n i) (b i)) (if side then U else L) := by
+  have expand (Q : ℝ × ℝ) (hQ : Q ∈ slabTerminalFiniteDomain s n b v)
+      (side : Bool) (hs : Q ∈ incomingSlabDomain side) (i : ι) (hi : i ∈ s) :
+      (slabThetaFamily t (α i a) (n i) (b i) h).weightedEvaluation
+          (slabThetaChartWeight t (α i a) (n i) (b i)) Q =
+        (if side then exponentRightMap (C t * (1 + T 1)) else
+          exponentLeftMap (C t * (1 + T 1))) (α i a • theta t (n i) (b i)) := by
+    have hQi := (mem_slabTerminalFiniteDomain s n b v Q).mp hQ i hi
+    rw [slabThetaFamily_weightedEvaluation_eq_terminal_resolution
+      t (α i a) (n i) (b i) h hQi side hs,
+      slabThetaTerminalResolution_weightedSum t (α i a) (n i) (b i) (by
+        have hp := (mem_slabTerminalDomain (n i) (b i) v Q).mp hQi ⟨0, by omega⟩
+        exact left_ne_zero_of_mul hp.ne') side]
   cases side
-  · simpa only [terminalChamberMap_false, LinearMap.comp_apply, AlgHom.toLinearMap_apply,
-      Bool.false_eq_true, ↓reduceIte, slabThetaFamily_weightedEvaluation] using
-      exponentLeftMap_slabTerminalFiniteLift s n b t α hL hLs a
-  · simpa only [terminalChamberMap_true, LinearMap.comp_apply,
-      AlgHom.toLinearMap_apply, ↓reduceIte, slabThetaFamily_weightedEvaluation] using
-      exponentRightMap_slabTerminalFiniteLift s n b t α hU hUs a
+  · simp only [terminalChamberMap_false, LinearMap.comp_apply, AlgHom.toLinearMap_apply,
+      Bool.false_eq_true, ↓reduceIte, slabTerminalFiniteLift_apply, map_sum]
+    apply Finset.sum_congr rfl
+    intro i hi
+    exact (expand L hL false (by simpa using hLs) i hi).symm
+  · simp only [terminalChamberMap_true, LinearMap.comp_apply, AlgHom.toLinearMap_apply,
+      ↓reduceIte, slabTerminalFiniteLift_apply, map_sum]
+    apply Finset.sum_congr rfl
+    intro i hi
+    exact (expand U hU true (by simpa using hUs) i hi).symm
 
 /-- Common-family weighted evaluations at any two opposite-side endpoints in
 the common terminal neighborhood extend uniquely to a linear matching family. -/

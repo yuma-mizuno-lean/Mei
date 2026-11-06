@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.LinearAlgebra.GradedModule.Shifted.Basic
+public import Mei.LinearAlgebra.GradedModule.Shifted.Map
 public import Mei.LinearAlgebra.ModuleFiltration.Bilinear
 public import TauCeti.RingTheory.GradedAlgebra.Basic
 
@@ -110,6 +110,8 @@ theorem shiftedMul_mem_shiftedFiltration {a b : ℕ}
 
 end Semiring
 
+section Ring
+
 variable {R A Γ : Type*} [CommRing R] [Ring A] [Algebra R A]
   [AddCommGroup Γ] (d : PositiveDegrees Γ)
   (𝒜 : Γ → Submodule R A) [SetLike.GradedMul 𝒜]
@@ -166,6 +168,22 @@ theorem projection_shiftedCompletionMul (k : ℕ)
     (d.shiftedFiltration 𝒜 (p + q)).projection k (d.shiftedCompletionMul 𝒜 p q x y) =
       Submodule.Quotient.mk (shiftedMul 𝒜 d.monoid p q u v) := by
   rw [projection_shiftedCompletionMul_eq_quotient, ← hu, ← hv, shiftedQuotientMul_mk]
+
+/-- Commuting ambient coefficients give symmetric completed products in a common chart. -/
+theorem shiftedCompletionMul_comm_same_origin
+    (hcomm : ∀ a b : A, Commute a b) (p : Γ) (x y : d.ShiftedCoefficients 𝒜 p) :
+    d.shiftedCompletionMul 𝒜 p p x y = d.shiftedCompletionMul 𝒜 p p y x := by
+  apply (d.shiftedFiltration 𝒜 (p + p)).completion_ext
+  intro k
+  obtain ⟨a, ha⟩ := ((d.shiftedFiltration 𝒜 p).submodule (k + 1)).mkQ_surjective
+    ((d.shiftedFiltration 𝒜 p).projection k x)
+  obtain ⟨b, hb⟩ := ((d.shiftedFiltration 𝒜 p).submodule (k + 1)).mkQ_surjective
+    ((d.shiftedFiltration 𝒜 p).projection k y)
+  rw [d.projection_shiftedCompletionMul 𝒜 p p k x y a b ha hb,
+    d.projection_shiftedCompletionMul 𝒜 p p k y x b a hb ha]
+  apply congrArg Submodule.Quotient.mk
+  apply Subtype.ext
+  simpa only [coe_shiftedMul] using (hcomm a b).eq
 
 /-- Original coefficients multiply before or after passage to the completion. -/
 @[simp]
@@ -232,6 +250,36 @@ theorem shiftedCompletionMul_assoc (r : Γ)
   apply Subtype.ext
   simp only [coe_shiftedMul]
   exact mul_assoc (u : A) v w
+
+end Ring
+
+section Map
+
+variable {Γ R A B : Type*} [AddCommGroup Γ] [CommRing R]
+  [Ring A] [Algebra R A] [Ring B] [Algebra R B]
+  (d : PositiveDegrees Γ) (𝒜 : Γ → Submodule R A) (ℬ : Γ → Submodule R B)
+  [SetLike.GradedMul 𝒜] [SetLike.GradedMul ℬ]
+  (f : A →ₗ[R] B) (hf : ∀ u, 𝒜 u ≤ (ℬ u).comap f)
+  (hmul : ∀ a b, f (a * b) = f a * f b)
+
+include hmul in
+/-- A multiplicative degree-preserving linear map intertwines the existing completed
+shifted products. -/
+@[simp]
+theorem completionCoefficientMap_mul (p q : Γ)
+    (x : d.ShiftedCoefficients 𝒜 p) (y : d.ShiftedCoefficients 𝒜 q) :
+    d.completionCoefficientMap 𝒜 ℬ (p + q) f hf
+        (d.shiftedCompletionMul 𝒜 p q x y) =
+      d.shiftedCompletionMul ℬ p q
+        (d.completionCoefficientMap 𝒜 ℬ p f hf x)
+        (d.completionCoefficientMap 𝒜 ℬ q f hf y) := by
+  simp only [completionCoefficientMap_eq_completionMap, shiftedCompletionMul_def]
+  apply ModuleFiltration.completionMap_completionBilinear
+  intro a b
+  apply Subtype.ext
+  simp only [coe_shiftedCoefficientMap, coe_shiftedMul, hmul]
+
+end Map
 
 end PositiveDegrees
 end Mei

@@ -5,8 +5,8 @@ Authors: Codex
 -/
 module
 
+public import Mei.LinearAlgebra.GradedModule.Shifted.Inclusion
 public import Mei.LinearAlgebra.GradedModule.Shifted.Quotient
-public import Mei.LinearAlgebra.ModuleFiltration.Map
 
 /-!
 # Maps of shifted coefficient modules
@@ -267,88 +267,35 @@ theorem shiftedCoefficientMap_mem_shiftedGrading {q : Γ}
 
 end FixedMonoid
 
-section Group
-
-variable {Γ Γ' R M N : Type*} [AddCommGroup Γ] [AddCommGroup Γ']
-  [Ring R] [AddCommGroup M] [Module R M] [AddCommGroup N] [Module R N]
-  [DecidableEq Γ] {d : PositiveDegrees Γ} {e : PositiveDegrees Γ'}
-  (T : PositiveDegreeMap d e) (ℳ : Γ → Submodule R M) (𝒩 : Γ' → Submodule R N)
-  [DirectSum.Decomposition ℳ] (p : Γ) (f : M →ₗ[R] N)
-  (hf : ∀ q, ℳ q ≤ (𝒩 (T q)).comap f)
-
-private theorem shiftedMapAt_mem_filtration (q : Γ') (hp : T p = q) (l k : ℕ)
-    (hk : T.modulus k = l) {a : shiftedSubmodule ℳ d.monoid p}
-    (ha : a ∈ (d.shiftedFiltration ℳ p).submodule (l + 1)) :
-    shiftedMapAt T ℳ 𝒩 p f hf q hp a ∈ (e.shiftedFiltration 𝒩 q).submodule (k + 1) := by
-  subst q
-  subst l
-  exact T.shiftedMap_mem_shiftedFiltration ℳ 𝒩 p f hf k ha
-
-private def shiftedQuotientMapAt (q : Γ') (hp : T p = q) (l k : ℕ)
-    (hk : T.modulus k = l) :
-    (d.shiftedFiltration ℳ p).quotient l →ₗ[R] (e.shiftedFiltration 𝒩 q).quotient k := by
-  subst q
-  subst l
-  exact T.shiftedQuotientMap ℳ 𝒩 p f hf k
-
-private theorem shiftedQuotientMapAt_def (q : Γ') (hp : T p = q) (l k : ℕ)
-    (hk : T.modulus k = l) :
-    shiftedQuotientMapAt T ℳ 𝒩 p f hf q hp l k hk =
-      ((d.shiftedFiltration ℳ p).submodule (l + 1)).mapQ
-        ((e.shiftedFiltration 𝒩 q).submodule (k + 1))
-        (shiftedMapAt T ℳ 𝒩 p f hf q hp)
-        (fun _ ha => shiftedMapAt_mem_filtration T ℳ 𝒩 p f hf q hp l k hk ha) := by
-  subst q
-  subst l
-  exact T.shiftedQuotientMap_def ℳ 𝒩 p f hf k
-
-private theorem shiftedQuotientMapAt_mk (q : Γ') (hp : T p = q) (l k : ℕ)
-    (hk : T.modulus k = l) (a : shiftedSubmodule ℳ d.monoid p) :
-    shiftedQuotientMapAt T ℳ 𝒩 p f hf q hp l k hk (Submodule.Quotient.mk a) =
-      Submodule.Quotient.mk (shiftedMapAt T ℳ 𝒩 p f hf q hp a) := by
-  subst q
-  subst l
-  exact T.shiftedQuotientMap_mk ℳ 𝒩 p f hf k a
-
-private def shiftedCompletionMapAt (q : Γ') (hp : T p = q) :
-    d.ShiftedCoefficients ℳ p →ₗ[R] e.ShiftedCoefficients 𝒩 q := by
-  subst q
-  exact T.shiftedCompletionMap ℳ 𝒩 p f hf
-
-private theorem projection_shiftedCompletionMapAt (q : Γ') (hp : T p = q) (l k : ℕ)
-    (hk : T.modulus k = l) (a : d.ShiftedCoefficients ℳ p) :
-    (e.shiftedFiltration 𝒩 q).projection k (shiftedCompletionMapAt T ℳ 𝒩 p f hf q hp a) =
-      shiftedQuotientMapAt T ℳ 𝒩 p f hf q hp l k hk
-        ((d.shiftedFiltration ℳ p).projection l a) := by
-  subst q
-  subst l
-  exact T.projection_shiftedCompletionMap ℳ 𝒩 p f hf k a
-
-end Group
-
 section FixedGroup
 
 variable {Γ R M N : Type*} [AddCommGroup Γ] [Ring R]
-  [AddCommGroup M] [Module R M] [AddCommGroup N] [Module R N] [DecidableEq Γ]
+  [AddCommGroup M] [Module R M] [AddCommGroup N] [Module R N]
   (d : PositiveDegrees Γ) (ℳ : Γ → Submodule R M) (𝓝 : Γ → Submodule R N)
-  [DirectSum.Decomposition ℳ] (p : Γ) (f : M →ₗ[R] N)
-  (hf₀ : ∀ q, ℳ q ≤ (𝓝 q).comap f)
+  (p : Γ) (f : M →ₗ[R] N) (hf₀ : ∀ q, ℳ q ≤ (𝓝 q).comap f)
 
-/-- Degree-preserving shifted maps preserve the relative filtration. -/
+/-- Degree-preserving shifted maps preserve the ambient degree tail defining the
+relative filtration, without a decomposition of either family. -/
 theorem shiftedCoefficientMap_mem_filtration (k : ℕ)
     {a : shiftedSubmodule ℳ d.monoid p}
     (ha : a ∈ (d.shiftedFiltration ℳ p).submodule (k + 1)) :
-    d.shiftedCoefficientMap ℳ 𝓝 p f hf₀ a ∈ (d.shiftedFiltration 𝓝 p).submodule (k + 1) :=
-  shiftedMapAt_mem_filtration (PositiveDegreeMap.id d) ℳ 𝓝 p f
-    (fun q => by simpa only [PositiveDegreeMap.id_apply] using hf₀ q) p
-    (PositiveDegreeMap.id_apply p) k k (PositiveDegreeMap.id_modulus k) ha
+    d.shiftedCoefficientMap ℳ 𝓝 p f hf₀ a ∈ (d.shiftedFiltration 𝓝 p).submodule (k + 1) := by
+  have htail : Mei.DirectSum.degreeTail ℳ (fun u => d.degree (u - p)) (k + 1) ≤
+      (Mei.DirectSum.degreeTail 𝓝 (fun u => d.degree (u - p)) (k + 1)).comap f := by
+    rw [Mei.DirectSum.degreeTail_def]
+    refine iSup_le fun u => iSup_le fun hu => ?_
+    exact (hf₀ u).trans (Submodule.comap_mono (Mei.DirectSum.le_degreeTail 𝓝 _ hu))
+  rw [d.shiftedFiltration_submodule] at ha ⊢
+  simpa only [Submodule.mem_comap, Submodule.subtype_apply,
+    coe_shiftedCoefficientMap] using htail ha
 
-/-- The existing finite shifted map for the identity degree map, at the same cutoff. -/
+/-- The finite coefficient map induced between equal-order relative quotients. -/
 def quotientCoefficientMap (k : ℕ) : (d.shiftedFiltration ℳ p).quotient k →ₗ[R]
     (d.shiftedFiltration 𝓝 p).quotient k :=
-  shiftedQuotientMapAt (PositiveDegreeMap.id d) ℳ 𝓝 p f
-    (fun q => by simpa only [PositiveDegreeMap.id_apply] using hf₀ q) p
-    (PositiveDegreeMap.id_apply p) k k (PositiveDegreeMap.id_modulus k)
+  ((d.shiftedFiltration ℳ p).submodule (k + 1)).mapQ
+    ((d.shiftedFiltration 𝓝 p).submodule (k + 1))
+    (d.shiftedCoefficientMap ℳ 𝓝 p f hf₀)
+    (fun _ ha => d.shiftedCoefficientMap_mem_filtration ℳ 𝓝 p f hf₀ k ha)
 
 /-- The fixed-degree finite map is induced on the relative filtration quotients. -/
 theorem quotientCoefficientMap_def (k : ℕ) :
@@ -356,28 +303,27 @@ theorem quotientCoefficientMap_def (k : ℕ) :
       ((d.shiftedFiltration ℳ p).submodule (k + 1)).mapQ
         ((d.shiftedFiltration 𝓝 p).submodule (k + 1))
         (d.shiftedCoefficientMap ℳ 𝓝 p f hf₀)
-        (fun _ ha => d.shiftedCoefficientMap_mem_filtration ℳ 𝓝 p f hf₀ k ha) :=
-  shiftedQuotientMapAt_def _ _ _ _ _ _ _ _ _ _ _
+        (fun _ ha => d.shiftedCoefficientMap_mem_filtration ℳ 𝓝 p f hf₀ k ha) := (rfl)
 
 /-- Degree-preserving finite coefficient maps send a class to the class of its image. -/
 @[simp]
 theorem quotientCoefficientMap_mk (k : ℕ) (a : shiftedSubmodule ℳ d.monoid p) :
     d.quotientCoefficientMap ℳ 𝓝 p f hf₀ k (Submodule.Quotient.mk a) =
-      Submodule.Quotient.mk (d.shiftedCoefficientMap ℳ 𝓝 p f hf₀ a) :=
-  shiftedQuotientMapAt_mk _ _ _ _ _ _ _ _ _ _ _ a
+      Submodule.Quotient.mk (d.shiftedCoefficientMap ℳ 𝓝 p f hf₀ a) := (rfl)
 
-/-- The existing shifted completion map for the identity degree map. -/
+/-- Complete a degree-preserving coefficient map using the identity cutoff modulus. -/
 def completionCoefficientMap : d.ShiftedCoefficients ℳ p →ₗ[R] d.ShiftedCoefficients 𝓝 p :=
-  shiftedCompletionMapAt (PositiveDegreeMap.id d) ℳ 𝓝 p f
-    (fun q => by simpa only [PositiveDegreeMap.id_apply] using hf₀ q) p
-    (PositiveDegreeMap.id_apply p)
+  (d.shiftedFiltration ℳ p).completionMap (d.shiftedFiltration 𝓝 p)
+    (d.shiftedCoefficientMap ℳ 𝓝 p f hf₀) id monotone_id
+    (fun k _ ha => d.shiftedCoefficientMap_mem_filtration ℳ 𝓝 p f hf₀ k ha)
 
 /-- Degree-preserving completion maps project to the finite maps at the same cutoff. -/
 @[simp]
 theorem projection_completionCoefficientMap (k : ℕ) (a : d.ShiftedCoefficients ℳ p) :
     (d.shiftedFiltration 𝓝 p).projection k (d.completionCoefficientMap ℳ 𝓝 p f hf₀ a) =
       d.quotientCoefficientMap ℳ 𝓝 p f hf₀ k ((d.shiftedFiltration ℳ p).projection k a) :=
-  projection_shiftedCompletionMapAt _ _ _ _ _ _ _ _ _ _ _ a
+  (d.shiftedFiltration ℳ p).projection_completionMap (d.shiftedFiltration 𝓝 p)
+    (d.shiftedCoefficientMap ℳ 𝓝 p f hf₀) id monotone_id _ k a
 
 end FixedGroup
 
@@ -402,5 +348,104 @@ theorem quotientCoefficientMap_mem_shiftedQuotientGrading
     ⟨_, d.shiftedCoefficientMap_mem_shiftedGrading ℳ 𝓝 p f hf ha, rfl⟩
 
 end FixedQuotientGrading
+
+section FixedCompletion
+
+variable {Γ R M N : Type*} [AddCommGroup Γ] [Ring R]
+  [AddCommGroup M] [Module R M] [AddCommGroup N] [Module R N] [DecidableEq Γ]
+  (d : PositiveDegrees Γ) (ℳ : Γ → Submodule R M) (𝓝 : Γ → Submodule R N)
+  [DirectSum.Decomposition ℳ] [DirectSum.Decomposition 𝓝]
+  (f : M →ₗ[R] N) (hf : ∀ u, ℳ u ≤ (𝓝 u).comap f)
+
+omit [DecidableEq Γ] [DirectSum.Decomposition ℳ] [DirectSum.Decomposition 𝓝] in
+/-- The fixed-degree coefficient map is the canonical filtered map with identity cutoff. -/
+theorem completionCoefficientMap_eq_completionMap (p : Γ) :
+    d.completionCoefficientMap ℳ 𝓝 p f hf =
+      (d.shiftedFiltration ℳ p).completionMap (d.shiftedFiltration 𝓝 p)
+        (d.shiftedCoefficientMap ℳ 𝓝 p f hf) id monotone_id
+        (fun k _ ha => d.shiftedCoefficientMap_mem_filtration ℳ 𝓝 p f hf k ha) := (rfl)
+
+/-- A fixed-degree completed map applies the original linear map to each ambient component. -/
+@[simp]
+theorem coe_shiftedHomogeneousComponent_completionCoefficientMap (p u : Γ)
+    (x : d.ShiftedCoefficients ℳ p) :
+    (d.shiftedHomogeneousComponent 𝓝 p u (d.completionCoefficientMap ℳ 𝓝 p f hf x) : N) =
+      f (d.shiftedHomogeneousComponent ℳ p u x) := by
+  have h := d.completionComponent_completionMap_of_injective d
+    (shiftedGrading ℳ d.monoid p) (shiftedGrading 𝓝 d.monoid p)
+    (d.shiftedFiltration ℳ p) (d.shiftedFiltration 𝓝 p)
+    (d.shiftedFiltration_succ ℳ p) (d.shiftedFiltration_succ 𝓝 p)
+    (d.shiftedCoefficientMap ℳ 𝓝 p f hf) id
+    (fun _ _ ha => d.shiftedCoefficientMap_mem_shiftedGrading ℳ 𝓝 p f hf ha)
+    id monotone_id (fun k _ ha => d.shiftedCoefficientMap_mem_filtration ℳ 𝓝 p f hf k ha)
+    Function.injective_id (u - p) x
+  have h' := congrArg (fun a : shiftedSubmodule 𝓝 d.monoid p => (a : N)) h
+  rw [coe_shiftedCoefficientMap, coe_completionComponent_shiftedGrading,
+    coe_completionComponent_shiftedGrading] at h'
+  have hp : p + (u - p) = u := by abel
+  rw [id_eq, hp] at h'
+  simpa only [← completionCoefficientMap_eq_completionMap] using h'
+
+omit [DecidableEq Γ] [DirectSum.Decomposition ℳ] [DirectSum.Decomposition 𝓝] in
+/-- Completing a degree-preserving map agrees with its map on ordinary shifted coefficients. -/
+@[simp]
+theorem completionCoefficientMap_of (p : Γ) (a : shiftedSubmodule ℳ d.monoid p) :
+    d.completionCoefficientMap ℳ 𝓝 p f hf ((d.shiftedFiltration ℳ p).of a) =
+      (d.shiftedFiltration 𝓝 p).of (d.shiftedCoefficientMap ℳ 𝓝 p f hf a) := by
+  rw [completionCoefficientMap_eq_completionMap]
+  exact (d.shiftedFiltration ℳ p).completionMap_of (d.shiftedFiltration 𝓝 p)
+    (d.shiftedCoefficientMap ℳ 𝓝 p f hf) id monotone_id
+    (fun k _ ha => d.shiftedCoefficientMap_mem_filtration ℳ 𝓝 p f hf k ha) a
+
+omit [DecidableEq Γ] [DirectSum.Decomposition ℳ] [DirectSum.Decomposition 𝓝] in
+/-- Degree-preserving completed maps commute with enlarging a support translate. -/
+theorem completionCoefficientMap_inclusion (p q : Γ) (hpq : p - q ∈ d.monoid)
+    (x : d.ShiftedCoefficients ℳ p) :
+    d.completionCoefficientMap ℳ 𝓝 q f hf (d.shiftedCompletedInclusion ℳ p q hpq x) =
+      d.shiftedCompletedInclusion 𝓝 p q hpq (d.completionCoefficientMap ℳ 𝓝 p f hf x) := by
+  have hi : (d.shiftedCoefficientMap ℳ 𝓝 q f hf).comp
+      (shiftedSupportInclusion ℳ d.monoid p q hpq) =
+      (shiftedSupportInclusion 𝓝 d.monoid p q hpq).comp
+        (d.shiftedCoefficientMap ℳ 𝓝 p f hf) := by
+    ext a
+    simp only [LinearMap.comp_apply, coe_shiftedCoefficientMap, coe_shiftedSupportInclusion]
+  have h₁ := ModuleFiltration.completionMap_comp
+    (d.shiftedFiltration ℳ p) (d.shiftedFiltration ℳ q)
+    (shiftedSupportInclusion ℳ d.monoid p q hpq) id monotone_id
+    (fun k => d.shiftedSupportInclusion_filtered ℳ p q hpq (k + 1))
+    (d.shiftedFiltration 𝓝 q) (d.shiftedCoefficientMap ℳ 𝓝 q f hf) id monotone_id
+    (fun k _ ha => d.shiftedCoefficientMap_mem_filtration ℳ 𝓝 q f hf k ha)
+  have h₂ := ModuleFiltration.completionMap_comp
+    (d.shiftedFiltration ℳ p) (d.shiftedFiltration 𝓝 p)
+    (d.shiftedCoefficientMap ℳ 𝓝 p f hf) id monotone_id
+    (fun k _ ha => d.shiftedCoefficientMap_mem_filtration ℳ 𝓝 p f hf k ha)
+    (d.shiftedFiltration 𝓝 q) (shiftedSupportInclusion 𝓝 d.monoid p q hpq) id monotone_id
+    (fun k => d.shiftedSupportInclusion_filtered 𝓝 p q hpq (k + 1))
+  simp only [hi] at h₁
+  simpa only [completionCoefficientMap_eq_completionMap, shiftedCompletedInclusion_def,
+    LinearMap.comp_apply] using congrArg (fun F => F x) (h₁.symm.trans h₂)
+
+omit [DecidableEq Γ] [DirectSum.Decomposition ℳ] [DirectSum.Decomposition 𝓝] in
+/-- Degree-preserving completion maps compose without decomposition assumptions. -/
+theorem completionCoefficientMap_comp {P : Type*} [AddCommGroup P] [Module R P]
+    (ℒ : Γ → Submodule R P) (g : N →ₗ[R] P) (hg : ∀ u, 𝓝 u ≤ (ℒ u).comap g)
+    (p : Γ) (x : d.ShiftedCoefficients ℳ p) :
+    d.completionCoefficientMap 𝓝 ℒ p g hg (d.completionCoefficientMap ℳ 𝓝 p f hf x) =
+      d.completionCoefficientMap ℳ ℒ p (g.comp f) (fun u _ ha => hg u (hf u ha)) x := by
+  have hi : (d.shiftedCoefficientMap 𝓝 ℒ p g hg).comp
+      (d.shiftedCoefficientMap ℳ 𝓝 p f hf) =
+      d.shiftedCoefficientMap ℳ ℒ p (g.comp f) (fun u _ ha => hg u (hf u ha)) := by
+    ext a
+    simp only [LinearMap.comp_apply, coe_shiftedCoefficientMap]
+  have h := ModuleFiltration.completionMap_comp
+    (d.shiftedFiltration ℳ p) (d.shiftedFiltration 𝓝 p)
+    (d.shiftedCoefficientMap ℳ 𝓝 p f hf) id monotone_id
+    (fun k _ ha => d.shiftedCoefficientMap_mem_filtration ℳ 𝓝 p f hf k ha)
+    (d.shiftedFiltration ℒ p) (d.shiftedCoefficientMap 𝓝 ℒ p g hg) id monotone_id
+    (fun k _ ha => d.shiftedCoefficientMap_mem_filtration 𝓝 ℒ p g hg k ha)
+  simpa only [hi, Function.id_comp, completionCoefficientMap_eq_completionMap,
+    LinearMap.comp_apply] using (congrArg (fun F => F x) h).symm
+
+end FixedCompletion
 
 end Mei.PositiveDegrees

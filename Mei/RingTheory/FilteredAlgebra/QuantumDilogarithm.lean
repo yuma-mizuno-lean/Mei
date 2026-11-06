@@ -34,6 +34,42 @@ variable {R A : Type*} [CommRing R] [Ring A] [Algebra R A] (F : AlgFiltration A)
   (x : F.completionIdeal 1) (y : F.completion) (q : Rˣ)
   (hq : ∀ j : ℕ, IsUnit ((q : R) ^ (j + 1) - (↑q⁻¹ : R) ^ (j + 1)))
 
+/-- Evaluation of the positive quantum-dilogarithm rescaling ratio is an ordered
+finite product of linear factors. -/
+theorem completedAeval_quantumDilogarithm_ratio_of_nonneg (r : ℕ) :
+    F.completedAeval x
+        (PowerSeries.rescale ((q : R) ^ (2 * r)) (Units.quantumDilogarithm q hq) *
+          PowerSeries.invOfUnit (Units.quantumDilogarithm q hq) 1) =
+      ((List.range r).map fun j =>
+        1 + ((q : R) ^ (2 * j + 1)) • (x : F.completion)).prod := by
+  have heval := congrArg (F.completedAeval x)
+    (Units.rescale_pow_quantumDilogarithm_mul_inv q hq r)
+  refine heval.trans ?_
+  have hprod := List.prod_toFinset (fun j : ℕ =>
+    (1 + PowerSeries.C ((q : R) ^ (2 * j + 1)) * PowerSeries.X : R⟦X⟧))
+    (List.nodup_range : (List.range r).Nodup)
+  rw [List.toFinset_range] at hprod
+  refine (congrArg (F.completedAeval x) hprod).trans ?_
+  simp [map_list_prod, List.map_map, Function.comp_def, Algebra.smul_def]
+
+/-- Evaluation of the negative rescaling ratio is an ordered finite product of
+inverse linear factors, each of which is a unit. -/
+theorem completedAeval_quantumDilogarithm_ratio_of_nonpos (r : ℕ) :
+    F.completedAeval x
+        (PowerSeries.rescale ((↑q⁻¹ : R) ^ (2 * r)) (Units.quantumDilogarithm q hq) *
+          PowerSeries.invOfUnit (Units.quantumDilogarithm q hq) 1) =
+      ((List.range r).map fun j =>
+        Ring.inverse (1 + ((↑q⁻¹ : R) ^ (2 * j + 1)) • (x : F.completion))).prod := by
+  have heval := congrArg (F.completedAeval x)
+    (Units.rescale_inv_pow_quantumDilogarithm_mul_inv q hq r)
+  refine heval.trans ?_
+  have hprod := List.prod_toFinset (fun j : ℕ => PowerSeries.invOfUnit
+    (1 + PowerSeries.C ((↑q⁻¹ : R) ^ (2 * j + 1)) * PowerSeries.X : R⟦X⟧) 1)
+    (List.nodup_range : (List.range r).Nodup)
+  rw [List.toFinset_range] at hprod
+  refine (congrArg (F.completedAeval x) hprod).trans ?_
+  simp [map_list_prod, List.map_map, Function.comp_def, Algebra.smul_def]
+
 /-- A positive even commutation factor gives a finite product of linear factors.
 The factors are ordered by increasing index in the associative target algebra. -/
 theorem completedAeval_quantumDilogarithm_conj_of_nonneg (r : ℕ)
@@ -44,15 +80,8 @@ theorem completedAeval_quantumDilogarithm_conj_of_nonneg (r : ℕ)
         1 + ((q : R) ^ (2 * j + 1)) • (x : F.completion)).prod := by
   have h := F.completedAeval_conj x y _ hy (Units.quantumDilogarithmUnit q hq)
   simp only [Units.coe_quantumDilogarithmUnit, Units.coe_quantumDilogarithmUnit_inv] at h
-  have heval := congrArg (F.completedAeval x)
-    (Units.rescale_pow_quantumDilogarithm_mul_inv q hq r)
-  refine h.trans (congrArg (fun t => y * t) (heval.trans ?_))
-  have hprod := List.prod_toFinset (fun j : ℕ =>
-    (1 + PowerSeries.C ((q : R) ^ (2 * j + 1)) * PowerSeries.X : R⟦X⟧))
-    (List.nodup_range : (List.range r).Nodup)
-  rw [List.toFinset_range] at hprod
-  refine (congrArg (F.completedAeval x) hprod).trans ?_
-  simp [map_list_prod, List.map_map, Function.comp_def, Algebra.smul_def]
+  exact h.trans (congrArg (fun t => y * t)
+    (F.completedAeval_quantumDilogarithm_ratio_of_nonneg x q hq r))
 
 /-- A negative even commutation factor gives a finite product of inverse linear factors.
 Every factor is a unit, being the evaluation of a series with constant coefficient one. -/
@@ -64,14 +93,7 @@ theorem completedAeval_quantumDilogarithm_conj_of_nonpos (r : ℕ)
         Ring.inverse (1 + ((↑q⁻¹ : R) ^ (2 * j + 1)) • (x : F.completion))).prod := by
   have h := F.completedAeval_conj x y _ hy (Units.quantumDilogarithmUnit q hq)
   simp only [Units.coe_quantumDilogarithmUnit, Units.coe_quantumDilogarithmUnit_inv] at h
-  have heval := congrArg (F.completedAeval x)
-    (Units.rescale_inv_pow_quantumDilogarithm_mul_inv q hq r)
-  refine h.trans (congrArg (fun t => y * t) (heval.trans ?_))
-  have hprod := List.prod_toFinset (fun j : ℕ => PowerSeries.invOfUnit
-    (1 + PowerSeries.C ((↑q⁻¹ : R) ^ (2 * j + 1)) * PowerSeries.X : R⟦X⟧) 1)
-    (List.nodup_range : (List.range r).Nodup)
-  rw [List.toFinset_range] at hprod
-  refine (congrArg (F.completedAeval x) hprod).trans ?_
-  simp [map_list_prod, List.map_map, Function.comp_def, Algebra.smul_def]
+  exact h.trans (congrArg (fun t => y * t)
+    (F.completedAeval_quantumDilogarithm_ratio_of_nonpos x q hq r))
 
 end Mei.AlgFiltration
