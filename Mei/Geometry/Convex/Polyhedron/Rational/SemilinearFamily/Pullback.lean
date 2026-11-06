@@ -166,6 +166,10 @@ theorem fiberPullbackEquiv_symm_apply (x : X) (p : F.fiber (φ x)) :
     (F.fiberPullbackEquiv φ hφ x).symm p =
       ⟨p.1, F.pullbackLift φ hφ p.1 p.2.1 x p.2.2, by simp⟩ := (rfl)
 
+/-- Base change of a family with finite fibers has finite fibers. -/
+instance (x : X) [Finite (F.fiber (φ x))] : Finite ((F.pullback φ hφ).fiber x) :=
+  Finite.of_equiv _ (F.fiberPullbackEquiv φ hφ x).symm
+
 /-- Base change preserves fiber cardinality without a finiteness assumption. -/
 @[simp]
 theorem nat_card_fiber_pullback (x : X) :
