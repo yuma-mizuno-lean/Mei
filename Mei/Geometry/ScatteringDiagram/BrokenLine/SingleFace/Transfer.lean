@@ -8,6 +8,7 @@ module
 public import Mei.LinearAlgebra.GradedCorrespondence.Basic
 public import Mei.Geometry.Convex.Sweep.Admissible.SingleFace
 public import Mei.Geometry.Convex.Sweep.Generic
+import Mei.LinearAlgebra.CommonLift
 
 /-!
 # Single-face rays for coefficient correspondences
@@ -190,11 +191,11 @@ theorem singleFaceTransferEvaluationLinear_eq_sum (s : Finset κ)
     have he := LinearMap.congr_fun (hs q hqs) x
     exact (DFinsupp.mem_support_iff.mp hq) (by simpa only [LinearMap.comp_apply,
       LinearMap.zero_apply, transfer_apply] using he)
-  apply Finset.sum_subset hsub
-  · intro q hq hnot
-    have hz : C.transfer i q (α x) = 0 := by
-      simpa only [transfer_apply, DFinsupp.mem_support_iff, not_not] using hnot
-    split_ifs <;> simp [hz]
+  simpa only [DFinsupp.sum, transfer_apply] using
+    (DFinsupp.sum_of_support_subset
+      (f := DirectSum.decompose ℳ (C.right (C.liftLeft i (α x))))
+      (g := fun q y => if ν (v q) = ν u ∧ (crosses Q q) then (y : M) else 0)
+      hsub (by simp))
 
 /-- Every linear incoming family computes the actual geometric weighted sum
 for every input, without a uniform support bound. -/
@@ -248,15 +249,11 @@ theorem exists_singleFaceTransferEvaluationLinear_commonLift
       module
     exact hF Q hQ ⟨q, hqs⟩ j (hp ▸ hj)
   -- The sum has one total lift; there is no lift requirement on its branches.
-  refine ⟨(C.liftLeft i).comp α, ⟨?_, heval.symm⟩, ?_⟩
-  · rw [← LinearMap.comp_assoc, C.left_liftLeft]
-  · intro l hl
-    ext x
-    apply hinj
-    apply Prod.ext
-    · simpa only [LinearMap.comp_apply, LinearMap.prod_apply, Function.prod_apply, Prod.fst,
-        C.left_liftLeft_apply, Submodule.subtype_apply] using LinearMap.congr_fun hl.1 x
-    · exact LinearMap.congr_fun (hl.2.trans heval) x
+  apply (LinearMap.existsUnique_comp_eq_and_comp_eq_iff hinj).mpr
+  intro x
+  refine ⟨C.liftLeft i (α x), ?_⟩
+  simp only [heval, LinearMap.prod_apply, Function.prod_apply, LinearMap.comp_apply,
+    C.left_liftLeft_apply, Submodule.subtype_apply]
 
 end Linear
 
