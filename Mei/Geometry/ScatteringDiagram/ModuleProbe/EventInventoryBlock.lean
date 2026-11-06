@@ -57,6 +57,22 @@ def eventBlock (k K : ℕ) (hkK : k ≤ K) (b : WallEvent (B.active K)) (n m : d
   PositiveDegrees.labelBlock d ℳ p ℒ k
     ((d.truncationMap ℒ hkK).bchGroupMap (B.wallEventLabel K b)) n m
 
+omit [IsWallAnnihilating H ℳ] in
+/-- The event block is the generic label block at the event's truncated label. -/
+theorem eventBlock_eq (k K : ℕ) (hkK : k ≤ K) (b : WallEvent (B.active K))
+    (n m : d.cutoff k) :
+    eventBlock d ℳ p ℒ H h B k K hkK b n m =
+      PositiveDegrees.labelBlock d ℳ p ℒ k
+        ((d.truncationMap ℒ hkK).bchGroupMap (B.wallEventLabel K b)) n m := (rfl)
+
+omit [IsWallAnnihilating H ℳ] in
+/-- An event block outside the strict relative-degree relation vanishes. -/
+theorem eventBlock_eq_zero_of_not_precedes (k K : ℕ) (hkK : k ≤ K)
+    (b : WallEvent (B.active K)) {n m : d.cutoff k} (hnm : ¬ d.Precedes m.val n.val) :
+    eventBlock d ℳ p ℒ H h B k K hkK b n m = 0 := by
+  rw [eventBlock_eq]
+  exact PositiveDegrees.labelBlock_eq_zero_of_not_precedes d ℳ p ℒ k _ hnm
+
 open Classical in
 /-- The lower-degree step carried by the diagram's event blocks. An event is
 used only between degrees with matching normal velocities; the event sets and

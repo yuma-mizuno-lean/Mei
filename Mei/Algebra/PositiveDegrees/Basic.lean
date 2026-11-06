@@ -224,6 +224,17 @@ theorem degree_lt_of_precedes {m n : G} (h : d.Precedes m n) :
   simp only [map_add] at this
   omega
 
+/-- The output-degree bound after cancelling an ambient shift. -/
+theorem degree_add_val_sub_self_le (p : G) (k : ℕ) (n : d.cutoff k) :
+    d.degree (p + n.val - p) ≤ k := by
+  simpa only [add_sub_cancel_left] using (d.mem_cutoff.mp n.property).2
+
+/-- The monoid membership of a retained relative degree after cancelling an ambient shift. -/
+theorem add_val_sub_self_mem (p : G) (k : ℕ) (n : d.cutoff k) :
+    p + n.val - p ∈ d.monoid := by
+  rw [add_sub_cancel_left]
+  exact (d.mem_cutoff.mp n.property).1
+
 /-- The allowed monoid is sharp: an element and its negative can both belong only
 when the element is zero. -/
 theorem eq_zero_of_mem_of_neg_mem {n : G} (hn : n ∈ d.monoid)

@@ -39,19 +39,6 @@ variable {Γ : Type} {R : Type*} {M L : Type u} [CommRing R] [Algebra ℚ R]
 
 local notation "A" => d.shiftedLieFiltration ℒ ℳ p
 
-omit [DecidableEq Γ] in
-/-- The output-degree bound after cancelling the ambient shift. -/
-theorem degree_add_val_sub_self_le (k : ℕ) (n : d.cutoff k) :
-    d.degree (p + n.val - p) ≤ k := by
-  simpa only [add_sub_cancel_left] using (d.mem_cutoff.mp n.property).2
-
-omit [DecidableEq Γ] in
-/-- The monoid membership of a retained relative degree after cancelling the shift. -/
-theorem add_val_sub_self_mem (k : ℕ) (n : d.cutoff k) :
-    p + n.val - p ∈ d.monoid := by
-  rw [add_sub_cancel_left]
-  exact (d.mem_cutoff.mp n.property).1
-
 /-- The difference between a truncated BCH action and the identity annihilates
 an included homogeneous coefficient when its relative degree does not strictly
 precede the output degree. -/

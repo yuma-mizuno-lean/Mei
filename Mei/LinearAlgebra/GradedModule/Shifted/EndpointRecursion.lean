@@ -8,7 +8,7 @@ module
 public import Mei.Algebra.PositiveDegrees.Basic
 public import Mathlib.Algebra.BigOperators.GroupWithZero.Action
 public import Mathlib.Algebra.Module.Pi
-public import Mei.LinearAlgebra.End.Recursion
+public import Mathlib.Algebra.Module.Submodule.LinearMap
 
 /-!
 # Lower-degree steps on shifted cutoff functions
