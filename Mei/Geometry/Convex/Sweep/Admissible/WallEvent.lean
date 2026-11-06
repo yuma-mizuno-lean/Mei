@@ -101,11 +101,12 @@ theorem normal_ne_zero_of_mem_wallEvents (j : Fin n) {b : ι}
 variable (hW : ∀ b x, x ∈ W b → f b x = c b)
 
 /-- Relabel all recorded encounters by their canonical signed simultaneous events.
-The complete actual ray, parameter tuple and source conditions are preserved. -/
+The complete actual ray, parameter tuple, original obstacle family and source
+conditions are preserved. -/
 def withWallEvents :
     AdmissibleRayRealization (fun j => (r.wallEvents j).normal f)
       (fun j => (r.wallEvents j).offset c) v (fun j => (r.wallEvents j).support W)
-      (fun e : WallEvent ι => e.support W) S C Q where
+      W S C Q where
   ray := r.ray
   parameter := r.parameter
   parameter_zero := r.parameter_zero
@@ -119,11 +120,10 @@ def withWallEvents :
   height_eq j := (r.wallEvents j).normal_apply_of_mem_support W f c hW
     (by simp)
   incidence j := by simp
-  avoids_walls e t ht hne hm := r.avoids_walls _ t ht hne
-    (e.support_subset W e.1.property.choose_spec hm)
+  avoids_walls := r.avoids_walls
   incoming := r.incoming
   avoids_singular := r.avoids_singular
-  off_walls e hm := r.off_walls _ (e.support_subset W e.1.property.choose_spec hm)
+  off_walls := r.off_walls
 
 /-- Canonical event relabelling preserves the entire path and incoming tail. -/
 @[simp]

@@ -20,7 +20,8 @@ and its path is straight, including all unchanged-degree encounters.
 
 If recorded encounters belong to the obstacle family and the signed encounter
 labels distinguish events at a point in the incoming direction, there is at most
-one such ray, across all finite itineraries. The leading component of the full
+one such ray, across all finite itineraries. Encounter labels and obstacle indices
+may have different types. The leading component of the full
 sum is therefore the input or zero, according to existence. An admissible
 realization in the incoming direction supplies existence for nonzero input and
 recovers the incoming coefficient, including when the coefficient is zero.
@@ -38,13 +39,13 @@ open Set Mei.Convex
 
 namespace Mei
 
-variable {R M Γ V J K : Type*} [Semiring R] [AddCommMonoid M] [Module R M]
+variable {R M Γ V J K I : Type*} [Semiring R] [AddCommMonoid M] [Module R M]
   [AddCommGroup Γ] [DecidableEq Γ] {d : PositiveDegrees Γ}
   {ℳ : Γ → Submodule R M} [DirectSum.Decomposition ℳ]
   [NormedAddCommGroup V] [NormedSpace ℝ V]
   {T : J → Module.End R M} {a : ℳ 0} {v : Γ → V}
   {f : J → V →L[ℝ] ℝ} {c : J → ℝ} {ε : J → SignType}
-  {P W : J → Set V} {S : K → Set V} {C : Set V} {k : ℕ} {Q : V}
+  {P : J → Set V} {W : I → Set V} {S : K → Set V} {C : Set V} {k : ℕ} {Q : V}
 
 namespace CutoffDecoratedRay
 

@@ -16,8 +16,9 @@ public import Mei.Algebra.Lie.Graded.Shifted.Support
 For a finite family of polyhedral walls, the leading component of the full
 decorated-ray sum is the incoming coefficient at generic endpoints. Encounters
 use canonical signed simultaneous events: coincident walls are retained in a
-single incidence set, while its two signs are distinct labels. Thus the leading
-straight ray is counted once, even when its complete half-line crosses walls.
+single incidence set, while its two signs are distinct labels. The original
+indexed walls remain the obstacle family. Thus the leading straight ray is
+counted once, even when its complete half-line crosses walls.
 The generic-endpoint results use the whole affine space as incoming source;
 the realization-level theorem retains arbitrary source admission. Stationary
 and zero inputs are allowed.
@@ -68,7 +69,7 @@ theorem decompose_cutoffDecoratedEvaluation_zero_of_wallEvents
     (hc : ∀ j x, x ∈ W j → f j x = c j)
     (hT : ∀ e x, x ∈ ℳ 0 → (DirectSum.decompose ℳ (T e x) 0 : M) = x) :
     (DirectSum.decompose ℳ
-      (cutoffDecoratedEvaluation d ℳ T a v ν b ε P P S C k Q) 0 : M) = a := by
+      (cutoffDecoratedEvaluation d ℳ T a v ν b ε P W S C k Q) 0 : M) = a := by
   have hregular (j : Fin n) : r.ray (r.parameter j.succ) ∉ singularSupport W := by
     apply r.avoids_singular ()
     simpa only [r.parameter_zero] using r.strictAnti_parameter.antitone (Fin.zero_le j.succ)
@@ -79,15 +80,16 @@ theorem decompose_cutoffDecoratedEvaluation_zero_of_wallEvents
   have hlead : ∀ z : Σ n, Fin n → WallEvent ι,
       AdmissibleRayRealization (fun j => (z.2 j).normal f)
         (fun j => (z.2 j).offset c) (fun _ => v 0)
-        (fun j => (z.2 j).support W) P S C Q →
+        (fun j => (z.2 j).support W) W S C Q →
       (∀ j, SignType.sign ((z.2 j).normal f (v 0)) = (z.2 j).2) →
       (DirectSum.decompose ℳ
-        (cutoffDecoratedEvaluation d ℳ T a v ν b ε P P S C k Q) 0 : M) = a := by
+        (cutoffDecoratedEvaluation d ℳ T a v ν b ε P W S C k Q) 0 : M) = a := by
     intro z
     obtain ⟨word, rfl⟩ := List.equivSigmaTuple.surjective z
     intro g hε
     exact decompose_cutoffDecoratedEvaluation_zero word g hT hε
-      (fun e => subset_iUnion P e)
+      (fun e => (e.support_subset W e.1.property.choose_spec).trans
+        (subset_iUnion W _))
       (fun _ _ e e' hx hx' he he' =>
         e.eq_of_mem_support_of_normal_sign_eq e' W f (v 0) hx hx' he he')
   exact hlead ⟨n, r.wallEvents⟩ g hs
@@ -107,7 +109,7 @@ theorem exists_leadingEvaluationArrangement [FiniteDimensional ℝ V]
         (∀ e x, x ∈ ℳ 0 → (DirectSum.decompose ℳ (T e x) 0 : M) = x) →
       ∀ (a : ℳ 0) (k : ℕ),
         (DirectSum.decompose ℳ
-          (cutoffDecoratedEvaluation d ℳ T a v ν b ε P P S univ k Q) 0 : M) = a := by
+          (cutoffDecoratedEvaluation d ℳ T a v ν b ε P W S univ k Q) 0 : M) = a := by
   classical
   obtain ⟨A, hA⟩ := exists_straightRayRealizationArrangement f c
     hpoly hdim hker hc {v 0}
@@ -144,8 +146,7 @@ theorem exists_leadingEvaluationArrangement_shiftedBCHAction [FiniteDimensional 
         (cutoffDecoratedEvaluation d (d.shiftedQuotientGrading ℳ p k).piece
           (fun e => ((d.shiftedLieFiltration ℒ ℳ p).truncatedBCHAction d ℒ k (g e)).toLinearMap)
           a v (fun e : WallEvent ι => e.normal f) (fun e : WallEvent ι => e.offset c)
-          (fun e : WallEvent ι => e.2) (fun e : WallEvent ι => e.support W)
-          (fun e : WallEvent ι => e.support W)
+          (fun e : WallEvent ι => e.2) (fun e : WallEvent ι => e.support W) W
           (fun _ : Unit => singularSupport W) univ k Q) 0 :
         (d.shiftedLieFiltration ℒ ℳ p).quotient k) = a := by
   classical
