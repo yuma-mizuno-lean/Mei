@@ -6,6 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.ScatteringDiagram.BrokenLine.SingleFace.Transfer
+public import Mei.Geometry.Convex.Sweep.Degeneration
 public import Mei.LinearAlgebra.GradedCorrespondence.Hom
 
 /-!
@@ -19,8 +20,10 @@ the same law without a uniform support or finite-generation assumption.
 For an injective output degree map and an injective output coefficient map,
 the actual one-crossing fibers are equivalent. This comparison retains the
 entire admissible ray, including its incoming tail and recorded encounter,
-and maps its whole output decoration. Surjectivity of the degree map and
-injectivity of either face leg are unnecessary.
+and maps its whole output decoration. The same comparison identifies the full
+branch inventory and its continuous closed path extensions, including branches
+with empty endpoint domains. Surjectivity of the degree map and injectivity of
+either face leg are unnecessary.
 
 We use the existing single-face admissible realizations and correspondence
 transfer comparisons. The coefficient interpretation follows
@@ -110,24 +113,81 @@ theorem map_singleFaceTransferEvaluation (a : 𝒰 i)
 
 variable (a : 𝒰 i) (hτ : Function.Injective τ) (hinj : Function.Injective f.right)
 
-private def transferRayMap (Q : V) (r : C.SingleFaceTransferRay i a u v ν b Z Q) :
-    D.SingleFaceTransferRay i' a'(a) u w ν b Z Q := by
-  classical
-  have hne : (C.transfer i r.1.val a : M) ≠ 0 := by
+open Classical in
+/-- Coefficient embeddings identify the entire finite inventory of nonzero
+single-face transfers, including labels with empty endpoint domains. Neither
+surjectivity of the degree map nor injectivity of a face leg is required. -/
+def singleFaceTransferLabelEquivOfInjective :
+    ((DirectSum.decompose ℳ (C.right (C.liftLeft i a))).support.filter
+      (fun q => ν (v q) = ν u) : Type _) ≃
+    ((DirectSum.decompose 𝓝 (D.right (D.liftLeft i' a'(a)))).support.filter
+      (fun q => ν (w q) = ν u) : Type _) := by
+  let F (q : ((DirectSum.decompose ℳ (C.right (C.liftLeft i a))).support.filter
+      (fun q => ν (v q) = ν u) : Type _)) :
+      ((DirectSum.decompose 𝓝 (D.right (D.liftLeft i' a'(a)))).support.filter
+        (fun q => ν (w q) = ν u) : Type _) := by
+    obtain ⟨hq, hn⟩ := Finset.mem_filter.mp q.property
+    refine ⟨τ q.val, Finset.mem_filter.mpr ⟨?_, by simpa only [hv] using hn⟩⟩
+    apply DFinsupp.mem_support_iff.mpr
     intro hz
-    apply DFinsupp.mem_support_iff.mp (Finset.mem_filter.mp r.1.property).1
+    have he := f.transfer_map_of_injective hτ i a q.val
+    rw [transfer_apply, hz, ZeroMemClass.coe_zero] at he
+    apply DFinsupp.mem_support_iff.mp hq
     apply Subtype.val_injective
-    simpa only [transfer_apply, ZeroMemClass.coe_zero] using hz
-  have hne' : (D.transfer i' (τ r.1.val) a'(a) : M') ≠ 0 := by
-    rw [f.transfer_map_of_injective hτ]
-    exact fun hz => hne (hinj (by simpa using hz))
-  refine ⟨⟨τ r.1.val, Finset.mem_filter.mpr ⟨?_, ?_⟩⟩,
-    r.2.congrVelocity (by simp only [hv])⟩
-  · apply DFinsupp.mem_support_iff.mpr
-    intro hz
-    apply hne'
-    simp only [transfer_apply, hz, ZeroMemClass.coe_zero]
-  · simpa only [hv] using (Finset.mem_filter.mp r.1.property).2
+    exact hinj (by simpa only [map_zero, transfer_apply, ZeroMemClass.coe_zero] using he.symm)
+  apply Equiv.ofBijective F
+  constructor
+  · intro q r he
+    exact Subtype.ext (hτ (congrArg Subtype.val he))
+  · intro r
+    have hne : (D.transfer i' r.val a'(a) : M') ≠ 0 := by
+      intro hz
+      apply DFinsupp.mem_support_iff.mp (Finset.mem_filter.mp r.property).1
+      apply Subtype.val_injective
+      simpa only [transfer_apply, ZeroMemClass.coe_zero] using hz
+    rw [f.transfer_map_eq_sum] at hne
+    obtain ⟨q, hq, _⟩ := Finset.exists_ne_zero_of_sum_ne_zero hne
+    obtain ⟨hsupport, heq⟩ := Finset.mem_filter.mp hq
+    refine ⟨⟨q, Finset.mem_filter.mpr ⟨hsupport, ?_⟩⟩, Subtype.ext heq⟩
+    rw [← hv q, heq]
+    exact (Finset.mem_filter.mp r.property).2
+
+open Classical in
+/-- Inventory transport applies the given map to the output degree. -/
+@[simp]
+theorem singleFaceTransferLabelEquivOfInjective_degree
+    (q : ((DirectSum.decompose ℳ (C.right (C.liftLeft i a))).support.filter
+      (fun q => ν (v q) = ν u) : Type _)) :
+    (f.singleFaceTransferLabelEquivOfInjective i u v w hv ν a hτ hinj q).val =
+      τ q.val := (rfl)
+
+open Classical in
+/-- The closed single-face paths agree at every endpoint, including outside
+the admissible domains and along the full incoming half-line. -/
+@[simp↓]
+theorem singleFaceTransferLabelEquivOfInjective_path
+    (q : ((DirectSum.decompose ℳ (C.right (C.liftLeft i a))).support.filter
+      (fun q => ν (v q) = ν u) : Type _)) :
+    backwardPath (fun _ : Fin 1 => ν) (fun _ => b)
+        ![w (f.singleFaceTransferLabelEquivOfInjective i u v w hv ν a hτ hinj q).val, u] =
+      backwardPath (fun _ : Fin 1 => ν) (fun _ => b) ![v q.val, u] := by
+  rw [singleFaceTransferLabelEquivOfInjective_degree, hv]
+
+open Classical in
+/-- Inventory transport maps each whole decoration by the chamber map. -/
+@[simp↓]
+theorem singleFaceTransferLabelEquivOfInjective_weight
+    (q : ((DirectSum.decompose ℳ (C.right (C.liftLeft i a))).support.filter
+      (fun q => ν (v q) = ν u) : Type _)) :
+    (D.transfer i'
+      (f.singleFaceTransferLabelEquivOfInjective i u v w hv ν a hτ hinj q).val a'(a) : M') =
+        f.right (C.transfer i q.val a : M) := by
+  rw [singleFaceTransferLabelEquivOfInjective_degree, f.transfer_map_of_injective hτ]
+
+private def transferRayMap (Q : V) (r : C.SingleFaceTransferRay i a u v ν b Z Q) :
+    D.SingleFaceTransferRay i' a'(a) u w ν b Z Q :=
+  ⟨f.singleFaceTransferLabelEquivOfInjective i u v w hv ν a hτ hinj r.1,
+    r.2.congrVelocity (by simp only [singleFaceTransferLabelEquivOfInjective_degree, hv])⟩
 
 /-- Injective output coefficients and degrees give a bijection of the full
 single-face ray fibers. Every target degree with nonzero decoration comes from
@@ -135,28 +195,18 @@ a source degree, even when the output degree map is not surjective. -/
 def singleFaceTransferRayEquivOfInjective (Q : V) :
     C.SingleFaceTransferRay i a u v ν b Z Q ≃
       D.SingleFaceTransferRay i' a'(a) u w ν b Z Q := by
-  classical
+  let e := f.singleFaceTransferLabelEquivOfInjective i u v w hv ν a hτ hinj
   apply Equiv.ofBijective (f.transferRayMap i u v w hv ν b Z a hτ hinj Q)
   constructor
   · intro r s hrs
     exact SingleFaceTransferRay.ext _ _ (hτ (congrArg (fun z => z.1.val) hrs))
   · intro r
-    have hne : (D.transfer i' r.1.val a'(a) : M') ≠ 0 := by
-      intro hz
-      apply DFinsupp.mem_support_iff.mp (Finset.mem_filter.mp r.1.property).1
-      apply Subtype.val_injective
-      simpa only [transfer_apply, ZeroMemClass.coe_zero] using hz
-    rw [f.transfer_map_eq_sum] at hne
-    obtain ⟨q, hq, _⟩ := Finset.exists_ne_zero_of_sum_ne_zero hne
-    obtain ⟨hsupport, heq⟩ := Finset.mem_filter.mp hq
-    have hnormal : ν (v q) = ν u := by
-      rw [← hv q, heq]
-      exact (Finset.mem_filter.mp r.1.property).2
-    let s : C.SingleFaceTransferRay i a u v ν b Z Q :=
-      ⟨⟨q, Finset.mem_filter.mpr ⟨hsupport, hnormal⟩⟩,
-        r.2.congrVelocity (by simp only [← heq, hv])⟩
-    refine ⟨s, ?_⟩
-    exact SingleFaceTransferRay.ext _ _ heq
+    let q := e.symm r.1
+    have hq : τ q.val = r.1.val := by
+      rw [← f.singleFaceTransferLabelEquivOfInjective_degree i u v w hv ν a hτ hinj q]
+      exact congrArg Subtype.val (e.apply_symm_apply r.1)
+    refine ⟨⟨q, r.2.congrVelocity (by simp only [← hq, hv])⟩, ?_⟩
+    exact SingleFaceTransferRay.ext _ _ hq
 
 /-- The comparison regrades the recorded outgoing degree. -/
 @[simp]
