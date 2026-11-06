@@ -24,7 +24,7 @@ diagram. For each fixed cutoff `k`, on a neighbourhood of `x` depending on `k`, 
 supports are the translates of the tangent supports. At a point in this neighbourhood that is
 regular for the diagram, its displacement is regular for the tangent diagram and the combined
 labels at cutoff `k` agree in each crossing direction. The singular supports themselves agree
-under translation locally. On every compact set of tangent displacements this comparison holds
+under translation locally. On every bounded set of tangent displacements this comparison holds
 uniformly under sufficiently small positive rescaling.
 These local identifications compare the crossings of a diagram near a joint with those of its
 tangent diagram. Consistency of the tangent diagram is not asserted here.
@@ -125,28 +125,21 @@ theorem smul_mem_singularSupport_tangentAt_iff (k : ℕ) {t : ℝ} (ht : 0 < t) 
   conv_lhs => rw [hsing]
   exact e.injective.mem_set_image
 
-/-- On a compact set of tangent displacements, the singular-support comparison holds
+/-- On a bounded set of tangent displacements, the singular-support comparison holds
 uniformly for every sufficiently small positive scaling factor. -/
 theorem eventually_forall_mem_singularSupport_add_smul_iff (k : ℕ) {K : Set V}
-    (hK : IsCompact K) :
+    (hK : Bornology.IsBounded K) :
     ∀ᶠ t : ℝ in 𝓝[>] 0, ∀ v ∈ K,
       x + t • v ∈ singularSupport (fun j : D.active k => (D.wall j).support) ↔
         v ∈ singularSupport (fun j : (D.tangentAt x).active k =>
           ((D.tangentAt x).wall j).support) := by
   have hlocal := D.eventually_mem_singularSupport_tangentAt_iff (x := x) k
-  have huniform : ∀ᶠ t : ℝ in 𝓝 0, ∀ v ∈ K,
-      x + t • v ∈ singularSupport (fun j : D.active k => (D.wall j).support) ↔
-        t • v ∈ singularSupport (fun j : (D.tangentAt x).active k =>
-          ((D.tangentAt x).wall j).support) := by
-    apply hK.eventually_forall_of_forall_eventually
-    intro v _
-    have hc : Continuous (fun z : ℝ × V => x + z.1 • z.2) := by fun_prop
-    have htend : Tendsto (fun z : ℝ × V => x + z.1 • z.2) (𝓝 (0, v)) (𝓝 x) := by
-      simpa only [zero_smul, add_zero] using hc.tendsto (0, v)
-    simpa only [add_sub_cancel_left] using htend.eventually hlocal
+  have huniform := eventually_singleton_add_smul_subset (𝕜 := ℝ) hK hlocal
   filter_upwards [huniform.filter_mono nhdsWithin_le_nhds, self_mem_nhdsWithin] with t ht htpos
   intro v hv
-  exact (ht v hv).trans (D.smul_mem_singularSupport_tangentAt_iff k htpos v)
+  have hcompare := ht (Set.add_mem_add (Set.mem_singleton x) (Set.smul_mem_smul_set hv))
+  simp only [Set.mem_ofPred_eq, add_sub_cancel_left] at hcompare
+  exact hcompare.trans (D.smul_mem_singularSupport_tangentAt_iff k htpos v)
 
 /-- Near `x`, a regular point has regular displacement for the tangent diagram, whose
 combined labels in every crossing direction agree with those of the original diagram.

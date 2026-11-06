@@ -95,6 +95,27 @@ theorem eventually_mem_iff_sub_mem_posTangentConeAt (hP : TauCeti.IsConvexPolyhe
 
 end TauCeti.IsConvexPolyhedron
 
+namespace Mei.Convex
+
+variable {V ι : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V] [Finite ι]
+  (W : ι → Set V) (hW : ∀ j, TauCeti.IsConvexPolyhedron (W j)) (x : V)
+
+include hW
+
+/-- Near the base point, membership in any member of a finite polyhedral family is
+membership of the displacement in its tangent cone, and that member contains the base point. -/
+theorem eventually_forall_mem_iff_sub_mem_posTangentConeAt :
+    ∀ᶠ y in 𝓝 x, ∀ j, y ∈ W j ↔
+      ∃ _ : x ∈ W j, y - x ∈ posTangentConeAt (W j) x := by
+  refine eventually_all.mpr fun j => ?_
+  by_cases hj : x ∈ W j
+  · filter_upwards [(hW j).eventually_mem_iff_sub_mem_posTangentConeAt hj] with y hy
+    exact ⟨fun h => ⟨hj, hy.mp h⟩, fun ⟨_, h⟩ => hy.mpr h⟩
+  · filter_upwards [(hW j).isClosed.isOpen_compl.mem_nhds hj] with y hy
+    exact iff_of_false hy fun ⟨hj', _⟩ => hj hj'
+
+end Mei.Convex
+
 namespace TauCeti.IsConvexPolyhedron
 
 variable {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V] [FiniteDimensional ℝ V]
