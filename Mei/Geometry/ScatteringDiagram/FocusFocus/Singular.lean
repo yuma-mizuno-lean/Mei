@@ -91,6 +91,23 @@ theorem mem_slabBranchDomain_singular (hQ : Q.1 / (n : ℝ) < 0)
   · exact (slabSingular_height_sign hQ hj hs l).2
   · exact (slabSingular_height_sign hQ hj hs l).1
 
+/-- At a singular-height center, the closed upper charts have indices at least
+the singular index, and the closed lower charts have indices at most that index. -/
+theorem mem_closure_slabBranchDomain_singular (hQ : Q.1 / (n : ℝ) < 0)
+    (hj : Q.2 - ((b + j : ℤ) : ℝ) * Q.1 / n = 0) (l : ℕ) (upper : Bool) :
+    Q ∈ closure (slabBranchDomain n (b + l) upper) ↔
+      if upper then j ≤ l else l ≤ j := by
+  have hn : n ≠ 0 := by
+    intro hn
+    simp [hn] at hQ
+  have hs := slabSingular_height_sign hQ hj (s := 0)
+    (by simpa using neg_pos.mpr hQ) l
+  simp only [add_zero, lt_self_iff_false, and_false, or_false] at hs
+  rw [mem_closure_slabBranchDomain hn]
+  cases upper <;> simp only [Bool.false_eq_true, ↓reduceIte, hQ.le, true_and]
+  · exact (not_lt.symm.trans hs.1.not).trans not_lt
+  · exact (not_lt.symm.trans hs.2.not).trans not_lt
+
 section Coefficients
 
 variable {R : Type*} [CommRing R] (t c : R)
