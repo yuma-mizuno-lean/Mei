@@ -30,8 +30,8 @@ public section
 namespace Mei
 
 variable {N N' N'' V W X : Type*} [AddCommGroup N] [AddCommGroup N'] [AddCommGroup N'']
-  [NormedAddCommGroup V] [NormedAddCommGroup W] [NormedAddCommGroup X]
-  [NormedSpace ℝ V] [NormedSpace ℝ W] [NormedSpace ℝ X]
+  [NormedAddCommGroup V] [AddCommGroup W] [NormedAddCommGroup X]
+  [NormedSpace ℝ V] [Module ℝ W] [NormedSpace ℝ X]
   {i : N →+ V} {i' : N' →+ W} {i'' : N'' →+ X}
   {h : TauCeti.Toric.IsIntegralLattice i} {h' : TauCeti.Toric.IsIntegralLattice i'}
   {h'' : TauCeti.Toric.IsIntegralLattice i''}
@@ -184,24 +184,6 @@ theorem IsFiniteBranch.pullback {F : FiniteSemilinearFamily h h' ι}
   (F.pullback φ hφ).isFiniteBranch_iff.mpr fun c =>
     (F.isFiniteBranch_iff.mp hF c).pullback φ hφ
 
-/-- Pullback along the identity has the same chart points as the original family. -/
-def pullbackIdEquiv (c : ι) :
-    (F.pullback (AffineMap.id ℝ W) (Toric.IsRationalLinearMap.id h')).domain c ≃
-      F.domain c where
-  toFun := F.pullbackFst _ _ c
-  invFun v := F.pullbackLift _ _ c v (F.eval c v) rfl
-  left_inv p := F.pullback_ext _ _ c rfl (F.eval_pullbackFst _ _ c p)
-  right_inv _ := rfl
-
-@[simp]
-theorem pullbackIdEquiv_apply (c : ι)
-    (p : (F.pullback (AffineMap.id ℝ W) (Toric.IsRationalLinearMap.id h')).domain c) :
-    F.pullbackIdEquiv c p = F.pullbackFst _ _ c p := (rfl)
-
-@[simp]
-theorem pullbackIdEquiv_symm_apply (c : ι) (v : F.domain c) :
-    (F.pullbackIdEquiv c).symm v = F.pullbackLift _ _ c v (F.eval c v) rfl := (rfl)
-
 variable {N''' Y : Type*} [AddCommGroup N'''] [NormedAddCommGroup Y] [NormedSpace ℝ Y]
   {i''' : N''' →+ Y} {h''' : TauCeti.Toric.IsIntegralLattice i'''}
 
@@ -252,6 +234,32 @@ theorem eval_pullbackCompEquiv (ψ : Y →ᵃ[ℝ] X)
     (p : ((F.pullback φ hφ).pullback ψ hψ).domain c) :
     (F.pullback (φ.comp ψ) (hφ.comp hψ)).eval c (F.pullbackCompEquiv φ hφ ψ hψ c p) =
       ((F.pullback φ hφ).pullback ψ hψ).eval c p := (rfl)
+
+end FiniteSemilinearFamily
+
+namespace FiniteSemilinearFamily
+
+variable {W : Type*} [NormedAddCommGroup W] [NormedSpace ℝ W] {i' : N' →+ W}
+  {h' : TauCeti.Toric.IsIntegralLattice i'} {ι : Type*} [Finite ι]
+  (F : FiniteSemilinearFamily h h' ι)
+
+/-- Pullback along the identity has the same chart points as the original family. -/
+def pullbackIdEquiv (c : ι) :
+    (F.pullback (AffineMap.id ℝ W) (Toric.IsRationalLinearMap.id h')).domain c ≃
+      F.domain c where
+  toFun := F.pullbackFst _ _ c
+  invFun v := F.pullbackLift _ _ c v (F.eval c v) rfl
+  left_inv p := F.pullback_ext _ _ c rfl (F.eval_pullbackFst _ _ c p)
+  right_inv _ := rfl
+
+@[simp]
+theorem pullbackIdEquiv_apply (c : ι)
+    (p : (F.pullback (AffineMap.id ℝ W) (Toric.IsRationalLinearMap.id h')).domain c) :
+    F.pullbackIdEquiv c p = F.pullbackFst _ _ c p := (rfl)
+
+@[simp]
+theorem pullbackIdEquiv_symm_apply (c : ι) (v : F.domain c) :
+    (F.pullbackIdEquiv c).symm v = F.pullbackLift _ _ c v (F.eval c v) rfl := (rfl)
 
 end FiniteSemilinearFamily
 

@@ -23,8 +23,8 @@ open Mei
 namespace AffineMap
 
 variable {N N' N'' V W X : Type*} [AddCommGroup N] [AddCommGroup N'] [AddCommGroup N'']
-  [NormedAddCommGroup V] [NormedAddCommGroup W] [NormedAddCommGroup X]
-  [NormedSpace ℝ V] [NormedSpace ℝ W] [NormedSpace ℝ X]
+  [NormedAddCommGroup V] [AddCommGroup W] [NormedAddCommGroup X]
+  [NormedSpace ℝ V] [Module ℝ W] [NormedSpace ℝ X]
   {i : N →+ V} {i' : N' →+ W} {i'' : N'' →+ X}
   {h : TauCeti.Toric.IsIntegralLattice i} {h' : TauCeti.Toric.IsIntegralLattice i'}
   {h'' : TauCeti.Toric.IsIntegralLattice i''}
@@ -36,6 +36,11 @@ theorem isRationalNormalPolyhedron_equalizer (f g : V →ᵃ[ℝ] W)
     (hg : Toric.IsRationalLinearMap h h' g.linear) :
     IsRationalNormalPolyhedron h {x | f x = g x} := by
   have := h.finiteDimensional
+  have := h'.finiteDimensional
+  let b := Module.finBasis ℝ W
+  let _ : NormedAddCommGroup W :=
+    NormedAddCommGroup.induced W (Fin (Module.finrank ℝ W) → ℝ) b.equivFun b.equivFun.injective
+  let _ : NormedSpace ℝ W := NormedSpace.induced ℝ W (Fin (Module.finrank ℝ W) → ℝ) b.equivFun
   let δ : V →ᴬ[ℝ] W :=
     ⟨f - g, (f - g).continuous_of_finiteDimensional⟩
   have hδ : Toric.IsRationalLinearMap h h' δ.toAffineMap.linear := by
