@@ -35,6 +35,32 @@ variable {N N' N'' V W X : Type*} [AddCommGroup N] [AddCommGroup N'] [AddCommGro
   {h : TauCeti.Toric.IsIntegralLattice i} {h' : TauCeti.Toric.IsIntegralLattice i'}
   {h'' : TauCeti.Toric.IsIntegralLattice i''}
 
+private theorem iUnion_pullback_pieces {κ : Type*} {D : Set V} {f : D → W}
+    (S : κ → Set V) (g : κ → (V →ᵃ[ℝ] W)) (φ : X →ᵃ[ℝ] W)
+    (hD : (⋃ k, S k) = D)
+    (hfg : ∀ k (v : D), v.1 ∈ S k → f v = g k v) :
+    (⋃ k, {p : V × X | p.1 ∈ S k} ∩ {p | g k p.1 = φ p.2}) =
+      {p : V × X | ∃ hx : p.1 ∈ D, f ⟨p.1, hx⟩ = φ p.2} := by
+  ext p
+  simp only [Set.mem_iUnion, Set.mem_inter_iff, Set.mem_ofPred_eq]
+  constructor
+  · rintro ⟨k, hk, he⟩
+    have hx : p.1 ∈ D := hD ▸ Set.mem_iUnion.mpr ⟨k, hk⟩
+    exact ⟨hx, (hfg k ⟨p.1, hx⟩ hk).trans he⟩
+  · rintro ⟨hx, he⟩
+    obtain ⟨k, hk⟩ := Set.mem_iUnion.mp (hD.symm ▸ hx)
+    exact ⟨k, hk, (hfg k ⟨p.1, hx⟩ hk).symm.trans he⟩
+
+private theorem isRationalNormalPolyhedron_pullback_matching (g : V →ᵃ[ℝ] W)
+    (φ : X →ᵃ[ℝ] W) (hg : Toric.IsRationalLinearMap h h' g.linear)
+    (hφ : Toric.IsRationalLinearMap h'' h' φ.linear) :
+    IsRationalNormalPolyhedron (h.prod h'') {p : V × X | g p.1 = φ p.2} :=
+  AffineMap.isRationalNormalPolyhedron_equalizer
+    (g.comp (AffineMap.fst : V × X →ᵃ[ℝ] V))
+    (φ.comp (AffineMap.snd : V × X →ᵃ[ℝ] X))
+    (hg.comp (Toric.IsRationalLinearMap.fst h h''))
+    (hφ.comp (Toric.IsRationalLinearMap.snd h h''))
+
 /-- The pullback of a piecewise-affine map has rational semilinear domain and
 rational affine evaluation, given by the second projection. -/
 theorem IsRationalPiecewiseAffine.pullback {D : Set V} {f : D → W}
@@ -46,24 +72,10 @@ theorem IsRationalPiecewiseAffine.pullback {D : Set V} {f : D → W}
   obtain ⟨κ, _, S, g, hD, hS⟩ := isRationalPiecewiseAffine_iff.mp hf
   have hpieces (k : κ) : IsRationalSemilinear (h.prod h'')
       (π ⁻¹' S k ∩ {p | g k p.1 = φ p.2}) := by
-    have heq := AffineMap.isRationalNormalPolyhedron_equalizer
-      ((g k).comp (AffineMap.fst : V × X →ᵃ[ℝ] V))
-      (φ.comp (AffineMap.snd : V × X →ᵃ[ℝ] X))
-      ((hS k).2.1.comp (Toric.IsRationalLinearMap.fst h h''))
-      (hφ.comp (Toric.IsRationalLinearMap.snd h h''))
+    have heq := isRationalNormalPolyhedron_pullback_matching (g k) φ (hS k).2.1 hφ
     exact ((hS k).1.preimage π (Toric.IsRationalLinearMap.fst h h'')).inter
       heq.isLocallyClosedPolyhedron.isRationalSemilinear
-  have hdom : (⋃ k, π ⁻¹' S k ∩ {p | g k p.1 = φ p.2}) =
-      {p : V × X | ∃ hx : p.1 ∈ D, f ⟨p.1, hx⟩ = φ p.2} := by
-    ext p
-    simp only [Set.mem_iUnion, Set.mem_inter_iff, Set.mem_preimage, Set.mem_ofPred_eq]
-    constructor
-    · rintro ⟨k, hk, he⟩
-      have hx : p.1 ∈ D := hD ▸ Set.mem_iUnion.mpr ⟨k, hk⟩
-      exact ⟨hx, ((hS k).2.2 ⟨p.1, hx⟩ hk).trans he⟩
-    · rintro ⟨hx, he⟩
-      obtain ⟨k, hk⟩ := Set.mem_iUnion.mp (hD.symm ▸ hx)
-      exact ⟨k, hk, ((hS k).2.2 ⟨p.1, hx⟩ hk).symm.trans he⟩
+  have hdom := iUnion_pullback_pieces S g φ hD (fun k => (hS k).2.2)
   rw [isRationalPiecewiseAffine_iff]
   refine ⟨Unit, inferInstance, fun _ => _, fun _ => AffineMap.snd,
     Set.iUnion_const _, fun _ => ⟨?_, Toric.IsRationalLinearMap.snd h h'', fun _ _ => rfl⟩⟩
@@ -83,20 +95,10 @@ theorem IsFiniteBranchOn.pullback {D : Set V} {f : D → W}
   refine ⟨κ, ‹_›, fun k => π ⁻¹' S k ∩ {p | g k p.1 = φ p.2},
     fun _ => AffineMap.snd, ?_, fun k => ⟨?_, Toric.IsRationalLinearMap.snd h h'', ?_,
       fun _ _ => rfl⟩⟩
-  · ext p
-    simp only [Set.mem_iUnion, Set.mem_inter_iff, Set.mem_preimage, Set.mem_ofPred_eq]
-    constructor
-    · rintro ⟨k, hk, he⟩
-      have hx : p.1 ∈ D := hD ▸ Set.mem_iUnion.mpr ⟨k, hk⟩
-      exact ⟨hx, ((hS k).2.2.2 ⟨p.1, hx⟩ hk).trans he⟩
-    · rintro ⟨hx, he⟩
-      obtain ⟨k, hk⟩ := Set.mem_iUnion.mp (hD.symm ▸ hx)
-      exact ⟨k, hk, ((hS k).2.2.2 ⟨p.1, hx⟩ hk).symm.trans he⟩
-  · exact ((hS k).1.preimage π (Toric.IsRationalLinearMap.fst h h'')).inter
-      (AffineMap.isRationalNormalPolyhedron_equalizer ((g k).comp (AffineMap.fst : V × X →ᵃ[ℝ] V))
-        (φ.comp (AffineMap.snd : V × X →ᵃ[ℝ] X))
-        ((hS k).2.1.comp (Toric.IsRationalLinearMap.fst h h''))
-        (hφ.comp (Toric.IsRationalLinearMap.snd h h''))).isLocallyClosedPolyhedron
+  · exact iUnion_pullback_pieces S g φ hD (fun k => (hS k).2.2.2)
+  · have heq := isRationalNormalPolyhedron_pullback_matching (g k) φ (hS k).2.1 hφ
+    exact ((hS k).1.preimage π (Toric.IsRationalLinearMap.fst h h'')).inter
+      heq.isLocallyClosedPolyhedron
   · intro p hp q hq he
     exact Prod.ext ((hS k).2.2.1 hp.1 hq.1 (hp.2.trans ((congrArg φ he).trans hq.2.symm))) he
 
@@ -209,11 +211,13 @@ def pullbackIdEquiv (c : ι) :
   right_inv _ := rfl
 
 @[simp]
-theorem eval_pullbackIdEquiv (c : ι)
+theorem pullbackIdEquiv_apply (c : ι)
     (p : (F.pullback (AffineMap.id ℝ W) (Toric.IsRationalLinearMap.id h')).domain c) :
-    F.eval c (F.pullbackIdEquiv c p) =
-      (F.pullback (AffineMap.id ℝ W) (Toric.IsRationalLinearMap.id h')).eval c p :=
-  F.eval_pullbackFst _ _ c p
+    F.pullbackIdEquiv c p = F.pullbackFst _ _ c p := (rfl)
+
+@[simp]
+theorem pullbackIdEquiv_symm_apply (c : ι) (v : F.domain c) :
+    (F.pullbackIdEquiv c).symm v = F.pullbackLift _ _ c v (F.eval c v) rfl := (rfl)
 
 variable {N''' Y : Type*} [AddCommGroup N'''] [NormedAddCommGroup Y] [NormedSpace ℝ Y]
   {i''' : N''' →+ Y} {h''' : TauCeti.Toric.IsIntegralLattice i'''}
@@ -239,6 +243,25 @@ noncomputable def pullbackCompEquiv (ψ : Y →ᵃ[ℝ] X)
       · exact ((F.pullback φ hφ).eval_pullbackFst ψ hψ c p).symm
     · rfl
   right_inv _ := rfl
+
+@[simp]
+theorem pullbackFst_pullbackCompEquiv (ψ : Y →ᵃ[ℝ] X)
+    (hψ : Toric.IsRationalLinearMap h''' h'' ψ.linear) (c : ι)
+    (p : ((F.pullback φ hφ).pullback ψ hψ).domain c) :
+    F.pullbackFst _ _ c (F.pullbackCompEquiv φ hφ ψ hψ c p) =
+      F.pullbackFst φ hφ c ((F.pullback φ hφ).pullbackFst ψ hψ c p) := (rfl)
+
+@[simp]
+theorem pullbackCompEquiv_symm_apply (ψ : Y →ᵃ[ℝ] X)
+    (hψ : Toric.IsRationalLinearMap h''' h'' ψ.linear) (c : ι)
+    (p : (F.pullback (φ.comp ψ) (hφ.comp hψ)).domain c) :
+    (F.pullbackCompEquiv φ hφ ψ hψ c).symm p =
+      (F.pullback φ hφ).pullbackLift ψ hψ c
+        (F.pullbackLift φ hφ c (F.pullbackFst _ _ c p) (ψ p.1.2)
+          ((F.eval_pullbackFst (φ.comp ψ) (hφ.comp hψ) c p).trans
+            (congrArg (fun y => φ (ψ y))
+              (F.pullback_eval (φ.comp ψ) (hφ.comp hψ) c p)))) p.1.2
+        (by rw [F.pullback_eval φ hφ, F.pullbackLift_val]) := (rfl)
 
 @[simp]
 theorem eval_pullbackCompEquiv (ψ : Y →ᵃ[ℝ] X)

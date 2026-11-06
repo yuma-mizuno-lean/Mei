@@ -34,8 +34,7 @@ theorem isRationalNormalPolyhedron_equalizer (f g : V →ᵃ[ℝ] W)
     IsRationalNormalPolyhedron h {x | f x = g x} := by
   have := h.finiteDimensional
   let δ : V →ᴬ[ℝ] W :=
-    ⟨f - g, AffineMap.continuous_linear_iff.mp
-      (f - g).linear.continuous_of_finiteDimensional⟩
+    ⟨f - g, (f - g).continuous_of_finiteDimensional⟩
   have hδ : Toric.IsRationalLinearMap h h' δ.toAffineMap.linear := by
     rw [Toric.isRationalLinearMap_iff]
     intro ℓ hℓ
@@ -43,7 +42,7 @@ theorem isRationalNormalPolyhedron_equalizer (f g : V →ᵃ[ℝ] W)
       (hf.map_functional hℓ).sub (hg.map_functional hℓ)
   have he : δ ⁻¹' {0} = {x | f x = g x} := by
     ext x
-    exact sub_eq_zero
+    simp [δ, sub_eq_zero]
   rw [← he]
   exact (isRationalNormalPolyhedron_singleton h' (0 : W)).preimage δ hδ
 
