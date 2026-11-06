@@ -162,7 +162,8 @@ theorem exists_straightProbeStepArrangement
     obtain ⟨z, hz, hgen, -⟩ := hinput b m (hevent ▸ hv)
     rw [hline b, hevent] at hz
     exact hz ▸ hgen
-  · rw [eventEndpointStep_apply_sum_cutoff d ℳ p ℒ H h B k _ _ f y.val n,
+  · rw [eventEndpointStep_apply_sum_cutoff d ℳ p ℒ H h B k (k + 1) (Nat.le_refl _)
+      _ _ f y.val n,
       sum_segmentWallEvents]
     have hsum := shiftedQuotientComponent_extendedCoefficientField_eq_add_sum_crossings
       d ℳ p ℒ H h h' D B k hBc hD hB e (p + n.val)
@@ -223,7 +224,7 @@ theorem exists_straightProbeStepArrangement
       have he' : field k (hBc.mono (Nat.le_succ k)) z = input := he
       rw [ite_eq_left hv, ← he', ← hf z m', hz']
     · rw [ite_eq_right hv, eventBlock_eq_zero_of_normal_ne d ℳ p ℒ H h B
-        (k + 1) (event b) n m'' hv]
+        (k + 1) (k + 1) (Nat.le_refl _) (event b) n m'' hv]
       rfl
 
 end Mei.ModuleProbe
