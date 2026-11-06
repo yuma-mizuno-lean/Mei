@@ -7,7 +7,6 @@ module
 
 public import Mei.Algebra.DirectSum.Component
 public import TauCeti.Algebra.DirectSum.Internal
-public import Mathlib.LinearAlgebra.Pi
 
 /-!
 # Linear families with finite homogeneous support

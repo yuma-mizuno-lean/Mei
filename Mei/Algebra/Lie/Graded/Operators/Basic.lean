@@ -8,8 +8,6 @@ module
 public import Mei.LinearAlgebra.GradedModule.Operators.Basic
 public import Mathlib.Algebra.Lie.Abelian
 public import Mathlib.Algebra.Lie.Graded
-public import Mathlib.Algebra.Lie.OfAssociative
-public import Mathlib.Algebra.Lie.Submodule
 
 /-!
 # Lie actions on homogeneous operator families
@@ -18,6 +16,8 @@ A graded Lie action induces an action by postcomposition on linear families with
 uniform finite homogeneous support. A Lie element has finitely many homogeneous
 components, each of which shifts an operator's degree. Evaluation is an equivariant,
 degree-preserving linear map. No finite generation of the input module is needed.
+The Lie algebra and coefficient module may have different grading index types,
+with degrees related by a vector addition action.
 
 We use Mathlib's Hom representation with trivial action on the source and restrict
 it to the existing `GradedOperators`. This supplies coefficient representations for
@@ -29,22 +29,22 @@ public noncomputable section
 
 namespace Mei.GradedOperators
 
-variable {R H M Γ L : Type*} [CommRing R] [AddCommGroup H] [Module R H]
-  [AddCommGroup M] [Module R M] [AddCommMonoid Γ] [DecidableEq Γ]
-  (ℳ : Γ → Submodule R M) [DirectSum.Decomposition ℳ]
+variable {R H M ι κ L : Type*} [CommRing R] [AddCommGroup H] [Module R H]
+  [AddCommGroup M] [Module R M] [DecidableEq ι] [DecidableEq κ] [VAdd ι κ]
+  (ℳ : κ → Submodule R M) [DirectSum.Decomposition ℳ]
   [LieRing L] [LieAlgebra R L] [LieRingModule L M] [LieModule R L M]
-  (ℒ : Γ → Submodule R L) [DirectSum.Decomposition ℒ] [SetLike.GradedBracket ℒ ℳ]
+  (ℒ : ι → Submodule R L) [DirectSum.Decomposition ℒ] [SetLike.GradedBracket ℒ ℳ]
 
-omit [DirectSum.Decomposition ℒ] in
+omit [DirectSum.Decomposition ℒ] [DecidableEq ι] in
 /-- Postcomposition by a homogeneous Lie element preserves finite homogeneous support. -/
-private theorem postcomp_mem_of_homogeneous {n q : Γ} {x : L} (hx : x ∈ ℒ n)
+private theorem postcomp_mem_of_homogeneous {n : ι} {q : κ} {x : L} (hx : x ∈ ℒ n)
     {f : GradedOperators ℳ H} (hf : f ∈ grading ℳ q) :
     (LieModule.toEnd R L M x).comp f.val ∈
       LinearMap.range (gradedOperatorMap (H := H) ℳ) := by
-  let g : H →ₗ[R] ℳ (n + q) :=
-    ((LieModule.toEnd R L M x).comp f.val).codRestrict (ℳ (n + q))
+  let g : H →ₗ[R] ℳ (n +ᵥ q) :=
+    ((LieModule.toEnd R L M x).comp f.val).codRestrict (ℳ (n +ᵥ q))
       (fun a => SetLike.GradedBracket.bracket_mem hx ((mem_grading_iff ℳ q f).mp hf a))
-  refine ⟨DirectSum.lof R Γ (fun q => H →ₗ[R] ℳ q) (n + q) g, ?_⟩
+  refine ⟨DirectSum.lof R κ (fun q => H →ₗ[R] ℳ q) (n +ᵥ q) g, ?_⟩
   rw [gradedOperatorMap_lof]
   rfl
 
@@ -77,7 +77,7 @@ abbrev lieSubmodule : LieSubmodule R L (TrivialLieModule R L H →ₗ[R] M) wher
     exact postcomp_mem ℳ ℒ x ⟨f, hf⟩
 
 /-- The homogeneous operators in the restricted Lie representation. -/
-abbrev lieGrading (q : Γ) : Submodule R (lieSubmodule (H := H) ℳ ℒ) :=
+abbrev lieGrading (q : κ) : Submodule R (lieSubmodule (H := H) ℳ ℒ) :=
   grading (H := TrivialLieModule R L H) ℳ q
 
 /-- The operator representation has the inherited internal direct-sum decomposition. -/
@@ -111,18 +111,18 @@ theorem evalLieModuleHom_apply (a : H) (f : lieSubmodule (H := H) ℳ ℒ) :
   eval_apply ℳ _ f
 
 /-- Evaluation retains the operator's homogeneous degree, even when its value vanishes. -/
-theorem evalLieModuleHom_mem (a : H) {q : Γ} {f : lieSubmodule (H := H) ℳ ℒ}
+theorem evalLieModuleHom_mem (a : H) {q : κ} {f : lieSubmodule (H := H) ℳ ℒ}
     (hf : f ∈ lieGrading ℳ ℒ q) : evalLieModuleHom ℳ ℒ a f ∈ ℳ q := by
   rw [evalLieModuleHom_apply]
   exact (mem_grading_iff ℳ q f).mp hf _
 
 /-- Regard a linear family in a single piece as a homogeneous operator coefficient. -/
-def homogeneousFamily (q : Γ) (f : H →ₗ[R] ℳ q) : lieGrading (H := H) ℳ ℒ q :=
+def homogeneousFamily (q : κ) (f : H →ₗ[R] ℳ q) : lieGrading (H := H) ℳ ℒ q :=
   ⟨single ℳ q (f.comp (TrivialLieModule.equiv R L H).toLinearMap), single_mem ℳ q _⟩
 
 /-- Evaluating a homogeneous incoming family recovers its prescribed input value. -/
 @[simp↓]
-theorem evalLieModuleHom_homogeneousFamily (q : Γ) (f : H →ₗ[R] ℳ q) (a : H) :
+theorem evalLieModuleHom_homogeneousFamily (q : κ) (f : H →ₗ[R] ℳ q) (a : H) :
     evalLieModuleHom ℳ ℒ a (homogeneousFamily ℳ ℒ q f) = (f a : M) := by
   simp only [evalLieModuleHom_apply, homogeneousFamily, coe_single, LinearMap.comp_apply,
     Submodule.subtype_apply, LinearEquiv.coe_coe, LinearEquiv.apply_symm_apply]
