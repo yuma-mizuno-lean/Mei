@@ -99,8 +99,8 @@ theorem eventually_avoids_walls_of_regular
     have heq := affineSpan_eq_of_notMem_singularSupport hreg ha (hinc j)
     constructor
     · intro hz
-      exact hq (map_eq_zero_of_affineSpan_eq (F j) (ν a) (hheight _) (hspan a) heq.symm
-        (hinc j) hz)
+      exact hq (map_eq_zero_of_affineSpan_eq (F j).toLinearMap (ν a).toLinearMap
+        (hheight _) (hspan a) heq.symm (hinc j) hz)
     · intro Y hY
       apply (hspan a).subset
       rw [heq]
