@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.Convex.Polyhedron.Boundary
-public import Mei.Topology.Algebra.ContinuousAffineMap
+public import Mei.LinearAlgebra.AffineSpace.Ray
 
 /-!
 # Boundaries of eventual polyhedral source admission
@@ -50,7 +50,9 @@ theorem mem_frontier_eventually_forall_apply_add_smul_le_comp_iff
     have hdomain : {Y : W | ∀ᶠ t : ℝ in atTop, ∀ j, g j (X Y + t • w) ≤ 0} =
         {Y | ∀ j : J, G j Y ≤ 0} := by
       ext Y
-      rw [mem_ofPred_eq, eventually_forall_apply_add_smul_le_iff_of_nonpos g w hw]
+      simp only [mem_ofPred_eq, ← ContinuousAffineMap.coe_toAffineMap]
+      rw [AffineMap.eventually_forall_apply_add_smul_le_iff_of_nonpos
+        (fun j => (g j).toAffineMap) w hw]
       exact ⟨fun h j => h j.val j.property, fun h j hj => h ⟨j, hj⟩⟩
     have hclosed : IsClosed {Y : W | ∀ j : J, G j Y ≤ 0} :=
       (TauCeti.isConvexPolyhedron_setOf_forall G).isClosed
@@ -59,11 +61,13 @@ theorem mem_frontier_eventually_forall_apply_add_smul_le_comp_iff
     · rintro ⟨hQ, hnot⟩
       obtain ⟨j, hj, hne⟩ := Mei.Convex.exists_nonzero_active_row_of_notMem_interior G hQ hnot
       refine ⟨?_, j.val, j.property, hj, hne⟩
-      exact (eventually_forall_apply_add_smul_le_iff_of_nonpos g w hw (X Q)).mpr
+      exact (AffineMap.eventually_forall_apply_add_smul_le_iff_of_nonpos
+        (fun j => (g j).toAffineMap) w hw (X Q)).mpr
         (fun j hj => hQ ⟨j, hj⟩)
     · rintro ⟨hQ, j, hjw, hjQ, hne⟩
       have hmem : ∀ j : J, G j Q ≤ 0 :=
-        fun j => (eventually_forall_apply_add_smul_le_iff_of_nonpos g w hw (X Q)).mp
+        fun j => (AffineMap.eventually_forall_apply_add_smul_le_iff_of_nonpos
+          (fun j => (g j).toAffineMap) w hw (X Q)).mp
           hQ j.val j.property
       refine ⟨hmem, ?_⟩
       intro hint
@@ -77,7 +81,8 @@ theorem mem_frontier_eventually_forall_apply_add_smul_le_comp_iff
       have hlt : G j' Q < 0 := by simpa only [interior_Iic, mem_preimage, mem_Iio] using hstrict
       exact (ne_of_lt hlt) hjQ
   · have hnone (Y : W) : ¬ (∀ᶠ t : ℝ in atTop, ∀ j, g j (X Y + t • w) ≤ 0) := by
-      simp only [eventually_all, eventually_apply_add_smul_le_iff]
+      simp only [eventually_all, ← ContinuousAffineMap.coe_toAffineMap,
+        AffineMap.eventually_apply_add_smul_le_iff]
       intro h
       exact hw fun j => (h j).elim le_of_lt (fun hzero => hzero.1.le)
     have he : {Y : W | ∀ᶠ t : ℝ in atTop, ∀ j, g j (X Y + t • w) ≤ 0} = ∅ :=
