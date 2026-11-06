@@ -97,10 +97,8 @@ theorem exists_decompose_cutoffDecoratedEvaluation_eq_sum_lastChange_generic
   have htrans : f e (v r) ≠ 0 := hnormal ▸ (hE e he).2.1
   let z : Z := ⟨(e, ⟨q, hq⟩, ⟨r, hr⟩), htrans⟩
   have hheight := (hE e he).2.2.2.1
-  have htime : (c e - f e Q) / f e (v q) = s e := by
-    apply (div_eq_iff (hE e he).2.1).mpr
-    rw [map_add, map_smul, smul_eq_mul] at hheight
-    linarith
-  simpa only [z, sweepProjection_apply, smul_smul, ← div_eq_mul_inv, htime] using hη z
+  simpa only [z,
+    ContinuousLinearMap.sweepProjection_inv_smul_eq_add_smul _ (hE e he).2.1 hheight]
+    using hη z
 
 end Mei.CutoffDecoratedRay

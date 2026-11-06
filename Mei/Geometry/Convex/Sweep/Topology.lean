@@ -67,6 +67,18 @@ theorem sweepProjection_eq_self (f : V →L[ℝ] ℝ) (c : ℝ) {n y : V}
     (hy : f y = c) : sweepProjection f c n y = y := by
   simp [hy]
 
+/-- Projecting along a transverse direction recovers any point on that line
+whose height is the target height. -/
+theorem _root_.ContinuousLinearMap.sweepProjection_inv_smul_eq_add_smul
+    (f : V →L[ℝ] ℝ) {c s : ℝ} {Q v : V} (hv : f v ≠ 0)
+    (h : f (Q + s • v) = c) :
+    sweepProjection f c ((f v)⁻¹ • v) Q = Q + s • v := by
+  have htime : (c - f Q) / f v = s := by
+    apply (div_eq_iff hv).mpr
+    rw [map_add, map_smul, smul_eq_mul] at h
+    linarith
+  simp only [sweepProjection_apply, smul_smul, ← div_eq_mul_inv, htime]
+
 /-- A sweep projection followed by displacement in a transverse direction
 covers the whole space. No condition on the sweeping vector is needed: the
 projection fixes the hyperplane, and the displacement supplies its complement. -/

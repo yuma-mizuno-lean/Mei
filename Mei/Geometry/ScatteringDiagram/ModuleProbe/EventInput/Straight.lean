@@ -197,11 +197,8 @@ theorem exists_straightEventInputArrangement
           (sub_eq_iff_eq_add.mp hxy).trans (add_comm _ _)
         rw [hyx, hx, smul_smul]
         module
-      rw [hline, map_add, map_smul, smul_eq_mul] at hh
-      have htime : (height c - ν c y.val) / ν c (v a) = (1 - τ[j.val]) * L := by
-        apply (div_eq_iff hv).mpr
-        linarith
-      rw [hline, sweepProjection_apply, smul_smul, ← div_eq_mul_inv, htime]
+      rw [hline] at hh ⊢
+      exact ((ν c).sweepProjection_inv_smul_eq_add_smul hv hh).symm
     exact (hG y.val hy).mono fun δ hδ => by
       simpa only [t, hpoint] using hδ t
   -- All finite events and directions use one common positive displacement;

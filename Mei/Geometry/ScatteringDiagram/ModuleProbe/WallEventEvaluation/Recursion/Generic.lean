@@ -116,16 +116,12 @@ theorem exists_cutoffWallEventEvaluation_eq_sum_eventBlock_generic
     hnormal ▸ hv
   let z : Z := ⟨(b, n, m), hw⟩
   -- The actual event point is the normalized sweep projection of the endpoint.
-  have htime : (b.offset (B.activeOffset (k + 1)) -
-      b.normal (B.activeNormal (k + 1)) y.val) /
-        b.normal (B.activeNormal (k + 1)) (i (ρ (p + n.val))) =
-          segmentEventParameter (B.activeNormal (k + 1)) e T b := by
-    apply (div_eq_iff hv).mpr
-    rw [map_add, map_smul, smul_eq_mul] at hheight
-    linarith
   have hgen := hsmall ⟨(hη b hb).1,
     lt_of_lt_of_le (hη b hb).2 (min_le_right _ _)⟩ z
-  simpa only [z, sweepProjection_apply, smul_smul, ← div_eq_mul_inv, htime] using hgen
+  simpa only [z,
+    (b.normal (B.activeNormal (k + 1))).sweepProjection_inv_smul_eq_add_smul
+      (c := b.offset (B.activeOffset (k + 1))) hv hheight]
+    using hgen
 
 open Classical in
 /-- One refinement gives complete backward segments and the actual event
@@ -181,10 +177,6 @@ theorem exists_wallEventRecursionArrangement_generic (k : ℕ) (A : ExceptionalA
     (by simpa only [hy] using ht) a C θ hθ
   refine ⟨η, by simpa only [hy] using hη, ?_⟩
   rw [eventEndpointStep_apply, ← hy, hrec]
-  apply Finset.sum_congr rfl
-  intro b hb
-  apply Finset.sum_congr rfl
-  intro m hm
-  split_ifs <;> rfl
+  simp only [DFunLike.ite_apply, LinearMap.zero_apply]
 
 end Mei.ModuleProbe

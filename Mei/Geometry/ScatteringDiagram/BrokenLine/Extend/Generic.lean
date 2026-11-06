@@ -83,12 +83,9 @@ theorem exists_eventually_sum_finalEncounter_eq_component_sum_generic
   refine ⟨F, fun Q hQ ℳ _ n T p₀ a f c ε P W S C H t ht hh hinc
     hclosedW hplane hclosedS hregular hW hS U => ?_⟩
   dsimp only
-  have htime : (b - m Q) / m (v q) = t := by
-    apply (div_eq_iff htrans).mpr
-    rw [map_add, map_smul, smul_eq_mul] at hh
-    linarith
   have hgeneric := hF Q hQ
-  simp only [sweepProjection_apply, smul_smul, ← div_eq_mul_inv, htime] at hgeneric
+  simp only [ContinuousLinearMap.sweepProjection_inv_smul_eq_add_smul _ htrans hh]
+    at hgeneric
   filter_upwards [hgeneric,
     eventually_sum_finalEncounter_eq_component_sum (T := T) (a := a) (v := v)
       (f := f) (c := c) (ε := ε) (P := P) (W := W) (S := S) (C := C)
