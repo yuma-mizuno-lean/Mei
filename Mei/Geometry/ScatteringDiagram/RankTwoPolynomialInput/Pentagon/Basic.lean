@@ -147,7 +147,7 @@ theorem isTypeA₂Presentation :
         rcases hA.eq_or_eq x.1 with he | he
         · rw [he, hA.offset_fst]
         · rw [he, hA.offset_snd] }
-  eq_or_eq := hA.eq_or_eq
+  commute_isolated x _ hx₁ hx₂ := (hx₁ ((hA.eq_or_eq x.1).resolve_right hx₂)).elim
   mem_monoid_fst := hA.mem_monoid_fst
   mem_monoid_snd := hA.mem_monoid_snd
   apply_fst_fst := hA.wallNormal_fst_fst
@@ -206,6 +206,6 @@ theorem exists_isPositiveWallRepresentative_scat [Module.Free ℤ L] :
   (hA.isTypeA₂Presentation h c).exists_isPositiveWallRepresentative_scat Q I.projection φ hc₁ hc₂
     ⟨-n₂, hQ₂, by rw [neg_neg]; exact (Fact.out : d.monoid ≤ Q) hA.mem_monoid_snd,
       by simp [hA.wallNormal_fst_snd], by simp [hA.wallNormal_snd_snd]⟩
-    ⟨n₁, (Fact.out : d.monoid ≤ Q) hA.mem_monoid_fst, hQ₁, hA.wallNormal_snd_fst⟩
+    ⟨n₁, (Fact.out : d.monoid ≤ Q) hA.mem_monoid_fst, hQ₁, hA.wallNormal_snd_fst⟩ hA.eq_or_eq
 
 end Mei.RankTwoPolynomialInput.IsTypeA₂

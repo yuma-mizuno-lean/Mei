@@ -377,6 +377,23 @@ theorem domain_def (t : CutoffDecoratedType d ℳ T a v f ε k) :
         (fun j => v (Fin.snoc (α := fun _ => Γ) t.history.val 0 j))
         (fun j => P (t.itinerary.val.get j)) W S C := (rfl)
 
+/-- The full type domain satisfies the strict incidence constraints for any
+larger selected supports. No avoidance or source condition is discarded from
+the domain on the left. -/
+theorem domain_subset_backwardDomain (t : CutoffDecoratedType d ℳ T a v f ε k)
+    {A : J → Set V} (hPA : ∀ j, P j ⊆ A j) :
+    domain c P W S C t ⊆ backwardDomain
+      (fun j => f (t.itinerary.val.get j)) (fun j => c (t.itinerary.val.get j))
+      (fun j => v (t.history.val j)) (fun j => A (t.itinerary.val.get j)) := by
+  intro Q hQ
+  rw [domain_def] at hQ
+  have hm := (mem_backwardDomain ..).mp
+    (admissibleBackwardDomain_subset_backwardDomain _ _ _ _ _ _ _ hQ)
+  simp only [Fin.snoc_castSucc] at hm
+  apply (mem_backwardDomain ..).mpr
+  intro j
+  exact ⟨(hm j).1, hPA _ (hm j).2⟩
+
 /-- Membership is the existing complete admissible backward endpoint condition. -/
 @[simp]
 theorem mem_domain (t : CutoffDecoratedType d ℳ T a v f ε k) (Q : V) :
@@ -589,7 +606,7 @@ theorem CutoffDecoratedType.isRationalSemilinear_domain {k : ℕ}
 
 /-- One finite exceptional arrangement controls every encounter itinerary at the
 cutoff. All type-domain frontiers are exceptional, and nearby actual ray fibers
-are bijective with the same whole decorations. -/
+are bijective with the same complete decorated types. -/
 theorem exists_cutoffDecoratedRay_membershipArrangement (k : ℕ) :
     ∃ E : ExceptionalArrangement V,
       (∀ t : CutoffDecoratedType d ℳ T a (fun q => i (w q)) f ε k,
@@ -597,7 +614,11 @@ theorem exists_cutoffDecoratedRay_membershipArrangement (k : ℕ) :
       ∀ Q, E.IsGeneric Q → ∀ᶠ Q' in nhds Q,
         ∃ e : CutoffDecoratedRay d ℳ T a (fun q => i (w q)) f c ε P W S C k Q ≃
             CutoffDecoratedRay d ℳ T a (fun q => i (w q)) f c ε P W S C k Q',
-          ∀ r, (e r).itinerary = r.itinerary ∧ (e r).decoration = r.decoration := by
+          ∀ r,
+            (cutoffDecoratedRayFiberEquiv d ℳ T a (fun q => i (w q))
+              f c ε P W S C k Q' (e r)).val =
+            (cutoffDecoratedRayFiberEquiv d ℳ T a (fun q => i (w q))
+              f c ε P W S C k Q r).val := by
   have hdom (t : CutoffDecoratedType d ℳ T a (fun q => i (w q)) f ε k) :
       IsRationalSemilinear h (CutoffDecoratedType.domain c P W S C t) :=
     t.isRationalSemilinear_domain c P W S C h w hf hP hW hS hC
@@ -609,14 +630,7 @@ theorem exists_cutoffDecoratedRay_membershipArrangement (k : ℕ) :
     (eQ Q').symm)
   refine ⟨e, fun r => ?_⟩
   have he : (eQ Q' (e r)).val = (eQ Q r).val := by simp [e]
-  refine ⟨congrArg (fun t => t.itinerary.val) he, ?_⟩
-  calc
-    (e r).decoration = (eQ Q' (e r)).val.decoration :=
-      (cutoffDecoratedRayFiberEquiv_decoration d ℳ T a (fun q => i (w q))
-        f c ε P W S C k Q' (e r)).symm
-    _ = (eQ Q r).val.decoration := congrArg CutoffDecoratedType.decoration he
-    _ = r.decoration := cutoffDecoratedRayFiberEquiv_decoration d ℳ T a
-      (fun q => i (w q)) f c ε P W S C k Q r
+  exact he
 
 /-- Weighted evaluation over the complete cutoff family is locally constant off
 one finite exceptional arrangement, over arbitrary semirings. -/
@@ -631,7 +645,11 @@ theorem exists_cutoffDecoratedEvaluation_eventually_eq (k : ℕ) :
     (CutoffDecoratedRay d ℳ T a (fun q => i (w q)) f c ε P W S C k Q)
   let := Fintype.ofFinite
     (CutoffDecoratedRay d ℳ T a (fun q => i (w q)) f c ε P W S C k Q')
-  exact (Fintype.sum_equiv e _ _ (fun r => (he r).2.symm)).symm
+  apply (Fintype.sum_equiv e _ _ ?_).symm
+  intro r
+  rw [← cutoffDecoratedRayFiberEquiv_decoration d ℳ T a (fun q => i (w q))
+    f c ε P W S C k Q' (e r), he r,
+    cutoffDecoratedRayFiberEquiv_decoration]
 
 end Rational
 

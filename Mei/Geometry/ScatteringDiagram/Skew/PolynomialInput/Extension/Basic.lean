@@ -473,6 +473,21 @@ theorem principalBLMExtension_exponent [Nonempty ι] (i : B.unfrozenIndex) :
       B.principalBLMExponent i := by
   simp [principalBLMExtension]
 
+/-- In the principal BLM extension, the multiplier and the form at the unfrozen vectors `a_i`,
+`a_j` satisfy `d^B_{a_i} {a_i, a_j} = ℓ_i d_j {e_i, e_j}`. -/
+theorem principalBLMExtension_multiplier_mul_form [Nonempty ι] (i j : B.unfrozenIndex) :
+    ((B.principalBLMBasis ℓ).multiplier (B.principalBLMUnfrozenEquiv ℓ i) : ℚ) *
+        (B.principalBLMDatum ℓ).form
+          ((B.principalBLMBasis ℓ).basis (B.principalBLMUnfrozenEquiv ℓ i))
+          ((B.principalBLMBasis ℓ).basis (B.principalBLMUnfrozenEquiv ℓ j)) =
+      ℓ i * (B.multiplier j * D.form (B.basis i) (B.basis j)) := by
+  have h := (B.principalBLMExtension ℓ).multiplicity_mul_exponent
+    (B.principalBLMUnfrozenEquiv ℓ i) ((B.principalBLMBasis ℓ).basis
+      (B.principalBLMUnfrozenEquiv ℓ j))
+  rw [principalBLMExtension_multiplicity, principalBLMExtension_exponent] at h
+  rw [← h]
+  simp
+
 /-- If the original form vanishes on `N_uf`, for instance for the zero form, the form of the
 extension vanishes on its unfrozen sublattice, spanned by the `a_i`, `i ∈ I_uf`:
 `{a_i, a_j} = c {d_i e_i, d_j e_j} = 0`. Its pairings of the `a_i` with the frozen `c_i` are

@@ -24,7 +24,9 @@ Then the exponents satisfy `w_i(e_j) = d_i {e_i, e_j} / ℓ_i = 0`, so every non
 the incoming diagram lies on a ray whose generator is annihilated by all the cylinder normals
 `e_j`. The labels of the incoming diagram therefore commute pairwise
 (`commute_incomingDiagram_label_of_forall_form_eq_zero`), although the tropical vertex algebra
-of the finite alphabet is not abelian. We prove:
+of the finite alphabet is not abelian. This holds pointwise: the labels of the walls over the
+initial polynomials at two unfrozen indices `i, j` commute as soon as `{e_i, e_j} = 0`
+(`commute_incomingDiagram_label_of_form_eq_zero`). We prove:
 
 * the incoming diagram is consistent (`incomingDiagram_consistent_of_forall_form_eq_zero`), so
   its outgoing scattering class is its own class
@@ -63,27 +65,15 @@ local notation "ρ" => AddMonoidHom.id (Module.Dual ℤ N × (I.Letter → ℤ))
 local notation "ℒ" => tropicalVertexGrading (R := R) 𝒅 ρ
 local notation "H" => tropicalVertexWallSpaces (R := R) 𝒅 ρ
 
-/-- If the form vanishes on `N_uf`, a nontrivial ray label of the initial wall at `i` lies on a
-supported ray whose generator has spatial part vanishing on every unfrozen basis vector `e_j`:
-that spatial part is a positive rational multiple of `wᵢ`, and `wᵢ(e_j) = 0`. -/
-theorem generator_apply_basis_eq_zero_of_forall_form_eq_zero
-    (hform : ∀ n m : D.unfrozen, D.form n m = 0) (i : B.unfrozenIndex) {w : SupportedRay 𝒅}
-    (hw : (𝒅).rayFactor ℒ (I.initialLabel (R := R) i) w ≠ 1) (j : B.unfrozenIndex) :
-    w.generator.1 (B.basis j) = 0 := by
-  obtain ⟨a, b, ha, -, hab⟩ := I.rayFactor_initialLabel_projectedDirection i w hw
-  have hj := LinearMap.congr_fun hab (B.basis j)
-  rw [LinearMap.smul_apply, LinearMap.smul_apply,
-    I.exponent_apply_basis_eq_zero_of_forall_form_eq_zero hform i j, smul_zero] at hj
-  exact (smul_eq_zero.mp hj).resolve_left ha.ne'
-
 variable [Module.Finite ℤ N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {latticeMap : (Module.Dual ℤ N × (I.Letter → ℤ)) →+ V}
   (h : TauCeti.Toric.IsIntegralLattice latticeMap)
 
-/-- If the form vanishes on `N_uf`, the labels of the incoming diagram commute pairwise: each
-cylinder normal `e_i` annihilates the supported ray of every nontrivial label. -/
-theorem commute_incomingDiagram_label_of_forall_form_eq_zero
-    (hform : ∀ n m : D.unfrozen, D.form n m = 0) (j j' : I.IncomingIndex) :
+/-- If `{e_i, e_j} = 0`, the labels of the incoming walls over the initial polynomials at `i`
+and `j` commute: each cylinder normal annihilates the supported ray of every nontrivial label of
+the other. -/
+theorem commute_incomingDiagram_label_of_form_eq_zero (j j' : I.IncomingIndex)
+    (hjj' : D.form (B.basis j.1) (B.basis j'.1) = 0) :
     Commute ((I.incomingDiagram (R := R) h).wall j).label
       ((I.incomingDiagram (R := R) h).wall j').label := by
   simp only [incomingDiagram_label]
@@ -96,8 +86,16 @@ theorem commute_incomingDiagram_label_of_forall_form_eq_zero
   refine (H).commute_of_mem_wallGroup_of_apply_eq_zero ?_ ?_
     (I.rayFactor_initialLabel_mem_wallGroup j.1 j.2.val)
     (I.rayFactor_initialLabel_mem_wallGroup j'.1 j'.2.val)
-  · simpa using I.generator_apply_basis_eq_zero_of_forall_form_eq_zero hform j'.1 hj' j.1
-  · simpa using I.generator_apply_basis_eq_zero_of_forall_form_eq_zero hform j.1 hj j'.1
+  · simpa using I.generator_apply_eq_zero_of_form_eq_zero
+      (by rw [D.form_swap, hjj', neg_zero]) hj'
+  · simpa using I.generator_apply_eq_zero_of_form_eq_zero hjj' hj
+
+/-- If the form vanishes on `N_uf`, the labels of the incoming diagram commute pairwise. -/
+theorem commute_incomingDiagram_label_of_forall_form_eq_zero
+    (hform : ∀ n m : D.unfrozen, D.form n m = 0) (j j' : I.IncomingIndex) :
+    Commute ((I.incomingDiagram (R := R) h).wall j).label
+      ((I.incomingDiagram (R := R) h).wall j').label :=
+  I.commute_incomingDiagram_label_of_form_eq_zero h j j' (B.forall_form_eq_zero_iff.mp hform _ _)
 
 /-- If the form vanishes on `N_uf`, the incoming diagram of the polynomial input is consistent:
 its walls are full hyperplanes with pairwise commuting labels. -/

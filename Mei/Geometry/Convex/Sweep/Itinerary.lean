@@ -5,6 +5,7 @@ Authors: Codex
 -/
 module
 
+public import Mei.Analysis.Convex.Intrinsic
 public import Mei.Geometry.Convex.Sweep.Topology
 public import TauCeti.Analysis.Convex.Polyhedron.Basic
 
@@ -24,6 +25,15 @@ velocity `-ρ(p)`, use `ρ(p)` here; positive elapsed times impose the correct o
 The sign of the normal applied to the velocity may be negative. Incidence with
 the selected supports does not assert that a segment avoids other walls or meets
 a selected wall for the first time.
+
+Positive elapsed times and relative-interior encounters persist near the endpoint
+when each support's affine direction contains the kernel of its normal. No
+supporting-hyperplane containment or surjectivity of the encounter maps is required.
+A boundary endpoint therefore has a zero elapsed time or an encounter on a
+relative support boundary, even for nonclosed supports. We use relative-interior
+neighborhoods in affine spans to establish this persistence.
+The endpoint-chart interpretation follows Carl–Pumperla–Siebert, *A tropical view
+on Landau–Ginzburg models*, §4 (arXiv:2205.07753v2).
 -/
 
 public section
@@ -260,6 +270,84 @@ theorem backwardTime_nonneg_of_mem_closure {D : Set V}
     (isClosed_Ici.preimage (backwardTime f c v j).continuous) hQ
   intro Q hQ
   exact hD Q hQ j
+
+/-- A positive backward elapsed time forces the corresponding wall functional to be
+nonzero on the direction. -/
+theorem ne_zero_of_backwardTime_pos {j : Fin n} {Q : V} (ht : 0 < backwardTime f c v j Q) :
+    f j (v j) ≠ 0 := by
+  intro hz
+  simp only [backwardTime_apply, hz, div_zero] at ht
+  exact (lt_irrefl 0) ht
+
+section DomainInterior
+
+open Set Filter Topology
+
+variable (P : Fin n → Set V)
+  (hdir : ∀ j, LinearMap.ker (f j).toLinearMap ≤ (affineSpan ℝ (P j)).direction)
+
+include hdir
+
+/-- For a transverse wall, once one encounter lies in the affine span of the support,
+every encounter does: differences between encounter points lie in the kernel of the
+wall functional. -/
+theorem backwardPoint_succ_mem_affineSpan {j : Fin n} (hf : f j (v j) ≠ 0) {X Y : V}
+    (hY : backwardPoint f c v j.succ Y ∈ affineSpan ℝ (P j)) :
+    backwardPoint f c v j.succ X ∈ affineSpan ℝ (P j) := by
+  rw [← AffineSubspace.vsub_right_mem_direction_iff_mem hY]
+  apply hdir j
+  rw [LinearMap.mem_ker, vsub_eq_sub, map_sub]
+  simp only [ContinuousLinearMap.coe_coe]
+  rw [backwardPoint_height f c v j hf X, backwardPoint_height f c v j hf Y, sub_self]
+
+/-- Strict time order and relative-interior wall encounters persist near the
+endpoint. No convexity, closedness or finite-dimensionality is required. -/
+theorem mem_interior_backwardDomain {Q : V}
+    (ht : ∀ j, 0 < backwardTime f c v j Q)
+    (hP : ∀ j, backwardPoint f c v j.succ Q ∈ intrinsicInterior ℝ (P j)) :
+    Q ∈ interior (backwardDomain f c v P) := by
+  apply mem_interior_iff_mem_nhds.mpr
+  suffices he : ∀ᶠ X in 𝓝 Q, ∀ j,
+      0 < backwardTime f c v j X ∧ backwardPoint f c v j.succ X ∈ P j by
+    exact he.mono fun X hX => (mem_backwardDomain f c v P X).mpr hX
+  apply eventually_all.mpr
+  intro j
+  have hf := ne_zero_of_backwardTime_pos f c v (ht j)
+  have hspan (X : V) : backwardPoint f c v j.succ X ∈ affineSpan ℝ (P j) :=
+    backwardPoint_succ_mem_affineSpan f c v P hdir hf
+      (subset_affineSpan ℝ _ (intrinsicInterior_subset (hP j)))
+  have hlim := tendsto_nhdsWithin_iff.mpr
+    ⟨(backwardPoint f c v j.succ).continuous.tendsto Q, Eventually.of_forall hspan⟩
+  exact ((backwardTime f c v j).continuous.continuousAt.eventually
+    (isOpen_Ioi.mem_nhds (ht j))).and
+      (hlim.eventually (Mei.mem_nhdsWithin_affineSpan_of_mem_intrinsicInterior (hP j)))
+
+/-- At a boundary of the selected-incidence domain, some elapsed time vanishes
+or a selected encounter lies on its wall's relative boundary. The converse can
+fail when an encounter map has smaller rank. -/
+theorem mem_frontier_backwardDomain_imp_time_eq_zero_or_mem_intrinsicFrontier
+    {Q : V} (hQ : Q ∈ frontier (backwardDomain f c v P)) :
+    (∃ j, backwardTime f c v j Q = 0) ∨
+      ∃ j, backwardPoint f c v j.succ Q ∈ intrinsicFrontier ℝ (P j) := by
+  by_contra! hnone
+  have ht (j) : 0 < backwardTime f c v j Q :=
+    lt_of_le_of_ne (backwardTime_nonneg_of_mem_closure f c v
+      (fun X hX i => (hX i).1.le) hQ.1 j) (Ne.symm (hnone.1 j))
+  obtain ⟨p, hp⟩ := (Set.nonempty_of_mem hQ.1).of_closure
+  have hi (j) : backwardPoint f c v j.succ Q ∈ intrinsicInterior ℝ (P j) := by
+    have hspan : backwardPoint f c v j.succ Q ∈ affineSpan ℝ (P j) :=
+      backwardPoint_succ_mem_affineSpan f c v P hdir
+        (ne_zero_of_backwardTime_pos f c v (ht j)) (subset_affineSpan ℝ _ (hp j).2)
+    have hcl : backwardPoint f c v j.succ Q ∈ closure (P j) :=
+      closure_mono (Set.image_subset_iff.mpr fun X hX => (hX j).2)
+        (mem_closure_image (backwardPoint f c v j.succ).continuous.continuousAt hQ.1)
+    rw [← intrinsicClosure_sdiff_intrinsicFrontier]
+    refine ⟨?_, hnone.2 j⟩
+    rw [intrinsicClosure_eq_closure_inter_affineSpan]
+    exact ⟨hcl, hspan⟩
+  exact hQ.2 (mem_interior_backwardDomain f c v P hdir ht hi)
+
+end DomainInterior
 
 /-- Locally closed support constraints give a locally closed strict endpoint domain. -/
 theorem isLocallyClosed_backwardDomain {P : Fin n → Set V}

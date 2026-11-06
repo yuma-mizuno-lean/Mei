@@ -7,9 +7,11 @@ module
 
 public import Mei.Geometry.ScatteringDiagram.Skew.Examples
 public import Mei.Geometry.ScatteringDiagram.Skew.PolynomialInput.Extension.Basic
+public import Mei.Geometry.ScatteringDiagram.Skew.PolynomialInput.Extension.Pentagon
 public import Mei.Geometry.ScatteringDiagram.Skew.PolynomialInput.Incoming
 public import Mei.Geometry.ScatteringDiagram.Skew.PolynomialInput.Commuting
 public import Mei.Geometry.ScatteringDiagram.Skew.PolynomialInput.Pentagon
+public import Mei.Geometry.ScatteringDiagram.Skew.Principal.Examples
 
 /-!
 # Checks on polynomial inputs of generalized cluster scattering diagrams
@@ -57,6 +59,18 @@ Two checks on `BLMPolynomialInput`, and instances of the positive representative
   (`scat_unimodularBLMPolynomialInput`), and over `ℚ` this representative has grouped wall
   functions with natural-number monomial coefficients
   (`unimodular_exists_isPositiveWallRepresentative`).
+
+* *Positive representatives of type `A₂` with an isolated index.* On `ℤ³` with the form
+  `{x, y} = x₀ y₁ - x₁ y₀`, all three basis vectors unfrozen (`isolatedBasis`), the principal BLM
+  extension with multiplicities `ℓ = (1, 1, 2)` is a polynomial input whose form is degenerate
+  on its unfrozen sublattice but does not vanish there. It is of type `A₂` at the indices of `e₀`
+  and `e₁` with the isolated index of `e₂`, where the initial function has two variables
+  (`isTypeA₂WithIsolated_isolatedExtension`, `isolatedExtension_multiplicity_thd`). Its outgoing
+  scattering class is the class of the pentagon diagram of the type `A₂` part together with the
+  isolated incoming walls (`scat_isolatedExtension`), and over `ℚ` this representative has
+  grouped wall functions with natural-number monomial coefficients, among them
+  `1 + p₂,₁ z^{w₂} + p₂,₂ z^{2 w₂}` at the isolated index
+  (`isolatedExtension_exists_isPositiveWallRepresentative`).
 
 The splitting of the initial function into rays follows Burcroff–Lee–Mou, *Positivity of
 generalized cluster scattering diagrams*, §8.1 and §9.2 (arXiv:2503.03719v1).
@@ -320,11 +334,12 @@ theorem unimodularBLMPolynomialInput_multiplicity
 /-- The polynomial input on the unimodular plane is of type `A₂` at `e₀, e₁`:
 `d₀ {e₀, e₁} = d₁ {e₀, e₁} = 1`. -/
 theorem isTypeA₂_unimodularBLMPolynomialInput :
-    unimodularBLMPolynomialInput.IsTypeA₂ unimodularRankTwoFst unimodularRankTwoSnd where
-  eq_or_eq i := by
+    unimodularBLMPolynomialInput.IsTypeA₂WithIsolated unimodularRankTwoFst
+      unimodularRankTwoSnd where
+  form_eq_zero i hi₁ hi₂ := by
     obtain ⟨i, hi⟩ := i
     fin_cases i
-    exacts [Or.inl rfl, Or.inr rfl]
+    exacts [absurd rfl hi₁, absurd rfl hi₂]
   multiplicity_fst := unimodularBLMPolynomialInput_multiplicity _
   multiplicity_snd := unimodularBLMPolynomialInput_multiplicity _
   multiplier_mul_form_fst := by simp
@@ -377,5 +392,82 @@ theorem unimodular_exists_isPositiveWallRepresentative :
     (fun _ => by simp) _
 
 end TypeA₂
+
+section TypeA₂WithIsolated
+
+/-- The multiplicities `ℓ = (1, 1, 2)` at the unfrozen indices of `isolatedBasis`. -/
+def isolatedMultiplicity : isolatedBasis.unfrozenIndex → ℕ+ := fun i => ![1, 1, 2] i.1
+
+/-- The principal BLM extension of `isolatedBasis` with multiplicities `ℓ = (1, 1, 2)`. -/
+abbrev isolatedExtension :
+    (isolatedBasis.principalBLMBasis isolatedMultiplicity).BLMPolynomialInput :=
+  isolatedBasis.principalBLMExtension isolatedMultiplicity
+
+/-- The initial function at the isolated index of the extension has two variables. -/
+theorem isolatedExtension_multiplicity_thd :
+    isolatedExtension.multiplicity
+        (isolatedBasis.principalBLMUnfrozenEquiv isolatedMultiplicity isolatedThd) = 2 := by
+  simp [isolatedMultiplicity]
+
+/-- The principal BLM extension of `isolatedBasis` with multiplicities `ℓ = (1, 1, 2)` is of type
+`A₂` at the indices of `e₀` and `e₁`, with the isolated index of `e₂`. -/
+theorem isTypeA₂WithIsolated_isolatedExtension :
+    isolatedExtension.IsTypeA₂WithIsolated
+      (isolatedBasis.principalBLMUnfrozenEquiv isolatedMultiplicity isolatedFst)
+      (isolatedBasis.principalBLMUnfrozenEquiv isolatedMultiplicity isolatedSnd) :=
+  isolatedBasis.principalBLMExtension_isTypeA₂WithIsolated _ (by simp [isolatedMultiplicity])
+    (by simp [isolatedMultiplicity])
+    (by simp [isolatedBasis_multiplier])
+    (by simp [isolatedBasis_multiplier])
+    isTypeA₂WithIsolated_isolatedBasis.form_eq_zero
+
+/-- The alphabet degrees of the extension are allowed exponents of its coefficient monoid. -/
+instance isolatedExtension_coefficientMonoid_fact :
+    Fact ((PositiveDegrees.finiteAlphabet isolatedExtension.letterExponent).monoid ≤
+      isolatedExtension.coefficientMonoid) :=
+  ⟨isolatedExtension.positiveDegrees_le_coefficientMonoid⟩
+
+variable {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
+  [DecidableEq (Module.Dual ℤ ((Fin 3 ⊕ isolatedBasis.unfrozenIndex) →₀ ℤ))]
+  {latticeMap : (Module.Dual ℤ ((Fin 3 ⊕ isolatedBasis.unfrozenIndex) →₀ ℤ) ×
+    (isolatedExtension.Letter → ℤ)) →+ V}
+  (h : TauCeti.Toric.IsIntegralLattice latticeMap)
+
+/-- The outgoing scattering class of the extension of `isolatedBasis` is the class of its
+pentagon diagram: the incoming walls together with the outgoing half-hyperplane
+`{a₀ + a₁ = 0, a₀ ≥ 0}` labelled by the binomial label of `1 + z^{v₀ + v₁}`. The wall at the
+isolated index does not interact with it. -/
+theorem scat_isolatedExtension :
+    (isolatedExtension.incomingDiagram (R := ℚ) h).Scat (isolatedExtension.incomingDiagram_full h) =
+      (isTypeA₂WithIsolated_isolatedExtension.isTypeA₂Presentation h).pentagonDiagram.toClass :=
+  (isTypeA₂WithIsolated_isolatedExtension.isTypeA₂Presentation h).scat_eq_toClass_pentagonDiagram
+
+open scoped Mei.TropicalVertexCoefficientAction in
+/-- Over `ℚ`, the outgoing scattering class of the extension of `isolatedBasis` has a consistent
+outgoing representative whose grouped wall functions have natural-number monomial coefficients,
+for the coefficient monoid with Laurent characters and nonnegative multiplicities of the
+variables: `1 + p₀ z^{w₀}`, `1 + p₁ z^{w₁}`, `1 + p₀ p₁ z^{w₀ + w₁}` and, at the isolated index,
+`1 + p₂,₁ z^{w₂} + p₂,₂ z^{2 w₂}`. -/
+theorem isolatedExtension_exists_isPositiveWallRepresentative :
+    ∃ (κ : Type) (E : DirectedDiagram
+        (d := PositiveDegrees.finiteAlphabet isolatedExtension.letterExponent) h
+        (tropicalVertexWallSpaces (R := ℚ) _ (AddMonoidHom.id _))
+        (isolatedExtension.IncomingIndex ⊕ κ)),
+      DirectedDiagram.IsOutgoingCompletion
+          (isolatedExtension.incomingDiagram (R := ℚ) h).wall E ∧
+        E.toClass = (isolatedExtension.incomingDiagram (R := ℚ) h).Scat
+          (isolatedExtension.incomingDiagram_full h) ∧
+        E.IsPositiveWallRepresentative
+          ((TropicalVertexCoefficientAction.filtration (R := ℚ)
+            (PositiveDegrees.finiteAlphabet isolatedExtension.letterExponent)
+            isolatedExtension.coefficientMonoid).completedBCHAction _
+              (tropicalVertexGrading (R := ℚ) _ (AddMonoidHom.id _)))
+          (AddMonoidAlgebra.mapRingHom isolatedExtension.coefficientMonoid
+            (Nat.castRingHom ℚ)).rangeS
+          (AddMonoidHom.fst _ _) :=
+  isTypeA₂WithIsolated_isolatedExtension.exists_isPositiveWallRepresentative_scat h _
+    (fun _ => by simp) _
+
+end TypeA₂WithIsolated
 
 end Mei.SkewLatticeDatum.Examples
