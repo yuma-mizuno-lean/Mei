@@ -6,6 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.Convex.Polyhedron.Rational.Cone
+public import Mei.Geometry.Toric.Algebraic.RationalLinearMap
 
 /-!
 # Rational affine equalizers
@@ -21,10 +22,12 @@ open Mei
 
 namespace AffineMap
 
-variable {N N' V W : Type*} [AddCommGroup N] [AddCommGroup N']
-  [NormedAddCommGroup V] [NormedAddCommGroup W] [NormedSpace ℝ V] [NormedSpace ℝ W]
-  {i : N →+ V} {i' : N' →+ W}
+variable {N N' N'' V W X : Type*} [AddCommGroup N] [AddCommGroup N'] [AddCommGroup N'']
+  [NormedAddCommGroup V] [NormedAddCommGroup W] [NormedAddCommGroup X]
+  [NormedSpace ℝ V] [NormedSpace ℝ W] [NormedSpace ℝ X]
+  {i : N →+ V} {i' : N' →+ W} {i'' : N'' →+ X}
   {h : TauCeti.Toric.IsIntegralLattice i} {h' : TauCeti.Toric.IsIntegralLattice i'}
+  {h'' : TauCeti.Toric.IsIntegralLattice i''}
 
 /-- The equalizer of rational affine maps is a rational-normal polyhedron,
 including when it is empty or either map has a kernel. -/
@@ -36,14 +39,23 @@ theorem isRationalNormalPolyhedron_equalizer (f g : V →ᵃ[ℝ] W)
   let δ : V →ᴬ[ℝ] W :=
     ⟨f - g, (f - g).continuous_of_finiteDimensional⟩
   have hδ : Toric.IsRationalLinearMap h h' δ.toAffineMap.linear := by
-    rw [Toric.isRationalLinearMap_iff]
-    intro ℓ hℓ
-    simpa only [δ, AffineMap.sub_linear, LinearMap.comp_sub] using
-      (hf.map_functional hℓ).sub (hg.map_functional hℓ)
+    simpa only [δ, AffineMap.sub_linear] using hf.sub hg
   have he : δ ⁻¹' {0} = {x | f x = g x} := by
     ext x
     simp [δ, sub_eq_zero]
   rw [← he]
   exact (isRationalNormalPolyhedron_singleton h' (0 : W)).preimage δ hδ
+
+/-- The matching locus of two rational affine maps with a common target is a
+rational-normal polyhedron in the product of their source spaces. -/
+theorem isRationalNormalPolyhedron_pullback_matching (g : V →ᵃ[ℝ] W)
+    (φ : X →ᵃ[ℝ] W) (hg : Toric.IsRationalLinearMap h h' g.linear)
+    (hφ : Toric.IsRationalLinearMap h'' h' φ.linear) :
+    IsRationalNormalPolyhedron (h.prod h'') {p : V × X | g p.1 = φ p.2} :=
+  AffineMap.isRationalNormalPolyhedron_equalizer
+    (g.comp (AffineMap.fst : V × X →ᵃ[ℝ] V))
+    (φ.comp (AffineMap.snd : V × X →ᵃ[ℝ] X))
+    (hg.comp (Toric.IsRationalLinearMap.fst h h''))
+    (hφ.comp (Toric.IsRationalLinearMap.snd h h''))
 
 end AffineMap

@@ -5,6 +5,7 @@ Authors: Codex
 -/
 module
 
+public import Mei.Data.Set.Pullback
 public import Mei.Geometry.Convex.Polyhedron.Rational.SemilinearFamily.Basic
 public import Mei.Geometry.Convex.Polyhedron.Rational.Equalizer
 
@@ -35,32 +36,6 @@ variable {N N' N'' V W X : Type*} [AddCommGroup N] [AddCommGroup N'] [AddCommGro
   {h : TauCeti.Toric.IsIntegralLattice i} {h' : TauCeti.Toric.IsIntegralLattice i'}
   {h'' : TauCeti.Toric.IsIntegralLattice i''}
 
-private theorem iUnion_pullback_pieces {κ : Type*} {D : Set V} {f : D → W}
-    (S : κ → Set V) (g : κ → (V →ᵃ[ℝ] W)) (φ : X →ᵃ[ℝ] W)
-    (hD : (⋃ k, S k) = D)
-    (hfg : ∀ k (v : D), v.1 ∈ S k → f v = g k v) :
-    (⋃ k, Prod.fst ⁻¹' S k ∩ {p : V × X | g k p.1 = φ p.2}) =
-      {p : V × X | ∃ hx : p.1 ∈ D, f ⟨p.1, hx⟩ = φ p.2} := by
-  ext p
-  simp only [Set.mem_iUnion, Set.mem_inter_iff, Set.mem_preimage, Set.mem_ofPred_eq]
-  constructor
-  · rintro ⟨k, hk, he⟩
-    have hx : p.1 ∈ D := hD ▸ Set.mem_iUnion.mpr ⟨k, hk⟩
-    exact ⟨hx, (hfg k ⟨p.1, hx⟩ hk).trans he⟩
-  · rintro ⟨hx, he⟩
-    obtain ⟨k, hk⟩ := Set.mem_iUnion.mp (hD.symm ▸ hx)
-    exact ⟨k, hk, (hfg k ⟨p.1, hx⟩ hk).symm.trans he⟩
-
-private theorem isRationalNormalPolyhedron_pullback_matching (g : V →ᵃ[ℝ] W)
-    (φ : X →ᵃ[ℝ] W) (hg : Toric.IsRationalLinearMap h h' g.linear)
-    (hφ : Toric.IsRationalLinearMap h'' h' φ.linear) :
-    IsRationalNormalPolyhedron (h.prod h'') {p : V × X | g p.1 = φ p.2} :=
-  AffineMap.isRationalNormalPolyhedron_equalizer
-    (g.comp (AffineMap.fst : V × X →ᵃ[ℝ] V))
-    (φ.comp (AffineMap.snd : V × X →ᵃ[ℝ] X))
-    (hg.comp (Toric.IsRationalLinearMap.fst h h''))
-    (hφ.comp (Toric.IsRationalLinearMap.snd h h''))
-
 /-- The pullback of a piecewise-affine map has rational semilinear domain and
 rational affine evaluation, given by the second projection. -/
 theorem IsRationalPiecewiseAffine.pullback {D : Set V} {f : D → W}
@@ -74,10 +49,10 @@ theorem IsRationalPiecewiseAffine.pullback {D : Set V} {f : D → W}
   obtain ⟨κ, _, S, g, hD, hS⟩ := isRationalPiecewiseAffine_iff.mp hf
   have hpieces (k : κ) : IsRationalSemilinear (h.prod h'')
       (Prod.fst ⁻¹' S k ∩ {p | g k p.1 = φ p.2}) := by
-    have heq := isRationalNormalPolyhedron_pullback_matching (g k) φ (hS k).2.1 hφ
+    have heq := AffineMap.isRationalNormalPolyhedron_pullback_matching (g k) φ (hS k).2.1 hφ
     simpa only [hπ] using ((hS k).1.preimage π (Toric.IsRationalLinearMap.fst h h'')).inter
       heq.isLocallyClosedPolyhedron.isRationalSemilinear
-  have hdom := iUnion_pullback_pieces S g φ hD (fun k => (hS k).2.2)
+  have hdom := Set.iUnion_pullback_pieces S (fun k => g k) φ hD (fun k => (hS k).2.2)
   rw [isRationalPiecewiseAffine_iff]
   refine ⟨Unit, inferInstance, fun _ => _, fun _ => AffineMap.snd,
     Set.iUnion_const _, fun _ => ⟨?_, Toric.IsRationalLinearMap.snd h h'', fun _ _ => rfl⟩⟩
@@ -99,8 +74,8 @@ theorem IsFiniteBranchOn.pullback {D : Set V} {f : D → W}
   refine ⟨κ, ‹_›, fun k => Prod.fst ⁻¹' S k ∩ {p | g k p.1 = φ p.2},
     fun _ => AffineMap.snd, ?_, fun k => ⟨?_, Toric.IsRationalLinearMap.snd h h'', ?_,
       fun _ _ => rfl⟩⟩
-  · exact iUnion_pullback_pieces S g φ hD (fun k => (hS k).2.2.2)
-  · have heq := isRationalNormalPolyhedron_pullback_matching (g k) φ (hS k).2.1 hφ
+  · exact Set.iUnion_pullback_pieces S (fun k => g k) φ hD (fun k => (hS k).2.2.2)
+  · have heq := AffineMap.isRationalNormalPolyhedron_pullback_matching (g k) φ (hS k).2.1 hφ
     simpa only [hπ] using ((hS k).1.preimage π (Toric.IsRationalLinearMap.fst h h'')).inter
       heq.isLocallyClosedPolyhedron
   · intro p hp q hq he
