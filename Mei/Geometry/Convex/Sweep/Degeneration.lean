@@ -116,6 +116,37 @@ private theorem backwardPath_partial_sum (Q : V) (j : Fin (n + 1)) (t : ℝ) :
       backwardParameter_succ]
     module
 
+/-- Between recorded parameters, the weakly ordered path extension is affine
+with its prescribed segment direction. This also describes the incoming tail
+when the segment index is last. -/
+theorem backwardPath_apply_between {Q : V}
+    (hQ : ∀ j, 0 ≤ backwardTime f c (fun j => v j.castSucc) j Q)
+    (j : Fin (n + 1)) {t : ℝ}
+    (ht : t ≤ backwardParameter f c (fun j => v j.castSucc) j Q)
+    (hafter : ∀ a : Fin n, j ≤ a.castSucc →
+      backwardParameter f c (fun j => v j.castSucc) a.succ Q ≤ t) :
+    backwardPath f c v Q t = backwardPoint f c (fun j => v j.castSucc) j Q +
+      (backwardParameter f c (fun j => v j.castSucc) j Q - t) • v j := by
+  classical
+  have hanti := antitone_backwardParameter f c (fun j => v j.castSucc) Q hQ
+  rw [backwardPath_apply]
+  have he : (∑ a : Fin n,
+      max (backwardParameter f c (fun j => v j.castSucc) a.succ Q - t) 0 •
+        (v a.succ - v a.castSucc)) =
+      ∑ a ∈ Finset.univ.filter (fun a : Fin n => a.val < j.val),
+        (backwardParameter f c (fun j => v j.castSucc) a.succ Q - t) •
+          (v a.succ - v a.castSucc) := by
+    rw [Finset.sum_filter]
+    apply Finset.sum_congr rfl
+    intro a _
+    by_cases ha : a.val < j.val
+    · rw [ite_eq_left ha, max_eq_left (sub_nonneg.mpr (ht.trans (hanti (by
+        simp only [Fin.le_iff_val_le_val, Fin.val_succ]; omega))))]
+    · rw [ite_eq_right ha, max_eq_right (sub_nonpos.mpr (hafter a (by
+        simp only [Fin.le_iff_val_le_val, Fin.val_castSucc]; omega))), zero_smul]
+  rw [he, backwardPath_partial_sum]
+  module
+
 /-- With nonnegative elapsed times, the extended path passes through every affine
 encounter point at its parameter. Several of those parameters may be equal. -/
 theorem backwardPath_apply_parameter {Q : V}
@@ -123,26 +154,9 @@ theorem backwardPath_apply_parameter {Q : V}
     (j : Fin (n + 1)) :
     backwardPath f c v Q (backwardParameter f c (fun j => v j.castSucc) j Q) =
       backwardPoint f c (fun j => v j.castSucc) j Q := by
-  classical
-  have hanti := antitone_backwardParameter f c (fun j => v j.castSucc) Q hQ
-  rw [backwardPath_apply]
-  have he : (∑ a : Fin n,
-      max (backwardParameter f c (fun j => v j.castSucc) a.succ Q -
-        backwardParameter f c (fun j => v j.castSucc) j Q) 0 • (v a.succ - v a.castSucc)) =
-      ∑ a ∈ Finset.univ.filter (fun a : Fin n => a.val < j.val),
-        (backwardParameter f c (fun j => v j.castSucc) a.succ Q -
-          backwardParameter f c (fun j => v j.castSucc) j Q) • (v a.succ - v a.castSucc) := by
-    rw [Finset.sum_filter]
-    apply Finset.sum_congr rfl
-    intro a _
-    by_cases ha : a.val < j.val
-    · rw [ite_eq_left ha, max_eq_left (sub_nonneg.mpr (hanti (by
-        simp only [Fin.le_iff_val_le_val, Fin.val_succ]; omega)))]
-    · rw [ite_eq_right ha, max_eq_right (sub_nonpos.mpr (hanti (by
-        simp only [Fin.le_iff_val_le_val, Fin.val_succ]; omega))), zero_smul]
-  rw [he, backwardPath_partial_sum]
-  simp only [sub_self, zero_smul, add_zero]
-  abel
+  simpa only [sub_self, zero_smul, add_zero] using
+    backwardPath_apply_between f c v hQ j le_rfl (fun a ha =>
+      antitone_backwardParameter f c _ Q hQ (ha.trans (Fin.castSucc_le_succ a)))
 
 /-- Nonnegative elapsed times suffice for the extended path to retain its endpoint. -/
 theorem backwardPath_apply_zero {Q : V}
@@ -151,6 +165,25 @@ theorem backwardPath_apply_zero {Q : V}
   simpa only [backwardParameter_zero, backwardPoint_zero, ContinuousAffineMap.coe_id,
     id_eq] using
     backwardPath_apply_parameter f c v hQ 0
+
+/-- On each finite segment of a weakly ordered itinerary, the closed path
+extension follows the prescribed affine line, including both ends. Collapsed
+segments are allowed. -/
+theorem backwardPath_apply_segment {Q : V}
+    (hQ : ∀ j, 0 ≤ backwardTime f c (fun j => v j.castSucc) j Q)
+    (j : Fin n) {s : ℝ} (hs : 0 ≤ s)
+    (hs' : s ≤ backwardTime f c (fun j => v j.castSucc) j Q) :
+    backwardPath f c v Q
+        (backwardParameter f c (fun j => v j.castSucc) j.castSucc Q - s) =
+      backwardPoint f c (fun j => v j.castSucc) j.castSucc Q + s • v j.castSucc := by
+  have hright : backwardParameter f c (fun j => v j.castSucc) j.succ Q ≤
+      backwardParameter f c (fun j => v j.castSucc) j.castSucc Q - s := by
+    rw [backwardParameter_succ]
+    exact sub_le_sub_left hs' _
+  simpa only [sub_sub_cancel] using
+    backwardPath_apply_between f c v hQ j.castSucc (sub_le_self _ hs) (fun a ha =>
+      (antitone_backwardParameter f c _ Q hQ
+        (Fin.succ_le_succ_iff.mpr (Fin.castSucc_le_castSucc_iff.mp ha))).trans hright)
 
 /-- The path family on any closed set with nonnegative elapsed times is proper
 in compact-open path space: evaluation at time zero recovers the endpoint. -/
