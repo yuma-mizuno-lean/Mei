@@ -209,13 +209,4 @@ theorem sum_slabSingularResolutionCharts_false_eq_true
   · simp [hl, hP]
   · simp [hl]
 
-/-- The changing complete chart has its limiting slab encounter at the origin.
-The upper and lower paths keep their respective incoming developed directions. -/
-theorem slabThetaChartPath_singular_crossing
-    (hn : n ≠ 0) (hj : Q.2 - ((b + j : ℤ) : ℝ) * Q.1 / n = 0)
-    (α : SlabChartIndex t c n) (hα : α.1.val.val = j) :
-    slabThetaChartPath t c n b (.inr (.inl α)) Q (Q.1 / (n : ℝ)) = 0 := by
-  rw [slabThetaChartPath_crossing, hα]
-  exact slabBranchPath_singular_crossing hn hj _
-
 end Mei.FocusFocus
