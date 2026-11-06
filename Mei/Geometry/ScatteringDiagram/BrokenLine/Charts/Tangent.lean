@@ -16,7 +16,7 @@ same degree history and whole decorations before and after passing to tangent
 supports. Its extended path rescales in space and time with unchanged velocities.
 At small positive scales the strict incidence domains agree, as do the weak domains
 that retain collapsed and terminal encounters. A single scale works for every
-complete type at the fixed cutoff and every endpoint in a compact set.
+complete type at the fixed cutoff and every endpoint in a bounded set.
 
 These are comparisons of the selected-incidence constraints of the existing
 closed path charts. They do not identify the full admissible domains: unrecorded
@@ -57,11 +57,11 @@ theorem path_add_smul (t : Types) (Q : V) {r : ℝ} (hr : 0 ≤ r) (s : ℝ) :
 
 variable [Finite J] (P : J → Set V)
   (hP : ∀ j, TauCeti.IsConvexPolyhedron (P j)) (hz : ∀ j, z ∈ P j)
-  {K : Set V} (hK : IsCompact K)
+  {K : Set V} (hK : Bornology.IsBounded K)
 include hP hz hK
 
 /-- One positive scale bound compares the strict selected-incidence domains
-for all complete types and all endpoints in a compact set simultaneously.
+for all complete types and all endpoints in a bounded set simultaneously.
 Every recorded encounter is retained, even without a change of degree or velocity. -/
 theorem eventually_forall_mem_backwardDomain_add_smul_iff :
     ∀ᶠ r : ℝ in 𝓝[>] 0, ∀ t : Types, ∀ Q ∈ K,

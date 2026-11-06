@@ -19,7 +19,7 @@ and the incoming half-line, without a time-order or transversality hypothesis.
 
 For polyhedral selected supports through the center, sufficiently small positive
 scales identify the selected-incidence endpoint domain with the domain for their
-positive tangent cones. This comparison is uniform on compact endpoint sets.
+positive tangent cones. This comparison is uniform on bounded endpoint sets.
 It supplies the incidence and path comparisons used when studying local broken-line
 resolutions by rescaling their closed endpoint charts. Avoidance of other walls,
 singular sets and incoming-source conditions are separate constraints.
@@ -94,11 +94,20 @@ theorem backwardPath_add_smul {r : ℝ} (hr : 0 ≤ r) (t : ℝ) :
 
 variable (P : Fin n → Set V)
 
+/-- Continuous affine maps send bounded sets to bounded sets. -/
+private theorem isBounded_image_continuousAffineMap (A : V →ᴬ[ℝ] V) {K : Set V}
+    (hK : Bornology.IsBounded K) : Bornology.IsBounded (A '' K) := by
+  refine ((Bornology.isBounded_singleton (x := A 0)).add
+    (A.contLinear.lipschitzWith.isBounded_image hK)).subset ?_
+  rintro _ ⟨x, hx, rfl⟩
+  refine ⟨A 0, mem_singleton _, A.contLinear x, mem_image_of_mem _ hx, ?_⟩
+  simpa [add_comm] using (A.map_vadd 0 x).symm
+
 /-- Every reconstructed encounter has the same support incidence as its tangent
-counterpart, uniformly on a compact endpoint set at small positive scales. -/
+counterpart, uniformly on a bounded endpoint set at small positive scales. -/
 theorem eventually_forall_backwardPoint_mem_add_smul_iff
     (hP : ∀ j, TauCeti.IsConvexPolyhedron (P j)) (hz : ∀ j, z ∈ P j)
-    {K : Set V} (hK : IsCompact K) :
+    {K : Set V} (hK : Bornology.IsBounded K) :
     ∀ᶠ r : ℝ in 𝓝[>] 0, ∀ Q ∈ K, ∀ j,
       backwardPoint f (fun i => f i z) u j.succ (z + r • Q) ∈ P j ↔
         backwardPoint f 0 u j.succ Q ∈ posTangentConeAt (P j) z := by
@@ -106,7 +115,7 @@ theorem eventually_forall_backwardPoint_mem_add_smul_iff
       ∀ᶠ r : ℝ in 𝓝[>] 0, ∀ Q ∈ K,
         z + r • backwardPoint f 0 u j.succ Q ∈ P j ↔
           backwardPoint f 0 u j.succ Q ∈ posTangentConeAt (P j) z := by
-    have hb := (hK.image (backwardPoint f 0 u j.succ).continuous).isBounded
+    have hb := isBounded_image_continuousAffineMap (backwardPoint f 0 u j.succ) hK
     have he := eventually_singleton_add_smul_subset (𝕜 := ℝ) hb
       ((hP j).eventually_mem_iff_sub_mem_posTangentConeAt (hz j))
     filter_upwards [he.filter_mono nhdsWithin_le_nhds, self_mem_nhdsWithin] with r hr hrpos
@@ -123,12 +132,12 @@ theorem eventually_forall_backwardPoint_mem_add_smul_iff
   rw [backwardPoint_add_smul]
   exact hr j Q hQ
 
-/-- On a compact set of endpoint displacements, all selected support incidences
+/-- On a bounded set of endpoint displacements, all selected support incidences
 and strict elapsed-time inequalities agree with those of the tangent supports
 for every sufficiently small positive scale. Repeated supports are allowed. -/
 theorem eventually_forall_mem_backwardDomain_add_smul_iff
     (hP : ∀ j, TauCeti.IsConvexPolyhedron (P j)) (hz : ∀ j, z ∈ P j)
-    {K : Set V} (hK : IsCompact K) :
+    {K : Set V} (hK : Bornology.IsBounded K) :
     ∀ᶠ r : ℝ in 𝓝[>] 0, ∀ Q ∈ K,
       z + r • Q ∈ backwardDomain f (fun i => f i z) u P ↔
         Q ∈ backwardDomain f 0 u (fun j => posTangentConeAt (P j) z) := by
@@ -142,7 +151,7 @@ theorem eventually_forall_mem_backwardDomain_add_smul_iff
 for closed charts with terminal or collapsed encounters. -/
 theorem eventually_forall_mem_weakBackwardDomain_add_smul_iff
     (hP : ∀ j, TauCeti.IsConvexPolyhedron (P j)) (hz : ∀ j, z ∈ P j)
-    {K : Set V} (hK : IsCompact K) :
+    {K : Set V} (hK : Bornology.IsBounded K) :
     ∀ᶠ r : ℝ in 𝓝[>] 0, ∀ Q ∈ K,
       z + r • Q ∈ weakBackwardDomain f (fun i => f i z) u P ↔
         Q ∈ weakBackwardDomain f 0 u (fun j => posTangentConeAt (P j) z) := by
