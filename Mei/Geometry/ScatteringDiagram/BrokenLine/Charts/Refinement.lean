@@ -123,17 +123,17 @@ theorem exists_cutoffDecoratedRay_common_closedCharts
       k μ (fun t j => intrinsicInterior ℝ (D t j)) hdisj hdomain Q
   -- Reindex the exact global ray fiber, retaining its complete type. No paths
   -- are constructed afresh on a chart or on an endpoint restriction.
-  · let e := (Set.sigmaDisjointCoverEquiv hdisj hdomain).trans
+  · let e := (Mei.sigmaDisjointCoverEquiv hdisj hdomain).trans
       (Equiv.sigmaCongrRight fun Q =>
         (cutoffDecoratedRayFiberEquiv d ℳ T a v f c ε P W S C k Q).symm)
     have hendpoint (z) : (e z).1 = z.2.2.val := by
       simp only [e, Equiv.trans_apply, Equiv.sigmaCongrRight_apply,
-        Set.sigmaDisjointCoverEquiv_apply_fst]
+        Mei.sigmaDisjointCoverEquiv_apply_fst]
     have he (z) : e z = ⟨z.2.2.val,
         (cutoffDecoratedRayFiberEquiv d ℳ T a v f c ε P W S C k z.2.2.val).symm
           ⟨z.1, hdomain z.1 ▸ mem_iUnion.mpr ⟨z.2.1, z.2.2.property⟩⟩⟩ := by
       dsimp only [e]
-      rw [Equiv.trans_apply, Set.sigmaDisjointCoverEquiv_apply, Equiv.sigmaCongrRight_apply]
+      rw [Equiv.trans_apply, Mei.sigmaDisjointCoverEquiv_apply, Equiv.sigmaCongrRight_apply]
     have htype (z) : (cutoffDecoratedRayFiberEquiv d ℳ T a v f c ε P W S C
         k (e z).1 (e z).2).val = z.1 := by
       rw [he]

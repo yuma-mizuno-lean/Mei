@@ -49,16 +49,16 @@ theorem exists_ofDomains_polyhedralCharts :
         (∀ z, (e z).1 = z.2.2.val) ∧ ∀ z, (e z).2.1 = z.1 := by
   classical
   choose κ hκ B hB hdisj hcover using fun t => (hD t).exists_disjoint_intrinsicInteriors
-  let e := (Set.sigmaDisjointCoverEquiv hdisj hcover).trans
+  let e := (Mei.sigmaDisjointCoverEquiv hdisj hcover).trans
     (Equiv.sigmaCongrRight fun Q => (fiberOfDomainsEquiv D hD Q).symm)
   have hendpoint (z) : (e z).1 = z.2.2.val := by
     simp only [e, Equiv.trans_apply, Equiv.sigmaCongrRight_apply,
-      Set.sigmaDisjointCoverEquiv_apply_fst]
+      Mei.sigmaDisjointCoverEquiv_apply_fst]
   have hlabel (z) : (e z).2.1 = z.1 := by
     calc
-      (e z).2.1 = (Set.sigmaDisjointCoverEquiv hdisj hcover z).2.val :=
+      (e z).2.1 = (Mei.sigmaDisjointCoverEquiv hdisj hcover z).2.val :=
         fiberOfDomainsEquiv_symm_apply_fst D hD _ _
-      _ = z.1 := Set.sigmaDisjointCoverEquiv_apply_val hdisj hcover z
+      _ = z.1 := Mei.sigmaDisjointCoverEquiv_apply_val hdisj hcover z
   exact ⟨κ, hκ, B, hB, hdisj, hcover, e, hendpoint, hlabel⟩
 
 end Mei.FiniteSemilinearFamily

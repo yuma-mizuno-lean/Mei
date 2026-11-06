@@ -11,14 +11,16 @@ public import Mathlib.Data.Set.Lattice.Disjoint
 # Reindexing disjoint covers by their points
 
 A disjoint cover of each set in a labelled family parameterizes the incidences
-between points and labels. `Set.sigmaDisjointCoverEquiv` performs this reindexing
+between points and labels. `Mei.sigmaDisjointCoverEquiv` performs this reindexing
 without identifying different labels whose domains overlap. It assembles
 Mathlib's `Set.unionEqSigmaOfDisjoint` and preserves both the point and the label.
 -/
 
 public noncomputable section
 
-namespace Set
+open Set
+
+namespace Mei
 
 variable {α ι : Type*} {κ : ι → Type*} {D : ι → Set α} {X : ∀ t, κ t → Set α}
   (hdisj : ∀ t, Pairwise fun j l => Disjoint (X t j) (X t l))
@@ -50,4 +52,4 @@ theorem sigmaDisjointCoverEquiv_apply_fst (z : Σ t, Σ j, X t j) :
 theorem sigmaDisjointCoverEquiv_apply_val (z : Σ t, Σ j, X t j) :
     (sigmaDisjointCoverEquiv hdisj hcover z).2.val = z.1 := (rfl)
 
-end Set
+end Mei
