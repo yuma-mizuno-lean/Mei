@@ -52,4 +52,18 @@ theorem sigmaDisjointCoverEquiv_apply_fst (z : Σ t, Σ j, X t j) :
 theorem sigmaDisjointCoverEquiv_apply_val (z : Σ t, Σ j, X t j) :
     (sigmaDisjointCoverEquiv hdisj hcover z).2.val = z.1 := (rfl)
 
+/-- Reindexing back to chart points preserves the underlying point. -/
+@[simp]
+theorem sigmaDisjointCoverEquiv_symm_apply_val
+    (z : Σ Q, {t // Q ∈ D t}) :
+    ((sigmaDisjointCoverEquiv hdisj hcover).symm z).2.2.val = z.1 := by
+  rw [← sigmaDisjointCoverEquiv_apply_fst hdisj hcover, Equiv.apply_symm_apply]
+
+/-- Reindexing back to chart points preserves the original label. -/
+@[simp]
+theorem sigmaDisjointCoverEquiv_symm_apply_fst
+    (z : Σ Q, {t // Q ∈ D t}) :
+    ((sigmaDisjointCoverEquiv hdisj hcover).symm z).1 = z.2.val := by
+  rw [← sigmaDisjointCoverEquiv_apply_val hdisj hcover, Equiv.apply_symm_apply]
+
 end Mei
