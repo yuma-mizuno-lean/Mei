@@ -145,24 +145,6 @@ theorem slabThetaFamily_eval (α : SlabThetaChartIndex t c n b)
     (slabThetaFamily t c n b h).eval α Q = Q.val :=
   FiniteSemilinearFamily.ofDomains_eval ..
 
-/-- The fiber of the common family records the complete charts whose domains
-contain the endpoint, without identifying coincident charts. -/
-def slabThetaFamilyFiberDomainsEquiv (Q : ℝ × ℝ) :
-    (slabThetaFamily t c n b h).fiber Q ≃ {α // Q ∈ slabThetaChartDomain t c n b α} :=
-  FiniteSemilinearFamily.fiberOfDomainsEquiv _ _ Q
-
-@[simp]
-theorem slabThetaFamilyFiberDomainsEquiv_apply_val (Q : ℝ × ℝ)
-    (z : (slabThetaFamily t c n b h).fiber Q) :
-    (slabThetaFamilyFiberDomainsEquiv t c n b h Q z).val = z.1 :=
-  FiniteSemilinearFamily.fiberOfDomainsEquiv_apply_val ..
-
-@[simp]
-theorem slabThetaFamilyFiberDomainsEquiv_symm_apply_fst (Q : ℝ × ℝ)
-    (z : {α // Q ∈ slabThetaChartDomain t c n b α}) :
-    ((slabThetaFamilyFiberDomainsEquiv t c n b h Q).symm z).1 = z.val :=
-  FiniteSemilinearFamily.fiberOfDomainsEquiv_symm_apply_fst ..
-
 /-- Every chart is a finite branch, also at nongeneric endpoints. -/
 theorem slabThetaFamily_isFiniteBranch : (slabThetaFamily t c n b h).IsFiniteBranch :=
   FiniteSemilinearFamily.isFiniteBranch_ofDomains ..

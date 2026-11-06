@@ -136,7 +136,8 @@ def slabSingularFamilyFiberEquiv
       (slabThetaFamily t c n b h).fiber (Q.1, Q.2 + s) :=
   (Equiv.subtypeEquivRight fun α =>
     (mem_slabThetaChartDomain_singular_iff t c hQ hj hs hs₀ α).symm).trans
-    (slabThetaFamilyFiberDomainsEquiv t c n b h (Q.1, Q.2 + s)).symm
+    (slabThetaFamily_def t c n b h ▸
+      (FiniteSemilinearFamily.fiberOfDomainsEquiv _ _ (Q.1, Q.2 + s)).symm)
 
 /-- The exact fiber comparison preserves the entire complete chart label. -/
 @[simp]
@@ -146,7 +147,17 @@ theorem slabSingularFamilyFiberEquiv_fst
     {s : ℝ} (hs : |s| < -(Q.1 / (n : ℝ))) (hs₀ : s ≠ 0)
     (α : slabSingularResolutionCharts t c n b Q j (decide (0 < s))) :
     (slabSingularFamilyFiberEquiv t c h hQ hj hs hs₀ α).1 = α.val := by
-  simp [slabSingularFamilyFiberEquiv]
+  have key : ∀ (F : FiniteSemilinearFamily h h (SlabThetaChartIndex t c n b))
+      (e : F = FiniteSemilinearFamily.ofDomains (slabThetaChartDomain t c n b)
+        (isRationalSemilinear_slabThetaChartDomain t c n b h))
+      (z : {x // (Q.1, Q.2 + s) ∈ slabThetaChartDomain t c n b x}),
+      ((e ▸ (FiniteSemilinearFamily.fiberOfDomainsEquiv (slabThetaChartDomain t c n b)
+        (isRationalSemilinear_slabThetaChartDomain t c n b h) (Q.1, Q.2 + s)).symm :
+          _ ≃ F.fiber (Q.1, Q.2 + s)) z).1 = z.val := by
+    intro F e z
+    subst e
+    simp
+  simp [slabSingularFamilyFiberEquiv, key _ (slabThetaFamily_def t c n b h)]
 
 open Classical in
 /-- The finite sum of the selected incident weights is the actual common-family
