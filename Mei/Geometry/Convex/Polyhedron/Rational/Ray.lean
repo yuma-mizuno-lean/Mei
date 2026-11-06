@@ -8,6 +8,7 @@ module
 public import Mei.Geometry.Convex.Polyhedron.Rational.Sweep
 public import Mei.Geometry.Convex.Polyhedron.Rational.LocallyClosed
 public import Mei.Geometry.Convex.Recession
+public import Mei.Geometry.Convex.Polyhedron.Incoming
 import Mei.Geometry.Convex.Polyhedron.Face
 import Mei.Geometry.Convex.Polyhedron.Escape
 
@@ -101,22 +102,10 @@ theorem IsRationalNormalPolyhedron.eventually_add_smul_mem
       have he : {x : V | ∀ᶠ t : ℝ in Filter.atTop, x + t • w ∈ A.carrier} =
           {x | ∀ j : J, A.inequality j.val x ≤ 0} := by
         ext x
-        simp only [Set.mem_ofPred_eq, RationalAffinePolyhedron.mem_carrier,
-          Filter.eventually_all]
-        constructor
-        · intro hx j
-          simpa only [ContinuousAffineMap.apply_add_smul, j.property, zero_mul,
-            add_zero, Filter.eventually_const] using hx j.val
-        · intro hx j
-          rcases (hlin j).eq_or_lt with hj | hj
-          · exact Filter.Eventually.of_forall fun t => by
-              simpa only [ContinuousAffineMap.apply_add_smul, hj, zero_mul, add_zero]
-                using hx ⟨j, hj⟩
-          · filter_upwards [Filter.eventually_ge_atTop
-              (-A.inequality j x / (A.inequality j).linear w)] with t ht
-            rw [ContinuousAffineMap.apply_add_smul]
-            have := (div_le_iff_of_neg hj).mp ht
-            linarith
+        simp only [Set.mem_ofPred_eq, RationalAffinePolyhedron.mem_carrier]
+        rw [ContinuousAffineMap.eventually_forall_apply_add_smul_le_iff_of_nonpos
+          A.inequality w hlin]
+        exact ⟨fun hx (j : J) => hx j.val j.property, fun hx j hj => hx ⟨j, hj⟩⟩
       rw [he]
       exact isRationalNormalPolyhedron_setOf_forall (fun j : J => A.inequality j.val)
         (fun j => A.rational_linear j.val)
