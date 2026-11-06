@@ -5,7 +5,6 @@ Authors: Claude Code, Codex
 -/
 module
 
-public import Mathlib.Analysis.Normed.Module.Basic
 public import Mathlib.Topology.Algebra.ContinuousAffineEquiv
 
 /-!
@@ -51,12 +50,13 @@ end ContinuousAffineEquiv
 
 namespace ContinuousLinearMap
 
-variable {V V' : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
-  [NormedAddCommGroup V'] [NormedSpace ℝ V']
+variable {k V V' W : Type*} [Ring k] [AddCommGroup V] [Module k V] [TopologicalSpace V]
+  [IsTopologicalAddGroup V] [AddCommGroup V'] [Module k V'] [TopologicalSpace V']
+  [IsTopologicalAddGroup V'] [AddCommGroup W] [Module k W] [TopologicalSpace W]
 
 /-- The transported normal pairs with a transported vector as the original normal
 pairs with the vector. -/
-theorem comp_symm_contLinear_linear (f : V →L[ℝ] ℝ) (e : V ≃ᴬ[ℝ] V') (x : V) :
+theorem comp_symm_contLinear_linear (f : V →L[k] W) (e : V ≃ᴬ[k] V') (x : V) :
     (f.comp e.symm.toContinuousAffineMap.contLinear) (e.toAffineEquiv.linear x) = f x := by
   simp only [ContinuousLinearMap.comp_apply, ContinuousAffineMap.coe_contLinear,
     ContinuousAffineEquiv.toContinuousAffineMap_toAffineMap,
@@ -65,7 +65,7 @@ theorem comp_symm_contLinear_linear (f : V →L[ℝ] ℝ) (e : V ≃ᴬ[ℝ] V')
 
 /-- The transported normal pairs with a transported point as the original normal
 pairs with the point, shifted by the pairing with the preimage of the origin. -/
-theorem comp_symm_contLinear_apply (f : V →L[ℝ] ℝ) (e : V ≃ᴬ[ℝ] V') (x : V) :
+theorem comp_symm_contLinear_apply (f : V →L[k] W) (e : V ≃ᴬ[k] V') (x : V) :
     (f.comp e.symm.toContinuousAffineMap.contLinear) (e x) = f x - f (e.symm 0) := by
   have he := e.symm.toAffineEquiv.toAffineMap.linear_apply_vsub (e x) 0
   simpa only [ContinuousLinearMap.comp_apply, ContinuousAffineMap.coe_contLinear,
