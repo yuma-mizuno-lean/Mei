@@ -137,7 +137,7 @@ omit [IsWallAnnihilating H ℳ] in
 /-- A genuine crossing gives a positive ray parameter, nonzero transversality,
 both signs used by the backward action, the event height, and its precise incident
 wall set. The common proof does not depend on weighted evaluation. -/
-private theorem crossing_event_data (k : ℕ) {n : Γ}
+theorem crossing_event_data (k : ℕ) {n : Γ}
     {x y : WallComplement (B.activeSupport k)}
     (e : x ⟶ y) (T : ℝ) (hTpos : 0 < T)
     (hxy : x.val - y.val = T • i (ρ (p + n)))

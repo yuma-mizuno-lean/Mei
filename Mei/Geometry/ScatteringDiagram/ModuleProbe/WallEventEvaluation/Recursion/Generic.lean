@@ -6,7 +6,6 @@ Authors: Codex
 module
 
 public import Mei.Geometry.ScatteringDiagram.ModuleProbe.WallEventEvaluation.Recursion
-public import Mei.Geometry.Convex.Sweep.Generic
 
 /-!
 # Wall-event recursions with generic incoming coefficients
@@ -111,30 +110,12 @@ theorem exists_cutoffWallEventEvaluation_eq_sum_eventBlock_generic
   let b := crossingWallEvent (B.activeNormal (k + 1)) e t ht
   -- Admissibility makes the outgoing normal velocity nonzero, and matching
   -- velocities give the incoming transversality required by the arrangement.
-  have hmem := mem_chosenWall_crossingWallEvent (B.activeNormal (k + 1)) e t ht
-  have hdir := e.down.transverse b.1.property.choose
-    ⟨t, Ioo_subset_Icc_self (mem_Ioo_of_mem_orderedCrossingTimes e ht), hmem⟩
-  rw [(B.wall b.1.property.choose).direction_support, LinearMap.mem_ker] at hdir
-  have hv : b.normal (B.activeNormal (k + 1)) (i (ρ (p + n.val))) ≠ 0 := by
-    intro hz
-    apply hdir
-    have hyx : y.val - x.val = -T • i (ρ (p + n.val)) := by
-      rw [← neg_sub, hxy, neg_smul]
-    simpa only [WallEvent.normal_def, B.activeNormal_apply,
-      h.continuousRealCharacter_apply, hyx, map_smul, smul_zero] using
-      congrArg (fun u : ℝ => (-T) • u) hz
+  obtain ⟨_, hv, _, _, hheight, _⟩ :=
+    crossing_event_data d p ℒ H h B (k + 1) e T hT hxy ht rfl
   have hw : b.normal (B.activeNormal (k + 1)) (i (ρ (p + m.val))) ≠ 0 :=
     hnormal ▸ hv
   let z : Z := ⟨(b, n, m), hw⟩
   -- The actual event point is the normalized sweep projection of the endpoint.
-  have hline : AffineMap.lineMap x.val y.val t = y.val +
-      segmentEventParameter (B.activeNormal (k + 1)) e T b • i (ρ (p + n.val)) := by
-    rw [lineMap_eq_add_smul (t := t) hxy, segmentEventParameter_of_mem]
-  have hheight : b.normal (B.activeNormal (k + 1))
-      (y.val + segmentEventParameter (B.activeNormal (k + 1)) e T b •
-        i (ρ (p + n.val))) = b.offset (B.activeOffset (k + 1)) := by
-    rw [← hline, WallEvent.normal_def, WallEvent.offset_def]
-    exact (B.wall b.1.property.choose).offset_eq hmem
   have htime : (b.offset (B.activeOffset (k + 1)) -
       b.normal (B.activeNormal (k + 1)) y.val) /
         b.normal (B.activeNormal (k + 1)) (i (ρ (p + n.val))) =
