@@ -89,6 +89,15 @@ theorem backwardPoint_succ_apply (i : Fin n) (Q : V) :
   rw [backwardPoint_succ, ContinuousAffineMap.comp_apply, sweepProjection_apply,
     backwardTime_apply, smul_smul, div_eq_mul_inv]
 
+/-- The segment between consecutive propagation points has the prescribed
+direction and elapsed time, including when that time vanishes. -/
+theorem lineMap_backwardPoint (j : Fin n) (Q : V) (s : ℝ) :
+    AffineMap.lineMap (backwardPoint f c v j.castSucc Q)
+      (backwardPoint f c v j.succ Q) s =
+        backwardPoint f c v j.castSucc Q + (s * backwardTime f c v j Q) • v j := by
+  rw [backwardPoint_succ_apply, AffineMap.lineMap_apply_module']
+  module
+
 /-- A transverse step lies on its selected hyperplane. -/
 theorem backwardPoint_height (i : Fin n) (hi : f i (v i) ≠ 0) (Q : V) :
     f i (backwardPoint f c v i.succ Q) = c i := by
