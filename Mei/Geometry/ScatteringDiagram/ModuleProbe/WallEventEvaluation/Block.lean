@@ -106,6 +106,21 @@ def eventEndpointStep (k K : ℕ) (hkK : k ≤ K)
 
 omit [IsWallAnnihilating H ℳ] in
 open Classical in
+/-- The event step is the generic lower-degree step with the normal-velocity
+condition applied to its coefficient blocks. -/
+theorem eventEndpointStep_def (k K : ℕ) (hkK : k ≤ K)
+    (events : V → (d.cutoff k) → Finset (WallEvent (B.active K)))
+    (point : WallEvent (B.active K) → V → (n m : d.cutoff k) → V) :
+    eventEndpointStep d ℳ p ℒ H h B k K hkK events point =
+      PositiveDegrees.shiftedLowerStep d ℳ p k events
+        (fun b n m _ =>
+          if b.normal (B.activeNormal K) (i (ρ (p + n.val))) =
+              b.normal (B.activeNormal K) (i (ρ (p + m.val))) then
+            eventBlock d ℳ p ℒ H h B k K hkK b n m
+          else 0) point := (rfl)
+
+omit [IsWallAnnihilating H ℳ] in
+open Classical in
 /-- Evaluation of the event endpoint step as a finite sum over lower-degree
 coefficients with preserved normal velocity. -/
 theorem eventEndpointStep_apply (k K : ℕ) (hkK : k ≤ K)

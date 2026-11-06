@@ -146,4 +146,20 @@ theorem labelBlock_apply_component_of_ne (k : ℕ) (g : d.truncatedGroup ℒ k)
   -- linear equivalence apply the same underlying BCH action.
   rfl
 
+/-- A retained coefficient block is independent of enlarging the cutoff, provided
+its label is truncated along the same quotient tower. -/
+theorem labelBlock_truncation {k l : ℕ} (hkl : k ≤ l)
+    (g : d.truncatedGroup ℒ l) (n m : d.cutoff k) :
+    labelBlock d ℳ p ℒ k ((d.truncationMap ℒ hkl).bchGroupMap g) n m =
+      labelBlock d ℳ p ℒ l g
+        ⟨n.val, d.cutoff_mono hkl n.property⟩
+        ⟨m.val, d.cutoff_mono hkl m.property⟩ := by
+  apply LinearMap.ext
+  intro x
+  simp only [labelBlock_apply, LinearMap.sub_apply, Module.End.one_apply, map_sub,
+    LinearEquiv.coe_coe]
+  rw [← (A).transition_mk hkl, ← (A).transition_truncatedBCHAction d ℒ hkl,
+    d.shiftedQuotientComponent_transition]
+  rw [d.shiftedQuotientComponent_transition]
+
 end Mei.PositiveDegrees
