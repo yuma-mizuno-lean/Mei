@@ -289,6 +289,12 @@ def fiberRestrictEquiv {P : Set V} (hP : IsRationalSemilinear h P) (w : W) :
   left_inv _ := rfl
   right_inv _ := rfl
 
+/-- Restriction of endpoint domains preserves each point's original chart label. -/
+@[simp]
+theorem fiberRestrictEquiv_apply_val_fst {P : Set V} (hP : IsRationalSemilinear h P)
+    (w : W) (z : (F.restrict hP).fiber w) :
+    (F.fiberRestrictEquiv hP w z).val.1 = z.1 := (rfl)
+
 /-- Restricting a family of finite branches to a rational semilinear set gives a family of
 finite branches. -/
 theorem IsFiniteBranch.restrict {F : FiniteSemilinearFamily h h' ι} {P : Set V}
