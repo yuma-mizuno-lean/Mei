@@ -5,7 +5,7 @@ Authors: Claude Sonnet 5.5
 -/
 module
 
-public import Mei.Algebra.Lie.Graded.Postcomposition
+public import Mei.Algebra.Lie.Graded.Shifted.Postcomposition
 public import Mei.Geometry.ScatteringDiagram.ModuleProbe.RelativeCompletion.Map
 
 /-!
@@ -17,7 +17,7 @@ probe handles all incoming coefficients `φ v`, `v : X`, at once. The wall space
 pieces whenever they annihilate those of `M`, so the probe construction applies to it, and
 evaluation at each `v : X` is a homogeneous equivariant coefficient map
 (`Mei.gradedHomEval`, `Mei.gradedHomEval_mem`). The evaluations are jointly injective on every
-finite-order coefficient quotient (`quotientGradedHomEval_injective`).
+finite-order coefficient quotient (`Mei.quotientGradedHomEval_injective`).
 
 For `X = ℳ p` with the trivial action, the inclusion of `ℳ p` in `M` is a coefficient
 `tautologicalCoefficient` of degree `p`, and evaluation at `b : ℳ p` sends it to `b`.
@@ -60,61 +60,6 @@ instance isWallAnnihilating_gradedHomPiece {ρ : Γ →+ Λ} (H : DirectedWallSp
     simpa only [LieSubmodule.coe_bracket, lie_linearMap_apply, ZeroMemClass.coe_zero,
       LinearMap.zero_apply] using IsWallAnnihilating.lie_eq_zero (H := H) (𝒜 := ℳ) hx
         ((mem_gradedHomPiece ℒ ℳ X).mp ha v) hm)
-
-section JointInjectivity
-
-variable (X : Type u) [AddCommGroup X] [Module R X] [LieRingModule L X] [LieModule R L X]
-  [LieModule.IsTrivial L X]
-
-/-- The evaluations at all vectors of `X`, on the order-`k` coefficient quotient of the probe
-of `gradedHom ℒ ℳ X`. -/
-def quotientGradedHomEval (k : ℕ) :
-    (d.shiftedFiltration (gradedHomPiece ℒ ℳ X) p).quotient k →ₗ[R]
-      (X → (d.shiftedFiltration ℳ p).quotient k) :=
-  LinearMap.pi fun v => PositiveDegrees.quotientCoefficientMap d (gradedHomPiece ℒ ℳ X) ℳ p
-    (gradedHomEval ℒ ℳ X v).toLinearMap (fun _ _ ha => gradedHomEval_mem ℒ ℳ X ha) k
-
-omit [Algebra ℚ R] [LieAlgebra ℚ L] [IsScalarTower ℚ R L] [IsPositiveGrading d ℒ] in
-@[simp]
-theorem quotientGradedHomEval_apply (k : ℕ)
-    (y : (d.shiftedFiltration (gradedHomPiece ℒ ℳ X) p).quotient k) (v : X) :
-    quotientGradedHomEval d ℒ ℳ p X k y v =
-      PositiveDegrees.quotientCoefficientMap d (gradedHomPiece ℒ ℳ X) ℳ p
-        (gradedHomEval ℒ ℳ X v).toLinearMap (fun _ _ ha => gradedHomEval_mem ℒ ℳ X ha) k y :=
-  (rfl)
-
-omit [Algebra ℚ R] [LieAlgebra ℚ L] [IsScalarTower ℚ R L] [IsPositiveGrading d ℒ] in
-/-- A finite-order coefficient of the homomorphism module is determined by its evaluations: a
-class whose evaluations all vanish has no component of relative degree at most `k`. -/
-theorem quotientGradedHomEval_injective (k : ℕ) :
-    Function.Injective (quotientGradedHomEval d ℒ ℳ p X k) := by
-  rw [injective_iff_map_eq_zero]
-  intro y hy
-  obtain ⟨a, rfl⟩ := Submodule.Quotient.mk_surjective _ y
-  rw [Submodule.Quotient.mk_eq_zero, PositiveDegrees.mem_shiftedFiltration_iff]
-  intro q hq
-  rw [decompose_gradedHomPiece_eq_zero_iff]
-  intro v
-  have hv := congrFun hy v
-  rw [quotientGradedHomEval_apply, PositiveDegrees.quotientCoefficientMap_mk] at hv
-  rw [Pi.zero_apply, Submodule.Quotient.mk_eq_zero, PositiveDegrees.mem_shiftedFiltration_iff]
-    at hv
-  simpa using hv q hq
-
-end JointInjectivity
-
-/-- The inclusion of `ℳ p` in `M`, as a coefficient of degree `p` in the homomorphism module
-from `ℳ p` with the trivial action. -/
-def tautologicalCoefficient : gradedHomPiece ℒ ℳ (TrivialLieModule R L (ℳ p)) p :=
-  ⟨⟨(ℳ p).subtype, homPiece_le_gradedHom ℒ ℳ p ((mem_homPiece ℳ).mpr fun v => v.property)⟩,
-    (mem_gradedHomPiece ℒ ℳ _).mpr fun v => v.property⟩
-
-omit [Algebra ℚ R] [LieAlgebra ℚ L] [IsScalarTower ℚ R L] [DirectSum.Decomposition ℳ] in
-/-- Evaluating the tautological coefficient at `b` returns `b`. -/
-@[simp]
-theorem gradedHomEval_tautologicalCoefficient (b : ℳ p) :
-    gradedHomEval ℒ ℳ (TrivialLieModule R L (ℳ p)) b (tautologicalCoefficient ℒ ℳ p) = b :=
-  (gradedHomEval_apply ℒ ℳ (TrivialLieModule R L (ℳ p)) b _).trans (rfl)
 
 variable {ρ : Γ →+ Λ} (H : DirectedWallSpaces ρ ℒ) [IsWallAnnihilating H ℳ]
   [NormedAddCommGroup V] [NormedSpace ℝ V] [NormedAddCommGroup E] [NormedSpace ℝ E]
