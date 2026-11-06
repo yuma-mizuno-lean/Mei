@@ -20,7 +20,8 @@ finite event alphabet distinguishes simultaneous encounters without losing
 coincident wall indices. The path, every encounter parameter, local directions,
 incoming source and singular avoidance are retained. Ordered crossing times of
 an admissible segment determine the same kind of event, and distinct such times
-have distinct canonical events.
+have distinct canonical events. Finite sums over the event inventory therefore
+reindex over the reversed crossing times, with coincident walls kept together.
 
 At a regular encounter all incident walls have the same affine direction.
 Consequently the normal chosen by the event remains transverse even when it
@@ -226,6 +227,36 @@ theorem mem_segmentWallEvents_iff (f : ι → V →L[ℝ] ℝ) (e : x ⟶ y)
     exact ⟨t.val, List.mem_toFinset.mp t.property, he.symm⟩
   · rintro ⟨t, ht, rfl⟩
     exact crossingWallEvent_mem_segmentWallEvents f e ht
+
+/-- Summing over the genuine event inventory is summing once over each
+crossing time, in reverse crossing order. The summands need only commute
+additively; coincident indexed walls remain one event. -/
+theorem sum_segmentWallEvents {A : Type*} [AddCommMonoid A]
+    (f : ι → V →L[ℝ] ℝ) (e : x ⟶ y) (g : WallEvent ι → A) :
+    ∑ b ∈ segmentWallEvents f e, g b =
+      ∑ t : Fin (orderedCrossingTimes e).length,
+        g (crossingWallEvent f e
+          ((orderedCrossingTimes e).reverse[t.val]'(by
+            simpa only [List.length_reverse] using t.isLt))
+          (List.mem_reverse.mp (List.getElem_mem (by
+            simpa only [List.length_reverse] using t.isLt)))) := by
+  classical
+  symm
+  refine Finset.sum_bij (fun t _ => crossingWallEvent f e
+    ((orderedCrossingTimes e).reverse[t.val]'(by
+      simpa only [List.length_reverse] using t.isLt))
+    (List.mem_reverse.mp (List.getElem_mem (by
+      simpa only [List.length_reverse] using t.isLt))))
+    (fun _ _ => crossingWallEvent_mem_segmentWallEvents _ _ _) ?_ ?_ (fun _ _ => rfl)
+  · intro t _ t' _ he
+    apply Fin.ext
+    exact ((List.nodup_reverse.mpr (pairwise_orderedCrossingTimes e).nodup).getElem_inj_iff).mp
+      (crossingWallEvent_injective f e _ _ he)
+  · intro b hb
+    obtain ⟨t, ht, rfl⟩ := (mem_segmentWallEvents_iff f e b).mp hb
+    obtain ⟨j, hj, he⟩ := List.mem_iff_getElem.mp (List.mem_reverse.mpr ht)
+    exact ⟨⟨j, by simpa only [List.length_reverse] using hj⟩,
+      Finset.mem_univ _, by simp only [he]⟩
 
 /-- The parameter of a segment event is its displacement to the specified ray's
 starting scale. Events outside the genuine inventory have the default value zero. -/
