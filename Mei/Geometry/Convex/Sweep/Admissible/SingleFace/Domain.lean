@@ -154,6 +154,7 @@ theorem frontier_admissibleBackwardDomain_singleFace_one (hw : ν w ≠ 0) (hZc 
       exact ⟨h0.le, fun hlt => absurd h0 hlt.ne⟩
     · exact ⟨hlt.le, fun _ => hz⟩
 
+omit hZ in
 /-- The incoming half-space and the one-crossing domain are disjoint. -/
 theorem disjoint_incoming_admissibleBackwardDomain_singleFace_one :
     Disjoint {x | 0 < (ν x - b) / ν u}
@@ -161,13 +162,20 @@ theorem disjoint_incoming_admissibleBackwardDomain_singleFace_one :
         (fun _ => {x | ν x = b}) (fun _ : Unit => {x | ν x = b}) (fun _ : Unit => Z)
         {x | 0 < (ν x - b) / ν u}) := by
   refine Set.disjoint_left.mpr fun x hx hx' => ?_
-  have h := ((mem_admissibleBackwardDomain_singleFace_one_iff hnormal hZ).mp hx').1
+  rw [← nonempty_admissibleRayRealization_iff] at hx'
+  obtain ⟨r⟩ := hx'
+  have hv : ∀ j : Fin 1, ν (![w, u] j.castSucc) = ν (![w, u] j.succ) := by
+    intro j
+    fin_cases j
+    exact hnormal
+  have h := r.div_neg_of_encounter_singleFace hv 0
   rw [← hnormal] at hx
   exact absurd h (not_lt.mpr (le_of_lt hx))
 
 /-- Every endpoint is admitted by exactly one of the empty and one-crossing itineraries,
-except those on a boundary event: the endpoints on the face and those with negative crossing
-parameter whose crossing point lies in the singular set. -/
+except the excluded endpoints on the face and those with negative crossing parameter whose
+crossing point lies in the singular set. These excluded endpoints form the frontier under the
+hypotheses of `frontier_admissibleBackwardDomain_singleFace_one`. -/
 theorem incoming_union_admissibleBackwardDomain_singleFace_one (hw : ν w ≠ 0) :
     {x | 0 < (ν x - b) / ν u} ∪ (admissibleBackwardDomain (fun _ : Fin 1 => ν) (fun _ => b) ![w, u]
         (fun _ => {x | ν x = b}) (fun _ : Unit => {x | ν x = b}) (fun _ : Unit => Z)

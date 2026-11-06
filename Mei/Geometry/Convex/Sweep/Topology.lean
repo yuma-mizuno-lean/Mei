@@ -60,6 +60,7 @@ theorem sweepProjection_inv_smul_apply (x : V) :
 
 /-- Moving a point of the face backward along a transverse direction by `s` makes the
 crossing parameter `-s`. -/
+@[simp↓]
 theorem sub_div_sub_smul_eq_neg (hw : ν w ≠ 0) {y : V} (hy : ν y = b) (s : ℝ) :
     (ν (y - s • w) - b) / ν w = -s := by
   simp only [map_sub, map_smul, smul_eq_mul, hy]
@@ -67,6 +68,7 @@ theorem sub_div_sub_smul_eq_neg (hw : ν w ≠ 0) {y : V} (hy : ν y = b) (s : �
   ring
 
 /-- Moving a point of the face backward along `w` and projecting returns the point. -/
+@[simp↓]
 theorem sweepProjection_inv_smul_sub_smul (hw : ν w ≠ 0) {y : V} (hy : ν y = b) (s : ℝ) :
     sweepProjection ν b ((ν w)⁻¹ • w) (y - s • w) = y := by
   rw [sweepProjection_inv_smul_apply, sub_div_sub_smul_eq_neg hw hy]

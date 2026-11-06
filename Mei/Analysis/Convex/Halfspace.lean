@@ -87,12 +87,14 @@ theorem Convex.closure_inter_setOf_forall_neg {V ι : Type*} [AddCommGroup V] [M
 
 namespace Mei
 
-variable {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
+variable {V : Type*} [AddCommGroup V] [Module ℝ V] [TopologicalSpace V]
   {ν : V →L[ℝ] ℝ} {b : ℝ} {u : V}
 
 /-- A strict affine half-space defined by a normalized linear functional is open. -/
 theorem isOpen_setOf_pos_sub_div : IsOpen {x : V | 0 < (ν x - b) / ν u} :=
   isOpen_lt continuous_const ((ν.continuous.sub continuous_const).div_const _)
+
+variable [IsTopologicalAddGroup V] [ContinuousSMul ℝ V]
 
 /-- The closure of a transverse open affine half-space is the corresponding closed half-space. -/
 theorem closure_setOf_pos_sub_div (hu : ν u ≠ 0) :
