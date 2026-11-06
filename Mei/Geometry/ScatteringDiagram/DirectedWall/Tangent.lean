@@ -105,7 +105,7 @@ theorem smul_mem_tangentAt_support (hx : x ∈ W.support) {v : V}
 support of the tangent wall. -/
 theorem eventually_mem_support_iff (hx : x ∈ W.support) :
     ∀ᶠ y in 𝓝 x, y ∈ W.support ↔ y - x ∈ (W.tangentAt x hx).support :=
-  W.rational_support.eventually_mem_iff_sub_mem_posTangentConeAt hx
+  W.isConvexPolyhedron.eventually_mem_iff_sub_mem_posTangentConeAt hx
 
 /-- An incoming wall has an incoming tangent wall at each point of its support. A wall that is
 outgoing may have an incoming tangent wall. -/

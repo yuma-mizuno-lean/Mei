@@ -1,0 +1,93 @@
+/-
+Copyright (c) 2026 Mei contributors. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Codex
+-/
+module
+
+public import TauCeti.Analysis.Convex.Polyhedron.Basic
+public import Mathlib.Analysis.Calculus.LocalExtr.Basic
+public import Mathlib.Analysis.Calculus.FDeriv.Affine
+
+/-!
+# Tangent cones of convex polyhedra
+
+The positive tangent cone of a finite system of continuous affine inequalities is cut out
+by the linear parts of the inequalities tight at the base point. The remaining inequalities
+stay strict nearby, so a convex polyhedron locally agrees with the translate of its tangent
+cone. No rationality, lattice, or finite-dimensionality assumption is needed.
+-/
+
+public section
+
+open Filter Topology Set
+
+namespace Mei
+
+variable {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
+  {ι : Type*} [Finite ι]
+
+/-- Near a solution of finitely many affine inequalities, only the tight inequalities constrain
+membership, through their linear parts applied to the displacement. -/
+theorem eventually_forall_affine_le_zero_iff (g : ι → (V →ᴬ[ℝ] ℝ)) {x : V}
+    (hx : ∀ j, g j x ≤ 0) :
+    ∀ᶠ y in 𝓝 x, (∀ j, g j y ≤ 0) ↔ ∀ j, g j x = 0 → (g j).contLinear (y - x) ≤ 0 := by
+  have hloose : ∀ᶠ y in 𝓝 x, ∀ j, g j x < 0 → g j y < 0 :=
+    eventually_all.mpr fun j => by
+      by_cases hj : g j x < 0
+      · exact ((g j).continuous.tendsto x).eventually (gt_mem_nhds hj) |>.mono
+          fun y hy _ => hy
+      · exact Eventually.of_forall fun y hlt => absurd hlt hj
+  filter_upwards [hloose] with y hy
+  have hlin (j) : (g j).contLinear (y - x) = g j y - g j x :=
+    (g j).contLinear_apply_vsub y x
+  constructor
+  · intro hyP j hj
+    simpa [hlin, hj] using hyP j
+  · intro hv j
+    rcases (hx j).lt_or_eq with hlt | heq
+    · exact (hy j hlt).le
+    · simpa [hlin, heq] using hv j heq
+
+/-- The tangent cone of a finite affine-inequality solution set is defined by the linear parts
+of exactly the inequalities tight at the base point. -/
+theorem posTangentConeAt_setOf_forall_le_zero_eq (g : ι → (V →ᴬ[ℝ] ℝ)) {x : V}
+    (hx : ∀ j, g j x ≤ 0) :
+    posTangentConeAt {y | ∀ j, g j y ≤ 0} x =
+      {v | ∀ j, g j x = 0 → (g j).contLinear v ≤ 0} := by
+  ext v
+  constructor
+  · intro hv j hj
+    have hmax : IsMaxOn (g j) {y | ∀ j, g j y ≤ 0} x := by
+      intro y hy
+      rw [hj]
+      exact hy j
+    exact hmax.isLocalMaxOn.hasFDerivWithinAt_nonpos (g j).hasFDerivWithinAt hv
+  · intro hv
+    apply mem_posTangentConeAt_of_frequently_mem
+    have hlim : Tendsto (fun t : ℝ => x + t • v) (𝓝[>] 0) (𝓝 x) := by
+      have hid : Tendsto (fun t : ℝ => t) (𝓝[>] 0) (𝓝 0) :=
+        tendsto_id.mono_left nhdsWithin_le_nhds
+      simpa using tendsto_const_nhds.add (hid.smul_const v)
+    refine (hlim.eventually (eventually_forall_affine_le_zero_iff g hx) |>.and
+      self_mem_nhdsWithin).mono (fun t ⟨ht, htpos⟩ => ?_) |>.frequently
+    rw [Set.mem_ofPred_eq, ht, add_sub_cancel_left]
+    intro j hj
+    rw [map_smul, smul_eq_mul]
+    exact mul_nonpos_of_nonneg_of_nonpos htpos.le (hv j hj)
+
+end Mei
+
+namespace TauCeti.IsConvexPolyhedron
+
+variable {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V] {P : Set V} {x : V}
+
+/-- Near a point of a convex polyhedron, membership is membership of the displacement in its
+positive tangent cone. -/
+theorem eventually_mem_iff_sub_mem_posTangentConeAt (hP : TauCeti.IsConvexPolyhedron P)
+    (hx : x ∈ P) : ∀ᶠ y in 𝓝 x, y ∈ P ↔ y - x ∈ posTangentConeAt P x := by
+  obtain ⟨k, g, rfl⟩ := TauCeti.isConvexPolyhedron_iff.mp hP
+  rw [Mei.posTangentConeAt_setOf_forall_le_zero_eq g hx]
+  exact Mei.eventually_forall_affine_le_zero_iff g hx
+
+end TauCeti.IsConvexPolyhedron

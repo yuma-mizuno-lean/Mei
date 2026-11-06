@@ -6,8 +6,7 @@ Authors: Claude
 module
 
 public import Mei.Geometry.Convex.Polyhedron.Rational
-public import Mathlib.Analysis.Calculus.LocalExtr.Basic
-public import Mathlib.Analysis.Calculus.FDeriv.Affine
+public import Mei.Geometry.Convex.Polyhedron.Tangent
 
 /-!
 # Tangent cones of rational-normal polyhedra
@@ -78,55 +77,20 @@ tangent presentation: only the tight inequalities can fail. -/
 theorem eventually_mem_carrier_iff (Q : RationalAffinePolyhedron h) {x : V}
     (hx : x ∈ Q.carrier) :
     ∀ᶠ y in 𝓝 x, y ∈ Q.carrier ↔ y - x ∈ (Q.tangentAt x).carrier := by
-  have hloose : ∀ᶠ y in 𝓝 x, ∀ j, Q.inequality j x < 0 → Q.inequality j y < 0 :=
-    eventually_all.mpr fun j => by
-      by_cases hj : Q.inequality j x < 0
-      · exact ((Q.inequality j).continuous.tendsto x).eventually (gt_mem_nhds hj) |>.mono
-          fun y hy _ => hy
-      · exact Eventually.of_forall fun y hlt => absurd hlt hj
-  filter_upwards [hloose] with y hy
-  rw [mem_carrier, mem_carrier_tangentAt]
-  have hx : ∀ j, Q.inequality j x ≤ 0 := mem_carrier.mp hx
-  constructor
-  · intro hyQ j hj
-    have := Q.inequality_apply_eq j x y
-    rw [hj, zero_add] at this
-    rw [← this]
-    exact hyQ j
-  · intro hv j
-    rcases (hx j).lt_or_eq with hlt | heq
-    · exact (hy j hlt).le
-    · have := Q.inequality_apply_eq j x y
-      rw [heq, zero_add] at this
-      rw [this]
-      exact hv j heq
+  filter_upwards [eventually_forall_affine_le_zero_iff Q.inequality (mem_carrier.mp hx)] with y hy
+  rw [mem_carrier_tangentAt, mem_carrier]
+  exact hy
 
 /-- The tangent cone of a presented polyhedron at one of its points is the cone cut out by the
 tight inequalities. -/
 theorem posTangentConeAt_carrier (Q : RationalAffinePolyhedron h) {x : V}
     (hx : x ∈ Q.carrier) :
     posTangentConeAt Q.carrier x = (Q.tangentAt x).carrier := by
+  have hcarrier : Q.carrier = {y | ∀ j, Q.inequality j y ≤ 0} :=
+    Set.ext fun _ => mem_carrier
+  rw [hcarrier, posTangentConeAt_setOf_forall_le_zero_eq Q.inequality (mem_carrier.mp hx)]
   ext v
-  constructor
-  · intro hv
-    rw [mem_carrier_tangentAt]
-    intro j hj
-    have hmax : IsMaxOn (Q.inequality j) Q.carrier x := by
-      intro y hy
-      rw [hj]
-      exact mem_carrier.mp hy j
-    exact hmax.isLocalMaxOn.hasFDerivWithinAt_nonpos
-      (Q.inequality j).hasFDerivWithinAt hv
-  · intro hv
-    apply mem_posTangentConeAt_of_frequently_mem
-    have hlim : Tendsto (fun t : ℝ => x + t • v) (𝓝[>] 0) (𝓝 x) := by
-      have hid : Tendsto (fun t : ℝ => t) (𝓝[>] 0) (𝓝 0) :=
-        tendsto_id.mono_left nhdsWithin_le_nhds
-      simpa using tendsto_const_nhds.add (hid.smul_const v)
-    refine (hlim.eventually (Q.eventually_mem_carrier_iff hx) |>.and
-      self_mem_nhdsWithin).mono (fun t ⟨ht, htpos⟩ => ?_) |>.frequently
-    rw [ht, add_sub_cancel_left]
-    exact Q.smul_mem_carrier_tangentAt x hv htpos.le
+  exact (Q.mem_carrier_tangentAt x v).symm
 
 end RationalAffinePolyhedron
 
@@ -141,14 +105,6 @@ theorem posTangentConeAt (hP : IsRationalNormalPolyhedron h P) (hx : x ∈ P) :
     IsRationalNormalPolyhedron h (_root_.posTangentConeAt P x) := by
   obtain ⟨Q, rfl⟩ := isRationalNormalPolyhedron_iff.mp hP
   exact isRationalNormalPolyhedron_iff.mpr ⟨Q.tangentAt x, (Q.posTangentConeAt_carrier hx).symm⟩
-
-/-- Near a point of a rational-normal polyhedron, the polyhedron is the translate of its
-tangent cone at that point. -/
-theorem eventually_mem_iff_sub_mem_posTangentConeAt (hP : IsRationalNormalPolyhedron h P)
-    (hx : x ∈ P) : ∀ᶠ y in 𝓝 x, y ∈ P ↔ y - x ∈ _root_.posTangentConeAt P x := by
-  obtain ⟨Q, rfl⟩ := isRationalNormalPolyhedron_iff.mp hP
-  rw [Q.posTangentConeAt_carrier hx]
-  exact Q.eventually_mem_carrier_iff hx
 
 end IsRationalNormalPolyhedron
 

@@ -6,7 +6,6 @@ Authors: Claude
 module
 
 public import Mathlib.Analysis.Calculus.TangentCone.Real
-public import Mathlib.Analysis.Normed.Module.FiniteDimension
 public import Mei.Analysis.Convex.Intrinsic
 import Mathlib.Analysis.Calculus.LocalExtr.Basic
 
