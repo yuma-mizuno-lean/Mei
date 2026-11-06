@@ -17,8 +17,8 @@ The positive tangent cone of a finite system of continuous affine inequalities i
 by the linear parts of the inequalities tight at the base point. The remaining inequalities
 stay strict nearby, so a convex polyhedron locally agrees with the translate of its tangent
 cone. No rationality, lattice, or finite-dimensionality assumption is needed.
-In finite dimension the comparison also identifies relative boundaries, using the common
-affine direction of the support and its tangent cone.
+The comparison also identifies relative boundaries, using the common affine direction
+of the support and its tangent cone.
 -/
 
 public section
@@ -93,6 +93,36 @@ theorem eventually_mem_iff_sub_mem_posTangentConeAt (hP : TauCeti.IsConvexPolyhe
   rw [Mei.posTangentConeAt_setOf_forall_le_zero_eq g hx]
   exact Mei.eventually_forall_affine_le_zero_iff g hx
 
+/-- A convex polyhedron and its tangent cone at one of its points have the same affine
+direction, even in infinite-dimensional ambient spaces. -/
+theorem direction_affineSpan_posTangentConeAt (hP : TauCeti.IsConvexPolyhedron P)
+    (hx : x ∈ P) :
+    (affineSpan ℝ (posTangentConeAt P x)).direction = (affineSpan ℝ P).direction := by
+  have h0 : (0 : V) ∈ posTangentConeAt P x := by
+    simpa using hP.convex.sub_mem_posTangentConeAt hx hx
+  have hsub : posTangentConeAt P x ⊆ (affineSpan ℝ P).direction := by
+    intro v hv
+    have hlim : Tendsto (fun t : ℝ => x + t • v) (𝓝[>] 0) (𝓝 x) := by
+      have hc : Continuous fun t : ℝ => x + t • v := by fun_prop
+      simpa using (hc.tendsto 0).mono_left nhdsWithin_le_nhds
+    obtain ⟨t, htlocal, htpos⟩ :=
+      ((hlim.eventually (hP.eventually_mem_iff_sub_mem_posTangentConeAt hx)).and
+        self_mem_nhdsWithin).exists
+    have htP : x + t • v ∈ P := htlocal.mpr (by
+      simpa using Mei.smul_mem_posTangentConeAt hv htpos.le)
+    have hmem := AffineSubspace.vsub_mem_direction (subset_affineSpan ℝ P htP)
+      (subset_affineSpan ℝ P hx)
+    simpa [smul_smul, htpos.ne'] using (affineSpan ℝ P).direction.smul_mem t⁻¹ hmem
+  refine le_antisymm ?_ ?_
+  · rw [direction_affineSpan, vectorSpan_eq_span_vsub_set_right ℝ h0]
+    refine Submodule.span_le.mpr ?_
+    rintro _ ⟨v, hv, rfl⟩
+    simpa using hsub hv
+  · rw [direction_affineSpan, direction_affineSpan, vectorSpan_eq_span_vsub_set_right ℝ hx]
+    refine Submodule.span_le.mpr ?_
+    rintro _ ⟨y, hy, rfl⟩
+    simpa using vsub_mem_vectorSpan ℝ (hP.convex.sub_mem_posTangentConeAt hx hy) h0
+
 end TauCeti.IsConvexPolyhedron
 
 namespace Mei.Convex
@@ -118,7 +148,7 @@ end Mei.Convex
 
 namespace TauCeti.IsConvexPolyhedron
 
-variable {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V] [FiniteDimensional ℝ V]
+variable {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
   {P : Set V} {x : V}
 
 open scoped Pointwise in
@@ -137,7 +167,7 @@ theorem eventually_mem_intrinsicFrontier_iff_sub_mem_posTangentConeAt
     -- Translation leaves the vector span unchanged; the cone has the original direction.
     have himage : e '' posTangentConeAt P x = x +ᵥ posTangentConeAt P x := (rfl)
     rw [himage, direction_affineSpan, vectorSpan_vadd, ← direction_affineSpan,
-      hP.convex.direction_affineSpan_posTangentConeAt hx]
+      hP.direction_affineSpan_posTangentConeAt hx]
   have hspan := AffineSubspace.ext_of_direction_eq hdir
     ⟨x, subset_affineSpan ℝ _ ⟨0, hzero, by simp [he]⟩, subset_affineSpan ℝ _ hx⟩
   have hlocal : P =ᶠ[𝓝 x] e '' posTangentConeAt P x := by

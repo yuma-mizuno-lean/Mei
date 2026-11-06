@@ -17,8 +17,8 @@ intersections of different supporting directions, hence the actual singular supp
 It allows regularity to be compared when shrinking paths towards the base point.
 Empty, bounded, coincident and non-full-dimensional members are allowed.
 
-The argument uses `Convex.direction_affineSpan_posTangentConeAt` to retain the relative
-topology of each support, and the local carrier comparison for convex polyhedra.
+The argument uses `TauCeti.IsConvexPolyhedron.direction_affineSpan_posTangentConeAt` to retain
+the relative topology of each support, and the local carrier comparison for convex polyhedra.
 -/
 
 public section
@@ -31,8 +31,6 @@ variable {V ι : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V] [Finite ι]
   (W : ι → Set V) (hW : ∀ j, TauCeti.IsConvexPolyhedron (W j)) (x : V)
 
 include hW
-
-variable [FiniteDimensional ℝ V]
 
 /-- The actual singular support near the base point is the translate of the singular
 support of the tangent cones of precisely the members containing that point. -/
@@ -59,13 +57,13 @@ theorem eventually_mem_singularSupport_iff_sub_mem_posTangentConeAt :
     · obtain ⟨hjx, hj⟩ := (hy j).mp hj
       obtain ⟨hlx, hl⟩ := (hy l).mp hl
       exact Or.inr ⟨⟨j, hjx⟩, ⟨l, hlx⟩, by
-        simpa only [(hW j).convex.direction_affineSpan_posTangentConeAt hjx,
-          (hW l).convex.direction_affineSpan_posTangentConeAt hlx] using hne, hj, hl⟩
+        simpa only [(hW j).direction_affineSpan_posTangentConeAt hjx,
+          (hW l).direction_affineSpan_posTangentConeAt hlx] using hne, hj, hl⟩
   · rintro (⟨⟨j, hjx⟩, hj⟩ | ⟨⟨j, hjx⟩, ⟨l, hlx⟩, hne, hj, hl⟩)
     · exact Or.inl ⟨j, (hyfront j).mpr ⟨hjx, hj⟩⟩
     · exact Or.inr ⟨j, l, by
-        simpa only [(hW j).convex.direction_affineSpan_posTangentConeAt hjx,
-          (hW l).convex.direction_affineSpan_posTangentConeAt hlx] using hne,
+        simpa only [(hW j).direction_affineSpan_posTangentConeAt hjx,
+          (hW l).direction_affineSpan_posTangentConeAt hlx] using hne,
         (hy j).mpr ⟨hjx, hj⟩, (hy l).mpr ⟨hlx, hl⟩⟩
 
 end Mei.Convex
