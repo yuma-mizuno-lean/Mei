@@ -6,7 +6,6 @@ Authors: Claude
 module
 
 public import Mei.Geometry.Convex.Polyhedron.Rational
-public import Mei.Analysis.Convex.TangentCone
 public import Mathlib.Analysis.Calculus.LocalExtr.Basic
 public import Mathlib.Analysis.Calculus.FDeriv.Affine
 

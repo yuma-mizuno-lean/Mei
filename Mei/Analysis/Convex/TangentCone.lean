@@ -7,6 +7,8 @@ module
 
 public import Mathlib.Analysis.Calculus.TangentCone.Real
 public import Mathlib.Analysis.Normed.Module.FiniteDimension
+public import Mei.Analysis.Convex.Intrinsic
+import Mathlib.Analysis.Calculus.LocalExtr.Basic
 
 /-!
 # Tangent cones of convex sets
@@ -14,6 +16,8 @@ public import Mathlib.Analysis.Normed.Module.FiniteDimension
 At a point `x` of a convex set `P`, the one-sided tangent cone contains every displacement
 `y - x` to a point `y` of `P`. In finite dimension it lies in the direction of the affine span of
 `P`, so the cone and `P` have the same affine direction.
+At a relative interior point of any set, the tangent cone equals the direction of its affine
+span; convexity is not required.
 -/
 
 public section
@@ -101,6 +105,24 @@ theorem posTangentConeAt_subset_direction_affineSpan (hx : x ∈ P) :
   refine Submodule.smul_of_tower_mem _ _ ?_
   simpa using AffineSubspace.vsub_mem_direction (subset_affineSpan ℝ _ hn)
     (subset_affineSpan ℝ _ hx)
+
+/-- At a relative interior point of any set in finite dimension, the positive tangent cone
+equals the direction of its affine span. Convexity is not required. -/
+theorem posTangentConeAt_eq_direction_affineSpan_of_mem_intrinsicInterior
+    (hx : x ∈ intrinsicInterior ℝ P) :
+    posTangentConeAt P x = ((affineSpan ℝ P).direction : Set V) := by
+  have hxs := intrinsicInterior_subset hx
+  refine Subset.antisymm (posTangentConeAt_subset_direction_affineSpan hxs) ?_
+  intro v hv
+  have hline : Tendsto (fun t : ℝ => x + t • v) (𝓝[>] 0) (𝓝[affineSpan ℝ P] x) := by
+    refine tendsto_nhdsWithin_iff.mpr ⟨?_, ?_⟩
+    · have hc : Continuous fun t : ℝ => x + t • v := by fun_prop
+      simpa using (hc.tendsto 0).mono_left nhdsWithin_le_nhds
+    · exact Eventually.of_forall fun t => by
+        simpa [add_comm] using (affineSpan ℝ P).vadd_mem_of_mem_direction
+          ((affineSpan ℝ P).direction.smul_mem t hv) (subset_affineSpan ℝ _ hxs)
+  exact mem_posTangentConeAt_of_frequently_mem (hline.eventually
+    (mem_nhdsWithin_affineSpan_of_mem_intrinsicInterior hx)).frequently
 
 end Mei
 

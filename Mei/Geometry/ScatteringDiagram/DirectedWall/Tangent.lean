@@ -6,7 +6,7 @@ Authors: Claude
 module
 
 public import Mei.Geometry.ScatteringDiagram.DirectedWall.Basic
-public import Mei.Analysis.Convex.Intrinsic
+public import Mei.Analysis.Convex.TangentCone
 public import Mei.Geometry.Convex.Polyhedron.Rational.Tangent
 
 /-!
@@ -125,19 +125,8 @@ theorem tangentAt_support_eq_ker (hx : x ∈ intrinsicInterior ℝ W.support) :
     (W.tangentAt x (intrinsicInterior_subset hx)).support =
       LinearMap.ker (h.realCharacter W.normal) := by
   have := h.finiteDimensional
-  have hxs := intrinsicInterior_subset hx
-  ext v
-  rw [tangentAt_support, SetLike.mem_coe, ← W.direction_support]
-  refine ⟨fun hv => posTangentConeAt_subset_direction_affineSpan hxs hv, fun hv => ?_⟩
-  have hline : Tendsto (fun t : ℝ => x + t • v) (𝓝[>] 0) (𝓝[affineSpan ℝ W.support] x) := by
-    refine tendsto_nhdsWithin_iff.mpr ⟨?_, ?_⟩
-    · have hc : Continuous fun t : ℝ => x + t • v := by fun_prop
-      simpa using (hc.tendsto 0).mono_left nhdsWithin_le_nhds
-    · exact Eventually.of_forall fun t => by
-        simpa [add_comm] using (affineSpan ℝ W.support).vadd_mem_of_mem_direction
-          ((affineSpan ℝ W.support).direction.smul_mem t hv) (subset_affineSpan ℝ _ hxs)
-  exact mem_posTangentConeAt_of_frequently_mem (hline.eventually
-    (mem_nhdsWithin_affineSpan_of_mem_intrinsicInterior hx)).frequently
+  rw [tangentAt_support,
+    posTangentConeAt_eq_direction_affineSpan_of_mem_intrinsicInterior hx, W.direction_support]
 
 end DirectedWall
 
