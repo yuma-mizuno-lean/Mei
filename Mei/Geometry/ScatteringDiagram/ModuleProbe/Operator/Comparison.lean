@@ -19,11 +19,9 @@ to the ordinary actual weighted ray sum. The arrangement is chosen before the
 input, with no finite-generation or injectivity requirement. In particular an
 input may kill whole decorations or the entire incoming coefficient.
 
-We compare the operator probe and its own actual rays first, then specialize
-those rays by evaluation, using `map_cutoffWallEventEvaluation`. Thus the
-ordinary ray sum is not defined to be an operator field or a linear extension.
+The ordinary ray sums use the original directed diagram and incoming source region.
 All simultaneous and unchanged-degree encounters, zero spatial shifts, and the
-whole incoming tail are retained by the existing actual-ray comparison.
+whole incoming tail are retained under evaluation at every parameter.
 The operator-probe argument follows Mandel, *Scattering diagrams, theta
 functions, and refined tropical curve counts*, §3.3.3 (arXiv:1503.06183v5).
 -/
@@ -81,6 +79,7 @@ theorem exists_operatorExtendedCoefficientField_eq_cutoffWallEventEvaluation
               ⟨d.quotientCoefficientMap 𝒪 ℳ p (ev a) (hev a) K b,
                 d.quotientCoefficientMap_mem_shiftedQuotientGrading
                   𝒪 ℳ p (ev a) (hev a) b.property⟩ univ Q := by
+  -- Compare the operator probe with its actual rays before specializing by evaluation.
   have hcomp := hP.isOutgoingCompletion_initialDiagram
   obtain ⟨A, hA⟩ := exists_extendedCoefficientField_eq_cutoffWallEventEvaluation
     d 𝒪 p ℒ W h h' B input P B hcomp.wall_inl K hBc

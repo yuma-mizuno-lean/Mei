@@ -7,7 +7,6 @@ module
 
 public import Mei.Geometry.ScatteringDiagram.ModuleProbe.WallEventEvaluation
 public import Mei.Algebra.Lie.Graded.Shifted.Map
-public import Mei.LinearAlgebra.GradedModule.Shifted.Map.Grading
 public import Mei.Geometry.ScatteringDiagram.BrokenLine.Itineraries.Map
 
 /-!
@@ -19,9 +18,8 @@ event inventory, even when the map kills an incoming coefficient or an entire
 decoration. The coefficient cutoff may be smaller than the geometric cutoff.
 No consistency, endpoint genericity, or injectivity is required.
 
-The proof applies `map_cutoffDecoratedEvaluation` to the original ray fibers,
-using equivariance of the finite BCH actions. In particular this allows evaluation
-of an operator-valued ray sum without retaining rays whose decorations vanish.
+In particular, evaluating an operator-valued ray sum gives the corresponding
+ordinary ray sum, including inputs for which whole decorations vanish.
 The whole-component interpretation follows Mandel, *Scattering diagrams, theta
 functions, and refined tropical curve counts*, Definition 2.10 and §3.3.3
 (arXiv:1503.06183v5).
@@ -66,7 +64,7 @@ theorem map_wallEventPropagation (k K : ℕ) (hkK : k ≤ K)
   exact d.quotientCoefficientMap_truncatedBCHAction ℳ 𝓝 p ℒ f hf hequiv k _ x
 
 /-- The whole actual weighted ray sum specializes by mapping its incoming
-coefficient. Vanished decorations are discarded by the ray-fiber comparison;
+coefficient. Decorations whose images vanish contribute zero;
 all encounters and the full incoming source region remain unchanged. -/
 theorem map_cutoffWallEventEvaluation (k K : ℕ) (hkK : k ≤ K)
     (a : (d.shiftedQuotientGrading ℳ p k).piece 0) (C : Set V) (Q : V) :
@@ -75,6 +73,7 @@ theorem map_cutoffWallEventEvaluation (k K : ℕ) (hkK : k ≤ K)
         ⟨fₖ k a, d.quotientCoefficientMap_mem_shiftedQuotientGrading
           ℳ 𝓝 p f hf a.property⟩ C Q := by
   simp only [cutoffWallEventEvaluation_def]
+  -- Compare the original ray fibers using equivariance of the finite BCH actions.
   apply map_cutoffDecoratedEvaluation
   intro e
   exact LinearMap.ext fun x => map_wallEventPropagation
