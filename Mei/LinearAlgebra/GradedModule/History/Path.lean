@@ -84,6 +84,21 @@ instance decidableEqDegrees [∀ q, DecidableEq (ι q)] :
   | _, nil => inferInstanceAs (DecidableEq PUnit)
   | _, cons p _ => @instDecidableEqProd _ _ (decidableEqDegrees p) _
 
+/-- Select at every encounter the degree assigned to its target vertex.
+Vertices may encode separate occurrences of the same chamber. -/
+def degreesOfVertices (s : ∀ q, ι q) : {b : Q} → (p : Path a b) → p.Degrees ι
+  | _, nil => PUnit.unit
+  | _, @cons _ _ _ _ c p _ => (degreesOfVertices s p, s c)
+
+@[simp]
+theorem degreesOfVertices_nil (s : ∀ q, ι q) :
+    (nil : Path a a).degreesOfVertices s = PUnit.unit := (rfl)
+
+@[simp]
+theorem degreesOfVertices_cons (s : ∀ q, ι q) {b c : Q} (p : Path a b) (e : b ⟶ c) :
+    (p.cons e).degreesOfVertices s = ((p.degreesOfVertices s, s c) :
+      (p.cons e).Degrees ι) := (rfl)
+
 /-- A degree history of a concatenation is a pair of degree histories. -/
 def degreesComp {b : Q} (p : Path a b) :
     ∀ {c : Q} (q : Path b c), (p.comp q).Degrees ι ≃ p.Degrees ι × q.Degrees ι
@@ -108,6 +123,17 @@ theorem degreesComp_symm_cons {b c e : Q} (p : Path a b) (q : Path b c) (f : c �
     (d : p.Degrees ι) (d' : q.Degrees ι) (i : ι e) :
     (degreesComp (ι := ι) p (q.cons f)).symm (d, (d', i)) =
       (((degreesComp (ι := ι) p q).symm (d, d'), i) : ((p.comp q).cons f).Degrees ι) := (rfl)
+
+/-- Vertex-selected degrees split into the selections on the two path blocks. -/
+@[simp]
+theorem degreesComp_degreesOfVertices (s : ∀ q, ι q) {b c : Q}
+    (p : Path a b) (q : Path b c) :
+    degreesComp (ι := ι) p q ((p.comp q).degreesOfVertices s) =
+      (p.degreesOfVertices s, q.degreesOfVertices s) := by
+  induction q with
+  | nil => rfl
+  | cons q e ih =>
+    exact congrArg (fun d : p.Degrees ι × q.Degrees ι => (d.1, (d.2, s _))) ih
 
 /-- Transport degree histories along vertexwise degree maps. -/
 def Degrees.map {κ : Q → Type*} (σ : ∀ q, ι q → κ q) :

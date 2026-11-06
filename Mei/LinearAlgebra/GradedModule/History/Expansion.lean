@@ -6,6 +6,7 @@ Authors: Codex
 module
 
 public import Mei.LinearAlgebra.GradedModule.History.Uniform
+public import Mei.LinearAlgebra.GradedModule.History.Path.Regrouping
 import Mathlib.Data.Fintype.BigOperators
 
 /-!
@@ -22,7 +23,8 @@ identities with a variable incoming parameter.
 for a uniform support on the range of an input map, which also covers
 infinitely supported gradings. Two blocks regroup using independent uniform
 supports on the original input and on the range of the right composite
-(`sum_sum_comp_homogeneousHistory_comp_eq_of_support`).
+(`sum_sum_comp_homogeneousHistory_comp_eq_of_support`), by specialization of
+the path expansion for varying chamber modules in `History/Path/Regrouping.lean`.
 
 Selecting the histories with a prescribed terminal degree isolates the final
 component of the composite
@@ -69,16 +71,34 @@ theorem sum_sum_comp_homogeneousHistory_comp_eq_of_support {n m : ℕ}
       b.comp ((homogeneousHistory ℳ T s).comp
         ((homogeneousHistory ℳ U r).comp a))) =
       b.comp ((List.ofFn T).prod.comp ((List.ofFn U).prod.comp a)) := by
-  calc
-    _ = ∑ s ∈ ST, b.comp ((homogeneousHistory ℳ T s).comp
-        ((List.ofFn U).prod.comp a)) := by
-      apply Finset.sum_congr rfl
-      intro s hs
-      simpa only [LinearMap.comp_assoc] using
-        sum_comp_homogeneousHistory_comp_eq ℳ U a
-          (b.comp (homogeneousHistory ℳ T s)) SU hU
-    _ = _ := sum_comp_homogeneousHistory_comp_eq ℳ T
-      ((List.ofFn U).prod.comp a) b ST hT
+  classical
+  let eT := Quiver.SingleObj.degreesPathOfFn ι T
+  let eU := Quiver.SingleObj.degreesPathOfFn ι U
+  have hhist {l : ℕ} (V : Fin l → Module.End R M)
+      (d : (Quiver.SingleObj.pathOfFn V).Degrees fun _ => ι) :
+      (Quiver.SingleObj.pathOfFn V).homogeneousHistory (M := fun _ => M)
+        (fun e => e) (fun _ => ℳ) d =
+          homogeneousHistory ℳ V ((Quiver.SingleObj.degreesPathOfFn ι V).symm d) := by
+    rw [homogeneousHistory_eq_pathOfFn ℳ (fun e => e) V, Equiv.apply_symm_apply]
+  have hu : ∀ d ∉ SU.map eU.toEmbedding,
+      ((Quiver.SingleObj.pathOfFn U).homogeneousHistory (M := fun _ => M)
+        (fun e => e) (fun _ => ℳ) d).comp a = 0 := by
+    intro d hd
+    rw [hhist]
+    exact hU _ (fun h => hd (Finset.mem_map_equiv.mpr h))
+  have ht : ∀ d ∉ ST.map eT.toEmbedding,
+      ((Quiver.SingleObj.pathOfFn T).homogeneousHistory (M := fun _ => M)
+        (fun e => e) (fun _ => ℳ) d).comp
+          (((Quiver.SingleObj.pathOfFn U).composeLinear (fun e => e)).comp a) = 0 := by
+    intro d hd
+    rw [hhist, composeLinear_pathOfFn (fun e => e) U]
+    exact hT _ (fun h => hd (Finset.mem_map_equiv.mpr h))
+  have h := Quiver.Path.sum_sum_comp_homogeneousHistory_comp_eq (M := fun _ => M)
+    (fun e => e) (fun _ => ℳ) (Quiver.SingleObj.pathOfFn U)
+    (Quiver.SingleObj.pathOfFn T) a b (SU.map eU.toEmbedding) (ST.map eT.toEmbedding) hu ht
+  simpa only [Finset.sum_map, Equiv.coe_toEmbedding, hhist, Equiv.symm_apply_apply,
+    Quiver.Path.composeLinear_comp, composeLinear_pathOfFn (fun e => e),
+    id_eq, LinearMap.comp_assoc, eT, eU] using h
 
 /-- Two history blocks over a grading with finite support have a nested finite
 expansion between arbitrary input and output linear maps. The right block acts
