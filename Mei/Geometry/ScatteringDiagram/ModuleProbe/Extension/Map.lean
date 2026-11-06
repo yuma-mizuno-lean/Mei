@@ -7,7 +7,6 @@ module
 
 public import Mei.Geometry.ScatteringDiagram.ModuleProbe.CoefficientMap
 public import Mei.Geometry.ScatteringDiagram.ModuleProbe.Extension
-public import Mei.Algebra.Lie.Graded.Shifted.Map
 
 /-!
 # Coefficient naturality of probe fields
