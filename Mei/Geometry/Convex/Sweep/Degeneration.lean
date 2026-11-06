@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.Convex.Sweep.NormalPairing
+public import Mei.Topology.Algebra.ContinuousAffineEquiv
 public import Mei.Geometry.Convex.Sweep.Realization
 public import Mei.Geometry.Convex.Polyhedron.Rational.Stratification
 public import Mei.Geometry.Convex.Polyhedron.Rational.Ray
