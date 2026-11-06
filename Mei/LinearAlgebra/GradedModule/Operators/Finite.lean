@@ -7,6 +7,7 @@ module
 
 public import Mei.LinearAlgebra.GradedModule.Operators.Basic
 public import Mei.LinearAlgebra.GradedModule.Shifted.Operator
+public import Mei.LinearAlgebra.GradedModule.Shifted.Map
 
 /-!
 # Finite quotients of homogeneous operator families
@@ -39,8 +40,16 @@ def quotientEquiv (k : ℕ) :
     ((DirectSum.congrLinearEquiv (fun n : d.cutoff k => pieceEquiv ℳ (p + n.val))).trans
       (PositiveDegrees.operatorCoefficientsEquiv d ℳ p k))
 
+/-- The finite Hom comparison reads homogeneous operators, then assembles their
+values in the ordinary quotient. -/
+theorem quotientEquiv_def (k : ℕ) :
+    quotientEquiv (H := H) d ℳ p k =
+      (d.shiftedQuotientEquivDirectSum (grading (H := H) ℳ) p k).trans
+        ((DirectSum.congrLinearEquiv (fun n : d.cutoff k => pieceEquiv ℳ (p + n.val))).trans
+          (PositiveDegrees.operatorCoefficientsEquiv d ℳ p k)) := (rfl)
+
 /-- The inverse comparison reads each homogeneous map pointwise. -/
-@[simp↓]
+@[simp↓ high]
 theorem quotientEquiv_symm_component (k : ℕ)
     (f : H →ₗ[R] (d.shiftedFiltration ℳ p).quotient k) (a : H) (n : d.cutoff k) :
     eval ℳ a (d.shiftedQuotientComponent (grading (H := H) ℳ) p (p + n.val) k
@@ -58,5 +67,34 @@ theorem quotientEquiv_symm_component (k : ℕ)
   have ha := congrArg (fun g : H →ₗ[R] ℳ (p + n.val) => (g a : M)) he
   simpa only [E, LinearEquiv.coe_coe, pieceEquiv_apply,
     PositiveDegrees.operatorCoefficientsEquiv_symm_apply] using ha
+
+/-- Reading an operator quotient component and evaluating it commutes with
+the quotient map induced by evaluation. -/
+@[simp↓]
+theorem eval_shiftedQuotientComponent (k : ℕ) (x) (a : H) (n : d.cutoff k) :
+    eval ℳ a (d.shiftedQuotientComponent (grading (H := H) ℳ) p (p + n.val) k
+        (d.degree_add_val_sub_self_le p k n) x) =
+      (d.shiftedQuotientComponent ℳ p (p + n.val) k
+        (d.degree_add_val_sub_self_le p k n)
+        (d.quotientCoefficientMap (grading (H := H) ℳ) ℳ p (eval ℳ a)
+          (fun _ _ hf => eval_mem ℳ a hf) k x) : M) := by
+  induction x using Submodule.Quotient.induction_on with
+  | _ x =>
+    rw [d.quotientCoefficientMap_mk, d.shiftedQuotientComponent_mk,
+      d.shiftedQuotientComponent_mk, eval_decompose, d.coe_shiftedCoefficientMap]
+
+/-- Evaluation of the finite comparison is induced by the original evaluation map. -/
+@[simp]
+theorem quotientEquiv_apply (k : ℕ) (x) (a : H) :
+    quotientEquiv (H := H) d ℳ p k x a =
+      d.quotientCoefficientMap (grading (H := H) ℳ) ℳ p (eval ℳ a)
+        (fun _ _ hf => eval_mem ℳ a hf) k x := by
+  apply d.shiftedQuotient_ext ℳ p
+  intro n
+  apply Subtype.ext
+  have hc := quotientEquiv_symm_component d ℳ p k
+    (quotientEquiv (H := H) d ℳ p k x) a n
+  rw [LinearEquiv.symm_apply_apply] at hc
+  exact hc.symm.trans (eval_shiftedQuotientComponent d ℳ p k x a n)
 
 end Mei.GradedOperators

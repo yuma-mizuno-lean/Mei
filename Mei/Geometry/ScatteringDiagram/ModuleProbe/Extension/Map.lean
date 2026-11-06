@@ -7,6 +7,7 @@ module
 
 public import Mei.Geometry.ScatteringDiagram.ModuleProbe.CoefficientMap
 public import Mei.Geometry.ScatteringDiagram.ModuleProbe.Extension
+public import Mei.Algebra.Lie.Graded.Shifted.Map
 
 /-!
 # Coefficient naturality of probe fields
@@ -94,21 +95,6 @@ theorem map_coefficientField (k : ℕ)
     ← LieHom.log_bchGroupMap,
     map_combinedLabel_of_levelEquivalent d ℳ 𝒩 p ℒ H h h' f hf hequiv D D' k hDD' Q hQ hQ']
 
-include hequiv in
-/-- Finite coefficient changes intertwine the base BCH action. -/
-theorem quotientCoefficientMap_truncatedBCHAction (k : ℕ) (g : d.truncatedGroup ℒ k)
-    (a : (d.shiftedFiltration ℳ p).quotient k) :
-    fₖ k ((d.shiftedLieFiltration ℒ ℳ p).truncatedBCHAction d ℒ k g a) =
-      (d.shiftedLieFiltration ℒ 𝒩 p).truncatedBCHAction d ℒ k g (fₖ k a) := by
-  have ht := (d.shiftedLieFiltration ℒ ℳ p).mapQ_truncatedBCHAction_of_gradedLieHom
-    (d.shiftedLieFiltration ℒ 𝒩 p) (GradedLieHom.id ℒ)
-    (d.shiftedCoefficientMap ℳ 𝒩 p f hf)
-    (fun x a => by simpa only [GradedLieHom.id_apply] using
-      shiftedCoefficientMap_lie d ℳ 𝒩 p ℒ f hf hequiv x a) k (by simp)
-    (fun _ ha => PositiveDegrees.shiftedCoefficientMap_mem_filtration d ℳ 𝒩 p f hf k ha) g a
-  simpa only [PositiveDegrees.quotientCoefficientMap_def, GradedLieHom.truncatedMap_id,
-    LieHom.bchGroupMap_id, MonoidHom.id_apply] using ht
-
 variable (B : DirectedDiagram (d := d) h H κ)
 
 /-- Extended fields are natural on every base-allowed endpoint. Both fields are
@@ -132,7 +118,7 @@ theorem map_extendedCoefficientField (k : ℕ) (hBc : B.LevelConsistent k)
   obtain ⟨hz, hz'⟩ := ExceptionalArrangement.isGeneric_union.mp hzT
   rw [extendedCoefficientField_eq_action d ℳ p ℒ H h h' D B k hBc hD hB x zB hz,
     extendedCoefficientField_eq_action d 𝒩 p ℒ H h h' D' B k hBc hD' hB' x zB hz',
-    quotientCoefficientMap_truncatedBCHAction d ℳ 𝒩 p ℒ f hf hequiv,
+    PositiveDegrees.quotientCoefficientMap_truncatedBCHAction d ℳ 𝒩 p ℒ f hf hequiv,
     map_coefficientField d ℳ 𝒩 p ℒ H h h' f hf hequiv D D' k hDD' zB.val hz hz']
 
 /-- The completed field commutes with coefficient maps for consistent probe diagrams

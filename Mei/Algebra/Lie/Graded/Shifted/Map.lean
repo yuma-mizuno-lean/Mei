@@ -91,3 +91,41 @@ theorem shiftedCompletionMap_completedBCHAction
     (fun k _ hx => T.shiftedMap_mem_shiftedFiltration ℳ 𝓝 p f hf k hx) hrestricted g a
 
 end Mei.PositiveDegreeMap
+
+namespace Mei.PositiveDegrees
+
+variable {Γ R M N L : Type*} [AddCommGroup Γ] [DecidableEq Γ]
+  [CommRing R] [Algebra ℚ R] [AddCommGroup M] [Module R M]
+  [AddCommGroup N] [Module R N] [LieRing L] [LieAlgebra R L]
+  [LieAlgebra ℚ L] [IsScalarTower ℚ R L]
+  [LieRingModule L M] [LieModule R L M] [LieRingModule L N] [LieModule R L N]
+  (d : PositiveDegrees Γ) (ℳ : Γ → Submodule R M) (𝓝 : Γ → Submodule R N) (p : Γ)
+  (ℒ : Γ → Submodule R L) [GradedLieAlgebra ℒ] [IsPositiveGrading d ℒ]
+  [SetLike.GradedBracket ℒ ℳ] [SetLike.GradedBracket ℒ 𝓝]
+  [DirectSum.Decomposition ℳ] [DirectSum.Decomposition 𝓝]
+  (f : M →ₗ[R] N) (hf : ∀ q, ℳ q ≤ (𝓝 q).comap f)
+  (hequiv : ∀ (x : L) (a : M), f ⁅x, a⁆ = ⁅x, f a⁆)
+
+include hequiv in
+/-- Finite fixed-degree coefficient maps intertwine the BCH action on the
+existing shifted quotients. The coefficient map need not be injective. -/
+theorem quotientCoefficientMap_truncatedBCHAction (k : ℕ) (g : d.truncatedGroup ℒ k)
+    (a : (d.shiftedFiltration ℳ p).quotient k) :
+    d.quotientCoefficientMap ℳ 𝓝 p f hf k
+        ((d.shiftedLieFiltration ℒ ℳ p).truncatedBCHAction d ℒ k g a) =
+      (d.shiftedLieFiltration ℒ 𝓝 p).truncatedBCHAction d ℒ k g
+        (d.quotientCoefficientMap ℳ 𝓝 p f hf k a) := by
+  let ψ : d.shiftedLieSubmodule ℒ ℳ p →ₗ[R] d.shiftedLieSubmodule ℒ 𝓝 p :=
+    d.shiftedCoefficientMap ℳ 𝓝 p f hf
+  have hcoe (z : d.shiftedLieSubmodule ℒ ℳ p) : (ψ z : N) = f z :=
+    d.coe_shiftedCoefficientMap ℳ 𝓝 p f hf z
+  have ht := (d.shiftedLieFiltration ℒ ℳ p).mapQ_truncatedBCHAction_of_gradedLieHom
+    (d.shiftedLieFiltration ℒ 𝓝 p) (GradedLieHom.id ℒ) ψ
+    (fun x a => by
+      apply Subtype.ext
+      simp only [hcoe, LieSubmodule.coe_bracket, GradedLieHom.id_apply, hequiv]) k (by simp)
+    (fun _ ha => d.shiftedCoefficientMap_mem_filtration ℳ 𝓝 p f hf k ha) g a
+  simpa only [quotientCoefficientMap_def, GradedLieHom.truncatedMap_id,
+    LieHom.bchGroupMap_id, MonoidHom.id_apply] using ht
+
+end Mei.PositiveDegrees
