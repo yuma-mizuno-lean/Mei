@@ -22,8 +22,9 @@ Reindexing the existing weighted evaluation gives the sum of precisely these
 admitted components. If every nonzero component has a nonsingular crossing on
 the opposite side, this sum is the propagated input. No positivity, finite
 grading, coefficient basis or injectivity of propagation is required. A finite
-affine cover of the singular set supplies one exceptional endpoint arrangement
-for the opposite-side identity; the empty itinerary recovers the incoming value.
+affine cover of the singular set, none of whose members contains the full face,
+supplies one exceptional endpoint arrangement for the opposite-side identity;
+the empty itinerary recovers the incoming value.
 
 The geometric construction is `AdmissibleRayRealization.singleFaceOne`; its
 uniqueness is the existing admissible-ray uniqueness theorem. Whole-component
@@ -53,6 +54,22 @@ variable (hnormal : ∀ q, DirectSum.decompose ℳ (T a) q ≠ 0 → ν (v q) = 
 
 include hnormal hZ
 
+omit hnormal [DecidableEq Γ] in
+/-- Admission of the one-crossing ray with recorded degree `q 0` is the nonsingular
+crossing condition, by the geometric characterization of single-face admission. -/
+private theorem nonempty_realization_iff_crossing (q : Fin 1 → Γ)
+    (hq : ν (v (q 0)) = ν (v p)) (Q : V) :
+    Nonempty (AdmissibleRayRealization (fun _ : Fin 1 => ν) (fun _ => b)
+      (fun j => v (Fin.snoc (α := fun _ => Γ) q p j))
+      (fun _ => {x | ν x = b}) (fun _ : Unit => {x | ν x = b})
+      (fun _ : Unit => Z) {x | 0 < (ν x - b) / ν (v p)} Q) ↔
+      (ν Q - b) / ν (v (q 0)) < 0 ∧ Q - ((ν Q - b) / ν (v (q 0))) • v (q 0) ∉ Z := by
+  have hv : (fun j => v (Fin.snoc (α := fun _ => Γ) q p j)) = ![v (q 0), v p] := by
+    funext j
+    fin_cases j <;> simp [Fin.snoc]
+  rw [hv]
+  exact AdmissibleRayRealization.nonempty_singleFace_one_iff hq hZ
+
 /-- Actual one-face rays correspond to the nonzero output components with a
 negative crossing parameter and a nonsingular crossing point. This includes
 unchanged degrees and equal spatial velocities. -/
@@ -64,17 +81,9 @@ def singleFaceComponentFiberEquiv (Q : V) : (D Q) ≃
     have hne : DirectSum.decompose ℳ (T a) (r.1.val 0) ≠ 0 := by
       have hr := (mem_decoratedHistorySupport ..).mp r.1.property |>.1
       simpa using hr
-    have hv : ∀ j : Fin 1,
-        ν (v (Fin.snoc (α := fun _ => Γ) r.1.val p j.castSucc)) =
-          ν (v (Fin.snoc (α := fun _ => Γ) r.1.val p j.succ)) := by
-      intro j
-      simpa only [Fin.snoc_castSucc] using r.normal_velocity_eq j
-    have ht := r.2.div_neg_of_encounter_singleFace hv 0
-    have hx := r.2.avoids_singular () (r.2.parameter (Fin.succ (0 : Fin 1)))
-      (by simpa only [r.2.parameter_zero] using
-        (r.2.strictAnti_parameter (Fin.succ_pos (0 : Fin 1))).le)
-    rw [r.2.ray_parameter_eq_singleFace hv 0] at hx
-    exact ⟨r.1.val 0, hne, by simpa using ht, by simpa using hx⟩
+    have hc := (nonempty_realization_iff_crossing (p := p) (v := v) (ν := ν) (b := b)
+      (Z := Z) hZ r.1.val (hnormal _ hne) Q).mp ⟨r.2⟩
+    exact ⟨r.1.val 0, hne, hc.1, hc.2⟩
   apply Equiv.ofBijective F
   constructor
   · intro r s hrs
@@ -86,13 +95,8 @@ def singleFaceComponentFiberEquiv (Q : V) : (D Q) ≃
     have hp : (fun _ : Fin 1 => q) ∈ decoratedHistorySupport ℳ (fun _ => T) p a v
         (fun _ => ν) (fun _ => SignType.sign (ν (v p))) := by
       simp [Fin.snoc, hnormal q hq, hq]
-    have hg : AdmissibleRayRealization (fun _ : Fin 1 => ν) (fun _ => b)
-        (fun j => v (Fin.snoc (α := fun _ => Γ) (fun _ : Fin 1 => q) p j))
-        (fun _ => {x | ν x = b}) (fun _ : Unit => {x | ν x = b})
-        (fun _ : Unit => Z) {x | 0 < (ν x - b) / ν (v p)} Q := by
-      convert AdmissibleRayRealization.singleFaceOne (hnormal q hq) hZ ht hx using 1
-      funext j
-      fin_cases j <;> simp [Fin.snoc]
+    obtain ⟨hg⟩ := (nonempty_realization_iff_crossing (p := p) (v := v) (ν := ν) (b := b)
+      (Z := Z) hZ (fun _ : Fin 1 => q) (hnormal q hq) Q).mpr ⟨ht, hx⟩
     exact ⟨⟨⟨fun _ => q, hp⟩, hg⟩, Subtype.ext rfl⟩
 
 /-- The component index is exactly the degree recorded at the crossing. -/
@@ -100,6 +104,17 @@ def singleFaceComponentFiberEquiv (Q : V) : (D Q) ≃
 theorem singleFaceComponentFiberEquiv_apply_val (Q : V) (r : (D Q)) :
     (singleFaceComponentFiberEquiv ℳ T p a v ν b Z hnormal hZ Q r).val = r.1.val 0 :=
   (rfl)
+
+/-- The inverse fiber comparison records the component as the degree of the ray. -/
+@[simp]
+theorem singleFaceComponentFiberEquiv_symm_val (Q : V)
+    (q : {q : Γ // DirectSum.decompose ℳ (T a) q ≠ 0 ∧
+      (ν Q - b) / ν (v q) < 0 ∧ Q - ((ν Q - b) / ν (v q)) • v q ∉ Z}) (j : Fin 1) :
+    ((singleFaceComponentFiberEquiv ℳ T p a v ν b Z hnormal hZ Q).symm q).1.val j = q.val := by
+  have he := congrArg Subtype.val
+    ((singleFaceComponentFiberEquiv ℳ T p a v ν b Z hnormal hZ Q).apply_symm_apply q)
+  rw [singleFaceComponentFiberEquiv_apply_val] at he
+  simpa only [Fin.fin_one_eq_zero j] using he
 
 /-- The ray indexed by a component carries that entire component as its final
 decoration, rather than a choice of monomial or a scalar summand. -/
