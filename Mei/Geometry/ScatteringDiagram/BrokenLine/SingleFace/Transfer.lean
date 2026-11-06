@@ -166,8 +166,8 @@ def singleFaceTransferEvaluationLinear (Q : V) : E →ₗ[R] M :=
       (C.right.comp ((C.liftLeft i).comp α))
 
 open Classical in
-/-- Linear evaluation is homogeneous extension of the geometrically admitted
-component maps, followed by the opposite image of the incoming lift. -/
+/-- Linear evaluation applies homogeneous extension of the geometrically admitted
+component maps to the opposite image of the incoming lift. -/
 theorem singleFaceTransferEvaluationLinear_def (Q : V) :
     C.singleFaceTransferEvaluationLinear i u v ν b Z α Q =
       (DirectSum.homogeneousExtend ℳ (fun q =>

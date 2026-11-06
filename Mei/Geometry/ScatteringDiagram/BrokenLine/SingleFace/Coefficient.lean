@@ -222,6 +222,7 @@ theorem singleFaceTransferRayEquivOfInjective_symm_parameter (Q : V)
 
 /-- The coefficient image of a lifted whole decoration is the original target
 decoration. This characterizes inverse weights without unfolding the bijection. -/
+@[simp↓]
 theorem singleFaceTransferRayEquivOfInjective_symm_decoration (Q : V)
     (r : D.SingleFaceTransferRay i' a'(a) u w ν b Z Q) :
     f.right (C.transfer i
