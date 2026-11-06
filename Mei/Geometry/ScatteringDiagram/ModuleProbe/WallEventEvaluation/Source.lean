@@ -84,31 +84,7 @@ theorem exists_cutoffWallEventEvaluation_leadingComponentArrangement (K : ℕ) :
         d.shiftedQuotientComponent ℳ p p k (by simp) a := by
   obtain ⟨A, hA⟩ := exists_cutoffWallEventEvaluation_sourceArrangement d ℳ p ℒ H h B K
   refine ⟨A, fun Q hQ k hkK a => ?_⟩
-  have he := congrArg (d.shiftedQuotientComponent ℳ p p k (by simp)) (hA Q hQ k hkK a)
-  have hd := d.decompose_shiftedQuotientGrading ℳ p k (0 : d.monoid) (by simp)
-    (cutoffWallEventEvaluation d ℳ p ℒ H h B k K hkK a univ Q)
-  simp only [ZeroMemClass.coe_zero] at hd
-  rw [hd] at he
-  simp only [d.shiftedQuotientComponent_mk, coe_shiftedInclusion,
-    ZeroMemClass.coe_zero] at he
-  have hc := (d.shiftedQuotientComponent ℳ p (p + 0) k (by simp)
-    (cutoffWallEventEvaluation d ℳ p ℒ H h B k K hkK a univ Q)).property
-  have hp := DirectSum.decompose_of_mem_same ℳ (by simpa only [add_zero] using hc)
-  apply Subtype.ext
-  have he' := congrArg Subtype.val he
-  rw [hp] at he'
-  -- Normalize the ambient index on representatives, avoiding dependent casts
-  -- between the pieces at p + 0 and p.
-  have ht :
-      (d.shiftedQuotientComponent ℳ p (p + 0) k (by simp)
-        (cutoffWallEventEvaluation d ℳ p ℒ H h B k K hkK a univ Q) : M) =
-      d.shiftedQuotientComponent ℳ p p k (by simp)
-        (cutoffWallEventEvaluation d ℳ p ℒ H h B k K hkK a univ Q) := by
-    obtain ⟨x, hx⟩ := ((d.shiftedFiltration ℳ p).submodule (k + 1)).mkQ_surjective
-      (cutoffWallEventEvaluation d ℳ p ℒ H h B k K hkK a univ Q)
-    rw [← hx]
-    simp only [Submodule.mkQ_apply, d.shiftedQuotientComponent_mk]
-    exact congrArg (fun q => (DirectSum.decompose ℳ (x : M) q : M)) (add_zero p)
-  exact ht.symm.trans he'
+  simpa only [d.shiftedQuotientComponent_self_decompose_zero] using
+    congrArg (d.shiftedQuotientComponent ℳ p p k (by simp)) (hA Q hQ k hkK a)
 
 end Mei.ModuleProbe
