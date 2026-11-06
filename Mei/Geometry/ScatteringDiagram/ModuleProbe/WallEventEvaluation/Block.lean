@@ -19,8 +19,8 @@ truncating the label supplied by the directed diagram.
 
 `eventEndpointStep` uses these coefficients, retaining an event between two
 relative degrees only when the event preserves their common normal velocity.
-Its event blocks vanish between degrees of different normal velocity. In the
-highest retained degree the step reads only the preceding cutoff. The finite
+Its event blocks vanish between degrees of different normal velocity. At every
+retained output degree the step reads only the preceding cutoff. The finite
 event sets and read points remain arbitrary caller-supplied data.
 The strict-degree nilpotence of `PositiveDegrees.shiftedLowerStep` applies
 without further geometric hypotheses. The degree bookkeeping follows Mandel,
@@ -165,13 +165,13 @@ theorem eventEndpointStep_apply (k K : ℕ) (hkK : k ≤ K)
 
 omit [IsWallAnnihilating H ℳ] in
 open Classical in
-/-- At the highest retained degree the endpoint step reads only the preceding
+/-- At every retained output degree the endpoint step reads only the preceding
 cutoff. The strict-degree filter is automatic in the event blocks. -/
-theorem eventEndpointStep_apply_of_degree_eq (k : ℕ)
+theorem eventEndpointStep_apply_sum_cutoff (k : ℕ)
     (events : V → (d.cutoff (k + 1)) → Finset (WallEvent (B.active (k + 1))))
     (point : WallEvent (B.active (k + 1)) → V → (n m : d.cutoff (k + 1)) → V)
     (F : PositiveDegrees.ShiftedEndpointFunction d ℳ p V (k + 1))
-    (Q : V) (n : d.cutoff (k + 1)) (hn : d.degree n.val = k + 1) :
+    (Q : V) (n : d.cutoff (k + 1)) :
     eventEndpointStep d ℳ p ℒ H h B (k + 1) (k + 1) (Nat.le_refl _) events point F Q n =
       ∑ b ∈ events Q n, ∑ m : d.cutoff k,
         let m' : d.cutoff (k + 1) := ⟨m.val, d.mem_cutoff.mpr
@@ -202,7 +202,7 @@ theorem eventEndpointStep_apply_of_degree_eq (k : ℕ)
   have hbound (m : d.cutoff (k + 1)) (hm : term m ≠ 0) : d.degree m.val ≤ k := by
     have hp : d.Precedes m.val n.val := by_contra fun hp => hm (hz m hp)
     have hd := d.degree_lt_of_precedes hp
-    rw [hn] at hd
+    have hn := (d.mem_cutoff.mp n.property).2
     omega
   refine Finset.sum_bij_ne_zero (fun m _ hm =>
     (⟨m.val, d.mem_cutoff.mpr ⟨(d.mem_cutoff.mp m.property).1, hbound m hm⟩⟩ :

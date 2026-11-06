@@ -162,7 +162,7 @@ theorem exists_straightProbeStepArrangement
     obtain ⟨z, hz, hgen, -⟩ := hinput b m (hevent ▸ hv)
     rw [hline b, hevent] at hz
     exact hz ▸ hgen
-  · rw [eventEndpointStep_apply_of_degree_eq d ℳ p ℒ H h B k _ _ f y.val n hn,
+  · rw [eventEndpointStep_apply_sum_cutoff d ℳ p ℒ H h B k _ _ f y.val n,
       sum_segmentWallEvents]
     have hsum := shiftedQuotientComponent_extendedCoefficientField_eq_add_sum_crossings
       d ℳ p ℒ H h h' D B k hBc hD hB e (p + n.val)
@@ -171,24 +171,12 @@ theorem exists_straightProbeStepArrangement
     rw [hsum]
     congr 1
     -- Both lists enumerate the same reversed crossing times.
-    refine Finset.sum_bij (fun b _ =>
-      (⟨b.val, by simpa only [List.length_map, List.length_reverse] using b.isLt⟩ :
-        Fin (orderedCrossingTimes e).length)) (fun _ _ => Finset.mem_univ _) ?_ ?_ ?_
-    · intro b _ b' _ he
-      exact Fin.ext (congrArg (fun b : Fin (orderedCrossingTimes e).length => b.val) he)
-    · intro b _
-      exact ⟨⟨b.val, by simpa only [g, List.length_map, List.length_reverse] using b.isLt⟩,
-        Finset.mem_univ _, Fin.ext rfl⟩
-    intro b hb
-    refine (Finset.sum_bij (fun m _ =>
-      (⟨m.val, (d.finite_cutoff k).mem_toFinset.mp m.property⟩ : d.cutoff k))
-      (fun _ _ => Finset.mem_univ _) ?_ ?_ ?_)
-    · intro m _ m' _ he
-      exact Subtype.ext (congrArg (fun m : d.cutoff k => m.val) he)
-    · intro m _
-      exact ⟨⟨m.val, (d.finite_cutoff k).mem_toFinset.mpr m.property⟩,
-        Finset.mem_attach _ _, rfl⟩
-    intro m hm
+    refine Fintype.sum_equiv (finCongr (by
+      simp only [List.length_map, List.length_reverse])) _ _ ?_
+    intro b
+    rw [← Finset.sum_coe_sort_eq_attach]
+    refine Fintype.sum_equiv (d.finite_cutoff k).subtypeEquivToFinset.symm _ _ ?_
+    intro m
     let m' : d.cutoff k := ⟨m.val, (d.finite_cutoff k).mem_toFinset.mp m.property⟩
     let m'' : d.cutoff (k + 1) := ⟨m.val, d.mem_cutoff.mpr
       ⟨(d.mem_cutoff.mp m'.property).1,
