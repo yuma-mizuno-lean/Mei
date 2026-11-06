@@ -62,8 +62,7 @@ def cylinder : DirectedWall (d := d) (h.prod h') H where
     obtain ⟨P, hP⟩ := isRationalNormalPolyhedron_iff.mp W.rational_support
     let f := (ContinuousLinearMap.fst ℝ V E).toContinuousAffineMap
     have hf : Toric.IsRationalLinearMap (h.prod h') h f.toAffineMap.linear :=
-      Toric.IsRationalLinearMap.of_integral_compatible (h.prod h') h
-        (AddMonoidHom.fst Λ K) f.toAffineMap.linear (fun _ => rfl)
+      Toric.IsRationalLinearMap.fst h h'
     apply isRationalNormalPolyhedron_iff.mpr
     refine ⟨P.preimage f hf, (P.carrier_preimage f hf).trans ?_⟩
     rw [hP]

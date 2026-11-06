@@ -39,10 +39,10 @@ private theorem iUnion_pullback_pieces {κ : Type*} {D : Set V} {f : D → W}
     (S : κ → Set V) (g : κ → (V →ᵃ[ℝ] W)) (φ : X →ᵃ[ℝ] W)
     (hD : (⋃ k, S k) = D)
     (hfg : ∀ k (v : D), v.1 ∈ S k → f v = g k v) :
-    (⋃ k, {p : V × X | p.1 ∈ S k} ∩ {p | g k p.1 = φ p.2}) =
+    (⋃ k, Prod.fst ⁻¹' S k ∩ {p : V × X | g k p.1 = φ p.2}) =
       {p : V × X | ∃ hx : p.1 ∈ D, f ⟨p.1, hx⟩ = φ p.2} := by
   ext p
-  simp only [Set.mem_iUnion, Set.mem_inter_iff, Set.mem_ofPred_eq]
+  simp only [Set.mem_iUnion, Set.mem_inter_iff, Set.mem_preimage, Set.mem_ofPred_eq]
   constructor
   · rintro ⟨k, hk, he⟩
     have hx : p.1 ∈ D := hD ▸ Set.mem_iUnion.mpr ⟨k, hk⟩
@@ -69,11 +69,13 @@ theorem IsRationalPiecewiseAffine.pullback {D : Set V} {f : D → W}
     IsRationalPiecewiseAffine (h.prod h'') h''
       {p : V × X | ∃ hx : p.1 ∈ D, f ⟨p.1, hx⟩ = φ p.2} (fun p => p.1.2) := by
   let π : V × X →ᴬ[ℝ] V := (ContinuousLinearMap.fst ℝ V X).toContinuousAffineMap
+  have hπ : ⇑π = Prod.fst := by
+    simp [π, ContinuousLinearMap.coe_toContinuousAffineMap, ContinuousLinearMap.coe_fst']
   obtain ⟨κ, _, S, g, hD, hS⟩ := isRationalPiecewiseAffine_iff.mp hf
   have hpieces (k : κ) : IsRationalSemilinear (h.prod h'')
-      (π ⁻¹' S k ∩ {p | g k p.1 = φ p.2}) := by
+      (Prod.fst ⁻¹' S k ∩ {p | g k p.1 = φ p.2}) := by
     have heq := isRationalNormalPolyhedron_pullback_matching (g k) φ (hS k).2.1 hφ
-    exact ((hS k).1.preimage π (Toric.IsRationalLinearMap.fst h h'')).inter
+    simpa only [hπ] using ((hS k).1.preimage π (Toric.IsRationalLinearMap.fst h h'')).inter
       heq.isLocallyClosedPolyhedron.isRationalSemilinear
   have hdom := iUnion_pullback_pieces S g φ hD (fun k => (hS k).2.2)
   rw [isRationalPiecewiseAffine_iff]
@@ -90,14 +92,16 @@ theorem IsFiniteBranchOn.pullback {D : Set V} {f : D → W}
     IsFiniteBranchOn (h.prod h'') h''
       {p : V × X | ∃ hx : p.1 ∈ D, f ⟨p.1, hx⟩ = φ p.2} (fun p => p.1.2) := by
   let π : V × X →ᴬ[ℝ] V := (ContinuousLinearMap.fst ℝ V X).toContinuousAffineMap
+  have hπ : ⇑π = Prod.fst := by
+    simp [π, ContinuousLinearMap.coe_toContinuousAffineMap, ContinuousLinearMap.coe_fst']
   obtain ⟨κ, _, S, g, hD, hS⟩ := isFiniteBranchOn_iff.mp hf
   rw [isFiniteBranchOn_iff]
-  refine ⟨κ, ‹_›, fun k => π ⁻¹' S k ∩ {p | g k p.1 = φ p.2},
+  refine ⟨κ, ‹_›, fun k => Prod.fst ⁻¹' S k ∩ {p | g k p.1 = φ p.2},
     fun _ => AffineMap.snd, ?_, fun k => ⟨?_, Toric.IsRationalLinearMap.snd h h'', ?_,
       fun _ _ => rfl⟩⟩
   · exact iUnion_pullback_pieces S g φ hD (fun k => (hS k).2.2.2)
   · have heq := isRationalNormalPolyhedron_pullback_matching (g k) φ (hS k).2.1 hφ
-    exact ((hS k).1.preimage π (Toric.IsRationalLinearMap.fst h h'')).inter
+    simpa only [hπ] using ((hS k).1.preimage π (Toric.IsRationalLinearMap.fst h h'')).inter
       heq.isLocallyClosedPolyhedron
   · intro p hp q hq he
     exact Prod.ext ((hS k).2.2.1 hp.1 hq.1 (hp.2.trans ((congrArg φ he).trans hq.2.symm))) he
