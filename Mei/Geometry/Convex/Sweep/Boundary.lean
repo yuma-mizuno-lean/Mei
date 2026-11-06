@@ -50,7 +50,7 @@ theorem mem_frontier_backwardDomain_imp_terminal_or_singularSupport
     (∃ j : Fin n, j.val = 0 ∧ Q ∈ W (wall j)) ∨
       ∃ j : Fin n, backwardPoint f c v j.succ Q ∈ singularSupport W := by
   rcases mem_frontier_backwardDomain_imp_time_eq_zero_or_mem_intrinsicFrontier
-    f c v _ hdir (fun j => hclosed (wall j)) hQ with ⟨j, ht⟩ | ⟨j, hj⟩
+    f c v _ hdir hQ with ⟨j, ht⟩ | ⟨j, hj⟩
   · rcases backwardTime_eq_zero_imp_terminal_or_singularSupport f c v W wall
       hheight hclosed (Subset.refl _) hQ.1 j ht with hterminal | hsingular
     · exact Or.inl ⟨j, hterminal⟩

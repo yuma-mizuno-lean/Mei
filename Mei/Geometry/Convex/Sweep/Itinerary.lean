@@ -29,8 +29,8 @@ a selected wall for the first time.
 Positive elapsed times and relative-interior encounters persist near the endpoint
 when each support's affine direction contains the kernel of its normal. No
 supporting-hyperplane containment or surjectivity of the encounter maps is required.
-For closed supports, a boundary endpoint therefore has a zero elapsed time or
-an encounter on a relative support boundary. We use relative-interior
+A boundary endpoint therefore has a zero elapsed time or an encounter on a
+relative support boundary, even for nonclosed supports. We use relative-interior
 neighborhoods in affine spans to establish this persistence.
 The endpoint-chart interpretation follows Carl–Pumperla–Siebert, *A tropical view
 on Landau–Ginzburg models*, §4 (arXiv:2205.07753v2).
@@ -250,6 +250,18 @@ theorem isClosed_weakBackwardDomain {P : Fin n → Set V} (hP : ∀ i, IsClosed 
     (isClosed_Ici.preimage (backwardTime f c v i).continuous).inter
       ((hP i).preimage (backwardPoint f c v i.succ).continuous)
 
+/-- Elapsed times remain nonnegative on the closure of any endpoint family
+with nonnegative elapsed times, without support constraints. -/
+theorem backwardTime_nonneg_of_mem_closure {D : Set V}
+    (hD : ∀ Q ∈ D, ∀ j, 0 ≤ backwardTime f c v j Q)
+    {Q : V} (hQ : Q ∈ closure D) (j : Fin n) :
+    0 ≤ backwardTime f c v j Q := by
+  apply closure_minimal (s := D)
+    (t := (backwardTime f c v j) ⁻¹' Set.Ici 0) _
+    (isClosed_Ici.preimage (backwardTime f c v j).continuous) hQ
+  intro Q hQ
+  exact hD Q hQ j
+
 section DomainInterior
 
 open Set Filter Topology
@@ -294,34 +306,38 @@ theorem mem_interior_backwardDomain {Q : V}
 or a selected encounter lies on its wall's relative boundary. The converse can
 fail when an encounter map has smaller rank. -/
 theorem mem_frontier_backwardDomain_imp_time_eq_zero_or_mem_intrinsicFrontier
-    (hclosed : ∀ j, IsClosed (P j)) {Q : V}
-    (hQ : Q ∈ frontier (backwardDomain f c v P)) :
+    {Q : V} (hQ : Q ∈ frontier (backwardDomain f c v P)) :
     (∃ j, backwardTime f c v j Q = 0) ∨
       ∃ j, backwardPoint f c v j.succ Q ∈ intrinsicFrontier ℝ (P j) := by
-  have hw := closure_minimal (backwardDomain_subset_weakBackwardDomain f c v P)
-    (isClosed_weakBackwardDomain f c v hclosed) hQ.1
-  have hm := (mem_weakBackwardDomain f c v P Q).mp hw
   by_contra! hnone
   have ht (j) : 0 < backwardTime f c v j Q :=
-    lt_of_le_of_ne (hm j).1 (Ne.symm (hnone.1 j))
+    lt_of_le_of_ne (backwardTime_nonneg_of_mem_closure f c v
+      (fun X hX i => (hX i).1.le) hQ.1 j) (Ne.symm (hnone.1 j))
+  obtain ⟨p, hp⟩ := (Set.nonempty_of_mem hQ.1).of_closure
   have hi (j) : backwardPoint f c v j.succ Q ∈ intrinsicInterior ℝ (P j) := by
+    have hf : f j (v j) ≠ 0 := by
+      intro hz
+      have htj := ht j
+      simp only [backwardTime_apply, hz, div_zero] at htj
+      exact (lt_irrefl 0) htj
+    have hspan : backwardPoint f c v j.succ Q ∈ affineSpan ℝ (P j) := by
+      rw [← AffineSubspace.vsub_right_mem_direction_iff_mem
+        (subset_affineSpan ℝ _ (hp j).2)]
+      apply hdir j
+      rw [LinearMap.mem_ker, vsub_eq_sub, map_sub]
+      simp only [ContinuousLinearMap.coe_coe]
+      rw [backwardPoint_height f c v j hf Q,
+        backwardPoint_height f c v j hf p, sub_self]
+    have hcl : backwardPoint f c v j.succ Q ∈ closure (P j) :=
+      closure_mono (Set.image_subset_iff.mpr fun X hX => (hX j).2)
+        (mem_closure_image (backwardPoint f c v j.succ).continuous.continuousAt hQ.1)
     rw [← intrinsicClosure_sdiff_intrinsicFrontier]
-    exact ⟨subset_intrinsicClosure (hm j).2, hnone.2 j⟩
+    refine ⟨?_, hnone.2 j⟩
+    rw [intrinsicClosure_eq_closure_inter_affineSpan]
+    exact ⟨hcl, hspan⟩
   exact hQ.2 (mem_interior_backwardDomain f c v P hdir ht hi)
 
 end DomainInterior
-
-/-- Elapsed times remain nonnegative on the closure of any endpoint family
-with nonnegative elapsed times, without support constraints. -/
-theorem backwardTime_nonneg_of_mem_closure {D : Set V}
-    (hD : ∀ Q ∈ D, ∀ j, 0 ≤ backwardTime f c v j Q)
-    {Q : V} (hQ : Q ∈ closure D) (j : Fin n) :
-    0 ≤ backwardTime f c v j Q := by
-  apply closure_minimal (s := D)
-    (t := (backwardTime f c v j) ⁻¹' Set.Ici 0) _
-    (isClosed_Ici.preimage (backwardTime f c v j).continuous) hQ
-  intro Q hQ
-  exact hD Q hQ j
 
 /-- Locally closed support constraints give a locally closed strict endpoint domain. -/
 theorem isLocallyClosed_backwardDomain {P : Fin n → Set V}
