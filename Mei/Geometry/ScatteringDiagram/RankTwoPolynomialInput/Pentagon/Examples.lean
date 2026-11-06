@@ -122,8 +122,8 @@ functions `1 + c₀ z^{e₁}` and `1 + c₁ z^{e₂}` is represented by the pent
 outgoing wall `{x = y, y ≤ 0}` carries the binomial label of `1 + c₀ c₁ z^{e₁ + e₂}`. -/
 theorem scat_axesInput (c : axesInput.Variable → R) :
     (axesInput.incomingDiagram h c).Scat (axesInput.incomingDiagram_full h c) =
-      (isTypeA₂_axesInput.pentagonDiagram h c).toClass :=
-  isTypeA₂_axesInput.scat_eq_toClass_pentagonDiagram h c
+      (isTypeA₂_axesInput.isTypeA₂Presentation h c).pentagonDiagram.toClass :=
+  (isTypeA₂_axesInput.isTypeA₂Presentation h c).scat_eq_toClass_pentagonDiagram
 
 open scoped Mei.TropicalVertexCoefficientAction
 

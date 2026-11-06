@@ -35,15 +35,18 @@ variable {V ι : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
 
 /-- A finite arrangement ensures that, in each prescribed direction, every
 sufficiently distant starting point gives an admissible segment to the generic
-endpoint. No transversality condition is imposed on walls the line misses. -/
+endpoint, and the ray beyond that point misses every wall. No transversality
+condition is imposed on walls the line misses. -/
 theorem exists_ray_admissibilityArrangement
     (W : ι → Set V) (hpoly : ∀ j, TauCeti.IsConvexPolyhedron (W j))
     (hdim : ∀ j, Module.finrank ℝ (affineSpan ℝ (W j)).direction + 1 =
       Module.finrank ℝ V) (vectors : Finset V) :
     ∃ A : ExceptionalArrangement V, ∀ Q, A.IsGeneric Q →
       ∃ y : WallComplement W, y.val = Q ∧ ∀ v ∈ vectors,
-        ∀ᶠ T : ℝ in atTop, ∃ x : WallComplement W,
-          x.val = Q + T • v ∧ WallComplement.AdmissibleSegment x y := by
+        ∀ᶠ T : ℝ in atTop,
+          (∀ s ≥ T, ∀ j, Q + s • v ∉ W j) ∧
+          ∃ x : WallComplement W,
+            x.val = Q + T • v ∧ WallComplement.AdmissibleSegment x y := by
   classical
   let := Fintype.ofFinite ι
   obtain ⟨S, hcover, hS⟩ := exists_finite_singularSupport_cover W hpoly hdim
@@ -100,12 +103,12 @@ theorem exists_ray_admissibilityArrangement
     obtain ⟨b, hb⟩ := (hfinite j).bddAbove
     filter_upwards [eventually_gt_atTop b] with T hT hmem
     exact (not_le_of_gt hT) (hb hmem)
-  filter_upwards [hfar] with T hT
-  let x : WallComplement W := ⟨Q + T • v, hT⟩
+  filter_upwards [eventually_forall_ge_atTop.mpr hfar] with T hT
+  let x : WallComplement W := ⟨Q + T • v, hT T le_rfl⟩
   have hline (s : ℝ) : AffineMap.lineMap x.val y.val s = Q + ((1 - s) * T) • v := by
     simp only [x, y, AffineMap.lineMap_apply_module']
     module
-  refine ⟨x, rfl, (convex_segment x.val y.val).admissibleSegment_of_disjoint_singularSupport
+  refine ⟨hT, x, rfl, (convex_segment x.val y.val).admissibleSegment_of_disjoint_singularSupport
     ?_ (left_mem_segment ℝ _ _) (right_mem_segment ℝ _ _)⟩
   apply Set.disjoint_left.mpr
   intro z hz

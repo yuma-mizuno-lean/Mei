@@ -92,6 +92,20 @@ theorem decompose_shiftedQuotientGrading (k : ℕ) (n : d.monoid)
   apply Subtype.ext
   simpa only [coe_shiftedInclusion] using coe_decompose_shiftedGrading ℳ d.monoid p a n
 
+/-- Reading a retained ambient component after projection to its relative
+homogeneous piece leaves that component unchanged. -/
+@[simp↓]
+theorem shiftedQuotientComponent_decompose_same (k : ℕ) (n : d.monoid)
+    (hn : d.degree n ≤ k) (x : (d.shiftedFiltration ℳ p).quotient k) :
+    d.shiftedQuotientComponent ℳ p (p + n) k (by simpa using hn)
+        (DirectSum.decompose (d.shiftedQuotientGrading ℳ p k).piece x n) =
+      d.shiftedQuotientComponent ℳ p (p + n) k (by simpa using hn) x := by
+  rw [d.decompose_shiftedQuotientGrading ℳ p k n hn,
+    d.shiftedQuotientComponent_mk]
+  apply Subtype.ext
+  simp only [coe_shiftedInclusion]
+  exact DirectSum.decompose_of_mem_same ℳ (Subtype.mem _)
+
 /-- The quotient image of a relative piece above the retained order vanishes.
 This is the simplifier normal form of the finite-piece vanishing law. -/
 @[simp]

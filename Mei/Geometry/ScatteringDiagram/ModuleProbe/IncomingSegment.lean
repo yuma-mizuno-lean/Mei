@@ -93,18 +93,13 @@ theorem exists_incomingSegmentArrangement
   refine ⟨y, hy, fun n hout => ?_⟩
   have hn : i (ρ (p + n.val)) ∈ vectors :=
     Finset.mem_image.mpr ⟨n.val, (d.finite_cutoff k).mem_toFinset.mpr n.property, rfl⟩
-  have htail : ∀ᶠ T : ℝ in atTop, ∀ s ≥ T, ∀ c : B.active k,
-      Q + s • i (ρ (p + n.val)) ∉ (B.wall c).support :=
-    (eventually_forall_ge_atTop.mpr (hsegment _ hn)).mono fun T hT s hs c hmem => by
-      obtain ⟨x, hx, _⟩ := hT s hs
-      exact x.notMem c (hx ▸ hmem)
   have hk : d.degree ((p + n.val) - p) ≤ k := by
     simpa only [add_sub_cancel_left] using (d.mem_cutoff.mp n.property).2
-  filter_upwards [htail, hsegment _ hn,
+  filter_upwards [hsegment _ hn,
     eventually_shiftedQuotientComponent_extendedCoefficientField_eq
       d ℳ p ℒ H h h' D₀ a D B hinitial k hD hBc hB (p + n.val) hk
-      hout (isCompact_singleton (x := Q))] with T htail hT hvalue
-  obtain ⟨x, hx, he⟩ := hT
+      hout (isCompact_singleton (x := Q))] with T hT hvalue
+  obtain ⟨htail, x, hx, he⟩ := hT
   refine ⟨htail, x, ⟨he⟩, hx, ?_⟩
   have heq : (⟨Q + T • i (ρ (p + n.val)), by rw [← hx]; exact x.notMem⟩ :
       WallComplement (fun c : B.active k => (B.wall c).support)) = x :=

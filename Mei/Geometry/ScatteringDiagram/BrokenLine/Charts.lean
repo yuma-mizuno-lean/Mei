@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Algebra.BigOperators.Group.Finset.Indicator
-public import Mei.Geometry.ScatteringDiagram.BrokenLine.Itineraries
+public import Mei.Geometry.ScatteringDiagram.BrokenLine.Family
 
 /-!
 # Polyhedral charts for decorated rays
@@ -22,9 +22,9 @@ The closed polyhedra add only limits of valid endpoints. This statement does not
 assert that boundary endpoints themselves admit transverse rays. Weighted evaluation
 is the sum of the fixed chart weights over the charts containing the endpoint.
 
-The construction combines `cutoffDecoratedRayFiberEquiv` with
-`IsRationalSemilinear.exists_disjoint_intrinsicInteriors`, using Mathlib’s
-`Set.unionEqSigmaOfDisjoint` to identify each domain with its chart pieces. The
+The charts are those of `cutoffBrokenLineFamily`, transported through its exact
+fiber equivalence with actual rays. The common semilinear-family chart construction
+subdivides the endpoint domains into disjoint relative interiors. The
 endpoint-chart description follows Carl–Pumperla–Siebert, *A tropical view on Landau–Ginzburg
 models*, §4 (arXiv:2205.07753v2).
 -/
@@ -96,30 +96,21 @@ theorem exists_cutoffDecoratedRay_polyhedralCharts (k : ℕ) :
         (∀ z, (cutoffDecoratedRayFiberEquiv d ℳ T a (fun q => i (w q))
           f c ε P W S C k (e z).1 (e z).2).val = z.1) ∧
         ∀ z, (e z).2.decoration = z.1.decoration := by
-  classical
-  let D := CutoffDecoratedType d ℳ T a (fun q => i (w q)) f ε k
-  have hdom (t : D) : IsRationalSemilinear h (domain t) :=
-    t.isRationalSemilinear_domain c P W S C h w hf hP hW hS hC
-  choose ι hι B hB hdisj hcover using fun t => (hdom t).exists_disjoint_intrinsicInteriors
-  let E (Q : V) := cutoffDecoratedRayFiberEquiv d ℳ T a (fun q => i (w q))
-    f c ε P W S C k Q
-  let swap : (Σ t : D, domain t) ≃ (Σ Q, {t : D // Q ∈ domain t}) :=
-    { toFun := fun z => ⟨z.2.val, z.1, z.2.property⟩
-      invFun := fun z => ⟨z.2.val, z.1, z.2.property⟩
-      left_inv := fun _ => rfl
-      right_inv := fun _ => rfl }
-  let e := (Equiv.sigmaCongrRight fun t =>
-    (Set.unionEqSigmaOfDisjoint (hdisj t)).symm.trans (Set.equivOfEq (hcover t))).trans
-      (swap.trans (Equiv.sigmaCongrRight fun Q => (E Q).symm))
-  have hendpoint (z) : (e z).1 = z.2.2.val := by
-    simp only [e, Equiv.trans_apply, Equiv.sigmaCongrRight_apply, swap,
-      Equiv.coe_fn_mk, Set.equivOfEq_apply, Set.coe_unionEqSigmaOfDisjoint_symm_apply]
-  have he (z) : (E (e z).1 (e z).2).val = z.1 := by
-    exact congrArg Subtype.val ((E _).apply_symm_apply _)
+  obtain ⟨ι, hι, B, hB, hdisj, hcover, eF, hendpoint, htype⟩ :=
+    exists_cutoffBrokenLineFamily_polyhedralCharts d ℳ T a f c ε P W S C
+      h w hf hP hW hS hC k
+  let E (Q : V) := cutoffBrokenLineFamilyFiberEquiv d ℳ T a f c ε P W S C
+    h w hf hP hW hS hC k Q
+  let e := eF.trans (Equiv.sigmaCongrRight E)
+  have he (z) :
+      (cutoffDecoratedRayFiberEquiv d ℳ T a (fun q => i (w q))
+        f c ε P W S C k (e z).1 (e z).2).val = z.1 :=
+    (cutoffBrokenLineFamilyFiberEquiv_type d ℳ T a f c ε P W S C
+      h w hf hP hW hS hC k (eF z).1 (eF z).2).trans (htype z)
   refine ⟨ι, hι, B, hB, hdisj, hcover, e, hendpoint, he, fun z => ?_⟩
-  exact (cutoffDecoratedRayFiberEquiv_decoration d ℳ T a (fun q => i (w q))
-    f c ε P W S C k (e z).1 (e z).2).symm.trans
-      (congrArg CutoffDecoratedType.decoration (he z))
+  exact (cutoffBrokenLineFamilyFiberEquiv_decoration d ℳ T a f c ε P W S C
+    h w hf hP hW hS hC k (eF z).1 (eF z).2).trans
+      (congrArg CutoffDecoratedType.decoration (htype z))
 
 end Rational
 

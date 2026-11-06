@@ -18,7 +18,8 @@ full weighted cutoff evaluation at `Q` is the sum, over the encounters `e` and t
 adjacent degrees `p ≠ q` preserving the normal velocity at `e`, of the degree-`q`
 component of `T e` applied to the degree-`p` evaluation at an incoming germ
 `Q + s e • v q + η e • v p`. The germs can be taken arbitrarily close to the
-encounters, and every adjacent degree is strictly lower than `q`.
+encounters, also subject to any eventual condition at each event. Every adjacent
+degree is strictly lower than `q`.
 
 Thus the evaluation at the endpoint is expressed through evaluations of strictly lower
 degree at incoming germs, with the unchanged degrees removed. All encounter words,
@@ -49,8 +50,10 @@ encounters `e` of the backward line and the lower adjacent degrees `p` of the
 degree-`q` component of `T e` applied to the degree-`p` evaluation at incoming germs.
 Here `E` lists all the encounters of the line, at ray parameters `s`, and the wall supports
 meet the line only at them. The germs `Q + s e • v q + η e • v p` can be taken with
-incoming parameters `η e` below any prescribed bound `θ`. -/
-theorem exists_decompose_cutoffDecoratedEvaluation_eq_sum_lastChange
+incoming parameters `η e` below any prescribed bound `θ`, while also satisfying
+any prescribed eventual condition `admit e`. The condition is imposed on every
+event, independently of whether a coefficient contribution vanishes. -/
+theorem exists_decompose_cutoffDecoratedEvaluation_eq_sum_lastChange_of_eventually
     [Finite J] [Finite K] [Finite I] {q : Γ} (hq : q ∈ d.cutoff k) (hq0 : q ≠ 0)
     (E : Finset J) (hT : ∀ e ∈ E, ∀ x ∈ ℳ q, (DirectSum.decompose ℳ (T e x) q : M) = x)
     (hP : ∀ j, P j ⊆ ⋃ b, W b) (hclosedW : ∀ j, IsClosed (W j))
@@ -62,7 +65,8 @@ theorem exists_decompose_cutoffDecoratedEvaluation_eq_sum_lastChange
     (hplane : ∀ e ∈ E, ∀ j, Q + s e • v q ∈ W j → ∀ y ∈ W j, f e y = c e)
     (hWray : ∀ j (u : ℝ), 0 ≤ u → Q + u • v q ∈ W j → ∃ e ∈ E, s e = u)
     (hSray : ∀ j (u : ℝ), 0 ≤ u → Q + u • v q ∉ S j) :
-    ∀ θ > 0, ∃ η : J → ℝ, (∀ e ∈ E, 0 < η e ∧ η e < θ) ∧
+    ∀ (admit : J → ℝ → Prop), (∀ e ∈ E, ∀ᶠ η : ℝ in 𝓝[>] 0, admit e η) →
+    ∀ θ > 0, ∃ η : J → ℝ, (∀ e ∈ E, 0 < η e ∧ η e < θ ∧ admit e (η e)) ∧
       (DirectSum.decompose ℳ
         (cutoffDecoratedEvaluation d ℳ T a v f c ε P W S C k Q) q : M) =
         ∑ e ∈ E, ∑ p ∈ (d.finite_cutoff k).toFinset with
@@ -71,7 +75,7 @@ theorem exists_decompose_cutoffDecoratedEvaluation_eq_sum_lastChange
             (cutoffDecoratedEvaluation d ℳ T a v f c ε P W S C k
               (Q + s e • v q + η e • v p)) p)) q : M) := by
   classical
-  intro θ hθ
+  intro admit hadmit θ hθ
   -- The contribution of an encounter `e` with incoming displacement `η`.
   let Xs : J → ℝ → M := fun e η => ∑ p ∈ (d.finite_cutoff k).toFinset with
       p ≠ q ∧ q - p ∈ d.monoid ∧ f e (v q) = f e (v p),
@@ -81,7 +85,7 @@ theorem exists_decompose_cutoffDecoratedEvaluation_eq_sum_lastChange
   -- `key` runs over the encounters ahead of the base point `Q + δ • v q`.
   have key : ∀ (n : ℕ) (δ : ℝ), 0 ≤ δ → (∀ j, Q + δ • v q ∉ W j) →
       (E.filter fun e => δ < s e).card = n → ∃ η : J → ℝ,
-        (∀ e ∈ E.filter fun e => δ < s e, 0 < η e ∧ η e < θ) ∧
+        (∀ e ∈ E.filter fun e => δ < s e, 0 < η e ∧ η e < θ ∧ admit e (η e)) ∧
         (DirectSum.decompose ℳ
           (cutoffDecoratedEvaluation d ℳ T a v f c ε P W S C k (Q + δ • v q)) q : M) =
           ∑ e ∈ E.filter fun e => δ < s e, Xs e (η e) := by
@@ -123,9 +127,10 @@ theorem exists_decompose_cutoffDecoratedEvaluation_eq_sum_lastChange
           have hlt : s e₀ < s e := (hmin e heA).lt_of_ne fun h =>
             hne₀ (hinj (Finset.mem_filter.mp heA).1 he₀E h.symm)
           exact (eventually_lt_nhds (sub_pos.mpr hlt)).filter_mono nhdsWithin_le_nhds
-        obtain ⟨η₀, ⟨⟨hη₀ev, hη₀gap⟩, hη₀pos⟩, hη₀θ⟩ :=
-          (((hev.and hgap).and (eventually_mem_nhdsWithin (a := (0 : ℝ)) (s := Ioi 0))).and
-            ((eventually_lt_nhds hθ).filter_mono nhdsWithin_le_nhds)).exists
+        obtain ⟨η₀, ⟨⟨⟨hη₀ev, hη₀gap⟩, hη₀pos⟩, hη₀θ⟩, hη₀admit⟩ :=
+          ((((hev.and hgap).and (eventually_mem_nhdsWithin (a := (0 : ℝ)) (s := Ioi 0))).and
+            ((eventually_lt_nhds hθ).filter_mono nhdsWithin_le_nhds)).and
+              (hadmit e₀ he₀E)).exists
         have hη₀pos : 0 < η₀ := hη₀pos
         have hAδ' : (E.filter fun e => s e₀ + η₀ < s e) =
             (E.filter fun e => δ < s e).erase e₀ := by
@@ -154,7 +159,7 @@ theorem exists_decompose_cutoffDecoratedEvaluation_eq_sum_lastChange
         refine ⟨Function.update η' e₀ η₀, fun e he => ?_, ?_⟩
         · by_cases hee : e = e₀
           · subst hee
-            simp [hη₀pos, hη₀θ]
+            simp [hη₀pos, hη₀θ, hη₀admit]
           · rw [Function.update_of_ne hee]
             exact hη'bd e (hAδ' ▸ Finset.mem_erase.mpr ⟨hee, he⟩)
         · have hqmem : q ∈ (d.finite_cutoff k).toFinset.filter
@@ -206,5 +211,39 @@ theorem exists_decompose_cutoffDecoratedEvaluation_eq_sum_lastChange
   rw [Finset.filter_true_of_mem fun e he => (hE e he).1] at hη heq
   simp only [zero_smul, add_zero] at heq
   exact ⟨η, hη, heq⟩
+
+open Classical in
+/-- The degree-`q` component of the weighted evaluation at `Q` is the sum over the
+encounters `e` of the backward line and the lower adjacent degrees `p` of the
+degree-`q` component of `T e` applied to the degree-`p` evaluation at incoming germs.
+Here `E` lists all the encounters of the line, at ray parameters `s`, and the wall supports
+meet the line only at them. The germs `Q + s e • v q + η e • v p` can be taken with
+incoming parameters `η e` below any prescribed bound `θ`. -/
+theorem exists_decompose_cutoffDecoratedEvaluation_eq_sum_lastChange
+    [Finite J] [Finite K] [Finite I] {q : Γ} (hq : q ∈ d.cutoff k) (hq0 : q ≠ 0)
+    (E : Finset J) (hT : ∀ e ∈ E, ∀ x ∈ ℳ q, (DirectSum.decompose ℳ (T e x) q : M) = x)
+    (hP : ∀ j, P j ⊆ ⋃ b, W b) (hclosedW : ∀ j, IsClosed (W j))
+    (hclosedS : ∀ j, IsClosed (S j)) (s : J → ℝ) (hinj : Set.InjOn s E)
+    (hE : ∀ e ∈ E, 0 < s e ∧ f e (v q) ≠ 0 ∧ SignType.sign (f e (v q)) = ε e ∧
+      f e (Q + s e • v q) = c e ∧ Q + s e • v q ∈ P e)
+    (hhit : ∀ e (u : ℝ), 0 < u → f e (v q) ≠ 0 → SignType.sign (f e (v q)) = ε e →
+      f e (Q + u • v q) = c e → Q + u • v q ∈ P e → e ∈ E ∧ s e = u)
+    (hplane : ∀ e ∈ E, ∀ j, Q + s e • v q ∈ W j → ∀ y ∈ W j, f e y = c e)
+    (hWray : ∀ j (u : ℝ), 0 ≤ u → Q + u • v q ∈ W j → ∃ e ∈ E, s e = u)
+    (hSray : ∀ j (u : ℝ), 0 ≤ u → Q + u • v q ∉ S j) :
+    ∀ θ > 0, ∃ η : J → ℝ, (∀ e ∈ E, 0 < η e ∧ η e < θ) ∧
+      (DirectSum.decompose ℳ
+        (cutoffDecoratedEvaluation d ℳ T a v f c ε P W S C k Q) q : M) =
+        ∑ e ∈ E, ∑ p ∈ (d.finite_cutoff k).toFinset with
+            p ≠ q ∧ q - p ∈ d.monoid ∧ f e (v q) = f e (v p),
+          (DirectSum.decompose ℳ (T e (DirectSum.decompose ℳ
+            (cutoffDecoratedEvaluation d ℳ T a v f c ε P W S C k
+              (Q + s e • v q + η e • v p)) p)) q : M) := by
+  intro θ hθ
+  obtain ⟨η, hη, heq⟩ :=
+    exists_decompose_cutoffDecoratedEvaluation_eq_sum_lastChange_of_eventually
+      hq hq0 E hT hP hclosedW hclosedS s hinj hE hhit hplane hWray hSray
+      (fun _ _ => True) (fun _ _ => Filter.Eventually.of_forall fun _ => trivial) θ hθ
+  exact ⟨η, fun e he => ⟨(hη e he).1, (hη e he).2.1⟩, heq⟩
 
 end Mei.CutoffDecoratedRay

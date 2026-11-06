@@ -5,7 +5,7 @@ Authors: Claude Code
 -/
 module
 
-public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Pentagon
+public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Pentagon.Basic
 public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Scat
 public import Mei.Geometry.ScatteringDiagram.DirectedWall.Halfspace
 public import Mei.Geometry.ScatteringDiagram.Skew.Principal.Positive

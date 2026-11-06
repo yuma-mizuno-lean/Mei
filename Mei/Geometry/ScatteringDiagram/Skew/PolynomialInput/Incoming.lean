@@ -9,6 +9,7 @@ public import Mei.Geometry.ScatteringDiagram.Skew.PolynomialInput.Basic
 public import Mei.Geometry.ScatteringDiagram.WallSpace.Logarithmic.RayFactor
 public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.RayFactor
 public import Mei.RingTheory.FilteredAlgebra.Positive.Basic
+public import Mei.Algebra.Lie.Logarithmic.WallFunction.Binomial
 
 /-!
 # Incoming diagrams of BLM polynomial inputs
@@ -73,6 +74,12 @@ theorem isPrimitive_alphabetNormal (i : B.unfrozenIndex) :
     TauCeti.IsPrimitive (I.alphabetNormal i) :=
   TauCeti.isPrimitive_def.mpr ⟨AddMonoidHom.toIntLinearMap
     (AddMonoidHom.eval (B.basis.coord i, 0)), by simp⟩
+
+/-- The letter `v_{i,s}` of a variable of the initial function at `i` is tangent to the cylinder
+over `eᵢ⊥`. -/
+theorem alphabetNormal_letter_self (i : B.unfrozenIndex) (s : Fin (I.multiplicity i)) :
+    I.alphabetNormal i (PositiveDegrees.letter I.letterExponent ⟨i, s⟩) = 0 := by
+  simp
 
 variable [CommRing R]
 
@@ -140,6 +147,24 @@ theorem initialLabel_def (i : B.unfrozenIndex) :
       (𝒅).completedBCHExp ℒ (completedTropicalTangentField 𝒅 ρ (χ i)
         ((F i).completedLog ⟨(F i).toCompletion (I.tangentInitialFunction i),
           I.toCompletion_tangentInitialFunction_sub_one_mem i⟩)) := (rfl)
+
+/-- If the initial function at `i` has a single variable (`ℓᵢ = 1`), so that it is the binomial
+`1 + p_{i,1} z^{wᵢ}`, its unsplit label is the binomial label `exp(log(1 + z^v) ∂_{eᵢ})` of the
+letter `v = v_{i,1}`, with coefficient one. -/
+theorem initialLabel_eq_binomialLabel {i : B.unfrozenIndex} (hi : I.multiplicity i = 1)
+    (s : Fin (I.multiplicity i)) :
+    I.initialLabel (R := R) i = binomialLabel 𝒅 ρ (I.alphabetNormal i)
+      (PositiveDegrees.letter_mem I.letterExponent ⟨i, s⟩)
+      (PositiveDegrees.letter_ne_zero I.letterExponent ⟨i, s⟩)
+      (I.alphabetNormal_letter_self i s) 1 := by
+  have hf : I.tangentInitialFunction (R := R) i = 1 + single (binomialExponent 𝒅 ρ
+      (I.alphabetNormal i) (PositiveDegrees.letter_mem I.letterExponent ⟨i, s⟩)
+      (I.alphabetNormal_letter_self i s)) 1 := by
+    rw [tangentInitialFunction, Fintype.sum_eq_single s fun t ht =>
+      absurd (Fin.ext (by have := t.isLt; have := s.isLt; omega)) ht]
+    exact congrArg (fun q => 1 + single q 1)
+      (Subtype.ext ((I.coe_tangentLetter i s).trans (coe_binomialExponent ..).symm))
+  simp only [initialLabel_def, binomialLabel_def, hf]
 
 section Pair
 

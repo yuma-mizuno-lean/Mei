@@ -253,6 +253,17 @@ theorem sum_eval_inr (c : κ) : (F.sum G).eval (.inr c) = G.eval c := (rfl)
 def fiberSumEquiv (w : W) : (F.sum G).fiber w ≃ F.fiber w ⊕ G.fiber w :=
   Equiv.sumSigmaDistrib fun c => {x : (F.sum G).domain c // (F.sum G).eval c x = w}
 
+/-- The inverse fiber comparison preserves the chart label on each summand. -/
+@[simp]
+theorem fiberSumEquiv_symm_apply_fst (w : W) (z : F.fiber w ⊕ G.fiber w) :
+    ((F.fiberSumEquiv G w).symm z).1 = Sum.map Sigma.fst Sigma.fst z := by
+  cases z <;> rfl
+
+/-- A disjoint union of families with finite fibers has finite fibers. -/
+instance (w : W) [Finite (F.fiber w)] [Finite (G.fiber w)] :
+    Finite ((F.sum G).fiber w) :=
+  Finite.of_equiv _ (F.fiberSumEquiv G w).symm
+
 /-- Fiber cardinalities add under disjoint union. -/
 theorem nat_card_fiber_sum (w : W) [Finite (F.fiber w)] [Finite (G.fiber w)] :
     Nat.card ((F.sum G).fiber w) = Nat.card (F.fiber w) + Nat.card (G.fiber w) := by
@@ -288,6 +299,17 @@ def fiberRestrictEquiv {P : Set V} (hP : IsRationalSemilinear h P) (w : W) :
   invFun p := ⟨p.1.1, ⟨p.1.2.1.1, p.1.2.1.2, p.2⟩, p.1.2.2⟩
   left_inv _ := rfl
   right_inv _ := rfl
+
+/-- Restriction of chart domains preserves each point's original chart label. -/
+@[simp]
+theorem fiberRestrictEquiv_apply_val_fst {P : Set V} (hP : IsRationalSemilinear h P)
+    (w : W) (z : (F.restrict hP).fiber w) :
+    (F.fiberRestrictEquiv hP w z).val.1 = z.1 := (rfl)
+
+/-- Restricting chart domains preserves finiteness of the fibers. -/
+instance {P : Set V} (hP : IsRationalSemilinear h P) (w : W) [Finite (F.fiber w)] :
+    Finite ((F.restrict hP).fiber w) :=
+  Finite.of_equiv _ (F.fiberRestrictEquiv hP w).symm
 
 /-- Restricting a family of finite branches to a rational semilinear set gives a family of
 finite branches. -/

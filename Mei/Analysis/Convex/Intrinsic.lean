@@ -29,7 +29,8 @@ Relative interiors are monotone for sets with equal affine spans, and the relati
 of a convex set is convex. A direction with a positive
 component towards an interior point and an arbitrary component along a relative interior
 set enters the interior of a convex set. This uses Mathlib's
-`Convex.combo_interior_self_mem_interior`.
+`Convex.combo_interior_self_mem_interior`. In a finite-dimensional real normed space, an affine
+map injective on a convex set has linear part injective on the direction of its affine span.
 -/
 
 public section
@@ -266,5 +267,40 @@ protected theorem intrinsicInterior {s : Set E} (hs : Convex 𝕜 s) :
   convex_iff_forall_pos.mpr fun _ hx _ hy _ _ ha hb hab =>
     hs.openSegment_intrinsicInterior_intrinsicClosure_subset_intrinsicInterior hx
       (subset_intrinsicClosure (intrinsicInterior_subset hy)) ⟨_, _, ha, hb, hab, rfl⟩
+
+end Convex
+
+namespace Convex
+
+variable {E F : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [FiniteDimensional ℝ E]
+  [AddCommGroup F] [Module ℝ F]
+
+/-- In a finite-dimensional real normed space, an affine map injective on a convex set has
+linear part injective on the direction of the affine span of the set. -/
+theorem injOn_linear_direction_of_injOn {S : Set E} (hS : Convex ℝ S) {g : E →ᵃ[ℝ] F}
+    (hinj : InjOn g S) : InjOn g.linear (affineSpan ℝ S).direction := by
+  intro u hu u' hu' huu'
+  rw [← sub_eq_zero]
+  set v := u - u'
+  have hv : v ∈ (affineSpan ℝ S).direction := Submodule.sub_mem _ hu hu'
+  have hgv : g.linear v = 0 := by simp [v, huu']
+  rcases S.eq_empty_or_nonempty with rfl | hne
+  · simpa using hv
+  obtain ⟨x, hx⟩ := hne.intrinsicInterior hS
+  -- Points `x + t • v` of the affine span close to the relative interior point `x` lie in `S`.
+  have hev : ∀ᶠ t : ℝ in 𝓝 0, x + t • v ∈ S := by
+    refine (tendsto_nhdsWithin_iff.mpr ⟨?_, Eventually.of_forall fun t => ?_⟩).eventually_mem
+      (Mei.mem_nhdsWithin_affineSpan_of_mem_intrinsicInterior hx)
+    · have hc : Continuous fun t : ℝ => x + t • v := by fun_prop
+      simpa using hc.tendsto 0
+    · rw [add_comm, ← vadd_eq_add]
+      exact AffineSubspace.vadd_mem_of_mem_direction (Submodule.smul_mem _ t hv)
+        (mem_affineSpan ℝ (intrinsicInterior_subset hx))
+  obtain ⟨t, hts, ht⟩ := ((hev.filter_mono nhdsWithin_le_nhds).and
+    (self_mem_nhdsWithin : {0}ᶜ ∈ 𝓝[≠] (0 : ℝ))).exists
+  have hgx : g (x + t • v) = g x := by
+    simpa [hgv, add_comm] using g.map_vadd x (t • v)
+  have hxt : t = 0 ∨ v = 0 := by simpa using hinj hts (intrinsicInterior_subset hx) hgx
+  exact hxt.resolve_left ht
 
 end Convex

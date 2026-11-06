@@ -9,12 +9,14 @@ public import Mei.Geometry.ScatteringDiagram.Skew.Examples
 public import Mei.Geometry.ScatteringDiagram.Skew.PolynomialInput.Extension.Basic
 public import Mei.Geometry.ScatteringDiagram.Skew.PolynomialInput.Incoming
 public import Mei.Geometry.ScatteringDiagram.Skew.PolynomialInput.Commuting
+public import Mei.Geometry.ScatteringDiagram.Skew.PolynomialInput.Pentagon
 
 /-!
 # Checks on polynomial inputs of generalized cluster scattering diagrams
 
-Two checks on `BLMPolynomialInput`, and an instance of the positive representatives of
-`Mei.Geometry.ScatteringDiagram.Skew.PolynomialInput.Commuting`.
+Two checks on `BLMPolynomialInput`, and instances of the positive representatives of
+`Mei.Geometry.ScatteringDiagram.Skew.PolynomialInput.Commuting` and
+`Mei.Geometry.ScatteringDiagram.Skew.PolynomialInput.Pentagon`.
 
 * *Terms of one initial polynomial on different rays.* Let `1 + ∑ₛ pₛ z^(s w)` be the initial
   function of a polynomial input, with variables `p_s`, `p_t` for `s ≠ t`. The terms
@@ -46,6 +48,15 @@ Two checks on `BLMPolynomialInput`, and an instance of the positive representati
   nevertheless the incoming diagram is consistent, and over `ℚ` it represents its own outgoing
   scattering class with grouped wall functions `1 + ∑_{s=1}^{ℓᵢ} pᵢₛ z^{s wᵢ}` whose monomial
   coefficients are natural numbers (`zeroFormPlane_exists_isPositiveWallRepresentative`).
+
+* *Positive representatives of type `A₂`.* On the unimodular plane `ℤ²` with `{e₀, e₁} = 1`, both
+  indices unfrozen and multipliers and multiplicities one, the polynomial input with initial
+  functions `1 + p₀ z^{e₁*}` and `1 + p₁ z^{-e₀*}` (`unimodularBLMPolynomialInput`) is of type
+  `A₂` (`isTypeA₂_unimodularBLMPolynomialInput`). Its outgoing scattering class is the class of
+  the pentagon diagram, with one outgoing wall labelled by `1 + p₀ p₁ z^{e₁* - e₀*}`
+  (`scat_unimodularBLMPolynomialInput`), and over `ℚ` this representative has grouped wall
+  functions with natural-number monomial coefficients
+  (`unimodular_exists_isPositiveWallRepresentative`).
 
 The splitting of the initial function into rays follows Burcroff–Lee–Mou, *Positivity of
 generalized cluster scattering diagrams*, §8.1 and §9.2 (arXiv:2503.03719v1).
@@ -272,5 +283,99 @@ theorem zeroFormPlane_exists_isPositiveWallRepresentative :
     (fun _ => by simp) _
 
 end ZeroFormPlane
+
+section TypeA₂
+
+/-- The polynomial input of type `A₂` on the unimodular plane `ℤ²` with `{e₀, e₁} = 1`, both indices
+unfrozen, multipliers and multiplicities one. Its exponents are `w₀ = {e₀, -} = e₁*` and
+`w₁ = {e₁, -} = -e₀*`, so its initial functions are `1 + p₀ z^{e₁*}` and `1 + p₁ z^{-e₀*}`. -/
+noncomputable def unimodularBLMPolynomialInput :
+    unimodularRankTwoAdaptedBasis.BLMPolynomialInput where
+  multiplicity _ := 1
+  multiplicity_pos _ := one_pos
+  exponent i := ![LinearMap.snd ℤ ℤ ℤ, -LinearMap.fst ℤ ℤ ℤ] i.1
+  multiplicity_mul_exponent i a := by
+    obtain ⟨i, -⟩ := i
+    fin_cases i <;> simp
+  isPrimitive_exponent i := by
+    obtain ⟨i, -⟩ := i
+    fin_cases i
+    · exact TauCeti.isPrimitive_def.mpr ⟨LinearMap.applyₗ (0, 1), by simp⟩
+    · exact TauCeti.isPrimitive_def.mpr ⟨LinearMap.applyₗ (-1, 0), by simp⟩
+  eq_one_of_dvd_multiplier k hk := by
+    simpa using hk 0
+  eq_zero_of_form_eq_zero v _ hv := by
+    have h₁ := hv (1, 0)
+    have h₂ := hv (0, 1)
+    simp only [unimodularRankTwo_form, rankTwoForm_apply, Int.cast_eq_zero] at h₁ h₂
+    ext <;> simp_all
+
+/-- Both initial functions have a single variable. -/
+@[simp]
+theorem unimodularBLMPolynomialInput_multiplicity
+    (i : unimodularRankTwoAdaptedBasis.unfrozenIndex) :
+    unimodularBLMPolynomialInput.multiplicity i = 1 :=
+  (rfl)
+
+/-- The polynomial input on the unimodular plane is of type `A₂` at `e₀, e₁`:
+`d₀ {e₀, e₁} = d₁ {e₀, e₁} = 1`. -/
+theorem isTypeA₂_unimodularBLMPolynomialInput :
+    unimodularBLMPolynomialInput.IsTypeA₂ unimodularRankTwoFst unimodularRankTwoSnd where
+  eq_or_eq i := by
+    obtain ⟨i, hi⟩ := i
+    fin_cases i
+    exacts [Or.inl rfl, Or.inr rfl]
+  multiplicity_fst := unimodularBLMPolynomialInput_multiplicity _
+  multiplicity_snd := unimodularBLMPolynomialInput_multiplicity _
+  multiplier_mul_form_fst := by simp
+  multiplier_mul_form_snd := by simp
+
+/-- The alphabet degrees of the input are allowed exponents of its coefficient monoid. -/
+instance unimodularBLMPolynomialInput_coefficientMonoid_fact :
+    Fact ((PositiveDegrees.finiteAlphabet unimodularBLMPolynomialInput.letterExponent).monoid ≤
+      unimodularBLMPolynomialInput.coefficientMonoid) :=
+  ⟨unimodularBLMPolynomialInput.positiveDegrees_le_coefficientMonoid⟩
+
+variable {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
+  [DecidableEq (Module.Dual ℤ (ℤ × ℤ))]
+  {latticeMap : (Module.Dual ℤ (ℤ × ℤ) × (unimodularBLMPolynomialInput.Letter → ℤ)) →+ V}
+  (h : TauCeti.Toric.IsIntegralLattice latticeMap)
+
+/-- The outgoing scattering class of the polynomial input of type `A₂` on the unimodular plane is
+the class of its pentagon diagram: the incoming cylinders over `e₀⊥` and `e₁⊥` and the outgoing
+half-hyperplane `{e₀ + e₁ = 0, e₀ ≥ 0}` labelled by the binomial label of `1 + z^{v₀ + v₁}`, that
+is of `1 + p₀ p₁ z^{e₁* - e₀*}`. -/
+theorem scat_unimodularBLMPolynomialInput :
+    (unimodularBLMPolynomialInput.incomingDiagram (R := ℚ) h).Scat
+        (unimodularBLMPolynomialInput.incomingDiagram_full h) =
+      (isTypeA₂_unimodularBLMPolynomialInput.isTypeA₂Presentation h).pentagonDiagram.toClass :=
+  (isTypeA₂_unimodularBLMPolynomialInput.isTypeA₂Presentation h).scat_eq_toClass_pentagonDiagram
+
+open scoped Mei.TropicalVertexCoefficientAction in
+/-- Over `ℚ`, the outgoing scattering class of the polynomial input of type `A₂` on the unimodular
+plane has a consistent outgoing representative whose grouped wall functions `1 + p₀ z^{e₁*}`,
+`1 + p₁ z^{-e₀*}` and `1 + p₀ p₁ z^{e₁* - e₀*}` have natural-number monomial coefficients, for the
+coefficient monoid with Laurent characters and nonnegative multiplicities of the variables. -/
+theorem unimodular_exists_isPositiveWallRepresentative :
+    ∃ (κ : Type) (E : DirectedDiagram
+        (d := PositiveDegrees.finiteAlphabet unimodularBLMPolynomialInput.letterExponent) h
+        (tropicalVertexWallSpaces (R := ℚ) _ (AddMonoidHom.id _))
+        (unimodularBLMPolynomialInput.IncomingIndex ⊕ κ)),
+      DirectedDiagram.IsOutgoingCompletion
+          (unimodularBLMPolynomialInput.incomingDiagram (R := ℚ) h).wall E ∧
+        E.toClass = (unimodularBLMPolynomialInput.incomingDiagram (R := ℚ) h).Scat
+          (unimodularBLMPolynomialInput.incomingDiagram_full h) ∧
+        E.IsPositiveWallRepresentative
+          ((TropicalVertexCoefficientAction.filtration (R := ℚ)
+            (PositiveDegrees.finiteAlphabet unimodularBLMPolynomialInput.letterExponent)
+            unimodularBLMPolynomialInput.coefficientMonoid).completedBCHAction _
+              (tropicalVertexGrading (R := ℚ) _ (AddMonoidHom.id _)))
+          (AddMonoidAlgebra.mapRingHom unimodularBLMPolynomialInput.coefficientMonoid
+            (Nat.castRingHom ℚ)).rangeS
+          (AddMonoidHom.fst _ _) :=
+  isTypeA₂_unimodularBLMPolynomialInput.exists_isPositiveWallRepresentative_scat h _
+    (fun _ => by simp) _
+
+end TypeA₂
 
 end Mei.SkewLatticeDatum.Examples

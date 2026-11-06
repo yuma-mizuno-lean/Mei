@@ -99,6 +99,12 @@ theorem unimodularRankTwoAdaptedBasis_multiplier (i : Fin 2) :
     unimodularRankTwoAdaptedBasis.multiplier i = 1 :=
   (rfl)
 
+/-- The unfrozen index `0` of the unimodular rank-two datum. -/
+abbrev unimodularRankTwoFst : unimodularRankTwoAdaptedBasis.unfrozenIndex := ⟨0, by simp⟩
+
+/-- The unfrozen index `1` of the unimodular rank-two datum. -/
+abbrev unimodularRankTwoSnd : unimodularRankTwoAdaptedBasis.unfrozenIndex := ⟨1, by simp⟩
+
 /-- The sublattice `ℤ e₁ ⊕ 2ℤ e₂` of vectors with even second coordinate, the kernel of the
 parity of the second coordinate. -/
 def evenSnd : Submodule ℤ (ℤ × ℤ) :=

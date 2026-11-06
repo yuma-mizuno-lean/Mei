@@ -124,6 +124,10 @@ theorem finite_cutoff (k : ℕ) : (d.cutoff k).Finite := d.finite_le k
 /-- Degree cutoffs are finite types, so they can index finite families. -/
 instance (k : ℕ) : Finite (d.cutoff k) := (d.finite_cutoff k).to_subtype
 
+/-- A choice of finite enumeration of a degree cutoff. -/
+noncomputable instance cutoffFintype (k : ℕ) : Fintype (d.cutoff k) :=
+  (d.finite_cutoff k).fintype
+
 /-- Increasing the cutoff retains every previously allowed degree. -/
 theorem cutoff_mono : Monotone d.cutoff := by
   intro k l h n hn
@@ -196,6 +200,40 @@ noncomputable def hasAntidiagonal : Finset.HasAntidiagonal d.monoid where
 section Group
 
 variable {G : Type*} [AddCommGroup G] (d : PositiveDegrees G)
+
+/-- A relative degree `m` strictly precedes `n` when it differs from it and their
+positive difference is an allowed degree. -/
+def Precedes (m n : G) : Prop := m ≠ n ∧ n - m ∈ d.monoid
+
+/-- Membership in the strict relative-degree relation. -/
+@[simp]
+theorem precedes_iff {m n : G} : d.Precedes m n ↔ m ≠ n ∧ n - m ∈ d.monoid := Iff.rfl
+
+/-- The strict relative-degree relation is decidable. -/
+noncomputable instance instDecidablePrecedes (m n : G) : Decidable (d.Precedes m n) :=
+  Classical.propDecidable _
+
+/-- Strictly lower relative degrees have strictly smaller degree. -/
+theorem degree_lt_of_precedes {m n : G} (h : d.Precedes m n) :
+    d.degree m < d.degree n := by
+  obtain ⟨hne, hsub⟩ := d.precedes_iff.mp h
+  have hzero : n - m ≠ 0 := sub_ne_zero.mpr hne.symm
+  have hpos := d.degree_pos hsub hzero
+  have hsplit : m + (n - m) = n := add_sub_cancel m n
+  have := congrArg d.degree hsplit
+  simp only [map_add] at this
+  omega
+
+/-- The output-degree bound after cancelling an ambient shift. -/
+theorem degree_add_val_sub_self_le (p : G) (k : ℕ) (n : d.cutoff k) :
+    d.degree (p + n.val - p) ≤ k := by
+  simpa only [add_sub_cancel_left] using (d.mem_cutoff.mp n.property).2
+
+/-- The monoid membership of a retained relative degree after cancelling an ambient shift. -/
+theorem add_val_sub_self_mem (p : G) (k : ℕ) (n : d.cutoff k) :
+    p + n.val - p ∈ d.monoid := by
+  rw [add_sub_cancel_left]
+  exact (d.mem_cutoff.mp n.property).1
 
 /-- The allowed monoid is sharp: an element and its negative can both belong only
 when the element is zero. -/

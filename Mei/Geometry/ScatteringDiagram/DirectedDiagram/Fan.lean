@@ -42,8 +42,8 @@ scattering diagrams, Part III*, §5 (arXiv:2111.00800v6), whose ordering convent
 the one used here. For the pentagon identity there is one outgoing wall, and the
 configuration is the consistent scattering diagram of type `A₂` (Gross–Hacking–Keel–Kontsevich,
 *Canonical bases for cluster algebras*, §1.1, arXiv:1411.1394v2); see
-`Mei.Geometry.ScatteringDiagram.DirectedDiagram.Pentagon`. The consistency is derived from the
-local criterion `DirectedDiagram.levelConsistent_of_local` applied to the chamber function.
+`Mei.Geometry.ScatteringDiagram.DirectedDiagram.Pentagon.Basic`. The consistency is derived from
+the local criterion `DirectedDiagram.levelConsistent_of_local` applied to the chamber function.
 -/
 
 public section

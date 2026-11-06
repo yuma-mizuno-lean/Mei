@@ -223,12 +223,6 @@ open AdaptedBasis
 open _root_.AddMonoidAlgebra
 open scoped Mei.TropicalVertexCoefficientAction
 
-/-- The unfrozen index `0` of the unimodular rank-two datum. -/
-abbrev unimodularRankTwoFst : unimodularRankTwoAdaptedBasis.unfrozenIndex := ⟨0, by simp⟩
-
-/-- The unfrozen index `1` of the unimodular rank-two datum. -/
-abbrev unimodularRankTwoSnd : unimodularRankTwoAdaptedBasis.unfrozenIndex := ⟨1, by simp⟩
-
 /-- The standard basis of the unimodular rank-two datum, with `{e₁, e₂} = 1` and `N° = N`, is of
 type `A₂` at its two indices, without isolated indices. -/
 theorem isTypeA₂WithIsolated_unimodularRankTwoAdaptedBasis :
