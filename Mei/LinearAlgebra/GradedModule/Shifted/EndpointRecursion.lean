@@ -33,11 +33,11 @@ genericity hypothesis on the base points is used.
 The module proves the three properties the R7 comparison needs about this
 operator.
 
-* *Degree increase.* `endpointStep` raises the degree filtration
-  `endpointHigh d ℳ p V k j`, the endpoint functions vanishing in relative
-  degrees at most `j`. Equivalently, it lowers the relative degree actually
-  read, which is the last-change bookkeeping of the geometric recursions.
-* *Nilpotence.* The filtration vanishes at order `k + 1`, so
+* *Degree increase.* `endpointStep` lowers the relative degree actually read,
+  which is the last-change bookkeeping of the geometric recursions: its `j`th
+  iterate vanishes in every relative degree of degree below `j`
+  (`endpointStep_pow_apply_eq_zero`).
+* *Nilpotence.* Every retained degree is at most `k`, so
   `endpointStep ^ (k + 1) = 0`. The proof tracks degrees along iterates; it
   needs neither a finite ambient grading nor a positivity order on `R`.
 * *Recursion uniqueness.* Consequently `x = source + endpointStep x` has the
@@ -151,50 +151,6 @@ theorem endpointStep_apply {ι : Type*} (events : V → (d.cutoff k) → Finset 
     endpointStep d ℳ p k events block point F Q n =
       ∑ b ∈ events Q n, ∑ m : d.cutoff k,
         if h : d.Precedes m.val n.val then block b n m h (F (point b Q n m) m) else 0 := (rfl)
-
-/-- Endpoint functions vanishing in every relative degree at most `j`. These are
-the terms of the degree filtration that a last change leaves behind. -/
-def endpointHigh (d : PositiveDegrees Γ) (ℳ : Γ → Submodule R M) (p : Γ) (V : Type*)
-    (k : ℕ) (j : ℕ) : Submodule R (Endpoint d ℳ p V k) where
-  carrier := {F | ∀ Q n, d.degree n.val ≤ j → F Q n = 0}
-  zero_mem' := by
-    intro Q n _
-    rfl
-  add_mem' := by
-    intro F G hF hG Q n hn
-    rw [Pi.add_apply, Pi.add_apply, hF Q n hn, hG Q n hn, add_zero]
-  smul_mem' := by
-    intro a F hF Q n hn
-    rw [Pi.smul_apply, Pi.smul_apply, hF Q n hn, smul_zero]
-
-omit [DecidableEq Γ] in
-/-- The backward-ray step strictly raises the degree filtration: an endpoint
-function vanishing in all relative degrees at most `j` is sent to one vanishing
-in all relative degrees at most `j + 1`. -/
-theorem endpointStep_mem_endpointHigh {ι : Type*} (events : V → (d.cutoff k) → Finset ι)
-    (block : ι → (n m : d.cutoff k) → d.Precedes m.val n.val →
-      ℳ (p + m.val) →ₗ[R] ℳ (p + n.val))
-    (point : ι → V → (n m : d.cutoff k) → V) {j : ℕ} {F : Endpoint d ℳ p V k}
-    (hF : F ∈ endpointHigh d ℳ p V k j) :
-    endpointStep d ℳ p k events block point F ∈ endpointHigh d ℳ p V k (j + 1) := by
-  classical
-  intro Q n hn
-  rw [endpointStep_apply]
-  apply Finset.sum_eq_zero
-  intro b _
-  apply Finset.sum_eq_zero
-  intro m _
-  split_ifs with hmn
-  · rw [hF _ _ (by have := degree_lt_of_precedes d hmn; omega), map_zero]
-  · rfl
-
-omit [DecidableEq Γ] in
-/-- The degree filtration of endpoint functions vanishes at order `k + 1`. -/
-theorem endpointHigh_eq_bot : endpointHigh d ℳ p V k (k + 1) = ⊥ := by
-  rw [eq_bot_iff]
-  intro F hF
-  funext Q n
-  exact hF Q n (by have := (d.mem_cutoff.mp n.property).2; omega)
 
 omit [DecidableEq Γ] in
 /-- Iterates of the backward-ray step vanish on relative degrees below the

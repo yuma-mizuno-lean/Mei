@@ -123,16 +123,15 @@ theorem cutoffWallEventEvaluation_def (k K : ℕ) (hkK : k ≤ K)
 
 omit [IsWallAnnihilating H ℳ] in
 /-- A fixed event preserves a homogeneous component of the current coefficient
-quotient, including when the geometric wall inventory uses a larger cutoff. -/
-theorem decompose_wallEventPropagation_self (k K : ℕ) (hkK : k ≤ K)
-    (b : WallEvent (B.active K))
+quotient when geometric and coefficient cutoffs agree. -/
+theorem decompose_wallEventPropagation_self (k : ℕ) (b : WallEvent (B.active k))
     {n : Γ} (z : (d.shiftedLieFiltration ℒ ℳ p).quotient k)
     (hz : z ∈ (d.shiftedQuotientGrading ℳ p k).piece n) :
     (DirectSum.decompose (d.shiftedQuotientGrading ℳ p k).piece
-      (wallEventPropagation d ℳ p ℒ H h B k K hkK b z) n :
+      (wallEventPropagation d ℳ p ℒ H h B k k (Nat.le_refl k) b z) n :
         (d.shiftedLieFiltration ℒ ℳ p).quotient k) = z := by
-  rw [wallEventPropagation_apply]
-  exact d.decompose_truncatedBCHAction_same ℒ ℳ p k _ hz
+  rw [wallEventPropagation_self]
+  exact d.decompose_truncatedBCHAction_same ℒ ℳ p k (B.wallEventLabel k b) hz
 
 omit [IsWallAnnihilating H ℳ] in
 /-- A genuine crossing gives a positive ray parameter, nonzero transversality,
@@ -382,8 +381,7 @@ theorem exists_decompose_cutoffWallEventEvaluation_eq_sum_lastChange (k : ℕ)
   -- The remaining obligations reduce to genuine event parameters, wall geometry,
   -- and the shifted component-preservation lemma for simultaneous actions.
   refine CutoffDecoratedRay.exists_decompose_cutoffDecoratedEvaluation_eq_sum_lastChange
-    hn hn0 E (fun b _ => decompose_wallEventPropagation_self d ℳ p ℒ H h B (k + 1)
-      (k + 1) (Nat.le_refl (k + 1)) b)
+    hn hn0 E (fun b _ => decompose_wallEventPropagation_self d ℳ p ℒ H h B (k + 1) b)
       hP hclosedW hclosedS s ?_ ?_ ?_ ?_ ?_ ?_
   -- Event parameters are injective on the finite event inventory.
   · exact segmentEventParameter_injOn ((B.activeNormal (k + 1))) e T hTpos

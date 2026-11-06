@@ -6,7 +6,8 @@ Authors: DeepSeek V4.1 Flash
 module
 
 public import Mei.LinearAlgebra.GradedModule.Shifted.EndpointRecursion
-public import Mei.Geometry.ScatteringDiagram.ModuleProbe.WallEventBackwardPart
+public import Mei.Geometry.ScatteringDiagram.ModuleProbe.WallEventEvaluation
+public import Mei.LinearAlgebra.ModuleFiltration.Raising
 
 /-!
 # The canonical event inventory as endpoint-step block data
@@ -178,22 +179,6 @@ theorem eventBlock_eq_labelBlock (k K : ℕ) (hkK : k ≤ K) (b : WallEvent (B.a
     eventBlock d ℳ p ℒ H h B k K hkK b n m =
       labelBlock d ℳ p ℒ k
         ((d.truncationMap ℒ hkK).bchGroupMap (B.wallEventLabel K b)) n m := (rfl)
-
-omit [IsWallAnnihilating H ℳ] in
-/-- Event blocks outside the last-change relation vanish. -/
-theorem eventBlock_eq_zero_of_not_precedes (k K : ℕ) (hkK : k ≤ K)
-    (b : WallEvent (B.active K)) {n m : d.cutoff k}
-    (hnm : ¬ d.Precedes m.val n.val) :
-    eventBlock d ℳ p ℒ H h B k K hkK b n m = 0 :=
-  labelBlock_eq_zero_of_not_precedes (d := d) (ℳ := ℳ) (p := p) (ℒ := ℒ) k _ hnm
-
-omit [IsWallAnnihilating H ℳ] in
-/-- A nonzero event block strictly raises the relative degree. -/
-theorem degree_lt_of_eventBlock_ne_zero (k K : ℕ) (hkK : k ≤ K)
-    (b : WallEvent (B.active K)) {n m : d.cutoff k}
-    (h : eventBlock d ℳ p ℒ H h B k K hkK b n m ≠ 0) :
-    d.degree m.val < d.degree n.val :=
-  degree_lt_of_labelBlock_ne_zero (d := d) (ℳ := ℳ) (p := p) (ℒ := ℒ) k _ h
 
 open Classical in
 /-- The canonical event inventory drives the endpoint step with a different
