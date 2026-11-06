@@ -179,11 +179,11 @@ def fiberPullbackEquiv (x : X) : (F.pullback φ hφ).fiber x ≃ F.fiber (φ x) 
   right_inv _ := rfl
 
 @[simp]
-theorem fiberPullbackEquiv_chart (x : X) (p : (F.pullback φ hφ).fiber x) :
+theorem fiberPullbackEquiv_apply_fst (x : X) (p : (F.pullback φ hφ).fiber x) :
     (F.fiberPullbackEquiv φ hφ x p).1 = p.1 := (rfl)
 
 @[simp]
-theorem fiberPullbackEquiv_val (x : X) (p : (F.pullback φ hφ).fiber x) :
+theorem fiberPullbackEquiv_apply_snd_val_val (x : X) (p : (F.pullback φ hφ).fiber x) :
     (F.fiberPullbackEquiv φ hφ x p).2.1.1 = p.2.1.1.1 := (rfl)
 
 @[simp]
