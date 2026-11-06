@@ -13,8 +13,9 @@ public import Mei.Geometry.Convex.Sweep.Generic
 
 For a fixed homogeneous input and a linear propagation map preserving normal
 velocity, the actual one-crossing decorated rays are indexed by the nonzero
-output components whose computed crossing misses the singular set. The source
-is the entire incoming half-space. The equivalence retains the actual admissible
+output components whose computed crossing parameter is negative and whose
+crossing point misses the singular set. The source is the entire incoming
+half-space. The equivalence retains the actual admissible
 ray, including its incoming tail, crossing parameter and whole decoration.
 It counts unchanged-degree crossings and different degrees with equal velocities.
 
@@ -55,8 +56,9 @@ variable (hnormal : ∀ q, DirectSum.decompose ℳ (T a) q ≠ 0 → ν (v q) = 
 include hnormal hZ
 
 omit hnormal [DecidableEq Γ] in
-/-- Admission of the one-crossing ray with recorded degree `q 0` is the nonsingular
-crossing condition, by the geometric characterization of single-face admission. -/
+/-- Admission of the one-crossing ray with recorded degree `q 0` requires a negative
+crossing parameter and a nonsingular crossing point, by the geometric
+characterization of single-face admission. -/
 private theorem nonempty_realization_iff_crossing (q : Fin 1 → Γ)
     (hq : ν (v (q 0)) = ν (v p)) (Q : V) :
     Nonempty (AdmissibleRayRealization (fun _ : Fin 1 => ν) (fun _ => b)
