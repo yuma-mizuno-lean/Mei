@@ -203,16 +203,15 @@ theorem exists_cutoffDecoratedRay_closedCharts (k : ℕ) :
   refine ⟨ι, hι, B, ?_, hdisj, hcover⟩
   intro t j
   obtain ⟨hne, hpoly, hlc, hsub⟩ := hB t j
-  refine ⟨hne, hpoly, hlc, hsub, hpoly.isClosed.isProperMap_subtypeVal, ?_, ?_⟩
-  · rw [CutoffDecoratedType.path_def]
-    exact isProperMap_backwardPath_restrict _ _ _ hpoly.isClosed
-      (fun Q hQ => t.backwardTime_nonneg c P W S C (hsub hQ))
-  · intro Q hQ
-    refine ⟨?_, t.path_eventually_mem c P W S C hC (hsub hQ),
-      t.exists_limitRay c P W S C (hsub hQ)⟩
-    intro e
-    simpa only [Fin.snoc_castSucc] using
-      t.path_parameter_mem c P W S C hclosed (hsub hQ) e
+  refine ⟨hne, hpoly, hlc, hsub, hpoly.isClosed.isProperMap_subtypeVal,
+    (t.isProperMap_path_closure c P W S C).comp
+      (Topology.IsClosedEmbedding.inclusion hsub
+        (hpoly.isClosed.preimage continuous_subtype_val)).isProperMap,
+    fun Q hQ => ⟨?_, t.path_eventually_mem c P W S C hC (hsub hQ),
+      t.exists_limitRay c P W S C (hsub hQ)⟩⟩
+  intro e
+  simpa only [Fin.snoc_castSucc] using
+    t.path_parameter_mem c P W S C hclosed (hsub hQ) e
 
 end Rational
 

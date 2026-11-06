@@ -84,3 +84,46 @@ theorem Convex.closure_inter_setOf_forall_neg {V ι : Type*} [AddCommGroup V] [M
       exact add_neg_of_nonpos_of_neg (mul_nonpos_of_nonneg_of_nonpos ha.le (hxg k))
         (mul_neg_of_pos_of_neg hb (hpg k))
     exact closure_mono hs (segment_subset_closure_openSegment (left_mem_segment ℝ x p))
+
+namespace Mei
+
+variable {V : Type*} [AddCommGroup V] [Module ℝ V] [TopologicalSpace V]
+  {ν : V →L[ℝ] ℝ} {b : ℝ} {u : V}
+
+/-- A strict affine half-space defined by a normalized linear functional is open. -/
+theorem isOpen_setOf_pos_sub_div : IsOpen {x : V | 0 < (ν x - b) / ν u} :=
+  isOpen_lt continuous_const ((ν.continuous.sub continuous_const).div_const _)
+
+variable [IsTopologicalAddGroup V] [ContinuousSMul ℝ V]
+
+/-- The closure of a transverse open affine half-space is the corresponding closed half-space. -/
+theorem closure_setOf_pos_sub_div (hu : ν u ≠ 0) :
+    closure {x : V | 0 < (ν x - b) / ν u} = {x | 0 ≤ (ν x - b) / ν u} := by
+  let g : Unit → V →ᴬ[ℝ] ℝ := fun _ =>
+    -(ν u)⁻¹ • (ν.toContinuousAffineMap - ContinuousAffineMap.const ℝ V b)
+  have hg (k : Unit) (x : V) : g k x = -((ν x - b) / ν u) := by
+    simp [g, smul_eq_mul, div_eq_mul_inv, mul_comm]
+  have hne : (Set.univ ∩ {x | ∀ k, g k x < 0}).Nonempty := by
+    refine ⟨(b / ν u + 1) • u, Set.mem_univ _, ?_⟩
+    intro k
+    rw [hg k]
+    simp [map_smul, add_mul, div_mul_cancel₀ _ hu, hu]
+  simpa only [hg, forall_const, neg_lt_zero, neg_nonpos, univ_inter] using
+    (convex_univ : Convex ℝ (Set.univ : Set V)).closure_inter_setOf_forall_neg
+      isClosed_univ g hne
+
+/-- The frontier of a transverse open affine half-space is its bounding hyperplane. -/
+theorem frontier_setOf_pos_sub_div (hu : ν u ≠ 0) :
+    frontier {x : V | 0 < (ν x - b) / ν u} = {x | ν x = b} := by
+  rw [isOpen_setOf_pos_sub_div.frontier_eq, closure_setOf_pos_sub_div hu]
+  ext x
+  simp only [Set.mem_sdiff, mem_ofPred_eq, not_lt]
+  constructor
+  · rintro ⟨h0, h1⟩
+    have := le_antisymm h1 h0
+    rw [div_eq_zero_iff] at this
+    exact sub_eq_zero.mp (this.resolve_right hu)
+  · intro hx
+    simp [hx]
+
+end Mei

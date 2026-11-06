@@ -25,7 +25,8 @@ the opposite side, this sum is the propagated input. No positivity, finite
 grading, coefficient basis or injectivity of propagation is required. A finite
 affine cover of the singular set, none of whose members contains the full face,
 supplies one exceptional endpoint arrangement for the opposite-side identity;
-the empty itinerary recovers the incoming value.
+the empty itinerary recovers the incoming value. Uniform finite output support
+provides one arrangement for an entire family of inputs.
 
 The geometric construction is `AdmissibleRayRealization.singleFaceOne`; its
 uniqueness is the existing admissible-ray uniqueness theorem. Whole-component
@@ -231,6 +232,36 @@ theorem decoratedRayEvaluation_singleFace_empty (Q : V) :
       Module.End.one_apply]
   · simp
 
+omit hnormal in
+/-- A uniform finite set of output degrees supplies one exceptional arrangement
+for an entire family of inputs. The family need not be linear or finite. -/
+theorem exists_uniform_decoratedRayEvaluation_singleFace_arrangement
+    {H : Type*} (α : H → ℳ p)
+    (hnormal : ∀ x q, DirectSum.decompose ℳ (T (α x)) q ≠ 0 → ν (v q) = ν (v p))
+    (s : Finset Γ) (hs : ∀ x q, DirectSum.decompose ℳ (T (α x)) q ≠ 0 → q ∈ s)
+    {κ : Type*} [Finite κ] (A : κ → AffineSubspace ℝ V)
+    (hcover : Z ⊆ ⋃ j, (A j : Set V))
+    (hA : ∀ j, ∃ x, ν x = b ∧ x ∉ A j) :
+    ∃ E : ExceptionalArrangement V, ∀ Q, E.IsGeneric Q →
+      (ν Q - b) / ν (v p) < 0 → ∀ x,
+        decoratedRayEvaluation ℳ (fun _ : Fin 1 => T) p (α x) v
+          (fun _ => ν) (fun _ => b) (fun _ => SignType.sign (ν (v p)))
+          (fun _ => {x | ν x = b}) (fun _ : Unit => {x | ν x = b})
+          (fun _ : Unit => Z) {x | 0 < (ν x - b) / ν (v p)} Q = T (α x) := by
+  classical
+  obtain ⟨E, hE⟩ := exists_forall_notMem_sweepProjection
+    (fun _ : (s : Type _) => ν) (fun _ => b)
+    (fun q => (ν (v q.val))⁻¹ • v q.val) A (fun _ j => hA j)
+  refine ⟨E, fun Q hQ ht x =>
+    decoratedRayEvaluation_singleFace_one_eq ℳ T p (α x) v ν b Z (hnormal x) hZ Q ht ?_⟩
+  intro q hq hmem
+  obtain ⟨j, hj⟩ := mem_iUnion.mp (hcover hmem)
+  have he : sweepProjection ν b ((ν (v q))⁻¹ • v q) Q =
+      Q - ((ν Q - b) / ν (v q)) • v q := by
+    simp only [sweepProjection_apply, smul_smul, div_eq_mul_inv]
+    module
+  exact hE Q hQ ⟨q, hs x q hq⟩ j (he ▸ hj)
+
 /-- If finitely many affine subspaces cover the singular set and none contains
 the full face, one finite exceptional arrangement makes the actual opposite-side
 weighted evaluation equal the propagated coefficient. The arrangement is built
@@ -245,18 +276,10 @@ theorem exists_decoratedRayEvaluation_singleFace_arrangement {κ : Type*} [Finit
           (fun _ => {x | ν x = b}) (fun _ : Unit => {x | ν x = b})
           (fun _ : Unit => Z) {x | 0 < (ν x - b) / ν (v p)} Q = T a := by
   classical
-  let s := (DirectSum.decompose ℳ (T a)).support
-  obtain ⟨E, hE⟩ := exists_forall_notMem_sweepProjection
-    (fun _ : (s : Type _) => ν) (fun _ => b)
-    (fun q => (ν (v q.val))⁻¹ • v q.val) A (fun _ j => hA j)
-  refine ⟨E, fun Q hQ ht =>
-    decoratedRayEvaluation_singleFace_one_eq ℳ T p a v ν b Z hnormal hZ Q ht ?_⟩
-  intro q hq hmem
-  obtain ⟨j, hj⟩ := mem_iUnion.mp (hcover hmem)
-  have he : sweepProjection ν b ((ν (v q))⁻¹ • v q) Q =
-      Q - ((ν Q - b) / ν (v q)) • v q := by
-    simp only [sweepProjection_apply, smul_smul, div_eq_mul_inv]
-    module
-  exact hE Q hQ ⟨q, DFinsupp.mem_support_iff.mpr hq⟩ j (he ▸ hj)
+  obtain ⟨E, hE⟩ := exists_uniform_decoratedRayEvaluation_singleFace_arrangement
+    ℳ T p v ν b Z hZ (fun _ : Unit => a) (fun _ => hnormal)
+    (DirectSum.decompose ℳ (T a)).support
+    (fun _ _ hq => DFinsupp.mem_support_iff.mpr hq) A hcover hA
+  exact ⟨E, fun Q hQ ht => hE Q hQ ht ()⟩
 
 end Mei

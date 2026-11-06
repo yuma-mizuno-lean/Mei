@@ -339,6 +339,18 @@ theorem ext {t u : CutoffDecoratedType d ℳ T a v f ε k}
   cases hh
   rfl
 
+/-- Agreement of the encounter word and the underlying degree function
+identifies complete types; support and cutoff witnesses carry no extra data. -/
+theorem ext_val {t u : CutoffDecoratedType d ℳ T a v f ε k}
+    (hl : t.itinerary.val = u.itinerary.val) (hh : HEq t.history.val u.history.val) :
+    t = u := by
+  have hi : t.itinerary = u.itinerary := Subtype.ext hl
+  apply ext hi
+  cases t
+  cases u
+  cases hi
+  exact heq_of_eq (Subtype.ext (eq_of_heq hh))
+
 /-- The whole final decoration determined by a type. -/
 def decoration (t : CutoffDecoratedType d ℳ T a v f ε k) : M :=
   homogeneousHistory ℳ (fun j => T (t.itinerary.val.get j)) t.history.val a

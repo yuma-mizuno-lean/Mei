@@ -23,7 +23,8 @@ tropical vertex Lie algebras sending every tangent field `z^q ∂_μ` to `z^{T q
 binomial label of `(μ, n, c)` to that of `(μ', T n, c)`
 (`Mei.GradedLieHom.completedMap_binomialLabel`); in particular so does a tropical pairing on all
 characters sending the character of `μ` to that of `μ'`
-(`Mei.TropicalPairing.completedMap_binomialLabel`).
+(`Mei.TropicalPairing.completedMap_binomialLabel`). Reversing the sign of the character inverts
+the label (`Mei.binomialLabel_neg`).
 
 These are the elementary wall-crossing automorphisms of the tropical vertex group of
 Gross–Pandharipande–Siebert, *Quivers, curves, and the tropical vertex*, §0
@@ -193,6 +194,67 @@ theorem GradedLieHom.completedMap_binomialLabel {n : Γ} (hn : n ∈ d.monoid) (
   exact Subtype.ext hTn
 
 end Map
+
+section Neg
+
+variable {R : Type*} {Γ : Type v} {Λ : Type w} [CommRing R] [Algebra ℚ R]
+  [AddCommMonoid Γ] [AddCommMonoid Λ] [DecidableEq Γ] {d : PositiveDegrees Γ} {ρ : Γ →+ Λ}
+  {μ : Λ →+ ℤ}
+
+local notation "G" => TropicalVertexCoefficientAction.filtration (R := R) d
+  (tropicalTangentMonoid d ρ (AddMonoidHom.comp (Int.castAddHom R) μ))
+
+local notation "G'" => TropicalVertexCoefficientAction.filtration (R := R) d
+  (tropicalTangentMonoid d ρ (AddMonoidHom.comp (Int.castAddHom R) (-μ)))
+
+/-- Reversing the sign of the character inverts the binomial label:
+`exp(log(1 + c z^n) ∂_{-μ}) = exp(log(1 + c z^n) ∂_μ)⁻¹`. The tangency `(-μ)(ρ n) = 0` is
+a consequence of `μ(ρ n) = 0`. -/
+@[simp]
+theorem binomialLabel_neg {n : Γ} (hn : n ∈ d.monoid) (hn0 : n ≠ 0) (hμ : μ (ρ n) = 0) (c : R) :
+    binomialLabel d ρ (-μ) hn hn0 (by simp [hμ]) c = (binomialLabel d ρ μ hn hn0 hμ c)⁻¹ := by
+  have hμ' : (-μ) (ρ n) = 0 := by simp [hμ]
+  -- The identity map sends each field `z^q ∂_μ` to `-z^q ∂_{-μ}`, hence the label of `μ` to the
+  -- inverse of the label of `-μ`.
+  have hneg : (Int.castAddHom R).comp (-μ) = -((Int.castAddHom R).comp μ) := by
+    ext x
+    simp
+  have hT : (tropicalTangentMonoid d ρ ((Int.castAddHom R).comp μ)).map
+      (PositiveDegreeMap.id d).toAddMonoidHom ≤
+      tropicalTangentMonoid d ρ ((Int.castAddHom R).comp (-μ)) := by
+    rintro _ ⟨q, hq, rfl⟩
+    rw [SetLike.mem_coe, mem_tropicalTangentMonoid] at hq
+    simpa [mem_tropicalTangentMonoid] using hq
+  have hf : ∀ q : tropicalTangentMonoid d ρ ((Int.castAddHom R).comp μ), (q : Γ) ≠ 0 →
+      ∀ x : tropicalVertexLieAlgebra (R := R) d ρ,
+        LogarithmicVectorField.single ρ q ((Int.castAddHom R).comp μ) = x.val →
+        (GradedLieHom.id (d := d) (tropicalVertexGrading (R := R) d ρ) x).val =
+          (-1 : R) • LogarithmicVectorField.single ρ (PositiveDegreeMap.id d q)
+            ((Int.castAddHom R).comp (-μ)) := by
+    intro q _ x hx
+    simp [← hx, hneg]
+  have h := GradedLieHom.completedMap_completedBCHExp_completedTropicalTangentField
+    (GradedLieHom.id (d := d) (tropicalVertexGrading (R := R) d ρ)) hT hf
+    ((G).completedLog ⟨(G).toCompletion (1 + single (binomialExponent d ρ μ hn hμ) c),
+      toCompletion_one_add_single_binomialExponent_sub_one_mem d ρ μ hn hn0 hμ c⟩)
+  rw [GradedLieHom.completedMap_id, completedTropicalTangentMap_completedLog] at h
+  have he : (⟨completedTropicalTangentMap (PositiveDegreeMap.id d) hT
+      ((G).toCompletion (1 + single (binomialExponent d ρ μ hn hμ) c)),
+      completedTropicalTangentMap_sub_one_mem (PositiveDegreeMap.id d) hT
+        (toCompletion_one_add_single_binomialExponent_sub_one_mem d ρ μ hn hn0 hμ c)⟩ :
+      {u : (G').completion // u - 1 ∈ (G').completionIdeal 1}) =
+      ⟨(G').toCompletion (1 + single (binomialExponent d ρ (-μ) hn hμ') c),
+        toCompletion_one_add_single_binomialExponent_sub_one_mem d ρ (-μ) hn hn0 hμ' c⟩ := by
+    apply Subtype.ext
+    simp only [completedTropicalTangentMap_toCompletion, map_add, map_one,
+      tropicalTangentMap_single]
+    congr 3
+    exact Subtype.ext (by simp)
+  dsimp only at h
+  rw [he, MonoidHom.id_apply, map_smul, neg_one_smul] at h
+  rw [binomialLabel_def, binomialLabel_def, h, PositiveDegrees.completedBCHExp_neg, inv_inv]
+
+end Neg
 
 section Pairing
 

@@ -7,6 +7,7 @@ module
 
 public import Mei.Geometry.Convex.Polyhedron.Rational.SemilinearFamily.Domains
 public import Mei.Geometry.Convex.Polyhedron.Rational.Stratification
+public import Mei.Data.Set.DisjointCover
 
 /-!
 # Closed polyhedral charts for families of endpoint domains
@@ -48,23 +49,16 @@ theorem exists_ofDomains_polyhedralCharts :
         (∀ z, (e z).1 = z.2.2.val) ∧ ∀ z, (e z).2.1 = z.1 := by
   classical
   choose κ hκ B hB hdisj hcover using fun t => (hD t).exists_disjoint_intrinsicInteriors
-  let swap : (Σ t, D t) ≃ (Σ Q, {t // Q ∈ D t}) :=
-    { toFun := fun z => ⟨z.2.val, z.1, z.2.property⟩
-      invFun := fun z => ⟨z.2.val, z.1, z.2.property⟩
-      left_inv := fun _ => rfl
-      right_inv := fun _ => rfl }
-  let split := Equiv.sigmaCongrRight fun t =>
-    (Set.unionEqSigmaOfDisjoint (hdisj t)).symm.trans (Set.equivOfEq (hcover t))
-  let e := split.trans (swap.trans (Equiv.sigmaCongrRight fun Q =>
-    (fiberOfDomainsEquiv D hD Q).symm))
+  let e := (Mei.sigmaDisjointCoverEquiv hdisj hcover).trans
+    (Equiv.sigmaCongrRight fun Q => (fiberOfDomainsEquiv D hD Q).symm)
   have hendpoint (z) : (e z).1 = z.2.2.val := by
-    simp only [e, split, Equiv.trans_apply, Equiv.sigmaCongrRight_apply, swap,
-      Equiv.coe_fn_mk, Set.equivOfEq_apply, Set.coe_unionEqSigmaOfDisjoint_symm_apply]
+    simp only [e, Equiv.trans_apply, Equiv.sigmaCongrRight_apply,
+      Mei.sigmaDisjointCoverEquiv_apply_fst]
   have hlabel (z) : (e z).2.1 = z.1 := by
     calc
-      (e z).2.1 = (swap (split z)).2.val :=
+      (e z).2.1 = (Mei.sigmaDisjointCoverEquiv hdisj hcover z).2.val :=
         fiberOfDomainsEquiv_symm_apply_fst D hD _ _
-      _ = z.1 := rfl
+      _ = z.1 := Mei.sigmaDisjointCoverEquiv_apply_val hdisj hcover z
   exact ⟨κ, hκ, B, hB, hdisj, hcover, e, hendpoint, hlabel⟩
 
 end Mei.FiniteSemilinearFamily

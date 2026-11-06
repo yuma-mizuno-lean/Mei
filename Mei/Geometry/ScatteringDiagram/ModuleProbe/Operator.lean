@@ -1,149 +1,130 @@
 /-
 Copyright (c) 2026 Mei contributors. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Claude Sonnet 5.5
+Authors: Codex
 -/
 module
 
-public import Mei.Algebra.Lie.Graded.Shifted.Postcomposition
-public import Mei.Geometry.ScatteringDiagram.ModuleProbe.RelativeCompletion.Map
+public import Mei.Geometry.ScatteringDiagram.WallSpace.Operators
+public import Mei.Geometry.ScatteringDiagram.ModuleProbe.CoefficientMap
 
 /-!
-# Probes with coefficients in a homomorphism module
+# Evaluation of operator-valued module probes
 
-For a module `X` on which the Lie algebra acts trivially, the linear maps `X → M` with finitely
-many homogeneous components in total form a graded Lie module `Mei.gradedHom ℒ ℳ X`. Its
-probe handles all incoming coefficients `φ v`, `v : X`, at once. The wall spaces annihilate its
-pieces whenever they annihilate those of `M`, so the probe construction applies to it, and
-evaluation at each `v : X` is a homogeneous equivariant coefficient map
-(`Mei.gradedHomEval`, `Mei.gradedHomEval_mem`). The evaluations are jointly injective on every
-finite-order coefficient quotient (`Mei.quotientGradedHomEval_injective`).
+Replace each homogeneous coefficient piece by the linear maps from an arbitrary
+input module into that piece. Their uniformly finitely supported sum is a graded
+Lie module under postcomposition. It inherits wall annihilation, so the ordinary
+module-probe construction applies. Evaluation fixes the base Lie algebra and gives
+a graded Lie map of probes preserving their directed wall spaces.
 
-For `X = ℳ p` with the trivial action, the inclusion of `ℳ p` in `M` is a coefficient
-`tautologicalCoefficient` of degree `p`, and evaluation at `b : ℳ p` sends it to `b`.
-By the naturality of relative completions under coefficient maps, the evaluation at `b` of the
-probe field of the tautological coefficient is the probe field of `b`, at every finite order and
-after completion
-(`quotientCoefficientMap_gradedHomEval_extendedCoefficientField_tautological`,
-`completionCoefficientMap_gradedHomEval_completedExtendedCoefficientField_tautological`).
-One probe thus computes the fields of all incoming coefficients simultaneously, as identities of
-linear maps; the relative completions of the two probes are arbitrary and independent.
+A homogeneous incoming linear family has a charge-one probe label; evaluation sends
+it to the ordinary coefficient label, including when evaluation kills the coefficient.
+Finite coefficient extraction commutes with this map. The operator module
+retains entire homogeneous maps, including nonzero degree shifts whose spatial
+projection vanishes.
 
-The probe and its coefficient maps are those of
-`Mei.ModuleProbe.map_extendedCoefficientField_of_isRelativeOutgoingCompletion`. The probe
-construction follows Mandel, *Scattering diagrams, theta functions, and refined tropical curve
-counts*, §3.3.3 (arXiv:1503.06183v5).
+The construction reuses `coefficientGradedLieHom` rather than rebuilding the semidirect
+or quotient maps. Operator probes follow Mandel, *Scattering diagrams, theta functions,
+and refined tropical curve counts*, §3.3.3 (arXiv:1503.06183v5).
 -/
 
 public noncomputable section
 
-open Set Filter Topology Mei.Convex
-
-namespace Mei.ModuleProbe
+namespace Mei
 
 universe u
 
-variable {R Γ Λ V E ι η η' κ : Type*} {M L : Type u} [CommRing R] [Algebra ℚ R]
-  [AddCommGroup Γ] [DecidableEq Γ] [AddCommGroup Λ] [AddCommGroup M] [Module R M]
-  [LieRing L] [LieAlgebra R L] [LieAlgebra ℚ L] [IsScalarTower ℚ R L]
-  [LieRingModule L M] [LieModule R L M]
-  (d : PositiveDegrees Γ) (ℒ : Γ → Submodule R L) [GradedLieAlgebra ℒ] [IsPositiveGrading d ℒ]
-  (ℳ : Γ → Submodule R M) [SetLike.GradedBracket ℒ ℳ] [DirectSum.Decomposition ℳ] (p : Γ)
+section Evaluation
 
-/-- The wall spaces annihilate the pieces of `gradedHom ℒ ℳ X` whenever they annihilate those
-of `M`, because `L` acts on a map only through its values. -/
-instance isWallAnnihilating_gradedHomPiece {ρ : Γ →+ Λ} (H : DirectedWallSpaces ρ ℒ)
-    [IsWallAnnihilating H ℳ] (X : Type u) [AddCommGroup X] [Module R X] [LieRingModule L X]
-    [LieModule R L X] [LieModule.IsTrivial L X] :
-    IsWallAnnihilating H (gradedHomPiece ℒ ℳ X) where
-  lie_eq_zero {_ _ _ _ _} hx ha hm := Subtype.ext (LinearMap.ext fun v => by
-    simpa only [LieSubmodule.coe_bracket, lie_linearMap_apply, ZeroMemClass.coe_zero,
-      LinearMap.zero_apply] using IsWallAnnihilating.lie_eq_zero (H := H) (𝒜 := ℳ) hx
-        ((mem_gradedHomPiece ℒ ℳ X).mp ha v) hm)
+variable {R H M Γ L Λ : Type*} [CommRing R] [AddCommGroup H] [Module R H]
+  [AddCommGroup M] [Module R M] [AddCommGroup Γ] [DecidableEq Γ]
+  (d : PositiveDegrees Γ) (ℳ : Γ → Submodule R M) [DirectSum.Decomposition ℳ]
+  [LieRing L] [LieAlgebra R L] [LieRingModule L M] [LieModule R L M]
+  (ℒ : Γ → Submodule R L) [GradedLieAlgebra ℒ] [IsPositiveGrading d ℒ]
+  [SetLike.GradedBracket ℒ ℳ] [AddCommMonoid Λ] {ρ : Γ →+ Λ}
+  (W : DirectedWallSpaces ρ ℒ) [IsWallAnnihilating W ℳ]
 
-variable {ρ : Γ →+ Λ} (H : DirectedWallSpaces ρ ℒ) [IsWallAnnihilating H ℳ]
-  [NormedAddCommGroup V] [NormedSpace ℝ V] [NormedAddCommGroup E] [NormedSpace ℝ E]
-  {i : Λ →+ V} (h : TauCeti.Toric.IsIntegralLattice i)
-  {j : ℤ →+ E} (h' : TauCeti.Toric.IsIntegralLattice j)
-  (B : DirectedDiagram (d := d) h H κ)
+namespace ModuleProbe
 
-local notation "ℳ'" => gradedHomPiece ℒ ℳ (TrivialLieModule R L (ℳ p))
-local notation "ev" => fun b : ℳ p => gradedHomEval ℒ ℳ (TrivialLieModule R L (ℳ p)) b
+local notation "𝒪" => GradedOperators.lieGrading (H := H) ℳ ℒ
+local notation "ev" a => LieModuleHom.toLinearMap (GradedOperators.evalLieModuleHom ℳ ℒ a)
+local notation "hev" a => fun q f hf => GradedOperators.evalLieModuleHom_mem ℳ ℒ a hf
 
-omit [DirectSum.Decomposition ℳ] [IsPositiveGrading d ℒ] [Algebra ℚ R] [LieAlgebra ℚ L]
-  [IsScalarTower ℚ R L] in
-/-- The evaluation at `b` carries the tautological coefficient to the coefficient `b`. -/
-theorem mappedProbeCoefficient_gradedHomEval_tautologicalCoefficient (b : ℳ p) :
-    mappedProbeCoefficient ℳ' ℳ p (ev b).toLinearMap
-      (fun _ _ ha => gradedHomEval_mem ℒ ℳ _ ha) (tautologicalCoefficient ℒ ℳ p) = b :=
-  Subtype.ext ((coe_mappedProbeCoefficient ℳ' ℳ p _ _ _).trans
-    (gradedHomEval_tautologicalCoefficient ℒ ℳ p b))
+variable (p : Γ)
 
-/-- Evaluation of a relative probe field of the tautological coefficient at `b` is the probe
-field of `b`: the field of the homomorphism module computes the fields of all incoming
-coefficients simultaneously. The completions `P` and `P'` are arbitrary actual relative
-completions of the two probes, independent of each other. -/
-theorem quotientCoefficientMap_gradedHomEval_extendedCoefficientField_tautological
-    (b : ℳ p)
-    (P : DirectedDiagram (d := positiveDegrees d p) (h.prod h') (wallSpaces d ℳ' p ℒ H)
-      ((κ ⊕ Unit) ⊕ η))
-    (P' : DirectedDiagram (d := positiveDegrees d p) (h.prod h') (wallSpaces d ℳ p ℒ H)
-      ((κ ⊕ Unit) ⊕ η'))
-    (hP : DirectedDiagram.IsRelativeOutgoingCompletion (baseProjection d ℳ' p ℒ)
-      (baseSection d ℳ' p ℒ) (fun _ _ _ hy => baseSection_mem_wallSpaces d ℳ' p ℒ H hy)
-      (cylinderQuotientDiagram d ℳ' p ℒ H h h' B)
-      (probeDiagram d ℳ' p ℒ H h h' (tautologicalCoefficient ℒ ℳ p)) P)
-    (hP' : DirectedDiagram.IsRelativeOutgoingCompletion (baseProjection d ℳ p ℒ)
-      (baseSection d ℳ p ℒ) (fun _ _ _ hy => baseSection_mem_wallSpaces d ℳ p ℒ H hy)
-      (cylinderQuotientDiagram d ℳ p ℒ H h h' B) (probeDiagram d ℳ p ℒ H h h' b) P')
-    (k : ℕ) (hBc : B.LevelConsistent k)
-    (x : WallComplement (fun c : B.active k => (B.wall c).support)) :
-    PositiveDegrees.quotientCoefficientMap d ℳ' ℳ p
-        (gradedHomEval ℒ ℳ (TrivialLieModule R L (ℳ p)) b).toLinearMap
-        (fun _ _ ha => gradedHomEval_mem ℒ ℳ _ ha) k
-        (extendedCoefficientField d ℳ' p ℒ H h h' P B k hBc x) =
-      extendedCoefficientField d ℳ p ℒ H h h' P' B k hBc x :=
-  map_extendedCoefficientField_of_isRelativeOutgoingCompletion d ℳ' ℳ p ℒ H h h'
-    (gradedHomEval ℒ ℳ (TrivialLieModule R L (ℳ p)) b).toLinearMap
-    (fun _ _ ha => gradedHomEval_mem ℒ ℳ _ ha)
-    (fun x a => (gradedHomEval ℒ ℳ (TrivialLieModule R L (ℳ p)) b).map_lie x a) B
-    (tautologicalCoefficient ℒ ℳ p) P P' hP (by
-      rw [mappedProbeCoefficient_gradedHomEval_tautologicalCoefficient ℒ ℳ p]
-      exact hP') k hBc x
+/-- Evaluate an operator-valued probe at one incoming coefficient. The base Lie
+algebra is fixed, and the full charge-one coefficient is evaluated. -/
+def operatorEvaluation (a : H) :
+    GradedLieHom (PositiveDegreeMap.id (positiveDegrees d p))
+      (grading d 𝒪 p ℒ) (grading d ℳ p ℒ) :=
+  coefficientGradedLieHom d 𝒪 ℳ p ℒ (ev a) (hev a)
+    (fun x f => LieModuleHom.map_lie (GradedOperators.evalLieModuleHom ℳ ℒ a) x f)
 
-/-- All-order version: evaluation of the completed field of the tautological coefficient at `b`
-is the completed field of `b`, at every allowed endpoint of the base. -/
-theorem completionCoefficientMap_gradedHomEval_completedExtendedCoefficientField_tautological
-    (b : ℳ p)
-    (P : DirectedDiagram (d := positiveDegrees d p) (h.prod h') (wallSpaces d ℳ' p ℒ H)
-      ((κ ⊕ Unit) ⊕ η))
-    (P' : DirectedDiagram (d := positiveDegrees d p) (h.prod h') (wallSpaces d ℳ p ℒ H)
-      ((κ ⊕ Unit) ⊕ η'))
-    (hP : DirectedDiagram.IsRelativeOutgoingCompletion (baseProjection d ℳ' p ℒ)
-      (baseSection d ℳ' p ℒ) (fun _ _ _ hy => baseSection_mem_wallSpaces d ℳ' p ℒ H hy)
-      (cylinderQuotientDiagram d ℳ' p ℒ H h h' B)
-      (probeDiagram d ℳ' p ℒ H h h' (tautologicalCoefficient ℒ ℳ p)) P)
-    (hP' : DirectedDiagram.IsRelativeOutgoingCompletion (baseProjection d ℳ p ℒ)
-      (baseSection d ℳ p ℒ) (fun _ _ _ hy => baseSection_mem_wallSpaces d ℳ p ℒ H hy)
-      (cylinderQuotientDiagram d ℳ p ℒ H h h' B) (probeDiagram d ℳ p ℒ H h h' b) P')
-    (hBc : B.Consistent) (x : B.Point) :
-    PositiveDegrees.completionCoefficientMap d ℳ' ℳ p
-        (gradedHomEval ℒ ℳ (TrivialLieModule R L (ℳ p)) b).toLinearMap
-        (fun _ _ ha => gradedHomEval_mem ℒ ℳ _ ha)
-        (completedExtendedCoefficientField d ℳ' p ℒ H h h' P B
-          hP.isOutgoingCompletion.consistent hBc
-          (map_chargeZeroGradedLieHom_equivalent_of_isRelativeOutgoingCompletion
-            d ℳ' p ℒ H h h' B _ P hP) x) =
-      completedExtendedCoefficientField d ℳ p ℒ H h h' P' B
-        hP'.isOutgoingCompletion.consistent hBc
-        (map_chargeZeroGradedLieHom_equivalent_of_isRelativeOutgoingCompletion
-          d ℳ p ℒ H h h' B _ P' hP') x :=
-  map_completedExtendedCoefficientField_of_isRelativeOutgoingCompletion d ℳ' ℳ p ℒ H h h'
-    (gradedHomEval ℒ ℳ (TrivialLieModule R L (ℳ p)) b).toLinearMap
-    (fun _ _ ha => gradedHomEval_mem ℒ ℳ _ ha)
-    (fun x a => (gradedHomEval ℒ ℳ (TrivialLieModule R L (ℳ p)) b).map_lie x a) B
-    (tautologicalCoefficient ℒ ℳ p) P P' hP (by
-      rw [mappedProbeCoefficient_gradedHomEval_tautologicalCoefficient ℒ ℳ p]
-      exact hP') hBc x
+/-- The operator probe's base summand is unchanged by evaluation. -/
+@[simp↓]
+theorem operatorEvaluation_baseInclusion (a : H) (x : L) :
+    operatorEvaluation d ℳ ℒ p a (baseInclusion d 𝒪 p ℒ x) =
+      baseInclusion d ℳ p ℒ x := by
+  rw [operatorEvaluation, coefficientGradedLieHom_apply]
+  exact coefficientLieHom_baseInclusion d 𝒪 ℳ p ℒ (ev a) (hev a)
+    (fun x f => LieModuleHom.map_lie _ x f) x
 
-end Mei.ModuleProbe
+/-- Evaluation of the charge-one inclusion is the ordinary coefficient inclusion. -/
+@[simp↓]
+theorem operatorEvaluation_moduleInclusion (a : H) (f : ModuleCoefficients d 𝒪 p) :
+    operatorEvaluation d ℳ ℒ p a (moduleInclusion d 𝒪 p ℒ f) =
+      moduleInclusion d ℳ p ℒ (coefficientMap d 𝒪 ℳ p (ev a) (hev a) f) := by
+  rw [operatorEvaluation, coefficientGradedLieHom_apply]
+  exact coefficientLieHom_moduleInclusion d 𝒪 ℳ p ℒ (ev a) (hev a)
+    (fun x f => LieModuleHom.map_lie _ x f) f
+
+/-- Evaluation preserves each reduced probe wall space, including zero evaluations. -/
+theorem operatorEvaluation_mem_wall (a : H) (q : Γ × ℤ) (m : (Λ × ℤ) →+ ℤ)
+    (x : ProbeLie d 𝒪 p ℒ) (hx : x ∈ (wallSpaces d 𝒪 p ℒ W).wall q m) :
+    operatorEvaluation d ℳ ℒ p a x ∈ (wallSpaces d ℳ p ℒ W).wall q m :=
+  coefficientGradedLieHom_mem_wall d 𝒪 ℳ p ℒ (ev a) (hev a)
+    (fun x f => LieModuleHom.map_lie _ x f) _ q m x hx
+
+/-- Finite coefficient extraction commutes with evaluation of the probe. -/
+@[simp]
+theorem moduleQuotientProjection_operatorEvaluation (a : H) (k : ℕ)
+    (x : (positiveDegrees d p).truncatedLie (grading d 𝒪 p ℒ) (k + 1)) :
+    moduleQuotientProjection d ℳ p ℒ k
+        ((operatorEvaluation d ℳ ℒ p a).truncatedMap (k + 1) (by simp) x) =
+      d.quotientCoefficientMap 𝒪 ℳ p (ev a) (hev a) k
+        (moduleQuotientProjection d 𝒪 p ℒ k x) :=
+  moduleQuotientProjection_coefficientGradedLieHom d 𝒪 ℳ p ℒ (ev a) (hev a)
+    (fun x f => LieModuleHom.map_lie _ x f) k x
+
+end ModuleProbe
+end Evaluation
+
+namespace ModuleProbe
+
+section Completion
+
+variable {R Γ : Type*} {H M L : Type u} [CommRing R] [Algebra ℚ R]
+  [AddCommGroup H] [Module R H] [AddCommGroup M] [Module R M]
+  [AddCommGroup Γ] [DecidableEq Γ]
+  (d : PositiveDegrees Γ) (ℳ : Γ → Submodule R M) [DirectSum.Decomposition ℳ]
+  [LieRing L] [LieAlgebra R L] [LieRingModule L M] [LieModule R L M]
+  (ℒ : Γ → Submodule R L) [GradedLieAlgebra ℒ] [IsPositiveGrading d ℒ]
+  [SetLike.GradedBracket ℒ ℳ] (p : Γ)
+
+local notation "𝒪" => GradedOperators.lieGrading (H := H) ℳ ℒ
+local notation "ev" a => LieModuleHom.toLinearMap (GradedOperators.evalLieModuleHom ℳ ℒ a)
+local notation "hev" a => fun q f hf => GradedOperators.evalLieModuleHom_mem ℳ ℒ a hf
+
+/-- Evaluation sends the exponential of an entire operator coefficient to the
+exponential of its evaluated coefficient in the ordinary probe. -/
+theorem operatorEvaluation_exp_moduleInclusion (a : H) (f : ModuleCoefficients d 𝒪 p) :
+    (operatorEvaluation d ℳ ℒ p a).completedMap
+        ((positiveDegrees d p).expToCompletion (grading d 𝒪 p ℒ)
+          (moduleInclusion d 𝒪 p ℒ f)) =
+      (positiveDegrees d p).expToCompletion (grading d ℳ p ℒ)
+        (moduleInclusion d ℳ p ℒ (coefficientMap d 𝒪 ℳ p (ev a) (hev a) f)) := by
+  rw [GradedLieHom.completedMap_expToCompletion, operatorEvaluation_moduleInclusion]
+
+end Completion
+end ModuleProbe
+end Mei

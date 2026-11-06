@@ -19,7 +19,9 @@ truncating the label supplied by the directed diagram.
 
 `eventEndpointStep` uses these coefficients, retaining an event between two
 relative degrees only when the event preserves their common normal velocity.
-The finite event sets and read points remain arbitrary caller-supplied data.
+Its event blocks vanish between degrees of different normal velocity. At every
+retained output degree the step reads only the preceding cutoff. The finite
+event sets and read points remain arbitrary caller-supplied data.
 The strict-degree nilpotence of `PositiveDegrees.shiftedLowerStep` applies
 without further geometric hypotheses. The degree bookkeeping follows Mandel,
 *Scattering diagrams, theta functions, and refined tropical curve counts*,
@@ -88,6 +90,52 @@ theorem eventBlock_apply_of_ne (k K : ℕ) (hkK : k ≤ K) (b : WallEvent (B.act
   rw [eventBlock_def]
   exact PositiveDegrees.labelBlock_apply_of_ne d ℳ p ℒ k _ n m hmn x
 
+omit [IsWallAnnihilating H ℳ] in
+/-- An event block vanishes between degrees of different normal velocity.
+The event inventory may be retained at any higher geometric cutoff. -/
+theorem eventBlock_eq_zero_of_normal_ne (k K : ℕ) (hkK : k ≤ K)
+    (b : WallEvent (B.active K))
+    (n m : d.cutoff k)
+    (hne : b.normal (B.activeNormal K) (i (ρ (p + n.val))) ≠
+      b.normal (B.activeNormal K) (i (ρ (p + m.val)))) :
+    eventBlock d ℳ p ℒ H h B k K hkK b n m = 0 := by
+  classical
+  by_cases hmn : m.val = n.val
+  · exact eventBlock_eq_zero_of_not_precedes d ℳ p ℒ H h B k K hkK b
+      (by simp only [d.precedes_iff, hmn, ne_eq, not_true_eq_false, false_and, not_false_eq_true])
+  apply LinearMap.ext
+  intro a
+  rw [eventBlock_apply_of_ne d ℳ p ℒ H h B k K hkK b n m hmn]
+  by_contra hnonzero
+  let F := d.shiftedLieFiltration ℒ ℳ p
+  let x : F.quotient K := Submodule.Quotient.mk
+    (shiftedInclusion ℳ d.monoid p ⟨m.val, (d.mem_cutoff.mp m.property).1⟩ a)
+  have hx : x ∈ (d.shiftedQuotientGrading ℳ p K).piece m.val :=
+    (d.mem_shiftedQuotientGrading_iff ℳ p).mpr
+      ⟨_, (mem_shiftedGrading ℳ d.monoid p).mpr
+        (by simpa only [coe_shiftedInclusion] using a.property), rfl⟩
+  have hdec : DirectSum.decompose (d.shiftedQuotientGrading ℳ p K).piece
+      (F.truncatedBCHAction d ℒ K (B.wallEventLabel K b) x) n.val ≠ 0 := by
+    intro hz
+    apply hnonzero
+    have hn := PositiveDegrees.degree_add_val_sub_self_le d p k n
+    -- A retained component agrees with its value before truncation.
+    have htransition := F.transition_truncatedBCHAction d ℒ hkK (B.wallEventLabel K b) x
+    simp only [x, ModuleFiltration.transition_mk] at htransition
+    rw [← htransition,
+      d.shiftedQuotientComponent_transition ℳ p (p + n.val) hkK hn,
+      ← d.shiftedQuotientComponent_decompose_same ℳ p K
+        ⟨n.val, (d.mem_cutoff.mp n.property).1⟩
+        ((d.mem_cutoff.mp n.property).2.trans (Int.ofNat_le.mpr hkK)), hz]
+    exact map_zero _
+  have := d.shiftedGrading_gradedBracket ℒ ℳ p
+  have he := B.normal_eq_of_decompose_truncatedBCHAction_wallEventLabel_ne_zero
+    (M := d.shiftedLieSubmodule ℒ ℳ p) (shiftedGrading ℳ d.monoid p) F K
+    (d.shiftedQuotientGrading ℳ p K).piece (d.shiftedQuotientGrading_piece ℳ p K) b hx hdec
+  apply hne
+  simp only [WallEvent.normal_def, B.activeNormal_apply,
+    h.continuousRealCharacter_apply, h.realCharacter_apply, map_add, he]
+
 open Classical in
 /-- The lower-degree step carried by the diagram's event blocks. An event is
 used only between degrees with matching normal velocities; the event sets and
@@ -136,6 +184,59 @@ theorem eventEndpointStep_apply (k K : ℕ) (hkK : k ≤ K)
           else 0) (F (point b Q n m) m)
         else 0 := by
   apply PositiveDegrees.shiftedLowerStep_apply
+
+omit [IsWallAnnihilating H ℳ] in
+open Classical in
+/-- At every retained output degree the endpoint step reads only the preceding
+cutoff, with the event inventory fixed at any higher geometric cutoff.
+The strict-degree filter is automatic in the event blocks. -/
+theorem eventEndpointStep_apply_sum_cutoff (k K : ℕ) (hkK : k + 1 ≤ K)
+    (events : V → (d.cutoff (k + 1)) → Finset (WallEvent (B.active K)))
+    (point : WallEvent (B.active K) → V → (n m : d.cutoff (k + 1)) → V)
+    (F : PositiveDegrees.ShiftedEndpointFunction d ℳ p V (k + 1))
+    (Q : V) (n : d.cutoff (k + 1)) :
+    eventEndpointStep d ℳ p ℒ H h B (k + 1) K hkK events point F Q n =
+      ∑ b ∈ events Q n, ∑ m : d.cutoff k,
+        let m' : d.cutoff (k + 1) := ⟨m.val, d.mem_cutoff.mpr
+          ⟨(d.mem_cutoff.mp m.property).1,
+            (d.mem_cutoff.mp m.property).2.trans (Int.ofNat_le.mpr (Nat.le_succ k))⟩⟩
+        (if b.normal (B.activeNormal K) (i (ρ (p + n.val))) =
+            b.normal (B.activeNormal K) (i (ρ (p + m.val))) then
+          eventBlock d ℳ p ℒ H h B (k + 1) K hkK b n m'
+        else 0) (F (point b Q n m') m') := by
+  rw [eventEndpointStep_apply]
+  apply Finset.sum_congr rfl
+  intro b hb
+  let term (m : d.cutoff (k + 1)) :=
+    (if b.normal (B.activeNormal K) (i (ρ (p + n.val))) =
+        b.normal (B.activeNormal K) (i (ρ (p + m.val))) then
+      eventBlock d ℳ p ℒ H h B (k + 1) K hkK b n m
+    else 0) (F (point b Q n m) m)
+  have hz (m : d.cutoff (k + 1)) (hm : ¬ d.Precedes m.val n.val) : term m = 0 := by
+    dsimp only [term]
+    rw [eventBlock_eq_zero_of_not_precedes d ℳ p ℒ H h B _ _ _ b hm]
+    split_ifs <;> rfl
+  trans ∑ m : d.cutoff (k + 1), term m
+  · apply Finset.sum_congr rfl
+    intro m hm
+    by_cases hp : d.Precedes m.val n.val
+    · simp only [hp, ↓reduceDIte, term]
+    · simp only [hp, ↓reduceDIte, hz m hp]
+  have hbound (m : d.cutoff (k + 1)) (hm : term m ≠ 0) : d.degree m.val ≤ k := by
+    have hp : d.Precedes m.val n.val := by_contra fun hp => hm (hz m hp)
+    have hd := d.degree_lt_of_precedes hp
+    have hn := (d.mem_cutoff.mp n.property).2
+    omega
+  refine Finset.sum_bij_ne_zero (fun m _ hm =>
+    (⟨m.val, d.mem_cutoff.mpr ⟨(d.mem_cutoff.mp m.property).1, hbound m hm⟩⟩ :
+      d.cutoff k)) (fun _ _ _ => Finset.mem_univ _) ?_ ?_ (fun _ _ _ => rfl)
+  · intro m _ hm m' _ hm' he
+    exact Subtype.ext (congrArg (fun m : d.cutoff k => m.val) he)
+  · intro m _ hm
+    let m' : d.cutoff (k + 1) := ⟨m.val, d.mem_cutoff.mpr
+      ⟨(d.mem_cutoff.mp m.property).1,
+        (d.mem_cutoff.mp m.property).2.trans (Int.ofNat_le.mpr (Nat.le_succ k))⟩⟩
+    exact ⟨m', Finset.mem_univ _, hm, Subtype.ext rfl⟩
 
 omit [IsWallAnnihilating H ℳ] in
 /-- The event endpoint operator is nilpotent by strict degree descent. -/

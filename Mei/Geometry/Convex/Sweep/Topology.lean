@@ -47,6 +47,35 @@ theorem sweepProjection_apply (f : V →L[ℝ] ℝ) (c : ℝ) (n y : V) :
     ContinuousAffineMap.coe_const, Function.const_apply]
   module
 
+section Crossing
+
+variable {ν : V →L[ℝ] ℝ} {b : ℝ} {w : V}
+
+/-- The sweep projection onto a face along a transverse direction moves a point to
+its computed crossing with the face. -/
+theorem sweepProjection_inv_smul_apply (x : V) :
+    sweepProjection ν b ((ν w)⁻¹ • w) x = x - ((ν x - b) / ν w) • w := by
+  rw [sweepProjection_apply, smul_smul, div_eq_mul_inv]
+  module
+
+/-- Moving a point of the face backward along a transverse direction by `s` makes the
+crossing parameter `-s`. -/
+@[simp↓]
+theorem sub_div_sub_smul_eq_neg (hw : ν w ≠ 0) {y : V} (hy : ν y = b) (s : ℝ) :
+    (ν (y - s • w) - b) / ν w = -s := by
+  simp only [map_sub, map_smul, smul_eq_mul, hy]
+  field_simp
+  ring
+
+/-- Moving a point of the face backward along `w` and projecting returns the point. -/
+@[simp↓]
+theorem sweepProjection_inv_smul_sub_smul (hw : ν w ≠ 0) {y : V} (hy : ν y = b) (s : ℝ) :
+    sweepProjection ν b ((ν w)⁻¹ • w) (y - s • w) = y := by
+  rw [sweepProjection_inv_smul_apply, sub_div_sub_smul_eq_neg hw hy]
+  module
+
+end Crossing
+
 /-- The linear part of a sweep projection subtracts the normal component along
 the sweeping vector. -/
 @[simp]
