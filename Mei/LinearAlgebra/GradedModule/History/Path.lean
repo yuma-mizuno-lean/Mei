@@ -780,6 +780,19 @@ theorem degreesPathOfFn_succ_apply (ι : Type w) {n : ℕ} (T : Fin (n + 1) → 
       ((degreesPathOfFn ι (fun j => T j.succ) (fun j => p j.succ), p 0) :
         (pathOfFn T).Degrees fun _ => ι) := (rfl)
 
+/-- The terminal degree of a sequence history is its first tuple entry, or the
+original input degree when the sequence is empty. -/
+@[simp]
+theorem terminalDegree_degreesPathOfFn {ι : Type w} {n : ℕ} (T : Fin n → α) (d : Fin n → ι)
+    (i : ι) :
+    Path.Degrees.terminalDegree i (pathOfFn T) (degreesPathOfFn ι T d) =
+      Fin.snoc (α := fun _ => ι) d i 0 := by
+  cases n with
+  | zero => rfl
+  | succ n =>
+    exact (congrArg Prod.snd (degreesPathOfFn_succ_apply ι T d)).trans
+      (Fin.snoc_castSucc (α := fun _ : Fin (n + 2) => ι) i d 0).symm
+
 /-- Transporting degrees along a map commutes with the identification of degree histories
 with functions. -/
 @[simp]

@@ -219,21 +219,3 @@ theorem sum_ite_homogeneousHistory_identity (p : Path a b) (q : Path b c)
     homogeneousHistory_degreesRepeat T ℳ p q e he i _ x.property]
 
 end Quiver.Path
-
-namespace Quiver.SingleObj
-
-variable {α ι : Type*}
-
-/-- The terminal degree of a sequence history is its first tuple entry, or the
-original input degree when the sequence is empty. -/
-@[simp]
-theorem terminalDegree_degreesPathOfFn {n : ℕ} (T : Fin n → α) (d : Fin n → ι) (i : ι) :
-    Path.Degrees.terminalDegree i (pathOfFn T) (degreesPathOfFn ι T d) =
-      Fin.snoc (α := fun _ => ι) d i 0 := by
-  cases n with
-  | zero => rfl
-  | succ n =>
-    exact (congrArg Prod.snd (degreesPathOfFn_succ_apply ι T d)).trans
-      (Fin.snoc_castSucc (α := fun _ : Fin (n + 2) => ι) i d 0).symm
-
-end Quiver.SingleObj
