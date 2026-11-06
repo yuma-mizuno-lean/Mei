@@ -47,16 +47,13 @@ include r
 Only the normal component is asserted to agree. -/
 theorem normal_velocity_eq_incoming_singleFace (i : Fin (n + 1)) :
     ν (v (Fin.snoc (α := fun _ => Γ) r.1.val p i)) = ν (v p) := by
-  have he : ∀ i : Fin (n + 1),
-      ν (v (Fin.snoc (α := fun _ => Γ) r.1.val p i)) =
-        ν (v (Fin.snoc (α := fun _ => Γ) r.1.val p 0)) := by
-    intro i
-    induction i using Fin.induction with
-    | zero => rfl
-    | succ i ih =>
-      exact (r.normal_velocity_eq i).symm.trans (by
-        simpa only [Fin.snoc_castSucc] using ih)
-  exact (he i).trans (by simpa only [Fin.snoc_last] using (he (Fin.last n)).symm)
+  by_cases hi : i = Fin.last n
+  · simp only [hi, Fin.snoc_last]
+  · have he := (Fin.liftFun_iff_succ (· = ·)
+      (f := fun i => ν (v (Fin.snoc (α := fun _ => Γ) r.1.val p i)))).mpr
+      (fun j => by simpa only [Fin.snoc_castSucc] using r.normal_velocity_eq j)
+      (Fin.lt_last_iff_ne_last.mpr hi)
+    simpa only [Fin.snoc_last] using he
 
 /-- Whole-component decorated rays through one face have at most one recorded
 encounter, even if that encounter changes neither degree nor spatial velocity. -/
@@ -67,12 +64,12 @@ theorem encounter_count_le_one_singleFace : n ≤ 1 :=
 /-- For a full face, the unique possible encounter occurs exactly on the side
 opposite the incoming normal velocity. Source and singular constraints remain
 in the decorated-ray hypothesis. -/
-theorem encounter_count_eq_one_iff_singleFace (htrans : ν (v p) ≠ 0)
+theorem encounter_count_eq_one_iff_singleFace
     (j : J) (hW : {x | ν x = b} ⊆ W j) :
     n = 1 ↔ (ν Q - b) / ν (v p) < 0 := by
   have he := r.2.encounter_count_eq_one_iff_singleFace
     (fun j => by simpa only [Fin.snoc_castSucc] using r.normal_velocity_eq j)
-    ((r.normal_velocity_eq_incoming_singleFace 0).symm ▸ htrans) j hW
+    j hW
   simpa only [r.normal_velocity_eq_incoming_singleFace] using he
 
 end Mei.DecoratedAdmissibleRay

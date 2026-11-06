@@ -71,16 +71,18 @@ include r hv
 parameter. Transversality follows from the recorded encounter itself. -/
 theorem parameter_eq_div_singleFace (j : Fin n) :
     r.parameter j.succ = (ν Q - b) / ν (v 0) := by
-  have hn : ∀ i : Fin (n + 1), ν (v i) = ν (v 0) := by
-    intro i
-    induction i using Fin.induction with
-    | zero => rfl
-    | succ i ih => exact (hv i).symm.trans ih
-  have htrans : ν (v 0) ≠ 0 := hn j.castSucc ▸ r.transverse j
-  have he := r.height_eq j
-  rw [r.normal_ray_eq_sub_mul ν hv] at he
-  apply (eq_div_iff htrans).mpr
-  linarith
+  have hn : ν (v j.castSucc) = ν (v 0) := by
+    by_cases hj : j.castSucc = 0
+    · rw [hj]
+    · exact ((Fin.liftFun_iff_succ (· = ·) (f := fun i => ν (v i))).mpr hv
+        (Fin.pos_iff_ne_zero.mpr hj)).symm
+  have htrans : ν (v 0) ≠ 0 := hn ▸ r.transverse j
+  simpa only [LinearMap.coe_toAffineMap, LinearMap.toAffineMap_linear,
+    ContinuousLinearMap.coe_coe, r.endpoint_eq, r.ray_direction] using
+    (r.ray.apply_eval_eq_iff_eq_div ν.toLinearMap.toAffineMap
+      (fun t ht => r.normal_bends_eq_zero ν hv ht)
+      (by simpa only [LinearMap.toAffineMap_linear, ContinuousLinearMap.coe_coe,
+        r.ray_direction] using htrans) b (r.parameter j.succ)).mp (r.height_eq j)
 
 /-- A common face and conserved normal velocity permit at most one recorded
 encounter. No nonzero-velocity assumption is needed for empty itineraries. -/
@@ -102,29 +104,24 @@ the face, even if its recorded encounter leaves the spatial direction unchanged.
 theorem ray_parameter_eq_singleFace (j : Fin n) :
     r.ray (r.parameter j.succ) = Q - ((ν Q - b) / ν (v 0)) • v 0 := by
   have hn := r.encounter_count_le_one_singleFace hv
-  have hj : j.val = 0 := by omega
-  have ht : r.parameter j.succ < 0 := by
-    simpa only [r.parameter_zero] using r.strictAnti_parameter (Fin.succ_pos j)
-  rw [r.ray_eq_endpoint_sub_smul j.succ ?_ ⟨le_rfl, ht.le⟩,
-    r.parameter_eq_div_singleFace hv j]
-  intro i hi
-  have hi0 : i = 0 := by
+  rw [r.ray_parameter_succ_eq_of_directions_eq j (fun i hi => by
+    congr 1
     apply Fin.ext
+    simp only [Fin.le_def, Fin.val_castSucc] at hi
     simp only [Fin.val_zero]
-    simp only [Fin.lt_def, Fin.val_succ] at hi
-    omega
-  rw [hi0]
+    omega), ← neg_sub b (ν Q), neg_div, neg_smul, sub_neg_eq_add]
 
 /-- A transverse ray encountering one face is on the opposite side exactly
 when its itinerary has one encounter. A full copy of the face in the obstacle
 family forces the encounter to be recorded. -/
-theorem encounter_count_eq_one_iff_singleFace (htrans : ν (v 0) ≠ 0)
+theorem encounter_count_eq_one_iff_singleFace
     (a : J) (hW : {x | ν x = b} ⊆ W a) :
     n = 1 ↔ (ν Q - b) / ν (v 0) < 0 := by
   constructor
   · intro hn
     exact r.div_neg_of_encounter_singleFace hv ⟨0, by omega⟩
   · intro ht
+    have htrans : ν (v 0) ≠ 0 := fun h => by simp [h] at ht
     have hn := r.encounter_count_le_one_singleFace hv
     by_contra hne
     have hn0 : n = 0 := by omega
@@ -143,7 +140,7 @@ theorem encounter_count_eq_zero_iff_singleFace (htrans : ν (v 0) ≠ 0)
   have hoff : ν Q ≠ b := fun he => r.off_walls a (hW he)
   have ht : (ν Q - b) / ν (v 0) ≠ 0 := div_ne_zero (sub_ne_zero.mpr hoff) htrans
   have hn := r.encounter_count_le_one_singleFace hv
-  have he := r.encounter_count_eq_one_iff_singleFace hv htrans a hW
+  have he := r.encounter_count_eq_one_iff_singleFace hv a hW
   constructor
   · intro h
     have hnot : ¬ (ν Q - b) / ν (v 0) < 0 := fun ht => by
@@ -156,12 +153,118 @@ theorem encounter_count_eq_zero_iff_singleFace (htrans : ν (v 0) ≠ 0)
 
 end SingleFace
 
+/-- Construct the one-crossing realization by inserting the difference of the
+incoming and outgoing directions at the computed negative intersection time.
+Conservation of the normal coordinate gives wall and singular avoidance. -/
+def singleFaceOne {ν : V →L[ℝ] ℝ} {b : ℝ} {u w Q : V} {Z : Set V}
+    (hnormal : ν w = ν u) (hZ : Z ⊆ {x | ν x = b})
+    (ht : (ν Q - b) / ν w < 0) (hx : Q - ((ν Q - b) / ν w) • w ∉ Z) :
+    AdmissibleRayRealization (fun _ : Fin 1 => ν) (fun _ => b) ![w, u]
+      (fun _ => {x | ν x = b}) (fun _ : Unit => {x | ν x = b})
+      (fun _ : Unit => Z) {x | 0 < (ν x - b) / ν u} Q := by
+  have htrans : ν w ≠ 0 := fun h => by simp [h] at ht
+  let τ := (ν Q - b) / ν w
+  let β := (FiniteAffineRay.straight Q w).insert τ (u - w) ht
+  -- The inserted increment has zero normal component, even when it is zero.
+  have hb : ∀ t ∈ β.bends.support,
+      ν.toLinearMap.toAffineMap.linear (β.bends t) = 0 := by
+    intro t _
+    simp only [β, FiniteAffineRay.bends_insert, FiniteAffineRay.bends_straight,
+      zero_add, Finsupp.single_apply]
+    split_ifs <;> simp [map_sub, hnormal]
+  have hhit (t : ℝ) : ν (β t) = b ↔ t = τ := by
+    simpa only [LinearMap.coe_toAffineMap, LinearMap.toAffineMap_linear,
+      ContinuousLinearMap.coe_coe, β, FiniteAffineRay.endpoint_insert,
+      FiniteAffineRay.endpoint_straight, FiniteAffineRay.direction_insert,
+      FiniteAffineRay.direction_straight] using
+      β.apply_eval_eq_iff_eq_div ν.toLinearMap.toAffineMap hb
+        (by simpa [β] using htrans) b t
+  have hcross : β τ = Q - τ • w := by
+    simp only [β, FiniteAffineRay.insert_apply, sub_self, max_self, zero_smul,
+      FiniteAffineRay.straight_apply, vadd_eq_add, zero_add, neg_smul, neg_add_eq_sub]
+  -- Record the crossing and verify the prescribed directions at both parameters.
+  refine {
+    ray := β
+    parameter := ![0, τ]
+    parameter_zero := rfl
+    strictAnti_parameter := ?_
+    transverse := ?_
+    endpoint_eq := by simp [β]
+    directionAt_eq := ?_
+    bends_recorded := ?_
+    height_eq := ?_
+    incidence := ?_
+    avoids_walls := ?_
+    incoming := ?_
+    avoids_singular := ?_
+    off_walls := ?_ }
+  · apply Fin.strictAnti_iff_succ_lt.mpr
+    intro j
+    fin_cases j
+    exact ht
+  · intro j
+    fin_cases j
+    exact htrans
+  · intro j
+    fin_cases j <;> simp [β]
+  · intro t ht'
+    refine ⟨0, ?_⟩
+    have hm : t ∈ (Finsupp.single τ (u - w)).support := by simpa [β] using ht'
+    exact Finset.mem_singleton.mp (Finsupp.support_single_subset hm)
+  · intro j
+    fin_cases j
+    exact (hhit τ).mpr rfl
+  · intro j
+    fin_cases j
+    exact (hhit τ).mpr rfl
+  · intro a t _ hnot hwall
+    exact hnot 0 ((hhit t).mp hwall)
+  -- The normal coordinate on the incoming tail lies in the source half-space.
+  · filter_upwards [Filter.eventually_lt_atBot τ] with t ht'
+    have he : (ν (β t) - b) / ν u = τ - t := by
+      have he := β.apply_eval_eq_sub_mul ν.toLinearMap.toAffineMap hb t
+      simp only [LinearMap.coe_toAffineMap, LinearMap.toAffineMap_linear,
+        ContinuousLinearMap.coe_coe, β, FiniteAffineRay.endpoint_insert,
+        FiniteAffineRay.endpoint_straight, FiniteAffineRay.direction_insert,
+        FiniteAffineRay.direction_straight] at he
+      rw [he, ← hnormal]
+      dsimp only [τ]
+      field_simp
+      ring
+    exact he ▸ sub_pos.mpr ht'
+  -- Any singular hit would be the computed crossing, which misses the singular set.
+  · intro a t _ hmem
+    have he := (hhit t).mp (hZ hmem)
+    subst t
+    exact hx (hcross ▸ hmem)
+  · intro a hwall
+    have hwall' : ν Q = b := hwall
+    have he : τ = 0 := by simp [τ, hwall']
+    exact ht.ne he
+
+/-- The one-crossing construction inserts the direction change into the straight
+terminal ray. -/
+@[simp]
+theorem ray_singleFaceOne {ν : V →L[ℝ] ℝ} {b : ℝ} {u w Q : V} {Z : Set V}
+    (hnormal : ν w = ν u) (hZ : Z ⊆ {x | ν x = b})
+    (ht : (ν Q - b) / ν w < 0) (hx : Q - ((ν Q - b) / ν w) • w ∉ Z) :
+    (singleFaceOne hnormal hZ ht hx).ray =
+      (FiniteAffineRay.straight Q w).insert ((ν Q - b) / ν w) (u - w) ht := (rfl)
+
+/-- The recorded encounter of the one-crossing construction is the explicit
+intersection parameter, after the endpoint at zero. -/
+@[simp]
+theorem parameter_singleFaceOne {ν : V →L[ℝ] ℝ} {b : ℝ} {u w Q : V} {Z : Set V}
+    (hnormal : ν w = ν u) (hZ : Z ⊆ {x | ν x = b})
+    (ht : (ν Q - b) / ν w < 0) (hx : Q - ((ν Q - b) / ν w) • w ∉ Z) :
+    (singleFaceOne hnormal hZ ht hx).parameter = ![0, (ν Q - b) / ν w] := (rfl)
+
 /-- For a single full face, an opposite-side endpoint admits its unique
 one-crossing realization exactly when the computed crossing misses the singular
 set. The source is the full incoming half-space. No closedness, codimension or
 genericity assumption on the singular subset is needed. -/
-theorem nonempty_singleFace_iff {ν : V →L[ℝ] ℝ} {b : ℝ} {u w Q : V}
-    {Z : Set V} (hnormal : ν w = ν u) (htrans : ν w ≠ 0)
+theorem nonempty_singleFace_one_iff {ν : V →L[ℝ] ℝ} {b : ℝ} {u w Q : V}
+    {Z : Set V} (hnormal : ν w = ν u)
     (hZ : Z ⊆ {x | ν x = b}) :
     Nonempty (AdmissibleRayRealization (fun _ : Fin 1 => ν) (fun _ => b) ![w, u]
       (fun _ => {x | ν x = b}) (fun _ : Unit => {x | ν x = b})
@@ -181,95 +284,25 @@ theorem nonempty_singleFace_iff {ν : V →L[ℝ] ℝ} {b : ℝ} {u w Q : V}
     rw [r.ray_parameter_eq_singleFace hv 0] at hx
     exact ⟨ht, hx⟩
   · rintro ⟨ht, hx⟩
-    -- Insert the difference of the incoming and outgoing directions at the
-    -- computed crossing. The conserved normal then handles all avoidance tests.
-    let τ := (ν Q - b) / ν w
-    let β := (FiniteAffineRay.straight Q w).insert τ (u - w) ht
-    have hbends {t : ℝ} (ht' : t ∈ β.bends.support) : t = τ := by
-      have hmem : t ∈ (Finsupp.single τ (u - w)).support := by
-        simpa only [β, FiniteAffineRay.bends_insert, FiniteAffineRay.bends_straight,
-          zero_add] using ht'
-      exact Finset.mem_singleton.mp (Finsupp.support_single_subset hmem)
-    have hβ (t : ℝ) : ν (β t) = ν Q - t * ν w := by
-      have hb : ∀ t ∈ β.bends.support,
-          ν.toLinearMap.toAffineMap.linear (β.bends t) = 0 := by
-        intro t ht'
-        simp [β, hbends ht', map_sub, hnormal]
-      simpa only [LinearMap.coe_toAffineMap, LinearMap.toAffineMap_linear,
-        ContinuousLinearMap.coe_coe, β, FiniteAffineRay.endpoint_insert,
-        FiniteAffineRay.endpoint_straight, FiniteAffineRay.direction_insert,
-        FiniteAffineRay.direction_straight] using
-        β.apply_eval_eq_sub_mul ν.toLinearMap.toAffineMap hb t
-    have hhit (t : ℝ) : ν (β t) = b ↔ t = τ := by
-      rw [hβ, eq_div_iff htrans]
-      constructor <;> intro h <;> linarith
-    have hcross : β τ = Q - τ • w := by
-      simp only [β, FiniteAffineRay.insert_apply, sub_self, max_self, zero_smul,
-        FiniteAffineRay.straight_apply, vadd_eq_add, zero_add, neg_smul, neg_add_eq_sub]
-    refine ⟨{
-      ray := β
-      parameter := ![0, τ]
-      parameter_zero := rfl
-      strictAnti_parameter := ?_
-      transverse := ?_
-      endpoint_eq := by simp [β]
-      directionAt_eq := ?_
-      bends_recorded := ?_
-      height_eq := ?_
-      incidence := ?_
-      avoids_walls := ?_
-      incoming := ?_
-      avoids_singular := ?_
-      off_walls := ?_ }⟩
-    · apply Fin.strictAnti_iff_succ_lt.mpr
-      intro j
-      fin_cases j
-      exact ht
-    · intro j
-      fin_cases j
-      exact htrans
-    · intro j
-      fin_cases j <;> simp [β]
-    · intro t ht'
-      exact ⟨0, hbends ht'⟩
-    · intro j
-      fin_cases j
-      exact (hhit τ).mpr rfl
-    · intro j
-      fin_cases j
-      exact (hhit τ).mpr rfl
-    · intro a t _ hnot hwall
-      exact hnot 0 ((hhit t).mp hwall)
-    · filter_upwards [Filter.eventually_lt_atBot τ] with t ht'
-      have he : (ν (β t) - b) / ν u = τ - t := by
-        rw [hβ, ← hnormal]
-        dsimp only [τ]
-        field_simp
-        ring
-      exact he ▸ sub_pos.mpr ht'
-    · intro a t _ hmem
-      have he := (hhit t).mp (hZ hmem)
-      subst t
-      exact hx (hcross ▸ hmem)
-    · intro a hwall
-      have hwall' : ν Q = b := hwall
-      have he : τ = 0 := by simp [τ, hwall']
-      exact ht.ne he
+    exact ⟨singleFaceOne hnormal hZ ht hx⟩
 
 /-- On the incoming side the empty itinerary has its straight realization;
 it is admitted exactly at endpoints in the full incoming half-space. Singular
 subsets of the face impose no additional condition on these rays. -/
 theorem nonempty_singleFace_empty_iff {ν : V →L[ℝ] ℝ} {b : ℝ} {u Q : V}
-    {Z : Set V} (htrans : ν u ≠ 0) (hZ : Z ⊆ {x | ν x = b}) :
+    {Z : Set V} (hZ : Z ⊆ {x | ν x = b}) :
     Nonempty (AdmissibleRayRealization (fun _ : Fin 0 => ν) (fun _ => b) (fun _ => u)
       (fun _ => {x | ν x = b}) (fun _ : Unit => {x | ν x = b})
       (fun _ : Unit => Z) {x | 0 < (ν x - b) / ν u} Q) ↔
       0 < (ν Q - b) / ν u := by
   constructor
   · rintro ⟨r⟩
+    obtain ⟨t, ht⟩ := r.incoming.exists
+    have htrans : ν u ≠ 0 := fun h => by simp [h] at ht
     exact (r.encounter_count_eq_zero_iff_singleFace (fun j => j.elim0)
       htrans () Set.Subset.rfl).mp rfl
   · intro ht
+    have htrans : ν u ≠ 0 := fun h => by simp [h] at ht
     have he (t : ℝ) :
         (ν (FiniteAffineRay.straight Q u t) - b) / ν u = (ν Q - b) / ν u - t := by
       simp only [FiniteAffineRay.straight_apply, vadd_eq_add, map_add, map_smul,
