@@ -111,4 +111,23 @@ theorem labelBlock_eq_zero_of_not_precedes (k : ℕ) (g : d.truncatedGroup ℒ k
   rw [labelBlock_apply]
   exact component_sub_one_inclusion_eq_zero d ℳ p ℒ k g hnm x
 
+/-- Between distinct relative degrees, the block acts on the component of an
+arbitrary quotient coefficient by projecting its homogeneous input, applying
+the BCH action, and reading the output component. The identity term vanishes. -/
+theorem labelBlock_apply_component (k : ℕ) (g : d.truncatedGroup ℒ k)
+    (n m : d.cutoff k) (hmn : m.val ≠ n.val) (x : (A).quotient k) :
+    labelBlock d ℳ p ℒ k g n m
+        (d.shiftedQuotientComponent ℳ p (p + m.val) k
+          (degree_add_val_sub_self_le d p k m) x) =
+      d.shiftedQuotientComponent ℳ p (p + n.val) k
+        (degree_add_val_sub_self_le d p k n)
+        ((A).truncatedBCHAction d ℒ k g
+          (DirectSum.decompose (d.shiftedQuotientGrading ℳ p k).piece x m.val)) := by
+  rw [labelBlock_apply, LinearMap.sub_apply, Module.End.one_apply, map_sub,
+    d.shiftedQuotientComponent_mk_shiftedInclusion_of_ne ℳ p
+      (p + n.val) k _ _ (fun he => hmn (add_left_cancel he)), sub_zero,
+    d.decompose_shiftedQuotientGrading ℳ p k
+      ⟨m.val, (d.mem_cutoff.mp m.property).1⟩ (d.mem_cutoff.mp m.property).2]
+  rfl
+
 end Mei.PositiveDegrees
