@@ -57,24 +57,14 @@ theorem itinerary_eq_nil_of_velocity_eq_zero
 theorem ray_eq_straight_of_velocity_eq_zero
     (r : CutoffDecoratedRay d ℳ T a v f c ε P W S C k Q) (hv : v 0 = 0) :
     r.realization.2.ray = FiniteAffineRay.straight Q 0 := by
-  have hn := r.itinerary_eq_nil_of_velocity_eq_zero hv
-  obtain ⟨l, β, hmem, hsub⟩ := r
-  dsimp only at hn
-  subst l
-  obtain ⟨hpos, _, hr⟩ := β.2.eq_backwardRay
-  simpa only [backwardRay_zero, Fin.snoc_zero, hv] using hr
+  rw [r.ray_eq_straight_of_itinerary_eq_nil (r.itinerary_eq_nil_of_velocity_eq_zero hv), hv]
 
 /-- Stationary rays retain the whole incoming coefficient. -/
 @[simp↓] -- Retain the stationary normal form before expanding homogeneous histories.
 theorem decoration_eq_input_of_velocity_eq_zero
     (r : CutoffDecoratedRay d ℳ T a v f c ε P W S C k Q) (hv : v 0 = 0) :
-    r.decoration = (a : M) := by
-  have hn := r.itinerary_eq_nil_of_velocity_eq_zero hv
-  rw [decoration_eq]
-  obtain ⟨l, β, hmem, hsub⟩ := r
-  dsimp only at hn
-  subst l
-  simp
+    r.decoration = (a : M) :=
+  r.decoration_eq_of_itinerary_eq_nil (r.itinerary_eq_nil_of_velocity_eq_zero hv)
 
 /-- The stationary ray with nonzero input, at an admitted allowed endpoint.
 No propagation map is applied, and no encounter is recorded. -/

@@ -155,6 +155,38 @@ theorem length_degreeItinerary (r : CutoffDecoratedRay d ℳ T a v f c ε P W S 
     r.degreeItinerary.length = r.itinerary.length := by
   simp [degreeItinerary]
 
+/-- A ray without encounters carries the incoming coefficient. -/
+theorem decoration_eq_of_itinerary_eq_nil (r : CutoffDecoratedRay d ℳ T a v f c ε P W S C k Q)
+    (h : r.itinerary = []) : r.decoration = (a : M) := by
+  obtain ⟨l, β, hmem, hsub⟩ := r
+  dsimp only at h
+  subst h
+  simp
+
+/-- A ray without encounters is the straight ray in the incoming direction. -/
+theorem ray_eq_straight_of_itinerary_eq_nil (r : CutoffDecoratedRay d ℳ T a v f c ε P W S C k Q)
+    (h : r.itinerary = []) : r.realization.2.ray = FiniteAffineRay.straight Q (v 0) := by
+  obtain ⟨l, β, hmem, hsub⟩ := r
+  dsimp only at h
+  subst h
+  obtain ⟨hpos, _, hr⟩ := β.2.eq_backwardRay
+  simpa only [backwardRay_zero, Fin.snoc_zero] using hr
+
+/-- A ray with the single recorded encounter `j` and component degree `η` carries the degree-`η`
+component of `T j a`. -/
+theorem decoration_eq_of_degreeItinerary_eq_singleton
+    (r : CutoffDecoratedRay d ℳ T a v f c ε P W S C k Q) {η : Γ} {j : J}
+    (h : r.degreeItinerary = [(η, j)]) :
+    r.decoration = (DirectSum.decompose ℳ (T j a) η : M) := by
+  obtain ⟨l, ⟨p, β⟩, hmem, hsub⟩ := r
+  have hl : l.length = 1 := by simpa [degreeItinerary_eq] using congrArg List.length h
+  obtain ⟨j', rfl⟩ := List.length_eq_one_iff.mp hl
+  simp only [List.length_cons, List.length_nil, Nat.reduceAdd, List.get_eq_getElem,
+    degreeItinerary_eq, zero_add, List.ofFn_succ, Fin.isValue, Fin.cast_eq_self, Fin.val_eq_zero,
+    List.getElem_cons_zero, List.ofFn_zero, List.cons.injEq, Prod.mk.injEq, and_true] at h
+  obtain ⟨rfl, rfl⟩ := h
+  simp [decoration_eq]
+
 section OfWord
 
 variable {n : ℕ} (word : Fin n → J)
