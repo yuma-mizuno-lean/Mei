@@ -121,11 +121,10 @@ theorem shiftedEndpointEval_shiftedOperatorLowerStep_pow (j : ℕ) (x : H)
     (F : ShiftedEndpointOperator (H := H) (V := V) d ℳ p k) :
     shiftedEndpointEval d ℳ p k x ((Uop ^ j) F) =
       (U ^ j) (shiftedEndpointEval d ℳ p k x F) := by
-  induction j with
-  | zero => rfl
-  | succ j ih =>
-    simpa only [pow_succ', Module.End.mul_apply,
-      shiftedEndpointEval_shiftedOperatorLowerStep] using congrArg U ih
+  exact (LinearMap.congr_fun (Module.End.commute_pow_left_of_commute
+    (f := shiftedEndpointEval d ℳ p k x) (g := Uop) (g₂ := U)
+    (LinearMap.ext fun F => (shiftedEndpointEval_shiftedOperatorLowerStep
+      d ℳ p k events block point x F).symm) j) F).symm
 
 /-- The operator-valued step has the same nilpotency bound as the coefficient
 step, even for infinitely generated incoming modules. -/

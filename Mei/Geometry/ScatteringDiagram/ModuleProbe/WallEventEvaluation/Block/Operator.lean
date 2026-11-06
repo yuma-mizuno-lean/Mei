@@ -121,11 +121,12 @@ theorem shiftedEndpointEval_operatorEventEndpointStep_finiteRecursion (x : A)
     (source : PositiveDegrees.ShiftedEndpointOperator (H := A) (V := V) d ℳ p k) :
     ev x (Module.End.finiteRecursion Uop (k + 1) source) =
       Module.End.finiteRecursion U (k + 1) (ev x source) := by
-  exact LinearMap.congr_fun (Module.End.comp_finiteRecursion Uop U (ev x)
-    (LinearMap.ext (shiftedEndpointEval_operatorEventEndpointStep
-      d ℳ p ℒ H h B k K hkK events point x))
-    (operatorEventEndpointStep_pow_eq_zero d ℳ p ℒ H h B k K hkK events point)
-    (eventEndpointStep_pow_eq_zero d ℳ p ℒ H h B k K hkK events point)) source
+  rw [operatorEventEndpointStep]
+  refine (PositiveDegrees.shiftedEndpointEval_finiteRecursion
+    d ℳ p k events _ point x source).trans ?_
+  congr 2
+  ext F Q n
+  rw [PositiveDegrees.shiftedLowerStep_apply, eventEndpointStep_apply]
 
 /-- Coefficient recursions for all incoming inputs characterize the single
 linear-family solution. This applies separately to each independently proved
