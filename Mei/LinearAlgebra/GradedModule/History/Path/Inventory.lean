@@ -36,9 +36,9 @@ and Lemma 3.7 (arXiv:1601.07081v4).
 
 public noncomputable section
 
-namespace Quiver.Path
+namespace Mei
 
-open Mei
+open Quiver
 
 variable {Q : Type*} [Quiver Q] {a : Q}
   {R : Type*} [Semiring R] {M : Q → Type*}
@@ -102,7 +102,7 @@ theorem finite_histories_of_componentTransfersRaise
     (admit : (Σ b : Q, Σ p : Path a b, p.Degrees ι) → Prop)
     (hbound : ∀ b (p : Path a b) (d : p.Degrees ι), admit ⟨b, p, d⟩ →
       (∃ x ∈ P, p.homogeneousHistory T ℳ d x ≠ 0) →
-        IsZeroRunBounded (GradedVertex.componentWeight w) h (Degrees.liftPath i₀ p d)) :
+        Path.IsZeroRunBounded (GradedVertex.componentWeight w) h (Path.Degrees.liftPath i₀ p d)) :
     {z : Σ b : Q, Σ p : Path a b, p.Degrees ι |
       admit z ∧ ∃ x ∈ P, z.2.1.homogeneousHistory T ℳ z.2.2 x ≠ 0}.Finite := by
   refine (finite_bounded_histories T ℳ (r * h + r - 1) P hP).subset ?_
@@ -114,4 +114,4 @@ theorem finite_histories_of_componentTransfersRaise
   dsimp only
   omega
 
-end Quiver.Path
+end Mei
