@@ -6,6 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.Convex.Sweep.Admissible
+public import Mei.Geometry.Convex.Sweep.NormalPairing
 public import Mei.Geometry.Affine.FiniteRay.Map
 public import Mathlib.Topology.Algebra.ContinuousAffineEquiv
 
@@ -51,17 +52,10 @@ translation changes hyperplane offsets, while the inverse linear part changes
 normals; every recorded encounter, including a geometrically straight one, remains. -/
 def admissibleRayAffineEquiv : Source ≃ Target := by
   -- Normal pairings are linear, while encounter heights include the translation.
-  have hlinear (j : Fin n) (x : V) : g j (e.toAffineEquiv.linear x) = f j x := by
-    simp only [ContinuousLinearMap.comp_apply, ContinuousAffineMap.coe_contLinear,
-      ContinuousAffineEquiv.toContinuousAffineMap_toAffineMap,
-      AffineEquiv.linear_toAffineMap, ContinuousAffineEquiv.toAffineEquiv_symm,
-      AffineEquiv.linear_symm, LinearEquiv.coe_coe, LinearEquiv.symm_apply_apply]
-  have hforward (j : Fin n) (x : V) : g j (e x) = f j x - f j (e.symm 0) := by
-    have he := e.symm.toAffineEquiv.toAffineMap.linear_apply_vsub (e x) 0
-    simpa only [ContinuousLinearMap.comp_apply, ContinuousAffineMap.coe_contLinear,
-      ContinuousAffineEquiv.toContinuousAffineMap_toAffineMap,
-      AffineEquiv.coe_toAffineMap, vsub_eq_sub, sub_zero, ContinuousAffineEquiv.coe_coe,
-      ContinuousAffineEquiv.symm_apply_apply, map_sub] using congrArg (f j) he
+  have hlinear (j : Fin n) (x : V) : g j (e.toAffineEquiv.linear x) = f j x :=
+    (f j).comp_symm_contLinear_linear e x
+  have hforward (j : Fin n) (x : V) : g j (e x) = f j x - f j (e.symm 0) :=
+    (f j).comp_symm_contLinear_apply e x
   have hbackward (j : Fin n) (x : V') :
       f j (e.symm x) = g j x + f j (e.symm 0) := by
     have he := hforward j (e.symm x)

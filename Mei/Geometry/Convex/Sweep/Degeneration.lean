@@ -5,6 +5,7 @@ Authors: Codex
 -/
 module
 
+public import Mei.Geometry.Convex.Sweep.NormalPairing
 public import Mei.Geometry.Convex.Sweep.Realization
 public import Mei.Geometry.Convex.Polyhedron.Rational.Stratification
 public import Mei.Geometry.Convex.Polyhedron.Rational.Ray
@@ -86,17 +87,10 @@ admissibility or time-order assumption, including at tangent encounters. -/
 @[simp↓]
 theorem backwardPath_affine (Q : V) (t : ℝ) :
     backwardPath g b u (e Q) t = e (backwardPath f c v Q t) := by
-  have hlinear (j : Fin n) (x : V) : g j (e.toAffineEquiv.linear x) = f j x := by
-    simp only [ContinuousLinearMap.comp_apply, ContinuousAffineMap.coe_contLinear,
-      ContinuousAffineEquiv.toContinuousAffineMap_toAffineMap,
-      AffineEquiv.linear_toAffineMap, ContinuousAffineEquiv.toAffineEquiv_symm,
-      AffineEquiv.linear_symm, LinearEquiv.coe_coe, LinearEquiv.symm_apply_apply]
-  have hforward (j : Fin n) (x : V) : g j (e x) = f j x - f j (e.symm 0) := by
-    have he := e.symm.toAffineEquiv.toAffineMap.linear_apply_vsub (e x) 0
-    simpa only [ContinuousLinearMap.comp_apply, ContinuousAffineMap.coe_contLinear,
-      ContinuousAffineEquiv.toContinuousAffineMap_toAffineMap,
-      AffineEquiv.coe_toAffineMap, vsub_eq_sub, sub_zero, ContinuousAffineEquiv.coe_coe,
-      ContinuousAffineEquiv.symm_apply_apply, map_sub] using congrArg (f j) he
+  have hlinear (j : Fin n) (x : V) : g j (e.toAffineEquiv.linear x) = f j x :=
+    (f j).comp_symm_contLinear_linear e x
+  have hforward (j : Fin n) (x : V) : g j (e x) = f j x - f j (e.symm 0) :=
+    (f j).comp_symm_contLinear_apply e x
   have hadd (x y : V) : e (x + y) = e.toAffineEquiv.linear x + e y :=
     e.toAffineEquiv.map_vadd y x
   -- Transport the recursive points and elapsed times, even when a normal is tangent.
