@@ -108,34 +108,32 @@ theorem fanProduct_eq_one_of_forall_eq_one {x : V} (hC : ∀ j ∈ l, C j = 1) :
     fanProduct ℓ₁ ℓ C l x = 1 :=
   List.prod_map_ite_eq_one fun j hj _ => hC j hj
 
-/-- Along a line through a point where a linear form is negative, it stays negative on both
-sides for all small parameters. -/
-private theorem eventually_neg_line {f : V →ₗ[ℝ] ℝ} {θ : V} (hf : f θ < 0) (w : V) :
-    ∀ᶠ s in 𝓝[>] (0 : ℝ), f (θ + s • w) < 0 ∧ f (θ - s • w) < 0 := by
-  have hle : 𝓝[>] (0 : ℝ) ≤ 𝓝 0 := nhdsWithin_le_nhds
-  filter_upwards [hle (eventually_add_mul_neg hf (f w)), hle (eventually_add_mul_neg hf (-f w))]
-    with s h₁ h₂
-  rw [mul_neg, ← sub_eq_add_neg] at h₂
-  simpa only [map_add, map_sub, map_smul, smul_eq_mul] using ⟨h₁, h₂⟩
+/-- On `{ℓ₁ = 0}`, where `ℓ₂` is negative, so is every outgoing form `p ℓ₁ + q ℓ₂` with
+`q > 0`. -/
+private theorem apply_neg_of_fst_eq_zero
+    (hshape : ∀ j ∈ l, ∃ p q : ℝ, 0 < q ∧ ∀ x, ℓ j x = p * ℓ₁ x + q * ℓ₂ x) {θ : V}
+    (hθ : ℓ₁ θ = 0) (hθ₂ : ℓ₂ θ < 0) : ∀ j ∈ l, ℓ j θ < 0 := fun j hj => by
+  obtain ⟨p, q, hq, he⟩ := hshape j hj
+  rw [he, hθ]
+  nlinarith
 
-/-- Along a line through a point where a linear form is positive, it stays positive on both
-sides for all small parameters. -/
-private theorem eventually_pos_line {f : V →ₗ[ℝ] ℝ} {θ : V} (hf : 0 < f θ) (w : V) :
-    ∀ᶠ s in 𝓝[>] (0 : ℝ), 0 < f (θ + s • w) ∧ 0 < f (θ - s • w) := by
-  have hle : 𝓝[>] (0 : ℝ) ≤ 𝓝 0 := nhdsWithin_le_nhds
-  filter_upwards [hle (eventually_pos_add_mul hf (f w)), hle (eventually_pos_add_mul hf (-f w))]
-    with s h₁ h₂
-  rw [mul_neg, ← sub_eq_add_neg] at h₂
-  simpa only [map_add, map_sub, map_smul, smul_eq_mul] using ⟨h₁, h₂⟩
+/-- On `{ℓ₁ = 0}`, where `ℓ₂` is positive, so is every outgoing form `p ℓ₁ + q ℓ₂` with
+`q > 0`. -/
+private theorem apply_pos_of_fst_eq_zero
+    (hshape : ∀ j ∈ l, ∃ p q : ℝ, 0 < q ∧ ∀ x, ℓ j x = p * ℓ₁ x + q * ℓ₂ x) {θ : V}
+    (hθ : ℓ₁ θ = 0) (hθ₂ : 0 < ℓ₂ θ) : ∀ j ∈ l, 0 < ℓ j θ := fun j hj => by
+  obtain ⟨p, q, hq, he⟩ := hshape j hj
+  rw [he, hθ]
+  nlinarith
 
-/-- Crossing the kernel of a linear form `f` in a direction `w` with `f w > 0`, the form is
-positive after and negative before the crossing. -/
-private theorem eventually_pos_neg_line {f : V →ₗ[ℝ] ℝ} {θ w : V} (hf : f θ = 0)
-    (hw : 0 < f w) : ∀ᶠ s in 𝓝[>] (0 : ℝ), 0 < f (θ + s • w) ∧ f (θ - s • w) < 0 := by
-  filter_upwards [self_mem_nhdsWithin] with s (hs : 0 < s)
-  have := mul_pos hs hw
-  simp only [map_add, map_sub, map_smul, smul_eq_mul, hf]
-  constructor <;> linarith
+/-- On `{ℓ₂ = 0}`, where `ℓ₁` is positive, so is every outgoing form `p ℓ₁ + q ℓ₂` with
+`p > 0`. -/
+private theorem apply_pos_of_snd_eq_zero
+    (hshape : ∀ j ∈ l, ∃ p q : ℝ, 0 < p ∧ ∀ x, ℓ j x = p * ℓ₁ x + q * ℓ₂ x) {θ : V}
+    (hθ : ℓ₂ θ = 0) (hθ₁ : 0 < ℓ₁ θ) : ∀ j ∈ l, 0 < ℓ j θ := fun j hj => by
+  obtain ⟨p, q, hp, he⟩ := hshape j hj
+  rw [he, hθ]
+  nlinarith
 
 /-- Two linear forms `p ℓ₁ + q ℓ₂` and `p' ℓ₁ + q' ℓ₂` with `q, q' > 0` vanishing at a common
 point off the joint `{ℓ₁ = ℓ₂ = 0}` are positive multiples of each other. -/
@@ -175,10 +173,8 @@ theorem eventually_fanTransport_fst
     · -- Below the joint, every outgoing form is negative near `θ`.
       have hl : ∀ᶠ s in 𝓝[>] (0 : ℝ), ∀ j ∈ {x | x ∈ l},
           ℓ j (θ + s • w) < 0 ∧ ℓ j (θ - s • w) < 0 :=
-        (List.finite_toSet l).eventually_all.mpr fun j hj => eventually_neg_line (by
-          obtain ⟨p, q, hq, he⟩ := hshape j hj
-          rw [he, hθ]
-          nlinarith) w
+        (List.finite_toSet l).eventually_all.mpr fun j hj =>
+          eventually_neg_line (apply_neg_of_fst_eq_zero hshape hθ hθ₂ j hj) w
       filter_upwards [h₁, eventually_neg_line hθ₂ w, hl] with s h₁ h₂ h₃
       rw [fanTransport_def, fanTransport_def,
         fanProduct_eq_one_of_forall_nonpos fun j hj => (h₃ j hj).1.le,
@@ -188,10 +184,8 @@ theorem eventually_fanTransport_fst
     · -- Above the joint, every outgoing form is positive near `θ`.
       have hl : ∀ᶠ s in 𝓝[>] (0 : ℝ), ∀ j ∈ {x | x ∈ l},
           0 < ℓ j (θ + s • w) ∧ 0 < ℓ j (θ - s • w) :=
-        (List.finite_toSet l).eventually_all.mpr fun j hj => eventually_pos_line (by
-          obtain ⟨p, q, hq, he⟩ := hshape j hj
-          rw [he, hθ]
-          nlinarith) w
+        (List.finite_toSet l).eventually_all.mpr fun j hj =>
+          eventually_pos_line (apply_pos_of_fst_eq_zero hshape hθ hθ₂ j hj) w
       filter_upwards [h₁, eventually_pos_line hθ₂ w, hl] with s h₁ h₂ h₃
       rw [fanTransport_def, fanTransport_def,
         fanProduct_eq_prod_of_forall_pos h₁.1 fun j hj => (h₃ j hj).1,
@@ -221,10 +215,8 @@ theorem eventually_fanTransport_snd
     · -- To the right of the joint, every outgoing form is positive near `θ`.
       have hl : ∀ᶠ s in 𝓝[>] (0 : ℝ), ∀ j ∈ {x | x ∈ l},
           0 < ℓ j (θ + s • w) ∧ 0 < ℓ j (θ - s • w) :=
-        (List.finite_toSet l).eventually_all.mpr fun j hj => eventually_pos_line (by
-          obtain ⟨p, q, hp, he⟩ := hshape j hj
-          rw [he, hθ]
-          nlinarith) w
+        (List.finite_toSet l).eventually_all.mpr fun j hj =>
+          eventually_pos_line (apply_pos_of_snd_eq_zero hshape hθ hθ₁ j hj) w
       filter_upwards [h₂, eventually_pos_line hθ₁ w, hl] with s h₂ h₁ h₃
       rw [fanTransport_def, fanTransport_def,
         fanProduct_eq_prod_of_forall_pos h₁.1 fun j hj => (h₃ j hj).1,
@@ -237,9 +229,9 @@ theorem eventually_fanTransport_snd
     simp
 
 /-- Crossing a common support of outgoing walls at a point `θ` with `ℓ₁ θ > 0` and `ℓ₂ θ < 0`, in
-a direction `w` on whose positive side all walls through `θ` lie, multiplies the chamber function
-on the right by the product of the labels of the walls through `θ`, provided no wall through `θ`
-precedes a wall on whose positive side `θ` lies. -/
+a direction `w` pointing to the positive side of every wall through `θ`, multiplies the chamber
+function on the right by the product of the labels of the walls through `θ`, provided every wall
+preceding a wall on whose positive side `θ` lies also has `θ` on its positive side. -/
 theorem eventually_fanTransport_outgoing {θ w : V} (hθ₁ : 0 < ℓ₁ θ) (hθ₂ : ℓ₂ θ < 0)
     (hsort : l.Pairwise fun i j => 0 < ℓ j θ → 0 < ℓ i θ)
     (htie : ∀ j ∈ l, ℓ j θ = 0 → 0 < ℓ j w) :
@@ -283,30 +275,6 @@ theorem fanTransport_eq_one {ℓ₀ : V →ₗ[ℝ] ℝ} (hC : (l.map C).prod = 
 
 end Transport
 
-section Crossing
-
-variable {G V : Type*} [Group G] [AddCommGroup V] [Module ℝ V]
-
-/-- Let `T` be a function on `V` such that, near `θ`, crossing in every direction `w` with
-`ℓ w > 0` multiplies `T` on the right by `X`. Then crossing in any direction `v` with
-`ℓ v ≠ 0` gives `T (θ + s • v)⁻¹ * T (θ - s • v) = X⁻¹` if `ℓ v > 0` and `X` if `ℓ v < 0`,
-for all small `s > 0`. -/
-theorem eventually_inv_mul_eq_zpow {T : V → G} {θ v : V} {ℓ : V →ₗ[ℝ] ℝ} {X : G}
-    (hT : ∀ w, 0 < ℓ w → ∀ᶠ s in 𝓝[>] (0 : ℝ), T (θ + s • w) = T (θ - s • w) * X)
-    (hv : ℓ v ≠ 0) :
-    ∀ᶠ s in 𝓝[>] (0 : ℝ), (T (θ + s • v))⁻¹ * T (θ - s • v) =
-      X ^ (if 0 < ℓ v then -1 else 1 : ℤ) := by
-  rcases hv.lt_or_gt with hv | hv
-  · filter_upwards [hT (-v) (by simpa using hv)] with s hs
-    rw [smul_neg, ← sub_eq_add_neg, sub_neg_eq_add] at hs
-    rw [hs, ite_eq_right (not_lt.mpr hv.le)]
-    group
-  · filter_upwards [hT v hv] with s hs
-    rw [hs, ite_eq_left hv]
-    group
-
-end Crossing
-
 section Diagram
 
 variable {Γ Λ R L V ι : Type*} [AddCommGroup Γ] [AddCommGroup Λ]
@@ -317,6 +285,36 @@ variable {Γ Λ R L V ι : Type*} [AddCommGroup Γ] [AddCommGroup Λ]
   [GradedLieAlgebra ℒ] [IsPositiveGrading d ℒ]
   {i : Λ →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
   {H : DirectedWallSpaces ρ ℒ} (D : DirectedDiagram (d := d) h H ι)
+
+/-- The walls of a list without repetition that are active at order `k` and whose normals vanish
+at `θ` can be listed without repetition as active walls, with the same product of labels as the
+product over the list of the labels of the walls whose normals vanish at `θ`. -/
+private theorem exists_list_active (k : ℕ) {l : List ι} (hl : l.Nodup) (θ : V) :
+    ∃ m : List (D.active k), m.Nodup ∧
+      (∀ b : D.active k, b ∈ m ↔ (b : ι) ∈ l ∧ h.realCharacter (D.wall b).normal θ = 0) ∧
+      (m.map fun b : D.active k => CompletedGroup.projection k (D.wall b).label).prod =
+        (l.map fun j => if h.realCharacter (D.wall j).normal θ = 0 then
+          CompletedGroup.projection k (D.wall j).label else 1).prod := by
+  classical
+  -- Filter the walls of `l` that are active and vanish at `θ`; `pmap` pairs each of them with
+  -- the proof of activity extracted from the filter condition.
+  let P : ι → Prop := fun j => j ∈ D.active k ∧ h.realCharacter (D.wall j).normal θ = 0
+  refine ⟨(l.filter fun j => P j).pmap Subtype.mk fun j hj =>
+      (of_decide_eq_true (List.mem_filter.mp hj).2).1, ?_, fun b => ?_, ?_⟩
+  · exact (hl.filter _).pmap fun _ _ _ _ he => congrArg Subtype.val he
+  · rw [List.mem_pmap]
+    constructor
+    · rintro ⟨a, ha, rfl⟩
+      exact ⟨(List.mem_filter.mp ha).1, (of_decide_eq_true (List.mem_filter.mp ha).2).2⟩
+    · rintro ⟨hbl, hb⟩
+      exact ⟨b, List.mem_filter.mpr ⟨hbl, decide_eq_true ⟨b.2, hb⟩⟩, rfl⟩
+  · simp only [List.map_pmap, List.pmap_eq_map]
+    rw [List.prod_map_filter_eq_prod_map_ite]
+    -- The inactive walls of `l` have trivial projected label.
+    refine List.prod_map_ite_congr fun j _ => ?_
+    by_cases hj : j ∈ D.active k
+    · exact Or.inr (and_iff_right hj)
+    · exact Or.inl (not_not.mp ((D.mem_active k j).not.mp hj))
 
 /-- A directed diagram is in *fan configuration* with walls `j₁, j₂` and integral normals
 `μ₁, μ₂`, with real extensions `ℓ₁, ℓ₂`, when the walls `j₁` and `j₂` are the hyperplanes
@@ -376,21 +374,6 @@ private theorem exists_apply_eq_zero {j : ι} (hj₁ : j ≠ j₁) (hj₂ : j �
       div_mul_cancel₀ q hy₁, div_mul_cancel₀ p hx₂]
     ring
 
-omit hD in
-/-- Active walls through a point outside the singular support of the active walls have the
-same kernel. -/
-private theorem apply_eq_zero_iff_of_mem_support {k : ℕ} {θ : V}
-    (hθ : θ ∉ singularSupport fun j : D.active k => (D.wall j).support) {a b : ι}
-    (ha : a ∈ D.active k) (hb : b ∈ D.active k) (hθa : θ ∈ (D.wall a).support)
-    (hθb : θ ∈ (D.wall b).support) (x : V) :
-    h.realCharacter (D.wall a).normal x = 0 ↔ h.realCharacter (D.wall b).normal x = 0 := by
-  have hker : LinearMap.ker (h.realCharacter (D.wall a).normal) =
-      LinearMap.ker (h.realCharacter (D.wall b).normal) := by
-    rw [← (D.wall a).direction_support, ← (D.wall b).direction_support]
-    exact congrArg AffineSubspace.direction (affineSpan_eq_of_notMem_singularSupport
-      (W := fun j : D.active k => (D.wall j).support) (i := ⟨a, ha⟩) (j := ⟨b, hb⟩) hθ hθa hθb)
-  simpa only [LinearMap.mem_ker] using SetLike.ext_iff.mp hker x
-
 /-- An active wall through a point of the active first wall outside the singular support of the
 active walls is the first wall. -/
 theorem eq_fst_of_mem_support {k : ℕ} {θ : V}
@@ -398,9 +381,10 @@ theorem eq_fst_of_mem_support {k : ℕ} {θ : V}
     (hb : b ∈ D.active k) (hθb : θ ∈ (D.wall b).support) (h₁ : j₁ ∈ D.active k)
     (hθ₁ : θ ∈ (D.wall j₁).support) : b = j₁ := by
   obtain ⟨x, hx₁, hx₂⟩ := hD.exists_fst
-  have hx := (apply_eq_zero_iff_of_mem_support hθ h₁ hb hθ₁ hθb x).mp (by
-    rw [hD.normal_fst]
-    exact hx₁)
+  have hx : h.realCharacter (D.wall b).normal x = 0 := by
+    rw [← LinearMap.mem_ker, ← D.ker_normal_eq_of_mem_support (a := ⟨j₁, h₁⟩) (b := ⟨b, hb⟩) hθ
+      hθ₁ hθb, LinearMap.mem_ker, hD.normal_fst]
+    exact hx₁
   by_contra hb₁
   by_cases hb₂ : b = j₂
   · subst hb₂
@@ -417,9 +401,10 @@ theorem eq_snd_of_mem_support {k : ℕ} {θ : V}
     (hb : b ∈ D.active k) (hθb : θ ∈ (D.wall b).support) (h₂ : j₂ ∈ D.active k)
     (hθ₂ : θ ∈ (D.wall j₂).support) : b = j₂ := by
   obtain ⟨y, hy₂, hy₁⟩ := hD.exists_snd
-  have hy := (apply_eq_zero_iff_of_mem_support hθ h₂ hb hθ₂ hθb y).mp (by
-    rw [hD.normal_snd]
-    exact hy₂)
+  have hy : h.realCharacter (D.wall b).normal y = 0 := by
+    rw [← LinearMap.mem_ker, ← D.ker_normal_eq_of_mem_support (a := ⟨j₂, h₂⟩) (b := ⟨b, hb⟩) hθ
+      hθ₂ hθb, LinearMap.mem_ker, hD.normal_snd]
+    exact hy₂
   by_contra hb₂
   by_cases hb₁ : b = j₁
   · subst hb₁
@@ -428,6 +413,11 @@ theorem eq_snd_of_mem_support {k : ℕ} {θ : V}
   · obtain ⟨p, q, hp, -, he⟩ := hD.exists_apply_eq_of_ne b hb₁ hb₂
     rw [he, hy₂, mul_zero, add_zero] at hy
     exact hy₁ ((mul_eq_zero.mp hy).resolve_left hp.ne')
+
+/-- The normal of every other wall extends to `p ℓ₁ + q ℓ₂` with `q > 0`. -/
+private theorem exists_apply_eq_of_ne' (j : ι) (hj₁ : j ≠ j₁) (hj₂ : j ≠ j₂) :
+    ∃ p q : ℝ, 0 < q ∧ ∀ x, h.realCharacter (D.wall j).normal x = p * ℓ₁ x + q * ℓ₂ x :=
+  (hD.exists_apply_eq_of_ne j hj₁ hj₂).imp fun _ ⟨q, _, hq, he⟩ => ⟨q, hq, he⟩
 
 /-- Two active outgoing walls through a point outside the singular support of the active walls
 have normals with positively proportional real extensions. -/
@@ -438,10 +428,11 @@ private theorem exists_pos_mul_of_mem_support {k : ℕ} {θ : V}
     ∃ c : ℝ, 0 < c ∧ ∀ x, h.realCharacter (D.wall a).normal x =
       c * h.realCharacter (D.wall b).normal x := by
   obtain ⟨z, hz₁, hz⟩ := hD.exists_apply_eq_zero hb₁ hb₂
-  exact exists_pos_mul_of_apply_eq_zero
-    ((hD.exists_apply_eq_of_ne a ha₁ ha₂).imp fun _ ⟨q, _, hq, he⟩ => ⟨q, hq, he⟩)
-    ((hD.exists_apply_eq_of_ne b hb₁ hb₂).imp fun _ ⟨q, _, hq, he⟩ => ⟨q, hq, he⟩) (Or.inl hz₁)
-    ((apply_eq_zero_iff_of_mem_support hθ ha hb hθa hθb z).mpr hz) hz
+  refine exists_pos_mul_of_apply_eq_zero (hD.exists_apply_eq_of_ne' a ha₁ ha₂)
+    (hD.exists_apply_eq_of_ne' b hb₁ hb₂) (Or.inl hz₁) ?_ hz
+  rw [← LinearMap.mem_ker, D.ker_normal_eq_of_mem_support (a := ⟨a, ha⟩) (b := ⟨b, hb⟩) hθ hθa
+    hθb, LinearMap.mem_ker]
+  exact hz
 
 variable (k : ℕ) {l : List ι} (hj₁ : j₁ ∉ l) (hj₂ : j₂ ∉ l)
 
@@ -463,6 +454,16 @@ private theorem ne_of_mem {j : ι} (hj : j ∈ l) : j ≠ j₁ ∧ j ≠ j₂ :=
 private theorem shape : ∀ j ∈ l, ∃ p q : ℝ, 0 < p ∧ 0 < q ∧
     ∀ x, h.realCharacter (D.wall j).normal x = p * ℓ₁ x + q * ℓ₂ x := fun j hj =>
   hD.exists_apply_eq_of_ne j (ne_of_mem hj₁ hj₂ hj).1 (ne_of_mem hj₁ hj₂ hj).2
+
+/-- The normals of the walls of the list extend to `p ℓ₁ + q ℓ₂` with `q > 0`. -/
+private theorem shape_fst : ∀ j ∈ l, ∃ p q : ℝ, 0 < q ∧
+    ∀ x, h.realCharacter (D.wall j).normal x = p * ℓ₁ x + q * ℓ₂ x := fun j hj =>
+  hD.exists_apply_eq_of_ne' j (ne_of_mem hj₁ hj₂ hj).1 (ne_of_mem hj₁ hj₂ hj).2
+
+/-- The normals of the walls of the list extend to `p ℓ₁ + q ℓ₂` with `p > 0`. -/
+private theorem shape_snd : ∀ j ∈ l, ∃ p q : ℝ, 0 < p ∧
+    ∀ x, h.realCharacter (D.wall j).normal x = p * ℓ₁ x + q * ℓ₂ x := fun j hj =>
+  (hD.shape hj₁ hj₂ j hj).imp fun _ ⟨q, hp, _, he⟩ => ⟨q, hp, he⟩
 
 /-- The walls of the list are the half-hyperplanes `{ℓⱼ = 0, ℓ₁ ≥ 0}`. -/
 private theorem support_of_mem {j : ι} (hj : j ∈ l) :
@@ -506,10 +507,8 @@ private theorem eventually_fanProduct_eq {θ : V}
     have hprod := mul_eq_right.mp hrel.symm
     rcases lt_trichotomy (ℓ₂ θ) 0 with h₂ | h₂ | h₂
     · have hl : ∀ᶠ φ in 𝓝 θ, ∀ j ∈ {x | x ∈ l}, h.realCharacter (D.wall j).normal φ < 0 :=
-        (List.finite_toSet l).eventually_all.mpr fun j hj => hneg (by
-          obtain ⟨p, q, -, hq, he⟩ := hD.shape hj₁ hj₂ j hj
-          rw [he, h₁]
-          nlinarith)
+        (List.finite_toSet l).eventually_all.mpr fun j hj =>
+          hneg (apply_neg_of_fst_eq_zero (hD.shape_fst hj₁ hj₂) h₁ h₂ j hj)
       filter_upwards [hl] with φ hφ
       rw [fanProduct_eq_one_of_forall_nonpos fun j hj => (hφ j hj).le,
         fanProduct_eq_one_of_nonpos h₁.le]
@@ -519,10 +518,8 @@ private theorem eventually_fanProduct_eq {θ : V}
       exact Eventually.of_forall fun φ => by
         rw [fanProduct_eq_one_of_forall_eq_one hC, fanProduct_eq_one_of_forall_eq_one hC]
     · have hl : ∀ᶠ φ in 𝓝 θ, ∀ j ∈ {x | x ∈ l}, 0 < h.realCharacter (D.wall j).normal φ :=
-        (List.finite_toSet l).eventually_all.mpr fun j hj => hpos (by
-          obtain ⟨p, q, -, hq, he⟩ := hD.shape hj₁ hj₂ j hj
-          rw [he, h₁]
-          nlinarith)
+        (List.finite_toSet l).eventually_all.mpr fun j hj =>
+          hpos (apply_pos_of_fst_eq_zero (hD.shape_fst hj₁ hj₂) h₁ h₂ j hj)
       filter_upwards [hl] with φ hφ
       rw [fanProduct_eq_one_of_nonpos h₁.le]
       by_cases hφ₁ : 0 < ℓ₁ φ
@@ -591,7 +588,7 @@ private theorem eventually_inv_mul_fst {θ : V}
   rw [hD.normal_fst] at hvj ⊢
   refine eventually_inv_mul_eq_zpow (fun w hw =>
     eventually_fanTransport_fst
-      (fun j hj => (hD.shape hj₁ hj₂ j hj).imp fun _ ⟨q, _, hq, he⟩ => ⟨q, hq, he⟩) hrel hθ₁' ?_
+      (hD.shape_fst hj₁ hj₂) hrel hθ₁' ?_
       hw) hvj
   -- On the joint, the second wall and the walls of the list are inactive.
   refine or_iff_not_imp_left.mpr fun hθ₂ => ?_
@@ -619,7 +616,7 @@ private theorem eventually_inv_mul_snd {θ : V}
   rw [hD.normal_snd] at hvj ⊢
   refine eventually_inv_mul_eq_zpow (fun w hw =>
     eventually_fanTransport_snd
-      (fun j hj => (hD.shape hj₁ hj₂ j hj).imp fun _ ⟨q, hp, _, he⟩ => ⟨q, hp, he⟩) hθ₂' ?_
+      (hD.shape_snd hj₁ hj₂) hθ₂' ?_
       hw) hvj
   -- On the joint, the first wall and the walls of the list are inactive.
   refine or_iff_not_imp_left.mpr fun hθ₁ => ?_
@@ -630,8 +627,51 @@ private theorem eventually_inv_mul_snd {θ : V}
   · exact (ne_of_mem hj₁ hj₂ hj).2 (hD.eq_snd_of_mem_support hθ ((D.mem_active k j).mpr hne)
       (hD.mem_support_of_mem hj₁ hj₂ hθ₁ hθ₂' hj) h₂ hθ₂)
 
+/-- At a point of the joint on an active outgoing wall outside the singular support of the
+active walls, if the labels `A` and `B` are `1`, the chamber function is `1` everywhere. -/
+private theorem fanTransport_eq_one_of_joint {θ : V}
+    (hθ : θ ∉ singularSupport fun j : D.active k => (D.wall j).support) {j₀ : ι}
+    (hj₀ : j₀ ∈ D.active k) (h₀₁ : j₀ ≠ j₁) (h₀₂ : j₀ ≠ j₂) (hθj₀ : θ ∈ (D.wall j₀).support)
+    (hθ₁ : ℓ₁ θ = 0) (hθ₂ : ℓ₂ θ = 0) (hA : 𝒜 = 1) (hB : ℬ = 1) (x : V) : 𝒯 x = 1 := by
+  simp only [hA, hB, one_mul, mul_one] at hrel
+  rw [hA, hB]
+  -- Every wall of the list with a nontrivial label passes through `θ`, hence is a positive
+  -- multiple of `j₀`.
+  refine fanTransport_eq_one (ℓ₀ := h.realCharacter (D.wall j₀).normal) hrel.symm
+    (fun j hj => ?_) x
+  by_cases hne : CompletedGroup.projection k (D.wall j).label = 1
+  · exact Or.inl hne
+  · refine Or.inr fun x => ?_
+    obtain ⟨c, hc, he⟩ := hD.exists_pos_mul_of_mem_support hθ ((D.mem_active k j).mpr hne)
+      (ne_of_mem hj₁ hj₂ hj).1 (ne_of_mem hj₁ hj₂ hj).2 hj₀ h₀₁ h₀₂
+      (hD.mem_support_of_mem hj₁ hj₂ hθ₁ hθ₂ hj) hθj₀
+    rw [he, mul_pos_iff_of_pos_left hc]
+
 variable (hl : l.Nodup) (hact : ∀ j ∈ D.active k, j ≠ j₁ → j ≠ j₂ → j ∈ l)
 include hl hact
+
+omit hrel hl in
+/-- At a point of an active outgoing wall outside the singular support of the active walls, the
+active walls through that point are the active walls of the list whose normals vanish there. -/
+private theorem mem_support_iff {θ : V}
+    (hθ : θ ∉ singularSupport fun j : D.active k => (D.wall j).support) {j₀ : ι}
+    (hj₀ : j₀ ∈ D.active k) (hj₀₁ : j₀ ≠ j₁) (hj₀₂ : j₀ ≠ j₂) (hθj₀ : θ ∈ (D.wall j₀).support)
+    (b : D.active k) :
+    θ ∈ (D.wall b).support ↔ (b : ι) ∈ l ∧ h.realCharacter (D.wall b).normal θ = 0 := by
+  have hθ₁ : 0 ≤ ℓ₁ θ := by
+    rw [hD.support_of_ne j₀ hj₀₁ hj₀₂] at hθj₀
+    exact hθj₀.2
+  constructor
+  · intro hb
+    have hb₁ : (b : ι) ≠ j₁ := fun he =>
+      hj₀₁ (hD.eq_fst_of_mem_support hθ hj₀ hθj₀ (he ▸ b.2) (he ▸ hb))
+    have hb₂ : (b : ι) ≠ j₂ := fun he =>
+      hj₀₂ (hD.eq_snd_of_mem_support hθ hj₀ hθj₀ (he ▸ b.2) (he ▸ hb))
+    rw [hD.support_of_ne b hb₁ hb₂] at hb
+    exact ⟨hact b b.2 hb₁ hb₂, hb.1⟩
+  · rintro ⟨hbl, hb⟩
+    rw [hD.support_of_mem hj₁ hj₂ hbl]
+    exact ⟨hb, hθ₁⟩
 
 omit hrel in
 /-- At a point of an active outgoing wall outside the singular support of the active walls,
@@ -646,68 +686,28 @@ private theorem combinedLabel_eq_zpow {θ : V}
       (l.map fun j => if h.realCharacter (D.wall j).normal θ = 0 then
         CompletedGroup.projection k (D.wall j).label else 1).prod ^
         (if 0 < h.realCharacter (D.wall j₀).normal v then -1 else 1 : ℤ) := by
-  classical
-  have hθ₁ : 0 ≤ ℓ₁ θ := by
-    rw [hD.support_of_ne j₀ hj₀₁ hj₀₂] at hθj₀
-    exact hθj₀.2
-  -- The active walls through `θ` are the active walls of the list vanishing at `θ`.
-  have hinc (b : D.active k) : θ ∈ (D.wall b).support ↔
-      (b : ι) ∈ l ∧ h.realCharacter (D.wall b).normal θ = 0 := by
-    constructor
-    · intro hb
-      have hb₁ : (b : ι) ≠ j₁ := fun he =>
-        hj₀₁ (hD.eq_fst_of_mem_support hθ hj₀ hθj₀ (he ▸ b.2) (he ▸ hb))
-      have hb₂ : (b : ι) ≠ j₂ := fun he =>
-        hj₀₂ (hD.eq_snd_of_mem_support hθ hj₀ hθj₀ (he ▸ b.2) (he ▸ hb))
-      rw [hD.support_of_ne b hb₁ hb₂] at hb
-      exact ⟨hact b b.2 hb₁ hb₂, hb.1⟩
-    · rintro ⟨hbl, hb⟩
-      rw [hD.support_of_mem hj₁ hj₂ hbl]
-      exact ⟨hb, hθ₁⟩
+  obtain ⟨m, hnodup, hm, hprod⟩ := D.exists_list_active k hl θ
+  have hm' (b : D.active k) : b ∈ m ↔ θ ∈ (D.wall b).support :=
+    (hm b).trans (hD.mem_support_iff k hj₁ hj₂ hact hθ hj₀ hj₀₁ hj₀₂ hθj₀ b).symm
   -- The walls through `θ` lie on the same side of every direction as `j₀`.
   have hsign (b : D.active k) (hb : θ ∈ (D.wall b).support) (x : V) :
       (0 < h.realCharacter (D.wall b).normal x ↔ 0 < h.realCharacter (D.wall j₀).normal x) := by
-    have hbl := ((hinc b).mp hb).1
+    have hbl := ((hm b).mp ((hm' b).mpr hb)).1
     obtain ⟨c, hc, he⟩ := hD.exists_pos_mul_of_mem_support hθ b.2 (ne_of_mem hj₁ hj₂ hbl).1
       (ne_of_mem hj₁ hj₂ hbl).2 hj₀ hj₀₁ hj₀₂ hb hθj₀
     rw [he, mul_pos_iff_of_pos_left hc]
   -- It suffices to treat directions pointing to the negative side of `j₀`.
-  have key (v : V)
-      (hv : ∀ j : D.active k, θ ∈ (D.wall j).support → h.realCharacter (D.wall j).normal v ≠ 0)
-      (hneg : h.realCharacter (D.wall j₀).normal v < 0) :
+  have key (v : V) (hneg : h.realCharacter (D.wall j₀).normal v < 0) :
       D.combinedLabel k θ v hθ = (l.map fun j => if h.realCharacter (D.wall j).normal θ = 0 then
         CompletedGroup.projection k (D.wall j).label else 1).prod := by
-    let P : ι → Prop := fun j => j ∈ D.active k ∧ h.realCharacter (D.wall j).normal θ = 0
-    let m : List (D.active k) := (l.filter fun j => P j).pmap Subtype.mk fun j hj =>
-      (of_decide_eq_true (List.mem_filter.mp hj).2).1
-    have hm (b : D.active k) : b ∈ m ↔ θ ∈ (D.wall b).support := by
-      rw [hinc b, List.mem_pmap]
-      constructor
-      · rintro ⟨a, ha, rfl⟩
-        exact ⟨(List.mem_filter.mp ha).1, (of_decide_eq_true (List.mem_filter.mp ha).2).2⟩
-      · rintro ⟨hbl, hb⟩
-        exact ⟨b, List.mem_filter.mpr ⟨hbl, decide_eq_true ⟨b.2, hb⟩⟩, rfl⟩
-    have hnodup : m.Nodup :=
-      (hl.filter _).pmap fun _ _ _ _ he => congrArg Subtype.val he
-    refine (D.combinedLabel_eq_prod k θ v hθ m hnodup hm).trans ?_
-    rw [List.map_congr_left
-        (g := fun b : D.active k => CompletedGroup.projection k (D.wall b).label) fun b hb => by
-          rw [ite_eq_right (by rw [hsign b ((hm b).mp hb)]; exact lt_asymm hneg), zpow_one]]
-    simp only [m, List.map_pmap, List.pmap_eq_map]
-    rw [List.prod_map_filter_eq_prod_map_ite]
-    refine List.prod_map_ite_congr fun j _ => ?_
-    by_cases hj : j ∈ D.active k
-    · exact Or.inr (and_iff_right hj)
-    · exact Or.inl (not_not.mp ((D.mem_active k j).not.mp hj))
+    rw [D.combinedLabel_eq_prod k θ v hθ m hnodup hm', ← hprod]
+    refine congrArg List.prod (List.map_congr_left fun b hb => ?_)
+    rw [ite_eq_right (by rw [hsign b ((hm' b).mp hb)]; exact lt_asymm hneg), zpow_one]
   rcases (hv ⟨j₀, hj₀⟩ hθj₀).lt_or_gt with hneg | hpos
   · rw [ite_eq_right (lt_asymm hneg), zpow_one]
-    exact key v hv hneg
-  · have hv' : ∀ j : D.active k, θ ∈ (D.wall j).support →
-        h.realCharacter (D.wall j).normal (-v) ≠ 0 := fun j hj => by
-      rw [map_neg, neg_ne_zero]
-      exact hv j hj
-    rw [ite_eq_left hpos, zpow_neg_one]
-    have hk := (key (-v) hv' (by rw [map_neg]; exact neg_neg_of_pos hpos)).symm.trans
+    exact key v hneg
+  · rw [ite_eq_left hpos, zpow_neg_one]
+    have hk := (key (-v) (by rw [map_neg]; exact neg_neg_of_pos hpos)).symm.trans
       (D.combinedLabel_neg k θ v hθ hv)
     exact (inv_eq_iff_eq_inv.mpr hk).symm
 
@@ -738,10 +738,8 @@ private theorem eventually_inv_mul_outgoing {θ : V}
     refine eventually_inv_mul_eq_zpow (fun w hw =>
       eventually_fanTransport_outgoing hθ₁ hθ₂ (hsort.imp fun hij => hij θ hθ₁)
         fun j hj hjθ => ?_) hvj
-    obtain ⟨c, hc, he⟩ := exists_pos_mul_of_apply_eq_zero
-      ((hshape j hj).imp fun _ ⟨q, _, hq, he⟩ => ⟨q, hq, he⟩)
-      ((hD.exists_apply_eq_of_ne j₀ h₀₁ h₀₂).imp fun _ ⟨q, _, hq, he⟩ => ⟨q, hq, he⟩)
-      (Or.inl hθ₁.ne') hjθ hθj₀'.1
+    obtain ⟨c, hc, he⟩ := exists_pos_mul_of_apply_eq_zero (hD.shape_fst hj₁ hj₂ j hj)
+      (hD.exists_apply_eq_of_ne' j₀ h₀₁ h₀₂) (Or.inl hθ₁.ne') hjθ hθj₀'.1
     rw [he]
     exact mul_pos hc hw
   · -- At the joint, `A`, `B` and the product of the outgoing labels are `1`, and so are the
@@ -758,26 +756,16 @@ private theorem eventually_inv_mul_outgoing {θ : V}
       by_contra hne
       exact h₀₂ (hD.eq_snd_of_mem_support hθ hj₀ hθj₀ ((D.mem_active k j₂).mpr hne)
         (by rw [hD.support_snd]; exact hθ₂))
+    have hT := hD.fanTransport_eq_one_of_joint k hj₁ hj₂ hrel hθ hj₀ h₀₁ h₀₂ hθj₀ hθ₁.symm hθ₂
+      hA hB
     simp only [hA, hB, one_mul, mul_one] at hrel
-    have hprod := hrel.symm
-    have hT (x : V) : 𝒯 x = 1 := by
-      rw [hA, hB]
-      refine fanTransport_eq_one (ℓ₀ := h.realCharacter (D.wall j₀).normal) hprod
-        (fun j hj => ?_) x
-      by_cases hne : CompletedGroup.projection k (D.wall j).label = 1
-      · exact Or.inl hne
-      · refine Or.inr fun x => ?_
-        have hjθ := hD.mem_support_of_mem hj₁ hj₂ hθ₁.symm hθ₂ hj
-        obtain ⟨c, hc, he⟩ := hD.exists_pos_mul_of_mem_support hθ ((D.mem_active k j).mpr hne)
-          (ne_of_mem hj₁ hj₂ hj).1 (ne_of_mem hj₁ hj₂ hj).2 hj₀ h₀₁ h₀₂ hjθ hθj₀
-        rw [he, mul_pos_iff_of_pos_left hc]
     have hX : (l.map fun j => if h.realCharacter (D.wall j).normal θ = 0 then
         CompletedGroup.projection k (D.wall j).label else 1).prod = 1 := by
       rw [List.prod_map_ite_eq_prod_map fun j hj hne => absurd (by
         obtain ⟨p, q, -, -, he⟩ := hshape j hj
         rw [he, ← hθ₁, hθ₂]
         ring) hne]
-      exact hprod
+      exact hrel.symm
     refine Eventually.of_forall fun s => ?_
     rw [hT, hT, hX, inv_one, one_mul, one_zpow]
 
@@ -829,8 +817,8 @@ than that of an earlier wall, by a list `l` such that the labels `A, B` of `{ℓ
 `{ℓ₂ = 0}` and `Cⱼ` of the walls `j` of `l` satisfy `B A = A (∏_{j ∈ l} Cⱼ) B` at order `k`. -/
 theorem levelConsistent : D.LevelConsistent k :=
   (D.levelConsistent_iff_loops k).mpr fun _ p => by
-    rw [hD.levelPathProduct_eq k hj₁ hj₂ hrel hl hact hsort p, inv_mul_cancel]
-    rfl
+    rw [hD.levelPathProduct_eq k hj₁ hj₂ hrel hl hact hsort p]
+    exact inv_mul_cancel _
 
 end IsFanConfiguration
 

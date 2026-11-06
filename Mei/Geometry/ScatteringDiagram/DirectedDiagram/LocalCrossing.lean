@@ -12,6 +12,7 @@ public import Mei.Geometry.Convex.Polyhedron.Path.LocalCrossing
 # Combined labels at regular directed wall germs
 
 At a fixed cutoff, all active walls through a point outside singular support have
+normals with a common kernel (`DirectedDiagram.ker_normal_eq_of_mem_support`) and
 commuting labels. Their combined label in a transverse direction is the unordered
 product of the signed projected labels. Every enumeration gives the same value.
 Its logarithm is the signed sum of the incident logarithms. Any segment
@@ -44,6 +45,17 @@ variable {Γ Λ R L V : Type*} [AddCommGroup Γ] [AddCommGroup Λ]
   {i : Λ →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
   {H : DirectedWallSpaces ρ ℒ} {ι : Type*}
   (D : DirectedDiagram (d := d) h H ι)
+
+/-- Active walls through a point outside the singular support of the active walls have normals
+with the same kernel. -/
+theorem ker_normal_eq_of_mem_support {k : ℕ} {θ : V}
+    (hθ : θ ∉ singularSupport fun j : D.active k => (D.wall j).support) {a b : D.active k}
+    (ha : θ ∈ (D.wall a).support) (hb : θ ∈ (D.wall b).support) :
+    LinearMap.ker (h.realCharacter (D.wall a).normal) =
+      LinearMap.ker (h.realCharacter (D.wall b).normal) := by
+  rw [← (D.wall a).direction_support, ← (D.wall b).direction_support]
+  exact congrArg AffineSubspace.direction (affineSpan_eq_of_notMem_singularSupport
+    (W := fun j : D.active k => (D.wall j).support) hθ ha hb)
 
 /-- The signed combined label of all active indexed walls through a regular point.
 The vector is the crossing velocity: positive normal evaluation contributes the

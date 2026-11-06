@@ -103,8 +103,7 @@ theorem isFanConfiguration : D.IsFanConfiguration j₁ j₂ μ₁ μ₂ where
     exact ⟨1, 1, one_pos, one_pos, fun x => by simp [hD.normal_half]⟩
   support_of_ne j hj₁ hj₂ := by
     obtain rfl := (hD.eq_or_eq_or_eq j).resolve_left hj₁ |>.resolve_left hj₂
-    rw [hD.support_half, hD.normal_half, map_add]
-    rfl
+    simp only [hD.support_half, hD.normal_half, map_add, LinearMap.add_apply]
   exists_fst := hD.exists_fst
   exists_snd := hD.exists_snd
 
