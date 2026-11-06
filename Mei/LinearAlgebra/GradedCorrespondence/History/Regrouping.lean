@@ -63,7 +63,7 @@ theorem transferFunctor_map_hom_eq_homogeneousHistory
   classical
   -- Expand the free extension to use Mathlib's path recursion. The component
   -- transfers are evaluated only through their public single-step formula.
-  unfold transferFunctor transferPrefunctor
+  unfold transferFunctor
   induction p with
   | nil =>
     -- The objects of `Paths Q` use a type synonym for the original vertices.
@@ -78,7 +78,10 @@ theorem transferFunctor_map_hom_eq_homogeneousHistory
       hx ▸ Subtype.property _
     calc
       _ = ((C e).transfer ⟨s b, hs e⟩ (s c)
-          (((transferFunctor ℳ C s hs).map p).hom x) : M c) := rfl
+          (((transferFunctor ℳ C s hs).map p).hom x) : M c) := by
+        erw [CategoryTheory.Paths.lift_cons, transferPrefunctor_map,
+          SemimoduleCat.hom_comp, SemimoduleCat.hom_ofHom,
+          LinearMap.comp_apply, LinearMap.comp_apply, Submodule.subtype_apply]
       _ = ((C e).transfer ⟨s b, hs e⟩ (s c) ⟨_, hmem⟩ : M c) := by
         exact congrArg (fun y : ℳ b (s b) =>
           ((C e).transfer ⟨s b, hs e⟩ (s c) y : M c)) (Subtype.ext hx)
