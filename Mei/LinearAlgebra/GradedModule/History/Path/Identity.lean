@@ -28,26 +28,11 @@ namespace Quiver.Path
 
 variable {Q : Type*} [Quiver Q] {ι : Q → Type*} {a b c : Q}
 
-/-- The last selected degree, using the input degree for the empty path. -/
-def Degrees.last (p : Path a b) (i : ι a) : p.Degrees ι → ι b :=
-  match p with
-  | nil => fun _ => i
-  | cons _ _ => fun d => d.2
-
-@[simp]
-theorem Degrees.last_nil (i : ι a) (d : (nil : Path a a).Degrees ι) :
-    Degrees.last nil i d = i := (rfl)
-
-@[simp]
-theorem Degrees.last_cons (p : Path a b) (e : b ⟶ c) (i : ι a)
-    (d : p.Degrees ι) (j : ι c) :
-    Degrees.last (p.cons e) i ((d, j) : (p.cons e).Degrees ι) = j := (rfl)
-
 /-- Insert one arrow between two blocks, repeating its incoming degree. -/
 def degreesRepeat (p : Path a b) (q : Path b c) (e : b ⟶ b) (i : ι a)
     (d : (p.comp q).Degrees ι) : ((p.cons e).comp q).Degrees ι :=
   (degreesComp (ι := ι) (p.cons e) q).symm
-    (((degreesComp (ι := ι) p q d).1, Degrees.last p i (degreesComp (ι := ι) p q d).1),
+    (((degreesComp (ι := ι) p q d).1, Degrees.terminalDegree i p (degreesComp (ι := ι) p q d).1),
       (degreesComp (ι := ι) p q d).2)
 
 /-- Erase the selected degree at the arrow between two blocks. -/
@@ -61,7 +46,7 @@ def degreesErase (p : Path a b) (q : Path b c) (e : b ⟶ b)
 theorem degreesComp_degreesRepeat (p : Path a b) (q : Path b c) (e : b ⟶ b)
     (i : ι a) (d : (p.comp q).Degrees ι) :
     degreesComp (ι := ι) (p.cons e) q (degreesRepeat p q e i d) =
-      (((degreesComp (ι := ι) p q d).1, Degrees.last p i (degreesComp (ι := ι) p q d).1),
+      (((degreesComp (ι := ι) p q d).1, Degrees.terminalDegree i p (degreesComp (ι := ι) p q d).1),
         (degreesComp (ι := ι) p q d).2) := by
   simp [degreesRepeat]
 
@@ -85,7 +70,7 @@ agrees with the incoming degree. -/
 theorem degreesRepeat_degreesErase (p : Path a b) (q : Path b c) (e : b ⟶ b)
     (i : ι a) (d : ((p.cons e).comp q).Degrees ι)
     (hd : (degreesComp (ι := ι) (p.cons e) q d).1.2 =
-      Degrees.last p i (degreesComp (ι := ι) (p.cons e) q d).1.1) :
+      Degrees.terminalDegree i p (degreesComp (ι := ι) (p.cons e) q d).1.1) :
     degreesRepeat p q e i (degreesErase p q e d) = d := by
   apply (degreesComp (ι := ι) (p.cons e) q).injective
   rw [degreesComp_degreesRepeat, degreesComp_degreesErase]
@@ -97,15 +82,6 @@ variable {R : Type*} [Semiring R]
   [∀ q, DecidableEq (ι q)]
   (ℳ : ∀ q, ι q → Submodule R (M q)) [∀ q, DirectSum.Decomposition (ℳ q)]
 
-/-- A history on homogeneous input is homogeneous of its last selected degree,
-including when the history is empty or its decoration vanishes. -/
-theorem homogeneousHistory_mem_last (p : Path a b) (i : ι a)
-    (d : p.Degrees ι) {x : M a} (hx : x ∈ ℳ a i) :
-    p.homogeneousHistory T ℳ d x ∈ ℳ b (Degrees.last p i d) := by
-  cases p with
-  | nil => simpa only [homogeneousHistory_nil, LinearMap.id_apply, Degrees.last_nil] using hx
-  | cons p e => exact homogeneousHistory_cons_mem T ℳ p e d.1 d.2 x
-
 /-- At the end of a block, an identity arrow retains exactly its incoming
 homogeneous decoration. The block can be empty. -/
 @[simp]
@@ -113,11 +89,11 @@ theorem homogeneousHistory_cons_last_of_eq_id (p : Path a b)
     (e : b ⟶ b) (he : T e = LinearMap.id) (i : ι a)
     (d : p.Degrees ι) {x : M a} (hx : x ∈ ℳ a i) :
     (p.cons e).homogeneousHistory T ℳ
-        ((d, Degrees.last p i d) : (p.cons e).Degrees ι) x =
+        ((d, Degrees.terminalDegree i p d) : (p.cons e).Degrees ι) x =
       p.homogeneousHistory T ℳ d x := by
   rw [homogeneousHistory_cons_of_eq_id T ℳ p e he, LinearMap.comp_apply]
   exact Mei.homogeneousComponent_apply_of_mem (ℳ b)
-    (homogeneousHistory_mem_last T ℳ p i d hx)
+    (homogeneousHistory_mem_vertex (T := T) (ℳ := ℳ) p d i x hx)
 
 /-- Repeating the incoming degree at an identity arrow preserves the entire
 final decoration after both propagation blocks. -/
@@ -140,14 +116,14 @@ theorem last_eq_of_identity_history_ne_zero (p : Path a b) (q : Path b c)
     (d : ((p.cons e).comp q).Degrees ι) {x : M a} (hx : x ∈ ℳ a i)
     (hd : ((p.cons e).comp q).homogeneousHistory T ℳ d x ≠ 0) :
     (degreesComp (ι := ι) (p.cons e) q d).1.2 =
-      Degrees.last p i (degreesComp (ι := ι) (p.cons e) q d).1.1 := by
+      Degrees.terminalDegree i p (degreesComp (ι := ι) (p.cons e) q d).1.1 := by
   by_contra hne
   apply hd
   rw [← (degreesComp (ι := ι) (p.cons e) q).symm_apply_apply d,
     homogeneousHistory_comp, LinearMap.comp_apply,
     homogeneousHistory_cons_of_eq_id T ℳ p e he, LinearMap.comp_apply,
     Mei.homogeneousComponent_apply_of_mem_ne (ℳ b)
-      (homogeneousHistory_mem_last T ℳ p i _ hx) (Ne.symm hne), map_zero]
+      (homogeneousHistory_mem_vertex (T := T) (ℳ := ℳ) p _ i x hx) (Ne.symm hne), map_zero]
 
 /-- Erasing an identity arrow from a surviving history keeps its whole output. -/
 theorem homogeneousHistory_degreesErase (p : Path a b) (q : Path b c)
@@ -251,8 +227,8 @@ variable {α ι : Type*}
 /-- The terminal degree of a sequence history is its first tuple entry, or the
 original input degree when the sequence is empty. -/
 @[simp]
-theorem last_degreesPathOfFn {n : ℕ} (T : Fin n → α) (d : Fin n → ι) (i : ι) :
-    Path.Degrees.last (pathOfFn T) i (degreesPathOfFn ι T d) =
+theorem terminalDegree_degreesPathOfFn {n : ℕ} (T : Fin n → α) (d : Fin n → ι) (i : ι) :
+    Path.Degrees.terminalDegree i (pathOfFn T) (degreesPathOfFn ι T d) =
       Fin.snoc (α := fun _ => ι) d i 0 := by
   cases n with
   | zero => rfl

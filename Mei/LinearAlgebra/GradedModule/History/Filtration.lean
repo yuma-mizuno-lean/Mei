@@ -172,13 +172,6 @@ open Mei
 
 variable {Q : Type*} [Quiver Q] {ι : Q → Type*} {a : Q}
 
-/-- The last selected degree, or the prescribed incoming degree for an empty path.
-This index is reducible so the degree of a lifted path endpoint reduces without casts. -/
-@[expose, reducible]
-def Degrees.terminalDegree (i₀ : ι a) : {b : Q} → (p : Path a b) → p.Degrees ι → ι b
-  | _, nil, _ => i₀
-  | _, cons _ _, d => d.2
-
 /-- The terminal chamber-degree pair of a history with specified incoming degree.
 Reducibility keeps the source and target types of encounter arrows definitionally equal. -/
 @[expose, reducible]
@@ -190,15 +183,6 @@ def Degrees.liftPath (i₀ : ι a) : {b : Q} → (p : Path a b) → (d : p.Degre
     Path (⟨a, i₀⟩ : GradedVertex ι) (Degrees.vertex i₀ p d)
   | _, nil, _ => nil
   | _, cons p e, d => (Degrees.liftPath i₀ p d.1).cons e
-
-/-- Empty histories retain the incoming degree. -/
-theorem Degrees.terminalDegree_nil (i₀ : ι a) (d : (nil : Path a a).Degrees ι) :
-    Degrees.terminalDegree i₀ nil d = i₀ := (rfl)
-
-/-- A nonempty history ends in its last selected degree. -/
-theorem Degrees.terminalDegree_cons (i₀ : ι a) {b c : Q} (p : Path a b) (e : b ⟶ c)
-    (d : p.Degrees ι) (i : ι c) :
-    Degrees.terminalDegree i₀ (p.cons e) (d, i) = i := (rfl)
 
 /-- The empty lifted history has the prescribed incoming vertex. -/
 theorem Degrees.vertex_nil (i₀ : ι a) (d : (nil : Path a a).Degrees ι) :
@@ -269,16 +253,6 @@ variable {R : Type*} [Semiring R] {M : Q → Type*}
   {ℳ : ∀ q, ι q → Submodule R (M q)} [∀ q, DirectSum.Decomposition (ℳ q)]
   {F : ∀ q, ModuleFiltration R (M q)}
   {w : ∀ {b c : Q}, (b ⟶ c) → ι b → ι c → ℕ}
-
-/-- The selected output remains homogeneous, including the unchanged incoming
-piece when the path is empty. -/
-theorem homogeneousHistory_mem_vertex {b : Q} (p : Path a b)
-    (d : p.Degrees ι) (i₀ : ι a) (x : M a) (hx : x ∈ ℳ a i₀) :
-    p.homogeneousHistory T ℳ d x ∈ ℳ b (Degrees.terminalDegree i₀ p d) := by
-  cases p with
-  | nil =>
-    simpa only [homogeneousHistory_nil, LinearMap.id_apply, Degrees.terminalDegree_nil] using hx
-  | cons p e => exact homogeneousHistory_cons_mem T ℳ p e d.1 d.2 x
 
 /-- Every complete homogeneous history lies in the filtration step counted by
 its lifted component weights. No intermediate encounter is deleted. -/

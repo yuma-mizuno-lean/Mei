@@ -52,7 +52,7 @@ theorem homogeneousHistory_insertNth_id {n : ℕ}
       (M := fun _ : Quiver.SingleObj (Module.End R M) => M)
       (fun e => e) (fun _ => ℳ) (Quiver.SingleObj.pathOfFn U)
       LinearMap.id rfl p₀ (Quiver.SingleObj.degreesPathOfFn ι U s) a.property
-    rw [Quiver.SingleObj.last_degreesPathOfFn] at hp
+    rw [Quiver.SingleObj.terminalDegree_degreesPathOfFn] at hp
     have hU : homogeneousHistory ℳ U s =
         (Quiver.SingleObj.pathOfFn U).homogeneousHistory
           (M := fun _ => M) (fun e => e) (fun _ => ℳ)

@@ -78,6 +78,22 @@ def Degrees (ι : Q → Type w) : {b : Q} → Path a b → Type w
 
 variable {ι : Q → Type w}
 
+/-- The last selected degree, or the prescribed incoming degree for an empty path.
+This index is reducible so the degree of a lifted path endpoint reduces without casts. -/
+@[expose, reducible]
+def Degrees.terminalDegree (i₀ : ι a) : {b : Q} → (p : Path a b) → p.Degrees ι → ι b
+  | _, nil, _ => i₀
+  | _, cons _ _, d => d.2
+
+/-- Empty histories retain the incoming degree. -/
+theorem Degrees.terminalDegree_nil (i₀ : ι a) (d : (nil : Path a a).Degrees ι) :
+    Degrees.terminalDegree i₀ nil d = i₀ := (rfl)
+
+/-- A nonempty history ends in its last selected degree. -/
+theorem Degrees.terminalDegree_cons (i₀ : ι a) {b c : Q} (p : Path a b) (e : b ⟶ c)
+    (d : p.Degrees ι) (i : ι c) :
+    Degrees.terminalDegree i₀ (p.cons e) (d, i) = i := (rfl)
+
 /-- Degree histories have decidable equality when the degree types do. -/
 instance decidableEqDegrees [∀ q, DecidableEq (ι q)] :
     ∀ {b : Q} (p : Path a b), DecidableEq (p.Degrees ι)
@@ -231,6 +247,22 @@ theorem homogeneousHistory_cons_mem {b c : Q} (p : Path a b) (e : b ⟶ c) (d : 
     (p.cons e).homogeneousHistory T ℳ ((d, i) : (p.cons e).Degrees ι) x ∈ ℳ c i := by
   rw [homogeneousHistory_cons, LinearMap.comp_apply]
   exact homogeneousComponent_mem (ℳ c) i _
+
+section
+
+variable {T ℳ}
+
+/-- The selected output remains homogeneous, including the unchanged incoming
+piece when the path is empty. -/
+theorem homogeneousHistory_mem_vertex {b : Q} (p : Path a b)
+    (d : p.Degrees ι) (i₀ : ι a) (x : M a) (hx : x ∈ ℳ a i₀) :
+    p.homogeneousHistory T ℳ d x ∈ ℳ b (Degrees.terminalDegree i₀ p d) := by
+  cases p with
+  | nil =>
+    simpa only [homogeneousHistory_nil, LinearMap.id_apply, Degrees.terminalDegree_nil] using hx
+  | cons p e => exact homogeneousHistory_cons_mem T ℳ p e d.1 d.2 x
+
+end
 
 /-- A vanished intermediate decoration cannot yield a nonzero final history. -/
 theorem homogeneousHistory_ne_zero_of_cons {b c : Q} (p : Path a b) (e : b ⟶ c)
