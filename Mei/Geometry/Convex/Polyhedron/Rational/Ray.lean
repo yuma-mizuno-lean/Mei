@@ -8,7 +8,6 @@ module
 public import Mei.Geometry.Convex.Polyhedron.Rational.Sweep
 public import Mei.Geometry.Convex.Polyhedron.Rational.LocallyClosed
 public import Mei.Geometry.Convex.Recession
-public import Mei.Geometry.Convex.Polyhedron.Incoming
 import Mei.Geometry.Convex.Polyhedron.Face
 import Mei.Geometry.Convex.Polyhedron.Escape
 

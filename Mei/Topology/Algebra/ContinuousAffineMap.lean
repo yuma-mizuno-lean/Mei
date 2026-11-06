@@ -27,7 +27,7 @@ public section
 
 namespace ContinuousAffineMap
 
-variable {V : Type*} [AddCommGroup V] [Module ℝ V] [TopologicalSpace V]
+variable {V ι : Type*} [AddCommGroup V] [Module ℝ V] [TopologicalSpace V]
 
 /-- Evaluation of a continuous affine functional along an affine ray. -/
 theorem apply_add_smul (g : V →ᴬ[ℝ] ℝ) (y n : V) (t : ℝ) :
@@ -57,6 +57,25 @@ theorem eventually_apply_add_smul_le_iff (g : V →ᴬ[ℝ] ℝ) (x w : V) :
       have := (div_lt_iff₀ hpos).mp ht
       nlinarith
     simp [hnot, hpos.ne', hpos.not_gt]
+
+/-- When all inequalities are nonincreasing along a ray, exactly the tangential
+ones constrain eventual admission. Strictly decreasing rows impose no condition
+on the base point. -/
+theorem eventually_forall_apply_add_smul_le_iff_of_nonpos
+    [Finite ι] (g : ι → V →ᴬ[ℝ] ℝ) (w : V) (hw : ∀ j, (g j).linear w ≤ 0) (x : V) :
+    (∀ᶠ t : ℝ in Filter.atTop, ∀ j, g j (x + t • w) ≤ 0) ↔
+      ∀ j, (g j).linear w = 0 → g j x ≤ 0 := by
+  rw [Filter.eventually_all]
+  simp only [eventually_apply_add_smul_le_iff]
+  constructor
+  · intro hx j hj
+    rcases hx j with hneg | ⟨_, hle⟩
+    · exact (hneg.ne hj).elim
+    · exact hle
+  · intro hx j
+    rcases (hw j).lt_or_eq with hneg | hzero
+    · exact Or.inl hneg
+    · exact Or.inr ⟨hzero, hx j hzero⟩
 
 end ContinuousAffineMap
 

@@ -5,16 +5,18 @@ Authors: Codex
 -/
 module
 
+public import Mei.Geometry.Convex.Polyhedron.Incoming
 public import Mei.Geometry.ScatteringDiagram.BrokenLine.Degeneration
 
 /-!
 # Tangential source events in closed decorated-type families
 
 For each complete decorated type, the incoming-source condition has a closed
-endpoint domain. Only source inequalities tangent to the incoming direction
-constrain this domain. At a boundary endpoint its extended path has an incoming
-tail entirely in a tight tangential source face. The corresponding inequality
-must vary with the endpoint, so constant zero rows do not give spurious events.
+endpoint domain. A strictly increasing source inequality makes this domain empty;
+otherwise only inequalities tangent to the incoming direction constrain it.
+At a boundary endpoint its extended path has an incoming tail entirely in a tight
+tangential source face. The corresponding inequality must vary with the endpoint,
+so constant zero rows do not give spurious events.
 
 The paths are the existing `CutoffDecoratedType.path` extensions, with all
 encounters and whole coefficient histories retained. This classifies boundaries
@@ -63,21 +65,21 @@ theorem path_eventually_mem_polyhedron_iff
 
 /-- The incoming-source condition is closed in endpoint space, including when
 the source is lower-dimensional or the incoming velocity is zero. -/
-theorem isClosed_sourceAdmission (hv : ∀ j, (g j).linear (v 0) ≤ 0) : IsClosed D := by
-  have he : D = ⋂ j : {j : ι // (g j).linear (v 0) = 0}, {Q | g j.val (X Q) ≤ 0} := by
+theorem isClosed_sourceAdmission : IsClosed D := by
+  have he : D = ⋂ j : ι, {Q | (g j).linear (v 0) < 0 ∨
+      (g j).linear (v 0) = 0 ∧ g j (X Q) ≤ 0} := by
     ext Q
-    rw [mem_ofPred_eq, t.path_eventually_mem_polyhedron_iff c g hv]
-    simp only [mem_ofPred_eq, mem_iInter]
-    exact ⟨fun h j => h j.val j.property, fun h j hj => h ⟨j, hj⟩⟩
+    rw [mem_ofPred_eq, path_def, backwardPath_eventually_mem_iff]
+    simp only [Fin.snoc_last, Fin.snoc_castSucc, mem_iInter, mem_ofPred_eq,
+      eventually_all, ContinuousAffineMap.eventually_apply_add_smul_le_iff]
   rw [he]
-  exact isClosed_iInter fun j =>
-    isClosed_le ((g j.val).continuous.comp (X).continuous) continuous_const
+  exact isClosed_iInter fun j => isClosed_const.union
+    (isClosed_const.inter (isClosed_le ((g j).continuous.comp (X).continuous) continuous_const))
 
 /-- Source-admission boundary endpoints are exactly the admitted endpoints
 where a tangential row is tight and nonconstant after backward reconstruction.
 This includes tangential source faces and excludes redundant constant rows. -/
-theorem mem_frontier_sourceAdmission_iff
-    (hv : ∀ j, (g j).linear (v 0) ≤ 0) (Q : V) :
+theorem mem_frontier_sourceAdmission_iff (Q : V) :
     Q ∈ frontier D ↔
       (∀ᶠ s : ℝ in atBot, t.path c Q s ∈ C) ∧
         ∃ j, (g j).linear (v 0) = 0 ∧ g j (X Q) = 0 ∧
@@ -90,17 +92,17 @@ theorem mem_frontier_sourceAdmission_iff
   simp only [mem_ofPred_eq] at hsource
   rw [he, hsource]
   exact ContinuousAffineMap.mem_frontier_eventually_forall_apply_add_smul_le_comp_iff
-    g X (v 0) hv Q
+    g X (v 0) Q
 
 /-- At a source-admission boundary the limiting incoming tail lies entirely in
 a tight source face tangent to its velocity. The row varies with the endpoint;
 the tail is the original global incoming germ, even for collapsed encounters. -/
 theorem path_eventually_mem_source_face_of_mem_frontier
-    (hv : ∀ j, (g j).linear (v 0) ≤ 0) {Q : V} (hQ : Q ∈ frontier D) :
+    {Q : V} (hQ : Q ∈ frontier D) :
     ∃ j, (g j).linear (v 0) = 0 ∧ ((g j).comp X).toAffineMap.linear ≠ 0 ∧
       ∀ᶠ s : ℝ in atBot, t.path c Q s ∈ {x ∈ C | g j x = 0} := by
   obtain ⟨hsource, j, hjv, hjQ, hne⟩ :=
-    (t.mem_frontier_sourceAdmission_iff c g hv Q).mp hQ
+    (t.mem_frontier_sourceAdmission_iff c g Q).mp hQ
   refine ⟨j, hjv, hne, ?_⟩
   have htail := backwardPath_eventuallyEq_incoming F b u Q
   simp only [Fin.snoc_last, Fin.snoc_castSucc] at htail
@@ -113,8 +115,7 @@ source admission forces the original incoming tail into a tangential source face
 No rationality of the source rows or nonzero-velocity hypothesis is needed. -/
 theorem path_eventually_mem_source_face_of_mem_closure
     {K I : Type*} (P : J → Set V) (W : I → Set V) (S : K → Set V)
-    (hv : ∀ j, (g j).linear (v 0) ≤ 0) {Q : V}
-    (hQ : Q ∈ closure (domain c P W S C t)) (hnot : Q ∉ interior D) :
+    {Q : V} (hQ : Q ∈ closure (domain c P W S C t)) (hnot : Q ∉ interior D) :
     ∃ j, (g j).linear (v 0) = 0 ∧ ((g j).comp X).toAffineMap.linear ≠ 0 ∧
       ∀ᶠ s : ℝ in atBot, t.path c Q s ∈ {x ∈ C | g j x = 0} := by
   have hsub : domain c P W S C t ⊆ D := by
@@ -122,8 +123,8 @@ theorem path_eventually_mem_source_face_of_mem_closure
     rw [mem_ofPred_eq, path_def, backwardPath_eventually_mem_iff]
     rw [domain_def, mem_admissibleBackwardDomain] at hY
     exact ((mem_backwardIncomingDomain _ _ _ _ _ _ _ _).mp hY.2.1).2.2
-  have hsource := closure_minimal hsub (t.isClosed_sourceAdmission c g hv) hQ
-  exact t.path_eventually_mem_source_face_of_mem_frontier c g hv
+  have hsource := closure_minimal hsub (t.isClosed_sourceAdmission c g) hQ
+  exact t.path_eventually_mem_source_face_of_mem_frontier c g
     ((mem_frontier_iff_notMem_interior hsource).mpr hnot)
 
 end Mei.CutoffDecoratedType
