@@ -71,6 +71,62 @@ theorem backwardPath_apply (Q : V) (t : ℝ) :
       (∑ j : Fin n, max (backwardParameter f c (fun j => v j.castSucc) j.succ Q - t) 0 •
         (v j.succ - v j.castSucc)) - t • v 0 + Q := (rfl)
 
+section Affine
+
+variable {V' : Type*} [NormedAddCommGroup V'] [NormedSpace ℝ V']
+  (e : V ≃ᴬ[ℝ] V')
+
+local notation "g" => fun j =>
+  ContinuousLinearMap.comp (f j) e.symm.toContinuousAffineMap.contLinear
+local notation "b" => fun j => c j - f j (e.symm 0)
+local notation "u" => fun j => e.toAffineEquiv.linear (v j)
+
+/-- The hinge extension transforms affinely at every endpoint, without any
+admissibility or time-order assumption, including at tangent encounters. -/
+theorem backwardPath_affine (Q : V) (t : ℝ) :
+    backwardPath g b u (e Q) t = e (backwardPath f c v Q t) := by
+  have hlinear (j : Fin n) (x : V) : g j (e.toAffineEquiv.linear x) = f j x := by
+    simp only [ContinuousLinearMap.comp_apply, ContinuousAffineMap.coe_contLinear,
+      ContinuousAffineEquiv.toContinuousAffineMap_toAffineMap,
+      AffineEquiv.linear_toAffineMap, ContinuousAffineEquiv.toAffineEquiv_symm,
+      AffineEquiv.linear_symm, LinearEquiv.coe_coe, LinearEquiv.symm_apply_apply]
+  have hforward (j : Fin n) (x : V) : g j (e x) = f j x - f j (e.symm 0) := by
+    have he := e.symm.toAffineEquiv.toAffineMap.linear_apply_vsub (e x) 0
+    simpa only [ContinuousLinearMap.comp_apply, ContinuousAffineMap.coe_contLinear,
+      ContinuousAffineEquiv.toContinuousAffineMap_toAffineMap,
+      AffineEquiv.coe_toAffineMap, vsub_eq_sub, sub_zero, ContinuousAffineEquiv.coe_coe,
+      ContinuousAffineEquiv.symm_apply_apply, map_sub] using congrArg (f j) he
+  have hadd (x y : V) : e (x + y) = e.toAffineEquiv.linear x + e y :=
+    e.toAffineEquiv.map_vadd y x
+  -- Transport the recursive points and elapsed times, even when a normal is tangent.
+  have ht (j : Fin n)
+      (hj : backwardPoint g b (fun j => u j.castSucc) j.castSucc (e Q) =
+        e (backwardPoint f c (fun j => v j.castSucc) j.castSucc Q)) :
+      backwardTime g b (fun j => u j.castSucc) j (e Q) =
+        backwardTime f c (fun j => v j.castSucc) j Q := by
+    rw [backwardTime_apply, backwardTime_apply, hj, hforward, hlinear]
+    congr 1
+    ring
+  have hp (j : Fin (n + 1)) :
+      backwardPoint g b (fun j => u j.castSucc) j (e Q) =
+        e (backwardPoint f c (fun j => v j.castSucc) j Q) := by
+    induction j using Fin.induction with
+    | zero => simp
+    | succ j ih =>
+      rw [backwardPoint_succ_apply, backwardPoint_succ_apply, ht j ih, ih,
+        add_comm (backwardPoint f c (fun j => v j.castSucc) j.castSucc Q), hadd,
+        map_smul, add_comm]
+  have hparam (j : Fin (n + 1)) :
+      backwardParameter g b (fun j => u j.castSucc) j (e Q) =
+        backwardParameter f c (fun j => v j.castSucc) j Q := by
+    induction j using Fin.induction with
+    | zero => simp
+    | succ j ih => rw [backwardParameter_succ, backwardParameter_succ, ih, ht j (hp _)]
+  -- The hinge coefficients are unchanged; the linear part transports their finite sum.
+  simp only [backwardPath_apply, hparam, hadd, map_sub, map_sum, map_smul]
+
+end Affine
+
 /-- On a strict itinerary the extended path is the actual finite affine ray,
 including its affine continuation beyond time zero. -/
 theorem backwardPath_eq_backwardRay (Q : V)

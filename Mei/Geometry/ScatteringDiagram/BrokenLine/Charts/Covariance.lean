@@ -18,8 +18,8 @@ endpoint chart can be transported with its original type and whole weight, rathe
 than choosing a new subdivision in the new coordinates. Incoming tails are part of
 the transported paths; boundary paths are not asserted to be admissible.
 
-We use the existing affine equivalence of admissible rays and uniqueness of continuous
-extensions from a set to its closure. The endpoint-chart interpretation follows
+We use the existing affine equivalence of decorated types and affine covariance
+of the backward hinge formula. The endpoint-chart interpretation follows
 Carl–Pumperla–Siebert, *A tropical view on Landau–Ginzburg models*, §4
 (arXiv:2205.07753v2).
 -/
@@ -47,38 +47,20 @@ variable (c : J → ℝ) (P W : J → Set V) (S : K → Set V) (C : Set V)
 local notation "b" => fun j => c j - f j (e.symm 0)
 local notation "D" => CutoffDecoratedType.domain c P W S C
 
-/-- The continuous path extensions transform affinely on the entire closed
-domain, including singular boundary paths and collapsed encounters. -/
-theorem cutoffDecoratedTypeAffineEquiv_path (t : Types) {Q : V}
-    (hQ : Q ∈ closure (D t)) (s : ℝ) :
+/-- The continuous path extensions transform affinely at every endpoint,
+including singular boundary paths, collapsed encounters and empty-domain types. -/
+theorem cutoffDecoratedTypeAffineEquiv_path (t : Types) (Q : V) (s : ℝ) :
     (E t).path b (e Q) s = e (t.path c Q s) := by
-  have heq : Set.EqOn (fun X => (E t).path b (e X) s)
-      (fun X => e (t.path c X s)) (D t) := by
-    intro X hX
-    let r := admissibleRayRealization (fun j => f (t.itinerary.val.get j))
-      (fun j => c (t.itinerary.val.get j))
-      (fun j => v (Fin.snoc (α := fun _ => Γ) t.history.val 0 j))
-      (fun j => P (t.itinerary.val.get j)) W S C X
-      ((CutoffDecoratedType.mem_domain c P W S C t X).mp hX)
-    let r' := admissibleRayAffineEquiv (fun j => f (t.itinerary.val.get j))
-      (fun j => c (t.itinerary.val.get j))
-      (fun j => v (Fin.snoc (α := fun _ => Γ) t.history.val 0 j))
-      (fun j => P (t.itinerary.val.get j)) W S C e X r
-    have hi := cutoffDecoratedTypeAffineEquiv_itinerary d ℳ T a v f ε e k t
-    have hh := cutoffDecoratedTypeAffineEquiv_history d ℳ T a v f ε e k t
-    -- Identify the dependent itinerary before rewriting its degree history.
-    generalize ht : E t = t' at hi hh ⊢
-    obtain ⟨l', history', dm', ds'⟩ := t'
-    dsimp at hi hh
-    cases hi
-    simp only [CutoffDecoratedType.path_def]
-    rw [eq_of_heq hh]
-    rw [← r'.toContinuousMap_eq_backwardPath,
-      FiniteAffineRay.toContinuousMap_apply, admissibleRayAffineEquiv_ray,
-      FiniteAffineRay.map_apply, ← FiniteAffineRay.toContinuousMap_apply,
-      r.toContinuousMap_eq_backwardPath]
-    rfl
-  exact heq.closure (by fun_prop) (by fun_prop) hQ
+  have hi := cutoffDecoratedTypeAffineEquiv_itinerary d ℳ T a v f ε e k t
+  have hh := cutoffDecoratedTypeAffineEquiv_history d ℳ T a v f ε e k t
+  -- Identify the dependent itinerary before rewriting its degree history.
+  generalize ht : E t = t' at hi hh ⊢
+  obtain ⟨l', history', dm', ds'⟩ := t'
+  dsimp at hi hh
+  cases hi
+  simp only [CutoffDecoratedType.path_def]
+  rw [eq_of_heq hh]
+  exact backwardPath_affine _ _ _ e Q s
 
 section Integral
 
@@ -126,10 +108,10 @@ theorem cutoffDecoratedTypeAffineEquiv_closedCharts
         (fun Q hQ => (Eᵢ t).backwardTime_nonneg bᵢ
           (fun j => A '' P j) (fun j => A '' W j) (fun j => A '' S j) (A '' C)
           (hsub t j hQ))
-    · intro Q hQ s
+    · intro Q _ s
       simpa only [Toric.IntegralAffineEquiv.toContinuousAffineEquiv_apply] using
         cutoffDecoratedTypeAffineEquiv_path d ℳ T a v f ε
-          A.toContinuousAffineEquiv k c P W S C t ((hB t j).2.2 hQ) s
+          A.toContinuousAffineEquiv k c t Q s
   · intro t j l hjl
     simp only [← Toric.IntegralAffineEquiv.toContinuousAffineEquiv_apply,
       ContinuousAffineEquiv.intrinsicInterior_image]
