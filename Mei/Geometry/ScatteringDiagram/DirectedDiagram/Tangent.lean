@@ -1,13 +1,14 @@
 /-
 Copyright (c) 2026 Mei contributors. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Claude
+Authors: Claude, Codex
 -/
 module
 
 public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.LocalCrossing
 public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Restriction
 public import Mei.Geometry.ScatteringDiagram.DirectedWall.Tangent
+public import Mei.Geometry.Convex.Polyhedron.Tangent.SingularSupport
 
 /-!
 # The tangent diagram at a point
@@ -21,8 +22,10 @@ This neighbourhood may depend on `k`.
 A wall through `x` is active at a cutoff in the tangent diagram exactly when it is active in the
 diagram. For each fixed cutoff `k`, on a neighbourhood of `x` depending on `k`, the active
 supports are the translates of the tangent supports. At a point in this neighbourhood that is
-regular for both diagrams, the combined labels at cutoff `k` agree in each crossing direction
-after translating by `x`.
+regular for the diagram, its displacement is regular for the tangent diagram and the combined
+labels at cutoff `k` agree in each crossing direction. The singular supports themselves agree
+under translation locally. On every compact set of tangent displacements this comparison holds
+uniformly under sufficiently small positive rescaling.
 These local identifications compare the crossings of a diagram near a joint with those of its
 tangent diagram. Consistency of the tangent diagram is not asserted here.
 -/
@@ -68,24 +71,97 @@ and the tangent wall contains the displacement. -/
 theorem eventually_forall_mem_support_iff (k : ℕ) :
     ∀ᶠ y in 𝓝 x, ∀ j : D.active k, y ∈ (D.wall j).support ↔
       ∃ hj : x ∈ (D.wall j).support, y - x ∈ ((D.wall j).tangentAt x hj).support := by
-  refine eventually_all.mpr fun j => ?_
-  by_cases hj : x ∈ (D.wall j).support
-  · filter_upwards [(D.wall j).eventually_mem_support_iff hj] with y hy
-    exact ⟨fun h => ⟨hj, hy.mp h⟩, fun ⟨_, h⟩ => hy.mpr h⟩
-  · filter_upwards [((D.wall j).isConvexPolyhedron.isClosed.isOpen_compl).mem_nhds hj] with y hy
-    exact iff_of_false hy fun ⟨hj', _⟩ => hj hj'
+  simpa only [DirectedWall.tangentAt_support] using
+    eventually_forall_mem_iff_sub_mem_posTangentConeAt
+    (fun j : D.active k => (D.wall j).support) (fun j => (D.wall j).isConvexPolyhedron) x
 
-/-- Near `x`, at a regular point of both diagrams, the combined label of the diagram in a
-crossing direction is the combined label of the tangent diagram at the displacement from `x`.
+/-- At each cutoff, translation identifies the actual singular supports of the diagram
+and its tangent diagram on a neighbourhood of the base point. -/
+theorem eventually_mem_singularSupport_tangentAt_iff (k : ℕ) :
+    ∀ᶠ y in 𝓝 x,
+      y ∈ singularSupport (fun j : D.active k => (D.wall j).support) ↔
+        y - x ∈ singularSupport (fun j : (D.tangentAt x).active k =>
+          ((D.tangentAt x).wall j).support) := by
+  have := h.finiteDimensional
+  let r : {j : D.active k | x ∈ (D.wall j).support} ≃ (D.tangentAt x).active k :=
+    { toFun := fun j => ⟨⟨j.1.1, j.2⟩, (D.mem_active_tangentAt x k _).mpr j.1.2⟩
+      invFun := fun j => ⟨⟨j.1.1, (D.mem_active_tangentAt x k _).mp j.2⟩, j.1.2⟩
+      left_inv := fun _ => rfl
+      right_inv := fun _ => rfl }
+  have hsing : singularSupport (fun j : (D.tangentAt x).active k =>
+      ((D.tangentAt x).wall j).support) = singularSupport
+        (fun j : {j : D.active k | x ∈ (D.wall j).support} =>
+          posTangentConeAt (D.wall j.1).support x) := by
+    simpa using (ContinuousAffineEquiv.refl ℝ V).singularSupport_image r
+      (fun j => by simp [r])
+  filter_upwards [eventually_mem_singularSupport_iff_sub_mem_posTangentConeAt
+    (fun j : D.active k => (D.wall j).support)
+    (fun j => (D.wall j).isConvexPolyhedron) x] with y hy
+  rwa [hsing]
+
+/-- Positive rescaling preserves and reflects singularity in the tangent diagram. -/
+@[simp↓]
+theorem smul_mem_singularSupport_tangentAt_iff (k : ℕ) {t : ℝ} (ht : 0 < t) (v : V) :
+    t • v ∈ singularSupport (fun j : (D.tangentAt x).active k =>
+      ((D.tangentAt x).wall j).support) ↔
+        v ∈ singularSupport (fun j : (D.tangentAt x).active k =>
+          ((D.tangentAt x).wall j).support) := by
+  let e := (ContinuousLinearEquiv.smulLeft (R₁ := ℝ) (M₁ := V)
+    (Units.mk0 t ht.ne')).toContinuousAffineEquiv
+  have he (w : V) : e w = t • w := (rfl)
+  have hsupport (j : (D.tangentAt x).active k) :
+      ((D.tangentAt x).wall j).support = e '' ((D.tangentAt x).wall j).support := by
+    apply Set.Subset.antisymm
+    · intro w hw
+      refine ⟨t⁻¹ • w, ?_, by simp [he, ht.ne']⟩
+      exact (D.wall j.1.1).smul_mem_tangentAt_support j.1.2 hw (inv_pos.mpr ht).le
+    · rintro w ⟨u, hu, rfl⟩
+      exact (D.wall j.1.1).smul_mem_tangentAt_support j.1.2 hu ht.le
+  have hsing := e.singularSupport_image
+    (W := fun j : (D.tangentAt x).active k => ((D.tangentAt x).wall j).support)
+    (W' := fun j : (D.tangentAt x).active k => ((D.tangentAt x).wall j).support)
+    (Equiv.refl ((D.tangentAt x).active k)) hsupport
+  rw [← he]
+  conv_lhs => rw [hsing]
+  exact e.injective.mem_set_image
+
+/-- On a compact set of tangent displacements, the singular-support comparison holds
+uniformly for every sufficiently small positive scaling factor. -/
+theorem eventually_forall_mem_singularSupport_add_smul_iff (k : ℕ) {K : Set V}
+    (hK : IsCompact K) :
+    ∀ᶠ t : ℝ in 𝓝[>] 0, ∀ v ∈ K,
+      x + t • v ∈ singularSupport (fun j : D.active k => (D.wall j).support) ↔
+        v ∈ singularSupport (fun j : (D.tangentAt x).active k =>
+          ((D.tangentAt x).wall j).support) := by
+  have hlocal := D.eventually_mem_singularSupport_tangentAt_iff (x := x) k
+  have huniform : ∀ᶠ t : ℝ in 𝓝 0, ∀ v ∈ K,
+      x + t • v ∈ singularSupport (fun j : D.active k => (D.wall j).support) ↔
+        t • v ∈ singularSupport (fun j : (D.tangentAt x).active k =>
+          ((D.tangentAt x).wall j).support) := by
+    apply hK.eventually_forall_of_forall_eventually
+    intro v _
+    have hc : Continuous (fun z : ℝ × V => x + z.1 • z.2) := by fun_prop
+    have htend : Tendsto (fun z : ℝ × V => x + z.1 • z.2) (𝓝 (0, v)) (𝓝 x) := by
+      simpa only [zero_smul, add_zero] using hc.tendsto (0, v)
+    simpa only [add_sub_cancel_left] using htend.eventually hlocal
+  filter_upwards [huniform.filter_mono nhdsWithin_le_nhds, self_mem_nhdsWithin] with t ht htpos
+  intro v hv
+  exact (ht v hv).trans (D.smul_mem_singularSupport_tangentAt_iff k htpos v)
+
+/-- Near `x`, a regular point has regular displacement for the tangent diagram, whose
+combined labels in every crossing direction agree with those of the original diagram.
 Walls active at the cutoff but missing `x` contribute nothing, and repeated or coincident
 indexed walls through `x` keep their separate factors. -/
 theorem eventually_combinedLabel_tangentAt (k : ℕ) :
-    ∀ᶠ y in 𝓝 x, ∀ (hy : y ∉ singularSupport (fun j : D.active k => (D.wall j).support))
-      (hy' : y - x ∉ singularSupport (fun j : (D.tangentAt x).active k =>
-        ((D.tangentAt x).wall j).support)) (v : V),
+    ∀ᶠ y in 𝓝 x, ∀ (hy : y ∉ singularSupport (fun j : D.active k => (D.wall j).support)),
+      ∃ hy' : y - x ∉ singularSupport (fun j : (D.tangentAt x).active k =>
+        ((D.tangentAt x).wall j).support), ∀ v : V,
       D.combinedLabel k y v hy = (D.tangentAt x).combinedLabel k (y - x) v hy' := by
   classical
-  filter_upwards [D.eventually_forall_mem_support_iff k] with y hyS hy hy' v
+  filter_upwards [D.eventually_forall_mem_support_iff k,
+    D.eventually_mem_singularSupport_tangentAt_iff k] with y hyS hyreg hy
+  have hy' := fun ht => hy (hyreg.mpr ht)
+  refine ⟨hy', fun v => ?_⟩
   let l : List ((D.tangentAt x).active k) :=
     (Set.toFinite {j : (D.tangentAt x).active k |
       y - x ∈ ((D.tangentAt x).wall j).support}).toFinset.toList

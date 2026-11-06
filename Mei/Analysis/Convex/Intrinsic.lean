@@ -73,6 +73,41 @@ theorem intrinsicInterior_mono_of_affineSpan_eq
 
 end Mei
 
+namespace Filter.EventuallyEqSet
+
+variable {𝕜 W A : Type*} [Ring 𝕜] [AddCommGroup W] [Module 𝕜 W]
+  [TopologicalSpace A] [AddTorsor W A] {P Q : Set A} {x : A}
+
+/-- Sets with the same affine span and the same germ have the same relative interior
+membership at the base point. -/
+theorem mem_intrinsicInterior_iff (hPQ : P =ᶠ[𝓝 x] Q)
+    (hspan : affineSpan 𝕜 P = affineSpan 𝕜 Q) :
+    x ∈ intrinsicInterior 𝕜 P ↔ x ∈ intrinsicInterior 𝕜 Q := by
+  rw [intrinsicInterior, intrinsicInterior, ← hspan]
+  constructor
+  · rintro ⟨y, hy, rfl⟩
+    have he : (Subtype.val ⁻¹' P : Set (affineSpan 𝕜 P)) =ᶠ[𝓝 y] Subtype.val ⁻¹' Q :=
+      (continuous_subtype_val.tendsto y).eventually hPQ
+    exact ⟨y, he.mem_interior hy, rfl⟩
+  · rintro ⟨y, hy, rfl⟩
+    have he : (Subtype.val ⁻¹' Q : Set (affineSpan 𝕜 P)) =ᶠ[𝓝 y] Subtype.val ⁻¹' P :=
+      (continuous_subtype_val.tendsto y).eventually hPQ.symm
+    exact ⟨y, he.mem_interior hy, rfl⟩
+
+/-- Sets with the same affine span and the same germ have the same relative boundary
+membership at the base point. Closedness is unnecessary. -/
+theorem mem_intrinsicFrontier_iff (hPQ : P =ᶠ[𝓝 x] Q)
+    (hspan : affineSpan 𝕜 P = affineSpan 𝕜 Q) :
+    x ∈ intrinsicFrontier 𝕜 P ↔ x ∈ intrinsicFrontier 𝕜 Q := by
+  have hclosure : x ∈ closure P ↔ x ∈ closure Q := by
+    simpa only [closure_eq_compl_interior_compl, mem_compl_iff] using
+      not_congr hPQ.compl.mem_interior_iff
+  simp only [← intrinsicClosure_sdiff_intrinsicInterior,
+    intrinsicClosure_eq_closure_inter_affineSpan, Set.mem_sdiff, Set.mem_inter_iff, hclosure,
+    hspan, hPQ.mem_intrinsicInterior_iff hspan]
+
+end Filter.EventuallyEqSet
+
 variable {V : Type*} [AddCommGroup V] [Module ℝ V] [TopologicalSpace V]
   [IsTopologicalAddGroup V] [ContinuousSMul ℝ V]
 

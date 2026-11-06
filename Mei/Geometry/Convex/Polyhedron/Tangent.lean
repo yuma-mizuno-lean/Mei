@@ -6,6 +6,7 @@ Authors: Codex
 module
 
 public import TauCeti.Analysis.Convex.Polyhedron.Basic
+public import Mei.Analysis.Convex.TangentCone
 public import Mathlib.Analysis.Calculus.LocalExtr.Basic
 public import Mathlib.Analysis.Calculus.FDeriv.Affine
 
@@ -16,6 +17,8 @@ The positive tangent cone of a finite system of continuous affine inequalities i
 by the linear parts of the inequalities tight at the base point. The remaining inequalities
 stay strict nearby, so a convex polyhedron locally agrees with the translate of its tangent
 cone. No rationality, lattice, or finite-dimensionality assumption is needed.
+In finite dimension the comparison also identifies relative boundaries, using the common
+affine direction of the support and its tangent cone.
 -/
 
 public section
@@ -89,5 +92,46 @@ theorem eventually_mem_iff_sub_mem_posTangentConeAt (hP : TauCeti.IsConvexPolyhe
   obtain ⟨k, g, rfl⟩ := TauCeti.isConvexPolyhedron_iff.mp hP
   rw [Mei.posTangentConeAt_setOf_forall_le_zero_eq g hx]
   exact Mei.eventually_forall_affine_le_zero_iff g hx
+
+end TauCeti.IsConvexPolyhedron
+
+namespace TauCeti.IsConvexPolyhedron
+
+variable {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V] [FiniteDimensional ℝ V]
+  {P : Set V} {x : V}
+
+open scoped Pointwise in
+/-- Near a point of a convex polyhedron, its relative boundary agrees with the translate
+of the relative boundary of its positive tangent cone. -/
+theorem eventually_mem_intrinsicFrontier_iff_sub_mem_posTangentConeAt
+    (hP : TauCeti.IsConvexPolyhedron P) (hx : x ∈ P) :
+    ∀ᶠ y in 𝓝 x,
+      y ∈ intrinsicFrontier ℝ P ↔ y - x ∈ intrinsicFrontier ℝ (posTangentConeAt P x) := by
+  let e := ContinuousAffineEquiv.constVAdd ℝ V x
+  have he (v : V) : e v = x + v := (rfl)
+  have hzero : (0 : V) ∈ posTangentConeAt P x := by
+    simpa using hP.convex.sub_mem_posTangentConeAt hx hx
+  have hdir : (affineSpan ℝ (e '' posTangentConeAt P x)).direction =
+      (affineSpan ℝ P).direction := by
+    -- Translation leaves the vector span unchanged; the cone has the original direction.
+    have himage : e '' posTangentConeAt P x = x +ᵥ posTangentConeAt P x := (rfl)
+    rw [himage, direction_affineSpan, vectorSpan_vadd, ← direction_affineSpan,
+      hP.convex.direction_affineSpan_posTangentConeAt hx]
+  have hspan := AffineSubspace.ext_of_direction_eq hdir
+    ⟨x, subset_affineSpan ℝ _ ⟨0, hzero, by simp [he]⟩, subset_affineSpan ℝ _ hx⟩
+  have hlocal : P =ᶠ[𝓝 x] e '' posTangentConeAt P x := by
+    filter_upwards [hP.eventually_mem_iff_sub_mem_posTangentConeAt hx] with y hy
+    apply propext
+    refine hy.trans ⟨fun hv => ⟨y - x, hv, by simp [he]⟩, ?_⟩
+    rintro ⟨v, hv, rfl⟩
+    simpa only [he, add_sub_cancel_left] using hv
+  filter_upwards [eventually_eventually_nhds.mpr hlocal] with y hy
+  rw [Filter.EventuallyEqSet.mem_intrinsicFrontier_iff hy hspan.symm,
+    e.intrinsicFrontier_image]
+  constructor
+  · rintro ⟨v, hv, rfl⟩
+    simpa only [he, add_sub_cancel_left] using hv
+  · intro hv
+    exact ⟨y - x, hv, by simp [he]⟩
 
 end TauCeti.IsConvexPolyhedron
