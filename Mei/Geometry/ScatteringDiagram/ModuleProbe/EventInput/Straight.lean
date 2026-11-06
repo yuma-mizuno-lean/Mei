@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.ScatteringDiagram.ModuleProbe.Event.Input
+public import Mei.Geometry.ScatteringDiagram.ModuleProbe.EventInput
 public import Mei.Geometry.ScatteringDiagram.ModuleProbe.IncomingGerm
 public import Mei.Geometry.Convex.Sweep.Generic
 
