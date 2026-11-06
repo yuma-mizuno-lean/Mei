@@ -6,8 +6,6 @@ Authors: Codex
 module
 
 public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Tangent
-public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Consistency
-public import Mei.Geometry.Convex.Polyhedron.Path.Comparison
 
 /-!
 # Consistency of incident tangent diagrams
