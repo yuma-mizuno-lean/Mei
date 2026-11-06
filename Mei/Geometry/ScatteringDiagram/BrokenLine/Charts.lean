@@ -35,13 +35,13 @@ open Set Mei.Convex
 
 namespace Mei
 
-variable {R M Γ V J K : Type*} [Semiring R] [AddCommMonoid M] [Module R M]
+variable {R M Γ V J K O : Type*} [Semiring R] [AddCommMonoid M] [Module R M]
   [AddCommGroup Γ] [DecidableEq Γ] (d : PositiveDegrees Γ)
   (ℳ : Γ → Submodule R M) [DirectSum.Decomposition ℳ]
   [NormedAddCommGroup V] [NormedSpace ℝ V]
   (T : J → Module.End R M) (a : ℳ 0) (v : Γ → V)
   (f : J → V →L[ℝ] ℝ) (c : J → ℝ) (ε : J → SignType)
-  (P W : J → Set V) (S : K → Set V) (C : Set V) [Finite J]
+  (P : J → Set V) (W : O → Set V) (S : K → Set V) (C : Set V) [Finite J]
 
 local notation "domain" t => CutoffDecoratedType.domain c P W S C t
 
@@ -69,7 +69,7 @@ theorem cutoffDecoratedEvaluation_eq_sum_charts (k : ℕ)
 section Rational
 
 variable {Λ : Type*} [AddCommGroup Λ] {i : Λ →+ V}
-  (h : TauCeti.Toric.IsIntegralLattice i) (w : Γ → Λ) [Finite K]
+  (h : TauCeti.Toric.IsIntegralLattice i) (w : Γ → Λ) [Finite K] [Finite O]
   (hf : ∀ j, Toric.IsRationalFunctional h (f j).toLinearMap)
   (hP : ∀ j, IsRationalSemilinear h (P j))
   (hW : ∀ j, IsRationalNormalPolyhedron h (W j))

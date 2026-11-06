@@ -37,13 +37,13 @@ open Set Mei.Convex
 
 namespace Mei.CutoffDecoratedType
 
-variable {R M Γ V J K ι : Type*} [Semiring R] [AddCommMonoid M] [Module R M]
+variable {R M Γ V J K ι O : Type*} [Semiring R] [AddCommMonoid M] [Module R M]
   [AddCommGroup Γ] [DecidableEq Γ] {d : PositiveDegrees Γ}
   {ℳ : Γ → Submodule R M} [DirectSum.Decomposition ℳ]
   [NormedAddCommGroup V] [NormedSpace ℝ V]
   {T : J → Module.End R M} {a : ℳ 0} {v : Γ → V}
   {f : J → V →L[ℝ] ℝ} {ε : J → SignType} {k : ℕ}
-  (c : J → ℝ) (P W : J → Set V) (S : K → Set V) (C : Set V)
+  (c : J → ℝ) (P : J → Set V) (W : O → Set V) (S : K → Set V) (C : Set V)
   (t : CutoffDecoratedType d ℳ T a v f ε k)
   (A : ι → Set V) (wall : J → ι)
   (hclosed : ∀ i, IsClosed (A i)) (hP : ∀ j, P j ⊆ A (wall j))
