@@ -1,7 +1,7 @@
 /-
 Copyright (c) 2026 Mei contributors. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Claude
+Authors: Claude, Codex
 -/
 module
 
@@ -24,7 +24,9 @@ charts are finite branches. A *branch stratification* of `F`
 Thus over each target stratum every source stratum is either absent or an affine copy of it, and
 the fiber of `F` over a point of a target stratum `T` is in bijection with the source strata over
 `T`; in particular the fiber cardinality is constant on each target stratum
-(`FiniteSemilinearFamily.BranchStratification.nat_card_fiber`).
+(`FiniteSemilinearFamily.BranchStratification.nat_card_fiber`). The actual bijections
+retain chart labels (`BranchStratification.exists_fiberEquiv` and
+`BranchStratification.exists_fiberEquiv_of_mem_target`).
 
 Every family of finite branches has a branch stratification
 (`FiniteSemilinearFamily.IsFiniteBranch.exists_branchStratification`), so `W` has a finite
@@ -141,11 +143,11 @@ theorem eval_mem_target (a : μ) (x : F.domain (S.chart a)) (hx : x.1 ∈ S.sour
   obtain ⟨g, -, hg, heval⟩ := S.exists_affineMap a
   exact heval x hx ▸ hg.mapsTo hx
 
-/-- Over a point `w` of the target stratum `b`, the fiber of `F` is in bijection with the source
-strata mapped onto `b`. In particular the fiber cardinality is constant on each target
-stratum. -/
-theorem nat_card_fiber {b : κ} {w : W} (hw : w ∈ S.target b) :
-    Nat.card (F.fiber w) = Nat.card {a // S.stratum a = b} := by
+/-- Over a target stratum, source strata index the actual fiber, retaining the chart
+and source stratum of every point. The source and target stratum indices may be infinite. -/
+theorem exists_fiberEquiv {b : κ} {w : W} (hw : w ∈ S.target b) :
+    ∃ e : {a // S.stratum a = b} ≃ F.fiber w,
+      ∀ a, (e a).1 = S.chart a ∧ ((e a).2.1 : V) ∈ S.source a := by
   choose g _ hbij heval using S.exists_affineMap
   -- Each source stratum over `b` has exactly one point over `w`.
   choose x hx hxw using fun a : {a // S.stratum a = b} => (hbij a).surjOn (a.2 ▸ hw)
@@ -153,23 +155,43 @@ theorem nat_card_fiber {b : κ} {w : W} (hw : w ∈ S.target b) :
     S.domain_eq _ ▸ mem_iUnion₂.mpr ⟨a, rfl, hx a⟩
   let e (a : {a // S.stratum a = b}) : F.fiber w :=
     ⟨S.chart a, ⟨x a, hdom a⟩, (heval a ⟨x a, hdom a⟩ (hx a)).trans (hxw a)⟩
-  refine (Nat.card_congr (Equiv.ofBijective e ⟨fun a a' he => ?_, ?_⟩)).symm
-  · by_contra hne
-    have hxx : x a = x a' := congrArg (fun p : F.fiber w => (p.2.1 : V)) he
-    exact (S.disjoint_source a a' (congrArg Sigma.fst he) (Subtype.coe_injective.ne hne)).ne_of_mem
-      (hx a) (hxx ▸ hx a') rfl
-  · rintro ⟨c, y, hy⟩
-    have hy' : (y : V) ∈ ⋃ (a) (_ : S.chart a = c), S.source a := by
-      rw [← S.domain_eq c]
-      exact y.2
-    obtain ⟨a, hac, hya⟩ := mem_iUnion₂.mp hy'
-    subst hac
-    have hab : S.stratum a = b := by
-      by_contra hne
-      exact (S.pairwise_disjoint_target hne).ne_of_mem (S.eval_mem_target a y hya) hw hy
-    have hxy : x ⟨a, hab⟩ = y :=
-      (hbij a).injOn (hx ⟨a, hab⟩) hya ((hxw ⟨a, hab⟩).trans (hy.symm.trans (heval a y hya)))
-    exact ⟨⟨a, hab⟩, Sigma.ext rfl (heq_of_eq (Subtype.ext (Subtype.ext hxy)))⟩
+  have hbij : Function.Bijective e := by
+    refine ⟨fun a a' he => ?_, ?_⟩
+    · by_contra hne
+      have hxx : x a = x a' := congrArg (fun p : F.fiber w => (p.2.1 : V)) he
+      exact (S.disjoint_source a a' (congrArg Sigma.fst he)
+        (Subtype.coe_injective.ne hne)).ne_of_mem (hx a) (hxx ▸ hx a') rfl
+    · rintro ⟨c, y, hy⟩
+      have hy' : (y : V) ∈ ⋃ (a) (_ : S.chart a = c), S.source a := by
+        rw [← S.domain_eq c]
+        exact y.2
+      obtain ⟨a, hac, hya⟩ := mem_iUnion₂.mp hy'
+      subst hac
+      have hab : S.stratum a = b := by
+        by_contra hne
+        exact (S.pairwise_disjoint_target hne).ne_of_mem (S.eval_mem_target a y hya) hw hy
+      have hxy : x ⟨a, hab⟩ = y :=
+        (hbij a).injOn (hx ⟨a, hab⟩) hya ((hxw ⟨a, hab⟩).trans (hy.symm.trans (heval a y hya)))
+      exact ⟨⟨a, hab⟩, Sigma.ext rfl (heq_of_eq (Subtype.ext (Subtype.ext hxy)))⟩
+  exact ⟨Equiv.ofBijective e hbij, fun a => ⟨rfl, hx a⟩⟩
+
+/-- Over a point `w` of the target stratum `b`, the fiber cardinality is the number
+of source strata mapped onto `b`. -/
+theorem nat_card_fiber {b : κ} {w : W} (hw : w ∈ S.target b) :
+    Nat.card (F.fiber w) = Nat.card {a // S.stratum a = b} := by
+  obtain ⟨e, -⟩ := S.exists_fiberEquiv hw
+  exact (Nat.card_congr e).symm
+
+/-- Two fibers over one target stratum are in bijection, preserving every chart
+label. Distinct branches in the same chart are still distinct fiber points. -/
+theorem exists_fiberEquiv_of_mem_target {b : κ} {w w' : W}
+    (hw : w ∈ S.target b) (hw' : w' ∈ S.target b) :
+    ∃ e : F.fiber w ≃ F.fiber w', ∀ x, (e x).1 = x.1 := by
+  obtain ⟨e, he⟩ := S.exists_fiberEquiv hw
+  obtain ⟨e', he'⟩ := S.exists_fiberEquiv hw'
+  refine ⟨e.symm.trans e', fun x => ?_⟩
+  exact (he' (e.symm x)).1.trans
+    ((he (e.symm x)).1.symm.trans (congrArg Sigma.fst (e.apply_symm_apply x)))
 
 end BranchStratification
 
