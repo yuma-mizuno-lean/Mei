@@ -6,7 +6,6 @@ Authors: Claude Code
 module
 
 public import Mei.Geometry.Convex.Sweep.Admissible.SingleFace
-public import Mei.Geometry.Convex.Sweep.Topology
 
 /-!
 # Endpoint domains and boundary events of a single face
@@ -20,11 +19,11 @@ is the `sweepProjection` of `Q` to the face along `w`, misses `Z`.
 When `Z` is closed and nowhere dense in the face, the closure of the one-crossing
 domain is the whole closed opposite half-space, and its frontier is the union of two
 kinds of boundary events: the terminal crossings, where the endpoint lies on the face and
-the crossing collapses into it, and the singular shadow of `Z`, where the crossing lands in
-`Z`. Every point of either kind is a limit of admitted endpoints, so no other
-degeneration occurs. The only boundary event of the incoming domain is the terminal
-crossing. A singular set contained in a proper affine subspace of ambient codimension at
-least two is nowhere dense in the face.
+the crossing collapses into it, and the singular shadow of `Z`, where the crossing parameter
+is negative and the crossing point lies in `Z`. Every point of either kind is a limit of
+admitted endpoints, so no other degeneration occurs. The only boundary event of the incoming
+domain is the terminal crossing. A singular set covered by countably many affine subspaces
+of ambient codimension at least two has dense complement in the face.
 
 The domains are read off from `nonempty_admissibleRayRealization_iff` and the single-face
 classification of `AdmissibleRayRealization`. The decomposition of the boundary of an
@@ -41,30 +40,10 @@ namespace Mei.Convex
 variable {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
   {ν : V →L[ℝ] ℝ} {b : ℝ} {u w : V} {Z : Set V}
 
-/-- The sweep projection onto a face along a transverse direction moves a point to
-its computed crossing with the face. -/
-theorem sweepProjection_inv_smul_apply (x : V) :
-    sweepProjection ν b ((ν w)⁻¹ • w) x = x - ((ν x - b) / ν w) • w := by
-  rw [sweepProjection_apply, smul_smul, div_eq_mul_inv]
-  module
-
-/-- Moving a point of the face backward along a transverse direction by `s` makes the
-crossing parameter `-s`. -/
-theorem sub_div_sub_smul_eq_neg (hw : ν w ≠ 0) {y : V} (hy : ν y = b) (s : ℝ) :
-    (ν (y - s • w) - b) / ν w = -s := by
-  simp only [map_sub, map_smul, smul_eq_mul, hy]
-  field_simp
-  ring
-
-/-- Moving a point of the face backward along `w` and projecting returns the point. -/
-theorem sweepProjection_inv_smul_sub_smul (hw : ν w ≠ 0) {y : V} (hy : ν y = b) (s : ℝ) :
-    sweepProjection ν b ((ν w)⁻¹ • w) (y - s • w) = y := by
-  rw [sweepProjection_inv_smul_apply, sub_div_sub_smul_eq_neg hw hy]
-  module
-
 section Incoming
 
 /-- The empty itinerary is admitted exactly on the open incoming half-space. -/
+@[simp]
 theorem admissibleBackwardDomain_singleFace_zero (hZ : Z ⊆ {x | ν x = b}) :
     admissibleBackwardDomain (fun _ : Fin 0 => ν) (fun _ => b) (fun _ : Fin 1 => u)
         (fun _ => {x | ν x = b}) (fun _ : Unit => {x | ν x = b}) (fun _ : Unit => Z)
@@ -73,39 +52,6 @@ theorem admissibleBackwardDomain_singleFace_zero (hZ : Z ⊆ {x | ν x = b}) :
     rw [← nonempty_admissibleRayRealization_iff,
       AdmissibleRayRealization.nonempty_singleFace_empty_iff hZ]
     rfl
-
-/-- The incoming half-space is open. -/
-theorem isOpen_singleFace_incoming : IsOpen {x : V | 0 < (ν x - b) / ν u} :=
-  isOpen_lt continuous_const ((ν.continuous.sub continuous_const).div_const _)
-
-/-- The closure of the incoming half-space is the closed half-space. -/
-theorem closure_singleFace_incoming (hu : ν u ≠ 0) :
-    closure {x : V | 0 < (ν x - b) / ν u} = {x | 0 ≤ (ν x - b) / ν u} := by
-  refine Set.Subset.antisymm (closure_minimal (ofPred_subset_ofPred.mpr fun _ h => h.le)
-    (isClosed_le continuous_const ((ν.continuous.sub continuous_const).div_const _)))
-    fun x hx => ?_
-  have hc : Continuous fun s : ℝ => x + s • u := by fun_prop
-  have hlim : Tendsto (fun s : ℝ => x + s • u) (𝓝[>] 0) (𝓝 x) :=
-    (hc.tendsto' 0 x (by simp)).mono_left nhdsWithin_le_nhds
-  refine mem_closure_of_tendsto hlim (eventually_nhdsWithin_of_forall fun s hs => ?_)
-  have hx' : 0 ≤ (ν x - b) / ν u := hx
-  simp only [mem_ofPred_eq, map_add, map_smul, smul_eq_mul, add_sub_right_comm, add_div,
-    mul_div_assoc, div_self hu, mul_one]
-  exact add_pos_of_nonneg_of_pos hx' hs
-
-/-- The only boundary event of the incoming half-space is the terminal crossing at the face. -/
-theorem frontier_singleFace_incoming (hu : ν u ≠ 0) :
-    frontier {x : V | 0 < (ν x - b) / ν u} = {x | ν x = b} := by
-  rw [isOpen_singleFace_incoming.frontier_eq, closure_singleFace_incoming hu]
-  ext x
-  simp only [Set.mem_sdiff, mem_ofPred_eq, not_lt]
-  constructor
-  · rintro ⟨h0, h1⟩
-    have := le_antisymm h1 h0
-    rw [div_eq_zero_iff] at this
-    exact sub_eq_zero.mp (this.resolve_right hu)
-  · intro hx
-    simp [hx]
 
 end Incoming
 
@@ -117,6 +63,8 @@ include hnormal hZ
 
 /-- The one-crossing itinerary is admitted exactly where the crossing parameter is negative
 and the crossing point misses the singular set. -/
+-- Match the single-face pattern before general domain membership unfolds it.
+@[simp↓]
 theorem mem_admissibleBackwardDomain_singleFace_one_iff {x : V} :
     x ∈ admissibleBackwardDomain (fun _ : Fin 1 => ν) (fun _ => b) ![w, u]
         (fun _ => {x | ν x = b}) (fun _ : Unit => {x | ν x = b}) (fun _ : Unit => Z)
@@ -167,10 +115,7 @@ theorem closure_admissibleBackwardDomain_singleFace_one (hw : ν w ≠ 0)
   have hτ : (ν x - b) / ν w ≤ 0 := hx
   set y := sweepProjection ν b ((ν w)⁻¹ • w) x with hy
   have hyH : ν y = b := by
-    rw [hy, sweepProjection_inv_smul_apply]
-    simp only [map_sub, map_smul, smul_eq_mul]
-    field_simp
-    ring
+    exact sweepProjection_height ν b (by simp [hw]) x
   have hxy (s : ℝ) : x - s • w = y - (s - (ν x - b) / ν w) • w := by
     rw [hy, sweepProjection_inv_smul_apply]
     module
@@ -186,7 +131,7 @@ theorem closure_admissibleBackwardDomain_singleFace_one (hw : ν w ≠ 0)
 
 /-- The boundary events of the one-crossing endpoint domain are exactly the terminal
 crossings, with the endpoint on the face, and the singular shadow, where the crossing
-point lies in the singular set. -/
+parameter is negative and the crossing point lies in the singular set. -/
 theorem frontier_admissibleBackwardDomain_singleFace_one (hw : ν w ≠ 0) (hZc : IsClosed Z)
     (hdense : {x | ν x = b} ⊆ closure ({x | ν x = b} \ Z)) :
     frontier (admissibleBackwardDomain (fun _ : Fin 1 => ν) (fun _ => b) ![w, u]
@@ -221,8 +166,8 @@ theorem disjoint_incoming_admissibleBackwardDomain_singleFace_one :
   exact absurd h (not_lt.mpr (le_of_lt hx))
 
 /-- Every endpoint is admitted by exactly one of the empty and one-crossing itineraries,
-except those on a boundary event: the endpoints on the face and those whose crossing point
-lies in the singular set. -/
+except those on a boundary event: the endpoints on the face and those with negative crossing
+parameter whose crossing point lies in the singular set. -/
 theorem incoming_union_admissibleBackwardDomain_singleFace_one (hw : ν w ≠ 0) :
     {x | 0 < (ν x - b) / ν u} ∪ (admissibleBackwardDomain (fun _ : Fin 1 => ν) (fun _ => b) ![w, u]
         (fun _ => {x | ν x = b}) (fun _ : Unit => {x | ν x = b}) (fun _ : Unit => Z)
@@ -239,36 +184,5 @@ theorem incoming_union_admissibleBackwardDomain_singleFace_one (hw : ν w ≠ 0)
   · simp [h, not_lt.mpr h.le, hτ.not.mp h.ne']
 
 end OneCrossing
-
-section Codimension
-
-variable [FiniteDimensional ℝ V]
-
-/-- A closed singular set contained in an affine subspace of ambient codimension at least two
-is nowhere dense in the face: every point of the face is a limit of points of the face
-outside the singular set. -/
-theorem face_subset_closure_diff_of_finrank (hν : ν ≠ 0) {E : AffineSubspace ℝ V}
-    (hZE : Z ⊆ E) (hE : Module.finrank ℝ E.direction + 1 < Module.finrank ℝ V) :
-    {x | ν x = b} ⊆ closure ({x | ν x = b} \ Z) := by
-  intro x hx
-  have hx' : ν x = b := hx
-  -- The face is the affine subspace through `x` with direction `ker ν`.
-  let A : AffineSubspace ℝ V := .mk' x (LinearMap.ker ν.toLinearMap)
-  have hA : ∀ y ∈ A, ν y = b := fun y hy => by
-    have := AffineSubspace.mem_mk'.mp hy
-    simpa [sub_eq_zero, hx'] using this
-  have hdir : Module.finrank ℝ A.direction + 1 = Module.finrank ℝ V := by
-    rw [AffineSubspace.direction_mk']
-    exact Module.Dual.finrank_ker_add_one_of_ne_zero (f := ν.toLinearMap)
-      (fun h => hν (ContinuousLinearMap.coe_injective h))
-  rw [Metric.mem_closure_iff]
-  intro ε hε
-  obtain ⟨z, hz, hzE⟩ := A.exists_mem_open_avoid_of_finrank_lt (fun _ : Unit => E)
-    (fun _ => by omega) (U := Subtype.val ⁻¹' Metric.ball x ε)
-    (Metric.isOpen_ball.preimage continuous_subtype_val)
-    ⟨⟨x, AffineSubspace.self_mem_mk' x _⟩, Metric.mem_ball_self hε⟩
-  exact ⟨z, ⟨hA z z.2, fun hzZ => hzE () (hZE hzZ)⟩, by simpa [dist_comm] using hz⟩
-
-end Codimension
 
 end Mei.Convex
