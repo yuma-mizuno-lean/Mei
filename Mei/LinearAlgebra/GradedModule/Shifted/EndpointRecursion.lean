@@ -6,50 +6,31 @@ Authors: DeepSeek V4.1 Flash
 module
 
 public import Mei.Algebra.PositiveDegrees.Basic
+public import Mathlib.Algebra.BigOperators.GroupWithZero.Action
+public import Mathlib.Algebra.Module.Pi
 public import Mei.LinearAlgebra.End.Recursion
-public import Mathlib.LinearAlgebra.Pi
-public import Mathlib.Data.Set.Finite.Range
 
 /-!
-# The common backward-ray operator on generic endpoint functions
+# Lower-degree steps on shifted cutoff functions
 
-A *generic endpoint function* of relative order `k` assigns to a base point `V`
-and an allowed relative degree `n` in the cutoff `d.cutoff k` a coefficient in
-the shifted homogeneous piece `ℳ (p + n)`. This is the carrier on which the
-broken-line and the probe recursions of a scattering diagram both read their
-lower-order inputs: the base point is the endpoint of the backward ray (or the
-incoming germ of the last change), and the relative degree is the grading
-coordinate that the recursion lowers.
+A *shifted cutoff function* of order `k` assigns to a base point in `V` and a
+relative degree `n` in `d.cutoff k` a coefficient in the shifted homogeneous
+piece `ℳ (p + n)`. A lower-degree step on these functions is assembled from an
+arbitrary index type `ι`, a finite set `events Q n` of indices for each base
+point and output degree, a coefficient map `block`, and a read point `point`.
+The block between relative degrees `m` and `n` is defined only when `m` strictly
+precedes `n`, meaning that `m ≠ n` and `n - m` is an allowed degree.
 
-`endpointStep` is the single operator that both recursions use. It is assembled
-from three pieces of geometric data: a finite inventory `ι` of simultaneous
-wall events, the coefficient of each event between two relative degrees
-(`block`), and the base point at which each event reads its input (`point`).
-The only degree input is that a block occurs only for a *lower* relative degree
-`m` of a higher one `n`, written `Precedes`: `m ≠ n` and `n - m` is an allowed
-degree. No commutativity between different events, no ordering, and no
-genericity hypothesis on the base points is used.
+`shiftedLowerStep` packages these data as a linear endomorphism. Each step reads
+at a relative degree strictly below the output degree. Consequently its `j`th
+iterate vanishes in every relative degree of degree below `j`
+(`shiftedLowerStep_pow_apply_eq_zero`), and its `(k + 1)`st iterate is zero
+(`shiftedLowerStep_pow_eq_zero`). The proof tracks degrees along iterates and
+needs neither a finite ambient grading nor a positivity order on `R`.
 
-The module proves the three properties the R7 comparison needs about this
-operator.
-
-* *Degree increase.* `endpointStep` lowers the relative degree actually read,
-  which is the last-change bookkeeping of the geometric recursions: its `j`th
-  iterate vanishes in every relative degree of degree below `j`
-  (`endpointStep_pow_apply_eq_zero`).
-* *Nilpotence.* Every retained degree is at most `k`, so
-  `endpointStep ^ (k + 1) = 0`. The proof tracks degrees along iterates; it
-  needs neither a finite ambient grading nor a positivity order on `R`.
-* *Recursion uniqueness.* Consequently `x = source + endpointStep x` has the
-  unique solution `∑ j ≤ k, endpointStep ^ j source`, and two endpoint
-  functions satisfying the same recursion with the same source are equal. This
-  is the comparison step of `probeWall_eq_brokenLineSum`: the probe field and
-  the broken-line sum are compared through one recursion, without defining
-  either side by the other.
-
-The uniqueness theorem is the shared semimodule result
-`Module.End.existsUnique_eq_add_of_pow_eq_zero` of `Mei.LinearAlgebra.End.Recursion`,
-applied to this operator. The last-change bookkeeping follows Mandel,
+Together with the generic results of `Mei.LinearAlgebra.End.Recursion`, this
+nilpotence gives finite solutions and uniqueness for recursions of the form
+`x = source + shiftedLowerStep x`. The degree bookkeeping follows Mandel,
 *Scattering diagrams, theta functions, and refined tropical curve counts*,
 §3.3.3 (arXiv:1503.06183v5).
 -/
@@ -58,63 +39,28 @@ public section
 
 noncomputable section
 
-namespace Mei
+namespace Mei.PositiveDegrees
 
-namespace PositiveDegrees
-
-variable {Γ : Type*} [AddCommGroup Γ] (d : PositiveDegrees Γ)
-
-/-- A relative degree `m` is strictly lower than `n` when it differs from it and
-`n - m` is an allowed degree. This is the index relation of a last change: the
-residual degree `n - m` is the degree carried by the crossed wall events. -/
-@[expose] def Precedes (m n : Γ) : Prop := m ≠ n ∧ n - m ∈ d.monoid
-
-/-- The last-change relation is decidable, so the sums over retained degrees can
-select it without side conditions. -/
-noncomputable instance instDecidablePrecedes (m n : Γ) : Decidable (d.Precedes m n) :=
-  Classical.propDecidable _
-
-/-- Strictly lower relative degrees have strictly smaller degree. -/
-theorem degree_lt_of_precedes {m n : Γ} (h : d.Precedes m n) :
-    d.degree m < d.degree n := by
-  obtain ⟨hne, hsub⟩ := h
-  have hzero : n - m ≠ 0 := sub_ne_zero.mpr hne.symm
-  have hpos := d.degree_pos hsub hzero
-  have hsplit : m + (n - m) = n := add_sub_cancel m n
-  have := congrArg d.degree hsplit
-  simp only [map_add] at this
-  omega
-
-end PositiveDegrees
-
-open PositiveDegrees
-
-variable {R M V : Type*} [Ring R] [AddCommGroup Γ] [DecidableEq Γ] [AddCommGroup M]
+variable {Γ R M V : Type*} [AddCommGroup Γ] [Semiring R] [AddCommMonoid M]
   [Module R M] (d : PositiveDegrees Γ) (ℳ : Γ → Submodule R M) (p : Γ) (k : ℕ)
 
-/-- The relative-degree cutoff is a finite type, so endpoint sums over it are
-finite. -/
-noncomputable instance cutoffFintype : Fintype (d.cutoff k) := (d.finite_cutoff k).fintype
-
-/-- Generic endpoint functions of relative order `k`: a base point and a
-coefficient in every retained shifted homogeneous piece. -/
-abbrev Endpoint (d : PositiveDegrees Γ) (ℳ : Γ → Submodule R M) (p : Γ) (V : Type*)
-    (k : ℕ) : Type _ :=
+/-- Shifted cutoff functions: a coefficient at a base point in every retained
+shifted homogeneous piece. -/
+abbrev ShiftedEndpointFunction (d : PositiveDegrees Γ) (ℳ : Γ → Submodule R M)
+    (p : Γ) (V : Type*) (k : ℕ) : Type _ :=
   V → (n : d.cutoff k) → ℳ (p + n.val)
 
-/-- The common backward-ray step of the broken-line and probe recursions.
-
-The inventory `ι` indexes simultaneous wall events. It may depend on the base
-point `Q` and output degree `n`. Event `b` reads its input at `point b Q n m`,
-where both the output degree `n` and the input degree `m` may vary, and transports
-it to the output through `block b`. Only strictly lower relative degrees
-contribute, which is what removes the unchanged-degree encounters. -/
-def endpointStep (d : PositiveDegrees Γ) (ℳ : Γ → Submodule R M) (p : Γ) (k : ℕ)
+/-- The linear step that transports coefficients from strictly lower relative
+degrees. Each `(Q, n)` selects a finite event set from the arbitrary index type
+`ι`; event `b` reads at `point b Q n m` and maps its coefficient through
+`block b`. No ordering, commutativity, or geometric hypothesis on the base
+points is used. -/
+def shiftedLowerStep (d : PositiveDegrees Γ) (ℳ : Γ → Submodule R M) (p : Γ) (k : ℕ)
     {ι : Type*} (events : V → (d.cutoff k) → Finset ι)
     (block : ι → (n m : d.cutoff k) → d.Precedes m.val n.val →
       ℳ (p + m.val) →ₗ[R] ℳ (p + n.val))
     (point : ι → V → (n m : d.cutoff k) → V) :
-      Endpoint d ℳ p V k →ₗ[R] Endpoint d ℳ p V k where
+      ShiftedEndpointFunction d ℳ p V k →ₗ[R] ShiftedEndpointFunction d ℳ p V k where
   toFun F Q n :=
     ∑ b ∈ events Q n, ∑ m : d.cutoff k,
       if h : d.Precedes m.val n.val then block b n m h (F (point b Q n m) m) else 0
@@ -141,27 +87,26 @@ def endpointStep (d : PositiveDegrees Γ) (ℳ : Γ → Submodule R M) (p : Γ) 
     · rw [map_smul]
     · rw [smul_zero]
 
-omit [DecidableEq Γ] in
-/-- The defining formula of the backward-ray step. -/
-theorem endpointStep_apply {ι : Type*} (events : V → (d.cutoff k) → Finset ι)
+/-- The defining formula of the lower-degree step. -/
+theorem shiftedLowerStep_apply {ι : Type*} (events : V → (d.cutoff k) → Finset ι)
     (block : ι → (n m : d.cutoff k) → d.Precedes m.val n.val →
       ℳ (p + m.val) →ₗ[R] ℳ (p + n.val))
-    (point : ι → V → (n m : d.cutoff k) → V) (F : Endpoint d ℳ p V k) (Q : V)
-    (n : d.cutoff k) :
-    endpointStep d ℳ p k events block point F Q n =
+    (point : ι → V → (n m : d.cutoff k) → V) (F : ShiftedEndpointFunction d ℳ p V k)
+    (Q : V) (n : d.cutoff k) :
+    shiftedLowerStep d ℳ p k events block point F Q n =
       ∑ b ∈ events Q n, ∑ m : d.cutoff k,
         if h : d.Precedes m.val n.val then block b n m h (F (point b Q n m) m) else 0 := (rfl)
 
-omit [DecidableEq Γ] in
-/-- Iterates of the backward-ray step vanish on relative degrees below the
+/-- Iterates of the lower-degree step vanish on relative degrees below the
 iterate count: after `j` steps the value read has lost at least `j` degrees. -/
-theorem endpointStep_pow_apply_eq_zero {ι : Type*} (events : V → (d.cutoff k) → Finset ι)
+theorem shiftedLowerStep_pow_apply_eq_zero {ι : Type*}
+    (events : V → (d.cutoff k) → Finset ι)
     (block : ι → (n m : d.cutoff k) → d.Precedes m.val n.val →
       ℳ (p + m.val) →ₗ[R] ℳ (p + n.val))
     (point : ι → V → (n m : d.cutoff k) → V) :
-    ∀ (j : ℕ) (F : Endpoint d ℳ p V k) (Q : V) (n : d.cutoff k),
+    ∀ (j : ℕ) (F : ShiftedEndpointFunction d ℳ p V k) (Q : V) (n : d.cutoff k),
       d.degree n.val < j →
-        ((endpointStep d ℳ p k events block point) ^ j) F Q n = 0 := by
+        ((shiftedLowerStep d ℳ p k events block point) ^ j) F Q n = 0 := by
   classical
   intro j
   induction j with
@@ -171,7 +116,7 @@ theorem endpointStep_pow_apply_eq_zero {ι : Type*} (events : V → (d.cutoff k)
     omega
   | succ j ih =>
     intro F Q n h
-    rw [pow_succ', Module.End.mul_apply, endpointStep_apply]
+    rw [pow_succ', Module.End.mul_apply, shiftedLowerStep_apply]
     apply Finset.sum_eq_zero
     intro b _
     apply Finset.sum_eq_zero
@@ -180,54 +125,17 @@ theorem endpointStep_pow_apply_eq_zero {ι : Type*} (events : V → (d.cutoff k)
     · rw [ih _ _ _ (by have := degree_lt_of_precedes d hmn; omega), map_zero]
     · rfl
 
-omit [DecidableEq Γ] in
-/-- Nilpotence of the common backward-ray operator: its `k + 1`-st iterate is
-zero on endpoint functions of relative order `k`. -/
-theorem endpointStep_pow_eq_zero {ι : Type*} (events : V → (d.cutoff k) → Finset ι)
+/-- The lower-degree step is nilpotent on shifted cutoff functions of order `k`. -/
+theorem shiftedLowerStep_pow_eq_zero {ι : Type*}
+    (events : V → (d.cutoff k) → Finset ι)
     (block : ι → (n m : d.cutoff k) → d.Precedes m.val n.val →
       ℳ (p + m.val) →ₗ[R] ℳ (p + n.val))
     (point : ι → V → (n m : d.cutoff k) → V) :
-    (endpointStep d ℳ p k events block point) ^ (k + 1) = 0 := by
+    (shiftedLowerStep d ℳ p k events block point) ^ (k + 1) = 0 := by
   refine LinearMap.ext fun F => ?_
   refine funext fun Q => ?_
   refine funext fun n => ?_
-  exact endpointStep_pow_apply_eq_zero d ℳ p k events block point (k + 1) F Q n
+  exact shiftedLowerStep_pow_apply_eq_zero d ℳ p k events block point (k + 1) F Q n
     (by have := (d.mem_cutoff.mp n.property).2; omega)
 
-section Recursion
-
-variable {ι : Type*} (events : V → (d.cutoff k) → Finset ι)
-  (block : ι → (n m : d.cutoff k) → d.Precedes m.val n.val →
-    ℳ (p + m.val) →ₗ[R] ℳ (p + n.val))
-  (point : ι → V → (n m : d.cutoff k) → V)
-
-omit [DecidableEq Γ] in
-/-- Two endpoint functions satisfying the same last-change recursion with the
-same source are equal. This is the comparison principle for the probe field and
-the broken-line sum: it applies to both once each is shown to solve the
-recursion of the common backward-ray operator. -/
-theorem eq_of_endpointStep_eq_add {source x y : Endpoint d ℳ p V k}
-    (hx : x = source + endpointStep d ℳ p k events block point x)
-    (hy : y = source + endpointStep d ℳ p k events block point y) : x = y :=
-  Module.End.eq_of_eq_add_of_pow_eq_zero _
-    (endpointStep_pow_eq_zero d ℳ p k events block point) hx hy
-
-omit [DecidableEq Γ] in
-/-- Every solution of the common recursion is the finite sum of the iterates of
-the source, below the nilpotency bound. -/
-theorem eq_finiteRecursion_endpointStep {source x : Endpoint d ℳ p V k}
-    (hx : x = source + endpointStep d ℳ p k events block point x) :
-    x = Module.End.finiteRecursion (endpointStep d ℳ p k events block point) (k + 1) source :=
-  Module.End.eq_finiteRecursion_of_eq_add _
-    (endpointStep_pow_eq_zero d ℳ p k events block point) hx
-
-omit [DecidableEq Γ] in
-/-- The common recursion has exactly one solution. -/
-theorem existsUnique_endpointStep_eq_add (source : Endpoint d ℳ p V k) :
-    ∃! x, x = source + endpointStep d ℳ p k events block point x :=
-  Module.End.existsUnique_eq_add_of_pow_eq_zero _
-    (endpointStep_pow_eq_zero d ℳ p k events block point) source
-
-end Recursion
-
-end Mei
+end Mei.PositiveDegrees

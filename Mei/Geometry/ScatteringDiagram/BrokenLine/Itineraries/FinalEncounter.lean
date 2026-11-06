@@ -210,7 +210,7 @@ theorem eventually_decompose_cutoffDecoratedEvaluation_eq_sum_finalEncounter
       · intro p' _ hne
         exact ite_eq_right fun h => hne (hp.unique w q h).symm
       · intro hnot
-        exact (hnot (by simp [hPs, hpc, hqp, hn, (d.finite_cutoff k).mem_toFinset])).elim
+        exact (hnot (by simp [hPs, hpc, hqp, hn])).elim
     · rw [ite_eq_right hz]
       exact (Finset.sum_eq_zero fun p _ => ite_eq_right fun h => hz h.finalDegree_eq).symm
   filter_upwards [(Filter.eventually_all_finset Ps).mpr hevent] with η hη
