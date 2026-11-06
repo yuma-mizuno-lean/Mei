@@ -112,31 +112,27 @@ theorem exists_cutoffDecoratedRay_common_closedCharts
       apply (hclosure.trans inter_subset_left).trans (closure_mono ?_)
       rw [← hAcover t]
       exact subset_iUnion (A t) (left t j)
-    refine ⟨hne, hpoly, hlc, hsub, hclosure, hsubdomain, ?_, fun Q hQ =>
-      ⟨t.path_eventually_mem c P W S C hC (hsubdomain hQ),
-        t.exists_limitRay c P W S C (hsubdomain hQ)⟩⟩
-    rw [CutoffDecoratedType.path_def]
-    exact isProperMap_backwardPath_restrict _ _ _ hpoly.isClosed
-      (fun Q hQ => t.backwardTime_nonneg c P W S C (hsubdomain hQ))
+    exact ⟨hne, hpoly, hlc, hsub, hclosure, hsubdomain,
+      t.isProperMap_path_restrict_and_exists_limitRay c P W S C hC hpoly.isClosed hsubdomain⟩
   · intro Q
     exact cutoffDecoratedEvaluation_eq_sum_charts d ℳ T a v f c ε P W S C
       k μ (fun t j => intrinsicInterior ℝ (D t j)) hdisj hdomain Q
   -- Reindex the exact global ray fiber, retaining its complete type. No paths
   -- are constructed afresh on a chart or on an endpoint restriction.
-  · let split := Equiv.sigmaCongrRight fun t =>
-      (Set.unionEqSigmaOfDisjoint (hdisj t)).symm.trans (Set.equivOfEq (hdomain t))
-    let swap : (Σ t, domain t) ≃ (Σ Q, {t : Types // Q ∈ domain t}) :=
-      { toFun := fun z => ⟨z.2.val, z.1, z.2.property⟩
-        invFun := fun z => ⟨z.2.val, z.1, z.2.property⟩
-        left_inv := fun _ => rfl
-        right_inv := fun _ => rfl }
-    let e := split.trans (swap.trans (Equiv.sigmaCongrRight fun Q =>
-      (cutoffDecoratedRayFiberEquiv d ℳ T a v f c ε P W S C k Q).symm))
+  · let e := (Set.sigmaDisjointCoverEquiv hdisj hdomain).trans
+      (Equiv.sigmaCongrRight fun Q =>
+        (cutoffDecoratedRayFiberEquiv d ℳ T a v f c ε P W S C k Q).symm)
     have hendpoint (z) : (e z).1 = z.2.2.val := by
-      simp only [e, split, Equiv.trans_apply, Equiv.sigmaCongrRight_apply, swap,
-        Equiv.coe_fn_mk, Set.equivOfEq_apply, Set.coe_unionEqSigmaOfDisjoint_symm_apply]
+      simp only [e, Equiv.trans_apply, Equiv.sigmaCongrRight_apply,
+        Set.sigmaDisjointCoverEquiv_apply_fst]
+    have he (z) : e z = ⟨z.2.2.val,
+        (cutoffDecoratedRayFiberEquiv d ℳ T a v f c ε P W S C k z.2.2.val).symm
+          ⟨z.1, hdomain z.1 ▸ mem_iUnion.mpr ⟨z.2.1, z.2.2.property⟩⟩⟩ := by
+      dsimp only [e]
+      rw [Equiv.trans_apply, Set.sigmaDisjointCoverEquiv_apply, Equiv.sigmaCongrRight_apply]
     have htype (z) : (cutoffDecoratedRayFiberEquiv d ℳ T a v f c ε P W S C
         k (e z).1 (e z).2).val = z.1 := by
+      rw [he]
       exact congrArg Subtype.val
         ((cutoffDecoratedRayFiberEquiv d ℳ T a v f c ε P W S C k _).apply_symm_apply _)
     refine ⟨e, hendpoint, htype, fun z => ?_, fun z => ?_⟩

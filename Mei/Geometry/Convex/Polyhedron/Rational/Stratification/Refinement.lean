@@ -62,6 +62,15 @@ theorem IsRationalSemilinear.exists_common_polyhedralRefinement
   -- Compress the finite chart index, independently of the parent universes.
   let := Fintype.ofFinite (Σ p : ι × κ, ν p)
   let e := Fintype.equivFin (Σ p : ι × κ, ν p)
+  have hmem (a : ι) (b : κ) (x : V) (ha : x ∈ A a) (hb : x ∈ B b) :
+      ∃ s, (e.symm s).1.1 = a ∧ (e.symm s).1.2 = b ∧
+        x ∈ intrinsicInterior ℝ (D (e.symm s).1 (e.symm s).2) := by
+    have hxAB : x ∈ A a ∩ B b := ⟨ha, hb⟩
+    obtain ⟨j, hj⟩ := mem_iUnion.mp ((hDcover (a, b)).symm ▸ hxAB)
+    refine ⟨e ⟨(a, b), j⟩, by simp only [Equiv.symm_apply_apply],
+      by simp only [Equiv.symm_apply_apply], ?_⟩
+    rw [Equiv.symm_apply_apply]
+    exact hj
   refine ⟨Fin (Fintype.card (Σ p : ι × κ, ν p)), inferInstance,
     fun s => D (e.symm s).1 (e.symm s).2,
     fun s => (e.symm s).1.1, fun s => (e.symm s).1.2, ?_, ?_, ?_, ?_⟩
@@ -96,21 +105,15 @@ theorem IsRationalSemilinear.exists_common_polyhedralRefinement
         hs ▸ ((hsub (e.symm s).1 (e.symm s).2).trans inter_subset_left)
     · intro x hx
       obtain ⟨b, hb⟩ := mem_iUnion.mp (hcover ▸ mem_iUnion.mpr ⟨a, hx⟩)
-      have hxAB : x ∈ A a ∩ B b := ⟨hx, hb⟩
-      obtain ⟨j, hj⟩ := mem_iUnion.mp ((hDcover (a, b)).symm ▸ hxAB)
-      exact mem_iUnion₂.mpr ⟨e ⟨(a, b), j⟩,
-        by simp only [Equiv.symm_apply_apply],
-        by dsimp only; rw [Equiv.symm_apply_apply]; exact hj⟩
+      obtain ⟨s, hs, -, hxs⟩ := hmem a b x hx hb
+      exact mem_iUnion₂.mpr ⟨s, hs, hxs⟩
   · intro b
     apply Subset.antisymm
     · exact iUnion₂_subset fun s hs =>
         hs ▸ ((hsub (e.symm s).1 (e.symm s).2).trans inter_subset_right)
     · intro x hx
       obtain ⟨a, ha⟩ := mem_iUnion.mp (hcover.symm ▸ mem_iUnion.mpr ⟨b, hx⟩)
-      have hxAB : x ∈ A a ∩ B b := ⟨ha, hx⟩
-      obtain ⟨j, hj⟩ := mem_iUnion.mp ((hDcover (a, b)).symm ▸ hxAB)
-      exact mem_iUnion₂.mpr ⟨e ⟨(a, b), j⟩,
-        by simp only [Equiv.symm_apply_apply],
-        by dsimp only; rw [Equiv.symm_apply_apply]; exact hj⟩
+      obtain ⟨s, -, hs, hxs⟩ := hmem a b x ha hx
+      exact mem_iUnion₂.mpr ⟨s, hs, hxs⟩
 
 end Mei
