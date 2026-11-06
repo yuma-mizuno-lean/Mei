@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.ScatteringDiagram.BrokenLine.DecoratedRay
-public import Mei.Geometry.Convex.Sweep.EncounterBound
+public import Mei.Geometry.Convex.Sweep.Encounter.Bound
 public import Mei.LinearAlgebra.ModuleFiltration.FiniteLength
 
 /-!
@@ -77,9 +77,7 @@ theorem encounter_count_le_of_filtration
     (Nat.le_add_right _ _).trans (hstep j)
   obtain ⟨hpos, _, _⟩ := β.2.eq_backwardRay
   apply Convex.encounter_count_le_of_antitone_rank f c wall (fun j => v (p j)) Q
-    hpos β.2.transverse (fun j => by
-      simpa only [p, Fin.snoc_castSucc] using β.normal_velocity_eq j)
-    rank hanti (hrank 0).1
+    hpos β.2.transverse rank hanti (hrank 0).1
   intro j hj
   have hz : w (wall j) (p j.succ) (p j.castSucc) = 0 := by
     have := hstep j

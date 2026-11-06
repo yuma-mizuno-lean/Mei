@@ -34,18 +34,10 @@ theorem exists_mem_notMem_succ {r : ℕ} (hr : F.submodule r = ⊥)
     {x : M} (hx : x ≠ 0) :
     ∃ k < r, x ∈ F.submodule k ∧ x ∉ F.submodule (k + 1) := by
   classical
-  have hex : ∃ k, x ∉ F.submodule (k + 1) := by
-    refine ⟨r, fun h => hx ?_⟩
-    exact (Submodule.mem_bot R).mp (hr ▸ F.antitone (Nat.le_succ r) h)
-  let k := Nat.find hex
-  have hnot : x ∉ F.submodule (k + 1) := Nat.find_spec hex
-  have hmem : x ∈ F.submodule k := by
-    by_cases hk : k = 0
-    · simp [hk]
-    · by_contra h
-      have hle := Nat.find_min' hex (m := k - 1) (by
-        simpa only [Nat.sub_add_cancel (Nat.one_le_iff_ne_zero.mpr hk)] using h)
-      omega
+  obtain ⟨k, hmem, hnot⟩ := Nat.exists_not_and_succ_of_not_zero_of_exists
+    (p := fun k => x ∉ F.submodule k) (by simp)
+    ⟨r, fun h => hx ((Submodule.mem_bot R).mp (hr ▸ h))⟩
+  simp only [not_not] at hmem
   refine ⟨k, ?_, hmem, hnot⟩
   by_contra h
   exact hx ((Submodule.mem_bot R).mp (hr ▸ F.antitone (Nat.le_of_not_gt h) hmem))

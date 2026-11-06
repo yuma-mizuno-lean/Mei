@@ -13,10 +13,9 @@ public import Mathlib.SetTheory.Cardinal.Finite
 
 A transverse backward itinerary with a nonincreasing natural rank has at most
 `r * Nat.card J` encounters if its ranks are below `r`. Equal adjacent ranks must
-preserve direction; every encounter must preserve normal velocity. Each wall
-then occurs at most once at any rank, even when degrees or directions recur at
-different ranks. No positive monoid or monotonicity of coefficient degrees is
-required.
+preserve direction. Each wall then occurs at most once at any rank, even when
+degrees or directions recur at different ranks. No positive monoid or
+monotonicity of coefficient degrees is required.
 
 This generalizes the no-repetition argument of
 `nodup_of_mem_realizedDegreeItineraries`, replacing positive degree by an
@@ -34,16 +33,14 @@ namespace Mei.Convex
 variable {V J : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
 
 /-- A rank that changes whenever direction changes bounds all transverse
-encounters with a finite wall alphabet. Normal velocity preservation permits
-the encounter starting a straight piece to be counted in that piece. Repeated
-wall labels and unchanged-direction encounters are retained. -/
+encounters with a finite wall alphabet. Repeated wall labels and
+unchanged-direction encounters are retained. -/
 theorem encounter_count_le_of_antitone_rank [Finite J] {n r : ℕ}
     (f : J → V →L[ℝ] ℝ) (c : J → ℝ) (wall : Fin n → J)
     (v : Fin (n + 1) → V) (Q : V)
     (hpos : ∀ j, 0 < backwardTime (fun j => f (wall j)) (fun j => c (wall j))
       (fun j => v j.castSucc) j Q)
     (htrans : ∀ j, f (wall j) (v j.castSucc) ≠ 0)
-    (hnormal : ∀ j, f (wall j) (v j.castSucc) = f (wall j) (v j.succ))
     (rank : Fin (n + 1) → ℕ) (hanti : Antitone rank) (hr : rank 0 < r)
     (hstraight : ∀ j : Fin n, rank j.castSucc = rank j.succ → v j.castSucc = v j.succ) :
     n ≤ r * Nat.card J := by
@@ -83,7 +80,9 @@ theorem encounter_count_le_of_antitone_rank [Finite J] {n r : ℕ}
       have hheight : F a (backwardPoint F offset u b.succ Q) = offset a := by
         simpa only [F, offset, hwall] using hb
       have hv : F a (v a.succ) ≠ 0 := by
-        simpa only [F, ← hnormal a] using htrans a
+        have hdir := hconstant b.castSucc (by simpa using hab)
+          (Fin.castSucc_le_succ b)
+        simpa only [F, ← hwall, hdir] using htrans b
       exact backwardPoint_height_ne_of_constant F offset u Q hpos a b hab (htrans a)
         (v a.succ) (fun j haj hjb =>
           hconstant j.castSucc haj ((Fin.castSucc_le_succ j).trans hjb)) hv hheight

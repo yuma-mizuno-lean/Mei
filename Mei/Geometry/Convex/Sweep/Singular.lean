@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.Convex.Sweep.Encounter
+public import Mei.Geometry.Convex.Sweep.Encounter.Basic
 
 /-!
 # Singular-set avoidance for backward rays
