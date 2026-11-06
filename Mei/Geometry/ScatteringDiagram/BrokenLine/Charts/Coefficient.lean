@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.ScatteringDiagram.BrokenLine.Degeneration
-public import Mei.Geometry.ScatteringDiagram.BrokenLine.Itineraries.Regrading
+public import Mei.Geometry.ScatteringDiagram.BrokenLine.Itineraries.Regrading.Coefficient
 
 /-!
 # Coefficient embeddings of closed decorated-type charts
@@ -50,150 +50,32 @@ local notation "a'" => regradeBase ℳ 𝓝 r (σ : Γ →+ Δ) hr a
 local notation "Source" => CutoffDecoratedType d ℳ T a v f ε k
 local notation "Target" => CutoffDecoratedType e 𝓝 U a' w f ε l
 
-include hinj hr hT hv in
-private theorem base_support_iff (word : List J) (p : Fin word.length → Γ) :
-    σ ∘ p ∈ decoratedHistorySupport 𝓝 (fun j => U (word.get j)) 0 a' w
-        (fun j => f (word.get j)) (fun j => ε (word.get j)) ↔
-      p ∈ decoratedHistorySupport ℳ (fun j => T (word.get j)) 0 a v
-        (fun j => f (word.get j)) (fun j => ε (word.get j)) := by
-  have hs := mem_decoratedHistorySupport_regrading_iff ℳ 𝓝 r σ hr σ.injective
-    (fun j => T (word.get j)) (fun j => U (word.get j)) (fun j => hT (word.get j))
-    0 a v w hv (fun j => f (word.get j)) (fun j => ε (word.get j)) hinj p
-  -- The incoming target degree is zero, with its coefficient transported along `map_zero`.
-  rw [mem_decoratedHistorySupport, mem_decoratedHistorySupport] at hs ⊢
-  rw [coe_regradeBase ℳ 𝓝 r (σ : Γ →+ Δ) hr a]
-  simpa only [map_zero] using hs
-
-/-- Embed a complete decorated type by mapping its whole coefficients and
-regrading every selected degree. No realization or generic endpoint is required. -/
-private def coefficientMap (t : Source) : Target where
-  itinerary := ⟨t.itinerary.val, by
-    have hc := Nat.card_congr (σ.toEquiv.subtypeEquiv hcut)
-    simpa only [hc] using t.itinerary.property⟩
-  history := ⟨σ ∘ t.history.val,
-    (base_support_iff ℳ 𝓝 r σ hinj hr T U hT a v w hv f ε t.itinerary.val _).mpr
-      t.history.property⟩
-  degree_mem j := (hcut _).mp (t.degree_mem j)
-  degree_sub_mem i j hij := by
-    simpa only [Function.comp_apply, map_sub] using (hpos _).mp (t.degree_sub_mem i j hij)
-
-local notation "mapType" => coefficientMap d e ℳ 𝓝 r σ hinj hr
-  T U hT a v w hv f ε k l hcut hpos
-
-/-- Coefficient embeddings retain every encounter, including unchanged degrees. -/
-@[simp]
-private theorem coefficientMap_itinerary (t : Source) :
-    (mapType t).itinerary.val = t.itinerary.val := (rfl)
-
-private theorem coefficientMap_bijective : Function.Bijective mapType := by
-  constructor
-  · rintro ⟨word, p, hp, hm⟩ ⟨word', q, hq, hn⟩ he
-    have hw := congrArg (fun t : Target => t.itinerary.val) he
-    simp only [coefficientMap_itinerary] at hw
-    have hw' : word = word' := Subtype.ext hw
-    subst word'
-    suffices hpq : p = q by cases hpq; rfl
-    have hh := congrArg (fun t : Target => (⟨t.itinerary.val, t.history.val⟩ :
-      Σ word : List J, Fin word.length → Δ)) he
-    have hhist := (Sigma.mk.inj_iff.mp hh).2
-    apply Subtype.ext
-    exact funext fun j => σ.injective (congrFun (eq_of_heq hhist) j)
-  · intro t
-    let p := σ.symm ∘ t.history.val
-    have hp : σ ∘ p = t.history.val := by funext j; simp [p]
-    have hc := Nat.card_congr (σ.toEquiv.subtypeEquiv hcut)
-    let s : Source := {
-      itinerary := ⟨t.itinerary.val, by simpa only [hc] using t.itinerary.property⟩
-      history := ⟨p, (base_support_iff ℳ 𝓝 r σ hinj hr T U hT a v w hv f ε
-        t.itinerary.val p).mp (hp ▸ t.history.property)⟩
-      degree_mem := fun j => (hcut _).mpr (by simpa [p] using t.degree_mem j)
-      degree_sub_mem := fun i j hij => (hpos _).mpr (by
-        simpa [p] using t.degree_sub_mem i j hij) }
-    refine ⟨s, CutoffDecoratedType.ext rfl ?_⟩
-    exact heq_of_eq (Subtype.ext hp)
-
-/-- Injective coefficient transport and a degree isomorphism identify all
-complete types at corresponding cutoffs, including unrealized types. -/
-def cutoffDecoratedTypeCoefficientEquiv : Source ≃ Target :=
-  Equiv.ofBijective mapType
-    (coefficientMap_bijective d e ℳ 𝓝 r σ hinj hr T U hT a v w hv f ε k l hcut hpos)
-
 local notation "E" => cutoffDecoratedTypeCoefficientEquiv d e ℳ 𝓝 r σ hinj hr
   T U hT a v w hv f ε k l hcut hpos
 
-/-- The type equivalence applies the explicit history transport. -/
-private theorem coefficientEquiv_apply (t : Source) : E t = mapType t :=
-  Equiv.ofBijective_apply ..
-
-/-- The type equivalence retains the complete encounter word. -/
-@[simp]
-theorem cutoffDecoratedTypeCoefficientEquiv_itinerary (t : Source) :
-    (E t).itinerary.val = t.itinerary.val := (rfl)
-
-/-- The type equivalence regrades the full degree history. -/
-@[simp]
-theorem cutoffDecoratedTypeCoefficientEquiv_history (t : Source) :
-    HEq (E t).history.val (σ ∘ t.history.val) := (HEq.rfl)
-
-/-- Whole final decorations are sent through the coefficient embedding. -/
-@[simp↓]
-theorem cutoffDecoratedTypeCoefficientEquiv_decoration (t : Source) :
-    (E t).decoration = r t.decoration := by
-  rw [coefficientEquiv_apply, coefficientMap,
-    CutoffDecoratedType.decoration_eq, CutoffDecoratedType.decoration_eq]
-  rw [coe_regradeBase ℳ 𝓝 r (σ : Γ →+ Δ) hr a]
-  exact (map_homogeneousHistory_of_injective ℳ 𝓝 r σ hr σ.injective
-    (fun j => T (t.itinerary.val.get j)) (fun j => U (t.itinerary.val.get j))
-    (fun j => hT (t.itinerary.val.get j)) t.history.val a).symm
-
 variable (c : J → ℝ) (P : J → Set V) (W : I → Set V) (S : K → Set V) (C : Set V)
-
-/-- The full endpoint domain is unchanged: incoming-source admission and
-avoidance of unrecorded walls and singularities are preserved together. -/
-@[simp]
-theorem cutoffDecoratedTypeCoefficientEquiv_domain (t : Source) :
-    CutoffDecoratedType.domain c P W S C (E t) =
-      CutoffDecoratedType.domain c P W S C t := by
-  rw [coefficientEquiv_apply, coefficientMap,
-    CutoffDecoratedType.domain_def, CutoffDecoratedType.domain_def]
-  dsimp only
-  congr 1
-  funext j
-  rw [hv, ← σ.map_zero, ← Fin.comp_snoc]
-  rfl
 
 /-- The continuous path extensions agree at every endpoint and every time,
 including singular degenerations, collapsed encounters and the incoming tail. -/
 @[simp]
 theorem cutoffDecoratedTypeCoefficientEquiv_path (t : Source) :
     (E t).path c = t.path c := by
-  rw [coefficientEquiv_apply, coefficientMap,
-    CutoffDecoratedType.path_def, CutoffDecoratedType.path_def]
-  dsimp only
+  have hw := cutoffDecoratedTypeCoefficientEquiv_itinerary d e ℳ 𝓝 r σ hinj hr
+    T U hT a v w hv f ε k l hcut hpos t
+  have hh := cutoffDecoratedTypeCoefficientEquiv_history d e ℳ 𝓝 r σ hinj hr
+    T U hT a v w hv f ε k l hcut hpos t
+  generalize E t = u at hw hh ⊢
+  rw [CutoffDecoratedType.path_def, CutoffDecoratedType.path_def]
+  -- Align the dependent history domains using the preserved encounter word.
+  rcases t with ⟨⟨word, _⟩, p, _, _⟩
+  rcases u with ⟨⟨word', _⟩, q, _, _⟩
+  dsimp only at hw hh ⊢
+  cases hw
+  rw [eq_of_heq hh]
   congr 1
   funext j
   rw [hv, ← σ.map_zero, ← Fin.comp_snoc]
   rfl
-
-/-- On actual rays, the type comparison is exactly the existing full
-coefficient-embedding comparison, rather than a second choice of history. -/
-@[simp↓]
-theorem cutoffDecoratedRayRegradingEmbeddingEquiv_type [Finite J] (Q : V)
-    (β : CutoffDecoratedRay d ℳ T a v f c ε P W S C k Q) :
-    (cutoffDecoratedRayFiberEquiv e 𝓝 U a' w f c ε P W S C l Q
-      (cutoffDecoratedRayRegradingEmbeddingEquiv d e ℳ 𝓝 r (σ : Γ →+ Δ)
-        σ.injective hr T U hT a v w hv f c ε P W S C k l hcut hpos Q hinj β)).val =
-      E ((cutoffDecoratedRayFiberEquiv d ℳ T a v f c ε P W S C k Q β).val) := by
-  apply CutoffDecoratedType.ext_val
-  · simp only [cutoffDecoratedRayFiberEquiv_apply_val,
-      cutoffDecoratedTypeCoefficientEquiv_itinerary]
-    exact cutoffDecoratedRayRegradingEmbeddingEquiv_itinerary d e ℳ 𝓝 r (σ : Γ →+ Δ)
-      σ.injective hr T U hT a v w hv f c ε P W S C k l hcut hpos Q hinj β
-  · rw [coefficientEquiv_apply, coefficientMap]
-    rw [cutoffDecoratedRayFiberEquiv_apply_val d ℳ T a v f c ε P W S C k Q β,
-      cutoffDecoratedRayFiberEquiv_apply_val e 𝓝 U a' w f c ε P W S C l Q]
-    exact cutoffDecoratedRayRegradingEmbeddingEquiv_history d e ℳ 𝓝 r (σ : Γ →+ Δ)
-      σ.injective hr T U hT a v w hv f c ε P W S C k l hcut hpos Q hinj β
 
 /-- Any closed polyhedral subdivision transports in both directions along a
 coefficient embedding. The chart sets and their indices stay the same, reindexed
