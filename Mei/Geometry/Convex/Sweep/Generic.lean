@@ -25,6 +25,11 @@ the endpoint arrangement has been refined. The intersection itself may lie in
 the target discriminant, including when that discriminant contains the entire
 crossing hyperplane.
 
+For singular sets contained in affine subspaces that do not contain the crossing
+hyperplane, `exists_forall_notMem_sweepProjection` instead excludes the singular
+crossings themselves. Its endpoint exceptions are the affine preimages of those
+subspaces under the sweep projections.
+
 We use `sweepProjection` and
 `ExceptionalArrangement.exists_forall_eventually_isGeneric_smul_vadd`. The
 backward-ray application follows Mandel, *Scattering diagrams, theta functions,
@@ -38,6 +43,34 @@ open Set Filter Topology
 namespace Mei.Convex
 
 variable {V ι : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V] [Finite ι]
+
+/-- One finite endpoint arrangement makes every projected crossing avoid each
+of the given affine subspaces. Each subspace must miss some point of each
+crossing hyperplane. Sweeping vectors need not be normalized or transverse. -/
+theorem exists_forall_notMem_sweepProjection {κ : Type*} [Finite κ]
+    (f : ι → V →L[ℝ] ℝ) (c : ι → ℝ) (n : ι → V)
+    (A : κ → AffineSubspace ℝ V)
+    (hA : ∀ j l, ∃ x, f j x = c j ∧ x ∉ A l) :
+    ∃ E : ExceptionalArrangement V, ∀ Q, E.IsGeneric Q →
+      ∀ j l, sweepProjection (f j) (c j) (n j) Q ∉ A l := by
+  classical
+  let := Fintype.ofFinite ι
+  let := Fintype.ofFinite κ
+  let B (z : ι × κ) := (A z.2).comap (sweepProjection (f z.1) (c z.1) (n z.1)).toAffineMap
+  have hB (z : ι × κ) : B z ≠ ⊤ := by
+    intro htop
+    obtain ⟨x, hx, hxA⟩ := hA z.1 z.2
+    have hm := AffineSubspace.mem_comap.mp (htop ▸ AffineSubspace.mem_top ℝ V x)
+    exact hxA (by simpa only [ContinuousAffineMap.coe_toAffineMap,
+      sweepProjection_eq_self _ _ hx] using hm)
+  let E : ExceptionalArrangement V :=
+    ⟨Finset.univ.image B, fun _ hm => by
+      obtain ⟨z, _, rfl⟩ := Finset.mem_image.mp hm
+      exact hB z⟩
+  refine ⟨E, fun Q hQ j l hm => ?_⟩
+  exact (ExceptionalArrangement.isGeneric_iff.mp hQ) (B (j, l))
+    (Finset.mem_image.mpr ⟨(j, l), Finset.mem_univ _, rfl⟩)
+    (AffineSubspace.mem_comap.mpr hm)
 
 /-- A finite refinement of endpoint exceptions makes every short incoming germ
 at a projected crossing generic, simultaneously for a finite family. Only the
