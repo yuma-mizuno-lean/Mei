@@ -280,7 +280,8 @@ variable (P : Fin n → Set V)
 include hdir
 
 /-- For a transverse wall, once one encounter lies in the affine span of the support,
-every encounter does: the encounter map is constant along the kernel direction. -/
+every encounter does: differences between encounter points lie in the kernel of the
+wall functional. -/
 theorem backwardPoint_succ_mem_affineSpan {j : Fin n} (hf : f j (v j) ≠ 0) {X Y : V}
     (hY : backwardPoint f c v j.succ Y ∈ affineSpan ℝ (P j)) :
     backwardPoint f c v j.succ X ∈ affineSpan ℝ (P j) := by
