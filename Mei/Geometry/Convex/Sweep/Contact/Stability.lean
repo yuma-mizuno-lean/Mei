@@ -7,7 +7,6 @@ module
 
 public import Mei.Analysis.Convex.Polyhedron.Projection
 public import Mei.Geometry.Affine.Segment
-import Mathlib.Tactic.Linarith
 
 /-!
 # Stability of open rays with prescribed boundary contacts
