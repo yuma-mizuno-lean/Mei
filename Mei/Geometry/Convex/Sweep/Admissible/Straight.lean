@@ -167,12 +167,8 @@ theorem exists_straightRayRealizationArrangement [FiniteDimensional ℝ V]
   obtain ⟨A, hA⟩ := exists_ray_admissibilityArrangement W hpoly hdim vectors
   refine ⟨A, fun Q hQ v hv => ?_⟩
   obtain ⟨y, hy, hsegments⟩ := hA Q hQ
-  have htail : ∀ᶠ T : ℝ in atTop, ∀ s ≥ T, ∀ a, Q + s • v ∉ W a := by
-    filter_upwards [eventually_forall_ge_atTop.mpr (hsegments v hv)] with T hT s hs
-    obtain ⟨x, hx, _⟩ := hT s hs
-    exact fun a => hx ▸ x.notMem a
   obtain ⟨T, hT, htail, x, hx, e⟩ :=
-    (eventually_gt_atTop (0 : ℝ) |>.and (htail.and (hsegments v hv))).exists
+    (eventually_gt_atTop (0 : ℝ) |>.and (hsegments v hv)).exists
   obtain ⟨a, _, r, hr, _⟩ := exists_straightRayRealization_of_admissibleSegment ν c
     (fun a => (hpoly a).isClosed) hν hc hT hy hx (Quiver.reverse ⟨e⟩) htail
     univ (Eventually.of_forall fun _ => mem_univ _)

@@ -92,19 +92,19 @@ theorem decompose_shiftedQuotientGrading (k : ℕ) (n : d.monoid)
   apply Subtype.ext
   simpa only [coe_shiftedInclusion] using coe_decompose_shiftedGrading ℳ d.monoid p a n
 
-/-- Taking the relative-degree-`n` projection preserves its retained ambient
-component at degree `p + n`. -/
+/-- Reading a retained ambient component after projection to its relative
+homogeneous piece leaves that component unchanged. -/
 @[simp↓]
-theorem shiftedQuotientComponent_decompose_shiftedQuotientGrading (k : ℕ) (n : d.monoid)
+theorem shiftedQuotientComponent_decompose_same (k : ℕ) (n : d.monoid)
     (hn : d.degree n ≤ k) (x : (d.shiftedFiltration ℳ p).quotient k) :
     d.shiftedQuotientComponent ℳ p (p + n) k (by simpa using hn)
-      (DirectSum.decompose (d.shiftedQuotientGrading ℳ p k).piece x n) =
+        (DirectSum.decompose (d.shiftedQuotientGrading ℳ p k).piece x n) =
       d.shiftedQuotientComponent ℳ p (p + n) k (by simpa using hn) x := by
-  rw [d.decompose_shiftedQuotientGrading ℳ p k n hn, shiftedQuotientComponent_mk]
+  rw [d.decompose_shiftedQuotientGrading ℳ p k n hn,
+    d.shiftedQuotientComponent_mk]
   apply Subtype.ext
   simp only [coe_shiftedInclusion]
-  exact DirectSum.decompose_of_mem_same ℳ
-    (d.shiftedQuotientComponent ℳ p (p + n) k (by simpa using hn) x).property
+  exact DirectSum.decompose_of_mem_same ℳ (Subtype.mem _)
 
 /-- Taking the relative-degree-zero projection preserves the ambient incoming
 component at degree `p`. -/
