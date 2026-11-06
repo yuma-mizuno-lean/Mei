@@ -5,6 +5,7 @@ Authors: Codex
 -/
 module
 
+public import Mei.LinearAlgebra.GradedModule.History.Path.Identity
 public import Mei.LinearAlgebra.GradedModule.History.Erasure
 public import Mei.LinearAlgebra.GradedModule.History.Finite
 public import Mei.Data.Fin.Insertion
@@ -22,6 +23,7 @@ that a geometric ray avoids the omitted wall or admit a geometric reinsertion.
 The homogeneous-input hypothesis matters when the deleted map is the first
 operation: an identity map still decomposes a nonhomogeneous input.
 
+Identity insertion specializes the shared graded-path insertion law.
 We use `homogeneousHistory_removeNth`, the nonvanishing of all stages of a
 surviving history, and Mathlib's `Fin.insertNth`/`Fin.removeNth` interface.
 -/
@@ -42,19 +44,32 @@ theorem homogeneousHistory_insertNth_id {n : ℕ}
     homogeneousHistory ℳ (j.insertNth LinearMap.id T)
       (j.insertNth (Fin.snoc (α := fun _ => ι) r p₀ j) r) a =
         homogeneousHistory ℳ T r a := by
+  have hfront {m : ℕ} (U : Fin m → Module.End R M) (s : Fin m → ι) :
+      homogeneousHistory ℳ (Fin.cons LinearMap.id U)
+        (Fin.cons (Fin.snoc (α := fun _ => ι) s p₀ 0) s) a =
+          homogeneousHistory ℳ U s a := by
+    have hp := Quiver.Path.homogeneousHistory_cons_last_of_eq_id
+      (M := fun _ : Quiver.SingleObj (Module.End R M) => M)
+      (fun e => e) (fun _ => ℳ) (Quiver.SingleObj.pathOfFn U)
+      LinearMap.id rfl p₀ (Quiver.SingleObj.degreesPathOfFn ι U s) a.property
+    rw [Quiver.SingleObj.last_degreesPathOfFn] at hp
+    have hU : homogeneousHistory ℳ U s =
+        (Quiver.SingleObj.pathOfFn U).homogeneousHistory
+          (M := fun _ => M) (fun e => e) (fun _ => ℳ)
+          (Quiver.SingleObj.degreesPathOfFn ι U s) :=
+      homogeneousHistory_eq_pathOfFn ℳ id U s
+    rw [Quiver.Path.homogeneousHistory_cons_apply, ← hU] at hp
+    rw [homogeneousHistory_succ_apply, Fin.cons_zero, Fin.cons_zero,
+      LinearMap.id_apply]
+    simpa only [Fin.cons_succ, LinearMap.id_apply] using hp
   induction n with
   | zero =>
     have hj : j = 0 := Fin.eq_zero j
     subst j
-    simp only [homogeneousHistory_succ_apply, homogeneousHistory_zero,
-      Fin.insertNth_apply_same, LinearMap.id_apply, Fin.snoc_zero]
-    exact DirectSum.decompose_of_mem_same ℳ a.property
+    simpa only [Fin.insertNth_zero', Fin.snoc_zero] using hfront T r
   | succ n ih =>
     refine Fin.cases ?_ (fun j => ?_) j
-    · rw [Fin.insertNth_zero', Fin.insertNth_zero', homogeneousHistory_succ_apply]
-      simp only [Fin.cons_succ, Fin.cons_zero, LinearMap.id_apply]
-      exact DirectSum.decompose_of_mem_same ℳ
-        (homogeneousHistory_mem ℳ T r a)
+    · simpa only [Fin.insertNth_zero'] using hfront T r
     · have hT : T = Fin.cons (T 0) (fun i => T i.succ) := (Fin.cons_self_tail T).symm
       have hr : r = Fin.cons (r 0) (fun i => r i.succ) := (Fin.cons_self_tail r).symm
       rw [hT, hr, ← Fin.cons_snoc_eq_snoc_cons, Fin.cons_succ,
