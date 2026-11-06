@@ -7,6 +7,7 @@ module
 
 public import Mei.Analysis.Convex.Polyhedron.Projection
 public import Mei.Geometry.Affine.Segment
+public import Mei.Geometry.Affine.Transverse
 import Mathlib.Tactic.Linarith
 
 /-!
@@ -34,16 +35,6 @@ namespace ContinuousLinearMap
 variable {V X : Type*} [AddCommGroup V] [Module ℝ V] [TopologicalSpace V]
   [IsTopologicalAddGroup V] [ContinuousSMul ℝ V] [TopologicalSpace X]
 
-omit [IsTopologicalAddGroup V] [ContinuousSMul ℝ V] in
-/-- A transverse line meets the supporting hyperplane of a wall at one parameter. -/
-private theorem eq_div_of_add_smul_mem
-    {ν : V →L[ℝ] ℝ} {c : ℝ} {W : Set V} (hheight : ∀ y ∈ W, ν y = c) {v : V}
-    (hv : ν v ≠ 0) {y : V} {t : ℝ} (ht : y + t • v ∈ W) : t = (c - ν y) / ν v := by
-  apply (eq_div_iff hv).mpr
-  have hh := hheight _ ht
-  simp only [map_add, map_smul, smul_eq_mul] at hh
-  linarith
-
 /-- If the unique possible contact of a transverse line misses a closed wall,
 nearby lines miss it entirely. -/
 private theorem eventually_forall_notMem_of_contact_notMem
@@ -55,7 +46,7 @@ private theorem eventually_forall_notMem_of_contact_notMem
     hx.add (((continuousAt_const.sub (ν.continuous.continuousAt.comp hx)).div_const _).smul
       continuousAt_const)
   filter_upwards [hp.eventually (hW.isOpen_compl.mem_nhds hQ)] with Y hY t hmem
-  rw [eq_div_of_add_smul_mem hheight hv hmem] at hmem
+  rw [ν.toLinearMap.eq_div_of_apply_add_smul_eq hv (hheight _ hmem)] at hmem
   exact hY hmem
 
 omit [IsTopologicalAddGroup V] [ContinuousSMul ℝ V] in
@@ -70,13 +61,16 @@ private theorem eventually_forall_pos_notMem_of_contact_nonpos
     ∀ᶠ Y in 𝓝 Q, Y ∈ D → ∀ t : ℝ, 0 < t → x Y + t • v ∉ W := by
   rcases eq_or_lt_of_le hr with he | he
   · exact Eventually.of_forall fun Y hY t ht hmem => by
-      have hh := eq_div_of_add_smul_mem hheight hv hmem
+      have hh : t = (c - ν (x Y)) / ν v :=
+        ν.toLinearMap.eq_div_of_apply_add_smul_eq hv (hheight _ hmem)
       simp only [hpin he Y hY, sub_self, zero_div] at hh
       linarith
   · have hr' : ContinuousAt (fun Y => (c - ν (x Y)) / ν v) Q :=
       (continuousAt_const.sub (ν.continuous.continuousAt.comp hx)).div_const _
     filter_upwards [hr'.eventually_lt continuousAt_const he] with Y hY _ t ht hmem
-    linarith [eq_div_of_add_smul_mem hheight hv hmem]
+    have hh : t = (c - ν (x Y)) / ν v :=
+      ν.toLinearMap.eq_div_of_apply_add_smul_eq hv (hheight _ hmem)
+    linarith
 
 /-- Avoidance on an open finite segment is stable relative to constraints fixing
 any limiting endpoint contact in the supporting hyperplane. Such contacts must
@@ -139,7 +133,9 @@ theorem eventually_forall_notMem_of_openSegment
         · have hr : ContinuousAt (fun Y => (c - ν (x Y)) / ν v) Q :=
             (continuousAt_const.sub (ν.continuous.continuousAt.comp hx)).div_const _
           filter_upwards [hb.eventually_lt hr he] with Y hY _ t _ ht hmem
-          linarith [eq_div_of_add_smul_mem hheight hv hmem]
+          have hh : t = (c - ν (x Y)) / ν v :=
+            ν.toLinearMap.eq_div_of_apply_add_smul_eq hv (hheight _ hmem)
+          linarith
     · filter_upwards [eventually_forall_notMem_of_contact_notMem ν hW hheight hv hx hpW]
         with Y hY _ t _ _
       exact hY t

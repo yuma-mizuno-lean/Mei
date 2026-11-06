@@ -18,10 +18,23 @@ subspace at most once, counted by its affine parameter. More generally, the
 affine span of finitely many points meets an affine subspace at most once when
 the edge vectors from the first point are linearly independent modulo the
 subspace's direction. Any two affine subspaces with disjoint directions also
-meet in at most one point.
+meet in at most one point. For a line transverse to a level hyperplane, the
+contact parameter is the height difference divided by the normal velocity.
 -/
 
 public section
+
+namespace LinearMap
+
+/-- A transverse line meets a level hyperplane at the height difference divided
+by its normal velocity. -/
+theorem eq_div_of_apply_add_smul_eq {K V : Type*} [Field K] [AddCommGroup V] [Module K V]
+    (f : V →ₗ[K] K) {c t : K} {y v : V} (hv : f v ≠ 0)
+    (ht : f (y + t • v) = c) : t = (c - f y) / f v := by
+  apply (eq_div_iff hv).mpr
+  exact eq_sub_of_add_eq' (by simpa only [map_add, map_smul, smul_eq_mul] using ht)
+
+end LinearMap
 
 namespace AffineSubspace
 

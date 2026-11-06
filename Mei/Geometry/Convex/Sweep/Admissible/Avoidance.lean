@@ -33,23 +33,6 @@ open Set Mei.Convex
 
 namespace Mei.Convex
 
-/-- If two walls share an affine span and the first has constant height for `f`,
-a displacement tangent to the second at a point of the first is tangent for `f`. -/
-theorem map_eq_zero_of_affineSpan_eq {V : Type*} [AddCommGroup V] [Module ℝ V]
-    {W₁ W₂ : Set V} (f ν : V →ₗ[ℝ] ℝ) {c b : ℝ}
-    (hheight : ∀ x ∈ W₁, f x = c) (hspan : (affineSpan ℝ W₂ : Set V) = {x | ν x = b})
-    (heq : affineSpan ℝ W₁ = affineSpan ℝ W₂) {y q : V} (hy : y ∈ W₁) (hq : ν q = 0) :
-    f q = 0 := by
-  have hyν : ν y = b := (hspan.subset) (heq ▸ subset_affineSpan ℝ _ hy)
-  have hyq : y + q ∈ affineSpan ℝ W₁ := by
-    rw [heq]
-    apply hspan.symm.subset
-    simpa only [mem_ofPred_eq, map_add, hq, add_zero] using hyν
-  have hh := AffineMap.eqOn_affineSpan
-    (f := f.toAffineMap) (g := AffineMap.const ℝ V c) hheight hyq
-  simpa only [LinearMap.coe_toAffineMap, AffineMap.const_apply, map_add,
-    hheight _ hy, add_eq_left] using hh
-
 variable {V K O : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
   {n : ℕ} (f : Fin n → V →L[ℝ] ℝ) (c : Fin n → ℝ)
   (v : Fin (n + 1) → V) (P : Fin n → Set V)
@@ -128,8 +111,8 @@ theorem backwardPath_notMem_wall_of_regular_limit
       have hreg : X e.succ Q ∉ singularSupport W := by
         simpa only [backwardPath_apply_parameter f c v h0] using hregular (τ e.succ Q) (hτ _)
       have heq := affineSpan_eq_of_notMem_singularSupport hreg hx hinc
-      have hz : f e (v e.succ) = 0 := map_eq_zero_of_affineSpan_eq
-        (f e).toLinearMap (ν a).toLinearMap (hheight e) (hspan a) heq.symm hinc hv
+      have hz : f e (v e.succ) = 0 := (f e).toLinearMap.map_eq_zero_of_affineSpan_eq
+        (ν a).toLinearMap (hheight e) (hspan a) heq.symm hinc hv
       exact htrans e hz
 
 end Mei.Convex

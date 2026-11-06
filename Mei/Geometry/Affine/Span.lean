@@ -16,6 +16,7 @@ The direction of the affine span of an image is the linear image of the original
 direction. This formula supports transport of transversality and codimension
 without requiring an invertible map or a nonempty set.
 A linear map whose kernel contains the direction of a set is constant on it.
+Equality of affine spans transfers tangency between level hyperplanes.
 Adding unrestricted coordinates preserves and reflects equality of affine spans.
 For nonempty sets it also preserves and reflects equality of their directions.
 
@@ -38,6 +39,23 @@ theorem apply_eq_of_direction_le_ker {K V W : Type*} [Ring K] [AddCommGroup V] [
   have hd := hf (AffineSubspace.vsub_mem_direction (subset_affineSpan K P hx)
     (subset_affineSpan K P hy))
   rwa [LinearMap.mem_ker, vsub_eq_sub, map_sub, sub_eq_zero] at hd
+
+/-- If two sets share an affine span and the first has constant height for `f`,
+a displacement tangent to the second at a point of the first is tangent for `f`. -/
+theorem map_eq_zero_of_affineSpan_eq {K V : Type*} [Ring K] [AddCommGroup V] [Module K V]
+    {W₁ W₂ : Set V} (f ν : V →ₗ[K] K) {c b : K}
+    (hheight : ∀ x ∈ W₁, f x = c) (hspan : (affineSpan K W₂ : Set V) = {x | ν x = b})
+    (heq : affineSpan K W₁ = affineSpan K W₂) {y q : V} (hy : y ∈ W₁) (hq : ν q = 0) :
+    f q = 0 := by
+  have hyν : ν y = b := (hspan.subset) (heq ▸ subset_affineSpan K _ hy)
+  have hyq : y + q ∈ affineSpan K W₁ := by
+    rw [heq]
+    apply hspan.symm.subset
+    simpa only [Set.mem_ofPred_eq, map_add, hq, add_zero] using hyν
+  have hh := AffineMap.eqOn_affineSpan
+    (f := f.toAffineMap) (g := AffineMap.const K V c) hheight hyq
+  simpa only [LinearMap.coe_toAffineMap, AffineMap.const_apply, map_add,
+    hheight _ hy, add_eq_left] using hh
 
 end LinearMap
 
