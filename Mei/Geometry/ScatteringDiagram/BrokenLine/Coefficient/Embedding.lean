@@ -71,6 +71,27 @@ theorem map_mem_decoratedHistorySupport {p : Fin n → Γ}
     exact (hp.2 j).1
   · simpa only [Function.comp_apply, hv] using (hp.2 j).2
 
+include hr hσ hT hv in
+/-- An injective coefficient map reflects as well as preserves compatible
+whole-component histories along an injective regrading. -/
+theorem mem_decoratedHistorySupport_regrading_iff (hinj : Function.Injective r)
+    (p : Fin n → Γ) :
+    σ ∘ p ∈ decoratedHistorySupport 𝓝 U (σ p₀) a' w f ε ↔
+      p ∈ decoratedHistorySupport ℳ T p₀ a v f ε := by
+  have hm := map_homogeneousHistory_of_injective ℳ 𝓝 r σ hr hσ T U hT p a
+  constructor
+  · intro hp
+    rw [mem_decoratedHistorySupport] at hp ⊢
+    refine ⟨fun hz => hp.1 (by rw [← hm, hz, map_zero]), ?_⟩
+    intro j
+    simpa only [Function.comp_apply, ← hv,
+      ← regrade_velocity σ p₀ v w hv p j.succ] using hp.2 j
+  · intro hp
+    apply map_mem_decoratedHistorySupport ℳ 𝓝 r σ hr hσ T U hT p₀ a v w hv f ε hp
+    intro hz
+    exact ((mem_decoratedHistorySupport ..).mp hp).1
+      (hinj (hz.trans r.map_zero.symm))
+
 /-- Map a decorated ray whose final coefficient survives, retaining its full geometry. -/
 def decoratedRayCoefficientMap (β : {β : Source // r (β.decoration 0) ≠ 0}) : Target :=
   ⟨⟨σ ∘ β.val.1.val, map_mem_decoratedHistorySupport ℳ 𝓝 r σ hr hσ T U hT
