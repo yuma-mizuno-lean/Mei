@@ -5,7 +5,7 @@ Authors: Claude, Codex
 -/
 module
 
-public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.LocalCrossing
+public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.LocalCrossing.Constancy
 public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Restriction
 public import Mei.Geometry.ScatteringDiagram.DirectedWall.Tangent
 public import Mei.Geometry.Convex.Polyhedron.Tangent.SingularSupport
@@ -201,14 +201,9 @@ theorem combinedLabel_tangentAt_smul_pos (k : ℕ) (v w : V) {t : ℝ} (ht : 0 <
     (D.tangentAt x).combinedLabel k (t • v) w htv =
       (D.tangentAt x).combinedLabel k v w
         (fun hv => htv ((D.smul_mem_singularSupport_tangentAt_iff k ht v).mpr hv)) := by
-  classical
-  let S := (Set.toFinite {j : (D.tangentAt x).active k |
-    v ∈ ((D.tangentAt x).wall j).support}).toFinset
-  have hm : ∀ j, j ∈ S.toList ↔ v ∈ ((D.tangentAt x).wall j).support := by simp [S]
-  rw [(D.tangentAt x).combinedLabel_eq_prod k _ _ htv S.toList S.nodup_toList
-    (fun j => by
-      simpa only [tangentAt_wall, DirectedWall.smul_mem_tangentAt_support_iff _ _ ht]
-        using hm j),
-    (D.tangentAt x).combinedLabel_eq_prod k _ _ _ S.toList S.nodup_toList hm]
+  refine (D.tangentAt x).combinedLabel_eq_of_incident_iff_of_pos_iff htv
+    (fun hv => htv ((D.smul_mem_singularSupport_tangentAt_iff k ht v).mpr hv))
+    (fun j => ?_) (fun _ _ => Iff.rfl)
+  exact (D.wall j.1.1).smul_mem_tangentAt_support_iff j.1.2 ht
 
 end Mei.DirectedDiagram
