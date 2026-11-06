@@ -72,8 +72,8 @@ theorem notMem_slabSingularResolutionCharts_constant (Q : ℝ × ℝ) (j : ℕ)
   simp [slabSingularResolutionCharts]
 
 /-- Every selected complete chart is geometrically incident to the event center. -/
-theorem slabSingularResolutionCharts_subset_closure (Q : ℝ × ℝ) (j : ℕ)
-    (positive : Bool) {α : SlabThetaChartIndex t c n b}
+theorem mem_closure_slabThetaChartDomain_of_mem_slabSingularResolutionCharts
+    (Q : ℝ × ℝ) (j : ℕ) (positive : Bool) {α : SlabThetaChartIndex t c n b}
     (hα : α ∈ slabSingularResolutionCharts t c n b Q j positive) :
     Q ∈ closure (slabThetaChartDomain t c n b α) := by
   rcases α with α | α | α
@@ -134,21 +134,9 @@ def slabSingularFamilyFiberEquiv
     {s : ℝ} (hs : |s| < -(Q.1 / (n : ℝ))) (hs₀ : s ≠ 0) :
     slabSingularResolutionCharts t c n b Q j (decide (0 < s)) ≃
       (slabThetaFamily t c n b h).fiber (Q.1, Q.2 + s) :=
-  Equiv.ofBijective (fun α =>
-    ⟨α.val, ⟨(Q.1, Q.2 + s), by
-      rw [slabThetaFamily_domain]
-      exact (mem_slabThetaChartDomain_singular_iff t c hQ hj hs hs₀ α.val).mpr
-        α.property⟩, by simp only [slabThetaFamily_eval]⟩) (by
-    constructor
-    · intro α β he
-      exact Subtype.ext (congrArg Sigma.fst he)
-    · rintro ⟨α, ⟨⟨x, hx⟩, he⟩⟩
-      have he' : x = (Q.1, Q.2 + s) := by
-        simpa only [slabThetaFamily_eval] using he
-      subst x
-      have hz : (Q.1, Q.2 + s) ∈ slabThetaChartDomain t c n b α := by
-        simpa only [slabThetaFamily_domain] using hx
-      exact ⟨⟨α, (mem_slabThetaChartDomain_singular_iff t c hQ hj hs hs₀ α).mp hz⟩, rfl⟩)
+  (Equiv.subtypeEquivRight fun α =>
+    (mem_slabThetaChartDomain_singular_iff t c hQ hj hs hs₀ α).symm).trans
+    (slabThetaFamilyFiberDomainsEquiv t c n b h (Q.1, Q.2 + s)).symm
 
 /-- The exact fiber comparison preserves the entire complete chart label. -/
 @[simp]
@@ -158,7 +146,7 @@ theorem slabSingularFamilyFiberEquiv_fst
     {s : ℝ} (hs : |s| < -(Q.1 / (n : ℝ))) (hs₀ : s ≠ 0)
     (α : slabSingularResolutionCharts t c n b Q j (decide (0 < s))) :
     (slabSingularFamilyFiberEquiv t c h hQ hj hs hs₀ α).1 = α.val := by
-  rfl
+  simp [slabSingularFamilyFiberEquiv]
 
 open Classical in
 /-- The finite sum of the selected incident weights is the actual common-family
@@ -182,7 +170,6 @@ open Classical in
 family have equal total weights at a singular-height event. This is an equality
 of whole decorations, with all binomial multiplicities retained. -/
 theorem sum_slabSingularResolutionCharts_false_eq_true
-    (hQ : Q.1 / (n : ℝ) < 0)
     (hj : Q.2 - ((b + j : ℤ) : ℝ) * Q.1 / n = 0) :
     (∑ α : SlabThetaChartIndex t c n b,
         if α ∈ slabSingularResolutionCharts t c n b Q j false
@@ -191,6 +178,14 @@ theorem sum_slabSingularResolutionCharts_false_eq_true
         if α ∈ slabSingularResolutionCharts t c n b Q j true
         then slabThetaChartWeight t c n b α else 0) := by
   classical
+  have hP : Q ∈ closure (slabBranchDomain n (b + j) false) ↔
+      Q ∈ closure (slabBranchDomain n (b + j) true) := by
+    by_cases hn : n = 0
+    · have h0 : ∀ u, slabBranchDomain n (b + j) u = ∅ := fun u => by
+        ext; simp [hn]
+      simp [h0]
+    · rw [mem_closure_slabBranchDomain hn, mem_closure_slabBranchDomain hn]
+      simp only [Bool.false_eq_true, ↓reduceIte, hj, le_refl, and_true]
   simp only [Fintype.sum_sum_type,
     notMem_slabSingularResolutionCharts_incoming, notMem_slabSingularResolutionCharts_constant,
     ite_false, Finset.sum_const_zero, add_zero, zero_add]
@@ -198,16 +193,10 @@ theorem sum_slabSingularResolutionCharts_false_eq_true
   apply Finset.sum_congr rfl
   intro l _
   simp only [Fintype.sum_bool, mem_slabSingularResolutionCharts_crossing,
-    mem_closure_slabBranchDomain_singular hQ hj, slabThetaChartWeight_crossing,
-    Bool.false_eq_true, ↓reduceIte]
-  rcases lt_trichotomy l.val.val j with hl | hl | hl
-  · have h₁ : ¬j ≤ l.val.val := by omega
-    have h₂ : l.val.val ≠ j := by omega
-    simp_all
+    slabThetaChartWeight_crossing, Bool.false_eq_true]
+  by_cases hl : l.val.val = j
+  · simp [hl, hP]
   · simp [hl]
-  · have h₁ : ¬l.val.val ≤ j := by omega
-    have h₂ : l.val.val ≠ j := by omega
-    simp_all
 
 /-- The changing complete chart has its limiting slab encounter at the origin.
 The upper and lower paths keep their respective incoming developed directions. -/
