@@ -202,6 +202,16 @@ theorem extend (h : IsIntegralLattice i) (h' : IsIntegralLattice i') (u : N →+
     IsRationalLinearMap h h' (h.extend i' u) :=
   of_integral_compatible h h' u (h.extend i' u) (fun n => h.extend_apply i' u n)
 
+/-- The first projection from a product lattice is rational. -/
+theorem fst (h : IsIntegralLattice i) (h' : IsIntegralLattice i') :
+    IsRationalLinearMap (h.prod h') h (LinearMap.fst ℝ V V') :=
+  of_integral_compatible _ _ (AddMonoidHom.fst N N') _ (fun _ => rfl)
+
+/-- The second projection from a product lattice is rational. -/
+theorem snd (h : IsIntegralLattice i) (h' : IsIntegralLattice i') :
+    IsRationalLinearMap (h.prod h') h' (LinearMap.snd ℝ V V') :=
+  of_integral_compatible _ _ (AddMonoidHom.snd N N') _ (fun _ => rfl)
+
 end IsRationalLinearMap
 
 end Mei.Toric
