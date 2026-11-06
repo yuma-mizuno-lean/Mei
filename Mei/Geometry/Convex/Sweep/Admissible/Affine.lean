@@ -8,7 +8,6 @@ module
 public import Mei.Geometry.Convex.Sweep.Admissible
 public import Mei.Topology.Algebra.ContinuousAffineEquiv
 public import Mei.Geometry.Affine.FiniteRay.Map
-public import Mathlib.Topology.Algebra.ContinuousAffineEquiv
 
 /-!
 # Affine coordinate changes of admissible rays
