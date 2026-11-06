@@ -23,7 +23,7 @@ unrestricted operator words, and retains degree changes of zero spatial shift.
 The incoming germs are not asserted to avoid an auxiliary arrangement.
 
 We apply `exists_decompose_cutoffWallEventEvaluation_eq_sum_lastChange` and
-`PositiveDegrees.labelBlock_apply_component`. The backward-ray interpretation
+`PositiveDegrees.labelBlock_apply_component_of_ne`. The backward-ray interpretation
 follows Mandel, *Scattering diagrams, theta functions, and refined tropical
 curve counts*, §3.3.3 (arXiv:1503.06183v5).
 -/
@@ -105,10 +105,9 @@ theorem exists_cutoffWallEventEvaluation_eq_sum_eventBlock (k : ℕ)
         dite_eq_left hmn, ite_eq_left hv]
       rw [d.shiftedQuotientComponent_decompose_same ℳ p (k + 1)
         ⟨n.val, (d.mem_cutoff.mp n.property).1⟩ (d.mem_cutoff.mp n.property).2]
-      rw [eventBlock_def, PositiveDegrees.labelBlock_apply_component d ℳ p ℒ (k + 1) _ n m
-        (d.precedes_iff.mp hmn).1, wallEventPropagation_def,
+      rw [eventBlock_def, PositiveDegrees.labelBlock_apply_component_of_ne d ℳ p ℒ
+        (k + 1) _ n m (d.precedes_iff.mp hmn).1, wallEventPropagation_self,
         d.truncationMap_refl, LieHom.bchGroupMap_id, MonoidHom.id_apply]
-      rfl
     · rw [ite_eq_right (fun h => hv h.2.2), dite_eq_left hmn, ite_eq_right hv]
   · have hnot : ¬ (m.val ≠ n.val ∧ n.val - m.val ∈ d.monoid) := by
       simpa only [← d.precedes_iff] using hmn
@@ -154,13 +153,8 @@ theorem exists_wallEventRecursionArrangement (k : ℕ) :
   refine ⟨y, hy, fun n hn => ?_⟩
   have hnmem : i (ρ (p + n.val)) ∈ vectors :=
     Finset.mem_image.mpr ⟨n.val, (d.finite_cutoff (k + 1)).mem_toFinset.mpr n.property, rfl⟩
-  have htail : ∀ᶠ T : ℝ in atTop, ∀ s ≥ T, ∀ c : B.active (k + 1),
-      Q + s • i (ρ (p + n.val)) ∉ (B.wall c).support :=
-    (eventually_forall_ge_atTop.mpr (hsegment _ hnmem)).mono fun T hT s hs c hmem => by
-      obtain ⟨x, hx, _⟩ := hT s hs
-      exact x.notMem c (hx ▸ hmem)
-  filter_upwards [eventually_gt_atTop (0 : ℝ), htail, hsegment _ hnmem] with T hT ht hs
-  obtain ⟨x, hx, he⟩ := hs
+  filter_upwards [eventually_gt_atTop (0 : ℝ), hsegment _ hnmem] with T hT hs
+  obtain ⟨ht, x, hx, he⟩ := hs
   let e : x ⟶ y := ⟨he⟩
   refine ⟨hT, ht, x, e, hx, fun a C θ hθ => ?_⟩
   have hxy : x.val - y.val = T • i (ρ (p + n.val)) := by rw [hx, hy]; module

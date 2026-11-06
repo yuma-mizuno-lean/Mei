@@ -114,7 +114,7 @@ theorem labelBlock_eq_zero_of_not_precedes (k : ℕ) (g : d.truncatedGroup ℒ k
 /-- Between distinct relative degrees, the block acts on the component of an
 arbitrary quotient coefficient by projecting its homogeneous input, applying
 the BCH action, and reading the output component. The identity term vanishes. -/
-theorem labelBlock_apply_component (k : ℕ) (g : d.truncatedGroup ℒ k)
+theorem labelBlock_apply_component_of_ne (k : ℕ) (g : d.truncatedGroup ℒ k)
     (n m : d.cutoff k) (hmn : m.val ≠ n.val) (x : (A).quotient k) :
     labelBlock d ℳ p ℒ k g n m
         (d.shiftedQuotientComponent ℳ p (p + m.val) k
@@ -128,6 +128,8 @@ theorem labelBlock_apply_component (k : ℕ) (g : d.truncatedGroup ℒ k)
       (p + n.val) k _ _ (fun he => hmn (add_left_cancel he)), sub_zero,
     d.decompose_shiftedQuotientGrading ℳ p k
       ⟨m.val, (d.mem_cutoff.mp m.property).1⟩ (d.mem_cutoff.mp m.property).2]
+  -- The subtype index has value `m.val`; the coerced endomorphism and the
+  -- linear equivalence apply the same underlying BCH action.
   rfl
 
 end Mei.PositiveDegrees
