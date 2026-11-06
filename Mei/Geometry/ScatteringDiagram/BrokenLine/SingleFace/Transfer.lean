@@ -19,10 +19,10 @@ half-space, and their crossing must avoid the prescribed singular subset of the
 face. Equal spatial velocities do not identify different component degrees.
 
 The weighted sum retains precisely the components with admitted crossings.
-For a linear family with uniform finite output support, this sum is a linear
-map. At generic opposite-side endpoints it is the opposite image of the total
-face lift, so the two chamber totals have a unique common lift when the span
-is jointly injective. Individual output branches need no lifts from the face.
+For any linear incoming family, this sum is a linear map. With uniform finite
+output support, at generic opposite-side endpoints it is the opposite image of
+the total face lift, so the two chamber totals have a unique common lift when
+the span is jointly injective. Individual output branches need no lifts from the face.
 
 This uses the existing `AdmissibleRayRealization` carrier and its single-face
 classification. Whole-component propagation and total terminal lifts follow
@@ -150,45 +150,61 @@ variable {E : Type*} [AddCommMonoid E] [Module R E] (α : E →ₗ[R] 𝒰 i)
 
 open Classical in
 /-- Select the component maps of a linear incoming family by the actual
-single-face incidence conditions. A uniform finite support is supplied by the
-caller; the grading and the input module need not be finite. -/
-def singleFaceTransferEvaluationLinear (s : Finset κ) (Q : V) : E →ₗ[R] M :=
-  ∑ q ∈ s, if ν (v q) = ν u ∧ (crosses Q q) then
-    (ℳ q).subtype.comp ((C.transfer i q).comp α) else 0
+single-face incidence conditions. Each input has finite graded output support;
+the family need not have a uniform finite support. -/
+def singleFaceTransferEvaluationLinear (Q : V) : E →ₗ[R] M :=
+  (DirectSum.homogeneousExtend ℳ (fun q =>
+    if ν (v q) = ν u ∧ (crosses Q q) then (ℳ q).subtype else 0)).comp
+      (C.right.comp ((C.liftLeft i).comp α))
 
 open Classical in
 /-- The linear evaluation retains zero component terms and selects crossings
 by geometry alone, independently of the input parameter. -/
-theorem singleFaceTransferEvaluationLinear_apply (s : Finset κ) (Q : V) (x : E) :
-    C.singleFaceTransferEvaluationLinear i u v ν b Z α s Q x =
-      ∑ q ∈ s, if ν (v q) = ν u ∧ (crosses Q q) then
-        (C.transfer i q (α x) : M) else 0 := by
-  simp only [singleFaceTransferEvaluationLinear, LinearMap.sum_apply, DFunLike.ite_apply,
-    LinearMap.comp_apply, Submodule.subtype_apply, LinearMap.zero_apply]
+@[simp]
+theorem singleFaceTransferEvaluationLinear_apply (Q : V) (x : E) :
+    C.singleFaceTransferEvaluationLinear i u v ν b Z α Q x =
+      ∑ q ∈ (DirectSum.decompose ℳ (C.right (C.liftLeft i (α x)))).support,
+        if ν (v q) = ν u ∧ (crosses Q q) then
+          (C.transfer i q (α x) : M) else 0 := by
+  rw [singleFaceTransferEvaluationLinear, LinearMap.comp_apply,
+    DirectSum.homogeneousExtend_eq_sum]
+  apply Finset.sum_congr rfl
+  intro q _
+  split_ifs <;> simp only [LinearMap.comp_apply, Submodule.subtype_apply,
+    LinearMap.zero_apply, transfer_apply]
 
 open Classical in
-/-- A uniformly supported linear family computes the actual geometric weighted
-sum for every input, even when specialization kills some branches. -/
-theorem singleFaceTransferEvaluationLinear_apply_eq_evaluation (s : Finset κ)
+/-- A uniform support bound gives a fixed finite-sum formula for the linear
+evaluation, even when specialization kills some branches. -/
+theorem singleFaceTransferEvaluationLinear_eq_sum (s : Finset κ)
     (hs : ∀ q ∉ s, (C.transfer i q).comp α = 0)
-    (hZ : Z ⊆ {x | ν x = b}) (Q : V) (x : E) :
-    C.singleFaceTransferEvaluationLinear i u v ν b Z α s Q x =
-      C.singleFaceTransferEvaluation i (α x) u v ν b Z Q := by
+    (Q : V) (x : E) :
+    C.singleFaceTransferEvaluationLinear i u v ν b Z α Q x =
+      ∑ q ∈ s, if ν (v q) = ν u ∧ (crosses Q q) then
+        (C.transfer i q (α x) : M) else 0 := by
   classical
-  rw [singleFaceTransferEvaluationLinear_apply,
-    C.singleFaceTransferEvaluation_eq_sum i (α x) u v ν b Z hZ Q]
+  rw [singleFaceTransferEvaluationLinear_apply]
   have hsub : (DirectSum.decompose ℳ (C.right (C.liftLeft i (α x)))).support ⊆ s := by
     intro q hq
     by_contra hqs
     have he := LinearMap.congr_fun (hs q hqs) x
     exact (DFinsupp.mem_support_iff.mp hq) (by simpa only [LinearMap.comp_apply,
       LinearMap.zero_apply, transfer_apply] using he)
-  symm
   apply Finset.sum_subset hsub
   · intro q hq hnot
     have hz : C.transfer i q (α x) = 0 := by
       simpa only [transfer_apply, DFinsupp.mem_support_iff, not_not] using hnot
     split_ifs <;> simp [hz]
+
+/-- Every linear incoming family computes the actual geometric weighted sum
+for every input, without a uniform support bound. -/
+theorem singleFaceTransferEvaluationLinear_apply_eq_evaluation
+    (hZ : Z ⊆ {x | ν x = b}) (Q : V) (x : E) :
+    C.singleFaceTransferEvaluationLinear i u v ν b Z α Q x =
+      C.singleFaceTransferEvaluation i (α x) u v ν b Z Q := by
+  classical
+  rw [singleFaceTransferEvaluationLinear_apply,
+    C.singleFaceTransferEvaluation_eq_sum i (α x) u v ν b Z hZ Q]
 
 /-- Uniformly supported one-face ray sums have their total common face lift
 at generic opposite-side endpoints. The arrangement is chosen for the whole
@@ -206,17 +222,17 @@ theorem exists_singleFaceTransferEvaluationLinear_commonLift
       (ν Q - b) / ν u < 0 →
         ∃! l : E →ₗ[R] B,
           C.left.comp l = (𝒰 i).subtype.comp α ∧
-          C.right.comp l = C.singleFaceTransferEvaluationLinear i u v ν b Z α s Q := by
+          C.right.comp l = C.singleFaceTransferEvaluationLinear i u v ν b Z α Q := by
   classical
   -- Exclude all singular shadows for the uniform output support at once.
   obtain ⟨F, hF⟩ := exists_forall_notMem_sweepProjection
     (fun _ : (s : Type _) => ν) (fun _ => b)
     (fun q => (ν (v q.val))⁻¹ • v q.val) A (fun _ j => hA j)
   refine ⟨F, fun Q hQ ht => ?_⟩
-  have heval : C.singleFaceTransferEvaluationLinear i u v ν b Z α s Q =
+  have heval : C.singleFaceTransferEvaluationLinear i u v ν b Z α Q =
       C.right.comp ((C.liftLeft i).comp α) := by
     ext x
-    rw [C.singleFaceTransferEvaluationLinear_apply_eq_evaluation i u v ν b Z α s hs hZ Q x]
+    rw [C.singleFaceTransferEvaluationLinear_apply_eq_evaluation i u v ν b Z α hZ Q x]
     apply C.singleFaceTransferEvaluation_eq_right i (α x) u v ν b Z hZ Q
     intro q hq
     refine ⟨hnormal q x hq, by rwa [hnormal q x hq], ?_⟩
