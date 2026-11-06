@@ -38,7 +38,7 @@ namespace Mei.ModuleProbe
 
 universe u
 
-variable {Λ V E κ ι : Type*} {R Γ H M L : Type u}
+variable {Λ V E κ ι Γ : Type*} {R H M L : Type u}
   [CommRing R] [Algebra ℚ R] [AddCommGroup Γ] [DecidableEq Γ] [AddCommGroup Λ]
   [AddCommGroup H] [Module R H] [AddCommGroup M] [Module R M]
   [LieRing L] [LieAlgebra R L] [LieAlgebra ℚ L] [IsScalarTower ℚ R L]
