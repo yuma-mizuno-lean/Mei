@@ -99,7 +99,7 @@ theorem zero_mem_tangentAt_support (hx : x ∈ W.support) : (0 : V) ∈ (W.tange
 theorem smul_mem_tangentAt_support (hx : x ∈ W.support) {v : V}
     (hv : v ∈ (W.tangentAt x hx).support) {t : ℝ} (ht : 0 ≤ t) :
     t • v ∈ (W.tangentAt x hx).support :=
-  W.rational_support.smul_mem_posTangentConeAt hx hv ht
+  smul_mem_posTangentConeAt hv ht
 
 /-- Near `x`, a point lies in the support exactly when its displacement from `x` lies in the
 support of the tangent wall. -/
@@ -116,7 +116,7 @@ theorem Incoming.tangentAt (hW : W.Incoming) (hx : x ∈ W.support) :
   have hw : i (ρ W.ray.generator) ∈ (W.tangentAt x hx).support := by
     have := W.sub_mem_tangentAt_support hx (W.incoming_iff.mp hW x hx 1 zero_le_one)
     simpa using this
-  exact W.rational_support.add_mem_posTangentConeAt hx hy
+  exact W.isConvexPolyhedron.convex.add_mem_posTangentConeAt hx hy
     (W.smul_mem_tangentAt_support hx hw ht)
 
 /-- At a relative interior point of the support, the tangent wall is the full supporting
@@ -136,11 +136,8 @@ theorem tangentAt_support_eq_ker (hx : x ∈ intrinsicInterior ℝ W.support) :
     · exact Eventually.of_forall fun t => by
         simpa [add_comm] using (affineSpan ℝ W.support).vadd_mem_of_mem_direction
           ((affineSpan ℝ W.support).direction.smul_mem t hv) (subset_affineSpan ℝ _ hxs)
-  obtain ⟨t, ht, htpos⟩ := ((hline.eventually
-    (mem_nhdsWithin_affineSpan_of_mem_intrinsicInterior hx)).and self_mem_nhdsWithin).exists
-  have hsub := W.sub_mem_tangentAt_support hxs ht
-  rw [add_sub_cancel_left] at hsub
-  simpa [smul_smul, htpos.ne'] using W.smul_mem_tangentAt_support hxs hsub (inv_nonneg.mpr htpos.le)
+  exact mem_posTangentConeAt_of_frequently_mem (hline.eventually
+    (mem_nhdsWithin_affineSpan_of_mem_intrinsicInterior hx)).frequently
 
 end DirectedWall
 

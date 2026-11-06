@@ -37,6 +37,14 @@ namespace RationalAffinePolyhedron
 
 variable {h : TauCeti.Toric.IsIntegralLattice i}
 
+/-- Every inequality is its value at `x` plus its linear part applied to the displacement. -/
+theorem inequality_apply_eq (Q : RationalAffinePolyhedron h) (j : Fin Q.numConstraints)
+    (x y : V) :
+    Q.inequality j y = Q.inequality j x + (Q.inequality j).contLinear (y - x) := by
+  have := (Q.inequality j).map_vadd x (y - x)
+  simp only [vadd_eq_add, sub_add_cancel] at this
+  rw [this, add_comm]
+
 /-- The closed set defined by the affine inequalities. -/
 def carrier (P : RationalAffinePolyhedron h) : Set V :=
   {x | ∀ j, P.inequality j x ≤ 0}

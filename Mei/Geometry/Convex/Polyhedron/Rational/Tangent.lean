@@ -7,6 +7,8 @@ module
 
 public import Mei.Geometry.Convex.Polyhedron.Rational
 public import Mei.Analysis.Convex.TangentCone
+public import Mathlib.Analysis.Calculus.LocalExtr.Basic
+public import Mathlib.Analysis.Calculus.FDeriv.Affine
 
 /-!
 # Tangent cones of rational-normal polyhedra
@@ -32,14 +34,6 @@ namespace RationalAffinePolyhedron
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
-
-/-- Every inequality is its value at `x` plus its linear part applied to the displacement. -/
-theorem inequality_apply_eq (Q : RationalAffinePolyhedron h) (j : Fin Q.numConstraints)
-    (x y : V) :
-    Q.inequality j y = Q.inequality j x + (Q.inequality j).contLinear (y - x) := by
-  have := (Q.inequality j).map_vadd x (y - x)
-  simp only [vadd_eq_add, sub_add_cancel] at this
-  rw [this, add_comm]
 
 /-- The presentation by the linear parts of the inequalities that are tight at `x`. -/
 noncomputable def tangentAt (Q : RationalAffinePolyhedron h) (x : V) :
@@ -116,37 +110,24 @@ theorem posTangentConeAt_carrier (Q : RationalAffinePolyhedron h) {x : V}
   ext v
   constructor
   · intro hv
-    obtain ⟨α, l, hl, c, d, hd0, hdQ, hcd⟩ := exists_fun_of_mem_tangentConeAt hv
     rw [mem_carrier_tangentAt]
     intro j hj
-    have hcont : Continuous fun w => (Q.inequality j).contLinear w :=
-      (Q.inequality j).contLinear.continuous
-    refine le_of_tendsto (hcont.continuousAt.tendsto.comp hcd) ?_
-    filter_upwards [hdQ] with n hn
-    have hineq := Q.inequality_apply_eq j x (x + d n)
-    rw [hj, zero_add, add_sub_cancel_left] at hineq
-    have hle : (Q.inequality j).contLinear (d n) ≤ 0 := by
-      rw [← hineq]
-      exact mem_carrier.mp hn j
-    simp only [Function.comp, NNReal.smul_def, map_smul, smul_eq_mul]
-    exact mul_nonpos_of_nonneg_of_nonpos (c n).2 hle
+    have hmax : IsMaxOn (Q.inequality j) Q.carrier x := by
+      intro y hy
+      rw [hj]
+      exact mem_carrier.mp hy j
+    exact hmax.isLocalMaxOn.hasFDerivWithinAt_nonpos
+      (Q.inequality j).hasFDerivWithinAt hv
   · intro hv
-    have hinv : Tendsto (fun n : ℕ => (n : ℝ)⁻¹) atTop (𝓝 0) :=
-      tendsto_inv_atTop_zero.comp tendsto_natCast_atTop_atTop
-    have hseq : ∀ᶠ n : ℕ in atTop, x + ((n : ℝ)⁻¹ • v) ∈ Q.carrier := by
-      have hlim : Tendsto (fun n : ℕ => x + ((n : ℝ)⁻¹ • v)) atTop (𝓝 (x + (0 : ℝ) • v)) :=
-        tendsto_const_nhds.add (hinv.smul_const v)
-      rw [zero_smul, add_zero] at hlim
-      filter_upwards [hlim.eventually (Q.eventually_mem_carrier_iff hx)] with n hn
-      rw [hn, add_sub_cancel_left]
-      exact Q.smul_mem_carrier_tangentAt x hv (inv_nonneg.mpr n.cast_nonneg)
-    refine mem_tangentConeAt_of_seq atTop (fun n : ℕ => (n : NNReal))
-      (fun n => (n : ℝ)⁻¹ • v) ?_ hseq ?_
-    · simpa using hinv.smul_const v
-    · refine tendsto_const_nhds.congr' ?_
-      filter_upwards [eventually_ge_atTop 1] with n hn
-      have hn0 : (n : ℝ) ≠ 0 := by positivity
-      simp [NNReal.smul_def, smul_smul, hn0]
+    apply mem_posTangentConeAt_of_frequently_mem
+    have hlim : Tendsto (fun t : ℝ => x + t • v) (𝓝[>] 0) (𝓝 x) := by
+      have hid : Tendsto (fun t : ℝ => t) (𝓝[>] 0) (𝓝 0) :=
+        tendsto_id.mono_left nhdsWithin_le_nhds
+      simpa using tendsto_const_nhds.add (hid.smul_const v)
+    refine (hlim.eventually (Q.eventually_mem_carrier_iff hx) |>.and
+      self_mem_nhdsWithin).mono (fun t ⟨ht, htpos⟩ => ?_) |>.frequently
+    rw [ht, add_sub_cancel_left]
+    exact Q.smul_mem_carrier_tangentAt x hv htpos.le
 
 end RationalAffinePolyhedron
 
@@ -169,22 +150,6 @@ theorem eventually_mem_iff_sub_mem_posTangentConeAt (hP : IsRationalNormalPolyhe
   obtain ⟨Q, rfl⟩ := isRationalNormalPolyhedron_iff.mp hP
   rw [Q.posTangentConeAt_carrier hx]
   exact Q.eventually_mem_carrier_iff hx
-
-/-- The tangent cone of a rational-normal polyhedron is invariant under nonnegative scaling. -/
-theorem smul_mem_posTangentConeAt (hP : IsRationalNormalPolyhedron h P) (hx : x ∈ P)
-    {v : V} (hv : v ∈ _root_.posTangentConeAt P x) {t : ℝ} (ht : 0 ≤ t) :
-    t • v ∈ _root_.posTangentConeAt P x := by
-  obtain ⟨Q, rfl⟩ := isRationalNormalPolyhedron_iff.mp hP
-  rw [Q.posTangentConeAt_carrier hx] at hv ⊢
-  exact Q.smul_mem_carrier_tangentAt x hv ht
-
-/-- The tangent cone of a rational-normal polyhedron is closed under addition. -/
-theorem add_mem_posTangentConeAt (hP : IsRationalNormalPolyhedron h P) (hx : x ∈ P)
-    {u v : V} (hu : u ∈ _root_.posTangentConeAt P x) (hv : v ∈ _root_.posTangentConeAt P x) :
-    u + v ∈ _root_.posTangentConeAt P x := by
-  obtain ⟨Q, rfl⟩ := isRationalNormalPolyhedron_iff.mp hP
-  rw [Q.posTangentConeAt_carrier hx] at hu hv ⊢
-  exact Q.add_mem_carrier_tangentAt x hu hv
 
 end IsRationalNormalPolyhedron
 

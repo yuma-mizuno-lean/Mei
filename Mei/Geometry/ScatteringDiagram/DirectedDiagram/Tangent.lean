@@ -14,13 +14,15 @@ public import Mei.Geometry.ScatteringDiagram.DirectedWall.Tangent
 
 The tangent diagram of a directed diagram at a point `x` retains the walls whose support
 contains `x`, each replaced by its tangent wall. Its supports are cones with apex `0`, and
-need not be full hyperplanes. Walls whose support misses `x` stay at a positive distance from
-`x`, since supports are closed, so only the retained walls matter near `x`.
+need not be full hyperplanes. For each fixed cutoff `k`, closedness and finiteness of the
+active walls give a neighbourhood of `x` on which active walls missing `x` contribute nothing.
+This neighbourhood may depend on `k`.
 
 A wall through `x` is active at a cutoff in the tangent diagram exactly when it is active in the
-diagram. Near `x` the supports of the active walls are the translates of the tangent supports.
-At a point near `x` that is regular for both diagrams, the combined label of the diagram in a
-crossing direction is the combined label of the tangent diagram at the displacement from `x`.
+diagram. For each fixed cutoff `k`, on a neighbourhood of `x` depending on `k`, the active
+supports are the translates of the tangent supports. At a point in this neighbourhood that is
+regular for both diagrams, the combined labels at cutoff `k` agree in each crossing direction
+after translating by `x`.
 These local identifications compare the crossings of a diagram near a joint with those of its
 tangent diagram. Consistency of the tangent diagram is not asserted here.
 -/
