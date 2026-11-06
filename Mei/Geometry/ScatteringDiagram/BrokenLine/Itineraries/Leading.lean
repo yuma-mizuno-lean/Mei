@@ -25,6 +25,13 @@ sum is therefore the input or zero, according to existence. An admissible
 realization in the incoming direction supplies existence for nonzero input and
 recovers the incoming coefficient, including when the coefficient is zero.
 
+The encounter alphabet and the ambient wall family that admissibility avoids are
+independent indices: `P : J → Set V` prescribes the encounter supports, while
+`W : I → Set V` is the wall inventory a ray must avoid. Only `P j ⊆ ⋃ b, W b` is
+needed. This is what lets the leading analysis apply to a sum whose encounters
+are canonical simultaneous events of a fixed wall inventory, rather than to the
+event supports themselves.
+
 We use `PositiveDegrees.eq_zero_of_mem_of_neg_mem`, the constant-degree result
 `homogeneousHistory_const_of_decompose_self`, and
 `AdmissibleRayRealization.encounterParameters_eq_of_ray_eq`. The leading term
@@ -38,13 +45,13 @@ open Set Mei.Convex
 
 namespace Mei
 
-variable {R M Γ V J K : Type*} [Semiring R] [AddCommMonoid M] [Module R M]
+variable {R M Γ V J K I : Type*} [Semiring R] [AddCommMonoid M] [Module R M]
   [AddCommGroup Γ] [DecidableEq Γ] {d : PositiveDegrees Γ}
   {ℳ : Γ → Submodule R M} [DirectSum.Decomposition ℳ]
   [NormedAddCommGroup V] [NormedSpace ℝ V]
   {T : J → Module.End R M} {a : ℳ 0} {v : Γ → V}
   {f : J → V →L[ℝ] ℝ} {c : J → ℝ} {ε : J → SignType}
-  {P W : J → Set V} {S : K → Set V} {C : Set V} {k : ℕ} {Q : V}
+  {P : J → Set V} {W : I → Set V} {S : K → Set V} {C : Set V} {k : ℕ} {Q : V}
 
 namespace CutoffDecoratedRay
 
