@@ -111,6 +111,30 @@ theorem slabComponentMap_mem_pow (I : Ideal R) {a : R[M]}
     · simp [coeff_single, hm]
   · exact (I ^ _).zero_mem
 
+/-- A slab component to a different exponent raises the ideal order by at least one, since a
+component of positive normal weight gains that many powers and one of weight zero is carried to
+itself. A component to the same exponent preserves the order. -/
+theorem slabComponentMap_mem_pow_add_ite [DecidableEq M] (I : Ideal R) {a : R[M]}
+    (ha : ∀ m, a.coeff m ∈ I) (p : {p : ℤ × M | 0 ≤ p.1}) (q : ℤ × M) {b : ℕ} {c : R}
+    (hc : c ∈ I ^ b) :
+    slabComponentMap a p q c ∈ I ^ (b + if p.val = q then 0 else 1) := by
+  have hmem := slabComponentMap_mem_pow I ha p q hc
+  by_cases hpq : p.val = q
+  · simp only [hpq, ↓reduceIte, Nat.add_zero]
+    exact Ideal.pow_le_pow_right (Nat.le_add_right _ _) hmem
+  · simp only [hpq, ↓reduceIte]
+    by_cases hd : p.val.1 = 0
+    · have hq : slabComponentMap a p q c = 0 := by
+        rw [slabComponentMap_apply]
+        split_ifs with h
+        · have h2 : p.val.2 ≠ q.2 := fun h2 => hpq (Prod.ext (by omega) h2)
+          simp [hd, coeff_single, h2]
+        · rfl
+      rw [hq]
+      exact (I ^ _).zero_mem
+    · have hp : 0 ≤ p.val.1 := p.property
+      exact Ideal.pow_le_pow_right (by omega) hmem
+
 /-- Composite slab components gain the sum of their incoming normal weights.
 The maps `f` allow arbitrary coefficient-linear operations before each slab
 crossing. Index zero acts last, following multiplication in `Module.End`. -/
