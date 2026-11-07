@@ -107,20 +107,17 @@ def twistedEquiv :
 def monomial (p : Γ) : QuantumMonoidAlgebra q β :=
   (twistedEquiv q β).symm (TwistedMonoidAlgebra.of (Multiplicative.ofAdd p))
 
-/-- A quantum monomial is the twisted basis vector at its additive exponent. -/
-theorem monomial_def (p : Γ) : monomial q β p =
-    (twistedEquiv q β).symm (TwistedMonoidAlgebra.of (Multiplicative.ofAdd p)) := (rfl)
+/-- The identification sends the twisted basis vector back to the quantum monomial. -/
+@[simp]
+theorem twistedEquiv_symm_of (g : Multiplicative Γ) :
+    (twistedEquiv q β).symm (TwistedMonoidAlgebra.of g) = monomial q β g.toAdd := (rfl)
 
 /-- The identification sends a quantum monomial to the twisted basis vector. -/
 @[simp]
 theorem twistedEquiv_monomial (p : Γ) :
     twistedEquiv q β (monomial q β p) = TwistedMonoidAlgebra.of (Multiplicative.ofAdd p) := by
-  rw [monomial_def, AlgEquiv.apply_symm_apply]
-
-/-- The identification sends the twisted basis vector back to the quantum monomial. -/
-@[simp]
-theorem twistedEquiv_symm_of (g : Multiplicative Γ) :
-    (twistedEquiv q β).symm (TwistedMonoidAlgebra.of g) = monomial q β g.toAdd := (rfl)
+  conv_lhs => rw [show p = (Multiplicative.ofAdd p).toAdd from rfl]
+  rw [← twistedEquiv_symm_of, AlgEquiv.apply_symm_apply]
 
 /-- The zero exponent is the multiplicative identity. -/
 @[simp]

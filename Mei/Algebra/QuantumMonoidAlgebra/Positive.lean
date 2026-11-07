@@ -43,8 +43,7 @@ variable {R Γ : Type*} [CommRing R] [AddCommGroup Γ]
   (q : Rˣ) (β : LinearMap.BilinForm ℤ Γ)
 
 /-- The subalgebra of quantum coefficients supported in the chosen exponent monoid. -/
-@[expose]
-def positiveSubalgebra (P : AddSubmonoid Γ) : Subalgebra R (QuantumMonoidAlgebra q β) :=
+abbrev positiveSubalgebra (P : AddSubmonoid Γ) : Subalgebra R (QuantumMonoidAlgebra q β) :=
   supportedSubalgebra (grade q β) P
 
 /-- Positive support is detected by vanishing of the excluded basis coefficients. -/
@@ -54,23 +53,6 @@ theorem mem_positiveSubalgebra_iff (P : AddSubmonoid Γ) (x : QuantumMonoidAlgeb
   classical
   simp only [positiveSubalgebra, mem_supportedSubalgebra_iff,
     ZeroMemClass.coe_eq_zero, decompose_eq_zero_iff]
-
-/-- The positive algebra is graded by the exponent pieces it contains. -/
-instance instGradedAlgebraPositiveSubalgebra [DecidableEq Γ] (P : AddSubmonoid Γ) :
-    GradedAlgebra ((positiveSubalgebra q β P).grading (grade q β)) :=
-  instGradedAlgebraSupportedSubalgebra (grade q β) P
-
-/-- No exponent outside the chosen monoid survives in the positive algebra's grading. -/
-@[simp]
-theorem positiveSubalgebra_grading_eq_bot (P : AddSubmonoid Γ) {n : Γ}
-    (hn : n ∉ P) : (positiveSubalgebra q β P).grading (grade q β) n = ⊥ := by
-  classical
-  exact supportedSubalgebra_grading_eq_bot (grade q β) P hn
-
-/-- As a module, the positive algebra is the coefficient module at shift zero. -/
-theorem positiveSubalgebra_toSubmodule (P : AddSubmonoid Γ) :
-    (positiveSubalgebra q β P).toSubmodule = shiftedSubmodule (grade q β) P 0 :=
-  supportedSubalgebra_toSubmodule (grade q β) P
 
 /-- A quantum monomial viewed in the positive coefficient algebra. -/
 def positiveMonomial (P : AddSubmonoid Γ) (p : P) : positiveSubalgebra q β P :=
@@ -105,7 +87,7 @@ def positiveFiltration : AlgFiltration (positiveSubalgebra q β P) := by
   classical
   exact GradedAlgebra.degreeFiltration
     ((positiveSubalgebra q β P).grading (grade q β)) δ
-    (fun p hp => positiveSubalgebra_grading_eq_bot q β P
+    (fun p hp => supportedSubalgebra_grading_eq_bot (grade q β) P
       (fun h => (not_lt_of_ge (hδ p h)) hp))
 
 open scoped Classical in
@@ -113,7 +95,7 @@ open scoped Classical in
 theorem positiveFiltration_ideal (k : ℕ) :
     (positiveFiltration q β P δ hδ).ideal k =
       GradedAlgebra.degreeIdeal ((positiveSubalgebra q β P).grading (grade q β)) δ
-        (fun p hp => positiveSubalgebra_grading_eq_bot q β P
+        (fun p hp => supportedSubalgebra_grading_eq_bot (grade q β) P
           (fun h => (not_lt_of_ge (hδ p h)) hp)) k := by
   classical
   rw [positiveFiltration, GradedAlgebra.degreeFiltration_ideal]
@@ -196,7 +178,7 @@ theorem map_mem_positiveSubalgebra {x : QuantumMonoidAlgebra q β}
     (hx : x ∈ positiveSubalgebra q β P) :
     map φ f h x ∈ positiveSubalgebra q' β' P' := by
   have hx' : x ∈ shiftedSubmodule (grade q β) P 0 := by
-    rwa [← positiveSubalgebra_toSubmodule q β P]
+    rwa [← supportedSubalgebra_toSubmodule (grade q β) P]
   rw [shiftedSubmodule_def] at hx'
   refine Submodule.iSup_induction _
     (motive := fun x => map φ f h x ∈ positiveSubalgebra q' β' P') hx'
@@ -253,7 +235,7 @@ theorem positiveMap_ideal_le_of_degree
   · rw [Ideal.mem_comap, positiveFiltration_ideal]
     exact GradedAlgebra.le_degreeIdeal _ δ' _ (hij n hnP hn) _
       (positiveMap_mem_grading φ f h P P' hf hx)
-  · have hz := positiveSubalgebra_grading_eq_bot q β P hnP
+  · have hz := supportedSubalgebra_grading_eq_bot (grade q β) P hnP
     have : x = 0 := by simpa only [hz, Submodule.mem_bot] using hx
     subst x
     simp

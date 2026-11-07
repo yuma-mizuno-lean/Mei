@@ -25,7 +25,8 @@ namespace Mei.QuantumMonoidAlgebra
 variable {R Γ : Type*} [CommRing R] [AddCommGroup Γ]
   (q : Rˣ) (β : LinearMap.BilinForm ℤ Γ)
 
-/-- The existing twisted basis unit at an additive exponent. -/
+/-- The unit obtained by transporting the twisted basis unit at an additive exponent
+along the inverse of `twistedEquiv`. -/
 def monomialUnit (p : Γ) : (QuantumMonoidAlgebra q β)ˣ :=
   Units.map ((twistedEquiv q β).symm : _ →* _)
     (TauCeti.TwistedMonoidAlgebra.isUnit_of (k := R) (α := factorSet q β)
