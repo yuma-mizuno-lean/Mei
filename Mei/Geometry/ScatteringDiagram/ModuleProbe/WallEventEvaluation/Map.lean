@@ -7,7 +7,6 @@ module
 
 public import Mei.Geometry.ScatteringDiagram.ModuleProbe.WallEventEvaluation
 public import Mei.Algebra.Lie.Graded.Shifted.Map
-public import Mei.Geometry.ScatteringDiagram.BrokenLine.Itineraries.Map
 
 /-!
 # Coefficient maps of actual simultaneous-event ray sums
