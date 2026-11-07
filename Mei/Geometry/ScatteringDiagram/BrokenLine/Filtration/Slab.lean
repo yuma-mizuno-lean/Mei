@@ -36,49 +36,9 @@ This is the slab-face part of the positive-kink finiteness argument of Gross–H
 
 public noncomputable section
 
-namespace Mei.NodeAlgebra
-
-open TauCeti AddMonoidAlgebra
-
-variable {R M : Type*} [CommRing R] [AddCommMonoid M] [DecidableEq M] {I : Ideal R}
-
-/-- A homogeneous input in the `k`-th term of the coefficient filtration is sent by the
-whole-component transfer of a slab correspondence, in either orientation, into the `k`-th term
-if the output exponent is the input exponent, and into the `(k + 1)`-st term otherwise, provided
-the slab parameter has all coefficients in `I`. -/
-theorem homogeneousComponent_mem_coeffFiltration_of_exponentCorrespondence {a : R[M]}
-    (ha : ∀ m, a.coeff m ∈ I) {T : Module.End R R[ℤ × M]}
-    (hT : T = (exponentCorrespondence a).totalTransfer ∨
-      T = (exponentCorrespondence a).symm.totalTransfer)
-    {p q : ℤ × M} {x : R[ℤ × M]} (hx : x ∈ grade R p) {k : ℕ}
-    (hxk : x ∈ (Ideal.coeffFiltration I (ℤ × M)).submodule k) :
-    homogeneousComponent (grade R : ℤ × M → _) q (T x) ∈
-      (Ideal.coeffFiltration I (ℤ × M)).submodule (k + if p = q then 0 else 1) := by
-  classical
-  have key (C : GradedCorrespondence (B := NodeAlgebra R[M] a) (grade R : ℤ × M → _)
-      (grade R : ℤ × M → _) {p | 0 ≤ p.1} {p | 0 ≤ p.1})
-      (hC : ∀ (p : {p : ℤ × M | 0 ≤ p.1}) (q : ℤ × M) (u : grade R p.val),
-        ((C.transfer p q u : grade R q) : R[ℤ × M]) =
-          single q (slabComponentMap a p q (u.val.coeff p.val))) :
-      homogeneousComponent (grade R : ℤ × M → _) q (C.totalTransfer x) ∈
-        (Ideal.coeffFiltration I (ℤ × M)).submodule (k + if p = q then 0 else 1) := by
-    rw [homogeneousComponent_apply, GradedCorrespondence.totalTransfer_apply,
-      C.decompose_right_liftLeftTotal_of_mem hx q]
-    by_cases hp : p ∈ {p : ℤ × M | 0 ≤ p.1}
-    · simp only [hp, ↓reduceDIte]
-      rw [hC ⟨p, hp⟩ q ⟨x, hx⟩]
-      exact Ideal.single_mem_coeffFiltration_submodule.2
-        (Ideal.slabComponentMap_mem_pow_add_ite I ha ⟨p, hp⟩ q
-          (Ideal.mem_coeffFiltration_submodule.1 hxk p))
-    · simp only [hp, ↓reduceDIte]
-      exact Submodule.zero_mem _
-  rcases hT with rfl | rfl
-  · exact key _ fun p q u => exponentCorrespondence_transfer_eq_single a p q u
-  · exact key _ fun p q u => exponentCorrespondence_symm_transfer_eq_single a p q u
-
-end Mei.NodeAlgebra
-
 namespace Mei.DecoratedAdmissibleRay
+
+
 
 open AddMonoidAlgebra Mei.NodeAlgebra
 
@@ -109,6 +69,6 @@ theorem encounter_count_le_of_exponentCorrespondence (a : J → R[M]) (I : Ideal
     by_cases hij : i = j
     · exact congrArg v hij
     · simp [hij] at h
-  · exact Ideal.coeffFiltration_submodule_eq_bot hr
+  · exact Ideal.coeffFiltration_submodule_eq_bot I (ℤ × M) hr
 
 end Mei.DecoratedAdmissibleRay

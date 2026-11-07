@@ -5,8 +5,9 @@ Authors: Claude Code
 -/
 module
 
-public import Mei.LinearAlgebra.ModuleFiltration.Basic
-public import Mathlib.Algebra.MonoidAlgebra.Basic
+public import Mei.LinearAlgebra.ModuleFiltration.Finsupp
+public import Mei.RingTheory.FilteredAlgebra.Module
+public import Mathlib.Algebra.MonoidAlgebra.Module
 
 /-!
 # The coefficient-ideal filtration of a monoid algebra
@@ -30,27 +31,29 @@ variable {R : Type*} [CommSemiring R] (I : Ideal R) (M : Type*)
 the elements with all coefficients in `I ^ k`. -/
 def coeffFiltration : Mei.ModuleFiltration R (AddMonoidAlgebra R M) where
   submodule k :=
-    { carrier := {x | ∀ m, x.coeff m ∈ I ^ k}
-      add_mem' := fun hx hy m => by
-        simpa only [AddMonoidAlgebra.coeff_add, Finsupp.add_apply] using add_mem (hx m) (hy m)
-      zero_mem' := fun m => by simp
-      smul_mem' := fun r x hx m => by
-        simpa only [AddMonoidAlgebra.coeff_smul, Finsupp.smul_apply, smul_eq_mul] using
-          Ideal.mul_mem_left _ r (hx m) }
-  antitone _ _ hkl _ hx m := Ideal.pow_le_pow_right hkl (hx m)
+    (((Mei.AlgFiltration.ofIdeal I).toModuleFiltration R).finsupp M).submodule k |>.map
+      (AddMonoidAlgebra.coeffLinearEquiv R).symm.toLinearMap
+  antitone k l hkl x hx := by
+    rw [Submodule.mem_map_equiv] at hx ⊢
+    exact (((Mei.AlgFiltration.ofIdeal I).toModuleFiltration R).finsupp M).antitone hkl hx
   zero_eq_top := by
     ext x
+    rw [Submodule.mem_map_equiv]
     simp
 
-variable {I M}
-
 /-- Membership in the coefficient filtration is coefficientwise. -/
+@[simp]
 theorem mem_coeffFiltration_submodule {k : ℕ} {x : AddMonoidAlgebra R M} :
-    x ∈ (coeffFiltration I M).submodule k ↔ ∀ m, x.coeff m ∈ I ^ k := (Iff.rfl)
+    x ∈ (coeffFiltration I M).submodule k ↔ ∀ m, x.coeff m ∈ I ^ k := by
+  change
+    (x ∈ Submodule.map (AddMonoidAlgebra.coeffLinearEquiv R).symm.toLinearMap
+      ((((Mei.AlgFiltration.ofIdeal I).toModuleFiltration R).finsupp M).submodule k)) ↔ _
+  rw [Submodule.mem_map_equiv, Mei.ModuleFiltration.mem_finsupp_submodule]
+  simp only [LinearEquiv.symm_symm, AddMonoidAlgebra.coeffLinearEquiv_apply,
+    Mei.AlgFiltration.ofIdeal_ideal, Submodule.restrictScalars_mem]
 
 /-- A monomial lies in the coefficient filtration exactly when its coefficient lies in the
 corresponding power of the ideal. -/
-@[simp]
 theorem single_mem_coeffFiltration_submodule {k : ℕ} {m : M} {c : R} :
     AddMonoidAlgebra.single m c ∈ (coeffFiltration I M).submodule k ↔ c ∈ I ^ k := by
   classical
@@ -65,6 +68,6 @@ theorem coeffFiltration_submodule_eq_bot {r : ℕ} (hr : I ^ r = ⊥) :
     (coeffFiltration I M).submodule r = ⊥ := by
   refine (Submodule.eq_bot_iff _).2 fun x hx => ?_
   refine AddMonoidAlgebra.ext (Finsupp.ext fun m => ?_)
-  simpa [hr] using mem_coeffFiltration_submodule.1 hx m
+  simpa [hr] using (mem_coeffFiltration_submodule (I := I) (M := M)).1 hx m
 
 end Ideal
