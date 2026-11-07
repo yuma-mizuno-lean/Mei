@@ -97,8 +97,8 @@ theorem exists_forall_value_eq_iff_smul_eq (c : M) :
   · rintro ⟨s, hs⟩
     have he := value_eq_inv_smul_value_hyperplaneDiagram s
       (offWallPoint (-v) (by simp [hv])) (offWallPoint v (by simp [hv]))
-      (Opens.mem_top _) (Opens.mem_top _) (by simp) (show f (-v) < 0 by simp [hv])
-      (show 0 < f v by simp [hv])
+      (Opens.mem_top _) (Opens.mem_top _) (by simp) (by simp [hv] : f (-v) < 0)
+      (by simp [hv] : (0 : ℝ) < f v)
     rw [hs, hs] at he
     exact eq_inv_smul_iff.mp he
   · -- transport `c` from `v`; the label and its inverse fix `c`

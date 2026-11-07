@@ -138,6 +138,12 @@ noncomputable def hyperplaneFactor [Inv H] [One H] (f : V →L[ℝ] ℝ) (a : H)
 theorem hyperplaneFactor_def [Inv H] [One H] (a : H) (v : V) :
     hyperplaneFactor f a v = if 0 < f v then a⁻¹ else 1 := (rfl)
 
+/-- The crossing factor depends only on the side of the hyperplane. -/
+theorem hyperplaneFactor_eq_of_sign_eq [Inv H] [One H] (a : H) {v w : V}
+    (hvw : SignType.sign (f v) = SignType.sign (f w)) :
+    hyperplaneFactor f a v = hyperplaneFactor f a w := by
+  simp only [hyperplaneFactor_def, ← sign_eq_one_iff, hvw]
+
 variable [Group H] [Group K] (hf0 : f ≠ 0) (hg0 : g ≠ 0) (a : H)
 
 /-- The product of a segment of the one-hyperplane diagram is the quotient of the crossing factors
