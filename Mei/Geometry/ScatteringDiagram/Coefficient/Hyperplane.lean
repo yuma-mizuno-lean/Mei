@@ -5,6 +5,7 @@ Authors: Claude
 -/
 module
 
+public import Mei.Geometry.ScatteringDiagram.Coefficient.Constant
 public import Mei.Geometry.ScatteringDiagram.Coefficient.Path
 public import Mei.Geometry.ScatteringDiagram.HyperplanePair
 
@@ -88,7 +89,6 @@ theorem exists_forall_value_eq_iff_smul_eq (c : M) :
     (∃ s : ((hyperplaneDiagram hf hf0 θ).coefficientLocalSystem M).presheaf.obj (op ⊤),
       ∀ x hx, ((hyperplaneDiagram hf hf0 θ).coefficientTransport M).value s x hx = c) ↔
       θ • c = c := by
-  have htop := FinitePolyhedralComplex.top_mem_coefficientCharts_hyperplaneComplex hf
   -- a point `v` with `f v = 1`, so that `-v` and `v` lie on opposite sides of the wall
   obtain ⟨v, hv⟩ := LinearMap.range_eq_top.mp
     (Module.Dual.range_eq_top_of_ne_zero (f := f.toLinearMap) (by exact_mod_cast hf0)) 1
@@ -101,16 +101,10 @@ theorem exists_forall_value_eq_iff_smul_eq (c : M) :
       (by simp [hv] : (0 : ℝ) < f v)
     rw [hs, hs] at he
     exact eq_inv_smul_iff.mp he
-  · -- transport `c` from `v`; the label and its inverse fix `c`
-    intro hc
-    have hc' : θ⁻¹ • c = c := by rw [inv_smul_eq_iff, hc]
-    refine ⟨((hyperplaneDiagram hf hf0 θ).coefficientTransport M).parallelSection
-      (by simpa using htop) le_rfl (offWallPoint v (by simp [hv])) (Opens.mem_top _) c,
-      fun y hy => ?_⟩
-    rw [DenseBasisTransport.value_parallelSection,
-      (hyperplaneDiagram hf hf0 θ).coefficientTransport_transport M ⊤ htop,
-      coefficientPathTransport_apply, pathProduct_hyperplaneDiagram]
-    simp only [hyperplaneFactor_def, mul_smul]
-    split_ifs <;> simp [hc, hc']
+  · intro hc
+    have hlabel : ∀ P, (hyperplaneDiagram hf hf0 θ).label P • c = c := fun P => by
+      rw [hyperplaneDiagram_label, hc]
+    exact ⟨(hyperplaneDiagram hf hf0 θ).constantCoefficientSection M ⊤ c hlabel,
+      fun x hx => (hyperplaneDiagram hf hf0 θ).value_constantCoefficientSection M ⊤ c hlabel x hx⟩
 
 end Mei.FiniteWallDiagram
