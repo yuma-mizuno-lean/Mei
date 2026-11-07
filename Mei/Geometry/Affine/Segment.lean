@@ -72,6 +72,13 @@ open Filter Topology
 variable {V X : Type*} [AddCommGroup V] [Module ℝ V] [TopologicalSpace V]
   [IsTopologicalAddGroup V] [ContinuousSMul ℝ V] [TopologicalSpace X]
 
+omit [IsTopologicalAddGroup V] [ContinuousSMul ℝ V] in
+/-- The contact parameter of a transverse line depends continuously on its base
+point. -/
+private theorem continuousAt_contactTime (ν : V →L[ℝ] ℝ) {c : ℝ} {v : V} {x : X → V} {Q : X}
+    (hx : ContinuousAt x Q) : ContinuousAt (fun Y => (c - ν (x Y)) / ν v) Q :=
+  (continuousAt_const.sub (ν.continuous.continuousAt.comp hx)).div_const _
+
 /-- If the unique possible contact of a transverse line misses a closed wall,
 nearby lines miss it entirely. -/
 theorem eventually_forall_notMem_of_contact_notMem
@@ -80,8 +87,7 @@ theorem eventually_forall_notMem_of_contact_notMem
     (hx : ContinuousAt x Q) (hQ : x Q + ((c - ν (x Q)) / ν v) • v ∉ W) :
     ∀ᶠ Y in 𝓝 Q, ∀ t : ℝ, x Y + t • v ∉ W := by
   have hp : ContinuousAt (fun Y => x Y + ((c - ν (x Y)) / ν v) • v) Q :=
-    hx.add (((continuousAt_const.sub (ν.continuous.continuousAt.comp hx)).div_const _).smul
-      continuousAt_const)
+    hx.add ((continuousAt_contactTime ν hx).smul continuousAt_const)
   filter_upwards [hp.eventually (hW.isOpen_compl.mem_nhds hQ)] with Y hY t hmem
   rw [ν.toLinearMap.eq_div_of_apply_add_smul_eq hv (hheight _ hmem)] at hmem
   exact hY hmem
@@ -102,9 +108,8 @@ theorem eventually_forall_pos_notMem_of_contact_nonpos
         ν.toLinearMap.eq_div_of_apply_add_smul_eq hv (hheight _ hmem)
       simp only [hpin he Y hY, sub_self, zero_div] at hh
       linarith
-  · have hr' : ContinuousAt (fun Y => (c - ν (x Y)) / ν v) Q :=
-      (continuousAt_const.sub (ν.continuous.continuousAt.comp hx)).div_const _
-    filter_upwards [hr'.eventually_lt continuousAt_const he] with Y hY _ t ht hmem
+  · filter_upwards [(continuousAt_contactTime ν hx).eventually_lt continuousAt_const he]
+      with Y hY _ t ht hmem
     have hh : t = (c - ν (x Y)) / ν v :=
       ν.toLinearMap.eq_div_of_apply_add_smul_eq hv (hheight _ hmem)
     linarith
@@ -167,9 +172,8 @@ theorem eventually_forall_notMem_of_openSegment
             have hh' := hheight _ hmem
             simp only [map_add, map_smul, smul_eq_mul] at hh hh'
             exact ht.ne (mul_right_cancel₀ hv (by linarith : t * ν v = b Y * ν v))
-        · have hr : ContinuousAt (fun Y => (c - ν (x Y)) / ν v) Q :=
-            (continuousAt_const.sub (ν.continuous.continuousAt.comp hx)).div_const _
-          filter_upwards [hb.eventually_lt hr he] with Y hY _ t _ ht hmem
+        · filter_upwards [hb.eventually_lt (continuousAt_contactTime ν hx) he]
+            with Y hY _ t _ ht hmem
           have hh : t = (c - ν (x Y)) / ν v :=
             ν.toLinearMap.eq_div_of_apply_add_smul_eq hv (hheight _ hmem)
           linarith

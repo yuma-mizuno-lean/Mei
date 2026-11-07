@@ -7,7 +7,6 @@ module
 
 public import Mei.Geometry.Convex.Sweep.Topology
 public import Mei.Analysis.Convex.Intrinsic
-import Mathlib.Tactic.Linarith
 
 /-!
 # Persistence of transverse wall contacts
@@ -46,12 +45,8 @@ theorem eventually_exists_add_smul_mem (f : V →L[ℝ] ℝ) {c : ℝ} {P : Set 
     ∀ᶠ Q' in 𝓝 Q, ∃ s : ℝ, a Q' < s ∧ s < b Q' ∧ x Q' + s • v ∈ P := by
   let τ : X → ℝ := fun Q' => (c - f (x Q')) / f v
   let g : X → V := fun Q' => sweepProjection f c ((f v)⁻¹ • v) (x Q')
-  have ht : τ Q = t := by
-    have hh : f (x Q + t • v) = c :=
-      hspan.subset (subset_affineSpan ℝ P (intrinsicInterior_subset hcontact))
-    apply (div_eq_iff hv).mpr
-    simp only [map_add, map_smul, smul_eq_mul] at hh
-    linarith
+  have ht : τ Q = t := (f.toLinearMap.eq_div_of_apply_add_smul_eq hv
+    (hspan.subset (subset_affineSpan ℝ P (intrinsicInterior_subset hcontact)))).symm
   have hτ : ContinuousAt τ Q :=
     (continuousAt_const.sub (f.continuous.continuousAt.comp hx)).div_const _
   have hg : ContinuousAt g Q := (sweepProjection f c _).continuous.continuousAt.comp hx

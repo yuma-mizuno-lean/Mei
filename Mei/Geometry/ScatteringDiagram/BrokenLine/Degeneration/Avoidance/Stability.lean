@@ -105,6 +105,15 @@ theorem eventually_avoids_walls_of_regular
       apply (hspan a).subset
       rw [heq]
       exact subset_affineSpan ℝ _ (hP _ (((mem_backwardDomain ..).mp hY j).2))
+  -- Every contact of a base point with a wall is a recorded one, since the
+  -- initial point is off all walls.
+  have hbase (j : Fin (t.itinerary.val.length + 1)) (a : O) (ha : X j Q ∈ W a) :
+      ν a (u j) ≠ 0 ∧ ∀ Y ∈ D, ν a (X j Y) = z a := by
+    rcases Fin.eq_zero_or_eq_succ j with hj | ⟨e, he⟩
+    · exact (hoff a (by simpa only [hj, backwardPoint_zero,
+        ContinuousAffineMap.coe_id, id_eq] using ha)).elim
+    · rw [he] at ha ⊢
+      exact hcontact e a _ (hin e) ha
   have havoid := (backwardRay_avoids_iff F b u Q hpos W).mp fun a s hs hne => by
     simpa only [path_def, backwardPath_eq_backwardRay F b u Q hpos,
       FiniteAffineRay.toContinuousMap_apply] using
@@ -120,12 +129,7 @@ theorem eventually_avoids_walls_of_regular
       (fun x hx => (hspan a).subset (subset_affineSpan ℝ _ hx))
       (X j.castSucc).continuous.continuousAt (backwardTime F b w j).continuous.continuousAt
     · exact fun s hs hs' => havoid.1 j a s hs hs'
-    · intro ha
-      rcases Fin.eq_zero_or_eq_succ j.castSucc with hj | ⟨e, he⟩
-      · exact (hoff a (by simpa only [hj, backwardPoint_zero,
-          ContinuousAffineMap.coe_id, id_eq] using ha)).elim
-      · rw [he] at ha ⊢
-        exact hcontact e a _ (hin e) ha
+    · exact hbase j.castSucc a
     · intro ha
       rw [← backwardPoint_succ_apply] at ha
       have hh := hcontact j a _ (hout j) ha
@@ -139,12 +143,7 @@ theorem eventually_avoids_walls_of_regular
       (fun x hx => (hspan a).subset (subset_affineSpan ℝ _ hx))
       (X (Fin.last t.itinerary.val.length)).continuous.continuousAt
     · exact fun s hs => havoid.2 a s hs
-    · intro ha
-      rcases Fin.eq_zero_or_eq_succ (Fin.last t.itinerary.val.length) with hj | ⟨e, he⟩
-      · exact (hoff a (by simpa only [hj, backwardPoint_zero,
-          ContinuousAffineMap.coe_id, id_eq] using ha)).elim
-      · rw [he] at ha ⊢
-        exact hcontact e a _ (hin e) ha
+    · exact hbase _ a
   filter_upwards [hfinite, htail] with Y hfinite htail hY
   exact ⟨(mem_backwardAvoidanceDomain ..).mpr ⟨hY, fun j a s hs hs' =>
     hfinite j a hY s hs hs'⟩, fun a s hs => htail a hY s hs⟩

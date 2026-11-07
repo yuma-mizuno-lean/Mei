@@ -5,6 +5,7 @@ Authors: Codex
 -/
 module
 
+public import Mei.Geometry.Affine.Transverse
 public import Mei.Geometry.Convex.Sweep
 public import Mathlib.Analysis.Normed.Module.FiniteDimension
 public import Mathlib.Topology.Homeomorph.Defs
@@ -102,10 +103,7 @@ theorem _root_.ContinuousLinearMap.sweepProjection_inv_smul_eq_add_smul
     (f : V →L[ℝ] ℝ) {c s : ℝ} {Q v : V} (hv : f v ≠ 0)
     (h : f (Q + s • v) = c) :
     sweepProjection f c ((f v)⁻¹ • v) Q = Q + s • v := by
-  have htime : (c - f Q) / f v = s := by
-    apply (div_eq_iff hv).mpr
-    rw [map_add, map_smul, smul_eq_mul] at h
-    linarith
+  have htime : (c - f Q) / f v = s := (f.toLinearMap.eq_div_of_apply_add_smul_eq hv h).symm
   simp only [sweepProjection_apply, smul_smul, ← div_eq_mul_inv, htime]
 
 /-- A sweep projection followed by displacement in a transverse direction
