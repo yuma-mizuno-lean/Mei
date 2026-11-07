@@ -124,16 +124,20 @@ value under the negative leg. -/
 @[simp]
 theorem sectionsLinearEquivOfLinearMaps_symm_apply_right_false (f g : B →ₗ[R] M) (b : B) :
     ((sectionsLinearEquivOfLinearMaps f g).symm b).val (.right false) = f b := by
-  change f (((sectionsLinearEquivOfLinearMaps f g).symm b).val (.left default)) = f b
-  exact congrArg f (LinearEquiv.apply_symm_apply (sectionsLinearEquivOfLinearMaps f g) b)
+  calc
+    _ = f (((sectionsLinearEquivOfLinearMaps f g).symm b).val (.left default)) :=
+      (sectionsLinearEquivOfLinearMaps_symm_apply_left_fst f g b).symm
+    _ = f b := congrArg f (sectionsLinearEquivOfLinearMaps_symm_apply_left f g b default)
 
 /-- The positive chamber value of the section with a given face value is the image of its face
 value under the positive leg. -/
 @[simp]
 theorem sectionsLinearEquivOfLinearMaps_symm_apply_right_true (f g : B →ₗ[R] M) (b : B) :
     ((sectionsLinearEquivOfLinearMaps f g).symm b).val (.right true) = g b := by
-  change g (((sectionsLinearEquivOfLinearMaps f g).symm b).val (.left default)) = g b
-  exact congrArg g (LinearEquiv.apply_symm_apply (sectionsLinearEquivOfLinearMaps f g) b)
+  calc
+    _ = g (((sectionsLinearEquivOfLinearMaps f g).symm b).val (.left default)) :=
+      (sectionsLinearEquivOfLinearMaps_symm_apply_left_snd f g b).symm
+    _ = g b := congrArg g (sectionsLinearEquivOfLinearMaps_symm_apply_left f g b default)
 
 /-- Linear families of matching sections with prescribed chamber values correspond to
 linear common lifts through the two legs, uniquely on both sides or on neither. -/
