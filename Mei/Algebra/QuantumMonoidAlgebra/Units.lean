@@ -27,16 +27,15 @@ variable {R Γ : Type*} [CommRing R] [AddCommGroup Γ]
 
 /-- The existing twisted basis unit at an additive exponent. -/
 def monomialUnit (p : Γ) : (QuantumMonoidAlgebra q β)ˣ :=
-  (TauCeti.TwistedMonoidAlgebra.isUnit_of (k := R) (α := factorSet q β)
-    (Multiplicative.ofAdd p)).unit
+  Units.map ((twistedEquiv q β).symm : _ →* _)
+    (TauCeti.TwistedMonoidAlgebra.isUnit_of (k := R) (α := factorSet q β)
+      (Multiplicative.ofAdd p)).unit
 
 /-- Forgetting the unit structure recovers the quantum monomial. -/
 @[simp]
 theorem coe_monomialUnit (p : Γ) :
     (monomialUnit q β p : QuantumMonoidAlgebra q β) = monomial q β p := by
-  simpa only [monomialUnit, monomial_def] using
-    (TauCeti.TwistedMonoidAlgebra.isUnit_of (k := R) (α := factorSet q β)
-      (Multiplicative.ofAdd p)).unit_spec
+  simp [monomialUnit]
 
 /-- The inverse includes the diagonal factor, even for nonalternating forms. -/
 @[simp]

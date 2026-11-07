@@ -41,26 +41,6 @@ variable {R S U Γ Γ' Γ'' : Type*}
   {β : LinearMap.BilinForm ℤ Γ} {β' : LinearMap.BilinForm ℤ Γ'}
   {β'' : LinearMap.BilinForm ℤ Γ''}
 
-section Instances
-
-variable {P : AddSubmonoid Γ} {δ : Γ →+ ℤ} {hδ : ∀ n ∈ P, 0 ≤ δ n}
-
-local notation "F" => positiveFiltration q β P δ hδ
-
--- Direct instances for the inherited structures: searching through the positive subalgebra,
--- quotient, product, and subring layers each time exceeds the instance search budget.
-instance : Ring (F).completion := inferInstance
-
-instance : Semiring (F).completion := (inferInstance : Ring (F).completion).toSemiring
-
-instance : Semigroup (F).completion := (inferInstance : Ring (F).completion).toSemigroup
-
-instance : AddCommMonoid (F).completion := inferInstance
-
-instance (k : ℕ) : Semiring (positiveSubalgebra q β P ⧸ (F).ideal k) := inferInstance
-
-end Instances
-
 section General
 
 variable (φ : R →+* S) (f : Γ →+ Γ')

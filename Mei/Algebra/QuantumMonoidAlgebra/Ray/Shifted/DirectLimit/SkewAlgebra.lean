@@ -28,20 +28,6 @@ variable {R Γ : Type*} [CommRing R] [AddCommGroup Γ] [DecidableEq Γ]
   (q : Rˣ) (β : LinearMap.BilinForm ℤ Γ) (d : PositiveDegrees Γ)
   (n : d.monoid) (hn : 0 < d.degree n)
 
-private local instance : Ring (QuantumMonoidAlgebra q β) := inferInstance
-private local instance : Algebra R (QuantumMonoidAlgebra q β) := inferInstance
-private local instance : AddCommGroup (QuantumMonoidAlgebra q β) := inferInstance
-private local instance : Module R (QuantumMonoidAlgebra q β) := inferInstance
-private local instance : DirectSum.Decomposition (grade q β) := inferInstance
-private local instance (p : Γ) : AddCommGroup (d.ShiftedCoefficients (grade q β) p) :=
-  inferInstance
-private local instance (p : Γ) : Module R (d.ShiftedCoefficients (grade q β) p) := inferInstance
-private local instance : AddCommMonoid (d.ShiftedDirectLimit (grade q β)) := inferInstance
-private local instance : AddCommGroup (d.ShiftedDirectLimit (grade q β)) := inferInstance
-private local instance : Ring (d.ShiftedDirectLimit (grade q β)) := inferInstance
-private local instance : Algebra R (d.ShiftedDirectLimit (grade q β)) := inferInstance
-private local instance : Module R (d.ShiftedDirectLimit (grade q β)) := inferInstance
-
 private theorem chart_mul_eq (s t : Multiset d.monoid)
     (x : d.ShiftedCoefficients (grade q β) (d.coefficientOrigin s))
     (y : d.ShiftedCoefficients (grade q β) (d.coefficientOrigin t)) :

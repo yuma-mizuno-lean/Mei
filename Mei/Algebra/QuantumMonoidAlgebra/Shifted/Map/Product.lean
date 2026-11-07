@@ -28,31 +28,6 @@ variable {R S Γ Γ' : Type*} [CommRing R] [CommRing S]
   (φ : R →+* S)
   (h : ∀ p r, Units.map φ.toMonoidHom (q ^ β p r) = q' ^ β' (T p) (T r))
 
-private local instance : Ring (QuantumMonoidAlgebra q β) := inferInstance
-private local instance : Semigroup (QuantumMonoidAlgebra q β) := inferInstance
-private local instance : Algebra R (QuantumMonoidAlgebra q β) := inferInstance
-private local instance : AddCommGroup (QuantumMonoidAlgebra q β) := inferInstance
-private local instance : Module R (QuantumMonoidAlgebra q β) := inferInstance
-private local instance : Ring (QuantumMonoidAlgebra q' β') := inferInstance
-private local instance : Semigroup (QuantumMonoidAlgebra q' β') := inferInstance
-private local instance : Algebra S (QuantumMonoidAlgebra q' β') := inferInstance
-private local instance : AddCommGroup (QuantumMonoidAlgebra q' β') := inferInstance
-private local instance : Module S (QuantumMonoidAlgebra q' β') := inferInstance
-private local instance (p : Γ) : AddCommGroup (d.ShiftedCoefficients (grade q β) p) := inferInstance
-private local instance (p : Γ) : Module R (d.ShiftedCoefficients (grade q β) p) := inferInstance
-private local instance (p : Γ') : AddCommGroup (e.ShiftedCoefficients (grade q' β') p) :=
-  inferInstance
-private local instance (p : Γ') : Module S (e.ShiftedCoefficients (grade q' β') p) :=
-  inferInstance
-private local instance : Ring (positiveSubalgebra q β d.monoid) := inferInstance
-private local instance : Algebra R (positiveSubalgebra q β d.monoid) := inferInstance
-private local instance : AddCommGroup (positiveSubalgebra q β d.monoid) := inferInstance
-private local instance : Module R (positiveSubalgebra q β d.monoid) := inferInstance
-private local instance : Ring (positiveSubalgebra q' β' e.monoid) := inferInstance
-private local instance : Algebra S (positiveSubalgebra q' β' e.monoid) := inferInstance
-private local instance : AddCommGroup (positiveSubalgebra q' β' e.monoid) := inferInstance
-private local instance : Module S (positiveSubalgebra q' β' e.monoid) := inferInstance
-
 private theorem positiveMap_smul' (r : R) (x : positiveSubalgebra q β d.monoid) :
     positiveMap φ T.toAddMonoidHom h d.monoid e.monoid (fun _ hn => T.map_mem hn) (r • x) =
       φ r • positiveMap φ T.toAddMonoidHom h d.monoid e.monoid

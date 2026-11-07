@@ -19,8 +19,12 @@ on the exponent group, and its exponent pieces form a graded algebra. For an
 alternating form the commutator has coefficient `q^(β p r) - q^(-β p r)`.
 The zero form gives the ordinary additive monoid algebra, preserving degrees.
 
-The ring and basis are the existing `TauCeti.twistedMonoidAlgebra` of the
-factor set `q^(β p r)`; we do not construct another twisted multiplication.
+The ring and basis are transported from the existing `TauCeti.twistedMonoidAlgebra`
+of the factor set `q^(β p r)` along the identification `twistedEquiv`; we do not
+construct another twisted multiplication. The quantum algebra is a type synonym with
+its own instances, so instance search does not unfold it to the subalgebra of
+twisted translations. The exponent pieces are those of the twisted algebra, presented
+by the quantum basis.
 The conventions follow Mandel, *Scattering diagrams, theta functions, and refined
 tropical curve counts*, Example 2.1(iii), and Nakanishi, *Pentagon relation in
 quantum cluster scattering diagrams*, §2.3.
@@ -59,8 +63,9 @@ end QuantumMonoidAlgebra
 
 /-- The quantum algebra of an exponent group and an integral bilinear form.
 Alternating forms give the usual quantum torus multiplication. -/
-abbrev QuantumMonoidAlgebra {R Γ : Type*} [CommRing R] [AddCommGroup Γ]
-    (q : Rˣ) (β : LinearMap.BilinForm ℤ Γ) :=
+@[expose]
+def QuantumMonoidAlgebra {R Γ : Type*} [CommRing R] [AddCommGroup Γ]
+    (q : Rˣ) (β : LinearMap.BilinForm ℤ Γ) : Type _ :=
   TauCeti.twistedMonoidAlgebra R (Multiplicative Γ) (QuantumMonoidAlgebra.factorSet q β)
 
 namespace QuantumMonoidAlgebra
@@ -70,51 +75,133 @@ open TauCeti
 variable {R Γ : Type*} [CommRing R] [AddCommGroup Γ]
   (q : Rˣ) (β : LinearMap.BilinForm ℤ Γ)
 
+/-- The ring structure inherited from the algebra of twisted translations. -/
+instance instRing : Ring (QuantumMonoidAlgebra q β) :=
+  -- Instance search does not find the ring structure of the twisted subalgebra itself.
+  letI : Ring (twistedMonoidAlgebra R (Multiplicative Γ) (factorSet q β)) :=
+    Subalgebra.toRing (R := R) (A := Module.End R (Multiplicative Γ →₀ R)) _
+  inferInstanceAs (Ring (twistedMonoidAlgebra R (Multiplicative Γ) (factorSet q β)))
+
+/-- The algebra structures over the algebras under the coefficient ring, inherited from
+the algebra of twisted translations. -/
+instance instAlgebra' {k : Type*} [CommSemiring k] [Algebra k R] :
+    Algebra k (QuantumMonoidAlgebra q β) :=
+  inferInstanceAs (Algebra k (twistedMonoidAlgebra R (Multiplicative Γ) (factorSet q β)))
+
+/-- The coefficient algebra structure, stated directly as for `Subalgebra.algebra`. -/
+instance instAlgebra : Algebra R (QuantumMonoidAlgebra q β) :=
+  instAlgebra' q β
+
+/-- Scalars from below the coefficient ring act through the coefficient ring. -/
+instance instIsScalarTower {k : Type*} [CommSemiring k] [Algebra k R] :
+    IsScalarTower k R (QuantumMonoidAlgebra q β) :=
+  inferInstanceAs (IsScalarTower k R (twistedMonoidAlgebra R (Multiplicative Γ) (factorSet q β)))
+
+/-- The identification of a quantum algebra with its underlying algebra of twisted
+translations, through which the twisted-monoid-algebra API applies. -/
+def twistedEquiv :
+    QuantumMonoidAlgebra q β ≃ₐ[R] twistedMonoidAlgebra R (Multiplicative Γ) (factorSet q β) :=
+  AlgEquiv.refl
+
 /-- The quantum monomial with exponent `p`. -/
 def monomial (p : Γ) : QuantumMonoidAlgebra q β :=
-  TauCeti.TwistedMonoidAlgebra.of (Multiplicative.ofAdd p)
+  (twistedEquiv q β).symm (TwistedMonoidAlgebra.of (Multiplicative.ofAdd p))
 
 /-- A quantum monomial is the twisted basis vector at its additive exponent. -/
 theorem monomial_def (p : Γ) : monomial q β p =
-    TauCeti.TwistedMonoidAlgebra.of (Multiplicative.ofAdd p) := (rfl)
+    (twistedEquiv q β).symm (TwistedMonoidAlgebra.of (Multiplicative.ofAdd p)) := (rfl)
+
+/-- The identification sends a quantum monomial to the twisted basis vector. -/
+@[simp]
+theorem twistedEquiv_monomial (p : Γ) :
+    twistedEquiv q β (monomial q β p) = TwistedMonoidAlgebra.of (Multiplicative.ofAdd p) := by
+  rw [monomial_def, AlgEquiv.apply_symm_apply]
+
+/-- The identification sends the twisted basis vector back to the quantum monomial. -/
+@[simp]
+theorem twistedEquiv_symm_of (g : Multiplicative Γ) :
+    (twistedEquiv q β).symm (TwistedMonoidAlgebra.of g) = monomial q β g.toAdd := (rfl)
 
 /-- The zero exponent is the multiplicative identity. -/
 @[simp]
-theorem monomial_zero : monomial q β 0 = 1 := TauCeti.TwistedMonoidAlgebra.of_one
+theorem monomial_zero : monomial q β 0 = 1 :=
+  (twistedEquiv q β).injective (by simp)
 
 /-- Multiplication of quantum monomials adds exponents and inserts the form's scalar. -/
 @[simp]
 theorem monomial_mul (p r : Γ) :
     monomial q β p * monomial q β r =
-      ((q ^ β p r : Rˣ) : R) • monomial q β (p + r) :=
-  TauCeti.TwistedMonoidAlgebra.of_mul_of _ _
+      ((q ^ β p r : Rˣ) : R) • monomial q β (p + r) := by
+  apply (twistedEquiv q β).injective
+  simp [TwistedMonoidAlgebra.of_mul_of, ofAdd_add]
 
 /-- Quantum monomials form a basis indexed by the original additive exponent group. -/
 def basis : Module.Basis Γ R (QuantumMonoidAlgebra q β) :=
-  (TauCeti.TwistedMonoidAlgebra.basis R (Multiplicative Γ) (factorSet q β)).reindex
-    Multiplicative.toAdd
+  ((TwistedMonoidAlgebra.basis R (Multiplicative Γ) (factorSet q β)).map
+    (twistedEquiv q β).symm.toLinearEquiv).reindex Multiplicative.toAdd
 
 @[simp]
 theorem basis_apply (p : Γ) : basis q β p = monomial q β p := by
-  simp only [basis, Module.Basis.reindex_apply, TauCeti.TwistedMonoidAlgebra.basis_apply, monomial]
-  rfl
+  simp [basis]
 
-/-- The homogeneous piece of exponent `p`. -/
-abbrev grade (p : Γ) : Submodule R (QuantumMonoidAlgebra q β) :=
-  TwistedMonoidAlgebra.grade R (factorSet q β) p
+/-- Quantum basis coordinates are the twisted basis coordinates under `twistedEquiv`. -/
+theorem basis_repr_apply (x : QuantumMonoidAlgebra q β) (p : Γ) :
+    (basis q β).repr x p =
+      (TwistedMonoidAlgebra.basis R (Multiplicative Γ) (factorSet q β)).repr
+        (twistedEquiv q β x) (Multiplicative.ofAdd p) := by
+  simp [basis]
+
+/-- The homogeneous piece of exponent `p`, the twisted exponent piece under
+`twistedEquiv`. -/
+def grade (p : Γ) : Submodule R (QuantumMonoidAlgebra q β) :=
+  (TwistedMonoidAlgebra.grade R (factorSet q β) p).comap (twistedEquiv q β).toLinearMap
+
+/-- Homogeneity is homogeneity of the underlying twisted element. -/
+theorem mem_grade_iff_twistedEquiv (p : Γ) (x : QuantumMonoidAlgebra q β) :
+    x ∈ grade q β p ↔ twistedEquiv q β x ∈ TwistedMonoidAlgebra.grade R (factorSet q β) p :=
+  Iff.rfl
 
 /-- Homogeneous elements are precisely scalar multiples of a quantum monomial. -/
 theorem mem_grade_iff (p : Γ) (x : QuantumMonoidAlgebra q β) :
-    x ∈ grade q β p ↔ ∃ r : R, r • monomial q β p = x :=
-  TwistedMonoidAlgebra.mem_grade_iff _ _ _ _
+    x ∈ grade q β p ↔ ∃ r : R, r • monomial q β p = x := by
+  rw [mem_grade_iff_twistedEquiv, TwistedMonoidAlgebra.mem_grade_iff]
+  refine exists_congr fun r => ?_
+  rw [← (twistedEquiv q β).injective.eq_iff, map_smul, twistedEquiv_monomial]
+
+/-- A quantum monomial belongs to the homogeneous piece of its exponent. -/
+theorem monomial_mem_grade (p : Γ) : monomial q β p ∈ grade q β p :=
+  (mem_grade_iff q β p _).mpr ⟨1, one_smul _ _⟩
+
+/-- The exponent pieces multiply as those of the twisted algebra. -/
+instance instGradedMonoidGrade : SetLike.GradedMonoid (grade q β) where
+  one_mem := by
+    rw [mem_grade_iff_twistedEquiv, map_one]
+    exact SetLike.GradedOne.one_mem
+  mul_mem i j x y hx hy := by
+    rw [mem_grade_iff_twistedEquiv] at hx hy ⊢
+    rw [map_mul]
+    exact SetLike.GradedMul.mul_mem hx hy
+
+/-- The quantum basis presents the exponent pieces as basis lines. -/
+def monomialPresentation : MonomialPresentation (grade q β) where
+  basis := basis q β
+  grade_eq_span p := by
+    ext x
+    rw [mem_grade_iff, basis_apply, Submodule.mem_span_singleton]
+
+/-- The presentation uses the quantum basis. -/
+@[simp]
+theorem monomialPresentation_basis : (monomialPresentation q β).basis = basis q β := (rfl)
+
+/-- The exponent pieces form a graded algebra. -/
+instance instGradedAlgebraGrade [DecidableEq Γ] : GradedAlgebra (grade q β) :=
+  (monomialPresentation q β).isInternal.gradedAlgebra
 
 /-- Homogeneous projection extracts the monomial's coefficient in the quantum basis. -/
 theorem coe_decompose [DecidableEq Γ] (x : QuantumMonoidAlgebra q β) (p : Γ) :
     (DirectSum.decompose (grade q β) x p : QuantumMonoidAlgebra q β) =
       (basis q β).repr x p • monomial q β p := by
-  simpa only [basis, Module.Basis.repr_reindex_apply, Multiplicative.toAdd,
-    Equiv.symm_symm, monomial] using
-    TwistedMonoidAlgebra.coe_decompose_grade R (factorSet q β) x p
+  simpa using (monomialPresentation q β).coe_decompose x p
 
 /-- A homogeneous quantum component vanishes exactly when its basis coefficient does. -/
 @[simp]
@@ -191,19 +278,20 @@ theorem monomial_pow (hβ : β.IsAlt) (p : Γ) (n : ℕ) :
 /-- The untwisting equivalence for the zero form. -/
 def zeroFormEquiv : QuantumMonoidAlgebra q (0 : LinearMap.BilinForm ℤ Γ) ≃ₐ[R]
     AddMonoidAlgebra R Γ :=
-  (TauCeti.TwistedMonoidAlgebra.equivOfCoboundary
-    (1 : Multiplicative Γ → Multiplicative Γ → Rˣ)
-    (factorSet q (0 : LinearMap.BilinForm ℤ Γ)) (fun _ => 1)
-    (by intros; simp [factorSet])).trans
-    ((TauCeti.TwistedMonoidAlgebra.monoidAlgebraEquiv R (Multiplicative Γ)).trans
-      (AddMonoidAlgebra.toMultiplicativeAlgEquiv R R Γ).symm)
+  (twistedEquiv q 0).trans <|
+    (TauCeti.TwistedMonoidAlgebra.equivOfCoboundary
+      (1 : Multiplicative Γ → Multiplicative Γ → Rˣ)
+      (factorSet q (0 : LinearMap.BilinForm ℤ Γ)) (fun _ => 1)
+      (by intros; simp [factorSet])).trans
+      ((TauCeti.TwistedMonoidAlgebra.monoidAlgebraEquiv R (Multiplicative Γ)).trans
+        (AddMonoidAlgebra.toMultiplicativeAlgEquiv R R Γ).symm)
 
 /-- Untwisting preserves the exponent and the coefficient of every monomial. -/
 @[simp]
 theorem zeroFormEquiv_monomial (p : Γ) :
     zeroFormEquiv q (monomial q 0 p) = AddMonoidAlgebra.single p 1 := by
   apply (AddMonoidAlgebra.toMultiplicativeAlgEquiv R R Γ).injective
-  simp [zeroFormEquiv, monomial]
+  simp [zeroFormEquiv]
 
 /-- The zero-form comparison preserves and reflects the homogeneous pieces. -/
 theorem zeroFormEquiv_mem_grade_iff (p : Γ) (x : QuantumMonoidAlgebra q 0) :

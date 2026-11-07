@@ -29,25 +29,6 @@ variable {R Γ : Type*} [CommRing R] [AddCommGroup Γ] [DecidableEq Γ]
 local notation "F" => positiveFiltration q β d.monoid d.degree (fun _ h => d.degree_nonneg h)
 local notation "G" => d.ShiftedDirectLimit (grade q β)
 
-private local instance : Ring (QuantumMonoidAlgebra q β) := inferInstance
-private local instance : Algebra R (QuantumMonoidAlgebra q β) := inferInstance
-private local instance : AddCommGroup (QuantumMonoidAlgebra q β) := inferInstance
-private local instance : Module R (QuantumMonoidAlgebra q β) := inferInstance
-private local instance : DirectSum.Decomposition (grade q β) := inferInstance
-private local instance : Ring (positiveSubalgebra q β d.monoid) := inferInstance
-private local instance : Algebra R (positiveSubalgebra q β d.monoid) := inferInstance
-private local instance : Ring (F).completion := inferInstance
-private local instance : Algebra R (F).completion := inferInstance
-private local instance : Module R (F).completion := inferInstance
-private local instance (p : Γ) : AddCommGroup (d.ShiftedCoefficients (grade q β) p) :=
-  inferInstance
-private local instance (p : Γ) : Module R (d.ShiftedCoefficients (grade q β) p) := inferInstance
-private local instance : AddCommMonoid G := inferInstance
-private local instance : AddCommGroup G := inferInstance
-private local instance : Ring G := inferInstance
-private local instance : Algebra R G := inferInstance
-private local instance : Module R G := inferInstance
-
 /-- Completing an ordinary positive coefficient preserves its ambient decomposition. -/
 theorem shiftedDirectLimitComponents_positiveCompletionToDirectLimit_toCompletion
     (a : positiveSubalgebra q β d.monoid) (u : Γ) :

@@ -203,15 +203,6 @@ variable (d : PositiveDegrees Γ)
 
 local notation "D" => positiveFiltration q β d.monoid d.degree (fun _ h => d.degree_nonneg h)
 
-private local instance : Ring (positiveSubalgebra q β d.monoid) := inferInstance
-private local instance : Algebra R (positiveSubalgebra q β d.monoid) := inferInstance
-private local instance : Ring (D).completion := inferInstance
-private local instance : Semiring (D).completion := (inferInstance : Ring (D).completion).toSemiring
-private local instance : Monoid (D).completion := (inferInstance : Ring (D).completion).toMonoid
-private local instance : Mul (D).completion := ⟨(inferInstance : Ring (D).completion).mul⟩
-private local instance : Algebra R (D).completion := inferInstance
-private local instance : Module R (D).completion := inferInstance
-
 /-- Products of arbitrary completed shifted coefficients have the same corrected coordinates. -/
 theorem shiftedCompletionMul_positiveCompletionShiftEquiv_skew
     (p s : Γ) (a b : (D).completion) :

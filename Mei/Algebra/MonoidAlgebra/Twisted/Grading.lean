@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Algebra.MonoidAlgebra.Twisted.Basic
+public import TauCeti.Algebra.MonoidAlgebra.Twisted.Basic
 public import Mei.LinearAlgebra.GradedModule.Monomial.Basic
 public import Mathlib.RingTheory.GradedAlgebra.Basic
 

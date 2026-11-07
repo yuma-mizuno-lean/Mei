@@ -29,39 +29,8 @@ variable {R S Γ Γ' : Type*} [CommRing R] [CommRing S]
   (φ : R →+* S)
   (h : ∀ p r, Units.map φ.toMonoidHom (q ^ β p r) = q' ^ β' (T p) (T r))
 
-private local instance : Ring (QuantumMonoidAlgebra q β) := inferInstance
-private local instance : Algebra R (QuantumMonoidAlgebra q β) := inferInstance
-private local instance : AddCommGroup (QuantumMonoidAlgebra q β) := inferInstance
-private local instance : Module R (QuantumMonoidAlgebra q β) := inferInstance
-private local instance : DirectSum.Decomposition (grade q β) := inferInstance
-private local instance : Ring (QuantumMonoidAlgebra q' β') := inferInstance
-private local instance : Algebra S (QuantumMonoidAlgebra q' β') := inferInstance
-private local instance : AddCommGroup (QuantumMonoidAlgebra q' β') := inferInstance
-private local instance : Module S (QuantumMonoidAlgebra q' β') := inferInstance
-private local instance : DirectSum.Decomposition (grade q' β') := inferInstance
-private local instance (p : Γ) : AddCommGroup (d.ShiftedCoefficients (grade q β) p) := inferInstance
-private local instance (p : Γ) : Module R (d.ShiftedCoefficients (grade q β) p) := inferInstance
-private local instance (p : Γ') : AddCommGroup (e.ShiftedCoefficients (grade q' β') p) :=
-  inferInstance
-private local instance (p : Γ') : Module S (e.ShiftedCoefficients (grade q' β') p) := inferInstance
-private local instance : AddCommMonoid (d.ShiftedDirectLimit (grade q β)) := inferInstance
-private local instance : Module R (d.ShiftedDirectLimit (grade q β)) := inferInstance
-private local instance : AddCommMonoid (e.ShiftedDirectLimit (grade q' β')) := inferInstance
-private local instance : Module S (e.ShiftedDirectLimit (grade q' β')) := inferInstance
-
 local notation "F" => positiveFiltration q β d.monoid d.degree (fun _ h => d.degree_nonneg h)
 local notation "G" => positiveFiltration q' β' e.monoid e.degree (fun _ h => e.degree_nonneg h)
-
-private local instance : Ring (positiveSubalgebra q β d.monoid) := inferInstance
-private local instance : Algebra R (positiveSubalgebra q β d.monoid) := inferInstance
-private local instance : Ring (positiveSubalgebra q' β' e.monoid) := inferInstance
-private local instance : Algebra S (positiveSubalgebra q' β' e.monoid) := inferInstance
-private local instance : Ring (F).completion := inferInstance
-private local instance : Algebra R (F).completion := inferInstance
-private local instance : Module R (F).completion := inferInstance
-private local instance : Ring (G).completion := inferInstance
-private local instance : Algebra S (G).completion := inferInstance
-private local instance : Module S (G).completion := inferInstance
 
 /-- The global embedding of positive completions is natural for scalar and degree transport. -/
 theorem mapShiftedDirectLimit_positiveCompletionToDirectLimit (a : (F).completion) :

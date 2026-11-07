@@ -25,28 +25,6 @@ namespace Mei.QuantumMonoidAlgebra
 variable {R Γ : Type*} [CommRing R] [AddCommGroup Γ] [DecidableEq Γ]
   (q : Rˣ) (β : LinearMap.BilinForm ℤ Γ) (d : PositiveDegrees Γ)
 
-private local instance : Ring (QuantumMonoidAlgebra q β) := inferInstance
-private local instance : Algebra R (QuantumMonoidAlgebra q β) := inferInstance
-private local instance : AddCommGroup (QuantumMonoidAlgebra q β) := inferInstance
-private local instance : Module R (QuantumMonoidAlgebra q β) := inferInstance
-private local instance : DirectSum.Decomposition (grade q β) := inferInstance
-private local instance (p : Γ) : AddCommGroup (shiftedSubmodule (grade q β) d.monoid p) :=
-  inferInstance
-private local instance (p : Γ) : Module R (shiftedSubmodule (grade q β) d.monoid p) :=
-  inferInstance
-private local instance (p : Γ) (k : ℕ) :
-    AddCommGroup ((d.shiftedFiltration (grade q β) p).quotient k) := inferInstance
-private local instance (p : Γ) (k : ℕ) :
-    Module R ((d.shiftedFiltration (grade q β) p).quotient k) := inferInstance
-private local instance (p : Γ) : AddCommGroup (d.ShiftedCoefficients (grade q β) p) :=
-  inferInstance
-private local instance (p : Γ) : Module R (d.ShiftedCoefficients (grade q β) p) := inferInstance
-private local instance : AddCommMonoid (d.ShiftedDirectLimit (grade q β)) := inferInstance
-private local instance : AddCommGroup (d.ShiftedDirectLimit (grade q β)) := inferInstance
-private local instance : Ring (d.ShiftedDirectLimit (grade q β)) := inferInstance
-private local instance : Algebra R (d.ShiftedDirectLimit (grade q β)) := inferInstance
-private local instance : Module R (d.ShiftedDirectLimit (grade q β)) := inferInstance
-
 omit [DecidableEq Γ] in
 /-- Multiplication by the completed origin monomial is completed translation. -/
 theorem shiftedCompletionMul_originMonomial (p s : Γ)

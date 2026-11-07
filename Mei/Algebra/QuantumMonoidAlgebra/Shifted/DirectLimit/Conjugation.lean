@@ -25,17 +25,6 @@ variable {R Γ : Type*} [CommRing R] [AddCommGroup Γ] [DecidableEq Γ]
   (q : Rˣ) (β : LinearMap.BilinForm ℤ Γ) (d : PositiveDegrees Γ)
   (hspan : ∀ p : Γ, ∃ a b : d.monoid, p = (a : Γ) - b)
 
-private local instance : Ring (QuantumMonoidAlgebra q β) := inferInstance
-private local instance : Algebra R (QuantumMonoidAlgebra q β) := inferInstance
-private local instance : AddCommGroup (QuantumMonoidAlgebra q β) := inferInstance
-private local instance : Module R (QuantumMonoidAlgebra q β) := inferInstance
-private local instance : DirectSum.Decomposition (grade q β) := inferInstance
-private local instance : AddCommMonoid (d.ShiftedDirectLimit (grade q β)) := inferInstance
-private local instance : AddCommGroup (d.ShiftedDirectLimit (grade q β)) := inferInstance
-private local instance : Ring (d.ShiftedDirectLimit (grade q β)) := inferInstance
-private local instance : Algebra R (d.ShiftedDirectLimit (grade q β)) := inferInstance
-private local instance : Module R (d.ShiftedDirectLimit (grade q β)) := inferInstance
-
 /-- The diagonal correction expresses global conjugation using ordinary monomials. -/
 theorem directLimitMonomialRightConj_eq_smul (p : Γ)
     (x : d.ShiftedDirectLimit (grade q β)) :

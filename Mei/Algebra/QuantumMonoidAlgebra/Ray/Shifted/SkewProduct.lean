@@ -31,16 +31,6 @@ local notation "F" => positiveFiltration q β d.monoid d.degree (fun _ h => d.de
 local notation "τ" => completedMonomialRightConjSkew q β d.monoid d.degree
   (fun _ h => d.degree_nonneg h)
 
-private local instance : Ring (positiveSubalgebra q β d.monoid) := inferInstance
-private local instance : Algebra R (positiveSubalgebra q β d.monoid) := inferInstance
-private local instance : Ring (F).completion := inferInstance
-private local instance : Semiring (F).completion := (inferInstance : Ring (F).completion).toSemiring
-private local instance : Monoid (F).completion := (inferInstance : Ring (F).completion).toMonoid
-private local instance : One (F).completion := ⟨(inferInstance : Ring (F).completion).one⟩
-private local instance : Algebra R (F).completion := inferInstance
-private local instance : Module R (F).completion := inferInstance
-private local instance : Mul (F).completion := ⟨(inferInstance : Ring (F).completion).mul⟩
-
 /-- Moving past an origin rescales the completed ray generator by its commutation character. -/
 theorem completedMonomialRightConjSkew_completedRayGenerator (s : Γ)
     (n : d.monoid) (hn : 0 < d.degree n) :
@@ -174,6 +164,5 @@ theorem shiftedRayAction_shiftedCompletionMul_skew
     shiftedRayAction_product_coordinates_skew q β d n hn p s H
       ((positiveCompletionShiftEquiv q β d p).symm a)
       ((positiveCompletionShiftEquiv q β d s).symm b)
-
 
 end Mei.QuantumMonoidAlgebra

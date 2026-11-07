@@ -32,25 +32,6 @@ local notation "F" => positiveFiltration q β d.monoid d.degree (fun _ h => d.de
 local notation "x" => completedRayGenerator q β d.monoid d.degree
   (fun _ h => d.degree_nonneg h) n hn
 
-private local instance : Ring (QuantumMonoidAlgebra q β) := inferInstance
-private local instance : Algebra R (QuantumMonoidAlgebra q β) := inferInstance
-private local instance : AddCommGroup (QuantumMonoidAlgebra q β) := inferInstance
-private local instance : Module R (QuantumMonoidAlgebra q β) := inferInstance
-private local instance : DirectSum.Decomposition (grade q β) := inferInstance
-private local instance : Ring (positiveSubalgebra q β d.monoid) := inferInstance
-private local instance : Algebra R (positiveSubalgebra q β d.monoid) := inferInstance
-private local instance : Ring (F).completion := inferInstance
-private local instance : Algebra R (F).completion := inferInstance
-private local instance : Module R (F).completion := inferInstance
-private local instance (p : Γ) : AddCommGroup (d.ShiftedCoefficients (grade q β) p) :=
-  inferInstance
-private local instance (p : Γ) : Module R (d.ShiftedCoefficients (grade q β) p) := inferInstance
-private local instance : AddCommMonoid (d.ShiftedDirectLimit (grade q β)) := inferInstance
-private local instance : AddCommGroup (d.ShiftedDirectLimit (grade q β)) := inferInstance
-private local instance : Ring (d.ShiftedDirectLimit (grade q β)) := inferInstance
-private local instance : Algebra R (d.ShiftedDirectLimit (grade q β)) := inferInstance
-private local instance : Module R (d.ShiftedDirectLimit (grade q β)) := inferInstance
-
 /-- Conjugation on an ambient monomial is its skew-rescaled ray ratio, evaluated
 in the positive completion and then multiplied inside the global algebra. -/
 theorem directLimitRayAction_monomial (p : Γ) (H : (PowerSeries R)ˣ) :

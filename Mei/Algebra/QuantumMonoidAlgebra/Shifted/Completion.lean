@@ -31,9 +31,9 @@ variable {R Γ : Type*} [CommRing R] [AddCommGroup Γ]
 def positiveZeroShiftEquiv :
     positiveSubalgebra q β P ≃ₗ[R] shiftedSubmodule (grade q β) P 0 where
   toFun x := ⟨x, by
-    simpa only [← supportedSubalgebra_toSubmodule, Subalgebra.mem_toSubmodule] using x.property⟩
+    simpa only [← positiveSubalgebra_toSubmodule, Subalgebra.mem_toSubmodule] using x.property⟩
   invFun x := ⟨x, by
-    simpa only [← supportedSubalgebra_toSubmodule, Subalgebra.mem_toSubmodule] using x.property⟩
+    simpa only [← positiveSubalgebra_toSubmodule, Subalgebra.mem_toSubmodule] using x.property⟩
   left_inv _ := rfl
   right_inv _ := rfl
   map_add' _ _ := rfl

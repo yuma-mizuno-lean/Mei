@@ -33,11 +33,6 @@ variable {R S Γ Γ' : Type*} [CommRing R] [CommRing S]
 local notation "F" => positiveFiltration q β d.monoid d.degree (fun _ hn => d.degree_nonneg hn)
 local notation "G" => positiveFiltration q' β' e.monoid e.degree (fun _ hn => e.degree_nonneg hn)
 
-private local instance : Ring (positiveSubalgebra q β d.monoid) := inferInstance
-private local instance : Ring (positiveSubalgebra q' β' e.monoid) := inferInstance
-private local instance : Ring (F).completion := inferInstance
-private local instance : Ring (G).completion := inferInstance
-
 /-- An injective scalar map and an exponent map injective on the positive monoid
 induce an injective map of its quantum completion. -/
 theorem mapPositiveCompletion_injective (hφ : Function.Injective φ)

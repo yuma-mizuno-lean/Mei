@@ -33,15 +33,6 @@ variable {R Γ : Type*} [CommRing R] [AddCommGroup Γ] [DecidableEq Γ]
 
 local notation "G" => d.ShiftedDirectLimit (grade (1 : Rˣ) β)
 
-private local instance : Ring (QuantumMonoidAlgebra (1 : Rˣ) β) := inferInstance
-private local instance : Algebra R (QuantumMonoidAlgebra (1 : Rˣ) β) := inferInstance
-private local instance : AddCommGroup (QuantumMonoidAlgebra (1 : Rˣ) β) := inferInstance
-private local instance : Module R (QuantumMonoidAlgebra (1 : Rˣ) β) := inferInstance
-private local instance : DirectSum.Decomposition (grade (1 : Rˣ) β) := inferInstance
-private local instance : Ring G := inferInstance
-private local instance : Algebra R G := inferInstance
-private local instance : Module R G := inferInstance
-
 /-- Global coefficients at `q = 1` commute, including infinite shifted families. -/
 theorem commute_shiftedDirectLimit_atOne (x y : G) : Commute x y :=
   d.commute_shiftedDirectLimit (grade (1 : Rˣ) β) (commute_atOne β) x y
