@@ -96,15 +96,44 @@ theorem sectionsLinearEquivOfLinearMaps_apply (f g : B →ₗ[R] M)
     (s : SemimoduleCat.sectionsSubmodule (ofLinearMaps f g).multispan) :
     sectionsLinearEquivOfLinearMaps f g s = s.val (.left default) := (rfl)
 
-/-- The negative chamber value of the section with a given face value. -/
+/-- The face component of the section with a given face value is that value at the unique
+face of a two-chamber span. -/
+@[simp]
+theorem sectionsLinearEquivOfLinearMaps_symm_apply_left (f g : B →ₗ[R] M) (b : B)
+    (c : (MultispanShape.ofLinearOrder Bool).L) :
+    ((sectionsLinearEquivOfLinearMaps f g).symm b).val (.left c) = b := by
+  obtain rfl : c = default := Subsingleton.elim _ _
+  exact LinearEquiv.apply_symm_apply (sectionsLinearEquivOfLinearMaps f g) b
+
+/-- The negative leg sends the face value of a reconstructed section to its negative
+chamber value. -/
+theorem sectionsLinearEquivOfLinearMaps_symm_apply_left_fst (f g : B →ₗ[R] M) (b : B) :
+    f (((sectionsLinearEquivOfLinearMaps f g).symm b).val (.left default)) =
+      ((sectionsLinearEquivOfLinearMaps f g).symm b).val (.right false) :=
+  (ofLinearMaps_apply_left f g default ((sectionsLinearEquivOfLinearMaps f g).symm b).property).1
+
+/-- The positive leg sends the face value of a reconstructed section to its positive
+chamber value. -/
+theorem sectionsLinearEquivOfLinearMaps_symm_apply_left_snd (f g : B →ₗ[R] M) (b : B) :
+    g (((sectionsLinearEquivOfLinearMaps f g).symm b).val (.left default)) =
+      ((sectionsLinearEquivOfLinearMaps f g).symm b).val (.right true) :=
+  (ofLinearMaps_apply_left f g default ((sectionsLinearEquivOfLinearMaps f g).symm b).property).2
+
+/-- The negative chamber value of the section with a given face value is the image of its face
+value under the negative leg. -/
 @[simp]
 theorem sectionsLinearEquivOfLinearMaps_symm_apply_right_false (f g : B →ₗ[R] M) (b : B) :
-    ((sectionsLinearEquivOfLinearMaps f g).symm b).val (.right false) = f b := (rfl)
+    ((sectionsLinearEquivOfLinearMaps f g).symm b).val (.right false) = f b := by
+  change f (((sectionsLinearEquivOfLinearMaps f g).symm b).val (.left default)) = f b
+  exact congrArg f (LinearEquiv.apply_symm_apply (sectionsLinearEquivOfLinearMaps f g) b)
 
-/-- The positive chamber value of the section with a given face value. -/
+/-- The positive chamber value of the section with a given face value is the image of its face
+value under the positive leg. -/
 @[simp]
 theorem sectionsLinearEquivOfLinearMaps_symm_apply_right_true (f g : B →ₗ[R] M) (b : B) :
-    ((sectionsLinearEquivOfLinearMaps f g).symm b).val (.right true) = g b := (rfl)
+    ((sectionsLinearEquivOfLinearMaps f g).symm b).val (.right true) = g b := by
+  change g (((sectionsLinearEquivOfLinearMaps f g).symm b).val (.left default)) = g b
+  exact congrArg g (LinearEquiv.apply_symm_apply (sectionsLinearEquivOfLinearMaps f g) b)
 
 /-- Linear families of matching sections with prescribed chamber values correspond to
 linear common lifts through the two legs, uniquely on both sides or on neither. -/
@@ -116,15 +145,13 @@ theorem existsUnique_sections_ofLinearMaps_iff {E : Type*} [AddCommMonoid E] [Mo
   let e := sectionsLinearEquivOfLinearMaps f g
   let Φ : (E →ₗ[R] SemimoduleCat.sectionsSubmodule (ofLinearMaps f g).multispan) ≃
       (E →ₗ[R] B) :=
-    { toFun := fun ℓ => (e : _ →ₗ[R] B) ∘ₗ ℓ
-      invFun := fun m => (e.symm : B →ₗ[R] _) ∘ₗ m
-      left_inv := fun ℓ => by ext; simp
-      right_inv := fun m => by ext; simp }
+    (LinearEquiv.arrowCongrAddEquiv (LinearEquiv.refl R E) e).toEquiv
   refine Iff.trans (existsUnique_congr fun ℓ => forall_congr' fun x => ?_)
     (Φ.existsUnique_congr_right (q := fun m => ∀ x, f (m x) = a₀ x ∧ g (m x) = a₁ x))
   have h := ofLinearMaps_apply_left f g default (ℓ x).property
-  simp only [Φ, Equiv.coe_fn_mk, LinearMap.coe_comp, LinearEquiv.coe_coe, Function.comp_apply, e,
-    sectionsLinearEquivOfLinearMaps_apply, h.1, h.2]
+  simp only [Φ, AddEquiv.toEquiv_eq_coe, AddEquiv.coe_toEquiv,
+    LinearEquiv.arrowCongrAddEquiv_apply, LinearEquiv.refl_symm, e, ← h.1,
+    ← h.2]
   exact Iff.rfl
 
 end MultispanIndex
