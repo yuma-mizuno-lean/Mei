@@ -5,7 +5,7 @@ Authors: Claude Code
 -/
 module
 
-public import Mei.LinearAlgebra.ModuleFiltration.Finsupp
+public import Mei.LinearAlgebra.ModuleFiltration.Basis
 public import Mei.RingTheory.FilteredAlgebra.Module
 public import Mathlib.Algebra.MonoidAlgebra.Module
 
@@ -29,28 +29,17 @@ variable {R : Type*} [CommSemiring R] (I : Ideal R) (M : Type*)
 
 /-- The filtration of `R[M]` by the powers of a coefficient ideal: the `k`-th term consists of
 the elements with all coefficients in `I ^ k`. -/
-def coeffFiltration : Mei.ModuleFiltration R (AddMonoidAlgebra R M) where
-  submodule k :=
-    (((Mei.AlgFiltration.ofIdeal I).toModuleFiltration R).finsupp M).submodule k |>.map
-      (AddMonoidAlgebra.coeffLinearEquiv R).symm.toLinearMap
-  antitone k l hkl x hx := by
-    rw [Submodule.mem_map_equiv] at hx ⊢
-    exact (((Mei.AlgFiltration.ofIdeal I).toModuleFiltration R).finsupp M).antitone hkl hx
-  zero_eq_top := by
-    ext x
-    rw [Submodule.mem_map_equiv]
-    simp
+def coeffFiltration : Mei.ModuleFiltration R (AddMonoidAlgebra R M) :=
+  (AddMonoidAlgebra.basis M R).coefficientFiltration
+    ((Mei.AlgFiltration.ofIdeal I).toModuleFiltration R)
 
 /-- Membership in the coefficient filtration is coefficientwise. -/
 @[simp]
 theorem mem_coeffFiltration_submodule {k : ℕ} {x : AddMonoidAlgebra R M} :
     x ∈ (coeffFiltration I M).submodule k ↔ ∀ m, x.coeff m ∈ I ^ k := by
-  change
-    (x ∈ Submodule.map (AddMonoidAlgebra.coeffLinearEquiv R).symm.toLinearMap
-      ((((Mei.AlgFiltration.ofIdeal I).toModuleFiltration R).finsupp M).submodule k)) ↔ _
-  rw [Submodule.mem_map_equiv, Mei.ModuleFiltration.mem_finsupp_submodule]
-  simp only [LinearEquiv.symm_symm, AddMonoidAlgebra.coeffLinearEquiv_apply,
-    Mei.AlgFiltration.ofIdeal_ideal, Submodule.restrictScalars_mem]
+  rw [coeffFiltration, Module.Basis.mem_coefficientFiltration_submodule]
+  simp only [Mei.AlgFiltration.ofIdeal_ideal, Submodule.restrictScalars_mem]
+  rfl
 
 /-- A monomial lies in the coefficient filtration exactly when its coefficient lies in the
 corresponding power of the ideal. -/
