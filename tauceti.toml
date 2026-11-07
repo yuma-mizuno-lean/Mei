@@ -11,7 +11,9 @@ content = "yuma-mizuno-lean/Mei"
 roadmap = "yuma-mizuno/TauCetiRoadmap"
 # Workers only read the roadmap. Its default branch carries the areas proposed to
 # TauCetiProject/TauCetiRoadmap that Mei drafts (now scattering-rev, PR 1134).
-review = "TauCetiProject/TauCetiReview"
+# Rubrics and the review engine both come from the Mei fork of TauCetiReview, which adds the
+# Open Math OS reviewer; keep it synced with upstream and pin it below.
+review = "yuma-mizuno-lean/TauCetiReview"
 # Enable and create these repositories when choosing the corresponding extras.
 # data = "yuma-mizuno-lean/MeiData"
 # ci = "yuma-mizuno-lean/MeiCI"
@@ -35,8 +37,8 @@ completed_dir = "Completed"
 repo = "yuma-mizuno-lean/TauCetiTools"
 ref = "80f1df5f160a568f27e453649781ac8da6584be5"
 [tools.review]
-repo = "TauCetiProject/TauCetiReview"
-ref = "7fd3a39e02c5a16cf7be65508a7ffb2c336dcada"
+repo = "yuma-mizuno-lean/TauCetiReview"
+ref = "b19c3618f1699feedc761d899b0459523da62aaa"
 [tools.progress]
 repo = "TauCetiProject/TauCetiProgress"
 ref = "5b0fb84dbeb36e9575b2205f9d2a5177671d3f33"

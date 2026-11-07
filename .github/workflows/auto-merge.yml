@@ -99,13 +99,14 @@ jobs:
     needs: [app-credentials, resolve]
     if: >-
       needs.app-credentials.outputs.ready == 'true' && (needs.resolve.outputs.pr != '')
-    # Pinned to a TauCetiReview commit; bump deliberately. The reusable workflow receives the App
+    # Pinned to a commit of the Mei fork of TauCetiReview; bump deliberately. The reusable workflow receives the App
     # secrets, so a floating @main would be a supply-chain risk.
     # Re-pin together with the other two callers and .github/actions/checkout-merge-policy
     # (scripts/test_workflow_pins.py checks they agree). Pass the same pin to the runner checkout.
-    uses: TauCetiProject/TauCetiReview/.github/workflows/merge-only.yml@7fd3a39e02c5a16cf7be65508a7ffb2c336dcada
+    uses: yuma-mizuno-lean/TauCetiReview/.github/workflows/merge-only.yml@b19c3618f1699feedc761d899b0459523da62aaa
     with:
-      review_ref: 7fd3a39e02c5a16cf7be65508a7ffb2c336dcada
+      review_ref: b19c3618f1699feedc761d899b0459523da62aaa
+      review_repository: yuma-mizuno-lean/TauCetiReview
       tools_repository: yuma-mizuno-lean/TauCetiTools
       tools_ref: 80f1df5f160a568f27e453649781ac8da6584be5
       pr: ${{ needs.resolve.outputs.pr }}

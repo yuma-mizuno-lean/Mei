@@ -49,7 +49,7 @@ class QueueReleaseWorkflows(unittest.TestCase):
 
     def test_displaced_unlabelled_pr_is_reconsidered_by_both_dispatches(self):
         # Execute only the pinned engine's pure selector, never its API/mutation code:
-        # https://github.com/TauCetiProject/TauCetiReview/blob/7fd3a39e02c5a16cf7be65508a7ffb2c336dcada/runner/sweep.py#L597
+        # https://github.com/yuma-mizuno-lean/TauCetiReview/blob/b19c3618f1699feedc761d899b0459523da62aaa/runner/sweep.py#L597
         # The selector reads optional sweep progress; without SWEEP_PROGRESS_FILE that is empty.
         engine = Path(os.environ.get('TAUCETI_REVIEW_ROOT', ROOT / '.tauceti-review'))
         tree = ast.parse((engine / 'runner/sweep.py').read_text())
