@@ -36,7 +36,7 @@ repo = "yuma-mizuno-lean/TauCetiTools"
 ref = "80f1df5f160a568f27e453649781ac8da6584be5"
 [tools.review]
 repo = "TauCetiProject/TauCetiReview"
-ref = "3999677031829254b4cbb27e9156c33672c61d0d"
+ref = "7fd3a39e02c5a16cf7be65508a7ffb2c336dcada"
 [tools.progress]
 repo = "TauCetiProject/TauCetiProgress"
 ref = "5b0fb84dbeb36e9575b2205f9d2a5177671d3f33"

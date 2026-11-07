@@ -49,14 +49,16 @@ class QueueReleaseWorkflows(unittest.TestCase):
 
     def test_displaced_unlabelled_pr_is_reconsidered_by_both_dispatches(self):
         # Execute only the pinned engine's pure selector, never its API/mutation code:
-        # https://github.com/TauCetiProject/TauCetiReview/blob/3999677031829254b4cbb27e9156c33672c61d0d/runner/sweep.py#L575
+        # https://github.com/TauCetiProject/TauCetiReview/blob/7fd3a39e02c5a16cf7be65508a7ffb2c336dcada/runner/sweep.py#L597
+        # The selector reads optional sweep progress; without SWEEP_PROGRESS_FILE that is empty.
         engine = Path(os.environ.get('TAUCETI_REVIEW_ROOT', ROOT / '.tauceti-review'))
         tree = ast.parse((engine / 'runner/sweep.py').read_text())
         selected = [node for node in tree.body
-                    if (isinstance(node, ast.FunctionDef) and node.name in {'candidates', 'has_keep_label'})
+                    if (isinstance(node, ast.FunctionDef)
+                        and node.name in {'candidates', 'has_keep_label', 'read_sweep_progress'})
                     or (isinstance(node, ast.Assign) and any(isinstance(t, ast.Name)
                         and t.id in {'KEEP_LABELS', 'NEEDS_REBASE_LABEL'} for t in node.targets))]
-        namespace = dict(datetime=datetime, hashlib=hashlib, itertools=itertools, FOCUSED=True)
+        namespace = dict(datetime=datetime, hashlib=hashlib, itertools=itertools, os=os, FOCUSED=True)
         exec(compile(ast.Module(body=selected, type_ignores=[]), 'pinned-candidate-selector', 'exec'), namespace)
         prs = [{'number': 608, 'isDraft': False, 'labels': []},
                {'number': 609, 'isDraft': False, 'labels': [{'name': 'hold'}]},

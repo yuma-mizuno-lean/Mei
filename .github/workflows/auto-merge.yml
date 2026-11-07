@@ -103,9 +103,9 @@ jobs:
     # secrets, so a floating @main would be a supply-chain risk.
     # Re-pin together with the other two callers and .github/actions/checkout-merge-policy
     # (scripts/test_workflow_pins.py checks they agree). Pass the same pin to the runner checkout.
-    uses: TauCetiProject/TauCetiReview/.github/workflows/merge-only.yml@3999677031829254b4cbb27e9156c33672c61d0d
+    uses: TauCetiProject/TauCetiReview/.github/workflows/merge-only.yml@7fd3a39e02c5a16cf7be65508a7ffb2c336dcada
     with:
-      review_ref: 3999677031829254b4cbb27e9156c33672c61d0d
+      review_ref: 7fd3a39e02c5a16cf7be65508a7ffb2c336dcada
       tools_repository: yuma-mizuno-lean/TauCetiTools
       tools_ref: 80f1df5f160a568f27e453649781ac8da6584be5
       pr: ${{ needs.resolve.outputs.pr }}

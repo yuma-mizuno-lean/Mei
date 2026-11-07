@@ -35,7 +35,7 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           repository: TauCetiProject/TauCetiReview
-          ref: 3999677031829254b4cbb27e9156c33672c61d0d
+          ref: 7fd3a39e02c5a16cf7be65508a7ffb2c336dcada
           path: .tauceti-review
           persist-credentials: false
       - name: Test shared release policy and trusted caller wiring
