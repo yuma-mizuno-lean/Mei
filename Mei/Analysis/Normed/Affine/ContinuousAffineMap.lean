@@ -10,7 +10,7 @@ public import Mathlib.Analysis.Normed.Affine.ContinuousAffineMap
 /-!
 # Bounded images under continuous affine maps
 
-A continuous affine map between normed spaces sends bounded sets to bounded sets, since it is a
+A continuous affine map between seminormed spaces sends bounded sets to bounded sets, since it is a
 translate of its continuous linear part.
 -/
 
@@ -21,7 +21,7 @@ open Set Pointwise
 namespace ContinuousAffineMap
 
 variable {𝕜 V W : Type*} [NontriviallyNormedField 𝕜]
-  [NormedAddCommGroup V] [NormedSpace 𝕜 V] [NormedAddCommGroup W] [NormedSpace 𝕜 W]
+  [SeminormedAddCommGroup V] [NormedSpace 𝕜 V] [SeminormedAddCommGroup W] [NormedSpace 𝕜 W]
 
 /-- Continuous affine maps send bounded sets to bounded sets. -/
 theorem isBounded_image (A : V →ᴬ[𝕜] W) {K : Set V} (hK : Bornology.IsBounded K) :
