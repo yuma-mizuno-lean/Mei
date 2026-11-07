@@ -61,16 +61,54 @@ theorem algHom_ext {A : Type*} [Semiring A] [Algebra R A]
     (h : ∀ p, f (monomial q β p) = g (monomial q β p)) : f = g :=
   AlgHom.toRingHom_injective <| ringHom_ext (fun r => by simp) h
 
+/-- Factor-set compatibility in the original additive exponents gives compatibility
+in the multiplicative exponents of the twisted algebra. -/
+theorem factorSet_map_compat (φ : R →+* S) (f : Γ →+ Γ')
+    (h : ∀ p r, Units.map φ.toMonoidHom (q ^ β p r) = q' ^ β' (f p) (f r))
+    (p r : Multiplicative Γ) :
+    Units.map φ.toMonoidHom (factorSet q β p r) =
+      factorSet q' β' (f.toMultiplicative p) (f.toMultiplicative r) := by
+  simpa only [factorSet_apply, AddMonoidHom.toMultiplicative_apply_apply, toAdd_ofAdd]
+    using h p.toAdd r.toAdd
+
 /-- Simultaneous change of coefficients and exponents in a quantum algebra,
 for maps carrying the source factor set to the target factor set. -/
 def map (φ : R →+* S) (f : Γ →+ Γ')
     (h : ∀ p r, Units.map φ.toMonoidHom (q ^ β p r) = q' ^ β' (f p) (f r)) :
     QuantumMonoidAlgebra q β →+* QuantumMonoidAlgebra q' β' :=
   ((twistedEquiv q' β').symm : _ →+* _).comp <|
-    (TwistedMonoidAlgebra.map (α := factorSet q β) (β := factorSet q' β') φ f.toMultiplicative
-      fun p r => by
-        simpa only [factorSet_apply, AddMonoidHom.toMultiplicative_apply_apply, toAdd_ofAdd]
-          using h p.toAdd r.toAdd).comp (twistedEquiv q β : _ →+* _)
+    (TwistedMonoidAlgebra.map φ f.toMultiplicative (factorSet_map_compat φ f h)).comp
+      (twistedEquiv q β : _ →+* _)
+
+/-- The equivalence and the quantum map compose to the twisted map. -/
+theorem twistedEquiv_comp_map (φ : R →+* S) (f : Γ →+ Γ')
+    (h : ∀ p r, Units.map φ.toMonoidHom (q ^ β p r) = q' ^ β' (f p) (f r)) :
+    (twistedEquiv q' β' : _ →+* _).comp (map φ f h) =
+      (TwistedMonoidAlgebra.map φ f.toMultiplicative (factorSet_map_compat φ f h)).comp
+        (twistedEquiv q β : _ →+* _) := by
+  ext x
+  simp [map]
+
+/-- Transporting a quantum map to the twisted algebra gives the twisted map. -/
+@[simp]
+theorem twistedEquiv_map (φ : R →+* S) (f : Γ →+ Γ')
+    (h : ∀ p r, Units.map φ.toMonoidHom (q ^ β p r) = q' ^ β' (f p) (f r))
+    (x : QuantumMonoidAlgebra q β) :
+    twistedEquiv q' β' (map φ f h x) =
+      TwistedMonoidAlgebra.map φ f.toMultiplicative (factorSet_map_compat φ f h)
+        (twistedEquiv q β x) :=
+  RingHom.congr_fun (twistedEquiv_comp_map φ f h) x
+
+/-- Transporting a twisted map back to the quantum algebra gives the quantum map. -/
+theorem twistedEquiv_symm_twistedMap (φ : R →+* S) (f : Γ →+ Γ')
+    (h : ∀ p r, Units.map φ.toMonoidHom (q ^ β p r) = q' ^ β' (f p) (f r))
+    (x : TauCeti.twistedMonoidAlgebra R (Multiplicative Γ) (factorSet q β)) :
+    (twistedEquiv q' β').symm
+        (TwistedMonoidAlgebra.map φ f.toMultiplicative (factorSet_map_compat φ f h) x) =
+      map φ f h ((twistedEquiv q β).symm x) := by
+  apply (twistedEquiv q' β').injective
+  rw [twistedEquiv_map]
+  simp
 
 /-- Quantum monomials map to monomials at the image exponent. -/
 @[simp]

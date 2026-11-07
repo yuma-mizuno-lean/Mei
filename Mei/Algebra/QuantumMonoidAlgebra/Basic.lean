@@ -63,7 +63,6 @@ end QuantumMonoidAlgebra
 
 /-- The quantum algebra of an exponent group and an integral bilinear form.
 Alternating forms give the usual quantum torus multiplication. -/
-@[expose]
 def QuantumMonoidAlgebra {R Γ : Type*} [CommRing R] [AddCommGroup Γ]
     (q : Rˣ) (β : LinearMap.BilinForm ℤ Γ) : Type _ :=
   TauCeti.twistedMonoidAlgebra R (Multiplicative Γ) (QuantumMonoidAlgebra.factorSet q β)

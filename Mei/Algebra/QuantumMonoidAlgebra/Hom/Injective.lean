@@ -33,11 +33,7 @@ theorem repr_map_of_injOn (P : Set Γ) (hf : Set.InjOn f P)
     (x : QuantumMonoidAlgebra q β)
     (hx : ∀ n, (basis q β).repr x n ≠ 0 → n ∈ P) (n : Γ) (hn : n ∈ P) :
     (basis q' β').repr (map φ f h x) (f n) = φ ((basis q β).repr x n) := by
-  have hcompat (g j : Multiplicative Γ) :
-      Units.map φ.toMonoidHom (factorSet q β g j) =
-        factorSet q' β' (f.toMultiplicative g) (f.toMultiplicative j) := by
-    simpa only [factorSet_apply, AddMonoidHom.toMultiplicative_apply_apply, toAdd_ofAdd]
-      using h g.toAdd j.toAdd
+  have hcompat := factorSet_map_compat φ f h
   have hinj : Set.InjOn f.toMultiplicative (Multiplicative.toAdd ⁻¹' P) := by
     intro a ha b hb hab
     exact hf ha hb hab
@@ -48,18 +44,7 @@ theorem repr_map_of_injOn (P : Set Γ) (hf : Set.InjOn f P)
     intro g hg
     apply hx g.toAdd
     rwa [basis_repr_apply, ofAdd_toAdd]
-  have hcomp : (twistedEquiv q' β' : _ →+* _).comp
-      ((map φ f h).comp ((twistedEquiv q β).symm : _ →+* QuantumMonoidAlgebra q β)) =
-        TwistedMonoidAlgebra.map φ f.toMultiplicative hcompat := by
-    apply TwistedMonoidAlgebra.ringHom_ext
-    · intro r
-      simp [TwistedMonoidAlgebra.map_algebraMap]
-    · intro g
-      simp [TwistedMonoidAlgebra.map_of]
-  have hmap : twistedEquiv q' β' (map φ f h x) =
-      TwistedMonoidAlgebra.map φ f.toMultiplicative hcompat (twistedEquiv q β x) := by
-    simpa using RingHom.congr_fun hcomp (twistedEquiv q β x)
-  rw [basis_repr_apply, basis_repr_apply, hmap]
+  rw [basis_repr_apply, basis_repr_apply, twistedEquiv_map]
   exact TwistedMonoidAlgebra.repr_map_of_injOn φ f.toMultiplicative hcompat
     (Multiplicative.toAdd ⁻¹' P) hinj _ hsupp (Multiplicative.ofAdd n) hn
 
