@@ -28,7 +28,7 @@ namespace LinearMap
 
 /-- A transverse line meets a level hyperplane at the height difference divided
 by its normal velocity. -/
-theorem eq_div_of_apply_add_smul_eq {K V : Type*} [Field K] [AddCommGroup V] [Module K V]
+theorem eq_div_of_apply_add_smul_eq {K V : Type*} [DivisionRing K] [AddCommGroup V] [Module K V]
     (f : V →ₗ[K] K) {c t : K} {y v : V} (hv : f v ≠ 0)
     (ht : f (y + t • v) = c) : t = (c - f y) / f v := by
   apply (eq_div_iff hv).mpr

@@ -6,9 +6,9 @@ Authors: Codex
 module
 
 public import Mei.Geometry.Affine.Transverse
+public import Mei.Topology.Algebra.ContinuousLinearMap
 public import Mathlib.Analysis.Convex.Basic
 public import Mathlib.Topology.Algebra.Affine
-public import Mathlib.Topology.Algebra.Module.ContinuousLinearMap.Basic
 public import Mathlib.Topology.Maps.Proper.Basic
 public import Mathlib.Topology.Instances.Real.Lemmas
 
@@ -71,13 +71,6 @@ open Filter Topology
 
 variable {V X : Type*} [AddCommGroup V] [Module ℝ V] [TopologicalSpace V]
   [IsTopologicalAddGroup V] [ContinuousSMul ℝ V] [TopologicalSpace X]
-
-omit [IsTopologicalAddGroup V] [ContinuousSMul ℝ V] in
-/-- The contact parameter of a transverse line depends continuously on its base
-point. -/
-private theorem continuousAt_contactTime (ν : V →L[ℝ] ℝ) {c : ℝ} {v : V} {x : X → V} {Q : X}
-    (hx : ContinuousAt x Q) : ContinuousAt (fun Y => (c - ν (x Y)) / ν v) Q :=
-  (continuousAt_const.sub (ν.continuous.continuousAt.comp hx)).div_const _
 
 /-- If the unique possible contact of a transverse line misses a closed wall,
 nearby lines miss it entirely. -/
