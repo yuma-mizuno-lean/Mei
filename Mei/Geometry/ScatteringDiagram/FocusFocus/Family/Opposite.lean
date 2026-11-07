@@ -77,6 +77,13 @@ def slabThetaOppositeChartEquiv (hQ : Q.1 / (n : ℝ) < 0) :
       (notMem_slabThetaChartDomain_constant_of_div_neg t c n b hQ u hα).elim
   right_inv _ := rfl
 
+/-- The opposite-chamber chart comparison preserves every crossing chart label. -/
+@[simp]
+theorem slabThetaOppositeChartEquiv_apply_crossing_val (hQ : Q.1 / (n : ℝ) < 0)
+    (α : SlabChartIndex t c n)
+    (hα : Q ∈ slabThetaChartDomain t c n b (.inr (.inl α))) :
+    (slabThetaOppositeChartEquiv t c n b hQ ⟨.inr (.inl α), hα⟩).val = α := (rfl)
+
 /-- The inverse opposite-chamber chart comparison is the inclusion of crossing charts. -/
 @[simp]
 theorem slabThetaOppositeChartEquiv_symm_apply_val (hQ : Q.1 / (n : ℝ) < 0)
@@ -93,6 +100,16 @@ def slabThetaFamilyOppositeFiberEquiv (hQ : Q.1 / (n : ℝ) < 0) :
     (slabThetaFamily t c n b h).fiber Q ≃ SlabBranchIndex t c n b Q :=
   (slabThetaFamilyChartFiberEquiv t c n b h Q).symm.trans
     ((slabThetaOppositeChartEquiv t c n b hQ).trans (slabChartIndexEquiv t c n b Q hQ))
+
+/-- The forward opposite-chamber comparison recovers the surviving binomial index of a
+broken line from its crossing chart label. -/
+@[simp]
+theorem slabThetaFamilyOppositeFiberEquiv_apply_val (hQ : Q.1 / (n : ℝ) < 0)
+    (z : (slabThetaFamily t c n b h).fiber Q) :
+    (slabThetaFamilyOppositeFiberEquiv t c n b h hQ z).val =
+      ((slabThetaOppositeChartEquiv t c n b hQ
+        ((slabThetaFamilyChartFiberEquiv t c n b h Q).symm z)).val.1.val) := by
+  simp [slabThetaFamilyOppositeFiberEquiv]
 
 /-- The broken line of a surviving binomial index `j` is the crossing chart of `j`, on the upper
 side exactly when the crossing height is positive. -/
