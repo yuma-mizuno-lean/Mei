@@ -165,10 +165,6 @@ theorem mem_grade_iff (p : Γ) (x : QuantumMonoidAlgebra q β) :
   refine exists_congr fun r => ?_
   rw [← (twistedEquiv q β).injective.eq_iff, map_smul, twistedEquiv_monomial]
 
-/-- A quantum monomial belongs to the homogeneous piece of its exponent. -/
-theorem monomial_mem_grade (p : Γ) : monomial q β p ∈ grade q β p :=
-  (mem_grade_iff q β p _).mpr ⟨1, one_smul _ _⟩
-
 /-- The exponent pieces multiply as those of the twisted algebra. -/
 instance instGradedMonoidGrade : SetLike.GradedMonoid (grade q β) where
   one_mem := by
