@@ -6,7 +6,7 @@ Authors: Claude Sonnet 5.5
 module
 
 public import Mei.Geometry.ScatteringDiagram.BrokenLine.SingleFace.Evaluation
-public import Mei.LinearAlgebra.GradedModule.Coarsening
+public import Mei.Algebra.DirectSum.Coarsening
 public import Mei.RingTheory.GradedAlgebra.FunctionWall.Basic
 
 /-!

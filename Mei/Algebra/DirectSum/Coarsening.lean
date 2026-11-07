@@ -15,9 +15,9 @@ map `w`, that is, `ℳ q ⊆ 𝒜 (w q)` for every index `q`. A homogeneous elem
 `i` then has nonzero `ℳ`-components only in the indices `q` with `w q = i`, and these components
 are again homogeneous of index `i`.
 
-This is the compatibility between a fine exponent grading and the coarser grading by the weight
-of a wall normal: the weight of a component of a weight-homogeneous element is the weight of
-the element.
+In particular, these results apply to a fine exponent grading and the coarser grading by the
+weight of a wall normal: the weight of a component of a weight-homogeneous element is the weight
+of the element.
 -/
 
 public section
