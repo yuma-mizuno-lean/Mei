@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.ScatteringDiagram.FocusFocus.Terminal.Resolution
-public import Mei.Algebra.Category.SemimoduleCat.Multispan.Basic
+public import Mei.Algebra.Category.SemimoduleCat.Multispan.Span
 
 /-!
 # Matching coefficients of finite terminal slab evaluations
@@ -35,23 +35,9 @@ variable {R : Type*} [CommRing R]
 /-- The full-exponent slab correspondence as a multispan of semimodules.
 The false and true chamber indices denote its negative and positive sides. -/
 abbrev slabTerminalMultispan (t : R) :
-    MultispanIndex (MultispanShape.ofLinearOrder Bool) (SemimoduleCat R) where
-  left _ := SemimoduleCat.of R (TauCeti.NodeAlgebra R[T;T⁻¹] (C t * (1 + T 1)))
-  right _ := SemimoduleCat.of R (R[ℤ × ℤ])
-  fst _ := SemimoduleCat.ofHom (exponentLeftMap (C t * (1 + T 1))).toLinearMap
-  snd _ := SemimoduleCat.ofHom (exponentRightMap (C t * (1 + T 1))).toLinearMap
-
-private theorem terminalShape_fst (c : (MultispanShape.ofLinearOrder Bool).L) :
-    (MultispanShape.ofLinearOrder Bool).fst c = false := by
-  have hc : c = default := Subsingleton.elim _ _
-  subst c
-  rfl
-
-private theorem terminalShape_snd (c : (MultispanShape.ofLinearOrder Bool).L) :
-    (MultispanShape.ofLinearOrder Bool).snd c = true := by
-  have hc : c = default := Subsingleton.elim _ _
-  subst c
-  rfl
+    MultispanIndex (MultispanShape.ofLinearOrder Bool) (SemimoduleCat R) :=
+  MultispanIndex.ofLinearMaps (exponentLeftMap (C t * (1 + T 1))).toLinearMap
+    (exponentRightMap (C t * (1 + T 1))).toLinearMap
 
 /-- Both maps together are injective, even for nilpotent smoothing parameters. -/
 theorem slabTerminalMultispan_jointly_injective (t : R)
@@ -129,9 +115,9 @@ theorem existsUnique_slabTerminalFinite_matchingFamily
     intro a c
     refine ⟨slabTerminalFiniteLift s n b t α a, Prod.ext ?_ ?_⟩
     · simp only [LinearMap.prod_apply, Function.prod_apply, SemimoduleCat.hom_ofHom,
-        terminalShape_fst, terminalChamberMap_false, LinearMap.comp_apply]
+        MultispanShape.ofLinearOrder_bool_fst, terminalChamberMap_false, LinearMap.comp_apply]
     · simp only [LinearMap.prod_apply, Function.prod_apply, SemimoduleCat.hom_ofHom,
-        terminalShape_snd, terminalChamberMap_true, LinearMap.comp_apply]
+        MultispanShape.ofLinearOrder_bool_snd, terminalChamberMap_true, LinearMap.comp_apply]
   obtain ⟨ℓ, hℓ, huniq⟩ := htest
   refine ⟨ℓ, fun a side => (hℓ a side).trans
     (terminalChamberMap_eq s n b t α h hL hU hLs hUs a side), ?_⟩
@@ -153,9 +139,11 @@ theorem slabTerminalFinite_matchingFamily_face
     (ℓ a).val (.left c) = slabTerminalFiniteLift s n b t α a := by
   have hface := (slabTerminalMultispan t).mem_sectionsSubmodule_multispan.mp (ℓ a).property
   have hleft := (hface.1 c).trans
-    (congrArg (fun side : Bool => (ℓ a).val (.right side)) (terminalShape_fst c))
+    (congrArg (fun side : Bool => (ℓ a).val (.right side))
+      (MultispanShape.ofLinearOrder_bool_fst c))
   have hright := (hface.2 c).trans
-    (congrArg (fun side : Bool => (ℓ a).val (.right side)) (terminalShape_snd c))
+    (congrArg (fun side : Bool => (ℓ a).val (.right side))
+      (MultispanShape.ofLinearOrder_bool_snd c))
   have hvalueL : (ℓ a).val (.right false) =
       ∑ i ∈ s, (slabThetaFamily t (α i a) (n i) (b i) h).weightedEvaluation
           (slabThetaChartWeight t (α i a) (n i) (b i)) L := by
