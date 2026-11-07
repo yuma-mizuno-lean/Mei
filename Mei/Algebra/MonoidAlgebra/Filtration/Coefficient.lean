@@ -43,6 +43,7 @@ theorem mem_coeffFiltration_submodule {k : ℕ} {x : AddMonoidAlgebra R M} :
 
 /-- A monomial lies in the coefficient filtration exactly when its coefficient lies in the
 corresponding power of the ideal. -/
+@[simp 1100]
 theorem single_mem_coeffFiltration_submodule {k : ℕ} {m : M} {c : R} :
     AddMonoidAlgebra.single m c ∈ (coeffFiltration I M).submodule k ↔ c ∈ I ^ k := by
   classical
