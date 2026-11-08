@@ -87,7 +87,8 @@ theorem path_eq_of_noFaces (b : BrokenLine D) (t : Iic (0 : ℝ)) :
     simp only [φ, min_eq_left hs'.le]
     exact hc s hs'
   have h0 : b.endpoint = c := by
-    have := hφc (show (0 : ℝ) ∈ closure (Iio (0 : ℝ)) by rw [closure_Iio]; exact le_rfl)
+    have h0mem : (0 : ℝ) ∈ closure (Iio (0 : ℝ)) := by rw [closure_Iio]; exact le_rfl
+    have := hφc h0mem
     rw [b.endpoint_def]
     simpa only [φ, min_self, zero_smul, add_zero] using this
   rw [← hfinal]
