@@ -162,11 +162,6 @@ def slabThetaSection (n b : ℤ) :
     AlgCat.sectionsSubalgebra (slabTerminalAlgebraMultispan t).multispan :=
   (slabAlgebraEquiv t).symm (theta t n b)
 
-/-- The theta section is the section with the theta monomial as face value. -/
-theorem slabThetaSection_def (n b : ℤ) :
-    slabThetaSection t n b = (slabAlgebraEquiv t).symm (theta t n b) := by
-  rw [slabThetaSection]
-
 /-- The face component of the theta section `ϑ_{n,b}` is the theta monomial. -/
 @[simp]
 theorem slabThetaSection_left (n b : ℤ) (c : (MultispanShape.ofLinearOrder Bool).L) :
@@ -198,7 +193,7 @@ def slabThetaSectionBasis : Module.Basis (ℤ × ℤ) R
 theorem slabThetaSectionBasis_apply (n b : ℤ) :
     slabThetaSectionBasis t (n, b) = slabThetaSection t n b := by
   rw [slabThetaSectionBasis, Module.Basis.map_apply, laurentBasis_apply_eq_theta]
-  exact slabThetaSection_def t n b
+  rfl
 
 /-- Scaling the theta section scales the face value. -/
 theorem slabThetaSection_smul (c : R) (n b : ℤ) :
@@ -252,9 +247,9 @@ theorem slabThetaSection_mul (n m b c : ℤ) :
         ∑ j ∈ Finset.range ((n.natAbs + m.natAbs - (n + m).natAbs) / 2 + 1),
           ((n.natAbs + m.natAbs - (n + m).natAbs) / 2).choose j •
             slabThetaSection t (n + m) (b + c + j) := by
-  rw [slabThetaSection_def, slabThetaSection_def, ← map_mul, theta_mul_theta, map_smul,
+  rw [slabThetaSection, slabThetaSection, ← map_mul, theta_mul_theta, map_smul,
     map_sum]
-  simp only [map_nsmul, slabThetaSection_def]
+  simp only [map_nsmul, slabThetaSection]
 
 /-- The check `ϑ_{-1,0} ϑ_{1,0} = t ϑ_{0,0} + t ϑ_{0,1}` for matching sections. -/
 theorem slabThetaSection_neg_one_mul_one :
@@ -277,7 +272,7 @@ theorem sum_smul_slabThetaSection (a : H) :
     ∑ i ∈ s, α i a • slabThetaSection t (n i) (b i) =
       (slabAlgebraEquiv t).symm (slabTerminalFiniteLift s n b t α a) := by
   rw [slabTerminalFiniteLift_apply, map_sum]
-  simp only [map_smul, slabThetaSection_def]
+  simp only [map_smul, slabThetaSection]
 
 /-- Normal form of the geometric matching families. A linear family of matching sections of
 the slab span has the actual weighted broken-line sums of the incoming records `α i` as its
