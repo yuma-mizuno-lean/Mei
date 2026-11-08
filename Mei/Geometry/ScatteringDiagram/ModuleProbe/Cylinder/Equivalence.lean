@@ -11,11 +11,14 @@ public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Equivalence.Basic
 /-!
 # Equivalence through the charge-zero cylinders of a module probe
 
-Equivalent base diagrams have equivalent charge-zero cylinders in a module probe, at each
-finite cutoff and in the completion. The two wall families may have unrelated index types.
-Common admissible cylinder paths project to common admissible base paths, and the cylinder
-product is the charge-zero inclusion of the base product
-(`ModuleProbe.levelPathProduct_cylinderDiagram`).
+Equivalent base diagrams have equivalent charge-zero cylinders in a module probe,
+at each finite cutoff and in the completion. The two wall families may have unrelated
+index types.
+
+Common admissible cylinder paths project to common admissible base paths, and the
+products are identified by the injective charge-zero inclusion. The comparison uses
+`DirectedDiagram.levelEquivalent_of_levelPathProduct_map` with the existing
+`ModuleProbe.levelPathProduct_cylinderDiagram` formula.
 -/
 
 public section
@@ -27,8 +30,7 @@ universe u
 
 variable {R Γ Λ V E ι κ : Type*} {M L : Type u} [CommRing R] [Algebra ℚ R]
   [AddCommGroup M] [Module R M] [AddCommGroup Γ] [DecidableEq Γ]
-  [AddCommGroup Λ] [LieRing L] [LieAlgebra R L]
-  [LieAlgebra ℚ L] [IsScalarTower ℚ R L]
+  [AddCommGroup Λ] [LieRing L] [LieAlgebra R L] [LieAlgebra ℚ L] [IsScalarTower ℚ R L]
   [LieRingModule L M] [LieModule R L M]
   (d : PositiveDegrees Γ) (ℳ : Γ → Submodule R M) (p : Γ)
   (ℒ : Γ → Submodule R L) [GradedLieAlgebra ℒ] [IsPositiveGrading d ℒ]
@@ -44,15 +46,14 @@ variable {R Γ Λ V E ι κ : Type*} {M L : Type u} [CommRing R] [Algebra ℚ R]
 theorem _root_.Mei.DirectedDiagram.LevelEquivalent.cylinderDiagram {k : ℕ}
     (hDD' : D.LevelEquivalent D' k) :
     (cylinderDiagram d ℳ p ℒ H h h' D).LevelEquivalent
-      (cylinderDiagram d ℳ p ℒ H h h' D') k := by
-  rw [DirectedDiagram.levelEquivalent_def] at hDD' ⊢
-  intro x y x' y' q q' hqq'
-  rw [levelPathProduct_cylinderDiagram, levelPathProduct_cylinderDiagram]
-  congr 1
-  apply hDD'
-  have hv := congrArg (List.map Prod.fst) hqq'
-  simpa only [Prefunctor.vertices_mapPath, List.map_map, Function.comp_def,
-    cylinderPathProjection_obj_val] using hv
+      (cylinderDiagram d ℳ p ℒ H h h' D') k :=
+  DirectedDiagram.levelEquivalent_of_levelPathProduct_map _
+    (cylinderPathProjection d ℳ p ℒ H h h' D k) (cylinderPathProjection d ℳ p ℒ H h h' D' k)
+    (fun p => by rw [levelPathProduct_cylinderDiagram])
+    (fun p => by rw [levelPathProduct_cylinderDiagram])
+    (fun p q hpq => by
+      simpa only [Prefunctor.vertices_mapPath, List.map_map, Function.comp_def,
+        cylinderPathProjection_obj_val] using congrArg (List.map Prod.fst) hpq) hDD'
 
 /-- Equivalent base diagrams have equivalent charge-zero probe cylinders. -/
 theorem _root_.Mei.DirectedDiagram.Equivalent.cylinderDiagram (hDD' : D.Equivalent D') :

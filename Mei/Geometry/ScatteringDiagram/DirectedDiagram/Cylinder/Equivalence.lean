@@ -46,14 +46,13 @@ variable {Γ Λ K R L V E ι κ : Type*}
 
 /-- Equivalent base diagrams have equivalent cylinders at the same cutoff. -/
 theorem LevelEquivalent.cylinder {k : ℕ} (hDF : D.LevelEquivalent F k) :
-    (D.cylinder h').LevelEquivalent (F.cylinder h') k := by
-  rw [levelEquivalent_def] at hDF ⊢
-  intro x y x' y' p q hpq
-  rw [levelPathProduct_cylinder, levelPathProduct_cylinder]
-  apply hDF
-  have hv := congrArg (List.map Prod.fst) hpq
-  simpa only [Prefunctor.vertices_mapPath, List.map_map, Function.comp_def,
-    levelCylinderProjection_obj_val] using hv
+    (D.cylinder h').LevelEquivalent (F.cylinder h') k :=
+  levelEquivalent_of_levelPathProduct_map id
+    (D.levelCylinderProjection h' k) (F.levelCylinderProjection h' k)
+    (levelPathProduct_cylinder _ _ _) (levelPathProduct_cylinder _ _ _)
+    (fun p q hpq => by
+      simpa only [Prefunctor.vertices_mapPath, List.map_map, Function.comp_def,
+        levelCylinderProjection_obj_val] using congrArg (List.map Prod.fst) hpq) hDF
 
 /-- Cylinders agree at a cutoff exactly when their base diagrams do. -/
 @[simp]

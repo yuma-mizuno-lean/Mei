@@ -7,16 +7,16 @@ module
 
 public import Mei.Geometry.ScatteringDiagram.ModuleProbe.Extension
 public import Mei.Geometry.ScatteringDiagram.ModuleProbe.RelativeCompletion
+public import Mei.Geometry.ScatteringDiagram.ModuleProbe.Cylinder.Equivalence
 
 /-!
 # Independence of extended probe fields from the diagram representative
 
 Equivalent probe diagrams give the same endpoint coefficients even at allowed
-base endpoints that lie on the exceptional probe arrangements. A common generic
-anchor is chosen in the dense complement of both finite arrangements, and base
-transport carries the comparison to every allowed endpoint. The finite-order
-comparison passes to the completed shifted module without separatedness or an
-all-order generic anchor.
+base endpoints that lie on the exceptional probe arrangements. The same argument
+compares equivalent base presentations: a common generic anchor has equal base
+transport. The finite-order comparison passes to the completed shifted module without
+separatedness or an all-order generic anchor.
 
 These comparisons express the representative independence of the probe field in
 Mandel, *Scattering diagrams, theta functions, and refined tropical curve counts*,
@@ -31,7 +31,7 @@ namespace Mei.ModuleProbe
 
 universe u
 
-variable {R Γ Λ V E ι κ : Type*} {M L : Type u} [CommRing R] [Algebra ℚ R]
+variable {R Γ Λ V E ι κ κ' : Type*} {M L : Type u} [CommRing R] [Algebra ℚ R]
   [AddCommGroup M] [Module R M] [AddCommGroup Γ] [DecidableEq Γ]
   [AddCommGroup Λ] [LieRing L] [LieAlgebra R L] [LieAlgebra ℚ L] [IsScalarTower ℚ R L]
   [LieRingModule L M] [LieModule R L M]
@@ -44,7 +44,7 @@ variable {R Γ Λ V E ι κ : Type*} {M L : Type u} [CommRing R] [Algebra ℚ R]
   {i : Λ →+ V} (h : TauCeti.Toric.IsIntegralLattice i)
   {j : ℤ →+ E} (h' : TauCeti.Toric.IsIntegralLattice j)
   (D : DirectedDiagram (d := positiveDegrees d p) (h.prod h') (wallSpaces d ℳ p ℒ H) ι)
-  (B : DirectedDiagram (d := d) h H κ)
+  (B : DirectedDiagram (d := d) h H κ) (B' : DirectedDiagram (d := d) h H κ')
 
 local notation "F" => d.shiftedFiltration ℳ p
 local notation "A" => d.shiftedLieFiltration ℒ ℳ p
@@ -94,6 +94,51 @@ theorem completedExtendedCoefficientField_eq_of_equivalent {ι' : Type*}
     ((B.consistent_iff.mp hBc) k) ((D.consistent_iff.mp hD) (k + 1))
     ((DirectedDiagram.equivalent_iff _ _).mp hB k)
     ((DirectedDiagram.equivalent_iff _ _).mp hDD' (k + 1)) _
+
+/-- Equivalent base presentations give equal finite probe coefficients at every endpoint
+allowed for both, since both are the same base transport of one generic probe coefficient.
+Neither endpoint needs to be generic for the probe arrangement. -/
+theorem extendedCoefficientField_eq_of_levelEquivalent_base (k : ℕ)
+    (hBB' : B.LevelEquivalent B' k) (hBc : B.LevelConsistent k) (hBc' : B'.LevelConsistent k)
+    (hD : D.LevelConsistent (k + 1))
+    (hB : (D.map (chargeZeroGradedLieHom d ℳ p ℒ)
+      (chargeZeroGradedLieHom_mem_wall d ℳ p ℒ H)).LevelEquivalent
+      (cylinderDiagram d ℳ p ℒ H h h' B) k)
+    (x : WallComplement (fun c : B.active k => (B.wall c).support))
+    (x' : WallComplement (fun c : B'.active k => (B'.wall c).support)) (hx : x.val = x'.val) :
+    extendedCoefficientField d ℳ p ℒ H h h' D B k hBc x =
+      extendedCoefficientField d ℳ p ℒ H h h' D B' k hBc' x' := by
+  let := h.finiteDimensional
+  have hB' := hB.trans (hBB'.cylinderDiagram d ℳ p ℒ H h h')
+  have hx'' : x.val ∈ {z : V | ∀ c : B'.active k, z ∉ (B'.wall c).support} := by
+    rw [hx]
+    exact x'.notMem
+  obtain ⟨z, hz, hT⟩ :=
+    (coefficientArrangement d ℳ p ℒ H h h' D k).dense_isGeneric.inter_open_nonempty
+      _ ((B.isOpen_setOf_forall_notMem_support k).inter
+        (B'.isOpen_setOf_forall_notMem_support k)) ⟨x.val, x.notMem, hx''⟩
+  rw [extendedCoefficientField_eq_action d ℳ p ℒ H h h' D B k hBc hD hB x ⟨z, hz.1⟩ hT,
+    extendedCoefficientField_eq_action d ℳ p ℒ H h h' D B' k hBc' hD hB' x' ⟨z, hz.2⟩ hT,
+    hBB'.levelTransport_eq hBc hBc' (x := ⟨z, hz.1⟩) (x' := ⟨z, hz.2⟩) rfl hx]
+
+/-- Equivalent base presentations give equal completed probe coefficients at every
+all-order endpoint allowed for both presentations. -/
+theorem completedExtendedCoefficientField_eq_of_equivalent_base (hBB' : B.Equivalent B')
+    (hD : D.Consistent) (hBc : B.Consistent)
+    (hB : (D.map (chargeZeroGradedLieHom d ℳ p ℒ)
+      (chargeZeroGradedLieHom_mem_wall d ℳ p ℒ H)).Equivalent
+      (cylinderDiagram d ℳ p ℒ H h h' B))
+    (x : B.Point) (x' : B'.Point) (hx : x.val = x'.val) :
+    completedExtendedCoefficientField d ℳ p ℒ H h h' D B hD hBc hB x =
+      completedExtendedCoefficientField d ℳ p ℒ H h h' D B' hD (hBB'.consistent hBc)
+        (hB.trans (hBB'.cylinderDiagram d ℳ p ℒ H h h')) x' := by
+  apply (F).completion_ext
+  intro k
+  rw [projection_completedExtendedCoefficientField, projection_completedExtendedCoefficientField]
+  exact extendedCoefficientField_eq_of_levelEquivalent_base d ℳ p ℒ H h h' D B B' k
+    ((DirectedDiagram.equivalent_iff _ _).mp hBB' k) ((B.consistent_iff.mp hBc) k)
+    ((B'.consistent_iff.mp (hBB'.consistent hBc)) k) ((D.consistent_iff.mp hD) (k + 1))
+    ((DirectedDiagram.equivalent_iff _ _).mp hB k) _ _ hx
 
 /-- Every relative probe completion has the prescribed cylinder as its
 charge-zero part. This comparison follows from the relative-completion witness;

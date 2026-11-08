@@ -16,9 +16,7 @@ public import Mei.Geometry.ScatteringDiagram.ModuleProbe.WallEventEvaluation.Sta
 
 Two equivalent consistent base diagrams may present the same scattering diagram by
 different wall families, for instance after subdividing supports or merging coincident
-walls. Their probe fields, extracted from one probe completion, agree at every endpoint
-allowed for both presentations, at each finite cutoff and in the completion: base transport
-is the same along common ambient paths.
+walls. Their probe fields agree by `extendedCoefficientField_eq_of_levelEquivalent_base`.
 
 The actual weighted sums of decorated rays through the two presentations, with the whole
 space as incoming source, then agree at every endpoint where both sums are locally constant.
@@ -53,59 +51,6 @@ variable {R Λ V E ι κ κ' : Type*} {Γ : Type} {M L : Type u} [CommRing R] [A
   {j : ℤ →+ E} (h' : TauCeti.Toric.IsIntegralLattice j)
   (D : DirectedDiagram (d := positiveDegrees d p) (h.prod h') (wallSpaces d ℳ p ℒ H) ι)
   (B : DirectedDiagram (d := d) h H κ) (B' : DirectedDiagram (d := d) h H κ')
-
-local notation "F" => d.shiftedFiltration ℳ p
-
-/-- Equivalent base presentations give equal finite probe coefficients at every endpoint
-allowed for both, since both are the same base transport of one generic probe coefficient.
-Neither endpoint needs to be generic for the probe arrangement. -/
-theorem extendedCoefficientField_eq_of_levelEquivalent_base (k : ℕ)
-    (hBB' : B.LevelEquivalent B' k) (hBc : B.LevelConsistent k) (hBc' : B'.LevelConsistent k)
-    (hD : D.LevelConsistent (k + 1))
-    (hB : (D.map (chargeZeroGradedLieHom d ℳ p ℒ)
-      (chargeZeroGradedLieHom_mem_wall d ℳ p ℒ H)).LevelEquivalent
-      (cylinderDiagram d ℳ p ℒ H h h' B) k)
-    (x : WallComplement (fun c : B.active k => (B.wall c).support))
-    (x' : WallComplement (fun c : B'.active k => (B'.wall c).support)) (hx : x.val = x'.val) :
-    extendedCoefficientField d ℳ p ℒ H h h' D B k hBc x =
-      extendedCoefficientField d ℳ p ℒ H h h' D B' k hBc' x' := by
-  let := h.finiteDimensional
-  have hB' := hB.trans (hBB'.cylinderDiagram d ℳ p ℒ H h h')
-  have hopen (C : DirectedDiagram (d := d) h H κ) :
-      IsOpen {z : V | ∀ c : C.active k, z ∉ (C.wall c).support} := by
-    simpa only [ofPred_forall, compl_def] using isOpen_iInter_of_finite
-      (fun c : C.active k => (C.wall c).isConvexPolyhedron.isClosed.isOpen_compl)
-  have hopen' : IsOpen {z : V | ∀ c : B'.active k, z ∉ (B'.wall c).support} := by
-    simpa only [ofPred_forall, compl_def] using isOpen_iInter_of_finite
-      (fun c : B'.active k => (B'.wall c).isConvexPolyhedron.isClosed.isOpen_compl)
-  have hx'' : x.val ∈ {z : V | ∀ c : B'.active k, z ∉ (B'.wall c).support} := by
-    rw [hx]
-    exact x'.notMem
-  obtain ⟨z, hz, hT⟩ :=
-    (coefficientArrangement d ℳ p ℒ H h h' D k).dense_isGeneric.inter_open_nonempty
-      _ ((hopen B).inter hopen') ⟨x.val, x.notMem, hx''⟩
-  rw [extendedCoefficientField_eq_action d ℳ p ℒ H h h' D B k hBc hD hB x ⟨z, hz.1⟩ hT,
-    extendedCoefficientField_eq_action d ℳ p ℒ H h h' D B' k hBc' hD hB' x' ⟨z, hz.2⟩ hT,
-    hBB'.levelTransport_eq hBc hBc' (x := ⟨z, hz.1⟩) (x' := ⟨z, hz.2⟩) rfl hx]
-
-/-- Equivalent base presentations give equal completed probe coefficients at every
-all-order endpoint allowed for both presentations. -/
-theorem completedExtendedCoefficientField_eq_of_equivalent_base (hBB' : B.Equivalent B')
-    (hD : D.Consistent) (hBc : B.Consistent)
-    (hB : (D.map (chargeZeroGradedLieHom d ℳ p ℒ)
-      (chargeZeroGradedLieHom_mem_wall d ℳ p ℒ H)).Equivalent
-      (cylinderDiagram d ℳ p ℒ H h h' B))
-    (x : B.Point) (x' : B'.Point) (hx : x.val = x'.val) :
-    completedExtendedCoefficientField d ℳ p ℒ H h h' D B hD hBc hB x =
-      completedExtendedCoefficientField d ℳ p ℒ H h h' D B' hD (hBB'.consistent hBc)
-        (hB.trans (hBB'.cylinderDiagram d ℳ p ℒ H h h')) x' := by
-  apply (F).completion_ext
-  intro k
-  rw [projection_completedExtendedCoefficientField, projection_completedExtendedCoefficientField]
-  exact extendedCoefficientField_eq_of_levelEquivalent_base d ℳ p ℒ H h h' D B B' k
-    ((DirectedDiagram.equivalent_iff _ _).mp hBB' k) ((B.consistent_iff.mp hBc) k)
-    ((B'.consistent_iff.mp (hBB'.consistent hBc)) k) ((D.consistent_iff.mp hD) (k + 1))
-    ((DirectedDiagram.equivalent_iff _ _).mp hB k) _ _ hx
 
 variable [Module.Free ℤ Γ]
 

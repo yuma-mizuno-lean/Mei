@@ -32,9 +32,9 @@ open Set Mei.Convex
 
 namespace Mei.DirectedDiagram
 
-universe uι uκ uη
+universe uL uL' uι uκ uη
 
-variable {Γ Λ R L V : Type*} {ι : Type uι} {κ : Type uκ} {η : Type uη}
+variable {Γ Λ R : Type*} {L : Type uL} {V : Type*} {ι : Type uι} {κ : Type uκ} {η : Type uη}
   [AddCommGroup Γ] [AddCommGroup Λ]
   [CommRing R] [Algebra ℚ R] [LieRing L] [LieAlgebra R L]
   [LieAlgebra ℚ L] [IsScalarTower ℚ R L] [DecidableEq Γ]
@@ -110,6 +110,40 @@ theorem LevelEquivalent.symm {k : ℕ} (hDE : D.LevelEquivalent E k) :
     E.LevelEquivalent D k := by
   intro x y x' y' p q hpq
   exact (hDE q p hpq.symm).symm
+
+/-- Compare diagrams whose products are images of products on projected paths under
+one function. For example, the function may preserve cylinder labels or include them
+in a larger group by an injective homomorphism. -/
+theorem levelEquivalent_of_levelPathProduct_map {k : ℕ}
+    {Γ' Λ' R' : Type*} {L' : Type uL'}
+    [AddCommGroup Γ'] [AddCommGroup Λ'] [DecidableEq Γ']
+    [CommRing R'] [Algebra ℚ R'] [LieRing L'] [LieAlgebra R' L']
+    [LieAlgebra ℚ L'] [IsScalarTower ℚ R' L']
+    {V' : Type*} [NormedAddCommGroup V'] [NormedSpace ℝ V']
+    {ρ' : Γ' →+ Λ'} {d' : PositiveDegrees Γ'} {ℒ' : Γ' → Submodule R' L'}
+    [GradedLieAlgebra ℒ'] [IsPositiveGrading d' ℒ']
+    {i' : Λ' →+ V'} {h' : TauCeti.Toric.IsIntegralLattice i'}
+    {H' : DirectedWallSpaces ρ' ℒ'}
+    {D' : DirectedDiagram (d := d') h' H' ι} {F' : DirectedDiagram (d := d') h' H' κ}
+    (f : d.truncatedGroup ℒ k → d'.truncatedGroup ℒ' k)
+    (πD : WallComplement (fun j : D'.active k => (D'.wall j).support) ⥤q
+      WallComplement (fun j : D.active k => (D.wall j).support))
+    (πF : WallComplement (fun j : F'.active k => (F'.wall j).support) ⥤q
+      WallComplement (fun j : F.active k => (F.wall j).support))
+    (hprodD : ∀ {x y : WallComplement (fun j : D'.active k => (D'.wall j).support)}
+      (p : AdmissiblePLPath x y), D'.levelPathProduct k p = f (D.levelPathProduct k (πD.mapPath p)))
+    (hprodF : ∀ {x y : WallComplement (fun j : F'.active k => (F'.wall j).support)}
+      (p : AdmissiblePLPath x y), F'.levelPathProduct k p = f (F.levelPathProduct k (πF.mapPath p)))
+    (hπ : ∀ {x y : WallComplement (fun j : D'.active k => (D'.wall j).support)}
+      {x' y' : WallComplement (fun j : F'.active k => (F'.wall j).support)}
+      (p : AdmissiblePLPath x y) (q : AdmissiblePLPath x' y'),
+      p.vertices.map WallComplement.val = q.vertices.map WallComplement.val →
+        (πD.mapPath p).vertices.map WallComplement.val =
+          (πF.mapPath q).vertices.map WallComplement.val)
+    (hDE : D.LevelEquivalent F k) : D'.LevelEquivalent F' k := by
+  intro x y x' y' p q hpq
+  rw [hprodD, hprodF]
+  exact congrArg f (hDE _ _ (hπ p q hpq))
 
 /-- Prefixing a stationary segment at the start gives a path with a repeated initial
 vertex and the same finite-order product. -/
