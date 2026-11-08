@@ -110,6 +110,44 @@ def cutoffDecoratedRayWordEquiv {Q : V}
   left_inv _ := rfl
   right_inv _ := rfl
 
+/-- A cutoff ray is sent to its encounter word and realization. -/
+@[simp]
+theorem cutoffDecoratedRayWordEquiv_apply {Q : V}
+    (hcut : ∀ (l : List J) (r : WordRay l Q),
+      (∀ j, r.1.val j ∈ d.cutoff k) ∧ ∀ i j, i ≤ j → r.1.val i - r.1.val j ∈ d.monoid)
+    (r : CutoffDecoratedRay d ℳ T a v f c ε P W S C k Q) :
+    cutoffDecoratedRayWordEquiv d ℳ T a v f c ε P W S C hcut r = ⟨r.itinerary, r.realization⟩ :=
+  (rfl)
+
+/-- The inverse retains the encounter word. -/
+@[simp]
+theorem cutoffDecoratedRayWordEquiv_symm_itinerary {Q : V}
+    (hcut : ∀ (l : List J) (r : WordRay l Q),
+      (∀ j, r.1.val j ∈ d.cutoff k) ∧ ∀ i j, i ≤ j → r.1.val i - r.1.val j ∈ d.monoid)
+    (z : Σ l : List J, WordRay l Q) :
+    ((cutoffDecoratedRayWordEquiv d ℳ T a v f c ε P W S C hcut).symm z).itinerary = z.1 :=
+  (rfl)
+
+/-- The inverse retains the degree-labelled encounter word. -/
+@[simp]
+theorem cutoffDecoratedRayWordEquiv_symm_degreeItinerary {Q : V}
+    (hcut : ∀ (l : List J) (r : WordRay l Q),
+      (∀ j, r.1.val j ∈ d.cutoff k) ∧ ∀ i j, i ≤ j → r.1.val i - r.1.val j ∈ d.monoid)
+    (z : Σ l : List J, WordRay l Q) :
+    ((cutoffDecoratedRayWordEquiv d ℳ T a v f c ε P W S C hcut).symm z).degreeItinerary =
+      List.ofFn fun j => (z.2.1.val j, z.1.get j) :=
+  CutoffDecoratedRay.degreeItinerary_eq _
+
+/-- The inverse retains the whole final decoration. -/
+@[simp]
+theorem cutoffDecoratedRayWordEquiv_symm_decoration {Q : V}
+    (hcut : ∀ (l : List J) (r : WordRay l Q),
+      (∀ j, r.1.val j ∈ d.cutoff k) ∧ ∀ i j, i ≤ j → r.1.val i - r.1.val j ∈ d.monoid)
+    (z : Σ l : List J, WordRay l Q) :
+    ((cutoffDecoratedRayWordEquiv d ℳ T a v f c ε P W S C hcut).symm z).decoration =
+      z.2.decoration 0 :=
+  (CutoffDecoratedRay.decoration_eq _).trans (DecoratedAdmissibleRay.decoration_zero _).symm
+
 variable [Finite J]
 
 /-- When every actual ray of every word satisfies the cutoff conditions at the endpoint,
