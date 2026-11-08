@@ -276,17 +276,17 @@ theorem mem_range_eventTime_iff (t : Iic (0 : ℝ)) :
       have : t = ⟨0, le_rfl⟩ := Subtype.ext h
       rwa [this] at hface)
     have hlt : (t : ℝ) < 0 := lt_of_le_of_ne t.property hne
-    have hT (j : Fin b.numEvents) : b.eventTime j ≠ t := fun h => hnot ⟨j, h⟩
     classical
     by_cases hex : ∃ j, (t : ℝ) < b.eventTime j
     · have hj := Fin.find_spec (p := fun j => (t : ℝ) < b.eventTime j) hex
       refine b.interior_off_faces (Fin.find _ hex).castSucc t
         ⟨hlt, fun i hi => ?_, fun i hi => ?_⟩ hface
       · exact lt_of_le_of_ne (not_lt.mp (Fin.find_min hex (Fin.castSucc_lt_castSucc_iff.mp hi)))
-          (hT i)
+          (fun h => hnot ⟨i, h⟩)
       · exact hj.trans_le (b.eventTime_strictMono.monotone (Fin.castSucc_le_castSucc_iff.mp hi))
     · refine b.interior_off_faces (Fin.last b.numEvents) t
-        ⟨hlt, fun i _ => lt_of_le_of_ne (not_lt.mp fun h => hex ⟨i, h⟩) (hT i), fun i hi => ?_⟩
+        ⟨hlt, fun i _ => lt_of_le_of_ne (not_lt.mp fun h => hex ⟨i, h⟩)
+          (fun h => hnot ⟨i, h⟩), fun i hi => ?_⟩
         hface
       exact absurd hi (not_le.mpr (Fin.castSucc_lt_last i))
 
@@ -332,38 +332,75 @@ theorem momentum_final_def : D.momentum b.finalState b.finalDegree =
       Σ u, D.Degree u) = ⟨b.finalState, b.finalDegree⟩ := Sigma.eq hs b.finalDegree_def
   rw [congrArg (fun dp : Σ u, D.Degree u => D.momentum dp.1 dp.2) hdp]
 
+/-- Broken lines with the same crossings, path, segment chambers, degrees and decorations are
+equal. -/
+@[ext]
+protected theorem ext {b c : BrokenLine D} (hn : b.numEvents = c.numEvents)
+    (hT : HEq b.eventTime c.eventTime) (hpath : b.path = c.path)
+    (hstate : HEq b.state c.state)
+    (hdegree : HEq b.degree c.degree) (hdecoration : HEq b.decoration c.decoration)
+    (hface : HEq b.face c.face) : b = c := by
+  cases b
+  cases c
+  simp only [BrokenLine.mk.injEq]
+  exact ⟨hn, hT, hstate, hdegree, hdecoration, hpath, hface⟩
+
+private theorem heq_of_fun.{v} {α β : Type} (hα : α = β)
+    {γ : α → Sort v} {δ : β → Sort v}
+    (hγ : ∀ ⦃i j⦄, HEq i j → HEq (γ i) (δ j))
+    (f : ∀ i, γ i) (g : ∀ j, δ j)
+    (h : ∀ ⦃i j⦄, HEq i j → HEq (f i) (g j)) : HEq f g := by
+  cases hα
+  have hγ' : γ = δ := by
+    funext i
+    exact eq_of_heq (hγ (HEq.refl i))
+  cases hγ'
+  exact heq_of_eq (funext fun i => eq_of_heq (h (HEq.refl i)))
+
+/-- The only segment index when there are no crossings is zero. -/
+private theorem index_eq_zero {n : ℕ} (hn : n = 0) (j : Fin (n + 1)) : j = 0 := by
+  apply Fin.ext
+  omega
+
+/-- Crossing-indexed families between broken lines without crossings agree. -/
+private theorem eventFamily_heq.{v} {b c : BrokenLine D} (hb : b.numEvents = 0)
+    (hc : c.numEvents = 0) {α : Fin b.numEvents → Sort v} {β : Fin c.numEvents → Sort v}
+    (hα : ∀ ⦃i j⦄, HEq i j → HEq (α i) (β j)) (f : ∀ i, α i) (g : ∀ j, β j) : HEq f g := by
+  apply heq_of_fun (congrArg Fin (hb.trans hc.symm)) hα
+  intro i
+  have hi : i.val < 0 := hb ▸ i.isLt
+  exact (Nat.not_lt_zero i.val hi).elim
+
 /-- Broken lines without crossings are determined by their path and incoming datum. -/
 theorem ext_of_numEvents_eq_zero {b c : BrokenLine D} (hb : b.numEvents = 0)
     (hc : c.numEvents = 0) (hpath : b.path = c.path) (hinc : b.incoming = c.incoming) :
     b = c := by
   rw [b.incoming_def, c.incoming_def] at hinc
-  cases b with
-  | mk n T ht htn st dg dc dcm dcn pnz pth proper pzf pzr as imr ia iof face ems trans nv adm
-      prop =>
-    cases c with
-    | mk m T' ht' htn' st' dg' dc' dcm' dcn' pnz' pth' proper' pzf' pzr' as' imr' ia' iof'
-        face' ems' trans' nv' adm' prop' =>
-      dsimp only at hb hc hpath hinc
-      subst hb hc hpath
-      have hj (j : Fin (0 + 1)) : j = 0 := Fin.fin_one_eq_zero j
-      have hst : st = st' := funext fun j => by
-        rw [hj j]
-        exact (Sigma.mk.inj hinc).1
-      subst hst
-      simp only [Sigma.mk.injEq, heq_eq_eq, true_and] at hinc
-      have hdg : dg = dg' := funext fun j => by
-        rw [hj j]
-        exact hinc.1
-      subst hdg
-      have hdc : dc = dc' := funext fun j => by
-        rw [hj j]
-        exact hinc.2
-      subst hdc
-      have hT : T = T' := funext fun j => j.elim0
-      subst hT
-      have hf : face = face' := funext fun j => j.elim0
-      subst hf
-      rfl
+  have hstate0 : b.state 0 = c.state 0 := congrArg Sigma.fst hinc
+  have hdegree0 : (⟨b.state 0, b.degree 0⟩ : Σ u, D.Degree u) = ⟨c.state 0, c.degree 0⟩ :=
+    congrArg (fun x : Σ u : D.State, Σ _ : D.Degree u, D.coefficient u =>
+      (⟨x.1, x.2.1⟩ : Σ u, D.Degree u)) hinc
+  have hdecoration0 : (⟨b.state 0, b.decoration 0⟩ : Σ u, D.coefficient u) =
+      ⟨c.state 0, c.decoration 0⟩ :=
+    congrArg (fun x : Σ u : D.State, Σ _ : D.Degree u, D.coefficient u =>
+      (⟨x.1, x.2.2⟩ : Σ u, D.coefficient u)) hinc
+  have hn : b.numEvents = c.numEvents := hb.trans hc.symm
+  have hseg : Fin (b.numEvents + 1) = Fin (c.numEvents + 1) := by rw [hn]
+  have hstate (i : Fin (b.numEvents + 1)) (j : Fin (c.numEvents + 1)) :
+      b.state i = c.state j := by
+    rw [index_eq_zero hb i, index_eq_zero hc j]
+    exact hstate0
+  apply Mei.BrokenLine.ext hn (eventFamily_heq hb hc (fun _ _ _ => HEq.rfl) _ _) hpath
+  · exact heq_of_fun hseg (fun _ _ _ => HEq.rfl) _ _
+      (fun _ _ _ => heq_of_eq (hstate _ _))
+  · exact heq_of_fun hseg (fun i j _ => by rw [hstate i j]) _ _ (fun i j hij => by
+      rw [index_eq_zero hb i, index_eq_zero hc j]
+      exact (Sigma.mk.inj_iff.mp hdegree0).2)
+  · exact heq_of_fun hseg (fun i j _ => by rw [hstate i j]) _ _ (fun i j hij => by
+      rw [index_eq_zero hb i, index_eq_zero hc j]
+      exact (Sigma.mk.inj_iff.mp hdecoration0).2)
+  · apply eventFamily_heq hb hc (fun i j _ => by
+      rw [hstate i.castSucc j.castSucc, hstate i.succ j.succ])
 
 /-- Evaluation of a finite family of broken lines in a chamber `u` that contains all their
 endpoints: the sum of their final decorations. -/
