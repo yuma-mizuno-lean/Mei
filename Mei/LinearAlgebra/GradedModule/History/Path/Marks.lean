@@ -63,6 +63,7 @@ theorem reverseMarks_cons_succ {b c : Q} (p : Path a b) (e : b ⟶ c) (d : p.Deg
     reverseMarks w i₀ (p.cons e) (d, i) j.succ = reverseMarks w i₀ p d j := Fin.cons_succ ..
 
 /-- The final rank adds the mark of the last encounter to the previous final rank. -/
+@[simp]
 theorem reverseRanks_cons_zero {b c : Q} (p : Path a b) (e : b ⟶ c) (d : p.Degrees ι)
     (i : ι c) :
     reverseRanks w i₀ (p.cons e) (d, i) (0 : Fin (p.length + 1 + 1)) =
