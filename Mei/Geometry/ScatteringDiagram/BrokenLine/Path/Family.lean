@@ -113,17 +113,7 @@ theorem pathDecoratedEvaluation_eq_sum_support (X : V) :
     simp
   apply Finset.sum_congr rfl
   intro p _
-  let e := pathDecoratedRayFiberEquiv T ℳ i₀ x v ν ε c P W S C p.val X
-  trans ∑ d : {d : (pathDecoratedHistorySupport T ℳ i₀ x v ν ε p.val : Type _) //
-      X ∈ D (⟨p, d⟩ : Labels)}, p.val.homogeneousHistory T ℳ d.val.val x
-  · exact Fintype.sum_equiv e _ (fun d : {d :
-        (pathDecoratedHistorySupport T ℳ i₀ x v ν ε p.val : Type _) //
-        X ∈ D (⟨p, d⟩ : Labels)} => p.val.homogeneousHistory T ℳ d.val.val x) fun r => by
-      rw [PathDecoratedRay.decoration_def, pathDecoratedRayFiberEquiv_history]
-  rw [← Finset.sum_filter]
-  exact (Finset.sum_subtype (Finset.univ.filter fun d :
-      (pathDecoratedHistorySupport T ℳ i₀ x v ν ε p.val : Type _) => X ∈ D ⟨p, d⟩)
-    (by simp) (fun d => p.val.homogeneousHistory T ℳ d.val x)).symm
+  exact sum_pathDecoratedRay_eq_sum_histories T ℳ i₀ x v ν ε c P W S C p.val X
 
 open Classical in
 /-- The shared weighted evaluation counts each complete type whose endpoint domain contains the
