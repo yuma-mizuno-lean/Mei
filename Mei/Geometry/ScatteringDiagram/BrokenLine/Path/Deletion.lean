@@ -147,15 +147,9 @@ theorem loop_decoration_eq_of_eq_id (he : T e = LinearMap.id) :
     (p.cons e).homogeneousHistory T ℳ
         (Path.degreesComp (ι := ι) (p.cons e) q r.1.val).1 x =
       p.homogeneousHistory T ℳ
-        (Path.degreesComp (ι := ι) (p.cons e) q r.1.val).1.1 x := by
-  have hd := Path.last_eq_of_identity_history_ne_zero T ℳ p q e he i₀ r.1.val x.property
+        (Path.degreesComp (ι := ι) (p.cons e) q r.1.val).1.1 x :=
+  Path.homogeneousHistory_loop_eq_of_eq_id T ℳ p q e he i₀ r.1.val x.property
     (by simpa only [decoration_def] using r.decoration_ne_zero)
-  have hh : (Path.degreesComp (ι := ι) (p.cons e) q r.1.val).1 =
-      ((Path.degreesComp (ι := ι) (p.cons e) q r.1.val).1.1,
-        Path.Degrees.terminalDegree i₀ p
-          (Path.degreesComp (ι := ι) (p.cons e) q r.1.val).1.1) := Prod.ext rfl hd
-  rw [hh]
-  exact Path.homogeneousHistory_cons_last_of_eq_id T ℳ p e he i₀ _ x.property
 
 /-- Encounter deletion cannot identify distinct complete rays when each omitted
 encounter fixes its whole decoration. At a fixed endpoint the shortened history

@@ -140,6 +140,21 @@ theorem last_eq_of_identity_history_ne_zero (p : Path a b) (q : Path b c)
     Mei.homogeneousComponent_apply_of_mem_ne (ℳ b)
       (homogeneousHistory_mem_vertex (T := T) (ℳ := ℳ) p _ i x hx) (Ne.symm hne), map_zero]
 
+/-- At a surviving history, an identity loop leaves the whole decoration reached
+before it unchanged. The exterior blocks and the other arrows remain arbitrary. -/
+theorem homogeneousHistory_loop_eq_of_eq_id (p : Path a b) (q : Path b c)
+    (e : b ⟶ b) (he : T e = LinearMap.id) (i : ι a)
+    (d : ((p.cons e).comp q).Degrees ι) {x : M a} (hx : x ∈ ℳ a i)
+    (hd : ((p.cons e).comp q).homogeneousHistory T ℳ d x ≠ 0) :
+    (p.cons e).homogeneousHistory T ℳ (degreesComp (ι := ι) (p.cons e) q d).1 x =
+      p.homogeneousHistory T ℳ (degreesComp (ι := ι) (p.cons e) q d).1.1 x := by
+  have hh : (degreesComp (ι := ι) (p.cons e) q d).1 =
+      ((degreesComp (ι := ι) (p.cons e) q d).1.1,
+        Degrees.terminalDegree i p (degreesComp (ι := ι) (p.cons e) q d).1.1) :=
+    Prod.ext rfl (last_eq_of_identity_history_ne_zero T ℳ p q e he i d hx hd)
+  rw [hh]
+  exact homogeneousHistory_cons_last_of_eq_id T ℳ p e he i _ hx
+
 /-- Erasing an identity arrow from a surviving history keeps its whole output. -/
 theorem homogeneousHistory_degreesErase (p : Path a b) (q : Path b c)
     (e : b ⟶ b) (he : T e = LinearMap.id) (i : ι a)

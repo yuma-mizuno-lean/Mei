@@ -120,26 +120,22 @@ theorem reverseVertexLabels_loopErasure_castSucc : ∀ {c : Q} (q : Path b c)
       Degrees.reverseVertexLabels v i₀ ((p.cons e).comp q) d
         (loopErasureArrow p e q j).castSucc
   | _, nil, d, j => by
-    rw [loopErasureArrow_nil p e j]
     obtain ⟨d, i⟩ := d
-    simp only [comp_nil, degreesErase_nil (ι := ι)]
-    rw [Degrees.reverseVertexLabels_cons v i₀ p e d i]
-    exact (Fin.cons_succ (α := fun _ => A) (v b i)
-      (Degrees.reverseVertexLabels v i₀ p d) j.castSucc).symm
+    simp only [comp_nil, degreesErase_nil]
+    rw [loopErasureArrow_nil p e j]
+    exact (Degrees.reverseVertexLabels_cons_succ v i₀ p e d i j.castSucc).symm
   | _, cons q g, d, j => by
     obtain ⟨d, i⟩ := d
-    simp only [comp_cons, degreesErase_cons (ι := ι)]
-    rw [Degrees.reverseVertexLabels_cons v i₀ (p.comp q) g _ i,
-      Degrees.reverseVertexLabels_cons v i₀ ((p.cons e).comp q) g d i]
-    cases j using Fin.cases with
-    | zero =>
-      rw [loopErasureArrow_cons_zero p e q g]
-      exact (Fin.cons_zero (α := fun _ => A) _ _).trans (Fin.cons_zero (α := fun _ => A) _ _).symm
-    | succ j =>
-      rw [loopErasureArrow_cons_succ p e q g j]
-      exact (Fin.cons_succ (α := fun _ => A) _ _ j.castSucc).trans
-        ((reverseVertexLabels_loopErasure_castSucc q d j).trans
-          (Fin.cons_succ (α := fun _ => A) _ _ (loopErasureArrow p e q j).castSucc).symm)
+    simp only [comp_cons, degreesErase_cons]
+    rcases Fin.eq_zero_or_eq_succ (n := (p.comp q).length) j with rfl | ⟨k, rfl⟩
+    · rw [loopErasureArrow_cons_zero p e q g]
+      exact (Degrees.reverseVertexLabels_cons_zero ..).trans
+        (Degrees.reverseVertexLabels_cons_zero ..).symm
+    · rw [loopErasureArrow_cons_succ p e q g k]
+      exact (Degrees.reverseVertexLabels_cons_succ v i₀ _ g _ i k.castSucc).trans
+        ((reverseVertexLabels_loopErasure_castSucc q d k).trans
+          (Degrees.reverseVertexLabels_cons_succ v i₀ _ g _ i
+            (loopErasureArrow p e q k).castSucc).symm)
 
 /-- Equal degrees at the erased loop preserve segment labels at every retained
 parameter, including the endpoint. -/
@@ -154,33 +150,27 @@ theorem reverseVertexLabels_loopErasureParameter : ∀ {c : Q} (q : Path b c)
   | _, nil, d, hd, j => by
     rw [degreesComp_nil (ι := ι) (p.cons e) d] at hd
     obtain ⟨d, i⟩ := d
-    simp only [comp_nil, degreesErase_nil (ι := ι)]
-    rw [Degrees.reverseVertexLabels_cons v i₀ p e d i]
-    cases j using Fin.cases with
-    | zero =>
-      rw [loopErasureParameter_zero p e nil]
+    simp only [comp_nil, degreesErase_nil]
+    rcases Fin.eq_zero_or_eq_succ (n := (p.comp nil).length) j with rfl | ⟨k, rfl⟩
+    · rw [loopErasureParameter_zero p e nil]
       exact (Degrees.reverseVertexLabels_zero v i₀ p d).trans
-        ((congrArg (v b) hd.symm).trans (Fin.cons_zero (α := fun _ => A) _ _).symm)
-    | succ j =>
-      rw [loopErasureParameter_succ p e nil j, loopErasureArrow_nil p e j]
-      exact (Fin.cons_succ (α := fun _ => A) _ _ j.succ).symm
+        ((congrArg (v b) hd.symm).trans (Degrees.reverseVertexLabels_cons_zero ..).symm)
+    · rw [loopErasureParameter_succ p e nil k, loopErasureArrow_nil p e k]
+      exact (Degrees.reverseVertexLabels_cons_succ v i₀ p e d i k.succ).symm
   | _, cons q g, d, hd, j => by
     obtain ⟨d, i⟩ := d
     rw [degreesComp_cons (ι := ι)] at hd
-    simp only [comp_cons, degreesErase_cons (ι := ι)]
-    rw [Degrees.reverseVertexLabels_cons v i₀ (p.comp q) g _ i,
-      Degrees.reverseVertexLabels_cons v i₀ ((p.cons e).comp q) g d i]
-    cases j using Fin.cases with
-    | zero =>
-      rw [loopErasureParameter_zero p e (q.cons g)]
-      exact (Fin.cons_zero (α := fun _ => A) _ _).trans (Fin.cons_zero (α := fun _ => A) _ _).symm
-    | succ j =>
-      exact (Fin.cons_succ (α := fun _ => A) _ _ j).trans
-        ((reverseVertexLabels_loopErasureParameter q d hd j).trans
-          ((Fin.cons_succ (α := fun _ => A) _ _ (loopErasureParameter p e q j)).symm.trans
-            (congrArg (Fin.cons (α := fun _ => A) (v _ i)
-              (Degrees.reverseVertexLabels v i₀ ((p.cons e).comp q) d))
-                (loopErasureParameter_cons_succ p e q g j).symm)))
+    simp only [comp_cons, degreesErase_cons]
+    rcases Fin.eq_zero_or_eq_succ (n := (p.comp q).length + 1) j with rfl | ⟨k, rfl⟩
+    · exact (Degrees.reverseVertexLabels_cons_zero ..).trans
+        ((Degrees.reverseVertexLabels_cons_zero ..).symm.trans
+          (congrArg (Degrees.reverseVertexLabels v i₀ (((p.cons e).comp q).cons g) (d, i))
+            (loopErasureParameter_zero p e (q.cons g)).symm))
+    · rw [loopErasureParameter_cons_succ p e q g k]
+      exact (Degrees.reverseVertexLabels_cons_succ v i₀ _ g _ i k).trans
+        ((reverseVertexLabels_loopErasureParameter q d hd k).trans
+          (Degrees.reverseVertexLabels_cons_succ v i₀ _ g _ i
+            (loopErasureParameter p e q k)).symm)
 
 /-- Equal adjacent degrees make the omitted encounter spatially unbent. -/
 theorem reverseVertexLabels_loopIndex_eq : ∀ {c : Q} (q : Path b c)
@@ -193,19 +183,15 @@ theorem reverseVertexLabels_loopIndex_eq : ∀ {c : Q} (q : Path b c)
     rw [degreesComp_nil (ι := ι) (p.cons e) d] at hd
     obtain ⟨d, i⟩ := d
     rw [loopIndex_nil p e]
-    simp only [comp_nil]
-    rw [Degrees.reverseVertexLabels_cons v i₀ p e d i]
-    exact (Fin.cons_succ (α := fun _ => A) _ _ (0 : Fin (p.length + 1))).trans
+    exact (Degrees.reverseVertexLabels_cons_succ v i₀ p e d i 0).trans
       ((Degrees.reverseVertexLabels_zero v i₀ p d).trans
-        ((congrArg (v b) hd.symm).trans (Fin.cons_zero (α := fun _ => A) _ _).symm))
+        ((congrArg (v b) hd.symm).trans (Degrees.reverseVertexLabels_cons_zero ..).symm))
   | _, cons q g, d, hd => by
     obtain ⟨d, i⟩ := d
     rw [degreesComp_cons (ι := ι)] at hd
     rw [loopIndex_cons p e q g]
-    simp only [comp_cons]
-    rw [Degrees.reverseVertexLabels_cons v i₀ ((p.cons e).comp q) g d i]
-    exact (Fin.cons_succ (α := fun _ => A) _ _ (loopIndex p e q).succ).trans
+    exact (Degrees.reverseVertexLabels_cons_succ v i₀ _ g _ i (loopIndex p e q).succ).trans
       ((reverseVertexLabels_loopIndex_eq q d hd).trans
-        (Fin.cons_succ (α := fun _ => A) _ _ (loopIndex p e q).castSucc).symm)
+        (Degrees.reverseVertexLabels_cons_succ v i₀ _ g _ i (loopIndex p e q).castSucc).symm)
 
 end Quiver.Path
