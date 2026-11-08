@@ -54,6 +54,27 @@ namespace BoundedDecoratedType
 
 variable {ℳ T p₀ a v f ε L}
 
+/-- A type is determined by its encounter word and its degree history. -/
+@[ext]
+theorem ext {t u : BoundedDecoratedType ℳ T p₀ a v f ε L}
+    (hl : t.1 = u.1) (hh : HEq t.2 u.2) : t = u := by
+  cases t
+  cases u
+  cases hl
+  cases hh
+  rfl
+
+/-- Agreement of the encounter word and the underlying degree function
+identifies complete types; the length bound and support witness carry no extra data. -/
+theorem ext_val {t u : BoundedDecoratedType ℳ T p₀ a v f ε L}
+    (hl : t.1.val = u.1.val) (hh : HEq t.2.val u.2.val) : t = u := by
+  have hi : t.1 = u.1 := Subtype.ext hl
+  apply ext hi
+  cases t
+  cases u
+  cases hi
+  exact heq_of_eq (Subtype.ext (eq_of_heq hh))
+
 /-- The final whole decoration, with all scalar multiplicities retained. -/
 def decoration (t : BoundedDecoratedType ℳ T p₀ a v f ε L) : M :=
   homogeneousHistory ℳ (fun j => T (t.1.val.get j)) t.2.val a
@@ -120,6 +141,15 @@ theorem boundedDecoratedRayFiberEquiv_apply_val (Q : V)
     (hbound : ∀ (l : List J), Ray(l, Q) → l.length ≤ L) (r : Σ l : List J, Ray(l, Q)) :
     (boundedDecoratedRayFiberEquiv ℳ T p₀ a v f ε L c P W S C Q hbound r).val =
       ⟨⟨r.1, hbound r.1 r.2⟩, r.2.1⟩ := (rfl)
+
+/-- The fiber equivalence preserves the final whole decoration. -/
+@[simp↓] -- Compare decorations before expanding them into homogeneous histories.
+theorem boundedDecoratedRayFiberEquiv_decoration (Q : V)
+    (hbound : ∀ (l : List J), Ray(l, Q) → l.length ≤ L) (r : Σ l : List J, Ray(l, Q)) :
+    (boundedDecoratedRayFiberEquiv ℳ T p₀ a v f ε L c P W S C Q hbound r).val.decoration =
+      r.2.decoration 0 := by
+  rw [DecoratedAdmissibleRay.decoration_zero]
+  rfl
 
 /-- The inverse recovers the unique admissible ray with the recorded history. -/
 @[simp]
