@@ -89,7 +89,8 @@ theorem strictMono_loopErasureArrow : ∀ {c : Q} (q : Path b c),
     StrictMono (loopErasureArrow p e q)
   | _, nil => Fin.strictMono_succ
   | _, @cons _ _ _ _ _ q _ => by
-    -- `Fin.cases` with constant first value is `Fin.cons` by definitional unfolding.
+    -- `loopErasureArrow` is `Fin.cases 0 (Fin.succ ∘ ·)` on `q.cons _`, and `Fin.cons` is
+    -- `Fin.cases` with a constant first value, so `change` exposes it for `Fin.strictMono_cons`.
     change StrictMono (Fin.cons (0 : Fin (((p.cons e).comp q).length + 1))
       (Fin.succ ∘ loopErasureArrow p e q))
     exact Fin.strictMono_cons.2
