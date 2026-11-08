@@ -140,17 +140,6 @@ theorem decoration_removeEncounter :
   rw [decoration_def, history_removeEncounter, decoration_def]
   exact Path.homogeneousHistory_degreesErase_of_eq p e T ℳ q r.1.val x hfix
 
-omit hfix hoff u hW in
-/-- An identity loop fixes the whole intermediate decoration of every surviving
-ray. Other arrows in the two exterior blocks remain arbitrary. -/
-theorem loop_decoration_eq_of_eq_id (he : T e = LinearMap.id) :
-    (p.cons e).homogeneousHistory T ℳ
-        (Path.degreesComp (ι := ι) (p.cons e) q r.1.val).1 x =
-      p.homogeneousHistory T ℳ
-        (Path.degreesComp (ι := ι) (p.cons e) q r.1.val).1.1 x :=
-  Path.homogeneousHistory_loop_eq_of_eq_id T ℳ p q e he i₀ r.1.val x.property
-    (by simpa only [decoration_def] using r.decoration_ne_zero)
-
 /-- Encounter deletion cannot identify distinct complete rays when each omitted
 encounter fixes its whole decoration. At a fixed endpoint the shortened history
 recovers the original one by repeating the intermediate degree. -/
