@@ -163,6 +163,23 @@ theorem Degrees.map_cons {κ : Q → Type*} (σ : ∀ q, ι q → κ q) {b c : Q
     Degrees.map σ (p.cons e) ((d, i) : (p.cons e).Degrees ι) =
       ((Degrees.map σ p d, σ c i) : (p.cons e).Degrees κ) := (rfl)
 
+/-- Identity degree maps retain the entire history. -/
+@[simp]
+theorem Degrees.map_id : ∀ {b : Q} (p : Path a b) (d : p.Degrees ι),
+    Degrees.map (fun _ => id) p d = d
+  | _, nil, _ => rfl
+  | _, cons p _, d => by
+    exact Prod.ext (Degrees.map_id p d.1) rfl
+
+/-- Successive vertexwise degree maps act on every degree of a history by composition. -/
+@[simp]
+theorem Degrees.map_map {κ ξ : Q → Type*} (σ : ∀ q, ι q → κ q)
+    (τ : ∀ q, κ q → ξ q) : ∀ {b : Q} (p : Path a b) (d : p.Degrees ι),
+    Degrees.map τ p (Degrees.map σ p d) = Degrees.map (fun q => τ q ∘ σ q) p d
+  | _, nil, _ => rfl
+  | _, cons p _, d => by
+    exact Prod.ext (Degrees.map_map σ τ p d.1) rfl
+
 /-- Vertexwise degree equivalences reindex complete histories, retaining every arrow. -/
 def Degrees.mapEquiv {κ : Q → Type*} (σ : ∀ q, ι q ≃ κ q) :
     ∀ {b : Q} (p : Path a b), p.Degrees ι ≃ p.Degrees κ
