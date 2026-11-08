@@ -488,4 +488,76 @@ theorem map_cutoffDecoratedEvaluation_regrading [Finite J] :
     exact (cutoffDecoratedRayRegradingEquiv_decoration d e ℳ 𝓝 r σ hσ hr T U hT a v w hv
       f c ε P W S C k l hcut hpos Q ⟨β, hβ⟩).symm
 
+section IdentityComposition
+
+variable {R M₁ M₂ M₃ Γ₁ Γ₂ Γ₃ V J I K : Type*} [Semiring R]
+  [AddCommMonoid M₁] [Module R M₁] [AddCommMonoid M₂] [Module R M₂]
+  [AddCommMonoid M₃] [Module R M₃]
+  [AddCommGroup Γ₁] [DecidableEq Γ₁] [AddCommGroup Γ₂] [DecidableEq Γ₂]
+  [AddCommGroup Γ₃] [DecidableEq Γ₃]
+  (d₁ : PositiveDegrees Γ₁) (d₂ : PositiveDegrees Γ₂) (d₃ : PositiveDegrees Γ₃)
+  (ℳ₁ : Γ₁ → Submodule R M₁) [DirectSum.Decomposition ℳ₁]
+  (ℳ₂ : Γ₂ → Submodule R M₂) [DirectSum.Decomposition ℳ₂]
+  (ℳ₃ : Γ₃ → Submodule R M₃) [DirectSum.Decomposition ℳ₃]
+  [NormedAddCommGroup V] [NormedSpace ℝ V]
+  (f : J → V →L[ℝ] ℝ) (c : J → ℝ) (ε : J → SignType)
+  (P : J → Set V) (W : I → Set V) (S : K → Set V) (C : Set V) (Q : V)
+
+/-- The identity coefficient comparison of cutoff rays over all itineraries is the
+identity. -/
+@[simp]
+theorem cutoffDecoratedRayRegradingEmbeddingEquiv_refl (T : J → Module.End R M₁)
+    (a : ℳ₁ 0) (v : Γ₁ → V) (k : ℕ) :
+    cutoffDecoratedRayRegradingEmbeddingEquiv d₁ d₁ ℳ₁ ℳ₁ LinearMap.id (AddMonoidHom.id Γ₁)
+        Function.injective_id (fun _ _ hx => hx) T T
+        (fun _ => (LinearMap.id_comp _).trans (LinearMap.comp_id _).symm) a v v
+        (fun _ => rfl) f c ε P W S C k k (fun _ => Iff.rfl) (fun _ => Iff.rfl) Q
+        Function.injective_id =
+      Equiv.refl _ :=
+  Equiv.ext fun _ => CutoffDecoratedRay.degreeItinerary_injective (by
+    rw [cutoffDecoratedRayRegradingEmbeddingEquiv_degreeItinerary]
+    simp only [AddMonoidHom.coe_id, Prod.map_id, List.map_id]
+    -- `Equiv.refl` applies as the identity, which the simp set cannot see through the
+    -- coefficient `regradeBase` of the target.
+    rfl)
+
+/-- Coefficient comparisons of cutoff rays over all itineraries compose. -/
+@[simp]
+theorem cutoffDecoratedRayRegradingEmbeddingEquiv_trans
+    (r₁ : M₁ →ₗ[R] M₂) (r₂ : M₂ →ₗ[R] M₃) (σ₁ : Γ₁ →+ Γ₂) (σ₂ : Γ₂ →+ Γ₃)
+    (hσ₁ : Function.Injective σ₁) (hσ₂ : Function.Injective σ₂)
+    (hinj₁ : Function.Injective r₁) (hinj₂ : Function.Injective r₂)
+    (hr₁ : ∀ p x, x ∈ ℳ₁ p → r₁ x ∈ ℳ₂ (σ₁ p))
+    (hr₂ : ∀ p x, x ∈ ℳ₂ p → r₂ x ∈ ℳ₃ (σ₂ p))
+    (T₁ : J → Module.End R M₁) (T₂ : J → Module.End R M₂) (T₃ : J → Module.End R M₃)
+    (hT₁ : ∀ j, r₁.comp (T₁ j) = (T₂ j).comp r₁)
+    (hT₂ : ∀ j, r₂.comp (T₂ j) = (T₃ j).comp r₂)
+    (a : ℳ₁ 0) (v₁ : Γ₁ → V) (v₂ : Γ₂ → V) (v₃ : Γ₃ → V)
+    (hv₁ : ∀ p, v₁ p = v₂ (σ₁ p)) (hv₂ : ∀ p, v₂ p = v₃ (σ₂ p)) (k l m : ℕ)
+    (hcut₁ : ∀ p, p ∈ d₁.cutoff k ↔ σ₁ p ∈ d₂.cutoff l)
+    (hcut₂ : ∀ p, p ∈ d₂.cutoff l ↔ σ₂ p ∈ d₃.cutoff m)
+    (hpos₁ : ∀ p, p ∈ d₁.monoid ↔ σ₁ p ∈ d₂.monoid)
+    (hpos₂ : ∀ p, p ∈ d₂.monoid ↔ σ₂ p ∈ d₃.monoid) :
+    (cutoffDecoratedRayRegradingEmbeddingEquiv d₁ d₂ ℳ₁ ℳ₂ r₁ σ₁ hσ₁ hr₁ T₁ T₂ hT₁ a v₁ v₂
+        hv₁ f c ε P W S C k l hcut₁ hpos₁ Q hinj₁).trans
+      (cutoffDecoratedRayRegradingEmbeddingEquiv d₂ d₃ ℳ₂ ℳ₃ r₂ σ₂ hσ₂ hr₂ T₂ T₃ hT₂
+        (regradeBase ℳ₁ ℳ₂ r₁ σ₁ hr₁ a) v₂ v₃ hv₂ f c ε P W S C l m hcut₂ hpos₂ Q hinj₂) =
+    cutoffDecoratedRayRegradingEmbeddingEquiv d₁ d₃ ℳ₁ ℳ₃ (r₂ ∘ₗ r₁) (σ₂.comp σ₁)
+      (hσ₂.comp hσ₁) (fun p x hx => hr₂ _ _ (hr₁ p x hx)) T₁ T₃
+      (fun j => by
+        rw [LinearMap.comp_assoc, hT₁ j, ← LinearMap.comp_assoc, hT₂ j, LinearMap.comp_assoc])
+      a v₁ v₃ (fun p => (hv₁ p).trans (hv₂ _)) f c ε P W S C k m
+      (fun p => (hcut₁ p).trans (hcut₂ _)) (fun p => (hpos₁ p).trans (hpos₂ _)) Q
+      (hinj₂.comp hinj₁) := by
+  refine Equiv.ext fun β => CutoffDecoratedRay.degreeItinerary_injective ?_
+  refine Eq.trans ?_
+    (cutoffDecoratedRayRegradingEmbeddingEquiv_degreeItinerary d₁ d₃ ℳ₁ ℳ₃ (r₂ ∘ₗ r₁)
+      (σ₂.comp σ₁) (hσ₂.comp hσ₁) _ T₁ T₃ _ a v₁ v₃ _ f c ε P W S C k m _ _ Q
+      (hinj₂.comp hinj₁) β).symm
+  rw [Equiv.trans_apply, cutoffDecoratedRayRegradingEmbeddingEquiv_degreeItinerary,
+    cutoffDecoratedRayRegradingEmbeddingEquiv_degreeItinerary, List.map_map]
+  rfl
+
+end IdentityComposition
+
 end Mei

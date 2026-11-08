@@ -217,4 +217,61 @@ theorem decoratedRayCoefficientEmbeddingEquiv_decoration (hinj : Function.Inject
   exact decoratedRayCoefficientEquiv_decoration ℳ 𝓝 r σ hr hσ T U hT p₀ a v w hv
     f c ε P W S C Q _ j
 
+section IdentityComposition
+
+variable {R M₁ M₂ M₃ Γ Δ Θ V J K : Type*} [Semiring R]
+  [AddCommMonoid M₁] [Module R M₁] [AddCommMonoid M₂] [Module R M₂]
+  [AddCommMonoid M₃] [Module R M₃] [DecidableEq Γ] [DecidableEq Δ] [DecidableEq Θ]
+  (ℳ₁ : Γ → Submodule R M₁) [DirectSum.Decomposition ℳ₁]
+  (ℳ₂ : Δ → Submodule R M₂) [DirectSum.Decomposition ℳ₂]
+  (ℳ₃ : Θ → Submodule R M₃) [DirectSum.Decomposition ℳ₃]
+  [NormedAddCommGroup V] [NormedSpace ℝ V] {n : ℕ}
+  (f : Fin n → V →L[ℝ] ℝ) (c : Fin n → ℝ) (ε : Fin n → SignType)
+  (P : Fin n → Set V) (W : J → Set V) (S : K → Set V) (C : Set V) (Q : V)
+
+/-- The identity coefficient comparison of rays with a fixed itinerary is the identity. -/
+@[simp]
+theorem decoratedRayCoefficientEmbeddingEquiv_refl {T : Fin n → Module.End R M₁}
+    (p₀ : Γ) (a : ℳ₁ p₀) (v : Γ → V) :
+    decoratedRayCoefficientEmbeddingEquiv ℳ₁ ℳ₁ LinearMap.id id (fun _ _ hx => hx)
+        Function.injective_id T T
+        (fun _ => (LinearMap.id_comp _).trans (LinearMap.comp_id _).symm)
+        p₀ a v v (fun _ => rfl) f c ε P W S C Q Function.injective_id =
+      Equiv.refl _ :=
+  Equiv.ext fun _ => DecoratedAdmissibleRay.ext_history
+    (decoratedRayCoefficientEmbeddingEquiv_history ..)
+
+/-- Coefficient comparisons of rays with a fixed itinerary compose: the comparison for
+a composite of intertwining injective coefficient maps along composite injective degree
+maps is the composite of the comparisons. -/
+@[simp]
+theorem decoratedRayCoefficientEmbeddingEquiv_trans
+    (r₁ : M₁ →ₗ[R] M₂) (r₂ : M₂ →ₗ[R] M₃) (σ₁ : Γ → Δ) (σ₂ : Δ → Θ)
+    (hr₁ : ∀ p x, x ∈ ℳ₁ p → r₁ x ∈ ℳ₂ (σ₁ p))
+    (hr₂ : ∀ p x, x ∈ ℳ₂ p → r₂ x ∈ ℳ₃ (σ₂ p))
+    (hσ₁ : Function.Injective σ₁) (hσ₂ : Function.Injective σ₂)
+    (hinj₁ : Function.Injective r₁) (hinj₂ : Function.Injective r₂)
+    (T₁ : Fin n → Module.End R M₁) (T₂ : Fin n → Module.End R M₂)
+    (T₃ : Fin n → Module.End R M₃)
+    (hT₁ : ∀ j, r₁.comp (T₁ j) = (T₂ j).comp r₁)
+    (hT₂ : ∀ j, r₂.comp (T₂ j) = (T₃ j).comp r₂)
+    (p₀ : Γ) (a : ℳ₁ p₀) (v₁ : Γ → V) (v₂ : Δ → V) (v₃ : Θ → V)
+    (hv₁ : ∀ p, v₁ p = v₂ (σ₁ p)) (hv₂ : ∀ p, v₂ p = v₃ (σ₂ p)) :
+    (decoratedRayCoefficientEmbeddingEquiv ℳ₁ ℳ₂ r₁ σ₁ hr₁ hσ₁ T₁ T₂ hT₁ p₀ a v₁ v₂ hv₁
+        f c ε P W S C Q hinj₁).trans
+      (decoratedRayCoefficientEmbeddingEquiv ℳ₂ ℳ₃ r₂ σ₂ hr₂ hσ₂ T₂ T₃ hT₂ (σ₁ p₀)
+        ⟨r₁ a, hr₁ p₀ a a.property⟩ v₂ v₃ hv₂ f c ε P W S C Q hinj₂) =
+    decoratedRayCoefficientEmbeddingEquiv ℳ₁ ℳ₃ (r₂ ∘ₗ r₁) (σ₂ ∘ σ₁)
+      (fun p x hx => hr₂ _ _ (hr₁ p x hx)) (hσ₂.comp hσ₁) T₁ T₃
+      (fun j => by
+        rw [LinearMap.comp_assoc, hT₁ j, ← LinearMap.comp_assoc, hT₂ j, LinearMap.comp_assoc])
+      p₀ a v₁ v₃ (fun p => (hv₁ p).trans (hv₂ _)) f c ε P W S C Q (hinj₂.comp hinj₁) :=
+  Equiv.ext fun β => DecoratedAdmissibleRay.ext_history (by
+    rw [Equiv.trans_apply, decoratedRayCoefficientEmbeddingEquiv_history,
+      decoratedRayCoefficientEmbeddingEquiv_history,
+      decoratedRayCoefficientEmbeddingEquiv_history]
+    rfl)
+
+end IdentityComposition
+
 end Mei
