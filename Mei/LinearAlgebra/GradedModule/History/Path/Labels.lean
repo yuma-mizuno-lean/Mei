@@ -6,6 +6,7 @@ Authors: Codex
 module
 
 public import Mei.LinearAlgebra.GradedModule.History.Path
+public import Mei.Combinatorics.Quiver.Path.Labels
 
 /-!
 # Vertex labels of a complete degree history
@@ -70,5 +71,39 @@ theorem reverseVertexLabels_comp (v : ∀ q, ι q → A) (g : A → B) (i₀ : �
   | _, cons p e, d => by
     funext j
     exact Fin.cases rfl (fun k => congrFun (reverseVertexLabels_comp v g i₀ p d.1) k) j
+
+/-- Extracting segment labels commutes with combining two labellings pointwise. -/
+theorem reverseVertexLabels_map₂ {C : Type*} (v : ∀ q, ι q → A)
+    (w : ∀ q, ι q → B) (f : A → B → C) (i₀ : ι a) :
+    ∀ {b : Q} (p : Path a b) (d : p.Degrees ι),
+      reverseVertexLabels (fun q i => f (v q i) (w q i)) i₀ p d =
+        fun j => f (reverseVertexLabels v i₀ p d j) (reverseVertexLabels w i₀ p d j)
+  | _, nil, _ => by simp only [reverseVertexLabels_nil]
+  | _, cons p e, d => by
+    obtain ⟨d, i⟩ := d
+    rw [reverseVertexLabels_cons, reverseVertexLabels_cons, reverseVertexLabels_cons]
+    funext j
+    exact Fin.cases rfl (fun j => congrFun (reverseVertexLabels_map₂ v w f i₀ p d) j) j
+
+/-- A relation between an arrow label and its adjacent segment labels holds
+throughout the backward history if it holds at every arrow and degree pair. -/
+theorem reverseLabels_forall (f : ∀ {b c : Q}, (b ⟶ c) → A)
+    (v : ∀ q, ι q → B) (P : A → B → B → Prop)
+    (hf : ∀ {b c : Q} (e : b ⟶ c) (i : ι b) (j : ι c), P (f e) (v c j) (v b i))
+    (i₀ : ι a) :
+    ∀ {b : Q} (p : Path a b) (d : p.Degrees ι) (j : Fin p.length),
+      P (p.reverseArrowLabels f j) (reverseVertexLabels v i₀ p d j.castSucc)
+        (reverseVertexLabels v i₀ p d j.succ)
+  | _, nil, _, j => j.elim0
+  | _, cons p e, d, j => by
+    obtain ⟨d, i⟩ := d
+    refine Fin.cases ?_ (fun j => ?_) j
+    · simpa only [Path.length_cons, Fin.castSucc_zero, reverseVertexLabels_cons,
+        Path.reverseArrowLabels_cons,
+        Fin.cons_zero, Fin.cons_succ, reverseVertexLabels_zero] using
+        hf e (terminalDegree i₀ p d) i
+    · simpa only [Path.length_cons, Fin.castSucc_succ, reverseVertexLabels_cons,
+        Path.reverseArrowLabels_cons,
+        Fin.cons_succ] using reverseLabels_forall f v P hf i₀ p d j
 
 end Quiver.Path.Degrees
