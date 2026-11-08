@@ -106,6 +106,27 @@ theorem pathDecoratedRayFiberEquiv_history (p : Path a b) (X : V)
     (pathDecoratedRayFiberEquiv T ℳ i₀ x v ν ε c P W S C p X r).val = r.1 := by
   rw [pathDecoratedRayFiberEquiv, admissibleRayFiberEquiv_apply_val]
 
+namespace PathDecoratedRay
+
+variable (p : Path a b) {X Y : V}
+
+local notation "D(" p ", " d ")" => admissibleBackwardDomain (Path.reverseArrowLabels ν p)
+  (Path.reverseArrowLabels c p) (dirs p d) (Path.reverseArrowLabels P p) W S C
+
+/-- Move the endpoint while retaining the complete component history, whenever
+membership in every surviving type domain agrees at the two endpoints. -/
+def endpointEquiv
+    (hXY : ∀ d ∈ pathDecoratedHistorySupport T ℳ i₀ x v ν ε p,
+      X ∈ D(p, d) ↔ Y ∈ D(p, d)) :
+    PathDecoratedRay T ℳ i₀ x v ν ε c P W S C p X ≃
+      PathDecoratedRay T ℳ i₀ x v ν ε c P W S C p Y :=
+  (pathDecoratedRayFiberEquiv T ℳ i₀ x v ν ε c P W S C p X).trans
+    ((Equiv.subtypeEquivRight fun d :
+        (pathDecoratedHistorySupport T ℳ i₀ x v ν ε p : Type _) => hXY d.val d.property).trans
+      (pathDecoratedRayFiberEquiv T ℳ i₀ x v ν ε c P W S C p Y).symm)
+
+end PathDecoratedRay
+
 instance (p : Path a b) (X : V) :
     Finite (PathDecoratedRay T ℳ i₀ x v ν ε c P W S C p X) :=
   Finite.of_equiv _ (pathDecoratedRayFiberEquiv T ℳ i₀ x v ν ε c P W S C p X).symm
@@ -137,6 +158,92 @@ def decoration (r : PathDecoratedRay T ℳ i₀ x v ν ε c P W S C p X) : M b :
 @[simp]
 theorem decoration_def (r : PathDecoratedRay T ℳ i₀ x v ν ε c P W S C p X) :
     r.decoration = p.homogeneousHistory T ℳ r.1.val x := (rfl)
+
+section EndpointTransport
+
+variable (T ℳ i₀ x v ν ε c P W S C)
+
+/-- Endpoint transport retains the whole degree history. -/
+@[simp]
+theorem endpointEquiv_history
+    (p : Path a b) {X Y : V}
+    (hXY : ∀ d ∈ pathDecoratedHistorySupport T ℳ i₀ x v ν ε p,
+      X ∈ admissibleBackwardDomain (Path.reverseArrowLabels ν p)
+        (p.reverseArrowLabels c) (dirs p d) (p.reverseArrowLabels P) W S C ↔
+      Y ∈ admissibleBackwardDomain (Path.reverseArrowLabels ν p)
+        (p.reverseArrowLabels c) (dirs p d) (p.reverseArrowLabels P) W S C)
+    (r : PathDecoratedRay T ℳ i₀ x v ν ε c P W S C p X) :
+    (endpointEquiv T ℳ i₀ x v ν ε c P W S C p hXY r).1 = r.1 := by
+  have he := pathDecoratedRayFiberEquiv_history T ℳ i₀ x v ν ε c P W S C p Y
+    (endpointEquiv T ℳ i₀ x v ν ε c P W S C p hXY r)
+  rw [endpointEquiv, Equiv.trans_apply, Equiv.trans_apply, Equiv.apply_symm_apply] at he
+  exact he.symm.trans (pathDecoratedRayFiberEquiv_history T ℳ i₀ x v ν ε c P W S C p X r)
+
+/-- Endpoint transport preserves the entire final decoration. -/
+@[simp↓]
+theorem endpointEquiv_decoration
+    (p : Path a b) {X Y : V}
+    (hXY : ∀ d ∈ pathDecoratedHistorySupport T ℳ i₀ x v ν ε p,
+      X ∈ admissibleBackwardDomain (Path.reverseArrowLabels ν p)
+        (p.reverseArrowLabels c) (dirs p d) (p.reverseArrowLabels P) W S C ↔
+      Y ∈ admissibleBackwardDomain (Path.reverseArrowLabels ν p)
+        (p.reverseArrowLabels c) (dirs p d) (p.reverseArrowLabels P) W S C)
+    (r : PathDecoratedRay T ℳ i₀ x v ν ε c P W S C p X) :
+    (endpointEquiv T ℳ i₀ x v ν ε c P W S C p hXY r).decoration = r.decoration := by
+  simp only [decoration_def, endpointEquiv_history]
+
+/-- Transport to the same endpoint is the identity. -/
+@[simp]
+theorem endpointEquiv_self
+    (p : Path a b) {X : V}
+    (hXX : ∀ d ∈ pathDecoratedHistorySupport T ℳ i₀ x v ν ε p,
+      X ∈ admissibleBackwardDomain (Path.reverseArrowLabels ν p)
+        (p.reverseArrowLabels c) (dirs p d) (p.reverseArrowLabels P) W S C ↔
+      X ∈ admissibleBackwardDomain (Path.reverseArrowLabels ν p)
+        (p.reverseArrowLabels c) (dirs p d) (p.reverseArrowLabels P) W S C)
+    (r : PathDecoratedRay T ℳ i₀ x v ν ε c P W S C p X) :
+    endpointEquiv T ℳ i₀ x v ν ε c P W S C p hXX r = r := by
+  apply ext_history
+  exact congrArg Subtype.val (endpointEquiv_history T ℳ i₀ x v ν ε c P W S C p hXX r)
+
+/-- Successive endpoint transports agree with direct transport. -/
+@[simp]
+theorem endpointEquiv_trans
+    (p : Path a b) {X Y Z : V}
+    (hXY : ∀ d ∈ pathDecoratedHistorySupport T ℳ i₀ x v ν ε p,
+      X ∈ admissibleBackwardDomain (Path.reverseArrowLabels ν p)
+        (p.reverseArrowLabels c) (dirs p d) (p.reverseArrowLabels P) W S C ↔
+      Y ∈ admissibleBackwardDomain (Path.reverseArrowLabels ν p)
+        (p.reverseArrowLabels c) (dirs p d) (p.reverseArrowLabels P) W S C)
+    (hYZ : ∀ d ∈ pathDecoratedHistorySupport T ℳ i₀ x v ν ε p,
+      Y ∈ admissibleBackwardDomain (Path.reverseArrowLabels ν p)
+        (p.reverseArrowLabels c) (dirs p d) (p.reverseArrowLabels P) W S C ↔
+      Z ∈ admissibleBackwardDomain (Path.reverseArrowLabels ν p)
+        (p.reverseArrowLabels c) (dirs p d) (p.reverseArrowLabels P) W S C)
+    (r : PathDecoratedRay T ℳ i₀ x v ν ε c P W S C p X) :
+    endpointEquiv T ℳ i₀ x v ν ε c P W S C p hYZ
+        (endpointEquiv T ℳ i₀ x v ν ε c P W S C p hXY r) =
+      endpointEquiv T ℳ i₀ x v ν ε c P W S C p (fun d hd => (hXY d hd).trans (hYZ d hd)) r := by
+  apply ext_history
+  simp only [endpointEquiv_history]
+
+/-- Reversing the endpoint membership comparisons inverts transport. -/
+@[simp]
+theorem endpointEquiv_symm
+    (p : Path a b) {X Y : V}
+    (hXY : ∀ d ∈ pathDecoratedHistorySupport T ℳ i₀ x v ν ε p,
+      X ∈ admissibleBackwardDomain (Path.reverseArrowLabels ν p)
+        (p.reverseArrowLabels c) (dirs p d) (p.reverseArrowLabels P) W S C ↔
+      Y ∈ admissibleBackwardDomain (Path.reverseArrowLabels ν p)
+        (p.reverseArrowLabels c) (dirs p d) (p.reverseArrowLabels P) W S C) :
+    (endpointEquiv T ℳ i₀ x v ν ε c P W S C p hXY).symm =
+      endpointEquiv T ℳ i₀ x v ν ε c P W S C p (fun d hd => (hXY d hd).symm) := by
+  apply Equiv.ext
+  intro r
+  apply (endpointEquiv T ℳ i₀ x v ν ε c P W S C p hXY).injective
+  simp only [Equiv.apply_symm_apply, endpointEquiv_trans, endpointEquiv_self]
+
+end EndpointTransport
 
 /-- A contributing path has a nonzero final whole decoration. -/
 theorem decoration_ne_zero (r : PathDecoratedRay T ℳ i₀ x v ν ε c P W S C p X) :
