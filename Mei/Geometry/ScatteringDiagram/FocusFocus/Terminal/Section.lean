@@ -255,8 +255,7 @@ theorem slabThetaSection_mul (n m b c : ℤ) :
 theorem slabThetaSection_neg_one_mul_one :
     slabThetaSection t (-1) 0 * slabThetaSection t 1 0 =
       t • slabThetaSection t 0 0 + t • slabThetaSection t 0 1 := by
-  rw [slabThetaSection_mul]
-  norm_num [Finset.sum_range_succ]
+  simp only [slabThetaSection, ← map_mul, theta_neg_one_mul_theta_one, map_add, map_smul]
 
 section Coefficients
 
