@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.LinearAlgebra.GradedModule.History.Path.Identity
+public import Mei.LinearAlgebra.GradedModule.History.Path.Erasure
 public import Mei.Combinatorics.Quiver.Path.Erasure
 
 /-!
@@ -131,7 +131,7 @@ theorem reverseVertexLabels_loopErasure_castSucc : ∀ {c : Q} (q : Path b c)
     · rw [loopErasureArrow_cons_zero p e q g]
       exact (Degrees.reverseVertexLabels_cons_zero ..).trans
         (Degrees.reverseVertexLabels_cons_zero ..).symm
-    · rw [loopErasureArrow_cons_succ p e q g k]
+    · rw [loopErasureArrow_cons_succ]
       exact (Degrees.reverseVertexLabels_cons_succ v i₀ _ g _ i k.castSucc).trans
         ((reverseVertexLabels_loopErasure_castSucc q d k).trans
           (Degrees.reverseVertexLabels_cons_succ v i₀ _ g _ i
@@ -166,11 +166,8 @@ theorem reverseVertexLabels_loopErasureParameter : ∀ {c : Q} (q : Path b c)
         ((Degrees.reverseVertexLabels_cons_zero ..).symm.trans
           (congrArg (Degrees.reverseVertexLabels v i₀ (((p.cons e).comp q).cons g) (d, i))
             (loopErasureParameter_zero p e (q.cons g)).symm))
-    · rw [loopErasureParameter_cons_succ p e q g k]
-      exact (Degrees.reverseVertexLabels_cons_succ v i₀ _ g _ i k).trans
-        ((reverseVertexLabels_loopErasureParameter q d hd k).trans
-          (Degrees.reverseVertexLabels_cons_succ v i₀ _ g _ i
-            (loopErasureParameter p e q k)).symm)
+    · simp only [loopErasureParameter_cons_succ, Degrees.reverseVertexLabels_cons_succ]
+      exact reverseVertexLabels_loopErasureParameter q d hd k
 
 /-- Equal adjacent degrees make the omitted encounter spatially unbent. -/
 theorem reverseVertexLabels_loopIndex_eq : ∀ {c : Q} (q : Path b c)
@@ -189,7 +186,7 @@ theorem reverseVertexLabels_loopIndex_eq : ∀ {c : Q} (q : Path b c)
   | _, cons q g, d, hd => by
     obtain ⟨d, i⟩ := d
     rw [degreesComp_cons (ι := ι)] at hd
-    rw [loopIndex_cons p e q g]
+    rw [loopIndex_cons]
     exact (Degrees.reverseVertexLabels_cons_succ v i₀ _ g _ i (loopIndex p e q).succ).trans
       ((reverseVertexLabels_loopIndex_eq q d hd).trans
         (Degrees.reverseVertexLabels_cons_succ v i₀ _ g _ i (loopIndex p e q).castSucc).symm)

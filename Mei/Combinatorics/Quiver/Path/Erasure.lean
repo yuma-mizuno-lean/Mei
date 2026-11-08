@@ -6,6 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Combinatorics.Quiver.Path.Labels
+public import Mathlib.Order.Fin.Tuple
 
 /-!
 # Indices after erasing a loop in a path
@@ -87,35 +88,19 @@ theorem loopErasureParameter_cons_succ {c d : Q} (q : Path b c) (g : c ⟶ d)
 theorem strictMono_loopErasureArrow : ∀ {c : Q} (q : Path b c),
     StrictMono (loopErasureArrow p e q)
   | _, nil => Fin.strictMono_succ
-  | _, cons q _ => by
-    intro i j hij
-    cases i using Fin.cases with
-    | zero =>
-      cases j using Fin.cases with
-      | zero => exact (lt_irrefl _ hij).elim
-      | succ j => exact Fin.succ_pos _
-    | succ i =>
-      cases j using Fin.cases with
-      | zero => exact (Fin.not_lt_zero _ hij).elim
-      | succ j =>
-        exact Fin.succ_lt_succ_iff.mpr
-          (strictMono_loopErasureArrow q (Fin.succ_lt_succ_iff.mp hij))
+  | _, @cons _ _ _ _ _ q _ => by
+    change StrictMono (Fin.cons (0 : Fin (((p.cons e).comp q).length + 1))
+      (Fin.succ ∘ loopErasureArrow p e q))
+    exact Fin.strictMono_cons.2
+      ⟨fun j => Fin.succ_pos (loopErasureArrow p e q j),
+        Fin.strictMono_succ.comp (strictMono_loopErasureArrow q)⟩
 
 /-- Parameter inclusion preserves the strict order, including the endpoint. -/
 theorem strictMono_loopErasureParameter {c : Q} (q : Path b c) :
-    StrictMono (loopErasureParameter p e q) := by
-  intro i j hij
-  cases i using Fin.cases with
-  | zero =>
-    cases j using Fin.cases with
-    | zero => exact (lt_irrefl _ hij).elim
-    | succ j => exact Fin.succ_pos _
-  | succ i =>
-    cases j using Fin.cases with
-    | zero => exact (Fin.not_lt_zero _ hij).elim
-    | succ j =>
-      exact Fin.succ_lt_succ_iff.mpr
-        (strictMono_loopErasureArrow p e q (Fin.succ_lt_succ_iff.mp hij))
+    StrictMono (loopErasureParameter p e q) :=
+  Fin.strictMono_cons.2
+    ⟨fun j => Fin.succ_pos (loopErasureArrow p e q j),
+      Fin.strictMono_succ.comp (strictMono_loopErasureArrow p e q)⟩
 
 /-- Exactly the selected loop is omitted from the encounter record. -/
 theorem eq_loopIndex_or_exists_loopErasureArrow : ∀ {c : Q} (q : Path b c)

@@ -57,6 +57,17 @@ theorem homogeneousHistory_degreesErase_of_eq {c : Q} (q : Path b c)
     LinearMap.congr_fun hright]
   simp only [Equiv.apply_symm_apply, LinearMap.comp_apply, hfix]
 
+/-- Erasing an identity arrow from a surviving history keeps its whole output. -/
+theorem homogeneousHistory_degreesErase (p : Path a b) {c : Q} (q : Path b c)
+    (e : b ⟶ b) (he : T e = LinearMap.id) (i : ι a)
+    (d : ((p.cons e).comp q).Degrees ι)
+    {x : M a} (hx : x ∈ ℳ a i)
+    (hd : ((p.cons e).comp q).homogeneousHistory T ℳ d x ≠ 0) :
+    (p.comp q).homogeneousHistory T ℳ (degreesErase p q e d) x =
+      ((p.cons e).comp q).homogeneousHistory T ℳ d x :=
+  homogeneousHistory_degreesErase_of_eq p e T ℳ q d x
+    (homogeneousHistory_loop_eq_of_eq_id T ℳ p q e he i d hx hd)
+
 /-- In a surviving homogeneous history, equal whole decorations at a loop
 force its selected degree to be the incoming degree. -/
 theorem erased_degree_eq_of_decoration_eq {c : Q} (q : Path b c)

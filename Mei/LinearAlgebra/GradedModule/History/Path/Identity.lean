@@ -155,17 +155,6 @@ theorem homogeneousHistory_loop_eq_of_eq_id (p : Path a b) (q : Path b c)
   rw [hh]
   exact homogeneousHistory_cons_last_of_eq_id T ℳ p e he i _ hx
 
-/-- Erasing an identity arrow from a surviving history keeps its whole output. -/
-theorem homogeneousHistory_degreesErase (p : Path a b) (q : Path b c)
-    (e : b ⟶ b) (he : T e = LinearMap.id) (i : ι a)
-    (d : ((p.cons e).comp q).Degrees ι) {x : M a} (hx : x ∈ ℳ a i)
-    (hd : ((p.cons e).comp q).homogeneousHistory T ℳ d x ≠ 0) :
-    (p.comp q).homogeneousHistory T ℳ (degreesErase p q e d) x =
-      ((p.cons e).comp q).homogeneousHistory T ℳ d x := by
-  rw [← homogeneousHistory_degreesRepeat T ℳ p q e he i _ hx,
-    degreesRepeat_degreesErase p q e i d
-      (last_eq_of_identity_history_ne_zero T ℳ p q e he i d hx hd)]
-
 /-- Insertion of an identity between arbitrary chamber blocks gives a bijection
 of surviving histories. Whole decorations, rather than just their degrees, are
 preserved. No injectivity of any propagation map is assumed. -/
@@ -177,8 +166,10 @@ def historySupportIdentityEquiv (p : Path a b) (q : Path b c)
     rw [mem_historySupport, homogeneousHistory_degreesRepeat T ℳ p q e he i _ x.property]
     exact (mem_historySupport ..).mp d.property⟩
   invFun d := ⟨degreesErase p q e d.val, by
-    rw [mem_historySupport, homogeneousHistory_degreesErase T ℳ p q e he i _ x.property
-      ((mem_historySupport ..).mp d.property)]
+    rw [mem_historySupport, ← homogeneousHistory_degreesRepeat T ℳ p q e he i
+      (degreesErase p q e d.val) x.property, degreesRepeat_degreesErase p q e i d.val
+      (last_eq_of_identity_history_ne_zero T ℳ p q e he i d.val x.property
+        ((mem_historySupport ..).mp d.property))]
     exact (mem_historySupport ..).mp d.property⟩
   left_inv d := Subtype.ext (degreesErase_degreesRepeat p q e i d.val)
   right_inv d := Subtype.ext (degreesRepeat_degreesErase p q e i d.val
