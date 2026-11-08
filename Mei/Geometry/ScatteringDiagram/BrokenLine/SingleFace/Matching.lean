@@ -7,7 +7,6 @@ module
 
 public import Mei.Geometry.ScatteringDiagram.BrokenLine.SingleFace.Resolution
 public import Mei.Algebra.Category.SemimoduleCat.Multispan.Span
-import Mei.LinearAlgebra.CommonLift
 
 /-!
 # Matching families of single-face ray evaluations
