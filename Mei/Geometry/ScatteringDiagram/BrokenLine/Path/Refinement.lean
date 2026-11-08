@@ -44,11 +44,42 @@ variable {Q R V J K : Type*} [Quiver Q] [Semiring R]
   (ℳ : ∀ q, ι q → Submodule R (M q)) [∀ q, DirectSum.Decomposition (ℳ q)]
   {a b : Q} (i₀ : ι a) (x : ℳ a i₀) (s : Finset (Path a b))
   [NormedAddCommGroup V] [NormedSpace ℝ V]
+  (v : ∀ q, ι q → V)
   (ν : ∀ {b c : Q}, (b ⟶ c) → V →L[ℝ] ℝ)
   (ε : ∀ {b c : Q}, (b ⟶ c) → SignType)
   (c : ∀ {b c : Q}, (b ⟶ c) → ℝ)
   (P : ∀ {b c : Q}, (b ⟶ c) → Set V) (W : J → Set V) (S : K → Set V) (C : Set V)
-  {Λ : Type*} [AddCommGroup Λ] {i : Λ →+ V}
+
+section General
+
+local notation "Labels" => PathDecoratedType T ℳ i₀ x s v ν ε
+local notation "dirs" => (fun t : Labels => Path.Degrees.reverseVertexLabels v i₀
+  (Subtype.val (Sigma.fst t)) (Subtype.val (Sigma.snd t)))
+local notation "D" => (fun t : Labels => admissibleBackwardDomain
+  (Path.reverseArrowLabels ν (Subtype.val (Sigma.fst t)))
+  (Path.reverseArrowLabels c (Subtype.val (Sigma.fst t))) (dirs t)
+  (Path.reverseArrowLabels P (Subtype.val (Sigma.fst t))) W S C)
+
+open Classical in
+/-- The weighted evaluation of the actual rays through any endpoint is the sum of the final
+decorations over every chart whose endpoint piece contains it, for any disjoint cover of each
+complete type's domain. In particular it does not depend on the subdivision. -/
+theorem pathDecoratedEvaluation_eq_sum_charts {κ : Labels → Type*} [∀ t, Fintype (κ t)]
+    (B : ∀ t, κ t → Set V) (hdisj : ∀ t, Pairwise fun j l => Disjoint (B t j) (B t l))
+    (hcover : ∀ t, ⋃ j, B t j = D t) (X : V) :
+    pathDecoratedEvaluation T ℳ i₀ x s v ν ε c P W S C X =
+      let := Fintype.ofFinite Labels
+      ∑ t : Labels, ∑ j : κ t,
+        if X ∈ B t j then t.1.val.homogeneousHistory T ℳ t.2.val x else 0 := by
+  rw [pathDecoratedEvaluation_eq_sum_domains T ℳ i₀ x s v ν ε c P W S C]
+  exact Finset.sum_congr rfl fun t _ => Set.ite_mem_eq_sum_of_pairwise_disjoint (B t)
+    (hdisj t) (hcover t) X _
+
+end General
+
+section Rational
+
+variable {Λ : Type*} [AddCommGroup Λ] {i : Λ →+ V}
   (h : TauCeti.Toric.IsIntegralLattice i) (w : ∀ q, ι q → Λ) [Finite J] [Finite K]
   (hν : ∀ {b c : Q} (e : b ⟶ c), Toric.IsRationalFunctional h (ν e).toLinearMap)
   (hP : ∀ {b c : Q} (e : b ⟶ c), IsRationalSemilinear h (P e))
@@ -69,21 +100,6 @@ local notation "path" => (fun t : Labels => backwardPath
   (Path.reverseArrowLabels c (Subtype.val (Sigma.fst t))) (dirs t))
 
 include hν hP hW hS hC
-
-open Classical in
-/-- The weighted evaluation of the actual rays through any endpoint is the sum of the final
-decorations over every chart whose endpoint piece contains it, for any disjoint cover of each
-complete type's domain. In particular it does not depend on the subdivision. -/
-theorem pathDecoratedEvaluation_eq_sum_charts {κ : Labels → Type*} [∀ t, Fintype (κ t)]
-    (B : ∀ t, κ t → Set V) (hdisj : ∀ t, Pairwise fun j l => Disjoint (B t j) (B t l))
-    (hcover : ∀ t, ⋃ j, B t j = D t) (X : V) :
-    pathDecoratedEvaluation T ℳ i₀ x s vel ν ε c P W S C X =
-      let := Fintype.ofFinite Labels
-      ∑ t : Labels, ∑ j : κ t,
-        if X ∈ B t j then t.1.val.homogeneousHistory T ℳ t.2.val x else 0 := by
-  rw [pathDecoratedEvaluation_eq_sum_domains T ℳ i₀ x s ν ε c P W S C h w hν hP hW hS hC]
-  exact Finset.sum_congr rfl fun t _ => Set.ite_mem_eq_sum_of_pairwise_disjoint (B t)
-    (hdisj t) (hcover t) X _
 
 /-- Two subdivisions of the endpoint domains of the complete types have common closed
 polyhedral charts. Each new interior lies in one piece of each subdivision and exhausts it,
@@ -182,5 +198,7 @@ theorem exists_pathDecoratedFamily_cover_closedCharts
   have hsubD : B t j ⊆ closure (D t) := hclosure.trans (closure_mono inter_subset_left)
   exact ⟨hne, hpoly, hlc, hsub, hclosure, hsubD, hpoly.isClosed.isProperMap_subtypeVal,
     pathDecoratedType_closedChart T ℳ i₀ x s ν ε c P W S C h w hC t hpoly hsubD⟩
+
+end Rational
 
 end Mei

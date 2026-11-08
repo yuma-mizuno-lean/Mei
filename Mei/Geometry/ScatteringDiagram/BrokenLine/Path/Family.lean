@@ -82,6 +82,57 @@ theorem pathDecoratedEvaluation_zero (X : V) :
 
 local notation "Ray" p:max X:max => PathDecoratedRay T ℳ i₀ x v ν ε c P W S C p X
 
+section General
+
+local notation "Labels" => PathDecoratedType T ℳ i₀ x s v ν ε
+local notation "D" => (fun t : Labels => admissibleBackwardDomain
+  (Path.reverseArrowLabels ν (Subtype.val (Sigma.fst t)))
+  (Path.reverseArrowLabels c (Subtype.val (Sigma.fst t)))
+  (Path.Degrees.reverseVertexLabels v i₀ (Subtype.val (Sigma.fst t))
+    (Subtype.val (Sigma.snd t)))
+  (Path.reverseArrowLabels P (Subtype.val (Sigma.fst t))) W S C)
+
+open Classical in
+/-- The shared weighted evaluation counts each complete type whose endpoint domain contains the
+point, with its entire final decoration. -/
+theorem pathDecoratedEvaluation_eq_sum_domains (X : V) :
+    pathDecoratedEvaluation T ℳ i₀ x s v ν ε c P W S C X =
+      let := Fintype.ofFinite Labels
+      ∑ t : Labels, if X ∈ D t then t.1.val.homogeneousHistory T ℳ t.2.val x else 0 := by
+  classical
+  let : ∀ p : (s : Type _), Fintype (Ray p.val X) := fun _ => Fintype.ofFinite _
+  let := Fintype.ofFinite (Rays X)
+  rw [pathDecoratedEvaluation_def]
+  dsimp only
+  trans ∑ p : (s : Type _), ∑ d :
+    (pathDecoratedHistorySupport T ℳ i₀ x v ν ε p.val : Type _),
+    if X ∈ D ⟨p, d⟩ then p.val.homogeneousHistory T ℳ d.val x else 0
+  · trans ∑ p : (s : Type _), ∑ r : Ray p.val X, r.decoration
+    · convert Fintype.sum_sigma (fun r : Rays X => r.2.decoration) using 1
+      congr 1
+      ext r
+      simp
+    apply Finset.sum_congr rfl
+    intro p _
+    let e := pathDecoratedRayFiberEquiv T ℳ i₀ x v ν ε c P W S C p.val X
+    trans ∑ d : {d : (pathDecoratedHistorySupport T ℳ i₀ x v ν ε p.val : Type _) //
+        X ∈ D (⟨p, d⟩ : Labels)}, p.val.homogeneousHistory T ℳ d.val.val x
+    · exact Fintype.sum_equiv e _ (fun d : {d :
+          (pathDecoratedHistorySupport T ℳ i₀ x v ν ε p.val : Type _) //
+          X ∈ D (⟨p, d⟩ : Labels)} => p.val.homogeneousHistory T ℳ d.val.val x) fun r => by
+        rw [PathDecoratedRay.decoration_def, pathDecoratedRayFiberEquiv_history]
+    rw [← Finset.sum_filter]
+    exact (Finset.sum_subtype (Finset.univ.filter fun d :
+        (pathDecoratedHistorySupport T ℳ i₀ x v ν ε p.val : Type _) => X ∈ D ⟨p, d⟩)
+      (by simp) (fun d => p.val.homogeneousHistory T ℳ d.val x)).symm
+  · convert (Fintype.sum_sigma (fun t : Labels =>
+      if X ∈ D t then t.1.val.homogeneousHistory T ℳ t.2.val x else 0)).symm using 1
+    congr 1
+    ext t
+    simp
+
+end General
+
 /-- Two finite inventories exhausting the actual endpoint fiber give the same
 weighted evaluation. Exhaustivity is needed only at the endpoint in question;
 the inventories may contain unrealizable paths and paths of different lengths. -/
@@ -236,16 +287,6 @@ theorem pathDecoratedFamily_weightedEvaluation (X : V) :
   exact (congrArg (fun t : Labels => t.1.val.homogeneousHistory T ℳ t.2.val x)
     (pathDecoratedFamilyFiberEquiv_type T ℳ i₀ x s ν ε c P W S C h w hν hP hW hS hC X z)).symm
 
-open Classical in
-/-- The shared weighted evaluation counts each complete type whose endpoint domain contains the
-point, with its entire final decoration. -/
-theorem pathDecoratedEvaluation_eq_sum_domains (X : V) :
-    pathDecoratedEvaluation T ℳ i₀ x s vel ν ε c P W S C X =
-      let := Fintype.ofFinite Labels
-      ∑ t : Labels, if X ∈ D t then t.1.val.homogeneousHistory T ℳ t.2.val x else 0 :=
-  (pathDecoratedFamily_weightedEvaluation T ℳ i₀ x s ν ε c P W S C h w hν hP hW hS hC X).symm.trans
-    (FiniteSemilinearFamily.weightedEvaluation_ofDomains _ _ _ X)
-
 /-- A disjoint cover of every complete type's endpoint domain parameterizes the actual rays of
 the inventory, sending a chart point to its endpoint and carrying its type label. -/
 def pathDecoratedChartEquiv {κ : Labels → Type*} {B : ∀ t, κ t → Set V}
@@ -276,6 +317,36 @@ theorem pathDecoratedChartEquiv_apply_type {κ : Labels → Type*} {B : ∀ t, �
         : Labels) = z.1 :=
   (pathDecoratedFamilyFiberEquiv_type T ℳ i₀ x s ν ε c P W S C h w hν hP hW hS hC _ _).trans
     (FiniteSemilinearFamily.ofDomainsChartEquiv_apply_snd_fst _ hdisj hcover z)
+
+/-- The ray parameterization preserves the entire actual path. -/
+theorem pathDecoratedChartEquiv_apply_path {κ : Labels → Type*} {B : ∀ t, κ t → Set V}
+    (hdisj : ∀ t, Pairwise fun j l => Disjoint (B t j) (B t l))
+    (hcover : ∀ t, ⋃ j, B t j = D t) (z : Σ t, Σ j, B t j) :
+    (pathDecoratedChartEquiv T ℳ i₀ x s ν ε c P W S C h w hν hP hW hS hC hdisj hcover
+      z).2.2.2.ray.toContinuousMap = (path z.1) z.2.2.val := by
+  let z' := FiniteSemilinearFamily.ofDomainsChartEquiv
+    (hD := fun t : Labels => isRationalSemilinear_pathDecoratedDomain
+      i₀ ν c P W S C h w hν hP hW hS hC t.1.val t.2.val) hdisj hcover z
+  have hz' : z'.2.1 = z.1 :=
+    FiniteSemilinearFamily.ofDomainsChartEquiv_apply_snd_fst _ hdisj hcover z
+  have hz'X : z'.1 = z.2.2.val :=
+    FiniteSemilinearFamily.ofDomainsChartEquiv_apply_fst _ hdisj hcover z
+  have hp := pathDecoratedFamilyFiberEquiv_path T ℳ i₀ x s ν ε c P W S C h w hν hP hW hS hC
+    z'.1 z'.2
+  change (pathDecoratedChartEquiv T ℳ i₀ x s ν ε c P W S C h w hν hP hW hS hC hdisj hcover
+    z).2.2.2.ray.toContinuousMap = (path z'.2.1) z'.1 at hp
+  rw [hp, hz', hz'X]
+
+/-- The ray parameterization preserves the entire final decoration. -/
+theorem pathDecoratedChartEquiv_apply_decoration {κ : Labels → Type*} {B : ∀ t, κ t → Set V}
+    (hdisj : ∀ t, Pairwise fun j l => Disjoint (B t j) (B t l))
+    (hcover : ∀ t, ⋃ j, B t j = D t) (z : Σ t, Σ j, B t j) :
+    PathDecoratedRay.decoration ((pathDecoratedChartEquiv T ℳ i₀ x s ν ε c P W S C h w hν hP hW
+      hS hC hdisj hcover z).2.2) = (Sigma.fst (Sigma.fst z)).val.homogeneousHistory T ℳ
+      (Sigma.snd (Sigma.fst z)).val x := by
+  rw [PathDecoratedRay.decoration_def]
+  exact congrArg (fun t : Labels => t.1.val.homogeneousHistory T ℳ t.2.val x)
+    (pathDecoratedChartEquiv_apply_type T ℳ i₀ x s ν ε c P W S C h w hν hP hW hS hC hdisj hcover z)
 
 include hν hP hW hS hC in
 /-- Finite closed charts exhaust every actual ray in the itinerary inventory.
