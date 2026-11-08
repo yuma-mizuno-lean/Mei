@@ -57,7 +57,10 @@ include hF hchart in
 `μ` is the half-line `t ↦ Q - t • μ`. -/
 theorem path_eq_of_noFaces (b : BrokenLine D) (t : Iic (0 : ℝ)) :
     b.path t = b.endpoint - (t : ℝ) • D.momentum b.finalState b.finalDegree := by
-  set μ := D.momentum b.finalState b.finalDegree with hμ
+  set μ := D.momentum (b.state (Fin.last b.numEvents))
+    (b.degree (Fin.last b.numEvents)) with hμ
+  have hfinal : μ = D.momentum b.finalState b.finalDegree :=
+    hμ.trans b.momentum_final_def.symm
   have : IsEmpty (Fin b.numEvents) := by
     rw [numEvents_eq_zero_of_noFaces hF b]
     infer_instance
@@ -67,8 +70,7 @@ theorem path_eq_of_noFaces (b : BrokenLine D) (t : Iic (0 : ℝ)) :
   have haff (s t : Iic (0 : ℝ)) (hs : (s : ℝ) < 0) (ht : (t : ℝ) < 0) :
       b.path t = b.path s - ((t : ℝ) - s) • μ := by
     have h := b.interior_affine _ s t (hint s hs) (hint t ht)
-    rw [hchart, hchart] at h
-    exact h
+    simpa only [hchart] using h
   let c : V := b.path ⟨-1, by norm_num⟩ + (-1 : ℝ) • μ
   have hc (s : ℝ) (hs : s < 0) : b.path ⟨s, hs.le⟩ + s • μ = c := by
     rw [haff ⟨-1, by norm_num⟩ ⟨s, hs.le⟩ (by norm_num) hs]
@@ -88,6 +90,7 @@ theorem path_eq_of_noFaces (b : BrokenLine D) (t : Iic (0 : ℝ)) :
     have := hφc (show (0 : ℝ) ∈ closure (Iio (0 : ℝ)) by rw [closure_Iio]; exact le_rfl)
     rw [b.endpoint_def]
     simpa only [φ, min_self, zero_smul, add_zero] using this
+  rw [← hfinal]
   rcases t.property.lt_or_eq with ht | ht
   · rw [← h0] at hc
     rw [eq_sub_iff_add_eq]

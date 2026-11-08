@@ -57,6 +57,7 @@ after all earlier crossings and before all later ones and the endpoint at time z
 def segmentInterior {k : ℕ} (T : Fin k → ℝ) (j : Fin (k + 1)) : Set ℝ :=
   {t | t < 0 ∧ (∀ b : Fin k, b.castSucc < j → T b < t) ∧ ∀ b : Fin k, j ≤ b.castSucc → t < T b}
 
+@[simp]
 theorem mem_segmentInterior {k : ℕ} {T : Fin k → ℝ} {j : Fin (k + 1)} {t : ℝ} :
     t ∈ segmentInterior T j ↔
       t < 0 ∧ (∀ b : Fin k, b.castSucc < j → T b < t) ∧ ∀ b : Fin k, j ≤ b.castSucc → t < T b :=
@@ -127,6 +128,7 @@ namespace BrokenLineData
 def faceSupport (D : BrokenLineData.{uS, uD, uM, uF} R B V) : Set B :=
   {x | ∃ (u v : D.State) (e : D.Face u v), x ∈ D.support e}
 
+@[simp]
 theorem mem_faceSupport {D : BrokenLineData.{uS, uD, uM, uF} R B V} {x : B} :
     x ∈ D.faceSupport ↔ ∃ (u v : D.State) (e : D.Face u v), x ∈ D.support e := Iff.rfl
 
@@ -209,10 +211,13 @@ variable {D : BrokenLineData.{uS, uD, uM, uF} R B V} (b : BrokenLine D)
 def endpoint : B := b.path ⟨0, le_rfl⟩
 
 /-- The chamber of the last segment, which contains the endpoint. -/
-@[expose] def finalState : D.State := b.state (Fin.last b.numEvents)
+def finalState : D.State := b.state (Fin.last b.numEvents)
+
+theorem finalState_def : b.finalState = b.state (Fin.last b.numEvents) := (rfl)
 
 /-- The decoration of the last segment. -/
-@[expose] def finalDecoration : D.coefficient b.finalState := b.decoration (Fin.last b.numEvents)
+def finalDecoration : D.coefficient b.finalState :=
+  b.finalState_def ▸ b.decoration (Fin.last b.numEvents)
 
 /-- The chamber, degree and decoration of the first segment, imposed on the fibers of
 evaluation. -/
@@ -221,22 +226,27 @@ def incoming : Σ u : D.State, Σ _ : D.Degree u, D.coefficient u :=
 
 theorem endpoint_def : b.endpoint = b.path ⟨0, le_rfl⟩ := (rfl)
 
-theorem finalState_def : b.finalState = b.state (Fin.last b.numEvents) := (rfl)
-
-theorem finalDecoration_def : b.finalDecoration = b.decoration (Fin.last b.numEvents) := (rfl)
+theorem finalDecoration_def : b.finalState_def ▸ b.finalDecoration =
+    b.decoration (Fin.last b.numEvents) := by
+  simp only [finalDecoration]
 
 theorem incoming_def : b.incoming = ⟨b.state 0, b.degree 0, b.decoration 0⟩ := (rfl)
 
-theorem endpoint_mem_region : b.endpoint ∈ D.region b.finalState := b.path_zero_mem_region
+theorem endpoint_mem_region : b.endpoint ∈ D.region b.finalState := by
+  rw [finalState_def]
+  exact b.path_zero_mem_region
 
 theorem endpoint_off_faces : b.endpoint ∉ D.faceSupport := b.path_zero_off_faces
 
 theorem finalDecoration_ne_zero : b.finalDecoration ≠ 0 := b.decoration_ne_zero _
 
 /-- The degree of the last segment. -/
-@[expose] def finalDegree : D.Degree b.finalState := b.degree (Fin.last b.numEvents)
+def finalDegree : D.Degree b.finalState :=
+  b.finalState_def ▸ b.degree (Fin.last b.numEvents)
 
-theorem finalDegree_def : b.finalDegree = b.degree (Fin.last b.numEvents) := (rfl)
+theorem finalDegree_def : b.finalState_def ▸ b.finalDegree =
+    b.degree (Fin.last b.numEvents) := by
+  simp only [finalDegree]
 
 theorem finalDecoration_mem : b.finalDecoration ∈ D.grading b.finalState b.finalDegree :=
   b.decoration_mem _
@@ -314,36 +324,46 @@ theorem momentum_final_eq_of_numEvents_eq_zero (hn : b.numEvents = 0) {u : D.Sta
   simp only [Sigma.mk.injEq, heq_eq_eq] at hp
   rw [hp.1]
 
+/-- The momentum of the final segment. -/
+theorem momentum_final_def : D.momentum b.finalState b.finalDegree =
+    D.momentum (b.state (Fin.last b.numEvents)) (b.degree (Fin.last b.numEvents)) := by
+  have hs : b.state (Fin.last b.numEvents) = b.finalState := b.finalState_def.symm
+  have hdp : (⟨b.state (Fin.last b.numEvents), b.degree (Fin.last b.numEvents)⟩ :
+      Σ u, D.Degree u) = ⟨b.finalState, b.finalDegree⟩ := Sigma.eq hs b.finalDegree_def
+  rw [congrArg (fun dp : Σ u, D.Degree u => D.momentum dp.1 dp.2) hdp]
+
 /-- Broken lines without crossings are determined by their path and incoming datum. -/
 theorem ext_of_numEvents_eq_zero {b c : BrokenLine D} (hb : b.numEvents = 0)
     (hc : c.numEvents = 0) (hpath : b.path = c.path) (hinc : b.incoming = c.incoming) :
     b = c := by
   rw [b.incoming_def, c.incoming_def] at hinc
-  obtain ⟨n, T, h1, h2, st, dg, dc, h3, h4, h5, pth, h6, h7, h8, h9, h10, h11, h12, h13, h14, h15,
-    h16, h17, h18⟩ := b
-  obtain ⟨m, T', h1', h2', st', dg', dc', h3', h4', h5', pth', h6', h7', h8', h9', h10', h11',
-    h12', h13', h14', h15', h16', h17', h18'⟩ := c
-  dsimp only at hb hc hpath hinc
-  subst hb hc hpath
-  have hj (j : Fin (0 + 1)) : j = 0 := Fin.fin_one_eq_zero j
-  have hst : st = st' := funext fun j => by
-    rw [hj j]
-    exact (Sigma.mk.inj hinc).1
-  subst hst
-  simp only [Sigma.mk.injEq, heq_eq_eq, true_and] at hinc
-  have hdg : dg = dg' := funext fun j => by
-    rw [hj j]
-    exact hinc.1
-  subst hdg
-  have hdc : dc = dc' := funext fun j => by
-    rw [hj j]
-    exact hinc.2
-  subst hdc
-  have hT : T = T' := funext fun j => j.elim0
-  subst hT
-  have hf : h13 = h13' := funext fun j => j.elim0
-  subst hf
-  rfl
+  cases b with
+  | mk n T ht htn st dg dc dcm dcn pnz pth proper pzf pzr as imr ia iof face ems trans nv adm
+      prop =>
+    cases c with
+    | mk m T' ht' htn' st' dg' dc' dcm' dcn' pnz' pth' proper' pzf' pzr' as' imr' ia' iof'
+        face' ems' trans' nv' adm' prop' =>
+      dsimp only at hb hc hpath hinc
+      subst hb hc hpath
+      have hj (j : Fin (0 + 1)) : j = 0 := Fin.fin_one_eq_zero j
+      have hst : st = st' := funext fun j => by
+        rw [hj j]
+        exact (Sigma.mk.inj hinc).1
+      subst hst
+      simp only [Sigma.mk.injEq, heq_eq_eq, true_and] at hinc
+      have hdg : dg = dg' := funext fun j => by
+        rw [hj j]
+        exact hinc.1
+      subst hdg
+      have hdc : dc = dc' := funext fun j => by
+        rw [hj j]
+        exact hinc.2
+      subst hdc
+      have hT : T = T' := funext fun j => j.elim0
+      subst hT
+      have hf : face = face' := funext fun j => j.elim0
+      subst hf
+      rfl
 
 /-- Evaluation of a finite family of broken lines in a chamber `u` that contains all their
 endpoints: the sum of their final decorations. -/
