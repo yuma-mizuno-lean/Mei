@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.ScatteringDiagram.BrokenLine.Path.Family
+public import Mei.Geometry.ScatteringDiagram.BrokenLine.Path.Regrading
 
 /-!
 # Coefficient comparisons for varying-chamber ray families
@@ -241,35 +241,5 @@ theorem pathDecoratedRayEmbeddingEquiv_decoration (hinj : Function.Injective (r 
   rw [pathDecoratedRayEmbeddingEquiv_apply]
   exact pathDecoratedRayCoefficientEquiv_decoration T U ℳ 𝓝 r σ hr hT i₀ x v w hv ν ε
     c P W S C p X _
-
-/-- Coefficient maps commute with the finite evaluation over any itinerary
-inventory. Killed whole decorations contribute zero and are then discarded;
-no coefficient injectivity or endpoint genericity is assumed. -/
-theorem map_pathDecoratedEvaluation (s : Finset (Path a b)) (X : V) :
-    r b (pathDecoratedEvaluation T ℳ i₀ x s v ν ε c P W S C X) =
-      pathDecoratedEvaluation U 𝓝 (σ a i₀) x' s w ν ε c P W S C X := by
-  classical
-  let : ∀ p : (s : Type _), Fintype (SrcRay p.val X) := fun _ => Fintype.ofFinite _
-  let : ∀ p : (s : Type _), Fintype (TgtRay p.val X) := fun _ => Fintype.ofFinite _
-  simp only [pathDecoratedEvaluation_def, map_sum]
-  -- The evaluation chooses finite enumerations independently of the sigma enumeration.
-  rw [Subsingleton.elim (Fintype.ofFinite (Σ p : (s : Type _), SrcRay p.val X))
-    (inferInstance : Fintype (Σ p : (s : Type _), SrcRay p.val X)),
-    Subsingleton.elim (Fintype.ofFinite (Σ p : (s : Type _), TgtRay p.val X))
-      (inferInstance : Fintype (Σ p : (s : Type _), TgtRay p.val X))]
-  simp only [Fintype.sum_sigma]
-  apply Finset.sum_congr rfl
-  intro p _
-  let A : Type _ := SrcRay p.val X
-  let B : Set A := {z | r b z.decoration ≠ 0}
-  let : Fintype A := inferInstanceAs (Fintype (SrcRay p.val X))
-  let : Fintype B := inferInstanceAs
-    (Fintype {z : SrcRay p.val X // r b z.decoration ≠ 0})
-  calc
-    _ = ∑ z : B, r b z.val.decoration :=
-      Finset.sum_congr_set B _ _ (fun _ _ => rfl) (fun _ hz => not_ne_iff.mp hz)
-    _ = _ := Fintype.sum_equiv (F p.val X) _ _ fun z =>
-      (pathDecoratedRayCoefficientEquiv_decoration T U ℳ 𝓝 r σ hr hT i₀ x v w hv
-        ν ε c P W S C p.val X z).symm
 
 end Mei
