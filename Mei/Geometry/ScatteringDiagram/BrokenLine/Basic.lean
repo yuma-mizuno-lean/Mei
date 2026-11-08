@@ -345,38 +345,58 @@ protected theorem ext {b c : BrokenLine D} (hn : b.numEvents = c.numEvents)
   simp only [BrokenLine.mk.injEq]
   exact ⟨hn, hT, hstate, hdegree, hdecoration, hpath, hface⟩
 
+universe uV uW uX
+
+private theorem zero_index_heq {n m : ℕ} (hn : n = 0) (hm : m = 0)
+    {A : Type uV} (f : Fin (n + 1) → A) (g : Fin (m + 1) → A)
+    (h : f 0 = g 0) : HEq f g := by
+  subst n
+  subst m
+  exact heq_of_eq (funext fun j => by
+    rw [Fin.fin_one_eq_zero j]
+    exact h)
+
+private theorem zero_index_dep_heq {S : Type uV} {A : S → Type uW} {B : ∀ s, A s → Type uX}
+    {n m : ℕ} (hn : n = 0) (hm : m = 0)
+    {st : Fin (n + 1) → S} {st' : Fin (m + 1) → S} (hst : HEq st st')
+    {f : ∀ j, A (st j)} {g : ∀ j, A (st' j)}
+    {df : ∀ j, B (st j) (f j)} {dg : ∀ j, B (st' j) (g j)}
+    (h : HEq (⟨f 0, df 0⟩ : Σ a, B (st 0) a) (⟨g 0, dg 0⟩ : Σ a, B (st' 0) a)) :
+    HEq f g ∧ HEq df dg := by
+  subst n
+  subst m
+  have hst' : st = st' := eq_of_heq hst
+  subst st'
+  have h' : (⟨f 0, df 0⟩ : Σ a, B (st 0) a) = ⟨g 0, dg 0⟩ := eq_of_heq h
+  have hfg : f = g := funext fun j => by
+    rw [Fin.fin_one_eq_zero j]
+    exact (Sigma.mk.inj h').1
+  subst g
+  exact ⟨HEq.rfl, heq_of_eq (funext fun j => by
+    rw [Fin.fin_one_eq_zero j]
+    exact eq_of_heq (Sigma.mk.inj h').2)⟩
+
 /-- Broken lines without crossings are determined by their path and incoming datum. -/
 theorem ext_of_numEvents_eq_zero {b c : BrokenLine D} (hb : b.numEvents = 0)
     (hc : c.numEvents = 0) (hpath : b.path = c.path) (hinc : b.incoming = c.incoming) :
     b = c := by
   rw [b.incoming_def, c.incoming_def] at hinc
-  cases b with
-  | mk n T ht htn st dg dc dcm dcn pnz pth proper pzf pzr as imr ia iof face ems trans nv
-      adm prop =>
-    cases c with
-    | mk m T' ht' htn' st' dg' dc' dcm' dcn' pnz' pth' proper' pzf' pzr' as' imr' ia' iof'
-        face' ems' trans' nv' adm' prop' =>
-      dsimp only at hb hc hpath hinc
-      subst hb hc hpath
-      have hj (j : Fin (0 + 1)) : j = 0 := Fin.fin_one_eq_zero j
-      have hst : st = st' := funext fun j => by
-        rw [hj j]
-        exact (Sigma.mk.inj hinc).1
-      subst hst
-      simp only [Sigma.mk.injEq, heq_eq_eq, true_and] at hinc
-      have hdg : dg = dg' := funext fun j => by
-        rw [hj j]
-        exact hinc.1
-      subst hdg
-      have hdc : dc = dc' := funext fun j => by
-        rw [hj j]
-        exact hinc.2
-      subst dc'
-      have hT : T = T' := funext fun j => j.elim0
-      have hf : face = face' := funext fun j => j.elim0
-      exact Mei.BrokenLine.ext rfl (heq_of_eq hT) rfl (heq_of_eq rfl)
-        (heq_of_eq rfl) (heq_of_eq rfl) (heq_of_eq hf)
-
+  have hstate : HEq b.state c.state :=
+    zero_index_heq hb hc b.state c.state (Sigma.mk.inj hinc).1
+  obtain ⟨hdegree, hdecoration⟩ :=
+    zero_index_dep_heq (B := fun u p => D.coefficient u) (f := b.degree) (g := c.degree)
+      (df := b.decoration) (dg := c.decoration) hb hc hstate (Sigma.mk.inj hinc).2
+  have hn : b.numEvents = c.numEvents := hb.trans hc.symm
+  have hbc : Fin b.numEvents = Fin c.numEvents := congrArg Fin hn
+  refine BrokenLine.ext hn ?_ hpath hstate hdegree hdecoration ?_
+  · apply Function.hfunext hbc
+    intro j j' _
+    have : j'.val < 0 := by simpa [hc] using j'.isLt
+    omega
+  · apply Function.hfunext hbc
+    intro j j' _
+    have : j'.val < 0 := by simpa [hc] using j'.isLt
+    omega
 
 /-- Evaluation of a finite family of broken lines in a chamber `u` that contains all their
 endpoints: the sum of their final decorations. -/
@@ -410,6 +430,7 @@ theorem weightedEvaluation_isEmpty {ι : Type*} [Finite ι] [IsEmpty ι] (family
   exact Finset.sum_of_isEmpty _
 
 /-- A single broken line evaluates to its final decoration. -/
+@[simp]
 theorem weightedEvaluation_unique {ι : Type*} [Unique ι] (family : ι → BrokenLine D)
     (u : D.State) (hu : ∀ j, (family j).finalState = u) :
     weightedEvaluation family u hu = (family default).decorationIn (hu default) := by
