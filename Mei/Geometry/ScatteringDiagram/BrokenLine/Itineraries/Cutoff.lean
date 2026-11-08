@@ -118,6 +118,20 @@ theorem cutoffDecoratedRayCutoffEquiv_itinerary
     (cutoffDecoratedRayCutoffEquiv d ℳ T a v f c ε P W S C h hℳ Q β).itinerary =
       β.itinerary := (rfl)
 
+/-- Changing the enumeration cutoff preserves every degree-labelled encounter. -/
+@[simp]
+theorem cutoffDecoratedRayCutoffEquiv_degreeItinerary
+    (β : CutoffDecoratedRay d ℳ T a v f c ε P W S C l Q) :
+    (cutoffDecoratedRayCutoffEquiv d ℳ T a v f c ε P W S C h hℳ Q β).degreeItinerary =
+      β.degreeItinerary := CutoffDecoratedRay.ofCutoff_degreeItinerary β _
+
+/-- Changing the enumeration cutoff preserves every encounter parameter. -/
+@[simp]
+theorem cutoffDecoratedRayCutoffEquiv_parameter
+    (β : CutoffDecoratedRay d ℳ T a v f c ε P W S C l Q) :
+    HEq (cutoffDecoratedRayCutoffEquiv d ℳ T a v f c ε P W S C h hℳ Q β).realization.2.parameter
+      β.realization.2.parameter := (HEq.rfl)
+
 /-- Changing the enumeration cutoff preserves the entire decorated realization,
 including all segment degrees, incoming tails and encounter times. -/
 @[simp]

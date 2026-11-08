@@ -43,6 +43,21 @@ theorem reverseVertexLabels_cons (v : ∀ q, ι q → A) (i₀ : ι a)
     reverseVertexLabels v i₀ (p.cons e) (d, i) =
       Fin.cons (v c i) (reverseVertexLabels v i₀ p d) := (rfl)
 
+/-- The label of the final segment is that of the last selected degree. -/
+@[simp]
+theorem reverseVertexLabels_cons_zero (v : ∀ q, ι q → A) (i₀ : ι a)
+    {b c : Q} (p : Path a b) (e : b ⟶ c) (d : p.Degrees ι) (i : ι c) :
+    reverseVertexLabels v i₀ (p.cons e) (d, i) (0 : Fin (p.length + 1 + 1)) = v c i :=
+  Fin.cons_zero ..
+
+/-- The labels of earlier segments are those of the shorter history. -/
+@[simp]
+theorem reverseVertexLabels_cons_succ (v : ∀ q, ι q → A) (i₀ : ι a)
+    {b c : Q} (p : Path a b) (e : b ⟶ c) (d : p.Degrees ι) (i : ι c)
+    (j : Fin (p.length + 1)) :
+    reverseVertexLabels v i₀ (p.cons e) (d, i) j.succ = reverseVertexLabels v i₀ p d j :=
+  Fin.cons_succ ..
+
 /-- The endpoint label belongs to the terminal chamber degree. -/
 @[simp]
 theorem reverseVertexLabels_zero (v : ∀ q, ι q → A) (i₀ : ι a) :
@@ -70,5 +85,19 @@ theorem reverseVertexLabels_comp (v : ∀ q, ι q → A) (g : A → B) (i₀ : �
   | _, cons p e, d => by
     funext j
     exact Fin.cases rfl (fun k => congrFun (reverseVertexLabels_comp v g i₀ p d.1) k) j
+
+/-- Regrading a history preserves all its segment labels when the vertex labels
+intertwine the degree maps, including the incoming segment. -/
+@[simp]
+theorem reverseVertexLabels_map {κ : Q → Type*} (σ : ∀ q, ι q → κ q)
+    (v : ∀ q, ι q → A) (w : ∀ q, κ q → A) (hv : ∀ q d, w q (σ q d) = v q d)
+    (i₀ : ι a) :
+    ∀ {b : Q} (p : Path a b) (d : p.Degrees ι),
+      reverseVertexLabels w (σ a i₀) p (map σ p d) = reverseVertexLabels v i₀ p d
+  | _, nil, _ => by simp [hv]
+  | _, cons p e, d => by
+    obtain ⟨d, i⟩ := d
+    rw [map_cons, reverseVertexLabels_cons, reverseVertexLabels_cons]
+    exact congrArg₂ Fin.cons (hv _ _) (reverseVertexLabels_map σ v w hv i₀ p d)
 
 end Quiver.Path.Degrees

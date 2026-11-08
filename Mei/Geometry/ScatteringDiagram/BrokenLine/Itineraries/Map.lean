@@ -71,6 +71,16 @@ theorem cutoffDecoratedRayCoefficientEquiv_itinerary
       β.val.itinerary :=
   cutoffDecoratedRayRegradingEquiv_itinerary ..
 
+/-- Specialization preserves the complete degree-labelled encounter word. -/
+@[simp]
+theorem cutoffDecoratedRayCoefficientEquiv_degreeItinerary
+    (β : {β : Source // r β.decoration ≠ 0}) :
+    (cutoffDecoratedRayCoefficientEquiv d ℳ 𝓝 r hr T U hT a
+      v f c ε P W S C k Q β).degreeItinerary = β.val.degreeItinerary := by
+  rw [cutoffDecoratedRayCoefficientEquiv, cutoffDecoratedRayRegradingEquiv_apply,
+    cutoffDecoratedRayRegradingMap_degreeItinerary]
+  exact List.map_id _
+
 /-- The selected degrees of every segment are unchanged by specialization. -/
 @[simp]
 theorem cutoffDecoratedRayCoefficientEquiv_history

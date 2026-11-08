@@ -23,6 +23,8 @@ of any segment in the domain of a section differ by the crossing factors of
 
 Consequently a family with the same value `c` on both sides of the wall is a section exactly
 when `θ • c = c` (`exists_forall_value_eq_iff_smul_eq`); if `θ • c ≠ c`, it is not a section.
+Every coefficient `c` on the negative side extends, by `θ⁻¹ • c` on the positive side, to the
+section `hyperplaneSection` (`value_hyperplaneSection`), which is determined by its values.
 For `V = ℝ²` and `f = e₁*` this is the wall `{x = 0}` with normal `e₁*`.
 
 The wall-crossing transport of coefficients follows Gross–Hacking–Siebert, *Theta functions on
@@ -74,6 +76,71 @@ theorem value_eq_inv_smul_value_hyperplaneDiagram
   rw [value_hyperplaneDiagram s x y hx hy hseg]
   simp [hyperplaneFactor_def, hfx.not_gt, hfy]
 
+variable (hf hf0 θ) in
+/-- The function with value `hyperplaneFactor f θ x • c` at the off-wall point `x` is locally
+parallel: the transport along a segment of a chart is the quotient of the crossing factors of its
+endpoints. -/
+private theorem prelocal_pred_hyperplaneFactor (c : M) :
+    ((hyperplaneDiagram hf hf0 θ).coefficientTransport M).prelocal.sheafify.pred
+      (fun x : (⊤ : Opens (FinitePolyhedralComplex.hyperplaneComplex f hf).regularSpace) =>
+        fun _ => hyperplaneFactor f θ x.val.val • c) := by
+  intro x
+  refine ⟨⊤, x.property, 𝟙 _, ?_⟩
+  rw [DenseBasisTransport.prelocal_pred_iff]
+  intro B hB _ y z hy hz
+  have hchart : B ∈ (FinitePolyhedralComplex.hyperplaneComplex f hf).coefficientCharts := by
+    simpa only [(hyperplaneDiagram hf hf0 θ).coefficientTransport_basis M] using hB
+  rw [(hyperplaneDiagram hf hf0 θ).coefficientTransport_transport M B hchart y z hy hz,
+    coefficientPathTransport_apply, pathProduct_hyperplaneDiagram, ← mul_smul]
+  exact congrArg (· • c) (inv_mul_cancel_right _ _)
+
+variable (hf hf0 θ) in
+/-- The section of the coefficient local system of the one-hyperplane diagram, over the whole
+space, with value `c` at the off-wall points `x` with `f x ≤ 0` and `θ⁻¹ • c` at those with
+`0 < f x`. Every section over the whole space is of this form, by
+`value_hyperplaneDiagram`. -/
+noncomputable def hyperplaneSection (c : M) :
+    ((hyperplaneDiagram hf hf0 θ).coefficientLocalSystem M).presheaf.obj (op ⊤) :=
+  ((hyperplaneDiagram hf hf0 θ).coefficientTransport M).sectionOfLocallyParallel
+    (fun x _ => hyperplaneFactor f θ x.val.val • c) (prelocal_pred_hyperplaneFactor hf hf0 θ c)
+
+variable (hf hf0 θ) in
+/-- The value of `hyperplaneSection` at an off-wall point is the crossing factor times `c`. -/
+@[simp]
+theorem value_hyperplaneSection (c : M)
+    (x : (FinitePolyhedralComplex.hyperplaneComplex f hf).coefficientPoints)
+    (hx : x.val ∈ (⊤ : Opens (FinitePolyhedralComplex.hyperplaneComplex f hf).regularSpace)) :
+    ((hyperplaneDiagram hf hf0 θ).coefficientTransport M).value (hyperplaneSection hf hf0 θ c) x
+      hx = hyperplaneFactor f θ x.val.val • c :=
+  ((hyperplaneDiagram hf hf0 θ).coefficientTransport M).value_sectionOfLocallyParallel _ _ x hx
+
+variable (hf hf0 θ) in
+/-- Restriction of `hyperplaneSection` to an open takes the same crossing factor times `c` at
+an off-wall point of that open. -/
+@[simp]
+theorem value_restrict_hyperplaneSection (c : M)
+    {U : Opens (FinitePolyhedralComplex.hyperplaneComplex f hf).regularSpace} (hU : U ≤ ⊤)
+    (x : (FinitePolyhedralComplex.hyperplaneComplex f hf).coefficientPoints)
+    (hx : x.val ∈ U) :
+    ((hyperplaneDiagram hf hf0 θ).coefficientTransport M).value
+        (((hyperplaneDiagram hf hf0 θ).coefficientLocalSystem M).presheaf.map (homOfLE hU).op
+          (hyperplaneSection hf hf0 θ c)) x hx = hyperplaneFactor f θ x.val.val • c := by
+  rw [DenseBasisTransport.value_restrict, value_hyperplaneSection]
+
+variable (hf hf0 θ) in
+/-- On the negative side, restriction of `hyperplaneSection` with `θ • c` differs from `c` if
+`θ` does not fix `c`. -/
+theorem value_restrict_ne_hyperplaneSection_of_forall_lt (c : M) (hc : θ • c ≠ c)
+    {U : Opens (FinitePolyhedralComplex.hyperplaneComplex f hf).regularSpace} (hU : U ≤ ⊤)
+    (hUneg : ∀ x ∈ U, f x.val < 0)
+    (x : (FinitePolyhedralComplex.hyperplaneComplex f hf).coefficientPoints) (hx : x.val ∈ U) :
+    ((hyperplaneDiagram hf hf0 θ).coefficientTransport M).value
+        (((hyperplaneDiagram hf hf0 θ).coefficientLocalSystem M).presheaf.map (homOfLE hU).op
+          (hyperplaneSection hf hf0 θ (θ • c))) x hx ≠ c := by
+  rw [value_restrict_hyperplaneSection]
+  simp only [hyperplaneFactor_def, (hUneg x hx).not_gt, ↓reduceIte, one_smul]
+  exact hc
+
 /-- A point off `ker f`, as an off-wall point of the regular locus of the hyperplane complex. -/
 private def offWallPoint (v : V) (hv : f v ≠ 0) :
     (FinitePolyhedralComplex.hyperplaneComplex f hf).coefficientPoints :=
@@ -102,9 +169,11 @@ theorem exists_forall_value_eq_iff_smul_eq (c : M) :
     rw [hs, hs] at he
     exact eq_inv_smul_iff.mp he
   · intro hc
-    have hlabel : ∀ P, (hyperplaneDiagram hf hf0 θ).label P • c = c := fun P => by
-      rw [hyperplaneDiagram_label, hc]
-    exact ⟨(hyperplaneDiagram hf hf0 θ).constantCoefficientSection M ⊤ c hlabel,
-      fun x hx => (hyperplaneDiagram hf hf0 θ).value_constantCoefficientSection M ⊤ c hlabel x hx⟩
+    exact ⟨hyperplaneSection hf hf0 θ c, fun x hx => by
+      rw [value_hyperplaneSection]
+      by_cases hx : 0 < f x.val.val
+      · rw [hyperplaneFactor_def, ite_eq_left hx, inv_smul_eq_iff]
+        exact hc.symm
+      · simp [hyperplaneFactor_def, hx]⟩
 
 end Mei.FiniteWallDiagram

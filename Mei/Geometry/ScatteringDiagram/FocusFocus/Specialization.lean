@@ -221,8 +221,7 @@ theorem mapRingHom_slabThetaEvaluation (φ : R →+* S) (t c : R)
     mapRingHom (ℤ × ℤ) φ (slabThetaEvaluation t c n b Q) =
       slabThetaEvaluation (φ t) (φ c) n b Q := by
   have h₀ : TauCeti.Toric.IsIntegralLattice (Int.castAddHom ℝ) :=
-    TauCeti.Toric.isIntegralLattice_of_basis (Module.Basis.singleton Unit ℤ)
-      (Module.Basis.singleton Unit ℝ) (fun _ => by simp)
+    TauCeti.Toric.isIntegralLattice_castAddHom
   simpa only [slabThetaFamily_weightedEvaluation] using
     mapRingHom_slabThetaFamily_weightedEvaluation t c n b φ (h₀.prod h₀) Q
 

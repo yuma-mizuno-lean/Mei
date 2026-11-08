@@ -136,9 +136,8 @@ theorem cutoffDecoratedEvaluation_functionWall_one_sub_of_neg (θ : (𝒜 0)ˣ) 
     have := hν 0
     rw [hν0] at this
     exact_mod_cast this.symm
-  have hap : functionWallAction 𝒜 θ a = (a : A) - a * z := by
-    rw [functionWallAction_apply_of_mem 𝒜 θ (hw 0 a.2), hw0, zpow_one]
-    simp [hθ, mul_sub]
+  have hap : functionWallAction 𝒜 θ a = (a : A) - a * z :=
+    functionWallAction_apply_of_mem_one_sub 𝒜 θ hθ (hw0 ▸ hw 0 a.2)
   rw [cutoffDecoratedEvaluation_functionWall_of_neg 𝒜 (fun _ : Unit => θ) w hw hν
     (Set.empty_subset _) (by rwa [hν0, div_one, sub_neg]) ?_]
   · simp [hw0, hε, hν0, hθ, mul_sub]

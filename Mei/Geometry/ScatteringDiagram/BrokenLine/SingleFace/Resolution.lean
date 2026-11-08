@@ -5,150 +5,162 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.ScatteringDiagram.BrokenLine.SingleFace.Component
+public import Mei.Geometry.ScatteringDiagram.BrokenLine.SingleFace.Transfer
 public import Mei.LinearAlgebra.GradedModule.History.Uniform
-public import Mei.LinearAlgebra.GradedCorrespondence.Basic
+import Mei.LinearAlgebra.CommonLift
 import Mathlib.RingTheory.Finiteness.Basic
 
 /-!
-# Common lifts of single-face ray evaluations
+# Total lifts of single-face ray evaluations
 
-For a graded correspondence between two copies of a decomposed chamber module,
-propagation is its total transfer. A linear family of admissible homogeneous
-inputs has the chosen face lift. One exceptional arrangement makes its two
-chamber images equal to the actual incoming and opposite-side ray sums for all
-inputs simultaneously. Joint injectivity makes this common linear lift unique.
+For a graded correspondence between independently graded chamber semimodules,
+one exceptional arrangement makes the opposite-side ray sum of a linear incoming
+family equal to the opposite image of its chosen face lift, for every input
+simultaneously. Uniform finite output support suffices; finite generation of the
+incoming range supplies it by the shared homogeneous-history expansion.
 
-Uniform finite output support is sufficient; finite generation of the incoming
-range supplies it by the shared homogeneous-history expansion. This includes
-every finite-input test, without requiring the homogeneous pieces or the chamber
-module to be finitely generated. The incoming region is the full
-half-space; rays with unchanged degrees or spatial velocities remain included.
-Reversing the correspondence gives the same assertion for right-hand inputs.
-Graph and slab correspondences use the same construction, with no invertibility
-assumption on propagation or on either face map separately.
+Joint injectivity makes the total lift unique. No individual outgoing branch
+needs a lift through the face. Graph and slab correspondences use this same
+construction, also when coefficients cancel or propagation is not invertible.
+These are terminal matching identities; singular-degeneration certificates and
+descent on the base require additional geometry.
 
-This supplies the terminal common-lift identity at one face. Closed-family
-boundary comparisons and gluing of sections are separate constructions.
 The terminal-face interpretation follows Gross–Hacking–Siebert, *Theta functions
 on varieties with effective anti-canonical class*, §3.2 (arXiv:1601.07081v4).
 -/
 
 public noncomputable section
 
-open Set
+open Set Mei.Convex
 
 namespace Mei.GradedCorrespondence
 
-variable {R M Γ V H B : Type*} [Semiring R]
-  [AddCommMonoid M] [Module R M] [DecidableEq Γ]
-  {ℳ : Γ → Submodule R M} [DirectSum.Decomposition ℳ]
-  [AddCommMonoid B] [Module R B] {I J : Set Γ}
-  (C : GradedCorrespondence (B := B) ℳ ℳ I J)
+variable {R B U M ι κ V E : Type*} [Semiring R]
+  [AddCommMonoid B] [Module R B] [AddCommMonoid U] [Module R U]
+  [AddCommMonoid M] [Module R M] [DecidableEq κ]
+  {𝒰 : ι → Submodule R U} {ℳ : κ → Submodule R M}
+  [DirectSum.Decomposition ℳ] {I : Set ι} {J : Set κ}
+  (C : GradedCorrespondence (B := B) 𝒰 ℳ I J) (i : I)
   [NormedAddCommGroup V] [NormedSpace ℝ V]
-  [AddCommMonoid H] [Module R H]
-  (p : I) (α : H →ₗ[R] ℳ p) (v : Γ → V)
-  (ν : V →L[ℝ] ℝ) (b : ℝ) (Z : Set V)
+  (u : V) (v : κ → V) (ν : V →L[ℝ] ℝ) (b : ℝ) (Z : Set V)
+  [AddCommMonoid E] [Module R E] (α : E →ₗ[R] 𝒰 i)
 
-local notation "ev(" n ", " x ", " Q ")" =>
-  decoratedRayEvaluation ℳ (fun _ : Fin n => C.totalTransfer) p (α x) v
-    (fun _ => ν) (fun _ => b) (fun _ => SignType.sign (ν (v p)))
-    (fun _ => Set.ofPred (fun x => ν x = b)) (fun _ : Unit => Set.ofPred (fun x => ν x = b))
-    (fun _ : Unit => Z) (Set.ofPred (fun x => 0 < (ν x - b) / ν (v p))) Q
-
-/-- One arrangement identifies the two actual ray sums with the images of the
-chosen face lift, uniformly over the incoming linear family. Only the output
-components of that family need to preserve normal velocity. -/
-theorem exists_singleFace_evaluation_lift_arrangement
-    (s : Finset Γ) (hs : ∀ x q, C.transfer p q (α x) ≠ 0 → q ∈ s)
-    (hnormal : ∀ x q, C.transfer p q (α x) ≠ 0 → ν (v q) = ν (v p))
+/-- A single exceptional arrangement computes every opposite-side ray sum as
+an identity of linear maps. Only the output components of the incoming family
+must preserve normal velocity, and no injectivity assumption is needed. -/
+theorem exists_singleFaceTransferEvaluationLinear_eq_right
+    (s : Finset κ) (hs : ∀ q ∉ s, (C.transfer i q).comp α = 0)
+    (hnormal : ∀ q x, C.transfer i q (α x) ≠ 0 → ν (v q) = ν u)
     (hZ : Z ⊆ {x | ν x = b})
-    {κ : Type*} [Finite κ] (A : κ → AffineSubspace ℝ V)
+    {δ : Type*} [Finite δ] (A : δ → AffineSubspace ℝ V)
     (hcover : Z ⊆ ⋃ j, (A j : Set V))
     (hA : ∀ j, ∃ x, ν x = b ∧ x ∉ A j) :
-    ∃ E : ExceptionalArrangement V,
-      (∀ Q, 0 < (ν Q - b) / ν (v p) → ∀ x,
-        C.left ((C.liftLeft p).comp α x) = ev(0, x, Q)) ∧
-      (∀ Q, E.IsGeneric Q → (ν Q - b) / ν (v p) < 0 → ∀ x,
-        C.right ((C.liftLeft p).comp α x) = ev(1, x, Q)) := by
-  have hT (x : H) : C.totalTransfer (α x) = C.right (C.liftLeft p (α x)) := by
-    rw [totalTransfer_apply, liftLeftTotal_coe]
-  have hn (x : H) (q : Γ) : DirectSum.decompose ℳ (C.totalTransfer (α x)) q ≠ 0 →
-      ν (v q) = ν (v p) := by
-    rw [hT, ← transfer_apply]
-    exact hnormal x q
-  have hsupport (x : H) (q : Γ) :
-      DirectSum.decompose ℳ (C.totalTransfer (α x)) q ≠ 0 → q ∈ s := by
-    rw [hT, ← transfer_apply]
-    exact hs x q
-  obtain ⟨E, hE⟩ := exists_uniform_decoratedRayEvaluation_singleFace_arrangement
-    ℳ C.totalTransfer p v ν b Z hZ α hn s hsupport A hcover hA
-  refine ⟨E, ?_, fun Q hQ ht x => (hT x).symm.trans (hE Q hQ ht x).symm⟩
-  intro Q hQ x
-  rw [LinearMap.comp_apply, left_liftLeft_apply,
-    decoratedRayEvaluation_singleFace_empty ℳ C.totalTransfer p (α x) v ν b Z hZ Q,
-    ite_eq_left hQ]
+    ∃ F : ExceptionalArrangement V, ∀ Q, F.IsGeneric Q →
+      (ν Q - b) / ν u < 0 →
+        C.singleFaceTransferEvaluationLinear i u v ν b Z α Q =
+          C.right.comp ((C.liftLeft i).comp α) := by
+  classical
+  -- Exclude all singular shadows for the uniform output support at once.
+  obtain ⟨F, hF⟩ := exists_forall_notMem_sweepProjection
+    (fun _ : (s : Type _) => ν) (fun _ => b)
+    (fun q => (ν (v q.val))⁻¹ • v q.val) A (fun _ j => hA j)
+  refine ⟨F, fun Q hQ ht => ?_⟩
+  ext x
+  rw [C.singleFaceTransferEvaluationLinear_apply_eq_evaluation i u v ν b Z α hZ Q x]
+  apply C.singleFaceTransferEvaluation_eq_right i (α x) u v ν b Z hZ Q
+  intro q hq
+  refine ⟨hnormal q x hq, by rwa [hnormal q x hq], ?_⟩
+  have hqs : q ∈ s := by
+    by_contra hnot
+    exact hq (by simpa only [LinearMap.comp_apply, LinearMap.zero_apply] using
+      LinearMap.congr_fun (hs q hnot) x)
+  intro hmem
+  obtain ⟨j, hj⟩ := mem_iUnion.mp (hcover hmem)
+  exact hF Q hQ ⟨q, hqs⟩ j (sweepProjection_inv_smul_apply Q ▸ hj)
 
-/-- At any incoming endpoint and any generic opposite-side endpoint, the actual
-ray sums admit exactly one common linear face lift. The same arrangement works
-for every incoming coefficient, including zero and cancelling combinations. -/
-theorem existsUnique_singleFace_evaluation_lift
-    (hinj : Function.Injective (C.left.prod C.right))
-    (s : Finset Γ) (hs : ∀ x q, C.transfer p q (α x) ≠ 0 → q ∈ s)
-    (hnormal : ∀ x q, C.transfer p q (α x) ≠ 0 → ν (v q) = ν (v p))
-    (hZ : Z ⊆ {x | ν x = b})
-    {κ : Type*} [Finite κ] (A : κ → AffineSubspace ℝ V)
-    (hcover : Z ⊆ ⋃ j, (A j : Set V))
-    (hA : ∀ j, ∃ x, ν x = b ∧ x ∉ A j) :
-    ∃ E : ExceptionalArrangement V, ∀ Q₀ Q₁,
-      0 < (ν Q₀ - b) / ν (v p) → E.IsGeneric Q₁ →
-      (ν Q₁ - b) / ν (v p) < 0 →
-      ∃! ℓ : H →ₗ[R] B, ∀ x,
-        C.left (ℓ x) = ev(0, x, Q₀) ∧ C.right (ℓ x) = ev(1, x, Q₁) := by
-  obtain ⟨E, hleft, hright⟩ := C.exists_singleFace_evaluation_lift_arrangement
-    p α v ν b Z s hs hnormal hZ A hcover hA
-  refine ⟨E, fun Q₀ Q₁ hQ₀ hQ₁ ht =>
-    ⟨(C.liftLeft p).comp α, fun x => ⟨hleft Q₀ hQ₀ x, hright Q₁ hQ₁ ht x⟩, ?_⟩⟩
-  intro ℓ hℓ
+/-- A finitely generated incoming range has a uniform finite support for its
+outgoing transfer components, without finiteness assumptions on the chambers. -/
+theorem exists_singleFaceTransfer_support_of_fg
+    (hα : (LinearMap.range α).FG) :
+    ∃ s : Finset κ, ∀ q ∉ s, (C.transfer i q).comp α = 0 := by
+  classical
+  let β := C.right.comp ((C.liftLeft i).comp α)
+  have hβ : (LinearMap.range β).FG := by
+    have he : β = (C.right.comp (C.liftLeft i)).comp α := LinearMap.comp_assoc ..
+    rw [he, LinearMap.range_comp]
+    exact hα.map (C.right.comp (C.liftLeft i))
+  obtain ⟨S, hS⟩ := exists_uniform_homogeneousHistory_support ℳ
+    (fun _ : Fin 1 => LinearMap.id) β hβ
+  refine ⟨S.image fun d => d 0, fun q hq => ?_⟩
+  have hnot : (fun _ : Fin 1 => q) ∉ S := fun h =>
+    hq (Finset.mem_image.mpr ⟨_, h, rfl⟩)
   apply LinearMap.ext
   intro x
-  apply hinj
-  exact Prod.ext ((hℓ x).1.trans (hleft Q₀ hQ₀ x).symm)
-    ((hℓ x).2.trans (hright Q₁ hQ₁ ht x).symm)
+  apply Subtype.val_injective
+  simpa only [homogeneousHistory_succ_apply, homogeneousHistory_zero,
+    LinearMap.comp_apply, LinearMap.id_apply, LinearMap.zero_apply,
+    transfer_apply, ZeroMemClass.coe_zero, β] using LinearMap.congr_fun (hS _ hnot) x
 
-/-- Every linear family with finitely generated incoming range satisfies the
-uniform terminal common-lift identity. This gives the finite-input test without
-requiring any finiteness of the ambient grading or its homogeneous pieces. -/
-theorem existsUnique_singleFace_evaluation_lift_of_fg
-    (hinj : Function.Injective (C.left.prod C.right))
+/-- A finitely generated incoming range gives the uniform finite-input test
+without finite generation of either chamber or any homogeneous piece. -/
+theorem exists_singleFaceTransferEvaluationLinear_eq_right_of_fg
     (hα : (LinearMap.range α).FG)
-    (hnormal : ∀ x q, C.transfer p q (α x) ≠ 0 → ν (v q) = ν (v p))
+    (hnormal : ∀ q x, C.transfer i q (α x) ≠ 0 → ν (v q) = ν u)
     (hZ : Z ⊆ {x | ν x = b})
-    {κ : Type*} [Finite κ] (A : κ → AffineSubspace ℝ V)
+    {δ : Type*} [Finite δ] (A : δ → AffineSubspace ℝ V)
     (hcover : Z ⊆ ⋃ j, (A j : Set V))
     (hA : ∀ j, ∃ x, ν x = b ∧ x ∉ A j) :
-    ∃ E : ExceptionalArrangement V, ∀ Q₀ Q₁,
-      0 < (ν Q₀ - b) / ν (v p) → E.IsGeneric Q₁ →
-      (ν Q₁ - b) / ν (v p) < 0 →
-      ∃! ℓ : H →ₗ[R] B, ∀ x,
-        C.left (ℓ x) = ev(0, x, Q₀) ∧ C.right (ℓ x) = ev(1, x, Q₁) := by
-  classical
-  have hfg : (LinearMap.range ((ℳ p).subtype.comp α)).FG := by
-    rw [LinearMap.range_comp]
-    exact hα.map _
-  obtain ⟨S, hS⟩ := exists_uniform_homogeneousHistory_support ℳ
-    (fun _ : Fin 1 => C.totalTransfer) ((ℳ p).subtype.comp α) hfg
-  apply C.existsUnique_singleFace_evaluation_lift p α v ν b Z hinj
-    (S.image fun r => r 0) ?_ hnormal hZ A hcover hA
-  intro x q hq
-  apply Finset.mem_image.mpr
-  refine ⟨fun _ => q, ?_, rfl⟩
-  by_contra hs
-  have hz := LinearMap.congr_fun (hS (fun _ => q) hs) x
-  have he : (C.transfer p q (α x) : M) = 0 := by
-    simpa only [LinearMap.comp_apply, Submodule.subtype_apply, LinearMap.zero_apply,
-      homogeneousHistory_succ_apply, homogeneousHistory_zero, LinearMap.id_apply,
-      totalTransfer_apply, liftLeftTotal_coe, transfer_apply] using hz
-  exact hq (Subtype.val_injective he)
+    ∃ F : ExceptionalArrangement V, ∀ Q, F.IsGeneric Q →
+      (ν Q - b) / ν u < 0 →
+        C.singleFaceTransferEvaluationLinear i u v ν b Z α Q =
+          C.right.comp ((C.liftLeft i).comp α) := by
+  obtain ⟨s, hs⟩ := C.exists_singleFaceTransfer_support_of_fg i α hα
+  exact C.exists_singleFaceTransferEvaluationLinear_eq_right
+    i u v ν b Z α s hs hnormal hZ A hcover hA
+
+/-- Uniformly supported one-face ray sums have their total common face lift
+at generic opposite-side endpoints. The arrangement is chosen for the whole
+linear family, before its input. Only joint injectivity is needed for uniqueness;
+neither chamber leg nor any individual component is required to be injective. -/
+theorem exists_singleFaceTransferEvaluationLinear_commonLift
+    (s : Finset κ) (hs : ∀ q ∉ s, (C.transfer i q).comp α = 0)
+    (hnormal : ∀ q x, C.transfer i q (α x) ≠ 0 → ν (v q) = ν u)
+    (hZ : Z ⊆ {x | ν x = b})
+    {δ : Type*} [Finite δ] (A : δ → AffineSubspace ℝ V)
+    (hcover : Z ⊆ ⋃ j, (A j : Set V))
+    (hA : ∀ j, ∃ x, ν x = b ∧ x ∉ A j)
+    (hinj : Function.Injective (C.left.prod C.right)) :
+    ∃ F : ExceptionalArrangement V, ∀ Q, F.IsGeneric Q →
+      (ν Q - b) / ν u < 0 →
+        ∃! l : E →ₗ[R] B,
+          C.left.comp l = (𝒰 i).subtype.comp α ∧
+          C.right.comp l = C.singleFaceTransferEvaluationLinear i u v ν b Z α Q := by
+  obtain ⟨F, hF⟩ := C.exists_singleFaceTransferEvaluationLinear_eq_right
+    i u v ν b Z α s hs hnormal hZ A hcover hA
+  refine ⟨F, fun Q hQ ht => ?_⟩
+  apply (LinearMap.existsUnique_comp_eq_and_comp_eq_iff hinj).mpr
+  intro x
+  refine ⟨C.liftLeft i (α x), ?_⟩
+  simp only [hF Q hQ ht, LinearMap.prod_apply, Function.prod_apply,
+    LinearMap.comp_apply, C.left_liftLeft_apply, Submodule.subtype_apply]
+
+/-- A finitely generated incoming range gives the unique total common face
+lift at generic opposite-side endpoints, with one arrangement for every input. -/
+theorem exists_singleFaceTransferEvaluationLinear_commonLift_of_fg
+    (hα : (LinearMap.range α).FG)
+    (hnormal : ∀ q x, C.transfer i q (α x) ≠ 0 → ν (v q) = ν u)
+    (hZ : Z ⊆ {x | ν x = b})
+    {δ : Type*} [Finite δ] (A : δ → AffineSubspace ℝ V)
+    (hcover : Z ⊆ ⋃ j, (A j : Set V))
+    (hA : ∀ j, ∃ x, ν x = b ∧ x ∉ A j)
+    (hinj : Function.Injective (C.left.prod C.right)) :
+    ∃ F : ExceptionalArrangement V, ∀ Q, F.IsGeneric Q →
+      (ν Q - b) / ν u < 0 →
+        ∃! l : E →ₗ[R] B,
+          C.left.comp l = (𝒰 i).subtype.comp α ∧
+          C.right.comp l = C.singleFaceTransferEvaluationLinear i u v ν b Z α Q := by
+  obtain ⟨s, hs⟩ := C.exists_singleFaceTransfer_support_of_fg i α hα
+  exact C.exists_singleFaceTransferEvaluationLinear_commonLift
+    i u v ν b Z α s hs hnormal hZ A hcover hA hinj
 
 end Mei.GradedCorrespondence
