@@ -9,6 +9,7 @@ public import TauCeti.Analysis.Convex.Polyhedron.Basic
 public import Mei.Analysis.Convex.TangentCone
 public import Mathlib.Analysis.Calculus.LocalExtr.Basic
 public import Mathlib.Analysis.Calculus.FDeriv.Affine
+import Mathlib.Analysis.Normed.Module.Ball.Pointwise
 
 /-!
 # Tangent cones of convex polyhedra
@@ -18,7 +19,8 @@ by the linear parts of the inequalities tight at the base point. The remaining i
 stay strict nearby, so a convex polyhedron locally agrees with the translate of its tangent
 cone. No rationality, lattice, or finite-dimensionality assumption is needed.
 The comparison also identifies relative boundaries, using the common affine direction
-of the support and its tangent cone.
+of the support and its tangent cone. On bounded displacement sets, a single small
+positive scale compares membership for an entire finite polyhedral family.
 -/
 
 public section
@@ -143,6 +145,26 @@ theorem eventually_forall_mem_iff_sub_mem_posTangentConeAt :
     exact ⟨fun h => ⟨hj, hy.mp h⟩, fun ⟨_, h⟩ => hy.mpr h⟩
   · filter_upwards [(hW j).isClosed.isOpen_compl.mem_nhds hj] with y hy
     exact iff_of_false hy fun ⟨hj', _⟩ => hj hj'
+
+/-- On a bounded set of displacements, a single small positive scale compares
+membership in a finite polyhedral family with tangent-cone membership. Members
+not containing the center are absent at every sufficiently small scale. -/
+theorem eventually_forall_add_smul_mem_iff {K : Set V} (hK : Bornology.IsBounded K) :
+    ∀ᶠ r : ℝ in 𝓝[>] 0, ∀ q ∈ K, ∀ j,
+      x + r • q ∈ W j ↔ x ∈ W j ∧ q ∈ posTangentConeAt (W j) x := by
+  have he := eventually_singleton_add_smul_subset (𝕜 := ℝ) hK
+    (eventually_forall_mem_iff_sub_mem_posTangentConeAt W hW x)
+  filter_upwards [he.filter_mono nhdsWithin_le_nhds, self_mem_nhdsWithin] with r hr hrpos
+  intro q hq j
+  have hc := hr (Set.add_mem_add (Set.mem_singleton x)
+    (Set.smul_mem_smul_set hq)) j
+  simp only [add_sub_cancel_left, exists_prop] at hc
+  refine hc.trans (and_congr_right fun _ => ⟨?_, ?_⟩)
+  · intro h
+    simpa only [smul_smul, inv_mul_cancel₀ hrpos.ne', one_smul] using
+      Mei.smul_mem_posTangentConeAt h (inv_pos.mpr hrpos).le
+  · intro h
+    exact Mei.smul_mem_posTangentConeAt h hrpos.le
 
 end Mei.Convex
 

@@ -106,24 +106,9 @@ theorem smul_mem_singularSupport_tangentAt_iff (k : ℕ) {t : ℝ} (ht : 0 < t) 
       ((D.tangentAt x).wall j).support) ↔
         v ∈ singularSupport (fun j : (D.tangentAt x).active k =>
           ((D.tangentAt x).wall j).support) := by
-  let e := (ContinuousLinearEquiv.smulLeft (R₁ := ℝ) (M₁ := V)
-    (Units.mk0 t ht.ne')).toContinuousAffineEquiv
-  have he (w : V) : e w = t • w := (rfl)
-  have hsupport (j : (D.tangentAt x).active k) :
-      ((D.tangentAt x).wall j).support = e '' ((D.tangentAt x).wall j).support := by
-    apply Set.Subset.antisymm
-    · intro w hw
-      refine ⟨t⁻¹ • w, ?_, by simp [he, ht.ne']⟩
-      exact (D.wall j.1.1).smul_mem_tangentAt_support j.1.2 hw (inv_pos.mpr ht).le
-    · rintro w ⟨u, hu, rfl⟩
-      exact (D.wall j.1.1).smul_mem_tangentAt_support j.1.2 hu ht.le
-  have hsing := e.singularSupport_image
-    (W := fun j : (D.tangentAt x).active k => ((D.tangentAt x).wall j).support)
-    (W' := fun j : (D.tangentAt x).active k => ((D.tangentAt x).wall j).support)
-    (Equiv.refl ((D.tangentAt x).active k)) hsupport
-  rw [← he]
-  conv_lhs => rw [hsing]
-  exact e.injective.mem_set_image
+  simpa only [tangentAt_wall, DirectedWall.tangentAt_support] using
+    smul_mem_singularSupport_posTangentConeAt_iff
+      (fun j : (D.tangentAt x).active k => (D.wall j.1.1).support) x ht v
 
 /-- On a bounded set of tangent displacements, the singular-support comparison holds
 uniformly for every sufficiently small positive scaling factor. -/
@@ -184,13 +169,10 @@ theorem eventually_forall_mem_support_add_smul_iff (k : ℕ) {K : Set V}
     ∀ᶠ t : ℝ in 𝓝[>] 0, ∀ v ∈ K, ∀ j : D.active k,
       x + t • v ∈ (D.wall j).support ↔
         ∃ hj : x ∈ (D.wall j).support, v ∈ ((D.wall j).tangentAt x hj).support := by
-  have huniform := eventually_singleton_add_smul_subset (𝕜 := ℝ) hK
-    (D.eventually_forall_mem_support_iff (x := x) k)
-  filter_upwards [huniform.filter_mono nhdsWithin_le_nhds, self_mem_nhdsWithin] with t ht htpos
-  intro v hv j
-  have hc := ht (Set.add_mem_add (Set.mem_singleton x) (Set.smul_mem_smul_set hv)) j
-  simpa only [Set.mem_ofPred_eq, add_sub_cancel_left,
-    DirectedWall.smul_mem_tangentAt_support_iff _ _ htpos] using hc
+  simpa only [DirectedWall.tangentAt_support, exists_prop] using
+    eventually_forall_add_smul_mem_iff
+      (fun j : D.active k => (D.wall j).support)
+      (fun j => (D.wall j).isConvexPolyhedron) x hK
 
 /-- Dilating the position by a positive factor preserves the tangent combined label.
 The crossing velocity is unchanged. -/

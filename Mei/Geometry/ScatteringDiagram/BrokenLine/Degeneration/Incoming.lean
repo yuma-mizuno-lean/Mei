@@ -67,16 +67,13 @@ theorem path_eventually_mem_polyhedron_iff
 /-- The incoming-source condition is closed in endpoint space, including when
 the source is lower-dimensional or the incoming velocity is zero. -/
 theorem isClosed_sourceAdmission : IsClosed D := by
-  have he : D = ⋂ j : ι, {Q | (g j).linear (v 0) < 0 ∨
-      (g j).linear (v 0) = 0 ∧ g j (X Q) ≤ 0} := by
-    ext Q
-    rw [mem_ofPred_eq, path_def, backwardPath_eventually_mem_iff]
-    simp only [Fin.snoc_last, Fin.snoc_castSucc, mem_iInter, mem_ofPred_eq,
-      eventually_all, ← ContinuousAffineMap.coe_toAffineMap,
-      AffineMap.eventually_apply_add_smul_le_iff]
-  rw [he]
-  exact isClosed_iInter fun j => isClosed_const.union
-    (isClosed_const.inter (isClosed_le ((g j).continuous.comp (X).continuous) continuous_const))
+  have hC : TauCeti.IsConvexPolyhedron C := by
+    have he : C = {x | ∀ j, g j x ≤ 0} := by ext x; simp
+    rw [he]
+    exact TauCeti.isConvexPolyhedron_setOf_forall g
+  simpa only [path_def, backwardPath_eventually_mem_iff, Fin.snoc_last,
+    Fin.snoc_castSucc, Set.preimage_ofPred_eq] using
+      (hC.eventually_add_smul_mem (v 0)).isClosed.preimage (X).continuous
 
 /-- Source-admission boundary endpoints are exactly the admitted endpoints
 where a tangential row is tight and nonconstant after backward reconstruction.

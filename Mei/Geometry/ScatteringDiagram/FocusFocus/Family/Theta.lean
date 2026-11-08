@@ -185,6 +185,17 @@ theorem slabThetaEvaluation_eq_sum_charts (Q : ℝ × ℝ) :
       congr 1
       by_cases hn : (n, b) = 0 <;> by_cases hc : c = 0 <;> simp [hn, hc]
 
+/-- Every admitted complete chart carries a nonzero whole decoration, including
+the stationary sector, whose unused chart has empty domain for zero input. -/
+theorem slabThetaChartWeight_ne_zero_of_mem_domain
+    (α : SlabThetaChartIndex t c n b) {Q : ℝ × ℝ}
+    (hQ : Q ∈ slabThetaChartDomain t c n b α) :
+    slabThetaChartWeight t c n b α ≠ 0 := by
+  rcases α with α | α | u
+  · simpa using α.property.1
+  · simpa using α.1.property
+  · simpa using (mem_slabThetaChartDomain_constant t c n b Q u).mp hQ |>.2
+
 variable (h : TauCeti.Toric.IsIntegralLattice
   ((Int.castAddHom ℝ).prodMap (Int.castAddHom ℝ)))
 

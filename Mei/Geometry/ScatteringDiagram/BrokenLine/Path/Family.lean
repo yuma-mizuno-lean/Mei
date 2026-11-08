@@ -80,6 +80,24 @@ theorem pathDecoratedEvaluation_zero (X : V) :
     pathDecoratedEvaluation T ℳ i₀ 0 s v ν ε c P W S C X = 0 := by
   simp [pathDecoratedEvaluation_def]
 
+local notation "Ray" p:max X:max => PathDecoratedRay T ℳ i₀ x v ν ε c P W S C p X
+
+/-- Two finite inventories exhausting the actual endpoint fiber give the same
+weighted evaluation. Exhaustivity is needed only at the endpoint in question;
+the inventories may contain unrealizable paths and paths of different lengths. -/
+theorem pathDecoratedEvaluation_eq_of_exhaustive
+    (s s' : Finset (Path a b)) (X : V)
+    (hs : ∀ p : Path a b, Ray p X → p ∈ s)
+    (hs' : ∀ p : Path a b, Ray p X → p ∈ s') :
+    pathDecoratedEvaluation T ℳ i₀ x s v ν ε c P W S C X =
+      pathDecoratedEvaluation T ℳ i₀ x s' v ν ε c P W S C X := by
+  let e := (Equiv.sigmaSubtypeEquivOfSubset (fun p => Ray p X) (fun p => p ∈ s) hs).trans
+    (Equiv.sigmaSubtypeEquivOfSubset (fun p => Ray p X) (fun p => p ∈ s') hs').symm
+  let := Fintype.ofFinite (Σ p : (s : Type _), Ray p.val X)
+  let := Fintype.ofFinite (Σ p : (s' : Type _), Ray p.val X)
+  rw [pathDecoratedEvaluation_def, pathDecoratedEvaluation_def]
+  exact Fintype.sum_equiv e _ _ fun _ => rfl
+
 section Rational
 
 variable {Λ : Type*} [AddCommGroup Λ] {i : Λ →+ V}

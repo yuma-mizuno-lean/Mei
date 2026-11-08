@@ -27,8 +27,37 @@ open Set Filter Topology
 
 namespace Mei.Convex
 
-variable {V ι : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V] [Finite ι]
+variable {V ι : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
   (W : ι → Set V) (hW : ∀ j, TauCeti.IsConvexPolyhedron (W j)) (x : V)
+
+/-- Positive dilation preserves and reflects the singular support of a family of
+positive tangent cones. The original supports need not be polyhedral. -/
+@[simp↓]
+theorem smul_mem_singularSupport_posTangentConeAt_iff {r : ℝ} (hr : 0 < r) (v : V) :
+    r • v ∈ singularSupport (fun j => posTangentConeAt (W j) x) ↔
+      v ∈ singularSupport (fun j => posTangentConeAt (W j) x) := by
+  let e := (ContinuousLinearEquiv.smulLeft (R₁ := ℝ) (M₁ := V)
+    (Units.mk0 r hr.ne')).toContinuousAffineEquiv
+  have he (w : V) : e w = r • w := by
+    rw [ContinuousLinearEquiv.coe_toContinuousAffineEquiv,
+      ContinuousLinearEquiv.smulLeft_apply_apply, Units.smul_def, Units.val_mk0]
+  have hsupport (j : ι) :
+      posTangentConeAt (W j) x = e '' posTangentConeAt (W j) x := by
+    apply Set.Subset.antisymm
+    · intro w hw
+      refine ⟨r⁻¹ • w, Mei.smul_mem_posTangentConeAt hw (inv_pos.mpr hr).le, ?_⟩
+      simp [he, hr.ne']
+    · rintro _ ⟨w, hw, rfl⟩
+      exact Mei.smul_mem_posTangentConeAt hw hr.le
+  have hsing := e.singularSupport_image
+    (W := fun j : ι => posTangentConeAt (W j) x)
+    (W' := fun j : ι => posTangentConeAt (W j) x)
+    (Equiv.refl ι) hsupport
+  rw [← he]
+  conv_lhs => rw [hsing]
+  exact e.injective.mem_set_image
+
+variable [Finite ι]
 
 include hW
 
