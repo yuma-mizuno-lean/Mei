@@ -157,6 +157,7 @@ theorem cutoffBCHRayTruncationEquiv_refl (k : ℕ) (β : Rays k) :
 
 /-- Truncating an actual ray through an intermediate order equals direct
 truncation. Survival at the final order suffices for both comparisons. -/
+@[simp]
 theorem cutoffBCHRayTruncationEquiv_comp {k l m : ℕ} (h : k ≤ l) (h' : l ≤ m)
     (β : {β : Rays m // d.degree β.finalDegree ≤ k}) :
     E h ⟨E h' ⟨β.val, β.property.trans (Int.ofNat_le.mpr h)⟩,

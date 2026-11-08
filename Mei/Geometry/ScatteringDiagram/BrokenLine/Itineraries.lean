@@ -149,6 +149,43 @@ theorem map_snd_degreeItinerary
     r.degreeItinerary.map Prod.snd = r.itinerary := by
   simp only [degreeItinerary_eq, List.map_ofFn, Function.comp_def, List.ofFn_get]
 
+/-- Transport between equal incoming inputs retains every labelled encounter. -/
+@[simp]
+theorem degreeItinerary_cast_input {b : ℳ 0}
+    (β : CutoffDecoratedRay d ℳ T a v f c ε P W S C k Q) (hab : a = b) :
+    (cast (congrArg (fun a => CutoffDecoratedRay d ℳ T a v f c ε P W S C k Q) hab)
+      β).degreeItinerary = β.degreeItinerary := by
+  cases hab
+  rfl
+
+/-- Transport between equal incoming inputs retains the whole path. -/
+@[simp]
+theorem ray_cast_input {b : ℳ 0}
+    (β : CutoffDecoratedRay d ℳ T a v f c ε P W S C k Q) (hab : a = b) :
+    (cast (congrArg (fun a => CutoffDecoratedRay d ℳ T a v f c ε P W S C k Q) hab)
+      β).realization.2.ray = β.realization.2.ray := by
+  cases hab
+  rfl
+
+/-- Transport between equal incoming inputs retains all encounter times. -/
+@[simp]
+theorem parameter_cast_input {b : ℳ 0}
+    (β : CutoffDecoratedRay d ℳ T a v f c ε P W S C k Q) (hab : a = b) :
+    HEq (cast (congrArg
+      (fun a => CutoffDecoratedRay d ℳ T a v f c ε P W S C k Q) hab) β).realization.2.parameter
+      β.realization.2.parameter := by
+  cases hab
+  rfl
+
+/-- Transport between equal incoming inputs retains the whole final coefficient. -/
+@[simp↓]
+theorem decoration_cast_input {b : ℳ 0}
+    (β : CutoffDecoratedRay d ℳ T a v f c ε P W S C k Q) (hab : a = b) :
+    (cast (congrArg (fun a => CutoffDecoratedRay d ℳ T a v f c ε P W S C k Q) hab)
+      β).decoration = β.decoration := by
+  cases hab
+  rfl
+
 /-- Recording degrees retains every encounter. -/
 @[simp]
 theorem length_degreeItinerary (r : CutoffDecoratedRay d ℳ T a v f c ε P W S C k Q) :

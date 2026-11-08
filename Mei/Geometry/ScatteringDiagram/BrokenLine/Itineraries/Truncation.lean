@@ -105,6 +105,7 @@ variable {O : Type*} [AddCommMonoid O] [Module R O]
 
 /-- Successive coefficient truncations agree with their composite on every
 surviving actual ray. Neither coefficient map is assumed injective. -/
+@[simp]
 theorem cutoffDecoratedRayCoefficientTruncationEquiv_comp
     (β : Source) (hb : s (r β.decoration) ≠ 0) :
     let β' := E ⟨β, fun hz => hb (by rw [hz, map_zero])⟩
