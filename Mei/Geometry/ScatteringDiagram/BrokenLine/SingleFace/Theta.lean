@@ -116,6 +116,24 @@ theorem existsUnique_section_value_eq_cutoffDecoratedEvaluation (θ : H) (u : (�
   · refine ((hyperplaneDiagram hf hf0 θ).coefficientTransport A).section_ext fun x hx => ?_
     rw [hs x hx, value_hyperplaneSection, hval]
 
+private theorem eq_hyperplaneSection_of_value_eq_cutoffDecoratedEvaluation (θ : H) (u : (𝒜 0)ˣ)
+    (z : A) {n : Γ} (hθ : ∀ x : A, θ • x = functionWallAction 𝒜 u x) (hu : (u : A) = 1 - z)
+    (hz : (a : A) * z ∈ ℳ n) (hn : n ∈ d.cutoff k) (w : Γ → ℤ) (hw : ∀ q, ℳ q ≤ 𝒜 (w q))
+    (hν : ∀ q, f (v q) = w q) (hν0 : f (v 0) = 1) (hε : ε () = 1)
+    {s : ((hyperplaneDiagram hf hf0 θ).coefficientLocalSystem A).presheaf.obj (op ⊤)}
+    (hs : ∀ x hx, ((hyperplaneDiagram hf hf0 θ).coefficientTransport A).value s x hx =
+      cutoffDecoratedEvaluation d ℳ (fun _ : Unit => (functionWallAction 𝒜 u).toLinearMap) a v
+        (fun _ : Unit => f) (fun _ : Unit => 0) ε (fun _ : Unit => {x | f x = 0})
+        (fun _ : Unit => {x | f x = 0}) (fun _ : Unit => (∅ : Set V))
+        {x | 0 < (f x - 0) / f (v 0)} k x.val.val) :
+    s = hyperplaneSection hf hf0 θ (θ • (a : A)) :=
+  (existsUnique_section_value_eq_cutoffDecoratedEvaluation 𝒜 hf0 θ u z hθ hu hz hn w hw hν hν0
+    hε).unique hs (fun x hx => by
+      rw [value_hyperplaneSection,
+        cutoffDecoratedEvaluation_functionWall_one_sub_eq_hyperplaneFactor 𝒜 θ u z hθ hu hz hn w
+          hw hν hν0 hε (fun h0 => x.property
+            ⟨_, (FinitePolyhedralComplex.mem_hyperplaneComplex_walls_iff hf hf0).mpr rfl⟩ h0)])
+
 /-- The restriction of the theta section of one function wall `1 - z` to an open of the regular
 locus on the negative side of the wall takes the value `a - a z`, though the wall misses the
 open. For `U = {f < -1}` this is the restriction check: the section retains the incoming tails
@@ -140,17 +158,15 @@ theorem value_restrict_eq_sub_mul_of_forall_lt (θ : H) (u : (𝒜 0)ˣ) (z : A)
     have := hν 0
     rw [hν0] at this
     exact_mod_cast this.symm
-  have hap : θ • (a : A) = (a : A) - a * z := by
-    rw [hθ]
-    exact functionWallAction_apply_of_mem_one_sub 𝒜 u hu (hw0 ▸ hw 0 a.2)
+  have hw0 : w 0 = 1 := by
+    have := hν 0
+    rw [hν0] at this
+    exact_mod_cast this.symm
   have heq : s = hyperplaneSection hf hf0 θ (θ • (a : A)) :=
-    (existsUnique_section_value_eq_cutoffDecoratedEvaluation 𝒜 hf0 θ u z hθ hu hz hn w hw hν hν0
-      hε).unique hs (fun x hx => by
-        rw [value_hyperplaneSection,
-          cutoffDecoratedEvaluation_functionWall_one_sub_eq_hyperplaneFactor 𝒜 θ u z hθ hu hz hn w
-            hw hν hν0 hε (fun h0 => x.property
-              ⟨_, (FinitePolyhedralComplex.mem_hyperplaneComplex_walls_iff hf hf0).mpr rfl⟩ h0)])
-  rw [heq, value_restrict_hyperplaneSection, hap]
+    eq_hyperplaneSection_of_value_eq_cutoffDecoratedEvaluation 𝒜 hf0 θ u z hθ hu hz hn w hw
+      hν hν0 hε hs
+  rw [heq, value_restrict_hyperplaneSection, hθ,
+    functionWallAction_apply_of_mem_one_sub 𝒜 u hu (hw0 ▸ hw 0 a.2)]
   simp only [hyperplaneFactor_def, (hU _ hx).not_gt, ↓reduceIte, one_smul]
 
 /-- The restriction of the theta section of one function wall `1 - z` to an open on the negative
@@ -173,25 +189,9 @@ theorem value_restrict_ne_of_mul_ne_zero (θ : H) (u : (𝒜 0)ˣ) (z : A) {n : 
     ((hyperplaneDiagram hf hf0 θ).coefficientTransport A).value
         (((hyperplaneDiagram hf hf0 θ).coefficientLocalSystem A).presheaf.map
           (homOfLE (le_top : U ≤ ⊤)).op s) x hx ≠ (a : A) := by
-  have hap : θ • (a : A) = (a : A) - a * z := by
-    have hw0 : w 0 = 1 := by
-      have := hν 0
-      rw [hν0] at this
-      exact_mod_cast this.symm
-    rw [hθ]
-    exact functionWallAction_apply_of_mem_one_sub 𝒜 u hu (hw0 ▸ hw 0 a.2)
-  have heq : s = hyperplaneSection hf hf0 θ (θ • (a : A)) :=
-    (existsUnique_section_value_eq_cutoffDecoratedEvaluation 𝒜 hf0 θ u z hθ hu hz hn w hw hν hν0
-      hε).unique hs (fun x hx => by
-        rw [value_hyperplaneSection,
-          cutoffDecoratedEvaluation_functionWall_one_sub_eq_hyperplaneFactor 𝒜 θ u z hθ hu hz hn w
-            hw hν hν0 hε (fun h0 => x.property
-              ⟨_, (FinitePolyhedralComplex.mem_hyperplaneComplex_walls_iff hf hf0).mpr rfl⟩ h0)])
-  rw [heq]
-  exact value_restrict_ne_hyperplaneSection_of_forall_lt hf hf0 θ (a : A)
-    (by rw [hap]; exact fun h => haz (by
-      have := congrArg (fun t : A => (a : A) - t) h
-      simpa using this)) le_top hU x hx
+  rw [value_restrict_eq_sub_mul_of_forall_lt 𝒜 hf0 θ u z hu hθ hz hn w hw hν hν0 hε hU hs x hx,
+    ne_eq, sub_eq_self]
+  exact haz
 
 end Section
 
