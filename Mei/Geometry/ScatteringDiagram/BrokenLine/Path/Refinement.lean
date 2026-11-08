@@ -171,7 +171,8 @@ theorem exists_pathDecoratedFamily_cover_closedCharts
           ∀ z, (⟨(e z).2.1, (e z).2.2.1⟩ : Labels) = z.1 := by
   classical
   choose κ hκ B patch hB hdisj hBcover hmem hpatch using fun t : Labels =>
-    (isRationalSemilinear_pathDecoratedDomain T ℳ i₀ x s ν ε c P W S C h w hν hP hW hS hC t
+    (isRationalSemilinear_pathDecoratedDomain
+      i₀ ν c P W S C h w hν hP hW hS hC t.1.val t.2.val
       ).exists_cover_polyhedralCharts U hU (hcover t)
   refine ⟨κ, hκ, B, patch, fun t j => ?_, hdisj, hBcover, hmem, hpatch,
     pathDecoratedChartEquiv T ℳ i₀ x s ν ε c P W S C h w hν hP hW hS hC hdisj hBcover,
