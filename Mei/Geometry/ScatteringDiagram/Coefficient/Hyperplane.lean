@@ -114,6 +114,19 @@ theorem value_hyperplaneSection (c : M)
       hx = hyperplaneFactor f θ x.val.val • c :=
   ((hyperplaneDiagram hf hf0 θ).coefficientTransport M).value_sectionOfLocallyParallel _ _ x hx
 
+variable (hf hf0 θ) in
+/-- Restriction of `hyperplaneSection` to an open takes the same crossing factor times `c` at
+an off-wall point of that open. -/
+@[simp]
+theorem value_restrict_hyperplaneSection (c : M)
+    {U : Opens (FinitePolyhedralComplex.hyperplaneComplex f hf).regularSpace} (hU : U ≤ ⊤)
+    (x : (FinitePolyhedralComplex.hyperplaneComplex f hf).coefficientPoints)
+    (hx : x.val ∈ U) :
+    ((hyperplaneDiagram hf hf0 θ).coefficientTransport M).value
+        (((hyperplaneDiagram hf hf0 θ).coefficientLocalSystem M).presheaf.map (homOfLE hU).op
+          (hyperplaneSection hf hf0 θ c)) x hx = hyperplaneFactor f θ x.val.val • c := by
+  rw [DenseBasisTransport.value_restrict, value_hyperplaneSection]
+
 /-- A point off `ker f`, as an off-wall point of the regular locus of the hyperplane complex. -/
 private def offWallPoint (v : V) (hv : f v ≠ 0) :
     (FinitePolyhedralComplex.hyperplaneComplex f hf).coefficientPoints :=
