@@ -10,6 +10,7 @@ public import Mei.Topology.Algebra.ContinuousAffineEquiv
 public import Mei.Geometry.Convex.Sweep.Realization
 public import Mei.Geometry.Convex.Polyhedron.Rational.Stratification
 public import Mei.Geometry.Convex.Polyhedron.Rational.Ray
+public import Mei.Geometry.Convex.Polyhedron.Incoming
 public import Mathlib.Topology.CompactOpen
 
 /-!
@@ -34,8 +35,8 @@ Every extended path agrees eventually with its incoming affine line, regardless
 of time order. A nonzero incoming direction therefore makes each half-line proper;
 this uses `ContinuousAffineMap.isProperMap_restrict_Iic_of_eventuallyEq`,
 which factors the compact-perturbation argument for `FiniteAffineRay.isProperMap_restrict_Iic`.
-Eventual admission to a rational-normal polyhedral source persists at limiting
-endpoints, using `IsRationalNormalPolyhedron.eventually_add_smul_mem`.
+Eventual admission to a convex polyhedral source persists at limiting endpoints,
+using `TauCeti.IsConvexPolyhedron.eventually_add_smul_mem`.
 
 The backward parameterization follows Carl–Pumperla–Siebert, *A tropical view on
 Landau–Ginzburg models*, §4 (arXiv:2205.07753v2).
@@ -429,11 +430,12 @@ variable (P : Fin n → Set V)
 variable {N : Type*} [AddCommGroup N] {i : N →+ V}
   {h : TauCeti.Toric.IsIntegralLattice i}
 
-/-- Eventual admission to a rational-normal polyhedral source persists at
-limiting endpoints of any family whose incoming affine tails are admitted.
-No support, avoidance or time-order constraints are needed. -/
+/-- Eventual admission to a convex polyhedral source persists at limiting
+endpoints of any family whose incoming affine tails are admitted. The inequality
+presentation need not have rational normals, and no support, avoidance or
+time-order constraints are needed. -/
 theorem backwardPath_eventually_mem_of_mem_closure (C : Set V)
-    (hC : IsRationalNormalPolyhedron h C) {D : Set V}
+    (hC : TauCeti.IsConvexPolyhedron C) {D : Set V}
     (hD : D ⊆ {Q : V | ∀ᶠ s : ℝ in atTop,
       backwardPoint f c (fun j => v j.castSucc) (Fin.last n) Q +
         s • v (Fin.last n) ∈ C})

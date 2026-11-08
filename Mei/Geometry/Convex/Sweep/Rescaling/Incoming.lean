@@ -7,6 +7,7 @@ module
 
 public import Mei.Geometry.Convex.Sweep.Rescaling
 public import Mei.Geometry.Convex.Polyhedron.Incoming
+public import Mei.Geometry.Convex.Sweep.Admissible.Limit
 
 /-!
 # Rescaling the incoming-source constraint
@@ -22,7 +23,7 @@ domain. One scale works on each bounded endpoint set. The original global
 source is retained: it is the admission domain, rather than the source itself,
 that must be linearized. A center outside the admission domain admits no nearby
 scaled tails. At an admitted center, exactly the tight tangential source rows
-constrain the rescaled last point.
+constrain the rescaled last point; a limit of admissible endpoints is such a center.
 
 These are constraints on the full incoming half-line, including for collapsed
 itineraries. No boundary path is asserted to be admissible. The interpretation
@@ -79,5 +80,31 @@ theorem eventually_forall_backwardPath_eventually_mem_add_smul_iff_active
   rw [hr Q hQ, and_iff_right hz,
     ContinuousAffineMap.posTangentConeAt_eventually_forall_apply_add_smul_le_eq g
       (v (Fin.last n)) z hz, mem_ofPred_eq]
+
+include hK in
+/-- At a center in the closure of an admissible domain, the incoming-source test
+of the rescaled backward path consists exactly of the tight tangential source
+inequalities. Center admission follows from persistence of source admission at
+limits; no boundary-admissibility assumption is added. -/
+theorem eventually_forall_backwardPath_eventually_mem_add_smul_iff_active_of_mem_closure
+    {ι J K' : Type*} [Finite ι] (g : ι → V →ᴬ[ℝ] ℝ)
+    (P : Fin n → Set V) (W : J → Set V) (S : K' → Set V)
+    (hz : z ∈ closure (admissibleBackwardDomain f (fun j => f j z) v P W S
+      {x | ∀ j, g j x ≤ 0})) :
+    ∀ᶠ r : ℝ in 𝓝[>] 0, ∀ Q ∈ K,
+      (∀ᶠ s : ℝ in atBot, ∀ j,
+        g j (backwardPath f (fun j => f j z) v (z + r • Q) s) ≤ 0) ↔
+        ∀ j, (g j).linear (v (Fin.last n)) = 0 → g j z = 0 →
+          (g j).contLinear (X Q) ≤ 0 := by
+  have hsource := backwardPath_eventually_mem_of_mem_closure_admissibleBackwardDomain
+    f (fun j => f j z) v P W S {x | ∀ j, g j x ≤ 0}
+    (TauCeti.isConvexPolyhedron_setOf_forall g) hz
+  rw [backwardPath_eventually_mem_iff] at hsource
+  have hcenter : backwardPoint f (fun j => f j z) (fun j : Fin n => v (Fin.castSucc j))
+      (Fin.last n) z = z := by
+    simpa only [zero_smul, add_zero] using
+      backwardPoint_add_smul f (fun j : Fin n => v (Fin.castSucc j)) z (0 : V) 0 (Fin.last n)
+  simp only [hcenter, mem_ofPred_eq] at hsource
+  exact eventually_forall_backwardPath_eventually_mem_add_smul_iff_active f v z hK g hsource
 
 end Mei.Convex

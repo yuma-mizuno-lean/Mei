@@ -98,6 +98,20 @@ theorem pathDecoratedEvaluation_eq_of_exhaustive
   rw [pathDecoratedEvaluation_def, pathDecoratedEvaluation_def]
   exact Fintype.sum_equiv e _ _ fun _ => rfl
 
+/-- Over the inventory of a single encounter path, weighted evaluation is the sum
+of the final decorations of the actual rays along that path. -/
+theorem pathDecoratedEvaluation_singleton (p : Path a b) (X : V) :
+    pathDecoratedEvaluation T ℳ i₀ x {p} v ν ε c P W S C X =
+      let := Fintype.ofFinite (Ray p X)
+      ∑ r : Ray p X, r.decoration := by
+  let := Fintype.ofFinite (Σ q : ({p} : Finset (Path a b)), Ray q.val X)
+  let := Fintype.ofFinite (Ray p X)
+  rw [pathDecoratedEvaluation_def]
+  refine Fintype.sum_equiv (Equiv.uniqueSigma fun q : ({p} : Finset (Path a b)) => Ray q.val X)
+    _ _ fun ⟨⟨q, hq⟩, r⟩ => ?_
+  obtain rfl := Finset.mem_singleton.mp hq
+  rfl
+
 section Rational
 
 variable {Λ : Type*} [AddCommGroup Λ] {i : Λ →+ V}
@@ -251,7 +265,7 @@ theorem exists_pathDecoratedFamily_closedCharts :
       have hlim := hsub hX
       refine ⟨backwardPath_apply_zero _ _ _ ?_,
         backwardPath_eventually_mem_of_mem_closure_admissibleBackwardDomain
-          _ _ _ _ W S C hC hlim, fun hv => ?_⟩
+          _ _ _ _ W S C hC.isConvexPolyhedron hlim, fun hv => ?_⟩
       · exact backwardTime_nonneg_of_mem_closure_admissibleBackwardDomain _ _ _ _ W S C hlim
       · apply isProperMap_backwardPath_restrict_Iic
         simpa only [Path.Degrees.reverseVertexLabels_last] using hv

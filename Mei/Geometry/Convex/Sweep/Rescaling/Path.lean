@@ -84,4 +84,37 @@ theorem eventually_forall_backwardPath_mem_singularSupport_add_smul_iff :
   exact hc.trans (smul_mem_singularSupport_posTangentConeAt_iff
     (fun j : {j | z ∈ W j} => W j) z hrpos _)
 
+local notation "τ" c:max => backwardParameter f c (fun j : Fin n => v (Fin.castSucc j))
+local notation "TW" => fun j : {j | z ∈ W j} => posTangentConeAt (W j) z
+
+/-- At a single small scale, uniformly on the bounded endpoint and time sets, the
+local no-extra-encounter and regularity constraints of a rescaled backward path
+agree with those of the incident tangent supports. Only recorded encounter times
+are excepted from wall avoidance; no time is excepted from singular avoidance. -/
+theorem eventually_forall_backwardPath_avoids_add_smul_iff :
+    ∀ᶠ r : ℝ in 𝓝[>] 0, ∀ Q ∈ K,
+      ((∀ s ∈ I, (∀ j : Fin n, r * s ≠ (τ (fun j => f j z)) j.succ (z + r • Q)) →
+          ∀ b, backwardPath f (fun j => f j z) v (z + r • Q) (r * s) ∉ W b) ∧
+        ∀ s ∈ I, backwardPath f (fun j => f j z) v (z + r • Q) (r * s) ∉ singularSupport W) ↔
+      ((∀ s ∈ I, (∀ j : Fin n, s ≠ (τ 0) j.succ Q) → ∀ b, backwardPath f 0 v Q s ∉ TW b) ∧
+        ∀ s ∈ I, backwardPath f 0 v Q s ∉ singularSupport TW) := by
+  have hm := eventually_forall_backwardPath_mem_add_smul_iff f v z W hW hK hI
+  have hs := eventually_forall_backwardPath_mem_singularSupport_add_smul_iff f v z W hW hK hI
+  filter_upwards [hm, hs, self_mem_nhdsWithin] with r hr hsing hrpos
+  intro Q hQ
+  have htimes (s : ℝ) :
+      (∀ j : Fin n, r * s ≠ (τ (fun j => f j z)) j.succ (z + r • Q)) ↔
+        ∀ j : Fin n, s ≠ (τ 0) j.succ Q := by
+    simp only [backwardParameter_add_smul, ne_eq, mul_right_inj' hrpos.ne']
+  constructor
+  · rintro ⟨hwall, hreg⟩
+    refine ⟨?_, fun s hs => fun hh => hreg s hs ((hsing Q hQ s hs).mpr hh)⟩
+    intro s hs htime b hb
+    exact hwall s hs ((htimes s).mpr htime) b.val ((hr Q hQ s hs b.val).mpr ⟨b.property, hb⟩)
+  · rintro ⟨hwall, hreg⟩
+    refine ⟨?_, fun s hs => fun hh => hreg s hs ((hsing Q hQ s hs).mp hh)⟩
+    intro s hs htime b hb
+    obtain ⟨hzb, hb⟩ := (hr Q hQ s hs b).mp hb
+    exact hwall s hs ((htimes s).mp htime) ⟨b, hzb⟩ hb
+
 end Mei.Convex

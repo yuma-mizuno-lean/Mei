@@ -25,7 +25,7 @@ or singular sets, and are not asserted to be transverse realizations.
 
 We use `backwardPath`, the local characterization of
 `AdmissibleRayRealization`, `backwardPath_eventually_mem_iff`, and
-`IsRationalNormalPolyhedron.eventually_add_smul_mem`. Individual half-line
+`TauCeti.IsConvexPolyhedron.eventually_add_smul_mem`. Individual half-line
 properness is supplied by `isProperMap_backwardPath_restrict_Iic`.
 The backward parameterization is that of
 Carl–Pumperla–Siebert, *A tropical view on Landau–Ginzburg models*, §4
@@ -111,9 +111,11 @@ variable {N : Type*} [AddCommGroup N] {i : N →+ V}
 
 /-- The incoming source persists at every boundary endpoint of the full
 admissible family. Polyhedrality controls eventual admission uniformly through
-the closed domain of incoming base points, without a uniform entry time. -/
+the closed domain of incoming base points, without a uniform entry time. The
+inequality presentation need not have rational normals, and no lattice or
+nonzero incoming velocity is required. -/
 theorem backwardPath_eventually_mem_of_mem_closure_admissibleBackwardDomain
-    (hC : IsRationalNormalPolyhedron h C)
+    (hC : TauCeti.IsConvexPolyhedron C)
     {Q : V} (hQ : Q ∈ closure (admissibleBackwardDomain f c v P W S C)) :
     ∀ᶠ t : ℝ in atBot, backwardPath f c v Q t ∈ C := by
   apply backwardPath_eventually_mem_of_mem_closure f c v C hC _ hQ
