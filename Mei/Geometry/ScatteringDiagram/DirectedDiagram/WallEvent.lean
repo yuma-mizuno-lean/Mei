@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.LocalCrossing.Constancy
-public import Mei.Geometry.Convex.Polyhedron.WallEvent
+public import Mei.Geometry.Convex.Polyhedron.WallEvent.Basic
 public import Mei.Geometry.Toric.Algebraic.DualLattice
 
 /-!

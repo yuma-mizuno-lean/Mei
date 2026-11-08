@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.Convex.Polyhedron.Incoming
-public import Mei.Geometry.ScatteringDiagram.BrokenLine.Degeneration
+public import Mei.Geometry.ScatteringDiagram.BrokenLine.Degeneration.Basic
 
 /-!
 # Tangential source events in closed decorated-type families

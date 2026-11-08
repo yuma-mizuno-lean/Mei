@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.Convex.Polyhedron.WallEvent
+public import Mei.Geometry.Convex.Polyhedron.WallEvent.Basic
 
 /-!
 # Regular limits of exact simultaneous events
