@@ -155,16 +155,27 @@ theorem existsUnique_of_noFaces :
     exact (hpath t).symm
 
 include hF in
+/-- At a fixed incoming datum, a finite family of broken lines in a diagram without faces whose
+final state is `u` (hypothesis `hu`) evaluates to the incoming coefficient, once per member. -/
+theorem weightedEvaluation_eq_card_smul_of_noFaces {ι : Type*} [Finite ι]
+    (family : ι → BrokenLine D) {u : D.State} {p : D.Degree u} {a : D.coefficient u}
+    (hfam : ∀ j, (family j).incoming = ⟨u, p, a⟩) (hu : ∀ j, (family j).finalState = u) :
+    weightedEvaluation family u hu = Nat.card ι • a := by
+  let := Fintype.ofFinite ι
+  rw [weightedEvaluation_def, Finset.sum_congr rfl fun j _ => ?_, Finset.sum_const,
+    Finset.card_univ, Nat.card_eq_fintype_card]
+  obtain ⟨h, ha⟩ := (family j).exists_decorationIn_eq_of_numEvents_eq_zero
+    (numEvents_eq_zero_of_noFaces hF _) (hfam j)
+  exact ha
+
+include hF in
 /-- At a fixed incoming datum, a single broken line in a diagram without faces whose final
 state is `u` (hypothesis `hu`) evaluates to its incoming coefficient. -/
 theorem weightedEvaluation_eq_of_noFaces {ι : Type*} [Unique ι] (family : ι → BrokenLine D)
     {u : D.State} {p : D.Degree u} {a : D.coefficient u}
     (hfam : ∀ j, (family j).incoming = ⟨u, p, a⟩) (hu : ∀ j, (family j).finalState = u) :
     weightedEvaluation family u hu = a := by
-  rw [weightedEvaluation_unique]
-  obtain ⟨h, ha⟩ := (family default).exists_decorationIn_eq_of_numEvents_eq_zero
-    (numEvents_eq_zero_of_noFaces hF _) (hfam default)
-  exact ha
+  rw [weightedEvaluation_eq_card_smul_of_noFaces hF family hfam hu, Nat.card_unique, one_smul]
 
 end
 

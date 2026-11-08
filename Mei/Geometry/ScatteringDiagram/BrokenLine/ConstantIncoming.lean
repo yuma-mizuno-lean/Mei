@@ -13,8 +13,7 @@ public import Mei.Geometry.ScatteringDiagram.BrokenLine.Basic
 A zero-momentum incoming coefficient contributes a constant incoming section, rather than a proper
 path on the noncompact half-line. A `ConstantIncomingSection` is a homogeneous matching family of
 the chamber coefficients whose momenta all vanish. Matching at a face uses the chosen total lift of
-its graded correspondence; inadmissible input would be discarded by that lift, so every source
-degree is required to be admissible.
+its graded correspondence.
 
 At an endpoint in a chamber's region, off every face and away from the singular set, `stationary`
 realizes the section by the constant path on `Iic 0`. Unlike `BrokenLine`, this presentation has no
@@ -40,6 +39,7 @@ variable {R B V : Type*} [Semiring R] [TopologicalSpace B]
 
 /-- A homogeneous matching family of chamber coefficients with zero spatial velocity. This is the
 stationary counterpart of a proper incoming tail. Zero coefficients are allowed. -/
+@[ext]
 structure ConstantIncomingSection (D : BrokenLineData.{uS, uD, uM, uF} R B V) where
   /-- The homogeneous degree in each chamber. -/
   degree : ∀ u, D.Degree u
@@ -49,8 +49,6 @@ structure ConstantIncomingSection (D : BrokenLineData.{uS, uD, uM, uF} R B V) wh
   decoration_mem : ∀ u, decoration u ∈ D.grading u (degree u)
   /-- Every chamber's degree has zero spatial velocity. -/
   momentum_eq_zero : ∀ u, D.momentum u (degree u) = 0
-  /-- Every source degree is admitted by every face, so its chosen lift is not discarded. -/
-  admissible : ∀ {u v} (e : D.Face u v), degree u ∈ D.admissibleLeft e
   /-- The coefficients match under the total transfer of every face correspondence. -/
   matching : ∀ {u v} (e : D.Face u v),
     (D.span e).totalTransfer (decoration u) = decoration v
@@ -62,6 +60,11 @@ variable (s : ConstantIncomingSection D)
 /-- Evaluation of a constant incoming section in a chamber. -/
 def weightedEvaluation (u : D.State) : D.coefficient u := s.decoration u
 
+@[simp]
+theorem weightedEvaluation_apply (u : D.State) : s.weightedEvaluation u = s.decoration u := by
+  unfold weightedEvaluation
+  rfl
+
 /-- The chamber evaluations of a constant incoming section match across every face. -/
 theorem totalTransfer_weightedEvaluation {u v : D.State} (e : D.Face u v) :
     (D.span e).totalTransfer (s.weightedEvaluation u) = s.weightedEvaluation v :=
@@ -69,6 +72,7 @@ theorem totalTransfer_weightedEvaluation {u v : D.State} (e : D.Face u v) :
 
 /-- a constant realization of `s` at an endpoint admitted by a chamber. No properness condition is
 imposed on the constant path. -/
+@[ext]
 structure Realization (s : ConstantIncomingSection D) where
   /-- The chamber containing the endpoint. -/
   state : D.State
@@ -85,6 +89,7 @@ structure Realization (s : ConstantIncomingSection D) where
 def Realization.path {s : ConstantIncomingSection D} (r : s.Realization) :
     Iic (0 : ℝ) → B := fun _ => r.endpoint
 
+@[simp]
 theorem Realization.path_apply (r : s.Realization) (t : Iic (0 : ℝ)) : r.path t = r.endpoint := by
   simp [Realization.path]
 
@@ -108,6 +113,12 @@ chamber. -/
 def Realization.weightedEvaluation (r : s.Realization) : D.coefficient r.state :=
   s.weightedEvaluation r.state
 
+@[simp]
+theorem Realization.weightedEvaluation_eq (r : s.Realization) :
+    r.weightedEvaluation = s.decoration r.state := by
+  unfold Realization.weightedEvaluation
+  simp
+
 /-- Realize a constant incoming section by the constant path at an admitted endpoint. -/
 def stationary (u : D.State) (Q : B) (hQ : Q ∈ D.region u)
     (hF : Q ∉ D.faceSupport) (hS : Q ∉ D.singular) : s.Realization where
@@ -129,21 +140,6 @@ theorem endpoint_stationary (u : D.State) (Q : B) (hQ : Q ∈ D.region u)
     (hF : Q ∉ D.faceSupport) (hS : Q ∉ D.singular) :
     (s.stationary u Q hQ hF hS).endpoint = Q := (rfl)
 
-/-- The stationary constructor gives the prescribed constant path. -/
-@[simp]
-theorem path_stationary (u : D.State) (Q : B) (hQ : Q ∈ D.region u)
-    (hF : Q ∉ D.faceSupport) (hS : Q ∉ D.singular) (t : Iic (0 : ℝ)) :
-    (s.stationary u Q hQ hF hS).path t = Q := by
-  simp only [Realization.path_apply, endpoint_stationary]
-
-@[simp]
-theorem weightedEvaluation_stationary (u : D.State) (Q : B) (hQ : Q ∈ D.region u)
-    (hF : Q ∉ D.faceSupport) (hS : Q ∉ D.singular) :
-    (state_stationary s u Q hQ hF hS) ▸
-      (s.stationary u Q hQ hF hS).weightedEvaluation = s.decoration u := by
-  unfold Realization.weightedEvaluation weightedEvaluation
-  rfl
-
 /-- In a presentation without faces, any zero-momentum family of homogeneous coefficients is a
 constant incoming section, including a zero coefficient. -/
 def ofNoFaces (hF : ∀ u v, IsEmpty (D.Face u v)) (degree : ∀ u, D.Degree u)
@@ -154,7 +150,6 @@ def ofNoFaces (hF : ∀ u v, IsEmpty (D.Face u v)) (degree : ∀ u, D.Degree u)
   decoration := decoration
   decoration_mem := decoration_mem
   momentum_eq_zero := momentum_eq_zero
-  admissible := fun {u v} => (hF u v).elim
   matching := fun {u v} => (hF u v).elim
 
 /-- The face-free constructor has the prescribed chamber degrees. -/
@@ -173,16 +168,6 @@ theorem decoration_ofNoFaces (hF : ∀ u v, IsEmpty (D.Face u v))
     (momentum_eq_zero : ∀ u, D.momentum u (degree u) = 0) (u : D.State) :
     (ofNoFaces hF degree decoration decoration_mem momentum_eq_zero).decoration u =
       decoration u := (rfl)
-
-/-- Without faces, stationary weighted evaluation at a chamber is the prescribed coefficient. -/
-@[simp]
-theorem weightedEvaluation_ofNoFaces (hF : ∀ u v, IsEmpty (D.Face u v))
-    (degree : ∀ u, D.Degree u) (decoration : ∀ u, D.coefficient u)
-    (decoration_mem : ∀ u, decoration u ∈ D.grading u (degree u))
-    (momentum_eq_zero : ∀ u, D.momentum u (degree u) = 0) (u : D.State) :
-    (ofNoFaces hF degree decoration decoration_mem momentum_eq_zero).weightedEvaluation u =
-      decoration u := by
-  simp [weightedEvaluation, ofNoFaces]
 
 end ConstantIncomingSection
 
