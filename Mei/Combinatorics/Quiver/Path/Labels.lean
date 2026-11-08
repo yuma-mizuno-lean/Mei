@@ -48,6 +48,17 @@ theorem reverseArrowLabels_comp (f : ∀ {b c : Q}, (b ⟶ c) → A) (g : A → 
     funext j
     exact Fin.cases rfl (fun k => congrFun (reverseArrowLabels_comp f g p) k) j
 
+/-- Combining two arrow labels commutes with extracting their backward tuples. -/
+theorem reverseArrowLabels_map₂ {C : Type*}
+    (f : ∀ {b c : Q}, (b ⟶ c) → A) (g : ∀ {b c : Q}, (b ⟶ c) → B)
+    (h : A → B → C) : ∀ {b : Q} (p : Path a b),
+      p.reverseArrowLabels (fun e => h (f e) (g e)) =
+        fun j => h (p.reverseArrowLabels f j) (p.reverseArrowLabels g j)
+  | _, nil => funext fun j => j.elim0
+  | _, cons p e => by
+    funext j
+    exact Fin.cases rfl (fun k => congrFun (reverseArrowLabels_map₂ f g h p) k) j
+
 /-- Every tuple entry inherits a property of all arrow labels. -/
 theorem reverseArrowLabels_forall (f : ∀ {b c : Q}, (b ⟶ c) → A)
     (P : A → Prop) (hf : ∀ {b c : Q} (e : b ⟶ c), P (f e)) :

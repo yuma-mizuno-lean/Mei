@@ -7,7 +7,7 @@ module
 
 public import Mei.Geometry.ScatteringDiagram.BrokenLine.LastChange.Localization
 public import Mei.Geometry.Convex.Sweep.Admissible.Itinerary
-public import Mei.Geometry.Convex.Polyhedron.WallEvent
+public import Mei.Geometry.Convex.Polyhedron.WallEvent.Basic
 
 /-!
 # Recovering the terminal word at the last degree change

@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.Convex.Polyhedron.Rational.Stratification.Refinement
-public import Mei.Geometry.ScatteringDiagram.BrokenLine.Degeneration
+public import Mei.Geometry.ScatteringDiagram.BrokenLine.Degeneration.Basic
 
 /-!
 # Common refinements of closed decorated-ray charts

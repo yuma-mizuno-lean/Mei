@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.ScatteringDiagram.BrokenLine.Degeneration
+public import Mei.Geometry.ScatteringDiagram.BrokenLine.Degeneration.Basic
 
 /-!
 # Continuous continuation of complete decorated rays

@@ -91,6 +91,47 @@ local notation "path" t:max => backwardPath
 local notation "Rays" X:max => Σ p : Path a b,
   PathDecoratedRay T ℳ i₀ x vel ν ε c P W S C p X
 
+omit [Finite Q] [∀ q q' : Q, Finite (q ⟶ q')] in
+include hν hP hW hS hC in
+/-- Finite closed charts for the inventory `s` exhaust all actual varying-chamber rays
+whenever every actual ray has its encounter path in `s`. Closed endpoints keep their
+continuous whole paths and incoming-source admission, including collapsed and singular
+limits; boundary admissibility and the classification of boundary events are not
+asserted. -/
+theorem exists_pathDecoratedRay_closedCharts_of_forall_mem (s : Finset (Path a b))
+    (hs : ∀ X (p : Path a b),
+      PathDecoratedRay T ℳ i₀ x vel ν ε c P W S C p X → p ∈ s) :
+    ∃ (κ : Types s → Type) (_ : ∀ t, Finite (κ t)) (A : ∀ t, κ t → Set V),
+      (∀ t j, (A t j).Nonempty ∧ IsRationalNormalPolyhedron h (A t j) ∧
+        IsLocallyClosedPolyhedron h (intrinsicInterior ℝ (A t j)) ∧
+        A t j ⊆ closure (D t) ∧ IsProperMap (fun X : A t j => (X : V)) ∧
+        IsProperMap (fun X : A t j => (path t) X.val) ∧
+        ∀ X ∈ A t j, (path t) X 0 = X ∧
+          (∀ᶠ r : ℝ in atBot, (path t) X r ∈ C) ∧
+          (i (w a i₀) ≠ 0 → IsProperMap (fun r : Iic (0 : ℝ) => (path t) X r))) ∧
+      (∀ t, Pairwise fun j k => Disjoint (intrinsicInterior ℝ (A t j))
+        (intrinsicInterior ℝ (A t k))) ∧
+      (∀ t, ⋃ j, intrinsicInterior ℝ (A t j) = D t) ∧
+      ∃ E : (Σ t, Σ j : κ t, intrinsicInterior ℝ (A t j)) ≃ (Σ X, Rays X),
+        (∀ z, (E z).1 = z.2.2.val) ∧
+        (∀ z, (E z).2.1 = z.1.1.val) ∧
+        (∀ z, HEq (E z).2.2.1 z.1.2) ∧
+        ∀ z, (E z).2.2.decoration = z.1.1.val.homogeneousHistory T ℳ z.1.2.val x := by
+  obtain ⟨κ, hκ, A, hA, hdisj, hcover, E, hX, ht⟩ :=
+    exists_pathDecoratedFamily_closedCharts T ℳ i₀ x s ν ε c P W S C
+      h w hν hP hW hS hC
+  let e (X : V) := Equiv.sigmaSubtypeEquivOfSubset
+    (fun p => PathDecoratedRay T ℳ i₀ x vel ν ε c P W S C p X)
+    (fun p => p ∈ s) (hs X)
+  refine ⟨κ, hκ, A, hA, hdisj, hcover, E.trans (Equiv.sigmaCongrRight e), hX, ?_, ?_, ?_⟩
+  · intro z
+    exact congrArg (fun t : Types s => t.1.val) (ht z)
+  · intro z
+    exact (Sigma.mk.inj_iff.mp (ht z)).2
+  · intro z
+    rw [PathDecoratedRay.decoration_def]
+    exact congrArg (fun t : Types s => t.1.val.homogeneousHistory T ℳ t.2.val x) (ht z)
+
 include hν hP hW hS hC in
 /-- An encounter bound constructs exhaustive finite closed charts for all actual
 varying-chamber rays. Closed endpoints keep their continuous whole paths and
@@ -124,21 +165,8 @@ theorem exists_exhaustive_pathDecoratedFamily_closedCharts (L : ℕ)
   have hs (X : V) (p : Path a b)
       (r : PathDecoratedRay T ℳ i₀ x vel ν ε c P W S C p X) : p ∈ s := by
     simpa only [s, Set.Finite.mem_toFinset, Set.mem_ofPred_eq] using hbound X p r
-  obtain ⟨κ, hκ, A, hA, hdisj, hcover, E, hX, ht⟩ :=
-    exists_pathDecoratedFamily_closedCharts T ℳ i₀ x s ν ε c P W S C
-      h w hν hP hW hS hC
-  let e (X : V) := Equiv.sigmaSubtypeEquivOfSubset
-    (fun p => PathDecoratedRay T ℳ i₀ x vel ν ε c P W S C p X)
-    (fun p => p ∈ s) (hs X)
-  refine ⟨s, hs, κ, hκ, A, hA, hdisj, hcover,
-    E.trans (Equiv.sigmaCongrRight e), hX, ?_, ?_, ?_⟩
-  · intro z
-    exact congrArg (fun t : Types s => t.1.val) (ht z)
-  · intro z
-    exact (Sigma.mk.inj_iff.mp (ht z)).2
-  · intro z
-    rw [PathDecoratedRay.decoration_def]
-    exact congrArg (fun t : Types s => t.1.val.homogeneousHistory T ℳ t.2.val x) (ht z)
+  exact ⟨s, hs, exists_pathDecoratedRay_closedCharts_of_forall_mem T ℳ i₀ x ν ε c P W S C
+    h w hν hP hW hS hC s hs⟩
 
 end Rational
 

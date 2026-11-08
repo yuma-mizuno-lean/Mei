@@ -5,6 +5,7 @@ Authors: Codex
 -/
 module
 
+public import Mei.Algebra.BigOperators.Group.Finset.Subtype
 public import Mei.Geometry.Convex.Sweep.Admissible
 public import Mei.LinearAlgebra.GradedModule.History.Finite
 
@@ -293,17 +294,9 @@ theorem decoratedRayEvaluation_eq_sum (Q : V) :
     (fun p j => velocity (Fin.snoc (α := fun _ => Γ) p.val p₀ j))
     (fun _ => P) (fun _ => C)
   rw [decoratedRayEvaluation]
-  trans ∑ p : {p : (decoratedHistorySupport ℳ T p₀ a velocity f ε : Type _) // Q ∈ A p.val},
-    homogeneousHistory ℳ T p.val.val a
-  · apply Fintype.sum_equiv e
-    intro r
-    simp only [DecoratedAdmissibleRay.decoration_zero, e, admissibleRayFiberEquiv_apply_val]
-  · rw [← Finset.sum_filter]
-    exact (Finset.sum_subtype
-      (p := fun p : (decoratedHistorySupport ℳ T p₀ a velocity f ε : Type _) => Q ∈ A p.val)
-      (Finset.univ.filter fun p : (decoratedHistorySupport ℳ T p₀ a velocity f ε : Type _) =>
-        Q ∈ A p.val) (by intro p; simp only [Finset.mem_filter, Finset.mem_univ, true_and])
-      (fun p => homogeneousHistory ℳ T p.val a)).symm
+  refine Fintype.sum_eq_sum_ite_of_equiv_subtype e _
+    (fun p => homogeneousHistory ℳ T p.val a) fun r => ?_
+  simp only [DecoratedAdmissibleRay.decoration_zero, e, admissibleRayFiberEquiv_apply_val]
 
 open Classical in
 /-- Sum over all nonzero coefficient histories, selecting precisely those with

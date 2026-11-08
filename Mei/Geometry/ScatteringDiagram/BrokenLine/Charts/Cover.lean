@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.Convex.Polyhedron.Rational.Stratification.Cover
-public import Mei.Geometry.ScatteringDiagram.BrokenLine.Degeneration
+public import Mei.Geometry.ScatteringDiagram.BrokenLine.Degeneration.Basic
 
 /-!
 # Closed decorated-ray charts on endpoint covers

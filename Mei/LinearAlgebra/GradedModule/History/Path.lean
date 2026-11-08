@@ -140,6 +140,15 @@ theorem degreesComp_symm_cons {b c e : Q} (p : Path a b) (q : Path b c) (f : c �
     (degreesComp (ι := ι) p (q.cons f)).symm (d, (d', i)) =
       (((degreesComp (ι := ι) p q).symm (d, d'), i) : ((p.comp q).cons f).Degrees ι) := (rfl)
 
+/-- The terminal degree of a concatenation is the terminal degree of its second
+block, starting at the degree reached by its first block. -/
+@[simp]
+theorem Degrees.terminalDegree_comp (i₀ : ι a) {b c : Q}
+    (p : Path a b) (q : Path b c) (d : p.Degrees ι) (e : q.Degrees ι) :
+    Degrees.terminalDegree i₀ (p.comp q) ((degreesComp (ι := ι) p q).symm (d, e)) =
+      Degrees.terminalDegree (Degrees.terminalDegree i₀ p d) q e := by
+  cases q <;> rfl
+
 /-- Vertex-selected degrees split into the selections on the two path blocks. -/
 @[simp]
 theorem degreesComp_degreesOfVertices (s : ∀ q, ι q) {b c : Q}
@@ -162,6 +171,51 @@ theorem Degrees.map_cons {κ : Q → Type*} (σ : ∀ q, ι q → κ q) {b c : Q
     (e : b ⟶ c) (d : p.Degrees ι) (i : ι c) :
     Degrees.map σ (p.cons e) ((d, i) : (p.cons e).Degrees ι) =
       ((Degrees.map σ p d, σ c i) : (p.cons e).Degrees κ) := (rfl)
+
+/-- Identity degree maps retain the entire history. -/
+@[simp]
+theorem Degrees.map_id : ∀ {b : Q} (p : Path a b) (d : p.Degrees ι),
+    Degrees.map (fun _ => id) p d = d
+  | _, nil, _ => rfl
+  | _, cons p _, d => by
+    exact Prod.ext (Degrees.map_id p d.1) rfl
+
+/-- Successive vertexwise degree maps act on every degree of a history by composition. -/
+@[simp]
+theorem Degrees.map_map {κ ξ : Q → Type*} (σ : ∀ q, ι q → κ q)
+    (τ : ∀ q, κ q → ξ q) : ∀ {b : Q} (p : Path a b) (d : p.Degrees ι),
+    Degrees.map τ p (Degrees.map σ p d) = Degrees.map (fun q => τ q ∘ σ q) p d
+  | _, nil, _ => rfl
+  | _, cons p _, d => by
+    exact Prod.ext (Degrees.map_map σ τ p d.1) rfl
+
+/-- Vertexwise degree equivalences reindex complete histories, retaining every arrow. -/
+def Degrees.mapEquiv {κ : Q → Type*} (σ : ∀ q, ι q ≃ κ q) :
+    ∀ {b : Q} (p : Path a b), p.Degrees ι ≃ p.Degrees κ
+  | _, nil => Equiv.equivPUnit _
+  | _, @cons _ _ _ _ c p _ => (Degrees.mapEquiv σ p).prodCongr (σ c)
+
+/-- The history equivalence applies the degree maps at every visited vertex. -/
+@[simp]
+theorem Degrees.mapEquiv_apply {κ : Q → Type*} (σ : ∀ q, ι q ≃ κ q) :
+    ∀ {b : Q} (p : Path a b) (d : p.Degrees ι),
+      Degrees.mapEquiv σ p d = Degrees.map (fun q => σ q) p d
+  | _, nil, _ => rfl
+  | _, cons p e, d => by
+    simpa only [Degrees.mapEquiv, Equiv.prodCongr_apply, Degrees.map_cons] using
+      Prod.ext (Degrees.mapEquiv_apply σ p d.1) (rfl : σ _ d.2 = σ _ d.2)
+
+/-- The inverse equivalence applies the inverse degree maps at every encountered vertex. -/
+@[simp]
+theorem Degrees.mapEquiv_symm_apply {κ : Q → Type*} (σ : ∀ q, ι q ≃ κ q) :
+    ∀ {b : Q} (p : Path a b) (d : p.Degrees κ),
+      (Degrees.mapEquiv σ p).symm d = Degrees.map (fun q => (σ q).symm) p d
+  | _, nil, _ => rfl
+  | _, cons p e, d => by
+    obtain ⟨d, i⟩ := d
+    simp only [Degrees.mapEquiv, Equiv.prodCongr_symm, Equiv.prodCongr_apply,
+      Degrees.map_cons]
+    exact Prod.ext (Degrees.mapEquiv_symm_apply σ p d) rfl
 
 /-- Degree maps commute with the decomposition of histories along a
 concatenation. The two outer pair components retain the degrees of the two

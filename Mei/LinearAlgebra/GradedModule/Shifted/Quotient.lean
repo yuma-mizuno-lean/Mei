@@ -168,4 +168,17 @@ theorem transition_mem_shiftedQuotientGrading {k l : ℕ} (h : k ≤ l) {n : Γ}
   obtain ⟨a, ha, rfl⟩ := (d.mem_shiftedQuotientGrading_iff ℳ p).mp hx
   exact (d.mem_shiftedQuotientGrading_iff ℳ p).mpr ⟨a, ha, by simp⟩
 
+/-- Truncating a homogeneous finite coefficient kills it exactly when it was
+already zero or its relative degree exceeds the new cutoff. -/
+theorem transition_eq_zero_iff_of_mem_shiftedQuotientGrading
+    {k l : ℕ} (h : k ≤ l) {n : Γ}
+    {x : (d.shiftedFiltration ℳ p).quotient l}
+    (hx : x ∈ (d.shiftedQuotientGrading ℳ p l).piece n) :
+    (d.shiftedFiltration ℳ p).transition h x = 0 ↔ x = 0 ∨ (k : ℤ) < d.degree n := by
+  obtain ⟨a, ha, rfl⟩ := (d.mem_shiftedQuotientGrading_iff ℳ p).mp hx
+  simp only [ModuleFiltration.transition_mk, Submodule.Quotient.mk_eq_zero,
+    shiftedFiltration_succ, d.mem_degreeSubmodule_of_mem_iff _ ha]
+  by_cases hz : a = 0 <;> simp only [hz, true_or, false_or]
+  omega
+
 end Mei.PositiveDegrees

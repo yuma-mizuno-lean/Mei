@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.Convex.Sweep.Rescaling
-public import Mei.Geometry.ScatteringDiagram.BrokenLine.Degeneration
+public import Mei.Geometry.ScatteringDiagram.BrokenLine.Degeneration.Basic
 
 /-!
 # Rescaling complete decorated-type charts

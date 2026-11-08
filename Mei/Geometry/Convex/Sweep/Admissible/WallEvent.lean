@@ -7,7 +7,7 @@ module
 
 public import Mei.Geometry.Convex.Sweep.Admissible
 public import Mei.Geometry.Convex.Polyhedron.CrossingEvents
-public import Mei.Geometry.Convex.Polyhedron.WallEvent
+public import Mei.Geometry.Convex.Polyhedron.WallEvent.Basic
 public import Mei.Geometry.Convex.Polyhedron.SingularSupport
 
 /-!
