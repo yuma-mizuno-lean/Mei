@@ -183,3 +183,97 @@ theorem truncate_ray_parameter_succ (j : Fin n) :
     FiniteAffineRay.truncate_apply _ _ (sub_nonpos.mpr (hlower j).le), sub_add_cancel]
 
 end Mei.Convex.AdmissibleRayRealization
+
+namespace Mei.Convex.AdmissibleRayRealization
+
+variable {V J K : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
+  {n : ℕ} {f : Fin (n + 1) → V →L[ℝ] ℝ} {c : Fin (n + 1) → ℝ}
+  {v : Fin (n + 2) → V} {P : Fin (n + 1) → Set V}
+  {W : J → Set V} {S : K → Set V} {C : Set V} {Q : V}
+  (r : AdmissibleRayRealization f c v P W S C Q) (t : ℝ)
+  (hupper : t < r.parameter 1) (hlower : ∀ j : Fin n, r.parameter j.succ.succ < t)
+
+private theorem cast_natAdd_one (j : Fin (n + 1)) :
+    Fin.cast (congrArg (fun k => k + 1) (Nat.add_comm n 1)).symm (Fin.natAdd 1 j) = j.succ :=
+  Fin.ext (by simp)
+
+private theorem cast_natAdd_one' (j : Fin n) :
+    Fin.cast (Nat.add_comm n 1).symm (Fin.natAdd 1 j) = j.succ :=
+  Fin.ext (by simp)
+
+/-- The same realization with its encounter count written as `1 + n`. -/
+private def oneAdd : AdmissibleRayRealization (fun j => f (Fin.cast (Nat.add_comm n 1).symm j))
+    (fun j => c (Fin.cast (Nat.add_comm n 1).symm j))
+    (fun j => v (Fin.cast (congrArg (fun k => k + 1) (Nat.add_comm n 1)).symm j))
+    (fun j => P (Fin.cast (Nat.add_comm n 1).symm j)) W S C Q :=
+  r.congrLength (Nat.add_comm n 1) _ _ _ _ (fun _ => rfl) (fun _ => rfl) (fun _ => rfl)
+    (fun _ => rfl)
+
+private theorem ray_oneAdd : (oneAdd r).ray = r.ray := by
+  simp only [oneAdd, ray_congrLength]
+
+private theorem parameter_oneAdd (j : Fin (1 + n + 1)) :
+    (oneAdd r).parameter j =
+      r.parameter (Fin.cast (congrArg (fun k => k + 1) (Nat.add_comm n 1)).symm j) := by
+  simp only [oneAdd, parameter_congrLength]
+
+include hupper in
+private theorem oneAdd_upper :
+    t < (oneAdd r).parameter (Fin.natAdd 1 (0 : Fin (n + 1))) := by
+  rw [parameter_oneAdd, cast_natAdd_one]
+  exact hupper
+
+include hlower in
+private theorem oneAdd_lower (j : Fin n) :
+    (oneAdd r).parameter (Fin.natAdd 1 j).succ < t := by
+  rw [parameter_oneAdd]
+  have he : Fin.cast (congrArg (fun k => k + 1) (Nat.add_comm n 1)).symm
+      (Fin.natAdd 1 j).succ = j.succ.succ := Fin.ext (by simp [Nat.add_comm])
+  rw [he]
+  exact hlower j
+
+/-- The single cut before transporting its endpoint along `ray_oneAdd`. -/
+private def truncateSuccAux :
+    AdmissibleRayRealization (fun j => f j.succ) (fun j => c j.succ) (fun j => v j.succ)
+      (fun j => P j.succ) W S C ((oneAdd r).ray t) :=
+  ((oneAdd r).truncate t (oneAdd_upper r t hupper) (oneAdd_lower r t hlower)).congrData
+    (funext fun j => congrArg f (cast_natAdd_one' j))
+    (funext fun j => congrArg c (cast_natAdd_one' j))
+    (funext fun j => congrArg v (cast_natAdd_one j))
+    (funext fun j => congrArg P (cast_natAdd_one' j))
+
+/-- Cut inside the segment between the final encounter and the one before it,
+retaining every earlier encounter and the incoming tail. This is `truncate` with
+a single discarded encounter, indexed by the successors of the original
+encounters. -/
+def truncateSucc :
+    AdmissibleRayRealization (fun j => f j.succ) (fun j => c j.succ) (fun j => v j.succ)
+      (fun j => P j.succ) W S C (r.ray t) :=
+  ray_oneAdd r ▸ truncateSuccAux r t hupper hlower
+
+private theorem truncateSucc_eq_aux {R : FiniteAffineRay V V} (h : (oneAdd r).ray = R)
+    (x : AdmissibleRayRealization (fun j => f j.succ) (fun j => c j.succ) (fun j => v j.succ)
+      (fun j => P j.succ) W S C ((oneAdd r).ray t)) :
+    (h ▸ x : AdmissibleRayRealization (fun j => f j.succ) (fun j => c j.succ)
+      (fun j => v j.succ) (fun j => P j.succ) W S C (R t)).ray = x.ray ∧
+    (h ▸ x : AdmissibleRayRealization (fun j => f j.succ) (fun j => c j.succ)
+      (fun j => v j.succ) (fun j => P j.succ) W S C (R t)).parameter = x.parameter := by
+  subst h
+  exact ⟨rfl, rfl⟩
+
+/-- The single cut uses the canonical truncated ray. -/
+@[simp]
+theorem ray_truncateSucc : (r.truncateSucc t hupper hlower).ray = r.ray.truncate t := by
+  rw [truncateSucc, (truncateSucc_eq_aux r t (ray_oneAdd r) _).1, truncateSuccAux,
+    ray_congrData, ray_truncate, ray_oneAdd]
+
+/-- Retained encounter parameters are translated by the cut. -/
+@[simp]
+theorem parameter_truncateSucc_succ (j : Fin n) :
+    (r.truncateSucc t hupper hlower).parameter j.succ = r.parameter j.succ.succ - t := by
+  rw [truncateSucc, (truncateSucc_eq_aux r t (ray_oneAdd r) _).2, truncateSuccAux,
+    parameter_congrData, parameter_truncate_succ, parameter_oneAdd]
+  congr 2
+  exact Fin.ext (by simp [Nat.add_comm])
+
+end Mei.Convex.AdmissibleRayRealization
