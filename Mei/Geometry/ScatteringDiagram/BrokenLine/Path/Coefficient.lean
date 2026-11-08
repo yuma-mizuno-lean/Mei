@@ -84,6 +84,17 @@ theorem pathDecoratedHistoryCoefficientEquiv_val (p : Path a b)
     (pathDecoratedHistoryCoefficientEquiv T U ℳ 𝓝 r σ hr hT i₀ x v w hv ν ε p d).val =
       (mapD p) d.val.val := (rfl)
 
+/-- The inverse comparison applies the inverse degree bijections to the whole history. -/
+@[simp]
+theorem pathDecoratedHistoryCoefficientEquiv_symm_val (p : Path a b)
+    (d : (tgt p : Type _)) :
+    ((pathDecoratedHistoryCoefficientEquiv T U ℳ 𝓝 r σ hr hT i₀ x v w hv ν ε p).symm
+      d).val.val = (mapD p).symm d.val := by
+  have h := pathDecoratedHistoryCoefficientEquiv_val T U ℳ 𝓝 r σ hr hT i₀ x v w hv ν ε p
+    ((pathDecoratedHistoryCoefficientEquiv T U ℳ 𝓝 r σ hr hT i₀ x v w hv ν ε p).symm d)
+  rw [Equiv.apply_symm_apply] at h
+  exact (mapD p).injective (h.symm.trans (Equiv.apply_symm_apply (mapD p) d.val).symm)
+
 /-- Every segment velocity is unchanged by the history comparison. This also
 identifies the extended closed-chart paths at endpoints where they are not admissible. -/
 @[simp↓] -- Preserve the velocity comparison before reindexing its history.
@@ -139,6 +150,16 @@ theorem pathDecoratedRayCoefficientEquiv_history (p : Path a b) (X : V)
     (s : {s : SrcRay p X // r b s.decoration ≠ 0}) :
     ((F p X) s).1.val = (mapD p) s.val.1.val := (rfl)
 
+/-- The inverse comparison applies the inverse degree bijections to every recorded segment. -/
+@[simp]
+theorem pathDecoratedRayCoefficientEquiv_symm_history (p : Path a b) (X : V)
+    (t : TgtRay p X) :
+    (((F p X).symm t).val.1.val) = (mapD p).symm t.1.val := by
+  have h := pathDecoratedRayCoefficientEquiv_history T U ℳ 𝓝 r σ hr hT i₀ x v w hv ν ε
+    c P W S C p X ((F p X).symm t)
+  rw [Equiv.apply_symm_apply] at h
+  exact (mapD p).injective (h.symm.trans (Equiv.apply_symm_apply (mapD p) t.1.val).symm)
+
 /-- The whole path and incoming half-line are unchanged under coefficient comparison. -/
 @[simp]
 theorem pathDecoratedRayCoefficientEquiv_ray (p : Path a b) (X : V)
@@ -181,6 +202,45 @@ theorem pathDecoratedRayEmbeddingEquiv_apply (hinj : Function.Injective (r b))
     pathDecoratedRayEmbeddingEquiv T U ℳ 𝓝 r σ hr hT i₀ x v w hv ν ε c P W S C hinj p X s =
       (F p X) ⟨s, fun hz => s.decoration_ne_zero (hinj (hz.trans (map_zero (r b)).symm))⟩ :=
   (rfl)
+
+/-- The unrestricted comparison applies the degree bijection to every recorded segment. -/
+theorem pathDecoratedRayEmbeddingEquiv_history (hinj : Function.Injective (r b))
+    (p : Path a b) (X : V) (s : SrcRay p X) :
+    (pathDecoratedRayEmbeddingEquiv T U ℳ 𝓝 r σ hr hT i₀ x v w hv ν ε c P W S C
+      hinj p X s).1.val = (mapD p) s.1.val := by
+  rw [pathDecoratedRayEmbeddingEquiv_apply]
+  exact pathDecoratedRayCoefficientEquiv_history T U ℳ 𝓝 r σ hr hT i₀ x v w hv ν ε
+    c P W S C p X _
+
+/-- The unrestricted comparison preserves the complete ray and incoming tail. -/
+@[simp]
+theorem pathDecoratedRayEmbeddingEquiv_ray (hinj : Function.Injective (r b))
+    (p : Path a b) (X : V) (s : SrcRay p X) :
+    (pathDecoratedRayEmbeddingEquiv T U ℳ 𝓝 r σ hr hT i₀ x v w hv ν ε c P W S C
+      hinj p X s).2.ray = s.2.ray := by
+  rw [pathDecoratedRayEmbeddingEquiv_apply]
+  exact pathDecoratedRayCoefficientEquiv_ray T U ℳ 𝓝 r σ hr hT i₀ x v w hv ν ε
+    c P W S C p X _
+
+/-- The unrestricted comparison preserves every unchanged-degree encounter parameter. -/
+@[simp]
+theorem pathDecoratedRayEmbeddingEquiv_parameter (hinj : Function.Injective (r b))
+    (p : Path a b) (X : V) (s : SrcRay p X) :
+    (pathDecoratedRayEmbeddingEquiv T U ℳ 𝓝 r σ hr hT i₀ x v w hv ν ε c P W S C
+      hinj p X s).2.parameter = s.2.parameter := by
+  rw [pathDecoratedRayEmbeddingEquiv_apply]
+  exact pathDecoratedRayCoefficientEquiv_parameter T U ℳ 𝓝 r σ hr hT i₀ x v w hv ν ε
+    c P W S C p X _
+
+/-- The unrestricted comparison maps the final whole decoration. -/
+@[simp↓] -- Map the whole decoration before expanding its component history.
+theorem pathDecoratedRayEmbeddingEquiv_decoration (hinj : Function.Injective (r b))
+    (p : Path a b) (X : V) (s : SrcRay p X) :
+    (pathDecoratedRayEmbeddingEquiv T U ℳ 𝓝 r σ hr hT i₀ x v w hv ν ε c P W S C
+      hinj p X s).decoration = r b s.decoration := by
+  rw [pathDecoratedRayEmbeddingEquiv_apply]
+  exact pathDecoratedRayCoefficientEquiv_decoration T U ℳ 𝓝 r σ hr hT i₀ x v w hv ν ε
+    c P W S C p X _
 
 /-- Coefficient maps commute with the finite evaluation over any itinerary
 inventory. Killed whole decorations contribute zero and are then discarded;

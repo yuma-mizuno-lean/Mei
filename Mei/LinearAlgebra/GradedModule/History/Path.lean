@@ -179,6 +179,18 @@ theorem Degrees.mapEquiv_apply {κ : Q → Type*} (σ : ∀ q, ι q ≃ κ q) :
     simpa only [Degrees.mapEquiv, Equiv.prodCongr_apply, Degrees.map_cons] using
       Prod.ext (Degrees.mapEquiv_apply σ p d.1) (rfl : σ _ d.2 = σ _ d.2)
 
+/-- The inverse equivalence applies the inverse degree maps at every encountered vertex. -/
+@[simp]
+theorem Degrees.mapEquiv_symm_apply {κ : Q → Type*} (σ : ∀ q, ι q ≃ κ q) :
+    ∀ {b : Q} (p : Path a b) (d : p.Degrees κ),
+      (Degrees.mapEquiv σ p).symm d = Degrees.map (fun q => (σ q).symm) p d
+  | _, nil, _ => rfl
+  | _, cons p e, d => by
+    obtain ⟨d, i⟩ := d
+    simp only [Degrees.mapEquiv, Equiv.prodCongr_symm, Equiv.prodCongr_apply,
+      Degrees.map_cons]
+    exact Prod.ext (Degrees.mapEquiv_symm_apply σ p d) rfl
+
 /-- Degree maps commute with the decomposition of histories along a
 concatenation. The two outer pair components retain the degrees of the two
 blocks after regrading. -/

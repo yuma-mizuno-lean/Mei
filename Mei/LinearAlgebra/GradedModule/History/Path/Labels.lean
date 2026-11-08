@@ -73,6 +73,7 @@ theorem reverseVertexLabels_comp (v : ∀ q, ι q → A) (g : A → B) (i₀ : �
 
 /-- Regrading a history preserves all its segment labels when the vertex labels
 intertwine the degree maps, including the incoming segment. -/
+@[simp]
 theorem reverseVertexLabels_map {κ : Q → Type*} (σ : ∀ q, ι q → κ q)
     (v : ∀ q, ι q → A) (w : ∀ q, κ q → A) (hv : ∀ q d, w q (σ q d) = v q d)
     (i₀ : ι a) :
