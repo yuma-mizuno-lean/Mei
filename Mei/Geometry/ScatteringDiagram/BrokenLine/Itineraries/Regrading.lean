@@ -52,7 +52,7 @@ variable {R M N Γ Δ V J K I : Type*}
   (hpos : ∀ p, p ∈ d.monoid ↔ σ p ∈ e.monoid) (Q : V)
 
 /-- The regraded incoming coefficient, placed in degree zero using `map_zero`. -/
-def regradeBase : 𝓝 0 :=
+@[expose] def regradeBase : 𝓝 0 :=
   ⟨r a, by simpa only [map_zero] using hr 0 a a.property⟩
 
 omit [DecidableEq Γ] [DecidableEq Δ]
