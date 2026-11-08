@@ -120,6 +120,28 @@ local notation "path" => (fun t : Labels => backwardPath
   (Path.reverseArrowLabels ν (Subtype.val (Sigma.fst t)))
   (Path.reverseArrowLabels c (Subtype.val (Sigma.fst t))) (dirs t))
 
+omit [Finite J] [Finite K] in
+include hC in
+/-- A closed polyhedron inside the closure of a type's endpoint domain carries the original
+whole-path extension of that type. Its endpoint-path map is proper, the extension returns the
+endpoint at time zero and eventually enters the incoming source, and a nonzero incoming
+direction makes the incoming half-line proper. -/
+theorem pathDecoratedType_closedChart (t : PathDecoratedType T ℳ i₀ x s vel ν ε) {E : Set V}
+    (hE : IsRationalNormalPolyhedron h E) (hsub : E ⊆ closure (D t)) :
+    IsProperMap (fun X : E => (path t) X.val) ∧
+      ∀ X ∈ E, (path t) X 0 = X ∧ (∀ᶠ r : ℝ in atBot, (path t) X r ∈ C) ∧
+        (i (w a i₀) ≠ 0 → IsProperMap (fun r : Iic (0 : ℝ) => (path t) X r)) := by
+  refine ⟨(isProperMap_backwardPath_closure_admissibleBackwardDomain _ _ _ _ W S C).comp
+    (Topology.IsClosedEmbedding.inclusion hsub
+      (hE.isClosed.preimage continuous_subtype_val)).isProperMap, fun X hX => ?_⟩
+  have hlim := hsub hX
+  refine ⟨backwardPath_apply_zero _ _ _
+    (backwardTime_nonneg_of_mem_closure_admissibleBackwardDomain _ _ _ _ W S C hlim),
+    backwardPath_eventually_mem_of_mem_closure_admissibleBackwardDomain
+      _ _ _ _ W S C hC hlim, fun hv => ?_⟩
+  apply isProperMap_backwardPath_restrict_Iic
+  simpa only [Path.Degrees.reverseVertexLabels_last] using hv
+
 include hν hP hW hS hC
 
 /-- All complete varying-chamber types have semilinear full endpoint domains. -/
@@ -209,6 +231,46 @@ theorem pathDecoratedFamily_weightedEvaluation (X : V) :
   exact (congrArg (fun t : Labels => t.1.val.homogeneousHistory T ℳ t.2.val x)
     (pathDecoratedFamilyFiberEquiv_type T ℳ i₀ x s ν ε c P W S C h w hν hP hW hS hC X z)).symm
 
+open Classical in
+/-- The shared weighted evaluation counts each complete type whose endpoint domain contains the
+point, with its entire final decoration. -/
+theorem pathDecoratedEvaluation_eq_sum_domains (X : V) :
+    pathDecoratedEvaluation T ℳ i₀ x s vel ν ε c P W S C X =
+      let := Fintype.ofFinite Labels
+      ∑ t : Labels, if X ∈ D t then t.1.val.homogeneousHistory T ℳ t.2.val x else 0 :=
+  (pathDecoratedFamily_weightedEvaluation T ℳ i₀ x s ν ε c P W S C h w hν hP hW hS hC X).symm.trans
+    (FiniteSemilinearFamily.weightedEvaluation_ofDomains _ _ _ X)
+
+/-- A disjoint cover of every complete type's endpoint domain parameterizes the actual rays of
+the inventory, sending a chart point to its endpoint and carrying its type label. -/
+def pathDecoratedChartEquiv {κ : Labels → Type*} {B : ∀ t, κ t → Set V}
+    (hdisj : ∀ t, Pairwise fun j l => Disjoint (B t j) (B t l))
+    (hcover : ∀ t, ⋃ j, B t j = D t) :
+    (Σ t, Σ j, B t j) ≃
+      (Σ X, Σ p : (s : Type _), PathDecoratedRay T ℳ i₀ x vel ν ε c P W S C p.val X) :=
+  (FiniteSemilinearFamily.ofDomainsChartEquiv
+    (isRationalSemilinear_pathDecoratedDomain T ℳ i₀ x s ν ε c P W S C h w hν hP hW hS hC)
+    hdisj hcover).trans (Equiv.sigmaCongrRight fun X => e X)
+
+/-- The ray parameterization preserves the endpoint. -/
+@[simp]
+theorem pathDecoratedChartEquiv_apply_fst {κ : Labels → Type*} {B : ∀ t, κ t → Set V}
+    (hdisj : ∀ t, Pairwise fun j l => Disjoint (B t j) (B t l))
+    (hcover : ∀ t, ⋃ j, B t j = D t) (z : Σ t, Σ j, B t j) :
+    (pathDecoratedChartEquiv T ℳ i₀ x s ν ε c P W S C h w hν hP hW hS hC hdisj hcover z).1 =
+      z.2.2.val :=
+  FiniteSemilinearFamily.ofDomainsChartEquiv_apply_fst _ hdisj hcover z
+
+/-- The ray parameterization preserves the complete type of each chart point. -/
+theorem pathDecoratedChartEquiv_apply_type {κ : Labels → Type*} {B : ∀ t, κ t → Set V}
+    (hdisj : ∀ t, Pairwise fun j l => Disjoint (B t j) (B t l))
+    (hcover : ∀ t, ⋃ j, B t j = D t) (z : Σ t, Σ j, B t j) :
+    (⟨(pathDecoratedChartEquiv T ℳ i₀ x s ν ε c P W S C h w hν hP hW hS hC hdisj hcover z).2.1,
+      (pathDecoratedChartEquiv T ℳ i₀ x s ν ε c P W S C h w hν hP hW hS hC hdisj hcover z).2.2.1⟩
+        : Labels) = z.1 :=
+  (pathDecoratedFamilyFiberEquiv_type T ℳ i₀ x s ν ε c P W S C h w hν hP hW hS hC _ _).trans
+    (FiniteSemilinearFamily.ofDomainsChartEquiv_apply_snd_fst _ hdisj hcover z)
+
 include hν hP hW hS hC in
 /-- Finite closed charts exhaust every actual ray in the itinerary inventory.
 Closed extensions are proper in endpoint and compact-open path space, retain
@@ -236,19 +298,8 @@ theorem exists_pathDecoratedFamily_closedCharts :
     E.trans (Equiv.sigmaCongrRight fun X => e X), hendpoint, ?_⟩
   · intro t j
     obtain ⟨hne, hpoly, hlc, hsub⟩ := hA t j
-    refine ⟨hne, hpoly, hlc, hsub, hpoly.isClosed.isProperMap_subtypeVal, ?_, ?_⟩
-    · exact (isProperMap_backwardPath_closure_admissibleBackwardDomain
-        _ _ _ _ W S C).comp
-        (Topology.IsClosedEmbedding.inclusion hsub
-          (hpoly.isClosed.preimage continuous_subtype_val)).isProperMap
-    · intro X hX
-      have hlim := hsub hX
-      refine ⟨backwardPath_apply_zero _ _ _ ?_,
-        backwardPath_eventually_mem_of_mem_closure_admissibleBackwardDomain
-          _ _ _ _ W S C hC hlim, fun hv => ?_⟩
-      · exact backwardTime_nonneg_of_mem_closure_admissibleBackwardDomain _ _ _ _ W S C hlim
-      · apply isProperMap_backwardPath_restrict_Iic
-        simpa only [Path.Degrees.reverseVertexLabels_last] using hv
+    exact ⟨hne, hpoly, hlc, hsub, hpoly.isClosed.isProperMap_subtypeVal,
+      pathDecoratedType_closedChart T ℳ i₀ x s ν ε c P W S C h w hC t hpoly hsub⟩
   · intro z
     exact (pathDecoratedFamilyFiberEquiv_type T ℳ i₀ x s ν ε c P W S C
       h w hν hP hW hS hC (E z).1 (E z).2).trans (hlabel z)
