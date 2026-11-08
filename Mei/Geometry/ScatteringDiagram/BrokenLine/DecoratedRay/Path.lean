@@ -115,7 +115,6 @@ theorem decoratedAdmissibleRayPathEquiv_ray (Q : V) (r : Ray Q) :
   AdmissibleRayRealization.ray_congrLength _ _ _ _ _ _ _ _ _ _
 
 /-- The comparison preserves the whole final decoration. -/
-@[simp]
 theorem decoratedAdmissibleRayPathEquiv_decoration (Q : V) (r : Ray Q) :
     (decoratedAdmissibleRayPathEquiv ℳ T p₀ a velocity f c ε P W S C g Q r).decoration =
       r.decoration 0 := by
