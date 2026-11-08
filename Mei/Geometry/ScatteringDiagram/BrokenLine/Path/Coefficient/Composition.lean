@@ -86,13 +86,9 @@ theorem pathDecoratedRayEmbeddingEquiv_refl :
         Equiv.refl Src := by
   apply Equiv.ext
   intro s
-  apply PathDecoratedRay.ext_history _ s
-  simpa only [Path.Degrees.mapEquiv_apply, Equiv.coe_refl, Equiv.refl_apply,
-    Path.Degrees.map_id] using
-    pathDecoratedRayEmbeddingEquiv_history T T ℳ ℳ (fun _ => LinearMap.id)
-      (fun _ => Equiv.refl _) (fun _ _ _ hx => hx)
-      (fun _ => (LinearMap.id_comp _).trans (LinearMap.comp_id _).symm)
-      i₀ x v v (fun _ _ => rfl) ν ε c P W S C Function.injective_id p X s
+  -- The fiber's incoming data is only propositionally the identity image.
+  erw [pathDecoratedRayEmbeddingEquiv_apply]
+  exact pathDecoratedRayCoefficientEquiv_refl_apply T ℳ v ν ε c P W S C i₀ x p X _
 
 variable (r : ∀ q, M q →ₗ[R] N q) (s : ∀ q, N q →ₗ[R] O q)
   (σ : ∀ q, ι q ≃ κ q) (τ : ∀ q, κ q ≃ ξ q)
