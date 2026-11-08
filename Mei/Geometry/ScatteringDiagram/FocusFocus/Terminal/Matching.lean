@@ -43,8 +43,9 @@ abbrev slabTerminalMultispan (t : R) :
 theorem slabTerminalMultispan_jointly_injective (t : R)
     (c : (MultispanShape.ofLinearOrder Bool).L) :
     Function.Injective (((slabTerminalMultispan t).fst c).hom.prod
-      ((slabTerminalMultispan t).snd c).hom) :=
-  exponentMaps_jointly_injective (C t * (1 + T 1))
+      ((slabTerminalMultispan t).snd c).hom) := by
+  obtain rfl : c = default := Subsingleton.elim _ _
+  exact exponentMaps_jointly_injective (C t * (1 + T 1))
 
 variable {ι H : Type*} [AddCommMonoid H] [Module R H]
   (s : Finset ι) (n b : ι → ℤ) (t : R) (α : ι → H →ₗ[R] R)
@@ -52,9 +53,12 @@ variable {ι H : Type*} [AddCommMonoid H] [Module R H]
     ((Int.castAddHom ℝ).prodMap (Int.castAddHom ℝ)))
   {v : ℝ} {L U : ℝ × ℝ}
 
-private def terminalChamberMap (side : Bool) : H →ₗ[R] R[ℤ × ℤ] :=
-  (if side then (exponentRightMap (C t * (1 + T 1))).toLinearMap else
-    (exponentLeftMap (C t * (1 + T 1))).toLinearMap).comp
+private def terminalChamberMap (side : Bool) :
+    H →ₗ[R] (slabTerminalMultispan t).right side :=
+  match side with
+  | false => (exponentLeftMap (C t * (1 + T 1))).toLinearMap.comp
+      (slabTerminalFiniteLift s n b t α)
+  | true => (exponentRightMap (C t * (1 + T 1))).toLinearMap.comp
       (slabTerminalFiniteLift s n b t α)
 
 private theorem terminalChamberMap_false :
@@ -72,8 +76,11 @@ private theorem terminalChamberMap_eq
     (hU : U ∈ slabTerminalFiniteDomain s n b v) (hLs : L.1 < 0) (hUs : 0 < U.1)
     (a : H) (side : Bool) :
     terminalChamberMap s n b t α side a =
-      ∑ i ∈ s, (slabThetaFamily t (α i a) (n i) (b i) h).weightedEvaluation
-          (slabThetaChartWeight t (α i a) (n i) (b i)) (if side then U else L) := by
+      (match side with
+      | false => (∑ i ∈ s, (slabThetaFamily t (α i a) (n i) (b i) h).weightedEvaluation
+          (slabThetaChartWeight t (α i a) (n i) (b i)) L : R[ℤ × ℤ])
+      | true => (∑ i ∈ s, (slabThetaFamily t (α i a) (n i) (b i) h).weightedEvaluation
+          (slabThetaChartWeight t (α i a) (n i) (b i)) U : R[ℤ × ℤ])) := by
   have expand (Q : ℝ × ℝ) (hQ : Q ∈ slabTerminalFiniteDomain s n b v)
       (side : Bool) (hs : Q ∈ incomingSlabDomain side) (i : ι) (hi : i ∈ s) :
       (slabThetaFamily t (α i a) (n i) (b i) h).weightedEvaluation
@@ -88,12 +95,12 @@ private theorem terminalChamberMap_eq
         exact left_ne_zero_of_mul hp.ne') side]
   cases side
   · simp only [terminalChamberMap_false, LinearMap.comp_apply, AlgHom.toLinearMap_apply,
-      Bool.false_eq_true, ↓reduceIte, slabTerminalFiniteLift_apply, map_sum]
+      slabTerminalFiniteLift_apply, map_sum]
     apply Finset.sum_congr rfl
     intro i hi
     exact (expand L hL false (by simpa using hLs) i hi).symm
   · simp only [terminalChamberMap_true, LinearMap.comp_apply, AlgHom.toLinearMap_apply,
-      ↓reduceIte, slabTerminalFiniteLift_apply, map_sum]
+      slabTerminalFiniteLift_apply, map_sum]
     apply Finset.sum_congr rfl
     intro i hi
     exact (expand U hU true (by simpa using hUs) i hi).symm
@@ -105,19 +112,19 @@ theorem existsUnique_slabTerminalFinite_matchingFamily
     (hU : U ∈ slabTerminalFiniteDomain s n b v) (hLs : L.1 < 0) (hUs : 0 < U.1) :
     ∃! ℓ : H →ₗ[R] SemimoduleCat.sectionsSubmodule (slabTerminalMultispan t).multispan,
       ∀ a (side : Bool), (ℓ a).val (.right side) =
-        ∑ i ∈ s, (slabThetaFamily t (α i a) (n i) (b i) h).weightedEvaluation
-          (slabThetaChartWeight t (α i a) (n i) (b i)) (if side then U else L) := by
+        (match side with
+        | false => (∑ i ∈ s, (slabThetaFamily t (α i a) (n i) (b i) h).weightedEvaluation
+            (slabThetaChartWeight t (α i a) (n i) (b i)) L : R[ℤ × ℤ])
+        | true => (∑ i ∈ s, (slabThetaFamily t (α i a) (n i) (b i) h).weightedEvaluation
+            (slabThetaChartWeight t (α i a) (n i) (b i)) U : R[ℤ × ℤ])) := by
   have htest : ∃! ℓ : H →ₗ[R]
       SemimoduleCat.sectionsSubmodule (slabTerminalMultispan t).multispan,
       ∀ a side, (ℓ a).val (.right side) = terminalChamberMap s n b t α side a := by
     apply ((slabTerminalMultispan t).existsUnique_sections_lift_iff
       (terminalChamberMap s n b t α) (slabTerminalMultispan_jointly_injective t)).mpr
     intro a c
-    refine ⟨slabTerminalFiniteLift s n b t α a, Prod.ext ?_ ?_⟩
-    · simp only [LinearMap.prod_apply, Function.prod_apply, SemimoduleCat.hom_ofHom,
-        MultispanShape.ofLinearOrder_bool_fst, terminalChamberMap_false, LinearMap.comp_apply]
-    · simp only [LinearMap.prod_apply, Function.prod_apply, SemimoduleCat.hom_ofHom,
-        MultispanShape.ofLinearOrder_bool_snd, terminalChamberMap_true, LinearMap.comp_apply]
+    obtain rfl : c = default := Subsingleton.elim _ _
+    exact ⟨slabTerminalFiniteLift s n b t α a, rfl⟩
   obtain ⟨ℓ, hℓ, huniq⟩ := htest
   refine ⟨ℓ, fun a side => (hℓ a side).trans
     (terminalChamberMap_eq s n b t α h hL hU hLs hUs a side), ?_⟩
@@ -133,31 +140,23 @@ theorem slabTerminalFinite_matchingFamily_face
     (hU : U ∈ slabTerminalFiniteDomain s n b v) (hLs : L.1 < 0) (hUs : 0 < U.1)
     (ℓ : H →ₗ[R] SemimoduleCat.sectionsSubmodule (slabTerminalMultispan t).multispan)
     (hℓ : ∀ a (side : Bool), (ℓ a).val (.right side) =
-      ∑ i ∈ s, (slabThetaFamily t (α i a) (n i) (b i) h).weightedEvaluation
-          (slabThetaChartWeight t (α i a) (n i) (b i)) (if side then U else L))
+      (match side with
+      | false => (∑ i ∈ s, (slabThetaFamily t (α i a) (n i) (b i) h).weightedEvaluation
+          (slabThetaChartWeight t (α i a) (n i) (b i)) L : R[ℤ × ℤ])
+      | true => (∑ i ∈ s, (slabThetaFamily t (α i a) (n i) (b i) h).weightedEvaluation
+          (slabThetaChartWeight t (α i a) (n i) (b i)) U : R[ℤ × ℤ])))
     (a : H) (c : (MultispanShape.ofLinearOrder Bool).L) :
     (ℓ a).val (.left c) = slabTerminalFiniteLift s n b t α a := by
-  have hface := (slabTerminalMultispan t).mem_sectionsSubmodule_multispan.mp (ℓ a).property
-  have hleft := (hface.1 c).trans
-    (congrArg (fun side : Bool => (ℓ a).val (.right side))
-      (MultispanShape.ofLinearOrder_bool_fst c))
-  have hright := (hface.2 c).trans
-    (congrArg (fun side : Bool => (ℓ a).val (.right side))
-      (MultispanShape.ofLinearOrder_bool_snd c))
-  have hvalueL : (ℓ a).val (.right false) =
-      ∑ i ∈ s, (slabThetaFamily t (α i a) (n i) (b i) h).weightedEvaluation
-          (slabThetaChartWeight t (α i a) (n i) (b i)) L := by
-    simpa only [Bool.false_eq_true, ↓reduceIte, slabThetaFamily_weightedEvaluation] using hℓ a false
-  have hvalueR : (ℓ a).val (.right true) =
-      ∑ i ∈ s, (slabThetaFamily t (α i a) (n i) (b i) h).weightedEvaluation
-          (slabThetaChartWeight t (α i a) (n i) (b i)) U := by
-    simpa only [↓reduceIte] using hℓ a true
+  obtain rfl : c = default := Subsingleton.elim _ _
+  have hspan := MultispanIndex.ofLinearMaps_apply_left
+    (exponentLeftMap (C t * (1 + T 1))).toLinearMap
+    (exponentRightMap (C t * (1 + T 1))).toLinearMap default (ℓ a).property
   apply exponentMaps_jointly_injective (C t * (1 + T 1))
   exact Prod.ext
-    ((hleft.trans hvalueL).trans
+    ((hspan.1.trans (hℓ a false)).trans
       (by simpa only [slabThetaFamily_weightedEvaluation] using
         (exponentLeftMap_slabTerminalFiniteLift s n b t α hL hLs a).symm))
-    ((hright.trans hvalueR).trans
+    ((hspan.2.trans (hℓ a true)).trans
       (by simpa only [slabThetaFamily_weightedEvaluation] using
         (exponentRightMap_slabTerminalFiniteLift s n b t α hU hUs a).symm))
 

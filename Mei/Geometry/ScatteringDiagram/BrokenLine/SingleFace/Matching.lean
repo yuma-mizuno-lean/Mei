@@ -1,29 +1,31 @@
 /-
 Copyright (c) 2026 Mei contributors. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Claude Code
+Authors: Claude Code, Codex
 -/
 module
 
 public import Mei.Geometry.ScatteringDiagram.BrokenLine.SingleFace.Resolution
 public import Mei.Algebra.Category.SemimoduleCat.Multispan.Span
+import Mei.LinearAlgebra.CommonLift
 
 /-!
 # Matching families of single-face ray evaluations
 
-The span of a graded correspondence between two copies of a decomposed chamber module is the
-incidence diagram of one face. The actual incoming and opposite-side ray sums, for a linear
-family of admissible homogeneous inputs, are the chamber values of a unique linear family of
-matching sections of that diagram, whose face component is a common linear lift of them. The
-arrangement away from which the opposite side is generic is independent of the incoming
-coefficient, and finitely generated incoming ranges give the finite-input test.
+The two chamber modules of a graded correspondence may have different degree
+sets and different underlying semimodules. A linear family of admissible inputs
+and its actual opposite-side ray sums determine a unique linear family of
+matching sections of the face incidence diagram when the span is jointly
+injective. Only the total sum needs a face lift; individual branches need none.
 
-Graph and slab correspondences are instances; neither the legs separately nor the propagation
-need be invertible, and only the joint injectivity of the span is used. This is matching at one
-face. It does not supply the closed global family, the certificates across singular
-degenerations, or descent along the stratification. The face matching follows
-Gross–Hacking–Siebert, *Theta functions on varieties with effective anti-canonical class*,
-§3.2 (arXiv:1601.07081v4).
+The arrangement is independent of the incoming coefficient. Finite generation
+of the incoming range supplies the finite-input test, without finite generation
+of either chamber or its homogeneous pieces. This uses the total transfer
+construction shared by graph and slab correspondences. It does not supply
+certificates across singular degenerations or descent along the base.
+
+The face matching follows Gross–Hacking–Siebert, *Theta functions on varieties
+with effective anti-canonical class*, §3.2 (arXiv:1601.07081v4).
 -/
 
 public noncomputable section
@@ -34,66 +36,72 @@ universe u
 
 namespace Mei.GradedCorrespondence
 
-variable {R V H Γ : Type*} {M B : Type u} [Semiring R]
-  [AddCommMonoid M] [Module R M] [DecidableEq Γ]
-  {ℳ : Γ → Submodule R M} [DirectSum.Decomposition ℳ]
-  [AddCommMonoid B] [Module R B] {I J : Set Γ}
-  (C : GradedCorrespondence (B := B) ℳ ℳ I J)
+variable {R V H ι κ : Type*} {U M B : Type u} [Semiring R]
+  [AddCommMonoid U] [Module R U] [AddCommMonoid M] [Module R M]
+  [DecidableEq κ] {𝒰 : ι → Submodule R U} {ℳ : κ → Submodule R M}
+  [DirectSum.Decomposition ℳ] [AddCommMonoid B] [Module R B]
+  {I : Set ι} {J : Set κ} (C : GradedCorrespondence (B := B) 𝒰 ℳ I J)
   [NormedAddCommGroup V] [NormedSpace ℝ V]
   [AddCommMonoid H] [Module R H]
-  (p : I) (α : H →ₗ[R] ℳ p) (v : Γ → V)
+  (p : I) (α : H →ₗ[R] 𝒰 p) (u : V) (v : κ → V)
   (ν : V →L[ℝ] ℝ) (b : ℝ) (Z : Set V)
 
-local notation "ev(" n ", " x ", " Q ")" =>
-  decoratedRayEvaluation ℳ (fun _ : Fin n => C.totalTransfer) p (α x) v
-    (fun _ => ν) (fun _ => b) (fun _ => SignType.sign (ν (v p)))
-    (fun _ => Set.ofPred (fun x => ν x = b)) (fun _ : Unit => Set.ofPred (fun x => ν x = b))
-    (fun _ : Unit => Z) (Set.ofPred (fun x => 0 < (ν x - b) / ν (v p))) Q
+local notation "Sections" => SemimoduleCat.sectionsSubmodule
+  (MultispanIndex.multispan (MultispanIndex.ofLinearMaps C.left C.right))
 
-/-- The incoming and opposite-side ray sums are the chamber values of a unique linear family of
-matching sections of the face, uniformly over the incoming coefficient. The opposite endpoint
-is generic for one exceptional arrangement chosen before the coefficient. -/
+/-- The incoming coefficients and the actual opposite-side ray sums are the
+chamber values of a unique linear family of matching sections. One arrangement
+works for all incoming parameters, including zero and cancelling inputs. -/
 theorem existsUnique_singleFace_matchingFamily
     (hinj : Function.Injective (C.left.prod C.right))
-    (s : Finset Γ) (hs : ∀ x q, C.transfer p q (α x) ≠ 0 → q ∈ s)
-    (hnormal : ∀ x q, C.transfer p q (α x) ≠ 0 → ν (v q) = ν (v p))
+    (s : Finset κ) (hs : ∀ q ∉ s, (C.transfer p q).comp α = 0)
+    (hnormal : ∀ q x, C.transfer p q (α x) ≠ 0 → ν (v q) = ν u)
     (hZ : Z ⊆ {x | ν x = b})
-    {κ : Type*} [Finite κ] (A : κ → AffineSubspace ℝ V)
+    {δ : Type*} [Finite δ] (A : δ → AffineSubspace ℝ V)
     (hcover : Z ⊆ ⋃ j, (A j : Set V))
     (hA : ∀ j, ∃ x, ν x = b ∧ x ∉ A j) :
-    ∃ E : ExceptionalArrangement V, ∀ Q₀ Q₁,
-      0 < (ν Q₀ - b) / ν (v p) → E.IsGeneric Q₁ →
-      (ν Q₁ - b) / ν (v p) < 0 →
-      ∃! ℓ : H →ₗ[R] SemimoduleCat.sectionsSubmodule
-          (MultispanIndex.ofLinearMaps C.left C.right).multispan, ∀ x,
-        (ℓ x).val (.right false) = ev(0, x, Q₀) ∧ (ℓ x).val (.right true) = ev(1, x, Q₁) := by
-  obtain ⟨E, hE⟩ := C.existsUnique_singleFace_evaluation_lift p α v ν b Z hinj s hs hnormal hZ
-    A hcover hA
-  exact ⟨E, fun Q₀ Q₁ h₀ h₁ h₂ =>
-    (MultispanIndex.existsUnique_sections_ofLinearMaps_iff C.left C.right _ _).mpr
-      (hE Q₀ Q₁ h₀ h₁ h₂)⟩
+    ∃ F : ExceptionalArrangement V, ∀ Q, F.IsGeneric Q → (ν Q - b) / ν u < 0 →
+      ∃! ℓ : H →ₗ[R] Sections, ∀ x,
+        (ℓ x).val (.right false) = (α x : U) ∧
+        (ℓ x).val (.right true) = C.singleFaceTransferEvaluation p (α x) u v ν b Z Q := by
+  obtain ⟨F, hF⟩ := C.exists_singleFaceTransferEvaluationLinear_commonLift
+    p u v ν b Z α s hs hnormal hZ A hcover hA hinj
+  refine ⟨F, fun Q hQ ht => ?_⟩
+  apply (MultispanIndex.existsUnique_sections_ofLinearMaps_iff C.left C.right _ _).mpr
+  simpa only [LinearMap.ext_iff, LinearMap.comp_apply, Submodule.subtype_apply,
+    ← forall_and,
+    C.singleFaceTransferEvaluationLinear_apply_eq_evaluation p u v ν b Z α hZ Q] using
+    hF Q hQ ht
 
-/-- Every linear family with finitely generated incoming range has matching sections whose
-chamber values are the incoming and opposite-side ray sums. This is the finite-input test; the
-homogeneous pieces and the chamber module need not be finitely generated. -/
+/-- Every linear family with finitely generated incoming range gives matching
+sections with these actual ray sums as chamber values. No finiteness of the
+ambient grading or chamber modules is required. -/
 theorem existsUnique_singleFace_matchingFamily_of_fg
     (hinj : Function.Injective (C.left.prod C.right))
     (hα : (LinearMap.range α).FG)
-    (hnormal : ∀ x q, C.transfer p q (α x) ≠ 0 → ν (v q) = ν (v p))
+    (hnormal : ∀ q x, C.transfer p q (α x) ≠ 0 → ν (v q) = ν u)
     (hZ : Z ⊆ {x | ν x = b})
-    {κ : Type*} [Finite κ] (A : κ → AffineSubspace ℝ V)
+    {δ : Type*} [Finite δ] (A : δ → AffineSubspace ℝ V)
     (hcover : Z ⊆ ⋃ j, (A j : Set V))
     (hA : ∀ j, ∃ x, ν x = b ∧ x ∉ A j) :
-    ∃ E : ExceptionalArrangement V, ∀ Q₀ Q₁,
-      0 < (ν Q₀ - b) / ν (v p) → E.IsGeneric Q₁ →
-      (ν Q₁ - b) / ν (v p) < 0 →
-      ∃! ℓ : H →ₗ[R] SemimoduleCat.sectionsSubmodule
-          (MultispanIndex.ofLinearMaps C.left C.right).multispan, ∀ x,
-        (ℓ x).val (.right false) = ev(0, x, Q₀) ∧ (ℓ x).val (.right true) = ev(1, x, Q₁) := by
-  obtain ⟨E, hE⟩ := C.existsUnique_singleFace_evaluation_lift_of_fg p α v ν b Z hinj hα hnormal hZ
-    A hcover hA
-  exact ⟨E, fun Q₀ Q₁ h₀ h₁ h₂ =>
-    (MultispanIndex.existsUnique_sections_ofLinearMaps_iff C.left C.right _ _).mpr
-      (hE Q₀ Q₁ h₀ h₁ h₂)⟩
+    ∃ F : ExceptionalArrangement V, ∀ Q, F.IsGeneric Q → (ν Q - b) / ν u < 0 →
+      ∃! ℓ : H →ₗ[R] Sections, ∀ x,
+        (ℓ x).val (.right false) = (α x : U) ∧
+        (ℓ x).val (.right true) = C.singleFaceTransferEvaluation p (α x) u v ν b Z Q := by
+  obtain ⟨F, hF⟩ := C.exists_singleFaceTransferEvaluationLinear_eq_right_of_fg
+    p u v ν b Z α hα hnormal hZ A hcover hA
+  refine ⟨F, fun Q hQ ht => ?_⟩
+  apply (MultispanIndex.existsUnique_sections_ofLinearMaps_iff C.left C.right _ _).mpr
+  have hlift : ∃! l : H →ₗ[R] B,
+      C.left.comp l = (𝒰 p).subtype.comp α ∧
+      C.right.comp l = C.singleFaceTransferEvaluationLinear p u v ν b Z α Q := by
+    apply (LinearMap.existsUnique_comp_eq_and_comp_eq_iff hinj).mpr
+    intro x
+    refine ⟨C.liftLeft p (α x), ?_⟩
+    simp only [hF Q hQ ht, LinearMap.prod_apply, Function.prod_apply,
+      LinearMap.comp_apply, C.left_liftLeft_apply, Submodule.subtype_apply]
+  simpa only [LinearMap.ext_iff, LinearMap.comp_apply, Submodule.subtype_apply,
+    ← forall_and,
+    C.singleFaceTransferEvaluationLinear_apply_eq_evaluation p u v ν b Z α hZ Q] using hlift
 
 end Mei.GradedCorrespondence
