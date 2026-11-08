@@ -186,8 +186,11 @@ theorem slabTerminalFinite_matchingFamily_iff
         ((slabSectionsToSemimodule t).toLinearMap ∘ₗ ℓ) (by
           intro a side
           rw [LinearMap.comp_apply, LinearEquiv.coe_coe]
-          exact (MultispanIndex.sectionsLinearEquivOfAlgHoms_apply_right
-            _ _ (ℓ a) side).trans (hℓ a side)) a default)
+          cases side
+          · exact (eq_of_heq (MultispanIndex.sectionsLinearEquivOfAlgHoms_apply_right
+              _ _ (ℓ a) false)).trans (hℓ a false)
+          · exact (eq_of_heq (MultispanIndex.sectionsLinearEquivOfAlgHoms_apply_right
+              _ _ (ℓ a) true)).trans (hℓ a true)) a default)
   · intro hℓ a side
     rw [hℓ a, sum_smul_slabThetaSection]
     cases side
