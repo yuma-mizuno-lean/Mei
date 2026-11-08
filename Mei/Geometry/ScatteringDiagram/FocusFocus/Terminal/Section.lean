@@ -48,26 +48,38 @@ abbrev slabTerminalAlgebraMultispan (t : R) :=
 
 /-- The algebra sections of the slab span are the semimodule sections of the underlying
 span of linear maps. -/
-def slabSectionsToSemimodule : AlgCat.sectionsSubalgebra
-    (slabTerminalAlgebraMultispan t).multispan ≃ₗ[R]
-      SemimoduleCat.sectionsSubmodule (slabTerminalMultispan t).multispan where
-  toFun x := ⟨fun j => match j with
-      | .left c => x.val (.left c)
-      | .right b => x.val (.right b),
-    (MultispanIndex.mem_sectionsSubmodule_multispan _).mpr
-      ⟨fun c => x.property (.fst c), fun c => x.property (.snd c)⟩⟩
-  invFun x := ⟨fun j => match j with
-      | .left c => x.val (.left c)
-      | .right b => x.val (.right b), by
-    intro j j' f
-    cases f with
-    | id j => rfl
-    | fst c => exact ((MultispanIndex.mem_sectionsSubmodule_multispan _).mp x.property).1 c
-    | snd c => exact ((MultispanIndex.mem_sectionsSubmodule_multispan _).mp x.property).2 c⟩
-  map_add' _ _ := Subtype.ext (funext fun j => by cases j <;> rfl)
-  map_smul' _ _ := Subtype.ext (funext fun j => by cases j <;> rfl)
-  left_inv _ := Subtype.ext (funext fun j => by cases j <;> rfl)
-  right_inv _ := Subtype.ext (funext fun j => by cases j <;> rfl)
+def slabSectionsToSemimodule :=
+  MultispanIndex.sectionsLinearEquivOfAlgHoms
+    (exponentLeftMap (C t * (1 + T 1))) (exponentRightMap (C t * (1 + T 1)))
+
+/-- Conversion from slab algebra sections to semimodule sections preserves face components. -/
+@[simp]
+theorem slabSectionsToSemimodule_apply_left (σ : AlgCat.sectionsSubalgebra
+      (slabTerminalAlgebraMultispan t).multispan)
+    (c : (MultispanShape.ofLinearOrder Bool).L) :
+    (slabSectionsToSemimodule t σ).val (.left c) = σ.val (.left c) :=
+  MultispanIndex.sectionsLinearEquivOfAlgHoms_apply_left _ _ σ c
+
+/-- Conversion from slab algebra sections to semimodule sections preserves chamber components. -/
+@[simp]
+theorem slabSectionsToSemimodule_apply_right (σ : AlgCat.sectionsSubalgebra
+      (slabTerminalAlgebraMultispan t).multispan) (side : Bool) :
+    (slabSectionsToSemimodule t σ).val (.right side) = σ.val (.right side) :=
+  MultispanIndex.sectionsLinearEquivOfAlgHoms_apply_right _ _ σ side
+
+/-- Conversion from slab semimodule sections to algebra sections preserves chamber components. -/
+@[simp]
+theorem slabSectionsToSemimodule_symm_apply_right (σ : SemimoduleCat.sectionsSubmodule
+      (slabTerminalMultispan t).multispan) (side : Bool) :
+    ((slabSectionsToSemimodule t).symm σ).val (.right side) = σ.val (.right side) :=
+  MultispanIndex.sectionsLinearEquivOfAlgHoms_symm_apply_right _ _ σ side
+
+/-- Conversion from slab semimodule sections to algebra sections preserves face components. -/
+@[simp]
+theorem slabSectionsToSemimodule_symm_apply_left (σ : SemimoduleCat.sectionsSubmodule
+      (slabTerminalMultispan t).multispan) (c : (MultispanShape.ofLinearOrder Bool).L) :
+    ((slabSectionsToSemimodule t).symm σ).val (.left c) = σ.val (.left c) :=
+  MultispanIndex.sectionsLinearEquivOfAlgHoms_symm_apply_left _ _ σ c
 
 /-- The matching algebra sections of the slab span are algebra-equivalent to the slab algebra
 by reading off the face value. -/
@@ -247,8 +259,12 @@ theorem slabTerminalFinite_matchingFamily_iff
     rw [sum_smul_slabThetaSection]
     apply (slabAlgebraEquiv t).injective
     rw [AlgEquiv.apply_symm_apply, slabAlgebraEquiv_apply]
-    exact slabTerminalFinite_matchingFamily_face s n b t α h hL hU hLs hUs
-      ((slabSectionsToSemimodule t).toLinearMap ∘ₗ ℓ) hℓ a default
+    exact (slabSectionsToSemimodule_apply_left t (ℓ a) default).symm.trans
+      (slabTerminalFinite_matchingFamily_face s n b t α h hL hU hLs hUs
+        ((slabSectionsToSemimodule t).toLinearMap ∘ₗ ℓ) (by
+          intro a side
+          rw [LinearMap.comp_apply, LinearEquiv.coe_coe, slabSectionsToSemimodule_apply_right]
+          exact hℓ a side) a default)
   · intro hℓ a side
     rw [hℓ a, sum_smul_slabThetaSection]
     cases side

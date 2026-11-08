@@ -6,6 +6,7 @@ Authors: Claude
 module
 
 public import Mei.Algebra.Category.AlgCat.Sections
+public import Mei.Algebra.Category.SemimoduleCat.Multispan.Span
 public import Mathlib.CategoryTheory.Limits.Shapes.Multiequalizer
 
 /-!
@@ -34,6 +35,67 @@ abbrev ofAlgHoms (f g : B →ₐ[R] M) :
   right _ := AlgCat.of R M
   fst _ := AlgCat.ofHom f
   snd _ := AlgCat.ofHom g
+
+/-- The algebra sections of a span of algebra homomorphisms are the semimodule sections of the
+underlying span of linear maps, componentwise. -/
+def sectionsLinearEquivOfAlgHoms (f g : B →ₐ[R] M) :
+    AlgCat.sectionsSubalgebra (ofAlgHoms f g).multispan ≃ₗ[R]
+      SemimoduleCat.sectionsSubmodule (ofLinearMaps f.toLinearMap g.toLinearMap).multispan where
+  toFun x := ⟨fun j => match j with
+      | .left c => x.val (.left c)
+      | .right b => x.val (.right b),
+    (mem_sectionsSubmodule_multispan _).mpr
+      ⟨fun c => x.property (.fst c), fun c => x.property (.snd c)⟩⟩
+  invFun x := ⟨fun j => match j with
+      | .left c => x.val (.left c)
+      | .right b => x.val (.right b), by
+    intro j j' h
+    cases h with
+    | id j => rfl
+    | fst c => exact ((mem_sectionsSubmodule_multispan _).mp x.property).1 c
+    | snd c => exact ((mem_sectionsSubmodule_multispan _).mp x.property).2 c⟩
+  map_add' _ _ := Subtype.ext (funext fun j => by cases j <;> rfl)
+  map_smul' _ _ := Subtype.ext (funext fun j => by cases j <;> rfl)
+  left_inv _ := Subtype.ext (funext fun j => by cases j <;> rfl)
+  right_inv _ := Subtype.ext (funext fun j => by cases j <;> rfl)
+
+/-- Conversion to semimodule sections preserves face components. -/
+@[simp]
+theorem sectionsLinearEquivOfAlgHoms_apply_left (f g : B →ₐ[R] M)
+    (x : AlgCat.sectionsSubalgebra (ofAlgHoms f g).multispan)
+    (c : (MultispanShape.ofLinearOrder Bool).L) :
+    (sectionsLinearEquivOfAlgHoms f g x).val (.left c) = x.val (.left c) := by
+  rw [sectionsLinearEquivOfAlgHoms]
+  rfl
+
+/-- Conversion to semimodule sections preserves chamber components. -/
+@[simp]
+theorem sectionsLinearEquivOfAlgHoms_apply_right (f g : B →ₐ[R] M)
+    (x : AlgCat.sectionsSubalgebra (ofAlgHoms f g).multispan)
+    (b : (MultispanShape.ofLinearOrder Bool).R) :
+    (sectionsLinearEquivOfAlgHoms f g x).val (.right b) = x.val (.right b) := by
+  rw [sectionsLinearEquivOfAlgHoms]
+  rfl
+
+/-- Conversion from semimodule sections preserves face components. -/
+@[simp]
+theorem sectionsLinearEquivOfAlgHoms_symm_apply_left (f g : B →ₐ[R] M)
+    (x : SemimoduleCat.sectionsSubmodule
+      (ofLinearMaps f.toLinearMap g.toLinearMap).multispan)
+    (c : (MultispanShape.ofLinearOrder Bool).L) :
+    ((sectionsLinearEquivOfAlgHoms f g).symm x).val (.left c) = x.val (.left c) := by
+  rw [sectionsLinearEquivOfAlgHoms]
+  rfl
+
+/-- Conversion from semimodule sections preserves chamber components. -/
+@[simp]
+theorem sectionsLinearEquivOfAlgHoms_symm_apply_right (f g : B →ₐ[R] M)
+    (x : SemimoduleCat.sectionsSubmodule
+      (ofLinearMaps f.toLinearMap g.toLinearMap).multispan)
+    (b : (MultispanShape.ofLinearOrder Bool).R) :
+    ((sectionsLinearEquivOfAlgHoms f g).symm x).val (.right b) = x.val (.right b) := by
+  rw [sectionsLinearEquivOfAlgHoms]
+  rfl
 
 /-- Matching algebra sections of one face are equivalent to its face algebra. The chamber
 values are the images of the face value under the two legs. -/
