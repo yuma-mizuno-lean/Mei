@@ -60,23 +60,20 @@ theorem eventually_mem_support_iff {x : V} (hx : x ∈ e.support W)
     (hregular : x ∉ singularSupport W) {j : ι} (hj : j ∈ e.1.val) :
     ∀ᶠ y in 𝓝 x, y ∈ e.support W ↔ y ∈ W j := by
   have hxj := e.support_subset W hj hx
-  have hnear : ∀ᶠ y in 𝓝 x, ∀ k, y ∈ W j → (y ∈ W k ↔ k ∈ e.1.val) := by
-    apply eventually_all.mpr
-    intro k
-    by_cases hk : k ∈ e.1.val
-    · have hxk := e.support_subset W hk hx
-      have heq := affineSpan_eq_of_notMem_singularSupport hregular hxk hxj
-      have hmem := Mei.mem_nhdsWithin_affineSpan_of_mem_intrinsicInterior
-        (mem_intrinsicInterior_of_notMem_singularSupport hxk hregular)
-      rw [heq, mem_nhdsWithin_iff_eventually] at hmem
-      filter_upwards [hmem] with y hy hyj
-      exact iff_of_true (hy (subset_affineSpan ℝ _ hyj)) hk
-    · have hxk : x ∉ W k := fun h => hk (((e.mem_support W x).mp hx k).mp h)
-      filter_upwards [(hclosed k).isOpen_compl.mem_nhds hxk] with y hy _
-      exact iff_of_false hy hk
-  filter_upwards [hnear] with y hy
-  exact ⟨fun hy => e.support_subset W hj hy,
-    fun hyj => (e.mem_support W y).mpr (fun k => hy k hyj)⟩
+  have hS (k : ι) (hxk : x ∈ W k) :
+      (affineSpan ℝ (W j)).direction ≤ (affineSpan ℝ (W k)).direction := by
+    rw [affineSpan_eq_of_notMem_singularSupport hregular hxj hxk]
+  have hdisp := Mei.Convex.eventually_mem_iff_of_submodule_le_direction W hclosed x hregular
+    (affineSpan ℝ (W j)).direction hS
+  rw [nhds_subtype, Submodule.coe_zero, eventually_comap] at hdisp
+  have ht : Tendsto (fun y : V => y - x) (𝓝 x) (𝓝 0) := by
+    simpa using (continuous_sub_right x).tendsto x
+  filter_upwards [ht.eventually hdisp] with y hy
+  refine ⟨fun hy => e.support_subset W hj hy, fun hyj => (e.mem_support W y).mpr (fun k => ?_)⟩
+  have hyk := hy ⟨y - x, AffineSubspace.vsub_mem_direction
+    (subset_affineSpan ℝ _ hyj) (subset_affineSpan ℝ _ hxj)⟩ rfl k
+  simp only [add_sub_cancel] at hyk
+  exact hyk.trans ((e.mem_support W x).mp hx k)
 
 /-- Even at a limit of a nonclosed exact support, its regular germ is the germ
 of each recorded wall. This includes all coincident wall indices. -/

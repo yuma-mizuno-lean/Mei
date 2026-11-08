@@ -82,7 +82,7 @@ theorem eventually_mem_domain_iff_sourceAdmission_of_regular
       backwardParameter F b w j Q ≤ 0 := by
     simpa only [backwardParameter_zero] using
       antitone_backwardParameter F b w Q h0 (Fin.zero_le j)
-  have hinc := t.mem_interior_backwardDomain_of_locally_eq
+  have hinc := t.mem_interior_backwardDomain_of_eventually_mem_of_mem
     c P W S C W wall hclosed hP hheight hdir hlocal hQ hoff
     (fun j => by
       simpa only [Fin.snoc_castSucc] using

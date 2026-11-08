@@ -56,6 +56,31 @@ local notation "D" => domain offset P W S C t
 
 include hW hdir hspan hS
 
+omit [NormedAddCommGroup V] [NormedSpace ℝ V] hW hdir hspan hS [Finite J] [Finite K] in
+private theorem wallEvent_support_subset (e : WallEvent J) :
+    e.support W ⊆ W (wall e) :=
+  e.support_subset W e.1.property.choose_spec
+
+
+omit hdir hspan hS [Finite K] in
+private theorem eventually_mem_wallEvent_support_of_mem_closure (e : WallEvent J)
+    {x : V} (hx : x ∈ closure (e.support W)) (hreg : x ∉ singularSupport W) :
+    ∀ᶠ y in 𝓝 x, y ∈ W (wall e) → y ∈ e.support W := by
+  filter_upwards [e.eventually_mem_support_iff_of_mem_closure W
+    (fun j => (hW j).isClosed) hx hreg e.1.property.choose_spec] with y hy hywall
+  exact hy.mpr hywall
+
+omit hW hdir hS [Finite J] [Finite K] in
+private theorem wallEvent_normal_apply_of_mem (e : WallEvent J)
+    {x : V} (hx : x ∈ W (wall e)) : e.normal f x = e.offset c := by
+  simpa only [WallEvent.normal_def, WallEvent.offset_def, Set.mem_ofPred_eq] using
+    (hspan _).subset (subset_affineSpan ℝ _ hx)
+
+omit hW hspan hS [Finite J] [Finite K] in
+private theorem wallEvent_kernel_le_direction (e : WallEvent J) :
+    LinearMap.ker (e.normal f).toLinearMap ≤ (affineSpan ℝ (W (wall e))).direction := by
+  simpa only [WallEvent.normal_def] using hdir (wall e)
+
 /-- At a regular limit, the original domain with exact simultaneous-event
 supports agrees locally with admission of the whole incoming tail. No closedness
 of event supports or polyhedral assumption on the incoming source is imposed. -/
@@ -67,15 +92,10 @@ theorem eventually_mem_domain_wallEvent_iff_sourceAdmission_of_regular
   apply t.eventually_mem_domain_iff_sourceAdmission_of_regular
     offset P W S C wall hW
     (fun e => e.support_subset W e.1.property.choose_spec)
-    (fun e x hx hreg => ?_)
-    (fun e x hx => by
-      simpa only [WallEvent.normal_def, WallEvent.offset_def, Set.mem_ofPred_eq] using
-        (hspan _).subset (subset_affineSpan ℝ _ hx))
-    (fun e => by simpa only [WallEvent.normal_def] using hdir (wall e))
+    (fun e x hx hreg => eventually_mem_wallEvent_support_of_mem_closure W hW e hx hreg)
+    (fun e x hx => wallEvent_normal_apply_of_mem f c W hspan e hx)
+    (fun e => wallEvent_kernel_le_direction f W hdir e)
     f c hspan hS hQ hoff hregular havoid
-  filter_upwards [e.eventually_mem_support_iff_of_mem_closure W
-    (fun j => (hW j).isClosed) hx hreg e.1.property.choose_spec] with y hy hywall
-  exact hy.mpr hywall
 
 /-- A regular closed type limit for exact simultaneous events is an actual
 admissible endpoint of that same complete type. The original polyhedral incoming
@@ -112,14 +132,9 @@ theorem mem_frontier_domain_wallEvent_imp_terminal_or_singular_or_source_face
   apply t.mem_frontier_domain_imp_terminal_or_singular_or_source_face
     offset P W S wall hW
     (fun e => e.support_subset W e.1.property.choose_spec)
-    (fun e x hx hreg => ?_)
-    (fun e x hx => by
-      simpa only [WallEvent.normal_def, WallEvent.offset_def, Set.mem_ofPred_eq] using
-        (hspan _).subset (subset_affineSpan ℝ _ hx))
-    (fun e => by simpa only [WallEvent.normal_def] using hdir (wall e))
+    (fun e x hx hreg => eventually_mem_wallEvent_support_of_mem_closure W hW e hx hreg)
+    (fun e x hx => wallEvent_normal_apply_of_mem f c W hspan e hx)
+    (fun e => wallEvent_kernel_le_direction f W hdir e)
     f c hspan hS g hQ
-  filter_upwards [e.eventually_mem_support_iff_of_mem_closure W
-    (fun j => (hW j).isClosed) hx hreg e.1.property.choose_spec] with y hy hywall
-  exact hy.mpr hywall
 
 end Mei.CutoffDecoratedType

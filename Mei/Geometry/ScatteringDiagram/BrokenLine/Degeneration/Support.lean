@@ -103,7 +103,7 @@ theorem mem_interior_backwardDomain_of_notMem_singularSupport
 /-- Nonclosed selected supports have no additional regular incidence boundary
 when their germs at regular limits agree with their ambient walls. This applies
 to exact simultaneous events, whose omitted wall indices must also persist. -/
-theorem mem_interior_backwardDomain_of_locally_eq
+theorem mem_interior_backwardDomain_of_eventually_mem_of_mem
     (hlocal : ∀ j x, x ∈ closure (P j) → x ∉ singularSupport A →
       ∀ᶠ y in 𝓝 x, y ∈ A (wall j) → y ∈ P j)
     {Q : V} (hQ : Q ∈ closure D) (hendpoint : ∀ i, Q ∉ A i)
