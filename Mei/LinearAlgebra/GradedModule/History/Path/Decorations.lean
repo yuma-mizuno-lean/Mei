@@ -37,42 +37,15 @@ def reverseHomogeneousDecorations (i₀ : ι) (x : M) {b : Q} (p : Path a b)
   fun j => Mei.homogeneousHistoryStage ℳ (p.reverseArrowLabels T)
     (Fin.init (Degrees.reverseVertexLabels (fun _ i => i) i₀ p d)) j x
 
-private theorem homogeneousHistory_eq_reverseLabels (i₀ : ι) {b : Q} (p : Path a b)
-    (d : p.Degrees (fun _ => ι)) (x : M) :
-    p.homogeneousHistory T (fun _ => ℳ) d x =
-      Mei.homogeneousHistory ℳ (p.reverseArrowLabels T)
-        (Fin.init (Degrees.reverseVertexLabels (fun _ i => i) i₀ p d)) x := by
-  induction p with
-  | nil =>
-    simp only [homogeneousHistory_nil, reverseArrowLabels_nil,
-      Degrees.reverseVertexLabels_nil, LinearMap.id_apply]
-    have hzero :
-        Mei.homogeneousHistory ℳ (Fin.elim0 : Fin 0 → Module.End R M)
-          (Fin.init (α := fun _ : Fin 1 => ι) (fun _ : Fin 1 => i₀)) = LinearMap.id :=
-      Mei.homogeneousHistory_zero ℳ _ _
-    have heq : (nil : Path a a).length = 0 := length_nil
-    cases heq
-    exact Eq.symm (congrFun (congrArg DFunLike.coe hzero) x)
-  | cons p e ih =>
-    have hi :
-        Fin.init (Degrees.reverseVertexLabels (fun _ i => i) i₀ (p.cons e) d) =
-          Fin.cons d.2 (Fin.init (Degrees.reverseVertexLabels (fun _ i => i) i₀ p d.1)) := by
-      obtain ⟨d, i⟩ := d
-      rw [Degrees.reverseVertexLabels_cons]
-      funext j
-      exact Fin.cases rfl (fun j => rfl) j
-    rw [reverseArrowLabels_cons, hi]
-    simp only [length_cons]
-    rw [Mei.homogeneousHistory_succ_apply, homogeneousHistory_cons_apply, ih d.1]
-    rfl
-
-/-- The terminal decoration is the final component of the path history. -/
+/-- The terminal decoration is the final component of the finite sequence history
+obtained from the reversed labels. -/
 @[simp]
 theorem reverseHomogeneousDecorations_zero (i₀ : ι) (x : M) {b : Q} (p : Path a b)
     (d : p.Degrees (fun _ => ι)) :
-    p.reverseHomogeneousDecorations T ℳ i₀ x d 0 = p.homogeneousHistory T (fun _ => ℳ) d x := by
+    p.reverseHomogeneousDecorations T ℳ i₀ x d 0 =
+      Mei.homogeneousHistoryStage ℳ (p.reverseArrowLabels T)
+        (Fin.init (Degrees.reverseVertexLabels (fun _ i => i) i₀ p d)) 0 x := by
   simp only [reverseHomogeneousDecorations, Mei.homogeneousHistoryStage_zero]
-  exact (homogeneousHistory_eq_reverseLabels T ℳ i₀ p d x).symm
 
 /-- The incoming decoration is the original input. -/
 @[simp]

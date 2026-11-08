@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.LinearAlgebra.GradedModule.History.Path
+public import Mei.LinearAlgebra.GradedModule.History.Basic
 public import Mei.Combinatorics.Quiver.Path.Labels
 
 /-!
@@ -14,7 +14,8 @@ public import Mei.Combinatorics.Quiver.Path.Labels
 Assign values to the chamber degrees visited by a component history. The tuple
 starts at the final component and ends at the prescribed incoming degree.
 In particular, spatial directions can be extracted without identifying the
-different chambers' degree types or coefficient modules.
+different chambers' degree types or coefficient modules. For a uniformly graded
+semimodule, the reverse labels identify a path history with a finite sequence history.
 -/
 
 public section
@@ -121,3 +122,42 @@ theorem reverseLabels_forall (f : ∀ {b c : Q}, (b ⟶ c) → A)
         Fin.cons_succ] using reverseLabels_forall f v P hf i₀ p d j
 
 end Quiver.Path.Degrees
+
+namespace Quiver.Path
+
+variable {Q R M ι : Type*} [Quiver Q] [Semiring R]
+  [AddCommMonoid M] [Module R M] [DecidableEq ι]
+  (T : ∀ {b c : Q}, (b ⟶ c) → Module.End R M)
+  (ℳ : ι → Submodule R M) [DirectSum.Decomposition ℳ] {a : Q}
+
+/-- A path history agrees with the finite sequence history of its reversed labels. -/
+theorem homogeneousHistory_eq_reverseLabels (i₀ : ι) {b : Q} (p : Path a b)
+    (d : p.Degrees (fun _ => ι)) (x : M) :
+    p.homogeneousHistory T (fun _ => ℳ) d x =
+      Mei.homogeneousHistory ℳ (p.reverseArrowLabels T)
+        (Fin.init (Degrees.reverseVertexLabels (fun _ i => i) i₀ p d)) x := by
+  induction p with
+  | nil =>
+    simp only [homogeneousHistory_nil, reverseArrowLabels_nil,
+      Degrees.reverseVertexLabels_nil, LinearMap.id_apply]
+    have hzero :
+        Mei.homogeneousHistory ℳ (Fin.elim0 : Fin 0 → Module.End R M)
+          (Fin.init (α := fun _ : Fin 1 => ι) (fun _ : Fin 1 => i₀)) = LinearMap.id :=
+      Mei.homogeneousHistory_zero ℳ _ _
+    have heq : (nil : Path a a).length = 0 := length_nil
+    cases heq
+    exact Eq.symm (congrFun (congrArg DFunLike.coe hzero) x)
+  | cons p e ih =>
+    have hi :
+        Fin.init (Degrees.reverseVertexLabels (fun _ i => i) i₀ (p.cons e) d) =
+          Fin.cons d.2 (Fin.init (Degrees.reverseVertexLabels (fun _ i => i) i₀ p d.1)) := by
+      obtain ⟨d, i⟩ := d
+      rw [Degrees.reverseVertexLabels_cons]
+      funext j
+      exact Fin.cases rfl (fun j => rfl) j
+    rw [reverseArrowLabels_cons, hi]
+    simp only [length_cons]
+    rw [Mei.homogeneousHistory_succ_apply, homogeneousHistory_cons_apply, ih d.1]
+    rfl
+
+end Quiver.Path
