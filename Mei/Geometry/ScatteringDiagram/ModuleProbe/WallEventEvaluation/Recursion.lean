@@ -84,7 +84,7 @@ theorem exists_cutoffWallEventEvaluation_eq_sum_eventBlock (k : ℕ)
   classical
   intro θ hθ
   obtain ⟨η, hη, heq⟩ := exists_decompose_cutoffWallEventEvaluation_eq_sum_lastChange
-    d ℳ p ℒ H h B k a C e T hT hxy htail n.property hn0 θ hθ
+    d ℳ p ℒ H h B k a C e T hT hxy htail hn0 θ hθ
   refine ⟨η, hη, ?_⟩
   have he := congrArg (component (k + 1) n) heq
   rw [d.shiftedQuotientComponent_decompose_same ℳ p (k + 1)

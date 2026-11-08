@@ -7,7 +7,7 @@ module
 
 public import Mei.Geometry.ScatteringDiagram.ModuleProbe.BackwardRecursion
 public import Mei.Algebra.Lie.Graded.Shifted.Support
-public import Mei.Geometry.ScatteringDiagram.BrokenLine.LastChange.Recursion
+public import Mei.Geometry.ScatteringDiagram.BrokenLine.Path.LastChange
 public import Mei.Geometry.ScatteringDiagram.BrokenLine.Itineraries.BCH
 public import Mei.Geometry.ScatteringDiagram.BrokenLine.Path.Regrading
 public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.WallEvent.Action
@@ -347,7 +347,7 @@ theorem exists_decompose_cutoffWallEventEvaluation_eq_sum_lastChange (k : ℕ)
     (hxy : x.val - y.val = T • i (ρ (p + n)))
     (htail : ∀ s ≥ T, ∀ c : B.active (k + 1),
       y.val + s • i (ρ (p + n)) ∉ (B.wall c).support)
-    (hn : n ∈ d.cutoff (k + 1)) (hn0 : n ≠ 0) :
+    (hn0 : n ≠ 0) :
     ∀ θ > 0, ∃ η : WallEvent (B.active (k + 1)) → ℝ,
       (∀ b ∈ segmentWallEvents ((B.activeNormal (k + 1))) e,
         0 < η b ∧ η b < θ) ∧
@@ -391,11 +391,45 @@ theorem exists_decompose_cutoffWallEventEvaluation_eq_sum_lastChange (k : ℕ)
   have hclosedS (u : Unit) :
       IsClosed ((fun _ : Unit => singularSupport walls) u) := by
     exact isClosed_singularSupport walls hclosedW
-  simp only [cutoffWallEventEvaluation_eq_cutoffDecoratedEvaluation]
+  -- The bounded inventory exhausts every endpoint fiber of the finite BCH actions.
+  have hσ : ∀ (X : V) (q : Path (Quiver.SingleObj.star (WallEvent (B.active (k + 1))))
+      (Quiver.SingleObj.star (WallEvent (B.active (k + 1))))),
+      PathDecoratedRay (Q := Quiver.SingleObj (WallEvent (B.active (k + 1))))
+        (M := fun _ => (d.shiftedLieFiltration ℒ ℳ p).quotient (k + 1)) (ι := fun _ => Γ)
+        (fun e => wallEventPropagation d ℳ p ℒ H h B (k + 1) (k + 1) (Nat.le_refl (k + 1)) e)
+        (fun _ => (d.shiftedQuotientGrading ℳ p (k + 1)).piece) 0 a (fun _ => vel)
+        (fun e => f e) (fun e => e.2) (fun e => e.offset (B.activeOffset (k + 1)))
+        (fun e => e.support walls) walls (fun _ : Unit => singularSupport walls) C q X →
+        q ∈ wallEventPaths d ℒ H h B (k + 1) (k + 1) := by
+    intro X q r
+    exact (mem_wallEventPaths d ℒ H h B).mpr
+      (d.pathDecoratedRay_shiftedBCH_length_le ℒ ℳ p (k + 1)
+        (fun e => (d.truncationMap ℒ (Nat.le_refl (k + 1))).bchGroupMap
+          (B.wallEventLabel (k + 1) e)) a vel f
+        (fun e => e.offset (B.activeOffset (k + 1))) (fun e => e.2)
+        (fun e => e.support walls) walls (fun _ : Unit => singularSupport walls) C r)
+  have hshift : ∀ (e : WallEvent (B.active (k + 1))) (n m : Γ)
+      (y : (d.shiftedLieFiltration ℒ ℳ p).quotient (k + 1)),
+      y ∈ (d.shiftedQuotientGrading ℳ p (k + 1)).piece n →
+      (DirectSum.decompose (d.shiftedQuotientGrading ℳ p (k + 1)).piece
+        (wallEventPropagation d ℳ p ℒ H h B (k + 1) (k + 1) (Nat.le_refl (k + 1)) e y) m :
+          (d.shiftedLieFiltration ℒ ℳ p).quotient (k + 1)) ≠ 0 → m - n ∈ d.monoid := by
+    intro e n m y hy hne
+    rw [wallEventPropagation_apply] at hne
+    exact d.sub_mem_monoid_of_decompose_shiftedBCHAction_ne_zero ℒ ℳ p (k + 1) _ hy
+      fun hz => hne (by rw [hz]; rfl)
+  simp only [cutoffWallEventEvaluation_def]
   -- The remaining obligations reduce to genuine event parameters, wall geometry,
   -- and the shifted component-preservation lemma for simultaneous actions.
-  refine CutoffDecoratedRay.exists_decompose_cutoffDecoratedEvaluation_eq_sum_lastChange
-    hn hn0 E (fun b _ => decompose_wallEventPropagation_self d ℳ p ℒ H h B (k + 1) b)
+  refine exists_decompose_pathDecoratedEvaluation_eq_sum_lastChange (d := d) (Q := y.val)
+    (T := fun e => wallEventPropagation d ℳ p ℒ H h B (k + 1) (k + 1) (Nat.le_refl (k + 1)) e)
+    (a := a) (v := vel) (f := f) (c := fun e => e.offset (B.activeOffset (k + 1)))
+    (ε := fun e => e.2) (P := fun e => e.support walls) (W := walls)
+    (S := fun _ : Unit => singularSupport walls) (C := C)
+    (wallEventPaths d ℒ H h B (k + 1) (k + 1)) hσ (d.finite_cutoff (k + 1)).toFinset
+    (fun _ _ hy hne => (d.finite_cutoff (k + 1)).mem_toFinset.mpr
+      (d.mem_cutoff_of_mem_shiftedQuotientGrading_ne_zero ℳ p hy hne)) hshift
+    hn0 E (fun b _ => decompose_wallEventPropagation_self d ℳ p ℒ H h B (k + 1) b)
       hP hclosedW hclosedS s ?_ ?_ ?_ ?_ ?_ ?_
   -- Event parameters are injective on the finite event inventory.
   · exact segmentEventParameter_injOn ((B.activeNormal (k + 1))) e T hTpos
