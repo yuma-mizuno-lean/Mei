@@ -88,13 +88,8 @@ theorem existsUnique_singleFace_matchingFamily_of_fg
       ∃! ℓ : H →ₗ[R] Sections, ∀ x,
         (ℓ x).val (.right false) = (α x : U) ∧
         (ℓ x).val (.right true) = C.singleFaceTransferEvaluation p (α x) u v ν b Z Q := by
-  obtain ⟨F, hF⟩ := C.exists_singleFaceTransferEvaluationLinear_commonLift_of_fg
-    p u v ν b Z α hα hnormal hZ A hcover hA hinj
-  refine ⟨F, fun Q hQ ht => ?_⟩
-  apply (MultispanIndex.existsUnique_sections_ofLinearMaps_iff C.left C.right _ _).mpr
-  simpa only [LinearMap.ext_iff, LinearMap.comp_apply, Submodule.subtype_apply,
-    ← forall_and,
-    C.singleFaceTransferEvaluationLinear_apply_eq_evaluation p u v ν b Z α hZ Q] using
-    hF Q hQ ht
+  obtain ⟨s, hs⟩ := C.exists_singleFaceTransfer_support_of_fg p α hα
+  exact C.existsUnique_singleFace_matchingFamily
+    p α u v ν b Z hinj s hs hnormal hZ A hcover hA
 
 end Mei.GradedCorrespondence
