@@ -76,11 +76,7 @@ theorem exists_singleFaceTransferEvaluationLinear_eq_right
       LinearMap.congr_fun (hs q hnot) x)
   intro hmem
   obtain ⟨j, hj⟩ := mem_iUnion.mp (hcover hmem)
-  have hp : sweepProjection ν b ((ν (v q))⁻¹ • v q) Q =
-      Q - ((ν Q - b) / ν (v q)) • v q := by
-    simp only [sweepProjection_apply, smul_smul, div_eq_mul_inv]
-    module
-  exact hF Q hQ ⟨q, hqs⟩ j (hp ▸ hj)
+  exact hF Q hQ ⟨q, hqs⟩ j (sweepProjection_inv_smul_apply Q ▸ hj)
 
 /-- A finitely generated incoming range has a uniform finite support for its
 outgoing transfer components, without finiteness assumptions on the chambers. -/
