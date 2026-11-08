@@ -68,25 +68,9 @@ theorem pathDecoratedEvaluation_eq_sum_homogeneousHistory (x : ℳ a i₀) (X : 
         if (∀ j, N(p.val, d) j) ∧ X ∈ D(p.val, d)
         then p.val.homogeneousHistory T ℳ d x else 0 := by
   classical
-  let : ∀ p : (s : Type _),
-      Fintype (PathDecoratedRay T ℳ i₀ x v ν ε c P W S C p.val X) :=
-    fun _ => Fintype.ofFinite _
-  let := Fintype.ofFinite (Σ p : (s : Type _),
-    PathDecoratedRay T ℳ i₀ x v ν ε c P W S C p.val X)
-  rw [pathDecoratedEvaluation_def]
-  dsimp only
-  trans ∑ p : (s : Type _),
-    ∑ r : PathDecoratedRay T ℳ i₀ x v ν ε c P W S C p.val X, r.decoration
-  · -- The evaluation uses `Fintype.ofFinite`, while the iterated sum uses the
-    -- dependent-sum instance. Both enumerate the same finite type.
-    convert Fintype.sum_sigma (fun r : Σ p : (s : Type _),
-      PathDecoratedRay T ℳ i₀ x v ν ε c P W S C p.val X => r.2.decoration) using 1
-    congr 1
-    ext r
-    simp
+  rw [pathDecoratedEvaluation_eq_sum_support]
   apply Finset.sum_congr rfl
   intro p _
-  rw [sum_pathDecoratedRay_eq_sum_histories]
   trans ∑ d ∈ pathDecoratedHistorySupport T ℳ i₀ x v ν ε p.val,
     if X ∈ D(p.val, d) then p.val.homogeneousHistory T ℳ d x else 0
   · exact Finset.sum_coe_sort (pathDecoratedHistorySupport T ℳ i₀ x v ν ε p.val)
