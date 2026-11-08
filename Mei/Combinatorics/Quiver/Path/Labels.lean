@@ -66,4 +66,14 @@ theorem reverseArrowLabels_forall (f : ∀ {b c : Q}, (b ⟶ c) → A)
   | _, nil, j => j.elim0
   | _, cons p e, j => Fin.cases (hf e) (reverseArrowLabels_forall f P hf p) j
 
+/-- Corresponding entries of two label tuples inherit a relation between the labels
+of every arrow. -/
+theorem reverseArrowLabels_forall₂ (f : ∀ {b c : Q}, (b ⟶ c) → A)
+    (g : ∀ {b c : Q}, (b ⟶ c) → B) (R : A → B → Prop)
+    (hfg : ∀ {b c : Q} (e : b ⟶ c), R (f e) (g e)) :
+    ∀ {b : Q} (p : Path a b) (j : Fin p.length),
+      R (p.reverseArrowLabels f j) (p.reverseArrowLabels g j)
+  | _, nil, j => j.elim0
+  | _, cons p e, j => Fin.cases (hfg e) (reverseArrowLabels_forall₂ f g R hfg p) j
+
 end Quiver.Path

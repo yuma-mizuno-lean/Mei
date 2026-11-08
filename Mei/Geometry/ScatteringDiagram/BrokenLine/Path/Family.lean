@@ -251,7 +251,7 @@ theorem exists_pathDecoratedFamily_closedCharts :
       have hlim := hsub hX
       refine ⟨backwardPath_apply_zero _ _ _ ?_,
         backwardPath_eventually_mem_of_mem_closure_admissibleBackwardDomain
-          _ _ _ _ W S C hC hlim, fun hv => ?_⟩
+          _ _ _ _ W S C hC.isConvexPolyhedron hlim, fun hv => ?_⟩
       · exact backwardTime_nonneg_of_mem_closure_admissibleBackwardDomain _ _ _ _ W S C hlim
       · apply isProperMap_backwardPath_restrict_Iic
         simpa only [Path.Degrees.reverseVertexLabels_last] using hv

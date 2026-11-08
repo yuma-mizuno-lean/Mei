@@ -6,7 +6,8 @@ Authors: Codex
 module
 
 public import Mei.Geometry.Convex.Sweep.Rescaling.Incoming
-public import Mei.Geometry.ScatteringDiagram.BrokenLine.Degeneration.Incoming
+public import Mei.Geometry.Convex.Sweep.Admissible.Source
+public import Mei.Geometry.ScatteringDiagram.BrokenLine.Degeneration.Basic
 
 /-!
 # Incoming-source constraints of rescaled complete types
@@ -81,10 +82,12 @@ theorem eventually_forall_path_eventually_mem_add_smul_iff_active_of_mem_closure
       (∀ᶠ s : ℝ in atBot, ∀ j,
         g j (t.path (fun j => f j z) (z + r • Q) s) ≤ 0) ↔
         ∀ j, (g j).linear (v 0) = 0 → g j z = 0 → (g j).contLinear (X(t) Q) ≤ 0 := by
-  have hsource := t₀.path_eventually_mem_of_isConvexPolyhedron
-    (fun j => f j z) P W S {x | ∀ j, g j x ≤ 0}
-    (TauCeti.isConvexPolyhedron_setOf_forall g) hz
-  rw [path_def, backwardPath_eventually_mem_iff] at hsource
+  have hsource := backwardPath_eventually_mem_of_mem_closure_admissibleBackwardDomain F(t₀)
+    (fun j => f (t₀.itinerary.val.get j) z)
+    (fun j => v (Fin.snoc (α := fun _ => Γ) t₀.history.val 0 j))
+    (fun j => P (t₀.itinerary.val.get j)) W S {x | ∀ j, g j x ≤ 0}
+    (TauCeti.isConvexPolyhedron_setOf_forall g) (by simpa only [domain_def] using hz)
+  rw [backwardPath_eventually_mem_iff] at hsource
   have hcenter : backwardPoint F(t₀) (fun j => f (t₀.itinerary.val.get j) z)
       u(t₀) (Fin.last t₀.itinerary.val.length) z = z := by
     simpa only [zero_smul, add_zero] using

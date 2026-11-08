@@ -127,8 +127,8 @@ The entry time may depend on the endpoint. -/
 theorem path_eventually_mem (hC : IsRationalNormalPolyhedron h C)
     {Q : V} (hQ : Q ∈ closure D) : ∀ᶠ s : ℝ in atBot, t.path c Q s ∈ C := by
   rw [path_def]
-  exact backwardPath_eventually_mem_of_mem_closure_admissibleBackwardDomain F b u A W S C hC
-    (by simpa only [domain_def] using hQ)
+  exact backwardPath_eventually_mem_of_mem_closure_admissibleBackwardDomain F b u A W S C
+    hC.isConvexPolyhedron (by simpa only [domain_def] using hQ)
 
 end CutoffDecoratedType
 
