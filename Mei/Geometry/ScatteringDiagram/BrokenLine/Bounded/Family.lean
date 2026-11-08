@@ -77,10 +77,12 @@ def boundedBrokenLineFamily : FiniteSemilinearFamily h h Types :=
 
 local notation "F" => boundedBrokenLineFamily ℳ T p₀ a f c ε P W S C h w hf hP hW hS hC L
 
+/-- The domain chart of a bounded type is its full admissible endpoint domain. -/
 @[simp]
 theorem boundedBrokenLineFamily_domain (t : Types) :
     (F).domain t = t.domain c P W S C := FiniteSemilinearFamily.ofDomains_domain ..
 
+/-- Evaluation of a bounded-type chart is the inclusion of its endpoint. -/
 @[simp]
 theorem boundedBrokenLineFamily_eval (t : Types) (Q : (F).domain t) :
     (F).eval t Q = Q.val := FiniteSemilinearFamily.ofDomains_eval ..
@@ -108,7 +110,7 @@ local notation "e(" Q ", " hb ")" =>
 theorem boundedBrokenLineFamilyFiberEquiv_itinerary (Q : V)
     (hbound : ∀ (l : List J), Ray(l, Q) → l.length ≤ L) (z : (F).fiber Q) :
     (e(Q, hbound) z).1 = z.1.1.val := by
-  unfold boundedBrokenLineFamily at *
+  unfold boundedBrokenLineFamily at z ⊢
   unfold boundedBrokenLineFamilyFiberEquiv
   rw [Equiv.trans_apply, boundedDecoratedRayFiberEquiv_symm_apply]
   simp only [FiniteSemilinearFamily.fiberOfDomainsEquiv_apply_val]
@@ -118,7 +120,7 @@ theorem boundedBrokenLineFamilyFiberEquiv_itinerary (Q : V)
 theorem boundedBrokenLineFamilyFiberEquiv_history (Q : V)
     (hbound : ∀ (l : List J), Ray(l, Q) → l.length ≤ L) (z : (F).fiber Q) :
     HEq (e(Q, hbound) z).2.1 z.1.2 := by
-  unfold boundedBrokenLineFamily at *
+  unfold boundedBrokenLineFamily at z ⊢
   unfold boundedBrokenLineFamilyFiberEquiv
   rw [Equiv.trans_apply, boundedDecoratedRayFiberEquiv_symm_apply]
   exact (Sigma.mk.inj_iff.mp
@@ -129,7 +131,7 @@ theorem boundedBrokenLineFamilyFiberEquiv_history (Q : V)
 theorem boundedBrokenLineFamilyFiberEquiv_decoration (Q : V)
     (hbound : ∀ (l : List J), Ray(l, Q) → l.length ≤ L) (z : (F).fiber Q) :
     (e(Q, hbound) z).2.decoration 0 = z.1.decoration := by
-  unfold boundedBrokenLineFamily at *
+  unfold boundedBrokenLineFamily at z ⊢
   unfold boundedBrokenLineFamilyFiberEquiv
   rw [Equiv.trans_apply, boundedDecoratedRayFiberEquiv_symm_apply,
     DecoratedAdmissibleRay.decoration_zero, BoundedDecoratedType.decoration_eq]
