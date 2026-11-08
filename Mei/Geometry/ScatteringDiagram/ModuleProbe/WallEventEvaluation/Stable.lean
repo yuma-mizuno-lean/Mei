@@ -7,6 +7,7 @@ module
 
 public import Mei.Geometry.ScatteringDiagram.ModuleProbe.WallEventEvaluation
 public import Mei.Geometry.Convex.Polyhedron.Rational.SingularSupport
+public import Mei.Geometry.ScatteringDiagram.BrokenLine.Path.Uniform
 
 /-!
 # Intrinsic stable loci of actual wall-event evaluations
@@ -119,8 +120,9 @@ theorem dense_stableWallEventLocus (K : ℕ)
   let T := fun e : WallEvent (B.active K) =>
     wallEventPropagation d ℳ p ℒ H h B K K (Nat.le_refl K) e
   let w := fun n : Γ => ρ (p + n)
-  let Types := CutoffDecoratedType d (d.shiftedQuotientGrading ℳ p K).piece
-    T b (fun n => i (w n)) f Prod.snd K
+  let Types := PathDecoratedType (Q := Quiver.SingleObj (WallEvent (B.active K)))
+    (fun e => T e) (fun _ => (d.shiftedQuotientGrading ℳ p K).piece) 0 b
+    (wallEventPaths d ℒ H h B K K) (fun _ n => i (w n)) (fun e => f e) (fun e => Prod.snd e)
   have hW (a : B.active K) : IsRationalNormalPolyhedron h (W a) :=
     (B.wall a).rational_support
   obtain ⟨J, hJ, S, hS, hUnion⟩ := exists_finite_singularSupport_polyhedra W hW
@@ -130,11 +132,16 @@ theorem dense_stableWallEventLocus (K : ℕ)
   have hP (e : WallEvent (B.active K)) : IsRationalSemilinear h (P e) :=
     e.isRationalSemilinear_support W fun a => (hW a).isLocallyClosedPolyhedron.isRationalSemilinear
   have hdom (t : Types) : IsRationalSemilinear h
-      (CutoffDecoratedType.domain c P W (fun _ : Unit => singularSupport W) univ t) := by
-    have ht := t.isRationalSemilinear_domain c P W S univ h w hf hP hW hS
-      (IsRationalNormalPolyhedron.univ h)
+      (admissibleBackwardDomain (Quiver.Path.reverseArrowLabels (fun e => f e) t.1.val)
+        (Quiver.Path.reverseArrowLabels (fun e => c e) t.1.val)
+        (Quiver.Path.Degrees.reverseVertexLabels (fun _ n => i (w n)) 0 t.1.val t.2.val)
+        (Quiver.Path.reverseArrowLabels (fun e => P e) t.1.val) W
+        (fun _ : Unit => singularSupport W) univ) := by
+    have ht := isRationalSemilinear_pathDecoratedDomain
+      (Q := Quiver.SingleObj (WallEvent (B.active K))) (ι := fun _ => Γ) 0 (fun e => f e)
+      (fun e => c e) (fun e => P e) W S univ h (fun _ n => w n) (fun e => hf e) (fun e => hP e)
+      hW hS (IsRationalNormalPolyhedron.univ h) t.1.val t.2.val
     convert ht using 1
-    rw [CutoffDecoratedType.domain_def, CutoffDecoratedType.domain_def]
     apply admissibleBackwardDomain_congr_singular
     simpa only [iUnion_const] using hUnion
   obtain ⟨A, hfrontier, _⟩ := IsRationalSemilinear.exists_membershipArrangement hdom
@@ -148,9 +155,8 @@ theorem dense_stableWallEventLocus (K : ℕ)
   apply (mem_stableWallEventLocus d ℳ p ℒ H h B K b Q).mpr
   refine ⟨?_, ?_⟩
   · simpa only [← hy] using y.notMem
-  · simp only [cutoffWallEventEvaluation_eq_cutoffDecoratedEvaluation]
-    exact cutoffDecoratedEvaluation_eventually_eq_of_notMem_frontier
-      d (d.shiftedQuotientGrading ℳ p K).piece _ b _ _ _ _ _ _ _ _ K Q
+  · simp only [cutoffWallEventEvaluation_def]
+    exact pathDecoratedEvaluation_eventually_eq_of_notMem_frontier _ _ _ _ _ _ _ _ _ _ _ _ _ Q
       (fun t ht => hfrontier t ht hA)
 
 /-- The common intrinsic stable locus for a family of incoming coefficients.

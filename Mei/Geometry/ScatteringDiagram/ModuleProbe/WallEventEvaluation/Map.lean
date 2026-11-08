@@ -71,11 +71,17 @@ theorem map_cutoffWallEventEvaluation (k K : ℕ) (hkK : k ≤ K)
       cutoffWallEventEvaluation d 𝓝 p ℒ W h B k K hkK
         ⟨fₖ k a, d.quotientCoefficientMap_mem_shiftedQuotientGrading
           ℳ 𝓝 p f hf a.property⟩ C Q := by
-  simp only [cutoffWallEventEvaluation_eq_cutoffDecoratedEvaluation]
-  -- Compare the original ray fibers using equivariance of the finite BCH actions.
-  apply map_cutoffDecoratedEvaluation
-  intro e
-  exact LinearMap.ext fun x => map_wallEventPropagation
-    d ℳ 𝓝 p ℒ W h B f hf hequiv k K hkK e x
+  rw [cutoffWallEventEvaluation_def, cutoffWallEventEvaluation_def]
+  -- Compare the path ray fibers using equivariance of the finite BCH actions.
+  exact map_pathDecoratedEvaluation (Q := Quiver.SingleObj (WallEvent (B.active K))) (V := V)
+    (T := fun e => wallEventPropagation d ℳ p ℒ W h B k K hkK e)
+    (U := fun e => wallEventPropagation d 𝓝 p ℒ W h B k K hkK e)
+    (ℳ := fun _ => (d.shiftedQuotientGrading ℳ p k).piece)
+    (𝓝 := fun _ => (d.shiftedQuotientGrading 𝓝 p k).piece)
+    (r := fun _ => fₖ k) (σ := fun _ => id)
+    (hr := fun _ _ _ hx => d.quotientCoefficientMap_mem_shiftedQuotientGrading ℳ 𝓝 p f hf hx)
+    (hT := fun e => LinearMap.ext fun x =>
+      map_wallEventPropagation d ℳ 𝓝 p ℒ W h B f hf hequiv k K hkK e x)
+    (v := fun _ n => i (ρ (p + n))) (w := fun _ n => i (ρ (p + n))) (hv := fun _ _ => rfl) ..
 
 end Mei.ModuleProbe

@@ -100,6 +100,45 @@ theorem pathDecoratedEvaluation_eq_sum_homogeneousHistory (x : ℳ a i₀) (X : 
     intro d _
     exact (ite_and _ _ _ _).symm
 
+open Classical in
+/-- Off the frontiers of the complete endpoint domains of all surviving histories in the
+inventory, weighted evaluation is locally constant. Histories with vanishing decoration
+impose no condition. -/
+theorem pathDecoratedEvaluation_eventually_eq_of_notMem_frontier (x : ℳ a i₀) (X : V)
+    (hX : ∀ t : PathDecoratedType T ℳ i₀ x s v ν ε, X ∉ frontier D(t.1.val, t.2.val)) :
+    ∀ᶠ X' in nhds X, pathDecoratedEvaluation T ℳ i₀ x s v ν ε c P W S C X' =
+      pathDecoratedEvaluation T ℳ i₀ x s v ν ε c P W S C X := by
+  have key (p : (s : Type _)) (d : p.val.Degrees ι) :
+      ∀ᶠ X' in nhds X,
+        (if (∀ j, N(p.val, d) j) ∧ X' ∈ D(p.val, d)
+          then p.val.homogeneousHistory T ℳ d x else 0) =
+        if (∀ j, N(p.val, d) j) ∧ X ∈ D(p.val, d)
+          then p.val.homogeneousHistory T ℳ d x else 0 := by
+    by_cases hd : p.val.homogeneousHistory T ℳ d x ≠ 0 ∧ ∀ j, N(p.val, d) j
+    · have ht : d ∈ pathDecoratedHistorySupport T ℳ i₀ x v ν ε p.val :=
+        (mem_pathDecoratedHistorySupport T ℳ i₀ x v ν ε p.val d).mpr hd
+      have hf := hX ⟨p, ⟨d, ht⟩⟩
+      by_cases hm : X ∈ D(p.val, d)
+      · filter_upwards [mem_interior_iff_mem_nhds.mp
+          ((mem_interior_iff_notMem_frontier hm).mpr hf)] with X' hX'
+        rw [ite_eq_left ⟨hd.2, hX'⟩, ite_eq_left ⟨hd.2, hm⟩]
+      · have hf' : X ∉ frontier D(p.val, d)ᶜ := by rwa [frontier_compl]
+        filter_upwards [mem_interior_iff_mem_nhds.mp
+          ((mem_interior_iff_notMem_frontier hm).mpr hf')] with X' hX'
+        rw [ite_eq_right fun h => hX' h.2, ite_eq_right fun h => hm h.2]
+    · refine Filter.Eventually.of_forall fun X' => ?_
+      by_cases hN : ∀ j, N(p.val, d) j
+      · have hz : p.val.homogeneousHistory T ℳ d x = 0 := by
+          by_contra hz
+          exact hd ⟨hz, hN⟩
+        simp only [hz, ite_self]
+      · rw [ite_eq_right fun h => hN h.1, ite_eq_right fun h => hN h.1]
+  filter_upwards [Filter.eventually_all.mpr fun p => Filter.eventually_all.mpr
+    fun d : (p.val.historySupport T ℳ (x : M a) : Type _) => key p d.val] with X' hX'
+  rw [pathDecoratedEvaluation_eq_sum_homogeneousHistory,
+    pathDecoratedEvaluation_eq_sum_homogeneousHistory]
+  exact Finset.sum_congr rfl fun p _ => Finset.sum_congr rfl fun d hd => hX' p ⟨d, hd⟩
+
 variable [AddCommMonoid E] [Module R E] (α : E →ₗ[R] ℳ a i₀)
 
 local notation "input" => LinearMap.comp (Submodule.subtype (ℳ a i₀)) α

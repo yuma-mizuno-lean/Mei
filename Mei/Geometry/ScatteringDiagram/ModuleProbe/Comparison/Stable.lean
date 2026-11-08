@@ -6,6 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.ScatteringDiagram.ModuleProbe.Comparison
+public import Mei.Geometry.ScatteringDiagram.BrokenLine.Path.Uniform
 
 /-!
 # Probe comparison at locally stable ray endpoints
@@ -64,15 +65,21 @@ variable {R Λ V E ι κ κ' : Type*} {Γ : Type} {M L : Type u} [CommRing R] [A
 local notation "field" => extendedCoefficientField d ℳ p ℒ H h h' D B K hBc
 local notation "evaluation" => cutoffWallEventEvaluation d ℳ p ℒ H h B
   K K (Nat.le_refl _) b univ
-local notation "types" => CutoffDecoratedType d
-  (TauCeti.InternalGrading.piece (d.shiftedQuotientGrading ℳ p K))
-  (fun e : WallEvent (B.active K) => wallEventPropagation d ℳ p ℒ H h B K K (Nat.le_refl _) e)
-  b (fun n => i (ρ (p + n)))
-  (fun e => WallEvent.normal e (B.activeNormal K)) Prod.snd K
-local notation "domain" => CutoffDecoratedType.domain
-  (fun e : WallEvent (B.active K) => WallEvent.offset e (B.activeOffset K))
-  (fun e => WallEvent.support e (B.activeSupport K)) (B.activeSupport K)
-  (fun _ : Unit => singularSupport (B.activeSupport K)) (univ : Set V)
+local notation "types" => PathDecoratedType (Q := Quiver.SingleObj (WallEvent (B.active K)))
+  (fun e => wallEventPropagation d ℳ p ℒ H h B K K (Nat.le_refl _) e)
+  (fun _ => TauCeti.InternalGrading.piece (d.shiftedQuotientGrading ℳ p K)) 0 b
+  (wallEventPaths d ℒ H h B K K)
+  (fun _ n => i (ρ (p + n))) (fun e => WallEvent.normal e (B.activeNormal K)) (fun e => Prod.snd e)
+local notation "domain" => fun t : types => admissibleBackwardDomain
+  (Quiver.Path.reverseArrowLabels (fun e => WallEvent.normal e (B.activeNormal K))
+    (Subtype.val (Sigma.fst t)))
+  (Quiver.Path.reverseArrowLabels (fun e => WallEvent.offset e (B.activeOffset K))
+    (Subtype.val (Sigma.fst t)))
+  (Quiver.Path.Degrees.reverseVertexLabels (fun _ n => i (ρ (p + n))) 0
+    (Subtype.val (Sigma.fst t)) (Subtype.val (Sigma.snd t)))
+  (Quiver.Path.reverseArrowLabels (fun e => WallEvent.support e (B.activeSupport K))
+    (Subtype.val (Sigma.fst t)))
+  (B.activeSupport K) (fun _ : Unit => singularSupport (B.activeSupport K)) (univ : Set V)
 
 include hinitial hBc hD hB hout
 
@@ -115,9 +122,8 @@ theorem extendedCoefficientField_eq_cutoffWallEventEvaluation_of_notMem_frontier
     field x = evaluation x.val := by
   apply extendedCoefficientField_eq_cutoffWallEventEvaluation_of_eventually_eq
     d ℳ p ℒ H h h' D₀ a D B hinitial K hBc hD hB hout b hb x
-  simp only [cutoffWallEventEvaluation_eq_cutoffDecoratedEvaluation]
-  exact cutoffDecoratedEvaluation_eventually_eq_of_notMem_frontier
-    d (d.shiftedQuotientGrading ℳ p K).piece _ b _ _ _ _ _ _ _ _ K x.val hx
+  simp only [cutoffWallEventEvaluation_def]
+  exact pathDecoratedEvaluation_eventually_eq_of_notMem_frontier _ _ _ _ _ _ _ _ _ _ _ _ _ x.val hx
 
 /-- Actual weighted ray sums at endpoints off all complete type-domain frontiers
 are related by the base path product along any admissible path. The incoming
