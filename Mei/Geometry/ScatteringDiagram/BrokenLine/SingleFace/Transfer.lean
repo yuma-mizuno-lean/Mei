@@ -8,7 +8,6 @@ module
 public import Mei.LinearAlgebra.GradedCorrespondence.Basic
 public import Mei.Geometry.Convex.Sweep.Admissible.SingleFace
 public import Mei.Geometry.Convex.Sweep.Generic
-import Mei.LinearAlgebra.CommonLift
 
 /-!
 # Single-face rays for coefficient correspondences
@@ -21,9 +20,9 @@ face. Equal spatial velocities do not identify different component degrees.
 
 The weighted sum retains precisely the components with admitted crossings.
 For any linear incoming family, this sum is a linear map. With uniform finite
-output support, at generic opposite-side endpoints it is the opposite image of
-the total face lift, so the two chamber totals have a unique common lift when
-the span is jointly injective. Individual output branches need no lifts from the face.
+output support it has a fixed finite-sum formula, retaining zero terms.
+Generic total-lift identities and matching are developed in
+`Mei.Geometry.ScatteringDiagram.BrokenLine.SingleFace.Resolution`.
 
 This uses the existing `AdmissibleRayRealization` carrier and its single-face
 classification. Whole-component propagation and total terminal lifts follow
@@ -222,54 +221,6 @@ theorem singleFaceTransferEvaluationLinear_apply_eq_evaluation
   classical
   rw [singleFaceTransferEvaluationLinear_apply,
     C.singleFaceTransferEvaluation_eq_sum i (α x) u v ν b Z hZ Q]
-
-/-- Uniformly supported one-face ray sums have their total common face lift
-at generic opposite-side endpoints. The arrangement is chosen for the whole
-linear family, before its input. Only joint injectivity is needed for uniqueness;
-neither chamber leg nor any individual component is required to be injective. -/
-theorem exists_singleFaceTransferEvaluationLinear_commonLift
-    (s : Finset κ) (hs : ∀ q ∉ s, (C.transfer i q).comp α = 0)
-    (hnormal : ∀ q x, C.transfer i q (α x) ≠ 0 → ν (v q) = ν u)
-    (hZ : Z ⊆ {x | ν x = b})
-    {δ : Type*} [Finite δ] (A : δ → AffineSubspace ℝ V)
-    (hcover : Z ⊆ ⋃ j, (A j : Set V))
-    (hA : ∀ j, ∃ x, ν x = b ∧ x ∉ A j)
-    (hinj : Function.Injective (C.left.prod C.right)) :
-    ∃ F : ExceptionalArrangement V, ∀ Q, F.IsGeneric Q →
-      (ν Q - b) / ν u < 0 →
-        ∃! l : E →ₗ[R] B,
-          C.left.comp l = (𝒰 i).subtype.comp α ∧
-          C.right.comp l = C.singleFaceTransferEvaluationLinear i u v ν b Z α Q := by
-  classical
-  -- Exclude all singular shadows for the uniform output support at once.
-  obtain ⟨F, hF⟩ := exists_forall_notMem_sweepProjection
-    (fun _ : (s : Type _) => ν) (fun _ => b)
-    (fun q => (ν (v q.val))⁻¹ • v q.val) A (fun _ j => hA j)
-  refine ⟨F, fun Q hQ ht => ?_⟩
-  have heval : C.singleFaceTransferEvaluationLinear i u v ν b Z α Q =
-      C.right.comp ((C.liftLeft i).comp α) := by
-    ext x
-    rw [C.singleFaceTransferEvaluationLinear_apply_eq_evaluation i u v ν b Z α hZ Q x]
-    apply C.singleFaceTransferEvaluation_eq_right i (α x) u v ν b Z hZ Q
-    intro q hq
-    refine ⟨hnormal q x hq, by rwa [hnormal q x hq], ?_⟩
-    have hqs : q ∈ s := by
-      by_contra hnot
-      exact hq (by simpa only [LinearMap.comp_apply, LinearMap.zero_apply] using
-        LinearMap.congr_fun (hs q hnot) x)
-    intro hmem
-    obtain ⟨j, hj⟩ := mem_iUnion.mp (hcover hmem)
-    have hp : sweepProjection ν b ((ν (v q))⁻¹ • v q) Q =
-        Q - ((ν Q - b) / ν (v q)) • v q := by
-      simp only [sweepProjection_apply, smul_smul, div_eq_mul_inv]
-      module
-    exact hF Q hQ ⟨q, hqs⟩ j (hp ▸ hj)
-  -- The sum has one total lift; there is no lift requirement on its branches.
-  apply (LinearMap.existsUnique_comp_eq_and_comp_eq_iff hinj).mpr
-  intro x
-  refine ⟨C.liftLeft i (α x), ?_⟩
-  simp only [heval, LinearMap.prod_apply, Function.prod_apply, LinearMap.comp_apply,
-    C.left_liftLeft_apply, Submodule.subtype_apply]
 
 end Linear
 

@@ -137,6 +137,11 @@ end TauCeti.Toric.IsIntegralLattice
 
 namespace TauCeti.Toric
 
+/-- The standard lattice `ℤ ⊆ ℝ` given by the integer cast is an integral lattice. -/
+theorem isIntegralLattice_castAddHom : IsIntegralLattice (Int.castAddHom ℝ) :=
+  isIntegralLattice_of_basis (Module.Basis.singleton Unit ℤ)
+    (Module.Basis.singleton Unit ℝ) (fun _ => by simp)
+
 /-- The standard lattice `ℤⁿ ⊆ ℝⁿ` is an integral lattice. -/
 theorem isIntegralLattice_compLeft_castAddHom (ι : Type*) [Finite ι] :
     IsIntegralLattice ((Int.castAddHom ℝ).compLeft ι) := by

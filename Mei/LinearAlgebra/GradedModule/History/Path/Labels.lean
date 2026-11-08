@@ -5,8 +5,10 @@ Authors: Codex
 -/
 module
 
+public import Mei.LinearAlgebra.GradedModule.History.Basic
 public import Mei.LinearAlgebra.GradedModule.History.Path.Erasure
 public import Mei.Combinatorics.Quiver.Path.Erasure
+public import Mei.Combinatorics.Quiver.Path.Labels
 
 /-!
 # Vertex labels of a complete degree history
@@ -16,7 +18,8 @@ starts at the final component and ends at the prescribed incoming degree.
 In particular, spatial directions can be extracted without identifying the
 different chambers' degree types or coefficient modules. Erasing a loop
 that preserves its adjacent degree retains the labels at all remaining
-parameters, while the erased arrow's two segment labels agree.
+parameters, while the erased arrow's two segment labels agree. For a uniformly graded
+semimodule, the reverse labels identify a path history with a finite sequence history.
 -/
 
 public section
@@ -103,9 +106,45 @@ theorem reverseVertexLabels_map {κ : Q → Type*} (σ : ∀ q, ι q → κ q)
     rw [map_cons, reverseVertexLabels_cons, reverseVertexLabels_cons]
     exact congrArg₂ Fin.cons (hv _ _) (reverseVertexLabels_map σ v w hv i₀ p d)
 
+/-- Extracting segment labels commutes with combining two labellings pointwise. -/
+theorem reverseVertexLabels_map₂ {C : Type*} (v : ∀ q, ι q → A)
+    (w : ∀ q, ι q → B) (f : A → B → C) (i₀ : ι a) :
+    ∀ {b : Q} (p : Path a b) (d : p.Degrees ι),
+      reverseVertexLabels (fun q i => f (v q i) (w q i)) i₀ p d =
+        fun j => f (reverseVertexLabels v i₀ p d j) (reverseVertexLabels w i₀ p d j)
+  | _, nil, _ => by simp only [reverseVertexLabels_nil]
+  | _, cons p e, d => by
+    obtain ⟨d, i⟩ := d
+    rw [reverseVertexLabels_cons, reverseVertexLabels_cons, reverseVertexLabels_cons]
+    funext j
+    exact Fin.cases rfl (fun j => congrFun (reverseVertexLabels_map₂ v w f i₀ p d) j) j
+
+/-- A relation between an arrow label and its adjacent segment labels holds
+throughout the backward history if it holds at every arrow and degree pair. -/
+theorem reverseLabels_forall (f : ∀ {b c : Q}, (b ⟶ c) → A)
+    (v : ∀ q, ι q → B) (P : A → B → B → Prop)
+    (hf : ∀ {b c : Q} (e : b ⟶ c) (i : ι b) (j : ι c), P (f e) (v c j) (v b i))
+    (i₀ : ι a) :
+    ∀ {b : Q} (p : Path a b) (d : p.Degrees ι) (j : Fin p.length),
+      P (p.reverseArrowLabels f j) (reverseVertexLabels v i₀ p d j.castSucc)
+        (reverseVertexLabels v i₀ p d j.succ)
+  | _, nil, _, j => j.elim0
+  | _, cons p e, d, j => by
+    obtain ⟨d, i⟩ := d
+    refine Fin.cases ?_ (fun j => ?_) j
+    · simpa only [Path.length_cons, Fin.castSucc_zero, reverseVertexLabels_cons,
+        Path.reverseArrowLabels_cons,
+        Fin.cons_zero, Fin.cons_succ, reverseVertexLabels_zero] using
+        hf e (terminalDegree i₀ p d) i
+    · simpa only [Path.length_cons, Fin.castSucc_succ, reverseVertexLabels_cons,
+        Path.reverseArrowLabels_cons,
+        Fin.cons_succ] using reverseLabels_forall f v P hf i₀ p d j
+
 end Quiver.Path.Degrees
 
 namespace Quiver.Path
+
+section Erasure
 
 variable {Q : Type*} [Quiver Q] {ι : Q → Type*} {a b : Q}
   (p : Path a b) (e : b ⟶ b)
@@ -183,5 +222,45 @@ theorem reverseVertexLabels_loopIndex_eq : ∀ {c : Q} (q : Path b c)
           reverseVertexLabels_loopIndex_eq q d hd
       _ = _ := (Degrees.reverseVertexLabels_cons_succ v i₀ _ g _ i
           (loopIndex p e q).castSucc).symm
+end Erasure
+
+section Homogeneous
+
+variable {Q R M ι : Type*} [Quiver Q] [Semiring R]
+  [AddCommMonoid M] [Module R M] [DecidableEq ι]
+  (T : ∀ {b c : Q}, (b ⟶ c) → Module.End R M)
+  (ℳ : ι → Submodule R M) [DirectSum.Decomposition ℳ] {a : Q}
+
+/-- A path history agrees with the finite sequence history of its reversed labels. -/
+theorem homogeneousHistory_eq_reverseLabels (i₀ : ι) {b : Q} (p : Path a b)
+    (d : p.Degrees (fun _ => ι)) (x : M) :
+    p.homogeneousHistory T (fun _ => ℳ) d x =
+      Mei.homogeneousHistory ℳ (p.reverseArrowLabels T)
+        (Fin.init (Degrees.reverseVertexLabels (fun _ i => i) i₀ p d)) x := by
+  induction p with
+  | nil =>
+    simp only [homogeneousHistory_nil, reverseArrowLabels_nil,
+      Degrees.reverseVertexLabels_nil, LinearMap.id_apply]
+    have hzero :
+        Mei.homogeneousHistory ℳ (Fin.elim0 : Fin 0 → Module.End R M)
+          (Fin.init (α := fun _ : Fin 1 => ι) (fun _ : Fin 1 => i₀)) = LinearMap.id :=
+      Mei.homogeneousHistory_zero ℳ _ _
+    have heq : (nil : Path a a).length = 0 := length_nil
+    cases heq
+    exact Eq.symm (congrFun (congrArg DFunLike.coe hzero) x)
+  | cons p e ih =>
+    have hi :
+        Fin.init (Degrees.reverseVertexLabels (fun _ i => i) i₀ (p.cons e) d) =
+          Fin.cons d.2 (Fin.init (Degrees.reverseVertexLabels (fun _ i => i) i₀ p d.1)) := by
+      obtain ⟨d, i⟩ := d
+      rw [Degrees.reverseVertexLabels_cons]
+      funext j
+      exact Fin.cases rfl (fun j => rfl) j
+    rw [reverseArrowLabels_cons, hi]
+    simp only [length_cons]
+    rw [Mei.homogeneousHistory_succ_apply, homogeneousHistory_cons_apply, ih d.1]
+    rfl
+
+end Homogeneous
 
 end Quiver.Path

@@ -256,11 +256,7 @@ theorem exists_uniform_decoratedRayEvaluation_singleFace_arrangement
     decoratedRayEvaluation_singleFace_one_eq ℳ T p (α x) v ν b Z (hnormal x) hZ Q ht ?_⟩
   intro q hq hmem
   obtain ⟨j, hj⟩ := mem_iUnion.mp (hcover hmem)
-  have he : sweepProjection ν b ((ν (v q))⁻¹ • v q) Q =
-      Q - ((ν Q - b) / ν (v q)) • v q := by
-    simp only [sweepProjection_apply, smul_smul, div_eq_mul_inv]
-    module
-  exact hE Q hQ ⟨q, hs x q hq⟩ j (he ▸ hj)
+  exact hE Q hQ ⟨q, hs x q hq⟩ j (sweepProjection_inv_smul_apply Q ▸ hj)
 
 /-- If finitely many affine subspaces cover the singular set and none contains
 the full face, one finite exceptional arrangement makes the actual opposite-side

@@ -10,8 +10,8 @@ public import Mei.Algebra.Category.SemimoduleCat.Multispan.Basic
 /-!
 # Matching families at one face between two chambers
 
-A span of linear maps `M ← B → M` is the incidence diagram of one face with a negative
-chamber (`false`) and a positive chamber (`true`), both carrying the module `M`. We form it as
+A span of linear maps `M ← B → N` is the incidence diagram of one face with a negative
+chamber (`false`) and a positive chamber (`true`), carrying the modules `M` and `N`. We form it as
 a multispan index over Mathlib's `MultispanShape.ofLinearOrder Bool`, whose single face has
 `false` and `true` as its two incident chambers.
 
@@ -46,20 +46,27 @@ theorem MultispanShape.ofLinearOrder_bool_snd (c : (MultispanShape.ofLinearOrder
 
 namespace MultispanIndex
 
-variable {R : Type*} {B M : Type v} [Semiring R] [AddCommMonoid B] [Module R B]
-  [AddCommMonoid M] [Module R M]
+variable {R : Type*} {B M N : Type v} [Semiring R] [AddCommMonoid B] [Module R B]
+  [AddCommMonoid M] [Module R M] [AddCommMonoid N] [Module R N]
 
-/-- The incidence diagram of one face with face module `B` between a negative chamber and
-a positive chamber, both carrying `M`, whose legs are `f` and `g`. -/
-abbrev ofLinearMaps (f g : B →ₗ[R] M) :
+/-- The incidence diagram of one face with face module `B` between chambers
+carrying `M` and `N`, whose legs are `f` and `g`. -/
+abbrev ofLinearMaps (f : B →ₗ[R] M) (g : B →ₗ[R] N) :
     MultispanIndex (MultispanShape.ofLinearOrder Bool) (SemimoduleCat R) where
   left _ := SemimoduleCat.of R B
-  right _ := SemimoduleCat.of R M
-  fst _ := SemimoduleCat.ofHom f
-  snd _ := SemimoduleCat.ofHom g
+  right j := match j with
+    | false => SemimoduleCat.of R M
+    | true => SemimoduleCat.of R N
+  fst c := by
+    rw [MultispanShape.ofLinearOrder_bool_fst c]
+    exact SemimoduleCat.ofHom f
+  snd c := by
+    rw [MultispanShape.ofLinearOrder_bool_snd c]
+    exact SemimoduleCat.ofHom g
 
 /-- The face component of a matching section maps to its chamber values. -/
-theorem ofLinearMaps_apply_left (f g : B →ₗ[R] M) (c : (MultispanShape.ofLinearOrder Bool).L)
+theorem ofLinearMaps_apply_left (f : B →ₗ[R] M) (g : B →ₗ[R] N)
+    (c : (MultispanShape.ofLinearOrder Bool).L)
     {s : ∀ j, (ofLinearMaps f g).multispan.obj j}
     (hs : s ∈ SemimoduleCat.sectionsSubmodule (ofLinearMaps f g).multispan) :
     f (s (.left c)) = s (.right false) ∧ g (s (.left c)) = s (.right true) := by
@@ -69,7 +76,7 @@ theorem ofLinearMaps_apply_left (f g : B →ₗ[R] M) (c : (MultispanShape.ofLin
 
 /-- Matching sections of one face are its face components: the chamber values are the images of
 the face value under the two legs, so no joint injectivity is needed to recover them. -/
-def sectionsLinearEquivOfLinearMaps (f g : B →ₗ[R] M) :
+def sectionsLinearEquivOfLinearMaps (f : B →ₗ[R] M) (g : B →ₗ[R] N) :
     SemimoduleCat.sectionsSubmodule (ofLinearMaps f g).multispan ≃ₗ[R] B where
   toFun s := s.val (.left default)
   map_add' _ _ := rfl
@@ -92,14 +99,14 @@ def sectionsLinearEquivOfLinearMaps (f g : B →ₗ[R] M) :
 
 /-- The equivalence reads off the face component. -/
 @[simp]
-theorem sectionsLinearEquivOfLinearMaps_apply (f g : B →ₗ[R] M)
+theorem sectionsLinearEquivOfLinearMaps_apply (f : B →ₗ[R] M) (g : B →ₗ[R] N)
     (s : SemimoduleCat.sectionsSubmodule (ofLinearMaps f g).multispan) :
     sectionsLinearEquivOfLinearMaps f g s = s.val (.left default) := (rfl)
 
 /-- The face component of the section with a given face value is that value at the unique
 face of a two-chamber span. -/
 @[simp]
-theorem sectionsLinearEquivOfLinearMaps_symm_apply_left (f g : B →ₗ[R] M) (b : B)
+theorem sectionsLinearEquivOfLinearMaps_symm_apply_left (f : B →ₗ[R] M) (g : B →ₗ[R] N) (b : B)
     (c : (MultispanShape.ofLinearOrder Bool).L) :
     ((sectionsLinearEquivOfLinearMaps f g).symm b).val (.left c) = b := by
   obtain rfl : c = default := Subsingleton.elim _ _
@@ -107,14 +114,16 @@ theorem sectionsLinearEquivOfLinearMaps_symm_apply_left (f g : B →ₗ[R] M) (b
 
 /-- The negative leg sends the face value of a reconstructed section to its negative
 chamber value. -/
-theorem sectionsLinearEquivOfLinearMaps_symm_apply_left_fst (f g : B →ₗ[R] M) (b : B) :
+theorem sectionsLinearEquivOfLinearMaps_symm_apply_left_fst (f : B →ₗ[R] M) (g : B →ₗ[R] N)
+    (b : B) :
     f (((sectionsLinearEquivOfLinearMaps f g).symm b).val (.left default)) =
       ((sectionsLinearEquivOfLinearMaps f g).symm b).val (.right false) :=
   (ofLinearMaps_apply_left f g default ((sectionsLinearEquivOfLinearMaps f g).symm b).property).1
 
 /-- The positive leg sends the face value of a reconstructed section to its positive
 chamber value. -/
-theorem sectionsLinearEquivOfLinearMaps_symm_apply_left_snd (f g : B →ₗ[R] M) (b : B) :
+theorem sectionsLinearEquivOfLinearMaps_symm_apply_left_snd (f : B →ₗ[R] M) (g : B →ₗ[R] N)
+    (b : B) :
     g (((sectionsLinearEquivOfLinearMaps f g).symm b).val (.left default)) =
       ((sectionsLinearEquivOfLinearMaps f g).symm b).val (.right true) :=
   (ofLinearMaps_apply_left f g default ((sectionsLinearEquivOfLinearMaps f g).symm b).property).2
@@ -122,7 +131,8 @@ theorem sectionsLinearEquivOfLinearMaps_symm_apply_left_snd (f g : B →ₗ[R] M
 /-- The negative chamber value of the section with a given face value is the image of its face
 value under the negative leg. -/
 @[simp]
-theorem sectionsLinearEquivOfLinearMaps_symm_apply_right_false (f g : B →ₗ[R] M) (b : B) :
+theorem sectionsLinearEquivOfLinearMaps_symm_apply_right_false (f : B →ₗ[R] M) (g : B →ₗ[R] N)
+    (b : B) :
     ((sectionsLinearEquivOfLinearMaps f g).symm b).val (.right false) = f b := by
   calc
     _ = f (((sectionsLinearEquivOfLinearMaps f g).symm b).val (.left default)) :=
@@ -132,17 +142,25 @@ theorem sectionsLinearEquivOfLinearMaps_symm_apply_right_false (f g : B →ₗ[R
 /-- The positive chamber value of the section with a given face value is the image of its face
 value under the positive leg. -/
 @[simp]
-theorem sectionsLinearEquivOfLinearMaps_symm_apply_right_true (f g : B →ₗ[R] M) (b : B) :
+theorem sectionsLinearEquivOfLinearMaps_symm_apply_right_true (f : B →ₗ[R] M) (g : B →ₗ[R] N)
+    (b : B) :
     ((sectionsLinearEquivOfLinearMaps f g).symm b).val (.right true) = g b := by
   calc
     _ = g (((sectionsLinearEquivOfLinearMaps f g).symm b).val (.left default)) :=
       (sectionsLinearEquivOfLinearMaps_symm_apply_left_snd f g b).symm
     _ = g b := congrArg g (sectionsLinearEquivOfLinearMaps_symm_apply_left f g b default)
 
+/-- The two chamber values at the unique face have the chosen common lift. -/
+theorem ofLinearMaps_mem_compatibility (f : B →ₗ[R] M) (g : B →ₗ[R] N) (b : B) :
+    (f b, g b) ∈
+      LinearMap.range (((ofLinearMaps f g).fst default).hom.prod
+        ((ofLinearMaps f g).snd default).hom) :=
+  ⟨b, Prod.ext rfl rfl⟩
+
 /-- Linear families of matching sections with prescribed chamber values correspond to
 linear common lifts through the two legs, uniquely on both sides or on neither. -/
 theorem existsUnique_sections_ofLinearMaps_iff {E : Type*} [AddCommMonoid E] [Module R E]
-    (f g : B →ₗ[R] M) (a₀ a₁ : E → M) :
+    (f : B →ₗ[R] M) (g : B →ₗ[R] N) (a₀ : E → M) (a₁ : E → N) :
     (∃! ℓ : E →ₗ[R] SemimoduleCat.sectionsSubmodule (ofLinearMaps f g).multispan,
         ∀ x, (ℓ x).val (.right false) = a₀ x ∧ (ℓ x).val (.right true) = a₁ x) ↔
       ∃! ℓ : E →ₗ[R] B, ∀ x, f (ℓ x) = a₀ x ∧ g (ℓ x) = a₁ x := by

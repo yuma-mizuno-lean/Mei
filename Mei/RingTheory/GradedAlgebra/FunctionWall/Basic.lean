@@ -160,4 +160,17 @@ theorem map_functionWallAction (φ : 𝒜 →+*ᵍ ℬ) (f : (𝒜 0)ˣ) (a : A)
 
 end Naturality
 
+section Ring
+
+variable {R A : Type*} [CommRing R] [CommRing A] [Algebra R A] (𝒜 : ℤ → Submodule R A)
+  [GradedAlgebra 𝒜]
+
+/-- The function wall `1 - z` sends an element of weight one `a` to `a - a * z`. -/
+theorem functionWallAction_apply_of_mem_one_sub {a z : A} (f : (𝒜 0)ˣ) (hf : (f : A) = 1 - z)
+    (ha : a ∈ 𝒜 1) : functionWallAction 𝒜 f a = a - a * z := by
+  rw [functionWallAction_apply_of_mem 𝒜 f ha, zpow_one]
+  simp [hf, mul_sub]
+
+end Ring
+
 end Mei.GradedAlgebra

@@ -5,6 +5,7 @@ Authors: Codex
 -/
 module
 
+public import Mei.Algebra.BigOperators.Group.Finset.Subtype
 public import Mei.Geometry.Convex.Sweep.Admissible
 public import Mei.LinearAlgebra.GradedModule.History.Finite
 
@@ -183,20 +184,9 @@ theorem homogeneousRayEvaluation_eq_sum (Q : V) :
         then homogeneousHistory ℳ T p.val a else 0 := by
   let := Fintype.ofFinite (HomogeneousRayRealization ℳ T p₀ a v f c P W S C Q)
   rw [homogeneousRayEvaluation]
-  calc
-    _ = ∑ p : {p : {p // p ∈ homogeneousHistorySupport ℳ T (a : M)} //
-        Q ∈ Convex.admissibleBackwardDomain f c
-          (Fin.snoc (fun j => v (p.val j)) (v p₀)) P W S C},
-        homogeneousHistory ℳ T p.val.val a :=
-      Fintype.sum_equiv (homogeneousRayFiberEquiv ℳ T p₀ a v f c P W S C Q) _ _
-        (fun _ => by simp)
-    _ = _ := by
-      rw [← Finset.sum_filter]
-      exact (Finset.sum_subtype
-        (Finset.univ.filter fun p : {p // p ∈ homogeneousHistorySupport ℳ T (a : M)} =>
-          Q ∈ Convex.admissibleBackwardDomain f c
-            (Fin.snoc (fun j => v (p.val j)) (v p₀)) P W S C)
-        (by simp) (fun p => homogeneousHistory ℳ T p.val a)).symm
+  exact Fintype.sum_eq_sum_ite_of_equiv_subtype
+    (homogeneousRayFiberEquiv ℳ T p₀ a v f c P W S C Q) _
+    (fun p => homogeneousHistory ℳ T p.val a) fun _ => by simp
 
 /-- Zero incoming coefficient produces no ray and has zero weighted evaluation. -/
 @[simp]
