@@ -71,7 +71,6 @@ theorem pathDecoratedEvaluation_eq_sum_homogeneousHistory (x : ℳ a i₀) (X : 
   rw [pathDecoratedEvaluation_eq_sum_support]
   apply Finset.sum_congr rfl
   intro p _
-  rw [sum_pathDecoratedRay_eq_sum_histories]
   trans ∑ d ∈ pathDecoratedHistorySupport T ℳ i₀ x v ν ε p.val,
     if X ∈ D(p.val, d) then p.val.homogeneousHistory T ℳ d x else 0
   · exact Finset.sum_coe_sort (pathDecoratedHistorySupport T ℳ i₀ x v ν ε p.val)
