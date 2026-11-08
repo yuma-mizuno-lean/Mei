@@ -309,6 +309,37 @@ theorem pathDecoratedTypeClosedDomainHomeomorph_symm_apply (t : Types)
     ((pathDecoratedTypeClosedDomainHomeomorph T ℳ i₀ x v ν ε e c P W S C s t).symm X).val =
       e.symm X.val := (rfl)
 
+/-- Transport any closed chart subdivision of the complete type domains without
+changing its index set. The images still exhaust every transported type, with
+disjoint relative interiors within each type, and have proper endpoint and path
+maps. For an integral affine equivalence, rational-normal charts stay
+rational-normal by `IsRationalNormalPolyhedron.image`. -/
+theorem pathDecoratedTypeAffineEquiv_closedCharts
+    (κ : Types → Type*) (B : ∀ t, κ t → Set V)
+    (hB : ∀ t j, IsClosed (B t j) ∧ B t j ⊆ closure (D(t)))
+    (hdisj : ∀ t, Pairwise fun j l => Disjoint (intrinsicInterior ℝ (B t j))
+      (intrinsicInterior ℝ (B t l)))
+    (hcover : ∀ t, ⋃ j, intrinsicInterior ℝ (B t j) = D(t)) :
+    (∀ t j, e '' B t j ⊆ closure (D'(E t)) ∧
+      IsProperMap (fun X : e '' B t j => (X : V')) ∧
+      IsProperMap (fun X : e '' B t j => β'(E t) X.val)) ∧
+    (∀ t, Pairwise fun j l => Disjoint (intrinsicInterior ℝ (e '' B t j))
+      (intrinsicInterior ℝ (e '' B t l))) ∧
+    ∀ t, ⋃ j, intrinsicInterior ℝ (e '' B t j) = D'(E t) := by
+  have hsub (t : Types) (j : κ t) : e '' B t j ⊆ closure (D'(E t)) := by
+    rw [pathDecoratedTypeAffineEquiv_closure_domain]
+    exact Set.image_mono (hB t j).2
+  refine ⟨fun t j => ?_, fun t j l hjl => ?_, fun t => ?_⟩
+  · have hclosed : IsClosed (e '' B t j) := e.toHomeomorph.isClosedMap _ (hB t j).1
+    exact ⟨hsub t j, hclosed.isProperMap_subtypeVal,
+      isProperMap_backwardPath_restrict _ _ _ hclosed fun X hX =>
+        backwardTime_nonneg_of_mem_closure_admissibleBackwardDomain _ _ _ _ _ _ _
+          (hsub t j hX)⟩
+  · simp only [ContinuousAffineEquiv.intrinsicInterior_image]
+    exact Set.disjoint_image_of_injective e.injective (hdisj t hjl)
+  · simp only [ContinuousAffineEquiv.intrinsicInterior_image]
+    rw [← Set.image_iUnion, hcover, pathDecoratedTypeAffineEquiv_domain]
+
 end TypeTransport
 
 end Mei
