@@ -6,6 +6,7 @@ Authors: Codex
 module
 
 public import Mei.LinearAlgebra.GradedModule.Shifted.Component
+public import Mei.Geometry.ScatteringDiagram.BrokenLine.Itineraries.Regrading
 public import TauCeti.Algebra.Module.GradedModule.Quotient
 
 /-!
@@ -167,6 +168,21 @@ theorem transition_mem_shiftedQuotientGrading {k l : ℕ} (h : k ≤ l) {n : Γ}
     (d.shiftedFiltration ℳ p).transition h x ∈ (d.shiftedQuotientGrading ℳ p k).piece n := by
   obtain ⟨a, ha, rfl⟩ := (d.mem_shiftedQuotientGrading_iff ℳ p).mp hx
   exact (d.mem_shiftedQuotientGrading_iff ℳ p).mpr ⟨a, ha, by simp⟩
+
+/-- Changing the cutoff regrades an original relative-degree-zero coefficient
+to the quotient class expected at the smaller cutoff. -/
+theorem regradeBase_shiftedQuotientGrading_transition {k l : ℕ} (h : k ≤ l)
+    (a : shiftedGrading ℳ d.monoid p 0) :
+    regradeBase (d.shiftedQuotientGrading ℳ p l).piece
+      (d.shiftedQuotientGrading ℳ p k).piece
+      ((d.shiftedFiltration ℳ p).transition h) (AddMonoidHom.id Γ)
+      (fun _ _ hx => d.transition_mem_shiftedQuotientGrading ℳ p h hx)
+      ⟨Submodule.Quotient.mk (a : shiftedSubmodule ℳ d.monoid p),
+        (d.mem_shiftedQuotientGrading_iff ℳ p).mpr ⟨a, a.property, rfl⟩⟩ =
+      ⟨Submodule.Quotient.mk (a : shiftedSubmodule ℳ d.monoid p),
+        (d.mem_shiftedQuotientGrading_iff ℳ p).mpr ⟨a, a.property, rfl⟩⟩ := by
+  apply Subtype.ext
+  rw [coe_regradeBase, ModuleFiltration.transition_mk]
 
 /-- Truncating a homogeneous finite coefficient kills it exactly when it was
 already zero or its relative degree exceeds the new cutoff. -/

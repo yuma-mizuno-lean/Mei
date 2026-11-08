@@ -66,12 +66,8 @@ theorem transition_cutoffBCHRay_decoration_ne_zero_iff {k l : ℕ} (h : k ≤ l)
   rw [ne_eq, d.transition_eq_zero_iff_of_mem_shiftedQuotientGrading ℳ p h β.decoration_mem]
   simp only [β.decoration_ne_zero, false_or, not_lt]
 
-omit [Algebra ℚ R] [LieAlgebra ℚ L] [IsScalarTower ℚ R L] [LieModule R L M] in
-private theorem input_transition {k l : ℕ} (h : k ≤ l) :
-    regradeBase (G l) (G k) ((F).transition h) (AddMonoidHom.id Γ)
-      (fun _ _ hx => d.transition_mem_shiftedQuotientGrading ℳ p h hx) (input l) = input k := by
-  apply Subtype.ext
-  rw [coe_regradeBase, ModuleFiltration.transition_mk]
+local notation "input_transition" => fun {k l : ℕ} (h : k ≤ l) =>
+  d.regradeBase_shiftedQuotientGrading_transition ℳ p h a
 
 /-- The smaller actual ray fiber is the subfiber of a larger one whose final
 relative degrees are retained. Truncation maps the entire final coefficients. -/
@@ -89,7 +85,7 @@ def cutoffBCHRayTruncationEquiv {k l : ℕ} (h : k ≤ l) :
     (fun _ _ hx => d.transition_mem_shiftedQuotientGrading ℳ p h hx) (T l) (T k) hT
     (input l) v f c ε P W S C h
     (fun _ _ hx hne => d.mem_cutoff_of_mem_shiftedQuotientGrading_ne_zero ℳ p hx hne) Q
-  have ha := input_transition d ℒ ℳ p a h
+  have ha := input_transition h
   exact ((Equiv.subtypeEquivRight (fun β =>
     (d.transition_cutoffBCHRay_decoration_ne_zero_iff ℒ ℳ p g a v f c ε P W S C Q h β).symm)).trans
       e).trans (Equiv.cast (congrArg (fun a =>
@@ -105,7 +101,7 @@ theorem cutoffBCHRayTruncationEquiv_degreeItinerary {k l : ℕ} (h : k ≤ l)
     (E h β).degreeItinerary = β.val.degreeItinerary := by
   simp only [cutoffBCHRayTruncationEquiv, Equiv.trans_apply,
     Equiv.subtypeEquivRight_apply, Equiv.cast_apply]
-  rw [CutoffDecoratedRay.degreeItinerary_cast_input _ (input_transition d ℒ ℳ p a h),
+  rw [CutoffDecoratedRay.degreeItinerary_cast_input _ (input_transition h),
     cutoffDecoratedRayCoefficientTruncationEquiv_degreeItinerary]
 
 /-- The final relative degree is unchanged by truncation. -/
@@ -123,7 +119,7 @@ theorem cutoffBCHRayTruncationEquiv_ray {k l : ℕ} (h : k ≤ l)
     (E h β).realization.2.ray = β.val.realization.2.ray := by
   simp only [cutoffBCHRayTruncationEquiv, Equiv.trans_apply,
     Equiv.subtypeEquivRight_apply, Equiv.cast_apply]
-  simp only [CutoffDecoratedRay.ray_cast_input _ (input_transition d ℒ ℳ p a h),
+  simp only [CutoffDecoratedRay.ray_cast_input _ (input_transition h),
     cutoffDecoratedRayCoefficientTruncationEquiv_ray]
 
 /-- The times of all recorded encounters are unchanged. -/
@@ -134,7 +130,7 @@ theorem cutoffBCHRayTruncationEquiv_parameter {k l : ℕ} (h : k ≤ l)
   simp only [cutoffBCHRayTruncationEquiv, Equiv.trans_apply, Equiv.subtypeEquivRight_apply,
     Equiv.cast_apply]
   refine HEq.trans (CutoffDecoratedRay.parameter_cast_input _
-    (input_transition d ℒ ℳ p a h)) ?_
+    (input_transition h)) ?_
   exact cutoffDecoratedRayCoefficientTruncationEquiv_parameter d (G l) (G k)
     ((F).transition h) _ (T l) (T k) _ (input l) v f c ε P W S C h _ Q _
 
@@ -145,7 +141,7 @@ theorem cutoffBCHRayTruncationEquiv_decoration {k l : ℕ} (h : k ≤ l)
     (E h β).decoration = (F).transition h β.val.decoration := by
   simp only [cutoffBCHRayTruncationEquiv, Equiv.trans_apply,
     Equiv.subtypeEquivRight_apply, Equiv.cast_apply]
-  rw [CutoffDecoratedRay.decoration_cast_input _ (input_transition d ℒ ℳ p a h),
+  rw [CutoffDecoratedRay.decoration_cast_input _ (input_transition h),
     cutoffDecoratedRayCoefficientTruncationEquiv_decoration]
 
 /-- Truncation at the same order is the identity on the actual fiber. -/
