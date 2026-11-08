@@ -93,6 +93,39 @@ local notation "D" => (fun t : Labels => admissibleBackwardDomain
   (Path.reverseArrowLabels P (Subtype.val (Sigma.fst t))) W S C)
 
 open Classical in
+/-- The weighted evaluation of the actual rays through an endpoint is the sum, over each
+itinerary and each contributing history, of the whole history whose endpoint domain contains
+the point. -/
+theorem pathDecoratedEvaluation_eq_sum_support (X : V) :
+    pathDecoratedEvaluation T ℳ i₀ x s v ν ε c P W S C X =
+      ∑ p : (s : Type _), ∑ d :
+        (pathDecoratedHistorySupport T ℳ i₀ x v ν ε p.val : Type _),
+        if X ∈ D ⟨p, d⟩ then p.val.homogeneousHistory T ℳ d.val x else 0 := by
+  classical
+  let : ∀ p : (s : Type _), Fintype (Ray p.val X) := fun _ => Fintype.ofFinite _
+  let := Fintype.ofFinite (Rays X)
+  rw [pathDecoratedEvaluation_def]
+  dsimp only
+  trans ∑ p : (s : Type _), ∑ r : Ray p.val X, r.decoration
+  · convert Fintype.sum_sigma (fun r : Rays X => r.2.decoration) using 1
+    congr 1
+    ext r
+    simp
+  apply Finset.sum_congr rfl
+  intro p _
+  let e := pathDecoratedRayFiberEquiv T ℳ i₀ x v ν ε c P W S C p.val X
+  trans ∑ d : {d : (pathDecoratedHistorySupport T ℳ i₀ x v ν ε p.val : Type _) //
+      X ∈ D (⟨p, d⟩ : Labels)}, p.val.homogeneousHistory T ℳ d.val.val x
+  · exact Fintype.sum_equiv e _ (fun d : {d :
+        (pathDecoratedHistorySupport T ℳ i₀ x v ν ε p.val : Type _) //
+        X ∈ D (⟨p, d⟩ : Labels)} => p.val.homogeneousHistory T ℳ d.val.val x) fun r => by
+      rw [PathDecoratedRay.decoration_def, pathDecoratedRayFiberEquiv_history]
+  rw [← Finset.sum_filter]
+  exact (Finset.sum_subtype (Finset.univ.filter fun d :
+      (pathDecoratedHistorySupport T ℳ i₀ x v ν ε p.val : Type _) => X ∈ D ⟨p, d⟩)
+    (by simp) (fun d => p.val.homogeneousHistory T ℳ d.val x)).symm
+
+open Classical in
 /-- The shared weighted evaluation counts each complete type whose endpoint domain contains the
 point, with its entire final decoration. -/
 theorem pathDecoratedEvaluation_eq_sum_domains (X : V) :
@@ -100,36 +133,13 @@ theorem pathDecoratedEvaluation_eq_sum_domains (X : V) :
       let := Fintype.ofFinite Labels
       ∑ t : Labels, if X ∈ D t then t.1.val.homogeneousHistory T ℳ t.2.val x else 0 := by
   classical
-  let : ∀ p : (s : Type _), Fintype (Ray p.val X) := fun _ => Fintype.ofFinite _
-  let := Fintype.ofFinite (Rays X)
-  rw [pathDecoratedEvaluation_def]
+  rw [pathDecoratedEvaluation_eq_sum_support]
   dsimp only
-  trans ∑ p : (s : Type _), ∑ d :
-    (pathDecoratedHistorySupport T ℳ i₀ x v ν ε p.val : Type _),
-    if X ∈ D ⟨p, d⟩ then p.val.homogeneousHistory T ℳ d.val x else 0
-  · trans ∑ p : (s : Type _), ∑ r : Ray p.val X, r.decoration
-    · convert Fintype.sum_sigma (fun r : Rays X => r.2.decoration) using 1
-      congr 1
-      ext r
-      simp
-    apply Finset.sum_congr rfl
-    intro p _
-    let e := pathDecoratedRayFiberEquiv T ℳ i₀ x v ν ε c P W S C p.val X
-    trans ∑ d : {d : (pathDecoratedHistorySupport T ℳ i₀ x v ν ε p.val : Type _) //
-        X ∈ D (⟨p, d⟩ : Labels)}, p.val.homogeneousHistory T ℳ d.val.val x
-    · exact Fintype.sum_equiv e _ (fun d : {d :
-          (pathDecoratedHistorySupport T ℳ i₀ x v ν ε p.val : Type _) //
-          X ∈ D (⟨p, d⟩ : Labels)} => p.val.homogeneousHistory T ℳ d.val.val x) fun r => by
-        rw [PathDecoratedRay.decoration_def, pathDecoratedRayFiberEquiv_history]
-    rw [← Finset.sum_filter]
-    exact (Finset.sum_subtype (Finset.univ.filter fun d :
-        (pathDecoratedHistorySupport T ℳ i₀ x v ν ε p.val : Type _) => X ∈ D ⟨p, d⟩)
-      (by simp) (fun d => p.val.homogeneousHistory T ℳ d.val x)).symm
-  · convert (Fintype.sum_sigma (fun t : Labels =>
-      if X ∈ D t then t.1.val.homogeneousHistory T ℳ t.2.val x else 0)).symm using 1
-    congr 1
-    ext t
-    simp
+  convert (Fintype.sum_sigma (fun t : Labels =>
+    if X ∈ D t then t.1.val.homogeneousHistory T ℳ t.2.val x else 0)).symm using 1
+  congr 1
+  ext t
+  simp
 
 end General
 
@@ -171,13 +181,13 @@ whole-path extension of that type. Its endpoint-path map is proper, the extensio
 endpoint at time zero and eventually enters the incoming source, and a nonzero incoming
 direction makes the incoming half-line proper. -/
 theorem pathDecoratedType_closedChart (t : PathDecoratedType T ℳ i₀ x s v ν ε) {E : Set V}
-    (hE : IsRationalNormalPolyhedron h E) (hsub : E ⊆ closure (D t)) :
+    (hE : IsClosed E) (hsub : E ⊆ closure (D t)) :
     IsProperMap (fun X : E => (path t) X.val) ∧
       ∀ X ∈ E, (path t) X 0 = X ∧ (∀ᶠ r : ℝ in atBot, (path t) X r ∈ C) ∧
         (v a i₀ ≠ 0 → IsProperMap (fun r : Iic (0 : ℝ) => (path t) X r)) := by
   refine ⟨(isProperMap_backwardPath_closure_admissibleBackwardDomain _ _ _ _ W S C).comp
     (Topology.IsClosedEmbedding.inclusion hsub
-      (hE.isClosed.preimage continuous_subtype_val)).isProperMap, fun X hX => ?_⟩
+      (hE.preimage continuous_subtype_val)).isProperMap, fun X hX => ?_⟩
   have hlim := hsub hX
   refine ⟨backwardPath_apply_zero _ _ _
     (backwardTime_nonneg_of_mem_closure_admissibleBackwardDomain _ _ _ _ W S C hlim),
@@ -195,7 +205,7 @@ include hD
 
 /-- The common inclusion family for every surviving history of the finite path
 inventory, using its complete geometric admission domain. -/
-def pathDecoratedFamily : FiniteSemilinearFamily h h Labels :=
+@[expose] def pathDecoratedFamily : FiniteSemilinearFamily h h Labels :=
   FiniteSemilinearFamily.ofDomains (fun t => D t)
     hD
 
@@ -280,6 +290,18 @@ def pathDecoratedChartEquiv {κ : Labels → Type*} {B : ∀ t, κ t → Set V}
     (hD := hD)
     hdisj hcover).trans (Equiv.sigmaCongrRight fun X => e X)
 
+/-- The ray parameterization is the chart parameterization of the family fibers followed by
+the fiber comparison. -/
+theorem pathDecoratedChartEquiv_apply {κ : Labels → Type*} {B : ∀ t, κ t → Set V}
+    (hdisj : ∀ t, Pairwise fun j l => Disjoint (B t j) (B t l))
+    (hcover : ∀ t, ⋃ j, B t j = D t) (z : Σ t, Σ j, B t j) :
+    pathDecoratedChartEquiv T ℳ i₀ x s v ν ε c P W S C h hD hdisj hcover z =
+      ⟨(FiniteSemilinearFamily.ofDomainsChartEquiv (hD := hD) hdisj hcover z).1,
+        (e (FiniteSemilinearFamily.ofDomainsChartEquiv (hD := hD) hdisj hcover z).1)
+          (FiniteSemilinearFamily.ofDomainsChartEquiv (hD := hD) hdisj hcover z).2⟩ := by
+  simp only [pathDecoratedChartEquiv, Equiv.trans_apply]
+  rfl
+
 /-- The ray parameterization preserves the endpoint. -/
 @[simp]
 theorem pathDecoratedChartEquiv_apply_fst {κ : Labels → Type*} {B : ∀ t, κ t → Set V}
@@ -315,11 +337,8 @@ theorem pathDecoratedChartEquiv_apply_path {κ : Labels → Type*} {B : ∀ t, �
     FiniteSemilinearFamily.ofDomainsChartEquiv_apply_fst _ hdisj hcover z
   have hp := pathDecoratedFamilyFiberEquiv_path T ℳ i₀ x s v ν ε c P W S C h hD
     z'.1 z'.2
-  -- `pathDecoratedChartEquiv` unfolds to `ofDomainsChartEquiv` followed by
-  -- `Equiv.sigmaCongrRight` of the fiber equivalences, so `hp` holds at `z` by `rfl`.
-  change (pathDecoratedChartEquiv T ℳ i₀ x s v ν ε c P W S C h hD hdisj hcover
-    z).2.2.2.ray.toContinuousMap = (path z'.2.1) z'.1 at hp
-  rw [hp, hz', hz'X]
+  rw [pathDecoratedChartEquiv_apply]
+  exact hp.trans (by rw [hz', hz'X])
 
 /-- The ray parameterization preserves the entire final decoration. -/
 @[simp↓]
@@ -396,19 +415,16 @@ theorem exists_pathDecoratedFamily_closedCharts :
           ∀ z, (⟨(E z).2.1, (E z).2.2.1⟩ : Labels) = z.1 := by
   let hD := fun t : Labels => isRationalSemilinear_pathDecoratedDomain
     i₀ ν c P W S C h w hν hP hW hS hC t.1.val t.2.val
-  obtain ⟨κ, hκ, A, hA, hdisj, hcover, E, hendpoint, hlabel⟩ :=
+  obtain ⟨κ, hκ, A, hA, hdisj, hcover, -⟩ :=
     FiniteSemilinearFamily.exists_ofDomains_polyhedralCharts (fun t : Labels => D t) hD
   refine ⟨κ, hκ, A, ?_, hdisj, hcover,
-    E.trans (Equiv.sigmaCongrRight fun X =>
-      pathDecoratedFamilyFiberEquiv T ℳ i₀ x s vel ν ε c P W S C h hD X),
-    hendpoint, ?_⟩
-  · intro t j
-    obtain ⟨hne, hpoly, hlc, hsub⟩ := hA t j
-    exact ⟨hne, hpoly, hlc, hsub, hpoly.isClosed.isProperMap_subtypeVal,
-      pathDecoratedType_closedChart T ℳ i₀ x s vel ν ε c P W S C h hC t hpoly hsub⟩
-  · intro z
-    exact (pathDecoratedFamilyFiberEquiv_type T ℳ i₀ x s vel ν ε c P W S C
-      h hD (E z).1 (E z).2).trans (hlabel z)
+    pathDecoratedChartEquiv T ℳ i₀ x s vel ν ε c P W S C h hD hdisj hcover,
+    pathDecoratedChartEquiv_apply_fst T ℳ i₀ x s vel ν ε c P W S C h hD hdisj hcover,
+    pathDecoratedChartEquiv_apply_type T ℳ i₀ x s vel ν ε c P W S C h hD hdisj hcover⟩
+  intro t j
+  obtain ⟨hne, hpoly, hlc, hsub⟩ := hA t j
+  exact ⟨hne, hpoly, hlc, hsub, hpoly.isClosed.isProperMap_subtypeVal,
+    pathDecoratedType_closedChart T ℳ i₀ x s vel ν ε c P W S C h hC t hpoly.isClosed hsub⟩
 
 end Integral
 

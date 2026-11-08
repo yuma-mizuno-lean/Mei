@@ -100,7 +100,7 @@ variable (hD : ∀ t : PathDecoratedType T ℳ i₀ x s v ν ε, IsRationalSemil
     (Path.reverseArrowLabels c t.1.val) (Path.Degrees.reverseVertexLabels v i₀ t.1.val t.2.val)
     (Path.reverseArrowLabels P t.1.val) W S C))
 
-include hC hD
+include hC
 
 /-- Two subdivisions of the endpoint domains of the complete types have common closed
 polyhedral charts. Each new interior lies in one piece of each subdivision, and the
@@ -135,6 +135,8 @@ theorem exists_pathDecoratedFamily_common_closedCharts
         (∀ z, (e z).1 = z.2.2.val) ∧
           ∀ z, (⟨(e z).2.1, (e z).2.2.1⟩ : Labels) = z.1 := by
   classical
+  have hD (t : Labels) : IsRationalSemilinear h (D t) :=
+    (hAcover t) ▸ IsRationalSemilinear.iUnion (hA t)
   choose μ hμ E left right hE hdisj hleft hright using fun t =>
     IsRationalSemilinear.exists_common_polyhedralRefinement (hA t) (hB t) (hAdisj t) (hBdisj t)
       ((hAcover t).trans (hBcover t).symm)
@@ -155,8 +157,9 @@ theorem exists_pathDecoratedFamily_common_closedCharts
     rw [← hAcover t]
     exact subset_iUnion (A t) (left t j)
   exact ⟨hne, hpoly, hlc, hsub, hclosure, hsubD, hpoly.isClosed.isProperMap_subtypeVal,
-    pathDecoratedType_closedChart T ℳ i₀ x s v ν ε c P W S C h hC t hpoly hsubD⟩
+    pathDecoratedType_closedChart T ℳ i₀ x s v ν ε c P W S C h hC t hpoly.isClosed hsubD⟩
 
+include hD in
 /-- A finite overlapping cover of the endpoint space has closed polyhedral charts, indexed by
 the complete types, that are subordinate to it. Their interiors partition each type domain,
 each lies in or misses every patch, and those inside a patch exhaust the type's restriction to
@@ -196,7 +199,7 @@ theorem exists_pathDecoratedFamily_cover_closedCharts
   obtain ⟨hne, hpoly, -, hlc, hsub, hclosure⟩ := hB t j
   have hsubD : B t j ⊆ closure (D t) := hclosure.trans (closure_mono inter_subset_left)
   exact ⟨hne, hpoly, hlc, hsub, hclosure, hsubD, hpoly.isClosed.isProperMap_subtypeVal,
-    pathDecoratedType_closedChart T ℳ i₀ x s v ν ε c P W S C h hC t hpoly hsubD⟩
+    pathDecoratedType_closedChart T ℳ i₀ x s v ν ε c P W S C h hC t hpoly.isClosed hsubD⟩
 
 end Rational
 

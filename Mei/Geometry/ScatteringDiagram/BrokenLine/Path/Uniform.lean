@@ -68,47 +68,21 @@ theorem pathDecoratedEvaluation_eq_sum_homogeneousHistory (x : ℳ a i₀) (X : 
         if (∀ j, N(p.val, d) j) ∧ X ∈ D(p.val, d)
         then p.val.homogeneousHistory T ℳ d x else 0 := by
   classical
-  let : ∀ p : (s : Type _),
-      Fintype (PathDecoratedRay T ℳ i₀ x v ν ε c P W S C p.val X) :=
-    fun _ => Fintype.ofFinite _
-  let := Fintype.ofFinite (Σ p : (s : Type _),
-    PathDecoratedRay T ℳ i₀ x v ν ε c P W S C p.val X)
-  rw [pathDecoratedEvaluation_def]
-  dsimp only
-  trans ∑ p : (s : Type _),
-    ∑ r : PathDecoratedRay T ℳ i₀ x v ν ε c P W S C p.val X, r.decoration
-  · -- The evaluation uses `Fintype.ofFinite`, while the iterated sum uses the
-    -- dependent-sum instance. Both enumerate the same finite type.
-    convert Fintype.sum_sigma (fun r : Σ p : (s : Type _),
-      PathDecoratedRay T ℳ i₀ x v ν ε c P W S C p.val X => r.2.decoration) using 1
-    congr 1
-    ext r
-    simp
+  rw [pathDecoratedEvaluation_eq_sum_support]
   apply Finset.sum_congr rfl
   intro p _
-  let e := pathDecoratedRayFiberEquiv T ℳ i₀ x v ν ε c P W S C p.val X
-  trans ∑ d : {d : (pathDecoratedHistorySupport T ℳ i₀ x v ν ε p.val : Type _) //
-      X ∈ D(p.val, d.val)}, p.val.homogeneousHistory T ℳ d.val.val x
-  · exact Fintype.sum_equiv e _ _ fun r => by
-      rw [PathDecoratedRay.decoration_def, pathDecoratedRayFiberEquiv_history]
-  · trans ∑ d : (pathDecoratedHistorySupport T ℳ i₀ x v ν ε p.val : Type _),
-      if X ∈ D(p.val, d.val) then p.val.homogeneousHistory T ℳ d.val x else 0
-    · rw [← Finset.sum_filter]
-      exact (Finset.sum_subtype (Finset.univ.filter fun d :
-          (pathDecoratedHistorySupport T ℳ i₀ x v ν ε p.val : Type _) => X ∈ D(p.val, d.val))
-        (by simp) (fun d => p.val.homogeneousHistory T ℳ d.val x)).symm
-    · trans ∑ d ∈ pathDecoratedHistorySupport T ℳ i₀ x v ν ε p.val,
-        if X ∈ D(p.val, d) then p.val.homogeneousHistory T ℳ d x else 0
-      · exact Finset.sum_coe_sort (pathDecoratedHistorySupport T ℳ i₀ x v ν ε p.val)
-          (fun d => if X ∈ D(p.val, d) then p.val.homogeneousHistory T ℳ d x else 0)
-      · have hs : pathDecoratedHistorySupport T ℳ i₀ x v ν ε p.val =
-            (p.val.historySupport T ℳ (x : M a)).filter (fun d => ∀ j, N(p.val, d) j) := by
-          ext d
-          simp only [mem_pathDecoratedHistorySupport, Finset.mem_filter, Path.mem_historySupport]
-        rw [hs, Finset.sum_filter]
-        apply Finset.sum_congr rfl
-        intro d _
-        exact (ite_and _ _ _ _).symm
+  trans ∑ d ∈ pathDecoratedHistorySupport T ℳ i₀ x v ν ε p.val,
+    if X ∈ D(p.val, d) then p.val.homogeneousHistory T ℳ d x else 0
+  · exact Finset.sum_coe_sort (pathDecoratedHistorySupport T ℳ i₀ x v ν ε p.val)
+      (fun d => if X ∈ D(p.val, d) then p.val.homogeneousHistory T ℳ d x else 0)
+  · have hs : pathDecoratedHistorySupport T ℳ i₀ x v ν ε p.val =
+        (p.val.historySupport T ℳ (x : M a)).filter (fun d => ∀ j, N(p.val, d) j) := by
+      ext d
+      simp only [mem_pathDecoratedHistorySupport, Finset.mem_filter, Path.mem_historySupport]
+    rw [hs, Finset.sum_filter]
+    apply Finset.sum_congr rfl
+    intro d _
+    exact (ite_and _ _ _ _).symm
 
 variable [AddCommMonoid E] [Module R E] (α : E →ₗ[R] ℳ a i₀)
 
