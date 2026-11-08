@@ -66,6 +66,21 @@ private theorem homogeneousHistory_eq_reverseLabels (i₀ : ι) {b : Q} (p : Pat
     rw [Mei.homogeneousHistory_succ_apply, homogeneousHistory_cons_apply, ih d.1]
     rfl
 
+/-- The terminal decoration is the final component of the path history. -/
+@[simp]
+theorem reverseHomogeneousDecorations_zero (i₀ : ι) (x : M) {b : Q} (p : Path a b)
+    (d : p.Degrees (fun _ => ι)) :
+    p.reverseHomogeneousDecorations T ℳ i₀ x d 0 = p.homogeneousHistory T (fun _ => ℳ) d x := by
+  simp only [reverseHomogeneousDecorations, Mei.homogeneousHistoryStage_zero]
+  exact (homogeneousHistory_eq_reverseLabels T ℳ i₀ p d x).symm
+
+/-- The incoming decoration is the original input. -/
+@[simp]
+theorem reverseHomogeneousDecorations_last (i₀ : ι) (x : M) {b : Q} (p : Path a b)
+    (d : p.Degrees (fun _ => ι)) :
+    p.reverseHomogeneousDecorations T ℳ i₀ x d (Fin.last p.length) = x := by
+  simp only [reverseHomogeneousDecorations, Mei.homogeneousHistoryStage_last, LinearMap.id_apply]
+
 /-- Every decoration lies in the degree recorded on its segment. -/
 theorem reverseHomogeneousDecorations_mem (i₀ : ι) {x : M} (hx : x ∈ ℳ i₀)
     {b : Q} (p : Path a b) (d : p.Degrees (fun _ => ι)) (j : Fin (p.length + 1)) :
