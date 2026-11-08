@@ -71,4 +71,17 @@ theorem reverseVertexLabels_comp (v : ∀ q, ι q → A) (g : A → B) (i₀ : �
     funext j
     exact Fin.cases rfl (fun k => congrFun (reverseVertexLabels_comp v g i₀ p d.1) k) j
 
+/-- Regrading a history preserves all its segment labels when the vertex labels
+intertwine the degree maps, including the incoming segment. -/
+theorem reverseVertexLabels_map {κ : Q → Type*} (σ : ∀ q, ι q → κ q)
+    (v : ∀ q, ι q → A) (w : ∀ q, κ q → A) (hv : ∀ q d, w q (σ q d) = v q d)
+    (i₀ : ι a) :
+    ∀ {b : Q} (p : Path a b) (d : p.Degrees ι),
+      reverseVertexLabels w (σ a i₀) p (map σ p d) = reverseVertexLabels v i₀ p d
+  | _, nil, _ => by simp [hv]
+  | _, cons p e, d => by
+    obtain ⟨d, i⟩ := d
+    rw [map_cons, reverseVertexLabels_cons, reverseVertexLabels_cons]
+    exact congrArg₂ Fin.cons (hv _ _) (reverseVertexLabels_map σ v w hv i₀ p d)
+
 end Quiver.Path.Degrees
