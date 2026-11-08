@@ -85,7 +85,6 @@ structure Realization (s : ConstantIncomingSection D) where
 def Realization.path {s : ConstantIncomingSection D} (r : s.Realization) :
     Iic (0 : ℝ) → B := fun _ => r.endpoint
 
-@[simp]
 theorem Realization.path_apply (r : s.Realization) (t : Iic (0 : ℝ)) : r.path t = r.endpoint := by
   simp [Realization.path]
 
@@ -102,7 +101,7 @@ theorem Realization.path_mem_chart_source (r : s.Realization) (t : Iic (0 : ℝ)
 theorem Realization.chart_path_sub_velocity (r : s.Realization) (t t' : Iic (0 : ℝ)) :
     D.chart r.state (r.path t) = D.chart r.state (r.path t') -
       ((t : ℝ) - t') • D.momentum r.state (s.degree r.state) := by
-  simp [s.momentum_eq_zero]
+  simp [Realization.path_apply, s.momentum_eq_zero]
 
 /-- The weighted evaluation of a constant realization is the section's coefficient in its
 chamber. -/
@@ -110,7 +109,6 @@ def Realization.weightedEvaluation (r : s.Realization) : D.coefficient r.state :
   s.weightedEvaluation r.state
 
 /-- Realize a constant incoming section by the constant path at an admitted endpoint. -/
-@[expose]
 def stationary (u : D.State) (Q : B) (hQ : Q ∈ D.region u)
     (hF : Q ∉ D.faceSupport) (hS : Q ∉ D.singular) : s.Realization where
   state := u
@@ -119,17 +117,31 @@ def stationary (u : D.State) (Q : B) (hQ : Q ∈ D.region u)
   endpoint_off_faces := hF
   endpoint_not_mem_singular := hS
 
+/-- The stationary realization lies in the prescribed chamber. -/
+@[simp]
+theorem state_stationary (u : D.State) (Q : B) (hQ : Q ∈ D.region u)
+    (hF : Q ∉ D.faceSupport) (hS : Q ∉ D.singular) :
+    (s.stationary u Q hQ hF hS).state = u := (rfl)
+
+/-- The stationary realization has the prescribed endpoint. -/
+@[simp]
+theorem endpoint_stationary (u : D.State) (Q : B) (hQ : Q ∈ D.region u)
+    (hF : Q ∉ D.faceSupport) (hS : Q ∉ D.singular) :
+    (s.stationary u Q hQ hF hS).endpoint = Q := (rfl)
+
 /-- The stationary constructor gives the prescribed constant path. -/
+@[simp]
 theorem path_stationary (u : D.State) (Q : B) (hQ : Q ∈ D.region u)
     (hF : Q ∉ D.faceSupport) (hS : Q ∉ D.singular) (t : Iic (0 : ℝ)) :
     (s.stationary u Q hQ hF hS).path t = Q := by
-  simp [stationary]
+  simp only [Realization.path_apply, endpoint_stationary]
 
 @[simp]
 theorem weightedEvaluation_stationary (u : D.State) (Q : B) (hQ : Q ∈ D.region u)
     (hF : Q ∉ D.faceSupport) (hS : Q ∉ D.singular) :
-    (s.stationary u Q hQ hF hS).weightedEvaluation = s.decoration u := by
-  change s.weightedEvaluation u = s.decoration u
+    (state_stationary s u Q hQ hF hS) ▸
+      (s.stationary u Q hQ hF hS).weightedEvaluation = s.decoration u := by
+  unfold Realization.weightedEvaluation weightedEvaluation
   rfl
 
 /-- In a presentation without faces, any zero-momentum family of homogeneous coefficients is a
@@ -144,6 +156,23 @@ def ofNoFaces (hF : ∀ u v, IsEmpty (D.Face u v)) (degree : ∀ u, D.Degree u)
   momentum_eq_zero := momentum_eq_zero
   admissible := fun {u v} => (hF u v).elim
   matching := fun {u v} => (hF u v).elim
+
+/-- The face-free constructor has the prescribed chamber degrees. -/
+@[simp]
+theorem degree_ofNoFaces (hF : ∀ u v, IsEmpty (D.Face u v))
+    (degree : ∀ u, D.Degree u) (decoration : ∀ u, D.coefficient u)
+    (decoration_mem : ∀ u, decoration u ∈ D.grading u (degree u))
+    (momentum_eq_zero : ∀ u, D.momentum u (degree u) = 0) (u : D.State) :
+    (ofNoFaces hF degree decoration decoration_mem momentum_eq_zero).degree u = degree u := (rfl)
+
+/-- The face-free constructor has the prescribed chamber decorations. -/
+@[simp]
+theorem decoration_ofNoFaces (hF : ∀ u v, IsEmpty (D.Face u v))
+    (degree : ∀ u, D.Degree u) (decoration : ∀ u, D.coefficient u)
+    (decoration_mem : ∀ u, decoration u ∈ D.grading u (degree u))
+    (momentum_eq_zero : ∀ u, D.momentum u (degree u) = 0) (u : D.State) :
+    (ofNoFaces hF degree decoration decoration_mem momentum_eq_zero).decoration u =
+      decoration u := (rfl)
 
 /-- Without faces, stationary weighted evaluation at a chamber is the prescribed coefficient. -/
 @[simp]
