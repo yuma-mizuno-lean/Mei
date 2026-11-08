@@ -158,10 +158,6 @@ theorem value_restrict_eq_sub_mul_of_forall_lt (θ : H) (u : (𝒜 0)ˣ) (z : A)
     have := hν 0
     rw [hν0] at this
     exact_mod_cast this.symm
-  have hw0 : w 0 = 1 := by
-    have := hν 0
-    rw [hν0] at this
-    exact_mod_cast this.symm
   have heq : s = hyperplaneSection hf hf0 θ (θ • (a : A)) :=
     eq_hyperplaneSection_of_value_eq_cutoffDecoratedEvaluation 𝒜 hf0 θ u z hθ hu hz hn w hw
       hν hν0 hε hs
