@@ -309,6 +309,7 @@ theorem pathDecoratedChartEquiv_apply_fst {κ : Labels → Type*} {B : ∀ t, κ
   FiniteSemilinearFamily.ofDomainsChartEquiv_apply_fst _ hdisj hcover z
 
 /-- The ray parameterization preserves the complete type of each chart point. -/
+@[simp]
 theorem pathDecoratedChartEquiv_apply_type {κ : Labels → Type*} {B : ∀ t, κ t → Set V}
     (hdisj : ∀ t, Pairwise fun j l => Disjoint (B t j) (B t l))
     (hcover : ∀ t, ⋃ j, B t j = D t) (z : Σ t, Σ j, B t j) :
@@ -319,6 +320,7 @@ theorem pathDecoratedChartEquiv_apply_type {κ : Labels → Type*} {B : ∀ t, �
     (FiniteSemilinearFamily.ofDomainsChartEquiv_apply_snd_fst _ hdisj hcover z)
 
 /-- The ray parameterization preserves the entire actual path. -/
+@[simp↓]
 theorem pathDecoratedChartEquiv_apply_path {κ : Labels → Type*} {B : ∀ t, κ t → Set V}
     (hdisj : ∀ t, Pairwise fun j l => Disjoint (B t j) (B t l))
     (hcover : ∀ t, ⋃ j, B t j = D t) (z : Σ t, Σ j, B t j) :
@@ -338,6 +340,7 @@ theorem pathDecoratedChartEquiv_apply_path {κ : Labels → Type*} {B : ∀ t, �
   rw [hp, hz', hz'X]
 
 /-- The ray parameterization preserves the entire final decoration. -/
+@[simp↓]
 theorem pathDecoratedChartEquiv_apply_decoration {κ : Labels → Type*} {B : ∀ t, κ t → Set V}
     (hdisj : ∀ t, Pairwise fun j l => Disjoint (B t j) (B t l))
     (hcover : ∀ t, ⋃ j, B t j = D t) (z : Σ t, Σ j, B t j) :
