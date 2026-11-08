@@ -18,11 +18,12 @@ an encounter that fixes the whole decoration, does not change the broken line it
 The coefficient comparison `decoratedRayCoefficientEquiv` commutes with both operations.
 
 For restoration (`decoratedRayCoefficientEquiv_insertIdentityEncounter`), the comparison for
-the subdivided itinerary sends the restored source ray to a ray with the history, path, incoming
-tail, encounter parameters and segment decorations of the restored image ray. The geometric
-conditions for restoring an encounter are the same on the source ray and on its image
-(`insertIdentityEncounter_conditions_iff`), so the restoration is available on one side exactly
-when it is on the other. For deletion (`decoratedRayCoefficientEquiv_removeEncounter`), the
+the subdivided itinerary sends the restored source ray to the canonical restored image ray.
+The geometric conditions for restoring an encounter are the same on the source ray and on its
+image (`insertIdentityEncounter_conditions_iff`), so the restoration is available on one side
+exactly when it is on the other. The conclusion is heterogeneous because the source and image
+crossing signs occur in the respective ray types and need only be propositionally equal. For
+deletion (`decoratedRayCoefficientEquiv_removeEncounter`), the
 comparison for the shortened itinerary sends the shortened source ray to the shortened image ray.
 
 No injectivity of the coefficient map is needed, and unchanged-degree encounters and
@@ -67,6 +68,14 @@ theorem intertwines_insertNth_id (i : Fin (n + 1)) :
   intro j
   cases j using Fin.succAboveCases i <;> simp [hT]
 
+private theorem decoratedAdmissibleRay_heq_of_history_eq
+    {ε' : Fin n → SignType}
+    {ζ : DecoratedAdmissibleRay ℳ T p₀ a v f c ε P W S C Q}
+    {η : DecoratedAdmissibleRay ℳ T p₀ a v f c ε' P W S C Q}
+    (hε : ε = ε') (h : ζ.1.val = η.1.val) : ζ ≍ η := by
+  subst ε'
+  exact heq_of_eq (DecoratedAdmissibleRay.ext_history h)
+
 variable (β : {β : DecoratedAdmissibleRay ℳ T p₀ a v f c ε P W S C Q //
       r (β.decoration 0) ≠ 0})
   (ρ : DecoratedAdmissibleRay 𝓝 U (σ p₀) ⟨r a, hr p₀ a a.property⟩ w f c ε P W S C Q)
@@ -100,42 +109,51 @@ variable (hbefore : t < β.val.2.parameter i)
     (∀ j : Fin n, s ≠ β.val.2.parameter j.succ) → β.val.2.ray s ∉ H)
   (hoff : Q ∉ H)
 
-include hρ in
+include hσ hρ in
 /-- The comparison for the subdivided itinerary sends the ray with a restored identity
-encounter to the ray with the restored data of the image: the history, the path and
-incoming tail, the encounter parameters with the restored time inserted, and the segment
-decorations, repeated across the restored encounter, are those of the restored image ray. -/
-theorem decoratedRayCoefficientEquiv_insertIdentityEncounter
-    (s : DecoratedAdmissibleRay 𝓝 (i.insertNth LinearMap.id U) (σ p₀) ⟨r a, hr p₀ a a.property⟩ w
-      (i.insertNth m f) (i.insertNth b c)
-      (i.insertNth (SignType.sign (m (v (Fin.snoc (α := fun _ => Γ) β.val.1.val p₀ i)))) ε)
-      (i.insertNth H P) (Sum.elim W fun _ : Unit => H) S C Q)
-    (hs : decoratedRayCoefficientEquiv ℳ 𝓝 r σ hr hσ (i.insertNth LinearMap.id T)
+encounter to the restored image ray. This is a heterogeneous equality because the source and
+image crossing signs, although equal, need not be definitionally equal. -/
+theorem decoratedRayCoefficientEquiv_insertIdentityEncounter :
+    decoratedRayCoefficientEquiv ℳ 𝓝 r σ hr hσ (i.insertNth LinearMap.id T)
       (i.insertNth LinearMap.id U) (intertwines_insertNth_id r T U hT i) p₀ a v w hv
       (i.insertNth m f) (i.insertNth b c)
       (i.insertNth (SignType.sign (m (v (Fin.snoc (α := fun _ => Γ) β.val.1.val p₀ i)))) ε)
       (i.insertNth H P) (Sum.elim W fun _ : Unit => H) S C Q
       ⟨β.val.insertIdentityEncounter i t hbefore hafter m b H htrans hheight hinc havoid hoff,
         by rw [DecoratedAdmissibleRay.decoration_zero_insertIdentityEncounter]
-           exact β.property⟩ = s) :
-    s.1.val = i.insertNth (α := fun _ => Δ) (Fin.snoc (α := fun _ => Δ) ρ.1.val (σ p₀) i)
-        ρ.1.val ∧
-      s.2.ray = ρ.2.ray ∧
-      s.2.parameter = i.succ.insertNth (α := fun _ => ℝ) t ρ.2.parameter ∧
-      ∀ j, s.decoration (i.castSucc.succAbove j) = ρ.decoration j := by
-  subst hρ hs
-  refine ⟨?_, ?_, ?_, fun j => ?_⟩
-  · have hsnoc := congrFun (Fin.comp_snoc σ β.val.1.val p₀) i
-    simp only [decoratedRayCoefficientEquiv_history,
-      DecoratedAdmissibleRay.history_insertIdentityEncounter, Fin.comp_insertNth,
-      Function.comp_apply] at hsnoc ⊢
-    rw [hsnoc]
-  · simp only [decoratedRayCoefficientEquiv_ray,
-      DecoratedAdmissibleRay.ray_insertIdentityEncounter]
-  · simp only [decoratedRayCoefficientEquiv_parameter,
-      DecoratedAdmissibleRay.parameter_insertIdentityEncounter]
-  · simp only [decoratedRayCoefficientEquiv_decoration,
-      DecoratedAdmissibleRay.decoration_insertIdentityEncounter]
+           exact β.property⟩ ≍
+    ρ.insertIdentityEncounter i t
+      (by rw [← hρ, decoratedRayCoefficientEquiv_parameter]; exact hbefore)
+      (by rw [← hρ, decoratedRayCoefficientEquiv_parameter]; exact hafter)
+      m b H
+      ((insertIdentityEncounter_conditions_iff ℳ 𝓝 r σ hr hσ T U hT p₀ a v w hv f c ε P W S C Q
+        β ρ hρ i t m b H).mpr ⟨htrans, hheight, hinc, havoid, hoff⟩).1
+      ((insertIdentityEncounter_conditions_iff ℳ 𝓝 r σ hr hσ T U hT p₀ a v w hv f c ε P W S C Q
+        β ρ hρ i t m b H).mpr ⟨htrans, hheight, hinc, havoid, hoff⟩).2.1
+      ((insertIdentityEncounter_conditions_iff ℳ 𝓝 r σ hr hσ T U hT p₀ a v w hv f c ε P W S C Q
+        β ρ hρ i t m b H).mpr ⟨htrans, hheight, hinc, havoid, hoff⟩).2.2.1
+      ((insertIdentityEncounter_conditions_iff ℳ 𝓝 r σ hr hσ T U hT p₀ a v w hv f c ε P W S C Q
+        β ρ hρ i t m b H).mpr ⟨htrans, hheight, hinc, havoid, hoff⟩).2.2.2.1
+      ((insertIdentityEncounter_conditions_iff ℳ 𝓝 r σ hr hσ T U hT p₀ a v w hv f c ε P W S C Q
+        β ρ hρ i t m b H).mpr ⟨htrans, hheight, hinc, havoid, hoff⟩).2.2.2.2 := by
+  subst hρ
+  have hvel : w (Fin.snoc (α := fun _ => Δ)
+      (decoratedRayCoefficientEquiv ℳ 𝓝 r σ hr hσ T U hT p₀ a v w hv f c ε P W S C Q β).1.val
+      (σ p₀) i) = v (Fin.snoc (α := fun _ => Γ) β.val.1.val p₀ i) := by
+    rw [hv, decoratedRayCoefficientEquiv_history, ← Function.comp_apply (f := σ), Fin.comp_snoc]
+  refine decoratedAdmissibleRay_heq_of_history_eq (ℳ := 𝓝)
+    (T := i.insertNth LinearMap.id U) (p₀ := σ p₀)
+    (a := ⟨r a, hr p₀ a a.property⟩) (v := w) (f := i.insertNth m f)
+    (c := i.insertNth b c) (ε := i.insertNth (SignType.sign
+      (m (v (Fin.snoc (α := fun _ => Γ) β.val.1.val p₀ i)))) ε)
+    (P := i.insertNth H P) (W := Sum.elim W fun _ : Unit => H) (S := S) (C := C) (Q := Q)
+    (congrArg (fun s => i.insertNth (α := fun _ => SignType) s ε)
+      (congrArg (fun s => SignType.sign (m s)) hvel.symm)) ?_
+  have hsnoc := congrFun (Fin.comp_snoc σ β.val.1.val p₀) i
+  simp only [decoratedRayCoefficientEquiv_history,
+    DecoratedAdmissibleRay.history_insertIdentityEncounter, Fin.comp_insertNth,
+    Function.comp_apply] at hsnoc ⊢
+  rw [hsnoc]
 
 end Insertion
 
