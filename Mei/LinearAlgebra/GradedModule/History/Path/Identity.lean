@@ -41,6 +41,21 @@ def degreesErase (p : Path a b) (q : Path b c) (e : b ⟶ b)
   (degreesComp (ι := ι) p q).symm
     ((degreesComp (ι := ι) (p.cons e) q d).1.1, (degreesComp (ι := ι) (p.cons e) q d).2)
 
+/-- Erasing a final loop drops the last selected degree. -/
+@[simp]
+theorem degreesErase_nil (p : Path a b) (e : b ⟶ b) (d : (p.cons e).Degrees ι) :
+    degreesErase p nil e d = d.1 := by
+  unfold degreesErase
+  rw [degreesComp_nil (ι := ι) (p.cons e) d, degreesComp_symm_nil]
+
+/-- Erasing an earlier loop retains the last selected degree. -/
+@[simp]
+theorem degreesErase_cons {f : Q} (p : Path a b) (e : b ⟶ b)
+    (q : Path b c) (g : c ⟶ f) (d : ((p.cons e).comp q).Degrees ι) (i : ι f) :
+    degreesErase p (q.cons g) e (d, i) = (degreesErase p q e d, i) := by
+  unfold degreesErase
+  rw [degreesComp_cons (ι := ι) (p.cons e) q g d i, degreesComp_symm_cons]
+
 /-- The inserted history repeats precisely the terminal degree of the prefix. -/
 -- Use this dependent splitting formula with `rw`; simp cannot infer its degree family.
 theorem degreesComp_degreesRepeat (p : Path a b) (q : Path b c) (e : b ⟶ b)
