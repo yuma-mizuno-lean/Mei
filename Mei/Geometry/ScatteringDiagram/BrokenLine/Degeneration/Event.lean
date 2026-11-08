@@ -56,12 +56,6 @@ local notation "D" => domain offset P W S C t
 
 include hW hdir hspan hS
 
-omit [NormedAddCommGroup V] [NormedSpace ℝ V] hW hdir hspan hS [Finite J] [Finite K] in
-private theorem wallEvent_support_subset (e : WallEvent J) :
-    e.support W ⊆ W (wall e) :=
-  e.support_subset W e.1.property.choose_spec
-
-
 omit hdir hspan hS [Finite K] in
 private theorem eventually_mem_wallEvent_support_of_mem_closure (e : WallEvent J)
     {x : V} (hx : x ∈ closure (e.support W)) (hreg : x ∉ singularSupport W) :

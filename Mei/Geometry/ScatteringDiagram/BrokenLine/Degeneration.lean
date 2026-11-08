@@ -82,12 +82,10 @@ theorem path_parameter_mem_closure {Q : V} (hQ : Q ∈ closure D)
     (j : Fin t.itinerary.val.length) :
     t.path c Q (backwardParameter F b (fun j => u j.castSucc) j.succ Q) ∈ closure (A j) := by
   rw [path_def, backwardPath_apply_parameter F b u (t.backwardTime_nonneg c P W S C hQ)]
-  exact closure_minimal
-    (t := (backwardPoint F b (fun j => u j.castSucc) j.succ) ⁻¹' closure (A j))
-    (fun Y hY => subset_closure (((mem_backwardDomain ..).mp
-      (admissibleBackwardDomain_subset_backwardDomain _ _ _ _ _ _ _
-        ((t.mem_domain c P W S C Y).mp hY))) j).2)
-    (isClosed_closure.preimage (backwardPoint F b _ j.succ).continuous) hQ
+  exact Set.MapsTo.closure (fun Y hY => (((mem_backwardDomain ..).mp
+    (admissibleBackwardDomain_subset_backwardDomain _ _ _ _ _ _ _
+      ((t.mem_domain c P W S C Y).mp hY))) j).2)
+    (backwardPoint F b _ j.succ).continuous hQ
 
 /-- Every recorded encounter remains on its selected closed support, even when
 its time coincides with another encounter or with the endpoint. -/
