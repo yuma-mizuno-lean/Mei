@@ -76,9 +76,7 @@ theorem reverseHomogeneousDecorations_mem (i₀ : ι) {x : M} (hx : x ∈ ℳ i�
   have hs := Fin.snoc_init_self
     (q := Degrees.reverseVertexLabels (fun _ i => i) i₀ p d)
   rw [Degrees.reverseVertexLabels_last] at hs
-  change Mei.homogeneousHistoryStage ℳ (p.reverseArrowLabels T)
-    (Fin.init (Degrees.reverseVertexLabels (fun _ i => i) i₀ p d)) j x ∈
-    ℳ (Degrees.reverseVertexLabels (fun _ i => i) i₀ p d j)
+  simp only [reverseHomogeneousDecorations]
   rw [← hs]
   simpa only [Fin.init_snoc] using h
 
