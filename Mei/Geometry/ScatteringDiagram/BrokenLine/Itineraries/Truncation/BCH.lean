@@ -66,6 +66,22 @@ theorem transition_cutoffBCHRay_decoration_ne_zero_iff {k l : ℕ} (h : k ≤ l)
   rw [ne_eq, d.transition_eq_zero_iff_of_mem_shiftedQuotientGrading ℳ p h β.decoration_mem]
   simp only [β.decoration_ne_zero, false_or, not_lt]
 
+omit [Algebra ℚ R] in
+/-- Changing the cutoff regrades an original relative-degree-zero coefficient
+to the quotient class expected at the smaller cutoff. -/
+theorem regradeBase_shiftedQuotientGrading_transition {k l : ℕ} (h : k ≤ l)
+    (a : shiftedGrading ℳ d.monoid p 0) :
+    regradeBase (d.shiftedQuotientGrading ℳ p l).piece
+      (d.shiftedQuotientGrading ℳ p k).piece
+      ((d.shiftedFiltration ℳ p).transition h) (AddMonoidHom.id Γ)
+      (fun _ _ hx => d.transition_mem_shiftedQuotientGrading ℳ p h hx)
+      ⟨Submodule.Quotient.mk (a : shiftedSubmodule ℳ d.monoid p),
+        (d.mem_shiftedQuotientGrading_iff ℳ p).mpr ⟨a, a.property, rfl⟩⟩ =
+      ⟨Submodule.Quotient.mk (a : shiftedSubmodule ℳ d.monoid p),
+        (d.mem_shiftedQuotientGrading_iff ℳ p).mpr ⟨a, a.property, rfl⟩⟩ := by
+  apply Subtype.ext
+  rw [coe_regradeBase, ModuleFiltration.transition_mk]
+
 local notation "input_transition" => fun {k l : ℕ} (h : k ≤ l) =>
   d.regradeBase_shiftedQuotientGrading_transition ℳ p h a
 
