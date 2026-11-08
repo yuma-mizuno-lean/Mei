@@ -8,6 +8,9 @@ module
 public import Mei.LinearAlgebra.ModuleFiltration.Basis
 public import Mei.RingTheory.FilteredAlgebra.Module
 public import Mathlib.Algebra.MonoidAlgebra.Module
+public import Mathlib.RingTheory.Ideal.Maps
+public import Mei.Algebra.MonoidAlgebra.Grading
+public import Mathlib.RingTheory.GradedAlgebra.Homogeneous.Ideal
 
 /-!
 # The coefficient-ideal filtration of a monoid algebra
@@ -59,5 +62,31 @@ theorem coeffFiltration_submodule_eq_bot {r : ℕ} (hr : I ^ r = ⊥) :
   refine (Submodule.eq_bot_iff _).2 fun x hx => ?_
   refine AddMonoidAlgebra.ext (Finsupp.ext fun m => ?_)
   simpa [hr] using (mem_coeffFiltration_submodule (I := I) (M := M)).1 hx m
+
+/-- The coefficient filtration is the filtration by powers of the extended
+coefficient ideal, viewed as submodules over the coefficient ring. -/
+theorem coeffFiltration_submodule_eq_restrictScalars_map_pow [AddCommMonoid M] (k : ℕ) :
+    (coeffFiltration I M).submodule k =
+      ((I.map (algebraMap R (AddMonoidAlgebra R M))) ^ k).restrictScalars R := by
+  rw [← Ideal.map_pow, ← Ideal.smul_top_eq_map]
+  ext x
+  rw [mem_coeffFiltration_submodule,
+    (AddMonoidAlgebra.basis M R).mem_ideal_smul_top_iff_repr_mem]
+  -- The monoid basis represents elements by their coefficient functions.
+  rfl
+
+/-- Extending a scalar ideal to a monoid algebra gives an ideal homogeneous
+for the full exponent grading. No homogeneity condition on the scalar ideal
+or positivity condition on exponents is needed. -/
+theorem isHomogeneous_map_algebraMap_grade [AddCommMonoid M] [DecidableEq M] :
+    (I.map (algebraMap R (AddMonoidAlgebra R M))).IsHomogeneous (AddMonoidAlgebra.grade R) := by
+  intro q x hx
+  have hx' : x ∈ (coeffFiltration I M).submodule 1 := by
+    simpa only [coeffFiltration_submodule_eq_restrictScalars_map_pow, pow_one,
+      Submodule.restrictScalars_mem] using hx
+  have hq := ((mem_coeffFiltration_submodule (I := I) (M := M)).mp hx') q
+  have hm := (single_mem_coeffFiltration_submodule (I := I) (M := M) (m := q)).mpr hq
+  simpa only [coeffFiltration_submodule_eq_restrictScalars_map_pow, pow_one,
+    Submodule.restrictScalars_mem, AddMonoidAlgebra.coe_decompose_grade] using hm
 
 end Ideal

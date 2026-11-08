@@ -6,8 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.ScatteringDiagram.BrokenLine.DecoratedRay
-public import Mei.Geometry.Convex.Sweep.Encounter.Bound
-public import Mei.LinearAlgebra.ModuleFiltration.FiniteLength
+public import Mei.Geometry.ScatteringDiagram.BrokenLine.Filtration.Geometry
 
 /-!
 # Geometric encounter bounds for component filtrations
@@ -56,32 +55,17 @@ theorem encounter_count_le_of_filtration
     {r : ℕ} (hr : F.submodule r = ⊥) :
     n ≤ r * Nat.card J := by
   classical
-  obtain ⟨rank, hrank⟩ := Classical.axiomOfChoice fun j : Fin (n + 1) =>
-    F.exists_mem_notMem_succ hr (β.decoration_ne_zero j)
   let p := Fin.snoc (α := fun _ => Γ) β.1.val p₀
-  have hstep (j : Fin n) :
-      rank j.succ + w (wall j) (p j.succ) (p j.castSucc) ≤ rank j.castSucc := by
+  apply β.2.encounter_count_le_of_filtration (fun _ => F) β.decoration
+    β.decoration_ne_zero (fun j => w (wall j) (p j.succ) (p j.castSucc))
+    (fun j k hk => ?_) (fun j hj => (hstraight _ _ _ hj).symm) (fun _ => hr)
+  · rename_i j k hk
     have hmem : β.decoration j.succ ∈ ℳ (p j.succ) := by
       simpa only [decoration_def] using homogeneousHistoryStage_mem_snoc ℳ
         (fun j => T (wall j)) β.1.val p₀ a j.succ
-    have hm := hT (wall j) (p j.succ) (p j.castSucc) (rank j.succ)
-      (β.decoration j.succ) hmem (hrank j.succ).2.1
-    have hout : β.decoration j.castSucc ∈
-        F.submodule (rank j.succ + w (wall j) (p j.succ) (p j.castSucc)) := by
-      rw [β.decoration_castSucc]
-      simpa only [p, Fin.snoc_castSucc, homogeneousComponent_apply] using hm
-    by_contra h
-    exact (hrank j.castSucc).2.2
-      (F.antitone (by omega) hout)
-  have hanti : Antitone rank := Fin.antitone_iff_succ_le.mpr fun j =>
-    (Nat.le_add_right _ _).trans (hstep j)
-  obtain ⟨hpos, _, _⟩ := β.2.eq_backwardRay
-  apply Convex.encounter_count_le_of_antitone_rank f c wall (fun j => v (p j)) Q
-    hpos β.2.transverse rank hanti (hrank 0).1
-  intro j hj
-  have hz : w (wall j) (p j.succ) (p j.castSucc) = 0 := by
-    have := hstep j
-    omega
-  exact (hstraight _ _ _ hz).symm
+    have hm := hT (wall j) (p j.succ) (p j.castSucc) k
+      (β.decoration j.succ) hmem hk
+    rw [β.decoration_castSucc]
+    simpa only [p, Fin.snoc_castSucc, homogeneousComponent_apply] using hm
 
 end Mei.DecoratedAdmissibleRay
