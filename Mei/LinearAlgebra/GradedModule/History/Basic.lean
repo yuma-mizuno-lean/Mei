@@ -287,6 +287,32 @@ theorem homogeneousHistory_rel_of_ne_zero {n : ℕ}
   rw [homogeneousHistoryStage_castSucc_apply]
   exact congrArg Subtype.val hz
 
+omit [DecidableEq ι] in
+/-- If every nonzero component of every propagation map moves a degree by an element
+of an additive submonoid, then reading a surviving history backwards, any earlier
+degree differs from any later degree, including the incoming degree, by an element of
+that submonoid. -/
+theorem homogeneousHistory_snoc_sub_mem_of_le {ι' : Type*} [AddCommGroup ι']
+    {ℳ' : ι' → Submodule R M} [DecidableEq ι'] [DirectSum.Decomposition ℳ']
+    (N : AddSubmonoid ι') {n : ℕ} (T : Fin n → Module.End R M)
+    (hT : ∀ j p q (x : M), x ∈ ℳ' p → DirectSum.decompose ℳ' (T j x) q ≠ 0 → q - p ∈ N)
+    (r : Fin n → ι') (r₀ : ι') (a : ℳ' r₀) (hne : homogeneousHistory ℳ' T r a ≠ 0)
+    (i j : Fin (n + 1)) (hij : i ≤ j) :
+    Fin.snoc (α := fun _ => ι') r r₀ i - Fin.snoc (α := fun _ => ι') r r₀ j ∈ N := by
+  induction j using Fin.inductionOn with
+  | zero =>
+    have hi : i = 0 := le_antisymm hij (Fin.zero_le i)
+    subst i
+    simp
+  | succ j ih =>
+    by_cases he : i = j.succ
+    · subst i
+      simp
+    · have hle : i ≤ j.castSucc := Fin.le_castSucc_iff.mpr (lt_of_le_of_ne hij he)
+      have hstep := homogeneousHistory_rel_of_ne_zero ℳ' T (P := fun _ q p => q - p ∈ N)
+        (fun j p q x hx hq => hT j p q x hx hq) r r₀ a hne j
+      simpa only [Fin.snoc_castSucc, sub_add_sub_cancel] using N.add_mem (ih hle) hstep
+
 section Path
 
 open Quiver

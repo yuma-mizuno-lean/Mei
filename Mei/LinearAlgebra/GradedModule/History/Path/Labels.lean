@@ -176,3 +176,35 @@ theorem homogeneousHistory_eq_reverseLabels (i₀ : ι) {b : Q} (p : Path a b)
     rfl
 
 end Quiver.Path
+
+namespace Quiver.SingleObj
+
+variable {α ι A : Type*}
+
+/-- The backward segment labels of a sequence history are the labels of the history
+followed by the incoming degree, read through the identification of index types. -/
+theorem reverseVertexLabels_degreesPathOfFn (v : ι → A) (i₀ : ι) :
+    ∀ {n : ℕ} (g : Fin n → α) (d : Fin n → ι) (j : Fin ((pathOfFn g).length + 1)),
+      Path.Degrees.reverseVertexLabels (fun _ => v) i₀ (pathOfFn g) (degreesPathOfFn ι g d) j =
+        v (Fin.snoc (α := fun _ => ι) d i₀
+          (Fin.cast (congrArg (fun k => k + 1) (length_pathOfFn g)) j))
+  | 0, _, d, j =>
+    (congrFun (Path.Degrees.reverseVertexLabels_nil _ _ _) j).trans
+      (congrArg v (by simp [Fin.snoc]))
+  | n + 1, g, d, j => by
+    rw [degreesPathOfFn_succ_apply]
+    -- The path is definitionally the cons of its tail path, so `j` splits by `Fin.cases`.
+    refine Fin.cases ?_ (fun j => ?_) j
+    · refine (Fin.cons_zero _ _).trans (congrArg v ?_)
+      rw [show (Fin.cast (congrArg (fun k => k + 1) (length_pathOfFn g)) 0 : Fin (n + 1 + 1)) =
+        Fin.castSucc 0 from Fin.ext rfl, Fin.snoc_castSucc]
+    · refine (Fin.cons_succ _ _ _).trans ((reverseVertexLabels_degreesPathOfFn v i₀
+        (fun j => g j.succ) (fun j => d j.succ) j).trans (congrArg v ?_))
+      have hd : d = Fin.cons (d 0) (fun j => d j.succ) := (Fin.cons_self_tail d).symm
+      conv_rhs => rw [hd, ← Fin.cons_snoc_eq_snoc_cons]
+      rw [show (Fin.cast (congrArg (fun k => k + 1) (length_pathOfFn g)) j.succ :
+          Fin (n + 1 + 1)) =
+          (Fin.cast (congrArg (fun k => k + 1) (length_pathOfFn fun j => g j.succ)) j).succ
+          from Fin.ext rfl, Fin.cons_succ]
+
+end Quiver.SingleObj

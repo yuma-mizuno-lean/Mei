@@ -67,3 +67,24 @@ theorem reverseArrowLabels_forall (f : ∀ {b c : Q}, (b ⟶ c) → A)
   | _, cons p e, j => Fin.cases (hf e) (reverseArrowLabels_forall f P hf p) j
 
 end Quiver.Path
+
+namespace Quiver.SingleObj
+
+variable {α A : Type*}
+
+/-- The backward arrow labels of the path of a finite sequence are the interpreted
+sequence, read through the identification of the two index types. -/
+theorem reverseArrowLabels_pathOfFn (h : α → A) :
+    ∀ {n : ℕ} (g : Fin n → α) (j : Fin (pathOfFn g).length),
+      (pathOfFn g).reverseArrowLabels (fun e => h e) j =
+        h (g (Fin.cast (length_pathOfFn g) j))
+  | 0, _, j => j.elim0
+  | n + 1, g, j => by
+    -- `pathOfFn g` is definitionally the cons of its tail path, so `j` splits by `Fin.cases`.
+    refine Fin.cases ?_ (fun j => ?_) j
+    · exact (Fin.cons_zero _ _).trans (congrArg (fun k => h (g k)) (Fin.ext rfl))
+    · exact (Fin.cons_succ _ _ _).trans
+        ((reverseArrowLabels_pathOfFn h (fun j => g j.succ) j).trans
+          (congrArg (fun k => h (g k)) (Fin.ext rfl)))
+
+end Quiver.SingleObj

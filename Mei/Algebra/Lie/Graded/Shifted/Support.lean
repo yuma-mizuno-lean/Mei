@@ -406,21 +406,11 @@ theorem homogeneousHistory_shiftedBCHAction_sub_mem_monoid_of_le
       (fun j => ((F).truncatedBCHAction d ℒ k (g j)).toLinearMap) r a ≠ 0)
     (i j : Fin (n + 1)) (hij : i ≤ j) :
     Fin.snoc (α := fun _ => Γ) r r₀ i - Fin.snoc (α := fun _ => Γ) r r₀ j ∈
-      d.monoid := by
-  induction j using Fin.inductionOn with
-  | zero =>
-    have hi : i = 0 := le_antisymm hij (Fin.zero_le i)
-    subst i
-    simp
-  | succ j ih =>
-    by_cases he : i = j.succ
-    · subst i
-      simp
-    · have hle : i ≤ j.castSucc := Fin.le_castSucc_iff.mpr (lt_of_le_of_ne hij he)
-      have hstep :=
-        d.homogeneousHistory_shiftedBCHAction_sub_mem_monoid ℒ ℳ p k g r r₀ a hne j
-      simpa only [Fin.snoc_castSucc, sub_add_sub_cancel] using
-        d.monoid.add_mem (ih hle) hstep
+      d.monoid :=
+  homogeneousHistory_snoc_sub_mem_of_le d.monoid _
+    (fun j _ _ _ ha hq =>
+      d.sub_mem_monoid_of_decompose_shiftedBCHAction_ne_zero ℒ ℳ p k (g j) ha hq)
+    r r₀ a hne i j hij
 
 /-- A surviving history of finite shifted BCH actions has at most `k` nonzero
 degree changes at order `k`. Unchanged-degree encounters are not counted, while
