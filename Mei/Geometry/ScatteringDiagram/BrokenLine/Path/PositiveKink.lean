@@ -80,7 +80,7 @@ theorem PathDecoratedRay.length_le_of_functionWalls_and_slabs
   let d := β.1.val
   let deg := Path.Degrees.reverseVertexLabels (fun _ q => q) i₀ p d
   let vel := Path.Degrees.reverseVertexLabels (fun q _ => v q) i₀ p d
-  let coeff := p.reverseHomogeneousDecorations T (grade R) x d
+  let coeff := p.reverseHomogeneousDecorations T (grade R) i₀ x d
   have hvel : Path.Degrees.reverseVertexLabels v i₀ p d = fun j => vel j (deg j) :=
     Path.Degrees.reverseVertexLabels_map₂ (fun q _ => v q) (fun _ q => q)
       (fun f q => f q) i₀ p d
@@ -126,7 +126,7 @@ theorem PathDecoratedRay.length_le_of_functionWalls_and_slabs
   exact β'.encounter_count_le_of_functionWalls_and_slabs 𝒜 θ weight slab U I
     vel deg coeff
     (p.reverseHomogeneousDecorations_mem T (grade R) i₀ x.property d)
-    (p.reverseHomogeneousDecorations_ne_zero T (grade R) d hnorm.1)
+    (p.reverseHomogeneousDecorations_ne_zero T (grade R) i₀ d hnorm.1)
     hprop hθ hw hslab hU hc htrans hr
 
 variable [Finite Q] [∀ q q' : Q, Finite (q ⟶ q')]

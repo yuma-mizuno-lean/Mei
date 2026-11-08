@@ -5,8 +5,9 @@ Authors: Codex
 -/
 module
 
+public import Mei.Combinatorics.Quiver.Path.Labels
+public import Mei.LinearAlgebra.GradedModule.History.Basic
 public import Mei.LinearAlgebra.GradedModule.History.Path.Labels
-
 /-!
 # The decorations of a complete component history
 
@@ -15,7 +16,9 @@ whole decorations in backward order. The tuple includes the original input and
 the final component. A surviving final component forces every entry to be
 nonzero. The component propagation equations connect algebraic path histories
 to geometric encounter bounds that inspect each decoration separately.
-The entries are the prefix values of `Quiver.Path.homogeneousHistory`.
+The entries are `Mei.homogeneousHistoryStage` applied to the backward arrow maps
+and outgoing vertex labels. The incoming label is restored by
+`Fin.snoc_init_self` in the membership statement.
 -/
 
 public section
@@ -29,96 +32,74 @@ variable {Q R M ι : Type*} [Quiver Q] [Semiring R]
 
 /-- All whole component decorations, from the terminal value back to the input.
 Equal adjacent values still occupy separate entries. -/
-def reverseHomogeneousDecorations (x : M) :
-    {b : Q} → (p : Path a b) → p.Degrees (fun _ => ι) → Fin (p.length + 1) → M
-  | _, nil, _ => fun _ => x
-  | _, cons p e, d => Fin.cons
-      ((p.cons e).homogeneousHistory T (fun _ => ℳ) d x)
-      (reverseHomogeneousDecorations x p d.1)
+def reverseHomogeneousDecorations (i₀ : ι) (x : M) {b : Q} (p : Path a b)
+    (d : p.Degrees (fun _ => ι)) : Fin (p.length + 1) → M :=
+  fun j => Mei.homogeneousHistoryStage ℳ (p.reverseArrowLabels T)
+    (Fin.init (Degrees.reverseVertexLabels (fun _ i => i) i₀ p d)) j x
 
-/-- The empty history contains just its input. -/
-@[simp]
-theorem reverseHomogeneousDecorations_nil (x : M)
-    (d : (nil : Path a a).Degrees (fun _ => ι)) :
-    (nil : Path a a).reverseHomogeneousDecorations T ℳ x d = fun _ => x := (rfl)
-
-/-- Appending an encounter prepends its entire output component. -/
-@[simp]
-theorem reverseHomogeneousDecorations_cons (x : M) {b c : Q} (p : Path a b)
-    (e : b ⟶ c) (d : p.Degrees (fun _ => ι)) (i : ι) :
-    (p.cons e).reverseHomogeneousDecorations T ℳ x (d, i) =
-      Fin.cons ((p.cons e).homogeneousHistory T (fun _ => ℳ) (d, i) x)
-        (p.reverseHomogeneousDecorations T ℳ x d) := (rfl)
-
-/-- The first backward entry is the terminal whole component. -/
-@[simp]
-theorem reverseHomogeneousDecorations_zero (x : M) :
-    ∀ {b : Q} (p : Path a b) (d : p.Degrees (fun _ => ι)),
-      p.reverseHomogeneousDecorations T ℳ x d 0 =
-        p.homogeneousHistory T (fun _ => ℳ) d x
-  | _, nil, _ => by simp only [reverseHomogeneousDecorations_nil, homogeneousHistory_nil,
-      LinearMap.id_apply]
-  | _, cons _ _, _ => Fin.cons_zero ..
-
-/-- The last backward entry retains the original input. -/
-@[simp]
-theorem reverseHomogeneousDecorations_last (x : M) :
-    ∀ {b : Q} (p : Path a b) (d : p.Degrees (fun _ => ι)),
-      p.reverseHomogeneousDecorations T ℳ x d (Fin.last p.length) = x
-  | _, nil, _ => rfl
-  | _, cons p _, d => by
-    exact (Fin.cons_succ _ _ (Fin.last p.length)).trans
-      (reverseHomogeneousDecorations_last x p d.1)
+private theorem homogeneousHistory_eq_reverseLabels (i₀ : ι) {b : Q} (p : Path a b)
+    (d : p.Degrees (fun _ => ι)) (x : M) :
+    p.homogeneousHistory T (fun _ => ℳ) d x =
+      Mei.homogeneousHistory ℳ (p.reverseArrowLabels T)
+        (Fin.init (Degrees.reverseVertexLabels (fun _ i => i) i₀ p d)) x := by
+  induction p with
+  | nil =>
+    simp only [homogeneousHistory_nil, reverseArrowLabels_nil,
+      Degrees.reverseVertexLabels_nil, LinearMap.id_apply]
+    have hzero :
+        Mei.homogeneousHistory ℳ (Fin.elim0 : Fin 0 → Module.End R M)
+          (Fin.init (α := fun _ : Fin 1 => ι) (fun _ : Fin 1 => i₀)) = LinearMap.id :=
+      Mei.homogeneousHistory_zero ℳ _ _
+    have heq : (nil : Path a a).length = 0 := length_nil
+    cases heq
+    exact Eq.symm (congrFun (congrArg DFunLike.coe hzero) x)
+  | cons p e ih =>
+    have hi :
+        Fin.init (Degrees.reverseVertexLabels (fun _ i => i) i₀ (p.cons e) d) =
+          Fin.cons d.2 (Fin.init (Degrees.reverseVertexLabels (fun _ i => i) i₀ p d.1)) := by
+      obtain ⟨d, i⟩ := d
+      rw [Degrees.reverseVertexLabels_cons]
+      funext j
+      exact Fin.cases rfl (fun j => rfl) j
+    rw [reverseArrowLabels_cons, hi]
+    simp only [length_cons]
+    rw [Mei.homogeneousHistory_succ_apply, homogeneousHistory_cons_apply, ih d.1]
+    rfl
 
 /-- Every decoration lies in the degree recorded on its segment. -/
-theorem reverseHomogeneousDecorations_mem (i₀ : ι) {x : M} (hx : x ∈ ℳ i₀) :
-    ∀ {b : Q} (p : Path a b) (d : p.Degrees (fun _ => ι)) (j : Fin (p.length + 1)),
-      p.reverseHomogeneousDecorations T ℳ x d j ∈
-        ℳ (Degrees.reverseVertexLabels (fun _ i => i) i₀ p d j)
-  | _, nil, _, _ => by simpa only [reverseHomogeneousDecorations_nil,
-      Degrees.reverseVertexLabels_nil] using hx
-  | _, cons p e, d, j => by
-    obtain ⟨d, i⟩ := d
-    refine Fin.cases ?_ (fun j => ?_) j
-    · simpa only [reverseHomogeneousDecorations_zero, Degrees.reverseVertexLabels_zero,
-        Degrees.terminalDegree_cons] using homogeneousHistory_cons_mem T (fun _ => ℳ)
-          p e d i x
-    · rw [reverseHomogeneousDecorations_cons, Degrees.reverseVertexLabels_cons]
-      exact reverseHomogeneousDecorations_mem i₀ hx p d j
+theorem reverseHomogeneousDecorations_mem (i₀ : ι) {x : M} (hx : x ∈ ℳ i₀)
+    {b : Q} (p : Path a b) (d : p.Degrees (fun _ => ι)) (j : Fin (p.length + 1)) :
+    p.reverseHomogeneousDecorations T ℳ i₀ x d j ∈
+      ℳ (Degrees.reverseVertexLabels (fun _ i => i) i₀ p d j) := by
+  have h := Mei.homogeneousHistoryStage_mem_snoc ℳ (p.reverseArrowLabels T)
+    (Fin.init (Degrees.reverseVertexLabels (fun _ i => i) i₀ p d)) i₀ ⟨x, hx⟩ j
+  have hs := Fin.snoc_init_self
+    (q := Degrees.reverseVertexLabels (fun _ i => i) i₀ p d)
+  rw [Degrees.reverseVertexLabels_last] at hs
+  change Mei.homogeneousHistoryStage ℳ (p.reverseArrowLabels T)
+    (Fin.init (Degrees.reverseVertexLabels (fun _ i => i) i₀ p d)) j x ∈
+    ℳ (Degrees.reverseVertexLabels (fun _ i => i) i₀ p d j)
+  rw [← hs]
+  simpa only [Fin.init_snoc] using h
 
 /-- A surviving history has no zero intermediate decoration. -/
-theorem reverseHomogeneousDecorations_ne_zero {x : M} :
-    ∀ {b : Q} (p : Path a b) (d : p.Degrees (fun _ => ι)),
-      p.homogeneousHistory T (fun _ => ℳ) d x ≠ 0 →
-        ∀ j, p.reverseHomogeneousDecorations T ℳ x d j ≠ 0
-  | _, nil, _, hx, _ => by simpa only [reverseHomogeneousDecorations_nil,
-      homogeneousHistory_nil, LinearMap.id_apply] using hx
-  | _, cons p e, d, hx, j => by
-    obtain ⟨d, i⟩ := d
-    refine Fin.cases ?_ (fun j => ?_) j
-    · simpa only [reverseHomogeneousDecorations_zero] using hx
-    · rw [reverseHomogeneousDecorations_cons]
-      exact reverseHomogeneousDecorations_ne_zero p d
-        (homogeneousHistory_ne_zero_of_cons T (fun _ => ℳ) p e d i hx) j
+theorem reverseHomogeneousDecorations_ne_zero (i₀ : ι) {x : M} {b : Q} (p : Path a b)
+    (d : p.Degrees (fun _ => ι)) (hx : p.homogeneousHistory T (fun _ => ℳ) d x ≠ 0) :
+    ∀ j, p.reverseHomogeneousDecorations T ℳ i₀ x d j ≠ 0 := by
+  rw [homogeneousHistory_eq_reverseLabels T ℳ i₀ p d x] at hx
+  simp only [reverseHomogeneousDecorations]
+  exact Mei.homogeneousHistoryStage_ne_zero ℳ (p.reverseArrowLabels T)
+    (Fin.init (Degrees.reverseVertexLabels (fun _ i => i) i₀ p d)) hx
 
 /-- Every encounter applies its arrow map and selects the entire component of
 the recorded outgoing degree. -/
-theorem reverseHomogeneousDecorations_propagation (i₀ : ι) (x : M) :
-    ∀ {b : Q} (p : Path a b) (d : p.Degrees (fun _ => ι)) (j : Fin p.length),
-      p.reverseHomogeneousDecorations T ℳ x d j.castSucc =
-        Mei.homogeneousComponent ℳ
-          (Degrees.reverseVertexLabels (fun _ i => i) i₀ p d j.castSucc)
-          (p.reverseArrowLabels T j (p.reverseHomogeneousDecorations T ℳ x d j.succ))
-  | _, nil, _, j => j.elim0
-  | _, cons p e, d, j => by
-    obtain ⟨d, i⟩ := d
-    refine Fin.cases ?_ (fun j => ?_) j
-    · simp only [length_cons, Fin.castSucc_zero, reverseHomogeneousDecorations_cons,
-        Degrees.reverseVertexLabels_cons, reverseArrowLabels_cons,
-        Fin.cons_zero, Fin.cons_succ, reverseHomogeneousDecorations_zero]
-      rw [homogeneousHistory_cons, LinearMap.comp_apply, LinearMap.comp_apply]
-    · simpa only [length_cons, Fin.castSucc_succ, reverseHomogeneousDecorations_cons,
-        Degrees.reverseVertexLabels_cons, reverseArrowLabels_cons, Fin.cons_succ] using
-        reverseHomogeneousDecorations_propagation i₀ x p d j
+theorem reverseHomogeneousDecorations_propagation (i₀ : ι) (x : M) {b : Q} (p : Path a b)
+    (d : p.Degrees (fun _ => ι)) (j : Fin p.length) :
+    p.reverseHomogeneousDecorations T ℳ i₀ x d j.castSucc =
+      Mei.homogeneousComponent ℳ (Degrees.reverseVertexLabels (fun _ i => i) i₀ p d j.castSucc)
+        (p.reverseArrowLabels T j (p.reverseHomogeneousDecorations T ℳ i₀ x d j.succ)) := by
+  simp only [reverseHomogeneousDecorations, Mei.homogeneousComponent_apply]
+  exact Mei.homogeneousHistoryStage_castSucc_apply ℳ (p.reverseArrowLabels T)
+    (Fin.init (Degrees.reverseVertexLabels (fun _ i => i) i₀ p d)) j x
 
 end Quiver.Path
