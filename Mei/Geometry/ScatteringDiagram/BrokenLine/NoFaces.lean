@@ -156,8 +156,8 @@ theorem existsUnique_of_noFaces :
     exact (hpath t).symm
 
 include hF in
-/-- At a fixed incoming datum and endpoint, a single broken line in a diagram without faces
-evaluates to its incoming coefficient. -/
+/-- At a fixed incoming datum, a single broken line in a diagram without faces whose final
+state is `u` (hypothesis `hu`) evaluates to its incoming coefficient. -/
 theorem weightedEvaluation_eq_of_noFaces {ι : Type*} [Unique ι] (family : ι → BrokenLine D)
     {u : D.State} {p : D.Degree u} {a : D.coefficient u}
     (hfam : ∀ j, (family j).incoming = ⟨u, p, a⟩) (hu : ∀ j, (family j).finalState = u) :
