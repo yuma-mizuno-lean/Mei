@@ -80,13 +80,8 @@ for the full exponent grading. No homogeneity condition on the scalar ideal
 or positivity condition on exponents is needed. -/
 theorem isHomogeneous_map_algebraMap_grade [AddCommMonoid M] [DecidableEq M] :
     (I.map (algebraMap R (AddMonoidAlgebra R M))).IsHomogeneous (AddMonoidAlgebra.grade R) := by
-  intro q x hx
-  have hx' : x ∈ (coeffFiltration I M).submodule 1 := by
-    simpa only [coeffFiltration_submodule_eq_restrictScalars_map_pow, pow_one,
-      Submodule.restrictScalars_mem] using hx
-  have hq := ((mem_coeffFiltration_submodule (I := I) (M := M)).mp hx') q
-  have hm := (single_mem_coeffFiltration_submodule (I := I) (M := M) (m := q)).mpr hq
-  simpa only [coeffFiltration_submodule_eq_restrictScalars_map_pow, pow_one,
-    Submodule.restrictScalars_mem, AddMonoidAlgebra.coe_decompose_grade] using hm
+  apply Ideal.homogeneous_span
+  rintro _ ⟨x, _, rfl⟩
+  exact ⟨0, by simpa using AddMonoidAlgebra.single_mem_grade (R := R) (0 : M) x⟩
 
 end Ideal
