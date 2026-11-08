@@ -127,6 +127,20 @@ theorem value_restrict_hyperplaneSection (c : M)
           (hyperplaneSection hf hf0 θ c)) x hx = hyperplaneFactor f θ x.val.val • c := by
   rw [DenseBasisTransport.value_restrict, value_hyperplaneSection]
 
+variable (hf hf0 θ) in
+/-- On the negative side, restriction of `hyperplaneSection` with `θ • c` differs from `c` if
+`θ` does not fix `c`. -/
+theorem value_restrict_ne_hyperplaneSection_of_forall_lt (c : M) (hc : θ • c ≠ c)
+    {U : Opens (FinitePolyhedralComplex.hyperplaneComplex f hf).regularSpace} (hU : U ≤ ⊤)
+    (hUneg : ∀ x ∈ U, f x.val < 0)
+    (x : (FinitePolyhedralComplex.hyperplaneComplex f hf).coefficientPoints) (hx : x.val ∈ U) :
+    ((hyperplaneDiagram hf hf0 θ).coefficientTransport M).value
+        (((hyperplaneDiagram hf hf0 θ).coefficientLocalSystem M).presheaf.map (homOfLE hU).op
+          (hyperplaneSection hf hf0 θ (θ • c))) x hx ≠ c := by
+  rw [value_restrict_hyperplaneSection]
+  simp only [hyperplaneFactor_def, (hUneg x hx).not_gt, ↓reduceIte, one_smul]
+  exact hc
+
 /-- A point off `ker f`, as an off-wall point of the regular locus of the hyperplane complex. -/
 private def offWallPoint (v : V) (hv : f v ≠ 0) :
     (FinitePolyhedralComplex.hyperplaneComplex f hf).coefficientPoints :=
@@ -155,9 +169,11 @@ theorem exists_forall_value_eq_iff_smul_eq (c : M) :
     rw [hs, hs] at he
     exact eq_inv_smul_iff.mp he
   · intro hc
-    have hlabel : ∀ P, (hyperplaneDiagram hf hf0 θ).label P • c = c := fun P => by
-      rw [hyperplaneDiagram_label, hc]
-    exact ⟨(hyperplaneDiagram hf hf0 θ).constantCoefficientSection M ⊤ c hlabel,
-      fun x hx => (hyperplaneDiagram hf hf0 θ).value_constantCoefficientSection M ⊤ c hlabel x hx⟩
+    exact ⟨hyperplaneSection hf hf0 θ c, fun x hx => by
+      rw [value_hyperplaneSection]
+      by_cases hx : 0 < f x.val.val
+      · rw [hyperplaneFactor_def, ite_eq_left hx, inv_smul_eq_iff]
+        exact hc.symm
+      · simp [hyperplaneFactor_def, hx]⟩
 
 end Mei.FiniteWallDiagram

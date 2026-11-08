@@ -121,7 +121,8 @@ locus on the negative side of the wall takes the value `a - a z`, though the wal
 open. For `U = {f < -1}` this is the restriction check: the section retains the incoming tails
 and bends outside `U`. -/
 theorem value_restrict_eq_sub_mul_of_forall_lt (θ : H) (u : (𝒜 0)ˣ) (z : A) {n : Γ}
-    (hu : (u : A) = 1 - z) (hz : (a : A) * z ∈ ℳ n) (hn : n ∈ d.cutoff k) (w : Γ → ℤ)
+    (hu : (u : A) = 1 - z) (hθ : ∀ x : A, θ • x = functionWallAction 𝒜 u x)
+    (hz : (a : A) * z ∈ ℳ n) (hn : n ∈ d.cutoff k) (w : Γ → ℤ)
     (hw : ∀ q, ℳ q ≤ 𝒜 (w q)) (hν : ∀ q, f (v q) = w q) (hν0 : f (v 0) = 1) (hε : ε () = 1)
     {U : Opens (FinitePolyhedralComplex.hyperplaneComplex f hf).regularSpace}
     (hU : ∀ x ∈ U, f x.val < 0)
@@ -135,14 +136,29 @@ theorem value_restrict_eq_sub_mul_of_forall_lt (θ : H) (u : (𝒜 0)ˣ) (z : A)
     ((hyperplaneDiagram hf hf0 θ).coefficientTransport A).value
         (((hyperplaneDiagram hf hf0 θ).coefficientLocalSystem A).presheaf.map
           (homOfLE (le_top : U ≤ ⊤)).op s) x hx = (a : A) - a * z := by
-  rw [DenseBasisTransport.value_restrict, hs,
-    cutoffDecoratedEvaluation_functionWall_one_sub_of_neg 𝒜 u z hu hz hn w hw hν hν0 hε (hU _ hx)]
+  have hw0 : w 0 = 1 := by
+    have := hν 0
+    rw [hν0] at this
+    exact_mod_cast this.symm
+  have hap : θ • (a : A) = (a : A) - a * z := by
+    rw [hθ]
+    exact functionWallAction_apply_of_mem_one_sub 𝒜 u hu (hw0 ▸ hw 0 a.2)
+  have heq : s = hyperplaneSection hf hf0 θ (θ • (a : A)) :=
+    (existsUnique_section_value_eq_cutoffDecoratedEvaluation 𝒜 hf0 θ u z hθ hu hz hn w hw hν hν0
+      hε).unique hs (fun x hx => by
+        rw [value_hyperplaneSection,
+          cutoffDecoratedEvaluation_functionWall_one_sub_eq_hyperplaneFactor 𝒜 θ u z hθ hu hz hn w
+            hw hν hν0 hε (fun h0 => x.property
+              ⟨_, (FinitePolyhedralComplex.mem_hyperplaneComplex_walls_iff hf hf0).mpr rfl⟩ h0)])
+  rw [heq, value_restrict_hyperplaneSection, hap]
+  simp only [hyperplaneFactor_def, (hU _ hx).not_gt, ↓reduceIte, one_smul]
 
 /-- The restriction of the theta section of one function wall `1 - z` to an open on the negative
 side of the wall is not the incoming coefficient `a`, the value for the diagram without wall,
 as soon as `a z ≠ 0`. -/
 theorem value_restrict_ne_of_mul_ne_zero (θ : H) (u : (𝒜 0)ˣ) (z : A) {n : Γ}
-    (hu : (u : A) = 1 - z) (hz : (a : A) * z ∈ ℳ n) (hn : n ∈ d.cutoff k) (w : Γ → ℤ)
+    (hu : (u : A) = 1 - z) (hθ : ∀ x : A, θ • x = functionWallAction 𝒜 u x)
+    (hz : (a : A) * z ∈ ℳ n) (hn : n ∈ d.cutoff k) (w : Γ → ℤ)
     (hw : ∀ q, ℳ q ≤ 𝒜 (w q)) (hν : ∀ q, f (v q) = w q) (hν0 : f (v 0) = 1) (hε : ε () = 1)
     {U : Opens (FinitePolyhedralComplex.hyperplaneComplex f hf).regularSpace}
     (hU : ∀ x ∈ U, f x.val < 0)
@@ -157,8 +173,25 @@ theorem value_restrict_ne_of_mul_ne_zero (θ : H) (u : (𝒜 0)ˣ) (z : A) {n : 
     ((hyperplaneDiagram hf hf0 θ).coefficientTransport A).value
         (((hyperplaneDiagram hf hf0 θ).coefficientLocalSystem A).presheaf.map
           (homOfLE (le_top : U ≤ ⊤)).op s) x hx ≠ (a : A) := by
-  rw [value_restrict_eq_sub_mul_of_forall_lt 𝒜 hf0 θ u z hu hz hn w hw hν hν0 hε hU hs x hx]
-  exact fun h => haz (by simpa using h)
+  have hap : θ • (a : A) = (a : A) - a * z := by
+    have hw0 : w 0 = 1 := by
+      have := hν 0
+      rw [hν0] at this
+      exact_mod_cast this.symm
+    rw [hθ]
+    exact functionWallAction_apply_of_mem_one_sub 𝒜 u hu (hw0 ▸ hw 0 a.2)
+  have heq : s = hyperplaneSection hf hf0 θ (θ • (a : A)) :=
+    (existsUnique_section_value_eq_cutoffDecoratedEvaluation 𝒜 hf0 θ u z hθ hu hz hn w hw hν hν0
+      hε).unique hs (fun x hx => by
+        rw [value_hyperplaneSection,
+          cutoffDecoratedEvaluation_functionWall_one_sub_eq_hyperplaneFactor 𝒜 θ u z hθ hu hz hn w
+            hw hν hν0 hε (fun h0 => x.property
+              ⟨_, (FinitePolyhedralComplex.mem_hyperplaneComplex_walls_iff hf hf0).mpr rfl⟩ h0)])
+  rw [heq]
+  exact value_restrict_ne_hyperplaneSection_of_forall_lt hf hf0 θ (a : A)
+    (by rw [hap]; exact fun h => haz (by
+      have := congrArg (fun t : A => (a : A) - t) h
+      simpa using this)) le_top hU x hx
 
 end Section
 
