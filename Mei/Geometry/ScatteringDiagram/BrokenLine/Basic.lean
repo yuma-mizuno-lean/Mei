@@ -22,7 +22,7 @@ for each degree, and, for every face between two chambers, a `GradedCorresponden
 between the two chamber modules together with the active normals at its points and a
 set of singular points.
 
-A `BrokenLine` for such data is a proper continuous path `(-∞, 0] → B` with finitely
+A `BrokenLine` for such data is a proper continuous path `Iic 0 → B` with finitely
 many strictly increasing crossing times. On each open segment it is affine in the
 chart of the segment's chamber with velocity the negative of the momentum of the
 segment's degree, and it misses all faces. Every crossing lies on a face, is transverse
@@ -161,8 +161,6 @@ structure BrokenLine (D : BrokenLineData.{uS, uD, uM, uF} R B V) where
   decoration_mem : ∀ j, decoration j ∈ D.grading (state j) (degree j)
   /-- Every decoration is nonzero. -/
   decoration_ne_zero : ∀ j, decoration j ≠ 0
-  /-- Every segment moves. -/
-  momentum_ne_zero : ∀ j, D.momentum (state j) (degree j) ≠ 0
   /-- The path, ending at time zero. -/
   path : Iic (0 : ℝ) → B
   /-- The path is continuous and proper, so its first segment leaves every compact set. -/

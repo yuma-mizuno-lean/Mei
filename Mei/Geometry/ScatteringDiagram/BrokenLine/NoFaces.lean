@@ -123,7 +123,6 @@ theorem existsUnique_of_noFaces :
       decoration := fun _ => a
       decoration_mem := fun _ => hp
       decoration_ne_zero := fun _ => ha
-      momentum_ne_zero := fun _ => hμ
       path := fun t => FiniteAffineRay.straight Q μ t
       proper := (FiniteAffineRay.straight Q μ).isProperMap_restrict_Iic hvelocity 0
       path_zero_off_faces := by
