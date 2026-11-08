@@ -158,14 +158,14 @@ theorem finite_pathDecoratedRays_of_filtration_of_direction_eq (X : V)
   apply finite_pathDecoratedRays_of_encounter_bound T ℳ i₀ x v ν ε c P W S C
     (r * Nat.card (Σ b c : Q, b ⟶ c)) X
   intro p β
-  exact β.length_le_of_filtration F mark hT hstraight hr
+  exact β.length_le_of_filtration (F := F) (mark := mark) hT hstraight hr
 
 section Rational
 
 variable {Λ : Type*} [AddCommGroup Λ] {i : Λ →+ V}
   (h : TauCeti.Toric.IsIntegralLattice i) (w : ∀ q, ι q → Λ) [Finite J] [Finite K]
   (hν : ∀ {b c : Q} (e : b ⟶ c), Toric.IsRationalFunctional h (ν e).toLinearMap)
-  (hP : ∀ {b c : Q} (e : b ⟶ c), Toric.IsRationalSemilinear h (P e))
+  (hP : ∀ {b c : Q} (e : b ⟶ c), IsRationalSemilinear h (P e))
   (hW : ∀ j, IsRationalNormalPolyhedron h (W j))
   (hS : ∀ j, IsRationalNormalPolyhedron h (S j))
   (hC : IsRationalNormalPolyhedron h C)
@@ -176,7 +176,7 @@ local notation "dirs" t:max => Path.Degrees.reverseVertexLabels vel i₀
   (Subtype.val (Sigma.fst t)) (Subtype.val (Sigma.snd t))
 local notation "D" t:max => admissibleBackwardDomain
   (Path.reverseArrowLabels ν (Subtype.val (Sigma.fst t)))
-  (Path.reverseArrowLabels (c) (Subtype.val (Sigma.fst t))) (dirs t)
+  (Path.reverseArrowLabels c (Subtype.val (Sigma.fst t))) (dirs t)
   (Path.reverseArrowLabels P (Subtype.val (Sigma.fst t))) W S C
 local notation "path" t:max => backwardPath
   (Path.reverseArrowLabels ν (Subtype.val (Sigma.fst t)))
@@ -213,7 +213,7 @@ theorem exists_closedPathDecoratedRayCharts_of_filtration
           (∀ z, (E z).2.1 = z.1.1.val) ∧
           (∀ z, HEq (E z).2.2.1 z.1.2) ∧
           ∀ z, (E z).2.2.decoration = z.1.1.val.homogeneousHistory T ℳ z.1.2.val x := by
-  apply exists_exhaustive_pathDecoratedFamily_closedCharts T ℳ i₀ x ν (ε := ε) c P W S C
+  apply exists_exhaustive_pathDecoratedFamily_closedCharts T ℳ i₀ x ν ε c P W S C
     h w hν hP hW hS hC (r * h₀ + r - 1)
   intro X p β
   exact β.length_le_of_componentTransfersRaise (F := F) (mark := mark) hT hr (hrun X p β)
@@ -251,7 +251,7 @@ theorem exists_pathDecoratedRay_closedCharts_of_filtration_of_direction_eq :
         ∀ z, (E z).2.2.decoration = z.1.1.val.homogeneousHistory T ℳ z.1.2.val x := by
   have hbound (X : V) (p : Path a b)
       (β : PathDecoratedRay T ℳ i₀ x vel ν ε c P W S C p X) : p ∈ s :=
-    hs p (β.length_le_of_filtration F mark hT hstraight hr)
+    hs p (β.length_le_of_filtration (F := F) (mark := mark) hT hstraight hr)
   let e (X : V) := Equiv.sigmaSubtypeEquivOfSubset
     (fun p : Path a b => PathDecoratedRay T ℳ i₀ x vel ν ε c P W S C p X)
     (fun p => p ∈ s) (hbound X)
