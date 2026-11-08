@@ -71,7 +71,7 @@ theorem map_cutoffWallEventEvaluation (k K : ℕ) (hkK : k ≤ K)
       cutoffWallEventEvaluation d 𝓝 p ℒ W h B k K hkK
         ⟨fₖ k a, d.quotientCoefficientMap_mem_shiftedQuotientGrading
           ℳ 𝓝 p f hf a.property⟩ C Q := by
-  simp only [cutoffWallEventEvaluation_def]
+  simp only [cutoffWallEventEvaluation_eq_cutoffDecoratedEvaluation]
   -- Compare the original ray fibers using equivariance of the finite BCH actions.
   apply map_cutoffDecoratedEvaluation
   intro e

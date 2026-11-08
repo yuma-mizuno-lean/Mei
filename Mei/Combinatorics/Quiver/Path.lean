@@ -8,6 +8,7 @@ module
 public import Mathlib.Combinatorics.Quiver.SingleObj
 public import Mathlib.Combinatorics.Quiver.Path.Vertices
 public import Mathlib.Data.List.Chain
+public import Mathlib.Data.Set.Finite.List
 public import Mathlib.Combinatorics.Quiver.Path.Weight
 public import Mathlib.Algebra.Group.Submonoid.Basic
 public import Mathlib.Algebra.BigOperators.Group.List.Basic
@@ -268,5 +269,19 @@ theorem addWeight_one_pathOfFn {n : ℕ} (T : Fin n → α) :
   induction n with
   | zero => simp
   | succ n ih => rw [pathOfFn_succ, Path.addWeight_cons, ih]
+
+/-- The path of a word has one arrow for each letter. -/
+@[simp]
+theorem length_listToPath : ∀ l : List α, (listToPath l).length = l.length
+  | [] => rfl
+  | _ :: l => by rw [listToPath, Path.length_cons, length_listToPath l, List.length_cons]
+
+/-- Over a finite alphabet, a one-object quiver has finitely many paths of bounded length. -/
+theorem finite_setOf_length_le [Finite α] (n : ℕ) :
+    {p : Path (star α) (star α) | p.length ≤ n}.Finite := by
+  refine ((List.finite_length_le α n).image listToPath).subset fun p hp => ?_
+  refine ⟨pathToList p, ?_, listToPath_pathToList p⟩
+  rw [Set.mem_ofPred_eq, ← length_listToPath, listToPath_pathToList]
+  exact hp
 
 end Quiver.SingleObj

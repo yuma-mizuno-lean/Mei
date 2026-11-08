@@ -115,7 +115,7 @@ theorem extendedCoefficientField_eq_cutoffWallEventEvaluation_of_notMem_frontier
     field x = evaluation x.val := by
   apply extendedCoefficientField_eq_cutoffWallEventEvaluation_of_eventually_eq
     d ℳ p ℒ H h h' D₀ a D B hinitial K hBc hD hB hout b hb x
-  simp only [cutoffWallEventEvaluation_def]
+  simp only [cutoffWallEventEvaluation_eq_cutoffDecoratedEvaluation]
   exact cutoffDecoratedEvaluation_eventually_eq_of_notMem_frontier
     d (d.shiftedQuotientGrading ℳ p K).piece _ b _ _ _ _ _ _ _ _ K x.val hx
 

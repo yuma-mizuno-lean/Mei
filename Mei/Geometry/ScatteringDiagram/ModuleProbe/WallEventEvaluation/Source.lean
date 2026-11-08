@@ -68,7 +68,7 @@ theorem exists_cutoffWallEventEvaluation_sourceArrangement (K : ℕ) :
         B.activeNormal_apply, h.continuousRealCharacter_apply])
     (fun j x hx => (B.wall j).offset_eq hx) (fun n => i (ρ (p + n)))
   refine ⟨A, fun Q hQ k hkK a => ?_⟩
-  rw [cutoffWallEventEvaluation_def]
+  rw [cutoffWallEventEvaluation_eq_cutoffDecoratedEvaluation]
   simp only [wallEventPropagation_def]
   exact hA Q hQ k
     (fun e => (d.truncationMap ℒ hkK).bchGroupMap (B.wallEventLabel K e)) a
