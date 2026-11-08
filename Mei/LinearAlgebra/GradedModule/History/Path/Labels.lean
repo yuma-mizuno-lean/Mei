@@ -43,6 +43,21 @@ theorem reverseVertexLabels_cons (v : ∀ q, ι q → A) (i₀ : ι a)
     reverseVertexLabels v i₀ (p.cons e) (d, i) =
       Fin.cons (v c i) (reverseVertexLabels v i₀ p d) := (rfl)
 
+/-- The label of the final segment is that of the last selected degree. -/
+@[simp]
+theorem reverseVertexLabels_cons_zero (v : ∀ q, ι q → A) (i₀ : ι a)
+    {b c : Q} (p : Path a b) (e : b ⟶ c) (d : p.Degrees ι) (i : ι c) :
+    reverseVertexLabels v i₀ (p.cons e) (d, i) (0 : Fin (p.length + 1 + 1)) = v c i :=
+  Fin.cons_zero ..
+
+/-- The labels of earlier segments are those of the shorter history. -/
+@[simp]
+theorem reverseVertexLabels_cons_succ (v : ∀ q, ι q → A) (i₀ : ι a)
+    {b c : Q} (p : Path a b) (e : b ⟶ c) (d : p.Degrees ι) (i : ι c)
+    (j : Fin (p.length + 1)) :
+    reverseVertexLabels v i₀ (p.cons e) (d, i) j.succ = reverseVertexLabels v i₀ p d j :=
+  Fin.cons_succ ..
+
 /-- The endpoint label belongs to the terminal chamber degree. -/
 @[simp]
 theorem reverseVertexLabels_zero (v : ∀ q, ι q → A) (i₀ : ι a) :
