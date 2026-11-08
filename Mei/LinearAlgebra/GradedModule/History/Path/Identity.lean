@@ -76,6 +76,20 @@ theorem degreesRepeat_degreesErase (p : Path a b) (q : Path b c) (e : b ⟶ b)
   rw [degreesComp_degreesRepeat, degreesComp_degreesErase]
   exact Prod.ext (Prod.ext rfl hd.symm) rfl
 
+/-- With no following block, insertion appends the terminal degree. -/
+theorem degreesRepeat_nil (p : Path a b) (e : b ⟶ b) (i : ι a)
+    (d : p.Degrees ι) :
+    degreesRepeat p nil e i d = (d, Degrees.terminalDegree i p d) := by
+  unfold degreesRepeat
+  erw [degreesComp_nil, degreesComp_symm_nil]
+
+/-- Insertion into a prefix leaves the last selected degree unchanged. -/
+theorem degreesRepeat_cons (p : Path a b) {c z : Q} (q : Path b c)
+    (g : c ⟶ z) (e : b ⟶ b) (i : ι a) (d : (p.comp q).Degrees ι) (j : ι z) :
+    degreesRepeat p (q.cons g) e i (d, j) = (degreesRepeat p q e i d, j) := by
+  unfold degreesRepeat
+  erw [degreesComp_cons, degreesComp_symm_cons]
+
 variable {R : Type*} [Semiring R]
   {M : Q → Type*} [∀ q, AddCommMonoid (M q)] [∀ q, Module R (M q)]
   (T : ∀ {u v : Q}, (u ⟶ v) → M u →ₗ[R] M v)

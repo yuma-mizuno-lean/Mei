@@ -185,6 +185,43 @@ theorem parameter_congrData (r : AdmissibleRayRealization f c v P W S C Q)
     (hf : f = f') (hc : c = c') (hv : v = v') (hP : P = P') :
     (r.congrData hf hc hv hP).parameter = r.parameter := (rfl)
 
+/-- Reindex a realization along an equality of encounter counts, retaining its
+ray. The data equations compare tuples through the canonical finite-index cast. -/
+def congrLength (r : AdmissibleRayRealization f c v P W S C Q)
+    {m : ℕ} (h : n = m) (f' : Fin m → V →L[ℝ] ℝ) (c' : Fin m → ℝ)
+    (v' : Fin (m + 1) → V) (P' : Fin m → Set V)
+    (hf : ∀ j, f j = f' (Fin.cast h j)) (hc : ∀ j, c j = c' (Fin.cast h j))
+    (hv : ∀ j, v j = v' (Fin.cast (congrArg (fun k => k + 1) h) j))
+    (hP : ∀ j, P j = P' (Fin.cast h j)) :
+    AdmissibleRayRealization f' c' v' P' W S C Q := by
+  subst m
+  exact r.congrData (funext hf) (funext hc) (funext hv) (funext hP)
+
+/-- Reindexing the encounter count preserves the entire incoming half-line. -/
+@[simp]
+theorem ray_congrLength (r : AdmissibleRayRealization f c v P W S C Q)
+    {m : ℕ} (h : n = m) (f' : Fin m → V →L[ℝ] ℝ) (c' : Fin m → ℝ)
+    (v' : Fin (m + 1) → V) (P' : Fin m → Set V)
+    (hf : ∀ j, f j = f' (Fin.cast h j)) (hc : ∀ j, c j = c' (Fin.cast h j))
+    (hv : ∀ j, v j = v' (Fin.cast (congrArg (fun k => k + 1) h) j))
+    (hP : ∀ j, P j = P' (Fin.cast h j)) :
+    (r.congrLength h f' c' v' P' hf hc hv hP).ray = r.ray := by
+  subst m
+  rfl
+
+/-- Reindexing retains the encounter parameters at their corresponding indices. -/
+@[simp]
+theorem parameter_congrLength (r : AdmissibleRayRealization f c v P W S C Q)
+    {m : ℕ} (h : n = m) (f' : Fin m → V →L[ℝ] ℝ) (c' : Fin m → ℝ)
+    (v' : Fin (m + 1) → V) (P' : Fin m → Set V)
+    (hf : ∀ j, f j = f' (Fin.cast h j)) (hc : ∀ j, c j = c' (Fin.cast h j))
+    (hv : ∀ j, v j = v' (Fin.cast (congrArg (fun k => k + 1) h) j))
+    (hP : ∀ j, P j = P' (Fin.cast h j)) (j : Fin (m + 1)) :
+    (r.congrLength h f' c' v' P' hf hc hv hP).parameter j =
+      r.parameter (Fin.cast (congrArg (fun k => k + 1) h).symm j) := by
+  subst m
+  rfl
+
 /-- Transport a realization along an equality of its prescribed velocities,
 retaining the entire ray and all encounter parameters. -/
 def congrVelocity (r : AdmissibleRayRealization f c v P W S C Q)
