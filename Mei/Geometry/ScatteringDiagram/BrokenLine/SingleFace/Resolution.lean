@@ -82,6 +82,29 @@ theorem exists_singleFaceTransferEvaluationLinear_eq_right
     module
   exact hF Q hQ ⟨q, hqs⟩ j (hp ▸ hj)
 
+/-- A finitely generated incoming range has a uniform finite support for its
+outgoing transfer components, without finiteness assumptions on the chambers. -/
+theorem exists_singleFaceTransfer_support_of_fg
+    (hα : (LinearMap.range α).FG) :
+    ∃ s : Finset κ, ∀ q ∉ s, (C.transfer i q).comp α = 0 := by
+  classical
+  let β := C.right.comp ((C.liftLeft i).comp α)
+  have hβ : (LinearMap.range β).FG := by
+    have he : β = (C.right.comp (C.liftLeft i)).comp α := LinearMap.comp_assoc ..
+    rw [he, LinearMap.range_comp]
+    exact hα.map (C.right.comp (C.liftLeft i))
+  obtain ⟨S, hS⟩ := exists_uniform_homogeneousHistory_support ℳ
+    (fun _ : Fin 1 => LinearMap.id) β hβ
+  refine ⟨S.image fun d => d 0, fun q hq => ?_⟩
+  have hnot : (fun _ : Fin 1 => q) ∉ S := fun h =>
+    hq (Finset.mem_image.mpr ⟨_, h, rfl⟩)
+  apply LinearMap.ext
+  intro x
+  apply Subtype.val_injective
+  simpa only [homogeneousHistory_succ_apply, homogeneousHistory_zero,
+    LinearMap.comp_apply, LinearMap.id_apply, LinearMap.zero_apply,
+    transfer_apply, ZeroMemClass.coe_zero, β] using LinearMap.congr_fun (hS _ hnot) x
+
 /-- A finitely generated incoming range gives the uniform finite-input test
 without finite generation of either chamber or any homogeneous piece. -/
 theorem exists_singleFaceTransferEvaluationLinear_eq_right_of_fg
@@ -95,25 +118,9 @@ theorem exists_singleFaceTransferEvaluationLinear_eq_right_of_fg
       (ν Q - b) / ν u < 0 →
         C.singleFaceTransferEvaluationLinear i u v ν b Z α Q =
           C.right.comp ((C.liftLeft i).comp α) := by
-  classical
-  let β := C.right.comp ((C.liftLeft i).comp α)
-  have hβ : (LinearMap.range β).FG := by
-    have he : β = (C.right.comp (C.liftLeft i)).comp α := LinearMap.comp_assoc ..
-    rw [he, LinearMap.range_comp]
-    exact hα.map (C.right.comp (C.liftLeft i))
-  obtain ⟨S, hS⟩ := exists_uniform_homogeneousHistory_support ℳ
-    (fun _ : Fin 1 => LinearMap.id) β hβ
-  apply C.exists_singleFaceTransferEvaluationLinear_eq_right i u v ν b Z α
-    (S.image fun d => d 0) ?_ hnormal hZ A hcover hA
-  intro q hq
-  have hnot : (fun _ : Fin 1 => q) ∉ S := fun h =>
-    hq (Finset.mem_image.mpr ⟨_, h, rfl⟩)
-  apply LinearMap.ext
-  intro x
-  apply Subtype.val_injective
-  simpa only [homogeneousHistory_succ_apply, homogeneousHistory_zero,
-    LinearMap.comp_apply, LinearMap.id_apply, LinearMap.zero_apply,
-    transfer_apply, ZeroMemClass.coe_zero, β] using LinearMap.congr_fun (hS _ hnot) x
+  obtain ⟨s, hs⟩ := C.exists_singleFaceTransfer_support_of_fg i α hα
+  exact C.exists_singleFaceTransferEvaluationLinear_eq_right
+    i u v ν b Z α s hs hnormal hZ A hcover hA
 
 /-- Uniformly supported one-face ray sums have their total common face lift
 at generic opposite-side endpoints. The arrangement is chosen for the whole
@@ -140,5 +147,24 @@ theorem exists_singleFaceTransferEvaluationLinear_commonLift
   refine ⟨C.liftLeft i (α x), ?_⟩
   simp only [hF Q hQ ht, LinearMap.prod_apply, Function.prod_apply,
     LinearMap.comp_apply, C.left_liftLeft_apply, Submodule.subtype_apply]
+
+/-- A finitely generated incoming range gives the unique total common face
+lift at generic opposite-side endpoints, with one arrangement for every input. -/
+theorem exists_singleFaceTransferEvaluationLinear_commonLift_of_fg
+    (hα : (LinearMap.range α).FG)
+    (hnormal : ∀ q x, C.transfer i q (α x) ≠ 0 → ν (v q) = ν u)
+    (hZ : Z ⊆ {x | ν x = b})
+    {δ : Type*} [Finite δ] (A : δ → AffineSubspace ℝ V)
+    (hcover : Z ⊆ ⋃ j, (A j : Set V))
+    (hA : ∀ j, ∃ x, ν x = b ∧ x ∉ A j)
+    (hinj : Function.Injective (C.left.prod C.right)) :
+    ∃ F : ExceptionalArrangement V, ∀ Q, F.IsGeneric Q →
+      (ν Q - b) / ν u < 0 →
+        ∃! l : E →ₗ[R] B,
+          C.left.comp l = (𝒰 i).subtype.comp α ∧
+          C.right.comp l = C.singleFaceTransferEvaluationLinear i u v ν b Z α Q := by
+  obtain ⟨s, hs⟩ := C.exists_singleFaceTransfer_support_of_fg i α hα
+  exact C.exists_singleFaceTransferEvaluationLinear_commonLift
+    i u v ν b Z α s hs hnormal hZ A hcover hA hinj
 
 end Mei.GradedCorrespondence

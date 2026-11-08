@@ -105,6 +105,14 @@ private theorem terminalChamberMap_eq
     intro i hi
     exact (expand U hU true (by simpa using hUs) i hi).symm
 
+private theorem terminalChamberMap_mem_compatibility (a : H) :
+    (terminalChamberMap s n b t α false a, terminalChamberMap s n b t α true a) ∈
+      LinearMap.range (((slabTerminalMultispan t).fst default).hom.prod
+        ((slabTerminalMultispan t).snd default).hom) := by
+  rw [terminalChamberMap_false, terminalChamberMap_true]
+  exact MultispanIndex.ofLinearMaps_mem_compatibility _ _
+    (slabTerminalFiniteLift s n b t α a)
+
 /-- Common-family weighted evaluations at any two opposite-side endpoints in
 the common terminal neighborhood extend uniquely to a linear matching family. -/
 theorem existsUnique_slabTerminalFinite_matchingFamily
@@ -124,7 +132,7 @@ theorem existsUnique_slabTerminalFinite_matchingFamily
       (terminalChamberMap s n b t α) (slabTerminalMultispan_jointly_injective t)).mpr
     intro a c
     obtain rfl : c = default := Subsingleton.elim _ _
-    exact ⟨slabTerminalFiniteLift s n b t α a, rfl⟩
+    exact terminalChamberMap_mem_compatibility s n b t α a
   obtain ⟨ℓ, hℓ, huniq⟩ := htest
   refine ⟨ℓ, fun a side => (hℓ a side).trans
     (terminalChamberMap_eq s n b t α h hL hU hLs hUs a side), ?_⟩

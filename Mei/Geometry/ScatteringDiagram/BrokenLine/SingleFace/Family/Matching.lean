@@ -78,9 +78,9 @@ theorem existsUnique_singleFaceTransferFamily_matchingFamily_of_fg
 /-- The face value of the matching family is exactly the chosen total lift.
 Conversely, this face value characterizes all the chamber evaluations of the
 actual endpoint family at generic opposite-side endpoints. -/
-theorem exists_singleFaceTransferFamily_matchingFamily_iff_of_fg
+theorem exists_singleFaceTransferFamily_matchingFamily_iff
     (hinj : Function.Injective (C.left.prod C.right))
-    (hα : (LinearMap.range α).FG)
+    (s : Finset κ) (hs : ∀ q ∉ s, (C.transfer p q).comp α = 0)
     (hnormal : ∀ q x, C.transfer p q (α x) ≠ 0 → ν (i (w q)) = ν (i w₀))
     {δ : Type*} [Finite δ] (A : δ → AffineSubspace ℝ V)
     (hcover : Z ⊆ ⋃ j, (A j : Set V))
@@ -90,8 +90,8 @@ theorem exists_singleFaceTransferFamily_matchingFamily_iff_of_fg
         (∀ x, (ℓ x).val (.right false) = (α x : U) ∧
           (ℓ x).val (.right true) = value x Q) ↔
         ∀ x, (ℓ x).val (.left default) = C.liftLeft p (α x) := by
-  obtain ⟨F, hF⟩ := C.exists_singleFaceTransferEvaluationLinear_eq_right_of_fg
-    p (i w₀) (fun q => i (w q)) ν b Z α hα hnormal hZ A hcover hA
+  obtain ⟨F, hF⟩ := C.exists_singleFaceTransferEvaluationLinear_eq_right
+    p (i w₀) (fun q => i (w q)) ν b Z α s hs hnormal hZ A hcover hA
   refine ⟨F, fun Q hQ ht ℓ => ?_⟩
   have hv (x : H) : value x Q = C.right (C.liftLeft p (α x)) := by
     rw [singleFaceTransferFamily_weightedEvaluation,
@@ -108,5 +108,23 @@ theorem exists_singleFaceTransferFamily_matchingFamily_iff_of_fg
     have hs := MultispanIndex.ofLinearMaps_apply_left C.left C.right default (ℓ x).property
     rw [hℓ x] at hs
     exact ⟨hs.1.symm.trans (C.left_liftLeft_apply p (α x)), hs.2.symm.trans (hv x).symm⟩
+
+/-- Finite generation supplies the uniform output support for the face-value
+characterization of matching extensions of the actual endpoint family. -/
+theorem exists_singleFaceTransferFamily_matchingFamily_iff_of_fg
+    (hinj : Function.Injective (C.left.prod C.right))
+    (hα : (LinearMap.range α).FG)
+    (hnormal : ∀ q x, C.transfer p q (α x) ≠ 0 → ν (i (w q)) = ν (i w₀))
+    {δ : Type*} [Finite δ] (A : δ → AffineSubspace ℝ V)
+    (hcover : Z ⊆ ⋃ j, (A j : Set V))
+    (hA : ∀ j, ∃ x, ν x = b ∧ x ∉ A j) :
+    ∃ F : ExceptionalArrangement V, ∀ Q, F.IsGeneric Q → (ν Q - b) / ν (i w₀) < 0 →
+      ∀ ℓ : H →ₗ[R] Sections,
+        (∀ x, (ℓ x).val (.right false) = (α x : U) ∧
+          (ℓ x).val (.right true) = value x Q) ↔
+        ∀ x, (ℓ x).val (.left default) = C.liftLeft p (α x) := by
+  obtain ⟨s, hs⟩ := C.exists_singleFaceTransfer_support_of_fg p α hα
+  exact C.exists_singleFaceTransferFamily_matchingFamily_iff
+    p α h w₀ w ν b Z hν hZ hsemi hinj s hs hnormal A hcover hA
 
 end Mei.GradedCorrespondence

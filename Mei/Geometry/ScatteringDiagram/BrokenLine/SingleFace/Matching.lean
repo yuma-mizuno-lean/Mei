@@ -88,20 +88,13 @@ theorem existsUnique_singleFace_matchingFamily_of_fg
       ∃! ℓ : H →ₗ[R] Sections, ∀ x,
         (ℓ x).val (.right false) = (α x : U) ∧
         (ℓ x).val (.right true) = C.singleFaceTransferEvaluation p (α x) u v ν b Z Q := by
-  obtain ⟨F, hF⟩ := C.exists_singleFaceTransferEvaluationLinear_eq_right_of_fg
-    p u v ν b Z α hα hnormal hZ A hcover hA
+  obtain ⟨F, hF⟩ := C.exists_singleFaceTransferEvaluationLinear_commonLift_of_fg
+    p u v ν b Z α hα hnormal hZ A hcover hA hinj
   refine ⟨F, fun Q hQ ht => ?_⟩
   apply (MultispanIndex.existsUnique_sections_ofLinearMaps_iff C.left C.right _ _).mpr
-  have hlift : ∃! l : H →ₗ[R] B,
-      C.left.comp l = (𝒰 p).subtype.comp α ∧
-      C.right.comp l = C.singleFaceTransferEvaluationLinear p u v ν b Z α Q := by
-    apply (LinearMap.existsUnique_comp_eq_and_comp_eq_iff hinj).mpr
-    intro x
-    refine ⟨C.liftLeft p (α x), ?_⟩
-    simp only [hF Q hQ ht, LinearMap.prod_apply, Function.prod_apply,
-      LinearMap.comp_apply, C.left_liftLeft_apply, Submodule.subtype_apply]
   simpa only [LinearMap.ext_iff, LinearMap.comp_apply, Submodule.subtype_apply,
     ← forall_and,
-    C.singleFaceTransferEvaluationLinear_apply_eq_evaluation p u v ν b Z α hZ Q] using hlift
+    C.singleFaceTransferEvaluationLinear_apply_eq_evaluation p u v ν b Z α hZ Q] using
+    hF Q hQ ht
 
 end Mei.GradedCorrespondence

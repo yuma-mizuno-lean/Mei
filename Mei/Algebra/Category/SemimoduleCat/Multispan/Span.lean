@@ -150,6 +150,13 @@ theorem sectionsLinearEquivOfLinearMaps_symm_apply_right_true (f : B →ₗ[R] M
       (sectionsLinearEquivOfLinearMaps_symm_apply_left_snd f g b).symm
     _ = g b := congrArg g (sectionsLinearEquivOfLinearMaps_symm_apply_left f g b default)
 
+/-- The two chamber values at the unique face have the chosen common lift. -/
+theorem ofLinearMaps_mem_compatibility (f : B →ₗ[R] M) (g : B →ₗ[R] N) (b : B) :
+    (f b, g b) ∈
+      LinearMap.range (((ofLinearMaps f g).fst default).hom.prod
+        ((ofLinearMaps f g).snd default).hom) :=
+  ⟨b, Prod.ext rfl rfl⟩
+
 /-- Linear families of matching sections with prescribed chamber values correspond to
 linear common lifts through the two legs, uniquely on both sides or on neither. -/
 theorem existsUnique_sections_ofLinearMaps_iff {E : Type*} [AddCommMonoid E] [Module R E]
