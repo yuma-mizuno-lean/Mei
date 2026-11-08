@@ -105,20 +105,28 @@ theorem exists_eventually_eq_apply (dev dev' : DevelopingMap h B) (x : B) :
   simp only [Function.comp_apply, e.left_inv hy] at hya hyb
   simp [hya, hyb]
 
-/-- If two developing maps differ by an integral affine equivalence `c`, their tangent frames
-differ by its lattice equivalence. -/
-theorem tangentFrame_eq_trans_latticeEquiv {dev dev' : DevelopingMap h B}
-    {c : IntegralAffineEquiv h h} (hc : ∀ x, dev' x = c (dev x)) (e : atlas V B) (x : B)
-    (hx : x ∈ e.1.source) :
+/-- If two developing maps differ near a point by an integral affine equivalence `c`, their
+tangent frames there differ by its lattice equivalence. -/
+theorem tangentFrame_eq_trans_latticeEquiv {dev dev' : DevelopingMap h B} {x : B}
+    {c : IntegralAffineEquiv h h} (hc : ∀ᶠ y in 𝓝 x, dev' y = c (dev y))
+    (e : atlas V B) (hx : x ∈ e.1.source) :
     dev'.tangentFrame e x hx = (dev.tangentFrame e x hx).trans c.latticeEquiv := by
   obtain ⟨a, u, hu, hxu, ha⟩ := isLocallyIntegralAffineOn_iff.mp
     (dev.isLocallyIntegralAffineOn e) _ (e.1.map_source hx)
-  rw [dev.tangentFrame_eq hx hu hxu ha, dev'.tangentFrame_eq hx hu hxu (a := c * a),
+  have ha' : ∀ᶠ y in 𝓝 (e.1 x), dev' (e.1.symm y) = (c * a) y := by
+    have hc' : ∀ᶠ y in 𝓝 (e.1.symm (e.1 x)), dev' y = c (dev y) := by
+      rwa [e.1.left_inv hx]
+    have hpre := Filter.Tendsto.eventually (f := e.1.symm)
+      (e.1.symm.continuousAt (e.1.map_source hx)) hc'
+    filter_upwards [hpre, e.1.open_target.mem_nhds (e.1.map_source hx),
+      hu.mem_nhds hxu] with y hy hyt hyu
+    have hya := ha ⟨hyt, hyu⟩
+    simp only [Function.comp_apply] at hya
+    rw [hya] at hy
+    simpa only [Function.comp_apply, IntegralAffineEquiv.mul_apply] using hy
+  obtain ⟨v, hvt, hv, hxv⟩ := mem_nhds_iff.mp ha'
+  rw [dev.tangentFrame_eq hx hu hxu ha, dev'.tangentFrame_eq hx hv hxv (fun _ hy => hvt hy.2),
     IntegralAffineEquiv.mul_latticeEquiv]
-  intro z hz
-  have hz' := ha hz
-  simp only [Function.comp_apply] at hz' ⊢
-  rw [hc, hz', IntegralAffineEquiv.mul_apply]
 
 variable [ConnectedSpace B]
 
@@ -200,8 +208,8 @@ theorem tangentFrame_chart_eq_trans_holonomy_latticeEquiv (dev : DevelopingMap h
     dev.tangentFrame (f.chart e) (f x) ((f.mem_source_iff e).mp hx) =
       (dev.tangentFrame e x hx).trans (dev.holonomy f).latticeEquiv := by
   rw [← tangentFrame_comap]
-  exact tangentFrame_eq_trans_latticeEquiv (fun y => by
-    rw [comap_apply]; exact holonomy_apply dev f y) e x hx
+  exact tangentFrame_eq_trans_latticeEquiv (Filter.Eventually.of_forall fun y => by
+    rw [comap_apply]; exact holonomy_apply dev f y) e hx
 
 /-- On the model space `V`, an integral affine equivalence is a developing map. -/
 def ofIntegralAffineEquiv (a : IntegralAffineEquiv h h) : DevelopingMap h V where
