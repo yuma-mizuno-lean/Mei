@@ -71,4 +71,19 @@ theorem shiftedDirectLimitBCHAction_inv (H : d.completedBCHGroup ℒ) :
     shiftedDirectLimitBCHAction d ℒ ℳ (H⁻¹) = (shiftedDirectLimitBCHAction d ℒ ℳ H).symm :=
   map_inv (shiftedDirectLimitBCHAction d ℒ ℳ) H
 
+/-- Completed BCH labels act additively on the global shifted coefficients. -/
+instance instDistribMulActionShiftedDirectLimit :
+    DistribMulAction (d.completedBCHGroup ℒ) (d.ShiftedDirectLimit ℳ) :=
+  DistribMulAction.compHom _ (d.shiftedDirectLimitBCHAction ℒ ℳ)
+
+/-- The completed BCH action commutes with the coefficient scalars. -/
+instance instSMulCommClassCompletedBCHShiftedDirectLimit :
+    SMulCommClass (d.completedBCHGroup ℒ) R (d.ShiftedDirectLimit ℳ) :=
+  SMul.comp.smulCommClass (β := R) (d.shiftedDirectLimitBCHAction ℒ ℳ)
+
+/-- The scalar action of a completed label is the global BCH action. -/
+@[simp]
+theorem smul_eq_shiftedDirectLimitBCHAction (g : d.completedBCHGroup ℒ)
+    (x : d.ShiftedDirectLimit ℳ) : g • x = d.shiftedDirectLimitBCHAction ℒ ℳ g x := (rfl)
+
 end Mei.PositiveDegrees

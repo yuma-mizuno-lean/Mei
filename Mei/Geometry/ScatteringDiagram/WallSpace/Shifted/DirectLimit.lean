@@ -8,6 +8,7 @@ module
 public import Mei.Geometry.ScatteringDiagram.WallSpace.Shifted
 public import Mei.Algebra.Lie.Graded.Shifted.DirectLimit
 public import Mei.LinearAlgebra.GradedModule.Shifted.DirectLimit.Component
+public import Mei.LinearAlgebra.GradedModule.Shifted.DirectLimit.ZeroDirection
 
 /-!
 # Tangent and zero-direction components of global wall actions
@@ -78,6 +79,21 @@ theorem shiftedDirectLimitBCHAction_of_eq_self_of_direction_eq_zero
       (d.toShiftedDirectLimitOfChart ℳ p s hp ((d.shiftedFiltration ℳ p).of a)) =
         d.toShiftedDirectLimitOfChart ℳ p s hp ((d.shiftedFiltration ℳ p).of a) :=
   H.shiftedDirectLimitBCHAction_of_eq_self_of_normal_eq_zero ℳ p s hp hg a ha (by simp [hr])
+
+/-- Ordinary wall labels fix every zero-direction coefficient. -/
+theorem smul_eq_self_of_mem_zeroDirectionCoefficients
+    {w : SupportedRay d} {m : Λ →+ ℤ} {g : d.completedBCHGroup ℒ}
+    (hg : g ∈ H.wallGroup w m) {x : d.ShiftedDirectLimit ℳ}
+    (hx : x ∈ d.zeroDirectionCoefficients ρ ℳ) : g • x = x := by
+  rw [PositiveDegrees.zeroDirectionCoefficients_def] at hx
+  induction hx using Submodule.span_induction with
+  | mem x hx =>
+    obtain ⟨p, s, hp, r, a, ha, hr, rfl⟩ := hx
+    rw [PositiveDegrees.smul_eq_shiftedDirectLimitBCHAction]
+    exact H.shiftedDirectLimitBCHAction_of_eq_self_of_direction_eq_zero ℳ p s hp hg a ha hr
+  | zero => exact smul_zero g
+  | add x y _ _ hx hy => rw [smul_add, hx, hy]
+  | smul r x _ hx => rw [smul_comm, hx]
 
 /-- A homogeneous input has no distinct zero-direction output under a global wall action. -/
 theorem shiftedDirectLimitComponents_BCHAction_eq_zero_of_direction_eq_zero

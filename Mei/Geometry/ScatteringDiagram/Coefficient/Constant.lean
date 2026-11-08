@@ -111,6 +111,17 @@ theorem value_constantCoefficientSections (e : E) (x : C.coefficientPoints) (hx 
     (D.coefficientTransport M).value (D.constantCoefficientSections M U g hg e) x hx = g e :=
   D.value_constantCoefficientSection M U (g e) (hg e) x hx
 
+/-- Restriction to a smaller open commutes with construction of the linear family of constant
+sections. -/
+@[simp]
+theorem restriction_constantCoefficientSections {U' : Opens C.regularSpace} (hU'U : U' ≤ U) :
+    ((D.coefficientTransport M).restrictionLinearMap R hU'U).comp
+        (D.constantCoefficientSections M U g hg) = D.constantCoefficientSections M U' g hg :=
+  LinearMap.ext fun e => (D.coefficientTransport M).section_ext fun x hx => by
+    rw [LinearMap.comp_apply, DenseBasisTransport.value_restrictionLinearMap,
+      value_constantCoefficientSections,
+      value_constantCoefficientSections]
+
 /-- A section is determined by its values at off-wall points, so the constant sections are the
 only linear family of sections of the open with the prescribed constant values. -/
 theorem eq_constantCoefficientSections_of_value_eq {t : E →ₗ[R] _}
