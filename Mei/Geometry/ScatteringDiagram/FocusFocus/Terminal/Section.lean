@@ -6,7 +6,7 @@ Authors: Claude
 module
 
 public import Mei.Geometry.ScatteringDiagram.FocusFocus.Terminal.Matching
-public import Mei.CategoryTheory.Limits.AlgebraMultispan
+public import Mei.Algebra.Category.AlgCat.Sections
 
 /-!
 # Theta sections of the focus-focus slab span
@@ -49,76 +49,106 @@ abbrev slabTerminalAlgebraMultispan (t : R) :
   fst _ := AlgCat.ofHom (exponentLeftMap (C t * (1 + T 1)))
   snd _ := AlgCat.ofHom (exponentRightMap (C t * (1 + T 1)))
 
+/-- The algebra sections of the slab span are the semimodule sections of the underlying
+span of linear maps. -/
+def slabSectionsToSemimodule : AlgCat.sectionsSubalgebra
+    (slabTerminalAlgebraMultispan t).multispan ≃ₗ[R]
+      SemimoduleCat.sectionsSubmodule (slabTerminalMultispan t).multispan where
+  toFun x := ⟨fun j => match j with
+      | .left c => x.val (.left c)
+      | .right b => x.val (.right b),
+    (MultispanIndex.mem_sectionsSubmodule_multispan _).mpr
+      ⟨fun c => x.property (.fst c), fun c => x.property (.snd c)⟩⟩
+  invFun x := ⟨fun j => match j with
+      | .left c => x.val (.left c)
+      | .right b => x.val (.right b), by
+    intro j j' f
+    cases f with
+    | id j => rfl
+    | fst c => exact ((MultispanIndex.mem_sectionsSubmodule_multispan _).mp x.property).1 c
+    | snd c => exact ((MultispanIndex.mem_sectionsSubmodule_multispan _).mp x.property).2 c⟩
+  map_add' _ _ := Subtype.ext (funext fun j => by cases j <;> rfl)
+  map_smul' _ _ := Subtype.ext (funext fun j => by cases j <;> rfl)
+  left_inv _ := Subtype.ext (funext fun j => by cases j <;> rfl)
+  right_inv _ := Subtype.ext (funext fun j => by cases j <;> rfl)
+
+/-- The matching sections of the slab span are linearly identified with the slab algebra by
+reading off the face value. -/
+private def slabFaceEquiv : AlgCat.sectionsSubalgebra
+    (slabTerminalAlgebraMultispan t).multispan ≃ₗ[R]
+      TauCeti.NodeAlgebra R[T;T⁻¹] (C t * (1 + T 1)) :=
+  (slabSectionsToSemimodule t).trans (MultispanIndex.sectionsLinearEquivOfLinearMaps
+    (exponentLeftMap (C t * (1 + T 1))).toLinearMap
+    (exponentRightMap (C t * (1 + T 1))).toLinearMap)
+
+private theorem slabFaceEquiv_apply (σ : AlgCat.sectionsSubalgebra
+      (slabTerminalAlgebraMultispan t).multispan) :
+    slabFaceEquiv t σ = σ.val (.left default) := by
+  rw [slabFaceEquiv, LinearEquiv.trans_apply,
+    MultispanIndex.sectionsLinearEquivOfLinearMaps_apply]
+  rfl
+
+private theorem slabFaceEquiv_symm_apply_right_false
+    (z : TauCeti.NodeAlgebra R[T;T⁻¹] (C t * (1 + T 1))) :
+    ((slabFaceEquiv t).symm z).val (.right false) =
+      exponentLeftMap (C t * (1 + T 1)) z := by
+  rw [slabFaceEquiv, LinearEquiv.symm_trans_apply]
+  exact MultispanIndex.sectionsLinearEquivOfLinearMaps_symm_apply_right_false _ _ z
+
+private theorem slabFaceEquiv_symm_apply_right_true
+    (z : TauCeti.NodeAlgebra R[T;T⁻¹] (C t * (1 + T 1))) :
+    ((slabFaceEquiv t).symm z).val (.right true) =
+      exponentRightMap (C t * (1 + T 1)) z := by
+  rw [slabFaceEquiv, LinearEquiv.symm_trans_apply]
+  exact MultispanIndex.sectionsLinearEquivOfLinearMaps_symm_apply_right_true _ _ z
+
+private theorem slabFaceEquiv_symm_apply_left
+    (z : TauCeti.NodeAlgebra R[T;T⁻¹] (C t * (1 + T 1)))
+    (c : (MultispanShape.ofLinearOrder Bool).L) :
+    ((slabFaceEquiv t).symm z).val (.left c) = z := by
+  rw [slabFaceEquiv, LinearEquiv.symm_trans_apply]
+  exact MultispanIndex.sectionsLinearEquivOfLinearMaps_symm_apply_left _ _ z c
+
 /-- The matching algebra sections of the slab span are algebra-equivalent to the slab algebra
 by reading off the face value. -/
 noncomputable def slabAlgebraEquiv : AlgCat.sectionsSubalgebra
     (slabTerminalAlgebraMultispan t).multispan ≃ₐ[R]
-      TauCeti.NodeAlgebra R[T;T⁻¹] (C t * (1 + T 1)) := by
-  let I := slabTerminalAlgebraMultispan t
-  let hinj : ∀ a, Function.Injective ((I.fst a).hom.prod (I.snd a).hom) := fun _ =>
-    exponentMaps_jointly_injective (C t * (1 + T 1))
-  let e := I.sectionsAlgEquivCompatibleFamilies hinj
-  let family : TauCeti.NodeAlgebra R[T;T⁻¹] (C t * (1 + T 1)) →
-      I.compatibleAlgebraFamilies := fun z => ⟨fun b => match b with
-    | false => exponentLeftMap (C t * (1 + T 1)) z
-    | true => exponentRightMap (C t * (1 + T 1)) z,
-    (MultispanIndex.mem_compatibleAlgebraFamilies I _).mpr (fun a => ⟨z, by
-      obtain rfl : a = default := Subsingleton.elim _ _
-      exact Prod.ext rfl rfl⟩)⟩
-  exact {
-    toFun := fun s => s.val (.left default)
-    invFun := fun z => e.symm (family z)
-    left_inv := by
-      intro x
-      apply Subtype.ext
-      funext j
-      cases j with
-      | left c =>
-          obtain rfl : c = default := Subsingleton.elim _ _
-          exact (I.sectionsAlgEquivCompatibleFamilies_symm_apply_left_iff hinj
-            (family (x.val (.left default))) default _).mpr ⟨rfl, rfl⟩
-      | right b =>
-          exact (I.sectionsAlgEquivCompatibleFamilies_symm_apply_right hinj
-            (family (x.val (.left default))) b).trans (by
-            cases b
-            · exact x.property (.fst default)
-            · exact x.property (.snd default))
-    right_inv := by
-      intro z
-      exact (I.sectionsAlgEquivCompatibleFamilies_symm_apply_left_iff hinj
-        (family z) default z).mpr ⟨rfl, rfl⟩
-    map_mul' := by intro x y; rfl
-    map_add' := by intro x y; rfl
-    commutes' := by intro r; rfl }
+      TauCeti.NodeAlgebra R[T;T⁻¹] (C t * (1 + T 1)) :=
+  AlgEquiv.ofLinearEquiv (slabFaceEquiv t)
+    (by rw [slabFaceEquiv_apply]; rfl)
+    (fun x y => by simp only [slabFaceEquiv_apply]; rfl)
 
 /-- The face value of a matching section is its image under `slabAlgebraEquiv`. -/
 @[simp]
 theorem slabAlgebraEquiv_apply (σ : AlgCat.sectionsSubalgebra
       (slabTerminalAlgebraMultispan t).multispan) :
-    slabAlgebraEquiv t σ = σ.val (.left default) := by
-  rw [slabAlgebraEquiv]
-  rfl
+    slabAlgebraEquiv t σ = σ.val (.left default) :=
+  slabFaceEquiv_apply t σ
 
 /-- The face component of a matching section reconstructed by `slabAlgebraEquiv`. -/
 @[simp]
 theorem slabAlgebraEquiv_symm_apply_left (z : TauCeti.NodeAlgebra R[T;T⁻¹] (C t * (1 + T 1)))
     (c : (MultispanShape.ofLinearOrder Bool).L) :
-    ((slabAlgebraEquiv t).symm z).val (.left c) = z := by
-  obtain rfl : c = default := Subsingleton.elim _ _
-  exact slabAlgebraEquiv_apply t _ |>.symm.trans ((slabAlgebraEquiv t).apply_symm_apply z)
+    ((slabAlgebraEquiv t).symm z).val (.left c) = z :=
+  slabFaceEquiv_symm_apply_left t z c
 
-/-- The chamber value of a matching section reconstructed by `slabAlgebraEquiv` is the
-corresponding Laurent image of its face value. -/
+/-- The negative chamber value of a matching section reconstructed by `slabAlgebraEquiv` is the
+left Laurent image of its face value. -/
 @[simp]
-theorem slabAlgebraEquiv_symm_apply_right (z : TauCeti.NodeAlgebra R[T;T⁻¹] (C t * (1 + T 1)))
-    (b : (MultispanShape.ofLinearOrder Bool).R) :
-    ((slabAlgebraEquiv t).symm z).val (.right b) =
-      match b with
-      | false => exponentLeftMap (C t * (1 + T 1)) z
-      | true => exponentRightMap (C t * (1 + T 1)) z := by
-  rw [slabAlgebraEquiv]
-  exact (slabTerminalAlgebraMultispan t).sectionsAlgEquivCompatibleFamilies_symm_apply_right
-    (fun _ => exponentMaps_jointly_injective (C t * (1 + T 1))) _ _
+theorem slabAlgebraEquiv_symm_apply_right_false
+    (z : TauCeti.NodeAlgebra R[T;T⁻¹] (C t * (1 + T 1))) :
+    ((slabAlgebraEquiv t).symm z).val (.right false) =
+      exponentLeftMap (C t * (1 + T 1)) z :=
+  slabFaceEquiv_symm_apply_right_false t z
+
+/-- The positive chamber value of a matching section reconstructed by `slabAlgebraEquiv` is the
+right Laurent image of its face value. -/
+@[simp]
+theorem slabAlgebraEquiv_symm_apply_right_true
+    (z : TauCeti.NodeAlgebra R[T;T⁻¹] (C t * (1 + T 1))) :
+    ((slabAlgebraEquiv t).symm z).val (.right true) =
+      exponentRightMap (C t * (1 + T 1)) z :=
+  slabFaceEquiv_symm_apply_right_true t z
 
 /-- The matching sections of the slab span are linearly identified with the slab algebra by
 reading off the face value. -/
@@ -148,14 +178,14 @@ theorem slabThetaSection_left (n b : ℤ) (c : (MultispanShape.ofLinearOrder Boo
 theorem slabThetaSection_right_false (n b : ℤ) :
     (slabThetaSection t n b).val (.right false) =
       exponentLeftMap (C t * (1 + T 1)) (theta t n b) :=
-  slabAlgebraEquiv_symm_apply_right t (theta t n b) false
+  slabAlgebraEquiv_symm_apply_right_false t (theta t n b)
 
 /-- The positive chamber value of `ϑ_{n,b}` is the right Laurent image of the monomial. -/
 @[simp]
 theorem slabThetaSection_right_true (n b : ℤ) :
     (slabThetaSection t n b).val (.right true) =
       exponentRightMap (C t * (1 + T 1)) (theta t n b) :=
-  slabAlgebraEquiv_symm_apply_right t (theta t n b) true
+  slabAlgebraEquiv_symm_apply_right_true t (theta t n b)
 
 /-- The theta sections form a basis of the matching sections of the slab span, indexed by
 the exponents `(n, b)`. -/
@@ -182,7 +212,7 @@ theorem slabThetaSection_smul_right_false (c : R) (n b : ℤ) :
     (c • slabThetaSection t n b).val (.right false) =
       exponentLeftMap (C t * (1 + T 1)) (c • theta t n b) := by
   rw [slabThetaSection_smul]
-  exact slabAlgebraEquiv_symm_apply_right t (c • theta t n b) _
+  exact slabAlgebraEquiv_symm_apply_right_false t (c • theta t n b)
 
 /-- The positive chamber value of a multiple of `ϑ_{n,b}` is the right Laurent image of the
 multiple of the monomial. -/
@@ -190,7 +220,7 @@ theorem slabThetaSection_smul_right_true (c : R) (n b : ℤ) :
     (c • slabThetaSection t n b).val (.right true) =
       exponentRightMap (C t * (1 + T 1)) (c • theta t n b) := by
   rw [slabThetaSection_smul]
-  exact slabAlgebraEquiv_symm_apply_right t (c • theta t n b) _
+  exact slabAlgebraEquiv_symm_apply_right_true t (c • theta t n b)
 
 /-- At a generic endpoint of the negative chamber, the actual weighted broken-line sum of the
 incoming record `c ϑ_{n,b}` is the negative chamber value of the section `c • ϑ_{n,b}`. -/
@@ -266,32 +296,15 @@ theorem slabTerminalFinite_matchingFamily_iff
     rw [sum_smul_slabThetaSection]
     apply (slabAlgebraEquiv t).injective
     rw [AlgEquiv.apply_symm_apply, slabAlgebraEquiv_apply]
-    apply exponentMaps_jointly_injective (C t * (1 + T 1))
-    refine Prod.ext ?_ ?_
-    · have hleft := ((ℓ a).property (.fst default)).trans
-        (congrArg (fun side : Bool => (ℓ a).val (.right side))
-          (MultispanShape.ofLinearOrder_bool_fst default))
-      have hvalueL : (ℓ a).val (.right false) =
-          ∑ i ∈ s, slabThetaEvaluation t (α i a) (n i) (b i) L := by
-        simpa only [Bool.false_eq_true, ↓reduceIte,
-          slabThetaFamily_weightedEvaluation] using hℓ a false
-      exact (hleft.trans hvalueL).trans
-        (exponentLeftMap_slabTerminalFiniteLift s n b t α hL hLs a).symm
-    · have hright := ((ℓ a).property (.snd default)).trans
-        (congrArg (fun side : Bool => (ℓ a).val (.right side))
-          (MultispanShape.ofLinearOrder_bool_snd default))
-      have hvalueR : (ℓ a).val (.right true) =
-          ∑ i ∈ s, slabThetaEvaluation t (α i a) (n i) (b i) U := by
-        simpa only [↓reduceIte, slabThetaFamily_weightedEvaluation] using hℓ a true
-      exact (hright.trans hvalueR).trans
-        (exponentRightMap_slabTerminalFiniteLift s n b t α hU hUs a).symm
+    exact slabTerminalFinite_matchingFamily_face s n b t α h hL hU hLs hUs
+      ((slabSectionsToSemimodule t).toLinearMap ∘ₗ ℓ) hℓ a default
   · intro hℓ a side
     rw [hℓ a, sum_smul_slabThetaSection]
     cases side
-    · rw [slabAlgebraEquiv_symm_apply_right t _ false]
+    · rw [slabAlgebraEquiv_symm_apply_right_false]
       refine (exponentLeftMap_slabTerminalFiniteLift s n b t α hL hLs a).trans ?_
       simp only [slabThetaFamily_weightedEvaluation, Bool.false_eq_true, ↓reduceIte]
-    · rw [slabAlgebraEquiv_symm_apply_right t _ true]
+    · rw [slabAlgebraEquiv_symm_apply_right_true]
       refine (exponentRightMap_slabTerminalFiniteLift s n b t α hU hUs a).trans ?_
       simp only [slabThetaFamily_weightedEvaluation, ↓reduceIte]
 
