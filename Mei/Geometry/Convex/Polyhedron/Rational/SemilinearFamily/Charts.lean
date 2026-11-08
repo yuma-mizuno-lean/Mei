@@ -34,6 +34,32 @@ variable {N V ι : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace �
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i} [Finite ι]
   (D : ι → Set V) (hD : ∀ t, IsRationalSemilinear h (D t))
 
+variable {D} {κ : ι → Type*} {B : ∀ t, κ t → Set V}
+  (hdisj : ∀ t, Pairwise fun j l => Disjoint (B t j) (B t l))
+  (hcover : ∀ t, ⋃ j, B t j = D t)
+
+/-- A disjoint cover of every domain by chart pieces parameterizes the whole
+inclusion family: a point of a piece is sent to its endpoint and chart label. -/
+def ofDomainsChartEquiv : (Σ t, Σ j, B t j) ≃ Σ Q, (ofDomains D hD).fiber Q :=
+  (Mei.sigmaDisjointCoverEquiv hdisj hcover).trans
+    (Equiv.sigmaCongrRight fun Q => (fiberOfDomainsEquiv D hD Q).symm)
+
+/-- The chart parameterization preserves the endpoint. -/
+@[simp]
+theorem ofDomainsChartEquiv_apply_fst (z : Σ t, Σ j, B t j) :
+    (ofDomainsChartEquiv hD hdisj hcover z).1 = z.2.2.val := by
+  simp only [ofDomainsChartEquiv, Equiv.trans_apply, Equiv.sigmaCongrRight_apply,
+    Mei.sigmaDisjointCoverEquiv_apply_fst]
+
+/-- The chart parameterization preserves the chart label. -/
+@[simp]
+theorem ofDomainsChartEquiv_apply_snd_fst (z : Σ t, Σ j, B t j) :
+    (ofDomainsChartEquiv hD hdisj hcover z).2.1 = z.1 :=
+  (fiberOfDomainsEquiv_symm_apply_fst D hD _ _).trans
+    (Mei.sigmaDisjointCoverEquiv_apply_val hdisj hcover z)
+
+variable (D)
+
 /-- Subdividing inclusion domains gives finite closed charts whose relative
 interiors parameterize the entire family exactly, with its original labels.
 Boundary points are limits and need not belong to the original domain. -/
@@ -49,16 +75,8 @@ theorem exists_ofDomains_polyhedralCharts :
         (∀ z, (e z).1 = z.2.2.val) ∧ ∀ z, (e z).2.1 = z.1 := by
   classical
   choose κ hκ B hB hdisj hcover using fun t => (hD t).exists_disjoint_intrinsicInteriors
-  let e := (Mei.sigmaDisjointCoverEquiv hdisj hcover).trans
-    (Equiv.sigmaCongrRight fun Q => (fiberOfDomainsEquiv D hD Q).symm)
-  have hendpoint (z) : (e z).1 = z.2.2.val := by
-    simp only [e, Equiv.trans_apply, Equiv.sigmaCongrRight_apply,
-      Mei.sigmaDisjointCoverEquiv_apply_fst]
-  have hlabel (z) : (e z).2.1 = z.1 := by
-    calc
-      (e z).2.1 = (Mei.sigmaDisjointCoverEquiv hdisj hcover z).2.val :=
-        fiberOfDomainsEquiv_symm_apply_fst D hD _ _
-      _ = z.1 := Mei.sigmaDisjointCoverEquiv_apply_val hdisj hcover z
-  exact ⟨κ, hκ, B, hB, hdisj, hcover, e, hendpoint, hlabel⟩
+  exact ⟨κ, hκ, B, hB, hdisj, hcover, ofDomainsChartEquiv hD hdisj hcover,
+    ofDomainsChartEquiv_apply_fst hD hdisj hcover,
+    ofDomainsChartEquiv_apply_snd_fst hD hdisj hcover⟩
 
 end Mei.FiniteSemilinearFamily
