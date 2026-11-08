@@ -27,7 +27,8 @@ the weight of an exponent degree is the normal weight of the wall. The far-side 
 the incoming coefficient times the power `θ ^ w` of the wall function, summed over the walls
 of the matching crossing sign. The exponent grading may be strictly finer than the weight grading.
 Components of unchanged exponent degree, and components whose spatial velocity is unchanged or
-changes within the face, all contribute.
+changes within the face, all contribute. For the wall function `1 - z` and an incoming datum of
+normal weight one, the far-side evaluation is `a - a z`.
 
 The function-wall formula follows Mandel, *Scattering diagrams, theta functions, and refined
 tropical curve counts*, Example 2.1(i), and the single-face broken lines follow
@@ -105,5 +106,55 @@ theorem cutoffDecoratedEvaluation_functionWall_of_neg [Fintype J] (θ : J → (�
   exact Finset.sum_congr rfl fun j _ => functionWallAction_apply_of_mem 𝒜 (θ j) (hw 0 a.2)
 
 end FunctionWall
+
+section OneWall
+
+open Mei.GradedAlgebra
+
+variable {R A Γ V : Type*} [CommRing R] [CommRing A] [Algebra R A] [DecidableEq Γ]
+  (𝒜 : ℤ → Submodule R A) [GradedAlgebra 𝒜] {ℳ : Γ → Submodule R A}
+  [DirectSum.Decomposition ℳ] [NormedAddCommGroup V] [NormedSpace ℝ V] [AddCommGroup Γ]
+  {d : PositiveDegrees Γ} {a : ℳ 0} {v : Γ → V} {ε : Unit → SignType}
+  {ν : V →L[ℝ] ℝ} {b : ℝ} {k : ℕ} {Q : V}
+
+/-- Weighted evaluation through one function wall `θ = 1 - z`, for an incoming datum `a` of
+relative degree zero and normal weight `ν (v 0) = 1`. The wall multiplies `a` by `1 - z`, and
+`a z` lies in the single exponent degree `n`. On the far side of the wall, with `n` in the
+enumeration cutoff and no singular set, the evaluation is `a - a z`. On the source side it is `a`,
+by `cutoffDecoratedEvaluation_singleFace_of_pos`. The weight `w 0` of `a` is one, so the wall acts
+by the first power of `θ`; the weight of `n` is not constrained, since `a z` is zero unless
+it equals the weight of `a`. -/
+theorem cutoffDecoratedEvaluation_functionWall_one_sub_of_neg (θ : (𝒜 0)ˣ) (z : A) {n : Γ}
+    (hθ : (θ : A) = 1 - z) (hz : (a : A) * z ∈ ℳ n) (hn : n ∈ d.cutoff k) (w : Γ → ℤ)
+    (hw : ∀ q, ℳ q ≤ 𝒜 (w q)) (hν : ∀ q, ν (v q) = w q) (hν0 : ν (v 0) = 1)
+    (hε : ε () = 1) (hQ : ν Q < b) :
+    cutoffDecoratedEvaluation d ℳ (fun _ : Unit => (functionWallAction 𝒜 θ).toLinearMap) a v
+        (fun _ : Unit => ν) (fun _ : Unit => b) ε (fun _ : Unit => {x | ν x = b})
+        (fun _ : Unit => {x | ν x = b}) (fun _ : Unit => (∅ : Set V))
+        {x | 0 < (ν x - b) / ν (v 0)} k Q = (a : A) - a * z := by
+  have hw0 : w 0 = 1 := by
+    have := hν 0
+    rw [hν0] at this
+    exact_mod_cast this.symm
+  have hap : functionWallAction 𝒜 θ a = (a : A) - a * z := by
+    rw [functionWallAction_apply_of_mem 𝒜 θ (hw 0 a.2), hw0, zpow_one]
+    simp [hθ, mul_sub]
+  rw [cutoffDecoratedEvaluation_functionWall_of_neg 𝒜 (fun _ : Unit => θ) w hw hν
+    (Set.empty_subset _) (by rwa [hν0, div_one, sub_neg]) ?_]
+  · simp [hw0, hε, hν0, hθ, mul_sub]
+  · intro j _ η hη
+    refine ⟨?_, by simp⟩
+    rw [hap, DirectSum.decompose_sub, DirectSum.decompose_of_mem ℳ a.2,
+      DirectSum.decompose_of_mem ℳ hz] at hη
+    by_cases h0 : η = 0
+    · subst h0
+      exact d.mem_cutoff.mpr ⟨d.monoid.zero_mem, by simp⟩
+    · by_cases hn' : η = n
+      · exact hn' ▸ hn
+      · exact absurd (by
+          rw [DirectSum.sub_apply, DirectSum.of_eq_of_ne _ _ _ h0,
+            DirectSum.of_eq_of_ne _ _ _ hn', sub_zero]) hη
+
+end OneWall
 
 end Mei
