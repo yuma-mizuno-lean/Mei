@@ -94,6 +94,17 @@ namespace PathDecoratedRay
 
 variable {p : Path a b} {X : V}
 
+/-- Component transfers raising a filtration that vanishes at order `r` bound the
+total mark of every actual ray by `r - 1`. Unmarked encounters, including
+unchanged-degree encounters and degree changes invisible in space, are retained. -/
+theorem addWeight_lt_of_componentTransfersRaise (β : Ray p X)
+    (hraise : ComponentTransfersRaise (T := T) (ℳ := ℳ) (F := F) (w := mark))
+    (hvanish : (F b).submodule r = ⊥) :
+    Path.addWeight (GradedVertex.componentWeight mark)
+      (Path.Degrees.liftPath i₀ p β.1.val) < r :=
+  p.componentWeight_lt_of_homogeneousHistory_ne_zero hraise i₀ x.property hvanish
+    (by simpa only [PathDecoratedRay.decoration_def] using β.decoration_ne_zero)
+
 /-- A nilpotent component filtration bounds the encounters of every actual decorated ray
 along a quiver path by the product of its vanishing order and the number of arrows. The
 filtrations of different chamber modules are unrelated, and components with zero mark
@@ -128,6 +139,22 @@ theorem length_le_of_filtration [Finite (Σ b c : Q, b ⟶ c)]
   · intro j
     rw [congrFun hν j]
     exact β.transverse j
+
+/-- Relative-degree ranks bound every actual ray when surviving components never
+lower the rank and marked components raise it, and the chamber modules vanish
+from rank `n` on. With direction-preserving unmarked components there are at most
+`n` times the number of arrows encounters. This is the affine application of the
+filtration encounter bound, with `n = k + 1` at order `k`. -/
+theorem length_le_of_rank [Finite (Σ b c : Q, b ⟶ c)] (β : Ray p X)
+    (rank : ∀ q, ι q → ℕ)
+    (hT : ∀ {b c : Q} (e : b ⟶ c) (i : ι b) (j : ι c) (y : M b), y ∈ ℳ b i →
+      homogeneousComponent (ℳ c) j (T e y) ≠ 0 → rank b i + mark e i j ≤ rank c j)
+    (hstraight : ∀ {b c : Q} (e : b ⟶ c) (i : ι b) (j : ι c), mark e i j = 0 → v b i = v c j)
+    {n : ℕ} (hn : ∀ i, n ≤ rank b i → ℳ b i = ⊥) :
+    p.length ≤ n * Nat.card (Σ b c : Q, b ⟶ c) :=
+  β.length_le_of_filtration (F := fun q => componentDegreeFiltration (ℳ q) (rank q))
+    (componentTransfersRaise_of_rank rank hT) hstraight
+    (componentDegreeFiltration_eq_bot (ℳ b) (rank b) hn)
 
 end PathDecoratedRay
 
