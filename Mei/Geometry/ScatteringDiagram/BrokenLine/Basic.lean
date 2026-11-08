@@ -5,6 +5,7 @@ Authors: Claude
 -/
 module
 
+public import Mei.Data.Fin.HEq
 public import Mei.LinearAlgebra.GradedCorrespondence.Basic
 public import Mathlib.Algebra.Category.ModuleCat.Semi
 public import Mathlib.Algebra.BigOperators.Fin
@@ -345,46 +346,15 @@ protected theorem ext {b c : BrokenLine D} (hn : b.numEvents = c.numEvents)
   simp only [BrokenLine.mk.injEq]
   exact ⟨hn, hT, hstate, hdegree, hdecoration, hpath, hface⟩
 
-universe uV uW uX
-
-private theorem zero_index_heq {n m : ℕ} (hn : n = 0) (hm : m = 0)
-    {A : Type uV} (f : Fin (n + 1) → A) (g : Fin (m + 1) → A)
-    (h : f 0 = g 0) : HEq f g := by
-  subst n
-  subst m
-  exact heq_of_eq (funext fun j => by
-    rw [Fin.fin_one_eq_zero j]
-    exact h)
-
-private theorem zero_index_dep_heq {S : Type uV} {A : S → Type uW} {B : ∀ s, A s → Type uX}
-    {n m : ℕ} (hn : n = 0) (hm : m = 0)
-    {st : Fin (n + 1) → S} {st' : Fin (m + 1) → S} (hst : HEq st st')
-    {f : ∀ j, A (st j)} {g : ∀ j, A (st' j)}
-    {df : ∀ j, B (st j) (f j)} {dg : ∀ j, B (st' j) (g j)}
-    (h : HEq (⟨f 0, df 0⟩ : Σ a, B (st 0) a) (⟨g 0, dg 0⟩ : Σ a, B (st' 0) a)) :
-    HEq f g ∧ HEq df dg := by
-  subst n
-  subst m
-  have hst' : st = st' := eq_of_heq hst
-  subst st'
-  have h' : (⟨f 0, df 0⟩ : Σ a, B (st 0) a) = ⟨g 0, dg 0⟩ := eq_of_heq h
-  have hfg : f = g := funext fun j => by
-    rw [Fin.fin_one_eq_zero j]
-    exact (Sigma.mk.inj h').1
-  subst g
-  exact ⟨HEq.rfl, heq_of_eq (funext fun j => by
-    rw [Fin.fin_one_eq_zero j]
-    exact eq_of_heq (Sigma.mk.inj h').2)⟩
-
 /-- Broken lines without crossings are determined by their path and incoming datum. -/
 theorem ext_of_numEvents_eq_zero {b c : BrokenLine D} (hb : b.numEvents = 0)
     (hc : c.numEvents = 0) (hpath : b.path = c.path) (hinc : b.incoming = c.incoming) :
     b = c := by
   rw [b.incoming_def, c.incoming_def] at hinc
   have hstate : HEq b.state c.state :=
-    zero_index_heq hb hc b.state c.state (Sigma.mk.inj hinc).1
+    Fin.zero_index_heq hb hc b.state c.state (Sigma.mk.inj hinc).1
   obtain ⟨hdegree, hdecoration⟩ :=
-    zero_index_dep_heq (B := fun u p => D.coefficient u) (f := b.degree) (g := c.degree)
+    Fin.zero_index_dep_heq (B := fun u p => D.coefficient u) (f := b.degree) (g := c.degree)
       (df := b.decoration) (dg := c.decoration) hb hc hstate (Sigma.mk.inj hinc).2
   have hn : b.numEvents = c.numEvents := hb.trans hc.symm
   have hbc : Fin b.numEvents = Fin c.numEvents := congrArg Fin hn
