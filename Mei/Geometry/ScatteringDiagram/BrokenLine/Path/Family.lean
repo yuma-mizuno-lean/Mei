@@ -315,7 +315,7 @@ theorem pathDecoratedChartEquiv_apply_path {κ : Labels → Type*} {B : ∀ t, �
     FiniteSemilinearFamily.ofDomainsChartEquiv_apply_fst _ hdisj hcover z
   have hp := pathDecoratedFamilyFiberEquiv_path T ℳ i₀ x s v ν ε c P W S C h hD
     z'.1 z'.2
-  change ((e z'.1) z'.2).2.2.ray.toContinuousMap = (path z.1) z.2.2.val
+  simp only [pathDecoratedChartEquiv, Equiv.trans_apply]
   exact hp.trans (by rw [hz', hz'X])
 
 /-- The ray parameterization preserves the entire final decoration. -/
