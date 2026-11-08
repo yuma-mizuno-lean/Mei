@@ -9,7 +9,7 @@ public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.WallEvent
 public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.LocalCrossing.Action
 public import Mei.Algebra.Lie.Graded.Shifted.Basic
 public import Mei.LinearAlgebra.GradedModule.Shifted.Quotient
-public import Mei.Geometry.ScatteringDiagram.BrokenLine.DecoratedRay
+public import Mei.Geometry.ScatteringDiagram.BrokenLine.Path.Basic
 
 /-!
 # Normal velocity under simultaneous wall events
@@ -148,22 +148,52 @@ theorem homogeneousHistory_wallEventLabel_normal_eq {n : ℕ}
   simpa only [WallEvent.normal_def, h.continuousRealCharacter_apply, h.realCharacter_apply]
     using congrArg (Int.cast : ℤ → ℝ) hamb
 
-/-- For actual signed simultaneous event labels, the decorated-history filter
-requires only survival and the prescribed crossing signs: normal conservation
-is automatic, even when several supported rays contribute to the event. -/
+/-- For actual signed simultaneous event labels along a path of events, the decorated
+history filter requires only survival and the prescribed crossing signs: normal
+conservation is automatic, even when several supported rays contribute to an event. -/
 @[simp↓]
-theorem mem_decoratedHistorySupport_wallEventLabel_iff {n : ℕ}
-    (e : Fin n → WallEvent (D.active k)) (r : Fin n → Γ) (r₀ : Γ)
-    (a : G r₀) :
-    r ∈ decoratedHistorySupport G (fun j => T (e j)) r₀ a v
-      (fun j => (e j).normal (f k)) (fun j => (e j).2) ↔
-      homogeneousHistory G (fun j => T (e j)) r a ≠ 0 ∧
-        ∀ j, SignType.sign ((e j).normal (f k) (v (r j))) = (e j).2 := by
-  rw [mem_decoratedHistorySupport]
+theorem mem_pathDecoratedHistorySupport_wallEventLabel_iff
+    (q : Quiver.Path (Quiver.SingleObj.star (WallEvent (D.active k)))
+      (Quiver.SingleObj.star (WallEvent (D.active k))))
+    (dd : q.Degrees fun _ => Γ) (r₀ : Γ) (a : G r₀) :
+    dd ∈ pathDecoratedHistorySupport (Q := Quiver.SingleObj (WallEvent (D.active k)))
+      (M := fun _ => (d.shiftedLieFiltration ℒ ℳ p).quotient k) (ι := fun _ => Γ)
+      (fun e => T e) (fun _ => G) r₀ a (fun _ => v) (fun e => WallEvent.normal e (f k))
+      (fun e => Prod.snd e) q ↔
+      q.homogeneousHistory (M := fun _ => (d.shiftedLieFiltration ℒ ℳ p).quotient k)
+        (fun e => T e) (fun _ => G) dd a ≠ 0 ∧
+        ∀ j, SignType.sign (q.reverseArrowLabels (fun e => WallEvent.normal e (f k)) j
+          (Quiver.Path.Degrees.reverseVertexLabels (fun _ => v) r₀ q dd j.castSucc)) =
+          q.reverseArrowLabels (fun e => Prod.snd e) j := by
+  rw [mem_pathDecoratedHistorySupport]
   constructor
   · exact fun hr => ⟨hr.1, fun j => (hr.2 j).2⟩
   · rintro ⟨hne, hs⟩
-    exact ⟨hne, fun j =>
-      ⟨D.homogeneousHistory_wallEventLabel_normal_eq ℳ p k e r r₀ a hne j, hs j⟩⟩
+    refine ⟨hne, fun j => ⟨?_, hs j⟩⟩
+    set lab := q.reverseArrowLabels (fun e => (e : WallEvent (D.active k)))
+    set rvl := Quiver.Path.Degrees.reverseVertexLabels (fun _ n => n) r₀ q dd
+    have hT : q.reverseArrowLabels (fun e => T e) = (fun e => T e) ∘ lab :=
+      Quiver.Path.reverseArrowLabels_comp (fun e => (e : WallEvent (D.active k)))
+        (fun e => T e) q
+    have hne' : homogeneousHistory G (fun j => T (lab j)) (Fin.init rvl) a ≠ 0 := by
+      have h := Quiver.Path.homogeneousHistory_eq_reverseLabels (fun e => T e) G r₀ q dd
+        (a : (d.shiftedLieFiltration ℒ ℳ p).quotient k)
+      rw [hT] at h
+      rw [h] at hne
+      exact hne
+    have h := D.homogeneousHistory_wallEventLabel_normal_eq ℳ p k lab (Fin.init rvl) r₀ a hne' j
+    have hν : q.reverseArrowLabels (fun e => WallEvent.normal e (f k)) =
+        (fun e => WallEvent.normal e (f k)) ∘ lab :=
+      Quiver.Path.reverseArrowLabels_comp (fun e => (e : WallEvent (D.active k)))
+        (fun e => WallEvent.normal e (f k)) q
+    have hv : Quiver.Path.Degrees.reverseVertexLabels (fun _ => v) r₀ q dd = v ∘ rvl :=
+      Quiver.Path.Degrees.reverseVertexLabels_comp (fun _ n => n) v r₀ q dd
+    have hsnoc : Fin.snoc (α := fun _ => Γ) (Fin.init rvl) r₀ = rvl := by
+      have hlast : rvl (Fin.last q.length) = r₀ :=
+        Quiver.Path.Degrees.reverseVertexLabels_last (fun _ n => n) r₀ q dd
+      conv_rhs => rw [← Fin.snoc_init_self rvl]
+      rw [hlast]
+    rw [hν, hv]
+    simpa only [Function.comp_apply, Fin.init, hsnoc] using h
 
 end Mei.DirectedDiagram
