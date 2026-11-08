@@ -8,7 +8,7 @@ module
 public import Mei.Geometry.ScatteringDiagram.ModuleProbe.BackwardRecursion
 public import Mei.Algebra.Lie.Graded.Shifted.Support
 public import Mei.Geometry.ScatteringDiagram.BrokenLine.Path.LastChange
-public import Mei.Geometry.ScatteringDiagram.BrokenLine.Itineraries.BCH
+public import Mei.Geometry.ScatteringDiagram.BrokenLine.Path.Cutoff
 public import Mei.Geometry.ScatteringDiagram.BrokenLine.Path.Regrading
 public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.WallEvent.Action
 public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.WallEvent.Parameters
@@ -23,9 +23,8 @@ The common weighted evaluation `pathDecoratedEvaluation` is specialized to
 canonical simultaneous events of a directed diagram: decorated rays run along the
 paths of the one-object quiver on the event alphabet, every chamber module is the
 same shifted finite quotient, and every arrow acts by the truncated BCH action of its
-event. The paths of bounded length `wallEventPaths` exhaust every endpoint fiber,
-and the evaluation reindexes the cutoff family of finite decorated-ray itineraries
-by `cutoffWallEventEvaluation_eq_cutoffDecoratedEvaluation`. Each genuine crossing of
+event. The paths of bounded length `wallEventPaths` exhaust every endpoint fiber, by
+`PositiveDegrees.pathDecoratedRay_shiftedBCH_length_le`. Each genuine crossing of
 an admissible segment determines one event, retaining every coincident indexed
 wall. The degree component at the final endpoint decomposes over those events,
 with arbitrarily close incoming germs of strictly lower relative degree;
@@ -171,37 +170,6 @@ theorem cutoffWallEventEvaluation_eq_pathDecoratedEvaluation (k K : ℕ) (hkK : 
   intro q r
   rw [mem_wallEventPaths]
   simp only [wallEventPropagation_def] at r
-  exact d.pathDecoratedRay_shiftedBCH_length_le ℒ ℳ p k
-    (fun e => (d.truncationMap ℒ hkK).bchGroupMap (B.wallEventLabel K e)) a
-    (fun n => i (ρ (p + n))) (fun e => e.normal (B.activeNormal K))
-    (fun e => e.offset (B.activeOffset K)) (fun e => e.2) (fun e => e.support (B.activeSupport K))
-    (B.activeSupport K) (fun _ : Unit => singularSupport (B.activeSupport K)) C r
-
-omit [IsWallAnnihilating H ℳ] in
-/-- Simultaneous-event weighted evaluation reindexes the weighted evaluation of the cutoff
-family of finite decorated-ray itineraries. -/
-theorem cutoffWallEventEvaluation_eq_cutoffDecoratedEvaluation (k K : ℕ) (hkK : k ≤ K)
-    (a : (d.shiftedQuotientGrading ℳ p k).piece 0) (C : Set V) (Q : V) :
-    cutoffWallEventEvaluation d ℳ p ℒ H h B k K hkK a C Q =
-      cutoffDecoratedEvaluation d (d.shiftedQuotientGrading ℳ p k).piece
-        (fun e : WallEvent (B.active K) => wallEventPropagation d ℳ p ℒ H h B k K hkK e)
-        a (fun n => i (ρ (p + n)))
-        (fun e => e.normal
-          ((B.activeNormal K)))
-        (fun e => e.offset ((B.activeOffset K)))
-        (fun e => e.2)
-        (fun e => e.support ((B.activeSupport K)))
-        ((B.activeSupport K))
-        (fun _ : Unit =>
-          singularSupport ((B.activeSupport K))) C k Q := by
-  simp only [wallEventPropagation_def]
-  refine (d.cutoffDecoratedEvaluation_shiftedBCH_eq_pathDecoratedEvaluation ℒ ℳ p k
-    (fun e => (d.truncationMap ℒ hkK).bchGroupMap (B.wallEventLabel K e)) a
-    (fun n => i (ρ (p + n))) (fun e => e.normal (B.activeNormal K))
-    (fun e => e.offset (B.activeOffset K)) (fun e => e.2) (fun e => e.support (B.activeSupport K))
-    (B.activeSupport K) (fun _ : Unit => singularSupport (B.activeSupport K)) C
-    (wallEventPaths d ℒ H h B k K) fun q r => ?_).symm
-  rw [mem_wallEventPaths]
   exact d.pathDecoratedRay_shiftedBCH_length_le ℒ ℳ p k
     (fun e => (d.truncationMap ℒ hkK).bchGroupMap (B.wallEventLabel K e)) a
     (fun n => i (ρ (p + n))) (fun e => e.normal (B.activeNormal K))
