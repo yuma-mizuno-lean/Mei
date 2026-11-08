@@ -30,8 +30,9 @@ the domain of a chart `e₀` gives the developing map `e₀ ∘ f`
 On the universal cover of an integral-affine manifold a developing map exists, and the deck
 transformations act on it by integral affine holonomy; see Gross–Siebert, *An Invitation to
 Toric Degenerations*, §2 (arXiv:0808.2749v2), and Gross–Hacking–Siebert, *Theta functions on
-varieties with effective anti-canonical class*, §1 (arXiv:1601.07081v4). Neither the universal
-cover nor the holonomy is constructed here.
+varieties with effective anti-canonical class*, §1 (arXiv:1601.07081v4). A developing map of a
+simply connected space exists by `Mei.Toric.DevelopingMap.nonempty_of_simplyConnectedSpace`;
+neither the universal cover nor the holonomy is constructed here.
 -/
 
 public section
