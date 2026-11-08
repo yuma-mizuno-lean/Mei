@@ -79,6 +79,35 @@ theorem pathDecoratedHistorySupport_zero (p : Path a b) :
   classical
   simp [pathDecoratedHistorySupport]
 
+/-- Appending an encounter retains a surviving prefix, a nonzero entire output
+component, and the normal-velocity and sign equations at that encounter. -/
+theorem mem_pathDecoratedHistorySupport_cons {b c : Q} (p : Path a b) (e : b ⟶ c)
+    (d : p.Degrees ι) (i : ι c) :
+    (d, i) ∈ pathDecoratedHistorySupport T ℳ i₀ x v ν ε (p.cons e) ↔
+      d ∈ pathDecoratedHistorySupport T ℳ i₀ x v ν ε p ∧
+        (p.cons e).homogeneousHistory T ℳ (d, i) x ≠ 0 ∧
+        ν e (v c i) = ν e (v b (Path.Degrees.terminalDegree i₀ p d)) ∧
+        SignType.sign (ν e (v c i)) = ε e := by
+  classical
+  have hnormal :
+      (∀ j, (normals (p.cons e)) j ((dirs (p.cons e) (d, i)) j.castSucc) =
+          (normals (p.cons e)) j ((dirs (p.cons e) (d, i)) j.succ) ∧
+        SignType.sign ((normals (p.cons e)) j ((dirs (p.cons e) (d, i)) j.castSucc)) =
+          (p.cons e).reverseArrowLabels ε j) ↔
+      (ν e (v c i) = ν e (v b (Path.Degrees.terminalDegree i₀ p d)) ∧
+        SignType.sign (ν e (v c i)) = ε e) ∧
+      ∀ j, (normals p) j ((dirs p d) j.castSucc) = (normals p) j ((dirs p d) j.succ) ∧
+        SignType.sign ((normals p) j ((dirs p d) j.castSucc)) = p.reverseArrowLabels ε j := by
+    -- Expose the recursive path length to split its dependent encounter tuple.
+    simp only [Path.reverseArrowLabels_cons, Path.Degrees.reverseVertexLabels_cons]
+    dsimp only [Path.length]
+    simp only [Fin.forall_fin_succ,
+      Fin.castSucc_zero, Fin.cons_zero, Fin.cons_succ, Path.Degrees.reverseVertexLabels_zero,
+      ← Fin.succ_castSucc]
+  rw [mem_pathDecoratedHistorySupport, hnormal, mem_pathDecoratedHistorySupport]
+  have hprefix := p.homogeneousHistory_ne_zero_of_cons T ℳ e d i (x := x)
+  tauto
+
 variable (c : ∀ {b c : Q}, (b ⟶ c) → ℝ)
   (P : ∀ {b c : Q}, (b ⟶ c) → Set V) (W : J → Set V) (S : K → Set V) (C : Set V)
 
@@ -154,5 +183,26 @@ theorem path_eq (r : PathDecoratedRay T ℳ i₀ x v ν ε c P W S C p X) :
       (dirs p r.1.val) X := r.2.toContinuousMap_eq_backwardPath
 
 end PathDecoratedRay
+
+open Classical in
+/-- Sum actual rays by their signed histories, testing the complete endpoint
+constraints, including the original incoming source and all avoidance conditions. -/
+theorem sum_pathDecoratedRay_eq_sum_histories (p : Path a b) (X : V) :
+    (let := Fintype.ofFinite (PathDecoratedRay T ℳ i₀ x v ν ε c P W S C p X)
+     ∑ r : PathDecoratedRay T ℳ i₀ x v ν ε c P W S C p X, r.decoration) =
+      ∑ d : (support p : Type _),
+        if X ∈ admissibleBackwardDomain (normals p) (p.reverseArrowLabels c)
+          (dirs p d.val) (p.reverseArrowLabels P) W S C
+        then p.homogeneousHistory T ℳ d.val x else 0 := by
+  let := Fintype.ofFinite (PathDecoratedRay T ℳ i₀ x v ν ε c P W S C p X)
+  let D (d : (support p : Type _)) := X ∈ admissibleBackwardDomain (normals p)
+    (p.reverseArrowLabels c) (dirs p d.val) (p.reverseArrowLabels P) W S C
+  trans ∑ d : {d : (support p : Type _) // D d}, p.homogeneousHistory T ℳ d.val.val x
+  · exact Fintype.sum_equiv (pathDecoratedRayFiberEquiv T ℳ i₀ x v ν ε c P W S C p X)
+      _ _ fun r => by
+        rw [PathDecoratedRay.decoration_def, pathDecoratedRayFiberEquiv_history]
+  · rw [← Finset.sum_filter]
+    exact (Finset.sum_subtype (Finset.univ.filter D) (by simp)
+      (fun d => p.homogeneousHistory T ℳ d.val x)).symm
 
 end Mei

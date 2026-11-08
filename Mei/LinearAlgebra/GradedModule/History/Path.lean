@@ -140,6 +140,15 @@ theorem degreesComp_symm_cons {b c e : Q} (p : Path a b) (q : Path b c) (f : c �
     (degreesComp (ι := ι) p (q.cons f)).symm (d, (d', i)) =
       (((degreesComp (ι := ι) p q).symm (d, d'), i) : ((p.comp q).cons f).Degrees ι) := (rfl)
 
+/-- The terminal degree of a concatenation is the terminal degree of its second
+block, starting at the degree reached by its first block. -/
+@[simp]
+theorem Degrees.terminalDegree_comp (i₀ : ι a) {b c : Q}
+    (p : Path a b) (q : Path b c) (d : p.Degrees ι) (e : q.Degrees ι) :
+    Degrees.terminalDegree i₀ (p.comp q) ((degreesComp (ι := ι) p q).symm (d, e)) =
+      Degrees.terminalDegree (Degrees.terminalDegree i₀ p d) q e := by
+  cases q <;> rfl
+
 /-- Vertex-selected degrees split into the selections on the two path blocks. -/
 @[simp]
 theorem degreesComp_degreesOfVertices (s : ∀ q, ι q) {b c : Q}
