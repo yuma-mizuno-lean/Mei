@@ -6,8 +6,8 @@ Authors: Claude
 module
 
 public import Mei.Algebra.Category.AlgCat.Sections
+public import Mei.Algebra.Category.AlgCat.Sections
 public import Mei.Algebra.Category.SemimoduleCat.Multispan.Span
-public import Mathlib.CategoryTheory.Limits.Shapes.Multiequalizer
 
 /-!
 # Algebra matching families at one face between two chambers
