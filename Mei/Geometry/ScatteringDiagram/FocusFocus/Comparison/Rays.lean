@@ -6,14 +6,15 @@ Authors: Codex
 module
 
 public import Mei.Geometry.ScatteringDiagram.FocusFocus.Family
-public import Mei.Geometry.ScatteringDiagram.BrokenLine.SingleFace.Component
+public import Mei.Geometry.ScatteringDiagram.BrokenLine.Path.SingleFace
 public import Mei.Geometry.Convex.Sweep.Admissible.Limit
 
 /-!
 # Focus-focus rays as single-face decorated rays
 
-The lower and upper slab presentations specialize the shared
-`DecoratedAdmissibleRay` construction. Their propagation is the total transfer
+The lower and upper slab presentations specialize the shared `PathDecoratedRay`
+construction along the one-arrow path of the one-object quiver on `Unit`. Their
+propagation is the total transfer
 of the slab correspondence, their source is the full incoming half-plane, and
 their singular obstacle is the origin. Restricting to the corresponding sign
 of the crossing height distinguishes the two coordinate presentations.
@@ -29,14 +30,14 @@ The slab coordinates and upper/lower transition follow Gross–Siebert,
 *An Invitation to Toric Degenerations*, §2.2–2.3 (arXiv:0808.2749v2), and
 Gross–Hacking–Siebert, *Theta functions on varieties with effective
 anti-canonical class*, §3 (arXiv:1601.07081v4). The formal suppliers are
-`singleFaceComponentFiberEquiv` and `slab_transfer_eq_upper`.
+`pathSingleFaceComponentFiberEquiv` and `slab_transfer_eq_upper`.
 -/
 
 public noncomputable section
 
 namespace Mei.FocusFocus
 
-open Set TauCeti AddMonoidAlgebra Mei.NodeAlgebra Mei.Convex
+open Set TauCeti AddMonoidAlgebra Mei.NodeAlgebra Mei.Convex Quiver
 
 variable {R : Type*} [CommRing R] (t c : R) (n b : ℤ)
 
@@ -48,14 +49,18 @@ local notation "p" upper:arg => ((Int.natAbs n : ℤ), B upper)
 local notation "a" upper:arg =>
   (Subtype.mk (single (p upper) c) (single_mem_grade _ _) : grade R (p upper))
 local notation "v" => fun q : ℤ × ℤ => ((n : ℝ), ((Prod.snd q : ℤ) : ℝ))
+local notation "arrow" => SingleObj.toHom ()
+local notation "path₁" => Path.cons (Path.nil : Path (SingleObj.star Unit) (SingleObj.star Unit))
+  (SingleObj.toHom ())
 local notation "D" upper:arg Q:arg =>
-  DecoratedAdmissibleRay (grade R : ℤ × ℤ → Submodule R R[ℤ × ℤ])
-    (fun _ : Fin 1 => GradedCorrespondence.totalTransfer (C upper))
-    (p upper) (a upper) v (fun _ => ν) (fun _ => 0)
-    (fun _ => SignType.sign (ν (v (p upper)))) (fun _ => Set.ofPred (fun x : ℝ × ℝ => ν x = 0))
+  PathDecoratedRay (Q := SingleObj Unit) (M := fun _ => R[ℤ × ℤ]) (ι := fun _ => ℤ × ℤ)
+    (fun _ => GradedCorrespondence.totalTransfer (C upper))
+    (fun _ => (grade R : ℤ × ℤ → Submodule R R[ℤ × ℤ])) (p upper) (a upper) (fun _ => v)
+    (fun _ => ν) (fun _ => SignType.sign (ν (v (p upper)))) (fun _ => 0)
+    (fun _ => Set.ofPred (fun x : ℝ × ℝ => ν x = 0))
     (fun _ : Unit => Set.ofPred (fun x : ℝ × ℝ => ν x = 0)) (fun _ : Unit => ({0} : Set (ℝ × ℝ)))
-    (Set.ofPred (fun x : ℝ × ℝ => 0 < (ν x - 0) / ν (v (p upper)))) Q
-
+    (Set.ofPred (fun x : ℝ × ℝ => 0 < (ν x - 0) / ν (v (p upper))))
+    path₁ Q
 private theorem decompose_chart_transfer (upper : Bool) (q : ℤ × ℤ) :
     DirectSum.decompose (grade R : ℤ × ℤ → Submodule R R[ℤ × ℤ])
       ((C upper).totalTransfer (single (p upper) c)) q =
@@ -77,9 +82,10 @@ local notation "Outputs" Q:arg =>
 
 private def chartComponentEquiv (upper : Bool) (Q : ℝ × ℝ) :
     D upper Q ≃ Outputs Q := by
-  refine (singleFaceComponentFiberEquiv
-    (grade R : ℤ × ℤ → Submodule R R[ℤ × ℤ]) (C upper).totalTransfer
-    (p upper) (a upper) v ν 0 {0} (fun _ _ => rfl) (by simp) Q).trans ?_
+  refine (pathSingleFaceComponentFiberEquiv (Q := SingleObj Unit) (M := fun _ => R[ℤ × ℤ])
+    (ι := fun _ => ℤ × ℤ) (fun _ => (C upper).totalTransfer)
+    (fun _ => (grade R : ℤ × ℤ → Submodule R R[ℤ × ℤ])) arrow (p upper) (a upper) (fun _ => v)
+    ν 0 {0} (fun _ _ => rfl) (by simp) Q).trans ?_
   apply Equiv.subtypeEquivRight
   intro q
   rw [decompose_chart_transfer]
@@ -98,17 +104,17 @@ private def chartComponentEquiv (upper : Bool) (Q : ℝ × ℝ) :
 
 private theorem chartComponentEquiv_degree (upper : Bool) (Q : ℝ × ℝ)
     (r : D upper Q) :
-    (chartComponentEquiv t c n b upper Q r).val = r.1.val 0 := by
+    (chartComponentEquiv t c n b upper Q r).val = r.1.val.2 := by
   dsimp only [chartComponentEquiv, Equiv.trans_apply, Equiv.subtypeEquivRight_apply]
-  exact singleFaceComponentFiberEquiv_apply_val ..
+  exact pathSingleFaceComponentFiberEquiv_apply_val ..
 
 /-- A shared single-face decorated ray in one slab chart, restricted to the
 corresponding strict sign of its crossing height. Its incoming source is the
 entire half-plane, and its propagation uses the upper or lower slab span. -/
 abbrev SlabChartRay (upper : Bool) (Q : ℝ × ℝ) :=
   {r : D upper Q //
-    if upper then 0 < Q.2 - ((r.1.val 0).2 : ℝ) * Q.1 / n
-    else Q.2 - ((r.1.val 0).2 : ℝ) * Q.1 / n < 0}
+    if upper then 0 < Q.2 - ((r.1.val.2).2 : ℝ) * Q.1 / n
+    else Q.2 - ((r.1.val.2).2 : ℝ) * Q.1 / n < 0}
 
 private def outputLineEquiv (Q : ℝ × ℝ) : Outputs Q ≃ SlabBrokenLine t c n b Q where
   toFun q :=
@@ -141,7 +147,7 @@ private def chartLineEquiv (upper : Bool) (Q : ℝ × ℝ) :
   (chartComponentEquiv t c n b upper Q).trans (outputLineEquiv t c n b Q)
 
 private theorem chartLineEquiv_degree (upper : Bool) (Q : ℝ × ℝ) (r : D upper Q) :
-    (chartLineEquiv t c n b upper Q r).degree = r.1.val 0 :=
+    (chartLineEquiv t c n b upper Q r).degree = r.1.val.2 :=
   (outputLineEquiv_degree t c n b Q _).trans
     (chartComponentEquiv_degree t c n b upper Q r)
 
@@ -173,13 +179,13 @@ with equal geometric velocities. -/
 @[simp]
 theorem slabChartRayEquiv_degree (Q : ℝ × ℝ)
     (z : Σ upper : Bool, SlabChartRay t c n b upper Q) :
-    (slabChartRayEquiv t c n b Q z).degree = z.2.val.1.val 0 :=
+    (slabChartRayEquiv t c n b Q z).degree = z.2.val.1.val.2 :=
   chartLineEquiv_degree t c n b z.1 Q z.2.val
 
 /-- The inverse comparison recovers the explicit ray's outgoing degree. -/
 @[simp]
 theorem slabChartRayEquiv_symm_degree (Q : ℝ × ℝ) (β : SlabBrokenLine t c n b Q) :
-    (((slabChartRayEquiv t c n b Q).symm β).2.val.1.val 0) = β.degree := by
+    (((slabChartRayEquiv t c n b Q).symm β).2.val.1.val.2) = β.degree := by
   rw [← slabChartRayEquiv_degree, Equiv.apply_symm_apply]
 
 /-- The explicit and shared fibers carry exactly the same whole homogeneous
@@ -187,12 +193,28 @@ output component. Vanishing binomial coefficients contribute no rays. -/
 @[simp]
 theorem slabChartRayEquiv_decoration (Q : ℝ × ℝ)
     (z : Σ upper : Bool, SlabChartRay t c n b upper Q) :
-    (slabChartRayEquiv t c n b Q z).decoration = z.2.val.decoration 0 := by
-  rw [SlabBrokenLine.decoration_def, slabChartRayEquiv_degree]
-  have he := z.2.val.decoration_castSucc (0 : Fin 1)
-  have hi : (0 : Fin 1).succ = Fin.last 1 := rfl
-  simpa only [Fin.castSucc_zero, hi, DecoratedAdmissibleRay.decoration_last,
-    decompose_chart_transfer] using he.symm
+    (slabChartRayEquiv t c n b Q z).decoration = z.2.val.decoration := by
+  rw [SlabBrokenLine.decoration_def, slabChartRayEquiv_degree, PathDecoratedRay.decoration_def,
+    show z.2.val.1.val = (z.2.val.1.val.1, z.2.val.1.val.2) from rfl,
+    Path.homogeneousHistory_cons_apply, Path.homogeneousHistory_nil, LinearMap.id_apply,
+    decompose_chart_transfer]
+
+/-- The one-arrow path data of a chart ray are the constant single-face data with the
+outgoing and incoming velocities. -/
+private theorem chartRay_data (upper : Bool) (q : ℤ × ℤ) :
+    (Path.reverseArrowLabels (fun _ => ν) path₁) = (fun _ => ν) ∧
+      (Path.reverseArrowLabels (fun _ => (0 : ℝ)) path₁) = (fun _ => 0) ∧
+      (Path.reverseArrowLabels (fun _ => Set.ofPred (fun x : ℝ × ℝ => ν x = 0)) path₁) =
+        (fun _ => Set.ofPred (fun x : ℝ × ℝ => ν x = 0)) ∧
+      Path.Degrees.reverseVertexLabels (fun _ => v) (p upper) path₁
+        (PUnit.unit, q) = ![v q, v (p upper)] := by
+  refine ⟨?_, ?_, ?_, ?_⟩
+  all_goals
+    funext j
+    first
+    | (rw [Path.reverseArrowLabels_cons]; exact Fin.cases rfl (fun j => j.elim0) j)
+    | (rw [Path.Degrees.reverseVertexLabels_cons, Path.Degrees.reverseVertexLabels_nil]
+       fin_cases j <;> rfl)
 
 /-- The actual shared realization has the same continuous extension as the
 explicit branch in its fixed upper or lower chart. In particular the entire
@@ -200,11 +222,14 @@ incoming half-line is retained. -/
 theorem SlabChartRay.toContinuousMap_eq_slabBranchPath (upper : Bool) (Q : ℝ × ℝ)
     (r : SlabChartRay t c n b upper Q) :
     r.val.2.ray.toContinuousMap =
-      slabBranchPath n (B upper) (r.val.1.val 0).2 Q := by
-  rw [r.val.2.toContinuousMap_eq_backwardPath, slabBranchPath_def]
-  congr 2
-  funext j
-  fin_cases j <;> simp [Fin.snoc]
+      slabBranchPath n (B upper) (r.val.1.val.2).2 Q := by
+  obtain ⟨hf, hc, hP, hv⟩ := chartRay_data n b upper r.val.1.val.2
+  have h := (r.val.2.congrData hf hc hv hP).toContinuousMap_eq_backwardPath
+  have hr : (r.val.2.congrData hf hc hv hP).ray = r.val.2.ray :=
+    AdmissibleRayRealization.ray_congrData _ _ _ _ _
+  rw [hr] at h
+  rw [h, slabBranchPath_def]
+  rfl
 
 /-- The fiber comparison preserves the whole path, including its incoming
 coordinate presentation and every point before the crossing. -/
@@ -217,7 +242,7 @@ theorem slabChartRayEquiv_path (Q : ℝ × ℝ)
   rw [SlabBrokenLine.ray_eq_slabBranch, ← slabBranchPath_eq_slabBranch,
     slabChartRayEquiv_degree, SlabChartRay.toContinuousMap_eq_slabBranchPath]
   have hsign := r.property
-  have hB : slabIncomingExponent n b (r.val.1.val 0).2 Q = B upper := by
+  have hB : slabIncomingExponent n b (r.val.1.val.2).2 Q = B upper := by
     cases upper <;> simp only [Bool.false_eq_true, ↓reduceIte,
       Bool.cond_false, Bool.cond_true] at hsign ⊢
     · exact slabIncomingExponent_of_neg _ _ _ _ hsign
@@ -229,8 +254,14 @@ record is retained even when the incoming and outgoing directions agree. -/
 @[simp]
 theorem SlabChartRay.parameter_one (upper : Bool) (Q : ℝ × ℝ)
     (r : SlabChartRay t c n b upper Q) : r.val.2.parameter 1 = Q.1 / (n : ℝ) := by
-  simpa only [Fin.succ_zero_eq_one, ContinuousLinearMap.coe_fst', sub_zero] using
-    r.val.2.parameter_eq_div_singleFace (fun _ => rfl) (0 : Fin 1)
+  obtain ⟨hf, hc, hP, hv⟩ := chartRay_data n b upper r.val.1.val.2
+  have h := (r.val.2.congrData hf hc hv hP).parameter_eq_div_singleFace
+    (fun j => by fin_cases j; simp) (0 : Fin 1)
+  have hp : (r.val.2.congrData hf hc hv hP).parameter = r.val.2.parameter :=
+    AdmissibleRayRealization.parameter_congrData _ _ _ _ _
+  rw [hp] at h
+  simp only [ContinuousLinearMap.coe_fst', sub_zero] at h
+  exact h
 
 open Classical in
 /-- The explicit slab weighted evaluation is the finite sum over the shared
@@ -239,7 +270,7 @@ required; singular branches and zero decorations are absent on both sides. -/
 theorem slabWeightedEvaluation_eq_sum_decoratedRays (Q : ℝ × ℝ) :
     slabWeightedEvaluation t c n b Q =
       let := Fintype.ofFinite (Σ upper : Bool, SlabChartRay t c n b upper Q)
-      ∑ z : Σ upper : Bool, SlabChartRay t c n b upper Q, z.2.val.decoration 0 := by
+      ∑ z : Σ upper : Bool, SlabChartRay t c n b upper Q, z.2.val.decoration := by
   classical
   let := Fintype.ofFinite (Σ upper : Bool, SlabChartRay t c n b upper Q)
   rw [slabWeightedEvaluation_def]

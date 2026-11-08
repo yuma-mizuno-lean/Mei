@@ -6,12 +6,13 @@ Authors: Codex
 module
 
 public import Mei.Geometry.ScatteringDiagram.FocusFocus.Incoming.Family
-public import Mei.Geometry.ScatteringDiagram.BrokenLine.SingleFace
+public import Mei.Geometry.ScatteringDiagram.BrokenLine.Path.Basic
+public import Mei.Geometry.Convex.Sweep.Admissible.SingleFace
 
 /-!
 # Incoming focus-focus rays in the shared decorated fiber
 
-An incoming chart uses the empty propagation itinerary, the full slab as a wall
+An incoming chart uses the empty path of the one-object quiver on `Unit`, the full slab as a wall
 obstacle, the singular origin, and its full open half-plane as incoming source.
 The common decorated rays are exactly the explicit incoming rays, including
 vertical rays on either side. Their whole paths and homogeneous decorations agree.
@@ -28,7 +29,7 @@ anti-canonical class*, §3 (arXiv:1601.07081v4).
 
 public noncomputable section
 
-open Set Filter AddMonoidAlgebra Mei.Convex
+open Set Filter AddMonoidAlgebra Mei.Convex Quiver
 
 namespace Mei.FocusFocus
 
@@ -42,11 +43,26 @@ local notation "v" => fun q : ℤ × ℤ => ((n : ℝ), ((Prod.snd q : ℤ) : �
 /-- A common empty-itinerary decorated ray with the full incoming half-plane
 of its admitted chart. Vertical incoming degrees admit both chart labels. -/
 abbrev IncomingSlabChartRay (α : IncomingSlabChartIndex c n b) (Q : ℝ × ℝ) :=
-  DecoratedAdmissibleRay (grade R : ℤ × ℤ → Submodule R R[ℤ × ℤ])
-    (fun j : Fin 0 => j.elim0) p a v (fun _ => ν) (fun _ => 0)
-    (fun _ => 0) (fun _ => {x : ℝ × ℝ | x.1 = 0})
+  PathDecoratedRay (Q := SingleObj Unit) (M := fun _ => R[ℤ × ℤ]) (ι := fun _ => ℤ × ℤ)
+    (fun _ => LinearMap.id) (fun _ => (grade R : ℤ × ℤ → Submodule R R[ℤ × ℤ])) p a (fun _ => v)
+    (fun _ => ν) (fun _ => 0) (fun _ => 0) (fun _ => {x : ℝ × ℝ | x.1 = 0})
     (fun _ : Unit => {x : ℝ × ℝ | x.1 = 0}) (fun _ : Unit => ({0} : Set (ℝ × ℝ)))
-    (incomingSlabDomain α.val) Q
+    (incomingSlabDomain α.val) (Path.nil : Path (SingleObj.star Unit) (SingleObj.star Unit)) Q
+
+/-- The empty-path data of an incoming chart ray are the constant single-face data with
+the incoming velocity. -/
+private theorem incomingRay_data :
+    ((Path.nil : Path (SingleObj.star Unit) (SingleObj.star Unit)).reverseArrowLabels
+        fun _ => ν) = (fun _ : Fin 0 => ν) ∧
+      ((Path.nil : Path (SingleObj.star Unit) (SingleObj.star Unit)).reverseArrowLabels
+        fun _ => (0 : ℝ)) = (fun _ : Fin 0 => 0) ∧
+      ((Path.nil : Path (SingleObj.star Unit) (SingleObj.star Unit)).reverseArrowLabels
+        fun _ => {x : ℝ × ℝ | x.1 = 0}) = (fun _ : Fin 0 => {x : ℝ × ℝ | x.1 = 0}) ∧
+      Path.Degrees.reverseVertexLabels (fun _ => v) p
+        (Path.nil : Path (SingleObj.star Unit) (SingleObj.star Unit)) PUnit.unit =
+        fun _ => ((n : ℝ), (b : ℝ)) :=
+  ⟨funext fun j => j.elim0, funext fun j => j.elim0, funext fun j => j.elim0,
+    Path.Degrees.reverseVertexLabels_nil _ _ _⟩
 
 /-- With no recorded encounters, the common path is the straight incoming path.
 This equality retains the whole incoming half-line, not only its endpoint. -/
@@ -54,8 +70,13 @@ This equality retains the whole incoming half-line, not only its endpoint. -/
 theorem IncomingSlabChartRay.ray_eq_straight (α : IncomingSlabChartIndex c n b)
     (Q : ℝ × ℝ) (r : IncomingSlabChartRay c n b α Q) :
     r.2.ray = FiniteAffineRay.straight Q ((n : ℝ), (b : ℝ)) := by
-  obtain ⟨_, _, hr⟩ := r.2.eq_backwardRay
-  simpa only [backwardRay_zero, Fin.snoc_zero] using hr
+  obtain ⟨hf, hc, hP, hv⟩ := incomingRay_data n b
+  obtain ⟨_, _, hr⟩ := (r.2.congrData hf hc hv hP).eq_backwardRay
+  have hr' : (r.2.congrData hf hc hv hP).ray = r.2.ray :=
+    AdmissibleRayRealization.ray_congrData _ _ _ _ _
+  rw [hr'] at hr
+  rw [hr]
+  exact backwardRay_zero _ _ _ _ _
 
 /-- The global incoming-source and wall-avoidance conditions force the endpoint
 to lie in the same open half-plane, also for zero normal velocity. -/
@@ -66,7 +87,8 @@ theorem IncomingSlabChartRay.endpoint_mem (α : IncomingSlabChartIndex c n b)
   · obtain ⟨s, hs⟩ := r.2.incoming.exists
     rw [r.ray_eq_straight c n b α Q, mem_incomingSlabDomain] at hs
     simpa [hn, FiniteAffineRay.straight_apply] using hs
-  · have he := r.2.encounter_count_eq_zero_iff_singleFace
+  · obtain ⟨hf, hc, hP, hv⟩ := incomingRay_data n b
+    have he := (r.2.congrData hf hc hv hP).encounter_count_eq_zero_iff_singleFace
       (fun j => j.elim0) (by simpa using (Int.cast_ne_zero.mpr hn : (n : ℝ) ≠ 0))
       () Set.Subset.rfl
     have ht : 0 < Q.1 / (n : ℝ) := by simpa using he.mp rfl
@@ -81,7 +103,8 @@ theorem IncomingSlabChartRay.endpoint_mem (α : IncomingSlabChartIndex c n b)
 private def incomingSlabChartRay (α : IncomingSlabChartIndex c n b) (Q : ℝ × ℝ)
     (hQ : Q ∈ incomingSlabDomain α.val) : IncomingSlabChartRay c n b α Q := by
   let β := incomingSlabChartEquiv c n b Q ⟨α, hQ⟩
-  refine ⟨⟨fun j => j.elim0, ?_⟩, {
+  obtain ⟨hf, hc, hP, hv⟩ := incomingRay_data n b
+  refine ⟨⟨PUnit.unit, ?_⟩, AdmissibleRayRealization.congrData {
     ray := β.ray
     parameter := fun _ => 0
     parameter_zero := rfl
@@ -99,11 +122,12 @@ private def incomingSlabChartRay (α : IncomingSlabChartIndex c n b) (Q : ℝ ×
     avoids_walls := fun _ s hs _ => β.fst_ne_zero s hs.le
     incoming := ?_
     avoids_singular := fun _ s hs => β.avoids_origin s hs
-    off_walls := fun _ => β.off_slab }⟩
-  · simp [mem_decoratedHistorySupport, α.property.1]
+    off_walls := fun _ => β.off_slab } hf.symm hc.symm hv.symm hP.symm⟩
+  · rw [mem_pathDecoratedHistorySupport, Path.homogeneousHistory_nil, LinearMap.id_apply]
+    exact ⟨by simp [α.property.1], fun j => j.elim0⟩
   · intro j
     rw [β.ray_eq_straight]
-    simp [Fin.snoc]
+    simp
   · simp
   · filter_upwards [eventually_le_atBot (0 : ℝ)] with s hs
     rw [β.ray_eq_straight, FiniteAffineRay.straight_apply, mem_incomingSlabDomain]
@@ -124,7 +148,7 @@ private def incomingSlabChartEndpointEquiv (Q : ℝ × ℝ) :
   left_inv r := by
     rcases r with ⟨α, r⟩
     exact congrArg (Sigma.mk α)
-      (DecoratedAdmissibleRay.ext_history (Subsingleton.elim _ _))
+      (PathDecoratedRay.ext_history _ _ (Subsingleton.elim _ _))
   right_inv _ := Subtype.ext rfl
 
 /-- Shared incoming decorated rays, partitioned by their source half-plane,
@@ -145,8 +169,8 @@ theorem incomingSlabChartRayEquiv_ray (Q : ℝ × ℝ)
 /-- The common ray carries the original whole incoming homogeneous monomial. -/
 theorem IncomingSlabChartRay.decoration_zero (α : IncomingSlabChartIndex c n b)
     (Q : ℝ × ℝ) (r : IncomingSlabChartRay c n b α Q) :
-    r.decoration 0 = single ((n.natAbs : ℤ), b) c :=
-  r.decoration_last
+    r.decoration = single ((n.natAbs : ℤ), b) c := by
+  rw [PathDecoratedRay.decoration_def, Path.homogeneousHistory_nil, LinearMap.id_apply]
 
 open Classical in
 /-- Reindexing the explicit incoming sum gives the evaluation over the actual
@@ -156,7 +180,7 @@ theorem incomingSlabWeightedEvaluation_eq_sum_decoratedRays (Q : ℝ × ℝ) :
       let := Fintype.ofFinite
         (Σ α : IncomingSlabChartIndex c n b, IncomingSlabChartRay c n b α Q)
       ∑ z : Σ α : IncomingSlabChartIndex c n b, IncomingSlabChartRay c n b α Q,
-        z.2.decoration 0 := by
+        z.2.decoration := by
   classical
   let := Fintype.ofFinite
     (Σ α : IncomingSlabChartIndex c n b, IncomingSlabChartRay c n b α Q)

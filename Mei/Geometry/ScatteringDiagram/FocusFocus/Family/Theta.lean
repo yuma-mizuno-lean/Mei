@@ -434,8 +434,8 @@ theorem slabThetaChartEquiv_path (Q : ℝ × ℝ)
 /-- The exact shared-ray comparison carries each whole chart decoration. -/
 theorem slabThetaChartEquiv_weight (Q : ℝ × ℝ)
     (α : {α : SlabThetaChartIndex t c n b // Q ∈ slabThetaChartDomain t c n b α}) :
-    Sum.elim (fun β => β.2.decoration 0)
-      (Sum.elim (fun β => β.2.val.decoration 0) (fun _ => single (0, 0) c))
+    Sum.elim (fun β => β.2.decoration)
+      (Sum.elim (fun β => β.2.val.decoration) (fun _ => single (0, 0) c))
       (slabThetaChartEquiv t c n b Q α) = slabThetaChartWeight t c n b α.val := by
   rcases α with ⟨α | α | α, hα⟩
   · exact IncomingSlabChartRay.decoration_zero c n b _ Q _
@@ -459,8 +459,8 @@ theorem slabThetaFamilyFiberEquiv_path (Q : ℝ × ℝ)
 /-- Common-family weights agree with the whole decorations of the actual rays. -/
 theorem slabThetaFamilyFiberEquiv_weight (Q : ℝ × ℝ)
     (z : (slabThetaFamily t c n b h).fiber Q) :
-    Sum.elim (fun β => β.2.decoration 0)
-      (Sum.elim (fun β => β.2.val.decoration 0) (fun _ => single (0, 0) c))
+    Sum.elim (fun β => β.2.decoration)
+      (Sum.elim (fun β => β.2.val.decoration) (fun _ => single (0, 0) c))
       (slabThetaFamilyFiberEquiv t c n b h Q z) = slabThetaChartWeight t c n b z.1 :=
   (slabThetaChartEquiv_weight t c n b Q
     (FiniteSemilinearFamily.fiberOfDomainsEquiv _ _ Q z)).trans
