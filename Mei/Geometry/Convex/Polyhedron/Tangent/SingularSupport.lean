@@ -38,7 +38,9 @@ theorem smul_mem_singularSupport_posTangentConeAt_iff {r : ℝ} (hr : 0 < r) (v 
       v ∈ singularSupport (fun j => posTangentConeAt (W j) x) := by
   let e := (ContinuousLinearEquiv.smulLeft (R₁ := ℝ) (M₁ := V)
     (Units.mk0 r hr.ne')).toContinuousAffineEquiv
-  have he (w : V) : e w = r • w := (rfl)
+  have he (w : V) : e w = r • w := by
+    rw [ContinuousLinearEquiv.coe_toContinuousAffineEquiv,
+      ContinuousLinearEquiv.smulLeft_apply_apply, Units.smul_def, Units.val_mk0]
   have hsupport (j : ι) :
       posTangentConeAt (W j) x = e '' posTangentConeAt (W j) x := by
     apply Set.Subset.antisymm
