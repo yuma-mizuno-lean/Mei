@@ -134,6 +134,17 @@ private theorem eq_hyperplaneSection_of_value_eq_cutoffDecoratedEvaluation (θ :
           hw hν hν0 hε (fun h0 => x.property
             ⟨_, (FinitePolyhedralComplex.mem_hyperplaneComplex_walls_iff hf hf0).mpr rfl⟩ h0)])
 
+omit [DecidableEq Γ] [DirectSum.Decomposition ℳ] in
+private theorem smul_eq_sub_mul_of_weight_one (θ : H) (u : (𝒜 0)ˣ) (z : A)
+    (hθ : ∀ x : A, θ • x = functionWallAction 𝒜 u x) (hu : (u : A) = 1 - z) (w : Γ → ℤ)
+    (hw : ∀ q, ℳ q ≤ 𝒜 (w q)) (hν : ∀ q, f (v q) = w q) (hν0 : f (v 0) = 1) :
+    θ • (a : A) = a - a * z := by
+  have hw0 : w 0 = 1 := by
+    have := hν 0
+    rw [hν0] at this
+    exact_mod_cast this.symm
+  rw [hθ, functionWallAction_apply_of_mem_one_sub 𝒜 u hu (hw0 ▸ hw 0 a.2)]
+
 /-- The restriction of the theta section of one function wall `1 - z` to an open of the regular
 locus on the negative side of the wall takes the value `a - a z`, though the wall misses the
 open. For `U = {f < -1}` this is the restriction check: the section retains the incoming tails
@@ -154,15 +165,11 @@ theorem value_restrict_eq_sub_mul_of_forall_lt (θ : H) (u : (𝒜 0)ˣ) (z : A)
     ((hyperplaneDiagram hf hf0 θ).coefficientTransport A).value
         (((hyperplaneDiagram hf hf0 θ).coefficientLocalSystem A).presheaf.map
           (homOfLE (le_top : U ≤ ⊤)).op s) x hx = (a : A) - a * z := by
-  have hw0 : w 0 = 1 := by
-    have := hν 0
-    rw [hν0] at this
-    exact_mod_cast this.symm
   have heq : s = hyperplaneSection hf hf0 θ (θ • (a : A)) :=
     eq_hyperplaneSection_of_value_eq_cutoffDecoratedEvaluation 𝒜 hf0 θ u z hθ hu hz hn w hw
       hν hν0 hε hs
-  rw [heq, value_restrict_hyperplaneSection, hθ,
-    functionWallAction_apply_of_mem_one_sub 𝒜 u hu (hw0 ▸ hw 0 a.2)]
+  rw [heq, value_restrict_hyperplaneSection,
+    smul_eq_sub_mul_of_weight_one 𝒜 θ u z hθ hu w hw hν hν0]
   simp only [hyperplaneFactor_def, (hU _ hx).not_gt, ↓reduceIte, one_smul]
 
 /-- The restriction of the theta section of one function wall `1 - z` to an open on the negative
@@ -185,9 +192,11 @@ theorem value_restrict_ne_of_mul_ne_zero (θ : H) (u : (𝒜 0)ˣ) (z : A) {n : 
     ((hyperplaneDiagram hf hf0 θ).coefficientTransport A).value
         (((hyperplaneDiagram hf hf0 θ).coefficientLocalSystem A).presheaf.map
           (homOfLE (le_top : U ≤ ⊤)).op s) x hx ≠ (a : A) := by
-  rw [value_restrict_eq_sub_mul_of_forall_lt 𝒜 hf0 θ u z hu hθ hz hn w hw hν hν0 hε hU hs x hx,
-    ne_eq, sub_eq_self]
-  exact haz
+  rw [eq_hyperplaneSection_of_value_eq_cutoffDecoratedEvaluation 𝒜 hf0 θ u z hθ hu hz hn w hw
+    hν hν0 hε hs]
+  exact value_restrict_ne_hyperplaneSection_of_forall_lt hf hf0 θ (a : A) (by
+    rw [smul_eq_sub_mul_of_weight_one 𝒜 θ u z hθ hu w hw hν hν0]
+    exact fun h => haz (sub_eq_self.mp h)) le_top hU x hx
 
 end Section
 
