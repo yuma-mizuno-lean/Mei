@@ -106,24 +106,9 @@ theorem smul_mem_singularSupport_tangentAt_iff (k : ℕ) {t : ℝ} (ht : 0 < t) 
       ((D.tangentAt x).wall j).support) ↔
         v ∈ singularSupport (fun j : (D.tangentAt x).active k =>
           ((D.tangentAt x).wall j).support) := by
-  let e := (ContinuousLinearEquiv.smulLeft (R₁ := ℝ) (M₁ := V)
-    (Units.mk0 t ht.ne')).toContinuousAffineEquiv
-  have he (w : V) : e w = t • w := (rfl)
-  have hsupport (j : (D.tangentAt x).active k) :
-      ((D.tangentAt x).wall j).support = e '' ((D.tangentAt x).wall j).support := by
-    apply Set.Subset.antisymm
-    · intro w hw
-      refine ⟨t⁻¹ • w, ?_, by simp [he, ht.ne']⟩
-      exact (D.wall j.1.1).smul_mem_tangentAt_support j.1.2 hw (inv_pos.mpr ht).le
-    · rintro w ⟨u, hu, rfl⟩
-      exact (D.wall j.1.1).smul_mem_tangentAt_support j.1.2 hu ht.le
-  have hsing := e.singularSupport_image
-    (W := fun j : (D.tangentAt x).active k => ((D.tangentAt x).wall j).support)
-    (W' := fun j : (D.tangentAt x).active k => ((D.tangentAt x).wall j).support)
-    (Equiv.refl ((D.tangentAt x).active k)) hsupport
-  rw [← he]
-  conv_lhs => rw [hsing]
-  exact e.injective.mem_set_image
+  simpa only [tangentAt_wall, DirectedWall.tangentAt_support] using
+    smul_mem_singularSupport_posTangentConeAt_iff
+      (fun j : (D.tangentAt x).active k => (D.wall j.1.1).support) x ht v
 
 /-- On a bounded set of tangent displacements, the singular-support comparison holds
 uniformly for every sufficiently small positive scaling factor. -/

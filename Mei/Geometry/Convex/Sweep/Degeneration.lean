@@ -5,6 +5,7 @@ Authors: Codex
 -/
 module
 
+public import Mei.Analysis.Normed.Affine.ContinuousAffineMap
 public import Mei.Topology.Algebra.ContinuousAffineEquiv
 public import Mei.Geometry.Convex.Sweep.Realization
 public import Mei.Geometry.Convex.Polyhedron.Rational.Stratification
@@ -71,6 +72,37 @@ theorem backwardPath_apply (Q : V) (t : ℝ) :
     backwardPath f c v Q t =
       (∑ j : Fin n, max (backwardParameter f c (fun j => v j.castSucc) j.succ Q - t) 0 •
         (v j.succ - v j.castSucc)) - t • v 0 + Q := (rfl)
+
+/-- The extended paths over bounded endpoint and time sets have bounded image.
+No ordering of the encounters or finite-dimensionality is required. -/
+theorem isBounded_image_backwardPath {K : Set V} {I : Set ℝ}
+    (hK : Bornology.IsBounded K) (hI : Bornology.IsBounded I) :
+    Bornology.IsBounded ((fun p : V × ℝ => backwardPath f c v p.1 p.2) '' (K ×ˢ I)) := by
+  obtain ⟨A, hA⟩ := hK.exists_norm_le
+  obtain ⟨B, hBpos, hB⟩ := hI.exists_pos_norm_le
+  have hb (j : Fin n) :=
+    ((backwardParameter f c (fun j => v j.castSucc) j.succ).isBounded_image hK).exists_norm_le
+  choose C hC using hb
+  refine isBounded_iff_forall_norm_le.mpr
+    ⟨(∑ j : Fin n, (|C j| + B) * ‖v j.succ - v j.castSucc‖) + B * ‖v 0‖ + A, ?_⟩
+  rintro _ ⟨⟨Q, t⟩, ⟨hQ, ht⟩, rfl⟩
+  have hh (j : Fin n) :
+      ‖max (backwardParameter f c (fun j => v j.castSucc) j.succ Q - t) 0‖ ≤ |C j| + B := by
+    rw [Real.norm_eq_abs, abs_of_nonneg (le_max_right _ _)]
+    apply max_le _ (by positivity)
+    have hc := hC j _ (mem_image_of_mem _ hQ)
+    have hp := le_abs_self (backwardParameter f c (fun j => v j.castSucc) j.succ Q)
+    have ht' := neg_le_abs t
+    rw [← Real.norm_eq_abs] at hp ht'
+    linarith [le_abs_self (C j), hB t ht]
+  simp only [backwardPath_apply]
+  exact (norm_add_le _ _).trans (add_le_add
+    ((norm_sub_le _ _).trans (add_le_add
+      ((norm_sum_le _ _).trans (Finset.sum_le_sum fun j _ => by
+        rw [norm_smul]
+        exact mul_le_mul_of_nonneg_right (hh j) (norm_nonneg _)))
+      (by simpa only [norm_smul] using
+        mul_le_mul_of_nonneg_right (hB t ht) (norm_nonneg (v 0))))) (hA Q hQ))
 
 section SingleFace
 
