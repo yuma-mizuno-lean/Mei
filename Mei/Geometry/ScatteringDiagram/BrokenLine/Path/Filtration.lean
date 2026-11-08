@@ -249,24 +249,9 @@ theorem exists_pathDecoratedRay_closedCharts_of_filtration_of_direction_eq :
         (∀ z, (E z).2.1 = z.1.1.val) ∧
         (∀ z, HEq (E z).2.2.1 z.1.2) ∧
         ∀ z, (E z).2.2.decoration = z.1.1.val.homogeneousHistory T ℳ z.1.2.val x := by
-  have hbound (X : V) (p : Path a b)
-      (β : PathDecoratedRay T ℳ i₀ x vel ν ε c P W S C p X) : p ∈ s :=
-    hs p (β.length_le_of_filtration (F := F) (mark := mark) hT hstraight hr)
-  let e (X : V) := Equiv.sigmaSubtypeEquivOfSubset
-    (fun p : Path a b => PathDecoratedRay T ℳ i₀ x vel ν ε c P W S C p X)
-    (fun p => p ∈ s) (hbound X)
-  obtain ⟨κ, hκ, A, hA, hdisj, hcover, E, hX, ht⟩ :=
-    exists_pathDecoratedFamily_closedCharts T ℳ i₀ x s ν ε c P W S C
-      h w hν hP hW hS hC
-  refine ⟨κ, hκ, A, hA, hdisj, hcover,
-    E.trans (Equiv.sigmaCongrRight e), hX, ?_, ?_, ?_⟩
-  · intro z
-    exact congrArg (fun t : Types s => t.1.val) (ht z)
-  · intro z
-    exact (Sigma.mk.inj_iff.mp (ht z)).2
-  · intro z
-    rw [PathDecoratedRay.decoration_def]
-    exact congrArg (fun t : Types s => t.1.val.homogeneousHistory T ℳ t.2.val x) (ht z)
+  exact exists_pathDecoratedRay_closedCharts_of_forall_mem T ℳ i₀ x ν ε c P W S C
+    h w hν hP hW hS hC s fun X p β =>
+      hs p (β.length_le_of_filtration (F := F) (mark := mark) hT hstraight hr)
 
 end Direction
 
