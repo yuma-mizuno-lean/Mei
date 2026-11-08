@@ -61,6 +61,7 @@ theorem affineEquivAt_eq {f : V → W} {s : Set V}
     fun y hy => (he₀ ⟨hy.1, hy.2.2⟩).symm.trans (he ⟨hy.1, hy.2.1⟩)
 
 /-- The local witness at `x` agrees with the map at `x`. -/
+@[simp]
 theorem affineEquivAt_apply {f : V → W} {s : Set V}
     (hf : IsLocallyIntegralAffineOn h h' f s) {x : V} (hx : x ∈ s) :
     hf.affineEquivAt hx x = f x := by
@@ -153,6 +154,7 @@ theorem exists_chartChange_eq {e e' : atlas V B} {x : B} (hx : x ∈ e.1.source 
   exact ⟨a, u, hu, hxu, ha, chartChange_eq hx hu hxu ha⟩
 
 /-- The chart change carries the point `e x` to `e' x`. -/
+@[simp]
 theorem chartChange_apply {e e' : atlas V B} {x : B} (hx : x ∈ e.1.source ∩ e'.1.source) :
     chartChange h e e' x (e.1 x) = e'.1 x := by
   rw [chartChange_of_mem hx]

@@ -17,7 +17,7 @@ A simply connected charted space `B` modelled on `V`, whose chart changes are lo
 affine for the lattice `N ⊆ V`, has a developing map `B → V`
 (`Mei.Toric.DevelopingMap.nonempty_of_simplyConnectedSpace`), and its integral tangent lattice has
 a trivialization
-(`Mei.Toric.DevelopingMap.nonempty_trivialization_tangent_of_simplyConnectedSpace`).
+(`Mei.Toric.DevelopingMap.nonempty_tangent_trivialization_of_simplyConnectedSpace`).
 
 The developing map is a section of a covering space of germs. The group `G` of integral affine
 self-equivalences of `V` is discrete. The chart changes `e ↦ e'` at a point, the integral affine
@@ -182,7 +182,7 @@ theorem nonempty_of_simplyConnectedSpace [SimplyConnectedSpace B] :
 
 /-- A simply connected charted space whose chart changes are locally integral affine has a
 trivialization of its integral tangent lattice, namely the tangent frames of a developing map. -/
-theorem nonempty_trivialization_tangent_of_simplyConnectedSpace [SimplyConnectedSpace B] :
+theorem nonempty_tangent_trivialization_of_simplyConnectedSpace [SimplyConnectedSpace B] :
     Nonempty ((ExponentSystem.tangent h B).Trivialization N) :=
   (nonempty_of_simplyConnectedSpace h).map DevelopingMap.tangentTrivialization
 
