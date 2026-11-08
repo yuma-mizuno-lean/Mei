@@ -195,7 +195,7 @@ include hD
 
 /-- The common inclusion family for every surviving history of the finite path
 inventory, using its complete geometric admission domain. -/
-@[expose] def pathDecoratedFamily : FiniteSemilinearFamily h h Labels :=
+def pathDecoratedFamily : FiniteSemilinearFamily h h Labels :=
   FiniteSemilinearFamily.ofDomains (fun t => D t)
     hD
 
@@ -280,18 +280,6 @@ def pathDecoratedChartEquiv {κ : Labels → Type*} {B : ∀ t, κ t → Set V}
     (hD := hD)
     hdisj hcover).trans (Equiv.sigmaCongrRight fun X => e X)
 
-/-- The ray parameterization is the chart parameterization of the family fibers followed by
-the fiber comparison. -/
-theorem pathDecoratedChartEquiv_apply {κ : Labels → Type*} {B : ∀ t, κ t → Set V}
-    (hdisj : ∀ t, Pairwise fun j l => Disjoint (B t j) (B t l))
-    (hcover : ∀ t, ⋃ j, B t j = D t) (z : Σ t, Σ j, B t j) :
-    pathDecoratedChartEquiv T ℳ i₀ x s v ν ε c P W S C h hD hdisj hcover z =
-      ⟨(FiniteSemilinearFamily.ofDomainsChartEquiv (hD := hD) hdisj hcover z).1,
-        (e (FiniteSemilinearFamily.ofDomainsChartEquiv (hD := hD) hdisj hcover z).1)
-          (FiniteSemilinearFamily.ofDomainsChartEquiv (hD := hD) hdisj hcover z).2⟩ := by
-  simp only [pathDecoratedChartEquiv, Equiv.trans_apply]
-  rfl
-
 /-- The ray parameterization preserves the endpoint. -/
 @[simp]
 theorem pathDecoratedChartEquiv_apply_fst {κ : Labels → Type*} {B : ∀ t, κ t → Set V}
@@ -327,7 +315,7 @@ theorem pathDecoratedChartEquiv_apply_path {κ : Labels → Type*} {B : ∀ t, �
     FiniteSemilinearFamily.ofDomainsChartEquiv_apply_fst _ hdisj hcover z
   have hp := pathDecoratedFamilyFiberEquiv_path T ℳ i₀ x s v ν ε c P W S C h hD
     z'.1 z'.2
-  rw [pathDecoratedChartEquiv_apply]
+  change ((e z'.1) z'.2).2.2.ray.toContinuousMap = (path z.1) z.2.2.val
   exact hp.trans (by rw [hz', hz'X])
 
 /-- The ray parameterization preserves the entire final decoration. -/
