@@ -104,22 +104,27 @@ local notation "path" => (fun t : Labels => backwardPath
 
 include hν hP hW hS hC
 
-/-- All complete varying-chamber types have semilinear full endpoint domains. -/
-theorem isRationalSemilinear_pathDecoratedDomain (t : Labels) :
-    IsRationalSemilinear h (D t) := by
+omit [∀ q, DecidableEq (ι q)] in
+/-- Every complete degree history has a semilinear full endpoint domain,
+independently of its coefficient and whether its decoration survives. -/
+theorem isRationalSemilinear_pathDecoratedDomain (p : Path a b) (d : p.Degrees ι) :
+    IsRationalSemilinear h (admissibleBackwardDomain (p.reverseArrowLabels ν)
+      (p.reverseArrowLabels c) (Path.Degrees.reverseVertexLabels vel i₀ p d)
+      (p.reverseArrowLabels P) W S C) := by
   simpa only [Path.Degrees.reverseVertexLabels_comp, Function.comp_def] using
-    isRationalSemilinear_admissibleBackwardDomain (t.1.val.reverseArrowLabels ν)
-      (t.1.val.reverseArrowLabels c) (t.1.val.reverseArrowLabels P) W S C
-      (Path.Degrees.reverseVertexLabels w i₀ t.1.val t.2.val)
-      (t.1.val.reverseArrowLabels_forall ν
+    isRationalSemilinear_admissibleBackwardDomain (p.reverseArrowLabels ν)
+      (p.reverseArrowLabels c) (p.reverseArrowLabels P) W S C
+      (Path.Degrees.reverseVertexLabels w i₀ p d)
+      (p.reverseArrowLabels_forall ν
         (fun l => Toric.IsRationalFunctional h l.toLinearMap) hν)
-      (t.1.val.reverseArrowLabels_forall P (IsRationalSemilinear h) hP) hW hS hC
+      (p.reverseArrowLabels_forall P (IsRationalSemilinear h) hP) hW hS hC
 
 /-- The common inclusion family for every surviving history of the finite path
 inventory, using its complete geometric admission domain. -/
 def pathDecoratedFamily : FiniteSemilinearFamily h h Labels :=
   FiniteSemilinearFamily.ofDomains (fun t => D t)
-    (isRationalSemilinear_pathDecoratedDomain T ℳ i₀ x s ν ε c P W S C h w hν hP hW hS hC)
+    (fun t => isRationalSemilinear_pathDecoratedDomain
+      i₀ ν c P W S C h w hν hP hW hS hC t.1.val t.2.val)
 
 local notation "F" => pathDecoratedFamily T ℳ i₀ x s ν ε c P W S C h w hν hP hW hS hC
 
@@ -213,7 +218,8 @@ theorem exists_pathDecoratedFamily_closedCharts :
           ∀ z, (⟨(E z).2.1, (E z).2.2.1⟩ : Labels) = z.1 := by
   obtain ⟨κ, hκ, A, hA, hdisj, hcover, E, hendpoint, hlabel⟩ :=
     FiniteSemilinearFamily.exists_ofDomains_polyhedralCharts (fun t : Labels => D t)
-      (isRationalSemilinear_pathDecoratedDomain T ℳ i₀ x s ν ε c P W S C h w hν hP hW hS hC)
+      (fun t => isRationalSemilinear_pathDecoratedDomain
+        i₀ ν c P W S C h w hν hP hW hS hC t.1.val t.2.val)
   refine ⟨κ, hκ, A, ?_, hdisj, hcover,
     E.trans (Equiv.sigmaCongrRight fun X => e X), hendpoint, ?_⟩
   · intro t j
