@@ -27,7 +27,8 @@ pullback `dev.comap f` is again a developing map. The *holonomy* `dev.holonomy f
 transition from `dev` to `dev ∘ f`, so that `dev (f x) = dev.holonomy f (dev x)`
 (`Mei.Toric.DevelopingMap.holonomy_apply`). It is multiplicative in `f`
 (`Mei.Toric.DevelopingMap.holonomy_comp`), and its lattice part intertwines the tangent frames
-of `dev` at `x` and at `f x` (`Mei.Toric.DevelopingMap.tangentFrame_chart_apply`). On the model
+of `dev` at `x` and at `f x`
+(`Mei.Toric.DevelopingMap.tangentFrame_chart_eq_trans_holonomy_latticeEquiv`). On the model
 space `V`, every integral affine equivalence is a developing map, and the transition between two of
 them is the quotient of the equivalences
 (`Mei.Toric.DevelopingMap.transition_ofIntegralAffineEquiv`), so every element of the group occurs
@@ -184,6 +185,7 @@ theorem holonomy_id (dev : DevelopingMap h B) : dev.holonomy (AtlasMap.id V B) =
     rw [AtlasMap.coe_id, id_eq, IntegralAffineEquiv.one_apply]
 
 /-- Holonomy is multiplicative: the holonomy of a composite is the product of the holonomies. -/
+@[simp]
 theorem holonomy_comp (dev : DevelopingMap h B) (f g : AtlasMap V B B) :
     dev.holonomy (g.comp f) = dev.holonomy g * dev.holonomy f :=
   holonomy_eq_iff.mpr fun x => by
@@ -192,7 +194,8 @@ theorem holonomy_comp (dev : DevelopingMap h B) (f g : AtlasMap V B B) :
 
 /-- The lattice part of the holonomy of `f` carries the tangent frame of a developing map in a
 chart `e` at `x` to its tangent frame in the target chart `f.chart e` at `f x`. -/
-theorem tangentFrame_chart_apply (dev : DevelopingMap h B) (f : AtlasMap V B B) (e : atlas V B)
+theorem tangentFrame_chart_eq_trans_holonomy_latticeEquiv (dev : DevelopingMap h B)
+    (f : AtlasMap V B B) (e : atlas V B)
     (x : B) (hx : x ∈ e.1.source) :
     dev.tangentFrame (f.chart e) (f x) ((f.mem_source_iff e).mp hx) =
       (dev.tangentFrame e x hx).trans (dev.holonomy f).latticeEquiv := by
