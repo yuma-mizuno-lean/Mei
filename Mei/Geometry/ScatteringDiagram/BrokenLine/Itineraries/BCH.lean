@@ -97,6 +97,23 @@ theorem decoratedAdmissibleRay_shiftedBCH_length_le [Finite J] {l : List J} {Q :
     (fun e => ((F).truncatedBCHAction d ℒ k (g e)).toLinearMap) a v f c ε P W S C
     (d.shiftedBCH_cutoff_conditions ℒ ℳ p k g a v f c ε P W S C)).symm ⟨l, β⟩).length_le
 
+/-- Every actual BCH-decorated ray along a path of the one-object quiver on the encounter
+alphabet obeys the same uniform bound on its number of arrows. -/
+theorem pathDecoratedRay_shiftedBCH_length_le [Finite J]
+    {q : Path (SingleObj.star J) (SingleObj.star J)} {Q : V}
+    (r : PathDecoratedRay (Q := SingleObj J) (M := fun _ => (F).quotient k)
+      (ι := fun _ => Γ) (fun e => ((F).truncatedBCHAction d ℒ k (g e)).toLinearMap)
+      (fun _ => (d.shiftedQuotientGrading ℳ p k).piece) 0 a (fun _ => v) (fun e => f e)
+      (fun e => ε e) (fun e => c e) (fun e => P e) W S C q Q) :
+    q.length ≤ Nat.card (d.cutoff k) * Nat.card J := by
+  obtain ⟨⟨l, β⟩, hz⟩ := (wordDecoratedRayPathEquiv (d.shiftedQuotientGrading ℳ p k).piece
+    (fun e => ((F).truncatedBCHAction d ℒ k (g e)).toLinearMap) a v f c ε P W S C Q).surjective
+    ⟨q, r⟩
+  have hq : SingleObj.listToPath l = q := by
+    simpa only [wordDecoratedRayPathEquiv_fst] using congrArg Sigma.fst hz
+  rw [← hq, SingleObj.length_listToPath]
+  exact d.decoratedAdmissibleRay_shiftedBCH_length_le ℒ ℳ p k g a v f c ε P W S C β
+
 /-- Across all endpoints, only finitely many degree-labelled encounter words
 are realized by actual BCH propagation. Equal spatial directions do not identify
 different coefficient degrees or omit unchanged-degree encounters. -/

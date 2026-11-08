@@ -8,9 +8,8 @@ module
 public import Mei.Geometry.ScatteringDiagram.ModuleProbe.BackwardRecursion
 public import Mei.Algebra.Lie.Graded.Shifted.Support
 public import Mei.Geometry.ScatteringDiagram.BrokenLine.LastChange.Recursion
-public import Mei.Geometry.ScatteringDiagram.BrokenLine.Itineraries.Linear
-public import Mei.Geometry.ScatteringDiagram.BrokenLine.Itineraries.Completion
-public import Mei.Geometry.ScatteringDiagram.BrokenLine.Itineraries.ZeroDirection.Quotient
+public import Mei.Geometry.ScatteringDiagram.BrokenLine.Itineraries.BCH
+public import Mei.Geometry.ScatteringDiagram.BrokenLine.Path.Regrading
 public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.WallEvent.Action
 public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.WallEvent.Parameters
 public import Mei.Geometry.Convex.Polyhedron.Line
@@ -20,22 +19,28 @@ public import Mei.Geometry.Convex.Sweep.Admissible.WallEvent
 /-!
 # Canonical simultaneous wall-event evaluations
 
-The weighted evaluation of finite decorated-ray itineraries is specialized to
-canonical simultaneous events of a directed diagram. Each genuine crossing of
+The common weighted evaluation `pathDecoratedEvaluation` is specialized to
+canonical simultaneous events of a directed diagram: decorated rays run along the
+paths of the one-object quiver on the event alphabet, every chamber module is the
+same shifted finite quotient, and every arrow acts by the truncated BCH action of its
+event. The paths of bounded length `wallEventPaths` exhaust every endpoint fiber,
+and the evaluation reindexes the cutoff family of finite decorated-ray itineraries
+by `cutoffWallEventEvaluation_eq_cutoffDecoratedEvaluation`. Each genuine crossing of
 an admissible segment determines one event, retaining every coincident indexed
 wall. The degree component at the final endpoint decomposes over those events,
 with arbitrarily close incoming germs of strictly lower relative degree;
 unchanged-degree encounters do not occur in this decomposition.
 
 The coefficient quotient may have a smaller cutoff than the geometric wall
-inventory, and lowering it commutes with the entire weighted evaluation. The
+inventory, and lowering it commutes with the entire weighted evaluation by
+`map_pathDecoratedEvaluation`. The
 recursion follows Mandel, *Scattering diagrams, theta functions, and refined
 tropical curve counts*, §3.3.3 (arXiv:1503.06183v5).
 -/
 
 public noncomputable section
 
-open Set Filter Topology Mei.Convex Mei.Convex.WallComplement
+open Set Filter Topology Quiver Mei.Convex Mei.Convex.WallComplement
 
 namespace Mei.ModuleProbe
 
@@ -89,24 +94,93 @@ theorem wallEventPropagation_self (k : ℕ) (b : WallEvent (B.active k))
   rw [wallEventPropagation_apply, d.truncationMap_refl, LieHom.bchGroupMap_id,
     MonoidHom.id_apply]
 
-/-- Weighted evaluation of every finite itinerary of canonical simultaneous wall events.
-The coefficients live in the same shifted finite quotient as the probe field, while
-avoidance and the event alphabet retain the possibly larger geometric cutoff. -/
+/-- Paths of canonical simultaneous wall events with at most
+`Nat.card (d.cutoff k) * Nat.card (WallEvent (B.active K))` arrows. Every decorated ray of
+the wall-event evaluation runs along one of them. -/
+def wallEventPaths (k K : ℕ) :
+    Finset (Path (SingleObj.star (WallEvent (B.active K)))
+      (SingleObj.star (WallEvent (B.active K)))) :=
+  (SingleObj.finite_setOf_length_le
+    (Nat.card (d.cutoff k) * Nat.card (WallEvent (B.active K)))).toFinset
+
+omit [IsWallAnnihilating H ℳ] in
+/-- A path of events is in the bounded inventory exactly when its length is bounded. -/
+theorem mem_wallEventPaths {k K : ℕ}
+    {q : Path (SingleObj.star (WallEvent (B.active K)))
+      (SingleObj.star (WallEvent (B.active K)))} :
+    q ∈ wallEventPaths d ℒ H h B k K ↔
+      q.length ≤ Nat.card (d.cutoff k) * Nat.card (WallEvent (B.active K)) := by
+  rw [wallEventPaths, Set.Finite.mem_toFinset, Set.mem_ofPred_eq]
+
+/-- Weighted evaluation of every finite itinerary of canonical simultaneous wall events,
+as the common weighted evaluation of decorated rays along the paths of the one-object quiver
+on the event alphabet. Every chamber module is the same shifted finite quotient, and every
+arrow acts by the truncated BCH action of its event. The coefficients live in the same
+shifted finite quotient as the probe field, while avoidance and the event alphabet retain
+the possibly larger geometric cutoff. -/
 def cutoffWallEventEvaluation (k K : ℕ) (hkK : k ≤ K)
     (a : (d.shiftedQuotientGrading ℳ p k).piece 0) (C : Set V) (Q : V) :
     (d.shiftedLieFiltration ℒ ℳ p).quotient k :=
-  cutoffDecoratedEvaluation d (d.shiftedQuotientGrading ℳ p k).piece
-    (fun e : WallEvent (B.active K) => wallEventPropagation d ℳ p ℒ H h B k K hkK e)
-    a (fun n => i (ρ (p + n)))
-    (fun e => e.normal ((B.activeNormal K)))
-    (fun e => e.offset ((B.activeOffset K)))
-    (fun e => e.2) (fun e => e.support ((B.activeSupport K)))
-    ((B.activeSupport K))
-    (fun _ : Unit => singularSupport ((B.activeSupport K))) C k Q
+  pathDecoratedEvaluation (Q := SingleObj (WallEvent (B.active K)))
+    (M := fun _ => (d.shiftedLieFiltration ℒ ℳ p).quotient k) (ι := fun _ => Γ)
+    (fun e => wallEventPropagation d ℳ p ℒ H h B k K hkK e)
+    (fun _ => (d.shiftedQuotientGrading ℳ p k).piece) 0 a (wallEventPaths d ℒ H h B k K)
+    (fun _ n => i (ρ (p + n)))
+    (fun e => e.normal (B.activeNormal K)) (fun e => e.2)
+    (fun e => e.offset (B.activeOffset K)) (fun e => e.support (B.activeSupport K))
+    (B.activeSupport K) (fun _ : Unit => singularSupport (B.activeSupport K)) C Q
 
 omit [IsWallAnnihilating H ℳ] in
 /-- Defining equation for canonical simultaneous-event weighted evaluation. -/
 theorem cutoffWallEventEvaluation_def (k K : ℕ) (hkK : k ≤ K)
+    (a : (d.shiftedQuotientGrading ℳ p k).piece 0) (C : Set V) (Q : V) :
+    cutoffWallEventEvaluation d ℳ p ℒ H h B k K hkK a C Q =
+      pathDecoratedEvaluation (Q := SingleObj (WallEvent (B.active K)))
+        (M := fun _ => (d.shiftedLieFiltration ℒ ℳ p).quotient k) (ι := fun _ => Γ)
+        (fun e => wallEventPropagation d ℳ p ℒ H h B k K hkK e)
+        (fun _ => (d.shiftedQuotientGrading ℳ p k).piece) 0 a (wallEventPaths d ℒ H h B k K)
+        (fun _ n => i (ρ (p + n)))
+        (fun e => e.normal (B.activeNormal K)) (fun e => e.2)
+        (fun e => e.offset (B.activeOffset K)) (fun e => e.support (B.activeSupport K))
+        (B.activeSupport K) (fun _ : Unit => singularSupport (B.activeSupport K)) C Q := (rfl)
+
+omit [IsWallAnnihilating H ℳ] in
+/-- Simultaneous-event weighted evaluation is the common weighted evaluation over any finite
+inventory exhausting the endpoint fiber. -/
+theorem cutoffWallEventEvaluation_eq_pathDecoratedEvaluation (k K : ℕ) (hkK : k ≤ K)
+    (a : (d.shiftedQuotientGrading ℳ p k).piece 0) (C : Set V) (Q : V)
+    (s : Finset (Path (SingleObj.star (WallEvent (B.active K)))
+      (SingleObj.star (WallEvent (B.active K)))))
+    (hs : ∀ q, PathDecoratedRay (Q := SingleObj (WallEvent (B.active K)))
+      (M := fun _ => (d.shiftedLieFiltration ℒ ℳ p).quotient k) (ι := fun _ => Γ)
+      (fun e => wallEventPropagation d ℳ p ℒ H h B k K hkK e)
+      (fun _ => (d.shiftedQuotientGrading ℳ p k).piece) 0 a (fun _ n => i (ρ (p + n)))
+      (fun e => e.normal (B.activeNormal K)) (fun e => e.2)
+      (fun e => e.offset (B.activeOffset K)) (fun e => e.support (B.activeSupport K))
+      (B.activeSupport K) (fun _ : Unit => singularSupport (B.activeSupport K)) C q Q →
+        q ∈ s) :
+    cutoffWallEventEvaluation d ℳ p ℒ H h B k K hkK a C Q =
+      pathDecoratedEvaluation (Q := SingleObj (WallEvent (B.active K)))
+        (M := fun _ => (d.shiftedLieFiltration ℒ ℳ p).quotient k) (ι := fun _ => Γ)
+        (fun e => wallEventPropagation d ℳ p ℒ H h B k K hkK e)
+        (fun _ => (d.shiftedQuotientGrading ℳ p k).piece) 0 a s (fun _ n => i (ρ (p + n)))
+        (fun e => e.normal (B.activeNormal K)) (fun e => e.2)
+        (fun e => e.offset (B.activeOffset K)) (fun e => e.support (B.activeSupport K))
+        (B.activeSupport K) (fun _ : Unit => singularSupport (B.activeSupport K)) C Q := by
+  apply pathDecoratedEvaluation_eq_of_exhaustive (hs' := hs)
+  intro q r
+  rw [mem_wallEventPaths]
+  simp only [wallEventPropagation_def] at r
+  exact d.pathDecoratedRay_shiftedBCH_length_le ℒ ℳ p k
+    (fun e => (d.truncationMap ℒ hkK).bchGroupMap (B.wallEventLabel K e)) a
+    (fun n => i (ρ (p + n))) (fun e => e.normal (B.activeNormal K))
+    (fun e => e.offset (B.activeOffset K)) (fun e => e.2) (fun e => e.support (B.activeSupport K))
+    (B.activeSupport K) (fun _ : Unit => singularSupport (B.activeSupport K)) C r
+
+omit [IsWallAnnihilating H ℳ] in
+/-- Simultaneous-event weighted evaluation reindexes the weighted evaluation of the cutoff
+family of finite decorated-ray itineraries. -/
+theorem cutoffWallEventEvaluation_eq_cutoffDecoratedEvaluation (k K : ℕ) (hkK : k ≤ K)
     (a : (d.shiftedQuotientGrading ℳ p k).piece 0) (C : Set V) (Q : V) :
     cutoffWallEventEvaluation d ℳ p ℒ H h B k K hkK a C Q =
       cutoffDecoratedEvaluation d (d.shiftedQuotientGrading ℳ p k).piece
@@ -119,7 +193,20 @@ theorem cutoffWallEventEvaluation_def (k K : ℕ) (hkK : k ≤ K)
         (fun e => e.support ((B.activeSupport K)))
         ((B.activeSupport K))
         (fun _ : Unit =>
-          singularSupport ((B.activeSupport K))) C k Q := (rfl)
+          singularSupport ((B.activeSupport K))) C k Q := by
+  simp only [wallEventPropagation_def]
+  refine (d.cutoffDecoratedEvaluation_shiftedBCH_eq_pathDecoratedEvaluation ℒ ℳ p k
+    (fun e => (d.truncationMap ℒ hkK).bchGroupMap (B.wallEventLabel K e)) a
+    (fun n => i (ρ (p + n))) (fun e => e.normal (B.activeNormal K))
+    (fun e => e.offset (B.activeOffset K)) (fun e => e.2) (fun e => e.support (B.activeSupport K))
+    (B.activeSupport K) (fun _ : Unit => singularSupport (B.activeSupport K)) C
+    (wallEventPaths d ℒ H h B k K) fun q r => ?_).symm
+  rw [mem_wallEventPaths]
+  exact d.pathDecoratedRay_shiftedBCH_length_le ℒ ℳ p k
+    (fun e => (d.truncationMap ℒ hkK).bchGroupMap (B.wallEventLabel K e)) a
+    (fun n => i (ρ (p + n))) (fun e => e.normal (B.activeNormal K))
+    (fun e => e.offset (B.activeOffset K)) (fun e => e.2) (fun e => e.support (B.activeSupport K))
+    (B.activeSupport K) (fun _ : Unit => singularSupport (B.activeSupport K)) C r
 
 omit [IsWallAnnihilating H ℳ] in
 /-- A fixed event preserves a homogeneous component of the current coefficient
@@ -304,6 +391,7 @@ theorem exists_decompose_cutoffWallEventEvaluation_eq_sum_lastChange (k : ℕ)
   have hclosedS (u : Unit) :
       IsClosed ((fun _ : Unit => singularSupport walls) u) := by
     exact isClosed_singularSupport walls hclosedW
+  simp only [cutoffWallEventEvaluation_eq_cutoffDecoratedEvaluation]
   -- The remaining obligations reduce to genuine event parameters, wall geometry,
   -- and the shifted component-preservation lemma for simultaneous actions.
   refine CutoffDecoratedRay.exists_decompose_cutoffDecoratedEvaluation_eq_sum_lastChange
@@ -356,19 +444,38 @@ theorem transition_cutoffWallEventEvaluation {k K : ℕ} (hk : k ≤ K)
       cutoffWallEventEvaluation d ℳ p ℒ H h B k K hk
         ⟨(d.shiftedLieFiltration ℒ ℳ p).transition hk a,
           d.transition_mem_shiftedQuotientGrading ℳ p hk a.property⟩ C Q := by
-  simp only [cutoffWallEventEvaluation_def, wallEventPropagation_def,
-    d.truncationMap_refl, LieHom.bchGroupMap_id, MonoidHom.id_apply]
-  exact
-    (d.transition_cutoffDecoratedEvaluation_shiftedBCHAction ℒ ℳ p
-      (fun n => i (ρ (p + n)))
-      (fun e : WallEvent (B.active K) =>
-        e.normal ((B.activeNormal K)))
-      (fun e : WallEvent (B.active K) =>
-        e.offset ((B.activeOffset K)))
-      (fun e : WallEvent (B.active K) => e.2)
-      (fun e : WallEvent (B.active K) => e.support ((B.activeSupport K)))
-      ((B.activeSupport K))
-      (fun _ : Unit => singularSupport ((B.activeSupport K)))
-      C Q hk (fun e : WallEvent (B.active K) => B.wallEventLabel K e) a)
+  rw [cutoffWallEventEvaluation_def, cutoffWallEventEvaluation_def,
+    map_pathDecoratedEvaluation (Q := SingleObj (WallEvent (B.active K))) (V := V)
+      (T := fun e => wallEventPropagation d ℳ p ℒ H h B K K (Nat.le_refl K) e)
+      (U := fun e => wallEventPropagation d ℳ p ℒ H h B k K hk e)
+      (ℳ := fun _ => (d.shiftedQuotientGrading ℳ p K).piece)
+      (r := fun _ => (d.shiftedLieFiltration ℒ ℳ p).transition hk) (σ := fun _ => id)
+      (hr := fun _ _ _ hx => d.transition_mem_shiftedQuotientGrading ℳ p hk hx)
+      (hT := fun e => LinearMap.ext fun x => by
+        rw [LinearMap.comp_apply, LinearMap.comp_apply, wallEventPropagation_self,
+          wallEventPropagation_apply]
+        exact (d.shiftedLieFiltration ℒ ℳ p).transition_truncatedBCHAction d ℒ hk _ x)
+      (v := fun _ n => i (ρ (p + n))) (w := fun _ n => i (ρ (p + n))) (hv := fun _ _ => rfl)]
+  -- The coarser inventory still exhausts the rays of the smaller coefficient cutoff.
+  apply pathDecoratedEvaluation_eq_of_exhaustive
+  · intro q r
+    simp only [wallEventPropagation_def] at r
+    rw [mem_wallEventPaths]
+    refine (d.pathDecoratedRay_shiftedBCH_length_le ℒ ℳ p k
+      (fun e => (d.truncationMap ℒ hk).bchGroupMap (B.wallEventLabel K e)) _
+      (fun n => i (ρ (p + n))) (fun e => e.normal (B.activeNormal K))
+      (fun e => e.offset (B.activeOffset K)) (fun e => e.2)
+      (fun e => e.support (B.activeSupport K)) (B.activeSupport K)
+      (fun _ : Unit => singularSupport (B.activeSupport K)) C r).trans (Nat.mul_le_mul_right _ ?_)
+    exact Nat.card_mono (d.finite_cutoff K) (d.cutoff_mono hk)
+  · intro q r
+    simp only [wallEventPropagation_def] at r
+    rw [mem_wallEventPaths]
+    exact d.pathDecoratedRay_shiftedBCH_length_le ℒ ℳ p k
+      (fun e => (d.truncationMap ℒ hk).bchGroupMap (B.wallEventLabel K e)) _
+      (fun n => i (ρ (p + n))) (fun e => e.normal (B.activeNormal K))
+      (fun e => e.offset (B.activeOffset K)) (fun e => e.2)
+      (fun e => e.support (B.activeSupport K)) (B.activeSupport K)
+      (fun _ : Unit => singularSupport (B.activeSupport K)) C r
 
 end Mei.ModuleProbe

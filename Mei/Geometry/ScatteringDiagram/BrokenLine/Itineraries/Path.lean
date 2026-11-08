@@ -68,6 +68,12 @@ def wordDecoratedRayPathEquiv (Q : V) :
     (decoratedAdmissibleRayPathEquiv ℳ T 0 a v f c ε P W S C l.get Q).trans
       (Equiv.cast (congrArg (fun p => PRay p Q) (SingleObj.pathOfFn_get l)))
 
+/-- The path comparison of words sends a word to its path. -/
+@[simp]
+theorem wordDecoratedRayPathEquiv_fst (Q : V) (z : Σ l : List J, WordRay l Q) :
+    (wordDecoratedRayPathEquiv ℳ T a v f c ε P W S C Q z).1 = SingleObj.listToPath z.1 :=
+  (rfl)
+
 /-- The path comparison of words preserves the whole final decoration. -/
 theorem wordDecoratedRayPathEquiv_decoration (Q : V) (z : Σ l : List J, WordRay l Q) :
     (wordDecoratedRayPathEquiv ℳ T a v f c ε P W S C Q z).2.decoration = z.2.decoration 0 := by
