@@ -157,14 +157,40 @@ namespace AdmissibleRayRealization
 
 variable {f c v P W S C Q}
 
+/-- Transport a realization between equal presentations, retaining its ray and times. -/
+def congrData (r : AdmissibleRayRealization f c v P W S C Q)
+    {f' : Fin n → V →L[ℝ] ℝ} {c' : Fin n → ℝ}
+    {v' : Fin (n + 1) → V} {P' : Fin n → Set V}
+    (hf : f = f') (hc : c = c') (hv : v = v') (hP : P = P') :
+    AdmissibleRayRealization f' c' v' P' W S C Q :=
+  { r with
+    transverse := fun j => by rw [← hf, ← hv]; exact r.transverse j
+    directionAt_eq := fun j => (r.directionAt_eq j).trans (congrFun hv j)
+    height_eq := fun j => by rw [← hf, ← hc]; exact r.height_eq j
+    incidence := fun j => by rw [← hP]; exact r.incidence j }
+
+/-- Equal presentation transport preserves the entire geometric ray. -/
+@[simp]
+theorem ray_congrData (r : AdmissibleRayRealization f c v P W S C Q)
+    {f' : Fin n → V →L[ℝ] ℝ} {c' : Fin n → ℝ}
+    {v' : Fin (n + 1) → V} {P' : Fin n → Set V}
+    (hf : f = f') (hc : c = c') (hv : v = v') (hP : P = P') :
+    (r.congrData hf hc hv hP).ray = r.ray := (rfl)
+
+/-- Equal presentation transport preserves all encounter parameters. -/
+@[simp]
+theorem parameter_congrData (r : AdmissibleRayRealization f c v P W S C Q)
+    {f' : Fin n → V →L[ℝ] ℝ} {c' : Fin n → ℝ}
+    {v' : Fin (n + 1) → V} {P' : Fin n → Set V}
+    (hf : f = f') (hc : c = c') (hv : v = v') (hP : P = P') :
+    (r.congrData hf hc hv hP).parameter = r.parameter := (rfl)
+
 /-- Transport a realization along an equality of its prescribed velocities,
 retaining the entire ray and all encounter parameters. -/
 def congrVelocity (r : AdmissibleRayRealization f c v P W S C Q)
     {v' : Fin (n + 1) → V} (h : v = v') :
     AdmissibleRayRealization f c v' P W S C Q :=
-  { r with
-    transverse := fun j => by rw [← h]; exact r.transverse j
-    directionAt_eq := fun j => (r.directionAt_eq j).trans (congrFun h j) }
+  r.congrData rfl rfl h rfl
 
 /-- Velocity transport preserves the entire geometric ray. -/
 @[simp]
