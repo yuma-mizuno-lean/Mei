@@ -76,15 +76,25 @@ theorem path_apply_zero {Q : V}
   rw [path_def]
   exact backwardPath_apply_zero F b u hQ
 
+/-- At a limiting endpoint, each recorded encounter stays in the closure of
+its selected support, including nonclosed exact simultaneous-event supports. -/
+theorem path_parameter_mem_closure {Q : V} (hQ : Q ∈ closure D)
+    (j : Fin t.itinerary.val.length) :
+    t.path c Q (backwardParameter F b (fun j => u j.castSucc) j.succ Q) ∈ closure (A j) := by
+  rw [path_def, backwardPath_apply_parameter F b u (t.backwardTime_nonneg c P W S C hQ)]
+  exact closure_minimal
+    (t := (backwardPoint F b (fun j => u j.castSucc) j.succ) ⁻¹' closure (A j))
+    (fun Y hY => subset_closure (((mem_backwardDomain ..).mp
+      (admissibleBackwardDomain_subset_backwardDomain _ _ _ _ _ _ _
+        ((t.mem_domain c P W S C Y).mp hY))) j).2)
+    (isClosed_closure.preimage (backwardPoint F b _ j.succ).continuous) hQ
+
 /-- Every recorded encounter remains on its selected closed support, even when
 its time coincides with another encounter or with the endpoint. -/
 theorem path_parameter_mem (hP : ∀ j, IsClosed (P j)) {Q : V} (hQ : Q ∈ closure D)
     (j : Fin t.itinerary.val.length) :
-    t.path c Q (backwardParameter F b (fun j => u j.castSucc) j.succ Q) ∈ A j := by
-  rw [path_def, backwardPath_apply_parameter F b u (t.backwardTime_nonneg c P W S C hQ)]
-  have hw := closure_admissibleBackwardDomain_subset_weakBackwardDomain F b u A W S C
-    (fun j => hP (t.itinerary.val.get j)) (by simpa only [domain_def] using hQ)
-  exact ((mem_weakBackwardDomain F b _ A Q).mp hw j).2
+    t.path c Q (backwardParameter F b (fun j => u j.castSucc) j.succ Q) ∈ A j :=
+  (hP _).closure_subset (t.path_parameter_mem_closure c P W S C hQ j)
 
 /-- The extension over a type's closed endpoint domain is proper in compact-open
 path space. This does not require nonzero incoming velocity. -/

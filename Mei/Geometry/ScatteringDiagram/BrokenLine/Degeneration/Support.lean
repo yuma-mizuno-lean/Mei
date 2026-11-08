@@ -31,7 +31,7 @@ Carl–Pumperla–Siebert, *A tropical view on Landau–Ginzburg models*, §4
 
 public section
 
-open Set Mei.Convex
+open Set Filter Topology Mei.Convex
 
 namespace Mei.CutoffDecoratedType
 
@@ -99,5 +99,38 @@ theorem mem_interior_backwardDomain_of_notMem_singularSupport
     c A wall hclosed hheight hdir hb with ⟨j, _, hj⟩ | ⟨j, hj⟩
   · exact hendpoint _ hj
   · exact hregular j hj
+
+/-- Nonclosed selected supports have no additional regular incidence boundary
+when their germs at regular limits agree with their ambient walls. This applies
+to exact simultaneous events, whose omitted wall indices must also persist. -/
+theorem mem_interior_backwardDomain_of_locally_eq
+    (hlocal : ∀ j x, x ∈ closure (P j) → x ∉ singularSupport A →
+      ∀ᶠ y in 𝓝 x, y ∈ A (wall j) → y ∈ P j)
+    {Q : V} (hQ : Q ∈ closure D) (hendpoint : ∀ i, Q ∉ A i)
+    (hregular : ∀ j : Fin t.itinerary.val.length,
+      t.path c Q (τ j.succ Q) ∉ singularSupport A) :
+    Q ∈ interior (backwardDomain F b u (fun j => P (t.itinerary.val.get j))) := by
+  have hambient := t.mem_interior_backwardDomain_of_notMem_singularSupport
+    c P W S C A wall hclosed hP hheight hdir hQ hendpoint hregular
+  have hnonneg := t.backwardTime_nonneg c P W S C hQ
+  have hselected : ∀ᶠ Y in 𝓝 Q, ∀ j : Fin t.itinerary.val.length,
+      backwardPoint F b u j.succ Y ∈ A (wall (t.itinerary.val.get j)) →
+        backwardPoint F b u j.succ Y ∈ P (t.itinerary.val.get j) := by
+    apply eventually_all.mpr
+    intro j
+    have hp := backwardPath_apply_parameter F b
+      (fun j => v (Fin.snoc (α := fun _ => Γ) t.history.val 0 j)) hnonneg j.succ
+    simp only [Fin.snoc_castSucc] at hp
+    have hclosure : backwardPoint F b u j.succ Q ∈ closure (P (t.itinerary.val.get j)) := by
+      simpa only [path_def, Fin.snoc_castSucc, hp] using
+        t.path_parameter_mem_closure c P W S C hQ j
+    have hreg : backwardPoint F b u j.succ Q ∉ singularSupport A := by
+      simpa only [path_def, Fin.snoc_castSucc, hp] using hregular j
+    exact (backwardPoint F b u j.succ).continuous.continuousAt.eventually
+      (hlocal _ _ hclosure hreg)
+  apply mem_interior_iff_mem_nhds.mpr
+  filter_upwards [mem_interior_iff_mem_nhds.mp hambient, hselected] with Y hY hsel
+  exact (mem_backwardDomain ..).mpr fun j =>
+    ⟨((mem_backwardDomain ..).mp hY j).1, hsel j ((mem_backwardDomain ..).mp hY j).2⟩
 
 end Mei.CutoffDecoratedType

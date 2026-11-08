@@ -13,9 +13,10 @@ public import Mei.Geometry.Convex.Sweep.Singular.Stability
 /-!
 # Boundaries of full decorated-type domains
 
-For closed polyhedral wall supports, a regular limiting path with endpoint off
+For polyhedral ambient walls, a regular limiting path with endpoint off
 the walls has no local constraints except admission of its incoming tail.
-Here each selected encounter support is its ambient wall. Selected incidences,
+The selected supports may be nonclosed, provided they agree locally with
+their ambient walls at regular limits. Selected incidences,
 strict time order, absence of unrecorded contacts, and singular avoidance all
 persist on a neighborhood. The full type domain therefore agrees locally with
 the source-admission domain, rather than merely containing its limiting point.
@@ -44,16 +45,18 @@ variable {R M Γ V J K O : Type*} [Semiring R] [AddCommMonoid M] [Module R M]
   [NormedAddCommGroup V] [NormedSpace ℝ V] [Finite O] [Finite K]
   {T : J → Module.End R M} {a : ℳ 0} {v : Γ → V}
   {f : J → V →L[ℝ] ℝ} {ε : J → SignType} {k : ℕ}
-  (c : J → ℝ) (W : O → Set V) (S : K → Set V) (C : Set V)
+  (c : J → ℝ) (P : J → Set V) (W : O → Set V) (S : K → Set V) (C : Set V)
   (t : CutoffDecoratedType d ℳ T a v f ε k) (wall : J → O)
   (hW : ∀ j, TauCeti.IsConvexPolyhedron (W j))
+  (hP : ∀ j, P j ⊆ W (wall j))
+  (hlocal : ∀ j x, x ∈ closure (P j) → x ∉ singularSupport W →
+    ∀ᶠ y in 𝓝 x, y ∈ W (wall j) → y ∈ P j)
   (hheight : ∀ j x, x ∈ W (wall j) → f j x = c j)
   (hdir : ∀ j, LinearMap.ker (f j).toLinearMap ≤ (affineSpan ℝ (W (wall j))).direction)
   (ν : O → V →L[ℝ] ℝ) (z : O → ℝ)
   (hspan : ∀ j, (affineSpan ℝ (W j) : Set V) = {x | ν j x = z j})
   (hS : ∀ j, TauCeti.IsConvexPolyhedron (S j))
 
-local notation "P" => fun j => W (wall j)
 local notation "F" => fun j => f (t.itinerary.val.get j)
 local notation "b" => fun j => c (t.itinerary.val.get j)
 local notation "u" => fun j => v (Fin.snoc (α := fun _ => Γ) t.history.val 0 j)
@@ -62,7 +65,7 @@ local notation "X" => backwardPoint F b w (Fin.last t.itinerary.val.length)
 local notation "D" => domain c P W S C t
 local notation "A" => Set.ofPred fun Q : V => ∀ᶠ s : ℝ in atBot, t.path c Q s ∈ C
 
-include hW hheight hdir hspan hS
+include hW hP hlocal hheight hdir hspan hS
 
 /-- At a regular limiting path with allowed endpoint, the full domain agrees
 locally with incoming-source admission. The source may be any set; only walls
@@ -79,8 +82,8 @@ theorem eventually_mem_domain_iff_sourceAdmission_of_regular
       backwardParameter F b w j Q ≤ 0 := by
     simpa only [backwardParameter_zero] using
       antitone_backwardParameter F b w Q h0 (Fin.zero_le j)
-  have hinc := t.mem_interior_backwardDomain_of_notMem_singularSupport
-    c P W S C W wall hclosed (fun _ => Subset.refl _) hheight hdir hQ hoff
+  have hinc := t.mem_interior_backwardDomain_of_locally_eq
+    c P W S C W wall hclosed hP hheight hdir hlocal hQ hoff
     (fun j => by
       simpa only [Fin.snoc_castSucc] using
         hregular (backwardParameter F b w j.succ Q) (hτ _))
@@ -89,7 +92,7 @@ theorem eventually_mem_domain_iff_sourceAdmission_of_regular
     (by simpa only [Fin.snoc_castSucc] using h0)
     (by simpa only [path_def] using havoid)
   have hlocal := t.eventually_mem_domain_iff_of_regular c P W S C wall hW
-    (fun _ => Subset.refl _) hheight ν z hspan hQ hoff hregular
+    hP hheight ν z hspan hQ hoff hregular
   simp only [Fin.snoc_castSucc] at hsing hlocal
   filter_upwards [hlocal, hsing, mem_interior_iff_mem_nhds.mp hinc]
     with Y hlocal hsing hinc
@@ -105,7 +108,7 @@ theorem mem_interior_domain_iff_sourceAdmission_of_regular
     (havoid : ∀ j s, s ≤ 0 → t.path c Q s ∉ S j) :
     Q ∈ interior D ↔ Q ∈ interior A := by
   have he : D =ᶠ[𝓝 Q] A :=
-    (t.eventually_mem_domain_iff_sourceAdmission_of_regular c W S C wall hW
+    (t.eventually_mem_domain_iff_sourceAdmission_of_regular c P W S C wall hW hP hlocal
       hheight hdir ν z hspan hS hQ hoff hregular havoid).set_eq
   exact he.mem_interior_iff
 
@@ -128,8 +131,8 @@ theorem mem_frontier_domain_iff_source_face_of_regular
     apply t.path_eventually_mem_of_isConvexPolyhedron c P W S source _ hQ
     rw [iInter_ofPred]
     exact TauCeti.isConvexPolyhedron_setOf_forall g
-  have hi := t.mem_interior_domain_iff_sourceAdmission_of_regular c W S source
-    wall hW hheight hdir ν z hspan hS hQ hoff hregular havoid
+  have hi := t.mem_interior_domain_iff_sourceAdmission_of_regular c P W S source
+    wall hW hP hlocal hheight hdir ν z hspan hS hQ hoff hregular havoid
   have hf := t.mem_frontier_sourceAdmission_iff c g Q
   have hfront : Q ∈ frontier Dg ↔ Q ∉ interior Dg :=
     ⟨fun h => h.2, fun h => ⟨hQ, h⟩⟩
@@ -162,8 +165,8 @@ theorem mem_frontier_domain_imp_terminal_or_singular_or_source_face
     simpa only [not_exists, not_and] using hw
   have havoid : ∀ j s, s ≤ 0 → t.path c Q s ∉ S j := by
     simpa only [not_exists, not_and] using hs
-  have hi := t.mem_interior_domain_iff_sourceAdmission_of_regular c W S source
-    wall hW hheight hdir ν z hspan hS (frontier_subset_closure hQ) hoff hregular havoid
+  have hi := t.mem_interior_domain_iff_sourceAdmission_of_regular c P W S source
+    wall hW hP hlocal hheight hdir ν z hspan hS (frontier_subset_closure hQ) hoff hregular havoid
   exact t.path_eventually_mem_source_face_of_mem_closure c g P W S
     (frontier_subset_closure hQ) (fun h => hQ.2 (hi.mpr h))
 
