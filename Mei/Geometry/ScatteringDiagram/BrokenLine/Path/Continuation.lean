@@ -89,7 +89,7 @@ theorem pathDecoratedRaysEndpointEquiv_type {X Y : V} (h : ∀ t : Labels, X ∈
     r.1.val _ r.2))
 
 /-- Endpoint transport of the inventory preserves the whole final decoration. -/
-@[simp]
+@[simp↓]
 theorem pathDecoratedRaysEndpointEquiv_decoration {X Y : V}
     (h : ∀ t : Labels, X ∈ D t ↔ Y ∈ D t) (r : Rays(X)) :
     (pathDecoratedRaysEndpointEquiv T ℳ i₀ x v ν ε c P W S C s h r).2.decoration =
