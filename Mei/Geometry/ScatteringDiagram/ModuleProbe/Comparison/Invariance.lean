@@ -66,8 +66,7 @@ theorem cutoffWallEventEvaluation_eq_of_equivalent (hB : B.Consistent) (hBB' : B
     cutoffWallEventEvaluation d ℳ p ℒ H h B K K (Nat.le_refl K) b univ x =
       cutoffWallEventEvaluation d ℳ p ℒ H h B' K K (Nat.le_refl K) b univ x := by
   have h₀ : TauCeti.Toric.IsIntegralLattice (Int.castAddHom ℝ) :=
-    TauCeti.Toric.isIntegralLattice_of_basis (Module.Basis.singleton Unit ℤ)
-      (Module.Basis.singleton Unit ℝ) (fun _ => by simp)
+    TauCeti.Toric.isIntegralLattice_castAddHom
   obtain ⟨η, -, P, hP, -, -⟩ := exists_isRelativeOutgoingCompletion_probe d ℳ p ℒ H h h₀ hB
     (d.shiftedQuotientComponent ℳ p p K (by simp) b)
   rw [mem_stableWallEventLocus] at hx hx'
