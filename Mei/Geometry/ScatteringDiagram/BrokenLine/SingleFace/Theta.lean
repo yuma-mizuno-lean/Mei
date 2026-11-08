@@ -53,7 +53,7 @@ variable {R A Γ V H : Type*} [CommRing R] [CommRing A] [Algebra R A] [Decidable
 
 omit [DecidableEq Γ] [DirectSum.Decomposition ℳ] in
 private theorem smul_eq_sub_mul_of_weight_one (θ : H) (u : (𝒜 0)ˣ) (z : A)
-    (hθ : ∀ x : A, θ • x = functionWallAction 𝒜 u x) (hu : (u : A) = 1 - z) (w : Γ → ℤ)
+    (hθ : θ • (a : A) = functionWallAction 𝒜 u (a : A)) (hu : (u : A) = 1 - z) (w : Γ → ℤ)
     (hw : ∀ q, ℳ q ≤ 𝒜 (w q)) (hν : ∀ q, f (v q) = w q) (hν0 : f (v 0) = 1) :
     θ • (a : A) = a - a * z := by
   have hw0 : w 0 = 1 := by
@@ -66,7 +66,7 @@ private theorem smul_eq_sub_mul_of_weight_one (θ : H) (u : (𝒜 0)ˣ) (z : A)
 crossing factor of `Q` times `θ • a`, where the label `θ` acts as the function wall. This is `a`
 on the source side, where the crossing factor is `θ⁻¹`, and `a - a z` on the far side. -/
 theorem cutoffDecoratedEvaluation_functionWall_one_sub_eq_hyperplaneFactor (θ : H) (u : (𝒜 0)ˣ)
-    (z : A) {n : Γ} (hθ : ∀ x : A, θ • x = functionWallAction 𝒜 u x) (hu : (u : A) = 1 - z)
+    (z : A) {n : Γ} (hθ : θ • (a : A) = functionWallAction 𝒜 u (a : A)) (hu : (u : A) = 1 - z)
     (hz : (a : A) * z ∈ ℳ n) (hn : n ∈ d.cutoff k) (w : Γ → ℤ) (hw : ∀ q, ℳ q ≤ 𝒜 (w q))
     (hν : ∀ q, f (v q) = w q) (hν0 : f (v 0) = 1) (hε : ε () = 1) {Q : V} (hQ : f Q ≠ 0) :
     cutoffDecoratedEvaluation d ℳ (fun _ : Unit => (functionWallAction 𝒜 u).toLinearMap) a v
@@ -99,7 +99,7 @@ evaluations of the cutoff decorated rays: the section `hyperplaneSection` with v
 the negative side of the wall takes at every off-wall point the evaluation at that point, and is
 determined by these values. -/
 theorem existsUnique_section_value_eq_cutoffDecoratedEvaluation (θ : H) (u : (𝒜 0)ˣ) (z : A)
-    {n : Γ} (hθ : ∀ x : A, θ • x = functionWallAction 𝒜 u x) (hu : (u : A) = 1 - z)
+    {n : Γ} (hθ : θ • (a : A) = functionWallAction 𝒜 u (a : A)) (hu : (u : A) = 1 - z)
     (hz : (a : A) * z ∈ ℳ n) (hn : n ∈ d.cutoff k) (w : Γ → ℤ) (hw : ∀ q, ℳ q ≤ 𝒜 (w q))
     (hν : ∀ q, f (v q) = w q) (hν0 : f (v 0) = 1) (hε : ε () = 1) :
     ∃! s : ((hyperplaneDiagram hf hf0 θ).coefficientLocalSystem A).presheaf.obj (op ⊤),
@@ -123,7 +123,7 @@ theorem existsUnique_section_value_eq_cutoffDecoratedEvaluation (θ : H) (u : (�
     rw [hs x hx, value_hyperplaneSection, hval]
 
 private theorem eq_hyperplaneSection_of_value_eq_cutoffDecoratedEvaluation (θ : H) (u : (𝒜 0)ˣ)
-    (z : A) {n : Γ} (hθ : ∀ x : A, θ • x = functionWallAction 𝒜 u x) (hu : (u : A) = 1 - z)
+    (z : A) {n : Γ} (hθ : θ • (a : A) = functionWallAction 𝒜 u (a : A)) (hu : (u : A) = 1 - z)
     (hz : (a : A) * z ∈ ℳ n) (hn : n ∈ d.cutoff k) (w : Γ → ℤ) (hw : ∀ q, ℳ q ≤ 𝒜 (w q))
     (hν : ∀ q, f (v q) = w q) (hν0 : f (v 0) = 1) (hε : ε () = 1)
     {s : ((hyperplaneDiagram hf hf0 θ).coefficientLocalSystem A).presheaf.obj (op ⊤)}
@@ -145,7 +145,7 @@ locus on the negative side of the wall takes the value `a - a z`, though the wal
 open. For `U = {f < -1}` this is the restriction check: the section retains the incoming tails
 and bends outside `U`. -/
 theorem value_restrict_eq_sub_mul_of_forall_lt (θ : H) (u : (𝒜 0)ˣ) (z : A) {n : Γ}
-    (hu : (u : A) = 1 - z) (hθ : ∀ x : A, θ • x = functionWallAction 𝒜 u x)
+    (hu : (u : A) = 1 - z) (hθ : θ • (a : A) = functionWallAction 𝒜 u (a : A))
     (hz : (a : A) * z ∈ ℳ n) (hn : n ∈ d.cutoff k) (w : Γ → ℤ)
     (hw : ∀ q, ℳ q ≤ 𝒜 (w q)) (hν : ∀ q, f (v q) = w q) (hν0 : f (v 0) = 1) (hε : ε () = 1)
     {U : Opens (FinitePolyhedralComplex.hyperplaneComplex f hf).regularSpace}
@@ -171,7 +171,7 @@ theorem value_restrict_eq_sub_mul_of_forall_lt (θ : H) (u : (𝒜 0)ˣ) (z : A)
 side of the wall is not the incoming coefficient `a`, the value for the diagram without wall,
 as soon as `a z ≠ 0`. -/
 theorem value_restrict_ne_of_mul_ne_zero (θ : H) (u : (𝒜 0)ˣ) (z : A) {n : Γ}
-    (hu : (u : A) = 1 - z) (hθ : ∀ x : A, θ • x = functionWallAction 𝒜 u x)
+    (hu : (u : A) = 1 - z) (hθ : θ • (a : A) = functionWallAction 𝒜 u (a : A))
     (hz : (a : A) * z ∈ ℳ n) (hn : n ∈ d.cutoff k) (w : Γ → ℤ)
     (hw : ∀ q, ℳ q ≤ 𝒜 (w q)) (hν : ∀ q, f (v q) = w q) (hν0 : f (v 0) = 1) (hε : ε () = 1)
     {U : Opens (FinitePolyhedralComplex.hyperplaneComplex f hf).regularSpace}
