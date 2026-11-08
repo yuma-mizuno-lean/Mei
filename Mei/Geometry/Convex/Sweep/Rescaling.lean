@@ -108,17 +108,11 @@ theorem eventually_forall_backwardPoint_mem_add_smul_iff
         z + r • backwardPoint f 0 u j.succ Q ∈ P j ↔
           backwardPoint f 0 u j.succ Q ∈ posTangentConeAt (P j) z := by
     have hb := (backwardPoint f 0 u j.succ).isBounded_image hK
-    have he := eventually_singleton_add_smul_subset (𝕜 := ℝ) hb
-      ((hP j).eventually_mem_iff_sub_mem_posTangentConeAt (hz j))
-    filter_upwards [he.filter_mono nhdsWithin_le_nhds, self_mem_nhdsWithin] with r hr hrpos
+    have he := eventually_forall_add_smul_mem_iff
+      (fun _ : Unit => P j) (fun _ => hP j) z hb
+    filter_upwards [he] with r hr
     intro Q hQ
-    have hc := hr (Set.add_mem_add (Set.mem_singleton z)
-      (Set.smul_mem_smul_set (mem_image_of_mem _ hQ)))
-    simp only [mem_ofPred_eq, add_sub_cancel_left] at hc
-    refine hc.trans ⟨?_, fun h => Mei.smul_mem_posTangentConeAt h hrpos.le⟩
-    intro h
-    simpa only [smul_smul, inv_mul_cancel₀ hrpos.ne', one_smul] using
-      Mei.smul_mem_posTangentConeAt h (inv_pos.mpr hrpos).le
+    simpa only [and_iff_right (hz j)] using hr _ (mem_image_of_mem _ hQ) ()
   filter_upwards [eventually_all.mpr hlocal] with r hr
   intro Q hQ j
   rw [backwardPoint_add_smul]
