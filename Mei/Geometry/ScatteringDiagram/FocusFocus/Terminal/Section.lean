@@ -6,7 +6,7 @@ Authors: Claude
 module
 
 public import Mei.Geometry.ScatteringDiagram.FocusFocus.Terminal.Matching
-public import Mei.Algebra.Category.AlgCat.Sections
+public import Mei.Algebra.Category.AlgCat.Multispan.Span
 
 /-!
 # Theta sections of the focus-focus slab span
@@ -42,12 +42,9 @@ variable {R : Type*} [CommRing R] (t : R)
 
 /-- The full-exponent slab correspondence as a multispan of algebras.
 The false and true chamber indices denote its negative and positive sides. -/
-abbrev slabTerminalAlgebraMultispan (t : R) :
-    MultispanIndex (MultispanShape.ofLinearOrder Bool) (AlgCat R) where
-  left _ := AlgCat.of R (TauCeti.NodeAlgebra R[T;T⁻¹] (C t * (1 + T 1)))
-  right _ := AlgCat.of R R[ℤ × ℤ]
-  fst _ := AlgCat.ofHom (exponentLeftMap (C t * (1 + T 1)))
-  snd _ := AlgCat.ofHom (exponentRightMap (C t * (1 + T 1)))
+abbrev slabTerminalAlgebraMultispan (t : R) :=
+  MultispanIndex.ofAlgHoms (exponentLeftMap (C t * (1 + T 1)))
+    (exponentRightMap (C t * (1 + T 1)))
 
 /-- The algebra sections of the slab span are the semimodule sections of the underlying
 span of linear maps. -/
@@ -72,65 +69,25 @@ def slabSectionsToSemimodule : AlgCat.sectionsSubalgebra
   left_inv _ := Subtype.ext (funext fun j => by cases j <;> rfl)
   right_inv _ := Subtype.ext (funext fun j => by cases j <;> rfl)
 
-/-- The matching sections of the slab span are linearly identified with the slab algebra by
-reading off the face value. -/
-private def slabFaceEquiv : AlgCat.sectionsSubalgebra
-    (slabTerminalAlgebraMultispan t).multispan ≃ₗ[R]
-      TauCeti.NodeAlgebra R[T;T⁻¹] (C t * (1 + T 1)) :=
-  (slabSectionsToSemimodule t).trans (MultispanIndex.sectionsLinearEquivOfLinearMaps
-    (exponentLeftMap (C t * (1 + T 1))).toLinearMap
-    (exponentRightMap (C t * (1 + T 1))).toLinearMap)
-
-private theorem slabFaceEquiv_apply (σ : AlgCat.sectionsSubalgebra
-      (slabTerminalAlgebraMultispan t).multispan) :
-    slabFaceEquiv t σ = σ.val (.left default) := by
-  rw [slabFaceEquiv, LinearEquiv.trans_apply,
-    MultispanIndex.sectionsLinearEquivOfLinearMaps_apply]
-  rfl
-
-private theorem slabFaceEquiv_symm_apply_right_false
-    (z : TauCeti.NodeAlgebra R[T;T⁻¹] (C t * (1 + T 1))) :
-    ((slabFaceEquiv t).symm z).val (.right false) =
-      exponentLeftMap (C t * (1 + T 1)) z := by
-  rw [slabFaceEquiv, LinearEquiv.symm_trans_apply]
-  exact MultispanIndex.sectionsLinearEquivOfLinearMaps_symm_apply_right_false _ _ z
-
-private theorem slabFaceEquiv_symm_apply_right_true
-    (z : TauCeti.NodeAlgebra R[T;T⁻¹] (C t * (1 + T 1))) :
-    ((slabFaceEquiv t).symm z).val (.right true) =
-      exponentRightMap (C t * (1 + T 1)) z := by
-  rw [slabFaceEquiv, LinearEquiv.symm_trans_apply]
-  exact MultispanIndex.sectionsLinearEquivOfLinearMaps_symm_apply_right_true _ _ z
-
-private theorem slabFaceEquiv_symm_apply_left
-    (z : TauCeti.NodeAlgebra R[T;T⁻¹] (C t * (1 + T 1)))
-    (c : (MultispanShape.ofLinearOrder Bool).L) :
-    ((slabFaceEquiv t).symm z).val (.left c) = z := by
-  rw [slabFaceEquiv, LinearEquiv.symm_trans_apply]
-  exact MultispanIndex.sectionsLinearEquivOfLinearMaps_symm_apply_left _ _ z c
-
 /-- The matching algebra sections of the slab span are algebra-equivalent to the slab algebra
 by reading off the face value. -/
-noncomputable def slabAlgebraEquiv : AlgCat.sectionsSubalgebra
-    (slabTerminalAlgebraMultispan t).multispan ≃ₐ[R]
-      TauCeti.NodeAlgebra R[T;T⁻¹] (C t * (1 + T 1)) :=
-  AlgEquiv.ofLinearEquiv (slabFaceEquiv t)
-    (by rw [slabFaceEquiv_apply]; rfl)
-    (fun x y => by simp only [slabFaceEquiv_apply]; rfl)
+noncomputable def slabAlgebraEquiv :=
+  MultispanIndex.sectionsAlgEquivOfAlgHoms (R := R)
+    (exponentLeftMap (C t * (1 + T 1))) (exponentRightMap (C t * (1 + T 1)))
 
 /-- The face value of a matching section is its image under `slabAlgebraEquiv`. -/
 @[simp]
 theorem slabAlgebraEquiv_apply (σ : AlgCat.sectionsSubalgebra
       (slabTerminalAlgebraMultispan t).multispan) :
     slabAlgebraEquiv t σ = σ.val (.left default) :=
-  slabFaceEquiv_apply t σ
+  MultispanIndex.sectionsAlgEquivOfAlgHoms_apply _ _ σ
 
 /-- The face component of a matching section reconstructed by `slabAlgebraEquiv`. -/
 @[simp]
 theorem slabAlgebraEquiv_symm_apply_left (z : TauCeti.NodeAlgebra R[T;T⁻¹] (C t * (1 + T 1)))
     (c : (MultispanShape.ofLinearOrder Bool).L) :
     ((slabAlgebraEquiv t).symm z).val (.left c) = z :=
-  slabFaceEquiv_symm_apply_left t z c
+  MultispanIndex.sectionsAlgEquivOfAlgHoms_symm_apply_left _ _ z c
 
 /-- The negative chamber value of a matching section reconstructed by `slabAlgebraEquiv` is the
 left Laurent image of its face value. -/
@@ -139,7 +96,7 @@ theorem slabAlgebraEquiv_symm_apply_right_false
     (z : TauCeti.NodeAlgebra R[T;T⁻¹] (C t * (1 + T 1))) :
     ((slabAlgebraEquiv t).symm z).val (.right false) =
       exponentLeftMap (C t * (1 + T 1)) z :=
-  slabFaceEquiv_symm_apply_right_false t z
+  MultispanIndex.sectionsAlgEquivOfAlgHoms_symm_apply_right_false _ _ z
 
 /-- The positive chamber value of a matching section reconstructed by `slabAlgebraEquiv` is the
 right Laurent image of its face value. -/
@@ -148,7 +105,7 @@ theorem slabAlgebraEquiv_symm_apply_right_true
     (z : TauCeti.NodeAlgebra R[T;T⁻¹] (C t * (1 + T 1))) :
     ((slabAlgebraEquiv t).symm z).val (.right true) =
       exponentRightMap (C t * (1 + T 1)) z :=
-  slabFaceEquiv_symm_apply_right_true t z
+  MultispanIndex.sectionsAlgEquivOfAlgHoms_symm_apply_right_true _ _ z
 
 /-- The matching sections of the slab span are linearly identified with the slab algebra by
 reading off the face value. -/
@@ -252,7 +209,7 @@ theorem slabThetaSection_mul (n m b c : ℤ) :
   simp only [map_nsmul, slabThetaSection]
 
 /-- The check `ϑ_{-1,0} ϑ_{1,0} = t ϑ_{0,0} + t ϑ_{0,1}` for matching sections. -/
-theorem slabThetaSection_neg_one_mul_one :
+theorem slabThetaSection_neg_one_mul_thetaSection_one :
     slabThetaSection t (-1) 0 * slabThetaSection t 1 0 =
       t • slabThetaSection t 0 0 + t • slabThetaSection t 0 1 := by
   simp only [slabThetaSection, ← map_mul, theta_neg_one_mul_theta_one, map_add, map_smul]
