@@ -139,7 +139,6 @@ theorem cutoffDecoratedRayWordEquiv_symm_degreeItinerary {Q : V}
   CutoffDecoratedRay.degreeItinerary_eq _
 
 /-- The inverse retains the whole final decoration. -/
-@[simp]
 theorem cutoffDecoratedRayWordEquiv_symm_decoration {Q : V}
     (hcut : ∀ (l : List J) (r : WordRay l Q),
       (∀ j, r.1.val j ∈ d.cutoff k) ∧ ∀ i j, i ≤ j → r.1.val i - r.1.val j ∈ d.monoid)
