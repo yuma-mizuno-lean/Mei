@@ -346,6 +346,43 @@ noncomputable abbrev evaluation (Q : ℝ) : Coefficients :=
     {crossing} (fun _ => velocity) (fun _ => ContinuousLinearMap.id ℝ ℝ) (fun _ => 1)
     (fun _ => 0) (fun _ => univ) (fun _ : Unit => {0}) (fun _ : Empty => ∅) univ Q
 
+/-- Left of the wall, every history of the support contributes to the weighted evaluation. -/
+theorem evaluation_eq_sum_of_neg {Q : ℝ} (hQ : Q < 0) :
+    evaluation Q = ∑ d ∈ historySupport,
+      crossing.homogeneousHistory (M := fun _ => Coefficients) (ι := fun _ => Degree)
+        (fun _ => theta) (fun _ => grade ℚ) d incoming.1 := by
+  classical
+  rw [evaluation, pathDecoratedEvaluation_singleton, sum_pathDecoratedRay_eq_sum_histories]
+  rw [Finset.sum_coe_sort historySupport (fun d => if Q ∈ admissibleBackwardDomain
+      (crossing.reverseArrowLabels fun {_ _ : SingleObj Unit} _ => ContinuousLinearMap.id ℝ ℝ)
+      (crossing.reverseArrowLabels fun {_ _ : SingleObj Unit} _ => (0 : ℝ))
+      (Path.Degrees.reverseVertexLabels (Q := SingleObj Unit) (ι := fun _ => Degree)
+        (fun _ => velocity) ((1, 0) : Degree) crossing d)
+      (crossing.reverseArrowLabels fun {_ _ : SingleObj Unit} _ => (univ : Set ℝ))
+      (fun _ : Unit => ({0} : Set ℝ)) (fun _ : Empty => (∅ : Set ℝ)) univ
+    then crossing.homogeneousHistory (M := fun _ => Coefficients) (ι := fun _ => Degree)
+      (fun _ => theta) (fun _ => grade ℚ) d incoming.1 else 0)]
+  exact Finset.sum_congr rfl fun d hd => ite_eq_left ((mem_domain_iff_neg hd Q).mpr hQ)
+
+/-- Left of the wall the weighted evaluation is `θ x = x + t x`. -/
+theorem evaluation_of_neg {Q : ℝ} (hQ : Q < 0) :
+    evaluation Q = single (1, 0) 1 + single (1, 1) 1 := by
+  rw [evaluation_eq_sum_of_neg hQ, historySupport_eq, Finset.sum_pair (by simp)]
+  simp only [homogeneousHistory_incoming]
+  simp
+
+/-- On or right of the wall no ray ends, and the weighted evaluation vanishes. -/
+theorem evaluation_of_nonneg {Q : ℝ} (hQ : 0 ≤ Q) : evaluation Q = 0 := by
+  have := isEmpty_ray_of_nonneg hQ
+  rw [evaluation, pathDecoratedEvaluation_singleton]
+  exact Finset.sum_eq_zero fun r _ => isEmptyElim r
+
+/-- Left of the wall, the weighted evaluation is the action of the label on the incoming
+decoration. -/
+theorem evaluation_of_neg_eq_theta {Q : ℝ} (hQ : Q < 0) : evaluation Q = theta incoming.1 := by
+  rw [evaluation_of_neg hQ]
+  simp [incoming, theta_single_zero]
+
 end DualNumberWall
 
 end Mei
