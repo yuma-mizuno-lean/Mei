@@ -252,8 +252,8 @@ theorem slabThetaSection_mul (n m b c : ℤ) :
         ∑ j ∈ Finset.range ((n.natAbs + m.natAbs - (n + m).natAbs) / 2 + 1),
           ((n.natAbs + m.natAbs - (n + m).natAbs) / 2).choose j •
             slabThetaSection t (n + m) (b + c + j) := by
-  change (slabAlgebraEquiv t).symm (theta t n b) * (slabAlgebraEquiv t).symm (theta t m c) = _
-  rw [← map_mul, theta_mul_theta, map_smul, map_sum]
+  rw [slabThetaSection_def, slabThetaSection_def, ← map_mul, theta_mul_theta, map_smul,
+    map_sum]
   simp only [map_nsmul, slabThetaSection_def]
 
 /-- The check `ϑ_{-1,0} ϑ_{1,0} = t ϑ_{0,0} + t ϑ_{0,1}` for matching sections. -/
