@@ -37,7 +37,7 @@ permissions:
 jobs:
   app-credentials:
     if: >-
-      ((github.repository == 'yuma-mizuno-lean/Mei' && ( ((github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main') || (github.event_name == 'pull_request_target' && (github.event.action != 'edited' || github.event.changes.base != null)) || (github.event_name == 'workflow_run' && ((github.event.workflow_run.name == 'pr-build' && github.event.workflow_run.event == 'pull_request_target') || (github.event.workflow_run.name == 'Review' && github.event.action == 'completed'))) || (github.event_name == 'issue_comment' && github.event.issue.pull_request != null && (contains(github.event.comment.body, 'tauceti-scoreboard') || contains(github.event.changes.body.from, 'tauceti-scoreboard') )) )))
+      ((github.repository == 'yuma-mizuno-lean/Mei' && ( ((github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main') || (github.event_name == 'pull_request_target' && (github.event.action != 'edited' || github.event.changes.base != null)) || (github.event_name == 'workflow_run' && ((github.event.workflow_run.name == 'pr-build' && contains(fromJSON('["pull_request_target", "workflow_dispatch", "repository_dispatch"]'), github.event.workflow_run.event)) || (github.event.workflow_run.name == 'Review' && github.event.action == 'completed'))) || (github.event_name == 'issue_comment' && github.event.issue.pull_request != null && (contains(github.event.comment.body, 'tauceti-scoreboard') || contains(github.event.changes.body.from, 'tauceti-scoreboard') )) )))
     runs-on: ubuntu-latest
     permissions: {}
     outputs:
@@ -63,7 +63,7 @@ jobs:
     needs: app-credentials
     # Meaningful PR events plus periodic/manual recovery; other events skip.
     if: >-
-      needs.app-credentials.outputs.ready == 'true' && (github.repository == 'yuma-mizuno-lean/Mei' && ( ((github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main') || (github.event_name == 'pull_request_target' && (github.event.action != 'edited' || github.event.changes.base != null)) || (github.event_name == 'workflow_run' && ((github.event.workflow_run.name == 'pr-build' && github.event.workflow_run.event == 'pull_request_target') || (github.event.workflow_run.name == 'Review' && github.event.action == 'completed'))) || (github.event_name == 'issue_comment' && github.event.issue.pull_request != null && (contains(github.event.comment.body, 'tauceti-scoreboard') || contains(github.event.changes.body.from, 'tauceti-scoreboard') )) ))
+      needs.app-credentials.outputs.ready == 'true' && (github.repository == 'yuma-mizuno-lean/Mei' && ( ((github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main') || (github.event_name == 'pull_request_target' && (github.event.action != 'edited' || github.event.changes.base != null)) || (github.event_name == 'workflow_run' && ((github.event.workflow_run.name == 'pr-build' && contains(fromJSON('["pull_request_target", "workflow_dispatch", "repository_dispatch"]'), github.event.workflow_run.event)) || (github.event.workflow_run.name == 'Review' && github.event.action == 'completed'))) || (github.event_name == 'issue_comment' && github.event.issue.pull_request != null && (contains(github.event.comment.body, 'tauceti-scoreboard') || contains(github.event.changes.body.from, 'tauceti-scoreboard') )) ))
     runs-on: ubuntu-latest
     timeout-minutes: 30
     # On the job, not the workflow: a workflow-level group admits runs before the `if` above is
@@ -106,10 +106,10 @@ jobs:
             .github/actions/checkout-merge-policy
           persist-credentials: false
       - name: Prepare pinned shared tools
-        uses: yuma-mizuno-lean/TauCetiTools/.github/actions/setup@80f1df5f160a568f27e453649781ac8da6584be5
+        uses: yuma-mizuno-lean/TauCetiTools/.github/actions/setup@1fd27ad5bc448c1d6e6f4d951fd015276021b479
         with:
           tools-repository: yuma-mizuno-lean/TauCetiTools
-          tools-ref: 80f1df5f160a568f27e453649781ac8da6584be5
+          tools-ref: 1fd27ad5bc448c1d6e6f4d951fd015276021b479
           project-directory: .
       - name: Checkout the pinned merge policy (read-only)
         uses: ./.github/actions/checkout-merge-policy

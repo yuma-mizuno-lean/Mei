@@ -71,7 +71,7 @@ jobs:
       review_ref: b19c3618f1699feedc761d899b0459523da62aaa
       review_repository: yuma-mizuno-lean/TauCetiReview
       tools_repository: yuma-mizuno-lean/TauCetiTools
-      tools_ref: 80f1df5f160a568f27e453649781ac8da6584be5
+      tools_ref: 1fd27ad5bc448c1d6e6f4d951fd015276021b479
       dry_run: ${{ inputs.dry-run || false }}
       focused: ${{ github.event_name == 'repository_dispatch' || (github.event_name == 'workflow_dispatch' && !inputs.full-scan) }}
     secrets:
