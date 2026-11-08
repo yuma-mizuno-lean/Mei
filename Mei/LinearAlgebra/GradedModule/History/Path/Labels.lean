@@ -129,13 +129,16 @@ theorem reverseVertexLabels_loopErasure_castSucc : ∀ {c : Q} (q : Path b c)
     simp only [comp_cons, degreesErase_cons]
     rcases Fin.eq_zero_or_eq_succ (n := (p.comp q).length) j with rfl | ⟨k, rfl⟩
     · rw [loopErasureArrow_cons_zero p e q g]
-      exact (Degrees.reverseVertexLabels_cons_zero ..).trans
-        (Degrees.reverseVertexLabels_cons_zero ..).symm
+      calc _ = v _ i := Degrees.reverseVertexLabels_cons_zero ..
+        _ = _ := (Degrees.reverseVertexLabels_cons_zero ..).symm
     · rw [loopErasureArrow_cons_succ]
-      exact (Degrees.reverseVertexLabels_cons_succ v i₀ _ g _ i k.castSucc).trans
-        ((reverseVertexLabels_loopErasure_castSucc q d k).trans
-          (Degrees.reverseVertexLabels_cons_succ v i₀ _ g _ i
-            (loopErasureArrow p e q k).castSucc).symm)
+      calc _ = Degrees.reverseVertexLabels v i₀ (p.comp q) (degreesErase p q e d) k.castSucc :=
+            Degrees.reverseVertexLabels_cons_succ v i₀ _ g _ i k.castSucc
+        _ = Degrees.reverseVertexLabels v i₀ ((p.cons e).comp q) d
+              (loopErasureArrow p e q k).castSucc :=
+            reverseVertexLabels_loopErasure_castSucc q d k
+        _ = _ := (Degrees.reverseVertexLabels_cons_succ v i₀ _ g _ i
+            (loopErasureArrow p e q k).castSucc).symm
 
 /-- Equal degrees at the erased loop preserve segment labels at every retained
 parameter, including the endpoint. -/
@@ -153,8 +156,9 @@ theorem reverseVertexLabels_loopErasureParameter : ∀ {c : Q} (q : Path b c)
     simp only [comp_nil, degreesErase_nil]
     rcases Fin.eq_zero_or_eq_succ (n := (p.comp nil).length) j with rfl | ⟨k, rfl⟩
     · rw [loopErasureParameter_zero p e nil]
-      exact (Degrees.reverseVertexLabels_zero v i₀ p d).trans
-        ((congrArg (v b) hd.symm).trans (Degrees.reverseVertexLabels_cons_zero ..).symm)
+      calc _ = v b (Degrees.terminalDegree i₀ p d) := Degrees.reverseVertexLabels_zero v i₀ p d
+        _ = v b i := congrArg (v b) hd.symm
+        _ = _ := (Degrees.reverseVertexLabels_cons_zero ..).symm
     · rw [loopErasureParameter_succ p e nil k, loopErasureArrow_nil p e k]
       exact (Degrees.reverseVertexLabels_cons_succ v i₀ p e d i k.succ).symm
   | _, cons q g, d, hd, j => by
@@ -162,10 +166,10 @@ theorem reverseVertexLabels_loopErasureParameter : ∀ {c : Q} (q : Path b c)
     rw [degreesComp_cons (ι := ι)] at hd
     simp only [comp_cons, degreesErase_cons]
     rcases Fin.eq_zero_or_eq_succ (n := (p.comp q).length + 1) j with rfl | ⟨k, rfl⟩
-    · exact (Degrees.reverseVertexLabels_cons_zero ..).trans
-        ((Degrees.reverseVertexLabels_cons_zero ..).symm.trans
-          (congrArg (Degrees.reverseVertexLabels v i₀ (((p.cons e).comp q).cons g) (d, i))
-            (loopErasureParameter_zero p e (q.cons g)).symm))
+    · calc _ = v _ i := Degrees.reverseVertexLabels_cons_zero ..
+        _ = Degrees.reverseVertexLabels v i₀ (((p.cons e).comp q).cons g) (d, i) 0 :=
+          (Degrees.reverseVertexLabels_cons_zero ..).symm
+        _ = _ := congrArg _ (loopErasureParameter_zero p e (q.cons g)).symm
     · simp only [loopErasureParameter_cons_succ, Degrees.reverseVertexLabels_cons_succ]
       exact reverseVertexLabels_loopErasureParameter q d hd k
 
@@ -180,15 +184,20 @@ theorem reverseVertexLabels_loopIndex_eq : ∀ {c : Q} (q : Path b c)
     rw [degreesComp_nil (ι := ι) (p.cons e) d] at hd
     obtain ⟨d, i⟩ := d
     rw [loopIndex_nil p e]
-    exact (Degrees.reverseVertexLabels_cons_succ v i₀ p e d i 0).trans
-      ((Degrees.reverseVertexLabels_zero v i₀ p d).trans
-        ((congrArg (v b) hd.symm).trans (Degrees.reverseVertexLabels_cons_zero ..).symm))
+    calc _ = Degrees.reverseVertexLabels v i₀ p d 0 :=
+          Degrees.reverseVertexLabels_cons_succ v i₀ p e d i 0
+      _ = v b (Degrees.terminalDegree i₀ p d) := Degrees.reverseVertexLabels_zero v i₀ p d
+      _ = v b i := congrArg (v b) hd.symm
+      _ = _ := (Degrees.reverseVertexLabels_cons_zero ..).symm
   | _, cons q g, d, hd => by
     obtain ⟨d, i⟩ := d
     rw [degreesComp_cons (ι := ι)] at hd
     rw [loopIndex_cons]
-    exact (Degrees.reverseVertexLabels_cons_succ v i₀ _ g _ i (loopIndex p e q).succ).trans
-      ((reverseVertexLabels_loopIndex_eq q d hd).trans
-        (Degrees.reverseVertexLabels_cons_succ v i₀ _ g _ i (loopIndex p e q).castSucc).symm)
+    calc _ = Degrees.reverseVertexLabels v i₀ ((p.cons e).comp q) d (loopIndex p e q).succ :=
+          Degrees.reverseVertexLabels_cons_succ v i₀ _ g _ i (loopIndex p e q).succ
+      _ = Degrees.reverseVertexLabels v i₀ ((p.cons e).comp q) d (loopIndex p e q).castSucc :=
+          reverseVertexLabels_loopIndex_eq q d hd
+      _ = _ := (Degrees.reverseVertexLabels_cons_succ v i₀ _ g _ i
+          (loopIndex p e q).castSucc).symm
 
 end Quiver.Path
