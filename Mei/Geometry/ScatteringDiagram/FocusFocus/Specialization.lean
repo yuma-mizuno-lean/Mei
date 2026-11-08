@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.ScatteringDiagram.FocusFocus.Evaluation
+public import Mei.Geometry.ScatteringDiagram.FocusFocus.Family.Coefficient
 public import Mei.RingTheory.Node.ExponentMap
 
 /-!
@@ -23,7 +23,8 @@ is required.
 
 The construction uses `SlabBrokenLine.ext`, the binomial transfer enumeration,
 `NodeAlgebra.exponentCorrespondenceMap` and transfer naturality,
-and `Finset.sum_congr_set` to discard zero image decorations. The geometric and
+and `Finset.sum_congr_set` to discard zero image decorations. The full
+evaluation comparison uses specialization of the complete endpoint family. The geometric and
 coefficient conventions follow Gross–Siebert, *An Invitation to Toric
 Degenerations*, §2.2–2.3 (arXiv:0808.2749v2), and Gross–Hacking–Siebert,
 *Theta functions on varieties with effective anti-canonical class*, §3
@@ -219,8 +220,10 @@ theorem mapRingHom_slabThetaEvaluation (φ : R →+* S) (t c : R)
     (n b : ℤ) (Q : ℝ × ℝ) :
     mapRingHom (ℤ × ℤ) φ (slabThetaEvaluation t c n b Q) =
       slabThetaEvaluation (φ t) (φ c) n b Q := by
-  simp only [slabThetaEvaluation_def, map_add, map_incomingSlabWeightedEvaluation,
-    mapRingHom_slabWeightedEvaluation]
-  split_ifs <;> simp
+  have h₀ : TauCeti.Toric.IsIntegralLattice (Int.castAddHom ℝ) :=
+    TauCeti.Toric.isIntegralLattice_of_basis (Module.Basis.singleton Unit ℤ)
+      (Module.Basis.singleton Unit ℝ) (fun _ => by simp)
+  simpa only [slabThetaFamily_weightedEvaluation] using
+    mapRingHom_slabThetaFamily_weightedEvaluation t c n b φ (h₀.prod h₀) Q
 
 end Mei.FocusFocus
