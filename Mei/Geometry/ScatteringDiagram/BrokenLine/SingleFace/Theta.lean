@@ -51,6 +51,17 @@ variable {R A Γ V H : Type*} [CommRing R] [CommRing A] [Algebra R A] [Decidable
   {d : PositiveDegrees Γ} {a : ℳ 0} {v : Γ → V} {ε : Unit → SignType} {f : V →L[ℝ] ℝ} {k : ℕ}
   [Group H] [MulAction H A]
 
+omit [DecidableEq Γ] [DirectSum.Decomposition ℳ] in
+private theorem smul_eq_sub_mul_of_weight_one (θ : H) (u : (𝒜 0)ˣ) (z : A)
+    (hθ : ∀ x : A, θ • x = functionWallAction 𝒜 u x) (hu : (u : A) = 1 - z) (w : Γ → ℤ)
+    (hw : ∀ q, ℳ q ≤ 𝒜 (w q)) (hν : ∀ q, f (v q) = w q) (hν0 : f (v 0) = 1) :
+    θ • (a : A) = a - a * z := by
+  have hw0 : w 0 = 1 := by
+    have := hν 0
+    rw [hν0] at this
+    exact_mod_cast this.symm
+  rw [hθ, functionWallAction_apply_of_mem_one_sub 𝒜 u hu (hw0 ▸ hw 0 a.2)]
+
 /-- Weighted evaluation through one function wall `1 - z`, at an off-wall endpoint `Q`, is the
 crossing factor of `Q` times `θ • a`, where the label `θ` acts as the function wall. This is `a`
 on the source side, where the crossing factor is `θ⁻¹`, and `a - a z` on the far side. -/
@@ -63,13 +74,8 @@ theorem cutoffDecoratedEvaluation_functionWall_one_sub_eq_hyperplaneFactor (θ :
         (fun _ : Unit => {x | f x = 0}) (fun _ : Unit => (∅ : Set V))
         {x | 0 < (f x - 0) / f (v 0)} k Q =
       hyperplaneFactor f θ Q • θ • (a : A) := by
-  have hw0 : w 0 = 1 := by
-    have := hν 0
-    rw [hν0] at this
-    exact_mod_cast this.symm
-  have hap : θ • (a : A) = (a : A) - a * z := by
-    rw [hθ]
-    exact functionWallAction_apply_of_mem_one_sub 𝒜 u hu (hw0 ▸ hw 0 a.2)
+  have hap : θ • (a : A) = (a : A) - a * z :=
+    smul_eq_sub_mul_of_weight_one 𝒜 θ u z hθ hu w hw hν hν0
   rcases hQ.lt_or_gt with hQ | hQ
   · rw [cutoffDecoratedEvaluation_functionWall_one_sub_of_neg 𝒜 u z hu hz hn w hw hν hν0 hε
       (by simpa using hQ), hap, hyperplaneFactor_def, ite_eq_right hQ.not_gt, one_smul]
@@ -133,17 +139,6 @@ private theorem eq_hyperplaneSection_of_value_eq_cutoffDecoratedEvaluation (θ :
         cutoffDecoratedEvaluation_functionWall_one_sub_eq_hyperplaneFactor 𝒜 θ u z hθ hu hz hn w
           hw hν hν0 hε (fun h0 => x.property
             ⟨_, (FinitePolyhedralComplex.mem_hyperplaneComplex_walls_iff hf hf0).mpr rfl⟩ h0)])
-
-omit [DecidableEq Γ] [DirectSum.Decomposition ℳ] in
-private theorem smul_eq_sub_mul_of_weight_one (θ : H) (u : (𝒜 0)ˣ) (z : A)
-    (hθ : ∀ x : A, θ • x = functionWallAction 𝒜 u x) (hu : (u : A) = 1 - z) (w : Γ → ℤ)
-    (hw : ∀ q, ℳ q ≤ 𝒜 (w q)) (hν : ∀ q, f (v q) = w q) (hν0 : f (v 0) = 1) :
-    θ • (a : A) = a - a * z := by
-  have hw0 : w 0 = 1 := by
-    have := hν 0
-    rw [hν0] at this
-    exact_mod_cast this.symm
-  rw [hθ, functionWallAction_apply_of_mem_one_sub 𝒜 u hu (hw0 ▸ hw 0 a.2)]
 
 /-- The restriction of the theta section of one function wall `1 - z` to an open of the regular
 locus on the negative side of the wall takes the value `a - a z`, though the wall misses the
