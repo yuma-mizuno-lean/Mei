@@ -71,7 +71,7 @@ instance instDistribMulActionShiftedDirectLimit :
   DistribMulAction.compHom _ (d.shiftedDirectLimitBCHAction ℒ ℳ)
 
 /-- The completed BCH action commutes with the coefficient scalars. -/
-instance instSMulCommClassShiftedDirectLimit :
+instance instSMulCommClassCompletedBCHShiftedDirectLimit :
     SMulCommClass (d.completedBCHGroup ℒ) R (d.ShiftedDirectLimit ℳ) :=
   SMul.comp.smulCommClass (β := R) (d.shiftedDirectLimitBCHAction ℒ ℳ)
 
