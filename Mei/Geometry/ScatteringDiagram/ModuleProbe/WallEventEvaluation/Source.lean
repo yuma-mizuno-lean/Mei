@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.ScatteringDiagram.ModuleProbe.WallEventEvaluation
-public import Mei.Geometry.ScatteringDiagram.BrokenLine.Itineraries.Leading.Generic
+public import Mei.Geometry.ScatteringDiagram.BrokenLine.Path.Leading
 
 /-!
 # The incoming component of simultaneous-event evaluations
@@ -21,7 +21,8 @@ unchanged-degree encounters are retained.
 This is the source term in the backward-ray recurrence of Mandel, *Scattering
 diagrams, theta functions, and refined tropical curve counts*, §3.3.3
 (arXiv:1503.06183v5). The straight-ray supplier is
-`PositiveDegrees.exists_leadingEvaluationArrangement_shiftedBCHAction`;
+`PositiveDegrees.exists_pathDecoratedEvaluation_leadingArrangement_shiftedBCHAction`,
+applied to the bounded path inventory `wallEventPaths`;
 its obstacle family is the original active walls, as in
 `cutoffWallEventEvaluation`.
 -/
@@ -57,7 +58,7 @@ theorem exists_cutoffWallEventEvaluation_sourceArrangement (K : ℕ) :
           (cutoffWallEventEvaluation d ℳ p ℒ H h B k K hkK a univ Q) 0 :
             (d.shiftedLieFiltration ℒ ℳ p).quotient k) = a := by
   let := h.finiteDimensional
-  obtain ⟨A, hA⟩ := d.exists_leadingEvaluationArrangement_shiftedBCHAction ℒ ℳ p
+  obtain ⟨A, hA⟩ := d.exists_pathDecoratedEvaluation_leadingArrangement_shiftedBCHAction ℒ ℳ p
     (f := B.activeNormal K) (c := B.activeOffset K)
     (fun j => (B.wall j).isConvexPolyhedron)
     (fun j => (B.wall j).finrank_direction_add_one)
@@ -68,10 +69,18 @@ theorem exists_cutoffWallEventEvaluation_sourceArrangement (K : ℕ) :
         B.activeNormal_apply, h.continuousRealCharacter_apply])
     (fun j x hx => (B.wall j).offset_eq hx) (fun n => i (ρ (p + n)))
   refine ⟨A, fun Q hQ k hkK a => ?_⟩
-  rw [cutoffWallEventEvaluation_eq_cutoffDecoratedEvaluation]
+  rw [cutoffWallEventEvaluation_def]
   simp only [wallEventPropagation_def]
-  exact hA Q hQ k
+  -- The bounded inventory exhausts the endpoint fiber of the finite BCH actions.
+  refine hA Q hQ k (fun e => (d.truncationMap ℒ hkK).bchGroupMap (B.wallEventLabel K e)) a
+    (wallEventPaths d ℒ H h B k K) ?_
+  intro q r
+  rw [mem_wallEventPaths]
+  exact d.pathDecoratedRay_shiftedBCH_length_le ℒ ℳ p k
     (fun e => (d.truncationMap ℒ hkK).bchGroupMap (B.wallEventLabel K e)) a
+    (fun n => i (ρ (p + n))) (fun e => e.normal (B.activeNormal K))
+    (fun e => e.offset (B.activeOffset K)) (fun e => e.2) (fun e => e.support (B.activeSupport K))
+    (B.activeSupport K) (fun _ : Unit => singularSupport (B.activeSupport K)) univ r
 
 /-- Read the source identity in the ambient incoming degree, using the same
 component maps as the endpoint recursion. The right side is the entire incoming
