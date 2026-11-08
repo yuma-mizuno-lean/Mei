@@ -5,6 +5,7 @@ Authors: Codex
 -/
 module
 
+public import Mei.Algebra.BigOperators.Group.Finset.Subtype
 public import Mei.Combinatorics.Quiver.Path.Labels
 public import Mei.LinearAlgebra.GradedModule.History.Path.Labels
 public import Mei.Geometry.Convex.Sweep.Admissible.Limit
@@ -195,14 +196,9 @@ theorem sum_pathDecoratedRay_eq_sum_histories (p : Path a b) (X : V) :
           (dirs p d.val) (p.reverseArrowLabels P) W S C
         then p.homogeneousHistory T ℳ d.val x else 0 := by
   let := Fintype.ofFinite (PathDecoratedRay T ℳ i₀ x v ν ε c P W S C p X)
-  let D (d : (support p : Type _)) := X ∈ admissibleBackwardDomain (normals p)
-    (p.reverseArrowLabels c) (dirs p d.val) (p.reverseArrowLabels P) W S C
-  trans ∑ d : {d : (support p : Type _) // D d}, p.homogeneousHistory T ℳ d.val.val x
-  · exact Fintype.sum_equiv (pathDecoratedRayFiberEquiv T ℳ i₀ x v ν ε c P W S C p X)
-      _ _ fun r => by
-        rw [PathDecoratedRay.decoration_def, pathDecoratedRayFiberEquiv_history]
-  · rw [← Finset.sum_filter]
-    exact (Finset.sum_subtype (Finset.univ.filter D) (by simp)
-      (fun d => p.homogeneousHistory T ℳ d.val x)).symm
+  exact Fintype.sum_eq_sum_ite_of_equiv_subtype
+    (pathDecoratedRayFiberEquiv T ℳ i₀ x v ν ε c P W S C p X) _
+    (fun d => p.homogeneousHistory T ℳ d.val x) fun r => by
+      rw [PathDecoratedRay.decoration_def, pathDecoratedRayFiberEquiv_history]
 
 end Mei

@@ -5,6 +5,7 @@ Authors: Codex
 -/
 module
 
+public import Mei.Algebra.BigOperators.Group.Finset.Subtype
 public import Mei.Geometry.ScatteringDiagram.BrokenLine.DecoratedRay
 public import Mei.Geometry.Convex.Sweep.Finiteness
 public import Mathlib.Data.Set.Finite.List
@@ -623,17 +624,9 @@ theorem cutoffDecoratedEvaluation_eq_sum [Finite J] (k : ℕ) (Q : V) :
   let := Fintype.ofFinite (CutoffDecoratedRay d ℳ T a v f c ε P W S C k Q)
   let := Fintype.ofFinite (CutoffDecoratedType d ℳ T a v f ε k)
   rw [cutoffDecoratedEvaluation]
-  trans ∑ t : {t : CutoffDecoratedType d ℳ T a v f ε k //
-    Q ∈ CutoffDecoratedType.domain c P W S C t},
-    t.val.decoration
-  · exact Fintype.sum_equiv (cutoffDecoratedRayFiberEquiv d ℳ T a v f c ε P W S C k Q)
-      _ _ (fun r => (cutoffDecoratedRayFiberEquiv_decoration d ℳ T a v f c ε P W S C k Q r).symm)
-  · rw [← Finset.sum_filter]
-    exact (Finset.sum_subtype
-      (p := fun t : CutoffDecoratedType d ℳ T a v f ε k =>
-        Q ∈ CutoffDecoratedType.domain c P W S C t)
-      (Finset.univ.filter fun t : CutoffDecoratedType d ℳ T a v f ε k =>
-      Q ∈ CutoffDecoratedType.domain c P W S C t) (by simp) (fun t => t.decoration)).symm
+  exact Fintype.sum_eq_sum_ite_of_equiv_subtype
+    (cutoffDecoratedRayFiberEquiv d ℳ T a v f c ε P W S C k Q) _ (fun t => t.decoration)
+    fun r => (cutoffDecoratedRayFiberEquiv_decoration d ℳ T a v f c ε P W S C k Q r).symm
 
 /-- Away from every complete type-domain frontier, the actual weighted ray sum
 is constant on an ambient neighborhood. The source and avoidance sets may be

@@ -123,6 +123,18 @@ theorem pathDecoratedHistoryCompEquiv_symm_val {c : Q} (p : Path a b) (q : Path 
         out(p, d.val) v ν ε q : Type _)) :
     ((split(p, q)).symm d).val = (Path.degreesComp (ι := ι) p q).symm (d.1.val, d.2.val) := (rfl)
 
+/-- Splitting identifies the second block's decoration of the first block's
+output with the joined decoration. -/
+theorem pathDecoratedHistoryCompEquiv_decoration {c : Q} (p : Path a b) (q : Path b c)
+    (d : (support(p.comp q) : Type _)) :
+    q.homogeneousHistory T ℳ (split(p, q) d).2.val out(p, (split(p, q) d).1.val) =
+      (p.comp q).homogeneousHistory T ℳ d.val x := by
+  simp only [pathDecoratedHistoryCompEquiv_fst, pathDecoratedHistoryCompEquiv_snd]
+  have h := Path.homogeneousHistory_comp T ℳ p q
+    (Path.degreesComp (ι := ι) p q d.val).1 (Path.degreesComp (ι := ι) p q d.val).2
+  rw [Prod.mk.eta, Equiv.symm_apply_apply] at h
+  exact (LinearMap.congr_fun h x).symm
+
 open Classical in
 /-- Group any selected signed histories by their first block. The selection
 may depend on the entire joined history, including geometric admission. -/
@@ -145,10 +157,7 @@ theorem sum_ite_pathDecoratedHistory_comp {c : Q} (p : Path a b) (q : Path b c)
       intro d
       simp only [F, pathDecoratedHistoryCompEquiv_fst, pathDecoratedHistoryCompEquiv_snd]
       split_ifs
-      · have h := Path.homogeneousHistory_comp T ℳ p q
-          (Path.degreesComp (ι := ι) p q d.val).1 (Path.degreesComp (ι := ι) p q d.val).2
-        rw [Prod.mk.eta, Equiv.symm_apply_apply] at h
-        exact LinearMap.congr_fun h x
+      · exact (pathDecoratedHistoryCompEquiv_decoration T ℳ i₀ x v ν ε p q d).symm
       · rfl
     _ = _ := Fintype.sum_sigma F
 
