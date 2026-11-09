@@ -153,7 +153,7 @@ theorem prod_slabComponentMap_mul_apply_mem_pow (I : Ideal R) {n : ℕ}
   induction n with
   | zero => simpa using hc
   | succ n ih =>
-    rw [List.ofFn_succ, List.prod_cons, Module.End.mul_apply]
+    rw [List.ofFn_succ, List.prod_cons, mul_apply_eq_comp]
     have ht := ih (fun j => a j.succ) (fun j => ha j.succ)
       (fun j => p j.succ) (fun j => q j.succ) (fun j => f j.succ)
     have hf : f 0 ((List.ofFn fun j : Fin n =>
@@ -163,7 +163,7 @@ theorem prod_slabComponentMap_mul_apply_mem_pow (I : Ideal R) {n : ℕ}
         simpa only [smul_eq_mul, mul_one] using (f 0).map_smul x 1
       rw [he]
       exact (I ^ _).mul_mem_right _ ht
-    simpa only [Module.End.mul_apply, Fin.sum_univ_succ, Nat.add_assoc,
+    simpa only [mul_apply_eq_comp, Fin.sum_univ_succ, Nat.add_assoc,
       Nat.add_left_comm, Nat.add_comm] using
       slabComponentMap_mem_pow I (ha 0) (p 0) (q 0) hf
 

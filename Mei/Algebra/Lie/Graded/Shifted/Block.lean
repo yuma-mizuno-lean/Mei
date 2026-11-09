@@ -53,7 +53,7 @@ private theorem component_sub_one_inclusion_eq_zero (k : ℕ) (g : d.truncatedGr
     fun h => hnm (d.precedes_iff.mpr h)
   rcases not_and_or.mp hnm' with hmn | hmon
   · obtain rfl : m = n := Subtype.ext (not_not.mp hmn)
-    rw [LinearMap.sub_apply, Module.End.one_apply, map_sub, sub_eq_zero]
+    rw [LinearMap.sub_apply, one_apply_eq_self, map_sub, sub_eq_zero]
     trans (⟨x, x.property⟩ : ℳ (p + m.val))
     · rw [LinearEquiv.coe_coe,
         d.shiftedQuotientComponent_truncatedBCHAction_of_mem_same ℒ ℳ p
@@ -71,7 +71,7 @@ private theorem component_sub_one_inclusion_eq_zero (k : ℕ) (g : d.truncatedGr
         rw [← add_sub_add_left_eq_sub, he, sub_self]
       rw [h0]
       exact d.monoid.zero_mem
-    rw [LinearMap.sub_apply, Module.End.one_apply, map_sub,
+    rw [LinearMap.sub_apply, one_apply_eq_self, map_sub,
       d.shiftedQuotientComponent_mk_shiftedInclusion_of_ne (q := p + n.val) (k := k)
         (h := degree_add_val_sub_self_le d p k n)
         (n := ⟨m.val, (d.mem_cutoff.mp m.property).1⟩) (hnq := hc) (x := x), sub_zero]
@@ -138,7 +138,7 @@ theorem labelBlock_apply_component_of_ne (k : ℕ) (g : d.truncatedGroup ℒ k)
         (degree_add_val_sub_self_le d p k n)
         ((A).truncatedBCHAction d ℒ k g
           (DirectSum.decompose (d.shiftedQuotientGrading ℳ p k).piece x m.val)) := by
-  rw [labelBlock_apply, LinearMap.sub_apply, Module.End.one_apply, map_sub,
+  rw [labelBlock_apply, LinearMap.sub_apply, one_apply_eq_self, map_sub,
     d.shiftedQuotientComponent_mk_shiftedInclusion_of_ne ℳ p
       (p + n.val) k _ _ (fun he => hmn (add_left_cancel he)), sub_zero,
     d.decompose_shiftedQuotientGrading ℳ p k
@@ -167,7 +167,7 @@ theorem shiftedQuotientComponent_truncatedBCHCorrection_eq_sum_labelBlock
   refine Fintype.sum_equiv (d.finite_cutoff k).subtypeEquivToFinset.symm _ _ ?_
   intro m
   simp only [Submodule.mkQ_apply, ModuleFiltration.truncatedBCHCorrection_mk,
-    labelBlock_apply, LinearMap.sub_apply, Module.End.one_apply, map_sub,
+    labelBlock_apply, LinearMap.sub_apply, one_apply_eq_self, map_sub,
     LinearEquiv.coe_coe]
   -- The reindexing preserves ambient degrees; cutoff membership is proof-irrelevant.
   rfl
@@ -182,7 +182,7 @@ theorem labelBlock_truncation {k l : ℕ} (hkl : k ≤ l)
         ⟨m.val, d.cutoff_mono hkl m.property⟩ := by
   apply LinearMap.ext
   intro x
-  simp only [labelBlock_apply, LinearMap.sub_apply, Module.End.one_apply, map_sub,
+  simp only [labelBlock_apply, LinearMap.sub_apply, one_apply_eq_self, map_sub,
     LinearEquiv.coe_coe]
   rw [← (A).transition_mk hkl, ← (A).transition_truncatedBCHAction d ℒ hkl,
     d.shiftedQuotientComponent_transition]

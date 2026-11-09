@@ -75,7 +75,7 @@ theorem eq_of_projection_prod_rayExp_smul_negDilogNeg_eq
       d.degree (m i) ≤ k → c i = c' i from H _ i rfl hi
   intro a
   induction a using Nat.strong_induction_on with
-  | h a ih =>
+  | ind a ih =>
     intro i hia hik
     have hpos := d.degree_pos (hm i) (hm0 i)
     have hdegree : d.degree (m i) = ((a - 1) + 1 : ℕ) := by omega

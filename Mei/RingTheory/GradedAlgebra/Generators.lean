@@ -41,7 +41,8 @@ theorem grade_eq_span_words (e : S → A) (deg : S → Γ)
     have hlift : (FreeMonoid.lift e : FreeMonoid S → A) =
         (fun l : List S => (l.map e).prod) ∘ FreeMonoid.toList :=
       funext (FreeMonoid.lift_apply e)
-    rw [hlift, EquivLike.range_comp]
+    rw [hlift]
+    exact FreeMonoid.toListEquiv.surjective.range_comp _
   have hspan : Submodule.span R (Set.range (fun l : List S => (l.map e).prod)) = ⊤ := by
     rw [← hclosure, ← Algebra.adjoin_eq_span, he, Algebra.top_toSubmodule]
   have hword (l : List S) : (l.map e).prod ∈ 𝒜 (l.map deg).sum :=

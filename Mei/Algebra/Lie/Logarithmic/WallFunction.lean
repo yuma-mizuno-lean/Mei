@@ -333,8 +333,8 @@ theorem quotientExpLieAction_tropicalTangentField (k : ℕ) (u : R[T]) (hu : u �
     rw [AlgFiltration.quotientLieAction_mk, lie_eq,
       tropicalVertexCoefficientAction_tropicalTangentField d ρ m Q _ u
         (coeff_zero_eq_zero_of_mem_filtration_ideal_one d ρ m hu),
-      Derivation.smul_apply, smul_eq_mul, map_mul]
-    simp only [Derivation.coeFn_coe, Derivation.smul_apply, hD, smul_eq_mul]
+      smul_apply, smul_eq_mul, map_mul]
+    simp only [Derivation.coeFn_coe, smul_apply, hD, smul_eq_mul]
     rfl
   rw [AlgFiltration.quotientExpLieAction_apply, he, D.exp_smul_toLinearMap_apply hx hn ha]
   congr 2

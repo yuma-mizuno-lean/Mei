@@ -214,7 +214,7 @@ noncomputable def truncatedBCHAction (k : ℕ) :
     have he := congrArg (fun f : (F.toModuleFiltration R).quotient k ≃ₗ[R]
         (F.toModuleFiltration R).quotient k => e (f a))
       (((F.toModuleFiltration R).truncatedBCHAction d ℒ k).map_mul g h)
-    simpa only [LinearEquiv.mul_apply, ModuleFiltration.truncatedBCHAction_apply,
+    simpa only [mul_apply_eq_comp, ModuleFiltration.truncatedBCHAction_apply,
       ← truncatedExpLieAction_restrictScalarsEquiv, AlgEquiv.mul_apply, e] using he
 
 /-- The finite algebra action is the already constructed truncated exponential. -/

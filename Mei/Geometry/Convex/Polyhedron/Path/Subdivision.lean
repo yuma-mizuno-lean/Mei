@@ -176,7 +176,7 @@ theorem exists_segment_subdivision_subsingleton_crossingTimes (e : x ⟶ y) :
       q.vertices.IsChain (fun u v => (Prod.snd '' crossings u v).Subsingleton) := by
   generalize hn : (orderedCrossingTimes e).length = n
   induction n using Nat.strong_induction_on generalizing x y with
-  | h n ih =>
+  | ind n ih =>
     rcases hl : orderedCrossingTimes e with _ | ⟨a, _ | ⟨b, l⟩⟩
     · refine ⟨e.toPath, .refl _, ?_⟩
       simp only [Quiver.Path.vertices_toPath, List.isChain_pair]

@@ -195,8 +195,8 @@ theorem mem_horizontalEdges {e : Edge d₁ d₂} : e ∈ horizontalEdges d₁ d�
 /-- Counting edges of a given step type counts that step in the path. -/
 private theorem card_step_eq (s : DyckStep) :
     #{e : Edge d₁ d₂ | step e = s} = (maximalDyckPath d₁ d₂).count s :=
-  Fin.card_filter_univ_eq_vector_get_eq_count s
-    ⟨maximalDyckPath d₁ d₂, length_maximalDyckPath d₁ d₂⟩
+  (List.Vector.count_toList s
+    ⟨maximalDyckPath d₁ d₂, length_maximalDyckPath d₁ d₂⟩).symm
 
 /-- The path has `d₂` vertical edges. -/
 @[simp]

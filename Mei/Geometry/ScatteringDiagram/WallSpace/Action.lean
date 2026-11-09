@@ -157,7 +157,7 @@ theorem decompose_exp_eq_of_normal_eq_zero
       (H.decompose_lie_eq_zero_of_mem_ray_of_normal_eq_zero 𝒜 hx hq a).symm
   have he := LinearMap.congr_fun
     (Module.End.commute_exp_left_of_commute hnil (IsNilpotent.zero) hf) a
-  simpa only [IsNilpotent.exp_zero, LinearMap.comp_apply, Module.End.one_apply,
+  simpa only [IsNilpotent.exp_zero, LinearMap.comp_apply, one_apply_eq_self,
     hf_apply] using he.symm
 
 /-- A wall exponential has no off-diagonal component into a zero-direction piece. -/

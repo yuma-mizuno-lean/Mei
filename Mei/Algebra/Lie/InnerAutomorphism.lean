@@ -31,16 +31,16 @@ theorem expAd_apply_eq_expAd (R S : Type*) [CommRing R] [CommRing S]
     [LieAlgebra R L] [LieAlgebra S L] (x y : L)
     (hR : IsNilpotent (LieAlgebra.ad R L x))
     (hS : IsNilpotent (LieAlgebra.ad S L x)) :
-    TauCeti.expAd x hR y = TauCeti.expAd x hS y := by
+    TauCeti.expAd x hR.exists_pow_apply_eq_zero y =
+      TauCeti.expAd x hS.exists_pow_apply_eq_zero y := by
   have hp (n : ℕ) (z : L) :
       (LieAlgebra.ad R L x ^ n) z = (LieAlgebra.ad S L x ^ n) z := by
     induction n with
     | zero => simp
-    | succ n ih => simp only [pow_succ', Module.End.mul_apply, LieAlgebra.ad_apply, ih]
-  obtain ⟨n, hn⟩ := hR
-  have hy : (LieAlgebra.ad R L x ^ n) y = 0 := by rw [hn]; simp
-  rw [TauCeti.expAd_apply_eq_sum ⟨n, hn⟩ hy,
-    TauCeti.expAd_apply_eq_sum hS (by rw [← hp n y]; exact hy)]
+    | succ n ih => simp only [pow_succ', mul_apply_eq_comp, LieAlgebra.ad_apply, ih]
+  obtain ⟨n, hy⟩ := hR.exists_pow_apply_eq_zero y
+  rw [TauCeti.expAd_apply_eq_sum hR.exists_pow_apply_eq_zero hy,
+    TauCeti.expAd_apply_eq_sum hS.exists_pow_apply_eq_zero (hp n y ▸ hy)]
   simp only [hp]
 
 end Mei

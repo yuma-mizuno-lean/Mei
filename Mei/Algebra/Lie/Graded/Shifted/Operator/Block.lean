@@ -51,7 +51,7 @@ theorem operatorBCHAction_lof_sub (k : ℕ) (g : d.truncatedGroup ℒ k)
   intro x
   rw [LinearMap.sub_apply, LinearMap.comp_apply, operatorBCHAction_apply,
     operatorCoefficientsEquiv_lof, labelBlock_apply, LinearMap.sub_apply,
-    Module.End.one_apply, map_sub, ← shiftedQuotientInclusion_apply]
+    one_apply_eq_self, map_sub, ← shiftedQuotientInclusion_apply]
   congr 1
   exact (shiftedQuotientComponent_operatorCoefficientsEquiv d ℳ p k
     (DirectSum.lof R (d.cutoff k) (fun n => H →ₗ[R] ℳ (p + n.val)) m f) n x).symm.trans

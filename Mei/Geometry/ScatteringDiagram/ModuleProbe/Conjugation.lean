@@ -77,7 +77,8 @@ theorem expAd_moduleQuotientInclusion (k : ℕ) (x : d.truncatedLie ℒ (k + 1))
     (hx : IsNilpotent (LieAlgebra.ad R
       ((positiveDegrees d p).truncatedLie (grading d ℳ p ℒ) (k + 1))
       ((baseGradedLieHom d ℳ p ℒ).truncatedMap (a := k + 1) (k + 1) (by simp) x))) :
-    TauCeti.expAd ((baseGradedLieHom d ℳ p ℒ).truncatedMap (a := k + 1) (k + 1) (by simp) x) hx
+    TauCeti.expAd ((baseGradedLieHom d ℳ p ℒ).truncatedMap (a := k + 1) (k + 1) (by simp) x)
+        hx.exists_pow_apply_eq_zero
         (moduleQuotientInclusion d ℳ p ℒ k a) =
       moduleQuotientInclusion d ℳ p ℒ k
         ((d.shiftedLieFiltration ℒ ℳ p).truncatedExpLieAction d ℒ k
@@ -96,7 +97,8 @@ theorem expAd_moduleQuotientInclusion (k : ℕ) (x : d.truncatedLie ℒ (k + 1))
       LieAlgebra.ad_apply, PositiveDegrees.truncationMap_mk,
       ModuleFiltration.truncatedLieAction_mk]
     simpa only [LieIdeal.mkQ_apply] using lie_base_moduleQuotientInclusion d ℳ p ℒ k x b
-  simpa only [TauCeti.expAd_apply, ModuleFiltration.truncatedExpLieAction_apply,
+  rw [TauCeti.expAd_apply _ hx]
+  simpa only [ModuleFiltration.truncatedExpLieAction_apply,
     LinearMap.comp_apply] using LinearMap.congr_fun
       (Module.End.commute_exp_left_of_commute
         ⟨k + 1, (d.shiftedLieFiltration ℒ ℳ p).truncatedLieAction_pow_eq_zero d ℒ k _⟩

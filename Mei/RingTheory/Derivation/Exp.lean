@@ -64,10 +64,10 @@ theorem exp_smul_toLinearMap_apply (D : Derivation R A A) {x : A}
   have hp (j : ℕ) : (D.toLinearMap ^ j) a = r ^ j • a := by
     induction j with
     | zero => simp
-    | succ j ih => simp [pow_succ', Module.End.mul_apply, ih, ha, smul_smul, mul_comm]
+    | succ j ih => simp [pow_succ', mul_apply_eq_comp, ih, ha, smul_smul, mul_comm]
   have ht (j : ℕ) : ((x • D).toLinearMap ^ j) a =
       (LinearMap.mulLeft R (r • x) ^ j) a := by
-    rw [D.smul_toLinearMap_pow hx, Module.End.mul_apply, hp, LinearMap.pow_mulLeft]
+    rw [D.smul_toLinearMap_pow hx, mul_apply_eq_comp, hp, LinearMap.pow_mulLeft]
     simp [smul_pow]
   have hr : (r • x) ^ k = 0 := by simp [smul_pow, hk]
   rw [IsNilpotent.exp_eq_sum (D.smul_toLinearMap_pow_eq_zero hx hk),

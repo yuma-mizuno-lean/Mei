@@ -99,7 +99,7 @@ private theorem linearCombination_mem_of_nonneg {ι : Type*} [Fintype ι]
       (Function.support c).toFinite.toFinset.card = n → 0 ≤ c → 0 ≤ f (L c) → L c ∈ D := by
     intro n
     induction n using Nat.strong_induction_on with
-    | h n ih =>
+    | ind n ih =>
       intro c hn hc hf
       by_cases hneg : ∃ j, c j ≠ 0 ∧ f (v j) < 0
       · obtain ⟨j, hcj, hj⟩ := hneg
@@ -129,8 +129,8 @@ private theorem linearCombination_mem_of_nonneg {ι : Type*} [Fintype ι]
           simpa [k, Pi.single_apply, hij] using neg_pos.mpr hj
         -- Subtract the largest admissible positive multiple of the boundary pair.
         obtain ⟨r, hr, hc', hss⟩ :=
-          TauCeti.exists_pos_sub_smul_nonneg_support_ssubset hc
-            (Function.support k).toFinite hsupport ⟨i, hkpos⟩
+          TauCeti.exists_pos_sub_smul_nonneg_support_ssubset hc (Set.toFinite _)
+            hsupport ⟨i, hkpos⟩
         have hLk : L k = f.boundaryCombination (v i) (v j) := by
           simp [L, k, map_add, Fintype.linearCombination_apply_single,
             LinearMap.boundaryCombination_def]

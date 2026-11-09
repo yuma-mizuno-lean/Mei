@@ -89,7 +89,7 @@ theorem exponentOrderGrade_eq_bot_of_lt (q : exponentMonoid) (hq : k < chamberOr
 @[simp]
 theorem exponentOrderGrade_eq_bot_of_notMem (q : ℤ × ℤ × ℤ) (hq : q ∉ exponentMonoid) :
     exponentOrderGrade K k i q = ⊥ := by
-  apply TauCeti.GradedAlgebra.quotientPiece_eq_bot_of_le
+  rw [exponentOrderGrade, TauCeti.GradedAlgebra.quotientPiece_eq_bot_iff]
   intro f hf
   -- Every exponent in the support of `f` would map to `q`, which lies outside the monoid.
   have hsupp : f.coeff.support = ∅ := Finset.eq_empty_of_forall_notMem fun s hs =>

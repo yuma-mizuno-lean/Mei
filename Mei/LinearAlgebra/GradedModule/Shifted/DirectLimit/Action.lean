@@ -53,7 +53,7 @@ def shiftedDirectLimitAction : G →*
     apply LinearEquiv.ext
     intro x
     obtain ⟨s, a, rfl⟩ := d.exists_toShiftedDirectLimit ℳ x
-    simp only [LinearEquiv.mul_apply, compatibleDirectLimitEquiv_apply, map_mul])
+    simp only [mul_apply_eq_comp, compatibleDirectLimitEquiv_apply, map_mul])
 
 /-- The descended action agrees with its defining action in every canonical chart. -/
 @[simp]

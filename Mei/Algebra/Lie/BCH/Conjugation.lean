@@ -40,7 +40,8 @@ variable {L : Type*} [LieRing L] [LieAlgebra ℚ L]
 nilpotency bound. -/
 theorem bchOfClass_conj (c : ℕ) (hc : lowerCentralSeries ℚ L L c = ⊥)
     (x y : L) (hx : IsNilpotent (LieAlgebra.ad ℚ L x)) :
-    bchOfClass c hc (bchOfClass c hc x y) (-x) = TauCeti.expAd x hx y := by
+    bchOfClass c hc (bchOfClass c hc x y) (-x) =
+      TauCeti.expAd x hx.exists_pow_apply_eq_zero y := by
   let F := _root_.FreeLieAlgebra ℚ (Fin 2)
   let C : LieIdeal ℚ F := lowerCentralSeries ℚ F F c
   let Q := F ⧸ C
@@ -52,14 +53,15 @@ theorem bchOfClass_conj (c : ℕ) (hc : lowerCentralSeries ℚ L L c = ⊥)
     isNilpotent_toEnd_of_isNilpotent ℚ Q Q a
   have hfree (a b : Q) :
       bchOfClass c hQ (bchOfClass c hQ a b) (-a) =
-        TauCeti.expAd a (hnil a) b := by
+        TauCeti.expAd a (hnil a).exists_pow_apply_eq_zero b := by
     let i := quotientEnvelopingMap ℚ (Fin 2) c
     have ha := isNilpotent_quotientEnvelopingMap ℚ (Fin 2) c a
     have hb := isNilpotent_quotientEnvelopingMap ℚ (Fin 2) c b
     have hconj : IsNilpotent.exp (i a) * IsNilpotent.exp (i b) *
         IsNilpotent.exp (-i a) =
-          IsNilpotent.exp (i (TauCeti.expAd a (hnil a) b)) := by
-      rw [i.map_expAd (hnil a) (LieAlgebra.ad_nilpotent_of_nilpotent (R := ℚ) ha) b,
+          IsNilpotent.exp (i (TauCeti.expAd a (hnil a).exists_pow_apply_eq_zero b)) := by
+      rw [i.map_expAd (hnil a).exists_pow_apply_eq_zero
+        (LieAlgebra.ad_nilpotent_of_nilpotent (R := ℚ) ha).exists_pow_apply_eq_zero b,
         TauCeti.expAd_apply_eq_exp_mul_exp_neg ha]
       simpa only [ConjAct.units_smul_def, ConjAct.ofConjAct_toConjAct,
         TauCeti.coe_nilpotentExpUnit, TauCeti.coe_inv_nilpotentExpUnit] using
@@ -82,14 +84,15 @@ theorem bchOfClass_conj (c : ℕ) (hc : lowerCentralSeries ℚ L L c = ⊥)
     simp
   have h := congrArg f (hfree a b)
   rw [f.map_bchOfClass c c hQ hc, f.map_bchOfClass c c hQ hc, map_neg,
-    f.map_expAd (hnil a) (by rw [hfa]; exact hx) b] at h
+    f.map_expAd (hnil a).exists_pow_apply_eq_zero
+      (by rw [hfa]; exact hx.exists_pow_apply_eq_zero) b] at h
   simpa only [hfa, hfb] using h
 
 variable [LieRing.IsNilpotent L] {R : Type*} [CommRing R] [LieAlgebra R L]
 
 /-- BCH conjugation is the exponential adjoint action. -/
 theorem bch_conj (x y : L) (hx : IsNilpotent (LieAlgebra.ad R L x)) :
-    bch (bch x y) (-x) = TauCeti.expAd x hx y := by
+    bch (bch x y) (-x) = TauCeti.expAd x hx.exists_pow_apply_eq_zero y := by
   obtain ⟨c, hc⟩ := IsNilpotent.nilpotent ℚ L L
   have hx' : IsNilpotent (LieAlgebra.ad ℚ L x) :=
     isNilpotent_toEnd_of_isNilpotent ℚ L L x
@@ -101,7 +104,7 @@ namespace BCHGroup
 /-- Conjugation in the BCH group exponentiates the adjoint action. -/
 @[simp]
 theorem exp_expAd (x y : L) (hx : IsNilpotent (LieAlgebra.ad R L x)) :
-    exp (TauCeti.expAd x hx y) = exp x * exp y * (exp x)⁻¹ := by
+    exp (TauCeti.expAd x hx.exists_pow_apply_eq_zero y) = exp x * exp y * (exp x)⁻¹ := by
   rw [← bch_conj x y hx, exp_bch, exp_bch, exp_neg]
 
 /-- When the commutator is central relative to both inputs, exponentials can be
@@ -112,8 +115,8 @@ theorem exp_mul_exp_eq_exp_mul_exp_mul {x y z : L}
   have hx : IsNilpotent (LieAlgebra.ad ℚ L x) :=
     isNilpotent_toEnd_of_isNilpotent ℚ L L x
   have h := exp_expAd x y hx
-  rw [TauCeti.expAd_apply_of_lie_lie_eq_zero hx (by rw [hxy]; exact hxz), hxy,
-    exp_add_of_lie_eq_zero y z hyz] at h
+  rw [TauCeti.expAd_apply_of_lie_lie_eq_zero hx.exists_pow_apply_eq_zero (by rw [hxy]; exact hxz),
+    hxy, exp_add_of_lie_eq_zero y z hyz] at h
   exact (eq_mul_inv_iff_mul_eq.mp h).symm
 
 end BCHGroup

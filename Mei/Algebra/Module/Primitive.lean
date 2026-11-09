@@ -24,7 +24,7 @@ public section
 
 namespace TauCeti.IsPrimitive
 
-variable {M : Type*} [AddCommGroup M] [Module ℤ M]
+variable {M : Type*} [AddCommGroup M]
 
 /-- Integer multiples of a primitive vector have distinct multipliers, even when
 the ambient module has torsion. -/

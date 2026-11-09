@@ -97,7 +97,7 @@ theorem truncatedBCHAction_combinedLabel_mem_normalDegreeSubmodule_iff
     apply List.prod_induction
       (p := fun g => ∀ a : F.quotient k, F.truncatedBCHAction d ℒ k g a ∈ N ↔ a ∈ N)
     · intro x y hx hy a
-      simpa only [map_mul, LinearEquiv.mul_apply] using (hx _).trans (hy a)
+      simpa only [map_mul, mul_apply_eq_comp] using (hx _).trans (hy a)
     · simp
     · intro g hg
       obtain ⟨b, hb, rfl⟩ := List.mem_map.mp hg

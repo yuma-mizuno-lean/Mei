@@ -71,7 +71,7 @@ def shiftedRayQuotientAction (k : ℕ) :
   map_mul' H K := by
     ext a
     obtain ⟨b, rfl⟩ := (S).projection_surjective k a
-    simp only [quotientRayEquiv_projection, map_mul, LinearEquiv.mul_apply]
+    simp only [quotientRayEquiv_projection, map_mul, mul_apply_eq_comp]
 
 /-- Projection intertwines the completed and finite ray actions. -/
 @[simp]

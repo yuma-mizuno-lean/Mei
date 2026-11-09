@@ -35,7 +35,7 @@ theorem apply_pos_iff_of_ker_le_ker (f g : E →ₗ[K] K)
     simpa using (mem_span_of_iInf_ker_le_ker
       (L := fun _ : Unit => f) (K := g) (by simpa using hker))
   obtain ⟨c, rfl⟩ := Submodule.mem_span_singleton.mp hspan
-  simp only [smul_apply, smul_eq_mul, mul_pos_iff_of_pos_right hv,
+  simp only [LinearMap.smul_apply, smul_eq_mul, mul_pos_iff_of_pos_right hv,
     mul_pos_iff_of_pos_right hw]
 
 /-- Functionals with nested kernels and a common positive vector are positively proportional. -/

@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import TauCeti.Algebra.Lie.UniversalEnveloping.PBW.Symmetrization
+public import TauCeti.Algebra.Lie.UniversalEnveloping.PBW.Symmetrization.Basic
 public import Mathlib.Data.Nat.Factorial.NatCast
 
 /-!

@@ -36,6 +36,7 @@ theorem exp_mul_exp_mul_exp_neg_of_lie_lie_eq_zero {x y : L} (h : ⁅x, ⁅x, y�
     exp x * exp y * exp (-x) = exp (y + ⁅x, y⁆) := by
   have hx : IsNilpotent (LieAlgebra.ad ℚ L x) :=
     LieModule.isNilpotent_toEnd_of_isNilpotent ℚ L L x
-  rw [exp_neg, ← exp_expAd x y hx, TauCeti.expAd_apply_of_lie_lie_eq_zero hx h]
+  rw [exp_neg, ← exp_expAd x y hx,
+    TauCeti.expAd_apply_of_lie_lie_eq_zero hx.exists_pow_apply_eq_zero h]
 
 end Mei.BCHGroup
