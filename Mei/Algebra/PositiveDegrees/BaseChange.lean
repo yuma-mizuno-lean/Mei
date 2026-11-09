@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Algebra.PositiveDegrees.Grading
-public import Mei.LinearAlgebra.TensorProduct.BaseChange
+public import Mathlib.LinearAlgebra.TensorProduct.Tower
 
 /-!
 # Extension of scalars for positive gradings

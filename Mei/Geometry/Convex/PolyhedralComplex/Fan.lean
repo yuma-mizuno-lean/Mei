@@ -7,7 +7,7 @@ module
 
 public import Mei.Geometry.Convex.PolyhedralComplex.Basic
 public import Mei.Geometry.Convex.Polyhedron.Rational.Cone
-public import Mei.Geometry.Convex.Cone.Face.Exposed
+public import TauCeti.Geometry.Convex.Cone.Face.Exposed
 public import TauCeti.Geometry.Toric.Algebraic.Fan.Subdivision
 
 /-!

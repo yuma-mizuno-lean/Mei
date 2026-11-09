@@ -97,7 +97,8 @@ theorem bch_conj (x y : L) (hx : IsNilpotent (LieAlgebra.ad R L x)) :
   have hx' : IsNilpotent (LieAlgebra.ad ℚ L x) :=
     isNilpotent_toEnd_of_isNilpotent ℚ L L x
   simp only [bch_eq_bchOfClass c hc]
-  exact (bchOfClass_conj c hc x y hx').trans (expAd_apply_eq_expAd ℚ R x y hx' hx)
+  exact (bchOfClass_conj c hc x y hx').trans
+    (expAd_apply_eq_expAd ℚ R x y hx'.exists_pow_apply_eq_zero hx.exists_pow_apply_eq_zero)
 
 namespace BCHGroup
 
