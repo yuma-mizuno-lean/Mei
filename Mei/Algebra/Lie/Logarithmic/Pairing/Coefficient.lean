@@ -79,7 +79,7 @@ theorem mapDomainAlgHom_tropicalVertexCoefficientAction (hQ : d.monoid ≤ Q)
           using x.property
       simp [hx]
   | add x y hx hy =>
-    simp only [AddMemClass.coe_add, map_add, Derivation.add_apply]
+    simp only [AddMemClass.coe_add, map_add, add_apply]
     rw [hx, hy]
 
 /-- On the positive coefficient algebras, a tropical pairing intertwines the

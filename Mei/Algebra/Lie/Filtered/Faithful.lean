@@ -81,7 +81,7 @@ def completedLieAction : d.completedLie ℒ →ₗ⁅R⁆ Module.End R F.complet
     intro m
     apply completion_ext
     intro k
-    simp [LieRing.of_associative_ring_bracket, Module.End.mul_apply]
+    simp [LieRing.of_associative_ring_bracket, mul_apply_eq_comp]
 
 /-- The completed action is computed by the finite representation at every order. -/
 @[simp]

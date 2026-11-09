@@ -53,7 +53,7 @@ weight times the logarithm of the wall function. -/
 theorem functionWallDerivation_apply_of_mem (f : (𝒜 0)ˣ) {i : ℤ} {a : A}
     (ha : a ∈ 𝒜 i) : functionWallDerivation 𝒜 f a =
       IsNilpotent.log (algebraMap (𝒜 0) A (f : 𝒜 0)) * (i • a) := by
-  simp only [functionWallDerivation, Derivation.smul_apply,
+  simp only [functionWallDerivation, smul_apply,
     gradingDerivation_apply_of_mem 𝒜 _ ha, Int.coe_castAddHom,
     Int.cast_smul_eq_zsmul, smul_eq_mul]
 

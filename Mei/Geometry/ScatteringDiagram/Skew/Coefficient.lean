@@ -361,7 +361,7 @@ theorem projection_completedBCHAction_single_of_mem_degreeFiltration
     apply LinearMap.ext
     intro q
     obtain ⟨b, rfl⟩ := Ideal.Quotient.mk_surjective q
-    rw [pow_two, Module.End.mul_apply, AlgFiltration.quotientLieAction_mk,
+    rw [pow_two, mul_apply_eq_comp, AlgFiltration.quotientLieAction_mk,
       AlgFiltration.quotientLieAction_mk, LinearMap.zero_apply, Ideal.Quotient.eq_zero_iff_mem]
     have h₀ : b ∈ ((Fpr).toModuleFiltration R).submodule 0 := by
       simp
@@ -382,7 +382,7 @@ theorem projection_completedBCHAction_single_of_mem_degreeFiltration
     IsNilpotent.exp_eq_sum hsq]
   simp only [Finset.sum_range_succ, Finset.range_zero, Finset.sum_empty, zero_add,
     Nat.factorial_zero, Nat.factorial_one, Nat.cast_one, inv_one, one_smul, pow_zero, pow_one,
-    LinearMap.add_apply, Module.End.one_apply, AlgFiltration.quotientLieAction_mk, map_add,
+    LinearMap.add_apply, one_apply_eq_self, AlgFiltration.quotientLieAction_mk, map_add,
     TropicalVertexCoefficientAction.lie_eq, tropicalVertexCoefficientAction_principalGradedLieHom]
 
 end FilteredAction

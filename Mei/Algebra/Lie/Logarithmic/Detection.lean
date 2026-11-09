@@ -68,7 +68,7 @@ theorem action_apply_single_injective : Function.Injective
     obtain ⟨p, hp, hne⟩ := exists_action_apply_single_coeff_ne_zero ρ P hspan (x - y) hn
     have he := congrFun h ⟨p, hp⟩
     apply hne
-    simp only [map_sub, Derivation.sub_apply, he, sub_self]
+    simp only [map_sub, sub_apply, he, sub_self]
     simp
   have he := DFunLike.congr_fun hz l
   have he' : toFinsupp ρ x n l - toFinsupp ρ y n l = 0 := by simpa using he

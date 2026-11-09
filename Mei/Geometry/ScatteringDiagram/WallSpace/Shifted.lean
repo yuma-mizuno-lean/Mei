@@ -77,7 +77,7 @@ theorem shiftedQuotientComponent_truncatedExpLieAction_of_normal_eq_zero
     (Module.End.commute_exp_left_of_commute
       ⟨k + 1, F.truncatedLieAction_pow_eq_zero d ℒ k x⟩ IsNilpotent.zero hf) a
   simpa only [ModuleFiltration.truncatedExpLieAction_apply, IsNilpotent.exp_zero,
-    LinearMap.comp_apply, Module.End.one_apply] using he.symm
+    LinearMap.comp_apply, one_apply_eq_self] using he.symm
 
 variable [LieAlgebra ℚ L] [IsScalarTower ℚ R L]
 

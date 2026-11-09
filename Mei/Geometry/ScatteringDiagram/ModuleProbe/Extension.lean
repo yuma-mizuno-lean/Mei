@@ -111,7 +111,7 @@ theorem extendedCoefficientField_eq_action (k : ℕ) (hBc : B.LevelConsistent k)
     (coefficientAnchor_generic d ℳ p ℒ H h h' D B k x) hz
   rw [← B.levelTransport_eq_levelPathProduct hBc γ] at he
   unfold extendedCoefficientField
-  rw [he, ← LinearEquiv.mul_apply, ← MonoidHom.map_mul]
+  rw [he, ← mul_apply_eq_comp, ← MonoidHom.map_mul]
   rw [← B.levelTransport_comp]
 
 /-- The extension recovers the original finite probe coefficient wherever that
@@ -138,7 +138,7 @@ theorem extendedCoefficientField_eq_transport (k : ℕ) (hBc : B.LevelConsistent
         (extendedCoefficientField d ℳ p ℒ H h h' D B k hBc x) := by
   unfold extendedCoefficientField
   simp only [coefficientAnchor_eq d ℳ p ℒ H h h' D B k x y]
-  rw [← LinearEquiv.mul_apply, ← MonoidHom.map_mul, ← B.levelTransport_comp]
+  rw [← mul_apply_eq_comp, ← MonoidHom.map_mul, ← B.levelTransport_comp]
 
 /-- The extension is the unique family obeying base transport and recovering
 the actual generic probe coefficients. -/

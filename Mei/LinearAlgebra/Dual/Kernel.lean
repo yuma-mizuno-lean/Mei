@@ -78,7 +78,8 @@ theorem ker_apply_smul_sub_apply_smul (f g : V →ₗ[K] K) {v : V}
       (f v • g - g v • f).ker ≤ (f.ker ⊓ g.ker) ⊔ K ∙ v := by
     intro x hx
     have he : f v * g x = g v * f x := by
-      simpa only [mem_ker, sub_apply, smul_apply, smul_eq_mul, sub_eq_zero] using hx
+      simpa only [mem_ker, LinearMap.sub_apply, LinearMap.smul_apply, smul_eq_mul,
+        sub_eq_zero] using hx
     have hw : x - (f x / f v) • v ∈ f.ker ⊓ g.ker := by
       constructor
       · simp [mem_ker, hf]
@@ -95,7 +96,7 @@ theorem ker_apply_smul_sub_apply_smul (f g : V →ₗ[K] K) {v : V}
       have hx' : x ∈ (g v • f - f v • g).ker := by
         have he := mem_ker.mp hx
         apply mem_ker.mpr
-        simpa only [sub_apply, smul_apply, smul_eq_mul, sub_eq_zero] using
+        simpa only [LinearMap.sub_apply, LinearMap.smul_apply, smul_eq_mul, sub_eq_zero] using
           (sub_eq_zero.mp he).symm
       simpa only [inf_comm] using step g f hg hx'
     · exact step f g hf

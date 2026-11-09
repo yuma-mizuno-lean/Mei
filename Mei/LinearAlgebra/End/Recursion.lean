@@ -47,7 +47,7 @@ No nilpotence, grading, or order on the coefficient semiring is required. -/
 theorem finiteRecursion_mem (S : AddSubmonoid M) (hS : ∀ x ∈ S, U x ∈ S)
     (r : ℕ) {a : M} (ha : a ∈ S) : U.finiteRecursion r a ∈ S := by
   rw [finiteRecursion_apply]
-  exact S.sum_mem (fun j _ => (Module.End.pow_apply U j a).symm ▸
+  exact S.sum_mem (fun j _ => (pow_apply_eq_iterate U j a).symm ▸
     Set.MapsTo.iterate (f := U) (s := S) hS j ha)
 
 /-- A nilpotency bound makes the solution operator satisfy `1 + U * S = S`. -/
@@ -70,7 +70,7 @@ theorem eq_finiteRecursion_of_eq_add {r : ℕ} (hU : U ^ r = 0)
     | zero => simp
     | succ n ih =>
       have hn : (U ^ n) x = (U ^ n) a + (U ^ (n + 1)) x := by
-        simpa only [map_add, pow_succ, Module.End.mul_apply] using congrArg (U ^ n) hx
+        simpa only [map_add, pow_succ, mul_apply_eq_comp] using congrArg (U ^ n) hx
       calc
         x = (∑ j ∈ Finset.range n, (U ^ j) a) + (U ^ n) x := ih
         _ = (∑ j ∈ Finset.range (n + 1), (U ^ j) a) + (U ^ (n + 1)) x := by

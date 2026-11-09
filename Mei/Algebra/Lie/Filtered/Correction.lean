@@ -99,7 +99,7 @@ theorem truncatedBCHCorrection_mul (k : ℕ) (g h : d.truncatedGroup ℒ (k + 1)
         F.truncatedBCHCorrection d ℒ k g a := by
   obtain ⟨m, rfl⟩ := (F.submodule (k + 1)).mkQ_surjective a
   simp only [Submodule.mkQ_apply, truncatedBCHCorrection_mk, map_mul,
-    LinearEquiv.mul_apply, map_sub]
+    mul_apply_eq_comp, map_sub]
   abel
 
 /-- A finite BCH word acts by adding its individual corrections. The input to
@@ -116,7 +116,7 @@ theorem truncatedBCHAction_list_prod_eq_add_sum (k : ℕ)
   induction g with
   | nil => simp
   | cons g gs ih =>
-    rw [List.prod_cons, map_mul, LinearEquiv.mul_apply,
+    rw [List.prod_cons, map_mul, mul_apply_eq_comp,
       F.truncatedBCHAction_eq_add_correction d ℒ k g,
       F.transition_truncatedBCHAction d ℒ (Nat.le_succ k), ih]
     simp only [List.length_cons, Fin.sum_univ_succ]

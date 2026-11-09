@@ -117,7 +117,7 @@ theorem homogeneousHistory_eq_prod {n : ℕ}
   | zero => ext a; simp
   | succ n ih =>
     ext a
-    rw [List.ofFn_succ, List.prod_cons, Module.End.mul_apply, ← ih]
+    rw [List.ofFn_succ, List.prod_cons, mul_apply_eq_comp, ← ih]
     simp only [homogeneousHistory_succ_apply, homogeneousHistory_zero,
       LinearMap.id_apply]
 

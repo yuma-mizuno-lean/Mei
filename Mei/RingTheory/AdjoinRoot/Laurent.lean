@@ -50,7 +50,7 @@ theorem C_root_X_pow_pow_mul_eq_zero_iff
   · rw [← map_pow C, ← map_pow C, Mei.LaurentPolynomial.C_dvd_iff_dvd_coeff]
     constructor
     · intro h j
-      apply (AdjoinRoot.root_X_pow_pow_mul_eq_zero_iff hi _).mp
+      apply (AdjoinRoot.root_X_pow_pow_mul_eq_zero_iff _).mp
       have hcoeff := congrArg (fun q => q.coeff j) h
       simpa only [← single_eq_C, coeff_single_zero_mul, coeff_zero,
         Finsupp.zero_apply] using hcoeff
@@ -58,7 +58,7 @@ theorem C_root_X_pow_pow_mul_eq_zero_iff
       apply LaurentPolynomial.ext
       intro j
       simp only [← single_eq_C, coeff_single_zero_mul, coeff_zero, Finsupp.zero_apply]
-      exact (AdjoinRoot.root_X_pow_pow_mul_eq_zero_iff hi _).mpr (h j)
+      exact (AdjoinRoot.root_X_pow_pow_mul_eq_zero_iff _).mpr (h j)
   · have hn : (C (AdjoinRoot.root (Polynomial.X ^ n : Polynomial R)) :
         (AdjoinRoot (Polynomial.X ^ n : Polynomial R))[T;T⁻¹]) ^ n = 0 := by
       exact C_root_X_pow_pow R n

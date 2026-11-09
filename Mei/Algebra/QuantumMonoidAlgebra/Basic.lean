@@ -57,7 +57,6 @@ instance instIsFactorSet (q : Rˣ) (β : LinearMap.BilinForm ℤ Γ) :
     congr 1
     omega
   one_left p := by simp [factorSet]
-  one_right p := by simp [factorSet]
 
 end QuantumMonoidAlgebra
 

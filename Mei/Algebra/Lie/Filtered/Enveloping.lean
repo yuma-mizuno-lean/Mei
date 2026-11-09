@@ -52,7 +52,7 @@ private theorem representation_word_mem (l : List (Σ n, ℒ n))
   induction l generalizing b m with
   | nil => simpa using hm
   | cons x l ih =>
-    simp only [List.map_cons, List.prod_cons, List.sum_cons, map_mul, Module.End.mul_apply]
+    simp only [List.map_cons, List.prod_cons, List.sum_cons, map_mul, mul_apply_eq_comp]
     rw [TauCeti.UniversalEnvelopingAlgebra.representation_ι, LieModule.toEnd_apply_apply]
     simpa only [Nat.add_assoc] using
       F.lie_mem_of_mem_homogeneous d ℒ x.2.property (ih hm)

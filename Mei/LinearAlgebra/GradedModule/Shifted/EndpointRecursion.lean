@@ -116,7 +116,7 @@ theorem shiftedLowerStep_pow_apply_eq_zero {ι : Type*}
     omega
   | succ j ih =>
     intro F Q n h
-    rw [pow_succ', Module.End.mul_apply, shiftedLowerStep_apply]
+    rw [pow_succ', mul_apply_eq_comp, shiftedLowerStep_apply]
     apply Finset.sum_eq_zero
     intro b _
     apply Finset.sum_eq_zero
