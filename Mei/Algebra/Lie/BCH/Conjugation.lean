@@ -103,9 +103,10 @@ namespace BCHGroup
 
 /-- Conjugation in the BCH group exponentiates the adjoint action. -/
 @[simp]
-theorem exp_expAd (x y : L) (hx : IsNilpotent (LieAlgebra.ad R L x)) :
-    exp (TauCeti.expAd x hx.exists_pow_apply_eq_zero y) = exp x * exp y * (exp x)⁻¹ := by
-  rw [← bch_conj x y hx, exp_bch, exp_bch, exp_neg]
+theorem exp_expAd (x y : L) (hx : ∀ z : L, ∃ n : ℕ, (LieAlgebra.ad R L x ^ n) z = 0) :
+    exp (TauCeti.expAd x hx y) = exp x * exp y * (exp x)⁻¹ := by
+  have hn := isNilpotent_toEnd_of_isNilpotent R L L x
+  rw [← bch_conj x y hn, exp_bch, exp_bch, exp_neg]
 
 /-- When the commutator is central relative to both inputs, exponentials can be
 interchanged by inserting the exponential of that commutator. -/
@@ -114,7 +115,7 @@ theorem exp_mul_exp_eq_exp_mul_exp_mul {x y z : L}
     exp x * exp y = exp y * exp z * exp x := by
   have hx : IsNilpotent (LieAlgebra.ad ℚ L x) :=
     isNilpotent_toEnd_of_isNilpotent ℚ L L x
-  have h := exp_expAd x y hx
+  have h := exp_expAd x y hx.exists_pow_apply_eq_zero
   rw [TauCeti.expAd_apply_of_lie_lie_eq_zero hx.exists_pow_apply_eq_zero (by rw [hxy]; exact hxz),
     hxy, exp_add_of_lie_eq_zero y z hyz] at h
   exact (eq_mul_inv_iff_mul_eq.mp h).symm

@@ -119,7 +119,8 @@ theorem base_conj_moduleBCHInclusion (k : ℕ) (g : BCHGroup (d.truncatedLie ℒ
   let x := (baseGradedLieHom d ℳ p ℒ).truncatedMap (a := k + 1) (k + 1) (by simp) (BCHGroup.log g)
   have hx : IsNilpotent (LieAlgebra.ad R _ x) :=
     LieModule.isNilpotent_toEnd_of_isNilpotent R _ _ x
-  have he := BCHGroup.exp_expAd x (moduleQuotientInclusion d ℳ p ℒ k a.toAdd) hx
+  have he := BCHGroup.exp_expAd x (moduleQuotientInclusion d ℳ p ℒ k a.toAdd)
+    hx.exists_pow_apply_eq_zero
   rw [expAd_moduleQuotientInclusion d ℳ p ℒ k (BCHGroup.log g) a.toAdd hx] at he
   simpa only [ModuleFiltration.truncatedBCHAction_apply, LieHom.log_bchGroupMap,
     moduleBCHInclusion_apply, toAdd_ofAdd,
