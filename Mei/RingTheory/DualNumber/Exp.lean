@@ -7,7 +7,7 @@ module
 
 public import Mathlib.RingTheory.DualNumber
 public import Mei.RingTheory.TrivSqZeroExt.Exp
-public import TauCeti.RingTheory.Nilpotent.Exp
+public import TauCeti.RingTheory.Nilpotent.Exp.Basic
 
 /-!
 # Nilpotent exponentials in the dual numbers

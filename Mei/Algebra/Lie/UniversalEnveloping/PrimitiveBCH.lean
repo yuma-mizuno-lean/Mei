@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Algebra.Lie.UniversalEnveloping.Coproduct
-public import Mei.RingTheory.Nilpotent.Log
+public import TauCeti.RingTheory.Nilpotent.Log
 public import Mei.RingTheory.FilteredAlgebra.Quotient
 
 /-!
