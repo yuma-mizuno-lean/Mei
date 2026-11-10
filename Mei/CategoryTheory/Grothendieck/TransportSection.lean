@@ -5,15 +5,17 @@ Authors: Codex
 -/
 module
 
-public import Mei.CategoryTheory.Grothendieck.Section
+public import Mei.CategoryTheory.Grothendieck.Basic
+public import TauCeti.CategoryTheory.Grothendieck.Section
 public import Mathlib.Algebra.Category.Grp.Limits
+public import Mathlib.CategoryTheory.Endomorphism
 
 /-!
 # Fiberwise transport data and compatible section automorphisms
 
 `GrothendieckSection` is a presentation of a section by objects and arrows in the
 actual fibers. `sectionFunctor` sends these transport data to the section category
-in `Mei.CategoryTheory.Grothendieck.Section`; the underlying total functor factors
+in `TauCeti.CategoryTheory.Grothendieck.Section`; the underlying total functor factors
 through that existing category. This presentation retains the original fiber
 carriers, so its automorphisms can be identified with compatible families of
 fiber automorphisms, with transitions given by transport and conjugation.
@@ -31,6 +33,7 @@ The constructions use Mathlib's `Grothendieck.ι`, `Aut.autMulEquivOfIso`,
 public section
 
 open CategoryTheory CategoryTheory.Limits
+open TauCeti.CategoryTheory.Grothendieck (Section)
 
 universe v u w z v' u'
 
@@ -158,7 +161,7 @@ theorem toNatTrans_app {s t : GrothendieckSection L} (α : s ⟶ t) (d : D) :
     (toNatTrans α).app d = (Grothendieck.ι _ d).map (α.app d) := (rfl)
 
 /-- Fiberwise transport data give a section of the Grothendieck projection. -/
-abbrev toSection (s : GrothendieckSection L) : CategoryTheory.Grothendieck.Section L :=
+abbrev toSection (s : GrothendieckSection L) : Section L :=
   CategoryTheory.Functor.Fiber.mk s.toFunctor_comp_forget
 
 /-- The actual section constructed from transport data has the specified total functor. -/
@@ -169,14 +172,14 @@ theorem toSection_toFunctor (s : GrothendieckSection L) :
 /-- A transformation between transport sections has identity base components. -/
 @[simp]
 theorem sectionHom_base {s t : GrothendieckSection L} (α : s.toSection ⟶ t.toSection) (d : D) :
-    ((CategoryTheory.Grothendieck.Section.hom α).app d).base = 𝟙 d := by
-  have h := CategoryTheory.Grothendieck.Section.hom_over α
+    ((Section.hom α).app d).base = 𝟙 d := by
+  have h := Section.whiskerRight_hom_forget α
   erw [eqToHom_refl (C := D ⥤ D), Category.id_comp] at h
   exact NatTrans.congr_app h d
 
 /-- Fiberwise morphisms give morphisms in the existing category of sections. -/
 def toSectionHom {s t : GrothendieckSection L} (α : s ⟶ t) : s.toSection ⟶ t.toSection :=
-  CategoryTheory.Grothendieck.Section.homMk (toNatTrans α) (by
+  Section.homMk (toNatTrans α) (by
     erw [eqToHom_refl (C := D ⥤ D), Category.id_comp]
     apply NatTrans.ext
     funext d
@@ -185,26 +188,26 @@ def toSectionHom {s t : GrothendieckSection L} (α : s ⟶ t) : s.toSection ⟶ 
 /-- The underlying transformation of the section morphism is its total transformation. -/
 @[simp]
 theorem hom_toSectionHom {s t : GrothendieckSection L} (α : s ⟶ t) :
-    CategoryTheory.Grothendieck.Section.hom (toSectionHom α) = toNatTrans α := by
-  exact CategoryTheory.Grothendieck.Section.hom_homMk _ _
+    Section.hom (toSectionHom α) = toNatTrans α := by
+  exact Section.hom_homMk _ _
 
 /-- The transport presentation maps to the existing category of sections. -/
-abbrev sectionFunctor : GrothendieckSection L ⥤ CategoryTheory.Grothendieck.Section L where
+abbrev sectionFunctor : GrothendieckSection L ⥤ Section L where
   obj := toSection
   map := toSectionHom
   map_id s := by
-    apply CategoryTheory.Grothendieck.Section.hom_ext
+    apply Section.hom_ext
     intro d
     rw [hom_toSectionHom]
     exact (Grothendieck.ι L d).map_id _
   map_comp α β := by
-    apply CategoryTheory.Grothendieck.Section.hom_ext
+    apply Section.hom_ext
     intro d
     -- `Functor.map_comp` does not match through `Section.hom`'s fiber wrapper.
     -- Expose its componentwise composition so `hom_toSectionHom` can rewrite each factor.
-    change (CategoryTheory.Grothendieck.Section.hom (toSectionHom (α ≫ β))).app d =
-      (CategoryTheory.Grothendieck.Section.hom (toSectionHom α)).app d ≫
-        (CategoryTheory.Grothendieck.Section.hom (toSectionHom β)).app d
+    change (Section.hom (toSectionHom (α ≫ β))).app d =
+      (Section.hom (toSectionHom α)).app d ≫
+        (Section.hom (toSectionHom β)).app d
     simp only [hom_toSectionHom, toNatTrans_app, comp_app]
     exact (Grothendieck.ι L d).map_comp _ _
 
@@ -221,7 +224,7 @@ instance : (sectionFunctor (L := L)).Faithful where
     apply Hom.ext
     funext d
     apply (Grothendieck.ι L d).map_injective
-    have hd := congrArg (fun γ => (CategoryTheory.Grothendieck.Section.hom γ).app d) h
+    have hd := congrArg (fun γ => (Section.hom γ).app d) h
     rw [sectionFunctor_map, sectionFunctor_map, hom_toSectionHom, hom_toSectionHom,
       toNatTrans_app, toNatTrans_app] at hd
     exact hd
@@ -352,7 +355,7 @@ noncomputable def completedLabelIso (α : s ⟶ t) [IsIso α]
     [HasLimit (s.toFunctor ⋙ A)] [HasLimit (t.toFunctor ⋙ A)] :
     limit (s.toFunctor ⋙ A) ≅ limit (t.toFunctor ⋙ A) :=
   HasLimit.isoOfNatIso
-    (((sectionFunctor ⋙ CategoryTheory.Grothendieck.Section.coefficientDiagram A)).mapIso
+    (((sectionFunctor ⋙ Section.coefficientDiagram A)).mapIso
       (asIso α))
 
 /-- Each projection computes the completed action using the represented fiber label. -/
@@ -368,7 +371,7 @@ theorem completedLabelIso_hom_π (α : s ⟶ t) [IsIso α]
   -- the total functors of `s.toSection` and `t.toSection`
   -- with `s.toFunctor` and `t.toFunctor`, respectively.
   change limit.π (s.toFunctor ⋙ A) d ≫
-    A.map ((CategoryTheory.Grothendieck.Section.hom (toSectionHom α)).app d) = _
+    A.map ((Section.hom (toSectionHom α)).app d) = _
   rw [hom_toSectionHom, toNatTrans_app]
   rfl
 
@@ -385,7 +388,7 @@ theorem completedLabelIso_inv_π (α : s ⟶ t) [IsIso α]
   -- the total functors of `t.toSection` and `s.toSection`
   -- with `t.toFunctor` and `s.toFunctor`, respectively.
   change limit.π (t.toFunctor ⋙ A) d ≫
-    A.map ((CategoryTheory.Grothendieck.Section.hom (toSectionHom (inv α))).app d) = _
+    A.map ((Section.hom (toSectionHom (inv α))).app d) = _
   rw [hom_toSectionHom, toNatTrans_app, inv_app]
   rfl
 

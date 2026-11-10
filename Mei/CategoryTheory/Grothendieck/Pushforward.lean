@@ -29,7 +29,7 @@ open CategoryTheory CategoryTheory.Functor CategoryTheory.Grothendieck CategoryT
 
 universe v u w z v' u'
 
-namespace Mei.CategoryTheory.Grothendieck.Section
+namespace TauCeti.CategoryTheory.Grothendieck.Section
 
 variable {D : Type u} [Category.{v} D] {C C' C'' : D ⥤ Cat.{w, z}}
 
@@ -52,7 +52,7 @@ def pushforwardHom (h : C ⟶ C') {s t : Section C} (α : s ⟶ t) :
     pushforward h s ⟶ pushforward h t :=
   homMk (whiskerRight (hom α) (Grothendieck.map h)) (by
     ext d
-    have he := NatTrans.congr_app (hom_over α) d
+    have he := NatTrans.congr_app (whiskerRight_hom_forget α) d
     convert he using 1 <;> rfl)
 
 /-- A pushed-forward label is the image of the original component. -/
@@ -195,4 +195,4 @@ theorem pullback_pushforward {E : Type*} [Category* E] (H : E ⥤ D) (h : C ⟶ 
   exact liftFunctor_comp_map H h (H ⋙ s.toFunctor)
     (by rw [Functor.assoc, s.toFunctor_comp_forget]; rfl)
 
-end Mei.CategoryTheory.Grothendieck.Section
+end TauCeti.CategoryTheory.Grothendieck.Section

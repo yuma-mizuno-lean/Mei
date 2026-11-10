@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mathlib.RingTheory.Derivation.Basic
-public import TauCeti.RingTheory.Nilpotent.Exp
+public import TauCeti.RingTheory.Nilpotent.Exp.Basic
 
 /-!
 # Exponentiating derivations with nilpotent coefficients

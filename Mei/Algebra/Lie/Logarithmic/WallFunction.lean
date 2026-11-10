@@ -9,7 +9,7 @@ public import Mei.Algebra.Lie.Logarithmic.Coefficient
 public import Mei.RingTheory.Derivation.Exp
 public import Mei.RingTheory.FilteredAlgebra.Exp.Map
 public import Mei.RingTheory.FilteredAlgebra.PowerSeries.Map
-public import Mei.RingTheory.Nilpotent.Log
+public import TauCeti.RingTheory.Nilpotent.Log
 
 /-!
 # Wall functions of tangent tropical vertex labels

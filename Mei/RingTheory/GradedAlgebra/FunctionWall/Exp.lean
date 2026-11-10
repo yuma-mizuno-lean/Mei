@@ -8,7 +8,7 @@ module
 public import Mei.RingTheory.GradedAlgebra.FunctionWall.Basic
 public import Mei.RingTheory.Derivation.Grading
 public import Mei.RingTheory.Derivation.Exp
-public import Mei.RingTheory.Nilpotent.Log
+public import TauCeti.RingTheory.Nilpotent.Log
 
 /-!
 # Function walls as finite exponentials
