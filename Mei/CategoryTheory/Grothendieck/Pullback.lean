@@ -5,8 +5,9 @@ Authors: Codex
 -/
 module
 
-public import Mei.CategoryTheory.Grothendieck.Section
+public import Mei.CategoryTheory.Grothendieck.Basic
 public import Mei.CategoryTheory.Limits.Reindex
+public import TauCeti.CategoryTheory.Grothendieck.Section
 
 /-!
 # Pulling back sections of a Grothendieck construction
@@ -249,7 +250,7 @@ theorem liftNatTrans_over :
 
 end CategoryTheory.Grothendieck
 
-namespace Mei.CategoryTheory.Grothendieck
+namespace TauCeti.CategoryTheory.Grothendieck
 namespace Section
 
 open _root_.CategoryTheory _root_.CategoryTheory.Functor _root_.CategoryTheory.Grothendieck
@@ -301,7 +302,7 @@ def pullbackHom {s t : Section C} (α : s ⟶ t) : pullback G s ⟶ pullback G t
     (by rw [Functor.assoc, t.toFunctor_comp_forget]; rfl)
     (whiskerLeft G (hom α)) (by
       ext e
-      convert NatTrans.congr_app (hom_over α) (G.obj e) using 1
+      convert NatTrans.congr_app (whiskerRight_hom_forget α) (G.obj e) using 1
       · rfl
       · rfl
       · erw [NatTrans.comp_app, NatTrans.comp_app, eqToHom_app, eqToHom_app,
@@ -435,4 +436,4 @@ instance isIso_coefficientRestriction (s : Section C) [G.Initial]
   NatTrans.isIso_reindexLimitMap _
 
 end Section
-end Mei.CategoryTheory.Grothendieck
+end TauCeti.CategoryTheory.Grothendieck

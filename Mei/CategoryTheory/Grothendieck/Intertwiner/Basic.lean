@@ -46,7 +46,7 @@ structure ActionIntertwiner (G : E ⥤ D) (A : Grothendieck C ⥤ V)
 
 namespace ActionIntertwiner
 
-open Mei.CategoryTheory.Grothendieck
+open TauCeti.CategoryTheory.Grothendieck (Section)
 
 variable {G : E ⥤ D}
 

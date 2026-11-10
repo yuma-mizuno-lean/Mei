@@ -28,7 +28,7 @@ universe v₁ u₁ v₂ u₂ v₃ u₃ w z v u
 
 namespace Mei.ActionIntertwiner
 
-open Mei.CategoryTheory.Grothendieck
+open TauCeti.CategoryTheory.Grothendieck (Section)
 
 variable {D : Type u₁} [Category.{v₁} D] {E : Type u₂} [Category.{v₂} E]
   {B : Type u₃} [Category.{v₃} B] {V : Type u} [Category.{v} V]
