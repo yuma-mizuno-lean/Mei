@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.Convex.Cone.Slice
+public import TauCeti.Geometry.Convex.Cone.Slice
 public import Mei.Geometry.Convex.Homogenization.Face
 public import Mei.Geometry.Convex.Polyhedron.Homogenization.Inequalities
 public import Mei.Geometry.Convex.Polyhedron.Face
@@ -36,7 +36,7 @@ theorem isExposed_slice_one_of_homogenization {P : Set V} {G : PointedCone ℝ (
   have hslice : {x : V | (x, (1 : ℝ)) ∈ Set.homogenization P} = P := by
     ext x
     exact hP.convex.mem_homogenization_one_iff hP.isClosed
-  have hext := hG.isExtreme_slice_one
+  have hext := hG.isExtreme_slice (1 : ℝ)
   rw [hslice] at hext
   have hconv : Convex ℝ {x : V | (x, (1 : ℝ)) ∈ G} :=
     G.convex.affine_preimage ((AffineMap.id ℝ V).prod (AffineMap.const ℝ V (1 : ℝ)))

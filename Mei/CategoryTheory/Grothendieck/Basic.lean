@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mathlib.CategoryTheory.Grothendieck
+public import TauCeti.CategoryTheory.Grothendieck.Basic
 
 /-!
 # Factoring morphisms in a Grothendieck construction
@@ -117,39 +117,6 @@ theorem fiberHom_comp {d e b : D} {x : C.obj d} {y : C.obj e} {z : C.obj b}
   subst c
   simp only [fiberHom, comp_fiber, eqToHom_refl, Category.id_comp]
   erw [eqToHom_trans_assoc]
-
-/-- A morphism is canonical transport followed by its fiber morphism. -/
-theorem ιNatTrans_app_comp_ι_map {X Y : Grothendieck C} (h : X ⟶ Y) :
-    (ιNatTrans h.base).app X.fiber ≫ (ι C Y.base).map h.fiber = h := by
-  cases X with | mk d x =>
-  cases Y with | mk e y =>
-  dsimp [Grothendieck.ιNatTrans, Grothendieck.ι]
-  refine Grothendieck.ext _ _ (by simp [Grothendieck.comp_base]) ?_
-  -- Retype the fiber composite after expanding the dependent inclusion maps.
-  change (eqToHom _ ≫ eqToHom _ ≫ (C.map (𝟙 e)).toFunctor.map (𝟙 _) ≫
-    eqToHom _ ≫ h.fiber : (C.map h.base).toFunctor.obj x ⟶ y) = h.fiber
-  simp only [comp_base, Functor.map_id, Category.id_comp, eqToHom_trans_assoc]
-  erw [eqToHom_trans_assoc (C := C.obj e)]
-  erw [eqToHom_refl (C := C.obj e), Category.id_comp (obj := C.obj e)]
-
-/-- Successive canonical transports agree with transport along the composite after identifying
-the iterated image with the image of the composite in the target fiber. -/
-theorem ιNatTrans_app_comp {d e b : D} (f : d ⟶ e) (g : e ⟶ b) (x : C.obj d) :
-    (ιNatTrans f).app x ≫ (ιNatTrans g).app ((C.map f).toFunctor.obj x) ≫
-      (ι C b).map (eqToHom (by simp)) = (ιNatTrans (f ≫ g)).app x := by
-  let h : (⟨e, (C.map f).toFunctor.obj x⟩ : Grothendieck C) ⟶
-      ⟨b, (C.map (f ≫ g)).toFunctor.obj x⟩ :=
-    ⟨g, eqToHom (by simp)⟩
-  rw [ιNatTrans_app_comp_ι_map h]
-  symm
-  refine Grothendieck.ext _ _ (by
-    dsimp [Grothendieck.ιNatTrans, Grothendieck.comp, h]
-    rfl) ?_
-  dsimp [Grothendieck.ιNatTrans, Grothendieck.ι, h]
-  erw [(C.map g).toFunctor.map_id]
-  erw [Category.comp_id (obj := C.obj b), Category.id_comp (obj := C.obj b),
-    eqToHom_trans (C := C.obj b)]
-  rfl
 
 end CategoryTheory.Grothendieck
 

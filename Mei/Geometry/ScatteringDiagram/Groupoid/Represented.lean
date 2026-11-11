@@ -14,7 +14,7 @@ public import Mei.Geometry.ScatteringDiagram.Groupoid
 Let `L : J ⥤ Cat` be a diagram of groupoids, for instance the one-object groupoids of the
 truncations of a group tower, and let `A : Grothendieck L ⥤ W` be a represented action on
 coefficients. A groupoid-labelled wall diagram with values in the groupoid
-`GrothendieckSection L` of sections and completed labels assigns to every chamber a section,
+`TransportSection L` of sections and completed labels assigns to every chamber a section,
 and to every wall a completed label between the sections of its two sides. Its transport along an
 admissible path is therefore a completed label, which acts by an isomorphism between the
 completed coefficient objects `lim_J (s ⋙ A)` of the sections at the two endpoints.
@@ -44,6 +44,7 @@ noncomputable section
 
 open CategoryTheory CategoryTheory.Limits Mei.Convex Mei.Convex.WallComplement
   Mei.FinitePolyhedralComplex
+open TauCeti (TransportSection)
 
 namespace Mei
 
@@ -54,7 +55,7 @@ namespace GroupoidWallDiagram
 
 variable {C : FinitePolyhedralComplex h} {J : Type*} [Category J] {L : J ⥤ Cat}
   [∀ j, IsGroupoid (L.obj j)] {W : Type*} [Category W] (A : Grothendieck L ⥤ W)
-  (D : GroupoidWallDiagram C (GrothendieckSection L))
+  (D : GroupoidWallDiagram C (TransportSection L))
   {x y z : WallComplement (fun P : C.walls => (P : Set V))}
 
 /-- Transport along an admissible path acts, as a completed label, between the completed
@@ -62,7 +63,7 @@ coefficient objects of the sections attached to the endpoint chambers. -/
 def representedTransport (p : AdmissiblePLPath x y)
     [HasLimit ((D.obj (chamber x)).toFunctor ⋙ A)] [HasLimit ((D.obj (chamber y)).toFunctor ⋙ A)] :
     limit ((D.obj (chamber x)).toFunctor ⋙ A) ≅ limit ((D.obj (chamber y)).toFunctor ⋙ A) :=
-  GrothendieckSection.completedLabelIso A (D.transport p)
+  TransportSection.completedLabelIso A (D.transport p)
 
 section Projection
 
@@ -76,7 +77,7 @@ theorem representedTransport_hom_π (p : AdmissiblePLPath x y) (j : J) :
     (D.representedTransport A p).hom ≫ limit.π ((D.obj (chamber y)).toFunctor ⋙ A) j =
       limit.π ((D.obj (chamber x)).toFunctor ⋙ A) j ≫
         A.map ((Grothendieck.ι L j).map ((D.transport p).app j)) :=
-  GrothendieckSection.completedLabelIso_hom_π A (D.transport p) j
+  TransportSection.completedLabelIso_hom_π A (D.transport p) j
 
 end Projection
 
@@ -114,9 +115,9 @@ theorem representedTransport_eq_of_isSubdivision [HasLimit ((D.obj (chamber x)).
 diagram in the fiber `L j`, whose transport is the `j`-component of the transport. -/
 theorem transport_map_evaluation (j : J) (p : AdmissiblePLPath x y) :
     letI : Groupoid (L.obj j) := Groupoid.ofIsGroupoid
-    (D.map (GrothendieckSection.evaluation j)).transport p = (D.transport p).app j := by
+    (D.map (TransportSection.evaluation j)).transport p = (D.transport p).app j := by
   let : Groupoid (L.obj j) := Groupoid.ofIsGroupoid
-  exact D.transport_map (GrothendieckSection.evaluation j) p
+  exact D.transport_map (TransportSection.evaluation j) p
 
 /-- The fiber transports are compatible with the transition functors of the diagram of
 groupoids: the transition functor applied to the transport at `j`, followed by the transport
@@ -124,9 +125,9 @@ arrow of the target section, is the transport at `k` preceded by that of the sou
 theorem transport_map_evaluation_naturality {j k : J} (f : j ⟶ k) (p : AdmissiblePLPath x y) :
     letI : Groupoid (L.obj j) := Groupoid.ofIsGroupoid
     letI : Groupoid (L.obj k) := Groupoid.ofIsGroupoid
-    ((D.map (GrothendieckSection.evaluation j)).map (L.map f).toFunctor).transport p ≫
+    ((D.map (TransportSection.evaluation j)).map (L.map f).toFunctor).transport p ≫
         (D.obj (chamber y)).map f =
-      (D.obj (chamber x)).map f ≫ (D.map (GrothendieckSection.evaluation k)).transport p := by
+      (D.obj (chamber x)).map f ≫ (D.map (TransportSection.evaluation k)).transport p := by
   let : Groupoid (L.obj j) := Groupoid.ofIsGroupoid
   let : Groupoid (L.obj k) := Groupoid.ofIsGroupoid
   rw [GroupoidWallDiagram.transport_map, transport_map_evaluation, transport_map_evaluation]
@@ -140,7 +141,7 @@ theorem transport_eq_of_representedTransport_eq [∀ j, (Grothendieck.ι L j ⋙
     [∀ j, Epi (limit.π ((D.obj (chamber x)).toFunctor ⋙ A) j)] {p q : AdmissiblePLPath x y}
     (hpq : D.representedTransport A p = D.representedTransport A q) :
     D.transport p = D.transport q := by
-  refine GrothendieckSection.Hom.ext (funext fun j => ?_)
+  refine TransportSection.Hom.ext (funext fun j => ?_)
   apply (Grothendieck.ι L j ⋙ A).map_injective
   refine (cancel_epi (limit.π ((D.obj (chamber x)).toFunctor ⋙ A) j)).mp ?_
   have := congrArg (fun e => e.hom ≫ limit.π ((D.obj (chamber y)).toFunctor ⋙ A) j) hpq
@@ -153,7 +154,7 @@ namespace FiniteWallDiagram
 
 variable {C : FinitePolyhedralComplex h} {J : Type*} [Category J] {L : J ⥤ Cat}
   [∀ j, IsGroupoid (L.obj j)] {W : Type*} [Category W] (A : Grothendieck L ⥤ W)
-  {H : Type*} [Group H] (D : FiniteWallDiagram C H) (s : GrothendieckSection L) (φ : H →* Aut s)
+  {H : Type*} [Group H] (D : FiniteWallDiagram C H) (s : TransportSection L) (φ : H →* Aut s)
   {x y : WallComplement (fun P : C.walls => (P : Set V))}
 
 /-- A group acting on a section by completed labels sends a group-labelled diagram to a diagram
@@ -162,7 +163,7 @@ labelled by completed labels on the constant section. -/
 -- (definitionally) that of `s` in the statements about the represented transport; see
 -- `toSectionDiagram_obj`.
 @[expose, reducible]
-def toSectionDiagram : GroupoidWallDiagram C (GrothendieckSection L) :=
+def toSectionDiagram : GroupoidWallDiagram C (TransportSection L) :=
   D.toGroupoidWallDiagram.map (SingleObj.functor (Aut.toEnd.comp φ))
 
 /-- Every chamber of the relabelled diagram carries the section `s`. -/
@@ -191,12 +192,12 @@ product. -/
 theorem representedTransport_toSectionDiagram [HasLimit (s.toFunctor ⋙ A)]
     (p : AdmissiblePLPath x y) :
     (D.toSectionDiagram s φ).representedTransport A p =
-      (GrothendieckSection.completedAut A s (φ (D.pathProduct p))).asIso := by
+      (TransportSection.completedAut A s (φ (D.pathProduct p))).asIso := by
   apply Iso.ext
   apply limit.hom_ext
   intro j
   rw [GroupoidWallDiagram.representedTransport_hom_π, transport_toSectionDiagram]
-  exact (GrothendieckSection.completedAut_hom_π A s (φ (D.pathProduct p)) j).symm
+  exact (TransportSection.completedAut_hom_π A s (φ (D.pathProduct p)) j).symm
 
 section Tower
 
@@ -225,7 +226,7 @@ theorem singleObjLimitAction_pathProduct (p : AdmissiblePLPath x y) :
   rw [F.singleObjLimitAction_hom_π]
   simp only [Aut.autMulEquivOfIso_apply_asIso, Iso.trans_hom, Iso.symm_hom, Category.assoc,
     F.isoOfNatIso_singleObjRepresentationIso_hom_π X ρ hρ j]
-  rw [GrothendieckSection.completedAut_hom_π]
+  rw [TransportSection.completedAut_hom_π]
   -- The projection of the section `F.singleObjSection` is matched up to reducible unfolding of
   -- the relabelled chamber objects.
   erw [← Category.assoc, F.isoOfNatIso_singleObjRepresentationIso_inv_π X ρ hρ j]

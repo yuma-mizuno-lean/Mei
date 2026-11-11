@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.Convex.Cone.MinkowskiWeyl
-public import Mei.Geometry.Convex.Cone.Slice
+public import TauCeti.Geometry.Convex.Cone.Slice
 public import Mei.Geometry.Convex.Polyhedron.Homogenization.Inequalities
 public import Mei.Geometry.Convex.Polyhedron.Recession
 
@@ -70,9 +70,10 @@ theorem exists_finset_convexHull_add_recessionCone (hP : TauCeti.IsConvexPolyhed
     exact hP.convex.mem_homogenization_one_iff hP.isClosed
   have hzero : (PointedCone.hull ℝ (Finset.zeroSliceGenerators s : Set V) : Set V) =
       (Set.recessionCone P : Set V) := by
-    rw [← Finset.slice_zero_hull s hsheight]
+    rw [← Finset.comap_inl_hull_eq_hull_zeroSliceGenerators s hsheight]
     ext x
-    simp only [Set.mem_ofPred_eq, SetLike.mem_coe, hs]
+    change (x, (0 : ℝ)) ∈ PointedCone.hull ℝ (s : Set (V × ℝ)) ↔ x ∈ Set.recessionCone P
+    rw [hs]
     exact hP.convex.mem_homogenization_zero_iff hne hP.isClosed
   refine ⟨Finset.positiveSliceGenerators s, ?_, ?_⟩
   · intro x hx
@@ -83,7 +84,7 @@ theorem exists_finset_convexHull_add_recessionCone (hP : TauCeti.IsConvexPolyhed
       P = {x : V | (x, (1 : ℝ)) ∈ PointedCone.hull ℝ (s : Set (V × ℝ))} := hone.symm
       _ = convexHull ℝ (Finset.positiveSliceGenerators s : Set V) +
           (PointedCone.hull ℝ (Finset.zeroSliceGenerators s : Set V) : Set V) :=
-        Finset.slice_one_hull s hsheight
+        Finset.setOf_prod_one_mem_hull_eq_convexHull_add s hsheight
       _ = convexHull ℝ (Finset.positiveSliceGenerators s : Set V) +
           (Set.recessionCone P : Set V) := by rw [hzero]
 
