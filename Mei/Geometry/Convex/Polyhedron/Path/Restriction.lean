@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.Convex.Polyhedron.Path.Product
-import Mei.Algebra.BigOperators.Group.Finset.Ordered
+import TauCeti.Data.Finset.Sort
 
 /-!
 # Deleting identity labels from indexed wall products

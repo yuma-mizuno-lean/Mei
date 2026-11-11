@@ -8,7 +8,7 @@ module
 public import Mei.Algebra.Group.Hom.Int
 public import Mei.Geometry.ScatteringDiagram.WallSpace.Group
 public import Mei.Geometry.Convex.Polyhedron.Rational
-public import Mei.Geometry.Convex.Recession
+public import TauCeti.Analysis.Convex.Recession.Basic
 public import Mei.Geometry.Toric.Algebraic.DualLattice
 public import Mathlib.LinearAlgebra.AffineSpace.AffineSubspace.Basic
 public import Mathlib.LinearAlgebra.Dual.Lemmas
@@ -114,7 +114,7 @@ def direction : V := -i (ρ W.ray.generator)
 theorem direction_def : W.direction = -i (ρ W.ray.generator) := (rfl)
 
 /-- A wall is incoming if its support is preserved by the positive geometric ray. -/
-def Incoming : Prop := i (ρ W.ray.generator) ∈ recessionCone W.support
+def Incoming : Prop := i (ρ W.ray.generator) ∈ recessionCone ℝ W.support
 
 /-- A wall is outgoing if it is not incoming. -/
 def Outgoing : Prop := ¬W.Incoming
@@ -126,7 +126,7 @@ theorem incoming_iff : W.Incoming ↔
 
 /-- Outgoingness means the positive geometric degree direction is not a recession
 direction of the support, including when that geometric direction is zero. -/
-theorem outgoing_iff : W.Outgoing ↔ i (ρ W.ray.generator) ∉ recessionCone W.support := Iff.rfl
+theorem outgoing_iff : W.Outgoing ↔ i (ρ W.ray.generator) ∉ recessionCone ℝ W.support := Iff.rfl
 
 /-- The geometric degree direction lies in the direction of the supporting hyperplane. -/
 theorem geometricDirection_mem_direction_support :
@@ -136,19 +136,19 @@ theorem geometricDirection_mem_direction_support :
 
 /-- Every actual degree on the ray has the same incomingness test. -/
 theorem incoming_iff_of_mem_rayDegrees {n : Γ} (hn : n ∈ W.ray.rayDegrees) :
-    W.Incoming ↔ i (ρ n) ∈ recessionCone W.support := by
+    W.Incoming ↔ i (ρ n) ∈ recessionCone ℝ W.support := by
   rw [SupportedRay.mem_rayDegrees] at hn
   obtain ⟨a, ha, rfl⟩ := hn.2
   have he : i (ρ (a • W.ray.generator)) = (a : ℝ) • i (ρ W.ray.generator) := by
     simp only [map_zsmul, Int.cast_smul_eq_zsmul]
-  rw [he, (recessionCone W.support).smul_mem_iff (by exact_mod_cast ha)]
+  rw [he, (recessionCone ℝ W.support).smul_mem_iff (by exact_mod_cast ha)]
   rfl
 
 /-- A wall with zero spatial degree direction is always incoming. -/
 theorem incoming_of_geometricDirection_eq_zero (hz : i (ρ W.ray.generator) = 0) :
     W.Incoming := by
   rw [Incoming, hz]
-  exact (recessionCone W.support).zero_mem
+  exact (recessionCone ℝ W.support).zero_mem
 
 /-- In particular, a degree killed by the projection gives an incoming wall. -/
 theorem incoming_of_degreeDirection_eq_zero (hz : ρ W.ray.generator = 0) : W.Incoming :=

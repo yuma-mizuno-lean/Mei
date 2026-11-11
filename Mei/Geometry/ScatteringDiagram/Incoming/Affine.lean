@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.Affine.Tail
-public import Mei.Geometry.Convex.Recession
+public import TauCeti.Analysis.Convex.Recession.Basic
 public import Mei.Topology.Algebra.ContinuousAffineMap
 public import Mathlib.Order.Filter.Germ.Basic
 public import Mathlib.Topology.Algebra.ContinuousAffineEquiv
@@ -58,7 +58,7 @@ structure AffineIncomingSource (R E : Type*) [Semiring R] [AddCommMonoid E] [Mod
   /-- The coefficient supplied by each incoming datum. -/
   coefficient : E →ₗ[R] M degree
   /-- Moving backwards along an incoming tail remains in the source. -/
-  direction_mem_recession : v degree ∈ recessionCone carrier
+  direction_mem_recession : v degree ∈ recessionCone ℝ carrier
 
 variable [TopologicalSpace V]
 

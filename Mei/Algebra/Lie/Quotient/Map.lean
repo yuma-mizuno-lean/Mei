@@ -132,40 +132,6 @@ section Nested
 
 variable (I J : LieIdeal R L)
 
-/-- The transition from the quotient by a smaller ideal to the quotient by a
-larger ideal. This is the Lie algebra analogue of `Submodule.factor`. -/
-def factor (h : I ≤ J) : L ⧸ I →ₗ⁅R⁆ L ⧸ J :=
-  I.liftQ J.mkQ (by rw [mkQ_ker]; exact h)
-
-/-- A quotient transition sends each representative to the same representative. -/
-@[simp]
-theorem factor_apply (h : I ≤ J) (x : L) :
-    I.factor J h (LieSubmodule.Quotient.mk x) = LieSubmodule.Quotient.mk x := by
-  simp [factor]
-
-/-- A quotient transition at the same ideal is the identity. -/
-@[simp]
-theorem factor_refl : I.factor I le_rfl = LieHom.id := by
-  apply I.lieHom_qext
-  intro x
-  simp [mkQ_apply]
-
-/-- Successive quotient transitions agree with the direct transition. -/
-@[simp]
-theorem factor_comp (K : LieIdeal R L) (hIJ : I ≤ J) (hJK : J ≤ K) :
-    (J.factor K hJK).comp (I.factor J hIJ) = I.factor K (hIJ.trans hJK) := by
-  apply I.lieHom_qext
-  intro x
-  simp [mkQ_apply]
-
-/-- Quotient transitions are surjective. -/
-theorem factor_surjective (h : I ≤ J) : Function.Surjective (I.factor J h) :=
-  I.liftQ_surjective _ _ J.surjective_mkQ
-
-/-- The kernel of a quotient transition is the image of the larger ideal. -/
-theorem ker_factor (h : I ≤ J) : (I.factor J h).ker = J.map I.mkQ := by
-  exact J.ker_liftQ_mkQ _
-
 /-- An ideal has central image in the quotient by `I` exactly when all its
 brackets with the ambient algebra belong to `I`. -/
 theorem map_mkQ_le_center_iff :
@@ -189,7 +155,7 @@ theorem map_mkQ_le_center_iff :
 /-- A quotient transition is a central extension exactly when bracketing with
 the larger ideal lands in the smaller ideal. -/
 theorem ker_factor_le_center_iff (h : I ≤ J) :
-    (I.factor J h).ker ≤ LieAlgebra.center R (L ⧸ I) ↔
+    (factor h).ker ≤ LieAlgebra.center R (L ⧸ I) ↔
       ⁅(⊤ : LieIdeal R L), J⁆ ≤ I := by
   rw [ker_factor]
   exact I.map_mkQ_le_center_iff J
@@ -201,8 +167,8 @@ and target ideals. -/
 theorem factor_comp_mapQ (I' : LieIdeal R L) (J' : LieIdeal R L')
     (hI : I ≤ I') (hJ : J ≤ J') (f : L →ₗ⁅R⁆ L')
     (hf : I ≤ J.comap f) (hf' : I' ≤ J'.comap f) :
-    (J.factor J' hJ).comp (I.mapQ J f hf) =
-      (I'.mapQ J' f hf').comp (I.factor I' hI) := by
+    (factor hJ).comp (I.mapQ J f hf) =
+      (I'.mapQ J' f hf').comp (factor hI) := by
   apply I.lieHom_qext
   intro x
   simp [mkQ_apply]

@@ -7,8 +7,7 @@ module
 
 public import Mathlib.Algebra.Group.Submonoid.Finsupp
 public import Mathlib.Data.Finsupp.Weight
-public import TauCeti.Algebra.Group.Submonoid.Closure
-public import TauCeti.Algebra.Group.Submonoid.PositiveDegree
+public import Mathlib.GroupTheory.Finiteness
 
 import Mathlib.Algebra.Order.Ring.Int
 

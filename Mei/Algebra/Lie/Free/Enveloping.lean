@@ -125,9 +125,7 @@ theorem isNilpotent_quotientEnvelopingMap (c : ℕ)
 theorem quotientEnvelopingMap_factor {c d : ℕ} (h : c ≤ d)
     (z : F ⧸ LieModule.lowerCentralSeries R F F d) :
     quotientEnvelopingMap R S c
-        (LieIdeal.factor (LieModule.lowerCentralSeries R F F d)
-          (LieModule.lowerCentralSeries R F F c)
-          (LieModule.antitone_lowerCentralSeries R F F h) z) =
+        (LieIdeal.factor (LieModule.antitone_lowerCentralSeries R F F h) z) =
       Ideal.Quotient.factor (Ideal.pow_le_pow_right (Nat.add_le_add_right h 1))
         (quotientEnvelopingMap R S d z) := by
   obtain ⟨z, rfl⟩ := LieIdeal.surjective_mkQ (LieModule.lowerCentralSeries R F F d) z

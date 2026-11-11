@@ -9,7 +9,7 @@ public import Mei.Geometry.ScatteringDiagram.Skew.Basic
 public import Mei.Geometry.Affine.Codimension
 public import Mei.Geometry.Toric.Algebraic.DualLattice
 public import Mei.Geometry.Convex.Polyhedron.Rational
-public import Mei.Geometry.Convex.Recession
+public import TauCeti.Analysis.Convex.Recession.Basic
 public import Mathlib.Basic.Sign.Defs
 
 /-!
@@ -140,7 +140,7 @@ images lie in the cone. This is the KS-incoming versus directed-incoming test. -
 @[simp high] -- Compute cone preimages before the generic recession predicate unfolds.
 theorem mem_recessionCone_skewComparison_preimage (σ : PointedCone ℝ (V →L[ℝ] ℝ))
     (x : V) :
-    x ∈ recessionCone ((D.skewComparison hD h) ⁻¹' (σ : Set (V →L[ℝ] ℝ))) ↔
+    x ∈ recessionCone ℝ ((D.skewComparison hD h) ⁻¹' (σ : Set (V →L[ℝ] ℝ))) ↔
       D.skewComparison hD h x ∈ σ := by
   rw [← PointedCone.coe_comap, PointedCone.recessionCone_coe, PointedCone.mem_comap]
 

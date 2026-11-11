@@ -5,7 +5,6 @@ Authors: Codex
 -/
 module
 
-public import Mei.Algebra.Group.AddSubmonoid.Degree
 public import TauCeti.Geometry.Convex.Cone.Chamber
 
 /-!

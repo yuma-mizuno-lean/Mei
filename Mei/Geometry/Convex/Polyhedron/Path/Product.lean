@@ -8,7 +8,7 @@ module
 public import Mei.Geometry.Convex.Polyhedron.CrossingEvents
 public import Mei.Data.Finset.NoncommProd
 public import Mathlib.Combinatorics.Quiver.Path.Weight
-import Mei.Algebra.BigOperators.Group.Finset.Ordered
+import TauCeti.Data.Finset.Sort
 
 /-!
 # Path products for indexed wall families

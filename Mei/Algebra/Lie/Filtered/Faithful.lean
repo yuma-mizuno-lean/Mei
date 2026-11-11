@@ -103,8 +103,7 @@ theorem eq_zero_of_truncatedLieAction_eq_zero (x : d.completedLie ℒ)
   obtain ⟨y, hy⟩ := (d.degreeIdeal ℒ (k + 1)).surjective_mkQ (π (k + 1) x)
   have hlow : (d.degreeIdeal ℒ k).mkQ y = π k x := by
     simpa only [LieIdeal.mkQ_apply, LieIdeal.factor_apply] using
-      congrArg ((d.degreeIdeal ℒ (k + 1)).factor (d.degreeIdeal ℒ k)
-        (d.degreeIdeal_antitone ℒ (Nat.le_succ k))) hy
+      congrArg (LieIdeal.factor (d.degreeIdeal_antitone ℒ (Nat.le_succ k))) hy
       |>.trans (LieIdeal.factor_completionProjection _ _ (Nat.le_succ k) x)
   have hy_not : y ∉ d.degreeSubmodule ℒ k := by
     intro h
@@ -120,8 +119,7 @@ theorem eq_zero_of_truncatedLieAction_eq_zero (x : d.completedLie ℒ)
   have hzy : (d.degreeIdeal ℒ (k + 1)).mkQ z = (d.degreeIdeal ℒ (k + 1)).mkQ y := by
     rw [hy]
     simpa only [LieIdeal.mkQ_apply, LieIdeal.factor_apply] using
-      congrArg ((d.degreeIdeal ℒ (b + k + 1)).factor (d.degreeIdeal ℒ (k + 1))
-        (d.degreeIdeal_antitone ℒ (by omega))) hz
+      congrArg (LieIdeal.factor (d.degreeIdeal_antitone ℒ (Nat.le_add_left (k + 1) b))) hz
       |>.trans (LieIdeal.factor_completionProjection _ _ (by omega) x)
   have hdiff : z - y ∈ d.degreeSubmodule ℒ (k + 1) := by
     rw [← d.degreeIdeal_toSubmodule ℒ]

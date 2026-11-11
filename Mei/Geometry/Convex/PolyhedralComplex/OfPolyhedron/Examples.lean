@@ -7,7 +7,7 @@ module
 
 public import Mei.Geometry.Convex.PolyhedralCochain.Plane.Basic
 public import Mei.Geometry.Convex.PolyhedralComplex.OfPolyhedron.Basic
-public import Mei.Geometry.Convex.Recession
+public import TauCeti.Analysis.Convex.Recession.Basic
 public import Mei.Geometry.Convex.Sweep.Face
 public import Mei.LinearAlgebra.Plane
 
@@ -79,9 +79,9 @@ theorem endpoint_mem_rightRay (a : ℝ) : (a, (0 : ℝ)) ∈ rightRay a := ⟨rf
 /-- The line has nonzero lineality: both directions along it preserve it. -/
 @[simp]
 theorem lineal_recessionCone_lineAtHeight_ne_bot (c : ℝ) :
-    (recessionCone (lineAtHeight c)).lineal ≠ ⊥ := by
+    (recessionCone ℝ (lineAtHeight c)).lineal ≠ ⊥ := by
   intro hbot
-  have hmem : ((1 : ℝ), (0 : ℝ)) ∈ (recessionCone (lineAtHeight c)).lineal := by
+  have hmem : ((1 : ℝ), (0 : ℝ)) ∈ (recessionCone ℝ (lineAtHeight c)).lineal := by
     rw [PointedCone.mem_lineal, mem_recessionCone, mem_recessionCone]
     constructor <;> intro x hx t _ <;> simpa [lineAtHeight] using hx
   rw [hbot, Submodule.mem_bot] at hmem
@@ -90,7 +90,7 @@ theorem lineal_recessionCone_lineAtHeight_ne_bot (c : ℝ) :
 /-- The ray has trivial lineality: it is pointed. -/
 @[simp]
 theorem lineal_recessionCone_rightRay_eq_bot (a : ℝ) :
-    (recessionCone (rightRay a)).lineal = ⊥ := by
+    (recessionCone ℝ (rightRay a)).lineal = ⊥ := by
   refine (Submodule.eq_bot_iff _).mpr fun v hv => ?_
   obtain ⟨h₁, h₂⟩ := PointedCone.mem_lineal.mp hv
   rw [mem_recessionCone] at h₁ h₂

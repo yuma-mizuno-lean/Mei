@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.Convex.Recession
+public import TauCeti.Analysis.Convex.Recession.Basic
 public import Mathlib.Analysis.Normed.Module.Basic
 public import TauCeti.Analysis.Convex.Polyhedron.Basic
 
@@ -29,7 +29,7 @@ variable {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
 polyhedron, including when the solution set is empty. -/
 theorem isConvexPolyhedron_recessionCone_setOf_forall {ι : Type*} [Finite ι]
     (g : ι → (V →ᴬ[ℝ] ℝ)) :
-    TauCeti.IsConvexPolyhedron (recessionCone {x : V | ∀ i, g i x ≤ 0} : Set V) := by
+    TauCeti.IsConvexPolyhedron (recessionCone ℝ {x : V | ∀ i, g i x ≤ 0} : Set V) := by
   rcases Set.eq_empty_or_nonempty {x : V | ∀ i, g i x ≤ 0} with h | hP
   · rw [h, recessionCone_empty]
     exact TauCeti.isConvexPolyhedron_univ
@@ -43,7 +43,7 @@ theorem isConvexPolyhedron_recessionCone_setOf_forall {ι : Type*} [Finite ι]
 /-- Every convex polyhedron has a convex polyhedral recession cone. The empty
 case has recession cone equal to the whole space. -/
 theorem isConvexPolyhedron_recessionCone {P : Set V} (hP : TauCeti.IsConvexPolyhedron P) :
-    TauCeti.IsConvexPolyhedron (recessionCone P : Set V) := by
+    TauCeti.IsConvexPolyhedron (recessionCone ℝ P : Set V) := by
   obtain ⟨k, g, rfl⟩ := TauCeti.isConvexPolyhedron_iff.mp hP
   exact isConvexPolyhedron_recessionCone_setOf_forall g
 

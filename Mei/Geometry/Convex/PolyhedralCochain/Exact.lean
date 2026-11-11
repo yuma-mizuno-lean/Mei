@@ -45,7 +45,7 @@ theorem exists_outgoing_primitive (C : PolyhedralCochain R h E (k + 1))
     (hC : coboundary C = 0) :
     ∃ (n : N) (g : OrientedCell h k →₀ E),
       coboundary (ofFinsupp (R := R) g) = C ∧
-      ∀ τ ∈ g.support, i n ∉ Set.recessionCone τ.carrier := by
+      ∀ τ ∈ g.support, i n ∉ Set.recessionCone ℝ τ.carrier := by
   obtain ⟨n, hn⟩ := exists_mem_transverseSubmodule C
   obtain ⟨g, _, hd, hout⟩ := exists_outgoing_sweep_presentation n ⟨C, hn⟩ hC
   refine ⟨n, -g, ?_, ?_⟩

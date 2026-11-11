@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Algebra.PositiveDegrees.Basic
-public import Mei.Algebra.Group.AddSubmonoid.Degree
+public import TauCeti.Algebra.Group.Submonoid.PositiveDegree
 
 /-!
 # Positive degrees from finite generation

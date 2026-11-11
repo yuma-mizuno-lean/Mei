@@ -7,7 +7,7 @@ module
 
 public import Mei.Geometry.ScatteringDiagram.KS.LocalLabel
 public import Mei.Combinatorics.Quiver.Path
-import Mei.Algebra.BigOperators.Group.Finset.Ordered
+import TauCeti.Data.Finset.Sort
 
 /-!
 # Detecting completed KS equivalence by regular germs

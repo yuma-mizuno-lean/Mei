@@ -62,7 +62,7 @@ private theorem bchOfClass_eq_of_le {c d : ℕ} (hc : lowerCentralSeries ℚ L L
     (hd : lowerCentralSeries ℚ L L d = ⊥) (h : c ≤ d) (x y : L) :
     bchOfClass d hd x y = bchOfClass c hc x y := by
   have he : (liftLowerCentralQuotient ℚ c hc ![x, y]).comp
-      (LieIdeal.factor (C d) (C c) (antitone_lowerCentralSeries ℚ Free₂ Free₂ h)) =
+      (LieIdeal.factor (antitone_lowerCentralSeries ℚ Free₂ Free₂ h)) =
         liftLowerCentralQuotient ℚ d hd ![x, y] := by
     apply LieIdeal.lieHom_qext (C d)
     intro z

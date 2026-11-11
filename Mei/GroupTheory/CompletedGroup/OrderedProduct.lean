@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mei.GroupTheory.CompletedGroup.Map
-public import Mei.Algebra.BigOperators.Group.Finset.Ordered
+public import TauCeti.Data.Finset.Sort
 public import Mathlib.Algebra.Group.Support
 
 /-!
