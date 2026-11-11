@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.Convex.Homogenization
+public import TauCeti.Analysis.Convex.Homogenization
 public import Mathlib.Topology.Algebra.ContinuousAffineMap
 
 /-!

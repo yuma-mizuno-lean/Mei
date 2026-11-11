@@ -53,7 +53,7 @@ theorem exists_sweep_presentation (n : N) (f : OrientedCell h (k + 1) →₀ E)
           -ofFinsupp (R := R) f ∧
       ∀ τ ∈ g.support, ∃ (σ : OrientedCell h (k + 1)) (hσ : σ ∈ f.support),
         τ = σ.sweep n (hf σ hσ) ∧
-          i n ∉ Set.recessionCone τ.carrier := by
+          i n ∉ Set.recessionCone ℝ τ.carrier := by
   classical
   let g : OrientedCell h k →₀ E :=
     ∑ σ : f.support, Finsupp.single (σ.val.sweep n (hf σ.val σ.property)) (f σ.val)
@@ -99,7 +99,7 @@ theorem exists_outgoing_filling_of_coboundary_eq_zero (n : N)
       ofFinsupp (R := R) g = sweep n
         ⟨ofFinsupp f, (mem_transverseSubmodule_iff_exists (i n) _).mpr ⟨f, hf, rfl⟩⟩ ∧
       coboundaryOfFinsupp (R := R) g = -ofFinsupp (R := R) f ∧
-      ∀ τ ∈ g.support, i n ∉ Set.recessionCone τ.carrier := by
+      ∀ τ ∈ g.support, i n ∉ Set.recessionCone ℝ τ.carrier := by
   obtain ⟨g, hg, hd, hout⟩ := exists_sweep_presentation (R := R) n f hf
   have hz : (⟨coboundaryOfFinsupp (R := R) f,
       coboundaryOfFinsupp_mem_transverseSubmodule (i n) f hf⟩ :

@@ -228,12 +228,12 @@ theorem mem_cutoff_of_truncatedGrading_ne_bot {k : ℕ} {n : N}
 /-- The surjective transition from a higher-order truncation to a lower-order one. -/
 def truncationMap {k l : ℕ} (h : k ≤ l) :
     d.truncatedLie ℒ l →ₗ⁅R⁆ d.truncatedLie ℒ k :=
-  (d.degreeIdeal ℒ l).factor (d.degreeIdeal ℒ k) (d.degreeIdeal_antitone ℒ h)
+  LieIdeal.factor (d.degreeIdeal_antitone ℒ h)
 
 /-- The degree transition is the quotient transition induced by inclusion of degree ideals. -/
 theorem truncationMap_def {k l : ℕ} (h : k ≤ l) :
     d.truncationMap ℒ h =
-      (d.degreeIdeal ℒ l).factor (d.degreeIdeal ℒ k) (d.degreeIdeal_antitone ℒ h) := (rfl)
+      LieIdeal.factor (d.degreeIdeal_antitone ℒ h) := (rfl)
 
 /-- A truncation transition retains the same quotient representative. -/
 @[simp]
@@ -251,12 +251,12 @@ theorem truncationMap_refl (k : ℕ) : d.truncationMap ℒ (le_refl k) = LieHom.
 theorem truncationMap_comp {k l m : ℕ} (hkl : k ≤ l) (hlm : l ≤ m) :
     (d.truncationMap ℒ hkl).comp (d.truncationMap ℒ hlm) =
       d.truncationMap ℒ (hkl.trans hlm) :=
-  LieIdeal.factor_comp _ _ _ _ _
+  LieIdeal.factor_comp _ _
 
 /-- Every class at lower order lifts to a class at higher order. -/
 theorem truncationMap_surjective {k l : ℕ} (h : k ≤ l) :
     Function.Surjective (d.truncationMap ℒ h) :=
-  LieIdeal.factor_surjective _ _ _
+  LieIdeal.factor_surjective _
 
 end PositiveDegrees
 end Mei

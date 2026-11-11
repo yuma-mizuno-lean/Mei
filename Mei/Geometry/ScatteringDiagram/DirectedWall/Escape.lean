@@ -70,7 +70,7 @@ theorem outgoing_iff_eventually_forall_notMem_support : W.Outgoing ↔
 
 /-- No actual degree on an outgoing wall's ray is a recession direction of its support. -/
 theorem Outgoing.notMem_recessionCone_of_mem_rayDegrees (hW : W.Outgoing)
-    {n : Γ} (hn : n ∈ W.ray.rayDegrees) : i (ρ n) ∉ recessionCone W.support := by
+    {n : Γ} (hn : n ∈ W.ray.rayDegrees) : i (ρ n) ∉ recessionCone ℝ W.support := by
   intro hv
   have hinc := (W.incoming_iff_of_mem_rayDegrees hn).mpr hv
   exact (W.outgoing_iff.mp hW) (mem_recessionCone.mpr (W.incoming_iff.mp hinc))

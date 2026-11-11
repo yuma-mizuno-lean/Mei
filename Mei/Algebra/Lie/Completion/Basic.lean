@@ -51,13 +51,13 @@ theorem completionFiltration_succ (k : ℕ) :
 
 /-- The module transition is the linear map underlying the Lie quotient transition. -/
 theorem completionFiltration_transition {k l : ℕ} (h : k ≤ l) :
-    (completionFiltration I hI).transition h = ((I l).factor (I k) (hI h)).toLinearMap := by
+    (completionFiltration I hI).transition h = (LieIdeal.factor (hI h)).toLinearMap := by
   apply LinearMap.ext
   intro x
   obtain ⟨x, rfl⟩ := (I l).surjective_mkQ x
   simpa only [Mei.ModuleFiltration.transition_mk, LieHom.coe_toLinearMap,
     LieIdeal.mkQ_apply] using
-    ((I l).factor_apply (I k) (hI h) x).symm
+    (LieIdeal.factor_apply (hI h) x).symm
 
 /-- Completion along a decreasing sequence of Lie ideals, using the module completion carrier. -/
 abbrev completion := (completionFiltration I hI).completion
@@ -141,7 +141,7 @@ theorem completionProjection_apply (k : ℕ) (x : completion I hI) :
 /-- Lie projections commute with all quotient transitions. -/
 @[simp]
 theorem factor_completionProjection {k l : ℕ} (h : k ≤ l) (x : completion I hI) :
-    (I l).factor (I k) (hI h) (completionProjection I hI l x) =
+    LieIdeal.factor (hI h) (completionProjection I hI l x) =
       completionProjection I hI k x := by
   simpa only [completionProjection_apply, completionFiltration_transition,
     LieHom.coe_toLinearMap] using
@@ -151,7 +151,7 @@ variable {M : Type*} [LieRing M] [LieAlgebra R M]
 
 /-- Lift a compatible family of Lie homomorphisms to the Lie completion. -/
 def completionLift (f : ∀ k, M →ₗ⁅R⁆ L ⧸ I k)
-    (hf : ∀ k l (h : k ≤ l), ((I l).factor (I k) (hI h)).comp (f l) = f k) :
+    (hf : ∀ k l (h : k ≤ l), (LieIdeal.factor (hI h)).comp (f l) = f k) :
     M →ₗ⁅R⁆ completion I hI where
   __ := (completionFiltration I hI).lift (fun k => (f k).toLinearMap) (by
     intro k l h

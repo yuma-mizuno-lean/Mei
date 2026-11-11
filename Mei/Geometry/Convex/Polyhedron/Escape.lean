@@ -33,7 +33,7 @@ variable {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V] {P : Set V} {v :
 /-- A direction outside a polyhedron's recession cone is strictly positive for
 a continuous linear functional bounded above on that polyhedron. -/
 theorem exists_pos_bound_of_notMem_recessionCone (hP : TauCeti.IsConvexPolyhedron P)
-    (hv : v ∉ recessionCone P) :
+    (hv : v ∉ recessionCone ℝ P) :
     ∃ (f : V →L[ℝ] ℝ) (c : ℝ), 0 < f v ∧ ∀ x ∈ P, f x ≤ c := by
   have hne : P.Nonempty := by
     by_contra he
@@ -52,7 +52,7 @@ theorem exists_pos_bound_of_notMem_recessionCone (hP : TauCeti.IsConvexPolyhedro
 /-- Compact sets translated far enough in a nonrecession direction uniformly
 miss the polyhedron. The initial compact set may meet the polyhedron. -/
 theorem eventually_forall_notMem_of_notMem_recessionCone
-    (hP : TauCeti.IsConvexPolyhedron P) (hv : v ∉ recessionCone P)
+    (hP : TauCeti.IsConvexPolyhedron P) (hv : v ∉ recessionCone ℝ P)
     {K : Set V} (hK : IsCompact K) :
     ∀ᶠ t : ℝ in atTop, ∀ x ∈ K, x + t • v ∉ P := by
   obtain ⟨f, c, hfv, hfP⟩ := exists_pos_bound_of_notMem_recessionCone hP hv
@@ -68,7 +68,7 @@ theorem eventually_forall_notMem_of_notMem_recessionCone
 directions outside the recession cone. -/
 theorem notMem_recessionCone_iff_eventually_forall_notMem
     (hP : TauCeti.IsConvexPolyhedron P) (hne : P.Nonempty) :
-    v ∉ recessionCone P ↔
+    v ∉ recessionCone ℝ P ↔
       ∀ K : Set V, IsCompact K → ∀ᶠ t : ℝ in atTop, ∀ x ∈ K, x + t • v ∉ P := by
   constructor
   · exact fun hv _ hK => eventually_forall_notMem_of_notMem_recessionCone hP hv hK

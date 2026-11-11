@@ -127,7 +127,7 @@ theorem ofSweep_outgoing (P : Set V) (hP : P.Nonempty)
     (ofSweep P hP hPrat w n hn m hm hker c hc).Outgoing := by
   let W := ofSweep P hP hPrat w n hn m hm hker c hc
   have hray : n ∈ W.ray.rayDegrees := by simpa [W] using hn
-  have hnot : i (ρ n) ∉ recessionCone W.support := by
+  have hnot : i (ρ n) ∉ recessionCone ℝ W.support := by
     rw [ofSweep_support, mem_recessionCone]
     exact sweep_strictlyOutgoing hP (by simpa only [direction_affineSpan] using htrans)
   apply W.outgoing_iff.mpr

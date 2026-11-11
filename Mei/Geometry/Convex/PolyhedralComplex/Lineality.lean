@@ -30,7 +30,7 @@ or finite-dimensionality assumption is required. -/
 theorem lineal_recessionCone_eq_of_inter_nonempty (C : FinitePolyhedralComplex h)
     {P Q : Set V} (hP : P ∈ C.cells) (hQ : Q ∈ C.cells)
     (hne : (P ∩ Q).Nonempty) :
-    (Set.recessionCone P).lineal = (Set.recessionCone Q).lineal := by
+    (Set.recessionCone ℝ P).lineal = (Set.recessionCone ℝ Q).lineal := by
   have hpolyP := C.isConvexPolyhedron hP
   have hpolyQ := C.isConvexPolyhedron hQ
   have hfaceP := C.inter_face P hP Q hQ hne

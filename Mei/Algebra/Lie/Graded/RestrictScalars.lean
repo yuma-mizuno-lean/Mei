@@ -197,9 +197,8 @@ theorem truncatedRestrictScalarsEquiv_decompose (k : ℕ) (n : ι)
 /-- The finite-order comparisons commute with transitions to smaller cutoffs. -/
 theorem truncatedRestrictScalarsEquiv_naturality {k l : ℕ} (h : k ≤ l) :
     (d.truncatedRestrictScalarsEquiv (R := R) ℒ k).toLieHom.comp
-        ((d.degreeIdeal (fun n => (ℒ n).restrictScalars R) l).factor _
-          (d.degreeIdeal_antitone _ h)) =
-      (((d.degreeIdeal ℒ l).factor _ (d.degreeIdeal_antitone ℒ h)).restrictScalars R).comp
+        (LieIdeal.factor (d.degreeIdeal_antitone (fun n => (ℒ n).restrictScalars R) h)) =
+      ((LieIdeal.factor (d.degreeIdeal_antitone ℒ h)).restrictScalars R).comp
         (d.truncatedRestrictScalarsEquiv (R := R) ℒ l).toLieHom := by
   apply (d.degreeIdeal (fun n => (ℒ n).restrictScalars R) l).lieHom_qext
   intro x

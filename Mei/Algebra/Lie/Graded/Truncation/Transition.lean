@@ -42,7 +42,7 @@ theorem map_truncatedGrading_truncationMap {k l : ℕ} (h : k ≤ l) (n : N) :
   rw [truncationMap_def, truncatedGrading_eq, ← Submodule.map_comp, truncatedGrading_eq]
   congr 1
   ext x
-  exact LieIdeal.factor_apply _ _ _ x
+  exact LieIdeal.factor_apply _ x
 
 /-- Collecting pieces by sign commutes with lowering the degree cutoff. -/
 theorem map_signSubalgebra_truncationMap {A : Type*} [AddCommGroup A] [LinearOrder A]

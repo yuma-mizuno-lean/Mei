@@ -5,6 +5,7 @@ Authors: Codex
 -/
 module
 
+public import TauCeti.Algebra.DirectSum.HomogeneousExtend
 public import TauCeti.Algebra.DirectSum.Internal
 import Mathlib.Algebra.Group.Submonoid.BigOperators
 
@@ -34,33 +35,6 @@ variable {R U M ι : Type*} [Semiring R] [AddCommMonoid U] [Module R U]
   [AddCommMonoid M] [Module R M] [DecidableEq ι]
   (𝒰 : ι → Submodule R U) [Decomposition 𝒰]
 
-/-- Extend linear maps on all homogeneous pieces to the decomposed module. -/
-noncomputable def homogeneousExtend (f : ∀ i, 𝒰 i →ₗ[R] M) : U →ₗ[R] M :=
-  (toModule R ι M f).comp (decomposeLinearEquiv 𝒰).toLinearMap
-
-/-- A homogeneous extension agrees with its prescribed homogeneous map. -/
-theorem homogeneousExtend_of_mem (f : ∀ i, 𝒰 i →ₗ[R] M) {i : ι} {a : U}
-    (ha : a ∈ 𝒰 i) : homogeneousExtend 𝒰 f a = f i ⟨a, ha⟩ := by
-  simp only [homogeneousExtend, LinearMap.comp_apply, LinearEquiv.coe_coe,
-    decomposeLinearEquiv_apply, decompose_of_mem 𝒰 ha, ← lof_eq_of R, toModule_lof]
-
-/-- Evaluate a homogeneous extension directly on a homogeneous subtype. -/
-@[simp]
-theorem homogeneousExtend_coe (f : ∀ i, 𝒰 i →ₗ[R] M) {i : ι} (a : 𝒰 i) :
-    homogeneousExtend 𝒰 f a = f i a :=
-  homogeneousExtend_of_mem 𝒰 f a.property
-
-/-- A homogeneous extension is the finite sum of its homogeneous input values. -/
-theorem homogeneousExtend_eq_sum [∀ i (a : 𝒰 i), Decidable (a ≠ 0)]
-    (f : ∀ i, 𝒰 i →ₗ[R] M) (a : U) :
-    homogeneousExtend 𝒰 f a = ∑ i ∈ (decompose 𝒰 a).support, f i (decompose 𝒰 a i) := by
-  classical
-  conv_lhs => rw [← sum_support_decompose 𝒰 a]
-  rw [map_sum]
-  apply Finset.sum_congr rfl
-  intro i _
-  exact homogeneousExtend_of_mem 𝒰 f (decompose 𝒰 a i).property
-
 /-- A homogeneous extension sends componentwise positive inputs into an additive
 submonoid if each prescribed map does so on its homogeneous positive inputs. -/
 theorem homogeneousExtend_mem_addSubmonoid (f : ∀ i, 𝒰 i →ₗ[R] M)
@@ -71,16 +45,6 @@ theorem homogeneousExtend_mem_addSubmonoid (f : ∀ i, 𝒰 i →ₗ[R] M)
   classical
   rw [homogeneousExtend_eq_sum]
   exact P.sum_mem (fun i _ => hf i _ (ha i))
-
-/-- Prescribed restrictions to the homogeneous pieces determine a linear map uniquely. -/
-theorem homogeneousExtend_unique (f : ∀ i, 𝒰 i →ₗ[R] M) (g : U →ₗ[R] M)
-    (hg : ∀ i, g.comp (𝒰 i).subtype = f i) : g = homogeneousExtend 𝒰 f := by
-  apply decompose_lhom_ext 𝒰
-  intro i
-  rw [hg i]
-  apply LinearMap.ext
-  intro a
-  simp only [LinearMap.comp_apply, Submodule.subtype_apply, homogeneousExtend_coe]
 
 end LinearExtension
 

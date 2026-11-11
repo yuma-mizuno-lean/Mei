@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.Convex.Polyhedron.Rational
-public import Mei.Geometry.Convex.Recession
+public import TauCeti.Analysis.Convex.Recession.Basic
 public import Mei.Geometry.Toric.Algebraic.Cone.RationalDuality
 public import TauCeti.Geometry.Toric.Algebraic.Cone.Inf
 

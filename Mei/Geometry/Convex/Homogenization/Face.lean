@@ -102,7 +102,7 @@ This follows from Mathlib's `PointedCone.IsFaceOf.lineal_congr` applied to
 the actual homogenizations; no polyhedral or finite-dimensional hypothesis is needed. -/
 theorem lineal_recessionCone_eq {P F : Set V} (hF : IsExposed ℝ P F)
     (hconv : Convex ℝ P) (hclosed : IsClosed P) (hne : F.Nonempty) :
-    (Set.recessionCone F).lineal = (Set.recessionCone P).lineal := by
+    (Set.recessionCone ℝ F).lineal = (Set.recessionCone ℝ P).lineal := by
   rw [(hF.convex hconv).lineal_recessionCone_eq_comap hne (hF.isClosed hclosed),
     hconv.lineal_recessionCone_eq_comap (hne.mono hF.subset) hclosed,
     (hF.homogenization_isFaceOf hconv hclosed hne).lineal_congr]

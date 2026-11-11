@@ -82,7 +82,7 @@ include hn in
 is a recession direction of the projected support:
 `r(n) ∈ rec(𝔡 × (N_uf)_ℝ) ↔ p₁*(n) ∈ rec(𝔡)`. -/
 theorem principalCylinder_incoming_iff :
-    (W.cylinder h').Incoming ↔ i (D.principalCharacter n) ∈ recessionCone W.support := by
+    (W.cylinder h').Incoming ↔ i (D.principalCharacter n) ∈ recessionCone ℝ W.support := by
   rw [DirectedWall.cylinder_incoming_iff, DirectedWall.incoming_iff, ← mem_recessionCone, hn]
   simp
 
@@ -90,7 +90,7 @@ include hn in
 /-- The principal cylinder of a wall of degree `r(n)` is outgoing exactly when `p₁*(n)`
 is not a recession direction of the projected support. -/
 theorem principalCylinder_outgoing_iff :
-    (W.cylinder h').Outgoing ↔ i (D.principalCharacter n) ∉ recessionCone W.support := by
+    (W.cylinder h').Outgoing ↔ i (D.principalCharacter n) ∉ recessionCone ℝ W.support := by
   rw [DirectedWall.cylinder_outgoing_iff, DirectedWall.outgoing_iff, hn]
   simp
 

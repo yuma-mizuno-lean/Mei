@@ -85,7 +85,7 @@ theorem exists_outgoing_sweep_presentation (n : N)
     ∃ g : OrientedCell h k →₀ E,
       ofFinsupp (R := R) g = sweep n C ∧
       coboundary (ofFinsupp (R := R) g) = -(C : PolyhedralCochain R h E (k + 1)) ∧
-      ∀ τ ∈ g.support, i n ∉ Set.recessionCone τ.carrier := by
+      ∀ τ ∈ g.support, i n ∉ Set.recessionCone ℝ τ.carrier := by
   obtain ⟨f, hf, he⟩ := (mem_transverseSubmodule_iff_exists (i n) _).mp C.property
   obtain ⟨g, hg, _, hout⟩ := exists_sweep_presentation (R := R) n f hf
   have hrep : (⟨ofFinsupp (R := R) f,

@@ -51,7 +51,7 @@ with at least one interior vertex and no crossings. -/
 theorem exists_signedCrossingEvents_eq_nil_of_notMem_recessionCone
     (hpoly : ∀ j, TauCeti.IsConvexPolyhedron (W j)) (hA : ∀ j, affineSpan ℝ (W j) ≠ ⊤)
     {v : V} (hpar : ∀ j, v ∈ (affineSpan ℝ (W j)).direction)
-    (hrec : ∀ j, v ∉ recessionCone (W j)) (x y : WallComplement W) :
+    (hrec : ∀ j, v ∉ recessionCone ℝ (W j)) (x y : WallComplement W) :
     ∃ l : List V, l ≠ [] ∧ ∃ p : AdmissiblePLPath x y,
       p.vertices.map WallComplement.val = x.val :: (l ++ [y.val]) ∧
         ∀ ν : ι → V →ₗ[ℝ] ℝ, p.signedCrossingEvents ν = [] := by
@@ -137,7 +137,7 @@ theorem wallCrossingSum_eq_zero_of_notMem_recessionCone
     (ν : ι → V →ₗ[ℝ] ℝ) (c : ι → E)
     (hν : ∀ j, c j ≠ 0 → LinearMap.ker (ν j) = (affineSpan ℝ (W j)).direction)
     {v : V} (hpar : ∀ j, c j ≠ 0 → ν j v = 0)
-    (hrec : ∀ j, c j ≠ 0 → v ∉ recessionCone (W j)) {x y : WallComplement W}
+    (hrec : ∀ j, c j ≠ 0 → v ∉ recessionCone ℝ (W j)) {x y : WallComplement W}
     (hloop : ∀ q : AdmissiblePLPath x x, q.wallCrossingSum ν c = 0)
     (p : AdmissiblePLPath x y) :
     p.wallCrossingSum ν c = 0 := by

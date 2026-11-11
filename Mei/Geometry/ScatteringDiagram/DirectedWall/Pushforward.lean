@@ -437,7 +437,7 @@ theorem incoming_pushforward_iff : (W.pushforward P).Incoming ↔ W.Incoming := 
       (W.degreeMap_mem_pushforward_rayDegrees P hn),
     W.incoming_iff_of_mem_rayDegrees hn]
   obtain ⟨c, hc, hd⟩ := P.map_direction n (SupportedRay.mem_rayDegrees.mp hn).1
-  rw [hd, (recessionCone _).smul_mem_iff hc, pushforward_support]
+  rw [hd, (recessionCone ℝ _).smul_mem_iff hc, pushforward_support]
   simpa only [ContinuousAffineEquiv.coe_coe] using
     P.spatialMap.toAffineEquiv.linear_mem_recessionCone_image W.support (i (ρ n))
 

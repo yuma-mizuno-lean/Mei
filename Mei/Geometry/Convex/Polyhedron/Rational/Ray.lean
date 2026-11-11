@@ -7,7 +7,7 @@ module
 
 public import Mei.Geometry.Convex.Polyhedron.Rational.Sweep
 public import Mei.Geometry.Convex.Polyhedron.Rational.LocallyClosed
-public import Mei.Geometry.Convex.Recession
+public import TauCeti.Analysis.Convex.Recession.Basic
 import Mei.LinearAlgebra.AffineSpace.Ray
 import Mei.Geometry.Convex.Polyhedron.Face
 import Mei.Geometry.Convex.Polyhedron.Escape
@@ -91,7 +91,7 @@ theorem IsRationalNormalPolyhedron.eventually_add_smul_mem
   classical
   by_cases hne : P.Nonempty
   · obtain ⟨A, rfl⟩ := isRationalNormalPolyhedron_iff.mp hP
-    by_cases hw : w ∈ Set.recessionCone A.carrier
+    by_cases hw : w ∈ Set.recessionCone ℝ A.carrier
     · have hlin : ∀ j, (A.inequality j).linear w ≤ 0 := by
         have hcarrier : A.carrier = {x | ∀ j, A.inequality j x ≤ 0} :=
           Set.ext fun _ => RationalAffinePolyhedron.mem_carrier

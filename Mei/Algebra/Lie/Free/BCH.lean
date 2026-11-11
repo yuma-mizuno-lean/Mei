@@ -196,9 +196,8 @@ theorem bchElement_unique (c : ℕ)
 universal BCH element. -/
 @[simp]
 theorem factor_bchElement {c d : ℕ} (h : c ≤ d) :
-    LieIdeal.factor (LieModule.lowerCentralSeries ℚ F₂ F₂ d)
-      (LieModule.lowerCentralSeries ℚ F₂ F₂ c)
-      (LieModule.antitone_lowerCentralSeries ℚ F₂ F₂ h) (bchElement d) = bchElement c := by
+    LieIdeal.factor (LieModule.antitone_lowerCentralSeries ℚ F₂ F₂ h)
+      (bchElement d) = bchElement c := by
   apply bchElement_unique
   rw [quotientEnvelopingMap_factor ℚ (Fin 2) h]
   let π : U₂ ⧸ J₂ ^ (d + 1) →+* U₂ ⧸ J₂ ^ (c + 1) :=

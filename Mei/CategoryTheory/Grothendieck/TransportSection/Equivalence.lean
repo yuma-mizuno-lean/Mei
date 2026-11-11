@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.CategoryTheory.Grothendieck.TransportSection
+public import TauCeti.CategoryTheory.Grothendieck.TransportSection
 public import Mei.CategoryTheory.Grothendieck.Pullback
 public import Mathlib.CategoryTheory.Equivalence
 
@@ -33,7 +33,7 @@ open TauCeti.CategoryTheory.Grothendieck (Section)
 
 universe v u w z
 
-namespace Mei.GrothendieckSection
+namespace TauCeti.TransportSection
 
 variable {D : Type u} [Category.{v} D] {L : D ⥤ Cat.{w, z}}
 
@@ -48,7 +48,7 @@ private theorem normalized_eq (s : Section L) :
   simpa only [Grothendieck.pre_id, Functor.comp_id] using h
 
 /-- Transport data extracted from an actual section. -/
-def ofSection (s : Section L) : GrothendieckSection L where
+def ofSection (s : Section L) : TransportSection L where
   obj d := (normalized s).obj d |>.fiber
   map f := Grothendieck.fiberHom ((normalized s).map f) f
     (Grothendieck.liftHom_base _ _ _ _ _ _)
@@ -86,31 +86,36 @@ theorem toSection_ofSection (s : Section L) :
 
 /-- Extracting transport data from its assembled section recovers the original data. -/
 @[simp]
-theorem ofSection_toSection (s : GrothendieckSection L) : ofSection s.toSection = s := by
+theorem ofSection_toSection (s : TransportSection L) : ofSection s.toSection = s := by
   apply toFunctor_injective
   exact ofSection_toFunctor s.toSection
 
 /-- The actual section and its transport presentation have the same arrow components. -/
-private theorem toSection_toFunctor_map (s : GrothendieckSection L) {d e : D} (f : d ⟶ e) :
+private theorem toSection_toFunctor_map (s : TransportSection L) {d e : D} (f : d ⟶ e) :
     s.toSection.toFunctor.map f = s.toFunctor.map f := (rfl)
 
 /-- A component of a vertical section morphism, regarded in the actual fiber. -/
-private def sectionHomComponent {s t : GrothendieckSection L} (α : s.toSection ⟶ t.toSection)
+private def sectionHomComponent {s t : TransportSection L} (α : s.toSection ⟶ t.toSection)
     (d : D) : s.obj d ⟶ t.obj d :=
   Grothendieck.verticalFiber ((Section.hom α).app d)
     (sectionHom_base α d)
 
 /-- Including the extracted component recovers the component of the section morphism. -/
 @[simp↓]
-private theorem ι_map_sectionHomComponent {s t : GrothendieckSection L}
+private theorem ι_map_sectionHomComponent {s t : TransportSection L}
     (α : s.toSection ⟶ t.toSection) (d : D) :
     (Grothendieck.ι L d).map (sectionHomComponent α d) =
       (Section.hom α).app d :=
   Grothendieck.ι_map_verticalFiber _ (sectionHom_base α d)
 
+private theorem toFunctor_map_factor (s : TransportSection L) {d e : D} (f : d ⟶ e) :
+    s.toFunctor.map f =
+      (Grothendieck.ιNatTrans f).app (s.obj d) ≫ (Grothendieck.ι L e).map (s.map f) :=
+  (Grothendieck.ιNatTrans_app_comp_ι_map (s.toFunctor.map f)).symm
+
 /-- Naturality of a vertical label after factoring both transport arrows through
 the target fiber inclusion. All endpoints are displayed as fiber objects. -/
-private theorem sectionHom_factorized_naturality {s t : GrothendieckSection L}
+private theorem sectionHom_factorized_naturality {s t : TransportSection L}
     (α : s.toSection ⟶ t.toSection) {d e : D} (f : d ⟶ e) :
     ((Grothendieck.ιNatTrans f).app (s.obj d) ≫ (Grothendieck.ι L e).map (s.map f)) ≫
         (Grothendieck.ι L e).map (sectionHomComponent α e) =
@@ -126,7 +131,7 @@ private theorem sectionHom_factorized_naturality {s t : GrothendieckSection L}
   exact h
 
 /-- The fiber components of a vertical transformation between transport sections. -/
-def fromSectionHom {s t : GrothendieckSection L} (α : s.toSection ⟶ t.toSection) : s ⟶ t where
+def fromSectionHom {s t : TransportSection L} (α : s.toSection ⟶ t.toSection) : s ⟶ t where
   app d := Grothendieck.verticalFiber ((Section.hom α).app d)
     (sectionHom_base α d)
   naturality {d e} f := by
@@ -145,7 +150,7 @@ def fromSectionHom {s t : GrothendieckSection L} (α : s.toSection ⟶ t.toSecti
 
 /-- Extraction is computed by the vertical component in the fiber. -/
 @[simp]
-theorem fromSectionHom_app {s t : GrothendieckSection L}
+theorem fromSectionHom_app {s t : TransportSection L}
     (α : s.toSection ⟶ t.toSection) (d : D) :
     (fromSectionHom α).app d =
       Grothendieck.verticalFiber ((Section.hom α).app d)
@@ -153,7 +158,7 @@ theorem fromSectionHom_app {s t : GrothendieckSection L}
 
 /-- Including an extracted fiber component recovers the original total component. -/
 @[simp↓]
-theorem ι_map_fromSectionHom_app {s t : GrothendieckSection L}
+theorem ι_map_fromSectionHom_app {s t : TransportSection L}
     (α : s.toSection ⟶ t.toSection) (d : D) :
     (Grothendieck.ι L d).map ((fromSectionHom α).app d) =
       (Section.hom α).app d := by
@@ -162,7 +167,7 @@ theorem ι_map_fromSectionHom_app {s t : GrothendieckSection L}
 
 /-- Reassembling the fiber components of a vertical transformation recovers it. -/
 @[simp]
-theorem toSectionHom_fromSectionHom {s t : GrothendieckSection L}
+theorem toSectionHom_fromSectionHom {s t : TransportSection L}
     (α : s.toSection ⟶ t.toSection) : toSectionHom (fromSectionHom α) = α := by
   apply Section.hom_ext
   intro d
@@ -174,7 +179,7 @@ instance : (sectionFunctor (L := L)).Full where
 
 /-- Extracting the components of a transport morphism recovers that morphism. -/
 @[simp]
-theorem fromSectionHom_toSectionHom {s t : GrothendieckSection L} (α : s ⟶ t) :
+theorem fromSectionHom_toSectionHom {s t : TransportSection L} (α : s ⟶ t) :
     fromSectionHom (toSectionHom α) = α := by
   apply (sectionFunctor (L := L)).map_injective
   exact toSectionHom_fromSectionHom (toSectionHom α)
@@ -186,7 +191,7 @@ instance : (sectionFunctor (L := L)).IsEquivalence where
 
 /-- The inverse comparison extracts transport data, including its morphisms.
 The reconstruction equalities identify the endpoints before vertical extraction. -/
-def sectionInverseFunctor : Section L ⥤ GrothendieckSection L where
+def sectionInverseFunctor : Section L ⥤ TransportSection L where
   obj := ofSection
   map {s t} α := fromSectionHom
     (eqToHom (toSection_ofSection s) ≫ α ≫ eqToHom (toSection_ofSection t).symm)
@@ -220,7 +225,7 @@ theorem sectionInverseFunctor_map {s t : Section L} (α : s ⟶ t) :
   erw [eqToHom_refl, eqToHom_refl, Category.id_comp, Category.comp_id]
 
 /-- Extracting the assembled section recovers the transport object. -/
-private theorem sectionInverseFunctor_obj_toSection (s : GrothendieckSection L) :
+private theorem sectionInverseFunctor_obj_toSection (s : TransportSection L) :
     (sectionInverseFunctor (L := L)).obj s.toSection = s := by
   rw [sectionInverseFunctor_obj, ofSection_toSection]
 
@@ -229,11 +234,11 @@ private theorem toSection_sectionInverseFunctor_obj (s : Section L) :
     ((sectionInverseFunctor (L := L)).obj s).toSection = s := by
   rw [sectionInverseFunctor_obj, toSection_ofSection]
 
-private theorem toSectionHom_eqToHom {s t : GrothendieckSection L} (h : s = t) :
+private theorem toSectionHom_eqToHom {s t : TransportSection L} (h : s = t) :
     toSectionHom (eqToHom h) = eqToHom (congrArg toSection h) :=
   eqToHom_map sectionFunctor h
 
-private theorem toSectionHom_comp {s t r : GrothendieckSection L}
+private theorem toSectionHom_comp {s t r : TransportSection L}
     (α : s ⟶ t) (β : t ⟶ r) :
     toSectionHom (α ≫ β) = toSectionHom α ≫ toSectionHom β :=
   sectionFunctor.map_comp α β
@@ -241,7 +246,7 @@ private theorem toSectionHom_comp {s t r : GrothendieckSection L}
 /-- Fiberwise transport data and actual sections are equivalent categories.
 The inverse is the explicit extraction functor; the unit and counit are the
 isomorphisms given by the two object reconstruction equalities. -/
-def sectionEquivalence : GrothendieckSection L ≌ Section L where
+def sectionEquivalence : TransportSection L ≌ Section L where
   functor := sectionFunctor
   inverse := sectionInverseFunctor
   unitIso := NatIso.ofComponents (fun s => eqToIso (sectionInverseFunctor_obj_toSection s).symm) (by
@@ -277,7 +282,7 @@ theorem sectionEquivalence_inverse_map {s t : Section L}
   simp only [sectionEquivalence, sectionInverseFunctor_map]
 
 /-- The unit's target object is the original transport datum. -/
-theorem sectionEquivalence_unit_obj (s : GrothendieckSection L) :
+theorem sectionEquivalence_unit_obj (s : TransportSection L) :
     ((sectionEquivalence (L := L)).functor ⋙ (sectionEquivalence (L := L)).inverse).obj s = s := by
   simp only [Functor.comp_obj, sectionEquivalence_functor, sectionEquivalence_inverse_obj,
     ofSection_toSection]
@@ -290,7 +295,7 @@ theorem sectionEquivalence_counit_obj (s : Section L) :
 
 /-- The unit is the canonical equality isomorphism to the reconstructed object. -/
 @[simp]
-theorem sectionEquivalence_unitIso_hom_app (s : GrothendieckSection L) :
+theorem sectionEquivalence_unitIso_hom_app (s : TransportSection L) :
     (sectionEquivalence (L := L)).unitIso.hom.app s =
       eqToHom (sectionEquivalence_unit_obj s).symm := (rfl)
 
@@ -302,7 +307,7 @@ theorem sectionEquivalence_counitIso_hom_app (s : Section L) :
 
 /-- The inverse unit is the reverse equality isomorphism. -/
 @[simp]
-theorem sectionEquivalence_unitIso_inv_app (s : GrothendieckSection L) :
+theorem sectionEquivalence_unitIso_inv_app (s : TransportSection L) :
     (sectionEquivalence (L := L)).unitIso.inv.app s =
       eqToHom (sectionEquivalence_unit_obj s) := (rfl)
 
@@ -314,7 +319,7 @@ theorem sectionEquivalence_counitIso_inv_app (s : Section L) :
 
 /-- The fully faithful comparison extracts the vertical components of a section morphism. -/
 @[simp]
-theorem sectionFunctor_preimage {s t : GrothendieckSection L}
+theorem sectionFunctor_preimage {s t : TransportSection L}
     (α : s.toSection ⟶ t.toSection) :
     (sectionFunctor (L := L)).preimage α = fromSectionHom α := by
   apply (sectionFunctor (L := L)).map_injective
@@ -374,4 +379,4 @@ theorem sectionAutEquiv_symm_apply_hom [∀ d, IsGroupoid (L.obj d)]
     autEquivSections_symm_apply_hom, Category.assoc]
   rfl
 
-end Mei.GrothendieckSection
+end TauCeti.TransportSection

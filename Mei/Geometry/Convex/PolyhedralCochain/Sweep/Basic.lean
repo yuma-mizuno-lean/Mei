@@ -8,7 +8,7 @@ module
 public import Mei.Geometry.Convex.PolyhedralCochain.Basic
 public import Mei.Geometry.Convex.Polyhedron.Rational.Sweep
 public import Mei.Geometry.Convex.Sweep
-public import Mei.Geometry.Convex.Recession
+public import TauCeti.Analysis.Convex.Recession.Basic
 public import Mei.LinearAlgebra.Alternating.Contraction
 
 /-!
@@ -76,7 +76,7 @@ theorem sweep_orientation (σ : OrientedCell h (k + 1)) (n : N)
 /-- The positive sweeping vector is not a recession direction of the swept cell. -/
 theorem sweep_strictlyOutgoing (σ : OrientedCell h (k + 1)) (n : N)
     (hn : i n ∉ (affineSpan ℝ σ.carrier).direction) :
-    i n ∉ Set.recessionCone (σ.sweep n hn).carrier := by
+    i n ∉ Set.recessionCone ℝ (σ.sweep n hn).carrier := by
   rw [sweep_carrier, Set.mem_recessionCone]
   exact Convex.sweep_strictlyOutgoing σ.nonempty (by simpa [direction_affineSpan] using hn)
 

@@ -99,7 +99,7 @@ theorem map_log_wallPathProduct_mul_inv_eq_zero_of_notMem_recessionCone
     (hν : ∀ j, π (log (a j * (b j)⁻¹)) ≠ 0 →
       LinearMap.ker (ν j) = (affineSpan ℝ (W j)).direction)
     {v : V} (hpar : ∀ j, π (log (a j * (b j)⁻¹)) ≠ 0 → ν j v = 0)
-    (hrec : ∀ j, π (log (a j * (b j)⁻¹)) ≠ 0 → v ∉ Set.recessionCone (W j))
+    (hrec : ∀ j, π (log (a j * (b j)⁻¹)) ≠ 0 → v ∉ Set.recessionCone ℝ (W j))
     (hloop : ∀ q : AdmissiblePLPath x x,
       π (log (q.wallPathProduct ν a ha * (q.wallPathProduct ν b hb)⁻¹)) = 0)
     (p : AdmissiblePLPath x y) :

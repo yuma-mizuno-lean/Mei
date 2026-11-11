@@ -7,7 +7,7 @@ module
 
 public import Mei.Geometry.Convex.Cone.FiniteGeneration
 public import Mei.Geometry.Convex.Cone.FiniteDuality
-public import Mei.Geometry.Convex.Recession
+public import TauCeti.Analysis.Convex.Recession.Basic
 public import Mathlib.Analysis.Normed.Module.FiniteDimension
 public import TauCeti.Analysis.Convex.Polyhedron.Basic
 
@@ -125,8 +125,8 @@ theorem dualFG_of_isConvexPolyhedron (C : PointedCone ℝ V)
     exact ⟨0, C.zero_mem⟩
   have hlin (x : V) : x ∈ C ↔ ∀ i, (g i).linear x ≤ 0 := by
     calc
-      x ∈ C ↔ x ∈ Set.recessionCone (C : Set V) := by rw [C.recessionCone_coe]
-      _ ↔ x ∈ Set.recessionCone {x : V | ∀ i, g i x ≤ 0} := by rw [hg]
+      x ∈ C ↔ x ∈ Set.recessionCone ℝ (C : Set V) := by rw [C.recessionCone_coe]
+      _ ↔ x ∈ Set.recessionCone ℝ {x : V | ∀ i, g i x ≤ 0} := by rw [hg]
       _ ↔ ∀ i, (g i).linear x ≤ 0 := by
         simpa only [ContinuousAffineMap.coe_toAffineMap] using
           (Set.mem_recessionCone_setOf_forall_iff

@@ -6,6 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Algebra.PositiveDegrees.Graph
+public import Mathlib.Data.Finsupp.Weight
 public import Mathlib.LinearAlgebra.Basis.Defs
 public import Mathlib.LinearAlgebra.Basis.Fin
 public import Mathlib.LinearAlgebra.TensorProduct.Basis
