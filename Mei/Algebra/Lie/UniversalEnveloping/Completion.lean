@@ -323,7 +323,7 @@ noncomputable def completedGroupLikeSubgroup : Subgroup (F).completionˣ :=
   let diagonal : (F).completionˣ →* (T).completion :=
     { toFun := fun u => (F).completedTensor (R := R) (F) u u
       map_one' := by simp
-      map_mul' := fun u v => (F).completedTensor_mul (F) u v u v }
+      map_mul' := fun u v => (F).completedTensor_mul R (F) u v u v }
   ((completedCoproduct ℒ d hneg).toMonoidHom.comp (Units.coeHom _)).eqLocus diagonal ⊓
     ((completedCounit ℒ d hneg).toMonoidHom.comp (Units.coeHom _)).ker
 
