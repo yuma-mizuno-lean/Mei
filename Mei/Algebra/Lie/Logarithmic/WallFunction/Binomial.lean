@@ -8,6 +8,7 @@ module
 public import Mei.Algebra.Lie.Logarithmic.WallFunction.Map
 public import Mei.Algebra.Lie.Logarithmic.Pairing.Full
 public import Mei.RingTheory.FilteredAlgebra.Positive.Basic
+public import Mei.Algebra.Group.Units.Hom
 
 /-!
 # Binomial function walls of the tropical vertex group
@@ -18,9 +19,10 @@ to one, and its function-wall label `exp(log(1 + c z^n) ∂_μ)` is the *binomia
 (`Mei.binomialLabel`). On a coefficient algebra `R[Q]` the binomial `1 + c z^n` is a unit of the
 completion (`Mei.binomialUnit`), positive for the image of `S[Q]` when `c` is the image of an
 element of `S` (`Mei.isPositive_binomialUnit`), and the binomial label multiplies a monomial
-`r z^p` by `(1 + c z^n)^{μ(ρ p)}` (`Mei.completedBCHAction_binomialLabel`). A graded Lie map of
-tropical vertex Lie algebras sending every tangent field `z^q ∂_μ` to `z^{T q} ∂_{μ'}` sends the
-binomial label of `(μ, n, c)` to that of `(μ', T n, c)`
+`r z^p` by `(1 + c z^n)^{μ(ρ p)}` (`Mei.completedBCHAction_binomialLabel`); its `k`-th power
+multiplies it by `((1 + c z^n)^k)^{μ(ρ p)}` (`Mei.completedBCHAction_binomialLabel_pow`). A graded
+Lie map of tropical vertex Lie algebras sending every tangent field `z^q ∂_μ` to `z^{T q} ∂_{μ'}`
+sends the binomial label of `(μ, n, c)` to that of `(μ', T n, c)`
 (`Mei.GradedLieHom.completedMap_binomialLabel`); in particular so does a tropical pairing on all
 characters sending the character of `μ` to that of `μ'`
 (`Mei.TropicalPairing.completedMap_binomialLabel`). Reversing the sign of the character inverts
@@ -153,6 +155,29 @@ theorem completedBCHAction_binomialLabel {n : Γ} (hn : n ∈ d.monoid) (hn0 : n
   rw [IsUnit.unit_spec, coe_binomialUnit, completedTropicalTangentInclusion_toCompletion, map_add,
     map_one, tropicalTangentInclusion_single, map_add, map_one]
   simp only [coe_binomialExponent]
+
+/-- The `k`-th power of the binomial label `exp(log(1 + c z^n) ∂_μ)` multiplies a monomial `r z^p`
+of `R[Q]` by `((1 + c z^n)^k)^{μ(ρ p)}`: it is the wall-crossing automorphism of the wall function
+`(1 + c z^n)^k`. -/
+theorem completedBCHAction_binomialLabel_pow {n : Γ} (hn : n ∈ d.monoid) (hn0 : n ≠ 0)
+    (hμ : μ (ρ n) = 0) (c : R) (k : ℕ) (p : Q) (r : R) :
+    (F).completedBCHAction d ℒ (binomialLabel d ρ μ hn hn0 hμ c ^ k)
+        ((F).toCompletion (single p r)) =
+      (((binomialUnit d Q hn hn0 c ^ k) ^ μ (ρ p) : (F).completionˣ) : (F).completion) *
+        (F).toCompletion (single p r) := by
+  induction k generalizing p r with
+  | zero => simp
+  | succ k ih =>
+    -- The power `θ^k` fixes the binomial `1 + c z^n`, since `μ(ρ n) = 0`.
+    have hU : Units.map ((F).completedBCHAction d ℒ (binomialLabel d ρ μ hn hn0 hμ c ^ k) :
+        (F).completion →* (F).completion) (binomialUnit d Q hn hn0 c) =
+        binomialUnit d Q hn hn0 c := by
+      ext
+      rw [Units.coe_map, MonoidHom.coe_ofClass, coe_binomialUnit, map_add, map_one, ih]
+      simp only [hμ, zpow_zero, Units.val_one, one_mul]
+    rw [pow_succ, map_mul, AlgEquiv.mul_apply, completedBCHAction_binomialLabel, map_mul,
+      map_units_zpow, hU, ih, ← mul_assoc, ← Units.val_mul,
+      ← (Commute.self_pow _ k).mul_zpow, ← pow_succ']
 
 end Action
 
