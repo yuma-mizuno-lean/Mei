@@ -26,7 +26,7 @@ ray presentation (Gross–Hacking–Keel–Kontsevich, *Canonical bases for clus
 diagrams*, §9.2, arXiv:2503.03719v1).
 
 The ray factor reassembles the selected coefficients through the product description
-`TauCeti.PositiveDegrees.completionEquivPi` of the degree completion and the exponential
+`TauCeti.PositiveDegrees.filtrationCompletionEquivPi` of the degree completion and the exponential
 coordinate `TauCeti.PositiveDegrees.completedBCHExp`. The product formula combines
 `TauCeti.PositiveDegrees.log_projection_eq_mkQ_sum` with `Mei.BCHGroup.exp_sum_of_lie_eq_zero`,
 using that every nonzero allowed degree lies on exactly one supported ray.
@@ -55,23 +55,24 @@ open Classical in
 /-- The ray factor of a completed label on a supported ray: the completed label whose
 logarithmic coefficients are those of `g` in the actual degrees of `w` and zero elsewhere. -/
 def rayFactor (g : d.completedBCHGroup ℒ) (w : SupportedRay d) : d.completedBCHGroup ℒ :=
-  d.completedBCHExp ℒ ((d.completionEquivPi ℒ F (fun k => d.truncationIdeal_toSubmodule ℒ k)
-    (fun _ hn => IsPositiveGrading.eq_bot _ (Or.inl hn))).symm
-      fun n => if n ∈ w.rayDegrees then d.logComponent ℒ g n else 0)
+  d.completedBCHExp ℒ
+    ((d.filtrationCompletionEquivPi ℒ F (fun k => d.truncationIdeal_toSubmodule ℒ k)
+      (fun _ hn => IsPositiveGrading.eq_bot _ (Or.inl hn))).symm
+        fun n => if n ∈ w.rayDegrees then d.logComponent ℒ g n else 0)
 
 /-- On an actual degree of the ray, the ray factor keeps the logarithmic coefficient. -/
 @[simp]
 theorem logComponent_rayFactor_of_mem (g : d.completedBCHGroup ℒ) {w : SupportedRay d}
     {n : N} (hn : n ∈ w.rayDegrees) :
     d.logComponent ℒ (d.rayFactor ℒ g w) n = d.logComponent ℒ g n := by
-  rw [rayFactor, logComponent_completedBCHExp, completionComponent_completionEquivPi_symm,
+  rw [rayFactor, logComponent_completedBCHExp, filtrationCompletionComponent_equivPi_symm,
     ite_eq_left hn]
 
 /-- Off the actual degrees of the ray, the ray factor has no logarithmic coefficient. -/
 @[simp]
 theorem logComponent_rayFactor_of_notMem (g : d.completedBCHGroup ℒ) {w : SupportedRay d}
     {n : N} (hn : n ∉ w.rayDegrees) : d.logComponent ℒ (d.rayFactor ℒ g w) n = 0 := by
-  rw [rayFactor, logComponent_completedBCHExp, completionComponent_completionEquivPi_symm,
+  rw [rayFactor, logComponent_completedBCHExp, filtrationCompletionComponent_equivPi_symm,
     ite_eq_right hn]
 
 /-- The ray factors are the unique completed labels with these coefficients. -/

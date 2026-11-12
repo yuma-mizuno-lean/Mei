@@ -24,7 +24,7 @@ Euler derivation supplies an enveloping embedding that reflects the degree tails
 Its image consists of primitive elements in the first completed filtration ideal.
 A compatible enveloping family lies in this image exactly when all its finite
 projections have Lie representatives. Assemble those representatives degree by
-degree using `TauCeti.PositiveDegrees.completionEquivPi`, without requiring the
+degree using `TauCeti.PositiveDegrees.filtrationCompletionEquivPi`, without requiring the
 representatives themselves to be compatible.
 
 The finite maps use `LieIdeal.liftQ` and Mathlib's quotient algebra maps. The Lie
@@ -301,11 +301,11 @@ theorem mem_range_completedLieToU_iff (u : (F).completion) :
     -- Choose finite representatives, then assemble one coefficient per homogeneous degree.
     choose a ha using hreps
     let x : ∀ n, ℒ n := fun n => DirectSum.decompose ℒ (a (d.degree n).toNat) n
-    refine ⟨(d.completionEquivPi ℒ M hM hℒ).symm x, ?_⟩
+    refine ⟨(d.filtrationCompletionEquivPi ℒ M hM hℒ).symm x, ?_⟩
     apply (F).completion_ext
     intro k
     rw [projection_completedLieToU, LieIdeal.completionProjection_apply]
-    rw [d.projection_completionEquivPi_symm, truncatedLieToU_mk, ← ha k]
+    rw [d.projection_filtrationCompletionEquivPi_symm, truncatedLieToU_mk, ← ha k]
     apply Ideal.Quotient.eq.mpr
     rw [degreeFiltration_ideal, Mei.GradedAlgebra.mem_truncationIdeal_iff,
       Mei.DirectSum.mem_degreeTail_iff]

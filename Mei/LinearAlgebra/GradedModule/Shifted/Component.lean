@@ -55,7 +55,7 @@ private theorem coe_shiftedPieceToAmbient (q : Γ)
 def shiftedQuotientComponent (q : Γ) (k : ℕ) (h : d.degree (q - p) ≤ k) :
     (d.shiftedFiltration ℳ p).quotient k →ₗ[R] ℳ q :=
   (d.shiftedPieceToAmbient ℳ p q).comp
-    (d.quotientComponent (shiftedGrading ℳ d.monoid p) (d.shiftedFiltration ℳ p)
+    (d.filtrationQuotientComponent (shiftedGrading ℳ d.monoid p) (d.shiftedFiltration ℳ p)
       (d.shiftedFiltration_succ ℳ p) k (q - p) h)
 
 /-- On a representative, the quotient component is the original homogeneous projection. -/
@@ -64,7 +64,7 @@ theorem shiftedQuotientComponent_mk (q : Γ) (k : ℕ) (h : d.degree (q - p) ≤
     (x : shiftedSubmodule ℳ d.monoid p) :
     d.shiftedQuotientComponent ℳ p q k h (Submodule.Quotient.mk x) =
       DirectSum.decompose ℳ (x : M) q := by
-  rw [shiftedQuotientComponent, LinearMap.comp_apply, quotientComponent_mk]
+  rw [shiftedQuotientComponent, LinearMap.comp_apply, filtrationQuotientComponent_mk]
   apply Subtype.ext
   rw [coe_shiftedPieceToAmbient, coe_decompose_shiftedGrading]
   congr 2 <;> abel_nf
@@ -87,12 +87,12 @@ theorem shiftedQuotientComponent_transition (q : Γ) {k l : ℕ} (hkl : k ≤ l)
     (hk : d.degree (q - p) ≤ k) (x : (d.shiftedFiltration ℳ p).quotient l) :
     d.shiftedQuotientComponent ℳ p q k hk ((d.shiftedFiltration ℳ p).transition hkl x) =
       d.shiftedQuotientComponent ℳ p q l (hk.trans (Int.ofNat_le.mpr hkl)) x := by
-  simp only [shiftedQuotientComponent, LinearMap.comp_apply, quotientComponent_transition]
+  simp only [shiftedQuotientComponent, LinearMap.comp_apply, filtrationQuotientComponent_transition]
 
 /-- The ambient degree-`q` homogeneous component of a completed shifted coefficient. -/
 def shiftedHomogeneousComponent (q : Γ) : d.ShiftedCoefficients ℳ p →ₗ[R] ℳ q :=
   (d.shiftedPieceToAmbient ℳ p q).comp
-    (d.completionComponent (shiftedGrading ℳ d.monoid p) (d.shiftedFiltration ℳ p)
+    (d.filtrationCompletionComponent (shiftedGrading ℳ d.monoid p) (d.shiftedFiltration ℳ p)
       (d.shiftedFiltration_succ ℳ p) (q - p))
 
 /-- A completed component can be read at any cutoff that retains its relative degree. -/
@@ -101,14 +101,14 @@ theorem shiftedHomogeneousComponent_eq (q : Γ) (k : ℕ) (hk : d.degree (q - p)
     d.shiftedHomogeneousComponent ℳ p q x =
       d.shiftedQuotientComponent ℳ p q k hk ((d.shiftedFiltration ℳ p).projection k x) := by
   simp only [shiftedHomogeneousComponent, shiftedQuotientComponent, LinearMap.comp_apply,
-    d.completionComponent_eq_quotientComponent _ _ _ (q - p) k hk]
+    d.filtrationCompletionComponent_eq_quotientComponent _ _ _ (q - p) k hk]
 
 /-- The completed component of an original coefficient is its direct-sum component. -/
 @[simp]
 theorem shiftedHomogeneousComponent_of (q : Γ) (x : shiftedSubmodule ℳ d.monoid p) :
     d.shiftedHomogeneousComponent ℳ p q ((d.shiftedFiltration ℳ p).of x) =
       DirectSum.decompose ℳ (x : M) q := by
-  rw [shiftedHomogeneousComponent, LinearMap.comp_apply, completionComponent_of]
+  rw [shiftedHomogeneousComponent, LinearMap.comp_apply, filtrationCompletionComponent_of]
   apply Subtype.ext
   rw [coe_shiftedPieceToAmbient, coe_decompose_shiftedGrading]
   congr 2 <;> abel_nf
@@ -116,7 +116,7 @@ theorem shiftedHomogeneousComponent_of (q : Γ) (x : shiftedSubmodule ℳ d.mono
 /-- Relative completed components and ambient shifted components have the same value. -/
 @[simp]
 theorem coe_completionComponent_shiftedGrading (n : Γ) (x : d.ShiftedCoefficients ℳ p) :
-    ((d.completionComponent (shiftedGrading ℳ d.monoid p) (d.shiftedFiltration ℳ p)
+    ((d.filtrationCompletionComponent (shiftedGrading ℳ d.monoid p) (d.shiftedFiltration ℳ p)
       (d.shiftedFiltration_succ ℳ p) n x : shiftedSubmodule ℳ d.monoid p) : M) =
       d.shiftedHomogeneousComponent ℳ p (p + n) x := by
   rw [shiftedHomogeneousComponent, LinearMap.comp_apply, coe_shiftedPieceToAmbient,
@@ -133,10 +133,10 @@ theorem projection_eq_sum_shiftedHomogeneousComponent (k : ℕ)
             ((d.finite_cutoff k).mem_toFinset.mp n.property)).1⟩
             (d.shiftedHomogeneousComponent ℳ p (p + n.val) x)) := by
   classical
-  let e := d.completionEquivPi (shiftedGrading ℳ d.monoid p)
+  let e := d.filtrationCompletionEquivPi (shiftedGrading ℳ d.monoid p)
     (d.shiftedFiltration ℳ p) (d.shiftedFiltration_succ ℳ p)
     (fun n hn => shiftedGrading_eq_bot ℳ d.monoid p hn)
-  have h := d.projection_completionEquivPi_symm (shiftedGrading ℳ d.monoid p)
+  have h := d.projection_filtrationCompletionEquivPi_symm (shiftedGrading ℳ d.monoid p)
     (d.shiftedFiltration ℳ p) (d.shiftedFiltration_succ ℳ p)
     (fun n hn => shiftedGrading_eq_bot ℳ d.monoid p hn) (e x) k
   rw [LinearEquiv.symm_apply_apply] at h
@@ -147,7 +147,7 @@ theorem projection_eq_sum_shiftedHomogeneousComponent (k : ℕ)
   rw [← Finset.sum_attach]
   apply Finset.sum_congr rfl
   intro n hn
-  simpa only [e, completionEquivPi_apply] using
+  simpa only [e, filtrationCompletionEquivPi_apply] using
     d.coe_completionComponent_shiftedGrading ℳ p n.val x
 
 /-- A finite shifted coefficient is the sum of its retained homogeneous components.
@@ -172,9 +172,9 @@ theorem quotient_eq_sum_shiftedQuotientComponent (k : ℕ)
 @[simp]
 theorem shiftedHomogeneousComponent_eq_zero {q : Γ} (hq : q - p ∉ d.monoid)
     (x : d.ShiftedCoefficients ℳ p) : d.shiftedHomogeneousComponent ℳ p q x = 0 := by
-  have hz := (d.completionComponent (shiftedGrading ℳ d.monoid p)
+  have hz := (d.filtrationCompletionComponent (shiftedGrading ℳ d.monoid p)
     (d.shiftedFiltration ℳ p) (d.shiftedFiltration_succ ℳ p) (q - p) x).property
-  have hz' : (d.completionComponent (shiftedGrading ℳ d.monoid p)
+  have hz' : (d.filtrationCompletionComponent (shiftedGrading ℳ d.monoid p)
       (d.shiftedFiltration ℳ p) (d.shiftedFiltration_succ ℳ p) (q - p) x :
       shiftedSubmodule ℳ d.monoid p) = 0 := by
     simpa only [shiftedGrading_eq_bot ℳ d.monoid p hq, Submodule.mem_bot] using hz
@@ -186,10 +186,10 @@ theorem shiftedHomogeneousComponent_eq_zero {q : Γ} (hq : q - p ∉ d.monoid)
 theorem shiftedCoefficients_ext {x y : d.ShiftedCoefficients ℳ p}
     (h : ∀ q, d.shiftedHomogeneousComponent ℳ p q x =
       d.shiftedHomogeneousComponent ℳ p q y) : x = y := by
-  apply (d.completionEquivPi (shiftedGrading ℳ d.monoid p) (d.shiftedFiltration ℳ p)
+  apply (d.filtrationCompletionEquivPi (shiftedGrading ℳ d.monoid p) (d.shiftedFiltration ℳ p)
     (d.shiftedFiltration_succ ℳ p) (fun n hn => shiftedGrading_eq_bot ℳ d.monoid p hn)).injective
   funext n
-  simp only [completionEquivPi_apply]
+  simp only [filtrationCompletionEquivPi_apply]
   apply Subtype.ext
   apply Subtype.ext
   have he := congrArg Subtype.val (h (p + n))

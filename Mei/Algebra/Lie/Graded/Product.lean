@@ -22,7 +22,7 @@ with this structure. These are explicit choices because the positive degree data
 are not determined by the type of the product.
 
 The linear comparison and its finite-cutoff reconstruction are
-`TauCeti.PositiveDegrees.completionEquivPi`. The verification of the Lie identities
+`TauCeti.PositiveDegrees.filtrationCompletionEquivPi`. The verification of the Lie identities
 uses the quotient-wise bracket on `LieIdeal.completion`, following Mathlib's
 transport construction `DirectSum.decomposeLieEquiv` for direct sums.
 -/
@@ -68,7 +68,7 @@ local notation "F" =>
   LieIdeal.completionFiltration (d.truncationIdeal ℒ) (d.truncationIdeal_antitone ℒ)
 
 private noncomputable abbrev productEquiv :=
-  d.completionEquivPi ℒ F (fun k => d.truncationIdeal_toSubmodule ℒ k)
+  d.filtrationCompletionEquivPi ℒ F (fun k => d.truncationIdeal_toSubmodule ℒ k)
     (fun n hn => IsPositiveGrading.eq_bot n (Or.inl hn))
 
 omit [IsPositiveGrading d ℒ] in
@@ -94,21 +94,21 @@ private theorem decompose_lie_cutoff (x y : ∀ n, ℒ n) (n : N) :
     d.filter_cutoff_product_eq_decompositions n _ (Int.self_le_toNat _), piLieBracket_apply]
 
 private theorem component_lie_inverse (x y : ∀ n, ℒ n) (n : N) :
-    d.completionComponent ℒ F (fun k => d.truncationIdeal_toSubmodule ℒ k) n
+    d.filtrationCompletionComponent ℒ F (fun k => d.truncationIdeal_toSubmodule ℒ k) n
       ⁅(productEquiv d ℒ).symm x, (productEquiv d ℒ).symm y⁆ =
         piLieBracket d ℒ x y n := by
   classical
-  rw [completionComponent_eq_quotientComponent d ℒ _ _ n (d.degree n).toNat
+  rw [filtrationCompletionComponent_eq_quotientComponent d ℒ _ _ n (d.degree n).toNat
     (Int.self_le_toNat _), LieIdeal.projection_bracket]
-  rw [projection_completionEquivPi_symm, projection_completionEquivPi_symm,
-    ← LieSubmodule.Quotient.mk_bracket, quotientComponent_mk]
+  rw [projection_filtrationCompletionEquivPi_symm, projection_filtrationCompletionEquivPi_symm,
+    ← LieSubmodule.Quotient.mk_bracket, filtrationQuotientComponent_mk]
   exact Subtype.ext (decompose_lie_cutoff d ℒ x y n)
 
 private theorem productEquiv_lie (x y : d.completedLie ℒ) :
     productEquiv d ℒ ⁅x, y⁆ =
       piLieBracket d ℒ (productEquiv d ℒ x) (productEquiv d ℒ y) := by
   funext n
-  simpa only [LinearEquiv.symm_apply_apply, completionEquivPi_apply] using
+  simpa only [LinearEquiv.symm_apply_apply, filtrationCompletionEquivPi_apply] using
     component_lie_inverse d ℒ (productEquiv d ℒ x) (productEquiv d ℒ y) n
 
 /-- The convolution Lie ring on all homogeneous families. Use as a local instance;
@@ -175,33 +175,36 @@ theorem completionLieEquivPi_toLinearEquiv :
     letI := d.lieRingPi ℒ
     letI := d.lieAlgebraPi ℒ
     (d.completionLieEquivPi ℒ).toLinearEquiv =
-      d.completionEquivPi ℒ F (fun k => d.truncationIdeal_toSubmodule ℒ k)
+      d.filtrationCompletionEquivPi ℒ F (fun k => d.truncationIdeal_toSubmodule ℒ k)
         (fun n hn => IsPositiveGrading.eq_bot n (Or.inl hn)) := (rfl)
 
 /-- The Lie comparison reads the same coefficients as the module comparison. -/
 @[simp]
 theorem completionLieEquivPi_apply (x : d.completedLie ℒ) (n : N) :
     d.completionLieEquivPi ℒ x n =
-      d.completionComponent ℒ F (fun k => d.truncationIdeal_toSubmodule ℒ k) n x :=
-  d.completionEquivPi_apply ℒ F _ _ x n
+      d.filtrationCompletionComponent ℒ F (fun k => d.truncationIdeal_toSubmodule ℒ k) n x :=
+  d.filtrationCompletionEquivPi_apply ℒ F _ _ x n
 
 /-- The inverse Lie comparison reconstructs any family of homogeneous coefficients. -/
 @[simp]
 theorem completionComponent_completionLieEquivPi_symm (x : ∀ n, ℒ n) (n : N) :
     letI := d.lieRingPi ℒ
     letI := d.lieAlgebraPi ℒ
-    d.completionComponent ℒ F (fun k => d.truncationIdeal_toSubmodule ℒ k) n
+    d.filtrationCompletionComponent ℒ F (fun k => d.truncationIdeal_toSubmodule ℒ k) n
       ((d.completionLieEquivPi ℒ).symm x) = x n :=
-  d.completionComponent_completionEquivPi_symm ℒ _ _ _ x n
+  d.filtrationCompletionComponent_equivPi_symm ℒ _ _ _ x n
 
 /-- The completed Lie bracket has the finite convolution formula on homogeneous
 coefficients, expressed directly on the compatible-family completion. -/
 theorem completionComponent_lie (x y : d.completedLie ℒ) (n : N) :
-    (d.completionComponent ℒ F (fun k => d.truncationIdeal_toSubmodule ℒ k) n ⁅x, y⁆ : L) =
+    (d.filtrationCompletionComponent ℒ F
+      (fun k => d.truncationIdeal_toSubmodule ℒ k) n ⁅x, y⁆ : L) =
       ∑ p ∈ (d.finite_decompositions n).toFinset,
-        ⁅(d.completionComponent ℒ F (fun k => d.truncationIdeal_toSubmodule ℒ k) p.1 x : L),
-         (d.completionComponent ℒ F (fun k => d.truncationIdeal_toSubmodule ℒ k) p.2 y : L)⁆ := by
-  simpa only [piLieBracket, completionEquivPi_apply] using
+        ⁅(d.filtrationCompletionComponent ℒ F
+            (fun k => d.truncationIdeal_toSubmodule ℒ k) p.1 x : L),
+         (d.filtrationCompletionComponent ℒ F
+            (fun k => d.truncationIdeal_toSubmodule ℒ k) p.2 y : L)⁆ := by
+  simpa only [piLieBracket, filtrationCompletionEquivPi_apply] using
     congrArg (fun z : ∀ n, ℒ n => (z n : L)) (productEquiv_lie d ℒ x y)
 
 end TauCeti.PositiveDegrees

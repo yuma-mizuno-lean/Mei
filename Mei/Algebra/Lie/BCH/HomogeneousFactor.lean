@@ -40,7 +40,7 @@ order `a` in degrees at most `a + 1`. Consequently, cancelling arbitrary `p` fac
 finite product leaves a residual label in the filtration term when the `¬p` factors lie in
 that term. In degrees at most `a + 1`, its coefficients are the sums of those of the `¬p` factors.
 
-The coefficients are `TauCeti.PositiveDegrees.completionComponent` of the exponential
+The coefficients are `TauCeti.PositiveDegrees.filtrationCompletionComponent` of the exponential
 coordinate `TauCeti.PositiveDegrees.completedBCHExp`; the finite products are Mathlib's
 `Finset.noncommProd`, related to finite sums by `Mei.BCHGroup.exp_sum_of_lie_eq_zero`. The
 filtration statements use the commutator bound
@@ -67,13 +67,13 @@ local notation "F" =>
 
 /-- The degree-`n` coefficient of the exponential coordinate of a completed label. -/
 def logComponent (g : d.completedBCHGroup ℒ) (n : N) : ℒ n :=
-  d.completionComponent ℒ F (fun k => d.truncationIdeal_toSubmodule ℒ k) n
+  d.filtrationCompletionComponent ℒ F (fun k => d.truncationIdeal_toSubmodule ℒ k) n
     ((d.completedBCHExp ℒ).symm g)
 
 /-- Read a logarithmic coefficient from the completed exponential coordinate. -/
 theorem logComponent_def (g : d.completedBCHGroup ℒ) (n : N) :
     d.logComponent ℒ g n =
-      d.completionComponent ℒ F (fun k => d.truncationIdeal_toSubmodule ℒ k) n
+      d.filtrationCompletionComponent ℒ F (fun k => d.truncationIdeal_toSubmodule ℒ k) n
         ((d.completedBCHExp ℒ).symm g) := (rfl)
 
 /-- The homogeneous factor of degree `n`: the completed exponential of the degree-`n`
@@ -107,7 +107,7 @@ theorem projection_homogeneousFactor_ne_one_iff (g : d.completedBCHGroup ℒ) (n
 @[simp]
 theorem logComponent_completedBCHExp (x : d.completedLie ℒ) (n : N) :
     d.logComponent ℒ (d.completedBCHExp ℒ x) n =
-      d.completionComponent ℒ F (fun k => d.truncationIdeal_toSubmodule ℒ k) n x := by
+      d.filtrationCompletionComponent ℒ F (fun k => d.truncationIdeal_toSubmodule ℒ k) n x := by
   rw [logComponent, Equiv.symm_apply_apply]
 
 /-- At any cutoff retaining degree `n`, the coefficient is the homogeneous component of any
@@ -117,10 +117,10 @@ theorem logComponent_eq_decompose (g : d.completedBCHGroup ℒ) {n : N} {k : ℕ
     (hx : (d.truncationIdeal ℒ k).mkQ x =
       BCHGroup.log (L := d.lieTruncation ℒ k) (CompletedGroup.projection k g)) :
     d.logComponent ℒ g n = DirectSum.decompose ℒ x n := by
-  rw [logComponent, completionComponent_eq_quotientComponent d ℒ F _ n k hn,
+  rw [logComponent, filtrationCompletionComponent_eq_quotientComponent d ℒ F _ n k hn,
     ← LieIdeal.completionProjection_apply, completionProjection_completedBCHExp_symm, ← hx,
     LieIdeal.mkQ_apply]
-  exact d.quotientComponent_mk ℒ F _ k n hn x
+  exact d.filtrationQuotientComponent_mk ℒ F _ k n hn x
 
 /-- A finite projection determines every logarithmic coefficient it retains. -/
 theorem logComponent_eq_of_projection_eq {g g' : d.completedBCHGroup ℒ}
@@ -149,10 +149,10 @@ theorem logComponent_eq_zero_of_projection_eq_one {g : d.completedBCHGroup ℒ}
 theorem ext_logComponent {g g' : d.completedBCHGroup ℒ}
     (h : ∀ n, d.logComponent ℒ g n = d.logComponent ℒ g' n) : g = g' := by
   apply (d.completedBCHExp ℒ).symm.injective
-  apply (d.completionEquivPi ℒ F (fun k => d.truncationIdeal_toSubmodule ℒ k)
+  apply (d.filtrationCompletionEquivPi ℒ F (fun k => d.truncationIdeal_toSubmodule ℒ k)
     (fun n hn => IsPositiveGrading.eq_bot n (Or.inl hn))).injective
   funext n
-  simpa only [completionEquivPi_apply, logComponent] using h n
+  simpa only [filtrationCompletionEquivPi_apply, logComponent] using h n
 
 /-- The logarithmic coefficients of a completed exponential are the homogeneous
 components of the original Lie element. -/
@@ -247,12 +247,12 @@ theorem log_projection_eq_mkQ_sum (g : d.completedBCHGroup ℒ) (k : ℕ) :
     BCHGroup.log (L := d.lieTruncation ℒ k) (CompletedGroup.projection k g) =
       (d.truncationIdeal ℒ k).mkQ
         (∑ n ∈ (d.finite_cutoff k).toFinset, (d.logComponent ℒ g n : L)) := by
-  let e := d.completionEquivPi ℒ F (fun k => d.truncationIdeal_toSubmodule ℒ k)
+  let e := d.filtrationCompletionEquivPi ℒ F (fun k => d.truncationIdeal_toSubmodule ℒ k)
     (fun n hn => IsPositiveGrading.eq_bot n (Or.inl hn))
   rw [← completionProjection_completedBCHExp_symm, LieIdeal.completionProjection_apply,
     ← e.symm_apply_apply ((d.completedBCHExp ℒ).symm g),
-    projection_completionEquivPi_symm]
-  simp only [e, completionEquivPi_apply, LieIdeal.mkQ_apply, logComponent]
+    projection_filtrationCompletionEquivPi_symm]
+  simp only [e, filtrationCompletionEquivPi_apply, LieIdeal.mkQ_apply, logComponent]
 
 /-- A completed label with a nontrivial order-`k` projection has a nonzero logarithmic
 coefficient in some degree of order at most `k`. This is the converse of

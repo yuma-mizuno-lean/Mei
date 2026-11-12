@@ -5,221 +5,198 @@ Authors: Codex
 -/
 module
 
+public import TauCeti.Algebra.PositiveDegrees.Completion
 public import Mei.Algebra.PositiveDegrees.Grading
 public import Mei.LinearAlgebra.ModuleFiltration.Completion
 
 /-!
-# Degree completions as products of homogeneous pieces
+# Degree completions for module filtrations
 
-The completion of a module supported on a positive degree monoid is linearly
-equivalent to the product of its homogeneous pieces. Finite degree cutoffs
-reconstruct each quotient from
-an arbitrary family of homogeneous coefficients. Conversely, a coefficient of a
-compatible quotient family is read at any cutoff containing its degree.
-
-The construction uses Mathlib's internal direct-sum decomposition, quotient linear
-maps, and the compatible-family completion `ModuleFiltration.completion`. The
-filtration is supplied with its identification with the degree submodules, so the
-comparison applies to existing completion carriers without replacing them. No
-basis or finiteness assumption on the homogeneous modules is needed.
+Mei's compatible quotient families form a module filtration completion.
+We compare these families with TauCeti's limit of the same quotient tower
+and use the upstream coefficient maps and product equivalence.
 -/
 
 public section
 
-open TauCeti (PositiveDegrees)
+open Opposite
+open _root_.DirectSum
 
 namespace TauCeti.PositiveDegrees
 
 open Mei
 
-open _root_.DirectSum
-
 variable {N R M : Type*} [AddCommMonoid N] [Ring R] [AddCommGroup M] [Module R M]
   [DecidableEq N] (d : PositiveDegrees N) (ℳ : N → Submodule R M)
-  [Decomposition ℳ]
-  (F : ModuleFiltration R M)
-  (hF : ∀ k, F.submodule (k + 1) = d.degreeSubmodule ℳ k)
+  [Decomposition ℳ] (F : ModuleFiltration R M)
 
-private def componentLinear (n : N) : M →ₗ[R] ℳ n :=
-  (DirectSum.component R N (fun n => ℳ n) n).comp (decomposeLinearEquiv ℳ).toLinearMap
+private theorem quotientAntitone : Antitone (fun k => F.submodule (k + 1)) :=
+  fun _ _ h => F.antitone (Nat.add_le_add_right h 1)
 
-/-- A homogeneous component descends to any quotient retaining its degree. -/
-def quotientComponent (k : ℕ) (n : N) (hn : d.degree n ≤ k) :
-    F.quotient k →ₗ[R] ℳ n :=
-  (F.submodule (k + 1)).liftQ (componentLinear ℳ n) (by
-    intro x hx
-    rw [LinearMap.mem_ker]
-    apply Subtype.ext
-    have hx' : x ∈ d.degreeSubmodule ℳ k := by simpa only [hF k] using hx
-    exact (d.mem_degreeSubmodule_iff ℳ).mp hx' n hn)
+local notation "J" => fun k => F.submodule (k + 1)
+local notation "T" => ModuleTower.quotients J (quotientAntitone F)
 
-/-- The component of a quotient class is the corresponding homogeneous component. -/
+private def quotientComparison (k : ℕ) : F.quotient k ≃ₗ[R] (T).obj (op k) := by
+  let f := (F.submodule (k + 1)).liftQ (ModuleTower.quotientsπ J (quotientAntitone F) k)
+    (by rw [ModuleTower.ker_quotientsπ])
+  let g := ModuleTower.quotientsLift J (quotientAntitone F) k (F.submodule (k + 1)).mkQ
+    (by rw [Submodule.ker_mkQ])
+  refine LinearEquiv.ofLinearMap f g ?_ ?_
+  · apply ModuleTower.quotients_hom_ext J (quotientAntitone F)
+    apply LinearMap.ext
+    intro x
+    simp [f, g, Submodule.liftQ_apply]
+  · apply Submodule.linearMap_qext (F.submodule (k + 1))
+    apply LinearMap.ext
+    intro x
+    simp [f, g, Submodule.liftQ_apply]
+
 @[simp]
-theorem quotientComponent_mk (k : ℕ) (n : N) (hn : d.degree n ≤ k) (x : M) :
-    d.quotientComponent ℳ F hF k n hn (Submodule.Quotient.mk x) = decompose ℳ x n :=
-  (F.submodule (k + 1)).liftQ_apply _ x
+private theorem quotientComparison_mk (k : ℕ) (x : M) :
+    quotientComparison F k (Submodule.Quotient.mk x) =
+      ModuleTower.quotientsπ J (quotientAntitone F) k x := by
+  exact Submodule.liftQ_apply _ _ x
 
-/-- Components already retained at the lower cutoff commute with quotient transitions. -/
-@[simp]
-theorem quotientComponent_transition {k l : ℕ} (h : k ≤ l) (n : N)
-    (hn : d.degree n ≤ k) (x : F.quotient l) :
-    d.quotientComponent ℳ F hF k n hn (F.transition h x) =
-      d.quotientComponent ℳ F hF l n (hn.trans (Int.ofNat_le.mpr h)) x := by
+private theorem quotientComparison_transition {k l : ℕ} (h : k ≤ l) (x : F.quotient l) :
+    (T).transitionOfLE h (quotientComparison F l x) =
+      quotientComparison F k (F.transition h x) := by
   obtain ⟨x, rfl⟩ := (F.submodule (l + 1)).mkQ_surjective x
   simp
 
-private theorem quotient_ext {k : ℕ} {x y : F.quotient k}
-    (h : ∀ n (hn : d.degree n ≤ k),
-      d.quotientComponent ℳ F hF k n hn x = d.quotientComponent ℳ F hF k n hn y) : x = y := by
-  obtain ⟨x, rfl⟩ := (F.submodule (k + 1)).mkQ_surjective x
-  obtain ⟨y, rfl⟩ := (F.submodule (k + 1)).mkQ_surjective y
-  apply (Submodule.Quotient.eq (F.submodule (k + 1))).mpr
-  rw [hF k, d.mem_degreeSubmodule_iff ℳ]
-  intro n hn
-  have he := congrArg Subtype.val (h n hn)
-  simpa only [Submodule.mkQ_apply, quotientComponent_mk, decompose_sub, sub_apply,
-    Submodule.coe_sub,
-    sub_eq_zero] using he
+private def completionComparison : F.completion ≃ₗ[R] (T).lim where
+  toFun x := ⟨fun k => quotientComparison F k (F.projection k x),
+    (T).mem_lim.mpr fun k => by
+      rw [← ModuleTower.transitionOfLE_succ, quotientComparison_transition,
+        F.transition_projection]⟩
+  invFun y := ⟨fun k => (quotientComparison F k.unop).symm ((T).limπ k.unop y),
+    (F.mem_completionSubmodule_iff _).mpr fun k l h => by
+      apply (quotientComparison F k).injective
+      change quotientComparison F k (F.transition h
+        ((quotientComparison F l).symm ((T).limπ l y))) =
+        quotientComparison F k ((quotientComparison F k).symm ((T).limπ k y))
+      rw [← quotientComparison_transition, LinearEquiv.apply_symm_apply,
+        LinearEquiv.apply_symm_apply]
+      simpa only [ModuleTower.limπ_apply] using (T).transitionOfLE_coe_lim y h⟩
+  left_inv x := by
+    apply F.completion_ext
+    intro k
+    simp [ModuleTower.limπ_apply]
+  right_inv y := by
+    apply (T).lim_ext
+    intro k
+    simp [ModuleTower.limπ_apply]
+  map_add' x y := by
+    apply (T).lim_ext
+    intro k
+    simp [ModuleTower.limπ_apply]
+  map_smul' r x := by
+    apply (T).lim_ext
+    intro k
+    simp [ModuleTower.limπ_apply]
 
-/-- The degree-`n` coefficient of a completed module element. -/
-def completionComponent (n : N) : F.completion →ₗ[R] ℳ n :=
-  (d.quotientComponent ℳ F hF (d.degree n).toNat n (Int.self_le_toNat _)).comp
-    (F.projection (d.degree n).toNat)
+@[simp]
+private theorem limπ_completionComparison (k : ℕ) (x : F.completion) :
+    (T).limπ k (completionComparison F x) = quotientComparison F k (F.projection k x) := by
+  rw [ModuleTower.limπ_apply]
+  rfl
+
+variable (hF : ∀ k, F.submodule (k + 1) = d.degreeSubmodule ℳ k)
+
+/-- A homogeneous component of a finite filtration quotient. -/
+def filtrationQuotientComponent (k : ℕ) (n : N) (hn : d.degree n ≤ k) :
+    F.quotient k →ₗ[R] ℳ n :=
+  (d.quotientComponent ℳ J (quotientAntitone F) hF k n hn).comp
+    (quotientComparison F k).toLinearMap
+
+/-- The component of a quotient class is the corresponding homogeneous component. -/
+@[simp]
+theorem filtrationQuotientComponent_mk (k : ℕ) (n : N) (hn : d.degree n ≤ k) (x : M) :
+    d.filtrationQuotientComponent ℳ F hF k n hn (Submodule.Quotient.mk x) = decompose ℳ x n := by
+  simp [filtrationQuotientComponent]
+
+/-- Components already retained at the lower cutoff commute with quotient transitions. -/
+@[simp]
+theorem filtrationQuotientComponent_transition {k l : ℕ} (h : k ≤ l) (n : N)
+    (hn : d.degree n ≤ k) (x : F.quotient l) :
+    d.filtrationQuotientComponent ℳ F hF k n hn (F.transition h x) =
+      d.filtrationQuotientComponent ℳ F hF l n (hn.trans (Int.ofNat_le.mpr h)) x := by
+  simp only [filtrationQuotientComponent, LinearMap.comp_apply, LinearEquiv.coe_coe,
+    ← quotientComparison_transition F h x, quotientComponent_transition]
+
+/-- The degree component of an element of the filtration completion. -/
+def filtrationCompletionComponent (n : N) : F.completion →ₗ[R] ℳ n :=
+  (d.completionComponent ℳ J (quotientAntitone F) hF n).comp (completionComparison F).toLinearMap
 
 /-- Any cutoff containing the degree computes the same completed component. -/
-theorem completionComponent_eq_quotientComponent (n : N) (k : ℕ)
+theorem filtrationCompletionComponent_eq_quotientComponent (n : N) (k : ℕ)
     (hn : d.degree n ≤ k) (x : F.completion) :
-    d.completionComponent ℳ F hF n x =
-      d.quotientComponent ℳ F hF k n hn (F.projection k x) := by
-  have hnk : (d.degree n).toNat ≤ k := by omega
-  rw [completionComponent, LinearMap.comp_apply, ← F.transition_projection hnk x,
-    quotientComponent_transition]
+    d.filtrationCompletionComponent ℳ F hF n x =
+      d.filtrationQuotientComponent ℳ F hF k n hn (F.projection k x) := by
+  simp only [filtrationCompletionComponent, filtrationQuotientComponent, LinearMap.comp_apply,
+    LinearEquiv.coe_coe, d.completionComponent_eq_quotientComponent ℳ J
+      (quotientAntitone F) hF n k hn, limπ_completionComparison]
 
 /-- Completed components of canonical elements are their original homogeneous components. -/
 @[simp]
-theorem completionComponent_of (n : N) (x : M) :
-    d.completionComponent ℳ F hF n (F.of x) = decompose ℳ x n := by
-  simp [completionComponent]
+theorem filtrationCompletionComponent_of (n : N) (x : M) :
+    d.filtrationCompletionComponent ℳ F hF n (F.of x) = decompose ℳ x n := by
+  rw [filtrationCompletionComponent_eq_quotientComponent d ℳ F hF n (d.degree n).toNat
+    (Int.self_le_toNat _), F.projection_of, filtrationQuotientComponent_mk]
 
-/-- A completed element has order at least `k + 1` exactly when its coefficients
-through order `k` vanish. -/
+/-- A completed element has order at least k + 1 exactly when its coefficients
+through order k vanish. -/
 theorem mem_completedFiltration_iff (x : F.completion) (k : ℕ) :
     x ∈ F.completedFiltration.submodule (k + 1) ↔
-      ∀ n, d.degree n ≤ k → d.completionComponent ℳ F hF n x = 0 := by
+      ∀ n, d.degree n ≤ k → d.filtrationCompletionComponent ℳ F hF n x = 0 := by
   rw [ModuleFiltration.completedFiltration_succ, LinearMap.mem_ker]
   constructor
   · intro hx n hn
-    rw [completionComponent_eq_quotientComponent d ℳ F hF n k hn, hx, map_zero]
+    rw [filtrationCompletionComponent_eq_quotientComponent d ℳ F hF n k hn, hx, map_zero]
   · intro hx
-    apply d.quotient_ext ℳ F hF
+    apply (quotientComparison F k).injective
+    apply d.quotient_ext ℳ J (quotientAntitone F) hF
     intro n hn
-    rw [map_zero, ← completionComponent_eq_quotientComponent]
-    exact hx n hn
-
-private noncomputable def finiteApprox (k : ℕ) : (∀ n, ℳ n) →ₗ[R] M :=
-  ∑ n ∈ (d.finite_cutoff k).toFinset, (ℳ n).subtype.comp (LinearMap.proj n)
+    rw [map_zero, map_zero]
+    exact (d.filtrationCompletionComponent_eq_quotientComponent ℳ F hF n k hn x).symm.trans
+      (hx n hn)
 
 variable (hℳ : ∀ n, n ∉ d.monoid → ℳ n = ⊥)
 
-include hℳ in
-private theorem decompose_finiteApprox (k : ℕ) (x : ∀ n, ℳ n) (n : N)
-    (hn : d.degree n ≤ k) :
-    decompose ℳ (d.finiteApprox ℳ k x) n = x n := by
-  classical
-  apply Subtype.ext
-  by_cases hP : n ∈ d.monoid
-  · have hn' : n ∈ (d.finite_cutoff k).toFinset := by simp [hP, hn]
-    simp only [finiteApprox, LinearMap.sum_apply, LinearMap.comp_apply,
-      LinearMap.proj_apply, Submodule.subtype_apply, decompose_sum, sum_apply,
-      Submodule.coe_sum]
-    rw [Finset.sum_eq_single n]
-    · exact decompose_of_mem_same ℳ (x n).property
-    · intro m hm hmn
-      exact decompose_of_mem_ne ℳ (x m).property hmn
-    · exact fun h => (h hn').elim
-  · have hb : ℳ n = ⊥ := hℳ n hP
-    have hz (y : ℳ n) : (y : M) = 0 := by simpa only [hb, Submodule.mem_bot] using y.property
-    exact (hz _).trans (hz _).symm
-
-private noncomputable def piToQuotient (k : ℕ) : (∀ n, ℳ n) →ₗ[R] F.quotient k :=
-  (F.submodule (k + 1)).mkQ.comp (d.finiteApprox ℳ k)
-
-include hℳ in
-private theorem quotientComponent_piToQuotient (k : ℕ) (n : N)
-    (hn : d.degree n ≤ k) (x : ∀ n, ℳ n) :
-    d.quotientComponent ℳ F hF k n hn (d.piToQuotient ℳ F k x) = x n := by
-  rw [piToQuotient, LinearMap.comp_apply, Submodule.mkQ_apply, quotientComponent_mk]
-  exact d.decompose_finiteApprox ℳ hℳ k x n hn
-
-include hℳ in
-private noncomputable def piToCompletion : (∀ n, ℳ n) →ₗ[R] F.completion :=
-  F.lift (d.piToQuotient ℳ F) (by
-    intro k l h
-    apply LinearMap.ext
-    intro x
-    apply d.quotient_ext ℳ F hF
-    intro n hn
-    simp only [LinearMap.comp_apply, quotientComponent_transition,
-      d.quotientComponent_piToQuotient ℳ F hF hℳ])
-
-private theorem completionComponent_piToCompletion (n : N) (x : ∀ n, ℳ n) :
-    d.completionComponent ℳ F hF n (d.piToCompletion ℳ F hF hℳ x) = x n := by
-  rw [completionComponent, LinearMap.comp_apply, piToCompletion, F.projection_lift]
-  exact d.quotientComponent_piToQuotient ℳ F hF hℳ _ n _ x
-
-include hℳ in
-/-- The degree completion of a module supported on the positive monoid is the product of its
-homogeneous pieces. Finite degree cutoffs reconstruct the inverse. -/
-noncomputable def completionEquivPi : F.completion ≃ₗ[R] ∀ n, ℳ n :=
-  LinearEquiv.ofLinearMap (LinearMap.pi (d.completionComponent ℳ F hF))
-    (d.piToCompletion ℳ F hF hℳ)
-    (by
-      apply LinearMap.ext
-      intro x
-      funext n
-      exact d.completionComponent_piToCompletion ℳ F hF hℳ n x)
-    (by
-      apply LinearMap.ext
-      intro x
-      apply F.completion_ext
-      intro k
-      apply d.quotient_ext ℳ F hF
-      intro n hn
-      rw [← completionComponent_eq_quotientComponent,
-        ← completionComponent_eq_quotientComponent]
-      simp only [LinearMap.comp_apply, LinearMap.pi_apply, LinearMap.id_apply,
-        d.completionComponent_piToCompletion ℳ F hF hℳ])
+/-- The filtration completion of a positively supported module as homogeneous coefficients. -/
+noncomputable def filtrationCompletionEquivPi : F.completion ≃ₗ[R] ∀ n, ℳ n :=
+  (completionComparison F).trans (d.completionEquivPi ℳ J (quotientAntitone F) hF hℳ)
 
 /-- The product comparison reads the completed homogeneous components. -/
 @[simp]
-theorem completionEquivPi_apply (x : F.completion) (n : N) :
-    d.completionEquivPi ℳ F hF hℳ x n = d.completionComponent ℳ F hF n x := (rfl)
+theorem filtrationCompletionEquivPi_apply (x : F.completion) (n : N) :
+    d.filtrationCompletionEquivPi ℳ F hF hℳ x n =
+      d.filtrationCompletionComponent ℳ F hF n x := by
+  exact d.completionEquivPi_apply ℳ J (quotientAntitone F) hF hℳ (completionComparison F x) n
 
 /-- The inverse product comparison has the prescribed homogeneous coefficients. -/
 @[simp]
-theorem completionComponent_completionEquivPi_symm (x : ∀ n, ℳ n) (n : N) :
-    d.completionComponent ℳ F hF n ((d.completionEquivPi ℳ F hF hℳ).symm x) = x n :=
-  d.completionComponent_piToCompletion ℳ F hF hℳ n x
+theorem filtrationCompletionComponent_equivPi_symm (x : ∀ n, ℳ n) (n : N) :
+    d.filtrationCompletionComponent ℳ F hF n ((d.filtrationCompletionEquivPi ℳ F hF hℳ).symm x) =
+      x n := by
+  rw [← filtrationCompletionEquivPi_apply d ℳ F hF hℳ, LinearEquiv.apply_symm_apply]
 
-/-- At order `k`, the inverse product comparison is the class of the finite sum
+/-- At order k, the inverse product comparison is the class of the finite sum
 of coefficients in the degree cutoff. -/
-theorem projection_completionEquivPi_symm (x : ∀ n, ℳ n) (k : ℕ) :
-    F.projection k ((d.completionEquivPi ℳ F hF hℳ).symm x) =
+theorem projection_filtrationCompletionEquivPi_symm (x : ∀ n, ℳ n) (k : ℕ) :
+    F.projection k ((d.filtrationCompletionEquivPi ℳ F hF hℳ).symm x) =
       Submodule.Quotient.mk (∑ n ∈ (d.finite_cutoff k).toFinset, (x n : M)) := by
-  classical
-  calc
-    _ = d.piToQuotient ℳ F k x := F.projection_lift _ _ k x
-    _ = _ := by
-      simp only [piToQuotient, LinearMap.comp_apply, Submodule.mkQ_apply,
-        finiteApprox, LinearMap.sum_apply, LinearMap.proj_apply, Submodule.subtype_apply]
+  apply (quotientComparison F k).injective
+  rw [← limπ_completionComparison, quotientComparison_mk]
+  simp only [filtrationCompletionEquivPi, LinearEquiv.symm_trans_apply,
+    LinearEquiv.apply_symm_apply, projection_completionEquivPi_symm]
 
 include hℳ in
 /-- A finite projection is reconstructed from the completed components in its cutoff. -/
-theorem projection_eq_sum_completionComponent (k : ℕ) (x : F.completion) :
+theorem projection_eq_sum_filtrationCompletionComponent (k : ℕ) (x : F.completion) :
     F.projection k x = Submodule.Quotient.mk
-      (∑ n ∈ (d.finite_cutoff k).toFinset, (d.completionComponent ℳ F hF n x : M)) := by
-  have h := d.projection_completionEquivPi_symm ℳ F hF hℳ
-    (d.completionEquivPi ℳ F hF hℳ x) k
-  simpa only [LinearEquiv.symm_apply_apply, completionEquivPi_apply] using h
+      (∑ n ∈ (d.finite_cutoff k).toFinset, (d.filtrationCompletionComponent ℳ F hF n x : M)) := by
+  have h := d.projection_filtrationCompletionEquivPi_symm ℳ F hF hℳ
+    (d.filtrationCompletionEquivPi ℳ F hF hℳ x) k
+  simpa only [LinearEquiv.symm_apply_apply, filtrationCompletionEquivPi_apply] using h
 
 end TauCeti.PositiveDegrees
