@@ -67,6 +67,8 @@ covered, since the transfer of wall functions requires the monomials to be fixed
 
 public section
 
+open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading)
+
 open TauCeti (DirectedWallSpaces)
 
 noncomputable section

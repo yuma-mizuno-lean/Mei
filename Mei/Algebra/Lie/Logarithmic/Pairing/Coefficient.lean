@@ -23,6 +23,8 @@ theta functions, and refined tropical curve counts*, Example 2.1(i), arXiv:1503.
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 noncomputable section
 
 namespace Mei

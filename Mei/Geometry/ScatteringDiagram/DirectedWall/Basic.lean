@@ -47,6 +47,8 @@ The constructions use `TauCeti.DirectedWallSpaces.wallGroup`,
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading SupportedRay)
+
 open TauCeti (DirectedWallSpaces)
 
 noncomputable section

@@ -19,12 +19,15 @@ different coefficient rings over a common base. The construction uses Mathlib's
 
 The supported-ray wall sums restrict in the same way
 (`DirectedWallSpaces.raySubmodule_restrictScalars`), so the scalar-restriction comparison
-`Mei.PositiveDegrees.completedBCHRestrictScalarsEquiv` of completed BCH groups identifies the wall
+`TauCeti.PositiveDegrees.completedBCHRestrictScalarsEquiv` of completed BCH groups identifies
+the wall
 groups of the restricted wall spaces with the original wall groups
 (`DirectedWallSpaces.mem_wallGroup_restrictScalars_iff`).
 -/
 
 public section
+
+open TauCeti (SupportedRay)
 
 open TauCeti (DirectedWallSpaces)
 
@@ -59,7 +62,7 @@ section Group
 variable {Γ Λ R S L : Type*} [AddCommGroup Γ] [AddCommMonoid Λ]
   [CommRing R] [CommRing S] [LieRing L] [LieAlgebra S L] [LieAlgebra R L]
   [SMul R S] [IsScalarTower R S L]
-  {ρ : Γ →+ Λ} {ℒ : Γ → Submodule S L} {d : Mei.PositiveDegrees Γ} (H : DirectedWallSpaces ρ ℒ)
+  {ρ : Γ →+ Λ} {ℒ : Γ → Submodule S L} {d : TauCeti.PositiveDegrees Γ} (H : DirectedWallSpaces ρ ℒ)
 
 /-- The supported-ray wall sums of the restricted wall spaces are the restrictions of the
 original ray sums. -/
@@ -68,17 +71,17 @@ theorem raySubmodule_restrictScalars (w : SupportedRay d) (m : Λ →+ ℤ) :
     (H.restrictScalars R).raySubmodule w m = (H.raySubmodule w m).restrictScalars R := by
   simp only [raySubmodule_def, restrictScalars_wall, Submodule.restrictScalars_iSup]
 
-variable [DecidableEq Γ] [GradedLieAlgebra ℒ] [Mei.IsPositiveGrading d ℒ]
+variable [DecidableEq Γ] [GradedLieAlgebra ℒ] [TauCeti.IsPositiveGrading d ℒ]
 
 /-- The finite truncation comparison identifies the truncated supported-ray wall algebras. -/
 theorem truncatedRestrictScalarsEquiv_mem_truncatedRayLieSubalgebra_iff (w : SupportedRay d)
-    (m : Λ →+ ℤ) (k : ℕ) (x : d.truncatedLie (fun n => (ℒ n).restrictScalars R) k) :
+    (m : Λ →+ ℤ) (k : ℕ) (x : d.lieTruncation (fun n => (ℒ n).restrictScalars R) k) :
     d.truncatedRestrictScalarsEquiv (R := R) ℒ k x ∈ H.truncatedRayLieSubalgebra w m k ↔
       x ∈ (H.restrictScalars R).truncatedRayLieSubalgebra w m k := by
   simp only [mem_truncatedRayLieSubalgebra, raySubmodule_restrictScalars,
     Submodule.restrictScalars_mem, LieIdeal.mkQ_apply]
   refine exists_congr fun y => and_congr_right fun _ => ?_
-  rw [← Mei.PositiveDegrees.truncatedRestrictScalarsEquiv_mk (R := R) ℒ d k y,
+  rw [← TauCeti.PositiveDegrees.truncatedRestrictScalarsEquiv_mk (R := R) ℒ d k y,
     EquivLike.apply_eq_iff_eq]
 
 variable [Algebra ℚ R] [Algebra ℚ S] [LieAlgebra ℚ L] [IsScalarTower ℚ R L]
@@ -90,11 +93,11 @@ theorem mem_wallGroup_restrictScalars_iff (w : SupportedRay d) (m : Λ →+ ℤ)
     (g : d.completedBCHGroup (fun n => (ℒ n).restrictScalars R)) :
     d.completedBCHRestrictScalarsEquiv (R := R) ℒ g ∈ H.wallGroup w m ↔
       g ∈ (H.restrictScalars R).wallGroup w m := by
-  simp only [mem_wallGroup, Mei.PositiveDegrees.projection_completedBCHRestrictScalarsEquiv]
+  simp only [mem_wallGroup, TauCeti.PositiveDegrees.projection_completedBCHRestrictScalarsEquiv]
   refine forall_congr' fun k => ?_
   -- The projection has a categorical tower-object type; re-elaborate it as a BCH group element.
   generalize (CompletedGroup.projection k g :
-    BCHGroup (d.truncatedLie (fun n => (ℒ n).restrictScalars R) k)) = x
+    BCHGroup (d.lieTruncation (fun n => (ℒ n).restrictScalars R) k)) = x
   rw [LieHom.log_bchGroupMap (d.truncatedRestrictScalarsEquiv (R := R) ℒ k).toLieHom x]
   exact H.truncatedRestrictScalarsEquiv_mem_truncatedRayLieSubalgebra_iff w m k _
 

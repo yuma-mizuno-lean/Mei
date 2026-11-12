@@ -20,6 +20,8 @@ have completed Lie representatives.
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 namespace Mei.UniversalEnvelopingAlgebra
 
 attribute [local instance 100] LieRing.ofAssociativeRing

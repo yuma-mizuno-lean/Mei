@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Algebra.PositiveDegrees.Map
+public import TauCeti.Algebra.PositiveDegrees.FinitelyGenerated
 public import Mathlib.Data.Set.Finite.List
 public import Mathlib.Data.Fintype.List
 
@@ -33,7 +33,10 @@ or group hypothesis is needed.
 
 public section
 
-namespace Mei.PositiveDegrees
+open TauCeti (PositiveDegrees PositiveDegreeMap)
+
+namespace TauCeti.PositiveDegrees
+
 
 variable {N : Type*} [AddCommMonoid N] (d : PositiveDegrees N)
 
@@ -116,9 +119,10 @@ theorem finite_reduced_degree_words (k : ℕ) :
     exact ⟨hl.1 n (List.mem_filter.mp hn).1, by simpa using (List.mem_filter.mp hn).2⟩
   · simpa only [List.sum_filter_bne_zero] using hl.2
 
-end Mei.PositiveDegrees
+end TauCeti.PositiveDegrees
 
-namespace Mei.PositiveDegreeMap
+namespace TauCeti.PositiveDegreeMap
+
 
 variable {N M : Type*} [AddCommMonoid N] [AddCommMonoid M]
   {d : PositiveDegrees N} {e : PositiveDegrees M} (T : PositiveDegreeMap d e)
@@ -132,4 +136,4 @@ theorem finite_preimage_degree_words (k : ℕ) :
   intro l hl
   exact ⟨hl.1, T.degree_le k (d.monoid.list_sum_mem (fun n hn => (hl.1 n hn).1)) hl.2⟩
 
-end Mei.PositiveDegreeMap
+end TauCeti.PositiveDegreeMap

@@ -26,7 +26,7 @@ lattice map must be injective.
 ## References
 
 * `PointedCone.mem_hull_image_iff_linearCombination`
-* `Mei.PositiveDegrees.graph`
+* `TauCeti.PositiveDegrees.graph`
 * `PointedCone.latticePoints_map_prod_id`
 -/
 
@@ -96,6 +96,6 @@ theorem positiveDegrees_graph_monoid_eq_latticePoints_hull :
   rw [← hmap, PointedCone.latticePoints_map_prod_id _ i j f F hF hj,
     ← b.positiveDegrees_monoid_eq_latticePoints_hull hi]
   ext ⟨m, n⟩
-  simp [Mei.PositiveDegrees.mem_graph_monoid, AddSubmonoid.mem_map, eq_comm]
+  simp [TauCeti.PositiveDegrees.mem_graph_monoid, AddSubmonoid.mem_map, eq_comm]
 
 end Module.Basis

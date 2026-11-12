@@ -28,6 +28,8 @@ cluster algebras*, §1 (arXiv:1411.1394v2).
 
 public noncomputable section
 
+open TauCeti (PositiveDegrees)
+
 namespace Mei.SkewLatticeDatum.AdaptedBasis.BLMPolynomialInput
 
 variable {N ι : Type*} [AddCommGroup N] {D : SkewLatticeDatum N} {B : D.AdaptedBasis ι}

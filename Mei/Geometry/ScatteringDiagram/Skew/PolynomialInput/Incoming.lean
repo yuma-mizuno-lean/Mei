@@ -35,6 +35,8 @@ cluster algebras*, §1.1 (arXiv:1411.1394v2).
 
 public noncomputable section
 
+open TauCeti (PositiveDegrees SupportedRay)
+
 namespace Mei.SkewLatticeDatum.AdaptedBasis.BLMPolynomialInput
 
 open _root_.AddMonoidAlgebra

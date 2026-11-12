@@ -35,6 +35,8 @@ direction of their supports. Walls with zero coefficient are unrestricted.
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading SupportedRay)
+
 open TauCeti (DirectedWallSpaces)
 
 open Set Filter Mei.Convex WallComplement

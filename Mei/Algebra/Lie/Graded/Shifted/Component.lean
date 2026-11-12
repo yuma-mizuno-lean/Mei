@@ -25,9 +25,13 @@ diagrams, theta functions, and refined tropical curve counts*, §2.1
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 noncomputable section
 
-namespace Mei.PositiveDegrees
+namespace TauCeti.PositiveDegrees
+
+open Mei
 
 variable {Γ R L M : Type*} [AddCommGroup Γ] [CommRing R] [Algebra ℚ R]
   [LieRing L] [LieAlgebra R L] [LieAlgebra ℚ L] [IsScalarTower ℚ R L]
@@ -44,7 +48,7 @@ theorem shiftedHomogeneousComponent_completedBCHAction (g : d.completedBCHGroup 
     d.shiftedHomogeneousComponent ℳ p p
         ((d.shiftedLieFiltration ℒ ℳ p).completedBCHAction d ℒ g x) =
       d.shiftedHomogeneousComponent ℳ p p x := by
-  let g0 : BCHGroup (d.truncatedLie ℒ 0) := CompletedGroup.projection 0 g
+  let g0 : BCHGroup (d.lieTruncation ℒ 0) := CompletedGroup.projection 0 g
   have ha : (d.shiftedLieFiltration ℒ ℳ p).projection 0
       ((d.shiftedLieFiltration ℒ ℳ p).completedBCHAction d ℒ g x) =
       (d.shiftedLieFiltration ℒ ℳ p).projection 0 x :=
@@ -54,4 +58,4 @@ theorem shiftedHomogeneousComponent_completedBCHAction (g : d.completedBCHGroup 
     ((congrArg (d.shiftedQuotientComponent ℳ p p 0 (by simp)) ha).trans
       (d.shiftedHomogeneousComponent_eq ℳ p p 0 (by simp) x).symm)
 
-end Mei.PositiveDegrees
+end TauCeti.PositiveDegrees

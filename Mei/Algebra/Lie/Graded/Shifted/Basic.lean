@@ -25,9 +25,11 @@ positivity requirement on the ambient coefficient grading.
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 noncomputable section
 
-namespace Mei.PositiveDegrees
+namespace TauCeti.PositiveDegrees
 
 open Mei
 
@@ -131,4 +133,4 @@ instance shiftedLieFiltration_isFiltrationRaising :
       simpa [add_lie] using
         Submodule.add_mem ((d.shiftedLieFiltration ℒ ℳ p).submodule (a + b + 1)) hx hz
 
-end Mei.PositiveDegrees
+end TauCeti.PositiveDegrees

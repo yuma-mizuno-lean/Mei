@@ -28,6 +28,8 @@ and refined tropical curve counts*, equation (8) and Definition 2.10
 
 public noncomputable section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 open TauCeti (DirectedWallSpaces)
 
 open Set Mei.Convex
@@ -59,7 +61,7 @@ theorem truncation_wallEventLabel_restrict {k l : ℕ} (hkl : k ≤ l)
     (hv : e.normal (f l) v ≠ 0) :
     let u : D.active k ↪ D.active l :=
       ⟨Set.inclusion (D.active_mono hkl), Set.inclusion_injective _⟩
-    (d.truncationMap ℒ hkl).bchGroupMap (D.wallEventLabel l e) =
+    (d.lieTruncationMap ℒ hkl).bchGroupMap (D.wallEventLabel l e) =
       (e.restrict u (f k) v).elim 1 (D.wallEventLabel k) := by
   dsimp only
   let u : D.active k ↪ D.active l :=

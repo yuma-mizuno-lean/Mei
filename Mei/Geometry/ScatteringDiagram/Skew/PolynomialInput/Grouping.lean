@@ -34,6 +34,8 @@ generalized cluster scattering diagrams*, §8.1 (arXiv:2503.03719v1).
 
 public section
 
+open TauCeti (PositiveDegrees)
+
 noncomputable section
 
 namespace Mei.SkewLatticeDatum.AdaptedBasis.BLMPolynomialInput

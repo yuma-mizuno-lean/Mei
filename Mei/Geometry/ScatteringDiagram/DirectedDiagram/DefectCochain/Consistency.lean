@@ -28,6 +28,8 @@ refined tropical curve counts*, proof of Theorem 2.6.
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 open TauCeti (DirectedWallSpaces)
 
 noncomputable section
@@ -53,7 +55,7 @@ variable {Γ Λ R L V ι : Type*} [AddCommGroup Γ] [AddCommGroup Λ]
   (ht : ∀ (P : (D.adaptedComplex (k + 1)).cellsOfCodimension 0)
     (x : WallComplement (fun j : D.active k => (D.wall j).support)),
     x.val ∈ interior (P : Set V) →
-    (d.truncationMap ℒ (Nat.le_succ k)).bchGroupMap (t P) = D.levelTransport k hk b x)
+    (d.lieTruncationMap ℒ (Nat.le_succ k)).bchGroupMap (t P) = D.levelTransport k hk b x)
 
 /-- Closed central crossing defects force trivial original transport on every
 loop admissible for the adapted complex. The basepoint can lie in any chamber. -/
@@ -84,7 +86,7 @@ theorem levelPathProduct_adapted_loop_eq_one_of_coboundary_crossingDefectCochain
   simpa only [AddMonoidHom.map_wallCrossingSum, map_zero, neg_zero,
     LinearMap.toAddMonoidHom_coe, LieHom.coe_toLinearMap, LieIdeal.incl_apply,
     ZeroMemClass.coe_zero] using congrArg Neg.neg
-      (congrArg (d.truncationMap ℒ (Nat.le_succ k)).ker.incl.toLinearMap.toAddMonoidHom
+      (congrArg (d.lieTruncationMap ℒ (Nat.le_succ k)).ker.incl.toLinearMap.toAddMonoidHom
         (hsum p))
 
 /-- Closedness of the crossing-defect cochain implies consistency of its finite

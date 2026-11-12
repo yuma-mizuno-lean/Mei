@@ -26,7 +26,10 @@ diagrams in Gross–Hacking–Keel–Kontsevich, *Canonical bases for cluster al
 
 public section
 
-namespace Mei
+open TauCeti (PositiveDegrees SupportedRay)
+
+namespace TauCeti
+
 
 variable {N : Type*} [AddCommGroup N] {d : PositiveDegrees N}
 
@@ -102,4 +105,4 @@ theorem exists_supportedRay_two_nsmul_three_nsmul [Module.Free ℤ N] {m : N}
 
 end PositiveDegrees
 
-end Mei
+end TauCeti

@@ -29,6 +29,8 @@ homogeneous splitting of abelian-ray labels in Gross–Hacking–Keel–Kontsevi
 
 public noncomputable section
 
+open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading)
+
 open Set Mei.Convex
 
 namespace Mei
@@ -159,7 +161,7 @@ theorem mem_active_iff_exists_homogeneous (k : ℕ) (j : ι) :
       · by_contra h0
         exact hn ⟨⟨n, hr⟩, (D.mem_active_homogeneousPresentation k _).mpr ⟨hk, h0⟩⟩
       · exact d.logComponent_eq_zero_of_notMem_rayDegrees ℒ (D.wall j).label_mem hr
-    have hlog : BCHGroup.log (L := d.truncatedLie ℒ k)
+    have hlog : BCHGroup.log (L := d.lieTruncation ℒ k)
         (CompletedGroup.projection k (D.wall j).label) = 0 := by
       rw [d.log_projection_eq_mkQ_sum ℒ]
       have hsum : (∑ n ∈ (d.finite_cutoff k).toFinset,
@@ -168,7 +170,7 @@ theorem mem_active_iff_exists_homogeneous (k : ℕ) (j : ι) :
           (hz n (d.mem_cutoff.mp ((d.finite_cutoff k).mem_toFinset.mp hn)).2)
       rw [hsum, map_zero]
     exact ((D.mem_active k j).mp hj)
-      (BCHGroup.log_injective (hlog.trans (BCHGroup.log_one (L := d.truncatedLie ℒ k)).symm))
+      (BCHGroup.log_injective (hlog.trans (BCHGroup.log_one (L := d.lieTruncation ℒ k)).symm))
   · rintro ⟨n, hn⟩
     exact D.active_homogeneousPresentation_parent hn
 

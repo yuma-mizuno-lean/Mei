@@ -21,9 +21,13 @@ of the choice of degree map.
 
 public section
 
+open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading)
+
 noncomputable section
 
-namespace Mei.PositiveDegrees
+namespace TauCeti.PositiveDegrees
+
+open Mei
 
 variable {N M R L : Type*} [AddCommMonoid N] [AddCommMonoid M]
   [CommRing R] [Algebra ℚ R] [LieRing L] [LieAlgebra R L]
@@ -126,4 +130,4 @@ theorem projection_graphBCHGroupEquiv_symm (k : ℕ)
   (graphProjectionGradedLieHom ℒ f d).projection_completedMap_of_le k
     (d.graphProjection_modulus f k).le x
 
-end Mei.PositiveDegrees
+end TauCeti.PositiveDegrees

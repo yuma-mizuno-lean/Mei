@@ -26,6 +26,8 @@ and the compatible-family construction of `CompletedDiagram`.
 
 public section
 
+open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading)
+
 noncomputable section
 
 universe u

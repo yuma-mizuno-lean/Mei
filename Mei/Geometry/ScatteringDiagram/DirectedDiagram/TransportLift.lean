@@ -30,7 +30,7 @@ combined label of that germ: this is the codimension-one central defect
 `log (t₊⁻¹ * X * t₋)` of a chamber trivialization.
 
 The algebra is `LieHom.logDefect`, together with the centrality of successive
-truncation kernels, `PositiveDegrees.ker_truncationMap_succ_le_center`. These
+truncation kernels, `PositiveDegrees.ker_lieTruncationMap_succ_le_center`. These
 defects are the order-by-order obstructions of the inductive construction of
 consistent completions in Travis Mandel, *Scattering diagrams, theta functions,
 and refined tropical curve counts*,
@@ -40,6 +40,8 @@ and Gross–Hacking–Keel–Kontsevich, *Canonical bases for cluster algebras*,
 -/
 
 public section
+
+open TauCeti (PositiveDegrees IsPositiveGrading)
 
 open TauCeti (DirectedWallSpaces)
 
@@ -69,7 +71,7 @@ structure TransportLift where
     d.truncatedGroup ℒ (k + 1)
   /-- Each lift projects to the lower-order transport from the base point. -/
   truncation_toFun (y : WallComplement (fun j : D.active (k + 1) => (D.wall j).support)) :
-    (d.truncationMap ℒ (Nat.le_succ k)).bchGroupMap (toFun y) =
+    (d.lieTruncationMap ℒ (Nat.le_succ k)).bchGroupMap (toFun y) =
       D.levelTransport k hk
         ((WallComplement.restrictPrefunctor (fun j : D.active (k + 1) => (D.wall j).support)
           (Set.inclusion (D.active_mono (Nat.le_succ k)))).obj x₀)
@@ -89,7 +91,7 @@ instance : CoeFun (D.TransportLift k hk x₀)
 @[simp]
 theorem truncation_apply (t : D.TransportLift k hk x₀)
     (y : WallComplement (fun j : D.active (k + 1) => (D.wall j).support)) :
-    (d.truncationMap ℒ (Nat.le_succ k)).bchGroupMap (t y) =
+    (d.lieTruncationMap ℒ (Nat.le_succ k)).bchGroupMap (t y) =
       D.levelTransport k hk
         ((WallComplement.restrictPrefunctor (fun j : D.active (k + 1) => (D.wall j).support)
           (Set.inclusion (D.active_mono (Nat.le_succ k)))).obj x₀)
@@ -101,7 +103,7 @@ variable (D k hk x₀) in
 /-- Lower-order transport always lifts, by surjectivity of the truncation map. -/
 instance : Nonempty (D.TransportLift k hk x₀) := by
   choose t ht using fun y : WallComplement (fun j : D.active (k + 1) => (D.wall j).support) =>
-    LieHom.bchGroupMap_surjective (d.truncationMap_surjective ℒ (Nat.le_succ k))
+    LieHom.bchGroupMap_surjective (d.lieTruncationMap_surjective ℒ (Nat.le_succ k))
       (D.levelTransport k hk
         ((WallComplement.restrictPrefunctor (fun j : D.active (k + 1) => (D.wall j).support)
           (Set.inclusion (D.active_mono (Nat.le_succ k)))).obj x₀)
@@ -126,23 +128,23 @@ variable {y z w : WallComplement (fun j : D.active (k + 1) => (D.wall j).support
 target after truncation. -/
 theorem truncation_levelPathProduct_mul (t : D.TransportLift k hk x₀)
     (p : AdmissiblePLPath y z) :
-    (d.truncationMap ℒ (Nat.le_succ k)).bchGroupMap (D.levelPathProduct (k + 1) p) *
-        (d.truncationMap ℒ (Nat.le_succ k)).bchGroupMap (t y) =
-      (d.truncationMap ℒ (Nat.le_succ k)).bchGroupMap (t z) := by
+    (d.lieTruncationMap ℒ (Nat.le_succ k)).bchGroupMap (D.levelPathProduct (k + 1) p) *
+        (d.lieTruncationMap ℒ (Nat.le_succ k)).bchGroupMap (t y) =
+      (d.lieTruncationMap ℒ (Nat.le_succ k)).bchGroupMap (t z) := by
   rw [D.truncation_levelPathProduct (Nat.le_succ k) p, t.truncation_apply, t.truncation_apply,
     ← D.levelTransport_eq_levelPathProduct hk, ← D.levelTransport_comp]
 
 /-- The central defect of an order-`(k + 1)` admissible path: the logarithm of its
 path product gauged by the lifts at its endpoints, in the kernel of truncation. -/
 def defect (t : D.TransportLift k hk x₀) (p : AdmissiblePLPath y z) :
-    (d.truncationMap ℒ (Nat.le_succ k)).ker :=
-  (d.truncationMap ℒ (Nat.le_succ k)).logDefect (t y) (t z) (D.levelPathProduct (k + 1) p)
+    (d.lieTruncationMap ℒ (Nat.le_succ k)).ker :=
+  (d.lieTruncationMap ℒ (Nat.le_succ k)).logDefect (t y) (t z) (D.levelPathProduct (k + 1) p)
     (t.truncation_levelPathProduct_mul p)
 
 /-- The defect is the logarithm of the gauged path product. -/
 @[simp]
 theorem coe_defect (t : D.TransportLift k hk x₀) (p : AdmissiblePLPath y z) :
-    (t.defect p : d.truncatedLie ℒ (k + 1)) =
+    (t.defect p : d.lieTruncation ℒ (k + 1)) =
       BCHGroup.log ((t z)⁻¹ * D.levelPathProduct (k + 1) p * t y) :=
   LieHom.coe_logDefect _ _ _ _ _
 
@@ -172,7 +174,7 @@ theorem defect_nil (t : D.TransportLift k hk x₀) :
 theorem defect_comp (t : D.TransportLift k hk x₀) (p : AdmissiblePLPath y z)
     (q : AdmissiblePLPath z w) :
     t.defect (p.comp q) = t.defect q + t.defect p := by
-  have he := (d.truncationMap ℒ (Nat.le_succ k)).logDefect_mul (t y) (t z) (t w)
+  have he := (d.lieTruncationMap ℒ (Nat.le_succ k)).logDefect_mul (t y) (t z) (t w)
     (D.levelPathProduct (k + 1) p) (D.levelPathProduct (k + 1) q)
     (t.truncation_levelPathProduct_mul p) (t.truncation_levelPathProduct_mul q)
   apply Subtype.ext
@@ -183,7 +185,7 @@ theorem defect_comp (t : D.TransportLift k hk x₀) (p : AdmissiblePLPath y z)
 @[simp]
 theorem defect_reverse (t : D.TransportLift k hk x₀) (p : AdmissiblePLPath y z) :
     t.defect p.reverse = -t.defect p := by
-  have he := (d.truncationMap ℒ (Nat.le_succ k)).logDefect_inv (t y) (t z)
+  have he := (d.lieTruncationMap ℒ (Nat.le_succ k)).logDefect_inv (t y) (t z)
     (D.levelPathProduct (k + 1) p) (t.truncation_levelPathProduct_mul p)
   apply Subtype.ext
   simpa only [coe_defect, LieSubmodule.coe_neg, LieHom.coe_logDefect, levelPathProduct_reverse]
@@ -192,12 +194,12 @@ theorem defect_reverse (t : D.TransportLift k hk x₀) (p : AdmissiblePLPath y z
 /-- Around a loop the defect is the logarithm of the loop product, independently of
 the lifts: the loop product is central. -/
 theorem coe_defect_of_loop (t : D.TransportLift k hk x₀) (p : AdmissiblePLPath y y) :
-    (t.defect p : d.truncatedLie ℒ (k + 1)) = BCHGroup.log (D.levelPathProduct (k + 1) p) := by
-  let f := d.truncationMap ℒ (Nat.le_succ k)
+    (t.defect p : d.lieTruncation ℒ (k + 1)) = BCHGroup.log (D.levelPathProduct (k + 1) p) := by
+  let f := d.lieTruncationMap ℒ (Nat.le_succ k)
   have hker : D.levelPathProduct (k + 1) p ∈ f.bchGroupMap.ker :=
     MonoidHom.mem_ker.mpr (mul_eq_right.mp (t.truncation_levelPathProduct_mul p))
   have hc := Subgroup.mem_center_iff.mp
-    (f.ker_bchGroupMap_le_center (d.ker_truncationMap_succ_le_center ℒ k) hker) (t y)⁻¹
+    (f.ker_bchGroupMap_le_center (d.ker_lieTruncationMap_succ_le_center ℒ k) hker) (t y)⁻¹
   rw [coe_defect, hc, inv_mul_cancel_right]
 
 /-- Consistency at order `k + 1` is equivalent to endpoint independence of defects. -/
@@ -228,8 +230,8 @@ theorem defect_ofLevelTransport (hk' : D.LevelConsistent (k + 1)) (p : Admissibl
 /-- The kernel element relating two lifts at a point: the logarithm of `(t y)⁻¹ * t' y`. -/
 def gauge (t t' : D.TransportLift k hk x₀)
     (y : WallComplement (fun j : D.active (k + 1) => (D.wall j).support)) :
-    (d.truncationMap ℒ (Nat.le_succ k)).ker :=
-  Multiplicative.toAdd ((d.truncationMap ℒ (Nat.le_succ k)).kernelLogEquiv
+    (d.lieTruncationMap ℒ (Nat.le_succ k)).ker :=
+  Multiplicative.toAdd ((d.lieTruncationMap ℒ (Nat.le_succ k)).kernelLogEquiv
     ⟨(t y)⁻¹ * t' y, by
       rw [MonoidHom.mem_ker, map_mul, map_inv, t.truncation_apply, t'.truncation_apply,
         inv_mul_cancel]⟩)
@@ -238,20 +240,20 @@ def gauge (t t' : D.TransportLift k hk x₀)
 @[simp]
 theorem coe_gauge (t t' : D.TransportLift k hk x₀)
     (y : WallComplement (fun j : D.active (k + 1) => (D.wall j).support)) :
-    (t.gauge t' y : d.truncatedLie ℒ (k + 1)) = BCHGroup.log ((t y)⁻¹ * t' y) :=
+    (t.gauge t' y : d.lieTruncation ℒ (k + 1)) = BCHGroup.log ((t y)⁻¹ * t' y) :=
   LieHom.coe_kernelLogEquiv _ _
 
 /-- A lift is recovered from another by multiplying with the exponential of the gauge. -/
 theorem mul_exp_gauge (t t' : D.TransportLift k hk x₀)
     (y : WallComplement (fun j : D.active (k + 1) => (D.wall j).support)) :
-    t y * BCHGroup.exp (t.gauge t' y : d.truncatedLie ℒ (k + 1)) = t' y := by
+    t y * BCHGroup.exp (t.gauge t' y : d.lieTruncation ℒ (k + 1)) = t' y := by
   rw [coe_gauge, BCHGroup.exp_log, mul_inv_cancel_left]
 
 /-- Changing lifts changes defects by the coboundary of the gauge. -/
 theorem defect_eq_add_gauge_sub_gauge (t t' : D.TransportLift k hk x₀)
     (p : AdmissiblePLPath y z) :
     t'.defect p = t.defect p + t.gauge t' y - t.gauge t' z := by
-  have he := (d.truncationMap ℒ (Nat.le_succ k)).logDefect_change_lifts (t y) (t z)
+  have he := (d.lieTruncationMap ℒ (Nat.le_succ k)).logDefect_change_lifts (t y) (t z)
     (D.levelPathProduct (k + 1) p) (t.truncation_levelPathProduct_mul p)
     (t.gauge t' y) (t.gauge t' z)
   apply Subtype.ext
@@ -265,7 +267,7 @@ lower-order consistency extends exactly when the defect can be gauged away. -/
 theorem levelConsistent_succ_iff_exists_coboundary (t : D.TransportLift k hk x₀) :
     D.LevelConsistent (k + 1) ↔
       ∃ c : WallComplement (fun j : D.active (k + 1) => (D.wall j).support) →
-          (d.truncationMap ℒ (Nat.le_succ k)).ker,
+          (d.lieTruncationMap ℒ (Nat.le_succ k)).ker,
         ∀ ⦃y z : WallComplement (fun j : D.active (k + 1) => (D.wall j).support)⦄
           (p : AdmissiblePLPath y z), t.defect p = c y - c z := by
   refine ⟨fun hk' => ⟨fun y => -t.gauge (ofLevelTransport hk x₀ hk') y, fun y z p => ?_⟩,
@@ -280,7 +282,7 @@ it is the central defect `log (t₊⁻¹ * X * t₋)` of the oriented crossing. 
 theorem coe_defect_toPath_eq_combinedLabel (t : D.TransportLift k hk x₀) (e : y ⟶ z) (θ : V)
     (hθ : θ ∉ singularSupport (fun j : D.active (k + 1) => (D.wall j).support))
     (s : ℝ) (hcross : ∀ j r, (j, r) ∈ crossings y z ↔ θ ∈ (D.wall j).support ∧ r = s) :
-    (t.defect e.toPath : d.truncatedLie ℒ (k + 1)) =
+    (t.defect e.toPath : d.lieTruncation ℒ (k + 1)) =
       BCHGroup.log ((t z)⁻¹ * D.combinedLabel (k + 1) θ (z.val - y.val) hθ * t y) := by
   rw [coe_defect, D.levelPathProduct_toPath_eq_combinedLabel (k + 1) e θ hθ s hcross]
 

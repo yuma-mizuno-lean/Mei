@@ -23,6 +23,8 @@ products are identified by the injective charge-zero inclusion. The comparison u
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 open TauCeti (DirectedWallSpaces)
 noncomputable section
 

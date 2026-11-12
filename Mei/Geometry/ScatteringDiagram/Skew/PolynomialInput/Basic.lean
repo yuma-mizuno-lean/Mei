@@ -28,7 +28,8 @@ exponent `w_i` is part of the data, determined by `ℓ_i w_i = d_i {e_i, -}`; eq
 `ℓ_i w_i = -{-, κ(e_i) e_i}` is the negated integral normal of `e_i`. Each `w_i` vanishes on
 `e_i`, so the exponents `s w_i` are tangent to the wall `e_i⊥`.
 
-The variables `p_{i,s}` are the letters of a finite alphabet (`Mei.PositiveDegrees.finiteAlphabet`)
+The variables `p_{i,s}` are the letters of a finite alphabet
+(`TauCeti.PositiveDegrees.finiteAlphabet`)
 over the exponents `m_{i,s} = s w_i`: identifying `p_{i,s} z^{s w_i}` with the monomial of the
 letter `v_{i,s} = (s w_i, e_{(i,s)})` of `M × ℤ^E` presents the initial functions
 (`BLMPolynomialInput.initialFunction`) in the monoid algebra of the alphabet lattice, where
@@ -64,6 +65,8 @@ vector `-2 e₁*` (`Mei.SkewLatticeDatum.Examples.rankTwoBLMPolynomialInput`, in
 -/
 
 public section
+
+open TauCeti (PositiveDegrees)
 
 noncomputable section
 

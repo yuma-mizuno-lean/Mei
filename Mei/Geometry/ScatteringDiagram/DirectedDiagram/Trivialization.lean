@@ -26,12 +26,14 @@ at successive orders this is the central kernel in which crossing defects live.
 This connects `DirectedDiagram.exists_chamberTransport_lifts` with the actual
 finite cells of `DirectedDiagram.adaptedComplex`, using convex connectedness of
 cell interiors. At successive orders, the existing
-`PositiveDegrees.ker_truncationMap_succ_le_center` identifies the kernel as central.
+`PositiveDegrees.ker_lieTruncationMap_succ_le_center` identifies the kernel as central.
 No consistency at the lifted
 order, local finiteness of the all-order wall union, or salient support is needed.
 -/
 
 public section
+
+open TauCeti (PositiveDegrees IsPositiveGrading)
 
 open TauCeti (DirectedWallSpaces)
 
@@ -118,7 +120,7 @@ theorem exists_adapted_chamber_lifts {k l : ℕ} (hkl : k ≤ l)
       ∀ (P : (D.adaptedComplex l).cellsOfCodimension 0)
         (x : WallComplement (fun j : D.active k => (D.wall j).support)),
         x.val ∈ interior (P : Set V) →
-        (d.truncationMap ℒ hkl).bchGroupMap (t P) = D.levelTransport k hk b x := by
+        (d.lieTruncationMap ℒ hkl).bchGroupMap (t P) = D.levelTransport k hk b x := by
   classical
   obtain ⟨B, ⟨hB, hbB⟩, -⟩ :=
     (D.adaptedComplex l).exists_unique_mem_interior_cellsOfCodimension_zero
@@ -148,12 +150,12 @@ theorem adapted_chamber_lift_path_mem_ker {k l : ℕ} (hkl : k ≤ l)
     (ht : ∀ (P : (D.adaptedComplex l).cellsOfCodimension 0)
       (x : WallComplement (fun j : D.active k => (D.wall j).support)),
       x.val ∈ interior (P : Set V) →
-      (d.truncationMap ℒ hkl).bchGroupMap (t P) = D.levelTransport k hk b x)
+      (d.lieTruncationMap ℒ hkl).bchGroupMap (t P) = D.levelTransport k hk b x)
     {x y : WallComplement (fun j : D.active l => (D.wall j).support)}
     (p : AdmissiblePLPath x y) (P Q : (D.adaptedComplex l).cellsOfCodimension 0)
     (hx : x.val ∈ interior (P : Set V)) (hy : y.val ∈ interior (Q : Set V)) :
     (t Q)⁻¹ * D.levelPathProduct l p * t P ∈
-      (d.truncationMap ℒ hkl).bchGroupMap.ker := by
+      (d.lieTruncationMap ℒ hkl).bchGroupMap.ker := by
   let r := WallComplement.restrictPrefunctor (fun j : D.active l => (D.wall j).support)
     (Set.inclusion (D.active_mono hkl))
   simp only [MonoidHom.mem_ker, map_mul, map_inv, ht P (r.obj x) hx, ht Q (r.obj y) hy,

@@ -27,9 +27,13 @@ and refined tropical curve counts*, §2.1 (arXiv:1503.06183).
 
 public section
 
+open TauCeti (PositiveDegrees PositiveDegreeMap)
+
 noncomputable section
 
-namespace Mei.PositiveDegreeMap
+namespace TauCeti.PositiveDegreeMap
+
+open Mei
 
 section Monoid
 
@@ -274,9 +278,11 @@ theorem shiftedQuotientMap_mem_shiftedQuotientGrading
 
 end QuotientGrading
 
-end Mei.PositiveDegreeMap
+end TauCeti.PositiveDegreeMap
 
-namespace Mei.PositiveDegrees
+namespace TauCeti.PositiveDegrees
+
+open Mei
 
 section Monoid
 
@@ -569,9 +575,11 @@ theorem cast_completionMap (F : ModuleFiltration R M) (s t : Γ) (h : s = t)
 
 end TargetTransport
 
-end Mei.PositiveDegrees
+end TauCeti.PositiveDegrees
 
-namespace Mei.PositiveDegreeMap
+namespace TauCeti.PositiveDegreeMap
+
+open Mei
 
 variable {Γ R M : Type*} [AddCommGroup Γ] [Ring R] [AddCommGroup M] [Module R M]
   [DecidableEq Γ] (d : PositiveDegrees Γ) (ℳ : Γ → Submodule R M)
@@ -592,4 +600,4 @@ theorem shiftedCompletionMap_id (p : Γ)
   exact (d.completionCoefficientMap_heq_shiftedCompletionMap_id ℳ ℳ LinearMap.id
     (fun _ => le_rfl) p hf x).symm.trans (heq_of_eq hx)
 
-end Mei.PositiveDegreeMap
+end TauCeti.PositiveDegreeMap

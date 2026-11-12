@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Algebra.PositiveDegrees.Map
+public import TauCeti.Algebra.PositiveDegrees.FinitelyGenerated
 public import Mei.Algebra.PositiveDegrees.Ray.Basic
 
 /-!
@@ -23,13 +23,15 @@ degree is primitive and supplies a supported ray. Thus charge-one degrees remain
 nonzero even when their original spatial direction vanishes.
 
 The monoid is constructed with Mathlib's `AddSubmonoid.map` and `AddSubmonoid.prod`;
-the ray constructions use `TauCeti.IsPrimitive` and `Mei.SupportedRay`.
+the ray constructions use `TauCeti.IsPrimitive` and `TauCeti.SupportedRay`.
 The motivating use of the semidirect Lie algebra to encode coefficient actions
 is described in Travis Mandel, *Scattering diagrams, theta functions, and refined
 tropical curve counts*, §3.3.3, arXiv:1503.06183v5.
 -/
 
 public section
+
+open TauCeti (PositiveDegrees PositiveDegreeMap SupportedRay)
 
 namespace Mei.ModuleProbe
 

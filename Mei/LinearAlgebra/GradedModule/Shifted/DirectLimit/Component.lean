@@ -19,9 +19,13 @@ supported in some translate of the positive monoid.
 -/
 
 public section
+
+open TauCeti (PositiveDegrees)
 noncomputable section
 
-namespace Mei.PositiveDegrees
+namespace TauCeti.PositiveDegrees
+
+open Mei
 
 variable {Γ R M : Type*} [AddCommGroup Γ] [Ring R] [AddCommGroup M] [Module R M]
   [DecidableEq Γ] (d : PositiveDegrees Γ) (ℳ : Γ → Submodule R M)
@@ -104,4 +108,4 @@ theorem mem_range_shiftedDirectLimitComponents_iff_of_spanning
     have h := d.monoid.add_mem hup hs
     simpa only [sub_add_sub_cancel] using h
 
-end Mei.PositiveDegrees
+end TauCeti.PositiveDegrees

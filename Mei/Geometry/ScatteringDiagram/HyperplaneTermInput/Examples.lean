@@ -32,11 +32,13 @@ This is the check `1 + p₁ x + p₂ x²` of the finite alphabet lift in Burcrof
 
 public section
 
+open TauCeti (PositiveDegrees SupportedRay)
+
 noncomputable section
 
 namespace Mei.HyperplaneTermInput.Examples
 
-open PositiveDegrees DirectedWall DirectedDiagram
+open TauCeti.PositiveDegrees DirectedWall DirectedDiagram
 
 /-- The positive quadrant `ℕ²` of `ℤ²`, with coordinate-sum degree. -/
 local notation "ℕ²" => Module.Basis.positiveDegrees (Module.Basis.finTwoProd ℤ)

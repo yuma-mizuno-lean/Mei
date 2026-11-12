@@ -24,6 +24,8 @@ orientation-reversing affine equivalences are allowed.
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 open TauCeti (DirectedWallSpaces)
 
 noncomputable section
@@ -99,7 +101,7 @@ theorem image_fullHyperplane
 @[simp]
 theorem image_refl :
     D.image (Toric.IntegralAffineEquiv.refl h)
-      (DirectedWallSpaces.CoordinateChange.refl H) (by simp) = D := by
+      (DirectedWallSpaces.CoordinateChange.refl d H) (by simp) = D := by
   apply DirectedDiagram.ext
   funext j
   simp

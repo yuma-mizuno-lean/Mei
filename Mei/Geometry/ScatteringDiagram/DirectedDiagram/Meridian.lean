@@ -32,6 +32,8 @@ their products in the central truncation kernel.
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 open TauCeti (DirectedWallSpaces)
 
 noncomputable section

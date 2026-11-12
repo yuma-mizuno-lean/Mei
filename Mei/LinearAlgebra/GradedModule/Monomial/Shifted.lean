@@ -28,6 +28,8 @@ zero divisors. No nontriviality of the scalar ring is required.
 
 public noncomputable section
 
+open TauCeti (PositiveDegrees)
+
 namespace Mei.MonomialPresentation
 
 variable {R M Γ : Type*} [Semiring R] [AddCommMonoid M] [Module R M]

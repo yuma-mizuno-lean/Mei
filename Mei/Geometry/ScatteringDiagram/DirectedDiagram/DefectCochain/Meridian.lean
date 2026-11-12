@@ -31,6 +31,8 @@ curve counts*, proof of Theorem 2.6. No higher-order consistency is required.
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 open TauCeti (DirectedWallSpaces)
 
 noncomputable section
@@ -58,7 +60,7 @@ variable
   (ht : ∀ (P : (D.adaptedComplex (k + 1)).cellsOfCodimension 0)
     (x : WallComplement (fun j : D.active k => (D.wall j).support)),
     x.val ∈ interior (P : Set V) →
-    (d.truncationMap ℒ (Nat.le_succ k)).bchGroupMap (t P) = D.levelTransport k hk b x)
+    (d.lieTruncationMap ℒ (Nat.le_succ k)).bchGroupMap (t P) = D.levelTransport k hk b x)
 
 /-- At any oriented adapted joint, an arbitrarily small positive isolating
 meridian computes the signed boundary pairing of the actual crossing defects.
@@ -165,7 +167,7 @@ theorem exists_joint_meridian_loopObstruction_eq_boundaryPairing
         ![u.val, v.val] f) := by
     apply Subtype.ext
     have he := congrArg
-      (d.truncationMap ℒ (Nat.le_succ k)).ker.incl.toLinearMap.toAddMonoidHom hpair
+      (d.lieTruncationMap ℒ (Nat.le_succ k)).ker.incl.toLinearMap.toAddMonoidHom hpair
     simp only [map_neg, AddMonoidHom.map_wallCrossingSum, LinearMap.toAddMonoidHom_coe,
       LieHom.coe_toLinearMap, LieIdeal.incl_apply] at he
     exact hlog.trans he.symm

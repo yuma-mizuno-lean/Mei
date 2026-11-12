@@ -31,6 +31,8 @@ comparison uses `IsIntegralLattice.eq_realCharacter`.
 
 public section
 
+open TauCeti (PositiveDegrees)
+
 noncomputable section
 
 namespace Mei

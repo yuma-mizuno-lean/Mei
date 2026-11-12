@@ -26,6 +26,8 @@ Mandel, *Scattering diagrams, theta functions, and refined tropical curve counts
 
 public noncomputable section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 open TauCeti (DirectedWallSpaces)
 
 open Set Mei.Convex

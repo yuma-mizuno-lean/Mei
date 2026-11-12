@@ -51,6 +51,8 @@ generalized cluster scattering diagrams*, Definition 2.1, §9.2 and Theorem 9.9
 
 public noncomputable section
 
+open TauCeti (PositiveDegrees SupportedRay)
+
 namespace Mei.RankTwoPolynomialInput
 
 open _root_.AddMonoidAlgebra

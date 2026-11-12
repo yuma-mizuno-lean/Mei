@@ -25,6 +25,8 @@ hypothesis is imposed.
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 namespace Mei.UniversalEnvelopingAlgebra
 
 attribute [local instance 100] LieRing.ofAssociativeRing
@@ -55,7 +57,7 @@ local instance rationalTruncatedEnvelopingAlgebra : Algebra ℚ U :=
 
 /-- Integrate the canonical finite Lie map to units of the finite enveloping quotient. -/
 noncomputable def truncatedBCHToUnits (k : ℕ) :
-    BCHGroup (d.truncatedLie ℒ k) →* (U ⧸ (F).ideal (k + 1))ˣ :=
+    BCHGroup (d.lieTruncation ℒ k) →* (U ⧸ (F).ideal (k + 1))ˣ :=
   ((truncatedLieToU d ℒ k).restrictScalars ℚ).bchExpHom
     ((J).map (Ideal.Quotient.mk ((F).ideal (k + 1))))
     (isNilpotent_augmentationImage d ℒ k)
@@ -64,7 +66,7 @@ noncomputable def truncatedBCHToUnits (k : ℕ) :
 
 /-- The finite group map is the associative exponential of the canonical Lie coordinate. -/
 @[simp]
-theorem coe_truncatedBCHToUnits (k : ℕ) (g : BCHGroup (d.truncatedLie ℒ k)) :
+theorem coe_truncatedBCHToUnits (k : ℕ) (g : BCHGroup (d.lieTruncation ℒ k)) :
     (truncatedBCHToUnits d ℒ k g : U ⧸ (F).ideal (k + 1)) =
       IsNilpotent.exp (truncatedLieToU d ℒ k (BCHGroup.log g)) := by
   unfold truncatedBCHToUnits
@@ -73,7 +75,7 @@ theorem coe_truncatedBCHToUnits (k : ℕ) (g : BCHGroup (d.truncatedLie ℒ k)) 
 
 /-- Finite logarithms recover the canonical Lie coordinate from its integrated image. -/
 @[simp↓]
-theorem log_truncatedBCHToUnits (k : ℕ) (g : BCHGroup (d.truncatedLie ℒ k)) :
+theorem log_truncatedBCHToUnits (k : ℕ) (g : BCHGroup (d.lieTruncation ℒ k)) :
     IsNilpotent.log (truncatedBCHToUnits d ℒ k g : U ⧸ (F).ideal (k + 1)) =
       truncatedLieToU d ℒ k (BCHGroup.log g) := by
   unfold truncatedBCHToUnits
@@ -83,11 +85,11 @@ theorem log_truncatedBCHToUnits (k : ℕ) (g : BCHGroup (d.truncatedLie ℒ k)) 
 /-- Lowering the enveloping cutoff intertwines the integrated BCH homomorphisms. -/
 @[simp]
 theorem factor_truncatedBCHToUnits {k l : ℕ} (h : k ≤ l)
-    (g : BCHGroup (d.truncatedLie ℒ l)) :
+    (g : BCHGroup (d.lieTruncation ℒ l)) :
     Units.map (Ideal.Quotient.factor ((F).antitone (Nat.add_le_add_right h 1)) :
         (U ⧸ (F).ideal (l + 1)) →* (U ⧸ (F).ideal (k + 1)))
         (truncatedBCHToUnits d ℒ l g) =
-      truncatedBCHToUnits d ℒ k ((d.truncationMap ℒ h).bchGroupMap g) := by
+      truncatedBCHToUnits d ℒ k ((d.lieTruncationMap ℒ h).bchGroupMap g) := by
   apply Units.ext
   simp only [Units.coe_map, coe_truncatedBCHToUnits, LieHom.log_bchGroupMap]
   have hn : IsNilpotent (truncatedLieToU d ℒ l (BCHGroup.log g)) :=

@@ -37,6 +37,8 @@ the output is sorted (`exists_nodup_prod_eq_and_intCast_mul_rayIndex_of_isChain`
 
 public section
 
+open TauCeti (PositiveDegrees)
+
 noncomputable section
 
 universe u

@@ -67,7 +67,7 @@ noncomputable def degreeFiltration (hneg : ∀ n, d n < 0 → ℒ n = ⊥) :
 @[simp]
 theorem degreeFiltration_ideal (hneg : ∀ n, d n < 0 → ℒ n = ⊥) (k : ℕ) :
     (degreeFiltration ℒ d hneg).ideal k =
-      Mei.GradedAlgebra.degreeIdeal (homogeneousSubmodule ℒ) d
+      Mei.GradedAlgebra.truncationIdeal (homogeneousSubmodule ℒ) d
         (fun _ hn => homogeneousSubmodule_eq_bot_of_degree_neg ℒ d hneg hn) k := by
   rw [degreeFiltration, Mei.GradedAlgebra.degreeFiltration_ideal]
 
@@ -79,7 +79,7 @@ theorem euler_mem_degreeFiltration (hneg : ∀ n, d n < 0 → ℒ n = ⊥) (φ :
       (LieDerivation.ofGrading ℒ φ) :
         Module.End R (_root_.UniversalEnvelopingAlgebra R L)) a ∈
       (degreeFiltration ℒ d hneg).ideal k := by
-  rw [degreeFiltration_ideal, Mei.GradedAlgebra.mem_degreeIdeal_iff,
+  rw [degreeFiltration_ideal, Mei.GradedAlgebra.mem_truncationIdeal_iff,
     Mei.DirectSum.mem_degreeTail_iff] at ha ⊢
   intro n hn
   rw [euler_component ℒ φ, ha n hn, smul_zero]
@@ -89,7 +89,7 @@ theorem ι_mem_degreeFiltration (hneg : ∀ n, d n < 0 → ℒ n = ⊥)
     {n : Γ} {x : L} (hx : x ∈ ℒ n) {k : ℕ} (hn : (k : ℤ) ≤ d n) :
     ι R x ∈ (degreeFiltration ℒ d hneg).ideal k := by
   rw [degreeFiltration, Mei.GradedAlgebra.degreeFiltration_ideal]
-  exact Mei.GradedAlgebra.le_degreeIdeal (homogeneousSubmodule ℒ) d _ hn _
+  exact Mei.GradedAlgebra.le_truncationIdeal (homogeneousSubmodule ℒ) d _ hn _
     (ι_mem_homogeneousSubmodule ℒ hx)
 
 /-- Every strictly positive degree ideal is contained in the augmentation ideal,

@@ -28,6 +28,8 @@ The skew bracket and abelian-ray observation follow Gross–Hacking–Keel–Kon
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading SupportedRay)
+
 noncomputable section
 
 namespace Mei.SkewLieAlgebra

@@ -30,6 +30,8 @@ curve counts*, §3.3.3 (arXiv:1503.06183v5).
 
 public noncomputable section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 open TauCeti (DirectedWallSpaces)
 
 open Set Filter Topology Mei.Convex Mei.Convex.WallComplement
@@ -109,7 +111,7 @@ theorem exists_cutoffWallEventEvaluation_eq_sum_eventBlock (k : ℕ)
         ⟨n.val, (d.mem_cutoff.mp n.property).1⟩ (d.mem_cutoff.mp n.property).2]
       rw [eventBlock_def, PositiveDegrees.labelBlock_apply_component_of_ne d ℳ p ℒ
         (k + 1) _ n m (d.precedes_iff.mp hmn).1, wallEventPropagation_self,
-        d.truncationMap_refl, LieHom.bchGroupMap_id, MonoidHom.id_apply]
+        d.lieTruncationMap_refl, LieHom.bchGroupMap_id, MonoidHom.id_apply]
     · rw [ite_eq_right (fun h => hv h.2.2), dite_eq_left hmn, ite_eq_right hv]
   · have hnot : ¬ (m.val ≠ n.val ∧ n.val - m.val ∈ d.monoid) := by
       simpa only [← d.precedes_iff] using hmn

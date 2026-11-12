@@ -47,7 +47,7 @@ noncomputable section
 
 namespace Mei.PositiveSpecialization.Examples
 
-open _root_.AddMonoidAlgebra PositiveDegrees nonnegIntegers
+open _root_.AddMonoidAlgebra TauCeti.PositiveDegrees nonnegIntegers
 
 local notation "Q" => nonnegIntegers.monoid
 

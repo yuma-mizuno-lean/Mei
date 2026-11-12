@@ -41,6 +41,8 @@ exactly when all of its coefficients lie in the image of `S`
 
 public section
 
+open TauCeti (PositiveDegrees)
+
 noncomputable section
 
 namespace Mei.SkewLatticeDatum

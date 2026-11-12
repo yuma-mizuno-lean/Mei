@@ -19,16 +19,20 @@ cutoff, including the middle factor used as a wall label.
 For the attribution to Bridgeland's sign factorization, see the module docstring
 of `Mei.Algebra.Lie.BCH.Sign.Basic`.
 
-The construction assembles `Mei.PositiveDegrees.signFactorizationEquiv` using its
+The construction assembles `TauCeti.PositiveDegrees.signFactorizationEquiv` using its
 transition law. The carrier is the existing `Mei.completedGroup`; no additional
 completeness or surjectivity assumption is required.
 -/
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 noncomputable section
 
-namespace Mei.PositiveDegrees
+namespace TauCeti.PositiveDegrees
+
+open Mei
 
 variable {N R L A : Type*} [AddCommMonoid N] [CommRing R] [Algebra ℚ R]
   [LieRing L] [LieAlgebra R L] [LieAlgebra ℚ L] [IsScalarTower ℚ R L]
@@ -39,7 +43,7 @@ variable {N R L A : Type*} [AddCommMonoid N] [CommRing R] [Algebra ℚ R]
 /-- The subgroup whose logarithm has only degrees of the specified sign at
 every finite cutoff. -/
 def completedSignSubgroup (s : SignType) : Subgroup (d.completedBCHGroup ℒ) :=
-  ⨅ k : ℕ, (signSubalgebra (d.truncatedGrading ℒ k) θ s).bchSubgroup.comap
+  ⨅ k : ℕ, (signSubalgebra (d.lieTruncationGrading ℒ k) θ s).bchSubgroup.comap
     (CompletedGroup.projection k)
 
 /-- Membership in a completed sign subgroup is tested at every finite cutoff. -/
@@ -47,7 +51,7 @@ def completedSignSubgroup (s : SignType) : Subgroup (d.completedBCHGroup ℒ) :=
 theorem mem_completedSignSubgroup (s : SignType) (g : d.completedBCHGroup ℒ) :
     g ∈ completedSignSubgroup ℒ θ d s ↔
       ∀ k, CompletedGroup.projection k g ∈
-        (signSubalgebra (d.truncatedGrading ℒ k) θ s).bchSubgroup := by
+        (signSubalgebra (d.lieTruncationGrading ℒ k) θ s).bchSubgroup := by
   simp only [completedSignSubgroup, Subgroup.mem_iInf]
   exact forall_congr' fun k => Iff.rfl
 
@@ -57,7 +61,7 @@ private def completedSignFactor (g : d.completedBCHGroup ℒ) (s : SignType) :
       d.truncatedGroup ℒ k), (mem_completedGroup_iff _ _).mpr (by
         intro k l h
         -- The categorical tower arrow has the concrete quotient BCH map as its homomorphism.
-        change (d.truncationMap ℒ h).bchGroupMap
+        change (d.lieTruncationMap ℒ h).bchGroupMap
           ((signFactorizationEquiv ℒ θ d l).symm
             (CompletedGroup.projection l g) s : d.truncatedGroup ℒ l) =
           ((signFactorizationEquiv ℒ θ d k).symm
@@ -90,7 +94,7 @@ def completedSignFactorizationEquiv :
     apply CompletedGroup.ext
     intro k
     rw [projection_completedSignFactor]
-    let b : ∀ s, (signSubalgebra (d.truncatedGrading ℒ k) θ s).bchSubgroup := fun s =>
+    let b : ∀ s, (signSubalgebra (d.lieTruncationGrading ℒ k) θ s).bchSubgroup := fun s =>
       ⟨CompletedGroup.projection k (a s : d.completedBCHGroup ℒ),
         (mem_completedSignSubgroup ℒ θ d s _).mp (a s).property k⟩
     have hb : (signFactorizationEquiv ℒ θ d k).symm
@@ -137,4 +141,4 @@ theorem completedSignFactorizationEquiv_symm_one :
   exact congrArg (fun a => (a s : d.truncatedGroup ℒ k))
     (signFactorizationEquiv_symm_one ℒ θ d k)
 
-end Mei.PositiveDegrees
+end TauCeti.PositiveDegrees

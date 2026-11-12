@@ -26,11 +26,13 @@ completed group map, and the intertwining of coefficient actions on `R[P_E] → 
 
 public section
 
+open TauCeti (PositiveDegrees)
+
 noncomputable section
 
 namespace Mei.TropicalPairing
 
-open PositiveDegrees
+open TauCeti.PositiveDegrees
 
 variable {R M E L : Type*} [CommRing R] [AddCommGroup M] [Fintype E] [DecidableEq E]
   [AddCommGroup L] {m : E → M} {e : PositiveDegrees L} {τ : M × (E → ℤ) →+ L}

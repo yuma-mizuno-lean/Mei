@@ -35,6 +35,8 @@ Tom Bridgeland, *Scattering diagrams, Hall algebras and stability conditions*,
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 noncomputable section
 
 open Set Mei.Convex
@@ -69,7 +71,7 @@ theorem equivalent_truncate {k l : ℕ} (hkl : k ≤ l) :
         intro x y x' y' p q hpq
         rw [KSComplex.toFiniteWallDiagram_truncate, FiniteWallDiagram.pathProduct_relabel]
         exact D.compatible l q p hpq.symm
-      have ht := hs.relabel (d.truncationMap ℒ hle).bchGroupMap
+      have ht := hs.relabel (d.lieTruncationMap ℒ hle).bchGroupMap
       rw [← KSComplex.toFiniteWallDiagram_truncate,
         ← KSComplex.toFiniteWallDiagram_truncate, KSComplex.truncate_truncate] at ht
       exact ht.trans (ih hle)

@@ -30,6 +30,8 @@ and repeated indexed walls are allowed.
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 open TauCeti (DirectedWallSpaces)
 
 noncomputable section

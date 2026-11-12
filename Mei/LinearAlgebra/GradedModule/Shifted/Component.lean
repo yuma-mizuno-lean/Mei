@@ -25,9 +25,13 @@ diagrams, theta functions, and refined tropical curve counts*, §2.1
 
 public section
 
+open TauCeti (PositiveDegrees)
+
 noncomputable section
 
-namespace Mei.PositiveDegrees
+namespace TauCeti.PositiveDegrees
+
+open Mei
 
 variable {Γ R M : Type*} [AddCommGroup Γ] [Ring R] [AddCommGroup M] [Module R M]
   [DecidableEq Γ] (d : PositiveDegrees Γ) (ℳ : Γ → Submodule R M)
@@ -195,4 +199,4 @@ theorem shiftedCoefficients_ext {x y : d.ShiftedCoefficients ℳ p}
   rw [hn] at he
   exact he
 
-end Mei.PositiveDegrees
+end TauCeti.PositiveDegrees

@@ -25,7 +25,11 @@ tropical curve counts*, §3.3.3 (arXiv:1503.06183v5).
 
 public noncomputable section
 
-namespace Mei.PositiveDegrees
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
+namespace TauCeti.PositiveDegrees
+
+open Mei
 
 variable {Γ R L M : Type*} [AddCommGroup Γ] [CommRing R] [Algebra ℚ R]
   [LieRing L] [LieAlgebra R L] [LieAlgebra ℚ L] [IsScalarTower ℚ R L]
@@ -126,4 +130,4 @@ theorem shiftedHomogeneousComponent_completedBCHAction_eq_add_sum
   simp only [ModuleFiltration.transition_projection,
     ← d.shiftedHomogeneousComponent_eq]
 
-end Mei.PositiveDegrees
+end TauCeti.PositiveDegrees

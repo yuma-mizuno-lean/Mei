@@ -29,6 +29,8 @@ Appendix B, arXiv:1411.1394v2.
 
 public section
 
+open TauCeti (PositiveDegrees SupportedRay)
+
 open TauCeti (DirectedWallSpaces)
 
 noncomputable section

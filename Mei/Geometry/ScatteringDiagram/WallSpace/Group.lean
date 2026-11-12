@@ -22,12 +22,14 @@ supported rays each of whose normals annihilates the geometric direction of the 
 Finite images commute with all truncation transitions. Membership retains the
 actual allowed ray degrees through `TauCeti.DirectedWallSpaces.raySubmodule`. A label whose
 logarithmic coefficients on a ray lie in the wall spaces of one normal has its ray factor
-(`Mei.PositiveDegrees.rayFactor`) in the corresponding wall group.
+(`TauCeti.PositiveDegrees.rayFactor`) in the corresponding wall group.
 The construction uses `LieSubalgebra.map`, `LieSubalgebra.bchSubgroup`, and
 inverse images and intersections of subgroups from Mathlib.
 -/
 
 public section
+
+open TauCeti (SupportedRay)
 
 open TauCeti (DirectedWallSpaces)
 
@@ -37,27 +39,27 @@ open Mei
 
 variable {Γ Λ R L : Type*} [AddCommGroup Γ] [AddCommMonoid Λ]
   [CommRing R] [LieRing L] [LieAlgebra R L] [DecidableEq Γ]
-  {ρ : Γ →+ Λ} {ℒ : Γ → Submodule R L} {d : Mei.PositiveDegrees Γ}
-  [GradedLieAlgebra ℒ] [Mei.IsPositiveGrading d ℒ]
+  {ρ : Γ →+ Λ} {ℒ : Γ → Submodule R L} {d : TauCeti.PositiveDegrees Γ}
+  [GradedLieAlgebra ℒ] [TauCeti.IsPositiveGrading d ℒ]
   (H : DirectedWallSpaces ρ ℒ)
 
 /-- The image of a supported-ray wall Lie algebra in a finite degree quotient. -/
 def truncatedRayLieSubalgebra (w : SupportedRay d) (m : Λ →+ ℤ) (k : ℕ) :
-    LieSubalgebra R (d.truncatedLie ℒ k) :=
-  (H.rayLieSubalgebra w m).map (d.degreeIdeal ℒ k).mkQ
+    LieSubalgebra R (d.lieTruncation ℒ k) :=
+  (H.rayLieSubalgebra w m).map (d.truncationIdeal ℒ k).mkQ
 
 /-- A finite wall logarithm is represented by an element of the original ray sum. -/
 @[simp]
 theorem mem_truncatedRayLieSubalgebra (w : SupportedRay d) (m : Λ →+ ℤ) (k : ℕ)
-    (x : d.truncatedLie ℒ k) :
+    (x : d.lieTruncation ℒ k) :
     x ∈ H.truncatedRayLieSubalgebra w m k ↔
-      ∃ y ∈ H.raySubmodule w m, (d.degreeIdeal ℒ k).mkQ y = x := by
+      ∃ y ∈ H.raySubmodule w m, (d.truncationIdeal ℒ k).mkQ y = x := by
   simp only [truncatedRayLieSubalgebra, LieSubalgebra.mem_map, mem_rayLieSubalgebra]
 
 /-- Truncation maps a finer ray Lie algebra onto the corresponding coarser one. -/
 theorem map_truncatedRayLieSubalgebra (w : SupportedRay d) (m : Λ →+ ℤ)
     {k l : ℕ} (h : k ≤ l) :
-    (H.truncatedRayLieSubalgebra w m l).map (d.truncationMap ℒ h) =
+    (H.truncatedRayLieSubalgebra w m l).map (d.lieTruncationMap ℒ h) =
       H.truncatedRayLieSubalgebra w m k := by
   ext x
   simp only [LieSubalgebra.mem_map, mem_truncatedRayLieSubalgebra]
@@ -65,13 +67,13 @@ theorem map_truncatedRayLieSubalgebra (w : SupportedRay d) (m : Λ →+ ℤ)
   · rintro ⟨y, ⟨z, hz, rfl⟩, rfl⟩
     exact ⟨z, hz, by simp [LieIdeal.mkQ_apply]⟩
   · rintro ⟨z, hz, rfl⟩
-    exact ⟨(d.degreeIdeal ℒ l).mkQ z, ⟨z, hz, rfl⟩, by simp [LieIdeal.mkQ_apply]⟩
+    exact ⟨(d.truncationIdeal ℒ l).mkQ z, ⟨z, hz, rfl⟩, by simp [LieIdeal.mkQ_apply]⟩
 
 /-- A ray not meeting the cutoff has its entire wall sum in the degree ideal. -/
 theorem raySubmodule_le_degreeIdeal (w : SupportedRay d) (m : Λ →+ ℤ) (k : ℕ)
-    (hw : w ∉ d.raysAtOrder k) : H.raySubmodule w m ≤ (d.degreeIdeal ℒ k).toSubmodule := by
+    (hw : w ∉ d.raysAtOrder k) : H.raySubmodule w m ≤ (d.truncationIdeal ℒ k).toSubmodule := by
   rw [raySubmodule_def]
-  refine iSup_le fun n => (H.wall_le_piece n m).trans (d.le_degreeIdeal ℒ ?_)
+  refine iSup_le fun n => (H.wall_le_piece n m).trans (d.le_truncationIdeal ℒ ?_)
   by_contra hn
   exact hw ((d.mem_raysAtOrder).mpr ⟨n, n.property, le_of_not_gt hn⟩)
 
@@ -81,13 +83,13 @@ theorem truncatedRayLieSubalgebra_eq_bot (w : SupportedRay d) (m : Λ →+ ℤ) 
   apply le_antisymm _ bot_le
   intro x hx
   obtain ⟨y, hy, rfl⟩ := (H.mem_truncatedRayLieSubalgebra w m k x).mp hx
-  exact (d.degreeIdeal ℒ k).mkQ_eq_zero.mpr (H.raySubmodule_le_degreeIdeal w m k hw hy)
+  exact (d.truncationIdeal ℒ k).mkQ_eq_zero.mpr (H.raySubmodule_le_degreeIdeal w m k hw hy)
 
 /-- If two ray sums commute, so do their images after finite truncation. -/
 theorem lie_eq_zero_of_mem_truncatedRayLieSubalgebra_of_forall {w v : SupportedRay d}
     {m m' : Λ →+ ℤ}
     (hlie : ∀ x ∈ H.raySubmodule w m, ∀ y ∈ H.raySubmodule v m', ⁅x, y⁆ = 0)
-    {k : ℕ} {x y : d.truncatedLie ℒ k}
+    {k : ℕ} {x y : d.lieTruncation ℒ k}
     (hx : x ∈ H.truncatedRayLieSubalgebra w m k)
     (hy : y ∈ H.truncatedRayLieSubalgebra v m' k) : ⁅x, y⁆ = 0 := by
   obtain ⟨a, ha, hax⟩ := (H.mem_truncatedRayLieSubalgebra w m k _).mp hx
@@ -96,7 +98,7 @@ theorem lie_eq_zero_of_mem_truncatedRayLieSubalgebra_of_forall {w v : SupportedR
 
 /-- Proportional normals still give zero brackets after finite truncation. -/
 theorem lie_eq_zero_of_mem_truncatedRayLieSubalgebra {w v : SupportedRay d}
-    {m m' : Λ →+ ℤ} {k : ℕ} {x y : d.truncatedLie ℒ k}
+    {m m' : Λ →+ ℤ} {k : ℕ} {x y : d.lieTruncation ℒ k}
     (hx : x ∈ H.truncatedRayLieSubalgebra w m k)
     (hy : y ∈ H.truncatedRayLieSubalgebra v m' k)
     {c e : ℤ} (hc : c ≠ 0) (he : e ≠ 0) (hm : c • m = e • m') : ⁅x, y⁆ = 0 :=
@@ -116,7 +118,7 @@ noncomputable def wallGroup (w : SupportedRay d) (m : Λ →+ ℤ) :
 @[simp]
 theorem mem_wallGroup (w : SupportedRay d) (m : Λ →+ ℤ) (g : d.completedBCHGroup ℒ) :
     g ∈ H.wallGroup w m ↔ ∀ k,
-      BCHGroup.log (L := d.truncatedLie ℒ k) (CompletedGroup.projection k g) ∈
+      BCHGroup.log (L := d.lieTruncation ℒ k) (CompletedGroup.projection k g) ∈
         H.truncatedRayLieSubalgebra w m k := by
   simp only [wallGroup, Subgroup.mem_iInf]
   exact forall_congr' fun k => LieSubalgebra.mem_bchSubgroup _ _
@@ -125,7 +127,7 @@ theorem mem_wallGroup (w : SupportedRay d) (m : Λ →+ ℤ) (g : d.completedBCH
 theorem wallGroup_le_completedRaySubgroup (w : SupportedRay d) (m : Λ →+ ℤ) :
     H.wallGroup w m ≤ d.completedRaySubgroup ℒ w := by
   intro g hg
-  rw [Mei.PositiveDegrees.mem_completedRaySubgroup]
+  rw [TauCeti.PositiveDegrees.mem_completedRaySubgroup]
   intro k
   rw [← d.map_rayLieSubalgebra_mkQ ℒ w k]
   obtain ⟨x, hx, he⟩ := (H.mem_truncatedRayLieSubalgebra w m k _).mp
@@ -142,7 +144,7 @@ theorem wallGroup_eq_completedRaySubgroup (w : SupportedRay d) (m : Λ →+ ℤ)
     rw [H.mem_rayLieSubalgebra, h]
     exact LieSubalgebra.mem_toSubmodule (Mei.rayLieSubalgebra ℒ w)
   ext g
-  simp only [H.mem_wallGroup, Mei.PositiveDegrees.mem_completedRaySubgroup,
+  simp only [H.mem_wallGroup, TauCeti.PositiveDegrees.mem_completedRaySubgroup,
     truncatedRayLieSubalgebra, he, d.map_rayLieSubalgebra_mkQ]
 
 /-- Exponentiating an element of a supported-ray wall algebra gives a completed wall label. -/
@@ -150,7 +152,7 @@ theorem expToCompletion_mem_wallGroup {w : SupportedRay d} {m : Λ →+ ℤ} {x 
     (hx : x ∈ H.raySubmodule w m) : d.expToCompletion ℒ x ∈ H.wallGroup w m := by
   rw [mem_wallGroup]
   intro k
-  rw [Mei.PositiveDegrees.projection_expToCompletion, BCHGroup.log_exp,
+  rw [TauCeti.PositiveDegrees.projection_expToCompletion, BCHGroup.log_exp,
     mem_truncatedRayLieSubalgebra]
   exact ⟨x, hx, rfl⟩
 
@@ -173,11 +175,11 @@ The primitive generator need not itself belong to the positive monoid. -/
 theorem decompose_log_projection_eq_zero_of_notMem_rayDegrees
     {w : SupportedRay d} {m : Λ →+ ℤ} {g : d.completedBCHGroup ℒ}
     (hg : g ∈ H.wallGroup w m) (k : ℕ) {n : Γ} (hn : n ∉ w.rayDegrees) :
-    (DirectSum.decompose (d.truncatedGrading ℒ k)
-      (BCHGroup.log (CompletedGroup.projection k g)) n : d.truncatedLie ℒ k) = 0 := by
+    (DirectSum.decompose (d.lieTruncationGrading ℒ k)
+      (BCHGroup.log (CompletedGroup.projection k g)) n : d.lieTruncation ℒ k) = 0 := by
   obtain ⟨y, hy, he⟩ := (H.mem_truncatedRayLieSubalgebra w m k _).mp
     ((H.mem_wallGroup w m g).mp hg k)
-  rw [← he, LieIdeal.mkQ_apply, d.decompose_truncatedGrading_mk,
+  rw [← he, LieIdeal.mkQ_apply, d.decompose_lieTruncationGrading_mk,
     H.decompose_eq_zero_of_notMem_rayDegrees hy hn]
   exact Submodule.Quotient.mk_zero _
 
@@ -185,7 +187,7 @@ theorem decompose_log_projection_eq_zero_of_notMem_rayDegrees
 theorem projection_eq_one_of_notMem_raysAtOrder {w : SupportedRay d} {m : Λ →+ ℤ}
     {g : d.completedBCHGroup ℒ} (hg : g ∈ H.wallGroup w m) (k : ℕ)
     (hw : w ∉ d.raysAtOrder k) : CompletedGroup.projection k g = 1 := by
-  apply BCHGroup.log_injective (L := d.truncatedLie ℒ k)
+  apply BCHGroup.log_injective (L := d.lieTruncation ℒ k)
   have h := (H.mem_wallGroup w m g).mp hg k
   rw [H.truncatedRayLieSubalgebra_eq_bot w m k hw, LieSubalgebra.mem_bot] at h
   exact h.trans BCHGroup.log_one.symm
@@ -198,13 +200,13 @@ theorem wallGroup_eq_bot_of_raySubmodule_eq_bot (w : SupportedRay d) (m : Λ →
   apply CompletedGroup.ext
   intro k
   rw [map_one]
-  apply BCHGroup.log_injective (L := d.truncatedLie ℒ k)
+  apply BCHGroup.log_injective (L := d.lieTruncation ℒ k)
   obtain ⟨y, hy, heq⟩ := (H.mem_truncatedRayLieSubalgebra w m k _).mp
     ((H.mem_wallGroup w m g).mp hg k)
   rw [h, Submodule.mem_bot] at hy
   subst y
-  exact ((map_zero (d.degreeIdeal ℒ k).mkQ).symm.trans heq).symm.trans
-    (BCHGroup.log_one (L := d.truncatedLie ℒ k)).symm
+  exact ((map_zero (d.truncationIdeal ℒ k).mkQ).symm.trans heq).symm.trans
+    (BCHGroup.log_one (L := d.lieTruncation ℒ k)).symm
 
 /-- A normal that does not annihilate the geometric direction of a supported ray has
 trivial wall group on that ray. -/
@@ -257,8 +259,8 @@ theorem commute_of_mem_wallGroup_of_forall {w v : SupportedRay d} {m m' : Λ →
   have hc := BCHGroup.commute_exp_of_lie_eq_zero _ _
     (H.lie_eq_zero_of_mem_truncatedRayLieSubalgebra_of_forall hlie
       ((H.mem_wallGroup w m g).mp hg k) ((H.mem_wallGroup v m' h).mp hh k))
-  rw [BCHGroup.exp_log (L := d.truncatedLie ℒ k) (CompletedGroup.projection k g),
-    BCHGroup.exp_log (L := d.truncatedLie ℒ k) (CompletedGroup.projection k h)] at hc
+  rw [BCHGroup.exp_log (L := d.lieTruncation ℒ k) (CompletedGroup.projection k g),
+    BCHGroup.exp_log (L := d.lieTruncation ℒ k) (CompletedGroup.projection k h)] at hc
   exact hc.eq
 
 /-- Completed labels with proportional normals commute, with no restriction on

@@ -20,9 +20,13 @@ translate exists for every positive monoid.
 -/
 
 public section
+
+open TauCeti (PositiveDegrees)
 noncomputable section
 
-namespace Mei.PositiveDegrees
+namespace TauCeti.PositiveDegrees
+
+open Mei
 
 variable {Γ R M : Type*} [AddCommGroup Γ] [Ring R] [AddCommGroup M] [Module R M]
   [DecidableEq Γ] (d : PositiveDegrees Γ) (ℳ : Γ → Submodule R M)
@@ -114,4 +118,4 @@ theorem range_shiftedCompletedInclusion_eq_inf (p q r s : Γ)
     · exact hq u (fun huq => hu ((hinter u).mpr ⟨hup, huq⟩))
     · exact hp u hup
 
-end Mei.PositiveDegrees
+end TauCeti.PositiveDegrees

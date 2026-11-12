@@ -24,6 +24,8 @@ is the identity, so labels of transported walls are literally unchanged.
 
 public section
 
+open TauCeti (SupportedRay)
+
 open TauCeti (DirectedWallSpaces)
 
 namespace TauCeti.DirectedWallSpaces
@@ -39,29 +41,7 @@ variable {Γ Λ Λ' R : Type*} {L : Type u}
 
 namespace CoordinateChange
 
-variable {d : Mei.PositiveDegrees Γ}
-
-/-- Relabelling tangent directions along `T` is a coordinate change with identity degree
-and Lie coordinates. -/
-def ofTangentEquiv : CoordinateChange (d := d) (e := d) H (H.mapTangent (T : Λ →+ Λ')) where
-  degreeEquiv := AddEquiv.refl Γ
-  tangentEquiv := T
-  lieEquiv := LieEquiv.refl
-  monoid_mem_iff _ := Iff.rfl
-  map_direction _ := rfl
-  piece_mem_iff _ _ := Iff.rfl
-  wall_mem_iff n m x := by
-    rw [LieEquiv.refl_apply, AddEquiv.refl_apply, H.mapTangent_wall_comp_symm T n m]
-
-@[simp]
-theorem ofTangentEquiv_degreeEquiv :
-    (ofTangentEquiv (d := d) H T).degreeEquiv = AddEquiv.refl Γ := (rfl)
-
-@[simp]
-theorem ofTangentEquiv_tangentEquiv : (ofTangentEquiv (d := d) H T).tangentEquiv = T := (rfl)
-
-@[simp]
-theorem ofTangentEquiv_lieEquiv : (ofTangentEquiv (d := d) H T).lieEquiv = LieEquiv.refl := (rfl)
+variable {d : TauCeti.PositiveDegrees Γ}
 
 /-- A tangent coordinate change fixes every supported ray. -/
 @[simp]
@@ -72,7 +52,7 @@ theorem ofTangentEquiv_rayEquiv :
   apply SupportedRay.ext
   simp
 
-variable [DecidableEq Γ] [GradedLieAlgebra ℒ] [Mei.IsPositiveGrading d ℒ] [Algebra ℚ R]
+variable [DecidableEq Γ] [GradedLieAlgebra ℒ] [TauCeti.IsPositiveGrading d ℒ] [Algebra ℚ R]
   [LieAlgebra ℚ L] [IsScalarTower ℚ R L]
 
 /-- A tangent coordinate change acts as the identity on completed labels. -/

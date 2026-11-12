@@ -24,9 +24,13 @@ shifted filtration, keeping the quotient carrier used by filtered Lie actions.
 
 public section
 
+open TauCeti (PositiveDegrees)
+
 noncomputable section
 
-namespace Mei.PositiveDegrees
+namespace TauCeti.PositiveDegrees
+
+open Mei
 
 variable {Γ : Type} {R M : Type*} [AddCommGroup Γ] [Ring R]
   [AddCommGroup M] [Module R M] [DecidableEq Γ]
@@ -181,4 +185,4 @@ theorem transition_eq_zero_iff_of_mem_shiftedQuotientGrading
   by_cases hz : a = 0 <;> simp only [hz, true_or, false_or]
   omega
 
-end Mei.PositiveDegrees
+end TauCeti.PositiveDegrees

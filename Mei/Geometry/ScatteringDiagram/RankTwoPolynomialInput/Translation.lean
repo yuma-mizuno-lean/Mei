@@ -42,6 +42,8 @@ the original inputs is not done here.
 
 public section
 
+open TauCeti (PositiveDegrees)
+
 noncomputable section
 
 open TauCeti.Toric

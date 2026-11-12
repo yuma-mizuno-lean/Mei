@@ -29,6 +29,8 @@ from the projection-fixed correction logarithms using
 
 public section
 
+open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading)
+
 open TauCeti (DirectedWallSpaces)
 
 noncomputable section
@@ -70,7 +72,7 @@ theorem exists_consistent_kernel_extension
     (ht : ∀ (P : (D.adaptedComplex (k + 1)).cellsOfCodimension 0)
       (x : WallComplement (fun j : D.active k => (D.wall j).support)),
       x.val ∈ interior (P : Set V) →
-      (d.truncationMap ℒ (Nat.le_succ k)).bchGroupMap (t P) = D.levelTransport k hk b x)
+      (d.lieTruncationMap ℒ (Nat.le_succ k)).bchGroupMap (t P) = D.levelTransport k hk b x)
     (τ : (D.adaptedComplex (k + 1)).joints → OrientedCell h 2)
     (hτ : ∀ J, (τ J).carrier = (J : Set V))
     (hq : (D.map π hπ).LevelConsistent (k + 1)) (lifted : Set ι)

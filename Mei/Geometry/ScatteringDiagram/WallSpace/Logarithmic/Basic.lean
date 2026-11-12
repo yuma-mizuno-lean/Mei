@@ -31,6 +31,8 @@ Example 2.1(i), arXiv:1503.06183v5.
 
 public section
 
+open TauCeti (PositiveDegrees)
+
 open TauCeti (DirectedWallSpaces wallBracketNormal)
 
 noncomputable section

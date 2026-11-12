@@ -27,7 +27,7 @@ Taking a ray factor commutes with degree-preserving coefficient maps, even when
 the coefficient map kills some or all of its logarithmic coefficients.
 
 The finite support argument uses `Mei.GradedLieHom.map_mem_rayLieSubalgebra` and
-`Mei.PositiveDegrees.map_rayLieSubalgebra_mkQ`. Completion uses
+`TauCeti.PositiveDegrees.map_rayLieSubalgebra_mkQ`. Completion uses
 `Mei.GradedLieHom.projection_completedMap` and `LieHom.log_bchGroupMap`.
 The restriction argument follows the wall-group construction in
 `Mei.Geometry.ScatteringDiagram.WallSpace.Hom`, with all homogeneous pieces
@@ -35,6 +35,8 @@ on the ray in place of normal-dependent wall spaces.
 -/
 
 public section
+
+open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading SupportedRay)
 
 namespace Mei.GradedLieHom
 
@@ -135,11 +137,11 @@ theorem completedMap_eq_self_of_mem_completedRaySubgroup
   let y : d.truncatedGroup ℒ k := CompletedGroup.projection k g
   apply BCHGroup.log_injective
   refine ((f.truncatedMap (a := k) k (by simp)).log_bchGroupMap y).trans ?_
-  have hle : (rayLieSubalgebra (d.truncatedGrading ℒ k) w).toSubmodule ≤
+  have hle : (rayLieSubalgebra (d.lieTruncationGrading ℒ k) w).toSubmodule ≤
       LinearMap.eqLocus (f.truncatedMap (a := k) k (by simp)).toLinearMap LinearMap.id := by
     rw [rayLieSubalgebra_toSubmodule]
     refine iSup_le fun n => ?_
-    rw [d.truncatedGrading_eq]
+    rw [d.lieTruncationGrading_eq]
     rintro _ ⟨x, hx, rfl⟩
     rw [LinearMap.mem_eqLocus, LieHom.coe_toLinearMap, LinearMap.id_apply,
       Submodule.mkQ_apply, f.truncatedMap_mk, hf n n.property x hx]

@@ -34,6 +34,8 @@ Appendix B (arXiv:1411.1394v2).
 
 public noncomputable section
 
+open TauCeti (PositiveDegrees PositiveDegreeMap)
+
 namespace Mei.SkewLatticeDatum.AdaptedBasis
 
 open Module _root_.AddMonoidAlgebra

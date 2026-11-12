@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Algebra.QuantumMonoidAlgebra.Positive
-public import Mei.Algebra.PositiveDegrees.Map
+public import TauCeti.Algebra.PositiveDegrees.FinitelyGenerated
 public import Mei.Algebra.QuantumMonoidAlgebra.Hom.Injective
 
 /-!
@@ -18,6 +18,8 @@ supply the target bound; equal or strictly preserved degrees are not required.
 -/
 
 public section
+
+open TauCeti (PositiveDegrees PositiveDegreeMap)
 noncomputable section
 
 namespace Mei.QuantumMonoidAlgebra

@@ -19,6 +19,8 @@ require positive differences to span the ambient group.
 -/
 
 public section
+
+open TauCeti (PositiveDegrees)
 noncomputable section
 
 namespace Mei.QuantumMonoidAlgebra

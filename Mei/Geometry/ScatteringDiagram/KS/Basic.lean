@@ -34,6 +34,8 @@ generation of the positive monoid is required.
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 noncomputable section
 
 open Set Mei.Convex
@@ -65,7 +67,7 @@ structure KSComplex (C : FinitePolyhedralComplex h) (k : ℕ) where
   label : C.walls → d.truncatedGroup ℒ k
   /-- The logarithm is supported on degrees annihilating the whole wall. -/
   label_mem : ∀ P : C.walls, label P ∈
-    (orthogonalLieSubalgebra (d.truncatedGrading ℒ k)
+    (orthogonalLieSubalgebra (d.lieTruncationGrading ℒ k)
       (s.evaluation '' (P : Set V))).bchSubgroup
 
 namespace KSComplex
@@ -105,7 +107,7 @@ def truncate (D : KSComplex s d ℒ C l) (hkl : k ≤ l) : KSComplex s d ℒ C k
   degree_mem := D.degree_mem
   degree_ne_zero := D.degree_ne_zero
   evaluation_eq_zero := D.evaluation_eq_zero
-  label P := (d.truncationMap ℒ hkl).bchGroupMap (D.label P)
+  label P := (d.lieTruncationMap ℒ hkl).bchGroupMap (D.label P)
   label_mem P := by
     rw [← map_bchSubgroup_orthogonalLieSubalgebra ℒ d
       (s.evaluation '' (P : Set V)) hkl]
@@ -119,7 +121,7 @@ theorem truncate_degree (D : KSComplex s d ℒ C l) (hkl : k ≤ l) :
 /-- Truncation applies the canonical BCH quotient homomorphism to wall labels. -/
 @[simp]
 theorem truncate_label (D : KSComplex s d ℒ C l) (hkl : k ≤ l) (P : C.walls) :
-    (D.truncate hkl).label P = (d.truncationMap ℒ hkl).bchGroupMap (D.label P) := (rfl)
+    (D.truncate hkl).label P = (d.lieTruncationMap ℒ hkl).bchGroupMap (D.label P) := (rfl)
 
 /-- A KS complex is determined by its coorienting degrees and labels. -/
 @[ext]
@@ -145,13 +147,13 @@ theorem truncate_truncate (D : KSComplex s d ℒ C m) (hkl : k ≤ l) (hlm : l �
   ext P
   · rfl
   · simp only [truncate_label, ← MonoidHom.comp_apply, ← LieHom.bchGroupMap_comp,
-      PositiveDegrees.truncationMap_comp]
+      PositiveDegrees.lieTruncationMap_comp]
 
 /-- Forgetting the grading turns cutoff change into ordinary relabelling. -/
 @[simp]
 theorem toFiniteWallDiagram_truncate (D : KSComplex s d ℒ C l) (hkl : k ≤ l) :
     (D.truncate hkl).toFiniteWallDiagram =
-      D.toFiniteWallDiagram.relabel (d.truncationMap ℒ hkl).bchGroupMap := by
+      D.toFiniteWallDiagram.relabel (d.lieTruncationMap ℒ hkl).bchGroupMap := by
   ext <;> simp
 
 /-- Cutoff projections preserve consistency of the actual geometric path products. -/

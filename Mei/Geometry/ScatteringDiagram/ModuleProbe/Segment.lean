@@ -33,6 +33,8 @@ homogeneous correction formula, and the transport and cutoff compatibility of
 
 public noncomputable section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 open TauCeti (DirectedWallSpaces)
 
 open Mei.Convex Mei.Convex.WallComplement
@@ -85,7 +87,7 @@ theorem extendedCoefficientField_eq_add_sum_crossings
     field (k + 1) hBc y = field (k + 1) hBc x +
       ∑ j : Fin g.length, (A).truncatedBCHCorrection d ℒ k g[j]
         ((A).truncatedBCHAction d ℒ k
-          ((d.truncationMap ℒ (Nat.le_succ k)).bchGroupMap (g.drop (j.val + 1)).prod)
+          ((d.lieTruncationMap ℒ (Nat.le_succ k)).bchGroupMap (g.drop (j.val + 1)).prod)
           (field k (hBc.mono (Nat.le_succ k)) ((restriction k).obj x))) := by
   dsimp only
   have he : B.levelPathProduct (k + 1) e.toPath = (labels (k + 1) e).prod := by
@@ -125,7 +127,7 @@ theorem shiftedQuotientComponent_extendedCoefficientField_eq_add_sum_crossings
                     (by simpa only [add_sub_cancel_left] using
                       (d.mem_cutoff.mp ((d.finite_cutoff k).mem_toFinset.mp n.property)).2)
                     ((A).truncatedBCHAction d ℒ k
-                      ((d.truncationMap ℒ (Nat.le_succ k)).bchGroupMap
+                      ((d.lieTruncationMap ℒ (Nat.le_succ k)).bchGroupMap
                         (g.drop (j.val + 1)).prod)
                       (field k (hBc.mono (Nat.le_succ k)) ((restriction k).obj x))))))) := by
   dsimp only

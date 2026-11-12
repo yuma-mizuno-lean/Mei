@@ -31,6 +31,8 @@ counts*, Example 2.1(iii).
 
 public section
 
+open TauCeti (PositiveDegrees)
+
 open TauCeti (DirectedWallSpaces wallBracketNormal)
 
 noncomputable section
@@ -103,7 +105,7 @@ private theorem contracted_normal_ker {n n' : Γ} {m m' : Γ →+ ℤ}
   have hs (v : Γ) :
       (a * c) * wallBracketNormal (AddMonoidHom.id Γ) n n' m m' v =
         (b * d * β n n') * β (n + n') v := by
-    simp only [wallBracketNormal_apply, AddMonoidHom.id_apply, map_add, LinearMap.add_apply]
+    simp only [TauCeti.wallBracketNormal_apply, map_add, LinearMap.add_apply]
     calc
       a * c * (m n' * m' v - m' n * m v) =
           (a * m n') * (c * m' v) - (c * m' n) * (a * m v) := by ring

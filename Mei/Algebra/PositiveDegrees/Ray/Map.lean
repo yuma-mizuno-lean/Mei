@@ -25,7 +25,10 @@ transport of primitive generators uses `LinearEquiv.isPrimitive_iff`.
 
 public section
 
-namespace Mei.SupportedRay
+open TauCeti (PositiveDegrees SupportedRay)
+
+namespace TauCeti.SupportedRay
+
 
 variable {N M K : Type*} [AddCommGroup N] [AddCommGroup M] [AddCommGroup K]
 variable {d : PositiveDegrees N} {e : PositiveDegrees M} {q : PositiveDegrees K}
@@ -258,4 +261,4 @@ theorem congr_trans (T : N ≃+ M) (U : M ≃+ K)
   intro w
   exact SupportedRay.ext rfl
 
-end Mei.SupportedRay
+end TauCeti.SupportedRay

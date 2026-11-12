@@ -33,6 +33,8 @@ theta functions, and refined tropical curve counts*, equation (8) and §3.3.3
 
 public noncomputable section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 open TauCeti (DirectedWallSpaces)
 
 open Set Filter Topology Mei.Convex Mei.Convex.WallComplement
@@ -223,7 +225,7 @@ theorem truncation_wallEventLabel {k l : ℕ} (hkl : k ≤ l)
     (hv : ∀ j : D.active l, x ∈ (D.wall j).support → (f l) j v ≠ 0)
     (hs : SignType.sign (e.normal (f k) v) = e.2)
     (hs' : SignType.sign (e'.normal (f l) v) = e'.2) :
-    (d.truncationMap ℒ hkl).bchGroupMap (D.wallEventLabel l e') =
+    (d.lieTruncationMap ℒ hkl).bchGroupMap (D.wallEventLabel l e') =
       D.wallEventLabel k e := by
   have hvk (j : D.active k) (hj : x ∈ (D.wall j).support) : (f k) j v ≠ 0 :=
     hv ⟨j.val, D.active_mono hkl j.property⟩ hj

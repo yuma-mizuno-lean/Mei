@@ -34,6 +34,8 @@ and refined tropical curve counts*, Example 2.1(iii), arXiv:1503.06183.
 
 public section
 
+open TauCeti (PositiveDegrees)
+
 noncomputable section
 
 namespace Mei.QuantumMonoidAlgebra
@@ -111,7 +113,7 @@ theorem positiveLieToCoefficients_mem_positiveFiltration {k : ℕ}
     hx ?_ (by simp) ?_
   · intro n x hx
     rw [positiveFiltration_ideal]
-    apply GradedAlgebra.le_degreeIdeal
+    apply GradedAlgebra.le_truncationIdeal
       ((positiveSubalgebra q β d.monoid).grading (grade q β)) d.degree _
       (i := (n : Γ)) (by have := n.property; omega)
     rw [Subalgebra.mem_grading_iff, coe_positiveLieToCoefficients]
@@ -122,16 +124,16 @@ theorem positiveLieToCoefficients_mem_positiveFiltration {k : ℕ}
 variable [DecidableEq Γ]
 
 /-- The positive Lie inclusion descends to the matching finite coefficient quotient. -/
-def truncatedCoefficientInclusion (k : ℕ) : d.truncatedLie ℒ k →ₗ⁅R⁆
+def truncatedCoefficientInclusion (k : ℕ) : d.lieTruncation ℒ k →ₗ⁅R⁆
     (positiveSubalgebra q β d.monoid) ⧸ (𝓕).ideal (k + 1) :=
-  (d.degreeIdeal ℒ k).liftQ
+  (d.truncationIdeal ℒ k).liftQ
     (((Ideal.Quotient.mkₐ R ((𝓕).ideal (k + 1))).toLieHom).comp
       (positiveLieToCoefficients q β d)) (by
         intro x hx
         rw [LieHom.mem_ker, LieHom.comp_apply, AlgHom.toLieHom_apply,
           Ideal.Quotient.mkₐ_eq_mk, Ideal.Quotient.eq_zero_iff_mem]
         apply positiveLieToCoefficients_mem_positiveFiltration q β d
-        rw [← d.degreeIdeal_toSubmodule ℒ k]
+        rw [← d.truncationIdeal_toSubmodule ℒ k]
         exact hx)
 
 /-- The finite inclusion sends a Lie representative to its coefficient class. -/
@@ -144,11 +146,11 @@ theorem truncatedCoefficientInclusion_mk (k : ℕ) (x : positiveLieAlgebra q β 
 /-- Lie truncation and coefficient truncation commute with the finite inclusion. -/
 @[simp]
 theorem factor_truncatedCoefficientInclusion {k l : ℕ} (h : k ≤ l)
-    (x : d.truncatedLie ℒ l) :
+    (x : d.lieTruncation ℒ l) :
     Ideal.Quotient.factor ((𝓕).antitone (Nat.add_le_add_right h 1))
         (truncatedCoefficientInclusion q β d l x) =
-      truncatedCoefficientInclusion q β d k (d.truncationMap ℒ h x) := by
-  obtain ⟨x, rfl⟩ := (d.degreeIdeal ℒ l).surjective_mkQ x
+      truncatedCoefficientInclusion q β d k (d.lieTruncationMap ℒ h x) := by
+  obtain ⟨x, rfl⟩ := (d.truncationIdeal ℒ l).surjective_mkQ x
   simp
 
 /-- The generic finite inner map agrees with the canonical quantum coefficient inclusion. -/
@@ -161,7 +163,7 @@ theorem truncatedInnerMap_eq_truncatedCoefficientInclusion
       (truncatedCoefficientInclusion q β d k).toLinearMap := by
   apply LinearMap.ext
   intro x
-  obtain ⟨x, rfl⟩ := (d.degreeIdeal ℒ k).surjective_mkQ x
+  obtain ⟨x, rfl⟩ := (d.truncationIdeal ℒ k).surjective_mkQ x
   simp only [LieIdeal.mkQ_apply, AlgFiltration.truncatedInnerMap_mk,
     LieHom.coe_toLinearMap, truncatedCoefficientInclusion_mk]
 
@@ -200,7 +202,7 @@ theorem projection_completedCoefficientLog (g : d.completedBCHGroup ℒ) (k : �
     simpa only [completedCoefficientLog] using!
       (𝓕).coe_completedInnerElement d ℒ j hj ((d.completedBCHExp ℒ).symm g)
   let z := (d.completedBCHExp ℒ).symm g
-  let π := LieIdeal.completionProjection (d.degreeIdeal ℒ) (d.degreeIdeal_antitone ℒ)
+  let π := LieIdeal.completionProjection (d.truncationIdeal ℒ) (d.truncationIdeal_antitone ℒ)
   calc
     _ = (𝓕).projection k ((𝓕).completedInnerMap d ℒ j hj z) :=
       congrArg ((𝓕).projection k) hc
@@ -229,9 +231,9 @@ theorem coe_completedCoefficientLog_inv (g : d.completedBCHGroup ℒ) :
       -(completedCoefficientLog q β d g : (𝓕).completion) := by
   apply (𝓕).completion_ext
   intro k
-  have hg : BCHGroup.log (L := d.truncatedLie ℒ k) (CompletedGroup.projection k g⁻¹) =
-      -BCHGroup.log (L := d.truncatedLie ℒ k) (CompletedGroup.projection k g) :=
-    (congrArg (BCHGroup.log (L := d.truncatedLie ℒ k))
+  have hg : BCHGroup.log (L := d.lieTruncation ℒ k) (CompletedGroup.projection k g⁻¹) =
+      -BCHGroup.log (L := d.lieTruncation ℒ k) (CompletedGroup.projection k g) :=
+    (congrArg (BCHGroup.log (L := d.lieTruncation ℒ k))
       ((CompletedGroup.projection (F := d.groupTower ℒ) k).map_inv g)).trans
         (BCHGroup.log_inv (CompletedGroup.projection k g))
   calc
@@ -248,7 +250,7 @@ theorem coe_completedCoefficientLog_inv (g : d.completedBCHGroup ℒ) :
 /-- At each cutoff, the inner exponential is conjugation by the exponential of
 the finite coefficient inclusion. -/
 @[simp]
-theorem truncatedExpLieAction_apply (k : ℕ) (x : d.truncatedLie ℒ k)
+theorem truncatedExpLieAction_apply (k : ℕ) (x : d.lieTruncation ℒ k)
     (a : (positiveSubalgebra q β d.monoid) ⧸ (𝓕).ideal (k + 1)) :
     (𝓕).truncatedExpLieAction d ℒ k x a =
       IsNilpotent.exp (truncatedCoefficientInclusion q β d k x) * a *

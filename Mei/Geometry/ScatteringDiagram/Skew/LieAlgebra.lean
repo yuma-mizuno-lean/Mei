@@ -27,6 +27,8 @@ nonfaithful Poisson action.
 
 public section
 
+open TauCeti (PositiveDegrees)
+
 namespace Mei.SkewLatticeDatum
 
 variable {N : Type*} [AddCommGroup N] (D : SkewLatticeDatum N)

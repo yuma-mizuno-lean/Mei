@@ -30,7 +30,11 @@ and Proposition 2.13 (arXiv:1503.06183v5).
 
 public noncomputable section
 
-namespace Mei.PositiveDegrees
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
+namespace TauCeti.PositiveDegrees
+
+open Mei
 
 variable {Γ : Type} {R L M : Type*} [AddCommGroup Γ] [CommRing R] [Algebra ℚ R]
   [LieRing L] [LieAlgebra R L] [LieAlgebra ℚ L] [IsScalarTower ℚ R L]
@@ -93,4 +97,4 @@ theorem homogeneousHistory_truncatedBCHAction_const
   homogeneousHistory_const_of_decompose_self
     (fun j _ hx => d.decompose_truncatedBCHAction_same ℒ ℳ p k (g j) hx) a.property
 
-end Mei.PositiveDegrees
+end TauCeti.PositiveDegrees

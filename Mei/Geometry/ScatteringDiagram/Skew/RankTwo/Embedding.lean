@@ -29,6 +29,8 @@ For a plane degree `q = (a, b)`, the exponent `{x, y} κ(a x + b y)` of the unit
 
 public section
 
+open TauCeti (PositiveDegrees PositiveDegreeMap)
+
 noncomputable section
 
 universe u

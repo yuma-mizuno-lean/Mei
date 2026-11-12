@@ -32,6 +32,8 @@ short-segment realization theorem. Incident full cells are supplied by
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 open TauCeti (DirectedWallSpaces)
 
 noncomputable section

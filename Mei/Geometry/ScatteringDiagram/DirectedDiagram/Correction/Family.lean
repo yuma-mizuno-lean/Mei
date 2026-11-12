@@ -31,6 +31,8 @@ consistency of the corrected diagram are separate requirements.
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 open TauCeti (DirectedWallSpaces)
 
 noncomputable section
@@ -58,7 +60,7 @@ open Classical in
 actual degrees, rather than all primitive generators of bounded degree. -/
 abbrev JointCorrectionIndex :=
   Σ J : (D.adaptedComplex (k + 1)).joints,
-    (DirectSum.decompose (d.truncatedGrading ℒ (k + 1))
+    (DirectSum.decompose (d.lieTruncationGrading ℒ (k + 1))
       (log (D.levelPathProduct (k + 1) (p J)))).support
 
 /-- Lower-order consistency forces each nonzero loop component to have exactly
@@ -66,22 +68,22 @@ the correction degree. This does not require the loop to be local. -/
 theorem degree_jointCorrectionIndex (hk : D.LevelConsistent k)
     (a : D.JointCorrectionIndex x p) : d.degree a.2.val = (k : ℤ) + 1 := by
   classical
-  have hne : (DirectSum.decompose (d.truncatedGrading ℒ (k + 1))
-      (log (D.levelPathProduct (k + 1) (p a.1))) a.2.val : d.truncatedLie ℒ (k + 1)) ≠ 0 :=
+  have hne : (DirectSum.decompose (d.lieTruncationGrading ℒ (k + 1))
+      (log (D.levelPathProduct (k + 1) (p a.1))) a.2.val : d.lieTruncation ℒ (k + 1)) ≠ 0 :=
     fun hz => (DFinsupp.mem_support_toFun _ _).mp a.2.property (Subtype.ext hz)
   have hker : log (D.levelPathProduct (k + 1) (p a.1)) ∈
-      (d.truncationMap ℒ (Nat.le_succ k)).ker := by
+      (d.lieTruncationMap ℒ (Nat.le_succ k)).ker := by
     rw [LieHom.mem_ker, ← LieHom.log_bchGroupMap,
       D.truncation_levelPathProduct (Nat.le_succ k),
       (D.levelConsistent_iff_loops k).mp hk, log_one]
-  have hck := d.ker_truncationMap_isHomogeneous ℒ (Nat.le_succ k) a.2.val hker
-  have hc := (DirectSum.decompose (d.truncatedGrading ℒ (k + 1))
+  have hck := d.ker_lieTruncationMap_isHomogeneous ℒ (Nat.le_succ k) a.2.val hker
+  have hc := (DirectSum.decompose (d.lieTruncationGrading ℒ (k + 1))
     (log (D.levelPathProduct (k + 1) (p a.1))) a.2.val).property
-  have hlo := d.lt_degree_of_mem_ker_truncationMap ℒ (Nat.le_succ k) hc hck hne
-  have hpiece : d.truncatedGrading ℒ (k + 1) a.2.val ≠ ⊥ := by
+  have hlo := d.lt_degree_of_mem_ker_lieTruncationMap ℒ (Nat.le_succ k) hc hck hne
+  have hpiece : d.lieTruncationGrading ℒ (k + 1) a.2.val ≠ ⊥ := by
     intro he
     exact hne (by simpa only [he, Submodule.mem_bot] using hc)
-  have hhi := (d.mem_cutoff.mp (d.mem_cutoff_of_truncatedGrading_ne_bot ℒ hpiece).1).2
+  have hhi := (d.mem_cutoff.mp (d.mem_cutoff_of_lieTruncationGrading_ne_bot ℒ hpiece).1).2
   omega
 
 /-- Whenever one correction wall negates each nonzero component of a joint
@@ -91,22 +93,22 @@ private theorem sum_log_joint_correction_eq
     (E : DirectedDiagram (d := d) h H (D.JointCorrectionIndex x p))
     (hlog : ∀ a : D.JointCorrectionIndex x p,
       log (CompletedGroup.projection (k + 1) (E.wall a).label) =
-        -(DirectSum.decompose (d.truncatedGrading ℒ (k + 1))
-          (log (D.levelPathProduct (k + 1) (p a.1))) a.2.val : d.truncatedLie ℒ (k + 1)))
+        -(DirectSum.decompose (d.lieTruncationGrading ℒ (k + 1))
+          (log (D.levelPathProduct (k + 1) (p a.1))) a.2.val : d.lieTruncation ℒ (k + 1)))
     (J : (D.adaptedComplex (k + 1)).joints) :
-    letI := Classical.decEq (d.truncatedLie ℒ (k + 1))
-    ∑ n : (DirectSum.decompose (d.truncatedGrading ℒ (k + 1))
+    letI := Classical.decEq (d.lieTruncation ℒ (k + 1))
+    ∑ n : (DirectSum.decompose (d.lieTruncationGrading ℒ (k + 1))
       (log (D.levelPathProduct (k + 1) (p J)))).support,
       log (CompletedGroup.projection (k + 1) (E.wall ⟨J, n⟩).label) =
       -log (D.levelPathProduct (k + 1) (p J)) := by
   classical
   simp only [hlog, Finset.sum_neg_distrib]
   congr 1
-  let f := DirectSum.decompose (d.truncatedGrading ℒ (k + 1))
+  let f := DirectSum.decompose (d.lieTruncationGrading ℒ (k + 1))
     (log (D.levelPathProduct (k + 1) (p J)))
   exact (Finset.sum_coe_sort f.support
-    (fun n => (f n : d.truncatedLie ℒ (k + 1)))).trans
-      (DirectSum.sum_support_decompose (d.truncatedGrading ℒ (k + 1))
+    (fun n => (f n : d.lieTruncation ℒ (k + 1)))).trans
+      (DirectSum.sum_support_decompose (d.lieTruncationGrading ℒ (k + 1))
         (log (D.levelPathProduct (k + 1) (p J))))
 
 /-- Near every adapted joint, the nonzero components of local loop logarithms
@@ -132,12 +134,12 @@ theorem exists_joint_correction_family [Module.Free ℤ Γ]
             (∃ b ∈ ℒ a.2.val, (E.wall a).label = d.expToCompletion ℒ (-b)) ∧
             (∀ l : ℕ, a ∈ E.active l ↔ k + 1 ≤ l) ∧
             log (CompletedGroup.projection (k + 1) (E.wall a).label) =
-              -(DirectSum.decompose (d.truncatedGrading ℒ (k + 1))
+              -(DirectSum.decompose (d.lieTruncationGrading ℒ (k + 1))
                 (log (D.levelPathProduct (k + 1) (p a.1))) a.2.val :
-                  d.truncatedLie ℒ (k + 1))) ∧
+                  d.lieTruncation ℒ (k + 1))) ∧
           ∀ J : (D.adaptedComplex (k + 1)).joints,
-            letI := Classical.decEq (d.truncatedLie ℒ (k + 1))
-            ∑ n : (DirectSum.decompose (d.truncatedGrading ℒ (k + 1))
+            letI := Classical.decEq (d.lieTruncation ℒ (k + 1))
+            ∑ n : (DirectSum.decompose (d.lieTruncationGrading ℒ (k + 1))
                 (log (D.levelPathProduct (k + 1) (p J)))).support,
               log (CompletedGroup.projection (k + 1) (E.wall ⟨J, n⟩).label) =
                 -log (D.levelPathProduct (k + 1) (p J)) := by

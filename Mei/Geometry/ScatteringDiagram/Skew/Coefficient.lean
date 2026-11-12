@@ -37,6 +37,8 @@ form is zero. The principal realization follows Gross–Hacking–Keel–Kontsev
 
 public section
 
+open TauCeti (PositiveDegrees)
+
 noncomputable section
 
 namespace Mei.SkewLatticeDatum
@@ -344,16 +346,16 @@ label at that order: the square of the action of `y` raises the order beyond `a 
 theorem projection_completedBCHAction_single_of_mem_degreeFiltration
     {g : d.completedBCHGroup 𝓛} {a : ℕ}
     (hg : g ∈ CompletedGroup.degreeFiltration (d.groupTower 𝓛) (a + 1)) {y : 𝔤}
-    (hylog : (d.degreeIdeal 𝓛 (a + 1)).mkQ y =
-      BCHGroup.log (L := d.truncatedLie 𝓛 (a + 1)) (CompletedGroup.projection (a + 1) g))
+    (hylog : (d.truncationIdeal 𝓛 (a + 1)).mkQ y =
+      BCHGroup.log (L := d.lieTruncation 𝓛 (a + 1)) (CompletedGroup.projection (a + 1) g))
     (p : Qpr) :
     (Fpr).projection (a + 1) ((Fpr).completedBCHAction (R := R) e ℳ
         ((D.principalGradedLieHom d).completedMap g) ((Fpr).toCompletion (single p 1))) =
       Ideal.Quotient.mk _ (single p 1 + D.principalCoefficientAction d y (single p 1)) := by
-  have hya : y ∈ d.degreeIdeal 𝓛 a :=
+  have hya : y ∈ d.truncationIdeal 𝓛 a :=
     (d.mem_degreeIdeal_iff_of_mkQ_eq_log_projection 𝓛 (Nat.le_succ a) g hylog).mpr hg
   have hfy : D.principalGradedLieHom d y ∈ (e).degreeSubmodule ℳ a := by
-    rw [← PositiveDegrees.degreeIdeal_toSubmodule]
+    rw [← PositiveDegrees.truncationIdeal_toSubmodule]
     exact (LieSubmodule.mem_toSubmodule _).mpr
       ((D.principalGradedLieHom d).map_mem_degreeIdeal a (by
         rwa [PositiveDegrees.graphMap_modulus]))

@@ -26,6 +26,8 @@ The bracket convention and the skew Lie algebra follow Gross–Hacking–Keel–
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 open TauCeti (DirectedWallSpaces)
 
 noncomputable section

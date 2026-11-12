@@ -18,6 +18,8 @@ geometric event inventory is chosen separately at each output degree.
 
 public noncomputable section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 open TauCeti (DirectedWallSpaces)
 
 open Set Filter Topology Mei.Convex Mei.Convex.WallComplement

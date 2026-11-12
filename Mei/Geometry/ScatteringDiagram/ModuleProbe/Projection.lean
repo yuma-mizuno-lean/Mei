@@ -35,6 +35,8 @@ counts*, §3.3.3 (arXiv:1503.06183v5).
 
 public noncomputable section
 
+open TauCeti (PositiveDegrees IsPositiveGrading SupportedRay)
+
 namespace Mei.ModuleProbe
 
 universe u
@@ -47,16 +49,16 @@ variable {R Γ : Type*} {M L : Type u} [CommRing R] [AddCommGroup M] [Module R M
   [SetLike.GradedBracket ℒ ℳ] [DirectSum.Decomposition ℳ]
 
 private theorem right_mem_degreeIdeal (k : ℕ) {x : ProbeLie d ℳ p ℒ}
-    (hx : x ∈ (positiveDegrees d p).degreeIdeal (grading d ℳ p ℒ) k) :
-    x.right ∈ d.degreeIdeal ℒ k := by
+    (hx : x ∈ (positiveDegrees d p).truncationIdeal (grading d ℳ p ℒ) k) :
+    x.right ∈ d.truncationIdeal ℒ k := by
   cases k with
   | zero => simp
   | succ k => exact ((mem_degreeIdeal_succ d ℳ p ℒ k x).mp hx).1
 
 /-- Forget the coefficient summand in a finite probe, at the same cutoff. -/
 def baseQuotientProjection (k : ℕ) :
-    (positiveDegrees d p).truncatedLie (grading d ℳ p ℒ) k →ₗ⁅R⁆ d.truncatedLie ℒ k :=
-  ((positiveDegrees d p).degreeIdeal (grading d ℳ p ℒ) k).mapQ (d.degreeIdeal ℒ k)
+    (positiveDegrees d p).lieTruncation (grading d ℳ p ℒ) k →ₗ⁅R⁆ d.lieTruncation ℒ k :=
+  ((positiveDegrees d p).truncationIdeal (grading d ℳ p ℒ) k).mapQ (d.truncationIdeal ℒ k)
     (LieAlgebra.SemiDirectSum.projr _) (fun _ hx => right_mem_degreeIdeal d ℳ p ℒ k hx)
 
 /-- Projection of a representative is its original base component. -/
@@ -64,25 +66,25 @@ def baseQuotientProjection (k : ℕ) :
 theorem baseQuotientProjection_mk (k : ℕ) (x : ProbeLie d ℳ p ℒ) :
     baseQuotientProjection d ℳ p ℒ k (Submodule.Quotient.mk x) =
       Submodule.Quotient.mk x.right := by
-  exact ((positiveDegrees d p).degreeIdeal (grading d ℳ p ℒ) k).mapQ_apply
-    (d.degreeIdeal ℒ k) (LieAlgebra.SemiDirectSum.projr _) _ x
+  exact ((positiveDegrees d p).truncationIdeal (grading d ℳ p ℒ) k).mapQ_apply
+    (d.truncationIdeal ℒ k) (LieAlgebra.SemiDirectSum.projr _) _ x
 
 /-- Base projection retracts the finite charge-zero inclusion. -/
 @[simp]
-theorem baseQuotientProjection_base (k : ℕ) (x : d.truncatedLie ℒ k) :
+theorem baseQuotientProjection_base (k : ℕ) (x : d.lieTruncation ℒ k) :
     baseQuotientProjection d ℳ p ℒ k
       ((baseGradedLieHom d ℳ p ℒ).truncatedMap (a := k) k (by simp) x) = x := by
-  obtain ⟨x, rfl⟩ := (d.degreeIdeal ℒ k).surjective_mkQ x
+  obtain ⟨x, rfl⟩ := (d.truncationIdeal ℒ k).surjective_mkQ x
   simp [LieIdeal.mkQ_apply, baseInclusion]
 
 /-- Forgetting coefficients commutes with every probe truncation. -/
 @[simp]
 theorem truncationMap_baseQuotientProjection {k l : ℕ} (h : k ≤ l)
-    (x : (positiveDegrees d p).truncatedLie (grading d ℳ p ℒ) l) :
-    d.truncationMap ℒ h (baseQuotientProjection d ℳ p ℒ l x) =
+    (x : (positiveDegrees d p).lieTruncation (grading d ℳ p ℒ) l) :
+    d.lieTruncationMap ℒ h (baseQuotientProjection d ℳ p ℒ l x) =
       baseQuotientProjection d ℳ p ℒ k
-        ((positiveDegrees d p).truncationMap (grading d ℳ p ℒ) h x) := by
-  obtain ⟨x, rfl⟩ := ((positiveDegrees d p).degreeIdeal (grading d ℳ p ℒ) l).surjective_mkQ x
+        ((positiveDegrees d p).lieTruncationMap (grading d ℳ p ℒ) h x) := by
+  obtain ⟨x, rfl⟩ := ((positiveDegrees d p).truncationIdeal (grading d ℳ p ℒ) l).surjective_mkQ x
   simp [LieIdeal.mkQ_apply]
 
 /-- The coefficient summand projects to zero in the base. -/
@@ -96,13 +98,13 @@ theorem baseQuotientProjection_module (k : ℕ)
 /-- A finite probe with zero base component is recovered from its coefficient
 projection. No condition on the coefficient action is required. -/
 theorem moduleQuotientInclusion_projection_of_base_eq_zero (k : ℕ)
-    (x : (positiveDegrees d p).truncatedLie (grading d ℳ p ℒ) (k + 1))
+    (x : (positiveDegrees d p).lieTruncation (grading d ℳ p ℒ) (k + 1))
     (hx : baseQuotientProjection d ℳ p ℒ (k + 1) x = 0) :
     moduleQuotientInclusion d ℳ p ℒ k (moduleQuotientProjection d ℳ p ℒ k x) = x := by
-  obtain ⟨x, rfl⟩ := ((positiveDegrees d p).degreeIdeal
+  obtain ⟨x, rfl⟩ := ((positiveDegrees d p).truncationIdeal
     (grading d ℳ p ℒ) (k + 1)).surjective_mkQ x
-  have hr : x.right ∈ d.degreeIdeal ℒ (k + 1) := by
-    apply (d.degreeIdeal ℒ (k + 1)).mkQ_eq_zero.mp
+  have hr : x.right ∈ d.truncationIdeal ℒ (k + 1) := by
+    apply (d.truncationIdeal ℒ (k + 1)).mkQ_eq_zero.mp
     simpa only [LieIdeal.mkQ_apply, baseQuotientProjection_mk] using hx
   rw [LieIdeal.mkQ_apply, moduleQuotientProjection_mk, moduleQuotientInclusion_mk,
     LinearEquiv.symm_apply_apply]
@@ -113,7 +115,7 @@ theorem moduleQuotientInclusion_projection_of_base_eq_zero (k : ℕ)
       rw [← LieAlgebra.SemiDirectSum.projr_mk, map_sub,
         LieAlgebra.SemiDirectSum.projr_inl_apply, LieAlgebra.SemiDirectSum.projr_mk, zero_sub]
     rw [he]
-    exact (d.degreeIdeal ℒ (k + 1)).neg_mem hr
+    exact (d.truncationIdeal ℒ (k + 1)).neg_mem hr
   · simp [moduleInclusion]
 
 /-- At every finite order the degree-preserving projection is the existing base
@@ -132,8 +134,8 @@ theorem truncatedMap_chargeZeroGradedLieHom (k : ℕ) :
     baseQuotientProjection]
   simp only [hcomp]
   exact LieIdeal.mapQ_comp
-    ((positiveDegrees d p).degreeIdeal (grading d ℳ p ℒ) k) (d.degreeIdeal ℒ k)
-    ((positiveDegrees d p).degreeIdeal (grading d ℳ p ℒ) k) (LieAlgebra.SemiDirectSum.projr _)
+    ((positiveDegrees d p).truncationIdeal (grading d ℳ p ℒ) k) (d.truncationIdeal ℒ k)
+    ((positiveDegrees d p).truncationIdeal (grading d ℳ p ℒ) k) (LieAlgebra.SemiDirectSum.projr _)
     (baseGradedLieHom d ℳ p ℒ).toLieHom _ _ _
 
 variable [Algebra ℚ R] [LieAlgebra ℚ L] [IsScalarTower ℚ R L]
@@ -141,7 +143,7 @@ variable [Algebra ℚ R] [LieAlgebra ℚ L] [IsScalarTower ℚ R L]
 /-- A finite BCH label projects to the identity exactly when it is a coefficient
 label. The coefficient is uniquely determined. -/
 theorem baseBCHProjection_eq_one_iff (k : ℕ)
-    (g : BCHGroup ((positiveDegrees d p).truncatedLie (grading d ℳ p ℒ) (k + 1))) :
+    (g : BCHGroup ((positiveDegrees d p).lieTruncation (grading d ℳ p ℒ) (k + 1))) :
     (baseQuotientProjection d ℳ p ℒ (k + 1)).bchGroupMap g = 1 ↔
       ∃! a, moduleBCHInclusion d ℳ p ℒ k a = g := by
   rw [(moduleBCHInclusion_injective d ℳ p ℒ k).existsUnique_iff_exists]
@@ -161,12 +163,12 @@ theorem baseBCHProjection_eq_one_iff (k : ℕ)
 /-- Any finite probe label acts on module labels by its projected base action.
 The base is truncated once more to act on relative order `k` coefficients. -/
 theorem conj_moduleBCHInclusion (k : ℕ)
-    (g : BCHGroup ((positiveDegrees d p).truncatedLie (grading d ℳ p ℒ) (k + 1)))
+    (g : BCHGroup ((positiveDegrees d p).lieTruncation (grading d ℳ p ℒ) (k + 1)))
     (a : Multiplicative ((d.shiftedFiltration ℳ p).quotient k)) :
     g * moduleBCHInclusion d ℳ p ℒ k a * g⁻¹ =
       moduleBCHInclusion d ℳ p ℒ k (Multiplicative.ofAdd
       ((d.shiftedLieFiltration ℒ ℳ p).truncatedBCHAction d ℒ k
-        ((d.truncationMap ℒ (Nat.le_succ k)).bchGroupMap
+        ((d.lieTruncationMap ℒ (Nat.le_succ k)).bchGroupMap
           ((baseQuotientProjection d ℳ p ℒ (k + 1)).bchGroupMap g))
         a.toAdd)) := by
   let b := (baseQuotientProjection d ℳ p ℒ (k + 1)).bchGroupMap g
@@ -193,19 +195,19 @@ private theorem baseProjectionComponent_compatible (k l : ℕ) (h : k ≤ l) :
       (baseProjectionComponent d ℳ p ℒ l) = baseProjectionComponent d ℳ p ℒ k := by
   ext g
   -- The tower arrows conceal the concrete BCH quotient types.
-  change (d.truncationMap ℒ h).bchGroupMap
+  change (d.lieTruncationMap ℒ h).bchGroupMap
     ((baseQuotientProjection d ℳ p ℒ l).bchGroupMap (CompletedGroup.projection l g)) =
       (baseQuotientProjection d ℳ p ℒ k).bchGroupMap (CompletedGroup.projection k g)
-  have hs : (d.truncationMap ℒ h).comp (baseQuotientProjection d ℳ p ℒ l) =
+  have hs : (d.lieTruncationMap ℒ h).comp (baseQuotientProjection d ℳ p ℒ l) =
       (baseQuotientProjection d ℳ p ℒ k).comp
-        ((positiveDegrees d p).truncationMap (grading d ℳ p ℒ) h) := by
+        ((positiveDegrees d p).lieTruncationMap (grading d ℳ p ℒ) h) := by
     apply LieHom.ext
     intro x
     exact truncationMap_baseQuotientProjection d ℳ p ℒ h x
   have he := DFunLike.congr_fun (congrArg LieHom.bchGroupMap hs)
     (CompletedGroup.projection l g)
   simp only [LieHom.bchGroupMap_comp] at he
-  have hp : ((positiveDegrees d p).truncationMap (grading d ℳ p ℒ) h).bchGroupMap
+  have hp : ((positiveDegrees d p).lieTruncationMap (grading d ℳ p ℒ) h).bchGroupMap
       (CompletedGroup.projection l g) = CompletedGroup.projection k g :=
     CompletedGroup.map_projection k l h g
   exact he.trans (congrArg (baseQuotientProjection d ℳ p ℒ k).bchGroupMap hp)
@@ -318,7 +320,7 @@ theorem completedBaseProjection_eq_one_iff
   · intro hg
     -- Recover a finite coefficient from each logarithm in the finite kernel.
     have hz (k : ℕ) : baseQuotientProjection d ℳ p ℒ (k + 1)
-        (BCHGroup.log (L := (positiveDegrees d p).truncatedLie
+        (BCHGroup.log (L := (positiveDegrees d p).lieTruncation
           (grading d ℳ p ℒ) (k + 1)) (CompletedGroup.projection (k + 1) g)) = 0 := by
       have hp : (baseQuotientProjection d ℳ p ℒ (k + 1)).bchGroupMap
           (CompletedGroup.projection (k + 1) g) = 1 := by
@@ -327,20 +329,20 @@ theorem completedBaseProjection_eq_one_iff
       obtain ⟨a, ha, _⟩ := (baseBCHProjection_eq_one_iff d ℳ p ℒ k _).mp hp
       rw [← ha, moduleBCHInclusion_apply, BCHGroup.log_exp, baseQuotientProjection_module]
     let a₀ (k : ℕ) := moduleQuotientProjection d ℳ p ℒ k
-      (BCHGroup.log (L := (positiveDegrees d p).truncatedLie
+      (BCHGroup.log (L := (positiveDegrees d p).lieTruncation
         (grading d ℳ p ℒ) (k + 1)) (CompletedGroup.projection (k + 1) g))
     -- Truncation compatibility glues these coefficients into one completed element.
     have ha : (fun k : ℕᵒᵖ => a₀ k.unop) ∈ (d.shiftedFiltration ℳ p).completionSubmodule := by
       apply (ModuleFiltration.mem_completionSubmodule_iff _ _).mpr
       intro k l h
-      have hp : ((positiveDegrees d p).truncationMap (grading d ℳ p ℒ)
+      have hp : ((positiveDegrees d p).lieTruncationMap (grading d ℳ p ℒ)
           (Nat.add_le_add_right h 1)).bchGroupMap (CompletedGroup.projection (l + 1) g) =
             CompletedGroup.projection (k + 1) g :=
         CompletedGroup.map_projection (k + 1) (l + 1) (Nat.add_le_add_right h 1) g
-      have hl := (((positiveDegrees d p).truncationMap (grading d ℳ p ℒ)
+      have hl := (((positiveDegrees d p).lieTruncationMap (grading d ℳ p ℒ)
         (Nat.add_le_add_right h 1)).log_bchGroupMap
           (CompletedGroup.projection (l + 1) g)).symm.trans
-        (congrArg (BCHGroup.log (L := (positiveDegrees d p).truncatedLie
+        (congrArg (BCHGroup.log (L := (positiveDegrees d p).lieTruncation
           (grading d ℳ p ℒ) (k + 1))) hp)
       exact (transition_moduleQuotientProjection d ℳ p ℒ h _).trans
         (congrArg (moduleQuotientProjection d ℳ p ℒ k) hl)
@@ -418,7 +420,7 @@ theorem projection_completedKernelEquiv (g : (π).ker) (k : ℕ) :
     (d.shiftedFiltration ℳ p).projection k
         (completedKernelEquiv d ℳ p ℒ g).toAdd =
       moduleQuotientProjection d ℳ p ℒ k
-        (BCHGroup.log (L := (positiveDegrees d p).truncatedLie
+        (BCHGroup.log (L := (positiveDegrees d p).lieTruncation
           (grading d ℳ p ℒ) (k + 1)) (CompletedGroup.projection (k + 1) g.val)) := by
   have he := congrArg (CompletedGroup.projection (k + 1))
     (completedModuleBCHInclusion_completedKernelEquiv d ℳ p ℒ g)

@@ -20,7 +20,7 @@ the completed Lie coordinate. The image consists exactly of the group-like units
 whose logarithm comes from the completed Lie algebra. Finite Dynkin
 reconstruction and homogeneous assembly show that every group-like unit occurs.
 
-The construction combines `Mei.PositiveDegrees.completedBCHExp`, the canonical
+The construction combines `TauCeti.PositiveDegrees.completedBCHExp`, the canonical
 `Mei.UniversalEnvelopingAlgebra.completedLieToU`, and
 `Mei.UniversalEnvelopingAlgebra.completedPrimitiveExpUnitsEquiv`.
 Multiplicativity follows from `truncatedBCHToUnits` at every finite cutoff.
@@ -30,6 +30,8 @@ module is assumed.
 -/
 
 public section
+
+open TauCeti (PositiveDegrees IsPositiveGrading)
 
 namespace Mei.UniversalEnvelopingAlgebra
 
@@ -44,7 +46,8 @@ local notation "U" => _root_.UniversalEnvelopingAlgebra R L
 local notation "hneg" => (fun n hn => d.eq_bot_of_degree_nonpos ℒ n (le_of_lt hn))
 local notation "hpos" => (fun n hn => d.eq_bot_of_degree_nonpos ℒ n hn)
 local notation "F" => degreeFiltration ℒ d.degree hneg
-local notation "π" => LieIdeal.completionProjection (d.degreeIdeal ℒ) (d.degreeIdeal_antitone ℒ)
+local notation "π" =>
+  LieIdeal.completionProjection (d.truncationIdeal ℒ) (d.truncationIdeal_antitone ℒ)
 local notation "G" => completedGroupLikeSubgroup ℒ d.degree hneg
 
 /-- Rational scalars on the enveloping algebra are induced from the coefficient ring. -/
@@ -77,7 +80,7 @@ private theorem projection_groupLikeExp_symm (k : ℕ) (g : d.completedBCHGroup 
         U ⧸ (F).ideal (k + 1)) := by
   rw [projection_groupLikeExp, PositiveDegrees.completionProjection_completedBCHExp_symm]
   exact congrArg (fun a => (truncatedBCHToUnits d ℒ k a : U ⧸ (F).ideal (k + 1)))
-    (BCHGroup.exp_log (L := d.truncatedLie ℒ k) (CompletedGroup.projection k g))
+    (BCHGroup.exp_log (L := d.lieTruncation ℒ k) (CompletedGroup.projection k g))
 
 /-- The canonical homomorphism from completed BCH labels to completed group-like units. -/
 noncomputable def completedBCHToGroupLike : d.completedBCHGroup ℒ →* G where

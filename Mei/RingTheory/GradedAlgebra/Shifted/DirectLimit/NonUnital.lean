@@ -17,9 +17,13 @@ structures; no unit or degree-zero assumption is introduced here.
 -/
 
 public section
+
+open TauCeti (PositiveDegrees)
 noncomputable section
 
-namespace Mei.PositiveDegrees
+namespace TauCeti.PositiveDegrees
+
+open Mei
 
 variable {Γ R A : Type*} [AddCommGroup Γ] [CommRing R] [Ring A] [Algebra R A]
   [DecidableEq Γ] (d : PositiveDegrees Γ) (𝒜 : Γ → Submodule R A)
@@ -75,4 +79,4 @@ instance instIsScalarTowerShiftedDirectLimit :
     rw [← shiftedDirectLimitMul_eq_mul, ← shiftedDirectLimitMul_eq_mul,
       map_smul, LinearMap.smul_apply]
 
-end Mei.PositiveDegrees
+end TauCeti.PositiveDegrees

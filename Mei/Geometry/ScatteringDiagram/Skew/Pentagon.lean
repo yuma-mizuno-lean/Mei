@@ -65,6 +65,8 @@ label.
 
 public section
 
+open TauCeti (PositiveDegrees PositiveDegreeMap)
+
 noncomputable section
 
 namespace Mei.SkewLatticeDatum

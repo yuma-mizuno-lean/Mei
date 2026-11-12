@@ -18,6 +18,8 @@ arbitrary negative origins. The bilinear form need not be alternating.
 -/
 
 public section
+
+open TauCeti (PositiveDegrees)
 noncomputable section
 
 namespace Mei.QuantumMonoidAlgebra

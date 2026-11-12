@@ -26,9 +26,13 @@ place of the Lie bracket, and uses Mathlib's homogeneous decomposition formulas.
 
 public section
 
+open TauCeti (PositiveDegrees)
+
 noncomputable section
 
-namespace Mei.PositiveDegrees
+namespace TauCeti.PositiveDegrees
+
+open Mei
 
 open _root_.DirectSum
 
@@ -118,4 +122,4 @@ theorem shiftedHomogeneousComponent_shiftedCompletionMul_zero
   rw [add_zero, hf, Finset.sum_singleton, add_zero, add_zero] at h
   exact h
 
-end Mei.PositiveDegrees
+end TauCeti.PositiveDegrees

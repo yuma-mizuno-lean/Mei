@@ -27,6 +27,8 @@ directions and leaves the degrees and the Lie algebra alone.
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading SupportedRay)
+
 open TauCeti (DirectedWallSpaces)
 
 noncomputable section
@@ -47,8 +49,8 @@ variable {Γ R : Type*} {L : Type u} [AddCommGroup Γ] [CommRing R] [Algebra ℚ
   (W : DirectedWall (d := d) h H)
 
 /-- Transport a directed wall along the coordinate swap of the plane. -/
-def swapImage : DirectedWall (d := d) h (H.mapTangent AddEquiv.prodComm.toAddMonoidHom) :=
-  W.image (Toric.IntegralAffineEquiv.swap h) (CoordinateChange.ofTangentEquiv H AddEquiv.prodComm)
+def swapImage : DirectedWall (d := d) h (H.mapTangent (AddEquiv.prodComm : ℤ × ℤ →+ ℤ × ℤ)) :=
+  W.image (Toric.IntegralAffineEquiv.swap h) (CoordinateChange.ofTangentEquiv d H AddEquiv.prodComm)
     (by simp)
 
 /-- The normal of the swapped wall is the original normal pulled back along the swap. -/
@@ -91,7 +93,7 @@ theorem realCharacter_swapImage_normal_swap (v : ℝ × ℝ) :
     h.realCharacter W.swapImage.normal v.swap = h.realCharacter W.normal v := by
   simpa [swapImage] using
     W.realCharacter_image_normal (Toric.IntegralAffineEquiv.swap h)
-      (CoordinateChange.ofTangentEquiv H AddEquiv.prodComm) (by simp) v
+      (CoordinateChange.ofTangentEquiv d H AddEquiv.prodComm) (by simp) v
 
 /-- The wall on the line `{x = 0}` with normal `e₁*`, a given ray and a given label is
 carried to the wall on `{y = 0}` with normal `e₂*`, the same ray and the same label. -/
@@ -121,9 +123,9 @@ variable {Γ R ι : Type*} {L : Type u} [AddCommGroup Γ] [CommRing R] [Algebra 
   (D : DirectedDiagram (d := d) h H ι)
 
 /-- Transport a directed diagram along the coordinate swap of the plane. -/
-def swapImage : DirectedDiagram (d := d) h (H.mapTangent AddEquiv.prodComm.toAddMonoidHom) ι :=
+def swapImage : DirectedDiagram (d := d) h (H.mapTangent (AddEquiv.prodComm : ℤ × ℤ →+ ℤ × ℤ)) ι :=
   D.pushforward (DirectedWall.Pushforward.ofCoordinateChange (Toric.IntegralAffineEquiv.swap h)
-    (DirectedWallSpaces.CoordinateChange.ofTangentEquiv H AddEquiv.prodComm) (by simp))
+    (DirectedWallSpaces.CoordinateChange.ofTangentEquiv d H AddEquiv.prodComm) (by simp))
 
 /-- Transport the points and paths of a directed diagram along the coordinate swap. -/
 def swapPathImage : D.Point ⥤q D.swapImage.Point :=
@@ -135,7 +137,7 @@ path and along its swapped path agree, although the swap reverses orientation. -
 theorem pathProduct_swapImage {x y : D.Point} (p : Quiver.Path x y) :
     D.swapImage.pathProduct (D.swapPathImage.mapPath p) = D.pathProduct p :=
   calc
-    _ = (CoordinateChange.ofTangentEquiv H AddEquiv.prodComm).gradedLieHom.completedMap
+    _ = (CoordinateChange.ofTangentEquiv d H AddEquiv.prodComm).gradedLieHom.completedMap
         (D.pathProduct p) := (D.pathProduct_pushforward _ p).trans
           (by rw [DirectedWall.Pushforward.ofCoordinateChange_lieHom_completedMap])
     _ = D.pathProduct p := by rw [← CoordinateChange.completedEquiv_apply]; simp

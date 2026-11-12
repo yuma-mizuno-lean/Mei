@@ -20,7 +20,7 @@ Consequently, pointwise sign factorizations can assign labels to cells without
 depending on a chosen relative interior point, and their middle factors lie in
 the required orthogonal wall-label group.
 
-This combines `Mei.PositiveDegrees.arrangementComplex`,
+This combines `TauCeti.PositiveDegrees.arrangementComplex`,
 `Mei.signSubalgebra`, and `Mei.orthogonalLieSubalgebra` using the relative-interior
 characterization of realized sign cells. Only degrees with a nonzero piece in
 the truncation matter; degrees above the cutoff impose no extra condition.
@@ -28,7 +28,11 @@ the truncation matter; degrees above the cutoff impose no extra condition.
 
 public section
 
-namespace Mei.PositiveDegrees
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
+namespace TauCeti.PositiveDegrees
+
+open Mei
 
 open Mei.Convex
 
@@ -66,36 +70,36 @@ theorem signSubalgebra_eq_of_mem_intrinsicInterior_arrangementComplex
     (hP : P ∈ (d.arrangementComplex h k).cells)
     {θ φ : V →L[ℝ] ℝ} (hθ : θ ∈ intrinsicInterior ℝ P)
     (hφ : φ ∈ intrinsicInterior ℝ P) (s : SignType) :
-    signSubalgebra (d.truncatedGrading ℒ k) (θ.toAddMonoidHom.comp i) s =
-      signSubalgebra (d.truncatedGrading ℒ k) (φ.toAddMonoidHom.comp i) s := by
+    signSubalgebra (d.lieTruncationGrading ℒ k) (θ.toAddMonoidHom.comp i) s =
+      signSubalgebra (d.lieTruncationGrading ℒ k) (φ.toAddMonoidHom.comp i) s := by
   apply signSubalgebra_eq_of_sign_eq
   intro n hn
   exact d.sign_eq_of_mem_intrinsicInterior_arrangementComplex h hP hθ hφ
-    (d.mem_cutoff_of_truncatedGrading_ne_bot ℒ hn)
+    (d.mem_cutoff_of_lieTruncationGrading_ne_bot ℒ hn)
 
 /-- The middle sign algebra at a cell's relative interior point is precisely
 the finite orthogonal algebra of the whole cell. -/
 theorem signSubalgebra_zero_eq_orthogonalLieSubalgebra
     (hP : P ∈ (d.arrangementComplex h k).cells)
     {θ : V →L[ℝ] ℝ} (hθ : θ ∈ intrinsicInterior ℝ P) :
-    signSubalgebra (d.truncatedGrading ℒ k) (θ.toAddMonoidHom.comp i) 0 =
-      orthogonalLieSubalgebra (d.truncatedGrading ℒ k)
+    signSubalgebra (d.lieTruncationGrading ℒ k) (θ.toAddMonoidHom.comp i) 0 =
+      orthogonalLieSubalgebra (d.lieTruncationGrading ℒ k)
         ((fun φ : V →L[ℝ] ℝ => φ.toAddMonoidHom.comp i) '' P) := by
   ext x
   rw [mem_signSubalgebra_iff, mem_orthogonalLieSubalgebra_iff]
   constructor
   · intro hx ψ hψ n hψn
     obtain ⟨φ, hφ, rfl⟩ := hψ
-    by_cases hn : d.truncatedGrading ℒ k n = ⊥
+    by_cases hn : d.lieTruncationGrading ℒ k n = ⊥
     · simpa only [hn, Submodule.mem_bot] using
-        (DirectSum.decompose (d.truncatedGrading ℒ k) x n).property
+        (DirectSum.decompose (d.lieTruncationGrading ℒ k) x n).property
     · apply hx n
       intro hn0
       have hθn : θ (i n) = 0 := sign_eq_zero_iff.mp hn0
       exact hψn ((d.eval_eq_zero_iff_forall_of_mem_intrinsicInterior_arrangementComplex
-        h hP hθ (d.mem_cutoff_of_truncatedGrading_ne_bot ℒ hn)).mp hθn φ hφ)
+        h hP hθ (d.mem_cutoff_of_lieTruncationGrading_ne_bot ℒ hn)).mp hθn φ hφ)
   · intro hx n hn
     exact hx _ ⟨θ, intrinsicInterior_subset hθ, rfl⟩ n
       (fun hn0 => hn (sign_eq_zero_iff.mpr hn0))
 
-end Mei.PositiveDegrees
+end TauCeti.PositiveDegrees

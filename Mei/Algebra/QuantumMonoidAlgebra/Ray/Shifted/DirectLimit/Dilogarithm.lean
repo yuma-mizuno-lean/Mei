@@ -23,6 +23,8 @@ arXiv:2202.01588v7, evaluated using the existing filtered-completion API.
 
 public noncomputable section
 
+open TauCeti (PositiveDegrees)
+
 namespace Mei.QuantumMonoidAlgebra
 
 variable {R Γ : Type*} [CommRing R] [AddCommGroup Γ] [DecidableEq Γ]

@@ -18,9 +18,13 @@ is needed for the restriction.
 -/
 
 public section
+
+open TauCeti (PositiveDegrees)
 noncomputable section
 
-namespace Mei.PositiveDegrees
+namespace TauCeti.PositiveDegrees
+
+open Mei
 
 variable {Γ R M : Type*} [AddCommGroup Γ] [Ring R] [AddCommGroup M] [Module R M]
   [DecidableEq Γ] (d : PositiveDegrees Γ) (ℳ : Γ → Submodule R M)
@@ -49,4 +53,4 @@ theorem notMem_range_shiftedDirectLimitComponents_of_not_difference
   rintro ⟨x, rfl⟩
   exact hau (d.shiftedDirectLimitComponents_eq_zero_of_not_difference ℳ x hu)
 
-end Mei.PositiveDegrees
+end TauCeti.PositiveDegrees

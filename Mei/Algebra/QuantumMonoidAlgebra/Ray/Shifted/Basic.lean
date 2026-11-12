@@ -23,6 +23,8 @@ The shift does not contribute to relative degree.
 -/
 
 public section
+
+open TauCeti (PositiveDegrees)
 noncomputable section
 
 namespace Mei.QuantumMonoidAlgebra

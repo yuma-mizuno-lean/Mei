@@ -63,6 +63,8 @@ The comparison uses `DirectedDiagram.LevelEquivalent.combinedLabel_eq`, and the 
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading SupportedRay)
+
 open TauCeti (DirectedWallSpaces)
 
 noncomputable section

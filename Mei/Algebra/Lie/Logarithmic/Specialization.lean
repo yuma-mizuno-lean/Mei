@@ -36,6 +36,8 @@ and refined tropical curve counts*, Example 2.1(i), arXiv:1503.06183v5.
 
 public section
 
+open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading)
+
 noncomputable section
 
 namespace Mei.LogarithmicVectorField

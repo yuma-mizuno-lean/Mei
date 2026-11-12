@@ -46,11 +46,13 @@ scattering diagrams*, §9.2 (arXiv:2503.03719v1).
 
 public section
 
+open TauCeti (PositiveDegrees)
+
 noncomputable section
 
 namespace Mei.HyperplaneTermInput
 
-open DirectedWall PositiveDegrees DirectedDiagram
+open DirectedWall TauCeti.PositiveDegrees DirectedDiagram
 
 universe u
 

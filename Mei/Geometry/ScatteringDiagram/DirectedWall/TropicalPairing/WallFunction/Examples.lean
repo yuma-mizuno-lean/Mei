@@ -44,6 +44,8 @@ computed in `Mei.DualLatticeIndex.Examples`.
 
 public section
 
+open TauCeti (PositiveDegreeMap SupportedRay)
+
 noncomputable section
 
 namespace Mei.DirectedWall.LatticeChange.Examples

@@ -58,6 +58,8 @@ arXiv:1503.06183v5.
 
 public section
 
+open TauCeti (PositiveDegrees PositiveDegreeMap SupportedRay)
+
 noncomputable section
 
 namespace Mei.DirectedWall.Pushforward

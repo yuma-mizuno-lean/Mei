@@ -32,6 +32,8 @@ We use `DirectedWall.cylinder`, `GradedLieHom.completedMap_mem_wallGroup` and
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 open TauCeti (DirectedWallSpaces)
 noncomputable section
 

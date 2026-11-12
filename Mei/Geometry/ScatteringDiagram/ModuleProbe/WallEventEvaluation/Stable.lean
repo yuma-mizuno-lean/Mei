@@ -28,6 +28,8 @@ models*, §4 (arXiv:2205.07753v2).
 
 public noncomputable section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 open TauCeti (DirectedWallSpaces)
 
 open Set Filter Topology Mei.Convex Mei.Convex.WallComplement

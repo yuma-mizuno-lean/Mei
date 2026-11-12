@@ -22,6 +22,8 @@ broken lines is a separate theorem.
 
 public noncomputable section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 open TauCeti (DirectedWallSpaces)
 
 open Set Mei.Convex

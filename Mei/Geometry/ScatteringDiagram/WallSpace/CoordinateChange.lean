@@ -6,6 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.ScatteringDiagram.WallSpace.Hom
+public import TauCeti.Geometry.ScatteringDiagram.WallSpace.CoordinateChange
 
 /-!
 # Coordinate changes of directed wall spaces
@@ -19,13 +20,15 @@ Coordinate changes induce isomorphisms of completed wall groups, with identity
 and composition laws. Supported primitive generators are transported in the
 ambient degree group, including generators outside the positive monoid.
 
-The construction uses `Mei.PositiveDegreeMap.ofInjectiveOn`,
+The construction uses `TauCeti.PositiveDegreeMap.ofInjectiveOn`,
 `SupportedRay.congr` and the wall-preservation API of `Mei.GradedLieHom`.
 The completed inverse laws use independence of the cutoff modulus for
 `Mei.GradedLieHom.completedMap`; restriction uses Mathlib's `MulEquiv.subgroupMap`.
 -/
 
 public section
+
+open TauCeti (SupportedRay)
 
 open TauCeti (DirectedWallSpaces)
 
@@ -43,166 +46,12 @@ variable {Γ Γ' Γ'' Λ Λ' Λ'' R : Type*} {L L' L'' : Type u}
   [LieRing L''] [LieAlgebra R L'']
   {ρ : Γ →+ Λ} {ρ' : Γ' →+ Λ'} {ρ'' : Γ'' →+ Λ''}
   {ℒ : Γ → Submodule R L} {ℳ : Γ' → Submodule R L'} {ℋ : Γ'' → Submodule R L''}
-  {d : Mei.PositiveDegrees Γ} {e : Mei.PositiveDegrees Γ'} {p : Mei.PositiveDegrees Γ''}
+  {d : TauCeti.PositiveDegrees Γ} {e : TauCeti.PositiveDegrees Γ'} {p : TauCeti.PositiveDegrees Γ''}
   (H : DirectedWallSpaces ρ ℒ) (H' : DirectedWallSpaces ρ' ℳ)
-
-/-- Algebraic coordinate changes for directed wall spaces. The degree functions
-may differ, but the allowed monoids and all wall submodules are identified. -/
-structure CoordinateChange where
-  /-- The change of degree coordinates. -/
-  degreeEquiv : Γ ≃+ Γ'
-  /-- The change of tangent coordinates. -/
-  tangentEquiv : Λ ≃+ Λ'
-  /-- The isomorphism of coefficient Lie algebras. -/
-  lieEquiv : L ≃ₗ⁅R⁆ L'
-  /-- Allowed degrees are preserved and reflected. -/
-  monoid_mem_iff : ∀ n, degreeEquiv n ∈ e.monoid ↔ n ∈ d.monoid
-  /-- The degree and tangent maps commute with geometric directions. -/
-  map_direction : ∀ n, tangentEquiv (ρ n) = ρ' (degreeEquiv n)
-  /-- Homogeneous pieces are identified. -/
-  piece_mem_iff : ∀ n x, lieEquiv x ∈ ℳ (degreeEquiv n) ↔ x ∈ ℒ n
-  /-- Wall spaces are identified, with contravariant transport of normals. -/
-  wall_mem_iff : ∀ n m x,
-    lieEquiv x ∈ H'.wall (degreeEquiv n) (m.comp tangentEquiv.symm) ↔
-      x ∈ H.wall n m
 
 namespace CoordinateChange
 
 variable {H H'} {H'' : DirectedWallSpaces ρ'' ℋ}
-
-/-- A coordinate change is determined by its three equivalences. -/
-@[ext]
-theorem ext {E F : CoordinateChange (d := d) (e := e) H H'}
-    (hΓ : E.degreeEquiv = F.degreeEquiv) (hΛ : E.tangentEquiv = F.tangentEquiv)
-    (hL : E.lieEquiv = F.lieEquiv) : E = F := by
-  cases E
-  cases F
-  congr
-
-/-- Identity coordinates preserve every directed wall space. -/
-def refl (H : DirectedWallSpaces ρ ℒ) : CoordinateChange (d := d) (e := d) H H where
-  degreeEquiv := AddEquiv.refl Γ
-  tangentEquiv := AddEquiv.refl Λ
-  lieEquiv := LieEquiv.refl
-  monoid_mem_iff _ := Iff.rfl
-  map_direction _ := rfl
-  piece_mem_iff _ _ := Iff.rfl
-  wall_mem_iff _ _ _ := by simp
-
-/-- Invert the degree, tangent and Lie coordinate maps. -/
-def symm (E : CoordinateChange (d := d) (e := e) H H') :
-    CoordinateChange (d := e) (e := d) H' H where
-  degreeEquiv := E.degreeEquiv.symm
-  tangentEquiv := E.tangentEquiv.symm
-  lieEquiv := E.lieEquiv.symm
-  monoid_mem_iff n := by simpa using (E.monoid_mem_iff (E.degreeEquiv.symm n)).symm
-  map_direction n := by
-    apply E.tangentEquiv.injective
-    simpa using (E.map_direction (E.degreeEquiv.symm n)).symm
-  piece_mem_iff n x := by
-    simpa using (E.piece_mem_iff (E.degreeEquiv.symm n) (E.lieEquiv.symm x)).symm
-  wall_mem_iff n m x := by
-    simpa [AddMonoidHom.comp_assoc] using
-      (E.wall_mem_iff (E.degreeEquiv.symm n) (m.comp E.tangentEquiv)
-        (E.lieEquiv.symm x)).symm
-
-/-- Compose coordinate changes, applying the left one first. -/
-def trans (E : CoordinateChange (d := d) (e := e) H H')
-    (F : CoordinateChange (d := e) (e := p) H' H'') :
-    CoordinateChange (d := d) (e := p) H H'' where
-  degreeEquiv := E.degreeEquiv.trans F.degreeEquiv
-  tangentEquiv := E.tangentEquiv.trans F.tangentEquiv
-  lieEquiv := E.lieEquiv.trans F.lieEquiv
-  monoid_mem_iff n := (F.monoid_mem_iff _).trans (E.monoid_mem_iff n)
-  map_direction n := by simp [E.map_direction, F.map_direction]
-  piece_mem_iff n x := (F.piece_mem_iff _ _).trans (E.piece_mem_iff n x)
-  wall_mem_iff n m x := by
-    have hn : m.comp (E.tangentEquiv.trans F.tangentEquiv).symm =
-        (m.comp (E.tangentEquiv.symm : Λ' →+ Λ)).comp
-          (F.tangentEquiv.symm : Λ'' →+ Λ') := by ext v; rfl
-    rw [hn]
-    exact (F.wall_mem_iff _ _ _).trans (E.wall_mem_iff n m x)
-
-@[simp]
-theorem refl_degreeEquiv : (refl (d := d) H).degreeEquiv = AddEquiv.refl Γ := (rfl)
-
-@[simp]
-theorem refl_tangentEquiv : (refl (d := d) H).tangentEquiv = AddEquiv.refl Λ := (rfl)
-
-@[simp]
-theorem refl_lieEquiv : (refl (d := d) H).lieEquiv = LieEquiv.refl := (rfl)
-
-@[simp]
-theorem symm_degreeEquiv (E : CoordinateChange (d := d) (e := e) H H') :
-    E.symm.degreeEquiv = E.degreeEquiv.symm := (rfl)
-
-@[simp]
-theorem symm_tangentEquiv (E : CoordinateChange (d := d) (e := e) H H') :
-    E.symm.tangentEquiv = E.tangentEquiv.symm := (rfl)
-
-@[simp]
-theorem symm_lieEquiv (E : CoordinateChange (d := d) (e := e) H H') :
-    E.symm.lieEquiv = E.lieEquiv.symm := (rfl)
-
-@[simp]
-theorem trans_degreeEquiv (E : CoordinateChange (d := d) (e := e) H H')
-    (F : CoordinateChange (d := e) (e := p) H' H'') :
-    (E.trans F).degreeEquiv = E.degreeEquiv.trans F.degreeEquiv := (rfl)
-
-@[simp]
-theorem trans_tangentEquiv (E : CoordinateChange (d := d) (e := e) H H')
-    (F : CoordinateChange (d := e) (e := p) H' H'') :
-    (E.trans F).tangentEquiv = E.tangentEquiv.trans F.tangentEquiv := (rfl)
-
-@[simp]
-theorem trans_lieEquiv (E : CoordinateChange (d := d) (e := e) H H')
-    (F : CoordinateChange (d := e) (e := p) H' H'') :
-    (E.trans F).lieEquiv = E.lieEquiv.trans F.lieEquiv := (rfl)
-
-/-- Inversion twice recovers the coordinate change. -/
-@[simp]
-theorem symm_symm (E : CoordinateChange (d := d) (e := e) H H') : E.symm.symm = E := by
-  apply ext <;> rfl
-
-/-- Composing on the right with identity coordinates changes nothing. -/
-@[simp]
-theorem trans_refl (E : CoordinateChange (d := d) (e := e) H H') : E.trans (refl H') = E := by
-  apply ext <;> ext x <;> rfl
-
-/-- Composing on the left with identity coordinates changes nothing. -/
-@[simp]
-theorem refl_trans (E : CoordinateChange (d := d) (e := e) H H') : (refl H).trans E = E := by
-  apply ext <;> ext x <;> rfl
-
-/-- Composing a coordinate change with its inverse gives identity coordinates. -/
-@[simp]
-theorem self_trans_symm (E : CoordinateChange (d := d) (e := e) H H') :
-    E.trans E.symm = refl H := by
-  apply ext <;> ext x <;> simp
-
-/-- The inverse coordinate change is also a left inverse. -/
-@[simp]
-theorem symm_trans_self (E : CoordinateChange (d := d) (e := e) H H') :
-    E.symm.trans E = refl H' := by
-  apply ext <;> ext x <;> simp
-
-/-- The finite-maximum source cutoff of a coordinate change. -/
-noncomputable def degreeMap (E : CoordinateChange (d := d) (e := e) H H') :
-    Mei.PositiveDegreeMap d e :=
-  .ofInjectiveOn E.degreeEquiv
-    (fun n hn => (E.monoid_mem_iff n).mpr hn) E.degreeEquiv.injective.injOn
-
-/-- The positive degree map has the original coordinate map as its underlying function. -/
-@[simp]
-theorem degreeMap_apply (E : CoordinateChange (d := d) (e := e) H H') (n : Γ) :
-    E.degreeMap n = E.degreeEquiv n := by
-  exact Mei.PositiveDegreeMap.ofInjectiveOn_apply _ _ _ n
-
-/-- The modulus is the least source cutoff covering the inverse target cutoff. -/
-theorem degreeMap_modulus_le_iff (E : CoordinateChange (d := d) (e := e) H H') (k l : ℕ) :
-    E.degreeMap.modulus k ≤ l ↔
-      ∀ n ∈ d.monoid, e.degree (E.degreeEquiv n) ≤ k → d.degree n ≤ l :=
-  Mei.PositiveDegreeMap.ofInjectiveOn_modulus_le_iff _ _ _ k l
 
 /-- The graded Lie map associated to a coordinate change, with its cutoff modulus. -/
 noncomputable def gradedLieHom (E : CoordinateChange (d := d) (e := e) H H') :
@@ -234,8 +83,11 @@ theorem mem_rayDegrees_rayEquiv (E : CoordinateChange (d := d) (e := e) H H')
 
 /-- Identity coordinates fix supported rays. -/
 @[simp]
-theorem rayEquiv_refl : (refl (d := d) H).rayEquiv = Equiv.refl (SupportedRay d) :=
-  SupportedRay.congr_refl
+theorem rayEquiv_refl : (refl (d := d) H).rayEquiv = Equiv.refl (SupportedRay d) := by
+  apply Equiv.ext
+  intro w
+  apply SupportedRay.ext
+  simp
 
 /-- The inverse coordinate change gives the inverse ray comparison. -/
 @[simp]
@@ -258,13 +110,13 @@ theorem rayEquiv_trans (E : CoordinateChange (d := d) (e := e) H H')
 
 variable [DecidableEq Γ] [DecidableEq Γ'] [DecidableEq Γ'']
   [GradedLieAlgebra ℒ] [GradedLieAlgebra ℳ] [GradedLieAlgebra ℋ]
-  [Mei.IsPositiveGrading d ℒ] [Mei.IsPositiveGrading e ℳ] [Mei.IsPositiveGrading p ℋ]
+  [TauCeti.IsPositiveGrading d ℒ] [TauCeti.IsPositiveGrading e ℳ] [TauCeti.IsPositiveGrading p ℋ]
 
 /-- At finite order a coordinate change preserves the supported-ray Lie images,
 using any source cutoff at least as large as its canonical modulus. -/
 theorem truncatedMap_mem (E : CoordinateChange (d := d) (e := e) H H')
     (w : SupportedRay d) (m : Λ →+ ℤ) {a k : ℕ} (ha : E.degreeMap.modulus k ≤ a)
-    {x : d.truncatedLie ℒ a} (hx : x ∈ H.truncatedRayLieSubalgebra w m a) :
+    {x : d.lieTruncation ℒ a} (hx : x ∈ H.truncatedRayLieSubalgebra w m a) :
     E.gradedLieHom.truncatedMap k ha x ∈ H'.truncatedRayLieSubalgebra
       (E.rayEquiv w) (m.comp E.tangentEquiv.symm) k :=
   E.gradedLieHom.truncatedMap_mem_truncatedRayLieSubalgebra
@@ -283,7 +135,7 @@ private theorem completedMap_symm_comp (E : CoordinateChange (d := d) (e := e) H
       MonoidHom.id (d.completedBCHGroup ℒ) := by
   rw [← Mei.GradedLieHom.completedMap_comp]
   exact (Mei.GradedLieHom.completedMap_eq_of_toLieHom_eq _ (Mei.GradedLieHom.id ℒ)
-    (by ext x; simp [symm])).trans Mei.GradedLieHom.completedMap_id
+    (by ext x; simp)).trans Mei.GradedLieHom.completedMap_id
 
 /-- Coordinate changes preserve and reflect completed wall-group membership. -/
 theorem completedMap_mem_wallGroup_iff (E : CoordinateChange (d := d) (e := e) H H')
@@ -295,15 +147,15 @@ theorem completedMap_mem_wallGroup_iff (E : CoordinateChange (d := d) (e := e) H
     have h := E.symm.gradedLieHom.completedMap_mem_wallGroup
       (w := E.rayEquiv w) (v := w)
       (fun n hn => by
-        simpa [symm] using (E.mem_rayDegrees_rayEquiv w (E.degreeEquiv.symm n)).mp
+        simpa using (E.mem_rayDegrees_rayEquiv w (E.degreeEquiv.symm n)).mp
           (by simpa using hn))
       (fun n _ x hx => by
         simp only [gradedLieHom_apply, degreeMap_apply]
-        simpa [symm, AddMonoidHom.comp_assoc] using (E.symm.wall_mem_iff n _ x).mpr hx) hg
+        simpa [AddMonoidHom.comp_assoc] using (E.symm.wall_mem_iff n _ x).mpr hx) hg
     have hinv := DFunLike.congr_fun E.completedMap_symm_comp g
     simp only [MonoidHom.comp_apply, MonoidHom.id_apply] at hinv
     rw [hinv] at h
-    simpa [symm, AddMonoidHom.comp_assoc] using h
+    simpa [AddMonoidHom.comp_assoc] using h
   · exact E.gradedLieHom.completedMap_mem_wallGroup
       (fun n hn => by simpa using (E.mem_rayDegrees_rayEquiv w n).mpr hn)
       (fun n _ x hx => by simpa using (E.wall_mem_iff n m x).mpr hx)

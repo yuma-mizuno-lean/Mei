@@ -30,11 +30,15 @@ assembling these local formulas along an entire path.
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 noncomputable section
 
 open Set Filter Topology Mei.Convex
 
-namespace Mei.PositiveDegrees
+namespace TauCeti.PositiveDegrees
+
+open Mei
 
 variable {N V R L : Type*} [AddCommGroup N]
   [NormedAddCommGroup V] [NormedSpace ℝ V]
@@ -159,4 +163,4 @@ theorem exists_radius_pathProduct_reconstructFinite_toPath
   · simpa only [D, ← d.reconstructFinite_degree_eq h ℒ g 1] using hq.1.1
   · simpa only [D, ← d.reconstructFinite_degree_eq h ℒ g 1] using hq.1.2
 
-end Mei.PositiveDegrees
+end TauCeti.PositiveDegrees

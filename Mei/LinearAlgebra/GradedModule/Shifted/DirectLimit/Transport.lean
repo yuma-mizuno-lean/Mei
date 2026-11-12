@@ -17,9 +17,13 @@ preserve the supporting monoids; no graded decomposition or injectivity is used.
 -/
 
 public section
+
+open TauCeti (PositiveDegrees)
 noncomputable section
 
-namespace Mei.PositiveDegrees
+namespace TauCeti.PositiveDegrees
+
+open Mei
 
 variable {Γ Γ' : Type*} [AddCommGroup Γ] [AddCommGroup Γ']
   (d : PositiveDegrees Γ) (e : PositiveDegrees Γ') (T : Γ →+ Γ')
@@ -138,4 +142,4 @@ theorem shiftedDirectLimitLift_toShiftedDirectLimitOfChart (p : Γ)
     (F p x)
   exact h₁.trans (h₂.trans (h₃.trans (h₄.trans h₅)))
 
-end Mei.PositiveDegrees
+end TauCeti.PositiveDegrees

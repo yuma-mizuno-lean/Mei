@@ -30,6 +30,8 @@ stability conditions*, Definition 2.3 (arXiv:1603.00416v4).
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 noncomputable section
 
 open Set Mei.Convex

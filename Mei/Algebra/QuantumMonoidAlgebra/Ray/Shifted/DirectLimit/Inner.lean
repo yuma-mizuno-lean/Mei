@@ -18,6 +18,8 @@ families. Neither a spanning nor an alternating hypothesis is required.
 -/
 
 public section
+
+open TauCeti (PositiveDegrees)
 noncomputable section
 
 namespace Mei.QuantumMonoidAlgebra

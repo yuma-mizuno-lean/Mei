@@ -20,6 +20,8 @@ may have arbitrary degree and no characteristic-zero assumption is used.
 -/
 
 public section
+
+open TauCeti (PositiveDegrees)
 noncomputable section
 
 namespace Mei.QuantumMonoidAlgebra

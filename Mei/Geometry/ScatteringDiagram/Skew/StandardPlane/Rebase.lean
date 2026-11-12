@@ -22,6 +22,8 @@ and `y` to the pair `e₂, e₁` of the rescaled plane.
 
 public section
 
+open TauCeti (PositiveDegreeMap)
+
 noncomputable section
 
 namespace Mei.StandardPlane

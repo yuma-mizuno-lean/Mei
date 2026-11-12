@@ -18,9 +18,13 @@ come from an ordinary graded coefficient.
 -/
 
 public section
+
+open TauCeti (PositiveDegrees)
 noncomputable section
 
-namespace Mei.PositiveDegrees
+namespace TauCeti.PositiveDegrees
+
+open Mei
 
 variable {Γ R A : Type*} [AddCommGroup Γ] [CommRing R] [Ring A] [Algebra R A]
   [DecidableEq Γ] (d : PositiveDegrees Γ) (𝒜 : Γ → Submodule R A) [GradedAlgebra 𝒜]
@@ -59,4 +63,4 @@ theorem finiteCoefficientOfShiftedDirectLimit_toShiftedDirectLimitAlgHom (a : A)
   apply d.toShiftedDirectLimitAlgHom_injective 𝒜 hspan
   exact d.toShiftedDirectLimitAlgHom_finiteCoefficientOfShiftedDirectLimit 𝒜 hspan _ ha
 
-end Mei.PositiveDegrees
+end TauCeti.PositiveDegrees

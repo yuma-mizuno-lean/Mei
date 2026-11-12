@@ -104,7 +104,7 @@ private theorem exists_isChain_rebase (k A B : ℕ) (x y : PlaneDegree w) (hk : 
             List.replicate A (PlaneDegree.e₂ (Weight.rebase x y))).map unitFactor).prod := by
   classical
   obtain ⟨l', hchain, -, hprod, hperm⟩ :=
-    Mei.PositiveDegrees.exists_isChain_projection_prod_eq_of_exchange
+    TauCeti.PositiveDegrees.exists_isChain_projection_prod_eq_of_exchange
       (plane (Weight.rebase x y))
       (SkewLieAlgebra.positiveGrading β hβ (plane (Weight.rebase x y)))
       ((List.replicate A (PlaneDegree.e₂ (Weight.rebase x y))) ++

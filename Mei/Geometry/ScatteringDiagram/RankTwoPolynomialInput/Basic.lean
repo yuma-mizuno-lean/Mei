@@ -16,7 +16,7 @@ public import Mathlib.Basic.Real.Basic
 Burcroff–Lee–Mou, *Positivity of generalized cluster scattering diagrams*, Theorem 9.9
 (arXiv:2503.03719v1), prove positivity for scattering diagrams in a rank-two lattice `M` whose
 incoming walls are affine lines carrying polynomial wall functions. We record such an input on
-positive degree data `(L, P, δ)` (`Mei.PositiveDegrees`):
+positive degree data `(L, P, δ)` (`TauCeti.PositiveDegrees`):
 
 * a surjection `π : L → M` onto a lattice of rank two;
 * incoming lines indexed by `j ∈ ι`, each with a primitive tangent `m_j ∈ M`, a primitive
@@ -42,6 +42,8 @@ Primitivity uses `TauCeti.IsPrimitive` and Mathlib's `Module.evalEquiv`.
 -/
 
 public section
+
+open TauCeti (PositiveDegrees)
 
 noncomputable section
 

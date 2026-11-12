@@ -22,6 +22,8 @@ normalized conjugation.
 -/
 
 public section
+
+open TauCeti (PositiveDegrees)
 noncomputable section
 
 namespace Mei.QuantumMonoidAlgebra
@@ -133,7 +135,7 @@ theorem positiveMonomialRightConjSkew_filtration_le (s : Γ) (k : ℕ) :
   rw [positiveFiltration_ideal, GradedAlgebra.degreeIdeal_le_iff]
   intro u hu a ha
   rw [Ideal.mem_comap]
-  exact GradedAlgebra.le_degreeIdeal _ δ _ hu _
+  exact GradedAlgebra.le_truncationIdeal _ δ _ hu _
     (positiveMonomialRightConjSkew_mem_grading q β P s ha)
 
 /-- Right monomial conjugation extends through the existing filtered algebra completion map. -/

@@ -21,6 +21,8 @@ intertwining theorem. The three coefficient modules may be different.
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 attribute [local instance] LieRing.ofAssociativeRing
 
 namespace Mei.ModuleFiltration
@@ -43,12 +45,12 @@ include hequiv
 
 omit [Algebra ℚ R] in
 /-- The Leibniz rule descends to matching finite Lie and coefficient quotients. -/
-theorem truncatedLieAction_quotientBilinear (k : ℕ) (z : d.truncatedLie ℒ k)
+theorem truncatedLieAction_quotientBilinear (k : ℕ) (z : d.lieTruncation ℒ k)
     (x : F.quotient k) (y : G.quotient k) :
     H.truncatedLieAction d ℒ k z (quotientBilinear F G H f hf k x y) =
       quotientBilinear F G H f hf k x (G.truncatedLieAction d ℒ k z y) +
         quotientBilinear F G H f hf k (F.truncatedLieAction d ℒ k z x) y := by
-  obtain ⟨z, rfl⟩ := (d.degreeIdeal ℒ k).surjective_mkQ z
+  obtain ⟨z, rfl⟩ := (d.truncationIdeal ℒ k).surjective_mkQ z
   obtain ⟨x, rfl⟩ := (F.submodule (k + 1)).mkQ_surjective x
   obtain ⟨y, rfl⟩ := (G.submodule (k + 1)).mkQ_surjective y
   simp only [Submodule.mkQ_apply, LieIdeal.mkQ_apply, truncatedLieAction_mk,
@@ -56,7 +58,7 @@ theorem truncatedLieAction_quotientBilinear (k : ℕ) (z : d.truncatedLie ℒ k)
   exact map_add ((H.submodule (k + 1)).mkQ) _ _
 
 /-- Matching finite exponential actions preserve a filtered bilinear pairing. -/
-theorem truncatedExpLieAction_quotientBilinear (k : ℕ) (z : d.truncatedLie ℒ k)
+theorem truncatedExpLieAction_quotientBilinear (k : ℕ) (z : d.lieTruncation ℒ k)
     (x : F.quotient k) (y : G.quotient k) :
     H.truncatedExpLieAction d ℒ k z (quotientBilinear F G H f hf k x y) =
       quotientBilinear F G H f hf k (F.truncatedExpLieAction d ℒ k z x)
@@ -76,7 +78,7 @@ theorem truncatedExpLieAction_quotientBilinear (k : ℕ) (z : d.truncatedLie ℒ
 variable [LieAlgebra ℚ L] [IsScalarTower ℚ R L]
 
 /-- Matching finite BCH actions preserve a filtered bilinear pairing. -/
-theorem truncatedBCHAction_quotientBilinear (k : ℕ) (g : BCHGroup (d.truncatedLie ℒ k))
+theorem truncatedBCHAction_quotientBilinear (k : ℕ) (g : BCHGroup (d.lieTruncation ℒ k))
     (x : F.quotient k) (y : G.quotient k) :
     H.truncatedBCHAction d ℒ k g (quotientBilinear F G H f hf k x y) =
       quotientBilinear F G H f hf k (F.truncatedBCHAction d ℒ k g x)

@@ -19,6 +19,8 @@ on the positive monoid nor alternation of the bilinear form.
 -/
 
 public section
+
+open TauCeti (PositiveDegrees)
 noncomputable section
 
 namespace Mei.QuantumMonoidAlgebra

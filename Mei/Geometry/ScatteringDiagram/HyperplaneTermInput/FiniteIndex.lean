@@ -45,6 +45,8 @@ of an independently chosen representative of the image class is proved.
 
 public section
 
+open TauCeti (PositiveDegrees PositiveDegreeMap)
+
 noncomputable section
 
 namespace Mei.HyperplaneTermInput

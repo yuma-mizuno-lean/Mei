@@ -30,6 +30,8 @@ curve counts*, proof of Theorem 2.6.
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 open TauCeti (DirectedWallSpaces)
 
 noncomputable section
@@ -73,10 +75,10 @@ theorem levelEquivalent_of_correction_cochain_eq
       let _ := Fintype.ofFinite (E.active (k + 1))
       (∑ j : D.active (k + 1), PolyhedralCochain.mk (R := R) (σ j)
         (if j.val ∈ s then 0 else log (CompletedGroup.projection (k + 1) (D.wall j).label) :
-          d.truncatedLie ℒ (k + 1))) =
+          d.lieTruncation ℒ (k + 1))) =
       ∑ j : E.active (k + 1), PolyhedralCochain.mk (τ j)
         (if j.val ∈ t then 0 else log (CompletedGroup.projection (k + 1) (E.wall j).label) :
-          d.truncatedLie ℒ (k + 1))) :
+          d.lieTruncation ℒ (k + 1))) :
     D.LevelEquivalent E (k + 1) := by
   classical
   let := Fintype.ofFinite (D.active (k + 1))

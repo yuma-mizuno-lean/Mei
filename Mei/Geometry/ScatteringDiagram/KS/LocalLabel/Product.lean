@@ -33,6 +33,8 @@ Hall algebras and stability conditions*, Definition 2.3 and §§2–3
 
 public noncomputable section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 open Set Mei.Convex
 
 namespace Mei.CompletedDiagram

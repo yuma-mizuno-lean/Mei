@@ -16,7 +16,7 @@ degrees in the first quadrant of the unimodular plane agrees with a product of u
 (`exists_isChain_projection_prod_pow_eq`). This is the positive ordering of rank-two products
 for the standard plane and arbitrary positive weights, from the exchange of antiordered pairs
 (`exists_exchange`) and the termination of the exchange algorithm
-(`Mei.PositiveDegrees.exists_isChain_projection_prod_eq_of_exchange`). The positive integer
+(`TauCeti.PositiveDegrees.exists_isChain_projection_prod_eq_of_exchange`). The positive integer
 exponents of the factors of the ordered product are the multiplicities of the degrees in the
 list.
 
@@ -46,7 +46,7 @@ theorem exists_isChain_projection_prod_unit_eq (k : ℕ) (l : List (PlaneDegree 
         CompletedGroup.projection k (l.map unitFactor).prod := by
   classical
   obtain ⟨l', hchain, hdeg, hprod, -⟩ :=
-    Mei.PositiveDegrees.exists_isChain_projection_prod_eq_of_exchange (plane w)
+    TauCeti.PositiveDegrees.exists_isChain_projection_prod_eq_of_exchange (plane w)
       (SkewLieAlgebra.positiveGrading (E.coefficientForm ℚ) (E.isAlt_coefficientForm ℚ)
         (plane w)) l unitFactor PlaneDegree.deg PlaneDegree.Inverted (fun _ => False) k
       (fun m => unitFactor_mem_degreeFiltration m)

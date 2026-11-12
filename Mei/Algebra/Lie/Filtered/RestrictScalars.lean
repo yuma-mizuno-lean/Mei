@@ -25,6 +25,8 @@ exponential. No freeness, flatness or separatedness is required.
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 attribute [local instance] LieRing.ofAssociativeRing
 
 namespace Mei
@@ -53,14 +55,14 @@ variable [LieModule S L M] [LieModule R L M]
 /-- The finite module comparison intertwines the restricted Lie representations. -/
 @[simp]
 theorem restrictScalarsEquiv_truncatedLieAction (k : ℕ)
-    (x : d.truncatedLie (fun n => (ℒ n).restrictScalars R) k)
+    (x : d.lieTruncation (fun n => (ℒ n).restrictScalars R) k)
     (a : (F.restrictScalars R).quotient k) :
     Submodule.Quotient.restrictScalarsEquiv R (F.submodule (k + 1))
         ((F.restrictScalars R).truncatedLieAction d
           (fun n => (ℒ n).restrictScalars R) k x a) =
       F.truncatedLieAction d ℒ k (d.truncatedRestrictScalarsEquiv (R := R) ℒ k x)
         (Submodule.Quotient.restrictScalarsEquiv R (F.submodule (k + 1)) a) := by
-  obtain ⟨x, rfl⟩ := (d.degreeIdeal (fun n => (ℒ n).restrictScalars R) k).surjective_mkQ x
+  obtain ⟨x, rfl⟩ := (d.truncationIdeal (fun n => (ℒ n).restrictScalars R) k).surjective_mkQ x
   obtain ⟨m, rfl⟩ := ((F.restrictScalars R).submodule (k + 1)).mkQ_surjective a
   simp [LieIdeal.mkQ_apply]
 
@@ -79,7 +81,7 @@ local instance restrictedQuotientRatModule (k : ℕ) :
 
 /-- Finite exponential actions are intertwined by the scalar-restriction comparisons. -/
 theorem restrictScalarsEquiv_truncatedExpLieAction (k : ℕ)
-    (x : d.truncatedLie (fun n => (ℒ n).restrictScalars R) k)
+    (x : d.lieTruncation (fun n => (ℒ n).restrictScalars R) k)
     (a : (F.restrictScalars R).quotient k) :
     Submodule.Quotient.restrictScalarsEquiv R (F.submodule (k + 1))
         ((F.restrictScalars R).truncatedExpLieAction d
@@ -110,7 +112,7 @@ variable [LieAlgebra ℚ L] [IsScalarTower ℚ R L] [IsScalarTower ℚ S L]
 
 /-- The finite BCH actions agree after restricting both Lie and coefficient scalars. -/
 theorem restrictScalarsEquiv_truncatedBCHAction (k : ℕ)
-    (g : BCHGroup (d.truncatedLie (fun n => (ℒ n).restrictScalars R) k))
+    (g : BCHGroup (d.lieTruncation (fun n => (ℒ n).restrictScalars R) k))
     (a : (F.restrictScalars R).quotient k) :
     Submodule.Quotient.restrictScalarsEquiv R (F.submodule (k + 1))
         ((F.restrictScalars R).truncatedBCHAction d
@@ -197,11 +199,11 @@ variable [GradedLieAlgebra ℒ]
 /-- The finite Lie quotient comparison identifies the exponential algebra actions. -/
 @[simp]
 theorem truncatedExpLieAction_restrictScalars (k : ℕ)
-    (x : d.truncatedLie (fun n => (ℒ n).restrictScalars R) k) :
+    (x : d.lieTruncation (fun n => (ℒ n).restrictScalars R) k) :
     F.truncatedExpLieAction d (fun n => (ℒ n).restrictScalars R) k x =
       (F.truncatedExpLieAction d ℒ k
         (d.truncatedRestrictScalarsEquiv (R := R) ℒ k x)).restrictScalars R := by
-  obtain ⟨x, rfl⟩ := (d.degreeIdeal (fun n => (ℒ n).restrictScalars R) k).surjective_mkQ x
+  obtain ⟨x, rfl⟩ := (d.truncationIdeal (fun n => (ℒ n).restrictScalars R) k).surjective_mkQ x
   simpa only [LieIdeal.mkQ_apply, truncatedExpLieAction_mk,
     PositiveDegrees.truncatedRestrictScalarsEquiv_mk] using
     F.quotientExpLieAction_restrictScalars d ℒ k x
@@ -210,7 +212,7 @@ variable [Algebra ℚ R] [Algebra ℚ S] [LieAlgebra ℚ L] [IsScalarTower ℚ R
 
 /-- The scalar-restriction group comparison identifies the finite BCH algebra actions. -/
 theorem truncatedBCHAction_restrictScalars (k : ℕ)
-    (g : BCHGroup (d.truncatedLie (fun n => (ℒ n).restrictScalars R) k)) :
+    (g : BCHGroup (d.lieTruncation (fun n => (ℒ n).restrictScalars R) k)) :
     F.truncatedBCHAction d (fun n => (ℒ n).restrictScalars R) k g =
       (F.truncatedBCHAction d ℒ k
         ((d.truncatedRestrictScalarsEquiv (R := R) ℒ k).toLieHom.bchGroupMap

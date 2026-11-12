@@ -35,6 +35,8 @@ tropical curve counts*, Example 2.1(iii), arXiv:1503.06183v5.
 
 public section
 
+open TauCeti (PositiveDegrees PositiveDegreeMap)
+
 noncomputable section
 
 namespace Mei.QuantumMonoidAlgebra
@@ -75,7 +77,7 @@ local notation "ψ" => positiveMap φ.toRingHom T.toAddMonoidHom h d.monoid e.mo
 map from the source cutoff prescribed by the positive degree modulus. -/
 @[simp↓]
 theorem quotientMap_truncatedCoefficientInclusion (k : ℕ)
-    (x : d.truncatedLie ℒ (T.modulus k)) :
+    (x : d.lieTruncation ℒ (T.modulus k)) :
     Ideal.quotientMap ((G).ideal (k + 1)) ψ (positiveMap_ideal_le d e T φ.toRingHom h k)
         (truncatedCoefficientInclusion q β d (T.modulus k) x) =
       truncatedCoefficientInclusion q' β' e k

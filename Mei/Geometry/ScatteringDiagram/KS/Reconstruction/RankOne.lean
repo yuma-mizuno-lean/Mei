@@ -27,9 +27,13 @@ formalized by `PositiveDegrees.reconstruct`. The proof uses the uniqueness of
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 noncomputable section
 
-namespace Mei.PositiveDegrees
+namespace TauCeti.PositiveDegrees
+
+open Mei
 
 variable {V R L : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : ℤ →+ V} (d : PositiveDegrees ℤ) (h : TauCeti.Toric.IsIntegralLattice i)
@@ -60,4 +64,4 @@ theorem reconstruct_label_int (g : d.completedBCHGroup ℒ)
     a 0
   simpa using hf
 
-end Mei.PositiveDegrees
+end TauCeti.PositiveDegrees

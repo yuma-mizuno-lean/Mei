@@ -22,6 +22,8 @@ negative degree; no positivity or injectivity assumption on them is used.
 -/
 
 public section
+
+open TauCeti (PositiveDegrees)
 noncomputable section
 
 namespace Mei.QuantumMonoidAlgebra

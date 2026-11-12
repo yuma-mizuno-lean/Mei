@@ -37,9 +37,12 @@ nilpotence gives finite solutions and uniqueness for recursions of the form
 
 public section
 
+open TauCeti (PositiveDegrees)
+
 noncomputable section
 
-namespace Mei.PositiveDegrees
+namespace TauCeti.PositiveDegrees
+
 
 variable {Γ R M V : Type*} [AddCommGroup Γ] [Semiring R] [AddCommMonoid M]
   [Module R M] (d : PositiveDegrees Γ) (ℳ : Γ → Submodule R M) (p : Γ) (k : ℕ)
@@ -138,4 +141,4 @@ theorem shiftedLowerStep_pow_eq_zero {ι : Type*}
   exact shiftedLowerStep_pow_apply_eq_zero d ℳ p k events block point (k + 1) F Q n
     (by have := (d.mem_cutoff.mp n.property).2; omega)
 
-end Mei.PositiveDegrees
+end TauCeti.PositiveDegrees

@@ -25,6 +25,8 @@ is that of Gross–Hacking–Keel–Kontsevich, *Canonical bases for cluster alg
 
 public noncomputable section
 
+open TauCeti (PositiveDegrees PositiveDegreeMap)
+
 namespace Mei.LogarithmicVectorField
 
 open _root_.AddMonoidAlgebra
@@ -36,8 +38,10 @@ variable {R Γ Λ : Type*} [CommRing R] [AddCommMonoid Γ] [AddCommMonoid Λ]
 
 local notation "ℒ" => tropicalVertexGrading (R := R) d ρ
 local notation "ℳ" => tropicalSubalgebraGrading ρ U d
-local notation "F" => LieIdeal.completionFiltration (d.degreeIdeal ℒ) (d.degreeIdeal_antitone ℒ)
-local notation "G" => LieIdeal.completionFiltration (d.degreeIdeal ℳ) (d.degreeIdeal_antitone ℳ)
+local notation "F" =>
+  LieIdeal.completionFiltration (d.truncationIdeal ℒ) (d.truncationIdeal_antitone ℒ)
+local notation "G" =>
+  LieIdeal.completionFiltration (d.truncationIdeal ℳ) (d.truncationIdeal_antitone ℳ)
 
 /-- A tangent field uses only scalar multiples of its specified character. -/
 theorem tropicalTangentField_mem_tropicalSubalgebra (m : U)
@@ -73,16 +77,16 @@ theorem tropicalTangentFieldToSubalgebra_mem_degreeIdeal (m : U) {k : ℕ}
     {u : R[tropicalTangentMonoid d ρ m.val]}
     (hu : u ∈ (TropicalVertexCoefficientAction.filtration
       (R := R) d (tropicalTangentMonoid d ρ m.val)).ideal (k + 1)) :
-    tropicalTangentFieldToSubalgebra d ρ U m u ∈ d.degreeIdeal ℳ k := by
+    tropicalTangentFieldToSubalgebra d ρ U m u ∈ d.truncationIdeal ℳ k := by
   -- Compare submodules to rewrite the grading without transporting its Lie algebra instance.
   have he := congrArg LieSubmodule.toSubmodule
     ((tropicalSubalgebra ρ U d).degreeIdeal_eq_comap ℒ d
       (tropicalSubalgebra_isHomogeneous ρ U d) k)
-  simp only [PositiveDegrees.degreeIdeal_toSubmodule, LieIdeal.comap_toSubmodule] at he
-  rw [← LieSubmodule.mem_toSubmodule, PositiveDegrees.degreeIdeal_toSubmodule,
+  simp only [PositiveDegrees.truncationIdeal_toSubmodule, LieIdeal.comap_toSubmodule] at he
+  rw [← LieSubmodule.mem_toSubmodule, PositiveDegrees.truncationIdeal_toSubmodule,
     tropicalSubalgebraGrading_def, he]
   simpa only [Submodule.mem_comap, LieHom.coe_toLinearMap, LieSubalgebra.coe_incl,
-    coe_tropicalTangentFieldToSubalgebra, ← PositiveDegrees.degreeIdeal_toSubmodule,
+    coe_tropicalTangentFieldToSubalgebra, ← PositiveDegrees.truncationIdeal_toSubmodule,
     LieSubmodule.mem_toSubmodule] using
       tropicalTangentField_mem_degreeIdeal d ρ m.val hu
 
@@ -106,7 +110,7 @@ theorem projection_completedTropicalTangentFieldToSubalgebra (k : ℕ)
     (u : (H).completion) (v : R[tropicalTangentMonoid d ρ m.val])
     (hv : (H).projection k u = Ideal.Quotient.mk _ v) :
     (G).projection k (completedTropicalTangentFieldToSubalgebra d ρ U m u) =
-      (d.degreeIdeal ℳ k).mkQ (tropicalTangentFieldToSubalgebra d ρ U m v) := by
+      (d.truncationIdeal ℳ k).mkQ (tropicalTangentFieldToSubalgebra d ρ U m v) := by
   simp only [completedTropicalTangentFieldToSubalgebra, LinearMap.comp_apply,
     LinearEquiv.coe_coe, ModuleFiltration.projection_completionMap, id_eq]
   rw [AlgFiltration.projection_moduleCompletionEquiv_symm_of_mk _ _ _ _ hv.symm,
@@ -118,7 +122,7 @@ theorem projection_completedTropicalTangentFieldToSubalgebra (k : ℕ)
 theorem completedTropicalTangentFieldToSubalgebra_toCompletion
     (u : R[tropicalTangentMonoid d ρ m.val]) :
     completedTropicalTangentFieldToSubalgebra d ρ U m ((H).toCompletion u) =
-      LieIdeal.toCompletion (d.degreeIdeal ℳ) (d.degreeIdeal_antitone ℳ)
+      LieIdeal.toCompletion (d.truncationIdeal ℳ) (d.truncationIdeal_antitone ℳ)
         (tropicalTangentFieldToSubalgebra d ρ U m u) := by
   simp only [completedTropicalTangentFieldToSubalgebra, LinearMap.comp_apply,
     LinearEquiv.coe_coe, AlgFiltration.moduleCompletionEquiv_symm_toCompletion,

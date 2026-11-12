@@ -22,7 +22,11 @@ exactly one supported ray.
 
 public section
 
-namespace Mei.PositiveDegrees
+open TauCeti (PositiveDegrees IsPositiveGrading SupportedRay)
+
+namespace TauCeti.PositiveDegrees
+
+open Mei
 
 variable {N R L : Type*} [AddCommGroup N] [CommRing R]
   [LieRing L] [LieAlgebra R L] [DecidableEq N]
@@ -35,8 +39,8 @@ factors over any finite set of supported rays containing those that meet the cut
 theorem log_projection_eq_sum_log_projection_rayFactor [Module.Free ℤ N]
     (g : d.completedBCHGroup ℒ) (k : ℕ) (s : Finset (SupportedRay d))
     (hs : d.raysAtOrder k ⊆ s) :
-    BCHGroup.log (L := d.truncatedLie ℒ k) (CompletedGroup.projection k g) =
-      ∑ w ∈ s, BCHGroup.log (L := d.truncatedLie ℒ k)
+    BCHGroup.log (L := d.lieTruncation ℒ k) (CompletedGroup.projection k g) =
+      ∑ w ∈ s, BCHGroup.log (L := d.lieTruncation ℒ k)
         (CompletedGroup.projection k (d.rayFactor ℒ g w)) := by
   classical
   let : HasUniqueDiv N := .of_isTorsionFree ℤ N
@@ -58,4 +62,4 @@ theorem log_projection_eq_sum_log_projection_rayFactor [Module.Free ℤ N]
   rw [d.logComponent_rayFactor_of_notMem ℒ g
     fun hv => hvw (SupportedRay.eq_of_mem_rayDegrees hv hw), ZeroMemClass.coe_zero]
 
-end Mei.PositiveDegrees
+end TauCeti.PositiveDegrees

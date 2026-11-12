@@ -25,6 +25,8 @@ It uses `ModuleProbe.moduleQuotientInclusion`, `BCHGroup.exp_expAd` and Mathlib'
 -/
 
 public section
+
+open TauCeti (PositiveDegrees IsPositiveGrading)
 noncomputable section
 
 namespace Mei.ModuleProbe
@@ -41,7 +43,7 @@ variable [Algebra ℚ R]
 
 /-- Exponentiation embeds the additive finite coefficient module in the probe group. -/
 def moduleBCHInclusion (k : ℕ) : Multiplicative ((d.shiftedFiltration ℳ p).quotient k) →*
-    BCHGroup ((positiveDegrees d p).truncatedLie (grading d ℳ p ℒ) (k + 1)) where
+    BCHGroup ((positiveDegrees d p).lieTruncation (grading d ℳ p ℒ) (k + 1)) where
   toFun a := BCHGroup.exp (moduleQuotientInclusion d ℳ p ℒ k a.toAdd)
   map_one' := by simp
   map_mul' a b := by
@@ -72,29 +74,29 @@ local instance quotientRatModule (k : ℕ) :
 
 /-- Charge-zero adjoint exponentials act on charge-one coefficients by the finite
 coefficient exponential, with the one-order shift forced by module charge. -/
-theorem expAd_moduleQuotientInclusion (k : ℕ) (x : d.truncatedLie ℒ (k + 1))
+theorem expAd_moduleQuotientInclusion (k : ℕ) (x : d.lieTruncation ℒ (k + 1))
     (a : (d.shiftedFiltration ℳ p).quotient k)
     (hx : IsNilpotent (LieAlgebra.ad R
-      ((positiveDegrees d p).truncatedLie (grading d ℳ p ℒ) (k + 1))
+      ((positiveDegrees d p).lieTruncation (grading d ℳ p ℒ) (k + 1))
       ((baseGradedLieHom d ℳ p ℒ).truncatedMap (a := k + 1) (k + 1) (by simp) x))) :
     TauCeti.expAd ((baseGradedLieHom d ℳ p ℒ).truncatedMap (a := k + 1) (k + 1) (by simp) x)
         hx.exists_pow_apply_eq_zero
         (moduleQuotientInclusion d ℳ p ℒ k a) =
       moduleQuotientInclusion d ℳ p ℒ k
         ((d.shiftedLieFiltration ℒ ℳ p).truncatedExpLieAction d ℒ k
-          (d.truncationMap ℒ (Nat.le_succ k) x) a) := by
+          (d.lieTruncationMap ℒ (Nat.le_succ k) x) a) := by
   have hc : (LieAlgebra.ad R _
       ((baseGradedLieHom d ℳ p ℒ).truncatedMap (a := k + 1) (k + 1) (by simp) x)).comp
       (moduleQuotientInclusion d ℳ p ℒ k) =
       (moduleQuotientInclusion d ℳ p ℒ k).comp
         ((d.shiftedLieFiltration ℒ ℳ p).truncatedLieAction d ℒ k
-          (d.truncationMap ℒ (Nat.le_succ k) x)) := by
-    obtain ⟨x, rfl⟩ := (d.degreeIdeal ℒ (k + 1)).surjective_mkQ x
+          (d.lieTruncationMap ℒ (Nat.le_succ k) x)) := by
+    obtain ⟨x, rfl⟩ := (d.truncationIdeal ℒ (k + 1)).surjective_mkQ x
     apply LinearMap.ext
     intro b
     simp only [LinearMap.comp_apply, LieIdeal.mkQ_apply,
       GradedLieHom.truncatedMap_mk, baseGradedLieHom_apply,
-      LieAlgebra.ad_apply, PositiveDegrees.truncationMap_mk,
+      LieAlgebra.ad_apply, PositiveDegrees.lieTruncationMap_mk,
       ModuleFiltration.truncatedLieAction_mk]
     simpa only [LieIdeal.mkQ_apply] using lie_base_moduleQuotientInclusion d ℳ p ℒ k x b
   rw [TauCeti.expAd_apply _ hx]
@@ -108,14 +110,14 @@ variable [LieAlgebra ℚ L] [IsScalarTower ℚ R L]
 
 /-- Conjugating a coefficient label by any finite charge-zero BCH label gives
 the label of its finite BCH coefficient action. -/
-theorem base_conj_moduleBCHInclusion (k : ℕ) (g : BCHGroup (d.truncatedLie ℒ (k + 1)))
+theorem base_conj_moduleBCHInclusion (k : ℕ) (g : BCHGroup (d.lieTruncation ℒ (k + 1)))
     (a : Multiplicative ((d.shiftedFiltration ℳ p).quotient k)) :
     ((baseGradedLieHom d ℳ p ℒ).truncatedMap (a := k + 1) (k + 1) (by simp)).bchGroupMap g *
         moduleBCHInclusion d ℳ p ℒ k a *
         (((baseGradedLieHom d ℳ p ℒ).truncatedMap (a := k + 1) (k + 1) (by simp)).bchGroupMap g)⁻¹ =
       moduleBCHInclusion d ℳ p ℒ k (Multiplicative.ofAdd
         ((d.shiftedLieFiltration ℒ ℳ p).truncatedBCHAction d ℒ k
-          ((d.truncationMap ℒ (Nat.le_succ k)).bchGroupMap g) a.toAdd)) := by
+          ((d.lieTruncationMap ℒ (Nat.le_succ k)).bchGroupMap g) a.toAdd)) := by
   let x := (baseGradedLieHom d ℳ p ℒ).truncatedMap (a := k + 1) (k + 1) (by simp) (BCHGroup.log g)
   have hx : IsNilpotent (LieAlgebra.ad R _ x) :=
     LieModule.isNilpotent_toEnd_of_isNilpotent R _ _ x

@@ -30,6 +30,8 @@ tropical curve counts*, [arXiv:1503.06183v5](https://arxiv.org/abs/1503.06183v5)
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading SupportedRay)
+
 open TauCeti (DirectedWallSpaces)
 
 noncomputable section

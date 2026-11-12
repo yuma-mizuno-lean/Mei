@@ -87,6 +87,8 @@ the factors of each degree reduces it to distinct degrees.
 
 public section
 
+open TauCeti (PositiveDegrees)
+
 noncomputable section
 
 namespace Mei.SkewLatticeDatum

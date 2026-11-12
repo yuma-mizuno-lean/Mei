@@ -41,6 +41,8 @@ curve counts*, Theorem 2.6.
 
 public section
 
+open TauCeti (SupportedRay)
+
 open TauCeti (DirectedWallSpaces)
 
 namespace TauCeti.DirectedWallSpaces
@@ -239,7 +241,7 @@ end Product
 section Completed
 
 variable [AddCommGroup Γ] [DecidableEq Γ] {ρ : Γ →+ Λ} {ℒ : Γ → Submodule R L}
-  {d : Mei.PositiveDegrees Γ} [GradedLieAlgebra ℒ] [Mei.IsPositiveGrading d ℒ]
+  {d : TauCeti.PositiveDegrees Γ} [GradedLieAlgebra ℒ] [TauCeti.IsPositiveGrading d ℒ]
   (H : DirectedWallSpaces ρ ℒ) {W : AddSubmonoid Λ}
 
 /-- The finite image of a supported-ray wall Lie algebra with normal annihilating `W` lies in
@@ -249,7 +251,7 @@ theorem truncatedRayLieSubalgebra_le_jointSubalgebra {m : Λ →+ ℤ} (hm : ∀
     H.truncatedRayLieSubalgebra w m k ≤ (H.truncated d k).jointSubalgebra W := by
   intro x hx
   obtain ⟨y, hy, rfl⟩ := (H.mem_truncatedRayLieSubalgebra w m k x).mp hx
-  have hle : (H.raySubmodule w m).map (d.degreeIdeal ℒ k).mkQ.toLinearMap ≤
+  have hle : (H.raySubmodule w m).map (d.truncationIdeal ℒ k).mkQ.toLinearMap ≤
       ((H.truncated d k).jointSubalgebra W).toSubmodule := by
     rw [raySubmodule_def, Submodule.map_iSup]
     exact iSup_le fun n => (H.truncated_wall d k n m).symm.le.trans

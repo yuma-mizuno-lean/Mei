@@ -33,6 +33,8 @@ This uses `WallComplement.segmentPathProduct_eq_of_crossingEventProduct_eq` and
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 open TauCeti (DirectedWallSpaces)
 
 noncomputable section
@@ -62,8 +64,8 @@ theorem LevelEquivalent.truncation_combinedLabel_eq {k l m : ℕ}
       h.realCharacter (D.wall j).normal v ≠ 0)
     (hvE : ∀ j : E.active m, θ ∈ (E.wall j).support →
       h.realCharacter (E.wall j).normal v ≠ 0) :
-    (d.truncationMap ℒ hkl).bchGroupMap (D.combinedLabel l θ v hD) =
-      (d.truncationMap ℒ hkm).bchGroupMap (E.combinedLabel m θ v hE) := by
+    (d.lieTruncationMap ℒ hkl).bchGroupMap (D.combinedLabel l θ v hD) =
+      (d.lieTruncationMap ℒ hkm).bchGroupMap (E.combinedLabel m θ v hE) := by
   obtain ⟨a, haD, haE⟩ := ((D.eventually_exists_levelPathProduct_eq_combinedLabel
     l θ v hD hvD).and (E.eventually_exists_levelPathProduct_eq_combinedLabel
       m θ v hE hvE)).exists

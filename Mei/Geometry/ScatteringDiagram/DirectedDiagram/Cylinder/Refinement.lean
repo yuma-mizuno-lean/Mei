@@ -26,6 +26,8 @@ Appendix B, arXiv:1411.1394v2. We use Mathlib's
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 open TauCeti (DirectedWallSpaces)
 
 noncomputable section

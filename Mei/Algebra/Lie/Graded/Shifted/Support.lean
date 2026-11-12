@@ -45,7 +45,11 @@ Definition 2.10 and Proposition 2.13 (arXiv:1503.06183v5).
 
 public noncomputable section
 
-namespace Mei.PositiveDegrees
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
+namespace TauCeti.PositiveDegrees
+
+open Mei
 
 variable {Γ R L M : Type*} [AddCommGroup Γ] [CommRing R] [Algebra ℚ R]
   [LieRing L] [LieAlgebra R L] [LieAlgebra ℚ L] [IsScalarTower ℚ R L]
@@ -258,7 +262,7 @@ theorem decompose_truncatedBCHAction_same (k : ℕ) (g : d.truncatedGroup ℒ k)
 
 end
 
-end Mei.PositiveDegrees
+end TauCeti.PositiveDegrees
 
 namespace Mei
 
@@ -281,7 +285,7 @@ local instance quotientRatModuleSupport (k : ℕ) : Module ℚ (F.quotient k) :=
 /-- Finite Lie exponentials preserve the image of every translated positive
 support. The filtration need not respect the coefficient grading. -/
 theorem truncatedExpLieAction_mem_map_shiftedSubmodule
-    (k : ℕ) (x : d.truncatedLie ℒ k) (p : Γ) {a : F.quotient k}
+    (k : ℕ) (x : d.lieTruncation ℒ k) (p : Γ) {a : F.quotient k}
     (ha : a ∈ (shiftedSubmodule ℳ d.monoid p).map (F.submodule (k + 1)).mkQ) :
     F.truncatedExpLieAction d ℒ k x a ∈
       (shiftedSubmodule ℳ d.monoid p).map (F.submodule (k + 1)).mkQ := by
@@ -289,7 +293,7 @@ theorem truncatedExpLieAction_mem_map_shiftedSubmodule
   apply Module.End.exp_apply_mem_of_forall_mem _
     ⟨k + 1, F.truncatedLieAction_pow_eq_zero d ℒ k x⟩ _ ?_ ha
   intro b hb
-  obtain ⟨y, rfl⟩ := (d.degreeIdeal ℒ k).surjective_mkQ x
+  obtain ⟨y, rfl⟩ := (d.truncationIdeal ℒ k).surjective_mkQ x
   obtain ⟨b, hb, rfl⟩ := hb
   rw [LieIdeal.mkQ_apply, truncatedLieAction_mk, Submodule.mkQ_apply,
     quotientLieAction_mk]
@@ -357,7 +361,9 @@ end ModuleFiltration
 
 end Mei
 
-namespace Mei.PositiveDegrees
+namespace TauCeti.PositiveDegrees
+
+open Mei
 
 variable {Γ : Type} {R L M : Type*} [AddCommGroup Γ] [CommRing R] [Algebra ℚ R]
   [LieRing L] [LieAlgebra R L] [AddCommGroup M] [Module R M]
@@ -447,4 +453,4 @@ theorem length_filter_bne_zero_homogeneousHistory_shiftedBCHAction_le
     simp only [b, Fin.snoc_last] at hlast
     omega
 
-end Mei.PositiveDegrees
+end TauCeti.PositiveDegrees

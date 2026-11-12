@@ -23,6 +23,8 @@ a product of unit factors (`prod_unitFactor_flatten_replicate`).
 
 public section
 
+open TauCeti (PositiveDegrees)
+
 noncomputable section
 
 namespace Mei.SkewLatticeDatum

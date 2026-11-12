@@ -23,6 +23,8 @@ with source cutoff given by the positive degree map modulus.
 -/
 
 public section
+
+open TauCeti (PositiveDegrees PositiveDegreeMap)
 noncomputable section
 
 namespace Mei.QuantumMonoidAlgebra

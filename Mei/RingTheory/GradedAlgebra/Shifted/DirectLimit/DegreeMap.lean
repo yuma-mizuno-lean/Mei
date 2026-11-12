@@ -23,9 +23,13 @@ theta functions, and refined tropical curve counts*, §2.1 (arXiv:1503.06183).
 -/
 
 public section
+
+open TauCeti (PositiveDegrees PositiveDegreeMap)
 noncomputable section
 
-namespace Mei.PositiveDegreeMap
+namespace TauCeti.PositiveDegreeMap
+
+open Mei
 
 variable {Γ Γ' R A B : Type*} [AddCommGroup Γ] [AddCommGroup Γ']
   [CommRing R] [Ring A] [Ring B] [Algebra R A] [Algebra R B]
@@ -103,4 +107,4 @@ theorem shiftedDirectLimitAlgHom_comp {Γ'' C : Type*} [AddCommGroup Γ''] [Deci
   ext x
   exact T.shiftedDirectLimitMap_comp 𝒜 ℬ f.toLinearMap hf U 𝒞 g.toLinearMap hg hc x
 
-end Mei.PositiveDegreeMap
+end TauCeti.PositiveDegreeMap

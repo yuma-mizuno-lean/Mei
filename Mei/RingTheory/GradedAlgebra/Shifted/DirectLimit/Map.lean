@@ -21,9 +21,13 @@ differences span the grading group. No injectivity of the algebra map is assumed
 -/
 
 public section
+
+open TauCeti (PositiveDegrees)
 noncomputable section
 
-namespace Mei.PositiveDegrees
+namespace TauCeti.PositiveDegrees
+
+open Mei
 
 variable {Γ R A B C : Type*} [AddCommGroup Γ] [CommRing R]
   [Ring A] [Algebra R A] [Ring B] [Algebra R B] [Ring C] [Algebra R C]
@@ -118,4 +122,4 @@ theorem shiftedDirectLimitAlgHom_toShiftedDirectLimitAlgHom
   exact DirectSum.map_decompose_shift 𝒜 ℬ f.toAddMonoidHom id Function.injective_id
     (fun i a ha => hf i ha) u a
 
-end Mei.PositiveDegrees
+end TauCeti.PositiveDegrees

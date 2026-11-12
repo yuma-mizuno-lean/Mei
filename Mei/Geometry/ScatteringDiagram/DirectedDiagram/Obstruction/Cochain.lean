@@ -43,6 +43,8 @@ tropical curve counts*, proof of Theorem 2.6, and Gross–Hacking–Keel–Konts
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 open TauCeti (DirectedWallSpaces)
 
 noncomputable section
@@ -71,7 +73,7 @@ and arbitrary admissible loops. The geometric meridians are supplied by
 `exists_jointObstructionCochain`. -/
 def jointObstructionCochain (_hσ : ∀ J, (σ J).carrier = (J : Set V))
     (hk : D.LevelConsistent k) :
-    PolyhedralCochain R h (d.truncationMap ℒ (Nat.le_succ k)).ker 2 := by
+    PolyhedralCochain R h (d.lieTruncationMap ℒ (Nat.le_succ k)).ker 2 := by
   classical
   let := Fintype.ofFinite (D.adaptedComplex (k + 1)).joints
   exact ∑ J, PolyhedralCochain.mk (σ J) (D.loopObstruction hk (γ J))
@@ -91,23 +93,23 @@ loop logarithms in the ambient truncated Lie algebra. In particular, taking
 ambient geometric comparison. -/
 theorem jointObstructionCochain_eq_iff (hσ : ∀ J, (σ J).carrier = (J : Set V))
     (hk : D.LevelConsistent k)
-    (A : PolyhedralCochain R h (d.truncationMap ℒ (Nat.le_succ k)).ker 2) :
+    (A : PolyhedralCochain R h (d.lieTruncationMap ℒ (Nat.le_succ k)).ker 2) :
     D.jointObstructionCochain σ x γ hσ hk = A ↔
       let _ := Fintype.ofFinite (D.adaptedComplex (k + 1)).joints
       (∑ J, PolyhedralCochain.mk (σ J)
         (log (D.levelPathProduct (k + 1) (γ J)))) =
-          PolyhedralCochain.map (d.truncationMap ℒ (Nat.le_succ k)).ker.subtype A := by
+          PolyhedralCochain.map (d.lieTruncationMap ℒ (Nat.le_succ k)).ker.subtype A := by
   classical
   let := Fintype.ofFinite (D.adaptedComplex (k + 1)).joints
   dsimp only
-  have hm : PolyhedralCochain.map (d.truncationMap ℒ (Nat.le_succ k)).ker.subtype
+  have hm : PolyhedralCochain.map (d.lieTruncationMap ℒ (Nat.le_succ k)).ker.subtype
       (D.jointObstructionCochain σ x γ hσ hk) =
         ∑ J, PolyhedralCochain.mk (σ J) (log (D.levelPathProduct (k + 1) (γ J))) := by
     simp only [jointObstructionCochain_def, map_sum, PolyhedralCochain.map_mk,
       Submodule.subtype_apply, coe_loopObstruction]
   rw [← hm]
   exact (PolyhedralCochain.map_injective
-    (d.truncationMap ℒ (Nat.le_succ k)).ker.subtype Subtype.val_injective).eq_iff.symm
+    (d.lieTruncationMap ℒ (Nat.le_succ k)).ker.subtype Subtype.val_injective).eq_iff.symm
 
 /-- Reversing every joint orientation and its loop preserves the cochain. -/
 @[simp]
@@ -178,9 +180,9 @@ theorem exists_jointObstructionCochain (hk : D.LevelConsistent k)
         ∀ m (j : D.active (k + 1)), (J : Set V) ⊆ (D.wall j).support →
           s.points m ∉ affineSpan ℝ (D.wall j).support) ∧
       ∀ n : Γ, d.degree n = (k : ℤ) + 1 →
-        let π := (DirectSum.component R Γ (fun m => d.truncatedGrading ℒ (k + 1) m) n) ∘ₗ
-          (DirectSum.decomposeLinearEquiv (d.truncatedGrading ℒ (k + 1))).toLinearMap ∘ₗ
-          (d.truncationMap ℒ (Nat.le_succ k)).ker.subtype
+        let π := (DirectSum.component R Γ (fun m => d.lieTruncationGrading ℒ (k + 1) m) n) ∘ₗ
+          (DirectSum.decomposeLinearEquiv (d.lieTruncationGrading ℒ (k + 1))).toLinearMap ∘ₗ
+          (d.lieTruncationMap ℒ (Nat.le_succ k)).ker.subtype
         PolyhedralCochain.map π (D.jointObstructionCochain σ x γ hσ hk) ∈
           PolyhedralCochain.transverseSubmodule (i (ρ n)) := by
   classical
@@ -232,7 +234,7 @@ theorem exists_jointObstructionCochain (hk : D.LevelConsistent k)
         exact Metric.ball_subset_ball (min_le_right _ _) (hball J (subset_convexHull ℝ _ hp))
       have hz := (hlocal J (x J) (γ J) hvertices_ball n (by exact_mod_cast hn)).1
         (by simpa only [hσ J] using ht)
-      have hz' : DirectSum.decompose (d.truncatedGrading ℒ (k + 1))
+      have hz' : DirectSum.decompose (d.lieTruncationGrading ℒ (k + 1))
           (log (D.levelPathProduct (k + 1) (γ J))) n = 0 := Subtype.ext hz
       simp only [LinearMap.comp_apply, Submodule.subtype_apply, coe_loopObstruction,
         LinearEquiv.coe_coe]

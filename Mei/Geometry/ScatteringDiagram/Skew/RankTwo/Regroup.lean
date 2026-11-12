@@ -27,6 +27,8 @@ integer multiple of `κ(m)`; it is positive because the exponents `c i` are.
 
 public section
 
+open TauCeti (PositiveDegrees)
+
 noncomputable section
 
 namespace Mei.SkewLatticeDatum

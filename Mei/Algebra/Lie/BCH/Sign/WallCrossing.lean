@@ -27,9 +27,13 @@ concern degrees below the chosen cutoff; no behavior of higher degrees is requir
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 noncomputable section
 
-namespace Mei.PositiveDegrees
+namespace TauCeti.PositiveDegrees
+
+open Mei
 
 variable {N R L A : Type*} [AddCommMonoid N] [CommRing R] [Algebra ℚ R]
   [LieRing L] [LieAlgebra R L] [LieAlgebra ℚ L] [IsScalarTower ℚ R L]
@@ -42,13 +46,13 @@ private theorem signFactor_mem_of_refinement (ε : SignType)
       if θ n = 0 then ε else SignType.sign (θ n))
     (g : d.truncatedGroup ℒ k) (s : SignType) :
     ((signFactorizationEquiv ℒ θ d k).symm g s : d.truncatedGroup ℒ k) ∈
-      (signSubalgebra (d.truncatedGrading ℒ k) φ
+      (signSubalgebra (d.lieTruncationGrading ℒ k) φ
         (if s = .zero then ε else s)).bchSubgroup := by
   apply LieSubalgebra.bchSubgroup_le_bchSubgroup.mpr
     (signSubalgebra_le_of_sign_imp _ _ _ _ _ ?_)
     ((signFactorizationEquiv ℒ θ d k).symm g s).property
   intro n hn hs
-  rw [h n (d.mem_cutoff_of_truncatedGrading_ne_bot ℒ hn)]
+  rw [h n (d.mem_cutoff_of_lieTruncationGrading_ne_bot ℒ hn)]
   by_cases hz : θ n = 0
   · have he : s = .zero := by simpa [hz] using hs.symm
     rw [ite_eq_left hz, ite_eq_left he]
@@ -70,7 +74,7 @@ theorem signFactorizationEquiv_symm_of_pos_refinement
       | .neg => ((signFactorizationEquiv ℒ θ d k).symm g .neg : d.truncatedGroup ℒ k) := by
   let a := (signFactorizationEquiv ℒ θ d k).symm g
   have hm := d.signFactor_mem_of_refinement ℒ θ φ k .pos h g
-  let b : ∀ s, (signSubalgebra (d.truncatedGrading ℒ k) φ s).bchSubgroup
+  let b : ∀ s, (signSubalgebra (d.lieTruncationGrading ℒ k) φ s).bchSubgroup
     | .pos => ⟨(a .pos : d.truncatedGroup ℒ k) * a .zero,
         Subgroup.mul_mem _ (by simpa using hm .pos) (by simpa using hm .zero)⟩
     | .zero => 1
@@ -96,7 +100,7 @@ theorem signFactorizationEquiv_symm_of_neg_refinement
           ((signFactorizationEquiv ℒ θ d k).symm g .neg : d.truncatedGroup ℒ k) := by
   let a := (signFactorizationEquiv ℒ θ d k).symm g
   have hm := d.signFactor_mem_of_refinement ℒ θ φ k .neg h g
-  let b : ∀ s, (signSubalgebra (d.truncatedGrading ℒ k) φ s).bchSubgroup
+  let b : ∀ s, (signSubalgebra (d.lieTruncationGrading ℒ k) φ s).bchSubgroup
     | .pos => ⟨a .pos, by simpa using hm .pos⟩
     | .zero => 1
     | .neg => ⟨(a .zero : d.truncatedGroup ℒ k) * a .neg,
@@ -138,4 +142,4 @@ theorem signFactorizationEquiv_pos_inv_mul_eq_middle (ψ : N →+ A)
     d.signFactorizationEquiv_symm_of_pos_refinement ℒ θ φ k hpos g .pos]
   exact inv_mul_cancel_left _ _
 
-end Mei.PositiveDegrees
+end TauCeti.PositiveDegrees

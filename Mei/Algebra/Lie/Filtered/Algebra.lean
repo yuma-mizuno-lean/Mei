@@ -24,6 +24,8 @@ The construction transports the module representation along Mathlib's
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 attribute [local instance] LieRing.ofAssociativeRing
 
 namespace Mei.AlgFiltration

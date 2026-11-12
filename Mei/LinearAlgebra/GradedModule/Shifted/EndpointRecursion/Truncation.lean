@@ -23,7 +23,10 @@ endpoint functions, without retaining spurious higher-degree input terms.
 
 public noncomputable section
 
-namespace Mei.PositiveDegrees
+open TauCeti (PositiveDegrees)
+
+namespace TauCeti.PositiveDegrees
+
 
 variable {Γ R M V : Type*} [AddCommGroup Γ] [Semiring R]
   [AddCommMonoid M] [Module R M] (d : PositiveDegrees Γ)
@@ -97,4 +100,4 @@ theorem shiftedEndpointRestrict_shiftedLowerStep {k l : ℕ} (hkl : k ≤ l)
   · intro m
     rfl
 
-end Mei.PositiveDegrees
+end TauCeti.PositiveDegrees

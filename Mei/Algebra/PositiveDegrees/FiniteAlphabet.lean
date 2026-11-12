@@ -36,7 +36,10 @@ diagrams*, §9.2, arXiv:2503.03719v1.
 
 public section
 
-namespace Mei.PositiveDegrees
+open TauCeti (PositiveDegrees PositiveDegreeMap SupportedRay)
+
+namespace TauCeti.PositiveDegrees
+
 
 section Letter
 
@@ -296,4 +299,4 @@ theorem finiteAlphabetLift_modulus (k : ℕ) : (finiteAlphabetLift m hτ hτ0).m
   unfold finiteAlphabetLift
   rw [PositiveDegreeMap.ofBound_modulus, one_mul]
 
-end Mei.PositiveDegrees
+end TauCeti.PositiveDegrees

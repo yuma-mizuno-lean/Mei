@@ -25,9 +25,13 @@ the injective comparison uses `DirectSum.map_decompose_shift`.
 
 public section
 
+open TauCeti (PositiveDegrees)
+
 noncomputable section
 
-namespace Mei.PositiveDegrees
+namespace TauCeti.PositiveDegrees
+
+open Mei
 
 open _root_.DirectSum
 
@@ -91,4 +95,4 @@ theorem completionComponent_completionMap_of_injective (hσ : Function.Injective
     quotientComponent_mk]
   exact (DirectSum.map_decompose_shift ℳ 𝓝 f.toAddMonoidHom σ hσ hhom n a).symm
 
-end Mei.PositiveDegrees
+end TauCeti.PositiveDegrees

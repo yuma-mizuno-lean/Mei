@@ -32,6 +32,8 @@ It uses `KSComplex`, `FiniteWallDiagram.pathProduct`,
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 noncomputable section
 
 open Set Mei.Convex
@@ -58,7 +60,7 @@ structure CompletedDiagram where
     {x' y' : WallComplement (fun P : (C (k + 1)).walls => (P : Set V))}
     (p : AdmissiblePLPath x y) (q : AdmissiblePLPath x' y'),
     p.vertices.map WallComplement.val = q.vertices.map WallComplement.val →
-      (d.truncationMap ℒ (Nat.le_succ k)).bchGroupMap
+      (d.lieTruncationMap ℒ (Nat.le_succ k)).bchGroupMap
         ((diagram (k + 1)).toFiniteWallDiagram.pathProduct q) =
           (diagram k).toFiniteWallDiagram.pathProduct p
 
@@ -110,7 +112,7 @@ variable {x y z : Point C}
 
 /-- Products on an all-order path are compatible with every cutoff transition. -/
 theorem truncation_pathProduct (p : Quiver.Path x y) {k l : ℕ} (hkl : k ≤ l) :
-    (d.truncationMap ℒ hkl).bchGroupMap
+    (d.lieTruncationMap ℒ hkl).bchGroupMap
       ((D.diagram l).toFiniteWallDiagram.pathProduct
         ((CommonWallComplement.projectionPrefunctor l).mapPath p)) =
       (D.diagram k).toFiniteWallDiagram.pathProduct
@@ -121,7 +123,7 @@ theorem truncation_pathProduct (p : Quiver.Path x y) {k l : ℕ} (hkl : k ≤ l)
     simp
   | succ l ih =>
     by_cases h : k ≤ l
-    · rw [← d.truncationMap_comp ℒ h (Nat.le_succ l), LieHom.bchGroupMap_comp,
+    · rw [← d.lieTruncationMap_comp ℒ h (Nat.le_succ l), LieHom.bchGroupMap_comp,
         MonoidHom.comp_apply]
       have hs := D.compatible l
         ((CommonWallComplement.projectionPrefunctor l).mapPath p)

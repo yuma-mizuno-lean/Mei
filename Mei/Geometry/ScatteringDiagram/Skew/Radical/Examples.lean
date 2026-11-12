@@ -52,6 +52,8 @@ for cluster algebras*, §1 and Appendix B (arXiv:1411.1394v2).
 
 public section
 
+open TauCeti (PositiveDegrees SupportedRay)
+
 noncomputable section
 
 namespace Mei.SkewLatticeDatum.Examples

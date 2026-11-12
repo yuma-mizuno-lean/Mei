@@ -22,6 +22,8 @@ existing completed coefficient map. No injectivity or surjectivity is required.
 
 public section
 
+open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading SupportedRay)
+
 open TauCeti (DirectedWallSpaces)
 
 noncomputable section

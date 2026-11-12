@@ -33,6 +33,8 @@ theta functions, and refined tropical curve counts*, §2.1 and Definition 2.10
 
 public section
 
+open TauCeti (SupportedRay)
+
 open TauCeti (DirectedWallSpaces)
 
 namespace Mei
@@ -118,7 +120,7 @@ section Group
 variable {Γ Λ R L M : Type*} [AddCommGroup Γ] [AddCommMonoid Λ]
   [CommRing R] [LieRing L] [LieAlgebra R L] [AddCommGroup M] [Module R M]
   [LieRingModule L M] {ρ : Γ →+ Λ} {ℒ : Γ → Submodule R L}
-  {d : Mei.PositiveDegrees Γ}
+  {d : TauCeti.PositiveDegrees Γ}
 
 namespace DirectedWallSpaces
 
@@ -137,7 +139,7 @@ theorem lie_mem_normalDegreeSubmodule_of_mem_ray {w : SupportedRay d} {m : Λ �
     (by simp) (fun x y hx hy => by simpa only [add_lie] using Submodule.add_mem _ hx hy)
 
 variable [Algebra ℚ R] [LieModule R L M] [DecidableEq Γ]
-  [GradedLieAlgebra ℒ] [Mei.IsPositiveGrading d ℒ]
+  [GradedLieAlgebra ℒ] [TauCeti.IsPositiveGrading d ℒ]
   (F : ModuleFiltration R M) [IsFiltrationRaising d ℒ F]
 
 /-- Rational scalars on a finite coefficient quotient come from its scalar ring. -/
@@ -147,7 +149,7 @@ local instance quotientRatModuleNormalVelocity (k : ℕ) : Module ℚ (F.quotien
 /-- Every finite wall exponential preserves normal degree, even if the filtration
 is not homogeneous. The submodule in the quotient is the image of the original one. -/
 theorem truncatedExpLieAction_mem_normalDegreeSubmodule
-    {w : SupportedRay d} {m : Λ →+ ℤ} {k : ℕ} {x : d.truncatedLie ℒ k}
+    {w : SupportedRay d} {m : Λ →+ ℤ} {k : ℕ} {x : d.lieTruncation ℒ k}
     (hx : x ∈ H.truncatedRayLieSubalgebra w m k) {c : ℤ} {a : F.quotient k}
     (ha : a ∈ (normalDegreeSubmodule ρ 𝒜 m c).map (F.submodule (k + 1)).mkQ) :
     F.truncatedExpLieAction d ℒ k x a ∈
@@ -165,7 +167,7 @@ theorem truncatedExpLieAction_mem_normalDegreeSubmodule
 /-- A finite wall exponential maps a quotient coefficient into the image of a
 normal-degree submodule exactly when the original coefficient lies there. -/
 theorem truncatedExpLieAction_mem_normalDegreeSubmodule_iff
-    {w : SupportedRay d} {m : Λ →+ ℤ} {k : ℕ} {x : d.truncatedLie ℒ k}
+    {w : SupportedRay d} {m : Λ →+ ℤ} {k : ℕ} {x : d.lieTruncation ℒ k}
     (hx : x ∈ H.truncatedRayLieSubalgebra w m k) (c : ℤ) (a : F.quotient k) :
     F.truncatedExpLieAction d ℒ k x a ∈
       (normalDegreeSubmodule ρ 𝒜 m c).map (F.submodule (k + 1)).mkQ ↔
@@ -182,7 +184,7 @@ theorem truncatedExpLieAction_mem_normalDegreeSubmodule_iff
 homogeneous input has the same normal evaluation. The inherited quotient grading
 is the sum of the images of the original pieces, with no finite-rank requirement. -/
 theorem normal_eq_of_decompose_truncatedExpLieAction_ne_zero
-    {w : SupportedRay d} {m : Λ →+ ℤ} {k : ℕ} {x : d.truncatedLie ℒ k}
+    {w : SupportedRay d} {m : Λ →+ ℤ} {k : ℕ} {x : d.lieTruncation ℒ k}
     (hx : x ∈ H.truncatedRayLieSubalgebra w m k)
     [DirectSum.Decomposition (fun p => (𝒜 p).map (F.submodule (k + 1)).mkQ)]
     {p q : Γ} {a : M} (ha : a ∈ 𝒜 p)

@@ -21,12 +21,14 @@ This gives the sign-factor comparison for coefficient maps and changes of degree
 without choosing compatible finite factorizations anew. It uses the homogeneous
 component criterion `Mei.mem_signSubalgebra_iff`,
 `Mei.GradedLieHom.truncatedMap_mem`, and uniqueness in
-`Mei.PositiveDegrees.completedSignFactorizationEquiv`. For the underlying sign
+`TauCeti.PositiveDegrees.completedSignFactorizationEquiv`. For the underlying sign
 factorization and its attribution to Bridgeland, see
 `Mei.Algebra.Lie.BCH.Sign.Basic`.
 -/
 
 public section
+
+open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading)
 
 noncomputable section
 
@@ -34,7 +36,7 @@ universe u
 
 namespace Mei.GradedLieHom
 
-open PositiveDegrees
+open TauCeti.PositiveDegrees
 
 variable {N M R A : Type*} {L L' : Type u}
   [AddCommMonoid N] [AddCommMonoid M] [CommRing R] [Algebra ℚ R]
@@ -52,23 +54,23 @@ variable {N M R A : Type*} {L L' : Type u}
 using any source cutoff at least as large as its prescribed modulus. -/
 theorem truncatedMap_mem_signSubgroup {a k : ℕ} (h : T.modulus k ≤ a)
     {s : SignType} {g : d.truncatedGroup ℒ a}
-    (hg : g ∈ (signSubalgebra (d.truncatedGrading ℒ a)
+    (hg : g ∈ (signSubalgebra (d.lieTruncationGrading ℒ a)
       (φ.comp T.toAddMonoidHom) s).bchSubgroup) :
     (f.truncatedMap k h).bchGroupMap g ∈
-      (signSubalgebra (e.truncatedGrading ℳ k) φ s).bchSubgroup := by
+      (signSubalgebra (e.lieTruncationGrading ℳ k) φ s).bchSubgroup := by
   classical
   rw [LieSubalgebra.mem_bchSubgroup] at hg ⊢
   rw [LieHom.log_bchGroupMap]
-  have hc := (mem_signSubalgebra_iff (d.truncatedGrading ℒ a)
+  have hc := (mem_signSubalgebra_iff (d.lieTruncationGrading ℒ a)
     (φ.comp T.toAddMonoidHom)).mp hg
-  rw [← DirectSum.sum_support_decompose (d.truncatedGrading ℒ a) (BCHGroup.log g), map_sum]
+  rw [← DirectSum.sum_support_decompose (d.lieTruncationGrading ℒ a) (BCHGroup.log g), map_sum]
   rw [← LieSubalgebra.mem_toSubmodule]
   apply Submodule.sum_mem
   intro n _
   by_cases hn : SignType.sign (φ (T n)) = s
   · have hy := f.truncatedMap_mem k h
-      (DirectSum.decompose (d.truncatedGrading ℒ a) (BCHGroup.log g) n).property
-    simpa only [hn] using le_signSubalgebra (e.truncatedGrading ℳ k) φ (T n) hy
+      (DirectSum.decompose (d.lieTruncationGrading ℒ a) (BCHGroup.log g) n).property
+    simpa only [hn] using le_signSubalgebra (e.lieTruncationGrading ℳ k) φ (T n) hy
   · rw [hc n (by simpa only [AddMonoidHom.comp_apply] using hn), map_zero]
     exact Submodule.zero_mem _
 

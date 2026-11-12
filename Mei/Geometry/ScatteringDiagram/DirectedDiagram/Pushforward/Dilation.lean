@@ -37,6 +37,8 @@ Theorem 9.5 (arXiv:2503.03719v1), compares these wall functions on `ℝ_{≤0}m�
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 open TauCeti (DirectedWallSpaces)
 
 noncomputable section

@@ -38,6 +38,8 @@ for cluster algebras*, §1 and Appendix B (arXiv:1411.1394v2), and Burcroff–Le
 
 public noncomputable section
 
+open TauCeti (SupportedRay)
+
 namespace Mei.SkewLatticeDatum.AdaptedBasis
 
 open PowerSeries

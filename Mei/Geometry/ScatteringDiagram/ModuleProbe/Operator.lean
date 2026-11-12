@@ -30,6 +30,8 @@ and refined tropical curve counts*, §3.3.3 (arXiv:1503.06183v5).
 
 public noncomputable section
 
+open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading)
+
 open TauCeti (DirectedWallSpaces)
 
 namespace Mei
@@ -90,7 +92,7 @@ theorem operatorEvaluation_mem_wall (a : H) (q : Γ × ℤ) (m : (Λ × ℤ) →
 /-- Finite coefficient extraction commutes with evaluation of the probe. -/
 @[simp]
 theorem moduleQuotientProjection_operatorEvaluation (a : H) (k : ℕ)
-    (x : (positiveDegrees d p).truncatedLie (grading d 𝒪 p ℒ) (k + 1)) :
+    (x : (positiveDegrees d p).lieTruncation (grading d 𝒪 p ℒ) (k + 1)) :
     moduleQuotientProjection d ℳ p ℒ k
         ((operatorEvaluation d ℳ ℒ p a).truncatedMap (k + 1) (by simp) x) =
       d.quotientCoefficientMap 𝒪 ℳ p (ev a) (hev a) k

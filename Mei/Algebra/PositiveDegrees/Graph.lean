@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Algebra.PositiveDegrees.Map
+public import TauCeti.Algebra.PositiveDegrees.FinitelyGenerated
 public import Mei.Algebra.PositiveDegrees.Ray.Basic
 
 /-!
@@ -25,7 +25,10 @@ radical of a skew form.
 
 public section
 
-namespace Mei.PositiveDegrees
+open TauCeti (PositiveDegrees PositiveDegreeMap SupportedRay)
+
+namespace TauCeti.PositiveDegrees
+
 
 variable {N M : Type*} [AddCommMonoid N] [AddCommMonoid M]
   (d : PositiveDegrees N) (f : N →+ M)
@@ -124,9 +127,10 @@ theorem graphProjection_comp_graphMap :
     (d.graphProjection f).comp (d.graphMap f) = PositiveDegreeMap.id d := by
   ext <;> simp
 
-end Mei.PositiveDegrees
+end TauCeti.PositiveDegrees
 
-namespace Mei.SupportedRay
+namespace TauCeti.SupportedRay
+
 
 variable {N M : Type*} [AddCommGroup N] [AddCommGroup M]
   {d : PositiveDegrees N} (w : SupportedRay d) (f : N →+ M)
@@ -158,4 +162,4 @@ theorem mem_graph_rayDegrees (m : M) (n : N) :
   · rintro ⟨⟨hn, a, ha, rfl⟩, rfl⟩
     exact ⟨⟨hn, rfl⟩, a, ha, by simp, rfl⟩
 
-end Mei.SupportedRay
+end TauCeti.SupportedRay

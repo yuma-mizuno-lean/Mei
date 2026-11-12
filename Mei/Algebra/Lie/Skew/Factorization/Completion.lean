@@ -31,6 +31,8 @@ compatibility argument for finite-order dilogarithm factorizations in Nakanishi,
 
 public noncomputable section
 
+open TauCeti (PositiveDegrees)
+
 namespace Mei.SkewLieAlgebra
 
 variable {R Γ ι : Type*} [CommRing R] [Algebra ℚ R]

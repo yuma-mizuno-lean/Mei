@@ -32,6 +32,8 @@ curve counts*, §3.3.3 (arXiv:1503.06183v5).
 
 public noncomputable section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 open TauCeti (DirectedWallSpaces)
 
 open Set Filter Topology Mei.Convex Mei.Convex.WallComplement
@@ -89,7 +91,7 @@ theorem eventually_exists_extendedCoefficientField_eq_eventInput_of_mul_pos
         z.val = AffineMap.lineMap x.val y.val
           (τ[b.val]'(by simpa only [τ, List.length_reverse] using b.isLt)) + δ • w ∧
         field k hBc z = (A).truncatedBCHAction d ℒ k
-          ((d.truncationMap ℒ hkl).bchGroupMap (g.drop (b.val + 1)).prod)
+          ((d.lieTruncationMap ℒ hkl).bchGroupMap (g.drop (b.val + 1)).prod)
           (field k hBc ((cutoffRestriction hkl).obj x)) := by
   dsimp only
   let τ := (orderedCrossingTimes e).reverse
@@ -154,7 +156,7 @@ theorem exists_straightEventInputArrangement
               (τ[j.val]'(by simpa only [g, List.length_map] using j.isLt)) + δ • w b ∧
             F.IsGeneric z.val ∧
             field k hBc z = (A).truncatedBCHAction d ℒ k
-              ((d.truncationMap ℒ hkl).bchGroupMap (g.drop (j.val + 1)).prod)
+              ((d.lieTruncationMap ℒ hkl).bchGroupMap (g.drop (j.val + 1)).prod)
               (field k hBc ((cutoffRestriction hkl).obj x)) := by
   classical
   let := h.finiteDimensional
@@ -216,7 +218,7 @@ theorem exists_straightEventInputArrangement
             (τ[j.val]'(by simpa only [g, List.length_map] using j.isLt)) + δ • w b ∧
           F.IsGeneric z.val ∧
           field k hBc z = (A).truncatedBCHAction d ℒ k
-            ((d.truncationMap ℒ hkl).bchGroupMap (g.drop (j.val + 1)).prod)
+            ((d.lieTruncationMap ℒ hkl).bchGroupMap (g.drop (j.val + 1)).prod)
             (field k hBc ((cutoffRestriction hkl).obj x)) := by
     by_cases hs : ∀ c : B.active l,
         AffineMap.lineMap x.val y.val

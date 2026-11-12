@@ -27,6 +27,8 @@ Appendix B, arXiv:1411.1394v2. We use `DirectedWallSpaces.mapTangent` for labels
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 open TauCeti (DirectedWallSpaces)
 
 noncomputable section

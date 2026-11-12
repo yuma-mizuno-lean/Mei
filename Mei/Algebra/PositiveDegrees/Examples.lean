@@ -5,7 +5,7 @@ Authors: Codex, Claude
 -/
 module
 
-public import Mei.Algebra.PositiveDegrees.Map
+public import TauCeti.Algebra.PositiveDegrees.FinitelyGenerated
 public import Mei.Algebra.PositiveDegrees.Ray.Basic
 public import Mei.Algebra.PositiveDegrees.Scale
 public import Mathlib.Tactic.Linarith
@@ -27,8 +27,8 @@ supported primitive rays.
   allowed degrees, rather than on the degrees of ambient primitive generators.
 
 Two further examples compute the canonical cutoff moduli of changes of degree on a fixed
-monoid, `Mei.PositiveDegreeMap.changeDegree`, which also computes
-`Mei.PositiveDegrees.changeDegreeEquiv` on completed BCH groups.
+monoid, `TauCeti.PositiveDegreeMap.changeDegree`, which also computes
+`TauCeti.PositiveDegrees.changeDegreeEquiv` on completed BCH groups.
 
 * On `ℕ`, the change from `δ(a) = a` to `2δ` has modulus `⌊k / 2⌋`, and the reverse change
   has modulus `2k`.
@@ -40,7 +40,11 @@ monoid, `Mei.PositiveDegreeMap.changeDegree`, which also computes
 
 public section
 
-namespace Mei.PositiveDegrees.Examples
+open TauCeti (PositiveDegrees PositiveDegreeMap SupportedRay)
+
+namespace TauCeti.PositiveDegrees.Examples
+
+open Mei
 
 /-- The origin together with the integer points `1 ≤ b ≤ a`. -/
 def wedgeMonoid : AddSubmonoid (ℤ × ℤ) where
@@ -425,4 +429,4 @@ theorem not_fg_quadraticWedgeMonoid : ¬ quadraticWedgeMonoid.FG := by
   simp only [quadraticWedgeFst_degree, quadraticWedgeSnd_degree] at h
   nlinarith
 
-end Mei.PositiveDegrees.Examples
+end TauCeti.PositiveDegrees.Examples

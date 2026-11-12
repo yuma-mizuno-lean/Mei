@@ -30,6 +30,8 @@ labels is assumed in the replacement construction.
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 open TauCeti (DirectedWallSpaces)
 
 noncomputable section

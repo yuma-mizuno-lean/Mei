@@ -31,6 +31,8 @@ We use `IsLatticeRational.sup`, `IsLatticeRational.map` and `PointedCone.lattice
 
 public section
 
+open TauCeti (PositiveDegrees)
+
 namespace PointedCone
 
 variable {V : Type*} [AddCommGroup V] [Module ℝ V]

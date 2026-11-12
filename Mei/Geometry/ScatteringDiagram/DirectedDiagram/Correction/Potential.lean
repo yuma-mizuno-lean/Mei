@@ -38,6 +38,8 @@ and consistency of the combined diagram are separate conclusions.
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 open TauCeti (DirectedWallSpaces)
 
 noncomputable section
@@ -66,7 +68,7 @@ variable {Γ : Type u} {V : Type v} {Λ R L ι : Type*}
   (ht : ∀ (P : (D.adaptedComplex (k + 1)).cellsOfCodimension 0)
     (x : WallComplement (fun j : D.active k => (D.wall j).support)),
     x.val ∈ interior (P : Set V) →
-    (d.truncationMap ℒ (Nat.le_succ k)).bchGroupMap (t P) = D.levelTransport k hk b x)
+    (d.lieTruncationMap ℒ (Nat.le_succ k)).bchGroupMap (t P) = D.levelTransport k hk b x)
 
 /-- For a loop projection at the next order, construct
 outgoing correction walls born exactly at order `k + 1`, together with a central
@@ -79,8 +81,8 @@ theorem exists_joint_correction_potential
     (P : D.LoopProjection (k + 1)) :
     ∃ (κ : Type (max u v)) (_ : Fintype κ)
       (E : DirectedDiagram (d := d) h H κ) (η : κ → OrientedCell h 1)
-      (c : κ → (d.truncationMap ℒ (Nat.le_succ k)).ker)
-      (f : OrientedCell h 0 →₀ (d.truncationMap ℒ (Nat.le_succ k)).ker),
+      (c : κ → (d.lieTruncationMap ℒ (Nat.le_succ k)).ker)
+      (f : OrientedCell h 0 →₀ (d.lieTruncationMap ℒ (Nat.le_succ k)).ker),
       (∀ a,
         (E.wall a).support = (η a).carrier ∧
         (∀ v : V, SignType.sign (h.realCharacter (E.wall a).normal v) =
@@ -89,7 +91,7 @@ theorem exists_joint_correction_potential
         (∃ n ∈ (E.wall a).ray.rayDegrees, d.degree n = (k : ℤ) + 1 ∧
           ∃ z ∈ ℒ n, (E.wall a).label = d.expToCompletion ℒ z) ∧
         (∀ l : ℕ, a ∈ E.active l ↔ k + 1 ≤ l) ∧
-        (c a : d.truncatedLie ℒ (k + 1)) =
+        (c a : d.lieTruncation ℒ (k + 1)) =
           log (CompletedGroup.projection (k + 1) (E.wall a).label) ∧
         P.toLinearMap (log (CompletedGroup.projection (k + 1) (E.wall a).label)) =
           log (CompletedGroup.projection (k + 1) (E.wall a).label)) ∧
@@ -128,7 +130,7 @@ theorem exists_joint_correction_potential
     exact PolyhedralCochain.coboundary_coboundary A
   have hbnd := hboundary hclosed
   -- Birth at the new order places every correction logarithm in the central kernel.
-  let π := d.truncationMap ℒ (Nat.le_succ k)
+  let π := d.lieTruncationMap ℒ (Nat.le_succ k)
   have hker (a : D.JointCorrectionIndex x p) :
       CompletedGroup.projection (k + 1) (E.wall a).label ∈ π.bchGroupMap.ker := by
     have hz : CompletedGroup.projection k (E.wall a).label = 1 := by
@@ -141,7 +143,7 @@ theorem exists_joint_correction_potential
   let c := fun a : D.JointCorrectionIndex x p => Multiplicative.toAdd
     (π.kernelLogEquiv ⟨CompletedGroup.projection (k + 1) (E.wall a).label, hker a⟩)
   have hc (a : D.JointCorrectionIndex x p) :
-      (c a : d.truncatedLie ℒ (k + 1)) =
+      (c a : d.lieTruncation ℒ (k + 1)) =
         log (CompletedGroup.projection (k + 1) (E.wall a).label) :=
     π.coe_kernelLogEquiv _
   let B := ∑ a, PolyhedralCochain.mk (R := R) (η a) (c a)

@@ -40,6 +40,8 @@ conditions. This supplies the initial coefficient in the last-change recursion o
 
 public noncomputable section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 open Set Quiver Mei.Convex
 
 namespace Mei
@@ -494,7 +496,7 @@ variable {Γ : Type} {R L M V ι : Type*}
 geometric arrangement, at every cutoff and over every inventory exhausting the endpoint
 fiber. Signed labels may be inverses or products of simultaneous wall labels. No
 consistency, faithfulness, coefficient basis or nonzero spatial direction is required. -/
-theorem exists_pathDecoratedEvaluation_leadingArrangement_shiftedBCHAction
+theorem _root_.TauCeti.PositiveDegrees.exists_pathDecoratedEvaluation_leadingArrangement_shiftedBCHAction
     [FiniteDimensional ℝ V]
     (hpoly : ∀ j, TauCeti.IsConvexPolyhedron (W j))
     (hdim : ∀ j, Module.finrank ℝ (affineSpan ℝ (W j)).direction + 1 =

@@ -17,7 +17,7 @@ agreeing with the original directions on the graph. Thus graph reindexing can
 retain either the full principal direction or its spatial projection.
 
 The graph lift of each supported ray retains its actual allowed degrees. The
-existing `Mei.PositiveDegrees.graphBCHGroupEquiv` restricts to an equivalence of its
+existing `TauCeti.PositiveDegrees.graphBCHGroupEquiv` restricts to an equivalence of its
 wall groups, with the same cutoff orders and integral normals. No saturation,
 freeness or injectivity of the spatial map is needed.
 
@@ -27,6 +27,8 @@ construction of `DirectedWallSpaces.CoordinateChange.wallGroupEquiv`.
 -/
 
 public section
+
+open TauCeti (SupportedRay)
 
 open TauCeti (DirectedWallSpaces wallBracketNormal)
 
@@ -105,8 +107,8 @@ open Mei
 variable {Γ M Λ R L : Type*} [AddCommGroup Γ] [AddCommGroup M] [AddCommMonoid Λ]
   [CommRing R] [Algebra ℚ R] [LieRing L] [LieAlgebra R L]
   [LieAlgebra ℚ L] [IsScalarTower ℚ R L] [DecidableEq Γ] [DecidableEq M]
-  {ρ : Γ →+ Λ} {ℒ : Γ → Submodule R L} {d : Mei.PositiveDegrees Γ}
-  [GradedLieAlgebra ℒ] [Mei.IsPositiveGrading d ℒ]
+  {ρ : Γ →+ Λ} {ℒ : Γ → Submodule R L} {d : TauCeti.PositiveDegrees Γ}
+  [GradedLieAlgebra ℒ] [TauCeti.IsPositiveGrading d ℒ]
   (H : DirectedWallSpaces ρ ℒ) (f : Γ →+ M) (ρ' : M × Γ →+ Λ)
   (hρ : ∀ n, ρ' (f n, n) = ρ n)
 
@@ -121,15 +123,16 @@ theorem graphBCHGroupEquiv_mem_wallGroup_iff (w : SupportedRay d) (m : Λ →+ �
     have h := (graphProjectionGradedLieHom ℒ f d).completedMap_mem_wallGroup
       (H := H.graph f ρ' hρ) (H' := H) (w := w.graph f) (v := w) (m := m) (m' := m)
       (fun p hp => by
-        simpa only [Mei.PositiveDegrees.graphProjection_apply] using
+        simpa only [TauCeti.PositiveDegrees.graphProjection_apply] using
           ((w.mem_graph_rayDegrees f p.1 p.2).mp hp).1)
       (fun p _ x hx => by
-        simpa only [graphProjectionGradedLieHom_apply, Mei.PositiveDegrees.graphProjection_apply]
+        simpa only [graphProjectionGradedLieHom_apply,
+          TauCeti.PositiveDegrees.graphProjection_apply]
           using graphGrading_le (fun n => H.wall n m) f p hx) hg
-    rw [← Mei.PositiveDegrees.graphBCHGroupEquiv_symm_apply, MulEquiv.symm_apply_apply] at h
+    rw [← TauCeti.PositiveDegrees.graphBCHGroupEquiv_symm_apply, MulEquiv.symm_apply_apply] at h
     exact h
   · intro hg
-    rw [Mei.PositiveDegrees.graphBCHGroupEquiv_apply]
+    rw [TauCeti.PositiveDegrees.graphBCHGroupEquiv_apply]
     exact (graphGradedLieHom ℒ f d).completedMap_mem_wallGroup
       (fun n hn => by simpa using hn)
       (fun n _ x hx => by simpa using hx) hg

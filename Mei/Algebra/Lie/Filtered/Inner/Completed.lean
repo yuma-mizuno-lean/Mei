@@ -27,6 +27,8 @@ injectivity hypothesis is required.
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 noncomputable section
 
 namespace Mei.AlgFiltration
@@ -46,12 +48,12 @@ variable [LieRingModule L A] [LieModule R L A]
 
 include hinner in
 /-- At each order, a truncated inner action is conjugation by the exponential of its image. -/
-theorem truncatedExpLieAction_eq_inner (k : ℕ) (x : d.truncatedLie ℒ k)
+theorem truncatedExpLieAction_eq_inner (k : ℕ) (x : d.lieTruncation ℒ k)
     (a : A ⧸ F.ideal (k + 1)) :
     F.truncatedExpLieAction d ℒ k x a =
       IsNilpotent.exp (F.truncatedInnerMap d ℒ j hj k x) * a *
         IsNilpotent.exp (-F.truncatedInnerMap d ℒ j hj k x) := by
-  obtain ⟨x, rfl⟩ := (d.degreeIdeal ℒ k).surjective_mkQ x
+  obtain ⟨x, rfl⟩ := (d.truncationIdeal ℒ k).surjective_mkQ x
   rw [LieIdeal.mkQ_apply, truncatedExpLieAction_mk]
   simpa only [LieIdeal.mkQ_apply, truncatedInnerMap_mk] using
     F.quotientExpLieAction_apply_eq_exp_mul_exp_neg d ℒ k (hinner x)

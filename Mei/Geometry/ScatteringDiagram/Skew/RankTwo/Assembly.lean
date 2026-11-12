@@ -51,6 +51,8 @@ A worked instance, the pentagon identity read as the ordered factorization of `Î
 
 public section
 
+open TauCeti (PositiveDegrees)
+
 noncomputable section
 
 namespace Mei.SkewLatticeDatum

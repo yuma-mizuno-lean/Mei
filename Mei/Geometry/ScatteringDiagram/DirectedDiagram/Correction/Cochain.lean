@@ -32,6 +32,8 @@ union with the original walls requires the geometric boundary identities.
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 open TauCeti (DirectedWallSpaces)
 
 noncomputable section
@@ -61,7 +63,7 @@ theorem exists_sweep_correction_family [Fintype ι]
     (m₀ : ι → Λ →+ ℤ)
     (h₀ : ∀ j, (h.realCharacter (m₀ j)).ker =
       (affineSpan ℝ (σ j).carrier).direction ⊔ ℝ ∙ i (ρ n))
-    (k : ℕ) (hnk : d.degree n ≤ k) (c : ι → d.truncatedLie ℒ k)
+    (k : ℕ) (hnk : d.degree n ≤ k) (c : ι → d.lieTruncation ℒ k)
     (hc : ∀ j, c j ∈ (H.truncated d k).wall n (m₀ j)) :
     ∃ E : DirectedDiagram (d := d) h H ι,
       (∀ j,
@@ -79,7 +81,7 @@ theorem exists_sweep_correction_family [Fintype ι]
           (∑ j, (⟨PolyhedralCochain.mk (σ j) (c j),
             PolyhedralCochain.mk_mem_transverseSubmodule (i (ρ n)) (σ j)
               (htrans j) (c j)⟩ : PolyhedralCochain.transverseSubmodule (R := R)
-                (h := h) (E := d.truncatedLie ℒ k) (k := 2) (i (ρ n)))) ∧
+                (h := h) (E := d.lieTruncation ℒ k) (k := 2) (i (ρ n)))) ∧
       (PolyhedralCochain.coboundaryOfFinsupp (R := R)
           (∑ j, Finsupp.single (σ j) (c j)) = 0 →
         PolyhedralCochain.coboundaryOfFinsupp (R := R)

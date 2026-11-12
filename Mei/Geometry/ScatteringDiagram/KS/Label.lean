@@ -32,13 +32,15 @@ This is the local label recovery in Tom Bridgeland,
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 noncomputable section
 
 open Set Filter Topology Mei.Convex
 
 namespace Mei.CompletedDiagram
 
-open PositiveDegrees
+open TauCeti.PositiveDegrees
 
 variable {N V R L : Type*} [AddCommGroup N]
   [NormedAddCommGroup V] [NormedSpace ℝ V]

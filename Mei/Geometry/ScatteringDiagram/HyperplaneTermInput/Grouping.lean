@@ -44,6 +44,8 @@ alphabet with the variables `p_{i,s}` of a BLM polynomial input is not treated h
 
 public section
 
+open TauCeti (PositiveDegrees SupportedRay)
+
 noncomputable section
 
 namespace Mei.HyperplaneTermInput

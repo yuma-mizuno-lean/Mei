@@ -21,6 +21,8 @@ These are the special case `DirectedWall.Pushforward.ofFixedDegree` of
 
 public section
 
+open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading)
+
 open TauCeti (DirectedWallSpaces)
 
 noncomputable section

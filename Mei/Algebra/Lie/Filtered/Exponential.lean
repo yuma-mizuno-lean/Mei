@@ -25,6 +25,8 @@ The construction uses the existing nilpotent quotient representation and
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 attribute [local instance] LieRing.ofAssociativeRing
 
 namespace Mei.AlgFiltration
@@ -99,7 +101,7 @@ variable [GradedLieAlgebra ℒ] [Algebra ℚ A]
 
 /-- Lie elements with equal order-`k` truncations induce the same coefficient automorphism. -/
 theorem quotientExpLieAction_eq_of_mk_eq (k : ℕ) {x y : L}
-    (h : (d.degreeIdeal ℒ k).mkQ x = (d.degreeIdeal ℒ k).mkQ y) :
+    (h : (d.truncationIdeal ℒ k).mkQ x = (d.truncationIdeal ℒ k).mkQ y) :
     F.quotientExpLieAction d ℒ k x = F.quotientExpLieAction d ℒ k y := by
   have hm := congrArg ((F.toModuleFiltration R).truncatedLieAction d ℒ k) h
   simp only [LieIdeal.mkQ_apply, ModuleFiltration.truncatedLieAction_mk] at hm
@@ -115,7 +117,7 @@ theorem quotientExpLieAction_eq_of_mk_eq (k : ℕ) {x y : L}
   simp only [quotientExpLieAction_apply, he]
 
 /-- Exponentiate an element of the Lie truncation on the matching coefficient quotient. -/
-noncomputable def truncatedExpLieAction (k : ℕ) : d.truncatedLie ℒ k →
+noncomputable def truncatedExpLieAction (k : ℕ) : d.lieTruncation ℒ k →
     ((A ⧸ F.ideal (k + 1)) ≃ₐ[R] (A ⧸ F.ideal (k + 1))) :=
   Quotient.lift (F.quotientExpLieAction d ℒ k) (fun _ _ h =>
     F.quotientExpLieAction_eq_of_mk_eq d ℒ k (Quotient.sound h))
@@ -135,22 +137,22 @@ theorem truncatedExpLieAction_zero (k : ℕ) :
 
 /-- Negation in the Lie truncation inverts the coefficient automorphism. -/
 @[simp]
-theorem truncatedExpLieAction_neg (k : ℕ) (x : d.truncatedLie ℒ k) :
+theorem truncatedExpLieAction_neg (k : ℕ) (x : d.lieTruncation ℒ k) :
     F.truncatedExpLieAction d ℒ k (-x) = (F.truncatedExpLieAction d ℒ k x).symm := by
-  obtain ⟨x, rfl⟩ := (d.degreeIdeal ℒ k).surjective_mkQ x
+  obtain ⟨x, rfl⟩ := (d.truncationIdeal ℒ k).surjective_mkQ x
   rw [← map_neg, LieIdeal.mkQ_apply, LieIdeal.mkQ_apply]
   simp only [truncatedExpLieAction_mk, quotientExpLieAction_neg]
 
 /-- Lie truncation and coefficient truncation intertwine the exponential actions. -/
 @[simp]
 theorem factor_truncatedExpLieAction {k l : ℕ} (h : k ≤ l)
-    (x : d.truncatedLie ℒ l) (a : A ⧸ F.ideal (l + 1)) :
+    (x : d.lieTruncation ℒ l) (a : A ⧸ F.ideal (l + 1)) :
     Ideal.Quotient.factor (F.antitone (Nat.add_le_add_right h 1))
       (F.truncatedExpLieAction d ℒ l x a) =
-        F.truncatedExpLieAction d ℒ k (d.truncationMap ℒ h x)
+        F.truncatedExpLieAction d ℒ k (d.lieTruncationMap ℒ h x)
           (Ideal.Quotient.factor (F.antitone (Nat.add_le_add_right h 1)) a) := by
-  obtain ⟨x, rfl⟩ := (d.degreeIdeal ℒ l).surjective_mkQ x
-  simp only [LieIdeal.mkQ_apply, truncatedExpLieAction_mk, PositiveDegrees.truncationMap_mk]
+  obtain ⟨x, rfl⟩ := (d.truncationIdeal ℒ l).surjective_mkQ x
+  simp only [LieIdeal.mkQ_apply, truncatedExpLieAction_mk, PositiveDegrees.lieTruncationMap_mk]
   exact F.factor_quotientExpLieAction d ℒ h x a
 
 end Truncated

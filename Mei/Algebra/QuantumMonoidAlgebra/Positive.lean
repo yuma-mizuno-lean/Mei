@@ -94,7 +94,7 @@ open scoped Classical in
 /-- Each positive filtration term is the degree ideal of the inherited grading. -/
 theorem positiveFiltration_ideal (k : ℕ) :
     (positiveFiltration q β P δ hδ).ideal k =
-      GradedAlgebra.degreeIdeal ((positiveSubalgebra q β P).grading (grade q β)) δ
+      GradedAlgebra.truncationIdeal ((positiveSubalgebra q β P).grading (grade q β)) δ
         (fun p hp => supportedSubalgebra_grading_eq_bot (grade q β) P
           (fun h => (not_lt_of_ge (hδ p h)) hp)) k := by
   classical
@@ -115,7 +115,7 @@ theorem mem_positiveFiltration_iff (k : ℕ) (x : positiveSubalgebra q β P) :
       ∀ p, δ p < k → (basis q β).repr (x : QuantumMonoidAlgebra q β) p = 0 := by
   classical
   rw [positiveFiltration, GradedAlgebra.degreeFiltration_ideal,
-    GradedAlgebra.mem_degreeIdeal_iff, Mei.DirectSum.mem_degreeTail_iff]
+    GradedAlgebra.mem_truncationIdeal_iff, Mei.DirectSum.mem_degreeTail_iff]
   constructor
   · intro hx p hp
     have h := congrArg (fun y : positiveSubalgebra q β P =>
@@ -233,7 +233,7 @@ theorem positiveMap_ideal_le_of_degree
   intro n hn x hx
   by_cases hnP : n ∈ P
   · rw [Ideal.mem_comap, positiveFiltration_ideal]
-    exact GradedAlgebra.le_degreeIdeal _ δ' _ (hij n hnP hn) _
+    exact GradedAlgebra.le_truncationIdeal _ δ' _ (hij n hnP hn) _
       (positiveMap_mem_grading φ f h P P' hf hx)
   · have hz := supportedSubalgebra_grading_eq_bot (grade q β) P hnP
     have : x = 0 := by simpa only [hz, Submodule.mem_bot] using hx

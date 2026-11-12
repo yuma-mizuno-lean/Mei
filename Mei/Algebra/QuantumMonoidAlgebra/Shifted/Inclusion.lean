@@ -19,6 +19,8 @@ for arbitrary bilinear forms and without injectivity assumptions.
 -/
 
 public section
+
+open TauCeti (PositiveDegrees PositiveDegreeMap)
 noncomputable section
 
 namespace Mei.QuantumMonoidAlgebra

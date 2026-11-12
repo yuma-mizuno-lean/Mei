@@ -16,9 +16,13 @@ is inverse to the ordinary coefficient inclusion and needs no multiplication.
 -/
 
 public section
+
+open TauCeti (PositiveDegrees)
 noncomputable section
 
-namespace Mei.PositiveDegrees
+namespace TauCeti.PositiveDegrees
+
+open Mei
 
 variable {Γ R M : Type*} [AddCommGroup Γ] [Ring R] [AddCommGroup M] [Module R M]
   [DecidableEq Γ] (d : PositiveDegrees Γ) (ℳ : Γ → Submodule R M)
@@ -58,4 +62,4 @@ theorem finiteCoefficientOfShiftedDirectLimit_eq_sum (x : d.ShiftedDirectLimit �
     (d.finiteCoefficientOfShiftedDirectLimit ℳ x hx)).symm
   simpa only [hs, decompose_finiteCoefficientOfShiftedDirectLimit] using h
 
-end Mei.PositiveDegrees
+end TauCeti.PositiveDegrees

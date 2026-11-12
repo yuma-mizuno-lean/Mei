@@ -37,6 +37,8 @@ with the charge-zero comparison `DirectedDiagram.levelPathProduct_pushforward` a
 
 public noncomputable section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 open TauCeti (DirectedWallSpaces)
 
 open Set Filter Topology Mei.Convex
@@ -231,8 +233,8 @@ theorem coefficientField_eq_truncatedBCHAction_levelPathProduct (k : ℕ)
   rw [hmain]
   congr 2
   -- Truncate the lower slab transport and compare it with the base path product.
-  have hcomm : (d.truncationMap ℒ (Nat.le_succ k)).comp (π (k + 1)) =
-      (π k).comp ((positiveDegrees d p).truncationMap (grading d ℳ p ℒ) (Nat.le_succ k)) :=
+  have hcomm : (d.lieTruncationMap ℒ (Nat.le_succ k)).comp (π (k + 1)) =
+      (π k).comp ((positiveDegrees d p).lieTruncationMap (grading d ℳ p ℒ) (Nat.le_succ k)) :=
     LieHom.ext (truncationMap_baseQuotientProjection d ℳ p ℒ (Nat.le_succ k))
   have ht' := DFunLike.congr_fun (congrArg LieHom.bchGroupMap hcomm)
     (D.levelPathProduct (k + 1) r₀)

@@ -25,6 +25,8 @@ counts*, [arXiv:1503.06183v5](https://arxiv.org/abs/1503.06183v5), Example 2.1(i
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 open TauCeti (DirectedWallSpaces)
 
 noncomputable section

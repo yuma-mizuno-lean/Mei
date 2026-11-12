@@ -25,6 +25,8 @@ Principal cylinders appear in Gross–Hacking–Keel–Kontsevich,
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 open TauCeti (DirectedWallSpaces)
 
 noncomputable section

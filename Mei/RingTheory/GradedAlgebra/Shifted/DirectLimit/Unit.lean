@@ -18,9 +18,13 @@ direct-limit additive group and scalar multiplication.
 -/
 
 public section
+
+open TauCeti (PositiveDegrees)
 noncomputable section
 
-namespace Mei.PositiveDegrees
+namespace TauCeti.PositiveDegrees
+
+open Mei
 
 variable {Γ R A : Type*} [AddCommGroup Γ] [CommRing R] [Ring A] [Algebra R A]
   [DecidableEq Γ] (d : PositiveDegrees Γ) (𝒜 : Γ → Submodule R A)
@@ -126,4 +130,4 @@ theorem toShiftedDirectLimitOfChart_of_eq_one (p : Γ) (s : Multiset d.monoid)
     shiftedHomogeneousComponent_of, shiftedDirectLimitComponents_one]
   exact congrArg (fun z => DirectSum.decompose 𝒜 z u) ha
 
-end Mei.PositiveDegrees
+end TauCeti.PositiveDegrees

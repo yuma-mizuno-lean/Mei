@@ -28,6 +28,8 @@ tropical curve counts*, §2.1 and the proof of Theorem 2.14 (arXiv:1503.06183v5)
 
 public section
 
+open TauCeti (SupportedRay)
+
 open TauCeti (DirectedWallSpaces)
 noncomputable section
 
@@ -39,8 +41,8 @@ variable {Γ Λ R L M : Type*} [AddCommGroup Γ] [AddCommMonoid Λ]
   [CommRing R] [Algebra ℚ R] [LieRing L] [LieAlgebra R L]
   [LieAlgebra ℚ L] [IsScalarTower ℚ R L]
   [AddCommGroup M] [Module R M] [LieRingModule L M] [LieModule R L M]
-  [DecidableEq Γ] {ρ : Γ →+ Λ} {d : Mei.PositiveDegrees Γ}
-  {ℒ : Γ → Submodule R L} [GradedLieAlgebra ℒ] [Mei.IsPositiveGrading d ℒ]
+  [DecidableEq Γ] {ρ : Γ →+ Λ} {d : TauCeti.PositiveDegrees Γ}
+  {ℒ : Γ → Submodule R L} [GradedLieAlgebra ℒ] [TauCeti.IsPositiveGrading d ℒ]
   (H : DirectedWallSpaces ρ ℒ) (ℳ : Γ → Submodule R M)
   [DirectSum.Decomposition ℳ] [SetLike.GradedBracket ℒ ℳ] [IsWallAnnihilating H ℳ]
 
@@ -52,9 +54,9 @@ theorem shiftedDirectLimitComponents_BCHAction_of_normal_eq_zero
     d.shiftedDirectLimitComponents ℳ (d.shiftedDirectLimitBCHAction ℒ ℳ g a) q =
       d.shiftedDirectLimitComponents ℳ a q := by
   obtain ⟨s, a, rfl⟩ := d.exists_toShiftedDirectLimit ℳ a
-  rw [Mei.PositiveDegrees.shiftedDirectLimitBCHAction_toShiftedDirectLimit,
-    Mei.PositiveDegrees.shiftedDirectLimitComponents_toShiftedDirectLimit,
-    Mei.PositiveDegrees.shiftedDirectLimitComponents_toShiftedDirectLimit]
+  rw [TauCeti.PositiveDegrees.shiftedDirectLimitBCHAction_toShiftedDirectLimit,
+    TauCeti.PositiveDegrees.shiftedDirectLimitComponents_toShiftedDirectLimit,
+    TauCeti.PositiveDegrees.shiftedDirectLimitComponents_toShiftedDirectLimit]
   exact H.shiftedHomogeneousComponent_completedBCHAction_of_normal_eq_zero
     ℳ (d.coefficientOrigin s) hg hq a
 
@@ -67,7 +69,7 @@ theorem shiftedDirectLimitBCHAction_of_eq_self_of_normal_eq_zero
     d.shiftedDirectLimitBCHAction ℒ ℳ g
       (d.toShiftedDirectLimitOfChart ℳ p s hp ((d.shiftedFiltration ℳ p).of a)) =
         d.toShiftedDirectLimitOfChart ℳ p s hp ((d.shiftedFiltration ℳ p).of a) := by
-  rw [Mei.PositiveDegrees.shiftedDirectLimitBCHAction_toShiftedDirectLimitOfChart]
+  rw [TauCeti.PositiveDegrees.shiftedDirectLimitBCHAction_toShiftedDirectLimitOfChart]
   exact congrArg (d.toShiftedDirectLimitOfChart ℳ p s hp)
     (H.completedBCHAction_of_eq_self_of_normal_eq_zero
       (fun q => (ℳ q).comap (d.shiftedLieSubmodule ℒ ℳ p).incl.toLinearMap)
@@ -89,11 +91,11 @@ theorem smul_eq_self_of_mem_zeroDirectionCoefficients
     {w : SupportedRay d} {m : Λ →+ ℤ} {g : d.completedBCHGroup ℒ}
     (hg : g ∈ H.wallGroup w m) {x : d.ShiftedDirectLimit ℳ}
     (hx : x ∈ d.zeroDirectionCoefficients ρ ℳ) : g • x = x := by
-  rw [Mei.PositiveDegrees.zeroDirectionCoefficients_def] at hx
+  rw [TauCeti.PositiveDegrees.zeroDirectionCoefficients_def] at hx
   induction hx using Submodule.span_induction with
   | mem x hx =>
     obtain ⟨p, s, hp, r, a, ha, hr, rfl⟩ := hx
-    rw [Mei.PositiveDegrees.smul_eq_shiftedDirectLimitBCHAction]
+    rw [TauCeti.PositiveDegrees.smul_eq_shiftedDirectLimitBCHAction]
     exact H.shiftedDirectLimitBCHAction_of_eq_self_of_direction_eq_zero ℳ p s hp hg a ha hr
   | zero => exact smul_zero g
   | add x y _ _ hx hy => rw [smul_add, hx, hy]
@@ -108,8 +110,8 @@ theorem shiftedDirectLimitComponents_BCHAction_eq_zero_of_direction_eq_zero
     d.shiftedDirectLimitComponents ℳ
       (d.shiftedDirectLimitBCHAction ℒ ℳ g
         (d.toShiftedDirectLimitOfChart ℳ p s hp ((d.shiftedFiltration ℳ p).of a))) q = 0 := by
-  rw [Mei.PositiveDegrees.shiftedDirectLimitBCHAction_toShiftedDirectLimitOfChart,
-    Mei.PositiveDegrees.shiftedDirectLimitComponents_toShiftedDirectLimitOfChart]
+  rw [TauCeti.PositiveDegrees.shiftedDirectLimitBCHAction_toShiftedDirectLimitOfChart,
+    TauCeti.PositiveDegrees.shiftedDirectLimitComponents_toShiftedDirectLimitOfChart]
   exact H.shiftedHomogeneousComponent_completedBCHAction_eq_zero_of_direction_eq_zero
     ℳ p hg hrq hq a ha
 

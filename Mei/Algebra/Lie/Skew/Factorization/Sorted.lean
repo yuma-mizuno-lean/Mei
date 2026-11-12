@@ -30,6 +30,8 @@ nonzero (`SkewLieAlgebra.existsUnique_orderedProd_rayExp_nsmul_smul_negDilogNeg`
 
 public noncomputable section
 
+open TauCeti (PositiveDegrees)
+
 namespace Mei.SkewLieAlgebra
 
 open PowerSeries

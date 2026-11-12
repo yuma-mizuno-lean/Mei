@@ -29,6 +29,8 @@ indexed walls preserves finite-order equivalence by
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 open TauCeti (DirectedWallSpaces)
 
 noncomputable section

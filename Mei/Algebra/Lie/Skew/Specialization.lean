@@ -31,6 +31,8 @@ Appendix B, arXiv:1411.1394v2.
 -/
 
 public section
+
+open TauCeti (PositiveDegrees PositiveDegreeMap)
 noncomputable section
 
 namespace Mei.SkewLieAlgebra
@@ -197,7 +199,7 @@ local notation "ℒS" => positiveGrading γ hγ d
 /-- Coefficient specialization on finite Lie truncations, expressed over the
 common scalar ring and on the original quotient carriers. -/
 def coefficientTruncatedMap (k : ℕ) :
-    d.truncatedLie ℒR k →ₗ⁅K⁆ d.truncatedLie ℒS k :=
+    d.lieTruncation ℒR k →ₗ⁅K⁆ d.lieTruncation ℒS k :=
   (d.truncatedRestrictScalarsEquiv (R := K) ℒS k).toLieHom.comp
     (((coefficientGradedLieHom β hβ γ hγ φ hφ d).truncatedMap k (by simp)).comp
       (d.truncatedRestrictScalarsEquiv (R := K) ℒR k).symm.toLieHom)
@@ -264,8 +266,8 @@ theorem projection_coefficientCompletedMap (k : ℕ) (g : d.completedBCHGroup �
   -- with the concrete quotient before rewriting it as an exponential.
   change BCHGroup.exp _ =
     (coefficientTruncatedMap β hβ γ hγ φ hφ d k).bchGroupMap
-      (CompletedGroup.projection k g : BCHGroup (d.truncatedLie ℒR k))
-  rw [← BCHGroup.exp_log (CompletedGroup.projection k g : BCHGroup (d.truncatedLie ℒR k)),
+      (CompletedGroup.projection k g : BCHGroup (d.lieTruncation ℒR k))
+  rw [← BCHGroup.exp_log (CompletedGroup.projection k g : BCHGroup (d.lieTruncation ℒR k)),
     LieHom.bchGroupMap_exp]
   congr 1
   simp [coefficientTruncatedMap]
@@ -303,7 +305,7 @@ theorem coefficientCompletedMap_comp {T : Type u} [CommRing T] [Algebra ℚ T]
   intro k
   simp only [MonoidHom.comp_apply, projection_coefficientCompletedMap]
   -- Re-express the categorical projection as its concrete BCH quotient.
-  generalize (CompletedGroup.projection k g : BCHGroup (d.truncatedLie ℒR k)) = x
+  generalize (CompletedGroup.projection k g : BCHGroup (d.lieTruncation ℒR k)) = x
   rw [← BCHGroup.exp_log x]
   simp only [LieHom.bchGroupMap_exp]
   congr 1

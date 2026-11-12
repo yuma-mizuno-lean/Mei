@@ -69,7 +69,7 @@ theorem mem_augmentation_pow_iff (a : U) (N : ℕ) :
         (Mei.UniversalEnvelopingAlgebra.homogeneousSubmodule ℒ) a n : U) = 0 := by
   rw [← degreeFiltration_eq_augmentation_pow R S N,
     Mei.UniversalEnvelopingAlgebra.degreeFiltration_ideal,
-    Mei.GradedAlgebra.mem_degreeIdeal_iff, Mei.DirectSum.mem_degreeTail_iff]
+    Mei.GradedAlgebra.mem_truncationIdeal_iff, Mei.DirectSum.mem_degreeTail_iff]
   rfl
 
 /-- The preimage of the `(c + 1)`-st augmentation power is the `c`-th lower central term. -/

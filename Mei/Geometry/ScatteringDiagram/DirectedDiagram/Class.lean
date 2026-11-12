@@ -28,6 +28,8 @@ Coordinate transport descends `DirectedDiagram.image` using `Equivalent.image` a
 
 public section
 
+open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading)
+
 open TauCeti (DirectedWallSpaces)
 
 noncomputable section
@@ -363,7 +365,7 @@ theorem LevelClass.project_image {k l a : ℕ} (hkl : k ≤ l)
 @[simp]
 theorem Class.image_refl (x : Class.{u} (d := d) (h := h) (H := H)) :
     image (Toric.IntegralAffineEquiv.refl h)
-      (DirectedWallSpaces.CoordinateChange.refl H) (by simp) x = x := by
+      (DirectedWallSpaces.CoordinateChange.refl d H) (by simp) x = x := by
   induction x using Class.inductionOn with | _ D =>
     simp only [image_toClass, DirectedDiagram.image_refl]
 
@@ -372,7 +374,7 @@ theorem Class.image_refl (x : Class.{u} (d := d) (h := h) (H := H)) :
 theorem LevelClass.image_refl (k : ℕ)
     (x : LevelClass.{u} (d := d) (h := h) (H := H) k) :
     image (Toric.IntegralAffineEquiv.refl h)
-      (DirectedWallSpaces.CoordinateChange.refl H) (by simp) k (by
+      (DirectedWallSpaces.CoordinateChange.refl d H) (by simp) k (by
         rw [DirectedWallSpaces.CoordinateChange.degreeMap_modulus_le_iff]
         intro n _ hn
         simpa using hn) x = x := by

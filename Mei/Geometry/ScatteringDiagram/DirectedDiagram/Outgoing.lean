@@ -34,6 +34,8 @@ functions, and refined tropical curve counts*, proof of Theorem 2.6.
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 open TauCeti (DirectedWallSpaces)
 
 noncomputable section
@@ -54,7 +56,7 @@ variable {Γ Λ R L V ι : Type*} [AddCommGroup Γ] [AddCommGroup Λ]
 /-- Consistent outgoing transport with logarithms in an abelian Lie subalgebra
 vanishes. The walls may have different degrees and geometric directions. -/
 theorem levelPathProduct_eq_one_of_outgoing {k : ℕ} (hD : D.LevelConsistent k)
-    (K : LieSubalgebra R (d.truncatedLie ℒ k)) [IsLieAbelian K]
+    (K : LieSubalgebra R (d.lieTruncation ℒ k)) [IsLieAbelian K]
     (hlabel : ∀ j : D.active k, log (CompletedGroup.projection k (D.wall j).label) ∈ K)
     (hout : ∀ j : D.active k, (D.wall j).Outgoing)
     {x y : WallComplement (fun j : D.active k => (D.wall j).support)}
@@ -66,8 +68,8 @@ theorem levelPathProduct_eq_one_of_outgoing {k : ℕ} (hD : D.LevelConsistent k)
       (q : AdmissiblePLPath u v) :
       log (D.levelPathProduct k q) = q.wallCrossingSum ν a := by
     have he := K.log_wallPathProduct_sub_crossingSum_mem
-      (⊥ : Submodule R (d.truncatedLie ℒ k)) (fun b hb c hc => by
-        have hz := congrArg (fun z : K => (z : d.truncatedLie ℒ k))
+      (⊥ : Submodule R (d.lieTruncation ℒ k)) (fun b hb c hc => by
+        have hz := congrArg (fun z : K => (z : d.lieTruncation ℒ k))
           (trivial_lie_zero K K ⟨b, hb⟩ ⟨c, hc⟩)
         exact (Submodule.mem_bot R).mpr hz)
       ν (fun j => CompletedGroup.projection k (D.wall j).label)
@@ -76,13 +78,13 @@ theorem levelPathProduct_eq_one_of_outgoing {k : ℕ} (hD : D.LevelConsistent k)
     rw [D.levelPathProduct_eq_wallPathProduct k q (D.activeLabels_commute k)]
     exact sub_eq_zero.mp ((Submodule.mem_bot R).mp he)
   have hsum : p.wallCrossingSum ν a = 0 := by
-    rw [← DirectSum.sum_support_decompose (d.truncatedGrading ℒ k)
+    rw [← DirectSum.sum_support_decompose (d.lieTruncationGrading ℒ k)
       (p.wallCrossingSum ν a)]
     apply Finset.sum_eq_zero
     intro n _
-    let f := ((d.truncatedGrading ℒ k n).subtype.comp
-      ((DirectSum.component R Γ (fun m => d.truncatedGrading ℒ k m) n).comp
-        (DirectSum.decomposeLinearEquiv (d.truncatedGrading ℒ k)).toLinearMap)).toAddMonoidHom
+    let f := ((d.lieTruncationGrading ℒ k n).subtype.comp
+      ((DirectSum.component R Γ (fun m => d.lieTruncationGrading ℒ k m) n).comp
+        (DirectSum.decomposeLinearEquiv (d.lieTruncationGrading ℒ k)).toLinearMap)).toAddMonoidHom
     -- A nonzero coefficient forces this degree to lie on the wall's actual ray.
     have hdegree (j : D.active k) (hj : f (a j) ≠ 0) : n ∈ (D.wall j).ray.rayDegrees := by
       by_contra hn
@@ -107,18 +109,18 @@ theorem levelPathProduct_eq_one_of_outgoing_of_projection_eq_one {k : ℕ}
     (hout : ∀ j : D.active (k + 1), (D.wall j).Outgoing)
     {x y : WallComplement (fun j : D.active (k + 1) => (D.wall j).support)}
     (p : AdmissiblePLPath x y) : D.levelPathProduct (k + 1) p = 1 := by
-  let : IsLieAbelian (d.truncationMap ℒ (Nat.le_succ k)).ker.toLieSubalgebra :=
-    inferInstanceAs (IsLieAbelian (d.truncationMap ℒ (Nat.le_succ k)).ker)
+  let : IsLieAbelian (d.lieTruncationMap ℒ (Nat.le_succ k)).ker.toLieSubalgebra :=
+    inferInstanceAs (IsLieAbelian (d.lieTruncationMap ℒ (Nat.le_succ k)).ker)
   apply D.levelPathProduct_eq_one_of_outgoing hD
-    (d.truncationMap ℒ (Nat.le_succ k)).ker.toLieSubalgebra ?_ hout p
+    (d.lieTruncationMap ℒ (Nat.le_succ k)).ker.toLieSubalgebra ?_ hout p
   intro j
   rw [LieIdeal.mem_toLieSubalgebra, LieHom.mem_ker]
-  have he : (d.truncationMap ℒ (Nat.le_succ k)).bchGroupMap
+  have he : (d.lieTruncationMap ℒ (Nat.le_succ k)).bchGroupMap
       (CompletedGroup.projection (k + 1) (D.wall j).label) =
         CompletedGroup.projection k (D.wall j).label :=
     CompletedGroup.map_projection k (k + 1) (Nat.le_succ k) (D.wall j).label
-  have he' := congrArg (log (L := d.truncatedLie ℒ k)) (he.trans (hlabel j))
-  exact ((d.truncationMap ℒ (Nat.le_succ k)).log_bchGroupMap _).symm.trans
+  have he' := congrArg (log (L := d.lieTruncation ℒ k)) (he.trans (hlabel j))
+  exact ((d.lieTruncationMap ℒ (Nat.le_succ k)).log_bchGroupMap _).symm.trans
     (he'.trans log_one)
 
 end Mei.DirectedDiagram

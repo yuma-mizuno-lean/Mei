@@ -37,6 +37,8 @@ diagrams, Part III*, §5.1 (arXiv:2111.00800v6).
 
 public section
 
+open TauCeti (PositiveDegrees SupportedRay)
+
 noncomputable section
 
 namespace Mei.SkewLieAlgebra
@@ -70,7 +72,7 @@ theorem dilogElement_congr {n' : Γ} (h : n = n') (hn' : n' ∈ d.monoid) (hn0' 
 `∑_{j < k} (-1)^j / (j+1)² X_{(j+1)n}`. -/
 theorem projection_dilogElement (k : ℕ) :
     CompletedGroup.projection k (dilogElement β hβ hn hn0) =
-      BCHGroup.exp ((d.degreeIdeal ℒ k).mkQ (∑ j ∈ Finset.range k,
+      BCHGroup.exp ((d.truncationIdeal ℒ k).mkQ (∑ j ∈ Finset.range k,
         rayGenerator β hβ hn hn0 j (algebraMap ℚ R ((-1) ^ j / ((j : ℚ) + 1) ^ 2)))) := by
   simp only [dilogElement, projection_rayExp, rayPartialSum_apply, coeff_succ_negDilogNeg]
   -- Both sides are the same exponential, typed in the tower object and the truncated group.

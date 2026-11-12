@@ -43,6 +43,8 @@ Gross–Hacking–Keel–Kontsevich, *Canonical bases for cluster algebras*, App
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 open TauCeti (DirectedWallSpaces)
 
 noncomputable section

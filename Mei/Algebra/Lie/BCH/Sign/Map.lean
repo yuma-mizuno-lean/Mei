@@ -23,6 +23,8 @@ factorization itself, see `Mei.Algebra.Lie.BCH.Sign.Basic`.
 
 public section
 
+open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading)
+
 noncomputable section
 
 namespace Mei.GradedLieHom
@@ -48,14 +50,14 @@ theorem truncatedMap_signFactorizationEquiv_symm
   let F : d.truncatedGroup ℒ k →* d.truncatedGroup ℳ k :=
     (f.truncatedMap k (by simp)).bchGroupMap
   let a := (PositiveDegrees.signFactorizationEquiv ℒ θ d k).symm g
-  have hf (n) (x) (hx : x ∈ d.truncatedGrading ℒ k n) :
-      f.truncatedMap k (by simp) x ∈ d.truncatedGrading ℳ k n := by
+  have hf (n) (x) (hx : x ∈ d.lieTruncationGrading ℒ k n) :
+      f.truncatedMap k (by simp) x ∈ d.lieTruncationGrading ℳ k n := by
     simpa only [PositiveDegreeMap.id_apply] using f.truncatedMap_mem k (by simp) hx
-  let b : ∀ t, (signSubalgebra (d.truncatedGrading ℳ k) θ t).bchSubgroup :=
+  let b : ∀ t, (signSubalgebra (d.lieTruncationGrading ℳ k) θ t).bchSubgroup :=
     fun t => ⟨F (a t), by
       rw [LieSubalgebra.mem_bchSubgroup, LieHom.log_bchGroupMap]
-      exact map_mem_signSubalgebra (d.truncatedGrading ℒ k) θ
-        (d.truncatedGrading ℳ k) (f.truncatedMap k (by simp)).toLinearMap.toAddMonoidHom
+      exact map_mem_signSubalgebra (d.lieTruncationGrading ℒ k) θ
+        (d.lieTruncationGrading ℳ k) (f.truncatedMap k (by simp)).toLinearMap.toAddMonoidHom
         hf ((LieSubalgebra.mem_bchSubgroup _ _).mp (a t).property)⟩
   have hb : PositiveDegrees.signFactorizationEquiv ℳ θ d k b = F g := by
     rw [PositiveDegrees.signFactorizationEquiv_apply]

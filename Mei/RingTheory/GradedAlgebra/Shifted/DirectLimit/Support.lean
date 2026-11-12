@@ -19,9 +19,13 @@ is needed.
 -/
 
 public section
+
+open TauCeti (PositiveDegrees)
 noncomputable section
 
-namespace Mei.PositiveDegrees
+namespace TauCeti.PositiveDegrees
+
+open Mei
 
 variable {Γ R A : Type*} [AddCommGroup Γ] [CommRing R] [Ring A] [Algebra R A]
   [DecidableEq Γ] (d : PositiveDegrees Γ) (𝒜 : Γ → Submodule R A)
@@ -101,4 +105,4 @@ theorem mem_positiveCoefficientSubalgebra_iff (x : d.ShiftedDirectLimit 𝒜) :
   rw [positiveCoefficientSubalgebra_toSubmodule, mem_range_toShiftedDirectLimitOfChart_iff]
   simp only [sub_zero]
 
-end Mei.PositiveDegrees
+end TauCeti.PositiveDegrees

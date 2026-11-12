@@ -20,9 +20,13 @@ Decompositions are used only by the component formulas.
 -/
 
 public section
+
+open TauCeti (PositiveDegrees)
 noncomputable section
 
-namespace Mei.PositiveDegrees
+namespace TauCeti.PositiveDegrees
+
+open Mei
 
 variable {Γ R M N P : Type*} [AddCommGroup Γ] [Ring R]
   [AddCommGroup M] [Module R M] [AddCommGroup N] [Module R N]
@@ -96,4 +100,4 @@ theorem shiftedDirectLimitMap_comp (ℒ : Γ → Submodule R P)
   obtain ⟨s, a, rfl⟩ := d.exists_toShiftedDirectLimit ℳ x
   simp only [shiftedDirectLimitMap_toShiftedDirectLimit, completionCoefficientMap_comp]
 
-end Mei.PositiveDegrees
+end TauCeti.PositiveDegrees

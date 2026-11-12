@@ -24,7 +24,11 @@ homogeneous projections. No finite generation or freeness is required.
 
 public section
 
-namespace Mei
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
+namespace TauCeti
+
+open Mei
 
 variable {N R M M' : Type*} [AddCommMonoid N] [Semiring R]
   [AddCommMonoid M] [Module R M] [AddCommMonoid M'] [Module R M']
@@ -82,4 +86,4 @@ instance IsPositiveGrading.quotient [IsPositiveGrading e G.piece] :
   infer_instance
 
 end Quotient
-end Mei
+end TauCeti

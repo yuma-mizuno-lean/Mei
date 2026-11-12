@@ -19,6 +19,8 @@ alternating, and no injectivity or spanning assumption is required.
 -/
 
 public section
+
+open TauCeti (PositiveDegrees PositiveDegreeMap)
 noncomputable section
 
 namespace Mei.QuantumMonoidAlgebra

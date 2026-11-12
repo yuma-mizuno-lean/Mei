@@ -18,6 +18,8 @@ only to define the finite algebra embeddings, not for global coefficient transpo
 -/
 
 public section
+
+open TauCeti (PositiveDegrees PositiveDegreeMap)
 noncomputable section
 
 namespace Mei.QuantumMonoidAlgebra

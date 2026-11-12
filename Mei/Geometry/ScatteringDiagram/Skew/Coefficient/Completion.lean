@@ -41,6 +41,8 @@ Appendix B, arXiv:1411.1394v2.
 
 public section
 
+open TauCeti (PositiveDegrees)
+
 noncomputable section
 
 namespace Mei.SkewLatticeDatum

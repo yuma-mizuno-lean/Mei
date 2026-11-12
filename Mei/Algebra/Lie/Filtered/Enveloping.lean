@@ -25,6 +25,8 @@ spans of `Mei.UniversalEnvelopingAlgebra.homogeneousSubmodule`, and
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 attribute [local instance 100] LieRing.ofAssociativeRing
 
 namespace Mei.ModuleFiltration
@@ -80,7 +82,7 @@ theorem representation_mem_of_mem_degreeFiltration {a b : ℕ} {u : U} {m : M}
     exact F.antitone (Nat.add_le_add_right (by exact_mod_cast hbound) b)
       (F.representation_word_mem d ℒ l hm)
   apply hs
-  simpa only [degreeFiltration_ideal, Mei.GradedAlgebra.mem_degreeIdeal_iff] using hu
+  simpa only [degreeFiltration_ideal, Mei.GradedAlgebra.mem_truncationIdeal_iff] using hu
 
 private theorem lift_quotientLieAction_mk (k : ℕ) (u : U) (m : M) :
     (_root_.UniversalEnvelopingAlgebra.lift R (F.quotientLieAction d ℒ k)) u
@@ -137,10 +139,10 @@ theorem truncatedEnvelopingAction_mk (k : ℕ) (u : U) :
 
 /-- On canonical Lie coordinates, the enveloping representation is the truncated Lie action. -/
 @[simp]
-theorem truncatedEnvelopingAction_truncatedLieToU (k : ℕ) (x : d.truncatedLie ℒ k) :
+theorem truncatedEnvelopingAction_truncatedLieToU (k : ℕ) (x : d.lieTruncation ℒ k) :
     F.truncatedEnvelopingAction d ℒ k (truncatedLieToU d ℒ k x) =
       F.truncatedLieAction d ℒ k x := by
-  obtain ⟨x, rfl⟩ := (d.degreeIdeal ℒ k).surjective_mkQ x
+  obtain ⟨x, rfl⟩ := (d.truncationIdeal ℒ k).surjective_mkQ x
   rw [LieIdeal.mkQ_apply, truncatedLieToU_mk, truncatedEnvelopingAction_mk,
     lift_ι_apply, truncatedLieAction_mk]
 

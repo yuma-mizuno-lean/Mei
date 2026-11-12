@@ -25,6 +25,8 @@ and `AlgFiltration.completedExp` constructions.
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 attribute [local instance] LieRing.ofAssociativeRing
 
 namespace Mei.AlgFiltration

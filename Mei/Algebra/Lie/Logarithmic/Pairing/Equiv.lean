@@ -28,6 +28,8 @@ arXiv:1503.06183v5.
 
 public section
 
+open TauCeti (PositiveDegrees PositiveDegreeMap)
+
 noncomputable section
 
 namespace Mei.TropicalPairing

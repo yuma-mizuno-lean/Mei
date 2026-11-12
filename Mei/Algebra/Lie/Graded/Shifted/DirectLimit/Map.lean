@@ -23,9 +23,13 @@ theta functions, and refined tropical curve counts*, §2.1 and Definition 2.10
 -/
 
 public section
+
+open TauCeti (PositiveDegrees IsPositiveGrading)
 noncomputable section
 
-namespace Mei.PositiveDegrees
+namespace TauCeti.PositiveDegrees
+
+open Mei
 
 variable {Γ R M N L : Type*} [AddCommGroup Γ] [DecidableEq Γ]
   [CommRing R] [Algebra ℚ R] [AddCommGroup M] [Module R M]
@@ -57,4 +61,4 @@ theorem shiftedDirectLimitMap_shiftedDirectLimitBCHAction
   exact d.completionCoefficientMap_completedBCHAction ℳ 𝓝 (d.coefficientOrigin s)
     ℒ f hf hequiv g a
 
-end Mei.PositiveDegrees
+end TauCeti.PositiveDegrees

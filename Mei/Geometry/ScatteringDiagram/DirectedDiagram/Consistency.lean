@@ -30,6 +30,8 @@ applies to repeated and overlapping indexed walls with grouped coplanar crossing
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 open TauCeti (DirectedWallSpaces)
 
 noncomputable section
@@ -127,7 +129,7 @@ theorem levelTransport_swap {k : ℕ} (hD : D.LevelConsistent k)
 theorem truncation_levelTransport {k l : ℕ} (hkl : k ≤ l)
     (hk : D.LevelConsistent k) (hl : D.LevelConsistent l)
     (x y : WallComplement (fun j : D.active l => (D.wall j).support)) :
-    (d.truncationMap ℒ hkl).bchGroupMap (D.levelTransport l hl x y) =
+    (d.lieTruncationMap ℒ hkl).bchGroupMap (D.levelTransport l hl x y) =
       D.levelTransport k hk
         ((WallComplement.restrictPrefunctor (fun j : D.active l => (D.wall j).support)
           (Set.inclusion (D.active_mono hkl))).obj x)

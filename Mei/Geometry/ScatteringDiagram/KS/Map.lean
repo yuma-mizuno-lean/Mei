@@ -23,6 +23,8 @@ for finite conical scattering diagrams; no faithful coefficient action is needed
 
 public section
 
+open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading SupportedRay)
+
 noncomputable section
 
 open Set Mei.Convex
@@ -53,8 +55,8 @@ def map (D : KSComplex s d ℒ C k)
   label P := (f.truncatedMap k (by simp)).bchGroupMap (D.label P)
   label_mem P := by
     rw [LieSubalgebra.mem_bchSubgroup, LieHom.log_bchGroupMap]
-    apply map_orthogonalLieSubalgebra_le (d.truncatedGrading ℒ k)
-      (d.truncatedGrading ℳ k) (f.truncatedMap k (by simp))
+    apply map_orthogonalLieSubalgebra_le (d.lieTruncationGrading ℒ k)
+      (d.lieTruncationGrading ℳ k) (f.truncatedMap k (by simp))
       (fun n x hx => by simpa using f.truncatedMap_mem k (by simp) hx)
       (s.evaluation '' (P : Set V))
     exact ⟨BCHGroup.log (D.label P),
@@ -99,7 +101,7 @@ theorem map_map (D : KSComplex s d ℒ C k)
   · simp
   · simp only [map_label, ← MonoidHom.comp_apply, ← LieHom.bchGroupMap_comp]
     congr 2
-    apply (d.degreeIdeal ℒ k).lieHom_qext
+    apply (d.truncationIdeal ℒ k).lieHom_qext
     intro x
     simp [LieIdeal.mkQ_apply, ← GradedLieHom.coe_toLieHom]
 
@@ -130,7 +132,7 @@ theorem truncate_map (D : KSComplex s d ℒ C l)
     -- Work at the explicit cutoffs rather than transporting quotient types
     -- along the propositional identity-modulus equations.
     congr 2
-    apply (d.degreeIdeal ℒ l).lieHom_qext
+    apply (d.truncationIdeal ℒ l).lieHom_qext
     intro x
     simp [LieIdeal.mkQ_apply]
 

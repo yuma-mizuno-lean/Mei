@@ -7,6 +7,7 @@ module
 
 public import Mei.Algebra.PositiveDegrees.Grading
 public import Mei.Algebra.Lie.Quotient.Map
+public import TauCeti.Algebra.Lie.Graded.Truncation
 public import TauCeti.Algebra.DirectSum.Internal
 public import Mathlib.Algebra.Lie.Graded
 public import Mathlib.Algebra.Lie.Nilpotent
@@ -30,7 +31,7 @@ The natural surjective transitions between cutoffs use `LieIdeal.factor`.
 
 public section
 
-namespace Mei
+namespace TauCeti
 
 variable {N R : Type*} [AddCommMonoid N] [CommRing R]
 
@@ -41,7 +42,7 @@ variable {L : Type*} [LieRing L] [LieAlgebra R L]
 
 variable [SetLike.GradedBracket ℒ ℒ] in
 /-- Bracketing terms above cutoffs `k` and `l` gives terms above `k + l + 1`. -/
-theorem lie_mem_degreeSubmodule {k l : ℕ} {x y : L}
+theorem bracket_mem_degreeSubmodule {k l : ℕ} {x y : L}
     (hx : x ∈ d.degreeSubmodule ℒ k) (hy : y ∈ d.degreeSubmodule ℒ l) :
     ⁅x, y⁆ ∈ d.degreeSubmodule ℒ (k + l + 1) := by
   rw [degreeSubmodule_def] at hx hy
@@ -62,108 +63,108 @@ theorem lie_mem_degreeSubmodule {k l : ℕ} {x y : L}
 variable [DecidableEq N] [GradedLieAlgebra ℒ] [IsPositiveGrading d ℒ]
 
 /-- The homogeneous Lie ideal of terms above order `k`, also denoted `F^{k+1}`. -/
-def degreeIdeal (k : ℕ) : LieIdeal R L where
+def truncationIdeal (k : ℕ) : LieIdeal R L where
   toSubmodule := d.degreeSubmodule ℒ k
   lie_mem := by
     intro x y hy
     have hx : x ∈ d.degreeSubmodule ℒ 0 := by simp
     exact d.degreeSubmodule_antitone ℒ (by omega : k ≤ 0 + k + 1)
-      (d.lie_mem_degreeSubmodule ℒ hx hy)
+      (d.bracket_mem_degreeSubmodule ℒ hx hy)
 
 /-- The underlying submodule of the degree ideal is the sum of the pieces above the cutoff. -/
 @[simp]
-theorem degreeIdeal_toSubmodule (k : ℕ) :
-    (d.degreeIdeal ℒ k).toSubmodule = d.degreeSubmodule ℒ k := (rfl)
+theorem truncationIdeal_toSubmodule (k : ℕ) :
+    (d.truncationIdeal ℒ k).toSubmodule = d.degreeSubmodule ℒ k := (rfl)
 
 /-- Every homogeneous piece above the cutoff lies in the degree ideal. -/
-theorem le_degreeIdeal {n : N} {k : ℕ} (hn : (k : ℤ) < d.degree n) :
-    ℒ n ≤ (d.degreeIdeal ℒ k).toSubmodule := by
-  rw [degreeIdeal_toSubmodule]
+theorem le_truncationIdeal {n : N} {k : ℕ} (hn : (k : ℤ) < d.degree n) :
+    ℒ n ≤ (d.truncationIdeal ℒ k).toSubmodule := by
+  rw [truncationIdeal_toSubmodule]
   exact d.le_degreeSubmodule ℒ hn
 
 /-- Degree-ideal membership is characterized by vanishing low-degree components. -/
-theorem mem_degreeIdeal_iff {x : L} {k : ℕ} :
-    x ∈ d.degreeIdeal ℒ k ↔
+theorem mem_truncationIdeal_iff {x : L} {k : ℕ} :
+    x ∈ d.truncationIdeal ℒ k ↔
       ∀ n, d.degree n ≤ k → (DirectSum.decompose ℒ x n : L) = 0 :=
   d.mem_degreeSubmodule_iff ℒ
 
 /-- The degree ideal is graded, using the existing homogeneous-substructure predicate. -/
-theorem degreeIdeal_isGraded (k : ℕ) :
-    DirectSum.SetLike.IsHomogeneous ℒ (d.degreeIdeal ℒ k) :=
+theorem truncationIdeal_isGraded (k : ℕ) :
+    DirectSum.SetLike.IsHomogeneous ℒ (d.truncationIdeal ℒ k) :=
   d.degreeSubmodule_isHomogeneous ℒ k
 
 /-- Degree ideals decrease as the cutoff increases. -/
-theorem degreeIdeal_antitone : Antitone (d.degreeIdeal ℒ) :=
+theorem truncationIdeal_antitone : Antitone (d.truncationIdeal ℒ) :=
   d.degreeSubmodule_antitone ℒ
 
 /-- The ideal above order zero is the whole positively graded Lie algebra. -/
 @[simp]
-theorem degreeIdeal_zero : d.degreeIdeal ℒ 0 = ⊤ := by
+theorem truncationIdeal_zero : d.truncationIdeal ℒ 0 = ⊤ := by
   apply LieSubmodule.toSubmodule_injective
   simp
 
 /-- Brackets add filtration orders. -/
-theorem lie_degreeIdeal_le (k l : ℕ) :
-    ⁅d.degreeIdeal ℒ k, d.degreeIdeal ℒ l⁆ ≤ d.degreeIdeal ℒ (k + l + 1) :=
-  (LieSubmodule.lie_le_iff _ _ _).mpr fun _ hx _ hy => d.lie_mem_degreeSubmodule ℒ hx hy
+theorem lie_truncationIdeal_le (k l : ℕ) :
+    ⁅d.truncationIdeal ℒ k, d.truncationIdeal ℒ l⁆ ≤ d.truncationIdeal ℒ (k + l + 1) :=
+  (LieSubmodule.lie_le_iff _ _ _).mpr fun _ hx _ hy => d.bracket_mem_degreeSubmodule ℒ hx hy
 
 /-- Mathlib's zero-based lower central series lies above the corresponding degree cutoff. -/
-theorem lowerCentralSeries_le_degreeIdeal (k : ℕ) :
-    LieModule.lowerCentralSeries R L L k ≤ d.degreeIdeal ℒ k := by
+theorem lowerCentralSeries_le_truncationIdeal (k : ℕ) :
+    LieModule.lowerCentralSeries R L L k ≤ d.truncationIdeal ℒ k := by
   induction k with
   | zero => simp
   | succ k ih =>
-    rw [LieModule.lowerCentralSeries_succ, ← d.degreeIdeal_zero ℒ]
+    rw [LieModule.lowerCentralSeries_succ, ← d.truncationIdeal_zero ℒ]
     exact (LieSubmodule.mono_lie le_rfl ih).trans (by
-      simpa using d.lie_degreeIdeal_le ℒ 0 k)
+      simpa using d.lie_truncationIdeal_le ℒ 0 k)
 
 /-- The order-`k` Lie truncation, retaining homogeneous degrees at most `k`. -/
-abbrev truncatedLie (k : ℕ) := L ⧸ d.degreeIdeal ℒ k
+abbrev lieTruncation (k : ℕ) := L ⧸ d.truncationIdeal ℒ k
 
 /-- The `k`-th lower central term of the order-`k` quotient vanishes. -/
-theorem lowerCentralSeries_truncatedLie_eq_bot (k : ℕ) :
-    LieModule.lowerCentralSeries R (d.truncatedLie ℒ k) (d.truncatedLie ℒ k) k = ⊥ := by
-  rw [← LieIdeal.lowerCentralSeries_map_eq k (d.degreeIdeal ℒ k).surjective_mkQ,
+theorem lowerCentralSeries_lieTruncation_eq_bot (k : ℕ) :
+    LieModule.lowerCentralSeries R (d.lieTruncation ℒ k) (d.lieTruncation ℒ k) k = ⊥ := by
+  rw [← LieIdeal.lowerCentralSeries_map_eq k (d.truncationIdeal ℒ k).surjective_mkQ,
     LieIdeal.map_eq_bot_iff, LieIdeal.mkQ_ker]
-  exact d.lowerCentralSeries_le_degreeIdeal ℒ k
+  exact d.lowerCentralSeries_le_truncationIdeal ℒ k
 
 /-- Every finite degree truncation is nilpotent. -/
-instance truncatedLie_isNilpotent (k : ℕ) : LieRing.IsNilpotent (d.truncatedLie ℒ k) :=
-  LieModule.IsNilpotent.mk _ (d.lowerCentralSeries_truncatedLie_eq_bot ℒ k)
+instance lieTruncation_isNilpotent (k : ℕ) : LieRing.IsNilpotent (d.lieTruncation ℒ k) :=
+  LieModule.IsNilpotent.mk _ (d.lowerCentralSeries_lieTruncation_eq_bot ℒ k)
 
 /-- The order-zero truncation is trivial: every degree is strictly positive. -/
-instance truncatedLie_zero_subsingleton : Subsingleton (d.truncatedLie ℒ 0) :=
+instance lieTruncation_zero_subsingleton : Subsingleton (d.lieTruncation ℒ 0) :=
   subsingleton_of_forall_eq 0 fun x => by
-    obtain ⟨x, rfl⟩ := (d.degreeIdeal ℒ 0).surjective_mkQ x
-    exact (d.degreeIdeal ℒ 0).mkQ_eq_zero.mpr (by simp)
+    obtain ⟨x, rfl⟩ := (d.truncationIdeal ℒ 0).surjective_mkQ x
+    exact (d.truncationIdeal ℒ 0).mkQ_eq_zero.mpr (by simp)
 
 /-- The order-one truncation is abelian: brackets of positive degrees have
 order at least two. -/
-instance truncatedLie_one_isLieAbelian : IsLieAbelian (d.truncatedLie ℒ 1) :=
+instance lieTruncation_one_isLieAbelian : IsLieAbelian (d.lieTruncation ℒ 1) :=
   (LieModule.trivial_iff_lower_central_eq_bot R _ _).mpr
-    (d.lowerCentralSeries_truncatedLie_eq_bot ℒ 1)
+    (d.lowerCentralSeries_lieTruncation_eq_bot ℒ 1)
 
 /-- The degree-`n` piece of the truncation is the image of the original degree-`n` piece. -/
-def truncatedGrading (k : ℕ) (n : N) : Submodule R (d.truncatedLie ℒ k) :=
-  (ℒ n).map (d.degreeIdeal ℒ k).toSubmodule.mkQ
+def lieTruncationGrading (k : ℕ) (n : N) : Submodule R (d.lieTruncation ℒ k) :=
+  (ℒ n).map (d.truncationIdeal ℒ k).toSubmodule.mkQ
 
 /-- Each truncated homogeneous piece is the image of the original piece. -/
 @[simp]
-theorem truncatedGrading_eq (k : ℕ) (n : N) :
-    d.truncatedGrading ℒ k n = (ℒ n).map (d.degreeIdeal ℒ k).toSubmodule.mkQ := (rfl)
+theorem lieTruncationGrading_eq (k : ℕ) (n : N) :
+    d.lieTruncationGrading ℒ k n = (ℒ n).map (d.truncationIdeal ℒ k).toSubmodule.mkQ := (rfl)
 
 /-- An element of the truncation has degree `n` exactly when it has a representative of degree `n`.
 -/
-theorem mem_truncatedGrading_iff {k : ℕ} {n : N} {y : d.truncatedLie ℒ k} :
-    y ∈ d.truncatedGrading ℒ k n ↔ ∃ x ∈ ℒ n, (d.degreeIdeal ℒ k).mkQ x = y := by
-  rw [truncatedGrading_eq]
+theorem mem_lieTruncationGrading_iff {k : ℕ} {n : N} {y : d.lieTruncation ℒ k} :
+    y ∈ d.lieTruncationGrading ℒ k n ↔ ∃ x ∈ ℒ n, (d.truncationIdeal ℒ k).mkQ x = y := by
+  rw [lieTruncationGrading_eq]
   exact Submodule.mem_map
 
 /-- The quotient's homogeneous decomposition respects the Lie bracket. -/
-noncomputable instance instGradedLieAlgebraTruncatedGrading (k : ℕ) :
-    GradedLieAlgebra (d.truncatedGrading ℒ k) where
+noncomputable instance instGradedLieAlgebraLieTruncationGrading (k : ℕ) :
+    GradedLieAlgebra (d.lieTruncationGrading ℒ k) where
   toDecomposition := by
-    rw [funext (d.truncatedGrading_eq ℒ k)]
+    rw [funext (d.lieTruncationGrading_eq ℒ k)]
     apply DirectSum.IsInternal.chooseDecomposition
     apply DirectSum.isInternal_submodule_of_iSupIndep_of_iSup_eq_top
     · apply (DirectSum.Decomposition.isInternal ℒ).submodule_iSupIndep.map_of_ker_inf_iSup_le
@@ -172,91 +173,100 @@ noncomputable instance instGradedLieAlgebraTruncatedGrading (k : ℕ) :
       classical
       rw [← DirectSum.sum_support_decompose ℒ x]
       exact Submodule.sum_mem _ fun n _ => Submodule.mem_iSup_of_mem n
-        ⟨d.degreeIdeal_isGraded ℒ k n hx.1, (DirectSum.decompose ℒ x n).property⟩
+        ⟨d.truncationIdeal_isGraded ℒ k n hx.1, (DirectSum.decompose ℒ x n).property⟩
     · simp only [← Submodule.map_iSup,
         (DirectSum.Decomposition.isInternal ℒ).submodule_iSup_eq_top,
         Submodule.map_top, Submodule.range_mkQ]
   bracket_mem := by
     intro n m x y hx hy
-    obtain ⟨x, hx', rfl⟩ := (d.mem_truncatedGrading_iff ℒ).mp hx
-    obtain ⟨y, hy', rfl⟩ := (d.mem_truncatedGrading_iff ℒ).mp hy
-    exact (d.mem_truncatedGrading_iff ℒ).mpr
+    obtain ⟨x, hx', rfl⟩ := (d.mem_lieTruncationGrading_iff ℒ).mp hx
+    obtain ⟨y, hy', rfl⟩ := (d.mem_lieTruncationGrading_iff ℒ).mp hy
+    exact (d.mem_lieTruncationGrading_iff ℒ).mpr
       ⟨⁅x, y⁆, SetLike.GradedBracket.bracket_mem hx' hy', LieHom.map_lie _ _ _⟩
 
 /-- Truncating a positive grading preserves positivity. -/
-instance truncatedGrading_isPositiveGrading (k : ℕ) :
-    IsPositiveGrading d (d.truncatedGrading ℒ k) where
+instance lieTruncationGrading_isPositiveGrading (k : ℕ) :
+    IsPositiveGrading d (d.lieTruncationGrading ℒ k) where
   eq_bot n hn := by
-    rw [truncatedGrading_eq, IsPositiveGrading.eq_bot (d := d) (ℒ := ℒ) n hn,
+    rw [lieTruncationGrading_eq, IsPositiveGrading.eq_bot (d := d) (ℒ := ℒ) n hn,
       Submodule.map_bot]
 
 /-- Homogeneous projection in the truncation commutes with the quotient map. -/
 @[simp]
-theorem decompose_truncatedGrading_mk (k : ℕ) (n : N) (x : L) :
-    (DirectSum.decompose (d.truncatedGrading ℒ k) (Submodule.Quotient.mk x) n :
-      d.truncatedLie ℒ k) = Submodule.Quotient.mk (DirectSum.decompose ℒ x n : L) :=
-  (DirectSum.map_decompose_shift ℒ (d.truncatedGrading ℒ k)
-    (d.degreeIdeal ℒ k).mkQ.toLinearMap.toAddMonoidHom id Function.injective_id
-    (fun _ x hx => (d.mem_truncatedGrading_iff ℒ).mpr ⟨x, hx, rfl⟩) n x).symm
+theorem decompose_lieTruncationGrading_mk (k : ℕ) (n : N) (x : L) :
+    (DirectSum.decompose (d.lieTruncationGrading ℒ k) (Submodule.Quotient.mk x) n :
+      d.lieTruncation ℒ k) = Submodule.Quotient.mk (DirectSum.decompose ℒ x n : L) :=
+  (DirectSum.map_decompose_shift ℒ (d.lieTruncationGrading ℒ k)
+    (d.truncationIdeal ℒ k).mkQ.toLinearMap.toAddMonoidHom id Function.injective_id
+    (fun _ x hx => (d.mem_lieTruncationGrading_iff ℒ).mpr ⟨x, hx, rfl⟩) n x).symm
 
 /-- Pieces above the cutoff vanish in the truncation. -/
-theorem truncatedGrading_eq_bot {k : ℕ} {n : N} (hn : (k : ℤ) < d.degree n) :
-    d.truncatedGrading ℒ k n = ⊥ := by
+theorem lieTruncationGrading_eq_bot {k : ℕ} {n : N} (hn : (k : ℤ) < d.degree n) :
+    d.lieTruncationGrading ℒ k n = ⊥ := by
   apply eq_bot_iff.mpr
   intro x hx
-  obtain ⟨y, hy, rfl⟩ := (d.mem_truncatedGrading_iff ℒ).mp hx
-  exact (d.degreeIdeal ℒ k).mkQ_eq_zero.mpr (d.le_degreeIdeal ℒ hn hy)
+  obtain ⟨y, hy, rfl⟩ := (d.mem_lieTruncationGrading_iff ℒ).mp hx
+  exact (d.truncationIdeal ℒ k).mkQ_eq_zero.mpr (d.le_truncationIdeal ℒ hn hy)
 
 /-- A degree truncation has no terms above its retained cutoff. -/
 @[simp]
-theorem degreeIdeal_truncatedGrading_eq_bot {k l : ℕ} (hkl : k ≤ l) :
-    d.degreeIdeal (d.truncatedGrading ℒ k) l = ⊥ := by
+theorem truncationIdeal_lieTruncationGrading_eq_bot {k l : ℕ} (hkl : k ≤ l) :
+    d.truncationIdeal (d.lieTruncationGrading ℒ k) l = ⊥ := by
   apply LieSubmodule.toSubmodule_injective
-  rw [degreeIdeal_toSubmodule, degreeSubmodule_def]
+  rw [truncationIdeal_toSubmodule, degreeSubmodule_def]
   exact iSup_eq_bot.mpr fun n =>
-    d.truncatedGrading_eq_bot ℒ (lt_of_le_of_lt (by exact_mod_cast hkl) n.property)
+    d.lieTruncationGrading_eq_bot ℒ (lt_of_le_of_lt (by exact_mod_cast hkl) n.property)
 
 /-- A nonzero piece in a truncation has nonzero allowed degree below the cutoff. -/
-theorem mem_cutoff_of_truncatedGrading_ne_bot {k : ℕ} {n : N}
-    (hn : d.truncatedGrading ℒ k n ≠ ⊥) : n ∈ d.cutoff k \ {0} := by
+theorem mem_cutoff_of_lieTruncationGrading_ne_bot {k : ℕ} {n : N}
+    (hn : d.lieTruncationGrading ℒ k n ≠ ⊥) : n ∈ d.cutoff k \ {0} := by
   have hp : n ∈ d.monoid ∧ n ≠ 0 := by
     by_contra h
-    exact hn (IsPositiveGrading.eq_bot (d := d) (ℒ := d.truncatedGrading ℒ k) n (by tauto))
+    exact hn (IsPositiveGrading.eq_bot (d := d) (ℒ := d.lieTruncationGrading ℒ k) n (by tauto))
   refine ⟨d.mem_cutoff.mpr ⟨hp.1, ?_⟩, hp.2⟩
-  exact le_of_not_gt (fun h => hn (d.truncatedGrading_eq_bot ℒ h))
+  exact le_of_not_gt (fun h => hn (d.lieTruncationGrading_eq_bot ℒ h))
 
 /-- The surjective transition from a higher-order truncation to a lower-order one. -/
-def truncationMap {k l : ℕ} (h : k ≤ l) :
-    d.truncatedLie ℒ l →ₗ⁅R⁆ d.truncatedLie ℒ k :=
-  LieIdeal.factor (d.degreeIdeal_antitone ℒ h)
+def lieTruncationMap {k l : ℕ} (h : k ≤ l) :
+    d.lieTruncation ℒ l →ₗ⁅R⁆ d.lieTruncation ℒ k :=
+  LieIdeal.factor (d.truncationIdeal_antitone ℒ h)
 
 /-- The degree transition is the quotient transition induced by inclusion of degree ideals. -/
-theorem truncationMap_def {k l : ℕ} (h : k ≤ l) :
-    d.truncationMap ℒ h =
-      LieIdeal.factor (d.degreeIdeal_antitone ℒ h) := (rfl)
+theorem lieTruncationMap_def {k l : ℕ} (h : k ≤ l) :
+    d.lieTruncationMap ℒ h =
+      LieIdeal.factor (d.truncationIdeal_antitone ℒ h) := (rfl)
 
 /-- A truncation transition retains the same quotient representative. -/
 @[simp]
-theorem truncationMap_mk {k l : ℕ} (h : k ≤ l) (x : L) :
-    d.truncationMap ℒ h (LieSubmodule.Quotient.mk x) = LieSubmodule.Quotient.mk x := by
-  simp [truncationMap]
+theorem lieTruncationMap_mk {k l : ℕ} (h : k ≤ l) (x : L) :
+    d.lieTruncationMap ℒ h (LieSubmodule.Quotient.mk x) = LieSubmodule.Quotient.mk x := by
+  simp [lieTruncationMap]
 
 /-- The transition at the same order is the identity. -/
 @[simp]
-theorem truncationMap_refl (k : ℕ) : d.truncationMap ℒ (le_refl k) = LieHom.id :=
+theorem lieTruncationMap_refl (k : ℕ) : d.lieTruncationMap ℒ (le_refl k) = LieHom.id :=
   LieIdeal.factor_refl _
 
 /-- Successive degree transitions compose to the direct transition. -/
 @[simp]
-theorem truncationMap_comp {k l m : ℕ} (hkl : k ≤ l) (hlm : l ≤ m) :
-    (d.truncationMap ℒ hkl).comp (d.truncationMap ℒ hlm) =
-      d.truncationMap ℒ (hkl.trans hlm) :=
+theorem lieTruncationMap_comp {k l m : ℕ} (hkl : k ≤ l) (hlm : l ≤ m) :
+    (d.lieTruncationMap ℒ hkl).comp (d.lieTruncationMap ℒ hlm) =
+      d.lieTruncationMap ℒ (hkl.trans hlm) :=
   LieIdeal.factor_comp _ _
 
 /-- Every class at lower order lifts to a class at higher order. -/
-theorem truncationMap_surjective {k l : ℕ} (h : k ≤ l) :
-    Function.Surjective (d.truncationMap ℒ h) :=
+theorem lieTruncationMap_surjective {k l : ℕ} (h : k ≤ l) :
+    Function.Surjective (d.lieTruncationMap ℒ h) :=
   LieIdeal.factor_surjective _
 
+/-- At small degree types the universe-polymorphic Lie truncation ideal is the
+same as the upstream degree ideal. -/
+theorem truncationIdeal_eq_degreeIdeal {I : Type} {S A : Type*} [AddCommMonoid I]
+    [CommRing S] [LieRing A] [LieAlgebra S A] (p : PositiveDegrees I)
+    (𝒜 : I → Submodule S A) [DecidableEq I] [GradedLieAlgebra 𝒜]
+    [IsPositiveGrading p 𝒜] (k : ℕ) : p.truncationIdeal 𝒜 k = p.degreeIdeal 𝒜 k := by
+  apply LieSubmodule.toSubmodule_injective
+  rw [truncationIdeal_toSubmodule, degreeIdeal_toSubmodule]
+
 end PositiveDegrees
-end Mei
+end TauCeti

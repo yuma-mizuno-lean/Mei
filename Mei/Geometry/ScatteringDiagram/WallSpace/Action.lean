@@ -29,6 +29,8 @@ functions, and refined tropical curve counts*, §2.1 (arXiv:1503.06183).
 
 public section
 
+open TauCeti (SupportedRay)
+
 open TauCeti (DirectedWallSpaces)
 
 namespace Mei
@@ -58,7 +60,7 @@ instance IsWallAnnihilating.comap (H : DirectedWallSpaces ρ ℒ)
     exact IsWallAnnihilating.lie_eq_zero (H := H) (𝒜 := 𝒜) hx ha hm
 
 variable (H : DirectedWallSpaces ρ ℒ) (𝒜 : Γ → Submodule R M)
-  [IsWallAnnihilating H 𝒜] {d : Mei.PositiveDegrees Γ}
+  [IsWallAnnihilating H 𝒜] {d : TauCeti.PositiveDegrees Γ}
 
 variable [DecidableEq Γ] [DirectSum.Decomposition 𝒜] [SetLike.GradedBracket ℒ 𝒜]
 
@@ -99,7 +101,7 @@ variable {Γ Λ R L M : Type*} [AddCommGroup Γ] [AddCommMonoid Λ]
   {ρ : Γ →+ Λ} {ℒ : Γ → Submodule R L}
 
 variable (H : DirectedWallSpaces ρ ℒ) (𝒜 : Γ → Submodule R M)
-  [IsWallAnnihilating H 𝒜] {d : Mei.PositiveDegrees Γ}
+  [IsWallAnnihilating H 𝒜] {d : TauCeti.PositiveDegrees Γ}
 
 /-- The full supported-ray wall algebra annihilates every coefficient tangent
 to its normal. No decomposition of the coefficient module is required. -/
@@ -177,7 +179,7 @@ end Components
 section Filtered
 
 variable [LieModule R L M] [Algebra ℚ R]
-  [DecidableEq Γ] [GradedLieAlgebra ℒ] [Mei.IsPositiveGrading d ℒ]
+  [DecidableEq Γ] [GradedLieAlgebra ℒ] [TauCeti.IsPositiveGrading d ℒ]
   (F : ModuleFiltration R M) [IsFiltrationRaising d ℒ F]
 
 /-- The coefficient quotient inherits rational scalars from the scalar ring. -/
@@ -187,7 +189,7 @@ local instance quotientRatModule (k : ℕ) : Module ℚ (F.quotient k) :=
 /-- Finite wall exponentials fix tangent homogeneous coefficients in every
 coefficient quotient, even when the logarithm has several degrees on its ray. -/
 theorem truncatedExpLieAction_mk_eq_self_of_normal_eq_zero
-    {w : SupportedRay d} {m : Λ →+ ℤ} {k : ℕ} {x : d.truncatedLie ℒ k}
+    {w : SupportedRay d} {m : Λ →+ ℤ} {k : ℕ} {x : d.lieTruncation ℒ k}
     (hx : x ∈ H.truncatedRayLieSubalgebra w m k)
     {p : Γ} {a : M} (ha : a ∈ 𝒜 p) (hm : m (ρ p) = 0) :
     F.truncatedExpLieAction d ℒ k x (Submodule.Quotient.mk a) =

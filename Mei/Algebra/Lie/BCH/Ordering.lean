@@ -29,9 +29,13 @@ whose total degree exceeds the order need no exchange.
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 open scoped commutatorElement
 
-namespace Mei.PositiveDegrees
+namespace TauCeti.PositiveDegrees
+
+open Mei
 
 variable {N R L : Type*} [AddCommMonoid N] [CommRing R] [Algebra ℚ R]
   [LieRing L] [LieAlgebra R L] [LieAlgebra ℚ L] [IsScalarTower ℚ R L]
@@ -81,4 +85,4 @@ theorem exists_isChain_projection_prod_eq_of_exchange {F : Type*} (l : List F)
   refine ⟨l', hc, hdeg, ?_, hperm⟩
   simpa only [map_list_prod, List.map_map, Function.comp_def] using hprod
 
-end Mei.PositiveDegrees
+end TauCeti.PositiveDegrees

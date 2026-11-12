@@ -23,6 +23,8 @@ The construction uses the finite automorphisms and transition compatibility in
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 attribute [local instance] LieRing.ofAssociativeRing
 
 namespace Mei.AlgFiltration

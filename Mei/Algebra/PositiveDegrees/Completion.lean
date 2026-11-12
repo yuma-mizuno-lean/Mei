@@ -26,7 +26,11 @@ basis or finiteness assumption on the homogeneous modules is needed.
 
 public section
 
-namespace Mei.PositiveDegrees
+open TauCeti (PositiveDegrees)
+
+namespace TauCeti.PositiveDegrees
+
+open Mei
 
 open _root_.DirectSum
 
@@ -218,4 +222,4 @@ theorem projection_eq_sum_completionComponent (k : ℕ) (x : F.completion) :
     (d.completionEquivPi ℳ F hF hℳ x) k
   simpa only [LinearEquiv.symm_apply_apply, completionEquivPi_apply] using h
 
-end Mei.PositiveDegrees
+end TauCeti.PositiveDegrees

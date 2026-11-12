@@ -53,7 +53,7 @@ variable {R A ι : Type*} [CommSemiring R] [Semiring A] [Algebra R A]
 variable (hneg : ∀ i, d i < 0 → 𝒜 i = ⊥)
 
 /-- The ideal of elements supported in degrees at least `n`. -/
-def degreeIdeal (n : ℕ) : Ideal A where
+def truncationIdeal (n : ℕ) : Ideal A where
   carrier := degreeTail 𝒜 d n
   zero_mem' := (degreeTail 𝒜 d n).zero_mem
   add_mem' := (degreeTail 𝒜 d n).add_mem
@@ -64,43 +64,43 @@ def degreeIdeal (n : ℕ) : Ideal A where
 
 /-- Ideal membership agrees with membership in the scalar degree tail. -/
 @[simp]
-theorem mem_degreeIdeal_iff (n : ℕ) (x : A) :
-    x ∈ degreeIdeal 𝒜 d hneg n ↔ x ∈ degreeTail 𝒜 d n := Iff.rfl
+theorem mem_truncationIdeal_iff (n : ℕ) (x : A) :
+    x ∈ truncationIdeal 𝒜 d hneg n ↔ x ∈ degreeTail 𝒜 d n := Iff.rfl
 
 /-- Restricting the degree ideal to the scalar ring recovers its degree tail. -/
 @[simp]
 theorem degreeIdeal_restrictScalars (n : ℕ) :
-    (degreeIdeal 𝒜 d hneg n).restrictScalars R = degreeTail 𝒜 d n := by
+    (truncationIdeal 𝒜 d hneg n).restrictScalars R = degreeTail 𝒜 d n := by
   ext x
-  exact mem_degreeIdeal_iff 𝒜 d hneg n x
+  exact mem_truncationIdeal_iff 𝒜 d hneg n x
 
 /-- A homogeneous component above the cutoff is contained in the degree ideal. -/
-theorem le_degreeIdeal {n : ℕ} {i : ι} (hi : (n : ℤ) ≤ d i) :
-    ∀ x ∈ 𝒜 i, x ∈ degreeIdeal 𝒜 d hneg n := fun x hx =>
-  (mem_degreeIdeal_iff 𝒜 d hneg n x).mpr (le_degreeTail 𝒜 d hi hx)
+theorem le_truncationIdeal {n : ℕ} {i : ι} (hi : (n : ℤ) ≤ d i) :
+    ∀ x ∈ 𝒜 i, x ∈ truncationIdeal 𝒜 d hneg n := fun x hx =>
+  (mem_truncationIdeal_iff 𝒜 d hneg n x).mpr (le_degreeTail 𝒜 d hi hx)
 
 /-- To contain the degree ideal, it suffices to contain its homogeneous components. -/
 theorem degreeIdeal_le_iff (n : ℕ) (K : Ideal A) :
-    degreeIdeal 𝒜 d hneg n ≤ K ↔
+    truncationIdeal 𝒜 d hneg n ≤ K ↔
       ∀ i, (n : ℤ) ≤ d i → ∀ x ∈ 𝒜 i, x ∈ K := by
   constructor
   · intro h i hi x hx
-    exact h (le_degreeIdeal 𝒜 d hneg hi x hx)
+    exact h (le_truncationIdeal 𝒜 d hneg hi x hx)
   · intro h x hx
     have ht : degreeTail 𝒜 d n ≤ K.restrictScalars R := by
       simp only [degreeTail_def, iSup_le_iff]
       exact h
-    exact ht ((mem_degreeIdeal_iff 𝒜 d hneg n x).mp hx)
+    exact ht ((mem_truncationIdeal_iff 𝒜 d hneg n x).mp hx)
 
-instance degreeIdeal_isTwoSided (n : ℕ) : (degreeIdeal 𝒜 d hneg n).IsTwoSided where
+instance degreeIdeal_isTwoSided (n : ℕ) : (truncationIdeal 𝒜 d hneg n).IsTwoSided where
   mul_mem_of_left a hx := by
     have ha : a ∈ degreeTail 𝒜 d 0 := by rw [degreeTail_zero 𝒜 d hneg]; trivial
-    apply (mem_degreeIdeal_iff 𝒜 d hneg n _).mpr
+    apply (mem_truncationIdeal_iff 𝒜 d hneg n _).mpr
     simpa only [add_zero] using degreeTail_mul_le 𝒜 d n 0 (Submodule.mul_mem_mul hx ha)
 
 /-- The decreasing degree filtration of a nonnegatively graded algebra. -/
 def degreeFiltration : Mei.AlgFiltration A where
-  ideal := degreeIdeal 𝒜 d hneg
+  ideal := truncationIdeal 𝒜 d hneg
   isTwoSided _ := inferInstance
   antitone := degreeTail_antitone 𝒜 d
   ideal_zero := by ext x; simp [degreeTail_zero 𝒜 d hneg]
@@ -108,17 +108,17 @@ def degreeFiltration : Mei.AlgFiltration A where
 
 @[simp]
 theorem degreeFiltration_ideal (n : ℕ) :
-    (degreeFiltration 𝒜 d hneg).ideal n = degreeIdeal 𝒜 d hneg n := (rfl)
+    (degreeFiltration 𝒜 d hneg).ideal n = truncationIdeal 𝒜 d hneg n := (rfl)
 
 /-- The ideal degree filtration is separated. -/
-theorem iInf_degreeIdeal_eq_bot : (⨅ n : ℕ, degreeIdeal 𝒜 d hneg n) = ⊥ := by
+theorem iInf_degreeIdeal_eq_bot : (⨅ n : ℕ, truncationIdeal 𝒜 d hneg n) = ⊥ := by
   apply le_antisymm _ bot_le
   intro x hx
   have ht : x ∈ ⨅ n : ℕ, degreeTail 𝒜 d n := by
     apply (Submodule.mem_iInf _).mpr
     intro n
-    exact (mem_degreeIdeal_iff 𝒜 d hneg n x).mp
-      ((iInf_le (fun n => degreeIdeal 𝒜 d hneg n) n) hx)
+    exact (mem_truncationIdeal_iff 𝒜 d hneg n x).mp
+      ((iInf_le (fun n => truncationIdeal 𝒜 d hneg n) n) hx)
   rwa [iInf_degreeTail_eq_bot, Submodule.mem_bot] at ht
 
 end Mei.GradedAlgebra

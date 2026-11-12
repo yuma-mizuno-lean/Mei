@@ -30,6 +30,8 @@ Appendix B, arXiv:1411.1394v2. The integral lift uses Mathlib's
 
 public section
 
+open TauCeti (PositiveDegrees)
+
 noncomputable section
 
 namespace Mei.SkewLatticeDatum

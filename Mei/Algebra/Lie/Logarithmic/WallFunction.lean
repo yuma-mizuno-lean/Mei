@@ -39,6 +39,8 @@ arXiv:1411.1394v2.
 
 public section
 
+open TauCeti (PositiveDegrees)
+
 noncomputable section
 
 namespace Mei
@@ -189,7 +191,7 @@ local notation "𝔤" => tropicalVertexLieAlgebra (R := R) d ρ
 
 /-- Tangent coefficients of order above `k` give fields above degree `k`. -/
 theorem tropicalTangentField_mem_degreeIdeal {k : ℕ} {v : R[T]} (hv : v ∈ (G).ideal (k + 1)) :
-    tropicalTangentField d ρ m v ∈ d.degreeIdeal ℒ k := by
+    tropicalTangentField d ρ m v ∈ d.truncationIdeal ℒ k := by
   have htop : d.monoid.comap (T).subtype = ⊤ := by
     ext q
     simp only [AddSubmonoid.mem_comap, AddSubmonoid.subtype_apply, AddSubmonoid.mem_top,
@@ -199,12 +201,12 @@ theorem tropicalTangentField_mem_degreeIdeal {k : ℕ} {v : R[T]} (hv : v ∈ (G
     AddSubmonoid.mem_monoidAlgebraIdeal_top_iff_of_nonneg
       (fun q : T => d.degree_nonneg ((mem_tropicalTangentMonoid d ρ m q).mp q.2).1)] at hv
   rw [← sum_coeff_single v, Finsupp.sum, map_sum]
-  refine Submodule.sum_mem (d.degreeIdeal ℒ k).toSubmodule fun q hq => ?_
+  refine Submodule.sum_mem (d.truncationIdeal ℒ k).toSubmodule fun q hq => ?_
   by_cases hq0 : (q : Γ) = 0
   · have h0 : q = 0 := Subtype.ext hq0
     rw [h0, tropicalTangentField_single_zero]
     exact zero_mem _
-  · refine d.le_degreeIdeal ℒ (n := (q : Γ)) ?_ ?_
+  · refine d.le_truncationIdeal ℒ (n := (q : Γ)) ?_ ?_
     · have hd := hv q hq
       simpa only [AddMonoidHom.comp_apply, AddSubmonoid.subtype_apply, Nat.cast_add,
         Nat.cast_one] using (Int.add_one_le_iff.mp hd)
@@ -212,9 +214,9 @@ theorem tropicalTangentField_mem_degreeIdeal {k : ℕ} {v : R[T]} (hv : v ∈ (G
       exact ⟨_, (coe_tropicalTangentField_single d ρ m hq0 _).symm⟩
 
 private def tangentFieldQuotient (k : ℕ) :
-    (R[T] ⧸ (G).ideal (k + 1)) →ₗ[R] 𝔤 ⧸ (d.degreeIdeal ℒ k).toSubmodule :=
+    (R[T] ⧸ (G).ideal (k + 1)) →ₗ[R] 𝔤 ⧸ (d.truncationIdeal ℒ k).toSubmodule :=
   (((G).ideal (k + 1)).restrictScalars R).liftQ
-      ((d.degreeIdeal ℒ k).toSubmodule.mkQ ∘ₗ tropicalTangentField d ρ m) (by
+      ((d.truncationIdeal ℒ k).toSubmodule.mkQ ∘ₗ tropicalTangentField d ρ m) (by
         intro v hv
         rw [LinearMap.mem_ker, LinearMap.comp_apply, Submodule.mkQ_apply,
           Submodule.Quotient.mk_eq_zero]
@@ -231,7 +233,7 @@ private theorem tangentFieldQuotient_mk (k : ℕ) (v : R[T]) :
 /-- The completed tangent field `u ∂_m` of a completed tangent coefficient `u`, as an
 element of the completed tropical vertex Lie algebra. -/
 def completedTropicalTangentField : (G).completion →ₗ[R] d.completedLie ℒ :=
-  (LieIdeal.completionFiltration (d.degreeIdeal ℒ) (d.degreeIdeal_antitone ℒ)).lift
+  (LieIdeal.completionFiltration (d.truncationIdeal ℒ) (d.truncationIdeal_antitone ℒ)).lift
     (fun k => tangentFieldQuotient d ρ m k ∘ₗ ((G).projectionₐ (R := R) k).toLinearMap) (by
       intro k l h
       apply LinearMap.ext
@@ -249,9 +251,9 @@ def completedTropicalTangentField : (G).completion →ₗ[R] d.completedLie ℒ 
 representative of the order-`k` coefficient. -/
 theorem completionProjection_completedTropicalTangentField (k : ℕ) (u : (G).completion)
     (v : R[T]) (hv : (G).projection k u = Ideal.Quotient.mk _ v) :
-    LieIdeal.completionProjection (d.degreeIdeal ℒ) (d.degreeIdeal_antitone ℒ) k
+    LieIdeal.completionProjection (d.truncationIdeal ℒ) (d.truncationIdeal_antitone ℒ) k
         (completedTropicalTangentField d ρ m u) =
-      (d.degreeIdeal ℒ k).mkQ (tropicalTangentField d ρ m v) := by
+      (d.truncationIdeal ℒ k).mkQ (tropicalTangentField d ρ m v) := by
   rw [LieIdeal.completionProjection_apply, completedTropicalTangentField,
     ModuleFiltration.projection_lift, LinearMap.comp_apply, AlgHom.toLinearMap_apply,
     AlgFiltration.projectionₐ_apply, hv, tangentFieldQuotient_mk]
@@ -261,7 +263,7 @@ theorem completionProjection_completedTropicalTangentField (k : ℕ) (u : (G).co
 @[simp]
 theorem completedTropicalTangentField_toCompletion (u : R[T]) :
     completedTropicalTangentField d ρ m ((G).toCompletion u) =
-      LieIdeal.toCompletion (d.degreeIdeal ℒ) (d.degreeIdeal_antitone ℒ)
+      LieIdeal.toCompletion (d.truncationIdeal ℒ) (d.truncationIdeal_antitone ℒ)
         (tropicalTangentField d ρ m u) := by
   apply ModuleFiltration.completion_ext
   intro k

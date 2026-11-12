@@ -17,7 +17,7 @@ of that same representative at every order. It commutes with graded Lie maps,
 including maps that regrade and change the cutoff, and identifies the degree
 filtrations and convergent ordered products.
 
-The finite comparisons use `Mei.PositiveDegrees.truncatedRestrictScalarsEquiv`
+The finite comparisons use `TauCeti.PositiveDegrees.truncatedRestrictScalarsEquiv`
 and `LieEquiv.bchGroupEquiv`. Their inverse limit uses
 `Mei.CompletedGroup.mapEquiv`, on the compatible-family carrier coming from
 Mathlib's `GrpCat.sectionsSubgroup`. No freeness, flatness or nilpotence of the
@@ -26,11 +26,15 @@ original Lie algebra is needed.
 
 public section
 
+open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading)
+
 noncomputable section
 
 open CategoryTheory Opposite
 
-namespace Mei.PositiveDegrees
+namespace TauCeti.PositiveDegrees
+
+open Mei
 
 variable {N R S L : Type*} [AddCommMonoid N] [DecidableEq N]
   [CommRing R] [CommRing S] [Algebra ℚ R] [Algebra ℚ S] [SMul R S]
@@ -50,15 +54,15 @@ def groupTowerRestrictScalarsIso :
       -- Categorical composition conceals the concrete BCH quotient homomorphisms.
       change
         (d.truncatedRestrictScalarsEquiv (R := R) ℒ l.unop).bchGroupEquiv.toMonoidHom.comp
-            (d.truncationMap (fun n => (ℒ n).restrictScalars R)
+            (d.lieTruncationMap (fun n => (ℒ n).restrictScalars R)
               (leOfHom f.unop)).bchGroupMap =
-          (d.truncationMap ℒ (leOfHom f.unop)).bchGroupMap.comp
+          (d.lieTruncationMap ℒ (leOfHom f.unop)).bchGroupMap.comp
             (d.truncatedRestrictScalarsEquiv (R := R) ℒ k.unop).bchGroupEquiv.toMonoidHom
       rw [← LieHom.bchGroupMap_restrictScalars (R := R)
-        (d.truncationMap ℒ (leOfHom f.unop))]
+        (d.lieTruncationMap ℒ (leOfHom f.unop))]
       simp only [MulEquiv.toMonoidHom_eq_coe, LieEquiv.coe_bchGroupEquiv, ← LieHom.bchGroupMap_comp]
       congr 1
-      simpa only [truncationMap_def] using
+      simpa only [lieTruncationMap_def] using
         d.truncatedRestrictScalarsEquiv_naturality (R := R) ℒ (leOfHom f.unop))
 
 /-- The tower comparison acts by the canonical finite Lie quotient comparison. -/
@@ -73,7 +77,7 @@ theorem groupTowerRestrictScalarsIso_hom_app_hom (k : ℕᵒᵖ) :
 /-- The inverse tower comparison acts by the inverse finite Lie quotient comparison. -/
 @[simp]
 theorem groupTowerRestrictScalarsIso_inv_app_exp (k : ℕᵒᵖ)
-    (x : d.truncatedLie ℒ k.unop) :
+    (x : d.lieTruncation ℒ k.unop) :
     (d.groupTowerRestrictScalarsIso (R := R) ℒ).inv.app k (BCHGroup.exp x) =
       BCHGroup.exp ((d.truncatedRestrictScalarsEquiv (R := R) ℒ k.unop).symm x) := by
   exact (d.truncatedRestrictScalarsEquiv (R := R) ℒ k.unop).bchGroupEquiv_symm_exp x
@@ -166,7 +170,7 @@ theorem completedBCHRestrictScalarsEquiv_orderedProd [LinearOrder ι]
     CompletedGroup.map_orderedProd OrderHom.id
       (d.groupTowerRestrictScalarsIso (R := R) ℒ).hom x hx
 
-end Mei.PositiveDegrees
+end TauCeti.PositiveDegrees
 
 universe u
 

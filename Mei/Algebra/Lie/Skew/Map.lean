@@ -18,6 +18,8 @@ This allows identities to be transported from a normalized skew form.
 
 public section
 
+open TauCeti (PositiveDegrees PositiveDegreeMap)
+
 noncomputable section
 
 namespace Mei.SkewLieAlgebra
@@ -140,9 +142,9 @@ theorem truncatedMap_gradedMap_projection_rayExp {n : Γ} (hn : n ∈ d.monoid) 
     apply (Submodule.Quotient.eq _).mpr
     rw [rayPartialSum_apply, rayPartialSum_apply, ← Finset.sum_range_add_sum_Ico _ hak,
       add_sub_cancel_left]
-    refine Submodule.sum_mem (e.degreeIdeal (positiveGrading β' hβ' e) k).toSubmodule
+    refine Submodule.sum_mem (e.truncationIdeal (positiveGrading β' hβ' e) k).toSubmodule
       fun j hj => ?_
-    apply e.le_degreeIdeal _ _ (rayGenerator_mem β' hβ' (T.map_mem hn)
+    apply e.le_truncationIdeal _ _ (rayGenerator_mem β' hβ' (T.map_mem hn)
       (T.map_ne_zero hn hn0) j _)
     rw [← T.toAddMonoidHom.map_nsmul]
     apply T.degree_gt k (d.monoid.nsmul_mem hn (j + 1))

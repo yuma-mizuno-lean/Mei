@@ -35,7 +35,11 @@ effective anti-canonical class*, §3.2 (arXiv:1601.07081v4).
 
 public noncomputable section
 
-namespace Mei.PositiveDegrees
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
+namespace TauCeti.PositiveDegrees
+
+open Mei
 
 variable {Γ : Type} {R L M : Type*} [AddCommGroup Γ] [CommRing R] [Algebra ℚ R]
   [LieRing L] [LieAlgebra R L] [LieAlgebra ℚ L] [IsScalarTower ℚ R L]
@@ -115,4 +119,4 @@ theorem sum_sum_comp_homogeneousHistory_comp_truncatedBCHAction
       (fun j => ((F).truncatedBCHAction d ℒ k (g j)).toLinearMap)
       (fun j => ((F).truncatedBCHAction d ℒ k (u j)).toLinearMap) a b
 
-end Mei.PositiveDegrees
+end TauCeti.PositiveDegrees

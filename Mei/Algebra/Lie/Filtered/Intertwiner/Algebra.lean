@@ -32,6 +32,8 @@ functions, and refined tropical curve counts*, §2.1 (arXiv:1503.06183v5).
 
 public noncomputable section
 
+open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading)
+
 open CategoryTheory CategoryTheory.Limits Opposite
 
 universe u v
@@ -48,7 +50,7 @@ variable {N R : Type*} {L : Type u} {A : Type v}
 
 /-- The finite BCH action as categorical automorphisms of the coefficient algebra. -/
 def truncatedBCHAlgebraAut (k : ℕ) :
-    BCHGroup (d.truncatedLie ℒ k) →* Aut (AlgCat.of R (A ⧸ F.ideal (k + 1))) where
+    BCHGroup (d.lieTruncation ℒ k) →* Aut (AlgCat.of R (A ⧸ F.ideal (k + 1))) where
   toFun g := Aut.of (F.truncatedBCHAction d ℒ k g).toAlgebraIso
   map_one' := by
     apply Aut.ext
@@ -66,7 +68,7 @@ def truncatedBCHAlgebraAut (k : ℕ) :
 /-- Categorical evaluation is the original finite BCH algebra action. -/
 @[simp]
 theorem truncatedBCHAlgebraAut_hom_apply (k : ℕ)
-    (g : BCHGroup (d.truncatedLie ℒ k)) (x : A ⧸ F.ideal (k + 1)) :
+    (g : BCHGroup (d.lieTruncation ℒ k)) (x : A ⧸ F.ideal (k + 1)) :
     (F.truncatedBCHAlgebraAut d ℒ k g).asIso.hom x =
       F.truncatedBCHAction d ℒ k g x := (rfl)
 
@@ -149,10 +151,10 @@ theorem bchActionIntertwiner_coefficient_app
 /-- The label component is the BCH map at the prescribed cutoffs. -/
 @[simp]
 theorem bchActionIntertwiner_labelMap_map (k : ℕᵒᵖ)
-    (g : BCHGroup (d.truncatedLie ℒ (μ k.unop))) :
+    (g : BCHGroup (d.lieTruncation ℒ (μ k.unop))) :
     (((F.bchActionIntertwiner d ℒ G φ ψ μ hμ hT hψ hequiv).labelMap.app k).toFunctor.map
-      (X := SingleObj.star (BCHGroup (d.truncatedLie ℒ (μ k.unop))))
-      (Y := SingleObj.star (BCHGroup (d.truncatedLie ℒ (μ k.unop)))) g) =
+      (X := SingleObj.star (BCHGroup (d.lieTruncation ℒ (μ k.unop))))
+      (Y := SingleObj.star (BCHGroup (d.lieTruncation ℒ (μ k.unop)))) g) =
         (φ.truncatedMap k.unop (hT k.unop)).bchGroupMap g := by
   unfold bchActionIntertwiner
   -- The group tower objects are the corresponding concrete BCH quotient groups.

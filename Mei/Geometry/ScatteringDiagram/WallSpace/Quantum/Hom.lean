@@ -29,6 +29,8 @@ Example 2.1(iii).
 
 public section
 
+open TauCeti (PositiveDegrees PositiveDegreeMap)
+
 open TauCeti (DirectedWallSpaces)
 
 namespace Mei.QuantumMonoidAlgebra

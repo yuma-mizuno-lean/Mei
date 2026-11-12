@@ -27,6 +27,8 @@ for cluster algebras*, §1 (arXiv:1411.1394v2).
 
 public section
 
+open TauCeti (PositiveDegrees)
+
 namespace Mei.SkewLieAlgebra
 
 variable {R Γ : Type*} [CommRing R] [AddCommGroup Γ]

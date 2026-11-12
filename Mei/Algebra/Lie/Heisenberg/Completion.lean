@@ -7,7 +7,7 @@ module
 
 public import Mei.Algebra.Lie.BCH.Completion
 public import Mei.Algebra.Lie.Heisenberg.BCH
-public import Mei.Algebra.Lie.Heisenberg.Grading
+public import TauCeti.Algebra.Lie.Heisenberg.Grading
 
 /-!
 # Noncommutation in the completed Heisenberg BCH group
@@ -23,7 +23,7 @@ noncomputable section
 
 namespace Mei
 
-open PositiveDegrees
+open TauCeti.PositiveDegrees
 open TauCeti (heisenbergGrading heisenbergX heisenbergY)
 
 attribute [local instance 100] LieRing.ofAssociativeRing
@@ -38,9 +38,9 @@ theorem expToCompletion_heisenbergX_mul_expToCompletion_heisenbergY_ne [Nontrivi
       nonnegIntegers.expToCompletion (heisenbergGrading R) (heisenbergY R) *
         nonnegIntegers.expToCompletion (heisenbergGrading R) (heisenbergX R) := by
   intro he
-  have hinj : Function.Injective (nonnegIntegers.degreeIdeal (heisenbergGrading R) 2).mkQ := by
-    rw [← LieHom.ker_eq_bot, LieIdeal.mkQ_ker,
-      degreeIdeal_heisenbergGrading_eq_bot R le_rfl]
+  have hinj : Function.Injective (nonnegIntegers.truncationIdeal (heisenbergGrading R) 2).mkQ := by
+    rw [← LieHom.ker_eq_bot, LieIdeal.mkQ_ker, truncationIdeal_eq_degreeIdeal,
+      TauCeti.degreeIdeal_heisenbergGrading_eq_bot R le_rfl]
   have h2 := congrArg (CompletedGroup.projection 2) he
   rw [map_mul, map_mul, projection_expToCompletion, projection_expToCompletion] at h2
   apply exp_heisenbergX_mul_exp_heisenbergY_ne R

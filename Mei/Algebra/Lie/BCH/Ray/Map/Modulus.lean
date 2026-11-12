@@ -19,6 +19,8 @@ taking supported-ray factors, as for `PositiveDegreeMap.id d`
 
 public section
 
+open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading SupportedRay)
+
 namespace Mei.GradedLieHom
 
 universe u

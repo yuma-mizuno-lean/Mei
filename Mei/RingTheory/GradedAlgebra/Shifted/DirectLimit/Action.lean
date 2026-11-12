@@ -17,9 +17,13 @@ shared descent applies to both completed Lie actions and quantum ray actions.
 -/
 
 public section
+
+open TauCeti (PositiveDegrees)
 noncomputable section
 
-namespace Mei.PositiveDegrees
+namespace TauCeti.PositiveDegrees
+
+open Mei
 
 variable {Γ R A G : Type*} [AddCommGroup Γ] [CommRing R]
   [Ring A] [Algebra R A] [DecidableEq Γ] [Monoid G]
@@ -48,4 +52,4 @@ theorem shiftedDirectLimitAction_map_mul
     hmul, shiftedDirectLimitAction_toShiftedDirectLimit,
     shiftedDirectLimitAction_toShiftedDirectLimit, toShiftedDirectLimit_mul]
 
-end Mei.PositiveDegrees
+end TauCeti.PositiveDegrees

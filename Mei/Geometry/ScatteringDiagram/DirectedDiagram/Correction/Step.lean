@@ -35,6 +35,8 @@ Gross–Hacking–Keel–Kontsevich, *Canonical bases for cluster algebras*, App
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 open TauCeti (DirectedWallSpaces)
 
 noncomputable section
@@ -71,7 +73,7 @@ theorem LoopProjection.exists_consistent_outgoing_extension
     (ht : ∀ (P : (D.adaptedComplex (k + 1)).cellsOfCodimension 0)
       (x : WallComplement (fun j : D.active k => (D.wall j).support)),
       x.val ∈ interior (P : Set V) →
-      (d.truncationMap ℒ (Nat.le_succ k)).bchGroupMap (t P) = D.levelTransport k hk b x)
+      (d.lieTruncationMap ℒ (Nat.le_succ k)).bchGroupMap (t P) = D.levelTransport k hk b x)
     (τ : (D.adaptedComplex (k + 1)).joints → OrientedCell h 2)
     (hτ : ∀ J, (τ J).carrier = (J : Set V))
     (P : D.LoopProjection (k + 1)) :
@@ -127,7 +129,7 @@ theorem LoopProjection.exists_consistent_outgoing_extension
     rcases j with ⟨j | a, ha⟩
     · exact (hj ⟨j, rfl⟩).elim
     · exact (hE a).2.1 v
-  let π := d.truncationMap ℒ (Nat.le_succ k)
+  let π := d.lieTruncationMap ℒ (Nat.le_succ k)
   let A := crossingDefectCochain σ hσ cross hk b t ht
   let B := ∑ a, PolyhedralCochain.mk (R := R) (η a) (c a)
   have hclosed : PolyhedralCochain.coboundary (A - B) = 0 := by
@@ -157,7 +159,7 @@ theorem LoopProjection.exists_consistent_outgoing_extension
       have hn : (e a).val ∉ s := by simp [e, s]
       simp only [newCoeff, hn, ite_false, e, ω, hright, (hE a).2.2.2.2.2.1]
   have hA : (∑ Q, PolyhedralCochain.mk (R := R) (σ Q)
-      ((cross Q).defect hk b t ht : d.truncatedLie ℒ (k + 1))) =
+      ((cross Q).defect hk b t ht : d.lieTruncation ℒ (k + 1))) =
       PolyhedralCochain.map π.ker.subtype A := by
     simp only [A, crossingDefectCochain_def, map_sum, PolyhedralCochain.map_mk,
       Submodule.subtype_apply]

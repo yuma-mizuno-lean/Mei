@@ -56,6 +56,8 @@ class over `M` are constant along open rays of `ℝm°` (`germLabel_smul_eq_of_t
 
 public section
 
+open TauCeti (PositiveDegreeMap SupportedRay)
+
 open TauCeti (DirectedWallSpaces)
 
 noncomputable section

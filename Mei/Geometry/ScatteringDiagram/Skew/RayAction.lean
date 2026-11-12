@@ -33,6 +33,8 @@ functions, and refined tropical curve counts*, Example 2.1(i), arXiv:1503.06183v
 
 public section
 
+open TauCeti (PositiveDegrees)
+
 noncomputable section
 
 namespace Mei.SkewLatticeDatum
@@ -107,9 +109,9 @@ private theorem principal_rayPartialSum (q : T) (hq : q.val = D.principalEmbeddi
 private theorem principal_rayPartialSum_projection (q : T)
     (hq : q.val = D.principalEmbedding n) (u : (G).completionIdeal 1)
     (hu : u.val = (G).toCompletion (single q 1)) (k : ℕ) :
-    ((e).degreeIdeal ℳ k).mkQ (D.principalGradedLieHom d
+    ((e).truncationIdeal ℳ k).mkQ (D.principalGradedLieHom d
         (SkewLieAlgebra.rayPartialSum β hβ hn hn0 k (κ • a))) =
-      LieIdeal.completionProjection ((e).degreeIdeal ℳ) ((e).degreeIdeal_antitone ℳ) k
+      LieIdeal.completionProjection ((e).truncationIdeal ℳ) ((e).truncationIdeal_antitone ℳ) k
         (completedTropicalTangentField e ρ χ ((G).completedAeval u b)) := by
   have hb0 : constantCoeff b = 0 := by rw [← hab]; simp
   let v : R[T] := ∑ j ∈ Finset.range k,
@@ -128,7 +130,7 @@ private theorem principal_rayPartialSum_projection (q : T)
       (map_smul (Ideal.Quotient.mkₐ R ((G).ideal (k + 1)))
         (PowerSeries.coeff (j + 1) b) (single ((j + 1) • q) (1 : R))).symm
   rw [completionProjection_completedTropicalTangentField e ρ χ k _ v hv]
-  exact congrArg (((e).degreeIdeal ℳ k).mkQ)
+  exact congrArg (((e).truncationIdeal ℳ k).mkQ)
     (D.principal_rayPartialSum (R := R) d hn hn0 s a b hab q hq k)
 
 omit b hab in

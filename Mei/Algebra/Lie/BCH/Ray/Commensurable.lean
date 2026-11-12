@@ -29,13 +29,17 @@ algebras*, §1.1 (arXiv:1411.1394v2), and Bridgeland, *Scattering diagrams, Hall
 stability conditions*, §§2–3 (arXiv:1603.00416v4). This file does not formalize walls or the
 merging of labels on coincident supports; it concerns only completed labels.
 
-Membership in the ray group uses `Mei.PositiveDegrees.mem_completedRaySubgroup_iff_logComponent`
-and commutation is `Mei.PositiveDegrees.commute_of_mem_completedRaySubgroup`.
+Membership in the ray group uses `TauCeti.PositiveDegrees.mem_completedRaySubgroup_iff_logComponent`
+and commutation is `TauCeti.PositiveDegrees.commute_of_mem_completedRaySubgroup`.
 -/
 
 public section
 
-namespace Mei.PositiveDegrees
+open TauCeti (PositiveDegrees IsPositiveGrading SupportedRay)
+
+namespace TauCeti.PositiveDegrees
+
+open Mei
 
 variable {N R L : Type*} [AddCommGroup N] [CommRing R]
   [LieRing L] [LieAlgebra R L] [DecidableEq N]
@@ -93,4 +97,4 @@ theorem commute_of_logComponent_eq_zero_two_nsmul_three_nsmul [Module.Free ℤ N
   d.commute_of_logComponent_eq_zero_nsmul_nsmul ℒ (by rintro rfl; exact hm d.monoid.zero_mem)
     two_ne_zero three_ne_zero h2 h3 hg hg'
 
-end Mei.PositiveDegrees
+end TauCeti.PositiveDegrees

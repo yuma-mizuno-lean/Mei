@@ -25,6 +25,8 @@ No stabilization of the active supports or local finiteness of all walls is requ
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 open TauCeti (DirectedWallSpaces)
 
 noncomputable section
@@ -46,7 +48,7 @@ variable {Γ Λ R L V ι : Type*} [AddCommGroup Γ] [AddCommGroup Λ]
 theorem truncation_levelPathProduct {k l : ℕ} (hkl : k ≤ l)
     {x y : WallComplement (fun j : D.active l => (D.wall j).support)}
     (p : AdmissiblePLPath x y) :
-    (d.truncationMap ℒ hkl).bchGroupMap (D.levelPathProduct l p) =
+    (d.lieTruncationMap ℒ hkl).bchGroupMap (D.levelPathProduct l p) =
       D.levelPathProduct k
         ((WallComplement.restrictPrefunctor (fun j : D.active l => (D.wall j).support)
           (Set.inclusion (D.active_mono hkl))).mapPath p) := by
@@ -95,7 +97,7 @@ variable {x y z : D.Point}
 
 /-- The finite-order products of an all-order path form a compatible family. -/
 theorem truncation_pathProduct (p : Quiver.Path x y) {k l : ℕ} (hkl : k ≤ l) :
-    (d.truncationMap ℒ hkl).bchGroupMap
+    (d.lieTruncationMap ℒ hkl).bchGroupMap
       (D.levelPathProduct l ((CommonWallComplement.projectionPrefunctor l).mapPath p)) =
         D.levelPathProduct k ((CommonWallComplement.projectionPrefunctor k).mapPath p) := by
   have hp := D.truncation_levelPathProduct hkl

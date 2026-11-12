@@ -31,6 +31,8 @@ unsubdivided segments and with signed boundary incidences is separate.
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 open TauCeti (DirectedWallSpaces)
 
 noncomputable section
@@ -56,7 +58,7 @@ variable {Γ Λ R L V ι : Type*} [AddCommGroup Γ] [AddCommGroup Λ]
   (ht : ∀ (P : (D.adaptedComplex (k + 1)).cellsOfCodimension 0)
     (x : WallComplement (fun j : D.active k => (D.wall j).support)),
     x.val ∈ interior (P : Set V) →
-    (d.truncationMap ℒ (Nat.le_succ k)).bchGroupMap (t P) = D.levelTransport k hk b x)
+    (d.lieTruncationMap ℒ (Nat.le_succ k)).bchGroupMap (t P) = D.levelTransport k hk b x)
 
 private theorem positive_segment_log
     {x y : WallComplement (fun W : (D.adaptedComplex (k + 1)).walls => (W : Set V))}
@@ -67,7 +69,7 @@ private theorem positive_segment_log
     (hx : x.val ∈ interior (P : Set V)) (hy : y.val ∈ interior (Q : Set V)) :
     log ((t Q)⁻¹ *
       D.levelPathProduct (k + 1) ((D.adaptedPathPrefunctor (k + 1)).map e).toPath * t P) =
-      ((cross W).defect hk b t ht : d.truncatedLie ℒ (k + 1)) := by
+      ((cross W).defect hk b t ht : d.lieTruncation ℒ (k + 1)) := by
   have he' : crossings x y = {(⟨(σ W).carrier, (hσ W).symm ▸ W.property⟩, a)} := by
     simpa only [hσ W] using he
   obtain ⟨hxm, hyp⟩ := (cross W).mem_interiors_of_crossings_singleton e a he' hv
@@ -92,7 +94,7 @@ theorem log_levelPathProduct_eq_intersectionPairing_of_subsingleton
       D.levelPathProduct (k + 1) ((D.adaptedPathPrefunctor (k + 1)).map e).toPath * t P) =
       ((OrientedCell.intersectionPairing (R := R) ![x.val, y.val]
         (∑ W, Finsupp.single (σ W) ((cross W).defect hk b t ht)) :
-          (d.truncationMap ℒ (Nat.le_succ k)).ker) : d.truncatedLie ℒ (k + 1)) := by
+          (d.lieTruncationMap ℒ (Nat.le_succ k)).ker) : d.lieTruncation ℒ (k + 1)) := by
   classical
   -- A wall-free segment stays in one chamber and pairs to zero.
   rcases he.eq_empty_or_singleton with he | ⟨⟨W, a⟩, he⟩
@@ -166,7 +168,7 @@ private theorem sum_pairings_of_single_crossings
         D.levelPathProduct (k + 1) ((D.adaptedPathPrefunctor (k + 1)).mapPath p) * t P) =
         ((p.addWeightOfEPs (fun u v => OrientedCell.intersectionPairing (R := R)
           ![u.val, v.val] (∑ W, Finsupp.single (σ W) ((cross W).defect hk b t ht))) :
-            (d.truncationMap ℒ (Nat.le_succ k)).ker) : d.truncatedLie ℒ (k + 1)) := by
+            (d.lieTruncationMap ℒ (Nat.le_succ k)).ker) : d.lieTruncation ℒ (k + 1)) := by
   induction p with
   | nil => exact ⟨P, hx, by simp [Quiver.Path.addWeightOfEPs_nil]⟩
   | @cons y z p e ih =>
@@ -191,7 +193,7 @@ private theorem sum_pairings_of_single_crossings
     refine ⟨S, hz, ?_⟩
     have he := log_levelPathProduct_eq_intersectionPairing_of_subsingleton
       σ hσ cross hk b t ht e hp'.2 Q S hy hz
-    let f := d.truncationMap ℒ (Nat.le_succ k)
+    let f := d.lieTruncationMap ℒ (Nat.le_succ k)
     -- Both gauged transports are in the abelian successive truncation kernel.
     have hX : f.bchGroupMap
         (D.levelPathProduct (k + 1) ((D.adaptedPathPrefunctor (k + 1)).mapPath p)) *
@@ -211,7 +213,7 @@ private theorem sum_pairings_of_single_crossings
         (by simpa only [D.adaptedPathPrefunctor_obj_val] using hz)
       rw [MonoidHom.mem_ker, map_mul, map_mul, map_inv, mul_assoc] at hm
       exact (inv_mul_eq_one.mp hm).symm
-    have hadd := congrArg (fun a : f.ker => (a : d.truncatedLie ℒ (k + 1)))
+    have hadd := congrArg (fun a : f.ker => (a : d.lieTruncation ℒ (k + 1)))
       (f.logDefect_mul (t P) (t Q) (t S) _ _ hX hY)
     simp only [LieHom.coe_logDefect, LieSubmodule.coe_add] at hadd
     rw [Prefunctor.mapPath_cons, ← Quiver.Path.comp_toPath_eq_cons,
@@ -233,7 +235,7 @@ theorem exists_subdivision_log_levelPathProduct_eq_sum_intersectionPairing
         D.levelPathProduct (k + 1) ((D.adaptedPathPrefunctor (k + 1)).mapPath p) * t P) =
         ((q.addWeightOfEPs (fun u v => OrientedCell.intersectionPairing (R := R)
           ![u.val, v.val] (∑ W, Finsupp.single (σ W) ((cross W).defect hk b t ht))) :
-            (d.truncationMap ℒ (Nat.le_succ k)).ker) : d.truncatedLie ℒ (k + 1)) := by
+            (d.lieTruncationMap ℒ (Nat.le_succ k)).ker) : d.lieTruncation ℒ (k + 1)) := by
   obtain ⟨q, hpq, hq⟩ := p.exists_subdivision_subsingleton_crossings
   obtain ⟨Q', hy', hlog⟩ := sum_pairings_of_single_crossings σ hσ cross hk b t ht q hq P hx
   have hQ : Q' = Q :=
@@ -264,12 +266,12 @@ theorem exists_subdivision_loopObstruction_eq_sum_intersectionPairing
       σ hσ cross hk b t ht p P P hx hx
   refine ⟨q, hpq, hq, Subtype.ext ?_⟩
   have hm : D.levelPathProduct (k + 1) ((D.adaptedPathPrefunctor (k + 1)).mapPath p) ∈
-      (d.truncationMap ℒ (Nat.le_succ k)).bchGroupMap.ker := by
+      (d.lieTruncationMap ℒ (Nat.le_succ k)).bchGroupMap.ker := by
     rw [MonoidHom.mem_ker, D.truncation_levelPathProduct (Nat.le_succ k)]
     exact (D.levelConsistent_iff_loops k).mp hk _ _
   have hc := Subgroup.mem_center_iff.mp
-    ((d.truncationMap ℒ (Nat.le_succ k)).ker_bchGroupMap_le_center
-      (d.ker_truncationMap_succ_le_center ℒ k) hm) ((t P)⁻¹)
+    ((d.lieTruncationMap ℒ (Nat.le_succ k)).ker_bchGroupMap_le_center
+      (d.ker_lieTruncationMap_succ_le_center ℒ k) hm) ((t P)⁻¹)
   rw [hc, mul_assoc, inv_mul_cancel, mul_one] at hlog
   simpa only [coe_loopObstruction] using hlog
 

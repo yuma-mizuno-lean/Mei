@@ -27,6 +27,8 @@ functions, and refined tropical curve counts*, §3.3.3 (arXiv:1503.06183v5).
 
 public section
 
+open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading)
+
 open TauCeti (DirectedWallSpaces)
 noncomputable section
 

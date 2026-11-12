@@ -38,6 +38,8 @@ by the active labels (`Subgroup.isMulCommutative_closure`).
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading SupportedRay)
+
 open TauCeti (DirectedWallSpaces)
 
 noncomputable section

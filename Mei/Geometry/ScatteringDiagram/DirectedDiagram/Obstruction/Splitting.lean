@@ -32,6 +32,8 @@ used for module probes. The kernel need not be abelian for these statements.
 
 public section
 
+open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading)
+
 open TauCeti (DirectedWallSpaces)
 
 noncomputable section
@@ -103,8 +105,8 @@ def LoopProjection.ofSplitting {k : ℕ} (hq : (D.map π hπ).LevelConsistent k)
       · have hmn : m ≠ n := by intro he; subst m; omega
         refine (hne ?_).elim
         rw [he, PositiveDegrees.projection_expToCompletion, log_exp,
-          DirectSum.decompose_of_mem_ne (d.truncatedGrading ℒ k)
-            ((d.mem_truncatedGrading_iff ℒ).mpr ⟨a, ha, rfl⟩) hmn]
+          DirectSum.decompose_of_mem_ne (d.lieTruncationGrading ℒ k)
+            ((d.mem_lieTruncationGrading_iff ℒ).mpr ⟨a, ha, rfl⟩) hmn]
         exact map_zero _
 
 @[simp]

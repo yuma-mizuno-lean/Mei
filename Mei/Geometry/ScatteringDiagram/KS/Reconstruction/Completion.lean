@@ -24,9 +24,13 @@ This is the reconstruction of Tom Bridgeland,
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 noncomputable section
 
-namespace Mei.PositiveDegrees
+namespace TauCeti.PositiveDegrees
+
+open Mei
 
 open Set Mei.Convex BCHGroup
 
@@ -53,12 +57,12 @@ def reconstruct (g : d.completedBCHGroup ℒ) :
     let b : d.truncatedGroup ℒ (k + 1) := CompletedGroup.projection (k + 1) g
     -- The tower objects are the concrete truncated BCH groups. Naming their
     -- elements fixes this identification before rewriting the finite products.
-    change (d.truncationMap ℒ (Nat.le_succ k)).bchGroupMap
+    change (d.lieTruncationMap ℒ (Nat.le_succ k)).bchGroupMap
       ((d.reconstructFinite h ℒ b).toFiniteWallDiagram.pathProduct q) =
       (d.reconstructFinite h ℒ a).toFiniteWallDiagram.pathProduct p
     rw [d.pathProduct_reconstructFinite h ℒ b q, map_mul, map_inv,
       truncationMap_signFactorizationEquiv_symm, truncationMap_signFactorizationEquiv_symm]
-    have hg : (d.truncationMap ℒ (Nat.le_succ k)).bchGroupMap b = a :=
+    have hg : (d.lieTruncationMap ℒ (Nat.le_succ k)).bchGroupMap b = a :=
       CompletedGroup.map_projection k (k + 1) (Nat.le_succ k) g
     rw [hg, d.pathProduct_reconstructFinite h ℒ a p, hx, hy]
 
@@ -138,4 +142,4 @@ theorem reconstruct_injective : Function.Injective (d.reconstruct h ℒ) := by
       (d.reconstruct h ℒ g').degreePoint (d.reconstruct h ℒ g').negDegreePoint at ht
   rwa [d.transport_reconstruct h ℒ g, d.transport_reconstruct h ℒ g'] at ht
 
-end Mei.PositiveDegrees
+end TauCeti.PositiveDegrees

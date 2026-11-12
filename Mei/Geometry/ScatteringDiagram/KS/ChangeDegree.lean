@@ -25,6 +25,8 @@ positive monoid is needed.
 
 public section
 
+open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading)
+
 noncomputable section
 
 universe u

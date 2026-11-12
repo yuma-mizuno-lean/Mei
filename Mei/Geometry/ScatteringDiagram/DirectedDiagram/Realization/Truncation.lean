@@ -25,6 +25,8 @@ adapted regular loci.
 
 public noncomputable section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 open TauCeti (DirectedWallSpaces)
 
 open Set Mei.Convex
@@ -51,7 +53,7 @@ theorem truncation_pathProduct_adaptedDiagram {k l : ℕ} (hkl : k ≤ l)
     {x' y' : WallComplement (fun Q : (D.adaptedComplex k).walls => (Q : Set V))}
     (p : AdmissiblePLPath x y) (q : AdmissiblePLPath x' y')
     (hpq : p.vertices.map WallComplement.val = q.vertices.map WallComplement.val) :
-    (d.truncationMap ℒ hkl).bchGroupMap ((D.adaptedDiagram l νl hνl).pathProduct p) =
+    (d.lieTruncationMap ℒ hkl).bchGroupMap ((D.adaptedDiagram l νl hνl).pathProduct p) =
       (D.adaptedDiagram k νk hνk).pathProduct q := by
   rw [← D.levelPathProduct_eq_adaptedDiagram νl hνl p,
     D.truncation_levelPathProduct hkl,

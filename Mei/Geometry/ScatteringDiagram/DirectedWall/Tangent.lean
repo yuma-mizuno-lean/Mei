@@ -26,6 +26,8 @@ hypothesis is needed; the support may be bounded or have lineality.
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 open TauCeti (DirectedWallSpaces)
 
 noncomputable section

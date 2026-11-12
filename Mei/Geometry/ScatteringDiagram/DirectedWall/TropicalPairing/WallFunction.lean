@@ -49,6 +49,8 @@ formalized here.
 
 public section
 
+open TauCeti (PositiveDegrees PositiveDegreeMap SupportedRay)
+
 noncomputable section
 
 namespace Mei

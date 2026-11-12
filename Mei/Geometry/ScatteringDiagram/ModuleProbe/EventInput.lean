@@ -31,6 +31,8 @@ theta functions, and refined tropical curve counts*, §3.3.3
 
 public noncomputable section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 open TauCeti (DirectedWallSpaces)
 
 open Set Filter Topology Mei.Convex Mei.Convex.WallComplement
@@ -87,7 +89,7 @@ theorem eventually_exists_extendedCoefficientField_eq_eventInput
         z.val = AffineMap.lineMap x.val y.val t ∧
         field k hBc ((cutoffRestriction hkl).obj z) =
           (A).truncatedBCHAction d ℒ k
-            ((d.truncationMap ℒ hkl).bchGroupMap (g.drop (j.val + 1)).prod)
+            ((d.lieTruncationMap ℒ hkl).bchGroupMap (g.drop (j.val + 1)).prod)
             (field k hBc ((cutoffRestriction hkl).obj x)) := by
   dsimp only
   filter_upwards [eventually_exists_segmentPathProduct_eq_drop
@@ -151,7 +153,7 @@ theorem exists_shiftedQuotientComponent_extendedCoefficientField_eq_add_sum_even
         z.val = AffineMap.lineMap x.val y.val t ∧
         field k (hBc.mono (Nat.le_succ k)) ((restriction k).obj z) =
           (A).truncatedBCHAction d ℒ k
-            ((d.truncationMap ℒ (Nat.le_succ k)).bchGroupMap (g.drop (j.val + 1)).prod)
+            ((d.lieTruncationMap ℒ (Nat.le_succ k)).bchGroupMap (g.drop (j.val + 1)).prod)
             (field k (hBc.mono (Nat.le_succ k)) ((restriction k).obj x)) := by
     have hj : j.val < (orderedCrossingTimes e).length := by
       simpa only [g, List.length_map, List.length_reverse] using j.isLt
@@ -203,7 +205,7 @@ theorem eventually_exists_extendedCoefficientField_eq_add_sum_incoming
               simpa only [List.length_map] using j.isLt) - ε) ∧
           field k (hBc.mono (Nat.le_succ k)) ((restriction k).obj z) =
             (A).truncatedBCHAction d ℒ k
-              ((d.truncationMap ℒ (Nat.le_succ k)).bchGroupMap
+              ((d.lieTruncationMap ℒ (Nat.le_succ k)).bchGroupMap
                 ((labels (k + 1) e).drop (j.val + 1)).prod)
               (field k (hBc.mono (Nat.le_succ k)) ((restriction k).obj x)) := by
     have hj : j.val < (orderedCrossingTimes e).reverse.length := by

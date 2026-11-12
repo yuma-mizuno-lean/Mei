@@ -26,7 +26,11 @@ tropical curve counts*, §3.3.3 (arXiv:1503.06183v5).
 
 public noncomputable section
 
-namespace Mei.PositiveDegrees
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
+namespace TauCeti.PositiveDegrees
+
+open Mei
 
 universe u
 
@@ -176,7 +180,7 @@ theorem shiftedQuotientComponent_truncatedBCHCorrection_eq_sum_labelBlock
 its label is truncated along the same quotient tower. -/
 theorem labelBlock_truncation {k l : ℕ} (hkl : k ≤ l)
     (g : d.truncatedGroup ℒ l) (n m : d.cutoff k) :
-    labelBlock d ℳ p ℒ k ((d.truncationMap ℒ hkl).bchGroupMap g) n m =
+    labelBlock d ℳ p ℒ k ((d.lieTruncationMap ℒ hkl).bchGroupMap g) n m =
       labelBlock d ℳ p ℒ l g
         ⟨n.val, d.cutoff_mono hkl n.property⟩
         ⟨m.val, d.cutoff_mono hkl m.property⟩ := by
@@ -188,4 +192,4 @@ theorem labelBlock_truncation {k l : ℕ} (hkl : k ≤ l)
     d.shiftedQuotientComponent_transition]
   rw [d.shiftedQuotientComponent_transition]
 
-end Mei.PositiveDegrees
+end TauCeti.PositiveDegrees

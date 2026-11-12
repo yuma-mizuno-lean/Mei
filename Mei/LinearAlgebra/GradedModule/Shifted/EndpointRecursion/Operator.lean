@@ -29,7 +29,10 @@ refined tropical curve counts*, §3.3.3 (arXiv:1503.06183v5).
 
 public noncomputable section
 
-namespace Mei.PositiveDegrees
+open TauCeti (PositiveDegrees)
+
+namespace TauCeti.PositiveDegrees
+
 
 variable {Γ R M H V : Type*} [AddCommGroup Γ] [CommSemiring R]
   [AddCommMonoid M] [Module R M] [AddCommMonoid H] [Module R H]
@@ -171,4 +174,4 @@ theorem eq_finiteRecursion_iff_forall_eval_eq_add
     simpa only [Pi.add_apply, shiftedEndpointEval_apply, LinearMap.add_apply,
       ← shiftedEndpointEval_shiftedOperatorLowerStep] using he
 
-end Mei.PositiveDegrees
+end TauCeti.PositiveDegrees

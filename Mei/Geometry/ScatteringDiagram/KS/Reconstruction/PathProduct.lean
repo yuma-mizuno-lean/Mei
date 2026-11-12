@@ -20,11 +20,15 @@ from sign factorization, as in Bridgeland's Lemma 3.2, §3.4 of
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 noncomputable section
 
 open Set Mei.Convex
 
-namespace Mei.PositiveDegrees
+namespace TauCeti.PositiveDegrees
+
+open Mei
 
 variable {N V R L : Type*} [AddCommGroup N]
   [NormedAddCommGroup V] [NormedSpace ℝ V]
@@ -59,4 +63,4 @@ theorem consistent_reconstructFinite (g : d.truncatedGroup ℒ k) :
   intro x y p q
   rw [d.pathProduct_reconstructFinite h ℒ g p, d.pathProduct_reconstructFinite h ℒ g q]
 
-end Mei.PositiveDegrees
+end TauCeti.PositiveDegrees

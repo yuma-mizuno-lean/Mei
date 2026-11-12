@@ -34,6 +34,8 @@ theta functions, and refined tropical curve counts*, proof of Theorem 2.6.
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 open TauCeti (DirectedWallSpaces)
 
 noncomputable section
@@ -59,7 +61,7 @@ variable {Γ Λ R L V ι : Type*} [AddCommGroup Γ] [AddCommGroup Λ]
   (ht : ∀ (P : (D.adaptedComplex (k + 1)).cellsOfCodimension 0)
     (x : WallComplement (fun j : D.active k => (D.wall j).support)),
     x.val ∈ interior (P : Set V) →
-    (d.truncationMap ℒ (Nat.le_succ k)).bchGroupMap (t P) = D.levelTransport k hk b x)
+    (d.lieTruncationMap ℒ (Nat.le_succ k)).bchGroupMap (t P) = D.levelTransport k hk b x)
 
 /-- The central finite diagram of crossing defects. Its stored label is the
 negative exponential because a positive crossing inverts the stored label. -/
@@ -67,7 +69,7 @@ def crossingDefectDiagram :
     FiniteWallDiagram (D.adaptedComplex (k + 1)) (d.truncatedGroup ℒ (k + 1)) where
   normal Q := h.realCharacter (cross Q).normal
   ker_normal Q := by simpa only [hσ Q] using (cross Q).ker_normal
-  label Q := exp (-((cross Q).defect hk b t ht : d.truncatedLie ℒ (k + 1)))
+  label Q := exp (-((cross Q).defect hk b t ht : d.lieTruncation ℒ (k + 1)))
 
 @[simp]
 theorem crossingDefectDiagram_normal :
@@ -77,7 +79,7 @@ theorem crossingDefectDiagram_normal :
 @[simp]
 theorem crossingDefectDiagram_label (Q : (D.adaptedComplex (k + 1)).walls) :
     (crossingDefectDiagram σ hσ cross hk b t ht).label Q =
-      exp (-((cross Q).defect hk b t ht : d.truncatedLie ℒ (k + 1))) := (rfl)
+      exp (-((cross Q).defect hk b t ht : d.lieTruncation ℒ (k + 1))) := (rfl)
 
 /-- The logarithm of gauged transport along the given adapted path is the
 negative signed crossing sum of the actual central wall defects. No consistency
@@ -90,7 +92,7 @@ theorem log_inv_mul_levelPathProduct_mul_eq_neg_wallCrossingSum_defect
     log ((t Q)⁻¹ *
       D.levelPathProduct (k + 1) ((D.adaptedPathPrefunctor (k + 1)).mapPath p) * t P) =
         -p.wallCrossingSum (fun Q => h.realCharacter (cross Q).normal)
-          (fun Q => ((cross Q).defect hk b t ht : d.truncatedLie ℒ (k + 1))) := by
+          (fun Q => ((cross Q).defect hk b t ht : d.lieTruncation ℒ (k + 1))) := by
   classical
   obtain ⟨q, hpq, _, hlog⟩ :=
     exists_subdivision_log_levelPathProduct_eq_sum_intersectionPairing
@@ -116,7 +118,7 @@ theorem log_inv_mul_levelPathProduct_mul_eq_neg_wallCrossingSum_defect
   rw [hlog]
   simpa only [map_neg, AddMonoidHom.map_wallCrossingSum, LinearMap.toAddMonoidHom_coe,
     LieHom.coe_toLinearMap, LieIdeal.incl_apply, c] using
-    congrArg (d.truncationMap ℒ (Nat.le_succ k)).ker.incl.toLinearMap.toAddMonoidHom
+    congrArg (d.lieTruncationMap ℒ (Nat.le_succ k)).ker.incl.toLinearMap.toAddMonoidHom
       (hpair p q hpq)
 
 /-- Products of the finite defect diagram telescope the chamber lifts along the
@@ -129,7 +131,7 @@ theorem pathProduct_crossingDefectDiagram
     (crossingDefectDiagram σ hσ cross hk b t ht).pathProduct p =
       (t Q)⁻¹ * D.levelPathProduct (k + 1) ((D.adaptedPathPrefunctor (k + 1)).mapPath p) * t P := by
   let A := crossingDefectDiagram σ hσ cross hk b t ht
-  let f := d.truncationMap ℒ (Nat.le_succ k)
+  let f := d.lieTruncationMap ℒ (Nat.le_succ k)
   let K := f.ker.toLieSubalgebra
   have hlabel (Q : (D.adaptedComplex (k + 1)).walls) : log (A.label Q) ∈ f.ker := by
     rw [crossingDefectDiagram_label, log_exp]
@@ -139,10 +141,10 @@ theorem pathProduct_crossingDefectDiagram
         Commute (A.label a) (A.label b) := by
     intro a b _
     exact commute_of_lie_log_eq_zero _ _
-      ((d.ker_truncationMap_succ_le_center ℒ k (hlabel b)) _)
+      ((d.ker_lieTruncationMap_succ_le_center ℒ k (hlabel b)) _)
   have he := K.log_wallPathProduct_sub_crossingSum_mem (⊥ : Submodule R _)
     (fun a _ b hb => by
-      simpa only [Submodule.mem_bot] using (d.ker_truncationMap_succ_le_center ℒ k hb) a)
+      simpa only [Submodule.mem_bot] using (d.ker_lieTruncationMap_succ_le_center ℒ k hb) a)
     A.normal A.label hcomm p
     (fun _ _ a _ => (K.mem_bchSubgroup _).mpr (hlabel a.1))
   rw [Submodule.mem_bot, sub_eq_zero, ← A.pathProduct_eq_wallPathProduct hcomm] at he
@@ -161,9 +163,9 @@ theorem coe_loopObstruction_eq_neg_wallCrossingSum_defect
     (P : (D.adaptedComplex (k + 1)).cellsOfCodimension 0)
     (hx : x.val ∈ interior (P : Set V)) :
     (D.loopObstruction hk ((D.adaptedPathPrefunctor (k + 1)).mapPath p) :
-      d.truncatedLie ℒ (k + 1)) =
+      d.lieTruncation ℒ (k + 1)) =
         -p.wallCrossingSum (fun Q => h.realCharacter (cross Q).normal)
-          (fun Q => ((cross Q).defect hk b t ht : d.truncatedLie ℒ (k + 1))) := by
+          (fun Q => ((cross Q).defect hk b t ht : d.lieTruncation ℒ (k + 1))) := by
   let q := (D.adaptedPathPrefunctor (k + 1)).mapPath p
   have he := D.inv_mul_levelPathProduct_loop_mul hk q (t P)
   have hp := log_inv_mul_levelPathProduct_mul_eq_neg_wallCrossingSum_defect

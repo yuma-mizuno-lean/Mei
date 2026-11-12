@@ -33,6 +33,8 @@ algebras and stability conditions*, Definition 2.3 (arXiv:1603.00416v4).
 
 public noncomputable section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 open Set Mei.Convex
 
 namespace Mei.IndexedWallPresentation

@@ -20,6 +20,8 @@ and `Module.Ray.evalSign_rayOfNeZero` to identify its orientation sign.
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 open TauCeti (DirectedWallSpaces)
 
 noncomputable section

@@ -25,6 +25,8 @@ expansion of a BCH correction. The backward-ray interpretation follows Mandel,
 
 public noncomputable section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 open TauCeti (DirectedWallSpaces)
 
 open Mei.Convex Mei.Convex.WallComplement
@@ -82,7 +84,7 @@ theorem shiftedQuotientComponent_extendedCoefficientField_eq_add_sum_labelBlock
           (d.shiftedQuotientComponent ℳ p (p + m.val) k
             (PositiveDegrees.degree_add_val_sub_self_le d p k m)
             ((A).truncatedBCHAction d ℒ k
-              ((d.truncationMap ℒ (Nat.le_succ k)).bchGroupMap
+              ((d.lieTruncationMap ℒ (Nat.le_succ k)).bchGroupMap
                 (g.drop (b.val + 1)).prod)
               (field k (hBc.mono (Nat.le_succ k))
                 ((WallComplement.restrictPrefunctor (fun c : B.active (k + 1) => (B.wall c).support)

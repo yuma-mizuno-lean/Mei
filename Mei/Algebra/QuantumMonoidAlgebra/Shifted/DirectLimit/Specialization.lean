@@ -24,6 +24,8 @@ carrier. Only the unnormalized action is considered, not a divided classical lim
 -/
 
 public section
+
+open TauCeti (PositiveDegrees PositiveDegreeMap)
 noncomputable section
 
 namespace Mei.QuantumMonoidAlgebra

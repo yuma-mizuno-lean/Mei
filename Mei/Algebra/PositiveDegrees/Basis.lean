@@ -17,7 +17,7 @@ public import Mathlib.LinearAlgebra.TensorProduct.Basis
 A finite integral basis defines the monoid of nonnegative integral combinations,
 graded by the sum of its coordinates. Its bounded-degree sets are finite, including
 when the basis is empty. These are the degree data for completions in independent
-formal variables. The construction pulls back `Mei.PositiveDegrees.orthant` along
+formal variables. The construction pulls back `TauCeti.PositiveDegrees.orthant` along
 Mathlib's `Module.Basis.equivFun`. The allowed monoid is free on the basis vectors:
 `Module.Basis.positiveDegreesMonoidEquiv` identifies it with `ι →₀ ℕ`, carrying the degree
 to the total degree. For the standard basis of `ℤ × ℤ` the allowed exponents are the pairs with
@@ -40,12 +40,12 @@ namespace Module.Basis
 variable {ι N : Type*} [Fintype ι] [AddCommGroup N] (b : Basis ι ℤ N)
 
 /-- The nonnegative basis monoid, with coordinate-sum degree. -/
-def positiveDegrees : Mei.PositiveDegrees N where
-  monoid := (Mei.PositiveDegrees.orthant ι).monoid.comap b.equivFun.toAddMonoidHom
-  degree := (Mei.PositiveDegrees.orthant ι).degree.comp b.equivFun.toAddMonoidHom
-  degree_pos hn hne := (Mei.PositiveDegrees.orthant ι).degree_pos hn
+def positiveDegrees : TauCeti.PositiveDegrees N where
+  monoid := (TauCeti.PositiveDegrees.orthant ι).monoid.comap b.equivFun.toAddMonoidHom
+  degree := (TauCeti.PositiveDegrees.orthant ι).degree.comp b.equivFun.toAddMonoidHom
+  degree_pos hn hne := (TauCeti.PositiveDegrees.orthant ι).degree_pos hn
     (fun h => hne (b.equivFun.injective (h.trans (map_zero _).symm)))
-  finite_le k := (Mei.PositiveDegrees.orthant ι).finite_le k |>.preimage
+  finite_le k := (TauCeti.PositiveDegrees.orthant ι).finite_le k |>.preimage
     b.equivFun.injective.injOn
 
 /-- Allowed exponents have nonnegative coordinates in the chosen basis. -/
@@ -99,8 +99,8 @@ theorem mem_positiveDegrees_monoid_self (j : ι) : b j ∈ b.positiveDegrees.mon
 
 /-- The supported primitive ray through an integral basis vector in the
 nonnegative basis monoid. -/
-def positiveDegreesRay (j : ι) : Mei.SupportedRay b.positiveDegrees :=
-  Mei.SupportedRay.ofMem (b j) (b.mem_positiveDegrees_monoid_self j) (b.isPrimitive j)
+def positiveDegreesRay (j : ι) : TauCeti.SupportedRay b.positiveDegrees :=
+  TauCeti.SupportedRay.ofMem (b j) (b.mem_positiveDegrees_monoid_self j) (b.isPrimitive j)
 
 /-- The generator of a basis ray is the corresponding basis vector. -/
 @[simp]
@@ -198,7 +198,7 @@ theorem positiveDegrees_degree_eq_degree_positiveDegreesMonoidEquiv
 target is torsion-free. This integral membership does not require real embeddings. -/
 theorem supportedRay_generator_mem_positiveDegrees_graph
     {M : Type*} [AddCommGroup M] [Module.IsTorsionFree ℤ M] (f : N →+ M)
-    (w : Mei.SupportedRay (b.positiveDegrees.graph f)) :
+    (w : TauCeti.SupportedRay (b.positiveDegrees.graph f)) :
     w.generator ∈ (b.positiveDegrees.graph f).monoid := by
   let := HasUniqueDiv.of_isTorsionFree ℤ M
   exact w.generator_mem_of_nsmulSaturated
@@ -216,7 +216,7 @@ theorem span_tmul_positiveDegrees_monoid :
 
 section DegreeMap
 
-variable {Γ : Type*} [AddCommGroup Γ] {d : Mei.PositiveDegrees Γ} (v : ι → Γ)
+variable {Γ : Type*} [AddCommGroup Γ] {d : TauCeti.PositiveDegrees Γ} (v : ι → Γ)
   (hv : ∀ j, v j ∈ d.monoid) (hv0 : ∀ j, v j ≠ 0)
 
 include hv hv0 in
@@ -244,8 +244,8 @@ theorem constr_mem_monoid {n : N} (hn : n ∈ b.positiveDegrees.monoid) :
 /-- The additive map `n ↦ ∑ⱼ nⱼ vⱼ` sending each basis vector `bⱼ` to a nonzero allowed degree
 `vⱼ` of `d`, as a positive degree map from the nonnegative basis monoid with the identity cutoff
 modulus `k ↦ 1 * k`. -/
-def positiveDegreeMap : Mei.PositiveDegreeMap b.positiveDegrees d :=
-  Mei.PositiveDegreeMap.ofBound (b.constr ℤ v).toAddMonoidHom
+def positiveDegreeMap : TauCeti.PositiveDegreeMap b.positiveDegrees d :=
+  TauCeti.PositiveDegreeMap.ofBound (b.constr ℤ v).toAddMonoidHom
     (fun _ hn => b.constr_mem_monoid v hv hn) 1
     (fun _ hn => by simpa using b.degree_le_degree_constr v hv hv0 hn)
 
@@ -254,7 +254,7 @@ def positiveDegreeMap : Mei.PositiveDegreeMap b.positiveDegrees d :=
 theorem positiveDegreeMap_apply (n : N) :
     b.positiveDegreeMap v hv hv0 n = b.constr ℤ v n := by
   rw [positiveDegreeMap]
-  exact Mei.PositiveDegreeMap.ofBound_apply _ _ _ _ n
+  exact TauCeti.PositiveDegreeMap.ofBound_apply _ _ _ _ n
 
 /-- The positive degree map of a basis sends the basis vector `bⱼ` to `vⱼ`. -/
 theorem positiveDegreeMap_self (j : ι) : b.positiveDegreeMap v hv hv0 (b j) = v j := by
@@ -264,7 +264,7 @@ theorem positiveDegreeMap_self (j : ι) : b.positiveDegreeMap v hv hv0 (b j) = v
 @[simp]
 theorem positiveDegreeMap_modulus (k : ℕ) : (b.positiveDegreeMap v hv hv0).modulus k = k := by
   rw [positiveDegreeMap]
-  exact (Mei.PositiveDegreeMap.ofBound_modulus _ _ _ _ k).trans (one_mul k)
+  exact (TauCeti.PositiveDegreeMap.ofBound_modulus _ _ _ _ k).trans (one_mul k)
 
 end DegreeMap
 

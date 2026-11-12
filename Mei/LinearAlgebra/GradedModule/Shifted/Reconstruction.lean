@@ -17,9 +17,13 @@ uses the original completion carrier and its finite-cutoff interpretation.
 -/
 
 public section
+
+open TauCeti (PositiveDegrees)
 noncomputable section
 
-namespace Mei.PositiveDegrees
+namespace TauCeti.PositiveDegrees
+
+open Mei
 
 variable {Γ R M : Type*} [AddCommGroup Γ] [Ring R] [AddCommGroup M] [Module R M]
   [DecidableEq Γ] (d : PositiveDegrees Γ) (ℳ : Γ → Submodule R M)
@@ -84,4 +88,4 @@ theorem existsUnique_shiftedCoefficients_components (x : ∀ q, ℳ q)
     intro q
     exact (ha q).trans (d.shiftedHomogeneousComponent_ofComponents ℳ p x hx q).symm
 
-end Mei.PositiveDegrees
+end TauCeti.PositiveDegrees

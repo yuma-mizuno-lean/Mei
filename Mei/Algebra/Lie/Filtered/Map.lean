@@ -32,6 +32,8 @@ refined tropical curve counts*, §2.1 (arXiv:1503.06183).
 
 public section
 
+open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading)
+
 noncomputable section
 
 namespace Mei.ModuleFiltration
@@ -64,7 +66,7 @@ map of Lie truncations, allowing different source and target orders. -/
 theorem mapQ_truncatedBCHAction_of_gradedLieHom {a : ℕ} (k : ℕ)
     (h : T.modulus k ≤ a)
     (hψ : F.submodule (a + 1) ≤ (G.submodule (k + 1)).comap ψ)
-    (g : BCHGroup (d.truncatedLie ℒ a)) (z : F.quotient a) :
+    (g : BCHGroup (d.lieTruncation ℒ a)) (z : F.quotient a) :
     (F.submodule (a + 1)).mapQ (G.submodule (k + 1)) ψ
         hψ
         (F.truncatedBCHAction d ℒ a g z) =
@@ -113,7 +115,7 @@ theorem completionMap_completedBCHAction_of_gradedLieHom
   have hCoeff : μ k ≤ a := le_max_right _ _
   have hψa : F.submodule (a + 1) ≤ (G.submodule (k + 1)).comap ψ :=
     (F.antitone (Nat.add_le_add_right hCoeff 1)).trans (hψ k)
-  let gk : BCHGroup (d.truncatedLie ℒ a) := CompletedGroup.projection a g
+  let gk : BCHGroup (d.lieTruncation ℒ a) := CompletedGroup.projection a g
   let qψ := (F.submodule (a + 1)).mapQ (G.submodule (k + 1)) ψ hψa
   have hl : G.projection k
       (F.completionMap G ψ μ hμ hψ (F.completedBCHAction d ℒ g z)) =
@@ -163,7 +165,7 @@ omit [LieAlgebra ℚ L] [IsScalarTower ℚ R L]
 cutoff sufficient for both the Lie map and the coefficient map. -/
 theorem quotientMapₐ_truncatedExpLieAction_of_gradedLieHom {a : ℕ} (k : ℕ)
     (h : T.modulus k ≤ a) (hψ : F.ideal (a + 1) ≤ (G.ideal (k + 1)).comap ψ)
-    (x : d.truncatedLie ℒ a) (z : A ⧸ F.ideal (a + 1)) :
+    (x : d.lieTruncation ℒ a) (z : A ⧸ F.ideal (a + 1)) :
     Ideal.quotientMapₐ (G.ideal (k + 1)) ψ hψ (F.truncatedExpLieAction d ℒ a x z) =
       G.truncatedExpLieAction e ℒ' k (φ.truncatedMap k h x)
         (Ideal.quotientMapₐ (G.ideal (k + 1)) ψ hψ z) := by

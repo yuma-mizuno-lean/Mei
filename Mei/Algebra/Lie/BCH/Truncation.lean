@@ -23,9 +23,13 @@ nilpotent or bounded.
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 noncomputable section
 
-namespace Mei.PositiveDegrees
+namespace TauCeti.PositiveDegrees
+
+open Mei
 
 variable {N R L : Type*} [AddCommMonoid N] [CommRing R] [Algebra ℚ R]
   [LieRing L] [LieAlgebra R L] [LieAlgebra ℚ L] [IsScalarTower ℚ R L]
@@ -34,22 +38,22 @@ variable {N R L : Type*} [AddCommMonoid N] [CommRing R] [Algebra ℚ R]
 
 /-- Completing the grading on a finite Lie truncation recovers its BCH group. -/
 def truncatedBCHCompletionEquiv (k : ℕ) :
-    d.completedBCHGroup (d.truncatedGrading ℒ k) ≃* d.truncatedGroup ℒ k :=
-  (d.bchCompletionEquiv (d.truncatedGrading ℒ k)
-    (d.degreeIdeal_truncatedGrading_eq_bot ℒ le_rfl)).symm
+    d.completedBCHGroup (d.lieTruncationGrading ℒ k) ≃* d.truncatedGroup ℒ k :=
+  (d.bchCompletionEquiv (d.lieTruncationGrading ℒ k)
+    (d.truncationIdeal_lieTruncationGrading_eq_bot ℒ le_rfl)).symm
 
 /-- The inverse comparison is the canonical map into the completion. -/
 @[simp]
 theorem truncatedBCHCompletionEquiv_symm_apply (k : ℕ) (g : d.truncatedGroup ℒ k) :
     (d.truncatedBCHCompletionEquiv ℒ k).symm g =
-      d.bchToCompletion (d.truncatedGrading ℒ k) g := by
+      d.bchToCompletion (d.lieTruncationGrading ℒ k) g := by
   rw [truncatedBCHCompletionEquiv, MulEquiv.symm_symm, bchCompletionEquiv_apply]
 
 /-- A completed exponential in the truncated algebra has its original finite coordinate. -/
 @[simp]
-theorem truncatedBCHCompletionEquiv_expToCompletion (k : ℕ) (x : d.truncatedLie ℒ k) :
+theorem truncatedBCHCompletionEquiv_expToCompletion (k : ℕ) (x : d.lieTruncation ℒ k) :
     d.truncatedBCHCompletionEquiv ℒ k
-      (d.expToCompletion (d.truncatedGrading ℒ k) x) = BCHGroup.exp x := by
+      (d.expToCompletion (d.lieTruncationGrading ℒ k) x) = BCHGroup.exp x := by
   rw [truncatedBCHCompletionEquiv, bchCompletionEquiv_symm_expToCompletion]
 
 /-- Quotienting the Lie algebra and then completing induces exactly the finite
@@ -70,19 +74,19 @@ theorem truncatedBCHCompletionEquiv_completedMap_truncation (k : ℕ)
   -- and `CompletedGroup.map_projection`.
   let f := GradedLieHom.truncation d ℒ k
   have hmap : f.truncatedMap l (a := max k l) (by simp) =
-      (d.degreeIdeal (d.truncatedGrading ℒ k) l).mkQ.comp
-        (d.truncationMap ℒ (le_max_left k l)) := by
-    apply (d.degreeIdeal ℒ (max k l)).lieHom_qext
+      (d.truncationIdeal (d.lieTruncationGrading ℒ k) l).mkQ.comp
+        (d.lieTruncationMap ℒ (le_max_left k l)) := by
+    apply (d.truncationIdeal ℒ (max k l)).lieHom_qext
     intro x
     simp [f, LieIdeal.mkQ_apply]
   let gm : d.truncatedGroup ℒ (max k l) := CompletedGroup.projection (max k l) g
   let gk : d.truncatedGroup ℒ k := CompletedGroup.projection k g
   have hp : (f.truncatedMap l (a := max k l) (by simp)).bchGroupMap gm =
-      (d.degreeIdeal (d.truncatedGrading ℒ k) l).mkQ.bchGroupMap gk := by
+      (d.truncationIdeal (d.lieTruncationGrading ℒ k) l).mkQ.bchGroupMap gk := by
     rw [hmap, LieHom.bchGroupMap_comp, MonoidHom.comp_apply]
-    exact congrArg (d.degreeIdeal (d.truncatedGrading ℒ k) l).mkQ.bchGroupMap
+    exact congrArg (d.truncationIdeal (d.lieTruncationGrading ℒ k) l).mkQ.bchGroupMap
       (CompletedGroup.map_projection k (max k l) (le_max_left k l) g)
   exact (f.projection_completedMap_of_le l (a := max k l) (by simp) g).trans
-    (hp.trans (d.projection_bchToCompletion (d.truncatedGrading ℒ k) l gk).symm)
+    (hp.trans (d.projection_bchToCompletion (d.lieTruncationGrading ℒ k) l gk).symm)
 
-end Mei.PositiveDegrees
+end TauCeti.PositiveDegrees

@@ -69,6 +69,8 @@ Theorem 9.9 (arXiv:2503.03719v1). The local crossing comparison uses
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 open TauCeti (DirectedWallSpaces)
 
 noncomputable section
@@ -189,7 +191,7 @@ theorem combinedLabel_eq_groupLabel_inv {k : ℕ} {θ v : V}
 /-- The group labels are compatible with the truncation maps of the BCH tower. -/
 @[simp]
 theorem map_groupLabel (g : κ) {k l : ℕ} (hkl : k ≤ l) :
-    (d.truncationMap ℒ hkl).bchGroupMap (G.groupLabel g l) = G.groupLabel g k := by
+    (d.lieTruncationMap ℒ hkl).bchGroupMap (G.groupLabel g l) = G.groupLabel g k := by
   classical
   let s := (Set.toFinite (D.active l)).toFinset.filter fun j => G.group j = g
   have hs : ∀ j ∈ s, G.group j = g := fun j hj => (Finset.mem_filter.mp hj).2

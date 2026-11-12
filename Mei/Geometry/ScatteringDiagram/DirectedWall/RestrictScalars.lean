@@ -30,6 +30,8 @@ ray and support are retained, so incomingness and outgoingness are preserved.
 
 public section
 
+open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading)
+
 open TauCeti (DirectedWallSpaces)
 
 noncomputable section

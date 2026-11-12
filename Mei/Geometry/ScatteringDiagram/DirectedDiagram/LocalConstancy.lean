@@ -26,6 +26,8 @@ In particular, near a regular point of an affine subspace `A` all of whose incid
 
 public noncomputable section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 open TauCeti (DirectedWallSpaces)
 
 open Set Filter Topology Mei.Convex

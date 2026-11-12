@@ -34,6 +34,8 @@ scattering diagrams, Part III*, §5 (arXiv:2111.00800v6).
 
 public section
 
+open TauCeti (PositiveDegrees)
+
 noncomputable section
 
 namespace Mei.SkewLatticeDatum.Examples

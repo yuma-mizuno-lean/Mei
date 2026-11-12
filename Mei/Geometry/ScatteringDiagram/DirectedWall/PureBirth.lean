@@ -19,6 +19,8 @@ bound for the birth order `δ(n)`.
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 open TauCeti (DirectedWallSpaces)
 
 noncomputable section

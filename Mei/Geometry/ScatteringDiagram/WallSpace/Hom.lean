@@ -30,6 +30,8 @@ Mathlib's `MonoidHom.domRestrict` and `MonoidHom.codRestrict`.
 
 public section
 
+open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading SupportedRay)
+
 open TauCeti (DirectedWallSpaces)
 
 namespace Mei
@@ -61,7 +63,7 @@ cutoff at least as large as the prescribed modulus. -/
 theorem truncatedMap_mem_truncatedRayLieSubalgebra (f : GradedLieHom T ℒ ℳ)
     (hdegree : ∀ n ∈ w.rayDegrees, T n ∈ v.rayDegrees)
     (hwall : ∀ n ∈ w.rayDegrees, ∀ x ∈ H.wall n m, f x ∈ H'.wall (T n) m')
-    {a k : ℕ} (ha : T.modulus k ≤ a) {x : d.truncatedLie ℒ a}
+    {a k : ℕ} (ha : T.modulus k ≤ a) {x : d.lieTruncation ℒ a}
     (hx : x ∈ H.truncatedRayLieSubalgebra w m a) :
     f.truncatedMap k ha x ∈ H'.truncatedRayLieSubalgebra v m' k := by
   obtain ⟨y, hy, rfl⟩ := (H.mem_truncatedRayLieSubalgebra w m a x).mp hx

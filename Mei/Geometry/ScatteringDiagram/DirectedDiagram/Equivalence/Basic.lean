@@ -26,6 +26,8 @@ No local finiteness of the union of the active supports is required.
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 open TauCeti (DirectedWallSpaces)
 
 noncomputable section

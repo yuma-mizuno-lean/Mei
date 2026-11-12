@@ -17,6 +17,8 @@ injective at every ambient shift, including negative shifts.
 -/
 
 public section
+
+open TauCeti (PositiveDegrees PositiveDegreeMap)
 noncomputable section
 
 namespace Mei.QuantumMonoidAlgebra

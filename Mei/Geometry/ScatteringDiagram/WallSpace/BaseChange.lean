@@ -39,21 +39,21 @@ variable {Γ Λ R S L : Type*} [AddCommMonoid Γ] [AddCommMonoid Λ]
   {ρ : Γ →+ Λ} {ℒ : Γ → Submodule R L} (H : DirectedWallSpaces ρ ℒ)
 
 variable [DecidableEq Γ] [GradedLieAlgebra ℒ]
-  (d : Mei.PositiveDegrees Γ) [Mei.IsPositiveGrading d ℒ]
+  (d : TauCeti.PositiveDegrees Γ) [TauCeti.IsPositiveGrading d ℒ]
 
 /-- Under the canonical truncation comparison, extending a wall space and then
 truncating gives the scalar extension of its original truncated image. -/
 theorem map_truncatedBaseChangeEquiv_wall (k : ℕ) (n : Γ) (m : Λ →+ ℤ) :
     (((H.baseChange S).truncated d k).wall n m).map
-        (d.truncatedBaseChangeEquiv ℒ k).toLinearMap =
+        (d.lieTruncationBaseChangeEquiv ℒ k).toLinearMap =
       ((H.truncated d k).wall n m).baseChange S := by
-  have square : (d.truncatedBaseChangeEquiv ℒ k).toLinearMap.comp
-      (d.degreeIdeal (fun n => (ℒ n).baseChange S) k).mkQ.toLinearMap =
-        ((d.degreeIdeal ℒ k).mkQ.toLinearMap).baseChange S := by
+  have square : (d.lieTruncationBaseChangeEquiv ℒ k).toLinearMap.comp
+      (d.truncationIdeal (fun n => (ℒ n).baseChange S) k).mkQ.toLinearMap =
+        ((d.truncationIdeal ℒ k).mkQ.toLinearMap).baseChange S := by
     rw [← LieHom.coe_baseChange]
     apply LinearMap.ext
     intro z
-    exact d.truncatedBaseChangeEquiv_mk ℒ k z
+    exact d.lieTruncationBaseChangeEquiv_mk ℒ k z
   rw [truncated_wall, baseChange_wall, ← Submodule.map_comp, square,
     truncated_wall, Submodule.baseChange_map]
 

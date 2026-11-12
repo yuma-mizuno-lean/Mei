@@ -24,8 +24,8 @@ Two checks on `BLMPolynomialInput`, and instances of the positive representative
   function of a polynomial input, with variables `p_s`, `p_t` for `s ≠ t`. The terms
   `p_s z^(s w)` and `p_t z^(t w)` have proportional exponents, but lie on different supported
   rays of the finite alphabet, those of the letters `v_s` and `v_t`
-  (`Mei.PositiveDegrees.letterRay_injective`). The product `p_s p_t z^((s+t) w)` lies on a third
-  ray, that of `v_s + v_t` (`Mei.PositiveDegrees.letterPairRay_ne_letterRay`). The logarithm of
+  (`TauCeti.PositiveDegrees.letterRay_injective`). The product `p_s p_t z^((s+t) w)` lies on a third
+  ray, that of `v_s + v_t` (`TauCeti.PositiveDegrees.letterPairRay_ne_letterRay`). The logarithm of
   the initial function is `g - g²/2` modulo cubic terms, where `g = ∑ pₛ z^(s w)`. The
   coefficient of `p_s p_t` in `g²` is `2`, so the coefficient on this ray is `-2/2 = -1`. So the
   ray factor of the initial label on this ray has wall function `f_u` with `[u] f_u = -1`
@@ -77,6 +77,8 @@ generalized cluster scattering diagrams*, §8.1 and §9.2 (arXiv:2503.03719v1).
 -/
 
 public section
+
+open TauCeti (PositiveDegrees)
 
 noncomputable section
 

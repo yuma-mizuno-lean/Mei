@@ -28,6 +28,8 @@ No freeness, PBW, or injectivity assumption on the canonical Lie map is required
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 open scoped UniversalEnvelopingAlgebra.InnerAction
 
 attribute [local instance 100] LieRing.ofAssociativeRing
@@ -57,7 +59,7 @@ local instance rationalCompletedInnerAlgebra : Algebra ℚ U :=
 /-- At every cutoff, the inner exponential of a truncated Lie element is
 conjugation by the finite exponential of its canonical enveloping image. -/
 @[simp]
-theorem truncatedExpLieAction_apply (k : ℕ) (x : d.truncatedLie ℒ k)
+theorem truncatedExpLieAction_apply (k : ℕ) (x : d.lieTruncation ℒ k)
     (a : U ⧸ (F).ideal (k + 1)) :
     (F).truncatedExpLieAction d ℒ k x a =
       IsNilpotent.exp (truncatedLieToU d ℒ k x) * a *
@@ -69,7 +71,7 @@ theorem truncatedExpLieAction_apply (k : ℕ) (x : d.truncatedLie ℒ k)
 variable [LieAlgebra ℚ L] [IsScalarTower ℚ R L]
 
 /-- The finite inner BCH action is conjugation by the canonical enveloping unit. -/
-theorem truncatedBCHAction_apply (k : ℕ) (g : BCHGroup (d.truncatedLie ℒ k))
+theorem truncatedBCHAction_apply (k : ℕ) (g : BCHGroup (d.lieTruncation ℒ k))
     (a : U ⧸ (F).ideal (k + 1)) :
     (F).truncatedBCHAction d ℒ k g a =
       (truncatedBCHToUnits d ℒ k g : U ⧸ (F).ideal (k + 1)) * a *

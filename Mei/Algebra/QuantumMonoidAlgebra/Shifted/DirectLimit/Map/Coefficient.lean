@@ -20,6 +20,8 @@ chosen ambient homogeneous pieces, with no comparison with other ambient complet
 -/
 
 public section
+
+open TauCeti (PositiveDegrees)
 noncomputable section
 
 namespace Mei.QuantumMonoidAlgebra

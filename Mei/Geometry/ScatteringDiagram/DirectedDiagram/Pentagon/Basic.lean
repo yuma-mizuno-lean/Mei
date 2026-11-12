@@ -31,6 +31,8 @@ cluster algebras*, §1.1, arXiv:1411.1394v2); see
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 open TauCeti (DirectedWallSpaces)
 
 noncomputable section

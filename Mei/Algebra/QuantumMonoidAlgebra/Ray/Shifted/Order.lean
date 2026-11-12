@@ -17,6 +17,8 @@ degree, and the acting unit series need not have constant coefficient one.
 -/
 
 public section
+
+open TauCeti (PositiveDegrees)
 noncomputable section
 
 namespace Mei.QuantumMonoidAlgebra

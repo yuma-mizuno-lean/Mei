@@ -14,7 +14,7 @@ public import Mei.RingTheory.PowerSeries.InvOneSubPow
 # A positive wall function that is not a polynomial
 
 Take the standard orthant `ℕ²` of `ℤ²` with the coordinate-sum degree
-(`Mei.PositiveDegrees.orthant (Fin 2)`), with its own monoid as coefficient monoid. Wall
+(`TauCeti.PositiveDegrees.orthant (Fin 2)`), with its own monoid as coefficient monoid. Wall
 functions are then units of the completion of `ℚ[x, y]` for the positive-increment filtration
 `Mei.TropicalVertexCoefficientAction.filtration`. Write `x²y²` for the monomial of exponent
 `(2, 2)` (`Mei.TropicalVertexCoefficientAction.Examples.diagonalExponent`). The unit
@@ -45,11 +45,13 @@ here; only the properties of the series listed above are.
 
 public section
 
+open TauCeti (PositiveDegrees)
+
 noncomputable section
 
 namespace Mei.TropicalVertexCoefficientAction.Examples
 
-open _root_.AddMonoidAlgebra PositiveDegrees
+open _root_.AddMonoidAlgebra TauCeti.PositiveDegrees
 
 local notation "Q" => PositiveDegrees.monoid (orthant (Fin 2))
 local notation "F" => filtration (R := ℚ) (orthant (Fin 2)) Q

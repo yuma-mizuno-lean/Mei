@@ -24,6 +24,8 @@ sums and its completed wall groups; no new group or completion is constructed.
 
 public section
 
+open TauCeti (SupportedRay)
+
 open TauCeti (DirectedWallSpaces)
 
 namespace TauCeti
@@ -67,7 +69,7 @@ namespace DirectedWallSpaces
 variable {Γ Λ Λ' R L : Type*} [AddCommGroup Γ]
   [AddCommMonoid Λ] [AddCommMonoid Λ']
   [CommRing R] [LieRing L] [LieAlgebra R L]
-  {ρ : Γ →+ Λ} {ℒ : Γ → Submodule R L} {d : Mei.PositiveDegrees Γ}
+  {ρ : Γ →+ Λ} {ℒ : Γ → Submodule R L} {d : TauCeti.PositiveDegrees Γ}
   (H : DirectedWallSpaces ρ ℒ) (π : Λ →+ Λ')
 
 /-- Projection retains the full supported-ray sum for the pulled back normal. -/
@@ -76,7 +78,7 @@ theorem mapTangent_raySubmodule (w : SupportedRay d) (m : Λ' →+ ℤ) :
     (H.mapTangent π).raySubmodule w m = H.raySubmodule w (m.comp π) := by
   simp only [raySubmodule_def, mapTangent_wall]
 
-variable [DecidableEq Γ] [GradedLieAlgebra ℒ] [Mei.IsPositiveGrading d ℒ]
+variable [DecidableEq Γ] [GradedLieAlgebra ℒ] [TauCeti.IsPositiveGrading d ℒ]
 
 /-- Finite ray logarithms agree under spatial projection. -/
 @[simp]

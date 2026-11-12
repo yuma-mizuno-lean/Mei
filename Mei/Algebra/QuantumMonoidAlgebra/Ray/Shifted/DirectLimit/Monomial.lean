@@ -21,6 +21,8 @@ is needed for this ratio formula.
 
 public noncomputable section
 
+open TauCeti (PositiveDegrees)
+
 namespace Mei.QuantumMonoidAlgebra
 
 variable {R Γ : Type*} [CommRing R] [AddCommGroup Γ] [DecidableEq Γ]

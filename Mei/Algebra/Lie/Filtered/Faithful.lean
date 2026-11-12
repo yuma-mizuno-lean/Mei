@@ -31,6 +31,8 @@ actions. Exponential detection uses the finite logarithm identity
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 attribute [local instance] LieRing.ofAssociativeRing
 
 namespace Mei
@@ -53,7 +55,8 @@ variable (F : ModuleFiltration R M) (d : PositiveDegrees N) (ℒ : N → Submodu
   [LieModule R L M] [DecidableEq N] [GradedLieAlgebra ℒ]
   [IsPositiveGrading d ℒ] [IsFiltrationRaising d ℒ F]
 
-local notation "π" => LieIdeal.completionProjection (d.degreeIdeal ℒ) (d.degreeIdeal_antitone ℒ)
+local notation "π" =>
+  LieIdeal.completionProjection (d.truncationIdeal ℒ) (d.truncationIdeal_antitone ℒ)
 
 /-- The action of the degree-completed Lie algebra on the coefficient completion. -/
 def completedLieAction : d.completedLie ℒ →ₗ⁅R⁆ Module.End R F.completion where
@@ -62,7 +65,7 @@ def completedLieAction : d.completedLie ℒ →ₗ⁅R⁆ Module.End R F.complet
       intro k l h
       ext m
       simp only [LinearMap.comp_apply, transition_truncatedLieAction,
-        transition_projection, PositiveDegrees.truncationMap_def,
+        transition_projection, PositiveDegrees.lieTruncationMap_def,
         LieIdeal.factor_completionProjection])
   map_add' x y := by
     apply LinearMap.ext
@@ -100,30 +103,30 @@ theorem eq_zero_of_truncatedLieAction_eq_zero (x : d.completedLie ℒ)
   intro k
   rw [← LieIdeal.completionProjection_apply, map_zero]
   by_contra hk
-  obtain ⟨y, hy⟩ := (d.degreeIdeal ℒ (k + 1)).surjective_mkQ (π (k + 1) x)
-  have hlow : (d.degreeIdeal ℒ k).mkQ y = π k x := by
+  obtain ⟨y, hy⟩ := (d.truncationIdeal ℒ (k + 1)).surjective_mkQ (π (k + 1) x)
+  have hlow : (d.truncationIdeal ℒ k).mkQ y = π k x := by
     simpa only [LieIdeal.mkQ_apply, LieIdeal.factor_apply] using
-      congrArg (LieIdeal.factor (d.degreeIdeal_antitone ℒ (Nat.le_succ k))) hy
+      congrArg (LieIdeal.factor (d.truncationIdeal_antitone ℒ (Nat.le_succ k))) hy
       |>.trans (LieIdeal.factor_completionProjection _ _ (Nat.le_succ k) x)
   have hy_not : y ∉ d.degreeSubmodule ℒ k := by
     intro h
-    have hz : (d.degreeIdeal ℒ k).mkQ y = 0 :=
-      (d.degreeIdeal ℒ k).mkQ_eq_zero.mpr (by
-        rw [← d.degreeIdeal_toSubmodule ℒ k] at h
+    have hz : (d.truncationIdeal ℒ k).mkQ y = 0 :=
+      (d.truncationIdeal ℒ k).mkQ_eq_zero.mpr (by
+        rw [← d.truncationIdeal_toSubmodule ℒ k] at h
         exact h)
     exact hk (by simpa only [map_zero] using hlow.symm.trans hz)
   obtain ⟨b, m, hm, hdet⟩ := IsFiltrationDetected.exists_lie_not_mem (F := F) hy_not
   -- Keep one extra Lie degree: the ambiguity in the lift then acts in the
   -- very filtration term excluded by the detection test.
-  obtain ⟨z, hz⟩ := (d.degreeIdeal ℒ (b + k + 1)).surjective_mkQ (π (b + k + 1) x)
-  have hzy : (d.degreeIdeal ℒ (k + 1)).mkQ z = (d.degreeIdeal ℒ (k + 1)).mkQ y := by
+  obtain ⟨z, hz⟩ := (d.truncationIdeal ℒ (b + k + 1)).surjective_mkQ (π (b + k + 1) x)
+  have hzy : (d.truncationIdeal ℒ (k + 1)).mkQ z = (d.truncationIdeal ℒ (k + 1)).mkQ y := by
     rw [hy]
     simpa only [LieIdeal.mkQ_apply, LieIdeal.factor_apply] using
-      congrArg (LieIdeal.factor (d.degreeIdeal_antitone ℒ (Nat.le_add_left (k + 1) b))) hz
+      congrArg (LieIdeal.factor (d.truncationIdeal_antitone ℒ (Nat.le_add_left (k + 1) b))) hz
       |>.trans (LieIdeal.factor_completionProjection _ _ (by omega) x)
   have hdiff : z - y ∈ d.degreeSubmodule ℒ (k + 1) := by
-    rw [← d.degreeIdeal_toSubmodule ℒ]
-    exact (d.degreeIdeal ℒ (k + 1)).mkQ_eq_zero.mp (by simp [map_sub, hzy])
+    rw [← d.truncationIdeal_toSubmodule ℒ]
+    exact (d.truncationIdeal ℒ (k + 1)).mkQ_eq_zero.mp (by simp [map_sub, hzy])
   have heq : ⁅z - y, m⁆ ∈ F.submodule (b + k + 2) := by
     simpa only [Nat.add_assoc, Nat.add_comm, Nat.add_left_comm] using
       IsFiltrationRaising.lie_mem (d := d) (ℒ := ℒ) (F := F) hdiff hm

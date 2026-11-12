@@ -31,6 +31,8 @@ and vanishing spatial degree directions are allowed.
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 open TauCeti (DirectedWallSpaces)
 
 noncomputable section

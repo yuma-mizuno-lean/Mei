@@ -26,6 +26,8 @@ separate.
 
 public noncomputable section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 open TauCeti (DirectedWallSpaces)
 
 open Set CategoryTheory TopologicalSpace Opposite Topology Mei.Convex

@@ -32,6 +32,8 @@ Gross–Hacking–Keel–Kontsevich, *Canonical bases for cluster algebras*, §1
 
 public noncomputable section
 
+open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading)
+
 open Set Mei.Convex
 
 namespace Mei.CompletedDiagram

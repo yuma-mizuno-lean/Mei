@@ -30,6 +30,8 @@ tropical curve counts*, Proposition 2.13 (arXiv:1503.06183v5), for path rays.
 
 public noncomputable section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 open Set Quiver Mei.Convex
 
 namespace Mei
@@ -108,6 +110,8 @@ end SingleObj
 
 namespace PositiveDegrees
 
+open TauCeti.PositiveDegrees
+
 variable {Γ : Type} {R L M V J K I : Type*}
   [AddCommGroup Γ] [DecidableEq Γ] [CommRing R] [Algebra ℚ R]
   [LieRing L] [LieAlgebra R L] [LieAlgebra ℚ L] [IsScalarTower ℚ R L]
@@ -126,7 +130,7 @@ variable (g : J → d.truncatedGroup ℒ k) (a : (d.shiftedQuotientGrading ℳ p
 /-- Every actual BCH-decorated ray along a path of the one-object quiver on the encounter
 alphabet obeys the same uniform bound on its number of arrows, including encounters that
 preserve degree. -/
-theorem pathDecoratedRay_shiftedBCH_length_le [Finite J]
+theorem _root_.TauCeti.PositiveDegrees.pathDecoratedRay_shiftedBCH_length_le [Finite J]
     {q : Path (SingleObj.star J) (SingleObj.star J)} {Q : V}
     (r : PathDecoratedRay (Q := SingleObj J) (M := fun _ => (F).quotient k)
       (ι := fun _ => Γ) (fun e => ((F).truncatedBCHAction d ℒ k (g e)).toLinearMap)

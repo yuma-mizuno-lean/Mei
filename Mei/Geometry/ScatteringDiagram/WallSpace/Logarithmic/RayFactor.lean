@@ -18,7 +18,7 @@ Fix an integral normal `n` and a completed coefficient `u` on the allowed degree
 to `n`. The completed tropical vertex label `exp(u ∂_n)` is not a wall label in general:
 its logarithm `u ∂_n` has terms `u_q z^q ∂_n` in tangent degrees `q` on many different
 supported rays. Every such term lies in the tropical vertex wall space of `q` and `n`.
-Hence the ray factors of the label (`Mei.PositiveDegrees.rayFactor`) are wall labels on
+Hence the ray factors of the label (`TauCeti.PositiveDegrees.rayFactor`) are wall labels on
 their supported rays with normal `n`, all of them commute, and at every order the label is
 the unordered product of its ray factors. For `u = log f`, these are the supported-ray
 walls `exp((log f)_w ∂_n)` presenting the function wall of `f`, whose action multiplies
@@ -50,6 +50,8 @@ scattering diagrams*, §9.2, arXiv:2503.03719v1.
 -/
 
 public section
+
+open TauCeti (PositiveDegrees SupportedRay)
 
 noncomputable section
 

@@ -31,9 +31,13 @@ finite generation or saturation of the positive monoid is required.
 
 public section
 
+open TauCeti (PositiveDegrees)
+
 noncomputable section
 
-namespace Mei.PositiveDegrees
+namespace TauCeti.PositiveDegrees
+
+open Mei
 
 open Mei.Convex Mei.FinitePolyhedralComplex
 
@@ -177,9 +181,11 @@ theorem exists_mem_arrangementComplex_walls_of_eval_eq_zero {k : ℕ} {n : N}
   rw [arrangementComplex_eq_ofArrangement]
   exact ⟨P, hP, hθP⟩
 
-end Mei.PositiveDegrees
+end TauCeti.PositiveDegrees
 
-namespace Mei.PositiveDegrees
+namespace TauCeti.PositiveDegrees
+
+open Mei
 
 variable {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : ℤ →+ V} (d : PositiveDegrees ℤ) (h : TauCeti.Toric.IsIntegralLattice i)
@@ -230,4 +236,4 @@ theorem walls_arrangementComplex_nonnegIntegers (k : ℕ) :
     have hex : ∃ n, n ∈ nonnegIntegers.cutoff k \ {0} := ⟨1, hn⟩
     simp only [hex, and_true, ite_eq_right hk, Finset.mem_singleton]
 
-end Mei.PositiveDegrees
+end TauCeti.PositiveDegrees

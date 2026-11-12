@@ -68,9 +68,9 @@ theorem antipode_mem_degreeFiltration {k : ℕ} {a : U} (ha : a ∈ (F).ideal k)
     intro n hn a ha
     rw [Submodule.mem_comap]
     rw [Submodule.restrictScalars_mem, degreeFiltration_ideal]
-    exact Mei.GradedAlgebra.le_degreeIdeal _ d _ hn _
+    exact Mei.GradedAlgebra.le_truncationIdeal _ d _ hn _
       (antipode_mem_homogeneousSubmodule ℒ ha)
-  rw [degreeFiltration_ideal, Mei.GradedAlgebra.mem_degreeIdeal_iff] at ha
+  rw [degreeFiltration_ideal, Mei.GradedAlgebra.mem_truncationIdeal_iff] at ha
   exact ht ha
 
 end Mei.UniversalEnvelopingAlgebra

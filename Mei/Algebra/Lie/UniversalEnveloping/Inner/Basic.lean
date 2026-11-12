@@ -24,6 +24,8 @@ enveloping algebra. No PBW, freeness, or separatedness assumption is used.
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 attribute [local instance 100] LieRing.ofAssociativeRing
 
 namespace UniversalEnvelopingAlgebra
@@ -63,8 +65,8 @@ local notation "F" => degreeFiltration ℒ d.degree
 scoped instance instIsFiltrationRaising :
     IsFiltrationRaising d ℒ ((F).toModuleFiltration R) where
   lie_mem {a b x m} hx hm := by
-    have hx' : x ∈ d.degreeIdeal ℒ a := by
-      rw [← d.degreeIdeal_toSubmodule ℒ a] at hx
+    have hx' : x ∈ d.truncationIdeal ℒ a := by
+      rw [← d.truncationIdeal_toSubmodule ℒ a] at hx
       exact hx
     have hi := ι_mem_degreeFiltration_of_mem_degreeIdeal d ℒ hx'
     rw [lie_eq]

@@ -31,6 +31,8 @@ completion is introduced.
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading SupportedRay)
+
 open TauCeti (DirectedWallSpaces)
 
 noncomputable section
@@ -265,7 +267,7 @@ theorem outgoing_image_iff : (W.image e E hE).Outgoing ↔ W.Outgoing := by
 @[simp]
 theorem image_refl :
     W.image (Toric.IntegralAffineEquiv.refl h)
-      (DirectedWallSpaces.CoordinateChange.refl H) (by simp) = W := by
+      (DirectedWallSpaces.CoordinateChange.refl d H) (by simp) = W := by
   apply DirectedWall.ext
   · ext n
     simp
