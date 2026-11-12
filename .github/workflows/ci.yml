@@ -70,10 +70,10 @@ jobs:
           fetch-depth: 0
 
       - name: Prepare pinned shared tools
-        uses: yuma-mizuno-lean/TauCetiTools/.github/actions/setup@1fd27ad5bc448c1d6e6f4d951fd015276021b479
+        uses: yuma-mizuno-lean/TauCetiTools/.github/actions/setup@b7fd61a4d069d6e5c83e82fec1dfad625e5edd23
         with:
           tools-repository: yuma-mizuno-lean/TauCetiTools
-          tools-ref: 1fd27ad5bc448c1d6e6f4d951fd015276021b479
+          tools-ref: b7fd61a4d069d6e5c83e82fec1dfad625e5edd23
           project-directory: .
       - name: Import-boundary guard (Mei/ and Mei.lean ⊬ roadmap/review)
         run: |
@@ -425,7 +425,7 @@ jobs:
     uses: ./.github/workflows/publish-lake-cache.yml
     with:
       tools_repository: yuma-mizuno-lean/TauCetiTools
-      tools_ref: 1fd27ad5bc448c1d6e6f4d951fd015276021b479
+      tools_ref: b7fd61a4d069d6e5c83e82fec1dfad625e5edd23
       revision: ${{ github.sha }}
       artifact-name: lake-cache-staging
       reported-toolchain: ${{ needs.build.outputs.reported-toolchain }}

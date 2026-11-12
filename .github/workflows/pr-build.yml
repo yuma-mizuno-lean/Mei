@@ -29,11 +29,11 @@ permissions:
   id-token: write  # reusable build job uses a telemetry-only OIDC audience
 jobs:
   validate:
-    uses: yuma-mizuno-lean/TauCetiTools/.github/workflows/pr-build.yml@1fd27ad5bc448c1d6e6f4d951fd015276021b479
+    uses: yuma-mizuno-lean/TauCetiTools/.github/workflows/pr-build.yml@b7fd61a4d069d6e5c83e82fec1dfad625e5edd23
     with:
       pr: ${{ inputs.pr || '' }}
       tools_repository: yuma-mizuno-lean/TauCetiTools
-      tools_ref: 1fd27ad5bc448c1d6e6f4d951fd015276021b479
+      tools_ref: b7fd61a4d069d6e5c83e82fec1dfad625e5edd23
       project_ref: ${{ github.workflow_sha }}
       lean_root: Mei
       lake_cache_bundle: true
