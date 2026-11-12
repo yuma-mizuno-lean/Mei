@@ -74,10 +74,10 @@ theorem isCompletedGroupLike_completedExp_iff (x : (F).completionIdeal 1) :
       IsCompletedPrimitive ℒ d hneg x := by
   let a : (T).completionIdeal 1 :=
     ⟨(F).includeLeftCompletion (R := R) (F) x,
-      (F).includeLeftCompletion_mem_completionIdeal (F) x.property⟩
+      (F).includeLeftCompletion_mem_completionIdeal R (F) x.property⟩
   let b : (T).completionIdeal 1 :=
     ⟨(F).includeRightCompletion (R := R) (F) x,
-      (F).includeRightCompletion_mem_completionIdeal (F) x.property⟩
+      (F).includeRightCompletion_mem_completionIdeal R (F) x.property⟩
   let c : (T).completionIdeal 1 :=
     ⟨completedCoproduct ℒ d hneg x,
       completedCoproduct_mem_completionIdeal ℒ d hneg 1 x.property⟩

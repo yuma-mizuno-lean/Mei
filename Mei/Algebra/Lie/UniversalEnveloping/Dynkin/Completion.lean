@@ -60,7 +60,7 @@ theorem mem_range_completedLieToU_iff_isCompletedPrimitive (u : (F).completion) 
         TauCeti.AlgFiltration.projection_includeLeftCompletion,
         TauCeti.AlgFiltration.projection_includeRightCompletion, ← ha,
         quotientCoproduct_mk, Ideal.Quotient.factor_mk,
-        AlgHom.toRingHom_eq_coe, Ideal.quotientMap_mk, RingHom.coe_coe,
+        Ideal.quotient_map_mkₐ, Ideal.Quotient.mkₐ_eq_mk,
         Algebra.TensorProduct.includeLeft_apply,
         Algebra.TensorProduct.includeRight_apply] at hp
       rw [← map_add] at hp ⊢

@@ -31,10 +31,9 @@ variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ 
 
 namespace OrientedCell
 
-/-- The affine test simplex with vertices `v` is transverse to the oriented cell `σ` of the same
-codimension: its image avoids the relative boundary of `σ` and, if it meets `σ`, its edge frame
-`(v 1 - v 0, …, v k - v 0)` is linearly independent modulo the direction of `σ`, so that the
-linear part of the test is an isomorphism onto the normal quotient. -/
+/-- A test of dimension k is transverse to the carrier of a codimension-k cell if
+it avoids the cell's relative frontier and, whenever it meets the cell, its
+edge vectors project to a basis of the normal quotient. -/
 structure IsTransverseToCarrier (σ : OrientedCell h k) (v : Fin (k + 1) → V) : Prop where
   /-- The test avoids the relative boundary of the cell. -/
   disjoint_intrinsicFrontier :
@@ -124,8 +123,9 @@ theorem IsTransverseToCarrier.mem_intrinsicInterior (hv : σ.IsTransverseToCarri
   rw [← intrinsicClosure_sdiff_intrinsicFrontier]
   exact ⟨subset_intrinsicClosure hxσ, hv.disjoint_intrinsicFrontier.notMem_of_mem_left hxv⟩
 
-/-- The intersection index of a transverse test vanishes exactly when the test misses the cell;
-otherwise it is `±1`. -/
+/-- The intersection index of a transverse test vanishes exactly when the test misses the cell.
+For a meeting test the two possible signs are described by
+`IsTransverseToCarrier.intersectionIndex_eq_one_or_neg_one`. -/
 theorem IsTransverseToCarrier.intersectionIndex_eq_zero_iff (hv : σ.IsTransverseToCarrier v) :
     σ.intersectionIndex v = 0 ↔ Disjoint (convexHull ℝ (range v)) σ.carrier := by
   have := h.finiteDimensional
