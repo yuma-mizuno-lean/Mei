@@ -7,6 +7,7 @@ module
 
 public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Basic
 public import Mei.Geometry.Convex.Polyhedron.CommonPath
+import Mei.Combinatorics.Quiver.Path
 import Mei.Geometry.Convex.Polyhedron.Path.Completion
 
 /-!
