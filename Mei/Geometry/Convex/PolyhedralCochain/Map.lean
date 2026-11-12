@@ -23,9 +23,13 @@ be checked in an ambient module.
 
 public section
 
+open TauCeti (OrientedCell)
+
 noncomputable section
 
-namespace Mei.PolyhedralCochain
+namespace TauCeti.PolyhedralCochain
+
+open Mei
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i} {k : ℕ}
@@ -52,14 +56,14 @@ theorem map_injective (f : E →ₗ[R] E') (hf : Function.Injective f) :
     (by norm_num : (0 : ℝ) < 1)).mpr
   intro p v _ hv
   have htrans : ∀ σ ∈ (Finsupp.mapRange.linearMap f (g ())).support,
-      σ.IsTransverse v := fun σ hσ => hv σ (Finsupp.support_mapRange (hf := f.map_zero) hσ)
-  have hzero := intersectionPairing_eq_of_ofFinsupp_eq
+      σ.IsTransverseToCarrier v := fun σ hσ => hv σ (Finsupp.support_mapRange (hf := f.map_zero) hσ)
+  have hzero := intersectionPairing_eq_of_ofFinsupp_eq_of_isTransverseToCarrier
     (hx.trans (map_zero ofFinsupp).symm) htrans
-    (by simp : ∀ σ ∈ (0 : OrientedCell h k →₀ E').support, σ.IsTransverse v)
+    (by simp : ∀ σ ∈ (0 : OrientedCell h k →₀ E').support, σ.IsTransverseToCarrier v)
   have hnat := LinearMap.congr_fun (OrientedCell.intersectionPairing_comp_mapRange f v) (g ())
   simp only [LinearMap.comp_apply] at hnat
   apply hf
   rw [map_zero]
   exact hnat.symm.trans (by simpa only [map_zero] using hzero)
 
-end Mei.PolyhedralCochain
+end TauCeti.PolyhedralCochain

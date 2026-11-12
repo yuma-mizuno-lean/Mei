@@ -25,6 +25,8 @@ The proof uses `intrinsicFrontier_eq_iUnion_active` and `activeFace`.
 
 public section
 
+open TauCeti (IsRationalNormalPolyhedron RationalAffinePolyhedron isRationalNormalPolyhedron_iff)
+
 open TauCeti (singularSupport mem_singularSupport)
 
 open Set

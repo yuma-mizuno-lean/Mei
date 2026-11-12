@@ -6,9 +6,10 @@ Authors: Codex
 module
 
 public import Mei.Algebra.Lie.UniversalEnveloping.Coproduct
-public import Mei.RingTheory.FilteredAlgebra.AlgHom
+public import TauCeti.RingTheory.FilteredAlgebra.AlgHom
 public import Mei.RingTheory.FilteredAlgebra.TensorProduct.Completion
 public import Mathlib.Algebra.Group.Submonoid.Units
+import Mei.RingTheory.FilteredAlgebra.Completion
 
 /-!
 # Coproduct and primitive elements in completed enveloping algebras
@@ -29,7 +30,7 @@ without a basis or finiteness assumption.
 The tensor target is completed by total degree; no coalgebra structure on the
 ordinary degree quotients is used.
 
-The construction uses `Mei.AlgFiltration.mapCompletionₐ`, the completed tensor
+The construction uses `TauCeti.AlgFiltration.mapCompletionₐ`, the completed tensor
 inclusions, Mathlib's `Ideal.Quotient.liftₐ` and Tau Ceti's primitive-generator
 formula `TauCeti.UniversalEnvelopingAlgebra.comul_ι`. The group-like subgroup uses
 Mathlib's `MonoidHom.eqLocus` and `MonoidHom.ker` on units.
@@ -38,6 +39,9 @@ that completed primitives have zero counit.
 -/
 
 public section
+
+open TauCeti.UniversalEnvelopingAlgebra (augmentation_le_degreeFiltration_one degreeFiltration
+  degreeFiltration_le_augmentation)
 
 open scoped TensorProduct
 
@@ -52,7 +56,7 @@ variable {Γ R L : Type*} [AddCommMonoid Γ] [CommRing R] [LieRing L] [LieAlgebr
 
 local notation "U" => _root_.UniversalEnvelopingAlgebra R L
 local notation "F" => degreeFiltration ℒ d hneg
-local notation "T" => Mei.AlgFiltration.tensorProduct R
+local notation "T" => TauCeti.AlgFiltration.tensorProduct R
   (degreeFiltration ℒ d hneg) (degreeFiltration ℒ d hneg)
 
 /-- The coproduct on the degree completion, valued in the completed total-degree
@@ -60,16 +64,16 @@ tensor product. -/
 noncomputable def completedCoproduct : (F).completion →ₐ[R] (T).completion :=
   (F).mapCompletionₐ (T) (Bialgebra.comulAlgHom R U) id monotone_id
     (fun k => by
-      rw [Mei.AlgFiltration.tensorProduct_ideal]
+      rw [TauCeti.AlgFiltration.tensorProduct_ideal]
       exact degreeFiltration_le_comap_comul ℒ d hneg (k + 1))
 
 /-- Projection of the completed coproduct is the existing finite quotient coproduct. -/
 @[simp]
 theorem projection_completedCoproduct (k : ℕ) (x : (F).completion) :
     (T).projection k (completedCoproduct ℒ d hneg x) =
-      Ideal.Quotient.factor (by rw [Mei.AlgFiltration.tensorProduct_ideal])
+      Ideal.Quotient.factor (by rw [TauCeti.AlgFiltration.tensorProduct_ideal])
         (quotientCoproduct ℒ d hneg (k + 1) ((F).projection k x)) := by
-  rw [completedCoproduct, Mei.AlgFiltration.projection_mapCompletionₐ]
+  rw [completedCoproduct, TauCeti.AlgFiltration.projection_mapCompletionₐ]
   obtain ⟨a, ha⟩ := Ideal.Quotient.mk_surjective ((F).projection k x)
   simp only [id_eq, ← ha, quotientCoproduct_mk, Ideal.Quotient.factor_mk,
     Ideal.quotient_map_mkₐ, Bialgebra.comulAlgHom_apply, Ideal.Quotient.mkₐ_eq_mk]
@@ -125,7 +129,7 @@ noncomputable def completedCounit : (F).completion →ₐ[R] R :=
 /-- Every finite-order component computes the same completed counit. -/
 theorem completedCounit_eq_quotientCounit (k : ℕ) (x : (F).completion) :
     completedCounit ℒ d hneg x = quotientCounit ℒ d hneg k ((F).projection k x) := by
-  rw [completedCounit, AlgHom.comp_apply, Mei.AlgFiltration.projectionₐ_apply,
+  rw [completedCounit, AlgHom.comp_apply, TauCeti.AlgFiltration.projectionₐ_apply,
     ← (F).factor_projection (Nat.zero_le k)]
   exact quotientCounit_factor ℒ d hneg (Nat.zero_le k) _
 
@@ -134,12 +138,12 @@ theorem completedCounit_eq_quotientCounit (k : ℕ) (x : (F).completion) :
 theorem completedCounit_toCompletion (a : U) :
     completedCounit ℒ d hneg ((F).toCompletion a) = Coalgebra.counit (R := R) a := by
   rw [completedCounit_eq_quotientCounit ℒ d hneg 0,
-    Mei.AlgFiltration.projection_toCompletion, quotientCounit_mk]
+    TauCeti.AlgFiltration.projection_toCompletion, quotientCounit_mk]
 
 /-- Elements of the first completion ideal have zero counit. -/
 theorem completedCounit_eq_zero_of_mem {x : (F).completion}
     (hx : x ∈ (F).completionIdeal 1) : completedCounit ℒ d hneg x = 0 := by
-  rw [Mei.AlgFiltration.completionIdeal_succ, RingHom.mem_ker] at hx
+  rw [TauCeti.AlgFiltration.completionIdeal_succ, RingHom.mem_ker] at hx
   rw [completedCounit_eq_quotientCounit ℒ d hneg 0, hx, map_zero]
 
 /-- For a strictly positive Lie grading, the first completion ideal is precisely
@@ -154,7 +158,7 @@ theorem mem_completionIdeal_one_iff_counit_eq_zero
     exact hx
   have hm : a ∈ (F).ideal 1 := augmentation_le_degreeFiltration_one ℒ d hpos
     ((TauCeti.HopfIdeal.mem_augmentation R _).mpr hc)
-  simpa only [Mei.AlgFiltration.completionIdeal_succ, RingHom.mem_ker,
+  simpa only [TauCeti.AlgFiltration.completionIdeal_succ, RingHom.mem_ker,
     ← ha, Ideal.Quotient.eq_zero_iff_mem] using hm
 
 /-- A completed primitive has coproduct `x ⊗ 1 + 1 ⊗ x` in the completed tensor product. -/
@@ -167,8 +171,8 @@ theorem isCompletedPrimitive_iff (x : (F).completion) :
     IsCompletedPrimitive ℒ d hneg x ↔
       completedCoproduct ℒ d hneg x =
         (F).completedTensor (R := R) (F) x 1 + (F).completedTensor (R := R) (F) 1 x := by
-  simp only [IsCompletedPrimitive, Mei.AlgFiltration.completedTensor_one_right,
-    Mei.AlgFiltration.completedTensor_one_left]
+  simp only [IsCompletedPrimitive, TauCeti.AlgFiltration.completedTensor_one_right,
+    TauCeti.AlgFiltration.completedTensor_one_left]
 
 /-- Zero is primitive in the completed enveloping algebra. -/
 @[simp]
@@ -214,7 +218,7 @@ theorem IsCompletedPrimitive.completedCounit_eq_zero {x : (F).completion}
     ext a
     simp [f]
   have hker : (T).ideal 1 ≤ RingHom.ker f.toRingHom := by
-    rw [Mei.AlgFiltration.tensorProduct_ideal]
+    rw [TauCeti.AlgFiltration.tensorProduct_ideal]
     refine (Ideal.tensorFiltration_le_iff R (F).ideal (F).ideal 1 _).mpr ?_
     intro i j hij a ha b hb
     have hc (k : ℕ) (hk : 0 < k) (c : U) (hc : c ∈ (F).ideal k) :
@@ -234,8 +238,8 @@ theorem IsCompletedPrimitive.completedCounit_eq_zero {x : (F).completion}
   have hfa : f (Coalgebra.comul (R := R) a) = Coalgebra.counit (R := R) a :=
     AlgHom.congr_fun hf a
   simp only [projection_completedCoproduct, map_add,
-    Mei.AlgFiltration.projection_includeLeftCompletion,
-    Mei.AlgFiltration.projection_includeRightCompletion, ← ha,
+    TauCeti.AlgFiltration.projection_includeLeftCompletion,
+    TauCeti.AlgFiltration.projection_includeRightCompletion, ← ha,
     quotientCoproduct_mk, Ideal.Quotient.factor_mk] at he
   have hc : Coalgebra.counit (R := R) a = 0 := by
     simpa [q, hfa, f] using he
@@ -247,8 +251,8 @@ theorem isCompletedPrimitive_toCompletion_ι (x : L) :
     IsCompletedPrimitive ℒ d hneg ((F).toCompletion (ι R x)) := by
   rw [IsCompletedPrimitive, completedCoproduct_toCompletion,
     TauCeti.UniversalEnvelopingAlgebra.comul_ι, map_add,
-    Mei.AlgFiltration.includeLeftCompletion_toCompletion,
-    Mei.AlgFiltration.includeRightCompletion_toCompletion]
+    TauCeti.AlgFiltration.includeLeftCompletion_toCompletion,
+    TauCeti.AlgFiltration.includeRightCompletion_toCompletion]
 
 /-- The canonical Lie map into the primitive elements of the completed enveloping algebra. -/
 noncomputable def toCompletedPrimitives : L →ₗ⁅R⁆ completedPrimitives ℒ d hneg :=
@@ -257,7 +261,7 @@ noncomputable def toCompletedPrimitives : L →ₗ⁅R⁆ completedPrimitives �
         intro x
         simpa only [LieSubalgebra.mem_toSubmodule, mem_completedPrimitives,
           LinearMap.comp_apply, AlgHom.toLinearMap_apply, LieHom.coe_toLinearMap,
-          Mei.AlgFiltration.toCompletionₐ_apply] using
+          TauCeti.AlgFiltration.toCompletionₐ_apply] using
           isCompletedPrimitive_toCompletion_ι ℒ d hneg x)
     map_lie' := fun {x y} => Subtype.ext
       ((((F).toCompletionₐ (R := R)).toLieHom.comp (ι R)).map_lie x y) }
@@ -300,7 +304,7 @@ theorem IsCompletedGroupLike.mul {x y : (F).completion}
   obtain ⟨hxc, hxd⟩ := hx
   obtain ⟨hyc, hyd⟩ := hy
   exact ⟨by rw [map_mul, hxc, hyc, one_mul], by
-    rw [map_mul, hxd, hyd, Mei.AlgFiltration.completedTensor_mul]⟩
+    rw [map_mul, hxd, hyd, TauCeti.AlgFiltration.completedTensor_mul]⟩
 
 /-- The submonoid of group-like elements of the degree-completed enveloping algebra. -/
 noncomputable def completedGroupLikeSubmonoid : Submonoid (F).completion where

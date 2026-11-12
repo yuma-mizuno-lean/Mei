@@ -35,7 +35,7 @@ local notation "J" => TauCeti.HopfIdeal.toIdeal (TauCeti.HopfIdeal.augmentation 
 variable [Algebra ℚ R]
 
 local notation "δ" => Nat.castAddMonoidHom ℤ
-local notation "𝓕" => Mei.UniversalEnvelopingAlgebra.degreeFiltration ℒ δ
+local notation "𝓕" => TauCeti.UniversalEnvelopingAlgebra.degreeFiltration ℒ δ
   (fun n hn => False.elim (not_lt_of_ge (Int.natCast_nonneg n) hn))
 
 /-- An augmentation element whose Dynkin and Euler values agree through order `N` is

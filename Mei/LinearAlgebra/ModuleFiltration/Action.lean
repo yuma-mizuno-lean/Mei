@@ -26,6 +26,8 @@ arbitrary decreasing compatible filtrations over associative rings.
 
 public section
 
+open TauCeti (AlgFiltration)
+
 namespace Mei.ModuleFiltration
 
 variable {R M : Type*} [Ring R] [AddCommGroup M] [Module R M]

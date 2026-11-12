@@ -30,6 +30,8 @@ varieties with effective anti-canonical class*, Proposition 3.5 and Lemma 3.7
 
 public noncomputable section
 
+open TauCeti (AlgFiltration)
+
 open Quiver Mei.GradedAlgebra
 
 namespace Mei.PathDecoratedRay
@@ -59,11 +61,11 @@ theorem length_le_of_functionWallAction
     (hv : ∀ {b c : Q} (_ : b ⟶ c) (i : Γ), v b i = v c i) {r : ℕ} (hr : I ^ r = ⊥) :
     p.length ≤ r * Nat.card (Σ b c : Q, b ⟶ c) := by
   apply β.length_le_of_filtration
-    (F := fun _ => (AlgFiltration.ofIdeal I).toModuleFiltration R)
+    (F := fun _ => (Ideal.algFiltration I).toModuleFiltration R)
     (mark := fun _ i j => if i = j then 0 else 1)
   · rw [componentTransfersRaise_iff]
     intro b c e i j k y hy hpow
-    rw [AlgFiltration.toModuleFiltration_submodule, AlgFiltration.ofIdeal_ideal,
+    rw [AlgFiltration.toModuleFiltration_submodule, Ideal.algFiltration_ideal,
       Submodule.restrictScalars_mem] at hpow ⊢
     by_cases hij : i = j
     · simp only [hij, ite_true, Nat.add_zero]
@@ -79,6 +81,6 @@ theorem length_le_of_functionWallAction
     · rw [← hij]
       exact hv e i
     · simp [hij] at h
-  · simp only [AlgFiltration.ofIdeal_ideal, hr, Submodule.restrictScalars_bot]
+  · simp only [Ideal.algFiltration_ideal, hr, Submodule.restrictScalars_bot]
 
 end Mei.PathDecoratedRay

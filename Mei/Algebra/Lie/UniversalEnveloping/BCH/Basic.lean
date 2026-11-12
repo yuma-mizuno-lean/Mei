@@ -25,6 +25,8 @@ hypothesis is imposed.
 
 public section
 
+open TauCeti.UniversalEnvelopingAlgebra (degreeFiltration)
+
 open TauCeti (PositiveDegrees IsPositiveGrading)
 
 namespace Mei.UniversalEnvelopingAlgebra

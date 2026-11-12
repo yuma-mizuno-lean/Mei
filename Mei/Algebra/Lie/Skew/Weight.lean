@@ -170,7 +170,7 @@ to the ray label of `f(χ(n) T)`. -/
 theorem completedMap_weightGradedLieHom_rayExp (f : PowerSeries R) :
     (weightGradedLieHom β hβ d hχ).completedMap (rayExp β hβ hn hn0 f) =
       rayExp β hβ hn hn0 (rescale (χ n) f) := by
-  apply CompletedGroup.ext
+  apply TauCeti.CompletedGroup.ext
   intro k
   rw [GradedLieHom.projection_completedMap_of_le _ k (a := k) (PositiveDegreeMap.id_modulus k).le,
     projection_rayExp, projection_rayExp, LieHom.bchGroupMap_exp]

@@ -167,7 +167,7 @@ theorem rayExp_congr_degree {n₁ n₂ : Γ} (h : n₁ = n₂) (hn₁ : n₁ ∈
 /-- At order `k`, a ray label is the exponential of the partial sum over `j < k`. -/
 @[simp]
 theorem projection_rayExp (k : ℕ) (f : R⟦X⟧) :
-    CompletedGroup.projection k (rayExp β hβ hn hn0 f) =
+    TauCeti.CompletedGroup.projection k (rayExp β hβ hn hn0 f) =
       BCHGroup.exp ((d.truncationIdeal ℒ k).mkQ (rayPartialSum β hβ hn hn0 k f)) := by
   rw [rayExp, PositiveDegrees.projection_completedBCHExp, completionProjection_raySeries]
 
@@ -210,7 +210,7 @@ theorem commute_rayExp_of_eq_zero {n' : Γ} (hn' : n' ∈ d.monoid) (hn0' : n' �
 private theorem log_projection_rayExp (k : ℕ) (f : R⟦X⟧) :
     (d.truncationIdeal ℒ k).mkQ (rayPartialSum β hβ hn hn0 k f) =
       BCHGroup.log (L := d.lieTruncation ℒ k)
-        (CompletedGroup.projection k (rayExp β hβ hn hn0 f)) := by
+        (TauCeti.CompletedGroup.projection k (rayExp β hβ hn hn0 f)) := by
   rw [projection_rayExp, BCHGroup.log_exp]
 
 /-- The logarithmic coefficient of a ray label in degree `(j+1)n` is `f_{j+1} X_{(j+1)n}`. -/
@@ -245,7 +245,7 @@ theorem logComponent_rayExp_eq_zero_of_forall_ne (f : R⟦X⟧) {m : Γ}
 /-- A ray label lies in the degree filtration above every order below the degree of `n`:
 its logarithmic coefficients vanish in all smaller degrees. -/
 theorem rayExp_mem_degreeFiltration (f : R⟦X⟧) {a : ℕ} (ha : (a : ℤ) < d.degree n) :
-    rayExp β hβ hn hn0 f ∈ CompletedGroup.degreeFiltration (d.groupTower ℒ) (a + 1) := by
+    rayExp β hβ hn hn0 f ∈ TauCeti.CompletedGroup.degreeFiltration (d.groupTower ℒ) (a + 1) := by
   refine d.mem_degreeFiltration_succ_iff.mpr fun m hm => ?_
   refine logComponent_rayExp_eq_zero_of_forall_ne β hβ hn hn0 f fun j hj => ?_
   have h := d.degree_pos hn hn0
@@ -258,9 +258,9 @@ regardless of the coefficients of its power series. -/
 @[simp↓] -- Discard high-degree rays before expanding their partial sums.
 theorem projection_rayExp_eq_one_of_lt (f : R⟦X⟧) {k : ℕ}
     (hk : (k : ℤ) < d.degree n) :
-    CompletedGroup.projection k (rayExp β hβ hn hn0 f) = 1 := by
+    TauCeti.CompletedGroup.projection k (rayExp β hβ hn hn0 f) = 1 := by
   exact MonoidHom.mem_ker.mp (by
-    simpa only [CompletedGroup.degreeFiltration_succ] using
+    simpa only [TauCeti.CompletedGroup.degreeFiltration_succ] using
       rayExp_mem_degreeFiltration β hβ hn hn0 f hk)
 
 /-- A ray label lies in the completed subgroup of the supported ray through `n`. -/

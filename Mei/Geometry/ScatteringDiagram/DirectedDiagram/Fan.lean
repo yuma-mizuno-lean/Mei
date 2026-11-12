@@ -298,9 +298,9 @@ product over the list of the labels of the walls whose normals vanish at `θ`. -
 private theorem exists_list_active (k : ℕ) {l : List ι} (hl : l.Nodup) (θ : V) :
     ∃ m : List (D.active k), m.Nodup ∧
       (∀ b : D.active k, b ∈ m ↔ (b : ι) ∈ l ∧ h.realCharacter (D.wall b).normal θ = 0) ∧
-      (m.map fun b : D.active k => CompletedGroup.projection k (D.wall b).label).prod =
+      (m.map fun b : D.active k => TauCeti.CompletedGroup.projection k (D.wall b).label).prod =
         (l.map fun j => if h.realCharacter (D.wall j).normal θ = 0 then
-          CompletedGroup.projection k (D.wall j).label else 1).prod := by
+          TauCeti.CompletedGroup.projection k (D.wall j).label else 1).prod := by
   classical
   -- Filter the walls of `l` that are active and vanish at `θ`; `pmap` pairs each of them with
   -- the proof of activity extracted from the filter condition.
@@ -442,9 +442,9 @@ private theorem exists_pos_mul_of_mem_support {k : ℕ} {θ : V}
 
 variable (k : ℕ) {l : List ι} (hj₁ : j₁ ∉ l) (hj₂ : j₂ ∉ l)
 
-local notation "𝒜" => CompletedGroup.projection k (DirectedWall.label (DirectedDiagram.wall D j₁))
-local notation "ℬ" => CompletedGroup.projection k (DirectedWall.label (DirectedDiagram.wall D j₂))
-local notation "𝒞" => fun j => CompletedGroup.projection k
+local notation "𝒜" => TauCeti.CompletedGroup.projection k (DirectedWall.label (DirectedDiagram.wall D j₁))
+local notation "ℬ" => TauCeti.CompletedGroup.projection k (DirectedWall.label (DirectedDiagram.wall D j₂))
+local notation "𝒞" => fun j => TauCeti.CompletedGroup.projection k
   (DirectedWall.label (DirectedDiagram.wall D j))
 local notation "𝓁" => fun j => h.realCharacter (DirectedWall.normal (DirectedDiagram.wall D j))
 local notation "𝒯" => fanTransport ℓ₁ ℓ₂ 𝓁 𝒜 ℬ 𝒞 l
@@ -483,11 +483,11 @@ private theorem mem_support_of_mem {θ : V} (hθ₁ : ℓ₁ θ = 0) (hθ₂ : �
   rw [hD.support_of_mem hj₁ hj₂ hj]
   exact ⟨by rw [he, hθ₁, hθ₂]; ring, hθ₁.ge⟩
 
-variable (hrel : CompletedGroup.projection k (D.wall j₂).label *
-    CompletedGroup.projection k (D.wall j₁).label =
-  CompletedGroup.projection k (D.wall j₁).label *
-    (l.map fun j => CompletedGroup.projection k (D.wall j).label).prod *
-    CompletedGroup.projection k (D.wall j₂).label)
+variable (hrel : TauCeti.CompletedGroup.projection k (D.wall j₂).label *
+    TauCeti.CompletedGroup.projection k (D.wall j₁).label =
+  TauCeti.CompletedGroup.projection k (D.wall j₁).label *
+    (l.map fun j => TauCeti.CompletedGroup.projection k (D.wall j).label).prod *
+    TauCeti.CompletedGroup.projection k (D.wall j₂).label)
 include hrel
 
 /-- Off the active walls, the fan product of the order-`k` labels is locally constant. -/
@@ -502,7 +502,7 @@ private theorem eventually_fanProduct_eq {θ : V}
   have hpos {f : V →ₗ[ℝ] ℝ} (hf : 0 < f θ) : ∀ᶠ φ in 𝓝 θ, 0 < f φ :=
     continuousAt_const.eventually_lt (hc f) hf
   -- A wall with a nonvanishing projected label does not contain `θ`.
-  have hoff (j : ι) (hj : CompletedGroup.projection k (D.wall j).label ≠ 1) :
+  have hoff (j : ι) (hj : TauCeti.CompletedGroup.projection k (D.wall j).label ≠ 1) :
       θ ∉ (D.wall j).support := hθ ⟨j, (D.mem_active k j).mpr hj⟩
   rcases lt_trichotomy (ℓ₁ θ) 0 with h₁ | h₁ | h₁
   · filter_upwards [hneg h₁] with φ hφ
@@ -519,7 +519,7 @@ private theorem eventually_fanProduct_eq {θ : V}
       rw [fanProduct_eq_one_of_forall_nonpos fun j hj => (hφ j hj).le,
         fanProduct_eq_one_of_nonpos h₁.le]
     · -- On the joint every wall of the list contains `θ`, so all of their labels vanish.
-      have hC : ∀ j ∈ l, CompletedGroup.projection k (D.wall j).label = 1 := fun j hj =>
+      have hC : ∀ j ∈ l, TauCeti.CompletedGroup.projection k (D.wall j).label = 1 := fun j hj =>
         not_not.mp fun hne => hoff j hne (hD.mem_support_of_mem hj₁ hj₂ h₁ h₂ hj)
       exact Eventually.of_forall fun φ => by
         rw [fanProduct_eq_one_of_forall_eq_one hC, fanProduct_eq_one_of_forall_eq_one hC]
@@ -532,10 +532,10 @@ private theorem eventually_fanProduct_eq {θ : V}
       · rw [fanProduct_eq_prod_of_forall_pos hφ₁ fun j hj => hφ j hj, hprod]
       · exact fanProduct_eq_one_of_nonpos (not_lt.mp hφ₁)
   · -- To the right of `{ℓ₁ = 0}`, each wall with a nontrivial label keeps its side.
-    have hl : ∀ᶠ φ in 𝓝 θ, ∀ j ∈ {x | x ∈ l}, CompletedGroup.projection k (D.wall j).label = 1 ∨
+    have hl : ∀ᶠ φ in 𝓝 θ, ∀ j ∈ {x | x ∈ l}, TauCeti.CompletedGroup.projection k (D.wall j).label = 1 ∨
         (0 < h.realCharacter (D.wall j).normal φ ↔ 0 < h.realCharacter (D.wall j).normal θ) := by
       refine (List.finite_toSet l).eventually_all.mpr fun j hj => ?_
-      by_cases hj' : CompletedGroup.projection k (D.wall j).label = 1
+      by_cases hj' : TauCeti.CompletedGroup.projection k (D.wall j).label = 1
       · exact Eventually.of_forall fun _ => Or.inl hj'
       · have hz : h.realCharacter (D.wall j).normal θ ≠ 0 := fun hz =>
           hoff j hj' (by rw [hD.support_of_mem hj₁ hj₂ hj]; exact ⟨hz, h₁.le⟩)
@@ -579,11 +579,11 @@ private theorem eventually_inv_mul_fst {θ : V}
     (hθ : θ ∉ singularSupport fun j : D.active k => (D.wall j).support) (h₁ : j₁ ∈ D.active k)
     (hθ₁ : θ ∈ (D.wall j₁).support) {v : V}
     (hv : ∀ j : D.active k, θ ∈ (D.wall j).support → h.realCharacter (D.wall j).normal v ≠ 0)
-    (hrel : CompletedGroup.projection k (D.wall j₂).label *
-        CompletedGroup.projection k (D.wall j₁).label =
-      CompletedGroup.projection k (D.wall j₁).label *
-        (l.map fun j => CompletedGroup.projection k (D.wall j).label).prod *
-        CompletedGroup.projection k (D.wall j₂).label) :
+    (hrel : TauCeti.CompletedGroup.projection k (D.wall j₂).label *
+        TauCeti.CompletedGroup.projection k (D.wall j₁).label =
+      TauCeti.CompletedGroup.projection k (D.wall j₁).label *
+        (l.map fun j => TauCeti.CompletedGroup.projection k (D.wall j).label).prod *
+        TauCeti.CompletedGroup.projection k (D.wall j₂).label) :
     ∀ᶠ s in 𝓝[>] (0 : ℝ), (𝒯 (θ + s • v))⁻¹ * 𝒯 (θ - s • v) = D.combinedLabel k θ v hθ := by
   have hθ₁' : ℓ₁ θ = 0 := by simpa [hD.support_fst] using hθ₁
   rw [D.combinedLabel_eq_prod k θ v hθ [⟨j₁, h₁⟩] (List.nodup_singleton _) fun b =>
@@ -645,7 +645,7 @@ private theorem fanTransport_eq_one_of_joint {θ : V}
   -- multiple of `j₀`.
   refine fanTransport_eq_one (ℓ₀ := h.realCharacter (D.wall j₀).normal) hrel.symm
     (fun j hj => ?_) x
-  by_cases hne : CompletedGroup.projection k (D.wall j).label = 1
+  by_cases hne : TauCeti.CompletedGroup.projection k (D.wall j).label = 1
   · exact Or.inl hne
   · refine Or.inr fun x => ?_
     obtain ⟨c, hc, he⟩ := hD.exists_pos_mul_of_mem_support hθ ((D.mem_active k j).mpr hne)
@@ -690,7 +690,7 @@ private theorem combinedLabel_eq_zpow {θ : V}
     (hv : ∀ j : D.active k, θ ∈ (D.wall j).support → h.realCharacter (D.wall j).normal v ≠ 0) :
     D.combinedLabel k θ v hθ =
       (l.map fun j => if h.realCharacter (D.wall j).normal θ = 0 then
-        CompletedGroup.projection k (D.wall j).label else 1).prod ^
+        TauCeti.CompletedGroup.projection k (D.wall j).label else 1).prod ^
         (if 0 < h.realCharacter (D.wall j₀).normal v then -1 else 1 : ℤ) := by
   obtain ⟨m, hnodup, hm, hprod⟩ := D.exists_list_active k hl θ
   have hm' (b : D.active k) : b ∈ m ↔ θ ∈ (D.wall b).support :=
@@ -705,7 +705,7 @@ private theorem combinedLabel_eq_zpow {θ : V}
   -- It suffices to treat directions pointing to the negative side of `j₀`.
   have key (v : V) (hneg : h.realCharacter (D.wall j₀).normal v < 0) :
       D.combinedLabel k θ v hθ = (l.map fun j => if h.realCharacter (D.wall j).normal θ = 0 then
-        CompletedGroup.projection k (D.wall j).label else 1).prod := by
+        TauCeti.CompletedGroup.projection k (D.wall j).label else 1).prod := by
     rw [D.combinedLabel_eq_prod k θ v hθ m hnodup hm', ← hprod]
     refine congrArg List.prod (List.map_congr_left fun b hb => ?_)
     rw [ite_eq_right (by rw [hsign b ((hm' b).mp hb)]; exact lt_asymm hneg), zpow_one]
@@ -766,7 +766,7 @@ private theorem eventually_inv_mul_outgoing {θ : V}
       hA hB
     simp only [hA, hB, one_mul, mul_one] at hrel
     have hX : (l.map fun j => if h.realCharacter (D.wall j).normal θ = 0 then
-        CompletedGroup.projection k (D.wall j).label else 1).prod = 1 := by
+        TauCeti.CompletedGroup.projection k (D.wall j).label else 1).prod = 1 := by
       rw [List.prod_map_ite_eq_prod_map fun j hj hne => absurd (by
         obtain ⟨p, q, -, -, he⟩ := hshape j hj
         rw [he, ← hθ₁, hθ₂]
@@ -840,11 +840,11 @@ theorem IsFanConfiguration.consistent {j₁ j₂ : ι} {μ₁ μ₂ : Λ →+ �
       (∀ j ∈ D.active k, j ≠ j₁ → j ≠ j₂ → j ∈ l) ∧
       l.Pairwise (fun i j => ∀ x, 0 < h.realCharacter μ₁ x →
         0 < h.realCharacter (D.wall j).normal x → 0 < h.realCharacter (D.wall i).normal x) ∧
-      CompletedGroup.projection k (D.wall j₂).label *
-          CompletedGroup.projection k (D.wall j₁).label =
-        CompletedGroup.projection k (D.wall j₁).label *
-          (l.map fun j => CompletedGroup.projection k (D.wall j).label).prod *
-          CompletedGroup.projection k (D.wall j₂).label) :
+      TauCeti.CompletedGroup.projection k (D.wall j₂).label *
+          TauCeti.CompletedGroup.projection k (D.wall j₁).label =
+        TauCeti.CompletedGroup.projection k (D.wall j₁).label *
+          (l.map fun j => TauCeti.CompletedGroup.projection k (D.wall j).label).prod *
+          TauCeti.CompletedGroup.projection k (D.wall j₂).label) :
     D.Consistent :=
   D.consistent_iff.mpr fun k => by
     obtain ⟨l, hl, hj₁, hj₂, hact, hsort, hrel⟩ := hfac k

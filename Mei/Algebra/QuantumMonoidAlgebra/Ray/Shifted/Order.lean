@@ -18,6 +18,8 @@ degree, and the acting unit series need not have constant coefficient one.
 
 public section
 
+open TauCeti (AlgFiltration)
+
 open TauCeti (PositiveDegrees)
 noncomputable section
 

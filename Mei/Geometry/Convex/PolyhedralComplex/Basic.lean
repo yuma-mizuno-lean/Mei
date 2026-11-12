@@ -22,6 +22,8 @@ No boundedness, full-dimensionality, or salience condition is imposed.
 
 public section
 
+open TauCeti (IsRationalNormalPolyhedron)
+
 namespace Mei
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]

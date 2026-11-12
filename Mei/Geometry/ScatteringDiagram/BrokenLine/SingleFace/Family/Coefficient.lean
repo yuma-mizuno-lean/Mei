@@ -31,9 +31,11 @@ and Carl–Pumperla–Siebert, *A tropical view on Landau–Ginzburg models*, §
 
 public noncomputable section
 
+open TauCeti (IsLocallyClosedPolyhedron IsRationalNormalPolyhedron IsRationalSemilinear)
+
 open Set Mei.Convex
 
-namespace Mei.GradedCorrespondence.Hom
+namespace TauCeti.GradedCorrespondence.Hom
 
 variable {R B U M B' U' M' ι κ ι' κ' V Λ : Type*} [Semiring R]
   [AddCommMonoid B] [Module R B] [AddCommMonoid U] [Module R U]
@@ -53,7 +55,7 @@ variable {R B U M B' U' M' ι κ ι' κ' V Λ : Type*} [Semiring R]
   {i : Λ →+ V} (h : TauCeti.Toric.IsIntegralLattice i)
   (w₀ : Λ) (v : κ → Λ) (w : κ' → Λ) (hv : ∀ q, w (τ q) = v q)
   (ν : V →L[ℝ] ℝ) (b : ℝ) (Z : Set V)
-  (hν : Toric.IsRationalFunctional h ν.toLinearMap)
+  (hν : TauCeti.Toric.IsRationalFunctional h ν.toLinearMap)
   (hZ : Z ⊆ {x | ν x = b}) (hsemi : IsRationalSemilinear h Z)
 
 local notation "p'" => (Subtype.mk (σ p) (f.admissible_left p.property) : I')
@@ -73,12 +75,12 @@ open Classical in
 /-- The complete semilinear families agree after the proved change of output
 labels. Their domains retain source admission and singular avoidance. -/
 theorem singleFaceTransferFamily_reindex : (G).reindex E = F := by
-  apply FiniteSemilinearFamily.ext
+  apply Mei.FiniteSemilinearFamily.ext
   · intro q
-    simp only [FiniteSemilinearFamily.reindex_domain, singleFaceTransferFamily_domain,
+    simp only [Mei.FiniteSemilinearFamily.reindex_domain, singleFaceTransferFamily_domain,
       singleFaceTransferLabelEquivOfInjective_degree, hv]
   · intro q Q hG hF
-    simp only [FiniteSemilinearFamily.reindex_eval, singleFaceTransferFamily_eval]
+    simp only [Mei.FiniteSemilinearFamily.reindex_eval, singleFaceTransferFamily_eval]
 
 open Classical in
 /-- One closed polyhedral subdivision simultaneously presents both embedded
@@ -100,7 +102,7 @@ theorem exists_singleFaceTransferFamily_commonClosedCharts :
   obtain ⟨η, hη, A, hA, hdisj, hcover, _⟩ :=
     C.exists_singleFaceTransferFamily_closedCharts p a h w₀ v ν b Z hν hZ hsemi
   have hD (q : labels) : (G).domain (E q) = (F).domain q := by
-    simpa only [FiniteSemilinearFamily.reindex_domain] using
+    simpa only [Mei.FiniteSemilinearFamily.reindex_domain] using
       congrArg (fun H => H.domain q)
         (f.singleFaceTransferFamily_reindex p a hτ hinj h w₀ v w hv ν b Z hν hZ hsemi)
   refine ⟨η, hη, A, ?_, hdisj, ?_, ?_⟩
@@ -117,4 +119,4 @@ theorem exists_singleFaceTransferFamily_commonClosedCharts :
   · intro q
     simpa only [hD, singleFaceTransferFamily_domain] using hcover q
 
-end Mei.GradedCorrespondence.Hom
+end TauCeti.GradedCorrespondence.Hom

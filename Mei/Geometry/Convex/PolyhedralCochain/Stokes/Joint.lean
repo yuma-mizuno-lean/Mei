@@ -36,11 +36,15 @@ transversality. No local Stokes equation or facet-incidence equation is assumed.
 
 public section
 
+open TauCeti (OrientedCell PolyhedralCochain)
+
 noncomputable section
 
 open Set Module Filter Topology
 
-namespace Mei
+namespace TauCeti
+
+open Mei
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
@@ -133,7 +137,7 @@ theorem exists_ball_sum_incident_eq_sum_succAbove
       IsCompl (affineSpan ℝ J).direction (vectorSpan ℝ (range s.points)) →
       convexHull ℝ (range s.points) ⊆ Metric.ball q ε →
       (∀ σ ∈ f.support, ∀ j, s.points j ∉ σ.carrier) →
-      (∀ τ ∈ (coboundaryPresentation (R := R) f).support, τ.IsTransverse s.points) ∧
+      (∀ τ ∈ (coboundaryPresentation (R := R) f).support, τ.IsTransverseToCarrier s.points) ∧
       (∑ σ ∈ f.support, ∑ τ ∈ σ.boundaryFacets with τ.carrier = J,
         (τ.orientation.evalSign (fun j : Fin 2 => s.points j.succ - s.points 0) : ℤ) • f σ) =
         ∑ m : Fin 3, (-1 : ℤ) ^ (m : ℕ) •
@@ -157,4 +161,4 @@ theorem exists_ball_sum_incident_eq_sum_succAbove
 
 end PolyhedralCochain
 
-end Mei
+end TauCeti

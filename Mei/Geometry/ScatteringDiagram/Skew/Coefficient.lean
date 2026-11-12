@@ -9,6 +9,7 @@ public import Mei.Geometry.ScatteringDiagram.Skew.Embedding
 public import Mei.Algebra.Lie.Logarithmic.Coefficient
 public import Mei.Algebra.Lie.Filtered.Map
 public import Mei.Algebra.Lie.BCH.Filtration
+import Mei.RingTheory.FilteredAlgebra.Completion
 
 /-!
 # Principal coefficient actions
@@ -36,6 +37,8 @@ form is zero. The principal realization follows Gross–Hacking–Keel–Kontsev
 -/
 
 public section
+
+open TauCeti (AlgFiltration)
 
 open TauCeti (PositiveDegrees GradedLieHom)
 
@@ -345,9 +348,9 @@ sends a monomial `z^p` to `z^p + y · z^p`, for any representative `y` of the lo
 label at that order: the square of the action of `y` raises the order beyond `a + 1`. -/
 theorem projection_completedBCHAction_single_of_mem_degreeFiltration
     {g : d.completedBCHGroup 𝓛} {a : ℕ}
-    (hg : g ∈ CompletedGroup.degreeFiltration (d.groupTower 𝓛) (a + 1)) {y : 𝔤}
+    (hg : g ∈ TauCeti.CompletedGroup.degreeFiltration (d.groupTower 𝓛) (a + 1)) {y : 𝔤}
     (hylog : (d.truncationIdeal 𝓛 (a + 1)).mkQ y =
-      BCHGroup.log (L := d.lieTruncation 𝓛 (a + 1)) (CompletedGroup.projection (a + 1) g))
+      BCHGroup.log (L := d.lieTruncation 𝓛 (a + 1)) (TauCeti.CompletedGroup.projection (a + 1) g))
     (p : Qpr) :
     (Fpr).projection (a + 1) ((Fpr).completedBCHAction (R := R) e ℳ
         ((D.principalGradedLieHom d).completedMap g) ((Fpr).toCompletion (single p 1))) =
@@ -376,7 +379,7 @@ theorem projection_completedBCHAction_single_of_mem_degreeFiltration
   have hle : (d.graphMap D.principalCharacter.toAddMonoidHom).modulus (a + 1) ≤ a + 1 :=
     (PositiveDegrees.graphMap_modulus _ _ _).le
   have hmap := ((D.principalGradedLieHom d).lieTruncatedMap (a + 1) hle).log_bchGroupMap
-    (CompletedGroup.projection (a + 1) g)
+    (TauCeti.CompletedGroup.projection (a + 1) g)
   have hmk := GradedLieHom.lieTruncatedMap_mk (D.principalGradedLieHom d) (a + 1) hle y
   simp only [AlgFiltration.projection_completedBCHAction, AlgFiltration.projection_toCompletion]
   rw [GradedLieHom.projection_completedMap_of_le _ (a + 1) hle, hmap, ← hylog, LieIdeal.mkQ_apply,

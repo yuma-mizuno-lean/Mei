@@ -13,18 +13,18 @@ public import Mathlib.RingTheory.PowerSeries.WellKnown
 
 Let `x` be an element of the first completed ideal of a filtered algebra. Evaluating
 Mathlib's `PowerSeries.invOneSubPow R d`, the inverse of `(1 - X) ^ d`, at `x` inverts
-`(1 - x) ^ d` (`Mei.AlgFiltration.completedAeval_invOneSubPow_mul_one_sub_pow`). The
+`(1 - x) ^ d` (`TauCeti.AlgFiltration.completedAeval_invOneSubPow_mul_one_sub_pow`). The
 coefficients of `PowerSeries.invOneSubPow R d` are natural numbers, so if `x` is positive for a
 subsemiring `P`, then so is this inverse
-(`Mei.AlgFiltration.IsPositive.completedAeval_invOneSubPow`,
-`Mei.AlgFiltration.IsPositive.inv_of_val_eq_one_sub_pow`). Unlike
-`Mei.AlgFiltration.IsPositive.inv_of_val_eq_one_add`, which inverts `1 + x`, no hypothesis on
+(`TauCeti.AlgFiltration.IsPositive.completedAeval_invOneSubPow`,
+`TauCeti.AlgFiltration.IsPositive.inv_of_val_eq_one_sub_pow`). Unlike
+`TauCeti.AlgFiltration.IsPositive.inv_of_val_eq_one_add`, which inverts `1 + x`, no hypothesis on
 `P` beyond being a subsemiring is needed.
 -/
 
 public section
 
-namespace Mei.AlgFiltration
+namespace TauCeti.AlgFiltration
 
 variable {R B : Type*} [CommRing R] [Ring B] [Algebra R B] {F : AlgFiltration B}
   {P : Subsemiring B}
@@ -61,4 +61,4 @@ theorem IsPositive.inv_of_val_eq_one_sub_pow {x : F.completionIdeal 1}
   rw [Units.inv_eq_of_mul_eq_one_left h]
   exact hx.completedAeval_invOneSubPow d
 
-end Mei.AlgFiltration
+end TauCeti.AlgFiltration

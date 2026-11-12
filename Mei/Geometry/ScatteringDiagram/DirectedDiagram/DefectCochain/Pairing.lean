@@ -28,6 +28,8 @@ boundary comparison.
 
 public section
 
+open TauCeti (OrientedCell PolyhedralCochain)
+
 open TauCeti (WallComplement)
 
 open TauCeti (PositiveDegrees IsPositiveGrading)
@@ -73,7 +75,7 @@ theorem eventually_exists_intersectionPairing_eq_log_defect
         x.val = q - a • v ∧ y.val = q + a • v ∧
         x.val ∈ interior ((cross Q).minus : Set V) ∧
         y.val ∈ interior ((cross Q).plus : Set V) ∧
-        (∀ P, (σ P).IsTransverse ![x.val, y.val]) ∧
+        (∀ P, (σ P).IsTransverseToCarrier ![x.val, y.val]) ∧
         ((OrientedCell.intersectionPairing (R := R) ![x.val, y.val]
           (∑ P, Finsupp.single (σ P) ((cross P).defect hk b t ht)) :
             (d.lieTruncationMap ℒ (Nat.le_succ k)).ker) : d.lieTruncation ℒ (k + 1)) =

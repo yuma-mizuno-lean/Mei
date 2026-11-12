@@ -59,7 +59,7 @@ theorem germLabel_homogeneousPresentation (θ : V)
     (hθ' : ∀ k, θ ∉ singularSupport
       (fun P : (D.homogeneousPresentation.levelComplex k).walls => (P : Set V))) :
     D.homogeneousPresentation.toCompletedDiagram.germLabel θ hθ' = D.germLabel θ hθ := by
-  apply CompletedGroup.ext
+  apply TauCeti.CompletedGroup.ext
   intro k
   rw [projection_germLabel, IndexedWallPresentation.toCompletedDiagram_diagram,
     IndexedWallPresentation.localLabel_toKSComplex]

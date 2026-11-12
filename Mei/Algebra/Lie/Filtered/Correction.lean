@@ -164,10 +164,10 @@ coefficient order than the output order. -/
 theorem projection_completedBCHAction_sub (g : d.completedBCHGroup ℒ)
     (a : F.completion) (k : ℕ) :
     F.projection (k + 1) (F.completedBCHAction d ℒ g a - a) =
-      F.truncatedBCHCorrection d ℒ k (CompletedGroup.projection (k + 1) g)
+      F.truncatedBCHCorrection d ℒ k (TauCeti.CompletedGroup.projection (k + 1) g)
         (F.projection k a) := by
   simp only [map_sub, projection_completedBCHAction,
-    F.truncatedBCHAction_eq_add_correction d ℒ k (CompletedGroup.projection (k + 1) g),
+    F.truncatedBCHAction_eq_add_correction d ℒ k (TauCeti.CompletedGroup.projection (k + 1) g),
     transition_projection, add_sub_cancel_left]
 
 end Mei.ModuleFiltration

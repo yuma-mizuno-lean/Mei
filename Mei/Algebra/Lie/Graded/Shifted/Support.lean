@@ -192,7 +192,7 @@ theorem sub_mem_monoid_of_shiftedQuotientComponent_truncatedBCHAction_ne_zero
       ((d.shiftedLieFiltration ℒ ℳ p).truncatedBCHAction d ℒ k
         g (Submodule.Quotient.mk a)) ≠ 0) :
     q - r ∈ d.monoid := by
-  obtain ⟨g, rfl⟩ := CompletedGroup.projection_surjective (d.groupTower ℒ)
+  obtain ⟨g, rfl⟩ := TauCeti.CompletedGroup.projection_surjective (d.groupTower ℒ)
     (fun n => d.groupTower_map_surjective ℒ (CategoryTheory.homOfLE (Nat.le_succ n)).op) k g
   apply d.sub_mem_monoid_of_shiftedHomogeneousComponent_completedBCHAction_ne_zero
     ℒ ℳ p hrp g a ha
@@ -209,7 +209,7 @@ theorem degree_lt_of_shiftedQuotientComponent_truncatedBCHAction_ne_zero
       ((d.shiftedLieFiltration ℒ ℳ p).truncatedBCHAction d ℒ k
         g (Submodule.Quotient.mk a)) ≠ 0) :
     d.degree (r - p) < d.degree (q - p) := by
-  obtain ⟨g, rfl⟩ := CompletedGroup.projection_surjective (d.groupTower ℒ)
+  obtain ⟨g, rfl⟩ := TauCeti.CompletedGroup.projection_surjective (d.groupTower ℒ)
     (fun n => d.groupTower_map_surjective ℒ (CategoryTheory.homOfLE (Nat.le_succ n)).op) k g
   apply d.degree_lt_of_shiftedHomogeneousComponent_completedBCHAction_ne_zero
     ℒ ℳ p hrp hrq g a ha
@@ -225,7 +225,7 @@ theorem shiftedQuotientComponent_truncatedBCHAction_of_mem_same
     d.shiftedQuotientComponent ℳ p r k hk
       ((d.shiftedLieFiltration ℒ ℳ p).truncatedBCHAction d ℒ k
         g (Submodule.Quotient.mk a)) = ⟨a, ha⟩ := by
-  obtain ⟨g, rfl⟩ := CompletedGroup.projection_surjective (d.groupTower ℒ)
+  obtain ⟨g, rfl⟩ := TauCeti.CompletedGroup.projection_surjective (d.groupTower ℒ)
     (fun n => d.groupTower_map_surjective ℒ (CategoryTheory.homOfLE (Nat.le_succ n)).op) k g
   simpa only [d.shiftedHomogeneousComponent_eq ℳ p r k hk,
     ModuleFiltration.projection_completedBCHAction, ModuleFiltration.projection_of] using

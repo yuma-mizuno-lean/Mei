@@ -94,14 +94,14 @@ logarithm. Empty supports are included. -/
 private theorem sum_log_joint_correction_eq
     (E : DirectedDiagram (d := d) h H (D.JointCorrectionIndex x p))
     (hlog : ∀ a : D.JointCorrectionIndex x p,
-      log (CompletedGroup.projection (k + 1) (E.wall a).label) =
+      log (TauCeti.CompletedGroup.projection (k + 1) (E.wall a).label) =
         -(DirectSum.decompose (d.lieTruncationGrading ℒ (k + 1))
           (log (D.levelPathProduct (k + 1) (p a.1))) a.2.val : d.lieTruncation ℒ (k + 1)))
     (J : (D.adaptedComplex (k + 1)).joints) :
     letI := Classical.decEq (d.lieTruncation ℒ (k + 1))
     ∑ n : (DirectSum.decompose (d.lieTruncationGrading ℒ (k + 1))
       (log (D.levelPathProduct (k + 1) (p J)))).support,
-      log (CompletedGroup.projection (k + 1) (E.wall ⟨J, n⟩).label) =
+      log (TauCeti.CompletedGroup.projection (k + 1) (E.wall ⟨J, n⟩).label) =
       -log (D.levelPathProduct (k + 1) (p J)) := by
   classical
   simp only [hlog, Finset.sum_neg_distrib]
@@ -131,11 +131,11 @@ theorem exists_joint_correction_family [Module.Free ℤ Γ]
         ∃ E : DirectedDiagram (d := d) h H (D.JointCorrectionIndex x p),
           (∀ a : D.JointCorrectionIndex x p,
             (E.wall a).Outgoing ∧
-            (E.wall a).support = Convex.sweep (a.1 : Set V) (i (ρ a.2.val)) ∧
+            (E.wall a).support = Set.sweep ℝ (a.1 : Set V) (i (ρ a.2.val)) ∧
             a.2.val ∈ (E.wall a).ray.rayDegrees ∧
             (∃ b ∈ ℒ a.2.val, (E.wall a).label = d.expToCompletion ℒ (-b)) ∧
             (∀ l : ℕ, a ∈ E.active l ↔ k + 1 ≤ l) ∧
-            log (CompletedGroup.projection (k + 1) (E.wall a).label) =
+            log (TauCeti.CompletedGroup.projection (k + 1) (E.wall a).label) =
               -(DirectSum.decompose (d.lieTruncationGrading ℒ (k + 1))
                 (log (D.levelPathProduct (k + 1) (p a.1))) a.2.val :
                   d.lieTruncation ℒ (k + 1))) ∧
@@ -143,7 +143,7 @@ theorem exists_joint_correction_family [Module.Free ℤ Γ]
             letI := Classical.decEq (d.lieTruncation ℒ (k + 1))
             ∑ n : (DirectSum.decompose (d.lieTruncationGrading ℒ (k + 1))
                 (log (D.levelPathProduct (k + 1) (p J)))).support,
-              log (CompletedGroup.projection (k + 1) (E.wall ⟨J, n⟩).label) =
+              log (TauCeti.CompletedGroup.projection (k + 1) (E.wall ⟨J, n⟩).label) =
                 -log (D.levelPathProduct (k + 1) (p J)) := by
   classical
   have hlocal := fun J : (D.adaptedComplex (k + 1)).joints =>

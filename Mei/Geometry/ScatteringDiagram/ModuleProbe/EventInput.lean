@@ -64,7 +64,7 @@ local notation "labels" k:max e:max => (List.map
   (crossingEventProduct (G := d.truncatedGroup ℒ k)
     (fun c : B.active k => h.realCharacter
       (DirectedWall.normal (DirectedDiagram.wall B c)))
-    (fun c => CompletedGroup.projection k (DirectedWall.label (DirectedDiagram.wall B c)))
+    (fun c => TauCeti.CompletedGroup.projection k (DirectedWall.label (DirectedDiagram.wall B c)))
     (B.activeLabels_commute k) e)
       (List.reverse (orderedCrossingTimes e)))
 local notation "restriction" k:max => (WallComplement.restrictPrefunctor
@@ -96,7 +96,7 @@ theorem eventually_exists_extendedCoefficientField_eq_eventInput
   dsimp only
   filter_upwards [eventually_exists_segmentPathProduct_eq_drop
     (fun c : B.active l => h.realCharacter (B.wall c).normal)
-    (fun c => CompletedGroup.projection l (B.wall c).label)
+    (fun c => TauCeti.CompletedGroup.projection l (B.wall c).label)
     (B.activeLabels_commute l) e j] with t ht
   obtain ⟨ht, z, a, hz, ha⟩ := ht
   refine ⟨ht, z, hz, ?_⟩

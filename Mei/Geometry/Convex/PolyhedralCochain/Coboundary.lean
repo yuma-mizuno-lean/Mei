@@ -30,9 +30,13 @@ The finite assembly uses `TauCeti.IsConvexPolyhedron.finite_setOf_isExposed`,
 
 public section
 
+open TauCeti (OrientedCell PolyhedralCochain)
+
 noncomputable section
 
-namespace Mei
+namespace TauCeti
+
+open Mei
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
@@ -150,4 +154,4 @@ theorem mapRange_coboundaryPresentation {F : Type*} [FunLike F E E'] [AddMonoidH
 
 end PolyhedralCochain
 
-end Mei
+end TauCeti

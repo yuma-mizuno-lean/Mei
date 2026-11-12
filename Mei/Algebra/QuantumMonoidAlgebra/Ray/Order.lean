@@ -34,8 +34,8 @@ theorem completedRayAction_sub_mem (n : P) (hn : 0 < δ n)
     completedRayAction q β P δ hδ n hn H a - a ∈ (F).completionIdeal (k + 1) := by
   have h := (F).completedTwistedSeriesAction_sub_mem
     (completedRayGenerator q β P δ hδ n hn) (1 : R) H k ha
-  simpa only [AlgFiltration.completedTwistedSeriesAction_apply, PowerSeries.rescale_one,
-    RingHom.id_apply, completedRayAction, AlgFiltration.completedSeriesAction_apply] using h
+  simpa only [TauCeti.AlgFiltration.completedTwistedSeriesAction_apply, PowerSeries.rescale_one,
+    RingHom.id_apply, completedRayAction, TauCeti.AlgFiltration.completedSeriesAction_apply] using h
 
 /-- Reverse ray crossings also act trivially modulo the next ideal order. -/
 theorem completedRayAction_symm_sub_mem (n : P) (hn : 0 < δ n)

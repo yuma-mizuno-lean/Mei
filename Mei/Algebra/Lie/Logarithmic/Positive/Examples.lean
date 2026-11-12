@@ -43,6 +43,8 @@ Gross–Hacking–Keel–Kontsevich, *Canonical bases for cluster algebras*, §1
 
 public section
 
+open TauCeti (AlgFiltration)
+
 noncomputable section
 
 namespace Mei.PositiveSpecialization.Examples
@@ -159,7 +161,7 @@ end TAdic
 
 section AAdic
 
-local notation "𝔄" => AlgFiltration.ofIdeal (Ideal.span {(Polynomial.X : Polynomial R)})
+local notation "𝔄" => Ideal.algFiltration (Ideal.span {(Polynomial.X : Polynomial R)})
 
 /-- The variable `a` lies in the first term of the `a`-adic filtration of `R[a]`. -/
 theorem X_mem_ideal_one : Polynomial.X ∈ (𝔄).ideal 1 := by

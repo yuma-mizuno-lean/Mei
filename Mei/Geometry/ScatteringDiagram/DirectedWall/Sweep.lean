@@ -8,8 +8,8 @@ module
 public import Mei.Geometry.ScatteringDiagram.DirectedWall.Basic
 public import Mei.Geometry.ScatteringDiagram.WallSpace.Normal
 public import Mei.Geometry.ScatteringDiagram.WallSpace.Coorientation
-public import Mei.Geometry.Convex.Polyhedron.Rational.Sweep
-public import Mei.Geometry.Convex.Sweep
+public import TauCeti.Analysis.Convex.Polyhedron.Rational.Sweep
+public import TauCeti.Analysis.Convex.Sweep.Basic
 
 /-!
 # Outgoing walls from transverse joint coefficients
@@ -34,13 +34,15 @@ preserves the coefficient's wall space, while fixing the positive side of its la
 
 The construction combines `FinitePolyhedralComplex.exists_joint_transverse_normal`,
 `DirectedWallSpaces.iSup_wall_eq_wall_of_inf_ker`, the rational sweep presentation,
-and `Convex.sweep_strictlyOutgoing`. It is the geometric wall construction of
+and `Set.notMem_recessionCone_sweep`. It is the geometric wall construction of
 Mandel, *Scattering diagrams, theta functions, and refined tropical curve counts*,
 proof of Theorem 2.6, and Gross–Hacking–Keel–Kontsevich,
 *Canonical bases for cluster algebras*, Appendix C.3.
 -/
 
 public section
+
+open TauCeti (IsRationalNormalPolyhedron OrientedCell)
 
 open TauCeti (PositiveDegrees IsPositiveGrading SupportedRay)
 
@@ -81,11 +83,11 @@ def ofSweep (P : Set V) (hP : P.Nonempty) (hPrat : IsRationalNormalPolyhedron h 
     obtain ⟨_, a, ha, he⟩ := SupportedRay.mem_rayDegrees.mp hn
     rw [he, map_zsmul, map_zsmul, zsmul_eq_mul, Int.cast_id] at hmn
     exact (mul_eq_zero.mp hmn).resolve_left (ne_of_gt ha)
-  support := sweep P (i (ρ n))
-  support_nonempty := sweep_nonempty hP _
+  support := Set.sweep ℝ P (i (ρ n))
+  support_nonempty := Set.Nonempty.sweep (𝕜 := ℝ) hP _
   rational_support := hPrat.sweep (ρ n)
   direction_support := by
-    rw [direction_affineSpan, vectorSpan_sweep hP, ← direction_affineSpan, hker]
+    rw [direction_affineSpan, Set.vectorSpan_sweep (𝕜 := ℝ) hP, ← direction_affineSpan, hker]
   label := d.expToCompletion ℒ (-c)
   label_mem := H.expToCompletion_mem_wallGroup
     (H.wall_le_raySubmodule w m hn ((H.wall n m).neg_mem hc))
@@ -96,7 +98,7 @@ theorem ofSweep_support (P : Set V) (hP : P.Nonempty)
     (hn : n ∈ w.rayDegrees) (m : Λ →+ ℤ) (hm : m ≠ 0)
     (hker : (h.realCharacter m).ker = (affineSpan ℝ P).direction ⊔ ℝ ∙ i (ρ n))
     (c : L) (hc : c ∈ H.wall n m) :
-    (ofSweep P hP hPrat w n hn m hm hker c hc).support = sweep P (i (ρ n)) := (rfl)
+    (ofSweep P hP hPrat w n hn m hm hker c hc).support = Set.sweep ℝ P (i (ρ n)) := (rfl)
 
 @[simp]
 theorem ofSweep_ray (P : Set V) (hP : P.Nonempty)
@@ -133,7 +135,7 @@ theorem ofSweep_outgoing (P : Set V) (hP : P.Nonempty)
   have hray : n ∈ W.ray.rayDegrees := by simpa [W] using hn
   have hnot : i (ρ n) ∉ recessionCone ℝ W.support := by
     rw [ofSweep_support, mem_recessionCone]
-    exact sweep_strictlyOutgoing hP (by simpa only [direction_affineSpan] using htrans)
+    exact Set.notMem_recessionCone_sweep hP (by simpa only [direction_affineSpan] using htrans)
   apply W.outgoing_iff.mpr
   intro hrec
   exact hnot ((W.incoming_iff_of_mem_rayDegrees hray).mp
@@ -149,9 +151,9 @@ theorem exists_outgoing_sweep {P : Set V} (hP : IsRationalNormalPolyhedron h P)
     (hker : (h.realCharacter m).ker = (affineSpan ℝ P).direction ⊔ ℝ ∙ i (ρ n))
     {a : L} (ha : a ∈ H.wall n m) :
     ∃ W : DirectedWall (d := d) h H,
-      W.normal = m ∧ W.ray = w ∧ W.support = Convex.sweep P (i (ρ n)) ∧
+      W.normal = m ∧ W.ray = w ∧ W.support = Set.sweep ℝ P (i (ρ n)) ∧
       W.label = d.expToCompletion ℒ a ∧ W.Outgoing ∧
-      ∀ l : ℕ, (l : ℤ) < d.degree n → CompletedGroup.projection l W.label = 1 := by
+      ∀ l : ℕ, (l : ℤ) < d.degree n → TauCeti.CompletedGroup.projection l W.label = 1 := by
   let W := ofSweep P hne hP w n hn m hm hker (-a) ((H.wall n m).neg_mem ha)
   refine ⟨W, ofSweep_normal .., ofSweep_ray .., ofSweep_support .., ?_,
     ofSweep_outgoing _ _ _ _ _ _ _ _ _ _ _ htrans, ?_⟩
@@ -172,11 +174,11 @@ theorem exists_sweep_correction_wall_of_ker_eq [Module.Free ℤ Γ]
     (hker : (h.realCharacter m).ker = (affineSpan ℝ P).direction ⊔ ℝ ∙ i (ρ n))
     (c : L) (hc : c ∈ H.wall n m) :
     ∃ W : DirectedWall (d := d) h H,
-      W.normal = m ∧ W.support = sweep P (i (ρ n)) ∧
-      W.support = sweep P (i (ρ W.ray.generator)) ∧
+      W.normal = m ∧ W.support = Set.sweep ℝ P (i (ρ n)) ∧
+      W.support = Set.sweep ℝ P (i (ρ W.ray.generator)) ∧
       n ∈ W.ray.rayDegrees ∧ W.label = d.expToCompletion ℒ (-c) ∧
       W.Outgoing ∧ ∀ k : ℕ,
-        CompletedGroup.projection k W.label = 1 ↔ c = 0 ∨ (k : ℤ) < d.degree n := by
+        TauCeti.CompletedGroup.projection k W.label = 1 ↔ c = 0 ∨ (k : ℤ) < d.degree n := by
   have hn0 : n ≠ 0 := by
     rintro rfl
     exact htrans (by simp)
@@ -187,7 +189,7 @@ theorem exists_sweep_correction_wall_of_ker_eq [Module.Free ℤ Γ]
   · rw [ofSweep_support, ofSweep_ray]
     obtain ⟨_, a, ha, he⟩ := SupportedRay.mem_rayDegrees.mp hw
     rw [he, map_zsmul, map_zsmul, ← Int.cast_smul_eq_zsmul ℝ]
-    exact sweep_smul_of_pos P _ (by exact_mod_cast ha)
+    exact Set.sweep_smul_of_pos P _ (by exact_mod_cast ha)
   · intro k
     rw [ofSweep_label, d.projection_expToCompletion_eq_one_iff ℒ
       (H.wall_le_piece _ _ ((H.wall _ _).neg_mem hc))]
@@ -206,7 +208,7 @@ theorem exists_swept_correction_wall [Module.Free ℤ Γ]
       W.support = sweep J (i (ρ W.ray.generator)) ∧
       n ∈ W.ray.rayDegrees ∧ W.label = d.expToCompletion ℒ (-c) ∧
       W.Outgoing ∧ ∀ k : ℕ,
-        CompletedGroup.projection k W.label = 1 ↔ c = 0 ∨ (k : ℤ) < d.degree n := by
+        TauCeti.CompletedGroup.projection k W.label = 1 ↔ c = 0 ∨ (k : ℤ) < d.degree n := by
   obtain ⟨m, hm, hker, hwall⟩ := H.exists_joint_sweep_normal C hJ n htrans
   have hcell := ((C.mem_cellsOfCodimension 2 J).mp hJ).1
   obtain ⟨W, _, hW⟩ := exists_sweep_correction_wall_of_ker_eq (C.rational J hcell)
@@ -225,12 +227,12 @@ theorem exists_sweep_correction_wall_of_truncated_of_ker_eq [Module.Free ℤ Γ]
     (k : ℕ) (hnk : d.degree n ≤ k) (c : d.lieTruncation ℒ k)
     (hc : c ∈ (H.truncated d k).wall n m) :
     ∃ W : DirectedWall (d := d) h H,
-      W.normal = m ∧ W.support = sweep P (i (ρ n)) ∧
-      W.support = sweep P (i (ρ W.ray.generator)) ∧
+      W.normal = m ∧ W.support = Set.sweep ℝ P (i (ρ n)) ∧
+      W.support = Set.sweep ℝ P (i (ρ W.ray.generator)) ∧
       n ∈ W.ray.rayDegrees ∧
       (∃ a ∈ ℒ n, W.label = d.expToCompletion ℒ (-a)) ∧ W.Outgoing ∧
-      BCHGroup.log (CompletedGroup.projection k W.label) = -c ∧
-      ∀ l : ℕ, CompletedGroup.projection l W.label = 1 ↔ c = 0 ∨ (l : ℤ) < d.degree n := by
+      BCHGroup.log (TauCeti.CompletedGroup.projection k W.label) = -c ∧
+      ∀ l : ℕ, TauCeti.CompletedGroup.projection l W.label = 1 ↔ c = 0 ∨ (l : ℤ) < d.degree n := by
   rw [H.truncated_wall] at hc
   obtain ⟨a, haw, hac⟩ := Submodule.mem_map.mp hc
   have ha : a ∈ ℒ n := H.wall_le_piece n m haw
@@ -268,8 +270,8 @@ theorem exists_swept_correction_wall_of_truncated [Module.Free ℤ Γ]
       W.support = sweep J (i (ρ W.ray.generator)) ∧
       n ∈ W.ray.rayDegrees ∧
       (∃ a ∈ ℒ n, W.label = d.expToCompletion ℒ (-a)) ∧ W.Outgoing ∧
-      BCHGroup.log (CompletedGroup.projection k W.label) = -c ∧
-      ∀ l : ℕ, CompletedGroup.projection l W.label = 1 ↔ c = 0 ∨ (l : ℤ) < d.degree n := by
+      BCHGroup.log (TauCeti.CompletedGroup.projection k W.label) = -c ∧
+      ∀ l : ℕ, TauCeti.CompletedGroup.projection l W.label = 1 ↔ c = 0 ∨ (l : ℤ) < d.degree n := by
   obtain ⟨m, hm, hker, hwall⟩ :=
     (H.truncated d k).exists_joint_sweep_normal C hJ n htrans
   have hcell := ((C.mem_cellsOfCodimension 2 J).mp hJ).1
@@ -296,8 +298,8 @@ theorem exists_cooriented_sweep [Module.Free ℤ Γ]
         (σ.sweep (ρ n) htrans).orientation.evalSign (fun _ : Fin 1 => v)) ∧
       n ∈ W.ray.rayDegrees ∧
       (∃ a ∈ ℒ n, W.label = d.expToCompletion ℒ (-a)) ∧ W.Outgoing ∧
-      BCHGroup.log (CompletedGroup.projection k W.label) = -c ∧
-      ∀ l : ℕ, CompletedGroup.projection l W.label = 1 ↔
+      BCHGroup.log (TauCeti.CompletedGroup.projection k W.label) = -c ∧
+      ∀ l : ℕ, TauCeti.CompletedGroup.projection l W.label = 1 ↔
         c = 0 ∨ (l : ℤ) < d.degree n := by
   obtain ⟨m, hm, hker, hsign, hwall⟩ := H.exists_cooriented_sweep_normal σ (ρ n) htrans m₀ h₀
   have hc' : c ∈ (H.truncated d k).wall n m := by

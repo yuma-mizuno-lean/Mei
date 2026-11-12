@@ -88,10 +88,10 @@ theorem continuousDual_realCharacter_eval (h : IsIntegralLattice i) (n : N) :
 
 /-- Evaluation at a lattice vector is rational for the continuous dual lattice. -/
 theorem isRationalFunctional_continuousDual_eval (h : IsIntegralLattice i) (n : N) :
-    Mei.Toric.IsRationalFunctional h.continuousDual
+    TauCeti.Toric.IsRationalFunctional h.continuousDual
       (ContinuousLinearMap.apply ℝ ℝ (i n)).toLinearMap := by
   rw [← continuousDual_realCharacter_eval]
-  exact Mei.Toric.IsRationalFunctional.realCharacter h.continuousDual
+  exact TauCeti.Toric.IsRationalFunctional.realCharacter h.continuousDual
     (AddMonoidHom.eval n).toIntLinearMap
 
 /-- Evaluation at a nonzero lattice point is a nonzero functional on the continuous dual. -/

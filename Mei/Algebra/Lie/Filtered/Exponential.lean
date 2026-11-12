@@ -29,7 +29,9 @@ open TauCeti (PositiveDegrees IsPositiveGrading)
 
 attribute [local instance] LieRing.ofAssociativeRing
 
-namespace Mei.AlgFiltration
+namespace TauCeti.AlgFiltration
+
+open Mei
 
 variable {N R L A : Type*} [AddCommMonoid N] [CommRing R]
   [LieRing L] [LieAlgebra R L] [Ring A] [Algebra R A]
@@ -157,4 +159,4 @@ theorem factor_truncatedExpLieAction {k l : ℕ} (h : k ≤ l)
 
 end Truncated
 
-end Mei.AlgFiltration
+end TauCeti.AlgFiltration

@@ -19,7 +19,7 @@ filtrations and convergent ordered products.
 
 The finite comparisons use `TauCeti.PositiveDegrees.lieTruncationRestrictScalarsEquiv`
 and `LieEquiv.bchGroupEquiv`. Their inverse limit uses
-`Mei.CompletedGroup.mapEquiv`, on the compatible-family carrier coming from
+`TauCeti.CompletedGroup.mapEquiv`, on the compatible-family carrier coming from
 Mathlib's `GrpCat.sectionsSubgroup`. No freeness, flatness or nilpotence of the
 original Lie algebra is needed.
 -/
@@ -85,35 +85,35 @@ theorem groupTowerRestrictScalarsIso_inv_app_exp (k : ℕᵒᵖ)
 /-- Restricting scalars preserves the completed BCH group, at every finite order. -/
 def completedBCHRestrictScalarsEquiv :
     d.completedBCHGroup (fun n => (ℒ n).restrictScalars R) ≃* d.completedBCHGroup ℒ :=
-  CompletedGroup.congr (d.groupTowerRestrictScalarsIso (R := R) ℒ)
+  TauCeti.CompletedGroup.congr (d.groupTowerRestrictScalarsIso (R := R) ℒ)
 
 /-- Projection computes scalar restriction by the finite Lie quotient comparison. -/
 @[simp]
 theorem projection_completedBCHRestrictScalarsEquiv (k : ℕ)
     (x : d.completedBCHGroup (fun n => (ℒ n).restrictScalars R)) :
-    CompletedGroup.projection k (d.completedBCHRestrictScalarsEquiv (R := R) ℒ x) =
+    TauCeti.CompletedGroup.projection k (d.completedBCHRestrictScalarsEquiv (R := R) ℒ x) =
       (d.lieTruncationRestrictScalarsEquiv (R := R) ℒ k).toLieHom.bchGroupMap
-        (CompletedGroup.projection k x) := by
-  rw [completedBCHRestrictScalarsEquiv, CompletedGroup.projection_congr]
+        (TauCeti.CompletedGroup.projection k x) := by
+  rw [completedBCHRestrictScalarsEquiv, TauCeti.CompletedGroup.projection_congr]
   exact DFunLike.congr_fun (d.groupTowerRestrictScalarsIso_hom_app_hom (R := R) ℒ (op k))
-    (CompletedGroup.projection k x)
+    (TauCeti.CompletedGroup.projection k x)
 
 /-- The inverse comparison also acts at the same finite cutoff. -/
 @[simp]
 theorem projection_completedBCHRestrictScalarsEquiv_symm (k : ℕ)
     (x : d.completedBCHGroup ℒ) :
-    CompletedGroup.projection k ((d.completedBCHRestrictScalarsEquiv (R := R) ℒ).symm x) =
+    TauCeti.CompletedGroup.projection k ((d.completedBCHRestrictScalarsEquiv (R := R) ℒ).symm x) =
       BCHGroup.exp ((d.lieTruncationRestrictScalarsEquiv (R := R) ℒ k).symm
-        (BCHGroup.log (CompletedGroup.projection k x))) := by
-  rw [completedBCHRestrictScalarsEquiv, CompletedGroup.projection_congr_symm]
-  conv_lhs => arg 2; rw [← BCHGroup.exp_log (CompletedGroup.projection k x)]
+        (BCHGroup.log (TauCeti.CompletedGroup.projection k x))) := by
+  rw [completedBCHRestrictScalarsEquiv, TauCeti.CompletedGroup.projection_congr_symm]
+  conv_lhs => arg 2; rw [← BCHGroup.exp_log (TauCeti.CompletedGroup.projection k x)]
   exact d.groupTowerRestrictScalarsIso_inv_app_exp (R := R) ℒ _ _
 
 /-- The comparison preserves and reflects triviality at every finite cutoff. -/
 theorem projection_completedBCHRestrictScalarsEquiv_eq_one_iff (k : ℕ)
     (x : d.completedBCHGroup (fun n => (ℒ n).restrictScalars R)) :
-    CompletedGroup.projection k (d.completedBCHRestrictScalarsEquiv (R := R) ℒ x) = 1 ↔
-      CompletedGroup.projection k x = 1 := by
+    TauCeti.CompletedGroup.projection k (d.completedBCHRestrictScalarsEquiv (R := R) ℒ x) = 1 ↔
+      TauCeti.CompletedGroup.projection k x = 1 := by
   rw [projection_completedBCHRestrictScalarsEquiv, ← LieEquiv.coe_bchGroupEquiv]
   exact (d.lieTruncationRestrictScalarsEquiv (R := R) ℒ k).bchGroupEquiv.injective.eq_iff'
     (map_one _)
@@ -123,8 +123,8 @@ comparison of `x` back to the projection of `x`. -/
 theorem bchGroupEquiv_projection_completedBCHRestrictScalarsEquiv_symm (k : ℕ)
     (x : d.completedBCHGroup ℒ) :
     (d.lieTruncationRestrictScalarsEquiv (R := R) ℒ k).bchGroupEquiv
-        (CompletedGroup.projection k ((d.completedBCHRestrictScalarsEquiv (R := R) ℒ).symm x)) =
-      CompletedGroup.projection k x := by
+        (TauCeti.CompletedGroup.projection k ((d.completedBCHRestrictScalarsEquiv (R := R) ℒ).symm x)) =
+      TauCeti.CompletedGroup.projection k x := by
   have hx := d.projection_completedBCHRestrictScalarsEquiv (R := R) ℒ k
     ((d.completedBCHRestrictScalarsEquiv (R := R) ℒ).symm x)
   rw [MulEquiv.apply_symm_apply] at hx
@@ -135,13 +135,13 @@ theorem bchGroupEquiv_projection_completedBCHRestrictScalarsEquiv_symm (k : ℕ)
 theorem completedBCHRestrictScalarsEquiv_mem_degreeFiltration_iff (a : ℕ)
     (x : d.completedBCHGroup (fun n => (ℒ n).restrictScalars R)) :
     d.completedBCHRestrictScalarsEquiv (R := R) ℒ x ∈
-        CompletedGroup.degreeFiltration (d.groupTower ℒ) a ↔
-      x ∈ CompletedGroup.degreeFiltration
+        TauCeti.CompletedGroup.degreeFiltration (d.groupTower ℒ) a ↔
+      x ∈ TauCeti.CompletedGroup.degreeFiltration
         (d.groupTower (fun n => (ℒ n).restrictScalars R)) a := by
   cases a with
   | zero => simp
   | succ k =>
-    simp only [CompletedGroup.degreeFiltration_succ, MonoidHom.mem_ker,
+    simp only [TauCeti.CompletedGroup.degreeFiltration_succ, MonoidHom.mem_ker,
       projection_completedBCHRestrictScalarsEquiv]
     have he := (d.lieTruncationRestrictScalarsEquiv (R := R) ℒ k).bchGroupEquiv.injective
     rw [← LieEquiv.coe_bchGroupEquiv]
@@ -152,23 +152,23 @@ variable {ι : Type*}
 /-- Scalar restriction preserves families with finite support in every truncation. -/
 theorem hasFiniteSupport_completedBCHRestrictScalarsEquiv
     (x : ι → d.completedBCHGroup (fun n => (ℒ n).restrictScalars R))
-    (hx : CompletedGroup.HasFiniteSupport x) :
-    CompletedGroup.HasFiniteSupport (fun i => d.completedBCHRestrictScalarsEquiv (R := R) ℒ
+    (hx : TauCeti.CompletedGroup.HasFiniteSupport x) :
+    TauCeti.CompletedGroup.HasFiniteSupport (fun i => d.completedBCHRestrictScalarsEquiv (R := R) ℒ
       (x i)) := by
-  simpa only [completedBCHRestrictScalarsEquiv, CompletedGroup.congr_apply] using
+  simpa only [completedBCHRestrictScalarsEquiv, TauCeti.CompletedGroup.congr_apply] using
     hx.map OrderHom.id (d.groupTowerRestrictScalarsIso (R := R) ℒ).hom
 
 /-- Scalar restriction commutes with ordered products that converge at every cutoff. -/
 @[simp]
 theorem completedBCHRestrictScalarsEquiv_orderedProd [LinearOrder ι]
     (x : ι → d.completedBCHGroup (fun n => (ℒ n).restrictScalars R))
-    (hx : CompletedGroup.HasFiniteSupport x) :
-    d.completedBCHRestrictScalarsEquiv (R := R) ℒ (CompletedGroup.orderedProd x hx) =
-      CompletedGroup.orderedProd
+    (hx : TauCeti.CompletedGroup.HasFiniteSupport x) :
+    d.completedBCHRestrictScalarsEquiv (R := R) ℒ (TauCeti.CompletedGroup.orderedProd x hx) =
+      TauCeti.CompletedGroup.orderedProd
         (fun i => d.completedBCHRestrictScalarsEquiv (R := R) ℒ (x i))
         (d.hasFiniteSupport_completedBCHRestrictScalarsEquiv ℒ x hx) := by
-  simpa only [completedBCHRestrictScalarsEquiv, CompletedGroup.congr_apply] using
-    CompletedGroup.map_orderedProd OrderHom.id
+  simpa only [completedBCHRestrictScalarsEquiv, TauCeti.CompletedGroup.congr_apply] using
+    TauCeti.CompletedGroup.map_orderedProd OrderHom.id
       (d.groupTowerRestrictScalarsIso (R := R) ℒ).hom x hx
 
 end TauCeti.PositiveDegrees
@@ -201,6 +201,6 @@ theorem completedMap_restrictScalars (f : GradedLieHom T ℒ ℳ) :
     PositiveDegrees.projection_completedBCHRestrictScalarsEquiv, projection_completedMap]
   have ht := congrArg (fun h => h.bchGroupMap) (f.lieTruncatedMap_restrictScalars (R := R) k le_rfl)
   simp only [LieHom.bchGroupMap_comp, LieHom.bchGroupMap_restrictScalars] at ht
-  exact DFunLike.congr_fun ht (CompletedGroup.projection (T.modulus k) x)
+  exact DFunLike.congr_fun ht (TauCeti.CompletedGroup.projection (T.modulus k) x)
 
 end TauCeti.GradedLieHom

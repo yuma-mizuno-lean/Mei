@@ -28,6 +28,8 @@ No freeness, PBW, or injectivity assumption on the canonical Lie map is required
 
 public section
 
+open TauCeti.UniversalEnvelopingAlgebra (degreeFiltration)
+
 open TauCeti (PositiveDegrees IsPositiveGrading)
 
 open scoped UniversalEnvelopingAlgebra.InnerAction
@@ -76,7 +78,7 @@ theorem truncatedBCHAction_apply (k : ℕ) (g : BCHGroup (d.lieTruncation ℒ k)
     (F).truncatedBCHAction d ℒ k g a =
       (truncatedBCHToUnits d ℒ k g : U ⧸ (F).ideal (k + 1)) * a *
         (truncatedBCHToUnits d ℒ k g⁻¹ : U ⧸ (F).ideal (k + 1)) := by
-  simp only [Mei.AlgFiltration.truncatedBCHAction_apply,
+  simp only [TauCeti.AlgFiltration.truncatedBCHAction_apply,
     truncatedExpLieAction_apply, coe_truncatedBCHToUnits, BCHGroup.log_inv, map_neg]
 
 /-- The inner representation of every completed BCH label is conjugation by its
@@ -88,11 +90,11 @@ theorem completedBCHAction_apply (g : d.completedBCHGroup ℒ) (a : (F).completi
         ((completedBCHToGroupLike d ℒ g⁻¹).val : (F).completion) := by
   apply (F).completion_ext
   intro k
-  rw [Mei.AlgFiltration.projection_completedBCHAction, map_mul, map_mul,
+  rw [TauCeti.AlgFiltration.projection_completedBCHAction, map_mul, map_mul,
     projection_completedBCHToGroupLike, projection_completedBCHToGroupLike]
   have h := truncatedBCHAction_apply d ℒ k
-    (CompletedGroup.projection k g) ((F).projection k a)
-  rw [(F).truncatedBCHAction_apply d ℒ k (CompletedGroup.projection k g)] at h
+    (TauCeti.CompletedGroup.projection k g) ((F).projection k a)
+  rw [(F).truncatedBCHAction_apply d ℒ k (TauCeti.CompletedGroup.projection k g)] at h
   simp only [map_inv] at h ⊢
   -- The categorical tower object and its concrete BCH group carry the same operations.
   convert h using 1
@@ -110,7 +112,7 @@ theorem completedBCHAction_exp_apply (x : d.completedLie ℒ) (a : (F).completio
       (degreeSubmodule_le_comap_ι d ℒ) x =
       ⟨completedLieToU d ℒ x, completedLieToU_mem_completionIdeal_one d ℒ x⟩ := by
     apply Subtype.ext
-    simp only [Mei.AlgFiltration.coe_completedInnerElement,
+    simp only [TauCeti.AlgFiltration.coe_completedInnerElement,
       completedInnerMap_eq_completedLieToU, LieHom.coe_toLinearMap]
   simpa only [he] using
     (F).completedBCHAction_exp_eq_inner d ℒ j

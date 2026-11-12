@@ -22,6 +22,8 @@ polyhedra cut out by the coordinate functionals, namely the upper half-plane, th
 
 public section
 
+open TauCeti (IsRationalNormalPolyhedron)
+
 open Set Module Mei.FinitePolyhedralComplex
 
 namespace Mei.Plane
@@ -112,7 +114,7 @@ theorem vectorSpan_upperHalfPlane : vectorSpan ℝ {p : ℝ × ℝ | 0 ≤ p.2} 
 theorem isRationalNormalPolyhedron_upperHalfPlane
     (h : TauCeti.Toric.IsIntegralLattice ((Int.castAddHom ℝ).prodMap (Int.castAddHom ℝ))) :
     IsRationalNormalPolyhedron h {p : ℝ × ℝ | 0 ≤ p.2} := by
-  convert isRationalNormalPolyhedron_setOf_le (-axisRow true)
+  convert TauCeti.isRationalNormalPolyhedron_setOf_le (-axisRow true)
     (by simpa using (isRationalFunctional_axisRow h true).neg) 0 using 1
   ext p
   simp
@@ -121,9 +123,9 @@ theorem isRationalNormalPolyhedron_upperHalfPlane
 theorem isRationalNormalPolyhedron_setOf_snd_eq
     (h : TauCeti.Toric.IsIntegralLattice ((Int.castAddHom ℝ).prodMap (Int.castAddHom ℝ)))
     (c : ℝ) : IsRationalNormalPolyhedron h {p : ℝ × ℝ | p.2 = c} := by
-  convert (isRationalNormalPolyhedron_setOf_le (-axisRow true)
+  convert (TauCeti.isRationalNormalPolyhedron_setOf_le (-axisRow true)
     (by simpa using (isRationalFunctional_axisRow h true).neg) (-c)).inter
-    (isRationalNormalPolyhedron_setOf_le (axisRow true)
+    (TauCeti.isRationalNormalPolyhedron_setOf_le (axisRow true)
       (isRationalFunctional_axisRow h true) c) using 1
   ext p
   simp [le_antisymm_iff, and_comm]
@@ -155,9 +157,9 @@ theorem isRationalNormalPolyhedron_segment
     (h : TauCeti.Toric.IsIntegralLattice ((Int.castAddHom ℝ).prodMap (Int.castAddHom ℝ))) :
     IsRationalNormalPolyhedron h (segment ℝ ((0 : ℝ), (0 : ℝ)) (1, 0)) := by
   convert ((isRationalNormalPolyhedron_horizontalLine h).inter
-    (isRationalNormalPolyhedron_setOf_le (-axisRow false)
+    (TauCeti.isRationalNormalPolyhedron_setOf_le (-axisRow false)
       (by simpa using (isRationalFunctional_axisRow h false).neg) 0)).inter
-    (isRationalNormalPolyhedron_setOf_le (axisRow false)
+    (TauCeti.isRationalNormalPolyhedron_setOf_le (axisRow false)
       (isRationalFunctional_axisRow h false) 1) using 1
   ext p
   simp [mem_segment_zero_one_iff, and_assoc]

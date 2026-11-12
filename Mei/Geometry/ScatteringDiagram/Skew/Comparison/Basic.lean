@@ -35,6 +35,8 @@ follows Gross–Hacking–Keel–Kontsevich, *Canonical bases for cluster algebr
 functions, and refined tropical curve counts*, Remark 2.3 (arXiv:1503.06183v5).
 -/
 
+open TauCeti (IsRationalNormalPolyhedron)
+
 public section
 noncomputable section
 
@@ -122,8 +124,8 @@ theorem skewComparison_self (x : V) : D.skewComparison hD h x x = 0 := by
 
 /-- The comparison is rational for the integral dual lattice. -/
 theorem isRationalLinearMap_skewComparison :
-    Toric.IsRationalLinearMap h h.continuousDual (D.skewComparison hD h) :=
-  Toric.IsRationalLinearMap.extend h h.continuousDual _
+    TauCeti.Toric.IsRationalLinearMap h h.continuousDual (D.skewComparison hD h) :=
+  TauCeti.Toric.IsRationalLinearMap.extend h h.continuousDual _
 
 /-- Inverse images of rational-normal polyhedra under the skew comparison are
 rational-normal, without a nondegeneracy hypothesis. -/

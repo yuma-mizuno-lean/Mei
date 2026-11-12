@@ -43,6 +43,8 @@ tropical curve counts*, [arXiv:1503.06183v5](https://arxiv.org/abs/1503.06183v5)
 
 public section
 
+open TauCeti (IsRationalNormalPolyhedron)
+
 open TauCeti (PositiveDegrees IsPositiveGrading SupportedRay)
 
 open TauCeti (DirectedWallSpaces wallBracketNormal)
@@ -353,7 +355,7 @@ theorem correction_ray : (P.correction h θ₀ hw hμ).ray = w :=
 @[simp]
 theorem correction_support :
     (P.correction h θ₀ hw hμ).support =
-      sweep (P.joint h θ₀) (i (ρ (P.degree 0 + P.degree 1))) :=
+      Set.sweep ℝ (P.joint h θ₀) (i (ρ (P.degree 0 + P.degree 1))) :=
   DirectedWall.ofSweep_support ..
 
 /-- The correction wall is labelled by `exp (t₀ t₁ ⁅x₀, x₁⁆)`. -/
@@ -395,7 +397,7 @@ theorem mem_correction_support_iff (z : V) :
       P.rayCoeff 0 * P.coord h θ₀ 1 z - P.rayCoeff 1 * P.coord h θ₀ 0 z = 0 ∧
         P.rayCoeff 0 * P.coord h θ₀ 0 z + P.rayCoeff 1 * P.coord h θ₀ 1 z ≤ 0 := by
   rw [← exists_nonneg_eq_neg_mul_iff (P.rayCoeff_ne_zero_or_ne_zero hμ), correction_support,
-    mem_sweep_iff_exists]
+    Set.mem_sweep_iff_exists]
   have hv (j : Fin 2) := P.realCharacter_normal_direction h j
   constructor
   · rintro ⟨x, ⟨hx₀, hx₁⟩, t, ht, rfl⟩

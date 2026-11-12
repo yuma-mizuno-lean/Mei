@@ -5,139 +5,28 @@ Authors: Codex
 -/
 module
 
+public import TauCeti.RingTheory.FilteredAlgebra.TensorProduct.Map
 public import Mei.RingTheory.FilteredAlgebra.TensorProduct.Basic
-public import Mei.RingTheory.FilteredAlgebra.Equiv
 public import Mei.RingTheory.FilteredAlgebra.Module
 public import Mei.LinearAlgebra.ModuleFiltration.Bilinear
 
 /-!
-# Pure tensors in completed tensor products
+# Comparing completed algebra tensors and module pairings
 
-The inclusions of two filtered algebras in their tensor product extend to their
-completions. Their images commute, and their product agrees with the `R`-bilinear,
-multiplicative pure-tensor map into the completion for the total-degree filtration.
-At each order this map depends only on the two finite-order classes. In particular,
-it can be used to state group-like and primitive identities for completed coproducts.
-
-The pure-tensor map is the generic `ModuleFiltration.completionBilinear` for
-`TensorProduct.mk`, transported by the canonical module/algebra completion
-equivalences. It agrees pointwise with the product of the completed left and
-right inclusions (`completedTensor_apply`), from which multiplicativity and the
-unit formulas follow. Filtration orders of the two inputs add.
-Tensoring filtration-preserving algebra maps preserves the total-degree filtration.
-The induced completion map sends pure tensors of arbitrary completed elements to
-the pure tensor of their images under the two completion maps. For independent
-monotone cutoff moduli `ρ` and `σ`, their pointwise sum is a cutoff for the tensor
-map and the same naturality identity holds.
-The two algebras may be noncommutative; no flatness or separatedness is required.
-Exchanging the factors gives a canonical algebra equivalence of completed tensor
-products. At each finite cutoff it is the factor exchange on quotient classes,
-and it sends a completed pure tensor to the pure tensor with its factors reversed.
+The completed tensor over the coefficient ring agrees with the completed
+bilinear pairing under the module and algebra completion equivalences.
 -/
 
 public section
 
 open scoped TensorProduct
 
-namespace Mei.AlgFiltration
+namespace TauCeti.AlgFiltration
+
+open Mei
 
 variable {R A B : Type*} [CommRing R] [Ring A] [Ring B]
-  [Algebra R A] [Algebra R B] (F : Mei.AlgFiltration A) (G : Mei.AlgFiltration B)
-
-/-- The left inclusion into the completed total-degree tensor product. -/
-noncomputable def includeLeftCompletion :
-    F.completion →ₐ[R] (F.tensorProduct R G).completion where
-  __ := F.mapCompletion (F.tensorProduct R G)
-    (Algebra.TensorProduct.includeLeft : A →ₐ[R] A ⊗[R] B).toRingHom
-    id monotone_id (fun _ _ hx => F.includeLeft_mem_tensorProduct R G hx)
-  commutes' r := by
-    apply (F.tensorProduct R G).completion_ext
-    intro k
-    refine (F.projection_mapCompletion _ _ id monotone_id _ k _).trans ?_
-    simp [Ideal.quotientMap_algebraMap, -Algebra.TensorProduct.algebraMap_apply]
-
-/-- The right inclusion into the completed total-degree tensor product. -/
-noncomputable def includeRightCompletion :
-    G.completion →ₐ[R] (F.tensorProduct R G).completion where
-  __ := G.mapCompletion (F.tensorProduct R G)
-    (Algebra.TensorProduct.includeRight : B →ₐ[R] A ⊗[R] B).toRingHom
-    id monotone_id (fun _ _ hx => F.includeRight_mem_tensorProduct R G hx)
-  commutes' r := by
-    apply (F.tensorProduct R G).completion_ext
-    intro k
-    refine (G.projection_mapCompletion _ _ id monotone_id _ k _).trans ?_
-    simp [Ideal.quotientMap_algebraMap, -Algebra.TensorProduct.algebraMap_apply]
-
-/-- Finite-order projection of the completed left inclusion. -/
-@[simp]
-theorem projection_includeLeftCompletion (k : ℕ) (x : F.completion) :
-    (F.tensorProduct R G).projection k (F.includeLeftCompletion (R := R) G x) =
-      Ideal.quotientMap ((F.tensorProduct R G).ideal (k + 1))
-        (Algebra.TensorProduct.includeLeft : A →ₐ[R] A ⊗[R] B).toRingHom
-        (fun _ hx => F.includeLeft_mem_tensorProduct R G hx) (F.projection k x) := by
-  exact F.projection_mapCompletion _ _ id monotone_id _ k x
-
-/-- Finite-order projection of the completed right inclusion. -/
-@[simp]
-theorem projection_includeRightCompletion (k : ℕ) (y : G.completion) :
-    (F.tensorProduct R G).projection k (F.includeRightCompletion (R := R) G y) =
-      Ideal.quotientMap ((F.tensorProduct R G).ideal (k + 1))
-        (Algebra.TensorProduct.includeRight : B →ₐ[R] A ⊗[R] B).toRingHom
-        (fun _ hy => F.includeRight_mem_tensorProduct R G hy) (G.projection k y) := by
-  exact G.projection_mapCompletion _ _ id monotone_id _ k y
-
-/-- The completed left inclusion extends the ordinary tensor inclusion. -/
-@[simp]
-theorem includeLeftCompletion_toCompletion (a : A) :
-    F.includeLeftCompletion (R := R) G (F.toCompletion a) =
-      (F.tensorProduct R G).toCompletion (a ⊗ₜ[R] (1 : B)) := by
-  exact F.mapCompletion_toCompletion _ _ id monotone_id _ a
-
-/-- The completed right inclusion extends the ordinary tensor inclusion. -/
-@[simp]
-theorem includeRightCompletion_toCompletion (b : B) :
-    F.includeRightCompletion (R := R) G (G.toCompletion b) =
-      (F.tensorProduct R G).toCompletion ((1 : A) ⊗ₜ[R] b) := by
-  exact G.mapCompletion_toCompletion _ _ id monotone_id _ b
-
-/-- The completed left inclusion preserves each filtration order. -/
-theorem includeLeftCompletion_mem_completionIdeal {k : ℕ} {x : F.completion}
-    (hx : x ∈ F.completionIdeal k) :
-    F.includeLeftCompletion (R := R) G x ∈ (F.tensorProduct R G).completionIdeal k := by
-  cases k with
-  | zero => simp
-  | succ k =>
-    exact F.mapCompletion_mem_completionIdeal _ _ id monotone_id _ k hx
-
-/-- The completed right inclusion preserves each filtration order. -/
-theorem includeRightCompletion_mem_completionIdeal {k : ℕ} {y : G.completion}
-    (hy : y ∈ G.completionIdeal k) :
-    F.includeRightCompletion (R := R) G y ∈ (F.tensorProduct R G).completionIdeal k := by
-  cases k with
-  | zero => simp
-  | succ k =>
-    exact G.mapCompletion_mem_completionIdeal _ _ id monotone_id _ k hy
-
-/-- The two completed tensor inclusions have commuting images. -/
-theorem commute_includeLeftCompletion_includeRightCompletion
-    (x : F.completion) (y : G.completion) :
-    Commute (F.includeLeftCompletion (R := R) G x) (F.includeRightCompletion (R := R) G y) := by
-  apply (F.tensorProduct R G).completion_ext
-  intro k
-  obtain ⟨a, ha⟩ := Ideal.Quotient.mk_surjective (F.projection k x)
-  obtain ⟨b, hb⟩ := Ideal.Quotient.mk_surjective (G.projection k y)
-  simp only [map_mul, projection_includeLeftCompletion, projection_includeRightCompletion]
-  simp [← ha, ← hb, ← map_mul, Algebra.TensorProduct.tmul_mul_tmul]
-
-/-- The bilinear pure-tensor map from the completions into the completed tensor product. -/
-noncomputable def completedTensor :
-    F.completion →ₗ[R] G.completion →ₗ[R] (F.tensorProduct R G).completion :=
-  ((ModuleFiltration.completionBilinear
-    (F.toModuleFiltration R) (G.toModuleFiltration R) ((F.tensorProduct R G).toModuleFiltration R)
-    (TensorProduct.mk R A B) (F.tmul_mem_tensorProduct R G)).compr₂
-      ((F.tensorProduct R G).moduleCompletionEquiv (R := R)).toLinearMap).compl₁₂
-    (F.moduleCompletionEquiv (R := R)).symm.toLinearMap
-    (G.moduleCompletionEquiv (R := R)).symm.toLinearMap
+  [Algebra R A] [Algebra R B] (F : TauCeti.AlgFiltration A) (G : TauCeti.AlgFiltration B)
 
 /-- The completed tensor is the generic completed bilinear pairing under the
 canonical module/algebra completion comparisons. -/
@@ -150,30 +39,12 @@ theorem completedTensor_apply_eq_completionBilinear (x : F.completion) (y : G.co
           (TensorProduct.mk R A B) (F.tmul_mem_tensorProduct R G)
           ((F.moduleCompletionEquiv (R := R)).symm x)
           ((G.moduleCompletionEquiv (R := R)).symm y)) := by
-  simp only [completedTensor, LinearMap.compl₁₂_apply, LinearMap.compr₂_apply,
-    LinearEquiv.coe_toLinearMap]
-
-/-- Completed pure tensors add the filtration orders of their factors. -/
-@[grind .]
-theorem completedTensor_mem_completionIdeal {a b : ℕ}
-    {x : F.completion} {y : G.completion}
-    (hx : x ∈ F.completionIdeal a) (hy : y ∈ G.completionIdeal b) :
-    F.completedTensor (R := R) G x y ∈ (F.tensorProduct R G).completionIdeal (a + b) := by
-  rw [completedTensor_apply_eq_completionBilinear, moduleCompletionEquiv_mem_completionIdeal_iff]
-  apply ModuleFiltration.completionBilinear_mem_completedFiltration
-  · apply (F.moduleCompletionEquiv_mem_completionIdeal_iff a _).mp
-    simpa only [LinearEquiv.apply_symm_apply] using hx
-  · apply (G.moduleCompletionEquiv_mem_completionIdeal_iff b _).mp
-    simpa only [LinearEquiv.apply_symm_apply] using hy
-
-/-- Any representatives of the two finite-order classes compute the projected tensor. -/
-theorem projection_completedTensor_of_representatives (k : ℕ)
-    (x : F.completion) (y : G.completion) (a : A) (b : B)
-    (ha : Ideal.Quotient.mk (F.ideal (k + 1)) a = F.projection k x)
-    (hb : Ideal.Quotient.mk (G.ideal (k + 1)) b = G.projection k y) :
-    (F.tensorProduct R G).projection k (F.completedTensor (R := R) G x y) =
-      Ideal.Quotient.mk ((F.tensorProduct R G).ideal (k + 1)) (a ⊗ₜ[R] b) := by
-  rw [completedTensor_apply_eq_completionBilinear, projection_moduleCompletionEquiv,
+  apply (F.tensorProduct R G).completion_ext
+  intro k
+  obtain ⟨a, ha⟩ := Ideal.Quotient.mk_surjective (F.projection k x)
+  obtain ⟨b, hb⟩ := Ideal.Quotient.mk_surjective (G.projection k y)
+  rw [F.projection_completedTensor_of_representatives R G k x y a b ha hb,
+    projection_moduleCompletionEquiv,
     ModuleFiltration.projection_completionBilinear _ _ _ _ (F.tmul_mem_tensorProduct R G),
     F.projection_moduleCompletionEquiv_symm_of_mk k x a ha,
     G.projection_moduleCompletionEquiv_symm_of_mk k y b hb,
@@ -181,155 +52,17 @@ theorem projection_completedTensor_of_representatives (k : ℕ)
   simp only [Submodule.Quotient.restrictScalarsEquiv_mk, Ideal.Quotient.mk_eq_mk,
     TensorProduct.mk_apply]
 
-/-- A completed pure tensor is the product of its completed tensor inclusions. -/
-theorem completedTensor_apply (x : F.completion) (y : G.completion) :
-    F.completedTensor (R := R) G x y =
-      F.includeLeftCompletion (R := R) G x * F.includeRightCompletion (R := R) G y := by
-  apply (F.tensorProduct R G).completion_ext
-  intro k
-  obtain ⟨a, ha⟩ := Ideal.Quotient.mk_surjective (F.projection k x)
-  obtain ⟨b, hb⟩ := Ideal.Quotient.mk_surjective (G.projection k y)
-  rw [projection_completedTensor_of_representatives F G k x y a b ha hb,
-    map_mul, projection_includeLeftCompletion, projection_includeRightCompletion, ← ha, ← hb]
-  simp [← map_mul, Algebra.TensorProduct.tmul_mul_tmul]
-
 /-- Projection of a completed pure tensor is computed using only the order-`k` classes. -/
 @[simp]
 theorem projection_completedTensor (k : ℕ) (x : F.completion) (y : G.completion) :
     (F.tensorProduct R G).projection k (F.completedTensor (R := R) G x y) =
-      Ideal.quotientMap ((F.tensorProduct R G).ideal (k + 1))
-        (Algebra.TensorProduct.includeLeft : A →ₐ[R] A ⊗[R] B).toRingHom
-        (fun _ hx => F.includeLeft_mem_tensorProduct R G hx) (F.projection k x) *
-      Ideal.quotientMap ((F.tensorProduct R G).ideal (k + 1))
-        (Algebra.TensorProduct.includeRight : B →ₐ[R] A ⊗[R] B).toRingHom
-        (fun _ hy => F.includeRight_mem_tensorProduct R G hy) (G.projection k y) := by
-  simp [completedTensor_apply]
+      Ideal.quotientMapₐ ((F.tensorProduct R G).ideal (k + 1))
+        (Algebra.TensorProduct.includeLeft : A →ₐ[R] A ⊗[R] B)
+        (F.ideal_le_comap_includeLeft R G (k + 1)) (F.projection k x) *
+      Ideal.quotientMapₐ ((F.tensorProduct R G).ideal (k + 1))
+        (Algebra.TensorProduct.includeRight : B →ₐ[R] A ⊗[R] B)
+        (F.ideal_le_comap_includeRight R G (k + 1)) (G.projection k y) := by
+  rw [completedTensor_apply, map_mul, projection_includeLeftCompletion,
+    projection_includeRightCompletion]
 
-/-- Completing an ordinary pure tensor agrees with tensoring the canonical images. -/
-@[simp]
-theorem completedTensor_toCompletion (a : A) (b : B) :
-    F.completedTensor (R := R) G (F.toCompletion a) (G.toCompletion b) =
-      (F.tensorProduct R G).toCompletion (a ⊗ₜ[R] b) := by
-  simp [completedTensor_apply, ← map_mul, Algebra.TensorProduct.tmul_mul_tmul]
-
-/-- The completed tensor map is multiplicative in pairs of factors. -/
-theorem completedTensor_mul (x x' : F.completion) (y y' : G.completion) :
-    F.completedTensor (R := R) G (x * x') (y * y') =
-      F.completedTensor (R := R) G x y * F.completedTensor (R := R) G x' y' := by
-  simp only [completedTensor_apply, map_mul]
-  exact (F.commute_includeLeftCompletion_includeRightCompletion (R := R) G x' y).symm
-    |>.mul_mul_mul_comm _ _ |>.symm
-
-/-- Tensoring with the right unit is the completed left inclusion. -/
-@[simp]
-theorem completedTensor_one_right (x : F.completion) :
-    F.completedTensor (R := R) G x 1 = F.includeLeftCompletion (R := R) G x := by
-  simp [completedTensor_apply]
-
-/-- Tensoring with the left unit is the completed right inclusion. -/
-@[simp]
-theorem completedTensor_one_left (y : G.completion) :
-    F.completedTensor (R := R) G 1 y = F.includeRightCompletion (R := R) G y := by
-  simp [completedTensor_apply]
-
-/-- Exchanging the factors induces an algebra equivalence of completed tensor products. -/
-noncomputable def completedTensorComm :
-    (F.tensorProduct R G).completion ≃ₐ[R] (G.tensorProduct R F).completion :=
-  (F.tensorProduct R G).completionEquiv (G.tensorProduct R F)
-    (Algebra.TensorProduct.comm R A B)
-    (tensorProduct_comap_comm R F G)
-
-/-- The finite projections of factor exchange are the induced quotient maps. -/
-@[simp]
-theorem projection_completedTensorComm (k : ℕ) (x : (F.tensorProduct R G).completion) :
-    (G.tensorProduct R F).projection k (F.completedTensorComm (R := R) G x) =
-      Ideal.quotientMapₐ ((G.tensorProduct R F).ideal (k + 1))
-        (Algebra.TensorProduct.comm R A B).toAlgHom
-        (by rw [tensorProduct_comap_comm])
-        ((F.tensorProduct R G).projection k x) :=
-  (F.tensorProduct R G).projection_completionEquiv (G.tensorProduct R F)
-    (Algebra.TensorProduct.comm R A B)
-    (tensorProduct_comap_comm R F G) k x
-
-/-- On original tensors the completed exchange is the original factor exchange. -/
-@[simp]
-theorem completedTensorComm_toCompletion (t : A ⊗[R] B) :
-    F.completedTensorComm (R := R) G ((F.tensorProduct R G).toCompletion t) =
-      (G.tensorProduct R F).toCompletion (Algebra.TensorProduct.comm R A B t) :=
-  (F.tensorProduct R G).completionEquiv_toCompletion (G.tensorProduct R F)
-    (Algebra.TensorProduct.comm R A B)
-    (tensorProduct_comap_comm R F G) t
-
-/-- Factor exchange reverses arbitrary completed pure tensors. -/
-@[simp]
-theorem completedTensorComm_completedTensor (x : F.completion) (y : G.completion) :
-    F.completedTensorComm (R := R) G (F.completedTensor (R := R) G x y) =
-      G.completedTensor (R := R) F y x := by
-  apply (G.tensorProduct R F).completion_ext
-  intro k
-  obtain ⟨a, ha⟩ := Ideal.Quotient.mk_surjective (F.projection k x)
-  obtain ⟨b, hb⟩ := Ideal.Quotient.mk_surjective (G.projection k y)
-  rw [projection_completedTensorComm,
-    F.projection_completedTensor_of_representatives G k x y a b ha hb,
-    G.projection_completedTensor_of_representatives F k y x b a hb ha]
-  simp only [Ideal.quotient_map_mkₐ, Ideal.Quotient.mkₐ_eq_mk,
-    AlgEquiv.coe_toAlgHom, Algebra.TensorProduct.comm_tmul]
-
-/-- Tensoring filtered algebra maps commutes with pure tensors of arbitrary completed elements. -/
-theorem mapCompletionₐ_completedTensor {C D : Type*} [Ring C] [Ring D]
-    [Algebra R C] [Algebra R D] (H : Mei.AlgFiltration C) (K : Mei.AlgFiltration D)
-    (f : A →ₐ[R] C) (g : B →ₐ[R] D)
-    (hf : ∀ k, F.ideal k ≤ (H.ideal k).comap f)
-    (hg : ∀ k, G.ideal k ≤ (K.ideal k).comap g)
-    (x : F.completion) (y : G.completion) :
-    (F.tensorProduct R G).mapCompletionₐ (H.tensorProduct R K)
-      (Algebra.TensorProduct.map f g) id monotone_id
-      (fun k => F.tensorProduct_le_comap_map R G H K f g hf hg (k + 1))
-      (F.completedTensor (R := R) G x y) =
-      H.completedTensor (R := R) K
-        (F.mapCompletionₐ H f id monotone_id (fun k => hf (k + 1)) x)
-        (G.mapCompletionₐ K g id monotone_id (fun k => hg (k + 1)) y) := by
-  simp only [completedTensor_apply_eq_completionBilinear,
-    moduleCompletionEquiv_symm_mapCompletionₐ]
-  rw [← moduleCompletionEquiv_completionMap]
-  congr 1
-  apply ModuleFiltration.completionMap_completionBilinear
-  intro a b
-  exact Algebra.TensorProduct.map_tmul f g a b
-
-
-/-- The completion of `Algebra.TensorProduct.map f g` sends `completedTensor x y`
-to the completed tensor of the images of `x` and `y` under the two factor
-completion maps. Here `ρ` is the source cutoff for `f`, so
-`F.ideal (ρ k + 1)` maps into `H.ideal (k + 1)`, and `σ` is the source cutoff for
-`g`, so `G.ideal (σ k + 1)` maps into `K.ideal (k + 1)`. The tensor map uses the
-cutoff `fun k => ρ k + σ k`. Monotonicity of `ρ` and `σ` makes all three
-completion maps compatible with the quotient-tower transitions. -/
-theorem mapCompletionₐ_completedTensor_of_moduli {C D : Type*} [Ring C] [Ring D]
-    [Algebra R C] [Algebra R D] (H : Mei.AlgFiltration C) (K : Mei.AlgFiltration D)
-    (f : A →ₐ[R] C) (g : B →ₐ[R] D) (ρ σ : ℕ → ℕ)
-    (hρ : Monotone ρ) (hσ : Monotone σ)
-    (hf : ∀ k, F.ideal (ρ k + 1) ≤ (H.ideal (k + 1)).comap f)
-    (hg : ∀ k, G.ideal (σ k + 1) ≤ (K.ideal (k + 1)).comap g)
-    (x : F.completion) (y : G.completion) :
-    (F.tensorProduct R G).mapCompletionₐ (H.tensorProduct R K)
-      (Algebra.TensorProduct.map f g) (fun k => ρ k + σ k) (hρ.add hσ)
-      (F.tensorProduct_le_comap_map_of_moduli R G H K f g ρ σ hf hg)
-      (F.completedTensor (R := R) G x y) =
-      H.completedTensor (R := R) K (F.mapCompletionₐ H f ρ hρ hf x)
-        (G.mapCompletionₐ K g σ hσ hg y) := by
-  simp only [completedTensor_apply_eq_completionBilinear,
-    moduleCompletionEquiv_symm_mapCompletionₐ]
-  rw [← moduleCompletionEquiv_completionMap]
-  congr 1
-  apply ModuleFiltration.completionMap_completionBilinear
-  intro a b
-  exact Algebra.TensorProduct.map_tmul f g a b
-
-/-- The inverse completed exchange is the exchange in the opposite order. -/
-@[simp]
-theorem completedTensorComm_symm :
-    (F.completedTensorComm (R := R) G).symm = G.completedTensorComm (R := R) F := by
-  simp only [completedTensorComm, completionEquiv_symm, Algebra.TensorProduct.comm_symm]
-
-end Mei.AlgFiltration
+end TauCeti.AlgFiltration

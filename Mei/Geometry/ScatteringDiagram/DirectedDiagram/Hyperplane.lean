@@ -82,7 +82,7 @@ theorem consistent_of_isEmpty [IsEmpty ι] : D.Consistent :=
 /-- A diagram without walls has trivial completed transport. -/
 theorem transport_of_isEmpty [IsEmpty ι] (x y : D.Point) :
     D.transport D.consistent_of_isEmpty x y = 1 := by
-  apply CompletedGroup.ext
+  apply TauCeti.CompletedGroup.ext
   intro k
   obtain ⟨p⟩ := D.exists_level_path k (CommonWallComplement.projection k x)
     (CommonWallComplement.projection k y)
@@ -106,11 +106,11 @@ theorem levelPathProduct_eq_zpow_of_support_eq
     {x y : WallComplement (fun j : D.active k => (D.wall j).support)}
     (p : AdmissiblePLPath x y) :
     D.levelPathProduct k p =
-      CompletedGroup.projection k W.label ^
+      TauCeti.CompletedGroup.projection k W.label ^
         ((if c < h.realCharacter W.normal x.val then 1 else 0 : ℤ) -
           (if c < h.realCharacter W.normal y.val then 1 else 0 : ℤ)) := by
   classical
-  by_cases hθ : CompletedGroup.projection k W.label = 1
+  by_cases hθ : TauCeti.CompletedGroup.projection k W.label = 1
   · have hempty : IsEmpty (D.active k) :=
       ⟨fun j => (D.mem_active k j.1).mp j.2 (by rw [hD]; exact hθ)⟩
     refine (D.levelPathProduct_of_isEmpty_active k p).trans (Eq.symm ?_)
@@ -131,14 +131,14 @@ theorem levelPathProduct_eq_zpow_of_support_eq
       (fun j _ => hsupp j)
     have hmap := p.map_wallPathProduct (fun j => (F j).linear)
       (fun _ : D.active k => Multiplicative.ofAdd (1 : ℤ))
-      (fun _ _ _ => Commute.all _ _) (zpowersHom _ (CompletedGroup.projection k W.label))
+      (fun _ _ _ => Commute.all _ _) (zpowersHom _ (TauCeti.CompletedGroup.projection k W.label))
     rw [hp, Fintype.prod_subsingleton _ j₀, map_zpow] at hmap
     have hν : (fun j => (F j).linear) =
         fun j : D.active k => h.realCharacter (D.wall j).normal := by
       funext j
       exact (hF j).trans (by rw [hD j.1])
-    have hl : (fun _ : D.active k => CompletedGroup.projection k W.label) =
-        fun j : D.active k => CompletedGroup.projection k (D.wall j).label := by
+    have hl : (fun _ : D.active k => TauCeti.CompletedGroup.projection k W.label) =
+        fun j : D.active k => TauCeti.CompletedGroup.projection k (D.wall j).label := by
       funext j
       rw [hD j.1]
     have hside : ∀ z, 0 < F j₀ z ↔ c < h.realCharacter W.normal z := fun z => by
@@ -185,9 +185,9 @@ theorem not_equivalent_of_isEmpty_of_support_eq {κ : Type*} [IsEmpty κ]
   have htrans := hDE.transport_eq (D.consistent_of_support_eq hD c hW) E.consistent_of_isEmpty
     (x := xD) (y := yD) (x' := xE) (y' := yE) rfl rfl
   rw [E.transport_of_isEmpty xE yE] at htrans
-  obtain ⟨k, hk⟩ : ∃ k, CompletedGroup.projection k W.label ≠ 1 := by
+  obtain ⟨k, hk⟩ : ∃ k, TauCeti.CompletedGroup.projection k W.label ≠ 1 := by
     by_contra hcon
-    exact hθ (CompletedGroup.ext fun k => by
+    exact hθ (TauCeti.CompletedGroup.ext fun k => by
       rw [not_not.mp fun hne => hcon ⟨k, hne⟩, map_one])
   obtain ⟨p⟩ := D.exists_level_path k (CommonWallComplement.projection k xD)
     (CommonWallComplement.projection k yD)
@@ -195,7 +195,7 @@ theorem not_equivalent_of_isEmpty_of_support_eq {κ : Type*} [IsEmpty κ]
   rw [htrans, map_one, D.levelPathProduct_eq_zpow_of_support_eq hD c hW k p] at hproj
   have hxc : c < c + 1 := by linarith
   have hyc : ¬ c < c - 1 := by linarith
-  have hexp : CompletedGroup.projection k W.label ^ (1 : ℤ) = 1 := by
+  have hexp : TauCeti.CompletedGroup.projection k W.label ^ (1 : ℤ) = 1 := by
     simpa [xD, yD, hu, hxc, hyc] using hproj.symm
   exact hk (by simpa using hexp)
 
@@ -214,11 +214,11 @@ applies. -/
 theorem levelConsistent_of_commute_of_full (k : ℕ)
     (hfull : ∀ j : D.active k, ∃ b : ℝ,
       (D.wall j).support = {v | h.realCharacter (D.wall j).normal v = b})
-    (hcomm : ∀ a b : D.active k, Commute (CompletedGroup.projection k (D.wall a).label)
-      (CompletedGroup.projection k (D.wall b).label)) :
+    (hcomm : ∀ a b : D.active k, Commute (TauCeti.CompletedGroup.projection k (D.wall a).label)
+      (TauCeti.CompletedGroup.projection k (D.wall b).label)) :
     D.LevelConsistent k := by
   choose b hb using hfull
-  let ℓ := fun j : D.active k => CompletedGroup.projection k (D.wall j).label
+  let ℓ := fun j : D.active k => TauCeti.CompletedGroup.projection k (D.wall j).label
   let G := Subgroup.closure (Set.range ℓ)
   have : IsMulCommutative G := Subgroup.isMulCommutative_closure (by
     rintro _ ⟨a, rfl⟩ _ ⟨c, rfl⟩ _
@@ -244,7 +244,7 @@ theorem consistent_of_commute_of_full
     (hcomm : ∀ a b, Commute (D.wall a).label (D.wall b).label) :
     D.Consistent :=
   D.consistent_iff.mpr fun k => D.levelConsistent_of_commute_of_full k (fun j => hfull j)
-    (fun a c => (hcomm a c).map (CompletedGroup.projection k))
+    (fun a c => (hcomm a c).map (TauCeti.CompletedGroup.projection k))
 
 /-- Over an abelian Lie algebra, every diagram of full affine hyperplanes is consistent:
 all completed labels commute, by `PositiveDegrees.commute_of_lie_logComponent_eq_zero`. -/

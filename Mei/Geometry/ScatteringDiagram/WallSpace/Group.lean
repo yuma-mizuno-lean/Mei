@@ -112,13 +112,13 @@ wall spaces. The primitive generator need not itself be an allowed degree. -/
 noncomputable def wallGroup (w : SupportedRay d) (m : Λ →+ ℤ) :
     Subgroup (d.completedBCHGroup ℒ) :=
   ⨅ k, (H.truncatedRayLieSubalgebra w m k).bchSubgroup.comap
-    (CompletedGroup.projection k)
+    (TauCeti.CompletedGroup.projection k)
 
 /-- A completed wall label is tested by its logarithms at all finite orders. -/
 @[simp]
 theorem mem_wallGroup (w : SupportedRay d) (m : Λ →+ ℤ) (g : d.completedBCHGroup ℒ) :
     g ∈ H.wallGroup w m ↔ ∀ k,
-      BCHGroup.log (L := d.lieTruncation ℒ k) (CompletedGroup.projection k g) ∈
+      BCHGroup.log (L := d.lieTruncation ℒ k) (TauCeti.CompletedGroup.projection k g) ∈
         H.truncatedRayLieSubalgebra w m k := by
   simp only [wallGroup, Subgroup.mem_iInf]
   exact forall_congr' fun k => LieSubalgebra.mem_bchSubgroup _ _
@@ -176,7 +176,7 @@ theorem decompose_log_projection_eq_zero_of_notMem_rayDegrees
     {w : SupportedRay d} {m : Λ →+ ℤ} {g : d.completedBCHGroup ℒ}
     (hg : g ∈ H.wallGroup w m) (k : ℕ) {n : Γ} (hn : n ∉ w.rayDegrees) :
     (DirectSum.decompose (d.lieTruncationGrading ℒ k)
-      (BCHGroup.log (CompletedGroup.projection k g)) n : d.lieTruncation ℒ k) = 0 := by
+      (BCHGroup.log (TauCeti.CompletedGroup.projection k g)) n : d.lieTruncation ℒ k) = 0 := by
   obtain ⟨y, hy, he⟩ := (H.mem_truncatedRayLieSubalgebra w m k _).mp
     ((H.mem_wallGroup w m g).mp hg k)
   rw [← he, LieIdeal.mkQ_apply, d.decompose_lieTruncationGrading_mk,
@@ -186,7 +186,7 @@ theorem decompose_log_projection_eq_zero_of_notMem_rayDegrees
 /-- A completed wall label is invisible below the first actual degree on its ray. -/
 theorem projection_eq_one_of_notMem_raysAtOrder {w : SupportedRay d} {m : Λ →+ ℤ}
     {g : d.completedBCHGroup ℒ} (hg : g ∈ H.wallGroup w m) (k : ℕ)
-    (hw : w ∉ d.raysAtOrder k) : CompletedGroup.projection k g = 1 := by
+    (hw : w ∉ d.raysAtOrder k) : TauCeti.CompletedGroup.projection k g = 1 := by
   apply BCHGroup.log_injective (L := d.lieTruncation ℒ k)
   have h := (H.mem_wallGroup w m g).mp hg k
   rw [H.truncatedRayLieSubalgebra_eq_bot w m k hw, LieSubalgebra.mem_bot] at h
@@ -197,7 +197,7 @@ theorem wallGroup_eq_bot_of_raySubmodule_eq_bot (w : SupportedRay d) (m : Λ →
     (h : H.raySubmodule w m = ⊥) : H.wallGroup w m = ⊥ := by
   apply le_antisymm _ bot_le
   intro g hg
-  apply CompletedGroup.ext
+  apply TauCeti.CompletedGroup.ext
   intro k
   rw [map_one]
   apply BCHGroup.log_injective (L := d.lieTruncation ℒ k)
@@ -253,14 +253,14 @@ theorem commute_of_mem_wallGroup_of_forall {w v : SupportedRay d} {m m' : Λ →
     (hlie : ∀ x ∈ H.raySubmodule w m, ∀ y ∈ H.raySubmodule v m', ⁅x, y⁆ = 0)
     {g h : d.completedBCHGroup ℒ} (hg : g ∈ H.wallGroup w m) (hh : h ∈ H.wallGroup v m') :
     Commute g h := by
-  apply CompletedGroup.ext
+  apply TauCeti.CompletedGroup.ext
   intro k
   rw [map_mul, map_mul]
   have hc := BCHGroup.commute_exp_of_lie_eq_zero _ _
     (H.lie_eq_zero_of_mem_truncatedRayLieSubalgebra_of_forall hlie
       ((H.mem_wallGroup w m g).mp hg k) ((H.mem_wallGroup v m' h).mp hh k))
-  rw [BCHGroup.exp_log (L := d.lieTruncation ℒ k) (CompletedGroup.projection k g),
-    BCHGroup.exp_log (L := d.lieTruncation ℒ k) (CompletedGroup.projection k h)] at hc
+  rw [BCHGroup.exp_log (L := d.lieTruncation ℒ k) (TauCeti.CompletedGroup.projection k g),
+    BCHGroup.exp_log (L := d.lieTruncation ℒ k) (TauCeti.CompletedGroup.projection k h)] at hc
   exact hc.eq
 
 /-- Completed labels with proportional normals commute, with no restriction on

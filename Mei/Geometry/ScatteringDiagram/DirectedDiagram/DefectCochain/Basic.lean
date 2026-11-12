@@ -39,6 +39,8 @@ incidence and boundary identities in addition to this finite sum.
 
 public section
 
+open TauCeti (OrientedCell PolyhedralCochain)
+
 open TauCeti (WallComplement)
 
 open TauCeti (PositiveDegrees IsPositiveGrading)

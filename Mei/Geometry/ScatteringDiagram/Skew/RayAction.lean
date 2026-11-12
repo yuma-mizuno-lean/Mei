@@ -33,6 +33,8 @@ functions, and refined tropical curve counts*, Example 2.1(i), arXiv:1503.06183v
 
 public section
 
+open TauCeti (AlgFiltration)
+
 open TauCeti (PositiveDegrees)
 
 noncomputable section
@@ -143,7 +145,7 @@ theorem principalGradedLieHom_completedMap_rayExp (q : T) (hq : q.val = D.princi
         (SkewLieAlgebra.rayExp β hβ hn hn0 (κ • a)) =
       (e).completedBCHExp ℳ
         (completedTropicalTangentField e ρ χ ((G).completedAeval u (X * d⁄dX a))) := by
-  apply CompletedGroup.ext
+  apply TauCeti.CompletedGroup.ext
   intro k
   have hp := (D.principalGradedLieHom (R := R) d).projection_completedMap_of_le k
     (a := k) (by simp)

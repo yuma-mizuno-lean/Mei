@@ -36,7 +36,9 @@ with effective anti-canonical class*, Definitions 3.1–3.3 (arXiv:1601.07081v4)
 
 public noncomputable section
 
-namespace Mei.GradedCorrespondence
+namespace TauCeti.GradedCorrespondence
+
+open Mei
 
 variable {R Q : Type*} [Semiring R] [Quiver Q]
   {M : Q → Type*} [∀ q, AddCommMonoid (M q)] [∀ q, Module R (M q)]
@@ -132,4 +134,4 @@ theorem exists_uniform_totalTransfer_regrouping
     intro h _
     split_ifs <;> simp
 
-end Mei.GradedCorrespondence
+end TauCeti.GradedCorrespondence

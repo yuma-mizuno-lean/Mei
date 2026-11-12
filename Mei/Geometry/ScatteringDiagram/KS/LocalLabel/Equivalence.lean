@@ -172,7 +172,7 @@ variable {C E : ℕ → FinitePolyhedralComplex h}
 omit [Module.Free ℤ N] in
 private theorem projection_pathProduct_eq_weight (k : ℕ) {x y : Point C}
     (p : Quiver.Path x y) :
-    CompletedGroup.projection k (D.pathProduct p) = MulOpposite.unop
+    TauCeti.CompletedGroup.projection k (D.pathProduct p) = MulOpposite.unop
       (p.weight fun e => MulOpposite.op ((D.diagram k).toFiniteWallDiagram.pathProduct
         (((CommonWallComplement.projectionPrefunctor k).map e).toPath))) := by
   rw [projection_pathProduct]
@@ -197,7 +197,7 @@ theorem equivalent_of_germLabel_eq
       D.germLabel θ hD = F.germLabel θ hF) : D.Equivalent F := by
   apply D.equivalent_of_pathProduct_eq F
   intro x y x' y' p q hpq
-  apply CompletedGroup.ext
+  apply TauCeti.CompletedGroup.ext
   intro k
   let wD {u v : Point C} (e : u ⟶ v) := MulOpposite.op
     ((D.diagram k).toFiniteWallDiagram.pathProduct
@@ -229,7 +229,7 @@ theorem equivalent_of_germLabel_eq
   apply (D.diagram k).crossingFactor_eq_of_localLabel_eq (F.diagram k) a b hu hv ht
   have hregD (l : ℕ) := (e.down l).regular t ht
   have hregF (l : ℕ) := (e'.down l).regular t ht
-  have hg := congrArg (CompletedGroup.projection k)
+  have hg := congrArg (TauCeti.CompletedGroup.projection k)
     (hlabel (AffineMap.lineMap u.val v.val t) hregD (by
       simpa only [CommonWallComplement.projection_val, hu, hv] using hregF))
   -- Tower projections use the categorical carrier of the same concrete BCH quotient.

@@ -9,6 +9,7 @@ public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.FunctionWall.Specia
 public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.RestrictScalars
 public import Mei.Geometry.ScatteringDiagram.WallSpace.Logarithmic.Specialization
 public import Mei.Algebra.Lie.Logarithmic.Positive
+import Mei.RingTheory.FilteredAlgebra.Algebra
 
 /-!
 # Positive wall representatives under changes of the coefficient ring
@@ -66,6 +67,8 @@ covered, since the transfer of wall functions requires the monomials to be fixed
 -/
 
 public section
+
+open TauCeti (AlgFiltration)
 
 open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading GradedLieHom)
 

@@ -24,9 +24,13 @@ is Mathlib's `posTangentConeAt`.
 
 public section
 
+open TauCeti (IsRationalNormalPolyhedron RationalAffinePolyhedron isRationalNormalPolyhedron_iff)
+
 open Filter Topology Set
 
-namespace Mei
+namespace TauCeti
+
+open Mei
 
 namespace RationalAffinePolyhedron
 
@@ -108,4 +112,4 @@ theorem posTangentConeAt (hP : IsRationalNormalPolyhedron h P) (hx : x ∈ P) :
 
 end IsRationalNormalPolyhedron
 
-end Mei
+end TauCeti

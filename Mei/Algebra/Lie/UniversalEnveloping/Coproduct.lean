@@ -26,6 +26,9 @@ bounded-generation assumption.
 
 public section
 
+open TauCeti.UniversalEnvelopingAlgebra (degreeFiltration homogeneousSubmodule_le_iff
+  ι_mem_degreeFiltration)
+
 open scoped TensorProduct
 
 namespace Mei.UniversalEnvelopingAlgebra
@@ -40,8 +43,8 @@ variable {Γ R L : Type*} [AddCommMonoid Γ] [CommRing R] [LieRing L] [LieAlgebr
 local notation "U" => _root_.UniversalEnvelopingAlgebra R L
 local notation "F" => degreeFiltration ℒ d hneg
 local notation "T" => Ideal.tensorFiltration R
-  (Mei.AlgFiltration.ideal (degreeFiltration ℒ d hneg))
-  (Mei.AlgFiltration.ideal (degreeFiltration ℒ d hneg))
+  (TauCeti.AlgFiltration.ideal (degreeFiltration ℒ d hneg))
+  (TauCeti.AlgFiltration.ideal (degreeFiltration ℒ d hneg))
 local notation "Δ" => Bialgebra.comulAlgHom R U
 
 private theorem comul_generator_mem_tensorFiltration {n : Γ} (x : ℒ n) :
@@ -68,7 +71,7 @@ private theorem comul_word_mem_tensorFiltration (l : List (Σ i, ℒ i)) :
   | cons a l ih =>
     simp only [List.map_cons, List.prod_cons, List.sum_cons, map_mul, map_add]
     have hgen := comul_generator_mem_tensorFiltration ℒ d hneg a.2
-    rw [← Mei.AlgFiltration.tensorProduct_ideal R (F) (F)] at hgen ih ⊢
+    rw [← TauCeti.AlgFiltration.tensorProduct_ideal R (F) (F)] at hgen ih ⊢
     exact ((F).tensorProduct R (F)).antitone (by omega)
       (((F).tensorProduct R (F)).mul_mem hgen ih)
 
@@ -76,8 +79,8 @@ private theorem comul_word_mem_tensorFiltration (l : List (Σ i, ℒ i)) :
 total-degree tensor ideal. -/
 theorem degreeFiltration_le_comap_comul (k : ℕ) :
     (F).ideal k ≤ (T k).comap (Δ).toRingHom := by
-  rw [Mei.UniversalEnvelopingAlgebra.degreeFiltration_ideal,
-    GradedAlgebra.degreeIdeal_le_iff]
+  rw [TauCeti.UniversalEnvelopingAlgebra.degreeFiltration_ideal,
+    TauCeti.GradedAlgebra.degreeIdeal_le_iff]
   intro n hn
   apply (homogeneousSubmodule_le_iff ℒ n (((T k).comap (Δ).toRingHom).restrictScalars R)).mpr
   intro l hl

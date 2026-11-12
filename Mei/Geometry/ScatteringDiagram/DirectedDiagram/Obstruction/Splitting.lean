@@ -96,8 +96,8 @@ def LoopProjection.ofSplitting {k : ℕ} (hq : (D.map π hπ).LevelConsistent k)
     by_cases hj : j.val ∈ lifted
     · obtain ⟨y, hy⟩ := hlift j hj
       refine (hne ?_).elim
-      have hl : log (CompletedGroup.projection k (D.wall j).label) =
-          s.lieTruncatedMap k (by simp) (log (CompletedGroup.projection k y)) := by
+      have hl : log (TauCeti.CompletedGroup.projection k (D.wall j).label) =
+          s.lieTruncatedMap k (by simp) (log (TauCeti.CompletedGroup.projection k y)) := by
         rw [hy, s.projection_completedMap_of_le k (a := k) (by simp)]
         exact LieHom.log_bchGroupMap _ _
       rw [hl, s.decompose_lieTruncatedMap, GradedLieHom.idSubSectionComp_lieTruncatedMap hsπ]

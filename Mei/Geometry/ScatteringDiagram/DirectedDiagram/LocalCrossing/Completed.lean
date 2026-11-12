@@ -237,9 +237,9 @@ projected labels of the active walls through the point commute pairwise, for eve
 theorem pairwise_commute_incidentActive (k : ℕ) (θ v : V)
     (hθ : θ ∉ singularSupport (fun j : D.active k => (D.wall j).support)) :
     (D.incidentActive k θ : Set (D.active k)).Pairwise fun x y =>
-      Commute (CompletedGroup.projection k (D.wall x).label ^
+      Commute (TauCeti.CompletedGroup.projection k (D.wall x).label ^
           (if 0 < h.realCharacter (D.wall x).normal v then -1 else 1 : ℤ))
-        (CompletedGroup.projection k (D.wall y).label ^
+        (TauCeti.CompletedGroup.projection k (D.wall y).label ^
           (if 0 < h.realCharacter (D.wall y).normal v then -1 else 1 : ℤ)) := by
   intro x hx y hy _
   exact (D.activeLabels_commute k x y (affineSpan_eq_of_notMem_singularSupport
@@ -251,7 +251,7 @@ through the point. -/
 theorem combinedLabel_eq_noncommProd_incidentActive (k : ℕ) (θ v : V)
     (hθ : θ ∉ singularSupport (fun j : D.active k => (D.wall j).support)) :
     D.combinedLabel k θ v hθ = (D.incidentActive k θ).noncommProd
-      (fun j => CompletedGroup.projection k (D.wall j).label ^
+      (fun j => TauCeti.CompletedGroup.projection k (D.wall j).label ^
         (if 0 < h.realCharacter (D.wall j).normal v then -1 else 1 : ℤ))
       (D.pairwise_commute_incidentActive k θ v hθ) :=
   D.combinedLabel_eq_noncommProd k θ v hθ _ (fun _ => D.mem_incidentActive) _
@@ -271,16 +271,16 @@ def germLabel (θ v : V) (hθ : D.IsRegular θ) : d.completedBCHGroup ℒ :=
 /-- The finite-order projections of a germ label are the combined crossing labels. -/
 @[simp]
 theorem projection_germLabel (θ v : V) (hθ : D.IsRegular θ) (k : ℕ) :
-    CompletedGroup.projection k (D.germLabel θ v hθ) =
+    TauCeti.CompletedGroup.projection k (D.germLabel θ v hθ) =
       D.combinedLabel k θ v (hθ.notMem_singularSupport k) :=
-  CompletedGroup.projection_apply k _
+  TauCeti.CompletedGroup.projection_apply k _
 
 /-- The germ label is the unique element with the combined crossing labels as projections. -/
 theorem eq_germLabel_iff (θ v : V) (hθ : D.IsRegular θ) (l : d.completedBCHGroup ℒ) :
     l = D.germLabel θ v hθ ↔
-      ∀ k, CompletedGroup.projection k l = D.combinedLabel k θ v (hθ.notMem_singularSupport k) :=
+      ∀ k, TauCeti.CompletedGroup.projection k l = D.combinedLabel k θ v (hθ.notMem_singularSupport k) :=
   ⟨by rintro rfl k; exact D.projection_germLabel θ v hθ k,
-    fun hl => CompletedGroup.ext fun k => (hl k).trans (D.projection_germLabel θ v hθ k).symm⟩
+    fun hl => TauCeti.CompletedGroup.ext fun k => (hl k).trans (D.projection_germLabel θ v hθ k).symm⟩
 
 /-- Positive rescaling of the direction preserves the germ label. -/
 @[simp]
@@ -319,8 +319,8 @@ order-`k` projection as the germ label at `θ`, in every direction. -/
 theorem IsGenericPoint.eventually_projection_germLabel_eq {A : AffineSubspace ℝ V} {θ : V}
     (hθ : D.IsGenericPoint A θ) (k : ℕ) :
     ∀ᶠ η in 𝓝[(A : Set V)] θ, ∀ (hη : D.IsRegular η) (v : V),
-      CompletedGroup.projection k (D.germLabel η v hη) =
-        CompletedGroup.projection k (D.germLabel θ v hθ.isRegular) := by
+      TauCeti.CompletedGroup.projection k (D.germLabel η v hη) =
+        TauCeti.CompletedGroup.projection k (D.germLabel θ v hθ.isRegular) := by
   filter_upwards [D.eventually_nhdsWithin_combinedLabel_eq k hθ.mem (hθ.isRegular k)
     fun a => hθ.affineSpan_eq a] with η ⟨_, _, hl⟩ hη v
   rw [projection_germLabel, projection_germLabel, hl v]
@@ -333,7 +333,7 @@ at a common generic point of an affine subspace `A`, in every direction outside 
 theorem Equivalent.germLabel_eq (hDE : D.Equivalent E) {A : AffineSubspace ℝ V} {θ v : V}
     (hD : D.IsGenericPoint A θ) (hE : E.IsGenericPoint A θ) (hv : v ∉ A.direction) :
     D.germLabel θ v hD.isRegular = E.germLabel θ v hE.isRegular :=
-  CompletedGroup.ext fun k => by
+  TauCeti.CompletedGroup.ext fun k => by
     rw [projection_germLabel, projection_germLabel]
     exact ((equivalent_iff D E).mp hDE k).combinedLabel_eq θ v _ _
       (hD.realCharacter_normal_ne_zero hv) (hE.realCharacter_normal_ne_zero hv)

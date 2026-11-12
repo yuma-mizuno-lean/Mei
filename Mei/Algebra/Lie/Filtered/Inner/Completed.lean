@@ -31,7 +31,9 @@ open TauCeti (PositiveDegrees IsPositiveGrading)
 
 noncomputable section
 
-namespace Mei.AlgFiltration
+namespace TauCeti.AlgFiltration
+
+open Mei
 
 variable {R A : Type*} [CommRing R] [Ring A] [Algebra R A] (F : AlgFiltration A)
 
@@ -84,4 +86,4 @@ theorem completedBCHAction_eq_inner (g : d.completedBCHGroup ℒ) (a : F.complet
   simpa only [Equiv.apply_symm_apply] using
     F.completedBCHAction_exp_eq_inner d ℒ j hj hinner ((d.completedBCHExp ℒ).symm g) a
 
-end Mei.AlgFiltration
+end TauCeti.AlgFiltration

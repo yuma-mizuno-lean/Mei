@@ -24,10 +24,10 @@ positivity notion for wall functions in Gross–Hacking–Keel–Kontsevich,
 Burcroff–Lee–Mou, *Positivity of generalized cluster scattering diagrams*, §8.1
 (arXiv:2503.03719v1).
 
-The criteria transfer `Mei.AlgFiltration.isPositive_principalCompletion_iff` and
+The criteria transfer `TauCeti.AlgFiltration.isPositive_principalCompletion_iff` and
 its `ℕ[A]` form through the free-coordinate identification of the native filtration
 with the powers of the ideal of variables (`principalCoefficientCompletionEquiv`),
-using `Mei.AlgFiltration.isPositive_completionEquiv_iff`. The polynomial dictionary
+using `TauCeti.AlgFiltration.isPositive_completionEquiv_iff`. The polynomial dictionary
 matches the image of `S[Q_pr]` with the image of `S[M°][t]` because it is natural in
 the scalar ring. In the coordinates of an adapted basis this reads positivity in
 `ℚ[A][M°][[t_i]]`. Coefficient maps need not be injective, characters have
@@ -40,6 +40,8 @@ exactly when all of its coefficients lie in the image of `S`
 -/
 
 public section
+
+open TauCeti (AlgFiltration)
 
 open TauCeti (PositiveDegrees)
 
@@ -71,9 +73,9 @@ theorem isPositive_principalCoefficientCompletion_iff [CommSemiring S]
           φ.rangeS := by
   rw [principalCoefficientCompletionEquiv_apply,
     ← AlgFiltration.isPositive_completionEquiv_iff _
-      (AlgFiltration.ofIdeal (MvPolynomial.idealOfVars ι R[M]))
+      (Ideal.algFiltration (MvPolynomial.idealOfVars ι R[M]))
       (D.principalCoefficientPolynomialEquiv d e)
-      (by simpa only [AlgFiltration.ofIdeal_ideal] using
+      (by simpa only [Ideal.algFiltration_ideal] using
         D.comap_idealOfVars_pow_principalCoefficientPolynomialEquiv (R := R) d e he)
       (D.principalCoefficientPolynomialEquiv_mem_rangeS_iff d e φ),
     AlgFiltration.isPositive_principalCompletion_iff]
@@ -94,9 +96,9 @@ theorem isPositive_principalCoefficientCompletion_natPolynomial_iff {A : Type*}
           a = c := by
   rw [principalCoefficientCompletionEquiv_apply,
     ← AlgFiltration.isPositive_completionEquiv_iff _
-      (AlgFiltration.ofIdeal (MvPolynomial.idealOfVars ι (MvPolynomial A ℚ)[M]))
+      (Ideal.algFiltration (MvPolynomial.idealOfVars ι (MvPolynomial A ℚ)[M]))
       (D.principalCoefficientPolynomialEquiv d e)
-      (by simpa only [AlgFiltration.ofIdeal_ideal] using
+      (by simpa only [Ideal.algFiltration_ideal] using
         D.comap_idealOfVars_pow_principalCoefficientPolynomialEquiv (R := MvPolynomial A ℚ) d e he)
       (D.principalCoefficientPolynomialEquiv_mem_rangeS_iff d e _),
     AlgFiltration.isPositive_principalCompletion_natPolynomial_iff]

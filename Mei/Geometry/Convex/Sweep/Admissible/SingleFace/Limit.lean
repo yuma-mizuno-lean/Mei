@@ -65,7 +65,7 @@ theorem backwardPath_singleFace_boundary
   · right
     refine ⟨ht, ?_⟩
     have hx := (mem_admissibleBackwardDomain_singleFace_one_iff hn hZ).not.mp hnot
-    rw [backwardPath_singleFace_crossing, ← sweepProjection_inv_smul_apply]
+    rw [backwardPath_singleFace_crossing, ← ContinuousLinearMap.sweepProjection_inv_smul_apply]
     tauto
   · exact Or.inl (sub_eq_zero.mp ((div_eq_zero_iff.mp ht).resolve_right hw))
 

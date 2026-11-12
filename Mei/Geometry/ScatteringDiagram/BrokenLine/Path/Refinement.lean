@@ -7,8 +7,8 @@ module
 
 public import Mei.Geometry.ScatteringDiagram.BrokenLine.Path.Family
 import Mei.Algebra.BigOperators.Group.Finset.Indicator
-import Mei.Geometry.Convex.Polyhedron.Rational.Stratification.Cover
-import Mei.Geometry.Convex.Polyhedron.Rational.Stratification.Refinement
+import TauCeti.Analysis.Convex.Polyhedron.Rational.Stratification.Cover
+import TauCeti.Analysis.Convex.Polyhedron.Rational.Stratification.Refinement
 
 /-!
 # Subdividing closed charts of varying-chamber decorated rays
@@ -34,6 +34,8 @@ domains are those of Carl–Pumperla–Siebert, *A tropical view on Landau–Gin
 -/
 
 public noncomputable section
+
+open TauCeti (IsLocallyClosedPolyhedron IsRationalNormalPolyhedron IsRationalSemilinear)
 
 open Set Filter Quiver Mei.Convex
 

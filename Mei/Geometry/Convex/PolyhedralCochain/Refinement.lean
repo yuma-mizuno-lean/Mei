@@ -34,11 +34,15 @@ disjoint relative interiors. The boundary comparison uses
 
 public section
 
+open TauCeti (OrientedCell isRationalNormalPolyhedron_iff)
+
 noncomputable section
 
 open Set Module
 
-namespace Mei.OrientedCell.IsOrientedSubdivision
+namespace TauCeti.OrientedCell.IsOrientedSubdivision
+
+open Mei
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i} {k : ℕ}
@@ -107,9 +111,11 @@ theorem subdivisionPieces_eq_biUnion (hQ : IsOrientedSubdivision σ Q)
     exact (σ.mem_subdivisionPieces C η).mpr
       ⟨hηC, hητ.trans (hQ.carrier_subset hτ), hηo.trans (hQ.orientation_eq τ hτ)⟩
 
-end Mei.OrientedCell.IsOrientedSubdivision
+end TauCeti.OrientedCell.IsOrientedSubdivision
 
-namespace Mei.OrientedCell
+namespace TauCeti.OrientedCell
+
+open Mei
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i} {k : ℕ}
@@ -133,4 +139,4 @@ theorem cellCoboundary_eq_sum_of_isOrientedSubdivision {σ : OrientedCell h k}
     _ = ∑ τ ∈ Q, τ.cellCoboundary c := Finset.sum_congr rfl fun τ hτ =>
       (τ.cellCoboundary_eq_sum_cellCoboundary_subdivisionPieces (hC (some ⟨τ, hτ⟩)) c).symm
 
-end Mei.OrientedCell
+end TauCeti.OrientedCell

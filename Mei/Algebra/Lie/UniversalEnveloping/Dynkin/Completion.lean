@@ -20,6 +20,8 @@ have completed Lie representatives.
 
 public section
 
+open TauCeti.UniversalEnvelopingAlgebra (degreeFiltration)
+
 open TauCeti (PositiveDegrees IsPositiveGrading)
 
 namespace Mei.UniversalEnvelopingAlgebra
@@ -48,22 +50,22 @@ theorem mem_range_completedLieToU_iff_isCompletedPrimitive (u : (F).completion) 
     · rw [← completedCounit_eq_quotientCounit]
       exact hu.completedCounit_eq_zero ℒ d.degree _
     · obtain ⟨a, ha⟩ := Ideal.Quotient.mk_surjective ((F).projection k u)
-      rw [← ha, quotientCoproduct_mk, Mei.AlgFiltration.quotientIncludeLeft_mk,
-        Mei.AlgFiltration.quotientIncludeRight_mk]
+      rw [← ha, quotientCoproduct_mk, TauCeti.AlgFiltration.quotientIncludeLeft_mk,
+        TauCeti.AlgFiltration.quotientIncludeRight_mk]
       have hp := congrArg (((F).tensorProduct R (F)).projection k)
         ((isCompletedPrimitive_iff ℒ d.degree _ u).mp hu)
-      rw [Mei.AlgFiltration.completedTensor_one_right,
-        Mei.AlgFiltration.completedTensor_one_left] at hp
+      rw [TauCeti.AlgFiltration.completedTensor_one_right,
+        TauCeti.AlgFiltration.completedTensor_one_left] at hp
       simp only [projection_completedCoproduct, map_add,
-        Mei.AlgFiltration.projection_includeLeftCompletion,
-        Mei.AlgFiltration.projection_includeRightCompletion, ← ha,
+        TauCeti.AlgFiltration.projection_includeLeftCompletion,
+        TauCeti.AlgFiltration.projection_includeRightCompletion, ← ha,
         quotientCoproduct_mk, Ideal.Quotient.factor_mk,
         AlgHom.toRingHom_eq_coe, Ideal.quotientMap_mk, RingHom.coe_coe,
         Algebra.TensorProduct.includeLeft_apply,
         Algebra.TensorProduct.includeRight_apply] at hp
       rw [← map_add] at hp ⊢
       have hm := Ideal.Quotient.eq.mp hp
-      rw [Mei.AlgFiltration.tensorProduct_ideal] at hm
+      rw [TauCeti.AlgFiltration.tensorProduct_ideal] at hm
       exact Ideal.Quotient.eq.mpr hm
   · rintro ⟨x, rfl⟩
     exact isCompletedPrimitive_completedLieToU d ℒ x

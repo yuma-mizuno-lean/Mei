@@ -6,8 +6,8 @@ Authors: Codex
 module
 
 public import Mei.Geometry.Convex.PolyhedralCochain.Basic
-public import Mei.Geometry.Convex.Polyhedron.Rational.Sweep
-public import Mei.Geometry.Convex.Sweep
+public import TauCeti.Analysis.Convex.Polyhedron.Rational.Sweep
+public import TauCeti.Analysis.Convex.Sweep.Basic
 public import TauCeti.Analysis.Convex.Recession.Basic
 public import Mei.LinearAlgebra.Alternating.Contraction
 
@@ -21,20 +21,22 @@ is strictly outgoing, and reversal of the original orientation reverses the
 swept orientation. These are the generator operations for sweeping polyhedral
 cochains.
 
-The support and dimension calculations use `Mei.Convex.sweep` and
-`Mei.Convex.finrank_sweep`. Rationality uses the Fourier–Motzkin construction
-`IsRationalNormalPolyhedron.negRay`; the orientation uses
+The support and dimension calculations use `Set.sweep ℝ` and
+`Set.finrank_vectorSpan_sweep`. Rationality uses the Fourier–Motzkin construction
+`TauCeti.IsRationalNormalPolyhedron.sweep`; the orientation uses
 `Module.Ray.contract`. This file concerns generators; descent through
 subdivision relations is a further step.
 -/
 
 public section
 
+open TauCeti (OrientedCell)
+
 open Module
 
 noncomputable section
 
-namespace Mei.OrientedCell
+namespace TauCeti.OrientedCell
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i} {k : ℕ}
@@ -46,25 +48,25 @@ def sweep (σ : OrientedCell h (k + 1)) (n : N)
     (hn : i n ∉ (affineSpan ℝ σ.carrier).direction) : OrientedCell h k := by
   have := h.finiteDimensional
   refine
-    { carrier := Convex.sweep σ.carrier (i n)
+    { carrier := Set.sweep ℝ σ.carrier (i n)
       rational := σ.rational.sweep n
-      nonempty := Convex.sweep_nonempty σ.nonempty (i n)
+      nonempty := Set.Nonempty.sweep (𝕜 := ℝ) σ.nonempty (i n)
       finrank_direction_add := ?_
       orientation := σ.orientation.contract σ.isConormal σ.finrank_quotient_direction (i n) hn
       isConormal := ?_ }
-  · rw [direction_affineSpan, Convex.finrank_sweep σ.nonempty
+  · rw [direction_affineSpan, Set.finrank_vectorSpan_sweep (𝕜 := ℝ) σ.nonempty
       (by simpa [direction_affineSpan] using hn)]
     have := σ.finrank_direction_add
     rw [direction_affineSpan] at this
     omega
-  · simpa only [direction_affineSpan, Convex.vectorSpan_sweep σ.nonempty] using
+  · simpa only [direction_affineSpan, Set.vectorSpan_sweep (𝕜 := ℝ) σ.nonempty] using
       σ.orientation.isConormal_contract σ.isConormal σ.finrank_quotient_direction (i n) hn
 
 /-- The support of an oriented sweep is the negative-ray sweep of its support. -/
 @[simp]
 theorem sweep_carrier (σ : OrientedCell h (k + 1)) (n : N)
     (hn : i n ∉ (affineSpan ℝ σ.carrier).direction) :
-    (σ.sweep n hn).carrier = Convex.sweep σ.carrier (i n) := (rfl)
+    (σ.sweep n hn).carrier = Set.sweep ℝ σ.carrier (i n) := (rfl)
 
 /-- The orientation of the swept cell is obtained by conormal contraction. -/
 @[simp]
@@ -77,8 +79,8 @@ theorem sweep_orientation (σ : OrientedCell h (k + 1)) (n : N)
 theorem sweep_strictlyOutgoing (σ : OrientedCell h (k + 1)) (n : N)
     (hn : i n ∉ (affineSpan ℝ σ.carrier).direction) :
     i n ∉ Set.recessionCone ℝ (σ.sweep n hn).carrier := by
-  rw [sweep_carrier, Set.mem_recessionCone]
-  exact Convex.sweep_strictlyOutgoing σ.nonempty (by simpa [direction_affineSpan] using hn)
+  rw [sweep_carrier]
+  exact Set.notMem_recessionCone_sweep σ.nonempty (by simpa [direction_affineSpan] using hn)
 
 /-- Reversing the input orientation reverses the swept cell. -/
 @[simp]
@@ -91,4 +93,4 @@ theorem sweep_reverse (σ : OrientedCell h (k + 1)) (n : N)
     exact Module.Ray.contract_neg σ.orientation σ.isConormal
       σ.finrank_quotient_direction (i n) hn
 
-end Mei.OrientedCell
+end TauCeti.OrientedCell

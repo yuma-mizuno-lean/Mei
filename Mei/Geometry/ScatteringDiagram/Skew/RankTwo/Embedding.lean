@@ -196,8 +196,8 @@ by `{x, y}`. -/
 theorem map_projection_dilogPow (hxy : βℚ x.1 y.1 ≠ 0) (k : ℕ)
     (q : PlaneDegree (D.planeWeight d x y)) (c : ℚ) :
     D.planeTransport d x y hxy k
-        (CompletedGroup.projection k (StandardPlane.dilogPow q c)) =
-      CompletedGroup.projection k
+        (TauCeti.CompletedGroup.projection k (StandardPlane.dilogPow q c)) =
+      TauCeti.CompletedGroup.projection k
         (D.dilogPow d (D.planeDegree d x y q) ((βℚ x.1 y.1)⁻¹ * c)) := by
   rw [planeTransport, StandardPlane.dilogPow_def, dilogPow_def, mul_smul]
   exact SkewLieAlgebra.lieTruncatedMap_gradedMap_projection_rayExp (E.coefficientForm ℚ)
@@ -211,24 +211,24 @@ ray labels `Ψ[δ i]^{c i}` of the plane gives the identity between the products
 theorem projection_prod_planeDegree_eq (hxy : βℚ x.1 y.1 ≠ 0) (k : ℕ) {ι ι' : Type u}
     {I : List ι} {δ : ι → PlaneDegree (D.planeWeight d x y)} {c : ι → ℚ}
     {J : List ι'} {δ' : ι' → PlaneDegree (D.planeWeight d x y)} {c' : ι' → ℚ}
-    (h : CompletedGroup.projection k (I.map fun i => StandardPlane.dilogPow (δ i) (c i)).prod =
-      CompletedGroup.projection k (J.map fun i => StandardPlane.dilogPow (δ' i) (c' i)).prod) :
-    CompletedGroup.projection k
+    (h : TauCeti.CompletedGroup.projection k (I.map fun i => StandardPlane.dilogPow (δ i) (c i)).prod =
+      TauCeti.CompletedGroup.projection k (J.map fun i => StandardPlane.dilogPow (δ' i) (c' i)).prod) :
+    TauCeti.CompletedGroup.projection k
         (I.map fun i => D.dilogPow d (D.planeDegree d x y (δ i)) ((βℚ x.1 y.1)⁻¹ * c i)).prod =
-      CompletedGroup.projection k
+      TauCeti.CompletedGroup.projection k
         (J.map fun i => D.dilogPow d (D.planeDegree d x y (δ' i))
           ((βℚ x.1 y.1)⁻¹ * c' i)).prod := by
   let ψ := D.planeTransport d x y hxy k
   have key {α : Type u} (L : List α) (δ : α → PlaneDegree (D.planeWeight d x y)) (c : α → ℚ) :
-      ψ (CompletedGroup.projection k (L.map fun i => StandardPlane.dilogPow (δ i) (c i)).prod) =
-      CompletedGroup.projection k
+      ψ (TauCeti.CompletedGroup.projection k (L.map fun i => StandardPlane.dilogPow (δ i) (c i)).prod) =
+      TauCeti.CompletedGroup.projection k
         (L.map fun i => D.dilogPow d (D.planeDegree d x y (δ i)) ((βℚ x.1 y.1)⁻¹ * c i)).prod := by
     induction L with
     | nil =>
-      simp only [List.map_nil, List.prod_nil, map_one (CompletedGroup.projection k)]
+      simp only [List.map_nil, List.prod_nil, map_one (TauCeti.CompletedGroup.projection k)]
       exact map_one ψ
     | cons i L ih =>
-      simp only [List.map_cons, List.prod_cons, map_mul (CompletedGroup.projection k)]
+      simp only [List.map_cons, List.prod_cons, map_mul (TauCeti.CompletedGroup.projection k)]
       exact (map_mul ψ _ _).trans
         (congrArg₂ (· * ·) (D.map_projection_dilogPow d x y hxy k (δ i) (c i)) ih)
   exact (key I δ c).symm.trans ((congrArg ψ h).trans (key J δ' c'))

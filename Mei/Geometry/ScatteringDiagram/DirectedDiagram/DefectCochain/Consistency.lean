@@ -28,6 +28,8 @@ refined tropical curve counts*, proof of Theorem 2.6.
 
 public section
 
+open TauCeti (OrientedCell PolyhedralCochain)
+
 open TauCeti (WallComplement AdmissiblePLPath)
 
 open TauCeti (PositiveDegrees IsPositiveGrading)

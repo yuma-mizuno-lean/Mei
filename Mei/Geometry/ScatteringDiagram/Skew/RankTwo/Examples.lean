@@ -201,7 +201,7 @@ theorem orderedNormalizedProd_planeDegree_eq_iff (s : PlaneDegree w₀ → ℕ) 
   have hexp : orderedNormalizedProd planeDegree_pentagon_injective pentagonExponent =
       E.dilogPow unitPlane pentagonSnd 1 * E.dilogPow unitPlane pentagonFst 1 := by
     rw [hpent, orderedNormalizedProd_def,
-      CompletedGroup.orderedProd_eq_list_prod _ _ pentagonSupport fun q hq => ?_,
+      TauCeti.CompletedGroup.orderedProd_eq_list_prod _ _ pentagonSupport fun q hq => ?_,
       sort_pentagonSupport]
     · simp only [List.map_cons, List.map_nil, List.prod_cons, List.prod_nil, mul_one,
         planeDegree_e₁, planeDegree_e₂, planeDegree_e₁_add_e₂, rayIndex_pentagonFst,

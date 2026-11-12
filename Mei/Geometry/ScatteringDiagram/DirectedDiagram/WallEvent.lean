@@ -210,7 +210,7 @@ theorem wallEventLabel_eq_prod (k : ℕ) (e : WallEvent (D.active k))
     (hs : SignType.sign (e.normal (f k) v) = e.2)
     (l : List (D.active k)) (hl : l.Nodup) (hm : ∀ j, j ∈ l ↔ j ∈ e.1.val) :
     D.wallEventLabel k e =
-      (l.map fun j : D.active k => CompletedGroup.projection k (D.wall j).label ^
+      (l.map fun j : D.active k => TauCeti.CompletedGroup.projection k (D.wall j).label ^
         (if 0 < h.realCharacter (D.wall j).normal (-v) then -1 else 1 : ℤ)).prod := by
   rw [D.wallEventLabel_eq_combinedLabel k e he hx hs
     (e.normal_ne_zero_of_mem_support (W k) (f k) he hv)]
@@ -246,7 +246,7 @@ theorem crossingEventProduct_eq_wallEventLabel (k : ℕ)
     (he : AffineMap.lineMap x.val y.val t ∈ e.support (W k))
     (hs : SignType.sign (e.normal (f k) (x.val - y.val)) = e.2) :
     crossingEventProduct (fun j : D.active k => h.realCharacter (D.wall j).normal)
-      (fun j => CompletedGroup.projection k (D.wall j).label)
+      (fun j => TauCeti.CompletedGroup.projection k (D.wall j).label)
       (D.activeLabels_commute k) a t = D.wallEventLabel k e := by
   rw [D.wallEventLabel_eq_combinedLabel k e he (a.down.regular t ht) hs
       (e.normal_ne_zero_of_mem_support (W k) (f k) he ?_),

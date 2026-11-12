@@ -14,18 +14,18 @@ public import Mei.RingTheory.FilteredAlgebra.PowerSeries.Basic
 Let `F` be a filtration of `R[M]` and `x` an element of the first completed ideal that is the
 completion of the monomial `z^m`. Evaluating a power series `g = ∑ᵢ gᵢ Xⁱ` at `x` gives, at order
 `k`, the class of `∑_{i ≤ k} gᵢ z^{i • m}`
-(`Mei.AlgFiltration.projection_completedAeval_of_val_eq_toCompletion_single`); for instance
+(`TauCeti.AlgFiltration.projection_completedAeval_of_val_eq_toCompletion_single`); for instance
 `1 + b X` gives the completion of `1 + b z^m`
-(`Mei.AlgFiltration.completedAeval_one_add_C_mul_X_of_val_eq_toCompletion_single`).
+(`TauCeti.AlgFiltration.completedAeval_one_add_C_mul_X_of_val_eq_toCompletion_single`).
 
 Suppose the terms of `F` lie in the monomial ideals of an integral degree `δ` that is
 nonnegative on `M` and positive on `m`. An element of the `k`-th monomial ideal has no
 exponent of degree below `k` (`AddSubmonoid.coeff_eq_zero_of_mem_monoidAlgebraIdeal`), so the
 finite projections determine the coefficients on the ray of `m`: if the completion of
 `a ∈ R[M]` is the evaluation of `g` at `x`, then the coefficient of `z^{i • m}` in `a` is `gᵢ`
-(`Mei.AlgFiltration.coeff_nsmul_of_toCompletion_eq_completedAeval`). Hence the evaluation of
+(`TauCeti.AlgFiltration.coeff_nsmul_of_toCompletion_eq_completedAeval`). Hence the evaluation of
 `g` at `x` is the completion of an element of `R[M]` exactly when `g` is a polynomial
-(`Mei.AlgFiltration.completedAeval_mem_range_toCompletion_iff`).
+(`TauCeti.AlgFiltration.completedAeval_mem_range_toCompletion_iff`).
 -/
 
 public section
@@ -51,7 +51,7 @@ theorem coeff_eq_zero_of_mem_monoidAlgebraIdeal (hδ : ∀ n, 0 ≤ δ n) {k : �
 
 end AddSubmonoid
 
-namespace Mei.AlgFiltration
+namespace TauCeti.AlgFiltration
 
 variable {R M : Type*} [CommRing R] [AddCommMonoid M] {F : AlgFiltration R[M]} {m : M}
   {x : F.completionIdeal 1}
@@ -129,4 +129,4 @@ theorem completedAeval_mem_range_toCompletion_iff
     rw [completedAeval_coe, hx]
     simpa using (Polynomial.aeval_algHom_apply (F.toCompletionₐ (R := R)) (single m 1) p).symm
 
-end Mei.AlgFiltration
+end TauCeti.AlgFiltration

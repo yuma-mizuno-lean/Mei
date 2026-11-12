@@ -31,9 +31,13 @@ tropical curve counts*, proof of Theorem 2.6.
 
 public section
 
+open TauCeti (OrientedCell)
+
 noncomputable section
 
-namespace Mei.PolyhedralCochain
+namespace TauCeti.PolyhedralCochain
+
+open Mei
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
@@ -107,4 +111,4 @@ theorem exists_outgoing_filling_of_coboundary_eq_zero (n : N)
   rw [hz, map_zero, add_zero] at hd
   exact ⟨g, hg, hd, fun τ hτ => (hout τ hτ).choose_spec.2.2⟩
 
-end Mei.PolyhedralCochain
+end TauCeti.PolyhedralCochain

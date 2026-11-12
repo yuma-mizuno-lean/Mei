@@ -29,6 +29,8 @@ on Landau–Ginzburg models*, §4 (arXiv:2205.07753v2).
 
 public noncomputable section
 
+open TauCeti (IsRationalNormalPolyhedron IsRationalSemilinear)
+
 open Set Filter Topology Quiver Mei.Convex
 
 namespace Mei
@@ -173,7 +175,7 @@ section Rational
 
 variable {Λ : Type*} [AddCommGroup Λ] {i : Λ →+ V}
   (h : TauCeti.Toric.IsIntegralLattice i) (w : ∀ q, ι q → Λ) [Finite J] [Finite K]
-  (hν : ∀ {b c : Q} (e : b ⟶ c), Toric.IsRationalFunctional h (ν e).toLinearMap)
+  (hν : ∀ {b c : Q} (e : b ⟶ c), TauCeti.Toric.IsRationalFunctional h (ν e).toLinearMap)
   (hP : ∀ {b c : Q} (e : b ⟶ c), IsRationalSemilinear h (P e))
   (hW : ∀ j, IsRationalNormalPolyhedron h (W j))
   (hS : ∀ j, IsRationalNormalPolyhedron h (S j))

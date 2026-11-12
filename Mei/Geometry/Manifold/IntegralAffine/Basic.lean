@@ -22,6 +22,8 @@ and structure groupoid describe integral affine chart changes.
 
 public section
 
+open TauCeti.Toric (IntegralAffineEquiv)
+
 open Set
 
 namespace Mei.Toric

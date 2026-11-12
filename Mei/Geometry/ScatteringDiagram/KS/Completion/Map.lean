@@ -117,7 +117,7 @@ theorem pathProduct_mapDiagram (D : CompletedDiagram s d ℒ C)
     (f : GradedLieHom (PositiveDegreeMap.id d) ℒ ℳ)
     {x y : Point C} (p : Quiver.Path x y) :
     (D.mapDiagram f).pathProduct p = f.completedMap (D.pathProduct p) := by
-  apply CompletedGroup.ext
+  apply TauCeti.CompletedGroup.ext
   intro k
   rw [f.projection_completedMap_of_le k (a := k) (by simp)]
   simp only [projection_pathProduct, mapDiagram_diagram, KSComplex.pathProduct_map]

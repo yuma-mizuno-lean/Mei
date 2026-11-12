@@ -213,7 +213,7 @@ theorem probeWall_label_eq_one_iff (a : ℳ p) :
 /-- A nonzero probe coefficient is visible precisely from extended order one onward. -/
 @[simp↓]
 theorem projection_probeWall_label_eq_one_iff (a : ℳ p) (k : ℕ) :
-    CompletedGroup.projection k (probeWall d ℳ p ℒ H h h' a).label = 1 ↔
+    TauCeti.CompletedGroup.projection k (probeWall d ℳ p ℒ H h h' a).label = 1 ↔
       a = 0 ∨ k = 0 := by
   have hx := (moduleGradingEquiv d ℳ p ℒ p (initialCoefficient d ℳ p a)).property
   rw [coe_moduleGradingEquiv] at hx

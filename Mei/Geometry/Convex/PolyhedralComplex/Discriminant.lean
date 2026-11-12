@@ -52,7 +52,7 @@ theorem exceptions_singularDiscriminant (C : FinitePolyhedralComplex h)
     (vectors : Finset V) :
     (C.singularDiscriminant vectors).exceptions =
       ((C.codimensionAtLeast 2).cells ×ˢ vectors).image
-        (fun z => affineSpan ℝ (Convex.sweep z.1 z.2)) := by
+        (fun z => affineSpan ℝ (Set.sweep ℝ z.1 z.2)) := by
   have := h.finiteDimensional
   exact ExceptionalArrangement.exceptions_ofSweeps _ _ _
 

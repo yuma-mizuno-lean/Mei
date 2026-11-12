@@ -35,6 +35,8 @@ cluster algebras*, §1.1 (arXiv:1411.1394v2).
 
 public noncomputable section
 
+open TauCeti (AlgFiltration)
+
 open TauCeti (PositiveDegrees SupportedRay)
 
 namespace Mei.SkewLatticeDatum.AdaptedBasis.BLMPolynomialInput
@@ -498,8 +500,8 @@ theorem projection_initialLabel_eq_noncommProd_incomingDiagram
     (s : Finset {w : SupportedRay 𝒅 // I.alphabetNormal i w.generator = 0})
     (hs : ∀ w ∈ (𝒅).raysAtOrder k, ∀ hw : I.alphabetNormal i w.generator = 0,
       ⟨w, hw⟩ ∈ s) :
-    CompletedGroup.projection k (I.initialLabel (R := R) i) =
-      s.noncommProd (fun w => CompletedGroup.projection k
+    TauCeti.CompletedGroup.projection k (I.initialLabel (R := R) i) =
+      s.noncommProd (fun w => TauCeti.CompletedGroup.projection k
         ((I.incomingDiagram (R := R) h).wall ⟨i, w⟩).label)
         (fun v _ w _ _ => by
           simp only [incomingDiagram_label]

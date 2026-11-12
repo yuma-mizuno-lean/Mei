@@ -31,11 +31,15 @@ classes is defined here. Unbounded cells and lineality are allowed.
 
 public section
 
+open TauCeti (OrientedCell PolyhedralCochain isRationalNormalPolyhedron_iff)
+
 noncomputable section
 
 open Set Module
 
-namespace Mei.OrientedCell
+namespace TauCeti.OrientedCell
+
+open Mei
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i} {k : ℕ}
@@ -136,4 +140,4 @@ theorem cellCoboundary_eq_sum_cellCoboundary_subdivisionPieces
   exact (σ.cellCoboundary_eq_sum_subdivisionPieces hQ c).trans
     (sum_external_boundaryFacets_eq_sum_subdivisionPieces hQ c).symm
 
-end Mei.OrientedCell
+end TauCeti.OrientedCell

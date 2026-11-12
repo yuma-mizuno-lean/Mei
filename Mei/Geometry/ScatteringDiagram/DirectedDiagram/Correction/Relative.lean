@@ -82,7 +82,7 @@ private theorem correctionStep_ker
   let E := D.listDiagram s
   -- The walls added so far are killed by `π`, so they do not change the quotient diagram.
   have hkill (j : Fin s.length) (l : ℕ) :
-      CompletedGroup.projection l ((s[j]).map π hπ).label = 1 := by
+      TauCeti.CompletedGroup.projection l ((s[j]).map π hπ).label = 1 := by
     obtain ⟨n, -, -, z, -, hz, hlabel, -⟩ :=
       DirectedWall.hasPureBirthLog_def.mp (hw s[j] (List.getElem_mem j.isLt)).2
     rw [DirectedWall.map_label, hlabel, GradedLieHom.completedMap_expToCompletion,

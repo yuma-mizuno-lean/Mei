@@ -52,6 +52,8 @@ for cluster algebras*, §1 and Appendix B (arXiv:1411.1394v2).
 
 public section
 
+open TauCeti (AlgFiltration)
+
 open TauCeti (PositiveDegrees SupportedRay)
 
 noncomputable section
@@ -401,7 +403,7 @@ theorem radicalLabel_mem :
 /-- Over a nontrivial ring the radical label is not the identity: it survives at order two. -/
 theorem radicalLabel_ne_one [Nontrivial R] : radicalLabel R ≠ 1 := by
   intro h
-  have hp := congrArg (CompletedGroup.projection 2) h
+  have hp := congrArg (TauCeti.CompletedGroup.projection 2) h
   rw [map_one, radicalLabel_def] at hp
   rcases (PositiveDegrees.projection_expToCompletion_eq_one_iff _ _
     (radicalGenerator_mem R) 2).mp hp with hp | hp

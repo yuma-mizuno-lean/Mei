@@ -28,9 +28,13 @@ supports and lineality are allowed, over modules with arbitrary ring scalars.
 
 public section
 
+open TauCeti (OrientedCell PolyhedralCochain)
+
 noncomputable section
 
-namespace Mei.PolyhedralCochain
+namespace TauCeti.PolyhedralCochain
+
+open Mei
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
@@ -96,4 +100,4 @@ theorem exists_outgoing_sweep_presentation (n : N)
   rw [hg]
   exact coboundary_sweep_of_coboundary_eq_zero n C hC
 
-end Mei.PolyhedralCochain
+end TauCeti.PolyhedralCochain

@@ -34,6 +34,8 @@ anti-canonical class*, Proposition 3.5 and Lemma 3.7 (arXiv:1601.07081v4).
 
 public noncomputable section
 
+open TauCeti (IsLocallyClosedPolyhedron IsRationalNormalPolyhedron IsRationalSemilinear)
+
 open Set Quiver AddMonoidAlgebra Mei.GradedAlgebra Mei.NodeAlgebra
 
 namespace Mei
@@ -148,7 +150,7 @@ section Rational
 variable {Λ : Type*} [AddCommGroup Λ] {i : Λ →+ V}
   (h : TauCeti.Toric.IsIntegralLattice i) (w : Q → ℤ × M → Λ)
   (hv : v = fun q d => i (w q d)) [Finite O] [Finite K]
-  (hν : ∀ j, Toric.IsRationalFunctional h (ν j).toLinearMap)
+  (hν : ∀ j, TauCeti.Toric.IsRationalFunctional h (ν j).toLinearMap)
   (hP : ∀ {b c : Q} (e : b ⟶ c), IsRationalSemilinear h (P e))
   (hW : ∀ j, IsRationalNormalPolyhedron h (W j))
   (hS : ∀ j, IsRationalNormalPolyhedron h (S j))

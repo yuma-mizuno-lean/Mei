@@ -8,7 +8,8 @@ module
 public import Mei.Analysis.Normed.Affine.ContinuousAffineMap
 public import Mei.Topology.Algebra.ContinuousAffineEquiv
 public import Mei.Geometry.Convex.Sweep.Realization
-public import Mei.Geometry.Convex.Polyhedron.Rational.Stratification
+public import TauCeti.Analysis.Convex.Polyhedron.Rational.Stratification.Basic
+public import Mei.Algebra.BigOperators.Group.Finset.Indicator
 public import Mei.Geometry.Convex.Polyhedron.Rational.Ray
 public import Mei.Geometry.Convex.Polyhedron.Incoming
 public import Mathlib.Topology.CompactOpen
@@ -43,6 +44,8 @@ Landau–Ginzburg models*, §4 (arXiv:2205.07753v2).
 -/
 
 public noncomputable section
+
+open TauCeti (IsRationalNormalPolyhedron IsRationalSemilinear)
 
 namespace Mei.Convex
 

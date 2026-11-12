@@ -29,7 +29,7 @@ with `upperExponent` and `exponentProjection` is proved in the exponent module.
 
 The construction uses Mathlib's `Equiv.prodShear` and
 `OpenPartialHomeomorph.subtypeRestr`, and Mei's
-`Toric.IntegralAffineEquiv.ofLatticeEquiv` and `Toric.integralAffineGroupoid`.
+`TauCeti.Toric.IntegralAffineEquiv.ofLatticeEquiv` and `Toric.integralAffineGroupoid`.
 The geometry is the focus-focus local model of
 Gross–Siebert, *An Invitation to Toric Degenerations*, §2.2–2.3
 (arXiv:0808.2749v2).
@@ -283,8 +283,8 @@ variable (h : TauCeti.Toric.IsIntegralLattice
   ((Int.castAddHom ℝ).prodMap (Int.castAddHom ℝ)))
 
 /-- The real upper shear, with its specified integral tangent-lattice map. -/
-def upperAffine : Toric.IntegralAffineEquiv h h :=
-  Toric.IntegralAffineEquiv.ofLatticeEquiv h h upperTangent.toAddEquiv
+def upperAffine : TauCeti.Toric.IntegralAffineEquiv h h :=
+  TauCeti.Toric.IntegralAffineEquiv.ofLatticeEquiv h h upperTangent.toAddEquiv
 
 @[simp] theorem upperAffine_apply (p : ℝ × ℝ) :
     upperAffine h p = (p.1, p.2 - p.1) := by
@@ -293,12 +293,12 @@ def upperAffine : Toric.IntegralAffineEquiv h h :=
     (f := upperTangent.toAddEquiv.toAddMonoidHom)
     (g := (LinearMap.fst ℝ ℝ ℝ).prod (LinearMap.snd ℝ ℝ ℝ - LinearMap.fst ℝ ℝ ℝ))
     (fun n => by simp)
-  rw [upperAffine, Toric.IntegralAffineEquiv.ofLatticeEquiv_apply, ← he]
+  rw [upperAffine, TauCeti.Toric.IntegralAffineEquiv.ofLatticeEquiv_apply, ← he]
   rfl
 
 @[simp] theorem upperAffine_latticeEquiv :
     (upperAffine h).latticeEquiv = upperTangent.toAddEquiv := by
-  rw [upperAffine, Toric.IntegralAffineEquiv.ofLatticeEquiv_latticeEquiv]
+  rw [upperAffine, TauCeti.Toric.IntegralAffineEquiv.ofLatticeEquiv_latticeEquiv]
 
 /-- On the left half-plane, the change from the cut chart to the upper chart is the upper
 shear `upperAffine`. -/
@@ -312,12 +312,12 @@ theorem eqOn_cutChart_symm_trans_upperChart_upperAffine :
 /-- On the right half-plane, the change from the cut chart to the upper chart is the
 identity. -/
 theorem eqOn_cutChart_symm_trans_upperChart_refl :
-    EqOn (cutChart.symm.trans upperChart) (Toric.IntegralAffineEquiv.refl h)
+    EqOn (cutChart.symm.trans upperChart) (TauCeti.Toric.IntegralAffineEquiv.refl h)
       ((cutChart.symm.trans upperChart).source ∩ {q | 0 < q.1}) := by
   intro q hq
   have hq' : 0 < q.1 := hq.2
   simp only [cutChart_symm_trans_upperChart_apply q hq.1, min_eq_right hq'.le,
-    sub_zero, Toric.IntegralAffineEquiv.refl_toAffineEquiv, AffineEquiv.refl_apply]
+    sub_zero, TauCeti.Toric.IntegralAffineEquiv.refl_toAffineEquiv, AffineEquiv.refl_apply]
 
 private theorem cutChart_symm_trans_upperChart_mem :
     cutChart.symm.trans upperChart ∈ Toric.integralAffineGroupoid h := by
@@ -327,7 +327,7 @@ private theorem cutChart_symm_trans_upperChart_mem :
   rcases lt_or_gt_of_ne hu with hu | hu
   · exact ⟨upperAffine h, {q | q.1 < 0}, isOpen_lt continuous_fst continuous_const, hu,
       eqOn_cutChart_symm_trans_upperChart_upperAffine h⟩
-  · exact ⟨Toric.IntegralAffineEquiv.refl h, {q | 0 < q.1},
+  · exact ⟨TauCeti.Toric.IntegralAffineEquiv.refl h, {q | 0 < q.1},
       isOpen_lt continuous_const continuous_fst, hu, eqOn_cutChart_symm_trans_upperChart_refl h⟩
 
 /-- Every change of coordinates in the focus-focus atlas is locally integral affine. -/

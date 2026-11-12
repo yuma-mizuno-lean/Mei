@@ -37,6 +37,8 @@ class*, §3 (arXiv:1601.07081v4), and Carl–Pumperla–Siebert,
 
 public noncomputable section
 
+open TauCeti (IsLocallyClosedPolyhedron IsRationalNormalPolyhedron IsRationalSemilinear)
+
 open Set Filter Quiver Mei.Convex
 
 namespace Mei
@@ -350,7 +352,7 @@ section Integral
 
 variable {Λ : Type*} [AddCommGroup Λ] {i : Λ →+ V}
   (h : TauCeti.Toric.IsIntegralLattice i) (w : ∀ q, ι q → Λ) [Finite J] [Finite K]
-  (hν : ∀ {b c : Q} (e : b ⟶ c), Toric.IsRationalFunctional h (ν e).toLinearMap)
+  (hν : ∀ {b c : Q} (e : b ⟶ c), TauCeti.Toric.IsRationalFunctional h (ν e).toLinearMap)
   (hP : ∀ {b c : Q} (e : b ⟶ c), IsRationalSemilinear h (P e))
   (hW : ∀ j, IsRationalNormalPolyhedron h (W j))
   (hS : ∀ j, IsRationalNormalPolyhedron h (S j))
@@ -382,7 +384,7 @@ theorem isRationalSemilinear_pathDecoratedDomain (p : Path a b) (d : p.Degrees �
       (p.reverseArrowLabels c) (p.reverseArrowLabels P) W S C
       (Path.Degrees.reverseVertexLabels w i₀ p d)
       (p.reverseArrowLabels_forall ν
-        (fun l => Toric.IsRationalFunctional h l.toLinearMap) hν)
+        (fun l => TauCeti.Toric.IsRationalFunctional h l.toLinearMap) hν)
       (p.reverseArrowLabels_forall P (IsRationalSemilinear h) hP) hW hS hC
 
 include hν hP hW hS hC in

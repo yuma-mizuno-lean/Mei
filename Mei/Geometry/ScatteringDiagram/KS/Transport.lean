@@ -180,10 +180,10 @@ theorem pathProduct_eq_signFactorizationEquiv_symm_neg_mul_inv (hD : D.Consisten
     (p : AdmissiblePLPath x y) :
     (D.diagram k).toFiniteWallDiagram.pathProduct p =
       ((signFactorizationEquiv ℒ (s.evaluation y.val) d k).symm
-          (CompletedGroup.projection k (D.transport hD D.degreePoint D.negDegreePoint)) .neg :
+          (TauCeti.CompletedGroup.projection k (D.transport hD D.degreePoint D.negDegreePoint)) .neg :
         d.truncatedGroup ℒ k) *
       ((signFactorizationEquiv ℒ (s.evaluation x.val) d k).symm
-          (CompletedGroup.projection k (D.transport hD D.degreePoint D.negDegreePoint)) .neg :
+          (TauCeti.CompletedGroup.projection k (D.transport hD D.degreePoint D.negDegreePoint)) .neg :
         d.truncatedGroup ℒ k)⁻¹ := by
   let := h.finiteDimensional
   let F := (D.diagram k).toFiniteWallDiagram

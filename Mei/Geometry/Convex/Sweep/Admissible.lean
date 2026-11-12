@@ -36,6 +36,8 @@ models*, §4 (arXiv:2205.07753v2).
 
 public noncomputable section
 
+open TauCeti (IsRationalNormalPolyhedron IsRationalSemilinear)
+
 namespace Mei.Convex
 
 open Set Filter
@@ -406,7 +408,7 @@ variable {N : Type*} [AddCommGroup N] {i : N →+ V}
 rational-normal obstacles and source. Supports may be rational semilinear and
 all affine offsets may be real. -/
 theorem isRationalSemilinear_admissibleBackwardDomain (w : Fin (n + 1) → N)
-    (hf : ∀ j, Toric.IsRationalFunctional h (f j).toLinearMap)
+    (hf : ∀ j, TauCeti.Toric.IsRationalFunctional h (f j).toLinearMap)
     (hP : ∀ j, IsRationalSemilinear h (P j))
     (hW : ∀ a, IsRationalNormalPolyhedron h (W a))
     (hS : ∀ a, IsRationalNormalPolyhedron h (S a))
@@ -467,7 +469,7 @@ variable {N : Type*} [AddCommGroup N] {i : N →+ V}
 locally constant by itinerary label. The domain includes all avoidance and
 source constraints, so no extra admissibility assumptions are needed nearby. -/
 theorem exists_admissibleRayFiber_membershipArrangement
-    (hF : ∀ a j, Toric.IsRationalFunctional h (F a j).toLinearMap)
+    (hF : ∀ a j, TauCeti.Toric.IsRationalFunctional h (F a j).toLinearMap)
     (hA : ∀ a j, IsRationalSemilinear h (A a j))
     (hW : ∀ a, IsRationalNormalPolyhedron h (W a))
     (hS : ∀ a, IsRationalNormalPolyhedron h (S a))

@@ -112,7 +112,7 @@ nonidentity projected label, so it is active at the ambient cutoff. -/
 theorem coherentProbeEndpointFunction_apply_of_active_wall
     (k K : ℕ) (hkK : k ≤ K) (hBc : B.LevelConsistent K)
     (Q : V) (n : d.cutoff k)
-    (hQ : ∃ c, CompletedGroup.projection K (B.wall c).label ≠ 1 ∧ Q ∈ (B.wall c).support) :
+    (hQ : ∃ c, TauCeti.CompletedGroup.projection K (B.wall c).label ≠ 1 ∧ Q ∈ (B.wall c).support) :
     coherentProbeEndpointFunction d ℳ p ℒ H h h' D B k K hkK hBc Q n = 0 := by
   apply coherentProbeEndpointFunction_apply_of_not_allowed d ℳ p ℒ H h h' D B
     k K hkK hBc Q n

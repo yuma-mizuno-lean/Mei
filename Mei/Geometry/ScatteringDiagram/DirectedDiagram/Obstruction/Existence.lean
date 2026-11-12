@@ -34,6 +34,8 @@ proof of Theorem 2.6, and Gross–Hacking–Keel–Kontsevich,
 
 public section
 
+open TauCeti (OrientedCell PolyhedralCochain)
+
 open TauCeti (WallComplement AdmissiblePLPath)
 
 open TauCeti (PositiveDegrees IsPositiveGrading)

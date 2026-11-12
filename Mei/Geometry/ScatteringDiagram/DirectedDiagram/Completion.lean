@@ -118,15 +118,15 @@ def pathProduct (p : Quiver.Path x y) : d.completedBCHGroup ℒ :=
 /-- Projection of the completed product recovers its actual finite geometric transport. -/
 @[simp]
 theorem projection_pathProduct (k : ℕ) (p : Quiver.Path x y) :
-    CompletedGroup.projection k (D.pathProduct p) =
+    TauCeti.CompletedGroup.projection k (D.pathProduct p) =
       D.levelPathProduct k ((CommonWallComplement.projectionPrefunctor k).mapPath p) := by
-  rw [CompletedGroup.projection_apply]
+  rw [TauCeti.CompletedGroup.projection_apply]
   rfl
 
 -- Reflexivity identifies the categorical tower operations with the concrete BCH operations.
 @[simp]
 theorem pathProduct_nil : D.pathProduct (Quiver.Path.nil : Quiver.Path x x) = 1 := by
-  apply CompletedGroup.ext
+  apply TauCeti.CompletedGroup.ext
   intro k
   simp
   rfl
@@ -135,7 +135,7 @@ theorem pathProduct_nil : D.pathProduct (Quiver.Path.nil : Quiver.Path x x) = 1 
 @[simp]
 theorem pathProduct_comp (p : Quiver.Path x y) (q : Quiver.Path y z) :
     D.pathProduct (p.comp q) = D.pathProduct q * D.pathProduct p := by
-  apply CompletedGroup.ext
+  apply TauCeti.CompletedGroup.ext
   intro k
   simp
   rfl
@@ -144,7 +144,7 @@ theorem pathProduct_comp (p : Quiver.Path x y) (q : Quiver.Path y z) :
 @[simp]
 theorem pathProduct_reverse (p : Quiver.Path x y) :
     D.pathProduct p.reverse = (D.pathProduct p)⁻¹ := by
-  apply CompletedGroup.ext
+  apply TauCeti.CompletedGroup.ext
   intro k
   simp
   rfl

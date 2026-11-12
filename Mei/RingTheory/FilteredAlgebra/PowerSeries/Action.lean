@@ -23,7 +23,7 @@ power series evaluation; the coefficient algebra need not be commutative.
 
 public section
 
-namespace Mei.AlgFiltration
+namespace TauCeti.AlgFiltration
 
 variable {R A : Type*} [CommRing R] [Ring A] [Algebra R A] (F : AlgFiltration A)
 
@@ -49,4 +49,4 @@ theorem completedSeriesAction_inv (x : F.completionIdeal 1) (H : (PowerSeries R)
     F.completedSeriesAction x (H⁻¹) = (F.completedSeriesAction x H).symm :=
   map_inv (F.completedSeriesAction x) H
 
-end Mei.AlgFiltration
+end TauCeti.AlgFiltration

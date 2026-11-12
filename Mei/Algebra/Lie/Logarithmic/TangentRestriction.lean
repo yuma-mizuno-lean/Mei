@@ -25,6 +25,8 @@ is that of Gross–Hacking–Keel–Kontsevich, *Canonical bases for cluster alg
 
 public noncomputable section
 
+open TauCeti (AlgFiltration)
+
 open TauCeti (PositiveDegrees PositiveDegreeMap GradedLieHom)
 
 namespace Mei.LogarithmicVectorField

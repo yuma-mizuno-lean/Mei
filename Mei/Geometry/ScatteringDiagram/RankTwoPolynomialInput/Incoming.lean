@@ -247,8 +247,8 @@ retained automatically. -/
 theorem projection_initialLabel_eq_noncommProd_incomingDiagram (i : ι) (k : ℕ)
     (s : Finset {w : SupportedRay d // I.wallNormal i w.generator = 0})
     (hs : ∀ w ∈ d.raysAtOrder k, ∀ hw : I.wallNormal i w.generator = 0, ⟨w, hw⟩ ∈ s) :
-    CompletedGroup.projection k (I.initialLabel c i) =
-      s.noncommProd (fun w => CompletedGroup.projection k
+    TauCeti.CompletedGroup.projection k (I.initialLabel c i) =
+      s.noncommProd (fun w => TauCeti.CompletedGroup.projection k
         ((I.incomingDiagram h c).wall ⟨i, w⟩).label)
         (fun v _ w _ _ => by
           simp only [incomingDiagram_label]

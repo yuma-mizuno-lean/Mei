@@ -34,7 +34,9 @@ public noncomputable section
 
 universe v
 
-namespace Mei.GradedCorrespondence
+namespace TauCeti.GradedCorrespondence
+
+open Mei
 
 variable {R Q : Type*} [Semiring R] [Quiver Q]
   {M N : Q → Type v} [∀ q, AddCommMonoid (M q)] [∀ q, Module R (M q)]
@@ -114,4 +116,4 @@ theorem homogeneousHistory_totalTransfer_eq_zero_iff_of_admissible {a b : Q}
   · intro hz
     simp [hz]
 
-end Mei.GradedCorrespondence
+end TauCeti.GradedCorrespondence

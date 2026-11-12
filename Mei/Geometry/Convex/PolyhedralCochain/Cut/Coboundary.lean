@@ -28,11 +28,15 @@ piece is counted, including facets that the cutting hyperplane only touches.
 
 public section
 
+open TauCeti (OrientedCell PolyhedralCochain isRationalNormalPolyhedron_iff)
+
 noncomputable section
 
 open Module Set
 
-namespace Mei.OrientedCell
+namespace TauCeti.OrientedCell
+
+open Mei
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i} {k : ℕ}
@@ -341,4 +345,4 @@ theorem cellCoboundary_cut_add_eq (σ π μ : OrientedCell h k)
       rw [cellCoboundary_apply]
       exact Finset.sum_coe_sort σ.boundaryFacets (fun η => PolyhedralCochain.mk (R := R) η c)
 
-end Mei.OrientedCell
+end TauCeti.OrientedCell

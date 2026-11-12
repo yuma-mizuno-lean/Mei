@@ -179,7 +179,7 @@ theorem levelTransportFun_of_mem {y : V} (hy : ¬ ∀ j : D.active k, y ∉ (D.w
 /-- The transport function takes values in every subgroup containing the projected labels of
 the walls active at order `k`. -/
 theorem levelTransportFun_mem {S : Subgroup (d.truncatedGroup ℒ k)}
-    (hS : ∀ j : D.active k, CompletedGroup.projection k (D.wall j).label ∈ S) (y : V) :
+    (hS : ∀ j : D.active k, TauCeti.CompletedGroup.projection k (D.wall j).label ∈ S) (y : V) :
     D.levelTransportFun hD x y ∈ S := by
   by_cases hy : ∀ j : D.active k, y ∉ (D.wall j).support
   · obtain ⟨p⟩ := D.exists_level_path k x ⟨y, hy⟩
@@ -221,12 +221,12 @@ theorem eventually_levelTransportFun_mul_inv_eq {θ : V}
 the transport functions of `D` and `E` take commuting values. -/
 theorem commute_levelTransportFun {κ : Type*} {E : DirectedDiagram (d := d) h H κ}
     (hE : E.LevelConsistent k) (x' : WallComplement (fun j : E.active k => (E.wall j).support))
-    (hDE : ∀ a b, Commute (CompletedGroup.projection k (D.wall a).label)
-      (CompletedGroup.projection k (E.wall b).label)) (y z : V) :
+    (hDE : ∀ a b, Commute (TauCeti.CompletedGroup.projection k (D.wall a).label)
+      (TauCeti.CompletedGroup.projection k (E.wall b).label)) (y z : V) :
     Commute (D.levelTransportFun hD x y) (E.levelTransportFun hE x' z) := by
   have hy : D.levelTransportFun hD x y ∈
       Subgroup.centralizer (Set.range fun b : E.active k =>
-        CompletedGroup.projection k (E.wall b).label) :=
+        TauCeti.CompletedGroup.projection k (E.wall b).label) :=
     D.levelTransportFun_mem hD x (fun a => Subgroup.mem_centralizer_iff.mpr <| by
       rintro _ ⟨b, rfl⟩
       exact (hDE a b).symm.eq) y

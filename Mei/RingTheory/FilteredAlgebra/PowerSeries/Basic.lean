@@ -23,7 +23,7 @@ No topology or separatedness assumption is needed.
 
 public section
 
-namespace Mei.AlgFiltration
+namespace TauCeti.AlgFiltration
 
 variable {R A : Type*} [CommRing R] [Ring A] [Algebra R A] (F : AlgFiltration A)
 
@@ -124,4 +124,4 @@ theorem completedAeval_conj (x : F.completionIdeal 1) (y : F.completion) (a : R)
         (PowerSeries.rescale a (f : PowerSeries R) * (↑(f⁻¹) : PowerSeries R)) := by
   rw [F.completedAeval_mul_of_semiconj x y a h, map_mul, mul_assoc]
 
-end Mei.AlgFiltration
+end TauCeti.AlgFiltration

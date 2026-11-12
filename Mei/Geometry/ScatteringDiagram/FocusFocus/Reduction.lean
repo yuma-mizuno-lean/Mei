@@ -27,6 +27,8 @@ Gross–Siebert,
 
 public noncomputable section
 
+open TauCeti (GradedCorrespondence)
+
 namespace Mei.FocusFocus
 
 open TauCeti AddMonoidAlgebra Mei.NodeAlgebra _root_.LaurentPolynomial

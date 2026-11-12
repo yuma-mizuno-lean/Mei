@@ -33,11 +33,15 @@ class*, §3.2 (arXiv:1601.07081v4).
 
 public noncomputable section
 
+open TauCeti (IsRationalSemilinear)
+
 open CategoryTheory Limits Set
 
 universe u
 
-namespace Mei.GradedCorrespondence
+namespace TauCeti.GradedCorrespondence
+
+open Mei
 
 variable {R V H ι κ Λ : Type*} {U M B : Type u} [Semiring R]
   [AddCommMonoid U] [Module R U] [AddCommMonoid M] [Module R M]
@@ -48,7 +52,7 @@ variable {R V H ι κ Λ : Type*} {U M B : Type u} [Semiring R]
   [AddCommMonoid H] [Module R H] (p : I) (α : H →ₗ[R] 𝒰 p)
   [AddCommGroup Λ] {i : Λ →+ V} (h : TauCeti.Toric.IsIntegralLattice i)
   (w₀ : Λ) (w : κ → Λ) (ν : V →L[ℝ] ℝ) (b : ℝ) (Z : Set V)
-  (hν : Toric.IsRationalFunctional h ν.toLinearMap)
+  (hν : TauCeti.Toric.IsRationalFunctional h ν.toLinearMap)
   (hZ : Z ⊆ {x | ν x = b}) (hsemi : IsRationalSemilinear h Z)
 
 local notation "Sections" => SemimoduleCat.sectionsSubmodule
@@ -68,7 +72,7 @@ theorem existsUnique_singleFaceTransferFamily_matchingFamily_of_fg
     {δ : Type*} [Finite δ] (A : δ → AffineSubspace ℝ V)
     (hcover : Z ⊆ ⋃ j, (A j : Set V))
     (hA : ∀ j, ∃ x, ν x = b ∧ x ∉ A j) :
-    ∃ F : ExceptionalArrangement V, ∀ Q, F.IsGeneric Q → (ν Q - b) / ν (i w₀) < 0 →
+    ∃ F : Mei.ExceptionalArrangement V, ∀ Q, F.IsGeneric Q → (ν Q - b) / ν (i w₀) < 0 →
       ∃! ℓ : H →ₗ[R] Sections, ∀ x,
         (ℓ x).val (.right false) = (α x : U) ∧ (ℓ x).val (.right true) = value x Q := by
   simpa only [singleFaceTransferFamily_weightedEvaluation] using
@@ -85,7 +89,7 @@ theorem exists_singleFaceTransferFamily_matchingFamily_iff
     {δ : Type*} [Finite δ] (A : δ → AffineSubspace ℝ V)
     (hcover : Z ⊆ ⋃ j, (A j : Set V))
     (hA : ∀ j, ∃ x, ν x = b ∧ x ∉ A j) :
-    ∃ F : ExceptionalArrangement V, ∀ Q, F.IsGeneric Q → (ν Q - b) / ν (i w₀) < 0 →
+    ∃ F : Mei.ExceptionalArrangement V, ∀ Q, F.IsGeneric Q → (ν Q - b) / ν (i w₀) < 0 →
       ∀ ℓ : H →ₗ[R] Sections,
         (∀ x, (ℓ x).val (.right false) = (α x : U) ∧
           (ℓ x).val (.right true) = value x Q) ↔
@@ -118,7 +122,7 @@ theorem exists_singleFaceTransferFamily_matchingFamily_iff_of_fg
     {δ : Type*} [Finite δ] (A : δ → AffineSubspace ℝ V)
     (hcover : Z ⊆ ⋃ j, (A j : Set V))
     (hA : ∀ j, ∃ x, ν x = b ∧ x ∉ A j) :
-    ∃ F : ExceptionalArrangement V, ∀ Q, F.IsGeneric Q → (ν Q - b) / ν (i w₀) < 0 →
+    ∃ F : Mei.ExceptionalArrangement V, ∀ Q, F.IsGeneric Q → (ν Q - b) / ν (i w₀) < 0 →
       ∀ ℓ : H →ₗ[R] Sections,
         (∀ x, (ℓ x).val (.right false) = (α x : U) ∧
           (ℓ x).val (.right true) = value x Q) ↔
@@ -127,4 +131,4 @@ theorem exists_singleFaceTransferFamily_matchingFamily_iff_of_fg
   exact C.exists_singleFaceTransferFamily_matchingFamily_iff
     p α h w₀ w ν b Z hν hZ hsemi hinj s hs hnormal A hcover hA
 
-end Mei.GradedCorrespondence
+end TauCeti.GradedCorrespondence

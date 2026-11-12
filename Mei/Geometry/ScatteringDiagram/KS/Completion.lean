@@ -27,7 +27,7 @@ This follows the compatible finite-diagram description in Tom Bridgeland,
 [arXiv:1603.00416](https://arxiv.org/abs/1603.00416), Definition 2.3 and §§2.9–2.11.
 It uses `KSComplex`, `FiniteWallDiagram.pathProduct`,
 `CommonWallComplement.exists_length_eq_two` and the compatible-family carrier
-`Mei.completedGroup` obtained from Mathlib's `GrpCat.sectionsSubgroup`.
+`TauCeti.completedGroup` obtained from Mathlib's `GrpCat.sectionsSubgroup`.
 -/
 
 public section
@@ -145,17 +145,17 @@ def pathProduct (p : Quiver.Path x y) : d.completedBCHGroup ℒ :=
 /-- Projection recovers exactly the existing geometric finite-order product. -/
 @[simp]
 theorem projection_pathProduct (k : ℕ) (p : Quiver.Path x y) :
-    CompletedGroup.projection k (D.pathProduct p) =
+    TauCeti.CompletedGroup.projection k (D.pathProduct p) =
       (D.diagram k).toFiniteWallDiagram.pathProduct
         ((CommonWallComplement.projectionPrefunctor k).mapPath p) := by
-  rw [CompletedGroup.projection_apply]
+  rw [TauCeti.CompletedGroup.projection_apply]
   rfl
 
 -- In the next three proofs, the final reflexivity computes the categorical
 -- tower group operations as the concrete BCH group operations.
 @[simp]
 theorem pathProduct_nil : D.pathProduct (Quiver.Path.nil : Quiver.Path x x) = 1 := by
-  apply CompletedGroup.ext
+  apply TauCeti.CompletedGroup.ext
   intro k
   simp
   rfl
@@ -164,7 +164,7 @@ theorem pathProduct_nil : D.pathProduct (Quiver.Path.nil : Quiver.Path x x) = 1 
 @[simp]
 theorem pathProduct_comp (p : Quiver.Path x y) (q : Quiver.Path y z) :
     D.pathProduct (p.comp q) = D.pathProduct q * D.pathProduct p := by
-  apply CompletedGroup.ext
+  apply TauCeti.CompletedGroup.ext
   intro k
   simp
   rfl
@@ -173,7 +173,7 @@ theorem pathProduct_comp (p : Quiver.Path x y) (q : Quiver.Path y z) :
 @[simp]
 theorem pathProduct_reverse (p : Quiver.Path x y) :
     D.pathProduct p.reverse = (D.pathProduct p)⁻¹ := by
-  apply CompletedGroup.ext
+  apply TauCeti.CompletedGroup.ext
   intro k
   simp
   rfl
@@ -190,7 +190,7 @@ variable {D}
 /-- Finite-order consistency makes complete products depend only on endpoints. -/
 theorem Consistent.pathProduct_eq (hD : D.Consistent) (p q : Quiver.Path x y) :
     D.pathProduct p = D.pathProduct q := by
-  apply CompletedGroup.ext
+  apply TauCeti.CompletedGroup.ext
   intro k
   simp only [projection_pathProduct]
   exact (FiniteWallDiagram.consistent_def _).mp (hD k) _ _
@@ -212,7 +212,7 @@ including one that is not admissible at the other orders. -/
 theorem projection_transport (hD : D.Consistent) (k : ℕ)
     (p : AdmissiblePLPath (CommonWallComplement.projection k x)
       (CommonWallComplement.projection k y)) :
-    CompletedGroup.projection k (D.transport hD x y) =
+    TauCeti.CompletedGroup.projection k (D.transport hD x y) =
       (D.diagram k).toFiniteWallDiagram.pathProduct p := by
   rw [transport, projection_pathProduct]
   exact (FiniteWallDiagram.consistent_def _).mp (hD k) _ _

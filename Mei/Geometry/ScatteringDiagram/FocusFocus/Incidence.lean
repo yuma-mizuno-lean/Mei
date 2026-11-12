@@ -32,6 +32,8 @@ The coordinate and gluing conventions follow Gross–Siebert,
 
 public noncomputable section
 
+open TauCeti (GradedCorrespondence)
+
 namespace Mei.FocusFocus
 
 open TauCeti Mei.NodeAlgebra _root_.LaurentPolynomial

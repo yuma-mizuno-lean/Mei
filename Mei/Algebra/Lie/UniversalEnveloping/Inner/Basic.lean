@@ -24,6 +24,8 @@ enveloping algebra. No PBW, freeness, or separatedness assumption is used.
 
 public section
 
+open TauCeti.UniversalEnvelopingAlgebra (degreeFiltration ι_mem_degreeFiltration_one)
+
 open TauCeti (PositiveDegrees IsPositiveGrading)
 
 attribute [local instance 100] LieRing.ofAssociativeRing

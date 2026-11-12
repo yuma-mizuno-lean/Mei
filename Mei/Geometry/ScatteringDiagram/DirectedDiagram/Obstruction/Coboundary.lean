@@ -34,6 +34,8 @@ Appendix C.3.
 
 public section
 
+open TauCeti (OrientedCell PolyhedralCochain)
+
 open TauCeti (WallComplement AdmissiblePLPath)
 
 open TauCeti (PositiveDegrees IsPositiveGrading)

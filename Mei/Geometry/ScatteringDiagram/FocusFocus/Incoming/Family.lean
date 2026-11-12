@@ -33,13 +33,15 @@ with effective anti-canonical class*, §3 (arXiv:1601.07081v4).
 
 public noncomputable section
 
+open TauCeti (IsLocallyClosedPolyhedron)
+
 open Set Filter Topology
 
 namespace Mei.FocusFocus
 
 /-- The endpoint chart in the right (`true`) or left (`false`) chamber. -/
 def incomingSlabDomain (right : Bool) : Set (ℝ × ℝ) :=
-  Convex.signCell (fun _ : Unit =>
+  TauCeti.Convex.signCell (fun _ : Unit =>
     (ContinuousLinearMap.fst ℝ ℝ ℝ).toContinuousAffineMap)
     (fun _ => if right then .pos else .neg)
 
@@ -47,7 +49,7 @@ def incomingSlabDomain (right : Bool) : Set (ℝ × ℝ) :=
 @[simp]
 theorem mem_incomingSlabDomain (right : Bool) (Q : ℝ × ℝ) :
     Q ∈ incomingSlabDomain right ↔ if right then 0 < Q.1 else Q.1 < 0 := by
-  cases right <;> simp [incomingSlabDomain, Convex.mem_signCell,
+  cases right <;> simp [incomingSlabDomain, TauCeti.Convex.mem_signCell,
     sign_eq_neg_one_iff, sign_eq_one_iff]
 
 /-- Both geometric chamber charts are inhabited, independently of decorations. -/
@@ -72,14 +74,14 @@ theorem isOpen_incomingSlabDomain (right : Bool) : IsOpen (incomingSlabDomain ri
 @[simp]
 theorem mem_closure_incomingSlabDomain (right : Bool) (Q : ℝ × ℝ) :
     Q ∈ closure (incomingSlabDomain right) ↔ if right then 0 ≤ Q.1 else Q.1 ≤ 0 := by
-  rw [incomingSlabDomain, Convex.closure_signCell (incomingSlabDomain_nonempty right)]
-  cases right <;> simp [Convex.mem_weakSignCell]
+  rw [incomingSlabDomain, TauCeti.Convex.closure_signCell (incomingSlabDomain_nonempty right)]
+  cases right <;> simp [TauCeti.Convex.mem_weakSignCell]
 
 /-- Valid endpoints are precisely the relative interior of each closed chart. -/
 @[simp]
 theorem intrinsicInterior_closure_incomingSlabDomain (right : Bool) :
     intrinsicInterior ℝ (closure (incomingSlabDomain right)) = incomingSlabDomain right :=
-  Convex.intrinsicInterior_closure_signCell
+  TauCeti.Convex.intrinsicInterior_closure_signCell
 
 /-- All endpoint degenerations of incoming charts occur on the slab. -/
 theorem incomingSlabDomain_boundary (right : Bool) {Q : ℝ × ℝ}
@@ -98,10 +100,10 @@ variable (h : TauCeti.Toric.IsIntegralLattice
 /-- Incoming chamber charts have rational normals for the standard plane lattice. -/
 theorem isLocallyClosedPolyhedron_incomingSlabDomain (right : Bool) :
     IsLocallyClosedPolyhedron h (incomingSlabDomain right) := by
-  have hf : Toric.IsRationalFunctional h (LinearMap.fst ℝ ℝ ℝ) := by
-    convert Toric.IsRationalFunctional.realCharacter h (LinearMap.fst ℤ ℤ ℤ) using 1
+  have hf : TauCeti.Toric.IsRationalFunctional h (LinearMap.fst ℝ ℝ ℝ) := by
+    convert TauCeti.Toric.IsRationalFunctional.realCharacter h (LinearMap.fst ℤ ℤ ℤ) using 1
     exact h.eq_realCharacter (by intro x; simp)
-  exact isLocallyClosedPolyhedron_signCell _ (fun _ => hf) _
+  exact TauCeti.isLocallyClosedPolyhedron_signCell _ (fun _ => hf) _
 
 end Rational
 

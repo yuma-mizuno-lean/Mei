@@ -158,7 +158,7 @@ variable {D} {x y z : D.Point}
 /-- Finite-order consistency makes completed products independent of the all-order path. -/
 theorem Consistent.pathProduct_eq (hD : D.Consistent) (p q : Quiver.Path x y) :
     D.pathProduct p = D.pathProduct q := by
-  apply CompletedGroup.ext
+  apply TauCeti.CompletedGroup.ext
   intro k
   simp only [projection_pathProduct]
   exact hD k _ _
@@ -179,14 +179,14 @@ theorem transport_eq_pathProduct (hD : D.Consistent) (p : Quiver.Path x y) :
 theorem projection_transport (hD : D.Consistent) (k : ℕ)
     (p : AdmissiblePLPath (CommonWallComplement.projection k x)
       (CommonWallComplement.projection k y)) :
-    CompletedGroup.projection k (D.transport hD x y) = D.levelPathProduct k p := by
+    TauCeti.CompletedGroup.projection k (D.transport hD x y) = D.levelPathProduct k p := by
   rw [transport, projection_pathProduct]
   exact hD k _ p
 
 /-- Completed endpoint transport projects to the finite-order endpoint transport. -/
 @[simp]
 theorem projection_transport_eq_levelTransport (hD : D.Consistent) (k : ℕ) :
-    CompletedGroup.projection k (D.transport hD x y) =
+    TauCeti.CompletedGroup.projection k (D.transport hD x y) =
       D.levelTransport k ((D.consistent_iff.mp hD) k) (CommonWallComplement.projection k x)
         (CommonWallComplement.projection k y) := by
   obtain ⟨p⟩ := D.exists_level_path k

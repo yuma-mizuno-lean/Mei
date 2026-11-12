@@ -17,11 +17,13 @@ determinant `-1`. -/
 
 public section
 
+open TauCeti.Toric (IntegralAffineEquiv)
+
 noncomputable section
 
 open TauCeti.Toric
 
-namespace Mei.Toric.IntegralAffineEquiv
+namespace TauCeti.Toric.IntegralAffineEquiv
 
 variable (h : IsIntegralLattice ((Int.castAddHom ℝ).prodMap (Int.castAddHom ℝ)))
 
@@ -58,6 +60,6 @@ theorem det_swap : LinearMap.det ((swap h).toAffineEquiv.linear : ℝ × ℝ →
   rw [← LinearMap.det_toMatrix b, Matrix.det_fin_two]
   simp [LinearMap.toMatrix_apply, b]
 
-end Mei.Toric.IntegralAffineEquiv
+end TauCeti.Toric.IntegralAffineEquiv
 
 end

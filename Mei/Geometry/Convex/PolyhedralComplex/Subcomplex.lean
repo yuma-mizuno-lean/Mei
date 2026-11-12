@@ -156,14 +156,14 @@ variable {N' W : Type*} [AddCommGroup N'] [NormedAddCommGroup W] [NormedSpace �
 
 /-- Integral affine transport preserves subcomplex inclusions. -/
 theorem IsSubcomplex.image {C D : FinitePolyhedralComplex h} (hCD : C.IsSubcomplex D)
-    (e : Toric.IntegralAffineEquiv h h') : (C.image e).IsSubcomplex (D.image e) := by
+    (e : TauCeti.Toric.IntegralAffineEquiv h h') : (C.image e).IsSubcomplex (D.image e) := by
   intro P hP
   obtain ⟨Q, hQ, rfl⟩ := mem_cells_image.mp hP
   exact mem_cells_image.mpr ⟨Q, hCD hQ, rfl⟩
 
 /-- Transport commutes with generating a subcomplex from chosen cells. -/
 theorem image_generatedSubcomplex (C : FinitePolyhedralComplex h) (S : Set (Set V))
-    (e : Toric.IntegralAffineEquiv h h') :
+    (e : TauCeti.Toric.IntegralAffineEquiv h h') :
     (C.generatedSubcomplex S).image e =
       (C.image e).generatedSubcomplex ((fun P => e '' P) '' S) := by
   apply IsSubcomplex.antisymm

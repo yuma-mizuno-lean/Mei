@@ -71,7 +71,7 @@ theorem dilogElement_congr {n' : Γ} (h : n = n') (hn' : n' ∈ d.monoid) (hn0' 
 /-- At order `k`, `Ψ[n]` is the exponential of the class of
 `∑_{j < k} (-1)^j / (j+1)² X_{(j+1)n}`. -/
 theorem projection_dilogElement (k : ℕ) :
-    CompletedGroup.projection k (dilogElement β hβ hn hn0) =
+    TauCeti.CompletedGroup.projection k (dilogElement β hβ hn hn0) =
       BCHGroup.exp ((d.truncationIdeal ℒ k).mkQ (∑ j ∈ Finset.range k,
         rayGenerator β hβ hn hn0 j (algebraMap ℚ R ((-1) ^ j / ((j : ℚ) + 1) ^ 2)))) := by
   simp only [dilogElement, projection_rayExp, rayPartialSum_apply, coeff_succ_negDilogNeg]
@@ -110,13 +110,13 @@ degree `mᵢ` is `cᵢ X_{mᵢ}`. -/
 theorem inv_prod_filter_mul_mem_and_logComponent {r : ℕ} (m : Fin r → Γ)
     (hm : ∀ j, m j ∈ d.monoid) (hm0 : ∀ j, m j ≠ 0) (hinj : Function.Injective m)
     (c : Fin r → R) {g : d.completedBCHGroup ℒ} {k : ℕ}
-    (hk : CompletedGroup.projection k g = CompletedGroup.projection k
+    (hk : TauCeti.CompletedGroup.projection k g = TauCeti.CompletedGroup.projection k
       ((List.finRange r).map fun j =>
         SkewLieAlgebra.rayExp β hβ (hm j) (hm0 j) (c j • negDilogNeg R)).prod)
     (i : Fin r) {a : ℕ} (hia : d.degree (m i) = (a + 1 : ℕ)) (hik : a + 1 ≤ k) :
     (((List.finRange r).filter fun j => d.degree (m j) < d.degree (m i)).map fun j =>
         SkewLieAlgebra.rayExp β hβ (hm j) (hm0 j) (c j • negDilogNeg R)).prod⁻¹ * g ∈
-      CompletedGroup.degreeFiltration (d.groupTower ℒ) (a + 1) ∧
+      TauCeti.CompletedGroup.degreeFiltration (d.groupTower ℒ) (a + 1) ∧
     ((d.logComponent ℒ ((((List.finRange r).filter fun j => d.degree (m j) < d.degree (m i)).map
         fun j => SkewLieAlgebra.rayExp β hβ (hm j) (hm0 j) (c j • negDilogNeg R)).prod⁻¹ * g)
           (m i) : 𝔤) : SkewLieAlgebra β hβ) = SkewLieAlgebra.single β hβ (m i) (c i) := by
@@ -130,11 +130,11 @@ theorem inv_prod_filter_mul_mem_and_logComponent {r : ℕ} (m : Fin r → Γ)
   -- `g C⁻¹` vanishes at order `k`; the factors of degree at least `deg mᵢ` lie in the
   -- filtration above order `a`, and their coefficients in degrees at most `a + 1` add up.
   have hgC : g * ((List.finRange r).map Ψ).prod⁻¹ ∈
-      CompletedGroup.degreeFiltration (d.groupTower ℒ) (k + 1) := by
-    rw [CompletedGroup.degreeFiltration_succ, MonoidHom.mem_ker, map_mul, map_inv, hk,
+      TauCeti.CompletedGroup.degreeFiltration (d.groupTower ℒ) (k + 1) := by
+    rw [TauCeti.CompletedGroup.degreeFiltration_succ, MonoidHom.mem_ker, map_mul, map_inv, hk,
       mul_inv_cancel]
   have hx : ∀ j ∈ List.finRange r, ¬p j →
-      Ψ j ∈ CompletedGroup.degreeFiltration (d.groupTower ℒ) (a + 1) := fun j _ hj => by
+      Ψ j ∈ TauCeti.CompletedGroup.degreeFiltration (d.groupTower ℒ) (a + 1) := fun j _ hj => by
     rw [hΨ]
     exact SkewLieAlgebra.rayExp_mem_degreeFiltration β hβ (hm j) (hm0 j) _
       (by simp only [p, not_lt] at hj; omega)
@@ -143,17 +143,17 @@ theorem inv_prod_filter_mul_mem_and_logComponent {r : ℕ} (m : Fin r → Γ)
   rw [← hw] at hwC hcomp
   -- Write `w⁻¹ g` as a conjugate of `g C⁻¹` times `w⁻¹ C`.
   have hconj : w⁻¹ * (g * ((List.finRange r).map Ψ).prod⁻¹) * w⁻¹⁻¹ ∈
-      CompletedGroup.degreeFiltration (d.groupTower ℒ) (a + 1 + 1) :=
-    (CompletedGroup.degreeFiltration_normal _ _).conj_mem _
-      (CompletedGroup.degreeFiltration_antitone _ (by omega) hgC) _
+      TauCeti.CompletedGroup.degreeFiltration (d.groupTower ℒ) (a + 1 + 1) :=
+    (TauCeti.CompletedGroup.degreeFiltration_normal _ _).conj_mem _
+      (TauCeti.CompletedGroup.degreeFiltration_antitone _ (by omega) hgC) _
   have hdecomp : w⁻¹ * g = (w⁻¹ * (g * ((List.finRange r).map Ψ).prod⁻¹) * w⁻¹⁻¹) *
       (w⁻¹ * ((List.finRange r).map Ψ).prod) := by group
   refine ⟨hdecomp ▸ Subgroup.mul_mem _
-    (CompletedGroup.degreeFiltration_antitone _ (by omega) hconj) hwC, ?_⟩
+    (TauCeti.CompletedGroup.degreeFiltration_antitone _ (by omega) hconj) hwC, ?_⟩
   -- Among the remaining factors only `Ψ[mᵢ]^{cᵢ}` has a coefficient in degree `mᵢ`.
   have hlog : d.logComponent ℒ (w⁻¹ * g) (m i) = d.logComponent ℒ (Ψ i) (m i) := by
     rw [hdecomp, d.logComponent_mul_of_mem_degreeFiltration (a := a) (b := a)
-        (CompletedGroup.degreeFiltration_antitone _ (by omega) hconj) hwC (by omega),
+        (TauCeti.CompletedGroup.degreeFiltration_antitone _ (by omega) hconj) hwC (by omega),
       d.mem_degreeFiltration_succ_iff.mp hconj (m i) (by omega), zero_add,
       hcomp (m i) (by omega), ← List.sum_toFinset _ ((List.nodup_finRange r).filter _)]
     refine Finset.sum_eq_single_of_mem i (by simp [p]) fun j hj hji => ?_

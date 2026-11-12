@@ -102,10 +102,10 @@ theorem existsUnique_orderedProd_rayExp_nsmul_smul_negDilogNeg (hinj : Function.
     (hord : ∀ i j, 0 < β (m i) (m j) → i ≤ j) (e : ι → R)
     (he : ∀ i, e i ≠ 0) (g : d.completedBCHGroup (positiveGrading β hβ d))
     (hfact : ∀ k : ℕ, ∃ l : List ι, l.Pairwise (fun i j => 0 ≤ β (m i) (m j)) ∧
-      CompletedGroup.projection k
+      TauCeti.CompletedGroup.projection k
           (l.map fun i => rayExp β hβ (hm i) (hm0 i) (e i • negDilogNeg R)).prod =
-        CompletedGroup.projection k g) :
-    ∃! s : ι → ℕ, CompletedGroup.orderedProd
+        TauCeti.CompletedGroup.projection k g) :
+    ∃! s : ι → ℕ, TauCeti.CompletedGroup.orderedProd
         (fun i => rayExp β hβ (hm i) (hm0 i) ((s i • e i) • negDilogNeg R))
         (hasFiniteSupport_rayExp_smul_negDilogNeg β hβ m hm hm0 hinj fun i => s i • e i) = g := by
   choose l hl hlg using hfact

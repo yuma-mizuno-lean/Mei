@@ -8,6 +8,7 @@ module
 public import Mei.Algebra.Lie.Logarithmic.WallFunction.Map
 public import Mei.Algebra.Lie.Logarithmic.Pairing.Full
 public import Mei.RingTheory.FilteredAlgebra.Positive.Basic
+import Mei.RingTheory.FilteredAlgebra.Completion
 
 /-!
 # Binomial function walls of the tropical vertex group
@@ -33,6 +34,8 @@ refined tropical curve counts*, Example 2.1(i), arXiv:1503.06183v5.
 -/
 
 public section
+
+open TauCeti (AlgFiltration)
 
 open TauCeti (PositiveDegrees PositiveDegreeMap GradedLieHom)
 

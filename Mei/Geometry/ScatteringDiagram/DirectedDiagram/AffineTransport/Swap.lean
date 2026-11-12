@@ -51,7 +51,8 @@ variable {Γ R : Type*} {L : Type u} [AddCommGroup Γ] [CommRing R] [Algebra ℚ
 /-- Transport a directed wall along the coordinate swap of the plane. -/
 def swapImage : DirectedWall (d := d) h
     (H.mapTangent ((AddEquiv.prodComm : ℤ × ℤ ≃+ ℤ × ℤ) : ℤ × ℤ →+ ℤ × ℤ)) :=
-  W.image (Toric.IntegralAffineEquiv.swap h) (CoordinateChange.ofTangentEquiv d H AddEquiv.prodComm)
+  W.image (TauCeti.Toric.IntegralAffineEquiv.swap h)
+    (CoordinateChange.ofTangentEquiv d H AddEquiv.prodComm)
     (by simp)
 
 /-- The normal of the swapped wall is the original normal pulled back along the swap. -/
@@ -93,7 +94,7 @@ sign from the determinant `-1`. -/
 theorem realCharacter_swapImage_normal_swap (v : ℝ × ℝ) :
     h.realCharacter W.swapImage.normal v.swap = h.realCharacter W.normal v := by
   simpa [swapImage] using
-    W.realCharacter_image_normal (Toric.IntegralAffineEquiv.swap h)
+    W.realCharacter_image_normal (TauCeti.Toric.IntegralAffineEquiv.swap h)
       (CoordinateChange.ofTangentEquiv d H AddEquiv.prodComm) (by simp) v
 
 /-- The wall on the line `{x = 0}` with normal `e₁*`, a given ray and a given label is
@@ -126,7 +127,8 @@ variable {Γ R ι : Type*} {L : Type u} [AddCommGroup Γ] [CommRing R] [Algebra 
 /-- Transport a directed diagram along the coordinate swap of the plane. -/
 def swapImage : DirectedDiagram (d := d) h
     (H.mapTangent ((AddEquiv.prodComm : ℤ × ℤ ≃+ ℤ × ℤ) : ℤ × ℤ →+ ℤ × ℤ)) ι :=
-  D.pushforward (DirectedWall.Pushforward.ofCoordinateChange (Toric.IntegralAffineEquiv.swap h)
+  D.pushforward (DirectedWall.Pushforward.ofCoordinateChange
+    (TauCeti.Toric.IntegralAffineEquiv.swap h)
     (DirectedWallSpaces.CoordinateChange.ofTangentEquiv d H AddEquiv.prodComm) (by simp))
 
 /-- Transport the points and paths of a directed diagram along the coordinate swap. -/

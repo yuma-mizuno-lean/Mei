@@ -47,6 +47,8 @@ The constructions use `TauCeti.DirectedWallSpaces.wallGroup`,
 
 public section
 
+open TauCeti (IsRationalNormalPolyhedron)
+
 open TauCeti (PositiveDegrees IsPositiveGrading SupportedRay)
 
 open TauCeti (DirectedWallSpaces)
@@ -218,8 +220,8 @@ theorem commute_label_of_direction_eq (D E : DirectedWall (d := d) h H)
 commuting logarithms at every finite order. -/
 theorem lie_log_projection_eq_zero_of_direction_eq (D E : DirectedWall (d := d) h H)
     (he : (affineSpan ℝ D.support).direction = (affineSpan ℝ E.support).direction) (k : ℕ) :
-    ⁅BCHGroup.log (CompletedGroup.projection k D.label),
-      BCHGroup.log (CompletedGroup.projection k E.label)⁆ = 0 := by
+    ⁅BCHGroup.log (TauCeti.CompletedGroup.projection k D.label),
+      BCHGroup.log (TauCeti.CompletedGroup.projection k E.label)⁆ = 0 := by
   obtain ⟨c, e, hc, he, hn⟩ := exists_ne_zero_zsmul_eq_normal_of_direction_eq D E he
   exact H.lie_eq_zero_of_mem_truncatedRayLieSubalgebra
     ((H.mem_wallGroup _ _ _).mp D.label_mem k) ((H.mem_wallGroup _ _ _).mp E.label_mem k) hc he hn

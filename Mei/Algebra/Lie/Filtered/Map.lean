@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Algebra.Lie.Filtered.BCH
-public import Mei.RingTheory.FilteredAlgebra.AlgHom
+public import TauCeti.RingTheory.FilteredAlgebra.AlgHom
 public import Mei.RingTheory.Ideal.Quotient
 
 /-!
@@ -115,7 +115,7 @@ theorem completionMap_completedBCHAction_of_gradedLieHom
   have hCoeff : μ k ≤ a := le_max_right _ _
   have hψa : F.submodule (a + 1) ≤ (G.submodule (k + 1)).comap ψ :=
     (F.antitone (Nat.add_le_add_right hCoeff 1)).trans (hψ k)
-  let gk : BCHGroup (d.lieTruncation ℒ a) := CompletedGroup.projection a g
+  let gk : BCHGroup (d.lieTruncation ℒ a) := TauCeti.CompletedGroup.projection a g
   let qψ := (F.submodule (a + 1)).mapQ (G.submodule (k + 1)) ψ hψa
   have hl : G.projection k
       (F.completionMap G ψ μ hμ hψ (F.completedBCHAction d ℒ g z)) =
@@ -138,7 +138,9 @@ end Completed
 
 end Mei.ModuleFiltration
 
-namespace Mei.AlgFiltration
+namespace TauCeti.AlgFiltration
+
+open Mei
 
 variable {N N' R A B : Type*} {L L' : Type u}
   [AddCommMonoid N] [AddCommMonoid N'] [CommRing R] [Algebra ℚ R]
@@ -196,24 +198,24 @@ theorem mapCompletionₐ_completedBCHAction_of_gradedLieHom
   let qψ := Ideal.quotientMapₐ (G.ideal (k + 1)) ψ hψa
   have hl : G.projection k
       (F.mapCompletionₐ G ψ μ hμ hψ (F.completedBCHAction d ℒ g z)) =
-      qψ (F.truncatedExpLieAction d ℒ a (BCHGroup.log (CompletedGroup.projection a g))
+      qψ (F.truncatedExpLieAction d ℒ a (BCHGroup.log (TauCeti.CompletedGroup.projection a g))
         (F.projection a z)) :=
     (F.projection_mapCompletionₐ_of_le G ψ μ hμ hψ k a hCoeff _).trans
       (congrArg qψ (F.projection_completedBCHAction d ℒ g z a))
-  have hg : BCHGroup.log (CompletedGroup.projection k (φ.completedMap g)) =
-      φ.lieTruncatedMap k hLie (BCHGroup.log (CompletedGroup.projection a g)) :=
+  have hg : BCHGroup.log (TauCeti.CompletedGroup.projection k (φ.completedMap g)) =
+      φ.lieTruncatedMap k hLie (BCHGroup.log (TauCeti.CompletedGroup.projection a g)) :=
     (congrArg BCHGroup.log (φ.projection_completedMap_of_le k hLie g)).trans
       ((φ.lieTruncatedMap k hLie).log_bchGroupMap _)
   have hr : G.projection k
       (G.completedBCHAction e ℒ' (φ.completedMap g)
         (F.mapCompletionₐ G ψ μ hμ hψ z)) =
       G.truncatedExpLieAction e ℒ' k
-        (φ.lieTruncatedMap k hLie (BCHGroup.log (CompletedGroup.projection a g)))
+        (φ.lieTruncatedMap k hLie (BCHGroup.log (TauCeti.CompletedGroup.projection a g)))
         (qψ (F.projection a z)) :=
     (G.projection_completedBCHAction e ℒ' (φ.completedMap g) _ k).trans
       (congrArg₂ (fun x z => G.truncatedExpLieAction e ℒ' k x z) hg
         (F.projection_mapCompletionₐ_of_le G ψ μ hμ hψ k a hCoeff z))
   exact hl.trans ((F.quotientMapₐ_truncatedExpLieAction_of_gradedLieHom G φ ψ hequiv k
-    hLie hψa (BCHGroup.log (CompletedGroup.projection a g)) (F.projection a z)).trans hr.symm)
+    hLie hψa (BCHGroup.log (TauCeti.CompletedGroup.projection a g)) (F.projection a z)).trans hr.symm)
 
-end Mei.AlgFiltration
+end TauCeti.AlgFiltration

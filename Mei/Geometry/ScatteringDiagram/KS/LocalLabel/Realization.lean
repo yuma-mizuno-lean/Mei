@@ -55,7 +55,7 @@ theorem exists_germLabel_projection_eq (k : ℕ) (P : (C k).walls)
     (hne : (U ∩ intrinsicInterior ℝ (P : Set V)).Nonempty) :
     ∃ θ ∈ U ∩ intrinsicInterior ℝ (P : Set V),
       ∃ hθ : ∀ l, θ ∉ singularSupport (fun Q : (C l).walls => (Q : Set V)),
-        CompletedGroup.projection k (D.germLabel θ hθ) = (D.diagram k).label P := by
+        TauCeti.CompletedGroup.projection k (D.germLabel θ hθ) = (D.diagram k).label P := by
   obtain ⟨θ, hθP, hθ⟩ := (C k).exists_mem_wall_notMem_singularSupport P C hU hne
   exact ⟨θ, hθP, hθ,
     D.projection_germLabel_of_mem θ hθ k P (intrinsicInterior_subset hθP.2)⟩
@@ -67,7 +67,7 @@ theorem exists_germLabel_mem_completedRaySubgroup [Module.Free ℤ N]
     ∃ θ ∈ intrinsicInterior ℝ (P : Set V),
       ∃ hθ : ∀ l, θ ∉ singularSupport (fun Q : (C l).walls => (Q : Set V)),
         D.germLabel θ hθ ∈ d.completedRaySubgroup ℒ ((D.diagram k).wallRay P) ∧
-        CompletedGroup.projection k (D.germLabel θ hθ) = (D.diagram k).label P := by
+        TauCeti.CompletedGroup.projection k (D.germLabel θ hθ) = (D.diagram k).label P := by
   obtain ⟨θ, hθP, hθ⟩ :=
     (C k).exists_mem_intrinsicInterior_wall_notMem_singularSupport P C
   have hmem := intrinsicInterior_subset hθP

@@ -33,7 +33,9 @@ open CategoryTheory Limits Set
 
 universe u
 
-namespace Mei.GradedCorrespondence
+namespace TauCeti.GradedCorrespondence
+
+open Mei
 
 variable {R V H ι κ : Type*} {U M B : Type u} [Semiring R]
   [AddCommMonoid U] [Module R U] [AddCommMonoid M] [Module R M]
@@ -59,7 +61,7 @@ theorem existsUnique_singleFace_matchingFamily
     {δ : Type*} [Finite δ] (A : δ → AffineSubspace ℝ V)
     (hcover : Z ⊆ ⋃ j, (A j : Set V))
     (hA : ∀ j, ∃ x, ν x = b ∧ x ∉ A j) :
-    ∃ F : ExceptionalArrangement V, ∀ Q, F.IsGeneric Q → (ν Q - b) / ν u < 0 →
+    ∃ F : Mei.ExceptionalArrangement V, ∀ Q, F.IsGeneric Q → (ν Q - b) / ν u < 0 →
       ∃! ℓ : H →ₗ[R] Sections, ∀ x,
         (ℓ x).val (.right false) = (α x : U) ∧
         (ℓ x).val (.right true) = C.singleFaceTransferEvaluation p (α x) u v ν b Z Q := by
@@ -83,7 +85,7 @@ theorem existsUnique_singleFace_matchingFamily_of_fg
     {δ : Type*} [Finite δ] (A : δ → AffineSubspace ℝ V)
     (hcover : Z ⊆ ⋃ j, (A j : Set V))
     (hA : ∀ j, ∃ x, ν x = b ∧ x ∉ A j) :
-    ∃ F : ExceptionalArrangement V, ∀ Q, F.IsGeneric Q → (ν Q - b) / ν u < 0 →
+    ∃ F : Mei.ExceptionalArrangement V, ∀ Q, F.IsGeneric Q → (ν Q - b) / ν u < 0 →
       ∃! ℓ : H →ₗ[R] Sections, ∀ x,
         (ℓ x).val (.right false) = (α x : U) ∧
         (ℓ x).val (.right true) = C.singleFaceTransferEvaluation p (α x) u v ν b Z Q := by
@@ -91,4 +93,4 @@ theorem existsUnique_singleFace_matchingFamily_of_fg
   exact C.existsUnique_singleFace_matchingFamily
     p α u v ν b Z hinj s hs hnormal hZ A hcover hA
 
-end Mei.GradedCorrespondence
+end TauCeti.GradedCorrespondence

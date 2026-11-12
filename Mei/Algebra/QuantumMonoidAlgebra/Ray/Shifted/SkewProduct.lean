@@ -21,6 +21,8 @@ may have arbitrary degree and no characteristic-zero assumption is used.
 
 public section
 
+open TauCeti (AlgFiltration)
+
 open TauCeti (PositiveDegrees)
 noncomputable section
 

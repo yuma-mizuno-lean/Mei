@@ -74,8 +74,8 @@ theorem exists_isChain_projection_prod_pow_eq_of_form_eq_zero (h : βℚ x.1 y.1
     ∃ l' : List (D.NonzeroDegree d),
       (∀ m ∈ l', (m : D.unfrozen) ∈ AddSubmonoid.closure {x.1, y.1}) ∧
       (l'.IsChain fun a b => 0 ≤ βℚ a.1 b.1) ∧ (∀ m ∈ l', d.degree m.1 ≤ k) ∧
-      CompletedGroup.projection k (l'.map (D.unitFactor d)).prod =
-        CompletedGroup.projection k
+      TauCeti.CompletedGroup.projection k (l'.map (D.unitFactor d)).prod =
+        TauCeti.CompletedGroup.projection k
           (l.map fun p => D.dilogPow d p.1 (p.2 * κ (p.1 : N))).prod := by
   classical
   set F : List (D.NonzeroDegree d) := (l.map fun p => List.replicate p.2 p.1).flatten with hF
@@ -133,8 +133,8 @@ theorem exists_isChain_projection_prod_pow_eq_of_form_pos [Module.Free ℤ D.sub
     ∃ l' : List (D.NonzeroDegree d),
       (∀ m ∈ l', (m : D.unfrozen) ∈ AddSubmonoid.closure {x.1, y.1}) ∧
       (l'.IsChain fun a b => 0 ≤ βℚ a.1 b.1) ∧ (∀ m ∈ l', d.degree m.1 ≤ k) ∧
-      CompletedGroup.projection k (l'.map (D.unitFactor d)).prod =
-        CompletedGroup.projection k
+      TauCeti.CompletedGroup.projection k (l'.map (D.unitFactor d)).prod =
+        TauCeti.CompletedGroup.projection k
           (l.map fun p => D.dilogPow d p.1 (p.2 * κ (p.1 : N))).prod := by
   classical
   have : Fact ((D.principalPositiveDegrees d).monoid ≤ D.principalCoefficientMonoid d) :=
@@ -187,8 +187,8 @@ theorem exists_isChain_projection_prod_pow_eq [Module.Free ℤ D.sublattice] (k 
     ∃ l' : List (D.NonzeroDegree d),
       (∀ m ∈ l', (m : D.unfrozen) ∈ AddSubmonoid.closure {x.1, y.1}) ∧
       (l'.IsChain fun a b => 0 ≤ βℚ a.1 b.1) ∧ (∀ m ∈ l', d.degree m.1 ≤ k) ∧
-      CompletedGroup.projection k (l'.map (D.unitFactor d)).prod =
-        CompletedGroup.projection k
+      TauCeti.CompletedGroup.projection k (l'.map (D.unitFactor d)).prod =
+        TauCeti.CompletedGroup.projection k
           (l.map fun p => D.dilogPow d p.1 (p.2 * κ (p.1 : N))).prod := by
   rcases lt_trichotomy (βℚ x.1 y.1) 0 with hneg | hzero | hpos
   · have hyx : 0 < βℚ y.1 x.1 := by

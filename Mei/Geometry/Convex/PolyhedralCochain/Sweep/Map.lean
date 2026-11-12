@@ -26,9 +26,11 @@ cochains into wall corrections; the coboundary homotopy identity is not proved h
 
 public section
 
+open TauCeti (OrientedCell PolyhedralCochain)
+
 noncomputable section
 
-namespace Mei.PolyhedralCochain
+namespace TauCeti.PolyhedralCochain
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
@@ -129,4 +131,4 @@ theorem map_sweep (f : E →ₗ[R] E') (n : N)
 
 end Coefficients
 
-end Mei.PolyhedralCochain
+end TauCeti.PolyhedralCochain

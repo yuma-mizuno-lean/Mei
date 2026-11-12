@@ -23,9 +23,13 @@ coincident cells and repeated directions keep their multiplicities.
 
 public section
 
+open TauCeti (OrientedCell)
+
 noncomputable section
 
-namespace Mei.PolyhedralCochain
+namespace TauCeti.PolyhedralCochain
+
+open Mei
 
 variable {N V ι κ : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
@@ -77,4 +81,4 @@ theorem coboundaryOfFinsupp_sum_sweep_of_fiberwise_closed [Fintype ι] [Decidabl
   simpa only [Finset.sum_neg_distrib] using
     congrArg Neg.neg (Finset.sum_fiberwise_of_maps_to hmaps (fun a => mk (σ a) (c a)))
 
-end Mei.PolyhedralCochain
+end TauCeti.PolyhedralCochain

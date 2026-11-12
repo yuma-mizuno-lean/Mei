@@ -73,7 +73,7 @@ variable {D d} {ι : Type*} {δ : ι → D.NonzeroDegree d}
 /-- A family of rational powers `Ψ[δ i]^{c i}` of dilogarithm labels at distinct nonzero allowed
 degrees has only finitely many nonidentity factors at every order. -/
 theorem hasFiniteSupport_dilogPow (hδ : Function.Injective δ) (c : ι → ℚ) :
-    CompletedGroup.HasFiniteSupport fun i => D.dilogPow d (δ i) (c i) := by
+    TauCeti.CompletedGroup.HasFiniteSupport fun i => D.dilogPow d (δ i) (c i) := by
   simpa only [dilogPow_def] using SkewLieAlgebra.hasFiniteSupport_rayExp_smul_negDilogNeg βℚ hβℚ
     (fun i => (δ i).1) (fun i => (δ i).2.1) (fun i => (δ i).2.2)
     (Subtype.val_injective.comp hδ) c
@@ -84,13 +84,13 @@ variable [Module.Free ℤ N] [LinearOrder ι]
 nonzero allowed degrees `δ i`, over the linearly ordered index type, smallest index leftmost. -/
 def orderedNormalizedProd (hδ : Function.Injective δ) (s : ι → ℕ) :
     d.completedBCHGroup (SkewLieAlgebra.positiveGrading βℚ hβℚ d) :=
-  CompletedGroup.orderedProd (fun i => D.dilogPow d (δ i) (s i * κ ((δ i).1 : N)))
+  TauCeti.CompletedGroup.orderedProd (fun i => D.dilogPow d (δ i) (s i * κ ((δ i).1 : N)))
     (hasFiniteSupport_dilogPow hδ fun i => s i * κ ((δ i).1 : N))
 
 /-- Unfolds `orderedNormalizedProd`, which holds by definition. -/
 theorem orderedNormalizedProd_def (hδ : Function.Injective δ) (s : ι → ℕ) :
     orderedNormalizedProd hδ s =
-      CompletedGroup.orderedProd (fun i => D.dilogPow d (δ i) (s i * κ ((δ i).1 : N)))
+      TauCeti.CompletedGroup.orderedProd (fun i => D.dilogPow d (δ i) (s i * κ ((δ i).1 : N)))
         (hasFiniteSupport_dilogPow hδ fun i => s i * κ ((δ i).1 : N)) := (rfl)
 
 /-- **Compatibility under truncation.** At order `k`, the ordered product
@@ -99,10 +99,10 @@ theorem orderedNormalizedProd_def (hδ : Function.Injective δ) (s : ι → ℕ)
 with `deg (δ i) ≤ k`. -/
 theorem projection_orderedNormalizedProd (hδ : Function.Injective δ) (s : ι → ℕ) (k : ℕ)
     (S : Finset ι) (hS : ∀ i, d.degree (δ i).1 ≤ k → i ∈ S) :
-    CompletedGroup.projection k (orderedNormalizedProd hδ s) =
-      CompletedGroup.projection k (S.sort.map fun i => D.unitFactor d (δ i) ^ s i).prod := by
+    TauCeti.CompletedGroup.projection k (orderedNormalizedProd hδ s) =
+      TauCeti.CompletedGroup.projection k (S.sort.map fun i => D.unitFactor d (δ i) ^ s i).prod := by
   rw [orderedNormalizedProd_def,
-    CompletedGroup.projection_orderedProd_of_support _ _ k S fun i hi => hS i ?_,
+    TauCeti.CompletedGroup.projection_orderedProd_of_support _ _ k S fun i hi => hS i ?_,
     map_list_prod, List.map_map, Function.comp_def]
   · simp only [dilogPow_natCast_mul, unitFactor_def]
   · by_contra hik
@@ -122,8 +122,8 @@ theorem exists_pairwise_projection_prod_unitFactor_eq
     (l : List (D.NonzeroDegree d × ℕ))
     (hl : ∀ p ∈ l, (p.1 : D.unfrozen) ∈ AddSubmonoid.closure {x.1, y.1}) (k : ℕ) :
     ∃ L : List ι, L.Pairwise (fun i j => 0 ≤ βℚ (δ i).1 (δ j).1) ∧
-      CompletedGroup.projection k (L.map fun i => D.unitFactor d (δ i)).prod =
-        CompletedGroup.projection k
+      TauCeti.CompletedGroup.projection k (L.map fun i => D.unitFactor d (δ i)).prod =
+        TauCeti.CompletedGroup.projection k
           (l.map fun p => D.dilogPow d p.1 (p.2 * κ (p.1 : N))).prod := by
   obtain ⟨l', hmem, hchain, -, hprod⟩ := D.exists_isChain_projection_prod_pow_eq d x y k l hl
   obtain ⟨i₀, -⟩ := hrange x (AddSubmonoid.subset_closure (Set.mem_insert _ _))
@@ -154,9 +154,9 @@ theorem existsUnique_orderedNormalizedProd_eq (hδ : Function.Injective δ)
     ∃! s : ι → ℕ, orderedNormalizedProd hδ s =
       (l.map fun p => D.dilogPow d p.1 (p.2 * κ (p.1 : N))).prod := by
   have hfact (k : ℕ) : ∃ L : List ι, L.Pairwise (fun i j => 0 ≤ βℚ (δ i).1 (δ j).1) ∧
-      CompletedGroup.projection k (L.map fun i => SkewLieAlgebra.rayExp βℚ hβℚ (δ i).2.1
+      TauCeti.CompletedGroup.projection k (L.map fun i => SkewLieAlgebra.rayExp βℚ hβℚ (δ i).2.1
           (δ i).2.2 (κ ((δ i).1 : N) • negDilogNeg ℚ)).prod =
-        CompletedGroup.projection k
+        TauCeti.CompletedGroup.projection k
           (l.map fun p => D.dilogPow d p.1 (p.2 * κ (p.1 : N))).prod := by
     simpa only [unitFactor_def, dilogPow_def] using
       exists_pairwise_projection_prod_unitFactor_eq x y hrange l hl k

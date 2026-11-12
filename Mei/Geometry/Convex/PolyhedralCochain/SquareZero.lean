@@ -36,9 +36,13 @@ uses `Finset.sum_sum_eq_zero_of_unique_partner` and
 
 public section
 
+open TauCeti (OrientedCell PolyhedralCochain)
+
 noncomputable section
 
-namespace Mei
+namespace TauCeti
+
+open Mei
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
@@ -72,4 +76,4 @@ theorem coboundaryOfFinsupp_coboundaryPresentation (x : OrientedCell h k →₀ 
 
 end PolyhedralCochain
 
-end Mei
+end TauCeti

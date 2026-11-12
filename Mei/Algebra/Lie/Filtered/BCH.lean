@@ -11,7 +11,7 @@ public import Mei.Algebra.Lie.Filtered.Faithful
 public import Mei.Algebra.Lie.UniversalEnveloping.BCH.Basic
 public import Mei.Algebra.Lie.BCH.Coordinates
 public import Mei.LinearAlgebra.ModuleFiltration.GroupAction
-public import Mei.RingTheory.FilteredAlgebra.Action
+public import TauCeti.RingTheory.FilteredAlgebra.Action.Algebra
 
 /-!
 # Completed BCH actions on filtered coefficients
@@ -116,7 +116,7 @@ noncomputable def completedBCHAction :
 theorem projection_completedBCHAction (g : d.completedBCHGroup ℒ)
     (a : F.completion) (k : ℕ) :
     F.projection k (F.completedBCHAction d ℒ g a) =
-      F.truncatedBCHAction d ℒ k (CompletedGroup.projection k g) (F.projection k a) := by
+      F.truncatedBCHAction d ℒ k (TauCeti.CompletedGroup.projection k g) (F.projection k a) := by
   exact F.projection_completedAction _ _ g a k
 
 /-- The integrated action agrees with the existing exponential operator in Lie coordinates. -/
@@ -134,7 +134,7 @@ theorem completedBCHAction_exp (x : d.completedLie ℒ) :
 theorem completedBCHAction_unique
     (σ : d.completedBCHGroup ℒ →* (F.completion ≃ₗ[R] F.completion))
     (hσ : ∀ g a k, F.projection k (σ g a) =
-      F.truncatedBCHAction d ℒ k (CompletedGroup.projection k g) (F.projection k a)) :
+      F.truncatedBCHAction d ℒ k (TauCeti.CompletedGroup.projection k g) (F.projection k a)) :
     σ = F.completedBCHAction d ℒ :=
   F.completedAction_unique _ _ σ hσ
 
@@ -157,7 +157,9 @@ theorem completedBCHAction_injective [IsFiltrationDetected d ℒ F] :
 
 end Mei.ModuleFiltration
 
-namespace Mei.AlgFiltration
+namespace TauCeti.AlgFiltration
+
+open Mei
 
 variable {N R L A : Type*} [AddCommMonoid N] [CommRing R] [Algebra ℚ R]
   [LieRing L] [LieAlgebra R L] [LieAlgebra ℚ L] [IsScalarTower ℚ R L]
@@ -239,7 +241,7 @@ theorem factor_truncatedBCHAction {k l : ℕ} (h : k ≤ l)
 /-- Integrate a filtration-raising derivation action to the completed BCH group. -/
 noncomputable def completedBCHAction :
     d.completedBCHGroup ℒ →* (F.completion ≃ₐ[R] F.completion) :=
-  F.completedAction (F.truncatedBCHAction d ℒ)
+  F.completedAlgebraAction (F.truncatedBCHAction d ℒ)
     (fun {_ _} h g a => F.factor_truncatedBCHAction d ℒ h g a)
 
 /-- The completed algebra action is computed by exponential operators at each finite order. -/
@@ -247,17 +249,17 @@ noncomputable def completedBCHAction :
 theorem projection_completedBCHAction (g : d.completedBCHGroup ℒ)
     (a : F.completion) (k : ℕ) :
     F.projection k (F.completedBCHAction d ℒ g a) =
-      F.truncatedExpLieAction d ℒ k (BCHGroup.log (CompletedGroup.projection k g))
+      F.truncatedExpLieAction d ℒ k (BCHGroup.log (TauCeti.CompletedGroup.projection k g))
         (F.projection k a) := by
-  exact F.projection_completedAction _ _ g a k
+  exact F.projection_completedAlgebraAction _ _ g a k
 
 /-- The finite-order projection law uniquely determines the completed algebra action. -/
 theorem completedBCHAction_unique
     (σ : d.completedBCHGroup ℒ →* (F.completion ≃ₐ[R] F.completion))
     (hσ : ∀ g a k, F.projection k (σ g a) =
-      F.truncatedExpLieAction d ℒ k (BCHGroup.log (CompletedGroup.projection k g))
+      F.truncatedExpLieAction d ℒ k (BCHGroup.log (TauCeti.CompletedGroup.projection k g))
         (F.projection k a)) : σ = F.completedBCHAction d ℒ :=
-  F.completedAction_unique _ _ σ hσ
+  F.completedAlgebraAction_unique _ _ σ hσ
 
 /-- Completed algebra actions agreeing on the canonical image of `A` agree. At each finite order,
 every completed element has the same projection as some canonical element. -/
@@ -307,4 +309,4 @@ theorem completedBCHAction_exp (x : L) :
   intro k
   simp
 
-end Mei.AlgFiltration
+end TauCeti.AlgFiltration

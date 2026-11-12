@@ -99,6 +99,6 @@ theorem completedBCHAction_completionBilinear (g : d.completedBCHGroup ℒ)
   let : Module ℚ (H.quotient k) := Module.compHom _ (algebraMap ℚ R)
   simp only [projection_completedBCHAction, projection_completionBilinear]
   exact truncatedBCHAction_quotientBilinear F G H d ℒ f hf hequiv k
-    (CompletedGroup.projection k g) (F.projection k x) (G.projection k y)
+    (TauCeti.CompletedGroup.projection k g) (F.projection k x) (G.projection k y)
 
 end Mei.ModuleFiltration

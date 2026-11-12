@@ -30,6 +30,8 @@ open TauCeti (singularSupport)
 
 public noncomputable section
 
+open TauCeti (IsRationalNormalPolyhedron IsRationalSemilinear)
+
 open TauCeti (PositiveDegrees IsPositiveGrading)
 
 open TauCeti (DirectedWallSpaces)
@@ -133,7 +135,7 @@ theorem dense_stableWallEventLocus (K : ℕ)
     (B.wall a).rational_support
   obtain ⟨J, hJ, S, hS, hUnion⟩ := exists_finite_singularSupport_polyhedra W hW
   let := hJ
-  have hf (e : WallEvent (B.active K)) : Toric.IsRationalFunctional h (f e).toLinearMap :=
+  have hf (e : WallEvent (B.active K)) : TauCeti.Toric.IsRationalFunctional h (f e).toLinearMap :=
     B.isRationalFunctional_wallEventNormal K e
   have hP (e : WallEvent (B.active K)) : IsRationalSemilinear h (P e) :=
     e.isRationalSemilinear_support W fun a => (hW a).isLocallyClosedPolyhedron.isRationalSemilinear

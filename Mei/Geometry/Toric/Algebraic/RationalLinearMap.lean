@@ -26,7 +26,9 @@ rational.
 
 public section
 
-namespace Mei.Toric
+open TauCeti.Toric (IsRationalFunctional IsRationalLinearMap isRationalLinearMap_iff)
+
+namespace TauCeti.Toric
 
 open TauCeti.Toric
 
@@ -142,4 +144,4 @@ theorem exists_leftInvOn {T : V →ₗ[ℝ] V'} (hT : IsRationalLinearMap h h' T
 
 end IsRationalLinearMap
 
-end Mei.Toric
+end TauCeti.Toric

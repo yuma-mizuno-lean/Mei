@@ -70,7 +70,7 @@ theorem truncatedBCHAction_combinedLabel_mem_normalDegreeSubmodule_iff
     (F.submodule (k + 1)).mkQ
   have hfactor (b : D.active k) (hb : b ∈ S.toList) :
       ∀ a : F.quotient k, F.truncatedBCHAction d ℒ k
-        ((CompletedGroup.projection k (D.wall b).label : d.truncatedGroup ℒ k) ^
+        ((TauCeti.CompletedGroup.projection k (D.wall b).label : d.truncatedGroup ℒ k) ^
           (if 0 < h.realCharacter (D.wall b).normal v then -1 else 1 : ℤ)) a ∈ N ↔ a ∈ N := by
     have hbθ : θ ∈ (D.wall b).support := by simpa [S] using hb
     have hker := (D.wall b).normal_ker_eq_of_direction_eq (D.wall j)
@@ -81,7 +81,7 @@ theorem truncatedBCHAction_combinedLabel_mem_normalDegreeSubmodule_iff
         (if 0 < h.realCharacter (D.wall b).normal v then -1 else 1 : ℤ)) k
     rw [H.mem_truncatedRayLieSubalgebra] at hg
     obtain ⟨x, hx, he⟩ := hg
-    have hg' : BCHGroup.log ((CompletedGroup.projection k (D.wall b).label : d.truncatedGroup ℒ k) ^
+    have hg' : BCHGroup.log ((TauCeti.CompletedGroup.projection k (D.wall b).label : d.truncatedGroup ℒ k) ^
         (if 0 < h.realCharacter (D.wall b).normal v then -1 else 1 : ℤ)) ∈
         H.truncatedRayLieSubalgebra (D.wall b).ray (D.wall j).normal k := by
       apply (H.mem_truncatedRayLieSubalgebra ..).mpr
@@ -90,14 +90,14 @@ theorem truncatedBCHAction_combinedLabel_mem_normalDegreeSubmodule_iff
       · simpa only [map_zpow] using he
     intro a
     have hact := F.truncatedBCHAction_apply d ℒ k
-      (CompletedGroup.projection k (D.wall b).label ^
+      (TauCeti.CompletedGroup.projection k (D.wall b).label ^
         (if 0 < h.realCharacter (D.wall b).normal v then -1 else 1 : ℤ)) a
     exact (Iff.of_eq (congrArg (fun x => x ∈ N) hact)).trans
       (H.truncatedExpLieAction_mem_normalDegreeSubmodule_iff ℳ F hg' z a)
   have hprod : ∀ a : F.quotient k,
       F.truncatedBCHAction d ℒ k
         ((S.toList.map fun b : D.active k =>
-          (CompletedGroup.projection k (D.wall b).label : d.truncatedGroup ℒ k) ^
+          (TauCeti.CompletedGroup.projection k (D.wall b).label : d.truncatedGroup ℒ k) ^
           (if 0 < h.realCharacter (D.wall b).normal v then -1 else 1 : ℤ)).prod) a ∈ N ↔
         a ∈ N := by
     apply List.prod_induction

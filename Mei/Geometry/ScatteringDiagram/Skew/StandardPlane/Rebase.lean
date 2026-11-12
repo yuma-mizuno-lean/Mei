@@ -152,8 +152,8 @@ theorem map_projection_dilogPow (hD : y.det x ≠ 0) (k : ℕ) (m : PlaneDegree 
     ((SkewLieAlgebra.gradedMap β hβ β hβ (y.det x : ℚ)⁻¹ (rebaseMap x y)
           (coefficientForm_eq_inv_mul_rebaseMap hD)).lieTruncatedMap k
         (rebaseMap_modulus_le x y k)).bchGroupMap
-        (CompletedGroup.projection k (dilogPow m c)) =
-      CompletedGroup.projection k (dilogPow (rebasePos x y m) ((y.det x : ℚ)⁻¹ * c)) := by
+        (TauCeti.CompletedGroup.projection k (dilogPow m c)) =
+      TauCeti.CompletedGroup.projection k (dilogPow (rebasePos x y m) ((y.det x : ℚ)⁻¹ * c)) := by
   rw [dilogPow_def, dilogPow_def, mul_smul]
   exact SkewLieAlgebra.lieTruncatedMap_gradedMap_projection_rayExp β hβ β hβ (y.det x : ℚ)⁻¹
     (rebaseMap x y) (coefficientForm_eq_inv_mul_rebaseMap hD) m.mem m.ne_zero
@@ -164,30 +164,30 @@ of unit factors of the rescaled plane gives the same identity in the plane betwe
 products of the labels `Ψ[T m]^{κ(m) / D}`, where `D = {y, x}`. -/
 theorem projection_prod_rebasePos_eq (hD : y.det x ≠ 0) (k : ℕ)
     {L₁ L₂ : List (PlaneDegree (Weight.rebase x y))}
-    (h : CompletedGroup.projection k (L₁.map unitFactor).prod =
-      CompletedGroup.projection k (L₂.map unitFactor).prod) :
-    CompletedGroup.projection k
+    (h : TauCeti.CompletedGroup.projection k (L₁.map unitFactor).prod =
+      TauCeti.CompletedGroup.projection k (L₂.map unitFactor).prod) :
+    TauCeti.CompletedGroup.projection k
         (L₁.map fun m => dilogPow (rebasePos x y m) ((y.det x : ℚ)⁻¹ * rayIndex m.vec)).prod =
-      CompletedGroup.projection k
+      TauCeti.CompletedGroup.projection k
         (L₂.map fun m => dilogPow (rebasePos x y m) ((y.det x : ℚ)⁻¹ * rayIndex m.vec)).prod := by
   let ψ := ((SkewLieAlgebra.gradedMap β hβ β hβ (y.det x : ℚ)⁻¹ (rebaseMap x y)
     (coefficientForm_eq_inv_mul_rebaseMap hD)).lieTruncatedMap k
       (rebaseMap_modulus_le x y k)).bchGroupMap
   have key : ∀ L : List (PlaneDegree (Weight.rebase x y)),
-      ψ (CompletedGroup.projection k (L.map unitFactor).prod) =
-      CompletedGroup.projection k
+      ψ (TauCeti.CompletedGroup.projection k (L.map unitFactor).prod) =
+      TauCeti.CompletedGroup.projection k
         (L.map fun m => dilogPow (rebasePos x y m) ((y.det x : ℚ)⁻¹ * rayIndex m.vec)).prod := by
     intro L
     induction L with
     | nil =>
-      simp only [List.map_nil, List.prod_nil, map_one (CompletedGroup.projection k)]
+      simp only [List.map_nil, List.prod_nil, map_one (TauCeti.CompletedGroup.projection k)]
       exact map_one ψ
     | cons m L ih =>
-      have h1 : ψ (CompletedGroup.projection k (unitFactor m)) = CompletedGroup.projection k
+      have h1 : ψ (TauCeti.CompletedGroup.projection k (unitFactor m)) = TauCeti.CompletedGroup.projection k
           (dilogPow (rebasePos x y m) ((y.det x : ℚ)⁻¹ * rayIndex m.vec)) := by
         rw [unitFactor_def]
         exact map_projection_dilogPow x y hD k m _
-      simp only [List.map_cons, List.prod_cons, map_mul (CompletedGroup.projection k)]
+      simp only [List.map_cons, List.prod_cons, map_mul (TauCeti.CompletedGroup.projection k)]
       exact (map_mul ψ _ _).trans (congrArg₂ (· * ·) h1 ih)
   rw [← key, ← key, h]
 

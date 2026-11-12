@@ -40,7 +40,9 @@ open CategoryTheory CategoryTheory.Limits Opposite
 
 universe u v
 
-namespace Mei.AlgFiltration
+namespace TauCeti.AlgFiltration
+
+open Mei
 
 variable {N R : Type*} {L : Type u} {A : Type v}
   [AddCommMonoid N] [CommRing R] [Algebra ℚ R]
@@ -173,4 +175,4 @@ theorem bchActionIntertwiner_sectionComparison_app (k : ℕᵒᵖ) :
   -- Identify the quotient objects under the identity-transport section wrappers.
   erw [Functor.singleObjActionIntertwiner_sectionComparison_app, quotientAlgebraDiagramMap_app]
 
-end Mei.AlgFiltration
+end TauCeti.AlgFiltration

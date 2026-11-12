@@ -24,6 +24,8 @@ binomial branches are needed. All maps retain the original coefficient scalar ac
 
 public noncomputable section
 
+open TauCeti (GradedCorrespondence)
+
 namespace Mei.FocusFocus
 
 open TauCeti AddMonoidAlgebra Mei.NodeAlgebra _root_.LaurentPolynomial

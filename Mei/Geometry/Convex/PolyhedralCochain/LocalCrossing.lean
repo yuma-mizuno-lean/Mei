@@ -6,6 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.Convex.PolyhedralCochain.Pairing
+public import Mei.Geometry.Convex.PolyhedralCochain.Basic
 public import Mei.Geometry.Convex.PolyhedralComplex.Strata
 public import Mei.Geometry.Convex.Polyhedron.AdmissiblePath
 
@@ -29,13 +30,17 @@ This local evaluation connects geometric wall coefficients to transport defects.
 
 public section
 
+open TauCeti (OrientedCell)
+
 open TauCeti (WallComplement)
 
 noncomputable section
 
 open Set Module
 
-namespace Mei.PolyhedralCochain
+namespace TauCeti.PolyhedralCochain
+
+open Mei
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
@@ -53,7 +58,7 @@ theorem exists_ball_intersectionPairing_eq (C : FinitePolyhedralComplex h) {k : 
     ∃ ε > 0, ∀ {v : Fin (k + 1) → V}, (∀ j, v j ∈ Metric.ball q ε) →
       q ∈ convexHull ℝ (range v) →
       (σ Q).orientation.evalSign (fun j : Fin k => v j.succ - v 0) ≠ 0 →
-      (∀ P, (σ P).IsTransverse v) ∧
+      (∀ P, (σ P).IsTransverseToCarrier v) ∧
       ∀ c : C.cellsOfCodimension k → E,
         OrientedCell.intersectionPairing (R := R) v
           (∑ P, Finsupp.single (σ P) (c P)) =
@@ -77,7 +82,7 @@ theorem exists_ball_intersectionPairing_eq (C : FinitePolyhedralComplex h) {k : 
       · apply ((σ Q).isConormal.evalSign_ne_zero_iff
           ((σ Q).finrank_quotient_direction.trans (Fintype.card_fin k).symm) _).mp
         exact hsign
-    · exact (σ P).isTransverse_of_disjoint (hdisj P he)
+    · exact (σ P).isTransverseToCarrier_of_disjoint (hdisj P he)
   · simp only [map_sum, OrientedCell.intersectionPairing_single]
     rw [Finset.sum_eq_single Q (fun P _ hPQ => by
       rw [OrientedCell.intersectionIndex_of_disjoint (hdisj P hPQ), zero_smul]) (by simp)]
@@ -123,4 +128,4 @@ theorem intersectionPairing_eq_of_crossings_singleton
         (fun hm => hW ((hmeet W).mp hm)))), zero_smul]
   · simp
 
-end Mei.PolyhedralCochain
+end TauCeti.PolyhedralCochain

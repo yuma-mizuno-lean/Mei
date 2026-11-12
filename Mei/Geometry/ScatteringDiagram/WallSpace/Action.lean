@@ -214,7 +214,7 @@ theorem completedBCHAction_of_eq_self_of_normal_eq_zero
   apply F.completion_ext
   intro k
   rw [ModuleFiltration.projection_completedBCHAction, ModuleFiltration.projection_of]
-  exact (F.truncatedBCHAction_apply d ℒ k (CompletedGroup.projection k g)
+  exact (F.truncatedBCHAction_apply d ℒ k (TauCeti.CompletedGroup.projection k g)
     (Submodule.Quotient.mk a)).trans
       (H.truncatedExpLieAction_mk_eq_self_of_normal_eq_zero 𝒜 F
         ((H.mem_wallGroup w m g).mp hg k) ha hm)

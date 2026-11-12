@@ -229,7 +229,7 @@ theorem projection_completedBCHAction_mem_normalDegreeSubmodule_iff
     F.projection k a ∈
       (normalDegreeSubmodule ρ 𝒜 m c).map (F.submodule (k + 1)).mkQ := by
   rw [ModuleFiltration.projection_completedBCHAction]
-  have he := F.truncatedBCHAction_apply d ℒ k (CompletedGroup.projection k g)
+  have he := F.truncatedBCHAction_apply d ℒ k (TauCeti.CompletedGroup.projection k g)
     (F.projection k a)
   exact (Iff.of_eq (congrArg (fun z => z ∈
     (normalDegreeSubmodule ρ 𝒜 m c).map (F.submodule (k + 1)).mkQ) he)).trans

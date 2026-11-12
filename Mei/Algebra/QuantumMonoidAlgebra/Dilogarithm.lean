@@ -34,6 +34,8 @@ diagrams*, §2.3, equations (2.14) and (2.21), arXiv:2202.01588v7.
 
 public section
 
+open TauCeti (AlgFiltration)
+
 noncomputable section
 
 open scoped PowerSeries

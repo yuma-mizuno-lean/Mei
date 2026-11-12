@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mei.RingTheory.Node.NormalForm
-public import Mei.LinearAlgebra.GradedCorrespondence.Basic
+public import TauCeti.LinearAlgebra.GradedCorrespondence.Basic
 public import Mathlib.Algebra.MonoidAlgebra.Grading
 public import Mathlib.Algebra.Order.Nonneg.Basic
 
@@ -35,6 +35,8 @@ class*, Definitions 3.1–3.3, arXiv:1601.07081v4.
 -/
 
 public section
+
+open TauCeti (GradedCorrespondence)
 
 noncomputable section
 

@@ -26,9 +26,13 @@ dimension comparisons and `OrientedCell.carrier_injOn_boundaryFacets`.
 
 public section
 
+open TauCeti (OrientedCell)
+
 open Set Module
 
-namespace Mei.OrientedCell
+namespace TauCeti.OrientedCell
+
+open Mei
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i} {k : ℕ}
@@ -133,4 +137,4 @@ theorem boundary_subcell_internal_or_external (σ : OrientedCell h k)
   apply σ.carrier_injOn_boundaryFacets hω hυ
   exact hωcarrier.trans (hFG.symm.trans hυcarrier.symm)
 
-end Mei.OrientedCell
+end TauCeti.OrientedCell

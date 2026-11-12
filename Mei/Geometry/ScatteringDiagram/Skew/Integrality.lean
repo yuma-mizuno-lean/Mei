@@ -12,6 +12,7 @@ import Mei.Geometry.ScatteringDiagram.Skew.Coefficient.Positive
 import Mei.LinearAlgebra.SesquilinearForm.Alternating
 import Mei.RingTheory.PowerSeries.Log
 import TauCeti.RingTheory.PowerSeries.Log
+import Mei.RingTheory.FilteredAlgebra.Completion
 
 /-!
 # Integral actions of dilogarithm powers
@@ -86,6 +87,8 @@ the factors of each degree reduces it to distinct degrees.
 -/
 
 public section
+
+open TauCeti (AlgFiltration)
 
 open TauCeti (PositiveDegrees)
 
@@ -214,7 +217,7 @@ over the coefficients `c_m X_m` of degree `deg n`, and the monomials `z^{p + r(m
 distinct. -/
 theorem algebraMap_inv_rayIndex_mul_mem_rangeS_of_isPositive [Module.Free ℤ D.sublattice]
     (φ : S →+* R) {g : d.completedBCHGroup 𝓛}
-    (hg : g ∈ CompletedGroup.degreeFiltration (d.groupTower 𝓛) (d.degree n).toNat)
+    (hg : g ∈ TauCeti.CompletedGroup.degreeFiltration (d.groupTower 𝓛) (d.degree n).toNat)
     (h : ∀ x : (Fpr).completion, (Fpr).IsPositive (mapRingHom Qpr φ).rangeS x →
       (Fpr).IsPositive (mapRingHom Qpr φ).rangeS
         ((Fpr).completedBCHAction (R := R) e ℳ ((D.principalGradedLieHom d).completedMap g) x))
@@ -471,7 +474,7 @@ theorem exists_eq_intCast_mul_rayIndex_of_projection_eq_prod [Module.Free ℤ D.
     (hinj : Function.Injective m) (c : Fin r → ℚ) {g : d.completedBCHGroup 𝓛ℚ}
     (hg : D.IsIntegralLabel d g)
     {k : ℕ}
-    (hk : CompletedGroup.projection k g = CompletedGroup.projection k
+    (hk : TauCeti.CompletedGroup.projection k g = TauCeti.CompletedGroup.projection k
       (List.ofFn fun i => SkewLieAlgebra.rayExp βℚ hβℚ (hm i) (hm0 i) (c i • negDilogNeg ℚ)).prod)
     (i : Fin r) (hi : d.degree (m i) ≤ k) :
     ∃ s : ℤ, c i = s * D.sublattice.toAddSubgroup.rayIndex (m i) := by
@@ -587,7 +590,7 @@ theorem exists_nodup_prod_eq_and_intCast_mul_rayIndex_of_isChain [Module.Free �
     (hl : l.IsChain fun i j => 0 ≤ βℚ (deg i) (deg j)) {g : d.completedBCHGroup 𝓛ℚ}
     (hg : D.IsIntegralLabel d g)
     {k : ℕ}
-    (hk : CompletedGroup.projection k g = CompletedGroup.projection k
+    (hk : TauCeti.CompletedGroup.projection k g = TauCeti.CompletedGroup.projection k
       (l.map fun i => SkewLieAlgebra.rayExp βℚ hβℚ (hdeg i) (hdeg0 i) (c i • negDilogNeg ℚ)).prod) :
     ∃ l' : List ι, l' ⊆ l ∧ (∀ i ∈ l, ∃ j ∈ l', deg j = deg i) ∧ (l'.map deg).Nodup ∧
       l'.Pairwise (fun i j => 0 ≤ βℚ (deg i) (deg j)) ∧
@@ -613,7 +616,7 @@ theorem exists_nodup_prod_eq_and_intCast_mul_rayIndex_of_isChain [Module.Free �
     intro j j' hjj'
     have h := hnd.injective_get (a₁ := ⟨j, by simp⟩) (a₂ := ⟨j', by simp⟩) (by simpa using hjj')
     exact Fin.ext (by simpa using congrArg Fin.val h)
-  have hk' : CompletedGroup.projection k g = CompletedGroup.projection k
+  have hk' : TauCeti.CompletedGroup.projection k g = TauCeti.CompletedGroup.projection k
       (List.ofFn fun j : Fin l'.length => SkewLieAlgebra.rayExp βℚ hβℚ (hdeg (l'.get j))
         (hdeg0 (l'.get j))
         (((l.filter fun j' => deg j' = deg (l'.get j)).map c).sum • negDilogNeg ℚ)).prod := by

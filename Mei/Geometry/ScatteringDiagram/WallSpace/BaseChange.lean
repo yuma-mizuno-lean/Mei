@@ -31,8 +31,6 @@ open TauCeti (DirectedWallSpaces)
 
 namespace TauCeti.DirectedWallSpaces
 
-open Mei
-
 variable {Γ Λ R S L : Type*} [AddCommMonoid Γ] [AddCommMonoid Λ]
   [CommRing R] [CommRing S] [Algebra R S]
   [LieRing L] [LieAlgebra R L]

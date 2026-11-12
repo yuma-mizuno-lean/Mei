@@ -80,7 +80,7 @@ private theorem bchGroupMap_truncatedMap_comp_eq_id {M' : Type*} [AddCommMonoid 
     (G.lieTruncatedMap k hG).bchGroupMap.comp (F.lieTruncatedMap k hF).bchGroupMap =
       MonoidHom.id _ := by
   refine MonoidHom.ext fun y => ?_
-  obtain ⟨x, rfl⟩ := CompletedGroup.projection_surjective (d.groupTower ℒ)
+  obtain ⟨x, rfl⟩ := TauCeti.CompletedGroup.projection_surjective (d.groupTower ℒ)
     (fun n => d.groupTower_map_surjective ℒ (CategoryTheory.homOfLE (Nat.le_succ n)).op) k y
   have hf := F.projection_completedMap_of_le k hF x
   have hg := G.projection_completedMap_of_le k hG (F.completedMap x)
@@ -116,8 +116,8 @@ theorem graphTruncatedGroupEquiv_symm_apply (k : ℕ)
 /-- The completed graph comparison projects to the finite graph comparison at every cutoff. -/
 @[simp]
 theorem projection_graphBCHGroupEquiv (k : ℕ) (x : d.completedBCHGroup ℒ) :
-    CompletedGroup.projection k (d.graphBCHGroupEquiv ℒ f x) =
-      d.graphTruncatedGroupEquiv ℒ f k (CompletedGroup.projection k x) :=
+    TauCeti.CompletedGroup.projection k (d.graphBCHGroupEquiv ℒ f x) =
+      d.graphTruncatedGroupEquiv ℒ f k (TauCeti.CompletedGroup.projection k x) :=
   (graphGradedLieHom ℒ f d).projection_completedMap_of_le k (d.graphMap_modulus f k).le x
 
 /-- The inverse completed graph comparison projects to the inverse finite graph comparison
@@ -125,8 +125,8 @@ at every cutoff. -/
 @[simp]
 theorem projection_graphBCHGroupEquiv_symm (k : ℕ)
     (x : (d.graph f).completedBCHGroup (graphGrading ℒ f)) :
-    CompletedGroup.projection k ((d.graphBCHGroupEquiv ℒ f).symm x) =
-      (d.graphTruncatedGroupEquiv ℒ f k).symm (CompletedGroup.projection k x) :=
+    TauCeti.CompletedGroup.projection k ((d.graphBCHGroupEquiv ℒ f).symm x) =
+      (d.graphTruncatedGroupEquiv ℒ f k).symm (TauCeti.CompletedGroup.projection k x) :=
   (graphProjectionGradedLieHom ℒ f d).projection_completedMap_of_le k
     (d.graphProjection_modulus f k).le x
 

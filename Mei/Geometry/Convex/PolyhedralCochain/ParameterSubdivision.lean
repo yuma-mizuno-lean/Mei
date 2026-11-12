@@ -6,6 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.Convex.PolyhedralCochain.Pairing
+public import Mei.Geometry.Convex.PolyhedralCochain.Basic
 public import TauCeti.Geometry.ScatteringDiagram.Path.Subdivision
 public import Mei.Geometry.Convex.Polyhedron.AdmissiblePath
 public import Mathlib.Analysis.Convex.Between
@@ -35,13 +36,15 @@ for the orientation under positive parameter rescaling.
 
 public section
 
+open TauCeti (OrientedCell isRationalNormalPolyhedron_iff)
+
 open TauCeti (WallComplement AdmissiblePLPath)
 
 noncomputable section
 
 open Set
 
-namespace Mei.OrientedCell
+namespace TauCeti.OrientedCell
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
@@ -128,11 +131,11 @@ theorem intersectionPairing_subdivide (f : OrientedCell h 1 →₀ E) {x y z : V
   intro σ hσ
   rw [σ.intersectionIndex_subdivide ht hz (hzf σ hσ), add_zsmul]
 
-end Mei.OrientedCell
+end TauCeti.OrientedCell
 
 namespace Quiver.Path
 
-open Mei TauCeti.WallComplement
+open TauCeti.WallComplement
 
 variable {N V ι : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}

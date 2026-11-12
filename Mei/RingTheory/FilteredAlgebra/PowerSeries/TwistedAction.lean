@@ -25,7 +25,7 @@ original coefficient raises its order by at least one, with arbitrary unit const
 public section
 noncomputable section
 
-namespace Mei.AlgFiltration
+namespace TauCeti.AlgFiltration
 
 variable {R A : Type*} [CommRing R] [Ring A] [Algebra R A] (F : AlgFiltration A)
 
@@ -191,4 +191,4 @@ theorem mapCompletion_completedTwistedSeriesAction_of_eq
   rw [hy', hc] at he
   exact he
 
-end Mei.AlgFiltration
+end TauCeti.AlgFiltration

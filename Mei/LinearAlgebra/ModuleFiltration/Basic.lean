@@ -22,6 +22,8 @@ Scalar restriction acts termwise and preserves the underlying filtration sets.
 
 public section
 
+open TauCeti (AlgFiltration)
+
 namespace Mei
 
 variable (R M : Type*) [Semiring R] [AddCommMonoid M] [Module R M]

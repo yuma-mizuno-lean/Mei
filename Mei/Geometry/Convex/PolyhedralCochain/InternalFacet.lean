@@ -30,11 +30,15 @@ lineality is required.
 
 public section
 
+open TauCeti (OrientedCell PolyhedralCochain isRationalNormalPolyhedron_iff)
+
 noncomputable section
 
 open Set Module Filter Topology
 
-namespace Mei.OrientedCell.IsOrientedSubdivision
+namespace TauCeti.OrientedCell.IsOrientedSubdivision
+
+open Mei
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i} {k : ℕ}
@@ -204,4 +208,4 @@ theorem sum_cellCoboundary_eq_sum_external_boundaryFacets
   simp_rw [hsplit]
   rw [Finset.sum_add_distrib, hQ.sum_internal_boundaryFacets_eq_zero hQC c, add_zero]
 
-end Mei.OrientedCell.IsOrientedSubdivision
+end TauCeti.OrientedCell.IsOrientedSubdivision

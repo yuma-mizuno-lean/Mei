@@ -59,18 +59,18 @@ theorem log_levelPathProduct_eq_sum_side_sub (k : ℕ)
     log (D.levelPathProduct k p) = ∑ j : D.active k,
       ((if b j < h.realCharacter (D.wall j).normal x.val then 1 else 0 : ℤ) -
         (if b j < h.realCharacter (D.wall j).normal y.val then 1 else 0)) •
-          log (CompletedGroup.projection k (D.wall j).label) := by
+          log (TauCeti.CompletedGroup.projection k (D.wall j).label) := by
   let K : LieSubalgebra R (d.lieTruncation ℒ k) := ⊤
   have hlog := K.log_wallPathProduct_sub_crossingSum_mem (⊥ : Submodule R (d.lieTruncation ℒ k))
     (fun a _ z _ => by simp [trivial_lie_zero])
     (fun j : D.active k => h.realCharacter (D.wall j).normal)
-    (fun j => CompletedGroup.projection k (D.wall j).label)
+    (fun j => TauCeti.CompletedGroup.projection k (D.wall j).label)
     (D.activeLabels_commute k) p (fun _ _ _ _ =>
       (K.mem_bchSubgroup _).mpr (by simp [K]))
   rw [Submodule.mem_bot, sub_eq_zero] at hlog
   calc
     _ = p.wallCrossingSum (fun j : D.active k => h.realCharacter (D.wall j).normal)
-        (fun j => log (CompletedGroup.projection k (D.wall j).label)) := by
+        (fun j => log (TauCeti.CompletedGroup.projection k (D.wall j).label)) := by
       rw [D.levelPathProduct_eq_wallPathProduct k p (D.activeLabels_commute k)]
       exact hlog
     _ = _ := p.wallCrossingSum_eq_sum_side_sub

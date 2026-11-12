@@ -33,7 +33,9 @@ public noncomputable section
 
 open Set Mei.Convex
 
-namespace Mei.GradedCorrespondence
+namespace TauCeti.GradedCorrespondence
+
+open Mei
 
 variable {R B U M ι κ V E : Type*} [Semiring R]
   [AddCommMonoid B] [Module R B] [AddCommMonoid U] [Module R U]
@@ -55,7 +57,7 @@ theorem exists_singleFaceTransferEvaluationLinear_eq_right
     {δ : Type*} [Finite δ] (A : δ → AffineSubspace ℝ V)
     (hcover : Z ⊆ ⋃ j, (A j : Set V))
     (hA : ∀ j, ∃ x, ν x = b ∧ x ∉ A j) :
-    ∃ F : ExceptionalArrangement V, ∀ Q, F.IsGeneric Q →
+    ∃ F : Mei.ExceptionalArrangement V, ∀ Q, F.IsGeneric Q →
       (ν Q - b) / ν u < 0 →
         C.singleFaceTransferEvaluationLinear i u v ν b Z α Q =
           C.right.comp ((C.liftLeft i).comp α) := by
@@ -76,7 +78,7 @@ theorem exists_singleFaceTransferEvaluationLinear_eq_right
       LinearMap.congr_fun (hs q hnot) x)
   intro hmem
   obtain ⟨j, hj⟩ := mem_iUnion.mp (hcover hmem)
-  exact hF Q hQ ⟨q, hqs⟩ j (sweepProjection_inv_smul_apply Q ▸ hj)
+  exact hF Q hQ ⟨q, hqs⟩ j (ContinuousLinearMap.sweepProjection_inv_smul_apply Q ▸ hj)
 
 /-- A finitely generated incoming range has a uniform finite support for its
 outgoing transfer components, without finiteness assumptions on the chambers. -/
@@ -110,7 +112,7 @@ theorem exists_singleFaceTransferEvaluationLinear_eq_right_of_fg
     {δ : Type*} [Finite δ] (A : δ → AffineSubspace ℝ V)
     (hcover : Z ⊆ ⋃ j, (A j : Set V))
     (hA : ∀ j, ∃ x, ν x = b ∧ x ∉ A j) :
-    ∃ F : ExceptionalArrangement V, ∀ Q, F.IsGeneric Q →
+    ∃ F : Mei.ExceptionalArrangement V, ∀ Q, F.IsGeneric Q →
       (ν Q - b) / ν u < 0 →
         C.singleFaceTransferEvaluationLinear i u v ν b Z α Q =
           C.right.comp ((C.liftLeft i).comp α) := by
@@ -130,7 +132,7 @@ theorem exists_singleFaceTransferEvaluationLinear_commonLift
     (hcover : Z ⊆ ⋃ j, (A j : Set V))
     (hA : ∀ j, ∃ x, ν x = b ∧ x ∉ A j)
     (hinj : Function.Injective (C.left.prod C.right)) :
-    ∃ F : ExceptionalArrangement V, ∀ Q, F.IsGeneric Q →
+    ∃ F : Mei.ExceptionalArrangement V, ∀ Q, F.IsGeneric Q →
       (ν Q - b) / ν u < 0 →
         ∃! l : E →ₗ[R] B,
           C.left.comp l = (𝒰 i).subtype.comp α ∧
@@ -154,7 +156,7 @@ theorem exists_singleFaceTransferEvaluationLinear_commonLift_of_fg
     (hcover : Z ⊆ ⋃ j, (A j : Set V))
     (hA : ∀ j, ∃ x, ν x = b ∧ x ∉ A j)
     (hinj : Function.Injective (C.left.prod C.right)) :
-    ∃ F : ExceptionalArrangement V, ∀ Q, F.IsGeneric Q →
+    ∃ F : Mei.ExceptionalArrangement V, ∀ Q, F.IsGeneric Q →
       (ν Q - b) / ν u < 0 →
         ∃! l : E →ₗ[R] B,
           C.left.comp l = (𝒰 i).subtype.comp α ∧
@@ -163,4 +165,4 @@ theorem exists_singleFaceTransferEvaluationLinear_commonLift_of_fg
   exact C.exists_singleFaceTransferEvaluationLinear_commonLift
     i u v ν b Z α s hs hnormal hZ A hcover hA hinj
 
-end Mei.GradedCorrespondence
+end TauCeti.GradedCorrespondence

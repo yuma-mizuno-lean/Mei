@@ -67,7 +67,7 @@ variable {Γ Γ₁ Λ Λ₁ R V V₁ : Type*} {L L' L₁ L₁' : Type u} {ι κ 
   {h : TauCeti.Toric.IsIntegralLattice i} {h₁ : TauCeti.Toric.IsIntegralLattice i₁}
   {H : DirectedWallSpaces ρ ℒ} {H' : DirectedWallSpaces ρ ℳ}
   {H₁ : DirectedWallSpaces ρ₁ ℒ₁} {H₁' : DirectedWallSpaces ρ₁ ℳ₁}
-  (e : Toric.IntegralAffineEquiv h h₁)
+  (e : TauCeti.Toric.IntegralAffineEquiv h h₁)
   (E : DirectedWallSpaces.CoordinateChange (d := d) (e := d₁) H H₁)
   (E' : DirectedWallSpaces.CoordinateChange (d := d) (e := d₁) H' H₁')
   (hE : E.tangentEquiv = e.latticeEquiv) (hE' : E'.tangentEquiv = e.latticeEquiv)

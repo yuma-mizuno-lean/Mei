@@ -58,6 +58,8 @@ Burcroff–Lee–Mou, *Positivity of generalized cluster scattering diagrams*, �
 
 public section
 
+open TauCeti (AlgFiltration)
+
 open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading GradedLieHom)
 
 open TauCeti (DirectedWallSpaces)

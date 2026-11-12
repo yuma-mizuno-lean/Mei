@@ -19,7 +19,7 @@ monoid algebras at a trivial factor set.
 
 public section
 
-namespace Mei.AlgFiltration
+namespace TauCeti.AlgFiltration
 
 variable {A : Type*} [Ring A] (F : AlgFiltration A)
 
@@ -31,4 +31,4 @@ theorem commute_completion (h : ∀ x y : A, Commute x y) (a b : F.completion) :
   obtain ⟨v, hv⟩ := Ideal.Quotient.mk_surjective (F.projection k b)
   rw [map_mul, map_mul, ← hu, ← hv, ← map_mul, ← map_mul, (h u v).eq]
 
-end Mei.AlgFiltration
+end TauCeti.AlgFiltration

@@ -53,7 +53,7 @@ variable {Γ Γ' Λ Λ' R V V' : Type*} {L L' : Type v} {ι : Type u}
   (D : DirectedDiagram (d := d) h H ι)
   (hfull : ∀ j, ∃ a : ℝ,
     (D.wall j).support = {x | h.realCharacter (D.wall j).normal x = a})
-  (e : Toric.IntegralAffineEquiv h h')
+  (e : TauCeti.Toric.IntegralAffineEquiv h h')
   (E : DirectedWallSpaces.CoordinateChange (d := d) (e := d') H H')
   (hE : E.tangentEquiv = e.latticeEquiv)
 

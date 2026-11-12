@@ -59,13 +59,13 @@ variable {Γ Λ R L V ι : Type*} [AddCommGroup Γ] [AddCommGroup Λ]
 vanishes. The walls may have different degrees and geometric directions. -/
 theorem levelPathProduct_eq_one_of_outgoing {k : ℕ} (hD : D.LevelConsistent k)
     (K : LieSubalgebra R (d.lieTruncation ℒ k)) [IsLieAbelian K]
-    (hlabel : ∀ j : D.active k, log (CompletedGroup.projection k (D.wall j).label) ∈ K)
+    (hlabel : ∀ j : D.active k, log (TauCeti.CompletedGroup.projection k (D.wall j).label) ∈ K)
     (hout : ∀ j : D.active k, (D.wall j).Outgoing)
     {x y : WallComplement (fun j : D.active k => (D.wall j).support)}
     (p : AdmissiblePLPath x y) : D.levelPathProduct k p = 1 := by
   classical
   let ν := fun j : D.active k => h.realCharacter (D.wall j).normal
-  let a := fun j : D.active k => log (CompletedGroup.projection k (D.wall j).label)
+  let a := fun j : D.active k => log (TauCeti.CompletedGroup.projection k (D.wall j).label)
   have hlinear {u v : WallComplement (fun j : D.active k => (D.wall j).support)}
       (q : AdmissiblePLPath u v) :
       log (D.levelPathProduct k q) = q.wallCrossingSum ν a := by
@@ -74,7 +74,7 @@ theorem levelPathProduct_eq_one_of_outgoing {k : ℕ} (hD : D.LevelConsistent k)
         have hz := congrArg (fun z : K => (z : d.lieTruncation ℒ k))
           (trivial_lie_zero K K ⟨b, hb⟩ ⟨c, hc⟩)
         exact (Submodule.mem_bot R).mpr hz)
-      ν (fun j => CompletedGroup.projection k (D.wall j).label)
+      ν (fun j => TauCeti.CompletedGroup.projection k (D.wall j).label)
       (D.activeLabels_commute k) q
       (fun _ _ j _ => (K.mem_bchSubgroup _).mpr (hlabel j.1))
     rw [D.levelPathProduct_eq_wallPathProduct k q (D.activeLabels_commute k)]
@@ -107,7 +107,7 @@ theorem levelPathProduct_eq_one_of_outgoing {k : ℕ} (hD : D.LevelConsistent k)
 transport: its labels lie in the abelian kernel of the preceding truncation. -/
 theorem levelPathProduct_eq_one_of_outgoing_of_projection_eq_one {k : ℕ}
     (hD : D.LevelConsistent (k + 1))
-    (hlabel : ∀ j : D.active (k + 1), CompletedGroup.projection k (D.wall j).label = 1)
+    (hlabel : ∀ j : D.active (k + 1), TauCeti.CompletedGroup.projection k (D.wall j).label = 1)
     (hout : ∀ j : D.active (k + 1), (D.wall j).Outgoing)
     {x y : WallComplement (fun j : D.active (k + 1) => (D.wall j).support)}
     (p : AdmissiblePLPath x y) : D.levelPathProduct (k + 1) p = 1 := by
@@ -118,9 +118,9 @@ theorem levelPathProduct_eq_one_of_outgoing_of_projection_eq_one {k : ℕ}
   intro j
   rw [LieIdeal.mem_toLieSubalgebra, LieHom.mem_ker]
   have he : (d.lieTruncationMap ℒ (Nat.le_succ k)).bchGroupMap
-      (CompletedGroup.projection (k + 1) (D.wall j).label) =
-        CompletedGroup.projection k (D.wall j).label :=
-    CompletedGroup.map_projection k (k + 1) (Nat.le_succ k) (D.wall j).label
+      (TauCeti.CompletedGroup.projection (k + 1) (D.wall j).label) =
+        TauCeti.CompletedGroup.projection k (D.wall j).label :=
+    TauCeti.CompletedGroup.map_projection k (k + 1) (Nat.le_succ k) (D.wall j).label
   have he' := congrArg (log (L := d.lieTruncation ℒ k)) (he.trans (hlabel j))
   exact ((d.lieTruncationMap ℒ (Nat.le_succ k)).log_bchGroupMap _).symm.trans
     (he'.trans log_one)

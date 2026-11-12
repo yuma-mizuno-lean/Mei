@@ -235,7 +235,7 @@ theorem _root_.TauCeti.PositiveDegrees.projection_reconstructionEquiv_toClass
     (D : ConsistentDiagram (KSSpace.continuousDual h) d ℒ) (k : ℕ)
     (p : AdmissiblePLPath (CommonWallComplement.projection k D.diagram.degreePoint)
       (CommonWallComplement.projection k D.diagram.negDegreePoint)) :
-    CompletedGroup.projection k (d.reconstructionEquiv h ℒ D.toClass) =
+    TauCeti.CompletedGroup.projection k (d.reconstructionEquiv h ℒ D.toClass) =
       (D.diagram.diagram k).toFiniteWallDiagram.pathProduct p :=
   D.diagram.projection_transport D.consistent k p
 

@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mei.RingTheory.FilteredAlgebra.TensorProduct.Completion
-public import Mei.RingTheory.FilteredAlgebra.Exp.Basic
+public import TauCeti.RingTheory.FilteredAlgebra.Exp.Basic
 
 /-!
 # Exponentials in completed tensor products
@@ -25,7 +25,7 @@ public section
 
 open scoped TensorProduct
 
-namespace Mei.AlgFiltration
+namespace TauCeti.AlgFiltration
 
 variable {R A B : Type*} [CommRing R]
   [Ring A] [Ring B] [Algebra R A] [Algebra R B] [Algebra ℚ A]
@@ -68,4 +68,4 @@ theorem completedTensor_completedExp (x : F.completionIdeal 1) (y : G.completion
   exact ((F.tensorProduct R G).completedExp_add _ _
     (F.commute_includeLeftCompletion_includeRightCompletion (R := R) G x y)).symm
 
-end Mei.AlgFiltration
+end TauCeti.AlgFiltration

@@ -102,7 +102,7 @@ theorem LevelConsistent.mono {k l : ℕ} (hD : D.LevelConsistent l) (hkl : k ≤
         simpa only [DirectedWallSpaces.CoordinateChange.refl_degreeEquiv, AddEquiv.refl_apply]
           using hn.trans (Int.ofNat_le.mpr hkl)
   simpa only [image_refl] using hD.image
-    (e := Toric.IntegralAffineEquiv.refl h)
+    (e := TauCeti.Toric.IntegralAffineEquiv.refl h)
     (E := DirectedWallSpaces.CoordinateChange.refl d H) (hE := by simp) ha
 
 /-- Equivalence preserves consistency at every cutoff. -/
@@ -178,7 +178,7 @@ theorem Equivalent.transport_eq (hDE : D.Equivalent E) (hD : D.Consistent)
     (hE : E.Consistent) {x y : D.Point} {x' y' : E.Point}
     (hx : x.val = x'.val) (hy : y.val = y'.val) :
     D.transport hD x y = E.transport hE x' y' := by
-  apply CompletedGroup.ext
+  apply TauCeti.CompletedGroup.ext
   intro k
   simp only [projection_transport_eq_levelTransport]
   exact ((equivalent_iff D E).mp hDE k).levelTransport_eq

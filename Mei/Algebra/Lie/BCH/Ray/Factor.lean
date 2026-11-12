@@ -138,7 +138,7 @@ theorem rayFactor_inv (g : d.completedBCHGroup ℒ) (w : SupportedRay d) :
 
 /-- Only finitely many ray factors of a label are nontrivial at each order. -/
 theorem hasFiniteSupport_rayFactor [HasUniqueDiv N] (g : d.completedBCHGroup ℒ) :
-    CompletedGroup.HasFiniteSupport (d.rayFactor ℒ g) :=
+    TauCeti.CompletedGroup.HasFiniteSupport (d.rayFactor ℒ g) :=
   d.hasFiniteSupport_completedRaySubgroup ℒ fun w =>
     ⟨d.rayFactor ℒ g w, d.rayFactor_mem_completedRaySubgroup ℒ g w⟩
 
@@ -146,7 +146,7 @@ open Classical in
 /-- At order `k`, the logarithm of a ray factor is the class of the sum of the
 coefficients of the label in the actual ray degrees retained at that order. -/
 theorem log_projection_rayFactor (g : d.completedBCHGroup ℒ) (w : SupportedRay d) (k : ℕ) :
-    BCHGroup.log (L := d.lieTruncation ℒ k) (CompletedGroup.projection k (d.rayFactor ℒ g w)) =
+    BCHGroup.log (L := d.lieTruncation ℒ k) (TauCeti.CompletedGroup.projection k (d.rayFactor ℒ g w)) =
       (d.truncationIdeal ℒ k).mkQ (∑ n ∈ (d.finite_cutoff k).toFinset,
         if n ∈ w.rayDegrees then (d.logComponent ℒ g n : L) else 0) := by
   rw [log_projection_eq_mkQ_sum]
@@ -177,8 +177,8 @@ the rays that meet the cutoff. -/
 theorem projection_eq_noncommProd_rayFactor [Module.Free ℤ N] {g : d.completedBCHGroup ℒ}
     (hg : ∀ n m, ⁅(d.logComponent ℒ g n : L), (d.logComponent ℒ g m : L)⁆ = 0)
     (k : ℕ) (s : Finset (SupportedRay d)) (hs : d.raysAtOrder k ⊆ s) :
-    CompletedGroup.projection k g =
-      s.noncommProd (fun w => CompletedGroup.projection k (d.rayFactor ℒ g w))
+    TauCeti.CompletedGroup.projection k g =
+      s.noncommProd (fun w => TauCeti.CompletedGroup.projection k (d.rayFactor ℒ g w))
         (fun v _ w _ _ => (d.commute_rayFactor hg v w).map _) := by
   classical
   let : HasUniqueDiv N := .of_isTorsionFree ℤ N
@@ -209,7 +209,7 @@ theorem projection_eq_noncommProd_rayFactor [Module.Free ℤ N] {g : d.completed
       ite_eq_left hw]
     intro v _ hvw
     exact ite_eq_right fun hv => hvw (SupportedRay.eq_of_mem_rayDegrees hv hw)
-  rw [← BCHGroup.exp_log (L := d.lieTruncation ℒ k) (CompletedGroup.projection k g),
+  rw [← BCHGroup.exp_log (L := d.lieTruncation ℒ k) (TauCeti.CompletedGroup.projection k g),
     log_projection_eq_mkQ_sum, ← hsum, map_sum, BCHGroup.exp_sum_of_lie_eq_zero s _ hx]
   refine Finset.noncommProd_congr rfl (fun w _ => ?_) _
   rw [← d.log_projection_rayFactor ℒ g w k]

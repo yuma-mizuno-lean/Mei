@@ -70,7 +70,7 @@ structure IsRayFactorPresentation {μ : ι → Λ →+ ℤ}
 variable (h) (μ : ι → Λ →+ ℤ) (hμ : ∀ j, μ j ≠ 0) (a : ι → ℝ)
   (g : ι → d.completedBCHGroup (tropicalVertexGrading (R := R) d ρ))
   (hg : ∀ j w, d.rayFactor _ (g j) w ∈ (tropicalVertexWallSpaces d ρ).wallGroup w (μ j))
-  (hfin : CompletedGroup.HasFiniteSupport
+  (hfin : TauCeti.CompletedGroup.HasFiniteSupport
     fun x : Σ j, {w : SupportedRay d // μ j (ρ w.generator) = 0} =>
       d.rayFactor (tropicalVertexGrading (R := R) d ρ) (g x.1) x.2.val)
 
@@ -136,7 +136,7 @@ logarithm. -/
 theorem familyLog_ofHyperplaneRayFactors [Module.Free ℤ Γ] (k : ℕ) (j : ι) :
     (ofHyperplaneRayFactors h μ hμ a g hg hfin).familyLog Sigma.fst k j =
       BCHGroup.log (L := d.lieTruncation (tropicalVertexGrading (R := R) d ρ) k)
-        (CompletedGroup.projection k (g j)) := by
+        (TauCeti.CompletedGroup.projection k (g j)) := by
   classical
   let : HasUniqueDiv Γ := .of_isTorsionFree ℤ _
   let A := (d.finite_raysAtOrder k).toFinset
@@ -160,7 +160,7 @@ theorem familyLog_ofHyperplaneRayFactors [Module.Free ℤ Γ] (k : ℕ) (j : ι)
   simp only [Function.Embedding.sigmaMk_apply, ofHyperplaneRayFactors_label]
   rw [Finset.sum_subtype_eq_sum_filter (fun w => BCHGroup.log
       (L := d.lieTruncation (tropicalVertexGrading (R := R) d ρ) k)
-      (CompletedGroup.projection k (d.rayFactor _ (g j) w))),
+      (TauCeti.CompletedGroup.projection k (d.rayFactor _ (g j) w))),
     Finset.sum_filter_of_ne fun w _ hw => ?_]
   by_contra hn
   have h1 := hg j w

@@ -30,9 +30,13 @@ Unbounded cells and lineality are allowed.
 
 public section
 
+open TauCeti (OrientedCell PolyhedralCochain)
+
 noncomputable section
 
-namespace Mei.OrientedCell
+namespace TauCeti.OrientedCell
+
+open Mei
 
 open Module
 
@@ -73,14 +77,14 @@ theorem boundaryFacets_sweep (σ : OrientedCell h (k + 1)) (n : N)
     · obtain ⟨υ, _, rfl⟩ := Finset.mem_image.mp hτ
       obtain ⟨F, hF, hne, hdim, he⟩ := (σ.mem_boundaryFacets υ.val).mp υ.property
       have hnF : i n ∉ vectorSpan ℝ F := fun hm => hnP (vectorSpan_mono ℝ hF.subset hm)
-      have hGF : IsExposed ℝ (σ.sweep n hn).carrier (Convex.sweep F (i n)) := by
+      have hGF : IsExposed ℝ (σ.sweep n hn).carrier (Set.sweep ℝ F (i n)) := by
         simpa only [sweep_carrier] using hF.sweep_of_transverse hnP
-      have hdGF : finrank ℝ (vectorSpan ℝ (Convex.sweep F (i n))) + 1 =
+      have hdGF : finrank ℝ (vectorSpan ℝ (Set.sweep ℝ F (i n))) + 1 =
           finrank ℝ (vectorSpan ℝ (σ.sweep n hn).carrier) := by
-        rw [sweep_carrier, Convex.finrank_sweep hne hnF,
-          Convex.finrank_sweep σ.nonempty hnP, hdim]
+        rw [sweep_carrier, Set.finrank_vectorSpan_sweep (𝕜 := ℝ) hne hnF,
+          Set.finrank_vectorSpan_sweep (𝕜 := ℝ) σ.nonempty hnP, hdim]
       have hmem := (σ.sweep n hn).boundaryFacet_mem_boundaryFacets hGF
-        (Convex.sweep_nonempty hne (i n)) hdGF
+        (Set.Nonempty.sweep (𝕜 := ℝ) hne (i n)) hdGF
       rw [σ.boundaryFacet_sweep_side n hn hF hne hdim] at hmem
       simpa only [he] using hmem
 
@@ -91,7 +95,7 @@ private theorem swept_boundaryFacets_injective (σ : OrientedCell h (k + 1)) (n 
   intro τ υ he
   apply Subtype.ext
   apply σ.carrier_injOn_boundaryFacets τ.property υ.property
-  exact (Convex.sweep_eq_sweep_iff_of_subset
+  exact (Set.sweep_eq_sweep_iff_of_subset
     (by simpa only [direction_affineSpan] using hn)
     (σ.carrier_subset_of_mem_boundaryFacets τ.property)
     (σ.carrier_subset_of_mem_boundaryFacets υ.property)).mp
@@ -106,9 +110,9 @@ private theorem reverse_notMem_swept_boundaryFacets (σ : OrientedCell h (k + 1)
   have := h.finiteDimensional
   rintro hmem
   obtain ⟨τ, _, he⟩ := Finset.mem_image.mp hmem
-  have hc : Convex.sweep τ.val.carrier (i n) = σ.carrier := by
+  have hc : Set.sweep ℝ τ.val.carrier (i n) = σ.carrier := by
     simpa only [reverse_carrier, sweep_carrier] using congrArg carrier he
-  have hd := Convex.vectorSpan_sweep τ.val.nonempty (i n)
+  have hd := Set.vectorSpan_sweep (𝕜 := ℝ) τ.val.nonempty (i n)
   rw [hc] at hd
   apply hn
   rw [direction_affineSpan, hd]
@@ -155,9 +159,11 @@ theorem cellCoboundary_sweep_add_sweep_cellCoboundary (σ : OrientedCell h (k + 
   simp only [PolyhedralCochain.mk_reverse, Finset.sum_neg_distrib, Finset.univ_eq_attach]
   abel
 
-end Mei.OrientedCell
+end TauCeti.OrientedCell
 
-namespace Mei.PolyhedralCochain
+namespace TauCeti.PolyhedralCochain
+
+open Mei
 
 variable {N V ι : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
@@ -202,4 +208,4 @@ theorem coboundaryOfFinsupp_sum_sweep_of_coboundary_eq_zero [Fintype ι]
   rw [hboundary, map_zero, add_zero] at hsum
   exact hsum
 
-end Mei.PolyhedralCochain
+end TauCeti.PolyhedralCochain

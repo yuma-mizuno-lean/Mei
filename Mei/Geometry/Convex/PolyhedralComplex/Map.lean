@@ -30,12 +30,12 @@ variable {N N' V W : Type*} [AddCommGroup N] [AddCommGroup N']
 
 /-- Integral affine equivalences preserve nonempty polyhedral faces. -/
 theorem IsPolyhedralFace.image {P F : Set V} (hF : IsPolyhedralFace P F)
-    (e : Toric.IntegralAffineEquiv h h') : IsPolyhedralFace (e '' P) (e '' F) := by
+    (e : TauCeti.Toric.IntegralAffineEquiv h h') : IsPolyhedralFace (e '' P) (e '' F) := by
   obtain ⟨hne, hex⟩ := isPolyhedralFace_iff.mp hF
   exact isPolyhedralFace_iff.mpr ⟨hne.image e, hex.image_integralAffineEquiv e⟩
 
 /-- Integral affine equivalences preserve and reflect nonempty faces. -/
-theorem isPolyhedralFace_image_iff {P F : Set V} (e : Toric.IntegralAffineEquiv h h') :
+theorem isPolyhedralFace_image_iff {P F : Set V} (e : TauCeti.Toric.IntegralAffineEquiv h h') :
     IsPolyhedralFace (e '' P) (e '' F) ↔ IsPolyhedralFace P F := by
   constructor
   · intro hF
@@ -48,7 +48,8 @@ theorem isPolyhedralFace_image_iff {P F : Set V} (e : Toric.IntegralAffineEquiv 
 namespace FinitePolyhedralComplex
 
 /-- Transport the finite collection of actual cells by an integral affine equivalence. -/
-noncomputable def image (C : FinitePolyhedralComplex h) (e : Toric.IntegralAffineEquiv h h') :
+noncomputable def image (C : FinitePolyhedralComplex h)
+    (e : TauCeti.Toric.IntegralAffineEquiv h h') :
     FinitePolyhedralComplex h' := by
   classical
   refine ⟨C.cells.image (fun P => e '' P), ?_, ?_, ?_, ?_⟩
@@ -84,20 +85,20 @@ noncomputable def image (C : FinitePolyhedralComplex h) (e : Toric.IntegralAffin
 
 /-- Cell transport is the finite image of the original cell carriers. -/
 @[simp]
-theorem image_cells (C : FinitePolyhedralComplex h) (e : Toric.IntegralAffineEquiv h h') :
+theorem image_cells (C : FinitePolyhedralComplex h) (e : TauCeti.Toric.IntegralAffineEquiv h h') :
     (C.image e).cells = C.cells.image (fun P => e '' P) := by
   classical
   rfl
 
 /-- A transported cell is exactly the image of one original cell. -/
-theorem mem_cells_image {C : FinitePolyhedralComplex h} {e : Toric.IntegralAffineEquiv h h'}
+theorem mem_cells_image {C : FinitePolyhedralComplex h} {e : TauCeti.Toric.IntegralAffineEquiv h h'}
     {P : Set W} : P ∈ (C.image e).cells ↔ ∃ Q ∈ C.cells, e '' Q = P := by
   classical
   rw [image_cells, Finset.mem_image]
 
 /-- The support of the transported complex is exactly the affine image of its support. -/
 @[simp]
-theorem support_image (C : FinitePolyhedralComplex h) (e : Toric.IntegralAffineEquiv h h') :
+theorem support_image (C : FinitePolyhedralComplex h) (e : TauCeti.Toric.IntegralAffineEquiv h h') :
     (C.image e).support = e '' C.support := by
   ext x
   simp only [mem_support, mem_cells_image, Set.mem_image]
@@ -106,7 +107,7 @@ theorem support_image (C : FinitePolyhedralComplex h) (e : Toric.IntegralAffineE
 /-- Transport by the integral affine identity recovers the original complex. -/
 @[simp]
 theorem image_refl (C : FinitePolyhedralComplex h) :
-    C.image (Toric.IntegralAffineEquiv.refl h) = C := by
+    C.image (TauCeti.Toric.IntegralAffineEquiv.refl h) = C := by
   apply ext
   simp [image_cells]
 
@@ -114,8 +115,8 @@ variable {N'' U : Type*} [AddCommGroup N''] [NormedAddCommGroup U] [NormedSpace 
   {i'' : N'' →+ U} {h'' : TauCeti.Toric.IsIntegralLattice i''}
 
 /-- Transport by successive equivalences agrees with transport by their composition. -/
-theorem image_trans (C : FinitePolyhedralComplex h) (e : Toric.IntegralAffineEquiv h h')
-    (f : Toric.IntegralAffineEquiv h' h'') :
+theorem image_trans (C : FinitePolyhedralComplex h) (e : TauCeti.Toric.IntegralAffineEquiv h h')
+    (f : TauCeti.Toric.IntegralAffineEquiv h' h'') :
     (C.image e).image f = C.image (e.trans f) := by
   classical
   apply ext
@@ -130,14 +131,14 @@ theorem image_trans (C : FinitePolyhedralComplex h) (e : Toric.IntegralAffineEqu
 
 /-- Transporting by an equivalence and its inverse recovers the complex. -/
 @[simp]
-theorem image_symm (C : FinitePolyhedralComplex h) (e : Toric.IntegralAffineEquiv h h') :
+theorem image_symm (C : FinitePolyhedralComplex h) (e : TauCeti.Toric.IntegralAffineEquiv h h') :
     (C.image e).image e.symm = C := by
   rw [image_trans]
   simp
 
 /-- Integral affine transport preserves cellwise weak refinement. -/
 theorem IsWeakRefinement.image {C D : FinitePolyhedralComplex h} (hCD : C.IsWeakRefinement D)
-    (e : Toric.IntegralAffineEquiv h h') : (C.image e).IsWeakRefinement (D.image e) := by
+    (e : TauCeti.Toric.IntegralAffineEquiv h h') : (C.image e).IsWeakRefinement (D.image e) := by
   rw [isWeakRefinement_iff] at hCD ⊢
   intro P hP
   obtain ⟨Q, hQ, rfl⟩ := mem_cells_image.mp hP
@@ -146,14 +147,14 @@ theorem IsWeakRefinement.image {C D : FinitePolyhedralComplex h} (hCD : C.IsWeak
 
 /-- Integral affine transport preserves subdivisions and their exact support equality. -/
 theorem IsSubdivision.image {C D : FinitePolyhedralComplex h} (hCD : C.IsSubdivision D)
-    (e : Toric.IntegralAffineEquiv h h') : (C.image e).IsSubdivision (D.image e) := by
+    (e : TauCeti.Toric.IntegralAffineEquiv h h') : (C.image e).IsSubdivision (D.image e) := by
   obtain ⟨href, hsupport⟩ := isSubdivision_iff.mp hCD
   apply isSubdivision_iff.mpr
   exact ⟨href.image e, by rw [support_image, support_image, hsupport]⟩
 
 /-- Affine transport preserves every exact ambient cell codimension. -/
 theorem mem_cellsOfCodimension_image (C : FinitePolyhedralComplex h)
-    (e : Toric.IntegralAffineEquiv h h') (k : ℕ) (Q : Set W) :
+    (e : TauCeti.Toric.IntegralAffineEquiv h h') (k : ℕ) (Q : Set W) :
     Q ∈ (C.image e).cellsOfCodimension k ↔
       ∃ P ∈ C.cellsOfCodimension k, e '' P = Q := by
   have hd (P : Set V) : Module.finrank ℝ (affineSpan ℝ (e '' P)).direction =
@@ -173,7 +174,7 @@ theorem mem_cellsOfCodimension_image (C : FinitePolyhedralComplex h)
 
 /-- The bijection from original walls to their actual affine image carriers. -/
 noncomputable def wallImageEquiv (C : FinitePolyhedralComplex h)
-    (e : Toric.IntegralAffineEquiv h h') : C.walls ≃ (C.image e).walls :=
+    (e : TauCeti.Toric.IntegralAffineEquiv h h') : C.walls ≃ (C.image e).walls :=
   Equiv.ofBijective
     (fun P => ⟨e '' (P : Set V), (C.mem_cellsOfCodimension_image e 1 _).mpr
       ⟨P, P.property, rfl⟩⟩)
@@ -185,18 +186,18 @@ noncomputable def wallImageEquiv (C : FinitePolyhedralComplex h)
 
 @[simp]
 theorem wallImageEquiv_coe (C : FinitePolyhedralComplex h)
-    (e : Toric.IntegralAffineEquiv h h') (P : C.walls) :
+    (e : TauCeti.Toric.IntegralAffineEquiv h h') (P : C.walls) :
     (C.wallImageEquiv e P : Set W) = e '' (P : Set V) := (rfl)
 
 /-- The inverse wall bijection takes the inverse image carrier. -/
 @[simp]
 theorem wallImageEquiv_symm_coe (C : FinitePolyhedralComplex h)
-    (e : Toric.IntegralAffineEquiv h h') (Q : (C.image e).walls) :
+    (e : TauCeti.Toric.IntegralAffineEquiv h h') (Q : (C.image e).walls) :
     ((C.wallImageEquiv e).symm Q : Set V) = e.symm '' (Q : Set W) := by
   have he := C.wallImageEquiv_coe e ((C.wallImageEquiv e).symm Q)
   rw [Equiv.apply_symm_apply] at he
   have hi := congrArg (fun P : Set W => e.symm '' P) he
-  simpa only [Mei.Toric.IntegralAffineEquiv.symm_image_image] using hi.symm
+  simpa only [TauCeti.Toric.IntegralAffineEquiv.symm_image_image] using hi.symm
 
 end FinitePolyhedralComplex
 

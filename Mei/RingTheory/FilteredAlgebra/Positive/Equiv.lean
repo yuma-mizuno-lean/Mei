@@ -6,7 +6,7 @@ Authors: Claude Code
 module
 
 public import Mei.RingTheory.FilteredAlgebra.Positive.Basic
-public import Mei.RingTheory.FilteredAlgebra.Equiv
+public import TauCeti.RingTheory.FilteredAlgebra.Equiv
 
 /-!
 # Positivity along filtered algebra equivalences
@@ -22,7 +22,9 @@ The proof uses `Mei.PositiveSpecialization.map_isPositive` to transport positivi
 
 public section
 
-namespace Mei.AlgFiltration
+namespace TauCeti.AlgFiltration
+
+open Mei
 
 variable {R A B : Type*} [CommRing R] [Ring A] [Algebra R A] [Ring B] [Algebra R B]
   {F : AlgFiltration A} {G : AlgFiltration B} {e : A ≃ₐ[R] B}
@@ -53,8 +55,8 @@ matches the chosen subsemirings. -/
 theorem isPositive_completionEquiv_iff (hP : ∀ a, e a ∈ P' ↔ a ∈ P) (x : F.completion) :
     G.IsPositive P' (F.completionEquiv G e he x) ↔ F.IsPositive P x := by
   refine ⟨fun hx => ?_, IsPositive.completionEquiv fun a ha => (hP a).mpr ha⟩
-  have h := hx.completionEquiv (he := F.comap_ideal_equiv_symm G e he)
+  have h := hx.completionEquiv (he := F.ideal_comap_symm G e he)
     (fun b hb => (hP _).mp (by simpa only [AlgEquiv.apply_symm_apply] using hb))
   rwa [← completionEquiv_symm, AlgEquiv.symm_apply_apply] at h
 
-end Mei.AlgFiltration
+end TauCeti.AlgFiltration

@@ -28,7 +28,9 @@ open TauCeti (PositiveDegrees IsPositiveGrading)
 
 attribute [local instance] LieRing.ofAssociativeRing
 
-namespace Mei.AlgFiltration
+namespace TauCeti.AlgFiltration
+
+open Mei
 
 variable {N R L A : Type*} [AddCommMonoid N] [CommRing R]
   [LieRing L] [LieAlgebra R L] [Ring A] [Algebra R A]
@@ -79,4 +81,4 @@ theorem factor_quotientLieAction {k l : ℕ} (h : k ≤ l) (x : L)
   obtain ⟨a, rfl⟩ := Ideal.Quotient.mk_surjective q
   simp
 
-end Mei.AlgFiltration
+end TauCeti.AlgFiltration

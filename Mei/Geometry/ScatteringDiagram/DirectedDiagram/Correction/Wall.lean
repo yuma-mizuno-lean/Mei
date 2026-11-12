@@ -64,13 +64,13 @@ theorem exists_outgoingWall_joint_obstruction {k : ℕ} {J : Set V}
         let c := (DirectSum.decompose (d.lieTruncationGrading ℒ k)
           (log (D.levelPathProduct k p)) n : d.lieTruncation ℒ k)
         c ≠ 0 → ∃ (W : DirectedWall (d := d) h H) (a : L),
-          W.Outgoing ∧ W.support = Convex.sweep J (i (ρ n)) ∧ n ∈ W.ray.rayDegrees ∧
+          W.Outgoing ∧ W.support = Set.sweep ℝ J (i (ρ n)) ∧ n ∈ W.ray.rayDegrees ∧
           (h.realCharacter W.normal).ker = (affineSpan ℝ J).direction ⊔ ℝ ∙ i (ρ n) ∧
           a ∈ H.wall n W.normal ∧ W.label = d.expToCompletion ℒ (-a) ∧
           (d.truncationIdeal ℒ k).mkQ a = c ∧
-          (∀ l : ℕ, l < k → CompletedGroup.projection l W.label = 1) ∧
-          log (CompletedGroup.projection k W.label) = -c ∧
-          CompletedGroup.projection k W.label ≠ 1 := by
+          (∀ l : ℕ, l < k → TauCeti.CompletedGroup.projection l W.label = 1) ∧
+          log (TauCeti.CompletedGroup.projection k W.label) = -c ∧
+          TauCeti.CompletedGroup.projection k W.label ≠ 1 := by
   obtain ⟨r, hr, hlocal⟩ := P.exists_pos_joint_loop_obstruction hJ hq
   refine ⟨r, hr, fun x p hp n hn => ?_⟩
   dsimp only
@@ -94,7 +94,7 @@ theorem exists_outgoingWall_joint_obstruction {k : ℕ} {J : Set V}
   obtain ⟨W, hnormal, hray, hsupp, hlabel, hout, hborn⟩ :=
     DirectedWall.exists_outgoing_sweep ((D.adaptedComplex k).rational J hcell.1)
       ((D.adaptedComplex k).nonempty J hcell.1) hw htrans hm hker ((H.wall n m).neg_mem ha)
-  have hlog : log (CompletedGroup.projection k W.label) = -c := by
+  have hlog : log (TauCeti.CompletedGroup.projection k W.label) = -c := by
     rw [hlabel, PositiveDegrees.projection_expToCompletion, log_exp, map_neg]
     exact congrArg Neg.neg he
   refine ⟨W, a, hout, hsupp, hray ▸ hw, hnormal ▸ hker, hnormal ▸ ha,

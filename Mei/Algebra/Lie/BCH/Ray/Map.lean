@@ -71,7 +71,7 @@ theorem completedMap_mem_completedRaySubgroup (f : GradedLieHom T ℒ ℳ)
   intro k
   rw [projection_completedMap]
   have hlog := (f.lieTruncatedMap k le_rfl).log_bchGroupMap
-    (CompletedGroup.projection (T.modulus k) g)
+    (TauCeti.CompletedGroup.projection (T.modulus k) g)
   exact hlog.symm ▸ f.lieTruncatedMap_mem_rayLieSubalgebra hdegree le_rfl
     ((d.mem_completedRaySubgroup ℒ w g).mp hg (T.modulus k))
 
@@ -130,11 +130,11 @@ theorem completedMap_eq_self_of_mem_completedRaySubgroup
     (hf : ∀ n ∈ w.rayDegrees, ∀ x ∈ ℒ n, f x = x)
     {g : d.completedBCHGroup ℒ} (hg : g ∈ d.completedRaySubgroup ℒ w) :
     f.completedMap g = g := by
-  apply CompletedGroup.ext
+  apply TauCeti.CompletedGroup.ext
   intro k
   rw [f.projection_completedMap_of_le k (a := k) (by simp)]
   -- Read the tower projection as an element of the concrete finite BCH group.
-  let y : d.truncatedGroup ℒ k := CompletedGroup.projection k g
+  let y : d.truncatedGroup ℒ k := TauCeti.CompletedGroup.projection k g
   apply BCHGroup.log_injective
   refine ((f.lieTruncatedMap (a := k) k (by simp)).log_bchGroupMap y).trans ?_
   have hle : (rayLieSubalgebra (d.lieTruncationGrading ℒ k) w).toSubmodule ≤

@@ -5,7 +5,7 @@ Authors: Claude
 -/
 module
 
-public import Mei.LinearAlgebra.GradedCorrespondence.Basic
+public import TauCeti.LinearAlgebra.GradedCorrespondence.Basic
 public import Mei.LinearAlgebra.GradedModule.History.Path
 
 /-!
@@ -37,7 +37,9 @@ The single-step formula is `decompose_right_liftLeftTotal_of_mem`.
 
 public noncomputable section
 
-namespace Mei.GradedCorrespondence
+namespace TauCeti.GradedCorrespondence
+
+open Mei
 
 variable {R : Type*} [Semiring R] {Q : Type*} [Quiver Q]
   {M : Q → Type*} [∀ q, AddCommMonoid (M q)] [∀ q, Module R (M q)]
@@ -71,4 +73,4 @@ theorem homogeneousHistory_totalTransfer_cons_eq_zero_of_notMem {a b c : Q}
   classical
   rw [homogeneousHistory_totalTransfer_cons_apply ℳ C p e d j x hx, dite_eq_right hi]
 
-end Mei.GradedCorrespondence
+end TauCeti.GradedCorrespondence

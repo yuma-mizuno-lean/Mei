@@ -45,8 +45,6 @@ open TauCeti (PositiveDegrees PositiveDegreeMap SupportedRay)
 
 namespace TauCeti.PositiveDegrees.Examples
 
-open Mei
-
 /-- Projection to the second coordinate, with values in the one-dimensional lattice. -/
 def wedgeProjection : (ℤ × ℤ) →+ (Unit → ℤ) :=
   AddMonoidHom.pi fun _ => AddMonoidHom.snd ℤ ℤ

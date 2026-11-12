@@ -22,9 +22,11 @@ including joints, rather than requiring a choice of defining equations as input.
 
 public section
 
+open TauCeti (IsRationalNormalPolyhedron RationalAffinePolyhedron isRationalNormalPolyhedron_iff)
+
 open Set
 
-namespace Mei.IsRationalNormalPolyhedron
+namespace TauCeti.IsRationalNormalPolyhedron
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i} {P : Set V}
@@ -86,4 +88,4 @@ theorem exists_direction_eq_inf_ker (hP : IsRationalNormalPolyhedron h P)
   ext v
   simp only [Submodule.mem_iInf, Submodule.mem_inf, LinearMap.mem_ker, Fin.forall_fin_two]
 
-end Mei.IsRationalNormalPolyhedron
+end TauCeti.IsRationalNormalPolyhedron

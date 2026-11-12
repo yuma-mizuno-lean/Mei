@@ -75,7 +75,7 @@ private theorem eventProduct_eq_adapted_factor (e : x ⟶ y)
     {a : (D.adaptedComplex k).walls × ℝ}
     (ha : a ∈ (D.adaptedComplex k).orderedCrossings e) :
     crossingEventProduct (fun j : D.active k => h.realCharacter (D.wall j).normal)
-        (fun j => CompletedGroup.projection k (D.wall j).label)
+        (fun j => TauCeti.CompletedGroup.projection k (D.wall j).label)
         (D.activeLabels_commute k) ((D.adaptedPathPrefunctor k).map e) a.2 =
       if 0 < ν a.1 (y.val - x.val) then
         ((D.adaptedDiagram k ν hν).label a.1)⁻¹

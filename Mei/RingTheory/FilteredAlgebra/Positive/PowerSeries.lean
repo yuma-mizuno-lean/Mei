@@ -23,7 +23,7 @@ element of `P`. When `-1 ∈ P`, the inverse `∑ (-x)ʲ` of the unit `1 + x` is
 
 public section
 
-namespace Mei.AlgFiltration
+namespace TauCeti.AlgFiltration
 
 variable {R B : Type*} [CommRing R] [Ring B] [Algebra R B] {F : AlgFiltration B}
   {P : Subsemiring B}
@@ -61,4 +61,4 @@ theorem IsPositive.inv_of_val_eq_one_add {x : F.completionIdeal 1}
   rw [Units.inv_eq_of_mul_eq_one_left h]
   exact hx.completedAeval fun j => by simpa using _root_.pow_mem hP j
 
-end Mei.AlgFiltration
+end TauCeti.AlgFiltration

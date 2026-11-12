@@ -7,7 +7,7 @@ module
 
 public import TauCeti.Algebra.PositiveDegrees.Grading
 public import Mei.Algebra.PositiveDegrees.Basic
-public import Mei.Algebra.DirectSum.Degree.Basic
+public import TauCeti.Algebra.DirectSum.DegreeTail
 
 /-!
 # Degree submodules of positive gradings
@@ -21,22 +21,20 @@ open TauCeti (PositiveDegrees IsPositiveGrading)
 
 namespace TauCeti.PositiveDegrees
 
-open Mei
-
 variable {N R M : Type*} [AddCommMonoid N] [Semiring R] [AddCommMonoid M] [Module R M]
   (d : PositiveDegrees N) (ℒ : N → Submodule R M)
 
 /-- Strict positive cutoffs are the corresponding successor degree tails. -/
 theorem degreeSubmodule_eq_degreeTail (k : ℕ) :
-    d.degreeSubmodule ℒ k = Mei.DirectSum.degreeTail ℒ d.degree (k + 1) := by
+    d.degreeSubmodule ℒ k = TauCeti.DirectSum.degreeTail ℒ d.degree (k + 1) := by
   apply le_antisymm
   · rw [degreeSubmodule_def]
     apply iSup_le
     intro n
-    apply Mei.DirectSum.le_degreeTail
+    apply TauCeti.DirectSum.le_degreeTail
     have := n.property
     omega
-  · rw [Mei.DirectSum.degreeTail_def]
+  · rw [TauCeti.DirectSum.degreeTail_def]
     refine iSup_le fun n => iSup_le fun hn => ?_
     apply d.le_degreeSubmodule ℒ
     omega

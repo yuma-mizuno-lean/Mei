@@ -95,7 +95,7 @@ theorem realCharacter_projectedPrincipalNormal (n : D.unfrozen) :
 
 omit [Module.Free ℤ N] in
 /-- The restriction is rational for the integral lattices `M°` and `Hom(N_uf, ℤ)`. -/
-theorem isRationalLinearMap : Toric.IsRationalLinearMap h hj A.toLinearMap := by
+theorem isRationalLinearMap : TauCeti.Toric.IsRationalLinearMap h hj A.toLinearMap := by
   set c := D.sublattice.toAddSubgroup.index
   have hc : (c : ℝ) ≠ 0 := by exact_mod_cast AddSubgroup.FiniteIndex.index_ne_zero
   let g : D.unfrozen →+ D.sublattice :=
@@ -117,9 +117,9 @@ theorem isRationalLinearMap : Toric.IsRationalLinearMap h hj A.toLinearMap := by
     rw [he]
     -- The right side unfolds to `m` evaluated at `c • n`, as in `he`.
     rfl
-  rw [Toric.isRationalLinearMap_iff]
+  rw [TauCeti.Toric.isRationalLinearMap_iff]
   intro f hf
-  have hr := (Toric.IsRationalLinearMap.of_integral_compatible h hj u _ hu).map_functional hf
+  have hr := (TauCeti.Toric.IsRationalLinearMap.of_integral_compatible h hj u _ hu).map_functional hf
   have he : f.comp A.toLinearMap =
       (((c : ℚ)⁻¹ : ℚ) : ℝ) • f.comp ((c : ℝ) • A.toLinearMap) := by
     ext x
@@ -294,7 +294,7 @@ def projectedDiagram (P : IndexedWallPresentation s d ℒ ι) :
   wall a := A.projectedWall (P.wall a)
   finite_active := by
     -- The labels of the projected walls are the graph images of the KS labels by definition.
-    change CompletedGroup.HasFiniteSupport fun a => d.graphBCHGroupEquiv ℒ p₁ (P.wall a).label
+    change TauCeti.CompletedGroup.HasFiniteSupport fun a => d.graphBCHGroupEquiv ℒ p₁ (P.wall a).label
     simpa only [← PositiveDegrees.graphBCHGroupEquiv_apply] using
       (graphGradedLieHom ℒ p₁ d).hasFiniteSupport_completedMap P.finite_active
 
@@ -364,8 +364,8 @@ theorem levelLift_comp_levelProjection (k : ℕ) :
 theorem commute_projection_label (k : ℕ) (a b : (A.projectedDiagram P).active k)
     (hab : affineSpan ℝ ((A.projectedDiagram P).wall a).support =
       affineSpan ℝ ((A.projectedDiagram P).wall b).support) :
-    Commute (CompletedGroup.projection k (P.wall a).label)
-      (CompletedGroup.projection k (P.wall b).label) := by
+    Commute (TauCeti.CompletedGroup.projection k (P.wall a).label)
+      (TauCeti.CompletedGroup.projection k (P.wall b).label) := by
   refine Commute.of_map (d.graphTruncatedGroupEquiv ℒ p₁ k).injective ?_
   have hF := (A.projectedDiagram P).activeLabels_commute k a b hab
   rwa [projectedDiagram_wall, projectedDiagram_wall, projectedWall_label, projectedWall_label,
@@ -380,7 +380,7 @@ theorem levelPathProduct_projectedDiagram_eq_wallPathProduct (k : ℕ)
     (A.projectedDiagram P).levelPathProduct k p =
       p.wallPathProduct (fun a : (A.projectedDiagram P).active k =>
           (s.normal (P.wall a).ray.generator).comp A.toLinearMap)
-        (fun a => d.graphTruncatedGroupEquiv ℒ p₁ k (CompletedGroup.projection k (P.wall a).label))
+        (fun a => d.graphTruncatedGroupEquiv ℒ p₁ k (TauCeti.CompletedGroup.projection k (P.wall a).label))
         (fun a b hab => (A.commute_projection_label P k a b hab).map _) := by
   let := h.finiteDimensional
   have hν : (fun a : (A.projectedDiagram P).active k =>
@@ -419,7 +419,7 @@ theorem levelPathProduct_projectedDiagram (k : ℕ)
   refine Eq.trans ?_ (congrArg _ (Quiver.Path.wallPathProduct_preimageProjection A.toLinearMap
     A.surjective (Set.equivOfEq (A.projectedDiagram_active P k)) (fun _ => rfl)
     (fun a : P.active k => s.normal (P.wall a).ray.generator)
-    (fun a : P.active k => CompletedGroup.projection k (P.wall a).label)
+    (fun a : P.active k => TauCeti.CompletedGroup.projection k (P.wall a).label)
     (P.activeLabels_commute k) (A.commute_projection_label P k) p).symm)
   exact (Quiver.Path.map_wallPathProduct _ _ _ (d.graphTruncatedGroupEquiv ℒ p₁ k).toMonoidHom
     p).symm

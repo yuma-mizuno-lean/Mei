@@ -29,6 +29,9 @@ Lie element whose finitely many components can be rescaled.
 
 public section
 
+open TauCeti.UniversalEnvelopingAlgebra (augmentation_le_degreeFiltration_one degreeFiltration
+  degreeFiltration_ideal homogeneousSubmodule)
+
 open TauCeti (PositiveDegrees IsPositiveGrading)
 
 open scoped TensorProduct
@@ -100,19 +103,19 @@ theorem exists_sub_ι_mem_degreeFiltration_of_dynkin_sub_mem {a : U} {k : ℕ}
     ∃ x : L, a - ι x ∈ (F).ideal k := by
   obtain ⟨x, hx⟩ := (E).dynkinOperator_mem_range_ι a
   simp only [LieHom.coe_toLinearMap] at hx
-  rw [degreeFiltration_ideal, Mei.GradedAlgebra.mem_truncationIdeal_iff,
-    Mei.DirectSum.mem_degreeTail_iff] at ha
+  rw [degreeFiltration_ideal, TauCeti.GradedAlgebra.mem_degreeIdeal_iff,
+    TauCeti.DirectSum.mem_degreeTail_iff] at ha
   refine ⟨inverseEuler ℒ d x, ?_⟩
-  rw [degreeFiltration_ideal, Mei.GradedAlgebra.mem_truncationIdeal_iff,
-    Mei.DirectSum.mem_degreeTail_iff]
+  rw [degreeFiltration_ideal, TauCeti.GradedAlgebra.mem_degreeIdeal_iff,
+    TauCeti.DirectSum.mem_degreeTail_iff]
   intro n hn
   apply component_sub_inverseEuler_eq_zero ℒ d a x n
     (fun hzero => ha n (by omega))
   have he : (Y : Module.End R U) a - ι x ∈ (F).ideal k := by
     rw [hx]
     simpa only [neg_sub] using ((F).ideal k).neg_mem h
-  rw [degreeFiltration_ideal, Mei.GradedAlgebra.mem_truncationIdeal_iff,
-    Mei.DirectSum.mem_degreeTail_iff] at he
+  rw [degreeFiltration_ideal, TauCeti.GradedAlgebra.mem_degreeIdeal_iff,
+    TauCeti.DirectSum.mem_degreeTail_iff] at he
   exact he n hn
 
 /-- An exact Dynkin-Euler identity for a positive-degree element recovers an exact
@@ -122,8 +125,8 @@ theorem exists_ι_eq_of_dynkin_eq {a : U} (ha : a ∈ (F).ideal 1)
   obtain ⟨x, hx⟩ := (E).dynkinOperator_mem_range_ι a
   simp only [LieHom.coe_toLinearMap] at hx
   have he : (Y : Module.End R U) a = ι x := h.symm.trans hx.symm
-  rw [degreeFiltration_ideal, Mei.GradedAlgebra.mem_truncationIdeal_iff,
-    Mei.DirectSum.mem_degreeTail_iff] at ha
+  rw [degreeFiltration_ideal, TauCeti.GradedAlgebra.mem_degreeIdeal_iff,
+    TauCeti.DirectSum.mem_degreeTail_iff] at ha
   refine ⟨inverseEuler ℒ d x, ?_⟩
   have hz : a - ι (inverseEuler ℒ d x) = 0 := by
     apply (DirectSum.decomposeLinearEquiv 𝒰).injective
@@ -159,16 +162,16 @@ theorem exists_truncatedLieToU_eq_iff (k : ℕ) (z : U ⧸ (Fₚ).ideal (k + 1))
     (∃ x : p.lieTruncation ℒ k, truncatedLieToU p ℒ k x = z) ↔
       quotientCounit ℒ p.degree _ k z = 0 ∧
         quotientCoproduct ℒ p.degree _ (k + 1) z =
-          Mei.AlgFiltration.quotientIncludeLeft R (Fₚ) (Fₚ) (k + 1) z +
-            Mei.AlgFiltration.quotientIncludeRight R (Fₚ) (Fₚ) (k + 1) z := by
+          TauCeti.AlgFiltration.quotientIncludeLeft R (Fₚ) (Fₚ) (k + 1) z +
+            TauCeti.AlgFiltration.quotientIncludeRight R (Fₚ) (Fₚ) (k + 1) z := by
   constructor
   · rintro ⟨x, rfl⟩
     obtain ⟨a, rfl⟩ := (p.truncationIdeal ℒ k).surjective_mkQ x
     rw [LieIdeal.mkQ_apply, truncatedLieToU_mk]
     constructor
     · simp only [quotientCounit_mk, TauCeti.UniversalEnvelopingAlgebra.counit_ι]
-    · simp only [quotientCoproduct_mk, Mei.AlgFiltration.quotientIncludeLeft_mk,
-        Mei.AlgFiltration.quotientIncludeRight_mk,
+    · simp only [quotientCoproduct_mk, TauCeti.AlgFiltration.quotientIncludeLeft_mk,
+        TauCeti.AlgFiltration.quotientIncludeRight_mk,
         TauCeti.UniversalEnvelopingAlgebra.comul_ι, map_add]
   · obtain ⟨a, rfl⟩ := Ideal.Quotient.mk_surjective z
     rintro ⟨hc, hp⟩
@@ -180,8 +183,8 @@ theorem exists_truncatedLieToU_eq_iff (k : ℕ) (z : U ⧸ (Fₚ).ideal (k + 1))
     have hred : Coalgebra.comul (R := R) a - 1 ⊗ₜ[R] a - a ⊗ₜ[R] 1 ∈
         Ideal.tensorFiltration R (Fₚ).ideal (Fₚ).ideal (k + 1) := by
       rw [← Ideal.Quotient.eq_zero_iff_mem]
-      simp only [quotientCoproduct_mk, Mei.AlgFiltration.quotientIncludeLeft_mk,
-        Mei.AlgFiltration.quotientIncludeRight_mk] at hp
+      simp only [quotientCoproduct_mk, TauCeti.AlgFiltration.quotientIncludeLeft_mk,
+        TauCeti.AlgFiltration.quotientIncludeRight_mk] at hp
       simp only [map_sub]
       rw [hp]
       abel

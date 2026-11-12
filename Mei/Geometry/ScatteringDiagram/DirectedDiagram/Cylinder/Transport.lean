@@ -89,7 +89,7 @@ theorem levelPathProduct_cylinder (k : ℕ)
       D.levelPathProduct k ((D.levelCylinderProjection h' k).mapPath p) := by
   let W := fun a : D.active k => (D.wall a).support
   let ν := fun a : D.active k => h.realCharacter (D.wall a).normal
-  let label := fun a : D.active k => CompletedGroup.projection k (D.wall a).label
+  let label := fun a : D.active k => TauCeti.CompletedGroup.projection k (D.wall a).label
   let comm : ∀ a b : D.active k,
       affineSpan ℝ (W a ×ˢ (univ : Set E)) = affineSpan ℝ (W b ×ˢ univ) →
       Commute (label a) (label b) := fun a b hab => D.activeLabels_commute k a b
@@ -110,7 +110,7 @@ theorem levelPathProduct_cylinder (k : ℕ)
       intro a
       rw [cylinder_wall, DirectedWall.realCharacter_cylinder_normal]
       simp [ν, e, r])
-    (fun a => CompletedGroup.projection k ((D.cylinder h').wall a).label)
+    (fun a => TauCeti.CompletedGroup.projection k ((D.cylinder h').wall a).label)
     label ((D.cylinder h').activeLabels_commute k) comm
     (MonoidHom.id _) (by intro a; simp [label, r])
   have hp := q.wallPathProduct_cylinderProjection W ν label (D.activeLabels_commute k)
@@ -256,7 +256,7 @@ No consistency hypothesis or locally finite all-order support is needed. -/
 theorem pathProduct_cylinder {x y : (D.cylinder h').Point} (p : Quiver.Path x y) :
     (D.cylinder h').pathProduct p =
       D.pathProduct ((D.pathCylinderProjection h').mapPath p) := by
-  apply CompletedGroup.ext
+  apply TauCeti.CompletedGroup.ext
   intro k
   have hp := congrArg
     (fun F : (D.cylinder h').Point ⥤q

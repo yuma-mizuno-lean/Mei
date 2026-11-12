@@ -20,7 +20,7 @@ For the attribution to Bridgeland's sign factorization, see the module docstring
 of `Mei.Algebra.Lie.BCH.Sign.Basic`.
 
 The construction assembles `TauCeti.PositiveDegrees.signFactorizationEquiv` using its
-transition law. The carrier is the existing `Mei.completedGroup`; no additional
+transition law. The carrier is the existing `TauCeti.completedGroup`; no additional
 completeness or surjectivity assumption is required.
 -/
 
@@ -46,43 +46,43 @@ variable {N R L A : Type*} [AddCommMonoid N] [CommRing R] [Algebra ℚ R]
 every finite cutoff. -/
 def completedSignSubgroup (s : SignType) : Subgroup (d.completedBCHGroup ℒ) :=
   ⨅ k : ℕ, (signSubalgebra (d.lieTruncationGrading ℒ k) θ s).bchSubgroup.comap
-    (CompletedGroup.projection k)
+    (TauCeti.CompletedGroup.projection k)
 
 /-- Membership in a completed sign subgroup is tested at every finite cutoff. -/
 @[simp]
 theorem mem_completedSignSubgroup (s : SignType) (g : d.completedBCHGroup ℒ) :
     g ∈ completedSignSubgroup ℒ θ d s ↔
-      ∀ k, CompletedGroup.projection k g ∈
+      ∀ k, TauCeti.CompletedGroup.projection k g ∈
         (signSubalgebra (d.lieTruncationGrading ℒ k) θ s).bchSubgroup := by
   simp only [completedSignSubgroup, Subgroup.mem_iInf]
   exact forall_congr' fun k => Iff.rfl
 
 private def completedSignFactor (g : d.completedBCHGroup ℒ) (s : SignType) :
     completedSignSubgroup ℒ θ d s :=
-  ⟨⟨fun k => ((signFactorizationEquiv ℒ θ d k).symm (CompletedGroup.projection k g) s :
+  ⟨⟨fun k => ((signFactorizationEquiv ℒ θ d k).symm (TauCeti.CompletedGroup.projection k g) s :
       d.truncatedGroup ℒ k), (mem_completedGroup_iff _ _).mpr (by
         intro k l h
         -- The categorical tower arrow has the concrete quotient BCH map as its homomorphism.
         change (d.lieTruncationMap ℒ h).bchGroupMap
           ((signFactorizationEquiv ℒ θ d l).symm
-            (CompletedGroup.projection l g) s : d.truncatedGroup ℒ l) =
+            (TauCeti.CompletedGroup.projection l g) s : d.truncatedGroup ℒ l) =
           ((signFactorizationEquiv ℒ θ d k).symm
-            (CompletedGroup.projection k g) s : d.truncatedGroup ℒ k)
+            (TauCeti.CompletedGroup.projection k g) s : d.truncatedGroup ℒ k)
         exact (truncationMap_signFactorizationEquiv_symm ℒ θ d h
-          (CompletedGroup.projection l g) s).trans (congrArg (fun a =>
+          (TauCeti.CompletedGroup.projection l g) s).trans (congrArg (fun a =>
           ((signFactorizationEquiv ℒ θ d k).symm a s : d.truncatedGroup ℒ k))
-          (CompletedGroup.map_projection k l h g)))⟩,
+          (TauCeti.CompletedGroup.map_projection k l h g)))⟩,
     (mem_completedSignSubgroup ℒ θ d s _).mpr (fun k => by
-      rw [CompletedGroup.projection_apply]
+      rw [TauCeti.CompletedGroup.projection_apply]
       exact ((signFactorizationEquiv ℒ θ d k).symm
-        (CompletedGroup.projection k g) s).property)⟩
+        (TauCeti.CompletedGroup.projection k g) s).property)⟩
 
 private theorem projection_completedSignFactor (g : d.completedBCHGroup ℒ)
     (s : SignType) (k : ℕ) :
-    CompletedGroup.projection k (completedSignFactor ℒ θ d g s : d.completedBCHGroup ℒ) =
-      ((signFactorizationEquiv ℒ θ d k).symm (CompletedGroup.projection k g) s :
+    TauCeti.CompletedGroup.projection k (completedSignFactor ℒ θ d g s : d.completedBCHGroup ℒ) =
+      ((signFactorizationEquiv ℒ θ d k).symm (TauCeti.CompletedGroup.projection k g) s :
         d.truncatedGroup ℒ k) := by
-  rw [CompletedGroup.projection_apply, completedSignFactor]
+  rw [TauCeti.CompletedGroup.projection_apply, completedSignFactor]
 
 /-- Multiplication in positive-zero-negative order identifies the three completed
 sign subgroups with the completed BCH group as sets. -/
@@ -93,24 +93,24 @@ def completedSignFactorizationEquiv :
   left_inv a := by
     funext s
     apply Subtype.ext
-    apply CompletedGroup.ext
+    apply TauCeti.CompletedGroup.ext
     intro k
     rw [projection_completedSignFactor]
     let b : ∀ s, (signSubalgebra (d.lieTruncationGrading ℒ k) θ s).bchSubgroup := fun s =>
-      ⟨CompletedGroup.projection k (a s : d.completedBCHGroup ℒ),
+      ⟨TauCeti.CompletedGroup.projection k (a s : d.completedBCHGroup ℒ),
         (mem_completedSignSubgroup ℒ θ d s _).mp (a s).property k⟩
     have hb : (signFactorizationEquiv ℒ θ d k).symm
-        (CompletedGroup.projection k ((a .pos : d.completedBCHGroup ℒ) *
+        (TauCeti.CompletedGroup.projection k ((a .pos : d.completedBCHGroup ℒ) *
           (a .zero : d.completedBCHGroup ℒ) * (a .neg : d.completedBCHGroup ℒ))) = b := by
       apply (signFactorizationEquiv ℒ θ d k).symm_apply_eq.mpr
       simp only [signFactorizationEquiv_apply, map_mul, b]
       rfl
     exact congrArg (fun a => (a s : d.truncatedGroup ℒ k)) hb
   right_inv g := by
-    apply CompletedGroup.ext
+    apply TauCeti.CompletedGroup.ext
     intro k
     simp only [map_mul, projection_completedSignFactor]
-    have h := (signFactorizationEquiv ℒ θ d k).apply_symm_apply (CompletedGroup.projection k g)
+    have h := (signFactorizationEquiv ℒ θ d k).apply_symm_apply (TauCeti.CompletedGroup.projection k g)
     rw [signFactorizationEquiv_apply] at h
     exact h
 
@@ -124,9 +124,9 @@ theorem completedSignFactorizationEquiv_apply (a : ∀ s, completedSignSubgroup 
 @[simp]
 theorem projection_completedSignFactorizationEquiv_symm (g : d.completedBCHGroup ℒ)
     (s : SignType) (k : ℕ) :
-    CompletedGroup.projection k
+    TauCeti.CompletedGroup.projection k
         ((completedSignFactorizationEquiv ℒ θ d).symm g s : d.completedBCHGroup ℒ) =
-      ((signFactorizationEquiv ℒ θ d k).symm (CompletedGroup.projection k g) s :
+      ((signFactorizationEquiv ℒ θ d k).symm (TauCeti.CompletedGroup.projection k g) s :
         d.truncatedGroup ℒ k) :=
   projection_completedSignFactor ℒ θ d g s k
 
@@ -136,7 +136,7 @@ theorem completedSignFactorizationEquiv_symm_one :
     (completedSignFactorizationEquiv ℒ θ d).symm 1 = 1 := by
   funext s
   apply Subtype.ext
-  apply CompletedGroup.ext
+  apply TauCeti.CompletedGroup.ext
   intro k
   rw [projection_completedSignFactorizationEquiv_symm]
   simp only [map_one, Pi.one_apply, OneMemClass.coe_one]

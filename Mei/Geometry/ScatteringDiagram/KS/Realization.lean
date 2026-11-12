@@ -52,7 +52,7 @@ variable {N V R L : Type*} [AddCommGroup N]
 
 private theorem exists_label_lift (P : C.walls) :
     ∃ G ∈ d.completedRaySubgroup ℒ (D.wallRay P),
-      CompletedGroup.projection k G = D.label P :=
+      TauCeti.CompletedGroup.projection k G = D.label P :=
   d.exists_completedRaySubgroup_projection_eq ℒ _ k
     (D.label_mem_bchSubgroup_rayLieSubalgebra P (D.degree_mem_wallRay P))
 
@@ -86,7 +86,7 @@ theorem indexedWall_support (P : C.walls) :
 /-- The chosen completed label recovers exactly the original finite label. -/
 @[simp]
 theorem projection_indexedWall_label (P : C.walls) :
-    (CompletedGroup.projection k (D.indexedWall P).label : d.truncatedGroup ℒ k) = D.label P := by
+    (TauCeti.CompletedGroup.projection k (D.indexedWall P).label : d.truncatedGroup ℒ k) = D.label P := by
   classical
   dsimp only [indexedWall]
   split_ifs with hP

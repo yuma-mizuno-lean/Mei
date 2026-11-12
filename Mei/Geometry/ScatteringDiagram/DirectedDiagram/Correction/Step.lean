@@ -35,6 +35,8 @@ Gross–Hacking–Keel–Kontsevich, *Canonical bases for cluster algebras*, App
 
 public section
 
+open TauCeti (OrientedCell PolyhedralCochain)
+
 open TauCeti (WallComplement)
 
 open TauCeti (PositiveDegrees IsPositiveGrading)
@@ -88,8 +90,8 @@ theorem LoopProjection.exists_consistent_outgoing_extension
         (∃ n ∈ (F.wall (.inr a)).ray.rayDegrees, d.degree n = (k : ℤ) + 1 ∧
           ∃ z ∈ ℒ n, (F.wall (.inr a)).label = d.expToCompletion ℒ z) ∧
         (∀ l, Sum.inr a ∈ F.active l ↔ k + 1 ≤ l) ∧
-        P.toLinearMap (log (CompletedGroup.projection (k + 1) (F.wall (.inr a)).label)) =
-          log (CompletedGroup.projection (k + 1) (F.wall (.inr a)).label) := by
+        P.toLinearMap (log (TauCeti.CompletedGroup.projection (k + 1) (F.wall (.inr a)).label)) =
+          log (TauCeti.CompletedGroup.projection (k + 1) (F.wall (.inr a)).label) := by
   classical
   obtain ⟨κ, _, E, η, c, f, hE, hpotential⟩ :=
     exists_joint_correction_potential σ hσ cross hk b t ht τ hτ P
@@ -147,7 +149,7 @@ theorem LoopProjection.exists_consistent_outgoing_extension
   have he : Function.Injective e := fun a b hab =>
     Sum.inr_injective (congrArg Subtype.val hab)
   let newCoeff := fun j : F.active (k + 1) => if j.val ∈ s then 0 else
-    log (CompletedGroup.projection (k + 1) (F.wall j).label)
+    log (TauCeti.CompletedGroup.projection (k + 1) (F.wall j).label)
   have hnew : (∑ j : F.active (k + 1), PolyhedralCochain.mk (R := R) (ω j) (newCoeff j)) =
       PolyhedralCochain.map π.ker.subtype B := by
     simp only [B, map_sum, PolyhedralCochain.map_mk, Submodule.subtype_apply]

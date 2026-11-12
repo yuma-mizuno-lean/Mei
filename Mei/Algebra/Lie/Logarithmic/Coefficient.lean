@@ -35,6 +35,8 @@ arXiv:1503.06183v5.
 
 public section
 
+open TauCeti (AlgFiltration)
+
 open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading)
 
 noncomputable section
@@ -178,7 +180,7 @@ variable {Γ' : Type*} [AddCommMonoid Γ'] {e : PositiveDegrees Γ'} {Q' : AddSu
 variable {d Q} in
 /-- The monomial map `z^q ↦ z^(T q)` along a positive degree map carries the
 coefficient filtration term above the cutoff modulus into the target term. Thus
-`Mei.AlgFiltration.mapCompletionₐ` extends it to the completed coefficient algebras
+`TauCeti.AlgFiltration.mapCompletionₐ` extends it to the completed coefficient algebras
 with the original modulus of `T`. -/
 theorem filtration_ideal_le_comap_mapDomainAlgHom {R : Type*} [CommSemiring R]
     (T : PositiveDegreeMap d e)

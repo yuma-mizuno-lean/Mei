@@ -14,7 +14,7 @@ For one full face `{ν = b}` with singular set `Z` inside it, the endpoint domai
 the two admissible itineraries are explicit. The empty itinerary is admitted exactly
 on the open incoming half-space. The one-crossing itinerary is admitted exactly where
 the crossing parameter `τ(Q) = (ν Q - b) / ν w` is negative and the crossing point, which
-is the `sweepProjection` of `Q` to the face along `w`, misses `Z`.
+is the `ContinuousLinearMap.sweepProjection` of `Q` to the face along `w`, misses `Z`.
 
 When `Z` is closed and nowhere dense in the face, the closure of the one-crossing
 domain is the whole closed opposite half-space, and its frontier is the union of two
@@ -69,10 +69,10 @@ theorem mem_admissibleBackwardDomain_singleFace_one_iff {x : V} :
     x ∈ admissibleBackwardDomain (fun _ : Fin 1 => ν) (fun _ => b) ![w, u]
         (fun _ => {x | ν x = b}) (fun _ : Unit => {x | ν x = b}) (fun _ : Unit => Z)
         {x | 0 < (ν x - b) / ν u} ↔
-      (ν x - b) / ν w < 0 ∧ sweepProjection ν b ((ν w)⁻¹ • w) x ∉ Z := by
+      (ν x - b) / ν w < 0 ∧ ContinuousLinearMap.sweepProjection ν b ((ν w)⁻¹ • w) x ∉ Z := by
   rw [← nonempty_admissibleRayRealization_iff,
     AdmissibleRayRealization.nonempty_singleFace_one_iff hnormal hZ,
-    sweepProjection_inv_smul_apply]
+    ContinuousLinearMap.sweepProjection_inv_smul_apply]
 
 /-- The one-crossing endpoint domain is open when the singular set is closed. -/
 theorem isOpen_admissibleBackwardDomain_singleFace_one (hZc : IsClosed Z) :
@@ -82,11 +82,11 @@ theorem isOpen_admissibleBackwardDomain_singleFace_one (hZc : IsClosed Z) :
   have : admissibleBackwardDomain (fun _ : Fin 1 => ν) (fun _ => b) ![w, u]
         (fun _ => {x | ν x = b}) (fun _ : Unit => {x | ν x = b}) (fun _ : Unit => Z)
         {x | 0 < (ν x - b) / ν u} =
-      {x | (ν x - b) / ν w < 0} ∩ sweepProjection ν b ((ν w)⁻¹ • w) ⁻¹' Zᶜ :=
+      {x | (ν x - b) / ν w < 0} ∩ ContinuousLinearMap.sweepProjection ν b ((ν w)⁻¹ • w) ⁻¹' Zᶜ :=
     Set.ext fun _ => mem_admissibleBackwardDomain_singleFace_one_iff hnormal hZ
   rw [this]
   exact (isOpen_lt ((ν.continuous.sub continuous_const).div_const _) continuous_const).inter
-    (hZc.isOpen_compl.preimage (sweepProjection ν b ((ν w)⁻¹ • w)).cont)
+    (hZc.isOpen_compl.preimage (ContinuousLinearMap.sweepProjection ν b ((ν w)⁻¹ • w)).cont)
 
 /-- If the singular set is nowhere dense in the face, the closure of the one-crossing
 endpoint domain is the closed opposite half-space. -/
@@ -108,16 +108,16 @@ theorem closure_admissibleBackwardDomain_singleFace_one (hw : ν w ≠ 0)
       (hdense hy) fun y' hy' => ?_
     obtain ⟨hy'H, hy'Z⟩ := hy'
     refine (mem_admissibleBackwardDomain_singleFace_one_iff hnormal hZ).mpr ⟨?_, ?_⟩
-    · rw [sub_div_sub_smul_eq_neg hw hy'H]
+    · rw [ContinuousLinearMap.sub_div_sub_smul_eq_neg hw hy'H]
       exact neg_neg_of_pos hs
-    · rwa [sweepProjection_inv_smul_sub_smul hw hy'H]
+    · rwa [ContinuousLinearMap.sweepProjection_inv_smul_sub_smul hw hy'H]
   -- Every point of the closed half-space is such a point, up to a vanishing displacement.
   have hτ : (ν x - b) / ν w ≤ 0 := hx
-  set y := sweepProjection ν b ((ν w)⁻¹ • w) x with hy
+  set y := ContinuousLinearMap.sweepProjection ν b ((ν w)⁻¹ • w) x with hy
   have hyH : ν y = b := by
-    exact sweepProjection_height ν b (by simp [hw]) x
+    exact ContinuousLinearMap.sweepProjection_height ν b (by simp [hw]) x
   have hxy (s : ℝ) : x - s • w = y - (s - (ν x - b) / ν w) • w := by
-    rw [hy, sweepProjection_inv_smul_apply]
+    rw [hy, ContinuousLinearMap.sweepProjection_inv_smul_apply]
     module
   have hc : Continuous fun s : ℝ => x - s • w := by fun_prop
   have hlim : Tendsto (fun s : ℝ => x - s • w) (𝓝[>] 0) (𝓝 x) :=
@@ -138,7 +138,8 @@ theorem frontier_admissibleBackwardDomain_singleFace_one (hw : ν w ≠ 0) (hZc 
         (fun _ => {x | ν x = b}) (fun _ : Unit => {x | ν x = b}) (fun _ : Unit => Z)
         {x | 0 < (ν x - b) / ν u}) =
       {x | ν x = b} ∪
-        {x | (ν x - b) / ν w < 0 ∧ sweepProjection ν b ((ν w)⁻¹ • w) x ∈ Z} := by
+        {x | (ν x - b) / ν w < 0 ∧
+          ContinuousLinearMap.sweepProjection ν b ((ν w)⁻¹ • w) x ∈ Z} := by
   rw [(isOpen_admissibleBackwardDomain_singleFace_one hnormal hZ hZc).frontier_eq,
     closure_admissibleBackwardDomain_singleFace_one hnormal hZ hw hdense]
   ext x
@@ -181,7 +182,8 @@ theorem incoming_union_admissibleBackwardDomain_singleFace_one (hw : ν w ≠ 0)
         (fun _ => {x | ν x = b}) (fun _ : Unit => {x | ν x = b}) (fun _ : Unit => Z)
         {x | 0 < (ν x - b) / ν u}) =
       ({x | ν x = b} ∪
-        {x | (ν x - b) / ν w < 0 ∧ sweepProjection ν b ((ν w)⁻¹ • w) x ∈ Z})ᶜ := by
+        {x | (ν x - b) / ν w < 0 ∧
+          ContinuousLinearMap.sweepProjection ν b ((ν w)⁻¹ • w) x ∈ Z})ᶜ := by
   ext x
   rw [mem_union, mem_admissibleBackwardDomain_singleFace_one_iff hnormal hZ, ← hnormal]
   simp only [mem_ofPred_eq, mem_compl_iff, mem_union, not_or, not_and]

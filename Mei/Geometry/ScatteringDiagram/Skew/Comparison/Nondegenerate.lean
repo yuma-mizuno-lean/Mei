@@ -6,6 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.ScatteringDiagram.Skew.Comparison.Basic
+import Mei.Geometry.Toric.Algebraic.Lattice
 
 /-!
 # Nondegenerate skew comparison

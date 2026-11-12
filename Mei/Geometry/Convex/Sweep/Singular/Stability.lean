@@ -21,7 +21,7 @@ half-line: they cannot disappear to infinity while endpoints converge.
 
 Finite segments use `IsClosed.isOpen_setOf_lineMap_notMem`. The incoming ray
 uses the closed polyhedral negative-ray projection supplied by
-`isConvexPolyhedron_setOf_exists_nonneg_add_smul_mem`. No rationality,
+`TauCeti.IsConvexPolyhedron.sweep`. No rationality,
 transversality of the singular cells, or nonzero velocity is required.
 The endpoint-chart interpretation follows Carl–Pumperla–Siebert,
 *A tropical view on Landau–Ginzburg models*, §4 (arXiv:2205.07753v2).
@@ -69,8 +69,12 @@ theorem eventually_mem_backwardSingularAvoidanceDomain
   have hincoming : ∀ᶠ Q' in 𝓝 Q, ∀ a (s : ℝ), 0 ≤ s →
       X (Fin.last n) Q' + s • v (Fin.last n) ∉ S a := by
     refine eventually_all.mpr fun a => ?_
-    have hc := (isConvexPolyhedron_setOf_exists_nonneg_add_smul_mem
-      (hS a) (v (Fin.last n))).isClosed
+    have hc : IsClosed {x : V | ∃ s : ℝ, 0 ≤ s ∧ x + s • v (Fin.last n) ∈ S a} := by
+      have he : Set.sweep ℝ (S a) (v (Fin.last n)) =
+          {x | ∃ s : ℝ, 0 ≤ s ∧ x + s • v (Fin.last n) ∈ S a} :=
+        Set.ext fun _ => Set.mem_sweep_iff
+      rw [← he]
+      exact ((hS a).sweep _).isClosed
     have hnot : X (Fin.last n) Q ∉
         {x | ∃ s : ℝ, 0 ≤ s ∧ x + s • v (Fin.last n) ∈ S a} := by
       rintro ⟨s, hs, hmem⟩

@@ -87,9 +87,9 @@ theorem _root_.TauCeti.PositiveDegrees.changeDegreeEquiv_symm (hP : d.monoid = e
 theorem _root_.TauCeti.PositiveDegrees.projection_changeDegreeEquiv
     (hP : d.monoid = e.monoid) (k : ℕ)
     (x : d.completedBCHGroup ℒ) :
-    CompletedGroup.projection k (d.changeDegreeEquiv e ℒ hP x) =
+    TauCeti.CompletedGroup.projection k (d.changeDegreeEquiv e ℒ hP x) =
       ((GradedLieHom.changeDegree d e hP ℒ).lieTruncatedMap k le_rfl).bchGroupMap
-        (CompletedGroup.projection ((PositiveDegreeMap.changeDegree d e hP).modulus k) x) :=
+        (TauCeti.CompletedGroup.projection ((PositiveDegreeMap.changeDegree d e hP).modulus k) x) :=
   GradedLieHom.projection_completedMap _ k x
 
 /-- Changing to the same degree function is the identity. -/
@@ -130,10 +130,10 @@ Applying this also in reverse proves that the two filtrations are cofinal. -/
 theorem _root_.TauCeti.PositiveDegrees.changeDegreeEquiv_mem_degreeFiltration
     (hP : d.monoid = e.monoid) (k : ℕ)
     {x : d.completedBCHGroup ℒ}
-    (hx : x ∈ CompletedGroup.degreeFiltration (d.groupTower ℒ)
+    (hx : x ∈ TauCeti.CompletedGroup.degreeFiltration (d.groupTower ℒ)
       ((PositiveDegreeMap.changeDegree d e hP).modulus k + 1)) :
     d.changeDegreeEquiv e ℒ hP x ∈
-      CompletedGroup.degreeFiltration (e.groupTower ℒ) (k + 1) :=
+      TauCeti.CompletedGroup.degreeFiltration (e.groupTower ℒ) (k + 1) :=
   (GradedLieHom.changeDegree d e hP ℒ).completedMap_mem_degreeFiltration k hx
 
 variable {ι : Type*}
@@ -143,11 +143,11 @@ variable {ι : Type*}
 theorem _root_.TauCeti.PositiveDegrees.hasFiniteSupport_changeDegreeEquiv_iff
     (hP : d.monoid = e.monoid)
     (x : ι → d.completedBCHGroup ℒ) :
-    CompletedGroup.HasFiniteSupport (fun i => d.changeDegreeEquiv e ℒ hP (x i)) ↔
-      CompletedGroup.HasFiniteSupport x := by
+    TauCeti.CompletedGroup.HasFiniteSupport (fun i => d.changeDegreeEquiv e ℒ hP (x i)) ↔
+      TauCeti.CompletedGroup.HasFiniteSupport x := by
   constructor
   · intro hx
-    have h : CompletedGroup.HasFiniteSupport
+    have h : TauCeti.CompletedGroup.HasFiniteSupport
         (fun i => e.changeDegreeEquiv d ℒ hP.symm (d.changeDegreeEquiv e ℒ hP (x i))) := by
       simpa only [changeDegreeEquiv_apply] using
         (GradedLieHom.changeDegree e d hP.symm ℒ).hasFiniteSupport_completedMap hx
@@ -160,9 +160,9 @@ theorem _root_.TauCeti.PositiveDegrees.hasFiniteSupport_changeDegreeEquiv_iff
 @[simp]
 theorem _root_.TauCeti.PositiveDegrees.changeDegreeEquiv_orderedProd [LinearOrder ι]
     (hP : d.monoid = e.monoid)
-    (x : ι → d.completedBCHGroup ℒ) (hx : CompletedGroup.HasFiniteSupport x) :
-    d.changeDegreeEquiv e ℒ hP (CompletedGroup.orderedProd x hx) =
-      CompletedGroup.orderedProd (fun i => d.changeDegreeEquiv e ℒ hP (x i))
+    (x : ι → d.completedBCHGroup ℒ) (hx : TauCeti.CompletedGroup.HasFiniteSupport x) :
+    d.changeDegreeEquiv e ℒ hP (TauCeti.CompletedGroup.orderedProd x hx) =
+      TauCeti.CompletedGroup.orderedProd (fun i => d.changeDegreeEquiv e ℒ hP (x i))
         ((d.hasFiniteSupport_changeDegreeEquiv_iff e ℒ hP x).mpr hx) :=
   GradedLieHom.completedMap_orderedProd _ x hx
 
@@ -199,20 +199,20 @@ theorem _root_.TauCeti.PositiveDegrees.bijective_lieTruncatedMap_changeDegree_sc
 projection. -/
 theorem _root_.TauCeti.PositiveDegrees.projection_changeDegreeEquiv_scale
     (k : ℕ) (x : d.completedBCHGroup ℒ) :
-    CompletedGroup.projection k (d.changeDegreeEquiv (d.scale c) ℒ (d.scale_monoid c).symm x) =
+    TauCeti.CompletedGroup.projection k (d.changeDegreeEquiv (d.scale c) ℒ (d.scale_monoid c).symm x) =
       ((GradedLieHom.changeDegree d (d.scale c) (d.scale_monoid c).symm ℒ).lieTruncatedMap k
         (PositiveDegreeMap.changeDegree_scale_modulus_le d c k)).bchGroupMap
-          (CompletedGroup.projection (k / c) x) :=
+          (TauCeti.CompletedGroup.projection (k / c) x) :=
   GradedLieHom.projection_completedMap_of_le _ k _ x
 
 /-- At order `k`, the change of degree from `c δ` back to `δ` is computed from the order-`c k`
 projection. -/
 theorem _root_.TauCeti.PositiveDegrees.projection_changeDegreeEquiv_scale_symm
     (k : ℕ) (x : (d.scale c).completedBCHGroup ℒ) :
-    CompletedGroup.projection k ((d.scale c).changeDegreeEquiv d ℒ (d.scale_monoid c) x) =
+    TauCeti.CompletedGroup.projection k ((d.scale c).changeDegreeEquiv d ℒ (d.scale_monoid c) x) =
       ((GradedLieHom.changeDegree (d.scale c) d (d.scale_monoid c) ℒ).lieTruncatedMap k
         (PositiveDegreeMap.changeDegree_scale_symm_modulus_le d c k)).bchGroupMap
-          (CompletedGroup.projection (c * k) x) :=
+          (TauCeti.CompletedGroup.projection (c * k) x) :=
   GradedLieHom.projection_completedMap_of_le _ k _ x
 
 end Scale

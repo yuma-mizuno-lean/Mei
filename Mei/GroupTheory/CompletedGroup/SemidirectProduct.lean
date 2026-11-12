@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.GroupTheory.CompletedGroup.Map
+public import TauCeti.GroupTheory.CompletedGroup.Map
 public import Mathlib.GroupTheory.SemidirectProduct
 
 /-!
@@ -18,18 +18,20 @@ transitions leave the `H` coordinate fixed.
 The comparison and its inverse are characterized by their finite projections.
 Thus a compatible family of elements of `Gₖ ⋊ H` has a single, constant `H`-coordinate.
 
-The construction uses `CompletedGroup.congr`, `CompletedGroup.lift`, and Mathlib's
+The construction uses `TauCeti.CompletedGroup.congr`, `TauCeti.CompletedGroup.lift`, and Mathlib's
 `SemidirectProduct.map`.
 No surjectivity of the tower transitions or finiteness of either group is required.
 -/
 
 public section
 
+open TauCeti (completedGroup)
+
 open CategoryTheory Opposite
 
 universe u v
 
-namespace Mei.CompletedGroup
+namespace TauCeti.CompletedGroup
 
 variable {F : ℕᵒᵖ ⥤ GrpCat.{u}} {H : Type v}
 
@@ -187,4 +189,4 @@ theorem projection_semidirectProductEquiv_symm
       semidirectProjection φ hφ k x :=
   projection_assemble φ hφ x k
 
-end Mei.CompletedGroup
+end TauCeti.CompletedGroup

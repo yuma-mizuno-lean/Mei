@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.Convex.PolyhedralComplex.Strata
-public import Mei.Geometry.Convex.Polyhedron.Rational.Sweep
+public import TauCeti.Analysis.Convex.Polyhedron.Rational.Sweep
 public import Mei.Geometry.Convex.Sweep.Face
 
 /-!
@@ -52,7 +52,7 @@ def sweep (C : FinitePolyhedralComplex h) (n : N)
       i n ∉ vectorSpan ℝ (P ∪ Q) :=
     fun hm => hn (vectorSpan_mono ℝ (union_subset (hcell hP) (hcell hQ)) hm)
   refine {
-    cells := C.cells ∪ C.cells.image (fun P => Mei.Convex.sweep P (i n))
+    cells := C.cells ∪ C.cells.image (fun P => Set.sweep ℝ P (i n))
     nonempty := ?_
     rational := ?_
     face_closed := ?_
@@ -61,19 +61,12 @@ def sweep (C : FinitePolyhedralComplex h) (n : N)
     rcases Finset.mem_union.mp hP with hP | hP
     · exact C.nonempty P hP
     · obtain ⟨Q, hQ, rfl⟩ := Finset.mem_image.mp hP
-      exact sweep_nonempty (C.nonempty Q hQ) (i n)
+      exact Set.Nonempty.sweep (𝕜 := ℝ) (C.nonempty Q hQ) (i n)
   · intro P hP
     rcases Finset.mem_union.mp hP with hP | hP
     · exact C.rational P hP
     · obtain ⟨Q, hQ, rfl⟩ := Finset.mem_image.mp hP
-      convert (C.rational Q hQ).negRay n using 1
-      ext y
-      simp only [mem_sweep_iff_exists, mem_ofPred_eq]
-      constructor
-      · rintro ⟨x, hx, t, ht, rfl⟩
-        exact ⟨t, ht, by simpa using hx⟩
-      · rintro ⟨t, ht, hx⟩
-        exact ⟨y + t • i n, hx, t, ht, by abel⟩
+      exact (C.rational Q hQ).sweep n
   · intro P hP F hF
     obtain ⟨hFne, hF⟩ := isPolyhedralFace_iff.mp hF
     rcases Finset.mem_union.mp hP with hP | hP
@@ -91,18 +84,18 @@ def sweep (C : FinitePolyhedralComplex h) (n : N)
       rcases Finset.mem_union.mp hQ with hQ | hQ
     · exact C.inter_face P hP Q hQ hne
     · obtain ⟨Q, hQc, rfl⟩ := Finset.mem_image.mp hQ
-      rw [inter_sweep_of_transverse (hnPQ hP hQc)] at hne ⊢
+      rw [Set.inter_sweep_of_transverse (𝕜 := ℝ) (hnPQ hP hQc)] at hne ⊢
       exact C.inter_face P hP Q hQc hne
     · obtain ⟨P, hPc, rfl⟩ := Finset.mem_image.mp hP
-      have he : Mei.Convex.sweep P (i n) ∩ Q = P ∩ Q := by
-        rw [inter_comm, inter_sweep_of_transverse (hnPQ hQ hPc), inter_comm]
+      have he : Set.sweep ℝ P (i n) ∩ Q = P ∩ Q := by
+        rw [inter_comm, Set.inter_sweep_of_transverse (𝕜 := ℝ) (hnPQ hQ hPc), inter_comm]
       rw [he] at hne ⊢
       exact (C.inter_face P hPc Q hQ hne).in_sweep_of_transverse (hnP hPc)
     · obtain ⟨P, hPc, rfl⟩ := Finset.mem_image.mp hP
       obtain ⟨Q, hQc, rfl⟩ := Finset.mem_image.mp hQ
-      rw [Mei.Convex.sweep_inter (hnPQ hPc hQc)] at hne ⊢
+      rw [Set.sweep_inter_sweep (𝕜 := ℝ) (hnPQ hPc hQc)] at hne ⊢
       obtain ⟨y, hy⟩ := hne
-      obtain ⟨x, hx, t, ht, he⟩ := mem_sweep_iff_exists.mp hy
+      obtain ⟨x, hx, t, ht, he⟩ := Set.mem_sweep_iff_exists.mp hy
       exact (C.inter_face P hPc Q hQc ⟨x, hx⟩).sweep_of_transverse (hnP hPc)
 
 /-- A prism cell is either a base cell or the sweep of a base cell. -/
@@ -110,7 +103,7 @@ def sweep (C : FinitePolyhedralComplex h) (n : N)
 theorem mem_sweep_cells {C : FinitePolyhedralComplex h} {n : N}
     {hn : i n ∉ vectorSpan ℝ C.support} {P : Set V} :
     P ∈ (C.sweep n hn).cells ↔
-      P ∈ C.cells ∨ ∃ Q ∈ C.cells, Mei.Convex.sweep Q (i n) = P := by
+      P ∈ C.cells ∨ ∃ Q ∈ C.cells, Set.sweep ℝ Q (i n) = P := by
   classical
   simp only [sweep, Finset.mem_union, Finset.mem_image]
 
@@ -118,20 +111,20 @@ theorem mem_sweep_cells {C : FinitePolyhedralComplex h} {n : N}
 @[simp]
 theorem support_sweep (C : FinitePolyhedralComplex h) (n : N)
     (hn : i n ∉ vectorSpan ℝ C.support) :
-    (C.sweep n hn).support = Mei.Convex.sweep C.support (i n) := by
+    (C.sweep n hn).support = Set.sweep ℝ C.support (i n) := by
   ext y
   constructor
   · intro hy
     obtain ⟨P, hP, hyP⟩ := mem_support.mp hy
     rcases mem_sweep_cells.mp hP with hP | ⟨Q, hQ, rfl⟩
-    · exact subset_sweep C.support (i n) (mem_support.mpr ⟨P, hP, hyP⟩)
-    · exact sweep_mono (fun x hx => mem_support.mpr ⟨Q, hQ, hx⟩) (i n) hyP
+    · exact Set.subset_sweep (𝕜 := ℝ) C.support (i n) (mem_support.mpr ⟨P, hP, hyP⟩)
+    · exact Set.sweep_mono (𝕜 := ℝ) (fun x hx => mem_support.mpr ⟨Q, hQ, hx⟩) (i n) hyP
   · intro hy
-    obtain ⟨x, hx, t, ht, rfl⟩ := mem_sweep_iff_exists.mp hy
+    obtain ⟨x, hx, t, ht, rfl⟩ := Set.mem_sweep_iff_exists.mp hy
     obtain ⟨P, hP, hxP⟩ := mem_support.mp hx
-    exact mem_support.mpr ⟨Mei.Convex.sweep P (i n),
+    exact mem_support.mpr ⟨Set.sweep ℝ P (i n),
       mem_sweep_cells.mpr (Or.inr ⟨P, hP, rfl⟩),
-      mem_sweep_iff_exists.mpr ⟨x, hxP, t, ht, rfl⟩⟩
+      Set.mem_sweep_iff_exists.mpr ⟨x, hxP, t, ht, rfl⟩⟩
 
 /-- The codimension-`k` prism cells are the codimension-`k` base cells and the
 sweeps of codimension-`k + 1` base cells. In particular this identifies the
@@ -140,13 +133,13 @@ theorem mem_sweep_cellsOfCodimension {C : FinitePolyhedralComplex h} {n : N}
     {hn : i n ∉ vectorSpan ℝ C.support} (k : ℕ) (P : Set V) :
     P ∈ (C.sweep n hn).cellsOfCodimension k ↔
       P ∈ C.cellsOfCodimension k ∨
-        ∃ Q ∈ C.cellsOfCodimension (k + 1), Mei.Convex.sweep Q (i n) = P := by
+        ∃ Q ∈ C.cellsOfCodimension (k + 1), Set.sweep ℝ Q (i n) = P := by
   let := h.finiteDimensional
   have hdim {Q : Set V} (hQ : Q ∈ C.cells) :
-      Module.finrank ℝ (affineSpan ℝ (Mei.Convex.sweep Q (i n))).direction =
+      Module.finrank ℝ (affineSpan ℝ (Set.sweep ℝ Q (i n))).direction =
         Module.finrank ℝ (affineSpan ℝ Q).direction + 1 := by
     rw [direction_affineSpan, direction_affineSpan]
-    exact finrank_sweep (C.nonempty Q hQ) (fun hm => hn (vectorSpan_mono ℝ
+    exact Set.finrank_vectorSpan_sweep (𝕜 := ℝ) (C.nonempty Q hQ) (fun hm => hn (vectorSpan_mono ℝ
       (fun x hx => mem_support.mpr ⟨Q, hQ, hx⟩) hm))
   simp only [mem_cellsOfCodimension, mem_sweep_cells]
   constructor
@@ -170,8 +163,8 @@ theorem IsWeakRefinement.sweep {C D : FinitePolyhedralComplex h}
   · obtain ⟨Q, hQ, hPQ⟩ := href P hP
     exact ⟨Q, mem_sweep_cells.mpr (Or.inl hQ), hPQ⟩
   · obtain ⟨R, hR, hQR⟩ := href Q hQ
-    exact ⟨Mei.Convex.sweep R (i n),
-      mem_sweep_cells.mpr (Or.inr ⟨R, hR, rfl⟩), sweep_mono hQR (i n)⟩
+    exact ⟨Set.sweep ℝ R (i n),
+      mem_sweep_cells.mpr (Or.inr ⟨R, hR, rfl⟩), Set.sweep_mono (𝕜 := ℝ) hQR (i n)⟩
 
 /-- Subdivision of a transverse base induces subdivision of its swept prism,
 including all base and side faces. -/

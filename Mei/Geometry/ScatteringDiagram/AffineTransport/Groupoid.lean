@@ -41,7 +41,7 @@ variable {N N' V V' : Type*} [AddCommGroup N] [AddCommGroup N']
   {i : N →+ V} {i' : N' →+ V'}
   {h : TauCeti.Toric.IsIntegralLattice i} {h' : TauCeti.Toric.IsIntegralLattice i'}
   {C : FinitePolyhedralComplex h} {G G' : Type*} [Groupoid G] [Groupoid G']
-  (D : GroupoidWallDiagram C G) (e : Mei.Toric.IntegralAffineEquiv h h')
+  (D : GroupoidWallDiagram C G) (e : TauCeti.Toric.IntegralAffineEquiv h h')
 
 /-- The wall arrow depends on the wall only up to the equality of its side chambers. -/
 theorem label_eq_of_eq {P P' : C.walls} (hP : P = P') :
@@ -212,7 +212,7 @@ variable {N N' V V' H : Type*} [AddCommGroup N] [AddCommGroup N']
   {i : N →+ V} {i' : N' →+ V'}
   {h : TauCeti.Toric.IsIntegralLattice i} {h' : TauCeti.Toric.IsIntegralLattice i'}
   {C : FinitePolyhedralComplex h} [Group H] (D : FiniteWallDiagram C H)
-  (e : Mei.Toric.IntegralAffineEquiv h h')
+  (e : TauCeti.Toric.IntegralAffineEquiv h h')
   {x y : WallComplement (fun P : C.walls => (P : Set V))}
 
 /-- For a group-labelled diagram, transport along an image path in the affine image of its

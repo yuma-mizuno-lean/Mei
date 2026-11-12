@@ -50,7 +50,7 @@ theorem expToCompletion_logComponent_eq_of_ray_single
       exact (Submodule.eq_bot_iff _).mp (hvan m hray hm) _
         (d.logComponent ℒ g m).property
     · exact d.logComponent_eq_zero_of_notMem_rayDegrees ℒ hg hray
-  apply CompletedGroup.ext
+  apply TauCeti.CompletedGroup.ext
   intro k
   apply BCHGroup.log_injective (L := d.lieTruncation ℒ k)
   rw [projection_expToCompletion, BCHGroup.log_exp, log_projection_eq_mkQ_sum]
@@ -88,7 +88,7 @@ def completedRaySingleEquiv :
     -- Expose subgroup coercions and multiplication of the additive type tag.
     change d.expToCompletion ℒ ((x.toAdd : L) + (y.toAdd : L)) =
       d.expToCompletion ℒ x.toAdd * d.expToCompletion ℒ y.toAdd
-    apply CompletedGroup.ext
+    apply TauCeti.CompletedGroup.ext
     intro k
     rw [map_mul, projection_expToCompletion, projection_expToCompletion,
       projection_expToCompletion, map_add]

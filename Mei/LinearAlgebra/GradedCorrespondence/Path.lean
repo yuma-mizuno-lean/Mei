@@ -40,7 +40,7 @@ public section
 
 open CategoryTheory
 
-namespace Mei.GradedCorrespondence
+namespace TauCeti.GradedCorrespondence
 
 universe v
 
@@ -166,4 +166,4 @@ theorem transferNatTrans_app_hom (q : Q) :
 
 end Naturality
 
-end Mei.GradedCorrespondence
+end TauCeti.GradedCorrespondence

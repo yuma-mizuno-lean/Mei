@@ -51,6 +51,8 @@ Example 2.1(i) and Definition 2.2.
 
 public section
 
+open TauCeti (IsRationalNormalPolyhedron RationalAffinePolyhedron isRationalNormalPolyhedron_iff)
+
 open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading SupportedRay GradedLieHom)
 
 open TauCeti (DirectedWallSpaces)
@@ -172,12 +174,12 @@ theorem normalMap_ne_zero {m : Λ →+ ℤ} (hm : m ≠ 0) : P.normalMap m ≠ 0
 /-- The inverse spatial map pulls rational functionals back to rational functionals,
 because the normal comparison scalars are rational. -/
 theorem isRationalLinearMap_symm :
-    Toric.IsRationalLinearMap h' h
+    TauCeti.Toric.IsRationalLinearMap h' h
       P.spatialMap.symm.toContinuousAffineMap.toAffineMap.linear := by
-  rw [Toric.isRationalLinearMap_iff]
+  rw [TauCeti.Toric.isRationalLinearMap_iff]
   intro f hf
-  obtain ⟨q, m, rfl⟩ := (Toric.IsRationalFunctional.iff_exists_character).mp hf
-  rw [Toric.IsRationalFunctional.iff_exists_character]
+  obtain ⟨q, m, rfl⟩ := (TauCeti.Toric.IsRationalFunctional.iff_exists_character).mp hf
+  rw [TauCeti.Toric.IsRationalFunctional.iff_exists_character]
   obtain ⟨r, hr, he⟩ := P.exists_realCharacter_normalMap_apply m.toAddMonoidHom
   refine ⟨q * r⁻¹, (P.normalMap m.toAddMonoidHom).toIntLinearMap, ?_⟩
   ext v

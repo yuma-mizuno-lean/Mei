@@ -31,6 +31,8 @@ its surjectivity, and the induced grading of `Mei.SymmetricAlgebra`.
 
 public section
 
+open TauCeti.UniversalEnvelopingAlgebra (homogeneousSubmodule ι_mem_homogeneousSubmodule)
+
 open scoped TensorProduct
 
 namespace Mei.UniversalEnvelopingAlgebra

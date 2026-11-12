@@ -29,6 +29,8 @@ tropical curve counts*, proof of Theorem 2.6.
 
 public section
 
+open TauCeti (OrientedCell)
+
 open TauCeti (DirectedWallSpaces)
 
 noncomputable section
@@ -36,8 +38,6 @@ noncomputable section
 open Set Module
 
 namespace TauCeti.DirectedWallSpaces
-
-open Mei
 
 variable {Γ Λ R L V : Type*} [AddCommMonoid Γ] [AddCommGroup Λ]
   [CommRing R] [LieRing L] [LieAlgebra R L]
@@ -76,7 +76,7 @@ theorem exists_cooriented_sweep_normal (σ : OrientedCell h 2) (v : Λ)
   have hdir : (affineSpan ℝ (σ.sweep v hv).carrier).direction =
       (affineSpan ℝ σ.carrier).direction ⊔ ℝ ∙ i v := by
     rw [OrientedCell.sweep_carrier, direction_affineSpan, direction_affineSpan,
-      Convex.vectorSpan_sweep σ.nonempty]
+      Set.vectorSpan_sweep (𝕜 := ℝ) σ.nonempty]
   obtain ⟨m, hm, hker, hsign, hwall⟩ :=
     H.exists_cooriented_normal (σ.sweep v hv) m₀ (h₀.trans hdir.symm)
   exact ⟨m, hm, hker.trans hdir, hsign, hwall⟩

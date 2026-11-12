@@ -41,6 +41,8 @@ and Lemma 3.7 (arXiv:1601.07081v4).
 
 public noncomputable section
 
+open TauCeti (GradedCorrespondence)
+
 namespace AddMonoidAlgebra
 
 section Scalar

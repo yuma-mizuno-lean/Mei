@@ -36,6 +36,8 @@ the original diagram, or common admissibility of the original loop is assumed.
 
 public section
 
+open TauCeti (OrientedCell PolyhedralCochain)
+
 open TauCeti (WallComplement AdmissiblePLPath)
 
 open TauCeti (PositiveDegrees IsPositiveGrading)
@@ -89,7 +91,7 @@ theorem levelConsistent_succ_of_closed_residual
             ((cross Q).defect hk b t ht : d.lieTruncation ℒ (k + 1))) -
           ∑ j : D.active (k + 1), Finsupp.single (ω j)
             (if j.val ∈ s then 0 else
-              log (CompletedGroup.projection (k + 1) (D.wall j).label)))) = 0) :
+              log (TauCeti.CompletedGroup.projection (k + 1) (D.wall j).label)))) = 0) :
     D.LevelConsistent (k + 1) := by
   classical
   have := h.finiteDimensional
@@ -97,7 +99,7 @@ theorem levelConsistent_succ_of_closed_residual
   let A := ∑ Q, Finsupp.single (σ Q)
     ((cross Q).defect hk b t ht : d.lieTruncation ℒ (k + 1))
   let c := fun j : D.active (k + 1) => if j.val ∈ s then 0 else
-    log (CompletedGroup.projection (k + 1) (D.wall j).label)
+    log (TauCeti.CompletedGroup.projection (k + 1) (D.wall j).label)
   let B := ∑ j : D.active (k + 1), Finsupp.single (ω j) (c j)
   -- A primitive may introduce additional facets. Include all of them in the perturbation.
   obtain ⟨_, F, hF, _⟩ := PolyhedralCochain.exists_outgoing_primitive
@@ -161,7 +163,7 @@ theorem levelConsistent_succ_of_closed_residual
   have htrans {u v : WallComplement W} (e : u ⟶ v)
       (g : OrientedCell h 1 →₀ d.lieTruncation ℒ (k + 1))
       (hg : ∀ τ ∈ g.support, ∃ j, τ = υ j) :
-      ∀ τ ∈ g.support, τ.IsTransverse ![u.val, v.val] := by
+      ∀ τ ∈ g.support, τ.IsTransverseToCarrier ![u.val, v.val] := by
     intro τ hτ
     obtain ⟨j, rfl⟩ := hg τ hτ
     exact e.down.isTransverse_orientedCell j
@@ -174,7 +176,7 @@ theorem levelConsistent_succ_of_closed_residual
     | nil => simp only [Quiver.Path.addWeightOfEPs_nil]
     | cons q e ih =>
       rw [Quiver.Path.addWeightOfEPs_cons, Quiver.Path.addWeightOfEPs_cons, ih,
-        PolyhedralCochain.intersectionPairing_eq_of_ofFinsupp_eq hFK
+        PolyhedralCochain.intersectionPairing_eq_of_ofFinsupp_eq_of_isTransverseToCarrier hFK
           (htrans e (A - B) hABcov) (htrans e K hKcov)]
   apply (D.levelConsistent_iff_loops (k + 1)).mpr
   intro x p

@@ -7,7 +7,8 @@ module
 
 public import Mei.Geometry.ScatteringDiagram.KS.Arrangement
 public import Mei.Geometry.ScatteringDiagram.KS.Orthogonal
-public import Mei.Geometry.Convex.Polyhedron.SignCell.Interior
+public import TauCeti.Analysis.Convex.Polyhedron.SignCell.Interior
+public import Mei.Analysis.Convex.Intrinsic
 public import Mei.Algebra.Lie.Graded.Sign.Basic
 
 /-!
@@ -27,6 +28,9 @@ the truncation matter; degrees above the cutoff impose no extra condition.
 -/
 
 public section
+
+open TauCeti.Convex (intrinsicInterior_closure_signCell
+  row_eq_zero_iff_forall_of_mem_intrinsicInterior)
 
 open TauCeti (signSubalgebra signSubalgebra_eq_of_sign_eq mem_signSubalgebra_iff)
 
@@ -50,7 +54,7 @@ theorem sign_eq_of_mem_intrinsicInterior_arrangementComplex
     SignType.sign (θ (i n)) = SignType.sign (φ (i n)) := by
   obtain ⟨σ, _, rfl⟩ := (d.mem_arrangementComplex_cells h k P).mp hP
   rw [intrinsicInterior_closure_signCell] at hθ hφ
-  exact (mem_signCell.mp hθ ⟨n, hn⟩).trans (mem_signCell.mp hφ ⟨n, hn⟩).symm
+  exact (TauCeti.Convex.mem_signCell.mp hθ ⟨n, hn⟩).trans (TauCeti.Convex.mem_signCell.mp hφ ⟨n, hn⟩).symm
 
 /-- A retained degree annihilates a relative interior point exactly when it
 annihilates the entire arrangement cell. -/

@@ -6,6 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.Convex.PolyhedralCochain.Pairing
+public import Mei.Geometry.Convex.PolyhedralCochain.Basic
 public import Mei.Geometry.Convex.PolyhedralComplex.Strata
 public import Mei.Geometry.Affine.Simplex.Transverse
 
@@ -29,11 +30,15 @@ Unbounded cells and lineality are allowed.
 
 public section
 
+open TauCeti (OrientedCell PolyhedralCochain)
+
 noncomputable section
 
 open Set Module
 
-namespace Mei
+namespace TauCeti
+
+open Mei
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i} {k : ℕ}
@@ -47,7 +52,7 @@ theorem exists_isolating_transverse_test (σ : OrientedCell h k)
     (C : FinitePolyhedralComplex h) (hσ : σ.carrier ∈ C.cells)
     {p : V} (hp : p ∈ intrinsicInterior ℝ σ.carrier) {ε : ℝ} (hε : 0 < ε) :
     ∃ s : Affine.Simplex ℝ V k,
-      σ.IsTransverse s.points ∧
+      σ.IsTransverseToCarrier s.points ∧
       convexHull ℝ (range s.points) ⊆ Metric.ball p ε ∧
       convexHull ℝ (range s.points) ∩ σ.carrier = {p} ∧
       p ∈ intrinsicInterior ℝ (convexHull ℝ (range s.points)) ∧
@@ -61,7 +66,7 @@ theorem exists_isolating_transverse_test (σ : OrientedCell h k)
       (subset_affineSpan ℝ _ (intrinsicInterior_subset hp)) (lt_min hr hε)
   have hsmall : convexHull ℝ (range s.points) ⊆ Metric.ball p r :=
     hball.trans (Metric.ball_subset_ball (min_le_left _ _))
-  refine ⟨s, σ.isTransverse_of_isCompl s hcompl (hfront.mono_left hsmall),
+  refine ⟨s, σ.isTransverseToCarrier_of_isCompl s hcompl (hfront.mono_left hsmall),
     hball.trans (Metric.ball_subset_ball (min_le_right _ _)), ?_, hpint,
     fun Q hQ hne => (hother Q hQ hne).mono_left hsmall⟩
   apply Set.Subset.antisymm
@@ -103,17 +108,18 @@ theorem sum_mk_eq_zero_iff (C : FinitePolyhedralComplex h)
     let f : OrientedCell h k →₀ E := ∑ P, Finsupp.single (σ P) (c P)
     have hf : ofFinsupp (R := R) f = 0 := by
       simpa only [f, map_sum, ofFinsupp_single] using hz
-    have hftrans : ∀ τ ∈ f.support, τ.IsTransverse s.points := by
+    have hftrans : ∀ τ ∈ f.support, τ.IsTransverseToCarrier s.points := by
       intro τ hτ
       obtain ⟨P, _, hP⟩ := Finsupp.mem_support_finsetSum τ hτ
       have he : τ = σ P := ((Finsupp.mem_support_single _ _ _).mp hP).1
       subst τ
       by_cases hPQ : P = Q
       · exact hPQ ▸ htrans
-      · exact (σ P).isTransverse_of_disjoint (hdisj P hPQ)
+      · exact (σ P).isTransverseToCarrier_of_disjoint (hdisj P hPQ)
     -- Representative invariance transfers zero in the quotient to zero pairing.
-    have heval := intersectionPairing_eq_of_ofFinsupp_eq (hf.trans (map_zero _).symm) hftrans
-      (by simp : ∀ τ ∈ (0 : OrientedCell h k →₀ E).support, τ.IsTransverse s.points)
+    have heval := intersectionPairing_eq_of_ofFinsupp_eq_of_isTransverseToCarrier
+      (hf.trans (map_zero _).symm) hftrans
+      (by simp : ∀ τ ∈ (0 : OrientedCell h k →₀ E).support, τ.IsTransverseToCarrier s.points)
     have hvalue : OrientedCell.intersectionPairing (R := R) s.points f =
         (σ Q).intersectionIndex s.points • c Q := by
       simp only [f, map_sum, OrientedCell.intersectionPairing_single]
@@ -130,4 +136,4 @@ theorem sum_mk_eq_zero_iff (C : FinitePolyhedralComplex h)
 
 end PolyhedralCochain
 
-end Mei
+end TauCeti

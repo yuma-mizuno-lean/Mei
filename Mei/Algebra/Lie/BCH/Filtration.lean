@@ -54,17 +54,17 @@ exactly when the completed element vanishes at order `a`. -/
 theorem mem_degreeIdeal_iff_of_mkQ_eq_log_projection {a k : ℕ} (hak : a ≤ k)
     (g : d.completedBCHGroup ℒ) {x : L}
     (hx : (d.truncationIdeal ℒ k).mkQ x =
-      BCHGroup.log (L := d.lieTruncation ℒ k) (CompletedGroup.projection k g)) :
+      BCHGroup.log (L := d.lieTruncation ℒ k) (TauCeti.CompletedGroup.projection k g)) :
     x ∈ d.truncationIdeal ℒ a ↔
-      g ∈ CompletedGroup.degreeFiltration (d.groupTower ℒ) (a + 1) := by
+      g ∈ TauCeti.CompletedGroup.degreeFiltration (d.groupTower ℒ) (a + 1) := by
   have hcompat :
-      (d.lieTruncationMap ℒ hak).bchGroupMap (CompletedGroup.projection k g) =
-        CompletedGroup.projection a g :=
-    CompletedGroup.map_projection a k hak g
+      (d.lieTruncationMap ℒ hak).bchGroupMap (TauCeti.CompletedGroup.projection k g) =
+        TauCeti.CompletedGroup.projection a g :=
+    TauCeti.CompletedGroup.map_projection a k hak g
   have hlog := congrArg (BCHGroup.log (L := d.lieTruncation ℒ a)) hcompat
   rw [(d.lieTruncationMap ℒ hak).log_bchGroupMap
-    (CompletedGroup.projection k g), ← hx, LieIdeal.mkQ_apply, lieTruncationMap_mk] at hlog
-  rw [CompletedGroup.degreeFiltration_succ, MonoidHom.mem_ker]
+    (TauCeti.CompletedGroup.projection k g), ← hx, LieIdeal.mkQ_apply, lieTruncationMap_mk] at hlog
+  rw [TauCeti.CompletedGroup.degreeFiltration_succ, MonoidHom.mem_ker]
   constructor
   · intro hx'
     exact BCHGroup.log_injective (L := d.lieTruncation ℒ a)
@@ -78,26 +78,26 @@ theorem mem_degreeIdeal_iff_of_mkQ_eq_log_projection {a k : ℕ} (hak : a ≤ k)
 /-- Every completed BCH element has strictly positive degree. -/
 @[simp↓]
 theorem degreeFiltration_one :
-    CompletedGroup.degreeFiltration (d.groupTower ℒ) 1 = ⊤ := by
+    TauCeti.CompletedGroup.degreeFiltration (d.groupTower ℒ) 1 = ⊤ := by
   apply top_unique
   intro g _
   obtain ⟨x, hx⟩ := (d.truncationIdeal ℒ 0).surjective_mkQ
-    (BCHGroup.log (L := d.lieTruncation ℒ 0) (CompletedGroup.projection 0 g))
+    (BCHGroup.log (L := d.lieTruncation ℒ 0) (TauCeti.CompletedGroup.projection 0 g))
   exact (d.mem_degreeIdeal_iff_of_mkQ_eq_log_projection ℒ le_rfl g hx).mp
     (by simp)
 
 /-- Positive filtration orders add under group commutators. -/
 private theorem commutator_mem_degreeFiltration_succ {a b : ℕ}
     {g h : d.completedBCHGroup ℒ}
-    (hg : g ∈ CompletedGroup.degreeFiltration (d.groupTower ℒ) (a + 1))
-    (hh : h ∈ CompletedGroup.degreeFiltration (d.groupTower ℒ) (b + 1)) :
-    ⁅g, h⁆ ∈ CompletedGroup.degreeFiltration (d.groupTower ℒ) (a + b + 2) := by
+    (hg : g ∈ TauCeti.CompletedGroup.degreeFiltration (d.groupTower ℒ) (a + 1))
+    (hh : h ∈ TauCeti.CompletedGroup.degreeFiltration (d.groupTower ℒ) (b + 1)) :
+    ⁅g, h⁆ ∈ TauCeti.CompletedGroup.degreeFiltration (d.groupTower ℒ) (a + b + 2) := by
   obtain ⟨x, hx⟩ := (d.truncationIdeal ℒ (a + b + 1)).surjective_mkQ
     (BCHGroup.log (L := d.lieTruncation ℒ (a + b + 1))
-      (CompletedGroup.projection (a + b + 1) g))
+      (TauCeti.CompletedGroup.projection (a + b + 1) g))
   obtain ⟨y, hy⟩ := (d.truncationIdeal ℒ (a + b + 1)).surjective_mkQ
     (BCHGroup.log (L := d.lieTruncation ℒ (a + b + 1))
-      (CompletedGroup.projection (a + b + 1) h))
+      (TauCeti.CompletedGroup.projection (a + b + 1) h))
   have hxa := (d.mem_degreeIdeal_iff_of_mkQ_eq_log_projection ℒ
     (by omega : a ≤ a + b + 1) g hx).mpr hg
   have hyb := (d.mem_degreeIdeal_iff_of_mkQ_eq_log_projection ℒ
@@ -105,31 +105,31 @@ private theorem commutator_mem_degreeFiltration_succ {a b : ℕ}
   have hc := d.commute_exp_mk_of_mem_degreeIdeal ℒ hxa hyb
   rw [hx, hy,
     BCHGroup.exp_log (L := d.lieTruncation ℒ (a + b + 1))
-      (CompletedGroup.projection (a + b + 1) g),
+      (TauCeti.CompletedGroup.projection (a + b + 1) g),
     BCHGroup.exp_log (L := d.lieTruncation ℒ (a + b + 1))
-      (CompletedGroup.projection (a + b + 1) h)] at hc
+      (TauCeti.CompletedGroup.projection (a + b + 1) h)] at hc
   have hab : a + b + 2 = (a + b + 1) + 1 := by omega
-  rw [hab, CompletedGroup.degreeFiltration_succ, MonoidHom.mem_ker,
+  rw [hab, TauCeti.CompletedGroup.degreeFiltration_succ, MonoidHom.mem_ker,
     map_commutatorElement]
   exact hc.commutator_eq
 
 /-- The commutator of two degree-filtration subgroups lies in their combined
 filtration order, including when either input order is zero. -/
 theorem commutator_degreeFiltration_le (a b : ℕ) :
-    ⁅CompletedGroup.degreeFiltration (d.groupTower ℒ) a,
-      CompletedGroup.degreeFiltration (d.groupTower ℒ) b⁆ ≤
-        CompletedGroup.degreeFiltration (d.groupTower ℒ) (a + b) := by
+    ⁅TauCeti.CompletedGroup.degreeFiltration (d.groupTower ℒ) a,
+      TauCeti.CompletedGroup.degreeFiltration (d.groupTower ℒ) b⁆ ≤
+        TauCeti.CompletedGroup.degreeFiltration (d.groupTower ℒ) (a + b) := by
   cases a with
   | zero =>
     simpa using Subgroup.commutator_le_right
-      (CompletedGroup.degreeFiltration (d.groupTower ℒ) 0)
-      (CompletedGroup.degreeFiltration (d.groupTower ℒ) b)
+      (TauCeti.CompletedGroup.degreeFiltration (d.groupTower ℒ) 0)
+      (TauCeti.CompletedGroup.degreeFiltration (d.groupTower ℒ) b)
   | succ a =>
     cases b with
     | zero =>
       simpa using Subgroup.commutator_le_left
-        (CompletedGroup.degreeFiltration (d.groupTower ℒ) (a + 1))
-        (CompletedGroup.degreeFiltration (d.groupTower ℒ) 0)
+        (TauCeti.CompletedGroup.degreeFiltration (d.groupTower ℒ) (a + 1))
+        (TauCeti.CompletedGroup.degreeFiltration (d.groupTower ℒ) 0)
     | succ b =>
       apply Subgroup.commutator_le.mpr
       intro g hg h hh
@@ -141,8 +141,8 @@ Consequently each successive filtration quotient is central in the corresponding
 quotient of the completed group. -/
 theorem commutator_top_degreeFiltration_le (k : ℕ) :
     ⁅(⊤ : Subgroup (d.completedBCHGroup ℒ)),
-      CompletedGroup.degreeFiltration (d.groupTower ℒ) k⁆ ≤
-        CompletedGroup.degreeFiltration (d.groupTower ℒ) (k + 1) := by
+      TauCeti.CompletedGroup.degreeFiltration (d.groupTower ℒ) k⁆ ≤
+        TauCeti.CompletedGroup.degreeFiltration (d.groupTower ℒ) (k + 1) := by
   simpa only [degreeFiltration_one, Nat.add_comm 1 k] using
     d.commutator_degreeFiltration_le ℒ 1 k
 

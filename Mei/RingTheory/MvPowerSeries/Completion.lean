@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mei.RingTheory.AdicCompletion.Filtered
-public import Mei.RingTheory.FilteredAlgebra.Map
+public import TauCeti.RingTheory.FilteredAlgebra.Map
 public import Mei.RingTheory.FilteredAlgebra.Module
 public import Mathlib.RingTheory.MvPowerSeries.Equiv
 
@@ -29,18 +29,20 @@ over itself, through `AlgFiltration.moduleCompletionEquiv`.
 
 public section
 
+open TauCeti (AlgFiltration)
+
 noncomputable section
 
 namespace Mei
 
-open AlgFiltration
+open TauCeti.AlgFiltration
 
 variable (σ R : Type*) [Finite σ] [CommRing R]
 
 /-- The ideal-of-variables completion of a polynomial ring is its power series
 ring, compatibly with the polynomial algebra structure. -/
 def principalCompletionEquiv :
-    (ofIdeal (MvPolynomial.idealOfVars σ R)).completion ≃ₐ[MvPolynomial σ R]
+    (MvPolynomial.idealOfVars σ R).algFiltration.completion ≃ₐ[MvPolynomial σ R]
       MvPowerSeries σ R :=
   (adicCompletionEquiv (MvPolynomial.idealOfVars σ R)).symm.trans
     (MvPowerSeries.toAdicCompletionAlgEquiv σ R).symm
@@ -49,9 +51,9 @@ def principalCompletionEquiv :
 followed by the quotient map. -/
 @[simp]
 theorem projection_principalCompletionEquiv_symm (k : ℕ) (p : MvPowerSeries σ R) :
-    (ofIdeal (MvPolynomial.idealOfVars σ R)).projection k
+    (MvPolynomial.idealOfVars σ R).algFiltration.projection k
       ((principalCompletionEquiv σ R).symm p) =
-      Ideal.Quotient.mk ((ofIdeal (MvPolynomial.idealOfVars σ R)).ideal (k + 1))
+      Ideal.Quotient.mk ((MvPolynomial.idealOfVars σ R).algFiltration.ideal (k + 1))
         (p.truncTotal (k + 1)) := by
   simp only [principalCompletionEquiv, AlgEquiv.symm_trans_apply,
     AlgEquiv.symm_symm, projection_adicCompletionEquiv,
@@ -65,7 +67,7 @@ theorem projection_principalCompletionEquiv_symm (k : ℕ) (p : MvPowerSeries σ
 @[simp]
 theorem principalCompletionEquiv_toCompletion (p : MvPolynomial σ R) :
     principalCompletionEquiv σ R
-      ((ofIdeal (MvPolynomial.idealOfVars σ R)).toCompletion p) = p := by
+      ((MvPolynomial.idealOfVars σ R).algFiltration.toCompletion p) = p := by
   apply (MvPowerSeries.toAdicCompletionAlgEquiv σ R).injective
   simp only [principalCompletionEquiv, AlgEquiv.trans_apply, AlgEquiv.apply_symm_apply,
     MvPowerSeries.toAdicCompletionAlgEquiv_apply, MvPowerSeries.toAdicCompletion_coe]
@@ -75,24 +77,24 @@ theorem principalCompletionEquiv_toCompletion (p : MvPolynomial σ R) :
 its finite-order projection. -/
 @[simp]
 theorem mk_truncTotal_principalCompletionEquiv (k : ℕ)
-    (x : (ofIdeal (MvPolynomial.idealOfVars σ R)).completion) :
-    Ideal.Quotient.mk ((ofIdeal (MvPolynomial.idealOfVars σ R)).ideal (k + 1))
+    (x : (MvPolynomial.idealOfVars σ R).algFiltration.completion) :
+    Ideal.Quotient.mk ((MvPolynomial.idealOfVars σ R).algFiltration.ideal (k + 1))
       ((principalCompletionEquiv σ R x).truncTotal (k + 1)) =
-        (ofIdeal (MvPolynomial.idealOfVars σ R)).projection k x := by
+        (MvPolynomial.idealOfVars σ R).algFiltration.projection k x := by
   rw [← projection_principalCompletionEquiv_symm, AlgEquiv.symm_apply_apply]
 
 /-- A polynomial representing the order-`k` projection has the same coefficients
 as the associated power series in every total degree at most `k`. -/
 theorem coeff_principalCompletionEquiv_eq_of_projection_eq
-    (x : (ofIdeal (MvPolynomial.idealOfVars σ R)).completion) (k : ℕ)
+    (x : (MvPolynomial.idealOfVars σ R).algFiltration.completion) (k : ℕ)
     (p : MvPolynomial σ R)
-    (hp : Ideal.Quotient.mk ((ofIdeal (MvPolynomial.idealOfVars σ R)).ideal (k + 1)) p =
-      (ofIdeal (MvPolynomial.idealOfVars σ R)).projection k x)
+    (hp : Ideal.Quotient.mk ((MvPolynomial.idealOfVars σ R).algFiltration.ideal (k + 1)) p =
+      (MvPolynomial.idealOfVars σ R).algFiltration.projection k x)
     (n : σ →₀ ℕ) (hn : n.degree ≤ k) :
     MvPowerSeries.coeff n (principalCompletionEquiv σ R x) = p.coeff n := by
   rw [← mk_truncTotal_principalCompletionEquiv] at hp
   have hmem := Ideal.Quotient.eq.mp hp
-  rw [ofIdeal_ideal, MvPolynomial.mem_pow_idealOfVars_iff'] at hmem
+  rw [Ideal.algFiltration_ideal, MvPolynomial.mem_pow_idealOfVars_iff'] at hmem
   have he := hmem n (Nat.lt_succ_of_le hn)
   symm
   simpa only [MvPolynomial.coeff_sub, MvPowerSeries.coeff_truncTotal _
@@ -101,16 +103,16 @@ theorem coeff_principalCompletionEquiv_eq_of_projection_eq
 /-- The module completion of a polynomial ring over itself along the ideal of
 variables is its power series ring. -/
 def principalModuleCompletionEquiv :
-    ((ofIdeal (MvPolynomial.idealOfVars σ R)).toModuleFiltration (MvPolynomial σ R)).completion
+    ((MvPolynomial.idealOfVars σ R).algFiltration.toModuleFiltration (MvPolynomial σ R)).completion
       ≃ₗ[MvPolynomial σ R] MvPowerSeries σ R :=
-  (ofIdeal (MvPolynomial.idealOfVars σ R)).moduleCompletionEquiv.trans
+  (MvPolynomial.idealOfVars σ R).algFiltration.moduleCompletionEquiv.trans
     (principalCompletionEquiv σ R).toLinearEquiv
 
 /-- A completed polynomial is sent to the same polynomial, viewed as a power series. -/
 @[simp]
 theorem principalModuleCompletionEquiv_of (p : MvPolynomial σ R) :
     principalModuleCompletionEquiv σ R
-      (((ofIdeal (MvPolynomial.idealOfVars σ R)).toModuleFiltration (MvPolynomial σ R)).of p) =
+      (((MvPolynomial.idealOfVars σ R).algFiltration.toModuleFiltration (MvPolynomial σ R)).of p) =
       p := by
   rw [principalModuleCompletionEquiv, LinearEquiv.trans_apply, moduleCompletionEquiv_of,
     AlgEquiv.toLinearEquiv_apply, principalCompletionEquiv_toCompletion]
@@ -119,7 +121,8 @@ theorem principalModuleCompletionEquiv_of (p : MvPolynomial σ R) :
 truncation at `k+1`. -/
 @[simp]
 theorem projection_principalModuleCompletionEquiv_symm (k : ℕ) (p : MvPowerSeries σ R) :
-    ((ofIdeal (MvPolynomial.idealOfVars σ R)).toModuleFiltration (MvPolynomial σ R)).projection k
+    ((MvPolynomial.idealOfVars σ R).algFiltration.toModuleFiltration
+        (MvPolynomial σ R)).projection k
       ((principalModuleCompletionEquiv σ R).symm p) =
       Submodule.Quotient.mk (p.truncTotal (k + 1)) := by
   rw [principalModuleCompletionEquiv, LinearEquiv.symm_trans_apply,
@@ -131,18 +134,18 @@ end Mei
 
 namespace RingHom
 
-open Mei.AlgFiltration
+open TauCeti.AlgFiltration
 
 variable {σ R S : Type*} [CommRing R] [CommRing S]
 
 /-- Coefficient change on polynomial completions, with the same cutoff at every order. -/
 def principalCompletionMap (φ : R →+* S) :
-    (ofIdeal (MvPolynomial.idealOfVars σ R)).completion →+*
-      (ofIdeal (MvPolynomial.idealOfVars σ S)).completion :=
-  (ofIdeal (MvPolynomial.idealOfVars σ R)).mapCompletion
-    (ofIdeal (MvPolynomial.idealOfVars σ S)) (MvPolynomial.map φ) _root_.id monotone_id (by
+    (MvPolynomial.idealOfVars σ R).algFiltration.completion →+*
+      (MvPolynomial.idealOfVars σ S).algFiltration.completion :=
+  (MvPolynomial.idealOfVars σ R).algFiltration.mapCompletion
+    (MvPolynomial.idealOfVars σ S).algFiltration (MvPolynomial.map φ) _root_.id monotone_id (by
       intro k p hp
-      simp only [ofIdeal_ideal, Ideal.mem_comap] at hp ⊢
+      simp only [Ideal.algFiltration_ideal, Ideal.mem_comap] at hp ⊢
       rw [MvPolynomial.mem_pow_idealOfVars_iff'] at hp ⊢
       intro d hd
       simp [MvPolynomial.coeff_map, hp d hd])
@@ -150,43 +153,43 @@ def principalCompletionMap (φ : R →+* S) :
 /-- At each order, coefficient change is the induced map on polynomial quotients. -/
 @[simp]
 theorem projection_principalCompletionMap (φ : R →+* S) (k : ℕ)
-    (x : (ofIdeal (MvPolynomial.idealOfVars σ R)).completion) :
-    (ofIdeal (MvPolynomial.idealOfVars σ S)).projection k (φ.principalCompletionMap x) =
-      Ideal.quotientMap ((ofIdeal (MvPolynomial.idealOfVars σ S)).ideal (k + 1))
+    (x : (MvPolynomial.idealOfVars σ R).algFiltration.completion) :
+    (MvPolynomial.idealOfVars σ S).algFiltration.projection k (φ.principalCompletionMap x) =
+      Ideal.quotientMap ((MvPolynomial.idealOfVars σ S).algFiltration.ideal (k + 1))
         (MvPolynomial.map φ) (by
           intro p hp
-          simp only [ofIdeal_ideal, Ideal.mem_comap] at hp ⊢
+          simp only [Ideal.algFiltration_ideal, Ideal.mem_comap] at hp ⊢
           rw [MvPolynomial.mem_pow_idealOfVars_iff'] at hp ⊢
           intro d hd
           simp [MvPolynomial.coeff_map, hp d hd])
-        ((ofIdeal (MvPolynomial.idealOfVars σ R)).projection k x) := by
+        ((MvPolynomial.idealOfVars σ R).algFiltration.projection k x) := by
   simp only [principalCompletionMap, projection_mapCompletion, id_eq]
 
 /-- Coefficient change commutes with the canonical inclusion into the completion. -/
 @[simp]
 theorem principalCompletionMap_toCompletion (φ : R →+* S) (p : MvPolynomial σ R) :
-    φ.principalCompletionMap ((ofIdeal (MvPolynomial.idealOfVars σ R)).toCompletion p) =
-      (ofIdeal (MvPolynomial.idealOfVars σ S)).toCompletion (MvPolynomial.map φ p) := by
+    φ.principalCompletionMap ((MvPolynomial.idealOfVars σ R).algFiltration.toCompletion p) =
+      (MvPolynomial.idealOfVars σ S).algFiltration.toCompletion (MvPolynomial.map φ p) := by
   simp only [principalCompletionMap, mapCompletion_toCompletion]
 
 end RingHom
 
 namespace Mei
 
-open AlgFiltration
+open TauCeti.AlgFiltration
 
 variable {σ R S : Type*} [Finite σ] [CommRing R] [CommRing S]
 
 /-- Coefficient change commutes with the power series description of the completion. -/
 @[simp]
 theorem principalCompletionEquiv_map (φ : R →+* S)
-    (x : (ofIdeal (MvPolynomial.idealOfVars σ R)).completion) :
+    (x : (MvPolynomial.idealOfVars σ R).algFiltration.completion) :
     principalCompletionEquiv σ S (φ.principalCompletionMap x) =
       MvPowerSeries.map φ (principalCompletionEquiv σ R x) := by
   obtain ⟨p, rfl⟩ := (principalCompletionEquiv σ R).symm.surjective x
   apply (principalCompletionEquiv σ S).symm.injective
   simp only [AlgEquiv.symm_apply_apply, AlgEquiv.apply_symm_apply]
-  apply (ofIdeal (MvPolynomial.idealOfVars σ S)).completion_ext
+  apply (MvPolynomial.idealOfVars σ S).algFiltration.completion_ext
   intro k
   simp only [RingHom.principalCompletionMap, projection_mapCompletion, id_eq,
     projection_principalCompletionEquiv_symm, Ideal.quotientMap_mk]
@@ -197,7 +200,7 @@ end Mei
 
 namespace RingHom
 
-open Mei.AlgFiltration
+open TauCeti.AlgFiltration
 
 variable {σ R S T : Type*} [CommRing R] [CommRing S] [CommRing T]
 
@@ -205,11 +208,11 @@ variable {σ R S T : Type*} [CommRing R] [CommRing S] [CommRing T]
 @[simp]
 theorem principalCompletionMap_id :
     (RingHom.id R).principalCompletionMap (σ := σ) =
-      RingHom.id (ofIdeal (MvPolynomial.idealOfVars σ R)).completion := by
+      RingHom.id (MvPolynomial.idealOfVars σ R).algFiltration.completion := by
   have hmap : MvPolynomial.map (RingHom.id R) = RingHom.id (MvPolynomial σ R) :=
     RingHom.ext MvPolynomial.map_id
   simpa only [principalCompletionMap, hmap] using
-    (ofIdeal (MvPolynomial.idealOfVars σ R)).mapCompletion_id
+    (MvPolynomial.idealOfVars σ R).algFiltration.mapCompletion_id
 
 /-- Coefficient changes on completed polynomials respect composition. -/
 theorem principalCompletionMap_comp (φ : R →+* S) (ψ : S →+* T) :

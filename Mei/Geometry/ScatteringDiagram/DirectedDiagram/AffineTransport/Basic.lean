@@ -59,7 +59,7 @@ variable {Γ Γ' Γ'' Λ Λ' Λ'' R V V' V'' ι : Type*} {L L' L'' : Type u}
   {H : DirectedWallSpaces ρ ℒ} {H' : DirectedWallSpaces ρ' ℳ}
   {H'' : DirectedWallSpaces ρ'' ℋ}
   (D : DirectedDiagram (d := d) h H ι)
-  (e : Toric.IntegralAffineEquiv h h')
+  (e : TauCeti.Toric.IntegralAffineEquiv h h')
   (E : DirectedWallSpaces.CoordinateChange (d := d) (e := d') H H')
   (hE : E.tangentEquiv = e.latticeEquiv)
 
@@ -87,7 +87,7 @@ theorem pushforward_ofCoordinateChange :
 theorem image_fullHyperplane
     (hfull : ∀ j, ∃ a : ℝ,
       (D.wall j).support = {x | h.realCharacter (D.wall j).normal x = a})
-    (e : Toric.IntegralAffineEquiv h h')
+    (e : TauCeti.Toric.IntegralAffineEquiv h h')
     (E : DirectedWallSpaces.CoordinateChange (d := d) (e := d') H H')
     (hE : E.tangentEquiv = e.latticeEquiv) : ∀ j, ∃ a : ℝ,
     ((D.image e E hE).wall j).support =
@@ -100,7 +100,7 @@ theorem image_fullHyperplane
 /-- Identity coordinates fix a directed diagram. -/
 @[simp]
 theorem image_refl :
-    D.image (Toric.IntegralAffineEquiv.refl h)
+    D.image (TauCeti.Toric.IntegralAffineEquiv.refl h)
       (DirectedWallSpaces.CoordinateChange.refl d H) (by simp) = D := by
   apply DirectedDiagram.ext
   funext j
@@ -108,7 +108,7 @@ theorem image_refl :
 
 /-- Successive spatial and algebraic coordinate changes compose on diagrams. -/
 theorem image_image
-    (f : Toric.IntegralAffineEquiv h' h'')
+    (f : TauCeti.Toric.IntegralAffineEquiv h' h'')
     (F : DirectedWallSpaces.CoordinateChange (d := d') (e := d'') H' H'')
     (hF : F.tangentEquiv = f.latticeEquiv) :
     (D.image e E hE).image f F hF =

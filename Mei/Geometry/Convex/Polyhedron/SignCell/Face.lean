@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.Convex.Polyhedron.SignCell
+public import TauCeti.Analysis.Convex.Polyhedron.SignCell.Basic
 public import Mei.Geometry.Convex.Polyhedron.Face
 
 /-!
@@ -20,9 +20,15 @@ no rationality assumption or bundled polyhedral-complex structure is introduced.
 
 public section
 
+open TauCeti.Convex (SignSpecializes closure_signCell
+  isConvexPolyhedron_of_mem_realizedSignCellClosures
+  isExtreme_inter_of_mem_realizedSignCellClosures mem_signCell_sign mem_weakSignCell_iff_rows
+  mem_weakSignCell_iff_specializes realizedSignCellClosures signCell signSpecializes_iff
+  weakSignCell weakSignCellRows weakSignCellRows_eq_zero_iff weakSignCell_eq_setOf_rows
+  weakSignCell_subset_of_specializes)
+
 namespace IsExtreme
 
-open Mei.Convex
 
 variable {V ι : Type*} [AddCommGroup V] [Module ℝ V] [TopologicalSpace V]
   [ContinuousAdd V] [ContinuousSMul ℝ V] [Finite ι]
@@ -48,7 +54,7 @@ theorem exists_zeroSpecialization_signCell {g : ι → (V →ᴬ[ℝ] ℝ)}
   rw [closure_signCell hτne]
   apply Set.Subset.antisymm
   · intro x hx
-    apply mem_weakSignCell.mpr
+    apply TauCeti.Convex.mem_weakSignCell.mpr
     intro j
     by_cases hj : τ j = 0
     · have hpj : g j p = 0 := sign_eq_zero_iff.mp hj
@@ -58,7 +64,7 @@ theorem exists_zeroSpecialization_signCell {g : ι → (V →ᴬ[ℝ] ℝ)}
       have hxj := weakSignCellRows_eq_zero_iff.mp hxrow
       simp [hj, hxj]
     · have heq : τ j = σ j := (signSpecializes_iff.mp hτ j).resolve_left hj
-      simpa only [heq] using mem_weakSignCell.mp (hF.subset hx) j
+      simpa only [heq] using TauCeti.Convex.mem_weakSignCell.mp (hF.subset hx) j
   · intro x hx
     rw [hI]
     refine ⟨mem_weakSignCell_iff_rows.mp (weakSignCell_subset_of_specializes hτ hx), ?_⟩
@@ -66,7 +72,7 @@ theorem exists_zeroSpecialization_signCell {g : ι → (V →ᴬ[ℝ] ℝ)}
     have hpI := (hI ▸ hp).2 j hj
     have hpj : g j.1 p = 0 := weakSignCellRows_eq_zero_iff.mp hpI
     have hτj : τ j.1 = 0 := sign_eq_zero_iff.mpr hpj
-    have hxj := (mem_weakSignCell.mp hx j.1).1 hτj
+    have hxj := (TauCeti.Convex.mem_weakSignCell.mp hx j.1).1 hτj
     exact weakSignCellRows_eq_zero_iff.mpr hxj
 
 /-- Nonempty faces of realized closed sign cells are themselves realized closed
@@ -91,9 +97,9 @@ theorem _root_.IsExtreme.mem_realizedSignCellClosures [Finite ι]
     {g : ι → (V →ᴬ[ℝ] ℝ)} {P F : Set V} (hF : IsExtreme ℝ P F)
     (hP : P ∈ realizedSignCellClosures g) (hconv : Convex ℝ F) (hne : F.Nonempty) :
     F ∈ realizedSignCellClosures g := by
-  obtain ⟨σ, hσ, rfl⟩ := Mei.Convex.mem_realizedSignCellClosures.mp hP
+  obtain ⟨σ, hσ, rfl⟩ := TauCeti.Convex.mem_realizedSignCellClosures.mp hP
   obtain ⟨τ, _, hτ, heq⟩ := hF.exists_zeroSpecialization_closure_signCell hσ hconv hne
-  exact Mei.Convex.mem_realizedSignCellClosures.mpr ⟨τ, hτ, heq⟩
+  exact TauCeti.Convex.mem_realizedSignCellClosures.mpr ⟨τ, hτ, heq⟩
 
 /-- Every nonempty intersection of two members of the finite realized closure
 family is again a member of the same family. -/

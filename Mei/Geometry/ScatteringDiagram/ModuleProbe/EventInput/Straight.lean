@@ -65,7 +65,7 @@ local notation "labels" k:max e:max => (List.map
   (crossingEventProduct (G := d.truncatedGroup ℒ k)
     (fun c : B.active k => h.realCharacter
       (DirectedWall.normal (DirectedDiagram.wall B c)))
-    (fun c => CompletedGroup.projection k (DirectedWall.label (DirectedDiagram.wall B c)))
+    (fun c => TauCeti.CompletedGroup.projection k (DirectedWall.label (DirectedDiagram.wall B c)))
     (B.activeLabels_commute k) e) (List.reverse (orderedCrossingTimes e)))
 local notation "cutoffRestriction" hkl:max => (WallComplement.restrictPrefunctor
   (fun c : B.active _ => DirectedWall.support (DirectedDiagram.wall B c))
@@ -194,7 +194,7 @@ theorem exists_straightEventInputArrangement
     have hh : ν c (AffineMap.lineMap x.val y.val τ[j.val]) = height c :=
       (B.wall c).normal_apply_eq hmem (B.wall c).support_nonempty.choose_spec
     have hpoint : AffineMap.lineMap x.val y.val τ[j.val] =
-        sweepProjection (ν c) (height c) ((ν c (v a))⁻¹ • v a) y.val := by
+        ContinuousLinearMap.sweepProjection (ν c) (height c) ((ν c (v a))⁻¹ • v a) y.val := by
       have hline : AffineMap.lineMap x.val y.val τ[j.val] =
           y.val + ((1 - τ[j.val]) * L) • v a := by
         rw [AffineMap.lineMap_apply_module']

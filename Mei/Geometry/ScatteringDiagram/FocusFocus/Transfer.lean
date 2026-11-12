@@ -33,6 +33,8 @@ anti-canonical class*, §3 (arXiv:1601.07081v4).
 
 public noncomputable section
 
+open TauCeti (GradedCorrespondence)
+
 namespace Mei.FocusFocus
 
 open TauCeti AddMonoidAlgebra Mei.NodeAlgebra

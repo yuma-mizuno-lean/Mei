@@ -20,7 +20,7 @@ Thus its order-zero quotient retains the original piece `ℳ p`, even when `p` h
 negative degree. These filtered modules provide coefficient spaces on which positive
 degree operators can act.
 
-The filtration restricts `Mei.DirectSum.degreeTail`; its membership and separatedness
+The filtration restricts `TauCeti.DirectSum.degreeTail`; its membership and separatedness
 use the ambient homogeneous decomposition. The relative decomposition uses
 `TauCeti.DirectSum.Decomposition.restrict` and `DirectSum.IsInternal.iSup_fiber`;
 `DirectSum.map_decompose_shift` identifies its projections with the ambient ones.
@@ -163,15 +163,15 @@ variable (d : PositiveDegrees Γ)
 /-- The decreasing filtration on `p + P` by the relative degree `δ(q - p)`. -/
 def _root_.TauCeti.PositiveDegrees.shiftedFiltration : ModuleFiltration R
     (shiftedSubmodule ℳ d.monoid p) where
-  submodule k := (Mei.DirectSum.degreeTail ℳ (fun q => d.degree (q - p)) k).comap
+  submodule k := (TauCeti.DirectSum.degreeTail ℳ (fun q => d.degree (q - p)) k).comap
     (shiftedSubmodule ℳ d.monoid p).subtype
-  antitone := fun _ _ h => Submodule.comap_mono (Mei.DirectSum.degreeTail_antitone ℳ _ h)
+  antitone := fun _ _ h => Submodule.comap_mono (TauCeti.DirectSum.degreeTail_antitone ℳ _ h)
   zero_eq_top := by
     apply top_unique
     intro x _
     have hs : shiftedSubmodule ℳ d.monoid p ≤
-        Mei.DirectSum.degreeTail ℳ (fun q => d.degree (q - p)) 0 :=
-      iSup_le fun n => Mei.DirectSum.le_degreeTail ℳ _
+        TauCeti.DirectSum.degreeTail ℳ (fun q => d.degree (q - p)) 0 :=
+      iSup_le fun n => TauCeti.DirectSum.le_degreeTail ℳ _
         (by simpa using d.degree_nonneg n.property)
     exact hs x.property
 
@@ -179,7 +179,7 @@ omit [DecidableEq Γ] [DirectSum.Decomposition ℳ] in
 /-- Each relative filtration term restricts the corresponding ambient degree tail. -/
 theorem _root_.TauCeti.PositiveDegrees.shiftedFiltration_submodule (k : ℕ) :
     (d.shiftedFiltration ℳ p).submodule k =
-      (Mei.DirectSum.degreeTail ℳ (fun q => d.degree (q - p)) k).comap
+      (TauCeti.DirectSum.degreeTail ℳ (fun q => d.degree (q - p)) k).comap
         (shiftedSubmodule ℳ d.monoid p).subtype := (rfl)
 
 /-- Filtration membership means that all components of smaller relative degree vanish. -/
@@ -187,7 +187,7 @@ theorem _root_.TauCeti.PositiveDegrees.mem_shiftedFiltration_iff
     {k : ℕ} {x : shiftedSubmodule ℳ d.monoid p} :
     x ∈ (d.shiftedFiltration ℳ p).submodule k ↔
       ∀ q, d.degree (q - p) < k → (DirectSum.decompose ℳ (x : M) q : M) = 0 :=
-  Mei.DirectSum.mem_degreeTail_iff ℳ _
+  TauCeti.DirectSum.mem_degreeTail_iff ℳ _
 
 omit [DecidableEq Γ] [DirectSum.Decomposition ℳ] in
 /-- Origin inclusion can only increase relative filtration order. -/
@@ -196,11 +196,11 @@ theorem _root_.TauCeti.PositiveDegrees.shiftedSupportInclusion_filtered
     (d.shiftedFiltration ℳ p).submodule k ≤
       ((d.shiftedFiltration ℳ q).submodule k).comap
         (shiftedSupportInclusion ℳ d.monoid p q hpq) := by
-  have htail : Mei.DirectSum.degreeTail ℳ (fun u => d.degree (u - p)) k ≤
-      Mei.DirectSum.degreeTail ℳ (fun u => d.degree (u - q)) k := by
-    rw [Mei.DirectSum.degreeTail_def]
+  have htail : TauCeti.DirectSum.degreeTail ℳ (fun u => d.degree (u - p)) k ≤
+      TauCeti.DirectSum.degreeTail ℳ (fun u => d.degree (u - q)) k := by
+    rw [TauCeti.DirectSum.degreeTail_def]
     refine iSup_le fun u => iSup_le fun hu => ?_
-    apply Mei.DirectSum.le_degreeTail
+    apply TauCeti.DirectSum.le_degreeTail
     have he : d.degree (u - q) = d.degree (u - p) + d.degree (p - q) := by
       rw [← map_add]
       congr 1
@@ -213,7 +213,7 @@ theorem _root_.TauCeti.PositiveDegrees.shiftedSupportInclusion_filtered
 /-- The relative-degree filtration is separated. -/
 theorem _root_.TauCeti.PositiveDegrees.iInf_shiftedFiltration_eq_bot :
     (⨅ k, (d.shiftedFiltration ℳ p).submodule k) = ⊥ := by
-  rw [shiftedFiltration, ← Submodule.comap_iInf, Mei.DirectSum.iInf_degreeTail_eq_bot]
+  rw [shiftedFiltration, ← Submodule.comap_iInf, TauCeti.DirectSum.iInf_degreeTail_eq_bot]
   simp
 
 /-- The successor relative filtration term is the degree submodule of the relative grading.

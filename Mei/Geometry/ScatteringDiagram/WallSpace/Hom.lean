@@ -87,7 +87,7 @@ theorem completedMap_mem_wallGroup (f : GradedLieHom T ℒ ℳ)
   intro k
   rw [projection_completedMap]
   have hlog := (f.lieTruncatedMap k le_rfl).log_bchGroupMap
-    (CompletedGroup.projection (T.modulus k) g)
+    (TauCeti.CompletedGroup.projection (T.modulus k) g)
   exact hlog.symm ▸ f.lieTruncatedMap_mem_truncatedRayLieSubalgebra hdegree hwall le_rfl
     ((H.mem_wallGroup w m g).mp hg (T.modulus k))
 

@@ -127,7 +127,7 @@ theorem coe_directLimitRayUnit_inv (H : (PowerSeries R)ˣ) :
   -- The monoid homomorphism maps the inverse unit to the inverse evaluated unit.
   rfl
 
-local notation "ev" => Mei.AlgFiltration.completedAeval (F)
+local notation "ev" => TauCeti.AlgFiltration.completedAeval (F)
   (completedRayGenerator q β d.monoid d.degree (fun _ h => d.degree_nonneg h) n hn)
 
 private theorem conjugated_chart_coordinates (H : (PowerSeries R)ˣ)

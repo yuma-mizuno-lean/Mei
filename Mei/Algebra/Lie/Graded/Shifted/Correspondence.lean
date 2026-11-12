@@ -9,7 +9,7 @@ public import Mei.Algebra.Lie.Graded.Shifted.Basic
 public import Mei.Algebra.Lie.Filtered.BCH
 public import Mei.LinearAlgebra.GradedModule.Shifted.Quotient
 public import Mei.LinearAlgebra.GradedCorrespondence.Hom
-public import Mei.LinearAlgebra.GradedCorrespondence.Terminal
+public import TauCeti.LinearAlgebra.GradedCorrespondence.Terminal
 
 /-!
 # Finite shifted wall actions as graded correspondences
@@ -27,6 +27,8 @@ finite BCH action and its truncation naturality theorem.
 -/
 
 public section
+
+open TauCeti (GradedCorrespondence)
 
 open TauCeti (PositiveDegrees IsPositiveGrading)
 
@@ -111,13 +113,13 @@ for a compatible finite BCH wall label, including mixed normal signs. -/
 theorem transition_terminalGraphLift_shiftedBCHAction {k l : ℕ} (h : k ≤ l)
     (g : BCHGroup (d.lieTruncation ℒ l)) (w : Γ → ℤ) :
     ((d.shiftedLieFiltration ℒ ℳ p).transition h).comp
-        (GradedCorrespondence.terminalGraphLift (d.shiftedQuotientGrading ℳ p l).piece
+        (GradedCorrespondence.terminalGraphLeft (d.shiftedQuotientGrading ℳ p l).piece
           ((d.shiftedLieFiltration ℒ ℳ p).truncatedBCHAction d ℒ l g) w) =
-      (GradedCorrespondence.terminalGraphLift (d.shiftedQuotientGrading ℳ p k).piece
+      (GradedCorrespondence.terminalGraphLeft (d.shiftedQuotientGrading ℳ p k).piece
         ((d.shiftedLieFiltration ℒ ℳ p).truncatedBCHAction d ℒ k
           ((d.lieTruncationMap ℒ h).bchGroupMap g)) w).comp
             ((d.shiftedLieFiltration ℒ ℳ p).transition h) := by
-  refine GradedCorrespondence.terminalGraphLift_naturality
+  refine GradedCorrespondence.comp_terminalGraphLeft_of_pos
     _ _ w _ _ w _ id ?_ ?_ (fun _ => Iff.rfl)
   · intro i a ha
     exact d.transition_mem_shiftedQuotientGrading ℳ p h ha
@@ -135,7 +137,7 @@ theorem transition_terminalGraphRight_shiftedBCHAction {k l : ℕ} (h : k ≤ l)
         ((d.shiftedLieFiltration ℒ ℳ p).truncatedBCHAction d ℒ k
           ((d.lieTruncationMap ℒ h).bchGroupMap g)) w).comp
             ((d.shiftedLieFiltration ℒ ℳ p).transition h) := by
-  refine GradedCorrespondence.terminalGraphRight_naturality
+  refine GradedCorrespondence.comp_terminalGraphRight_of_neg
     _ _ w _ _ w _ id ?_ ?_ (fun _ => Iff.rfl)
   · intro i a ha
     exact d.transition_mem_shiftedQuotientGrading ℳ p h ha

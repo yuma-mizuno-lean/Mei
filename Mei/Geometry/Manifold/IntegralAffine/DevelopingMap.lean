@@ -37,6 +37,8 @@ neither the universal cover nor the holonomy is constructed here.
 
 public section
 
+open TauCeti.Toric (IntegralAffineEquiv)
+
 open Set Topology Manifold
 
 namespace Mei.Toric

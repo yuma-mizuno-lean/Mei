@@ -98,7 +98,7 @@ theorem shiftedHomogeneousComponent_completedBCHAction_of_normal_eq_zero
       d.shiftedHomogeneousComponent ℳ p q a := by
   let F := d.shiftedLieFiltration ℒ ℳ p
   let k := (d.degree (q - p)).toNat
-  let gk : BCHGroup (d.lieTruncation ℒ k) := CompletedGroup.projection k g
+  let gk : BCHGroup (d.lieTruncation ℒ k) := TauCeti.CompletedGroup.projection k g
   have hk : d.degree (q - p) ≤ k := Int.self_le_toNat _
   have hp : F.projection k (F.completedBCHAction d ℒ g a) =
       F.truncatedExpLieAction d ℒ k (BCHGroup.log gk) (F.projection k a) :=

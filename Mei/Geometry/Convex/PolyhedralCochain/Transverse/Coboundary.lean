@@ -18,9 +18,13 @@ each boundary facet has direction contained in that of its parent cell.
 
 public section
 
+open TauCeti (OrientedCell PolyhedralCochain)
+
 noncomputable section
 
-namespace Mei.OrientedCell
+namespace TauCeti.OrientedCell
+
+open Mei
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i} {k : ℕ}
@@ -34,9 +38,11 @@ theorem cellCoboundary_mem_transverseSubmodule (σ : OrientedCell h k) (v : V)
   exact Submodule.sum_mem _ fun τ hτ => PolyhedralCochain.mk_mem_transverseSubmodule v τ
     (σ.notMem_direction_of_mem_boundaryFacets hτ hv) c
 
-end Mei.OrientedCell
+end TauCeti.OrientedCell
 
-namespace Mei.PolyhedralCochain
+namespace TauCeti.PolyhedralCochain
+
+open Mei
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
@@ -54,4 +60,4 @@ theorem coboundaryOfFinsupp_mem_transverseSubmodule (v : V)
   exact Submodule.sum_mem _ fun σ hσ =>
     σ.cellCoboundary_mem_transverseSubmodule v (hf σ hσ) (f σ)
 
-end Mei.PolyhedralCochain
+end TauCeti.PolyhedralCochain

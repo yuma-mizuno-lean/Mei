@@ -26,6 +26,8 @@ Part III*, §5.1, arXiv:2111.00800v6, and Gross–Hacking–Keel–Kontsevich,
 
 public section
 
+open TauCeti (AlgFiltration)
+
 open TauCeti (PositiveDegrees)
 
 noncomputable section

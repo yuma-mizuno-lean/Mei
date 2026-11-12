@@ -302,20 +302,20 @@ theorem truncationMap_pathProduct_stageKS (t t' : Bool) (ht : t' = !t)
 walls inside `ker (evaluation at b)` carry the projections of the completed group element
 `x`, all other walls carrying `1`. -/
 def alternating (x : d.completedBCHGroup ℒ)
-    (hx : ∀ k, CompletedGroup.projection k x ∈ hyperplaneLabels j h d ℒ b k) :
+    (hx : ∀ k, TauCeti.CompletedGroup.projection k x ∈ hyperplaneLabels j h d ℒ b k) :
     CompletedDiagram (KSSpace.continuousDual h) d ℒ (alternatingComplex h a b) where
-  diagram k := stageKS hb hb0 ha ha0 (CompletedGroup.projection k x) (hx k) (decide (Even k))
+  diagram k := stageKS hb hb0 ha ha0 (TauCeti.CompletedGroup.projection k x) (hx k) (decide (Even k))
   compatible k _ _ _ _ p q hpq :=
     truncationMap_pathProduct_stageKS hb hb0 ha ha0 (hx k) (hx (k + 1))
-      (CompletedGroup.map_projection k (k + 1) (Nat.le_succ k) x) _ _
+      (TauCeti.CompletedGroup.map_projection k (k + 1) (Nat.le_succ k) x) _ _
       (by simp only [Nat.even_add_one, decide_not]) p q hpq
 
 /-- The diagram of the completed diagram at cutoff `k` is the stage of the parity of `k`. -/
 @[simp]
 theorem alternating_diagram (x : d.completedBCHGroup ℒ)
-    (hx : ∀ k, CompletedGroup.projection k x ∈ hyperplaneLabels j h d ℒ b k) (k : ℕ) :
+    (hx : ∀ k, TauCeti.CompletedGroup.projection k x ∈ hyperplaneLabels j h d ℒ b k) (k : ℕ) :
     (alternating hb hb0 ha ha0 x hx).diagram k =
-      stageKS hb hb0 ha ha0 (CompletedGroup.projection k x) (hx k) (decide (Even k)) := (rfl)
+      stageKS hb hb0 ha ha0 (TauCeti.CompletedGroup.projection k x) (hx k) (decide (Even k)) := (rfl)
 
 end Diagram
 
@@ -334,7 +334,7 @@ orthogonal to the hyperplane `θ ↦ θ(e₂) = 0`: the complex of the even cuto
 that hyperplane and the complex of the odd cutoffs by it and `θ(e₁) = 0`. -/
 theorem exists_completedDiagram_not_eventually_eq_orthant
     (x : (PositiveDegrees.orthant (Fin 2)).completedBCHGroup ℒ)
-    (hx : ∀ k, CompletedGroup.projection k x ∈ hyperplaneLabels
+    (hx : ∀ k, TauCeti.CompletedGroup.projection k x ∈ hyperplaneLabels
       ((Int.castAddHom ℝ).compLeft (Fin 2)) Λ₂
       (PositiveDegrees.orthant (Fin 2)) ℒ (Pi.single 1 1) k) :
     ∃ (C : ℕ → FinitePolyhedralComplex (Λ₂).continuousDual)

@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.LinearAlgebra.GradedCorrespondence.Basic
+public import TauCeti.LinearAlgebra.GradedCorrespondence.Basic
 public import Mathlib.RingTheory.GradedAlgebra.Basic
 
 /-!
@@ -22,7 +22,7 @@ The proof uses Mathlib's `DirectSum.decompose_mul` and `DirectSum.coe_mul_apply`
 
 public section
 
-namespace Mei.GradedCorrespondence
+namespace TauCeti.GradedCorrespondence
 
 variable {R B U V ι κ : Type*} [Semiring R]
   [AddCommMonoid B] [Module R B] [Mul B]
@@ -36,7 +36,7 @@ Only the indicated product of lifts and its image need to be multiplicative. In 
 these hypotheses hold for multiplicative admissible lifts and an algebra-homomorphism leg.
 The admissible set need not be closed under addition: admissibility of the sum is explicit.
 The reverse-crossing formula is this theorem applied to `C.symm`. -/
-theorem transfer_mul (C : Mei.GradedCorrespondence (B := B) 𝒰 𝒱 I J)
+theorem transfer_mul (C : TauCeti.GradedCorrespondence (B := B) 𝒰 𝒱 I J)
     (i j : I) (hij : (i : ι) + (j : ι) ∈ I) (a : 𝒰 i) (b : 𝒰 j)
     (hLift : C.liftLeft ⟨(i : ι) + (j : ι), hij⟩
       ⟨(a : U) * (b : U), SetLike.mul_mem_graded a.property b.property⟩ =
@@ -52,4 +52,4 @@ theorem transfer_mul (C : Mei.GradedCorrespondence (B := B) 𝒰 𝒱 I J)
   simp only [transfer_apply, hLift, hRight, DirectSum.decompose_mul]
   exact DirectSum.coe_mul_apply 𝒱 _ _ k
 
-end Mei.GradedCorrespondence
+end TauCeti.GradedCorrespondence

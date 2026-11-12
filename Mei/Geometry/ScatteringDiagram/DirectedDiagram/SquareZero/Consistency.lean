@@ -362,14 +362,14 @@ variable {w : SupportedRay d} (hw : P.degree 0 + P.degree 1 ∈ w.rayDegrees)
 
 /-- The order-`k` projection of a hyperplane label is the exponential of its logarithm. -/
 theorem projection_completion_label_inl (j : Fin 2) :
-    CompletedGroup.projection k ((P.completion h θ₀ hw hμ).wall (.inl j)).label =
+    TauCeti.CompletedGroup.projection k ((P.completion h θ₀ hw hμ).wall (.inl j)).label =
       BCHGroup.exp (P.labelLog k j) := by
   rw [completion_wall_inl, hyperplane_label, PositiveDegrees.projection_expToCompletion,
     labelLog]
 
 /-- The order-`k` projection of the correction label is the exponential of its logarithm. -/
 theorem projection_completion_label_inr (u : Unit) :
-    CompletedGroup.projection k ((P.completion h θ₀ hw hμ).wall (.inr u)).label =
+    TauCeti.CompletedGroup.projection k ((P.completion h θ₀ hw hμ).wall (.inr u)).label =
       BCHGroup.exp (P.commutatorLog k) := by
   rw [completion_wall_inr, correction_label, PositiveDegrees.projection_expToCompletion,
     commutatorLog]
@@ -386,7 +386,7 @@ theorem levelConsistent_completion_of_exp_commutatorLog_eq_one
   have hinl (j : D.active k) : ∃ l : Fin 2, j.1 = .inl l := by
     obtain ⟨j | u, hj⟩ := j
     · exact ⟨j, rfl⟩
-    · have h1 : CompletedGroup.projection k (D.wall (.inr u)).label =
+    · have h1 : TauCeti.CompletedGroup.projection k (D.wall (.inr u)).label =
           (1 : (d.groupTower ℒ).obj (Opposite.op k)) := by
         rw [P.projection_completion_label_inr, hC]
         exact (d.groupTower_obj_one ℒ k).symm
@@ -525,7 +525,7 @@ theorem log_combinedLabel_completion (v : V) :
   let G : Fin 2 ⊕ Unit → d.lieTruncation ℒ k := fun j =>
     if θ ∈ (D.wall j).support then
       (if 0 < h.realCharacter (D.wall j).normal v then -1 else 1 : ℤ) •
-        BCHGroup.log (L := d.lieTruncation ℒ k) (CompletedGroup.projection k (D.wall j).label)
+        BCHGroup.log (L := d.lieTruncation ℒ k) (TauCeti.CompletedGroup.projection k (D.wall j).label)
     else 0
   have hsum : BCHGroup.log (D.combinedLabel k θ v hθ) = ∑ j, G j := by
     let := Fintype.ofFinite (D.active k)

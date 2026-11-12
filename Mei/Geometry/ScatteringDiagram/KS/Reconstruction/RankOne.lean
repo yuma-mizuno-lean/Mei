@@ -48,13 +48,13 @@ This also applies when the positive monoid omits its primitive ray generator. -/
 @[simp↓]
 theorem reconstruct_label_int (g : d.completedBCHGroup ℒ)
     (P : (d.arrangementComplex h k).walls) :
-    ((d.reconstruct h ℒ g).diagram k).label P = CompletedGroup.projection k g := by
+    ((d.reconstruct h ℒ g).diagram k).label P = TauCeti.CompletedGroup.projection k g := by
   have hP : (P : Set (V →L[ℝ] ℝ)) = {0} :=
     d.eq_singleton_zero_of_mem_arrangementComplex_walls_int h P.property
   have hzero : (0 : V →L[ℝ] ℝ) ∈ intrinsicInterior ℝ (P : Set (V →L[ℝ] ℝ)) := by
     simp [hP]
   rw [d.reconstruct_diagram]
-  let a : d.truncatedGroup ℒ k := CompletedGroup.projection k g
+  let a : d.truncatedGroup ℒ k := TauCeti.CompletedGroup.projection k g
   -- The tower projection has the concrete truncated BCH carrier; naming it
   -- fixes that identification before applying the finite reconstruction API.
   change (d.reconstructFinite h ℒ a).label P = a

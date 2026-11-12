@@ -6,7 +6,8 @@ Authors: Codex
 module
 
 public import Mei.Geometry.Convex.Sweep.Itinerary
-public import Mei.Geometry.Convex.Polyhedron.Rational.LocallyClosed
+public import TauCeti.Analysis.Convex.Polyhedron.Rational.LocallyClosed
+public import Mei.Geometry.Convex.Polyhedron.Rational.Map
 
 /-!
 # Rational endpoint domains of backward itineraries
@@ -18,7 +19,8 @@ endpoint domains, and semilinear constraints give finite disjoint decompositions
 such domains. These are the endpoint charts used to parameterize transverse affine
 broken-line histories.
 
-We use the existing `sweepProjection`, `backwardPoint` and `backwardTime` constructions,
+We use `ContinuousLinearMap.sweepProjection`, `backwardPoint` and
+`backwardTime`,
 and rational pullback and sign-cell decomposition for semilinear sets. The geometric
 interpretation follows Carl–Pumperla–Siebert, *A tropical view on Landau–Ginzburg models*,
 §4 (arXiv:2205.07753v2). The constraints here impose the selected encounters and their
@@ -28,6 +30,10 @@ conditions. Tangent steps retain the existing totalized zero-time convention.
 
 public section
 
+open TauCeti (IsLocallyClosedPolyhedron IsRationalNormalPolyhedron IsRationalSemilinear
+  RationalAffinePolyhedron isLocallyClosedPolyhedron_setOf_forall_neg
+  isRationalNormalPolyhedron_iff isRationalNormalPolyhedron_setOf_forall)
+
 namespace Mei.Convex
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
@@ -36,15 +42,16 @@ variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ 
 /-- Projection along a lattice vector to a rational-normal hyperplane has rational
 linear part. The formula is totalized even when the vector is tangent. -/
 theorem isRationalLinearMap_sweepProjection {f : V →L[ℝ] ℝ}
-    (hf : Toric.IsRationalFunctional h f.toLinearMap) (c : ℝ) (w : N) :
-    Toric.IsRationalLinearMap h h
-      (sweepProjection f c ((f (ι w))⁻¹ • ι w)).toAffineMap.linear := by
-  rw [Toric.isRationalLinearMap_iff]
+    (hf : TauCeti.Toric.IsRationalFunctional h f.toLinearMap) (c : ℝ) (w : N) :
+    TauCeti.Toric.IsRationalLinearMap h h
+      (ContinuousLinearMap.sweepProjection f c ((f (ι w))⁻¹ • ι w)).toAffineMap.linear := by
+  rw [TauCeti.Toric.isRationalLinearMap_iff]
   intro g hg
   obtain ⟨a, ha⟩ := hg.exists_rat_apply w
   obtain ⟨b, hb⟩ := hf.exists_rat_apply w
   simp only [ContinuousLinearMap.coe_coe] at hb
-  have he : g.comp (sweepProjection f c ((f (ι w))⁻¹ • ι w)).toAffineMap.linear =
+  have he : g.comp
+      (ContinuousLinearMap.sweepProjection f c ((f (ι w))⁻¹ • ι w)).toAffineMap.linear =
       g - ((a / b : ℚ) : ℝ) • f.toLinearMap := by
     ext x
     simp [ha, hb, div_eq_mul_inv, mul_comm]
@@ -52,19 +59,19 @@ theorem isRationalLinearMap_sweepProjection {f : V →L[ℝ] ℝ}
   exact hg.sub (hf.rat_smul (a / b))
 
 variable {n : ℕ} (f : Fin n → V →L[ℝ] ℝ) (c : Fin n → ℝ) (v : Fin n → N)
-  (hf : ∀ j, Toric.IsRationalFunctional h (f j).toLinearMap)
+  (hf : ∀ j, TauCeti.Toric.IsRationalFunctional h (f j).toLinearMap)
 
 include hf
 
 /-- Every encounter point is an affine function with rational linear part of the
 endpoint. No transversality or genericity hypothesis is needed for this formula. -/
 theorem isRationalLinearMap_backwardPoint (j : Fin (n + 1)) :
-    Toric.IsRationalLinearMap h h
+    TauCeti.Toric.IsRationalLinearMap h h
       (backwardPoint f c (fun k => ι (v k)) j).toAffineMap.linear := by
   induction j using Fin.induction with
   | zero =>
     rw [backwardPoint_zero]
-    exact Toric.IsRationalLinearMap.id h
+    exact TauCeti.Toric.IsRationalLinearMap.id h
   | succ j ih =>
     rw [backwardPoint_succ]
     exact (isRationalLinearMap_sweepProjection (hf j) (c j) (v j)).comp ih
@@ -72,7 +79,7 @@ theorem isRationalLinearMap_backwardPoint (j : Fin (n + 1)) :
 /-- Elapsed time to an encounter has rational linear part as a function of the
 endpoint, even with arbitrary real hyperplane offsets. -/
 theorem isRationalFunctional_backwardTime (j : Fin n) :
-    Toric.IsRationalFunctional h
+    TauCeti.Toric.IsRationalFunctional h
       (backwardTime f c (fun k => ι (v k)) j).toAffineMap.linear := by
   obtain ⟨a, ha⟩ := (hf j).exists_rat_apply (v j)
   simp only [ContinuousLinearMap.coe_coe] at ha
@@ -89,9 +96,9 @@ theorem isRationalFunctional_backwardTime (j : Fin n) :
 including the elapsed-time rows. -/
 theorem isRationalFunctional_backwardCondition {m : Fin n → ℕ}
     (g : ∀ j, Fin (m j) → V →ᴬ[ℝ] ℝ)
-    (hg : ∀ j k, Toric.IsRationalFunctional h (g j k).toAffineMap.linear)
+    (hg : ∀ j k, TauCeti.Toric.IsRationalFunctional h (g j k).toAffineMap.linear)
     (a : Fin n ⊕ (Σ j, Fin (m j))) :
-    Toric.IsRationalFunctional h
+    TauCeti.Toric.IsRationalFunctional h
       (backwardCondition f c (fun k => ι (v k)) g a).toAffineMap.linear := by
   cases a with
   | inl j =>

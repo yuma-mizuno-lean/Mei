@@ -36,7 +36,9 @@ public section
 
 noncomputable section
 
-namespace Mei.AlgFiltration
+namespace TauCeti.AlgFiltration
+
+open Mei
 
 variable {σ S R : Type*} [Finite σ] [CommSemiring S] [CommRing R]
 
@@ -45,8 +47,8 @@ image of the coefficient semiring. In particular, no common polynomial lift of
 the entire infinite series is required. -/
 @[simp]
 theorem isPositive_principalCompletion_iff
-    (x : (ofIdeal (MvPolynomial.idealOfVars σ R)).completion) (φ : S →+* R) :
-    (ofIdeal (MvPolynomial.idealOfVars σ R)).IsPositive
+    (x : (MvPolynomial.idealOfVars σ R).algFiltration.completion) (φ : S →+* R) :
+    (MvPolynomial.idealOfVars σ R).algFiltration.IsPositive
       (MvPolynomial.map (σ := σ) φ).rangeS x ↔
         ∀ n, MvPowerSeries.coeff n (principalCompletionEquiv σ R x) ∈ φ.rangeS := by
   rw [isPositive_iff]
@@ -83,8 +85,8 @@ means that every scalar monomial coefficient is a natural number. Here the
 positive polynomials are exactly the image of `ℕ[A][M][σ]`; no finiteness of
 the coefficient-variable set or the exponent monoid is needed. -/
 theorem isPositive_principalCompletion_natPolynomial_iff
-    (x : (ofIdeal (MvPolynomial.idealOfVars σ B)).completion) :
-    (ofIdeal (MvPolynomial.idealOfVars σ B)).IsPositive
+    (x : (MvPolynomial.idealOfVars σ B).algFiltration.completion) :
+    (MvPolynomial.idealOfVars σ B).algFiltration.IsPositive
       ((MvPolynomial.map (σ := σ) natMap :
         MvPolynomial σ (AddMonoidAlgebra (MvPolynomial A ℕ) M) →+* MvPolynomial σ B).rangeS) x ↔
       ∀ (n : σ →₀ ℕ) (m : M) (a : A →₀ ℕ), ∃ c : ℕ,
@@ -109,4 +111,4 @@ theorem isPositive_principalCompletion_natPolynomial_iff
     exact (Set.ext_iff.mp (AddMonoidAlgebra.range_map
       (MvPolynomial.map (σ := A) (Nat.castRingHom ℚ)).toAddMonoidHom) _).mpr hm
 
-end Mei.AlgFiltration
+end TauCeti.AlgFiltration

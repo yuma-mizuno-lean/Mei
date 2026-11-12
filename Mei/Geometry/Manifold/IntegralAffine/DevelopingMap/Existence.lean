@@ -39,6 +39,8 @@ equivalence, and hence the holonomy of deck transformations, is treated here. Se
 
 public noncomputable section
 
+open TauCeti.Toric (IntegralAffineEquiv)
+
 open Set Topology Bundle Manifold
 
 namespace Mei.Toric

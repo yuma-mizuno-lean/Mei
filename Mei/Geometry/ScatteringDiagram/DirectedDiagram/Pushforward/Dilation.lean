@@ -115,7 +115,7 @@ theorem germLabel_pushforward_dilation {θ : V} (v : V) (hθ : D.IsRegular θ)
       ((q : ℝ) • θ)) :
     (D.pushforward (DirectedWall.Pushforward.dilation d h H q hq)).germLabel ((q : ℝ) • θ) v hθ' =
       D.germLabel θ v hθ :=
-  CompletedGroup.ext fun k => by
+  TauCeti.CompletedGroup.ext fun k => by
     rw [projection_germLabel, projection_germLabel, combinedLabel_pushforward_dilation]
 
 variable {D} in
@@ -151,7 +151,7 @@ theorem germLabel_smul_eq_of_equivalent_dilation {E : DirectedDiagram (d := d) h
     {θ v : V} {t : ℝ} (ht : 0 < t) (hθ : E.IsGenericPoint A θ)
     (htθ : F.IsGenericPoint A (t • θ)) (hv : v ∉ A.direction) :
     F.germLabel (t • θ) v htθ.isRegular = E.germLabel θ v hθ.isRegular := by
-  refine CompletedGroup.ext fun k => ?_
+  refine TauCeti.CompletedGroup.ext fun k => ?_
   /- At order `k`, the germ label of `F` is constant on `A` near `t • θ`. Pick a positive
   rational `q` with `q • θ` in that neighbourhood. The dilation of `E` by `q` is generic at
   `q • θ`, where it has the germ label of `E` at `θ`, and its germ label is constant on `A` near

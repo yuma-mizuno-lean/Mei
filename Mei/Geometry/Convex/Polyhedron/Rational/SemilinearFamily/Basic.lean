@@ -5,7 +5,8 @@ Authors: Claude
 -/
 module
 
-public import Mei.Geometry.Convex.Polyhedron.Rational.LocallyClosed
+public import TauCeti.Analysis.Convex.Polyhedron.Rational.LocallyClosed
+public import Mei.Geometry.Convex.Polyhedron.Rational.Map
 
 /-!
 # Finite semilinear families and finite branches
@@ -52,6 +53,9 @@ fibers.
 
 public section
 
+open TauCeti (IsLocallyClosedPolyhedron IsRationalSemilinear
+  isLocallyClosedPolyhedron_setOf_forall_neg)
+
 namespace Mei
 
 variable {N V N' W N'' X : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
@@ -67,7 +71,7 @@ def IsRationalPiecewiseAffine (h : TauCeti.Toric.IsIntegralLattice i)
     (h' : TauCeti.Toric.IsIntegralLattice i') (D : Set V) (f : D → W) : Prop :=
   ∃ (κ : Type) (_ : Finite κ) (S : κ → Set V) (g : κ → (V →ᵃ[ℝ] W)),
     (⋃ k, S k) = D ∧ ∀ k, IsRationalSemilinear h (S k) ∧
-      Toric.IsRationalLinearMap h h' (g k).linear ∧ ∀ x : D, x.1 ∈ S k → f x = g k x
+      TauCeti.Toric.IsRationalLinearMap h h' (g k).linear ∧ ∀ x : D, x.1 ∈ S k → f x = g k x
 
 /-- A map `f` on `D` is a finite branch: finitely many locally closed rational-normal
 polyhedra cover `D`, and on each of them `f` agrees with an affine map, with rational
@@ -76,7 +80,7 @@ def IsFiniteBranchOn (h : TauCeti.Toric.IsIntegralLattice i)
     (h' : TauCeti.Toric.IsIntegralLattice i') (D : Set V) (f : D → W) : Prop :=
   ∃ (κ : Type) (_ : Finite κ) (S : κ → Set V) (g : κ → (V →ᵃ[ℝ] W)),
     (⋃ k, S k) = D ∧ ∀ k, IsLocallyClosedPolyhedron h (S k) ∧
-      Toric.IsRationalLinearMap h h' (g k).linear ∧ Set.InjOn (g k) (S k) ∧
+      TauCeti.Toric.IsRationalLinearMap h h' (g k).linear ∧ Set.InjOn (g k) (S k) ∧
         ∀ x : D, x.1 ∈ S k → f x = g k x
 
 /-- Unfolds `IsRationalPiecewiseAffine`. -/
@@ -84,7 +88,7 @@ theorem isRationalPiecewiseAffine_iff {D : Set V} {f : D → W} :
     IsRationalPiecewiseAffine h h' D f ↔
       ∃ (κ : Type) (_ : Finite κ) (S : κ → Set V) (g : κ → (V →ᵃ[ℝ] W)),
         (⋃ k, S k) = D ∧ ∀ k, IsRationalSemilinear h (S k) ∧
-          Toric.IsRationalLinearMap h h' (g k).linear ∧ ∀ x : D, x.1 ∈ S k → f x = g k x :=
+          TauCeti.Toric.IsRationalLinearMap h h' (g k).linear ∧ ∀ x : D, x.1 ∈ S k → f x = g k x :=
   Iff.rfl
 
 /-- Unfolds `IsFiniteBranchOn`. -/
@@ -92,7 +96,7 @@ theorem isFiniteBranchOn_iff {D : Set V} {f : D → W} :
     IsFiniteBranchOn h h' D f ↔
       ∃ (κ : Type) (_ : Finite κ) (S : κ → Set V) (g : κ → (V →ᵃ[ℝ] W)),
         (⋃ k, S k) = D ∧ ∀ k, IsLocallyClosedPolyhedron h (S k) ∧
-          Toric.IsRationalLinearMap h h' (g k).linear ∧ Set.InjOn (g k) (S k) ∧
+          TauCeti.Toric.IsRationalLinearMap h h' (g k).linear ∧ Set.InjOn (g k) (S k) ∧
             ∀ x : D, x.1 ∈ S k → f x = g k x :=
   Iff.rfl
 
@@ -114,7 +118,7 @@ theorem inter {D : Set V} {f : D → W} (hf : IsRationalPiecewiseAffine h h' D f
 
 /-- Composing the values with a rational affine map keeps the map piecewise affine. -/
 theorem postcomp {D : Set V} {f : D → W} (hf : IsRationalPiecewiseAffine h h' D f)
-    (φ : W →ᵃ[ℝ] X) (hφ : Toric.IsRationalLinearMap h' h'' φ.linear) :
+    (φ : W →ᵃ[ℝ] X) (hφ : TauCeti.Toric.IsRationalLinearMap h' h'' φ.linear) :
     IsRationalPiecewiseAffine h h'' D fun x => φ (f x) := by
   obtain ⟨κ, _, S, g, hD, hS⟩ := hf
   refine ⟨κ, ‹_›, S, fun k => φ.comp (g k), hD, fun k => ⟨(hS k).1, ?_, fun x hx => ?_⟩⟩
@@ -138,7 +142,7 @@ theorem inter {D : Set V} {f : D → W} (hf : IsFiniteBranchOn h h' D f) {P : Se
     (hP : IsRationalSemilinear h P) :
     IsFiniteBranchOn h h' (D ∩ P) fun x => f ⟨x.1, x.2.1⟩ := by
   obtain ⟨κ, _, S, g, rfl, hS⟩ := hf
-  obtain ⟨μ, _, C, hC, -, rfl⟩ := isRationalSemilinear_iff_exists_pairwise_disjoint.mp hP
+  obtain ⟨μ, _, C, hC, -, rfl⟩ := TauCeti.isRationalSemilinear_iff_exists_pairwise_disjoint.mp hP
   refine ⟨κ × μ, inferInstance, fun p => S p.1 ∩ C p.2, fun p => g p.1, ?_, fun p =>
     ⟨(hS p.1).1.inter (hC p.2), (hS p.1).2.1, (hS p.1).2.2.1.mono Set.inter_subset_left,
       fun x hx => (hS p.1).2.2.2 ⟨x.1, x.2.1⟩ hx.1⟩⟩
@@ -326,23 +330,23 @@ theorem IsFiniteBranch.restrict {F : FiniteSemilinearFamily h h' ι} {P : Set V}
   fun c => (hF c).inter hP
 
 /-- Post-composition of the evaluation of all charts with a rational affine map. -/
-@[expose] def postcomp (φ : W →ᵃ[ℝ] X) (hφ : Toric.IsRationalLinearMap h' h'' φ.linear) :
+@[expose] def postcomp (φ : W →ᵃ[ℝ] X) (hφ : TauCeti.Toric.IsRationalLinearMap h' h'' φ.linear) :
     FiniteSemilinearFamily h h'' ι where
   domain := F.domain
   eval c x := φ (F.eval c x)
   isRationalPiecewiseAffine c := (F.isRationalPiecewiseAffine c).postcomp φ hφ
 
 @[simp]
-theorem postcomp_domain (φ : W →ᵃ[ℝ] X) (hφ : Toric.IsRationalLinearMap h' h'' φ.linear) :
+theorem postcomp_domain (φ : W →ᵃ[ℝ] X) (hφ : TauCeti.Toric.IsRationalLinearMap h' h'' φ.linear) :
     (F.postcomp φ hφ).domain = F.domain := (rfl)
 
 @[simp]
-theorem postcomp_eval (φ : W →ᵃ[ℝ] X) (hφ : Toric.IsRationalLinearMap h' h'' φ.linear)
+theorem postcomp_eval (φ : W →ᵃ[ℝ] X) (hφ : TauCeti.Toric.IsRationalLinearMap h' h'' φ.linear)
     (c : ι) (x : F.domain c) : (F.postcomp φ hφ).eval c x = φ (F.eval c x) := (rfl)
 
 /-- The fiber of a post-composition over `w'` is the union of the original fibers over the
 points of `φ ⁻¹' {w'}`. -/
-def fiberPostcompEquiv (φ : W →ᵃ[ℝ] X) (hφ : Toric.IsRationalLinearMap h' h'' φ.linear)
+def fiberPostcompEquiv (φ : W →ᵃ[ℝ] X) (hφ : TauCeti.Toric.IsRationalLinearMap h' h'' φ.linear)
     (w' : X) : (F.postcomp φ hφ).fiber w' ≃ Σ w : {w : W // φ w = w'}, F.fiber w where
   toFun p := ⟨⟨F.eval p.1 p.2.1, p.2.2⟩, p.1, p.2.1, rfl⟩
   invFun p := ⟨p.2.1, p.2.2.1, (congrArg φ p.2.2.2).trans p.1.2⟩
@@ -364,21 +368,22 @@ variable (h : TauCeti.Toric.IsIntegralLattice (Int.castAddHom ℝ))
 theorem isFiniteBranchOn_id_Ioo :
     IsFiniteBranchOn h h (Set.Ioo 0 1 : Set ℝ) (Subtype.val : ↥(Set.Ioo 0 1 : Set ℝ) → ℝ) := by
   refine ⟨Unit, inferInstance, fun _ => Set.Ioo 0 1, fun _ => AffineMap.id ℝ ℝ,
-    Set.iUnion_const _, fun _ => ⟨?_, Toric.IsRationalLinearMap.id h, Function.injective_id.injOn,
+    Set.iUnion_const _, fun _ =>
+      ⟨?_, TauCeti.Toric.IsRationalLinearMap.id h, Function.injective_id.injOn,
       fun _ _ => rfl⟩⟩
-  have hid : Toric.IsRationalFunctional h (LinearMap.id : ℝ →ₗ[ℝ] ℝ) := by
-    convert Toric.IsRationalFunctional.realCharacter h (LinearMap.id : ℤ →ₗ[ℤ] ℤ) using 1
+  have hid : TauCeti.Toric.IsRationalFunctional h (LinearMap.id : ℝ →ₗ[ℝ] ℝ) := by
+    convert TauCeti.Toric.IsRationalFunctional.realCharacter h (LinearMap.id : ℤ →ₗ[ℤ] ℤ) using 1
     exact h.eq_realCharacter (by intro x; simp)
   let r₀ : ℝ →ᴬ[ℝ] ℝ := (-(ContinuousLinearMap.id ℝ ℝ)).toContinuousAffineMap
   let r₁ : ℝ →ᴬ[ℝ] ℝ :=
     (ContinuousLinearMap.id ℝ ℝ).toContinuousAffineMap + ContinuousAffineMap.const ℝ ℝ (-1)
-  have hr₀ : Toric.IsRationalFunctional h r₀.toAffineMap.linear := by
+  have hr₀ : TauCeti.Toric.IsRationalFunctional h r₀.toAffineMap.linear := by
     have e : r₀.toAffineMap.linear = -LinearMap.id := LinearMap.ext fun x => by
       rw [ContinuousAffineMap.coe_linear_eq_coe_contLinear]
       simp [r₀]
     rw [e]
     exact hid.neg
-  have hr₁ : Toric.IsRationalFunctional h r₁.toAffineMap.linear := by
+  have hr₁ : TauCeti.Toric.IsRationalFunctional h r₁.toAffineMap.linear := by
     have e : r₁.toAffineMap.linear = LinearMap.id := LinearMap.ext fun x => by
       rw [ContinuousAffineMap.coe_linear_eq_coe_contLinear]
       simp [r₁]

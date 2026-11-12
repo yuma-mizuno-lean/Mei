@@ -13,16 +13,18 @@ public import Mei.GroupTheory.CompletedGroup.Basic
 
 The completed group of a tower is the automorphism group of the identity-transport section of
 its one-object groupoids. Each component of a label is the corresponding finite-order
-projection, so these labels combine with `CompletedGroup.map_projection` and the projection
+projection, so these labels combine with `TauCeti.CompletedGroup.map_projection` and the projection
 rules for ordered products and reindexed maps.
 
-The identification composes `CompletedGroup.sectionsSubgroupEquiv` with
+The identification composes `TauCeti.CompletedGroup.sectionsSubgroupEquiv` with
 `Functor.singleObjSectionAutEquiv`.
 -/
 
 public section
 
-open CategoryTheory Mei Mei.CompletedGroup Opposite
+open TauCeti (completedGroup)
+
+open CategoryTheory TauCeti.CompletedGroup Opposite
 
 universe w
 

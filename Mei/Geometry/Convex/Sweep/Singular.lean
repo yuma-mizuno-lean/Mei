@@ -31,6 +31,8 @@ Carl–Pumperla–Siebert, *A tropical view on Landau–Ginzburg models*, §4
 
 public noncomputable section
 
+open TauCeti (IsRationalNormalPolyhedron IsRationalSemilinear)
+
 namespace Mei.Convex
 
 open Set
@@ -116,7 +118,7 @@ The incoming source is unrestricted. Selected supports may themselves be semilin
 offsets are arbitrary real numbers. -/
 theorem isRationalSemilinear_backwardSingularAvoidanceDomain [Finite J]
     (w : Fin (n + 1) → N)
-    (hf : ∀ j, Toric.IsRationalFunctional h (f j).toLinearMap)
+    (hf : ∀ j, TauCeti.Toric.IsRationalFunctional h (f j).toLinearMap)
     (hP : ∀ j, IsRationalSemilinear h (P j))
     (hS : ∀ a, IsRationalNormalPolyhedron h (S a)) :
     IsRationalSemilinear h

@@ -35,8 +35,6 @@ variable [AddCommMonoid N] [DecidableEq N] (ℒ : N → Submodule R L) [GradedLi
 
 namespace TauCeti.PositiveDegrees
 
-open Mei
-
 variable (d : PositiveDegrees N) [IsPositiveGrading d ℒ]
 
 /-- Extending scalars commutes with the Lie ideal above a degree cutoff. -/

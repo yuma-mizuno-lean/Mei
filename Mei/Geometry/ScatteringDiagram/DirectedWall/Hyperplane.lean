@@ -6,7 +6,8 @@ Authors: Codex
 module
 
 public import Mei.Geometry.ScatteringDiagram.DirectedWall.Basic
-public import Mei.Geometry.Convex.Polyhedron.SignCell.Rational
+public import TauCeti.Analysis.Convex.Polyhedron.SignCell.Rational
+public import Mei.Geometry.Convex.Polyhedron.Rational
 
 /-!
 # Walls supported on full hyperplanes
@@ -19,7 +20,7 @@ the coefficient probe wall and the cylinders over the affine incoming lines of r
 polynomial inputs. Every level set of `ℓ` is nonempty, since `ℓ` is nonzero
 (`TauCeti.Toric.IsIntegralLattice.exists_realCharacter_eq`).
 
-We use `isRationalNormalPolyhedron_setOf_le` for the support and Mathlib's
+We use `TauCeti.isRationalNormalPolyhedron_setOf_le` for the support and Mathlib's
 `AffineSubspace.mk'` for its affine direction.
 -/
 
@@ -74,14 +75,14 @@ def ofAffineHyperplane (m : Λ →+ ℤ) (hm : m ≠ 0) (c : ℝ) (w : Supported
   rational_support := by
     let := h.finiteDimensional
     let ℓ := (h.realCharacter m).toContinuousLinearMap
-    have hℓ : Toric.IsRationalFunctional h ℓ.toLinearMap :=
-      Toric.IsRationalFunctional.realCharacter h m.toIntLinearMap
+    have hℓ : TauCeti.Toric.IsRationalFunctional h ℓ.toLinearMap :=
+      TauCeti.Toric.IsRationalFunctional.realCharacter h m.toIntLinearMap
     have he : {x | h.realCharacter m x = c} = {x | ℓ x ≤ c} ∩ {x | (-ℓ) x ≤ -c} := by
       ext x
       simp [ℓ, le_antisymm_iff]
     rw [he]
-    exact (isRationalNormalPolyhedron_setOf_le ℓ hℓ c).inter
-      (isRationalNormalPolyhedron_setOf_le (-ℓ) (by simpa using hℓ.neg) (-c))
+    exact (TauCeti.isRationalNormalPolyhedron_setOf_le ℓ hℓ c).inter
+      (TauCeti.isRationalNormalPolyhedron_setOf_le (-ℓ) (by simpa using hℓ.neg) (-c))
   direction_support := by
     obtain ⟨p, hp⟩ := h.exists_realCharacter_eq hm c
     have he : {x | h.realCharacter m x = c} =

@@ -31,6 +31,8 @@ diagrams*, §8.1 and §9.2 (arXiv:2503.03719v1).
 
 public noncomputable section
 
+open TauCeti (AlgFiltration)
+
 open TauCeti (PositiveDegrees)
 
 namespace Mei.SkewLatticeDatum.AdaptedBasis.BLMPolynomialInput

@@ -8,7 +8,7 @@ module
 public import Mei.Algebra.QuantumMonoidAlgebra.Action
 public import Mei.Algebra.QuantumMonoidAlgebra.Completion
 public import Mei.Algebra.Lie.BCH.RestrictScalars
-public import Mei.RingTheory.FilteredAlgebra.Exp.Map
+public import TauCeti.RingTheory.FilteredAlgebra.Exp.Map
 public import Mathlib.Algebra.Algebra.Hom.Rat
 
 /-!

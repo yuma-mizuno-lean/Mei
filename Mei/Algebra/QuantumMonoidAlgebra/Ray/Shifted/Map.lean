@@ -19,6 +19,8 @@ character uses the skew part of the bilinear form, so neither form needs to be a
 
 public section
 
+open TauCeti (AlgFiltration)
+
 open TauCeti (PositiveDegrees PositiveDegreeMap)
 noncomputable section
 

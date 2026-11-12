@@ -26,6 +26,8 @@ subcomplex of `C` (`FinitePolyhedralComplex.isSubcomplex_ofPolyhedron`).
 
 public section
 
+open TauCeti (IsRationalNormalPolyhedron)
+
 namespace Mei
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]

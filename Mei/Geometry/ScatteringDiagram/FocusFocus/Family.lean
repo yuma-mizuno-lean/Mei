@@ -31,6 +31,8 @@ anti-canonical class*, §3 (arXiv:1601.07081v4).
 
 public noncomputable section
 
+open TauCeti (IsLocallyClosedPolyhedron)
+
 open Set Filter Topology
 
 namespace Mei.FocusFocus
@@ -47,7 +49,7 @@ private def slabSigns (upper : Bool) : Bool → SignType :=
 /-- Endpoints of a slab branch with horizontal exponent `n` and outgoing vertical
 exponent `q`. The Boolean selects the upper (`true`) or lower (`false`) encounter. -/
 def slabBranchDomain (n q : ℤ) (upper : Bool) : Set (ℝ × ℝ) :=
-  Convex.signCell (slabRows n q) (slabSigns upper)
+  TauCeti.Convex.signCell (slabRows n q) (slabSigns upper)
 
 /-- A chart fixes the outgoing chamber and the strict sign of the crossing height. -/
 @[simp]
@@ -57,7 +59,7 @@ theorem mem_slabBranchDomain (n q : ℤ) (upper : Bool) (Q : ℝ × ℝ) :
         if upper then 0 < Q.2 - (q : ℝ) * Q.1 / n
         else Q.2 - (q : ℝ) * Q.1 / n < 0 := by
   cases upper <;>
-    simp [slabBranchDomain, Convex.mem_signCell, Bool.forall_bool, slabRows, slabSigns,
+    simp [slabBranchDomain, TauCeti.Convex.mem_signCell, Bool.forall_bool, slabRows, slabSigns,
       sign_eq_neg_one_iff, sign_eq_one_iff, smul_eq_mul, div_eq_mul_inv, mul_comm,
       mul_assoc]
 
@@ -99,9 +101,9 @@ theorem mem_closure_slabBranchDomain {n : ℤ} (hn : n ≠ 0) (q : ℤ)
       Q.1 / (n : ℝ) ≤ 0 ∧
         if upper then 0 ≤ Q.2 - (q : ℝ) * Q.1 / n
         else Q.2 - (q : ℝ) * Q.1 / n ≤ 0 := by
-  rw [slabBranchDomain, Convex.closure_signCell (slabBranchDomain_nonempty hn q upper)]
+  rw [slabBranchDomain, TauCeti.Convex.closure_signCell (slabBranchDomain_nonempty hn q upper)]
   cases upper <;>
-    simp [Convex.mem_weakSignCell, Bool.forall_bool, slabRows, slabSigns,
+    simp [TauCeti.Convex.mem_weakSignCell, Bool.forall_bool, slabRows, slabSigns,
       smul_eq_mul, div_eq_mul_inv, mul_comm, mul_assoc]
 
 /-- The relative interior of each closed chart is exactly its valid endpoint domain. -/
@@ -109,7 +111,7 @@ theorem mem_closure_slabBranchDomain {n : ℤ} (hn : n ≠ 0) (q : ℤ)
 theorem intrinsicInterior_closure_slabBranchDomain (n q : ℤ) (upper : Bool) :
     intrinsicInterior ℝ (closure (slabBranchDomain n q upper)) =
       slabBranchDomain n q upper :=
-  Convex.intrinsicInterior_closure_signCell
+  TauCeti.Convex.intrinsicInterior_closure_signCell
 
 /-- Boundary points represent terminal face crossings or singular-origin encounters. -/
 theorem slabBranchDomain_boundary {n : ℤ} (hn : n ≠ 0) (q : ℤ)
@@ -133,12 +135,12 @@ variable (h : TauCeti.Toric.IsIntegralLattice
   ((Int.castAddHom ℝ).prodMap (Int.castAddHom ℝ)))
 
 private theorem rational_slabRows (n q : ℤ) (a : Bool) :
-    Toric.IsRationalFunctional h (slabRows n q a).toAffineMap.linear := by
-  have hf : Toric.IsRationalFunctional h (LinearMap.fst ℝ ℝ ℝ) := by
-    convert Toric.IsRationalFunctional.realCharacter h (LinearMap.fst ℤ ℤ ℤ) using 1
+    TauCeti.Toric.IsRationalFunctional h (slabRows n q a).toAffineMap.linear := by
+  have hf : TauCeti.Toric.IsRationalFunctional h (LinearMap.fst ℝ ℝ ℝ) := by
+    convert TauCeti.Toric.IsRationalFunctional.realCharacter h (LinearMap.fst ℤ ℤ ℤ) using 1
     exact h.eq_realCharacter (by intro x; simp)
-  have hg : Toric.IsRationalFunctional h (LinearMap.snd ℝ ℝ ℝ) := by
-    convert Toric.IsRationalFunctional.realCharacter h (LinearMap.snd ℤ ℤ ℤ) using 1
+  have hg : TauCeti.Toric.IsRationalFunctional h (LinearMap.snd ℝ ℝ ℝ) := by
+    convert TauCeti.Toric.IsRationalFunctional.realCharacter h (LinearMap.snd ℤ ℤ ℤ) using 1
     exact h.eq_realCharacter (by intro x; simp)
   cases a
   · exact hf.smul ⟨(n : ℚ)⁻¹, by simp⟩
@@ -148,7 +150,7 @@ private theorem rational_slabRows (n q : ℤ) (a : Bool) :
 standard integral lattice, so they are legitimate finite semilinear charts. -/
 theorem isLocallyClosedPolyhedron_slabBranchDomain (n q : ℤ) (upper : Bool) :
     IsLocallyClosedPolyhedron h (slabBranchDomain n q upper) :=
-  isLocallyClosedPolyhedron_signCell _ (rational_slabRows h n q) _
+  TauCeti.isLocallyClosedPolyhedron_signCell _ (rational_slabRows h n q) _
 
 end Rational
 

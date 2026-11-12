@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.Convex.Sweep.Topology
+public import TauCeti.Analysis.Convex.Sweep.Topology
 public import Mei.Analysis.Convex.Intrinsic
 
 /-!
@@ -20,7 +20,7 @@ Consequently, a limit of wall-avoiding segments can meet that wall transversely
 only on its relative boundary. The same argument applies to incoming half-lines
 by restricting to a finite interval around the contact.
 
-We use `sweepProjection` to locate the crossing and
+We use `ContinuousLinearMap.sweepProjection` to locate the crossing and
 `Mei.mem_nhdsWithin_affineSpan_of_mem_intrinsicInterior` to keep it in the wall,
 the same relative-neighborhood argument used for admissible-segment stability
 in `Mei.Geometry.Convex.Polyhedron.Perturbation`.
@@ -28,7 +28,7 @@ in `Mei.Geometry.Convex.Polyhedron.Perturbation`.
 
 public section
 
-open Set Filter Topology Mei.Convex
+open Set Filter Topology
 
 namespace ContinuousLinearMap
 
@@ -44,17 +44,18 @@ theorem eventually_exists_add_smul_mem (f : V →L[ℝ] ℝ) {c : ℝ} {P : Set 
     (hcontact : x Q + t • v ∈ intrinsicInterior ℝ P) :
     ∀ᶠ Q' in 𝓝 Q, ∃ s : ℝ, a Q' < s ∧ s < b Q' ∧ x Q' + s • v ∈ P := by
   let τ : X → ℝ := fun Q' => (c - f (x Q')) / f v
-  let g : X → V := fun Q' => sweepProjection f c ((f v)⁻¹ • v) (x Q')
+  let g : X → V := fun Q' => ContinuousLinearMap.sweepProjection f c ((f v)⁻¹ • v) (x Q')
   have ht : τ Q = t := (f.toLinearMap.eq_div_of_apply_add_smul_eq hv
     (hspan.subset (subset_affineSpan ℝ P (intrinsicInterior_subset hcontact)))).symm
   have hτ : ContinuousAt τ Q :=
     (continuousAt_const.sub (f.continuous.continuousAt.comp hx)).div_const _
-  have hg : ContinuousAt g Q := (sweepProjection f c _).continuous.continuousAt.comp hx
+  have hg : ContinuousAt g Q :=
+    (ContinuousLinearMap.sweepProjection f c _).continuous.continuousAt.comp hx
   have hformula (Q' : X) : g Q' = x Q' + τ Q' • v := by
-    simp only [g, sweepProjection_apply, smul_smul, τ, div_eq_mul_inv]
+    simp only [g, ContinuousLinearMap.sweepProjection_apply, smul_smul, τ, div_eq_mul_inv]
   have hgspan : ∀ Q', g Q' ∈ affineSpan ℝ P := by
     intro Q'
-    exact hspan.symm.subset (sweepProjection_height f c (by simp [hv]) (x Q'))
+    exact hspan.symm.subset (ContinuousLinearMap.sweepProjection_height f c (by simp [hv]) (x Q'))
   have hlim : Tendsto g (𝓝 Q) (𝓝[affineSpan ℝ P] (x Q + t • v)) :=
     tendsto_nhdsWithin_iff.mpr ⟨by simpa only [hformula, ht] using hg.tendsto,
       Eventually.of_forall hgspan⟩

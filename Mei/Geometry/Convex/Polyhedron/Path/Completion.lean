@@ -19,11 +19,14 @@ any directed or KS presentation of the supports and coorientations.
 
 public section
 
+open TauCeti (completedGroup)
+
 open TauCeti (WallComplement AdmissiblePLPath)
 
 noncomputable section
 
-open Set Mei CategoryTheory Opposite
+open Set CategoryTheory Opposite
+open TauCeti.CompletedGroup (projection)
 
 universe u
 
@@ -40,34 +43,34 @@ theorem map_wallPathProduct_projection (W : ι → Set V) (ν : ι → V →ₗ[
     (hcomm : ∀ a b, affineSpan ℝ (W a) = affineSpan ℝ (W b) →
       Commute (label a) (label b))
     (A : ℕ → Set ι)
-    (hA : ∀ k, A k = Function.mulSupport fun j => CompletedGroup.projection k (label j))
+    (hA : ∀ k, A k = Function.mulSupport fun j => projection k (label j))
     {k l : ℕ} (hkl : k ≤ l) [Finite (A k)] [Finite (A l)]
     {x y : WallComplement (fun j : A l => W j)} (p : AdmissiblePLPath x y) :
     F.map (homOfLE hkl).op
-        (p.wallPathProduct (fun j : A l => ν j) (fun j => CompletedGroup.projection l (label j))
-          (fun a b hab => (hcomm a b hab).map (CompletedGroup.projection l))) =
+        (p.wallPathProduct (fun j : A l => ν j) (fun j => projection l (label j))
+          (fun a b hab => (hcomm a b hab).map (projection l))) =
       ((WallComplement.restrictPrefunctor _
         (Set.inclusion ((hA k).trans_subset
-          ((CompletedGroup.monotone_mulSupport_projection label hkl).trans_eq
+          ((TauCeti.CompletedGroup.monotone_mulSupport_projection label hkl).trans_eq
             (hA l).symm)))).mapPath p).wallPathProduct
-            (fun j : A k => ν j) (fun j => CompletedGroup.projection k (label j))
-            (fun a b hab => (hcomm a b hab).map (CompletedGroup.projection k)) := by
+            (fun j : A k => ν j) (fun j => projection k (label j))
+            (fun a b hab => (hcomm a b hab).map (projection k)) := by
   obtain rfl : A = _ := funext hA
-  let f := Set.inclusion (CompletedGroup.monotone_mulSupport_projection label hkl)
+  let f := Set.inclusion (TauCeti.CompletedGroup.monotone_mulSupport_projection label hkl)
   let φ := (F.map (homOfLE hkl).op).hom
-  have hproj (j : Function.mulSupport fun j => CompletedGroup.projection l (label j)) :
-      φ (CompletedGroup.projection l (label j)) = CompletedGroup.projection k (label j) :=
-    CompletedGroup.map_projection k l hkl (label j)
-  have hlabel : ∀ j, j ∉ range f → φ (CompletedGroup.projection l (label j)) = 1 := by
+  have hproj (j : Function.mulSupport fun j => projection l (label j)) :
+      φ (projection l (label j)) = projection k (label j) :=
+    TauCeti.CompletedGroup.map_projection k l hkl (label j)
+  have hlabel : ∀ j, j ∉ range f → φ (projection l (label j)) = 1 := by
     intro j hj
     rw [hproj]
     by_contra hne
     exact hj ⟨⟨j.val, hne⟩, Subtype.ext rfl⟩
   rw [Quiver.Path.map_wallPathProduct _ _ _ φ p]
   have he := p.wallPathProduct_restrict
-    (fun j : Function.mulSupport (fun j => CompletedGroup.projection l (label j)) => ν j)
-    (fun j => φ (CompletedGroup.projection l (label j)))
-    (fun a b hab => ((hcomm a b hab).map (CompletedGroup.projection l)).map φ)
+    (fun j : Function.mulSupport (fun j => projection l (label j)) => ν j)
+    (fun j => φ (projection l (label j)))
+    (fun a b hab => ((hcomm a b hab).map (projection l)).map φ)
     f (Set.inclusion_injective _) hlabel
   simpa only [Function.comp_def, hproj, f, Set.coe_inclusion] using he.symm
 

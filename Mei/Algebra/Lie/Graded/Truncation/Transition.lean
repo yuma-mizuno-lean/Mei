@@ -32,8 +32,6 @@ open TauCeti (signSubalgebra map_signSubalgebra)
 
 namespace TauCeti.PositiveDegrees
 
-open Mei
-
 variable {N R L : Type*} [AddCommMonoid N] [CommRing R]
   [LieRing L] [LieAlgebra R L] [DecidableEq N]
   (d : TauCeti.PositiveDegrees N) (ℒ : N → Submodule R L)

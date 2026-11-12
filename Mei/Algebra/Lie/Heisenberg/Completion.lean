@@ -41,7 +41,7 @@ theorem expToCompletion_heisenbergX_mul_expToCompletion_heisenbergY_ne [Nontrivi
   have hinj : Function.Injective (nonnegIntegers.truncationIdeal (heisenbergGrading R) 2).mkQ := by
     rw [← LieHom.ker_eq_bot, LieIdeal.mkQ_ker, truncationIdeal_eq_degreeIdeal,
       TauCeti.degreeIdeal_heisenbergGrading_eq_bot R le_rfl]
-  have h2 := congrArg (CompletedGroup.projection 2) he
+  have h2 := congrArg (TauCeti.CompletedGroup.projection 2) he
   rw [map_mul, map_mul, projection_expToCompletion, projection_expToCompletion] at h2
   apply exp_heisenbergX_mul_exp_heisenbergY_ne R
   apply LieHom.bchGroupMap_injective hinj

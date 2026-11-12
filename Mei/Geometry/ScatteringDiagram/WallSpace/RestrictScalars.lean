@@ -96,7 +96,7 @@ theorem mem_wallGroup_restrictScalars_iff (w : SupportedRay d) (m : Λ →+ ℤ)
   simp only [mem_wallGroup, TauCeti.PositiveDegrees.projection_completedBCHRestrictScalarsEquiv]
   refine forall_congr' fun k => ?_
   -- The projection has a categorical tower-object type; re-elaborate it as a BCH group element.
-  generalize (CompletedGroup.projection k g :
+  generalize (TauCeti.CompletedGroup.projection k g :
     BCHGroup (d.lieTruncation (fun n => (ℒ n).restrictScalars R) k)) = x
   rw [LieHom.log_bchGroupMap (d.lieTruncationRestrictScalarsEquiv (R := R) ℒ k).toLieHom x]
   exact H.lieTruncationRestrictScalarsEquiv_mem_truncatedRayLieSubalgebra_iff w m k _

@@ -167,7 +167,7 @@ theorem projection_pushforward_wall_label_eq_one (k : ℕ) {a : ℕ}
     (ha : P.degreeMap.modulus k ≤ a) {θ : V} {b : D.active a} (hb : b ∈ D.incidentActive a θ)
     (hnot : b ∉ ((D.pushforward P).incidentActive k (P.spatialMap θ)).map
       (D.activePushforwardEmbedding P k ha)) :
-    CompletedGroup.projection k ((D.pushforward P).wall b).label = 1 := by
+    TauCeti.CompletedGroup.projection k ((D.pushforward P).wall b).label = 1 := by
   have hinactive : b.val ∉ (D.pushforward P).active k := fun hbk => hnot
     (Finset.mem_map.mpr ⟨⟨b.val, hbk⟩, by
       rwa [mem_incidentActive, spatialMap_mem_pushforward_wall_support_iff,
@@ -195,8 +195,8 @@ theorem combinedLabel_pushforward (k : ℕ) {a : ℕ} (ha : P.degreeMap.modulus 
   -- The truncated BCH map of the pushforward, between the objects of the two group towers.
   let F : (d.groupTower ℒ).obj (Opposite.op a) →* (d'.groupTower ℳ).obj (Opposite.op k) :=
     (P.lieHom.lieTruncatedMap k ha).bchGroupMap
-  have hproj (b : D.active a) : F (CompletedGroup.projection a (D.wall b).label) =
-      CompletedGroup.projection k ((D.pushforward P).wall b).label :=
+  have hproj (b : D.active a) : F (TauCeti.CompletedGroup.projection a (D.wall b).label) =
+      TauCeti.CompletedGroup.projection k ((D.pushforward P).wall b).label :=
     (D.projection_pushforward_wall_label P k ha b).symm
   rw [D.combinedLabel_eq_noncommProd_incidentActive a θ v hθ,
     (D.pushforward P).combinedLabel_eq_noncommProd_incidentActive k]
@@ -219,7 +219,7 @@ theorem germLabel_pushforward {θ : V} (v : V) (hθ : D.IsRegular θ) :
     (D.pushforward P).germLabel (P.spatialMap θ) (P.spatialMap.toAffineEquiv.linear v)
         (hθ.pushforward P) =
       P.lieHom.completedMap (D.germLabel θ v hθ) :=
-  CompletedGroup.ext fun k => by
+  TauCeti.CompletedGroup.ext fun k => by
     rw [projection_germLabel, P.lieHom.projection_completedMap, projection_germLabel,
       ← combinedLabel_pushforward]
 

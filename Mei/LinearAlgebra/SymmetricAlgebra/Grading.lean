@@ -20,7 +20,7 @@ hypothesis is needed, and the scalar ring may be a commutative semiring.
 
 This supplies the symmetric-algebra side of graded PBW comparisons. The construction
 uses the universal property of `SymmetricAlgebra.lift` and follows the direct-sum
-construction of `Mei.UniversalEnvelopingAlgebra.gradedAlgebra`. The pure symmetric
+construction of `TauCeti.UniversalEnvelopingAlgebra.gradedAlgebra`. The pure symmetric
 tensor formula uses Tau Ceti's `SymmetricPower.toSymmetricAlgebra`; that formula
 inherits its requirement that the scalar semiring lie in `Type`.
 -/

@@ -18,7 +18,7 @@ These equalizers impose the matching equation in a pullback of semilinear famili
 
 public section
 
-open Mei
+open TauCeti (IsRationalNormalPolyhedron isRationalNormalPolyhedron_singleton)
 
 namespace AffineMap
 
@@ -32,8 +32,8 @@ variable {N N' N'' V W X : Type*} [AddCommGroup N] [AddCommGroup N'] [AddCommGro
 /-- The equalizer of rational affine maps is a rational-normal polyhedron,
 including when it is empty or either map has a kernel. -/
 theorem isRationalNormalPolyhedron_equalizer (f g : V →ᵃ[ℝ] W)
-    (hf : Toric.IsRationalLinearMap h h' f.linear)
-    (hg : Toric.IsRationalLinearMap h h' g.linear) :
+    (hf : TauCeti.Toric.IsRationalLinearMap h h' f.linear)
+    (hg : TauCeti.Toric.IsRationalLinearMap h h' g.linear) :
     IsRationalNormalPolyhedron h {x | f x = g x} := by
   have := h.finiteDimensional
   have := h'.finiteDimensional
@@ -43,7 +43,7 @@ theorem isRationalNormalPolyhedron_equalizer (f g : V →ᵃ[ℝ] W)
   let _ : NormedSpace ℝ W := NormedSpace.induced ℝ W (Fin (Module.finrank ℝ W) → ℝ) b.equivFun
   let δ : V →ᴬ[ℝ] W :=
     ⟨f - g, (f - g).continuous_of_finiteDimensional⟩
-  have hδ : Toric.IsRationalLinearMap h h' δ.toAffineMap.linear := by
+  have hδ : TauCeti.Toric.IsRationalLinearMap h h' δ.toAffineMap.linear := by
     simpa only [δ, AffineMap.sub_linear] using hf.sub hg
   have he : δ ⁻¹' {0} = {x | f x = g x} := by
     ext x
@@ -54,13 +54,13 @@ theorem isRationalNormalPolyhedron_equalizer (f g : V →ᵃ[ℝ] W)
 /-- The matching locus of two rational affine maps with a common target is a
 rational-normal polyhedron in the product of their source spaces. -/
 theorem isRationalNormalPolyhedron_pullback_matching (g : V →ᵃ[ℝ] W)
-    (φ : X →ᵃ[ℝ] W) (hg : Toric.IsRationalLinearMap h h' g.linear)
-    (hφ : Toric.IsRationalLinearMap h'' h' φ.linear) :
+    (φ : X →ᵃ[ℝ] W) (hg : TauCeti.Toric.IsRationalLinearMap h h' g.linear)
+    (hφ : TauCeti.Toric.IsRationalLinearMap h'' h' φ.linear) :
     IsRationalNormalPolyhedron (h.prod h'') {p : V × X | g p.1 = φ p.2} :=
   AffineMap.isRationalNormalPolyhedron_equalizer
     (g.comp (AffineMap.fst : V × X →ᵃ[ℝ] V))
     (φ.comp (AffineMap.snd : V × X →ᵃ[ℝ] X))
-    (hg.comp (Toric.IsRationalLinearMap.fst h h''))
-    (hφ.comp (Toric.IsRationalLinearMap.snd h h''))
+    (hg.comp (TauCeti.Toric.IsRationalLinearMap.fst h h''))
+    (hφ.comp (TauCeti.Toric.IsRationalLinearMap.snd h h''))
 
 end AffineMap

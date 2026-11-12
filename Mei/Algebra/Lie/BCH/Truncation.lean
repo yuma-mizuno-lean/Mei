@@ -63,15 +63,15 @@ theorem truncatedBCHCompletionEquiv_completedMap_truncation (k : ℕ)
     (g : d.completedBCHGroup ℒ) :
     d.truncatedBCHCompletionEquiv ℒ k
       ((GradedLieHom.lieTruncationHom d ℒ k).completedMap g) =
-        CompletedGroup.projection k g := by
+        TauCeti.CompletedGroup.projection k g := by
   apply (d.truncatedBCHCompletionEquiv ℒ k).symm.injective
   rw [MulEquiv.symm_apply_apply]
   refine Eq.trans ?_ (d.truncatedBCHCompletionEquiv_symm_apply ℒ k
-    (CompletedGroup.projection k g)).symm
-  apply CompletedGroup.ext
+    (TauCeti.CompletedGroup.projection k g)).symm
+  apply TauCeti.CompletedGroup.ext
   intro l
   -- Compare at a common upper cutoff using `GradedLieHom.lieTruncatedMap_mk`
-  -- and `CompletedGroup.map_projection`.
+  -- and `TauCeti.CompletedGroup.map_projection`.
   let f := GradedLieHom.lieTruncationHom d ℒ k
   have hmap : f.lieTruncatedMap l (a := max k l) (by simp) =
       (d.truncationIdeal (d.lieTruncationGrading ℒ k) l).mkQ.comp
@@ -79,13 +79,13 @@ theorem truncatedBCHCompletionEquiv_completedMap_truncation (k : ℕ)
     apply (d.truncationIdeal ℒ (max k l)).lieHom_qext
     intro x
     simp [f, LieIdeal.mkQ_apply]
-  let gm : d.truncatedGroup ℒ (max k l) := CompletedGroup.projection (max k l) g
-  let gk : d.truncatedGroup ℒ k := CompletedGroup.projection k g
+  let gm : d.truncatedGroup ℒ (max k l) := TauCeti.CompletedGroup.projection (max k l) g
+  let gk : d.truncatedGroup ℒ k := TauCeti.CompletedGroup.projection k g
   have hp : (f.lieTruncatedMap l (a := max k l) (by simp)).bchGroupMap gm =
       (d.truncationIdeal (d.lieTruncationGrading ℒ k) l).mkQ.bchGroupMap gk := by
     rw [hmap, LieHom.bchGroupMap_comp, MonoidHom.comp_apply]
     exact congrArg (d.truncationIdeal (d.lieTruncationGrading ℒ k) l).mkQ.bchGroupMap
-      (CompletedGroup.map_projection k (max k l) (le_max_left k l) g)
+      (TauCeti.CompletedGroup.map_projection k (max k l) (le_max_left k l) g)
   exact (f.projection_completedMap_of_le l (a := max k l) (by simp) g).trans
     (hp.trans (d.projection_bchToCompletion (d.lieTruncationGrading ℒ k) l gk).symm)
 

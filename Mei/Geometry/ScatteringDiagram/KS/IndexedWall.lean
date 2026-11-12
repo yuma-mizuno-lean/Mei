@@ -9,6 +9,7 @@ public import Mei.Geometry.ScatteringDiagram.KS.Ray
 public import Mei.Algebra.Lie.BCH.Ray.Basic
 public import Mei.Geometry.Convex.Polyhedron.Rational.Cone
 import Mei.Geometry.Convex.Polyhedron.Path.Completion
+import Mei.GroupTheory.CompletedGroup.Basic
 
 /-!
 # Indexed walls and abelian-ray presentations of KS diagrams
@@ -32,6 +33,8 @@ The path products use `Quiver.Path.wallPathProduct`; ray uniqueness is
 -/
 
 public section
+
+open TauCeti (IsRationalNormalPolyhedron RationalAffinePolyhedron)
 
 open TauCeti (WallComplement AdmissiblePLPath)
 
@@ -139,7 +142,7 @@ structure IndexedWallPresentation (ι : Type*) where
   /-- The indexed walls, with their supports and completed labels. -/
   wall : ι → IndexedWall s d ℒ
   /-- Only finitely many indexed labels are nonidentity at any fixed order. -/
-  finite_active : CompletedGroup.HasFiniteSupport (fun j => (wall j).label)
+  finite_active : TauCeti.CompletedGroup.HasFiniteSupport (fun j => (wall j).label)
 
 namespace IndexedWallPresentation
 
@@ -147,12 +150,12 @@ variable {s d ℒ} {ι : Type*} (D : IndexedWallPresentation s d ℒ ι)
 
 /-- The indices whose labels survive the order-`k` projection. -/
 def active (k : ℕ) : Set ι :=
-  Function.mulSupport (fun j => CompletedGroup.projection k (D.wall j).label)
+  Function.mulSupport (fun j => TauCeti.CompletedGroup.projection k (D.wall j).label)
 
 /-- Activity is exactly nontriviality of the projected label. -/
 @[simp]
 theorem mem_active (k : ℕ) (j : ι) :
-    j ∈ D.active k ↔ CompletedGroup.projection k (D.wall j).label ≠ 1 := Iff.rfl
+    j ∈ D.active k ↔ TauCeti.CompletedGroup.projection k (D.wall j).label ≠ 1 := Iff.rfl
 
 /-- The active wall index type is finite at every order. -/
 instance finiteActive (k : ℕ) : Finite (D.active k) :=
@@ -160,16 +163,16 @@ instance finiteActive (k : ℕ) : Finite (D.active k) :=
 
 /-- A label active at a lower order is also active at every higher order. -/
 theorem active_mono : Monotone D.active :=
-  CompletedGroup.monotone_mulSupport_projection (fun j => (D.wall j).label)
+  TauCeti.CompletedGroup.monotone_mulSupport_projection (fun j => (D.wall j).label)
 
 variable [Module.Free ℤ N] [IsAbelianRays d ℒ]
 
 /-- The projected labels of active walls with the same affine span commute. -/
 theorem activeLabels_commute (k : ℕ) (a b : D.active k)
     (hab : affineSpan ℝ (D.wall a).support = affineSpan ℝ (D.wall b).support) :
-    Commute (CompletedGroup.projection k (D.wall a).label)
-      (CompletedGroup.projection k (D.wall b).label) :=
-  ((D.wall a).commute_label (D.wall b) hab).map (CompletedGroup.projection k)
+    Commute (TauCeti.CompletedGroup.projection k (D.wall a).label)
+      (TauCeti.CompletedGroup.projection k (D.wall b).label) :=
+  ((D.wall a).commute_label (D.wall b) hab).map (TauCeti.CompletedGroup.projection k)
 
 /-- The order-`k` transport along a path admissible for the finite active wall family. Each
 wall is cooriented by the normal of the generator of its ray. -/
@@ -177,7 +180,7 @@ def levelPathProduct (k : ℕ)
     {x y : WallComplement (fun j : D.active k => (D.wall j).support)}
     (p : AdmissiblePLPath x y) : d.truncatedGroup ℒ k :=
   p.wallPathProduct (fun j : D.active k => s.normal (D.wall j).ray.generator)
-    (fun j => CompletedGroup.projection k (D.wall j).label) (D.activeLabels_commute k)
+    (fun j => TauCeti.CompletedGroup.projection k (D.wall j).label) (D.activeLabels_commute k)
 
 /-- The grouped wall-family product characterizes finite-order transport, independently
 of which proof of coplanar commutation is used. -/
@@ -186,11 +189,11 @@ theorem levelPathProduct_eq_wallPathProduct (k : ℕ)
     (p : AdmissiblePLPath x y)
     (comm : ∀ a b : D.active k,
       affineSpan ℝ (D.wall a).support = affineSpan ℝ (D.wall b).support →
-        Commute (CompletedGroup.projection k (D.wall a).label)
-          (CompletedGroup.projection k (D.wall b).label)) :
+        Commute (TauCeti.CompletedGroup.projection k (D.wall a).label)
+          (TauCeti.CompletedGroup.projection k (D.wall b).label)) :
     D.levelPathProduct k p =
       p.wallPathProduct (fun j : D.active k => s.normal (D.wall j).ray.generator)
-        (fun j => CompletedGroup.projection k (D.wall j).label) comm := (rfl)
+        (fun j => TauCeti.CompletedGroup.projection k (D.wall j).label) comm := (rfl)
 
 @[simp]
 theorem levelPathProduct_nil (k : ℕ)

@@ -22,20 +22,22 @@ interface as general piecewise affine parameterizations.
 
 public noncomputable section
 
+open TauCeti (IsRationalSemilinear)
+
 namespace Mei
 
 variable {N V ι : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
 
 /-- Inclusion of a rational semilinear set is a finite branch. -/
-theorem IsRationalSemilinear.isFiniteBranchOn_subtypeVal {D : Set V}
+theorem _root_.TauCeti.IsRationalSemilinear.isFiniteBranchOn_subtypeVal {D : Set V}
     (hD : IsRationalSemilinear h D) :
     IsFiniteBranchOn h h D (Subtype.val : D → V) := by
   apply isFiniteBranchOn_iff.mpr
   obtain ⟨κ, hκ, S, hS, -, hcover⟩ :=
-    isRationalSemilinear_iff_exists_pairwise_disjoint.mp hD
+    TauCeti.isRationalSemilinear_iff_exists_pairwise_disjoint.mp hD
   exact ⟨κ, hκ, S, fun _ => AffineMap.id ℝ V, hcover,
-    fun k => ⟨hS k, Toric.IsRationalLinearMap.id h,
+    fun k => ⟨hS k, TauCeti.Toric.IsRationalLinearMap.id h,
       Function.injective_id.injOn, fun _ _ => rfl⟩⟩
 
 namespace FiniteSemilinearFamily

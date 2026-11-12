@@ -264,7 +264,7 @@ variable [Algebra ℚ R] [LieAlgebra ℚ L] [IsScalarTower ℚ R L]
 exponential subgroup of the truncated joint subalgebra. -/
 theorem projection_mem_bchSubgroup_jointSubalgebra {w : SupportedRay d} {m : Λ →+ ℤ}
     {g : d.completedBCHGroup ℒ} (hg : g ∈ H.wallGroup w m) (hm : ∀ v ∈ W, m v = 0) (k : ℕ) :
-    CompletedGroup.projection k g ∈ ((H.truncated d k).jointSubalgebra W).bchSubgroup :=
+    TauCeti.CompletedGroup.projection k g ∈ ((H.truncated d k).jointSubalgebra W).bchSubgroup :=
   (LieSubalgebra.bchSubgroup_le_bchSubgroup.mpr
     (H.truncatedRayLieSubalgebra_le_jointSubalgebra hm w k))
     ((LieSubalgebra.mem_bchSubgroup _ _).mpr ((H.mem_wallGroup w m g).mp hg k))

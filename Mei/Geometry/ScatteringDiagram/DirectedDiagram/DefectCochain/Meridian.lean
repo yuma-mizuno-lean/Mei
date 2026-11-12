@@ -31,6 +31,8 @@ curve counts*, proof of Theorem 2.6. No higher-order consistency is required.
 
 public section
 
+open TauCeti (OrientedCell PolyhedralCochain)
+
 open TauCeti (WallComplement AdmissiblePLPath)
 
 open TauCeti (PositiveDegrees IsPositiveGrading)
@@ -86,7 +88,7 @@ theorem exists_joint_meridian_loopObstruction_eq_boundaryPairing
       convexHull ℝ (range s.points) ∩
         ((D.adaptedComplex (k + 1)).codimensionAtLeast 2).support = {q} ∧
       (∀ τ ∈ (PolyhedralCochain.coboundaryPresentation (R := R) f).support,
-        τ.IsTransverse s.points) ∧
+        τ.IsTransverseToCarrier s.points) ∧
       D.loopObstruction hk ((D.adaptedPathPrefunctor (k + 1)).mapPath p) =
         OrientedCell.intersectionPairing (R := R) s.points
           (PolyhedralCochain.coboundaryPresentation (R := R) f) := by

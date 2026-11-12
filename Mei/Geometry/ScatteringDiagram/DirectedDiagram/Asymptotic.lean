@@ -73,7 +73,7 @@ theorem eventually_decompose_log_combinedLabel_eq_sum_incoming (k : ℕ) (n : Γ
             (if 0 < h.realCharacter (D.wall a).normal v then -1 else 1 : ℤ) •
               DirectSum.decompose (d.lieTruncationGrading ℒ k)
                 (BCHGroup.log (L := d.lieTruncation ℒ k)
-                  (CompletedGroup.projection k (D.wall a).label)) n else 0 := by
+                  (TauCeti.CompletedGroup.projection k (D.wall a).label)) n else 0 := by
   classical
   let := Fintype.ofFinite (D.active k)
   -- Only outgoing walls carrying this degree need to escape. The finite
@@ -118,7 +118,7 @@ theorem eventually_decompose_log_combinedLabel_eq_sum_incoming (k : ℕ) (n : Γ
       simp only [ht a hout hn θ hθK, hin, false_and, ite_false]
   · have hz : DirectSum.decompose (d.lieTruncationGrading ℒ k)
         (BCHGroup.log (L := d.lieTruncation ℒ k)
-          (CompletedGroup.projection k (D.wall a).label)) n = 0 := by
+          (TauCeti.CompletedGroup.projection k (D.wall a).label)) n = 0 := by
       apply Subtype.ext
       exact H.decompose_log_projection_eq_zero_of_notMem_rayDegrees (D.wall a).label_mem k hn
     simp only [hz, smul_zero, ite_self]
@@ -152,7 +152,7 @@ theorem eventually_decompose_log_combinedLabel_eq_zero_of_outgoing (k : ℕ) (n 
     simp only [hin, false_and, ite_false]
   · have hz : DirectSum.decompose (d.lieTruncationGrading ℒ k)
         (BCHGroup.log (L := d.lieTruncation ℒ k)
-          (CompletedGroup.projection k (D.wall a).label)) n = 0 := by
+          (TauCeti.CompletedGroup.projection k (D.wall a).label)) n = 0 := by
       apply Subtype.ext
       exact H.decompose_log_projection_eq_zero_of_notMem_rayDegrees (D.wall a).label_mem k hn
     simp only [hz, smul_zero, ite_self]

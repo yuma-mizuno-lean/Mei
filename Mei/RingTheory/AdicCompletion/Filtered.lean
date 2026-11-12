@@ -17,7 +17,7 @@ adic completion also records the trivial quotient by `I^0`. The comparison
 forgets this redundant coordinate and commutes with the canonical maps.
 
 The construction uses `AdicCompletion.evalₐ`, `AdicCompletion.liftAlgHom` and
-the compatible-family universal property `Mei.AlgFiltration.liftₐ`.
+the compatible-family universal property `TauCeti.AlgFiltration.liftₐ`.
 -/
 
 public section
@@ -43,15 +43,16 @@ theorem factor_evalₐ {m n : ℕ} (h : m ≤ n) (x : AdicCompletion I A) :
 
 end AdicCompletion
 
-namespace Mei.AlgFiltration
+namespace TauCeti.AlgFiltration
 
 variable {A : Type*} [CommRing A] (I : Ideal A)
 
-local notation "Q" n => Ideal.quotientEquivAlgOfEq A (ofIdeal_ideal I n)
+local notation "Q" n => Ideal.quotientEquivAlgOfEq A (Ideal.algFiltration_ideal I n)
 
 private def fromAdicCompletion :
-    AdicCompletion I A →ₐ[A] (ofIdeal I).completion :=
-  (ofIdeal I).liftₐ (fun k => ((Q (k + 1)).symm.toAlgHom).comp (AdicCompletion.evalₐ I (k + 1))) (by
+    AdicCompletion I A →ₐ[A] (Ideal.algFiltration I).completion :=
+  (Ideal.algFiltration I).liftₐ
+    (fun k => ((Q (k + 1)).symm.toAlgHom).comp (AdicCompletion.evalₐ I (k + 1))) (by
     intro k l h
     ext x
     simp only [AlgHom.comp_apply, AlgEquiv.coe_toAlgHom]
@@ -61,32 +62,32 @@ private def fromAdicCompletion :
     simp)
 
 private theorem projection_fromAdicCompletion (k : ℕ) (x : AdicCompletion I A) :
-    (ofIdeal I).projection k (fromAdicCompletion I x) =
+    (Ideal.algFiltration I).projection k (fromAdicCompletion I x) =
       (Q (k + 1)).symm (AdicCompletion.evalₐ I (k + 1) x) := by
   simp only [fromAdicCompletion, projection_liftₐ, AlgHom.comp_apply, AlgEquiv.coe_toAlgHom]
 
-private def adicComponent (n : ℕ) : (ofIdeal I).completion →ₐ[A] A ⧸ I ^ n :=
+private def adicComponent (n : ℕ) : (Ideal.algFiltration I).completion →ₐ[A] A ⧸ I ^ n :=
   (Ideal.Quotient.factorₐ A (Ideal.pow_le_pow_right (Nat.le_succ n))).comp
-    (((Q (n + 1)).toAlgHom).comp ((ofIdeal I).projectionₐ n))
+    (((Q (n + 1)).toAlgHom).comp ((Ideal.algFiltration I).projectionₐ n))
 
 private theorem adicComponent_compatible {m n : ℕ} (h : m ≤ n) :
     (Ideal.Quotient.factorₐ A (Ideal.pow_le_pow_right h)).comp (adicComponent I n) =
       adicComponent I m := by
   ext x
   simp only [adicComponent, AlgHom.comp_apply, projectionₐ_apply, AlgEquiv.coe_toAlgHom]
-  rw [← (ofIdeal I).factor_projection h x]
-  obtain ⟨a, ha⟩ := Ideal.Quotient.mk_surjective ((ofIdeal I).projection n x)
+  rw [← (Ideal.algFiltration I).factor_projection h x]
+  obtain ⟨a, ha⟩ := Ideal.Quotient.mk_surjective ((Ideal.algFiltration I).projection n x)
   rw [← ha]
   simp
 
 private def toAdicCompletion :
-    (ofIdeal I).completion →ₐ[A] AdicCompletion I A :=
+    (Ideal.algFiltration I).completion →ₐ[A] AdicCompletion I A :=
   AdicCompletion.liftAlgHom I (adicComponent I) (adicComponent_compatible I)
 
-private theorem eval_toAdicCompletion (n : ℕ) (x : (ofIdeal I).completion) :
+private theorem eval_toAdicCompletion (n : ℕ) (x : (Ideal.algFiltration I).completion) :
     AdicCompletion.evalₐ I n (toAdicCompletion I x) =
       Ideal.Quotient.factor (Ideal.pow_le_pow_right (Nat.le_succ n))
-        ((Q (n + 1)) ((ofIdeal I).projection n x)) := by
+        ((Q (n + 1)) ((Ideal.algFiltration I).projection n x)) := by
   rw [toAdicCompletion,
     AdicCompletion.evalₐ_liftAlgHom I (adicComponent I) (adicComponent_compatible I)]
   simp only [adicComponent, AlgHom.comp_apply, AlgEquiv.coe_toAlgHom,
@@ -94,7 +95,7 @@ private theorem eval_toAdicCompletion (n : ℕ) (x : (ofIdeal I).completion) :
 
 /-- The adic completion is the completion of the ideal-power filtration, with
 its redundant order-zero quotient omitted. -/
-def adicCompletionEquiv : AdicCompletion I A ≃ₐ[A] (ofIdeal I).completion where
+def adicCompletionEquiv : AdicCompletion I A ≃ₐ[A] (Ideal.algFiltration I).completion where
   toFun := fromAdicCompletion I
   map_mul' := (fromAdicCompletion I).map_mul
   map_add' := (fromAdicCompletion I).map_add
@@ -106,26 +107,26 @@ def adicCompletionEquiv : AdicCompletion I A ≃ₐ[A] (ofIdeal I).completion wh
     rw [eval_toAdicCompletion, projection_fromAdicCompletion,
       AlgEquiv.apply_symm_apply, AdicCompletion.factor_evalₐ I (Nat.le_succ n)]
   right_inv x := by
-    apply (ofIdeal I).completion_ext
+    apply (Ideal.algFiltration I).completion_ext
     intro k
     rw [projection_fromAdicCompletion, eval_toAdicCompletion]
-    rw [← (ofIdeal I).factor_projection (Nat.le_succ k) x]
-    obtain ⟨a, ha⟩ := Ideal.Quotient.mk_surjective ((ofIdeal I).projection (k + 1) x)
+    rw [← (Ideal.algFiltration I).factor_projection (Nat.le_succ k) x]
+    obtain ⟨a, ha⟩ := Ideal.Quotient.mk_surjective ((Ideal.algFiltration I).projection (k + 1) x)
     rw [← ha]
     simp
 
 /-- The comparison sends the adic quotient of order `k+1` to filtered order `k`. -/
 @[simp]
 theorem projection_adicCompletionEquiv (k : ℕ) (x : AdicCompletion I A) :
-    (ofIdeal I).projection k (adicCompletionEquiv I x) =
+    (Ideal.algFiltration I).projection k (adicCompletionEquiv I x) =
       (Q (k + 1)).symm (AdicCompletion.evalₐ I (k + 1) x) :=
   projection_fromAdicCompletion I k x
 
 /-- The inverse comparison recovers every positive-order adic projection. -/
 @[simp]
-theorem eval_adicCompletionEquiv_symm (k : ℕ) (x : (ofIdeal I).completion) :
+theorem eval_adicCompletionEquiv_symm (k : ℕ) (x : (Ideal.algFiltration I).completion) :
     AdicCompletion.evalₐ I (k + 1) ((adicCompletionEquiv I).symm x) =
-      (Q (k + 1)) ((ofIdeal I).projection k x) := by
+      (Q (k + 1)) ((Ideal.algFiltration I).projection k x) := by
   apply (Q (k + 1)).symm.injective
   rw [← projection_adicCompletionEquiv, AlgEquiv.apply_symm_apply,
     AlgEquiv.symm_apply_apply]
@@ -133,9 +134,9 @@ theorem eval_adicCompletionEquiv_symm (k : ℕ) (x : (ofIdeal I).completion) :
 /-- The comparison preserves the canonical image of the original ring. -/
 @[simp]
 theorem adicCompletionEquiv_of (a : A) :
-    adicCompletionEquiv I (AdicCompletion.of I A a) = (ofIdeal I).toCompletion a := by
-  apply (ofIdeal I).completion_ext
+    adicCompletionEquiv I (AdicCompletion.of I A a) = (Ideal.algFiltration I).toCompletion a := by
+  apply (Ideal.algFiltration I).completion_ext
   intro k
   simp
 
-end Mei.AlgFiltration
+end TauCeti.AlgFiltration

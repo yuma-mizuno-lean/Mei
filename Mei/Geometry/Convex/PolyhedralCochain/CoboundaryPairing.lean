@@ -7,6 +7,7 @@ module
 
 public import Mei.Geometry.Convex.PolyhedralCochain.Coboundary
 public import Mei.Geometry.Convex.PolyhedralCochain.Pairing
+public import Mei.Geometry.Convex.PolyhedralCochain.Basic
 
 /-!
 # Pairing of coboundary presentations
@@ -18,9 +19,13 @@ the signed boundary presentation `coboundaryPresentation (single σ c)` does.
 
 public section
 
-namespace Mei.PolyhedralCochain
+open TauCeti (OrientedCell)
 
-open OrientedCell
+namespace TauCeti.PolyhedralCochain
+
+open Mei
+
+open TauCeti.OrientedCell
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i} {k : ℕ}
@@ -33,15 +38,15 @@ presentation does. -/
 theorem intersectionPairing_eq_coboundaryPresentation_of_ofFinsupp_eq {σ : OrientedCell h k}
     (c : E) {v : Fin (k + 1 + 1) → V} {y : OrientedCell h (k + 1) →₀ E}
     (hy : ofFinsupp (R := R) y = coboundaryOfFinsupp (Finsupp.single σ c))
-    (hσ : ∀ τ ∈ σ.boundaryFacets, τ.IsTransverse v)
-    (hT : ∀ τ ∈ y.support, τ.IsTransverse v) :
+    (hσ : ∀ τ ∈ σ.boundaryFacets, τ.IsTransverseToCarrier v)
+    (hT : ∀ τ ∈ y.support, τ.IsTransverseToCarrier v) :
     intersectionPairing (R := R) v y =
       intersectionPairing (R := R) v (coboundaryPresentation (R := R) (Finsupp.single σ c)) := by
-  refine intersectionPairing_eq_of_ofFinsupp_eq
+  refine intersectionPairing_eq_of_ofFinsupp_eq_of_isTransverseToCarrier
     (by rw [hy, ofFinsupp_coboundaryPresentation]) hT fun τ hτ => ?_
   obtain ⟨σ', hσ', hτσ⟩ := Finset.mem_biUnion.mp
     (support_coboundaryPresentation_subset (R := R) (Finsupp.single σ c) hτ)
   rw [Finset.mem_singleton.mp (Finsupp.support_single_subset hσ')] at hτσ
   exact hσ τ hτσ
 
-end Mei.PolyhedralCochain
+end TauCeti.PolyhedralCochain

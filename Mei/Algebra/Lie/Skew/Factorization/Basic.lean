@@ -55,7 +55,7 @@ local notation "prodDilog" c:arg => List.prod (List.ofFn fun i =>
 the finite products at that cutoff. Factors born later project to the identity. -/
 theorem projection_prod_rayExp_smul_negDilogNeg_eq_of_eq
     (c c' : Fin r → R) (k : ℕ) (hc : ∀ i, d.degree (m i) ≤ k → c i = c' i) :
-    CompletedGroup.projection k (prodDilog c) = CompletedGroup.projection k (prodDilog c') := by
+    TauCeti.CompletedGroup.projection k (prodDilog c) = TauCeti.CompletedGroup.projection k (prodDilog c') := by
   simp only [map_list_prod, List.map_ofFn, Function.comp_def]
   congr 1
   apply congrArg List.ofFn
@@ -69,7 +69,7 @@ theorem projection_prod_rayExp_smul_negDilogNeg_eq_of_eq
 whose degree is retained. The factors may be in any fixed order. -/
 theorem eq_of_projection_prod_rayExp_smul_negDilogNeg_eq
     (hinj : Function.Injective m) (c c' : Fin r → R) {k : ℕ}
-    (hprod : CompletedGroup.projection k (prodDilog c) = CompletedGroup.projection k (prodDilog c'))
+    (hprod : TauCeti.CompletedGroup.projection k (prodDilog c) = TauCeti.CompletedGroup.projection k (prodDilog c'))
     (i : Fin r) (hi : d.degree (m i) ≤ k) : c i = c' i := by
   classical
   simp only [List.ofFn_eq_map] at hprod
@@ -108,7 +108,7 @@ the degrees visible at that order. Exponents above the cutoff remain arbitrary. 
 @[simp]
 theorem projection_prod_rayExp_smul_negDilogNeg_eq_iff
     (hinj : Function.Injective m) (c c' : Fin r → R) (k : ℕ) :
-    CompletedGroup.projection k (prodDilog c) = CompletedGroup.projection k (prodDilog c') ↔
+    TauCeti.CompletedGroup.projection k (prodDilog c) = TauCeti.CompletedGroup.projection k (prodDilog c') ↔
       ∀ i, d.degree (m i) ≤ k → c i = c' i :=
   ⟨fun h i hi => eq_of_projection_prod_rayExp_smul_negDilogNeg_eq
       β hβ m hm hm0 hinj c c' h i hi,
@@ -124,7 +124,7 @@ theorem prod_rayExp_smul_negDilogNeg_eq_iff
   · intro h
     funext i
     exact eq_of_projection_prod_rayExp_smul_negDilogNeg_eq β hβ m hm hm0 hinj c c'
-      (congrArg (CompletedGroup.projection (d.degree (m i)).toNat) h) i
+      (congrArg (TauCeti.CompletedGroup.projection (d.degree (m i)).toNat) h) i
       (Int.self_le_toNat _)
   · rintro rfl
     rfl
@@ -134,13 +134,13 @@ identical exponents through the smaller cutoff, on the same ordered inventory. -
 theorem eq_of_projection_prod_rayExp_smul_negDilogNeg_eq_of_le
     (hinj : Function.Injective m) (c c' : Fin r → R) {g : d.completedBCHGroup ℒ}
     {k l : ℕ} (hkl : k ≤ l)
-    (hc : CompletedGroup.projection k (prodDilog c) = CompletedGroup.projection k g)
-    (hc' : CompletedGroup.projection l (prodDilog c') = CompletedGroup.projection l g)
+    (hc : TauCeti.CompletedGroup.projection k (prodDilog c) = TauCeti.CompletedGroup.projection k g)
+    (hc' : TauCeti.CompletedGroup.projection l (prodDilog c') = TauCeti.CompletedGroup.projection l g)
     (i : Fin r) (hi : d.degree (m i) ≤ k) : c i = c' i := by
   apply eq_of_projection_prod_rayExp_smul_negDilogNeg_eq β hβ m hm hm0 hinj c c' _ i hi
   have he := congrArg ((d.groupTower ℒ).map
     (CategoryTheory.homOfLE hkl).op) hc'
-  simp only [CompletedGroup.map_projection] at he
+  simp only [TauCeti.CompletedGroup.map_projection] at he
   exact hc.trans he.symm
 
 end FiniteTuple
@@ -197,8 +197,8 @@ visible exponents. Degrees outside the inventory may coincide. -/
 @[simp]
 theorem projection_orderedDilogProduct_eq_iff (s : Finset ι)
     (hinj : Set.InjOn m (↑s : Set ι)) (c c' : ι → R) (k : ℕ) :
-    CompletedGroup.projection k (orderedDilogProduct β hβ m hm hm0 s c) =
-        CompletedGroup.projection k (orderedDilogProduct β hβ m hm hm0 s c') ↔
+    TauCeti.CompletedGroup.projection k (orderedDilogProduct β hβ m hm hm0 s c) =
+        TauCeti.CompletedGroup.projection k (orderedDilogProduct β hβ m hm hm0 s c') ↔
       ∀ i ∈ s, d.degree (m i) ≤ k → c i = c' i := by
   let l := s.sort
   have he (a : ι → R) :
@@ -230,8 +230,8 @@ exponents by zero. Degrees outside the union may coincide. -/
 theorem projection_orderedDilogProduct_eq_iff_of_support
     (s t : Finset ι) (hinj : Set.InjOn m (↑(s ∪ t) : Set ι)) (c c' : ι → R)
     (hc : ∀ i ∉ s, c i = 0) (hc' : ∀ i ∉ t, c' i = 0) (k : ℕ) :
-    CompletedGroup.projection k (orderedDilogProduct β hβ m hm hm0 s c) =
-        CompletedGroup.projection k (orderedDilogProduct β hβ m hm hm0 t c') ↔
+    TauCeti.CompletedGroup.projection k (orderedDilogProduct β hβ m hm hm0 s c) =
+        TauCeti.CompletedGroup.projection k (orderedDilogProduct β hβ m hm hm0 t c') ↔
       ∀ i, d.degree (m i) ≤ k → c i = c' i := by
   rw [orderedDilogProduct_eq_of_subset β hβ m hm hm0 Finset.subset_union_left c
       (fun i _ hi => hc i hi),
@@ -250,9 +250,9 @@ theorem projection_orderedDilogProduct_eq_iff_of_support
 cutoff. Missing degrees in the original support have exponent zero. -/
 theorem projection_orderedDilogProduct_cutoff (hinj : Function.Injective m)
     (c : ι →₀ R) (k : ℕ) :
-    CompletedGroup.projection k
+    TauCeti.CompletedGroup.projection k
         (orderedDilogProduct β hβ m hm hm0 (inventory hinj k) c) =
-      CompletedGroup.projection k (orderedDilogProduct β hβ m hm hm0 c.support c) := by
+      TauCeti.CompletedGroup.projection k (orderedDilogProduct β hβ m hm hm0 c.support c) := by
   simp only [orderedDilogProduct_def, map_list_prod, List.map_map, Function.comp_def]
   apply Finset.prod_map_sort_eq_of_ne_one
   intro i hi
@@ -273,9 +273,9 @@ finite factorization of that label in every retained degree. This allows the
 finite inventories to vary with the cutoff. -/
 theorem eq_of_projection_orderedDilogProduct_cutoff
     (hinj : Function.Injective m) (c : ι → R) (a : ι →₀ R) {k : ℕ}
-    (he : CompletedGroup.projection k
+    (he : TauCeti.CompletedGroup.projection k
         (orderedDilogProduct β hβ m hm hm0 (inventory hinj k) c) =
-      CompletedGroup.projection k (orderedDilogProduct β hβ m hm hm0 a.support a))
+      TauCeti.CompletedGroup.projection k (orderedDilogProduct β hβ m hm hm0 a.support a))
     (i : ι) (hi : d.degree (m i) ≤ k) : c i = a i := by
   rw [← projection_orderedDilogProduct_cutoff β hβ m hm hm0 hinj a k] at he
   exact (projection_orderedDilogProduct_eq_iff β hβ m hm hm0 _ hinj.injOn c a k).mp he

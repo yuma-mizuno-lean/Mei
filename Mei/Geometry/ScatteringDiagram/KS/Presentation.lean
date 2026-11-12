@@ -40,6 +40,8 @@ The construction uses `FinitePolyhedralComplex.ambientSubdivision`,
 
 public section
 
+open TauCeti (RationalAffinePolyhedron)
+
 open TauCeti (WallComplement AdmissiblePLPath singularSupport
   affineSpan_eq_of_notMem_singularSupport)
 
@@ -247,20 +249,20 @@ variable [Module.Free ℤ N] [IsAbelianRays d ℒ]
 /-- The projected labels of the active indexed walls containing a wall commute. -/
 theorem wallIndices_pairwise_commute {k : ℕ} {Q : Set V} (hQ : Q ∈ (D.levelComplex k).walls) :
     ((D.wallIndices k Q : Finset (D.active k)) : Set (D.active k)).Pairwise
-      (fun a b => Commute (CompletedGroup.projection k (D.wall a).label)
-        (CompletedGroup.projection k (D.wall b).label)) := by
+      (fun a b => Commute (TauCeti.CompletedGroup.projection k (D.wall a).label)
+        (TauCeti.CompletedGroup.projection k (D.wall b).label)) := by
   intro a ha b hb _
   have hab := D.ray_eq_of_subset hQ (D.mem_wallIndices.mp ha) (D.mem_wallIndices.mp hb)
   exact (d.commute_of_mem_completedRaySubgroup ℒ (D.wall a).label_mem
-    (hab ▸ (D.wall b).label_mem)).map (CompletedGroup.projection k)
+    (hab ▸ (D.wall b).label_mem)).map (TauCeti.CompletedGroup.projection k)
 
 /-- At a regular point of the active family, the incident projected labels
 commute, including labels on repeated or overlapping supports. -/
 theorem wallIndices_singleton_pairwise_commute (k : ℕ) (θ : V)
     (hθ : θ ∉ singularSupport (fun j : D.active k => (D.wall j).support)) :
     (D.wallIndices k {θ} : Set (D.active k)).Pairwise
-      (fun a b => Commute (CompletedGroup.projection k (D.wall a).label)
-        (CompletedGroup.projection k (D.wall b).label)) := by
+      (fun a b => Commute (TauCeti.CompletedGroup.projection k (D.wall a).label)
+        (TauCeti.CompletedGroup.projection k (D.wall b).label)) := by
   intro a ha b hb _
   have ha : θ ∈ (D.wall a).support := singleton_subset_iff.mp (D.mem_wallIndices.mp ha)
   have hb : θ ∈ (D.wall b).support := singleton_subset_iff.mp (D.mem_wallIndices.mp hb)
@@ -279,12 +281,12 @@ def toKSComplex (k : ℕ) : KSComplex s d ℒ (D.levelComplex k) k where
   evaluation_eq_zero Q θ hθ :=
     (D.wall _).evaluation_eq_zero_of_mem_rayDegrees (D.wallRay Q).rayDegrees_nonempty.some_mem
       ((D.exists_subset_support_of_mem_levelComplex_walls Q.property).choose_spec hθ)
-  label Q := (D.wallIndices k Q).noncommProd (fun j => CompletedGroup.projection k (D.wall j).label)
+  label Q := (D.wallIndices k Q).noncommProd (fun j => TauCeti.CompletedGroup.projection k (D.wall j).label)
     (D.wallIndices_pairwise_commute Q.property)
   label_mem Q := by
     refine Subgroup.noncommProd_mem _ _ fun j hj => ?_
     obtain ⟨n, hn⟩ := (D.wall j).ray.rayDegrees_nonempty
-    have hray : CompletedGroup.projection k (D.wall j).label ∈
+    have hray : TauCeti.CompletedGroup.projection k (D.wall j).label ∈
         (rayLieSubalgebra (d.lieTruncationGrading ℒ k) (D.wall j).ray).bchSubgroup := by
       exact (LieSubalgebra.mem_bchSubgroup _ _).mpr
         ((d.mem_completedRaySubgroup ℒ _ _).mp (D.wall j).label_mem k)
@@ -298,7 +300,7 @@ containing it. -/
 @[simp]
 theorem toKSComplex_label (k : ℕ) (Q : (D.levelComplex k).walls) :
     (D.toKSComplex k).label Q = (D.wallIndices k Q).noncommProd
-      (fun j => CompletedGroup.projection k (D.wall j).label)
+      (fun j => TauCeti.CompletedGroup.projection k (D.wall j).label)
       (D.wallIndices_pairwise_commute Q.property) := (rfl)
 
 /-- Each wall is cooriented by a degree on its supported ray. -/
@@ -358,7 +360,7 @@ private theorem crossingEventProduct_toKSComplex (k : ℕ)
     crossingEventProduct (D.toKSComplex k).toFiniteWallDiagram.normal
         (D.toKSComplex k).toFiniteWallDiagram.label (D.commute_toFiniteWallDiagram_label k) e t =
       crossingEventProduct (fun j : D.active k => s.normal (D.wall j).ray.generator)
-        (fun j => CompletedGroup.projection k (D.wall j).label) (D.activeLabels_commute k)
+        (fun j => TauCeti.CompletedGroup.projection k (D.wall j).label) (D.activeLabels_commute k)
         e' t := by
   classical
   have hz : AffineMap.lineMap x'.val y'.val t = AffineMap.lineMap x.val y.val t := by

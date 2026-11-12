@@ -66,6 +66,8 @@ grouping nor matched crossing germs. The crossing germs of the first diagram's g
 
 public section
 
+open TauCeti (AlgFiltration)
+
 open TauCeti (singularSupport singularSupport_comp_subset)
 
 open TauCeti (PositiveDegrees IsPositiveGrading)
@@ -171,7 +173,7 @@ arbitrarily large orders suffice. -/
 theorem label_eq_of_equivalent (hDE : D.Equivalent E)
     (hgerm : ∀ k, ∃ θ v, G.IsCrossingGerm g k θ v ∧ G'.IsCrossingGerm g' k θ v) :
     G.label g = G'.label g' :=
-  CompletedGroup.ext fun k => by
+  TauCeti.CompletedGroup.ext fun k => by
     obtain ⟨θ, v, hG, hG'⟩ := hgerm k
     rw [projection_label, projection_label]
     exact hG.groupLabel_eq ((equivalent_iff D E).mp hDE k) hG'

@@ -54,6 +54,6 @@ theorem mapDiagram_reconstruct (f : GradedLieHom (PositiveDegreeMap.id d) ℒ �
   funext k
   rw [CompletedDiagram.mapDiagram_diagram, reconstruct_diagram, reconstruct_diagram,
     f.projection_completedMap_of_le k (a := k) (by simp)]
-  exact d.map_reconstructFinite h ℒ ℳ f (CompletedGroup.projection k g)
+  exact d.map_reconstructFinite h ℒ ℳ f (TauCeti.CompletedGroup.projection k g)
 
 end TauCeti.PositiveDegrees

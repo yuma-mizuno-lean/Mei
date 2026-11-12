@@ -34,6 +34,8 @@ arbitrary original loops into the common admissible family are separate steps.
 
 public section
 
+open TauCeti (OrientedCell)
+
 open TauCeti (WallComplement AdmissiblePLPath)
 
 open TauCeti (PositiveDegrees IsPositiveGrading)
@@ -97,7 +99,7 @@ theorem log_levelPathProduct_eq_residual_pairing
           ((∑ Q, Finsupp.single (σ Q) ((cross Q).defect hk b t ht : d.lieTruncation ℒ (k + 1))) -
             ∑ j : D.active (k + 1), Finsupp.single (τ j)
               (if j.val ∈ s then 0 else
-                log (CompletedGroup.projection (k + 1) (D.wall j).label)))) := by
+                log (TauCeti.CompletedGroup.projection (k + 1) (D.wall j).label)))) := by
   classical
   let := Fintype.ofFinite ((D.restrict s).adaptedComplex (k + 1)).walls
   let := Fintype.ofFinite (D.active (k + 1))
@@ -112,7 +114,7 @@ theorem log_levelPathProduct_eq_residual_pairing
   let pA := G.mapPath p
   let a := fun Q => ((cross Q).defect hk b t ht : d.lieTruncation ℒ (k + 1))
   let c := fun j : D.active (k + 1) => if j.val ∈ s then 0 else
-    log (CompletedGroup.projection (k + 1) (D.wall j).label)
+    log (TauCeti.CompletedGroup.projection (k + 1) (D.wall j).label)
   let f := ∑ Q, Finsupp.single (σ Q) (a Q)
   let g := ∑ j : D.active (k + 1), Finsupp.single (τ j) (c j)
   -- Forgetting different admissibility conditions retains precisely the same

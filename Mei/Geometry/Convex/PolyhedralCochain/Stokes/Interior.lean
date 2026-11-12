@@ -28,11 +28,15 @@ contributions to polygonal meridian intersections.
 
 public section
 
+open TauCeti (OrientedCell)
+
 noncomputable section
 
 open Set
 
-namespace Mei.OrientedCell
+namespace TauCeti.OrientedCell
+
+open Mei
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
@@ -113,4 +117,4 @@ theorem exists_ball_sum_intersectionIndex_boundaryFacets_eq_sum_succAbove
     exact mem_iUnion₂.mpr ⟨τ, hτ, hzτ⟩
   exact hball (Metric.ball_subset_ball (min_le_left _ _) (hv hz)) hzfr
 
-end Mei.OrientedCell
+end TauCeti.OrientedCell

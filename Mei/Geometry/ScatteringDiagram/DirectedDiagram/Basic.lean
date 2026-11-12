@@ -7,6 +7,7 @@ module
 
 public import Mei.Geometry.ScatteringDiagram.DirectedWall.Basic
 public import Mei.Geometry.Convex.Polyhedron.Path.Product
+import Mei.GroupTheory.CompletedGroup.Basic
 
 /-!
 # Directed diagrams and finite-order path products
@@ -54,7 +55,7 @@ structure DirectedDiagram (ι : Type*) where
   /-- The directed walls, including their supports and completed labels. -/
   wall : ι → DirectedWall (d := d) h H
   /-- Only finitely many indexed labels are nonidentity at any fixed order. -/
-  finite_active : CompletedGroup.HasFiniteSupport (fun j => (wall j).label)
+  finite_active : TauCeti.CompletedGroup.HasFiniteSupport (fun j => (wall j).label)
 
 namespace DirectedDiagram
 
@@ -72,17 +73,17 @@ theorem ofFinite_wall [Finite ι] (W : ι → DirectedWall (d := d) h H) (j : ι
 
 /-- The indices whose labels survive the order-`k` projection. -/
 def active (k : ℕ) : Set ι :=
-  Function.mulSupport (fun j => CompletedGroup.projection k (D.wall j).label)
+  Function.mulSupport (fun j => TauCeti.CompletedGroup.projection k (D.wall j).label)
 
 /-- The active indices are the support of the projected labels. -/
 theorem active_def (k : ℕ) :
-    D.active k = Function.mulSupport (fun j => CompletedGroup.projection k (D.wall j).label) :=
+    D.active k = Function.mulSupport (fun j => TauCeti.CompletedGroup.projection k (D.wall j).label) :=
   (rfl)
 
 /-- Activity is exactly nontriviality of the projected label. -/
 @[simp]
 theorem mem_active (k : ℕ) (j : ι) :
-    j ∈ D.active k ↔ CompletedGroup.projection k (D.wall j).label ≠ 1 := Iff.rfl
+    j ∈ D.active k ↔ TauCeti.CompletedGroup.projection k (D.wall j).label ≠ 1 := Iff.rfl
 
 /-- No wall is active at order zero, since the order-zero group is trivial. -/
 theorem not_mem_active_zero (j : ι) : j ∉ D.active 0 := by
@@ -104,15 +105,15 @@ instance finiteActive (k : ℕ) : Finite (D.active k) :=
 
 /-- A label active at a lower order is also active at every higher order. -/
 theorem active_mono : Monotone D.active :=
-  CompletedGroup.monotone_mulSupport_projection (fun j => (D.wall j).label)
+  TauCeti.CompletedGroup.monotone_mulSupport_projection (fun j => (D.wall j).label)
 
 /-- The projected labels of active walls with the same affine span commute. -/
 theorem activeLabels_commute (k : ℕ) (a b : D.active k)
     (hab : affineSpan ℝ (D.wall a).support = affineSpan ℝ (D.wall b).support) :
-    Commute (CompletedGroup.projection k (D.wall a).label)
-      (CompletedGroup.projection k (D.wall b).label) :=
+    Commute (TauCeti.CompletedGroup.projection k (D.wall a).label)
+      (TauCeti.CompletedGroup.projection k (D.wall b).label) :=
   ((D.wall a).commute_label_of_direction_eq (D.wall b)
-    (congrArg AffineSubspace.direction hab)).map (CompletedGroup.projection k)
+    (congrArg AffineSubspace.direction hab)).map (TauCeti.CompletedGroup.projection k)
 
 /-- Any endpoints allowed at a fixed cutoff admit a finite-order admissible path. -/
 theorem exists_level_path (k : ℕ)
@@ -129,7 +130,7 @@ def levelPathProduct (k : ℕ)
     {x y : WallComplement (fun j : D.active k => (D.wall j).support)}
     (p : AdmissiblePLPath x y) : d.truncatedGroup ℒ k :=
   p.wallPathProduct (fun j : D.active k => h.realCharacter (D.wall j).normal)
-    (fun j => CompletedGroup.projection k (D.wall j).label) (D.activeLabels_commute k)
+    (fun j => TauCeti.CompletedGroup.projection k (D.wall j).label) (D.activeLabels_commute k)
 
 /-- The grouped wall-family product characterizes finite-order transport, independently
 of which proof of coplanar commutation is used. -/
@@ -138,11 +139,11 @@ theorem levelPathProduct_eq_wallPathProduct (k : ℕ)
     (p : AdmissiblePLPath x y)
     (comm : ∀ a b : D.active k,
       affineSpan ℝ (D.wall a).support = affineSpan ℝ (D.wall b).support →
-        Commute (CompletedGroup.projection k (D.wall a).label)
-          (CompletedGroup.projection k (D.wall b).label)) :
+        Commute (TauCeti.CompletedGroup.projection k (D.wall a).label)
+          (TauCeti.CompletedGroup.projection k (D.wall b).label)) :
     D.levelPathProduct k p =
       p.wallPathProduct (fun j : D.active k => h.realCharacter (D.wall j).normal)
-        (fun j => CompletedGroup.projection k (D.wall j).label) comm := (rfl)
+        (fun j => TauCeti.CompletedGroup.projection k (D.wall j).label) comm := (rfl)
 
 /-- A segment meeting no active wall has identity finite-order transport. -/
 theorem levelPathProduct_eq_one_of_crossings_eq_empty (k : ℕ)
@@ -192,7 +193,7 @@ theorem levelPathProduct_reverse (k : ℕ)
 /-- Finite-order transport lies in every subgroup containing the projected labels of the walls
 active at that order. -/
 theorem levelPathProduct_mem (k : ℕ) {S : Subgroup (d.truncatedGroup ℒ k)}
-    (hS : ∀ j : D.active k, CompletedGroup.projection k (D.wall j).label ∈ S)
+    (hS : ∀ j : D.active k, TauCeti.CompletedGroup.projection k (D.wall j).label ∈ S)
     {x y : WallComplement (fun j : D.active k => (D.wall j).support)}
     (p : AdmissiblePLPath x y) : D.levelPathProduct k p ∈ S := by
   rw [D.levelPathProduct_eq_wallPathProduct k p (D.activeLabels_commute k)]

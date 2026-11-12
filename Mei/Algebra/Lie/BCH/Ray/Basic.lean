@@ -85,13 +85,13 @@ theorem map_bchSubgroup_rayLieSubalgebra (w : SupportedRay d)
 /-- Completed labels whose logarithms at every cutoff are supported on one ray. -/
 def completedRaySubgroup (w : SupportedRay d) : Subgroup (d.completedBCHGroup ℒ) :=
   ⨅ k, (rayLieSubalgebra (d.lieTruncationGrading ℒ k) w).bchSubgroup.comap
-    (CompletedGroup.projection k)
+    (TauCeti.CompletedGroup.projection k)
 
 /-- Ray subgroup membership is detected by the support of every finite logarithm. -/
 @[simp]
 theorem mem_completedRaySubgroup (w : SupportedRay d) (g : d.completedBCHGroup ℒ) :
     g ∈ d.completedRaySubgroup ℒ w ↔ ∀ k,
-      BCHGroup.log (L := d.lieTruncation ℒ k) (CompletedGroup.projection k g) ∈
+      BCHGroup.log (L := d.lieTruncation ℒ k) (TauCeti.CompletedGroup.projection k g) ∈
         rayLieSubalgebra (d.lieTruncationGrading ℒ k) w := by
   simp only [completedRaySubgroup, Subgroup.mem_iInf]
   exact forall_congr' fun k => LieSubalgebra.mem_bchSubgroup _ _
@@ -102,7 +102,7 @@ theorem completedRaySubgroup_eq_bot_of_rayLieSubalgebra_eq_bot (w : SupportedRay
   apply le_antisymm _ bot_le
   intro g hg
   rw [Subgroup.mem_bot]
-  apply CompletedGroup.ext
+  apply TauCeti.CompletedGroup.ext
   intro k
   apply BCHGroup.log_injective (L := d.lieTruncation ℒ k)
   have hm := (d.mem_completedRaySubgroup ℒ w g).mp hg k
@@ -127,7 +127,7 @@ theorem expToCompletion_mem_completedRaySubgroup {w : SupportedRay d} {x : L}
 theorem exists_completedRaySubgroup_projection_eq (w : SupportedRay d) (k : ℕ)
     {g : d.truncatedGroup ℒ k}
     (hg : g ∈ (rayLieSubalgebra (d.lieTruncationGrading ℒ k) w).bchSubgroup) :
-    ∃ G ∈ d.completedRaySubgroup ℒ w, CompletedGroup.projection k G = g := by
+    ∃ G ∈ d.completedRaySubgroup ℒ w, TauCeti.CompletedGroup.projection k G = g := by
   rw [LieSubalgebra.mem_bchSubgroup, ← d.map_rayLieSubalgebra_mkQ ℒ w k] at hg
   obtain ⟨x, hx, he⟩ := (LieSubalgebra.mem_map _ _ _).mp hg
   refine ⟨d.expToCompletion ℒ x, d.expToCompletion_mem_completedRaySubgroup ℒ hx, ?_⟩
@@ -139,11 +139,11 @@ theorem disjoint_completedRaySubgroup [HasUniqueDiv N] {v w : SupportedRay d} (h
   rw [disjoint_iff]
   apply le_antisymm _ bot_le
   intro g hg
-  apply CompletedGroup.ext
+  apply TauCeti.CompletedGroup.ext
   intro k
   rw [map_one]
   apply BCHGroup.log_injective (L := d.lieTruncation ℒ k)
-  have hz : BCHGroup.log (L := d.lieTruncation ℒ k) (CompletedGroup.projection k g) = 0 :=
+  have hz : BCHGroup.log (L := d.lieTruncation ℒ k) (TauCeti.CompletedGroup.projection k g) = 0 :=
     (disjoint_rayLieSubalgebra (d.lieTruncationGrading ℒ k) h).le_bot
       ⟨(d.mem_completedRaySubgroup ℒ v g).mp hg.1 k,
         (d.mem_completedRaySubgroup ℒ w g).mp hg.2 k⟩
@@ -154,30 +154,30 @@ completed label lies on one unique supported ray. The ray may initially depend o
 the cutoff; compatibility forces it to stabilize as soon as a projection is nontrivial. -/
 theorem existsUnique_mem_completedRaySubgroup [HasUniqueDiv N]
     {g : d.completedBCHGroup ℒ} (hg : g ≠ 1)
-    (h : ∀ k, CompletedGroup.projection k g ≠ 1 →
+    (h : ∀ k, TauCeti.CompletedGroup.projection k g ≠ 1 →
       ∃ w : SupportedRay d,
-        CompletedGroup.projection k g ∈
+        TauCeti.CompletedGroup.projection k g ∈
           (rayLieSubalgebra (d.lieTruncationGrading ℒ k) w).bchSubgroup) :
     ∃! w : SupportedRay d, g ∈ d.completedRaySubgroup ℒ w := by
   classical
-  obtain ⟨k, hk⟩ : ∃ k, CompletedGroup.projection k g ≠ 1 := by
+  obtain ⟨k, hk⟩ : ∃ k, TauCeti.CompletedGroup.projection k g ≠ 1 := by
     by_contra! he
-    exact hg (CompletedGroup.ext (fun k => (he k).trans (map_one _).symm))
+    exact hg (TauCeti.CompletedGroup.ext (fun k => (he k).trans (map_one _).symm))
   obtain ⟨w, hw⟩ := h k hk
   have hproj {a b : ℕ} (hab : a ≤ b) :
-      (d.lieTruncationMap ℒ hab).bchGroupMap (CompletedGroup.projection b g) =
-        CompletedGroup.projection a g := CompletedGroup.map_projection a b hab g
+      (d.lieTruncationMap ℒ hab).bchGroupMap (TauCeti.CompletedGroup.projection b g) =
+        TauCeti.CompletedGroup.projection a g := TauCeti.CompletedGroup.map_projection a b hab g
   -- At every higher order the ray is forced by its nonidentity image at order `k`.
   have hhigh (l : ℕ) (hkl : k ≤ l) :
-      CompletedGroup.projection l g ∈
+      TauCeti.CompletedGroup.projection l g ∈
         (rayLieSubalgebra (d.lieTruncationGrading ℒ l) w).bchSubgroup := by
-    have hl : CompletedGroup.projection l g ≠ 1 := by
+    have hl : TauCeti.CompletedGroup.projection l g ≠ 1 := by
       intro he
       apply hk
       rw [← hproj hkl, he]
       exact map_one (d.lieTruncationMap ℒ hkl).bchGroupMap
     obtain ⟨v, hv⟩ := h l hl
-    have hvk : CompletedGroup.projection k g ∈
+    have hvk : TauCeti.CompletedGroup.projection k g ∈
         (rayLieSubalgebra (d.lieTruncationGrading ℒ k) v).bchSubgroup := by
       rw [← d.map_bchSubgroup_rayLieSubalgebra ℒ v hkl]
       exact ⟨_, hv, hproj hkl⟩
@@ -190,7 +190,7 @@ theorem existsUnique_mem_completedRaySubgroup [HasUniqueDiv N]
     by_cases hkl : k ≤ l
     · exact (LieSubalgebra.mem_bchSubgroup _ _).mp (hhigh l hkl)
     · have hlk : l ≤ k := by omega
-      have hl : CompletedGroup.projection l g ∈
+      have hl : TauCeti.CompletedGroup.projection l g ∈
           (rayLieSubalgebra (d.lieTruncationGrading ℒ l) w).bchSubgroup := by
         rw [← d.map_bchSubgroup_rayLieSubalgebra ℒ w hlk]
         exact ⟨_, hw, hproj hlk⟩
@@ -202,7 +202,7 @@ theorem existsUnique_mem_completedRaySubgroup [HasUniqueDiv N]
 /-- A ray with no actual degree at or below the cutoff has trivial projection there. -/
 theorem projection_eq_one_of_notMem_raysAtOrder {w : SupportedRay d}
     {g : d.completedBCHGroup ℒ} (hg : g ∈ d.completedRaySubgroup ℒ w) (k : ℕ)
-    (hw : w ∉ d.raysAtOrder k) : CompletedGroup.projection k g = 1 := by
+    (hw : w ∉ d.raysAtOrder k) : TauCeti.CompletedGroup.projection k g = 1 := by
   have hle : rayLieSubalgebra ℒ w ≤ (d.truncationIdeal ℒ k).toLieSubalgebra := by
     apply (rayLieSubalgebra_le_iff ℒ w _).mpr
     intro n hn
@@ -218,7 +218,7 @@ theorem projection_eq_one_of_notMem_raysAtOrder {w : SupportedRay d}
 /-- A choice of one completed label on each supported ray is finite at every order. -/
 theorem hasFiniteSupport_completedRaySubgroup [HasUniqueDiv N]
     (g : ∀ w : SupportedRay d, d.completedRaySubgroup ℒ w) :
-    CompletedGroup.HasFiniteSupport (fun w => (g w : d.completedBCHGroup ℒ)) := by
+    TauCeti.CompletedGroup.HasFiniteSupport (fun w => (g w : d.completedBCHGroup ℒ)) := by
   intro k
   apply (d.finite_raysAtOrder k).subset
   intro w hw
@@ -230,15 +230,15 @@ theorem commute_of_mem_completedRaySubgroup [IsAbelianRays d ℒ]
     {w : SupportedRay d} {g h : d.completedBCHGroup ℒ}
     (hg : g ∈ d.completedRaySubgroup ℒ w) (hh : h ∈ d.completedRaySubgroup ℒ w) :
     Commute g h := by
-  apply CompletedGroup.ext
+  apply TauCeti.CompletedGroup.ext
   intro k
   rw [map_mul, map_mul]
   have hc := BCHGroup.commute_exp_of_lie_eq_zero _ _
     (lie_eq_zero_of_mem_rayLieSubalgebra (d.lieTruncationGrading ℒ k)
       ((d.mem_completedRaySubgroup ℒ w g).mp hg k)
       ((d.mem_completedRaySubgroup ℒ w h).mp hh k))
-  rw [BCHGroup.exp_log (L := d.lieTruncation ℒ k) (CompletedGroup.projection k g),
-    BCHGroup.exp_log (L := d.lieTruncation ℒ k) (CompletedGroup.projection k h)] at hc
+  rw [BCHGroup.exp_log (L := d.lieTruncation ℒ k) (TauCeti.CompletedGroup.projection k g),
+    BCHGroup.exp_log (L := d.lieTruncation ℒ k) (TauCeti.CompletedGroup.projection k h)] at hc
   exact hc.eq
 
 /-- Abelian rays give abelian completed ray subgroups. -/
@@ -304,8 +304,8 @@ theorem projection_eq_noncommProd_homogeneousFactor_of_mem_completedRaySubgroup
     [IsAbelianRays d ℒ] {w : SupportedRay d} {g : d.completedBCHGroup ℒ}
     (hg : g ∈ d.completedRaySubgroup ℒ w) (k : ℕ) (s : Finset N)
     (hs : ∀ n ∈ w.rayDegrees, d.degree n ≤ k → n ∈ s) :
-    CompletedGroup.projection k g =
-      s.noncommProd (fun n => CompletedGroup.projection k (d.homogeneousFactor ℒ g n))
+    TauCeti.CompletedGroup.projection k g =
+      s.noncommProd (fun n => TauCeti.CompletedGroup.projection k (d.homogeneousFactor ℒ g n))
         (fun n _ m _ _ => (d.commute_homogeneousFactor ℒ (lie_eq_zero_of_mem_rayLieSubalgebra ℒ
           (d.logComponent_mem_rayLieSubalgebra ℒ hg n)
           (d.logComponent_mem_rayLieSubalgebra ℒ hg m))).map _) :=

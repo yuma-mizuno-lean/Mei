@@ -12,6 +12,7 @@ public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Pushforward.Scat
 public import Mei.Geometry.ScatteringDiagram.DirectedWall.TropicalPairing.WallFunction
 public import Mei.Algebra.MonoidAlgebra.Range
 import Mei.Geometry.Convex.Polyhedron.SingularSupport
+import Mei.RingTheory.FilteredAlgebra.Algebra
 
 /-!
 # Function-wall groupings under pushforward
@@ -88,6 +89,8 @@ Gross–Hacking–Keel–Kontsevich, *Canonical bases for cluster algebras*, §1
 -/
 
 public section
+
+open TauCeti (AlgFiltration)
 
 open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading SupportedRay GradedLieHom)
 

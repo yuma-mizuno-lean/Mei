@@ -24,9 +24,13 @@ ordinary polyhedral coboundary. No lattice condition on the vector is needed.
 
 public section
 
+open TauCeti (OrientedCell PolyhedralCochain)
+
 noncomputable section
 
-namespace Mei.PolyhedralCochain
+namespace TauCeti.PolyhedralCochain
+
+open Mei
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
@@ -80,4 +84,4 @@ theorem transverseMap_transverseCoboundary (f : E →ₗ[R] E') (v : V)
   apply Subtype.ext
   simp
 
-end Mei.PolyhedralCochain
+end TauCeti.PolyhedralCochain

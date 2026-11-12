@@ -48,7 +48,7 @@ theorem shiftedHomogeneousComponent_completedBCHAction (g : d.completedBCHGroup 
     d.shiftedHomogeneousComponent ℳ p p
         ((d.shiftedLieFiltration ℒ ℳ p).completedBCHAction d ℒ g x) =
       d.shiftedHomogeneousComponent ℳ p p x := by
-  let g0 : BCHGroup (d.lieTruncation ℒ 0) := CompletedGroup.projection 0 g
+  let g0 : BCHGroup (d.lieTruncation ℒ 0) := TauCeti.CompletedGroup.projection 0 g
   have ha : (d.shiftedLieFiltration ℒ ℳ p).projection 0
       ((d.shiftedLieFiltration ℒ ℳ p).completedBCHAction d ℒ g x) =
       (d.shiftedLieFiltration ℒ ℳ p).projection 0 x :=

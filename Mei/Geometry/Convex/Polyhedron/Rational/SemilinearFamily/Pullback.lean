@@ -27,6 +27,8 @@ equivalences preserving evaluation.
 
 public section
 
+open TauCeti (IsRationalSemilinear)
+
 namespace Mei
 
 variable {N N' N'' V W X : Type*} [AddCommGroup N] [AddCommGroup N'] [AddCommGroup N'']
@@ -40,7 +42,7 @@ variable {N N' N'' V W X : Type*} [AddCommGroup N] [AddCommGroup N'] [AddCommGro
 rational affine evaluation, given by the second projection. -/
 theorem IsRationalPiecewiseAffine.pullback {D : Set V} {f : D → W}
     (hf : IsRationalPiecewiseAffine h h' D f) (φ : X →ᵃ[ℝ] W)
-    (hφ : Toric.IsRationalLinearMap h'' h' φ.linear) :
+    (hφ : TauCeti.Toric.IsRationalLinearMap h'' h' φ.linear) :
     IsRationalPiecewiseAffine (h.prod h'') h''
       {p : V × X | ∃ hx : p.1 ∈ D, f ⟨p.1, hx⟩ = φ p.2} (fun p => p.1.2) := by
   let π : V × X →ᴬ[ℝ] V := (ContinuousLinearMap.fst ℝ V X).toContinuousAffineMap
@@ -50,12 +52,12 @@ theorem IsRationalPiecewiseAffine.pullback {D : Set V} {f : D → W}
   have hpieces (k : κ) : IsRationalSemilinear (h.prod h'')
       (Prod.fst ⁻¹' S k ∩ {p | g k p.1 = φ p.2}) := by
     have heq := AffineMap.isRationalNormalPolyhedron_pullback_matching (g k) φ (hS k).2.1 hφ
-    simpa only [hπ] using ((hS k).1.preimage π (Toric.IsRationalLinearMap.fst h h'')).inter
+    simpa only [hπ] using ((hS k).1.preimage π (TauCeti.Toric.IsRationalLinearMap.fst h h'')).inter
       heq.isLocallyClosedPolyhedron.isRationalSemilinear
   have hdom := Set.iUnion_pullback_pieces S (fun k => g k) φ hD (fun k => (hS k).2.2)
   rw [isRationalPiecewiseAffine_iff]
   refine ⟨Unit, inferInstance, fun _ => _, fun _ => AffineMap.snd,
-    Set.iUnion_const _, fun _ => ⟨?_, Toric.IsRationalLinearMap.snd h h'', fun _ _ => rfl⟩⟩
+    Set.iUnion_const _, fun _ => ⟨?_, TauCeti.Toric.IsRationalLinearMap.snd h h'', fun _ _ => rfl⟩⟩
   rw [← hdom]
   exact IsRationalSemilinear.iUnion hpieces
 
@@ -63,7 +65,7 @@ theorem IsRationalPiecewiseAffine.pullback {D : Set V} {f : D → W}
 Only the original evaluation needs to be injective on its pieces. -/
 theorem IsFiniteBranchOn.pullback {D : Set V} {f : D → W}
     (hf : IsFiniteBranchOn h h' D f) (φ : X →ᵃ[ℝ] W)
-    (hφ : Toric.IsRationalLinearMap h'' h' φ.linear) :
+    (hφ : TauCeti.Toric.IsRationalLinearMap h'' h' φ.linear) :
     IsFiniteBranchOn (h.prod h'') h''
       {p : V × X | ∃ hx : p.1 ∈ D, f ⟨p.1, hx⟩ = φ p.2} (fun p => p.1.2) := by
   let π : V × X →ᴬ[ℝ] V := (ContinuousLinearMap.fst ℝ V X).toContinuousAffineMap
@@ -72,11 +74,11 @@ theorem IsFiniteBranchOn.pullback {D : Set V} {f : D → W}
   obtain ⟨κ, _, S, g, hD, hS⟩ := isFiniteBranchOn_iff.mp hf
   rw [isFiniteBranchOn_iff]
   refine ⟨κ, ‹_›, fun k => Prod.fst ⁻¹' S k ∩ {p | g k p.1 = φ p.2},
-    fun _ => AffineMap.snd, ?_, fun k => ⟨?_, Toric.IsRationalLinearMap.snd h h'', ?_,
+    fun _ => AffineMap.snd, ?_, fun k => ⟨?_, TauCeti.Toric.IsRationalLinearMap.snd h h'', ?_,
       fun _ _ => rfl⟩⟩
   · exact Set.iUnion_pullback_pieces S (fun k => g k) φ hD (fun k => (hS k).2.2.2)
   · have heq := AffineMap.isRationalNormalPolyhedron_pullback_matching (g k) φ (hS k).2.1 hφ
-    simpa only [hπ] using ((hS k).1.preimage π (Toric.IsRationalLinearMap.fst h h'')).inter
+    simpa only [hπ] using ((hS k).1.preimage π (TauCeti.Toric.IsRationalLinearMap.fst h h'')).inter
       heq.isLocallyClosedPolyhedron
   · intro p hp q hq he
     exact Prod.ext ((hS k).2.2.1 hp.1 hq.1 (hp.2.trans ((congrArg φ he).trans hq.2.symm))) he
@@ -84,7 +86,7 @@ theorem IsFiniteBranchOn.pullback {D : Set V} {f : D → W}
 namespace FiniteSemilinearFamily
 
 variable {ι κ : Type*} [Finite ι] [Finite κ] (F : FiniteSemilinearFamily h h' ι)
-  (φ : X →ᵃ[ℝ] W) (hφ : Toric.IsRationalLinearMap h'' h' φ.linear)
+  (φ : X →ᵃ[ℝ] W) (hφ : TauCeti.Toric.IsRationalLinearMap h'' h' φ.linear)
 
 /-- Base change of a family along a rational affine target map. The chart index
 is unchanged; chart points retain both their original point and their new endpoint. -/
@@ -179,7 +181,7 @@ theorem nat_card_fiber_pullback (x : X) :
 /-- A family of finite branches remains so after rational affine base change. -/
 theorem IsFiniteBranch.pullback {F : FiniteSemilinearFamily h h' ι}
     (hF : F.IsFiniteBranch) (φ : X →ᵃ[ℝ] W)
-    (hφ : Toric.IsRationalLinearMap h'' h' φ.linear) :
+    (hφ : TauCeti.Toric.IsRationalLinearMap h'' h' φ.linear) :
     (F.pullback φ hφ).IsFiniteBranch :=
   (F.pullback φ hφ).isFiniteBranch_iff.mpr fun c =>
     (F.isFiniteBranch_iff.mp hF c).pullback φ hφ
@@ -190,7 +192,7 @@ variable {N''' Y : Type*} [AddCommGroup N'''] [NormedAddCommGroup Y] [NormedSpac
 /-- Successive base changes agree with base change along the composite, by
 forgetting the redundant intermediate endpoint. -/
 noncomputable def pullbackCompEquiv (ψ : Y →ᵃ[ℝ] X)
-    (hψ : Toric.IsRationalLinearMap h''' h'' ψ.linear)
+    (hψ : TauCeti.Toric.IsRationalLinearMap h''' h'' ψ.linear)
     (c : ι) :
     ((F.pullback φ hφ).pullback ψ hψ).domain c ≃
       (F.pullback (φ.comp ψ) (hφ.comp hψ)).domain c where
@@ -211,14 +213,14 @@ noncomputable def pullbackCompEquiv (ψ : Y →ᵃ[ℝ] X)
 
 @[simp]
 theorem pullbackFst_pullbackCompEquiv (ψ : Y →ᵃ[ℝ] X)
-    (hψ : Toric.IsRationalLinearMap h''' h'' ψ.linear) (c : ι)
+    (hψ : TauCeti.Toric.IsRationalLinearMap h''' h'' ψ.linear) (c : ι)
     (p : ((F.pullback φ hφ).pullback ψ hψ).domain c) :
     F.pullbackFst _ _ c (F.pullbackCompEquiv φ hφ ψ hψ c p) =
       F.pullbackFst φ hφ c ((F.pullback φ hφ).pullbackFst ψ hψ c p) := (rfl)
 
 @[simp]
 theorem pullbackCompEquiv_symm_apply (ψ : Y →ᵃ[ℝ] X)
-    (hψ : Toric.IsRationalLinearMap h''' h'' ψ.linear) (c : ι)
+    (hψ : TauCeti.Toric.IsRationalLinearMap h''' h'' ψ.linear) (c : ι)
     (p : (F.pullback (φ.comp ψ) (hφ.comp hψ)).domain c) :
     (F.pullbackCompEquiv φ hφ ψ hψ c).symm p =
       (F.pullback φ hφ).pullbackLift ψ hψ c
@@ -230,7 +232,7 @@ theorem pullbackCompEquiv_symm_apply (ψ : Y →ᵃ[ℝ] X)
 
 @[simp]
 theorem eval_pullbackCompEquiv (ψ : Y →ᵃ[ℝ] X)
-    (hψ : Toric.IsRationalLinearMap h''' h'' ψ.linear) (c : ι)
+    (hψ : TauCeti.Toric.IsRationalLinearMap h''' h'' ψ.linear) (c : ι)
     (p : ((F.pullback φ hφ).pullback ψ hψ).domain c) :
     (F.pullback (φ.comp ψ) (hφ.comp hψ)).eval c (F.pullbackCompEquiv φ hφ ψ hψ c p) =
       ((F.pullback φ hφ).pullback ψ hψ).eval c p := (rfl)
@@ -245,7 +247,7 @@ variable {W : Type*} [NormedAddCommGroup W] [NormedSpace ℝ W] {i' : N' →+ W}
 
 /-- Pullback along the identity has the same chart points as the original family. -/
 def pullbackIdEquiv (c : ι) :
-    (F.pullback (AffineMap.id ℝ W) (Toric.IsRationalLinearMap.id h')).domain c ≃
+    (F.pullback (AffineMap.id ℝ W) (TauCeti.Toric.IsRationalLinearMap.id h')).domain c ≃
       F.domain c where
   toFun := F.pullbackFst _ _ c
   invFun v := F.pullbackLift _ _ c v (F.eval c v) rfl
@@ -254,7 +256,7 @@ def pullbackIdEquiv (c : ι) :
 
 @[simp]
 theorem pullbackIdEquiv_apply (c : ι)
-    (p : (F.pullback (AffineMap.id ℝ W) (Toric.IsRationalLinearMap.id h')).domain c) :
+    (p : (F.pullback (AffineMap.id ℝ W) (TauCeti.Toric.IsRationalLinearMap.id h')).domain c) :
     F.pullbackIdEquiv c p = F.pullbackFst _ _ c p := (rfl)
 
 @[simp]
@@ -275,8 +277,8 @@ example (a : ℝ) (ha : a ∈ Set.Ioo (0 : ℝ) 1) :
         F.domain (.inl ()) = {p : ℝ × ℝ | p.1 = a} := by
   let F := FiniteSemilinearFamily.single (isFiniteBranchOn_id_Ioo h).isRationalPiecewiseAffine
   let φ := AffineMap.const ℝ ℝ a
-  have hφ : Toric.IsRationalLinearMap h h φ.linear := by
-    rw [Toric.isRationalLinearMap_iff]
+  have hφ : TauCeti.Toric.IsRationalLinearMap h h φ.linear := by
+    rw [TauCeti.Toric.isRationalLinearMap_iff]
     intro ℓ _
     simp [φ]
   have hF : F.IsFiniteBranch :=

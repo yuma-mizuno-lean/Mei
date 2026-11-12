@@ -139,7 +139,8 @@ theorem tangentLatticeChange_eq_latticeTransition {e e' : atlas (ℝ × ℝ) reg
     · rw [Toric.tangentLatticeChange_eq hp (isOpen_lt continuous_const continuous_fst)
         (by rw [he, cutChart_apply]; exact hx)
         (by simpa only [he, he'] using eqOn_cutChart_symm_trans_upperChart_refl h),
-        Toric.IntegralAffineEquiv.refl_latticeEquiv, latticeTransition_of_nonneg _ _ _ hx.le]
+        TauCeti.Toric.IntegralAffineEquiv.refl_latticeEquiv,
+        latticeTransition_of_nonneg _ _ _ hx.le]
   cases he : atlasIndex e <;> cases he' : atlasIndex e'
   · rw [atlasIndex_injective (he.trans he'.symm), Toric.tangentLatticeChange_self hp.2,
       latticeTransition_self]

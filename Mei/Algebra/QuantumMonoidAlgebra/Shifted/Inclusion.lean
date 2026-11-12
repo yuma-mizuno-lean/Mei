@@ -7,6 +7,7 @@ module
 
 public import Mei.Algebra.QuantumMonoidAlgebra.Shifted.Map
 public import Mei.LinearAlgebra.GradedModule.Shifted.Inclusion
+import Mei.RingTheory.FilteredAlgebra.Algebra
 
 /-!
 # Inclusions in positive coordinates for shifted quantum coefficients
@@ -19,6 +20,8 @@ for arbitrary bilinear forms and without injectivity assumptions.
 -/
 
 public section
+
+open TauCeti (AlgFiltration)
 
 open TauCeti (PositiveDegrees PositiveDegreeMap)
 noncomputable section

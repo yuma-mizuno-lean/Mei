@@ -61,7 +61,7 @@ open Classical in
 labels of the active walls `j` with `a j = i`. -/
 def familyLog (k : ℕ) (i : κ) : d.lieTruncation ℒ k :=
   ∑ j ∈ (Set.toFinite (D.active k)).toFinset with a j = i,
-    BCHGroup.log (L := d.lieTruncation ℒ k) (CompletedGroup.projection k (D.wall j).label)
+    BCHGroup.log (L := d.lieTruncation ℒ k) (TauCeti.CompletedGroup.projection k (D.wall j).label)
 
 /-- Any finite set of walls of the family `i` containing its active walls computes the family
 logarithm. -/
@@ -69,7 +69,7 @@ theorem familyLog_eq_sum (k : ℕ) (i : κ) (s : Finset ι) (hs : ∀ j ∈ s, a
     (hact : ∀ j ∈ D.active k, a j = i → j ∈ s) :
     D.familyLog a k i =
       ∑ j ∈ s, BCHGroup.log (L := d.lieTruncation ℒ k)
-        (CompletedGroup.projection k (D.wall j).label) := by
+        (TauCeti.CompletedGroup.projection k (D.wall j).label) := by
   classical
   unfold familyLog
   refine Finset.sum_subset_zero_on_sdiff (fun j hj => ?_) (fun j hj => ?_) fun _ _ => rfl
@@ -99,7 +99,7 @@ theorem log_combinedLabel_eq_sum_familyLog (hS : ∀ j, (D.wall j).support = S (
   let A := (Set.toFinite (D.active k)).toFinset
   let G (j : ι) : d.lieTruncation ℒ k := if θ ∈ (D.wall j).support then
     (if 0 < h.realCharacter (D.wall j).normal v then -1 else 1 : ℤ) •
-      BCHGroup.log (L := d.lieTruncation ℒ k) (CompletedGroup.projection k (D.wall j).label)
+      BCHGroup.log (L := d.lieTruncation ℒ k) (TauCeti.CompletedGroup.projection k (D.wall j).label)
     else 0
   have hsum : BCHGroup.log (D.combinedLabel k θ v hθ) = ∑ j ∈ A, G j :=
     (D.log_combinedLabel_eq_sum k θ v hθ).trans

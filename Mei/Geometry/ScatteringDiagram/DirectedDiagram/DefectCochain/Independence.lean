@@ -30,6 +30,8 @@ and `DirectedDiagram.AdaptedWallCrossing.defect`.
 
 public section
 
+open TauCeti (OrientedCell PolyhedralCochain)
+
 open TauCeti (WallComplement)
 
 open TauCeti (PositiveDegrees IsPositiveGrading)

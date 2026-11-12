@@ -5,7 +5,8 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.Convex.Polyhedron.Rational.LocallyClosed
+public import TauCeti.Analysis.Convex.Polyhedron.Rational.LocallyClosed
+public import Mei.Geometry.Convex.Polyhedron.Rational.Map
 public import Mei.Geometry.Convex.Polyhedron.SingularSupport
 
 /-!
@@ -28,6 +29,8 @@ simultaneous crossings follows `WallComplement.signedCrossingEvent`.
 open TauCeti (singularSupport)
 
 public noncomputable section
+
+open TauCeti (IsRationalSemilinear)
 
 open Set
 

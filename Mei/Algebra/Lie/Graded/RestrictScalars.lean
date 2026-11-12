@@ -35,8 +35,6 @@ variable {R S L ι : Type*} [CommRing R] [CommRing S] [LieRing L]
 
 namespace TauCeti.GradedLieHom
 
-open Mei
-
 variable {N M : Type*} [AddCommMonoid N] [AddCommMonoid M]
   {L' : Type*} [LieRing L'] [LieAlgebra S L'] [LieAlgebra R L']
   [IsScalarTower R S L'] {d : PositiveDegrees N} {e : PositiveDegrees M}
@@ -82,8 +80,6 @@ theorem restrictScalars_comp {P : Type*} [AddCommMonoid P]
 end TauCeti.GradedLieHom
 
 namespace TauCeti.PositiveDegrees
-
-open Mei
 
 variable (d : TauCeti.PositiveDegrees ι) [GradedLieAlgebra ℒ] [TauCeti.IsPositiveGrading d ℒ]
 
@@ -205,8 +201,6 @@ theorem lieTruncationRestrictScalarsEquiv_naturality {k l : ℕ} (h : k ≤ l) :
 end TauCeti.PositiveDegrees
 
 namespace TauCeti.GradedLieHom
-
-open Mei
 
 variable {N M : Type*} [AddCommMonoid N] [AddCommMonoid M]
   [DecidableEq N] [DecidableEq M]

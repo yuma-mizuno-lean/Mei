@@ -30,6 +30,8 @@ continuity of the chosen bijections is asserted.
 
 public section
 
+open TauCeti (IsRationalSemilinear)
+
 open Set Filter Topology
 
 namespace Mei.FiniteSemilinearFamily

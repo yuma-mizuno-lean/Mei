@@ -27,11 +27,13 @@ of lineality is required.
 
 public section
 
+open TauCeti (OrientedCell)
+
 noncomputable section
 
 open Set Module
 
-namespace Mei.OrientedCell
+namespace TauCeti.OrientedCell
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
@@ -102,4 +104,4 @@ theorem exists_integral_coorientation (σ : OrientedCell h 1) :
   · refine ⟨m, hm, hmker, fun v => ?_⟩
     rw [← hc, LinearMap.smul_apply, smul_eq_mul, sign_mul, sign_pos hcpos, one_mul, hsign]
 
-end Mei.OrientedCell
+end TauCeti.OrientedCell

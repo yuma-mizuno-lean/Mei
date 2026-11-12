@@ -69,7 +69,7 @@ variable {Γ Λ R L V ι : Type*} [AddCommGroup Γ] [AddCommGroup Λ]
 walls. -/
 private def indicatorLabel (s : Set ι) [DecidablePred (· ∈ s)] (k : ℕ) (j : F.active k) :
     d.truncatedGroup ℒ k :=
-  if j.val ∈ s then CompletedGroup.projection k (F.wall j).label else 1
+  if j.val ∈ s then TauCeti.CompletedGroup.projection k (F.wall j).label else 1
 
 private theorem lie_log_indicatorLabel (s : Set ι) [DecidablePred (· ∈ s)] (k : ℕ)
     (j j' : F.active k)
@@ -160,15 +160,15 @@ private theorem wallPathProduct_indicatorLabel_eq {s t : Set ι} [DecidablePred 
       ((DirectSum.component R Γ (fun m => d.lieTruncationGrading ℒ (k + 1) m) n).comp
         (DirectSum.decomposeLinearEquiv (d.lieTruncationGrading ℒ (k + 1))).toLinearMap)
       ).toAddMonoidHom
-    have hcomp (g : d.completedBCHGroup ℒ) : f (log (CompletedGroup.projection (k + 1) g)) =
+    have hcomp (g : d.completedBCHGroup ℒ) : f (log (TauCeti.CompletedGroup.projection (k + 1) g)) =
         (DirectSum.decompose (d.lieTruncationGrading ℒ (k + 1))
-          (log (CompletedGroup.projection (k + 1) g)) n : d.lieTruncation ℒ (k + 1)) :=
+          (log (TauCeti.CompletedGroup.projection (k + 1) g)) n : d.lieTruncation ℒ (k + 1)) :=
       -- `f` is the degree-`n` component map by construction.
       (rfl)
     -- A nonzero coefficient comes from a wall of exactly one subdiagram with `n` on its ray.
     have hwall (j : F.active (k + 1)) (hj : f (c j) ≠ 0) :
         (F.wall j).Outgoing ∧ n ∈ (F.wall j).ray.rayDegrees := by
-      have hne : f (log (CompletedGroup.projection (k + 1) (F.wall j).label)) ≠ 0 ∧
+      have hne : f (log (TauCeti.CompletedGroup.projection (k + 1) (F.wall j).label)) ≠ 0 ∧
           j.val ∈ s ∆ t := by
         by_cases hjs : j.val ∈ s <;> by_cases hjt : j.val ∈ t <;>
           simp_all [c, a, b, indicatorLabel, mem_symmDiff]

@@ -34,6 +34,8 @@ C.3. Global path consistency of the corrected diagram is a separate assertion.
 
 public section
 
+open TauCeti (OrientedCell PolyhedralCochain)
+
 open TauCeti (WallComplement AdmissiblePLPath)
 
 open TauCeti (PositiveDegrees IsPositiveGrading)
@@ -109,14 +111,14 @@ theorem exists_joint_correction_boundary
           a.2.val ∈ (E.wall a).ray.rayDegrees ∧
           (∃ c ∈ ℒ a.2.val, (E.wall a).label = d.expToCompletion ℒ (-c)) ∧
           (E.wall a).Outgoing ∧
-          log (CompletedGroup.projection (k + 1) (E.wall a).label) =
+          log (TauCeti.CompletedGroup.projection (k + 1) (E.wall a).label) =
             -(DirectSum.decompose (d.lieTruncationGrading ℒ (k + 1))
               (log (D.levelPathProduct (k + 1) (γ a.1))) a.2.val : d.lieTruncation ℒ (k + 1)) ∧
           ∀ l : ℕ, a ∈ E.active l ↔ k + 1 ≤ l) ∧
         let B := PolyhedralCochain.ofFinsupp (R := R)
           (∑ a : D.JointCorrectionIndex x γ,
             Finsupp.single ((τ a.1).sweep (ρ a.2.val) (htrans a))
-              (log (CompletedGroup.projection (k + 1) (E.wall a).label)))
+              (log (TauCeti.CompletedGroup.projection (k + 1) (E.wall a).label)))
         PolyhedralCochain.coboundary B =
           ∑ J, PolyhedralCochain.mk (τ J) (log (D.levelPathProduct (k + 1) (γ J))) ∧
         PolyhedralCochain.coboundary

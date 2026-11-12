@@ -28,7 +28,9 @@ open TauCeti (PositiveDegrees IsPositiveGrading)
 
 noncomputable section
 
-namespace Mei.AlgFiltration
+namespace TauCeti.AlgFiltration
+
+open Mei
 
 variable {R A : Type*} [CommRing R] [Ring A] [Algebra R A] (F : AlgFiltration A)
 
@@ -74,7 +76,7 @@ theorem projection_completedInnerMap (k : ℕ) (x : d.completedLie ℒ) :
         (LieIdeal.completionProjection (d.truncationIdeal ℒ)
           (d.truncationIdeal_antitone ℒ) k x) := by
   simp only [completedInnerMap, LinearMap.comp_apply, projection_moduleCompletionEquiv,
-    ModuleFiltration.projection_completionMap, id_eq, truncatedInnerMap,
+    Mei.ModuleFiltration.projection_completionMap, id_eq, truncatedInnerMap,
     LinearEquiv.coe_coe, LieIdeal.completionProjection_apply]
 
 /-- The completed extension agrees with the original coefficient map on Lie elements. -/
@@ -111,4 +113,4 @@ theorem coe_completedInnerElement (x : d.completedLie ℒ) :
     (F.completedInnerElement d ℒ j hj x : F.completion) =
       F.completedInnerMap d ℒ j hj x := (rfl)
 
-end Mei.AlgFiltration
+end TauCeti.AlgFiltration

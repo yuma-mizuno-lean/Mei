@@ -22,6 +22,8 @@ nothing lies over `{w < 0}`. Hence the fiber over `w` has two points for `w > 0`
 
 public section
 
+open TauCeti (IsLocallyClosedPolyhedron)
+
 open Set
 
 namespace Mei.FiniteSemilinearFamily.Examples
@@ -41,26 +43,27 @@ theorem signSMul_linear (σ : SignType) : (signSMul σ).linear = (σ : ℝ) • 
 
 /-- Multiplication by a sign has rational linear part. -/
 theorem isRationalLinearMap_signSMul (σ : SignType) :
-    Toric.IsRationalLinearMap h h (signSMul σ).linear := by
+    TauCeti.Toric.IsRationalLinearMap h h (signSMul σ).linear := by
   have hσ : (σ : ℝ) = ((σ : ℚ) : ℝ) := by cases σ <;> simp
   rw [signSMul_linear, hσ]
-  exact (Toric.IsRationalLinearMap.id h).rat_smul _
+  exact (TauCeti.Toric.IsRationalLinearMap.id h).rat_smul _
 
 /-- The level set of the sign function at `σ` is a locally closed polyhedron. -/
 theorem isLocallyClosedPolyhedron_setOf_sign_eq (σ : SignType) :
     IsLocallyClosedPolyhedron h {x : ℝ | SignType.sign x = σ} := by
   -- The level set is the sign cell of the single row `x ↦ x`.
   let r : ℝ →ᴬ[ℝ] ℝ := (ContinuousLinearMap.id ℝ ℝ).toContinuousAffineMap
-  have hr : Toric.IsRationalFunctional h r.toAffineMap.linear := by
+  have hr : TauCeti.Toric.IsRationalFunctional h r.toAffineMap.linear := by
     have hlin : r.toAffineMap.linear = h.realCharacter (LinearMap.id : Module.Dual ℤ ℤ) :=
       h.eq_realCharacter fun n => by
         rw [ContinuousAffineMap.coe_linear_eq_coe_contLinear]
         simp [r]
-    exact hlin ▸ Toric.IsRationalFunctional.realCharacter h LinearMap.id
-  have hcell : {x : ℝ | SignType.sign x = σ} = Convex.signCell (fun _ : Unit => r) fun _ => σ := by
+    exact hlin ▸ TauCeti.Toric.IsRationalFunctional.realCharacter h LinearMap.id
+  have hcell : {x : ℝ | SignType.sign x = σ} =
+      TauCeti.Convex.signCell (fun _ : Unit => r) (fun _ => σ) := by
     ext x
     simp [r]
-  exact hcell ▸ isLocallyClosedPolyhedron_signCell _ (fun _ => hr) _
+  exact hcell ▸ TauCeti.isLocallyClosedPolyhedron_signCell _ (fun _ => hr) _
 
 /-- On the level set of the sign function at `σ`, the absolute value is multiplication by `σ`. -/
 theorem abs_eq_signSMul {σ : SignType} {x : ℝ} (hx : SignType.sign x = σ) :

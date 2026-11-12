@@ -21,11 +21,13 @@ products. Neither flatness nor freeness is required.
 
 The comparison uses `TauCeti.PositiveDegrees.lieTruncationBaseChangeEquiv`, based on
 Tau Ceti's `LieIdeal.quotientBaseChangeEquiv`, and the compatible-family maps
-`Mei.CompletedGroup.mapEquiv`. Rational scalars act on the left tensor factor,
+`TauCeti.CompletedGroup.mapEquiv`. Rational scalars act on the left tensor factor,
 retaining the existing tensor-product module structure.
 -/
 
 public section
+
+open TauCeti (completedGroup)
 
 open TauCeti (PositiveDegrees IsPositiveGrading)
 
@@ -143,7 +145,7 @@ abbrev completedBCHBaseChange := completedGroup (d.baseChangeGroupTower S ℒ)
 scalar extension formed from its finite quotients. -/
 def completedBCHBaseChangeEquiv :
     d.completedBCHGroup (fun n => (ℒ n).baseChange S) ≃* d.completedBCHBaseChange S ℒ :=
-  CompletedGroup.mapEquiv OrderHom.id OrderHom.id
+  TauCeti.CompletedGroup.mapEquiv OrderHom.id OrderHom.id
     (baseChangeTowerMap S d ℒ) (baseChangeTowerInv S d ℒ)
     (fun k => ⟨k, le_rfl, le_rfl, by
       have he := NatTrans.congr_app (d.baseChangeGroupTowerIso S ℒ).hom_inv_id (op k)
@@ -161,22 +163,22 @@ same order. -/
 @[simp]
 theorem projection_completedBCHBaseChangeEquiv (k : ℕ)
     (x : d.completedBCHGroup (fun n => (ℒ n).baseChange S)) :
-    CompletedGroup.projection k (d.completedBCHBaseChangeEquiv S ℒ x) =
+    TauCeti.CompletedGroup.projection k (d.completedBCHBaseChangeEquiv S ℒ x) =
       (d.lieTruncationBaseChangeEquiv (S := S) ℒ k).toLieHom.bchGroupMap
-        (CompletedGroup.projection k x) := by
-  rw [completedBCHBaseChangeEquiv, CompletedGroup.mapEquiv_apply,
-    CompletedGroup.projection_map]
+        (TauCeti.CompletedGroup.projection k x) := by
+  rw [completedBCHBaseChangeEquiv, TauCeti.CompletedGroup.mapEquiv_apply,
+    TauCeti.CompletedGroup.projection_map]
   rfl
 
 /-- Projection of the inverse comparison uses the inverse finite quotient map. -/
 @[simp]
 theorem projection_completedBCHBaseChangeEquiv_symm (k : ℕ)
     (x : d.completedBCHBaseChange S ℒ) :
-    CompletedGroup.projection k ((d.completedBCHBaseChangeEquiv S ℒ).symm x) =
+    TauCeti.CompletedGroup.projection k ((d.completedBCHBaseChangeEquiv S ℒ).symm x) =
       (d.lieTruncationBaseChangeEquiv (S := S) ℒ k).symm.toLieHom.bchGroupMap
-        (CompletedGroup.projection k x) := by
-  rw [completedBCHBaseChangeEquiv, CompletedGroup.mapEquiv_symm_apply,
-    CompletedGroup.projection_map]
+        (TauCeti.CompletedGroup.projection k x) := by
+  rw [completedBCHBaseChangeEquiv, TauCeti.CompletedGroup.mapEquiv_symm_apply,
+    TauCeti.CompletedGroup.projection_map]
   rfl
 
 /-- Completed scalar extension preserves and reflects every filtration order. -/
@@ -184,13 +186,13 @@ theorem projection_completedBCHBaseChangeEquiv_symm (k : ℕ)
 theorem completedBCHBaseChangeEquiv_mem_degreeFiltration (a : ℕ)
     (x : d.completedBCHGroup (fun n => (ℒ n).baseChange S)) :
     d.completedBCHBaseChangeEquiv S ℒ x ∈
-        CompletedGroup.degreeFiltration (d.baseChangeGroupTower S ℒ) a ↔
-      x ∈ CompletedGroup.degreeFiltration
+        TauCeti.CompletedGroup.degreeFiltration (d.baseChangeGroupTower S ℒ) a ↔
+      x ∈ TauCeti.CompletedGroup.degreeFiltration
         (d.groupTower (fun n => (ℒ n).baseChange S)) a := by
   cases a with
   | zero => simp
   | succ k =>
-    simp only [CompletedGroup.degreeFiltration_succ, MonoidHom.mem_ker,
+    simp only [TauCeti.CompletedGroup.degreeFiltration_succ, MonoidHom.mem_ker,
       projection_completedBCHBaseChangeEquiv]
     have h (y : BCHGroup (d.lieTruncation (fun n => (ℒ n).baseChange S) k)) :
         (d.lieTruncationBaseChangeEquiv (S := S) ℒ k).toLieHom.bchGroupMap y = 1 ↔ y = 1 := by
@@ -201,7 +203,7 @@ theorem completedBCHBaseChangeEquiv_mem_degreeFiltration (a : ℕ)
         simpa using congrArg BCHGroup.log hy
       · rintro rfl
         exact map_one _
-    exact h (CompletedGroup.projection k x)
+    exact h (TauCeti.CompletedGroup.projection k x)
 
 variable {ι : Type*}
 
@@ -210,17 +212,17 @@ when it does afterwards. -/
 @[simp]
 theorem hasFiniteSupport_completedBCHBaseChangeEquiv_iff
     (x : ι → d.completedBCHGroup (fun n => (ℒ n).baseChange S)) :
-    CompletedGroup.HasFiniteSupport (fun i => d.completedBCHBaseChangeEquiv S ℒ (x i)) ↔
-      CompletedGroup.HasFiniteSupport x := by
+    TauCeti.CompletedGroup.HasFiniteSupport (fun i => d.completedBCHBaseChangeEquiv S ℒ (x i)) ↔
+      TauCeti.CompletedGroup.HasFiniteSupport x := by
   constructor
   · intro hx
-    have h : CompletedGroup.HasFiniteSupport (fun i =>
+    have h : TauCeti.CompletedGroup.HasFiniteSupport (fun i =>
         (d.completedBCHBaseChangeEquiv S ℒ).symm (d.completedBCHBaseChangeEquiv S ℒ (x i))) := by
-      simpa only [completedBCHBaseChangeEquiv, CompletedGroup.mapEquiv_symm_apply] using
+      simpa only [completedBCHBaseChangeEquiv, TauCeti.CompletedGroup.mapEquiv_symm_apply] using
         hx.map OrderHom.id (baseChangeTowerInv S d ℒ)
     simpa only [MulEquiv.symm_apply_apply] using h
   · intro hx
-    simpa only [completedBCHBaseChangeEquiv, CompletedGroup.mapEquiv_apply] using
+    simpa only [completedBCHBaseChangeEquiv, TauCeti.CompletedGroup.mapEquiv_apply] using
       hx.map OrderHom.id (baseChangeTowerMap S d ℒ)
 
 /-- The completed scalar-extension comparison preserves convergent products
@@ -228,11 +230,11 @@ with the smallest index leftmost. -/
 @[simp]
 theorem completedBCHBaseChangeEquiv_orderedProd [LinearOrder ι]
     (x : ι → d.completedBCHGroup (fun n => (ℒ n).baseChange S))
-    (hx : CompletedGroup.HasFiniteSupport x) :
-    d.completedBCHBaseChangeEquiv S ℒ (CompletedGroup.orderedProd x hx) =
-      CompletedGroup.orderedProd (fun i => d.completedBCHBaseChangeEquiv S ℒ (x i))
+    (hx : TauCeti.CompletedGroup.HasFiniteSupport x) :
+    d.completedBCHBaseChangeEquiv S ℒ (TauCeti.CompletedGroup.orderedProd x hx) =
+      TauCeti.CompletedGroup.orderedProd (fun i => d.completedBCHBaseChangeEquiv S ℒ (x i))
         ((d.hasFiniteSupport_completedBCHBaseChangeEquiv_iff S ℒ x).mpr hx) := by
-  simpa only [completedBCHBaseChangeEquiv, CompletedGroup.mapEquiv_apply] using
-    CompletedGroup.map_orderedProd OrderHom.id (baseChangeTowerMap S d ℒ) x hx
+  simpa only [completedBCHBaseChangeEquiv, TauCeti.CompletedGroup.mapEquiv_apply] using
+    TauCeti.CompletedGroup.map_orderedProd OrderHom.id (baseChangeTowerMap S d ℒ) x hx
 
 end TauCeti.PositiveDegrees

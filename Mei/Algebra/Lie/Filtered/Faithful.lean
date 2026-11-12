@@ -31,6 +31,8 @@ actions. Exponential detection uses the finite logarithm identity
 
 public section
 
+open TauCeti (AlgFiltration)
+
 open TauCeti (PositiveDegrees IsPositiveGrading)
 
 attribute [local instance] LieRing.ofAssociativeRing
@@ -176,7 +178,14 @@ theorem eq_of_exp_truncatedLieAction_eq (x y : d.completedLie ℒ)
 end Rational
 end ModuleFiltration
 
-namespace AlgFiltration
+end Mei
+
+namespace TauCeti.AlgFiltration
+
+open Mei
+
+variable {N R L : Type*} [AddCommMonoid N] [CommRing R]
+  [LieRing L] [LieAlgebra R L]
 
 variable {A : Type*} [Ring A] [Algebra R A] [Algebra ℚ A]
   [LieRingModule L A] [LieModule R L A]
@@ -205,7 +214,7 @@ theorem expAction_injective : Function.Injective (F.expAction d ℒ) := by
     simpa only [IsNilpotent.log_exp ⟨k + 1, F.quotientLieAction_pow_eq_zero d ℒ k x⟩,
       IsNilpotent.log_exp ⟨k + 1, F.quotientLieAction_pow_eq_zero d ℒ k y⟩] using h
   apply sub_eq_zero.mp
-  have htail : x - y ∈ ⨅ n, Mei.DirectSum.degreeTail ℒ d.degree n := by
+  have htail : x - y ∈ ⨅ n, TauCeti.DirectSum.degreeTail ℒ d.degree n := by
     apply (Submodule.mem_iInf _).mpr
     intro k
     have hmem : x - y ∈ d.degreeSubmodule ℒ k := by
@@ -217,9 +226,8 @@ theorem expAction_injective : Function.Injective (F.expAction d ℒ) := by
       have h := LinearMap.congr_fun hz (Ideal.Quotient.mk _ a)
       rw [quotientLieAction_mk, LinearMap.zero_apply, Ideal.Quotient.eq_zero_iff_mem] at h
       exact hdet h
-    exact Mei.DirectSum.degreeTail_antitone ℒ d.degree (Nat.le_succ k)
+    exact TauCeti.DirectSum.degreeTail_antitone ℒ d.degree (Nat.le_succ k)
       ((d.degreeSubmodule_eq_degreeTail ℒ k) ▸ hmem)
-  simpa only [Mei.DirectSum.iInf_degreeTail_eq_bot, Submodule.mem_bot] using htail
+  simpa only [TauCeti.DirectSum.iInf_degreeTail_eq_bot, Submodule.mem_bot] using htail
 
-end AlgFiltration
-end Mei
+end TauCeti.AlgFiltration

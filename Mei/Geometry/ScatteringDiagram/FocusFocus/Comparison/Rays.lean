@@ -35,6 +35,8 @@ anti-canonical class*, §3 (arXiv:1601.07081v4). The formal suppliers are
 
 public noncomputable section
 
+open TauCeti (GradedCorrespondence)
+
 namespace Mei.FocusFocus
 
 open Set TauCeti AddMonoidAlgebra Mei.NodeAlgebra Mei.Convex Quiver

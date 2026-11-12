@@ -73,7 +73,7 @@ def combinedLabel (k : ℕ) (θ v : V)
   classical
   let S := (Set.toFinite {j : D.active k | θ ∈ (D.wall j).support}).toFinset
   exact S.noncommProd
-    (fun j => CompletedGroup.projection k (D.wall j).label ^
+    (fun j => TauCeti.CompletedGroup.projection k (D.wall j).label ^
       (if 0 < h.realCharacter (D.wall j).normal v then -1 else 1 : ℤ)) (by
     intro a ha b hb _
     have ha : θ ∈ (D.wall a).support := by simpa [S] using ha
@@ -88,12 +88,12 @@ theorem combinedLabel_eq_noncommProd (k : ℕ) (θ v : V)
     (hθ : θ ∉ singularSupport (fun j : D.active k => (D.wall j).support))
     (S : Finset (D.active k)) (hS : ∀ j, j ∈ S ↔ θ ∈ (D.wall j).support)
     (comm : (S : Set (D.active k)).Pairwise (fun a b =>
-      Commute (CompletedGroup.projection k (D.wall a).label ^
+      Commute (TauCeti.CompletedGroup.projection k (D.wall a).label ^
         (if 0 < h.realCharacter (D.wall a).normal v then -1 else 1 : ℤ))
-        (CompletedGroup.projection k (D.wall b).label ^
+        (TauCeti.CompletedGroup.projection k (D.wall b).label ^
           (if 0 < h.realCharacter (D.wall b).normal v then -1 else 1 : ℤ)))) :
     D.combinedLabel k θ v hθ = S.noncommProd
-      (fun j => CompletedGroup.projection k (D.wall j).label ^
+      (fun j => TauCeti.CompletedGroup.projection k (D.wall j).label ^
         (if 0 < h.realCharacter (D.wall j).normal v then -1 else 1 : ℤ)) comm := by
   classical
   unfold combinedLabel
@@ -108,7 +108,7 @@ theorem combinedLabel_eq_prod (k : ℕ) (θ v : V)
     (l : List (D.active k)) (hl : l.Nodup)
     (hm : ∀ j, j ∈ l ↔ θ ∈ (D.wall j).support) :
     D.combinedLabel k θ v hθ =
-      (l.map fun j : D.active k => CompletedGroup.projection k (D.wall j).label ^
+      (l.map fun j : D.active k => TauCeti.CompletedGroup.projection k (D.wall j).label ^
         (if 0 < h.realCharacter (D.wall j).normal v then -1 else 1 : ℤ)).prod := by
   classical
   unfold combinedLabel
@@ -127,14 +127,14 @@ theorem log_combinedLabel_eq_sum (k : ℕ) (θ v : V)
       if θ ∈ (D.wall j).support then
         (if 0 < h.realCharacter (D.wall j).normal v then -1 else 1 : ℤ) •
           BCHGroup.log (L := d.lieTruncation ℒ k)
-            (CompletedGroup.projection k (D.wall j).label) else 0 := by
+            (TauCeti.CompletedGroup.projection k (D.wall j).label) else 0 := by
   classical
   let := Fintype.ofFinite (D.active k)
   let S := Finset.univ.filter fun j : D.active k => θ ∈ (D.wall j).support
   let a (j : D.active k) : d.lieTruncation ℒ k :=
     (if 0 < h.realCharacter (D.wall j).normal v then -1 else 1 : ℤ) •
       BCHGroup.log (L := d.lieTruncation ℒ k)
-        (CompletedGroup.projection k (D.wall j).label)
+        (TauCeti.CompletedGroup.projection k (D.wall j).label)
   have hlie : (S : Set (D.active k)).Pairwise fun b c => ⁅a b, a c⁆ = 0 := by
     intro b hb c hc _
     have hb : θ ∈ (D.wall b).support := (Finset.mem_filter.mp hb).2
@@ -148,7 +148,7 @@ theorem log_combinedLabel_eq_sum (k : ℕ) (θ v : V)
       smul_zero]
   have he : BCHGroup.exp (∑ j ∈ S, a j) = D.combinedLabel k θ v hθ := by
     have hx (j : D.active k) : BCHGroup.exp (a j) =
-        CompletedGroup.projection k (D.wall j).label ^
+        TauCeti.CompletedGroup.projection k (D.wall j).label ^
           (if 0 < h.realCharacter (D.wall j).normal v then -1 else 1 : ℤ) := by
       exact (BCHGroup.exp_zsmul _ _).trans
         (congrArg (fun g : BCHGroup (d.lieTruncation ℒ k) =>
@@ -180,22 +180,22 @@ theorem truncation_combinedLabel {k l : ℕ} (hkl : k ≤ l) (θ v : V)
     obtain ⟨b, hb, rfl⟩ := Finset.mem_map.mp ha
     simpa [S, T, emb] using hb
   have hz : ∀ a ∈ S, a ∉ T.map emb →
-      CompletedGroup.projection k (D.wall a).label ^
+      TauCeti.CompletedGroup.projection k (D.wall a).label ^
         (if 0 < h.realCharacter (D.wall a).normal v then -1 else 1 : ℤ) = 1 := by
     intro a ha hnot
     have hinactive : a.val ∉ D.active k := by
       intro hak
       apply hnot
       exact Finset.mem_map.mpr ⟨⟨a.val, hak⟩, by simpa [T, S] using ha, rfl⟩
-    have hone : CompletedGroup.projection k (D.wall a).label = 1 := by
+    have hone : TauCeti.CompletedGroup.projection k (D.wall a).label = 1 := by
       simpa only [mem_active, not_not] using hinactive
     simp only [hone, one_zpow]
   -- Use the tower group instances to map the unordered product; the tower
   -- transition is the BCH truncation map, as in `groupTower_map_hom`.
   let F := ((d.groupTower ℒ).map (CategoryTheory.homOfLE hkl).op).hom
-  have hproj (a : D.active l) : F (CompletedGroup.projection l (D.wall a).label) =
-      CompletedGroup.projection k (D.wall a).label :=
-    CompletedGroup.map_projection k l hkl (D.wall a).label
+  have hproj (a : D.active l) : F (TauCeti.CompletedGroup.projection l (D.wall a).label) =
+      TauCeti.CompletedGroup.projection k (D.wall a).label :=
+    TauCeti.CompletedGroup.map_projection k l hkl (D.wall a).label
   unfold combinedLabel
   -- This exposes the tower homomorphism to the generic product-mapping lemma.
   change F (S.noncommProd _ _) = T.noncommProd _ _
@@ -236,7 +236,7 @@ theorem combinedLabel_neg (k : ℕ) (θ v : V)
   unfold combinedLabel
   refine (Finset.noncommProd_congr rfl
     (g := fun j : D.active k =>
-      (CompletedGroup.projection k (D.wall j).label ^
+      (TauCeti.CompletedGroup.projection k (D.wall j).label ^
         (if 0 < h.realCharacter (D.wall j).normal v then -1 else 1 : ℤ))⁻¹)
     ?_ _).trans (Finset.noncommProd_inv _ _ _)
   intro j hj
@@ -254,7 +254,7 @@ theorem crossingEventProduct_eq_combinedLabel (k : ℕ)
     {x y : WallComplement (fun j : D.active k => (D.wall j).support)} (e : x ⟶ y)
     {t : ℝ} (ht : t ∈ Icc (0 : ℝ) 1) :
     crossingEventProduct (fun j : D.active k => h.realCharacter (D.wall j).normal)
-        (fun j => CompletedGroup.projection k (D.wall j).label)
+        (fun j => TauCeti.CompletedGroup.projection k (D.wall j).label)
         (D.activeLabels_commute k) e t =
       D.combinedLabel k (AffineMap.lineMap x.val y.val t) (y.val - x.val)
         (e.down.regular t ht) := by

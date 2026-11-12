@@ -27,6 +27,8 @@ Appendix B, arXiv:1411.1394v2. We use `DirectedWallSpaces.mapTangent` for labels
 
 public section
 
+open TauCeti (isRationalNormalPolyhedron_iff)
+
 open TauCeti (PositiveDegrees IsPositiveGrading)
 
 open TauCeti (DirectedWallSpaces)
@@ -65,8 +67,8 @@ def cylinder : DirectedWall (d := d) (h.prod h') H where
   rational_support := by
     obtain ⟨P, hP⟩ := isRationalNormalPolyhedron_iff.mp W.rational_support
     let f := (ContinuousLinearMap.fst ℝ V E).toContinuousAffineMap
-    have hf : Toric.IsRationalLinearMap (h.prod h') h f.toAffineMap.linear :=
-      Toric.IsRationalLinearMap.fst h h'
+    have hf : TauCeti.Toric.IsRationalLinearMap (h.prod h') h f.toAffineMap.linear :=
+      TauCeti.Toric.IsRationalLinearMap.fst h h'
     apply isRationalNormalPolyhedron_iff.mpr
     refine ⟨P.preimage f hf, (P.carrier_preimage f hf).trans ?_⟩
     rw [hP]

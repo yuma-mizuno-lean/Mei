@@ -15,8 +15,8 @@ other parent containing its reversed fiber element, and reversed terms cancel.
 Parent indices retain multiplicities even when fiber elements coincide.
 
 The pairing argument is extracted from
-`Mei.OrientedCell.IsOrientedSubdivision.sum_internal_boundaryFacets_eq_zero`
-and shared with `Mei.PolyhedralCochain.sum_mk_eq_zero_of_existsUnique_reverse`.
+`TauCeti.OrientedCell.IsOrientedSubdivision.sum_internal_boundaryFacets_eq_zero`
+and shared with `TauCeti.PolyhedralCochain.sum_mk_eq_zero_of_existsUnique_reverse`.
 It uses Mathlib's `Finset.sum_involution` and applies to additive commutative
 monoids, without cancellation of multiplication by two.
 -/

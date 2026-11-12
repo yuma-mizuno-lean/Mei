@@ -26,8 +26,6 @@ open TauCeti (DirectedWallSpaces)
 
 namespace TauCeti.DirectedWallSpaces
 
-open Mei
-
 variable {Γ Λ R L : Type*} [AddCommMonoid Γ] [AddCommMonoid Λ]
   [CommRing R] [LieRing L] [LieAlgebra R L]
   {ρ : Γ →+ Λ} {ℒ : Γ → Submodule R L} (H : DirectedWallSpaces ρ ℒ)
@@ -66,8 +64,6 @@ theorem map_truncationMap_wall {k l : ℕ} (h : k ≤ l) (n : Γ) (m : Λ →+ �
 end TauCeti.DirectedWallSpaces
 
 namespace TauCeti.GradedLieHom
-
-open Mei
 
 variable {Γ Λ R L L' : Type*} [AddCommMonoid Γ] [AddCommMonoid Λ] [CommRing R]
   [LieRing L] [LieAlgebra R L] [LieRing L'] [LieAlgebra R L'] [DecidableEq Γ]

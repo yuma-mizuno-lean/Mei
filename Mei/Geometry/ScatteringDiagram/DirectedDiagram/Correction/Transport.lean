@@ -72,9 +72,9 @@ theorem log_levelPathProduct_mul_inv_restrict_eq_crossingSum
         ((D.restrictPathPrefunctor s (k + 1)).mapPath p))⁻¹) =
       p.wallCrossingSum (fun j : D.active (k + 1) => h.realCharacter (D.wall j).normal)
         (fun j => if j.val ∈ s then 0 else
-          log (CompletedGroup.projection (k + 1) (D.wall j).label)) := by
+          log (TauCeti.CompletedGroup.projection (k + 1) (D.wall j).label)) := by
   let a : D.active (k + 1) → BCHGroup (d.lieTruncation ℒ (k + 1)) := fun j =>
-    (CompletedGroup.projection (k + 1) (D.wall j).label : d.truncatedGroup ℒ (k + 1))
+    (TauCeti.CompletedGroup.projection (k + 1) (D.wall j).label : d.truncatedGroup ℒ (k + 1))
   let b := fun j : D.active (k + 1) => if j.val ∈ s then a j else 1
   have hb : ∀ j j' : D.active (k + 1),
       affineSpan ℝ (D.wall j).support = affineSpan ℝ (D.wall j').support →
@@ -91,12 +91,12 @@ theorem log_levelPathProduct_mul_inv_restrict_eq_crossingSum
     dsimp only [b]
     split_ifs with hj
     · rfl
-    · have hz : CompletedGroup.projection k (D.wall j).label = 1 := by
+    · have hz : TauCeti.CompletedGroup.projection k (D.wall j).label = 1 := by
         by_contra hne
         exact hj (hs ((D.mem_active k j.val).mpr hne))
       have he : (d.lieTruncationMap ℒ (Nat.le_succ k)).bchGroupMap (a j) =
-          CompletedGroup.projection k (D.wall j).label :=
-        CompletedGroup.map_projection k (k + 1) (Nat.le_succ k) (D.wall j).label
+          TauCeti.CompletedGroup.projection k (D.wall j).label :=
+        TauCeti.CompletedGroup.map_projection k (k + 1) (Nat.le_succ k) (D.wall j).label
       rw [he, hz, map_one]
       -- The tower identity and the identity in its concrete BCH group coincide.
       rfl
@@ -124,7 +124,7 @@ theorem levelPathProduct_eq_exp_crossingSum_mul_restrict
       exp (p.wallCrossingSum
         (fun j : D.active (k + 1) => h.realCharacter (D.wall j).normal)
         (fun j => if j.val ∈ s then 0 else
-          log (CompletedGroup.projection (k + 1) (D.wall j).label))) *
+          log (TauCeti.CompletedGroup.projection (k + 1) (D.wall j).label))) *
       (D.restrict s).levelPathProduct (k + 1)
         ((D.restrictPathPrefunctor s (k + 1)).mapPath p) := by
   have he := congrArg exp (D.log_levelPathProduct_mul_inv_restrict_eq_crossingSum s hs p)
@@ -140,7 +140,7 @@ theorem log_levelPathProduct_eq_crossingSum_add_restrict
     log (D.levelPathProduct (k + 1) p) =
       p.wallCrossingSum (fun j : D.active (k + 1) => h.realCharacter (D.wall j).normal)
         (fun j => if j.val ∈ s then 0 else
-          log (CompletedGroup.projection (k + 1) (D.wall j).label)) +
+          log (TauCeti.CompletedGroup.projection (k + 1) (D.wall j).label)) +
       log ((D.restrict s).levelPathProduct (k + 1)
         ((D.restrictPathPrefunctor s (k + 1)).mapPath p)) := by
   let f := d.lieTruncationMap ℒ (Nat.le_succ k)
@@ -148,19 +148,19 @@ theorem log_levelPathProduct_eq_crossingSum_add_restrict
   let B := (D.restrict s).levelPathProduct (k + 1)
     ((D.restrictPathPrefunctor s (k + 1)).mapPath p)
   have hcoeff (j : D.active (k + 1)) :
-      (if j.val ∈ s then 0 else log (CompletedGroup.projection (k + 1) (D.wall j).label)) ∈
+      (if j.val ∈ s then 0 else log (TauCeti.CompletedGroup.projection (k + 1) (D.wall j).label)) ∈
         f.ker := by
     split_ifs with hj
     · exact f.ker.zero_mem
     · rw [LieHom.mem_ker]
-      have hz : CompletedGroup.projection k (D.wall j).label = 1 := by
+      have hz : TauCeti.CompletedGroup.projection k (D.wall j).label = 1 := by
         by_contra hne
         exact hj (hs ((D.mem_active k j.val).mpr hne))
-      have he : f.bchGroupMap (CompletedGroup.projection (k + 1) (D.wall j).label) =
-          CompletedGroup.projection k (D.wall j).label :=
-        CompletedGroup.map_projection k (k + 1) (Nat.le_succ k) (D.wall j).label
-      have he' : f (log (CompletedGroup.projection (k + 1) (D.wall j).label)) =
-          log (CompletedGroup.projection k (D.wall j).label) :=
+      have he : f.bchGroupMap (TauCeti.CompletedGroup.projection (k + 1) (D.wall j).label) =
+          TauCeti.CompletedGroup.projection k (D.wall j).label :=
+        TauCeti.CompletedGroup.map_projection k (k + 1) (Nat.le_succ k) (D.wall j).label
+      have he' : f (log (TauCeti.CompletedGroup.projection (k + 1) (D.wall j).label)) =
+          log (TauCeti.CompletedGroup.projection k (D.wall j).label) :=
         (f.log_bchGroupMap _).symm.trans (congrArg log he)
       rw [hz] at he'
       exact he'.trans (log_one (L := d.lieTruncation ℒ k))
@@ -188,7 +188,7 @@ theorem levelConsistent_succ_iff_crossingSum_eq_neg_restrict :
         (p : AdmissiblePLPath x x),
         p.wallCrossingSum (fun j : D.active (k + 1) => h.realCharacter (D.wall j).normal)
           (fun j => if j.val ∈ s then 0 else
-            log (CompletedGroup.projection (k + 1) (D.wall j).label)) =
+            log (TauCeti.CompletedGroup.projection (k + 1) (D.wall j).label)) =
           -log ((D.restrict s).levelPathProduct (k + 1)
             ((D.restrictPathPrefunctor s (k + 1)).mapPath p)) := by
   rw [D.levelConsistent_iff_loops]

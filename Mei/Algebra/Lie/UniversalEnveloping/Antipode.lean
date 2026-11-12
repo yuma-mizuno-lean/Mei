@@ -20,6 +20,9 @@ The proof uses Tau Ceti's enveloping antipode and the homogeneous word spans.
 
 public section
 
+open TauCeti.UniversalEnvelopingAlgebra (degreeFiltration degreeFiltration_ideal
+  homogeneousSubmodule homogeneousSubmodule_def ι_mem_homogeneousSubmodule)
+
 namespace Mei.UniversalEnvelopingAlgebra
 
 variable {Γ R L : Type*} [AddCommMonoid Γ] [CommRing R] [LieRing L] [LieAlgebra R L]
@@ -62,15 +65,15 @@ local notation "F" => degreeFiltration ℒ d hneg
 /-- The enveloping antipode preserves every degree ideal. -/
 theorem antipode_mem_degreeFiltration {k : ℕ} {a : U} (ha : a ∈ (F).ideal k) :
     S a ∈ (F).ideal k := by
-  have ht : Mei.DirectSum.degreeTail (homogeneousSubmodule ℒ) d k ≤
+  have ht : TauCeti.DirectSum.degreeTail (homogeneousSubmodule ℒ) d k ≤
       (((F).ideal k).restrictScalars R).comap S := by
-    simp only [Mei.DirectSum.degreeTail_def, iSup_le_iff]
+    simp only [TauCeti.DirectSum.degreeTail_def, iSup_le_iff]
     intro n hn a ha
     rw [Submodule.mem_comap]
     rw [Submodule.restrictScalars_mem, degreeFiltration_ideal]
-    exact Mei.GradedAlgebra.le_truncationIdeal _ d _ hn _
+    exact TauCeti.GradedAlgebra.le_degreeIdeal _ d _ hn _
       (antipode_mem_homogeneousSubmodule ℒ ha)
-  rw [degreeFiltration_ideal, Mei.GradedAlgebra.mem_truncationIdeal_iff] at ha
+  rw [degreeFiltration_ideal, TauCeti.GradedAlgebra.mem_degreeIdeal_iff] at ha
   exact ht ha
 
 end Mei.UniversalEnvelopingAlgebra

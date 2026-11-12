@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mei.RingTheory.Ideal.TensorProduct
-public import Mei.RingTheory.FilteredAlgebra.Basic
+public import TauCeti.RingTheory.FilteredAlgebra.TensorProduct.Basic
 public import Mathlib.RingTheory.Ideal.Quotient.Operations
 
 /-!
@@ -17,7 +17,7 @@ the images of `I a ⊗ J b` with `k ≤ a + b`. It is decreasing and inherits
 multiplicativity and two-sidedness from the factors. If both families start at
 the whole algebra, so does the tensor filtration. Thus it supplies the quotient
 tower for completed tensor products of filtered associative algebras.
-`Mei.AlgFiltration.tensorProduct` bundles these terms as an `AlgFiltration`;
+`TauCeti.AlgFiltration.tensorProduct` bundles these terms as an `AlgFiltration`;
 the two algebra inclusions preserve its filtration orders.
 
 The construction uses `Ideal.tensorProduct`, whose underlying scalar submodule
@@ -186,89 +186,40 @@ instance tensorFiltration_isRingFiltration (I : ℕ → Ideal A) (J : ℕ → Id
 
 end Ideal
 
-namespace Mei.AlgFiltration
+namespace TauCeti.AlgFiltration
 
 variable (R : Type*) {A B : Type*} [CommSemiring R] [Semiring A] [Semiring B]
-  [Algebra R A] [Algebra R B] (F : Mei.AlgFiltration A) (G : Mei.AlgFiltration B)
-
-/-- The total-degree filtration on the tensor product of two filtered algebras. -/
-noncomputable def tensorProduct : Mei.AlgFiltration (A ⊗[R] B) where
-  ideal := Ideal.tensorFiltration R F.ideal G.ideal
-  isTwoSided _ := inferInstance
-  antitone := Ideal.tensorFiltration_antitone R F.ideal G.ideal
-  ideal_zero := Ideal.tensorFiltration_zero R F.ideal G.ideal F.ideal_zero G.ideal_zero
-  mul_mem hx hy := Ideal.tensorFiltration_mul_le R F.ideal G.ideal
-    (fun _ _ => Ideal.mul_le.mpr fun _ hx _ hy => F.mul_mem hx hy)
-    (fun _ _ => Ideal.mul_le.mpr fun _ hx _ hy => G.mul_mem hx hy) _ _
-    (Ideal.mul_mem_mul hx hy)
+  [Algebra R A] [Algebra R B] (F : TauCeti.AlgFiltration A) (G : TauCeti.AlgFiltration B)
 
 /-- The bundled tensor filtration uses the total-degree tensor ideals. -/
 @[simp]
 theorem tensorProduct_ideal (k : ℕ) :
-    (F.tensorProduct R G).ideal k = Ideal.tensorFiltration R F.ideal G.ideal k := (rfl)
-
-/-- The tensor of filtration-preserving algebra maps preserves the bundled filtration. -/
-theorem tensorProduct_le_comap_map {C D : Type*} [Semiring C] [Semiring D]
-    [Algebra R C] [Algebra R D] (H : Mei.AlgFiltration C) (K : Mei.AlgFiltration D)
-    (f : A →ₐ[R] C) (g : B →ₐ[R] D)
-    (hf : ∀ k, F.ideal k ≤ (H.ideal k).comap f)
-    (hg : ∀ k, G.ideal k ≤ (K.ideal k).comap g) (k : ℕ) :
-    (F.tensorProduct R G).ideal k ≤
-      ((H.tensorProduct R K).ideal k).comap (Algebra.TensorProduct.map f g) := by
-  simp only [tensorProduct_ideal]
-  exact Ideal.tensorFiltration_le_comap_map R F.ideal G.ideal H.ideal K.ideal f g hf hg k
-
-/-- If `f` sends `F.ideal (ρ k + 1)` into `H.ideal (k + 1)` and `g` sends
-`G.ideal (σ k + 1)` into `K.ideal (k + 1)`, then `Algebra.TensorProduct.map f g`
-sends the order `ρ k + σ k + 1` term of `F.tensorProduct R G` into the order
-`k + 1` term of `H.tensorProduct R K`. No monotonicity of the cutoffs is needed
-for this bound at a fixed order. -/
-theorem tensorProduct_le_comap_map_of_moduli {C D : Type*} [Semiring C] [Semiring D]
-    [Algebra R C] [Algebra R D] (H : Mei.AlgFiltration C) (K : Mei.AlgFiltration D)
-    (f : A →ₐ[R] C) (g : B →ₐ[R] D) (ρ σ : ℕ → ℕ)
-    (hf : ∀ k, F.ideal (ρ k + 1) ≤ (H.ideal (k + 1)).comap f)
-    (hg : ∀ k, G.ideal (σ k + 1) ≤ (K.ideal (k + 1)).comap g) (k : ℕ) :
-    (F.tensorProduct R G).ideal (ρ k + σ k + 1) ≤
-      ((H.tensorProduct R K).ideal (k + 1)).comap (Algebra.TensorProduct.map f g) := by
-  simp only [tensorProduct_ideal]
-  apply (Ideal.tensorFiltration_le_iff R F.ideal G.ideal _ _).mpr
-  intro a b hab x hx y hy
-  rw [Ideal.mem_comap, Algebra.TensorProduct.map_tmul]
-  by_cases ha : ρ k + 1 ≤ a
-  · exact Ideal.tmul_mem_tensorFiltration R (a := k + 1) (b := 0) (by omega)
-      (hf k (F.antitone ha hx)) (by simp)
-  · have hb : σ k + 1 ≤ b := by omega
-    exact Ideal.tmul_mem_tensorFiltration R (a := 0) (b := k + 1) (by omega)
-      (by simp) (hg k (G.antitone hb hy))
-
-/-- Factor exchange identifies the ideals of the two bundled tensor filtrations. -/
-theorem tensorProduct_comap_comm (k : ℕ) :
-    ((G.tensorProduct R F).ideal k).comap (Algebra.TensorProduct.comm R A B).toAlgHom =
-      (F.tensorProduct R G).ideal k := by
-  simp only [tensorProduct_ideal, Ideal.tensorFiltration_comap_comm]
+    (F.tensorProduct R G).ideal k = Ideal.tensorFiltration R F.ideal G.ideal k := by
+  ext x
+  rw [F.mem_tensorProduct_ideal_iff R G, TauCeti.tensorFiltrationTail_def,
+    ← Ideal.tensorFiltration_restrictScalars R F.ideal G.ideal k]
+  rfl
 
 /-- Pure tensors add the filtration orders of their two factors. -/
 theorem tmul_mem_tensorProduct (a b : ℕ) {x : A} {y : B}
     (hx : x ∈ F.ideal a) (hy : y ∈ G.ideal b) :
     x ⊗ₜ[R] y ∈ (F.tensorProduct R G).ideal (a + b) :=
-  Ideal.tmul_mem_tensorFiltration R le_rfl hx hy
+  F.tmul_mem_tensorProduct_ideal R G le_rfl hx hy
 
 /-- The left inclusion preserves filtration orders. -/
 theorem includeLeft_mem_tensorProduct {k : ℕ} {a : A} (ha : a ∈ F.ideal k) :
     Algebra.TensorProduct.includeLeft (R := R) (S := R) (B := B) a ∈
       (F.tensorProduct R G).ideal k := by
-  exact Ideal.tmul_mem_tensorFiltration R (a := k) (b := 0) (by omega) ha
-    (by simp)
+  exact F.ideal_le_comap_includeLeft R G k ha
 
 /-- The right inclusion preserves filtration orders. -/
 theorem includeRight_mem_tensorProduct {k : ℕ} {b : B} (hb : b ∈ G.ideal k) :
     Algebra.TensorProduct.includeRight (R := R) (A := A) b ∈ (F.tensorProduct R G).ideal k := by
-  exact Ideal.tmul_mem_tensorFiltration R (a := 0) (b := k) (by omega)
-    (by simp) hb
+  exact F.ideal_le_comap_includeRight R G k hb
 
-end Mei.AlgFiltration
+end TauCeti.AlgFiltration
 
-namespace Mei.AlgFiltration
+namespace TauCeti.AlgFiltration
 
 variable (R : Type*) {A B : Type*} [CommSemiring R] [Ring A] [Ring B]
   [Algebra R A] [Algebra R B] (F : AlgFiltration A) (G : AlgFiltration B)
@@ -313,4 +264,4 @@ theorem commute_quotientIncludes (k : ℕ) (x : A ⧸ F.ideal k) (y : B ⧸ G.id
   rw [quotientIncludeLeft_mk, quotientIncludeRight_mk]
   exact ((Commute.one_right x).tmul (Commute.one_left y)).map (Ideal.Quotient.mk (T k))
 
-end Mei.AlgFiltration
+end TauCeti.AlgFiltration

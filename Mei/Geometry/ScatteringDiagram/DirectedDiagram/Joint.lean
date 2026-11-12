@@ -66,7 +66,7 @@ theorem log_levelPathProduct_sub_wallCrossingSum_mem (p : AdmissiblePLPath x y)
       ∀ a ∈ S, ∀ v ∈ W, (D.wall a.1).normal v = 0) :
     log (D.levelPathProduct k p) -
       p.wallCrossingSum (fun j : D.active k => h.realCharacter (D.wall j).normal)
-        (fun j => log (CompletedGroup.projection k (D.wall j).label)) ∈
+        (fun j => log (TauCeti.CompletedGroup.projection k (D.wall j).label)) ∈
       (H.truncated d k).transverseJointSubmodule W := by
   rw [D.levelPathProduct_eq_wallPathProduct k p (D.activeLabels_commute k)]
   exact p.log_wallPathProduct_sub_wallCrossingSum_mem _ _ _
@@ -86,7 +86,7 @@ theorem decompose_log_levelPathProduct_loop_eq_zero (p : AdmissiblePLPath x x)
     (b : D.active k → ℝ)
     (hfull : ∀ j : D.active k,
       (DirectSum.decompose (d.lieTruncationGrading ℒ k)
-        (log (CompletedGroup.projection k (D.wall j).label)) n : d.lieTruncation ℒ k) ≠ 0 →
+        (log (TauCeti.CompletedGroup.projection k (D.wall j).label)) n : d.lieTruncation ℒ k) ≠ 0 →
       (D.wall j).support = {v | h.realCharacter (D.wall j).normal v = b j}) :
     (DirectSum.decompose (d.lieTruncationGrading ℒ k)
       (log (D.levelPathProduct k p)) n : d.lieTruncation ℒ k) = 0 := by
@@ -101,7 +101,7 @@ theorem decompose_log_levelPathProduct_loop_eq_zero (p : AdmissiblePLPath x x)
       f u = DirectSum.decompose (d.lieTruncationGrading ℒ k) u n := (rfl)
   have hzero := p.wallCrossingSum_loop_eq_zero
     (fun j : D.active k => h.realCharacter (D.wall j).normal) b
-    (fun j => f (log (CompletedGroup.projection k (D.wall j).label)))
+    (fun j => f (log (TauCeti.CompletedGroup.projection k (D.wall j).label)))
     (fun j hj => hfull j (fun he => hj (by
       apply Subtype.ext
       simpa only [hf, ZeroMemClass.coe_zero] using he)))
@@ -120,13 +120,13 @@ theorem decompose_log_levelPathProduct_loop_eq_zero_of_lower_birth
       (∃ b : ℝ, (D.wall j).support =
         {v | h.realCharacter (D.wall j).normal v = b}) ∨
       ∃ m : Γ, d.degree m < k ∧
-        log (CompletedGroup.projection k (D.wall j).label) ∈ d.lieTruncationGrading ℒ k m) :
+        log (TauCeti.CompletedGroup.projection k (D.wall j).label) ∈ d.lieTruncationGrading ℒ k m) :
     (DirectSum.decompose (d.lieTruncationGrading ℒ k)
       (log (D.levelPathProduct k p)) n : d.lieTruncation ℒ k) = 0 := by
   classical
   have hex (j : D.active k) : ∃ b : ℝ,
       (DirectSum.decompose (d.lieTruncationGrading ℒ k)
-        (log (CompletedGroup.projection k (D.wall j).label)) n : d.lieTruncation ℒ k) ≠ 0 →
+        (log (TauCeti.CompletedGroup.projection k (D.wall j).label)) n : d.lieTruncation ℒ k) ≠ 0 →
       (D.wall j).support = {v | h.realCharacter (D.wall j).normal v = b} := by
     rcases hbirth j with ⟨b, hb⟩ | ⟨m, hm, hlog⟩
     · exact ⟨b, fun _ => hb⟩

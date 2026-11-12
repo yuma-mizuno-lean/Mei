@@ -53,7 +53,7 @@ theorem LevelEquivalent.mono {k l : ℕ} (hDE : D.LevelEquivalent E l) (hkl : k 
         simpa only [DirectedWallSpaces.CoordinateChange.refl_degreeEquiv, AddEquiv.refl_apply]
           using hn.trans (Int.ofNat_le.mpr hkl)
   simpa only [image_refl] using hDE.image
-    (e := Toric.IntegralAffineEquiv.refl h)
+    (e := TauCeti.Toric.IntegralAffineEquiv.refl h)
     (E := DirectedWallSpaces.CoordinateChange.refl d H) (hE := by simp) ha
 
 /-- If no Lie degrees remain above order `k`, that order detects diagram equivalence.

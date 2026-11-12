@@ -30,9 +30,11 @@ Mathlib's `LinearMap.IsIdempotentElem.mem_range_iff`. No lattice condition on `n
 
 public section
 
+open TauCeti (OrientedCell PolyhedralCochain)
+
 noncomputable section
 
-namespace Mei.PolyhedralCochain
+namespace TauCeti.PolyhedralCochain
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
@@ -250,4 +252,4 @@ theorem transverseMap_comp (g : E' →ₗ[R] E'') (f : E →ₗ[R] E') (n : V) :
 
 end Coefficients
 
-end Mei.PolyhedralCochain
+end TauCeti.PolyhedralCochain

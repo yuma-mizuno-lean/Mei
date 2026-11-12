@@ -28,8 +28,6 @@ open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading)
 
 namespace TauCeti
 
-open Mei
-
 variable {N : Type*} [AddCommMonoid N]
 
 variable {R M : Type*} [Semiring R] [AddCommMonoid M] [Module R M] (ℒ : N → Submodule R M)

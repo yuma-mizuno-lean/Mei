@@ -25,7 +25,9 @@ recursion on the module completion, by uniqueness.
 
 public section
 
-namespace Mei.AlgFiltration
+namespace TauCeti.AlgFiltration
+
+open Mei
 
 variable {R A : Type*} [CommRing R] [Ring A] [Algebra R A]
   {F : AlgFiltration A} {P : Subsemiring A}
@@ -67,4 +69,4 @@ theorem isPositive_moduleCompletionEquiv_of_eq_add
   rw [(F.toModuleFiltration R).eq_completionRecursion_of_eq_add_completionMap f hf hx]
   simpa only [LinearEquiv.symm_apply_apply] using ha.completionRecursion f hf hP
 
-end Mei.AlgFiltration
+end TauCeti.AlgFiltration

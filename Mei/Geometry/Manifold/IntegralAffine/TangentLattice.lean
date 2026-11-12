@@ -30,6 +30,8 @@ This is the integral tangent lattice `Λ` of an integral-affine manifold in Gros
 
 public section
 
+open TauCeti.Toric (IntegralAffineEquiv)
+
 open Set Topology Manifold
 
 namespace Mei.Toric

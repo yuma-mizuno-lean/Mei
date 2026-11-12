@@ -138,7 +138,7 @@ theorem completionRestrictScalarsEquiv_completedBCHAction
   simp only [projection_completionRestrictScalarsEquiv, projection_completedBCHAction,
     PositiveDegrees.projection_completedBCHRestrictScalarsEquiv]
   exact F.restrictScalarsEquiv_truncatedBCHAction d ℒ k
-    (CompletedGroup.projection k g) ((F.restrictScalars R).projection k a)
+    (TauCeti.CompletedGroup.projection k g) ((F.restrictScalars R).projection k a)
 
 end Rational
 end ModuleFiltration
@@ -161,7 +161,9 @@ instance IsFiltrationRaising.restrictScalars_algebra
 
 end Mei
 
-namespace Mei.AlgFiltration
+namespace TauCeti.AlgFiltration
+
+open Mei
 
 variable {N R S L A : Type*} [AddCommMonoid N] [CommRing R] [CommRing S]
   [Algebra R S] [LieRing L] [LieAlgebra S L] [LieAlgebra R L]
@@ -236,9 +238,9 @@ theorem completedBCHAction_restrictScalars
   simp only [projection_completedBCHAction, AlgEquiv.restrictScalars_apply,
     PositiveDegrees.projection_completedBCHRestrictScalarsEquiv]
   have h := DFunLike.congr_fun (F.truncatedBCHAction_restrictScalars d ℒ k
-    (CompletedGroup.projection k g)) (F.projection k a)
+    (TauCeti.CompletedGroup.projection k g)) (F.projection k a)
   rw [F.truncatedBCHAction_apply d (fun n => (ℒ n).restrictScalars R) k
-    (CompletedGroup.projection k g) (F.projection k a)] at h
+    (TauCeti.CompletedGroup.projection k g) (F.projection k a)] at h
   rw [AlgEquiv.restrictScalars_apply, F.truncatedBCHAction_apply d ℒ] at h
   exact h
 
@@ -249,4 +251,4 @@ theorem completedBCHAction_restrictScalars_apply
       F.completedBCHAction d ℒ (d.completedBCHRestrictScalarsEquiv (R := R) ℒ g) a := by
   rw [completedBCHAction_restrictScalars, AlgEquiv.restrictScalars_apply]
 
-end Mei.AlgFiltration
+end TauCeti.AlgFiltration

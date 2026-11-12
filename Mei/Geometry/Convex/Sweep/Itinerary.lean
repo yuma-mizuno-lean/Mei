@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Analysis.Convex.Intrinsic
-public import Mei.Geometry.Convex.Sweep.Topology
+public import TauCeti.Analysis.Convex.Sweep.Topology
 public import TauCeti.Analysis.Convex.Polyhedron.Basic
 
 /-!
@@ -14,7 +14,7 @@ public import TauCeti.Analysis.Convex.Polyhedron.Basic
 
 Starting at an endpoint, propagate backwards along specified vectors toward
 specified hyperplanes. The propagation points and times are continuous affine
-functions of the endpoint, obtained by composing the existing `sweepProjection`
+functions of the endpoint, obtained by composing the existing `ContinuousLinearMap.sweepProjection`
 maps. A step is an actual hyperplane encounter when `f i (v i) ≠ 0`; this
 transversality also gives uniqueness, without a genericity assumption. When
 `f i (v i) = 0`, the totalized formulas assign zero time and leave the point
@@ -50,7 +50,7 @@ step encounters its selected hyperplane; a tangent step leaves its point unchang
 Index zero is the endpoint. -/
 def backwardPoint : Fin (n + 1) → (V →ᴬ[ℝ] V) :=
   Fin.induction (ContinuousAffineMap.id ℝ V)
-    (fun i X => (sweepProjection (f i) (c i) ((f i (v i))⁻¹ • v i)).comp X)
+    (fun i X => (ContinuousLinearMap.sweepProjection (f i) (c i) ((f i (v i))⁻¹ • v i)).comp X)
 
 /-- The starting point of backward propagation is the endpoint. -/
 @[simp]
@@ -60,7 +60,7 @@ theorem backwardPoint_zero : backwardPoint f c v 0 = ContinuousAffineMap.id ℝ 
 /-- Each propagation step uses the normalized sweep; a tangent step is the identity. -/
 theorem backwardPoint_succ (i : Fin n) :
     backwardPoint f c v i.succ =
-      (sweepProjection (f i) (c i) ((f i (v i))⁻¹ • v i)).comp
+      (ContinuousLinearMap.sweepProjection (f i) (c i) ((f i (v i))⁻¹ • v i)).comp
         (backwardPoint f c v i.castSucc) := by
   simp only [backwardPoint, Fin.induction_succ]
 
@@ -96,7 +96,7 @@ specified velocity, including tangent steps with zero time. -/
 theorem backwardPoint_succ_apply (i : Fin n) (Q : V) :
     backwardPoint f c v i.succ Q = backwardPoint f c v i.castSucc Q +
       backwardTime f c v i Q • v i := by
-  rw [backwardPoint_succ, ContinuousAffineMap.comp_apply, sweepProjection_apply,
+  rw [backwardPoint_succ, ContinuousAffineMap.comp_apply, ContinuousLinearMap.sweepProjection_apply,
     backwardTime_apply, smul_smul, div_eq_mul_inv]
 
 /-- The segment between consecutive propagation points has the prescribed
@@ -112,7 +112,7 @@ theorem lineMap_backwardPoint (j : Fin n) (Q : V) (s : ℝ) :
 theorem backwardPoint_height (i : Fin n) (hi : f i (v i) ≠ 0) (Q : V) :
     f i (backwardPoint f c v i.succ Q) = c i := by
   rw [backwardPoint_succ, ContinuousAffineMap.comp_apply]
-  apply sweepProjection_height
+  apply ContinuousLinearMap.sweepProjection_height
   simp only [map_smul, smul_eq_mul, inv_mul_cancel₀ hi]
 
 /-- Endpoint, velocities and transverse hyperplanes uniquely determine every

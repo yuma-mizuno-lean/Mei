@@ -26,11 +26,15 @@ lineality and arbitrary real offsets are allowed.
 
 public section
 
+open TauCeti (OrientedCell isRationalNormalPolyhedron_iff)
+
 noncomputable section
 
 open Module Set
 
-namespace Mei.OrientedCell
+namespace TauCeti.OrientedCell
+
+open Mei
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i} {k : ℕ}
@@ -128,4 +132,4 @@ theorem exists_boundaryFacet_cut_subdivision (σ π μ : OrientedCell h k)
     · exact hoτ
     · exact Finset.mem_singleton.mp ha ▸ hoυ
 
-end Mei.OrientedCell
+end TauCeti.OrientedCell

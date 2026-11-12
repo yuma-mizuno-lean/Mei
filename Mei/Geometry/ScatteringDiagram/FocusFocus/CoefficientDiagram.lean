@@ -26,6 +26,8 @@ model is Gross–Siebert, *An Invitation to Toric Degenerations*, §2.3
 
 public noncomputable section
 
+open TauCeti (GradedCorrespondence)
+
 open CategoryTheory CategoryTheory.Limits Opposite
 
 namespace Mei.FocusFocus

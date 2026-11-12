@@ -83,7 +83,7 @@ theorem homogeneousWall_label (a : HomogeneousWallIndex d C) :
 Thus the finite realization's choice of lift leaves no choice in this coefficient. -/
 theorem homogeneousWall_label_eq (a : HomogeneousWallIndex d C)
     (g : d.completedBCHGroup ℒ)
-    (hg : CompletedGroup.projection (d.degree a.1.val).toNat g =
+    (hg : TauCeti.CompletedGroup.projection (d.degree a.1.val).toNat g =
       (D.diagram (d.degree a.1.val).toNat).label a.2) :
     (D.homogeneousWall a).label = d.homogeneousFactor ℒ g a.1.val := by
   rw [homogeneousWall_label, PositiveDegrees.homogeneousFactor_def,
@@ -96,7 +96,7 @@ theorem homogeneousWall_label_eq (a : HomogeneousWallIndex d C)
 is nonzero. No abelian-ray assumption is needed. -/
 @[simp↓]
 theorem homogeneousWall_projection_ne_one_iff (a : HomogeneousWallIndex d C) (k : ℕ) :
-    CompletedGroup.projection k (D.homogeneousWall a).label ≠ 1 ↔
+    TauCeti.CompletedGroup.projection k (D.homogeneousWall a).label ≠ 1 ↔
       d.degree a.1.val ≤ k ∧ d.logComponent ℒ
         ((D.diagram (d.degree a.1.val).toNat).indexedWall a.2).label a.1.val ≠ 0 := by
   rw [homogeneousWall_label, PositiveDegrees.homogeneousFactor_def, ne_eq,
@@ -105,7 +105,7 @@ theorem homogeneousWall_projection_ne_one_iff (a : HomogeneousWallIndex d C) (k 
 
 private theorem finite_homogeneousWall_active (k : ℕ) :
     {a : HomogeneousWallIndex d C |
-      CompletedGroup.projection k (D.homogeneousWall a).label ≠ 1}.Finite := by
+      TauCeti.CompletedGroup.projection k (D.homogeneousWall a).label ≠ 1}.Finite := by
   apply Set.Finite.of_finite_fibers (fun a : HomogeneousWallIndex d C => a.1)
   · apply ((d.finite_cutoff k).preimage Subtype.val_injective.injOn).subset
     rintro n ⟨a, ha, rfl⟩
@@ -146,7 +146,7 @@ theorem homogeneousFactor_germLabel_eq_one_of_notMem (n : N)
     (θ : V) (hθ : ∀ k, θ ∉ singularSupport (fun P : (C k).walls => (P : Set V)))
     (hP : ∀ P : (C (d.degree n).toNat).walls, θ ∉ (P : Set V)) :
     d.homogeneousFactor ℒ (D.germLabel θ hθ) n = 1 := by
-  have hg : CompletedGroup.projection (d.degree n).toNat (D.germLabel θ hθ) = 1 := by
+  have hg : TauCeti.CompletedGroup.projection (d.degree n).toNat (D.germLabel θ hθ) = 1 := by
     rw [projection_germLabel, KSComplex.localLabel_of_notMem _ θ (hθ _) hP,
       d.groupTower_obj_one ℒ]
   rw [PositiveDegrees.homogeneousFactor_def,

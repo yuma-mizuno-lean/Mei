@@ -7,6 +7,7 @@ module
 
 public import Mei.Geometry.Convex.PolyhedralCochain.Incidence
 public import Mei.Geometry.Convex.PolyhedralCochain.Pairing
+public import Mei.Geometry.Convex.PolyhedralCochain.Basic
 
 /-!
 # Signed boundary pairings at an isolated joint
@@ -23,7 +24,7 @@ requiring a Stokes identity or a coboundary on cochain classes.
 
 The geometric inputs are
 `FinitePolyhedralComplex.exists_positive_isolating_joint_triangle` and
-`OrientedCell.isTransverse_of_isCompl`; the finite sum uses
+`OrientedCell.isTransverseToCarrier_of_isCompl`; the finite sum uses
 `PolyhedralCochain.coboundaryPresentation` and
 `OrientedCell.intersectionPairing`. No choice of a common orientation on all
 joint cells is required.
@@ -31,11 +32,15 @@ joint cells is required.
 
 public section
 
+open TauCeti (OrientedCell PolyhedralCochain)
+
 noncomputable section
 
 open Set Module
 
-namespace Mei
+namespace TauCeti
+
+open Mei
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
@@ -53,10 +58,10 @@ theorem isTransverse_of_isolating_simplex (σ : OrientedCell h k)
     (hf : Disjoint (convexHull ℝ (range s.points)) (intrinsicFrontier ℝ J))
     (ho : ∀ Q ∈ C.cellsOfCodimension k, Q ≠ J →
       Disjoint (convexHull ℝ (range s.points)) Q) :
-    σ.IsTransverse s.points := by
+    σ.IsTransverseToCarrier s.points := by
   by_cases he : σ.carrier = J
-  · exact σ.isTransverse_of_isCompl s (he ▸ hc) (he ▸ hf)
-  · exact σ.isTransverse_of_disjoint (ho σ.carrier hσ he)
+  · exact σ.isTransverseToCarrier_of_isCompl s (he ▸ hc) (he ▸ hf)
+  · exact σ.isTransverseToCarrier_of_disjoint (ho σ.carrier hσ he)
 
 end OrientedCell
 
@@ -74,7 +79,7 @@ theorem isTransverse_coboundaryPresentation (C : FinitePolyhedralComplex h)
     (hf : Disjoint (convexHull ℝ (range s.points)) (intrinsicFrontier ℝ J))
     (ho : ∀ Q ∈ C.cellsOfCodimension (k + 1), Q ≠ J →
       Disjoint (convexHull ℝ (range s.points)) Q) :
-    ∀ τ ∈ (coboundaryPresentation (R := R) f).support, τ.IsTransverse s.points := by
+    ∀ τ ∈ (coboundaryPresentation (R := R) f).support, τ.IsTransverseToCarrier s.points := by
   intro τ hτ
   exact τ.isTransverse_of_isolating_simplex C
     (mem_cellsOfCodimension_of_mem_support_coboundaryPresentation (R := R) C f hfold hτ)
@@ -111,4 +116,4 @@ theorem intersectionPairing_coboundaryPresentation_eq_sum_incident
 
 end PolyhedralCochain
 
-end Mei
+end TauCeti

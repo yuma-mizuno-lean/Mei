@@ -21,6 +21,8 @@ need not have nonnegative degree.
 
 public section
 
+open TauCeti (AlgFiltration)
+
 open TauCeti (PositiveDegrees)
 noncomputable section
 

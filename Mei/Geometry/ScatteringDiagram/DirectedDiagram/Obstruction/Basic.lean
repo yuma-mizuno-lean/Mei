@@ -132,7 +132,7 @@ theorem log_levelPathProduct_sub_crossingSum_mem (p : AdmissiblePLPath x y)
       ∀ a ∈ S, ∀ v ∈ W, (D.wall a.1).normal v = 0) :
     log (D.levelPathProduct k p) -
       p.wallCrossingSum (fun j : D.active k => h.realCharacter (D.wall j).normal)
-        (fun j => log (CompletedGroup.projection k (D.wall j).label)) ∈
+        (fun j => log (TauCeti.CompletedGroup.projection k (D.wall j).label)) ∈
       (H.truncated d k).transverseJointSubmodule W := by
   rw [D.levelPathProduct_eq_wallPathProduct k p (D.activeLabels_commute k)]
   exact ((H.truncated d k).jointSubalgebra W).log_wallPathProduct_sub_crossingSum_mem
@@ -169,7 +169,7 @@ structure LoopProjection (k : ℕ) where
   hyperplane support. -/
   full_of_ne_zero : ∀ (j : D.active k) {n : Γ}, d.degree n = k →
     toLinearMap (DirectSum.decompose (d.lieTruncationGrading ℒ k)
-      (log (CompletedGroup.projection k (D.wall j).label)) n) ≠ 0 →
+      (log (TauCeti.CompletedGroup.projection k (D.wall j).label)) n) ≠ 0 →
     ∃ b : ℝ, (D.wall j).support = {v | h.realCharacter (D.wall j).normal v = b}
 
 namespace LoopProjection
@@ -189,7 +189,7 @@ theorem map_decompose_crossingSum_loop_eq_zero (p : AdmissiblePLPath x x)
     {n : Γ} (hn : d.degree n = k) :
     P.toLinearMap (DirectSum.decompose (d.lieTruncationGrading ℒ k)
       (p.wallCrossingSum (fun j : D.active k => h.realCharacter (D.wall j).normal)
-        (fun j => log (CompletedGroup.projection k (D.wall j).label))) n) = 0 := by
+        (fun j => log (TauCeti.CompletedGroup.projection k (D.wall j).label))) n) = 0 := by
   classical
   let f := (P.toLinearMap.comp ((d.lieTruncationGrading ℒ k n).subtype.comp
     ((DirectSum.component R Γ (fun m => d.lieTruncationGrading ℒ k m) n).comp
@@ -197,17 +197,17 @@ theorem map_decompose_crossingSum_loop_eq_zero (p : AdmissiblePLPath x x)
   let b (j : D.active k) : ℝ := if hj : ∃ b : ℝ,
       (D.wall j).support = {v | h.realCharacter (D.wall j).normal v = b} then hj.choose else 0
   have hc : ∀ j : D.active k,
-      f (log (CompletedGroup.projection k (D.wall j).label)) ≠ 0 →
+      f (log (TauCeti.CompletedGroup.projection k (D.wall j).label)) ≠ 0 →
       (D.wall j).support = {v | h.realCharacter (D.wall j).normal v = b j} := by
     intro j hj
     have hfull := P.full_of_ne_zero j hn hj
     simpa only [b, dite_eq_left hfull] using hfull.choose_spec
   have he := p.map_sum_log_signedCrossingEvents_loop_eq_zero (L := d.lieTruncation ℒ k)
     (fun j : D.active k => h.realCharacter (D.wall j).normal) b
-    (fun j => CompletedGroup.projection k (D.wall j).label) f hc
+    (fun j => TauCeti.CompletedGroup.projection k (D.wall j).label) f hc
   rw [Quiver.Path.sum_log_signedCrossingEvents p
     (fun j : D.active k => h.realCharacter (D.wall j).normal)
-    (fun j : D.active k => (CompletedGroup.projection k (D.wall j).label :
+    (fun j : D.active k => (TauCeti.CompletedGroup.projection k (D.wall j).label :
       d.truncatedGroup ℒ k))] at he
   exact he
 
@@ -220,7 +220,7 @@ theorem decompose_log_levelPathProduct_loop_eq (p : AdmissiblePLPath x x)
       P.toLinearMap (DirectSum.decompose (d.lieTruncationGrading ℒ k)
         (log (D.levelPathProduct k p) -
           p.wallCrossingSum (fun j : D.active k => h.realCharacter (D.wall j).normal)
-            (fun j => log (CompletedGroup.projection k (D.wall j).label))) n) := by
+            (fun j => log (TauCeti.CompletedGroup.projection k (D.wall j).label))) n) := by
   rw [DirectSum.decompose_sub, DFinsupp.sub_apply, Submodule.coe_sub, map_sub,
     P.map_decompose_crossingSum_loop_eq_zero p hn, sub_zero, ← P.decompose_map,
     P.map_log_loop p]

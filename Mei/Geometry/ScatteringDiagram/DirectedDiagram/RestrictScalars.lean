@@ -181,8 +181,8 @@ theorem vertices_levelPathOfRestrictScalars (k : ℕ)
 the projected label of the original wall. -/
 theorem bchGroupEquiv_projection_restrictScalars_wall_label (k : ℕ) (j : ι) :
     (d.lieTruncationRestrictScalarsEquiv (R := K) ℒ k).bchGroupEquiv
-        (CompletedGroup.projection k ((D.restrictScalars K).wall j).label) =
-      CompletedGroup.projection k (D.wall j).label := by
+        (TauCeti.CompletedGroup.projection k ((D.restrictScalars K).wall j).label) =
+      TauCeti.CompletedGroup.projection k (D.wall j).label := by
   rw [restrictScalars_wall, DirectedWall.restrictScalars_label]
   exact PositiveDegrees.bchGroupEquiv_projection_completedBCHRestrictScalarsEquiv_symm _ _ k _
 

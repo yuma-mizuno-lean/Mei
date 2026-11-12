@@ -92,10 +92,10 @@ theorem _root_.TauCeti.PositiveDegrees.shiftedMul_mem_shiftedFiltration {a b : �
     (hy : y ∈ (d.shiftedFiltration 𝒜 q).submodule b) :
     shiftedMul 𝒜 d.monoid p q x y ∈ (d.shiftedFiltration 𝒜 (p + q)).submodule (a + b) := by
   have hmul :
-      Mei.DirectSum.degreeTail 𝒜 (fun i => d.degree (i - p)) a *
-          Mei.DirectSum.degreeTail 𝒜 (fun i => d.degree (i - q)) b ≤
-        Mei.DirectSum.degreeTail 𝒜 (fun i => d.degree (i - (p + q))) (a + b) := by
-    simp only [Mei.DirectSum.degreeTail_def, Submodule.iSup_mul, Submodule.mul_iSup,
+      TauCeti.DirectSum.degreeTail 𝒜 (fun i => d.degree (i - p)) a *
+          TauCeti.DirectSum.degreeTail 𝒜 (fun i => d.degree (i - q)) b ≤
+        TauCeti.DirectSum.degreeTail 𝒜 (fun i => d.degree (i - (p + q))) (a + b) := by
+    simp only [TauCeti.DirectSum.degreeTail_def, Submodule.iSup_mul, Submodule.mul_iSup,
       iSup_le_iff]
     intro i hi j hj
     apply (TauCeti.GradedAlgebra.mul_le_grade_add 𝒜 j i).trans
@@ -105,8 +105,8 @@ theorem _root_.TauCeti.PositiveDegrees.shiftedMul_mem_shiftedFiltration {a b : �
     have hab : ((a + b : ℕ) : ℤ) ≤ d.degree (j + i - (p + q)) := by
       rw [hd, Nat.cast_add]
       exact add_le_add hj hi
-    simpa only [Mei.DirectSum.degreeTail_def] using
-      Mei.DirectSum.le_degreeTail 𝒜 (fun i => d.degree (i - (p + q))) hab
+    simpa only [TauCeti.DirectSum.degreeTail_def] using
+      TauCeti.DirectSum.le_degreeTail 𝒜 (fun i => d.degree (i - (p + q))) hab
   simp only [shiftedFiltration_submodule, Submodule.mem_comap,
     Submodule.coe_subtype] at hx hy ⊢
   rw [coe_shiftedMul]

@@ -188,7 +188,7 @@ theorem conj_moduleBCHInclusion (k : ℕ)
 
 private def baseProjectionComponent (k : ℕ) :
     (positiveDegrees d p).completedBCHGroup (grading d ℳ p ℒ) →* d.truncatedGroup ℒ k :=
-  (baseQuotientProjection d ℳ p ℒ k).bchGroupMap.comp (CompletedGroup.projection k)
+  (baseQuotientProjection d ℳ p ℒ k).bchGroupMap.comp (TauCeti.CompletedGroup.projection k)
 
 private theorem baseProjectionComponent_compatible (k l : ℕ) (h : k ≤ l) :
     ((d.groupTower ℒ).map (CategoryTheory.homOfLE h).op).hom.comp
@@ -196,8 +196,8 @@ private theorem baseProjectionComponent_compatible (k l : ℕ) (h : k ≤ l) :
   ext g
   -- The tower arrows conceal the concrete BCH quotient types.
   change (d.lieTruncationMap ℒ h).bchGroupMap
-    ((baseQuotientProjection d ℳ p ℒ l).bchGroupMap (CompletedGroup.projection l g)) =
-      (baseQuotientProjection d ℳ p ℒ k).bchGroupMap (CompletedGroup.projection k g)
+    ((baseQuotientProjection d ℳ p ℒ l).bchGroupMap (TauCeti.CompletedGroup.projection l g)) =
+      (baseQuotientProjection d ℳ p ℒ k).bchGroupMap (TauCeti.CompletedGroup.projection k g)
   have hs : (d.lieTruncationMap ℒ h).comp (baseQuotientProjection d ℳ p ℒ l) =
       (baseQuotientProjection d ℳ p ℒ k).comp
         ((positiveDegrees d p).lieTruncationMap (grading d ℳ p ℒ) h) := by
@@ -205,32 +205,32 @@ private theorem baseProjectionComponent_compatible (k l : ℕ) (h : k ≤ l) :
     intro x
     exact truncationMap_baseQuotientProjection d ℳ p ℒ h x
   have he := DFunLike.congr_fun (congrArg LieHom.bchGroupMap hs)
-    (CompletedGroup.projection l g)
+    (TauCeti.CompletedGroup.projection l g)
   simp only [LieHom.bchGroupMap_comp] at he
   have hp : ((positiveDegrees d p).lieTruncationMap (grading d ℳ p ℒ) h).bchGroupMap
-      (CompletedGroup.projection l g) = CompletedGroup.projection k g :=
-    CompletedGroup.map_projection k l h g
+      (TauCeti.CompletedGroup.projection l g) = TauCeti.CompletedGroup.projection k g :=
+    TauCeti.CompletedGroup.map_projection k l h g
   exact he.trans (congrArg (baseQuotientProjection d ℳ p ℒ k).bchGroupMap hp)
 
 /-- Forget the completed coefficient label, retaining the completed base label. -/
 def completedBaseProjection :
     (positiveDegrees d p).completedBCHGroup (grading d ℳ p ℒ) →* d.completedBCHGroup ℒ :=
-  CompletedGroup.lift (baseProjectionComponent d ℳ p ℒ)
+  TauCeti.CompletedGroup.lift (baseProjectionComponent d ℳ p ℒ)
     (baseProjectionComponent_compatible d ℳ p ℒ)
 
 /-- Completed base projection is computed at the same finite order. -/
 @[simp]
 theorem projection_completedBaseProjection (k : ℕ)
     (g : (positiveDegrees d p).completedBCHGroup (grading d ℳ p ℒ)) :
-    CompletedGroup.projection k (completedBaseProjection d ℳ p ℒ g) =
-      (baseQuotientProjection d ℳ p ℒ k).bchGroupMap (CompletedGroup.projection k g) := by
-  exact CompletedGroup.projection_lift _ _ k g
+    TauCeti.CompletedGroup.projection k (completedBaseProjection d ℳ p ℒ g) =
+      (baseQuotientProjection d ℳ p ℒ k).bchGroupMap (TauCeti.CompletedGroup.projection k g) := by
+  exact TauCeti.CompletedGroup.projection_lift _ _ k g
 
 /-- Projection recovers every completed charge-zero label. -/
 @[simp]
 theorem completedBaseProjection_base (g : d.completedBCHGroup ℒ) :
     completedBaseProjection d ℳ p ℒ ((baseGradedLieHom d ℳ p ℒ).completedMap g) = g := by
-  apply CompletedGroup.ext
+  apply TauCeti.CompletedGroup.ext
   intro k
   rw [projection_completedBaseProjection,
     (baseGradedLieHom d ℳ p ℒ).projection_completedMap_of_le k (a := k) (by simp)]
@@ -241,7 +241,7 @@ theorem completedBaseProjection_base (g : d.completedBCHGroup ℒ) :
     exact baseQuotientProjection_base d ℳ p ℒ k x
   have he := congrArg LieHom.bchGroupMap hs
   rw [LieHom.bchGroupMap_comp, LieHom.bchGroupMap_id] at he
-  exact DFunLike.congr_fun he (CompletedGroup.projection k g)
+  exact DFunLike.congr_fun he (TauCeti.CompletedGroup.projection k g)
 
 /-- At completion the degree-preserving projection is the existing base
 projection followed by the charge-zero inclusion. -/
@@ -250,7 +250,7 @@ theorem completedMap_chargeZeroGradedLieHom
     (g : (positiveDegrees d p).completedBCHGroup (grading d ℳ p ℒ)) :
     (chargeZeroGradedLieHom d ℳ p ℒ).completedMap g =
       (baseGradedLieHom d ℳ p ℒ).completedMap (completedBaseProjection d ℳ p ℒ g) := by
-  apply CompletedGroup.ext
+  apply TauCeti.CompletedGroup.ext
   intro k
   rw [GradedLieHom.projection_completedMap_of_le _ k (a := k) (by simp),
     GradedLieHom.projection_completedMap_of_le _ k (a := k) (by simp),
@@ -285,7 +285,7 @@ theorem completedBaseProjection_expToCompletion (x : ProbeLie d ℳ p ℒ) :
     completedBaseProjection d ℳ p ℒ
       ((positiveDegrees d p).expToCompletion (grading d ℳ p ℒ) x) =
         d.expToCompletion ℒ x.right := by
-  apply CompletedGroup.ext
+  apply TauCeti.CompletedGroup.ext
   intro k
   -- The tower and explicit quotient give the same exponential on representatives.
   simp only [projection_completedBaseProjection, PositiveDegrees.projection_expToCompletion,
@@ -297,7 +297,7 @@ theorem completedBaseProjection_expToCompletion (x : ProbeLie d ℳ p ℒ) :
 theorem completedBaseProjection_module
     (a : Multiplicative (d.shiftedFiltration ℳ p).completion) :
     completedBaseProjection d ℳ p ℒ (completedModuleBCHInclusion d ℳ p ℒ a) = 1 := by
-  apply CompletedGroup.ext
+  apply TauCeti.CompletedGroup.ext
   intro k
   cases k with
   | zero =>
@@ -321,33 +321,33 @@ theorem completedBaseProjection_eq_one_iff
     -- Recover a finite coefficient from each logarithm in the finite kernel.
     have hz (k : ℕ) : baseQuotientProjection d ℳ p ℒ (k + 1)
         (BCHGroup.log (L := (positiveDegrees d p).lieTruncation
-          (grading d ℳ p ℒ) (k + 1)) (CompletedGroup.projection (k + 1) g)) = 0 := by
+          (grading d ℳ p ℒ) (k + 1)) (TauCeti.CompletedGroup.projection (k + 1) g)) = 0 := by
       have hp : (baseQuotientProjection d ℳ p ℒ (k + 1)).bchGroupMap
-          (CompletedGroup.projection (k + 1) g) = 1 := by
+          (TauCeti.CompletedGroup.projection (k + 1) g) = 1 := by
         rw [← projection_completedBaseProjection, hg, map_one]
         rfl
       obtain ⟨a, ha, _⟩ := (baseBCHProjection_eq_one_iff d ℳ p ℒ k _).mp hp
       rw [← ha, moduleBCHInclusion_apply, BCHGroup.log_exp, baseQuotientProjection_module]
     let a₀ (k : ℕ) := moduleQuotientProjection d ℳ p ℒ k
       (BCHGroup.log (L := (positiveDegrees d p).lieTruncation
-        (grading d ℳ p ℒ) (k + 1)) (CompletedGroup.projection (k + 1) g))
+        (grading d ℳ p ℒ) (k + 1)) (TauCeti.CompletedGroup.projection (k + 1) g))
     -- Truncation compatibility glues these coefficients into one completed element.
     have ha : (fun k : ℕᵒᵖ => a₀ k.unop) ∈ (d.shiftedFiltration ℳ p).completionSubmodule := by
       apply (ModuleFiltration.mem_completionSubmodule_iff _ _).mpr
       intro k l h
       have hp : ((positiveDegrees d p).lieTruncationMap (grading d ℳ p ℒ)
-          (Nat.add_le_add_right h 1)).bchGroupMap (CompletedGroup.projection (l + 1) g) =
-            CompletedGroup.projection (k + 1) g :=
-        CompletedGroup.map_projection (k + 1) (l + 1) (Nat.add_le_add_right h 1) g
+          (Nat.add_le_add_right h 1)).bchGroupMap (TauCeti.CompletedGroup.projection (l + 1) g) =
+            TauCeti.CompletedGroup.projection (k + 1) g :=
+        TauCeti.CompletedGroup.map_projection (k + 1) (l + 1) (Nat.add_le_add_right h 1) g
       have hl := (((positiveDegrees d p).lieTruncationMap (grading d ℳ p ℒ)
         (Nat.add_le_add_right h 1)).log_bchGroupMap
-          (CompletedGroup.projection (l + 1) g)).symm.trans
+          (TauCeti.CompletedGroup.projection (l + 1) g)).symm.trans
         (congrArg (BCHGroup.log (L := (positiveDegrees d p).lieTruncation
           (grading d ℳ p ℒ) (k + 1))) hp)
       exact (transition_moduleQuotientProjection d ℳ p ℒ h _).trans
         (congrArg (moduleQuotientProjection d ℳ p ℒ k) hl)
     refine ⟨Multiplicative.ofAdd ⟨_, ha⟩, ?_⟩
-    apply CompletedGroup.ext
+    apply TauCeti.CompletedGroup.ext
     intro k
     cases k with
     | zero =>
@@ -421,8 +421,8 @@ theorem projection_completedKernelEquiv (g : (π).ker) (k : ℕ) :
         (completedKernelEquiv d ℳ p ℒ g).toAdd =
       moduleQuotientProjection d ℳ p ℒ k
         (BCHGroup.log (L := (positiveDegrees d p).lieTruncation
-          (grading d ℳ p ℒ) (k + 1)) (CompletedGroup.projection (k + 1) g.val)) := by
-  have he := congrArg (CompletedGroup.projection (k + 1))
+          (grading d ℳ p ℒ) (k + 1)) (TauCeti.CompletedGroup.projection (k + 1) g.val)) := by
+  have he := congrArg (TauCeti.CompletedGroup.projection (k + 1))
     (completedModuleBCHInclusion_completedKernelEquiv d ℳ p ℒ g)
   rw [projection_completedModuleBCHInclusion, moduleBCHInclusion_apply,
     toAdd_ofAdd] at he
