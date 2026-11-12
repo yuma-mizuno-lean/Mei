@@ -30,7 +30,7 @@ jobs:
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           repository: yuma-mizuno-lean/TauCetiTools
-          ref: 1fd27ad5bc448c1d6e6f4d951fd015276021b479
+          ref: b7fd61a4d069d6e5c83e82fec1dfad625e5edd23
           path: .tauceti-tools
           persist-credentials: false
       - name: Run isolated tests without Lean downloads or publication credentials

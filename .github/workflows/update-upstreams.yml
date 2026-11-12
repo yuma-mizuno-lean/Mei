@@ -43,10 +43,10 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           persist-credentials: false
-      - uses: yuma-mizuno-lean/TauCetiTools/.github/actions/setup@1fd27ad5bc448c1d6e6f4d951fd015276021b479
+      - uses: yuma-mizuno-lean/TauCetiTools/.github/actions/setup@b7fd61a4d069d6e5c83e82fec1dfad625e5edd23
         with:
           tools-repository: yuma-mizuno-lean/TauCetiTools
-          tools-ref: 1fd27ad5bc448c1d6e6f4d951fd015276021b479
+          tools-ref: b7fd61a4d069d6e5c83e82fec1dfad625e5edd23
       - name: Install elan (trusted, pinned + checksum)
         env:
           ELAN_SHA256: df0b2b3a439961ffcbb3985214365ffe40f49bc871df04dff268c7d8e21ca8b2
