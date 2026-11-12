@@ -24,7 +24,7 @@ This formalizes the finite-order (truncated) form of the sign factorization in T
 ([arXiv:1603.00416v4](https://arxiv.org/pdf/1603.00416v4)). The completed form is
 proved in `Mei.Algebra.Lie.BCH.Sign.Completion`.
 
-The proof uses `Mei.signDecomposition` and the central successive kernels of
+The proof uses `TauCeti.signDecomposition` and the central successive kernels of
 `TauCeti.PositiveDegrees.lieTruncationMap`. Central corrections make the nonlinear BCH
 recombination act by translation on each new kernel. No freeness, finite rank,
 finite generation of the positive monoid, or nilpotence of the original Lie
@@ -32,6 +32,9 @@ algebra is required.
 -/
 
 public section
+
+open TauCeti (signSubalgebra signDecomposition signDecomposition_mem sum_signDecomposition
+  signDecomposition_eq_iff map_signDecomposition)
 
 open TauCeti (PositiveDegrees IsPositiveGrading)
 

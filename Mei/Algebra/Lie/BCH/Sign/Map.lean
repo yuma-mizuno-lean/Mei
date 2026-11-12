@@ -23,6 +23,8 @@ factorization itself, see `Mei.Algebra.Lie.BCH.Sign.Basic`.
 
 public section
 
+open TauCeti (signSubalgebra map_mem_signSubalgebra)
+
 open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading GradedLieHom)
 
 noncomputable section

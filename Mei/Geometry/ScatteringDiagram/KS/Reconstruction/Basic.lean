@@ -32,6 +32,8 @@ and `Reconstruction.Completion`. The finite construction follows Tom Bridgeland,
 
 public section
 
+open TauCeti (signSubalgebra signSubalgebra_eq_of_sign_eq)
+
 open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading GradedLieHom)
 
 noncomputable section

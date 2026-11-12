@@ -28,6 +28,8 @@ specialize its general quotient API.
 
 public section
 
+open TauCeti (signSubalgebra map_signSubalgebra)
+
 namespace TauCeti.PositiveDegrees
 
 open Mei

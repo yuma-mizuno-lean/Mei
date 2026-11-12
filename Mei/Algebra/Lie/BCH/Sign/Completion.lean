@@ -26,6 +26,8 @@ completeness or surjectivity assumption is required.
 
 public section
 
+open TauCeti (signSubalgebra)
+
 open TauCeti (PositiveDegrees IsPositiveGrading)
 
 noncomputable section

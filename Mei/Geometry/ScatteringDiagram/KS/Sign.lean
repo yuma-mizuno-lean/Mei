@@ -21,12 +21,14 @@ depending on a chosen relative interior point, and their middle factors lie in
 the required orthogonal wall-label group.
 
 This combines `TauCeti.PositiveDegrees.arrangementComplex`,
-`Mei.signSubalgebra`, and `Mei.orthogonalLieSubalgebra` using the relative-interior
+`TauCeti.signSubalgebra`, and `Mei.orthogonalLieSubalgebra` using the relative-interior
 characterization of realized sign cells. Only degrees with a nonzero piece in
 the truncation matter; degrees above the cutoff impose no extra condition.
 -/
 
 public section
+
+open TauCeti (signSubalgebra signSubalgebra_eq_of_sign_eq mem_signSubalgebra_iff)
 
 open TauCeti (PositiveDegrees IsPositiveGrading)
 

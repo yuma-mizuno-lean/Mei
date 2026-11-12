@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Algebra.Lie.BCH.Sign.Basic
-public import Mei.Algebra.Lie.Graded.Sign.Chamber
+public import TauCeti.Algebra.Lie.Graded.Sign
 
 /-!
 # Sign factorization in uniform-sign chambers
@@ -19,6 +19,8 @@ every retained homogeneous piece lies in such a degree.
 -/
 
 public section
+
+open TauCeti (signSubalgebra signSubalgebra_eq_top_of_sign_eq)
 
 open TauCeti (PositiveDegrees IsPositiveGrading)
 

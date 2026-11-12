@@ -38,6 +38,8 @@ consistent diagram with a reconstruction.
 
 public section
 
+open TauCeti (signSubalgebra mem_signSubalgebra_iff)
+
 open TauCeti (WallComplement AdmissiblePLPath exists_mem_open_two_transverse_lineMaps)
 
 open TauCeti (PositiveDegrees IsPositiveGrading)

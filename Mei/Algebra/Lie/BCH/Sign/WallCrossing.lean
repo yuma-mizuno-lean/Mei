@@ -21,11 +21,13 @@ The argument follows the single-crossing calculation in Tom Bridgeland,
 *Scattering diagrams, Hall algebras and stability conditions*, §3.4, proof of
 Lemma 3.2 ([arXiv:1603.00416v4](https://arxiv.org/html/1603.00416v4#S3.SS4)).
 It uses `PositiveDegrees.signFactorizationEquiv` for uniqueness and
-`Mei.signSubalgebra_le_of_sign_imp` for the subgroup inclusions. All hypotheses
+`TauCeti.signSubalgebra_le_of_sign_imp` for the subgroup inclusions. All hypotheses
 concern degrees below the chosen cutoff; no behavior of higher degrees is required.
 -/
 
 public section
+
+open TauCeti (signSubalgebra signSubalgebra_le_of_sign_imp)
 
 open TauCeti (PositiveDegrees IsPositiveGrading)
 

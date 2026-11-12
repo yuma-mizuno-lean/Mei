@@ -19,7 +19,7 @@ with a degree-preserving coefficient map.
 
 This gives the sign-factor comparison for coefficient maps and changes of degree
 without choosing compatible finite factorizations anew. It uses the homogeneous
-component criterion `Mei.mem_signSubalgebra_iff`,
+component criterion `TauCeti.mem_signSubalgebra_iff`,
 `TauCeti.GradedLieHom.lieTruncatedMap_mem`, and uniqueness in
 `TauCeti.PositiveDegrees.completedSignFactorizationEquiv`. For the underlying sign
 factorization and its attribution to Bridgeland, see
@@ -27,6 +27,8 @@ factorization and its attribution to Bridgeland, see
 -/
 
 public section
+
+open TauCeti (signSubalgebra le_signSubalgebra mem_signSubalgebra_iff)
 
 open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading GradedLieHom)
 

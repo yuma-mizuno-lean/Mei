@@ -240,7 +240,8 @@ theorem exists_coherentBackwardRayEndpointStepArrangement
     have hy' : ((WallComplement.restrictPrefunctor (B.activeSupport K)
         (Set.inclusion (B.active_mono hkK))).obj ⟨Q, hallowed Q hQA⟩) = y :=
       WallComplement.ext hy.symm
-    simpa only [hy'] using he
+    rw [← hy']
+    exact he
   dsimp only [f] at houtput
   refine ⟨y, hy, fun n hn => ?_⟩
   filter_upwards [hyrec n hn] with T hT
