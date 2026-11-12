@@ -27,6 +27,10 @@ The quotient decomposition follows `TauCeti.InternalGrading.quotient`, using
 `iSupIndep.map_of_ker_inf_iSup_le` to preserve independence under the quotient
 map. It keeps the images of the original pieces as submodules of the quotient.
 The natural surjective transitions between cutoffs use `LieIdeal.factor`.
+
+The index type here is universe-polymorphic. The upstream `truncatedLie` uses
+`InternalGrading`, whose index type is in `Type 0`. For indices in `Type 0`,
+`truncationIdeal_eq_degreeIdeal` identifies the ideals of the two constructions.
 -/
 
 public section

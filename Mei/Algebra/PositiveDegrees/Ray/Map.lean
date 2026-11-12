@@ -17,6 +17,9 @@ The generator itself need not be allowed in either monoid. The induced ray map
 and its integer multiplier respect identity and composition, and transport actual
 ray degrees with any cutoff bound satisfied by the original additive map.
 
+Use TauCeti's `SupportedRay.map` when the input is a `PositiveDegreeMap`.
+`SupportedRay.mapAddHom` also covers additive maps with no cutoff modulus.
+
 Only the target integer module must be free; neither finite rank nor injectivity
 of the additive map is required. For additive equivalences identifying the allowed
 monoids, `SupportedRay.congr` identifies supported rays without any freeness
@@ -29,7 +32,6 @@ public section
 open TauCeti (PositiveDegrees SupportedRay)
 
 namespace TauCeti.SupportedRay
-
 
 variable {N M K : Type*} [AddCommGroup N] [AddCommGroup M] [AddCommGroup K]
 variable {d : PositiveDegrees N} {e : PositiveDegrees M} {q : PositiveDegrees K}

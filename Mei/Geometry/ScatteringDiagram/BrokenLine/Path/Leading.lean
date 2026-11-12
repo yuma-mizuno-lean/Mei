@@ -483,7 +483,11 @@ theorem exists_pathDecoratedEvaluation_leadingArrangement [FiniteDimensional ℝ
 
 end WallEvent
 
-namespace PositiveDegrees
+end Mei
+
+namespace TauCeti.PositiveDegrees
+
+open Mei
 
 variable {Γ : Type} {R L M V ι : Type*}
   [AddCommGroup Γ] [DecidableEq Γ] [CommRing R] [Algebra ℚ R]
@@ -499,14 +503,14 @@ variable {Γ : Type} {R L M V ι : Type*}
 geometric arrangement, at every cutoff and over every inventory exhausting the endpoint
 fiber. Signed labels may be inverses or products of simultaneous wall labels. No
 consistency, faithfulness, coefficient basis or nonzero spatial direction is required. -/
-theorem _root_.TauCeti.PositiveDegrees.exists_pathDecoratedEvaluation_leadingArrangement_shiftedBCHAction
+theorem exists_pathDecoratedEvaluation_leadingArrangement_shiftedBCHAction
     [FiniteDimensional ℝ V]
     (hpoly : ∀ j, TauCeti.IsConvexPolyhedron (W j))
     (hdim : ∀ j, Module.finrank ℝ (affineSpan ℝ (W j)).direction + 1 =
       Module.finrank ℝ V)
     (hker : ∀ j, (f j).toLinearMap.ker = (affineSpan ℝ (W j)).direction)
     (hc : ∀ j x, x ∈ W j → f j x = c j) (v : Γ → V) :
-    ∃ A : ExceptionalArrangement V, ∀ Q, A.IsGeneric Q → ∀ (k : ℕ)
+    ∃ A : Mei.ExceptionalArrangement V, ∀ Q, A.IsGeneric Q → ∀ (k : ℕ)
       (g : WallEvent ι → d.truncatedGroup ℒ k)
       (a : (d.shiftedQuotientGrading ℳ p k).piece 0)
       (s : Finset (Path (SingleObj.star (WallEvent ι)) (SingleObj.star (WallEvent ι)))),
@@ -537,6 +541,4 @@ theorem _root_.TauCeti.PositiveDegrees.exists_pathDecoratedEvaluation_leadingArr
     (fun e _ _ _ hy hne => d.sub_mem_monoid_of_decompose_shiftedBCHAction_ne_zero ℒ ℳ p k (g e)
       hy (by simpa using hne)) s hs
 
-end PositiveDegrees
-
-end Mei
+end TauCeti.PositiveDegrees
