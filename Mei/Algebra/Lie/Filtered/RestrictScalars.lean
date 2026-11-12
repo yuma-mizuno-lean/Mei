@@ -151,7 +151,7 @@ instance IsFiltrationRaising.restrictScalars_algebra
     {N R S L A : Type*} [AddCommMonoid N] [CommRing R] [CommRing S]
     [SMul R S] [LieRing L] [LieAlgebra S L] [LieAlgebra R L]
     [IsScalarTower R S L] [Ring A] [Algebra S A] [Algebra R A]
-    [LieRingModule L A] (F : AlgFiltration A) (d : PositiveDegrees N)
+    [LieRingModule L A] (F : TauCeti.AlgFiltration A) (d : PositiveDegrees N)
     (ℒ : N → Submodule S L) [IsFiltrationRaising d ℒ (F.toModuleFiltration S)] :
     IsFiltrationRaising d (fun n => (ℒ n).restrictScalars R) (F.toModuleFiltration R) where
   lie_mem hx hm := IsFiltrationRaising.lie_mem (d := d) (ℒ := ℒ)

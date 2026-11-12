@@ -134,7 +134,7 @@ theorem ofSweep_outgoing (P : Set V) (hP : P.Nonempty)
   let W := ofSweep P hP hPrat w n hn m hm hker c hc
   have hray : n ∈ W.ray.rayDegrees := by simpa [W] using hn
   have hnot : i (ρ n) ∉ recessionCone ℝ W.support := by
-    rw [ofSweep_support, mem_recessionCone]
+    rw [ofSweep_support]
     exact Set.notMem_recessionCone_sweep hP (by simpa only [direction_affineSpan] using htrans)
   apply W.outgoing_iff.mpr
   intro hrec
@@ -204,8 +204,8 @@ theorem exists_swept_correction_wall [Module.Free ℤ Γ]
     (c : L) (hc : c ∈ ⨆ (m : Λ →+ ℤ)
       (_ : ∀ v : Λ, i v ∈ (affineSpan ℝ J).direction → m v = 0), H.wall n m) :
     ∃ W : DirectedWall (d := d) h H,
-      W.support = sweep J (i (ρ n)) ∧
-      W.support = sweep J (i (ρ W.ray.generator)) ∧
+      W.support = Set.sweep ℝ J (i (ρ n)) ∧
+      W.support = Set.sweep ℝ J (i (ρ W.ray.generator)) ∧
       n ∈ W.ray.rayDegrees ∧ W.label = d.expToCompletion ℒ (-c) ∧
       W.Outgoing ∧ ∀ k : ℕ,
         TauCeti.CompletedGroup.projection k W.label = 1 ↔ c = 0 ∨ (k : ℤ) < d.degree n := by
@@ -266,8 +266,8 @@ theorem exists_swept_correction_wall_of_truncated [Module.Free ℤ Γ]
       (_ : ∀ v : Λ, i v ∈ (affineSpan ℝ J).direction → m v = 0),
       (H.truncated d k).wall n m) :
     ∃ W : DirectedWall (d := d) h H,
-      W.support = sweep J (i (ρ n)) ∧
-      W.support = sweep J (i (ρ W.ray.generator)) ∧
+      W.support = Set.sweep ℝ J (i (ρ n)) ∧
+      W.support = Set.sweep ℝ J (i (ρ W.ray.generator)) ∧
       n ∈ W.ray.rayDegrees ∧
       (∃ a ∈ ℒ n, W.label = d.expToCompletion ℒ (-a)) ∧ W.Outgoing ∧
       BCHGroup.log (TauCeti.CompletedGroup.projection k W.label) = -c ∧

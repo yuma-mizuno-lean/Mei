@@ -7,6 +7,7 @@ module
 
 public import Mei.Geometry.ScatteringDiagram.KS.Completion
 public import Mei.Geometry.ScatteringDiagram.HyperplanePair
+public import Mei.Geometry.Toric.Algebraic.Lattice
 
 /-!
 # Completed diagrams whose complexes alternate
