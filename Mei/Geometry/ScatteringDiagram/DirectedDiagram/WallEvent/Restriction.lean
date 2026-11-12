@@ -28,7 +28,6 @@ and refined tropical curve counts*, equation (8) and Definition 2.10
 
 open TauCeti (singularSupport singularSupport_comp_subset)
 
-
 public noncomputable section
 
 open TauCeti (PositiveDegrees IsPositiveGrading)

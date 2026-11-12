@@ -24,7 +24,6 @@ same signed-event convention as `WallEvent`.
 
 open TauCeti (singularSupport singularSupport_comp_subset)
 
-
 public noncomputable section
 
 open Set

@@ -25,7 +25,6 @@ crossing-time and simultaneous-product APIs.
 
 open TauCeti (WallComplement)
 
-
 public noncomputable section
 
 open Set Filter Topology

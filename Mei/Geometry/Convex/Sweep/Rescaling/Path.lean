@@ -27,7 +27,6 @@ The local broken-line interpretation follows Carl–Pumperla–Siebert,
 
 open TauCeti (singularSupport)
 
-
 public noncomputable section
 
 open Set Filter Topology

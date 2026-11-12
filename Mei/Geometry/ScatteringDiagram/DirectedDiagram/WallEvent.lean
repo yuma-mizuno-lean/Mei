@@ -33,7 +33,6 @@ theta functions, and refined tropical curve counts*, equation (8) and §3.3.3
 
 open TauCeti (WallComplement singularSupport affineSpan_eq_of_notMem_singularSupport)
 
-
 public noncomputable section
 
 open TauCeti (PositiveDegrees IsPositiveGrading)

@@ -35,7 +35,6 @@ Definition 2.10 and §3.3.3 (arXiv:1503.06183v5).
 
 open TauCeti (WallComplement singularSupport singularSupport_subset_iUnion)
 
-
 public noncomputable section
 
 open Set Filter Topology TauCeti.WallComplement

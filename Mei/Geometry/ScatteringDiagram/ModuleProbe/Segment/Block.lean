@@ -25,7 +25,6 @@ expansion of a BCH correction. The backward-ray interpretation follows Mandel,
 
 open TauCeti (WallComplement)
 
-
 public noncomputable section
 
 open TauCeti (PositiveDegrees IsPositiveGrading)

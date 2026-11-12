@@ -31,7 +31,6 @@ and refined tropical curve counts*, §3.3.3 (arXiv:1503.06183v5).
 
 open TauCeti (WallComplement AdmissiblePLPath singularSupport)
 
-
 public noncomputable section
 
 open TauCeti (PositiveDegrees IsPositiveGrading)

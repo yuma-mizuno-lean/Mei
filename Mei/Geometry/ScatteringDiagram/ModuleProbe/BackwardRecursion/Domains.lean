@@ -18,7 +18,6 @@ geometric event inventory is chosen separately at each output degree.
 
 open TauCeti (WallComplement)
 
-
 public noncomputable section
 
 open TauCeti (PositiveDegrees IsPositiveGrading)

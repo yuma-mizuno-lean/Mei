@@ -28,7 +28,6 @@ models*, §4 (arXiv:2205.07753v2).
 
 open TauCeti (singularSupport)
 
-
 public noncomputable section
 
 open TauCeti (PositiveDegrees IsPositiveGrading)

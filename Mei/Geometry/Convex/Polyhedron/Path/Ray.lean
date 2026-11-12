@@ -26,7 +26,6 @@ functions, and refined tropical curve counts*, §3.3.3 (arXiv:1503.06183v5).
 
 open TauCeti (WallComplement singularSupport exists_finite_singularSupport_cover)
 
-
 public noncomputable section
 
 open Set Filter Topology

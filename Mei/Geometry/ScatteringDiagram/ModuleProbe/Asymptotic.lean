@@ -36,7 +36,6 @@ theta functions, and refined tropical curve counts*, §3.3.3
 
 open TauCeti (singularSupport)
 
-
 public noncomputable section
 
 open TauCeti (PositiveDegrees IsPositiveGrading)

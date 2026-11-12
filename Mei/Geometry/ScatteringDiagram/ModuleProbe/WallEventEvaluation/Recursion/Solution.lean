@@ -35,7 +35,6 @@ Mandel, *Scattering diagrams, theta functions, and refined tropical curve counts
 
 open TauCeti (WallComplement)
 
-
 public noncomputable section
 
 open TauCeti (PositiveDegrees IsPositiveGrading)

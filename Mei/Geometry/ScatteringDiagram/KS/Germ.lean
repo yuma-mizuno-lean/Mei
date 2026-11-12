@@ -31,7 +31,6 @@ Definition 2.3 and §§2.9–2.11 (arXiv:1603.00416v4).
 
 open TauCeti (singularSupport)
 
-
 public noncomputable section
 
 open TauCeti (PositiveDegrees IsPositiveGrading)

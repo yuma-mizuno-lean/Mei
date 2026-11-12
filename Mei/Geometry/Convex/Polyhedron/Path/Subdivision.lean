@@ -29,7 +29,6 @@ to the given admissibility of the path.
 
 open TauCeti (WallComplement AdmissiblePLPath)
 
-
 public noncomputable section
 
 open Set Mei.Convex

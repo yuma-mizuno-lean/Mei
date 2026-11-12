@@ -37,7 +37,6 @@ with the charge-zero comparison `DirectedDiagram.levelPathProduct_pushforward` a
 
 open TauCeti (WallComplement AdmissiblePLPath)
 
-
 public noncomputable section
 
 open TauCeti (PositiveDegrees IsPositiveGrading)

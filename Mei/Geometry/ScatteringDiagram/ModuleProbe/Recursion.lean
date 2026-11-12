@@ -30,7 +30,6 @@ compatibility, the finite shifted BCH correction formula, and
 
 open TauCeti (WallComplement AdmissiblePLPath singularSupport)
 
-
 public noncomputable section
 
 open TauCeti (PositiveDegrees IsPositiveGrading)

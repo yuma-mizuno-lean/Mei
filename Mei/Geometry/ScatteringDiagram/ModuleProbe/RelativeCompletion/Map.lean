@@ -21,7 +21,6 @@ and completed coefficient-field naturality.
 
 open TauCeti (WallComplement GradedLieHom)
 
-
 public noncomputable section
 
 open TauCeti (PositiveDegrees IsPositiveGrading)

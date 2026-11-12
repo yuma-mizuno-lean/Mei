@@ -34,7 +34,6 @@ recurrence, probe transport and far-ray condition, and
 
 open TauCeti (WallComplement)
 
-
 public noncomputable section
 
 open TauCeti (PositiveDegrees IsPositiveGrading)

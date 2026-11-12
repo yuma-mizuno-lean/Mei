@@ -33,7 +33,6 @@ homogeneous correction formula, and the transport and cutoff compatibility of
 
 open TauCeti (WallComplement)
 
-
 public noncomputable section
 
 open TauCeti (PositiveDegrees IsPositiveGrading)

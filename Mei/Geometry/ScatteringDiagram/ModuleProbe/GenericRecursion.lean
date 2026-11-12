@@ -32,7 +32,6 @@ existing finite component correction formula. The recursion follows Mandel,
 
 open TauCeti (WallComplement)
 
-
 public noncomputable section
 
 open TauCeti (PositiveDegrees IsPositiveGrading)

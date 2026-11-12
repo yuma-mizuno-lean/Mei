@@ -18,7 +18,6 @@ A fixed-coordinate lift is a section of this projection on points and paths.
 
 open TauCeti (WallComplement AdmissiblePLPath)
 
-
 public section
 noncomputable section
 

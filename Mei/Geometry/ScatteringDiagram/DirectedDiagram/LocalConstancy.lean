@@ -26,7 +26,6 @@ In particular, near a regular point of an affine subspace `A` all of whose incid
 
 open TauCeti (singularSupport isClosed_singularSupport)
 
-
 public noncomputable section
 
 open TauCeti (PositiveDegrees IsPositiveGrading)

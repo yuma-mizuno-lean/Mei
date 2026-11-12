@@ -34,7 +34,6 @@ and stability conditions*, Definition 2.3 (arXiv:1603.00416v4).
 
 open TauCeti (singularSupport)
 
-
 public noncomputable section
 
 open TauCeti (PositiveDegrees IsPositiveGrading)

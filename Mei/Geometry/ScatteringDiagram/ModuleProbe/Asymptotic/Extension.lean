@@ -37,7 +37,6 @@ diagrams, theta functions, and refined tropical curve counts*, §3.3.3
 
 open TauCeti (WallComplement)
 
-
 public noncomputable section
 
 open TauCeti (PositiveDegrees IsPositiveGrading)

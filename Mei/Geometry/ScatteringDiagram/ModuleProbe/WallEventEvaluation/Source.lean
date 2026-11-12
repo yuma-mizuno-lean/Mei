@@ -29,7 +29,6 @@ its obstacle family is the original active walls, as in
 
 open TauCeti (singularSupport)
 
-
 public noncomputable section
 
 open TauCeti (PositiveDegrees IsPositiveGrading)

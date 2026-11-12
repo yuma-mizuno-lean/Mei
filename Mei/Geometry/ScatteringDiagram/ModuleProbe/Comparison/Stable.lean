@@ -28,7 +28,6 @@ for limiting rays on type-domain frontiers. The comparison follows Mandel,
 
 open TauCeti (WallComplement AdmissiblePLPath singularSupport)
 
-
 public noncomputable section
 
 open TauCeti (PositiveDegrees IsPositiveGrading)

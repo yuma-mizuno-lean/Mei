@@ -23,7 +23,6 @@ transversality and precise incident wall set.
 
 open TauCeti (WallComplement)
 
-
 public noncomputable section
 
 open TauCeti (PositiveDegrees IsPositiveGrading)

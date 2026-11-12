@@ -21,7 +21,6 @@ The same laws compare extended fields at allowed endpoints and completed fields.
 
 open TauCeti (WallComplement)
 
-
 public noncomputable section
 
 open TauCeti (PositiveDegrees IsPositiveGrading)

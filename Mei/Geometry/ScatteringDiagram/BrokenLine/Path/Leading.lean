@@ -40,7 +40,6 @@ conditions. This supplies the initial coefficient in the last-change recursion o
 
 open TauCeti (singularSupport)
 
-
 public noncomputable section
 
 open TauCeti (PositiveDegrees IsPositiveGrading)

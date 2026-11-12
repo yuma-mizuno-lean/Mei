@@ -26,7 +26,6 @@ perturbs only interior vertices of a subdivision of the filling.
 
 open TauCeti (WallComplement)
 
-
 public noncomputable section
 
 open Set Mei.Convex
