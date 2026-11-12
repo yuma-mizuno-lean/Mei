@@ -8,6 +8,7 @@ module
 public import Mei.Geometry.Convex.PolyhedralComplex.Grid
 public import Mei.Geometry.Convex.PolyhedralComplex.RegularTransport
 public import Mei.Topology.ContinuousMap.Subdivision
+import Mei.Combinatorics.Quiver.Path
 
 /-!
 # Joint relations on the boundary of a filling grid

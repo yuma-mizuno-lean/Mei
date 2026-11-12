@@ -23,7 +23,7 @@ open TauCeti (WallComplement AdmissiblePLPath)
 
 noncomputable section
 
-open Set Mei Mei.Convex CategoryTheory Opposite
+open Set Mei CategoryTheory Opposite
 
 universe u
 

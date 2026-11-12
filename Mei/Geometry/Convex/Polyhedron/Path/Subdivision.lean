@@ -8,6 +8,7 @@ module
 public import TauCeti.Geometry.ScatteringDiagram.Path.Subdivision
 public import Mei.Geometry.Convex.Polyhedron.AdmissiblePath
 public import Mei.Geometry.Convex.Polyhedron.CrossingEvents
+import Mei.Combinatorics.Quiver.Path
 
 /-!
 # Subdivision at simultaneous crossing events
@@ -31,7 +32,7 @@ open TauCeti (WallComplement AdmissiblePLPath)
 
 public noncomputable section
 
-open Set Mei.Convex
+open Set
 
 namespace TauCeti.WallComplement
 

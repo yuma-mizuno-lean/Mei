@@ -6,6 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.LocalCrossing
+import Mei.Geometry.Convex.Polyhedron.SingularSupport
 
 /-!
 # Local constancy along regular wall germs

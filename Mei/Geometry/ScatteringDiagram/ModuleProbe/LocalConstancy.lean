@@ -7,6 +7,7 @@ module
 
 public import Mei.Geometry.ScatteringDiagram.ModuleProbe.Crossing
 public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.LocalConstancy
+import Mei.Geometry.Convex.Polyhedron.SingularSupport
 
 /-!
 # Local constancy of vertical probe coefficients

@@ -246,6 +246,6 @@ theorem map_reconstructFinite
       ⟨P, (d.arrangementComplex h k).mem_cells_of_mem_walls P.property⟩
     rw [KSComplex.map_label, d.reconstructFinite_label h ℒ g P hθ,
       d.reconstructFinite_label h ℳ _ P hθ]
-    exact f.truncatedMap_signFactorizationEquiv_symm _ k g 0
+    exact f.lieTruncatedMap_signFactorizationEquiv_symm _ k g 0
 
 end TauCeti.PositiveDegrees

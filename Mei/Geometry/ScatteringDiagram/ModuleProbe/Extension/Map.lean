@@ -84,7 +84,7 @@ theorem map_combinedLabel_of_levelEquivalent (k : ℕ)
     ((D.levelPathPushforward P (k + 1) (by simp [P])).mapPath e.toPath) e'.toPath
       (by simp [Quiver.Path.vertices_toPath, P, hx, hy, hx', hy'])
   rw [D.levelPathProduct_pushforward, he, he'] at hp
-  simpa only [P, DirectedWall.Pushforward.ofFixedDegree_lieHom_truncatedMap] using hp
+  simpa only [P, DirectedWall.Pushforward.ofFixedDegree_lieHom_lieTruncatedMap] using hp
 
 omit [LieAlgebra ℚ L] [IsScalarTower ℚ R L] in
 /-- The finite field commutes with coefficient changes, including noninjective

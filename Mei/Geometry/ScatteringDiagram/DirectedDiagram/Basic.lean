@@ -34,7 +34,7 @@ open TauCeti (DirectedWallSpaces)
 
 noncomputable section
 
-open Set Mei.Convex
+open Set
 
 namespace Mei
 

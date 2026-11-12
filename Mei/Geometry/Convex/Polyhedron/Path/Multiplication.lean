@@ -26,7 +26,7 @@ open TauCeti (WallComplement)
 
 noncomputable section
 
-open Set Mei.Convex TauCeti.WallComplement
+open Set TauCeti.WallComplement
 
 namespace TauCeti.WallComplement
 

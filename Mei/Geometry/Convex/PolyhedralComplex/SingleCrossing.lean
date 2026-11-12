@@ -7,6 +7,7 @@ module
 
 public import Mei.Geometry.Convex.PolyhedralComplex.PathSubdivision
 public import Mei.Geometry.Convex.Polyhedron.Path.Subdivision
+import Mei.Combinatorics.Quiver.Path
 
 /-!
 # Subdivision into single-crossing segments

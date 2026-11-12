@@ -6,6 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.Convex.Polyhedron.AdmissiblePath
+import Mei.Geometry.Convex.Polyhedron.SingularSupport
 
 /-!
 # Admissible paths under wall covers

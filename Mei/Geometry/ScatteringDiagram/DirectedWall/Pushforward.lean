@@ -344,7 +344,7 @@ theorem dilation_lieHom_completedMap :
 omit [Algebra ℚ R] [LieAlgebra ℚ L] [IsScalarTower ℚ R L] in
 /-- At equal source and target orders, the truncated Lie map of a dilation is the identity. -/
 @[simp]
-theorem dilation_lieHom_truncatedMap (k : ℕ)
+theorem dilation_lieHom_lieTruncatedMap (k : ℕ)
     (hk : (dilation d h H q hq).degreeMap.modulus k ≤ k) :
     (dilation d h H q hq).lieHom.lieTruncatedMap k hk = LieHom.id :=
   GradedLieHom.lieTruncatedMap_id k

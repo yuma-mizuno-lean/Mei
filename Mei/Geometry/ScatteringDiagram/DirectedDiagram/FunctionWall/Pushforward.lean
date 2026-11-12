@@ -11,6 +11,7 @@ public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Pushforward.Complet
 public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Pushforward.Scat
 public import Mei.Geometry.ScatteringDiagram.DirectedWall.TropicalPairing.WallFunction
 public import Mei.Algebra.MonoidAlgebra.Range
+import Mei.Geometry.Convex.Polyhedron.SingularSupport
 
 /-!
 # Function-wall groupings under pushforward

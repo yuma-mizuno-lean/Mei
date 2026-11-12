@@ -7,6 +7,7 @@ module
 
 public import Mei.Geometry.Convex.PolyhedralComplex.SideChamber
 public import Mei.Geometry.Convex.PolyhedralComplex.SingleCrossing
+import Mei.Combinatorics.Quiver.Path
 
 /-!
 # Chamber itineraries of admissible paths

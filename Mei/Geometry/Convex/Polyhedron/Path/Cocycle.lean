@@ -9,6 +9,7 @@ public import Mei.Geometry.Convex.Polyhedron.Path.Enumeration
 import Mei.Geometry.Convex.Polyhedron.Path.Hyperplane
 import Mei.LinearAlgebra.AffineSpace.Ordered
 import Mei.Data.Finset.Sort
+import Mei.Geometry.Convex.Polyhedron.SingularSupport
 
 /-!
 # The local segment cocycle

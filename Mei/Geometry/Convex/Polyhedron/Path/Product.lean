@@ -300,7 +300,7 @@ end TauCeti.WallComplement
 
 namespace Quiver.Path
 
-open Mei.Convex TauCeti.WallComplement
+open TauCeti.WallComplement
 
 variable {V ι G K : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V] [Finite ι]
   [Group G] [Group K] {W : ι → Set V}

@@ -269,7 +269,7 @@ theorem rayExp_smul_negDilogNeg_pentagon {n₁ n₂ : Γ} (hn₁ : n₁ ∈ d.mo
       ψ (SkewLieAlgebra.rayExp (E.coefficientForm R) (E.isAlt_coefficientForm R)
         hv hv0 (negDilogNeg R)) = CompletedGroup.projection k
           (Ψ (T.map_mem hv) (T.map_ne_zero hv hv0) (c • negDilogNeg R)) := by
-    exact SkewLieAlgebra.truncatedMap_gradedMap_projection_rayExp
+    exact SkewLieAlgebra.lieTruncatedMap_gradedMap_projection_rayExp
       (E.coefficientForm R) (E.isAlt_coefficientForm R) β hβ c T hform
       hv hv0 (negDilogNeg R) k k hk
   simp only [hmap] at h

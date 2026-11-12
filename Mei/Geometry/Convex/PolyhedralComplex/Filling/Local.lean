@@ -8,6 +8,7 @@ module
 public import Mei.Geometry.Convex.PolyhedralComplex.Sampling
 public import Mei.Geometry.Convex.Polyhedron.Filling
 import Mathlib.Tactic.FunProp
+import Mei.Combinatorics.Quiver.Path
 
 /-!
 # Boundary words of fillings from local relations

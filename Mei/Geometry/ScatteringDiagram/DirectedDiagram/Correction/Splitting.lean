@@ -99,7 +99,7 @@ theorem exists_consistent_kernel_extension
   obtain ⟨hout, ⟨n, hn, hdeg, z, hz, hlabel⟩, hborn, hfix⟩ := hnew a
   -- The correction logarithm is fixed by `id - s ∘ π`, hence killed by `π`.
   rw [LoopProjection.ofSplitting_toLinearMap] at hfix
-  have h0 := GradedLieHom.truncatedMap_eq_zero_of_idSubSectionComp_eq hsπ (k + 1) hfix
+  have h0 := GradedLieHom.lieTruncatedMap_eq_zero_of_idSubSectionComp_eq hsπ (k + 1) hfix
   have hproj : CompletedGroup.projection (k + 1) (π.completedMap (F.wall (.inr a)).label) = 1 := by
     rw [π.projection_completedMap_of_le (k + 1) (a := k + 1) (by simp)]
     apply log_injective

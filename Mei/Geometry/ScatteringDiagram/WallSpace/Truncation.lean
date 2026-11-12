@@ -78,7 +78,7 @@ variable {Γ Λ R L L' : Type*} [AddCommMonoid Γ] [AddCommMonoid Λ] [CommRing 
 
 /-- A fixed-degree homomorphism preserving wall spaces preserves the wall spaces at every
 finite order. -/
-theorem truncatedMap_mem_truncated_wall
+theorem lieTruncatedMap_mem_truncated_wall
     (f : TauCeti.GradedLieHom (TauCeti.PositiveDegreeMap.id d) ℒ ℳ)
     (hf : ∀ n m, ∀ x ∈ H.wall n m, f x ∈ H'.wall n m) (k : ℕ) {n : Γ} {m : Λ →+ ℤ}
     {x : d.lieTruncation ℒ k} (hx : x ∈ (H.truncated d k).wall n m) :

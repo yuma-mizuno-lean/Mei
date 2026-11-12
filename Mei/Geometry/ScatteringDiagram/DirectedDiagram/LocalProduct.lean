@@ -8,6 +8,7 @@ module
 public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.LocalCrossing
 public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Chamber
 public import Mei.Geometry.Convex.Polyhedron.Path.Subdivision
+import Mei.Combinatorics.Quiver.Path
 
 /-!
 # Directed transport from local crossing formulas

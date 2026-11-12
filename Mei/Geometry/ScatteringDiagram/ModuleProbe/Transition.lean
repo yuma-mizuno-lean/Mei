@@ -191,7 +191,7 @@ theorem coefficientLocalTransition_section :
   convert he using 1
   congr 1
   apply WallComplement.ext
-  simp only [B.adaptedPathPrefunctor_obj_val, WallComplement.restrictPrefunctor_obj_val,
+  simp only [B.adaptedPathPrefunctor_obj_val,
     FinitePolyhedralComplex.IsSubdivision.coefficientPointMap_val]
   exact (B.adaptedComplex_isSubdivision hkl).regularInclusion_val x.val
 

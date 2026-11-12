@@ -6,6 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.Convex.Polyhedron.AdmissiblePath
+import Mei.Geometry.Affine.Span
 
 /-!
 # Affine transport of admissible polygonal paths
@@ -25,7 +26,7 @@ public section
 
 open TauCeti (WallComplement)
 
-open Set Mei.Convex TauCeti.WallComplement
+open Set TauCeti.WallComplement
 
 namespace ContinuousAffineEquiv
 

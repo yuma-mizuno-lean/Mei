@@ -77,7 +77,7 @@ open TauCeti (DirectedWallSpaces)
 
 noncomputable section
 
-open Set Mei.Convex CategoryTheory
+open Set CategoryTheory
 
 namespace Mei
 

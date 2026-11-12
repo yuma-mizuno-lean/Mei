@@ -30,7 +30,7 @@ open TauCeti (WallComplement AdmissiblePLPath)
 
 noncomputable section
 
-open Mei Mei.Convex TauCeti.WallComplement BCHGroup
+open Mei TauCeti.WallComplement BCHGroup
 
 namespace LieSubalgebra
 

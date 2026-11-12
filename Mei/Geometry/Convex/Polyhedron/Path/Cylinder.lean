@@ -6,6 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.Convex.Polyhedron.Path.Product
+import Mei.Geometry.Convex.Polyhedron.SingularSupport
 
 /-!
 # Projection of paths through cylinder walls

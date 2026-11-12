@@ -120,7 +120,7 @@ theorem moduleQuotientInclusion_projection_of_base_eq_zero (k : ℕ)
 
 /-- At every finite order the degree-preserving projection is the existing base
 projection followed by the charge-zero inclusion. -/
-theorem truncatedMap_chargeZeroGradedLieHom (k : ℕ) :
+theorem lieTruncatedMap_chargeZeroGradedLieHom (k : ℕ) :
     (chargeZeroGradedLieHom d ℳ p ℒ).lieTruncatedMap (a := k) k (by simp) =
       ((baseGradedLieHom d ℳ p ℒ).lieTruncatedMap (a := k) k (by simp)).comp
         (baseQuotientProjection d ℳ p ℒ k) := by
@@ -130,7 +130,7 @@ theorem truncatedMap_chargeZeroGradedLieHom (k : ℕ) :
     intro x
     exact (chargeZeroGradedLieHom_apply d ℳ p ℒ x).trans
       (baseGradedLieHom_apply d ℳ p ℒ x.right).symm
-  rw [GradedLieHom.truncatedMap_def, GradedLieHom.truncatedMap_def,
+  rw [GradedLieHom.lieTruncatedMap_def, GradedLieHom.lieTruncatedMap_def,
     baseQuotientProjection]
   simp only [hcomp]
   exact LieIdeal.mapQ_comp
@@ -254,7 +254,7 @@ theorem completedMap_chargeZeroGradedLieHom
   intro k
   rw [GradedLieHom.projection_completedMap_of_le _ k (a := k) (by simp),
     GradedLieHom.projection_completedMap_of_le _ k (a := k) (by simp),
-    projection_completedBaseProjection, truncatedMap_chargeZeroGradedLieHom,
+    projection_completedBaseProjection, lieTruncatedMap_chargeZeroGradedLieHom,
     LieHom.bchGroupMap_comp]
   exact MonoidHom.comp_apply _ _ _
 

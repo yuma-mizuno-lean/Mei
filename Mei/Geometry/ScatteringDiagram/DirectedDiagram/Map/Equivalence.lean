@@ -65,7 +65,7 @@ theorem levelEquivalent_map_iff_of_injective (k : ℕ)
     levelEquivalent_def]
   intro hDE x y x' y' p q hpq
   apply LieHom.bchGroupMap_injective hinj
-  rw [← DirectedWall.Pushforward.ofFixedDegree_lieHom_truncatedMap (h := h) f hf k (by simp)]
+  rw [← DirectedWall.Pushforward.ofFixedDegree_lieHom_lieTruncatedMap (h := h) f hf k (by simp)]
   refine (D.levelPathProduct_pushforward (.ofFixedDegree f hf) k (by simp) p).symm.trans
     (Eq.trans ?_ (E.levelPathProduct_pushforward (.ofFixedDegree f hf) k (by simp) q))
   apply hDE

@@ -232,7 +232,7 @@ variable [DecidableEq N] [DecidableEq M]
 
 /-- Ray support is preserved at finite order, for any source cutoff at least
 the order prescribed by the positive degree map. -/
-theorem truncatedMap_mem_rayLieSubalgebra (f : GradedLieHom T ℒ ℳ)
+theorem lieTruncatedMap_mem_rayLieSubalgebra (f : GradedLieHom T ℒ ℳ)
     (hdegree : ∀ n ∈ w.rayDegrees, T n ∈ v.rayDegrees)
     {a k : ℕ} (ha : T.modulus k ≤ a) {x : d.lieTruncation ℒ a}
     (hx : x ∈ rayLieSubalgebra (d.lieTruncationGrading ℒ a) w) :

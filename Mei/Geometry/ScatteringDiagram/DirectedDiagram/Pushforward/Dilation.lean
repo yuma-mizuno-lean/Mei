@@ -95,7 +95,7 @@ theorem combinedLabel_pushforward_dilation (k : ℕ) (θ v : V)
       v hθ' = D.combinedLabel k θ v hθ := by
   have he := D.combinedLabel_pushforward (DirectedWall.Pushforward.dilation d h H q hq) k
     (by simp) θ v hθ
-  simp only [DirectedWall.Pushforward.dilation_lieHom_truncatedMap, LieHom.bchGroupMap_id,
+  simp only [DirectedWall.Pushforward.dilation_lieHom_lieTruncatedMap, LieHom.bchGroupMap_id,
     MonoidHom.id_apply, DirectedWall.Pushforward.dilation_spatialMap_apply,
     DirectedWall.Pushforward.dilation_spatialMap_linear_apply] at he
   rwa [combinedLabel_smul_pos _ _ _ _ _ (by exact_mod_cast hq)] at he

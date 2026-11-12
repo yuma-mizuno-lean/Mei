@@ -199,7 +199,7 @@ theorem completedMap_restrictScalars (f : GradedLieHom T ℒ ℳ) :
   ext x k
   simp only [MonoidHom.comp_apply, MulEquiv.coe_toMonoidHom,
     PositiveDegrees.projection_completedBCHRestrictScalarsEquiv, projection_completedMap]
-  have ht := congrArg (fun h => h.bchGroupMap) (f.truncatedMap_restrictScalars (R := R) k le_rfl)
+  have ht := congrArg (fun h => h.bchGroupMap) (f.lieTruncatedMap_restrictScalars (R := R) k le_rfl)
   simp only [LieHom.bchGroupMap_comp, LieHom.bchGroupMap_restrictScalars] at ht
   exact DFunLike.congr_fun ht (CompletedGroup.projection (T.modulus k) x)
 

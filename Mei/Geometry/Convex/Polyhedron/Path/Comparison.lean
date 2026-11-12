@@ -6,6 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.Convex.Polyhedron.Path.Product
+import Mei.Combinatorics.Quiver.Path
 
 /-!
 # Comparing transport from simultaneous crossing products
@@ -30,7 +31,7 @@ open TauCeti (WallComplement AdmissiblePLPath)
 
 noncomputable section
 
-open Set Mei.Convex TauCeti.WallComplement
+open Set TauCeti.WallComplement
 
 namespace TauCeti.WallComplement
 

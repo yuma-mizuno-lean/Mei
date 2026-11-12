@@ -9,6 +9,7 @@ public import Mei.Geometry.Convex.PolyhedralComplex.Joint
 public import Mei.Geometry.Convex.Polyhedron.Path.Meridian
 public import Mei.Geometry.Affine.Simplex.Conormal
 public import Mathlib.Analysis.Convex.Combination
+import Mei.Combinatorics.Quiver.Path
 
 /-!
 # Isolating triangular loops at polyhedral joints

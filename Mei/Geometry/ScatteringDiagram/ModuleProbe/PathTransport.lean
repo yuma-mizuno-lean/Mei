@@ -98,7 +98,7 @@ theorem baseBCHProjection_levelPathProduct (k : ℕ)
       ((chargeZeroGradedLieHom d ℳ p ℒ).lieTruncatedMap (a := k) k (by simp)).bchGroupMap
         (D.levelPathProduct k r) :=
     (D.levelPathProduct_pushforward P k _ r).trans
-      (by rw [DirectedWall.Pushforward.ofFixedDegree_lieHom_truncatedMap])
+      (by rw [DirectedWall.Pushforward.ofFixedDegree_lieHom_lieTruncatedMap])
   have hpx : (cylinderPathProjection d ℳ p ℒ H h h' B k).obj x' = x :=
     WallComplement.ext (by simp [x'])
   have hpy : (cylinderPathProjection d ℳ p ℒ H h h' B k).obj y' = y :=
@@ -110,7 +110,7 @@ theorem baseBCHProjection_levelPathProduct (k : ℕ)
     ((hB.levelTransport_eq hD₀ hC hx' hy').trans
       (levelTransport_cylinderDiagram d ℳ p ℒ H h h' B hBc x' y'))
   rw [hpx, hpy, B.levelTransport_eq_levelPathProduct hBc γ, hr,
-    truncatedMap_chargeZeroGradedLieHom, LieHom.bchGroupMap_comp] at he
+    lieTruncatedMap_chargeZeroGradedLieHom, LieHom.bchGroupMap_comp] at he
   exact he
 
 omit [LieAlgebra ℚ L] [IsScalarTower ℚ R L] in
@@ -178,7 +178,7 @@ private theorem levelPathProduct_eq_of_baseBCHProjection_eq_one (k : ℕ)
     ((D.levelConsistent_def k).mp hD (e.comp r₁) (r₀.comp f))
   rw [DirectedDiagram.levelPathProduct_comp, DirectedDiagram.levelPathProduct_comp, map_mul,
     map_mul, he, hf, mul_one, one_mul] at hc
-  rw [← hr₁, ← hr₀, truncatedMap_chargeZeroGradedLieHom, LieHom.bchGroupMap_comp,
+  rw [← hr₁, ← hr₀, lieTruncatedMap_chargeZeroGradedLieHom, LieHom.bchGroupMap_comp,
     MonoidHom.comp_apply, MonoidHom.comp_apply, hc]
 
 /-- Transport of the endpoint field of probe coefficients along base paths. Suppose the

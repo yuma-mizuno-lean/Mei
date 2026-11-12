@@ -182,7 +182,7 @@ theorem completedBCHExp_symm_completedMap (f : GradedLieHom T ℒ ℳ)
     (CompletedGroup.projection (T.modulus k) g)).trans ?_
   rw [← d.completionProjection_completedBCHExp_symm ℒ,
     LieIdeal.completionProjection_apply]
-  rw [truncatedMap_def]
+  rw [lieTruncatedMap_def]
   exact LinearMap.congr_fun
     ((d.truncationIdeal ℒ (T.modulus k)).toLinearMap_mapQ (e.truncationIdeal ℳ k)
       f.toLieHom (fun _ hx => f.map_mem_truncationIdeal k hx)) _

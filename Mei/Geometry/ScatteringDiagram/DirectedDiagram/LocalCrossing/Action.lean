@@ -33,7 +33,7 @@ open TauCeti (PositiveDegrees IsPositiveGrading)
 
 open TauCeti (DirectedWallSpaces)
 
-open Set Mei.Convex
+open Set
 
 namespace Mei.DirectedDiagram
 

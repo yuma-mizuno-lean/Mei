@@ -8,6 +8,7 @@ module
 public import Mei.Geometry.Convex.PolyhedralComplex.CrossingWord
 public import Mei.Geometry.Convex.Polyhedron.SimultaneousPath
 public import Mathlib.Algebra.Group.Subgroup.MulOpposite
+import Mei.Combinatorics.Quiver.Path
 
 /-!
 # Reduction of polygonal crossing words to triangles

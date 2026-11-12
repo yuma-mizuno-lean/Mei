@@ -30,7 +30,7 @@ open TauCeti (WallComplement AdmissiblePLPath)
 
 noncomputable section
 
-open Set Mei.Convex TauCeti.WallComplement
+open Set TauCeti.WallComplement
 
 namespace Quiver.Path
 

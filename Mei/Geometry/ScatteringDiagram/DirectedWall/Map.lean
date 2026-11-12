@@ -85,7 +85,7 @@ theorem Pushforward.ofFixedDegree_spatialMap :
 /-- The truncations of the Lie map of a fixed-degree coefficient map are those of the
 given map. -/
 @[simp]
-theorem Pushforward.ofFixedDegree_lieHom_truncatedMap [DecidableEq Γ]
+theorem Pushforward.ofFixedDegree_lieHom_lieTruncatedMap [DecidableEq Γ]
     [GradedLieAlgebra ℒ] [GradedLieAlgebra ℳ] [IsPositiveGrading d ℒ] [IsPositiveGrading d ℳ]
     {a : ℕ} (k : ℕ) (ha : (Pushforward.ofFixedDegree (h := h) f hf).degreeMap.modulus k ≤ a) :
     (Pushforward.ofFixedDegree (h := h) f hf).lieHom.lieTruncatedMap k ha =

@@ -11,6 +11,7 @@ public import Mei.Geometry.Convex.PolyhedralComplex.SingleCrossing
 public import Mei.Geometry.Convex.PolyhedralCochain.LocalCrossing
 public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Obstruction.Basic
 public import Mei.Algebra.Lie.Graded.Truncation.Transition
+import Mei.Combinatorics.Quiver.Path
 
 /-!
 # Central defect pairings along subdivided paths

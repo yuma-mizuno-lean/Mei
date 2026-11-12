@@ -155,7 +155,7 @@ theorem map_projection_dilogPow (hD : y.det x ≠ 0) (k : ℕ) (m : PlaneDegree 
         (CompletedGroup.projection k (dilogPow m c)) =
       CompletedGroup.projection k (dilogPow (rebasePos x y m) ((y.det x : ℚ)⁻¹ * c)) := by
   rw [dilogPow_def, dilogPow_def, mul_smul]
-  exact SkewLieAlgebra.truncatedMap_gradedMap_projection_rayExp β hβ β hβ (y.det x : ℚ)⁻¹
+  exact SkewLieAlgebra.lieTruncatedMap_gradedMap_projection_rayExp β hβ β hβ (y.det x : ℚ)⁻¹
     (rebaseMap x y) (coefficientForm_eq_inv_mul_rebaseMap hD) m.mem m.ne_zero
     (c • negDilogNeg ℚ) k k (rebaseMap_modulus_le x y k)
 

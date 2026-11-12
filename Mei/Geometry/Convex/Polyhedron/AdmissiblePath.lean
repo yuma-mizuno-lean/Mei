@@ -6,8 +6,6 @@ Authors: Codex
 module
 
 public import TauCeti.Geometry.ScatteringDiagram.Path.Basic
-public import Mei.Geometry.Convex.Polyhedron.SingularSupport
-public import Mei.Combinatorics.Quiver.Path
 
 /-!
 # Comparing endpoints of admissible paths

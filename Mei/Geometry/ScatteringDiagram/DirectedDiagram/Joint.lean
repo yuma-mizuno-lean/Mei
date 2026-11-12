@@ -43,7 +43,7 @@ open TauCeti (DirectedWallSpaces)
 
 noncomputable section
 
-open Set Mei Mei.Convex TauCeti.WallComplement BCHGroup
+open Set Mei TauCeti.WallComplement BCHGroup
 
 namespace Mei.DirectedDiagram
 

@@ -11,6 +11,7 @@ public import Mei.Geometry.Convex.PolyhedralCochain.Exact
 import Mei.Geometry.Convex.PolyhedralCochain.Crossing
 import Mei.Geometry.Convex.PolyhedralCochain.Stokes.Path
 import Mei.Geometry.Convex.PolyhedralComplex.RegularLocus
+import Mei.Combinatorics.Quiver.Path
 
 /-!
 # Consistency after central cochain correction
