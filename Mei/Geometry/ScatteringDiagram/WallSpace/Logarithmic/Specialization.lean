@@ -27,6 +27,8 @@ Example 2.1(i), arXiv:1503.06183v5.
 
 public section
 
+open TauCeti (DirectedWallSpaces)
+
 namespace Mei.LogarithmicVectorField
 
 variable {K R S Γ Λ : Type*} [CommRing K] [CommRing R] [CommRing S]

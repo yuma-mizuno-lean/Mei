@@ -26,6 +26,8 @@ Appendix B, arXiv:1411.1394v2.
 
 public section
 
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
 namespace Mei.DirectedDiagram
@@ -45,7 +47,7 @@ variable {Γ Λ K R V E : Type*} {L : Type v}
   (h' : TauCeti.Toric.IsIntegralLattice j)
 
 variable {ι : Type u}
-  (D : DirectedDiagram (d := d) h (H.project (AddMonoidHom.fst Λ K)) ι)
+  (D : DirectedDiagram (d := d) h (H.mapTangent (AddMonoidHom.fst Λ K)) ι)
   (hfull : ∀ a, ∃ c : ℝ,
     (D.wall a).support = {x | h.realCharacter (D.wall a).normal x = c})
 

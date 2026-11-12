@@ -32,15 +32,19 @@ counts*, §2.1 and the proof of Theorem 2.14 (arXiv:1503.06183v5).
 
 public section
 
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
-namespace Mei.DirectedWallSpaces
+namespace TauCeti.DirectedWallSpaces
+
+open Mei
 
 variable {Γ Λ R L M : Type*} [AddCommGroup Γ] [AddCommMonoid Λ]
   [CommRing R] [Algebra ℚ R] [LieRing L] [LieAlgebra R L]
   [AddCommGroup M] [Module R M] [LieRingModule L M] [LieModule R L M]
-  [DecidableEq Γ] {ρ : Γ →+ Λ} {d : PositiveDegrees Γ}
-  {ℒ : Γ → Submodule R L} [GradedLieAlgebra ℒ] [IsPositiveGrading d ℒ]
+  [DecidableEq Γ] {ρ : Γ →+ Λ} {d : Mei.PositiveDegrees Γ}
+  {ℒ : Γ → Submodule R L} [GradedLieAlgebra ℒ] [Mei.IsPositiveGrading d ℒ]
   (H : DirectedWallSpaces ρ ℒ) (ℳ : Γ → Submodule R M)
   [DirectSum.Decomposition ℳ] [SetLike.GradedBracket ℒ ℳ]
   [IsWallAnnihilating H ℳ] (p : Γ)
@@ -123,17 +127,19 @@ theorem shiftedHomogeneousComponent_completedBCHAction_eq_zero_of_direction_eq_z
   apply Subtype.ext
   exact DirectSum.decompose_of_mem_ne ℳ ha hrq
 
-end Mei.DirectedWallSpaces
+end TauCeti.DirectedWallSpaces
 
-namespace Mei.DirectedWallSpaces
+namespace TauCeti.DirectedWallSpaces
+
+open Mei
 
 -- The finite internal-grading supplier takes its degree type in `Type`.
 variable {Γ : Type} {Λ R L M : Type*} [AddCommGroup Γ] [AddCommMonoid Λ]
   [CommRing R] [Algebra ℚ R] [LieRing L] [LieAlgebra R L]
   [LieAlgebra ℚ L] [IsScalarTower ℚ R L]
   [AddCommGroup M] [Module R M] [LieRingModule L M] [LieModule R L M]
-  [DecidableEq Γ] {ρ : Γ →+ Λ} {d : PositiveDegrees Γ}
-  {ℒ : Γ → Submodule R L} [GradedLieAlgebra ℒ] [IsPositiveGrading d ℒ]
+  [DecidableEq Γ] {ρ : Γ →+ Λ} {d : Mei.PositiveDegrees Γ}
+  {ℒ : Γ → Submodule R L} [GradedLieAlgebra ℒ] [Mei.IsPositiveGrading d ℒ]
   (H : DirectedWallSpaces ρ ℒ) (ℳ : Γ → Submodule R M)
   [DirectSum.Decomposition ℳ] [SetLike.GradedBracket ℒ ℳ]
   [IsWallAnnihilating H ℳ] (p : Γ)
@@ -154,4 +160,4 @@ theorem shiftedBCHAction_eq_self_of_normal_eq_zero
     (fun q => (ℳ q).comap (d.shiftedLieSubmodule ℒ ℳ p).incl.toLinearMap) F hg
     ((mem_shiftedGrading ℳ d.monoid p).mp hb) hr
 
-end Mei.DirectedWallSpaces
+end TauCeti.DirectedWallSpaces

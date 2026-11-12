@@ -28,6 +28,8 @@ and refined tropical curve counts*, equation (8) and Definition 2.10
 
 public noncomputable section
 
+open TauCeti (DirectedWallSpaces)
+
 open Set Mei.Convex
 
 namespace Mei.DirectedDiagram

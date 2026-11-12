@@ -32,6 +32,8 @@ The construction uses `eventBlock`, `operatorBCHAction_lof_sub` and the shared
 
 public noncomputable section
 
+open TauCeti (DirectedWallSpaces)
+
 open scoped DirectSum
 open Mei.Convex
 

@@ -26,6 +26,8 @@ No local finiteness of the union of the active supports is required.
 
 public section
 
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
 open Set Mei.Convex

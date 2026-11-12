@@ -63,6 +63,8 @@ The comparison uses `DirectedDiagram.LevelEquivalent.combinedLabel_eq`, and the 
 
 public section
 
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
 open Set Filter Topology Mei.Convex

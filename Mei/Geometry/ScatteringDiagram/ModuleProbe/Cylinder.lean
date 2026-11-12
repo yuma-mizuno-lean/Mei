@@ -28,6 +28,8 @@ curve counts*, §3.3.3 (arXiv:1503.06183v5).
 -/
 
 public section
+
+open TauCeti (DirectedWallSpaces)
 noncomputable section
 
 open Set Mei.Convex

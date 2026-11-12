@@ -33,6 +33,8 @@ homogeneous correction formula, and the transport and cutoff compatibility of
 
 public noncomputable section
 
+open TauCeti (DirectedWallSpaces)
+
 open Mei.Convex Mei.Convex.WallComplement
 
 namespace Mei.ModuleProbe

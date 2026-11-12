@@ -30,6 +30,8 @@ labels is assumed in the replacement construction.
 
 public section
 
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
 open Set Mei.Convex

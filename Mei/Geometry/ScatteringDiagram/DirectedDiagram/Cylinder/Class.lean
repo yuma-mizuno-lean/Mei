@@ -24,6 +24,8 @@ Appendix B, arXiv:1411.1394v2.
 
 public section
 
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
 namespace Mei.DirectedDiagram
@@ -44,14 +46,14 @@ variable {Γ Λ K R V E : Type*} {L : Type v}
 
 /-- Lift a completed diagram class to cylinders, independently of its presentation. -/
 def Class.cylinder :
-    Class.{u} (d := d) (h := h) (H := H.project (AddMonoidHom.fst Λ K)) →
+    Class.{u} (d := d) (h := h) (H := H.mapTangent (AddMonoidHom.fst Λ K)) →
       Class.{u} (d := d) (h := h.prod h') (H := H) :=
   Class.lift (fun D => (D.cylinder h').toClass)
     (fun _ _ hDF => (toClass_eq_iff _ _).mpr (hDF.cylinder h'))
 
 /-- Lift a finite-order diagram class to cylinders at the same order. -/
 def LevelClass.cylinder (k : ℕ) :
-    LevelClass.{u} (d := d) (h := h) (H := H.project (AddMonoidHom.fst Λ K)) k →
+    LevelClass.{u} (d := d) (h := h) (H := H.mapTangent (AddMonoidHom.fst Λ K)) k →
       LevelClass.{u} (d := d) (h := h.prod h') (H := H) k :=
   LevelClass.lift k (fun D => (D.cylinder h').toLevelClass k)
     (fun _ _ hDF => (toLevelClass_eq_iff _ _ k).mpr (hDF.cylinder h'))
@@ -59,14 +61,14 @@ def LevelClass.cylinder (k : ℕ) :
 /-- The completed cylinder map is computed by lifting any representative. -/
 @[simp]
 theorem Class.cylinder_toClass {ι : Type u}
-    (D : DirectedDiagram (d := d) h (H.project (AddMonoidHom.fst Λ K)) ι) :
+    (D : DirectedDiagram (d := d) h (H.mapTangent (AddMonoidHom.fst Λ K)) ι) :
     Class.cylinder h' D.toClass = (D.cylinder h').toClass := by
   simp only [cylinder, lift_toClass]
 
 /-- The finite cylinder map is computed by lifting any representative. -/
 @[simp]
 theorem LevelClass.cylinder_toLevelClass {ι : Type u}
-    (D : DirectedDiagram (d := d) h (H.project (AddMonoidHom.fst Λ K)) ι) (k : ℕ) :
+    (D : DirectedDiagram (d := d) h (H.mapTangent (AddMonoidHom.fst Λ K)) ι) (k : ℕ) :
     LevelClass.cylinder h' k (D.toLevelClass k) = (D.cylinder h').toLevelClass k := by
   simp only [cylinder, lift_toLevelClass]
 
@@ -83,7 +85,7 @@ theorem Class.cylinder_injective : Function.Injective
 /-- Two completed cylinder classes agree exactly when their original classes agree. -/
 @[simp]
 theorem Class.cylinder_inj
-    {x y : Class.{u} (d := d) (h := h) (H := H.project (AddMonoidHom.fst Λ K))} :
+    {x y : Class.{u} (d := d) (h := h) (H := H.mapTangent (AddMonoidHom.fst Λ K))} :
     Class.cylinder h' x = Class.cylinder h' y ↔ x = y :=
   (cylinder_injective h').eq_iff
 
@@ -100,14 +102,14 @@ theorem LevelClass.cylinder_injective (k : ℕ) : Function.Injective
 /-- Two finite cylinder classes agree exactly when their original classes agree. -/
 @[simp]
 theorem LevelClass.cylinder_inj (k : ℕ)
-    {x y : LevelClass.{u} (d := d) (h := h) (H := H.project (AddMonoidHom.fst Λ K)) k} :
+    {x y : LevelClass.{u} (d := d) (h := h) (H := H.mapTangent (AddMonoidHom.fst Λ K)) k} :
     LevelClass.cylinder h' k x = LevelClass.cylinder h' k y ↔ x = y :=
   (cylinder_injective h' k).eq_iff
 
 /-- Taking a finite projection commutes with cylinder lifting. -/
 @[simp]
 theorem Class.projection_cylinder (k : ℕ)
-    (x : Class.{u} (d := d) (h := h) (H := H.project (AddMonoidHom.fst Λ K))) :
+    (x : Class.{u} (d := d) (h := h) (H := H.mapTangent (AddMonoidHom.fst Λ K))) :
     (cylinder h' x).projection k = LevelClass.cylinder h' k (x.projection k) := by
   induction x using Class.inductionOn with | _ D =>
     simp only [cylinder_toClass, projection_toClass, LevelClass.cylinder_toLevelClass]
@@ -115,7 +117,7 @@ theorem Class.projection_cylinder (k : ℕ)
 /-- Lowering the finite cutoff commutes with cylinder lifting. -/
 @[simp]
 theorem LevelClass.project_cylinder {k l : ℕ} (hkl : k ≤ l)
-    (x : LevelClass.{u} (d := d) (h := h) (H := H.project (AddMonoidHom.fst Λ K)) l) :
+    (x : LevelClass.{u} (d := d) (h := h) (H := H.mapTangent (AddMonoidHom.fst Λ K)) l) :
     project hkl (cylinder h' l x) = cylinder h' k (project hkl x) := by
   induction x using LevelClass.inductionOn with | _ D =>
     simp only [cylinder_toLevelClass, project_toLevelClass]

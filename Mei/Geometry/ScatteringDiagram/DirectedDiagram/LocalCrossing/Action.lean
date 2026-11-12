@@ -27,6 +27,8 @@ Definition 2.10 (arXiv:1503.06183v5).
 
 public noncomputable section
 
+open TauCeti (DirectedWallSpaces)
+
 open Set Mei.Convex
 
 namespace Mei.DirectedDiagram

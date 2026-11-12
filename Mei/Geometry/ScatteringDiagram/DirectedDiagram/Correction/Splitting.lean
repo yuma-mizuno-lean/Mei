@@ -29,6 +29,8 @@ from the projection-fixed correction logarithms using
 
 public section
 
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
 open Set Mei Mei.Convex BCHGroup

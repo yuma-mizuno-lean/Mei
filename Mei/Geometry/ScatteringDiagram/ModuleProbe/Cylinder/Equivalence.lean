@@ -22,6 +22,8 @@ products are identified by the injective charge-zero inclusion. The comparison u
 -/
 
 public section
+
+open TauCeti (DirectedWallSpaces)
 noncomputable section
 
 namespace Mei.ModuleProbe

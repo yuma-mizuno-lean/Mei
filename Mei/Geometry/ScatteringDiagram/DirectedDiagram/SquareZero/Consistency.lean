@@ -39,6 +39,8 @@ and an instance of the existence and uniqueness of outgoing completions in Travi
 
 public section
 
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
 open Set Filter Topology Mei.Convex

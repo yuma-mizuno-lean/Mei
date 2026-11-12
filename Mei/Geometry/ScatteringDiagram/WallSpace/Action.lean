@@ -29,6 +29,8 @@ functions, and refined tropical curve counts*, §2.1 (arXiv:1503.06183).
 
 public section
 
+open TauCeti (DirectedWallSpaces)
+
 namespace Mei
 
 section Monoid
@@ -55,15 +57,13 @@ instance IsWallAnnihilating.comap (H : DirectedWallSpaces ρ ℒ)
     apply Subtype.ext
     exact IsWallAnnihilating.lie_eq_zero (H := H) (𝒜 := 𝒜) hx ha hm
 
-namespace DirectedWallSpaces
-
 variable (H : DirectedWallSpaces ρ ℒ) (𝒜 : Γ → Submodule R M)
-  [IsWallAnnihilating H 𝒜] {d : PositiveDegrees Γ}
+  [IsWallAnnihilating H 𝒜] {d : Mei.PositiveDegrees Γ}
 
 variable [DecidableEq Γ] [DirectSum.Decomposition 𝒜] [SetLike.GradedBracket ℒ 𝒜]
 
 /-- A homogeneous wall action has no component at a degree tangent to its normal. -/
-theorem decompose_lie_eq_zero_of_mem_wall_of_normal_eq_zero
+theorem _root_.TauCeti.DirectedWallSpaces.decompose_lie_eq_zero_of_mem_wall_of_normal_eq_zero
     {n q : Γ} {m : Λ →+ ℤ} {x : L} (hx : x ∈ H.wall n m)
     (hq : m (ρ q) = 0) (a : M) : DirectSum.decompose 𝒜 ⁅x, a⁆ q = 0 := by
   by_cases hx0 : x = 0
@@ -85,19 +85,21 @@ theorem decompose_lie_eq_zero_of_mem_wall_of_normal_eq_zero
   | add a b ha hb =>
     simp only [lie_add, DirectSum.decompose_add, DirectSum.add_apply, ha, hb, add_zero]
 
-end DirectedWallSpaces
-
 end Monoid
+
+end Mei
+
+namespace TauCeti.DirectedWallSpaces
+
+open Mei
 
 variable {Γ Λ R L M : Type*} [AddCommGroup Γ] [AddCommMonoid Λ]
   [CommRing R] [LieRing L] [LieAlgebra R L]
   [AddCommGroup M] [Module R M] [LieRingModule L M]
   {ρ : Γ →+ Λ} {ℒ : Γ → Submodule R L}
 
-namespace DirectedWallSpaces
-
 variable (H : DirectedWallSpaces ρ ℒ) (𝒜 : Γ → Submodule R M)
-  [IsWallAnnihilating H 𝒜] {d : PositiveDegrees Γ}
+  [IsWallAnnihilating H 𝒜] {d : Mei.PositiveDegrees Γ}
 
 /-- The full supported-ray wall algebra annihilates every coefficient tangent
 to its normal. No decomposition of the coefficient module is required. -/
@@ -175,7 +177,7 @@ end Components
 section Filtered
 
 variable [LieModule R L M] [Algebra ℚ R]
-  [DecidableEq Γ] [GradedLieAlgebra ℒ] [IsPositiveGrading d ℒ]
+  [DecidableEq Γ] [GradedLieAlgebra ℒ] [Mei.IsPositiveGrading d ℒ]
   (F : ModuleFiltration R M) [IsFiltrationRaising d ℒ F]
 
 /-- The coefficient quotient inherits rational scalars from the scalar ring. -/
@@ -225,5 +227,4 @@ theorem completedBCHAction_of_eq_self_of_direction_eq_zero
 
 end Filtered
 
-end DirectedWallSpaces
-end Mei
+end TauCeti.DirectedWallSpaces

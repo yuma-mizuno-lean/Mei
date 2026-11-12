@@ -48,6 +48,8 @@ Appendix C.3. No freeness or dimension assumption on the homogeneous pieces is u
 
 public section
 
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
 open Set Mei Mei.Convex WallComplement BCHGroup

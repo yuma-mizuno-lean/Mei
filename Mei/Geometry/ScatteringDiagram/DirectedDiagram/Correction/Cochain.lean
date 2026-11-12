@@ -32,6 +32,8 @@ union with the original walls requires the geometric boundary identities.
 
 public section
 
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
 open Set Module Mei BCHGroup

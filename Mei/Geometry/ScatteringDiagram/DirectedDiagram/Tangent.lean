@@ -32,6 +32,8 @@ tangent diagram. Consistency of the tangent diagram is not asserted here.
 
 public section
 
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
 open Set Filter Topology Mei.Convex

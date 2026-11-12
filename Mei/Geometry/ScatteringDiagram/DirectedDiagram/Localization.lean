@@ -32,6 +32,8 @@ truncation kernel.
 
 public section
 
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
 open Set Mei Mei.Convex WallComplement BCHGroup

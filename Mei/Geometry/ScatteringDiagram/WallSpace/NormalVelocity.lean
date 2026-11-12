@@ -33,6 +33,8 @@ theta functions, and refined tropical curve counts*, §2.1 and Definition 2.10
 
 public section
 
+open TauCeti (DirectedWallSpaces)
+
 namespace Mei
 
 section NormalDegree
@@ -73,6 +75,12 @@ theorem mem_normalDegreeSubmodule_iff (𝒜 : Γ → Submodule R M)
 
 end NormalDegree
 
+end Mei
+
+namespace TauCeti
+
+open Mei
+
 section Monoid
 
 variable {Γ Λ R L M : Type*} [AddCommMonoid Γ] [AddCommMonoid Λ]
@@ -110,7 +118,7 @@ section Group
 variable {Γ Λ R L M : Type*} [AddCommGroup Γ] [AddCommMonoid Λ]
   [CommRing R] [LieRing L] [LieAlgebra R L] [AddCommGroup M] [Module R M]
   [LieRingModule L M] {ρ : Γ →+ Λ} {ℒ : Γ → Submodule R L}
-  {d : PositiveDegrees Γ}
+  {d : Mei.PositiveDegrees Γ}
 
 namespace DirectedWallSpaces
 
@@ -129,7 +137,7 @@ theorem lie_mem_normalDegreeSubmodule_of_mem_ray {w : SupportedRay d} {m : Λ �
     (by simp) (fun x y hx hy => by simpa only [add_lie] using Submodule.add_mem _ hx hy)
 
 variable [Algebra ℚ R] [LieModule R L M] [DecidableEq Γ]
-  [GradedLieAlgebra ℒ] [IsPositiveGrading d ℒ]
+  [GradedLieAlgebra ℒ] [Mei.IsPositiveGrading d ℒ]
   (F : ModuleFiltration R M) [IsFiltrationRaising d ℒ F]
 
 /-- Rational scalars on a finite coefficient quotient come from its scalar ring. -/
@@ -228,4 +236,4 @@ theorem projection_completedBCHAction_mem_normalDegreeSubmodule_iff
 
 end DirectedWallSpaces
 end Group
-end Mei
+end TauCeti

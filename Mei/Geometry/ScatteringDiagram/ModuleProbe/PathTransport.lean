@@ -37,6 +37,8 @@ with the charge-zero comparison `DirectedDiagram.levelPathProduct_pushforward` a
 
 public noncomputable section
 
+open TauCeti (DirectedWallSpaces)
+
 open Set Filter Topology Mei.Convex
 
 namespace Mei.ModuleProbe

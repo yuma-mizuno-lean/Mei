@@ -31,9 +31,9 @@ Completed wall labels with normals annihilating `W` project at each finite order
 exponential subgroup of the joint subalgebra of the truncated wall spaces.
 
 The comparison with the sum of logarithms uses `LieSubalgebra.log_list_prod_sub_sum_mem`. The
-vanishing in degrees along `W` is `Mei.DirectedWallSpaces.lie_eq_zero_of_normal_total_eq_zero`;
+vanishing in degrees along `W` is `TauCeti.DirectedWallSpaces.lie_eq_zero_of_normal_total_eq_zero`;
 the corresponding statement for iterated brackets is
-`Mei.DirectedWallSpaces.word_eq_zero_of_direction_mem`. The local analysis of joints follows
+`TauCeti.DirectedWallSpaces.word_eq_zero_of_direction_mem`. The local analysis of joints follows
 Gross, Hacking, Keel and Kontsevich, *Canonical bases for cluster algebras*, Appendix C.3,
 in the directed setting of Mandel, *Scattering diagrams, theta functions, and refined tropical
 curve counts*, Theorem 2.6.
@@ -41,7 +41,11 @@ curve counts*, Theorem 2.6.
 
 public section
 
-namespace Mei.DirectedWallSpaces
+open TauCeti (DirectedWallSpaces)
+
+namespace TauCeti.DirectedWallSpaces
+
+open Mei
 
 open Mei BCHGroup
 
@@ -235,7 +239,7 @@ end Product
 section Completed
 
 variable [AddCommGroup Γ] [DecidableEq Γ] {ρ : Γ →+ Λ} {ℒ : Γ → Submodule R L}
-  {d : PositiveDegrees Γ} [GradedLieAlgebra ℒ] [IsPositiveGrading d ℒ]
+  {d : Mei.PositiveDegrees Γ} [GradedLieAlgebra ℒ] [Mei.IsPositiveGrading d ℒ]
   (H : DirectedWallSpaces ρ ℒ) {W : AddSubmonoid Λ}
 
 /-- The finite image of a supported-ray wall Lie algebra with normal annihilating `W` lies in
@@ -265,4 +269,4 @@ theorem projection_mem_bchSubgroup_jointSubalgebra {w : SupportedRay d} {m : Λ 
 
 end Completed
 
-end Mei.DirectedWallSpaces
+end TauCeti.DirectedWallSpaces

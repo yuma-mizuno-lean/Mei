@@ -31,6 +31,8 @@ cluster algebras*, §1.1, arXiv:1411.1394v2); see
 
 public section
 
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
 namespace Mei.DirectedDiagram

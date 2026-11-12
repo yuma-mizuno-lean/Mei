@@ -52,6 +52,8 @@ indices. These are the same restriction and reindexing comparisons used in
 
 public section
 
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
 open Set Mei.Convex

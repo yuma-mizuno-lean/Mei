@@ -25,6 +25,8 @@ stabilize or the union of all walls to be locally finite.
 
 public section
 
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
 open Set Mei.Convex

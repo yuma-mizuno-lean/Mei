@@ -19,15 +19,19 @@ Coordinate changes induce isomorphisms of completed wall groups, with identity
 and composition laws. Supported primitive generators are transported in the
 ambient degree group, including generators outside the positive monoid.
 
-The construction uses `PositiveDegreeMap.ofInjectiveOn`,
-`SupportedRay.congr` and the wall-preservation API of `GradedLieHom`.
+The construction uses `Mei.PositiveDegreeMap.ofInjectiveOn`,
+`SupportedRay.congr` and the wall-preservation API of `Mei.GradedLieHom`.
 The completed inverse laws use independence of the cutoff modulus for
-`GradedLieHom.completedMap`; restriction uses Mathlib's `MulEquiv.subgroupMap`.
+`Mei.GradedLieHom.completedMap`; restriction uses Mathlib's `MulEquiv.subgroupMap`.
 -/
 
 public section
 
-namespace Mei.DirectedWallSpaces
+open TauCeti (DirectedWallSpaces)
+
+namespace TauCeti.DirectedWallSpaces
+
+open Mei
 
 universe u
 
@@ -39,7 +43,7 @@ variable {Γ Γ' Γ'' Λ Λ' Λ'' R : Type*} {L L' L'' : Type u}
   [LieRing L''] [LieAlgebra R L'']
   {ρ : Γ →+ Λ} {ρ' : Γ' →+ Λ'} {ρ'' : Γ'' →+ Λ''}
   {ℒ : Γ → Submodule R L} {ℳ : Γ' → Submodule R L'} {ℋ : Γ'' → Submodule R L''}
-  {d : PositiveDegrees Γ} {e : PositiveDegrees Γ'} {p : PositiveDegrees Γ''}
+  {d : Mei.PositiveDegrees Γ} {e : Mei.PositiveDegrees Γ'} {p : Mei.PositiveDegrees Γ''}
   (H : DirectedWallSpaces ρ ℒ) (H' : DirectedWallSpaces ρ' ℳ)
 
 /-- Algebraic coordinate changes for directed wall spaces. The degree functions
@@ -184,7 +188,7 @@ theorem symm_trans_self (E : CoordinateChange (d := d) (e := e) H H') :
 
 /-- The finite-maximum source cutoff of a coordinate change. -/
 noncomputable def degreeMap (E : CoordinateChange (d := d) (e := e) H H') :
-    PositiveDegreeMap d e :=
+    Mei.PositiveDegreeMap d e :=
   .ofInjectiveOn E.degreeEquiv
     (fun n hn => (E.monoid_mem_iff n).mpr hn) E.degreeEquiv.injective.injOn
 
@@ -192,17 +196,17 @@ noncomputable def degreeMap (E : CoordinateChange (d := d) (e := e) H H') :
 @[simp]
 theorem degreeMap_apply (E : CoordinateChange (d := d) (e := e) H H') (n : Γ) :
     E.degreeMap n = E.degreeEquiv n := by
-  exact PositiveDegreeMap.ofInjectiveOn_apply _ _ _ n
+  exact Mei.PositiveDegreeMap.ofInjectiveOn_apply _ _ _ n
 
 /-- The modulus is the least source cutoff covering the inverse target cutoff. -/
 theorem degreeMap_modulus_le_iff (E : CoordinateChange (d := d) (e := e) H H') (k l : ℕ) :
     E.degreeMap.modulus k ≤ l ↔
       ∀ n ∈ d.monoid, e.degree (E.degreeEquiv n) ≤ k → d.degree n ≤ l :=
-  PositiveDegreeMap.ofInjectiveOn_modulus_le_iff _ _ _ k l
+  Mei.PositiveDegreeMap.ofInjectiveOn_modulus_le_iff _ _ _ k l
 
 /-- The graded Lie map associated to a coordinate change, with its cutoff modulus. -/
 noncomputable def gradedLieHom (E : CoordinateChange (d := d) (e := e) H H') :
-    GradedLieHom E.degreeMap ℒ ℳ where
+    Mei.GradedLieHom E.degreeMap ℒ ℳ where
   toLieHom := E.lieEquiv.toLieHom
   map_mem hx := by simpa using (E.piece_mem_iff _ _).mpr hx
 
@@ -254,7 +258,7 @@ theorem rayEquiv_trans (E : CoordinateChange (d := d) (e := e) H H')
 
 variable [DecidableEq Γ] [DecidableEq Γ'] [DecidableEq Γ'']
   [GradedLieAlgebra ℒ] [GradedLieAlgebra ℳ] [GradedLieAlgebra ℋ]
-  [IsPositiveGrading d ℒ] [IsPositiveGrading e ℳ] [IsPositiveGrading p ℋ]
+  [Mei.IsPositiveGrading d ℒ] [Mei.IsPositiveGrading e ℳ] [Mei.IsPositiveGrading p ℋ]
 
 /-- At finite order a coordinate change preserves the supported-ray Lie images,
 using any source cutoff at least as large as its canonical modulus. -/
@@ -277,9 +281,9 @@ even though the two finite cutoff moduli need not be inverse functions. -/
 private theorem completedMap_symm_comp (E : CoordinateChange (d := d) (e := e) H H') :
     E.symm.gradedLieHom.completedMap.comp E.gradedLieHom.completedMap =
       MonoidHom.id (d.completedBCHGroup ℒ) := by
-  rw [← GradedLieHom.completedMap_comp]
-  exact (GradedLieHom.completedMap_eq_of_toLieHom_eq _ (GradedLieHom.id ℒ)
-    (by ext x; simp [symm])).trans GradedLieHom.completedMap_id
+  rw [← Mei.GradedLieHom.completedMap_comp]
+  exact (Mei.GradedLieHom.completedMap_eq_of_toLieHom_eq _ (Mei.GradedLieHom.id ℒ)
+    (by ext x; simp [symm])).trans Mei.GradedLieHom.completedMap_id
 
 /-- Coordinate changes preserve and reflect completed wall-group membership. -/
 theorem completedMap_mem_wallGroup_iff (E : CoordinateChange (d := d) (e := e) H H')
@@ -332,8 +336,8 @@ theorem completedEquiv_refl : (refl (d := d) H).completedEquiv =
   apply MulEquiv.ext
   intro g
   exact DFunLike.congr_fun
-    ((GradedLieHom.completedMap_eq_of_toLieHom_eq _ (GradedLieHom.id ℒ)
-      (by ext x; simp)).trans GradedLieHom.completedMap_id) g
+    ((Mei.GradedLieHom.completedMap_eq_of_toLieHom_eq _ (Mei.GradedLieHom.id ℒ)
+      (by ext x; simp)).trans Mei.GradedLieHom.completedMap_id) g
 
 /-- Inverting coordinates inverts the completed comparison. -/
 @[simp]
@@ -351,9 +355,9 @@ theorem completedEquiv_trans (E : CoordinateChange (d := d) (e := e) H H')
   apply MulEquiv.ext
   intro g
   exact DFunLike.congr_fun
-    ((GradedLieHom.completedMap_eq_of_toLieHom_eq (E.trans F).gradedLieHom
+    ((Mei.GradedLieHom.completedMap_eq_of_toLieHom_eq (E.trans F).gradedLieHom
       (F.gradedLieHom.comp E.gradedLieHom) (by ext x; simp)).trans
-        (GradedLieHom.completedMap_comp _ _)) g
+        (Mei.GradedLieHom.completedMap_comp _ _)) g
 
 /-- A coordinate change carries a wall group onto the group of the transported
 primitive ray and inverse-dual normal. -/
@@ -401,4 +405,4 @@ theorem coe_wallGroupEquiv_trans (E : CoordinateChange (d := d) (e := e) H H')
   simp only [coe_wallGroupEquiv_apply, completedEquiv_trans, MulEquiv.trans_apply]
 
 end CoordinateChange
-end Mei.DirectedWallSpaces
+end TauCeti.DirectedWallSpaces

@@ -33,6 +33,8 @@ This uses `WallComplement.segmentPathProduct_eq_of_crossingEventProduct_eq` and
 
 public section
 
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
 open Set Filter Topology Mei.Convex WallComplement

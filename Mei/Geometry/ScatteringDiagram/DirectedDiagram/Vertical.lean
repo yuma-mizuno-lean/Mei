@@ -8,6 +8,7 @@ module
 public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Basic
 public import Mei.Geometry.Affine.Generic
 public import Mei.Geometry.Affine.Codimension
+import Mei.Algebra.Group.Hom.Int
 
 /-!
 # Regular vertical crossings in the zero slice
@@ -28,6 +29,8 @@ tropical curve counts*, §3.3.3 (arXiv:1503.06183v5).
 -/
 
 public noncomputable section
+
+open TauCeti (DirectedWallSpaces)
 
 open Set Mei.Convex
 

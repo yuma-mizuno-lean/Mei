@@ -31,6 +31,8 @@ curve counts*, proof of Theorem 2.6. No higher-order consistency is required.
 
 public section
 
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
 open Set Mei Mei.Convex WallComplement BCHGroup

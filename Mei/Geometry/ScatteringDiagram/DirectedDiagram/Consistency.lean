@@ -30,6 +30,8 @@ applies to repeated and overlapping indexed walls with grouped coplanar crossing
 
 public section
 
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
 open Set Mei.Convex

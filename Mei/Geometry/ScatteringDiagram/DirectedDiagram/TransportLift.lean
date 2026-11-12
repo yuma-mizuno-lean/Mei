@@ -41,6 +41,8 @@ and Gross–Hacking–Keel–Kontsevich, *Canonical bases for cluster algebras*,
 
 public section
 
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
 open Set Mei.Convex WallComplement

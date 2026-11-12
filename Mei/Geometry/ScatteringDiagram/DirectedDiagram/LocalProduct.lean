@@ -34,6 +34,8 @@ commute (`DirectedDiagram.commute_levelTransportFun`).
 
 public section
 
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
 open Set Filter Topology Mei.Convex

@@ -20,6 +20,8 @@ and `Module.Ray.evalSign_rayOfNeZero` to identify its orientation sign.
 
 public section
 
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
 namespace Mei.DirectedWall

@@ -32,6 +32,8 @@ affine supports.
 
 public section
 
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
 open Set

@@ -26,6 +26,8 @@ For the application to local broken-line wall crossing, see Travis Mandel,
 
 public section
 
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
 open Set Filter Topology Mei.Convex WallComplement

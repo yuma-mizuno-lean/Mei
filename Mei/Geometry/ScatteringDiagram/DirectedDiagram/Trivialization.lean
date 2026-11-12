@@ -33,6 +33,8 @@ order, local finiteness of the all-order wall union, or salient support is neede
 
 public section
 
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
 open Set Mei.Convex

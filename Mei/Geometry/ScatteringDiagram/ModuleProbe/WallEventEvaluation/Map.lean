@@ -26,6 +26,8 @@ functions, and refined tropical curve counts*, Definition 2.10 and §3.3.3
 
 public noncomputable section
 
+open TauCeti (DirectedWallSpaces)
+
 open Mei.Convex
 
 namespace Mei.ModuleProbe

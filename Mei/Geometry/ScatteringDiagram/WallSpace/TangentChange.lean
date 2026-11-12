@@ -24,7 +24,11 @@ is the identity, so labels of transported walls are literally unchanged.
 
 public section
 
-namespace Mei.DirectedWallSpaces
+open TauCeti (DirectedWallSpaces)
+
+namespace TauCeti.DirectedWallSpaces
+
+open Mei
 
 universe u
 
@@ -33,47 +37,13 @@ variable {Γ Λ Λ' R : Type*} {L : Type u}
   [LieRing L] [LieAlgebra R L]
   {ρ : Γ →+ Λ} {ℒ : Γ → Submodule R L} (H : DirectedWallSpaces ρ ℒ) (T : Λ ≃+ Λ')
 
-/-- Relabel the tangent directions of a directed wall space along an additive equivalence.
-The wall space of degree `n` and normal `m` is the original one with normal `m ∘ T`. -/
-def mapTangent : DirectedWallSpaces ((T : Λ →+ Λ').comp ρ) ℒ where
-  wall n m := H.wall n (m.comp T)
-  wall_le_piece n m := H.wall_le_piece n _
-  zero_normal n := H.zero_normal n
-  nontangent n m hm := H.nontangent n _ hm
-  rescale n m c hc := by
-    have hc' : (c • m).comp (T : Λ →+ Λ') = c • m.comp (T : Λ →+ Λ') := by
-      ext v
-      simp
-    simpa only [hc'] using H.rescale n (m.comp (T : Λ →+ Λ')) c hc
-  bracket_mem {n n' m m' x y} hx hy := by
-    have hn : wallBracketNormal ρ n n' (m.comp T) (m'.comp T) =
-        (wallBracketNormal ((T : Λ →+ Λ').comp ρ) n n' m m').comp T := by
-      ext v
-      simp
-    exact hn ▸ H.bracket_mem hx hy
-
-/-- The wall space of the relabelled tangent directions is that of the original with
-the normal precomposed by `T`. -/
-@[simp]
-theorem mapTangent_wall (n : Γ) (m : Λ' →+ ℤ) :
-    (H.mapTangent T).wall n m = H.wall n (m.comp T) := (rfl)
-
-/-- Transporting a normal `m` along `T` and pulling it back by `T⁻¹` gives the same wall
-space as the original. -/
-theorem mapTangent_wall_comp_symm (n : Γ) (m : Λ →+ ℤ) :
-    (H.mapTangent T).wall n (m.comp (T.symm : Λ' →+ Λ)) = H.wall n m := by
-  rw [mapTangent_wall]
-  congr 1
-  ext v
-  simp
-
 namespace CoordinateChange
 
-variable {d : PositiveDegrees Γ}
+variable {d : Mei.PositiveDegrees Γ}
 
 /-- Relabelling tangent directions along `T` is a coordinate change with identity degree
 and Lie coordinates. -/
-def ofTangentEquiv : CoordinateChange (d := d) (e := d) H (H.mapTangent T) where
+def ofTangentEquiv : CoordinateChange (d := d) (e := d) H (H.mapTangent (T : Λ →+ Λ')) where
   degreeEquiv := AddEquiv.refl Γ
   tangentEquiv := T
   lieEquiv := LieEquiv.refl
@@ -102,7 +72,7 @@ theorem ofTangentEquiv_rayEquiv :
   apply SupportedRay.ext
   simp
 
-variable [DecidableEq Γ] [GradedLieAlgebra ℒ] [IsPositiveGrading d ℒ] [Algebra ℚ R]
+variable [DecidableEq Γ] [GradedLieAlgebra ℒ] [Mei.IsPositiveGrading d ℒ] [Algebra ℚ R]
   [LieAlgebra ℚ L] [IsScalarTower ℚ R L]
 
 /-- A tangent coordinate change acts as the identity on completed labels. -/
@@ -113,9 +83,9 @@ theorem ofTangentEquiv_completedEquiv :
   intro g
   rw [completedEquiv_apply, MulEquiv.refl_apply]
   exact DFunLike.congr_fun
-    ((GradedLieHom.completedMap_eq_of_toLieHom_eq _ (GradedLieHom.id ℒ)
-      (by ext x; simp)).trans GradedLieHom.completedMap_id) g
+    ((Mei.GradedLieHom.completedMap_eq_of_toLieHom_eq _ (Mei.GradedLieHom.id ℒ)
+      (by ext x; simp)).trans Mei.GradedLieHom.completedMap_id) g
 
 end CoordinateChange
 
-end Mei.DirectedWallSpaces
+end TauCeti.DirectedWallSpaces

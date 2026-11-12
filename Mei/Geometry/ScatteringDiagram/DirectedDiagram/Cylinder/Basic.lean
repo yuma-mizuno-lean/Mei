@@ -25,6 +25,8 @@ Principal cylinders appear in Gross–Hacking–Keel–Kontsevich,
 
 public section
 
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
 namespace Mei.DirectedDiagram
@@ -38,7 +40,7 @@ variable {Γ Λ K R L V E ι : Type*} [AddCommGroup Γ] [AddCommGroup Λ] [AddCo
   [GradedLieAlgebra ℒ] [IsPositiveGrading d ℒ]
   {i : Λ →+ V} {j : K →+ E} {h : TauCeti.Toric.IsIntegralLattice i}
   {H : DirectedWallSpaces ρ ℒ}
-  (D : DirectedDiagram (d := d) h (H.project (AddMonoidHom.fst Λ K)) ι)
+  (D : DirectedDiagram (d := d) h (H.mapTangent (AddMonoidHom.fst Λ K)) ι)
   (h' : TauCeti.Toric.IsIntegralLattice j)
 
 /-- Lift every wall to its cylinder, retaining the original index type. -/

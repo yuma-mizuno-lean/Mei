@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.ScatteringDiagram.WallSpace.Map
+public import TauCeti.Geometry.ScatteringDiagram.WallSpace.Map
 public import Mei.Algebra.Lie.Graded.PositiveDegreeHom
 
 /-!
@@ -22,18 +22,22 @@ The construction uses `DirectedWallSpaces.map` on the canonical quotient maps.
 
 public section
 
-namespace Mei.DirectedWallSpaces
+open TauCeti (DirectedWallSpaces)
+
+namespace TauCeti.DirectedWallSpaces
+
+open Mei
 
 variable {Γ Λ R L : Type*} [AddCommMonoid Γ] [AddCommMonoid Λ]
   [CommRing R] [LieRing L] [LieAlgebra R L]
   {ρ : Γ →+ Λ} {ℒ : Γ → Submodule R L} (H : DirectedWallSpaces ρ ℒ)
   [DecidableEq Γ] [GradedLieAlgebra ℒ]
-  (d : PositiveDegrees Γ) [IsPositiveGrading d ℒ]
+  (d : Mei.PositiveDegrees Γ) [Mei.IsPositiveGrading d ℒ]
 
 /-- Wall spaces at order `k` are the actual quotient images of the original spaces. -/
 def truncated (k : ℕ) : DirectedWallSpaces ρ (d.truncatedGrading ℒ k) :=
   H.map (d.degreeIdeal ℒ k).mkQ (d.truncatedGrading ℒ k)
-    (by intro n; rw [PositiveDegrees.truncatedGrading_eq]; exact le_rfl)
+    (by intro n; rw [Mei.PositiveDegrees.truncatedGrading_eq]; exact le_rfl)
 
 /-- Truncation takes each wall space to its image in the Lie quotient. -/
 @[simp]
@@ -45,9 +49,9 @@ theorem truncated_wall (k : ℕ) (n : Γ) (m : Λ →+ ℤ) :
 /-- The canonical graded quotient homomorphism preserves directed wall spaces. -/
 theorem truncation_mem_wall (k : ℕ) (n : Γ) (m : Λ →+ ℤ) (x : L)
     (hx : x ∈ H.wall n m) :
-    GradedLieHom.truncation d ℒ k x ∈ (H.truncated d k).wall n m := by
+    Mei.GradedLieHom.truncation d ℒ k x ∈ (H.truncated d k).wall n m := by
   rw [truncated_wall]
-  exact Submodule.mem_map.mpr ⟨x, hx, (GradedLieHom.truncation_apply k x).symm⟩
+  exact Submodule.mem_map.mpr ⟨x, hx, (Mei.GradedLieHom.truncation_apply k x).symm⟩
 
 /-- Every finite-order wall space maps onto its image at a lower cutoff. -/
 theorem map_truncationMap_wall {k l : ℕ} (h : k ≤ l) (n : Γ) (m : Λ →+ ℤ) :
@@ -59,20 +63,20 @@ theorem map_truncationMap_wall {k l : ℕ} (h : k ≤ l) (n : Γ) (m : Λ →+ �
     simp
   rw [truncated_wall, ← Submodule.map_comp, square, truncated_wall]
 
-end Mei.DirectedWallSpaces
+end TauCeti.DirectedWallSpaces
 
 namespace Mei.GradedLieHom
 
 variable {Γ Λ R L L' : Type*} [AddCommMonoid Γ] [AddCommMonoid Λ] [CommRing R]
   [LieRing L] [LieAlgebra R L] [LieRing L'] [LieAlgebra R L'] [DecidableEq Γ]
   {ρ : Γ →+ Λ} {ℒ : Γ → Submodule R L} {ℳ : Γ → Submodule R L'}
-  [GradedLieAlgebra ℒ] [GradedLieAlgebra ℳ] {d : PositiveDegrees Γ}
-  [IsPositiveGrading d ℒ] [IsPositiveGrading d ℳ]
+  [GradedLieAlgebra ℒ] [GradedLieAlgebra ℳ] {d : Mei.PositiveDegrees Γ}
+  [Mei.IsPositiveGrading d ℒ] [Mei.IsPositiveGrading d ℳ]
   {H : DirectedWallSpaces ρ ℒ} {H' : DirectedWallSpaces ρ ℳ}
 
 /-- A fixed-degree homomorphism preserving wall spaces preserves the wall spaces at every
 finite order. -/
-theorem truncatedMap_mem_truncated_wall (f : GradedLieHom (PositiveDegreeMap.id d) ℒ ℳ)
+theorem truncatedMap_mem_truncated_wall (f : Mei.GradedLieHom (Mei.PositiveDegreeMap.id d) ℒ ℳ)
     (hf : ∀ n m, ∀ x ∈ H.wall n m, f x ∈ H'.wall n m) (k : ℕ) {n : Γ} {m : Λ →+ ℤ}
     {x : d.truncatedLie ℒ k} (hx : x ∈ (H.truncated d k).wall n m) :
     f.truncatedMap k (by simp) x ∈ (H'.truncated d k).wall n m := by

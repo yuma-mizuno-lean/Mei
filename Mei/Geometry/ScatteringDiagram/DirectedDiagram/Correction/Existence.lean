@@ -34,6 +34,8 @@ C.3. Global path consistency of the corrected diagram is a separate assertion.
 
 public section
 
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
 open Set Module Mei Mei.Convex WallComplement BCHGroup

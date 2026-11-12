@@ -29,6 +29,8 @@ indexed walls preserves finite-order equivalence by
 
 public section
 
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
 open Set Mei.Convex WallComplement

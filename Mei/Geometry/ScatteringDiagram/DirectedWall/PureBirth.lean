@@ -19,6 +19,8 @@ bound for the birth order `δ(n)`.
 
 public section
 
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
 namespace Mei.DirectedWall

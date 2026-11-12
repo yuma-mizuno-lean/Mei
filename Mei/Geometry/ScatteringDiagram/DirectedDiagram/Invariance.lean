@@ -27,6 +27,8 @@ to the identity spatial and wall-space coordinate changes.
 
 public section
 
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
 open Set Mei.Convex

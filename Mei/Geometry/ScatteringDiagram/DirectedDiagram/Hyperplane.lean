@@ -38,6 +38,8 @@ by the active labels (`Subgroup.isMulCommutative_closure`).
 
 public section
 
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
 open Set Mei.Convex

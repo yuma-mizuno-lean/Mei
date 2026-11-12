@@ -25,6 +25,8 @@ expansion of a BCH correction. The backward-ray interpretation follows Mandel,
 
 public noncomputable section
 
+open TauCeti (DirectedWallSpaces)
+
 open Mei.Convex Mei.Convex.WallComplement
 
 namespace Mei.ModuleProbe

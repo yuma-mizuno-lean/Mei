@@ -23,7 +23,8 @@ noncomputable section
 
 namespace Mei
 
-open TauCeti PositiveDegrees
+open PositiveDegrees
+open TauCeti (heisenbergGrading heisenbergX heisenbergY)
 
 attribute [local instance 100] LieRing.ofAssociativeRing
 

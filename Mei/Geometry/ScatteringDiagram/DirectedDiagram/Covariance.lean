@@ -29,6 +29,8 @@ walls with zero spatial velocity are allowed.
 
 public section
 
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
 open Set Mei.Convex

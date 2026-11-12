@@ -30,6 +30,8 @@ and repeated indexed walls are allowed.
 
 public section
 
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
 open Set Mei.Convex WallComplement

@@ -28,6 +28,8 @@ Coordinate transport descends `DirectedDiagram.image` using `Equivalent.image` a
 
 public section
 
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
 namespace Mei.DirectedDiagram

@@ -25,6 +25,8 @@ adapted regular loci.
 
 public noncomputable section
 
+open TauCeti (DirectedWallSpaces)
+
 open Set Mei.Convex
 
 namespace Mei.DirectedDiagram

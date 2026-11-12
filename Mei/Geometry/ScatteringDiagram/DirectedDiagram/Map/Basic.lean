@@ -26,6 +26,8 @@ action or injective coefficient map is needed.
 
 public section
 
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
 open Set Mei.Convex

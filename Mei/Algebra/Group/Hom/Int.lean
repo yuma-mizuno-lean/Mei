@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mathlib.Algebra.Group.Subgroup.Ker
+public import TauCeti.Algebra.Group.Hom.Int
 public import Mathlib.Algebra.Group.Int.Defs
 
 /-!
@@ -34,37 +34,6 @@ theorem apply_prod_int {Λ : Type*} [AddMonoid Λ] (m : (Λ × ℤ) →+ ℤ) (v
   simp
 
 variable {A : Type*} [AddGroup A]
-
-/-- If the kernel of an integer character is contained in that of another,
-then a nonzero integer multiple of the latter is a multiple of the former.
-The second character is allowed to be zero. -/
-theorem exists_ne_zero_zsmul_eq_of_ker_le (f g : A →+ ℤ) (hf : f ≠ 0)
-    (hker : f.ker ≤ g.ker) :
-    ∃ c d : ℤ, c ≠ 0 ∧ c • g = d • f := by
-  obtain ⟨a, ha⟩ := DFunLike.ne_iff.mp hf
-  refine ⟨f a, g a, ha, ?_⟩
-  ext x
-  have hx : f a • x - f x • a ∈ f.ker := by
-    simp [AddMonoidHom.mem_ker, mul_comm]
-  have hg := AddMonoidHom.mem_ker.mp (hker hx)
-  simpa only [map_sub, map_zsmul, AddMonoidHom.zsmul_apply, Int.zsmul_eq_mul,
-    sub_eq_zero, mul_comm (f x)] using hg
-
-/-- Nonzero integer characters with the same kernel have equal nonzero integer multiples. -/
-theorem exists_ne_zero_zsmul_eq_of_ker_eq (f g : A →+ ℤ) (hf : f ≠ 0)
-    (hker : f.ker = g.ker) :
-    ∃ c e : ℤ, c ≠ 0 ∧ e ≠ 0 ∧ c • f = e • g := by
-  obtain ⟨a, ha⟩ := DFunLike.ne_iff.mp hf
-  have hga : g a ≠ 0 := by
-    intro h
-    have hm : a ∈ f.ker := hker ▸ AddMonoidHom.mem_ker.mpr h
-    exact ha (AddMonoidHom.mem_ker.mp hm)
-  obtain ⟨c, d, hc, hcd⟩ := f.exists_ne_zero_zsmul_eq_of_ker_le g hf hker.le
-  have hd : d ≠ 0 := by
-    intro hd
-    have hv : c * g a = 0 := by simpa [hd] using DFunLike.congr_fun hcd a
-    exact hga ((Int.mul_eq_zero.mp hv).resolve_left hc)
-  exact ⟨d, c, hd, hc, hcd.symm⟩
 
 /-- A character annihilating the common kernel of two characters and a vector
 outside it annihilates the kernel of their contraction at that vector. -/

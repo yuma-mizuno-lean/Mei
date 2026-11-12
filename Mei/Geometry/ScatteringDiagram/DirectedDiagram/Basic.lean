@@ -26,6 +26,8 @@ finiteness of all supports is imposed.
 
 public section
 
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
 open Set Mei.Convex

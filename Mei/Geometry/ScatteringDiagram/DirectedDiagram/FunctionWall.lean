@@ -69,6 +69,8 @@ Theorem 9.9 (arXiv:2503.03719v1). The local crossing comparison uses
 
 public section
 
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
 open Set Mei.Convex CategoryTheory

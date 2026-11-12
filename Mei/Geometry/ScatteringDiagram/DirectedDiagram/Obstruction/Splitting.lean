@@ -32,6 +32,8 @@ used for module probes. The kernel need not be abelian for these statements.
 
 public section
 
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
 open Set Mei Mei.Convex WallComplement BCHGroup

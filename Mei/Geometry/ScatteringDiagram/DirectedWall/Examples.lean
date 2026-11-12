@@ -41,6 +41,8 @@ Remark 2.3 (arXiv:1503.06183v5), with affine supports.
 
 public section
 
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
 namespace Mei.DirectedWall.Examples

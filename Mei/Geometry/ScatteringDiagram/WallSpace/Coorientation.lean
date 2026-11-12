@@ -7,7 +7,7 @@ module
 
 public import Mei.Geometry.Convex.PolyhedralCochain.Coorientation
 public import Mei.Geometry.Convex.PolyhedralCochain.Sweep.Basic
-public import Mei.Geometry.ScatteringDiagram.WallSpace.Basic
+public import TauCeti.Geometry.ScatteringDiagram.WallSpace.Basic
 
 /-!
 # Matching swept orientations with integral wall normals
@@ -29,11 +29,15 @@ tropical curve counts*, proof of Theorem 2.6.
 
 public section
 
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
 open Set Module
 
-namespace Mei.DirectedWallSpaces
+namespace TauCeti.DirectedWallSpaces
+
+open Mei
 
 variable {Γ Λ R L V : Type*} [AddCommMonoid Γ] [AddCommGroup Λ]
   [CommRing R] [LieRing L] [LieAlgebra R L]
@@ -77,4 +81,4 @@ theorem exists_cooriented_sweep_normal (σ : OrientedCell h 2) (v : Λ)
     H.exists_cooriented_normal (σ.sweep v hv) m₀ (h₀.trans hdir.symm)
   exact ⟨m, hm, hker.trans hdir, hsign, hwall⟩
 
-end Mei.DirectedWallSpaces
+end TauCeti.DirectedWallSpaces

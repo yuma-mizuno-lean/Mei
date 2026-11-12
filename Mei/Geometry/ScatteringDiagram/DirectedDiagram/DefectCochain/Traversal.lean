@@ -31,6 +31,8 @@ and refined tropical curve counts*, proof of Theorem 2.6.
 
 public section
 
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
 open Set Filter Topology Mei.Convex WallComplement

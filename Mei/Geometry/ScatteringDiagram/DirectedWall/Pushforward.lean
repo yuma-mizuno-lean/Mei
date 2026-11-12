@@ -51,6 +51,8 @@ Example 2.1(i) and Definition 2.2.
 
 public section
 
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
 namespace Mei

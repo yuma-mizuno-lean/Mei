@@ -66,6 +66,8 @@ grouping nor matched crossing germs. The crossing germs of the first diagram's g
 
 public section
 
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
 open Set Mei.Convex

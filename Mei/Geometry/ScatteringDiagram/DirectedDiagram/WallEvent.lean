@@ -33,6 +33,8 @@ theta functions, and refined tropical curve counts*, equation (8) and §3.3.3
 
 public noncomputable section
 
+open TauCeti (DirectedWallSpaces)
+
 open Set Filter Topology Mei.Convex Mei.Convex.WallComplement
 
 namespace Mei.DirectedDiagram

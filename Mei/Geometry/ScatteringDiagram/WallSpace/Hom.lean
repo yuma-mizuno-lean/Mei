@@ -30,6 +30,8 @@ Mathlib's `MonoidHom.domRestrict` and `MonoidHom.codRestrict`.
 
 public section
 
+open TauCeti (DirectedWallSpaces)
+
 namespace Mei
 
 universe u

@@ -29,6 +29,8 @@ correction diagram or identify the orientation sign of a joint cochain.
 
 public section
 
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
 open Set Mei Mei.Convex BCHGroup

@@ -34,6 +34,8 @@ arbitrary original loops into the common admissible family are separate steps.
 
 public section
 
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
 open Set Mei Mei.Convex WallComplement BCHGroup

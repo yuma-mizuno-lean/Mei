@@ -28,6 +28,8 @@ only at the lower order, not at the order to which the transports are lifted.
 
 public section
 
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
 open Set Mei.Convex

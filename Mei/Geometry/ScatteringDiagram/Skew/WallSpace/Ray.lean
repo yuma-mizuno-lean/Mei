@@ -24,6 +24,8 @@ cluster algebras*, §1 and Appendix B, arXiv:1411.1394v2.
 
 public noncomputable section
 
+open TauCeti (DirectedWallSpaces)
+
 namespace Mei.SkewLatticeDatum
 
 variable {N R : Type*} [AddCommGroup N] [Module.Free ℤ N]

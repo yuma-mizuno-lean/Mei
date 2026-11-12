@@ -39,6 +39,8 @@ incidence and boundary identities in addition to this finite sum.
 
 public section
 
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
 open Set Filter Topology Mei.Convex WallComplement

@@ -30,6 +30,8 @@ counts*, [arXiv:1503.06183v5](https://arxiv.org/abs/1503.06183v5), equation (8).
 
 public section
 
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
 open Set Filter Topology Mei.Convex WallComplement

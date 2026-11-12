@@ -26,6 +26,8 @@ hypothesis is needed; the support may be bounded or have lineality.
 
 public section
 
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
 open Set Filter Topology

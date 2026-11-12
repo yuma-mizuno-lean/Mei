@@ -30,6 +30,8 @@ diagrams, theta functions, and refined tropical curve counts*, §3.3.3
 
 public noncomputable section
 
+open TauCeti (DirectedWallSpaces)
+
 open Mei.Convex
 
 namespace Mei.ModuleProbe

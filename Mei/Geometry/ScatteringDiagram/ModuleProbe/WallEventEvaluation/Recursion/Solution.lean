@@ -35,6 +35,8 @@ Mandel, *Scattering diagrams, theta functions, and refined tropical curve counts
 
 public noncomputable section
 
+open TauCeti (DirectedWallSpaces)
+
 open Set Filter Topology Mei.Convex Mei.Convex.WallComplement
 
 namespace Mei.ModuleProbe

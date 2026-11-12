@@ -34,6 +34,8 @@ meridian's signed incidences with the facets of a cochain is a separate statemen
 
 public section
 
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
 open Set Mei Mei.Convex BCHGroup

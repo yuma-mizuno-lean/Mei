@@ -30,6 +30,8 @@ without further geometric hypotheses. The degree bookkeeping follows Mandel,
 
 public noncomputable section
 
+open TauCeti (DirectedWallSpaces)
+
 open Set Filter Topology Mei.Convex Mei.Convex.WallComplement
 
 namespace Mei.ModuleProbe

@@ -23,6 +23,8 @@ the target sections are restricted to this open image.
 
 public noncomputable section
 
+open TauCeti (DirectedWallSpaces)
+
 open Set CategoryTheory TopologicalSpace Opposite Topology Mei.Convex
 
 namespace Mei.ModuleProbe

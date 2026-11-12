@@ -32,6 +32,8 @@ their products in the central truncation kernel.
 
 public section
 
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
 open Set Mei.Convex

@@ -38,6 +38,8 @@ and consistency of the combined diagram are separate conclusions.
 
 public section
 
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
 open Set Mei Mei.Convex BCHGroup

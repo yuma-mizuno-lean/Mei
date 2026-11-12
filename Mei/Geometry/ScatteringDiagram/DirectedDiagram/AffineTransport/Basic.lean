@@ -24,6 +24,8 @@ orientation-reversing affine equivalences are allowed.
 
 public section
 
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
 open Set Mei.Convex

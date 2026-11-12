@@ -20,6 +20,8 @@ charge-one coefficient summand, including coefficients killed by the map.
 
 public noncomputable section
 
+open TauCeti (DirectedWallSpaces)
+
 namespace Mei.ModuleProbe
 
 variable {R M N Γ L : Type*} [CommRing R]

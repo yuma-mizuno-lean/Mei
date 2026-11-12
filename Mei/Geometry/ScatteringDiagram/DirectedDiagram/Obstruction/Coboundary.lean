@@ -34,6 +34,8 @@ Appendix C.3.
 
 public section
 
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
 open Set Module Mei Mei.Convex WallComplement BCHGroup

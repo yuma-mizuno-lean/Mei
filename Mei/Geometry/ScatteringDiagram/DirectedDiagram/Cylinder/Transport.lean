@@ -31,6 +31,8 @@ algebras*, §1 and Appendix B, arXiv:1411.1394v2.
 
 public section
 
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
 open Set Mei.Convex
@@ -46,7 +48,7 @@ variable {Γ Λ K R L V E ι : Type*} [AddCommGroup Γ] [AddCommGroup Λ] [AddCo
   [GradedLieAlgebra ℒ] [IsPositiveGrading d ℒ]
   {i : Λ →+ V} {j : K →+ E} {h : TauCeti.Toric.IsIntegralLattice i}
   {H : DirectedWallSpaces ρ ℒ}
-  (D : DirectedDiagram (d := d) h (H.project (AddMonoidHom.fst Λ K)) ι)
+  (D : DirectedDiagram (d := d) h (H.mapTangent (AddMonoidHom.fst Λ K)) ι)
   (h' : TauCeti.Toric.IsIntegralLattice j)
 
 /-- Project a finite-order cylinder path, forgetting the unrestricted coordinates.
@@ -274,8 +276,8 @@ omit D in
 /-- The cylinder over an outgoing completion is an outgoing completion of the
 cylinder input, retaining every indexed initial wall. -/
 theorem IsOutgoingCompletion.cylinder {ι₀ κ : Type*}
-    {D₀ : ι₀ → DirectedWall (d := d) h (H.project (AddMonoidHom.fst Λ K))}
-    {C : DirectedDiagram (d := d) h (H.project (AddMonoidHom.fst Λ K)) (ι₀ ⊕ κ)}
+    {D₀ : ι₀ → DirectedWall (d := d) h (H.mapTangent (AddMonoidHom.fst Λ K))}
+    {C : DirectedDiagram (d := d) h (H.mapTangent (AddMonoidHom.fst Λ K)) (ι₀ ⊕ κ)}
     (hC : IsOutgoingCompletion D₀ C) :
     IsOutgoingCompletion (fun a => (D₀ a).cylinder h') (C.cylinder h') where
   wall_inl a := by rw [cylinder_wall, hC.wall_inl]

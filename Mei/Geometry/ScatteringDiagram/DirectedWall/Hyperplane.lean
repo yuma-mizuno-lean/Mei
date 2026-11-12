@@ -24,6 +24,8 @@ We use `isRationalNormalPolyhedron_setOf_le` for the support and Mathlib's
 -/
 
 public section
+
+open TauCeti (DirectedWallSpaces)
 noncomputable section
 
 namespace TauCeti.Toric.IsIntegralLattice

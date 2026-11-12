@@ -21,6 +21,8 @@ The same laws compare extended fields at allowed endpoints and completed fields.
 
 public noncomputable section
 
+open TauCeti (DirectedWallSpaces)
+
 open Set Filter Topology Mei.Convex
 
 namespace Mei.ModuleProbe

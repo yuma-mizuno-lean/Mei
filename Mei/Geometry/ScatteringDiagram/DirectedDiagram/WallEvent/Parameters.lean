@@ -23,6 +23,8 @@ transversality and precise incident wall set.
 
 public noncomputable section
 
+open TauCeti (DirectedWallSpaces)
+
 open Set Mei.Convex Mei.Convex.WallComplement
 
 namespace Mei.DirectedDiagram

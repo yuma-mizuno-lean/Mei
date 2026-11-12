@@ -35,6 +35,8 @@ the original diagram, or common admissibility of the original loop is assumed.
 
 public section
 
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
 open Set Mei Mei.Convex WallComplement BCHGroup

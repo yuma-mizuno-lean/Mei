@@ -27,6 +27,8 @@ anti-canonical class*, §3.2 (arXiv:1601.07081v4).
 
 public noncomputable section
 
+open TauCeti (DirectedWallSpaces)
+
 open Mei.Convex
 
 namespace Mei.DirectedDiagram

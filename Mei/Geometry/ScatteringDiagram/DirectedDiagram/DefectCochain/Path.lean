@@ -31,6 +31,8 @@ unsubdivided segments and with signed boundary incidences is separate.
 
 public section
 
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
 open Set Mei Mei.Convex WallComplement BCHGroup

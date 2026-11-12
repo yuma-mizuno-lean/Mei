@@ -22,7 +22,7 @@ are allowed, including walls with zero spatial velocity. This transport is the
 pushforward along `DirectedWall.Pushforward.ofCoordinateChange`, whose normal
 comparison scalars are all one.
 
-The construction combines `Mei.DirectedWallSpaces.CoordinateChange` and its
+The construction combines `TauCeti.DirectedWallSpaces.CoordinateChange` and its
 `completedMap_mem_wallGroup_iff` with the existing integral affine image of
 rational-normal polyhedra. Recession directions are transported using
 `AffineEquiv.linear_mem_recessionCone_image`. No additional wall carrier or
@@ -30,6 +30,8 @@ completion is introduced.
 -/
 
 public section
+
+open TauCeti (DirectedWallSpaces)
 
 noncomputable section
 
@@ -58,11 +60,9 @@ variable {Γ Γ' Γ'' Λ Λ' Λ'' R V V' V'' : Type*} {L L' L'' : Type u}
   {H : DirectedWallSpaces ρ ℒ} {H' : DirectedWallSpaces ρ' ℳ}
   {H'' : DirectedWallSpaces ρ'' ℋ}
 
-namespace DirectedWallSpaces.CoordinateChange
-
 /-- Compatible spatial and algebraic coordinate changes pull real normals back
 along the inverse linear map. -/
-theorem realCharacter_comp_tangentEquiv_symm
+theorem _root_.TauCeti.DirectedWallSpaces.CoordinateChange.realCharacter_comp_tangentEquiv_symm
     (E : DirectedWallSpaces.CoordinateChange (d := d) (e := d') H H')
     (e : Toric.IntegralAffineEquiv h h') (hE : E.tangentEquiv = e.latticeEquiv)
     (m : Λ →+ ℤ) :
@@ -73,8 +73,6 @@ theorem realCharacter_comp_tangentEquiv_symm
     Toric.IntegralAffineEquiv.symm_toAffineEquiv, AffineEquiv.linear_symm] using
     h'.realCharacter_comp h e.symm.latticeEquiv
       e.symm.toAffineEquiv.linear.toLinearMap e.symm.map_lattice m
-
-end DirectedWallSpaces.CoordinateChange
 
 /-- Compatible spatial and algebraic coordinate changes, with inverse-dual normals. -/
 def DirectedWall.Pushforward.ofCoordinateChange (e : Toric.IntegralAffineEquiv h h')

@@ -34,7 +34,8 @@ noncomputable section
 
 namespace Mei
 
-open TauCeti PositiveDegrees Mei.Convex
+open PositiveDegrees Mei.Convex
+open TauCeti (heisenbergGrading heisenbergX heisenbergY lie_mem_center_heisenberg)
 
 attribute [local instance 100] LieRing.ofAssociativeRing
 

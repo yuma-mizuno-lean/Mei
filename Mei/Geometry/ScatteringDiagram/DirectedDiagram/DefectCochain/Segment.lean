@@ -30,6 +30,8 @@ its central coefficient and exchanges the incident chambers.
 
 public section
 
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
 open Set Mei.Convex WallComplement

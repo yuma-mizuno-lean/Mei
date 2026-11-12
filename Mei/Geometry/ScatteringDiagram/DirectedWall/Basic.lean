@@ -40,12 +40,14 @@ and express incomingness by membership of the positive projected degree in the s
 recession cone. This affine adaptation preserves incomingness under translation and
 includes zero projected degrees.
 
-The constructions use `Mei.DirectedWallSpaces.wallGroup`,
+The constructions use `TauCeti.DirectedWallSpaces.wallGroup`,
 `TauCeti.Toric.IsIntegralLattice.realCharacter` and Mathlib's
 `Module.Dual.finrank_ker_add_one_of_ne_zero`.
 -/
 
 public section
+
+open TauCeti (DirectedWallSpaces)
 
 noncomputable section
 

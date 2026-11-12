@@ -24,6 +24,8 @@ Appendix B, arXiv:1411.1394v2.
 
 public section
 
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
 open Mei.Convex
@@ -40,8 +42,8 @@ variable {Γ Λ K R L V E ι κ : Type*}
   [GradedLieAlgebra ℒ] [IsPositiveGrading d ℒ]
   {i : Λ →+ V} {j : K →+ E} {h : TauCeti.Toric.IsIntegralLattice i}
   {H : DirectedWallSpaces ρ ℒ}
-  {D : DirectedDiagram (d := d) h (H.project (AddMonoidHom.fst Λ K)) ι}
-  {F : DirectedDiagram (d := d) h (H.project (AddMonoidHom.fst Λ K)) κ}
+  {D : DirectedDiagram (d := d) h (H.mapTangent (AddMonoidHom.fst Λ K)) ι}
+  {F : DirectedDiagram (d := d) h (H.mapTangent (AddMonoidHom.fst Λ K)) κ}
   (h' : TauCeti.Toric.IsIntegralLattice j)
 
 /-- Equivalent base diagrams have equivalent cylinders at the same cutoff. -/

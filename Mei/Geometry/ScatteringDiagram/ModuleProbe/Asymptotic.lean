@@ -36,6 +36,8 @@ theta functions, and refined tropical curve counts*, §3.3.3
 
 public noncomputable section
 
+open TauCeti (DirectedWallSpaces)
+
 open Set Filter Mei.Convex
 
 namespace Mei.ModuleProbe

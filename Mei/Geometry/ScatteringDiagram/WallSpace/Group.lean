@@ -20,7 +20,7 @@ elementwise, including groups belonging to different supported rays. So do wall 
 supported rays each of whose normals annihilates the geometric direction of the other ray.
 
 Finite images commute with all truncation transitions. Membership retains the
-actual allowed ray degrees through `Mei.DirectedWallSpaces.raySubmodule`. A label whose
+actual allowed ray degrees through `TauCeti.DirectedWallSpaces.raySubmodule`. A label whose
 logarithmic coefficients on a ray lie in the wall spaces of one normal has its ray factor
 (`Mei.PositiveDegrees.rayFactor`) in the corresponding wall group.
 The construction uses `LieSubalgebra.map`, `LieSubalgebra.bchSubgroup`, and
@@ -29,12 +29,16 @@ inverse images and intersections of subgroups from Mathlib.
 
 public section
 
-namespace Mei.DirectedWallSpaces
+open TauCeti (DirectedWallSpaces)
+
+namespace TauCeti.DirectedWallSpaces
+
+open Mei
 
 variable {Γ Λ R L : Type*} [AddCommGroup Γ] [AddCommMonoid Λ]
   [CommRing R] [LieRing L] [LieAlgebra R L] [DecidableEq Γ]
-  {ρ : Γ →+ Λ} {ℒ : Γ → Submodule R L} {d : PositiveDegrees Γ}
-  [GradedLieAlgebra ℒ] [IsPositiveGrading d ℒ]
+  {ρ : Γ →+ Λ} {ℒ : Γ → Submodule R L} {d : Mei.PositiveDegrees Γ}
+  [GradedLieAlgebra ℒ] [Mei.IsPositiveGrading d ℒ]
   (H : DirectedWallSpaces ρ ℒ)
 
 /-- The image of a supported-ray wall Lie algebra in a finite degree quotient. -/
@@ -121,7 +125,7 @@ theorem mem_wallGroup (w : SupportedRay d) (m : Λ →+ ℤ) (g : d.completedBCH
 theorem wallGroup_le_completedRaySubgroup (w : SupportedRay d) (m : Λ →+ ℤ) :
     H.wallGroup w m ≤ d.completedRaySubgroup ℒ w := by
   intro g hg
-  rw [PositiveDegrees.mem_completedRaySubgroup]
+  rw [Mei.PositiveDegrees.mem_completedRaySubgroup]
   intro k
   rw [← d.map_rayLieSubalgebra_mkQ ℒ w k]
   obtain ⟨x, hx, he⟩ := (H.mem_truncatedRayLieSubalgebra w m k _).mp
@@ -138,7 +142,7 @@ theorem wallGroup_eq_completedRaySubgroup (w : SupportedRay d) (m : Λ →+ ℤ)
     rw [H.mem_rayLieSubalgebra, h]
     exact LieSubalgebra.mem_toSubmodule (Mei.rayLieSubalgebra ℒ w)
   ext g
-  simp only [H.mem_wallGroup, PositiveDegrees.mem_completedRaySubgroup,
+  simp only [H.mem_wallGroup, Mei.PositiveDegrees.mem_completedRaySubgroup,
     truncatedRayLieSubalgebra, he, d.map_rayLieSubalgebra_mkQ]
 
 /-- Exponentiating an element of a supported-ray wall algebra gives a completed wall label. -/
@@ -146,7 +150,7 @@ theorem expToCompletion_mem_wallGroup {w : SupportedRay d} {m : Λ →+ ℤ} {x 
     (hx : x ∈ H.raySubmodule w m) : d.expToCompletion ℒ x ∈ H.wallGroup w m := by
   rw [mem_wallGroup]
   intro k
-  rw [PositiveDegrees.projection_expToCompletion, BCHGroup.log_exp,
+  rw [Mei.PositiveDegrees.projection_expToCompletion, BCHGroup.log_exp,
     mem_truncatedRayLieSubalgebra]
   exact ⟨x, hx, rfl⟩
 
@@ -281,4 +285,4 @@ noncomputable instance wallGroup_isMulCommutative (w : SupportedRay d) (m : Λ �
   IsMulCommutative.of_setLike_mul_comm fun _ hg _ hh =>
     (H.commute_of_mem_wallGroup hg hh one_ne_zero one_ne_zero rfl).eq
 
-end Mei.DirectedWallSpaces
+end TauCeti.DirectedWallSpaces

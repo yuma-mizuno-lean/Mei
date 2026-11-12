@@ -25,6 +25,8 @@ No stabilization of the active supports or local finiteness of all walls is requ
 
 public section
 
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
 open Set Mei.Convex

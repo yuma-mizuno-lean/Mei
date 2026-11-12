@@ -29,6 +29,8 @@ its obstacle family is the original active walls, as in
 
 public noncomputable section
 
+open TauCeti (DirectedWallSpaces)
+
 open Set Mei.Convex
 
 namespace Mei.ModuleProbe

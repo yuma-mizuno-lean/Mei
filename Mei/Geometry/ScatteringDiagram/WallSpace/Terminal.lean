@@ -35,14 +35,18 @@ and refined tropical curve counts*, Definition 2.10 (arXiv:1503.06183v5).
 
 public noncomputable section
 
-namespace Mei.DirectedWallSpaces
+open TauCeti (DirectedWallSpaces)
+
+namespace TauCeti.DirectedWallSpaces
+
+open Mei
 
 variable {Γ : Type} {Λ R L M E : Type*} [AddCommGroup Γ] [AddCommMonoid Λ]
   [CommRing R] [Algebra ℚ R] [LieRing L] [LieAlgebra R L]
   [LieAlgebra ℚ L] [IsScalarTower ℚ R L]
   [AddCommGroup M] [Module R M] [LieRingModule L M] [LieModule R L M]
-  [DecidableEq Γ] {ρ : Γ →+ Λ} {d : PositiveDegrees Γ}
-  {ℒ : Γ → Submodule R L} [GradedLieAlgebra ℒ] [IsPositiveGrading d ℒ]
+  [DecidableEq Γ] {ρ : Γ →+ Λ} {d : Mei.PositiveDegrees Γ}
+  {ℒ : Γ → Submodule R L} [GradedLieAlgebra ℒ] [Mei.IsPositiveGrading d ℒ]
   (H : DirectedWallSpaces ρ ℒ) (ℳ : Γ → Submodule R M)
   [DirectSum.Decomposition ℳ] [SetLike.GradedBracket ℒ ℳ]
   [IsWallAnnihilating H ℳ] (p : Γ)
@@ -112,4 +116,4 @@ theorem existsUnique_shiftedBCH_terminalGraphLift_mem_addSubmonoid
   · intro l' hl'
     exact huniq l' ⟨hl'.1, hl'.2.1⟩
 
-end Mei.DirectedWallSpaces
+end TauCeti.DirectedWallSpaces

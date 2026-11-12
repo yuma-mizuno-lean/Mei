@@ -43,6 +43,8 @@ the escape step is `DirectedWall.wallCrossingSum_eq_zero_of_outgoing`.
 
 public section
 
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
 open Set Mei Mei.Convex WallComplement BCHGroup

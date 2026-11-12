@@ -43,6 +43,8 @@ tropical curve counts*, [arXiv:1503.06183v5](https://arxiv.org/abs/1503.06183v5)
 
 public section
 
+open TauCeti (DirectedWallSpaces wallBracketNormal)
+
 noncomputable section
 
 open Set Mei.Convex

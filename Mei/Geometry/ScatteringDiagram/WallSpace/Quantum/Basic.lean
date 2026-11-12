@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Algebra.QuantumMonoidAlgebra.Lie
-public import Mei.Geometry.ScatteringDiagram.WallSpace.Basic
+public import TauCeti.Geometry.ScatteringDiagram.WallSpace.Basic
 
 /-!
 # Quantum directed wall spaces
@@ -30,6 +30,8 @@ counts*, Example 2.1(iii).
 -/
 
 public section
+
+open TauCeti (DirectedWallSpaces wallBracketNormal)
 
 noncomputable section
 

@@ -28,6 +28,8 @@ positive (`FunctionWallGrouping.IsPositive.append`).
 
 public section
 
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
 namespace Mei.DirectedDiagram
