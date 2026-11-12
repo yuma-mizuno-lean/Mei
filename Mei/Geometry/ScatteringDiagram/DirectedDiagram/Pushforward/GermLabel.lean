@@ -83,7 +83,7 @@ theorem singularSupport_pushforward (k : ℕ) :
       P.spatialMap ''
         singularSupport (fun j : (D.pushforward P).active k => (D.wall j).support) := by
   simp only [pushforward_wall_support]
-  exact singularSupport_image _ _
+  exact P.spatialMap.singularSupport_image (Equiv.refl _) (fun _ => rfl)
 
 /-- A point outside the singular support of the walls of `D` active at a source order covering
 the cutoff modulus of `k` has image outside the singular support of the pushed walls active at

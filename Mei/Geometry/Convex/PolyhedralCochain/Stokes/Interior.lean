@@ -30,7 +30,7 @@ public section
 
 noncomputable section
 
-open Set Mei.Convex
+open Set
 
 namespace Mei.OrientedCell
 

@@ -41,7 +41,7 @@ open TauCeti (WallComplement AdmissiblePLPath mem_singularSupport)
 
 noncomputable section
 
-open Set Mei.Convex TauCeti.WallComplement
+open Set TauCeti.WallComplement
 
 namespace Mei.PolyhedralCochain
 
