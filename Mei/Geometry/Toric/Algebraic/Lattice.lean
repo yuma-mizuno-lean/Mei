@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import TauCeti.Geometry.Toric.Algebraic.Lattice
+public import TauCeti.Geometry.Toric.Algebraic.Lattice.Basic
 
 /-!
 # Real extension of integral lattices

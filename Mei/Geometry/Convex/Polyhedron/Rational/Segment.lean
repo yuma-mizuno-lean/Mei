@@ -7,6 +7,7 @@ module
 
 public import Mei.Geometry.Convex.Polyhedron.Rational.Sweep
 public import Mei.Geometry.Convex.Polyhedron.Rational.LocallyClosed
+import TauCeti.Analysis.Convex.FourierMotzkin
 
 /-!
 # Polyhedral encounters along finite affine segments
@@ -16,7 +17,7 @@ rational-normal polyhedron in its open time interval form a rational semilinear
 set. Both its starting point and its duration may depend affinely on the endpoint,
 with rational linear parts. Tangencies and singleton intersections are retained.
 
-The proof eliminates the time variable using `exists_pos_lt_mul_le_iff`.
+The proof eliminates the time variable using `TauCeti.exists_pos_lt_mul_le_iff`.
 The strict interval bounds give strict resultant inequalities, while pairs of
 weak support inequalities give weak resultants. Complements therefore describe
 avoidance by the entire open segment, including segments parallel to a wall.
@@ -58,7 +59,7 @@ theorem isRationalSemilinear_setOf_exists_pos_lt_affine_le {κ : Type*} [Finite 
     ContinuousAffineMap.neg_apply, neg_lt_zero, ContinuousAffineMap.add_apply,
     ContinuousAffineMap.smul_apply, smul_eq_mul, nonnegElimFamily_pair_apply,
     Subtype.forall, Prod.forall]
-  have he := exists_pos_lt_mul_le_iff (a := a) (b := fun j => -g j x) (T := T x)
+  have he := TauCeti.exists_pos_lt_mul_le_iff (a := a) (b := fun j => -g j x) (T := T x)
   have he' : (∃ t : ℝ, 0 < t ∧ t < T x ∧ ∀ j, g j x + a j * t ≤ 0) ↔
       0 < T x ∧ (∀ j, a j = 0 → 0 ≤ -g j x) ∧
         (∀ j, 0 < a j → 0 < -g j x) ∧

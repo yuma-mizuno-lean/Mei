@@ -29,7 +29,7 @@ These two results supply wall avoidance and source admission for unbounded incom
 segments.
 
 The construction reuses `IsRationalNormalPolyhedron.negRay` and the active-inequality
-perturbation theorem `AffineMap.exists_pos_smul_add_forall_le`, together with
+perturbation theorem `TauCeti.exists_pos_smul_add_forall_le`, together with
 `Convex.eventually_forall_notMem_of_notMem_recessionCone` for nonrecession directions.
 -/
 
@@ -69,7 +69,7 @@ theorem IsRationalNormalPolyhedron.isLocallyClosedPolyhedron_openNegRay
           by_contra hle
           have hs := hstrict ⟨j, lt_of_not_ge hle⟩
           linarith
-        obtain ⟨ε, hε, hmem⟩ := AffineMap.exists_pos_smul_add_forall_le
+        obtain ⟨ε, hε, hmem⟩ := TauCeti.exists_pos_smul_add_forall_le
           (fun j => (A.inequality j).toAffineMap)
           (RationalAffinePolyhedron.mem_carrier.mp hx) hactive
         exact ⟨ε, hε, RationalAffinePolyhedron.mem_carrier.mpr

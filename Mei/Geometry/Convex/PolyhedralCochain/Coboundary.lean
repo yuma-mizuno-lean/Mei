@@ -24,7 +24,7 @@ This is the generator formula only: descent through subdivision relations requir
 additional geometric cancellation results. In particular, no coboundary on the quotient of
 source presentations is defined here.
 
-The finite assembly uses `TauCeti.IsConvexPolyhedron.finite_exposed_sets`,
+The finite assembly uses `TauCeti.IsConvexPolyhedron.finite_setOf_isExposed`,
 `OrientedCell.boundaryFacet` and its reversal law, and Mathlib's `Finsupp.lsum`.
 -/
 

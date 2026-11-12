@@ -5,11 +5,11 @@ Authors: Codex
 -/
 module
 
-public import Mei.Analysis.Convex.FourierMotzkin
 public import Mei.Topology.Algebra.ContinuousAffineMap
 public import TauCeti.Analysis.Convex.Polyhedron.Basic
 public import Mathlib.Basic.Finite.Sum
 public import Mathlib.Basic.Finite.Prod
+import TauCeti.Analysis.Convex.FourierMotzkin
 import Mathlib.Tactic.Linarith
 
 /-!
@@ -90,7 +90,7 @@ theorem exists_nonneg_affine_le_iff [Finite ι]
       exact ⟨t, ht, fun i => by linarith [h i]⟩
     · rintro ⟨t, ht, h⟩
       exact ⟨t, ht, fun i => by linarith [h i]⟩
-  rw [he, Mei.exists_nonneg_mul_le_iff]
+  rw [he, TauCeti.exists_nonneg_mul_le_iff]
   constructor
   · rintro ⟨hsingle, hpair⟩ k
     rcases k with i | ⟨i, j⟩

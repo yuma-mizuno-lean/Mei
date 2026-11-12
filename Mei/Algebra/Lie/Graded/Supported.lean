@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Algebra.Lie.Graded.Map
+public import TauCeti.Algebra.Lie.Graded.Hom
 public import Mei.Algebra.DirectSum.Supported
 
 /-!

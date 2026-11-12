@@ -7,7 +7,7 @@ module
 
 public import Mei.Geometry.ScatteringDiagram.ModuleProbe.Grading.Basic
 public import Mei.Geometry.ScatteringDiagram.ModuleProbe.Degree
-public import Mei.Algebra.Lie.Graded.Map
+public import TauCeti.Algebra.Lie.Graded.Hom
 public import Mei.Algebra.Lie.Graded.PositiveDegreeHom
 
 /-!

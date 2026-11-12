@@ -99,7 +99,7 @@ theorem isExposed_activeFace (P : RationalAffinePolyhedron h)
   have hcarrier : P.carrier = {x : V | ∀ j, P.inequality j x ≤ 0} :=
     Set.ext fun _ => mem_carrier
   rw [carrier_activeFace, hcarrier]
-  exact Mei.Convex.isExposed_setOf_active P.inequality I
+  exact TauCeti.isExposed_setOf_active P.inequality I
 
 end Mei.RationalAffinePolyhedron
 

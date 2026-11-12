@@ -272,7 +272,7 @@ private theorem finite_boundaryFacets (σ : OrientedCell h k) :
     simp only [boundaryFacet_carrier] at heq
     subst G
     rfl
-  · exact σ.rational.isConvexPolyhedron.finite_exposed_sets
+  · exact σ.rational.isConvexPolyhedron.finite_setOf_isExposed
 
 /-- All nonempty exposed facets, with their signed boundary orientations. Each geometric
 facet occurs once, regardless of redundant inequalities in a presentation of the cell. -/

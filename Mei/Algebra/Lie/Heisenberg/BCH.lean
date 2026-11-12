@@ -7,7 +7,7 @@ module
 
 public import Mei.Algebra.Lie.BCH.LowDegree
 public import Mei.Algebra.Lie.BCH.Group
-public import TauCeti.Algebra.Lie.Heisenberg
+public import TauCeti.Algebra.Lie.Heisenberg.Basic
 
 /-!
 # BCH multiplication in the Heisenberg Lie algebra

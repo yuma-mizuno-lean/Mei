@@ -292,7 +292,7 @@ theorem intrinsicFrontier_subset_support_codimensionAtLeast (C : FinitePolyhedra
   have hex : IsExposed ℝ P F := by
     dsimp only [F]
     rw [hpres]
-    simpa using Mei.Convex.isExposed_setOf_active g {j}
+    simpa using TauCeti.isExposed_setOf_active g {j}
   have hlt : Module.finrank ℝ (affineSpan ℝ F).direction <
       Module.finrank ℝ (affineSpan ℝ P).direction :=
     (g j).toAffineMap.finrank_direction_inter_zero_lt ⟨x, hxP, hgx⟩ ⟨p, hp, hgp.ne⟩

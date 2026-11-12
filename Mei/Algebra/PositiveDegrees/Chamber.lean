@@ -7,7 +7,7 @@ module
 
 public import Mei.Algebra.PositiveDegrees.Basic
 public import Mei.Geometry.Convex.Cone.Chamber
-public import TauCeti.Geometry.Toric.Algebraic.Lattice
+public import TauCeti.Geometry.Toric.Algebraic.Lattice.Basic
 public import Mathlib.Analysis.Normed.Module.FiniteDimension
 
 /-!
