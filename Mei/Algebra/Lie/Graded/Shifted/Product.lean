@@ -23,9 +23,13 @@ functions, and refined tropical curve counts*, §2.1 (arXiv:1503.06183).
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 noncomputable section
 
-namespace Mei.PositiveDegrees
+namespace TauCeti.PositiveDegrees
+
+open Mei
 
 variable {Γ R L A : Type*} [AddCommGroup Γ] [CommRing R] [Algebra ℚ R]
   [LieRing L] [LieAlgebra R L] [LieAlgebra ℚ L] [IsScalarTower ℚ R L]
@@ -70,4 +74,4 @@ theorem completedBCHAction_shiftedCompletionMul (g : d.completedBCHGroup ℒ)
     (fun _ _ _ _ => d.shiftedMul_mem_shiftedFiltration 𝒜 p q)
     (d.lie_shiftedLieMul ℒ 𝒜 p q) g x y
 
-end Mei.PositiveDegrees
+end TauCeti.PositiveDegrees

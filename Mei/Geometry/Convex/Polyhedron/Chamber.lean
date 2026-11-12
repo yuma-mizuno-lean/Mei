@@ -25,6 +25,8 @@ complement is disconnected. Chambers use Mathlib's `ConnectedComponents` and
 
 public section
 
+open TauCeti (WallComplement singularSupport exists_mem_open_two_transverse_lineMaps)
+
 open Set AffineSubspace
 
 namespace Mei.Convex

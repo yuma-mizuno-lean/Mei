@@ -31,6 +31,8 @@ This combines `ContinuousMap.exists_grid_subdivision_convexHull`,
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath)
+
 open Set Mei.Convex
 open scoped unitInterval
 

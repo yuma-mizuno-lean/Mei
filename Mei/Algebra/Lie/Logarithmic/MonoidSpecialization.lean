@@ -30,6 +30,8 @@ arXiv:1503.06183v5.
 
 public section
 
+open TauCeti (PositiveDegrees PositiveDegreeMap)
+
 namespace Mei.LogarithmicVectorField
 
 open _root_.AddMonoidAlgebra

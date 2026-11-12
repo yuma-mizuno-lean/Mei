@@ -21,6 +21,8 @@ therefore give an actual common subdivision. Lineality is allowed.
 
 public section
 
+open TauCeti (RationalAffinePolyhedron isRationalNormalPolyhedron_iff)
+
 namespace Mei.FinitePolyhedralComplex
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]

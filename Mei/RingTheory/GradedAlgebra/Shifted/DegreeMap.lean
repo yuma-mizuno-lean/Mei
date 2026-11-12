@@ -18,9 +18,13 @@ and refined tropical curve counts*, §2.1 (arXiv:1503.06183).
 -/
 
 public section
+
+open TauCeti (PositiveDegrees PositiveDegreeMap)
 noncomputable section
 
-namespace Mei.PositiveDegreeMap
+namespace TauCeti.PositiveDegreeMap
+
+open Mei
 
 variable {Γ Γ' R A B : Type*} [AddCommGroup Γ] [AddCommGroup Γ']
   [CommRing R] [Ring A] [Ring B] [Algebra R A] [Algebra R B]
@@ -48,4 +52,4 @@ theorem shiftedCompletionMap_mul (hmul : ∀ a b, f (a * b) = f a * f b)
   rw [hcast _ _ (_root_.map_add T.toAddMonoidHom p q)]
   simp only [coe_shiftedMap, coe_shiftedMul, hmul]
 
-end Mei.PositiveDegreeMap
+end TauCeti.PositiveDegreeMap

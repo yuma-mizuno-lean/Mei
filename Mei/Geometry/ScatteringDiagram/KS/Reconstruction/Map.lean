@@ -26,11 +26,15 @@ map is needed. The reconstruction is that of Tom Bridgeland,
 
 public section
 
+open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading GradedLieHom)
+
 noncomputable section
 
 universe u
 
-namespace Mei.PositiveDegrees
+namespace TauCeti.PositiveDegrees
+
+open Mei
 
 variable {N V R : Type*} {L L' : Type u} [AddCommGroup N]
   [NormedAddCommGroup V] [NormedSpace ℝ V]
@@ -50,6 +54,6 @@ theorem mapDiagram_reconstruct (f : GradedLieHom (PositiveDegreeMap.id d) ℒ �
   funext k
   rw [CompletedDiagram.mapDiagram_diagram, reconstruct_diagram, reconstruct_diagram,
     f.projection_completedMap_of_le k (a := k) (by simp)]
-  exact d.map_reconstructFinite h ℒ ℳ f (CompletedGroup.projection k g)
+  exact d.map_reconstructFinite h ℒ ℳ f (TauCeti.CompletedGroup.projection k g)
 
-end Mei.PositiveDegrees
+end TauCeti.PositiveDegrees

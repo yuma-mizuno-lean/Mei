@@ -71,6 +71,10 @@ Gross–Hacking–Keel–Kontsevich, *Canonical bases for cluster algebras*, Exa
 
 public section
 
+open TauCeti (AlgFiltration)
+
+open TauCeti (PositiveDegrees SupportedRay)
+
 noncomputable section
 
 namespace Mei.DirectedDiagram

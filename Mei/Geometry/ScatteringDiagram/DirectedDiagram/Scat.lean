@@ -29,6 +29,10 @@ countably many corrections; only its class enters the public construction.
 
 public section
 
+open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading GradedLieHom)
+
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
 namespace Mei.DirectedDiagram

@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.LinearAlgebra.GradedCorrespondence.Basic
+public import TauCeti.LinearAlgebra.GradedCorrespondence.Basic
 public import Mei.Geometry.Convex.Sweep.Admissible.SingleFace
 public import Mei.Geometry.Convex.Sweep.Generic
 
@@ -34,7 +34,9 @@ public noncomputable section
 
 open Set Mei.Convex
 
-namespace Mei.GradedCorrespondence
+namespace TauCeti.GradedCorrespondence
+
+open Mei
 
 variable {R B U M ι κ V : Type*} [Semiring R]
   [AddCommMonoid B] [Module R B] [AddCommMonoid U] [Module R U]
@@ -224,4 +226,4 @@ theorem singleFaceTransferEvaluationLinear_apply_eq_evaluation
 
 end Linear
 
-end Mei.GradedCorrespondence
+end TauCeti.GradedCorrespondence

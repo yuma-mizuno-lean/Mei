@@ -18,6 +18,8 @@ not be injective, and neither bilinear form needs to be alternating.
 -/
 
 public section
+
+open TauCeti (PositiveDegrees PositiveDegreeMap)
 noncomputable section
 
 namespace Mei.QuantumMonoidAlgebra

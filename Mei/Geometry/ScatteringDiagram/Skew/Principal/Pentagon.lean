@@ -11,6 +11,7 @@ public import Mei.Geometry.ScatteringDiagram.DirectedWall.Halfspace
 public import Mei.Geometry.ScatteringDiagram.Skew.Principal.Positive
 public import Mei.Geometry.ScatteringDiagram.Skew.Pentagon
 import Mei.Algebra.MonoidAlgebra.Filtration.PowerSeries
+import Mei.RingTheory.FilteredAlgebra.Completion
 
 /-!
 # The cluster scattering pentagon diagram with isolated indices and coefficients
@@ -58,6 +59,10 @@ there). The relation between the walls at `i₁`, `i₂` is the pentagon identit
 -/
 
 public section
+
+open TauCeti (AlgFiltration)
+
+open TauCeti (PositiveDegrees SupportedRay GradedLieHom)
 
 noncomputable section
 

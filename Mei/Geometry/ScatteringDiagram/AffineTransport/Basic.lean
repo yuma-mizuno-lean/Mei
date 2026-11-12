@@ -24,6 +24,8 @@ test paths in image complexes by their ambient vertex lists.
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath)
+
 noncomputable section
 
 open Set Mei.Convex
@@ -36,7 +38,7 @@ variable {N N' V V' H : Type*} [AddCommGroup N] [AddCommGroup N']
   {i : N →+ V} {i' : N' →+ V'}
   {h : TauCeti.Toric.IsIntegralLattice i} {h' : TauCeti.Toric.IsIntegralLattice i'}
   {C : FinitePolyhedralComplex h}
-  (D : FiniteWallDiagram C H) (e : Mei.Toric.IntegralAffineEquiv h h')
+  (D : FiniteWallDiagram C H) (e : TauCeti.Toric.IntegralAffineEquiv h h')
 
 /-- Transport labels by the wall bijection and normals by the inverse linear part. -/
 def image : FiniteWallDiagram (C.image e) H where
@@ -88,7 +90,7 @@ variable {C' : FinitePolyhedralComplex h}
   {D : FiniteWallDiagram C H} {E : FiniteWallDiagram C' H}
 
 /-- Affine images preserve equivalence, even for diagrams on different complexes. -/
-theorem Equivalent.image (hDE : D.Equivalent E) (e : Toric.IntegralAffineEquiv h h') :
+theorem Equivalent.image (hDE : D.Equivalent E) (e : TauCeti.Toric.IntegralAffineEquiv h h') :
     (D.image e).Equivalent (E.image e) := by
   apply (equivalent_def _ _).mpr
   intro x y x' y' p q hpq
@@ -99,7 +101,7 @@ theorem Equivalent.image (hDE : D.Equivalent E) (e : Toric.IntegralAffineEquiv h
 /-- Affine images preserve and reflect equivalence. -/
 @[simp]
 theorem equivalent_image_iff (D : FiniteWallDiagram C H) (E : FiniteWallDiagram C' H)
-    (e : Toric.IntegralAffineEquiv h h') :
+    (e : TauCeti.Toric.IntegralAffineEquiv h h') :
     (D.image e).Equivalent (E.image e) ↔ D.Equivalent E := by
   constructor
   · intro hDE
@@ -112,7 +114,8 @@ theorem equivalent_image_iff (D : FiniteWallDiagram C H) (E : FiniteWallDiagram 
 
 /-- Affine images preserve and reflect endpoint independence. -/
 @[simp]
-theorem consistent_image_iff (D : FiniteWallDiagram C H) (e : Toric.IntegralAffineEquiv h h') :
+theorem consistent_image_iff (D : FiniteWallDiagram C H)
+    (e : TauCeti.Toric.IntegralAffineEquiv h h') :
     (D.image e).Consistent ↔ D.Consistent := by
   rw [consistent_def, consistent_def]
   constructor
@@ -125,10 +128,10 @@ theorem consistent_image_iff (D : FiniteWallDiagram C H) (e : Toric.IntegralAffi
 
 /-- Transport by the identity is equivalent to the original diagram. -/
 theorem image_refl_equivalent (D : FiniteWallDiagram C H) :
-    (D.image (Toric.IntegralAffineEquiv.refl h)).Equivalent D := by
+    (D.image (TauCeti.Toric.IntegralAffineEquiv.refl h)).Equivalent D := by
   apply (equivalent_def _ _).mpr
   intro x y x' y' p q hpq
-  rw [← D.pathProduct_image (Toric.IntegralAffineEquiv.refl h) q]
+  rw [← D.pathProduct_image (TauCeti.Toric.IntegralAffineEquiv.refl h) q]
   apply pathProduct_eq_of_vertices_eq
   rw [C.vertices_pathImage]
   simpa using hpq
@@ -139,7 +142,7 @@ variable {N'' V'' : Type*} [AddCommGroup N'']
 
 /-- Successive coordinate changes agree with their composite up to equivalence. -/
 theorem image_trans_equivalent (D : FiniteWallDiagram C H)
-    (e : Toric.IntegralAffineEquiv h h') (f : Toric.IntegralAffineEquiv h' h'') :
+    (e : TauCeti.Toric.IntegralAffineEquiv h h') (f : TauCeti.Toric.IntegralAffineEquiv h' h'') :
     ((D.image e).image f).Equivalent (D.image (e.trans f)) := by
   apply (equivalent_def _ _).mpr
   intro x y x' y' p q hpq
@@ -155,10 +158,10 @@ theorem image_trans_equivalent (D : FiniteWallDiagram C H)
 
 /-- A coordinate change followed by its inverse recovers the diagram up to equivalence. -/
 theorem image_symm_equivalent (D : FiniteWallDiagram C H)
-    (e : Toric.IntegralAffineEquiv h h') :
+    (e : TauCeti.Toric.IntegralAffineEquiv h h') :
     ((D.image e).image e.symm).Equivalent D := by
   have he := D.image_trans_equivalent e e.symm
-  rw [Toric.IntegralAffineEquiv.self_trans_symm] at he
+  rw [TauCeti.Toric.IntegralAffineEquiv.self_trans_symm] at he
   exact he.trans (D.image_refl_equivalent)
 
 end Mei.FiniteWallDiagram

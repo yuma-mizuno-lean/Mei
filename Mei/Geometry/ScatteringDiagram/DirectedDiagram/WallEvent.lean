@@ -31,9 +31,15 @@ theta functions, and refined tropical curve counts*, equation (8) and §3.3.3
 (arXiv:1503.06183v5).
 -/
 
+open TauCeti (WallComplement singularSupport affineSpan_eq_of_notMem_singularSupport)
+
 public noncomputable section
 
-open Set Filter Topology Mei.Convex Mei.Convex.WallComplement
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
+open TauCeti (DirectedWallSpaces)
+
+open Set Filter Topology Mei.Convex TauCeti.WallComplement
 
 namespace Mei.DirectedDiagram
 
@@ -204,7 +210,7 @@ theorem wallEventLabel_eq_prod (k : ℕ) (e : WallEvent (D.active k))
     (hs : SignType.sign (e.normal (f k) v) = e.2)
     (l : List (D.active k)) (hl : l.Nodup) (hm : ∀ j, j ∈ l ↔ j ∈ e.1.val) :
     D.wallEventLabel k e =
-      (l.map fun j : D.active k => CompletedGroup.projection k (D.wall j).label ^
+      (l.map fun j : D.active k => TauCeti.CompletedGroup.projection k (D.wall j).label ^
         (if 0 < h.realCharacter (D.wall j).normal (-v) then -1 else 1 : ℤ)).prod := by
   rw [D.wallEventLabel_eq_combinedLabel k e he hx hs
     (e.normal_ne_zero_of_mem_support (W k) (f k) he hv)]
@@ -221,7 +227,7 @@ theorem truncation_wallEventLabel {k l : ℕ} (hkl : k ≤ l)
     (hv : ∀ j : D.active l, x ∈ (D.wall j).support → (f l) j v ≠ 0)
     (hs : SignType.sign (e.normal (f k) v) = e.2)
     (hs' : SignType.sign (e'.normal (f l) v) = e'.2) :
-    (d.truncationMap ℒ hkl).bchGroupMap (D.wallEventLabel l e') =
+    (d.lieTruncationMap ℒ hkl).bchGroupMap (D.wallEventLabel l e') =
       D.wallEventLabel k e := by
   have hvk (j : D.active k) (hj : x ∈ (D.wall j).support) : (f k) j v ≠ 0 :=
     hv ⟨j.val, D.active_mono hkl j.property⟩ hj
@@ -231,7 +237,7 @@ theorem truncation_wallEventLabel {k l : ℕ} (hkl : k ≤ l)
       (e.normal_ne_zero_of_mem_support (W k) (f k) he hvk)]
   exact D.truncation_combinedLabel hkl x (-v) hl hk
 
-open WallComplement in
+open TauCeti.WallComplement in
 /-- The product at an actual admissible-segment event is the fixed alphabet
 label whose sign is computed on the negative segment velocity. -/
 theorem crossingEventProduct_eq_wallEventLabel (k : ℕ)
@@ -240,7 +246,7 @@ theorem crossingEventProduct_eq_wallEventLabel (k : ℕ)
     (he : AffineMap.lineMap x.val y.val t ∈ e.support (W k))
     (hs : SignType.sign (e.normal (f k) (x.val - y.val)) = e.2) :
     crossingEventProduct (fun j : D.active k => h.realCharacter (D.wall j).normal)
-      (fun j => CompletedGroup.projection k (D.wall j).label)
+      (fun j => TauCeti.CompletedGroup.projection k (D.wall j).label)
       (D.activeLabels_commute k) a t = D.wallEventLabel k e := by
   rw [D.wallEventLabel_eq_combinedLabel k e he (a.down.regular t ht) hs
       (e.normal_ne_zero_of_mem_support (W k) (f k) he ?_),

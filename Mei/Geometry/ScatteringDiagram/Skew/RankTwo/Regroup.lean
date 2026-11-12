@@ -27,6 +27,8 @@ integer multiple of `κ(m)`; it is positive because the exponents `c i` are.
 
 public section
 
+open TauCeti (PositiveDegrees)
+
 noncomputable section
 
 namespace Mei.SkewLatticeDatum
@@ -80,12 +82,12 @@ theorem exists_isChain_projection_prod_unitFactor_eq [Module.Free ℤ D.sublatti
     (hI : I.IsChain fun i j => 0 ≤ βℚ (δ i).1 (δ j).1) {g : d.completedBCHGroup
       (SkewLieAlgebra.positiveGrading βℚ (D.isAlt_coefficientForm ℚ) d)}
     (hg : D.IsIntegralLabel d g) {k : ℕ} (hdeg : ∀ i ∈ I, d.degree (δ i).1 ≤ k)
-    (hk : CompletedGroup.projection k g =
-      CompletedGroup.projection k (I.map fun i => D.dilogPow d (δ i) (c i)).prod) :
+    (hk : TauCeti.CompletedGroup.projection k g =
+      TauCeti.CompletedGroup.projection k (I.map fun i => D.dilogPow d (δ i) (c i)).prod) :
     ∃ M : List (D.NonzeroDegree d), (∀ m ∈ M, ∃ i ∈ I, δ i = m) ∧
       (M.IsChain fun a b => 0 ≤ βℚ a.1 b.1) ∧ (∀ m ∈ M, d.degree m.1 ≤ k) ∧
-      CompletedGroup.projection k (M.map (D.unitFactor d)).prod =
-        CompletedGroup.projection k g := by
+      TauCeti.CompletedGroup.projection k (M.map (D.unitFactor d)).prod =
+        TauCeti.CompletedGroup.projection k g := by
   classical
   obtain ⟨I', hI'I, -, -, hI'pw, hprod, hs⟩ :=
     D.exists_nodup_prod_eq_and_intCast_mul_rayIndex_of_isChain d I (fun i => (δ i).1)

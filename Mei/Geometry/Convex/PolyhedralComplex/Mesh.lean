@@ -33,6 +33,8 @@ nonembedded fillings and degenerate parameter cells are allowed.
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath)
+
 open Set Metric Mei.Convex
 
 namespace Mei.FinitePolyhedralComplex

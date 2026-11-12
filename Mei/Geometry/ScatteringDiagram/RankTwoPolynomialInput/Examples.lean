@@ -20,7 +20,7 @@ public import Mei.Algebra.PositiveDegrees.Basis
 ## A horizontal line
 
 Take `L = M = ℤ²`, `π = id`, the even quadrant `P = 2ℕe₁ + ℕe₂` with `δ(a, b) = a + b`
-(`Mei.PositiveDegrees.Examples.evenOrthant`), and the horizontal incoming line `{y = 0}` with
+(`TauCeti.PositiveDegrees.Examples.evenOrthant`), and the horizontal incoming line `{y = 0}` with
 wall function `1 + c z^{2e₁}` (`RankTwoPolynomialInput.Examples.horizontalInput`). The primitive
 generator `e₁` of the horizontal ray is not an allowed degree, but its ray is supported by
 `2e₁`, and it is the only supported ray tangent to the line
@@ -99,11 +99,13 @@ completion or consistency statement is proved for it.
 
 public section
 
+open TauCeti (PositiveDegreeMap SupportedRay)
+
 noncomputable section
 
 namespace Mei.RankTwoPolynomialInput.Examples
 
-open PositiveDegrees.Examples
+open TauCeti.PositiveDegrees.Examples
 
 /-- The horizontal line `{y = 0}` of `ℤ²` with the wall function `1 + c z^{2e₁}`, on the even
 quadrant with the coordinate-sum degree. -/

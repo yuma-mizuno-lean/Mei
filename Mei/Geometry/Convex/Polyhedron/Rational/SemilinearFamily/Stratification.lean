@@ -7,7 +7,8 @@ module
 
 public import Mei.Geometry.Convex.Polyhedron.Rational.Image
 public import Mei.Geometry.Convex.Polyhedron.Rational.SemilinearFamily.Basic
-public import Mei.Geometry.Convex.Polyhedron.Rational.Stratification
+public import TauCeti.Analysis.Convex.Polyhedron.Rational.Stratification.Basic
+public import Mei.Algebra.BigOperators.Group.Finset.Indicator
 
 /-!
 # Compatible stratifications of finite branches
@@ -45,6 +46,8 @@ not treated here.
 
 public section
 
+open TauCeti (IsLocallyClosedPolyhedron IsRationalSemilinear)
+
 open Set
 
 namespace Mei
@@ -62,7 +65,7 @@ theorem exists_pairwise_disjoint {D : Set V} {f : D → W} (hf : IsFiniteBranchO
     ∃ (κ : Type) (_ : Finite κ) (S : κ → Set V) (g : κ → (V →ᵃ[ℝ] W)),
       (⋃ k, S k) = D ∧ (Pairwise fun a b => Disjoint (S a) (S b)) ∧ (∀ k, (S k).Nonempty) ∧
         (∀ k, IsLocallyClosedPolyhedron h (S k)) ∧
-        (∀ k, Toric.IsRationalLinearMap h h' (g k).linear) ∧ (∀ k, InjOn (g k) (S k)) ∧
+        (∀ k, TauCeti.Toric.IsRationalLinearMap h h' (g k).linear) ∧ (∀ k, InjOn (g k) (S k)) ∧
         ∀ k (x : D), x.1 ∈ S k → f x = g k x := by
   classical
   obtain ⟨κ, _, S, g, hD, hS⟩ := isFiniteBranchOn_iff.mp hf
@@ -124,7 +127,7 @@ structure BranchStratification (κ μ : Type*) where
   disjoint_source : ∀ a a', chart a = chart a' → a ≠ a' → Disjoint (source a) (source a')
   /-- On each source stratum, the evaluation of its chart agrees with an affine map with rational
   linear part that maps the source stratum bijectively onto its target stratum. -/
-  exists_affineMap : ∀ a, ∃ g : V →ᵃ[ℝ] W, Toric.IsRationalLinearMap h h' g.linear ∧
+  exists_affineMap : ∀ a, ∃ g : V →ᵃ[ℝ] W, TauCeti.Toric.IsRationalLinearMap h h' g.linear ∧
     BijOn g (source a) (target (stratum a)) ∧
       ∀ x : F.domain (chart a), x.1 ∈ source a → F.eval (chart a) x = g x
 

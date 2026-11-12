@@ -7,7 +7,7 @@ module
 
 public import Mei.Geometry.ScatteringDiagram.ModuleProbe.Grading.Basic
 public import Mei.Geometry.ScatteringDiagram.ModuleProbe.Degree
-public import Mei.Algebra.Lie.Graded.Map
+public import TauCeti.Algebra.Lie.Graded.Hom
 public import Mei.Algebra.Lie.Graded.PositiveDegreeHom
 
 /-!
@@ -25,6 +25,8 @@ tropical curve counts*, §3.3.3 (arXiv:1503.06183v5).
 -/
 
 public section
+
+open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading GradedLieHom)
 noncomputable section
 namespace Mei.ModuleProbe
 

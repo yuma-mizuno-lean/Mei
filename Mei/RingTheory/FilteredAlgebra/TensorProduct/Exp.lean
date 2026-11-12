@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mei.RingTheory.FilteredAlgebra.TensorProduct.Completion
-public import Mei.RingTheory.FilteredAlgebra.Exp.Basic
+public import TauCeti.RingTheory.FilteredAlgebra.Exp.Basic
 
 /-!
 # Exponentials in completed tensor products
@@ -25,7 +25,7 @@ public section
 
 open scoped TensorProduct
 
-namespace Mei.AlgFiltration
+namespace TauCeti.AlgFiltration
 
 variable {R A B : Type*} [CommRing R]
   [Ring A] [Ring B] [Algebra R A] [Algebra R B] [Algebra ℚ A]
@@ -36,7 +36,7 @@ theorem includeLeftCompletion_completedExp (x : F.completionIdeal 1) :
     F.includeLeftCompletion (R := R) G (F.completedExp x) =
       (F.tensorProduct R G).completedExp
         ⟨F.includeLeftCompletion (R := R) G x,
-          F.includeLeftCompletion_mem_completionIdeal G x.property⟩ := by
+          F.includeLeftCompletion_mem_completionIdeal R G x.property⟩ := by
   apply (F.tensorProduct R G).completion_ext
   intro k
   simp only [projection_includeLeftCompletion, projection_completedExp]
@@ -49,7 +49,7 @@ theorem includeRightCompletion_completedExp (y : G.completionIdeal 1) :
     F.includeRightCompletion (R := R) G (G.completedExp y) =
       (F.tensorProduct R G).completedExp
         ⟨F.includeRightCompletion (R := R) G y,
-          F.includeRightCompletion_mem_completionIdeal G y.property⟩ := by
+          F.includeRightCompletion_mem_completionIdeal R G y.property⟩ := by
   apply (F.tensorProduct R G).completion_ext
   intro k
   simp only [projection_includeRightCompletion, projection_completedExp]
@@ -60,12 +60,12 @@ theorem completedTensor_completedExp (x : F.completionIdeal 1) (y : G.completion
     F.completedTensor (R := R) G (F.completedExp x) (G.completedExp y) =
       (F.tensorProduct R G).completedExp
         (⟨F.includeLeftCompletion (R := R) G x,
-            F.includeLeftCompletion_mem_completionIdeal G x.property⟩ +
+            F.includeLeftCompletion_mem_completionIdeal R G x.property⟩ +
           ⟨F.includeRightCompletion (R := R) G y,
-            F.includeRightCompletion_mem_completionIdeal G y.property⟩) := by
+            F.includeRightCompletion_mem_completionIdeal R G y.property⟩) := by
   rw [completedTensor_apply, includeLeftCompletion_completedExp,
     includeRightCompletion_completedExp]
   exact ((F.tensorProduct R G).completedExp_add _ _
     (F.commute_includeLeftCompletion_includeRightCompletion (R := R) G x y)).symm
 
-end Mei.AlgFiltration
+end TauCeti.AlgFiltration

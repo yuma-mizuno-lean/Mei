@@ -40,6 +40,12 @@ tropical curve counts*, Example 2.1(i) (arXiv:1503.06183v5), with fixed supports
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath GradedLieHom)
+
+open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading)
+
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
 open Set Mei.Convex
@@ -174,9 +180,9 @@ theorem vertices_levelPathOfRestrictScalars (k : ℕ)
 /-- The finite scalar-restriction comparison sends the projected label of a restricted wall to
 the projected label of the original wall. -/
 theorem bchGroupEquiv_projection_restrictScalars_wall_label (k : ℕ) (j : ι) :
-    (d.truncatedRestrictScalarsEquiv (R := K) ℒ k).bchGroupEquiv
-        (CompletedGroup.projection k ((D.restrictScalars K).wall j).label) =
-      CompletedGroup.projection k (D.wall j).label := by
+    (d.lieTruncationRestrictScalarsEquiv (R := K) ℒ k).bchGroupEquiv
+        (TauCeti.CompletedGroup.projection k ((D.restrictScalars K).wall j).label) =
+      TauCeti.CompletedGroup.projection k (D.wall j).label := by
   rw [restrictScalars_wall, DirectedWall.restrictScalars_label]
   exact PositiveDegrees.bchGroupEquiv_projection_completedBCHRestrictScalarsEquiv_symm _ _ k _
 
@@ -186,13 +192,13 @@ theorem levelPathProduct_restrictScalars (k : ℕ)
     {x y : WallComplement (fun j : D.active k => (D.wall j).support)}
     (p : AdmissiblePLPath x y) :
     (D.restrictScalars K).levelPathProduct k ((D.levelPathRestrictScalars K k).mapPath p) =
-      (d.truncatedRestrictScalarsEquiv (R := K) ℒ k).bchGroupEquiv.symm
+      (d.lieTruncationRestrictScalarsEquiv (R := K) ℒ k).bchGroupEquiv.symm
         (D.levelPathProduct k p) := by
   rw [levelPathProduct_eq_wallPathProduct _ k _ ((D.restrictScalars K).activeLabels_commute k),
     D.levelPathProduct_eq_wallPathProduct k p (D.activeLabels_commute k)]
   exact p.wallPathProduct_wallComplementMap (ContinuousAffineEquiv.refl ℝ V)
     (Set.equivOfEq (D.active_restrictScalars k).symm) _ _ _ (fun j => by ext v; simp) _ _ _ _
-    (d.truncatedRestrictScalarsEquiv (R := K) ℒ k).bchGroupEquiv.symm.toMonoidHom fun j =>
+    (d.lieTruncationRestrictScalarsEquiv (R := K) ℒ k).bchGroupEquiv.symm.toMonoidHom fun j =>
       (MulEquiv.eq_symm_apply _).mpr (D.bchGroupEquiv_projection_restrictScalars_wall_label k j)
 
 /-- A finite path product of the restriction is computed by the corresponding path of `D`. -/
@@ -201,7 +207,7 @@ theorem levelPathProduct_restrictScalars_eq (k : ℕ)
       ((D.restrictScalars K).wall j).support)}
     (p : AdmissiblePLPath x y) :
     (D.restrictScalars K).levelPathProduct k p =
-      (d.truncatedRestrictScalarsEquiv (R := K) ℒ k).bchGroupEquiv.symm
+      (d.lieTruncationRestrictScalarsEquiv (R := K) ℒ k).bchGroupEquiv.symm
         (D.levelPathProduct k ((D.levelPathOfRestrictScalars K k).mapPath p)) := by
   rw [← levelPathProduct_restrictScalars]
   apply levelPathProduct_eq_of_vertices_eq
@@ -214,7 +220,7 @@ theorem levelConsistent_restrictScalars_iff {k : ℕ} :
     (D.restrictScalars K).LevelConsistent k ↔ D.LevelConsistent k := by
   rw [levelConsistent_def, levelConsistent_def]
   refine ⟨fun hD x y p q => ?_, fun hD x y p q => ?_⟩
-  · apply (d.truncatedRestrictScalarsEquiv (R := K) ℒ k).bchGroupEquiv.symm.injective
+  · apply (d.lieTruncationRestrictScalarsEquiv (R := K) ℒ k).bchGroupEquiv.symm.injective
     rw [← levelPathProduct_restrictScalars, ← levelPathProduct_restrictScalars]
     exact hD _ _
   · rw [levelPathProduct_restrictScalars_eq, levelPathProduct_restrictScalars_eq, hD]
@@ -230,7 +236,7 @@ theorem levelEquivalent_restrictScalars_iff {κ : Type*} {E : DirectedDiagram (d
     (D.restrictScalars K).LevelEquivalent (E.restrictScalars K) k ↔ D.LevelEquivalent E k := by
   rw [levelEquivalent_def, levelEquivalent_def]
   refine ⟨fun hDE x y x' y' p q hpq => ?_, fun hDE x y x' y' p q hpq => ?_⟩
-  · apply (d.truncatedRestrictScalarsEquiv (R := K) ℒ k).bchGroupEquiv.symm.injective
+  · apply (d.lieTruncationRestrictScalarsEquiv (R := K) ℒ k).bchGroupEquiv.symm.injective
     rw [← levelPathProduct_restrictScalars, ← levelPathProduct_restrictScalars]
     apply hDE
     rw [vertices_levelPathRestrictScalars, vertices_levelPathRestrictScalars, hpq]

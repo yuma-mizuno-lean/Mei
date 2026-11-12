@@ -29,6 +29,12 @@ correction diagram or identify the orientation sign of a joint cochain.
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath)
+
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
 open Set Mei Mei.Convex BCHGroup
@@ -55,46 +61,46 @@ theorem exists_outgoingWall_joint_obstruction {k : ℕ} {J : Set V}
     ∃ r > 0, ∀ (x : WallComplement (fun j : D.active k => (D.wall j).support))
       (p : AdmissiblePLPath x x), (∀ z ∈ p.vertices, z.val ∈ Metric.ball q r) →
       ∀ n : Γ, d.degree n = k →
-        let c := (DirectSum.decompose (d.truncatedGrading ℒ k)
-          (log (D.levelPathProduct k p)) n : d.truncatedLie ℒ k)
+        let c := (DirectSum.decompose (d.lieTruncationGrading ℒ k)
+          (log (D.levelPathProduct k p)) n : d.lieTruncation ℒ k)
         c ≠ 0 → ∃ (W : DirectedWall (d := d) h H) (a : L),
-          W.Outgoing ∧ W.support = Convex.sweep J (i (ρ n)) ∧ n ∈ W.ray.rayDegrees ∧
+          W.Outgoing ∧ W.support = Set.sweep ℝ J (i (ρ n)) ∧ n ∈ W.ray.rayDegrees ∧
           (h.realCharacter W.normal).ker = (affineSpan ℝ J).direction ⊔ ℝ ∙ i (ρ n) ∧
           a ∈ H.wall n W.normal ∧ W.label = d.expToCompletion ℒ (-a) ∧
-          (d.degreeIdeal ℒ k).mkQ a = c ∧
-          (∀ l : ℕ, l < k → CompletedGroup.projection l W.label = 1) ∧
-          log (CompletedGroup.projection k W.label) = -c ∧
-          CompletedGroup.projection k W.label ≠ 1 := by
+          (d.truncationIdeal ℒ k).mkQ a = c ∧
+          (∀ l : ℕ, l < k → TauCeti.CompletedGroup.projection l W.label = 1) ∧
+          log (TauCeti.CompletedGroup.projection k W.label) = -c ∧
+          TauCeti.CompletedGroup.projection k W.label ≠ 1 := by
   obtain ⟨r, hr, hlocal⟩ := P.exists_pos_joint_loop_obstruction hJ hq
   refine ⟨r, hr, fun x p hp n hn => ?_⟩
   dsimp only
   intro hc
-  let c := (DirectSum.decompose (d.truncatedGrading ℒ k)
-    (log (D.levelPathProduct k p)) n : d.truncatedLie ℒ k)
+  let c := (DirectSum.decompose (d.lieTruncationGrading ℒ k)
+    (log (D.levelPathProduct k p)) n : d.lieTruncation ℒ k)
   have htrans : i (ρ n) ∉ (affineSpan ℝ J).direction :=
     fun ht => hc ((hlocal x p hp n hn).1 ht)
   obtain ⟨m, hm, hker, hmem⟩ := (hlocal x p hp n hn).2 htrans
   rw [H.truncated_wall] at hmem
   obtain ⟨a, ha, he⟩ := Submodule.mem_map.mp hmem
-  have hpiece : d.truncatedGrading ℒ k n ≠ ⊥ := by
+  have hpiece : d.lieTruncationGrading ℒ k n ≠ ⊥ := by
     intro heq
-    have hz : c ∈ d.truncatedGrading ℒ k n := (DirectSum.decompose (d.truncatedGrading ℒ k)
+    have hz : c ∈ d.lieTruncationGrading ℒ k n := (DirectSum.decompose (d.lieTruncationGrading ℒ k)
       (log (D.levelPathProduct k p)) n).property
     rw [heq, Submodule.mem_bot] at hz
     exact hc hz
-  have hcut := d.mem_cutoff_of_truncatedGrading_ne_bot ℒ hpiece
+  have hcut := d.mem_cutoff_of_lieTruncationGrading_ne_bot ℒ hpiece
   obtain ⟨w, hw⟩ := d.exists_supportedRay (d.mem_cutoff.mp hcut.1).1 hcut.2
   have hcell := ((D.adaptedComplex k).mem_cellsOfCodimension 2 J).mp hJ
   obtain ⟨W, hnormal, hray, hsupp, hlabel, hout, hborn⟩ :=
     DirectedWall.exists_outgoing_sweep ((D.adaptedComplex k).rational J hcell.1)
       ((D.adaptedComplex k).nonempty J hcell.1) hw htrans hm hker ((H.wall n m).neg_mem ha)
-  have hlog : log (CompletedGroup.projection k W.label) = -c := by
+  have hlog : log (TauCeti.CompletedGroup.projection k W.label) = -c := by
     rw [hlabel, PositiveDegrees.projection_expToCompletion, log_exp, map_neg]
     exact congrArg Neg.neg he
   refine ⟨W, a, hout, hsupp, hray ▸ hw, hnormal ▸ hker, hnormal ▸ ha,
     hlabel, he, fun l hl => hborn l (by omega), hlog, ?_⟩
   intro hzero
-  have hz : -c = 0 := hlog.symm.trans (hzero ▸ (log_one (L := d.truncatedLie ℒ k)))
+  have hz : -c = 0 := hlog.symm.trans (hzero ▸ (log_one (L := d.lieTruncation ℒ k)))
   exact hc (neg_eq_zero.mp hz)
 
 end Mei.DirectedDiagram

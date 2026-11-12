@@ -35,7 +35,7 @@ public noncomputable section
 
 open Set Mei.Convex
 
-namespace Mei.GradedCorrespondence.Hom
+namespace TauCeti.GradedCorrespondence.Hom
 
 variable {R B U M B' U' M' ι κ ι' κ' V : Type*} [Semiring R]
   [AddCommMonoid B] [Module R B] [AddCommMonoid U] [Module R U]
@@ -283,4 +283,4 @@ theorem singleFaceTransferRayEquivOfInjective_symm_decoration (Q : V)
     (e.symm r)).symm.trans
       (congrArg (fun z => (D.transfer i' z.1.val a'(a) : M')) (e.apply_symm_apply r))
 
-end Mei.GradedCorrespondence.Hom
+end TauCeti.GradedCorrespondence.Hom

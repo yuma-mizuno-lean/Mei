@@ -33,6 +33,8 @@ Appendix B (arXiv:1411.1394v2).
 
 public noncomputable section
 
+open TauCeti (PositiveDegrees GradedLieHom)
+
 namespace Mei.SkewLatticeDatum.AdaptedBasis
 
 open Module LogarithmicVectorField _root_.AddMonoidAlgebra

@@ -51,6 +51,12 @@ Example 2.1(i) and Definition 2.2.
 
 public section
 
+open TauCeti (IsRationalNormalPolyhedron RationalAffinePolyhedron isRationalNormalPolyhedron_iff)
+
+open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading SupportedRay GradedLieHom)
+
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
 namespace Mei
@@ -168,12 +174,12 @@ theorem normalMap_ne_zero {m : Λ →+ ℤ} (hm : m ≠ 0) : P.normalMap m ≠ 0
 /-- The inverse spatial map pulls rational functionals back to rational functionals,
 because the normal comparison scalars are rational. -/
 theorem isRationalLinearMap_symm :
-    Toric.IsRationalLinearMap h' h
+    TauCeti.Toric.IsRationalLinearMap h' h
       P.spatialMap.symm.toContinuousAffineMap.toAffineMap.linear := by
-  rw [Toric.isRationalLinearMap_iff]
+  rw [TauCeti.Toric.isRationalLinearMap_iff]
   intro f hf
-  obtain ⟨q, m, rfl⟩ := (Toric.IsRationalFunctional.iff_exists_character).mp hf
-  rw [Toric.IsRationalFunctional.iff_exists_character]
+  obtain ⟨q, m, rfl⟩ := (TauCeti.Toric.IsRationalFunctional.iff_exists_character).mp hf
+  rw [TauCeti.Toric.IsRationalFunctional.iff_exists_character]
   obtain ⟨r, hr, he⟩ := P.exists_realCharacter_normalMap_apply m.toAddMonoidHom
   refine ⟨q * r⁻¹, (P.normalMap m.toAddMonoidHom).toIntLinearMap, ?_⟩
   ext v
@@ -340,10 +346,10 @@ theorem dilation_lieHom_completedMap :
 omit [Algebra ℚ R] [LieAlgebra ℚ L] [IsScalarTower ℚ R L] in
 /-- At equal source and target orders, the truncated Lie map of a dilation is the identity. -/
 @[simp]
-theorem dilation_lieHom_truncatedMap (k : ℕ)
+theorem dilation_lieHom_lieTruncatedMap (k : ℕ)
     (hk : (dilation d h H q hq).degreeMap.modulus k ≤ k) :
-    (dilation d h H q hq).lieHom.truncatedMap k hk = LieHom.id :=
-  GradedLieHom.truncatedMap_id k
+    (dilation d h H q hq).lieHom.lieTruncatedMap k hk = LieHom.id :=
+  GradedLieHom.lieTruncatedMap_id k
 
 end Pushforward
 
@@ -393,10 +399,9 @@ theorem pushforward_label : (W.pushforward P).label = P.lieHom.completedMap W.la
 transport of supported rays: the image of the primitive generator is a positive multiple
 of the target primitive generator. -/
 theorem pushforward_ray_eq_map [Module.Free ℤ Γ'] :
-    (W.pushforward P).ray = W.ray.map P.degreeMap.toAddMonoidHom
-      (fun _ hn => P.degreeMap.map_mem hn) (fun _ hn h0 => P.degreeMap.map_ne_zero hn h0) := by
+    (W.pushforward P).ray = W.ray.map P.degreeMap := by
   obtain ⟨n, hn⟩ := W.ray.rayDegrees_nonempty
-  exact ((W.ray.map_eq_iff_exists_mem_rayDegrees _ _ _ _).mpr
+  exact ((W.ray.map_eq_iff_exists_mem_rayDegrees _ _).mpr
     ⟨n, hn, P.mem_rayDegrees_rayMap W.ray n hn⟩).symm
 
 /-- The image of an actual degree of the wall is an actual degree of the pushed wall. -/

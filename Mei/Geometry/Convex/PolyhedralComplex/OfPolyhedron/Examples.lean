@@ -31,6 +31,8 @@ the offset `a` of the ray is not required to be rational. They are the complexes
 
 public section
 
+open TauCeti (IsRationalNormalPolyhedron)
+
 open Set
 
 namespace Mei.FinitePolyhedralComplex.Examples
@@ -67,7 +69,7 @@ theorem isRationalNormalPolyhedron_lineAtHeight (c : ℝ) :
 theorem isRationalNormalPolyhedron_rightRay (a : ℝ) :
     IsRationalNormalPolyhedron h (rightRay a) := by
   have h₁ := Plane.isRationalNormalPolyhedron_horizontalLine h
-  have h₂ := isRationalNormalPolyhedron_setOf_le (h := h) (-axisRow false)
+  have h₂ := TauCeti.isRationalNormalPolyhedron_setOf_le (h := h) (-axisRow false)
     (by simpa using (isRationalFunctional_axisRow h false).neg) (-a)
   convert h₁.inter h₂ using 1
   ext p
@@ -122,9 +124,9 @@ theorem isPolyhedralFace_lineAtHeight_iff (c : ℝ) (F : Set (ℝ × ℝ)) :
 
 /-- The ray with endpoint `(a, 0)` is the sweep of its endpoint along `(-1, 0)`. -/
 theorem rightRay_eq_sweep (a : ℝ) :
-    rightRay a = Mei.Convex.sweep {((a : ℝ), (0 : ℝ))} (-1, 0) := by
+    rightRay a = Set.sweep ℝ {((a : ℝ), (0 : ℝ))} (-1, 0) := by
   ext p
-  simp only [mem_rightRay, Mei.Convex.mem_sweep_iff_exists, mem_singleton_iff, exists_eq_left]
+  simp only [mem_rightRay, Set.mem_sweep_iff_exists, mem_singleton_iff, exists_eq_left]
   constructor
   · rintro ⟨hp, hap⟩
     exact ⟨p.1 - a, sub_nonneg.mpr hap, Prod.ext (by simp) (by simp [hp])⟩
@@ -138,7 +140,7 @@ theorem isPolyhedralFace_rightRay_iff (a : ℝ) (F : Set (ℝ × ℝ)) :
     IsPolyhedralFace (rightRay a) F ↔ F = rightRay a ∨ F = {(a, 0)} := by
   have hn : ((-1 : ℝ), (0 : ℝ)) ∉ vectorSpan ℝ {((a : ℝ), (0 : ℝ))} := by
     simp [vectorSpan_singleton]
-  have hpt : IsExposed ℝ (Mei.Convex.sweep {((a : ℝ), (0 : ℝ))} (-1, 0)) {(a, 0)} :=
+  have hpt : IsExposed ℝ (Set.sweep ℝ {((a : ℝ), (0 : ℝ))} (-1, 0)) {(a, 0)} :=
     (IsExposed.refl _).in_sweep_of_transverse hn
   rw [isPolyhedralFace_iff, rightRay_eq_sweep]
   constructor
@@ -147,7 +149,7 @@ theorem isPolyhedralFace_rightRay_iff (a : ℝ) (F : Set (ℝ × ℝ)) :
     · exact Or.inr (hF₀.subset_singleton_iff.mp hF₀exp.subset)
     · exact Or.inl (by rw [hF₀.subset_singleton_iff.mp hF₀exp.subset])
   · rintro (rfl | rfl)
-    · exact ⟨(singleton_nonempty _).mono (Mei.Convex.subset_sweep _ _), IsExposed.refl _⟩
+    · exact ⟨(singleton_nonempty _).mono (Set.subset_sweep (𝕜 := ℝ) _ _), IsExposed.refl _⟩
     · exact ⟨singleton_nonempty _, hpt⟩
 
 /-- The complex of a horizontal line has the single cell `H`. -/

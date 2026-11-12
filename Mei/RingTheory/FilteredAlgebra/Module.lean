@@ -7,7 +7,7 @@ module
 
 public import Mei.LinearAlgebra.ModuleFiltration.RestrictScalars
 public import Mei.LinearAlgebra.ModuleFiltration.Bilinear
-public import Mei.RingTheory.FilteredAlgebra.AlgHom
+public import TauCeti.RingTheory.FilteredAlgebra.AlgHom
 public import Mei.RingTheory.Ideal.Quotient
 public import Mathlib.RingTheory.Ideal.Quotient.PowTransition
 
@@ -34,7 +34,9 @@ introduced in [Mei #419](https://github.com/yuma-mizuno-lean/Mei/pull/419).
 
 public section
 
-namespace Mei.AlgFiltration
+namespace TauCeti.AlgFiltration
+
+open Mei
 
 variable (R : Type*) {A : Type*} [Semiring R] [Semiring A]
   [Module R A] [IsScalarTower R A A]
@@ -58,11 +60,13 @@ theorem toModuleFiltration_mul_mem (a b : ℕ) {x y : A}
     x * y ∈ (F.toModuleFiltration R).submodule (a + b) :=
   F.mul_mem hx hy
 
-end Mei.AlgFiltration
+end TauCeti.AlgFiltration
 
 noncomputable section
 
-namespace Mei.AlgFiltration
+namespace TauCeti.AlgFiltration
+
+open Mei
 
 variable {R A : Type*} [CommRing R] [Ring A] [Algebra R A] (F : AlgFiltration A)
 
@@ -252,4 +256,4 @@ theorem moduleCompletionEquiv_completionBilinear_mul
   rw [ModuleFiltration.projection_completionBilinear _ _ _ _ (F.toModuleFiltration_mul_mem R)]
   simp only [restrictScalarsEquiv_quotientBilinear_mul]
 
-end Mei.AlgFiltration
+end TauCeti.AlgFiltration

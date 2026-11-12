@@ -29,6 +29,8 @@ all the prescribed vertices.
 
 public section
 
+open TauCeti (WallComplement)
+
 open Set
 
 namespace Mei.Convex

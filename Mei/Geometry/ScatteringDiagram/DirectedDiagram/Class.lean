@@ -28,6 +28,10 @@ Coordinate transport descends `DirectedDiagram.image` using `Equivalent.image` a
 
 public section
 
+open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading GradedLieHom)
+
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
 namespace Mei.DirectedDiagram
@@ -293,7 +297,7 @@ variable {Γ Γ' Γ'' Λ Λ' Λ'' R V V' V'' : Type*} {L L' L'' : Type v}
   {h'' : TauCeti.Toric.IsIntegralLattice i''}
   {H : DirectedWallSpaces ρ ℒ} {H' : DirectedWallSpaces ρ' ℳ}
   {H'' : DirectedWallSpaces ρ'' ℋ}
-  (e : Toric.IntegralAffineEquiv h h')
+  (e : TauCeti.Toric.IntegralAffineEquiv h h')
   (E : DirectedWallSpaces.CoordinateChange (d := d) (e := d') H H')
   (hE : E.tangentEquiv = e.latticeEquiv)
 
@@ -360,8 +364,8 @@ theorem LevelClass.project_image {k l a : ℕ} (hkl : k ≤ l)
 /-- Identity coordinates fix completed diagram classes. -/
 @[simp]
 theorem Class.image_refl (x : Class.{u} (d := d) (h := h) (H := H)) :
-    image (Toric.IntegralAffineEquiv.refl h)
-      (DirectedWallSpaces.CoordinateChange.refl H) (by simp) x = x := by
+    image (TauCeti.Toric.IntegralAffineEquiv.refl h)
+      (DirectedWallSpaces.CoordinateChange.refl d H) (by simp) x = x := by
   induction x using Class.inductionOn with | _ D =>
     simp only [image_toClass, DirectedDiagram.image_refl]
 
@@ -369,15 +373,15 @@ theorem Class.image_refl (x : Class.{u} (d := d) (h := h) (H := H)) :
 @[simp]
 theorem LevelClass.image_refl (k : ℕ)
     (x : LevelClass.{u} (d := d) (h := h) (H := H) k) :
-    image (Toric.IntegralAffineEquiv.refl h)
-      (DirectedWallSpaces.CoordinateChange.refl H) (by simp) k (by
+    image (TauCeti.Toric.IntegralAffineEquiv.refl h)
+      (DirectedWallSpaces.CoordinateChange.refl d H) (by simp) k (by
         rw [DirectedWallSpaces.CoordinateChange.degreeMap_modulus_le_iff]
         intro n _ hn
         simpa using hn) x = x := by
   induction x using LevelClass.inductionOn with | _ D =>
     simp only [image_toLevelClass, DirectedDiagram.image_refl]
 
-variable (f : Toric.IntegralAffineEquiv h' h'')
+variable (f : TauCeti.Toric.IntegralAffineEquiv h' h'')
   (F : DirectedWallSpaces.CoordinateChange (d := d') (e := d'') H' H'')
   (hF : F.tangentEquiv = f.latticeEquiv)
 

@@ -32,6 +32,8 @@ for cluster algebras*, §1.1 (arXiv:1411.1394v2).
 
 public section
 
+open TauCeti (PositiveDegrees SupportedRay)
+
 noncomputable section
 
 namespace Mei.DirectedDiagram

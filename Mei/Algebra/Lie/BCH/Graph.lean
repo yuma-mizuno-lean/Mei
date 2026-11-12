@@ -21,9 +21,13 @@ of the choice of degree map.
 
 public section
 
+open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading GradedLieHom)
+
 noncomputable section
 
-namespace Mei.PositiveDegrees
+namespace TauCeti.PositiveDegrees
+
+open Mei
 
 variable {N M R L : Type*} [AddCommMonoid N] [AddCommMonoid M]
   [CommRing R] [Algebra ℚ R] [LieRing L] [LieAlgebra R L]
@@ -73,10 +77,10 @@ private theorem bchGroupMap_truncatedMap_comp_eq_id {M' : Type*} [AddCommMonoid 
     {U : PositiveDegreeMap e d} (F : GradedLieHom T ℒ ℳ) (G : GradedLieHom U ℳ ℒ) (k : ℕ)
     (hF : T.modulus k ≤ k) (hG : U.modulus k ≤ k)
     (h : ∀ x, G.completedMap (F.completedMap x) = x) :
-    (G.truncatedMap k hG).bchGroupMap.comp (F.truncatedMap k hF).bchGroupMap =
+    (G.lieTruncatedMap k hG).bchGroupMap.comp (F.lieTruncatedMap k hF).bchGroupMap =
       MonoidHom.id _ := by
   refine MonoidHom.ext fun y => ?_
-  obtain ⟨x, rfl⟩ := CompletedGroup.projection_surjective (d.groupTower ℒ)
+  obtain ⟨x, rfl⟩ := TauCeti.CompletedGroup.projection_surjective (d.groupTower ℒ)
     (fun n => d.groupTower_map_surjective ℒ (CategoryTheory.homOfLE (Nat.le_succ n)).op) k y
   have hf := F.projection_completedMap_of_le k hF x
   have hg := G.projection_completedMap_of_le k hG (F.completedMap x)
@@ -89,8 +93,8 @@ directions are induced by identity on the original Lie algebra. -/
 def graphTruncatedGroupEquiv (k : ℕ) :
     d.truncatedGroup ℒ k ≃* (d.graph f).truncatedGroup (graphGrading ℒ f) k :=
   MonoidHom.toMulEquiv
-    ((graphGradedLieHom ℒ f d).truncatedMap k (d.graphMap_modulus f k).le).bchGroupMap
-    ((graphProjectionGradedLieHom ℒ f d).truncatedMap k
+    ((graphGradedLieHom ℒ f d).lieTruncatedMap k (d.graphMap_modulus f k).le).bchGroupMap
+    ((graphProjectionGradedLieHom ℒ f d).lieTruncatedMap k
       (d.graphProjection_modulus f k).le).bchGroupMap
     (bchGroupMap_truncatedMap_comp_eq_id _ _ k _ _ (d.graphBCHGroupEquiv ℒ f).symm_apply_apply)
     (bchGroupMap_truncatedMap_comp_eq_id _ _ k _ _ (d.graphBCHGroupEquiv ℒ f).apply_symm_apply)
@@ -98,22 +102,22 @@ def graphTruncatedGroupEquiv (k : ℕ) :
 /-- The forward finite comparison is the BCH map of truncated graph inclusion. -/
 theorem graphTruncatedGroupEquiv_apply (k : ℕ) (y : d.truncatedGroup ℒ k) :
     d.graphTruncatedGroupEquiv ℒ f k y =
-      ((graphGradedLieHom ℒ f d).truncatedMap k (d.graphMap_modulus f k).le).bchGroupMap y :=
+      ((graphGradedLieHom ℒ f d).lieTruncatedMap k (d.graphMap_modulus f k).le).bchGroupMap y :=
   (rfl)
 
 /-- The inverse finite comparison is the BCH map of truncated graph projection. -/
 theorem graphTruncatedGroupEquiv_symm_apply (k : ℕ)
     (y : (d.graph f).truncatedGroup (graphGrading ℒ f) k) :
     (d.graphTruncatedGroupEquiv ℒ f k).symm y =
-      ((graphProjectionGradedLieHom ℒ f d).truncatedMap k
+      ((graphProjectionGradedLieHom ℒ f d).lieTruncatedMap k
         (d.graphProjection_modulus f k).le).bchGroupMap y :=
   (rfl)
 
 /-- The completed graph comparison projects to the finite graph comparison at every cutoff. -/
 @[simp]
 theorem projection_graphBCHGroupEquiv (k : ℕ) (x : d.completedBCHGroup ℒ) :
-    CompletedGroup.projection k (d.graphBCHGroupEquiv ℒ f x) =
-      d.graphTruncatedGroupEquiv ℒ f k (CompletedGroup.projection k x) :=
+    TauCeti.CompletedGroup.projection k (d.graphBCHGroupEquiv ℒ f x) =
+      d.graphTruncatedGroupEquiv ℒ f k (TauCeti.CompletedGroup.projection k x) :=
   (graphGradedLieHom ℒ f d).projection_completedMap_of_le k (d.graphMap_modulus f k).le x
 
 /-- The inverse completed graph comparison projects to the inverse finite graph comparison
@@ -121,9 +125,9 @@ at every cutoff. -/
 @[simp]
 theorem projection_graphBCHGroupEquiv_symm (k : ℕ)
     (x : (d.graph f).completedBCHGroup (graphGrading ℒ f)) :
-    CompletedGroup.projection k ((d.graphBCHGroupEquiv ℒ f).symm x) =
-      (d.graphTruncatedGroupEquiv ℒ f k).symm (CompletedGroup.projection k x) :=
+    TauCeti.CompletedGroup.projection k ((d.graphBCHGroupEquiv ℒ f).symm x) =
+      (d.graphTruncatedGroupEquiv ℒ f k).symm (TauCeti.CompletedGroup.projection k x) :=
   (graphProjectionGradedLieHom ℒ f d).projection_completedMap_of_le k
     (d.graphProjection_modulus f k).le x
 
-end Mei.PositiveDegrees
+end TauCeti.PositiveDegrees

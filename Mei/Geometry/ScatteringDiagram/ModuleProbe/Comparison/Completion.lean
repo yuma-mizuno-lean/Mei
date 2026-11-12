@@ -31,7 +31,11 @@ and module-completion APIs. The geometric interpretation follows Mandel,
 
 public noncomputable section
 
-open Set Filter Topology Mei.Convex Mei.Convex.WallComplement
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
+open TauCeti (DirectedWallSpaces)
+
+open Set Filter Topology Mei.Convex TauCeti.WallComplement
 
 namespace Mei.ModuleProbe
 

@@ -20,7 +20,11 @@ cutoff, with the same local finite-sum solution as an ordinary lower-degree step
 
 public noncomputable section
 
-open Set Filter Topology Mei.Convex Mei.Convex.WallComplement
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
+open TauCeti (DirectedWallSpaces)
+
+open Set Filter Topology Mei.Convex TauCeti.WallComplement
 
 namespace Mei.ModuleProbe
 

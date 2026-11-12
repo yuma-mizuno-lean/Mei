@@ -80,7 +80,7 @@ theorem facet_cut_iff (hP : TauCeti.IsConvexPolyhedron P) (g : V →ᴬ[ℝ] ℝ
         (vectorSpan_mono ℝ (inter_subset_left : G ∩ {x | g x ≤ 0} ⊆ G))
       exact (hF.mono hlarge hinside).eq_of_finrank_vectorSpan_eq hne (by omega)
   · rintro (rfl | ⟨G, hG, _, rfl⟩)
-    · have hz := Mei.Convex.isExposed_setOf_active (fun _ : Unit => g) Finset.univ
+    · have hz := TauCeti.isExposed_setOf_active (fun _ : Unit => g) Finset.univ
       have hzero : IsExposed ℝ {x | g x ≤ 0} {x | g x = 0} := by
         simp only [forall_const, Finset.mem_univ] at hz
         convert hz using 1

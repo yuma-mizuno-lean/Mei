@@ -30,7 +30,11 @@ without further geometric hypotheses. The degree bookkeeping follows Mandel,
 
 public noncomputable section
 
-open Set Filter Topology Mei.Convex Mei.Convex.WallComplement
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
+open TauCeti (DirectedWallSpaces)
+
+open Set Filter Topology Mei.Convex TauCeti.WallComplement
 
 namespace Mei.ModuleProbe
 
@@ -57,7 +61,7 @@ event's label and the identity, between two retained relative degrees. -/
 def eventBlock (k K : ℕ) (hkK : k ≤ K) (b : WallEvent (B.active K)) (n m : d.cutoff k) :
     ℳ (p + m.val) →ₗ[R] ℳ (p + n.val) :=
   PositiveDegrees.labelBlock d ℳ p ℒ k
-    ((d.truncationMap ℒ hkK).bchGroupMap (B.wallEventLabel K b)) n m
+    ((d.lieTruncationMap ℒ hkK).bchGroupMap (B.wallEventLabel K b)) n m
 
 omit [IsWallAnnihilating H ℳ] in
 /-- The event block is the generic label block at the event's truncated label. -/
@@ -65,7 +69,7 @@ theorem eventBlock_def (k K : ℕ) (hkK : k ≤ K) (b : WallEvent (B.active K))
     (n m : d.cutoff k) :
     eventBlock d ℳ p ℒ H h B k K hkK b n m =
       PositiveDegrees.labelBlock d ℳ p ℒ k
-        ((d.truncationMap ℒ hkK).bchGroupMap (B.wallEventLabel K b)) n m := (rfl)
+        ((d.lieTruncationMap ℒ hkK).bchGroupMap (B.wallEventLabel K b)) n m := (rfl)
 
 omit [IsWallAnnihilating H ℳ] in
 /-- An event block outside the strict relative-degree relation vanishes. -/
@@ -84,7 +88,7 @@ theorem eventBlock_apply_of_ne (k K : ℕ) (hkK : k ≤ K) (b : WallEvent (B.act
       d.shiftedQuotientComponent ℳ p (p + n.val) k
         (PositiveDegrees.degree_add_val_sub_self_le d p k n)
         ((d.shiftedLieFiltration ℒ ℳ p).truncatedBCHAction d ℒ k
-          ((d.truncationMap ℒ hkK).bchGroupMap (B.wallEventLabel K b))
+          ((d.lieTruncationMap ℒ hkK).bchGroupMap (B.wallEventLabel K b))
           (Submodule.Quotient.mk (shiftedInclusion ℳ d.monoid p
             ⟨m.val, (d.mem_cutoff.mp m.property).1⟩ x))) := by
   rw [eventBlock_def]

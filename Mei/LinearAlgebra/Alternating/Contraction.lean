@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.LinearAlgebra.Alternating.Conormal
+public import TauCeti.LinearAlgebra.Alternating.Conormal
 public import Mathlib.LinearAlgebra.Alternating.Uncurry.Fin
 public import Mathlib.LinearAlgebra.Dual.Lemmas
 

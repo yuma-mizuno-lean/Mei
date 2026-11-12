@@ -26,6 +26,10 @@ injective or surjective.
 
 public section
 
+open TauCeti (AdmissiblePLPath GradedLieHom)
+
+open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading)
+
 noncomputable section
 
 universe u
@@ -191,6 +195,8 @@ end General
 
 namespace PositiveDegrees
 
+open TauCeti.PositiveDegrees
+
 variable {N V R : Type*} {L : Type u} [AddCommGroup N]
   [NormedAddCommGroup V] [NormedSpace ℝ V]
   [CommRing R] [Algebra ℚ R] [DecidableEq N]
@@ -201,7 +207,7 @@ variable {N V R : Type*} {L : Type u} [AddCommGroup N]
 
 /-- Consistent KS diagram classes are canonically the completed BCH group;
 the inverse is the class of the middle-factor reconstruction. -/
-def reconstructionEquiv :
+def _root_.TauCeti.PositiveDegrees.reconstructionEquiv :
     ConsistentDiagram.Class (s := KSSpace.continuousDual h) (d := d) (ℒ := ℒ) ≃
       d.completedBCHGroup ℒ where
   toFun := ConsistentDiagram.Class.chamberTransport
@@ -214,22 +220,22 @@ def reconstructionEquiv :
 
 /-- Reconstruction identifies a class with its chamber transport. -/
 @[simp]
-theorem reconstructionEquiv_apply
+theorem _root_.TauCeti.PositiveDegrees.reconstructionEquiv_apply
     (x : ConsistentDiagram.Class (s := KSSpace.continuousDual h) (d := d) (ℒ := ℒ)) :
     d.reconstructionEquiv h ℒ x = x.chamberTransport := (rfl)
 
 /-- The inverse classification map is represented by the reconstructed diagram. -/
-theorem reconstructionEquiv_symm_apply (g : d.completedBCHGroup ℒ) :
+theorem _root_.TauCeti.PositiveDegrees.reconstructionEquiv_symm_apply (g : d.completedBCHGroup ℒ) :
     (d.reconstructionEquiv h ℒ).symm g =
       (⟨_, d.reconstruct h ℒ g, d.consistent_reconstruct h ℒ g⟩ :
         ConsistentDiagram (KSSpace.continuousDual h) d ℒ).toClass := (rfl)
 
 /-- Classification respects every finite-order path computing chamber transport. -/
-theorem projection_reconstructionEquiv_toClass
+theorem _root_.TauCeti.PositiveDegrees.projection_reconstructionEquiv_toClass
     (D : ConsistentDiagram (KSSpace.continuousDual h) d ℒ) (k : ℕ)
     (p : AdmissiblePLPath (CommonWallComplement.projection k D.diagram.degreePoint)
       (CommonWallComplement.projection k D.diagram.negDegreePoint)) :
-    CompletedGroup.projection k (d.reconstructionEquiv h ℒ D.toClass) =
+    TauCeti.CompletedGroup.projection k (d.reconstructionEquiv h ℒ D.toClass) =
       (D.diagram.diagram k).toFiniteWallDiagram.pathProduct p :=
   D.diagram.projection_transport D.consistent k p
 

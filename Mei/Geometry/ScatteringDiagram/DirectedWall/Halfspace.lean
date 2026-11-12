@@ -32,6 +32,10 @@ affine supports.
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
 open Set
@@ -63,14 +67,14 @@ def cutHalfspace (μ : Λ →+ ℤ) (a : ℝ) (hμ : ∃ x ∈ W.support, a < h.
   rational_support := by
     let := h.finiteDimensional
     let ℓ := (h.realCharacter μ).toContinuousLinearMap
-    have hℓ : Toric.IsRationalFunctional h ℓ.toLinearMap :=
-      Toric.IsRationalFunctional.realCharacter h μ.toIntLinearMap
+    have hℓ : TauCeti.Toric.IsRationalFunctional h ℓ.toLinearMap :=
+      TauCeti.Toric.IsRationalFunctional.realCharacter h μ.toIntLinearMap
     have he : {x | a ≤ h.realCharacter μ x} = {x | (-ℓ) x ≤ -a} := by
       ext x
       simp [ℓ]
     rw [he]
     exact W.rational_support.inter
-      (isRationalNormalPolyhedron_setOf_le (-ℓ) (by simpa using hℓ.neg) (-a))
+      (TauCeti.isRationalNormalPolyhedron_setOf_le (-ℓ) (by simpa using hℓ.neg) (-a))
   direction_support := by
     let g : V →ᵃ[ℝ] ℝ := AffineMap.const ℝ V a - (h.realCharacter μ).toAffineMap
     have hg : {x | a ≤ h.realCharacter μ x} = {x | g x ≤ 0} := by

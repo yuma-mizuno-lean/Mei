@@ -25,6 +25,8 @@ All maps retain the original affine chain.
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath)
+
 noncomputable section
 
 open Mei.Convex
@@ -126,8 +128,7 @@ theorem segmentCrossingWord_restrict (ν : C.walls → V →ₗ[ℝ] ℝ) (e : x
         rw [List.filterMap_cons_some hf]
         simp only [List.map_cons, List.prod_cons, map_mul, ih]
         congr 1
-        simp only [D.crossingLetter_def, C.crossingLetter_def,
-          WallComplement.restrictPrefunctor_obj_val, he]
+        simp only [D.crossingLetter_def, C.crossingLetter_def, he]
         split_ifs <;> simp only [map_inv, wallDeletion_of, dite_eq_left ha]
       · have hf : f a = none := by simp only [f, dite_eq_right ha]
         rw [List.filterMap_cons_none hf]

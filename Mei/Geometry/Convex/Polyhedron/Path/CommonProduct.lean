@@ -24,9 +24,11 @@ It combines `Quiver.Path.exists_pos_wallPathProduct_eq_of_forall₂_dist_lt` wit
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath)
+
 noncomputable section
 
-open Set Mei.Convex Mei.Convex.WallComplement
+open Set Mei.Convex TauCeti.WallComplement
 
 namespace Quiver.Path
 

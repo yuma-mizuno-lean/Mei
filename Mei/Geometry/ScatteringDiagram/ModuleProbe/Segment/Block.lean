@@ -23,9 +23,15 @@ expansion of a BCH correction. The backward-ray interpretation follows Mandel,
 §3.3.3 (arXiv:1503.06183v5).
 -/
 
+open TauCeti (WallComplement)
+
 public noncomputable section
 
-open Mei.Convex Mei.Convex.WallComplement
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
+open TauCeti (DirectedWallSpaces)
+
+open Mei.Convex TauCeti.WallComplement
 
 namespace Mei.ModuleProbe
 
@@ -52,7 +58,7 @@ local notation "labels" k:max e:max => (List.map
   (crossingEventProduct (G := d.truncatedGroup ℒ k)
     (fun c : B.active k => h.realCharacter
       (DirectedWall.normal (DirectedDiagram.wall B c)))
-    (fun c => CompletedGroup.projection k (DirectedWall.label (DirectedDiagram.wall B c)))
+    (fun c => TauCeti.CompletedGroup.projection k (DirectedWall.label (DirectedDiagram.wall B c)))
     (B.activeLabels_commute k) e)
       (List.reverse (orderedCrossingTimes e)))
 
@@ -80,7 +86,7 @@ theorem shiftedQuotientComponent_extendedCoefficientField_eq_add_sum_labelBlock
           (d.shiftedQuotientComponent ℳ p (p + m.val) k
             (PositiveDegrees.degree_add_val_sub_self_le d p k m)
             ((A).truncatedBCHAction d ℒ k
-              ((d.truncationMap ℒ (Nat.le_succ k)).bchGroupMap
+              ((d.lieTruncationMap ℒ (Nat.le_succ k)).bchGroupMap
                 (g.drop (b.val + 1)).prod)
               (field k (hBc.mono (Nat.le_succ k))
                 ((WallComplement.restrictPrefunctor (fun c : B.active (k + 1) => (B.wall c).support)

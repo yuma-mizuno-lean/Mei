@@ -26,9 +26,13 @@ allowed; the coefficient ring may be noncommutative.
 
 public section
 
+open TauCeti (OrientedCell PolyhedralCochain)
+
 noncomputable section
 
-namespace Mei.PolyhedralCochain
+namespace TauCeti.PolyhedralCochain
+
+open Mei
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
@@ -81,4 +85,4 @@ theorem map_coboundary (f : E →ₗ[R] E') (x : PolyhedralCochain R h E k) :
   | add x y hx hy => simp only [map_add, hx, hy]
   | mk σ c => simp
 
-end Mei.PolyhedralCochain
+end TauCeti.PolyhedralCochain

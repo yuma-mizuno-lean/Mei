@@ -33,6 +33,8 @@ arXiv:1503.06183v5.
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 noncomputable section
 
 namespace Mei.LogarithmicVectorField

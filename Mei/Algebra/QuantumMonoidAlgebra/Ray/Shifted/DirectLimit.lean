@@ -20,6 +20,8 @@ coefficient algebra or its multiplication is made here.
 -/
 
 public section
+
+open TauCeti (PositiveDegrees)
 noncomputable section
 
 namespace Mei.QuantumMonoidAlgebra

@@ -20,7 +20,13 @@ These are probe-derived parallel coefficients. Identification with sums of
 broken lines is a separate theorem.
 -/
 
+open TauCeti (WallComplement)
+
 public noncomputable section
+
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
+open TauCeti (DirectedWallSpaces)
 
 open Set Mei.Convex
 
@@ -201,7 +207,6 @@ theorem transition_extendedCoefficientField {k l : ℕ} (hkl : k ≤ l)
     transition_coefficientField d ℳ p ℒ H h h' D hkl z.val hzk hzl,
     extendedCoefficientField_eq_action d ℳ p ℒ H h h' D B k hBk
       (hD.mono (Nat.add_le_add_right hkl 1)) (hBl'.mono hkl) (r.obj x) (r.obj z) hzk]
-  rfl
 
 /-- Compatible extended coefficients at an all-order allowed endpoint. No
 genericity condition on the endpoint is required at any cutoff. -/

@@ -28,6 +28,10 @@ functions, and refined tropical curve counts*, §3.3.3 (arXiv:1503.06183v5).
 
 public noncomputable section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
+open TauCeti (DirectedWallSpaces)
+
 namespace Mei.ModuleProbe
 
 universe u
@@ -92,7 +96,7 @@ theorem wallCoefficient_eq_zero_iff :
 /-- A finite cutoff sees precisely the nonzero charge-one coefficients whose
 relative degree is at most one less than that cutoff. -/
 theorem projection_label_eq_one_iff (k : ℕ) :
-    CompletedGroup.projection k W.label = 1 ↔
+    TauCeti.CompletedGroup.projection k W.label = 1 ↔
       wallCoefficient d ℳ p ℒ H h h' W q hq hw = 0 ∨
         (k : ℤ) < d.degree (q - p) + 1 := by
   let a := wallCoefficient d ℳ p ℒ H h h' W q hq hw

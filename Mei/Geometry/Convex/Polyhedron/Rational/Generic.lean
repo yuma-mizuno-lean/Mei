@@ -5,7 +5,8 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.Convex.Polyhedron.Rational.Stratification
+public import TauCeti.Analysis.Convex.Polyhedron.Rational.Stratification.Basic
+public import Mei.Algebra.BigOperators.Group.Finset.Indicator
 public import Mei.Geometry.Affine.Arrangement
 public import Mei.Topology.LocallyConstant.Basic
 
@@ -30,6 +31,8 @@ domains after imposing semilinear support, avoidance and incoming-source constra
 
 public section
 
+open TauCeti (IsRationalSemilinear)
+
 open Set Filter Topology
 
 namespace Mei
@@ -52,7 +55,7 @@ theorem IsRationalSemilinear.exists_membershipArrangement
     apply (ExceptionalArrangement.eventually_sign_eq_of_isGeneric g hx).mono
     intro y hy
     exact hmem (fun a => SignType.sign (g a x)) y x
-      (Convex.mem_signCell.mpr hy) (Convex.mem_signCell_sign g x)
+      (TauCeti.Convex.mem_signCell.mpr hy) (TauCeti.Convex.mem_signCell_sign g x)
   refine ⟨E, ?_, hstable⟩
   intro j x hx hgen
   have he := (hstable x hgen).mono fun y hy => hy j

@@ -30,9 +30,13 @@ cochain presentation, so the primitive is not canonical.
 
 public section
 
+open TauCeti (OrientedCell PolyhedralCochain)
+
 noncomputable section
 
-namespace Mei.PolyhedralCochain
+namespace TauCeti.PolyhedralCochain
+
+open Mei
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
@@ -63,4 +67,4 @@ theorem coboundary_eq_zero_iff_exists_coboundary (C : PolyhedralCochain R h E (k
   · rintro ⟨B, rfl⟩
     exact coboundary_coboundary B
 
-end Mei.PolyhedralCochain
+end TauCeti.PolyhedralCochain

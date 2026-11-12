@@ -18,9 +18,13 @@ cutoff modulus, injectivity or homogeneous unit is used in this descent.
 -/
 
 public section
+
+open TauCeti (PositiveDegrees)
 noncomputable section
 
-namespace Mei.PositiveDegrees
+namespace TauCeti.PositiveDegrees
+
+open Mei
 
 variable {Γ Γ' R S A B : Type*} [AddCommGroup Γ] [AddCommGroup Γ']
   [CommRing R] [CommRing S] [Ring A] [Ring B] [Algebra R A] [Algebra S B]
@@ -116,4 +120,4 @@ theorem shiftedDirectLimitMap_mul_of_charts (x y : d.ShiftedDirectLimit 𝒜) :
     Φ b) hs ht
   exact hl.symm.trans (hmul.trans hr)
 
-end Mei.PositiveDegrees
+end TauCeti.PositiveDegrees

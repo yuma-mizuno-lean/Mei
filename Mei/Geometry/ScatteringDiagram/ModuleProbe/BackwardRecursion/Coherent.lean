@@ -24,9 +24,15 @@ The backward-ray interpretation follows Mandel, *Scattering diagrams, theta
 functions, and refined tropical curve counts*, §3.3.3 (arXiv:1503.06183v5).
 -/
 
+open TauCeti (WallComplement)
+
 public noncomputable section
 
-open Set Filter Topology Mei.Convex Mei.Convex.WallComplement
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
+open TauCeti (DirectedWallSpaces)
+
+open Set Filter Topology Mei.Convex TauCeti.WallComplement
 
 namespace Mei.ModuleProbe
 
@@ -106,7 +112,7 @@ nonidentity projected label, so it is active at the ambient cutoff. -/
 theorem coherentProbeEndpointFunction_apply_of_active_wall
     (k K : ℕ) (hkK : k ≤ K) (hBc : B.LevelConsistent K)
     (Q : V) (n : d.cutoff k)
-    (hQ : ∃ c, CompletedGroup.projection K (B.wall c).label ≠ 1 ∧ Q ∈ (B.wall c).support) :
+    (hQ : ∃ c, TauCeti.CompletedGroup.projection K (B.wall c).label ≠ 1 ∧ Q ∈ (B.wall c).support) :
     coherentProbeEndpointFunction d ℳ p ℒ H h h' D B k K hkK hBc Q n = 0 := by
   apply coherentProbeEndpointFunction_apply_of_not_allowed d ℳ p ℒ H h h' D B
     k K hkK hBc Q n
@@ -234,7 +240,8 @@ theorem exists_coherentBackwardRayEndpointStepArrangement
     have hy' : ((WallComplement.restrictPrefunctor (B.activeSupport K)
         (Set.inclusion (B.active_mono hkK))).obj ⟨Q, hallowed Q hQA⟩) = y :=
       WallComplement.ext hy.symm
-    simpa only [hy'] using he
+    rw [← hy']
+    exact he
   dsimp only [f] at houtput
   refine ⟨y, hy, fun n hn => ?_⟩
   filter_upwards [hyrec n hn] with T hT

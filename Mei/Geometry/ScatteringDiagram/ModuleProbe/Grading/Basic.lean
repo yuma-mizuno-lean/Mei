@@ -17,6 +17,8 @@ The two original direct-sum decompositions give the decomposition of the semidir
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 open scoped DirectSum
 noncomputable section
 namespace Mei.ModuleProbe

@@ -26,6 +26,8 @@ Mathlib's antipode and tensor-product maps.
 
 public section
 
+open TauCeti.UniversalEnvelopingAlgebra (degreeFiltration)
+
 open scoped TensorProduct
 
 namespace Mei.UniversalEnvelopingAlgebra
@@ -46,8 +48,8 @@ variable (φ : Γ →+ R)
 local notation "Y" => TauCeti.UniversalEnvelopingAlgebra.envelopingDerivation R L
   (LieDerivation.ofGrading ℒ φ)
 local notation "T" => Ideal.tensorFiltration R
-  (Mei.AlgFiltration.ideal (degreeFiltration ℒ d hneg))
-  (Mei.AlgFiltration.ideal (degreeFiltration ℒ d hneg))
+  (TauCeti.AlgFiltration.ideal (degreeFiltration ℒ d hneg))
+  (TauCeti.AlgFiltration.ideal (degreeFiltration ℒ d hneg))
 
 /-- Antipode-Euler contraction preserves total tensor order. -/
 theorem dynkinContraction_mem_degreeFiltration {k : ℕ} {t : U ⊗[R] U} (ht : t ∈ T k) :

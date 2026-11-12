@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import TauCeti.Geometry.Toric.Algebraic.Lattice
+public import TauCeti.Geometry.Toric.Algebraic.Lattice.Dual
 public import Mathlib.LinearAlgebra.Dual.Lemmas
 public import Mathlib.Analysis.Normed.Module.FiniteDimension
 public import Mathlib.Analysis.Normed.Module.HahnBanach
@@ -49,29 +49,6 @@ theorem realCharacter_toIntLinearMap (h : IsIntegralLattice i) :
   intro n
   simpa using h.isBaseChange.toDual_comp_apply (addMonoidHomLequivInt ℤ m) n
 
-/-- The real extensions of integral characters form an integral lattice in
-the real dual space, including finite freeness and the actual base-change datum. -/
-theorem dual (h : IsIntegralLattice i) : IsIntegralLattice h.realCharacter := by
-  let _ := h.free
-  let _ := h.finite
-  let e : (N →+ ℤ) ≃ₗ[ℤ] Module.Dual ℤ N := addMonoidHomLequivInt ℤ
-  have hbase : IsBaseChange ℝ h.realCharacter.toIntLinearMap ↔
-      IsBaseChange ℝ h.isBaseChange.toDual :=
-    IsBaseChange.iff_of_equiv_comm e (LinearEquiv.refl ℝ (Module.Dual ℝ V))
-      h.realCharacter_toIntLinearMap.symm
-  exact ⟨(Module.Free.iff_of_equiv e).mpr inferInstance,
-    (Module.Finite.equiv_iff e).mpr inferInstance, hbase.mpr h.isBaseChange.dual⟩
-
-/-- Under the dual lattice, integral evaluation at `n` extends to real
-evaluation at `i n`. This is the canonical double-dual compatibility on lattice vectors. -/
-@[simp]
-theorem dual_realCharacter_eval (h : IsIntegralLattice i) (n : N) :
-    h.dual.realCharacter (AddMonoidHom.eval n) = (Module.Dual.eval ℝ V) (i n) := by
-  symm
-  apply h.dual.eq_realCharacter
-  intro m
-  simp
-
 end TauCeti.Toric.IsIntegralLattice
 
 namespace TauCeti.Toric.IsIntegralLattice
@@ -111,10 +88,10 @@ theorem continuousDual_realCharacter_eval (h : IsIntegralLattice i) (n : N) :
 
 /-- Evaluation at a lattice vector is rational for the continuous dual lattice. -/
 theorem isRationalFunctional_continuousDual_eval (h : IsIntegralLattice i) (n : N) :
-    Mei.Toric.IsRationalFunctional h.continuousDual
+    TauCeti.Toric.IsRationalFunctional h.continuousDual
       (ContinuousLinearMap.apply ℝ ℝ (i n)).toLinearMap := by
   rw [← continuousDual_realCharacter_eval]
-  exact Mei.Toric.IsRationalFunctional.realCharacter h.continuousDual
+  exact TauCeti.Toric.IsRationalFunctional.realCharacter h.continuousDual
     (AddMonoidHom.eval n).toIntLinearMap
 
 /-- Evaluation at a nonzero lattice point is a nonzero functional on the continuous dual. -/

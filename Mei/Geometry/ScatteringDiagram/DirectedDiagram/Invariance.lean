@@ -27,6 +27,12 @@ to the identity spatial and wall-space coordinate changes.
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath)
+
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
 open Set Mei.Convex
@@ -91,13 +97,13 @@ No admissibility for the higher active wall family is required of the test loops
 theorem LevelConsistent.mono {k l : ℕ} (hD : D.LevelConsistent l) (hkl : k ≤ l) :
     D.LevelConsistent k := by
   have ha : (DirectedWallSpaces.CoordinateChange.refl (d := d) H).degreeMap.modulus k ≤ l :=
-    ((DirectedWallSpaces.CoordinateChange.refl H).degreeMap_modulus_le_iff k l).mpr
+    ((DirectedWallSpaces.CoordinateChange.refl d H).degreeMap_modulus_le_iff k l).mpr
       fun n _ hn => by
         simpa only [DirectedWallSpaces.CoordinateChange.refl_degreeEquiv, AddEquiv.refl_apply]
           using hn.trans (Int.ofNat_le.mpr hkl)
   simpa only [image_refl] using hD.image
-    (e := Toric.IntegralAffineEquiv.refl h)
-    (E := DirectedWallSpaces.CoordinateChange.refl H) (hE := by simp) ha
+    (e := TauCeti.Toric.IntegralAffineEquiv.refl h)
+    (E := DirectedWallSpaces.CoordinateChange.refl d H) (hE := by simp) ha
 
 /-- Equivalence preserves consistency at every cutoff. -/
 theorem Equivalent.consistent (hDE : D.Equivalent E) (hD : D.Consistent) : E.Consistent :=
@@ -172,7 +178,7 @@ theorem Equivalent.transport_eq (hDE : D.Equivalent E) (hD : D.Consistent)
     (hE : E.Consistent) {x y : D.Point} {x' y' : E.Point}
     (hx : x.val = x'.val) (hy : y.val = y'.val) :
     D.transport hD x y = E.transport hE x' y' := by
-  apply CompletedGroup.ext
+  apply TauCeti.CompletedGroup.ext
   intro k
   simp only [projection_transport_eq_levelTransport]
   exact ((equivalent_iff D E).mp hDE k).levelTransport_eq

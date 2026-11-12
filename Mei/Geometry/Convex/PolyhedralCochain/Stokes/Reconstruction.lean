@@ -30,11 +30,15 @@ The local input is
 
 public section
 
+open TauCeti (OrientedCell)
+
 noncomputable section
 
 open Set
 
-namespace Mei.PolyhedralCochain
+namespace TauCeti.PolyhedralCochain
+
+open Mei
 
 variable {N V R E : Type*} [AddCommGroup N]
   [NormedAddCommGroup V] [NormedSpace ℝ V]
@@ -82,7 +86,7 @@ theorem exists_radii_coboundary_eq_sum_mk_iff_edge_pairings
     refine ⟨q J, ?_, intrinsicInterior_subset (hq J)⟩
     rw [(s J).convexHull_eq_closedInterior]
     exact (s J).interior_subset_closedInterior (hqs J)
-  have ht (J) : (τ J).IsTransverse (s J).points :=
+  have ht (J) : (τ J).IsTransverseToCarrier (s J).points :=
     (τ J).isTransverse_of_isolating_simplex C (hτ J ▸ J.property) (s J) (hc J)
       ((hfront J).mono_left (hsmall J))
       (fun P hP hne => (hother J P hP hne).mono_left (hsmall J))
@@ -93,4 +97,4 @@ theorem exists_radii_coboundary_eq_sum_mk_iff_edge_pairings
   rw [hstokes J (s J) (hqs J) (hc J)
     ((hs J).trans (Metric.ball_subset_ball (min_le_left _ _))) (hv J)]
 
-end Mei.PolyhedralCochain
+end TauCeti.PolyhedralCochain

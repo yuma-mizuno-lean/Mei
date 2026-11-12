@@ -31,6 +31,10 @@ We use `DirectedWall.cylinder`, `GradedLieHom.completedMap_mem_wallGroup` and
 -/
 
 public section
+
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
+open TauCeti (DirectedWallSpaces)
 noncomputable section
 
 namespace Mei.ModuleProbe
@@ -68,7 +72,7 @@ variable [LieAlgebra ℚ L] [IsScalarTower ℚ R L]
 
 private def baseProjectedWall (W : DirectedWall (d := d) h H) :
     DirectedWall (d := positiveDegrees d p) h
-      ((wallSpaces d ℳ p ℒ H).project (AddMonoidHom.fst Λ ℤ)) where
+      ((wallSpaces d ℳ p ℒ H).mapTangent (AddMonoidHom.fst Λ ℤ)) where
   normal := W.normal
   normal_ne_zero := W.normal_ne_zero
   ray := baseRay d p W.ray
@@ -79,11 +83,11 @@ private def baseProjectedWall (W : DirectedWall (d := d) h H) :
   direction_support := W.direction_support
   label := (baseGradedLieHom d ℳ p ℒ).completedMap W.label
   label_mem := (baseGradedLieHom d ℳ p ℒ).completedMap_mem_wallGroup
-    (H := H) (H' := (wallSpaces d ℳ p ℒ H).project (AddMonoidHom.fst Λ ℤ))
+    (H := H) (H' := (wallSpaces d ℳ p ℒ H).mapTangent (AddMonoidHom.fst Λ ℤ))
     (w := W.ray) (v := baseRay d p W.ray) (m := W.normal) (m' := W.normal)
     (fun n hn => by simpa using hn)
     (fun n _ x hx => by
-      simp only [DirectedWallSpaces.project_wall, baseMap_apply,
+      simp only [DirectedWallSpaces.mapTangent_wall, baseMap_apply,
         wallSpaces_wall]
       rw [← baseNormal_def, wallSubmodule_base]
       exact Submodule.mem_map.mpr ⟨x, hx, by simp⟩) W.label_mem
@@ -209,7 +213,7 @@ theorem probeWall_label_eq_one_iff (a : ℳ p) :
 /-- A nonzero probe coefficient is visible precisely from extended order one onward. -/
 @[simp↓]
 theorem projection_probeWall_label_eq_one_iff (a : ℳ p) (k : ℕ) :
-    CompletedGroup.projection k (probeWall d ℳ p ℒ H h h' a).label = 1 ↔
+    TauCeti.CompletedGroup.projection k (probeWall d ℳ p ℒ H h h' a).label = 1 ↔
       a = 0 ∨ k = 0 := by
   have hx := (moduleGradingEquiv d ℳ p ℒ p (initialCoefficient d ℳ p a)).property
   rw [coe_moduleGradingEquiv] at hx

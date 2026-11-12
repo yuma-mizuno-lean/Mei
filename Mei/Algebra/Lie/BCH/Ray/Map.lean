@@ -26,9 +26,9 @@ completed label of that ray.
 Taking a ray factor commutes with degree-preserving coefficient maps, even when
 the coefficient map kills some or all of its logarithmic coefficients.
 
-The finite support argument uses `Mei.GradedLieHom.map_mem_rayLieSubalgebra` and
-`Mei.PositiveDegrees.map_rayLieSubalgebra_mkQ`. Completion uses
-`Mei.GradedLieHom.projection_completedMap` and `LieHom.log_bchGroupMap`.
+The finite support argument uses `TauCeti.GradedLieHom.map_mem_rayLieSubalgebra` and
+`TauCeti.PositiveDegrees.map_rayLieSubalgebra_mkQ`. Completion uses
+`TauCeti.GradedLieHom.projection_completedMap` and `LieHom.log_bchGroupMap`.
 The restriction argument follows the wall-group construction in
 `Mei.Geometry.ScatteringDiagram.WallSpace.Hom`, with all homogeneous pieces
 on the ray in place of normal-dependent wall spaces.
@@ -36,7 +36,11 @@ on the ray in place of normal-dependent wall spaces.
 
 public section
 
-namespace Mei.GradedLieHom
+open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading SupportedRay GradedLieHom)
+
+namespace TauCeti.GradedLieHom
+
+open Mei
 
 universe u
 
@@ -66,9 +70,9 @@ theorem completedMap_mem_completedRaySubgroup (f : GradedLieHom T ℒ ℳ)
   apply (e.mem_completedRaySubgroup ℳ v _).mpr
   intro k
   rw [projection_completedMap]
-  have hlog := (f.truncatedMap k le_rfl).log_bchGroupMap
-    (CompletedGroup.projection (T.modulus k) g)
-  exact hlog.symm ▸ f.truncatedMap_mem_rayLieSubalgebra hdegree le_rfl
+  have hlog := (f.lieTruncatedMap k le_rfl).log_bchGroupMap
+    (TauCeti.CompletedGroup.projection (T.modulus k) g)
+  exact hlog.symm ▸ f.lieTruncatedMap_mem_rayLieSubalgebra hdegree le_rfl
     ((d.mem_completedRaySubgroup ℒ w g).mp hg (T.modulus k))
 
 /-- Restrict a completed graded homomorphism to two supported-ray subgroups. -/
@@ -115,11 +119,9 @@ theorem completedMap_mem_completedRaySubgroup_map [Module.Free ℤ M]
     (f : GradedLieHom T ℒ ℳ) {g : d.completedBCHGroup ℒ}
     (hg : g ∈ d.completedRaySubgroup ℒ w) :
     f.completedMap g ∈ e.completedRaySubgroup ℳ
-      (w.map T.toAddMonoidHom (fun _ hn => T.map_mem hn)
-        (fun _ hn h0 => T.map_ne_zero hn h0)) :=
+      (w.map T) :=
   f.completedMap_mem_completedRaySubgroup
-    (fun _ hn => w.map_mem_rayDegrees T.toAddMonoidHom
-      (fun _ hn => T.map_mem hn) (fun _ hn h0 => T.map_ne_zero hn h0) hn) hg
+    (fun _ hn => w.map_mem_rayDegrees T hn) hg
 
 /-- A degree-preserving graded endomorphism fixing every homogeneous piece on a ray
 pointwise fixes every completed label of that ray. -/
@@ -128,21 +130,21 @@ theorem completedMap_eq_self_of_mem_completedRaySubgroup
     (hf : ∀ n ∈ w.rayDegrees, ∀ x ∈ ℒ n, f x = x)
     {g : d.completedBCHGroup ℒ} (hg : g ∈ d.completedRaySubgroup ℒ w) :
     f.completedMap g = g := by
-  apply CompletedGroup.ext
+  apply TauCeti.CompletedGroup.ext
   intro k
   rw [f.projection_completedMap_of_le k (a := k) (by simp)]
   -- Read the tower projection as an element of the concrete finite BCH group.
-  let y : d.truncatedGroup ℒ k := CompletedGroup.projection k g
+  let y : d.truncatedGroup ℒ k := TauCeti.CompletedGroup.projection k g
   apply BCHGroup.log_injective
-  refine ((f.truncatedMap (a := k) k (by simp)).log_bchGroupMap y).trans ?_
-  have hle : (rayLieSubalgebra (d.truncatedGrading ℒ k) w).toSubmodule ≤
-      LinearMap.eqLocus (f.truncatedMap (a := k) k (by simp)).toLinearMap LinearMap.id := by
+  refine ((f.lieTruncatedMap (a := k) k (by simp)).log_bchGroupMap y).trans ?_
+  have hle : (rayLieSubalgebra (d.lieTruncationGrading ℒ k) w).toSubmodule ≤
+      LinearMap.eqLocus (f.lieTruncatedMap (a := k) k (by simp)).toLinearMap LinearMap.id := by
     rw [rayLieSubalgebra_toSubmodule]
     refine iSup_le fun n => ?_
-    rw [d.truncatedGrading_eq]
+    rw [d.lieTruncationGrading_eq]
     rintro _ ⟨x, hx, rfl⟩
     rw [LinearMap.mem_eqLocus, LieHom.coe_toLinearMap, LinearMap.id_apply,
-      Submodule.mkQ_apply, f.truncatedMap_mk, hf n n.property x hx]
+      Submodule.mkQ_apply, f.lieTruncatedMap_mk, hf n n.property x hx]
   exact LinearMap.mem_eqLocus.mp (hle ((d.mem_completedRaySubgroup ℒ w g).mp hg k))
 
 variable {𝓝 : N → Submodule R L'} [GradedLieAlgebra 𝓝] [IsPositiveGrading d 𝓝]
@@ -165,4 +167,4 @@ theorem completedMap_rayFactor (f : GradedLieHom (PositiveDegreeMap.id d) ℒ �
       d.logComponent_rayFactor_of_notMem 𝓝 (f.completedMap g) hn]
     simp
 
-end Mei.GradedLieHom
+end TauCeti.GradedLieHom

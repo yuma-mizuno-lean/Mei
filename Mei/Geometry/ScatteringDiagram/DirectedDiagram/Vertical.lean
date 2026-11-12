@@ -8,6 +8,7 @@ module
 public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Basic
 public import Mei.Geometry.Affine.Generic
 public import Mei.Geometry.Affine.Codimension
+import Mei.Algebra.Group.Hom.Int
 
 /-!
 # Regular vertical crossings in the zero slice
@@ -19,7 +20,7 @@ affine span contains it is transverse to the vertical direction. The statement
 allows arbitrary supports and repeated indexed walls; it needs neither consistency
 nor a classification of the wall labels.
 
-We pull the finite codimension-two cover of `Convex.singularSupport` and the spans
+We pull the finite codimension-two cover of `TauCeti.singularSupport` and the spans
 of vertically tangent walls back to the zero slice. Each pullback is a proper affine
 subspace of the base, so these pullbacks form an `ExceptionalArrangement`. This
 supplies actual regular germs for the coefficient extraction of module probes; the
@@ -27,9 +28,15 @@ geometric argument follows Mandel, *Scattering diagrams, theta functions, and re
 tropical curve counts*, §3.3.3 (arXiv:1503.06183v5).
 -/
 
+open TauCeti (singularSupport exists_finite_singularSupport_cover)
+
 public noncomputable section
 
-open Set Mei.Convex
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
+open TauCeti (DirectedWallSpaces)
+
+open Set
 
 namespace Mei.DirectedDiagram
 

@@ -5,7 +5,7 @@ Authors: Claude, Codex
 -/
 module
 
-public import Mei.Algebra.DirectSum.Degree.Basic
+public import TauCeti.Algebra.DirectSum.DegreeTail
 public import Mei.Combinatorics.Quiver.Path.ZeroRuns
 public import Mei.LinearAlgebra.GradedModule.History.Path
 public import Mei.LinearAlgebra.ModuleFiltration.Basic
@@ -81,21 +81,21 @@ variable {R M ι : Type*} [Semiring R] [AddCommMonoid M] [Module R M]
 
 /-- The filtration by a natural-valued order of homogeneous pieces. -/
 def componentDegreeFiltration : ModuleFiltration R M where
-  submodule := DirectSum.degreeTail ℳ (fun i => (rank i : ℤ))
-  antitone := DirectSum.degreeTail_antitone ℳ _
-  zero_eq_top := DirectSum.degreeTail_zero ℳ _ (fun i hi => by omega)
+  submodule := TauCeti.DirectSum.degreeTail ℳ (fun i => (rank i : ℤ))
+  antitone := TauCeti.DirectSum.degreeTail_antitone ℳ _
+  zero_eq_top := TauCeti.DirectSum.degreeTail_zero ℳ _ (fun i hi => by omega)
 
 /-- Each filtration submodule is the corresponding homogeneous degree tail. -/
 @[simp]
 theorem componentDegreeFiltration_submodule (k : ℕ) :
     (componentDegreeFiltration ℳ rank).submodule k =
-      DirectSum.degreeTail ℳ (fun i => (rank i : ℤ)) k := (rfl)
+      TauCeti.DirectSum.degreeTail ℳ (fun i => (rank i : ℤ)) k := (rfl)
 
 /-- Membership means that all lower-rank homogeneous components vanish. -/
 theorem mem_componentDegreeFiltration_iff {k : ℕ} {x : M} :
     x ∈ (componentDegreeFiltration ℳ rank).submodule k ↔
       ∀ i, rank i < k → (_root_.DirectSum.decompose ℳ x i : M) = 0 := by
-  rw [componentDegreeFiltration_submodule, DirectSum.mem_degreeTail_iff]
+  rw [componentDegreeFiltration_submodule, TauCeti.DirectSum.mem_degreeTail_iff]
   simp only [Nat.cast_lt]
 
 /-- Vanishing of pieces in order at least `r` makes the degree filtration nilpotent. -/
@@ -103,7 +103,7 @@ theorem componentDegreeFiltration_eq_bot {r : ℕ}
     (hr : ∀ i, r ≤ rank i → ℳ i = ⊥) :
     (componentDegreeFiltration ℳ rank).submodule r = ⊥ := by
   apply bot_unique
-  rw [componentDegreeFiltration_submodule, DirectSum.degreeTail_def]
+  rw [componentDegreeFiltration_submodule, TauCeti.DirectSum.degreeTail_def]
   refine iSup_le fun i => iSup_le fun hi => ?_
   rw [hr i (by exact_mod_cast hi)]
 
@@ -158,7 +158,7 @@ theorem componentTransfersRaise_of_rank (rank : ∀ q, ι q → ℕ)
     rw [DirectSum.decompose_of_mem_same (ℳ b) hxi] at hzero
     exact hx hzero
   rw [componentDegreeFiltration_submodule]
-  exact DirectSum.le_degreeTail (ℳ c) (fun j => (rank c j : ℤ))
+  exact TauCeti.DirectSum.le_degreeTail (ℳ c) (fun j => (rank c j : ℤ))
     (by exact_mod_cast (Nat.add_le_add_right hki (w e i j)).trans (hT e i j x hxi hz))
     (homogeneousComponent_mem (ℳ c) j _)
 

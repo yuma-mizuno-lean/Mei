@@ -41,6 +41,10 @@ Gross–Hacking–Keel–Kontsevich, *Canonical bases for cluster algebras*, §1
 
 public section
 
+open TauCeti (AlgFiltration)
+
+open TauCeti (PositiveDegrees SupportedRay)
+
 noncomputable section
 
 namespace Mei
@@ -164,7 +168,7 @@ theorem rayFactor_label_mem_wallGroup (c : E → R) (i : ι) (w : SupportedRay d
 
 /-- With finitely many terms, only finitely many ray factors of the labels survive each cutoff. -/
 theorem hasFiniteSupport_rayFactor_label [Module.Free ℤ Γ] (c : E → R) :
-    CompletedGroup.HasFiniteSupport
+    TauCeti.CompletedGroup.HasFiniteSupport
       fun x : Σ i, {w : SupportedRay d // I.normal i (ρ w.generator) = 0} =>
         d.rayFactor ℒ (I.label c x.1) x.2.val := by
   let : HasUniqueDiv Γ := .of_isTorsionFree ℤ _

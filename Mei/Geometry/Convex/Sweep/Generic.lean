@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.Convex.Sweep.Topology
+public import TauCeti.Analysis.Convex.Sweep.Topology
 public import Mei.Geometry.Affine.IncomingGerm
 
 /-!
@@ -30,7 +30,7 @@ hyperplane, `exists_forall_notMem_sweepProjection` instead excludes the singular
 crossings themselves. Its endpoint exceptions are the affine preimages of those
 subspaces under the sweep projections.
 
-We use `sweepProjection` and
+We use `ContinuousLinearMap.sweepProjection` and
 `ExceptionalArrangement.exists_forall_eventually_isGeneric_smul_vadd`. The
 backward-ray application follows Mandel, *Scattering diagrams, theta functions,
 and refined tropical curve counts*, §3.3.3 (arXiv:1503.06183v5).
@@ -52,17 +52,18 @@ theorem exists_forall_notMem_sweepProjection {κ : Type*} [Finite κ]
     (A : κ → AffineSubspace ℝ V)
     (hA : ∀ j l, ∃ x, f j x = c j ∧ x ∉ A l) :
     ∃ E : ExceptionalArrangement V, ∀ Q, E.IsGeneric Q →
-      ∀ j l, sweepProjection (f j) (c j) (n j) Q ∉ A l := by
+      ∀ j l, ContinuousLinearMap.sweepProjection (f j) (c j) (n j) Q ∉ A l := by
   classical
   let := Fintype.ofFinite ι
   let := Fintype.ofFinite κ
-  let B (z : ι × κ) := (A z.2).comap (sweepProjection (f z.1) (c z.1) (n z.1)).toAffineMap
+  let B (z : ι × κ) :=
+    (A z.2).comap (ContinuousLinearMap.sweepProjection (f z.1) (c z.1) (n z.1)).toAffineMap
   have hB (z : ι × κ) : B z ≠ ⊤ := by
     intro htop
     obtain ⟨x, hx, hxA⟩ := hA z.1 z.2
     have hm := AffineSubspace.mem_comap.mp (htop ▸ AffineSubspace.mem_top ℝ V x)
     exact hxA (by simpa only [ContinuousAffineMap.coe_toAffineMap,
-      sweepProjection_eq_self _ _ hx] using hm)
+      ContinuousLinearMap.sweepProjection_eq_self _ _ hx] using hm)
   let E : ExceptionalArrangement V :=
     ⟨Finset.univ.image B, fun _ hm => by
       obtain ⟨z, _, rfl⟩ := Finset.mem_image.mp hm
@@ -80,10 +81,10 @@ theorem exists_forall_eventually_isGeneric_sweepProjection
     (n v : ι → V) (hv : ∀ j, f j (v j) ≠ 0) :
     ∃ F : ExceptionalArrangement V, ∀ Q, F.IsGeneric Q →
       ∀ᶠ t : ℝ in 𝓝[>] 0, ∀ j,
-        E.IsGeneric (sweepProjection (f j) (c j) (n j) Q + t • v j) := by
+        E.IsGeneric (ContinuousLinearMap.sweepProjection (f j) (c j) (n j) Q + t • v j) := by
   obtain ⟨F, hF⟩ := E.exists_forall_eventually_isGeneric_smul_vadd
-    (fun j => (sweepProjection (f j) (c j) (n j)).toAffineMap) v
-    (fun j => (f j).surjective_smul_add_sweepProjection (c j) (n j) (v j) (hv j))
+    (fun j => (ContinuousLinearMap.sweepProjection (f j) (c j) (n j)).toAffineMap) v
+    (fun j => (f j).smul_add_sweepProjection_surjective (c j) (n j) (v j) (hv j))
   exact ⟨F, fun Q hQ => (hF Q hQ).mono fun t ht j => by
     simpa only [ContinuousAffineMap.coe_toAffineMap, vadd_eq_add, add_comm] using ht j⟩
 

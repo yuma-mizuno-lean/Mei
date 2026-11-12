@@ -224,7 +224,7 @@ theorem exists_uniform_pathDecoratedEvaluation_singleFace_arrangement
     pathDecoratedEvaluation_singleFace_one_eq T ℳ e i₀ (α y) v ν β Z (hnormal y) hZ X ht ?_⟩
   intro q hq hmem
   obtain ⟨j, hj⟩ := mem_iUnion.mp (hcover hmem)
-  exact hE X hX ⟨q, hs y q hq⟩ j (sweepProjection_inv_smul_apply X ▸ hj)
+  exact hE X hX ⟨q, hs y q hq⟩ j (ContinuousLinearMap.sweepProjection_inv_smul_apply X ▸ hj)
 
 /-- If finitely many affine subspaces cover the singular set and none contains the full
 face, one finite exceptional arrangement makes the opposite-side weighted evaluation over

@@ -31,6 +31,12 @@ algebras*, §1 and Appendix B, arXiv:1411.1394v2.
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath)
+
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
 open Set Mei.Convex
@@ -46,7 +52,7 @@ variable {Γ Λ K R L V E ι : Type*} [AddCommGroup Γ] [AddCommGroup Λ] [AddCo
   [GradedLieAlgebra ℒ] [IsPositiveGrading d ℒ]
   {i : Λ →+ V} {j : K →+ E} {h : TauCeti.Toric.IsIntegralLattice i}
   {H : DirectedWallSpaces ρ ℒ}
-  (D : DirectedDiagram (d := d) h (H.project (AddMonoidHom.fst Λ K)) ι)
+  (D : DirectedDiagram (d := d) h (H.mapTangent (AddMonoidHom.fst Λ K)) ι)
   (h' : TauCeti.Toric.IsIntegralLattice j)
 
 /-- Project a finite-order cylinder path, forgetting the unrestricted coordinates.
@@ -83,7 +89,7 @@ theorem levelPathProduct_cylinder (k : ℕ)
       D.levelPathProduct k ((D.levelCylinderProjection h' k).mapPath p) := by
   let W := fun a : D.active k => (D.wall a).support
   let ν := fun a : D.active k => h.realCharacter (D.wall a).normal
-  let label := fun a : D.active k => CompletedGroup.projection k (D.wall a).label
+  let label := fun a : D.active k => TauCeti.CompletedGroup.projection k (D.wall a).label
   let comm : ∀ a b : D.active k,
       affineSpan ℝ (W a ×ˢ (univ : Set E)) = affineSpan ℝ (W b ×ˢ univ) →
       Commute (label a) (label b) := fun a b hab => D.activeLabels_commute k a b
@@ -104,7 +110,7 @@ theorem levelPathProduct_cylinder (k : ℕ)
       intro a
       rw [cylinder_wall, DirectedWall.realCharacter_cylinder_normal]
       simp [ν, e, r])
-    (fun a => CompletedGroup.projection k ((D.cylinder h').wall a).label)
+    (fun a => TauCeti.CompletedGroup.projection k ((D.cylinder h').wall a).label)
     label ((D.cylinder h').activeLabels_commute k) comm
     (MonoidHom.id _) (by intro a; simp [label, r])
   have hp := q.wallPathProduct_cylinderProjection W ν label (D.activeLabels_commute k)
@@ -250,7 +256,7 @@ No consistency hypothesis or locally finite all-order support is needed. -/
 theorem pathProduct_cylinder {x y : (D.cylinder h').Point} (p : Quiver.Path x y) :
     (D.cylinder h').pathProduct p =
       D.pathProduct ((D.pathCylinderProjection h').mapPath p) := by
-  apply CompletedGroup.ext
+  apply TauCeti.CompletedGroup.ext
   intro k
   have hp := congrArg
     (fun F : (D.cylinder h').Point ⥤q
@@ -274,8 +280,8 @@ omit D in
 /-- The cylinder over an outgoing completion is an outgoing completion of the
 cylinder input, retaining every indexed initial wall. -/
 theorem IsOutgoingCompletion.cylinder {ι₀ κ : Type*}
-    {D₀ : ι₀ → DirectedWall (d := d) h (H.project (AddMonoidHom.fst Λ K))}
-    {C : DirectedDiagram (d := d) h (H.project (AddMonoidHom.fst Λ K)) (ι₀ ⊕ κ)}
+    {D₀ : ι₀ → DirectedWall (d := d) h (H.mapTangent (AddMonoidHom.fst Λ K))}
+    {C : DirectedDiagram (d := d) h (H.mapTangent (AddMonoidHom.fst Λ K)) (ι₀ ⊕ κ)}
     (hC : IsOutgoingCompletion D₀ C) :
     IsOutgoingCompletion (fun a => (D₀ a).cylinder h') (C.cylinder h') where
   wall_inl a := by rw [cylinder_wall, hC.wall_inl]

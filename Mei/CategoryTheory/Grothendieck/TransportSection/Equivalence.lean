@@ -6,7 +6,8 @@ Authors: Codex
 module
 
 public import TauCeti.CategoryTheory.Grothendieck.TransportSection
-public import Mei.CategoryTheory.Grothendieck.Pullback
+public import TauCeti.CategoryTheory.Grothendieck.Pullback
+public import Mei.CategoryTheory.Grothendieck.Basic
 public import Mathlib.CategoryTheory.Equivalence
 
 /-!

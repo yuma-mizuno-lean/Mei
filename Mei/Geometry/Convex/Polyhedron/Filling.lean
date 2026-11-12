@@ -6,7 +6,8 @@ Authors: Codex
 module
 
 public import Mei.Geometry.Convex.Polyhedron.GraphPerturbation
-public import Mei.Geometry.Convex.Polyhedron.SegmentSubdivision
+public import TauCeti.Geometry.ScatteringDiagram.Path.Subdivision
+public import Mei.Geometry.Convex.Polyhedron.AdmissiblePath
 public import Mei.Topology.ContinuousMap.Subdivision
 
 /-!
@@ -31,6 +32,8 @@ Neither the square nor its boundary is required to be embedded or nondegenerate.
 -/
 
 public section
+
+open TauCeti (WallComplement)
 
 noncomputable section
 

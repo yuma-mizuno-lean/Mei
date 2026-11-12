@@ -19,12 +19,14 @@ with no free vertex there is no admissible path from `(-1, 1)` to `(1, -1)`
 (`Mei.Convex.TwoLines.isEmpty_hom`).
 
 Admissible chains do exist once a free vertex is allowed:
-`Mei.Convex.AdmissiblePLPath.exists_length_eq_two` supplies one with two edges
+`TauCeti.AdmissiblePLPath.exists_length_eq_two` supplies one with two edges
 (`Mei.Convex.TwoLines.exists_admissiblePLPath`). The example shows that the requirement of a
 free vertex for the admissibility of a path cannot be dropped.
 -/
 
 public section
+
+open TauCeti (WallComplement AdmissiblePLPath singularSupport mem_singularSupport)
 
 open Set
 

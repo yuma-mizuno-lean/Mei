@@ -20,7 +20,7 @@ the completed Lie coordinate. The image consists exactly of the group-like units
 whose logarithm comes from the completed Lie algebra. Finite Dynkin
 reconstruction and homogeneous assembly show that every group-like unit occurs.
 
-The construction combines `Mei.PositiveDegrees.completedBCHExp`, the canonical
+The construction combines `TauCeti.PositiveDegrees.completedBCHExp`, the canonical
 `Mei.UniversalEnvelopingAlgebra.completedLieToU`, and
 `Mei.UniversalEnvelopingAlgebra.completedPrimitiveExpUnitsEquiv`.
 Multiplicativity follows from `truncatedBCHToUnits` at every finite cutoff.
@@ -30,6 +30,10 @@ module is assumed.
 -/
 
 public section
+
+open TauCeti.UniversalEnvelopingAlgebra (degreeFiltration)
+
+open TauCeti (PositiveDegrees IsPositiveGrading)
 
 namespace Mei.UniversalEnvelopingAlgebra
 
@@ -44,7 +48,8 @@ local notation "U" => _root_.UniversalEnvelopingAlgebra R L
 local notation "hneg" => (fun n hn => d.eq_bot_of_degree_nonpos ℒ n (le_of_lt hn))
 local notation "hpos" => (fun n hn => d.eq_bot_of_degree_nonpos ℒ n hn)
 local notation "F" => degreeFiltration ℒ d.degree hneg
-local notation "π" => LieIdeal.completionProjection (d.degreeIdeal ℒ) (d.degreeIdeal_antitone ℒ)
+local notation "π" =>
+  LieIdeal.completionProjection (d.truncationIdeal ℒ) (d.truncationIdeal_antitone ℒ)
 local notation "G" => completedGroupLikeSubgroup ℒ d.degree hneg
 
 /-- Rational scalars on the enveloping algebra are induced from the coefficient ring. -/
@@ -67,17 +72,17 @@ variable [LieAlgebra ℚ L] [IsScalarTower ℚ R L]
 private theorem projection_groupLikeExp (k : ℕ) (x : d.completedLie ℒ) :
     (F).projection k ((groupLikeExp d ℒ x).val : (F).completion) =
       (truncatedBCHToUnits d ℒ k (BCHGroup.exp (π k x)) : U ⧸ (F).ideal (k + 1)) := by
-  simp only [coe_groupLikeExp, Mei.AlgFiltration.projection_completedExp,
+  simp only [coe_groupLikeExp, TauCeti.AlgFiltration.projection_completedExp,
     projection_completedLieToU, coe_truncatedBCHToUnits, BCHGroup.log_exp]
 
 private theorem projection_groupLikeExp_symm (k : ℕ) (g : d.completedBCHGroup ℒ) :
     (F).projection k ((groupLikeExp d ℒ ((d.completedBCHExp ℒ).symm g)).val :
       (F).completion) =
-      (truncatedBCHToUnits d ℒ k (CompletedGroup.projection k g) :
+      (truncatedBCHToUnits d ℒ k (TauCeti.CompletedGroup.projection k g) :
         U ⧸ (F).ideal (k + 1)) := by
   rw [projection_groupLikeExp, PositiveDegrees.completionProjection_completedBCHExp_symm]
   exact congrArg (fun a => (truncatedBCHToUnits d ℒ k a : U ⧸ (F).ideal (k + 1)))
-    (BCHGroup.exp_log (L := d.truncatedLie ℒ k) (CompletedGroup.projection k g))
+    (BCHGroup.exp_log (L := d.lieTruncation ℒ k) (TauCeti.CompletedGroup.projection k g))
 
 /-- The canonical homomorphism from completed BCH labels to completed group-like units. -/
 noncomputable def completedBCHToGroupLike : d.completedBCHGroup ℒ →* G where
@@ -96,7 +101,7 @@ noncomputable def completedBCHToGroupLike : d.completedBCHGroup ℒ →* G where
     intro k
     simp only [Subgroup.coe_mul, Units.val_mul, map_mul, projection_groupLikeExp_symm]
     exact congrArg Units.val ((truncatedBCHToUnits d ℒ k).map_mul
-      (CompletedGroup.projection k g) (CompletedGroup.projection k h))
+      (TauCeti.CompletedGroup.projection k g) (TauCeti.CompletedGroup.projection k h))
 
 /-- The value of the completed group map is exponential of the canonical Lie image. -/
 @[simp]
@@ -113,7 +118,7 @@ theorem completedBCHToGroupLike_injective :
   intro g h hgh
   apply (d.completedBCHExp ℒ).symm.injective
   apply completedLieToU_injective d ℒ
-  simpa only [coe_completedBCHToGroupLike, Mei.AlgFiltration.completedLog_completedExp] using
+  simpa only [coe_completedBCHToGroupLike, TauCeti.AlgFiltration.completedLog_completedExp] using
     congrArg (fun u : G => (F).completedLog ⟨(u.val : (F).completion),
       ((mem_completedGroupLikeSubgroup ℒ d.degree hneg _).mp u.property).sub_one_mem
         ℒ d.degree hneg hpos⟩) hgh
@@ -121,14 +126,14 @@ theorem completedBCHToGroupLike_injective :
 /-- Each projection of the completed group map is the existing finite unit map. -/
 theorem projection_completedBCHToGroupLike (k : ℕ) (g : d.completedBCHGroup ℒ) :
     (F).projection k ((completedBCHToGroupLike d ℒ g).val : (F).completion) =
-      (truncatedBCHToUnits d ℒ k (CompletedGroup.projection k g) :
+      (truncatedBCHToUnits d ℒ k (TauCeti.CompletedGroup.projection k g) :
         U ⧸ (F).ideal (k + 1)) :=
   projection_groupLikeExp_symm d ℒ k g
 
 /-- The finite projection formula uniquely characterizes the completed group map. -/
 theorem completedBCHToGroupLike_unique (f : d.completedBCHGroup ℒ →* G)
     (hf : ∀ k g, (F).projection k ((f g).val : (F).completion) =
-      (truncatedBCHToUnits d ℒ k (CompletedGroup.projection k g) :
+      (truncatedBCHToUnits d ℒ k (TauCeti.CompletedGroup.projection k g) :
         U ⧸ (F).ideal (k + 1))) : f = completedBCHToGroupLike d ℒ := by
   apply MonoidHom.ext
   intro g
@@ -147,7 +152,7 @@ theorem mem_range_completedBCHToGroupLike_iff (u : G) :
   constructor
   · rintro ⟨g, rfl⟩
     refine ⟨(d.completedBCHExp ℒ).symm g, ?_⟩
-    simp only [coe_completedBCHToGroupLike, Mei.AlgFiltration.completedLog_completedExp]
+    simp only [coe_completedBCHToGroupLike, TauCeti.AlgFiltration.completedLog_completedExp]
   · rintro ⟨x, hx⟩
     refine ⟨d.completedBCHExp ℒ x, ?_⟩
     apply Subtype.ext
@@ -194,6 +199,7 @@ theorem completedLieToU_completedBCHGroupLikeEquiv_symm (u : G) :
   have hlog := congrArg (fun v : G => (F).completedLog ⟨(v.val : (F).completion),
     ((mem_completedGroupLikeSubgroup ℒ d.degree hneg _).mp v.property).sub_one_mem
       ℒ d.degree hneg hpos⟩) he
-  simpa only [coe_completedBCHToGroupLike, Mei.AlgFiltration.completedLog_completedExp] using hlog
+  simpa only [coe_completedBCHToGroupLike, TauCeti.AlgFiltration.completedLog_completedExp]
+    using hlog
 
 end Mei.UniversalEnvelopingAlgebra

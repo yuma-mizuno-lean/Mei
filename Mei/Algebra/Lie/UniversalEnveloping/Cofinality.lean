@@ -22,6 +22,9 @@ this gives cofinality of the degree and augmentation filtrations.
 
 public section
 
+open TauCeti.UniversalEnvelopingAlgebra (augmentation_pow_le_degreeFiltration degreeFiltration
+  homogeneousSubmodule ι_mem_homogeneousSubmodule)
+
 namespace Mei.UniversalEnvelopingAlgebra
 
 open _root_.UniversalEnvelopingAlgebra
@@ -42,8 +45,8 @@ theorem degreeFiltration_le_augmentation_pow (hneg : ∀ n, d n < 0 → ℒ n = 
   have hgen : Algebra.adjoin R (Set.range (fun s => ι R (e s))) = ⊤ := by
     simpa only [← Set.range_comp, Function.comp_def] using
       TauCeti.UniversalEnvelopingAlgebra.adjoin_image_ι_eq_top R L he
-  rw [Mei.UniversalEnvelopingAlgebra.degreeFiltration_ideal,
-    GradedAlgebra.degreeIdeal_le_iff]
+  rw [TauCeti.UniversalEnvelopingAlgebra.degreeFiltration_ideal,
+    TauCeti.GradedAlgebra.degreeIdeal_le_iff]
   intro n hn x hx
   have hspan : homogeneousSubmodule ℒ n ≤ (J ^ k).restrictScalars R := by
     rw [Mei.GradedAlgebra.grade_eq_span_words (homogeneousSubmodule ℒ)

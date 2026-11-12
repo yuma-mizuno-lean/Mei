@@ -8,6 +8,7 @@ module
 public import Mei.Geometry.Convex.PolyhedralComplex.Strata
 public import Mei.Geometry.Convex.Polyhedron.CrossingEvents
 public import Mathlib.GroupTheory.FreeGroup.Basic
+public import Mei.Combinatorics.Quiver.Path
 
 /-!
 # Signed crossing words of polyhedral paths
@@ -32,6 +33,8 @@ The sequence crossing-word formula is adapted from Codex,
 -/
 
 public section
+
+open TauCeti (WallComplement AdmissiblePLPath)
 
 noncomputable section
 

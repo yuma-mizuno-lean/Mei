@@ -24,13 +24,17 @@ all finite complexes are constant is asserted.
 
 The construction uses `KSComplex.label_eq_of_equivalent`,
 `CompletedDiagram.equivalent_truncate`, and the compatible-family carrier
-`Mei.completedGroup`. The conventions follow Bridgeland, *Scattering diagrams, Hall
+`TauCeti.completedGroup`. The conventions follow Bridgeland, *Scattering diagrams, Hall
 algebras and stability conditions*, Definition 2.3 and §§2.9–2.11
 (arXiv:1603.00416v4), and Gross–Hacking–Keel–Kontsevich, *Canonical bases for cluster
 algebras*, §1.1 (arXiv:1411.1394v2).
 -/
 
+open TauCeti (singularSupport)
+
 public noncomputable section
+
+open TauCeti (PositiveDegrees IsPositiveGrading SupportedRay)
 
 open Set Mei.Convex
 
@@ -101,7 +105,7 @@ theorem localLabel_eq_of_equivalent
 @[simp]
 theorem localLabel_truncate {l : ℕ} (hkl : l ≤ k) :
     (D.truncate hkl).localLabel θ hθ =
-      (d.truncationMap ℒ hkl).bchGroupMap (D.localLabel θ hθ) := by
+      (d.lieTruncationMap ℒ hkl).bchGroupMap (D.localLabel θ hθ) := by
   classical
   by_cases hP : ∃ P : C.walls, θ ∈ (P : Set V)
   · obtain ⟨P, hP⟩ := hP
@@ -120,7 +124,7 @@ variable {C E : ℕ → FinitePolyhedralComplex h}
 /-- Local wall labels at different cutoffs are compatible, including cutoffs at
 which the point lies on no wall. -/
 theorem truncation_localLabel {k l : ℕ} (hkl : k ≤ l) :
-    (d.truncationMap ℒ hkl).bchGroupMap ((D.diagram l).localLabel θ (hθ l)) =
+    (d.lieTruncationMap ℒ hkl).bchGroupMap ((D.diagram l).localLabel θ (hθ l)) =
       (D.diagram k).localLabel θ (hθ k) := by
   rw [← KSComplex.localLabel_truncate]
   exact ((D.diagram l).truncate hkl).localLabel_eq_of_equivalent (D.diagram k)
@@ -130,20 +134,20 @@ theorem truncation_localLabel {k l : ℕ} (hkl : k ≤ l) :
 coorientation is the one positive on the degree point. -/
 def germLabel : d.completedBCHGroup ℒ :=
   ⟨fun k => (D.diagram k).localLabel θ (hθ k),
-    (mem_completedGroup_iff _ _).mpr (fun _ _ hkl => D.truncation_localLabel θ hθ hkl)⟩
+    (TauCeti.mem_completedGroup_iff _ _).mpr (fun _ _ hkl => D.truncation_localLabel θ hθ hkl)⟩
 
 /-- Each projection is the actual local label of the finite complex. -/
 @[simp]
 theorem projection_germLabel (k : ℕ) :
-    CompletedGroup.projection k (D.germLabel θ hθ) =
+    TauCeti.CompletedGroup.projection k (D.germLabel θ hθ) =
       (D.diagram k).localLabel θ (hθ k) := by
-  rw [CompletedGroup.projection_apply]
+  rw [TauCeti.CompletedGroup.projection_apply]
   rfl
 
 /-- A wall through the point computes the corresponding projection. -/
 theorem projection_germLabel_of_mem (k : ℕ) (P : (C k).walls)
     (hP : θ ∈ (P : Set V)) :
-    CompletedGroup.projection k (D.germLabel θ hθ) = (D.diagram k).label P := by
+    TauCeti.CompletedGroup.projection k (D.germLabel θ hθ) = (D.diagram k).label P := by
   rw [projection_germLabel, KSComplex.localLabel_of_mem _ θ (hθ k) P hP]
 
 /-- The completed germ is trivial exactly when all finite local labels are trivial. -/
@@ -156,7 +160,7 @@ theorem germLabel_eq_one_iff : D.germLabel θ hθ = 1 ↔
     -- The categorical tower and the concrete BCH quotient have the same identity.
     rfl
   · intro hg
-    apply CompletedGroup.ext
+    apply TauCeti.CompletedGroup.ext
     intro k
     rw [projection_germLabel, hg, map_one]
     rfl
@@ -174,7 +178,7 @@ theorem germLabel_eq_of_equivalent (F : CompletedDiagram s d ℒ E)
     (hDF : D.Equivalent F)
     (hθF : ∀ k, θ ∉ singularSupport (fun P : (E k).walls => (P : Set V))) :
     D.germLabel θ hθ = F.germLabel θ hθF := by
-  apply CompletedGroup.ext
+  apply TauCeti.CompletedGroup.ext
   intro k
   simp only [projection_germLabel]
   exact (D.diagram k).localLabel_eq_of_equivalent (F.diagram k) θ (hθ k)
@@ -230,7 +234,7 @@ theorem germLabel_mem_completedRaySubgroup [Module.Free ℤ N]
   have hwk := (d.mem_completedRaySubgroup ℒ w _).mp hw k
   rw [D.projection_germLabel_of_mem θ hθ k P hP] at hwk
   have heq : w = (D.diagram k).wallRay P :=
-    d.eq_of_mem_bchSubgroup_rayLieSubalgebra (d.truncatedGrading ℒ k) hlabel
+    d.eq_of_mem_bchSubgroup_rayLieSubalgebra (d.lieTruncationGrading ℒ k) hlabel
       ((LieSubalgebra.mem_bchSubgroup _ _).mpr hwk)
       ((D.diagram k).label_mem_bchSubgroup_rayLieSubalgebra P
         ((D.diagram k).degree_mem_wallRay P))

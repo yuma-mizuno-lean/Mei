@@ -18,10 +18,17 @@ complexes. The fine regular locus embeds openly into the coarse regular locus;
 the target sections are restricted to this open image.
 -/
 
+open TauCeti (WallComplement)
+
+
 -- The transport comparison combines `truncation_pathProduct_adaptedDiagram` with
 -- `ModuleFiltration.transition_truncatedBCHAction`.
 
 public noncomputable section
+
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
+open TauCeti (DirectedWallSpaces)
 
 open Set CategoryTheory TopologicalSpace Opposite Topology Mei.Convex
 
@@ -184,7 +191,7 @@ theorem coefficientLocalTransition_section :
   convert he using 1
   congr 1
   apply WallComplement.ext
-  simp only [B.adaptedPathPrefunctor_obj_val, WallComplement.restrictPrefunctor_obj_val,
+  simp only [B.adaptedPathPrefunctor_obj_val,
     FinitePolyhedralComplex.IsSubdivision.coefficientPointMap_val]
   exact (B.adaptedComplex_isSubdivision hkl).regularInclusion_val x.val
 

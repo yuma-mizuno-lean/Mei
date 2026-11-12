@@ -24,6 +24,9 @@ The argument uses `LieDerivation.ShearedModule`, rather than a PBW basis.
 
 public section
 
+open TauCeti.UniversalEnvelopingAlgebra (degreeFiltration degreeFiltration_ideal
+  homogeneousSubmodule ι_mem_homogeneousSubmodule)
+
 namespace Mei.UniversalEnvelopingAlgebra
 
 open _root_.UniversalEnvelopingAlgebra
@@ -39,8 +42,8 @@ theorem comap_degreeFiltration_ι (hneg : ∀ n, d n < 0 → ℒ n = ⊥)
     (hι : Function.Injective (ι R : L → _root_.UniversalEnvelopingAlgebra R L)) (k : ℕ) :
     (((degreeFiltration ℒ d hneg).ideal k).restrictScalars R).comap
         (ι R : L →ₗ⁅R⁆ _root_.UniversalEnvelopingAlgebra R L).toLinearMap =
-      Mei.DirectSum.degreeTail ℒ d k := by
-  rw [degreeFiltration_ideal, Mei.GradedAlgebra.degreeIdeal_restrictScalars]
+      TauCeti.DirectSum.degreeTail ℒ d k := by
+  rw [degreeFiltration_ideal, TauCeti.GradedAlgebra.degreeIdeal_restrictScalars]
   exact LinearMap.comap_degreeTail_eq_of_injective _ ℒ (homogeneousSubmodule ℒ)
     hι (fun _ _ hx => ι_mem_homogeneousSubmodule ℒ hx) d k
 

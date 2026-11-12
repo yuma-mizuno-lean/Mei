@@ -24,6 +24,8 @@ history recorded by a chart label.
 
 public noncomputable section
 
+open TauCeti (IsRationalSemilinear)
+
 open scoped BigOperators
 
 namespace Mei.FiniteSemilinearFamily

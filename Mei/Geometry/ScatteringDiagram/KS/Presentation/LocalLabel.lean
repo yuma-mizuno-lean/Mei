@@ -31,7 +31,11 @@ algebras*, §1.1 (arXiv:1411.1394v2), and Bridgeland, *Scattering diagrams, Hall
 algebras and stability conditions*, Definition 2.3 (arXiv:1603.00416v4).
 -/
 
+open TauCeti (singularSupport mem_intrinsicInterior_of_notMem_singularSupport)
+
 public noncomputable section
+
+open TauCeti (PositiveDegrees IsPositiveGrading)
 
 open Set Mei.Convex
 
@@ -55,7 +59,7 @@ theorem localLabel_toKSComplex (k : ℕ) (θ : V)
     (hθ : θ ∉ singularSupport (fun Q : (D.levelComplex k).walls => (Q : Set V))) :
     (D.toKSComplex k).localLabel θ hθ =
       (D.wallIndices k {θ}).noncommProd
-        (fun j : D.active k => CompletedGroup.projection k (D.wall j).label)
+        (fun j : D.active k => TauCeti.CompletedGroup.projection k (D.wall j).label)
         (D.wallIndices_singleton_pairwise_commute k θ
           (fun hs => hθ (D.singularSupport_active_subset k hs))) := by
   classical
@@ -84,7 +88,7 @@ theorem localLabel_toKSComplex_eq_prod (k : ℕ) (θ : V)
     (l : List (D.active k)) (hl : l.Nodup)
     (hm : ∀ j, j ∈ l ↔ θ ∈ (D.wall j).support) :
     (D.toKSComplex k).localLabel θ hθ =
-      (l.map fun j : D.active k => CompletedGroup.projection k (D.wall j).label).prod := by
+      (l.map fun j : D.active k => TauCeti.CompletedGroup.projection k (D.wall j).label).prod := by
   classical
   have he : D.wallIndices k {θ} = l.toFinset := by
     ext j

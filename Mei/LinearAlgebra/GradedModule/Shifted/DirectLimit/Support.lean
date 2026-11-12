@@ -21,9 +21,13 @@ coefficients is assumed.
 -/
 
 public section
+
+open TauCeti (PositiveDegrees)
 noncomputable section
 
-namespace Mei.PositiveDegrees
+namespace TauCeti.PositiveDegrees
+
+open Mei
 
 variable {Γ R M : Type*} [AddCommGroup Γ] [Ring R] [AddCommGroup M] [Module R M]
   [DecidableEq Γ] (d : PositiveDegrees Γ) (ℳ : Γ → Submodule R M)
@@ -89,4 +93,4 @@ theorem range_toShiftedDirectLimitOfChart_eq_inf (p q r : Γ)
     rw [← d.toShiftedDirectLimitOfChart_inclusion ℳ r p hrp v s hrv hps c, hc.1]
     exact ha
 
-end Mei.PositiveDegrees
+end TauCeti.PositiveDegrees

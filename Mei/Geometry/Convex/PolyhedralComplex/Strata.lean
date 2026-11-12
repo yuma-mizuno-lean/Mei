@@ -8,7 +8,8 @@ module
 public import Mei.Geometry.Convex.PolyhedralComplex.Basic
 public import Mei.Geometry.Convex.Polyhedron.SingularSupport
 public import Mei.Geometry.Convex.Polyhedron.Face
-import Mei.Geometry.Affine.Transverse
+import TauCeti.LinearAlgebra.AffineSpace.Transverse
+import Mei.Geometry.Convex.Polyhedron.Boundary
 
 /-!
 # Walls, joints and regular points of finite polyhedral complexes
@@ -40,6 +41,8 @@ All cells may be unbounded and may have lineality.
 -/
 
 public section
+
+open TauCeti (singularSupport mem_intrinsicInterior_of_notMem_singularSupport)
 
 namespace Mei.FinitePolyhedralComplex
 
@@ -292,7 +295,7 @@ theorem intrinsicFrontier_subset_support_codimensionAtLeast (C : FinitePolyhedra
   have hex : IsExposed ℝ P F := by
     dsimp only [F]
     rw [hpres]
-    simpa using Mei.Convex.isExposed_setOf_active g {j}
+    simpa using TauCeti.isExposed_setOf_active g {j}
   have hlt : Module.finrank ℝ (affineSpan ℝ F).direction <
       Module.finrank ℝ (affineSpan ℝ P).direction :=
     (g j).toAffineMap.finrank_direction_inter_zero_lt ⟨x, hxP, hgx⟩ ⟨p, hp, hgp.ne⟩
@@ -326,11 +329,11 @@ theorem existsUnique_mem_cellsOfCodimension_of_notMem_succ
 /-- The singular support of the wall family lies in the support of the subcomplex
 of cells of codimension at least two. -/
 theorem singularSupport_walls_subset_support_codimensionAtLeast (C : FinitePolyhedralComplex h) :
-    Mei.Convex.singularSupport (fun W : C.walls => (W : Set V)) ⊆
+    TauCeti.singularSupport (fun W : C.walls => (W : Set V)) ⊆
       (C.codimensionAtLeast 2).support := by
   have := h.finiteDimensional
   intro x hx
-  rcases Mei.Convex.mem_singularSupport.mp hx with ⟨P, hxP⟩ | ⟨P, Q, hne, hxP, hxQ⟩
+  rcases TauCeti.mem_singularSupport.mp hx with ⟨P, hxP⟩ | ⟨P, Q, hne, hxP, hxQ⟩
   · exact C.intrinsicFrontier_subset_support_codimensionAtLeast
       (C.mem_cells_of_mem_walls P.property) 1
       (C.finrank_direction_add_one_of_mem_walls P.property).le hxP
@@ -352,12 +355,12 @@ theorem singularSupport_walls_subset_support_codimensionAtLeast (C : FinitePolyh
 when different walls have the same supporting hyperplane. -/
 theorem eq_of_mem_wall_of_notMem_singularSupport (C : FinitePolyhedralComplex h)
     {P Q : C.walls} {x : V} (hxP : x ∈ (P : Set V)) (hxQ : x ∈ (Q : Set V))
-    (hx : x ∉ Mei.Convex.singularSupport (fun W : C.walls => (W : Set V))) : P = Q := by
+    (hx : x ∉ TauCeti.singularSupport (fun W : C.walls => (W : Set V))) : P = Q := by
   apply Subtype.ext
   exact C.eq_of_mem_intrinsicInterior
     (C.mem_cells_of_mem_walls P.property) (C.mem_cells_of_mem_walls Q.property)
-    (Mei.Convex.mem_intrinsicInterior_of_notMem_singularSupport hxP hx)
-    (Mei.Convex.mem_intrinsicInterior_of_notMem_singularSupport hxQ hx)
+    (TauCeti.mem_intrinsicInterior_of_notMem_singularSupport hxP hx)
+    (TauCeti.mem_intrinsicInterior_of_notMem_singularSupport hxQ hx)
 
 section JointGeometry
 

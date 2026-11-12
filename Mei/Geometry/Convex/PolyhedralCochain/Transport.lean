@@ -30,9 +30,13 @@ coefficients, unbounded cells and lineality are allowed.
 
 public section
 
+open TauCeti (OrientedCell PolyhedralCochain)
+
+open TauCeti (WallComplement AdmissiblePLPath)
+
 noncomputable section
 
-open Set Mei Mei.Convex WallComplement
+open Set Mei Mei.Convex TauCeti.WallComplement
 
 namespace Quiver.Path
 
@@ -135,7 +139,7 @@ private theorem wallCrossingSum_loop_eq_zero_of_eq_coboundary
       | cons q e ih =>
         simp only [Prefunctor.mapPath_cons, addWeightOfEPs_cons, ih]
         congr 1
-        exact PolyhedralCochain.intersectionPairing_eq_of_ofFinsupp_eq hg
+        exact PolyhedralCochain.intersectionPairing_eq_of_ofFinsupp_eq_of_isTransverseToCarrier hg
           (fun υ hυ => by
             obtain ⟨j, rfl⟩ := hg₀ υ hυ
             exact (r.map e).down.isTransverse_orientedCell j)

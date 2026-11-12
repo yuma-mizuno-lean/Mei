@@ -36,7 +36,7 @@ local notation "U" => _root_.UniversalEnvelopingAlgebra R F
 local notation "ℒ" => homogeneousSubmodule R S
 local notation "δ" => Nat.castAddMonoidHom ℤ
 local notation "J" => TauCeti.HopfIdeal.toIdeal (TauCeti.HopfIdeal.augmentation R U)
-local notation "𝓕" => Mei.UniversalEnvelopingAlgebra.degreeFiltration ℒ δ
+local notation "𝓕" => TauCeti.UniversalEnvelopingAlgebra.degreeFiltration ℒ δ
   (fun n hn => False.elim (not_lt_of_ge (Int.natCast_nonneg n) hn))
 
 /-- Word-length ideals of a free enveloping algebra are exactly augmentation powers. -/
@@ -50,7 +50,8 @@ theorem degreeFiltration_eq_augmentation_pow (k : ℕ) : (𝓕).ideal k = J ^ k 
     exact homogeneousSubmodule_zero R S
   apply le_antisymm
   · cases k with
-    | zero => simp only [Mei.AlgFiltration.ideal_zero, Submodule.pow_zero, Ideal.one_eq_top, le_rfl]
+    | zero =>
+      simp only [TauCeti.AlgFiltration.ideal_zero, Submodule.pow_zero, Ideal.one_eq_top, le_rfl]
     | succ k =>
       simpa only [Nat.add_sub_cancel, Nat.one_mul] using
         Mei.UniversalEnvelopingAlgebra.degreeFiltration_le_augmentation_pow
@@ -59,17 +60,17 @@ theorem degreeFiltration_eq_augmentation_pow (k : ℕ) : (𝓕).ideal k = J ^ k 
         (TauCeti.FreeLieAlgebra.lieSpan_range_of_eq_top R S)
         (fun s => by simpa using word_mem_homogeneousSubmodule R (FreeMagma.of s))
         1 (fun _ => le_rfl) (k + 1)
-  · exact Mei.UniversalEnvelopingAlgebra.augmentation_pow_le_degreeFiltration ℒ δ hpos k
+  · exact TauCeti.UniversalEnvelopingAlgebra.augmentation_pow_le_degreeFiltration ℒ δ hpos k
 
 /-- Membership in an augmentation power is equivalent to vanishing of every lower
 word-length component. -/
 theorem mem_augmentation_pow_iff (a : U) (N : ℕ) :
     a ∈ J ^ N ↔ ∀ n : ℕ, (n : ℤ) < N →
       (DirectSum.decompose
-        (Mei.UniversalEnvelopingAlgebra.homogeneousSubmodule ℒ) a n : U) = 0 := by
+        (TauCeti.UniversalEnvelopingAlgebra.homogeneousSubmodule ℒ) a n : U) = 0 := by
   rw [← degreeFiltration_eq_augmentation_pow R S N,
-    Mei.UniversalEnvelopingAlgebra.degreeFiltration_ideal,
-    Mei.GradedAlgebra.mem_degreeIdeal_iff, Mei.DirectSum.mem_degreeTail_iff]
+    TauCeti.UniversalEnvelopingAlgebra.degreeFiltration_ideal,
+    TauCeti.GradedAlgebra.mem_degreeIdeal_iff, TauCeti.DirectSum.mem_degreeTail_iff]
   rfl
 
 /-- The preimage of the `(c + 1)`-st augmentation power is the `c`-th lower central term. -/
@@ -144,8 +145,7 @@ private theorem ker_quotientEnvelopingHom
 underlying free Lie module is free. In particular this applies over every field. -/
 theorem quotientEnvelopingMap_injective [Module.Free R F] (c : ℕ) :
     Function.Injective (quotientEnvelopingMap R S c) := by
-  rw [quotientEnvelopingMap]
-  apply LieIdeal.liftQ_injective
+  rw [quotientEnvelopingMap, LieIdeal.liftQ_injective_iff]
   exact (ker_quotientEnvelopingHom R S (TauCeti.UniversalEnvelopingAlgebra.ι_injective R F) c).le
 
 end Mei.FreeLieAlgebra

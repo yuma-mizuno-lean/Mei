@@ -5,8 +5,8 @@ Authors: Codex
 -/
 module
 
-public import Mei.LinearAlgebra.GradedCorrespondence.Basic
-public import Mei.Algebra.DirectSum.RestrictScalars
+public import TauCeti.LinearAlgebra.GradedCorrespondence.Basic
+public import TauCeti.Algebra.DirectSum.RestrictScalars
 
 /-!
 # Restricting scalars in homogeneous correspondences
@@ -21,7 +21,7 @@ decompositions; no new choice of homogeneous projection or lift is made.
 
 public section
 
-namespace Mei.GradedCorrespondence
+namespace TauCeti.GradedCorrespondence
 
 variable {R S B U V ι κ : Type*} [Semiring R] [Semiring S] [SMul R S]
   [AddCommMonoid B] [Module S B] [Module R B] [IsScalarTower R S B]
@@ -84,4 +84,4 @@ theorem restrictScalars_symm (C : GradedCorrespondence (B := B) 𝒰 𝒱 I J) :
     C.symm.restrictScalars R = (C.restrictScalars R).symm := by
   ext <;> simp
 
-end Mei.GradedCorrespondence
+end TauCeti.GradedCorrespondence

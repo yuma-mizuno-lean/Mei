@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.ScatteringDiagram.WallSpace.Basic
+public import TauCeti.Geometry.ScatteringDiagram.WallSpace.Basic
 public import Mei.Algebra.Lie.Graded.Ray
 public import Mei.Algebra.PositiveDegrees.Ray.Basic
 public import Mathlib.Algebra.Lie.Abelian
@@ -22,16 +22,22 @@ direction of the other ray. The primitive generator need not be an allowed degre
 For an internal grading, membership in this sum is detected by homogeneous
 components: they belong to the prescribed wall spaces, and vanish away from the
 ray. The construction uses Mathlib's submodule suprema and
-`Submodule.iSup_induction`, with the supported degrees from `Mei.SupportedRay`.
+`Submodule.iSup_induction`, with the supported degrees from `TauCeti.SupportedRay`.
 -/
 
 public section
 
-namespace Mei.DirectedWallSpaces
+open TauCeti (SupportedRay)
+
+open TauCeti (DirectedWallSpaces)
+
+namespace TauCeti.DirectedWallSpaces
+
+open Mei
 
 variable {Γ Λ R L : Type*} [AddCommGroup Γ] [AddCommMonoid Λ]
   [CommRing R] [LieRing L] [LieAlgebra R L]
-  {ρ : Γ →+ Λ} {ℒ : Γ → Submodule R L} {d : PositiveDegrees Γ}
+  {ρ : Γ →+ Λ} {ℒ : Γ → Submodule R L} {d : TauCeti.PositiveDegrees Γ}
   (H : DirectedWallSpaces ρ ℒ)
 
 /-- The sum of wall spaces on the actual allowed degrees of a supported ray. -/
@@ -170,16 +176,18 @@ theorem mem_raySubmodule_iff (w : SupportedRay d) (m : Λ →+ ℤ) (x : L) :
   · rw [hzero n hn]
     exact Submodule.zero_mem _
 
-end Mei.DirectedWallSpaces
+end TauCeti.DirectedWallSpaces
 
-namespace Mei.DirectedWallSpaces
+namespace TauCeti.DirectedWallSpaces
+
+open Mei
 
 variable {Γ Γ' Λ Λ' R L L' : Type*}
   [AddCommGroup Γ] [AddCommGroup Γ'] [AddCommMonoid Λ] [AddCommMonoid Λ']
   [CommRing R] [LieRing L] [LieAlgebra R L] [LieRing L'] [LieAlgebra R L']
   {ρ : Γ →+ Λ} {ρ' : Γ' →+ Λ'}
   {ℒ : Γ → Submodule R L} {ℳ : Γ' → Submodule R L'}
-  {d : PositiveDegrees Γ} {e : PositiveDegrees Γ'}
+  {d : TauCeti.PositiveDegrees Γ} {e : TauCeti.PositiveDegrees Γ'}
 
 /-- A linear map preserving the homogeneous wall spaces on a ray preserves their
 sum. The target ray condition concerns actual allowed degrees only. -/
@@ -195,4 +203,4 @@ theorem map_mem_raySubmodule (H : DirectedWallSpaces ρ ℒ) (H' : DirectedWallS
       (hwall n n.property x hx)
   exact hle hx
 
-end Mei.DirectedWallSpaces
+end TauCeti.DirectedWallSpaces

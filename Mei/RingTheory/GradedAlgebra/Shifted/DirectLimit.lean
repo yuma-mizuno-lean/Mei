@@ -17,9 +17,13 @@ and agrees with multiplication in every pair of translated supports.
 -/
 
 public section
+
+open TauCeti (PositiveDegrees)
 noncomputable section
 
-namespace Mei.PositiveDegrees
+namespace TauCeti.PositiveDegrees
+
+open Mei
 
 variable {Γ R A : Type*} [AddCommGroup Γ] [CommRing R] [Ring A] [Algebra R A]
   [DecidableEq Γ] (d : PositiveDegrees Γ) (𝒜 : Γ → Submodule R A)
@@ -119,4 +123,4 @@ theorem shiftedDirectLimitMul_toShiftedDirectLimitOfChart (p q : Γ)
       (d.coefficientOrigin s) (d.coefficientOrigin t) hp hq hsum x y]
   exact d.toShiftedDirectLimitOfChart_inclusion 𝒜 _ _ hsum (s + t) (s + t) _ _ _
 
-end Mei.PositiveDegrees
+end TauCeti.PositiveDegrees

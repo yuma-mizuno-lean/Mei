@@ -25,6 +25,8 @@ finite-dimensionality, or characteristic-zero assumption is needed.
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 attribute [local instance] LieRing.ofAssociativeRing
 
 namespace Mei
@@ -158,7 +160,7 @@ variable [LieModule R L M] [DecidableEq N] [GradedLieAlgebra ℒ]
 
 /-- Lie terms above order `k` act trivially on the order-`k` coefficient module. -/
 theorem degreeIdeal_le_ker_quotientLieAction (k : ℕ) :
-    d.degreeIdeal ℒ k ≤ (F.quotientLieAction d ℒ k).ker := by
+    d.truncationIdeal ℒ k ≤ (F.quotientLieAction d ℒ k).ker := by
   intro x hx
   rw [LieHom.mem_ker]
   apply LinearMap.ext
@@ -167,7 +169,7 @@ theorem degreeIdeal_le_ker_quotientLieAction (k : ℕ) :
   rw [Submodule.mkQ_apply, quotientLieAction_mk, LinearMap.zero_apply,
     Submodule.Quotient.mk_eq_zero]
   have hx' : x ∈ d.degreeSubmodule ℒ k := by
-    rw [← d.degreeIdeal_toSubmodule ℒ k]
+    rw [← d.truncationIdeal_toSubmodule ℒ k]
     exact hx
   simpa only [Nat.add_zero] using
     IsFiltrationRaising.lie_mem (d := d) (ℒ := ℒ) (F := F) hx'
@@ -175,8 +177,8 @@ theorem degreeIdeal_le_ker_quotientLieAction (k : ℕ) :
 
 /-- The action of the order-`k` Lie truncation on the order-`k` coefficient module. -/
 def truncatedLieAction (k : ℕ) :
-    d.truncatedLie ℒ k →ₗ⁅R⁆ Module.End R (F.quotient k) :=
-  (d.degreeIdeal ℒ k).liftQ (F.quotientLieAction d ℒ k)
+    d.lieTruncation ℒ k →ₗ⁅R⁆ Module.End R (F.quotient k) :=
+  (d.truncationIdeal ℒ k).liftQ (F.quotientLieAction d ℒ k)
     (F.degreeIdeal_le_ker_quotientLieAction d ℒ k)
 
 /-- The truncated representation agrees with the quotient action on Lie representatives. -/
@@ -187,20 +189,20 @@ theorem truncatedLieAction_mk (k : ℕ) (x : L) :
   simp [truncatedLieAction]
 
 /-- The nilpotence bound holds for arbitrary elements of the Lie truncation. -/
-theorem truncatedLieAction_pow_eq_zero (k : ℕ) (x : d.truncatedLie ℒ k) :
+theorem truncatedLieAction_pow_eq_zero (k : ℕ) (x : d.lieTruncation ℒ k) :
     F.truncatedLieAction d ℒ k x ^ (k + 1) = 0 := by
-  obtain ⟨x, rfl⟩ := (d.degreeIdeal ℒ k).surjective_mkQ x
+  obtain ⟨x, rfl⟩ := (d.truncationIdeal ℒ k).surjective_mkQ x
   rw [LieIdeal.mkQ_apply, truncatedLieAction_mk]
   exact F.quotientLieAction_pow_eq_zero d ℒ k x
 
 /-- Lie and coefficient truncations commute with their finite-order actions. -/
 @[simp]
 theorem transition_truncatedLieAction {k l : ℕ} (h : k ≤ l)
-    (x : d.truncatedLie ℒ l) (q : F.quotient l) :
+    (x : d.lieTruncation ℒ l) (q : F.quotient l) :
     F.transition h (F.truncatedLieAction d ℒ l x q) =
-      F.truncatedLieAction d ℒ k (d.truncationMap ℒ h x) (F.transition h q) := by
-  obtain ⟨x, rfl⟩ := (d.degreeIdeal ℒ l).surjective_mkQ x
-  simp only [LieIdeal.mkQ_apply, truncatedLieAction_mk, PositiveDegrees.truncationMap_mk]
+      F.truncatedLieAction d ℒ k (d.lieTruncationMap ℒ h x) (F.transition h q) := by
+  obtain ⟨x, rfl⟩ := (d.truncationIdeal ℒ l).surjective_mkQ x
+  simp only [LieIdeal.mkQ_apply, truncatedLieAction_mk, PositiveDegrees.lieTruncationMap_mk]
   exact F.transition_quotientLieAction d ℒ h x q
 
 end Lie

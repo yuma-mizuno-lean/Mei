@@ -30,6 +30,10 @@ ray and support are retained, so incomingness and outgoingness are preserved.
 
 public section
 
+open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading GradedLieHom)
+
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
 namespace Mei.DirectedWall
@@ -135,8 +139,8 @@ theorem restrictScalars_label_eq_one_iff : (W.restrictScalars K).label = 1 ↔ W
 /-- Restricting scalars keeps the label trivial at a finite order exactly when it was trivial
 there. -/
 theorem projection_restrictScalars_label_eq_one_iff (k : ℕ) :
-    CompletedGroup.projection k (W.restrictScalars K).label = 1 ↔
-      CompletedGroup.projection k W.label = 1 := by
+    TauCeti.CompletedGroup.projection k (W.restrictScalars K).label = 1 ↔
+      TauCeti.CompletedGroup.projection k W.label = 1 := by
   rw [← PositiveDegrees.projection_completedBCHRestrictScalarsEquiv_eq_one_iff,
     restrictScalars_label, MulEquiv.apply_symm_apply]
 

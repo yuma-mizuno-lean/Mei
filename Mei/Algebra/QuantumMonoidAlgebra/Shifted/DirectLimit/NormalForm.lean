@@ -19,6 +19,8 @@ No localization universal property is asserted here.
 -/
 
 public section
+
+open TauCeti (PositiveDegrees)
 noncomputable section
 
 namespace Mei.QuantumMonoidAlgebra

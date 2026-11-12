@@ -30,18 +30,24 @@ Coefficients may have torsion and lie in a module over any associative ring.
 
 The transport formula `Quiver.Path.wallCrossingSum_eq_sub_of_eq_coboundary`
 applies to any wall cochain equal to this boundary in the cochain quotient. It
-uses `PolyhedralCochain.intersectionPairing_eq_of_ofFinsupp_eq` and
+uses `PolyhedralCochain.intersectionPairing_eq_of_ofFinsupp_eq_of_isTransverseToCarrier` and
 `Quiver.Path.addWeightOfEPs_intersectionPairing_eq_neg_wallCrossingSum`, so
 subdivision and orientation relations are retained.
 -/
 
 public section
 
+open TauCeti (OrientedCell PolyhedralCochain)
+
+open TauCeti (WallComplement AdmissiblePLPath mem_singularSupport)
+
 noncomputable section
 
-open Set Mei.Convex WallComplement
+open Set TauCeti.WallComplement
 
-namespace Mei.PolyhedralCochain
+namespace TauCeti.PolyhedralCochain
+
+open Mei
 
 variable {N V R E ι : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
@@ -164,7 +170,7 @@ theorem addWeightOfEPs_intersectionPairing_coboundaryPresentation_eq_sub
       intersectionPairing_coboundaryPresentation_eq_sub_of_admissible f hf e]
     abel
 
-end Mei.PolyhedralCochain
+end TauCeti.PolyhedralCochain
 
 namespace Quiver.Path
 
@@ -204,7 +210,8 @@ theorem wallCrossingSum_eq_sub_of_eq_coboundary
       OrientedCell.intersectionPairing (R := R) ![a.val, b.val] g =
         OrientedCell.intersectionPairing (R := R) ![b.val] f -
           OrientedCell.intersectionPairing (R := R) ![a.val] f := by
-    rw [PolyhedralCochain.intersectionPairing_eq_of_ofFinsupp_eq hboundary']
+    rw [PolyhedralCochain.intersectionPairing_eq_of_ofFinsupp_eq_of_isTransverseToCarrier
+      hboundary']
     · exact PolyhedralCochain.intersectionPairing_coboundaryPresentation_eq_sub_of_admissible
         f hf e
     · intro τ hτ

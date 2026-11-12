@@ -28,11 +28,13 @@ Mathlib's `Finset.sort`; its order is on crossing times alone.
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath mem_singularSupport)
+
 noncomputable section
 
 open Set
 
-namespace Mei.Convex.WallComplement
+namespace TauCeti.WallComplement
 
 variable {V ι : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V] [Finite ι]
   {W : ι → Set V} (x y : WallComplement W)
@@ -255,11 +257,11 @@ theorem segmentCrossingEvents_smul (r : ι → ℝ) (hr : ∀ i, 0 < r i) (e : x
   intro t _
   exact signedCrossingEvent_smul ν r hr x y t
 
-end Mei.Convex.WallComplement
+end TauCeti.WallComplement
 
 namespace Quiver.Path
 
-open Mei.Convex WallComplement
+open TauCeti.WallComplement
 
 variable {V ι : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V] [Finite ι]
   {W : ι → Set V} {x y z : WallComplement W}

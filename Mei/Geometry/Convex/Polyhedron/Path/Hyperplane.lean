@@ -30,11 +30,13 @@ proof of Theorem 2.6.
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath)
+
 noncomputable section
 
-open Set Mei.Convex
+open Set
 
-namespace Mei.Convex.WallComplement
+namespace TauCeti.WallComplement
 
 variable {V ι : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V] {W : ι → Set V}
   {x y : WallComplement W}
@@ -83,11 +85,11 @@ theorem segmentPathProduct_eq_prod_of_hyperplanes (e : x ⟶ y) :
     rw [hd]
     split_ifs <;> norm_num <;> grind
 
-end Mei.Convex.WallComplement
+end TauCeti.WallComplement
 
 namespace Quiver.Path
 
-open Mei.Convex.WallComplement
+open TauCeti.WallComplement
 
 variable {V ι G : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
   [Fintype ι] [CommGroup G] {W : ι → Set V}
@@ -128,7 +130,7 @@ end Quiver.Path
 
 namespace Quiver.Path
 
-open Mei.Convex.WallComplement
+open TauCeti.WallComplement
 
 variable {V ι E : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
   [Fintype ι] [AddCommGroup E] {W : ι → Set V}

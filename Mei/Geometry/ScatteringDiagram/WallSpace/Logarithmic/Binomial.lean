@@ -24,6 +24,8 @@ walls into ray walls in Gross–Hacking–Keel–Kontsevich, *Canonical bases fo
 
 public section
 
+open TauCeti (PositiveDegrees SupportedRay)
+
 noncomputable section
 
 namespace Mei

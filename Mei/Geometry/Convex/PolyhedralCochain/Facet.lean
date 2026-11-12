@@ -41,11 +41,15 @@ facet. It uses the exposed-face classification `TauCeti.IsConvexPolyhedron.facet
 
 public section
 
+open TauCeti (OrientedCell isRationalNormalPolyhedron_iff)
+
 open Module Set
 
 noncomputable section
 
-namespace Mei.OrientedCell
+namespace TauCeti.OrientedCell
+
+open Mei
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i} {k : ℕ}
@@ -272,7 +276,7 @@ private theorem finite_boundaryFacets (σ : OrientedCell h k) :
     simp only [boundaryFacet_carrier] at heq
     subst G
     rfl
-  · exact σ.rational.isConvexPolyhedron.finite_exposed_sets
+  · exact σ.rational.isConvexPolyhedron.finite_setOf_isExposed
 
 /-- All nonempty exposed facets, with their signed boundary orientations. Each geometric
 facet occurs once, regardless of redundant inequalities in a presentation of the cell. -/
@@ -492,4 +496,4 @@ theorem exists_boundaryFacet_cut_reverse (σ σ₁ σ₂ : OrientedCell h k)
     exact σ₂.boundaryFacet_mem_boundaryFacets hG hne hdp
   exact ⟨υ, hυ, by simp only [υ, boundaryFacet_carrier, F], hυr⟩
 
-end Mei.OrientedCell
+end TauCeti.OrientedCell

@@ -28,9 +28,15 @@ The backward-ray method follows Mandel, *Scattering diagrams, theta functions,
 and refined tropical curve counts*, §3.3.3 (arXiv:1503.06183v5).
 -/
 
+open TauCeti (WallComplement)
+
 public noncomputable section
 
-open Set Filter Topology Mei.Convex Mei.Convex.WallComplement
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
+open TauCeti (DirectedWallSpaces)
+
+open Set Filter Topology Mei.Convex TauCeti.WallComplement
 
 namespace Mei.ModuleProbe
 
@@ -58,7 +64,7 @@ local notation "labels" k:max e:max => (List.map
   (crossingEventProduct (G := d.truncatedGroup ℒ k)
     (fun c : B.active k => h.realCharacter
       (DirectedWall.normal (DirectedDiagram.wall B c)))
-    (fun c => CompletedGroup.projection k (DirectedWall.label (DirectedDiagram.wall B c)))
+    (fun c => TauCeti.CompletedGroup.projection k (DirectedWall.label (DirectedDiagram.wall B c)))
     (B.activeLabels_commute k) e)
       (List.reverse (orderedCrossingTimes e)))
 
@@ -152,7 +158,7 @@ theorem exists_backwardRayEventBlockArrangement
     rw [heq, hn'] at hm
     omega
   rw [eventBlock_apply_of_ne d ℳ p ℒ H h B (k + 1) (k + 1) (Nat.le_refl _) _ n _ hmn]
-  simp only [d.truncationMap_refl, LieHom.bchGroupMap_id, MonoidHom.id_apply]
+  simp only [d.lieTruncationMap_refl, LieHom.bchGroupMap_id, MonoidHom.id_apply]
   congr 2
   apply congrArg ((d.shiftedLieFiltration ℒ ℳ p).truncatedBCHAction d ℒ (k + 1))
   -- The signed product of the coincident indexed crossings is the canonical event label.

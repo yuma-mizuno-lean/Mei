@@ -28,6 +28,10 @@ and refined tropical curve counts*, §3.3.3 (arXiv:1503.06183v5).
 
 public noncomputable section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
+open TauCeti (DirectedWallSpaces)
+
 namespace Mei.ModuleProbe
 
 universe u

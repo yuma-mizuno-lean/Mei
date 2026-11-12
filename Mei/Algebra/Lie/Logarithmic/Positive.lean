@@ -60,6 +60,10 @@ diagrams*, §8.1, arXiv:2503.03719v1.
 
 public section
 
+open TauCeti (AlgFiltration)
+
+open TauCeti (PositiveDegrees)
+
 noncomputable section
 
 namespace Mei.LogarithmicVectorField

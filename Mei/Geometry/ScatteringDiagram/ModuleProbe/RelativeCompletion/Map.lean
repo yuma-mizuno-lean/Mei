@@ -19,7 +19,13 @@ logarithms. The comparison supplies the diagram equivalence needed for finite
 and completed coefficient-field naturality.
 -/
 
+open TauCeti (WallComplement GradedLieHom)
+
 public noncomputable section
+
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
+open TauCeti (DirectedWallSpaces)
 
 open Set Filter Topology Mei.Convex
 

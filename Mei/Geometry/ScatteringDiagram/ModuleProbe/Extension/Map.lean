@@ -19,7 +19,13 @@ injectivity is required: walls and their individual contributions may disappear.
 The same laws compare extended fields at allowed endpoints and completed fields.
 -/
 
+open TauCeti (WallComplement)
+
 public noncomputable section
+
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
+open TauCeti (DirectedWallSpaces)
 
 open Set Filter Topology Mei.Convex
 
@@ -58,7 +64,7 @@ theorem map_combinedLabel_of_levelEquivalent (k : ℕ)
     (hDD' : (D.map φ hφ).LevelEquivalent D' (k + 1)) (Q : V)
     (hQ : (coefficientArrangement d ℳ p ℒ H h h' D k).IsGeneric Q)
     (hQ' : (coefficientArrangement d 𝒩 p ℒ H h h' D' k).IsGeneric Q) :
-    ((φ).truncatedMap (k + 1) (by simp)).bchGroupMap
+    ((φ).lieTruncatedMap (k + 1) (by simp)).bchGroupMap
         (D.combinedLabel (k + 1) (Q, 0) (0, j 1)
           (regular_of_isGeneric d ℳ p ℒ H h h' D k Q hQ)) =
       D'.combinedLabel (k + 1) (Q, 0) (0, j 1)
@@ -78,7 +84,7 @@ theorem map_combinedLabel_of_levelEquivalent (k : ℕ)
     ((D.levelPathPushforward P (k + 1) (by simp [P])).mapPath e.toPath) e'.toPath
       (by simp [Quiver.Path.vertices_toPath, P, hx, hy, hx', hy'])
   rw [D.levelPathProduct_pushforward, he, he'] at hp
-  simpa only [P, DirectedWall.Pushforward.ofFixedDegree_lieHom_truncatedMap] using hp
+  simpa only [P, DirectedWall.Pushforward.ofFixedDegree_lieHom_lieTruncatedMap] using hp
 
 omit [LieAlgebra ℚ L] [IsScalarTower ℚ R L] in
 /-- The finite field commutes with coefficient changes, including noninjective

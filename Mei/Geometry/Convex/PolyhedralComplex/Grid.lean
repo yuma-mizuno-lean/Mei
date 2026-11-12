@@ -31,6 +31,8 @@ The crossing-word grid argument is adapted from Codex,
 
 public section
 
+open TauCeti (WallComplement)
+
 noncomputable section
 
 open Set Mei.Convex

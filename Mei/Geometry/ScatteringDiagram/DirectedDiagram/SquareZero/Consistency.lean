@@ -39,6 +39,14 @@ and an instance of the existence and uniqueness of outgoing completions in Travi
 
 public section
 
+open TauCeti.CompletedGroup (projection)
+
+open TauCeti (singularSupport affineSpan_eq_of_notMem_singularSupport)
+
+open TauCeti (PositiveDegrees IsPositiveGrading SupportedRay)
+
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
 open Set Filter Topology Mei.Convex
@@ -321,10 +329,11 @@ variable {d H} (P : SquareZeroPair d H)
 /-! ### Truncated logarithms of the labels -/
 
 /-- The logarithm `t_j x_j` of the `j`-th hyperplane label at order `k`. -/
-def labelLog (j : Fin 2) : d.truncatedLie ℒ k := (d.degreeIdeal ℒ k).mkQ (P.scalar j • P.coeff j)
+def labelLog
+    (j : Fin 2) : d.lieTruncation ℒ k := (d.truncationIdeal ℒ k).mkQ (P.scalar j • P.coeff j)
 
 /-- The logarithm `t₀ t₁ ⁅x₀, x₁⁆` of the correction label at order `k`. -/
-def commutatorLog : d.truncatedLie ℒ k := (d.degreeIdeal ℒ k).mkQ P.commutator
+def commutatorLog : d.lieTruncation ℒ k := (d.truncationIdeal ℒ k).mkQ P.commutator
 
 omit [Algebra ℚ R] [LieAlgebra ℚ L] [IsScalarTower ℚ R L] in
 /-- The bracket of the two label logarithms is the correction logarithm. -/
@@ -355,14 +364,14 @@ variable {w : SupportedRay d} (hw : P.degree 0 + P.degree 1 ∈ w.rayDegrees)
 
 /-- The order-`k` projection of a hyperplane label is the exponential of its logarithm. -/
 theorem projection_completion_label_inl (j : Fin 2) :
-    CompletedGroup.projection k ((P.completion h θ₀ hw hμ).wall (.inl j)).label =
+    projection k ((P.completion h θ₀ hw hμ).wall (.inl j)).label =
       BCHGroup.exp (P.labelLog k j) := by
   rw [completion_wall_inl, hyperplane_label, PositiveDegrees.projection_expToCompletion,
     labelLog]
 
 /-- The order-`k` projection of the correction label is the exponential of its logarithm. -/
 theorem projection_completion_label_inr (u : Unit) :
-    CompletedGroup.projection k ((P.completion h θ₀ hw hμ).wall (.inr u)).label =
+    projection k ((P.completion h θ₀ hw hμ).wall (.inr u)).label =
       BCHGroup.exp (P.commutatorLog k) := by
   rw [completion_wall_inr, correction_label, PositiveDegrees.projection_expToCompletion,
     commutatorLog]
@@ -379,7 +388,7 @@ theorem levelConsistent_completion_of_exp_commutatorLog_eq_one
   have hinl (j : D.active k) : ∃ l : Fin 2, j.1 = .inl l := by
     obtain ⟨j | u, hj⟩ := j
     · exact ⟨j, rfl⟩
-    · have h1 : CompletedGroup.projection k (D.wall (.inr u)).label =
+    · have h1 : projection k (D.wall (.inr u)).label =
           (1 : (d.groupTower ℒ).obj (Opposite.op k)) := by
         rw [P.projection_completion_label_inr, hC]
         exact (d.groupTower_obj_one ℒ k).symm
@@ -400,7 +409,7 @@ theorem levelConsistent_completion_of_exp_commutatorLog_eq_one
 theorem mem_active_completion (hC : BCHGroup.exp (P.commutatorLog k) ≠ 1)
     (j : Fin 2 ⊕ Unit) : j ∈ (P.completion h θ₀ hw hμ).active k := by
   have hc0 : P.commutatorLog k ≠ 0 := fun h0 => hC (by rw [h0, BCHGroup.exp_zero])
-  have hexp_ne {x : d.truncatedLie ℒ k} (hx : x ≠ 0) :
+  have hexp_ne {x : d.lieTruncation ℒ k} (hx : x ≠ 0) :
       BCHGroup.exp x ≠ (1 : (d.groupTower ℒ).obj (Opposite.op k)) := by
     rw [d.groupTower_obj_one]
     intro h1
@@ -515,10 +524,10 @@ theorem log_combinedLabel_completion (v : V) :
       else 0 := by
   classical
   set D := P.completion h θ₀ hw hμ
-  let G : Fin 2 ⊕ Unit → d.truncatedLie ℒ k := fun j =>
+  let G : Fin 2 ⊕ Unit → d.lieTruncation ℒ k := fun j =>
     if θ ∈ (D.wall j).support then
       (if 0 < h.realCharacter (D.wall j).normal v then -1 else 1 : ℤ) •
-        BCHGroup.log (L := d.truncatedLie ℒ k) (CompletedGroup.projection k (D.wall j).label)
+        BCHGroup.log (L := d.lieTruncation ℒ k) (projection k (D.wall j).label)
     else 0
   have hsum : BCHGroup.log (D.combinedLabel k θ v hθ) = ∑ j, G j := by
     let := Fintype.ofFinite (D.active k)

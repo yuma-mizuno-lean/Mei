@@ -17,7 +17,7 @@ coefficient, so the embedding remains injective without separatedness of the
 original module. Conjugation by a completed charge-zero label is the completed
 BCH action on coefficients.
 
-We assemble `ModuleProbe.moduleBCHInclusion` using `CompletedGroup.lift` and
+We assemble `ModuleProbe.moduleBCHInclusion` using `TauCeti.CompletedGroup.lift` and
 pass `ModuleProbe.base_conj_moduleBCHInclusion` through the finite projections.
 The probe construction and its transport interpretation follow Mandel,
 *Scattering diagrams, theta functions, and refined tropical curve counts*,
@@ -25,6 +25,8 @@ The probe construction and its transport interpretation follow Mandel,
 -/
 
 public section
+
+open TauCeti (PositiveDegrees IsPositiveGrading GradedLieHom)
 noncomputable section
 
 namespace Mei.ModuleProbe
@@ -41,15 +43,15 @@ variable {R M Γ : Type*} [CommRing R] [AddCommGroup M] [Module R M]
 
 private def moduleBCHComponent (k : ℕ) :
     Multiplicative (d.shiftedFiltration ℳ p).completion →*
-      BCHGroup ((positiveDegrees d p).truncatedLie (grading d ℳ p ℒ) k) :=
-  (((positiveDegrees d p).truncationMap (grading d ℳ p ℒ)
+      BCHGroup ((positiveDegrees d p).lieTruncation (grading d ℳ p ℒ) k) :=
+  (((positiveDegrees d p).lieTruncationMap (grading d ℳ p ℒ)
       (Nat.le_succ k)).bchGroupMap.comp (moduleBCHInclusion d ℳ p ℒ k)).comp
     ((d.shiftedFiltration ℳ p).projection k).toAddMonoidHom.toMultiplicative
 
 private theorem moduleBCHComponent_apply (k : ℕ)
     (a : Multiplicative (d.shiftedFiltration ℳ p).completion) :
     moduleBCHComponent d ℳ p ℒ k a =
-      BCHGroup.exp ((positiveDegrees d p).truncationMap (grading d ℳ p ℒ)
+      BCHGroup.exp ((positiveDegrees d p).lieTruncationMap (grading d ℳ p ℒ)
         (Nat.le_succ k) (moduleQuotientInclusion d ℳ p ℒ k
           ((d.shiftedFiltration ℳ p).projection k a.toAdd))) := by
   simp [moduleBCHComponent, AddMonoidHom.toMultiplicative]
@@ -63,12 +65,12 @@ private theorem moduleBCHComponent_compatible (k l : ℕ) (h : k ≤ l) :
   -- `groupTower_map_hom` alone leaves categorical object types in `MonoidHom.comp`;
   -- subsequent rewrites cannot match through the unexposed `BCHGroup` wrapper.
   -- Specify the concrete quotient types as well as the transition map.
-  change ((positiveDegrees d p).truncationMap (grading d ℳ p ℒ) h).bchGroupMap
+  change ((positiveDegrees d p).lieTruncationMap (grading d ℳ p ℒ) h).bchGroupMap
     (moduleBCHComponent d ℳ p ℒ l a) = moduleBCHComponent d ℳ p ℒ k a
   simp only [moduleBCHComponent_apply, LieHom.bchGroupMap_exp]
   congr 1
-  rw [← LieHom.comp_apply, PositiveDegrees.truncationMap_comp,
-    ← PositiveDegrees.truncationMap_comp (positiveDegrees d p) (grading d ℳ p ℒ)
+  rw [← LieHom.comp_apply, PositiveDegrees.lieTruncationMap_comp,
+    ← PositiveDegrees.lieTruncationMap_comp (positiveDegrees d p) (grading d ℳ p ℒ)
       (Nat.le_succ k) (Nat.add_le_add_right h 1), LieHom.comp_apply,
     truncationMap_moduleQuotientInclusion d ℳ p ℒ h,
     ModuleFiltration.transition_projection]
@@ -77,7 +79,7 @@ private theorem moduleBCHComponent_compatible (k l : ℕ) (h : k ≤ l) :
 def completedModuleBCHInclusion :
     Multiplicative (d.shiftedFiltration ℳ p).completion →*
       (positiveDegrees d p).completedBCHGroup (grading d ℳ p ℒ) :=
-  CompletedGroup.lift (moduleBCHComponent d ℳ p ℒ)
+  TauCeti.CompletedGroup.lift (moduleBCHComponent d ℳ p ℒ)
     (moduleBCHComponent_compatible d ℳ p ℒ)
 
 /-- At extended order `k + 1`, the completed label is the finite inclusion of the
@@ -85,10 +87,10 @@ relative order-`k` coefficient. -/
 @[simp]
 theorem projection_completedModuleBCHInclusion (k : ℕ)
     (a : Multiplicative (d.shiftedFiltration ℳ p).completion) :
-    CompletedGroup.projection (k + 1) (completedModuleBCHInclusion d ℳ p ℒ a) =
+    TauCeti.CompletedGroup.projection (k + 1) (completedModuleBCHInclusion d ℳ p ℒ a) =
       moduleBCHInclusion d ℳ p ℒ k
         (Multiplicative.ofAdd ((d.shiftedFiltration ℳ p).projection k a.toAdd)) := by
-  have hp := CompletedGroup.projection_lift
+  have hp := TauCeti.CompletedGroup.projection_lift
     (F := (positiveDegrees d p).groupTower (grading d ℳ p ℒ))
     (moduleBCHComponent d ℳ p ℒ)
     (moduleBCHComponent_compatible d ℳ p ℒ) (k + 1) a
@@ -109,7 +111,7 @@ theorem completedModuleBCHInclusion_injective :
   apply Multiplicative.toAdd.injective
   apply ModuleFiltration.completion_ext
   intro k
-  have h := congrArg (CompletedGroup.projection (k + 1)) hab
+  have h := congrArg (TauCeti.CompletedGroup.projection (k + 1)) hab
   rw [projection_completedModuleBCHInclusion, projection_completedModuleBCHInclusion] at h
   exact Multiplicative.ofAdd.injective (moduleBCHInclusion_injective d ℳ p ℒ k h)
 
@@ -120,13 +122,13 @@ theorem completedModuleBCHInclusion_of (a : shiftedSubmodule ℳ d.monoid p) :
         (Multiplicative.ofAdd ((d.shiftedFiltration ℳ p).of a)) =
       (positiveDegrees d p).expToCompletion (grading d ℳ p ℒ)
         (moduleInclusion d ℳ p ℒ ((moduleCoefficientsEquiv d ℳ p).symm a)) := by
-  apply CompletedGroup.ext
+  apply TauCeti.CompletedGroup.ext
   intro k
   cases k with
   | zero =>
     -- The categorical tower object hides the concrete trivial order-zero BCH group.
     exact @Subsingleton.elim
-      (BCHGroup ((positiveDegrees d p).truncatedLie (grading d ℳ p ℒ) 0)) _ _ _
+      (BCHGroup ((positiveDegrees d p).lieTruncation (grading d ℳ p ℒ) 0)) _ _ _
   | succ k =>
     simp only [projection_completedModuleBCHInclusion, ModuleFiltration.projection_of,
       moduleBCHInclusion_apply, toAdd_ofAdd, moduleQuotientInclusion_mk,
@@ -154,28 +156,28 @@ theorem base_conj_completedModuleBCHInclusion (g : d.completedBCHGroup ℒ)
         ((baseGradedLieHom d ℳ p ℒ).completedMap g)⁻¹ =
       completedModuleBCHInclusion d ℳ p ℒ (Multiplicative.ofAdd
         ((d.shiftedLieFiltration ℒ ℳ p).completedBCHAction d ℒ g a.toAdd)) := by
-  apply CompletedGroup.ext
+  apply TauCeti.CompletedGroup.ext
   intro k
   cases k with
   | zero =>
     -- The categorical tower object hides the concrete trivial order-zero BCH group.
     exact @Subsingleton.elim
-      (BCHGroup ((positiveDegrees d p).truncatedLie (grading d ℳ p ℒ) 0)) _ _ _
+      (BCHGroup ((positiveDegrees d p).lieTruncation (grading d ℳ p ℒ) 0)) _ _ _
   | succ k =>
-    have hb : CompletedGroup.projection (k + 1)
+    have hb : TauCeti.CompletedGroup.projection (k + 1)
         ((baseGradedLieHom d ℳ p ℒ).completedMap g) =
-        ((baseGradedLieHom d ℳ p ℒ).truncatedMap (a := k + 1) (k + 1)
-          (by simp)).bchGroupMap (CompletedGroup.projection (k + 1) g) :=
+        ((baseGradedLieHom d ℳ p ℒ).lieTruncatedMap (a := k + 1) (k + 1)
+          (by simp)).bchGroupMap (TauCeti.CompletedGroup.projection (k + 1) g) :=
       GradedLieHom.projection_completedMap_of_le (baseGradedLieHom d ℳ p ℒ)
         (k + 1) (by simp) g
-    have hg := CompletedGroup.map_projection k (k + 1) (Nat.le_succ k) g
+    have hg := TauCeti.CompletedGroup.map_projection k (k + 1) (Nat.le_succ k) g
     -- `map_projection` uses `ConcreteCategory.hom`, which `groupTower_map_hom`
     -- does not match directly. This also identifies the categorical object types
     -- with the concrete BCH quotients, avoiding unexposed-wrapper rewrite failures.
-    change (d.truncationMap ℒ (Nat.le_succ k)).bchGroupMap
-      (CompletedGroup.projection (k + 1) g) = CompletedGroup.projection k g at hg
+    change (d.lieTruncationMap ℒ (Nat.le_succ k)).bchGroupMap
+      (TauCeti.CompletedGroup.projection (k + 1) g) = TauCeti.CompletedGroup.projection k g at hg
     have hc := base_conj_moduleBCHInclusion d ℳ p ℒ k
-      (CompletedGroup.projection (k + 1) g)
+      (TauCeti.CompletedGroup.projection (k + 1) g)
       (Multiplicative.ofAdd ((d.shiftedFiltration ℳ p).projection k a.toAdd))
     rw [hg] at hc
     rw [map_mul, map_mul, map_inv, hb, projection_completedModuleBCHInclusion,

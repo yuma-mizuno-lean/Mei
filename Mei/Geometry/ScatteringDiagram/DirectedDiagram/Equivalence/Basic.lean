@@ -26,6 +26,12 @@ No local finiteness of the union of the active supports is required.
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath)
+
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
 open Set Mei.Convex
@@ -63,7 +69,7 @@ theorem exists_pos_levelPathProduct_eq_of_forall₂_dist_lt (k : ℕ)
     (fun j => (D.wall j).finrank_direction_add_one)
     (fun j => h.realCharacter (D.wall j).normal)
     (fun j => (D.wall j).direction_support.symm)
-    (fun j => CompletedGroup.projection k (D.wall j).label) (D.activeLabels_commute k)
+    (fun j => TauCeti.CompletedGroup.projection k (D.wall j).label) (D.activeLabels_commute k)
   refine ⟨ε, hε, fun q hq => ?_⟩
   rw [D.levelPathProduct_eq_wallPathProduct k q (D.activeLabels_commute k),
     D.levelPathProduct_eq_wallPathProduct k p (D.activeLabels_commute k)]
@@ -156,7 +162,7 @@ theorem exists_vertices_eq_cons_levelPathProduct_eq (D : DirectedDiagram (d := d
   obtain ⟨q, hv, hp⟩ := p.exists_vertices_eq_cons_wallPathProduct_eq
     (fun j : D.active k => (D.wall j).isConvexPolyhedron.isClosed)
     (fun j => h.realCharacter (D.wall j).normal)
-    (fun j => CompletedGroup.projection k (D.wall j).label) (D.activeLabels_commute k)
+    (fun j => TauCeti.CompletedGroup.projection k (D.wall j).label) (D.activeLabels_commute k)
   refine ⟨q, hv, ?_⟩
   rw [D.levelPathProduct_eq_wallPathProduct k q (D.activeLabels_commute k),
     D.levelPathProduct_eq_wallPathProduct k p (D.activeLabels_commute k)]
@@ -221,12 +227,12 @@ theorem exists_common_levelPathProduct_eq (k l : ℕ)
     (fun j => (D.wall j).finrank_direction_add_one)
     (fun j => h.realCharacter (D.wall j).normal)
     (fun j => (D.wall j).direction_support.symm)
-    (fun j => CompletedGroup.projection k (D.wall j).label) (D.activeLabels_commute k)
+    (fun j => TauCeti.CompletedGroup.projection k (D.wall j).label) (D.activeLabels_commute k)
     (fun j : F.active l => (F.wall j).isConvexPolyhedron.isClosed)
     (fun j => (F.wall j).finrank_direction_add_one)
     (fun j => h.realCharacter (F.wall j).normal)
     (fun j => (F.wall j).direction_support.symm)
-    (fun j => CompletedGroup.projection l (F.wall j).label) (F.activeLabels_commute l)
+    (fun j => TauCeti.CompletedGroup.projection l (F.wall j).label) (F.activeLabels_commute l)
     hpoly hdim q hpq
   refine ⟨a, b, r, fun t ht => ?_, fun t ht => ?_⟩
   · rw [D.levelPathProduct_eq_wallPathProduct k t (D.activeLabels_commute k),
@@ -324,7 +330,7 @@ theorem Equivalent.pathProduct_eq (hDE : D.Equivalent E)
     {x y : D.Point} {x' y' : E.Point} (p : Quiver.Path x y) (q : Quiver.Path x' y')
     (hpq : p.vertices.map CommonWallComplement.val =
       q.vertices.map CommonWallComplement.val) : D.pathProduct p = E.pathProduct q := by
-  apply CompletedGroup.ext
+  apply TauCeti.CompletedGroup.ext
   intro k
   simp only [projection_pathProduct]
   apply hDE k

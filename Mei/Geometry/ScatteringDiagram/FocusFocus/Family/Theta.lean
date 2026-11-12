@@ -32,6 +32,8 @@ Degenerations*, §§2.2–2.3 (arXiv:0808.2749v2), and Gross–Hacking–Siebert
 
 public noncomputable section
 
+open TauCeti (IsLocallyClosedPolyhedron IsRationalNormalPolyhedron IsRationalSemilinear)
+
 open Set AddMonoidAlgebra
 
 namespace Mei.FocusFocus

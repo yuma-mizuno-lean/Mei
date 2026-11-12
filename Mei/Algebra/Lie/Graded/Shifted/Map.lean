@@ -25,9 +25,13 @@ and refined tropical curve counts*, §2.1 (arXiv:1503.06183).
 
 public section
 
+open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading GradedLieHom)
+
 noncomputable section
 
-namespace Mei.PositiveDegreeMap
+namespace TauCeti.PositiveDegreeMap
+
+open Mei
 
 variable {Γ Γ' R M M' : Type*} {L L' : Type u}
   [AddCommGroup Γ] [AddCommGroup Γ'] [CommRing R] [Algebra ℚ R]
@@ -57,7 +61,7 @@ theorem shiftedQuotientMap_truncatedBCHAction
     T.shiftedQuotientMap ℳ 𝓝 p f hf k
         ((d.shiftedLieFiltration ℒ ℳ p).truncatedBCHAction d ℒ (T.modulus k) g a) =
       (e.shiftedLieFiltration ℒ' 𝓝 (T p)).truncatedBCHAction e ℒ' k
-        ((φ.truncatedMap k le_rfl).bchGroupMap g)
+        ((φ.lieTruncatedMap k le_rfl).bchGroupMap g)
         (T.shiftedQuotientMap ℳ 𝓝 p f hf k a) := by
   have hcoe (z : d.shiftedLieSubmodule ℒ ℳ p) :
       (T.shiftedMap ℳ 𝓝 p f hf z : M') = f z := T.coe_shiftedMap ℳ 𝓝 p f hf z
@@ -90,9 +94,11 @@ theorem shiftedCompletionMap_completedBCHAction
     T.modulus T.monotone_modulus
     (fun k _ hx => T.shiftedMap_mem_shiftedFiltration ℳ 𝓝 p f hf k hx) hrestricted g a
 
-end Mei.PositiveDegreeMap
+end TauCeti.PositiveDegreeMap
 
-namespace Mei.PositiveDegrees
+namespace TauCeti.PositiveDegrees
+
+open Mei
 
 variable {Γ R M N L : Type*} [AddCommGroup Γ] [DecidableEq Γ]
   [CommRing R] [Algebra ℚ R] [AddCommGroup M] [Module R M]
@@ -125,7 +131,7 @@ theorem quotientCoefficientMap_truncatedBCHAction (k : ℕ) (g : d.truncatedGrou
       apply Subtype.ext
       simp only [hcoe, LieSubmodule.coe_bracket, GradedLieHom.id_apply, hequiv]) k (by simp)
     (fun _ ha => d.shiftedCoefficientMap_mem_filtration ℳ 𝓝 p f hf k ha) g a
-  simpa only [quotientCoefficientMap_def, GradedLieHom.truncatedMap_id,
+  simpa only [quotientCoefficientMap_def, GradedLieHom.lieTruncatedMap_id,
     LieHom.bchGroupMap_id, MonoidHom.id_apply] using ht
 
 
@@ -159,4 +165,4 @@ theorem completionCoefficientMap_completedBCHAction (g : d.completedBCHGroup ℒ
       ((heq_of_eq h).trans (haction (PositiveDegreeMap.id_apply p)
         (d.completionCoefficientMap_heq_shiftedCompletionMap_id ℳ 𝓝 f hf p hf' a).symm)))
 
-end Mei.PositiveDegrees
+end TauCeti.PositiveDegrees

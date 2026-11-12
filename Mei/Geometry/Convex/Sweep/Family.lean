@@ -32,6 +32,8 @@ Landau–Ginzburg models*, §4 (arXiv:2205.07753v2).
 
 public section
 
+open TauCeti (IsLocallyClosedPolyhedron IsRationalSemilinear)
+
 namespace Mei.Convex
 
 variable {V J : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
@@ -86,7 +88,7 @@ instance [Finite J] (Q : V) : Finite {a // backwardEvaluation n f c v P a = Q} :
 
 variable {N : Type*} [AddCommGroup N] [Finite J]
   (w : ∀ j, Fin (n j) → N) (i : N →+ V) (h : TauCeti.Toric.IsIntegralLattice i)
-  (hf : ∀ j a, Toric.IsRationalFunctional h (f j a).toLinearMap)
+  (hf : ∀ j a, TauCeti.Toric.IsRationalFunctional h (f j a).toLinearMap)
   (hP : ∀ j a, IsRationalSemilinear h (P j a))
 
 include hf hP

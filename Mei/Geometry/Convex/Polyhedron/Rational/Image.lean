@@ -8,7 +8,8 @@ module
 public import Mei.Analysis.Convex.Intrinsic
 public import Mei.Geometry.Convex.Polyhedron.Rational.Cone
 public import Mei.Geometry.Convex.Polyhedron.Rational.Direction
-public import Mei.Geometry.Convex.Polyhedron.Rational.LocallyClosed
+public import TauCeti.Analysis.Convex.Polyhedron.Rational.LocallyClosed
+public import Mei.Geometry.Convex.Polyhedron.Rational.Map
 public import Mei.Geometry.Toric.Algebraic.RationalLinearMap
 
 /-!
@@ -25,9 +26,13 @@ be lower-dimensional; offsets stay real.
 
 public section
 
+open TauCeti (IsLocallyClosedPolyhedron isRationalNormalPolyhedron_singleton)
+
 open Set
 
-namespace Mei.IsLocallyClosedPolyhedron
+namespace TauCeti.IsLocallyClosedPolyhedron
+
+open Mei
 
 variable {N V N' W : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   [AddCommGroup N'] [NormedAddCommGroup W] [NormedSpace ℝ W] {i : N →+ V} {i' : N' →+ W}
@@ -36,9 +41,9 @@ variable {N V N' W : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace
 /-- An affine map with rational linear part that is injective on a nonempty locally closed
 polyhedron `S` has a rational linear left inverse on the direction of the affine span of `S`. -/
 theorem exists_leftInvOn_direction {S : Set V} (hS : IsLocallyClosedPolyhedron h S)
-    (hne : S.Nonempty) (g : V →ᵃ[ℝ] W) (hg : Toric.IsRationalLinearMap h h' g.linear)
+    (hne : S.Nonempty) (g : V →ᵃ[ℝ] W) (hg : TauCeti.Toric.IsRationalLinearMap h h' g.linear)
     (hinj : InjOn g S) :
-    ∃ B : W →ₗ[ℝ] V, Toric.IsRationalLinearMap h' h B ∧
+    ∃ B : W →ₗ[ℝ] V, TauCeti.Toric.IsRationalLinearMap h' h B ∧
       LeftInvOn B g.linear (affineSpan ℝ S).direction := by
   let := h.finiteDimensional
   -- The direction of the affine span is cut out by integral characters.
@@ -58,7 +63,7 @@ theorem exists_leftInvOn_direction {S : Set V} (hS : IsLocallyClosedPolyhedron h
 /-- The image of a locally closed polyhedron under an affine map with rational linear part that
 is injective on it is a locally closed polyhedron. -/
 theorem image_of_injOn {S : Set V} (hS : IsLocallyClosedPolyhedron h S) (g : V →ᵃ[ℝ] W)
-    (hg : Toric.IsRationalLinearMap h h' g.linear) (hinj : InjOn g S) :
+    (hg : TauCeti.Toric.IsRationalLinearMap h h' g.linear) (hinj : InjOn g S) :
     IsLocallyClosedPolyhedron h' (g '' S) := by
   let := h'.finiteDimensional
   rcases S.eq_empty_or_nonempty with rfl | ⟨x₀, hx₀⟩
@@ -69,10 +74,10 @@ theorem image_of_injOn {S : Set V} (hS : IsLocallyClosedPolyhedron h S) (g : V �
   let φ : W →ᴬ[ℝ] V := ⟨φa, φa.continuous_of_finiteDimensional⟩
   let ψa : W →ᵃ[ℝ] W := g.comp φa - AffineMap.id ℝ W
   let ψ : W →ᴬ[ℝ] W := ⟨ψa, ψa.continuous_of_finiteDimensional⟩
-  have hφ : Toric.IsRationalLinearMap h' h φ.toAffineMap.linear := by
+  have hφ : TauCeti.Toric.IsRationalLinearMap h' h φ.toAffineMap.linear := by
     simpa [φ, φa] using hB
-  have hψ : Toric.IsRationalLinearMap h' h' ψ.toAffineMap.linear := by
-    simpa [ψ, ψa, φa] using (hg.comp hB).sub (Toric.IsRationalLinearMap.id h')
+  have hψ : TauCeti.Toric.IsRationalLinearMap h' h' ψ.toAffineMap.linear := by
+    simpa [ψ, ψa, φa] using (hg.comp hB).sub (TauCeti.Toric.IsRationalLinearMap.id h')
   have himage : g '' S = φ ⁻¹' S ∩ ψ ⁻¹' {0} := by
     ext w
     simp only [mem_image, mem_inter_iff, mem_preimage, mem_singleton_iff]
@@ -93,4 +98,4 @@ theorem image_of_injOn {S : Set V} (hS : IsLocallyClosedPolyhedron h S) (g : V �
   exact (hS.preimage φ hφ).inter
     ((isRationalNormalPolyhedron_singleton (h := h') 0).isLocallyClosedPolyhedron.preimage ψ hψ)
 
-end Mei.IsLocallyClosedPolyhedron
+end TauCeti.IsLocallyClosedPolyhedron

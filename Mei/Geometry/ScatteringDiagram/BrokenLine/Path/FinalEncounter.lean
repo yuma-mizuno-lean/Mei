@@ -32,6 +32,8 @@ diagrams, theta functions, and refined tropical curve counts*, §3.3.3
 
 public noncomputable section
 
+open TauCeti (PositiveDegrees)
+
 open Set Filter Topology Quiver Mei.Convex
 
 namespace Mei

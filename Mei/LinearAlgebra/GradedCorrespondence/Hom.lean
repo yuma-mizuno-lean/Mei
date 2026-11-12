@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.LinearAlgebra.GradedCorrespondence.Basic
+public import TauCeti.LinearAlgebra.GradedCorrespondence.Basic
 public import Mei.Algebra.DirectSum.Map
 public import TauCeti.Algebra.DirectSum.Internal
 
@@ -31,7 +31,7 @@ No additive structure on the degree types is needed for these linear constructio
 
 public section
 
-namespace Mei.GradedCorrespondence
+namespace TauCeti.GradedCorrespondence
 
 variable {R B U V B' U' V' B'' U'' V'' ι κ ι' κ' ι'' κ'' : Type*} [Semiring R]
   [AddCommMonoid B] [Module R B] [AddCommMonoid U] [Module R U]
@@ -291,4 +291,4 @@ theorem transfer_map_of_injective (f : Hom C D σ τ) (hτ : Function.Injective 
 
 end Transfer
 end Hom
-end Mei.GradedCorrespondence
+end TauCeti.GradedCorrespondence

@@ -31,9 +31,15 @@ homogeneous correction formula, and the transport and cutoff compatibility of
 §3.3.3 (arXiv:1503.06183v5).
 -/
 
+open TauCeti (WallComplement)
+
 public noncomputable section
 
-open Mei.Convex Mei.Convex.WallComplement
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
+open TauCeti (DirectedWallSpaces)
+
+open Mei.Convex TauCeti.WallComplement
 
 namespace Mei.ModuleProbe
 
@@ -60,7 +66,7 @@ local notation "labels" k:max e:max => (List.map
   (crossingEventProduct (G := d.truncatedGroup ℒ k)
     (fun c : B.active k => h.realCharacter
       (DirectedWall.normal (DirectedDiagram.wall B c)))
-    (fun c => CompletedGroup.projection k (DirectedWall.label (DirectedDiagram.wall B c)))
+    (fun c => TauCeti.CompletedGroup.projection k (DirectedWall.label (DirectedDiagram.wall B c)))
     (B.activeLabels_commute k) e)
       (List.reverse (orderedCrossingTimes e)))
 local notation "restriction" k:max => (WallComplement.restrictPrefunctor
@@ -83,7 +89,7 @@ theorem extendedCoefficientField_eq_add_sum_crossings
     field (k + 1) hBc y = field (k + 1) hBc x +
       ∑ j : Fin g.length, (A).truncatedBCHCorrection d ℒ k g[j]
         ((A).truncatedBCHAction d ℒ k
-          ((d.truncationMap ℒ (Nat.le_succ k)).bchGroupMap (g.drop (j.val + 1)).prod)
+          ((d.lieTruncationMap ℒ (Nat.le_succ k)).bchGroupMap (g.drop (j.val + 1)).prod)
           (field k (hBc.mono (Nat.le_succ k)) ((restriction k).obj x))) := by
   dsimp only
   have he : B.levelPathProduct (k + 1) e.toPath = (labels (k + 1) e).prod := by
@@ -123,7 +129,7 @@ theorem shiftedQuotientComponent_extendedCoefficientField_eq_add_sum_crossings
                     (by simpa only [add_sub_cancel_left] using
                       (d.mem_cutoff.mp ((d.finite_cutoff k).mem_toFinset.mp n.property)).2)
                     ((A).truncatedBCHAction d ℒ k
-                      ((d.truncationMap ℒ (Nat.le_succ k)).bchGroupMap
+                      ((d.lieTruncationMap ℒ (Nat.le_succ k)).bchGroupMap
                         (g.drop (j.val + 1)).prod)
                       (field k (hBc.mono (Nat.le_succ k)) ((restriction k).obj x))))))) := by
   dsimp only

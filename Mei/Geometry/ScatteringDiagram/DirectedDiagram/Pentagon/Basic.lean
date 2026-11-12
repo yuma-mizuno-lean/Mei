@@ -31,6 +31,10 @@ cluster algebras*, §1.1, arXiv:1411.1394v2); see
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
 namespace Mei.DirectedDiagram
@@ -120,7 +124,7 @@ theorem consistent (hpent : (D.wall j₂).label * (D.wall j₁).label =
     · obtain rfl := (hD.eq_or_eq_or_eq j).resolve_left hj₁ |>.resolve_left hj₂
       exact List.mem_singleton_self _
     · simpa only [List.map_cons, List.map_nil, List.prod_cons, List.prod_nil, mul_one, map_mul]
-        using congrArg (CompletedGroup.projection k) hpent
+        using congrArg (TauCeti.CompletedGroup.projection k) hpent
 
 end IsPentagonConfiguration
 

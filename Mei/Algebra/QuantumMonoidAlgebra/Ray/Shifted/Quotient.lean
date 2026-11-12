@@ -17,6 +17,8 @@ are the previously constructed nilpotent quotient endomorphisms.
 -/
 
 public section
+
+open TauCeti (PositiveDegrees)
 noncomputable section
 
 namespace Mei.QuantumMonoidAlgebra

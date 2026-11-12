@@ -25,7 +25,13 @@ The geometric interpretation follows Mandel, *Scattering diagrams, theta functio
 and refined tropical curve counts*, §3.3.3 (arXiv:1503.06183v5).
 -/
 
+open TauCeti (WallComplement singularSupport)
+
 public noncomputable section
+
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
+open TauCeti (DirectedWallSpaces)
 
 open Set Filter Topology Mei.Convex
 
@@ -76,11 +82,11 @@ theorem baseBCHProjection_combinedLabel_vertical_eq_one (k : ℕ) (θ : V × E)
     apply hv a (by simpa [S] using ha)
     rw [← hm]
     simp
-  have hp := congrArg (CompletedGroup.projection (k + 1))
+  have hp := congrArg (TauCeti.CompletedGroup.projection (k + 1))
     (completedBaseProjection_label_eq_one_of_normal_notMem_range d ℳ p ℒ H h h'
       (D.wall a) hm)
   rw [projection_completedBaseProjection, map_one] at hp
-  have hpa : f (CompletedGroup.projection (k + 1) (D.wall a).label) = 1 := hp
+  have hpa : f (TauCeti.CompletedGroup.projection (k + 1) (D.wall a).label) = 1 := hp
   simp only [Function.comp_apply, map_zpow, hpa, one_zpow]
 
 /-- The coefficient with positive probe coorientation, extracted from the

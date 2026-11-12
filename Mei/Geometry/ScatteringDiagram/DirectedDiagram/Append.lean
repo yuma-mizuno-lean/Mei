@@ -52,6 +52,14 @@ indices. These are the same restriction and reindexing comparisons used in
 
 public section
 
+open TauCeti (GradedLieHom)
+
+open TauCeti (WallComplement AdmissiblePLPath singularSupport singularSupport_comp_subset)
+
+open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading)
+
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
 open Set Mei.Convex
@@ -126,7 +134,7 @@ theorem vertices_appendLeftPathPrefunctor (k : ℕ)
 /-- Adjoining labels invisible at order `k` preserves every common order-`k`
 path product. No condition is imposed at later orders. -/
 theorem append_levelEquivalent_left {k : ℕ}
-    (hE : ∀ j, CompletedGroup.projection k (E.wall j).label = 1) :
+    (hE : ∀ j, TauCeti.CompletedGroup.projection k (E.wall j).label = 1) :
     (D.append E).LevelEquivalent D k := by
   have hs : (D.append E).active k ⊆ range (Sum.inl : ι → ι ⊕ κ) := by
     rintro (j | j) hj
@@ -138,7 +146,7 @@ theorem append_levelEquivalent_left {k : ℕ}
 /-- The actual path obtained by forgetting invisible appended walls has the
 original product. In particular, no new admissible path has to be chosen. -/
 theorem levelPathProduct_appendLeftPathPrefunctor {k : ℕ}
-    (hE : ∀ j, CompletedGroup.projection k (E.wall j).label = 1)
+    (hE : ∀ j, TauCeti.CompletedGroup.projection k (E.wall j).label = 1)
     {x y : WallComplement
       (fun j : (D.append E).active k => ((D.append E).wall j).support)}
     (p : AdmissiblePLPath x y) :
@@ -151,17 +159,17 @@ theorem levelPathProduct_appendLeftPathPrefunctor {k : ℕ}
 
 /-- Corrections invisible at order `k` preserve consistency at that order. -/
 theorem append_levelConsistent_iff {k : ℕ}
-    (hE : ∀ j, CompletedGroup.projection k (E.wall j).label = 1) :
+    (hE : ∀ j, TauCeti.CompletedGroup.projection k (E.wall j).label = 1) :
     (D.append E).LevelConsistent k ↔ D.LevelConsistent k :=
   (D.append_levelEquivalent_left E hE).consistent_iff
 
 /-- Corrections invisible at order `k` preserve transport at every earlier order too. -/
 theorem append_levelEquivalent_left_of_le {k l : ℕ} (hlk : l ≤ k)
-    (hE : ∀ j, CompletedGroup.projection k (E.wall j).label = 1) :
+    (hE : ∀ j, TauCeti.CompletedGroup.projection k (E.wall j).label = 1) :
     (D.append E).LevelEquivalent D l := by
   apply D.append_levelEquivalent_left E
   intro j
-  have he := CompletedGroup.map_projection l k hlk (E.wall j).label
+  have he := TauCeti.CompletedGroup.map_projection l k hlk (E.wall j).label
   rw [hE j, map_one] at he
   exact he.symm
 
@@ -298,8 +306,8 @@ theorem forall_notMem_append_iff (k : ℕ) (y : V) :
 of `D` commutes with every projected label of `E` at that order, then the union `D.append E` is
 consistent at order `k`. The walls of the two families may cross, overlap or coincide. -/
 theorem LevelConsistent.append {k : ℕ} (hD : D.LevelConsistent k) (hE : E.LevelConsistent k)
-    (hDE : ∀ a b, Commute (CompletedGroup.projection k (D.wall a).label)
-      (CompletedGroup.projection k (E.wall b).label)) :
+    (hDE : ∀ a b, Commute (TauCeti.CompletedGroup.projection k (D.wall a).label)
+      (TauCeti.CompletedGroup.projection k (E.wall b).label)) :
     (D.append E).LevelConsistent k := by
   -- The pointwise product of the two transport functions, whose values commute, satisfies the
   -- local criterion.
@@ -335,7 +343,7 @@ cross, overlap or coincide. -/
 theorem Consistent.append (hD : D.Consistent) (hE : E.Consistent)
     (hDE : ∀ a b, Commute (D.wall a).label (E.wall b).label) : (D.append E).Consistent :=
   (consistent_iff _).mpr fun k => ((consistent_iff _).mp hD k).append ((consistent_iff _).mp hE k)
-    fun a b => (hDE a b).map (CompletedGroup.projection k)
+    fun a b => (hDE a b).map (TauCeti.CompletedGroup.projection k)
 
 variable (D) in
 /-- A diagram is equivalent to the union of its restrictions to a set of indices and to the

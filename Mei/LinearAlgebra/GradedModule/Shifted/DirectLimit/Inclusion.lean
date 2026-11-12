@@ -15,9 +15,13 @@ coefficient, even when different containing multiset charts are chosen.
 -/
 
 public section
+
+open TauCeti (PositiveDegrees)
 noncomputable section
 
-namespace Mei.PositiveDegrees
+namespace TauCeti.PositiveDegrees
+
+open Mei
 
 variable {Γ R M : Type*} [AddCommGroup Γ] [Ring R] [AddCommGroup M] [Module R M]
   [DecidableEq Γ] (d : PositiveDegrees Γ) (ℳ : Γ → Submodule R M)
@@ -55,4 +59,4 @@ theorem toShiftedDirectLimitOfChart_cast (p q : Γ) (hpq : p = q)
   simpa only [cast_eq, shiftedCompletedInclusion_refl] using
     d.toShiftedDirectLimitOfChart_inclusion ℳ p p (by simp) s t hp hq x
 
-end Mei.PositiveDegrees
+end TauCeti.PositiveDegrees

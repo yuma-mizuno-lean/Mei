@@ -27,6 +27,8 @@ arXiv:0808.2749v2.
 
 public section
 
+open TauCeti (AlgFiltration)
+
 noncomputable section
 
 namespace Mei.FocusFocus
@@ -39,7 +41,7 @@ local notation "S" => MvPolynomial Unit K
 local notation "t" => (MvPolynomial.X () : S)
 local notation "A" => SlabNode t
 local notation "I" => MvPolynomial.idealOfVars Unit K
-local notation "F" => AlgFiltration.toModuleFiltration S (AlgFiltration.ofIdeal I)
+local notation "F" => AlgFiltration.toModuleFiltration S (Ideal.algFiltration I)
 local notation "b" => Mei.NodeAlgebra.laurentBasis
   (_root_.LaurentPolynomial.C t * (1 + _root_.LaurentPolynomial.T 1))
 
@@ -53,7 +55,7 @@ theorem thetaFiltration_submodule (k : ℕ) :
   ext x
   rw [thetaFiltration, Module.Basis.mem_coefficientFiltration_submodule,
     (b).mem_ideal_smul_top_iff_repr_mem]
-  simp only [AlgFiltration.ofIdeal_ideal, Submodule.restrictScalars_mem]
+  simp only [Ideal.algFiltration_ideal, Submodule.restrictScalars_mem]
 
 /-- Power series coefficient families with only finitely many nonzero residues
 modulo each power of the smoothing parameter. -/
@@ -72,7 +74,7 @@ theorem mem_restrictedThetaCoefficients (f : (ℤ × ℤ) → PowerSeries K) :
     ModuleFiltration.mem_restrictedFamilies, LinearEquiv.coe_coe,
     LinearEquiv.piCongrRight_apply]
   simp only [projection_principalModuleCompletionEquiv_symm, ne_eq,
-    Submodule.Quotient.mk_eq_zero, Submodule.restrictScalars_mem, AlgFiltration.ofIdeal_ideal,
+    Submodule.Quotient.mk_eq_zero, Submodule.restrictScalars_mem, Ideal.algFiltration_ideal,
     Function.support, Ideal.Quotient.eq_zero_iff_mem]
 
 /-- Completed theta monomial expansions have precisely the power series coefficients

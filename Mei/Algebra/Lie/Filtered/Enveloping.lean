@@ -18,12 +18,17 @@ the finite enveloping degree quotient on each finite coefficient quotient. These
 representations connect finite enveloping units with coefficient automorphisms.
 
 We use `TauCeti.UniversalEnvelopingAlgebra.representation`, the homogeneous word
-spans of `Mei.UniversalEnvelopingAlgebra.homogeneousSubmodule`, and
+spans of `TauCeti.UniversalEnvelopingAlgebra.homogeneousSubmodule`, and
 `Ideal.Quotient.liftₐ`. Quotient equivariance uses Tau Ceti's
 `map_smul_of_map_ι_smul`. No basis or faithful representation is required.
 -/
 
 public section
+
+open TauCeti.UniversalEnvelopingAlgebra (degreeFiltration degreeFiltration_ideal
+  homogeneousSubmodule homogeneousSubmodule_le_iff)
+
+open TauCeti (PositiveDegrees IsPositiveGrading)
 
 attribute [local instance 100] LieRing.ofAssociativeRing
 
@@ -61,10 +66,10 @@ private theorem representation_word_mem (l : List (Σ n, ℒ n))
 theorem representation_mem_of_mem_degreeFiltration {a b : ℕ} {u : U} {m : M}
     (hu : u ∈ (E).ideal a) (hm : m ∈ F.submodule b) :
     ρ u m ∈ F.submodule (a + b) := by
-  have hs : Mei.DirectSum.degreeTail (homogeneousSubmodule ℒ) d.degree a ≤
+  have hs : TauCeti.DirectSum.degreeTail (homogeneousSubmodule ℒ) d.degree a ≤
       (F.submodule (a + b)).comap
         ((LinearMap.applyₗ m).comp (ρ).toLinearMap) := by
-    rw [Mei.DirectSum.degreeTail_def]
+    rw [TauCeti.DirectSum.degreeTail_def]
     refine iSup_le fun n => iSup_le fun hn => ?_
     apply (homogeneousSubmodule_le_iff ℒ n _).mpr
     intro l hl
@@ -80,7 +85,7 @@ theorem representation_mem_of_mem_degreeFiltration {a b : ℕ} {u : U} {m : M}
     exact F.antitone (Nat.add_le_add_right (by exact_mod_cast hbound) b)
       (F.representation_word_mem d ℒ l hm)
   apply hs
-  simpa only [degreeFiltration_ideal, Mei.GradedAlgebra.mem_degreeIdeal_iff] using hu
+  simpa only [degreeFiltration_ideal, TauCeti.GradedAlgebra.mem_degreeIdeal_iff] using hu
 
 private theorem lift_quotientLieAction_mk (k : ℕ) (u : U) (m : M) :
     (_root_.UniversalEnvelopingAlgebra.lift R (F.quotientLieAction d ℒ k)) u
@@ -137,10 +142,10 @@ theorem truncatedEnvelopingAction_mk (k : ℕ) (u : U) :
 
 /-- On canonical Lie coordinates, the enveloping representation is the truncated Lie action. -/
 @[simp]
-theorem truncatedEnvelopingAction_truncatedLieToU (k : ℕ) (x : d.truncatedLie ℒ k) :
+theorem truncatedEnvelopingAction_truncatedLieToU (k : ℕ) (x : d.lieTruncation ℒ k) :
     F.truncatedEnvelopingAction d ℒ k (truncatedLieToU d ℒ k x) =
       F.truncatedLieAction d ℒ k x := by
-  obtain ⟨x, rfl⟩ := (d.degreeIdeal ℒ k).surjective_mkQ x
+  obtain ⟨x, rfl⟩ := (d.truncationIdeal ℒ k).surjective_mkQ x
   rw [LieIdeal.mkQ_apply, truncatedLieToU_mk, truncatedEnvelopingAction_mk,
     lift_ι_apply, truncatedLieAction_mk]
 

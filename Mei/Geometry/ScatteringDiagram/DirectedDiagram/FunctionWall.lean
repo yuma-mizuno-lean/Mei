@@ -7,6 +7,7 @@ module
 
 public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.LocalCrossing
 public import Mei.RingTheory.FilteredAlgebra.Positive.Basic
+import Mei.RingTheory.FilteredAlgebra.Algebra
 
 /-!
 # Function-wall groupings and positive wall representatives
@@ -69,9 +70,17 @@ Theorem 9.9 (arXiv:2503.03719v1). The local crossing comparison uses
 
 public section
 
+open TauCeti (AlgFiltration)
+
+open TauCeti (WallComplement singularSupport)
+
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
-open Set Mei.Convex CategoryTheory
+open Set CategoryTheory
 
 namespace Mei
 
@@ -124,7 +133,7 @@ theorem commute_label {j j' : ι} (hj : G.group j = G.group j') :
 walls of `g` active at order `k`. -/
 def groupLabel (g : κ) (k : ℕ) : d.truncatedGroup ℒ k :=
   (Set.toFinite {j : D.active k | G.group j = g}).toFinset.noncommProd
-    (fun j => CompletedGroup.projection k (D.wall j).label) (by
+    (fun j => TauCeti.CompletedGroup.projection k (D.wall j).label) (by
       intro a ha b hb _
       have ha : G.group a = g := by simpa using ha
       have hb : G.group b = g := by simpa using hb
@@ -134,7 +143,7 @@ def groupLabel (g : κ) (k : ℕ) : d.truncatedGroup ℒ k :=
 label: the projected labels of the remaining walls are trivial. -/
 theorem groupLabel_eq_noncommProd (g : κ) (k : ℕ) (s : Finset ι)
     (hs : ∀ j ∈ s, G.group j = g) (hact : ∀ j ∈ D.active k, G.group j = g → j ∈ s) :
-    G.groupLabel g k = s.noncommProd (fun j => CompletedGroup.projection k (D.wall j).label)
+    G.groupLabel g k = s.noncommProd (fun j => TauCeti.CompletedGroup.projection k (D.wall j).label)
       (fun a ha b hb _ => (G.commute_label ((hs a ha).trans (hs b hb).symm)).map _) := by
   classical
   let T := (Set.toFinite {j : D.active k | G.group j = g}).toFinset
@@ -144,7 +153,7 @@ theorem groupLabel_eq_noncommProd (g : κ) (k : ℕ) (s : Finset ι)
     obtain ⟨a, ha, rfl⟩ := Finset.mem_map.mp hj
     exact hact a a.property (by simpa [T] using ha)
   unfold groupLabel
-  refine (Finset.noncommProd_map T e (fun j => CompletedGroup.projection k (D.wall j).label)
+  refine (Finset.noncommProd_map T e (fun j => TauCeti.CompletedGroup.projection k (D.wall j).label)
     (fun a ha b hb _ => (G.commute_label ((hs a (hTs ha)).trans
       (hs b (hTs hb)).symm)).map _)).symm.trans
     (Finset.noncommProd_subset hTs _ _ fun j hj hjT => ?_)
@@ -187,7 +196,7 @@ theorem combinedLabel_eq_groupLabel_inv {k : ℕ} {θ v : V}
 /-- The group labels are compatible with the truncation maps of the BCH tower. -/
 @[simp]
 theorem map_groupLabel (g : κ) {k l : ℕ} (hkl : k ≤ l) :
-    (d.truncationMap ℒ hkl).bchGroupMap (G.groupLabel g l) = G.groupLabel g k := by
+    (d.lieTruncationMap ℒ hkl).bchGroupMap (G.groupLabel g l) = G.groupLabel g k := by
   classical
   let s := (Set.toFinite (D.active l)).toFinset.filter fun j => G.group j = g
   have hs : ∀ j ∈ s, G.group j = g := fun j hj => (Finset.mem_filter.mp hj).2
@@ -197,25 +206,25 @@ theorem map_groupLabel (g : κ) {k l : ℕ} (hkl : k ≤ l) :
     G.groupLabel_eq_noncommProd g k s hs fun j hj hg => hl j (D.active_mono hkl hj) hg]
   refine (Finset.map_noncommProd s _ _ _).trans (Finset.noncommProd_congr rfl ?_ _)
   intro j _
-  exact CompletedGroup.map_projection k l hkl (D.wall j).label
+  exact TauCeti.CompletedGroup.map_projection k l hkl (D.wall j).label
 
 /-- The completed label of the group `g`: the convergent product of the commuting labels
 of its walls, whose order-`k` projection is the group label. -/
 def label (g : κ) : d.completedBCHGroup ℒ :=
   ⟨fun k => G.groupLabel g k,
-    (mem_completedGroup_iff _ _).mpr fun _ _ hkl => G.map_groupLabel g hkl⟩
+    (TauCeti.mem_completedGroup_iff _ _).mpr fun _ _ hkl => G.map_groupLabel g hkl⟩
 
 /-- The finite-order projections of the completed group label are the group labels. -/
 @[simp]
 theorem projection_label (g : κ) (k : ℕ) :
-    CompletedGroup.projection k (G.label g) = G.groupLabel g k :=
-  CompletedGroup.projection_apply k _
+    TauCeti.CompletedGroup.projection k (G.label g) = G.groupLabel g k :=
+  TauCeti.CompletedGroup.projection_apply k _
 
 /-- The completed group label is the unique element with the group labels as projections. -/
 theorem eq_label_iff (g : κ) (l : d.completedBCHGroup ℒ) :
-    l = G.label g ↔ ∀ k, CompletedGroup.projection k l = G.groupLabel g k :=
+    l = G.label g ↔ ∀ k, TauCeti.CompletedGroup.projection k l = G.groupLabel g k :=
   ⟨by rintro rfl k; exact G.projection_label g k,
-    fun hl => CompletedGroup.ext fun k => (hl k).trans (G.projection_label g k).symm⟩
+    fun hl => TauCeti.CompletedGroup.ext fun k => (hl k).trans (G.projection_label g k).symm⟩
 
 /-- A segment crossing exactly the active walls of the group `g`, at one regular point and
 negatively against their common normal, has the projection of the group label as its
@@ -228,7 +237,7 @@ theorem levelPathProduct_toPath_eq_projection_label {g : κ} {k : ℕ}
     (hg : ∀ j : D.active k, θ ∈ (D.wall j).support ↔ G.group j = g)
     (hv : ∀ j : D.active k, G.group j = g →
       h.realCharacter (D.wall j).normal (y.val - x.val) < 0) :
-    D.levelPathProduct k e.toPath = CompletedGroup.projection k (G.label g) := by
+    D.levelPathProduct k e.toPath = TauCeti.CompletedGroup.projection k (G.label g) := by
   rw [D.levelPathProduct_toPath_eq_combinedLabel k e θ hθ t hcross,
     G.combinedLabel_eq_groupLabel hθ hg hv, G.projection_label g k]
 

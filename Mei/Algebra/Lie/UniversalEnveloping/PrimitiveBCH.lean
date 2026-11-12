@@ -22,6 +22,8 @@ enveloping algebra images.
 
 public section
 
+open TauCeti.UniversalEnvelopingAlgebra (degreeFiltration ι_mem_degreeFiltration_one)
+
 open scoped TensorProduct
 
 namespace Mei.UniversalEnvelopingAlgebra
@@ -36,8 +38,8 @@ variable {Γ R L : Type*} [AddCommMonoid Γ] [CommRing R]
 local notation "U" => _root_.UniversalEnvelopingAlgebra R L
 local notation "F" => degreeFiltration ℒ d (fun n hn => hpos n (le_of_lt hn))
 local notation "T" => Ideal.tensorFiltration R
-  (Mei.AlgFiltration.ideal (degreeFiltration ℒ d (fun n hn => hpos n (le_of_lt hn))))
-  (Mei.AlgFiltration.ideal (degreeFiltration ℒ d (fun n hn => hpos n (le_of_lt hn))))
+  (TauCeti.AlgFiltration.ideal (degreeFiltration ℒ d (fun n hn => hpos n (le_of_lt hn))))
+  (TauCeti.AlgFiltration.ideal (degreeFiltration ℒ d (fun n hn => hpos n (le_of_lt hn))))
 
 variable [Algebra ℚ R]
 
@@ -53,12 +55,12 @@ theorem quotient_log_exp_product_primitive
     let q := Ideal.Quotient.mk ((F).ideal (k + 1))
     let z := IsNilpotent.log (IsNilpotent.exp (q (ι R x)) * IsNilpotent.exp (q (ι R y)))
     quotientCoproduct ℒ d (fun n hn => hpos n (le_of_lt hn)) (k + 1) z =
-      Mei.AlgFiltration.quotientIncludeLeft R (F) (F) (k + 1) z +
-        Mei.AlgFiltration.quotientIncludeRight R (F) (F) (k + 1) z := by
+      TauCeti.AlgFiltration.quotientIncludeLeft R (F) (F) (k + 1) z +
+        TauCeti.AlgFiltration.quotientIncludeRight R (F) (F) (k + 1) z := by
   let q := Ideal.Quotient.mk ((F).ideal (k + 1))
   let δ := quotientCoproduct ℒ d (fun n hn => hpos n (le_of_lt hn)) (k + 1)
-  let l := Mei.AlgFiltration.quotientIncludeLeft R (F) (F) (k + 1)
-  let r := Mei.AlgFiltration.quotientIncludeRight R (F) (F) (k + 1)
+  let l := TauCeti.AlgFiltration.quotientIncludeLeft R (F) (F) (k + 1)
+  let r := TauCeti.AlgFiltration.quotientIncludeRight R (F) (F) (k + 1)
   let π : U ⧸ (F).ideal (k + 1) →+* U ⧸ (F).ideal 1 :=
     Ideal.Quotient.factor ((F).antitone (Nat.le_add_left 1 k))
   -- The kernel of projection to degree one is nilpotent at this finite level.
@@ -70,20 +72,21 @@ theorem quotient_log_exp_product_primitive
   have hx := hnil (q (ι R x)) (hπ x)
   have hy := hnil (q (ι R y)) (hπ y)
   have hprim (z : L) : δ (q (ι R z)) = l (q (ι R z)) + r (q (ι R z)) := by
-    simp only [δ, l, r, q, quotientCoproduct_mk, Mei.AlgFiltration.quotientIncludeLeft_mk,
-      Mei.AlgFiltration.quotientIncludeRight_mk,
+    simp only [δ, l, r, q, quotientCoproduct_mk, TauCeti.AlgFiltration.quotientIncludeLeft_mk,
+      TauCeti.AlgFiltration.quotientIncludeRight_mk,
       TauCeti.UniversalEnvelopingAlgebra.comul_ι, map_add]
   -- Primitive generators exponentiate to group-like elements in the tensor quotient.
   have he (a : U ⧸ (F).ideal (k + 1)) (ha : IsNilpotent a)
       (hp : δ a = l a + r a) :
       δ (IsNilpotent.exp a) = l (IsNilpotent.exp a) * r (IsNilpotent.exp a) := by
     rw [IsNilpotent.map_exp ha, hp,
-      IsNilpotent.exp_add_of_commute (Mei.AlgFiltration.commute_quotientIncludes R (F) (F) _ a a)
+      IsNilpotent.exp_add_of_commute
+        (TauCeti.AlgFiltration.commute_quotientIncludes R (F) (F) _ a a)
         (ha.map l) (ha.map r), ← IsNilpotent.map_exp ha l, ← IsNilpotent.map_exp ha r]
   let g := IsNilpotent.exp (q (ι R x)) * IsNilpotent.exp (q (ι R y))
   have hg : δ g = l g * r g := by
     rw [map_mul, he _ hx (hprim x), he _ hy (hprim y), map_mul, map_mul]
-    exact (Mei.AlgFiltration.commute_quotientIncludes R (F) (F) _ (IsNilpotent.exp (q (ι R y)))
+    exact (TauCeti.AlgFiltration.commute_quotientIncludes R (F) (F) _ (IsNilpotent.exp (q (ι R y)))
       (IsNilpotent.exp (q (ι R x)))).symm.mul_mul_mul_comm _ _
   have hgu : IsNilpotent (g - 1) := by
     apply hnil
@@ -92,7 +95,7 @@ theorem quotient_log_exp_product_primitive
   have hl : IsNilpotent (l g - 1) := by simpa only [map_sub, map_one] using hgu.map l
   have hr : IsNilpotent (r g - 1) := by simpa only [map_sub, map_one] using hgu.map r
   -- The logarithm of the commuting left/right product is the sum of logarithms.
-  have hc : Commute (l g) (r g) := Mei.AlgFiltration.commute_quotientIncludes R (F) (F) _ g g
+  have hc : Commute (l g) (r g) := TauCeti.AlgFiltration.commute_quotientIncludes R (F) (F) _ g g
   have hz : δ (IsNilpotent.log g) = l (IsNilpotent.log g) + r (IsNilpotent.log g) := by
     rw [IsNilpotent.map_log hgu, hg]
     have hm := IsNilpotent.log_mul_of_commute hc hl hr

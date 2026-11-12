@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.ScatteringDiagram.WallSpace.Shifted
-public import Mei.LinearAlgebra.GradedCorrespondence.Terminal
+public import TauCeti.LinearAlgebra.GradedCorrespondence.Terminal
 
 /-!
 # Terminal common lifts for ordinary BCH walls
@@ -23,7 +23,7 @@ and tangent coefficients. The label is the signed transport from the negative
 to the positive side; for the original cooriented wall label, take its inverse.
 Combined labels are allowed.
 
-This instantiates `GradedCorrespondence.existsUnique_terminalGraphLift` using
+This instantiates `GradedCorrespondence.existsUnique_terminalGraphLeft` using
 wall annihilation on the actual finite BCH action, without assuming the terminal
 identity. It is the coefficient part of a single ordinary-face resolution;
 matching these branches to a geometric degeneration is independent. If incoming
@@ -35,14 +35,22 @@ and refined tropical curve counts*, Definition 2.10 (arXiv:1503.06183v5).
 
 public noncomputable section
 
-namespace Mei.DirectedWallSpaces
+open TauCeti (GradedCorrespondence)
+
+open TauCeti (SupportedRay)
+
+open TauCeti (DirectedWallSpaces)
+
+namespace TauCeti.DirectedWallSpaces
+
+open Mei
 
 variable {Γ : Type} {Λ R L M E : Type*} [AddCommGroup Γ] [AddCommMonoid Λ]
   [CommRing R] [Algebra ℚ R] [LieRing L] [LieAlgebra R L]
   [LieAlgebra ℚ L] [IsScalarTower ℚ R L]
   [AddCommGroup M] [Module R M] [LieRingModule L M] [LieModule R L M]
-  [DecidableEq Γ] {ρ : Γ →+ Λ} {d : PositiveDegrees Γ}
-  {ℒ : Γ → Submodule R L} [GradedLieAlgebra ℒ] [IsPositiveGrading d ℒ]
+  [DecidableEq Γ] {ρ : Γ →+ Λ} {d : TauCeti.PositiveDegrees Γ}
+  {ℒ : Γ → Submodule R L} [GradedLieAlgebra ℒ] [TauCeti.IsPositiveGrading d ℒ]
   (H : DirectedWallSpaces ρ ℒ) (ℳ : Γ → Submodule R M)
   [DirectSum.Decomposition ℳ] [SetLike.GradedBracket ℒ ℳ]
   [IsWallAnnihilating H ℳ] (p : Γ)
@@ -63,10 +71,10 @@ theorem existsUnique_shiftedBCH_terminalGraphLift
     (α : E →ₗ[R] (F).quotient k) :
     ∃! l : E →ₗ[R] (F).quotient k,
       (GradedCorrespondence.graph 𝓝 𝓝 θ).left.comp l =
-        (GradedCorrespondence.terminalGraphLift 𝓝 θ weight).comp α ∧
+        (GradedCorrespondence.terminalGraphLeft 𝓝 θ weight).comp α ∧
       (GradedCorrespondence.graph 𝓝 𝓝 θ).right.comp l =
         (GradedCorrespondence.terminalGraphRight 𝓝 θ weight).comp α := by
-  apply GradedCorrespondence.existsUnique_terminalGraphLift
+  apply GradedCorrespondence.existsUnique_terminalGraphLeft
   intro r a hr
   exact H.shiftedBCHAction_eq_self_of_normal_eq_zero ℳ p hg a.property hr
 
@@ -88,7 +96,7 @@ theorem existsUnique_shiftedBCH_terminalGraphLift_mem_addSubmonoid
     (α : E →ₗ[R] (F).quotient k) :
     ∃! l : E →ₗ[R] (F).quotient k,
       (GradedCorrespondence.graph 𝓝 𝓝 θ).left.comp l =
-          (GradedCorrespondence.terminalGraphLift 𝓝 θ weight).comp α ∧
+          (GradedCorrespondence.terminalGraphLeft 𝓝 θ weight).comp α ∧
       (GradedCorrespondence.graph 𝓝 𝓝 θ).right.comp l =
           (GradedCorrespondence.terminalGraphRight 𝓝 θ weight).comp α ∧
       ∀ x, (∀ r, (DirectSum.decompose 𝓝 (α x) r : (F).quotient k) ∈ Pos r) →
@@ -96,7 +104,7 @@ theorem existsUnique_shiftedBCH_terminalGraphLift_mem_addSubmonoid
   obtain ⟨l, hl, huniq⟩ := H.existsUnique_shiftedBCH_terminalGraphLift ℳ p g hg α
   refine ⟨l, ⟨hl.1, hl.2, ?_⟩, ?_⟩
   · intro x hx
-    have hleft : l x = GradedCorrespondence.terminalGraphLift 𝓝 θ weight (α x) := by
+    have hleft : l x = GradedCorrespondence.terminalGraphLeft 𝓝 θ weight (α x) := by
       simpa only [GradedCorrespondence.graph_left, LinearMap.comp_apply, LinearMap.id_apply]
         using LinearMap.congr_fun hl.1 x
     have hright : θ (l x) = GradedCorrespondence.terminalGraphRight 𝓝 θ weight (α x) := by
@@ -104,7 +112,7 @@ theorem existsUnique_shiftedBCH_terminalGraphLift_mem_addSubmonoid
         using LinearMap.congr_fun hl.2 x
     constructor
     · rw [hleft]
-      exact GradedCorrespondence.terminalGraphLift_mem_addSubmonoid 𝓝 θ weight Pos Pneg
+      exact GradedCorrespondence.terminalGraphLeft_mem_addSubmonoid 𝓝 θ weight Pos Pneg
         hLcross hLstay (α x) hx
     · rw [hright]
       exact GradedCorrespondence.terminalGraphRight_mem_addSubmonoid 𝓝 θ weight Pos Ppos
@@ -112,4 +120,4 @@ theorem existsUnique_shiftedBCH_terminalGraphLift_mem_addSubmonoid
   · intro l' hl'
     exact huniq l' ⟨hl'.1, hl'.2.1⟩
 
-end Mei.DirectedWallSpaces
+end TauCeti.DirectedWallSpaces

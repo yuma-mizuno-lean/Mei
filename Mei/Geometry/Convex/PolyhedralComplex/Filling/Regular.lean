@@ -19,6 +19,9 @@ arbitrary group-valued wall labels, including noncommuting ones. It supplies the
 local compatibility needed to transport coefficients across regular wall points.
 -/
 
+open TauCeti (WallComplement singularSupport)
+
+
 -- The proofs apply `FinitePolyhedralComplex.crossingWord_boundary_mem_of_cover` and
 -- `FinitePolyhedralComplex.crossingWord_triangle_mem_of_cover` with the trivial subgroup,
 -- covering the filling by the regular transport neighborhoods of

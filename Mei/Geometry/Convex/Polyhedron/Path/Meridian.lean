@@ -26,6 +26,8 @@ avoidance of proper faces, and Mei's quiver of admissible segments.
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath singularSupport)
+
 open Set
 
 namespace Mei.Convex

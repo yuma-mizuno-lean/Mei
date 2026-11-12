@@ -26,6 +26,8 @@ and the compatible-family construction of `CompletedDiagram`.
 
 public section
 
+open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading GradedLieHom)
+
 noncomputable section
 
 universe u
@@ -59,7 +61,7 @@ def mapDiagram (D : CompletedDiagram s d ℒ C)
     have hc := D.compatible k p q hpq
     have hn := DFunLike.congr_fun
       (congrArg LieHom.bchGroupMap
-        (f.truncationMap_comp_truncatedMap_of_le (Nat.le_succ k)
+        (f.lieTruncationMap_comp_lieTruncatedMap_of_le (Nat.le_succ k)
           (Nat.le_succ k) (by simp) (by simp)))
       ((D.diagram (k + 1)).toFiniteWallDiagram.pathProduct q)
     simpa only [LieHom.bchGroupMap_comp, MonoidHom.comp_apply, hc] using hn
@@ -115,7 +117,7 @@ theorem pathProduct_mapDiagram (D : CompletedDiagram s d ℒ C)
     (f : GradedLieHom (PositiveDegreeMap.id d) ℒ ℳ)
     {x y : Point C} (p : Quiver.Path x y) :
     (D.mapDiagram f).pathProduct p = f.completedMap (D.pathProduct p) := by
-  apply CompletedGroup.ext
+  apply TauCeti.CompletedGroup.ext
   intro k
   rw [f.projection_completedMap_of_le k (a := k) (by simp)]
   simp only [projection_pathProduct, mapDiagram_diagram, KSComplex.pathProduct_map]

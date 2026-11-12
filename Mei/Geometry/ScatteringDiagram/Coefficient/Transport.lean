@@ -21,6 +21,8 @@ commutativity of the wall labels. `MulAction.toPerm` supplies the coefficient
 equivalence, and the existing path-product laws give its basic functoriality.
 -/
 
+open TauCeti (WallComplement AdmissiblePLPath singularSupport)
+
 public noncomputable section
 
 open Set Mei.Convex

@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.RingTheory.FilteredAlgebra.Map
+public import TauCeti.RingTheory.FilteredAlgebra.Map
 
 /-!
 # Injectivity of filtered completion maps
@@ -18,7 +18,7 @@ original filtrations need not be separated.
 
 public section
 
-namespace Mei.AlgFiltration
+namespace TauCeti.AlgFiltration
 
 variable {A B : Type*} [Ring A] [Ring B]
   (F : AlgFiltration A) (G : AlgFiltration B)
@@ -50,4 +50,4 @@ theorem mapCompletion_injective_of_comap_le
   rw [map_zero, ← he]
   exact Ideal.Quotient.eq_zero_iff_mem.mpr haF
 
-end Mei.AlgFiltration
+end TauCeti.AlgFiltration

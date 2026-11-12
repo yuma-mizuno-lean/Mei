@@ -26,9 +26,15 @@ adapted complex. The comparison follows Mandel, *Scattering diagrams, theta
 functions, and refined tropical curve counts*, §3.3.3 (arXiv:1503.06183v5).
 -/
 
+open TauCeti (WallComplement)
+
 public noncomputable section
 
-open Set TopologicalSpace Opposite Mei.Convex Mei.Convex.WallComplement
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
+open TauCeti (DirectedWallSpaces)
+
+open Set TopologicalSpace Opposite Mei.Convex TauCeti.WallComplement
 
 namespace Mei.ModuleProbe
 

@@ -31,6 +31,12 @@ diagrams, theta functions, and refined tropical curve counts*,
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath)
+
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
 open Set Mei.Convex
@@ -85,8 +91,9 @@ theorem active_pushforward_subset (k : ℕ) {a : ℕ} (ha : P.degreeMap.modulus 
 
 /-- The order-`k` label of a pushed wall is the truncated image of its order-`a` label. -/
 theorem projection_pushforward_wall_label (k : ℕ) {a : ℕ} (ha : P.degreeMap.modulus k ≤ a)
-    (j : ι) : CompletedGroup.projection k ((D.pushforward P).wall j).label =
-      (P.lieHom.truncatedMap k ha).bchGroupMap (CompletedGroup.projection a (D.wall j).label) := by
+    (j : ι) : TauCeti.CompletedGroup.projection k ((D.pushforward P).wall j).label =
+      (P.lieHom.lieTruncatedMap k ha).bchGroupMap
+        (TauCeti.CompletedGroup.projection a (D.wall j).label) := by
   rw [pushforward_wall, DirectedWall.pushforward_label]
   exact P.lieHom.projection_completedMap_of_le k ha _
 
@@ -143,17 +150,17 @@ private theorem wallPathProduct_restrict_pushforward (k : ℕ) {a : ℕ}
     ((WallComplement.restrictPrefunctor _
         (Set.inclusion (D.active_pushforward_subset P k ha))).mapPath p).wallPathProduct
         (fun j : (D.pushforward P).active k => h.realCharacter (D.wall j).normal)
-        (fun j : (D.pushforward P).active k => (P.lieHom.truncatedMap k ha).bchGroupMap
-          (CompletedGroup.projection a (D.wall j).label))
+        (fun j : (D.pushforward P).active k => (P.lieHom.lieTruncatedMap k ha).bchGroupMap
+          (TauCeti.CompletedGroup.projection a (D.wall j).label))
         (fun j l hjl => (D.activeLabels_commute a (Set.inclusion _ j) (Set.inclusion _ l)
           hjl).map _) =
       p.wallPathProduct (fun j : D.active a => h.realCharacter (D.wall j).normal)
-        (fun j : D.active a => (P.lieHom.truncatedMap k ha).bchGroupMap
-          (CompletedGroup.projection a (D.wall j).label))
+        (fun j : D.active a => (P.lieHom.lieTruncatedMap k ha).bchGroupMap
+          (TauCeti.CompletedGroup.projection a (D.wall j).label))
         (fun j l hjl => (D.activeLabels_commute a j l hjl).map _) := by
   refine p.wallPathProduct_restrict (fun j : D.active a => h.realCharacter (D.wall j).normal)
-    (fun j : D.active a => (P.lieHom.truncatedMap k ha).bchGroupMap
-      (CompletedGroup.projection a (D.wall j).label))
+    (fun j : D.active a => (P.lieHom.lieTruncatedMap k ha).bchGroupMap
+      (TauCeti.CompletedGroup.projection a (D.wall j).label))
     (fun j l hjl => (D.activeLabels_commute a j l hjl).map _) _ (Set.inclusion_injective _)
     fun j hj => ?_
   rw [← projection_pushforward_wall_label]
@@ -170,17 +177,17 @@ private theorem wallPathProduct_wallComplementMap_pushforward (k : ℕ) {a : ℕ
     ((D.survivingPathPushforward P k ha).mapPath q).wallPathProduct
         (fun j : (D.pushforward P).active k => h'.realCharacter ((D.pushforward P).wall j).normal)
         (fun j : (D.pushforward P).active k =>
-          CompletedGroup.projection k ((D.pushforward P).wall j).label)
+          TauCeti.CompletedGroup.projection k ((D.pushforward P).wall j).label)
         ((D.pushforward P).activeLabels_commute k) =
-      (P.lieHom.truncatedMap k ha).bchGroupMap (q.wallPathProduct
+      (P.lieHom.lieTruncatedMap k ha).bchGroupMap (q.wallPathProduct
         (fun j : (D.pushforward P).active k => h.realCharacter (D.wall j).normal)
-        (fun j : (D.pushforward P).active k => CompletedGroup.projection a (D.wall j).label)
+        (fun j : (D.pushforward P).active k => TauCeti.CompletedGroup.projection a (D.wall j).label)
         (fun j l hjl => D.activeLabels_commute a (Set.inclusion _ j) (Set.inclusion _ l) hjl)) := by
   let r : (D.pushforward P).active k → ℝ :=
     fun j => ((P.realCharacter_normalMap (D.wall j).normal).choose : ℝ)
   have hs := q.wallPathProduct_smul_normal (fun j => h.realCharacter (D.wall j).normal) r
     (fun j => Rat.cast_pos.mpr (P.realCharacter_normalMap (D.wall j).normal).choose_spec.1)
-    (fun j => CompletedGroup.projection a (D.wall j).label)
+    (fun j => TauCeti.CompletedGroup.projection a (D.wall j).label)
     (fun j l hjl => D.activeLabels_commute a (Set.inclusion _ j) (Set.inclusion _ l) hjl)
   refine (q.wallPathProduct_wallComplementMap P.spatialMap (Equiv.refl _) _
     (fun j => r j • h.realCharacter (D.wall j).normal) _ (fun j => ?_) _ _ _ _ _
@@ -196,7 +203,7 @@ theorem levelPathProduct_pushforward (k : ℕ) {a : ℕ} (ha : P.degreeMap.modul
     {x y : WallComplement (fun j : D.active a => (D.wall j).support)}
     (p : AdmissiblePLPath x y) :
     (D.pushforward P).levelPathProduct k ((D.levelPathPushforward P k ha).mapPath p) =
-      (P.lieHom.truncatedMap k ha).bchGroupMap (D.levelPathProduct a p) := by
+      (P.lieHom.lieTruncatedMap k ha).bchGroupMap (D.levelPathProduct a p) := by
   rw [levelPathProduct_levelPathPushforward, levelPathProduct_eq_wallPathProduct _ k _
       ((D.pushforward P).activeLabels_commute k),
     D.levelPathProduct_eq_wallPathProduct a p (D.activeLabels_commute a),
@@ -261,7 +268,7 @@ group homomorphism of the graded Lie map. -/
 theorem pathProduct_pushforward {x y : D.Point} (p : Quiver.Path x y) :
     (D.pushforward P).pathProduct ((D.pathPushforward P).mapPath p) =
       P.lieHom.completedMap (D.pathProduct p) := by
-  apply CompletedGroup.ext
+  apply TauCeti.CompletedGroup.ext
   intro k
   have hp := congrArg
     (fun F : D.Point ⥤q WallComplement

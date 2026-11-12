@@ -20,7 +20,7 @@ on each nilpotent quotient. Completed conjugation is supplied separately by
 
 public section
 
-namespace Mei.AlgFiltration
+namespace TauCeti.AlgFiltration
 
 variable {R A : Type*} [CommRing R] [Ring A] [Algebra R A] (F : AlgFiltration A)
 
@@ -40,4 +40,4 @@ theorem completedAeval_smul (x : F.completionIdeal 1) (a : R) (G : PowerSeries R
       congr 2
     _ = _ := PowerSeries.nilpotentAeval_smul _ a G
 
-end Mei.AlgFiltration
+end TauCeti.AlgFiltration

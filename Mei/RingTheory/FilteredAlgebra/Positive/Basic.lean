@@ -5,7 +5,7 @@ Authors: Claude Code
 -/
 module
 
-public import Mei.RingTheory.FilteredAlgebra.Map
+public import TauCeti.RingTheory.FilteredAlgebra.Map
 
 /-!
 # Positive elements of filtered completions and positive specializations
@@ -23,7 +23,7 @@ sums, products and natural powers, and contain the image of `P`.
 
 A positive specialization from `(B, F, P)` to `(C, G, Q)` is a ring homomorphism
 that is filtered along some monotone cutoff modulus and maps `P` into `Q`. The
-modulus is not part of the data: by `Mei.AlgFiltration.mapCompletion_eq` the induced
+modulus is not part of the data: by `TauCeti.AlgFiltration.mapCompletion_eq` the induced
 completion map does not depend on it. Positive specializations compose, restrict to
 semiring maps `P →+* Q`, and their completion maps commute with the canonical maps
 from the rings and preserve positivity.
@@ -33,11 +33,11 @@ No commutativity, separatedness or adicness is assumed.
 
 public section
 
-namespace Mei
+open TauCeti (AlgFiltration)
 
-namespace AlgFiltration
+namespace TauCeti.AlgFiltration
 
-variable {B : Type*} [Ring B] (F : Mei.AlgFiltration B) (P : Subsemiring B)
+variable {B : Type*} [Ring B] (F : TauCeti.AlgFiltration B) (P : Subsemiring B)
 
 /-- An element of the completion is positive for `P` when, at every finite order, its
 projection is the class of an element of `P`. -/
@@ -137,7 +137,9 @@ theorem positiveCompletion_top : F.positiveCompletion ⊤ = ⊤ := by
   obtain ⟨a, ha⟩ := Ideal.Quotient.mk_surjective (F.projection k x)
   exact ⟨a, Subsemiring.mem_top a, ha⟩
 
-end AlgFiltration
+end TauCeti.AlgFiltration
+
+namespace Mei
 
 variable {B C D : Type*} [Ring B] [Ring C] [Ring D]
 

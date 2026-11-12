@@ -29,6 +29,8 @@ homogeneous splitting of abelian-ray labels in Gross–Hacking–Keel–Kontsevi
 
 public noncomputable section
 
+open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading GradedLieHom)
+
 open Set Mei.Convex
 
 namespace Mei
@@ -79,7 +81,7 @@ monoid degree on its ray. Primitive generators outside the monoid are not indice
 abbrev HomogeneousIndex := Σ j : ι, (D.wall j).ray.rayDegrees
 
 private theorem homogeneousFactor_active_parent {j : ι} {n : N} {k : ℕ}
-    (hn : CompletedGroup.projection k (d.homogeneousFactor ℒ (D.wall j).label n) ≠ 1) :
+    (hn : TauCeti.CompletedGroup.projection k (d.homogeneousFactor ℒ (D.wall j).label n) ≠ 1) :
     j ∈ D.active k := by
   rw [D.mem_active]
   intro hj
@@ -90,7 +92,7 @@ private theorem homogeneousFactor_active_parent {j : ι} {n : N} {k : ℕ}
 
 private theorem finite_homogeneous_active (k : ℕ) :
     {a : D.HomogeneousIndex |
-      CompletedGroup.projection k
+      TauCeti.CompletedGroup.projection k
         (d.homogeneousFactor ℒ (D.wall a.1).label a.2.val) ≠ 1}.Finite := by
   let f : D.HomogeneousIndex → ι × N := fun a => (a.1, a.2.val)
   apply Set.Finite.of_injOn (f := f) ?_ ?_
@@ -159,8 +161,8 @@ theorem mem_active_iff_exists_homogeneous (k : ℕ) (j : ι) :
       · by_contra h0
         exact hn ⟨⟨n, hr⟩, (D.mem_active_homogeneousPresentation k _).mpr ⟨hk, h0⟩⟩
       · exact d.logComponent_eq_zero_of_notMem_rayDegrees ℒ (D.wall j).label_mem hr
-    have hlog : BCHGroup.log (L := d.truncatedLie ℒ k)
-        (CompletedGroup.projection k (D.wall j).label) = 0 := by
+    have hlog : BCHGroup.log (L := d.lieTruncation ℒ k)
+        (TauCeti.CompletedGroup.projection k (D.wall j).label) = 0 := by
       rw [d.log_projection_eq_mkQ_sum ℒ]
       have hsum : (∑ n ∈ (d.finite_cutoff k).toFinset,
           (d.logComponent ℒ (D.wall j).label n : L)) = 0 :=
@@ -168,7 +170,7 @@ theorem mem_active_iff_exists_homogeneous (k : ℕ) (j : ι) :
           (hz n (d.mem_cutoff.mp ((d.finite_cutoff k).mem_toFinset.mp hn)).2)
       rw [hsum, map_zero]
     exact ((D.mem_active k j).mp hj)
-      (BCHGroup.log_injective (hlog.trans (BCHGroup.log_one (L := d.truncatedLie ℒ k)).symm))
+      (BCHGroup.log_injective (hlog.trans (BCHGroup.log_one (L := d.lieTruncation ℒ k)).symm))
   · rintro ⟨n, hn⟩
     exact D.active_homogeneousPresentation_parent hn
 
@@ -177,16 +179,16 @@ variable [IsAbelianRays d ℒ]
 /-- Multiplying exactly the active homogeneous factors over an original index
 recovers its projected label. No zero coefficient or invisible degree contributes. -/
 theorem projection_eq_noncommProd_homogeneousPresentation (k : ℕ) (j : ι) :
-    CompletedGroup.projection k (D.wall j).label =
+    TauCeti.CompletedGroup.projection k (D.wall j).label =
       (D.homogeneousIndices k j).noncommProd
-        (fun n => CompletedGroup.projection k
+        (fun n => TauCeti.CompletedGroup.projection k
           (D.homogeneousPresentation.wall ⟨j, n⟩).label)
         (fun n _ m _ _ => by
           simpa only [homogeneousPresentation_wall, IndexedWall.homogeneousFactor_label] using
             (d.commute_of_mem_completedRaySubgroup ℒ
               (d.homogeneousFactor_mem_completedRaySubgroup ℒ (D.wall j).label_mem n.val)
               (d.homogeneousFactor_mem_completedRaySubgroup ℒ (D.wall j).label_mem m.val)).map
-                (CompletedGroup.projection k)) := by
+                (TauCeti.CompletedGroup.projection k)) := by
   classical
   let e : (D.wall j).ray.rayDegrees ↪ N := ⟨Subtype.val, Subtype.val_injective⟩
   have hc (n m : N) :

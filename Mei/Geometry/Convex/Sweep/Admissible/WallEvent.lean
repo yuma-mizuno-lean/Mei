@@ -32,6 +32,8 @@ are those of Mandel, *Scattering diagrams, theta functions, and refined tropical
 curve counts*, Definition 2.10 (arXiv:1503.06183v5).
 -/
 
+open TauCeti (WallComplement singularSupport affineSpan_eq_of_notMem_singularSupport)
+
 public noncomputable section
 
 open Set
@@ -137,7 +139,9 @@ theorem parameter_withWallEvents :
 
 end Mei.Convex.AdmissibleRayRealization
 
-namespace Mei.Convex.WallComplement
+namespace TauCeti.WallComplement
+
+open Mei.Convex
 
 variable {V ι : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V] [Finite ι]
   {W : ι → Set V} {x y : WallComplement W}
@@ -312,4 +316,4 @@ theorem segmentEventParameter_injOn (f : ι → V →L[ℝ] ℝ) (e : x ⟶ y)
   subst t'
   rfl
 
-end Mei.Convex.WallComplement
+end TauCeti.WallComplement

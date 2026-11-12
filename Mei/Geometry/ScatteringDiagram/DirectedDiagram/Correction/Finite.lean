@@ -34,6 +34,10 @@ proof of Theorem 2.6, and Gross–Hacking–Keel–Kontsevich,
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
 open Set Mei.Convex

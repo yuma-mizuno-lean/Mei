@@ -7,8 +7,9 @@ module
 
 public import Mei.Geometry.Convex.PolyhedralComplex.Joint
 public import Mei.Geometry.Convex.Polyhedron.Path.Meridian
-public import Mei.Geometry.Affine.Simplex.Conormal
+public import TauCeti.LinearAlgebra.AffineSpace.Simplex.Conormal
 public import Mathlib.Analysis.Convex.Combination
+import Mei.Combinatorics.Quiver.Path
 
 /-!
 # Isolating triangular loops at polyhedral joints
@@ -32,6 +33,8 @@ Cells may be unbounded and have lineality.
 -/
 
 public section
+
+open TauCeti (WallComplement AdmissiblePLPath singularSupport)
 
 open Set Mei.Convex
 

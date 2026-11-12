@@ -24,6 +24,9 @@ is that of `WallEvent.support`, retaining coincident indexed walls separately.
 
 public section
 
+open TauCeti (singularSupport affineSpan_eq_of_notMem_singularSupport
+  mem_intrinsicInterior_of_notMem_singularSupport)
+
 open Set Filter Topology
 
 namespace Mei.Convex.WallEvent

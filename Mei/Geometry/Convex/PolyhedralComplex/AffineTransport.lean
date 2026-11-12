@@ -30,9 +30,11 @@ with the geometric membership and order characterization of `orderedCrossings`.
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath)
+
 noncomputable section
 
-open Set Mei.Convex Mei.Convex.WallComplement
+open Set Mei.Convex TauCeti.WallComplement
 
 namespace Mei.FinitePolyhedralComplex
 
@@ -41,7 +43,7 @@ variable {N N' V V' : Type*} [AddCommGroup N] [AddCommGroup N']
   [NormedAddCommGroup V'] [NormedSpace ℝ V']
   {i : N →+ V} {i' : N' →+ V'}
   {h : TauCeti.Toric.IsIntegralLattice i} {h' : TauCeti.Toric.IsIntegralLattice i'}
-  (C : FinitePolyhedralComplex h) (e : Mei.Toric.IntegralAffineEquiv h h')
+  (C : FinitePolyhedralComplex h) (e : TauCeti.Toric.IntegralAffineEquiv h h')
 
 /-- Transport the allowed vertices and segments to the image complex. -/
 def pathImage : WallComplement (fun P : C.walls => (P : Set V)) ⥤q
@@ -354,7 +356,7 @@ variable {N N' V V' : Type*} [AddCommGroup N] [AddCommGroup N']
 The normals transform by pullback along the inverse linear part; no determinant
 sign is inserted. -/
 theorem crossingWord_pathImage (p : AdmissiblePLPath x y)
-    (e : Mei.Toric.IntegralAffineEquiv h h')
+    (e : TauCeti.Toric.IntegralAffineEquiv h h')
     (ν : C.walls → V →ₗ[ℝ] ℝ) (ν' : (C.image e).walls → V' →ₗ[ℝ] ℝ)
     (hν : ∀ P, (ν' (C.wallImageEquiv e P)).comp e.toAffineEquiv.linear.toLinearMap = ν P) :
     ((C.pathImage e).mapPath p).crossingWord ν' =
@@ -367,7 +369,7 @@ theorem crossingWord_pathImage (p : AdmissiblePLPath x y)
 /-- Affine transport sends the crossing letters of a polygonal path through the wall
 bijection, keeping the order and the signs. -/
 theorem crossingLetters_pathImage (p : AdmissiblePLPath x y)
-    (e : Mei.Toric.IntegralAffineEquiv h h')
+    (e : TauCeti.Toric.IntegralAffineEquiv h h')
     (ν : C.walls → V →ₗ[ℝ] ℝ) (ν' : (C.image e).walls → V' →ₗ[ℝ] ℝ)
     (hνν' : ∀ P, (ν' (C.wallImageEquiv e P)).comp e.toAffineEquiv.linear.toLinearMap = ν P) :
     ((C.pathImage e).mapPath p).crossingLetters ν' =

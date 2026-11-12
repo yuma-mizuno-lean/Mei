@@ -18,7 +18,7 @@ exponent by the cutoff, without assuming commutative multiplication.
 
 public section
 
-namespace Mei.AlgFiltration
+namespace TauCeti.AlgFiltration
 
 variable {A : Type*} [Ring A] (F : AlgFiltration A)
 
@@ -34,4 +34,4 @@ theorem isNilpotent_of_factor_eq_zero (k : ℕ) (x : A ⧸ F.ideal (k + 1))
   rw [← map_pow, Ideal.Quotient.eq_zero_iff_mem]
   simpa only [Nat.mul_one] using F.pow_mem ha (k + 1)
 
-end Mei.AlgFiltration
+end TauCeti.AlgFiltration

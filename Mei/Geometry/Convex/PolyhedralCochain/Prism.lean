@@ -27,9 +27,13 @@ contraction defining `OrientedCell.sweep`.
 
 public section
 
+open TauCeti (OrientedCell)
+
 noncomputable section
 
-namespace Mei.OrientedCell
+namespace TauCeti.OrientedCell
+
+open Mei
 
 open Module
 
@@ -51,7 +55,7 @@ theorem finrank_vectorSpan_sweep_base (σ : OrientedCell h (k + 1)) (n : N)
     finrank ℝ (vectorSpan ℝ σ.carrier) + 1 =
       finrank ℝ (vectorSpan ℝ (σ.sweep n hn).carrier) := by
   have := h.finiteDimensional
-  rw [sweep_carrier, Convex.finrank_sweep σ.nonempty
+  rw [sweep_carrier, Set.finrank_vectorSpan_sweep (𝕜 := ℝ) σ.nonempty
     (by simpa only [direction_affineSpan] using hn)]
 
 /-- The signed base facet of a transverse negative-ray sweep is the original
@@ -68,14 +72,14 @@ theorem boundaryFacet_sweep_base (σ : OrientedCell h (k + 1)) (n : N)
   have hn' : i n ∉ vectorSpan ℝ σ.carrier := by
     simpa only [direction_affineSpan] using hn
   have hmem : i n ∈ vectorSpan ℝ (σ.sweep n hn).carrier := by
-    rw [sweep_carrier, Convex.vectorSpan_sweep σ.nonempty]
+    rw [sweep_carrier, Set.vectorSpan_sweep (𝕜 := ℝ) σ.nonempty]
     exact (le_sup_right : Submodule.span ℝ {i n} ≤
       vectorSpan ℝ σ.carrier ⊔ Submodule.span ℝ {i n})
         (Submodule.mem_span_singleton_self (i n))
   obtain ⟨x, hx⟩ := σ.nonempty
   have hxsub : x - i n ∈ (σ.sweep n hn).carrier := by
     rw [sweep_carrier]
-    exact Convex.mem_sweep_iff_exists.mpr ⟨x, hx, 1, zero_le_one, by simp⟩
+    exact Set.mem_sweep_iff_exists.mpr ⟨x, hx, 1, zero_le_one, by simp⟩
   have hxnot : x - i n ∉ σ.carrier := by
     intro hmem
     exact hn' (by simpa using vsub_mem_vectorSpan ℝ hx hmem)
@@ -88,4 +92,4 @@ theorem boundaryFacet_sweep_base (σ : OrientedCell h (k + 1)) (n : N)
   exact Module.Ray.contract_neg σ.orientation σ.isConormal
     σ.finrank_quotient_direction (i n) hn
 
-end Mei.OrientedCell
+end TauCeti.OrientedCell

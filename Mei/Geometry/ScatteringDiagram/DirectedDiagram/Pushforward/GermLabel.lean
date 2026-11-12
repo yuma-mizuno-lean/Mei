@@ -43,6 +43,12 @@ cluster scattering diagrams*, Theorem 9.5 (arXiv:2503.03719v1).
 
 public section
 
+open TauCeti (singularSupport singularSupport_comp_subset)
+
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
 open Set Mei.Convex
@@ -77,7 +83,7 @@ theorem singularSupport_pushforward (k : ℕ) :
       P.spatialMap ''
         singularSupport (fun j : (D.pushforward P).active k => (D.wall j).support) := by
   simp only [pushforward_wall_support]
-  exact singularSupport_image _ _
+  exact P.spatialMap.singularSupport_image (Equiv.refl _) (fun _ => rfl)
 
 /-- A point outside the singular support of the walls of `D` active at a source order covering
 the cutoff modulus of `k` has image outside the singular support of the pushed walls active at
@@ -161,7 +167,7 @@ theorem projection_pushforward_wall_label_eq_one (k : ℕ) {a : ℕ}
     (ha : P.degreeMap.modulus k ≤ a) {θ : V} {b : D.active a} (hb : b ∈ D.incidentActive a θ)
     (hnot : b ∉ ((D.pushforward P).incidentActive k (P.spatialMap θ)).map
       (D.activePushforwardEmbedding P k ha)) :
-    CompletedGroup.projection k ((D.pushforward P).wall b).label = 1 := by
+    TauCeti.CompletedGroup.projection k ((D.pushforward P).wall b).label = 1 := by
   have hinactive : b.val ∉ (D.pushforward P).active k := fun hbk => hnot
     (Finset.mem_map.mpr ⟨⟨b.val, hbk⟩, by
       rwa [mem_incidentActive, spatialMap_mem_pushforward_wall_support_iff,
@@ -176,7 +182,7 @@ theorem combinedLabel_pushforward (k : ℕ) {a : ℕ} (ha : P.degreeMap.modulus 
     (hθ : θ ∉ singularSupport (fun j : D.active a => (D.wall j).support)) :
     (D.pushforward P).combinedLabel k (P.spatialMap θ) (P.spatialMap.toAffineEquiv.linear v)
         (D.notMem_singularSupport_pushforward P k ha hθ) =
-      (P.lieHom.truncatedMap k ha).bchGroupMap (D.combinedLabel a θ v hθ) := by
+      (P.lieHom.lieTruncatedMap k ha).bchGroupMap (D.combinedLabel a θ v hθ) := by
   /- Both combined labels are products over the active walls through the point
   (`combinedLabel_eq_noncommProd_incidentActive`). The truncated BCH map sends each source factor
   to the order-`k` projection of the pushed label with the original crossing sign. These factors
@@ -188,9 +194,9 @@ theorem combinedLabel_pushforward (k : ℕ) {a : ℕ} (ha : P.degreeMap.modulus 
   let e := D.activePushforwardEmbedding P k ha
   -- The truncated BCH map of the pushforward, between the objects of the two group towers.
   let F : (d.groupTower ℒ).obj (Opposite.op a) →* (d'.groupTower ℳ).obj (Opposite.op k) :=
-    (P.lieHom.truncatedMap k ha).bchGroupMap
-  have hproj (b : D.active a) : F (CompletedGroup.projection a (D.wall b).label) =
-      CompletedGroup.projection k ((D.pushforward P).wall b).label :=
+    (P.lieHom.lieTruncatedMap k ha).bchGroupMap
+  have hproj (b : D.active a) : F (TauCeti.CompletedGroup.projection a (D.wall b).label) =
+      TauCeti.CompletedGroup.projection k ((D.pushforward P).wall b).label :=
     (D.projection_pushforward_wall_label P k ha b).symm
   rw [D.combinedLabel_eq_noncommProd_incidentActive a θ v hθ,
     (D.pushforward P).combinedLabel_eq_noncommProd_incidentActive k]
@@ -213,7 +219,7 @@ theorem germLabel_pushforward {θ : V} (v : V) (hθ : D.IsRegular θ) :
     (D.pushforward P).germLabel (P.spatialMap θ) (P.spatialMap.toAffineEquiv.linear v)
         (hθ.pushforward P) =
       P.lieHom.completedMap (D.germLabel θ v hθ) :=
-  CompletedGroup.ext fun k => by
+  TauCeti.CompletedGroup.ext fun k => by
     rw [projection_germLabel, P.lieHom.projection_completedMap, projection_germLabel,
       ← combinedLabel_pushforward]
 

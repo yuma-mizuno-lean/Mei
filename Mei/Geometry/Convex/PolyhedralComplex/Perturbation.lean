@@ -13,18 +13,20 @@ public import Mei.Geometry.Convex.Polyhedron.Perturbation
 
 The signed crossing word of an admissible path through the walls of a finite polyhedral
 complex is locally constant in the vertices of the path. For a segment, the perturbed
-segment crosses the same walls in the same order (`Mei.Convex.WallComplement.AdmissibleSegment`
+segment crosses the same walls in the same order (`TauCeti.WallComplement.AdmissibleSegment`
 perturbation API), and its normal velocity has the same sign at each crossed wall, so every
 signed letter is unchanged. For a polygonal path, it suffices that every vertex moves less
 than a positive distance depending on the path; the endpoints may move as well.
 
 Nearby paths admissible for any finite family of codimension-one polyhedra exist by
-`Mei.Convex.AdmissiblePLPath.exists_forall₂_dist_lt`; the radius given here bounds how far
+`TauCeti.AdmissiblePLPath.exists_forall₂_dist_lt`; the radius given here bounds how far
 such a path may stray from the original one without changing the crossing word.
 Coorientations are linear functionals whose kernels are the wall directions.
 -/
 
 public section
+
+open TauCeti (WallComplement AdmissiblePLPath)
 
 open Set Filter Topology Mei.Convex
 

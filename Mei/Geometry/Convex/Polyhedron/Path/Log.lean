@@ -26,9 +26,11 @@ product. The geometric products and additive sums are the existing
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath)
+
 noncomputable section
 
-open Mei Mei.Convex WallComplement BCHGroup
+open Mei TauCeti.WallComplement BCHGroup
 
 namespace LieSubalgebra
 

@@ -35,7 +35,13 @@ with the charge-zero comparison `DirectedDiagram.levelPathProduct_pushforward` a
 `ModuleProbe.levelTransport_cylinderDiagram`.
 -/
 
+open TauCeti (WallComplement AdmissiblePLPath)
+
 public noncomputable section
+
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
+open TauCeti (DirectedWallSpaces)
 
 open Set Filter Topology Mei.Convex
 
@@ -89,10 +95,10 @@ theorem baseBCHProjection_levelPathProduct (k : ℕ)
     simp [P, y', ← hb]
   have hr : (D.pushforward P).levelPathProduct k
       ((D.levelPathPushforward P k (by simp [P])).mapPath r) =
-      ((chargeZeroGradedLieHom d ℳ p ℒ).truncatedMap (a := k) k (by simp)).bchGroupMap
+      ((chargeZeroGradedLieHom d ℳ p ℒ).lieTruncatedMap (a := k) k (by simp)).bchGroupMap
         (D.levelPathProduct k r) :=
     (D.levelPathProduct_pushforward P k _ r).trans
-      (by rw [DirectedWall.Pushforward.ofFixedDegree_lieHom_truncatedMap])
+      (by rw [DirectedWall.Pushforward.ofFixedDegree_lieHom_lieTruncatedMap])
   have hpx : (cylinderPathProjection d ℳ p ℒ H h h' B k).obj x' = x :=
     WallComplement.ext (by simp [x'])
   have hpy : (cylinderPathProjection d ℳ p ℒ H h h' B k).obj y' = y :=
@@ -104,7 +110,7 @@ theorem baseBCHProjection_levelPathProduct (k : ℕ)
     ((hB.levelTransport_eq hD₀ hC hx' hy').trans
       (levelTransport_cylinderDiagram d ℳ p ℒ H h h' B hBc x' y'))
   rw [hpx, hpy, B.levelTransport_eq_levelPathProduct hBc γ, hr,
-    truncatedMap_chargeZeroGradedLieHom, LieHom.bchGroupMap_comp] at he
+    lieTruncatedMap_chargeZeroGradedLieHom, LieHom.bchGroupMap_comp] at he
   exact he
 
 omit [LieAlgebra ℚ L] [IsScalarTower ℚ R L] in
@@ -117,7 +123,7 @@ private theorem exists_pos_forall_exists_levelPathProduct_eq (k : ℕ) :
         (h.prod h').realCharacter (probeNormal (Λ := Λ)) z.val ∈ I →
         (h.prod h').realCharacter (probeNormal (Λ := Λ)) w.val ∈ I →
         ∃ q : AdmissiblePLPath z w,
-          ((chargeZeroGradedLieHom d ℳ p ℒ).truncatedMap (a := k) k (by simp)).bchGroupMap
+          ((chargeZeroGradedLieHom d ℳ p ℒ).lieTruncatedMap (a := k) k (by simp)).bchGroupMap
             (D.levelPathProduct k q) = D.levelPathProduct k q := by
   let := h.finiteDimensional
   let := h'.finiteDimensional
@@ -136,7 +142,7 @@ private theorem exists_pos_forall_exists_levelPathProduct_eq (k : ℕ) :
     (fun a => (D.wall a).finrank_direction_add_one)
     (hIo.preimage ζ.continuous_of_finiteDimensional) hz hw
   refine ⟨q, D.map_levelPathProduct_eq_self k
-    ((chargeZeroGradedLieHom d ℳ p ℒ).truncatedMap (a := k) k (by simp)).bchGroupMap
+    ((chargeZeroGradedLieHom d ℳ p ℒ).lieTruncatedMap (a := k) k (by simp)).bchGroupMap
     (hIc.convex.linear_preimage ζ) q hq ?_⟩
   rintro a ⟨u, huI, hu⟩
   rw [← (chargeZeroGradedLieHom d ℳ p ℒ).projection_completedMap_of_le k (a := k) (by simp)]
@@ -163,16 +169,16 @@ private theorem levelPathProduct_eq_of_baseBCHProjection_eq_one (k : ℕ)
     (r₀ : AdmissiblePLPath x₀ y₀) (r₁ : AdmissiblePLPath x₁ y₁)
     (he : (π k).bchGroupMap (D.levelPathProduct k e) = 1)
     (hf : (π k).bchGroupMap (D.levelPathProduct k f) = 1)
-    (hr₀ : ((chargeZeroGradedLieHom d ℳ p ℒ).truncatedMap (a := k) k (by simp)).bchGroupMap
+    (hr₀ : ((chargeZeroGradedLieHom d ℳ p ℒ).lieTruncatedMap (a := k) k (by simp)).bchGroupMap
       (D.levelPathProduct k r₀) = D.levelPathProduct k r₀)
-    (hr₁ : ((chargeZeroGradedLieHom d ℳ p ℒ).truncatedMap (a := k) k (by simp)).bchGroupMap
+    (hr₁ : ((chargeZeroGradedLieHom d ℳ p ℒ).lieTruncatedMap (a := k) k (by simp)).bchGroupMap
       (D.levelPathProduct k r₁) = D.levelPathProduct k r₁) :
     D.levelPathProduct k r₁ = D.levelPathProduct k r₀ := by
   have hc := congrArg (π k).bchGroupMap
     ((D.levelConsistent_def k).mp hD (e.comp r₁) (r₀.comp f))
   rw [DirectedDiagram.levelPathProduct_comp, DirectedDiagram.levelPathProduct_comp, map_mul,
     map_mul, he, hf, mul_one, one_mul] at hc
-  rw [← hr₁, ← hr₀, truncatedMap_chargeZeroGradedLieHom, LieHom.bchGroupMap_comp,
+  rw [← hr₁, ← hr₀, lieTruncatedMap_chargeZeroGradedLieHom, LieHom.bchGroupMap_comp,
     MonoidHom.comp_apply, MonoidHom.comp_apply, hc]
 
 /-- Transport of the endpoint field of probe coefficients along base paths. Suppose the
@@ -229,8 +235,8 @@ theorem coefficientField_eq_truncatedBCHAction_levelPathProduct (k : ℕ)
   rw [hmain]
   congr 2
   -- Truncate the lower slab transport and compare it with the base path product.
-  have hcomm : (d.truncationMap ℒ (Nat.le_succ k)).comp (π (k + 1)) =
-      (π k).comp ((positiveDegrees d p).truncationMap (grading d ℳ p ℒ) (Nat.le_succ k)) :=
+  have hcomm : (d.lieTruncationMap ℒ (Nat.le_succ k)).comp (π (k + 1)) =
+      (π k).comp ((positiveDegrees d p).lieTruncationMap (grading d ℳ p ℒ) (Nat.le_succ k)) :=
     LieHom.ext (truncationMap_baseQuotientProjection d ℳ p ℒ (Nat.le_succ k))
   have ht' := DFunLike.congr_fun (congrArg LieHom.bchGroupMap hcomm)
     (D.levelPathProduct (k + 1) r₀)

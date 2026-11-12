@@ -14,7 +14,7 @@ public import Mei.Algebra.PositiveDegrees.Scale
 Two positive degree functions on the same allowed monoid define canonically
 isomorphic completed BCH groups. The comparison is induced by the identity Lie
 homomorphism, using the finite-maximum cutoff modulus of
-`Mei.PositiveDegreeMap.changeDegree` in each direction.
+`TauCeti.PositiveDegreeMap.changeDegree` in each direction.
 
 The equivalence preserves exponentials of original Lie elements and convergent
 ordered products, and is natural for graded Lie homomorphisms, even when their
@@ -26,12 +26,16 @@ order-`⌊k / c⌋` truncation for `δ`. The order-`k` projection of the change 
 is the identity of Lie algebras applied at order `⌊k / c⌋`, an isomorphism of truncations,
 and the reverse change is computed at order `c k`.
 
-The construction uses `Mei.GradedLieHom.completedMap`, its composition law and
+The construction uses `TauCeti.GradedLieHom.completedMap`, its composition law and
 its independence from the degree map and modulus. In particular, the two cutoff
 moduli need not be mutually inverse functions.
 -/
 
 public section
+
+open TauCeti.CompletedGroup (projection)
+
+open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading GradedLieHom)
 
 noncomputable section
 
@@ -40,6 +44,8 @@ universe u
 namespace Mei
 
 namespace PositiveDegrees
+
+open TauCeti.PositiveDegrees
 
 variable {N R : Type*} {L : Type*} [AddCommMonoid N] [CommRing R] [Algebra ℚ R]
   [LieRing L] [LieAlgebra R L] [LieAlgebra ℚ L] [IsScalarTower ℚ R L]
@@ -57,7 +63,7 @@ private theorem changeDegree_completedMap_self (hP : d.monoid = e.monoid) :
 
 /-- Changing a positive degree function on a fixed allowed monoid gives a canonical
 isomorphism of completed BCH groups. Its inverse uses the reverse cutoff comparison. -/
-def changeDegreeEquiv (hP : d.monoid = e.monoid) :
+def _root_.TauCeti.PositiveDegrees.changeDegreeEquiv (hP : d.monoid = e.monoid) :
     d.completedBCHGroup ℒ ≃* e.completedBCHGroup ℒ :=
   (GradedLieHom.changeDegree d e hP ℒ).completedMap.toMulEquiv
     (GradedLieHom.changeDegree e d hP.symm ℒ).completedMap
@@ -65,13 +71,14 @@ def changeDegreeEquiv (hP : d.monoid = e.monoid) :
     (changeDegree_completedMap_self e d ℒ hP.symm)
 
 /-- The forward comparison is the completed map of the identity Lie homomorphism. -/
-theorem changeDegreeEquiv_apply (hP : d.monoid = e.monoid) (x : d.completedBCHGroup ℒ) :
+theorem _root_.TauCeti.PositiveDegrees.changeDegreeEquiv_apply
+    (hP : d.monoid = e.monoid) (x : d.completedBCHGroup ℒ) :
     d.changeDegreeEquiv e ℒ hP x = (GradedLieHom.changeDegree d e hP ℒ).completedMap x :=
   (rfl)
 
 /-- Reversing the change of degree gives the inverse comparison. -/
 @[simp]
-theorem changeDegreeEquiv_symm (hP : d.monoid = e.monoid) :
+theorem _root_.TauCeti.PositiveDegrees.changeDegreeEquiv_symm (hP : d.monoid = e.monoid) :
     (d.changeDegreeEquiv e ℒ hP).symm = e.changeDegreeEquiv d ℒ hP.symm := by
   apply MulEquiv.ext
   intro x
@@ -79,16 +86,17 @@ theorem changeDegreeEquiv_symm (hP : d.monoid = e.monoid) :
 
 /-- Projection computes the comparison at the canonical finite-maximum source cutoff. -/
 @[simp]
-theorem projection_changeDegreeEquiv (hP : d.monoid = e.monoid) (k : ℕ)
+theorem _root_.TauCeti.PositiveDegrees.projection_changeDegreeEquiv
+    (hP : d.monoid = e.monoid) (k : ℕ)
     (x : d.completedBCHGroup ℒ) :
-    CompletedGroup.projection k (d.changeDegreeEquiv e ℒ hP x) =
-      ((GradedLieHom.changeDegree d e hP ℒ).truncatedMap k le_rfl).bchGroupMap
-        (CompletedGroup.projection ((PositiveDegreeMap.changeDegree d e hP).modulus k) x) :=
+    projection k (d.changeDegreeEquiv e ℒ hP x) =
+      ((GradedLieHom.changeDegree d e hP ℒ).lieTruncatedMap k le_rfl).bchGroupMap
+        (projection ((PositiveDegreeMap.changeDegree d e hP).modulus k) x) :=
   GradedLieHom.projection_completedMap _ k x
 
 /-- Changing to the same degree function is the identity. -/
 @[simp]
-theorem changeDegreeEquiv_refl :
+theorem _root_.TauCeti.PositiveDegrees.changeDegreeEquiv_refl :
     d.changeDegreeEquiv d ℒ rfl = MulEquiv.refl (d.completedBCHGroup ℒ) := by
   apply MulEquiv.ext
   intro x
@@ -99,7 +107,8 @@ theorem changeDegreeEquiv_refl :
 
 /-- Successive changes of degree agree with the direct change. -/
 @[simp]
-theorem changeDegreeEquiv_trans (hde : d.monoid = e.monoid) (hep : e.monoid = p.monoid) :
+theorem _root_.TauCeti.PositiveDegrees.changeDegreeEquiv_trans
+    (hde : d.monoid = e.monoid) (hep : e.monoid = p.monoid) :
     (d.changeDegreeEquiv e ℒ hde).trans (e.changeDegreeEquiv p ℒ hep) =
       d.changeDegreeEquiv p ℒ (hde.trans hep) := by
   apply MulEquiv.ext
@@ -112,32 +121,35 @@ theorem changeDegreeEquiv_trans (hde : d.monoid = e.monoid) (hep : e.monoid = p.
 
 /-- The comparison commutes with the canonical exponential map from the Lie algebra. -/
 @[simp]
-theorem changeDegreeEquiv_expToCompletion (hP : d.monoid = e.monoid) (x : L) :
+theorem _root_.TauCeti.PositiveDegrees.changeDegreeEquiv_expToCompletion
+    (hP : d.monoid = e.monoid) (x : L) :
     d.changeDegreeEquiv e ℒ hP (d.expToCompletion ℒ x) = e.expToCompletion ℒ x := by
   rw [changeDegreeEquiv_apply, GradedLieHom.completedMap_expToCompletion]
   simp
 
 /-- The canonical cutoff modulus controls the change in the completed filtrations.
 Applying this also in reverse proves that the two filtrations are cofinal. -/
-theorem changeDegreeEquiv_mem_degreeFiltration (hP : d.monoid = e.monoid) (k : ℕ)
+theorem _root_.TauCeti.PositiveDegrees.changeDegreeEquiv_mem_degreeFiltration
+    (hP : d.monoid = e.monoid) (k : ℕ)
     {x : d.completedBCHGroup ℒ}
-    (hx : x ∈ CompletedGroup.degreeFiltration (d.groupTower ℒ)
+    (hx : x ∈ TauCeti.CompletedGroup.degreeFiltration (d.groupTower ℒ)
       ((PositiveDegreeMap.changeDegree d e hP).modulus k + 1)) :
     d.changeDegreeEquiv e ℒ hP x ∈
-      CompletedGroup.degreeFiltration (e.groupTower ℒ) (k + 1) :=
+      TauCeti.CompletedGroup.degreeFiltration (e.groupTower ℒ) (k + 1) :=
   (GradedLieHom.changeDegree d e hP ℒ).completedMap_mem_degreeFiltration k hx
 
 variable {ι : Type*}
 
 /-- Finite support at each order is independent of the positive degree function. -/
 @[simp]
-theorem hasFiniteSupport_changeDegreeEquiv_iff (hP : d.monoid = e.monoid)
+theorem _root_.TauCeti.PositiveDegrees.hasFiniteSupport_changeDegreeEquiv_iff
+    (hP : d.monoid = e.monoid)
     (x : ι → d.completedBCHGroup ℒ) :
-    CompletedGroup.HasFiniteSupport (fun i => d.changeDegreeEquiv e ℒ hP (x i)) ↔
-      CompletedGroup.HasFiniteSupport x := by
+    TauCeti.CompletedGroup.HasFiniteSupport (fun i => d.changeDegreeEquiv e ℒ hP (x i)) ↔
+      TauCeti.CompletedGroup.HasFiniteSupport x := by
   constructor
   · intro hx
-    have h : CompletedGroup.HasFiniteSupport
+    have h : TauCeti.CompletedGroup.HasFiniteSupport
         (fun i => e.changeDegreeEquiv d ℒ hP.symm (d.changeDegreeEquiv e ℒ hP (x i))) := by
       simpa only [changeDegreeEquiv_apply] using
         (GradedLieHom.changeDegree e d hP.symm ℒ).hasFiniteSupport_completedMap hx
@@ -148,10 +160,11 @@ theorem hasFiniteSupport_changeDegreeEquiv_iff (hP : d.monoid = e.monoid)
 
 /-- The canonical comparison preserves convergent products with the smallest index leftmost. -/
 @[simp]
-theorem changeDegreeEquiv_orderedProd [LinearOrder ι] (hP : d.monoid = e.monoid)
-    (x : ι → d.completedBCHGroup ℒ) (hx : CompletedGroup.HasFiniteSupport x) :
-    d.changeDegreeEquiv e ℒ hP (CompletedGroup.orderedProd x hx) =
-      CompletedGroup.orderedProd (fun i => d.changeDegreeEquiv e ℒ hP (x i))
+theorem _root_.TauCeti.PositiveDegrees.changeDegreeEquiv_orderedProd [LinearOrder ι]
+    (hP : d.monoid = e.monoid)
+    (x : ι → d.completedBCHGroup ℒ) (hx : TauCeti.CompletedGroup.HasFiniteSupport x) :
+    d.changeDegreeEquiv e ℒ hP (TauCeti.CompletedGroup.orderedProd x hx) =
+      TauCeti.CompletedGroup.orderedProd (fun i => d.changeDegreeEquiv e ℒ hP (x i))
         ((d.hasFiniteSupport_changeDegreeEquiv_iff e ℒ hP x).mpr hx) :=
   GradedLieHom.completedMap_orderedProd _ x hx
 
@@ -162,21 +175,22 @@ variable (c : ℕ) [NeZero c]
 omit [Algebra ℚ R] [LieAlgebra ℚ L] [IsScalarTower ℚ R L] in
 /-- The ideal of terms of `c δ`-degree above `k` is that of `δ`-degree above `⌊k / c⌋`, so the
 order-`k` truncation for `c δ` is the order-`⌊k / c⌋` truncation for `δ`. -/
-theorem degreeIdeal_scale (k : ℕ) : (d.scale c).degreeIdeal ℒ k = d.degreeIdeal ℒ (k / c) :=
+theorem _root_.TauCeti.PositiveDegrees.degreeIdeal_scale
+    (k : ℕ) : (d.scale c).truncationIdeal ℒ k = d.truncationIdeal ℒ (k / c) :=
   LieSubmodule.toSubmodule_injective <| by
-    rw [degreeIdeal_toSubmodule, degreeIdeal_toSubmodule, degreeSubmodule_scale]
+    rw [truncationIdeal_toSubmodule, truncationIdeal_toSubmodule, degreeSubmodule_scale]
 
 omit [Algebra ℚ R] [LieAlgebra ℚ L] [IsScalarTower ℚ R L] in
 /-- The identity of Lie algebras from the order-`⌊k / c⌋` truncation for `δ` to the order-`k`
 truncation for `c δ` is bijective. -/
-theorem bijective_truncatedMap_changeDegree_scale (k : ℕ) :
+theorem _root_.TauCeti.PositiveDegrees.bijective_lieTruncatedMap_changeDegree_scale (k : ℕ) :
     Function.Bijective
-      ((GradedLieHom.changeDegree d (d.scale c) (d.scale_monoid c).symm ℒ).truncatedMap k
+      ((GradedLieHom.changeDegree d (d.scale c) (d.scale_monoid c).symm ℒ).lieTruncatedMap k
         (PositiveDegreeMap.changeDegree_scale_modulus_le d c k)) := by
   refine ⟨fun x y hxy => ?_, fun y => ?_⟩
   · induction x using Submodule.Quotient.induction_on
     induction y using Submodule.Quotient.induction_on
-    rw [GradedLieHom.truncatedMap_mk, GradedLieHom.truncatedMap_mk,
+    rw [GradedLieHom.lieTruncatedMap_mk, GradedLieHom.lieTruncatedMap_mk,
       Submodule.Quotient.eq] at hxy
     rw [Submodule.Quotient.eq]
     simpa only [degreeIdeal_scale, GradedLieHom.changeDegree_apply] using hxy
@@ -185,27 +199,33 @@ theorem bijective_truncatedMap_changeDegree_scale (k : ℕ) :
 
 /-- At order `k`, the change of degree from `δ` to `c δ` is computed from the order-`⌊k / c⌋`
 projection. -/
-theorem projection_changeDegreeEquiv_scale (k : ℕ) (x : d.completedBCHGroup ℒ) :
-    CompletedGroup.projection k (d.changeDegreeEquiv (d.scale c) ℒ (d.scale_monoid c).symm x) =
-      ((GradedLieHom.changeDegree d (d.scale c) (d.scale_monoid c).symm ℒ).truncatedMap k
+theorem _root_.TauCeti.PositiveDegrees.projection_changeDegreeEquiv_scale
+    (k : ℕ) (x : d.completedBCHGroup ℒ) :
+    projection k (d.changeDegreeEquiv (d.scale c) ℒ (d.scale_monoid c).symm x) =
+      ((GradedLieHom.changeDegree d (d.scale c) (d.scale_monoid c).symm ℒ).lieTruncatedMap k
         (PositiveDegreeMap.changeDegree_scale_modulus_le d c k)).bchGroupMap
-          (CompletedGroup.projection (k / c) x) :=
+          (projection (k / c) x) :=
   GradedLieHom.projection_completedMap_of_le _ k _ x
 
 /-- At order `k`, the change of degree from `c δ` back to `δ` is computed from the order-`c k`
 projection. -/
-theorem projection_changeDegreeEquiv_scale_symm (k : ℕ) (x : (d.scale c).completedBCHGroup ℒ) :
-    CompletedGroup.projection k ((d.scale c).changeDegreeEquiv d ℒ (d.scale_monoid c) x) =
-      ((GradedLieHom.changeDegree (d.scale c) d (d.scale_monoid c) ℒ).truncatedMap k
+theorem _root_.TauCeti.PositiveDegrees.projection_changeDegreeEquiv_scale_symm
+    (k : ℕ) (x : (d.scale c).completedBCHGroup ℒ) :
+    projection k ((d.scale c).changeDegreeEquiv d ℒ (d.scale_monoid c) x) =
+      ((GradedLieHom.changeDegree (d.scale c) d (d.scale_monoid c) ℒ).lieTruncatedMap k
         (PositiveDegreeMap.changeDegree_scale_symm_modulus_le d c k)).bchGroupMap
-          (CompletedGroup.projection (c * k) x) :=
+          (projection (c * k) x) :=
   GradedLieHom.projection_completedMap_of_le _ k _ x
 
 end Scale
 
 end PositiveDegrees
 
-namespace GradedLieHom
+end Mei
+
+namespace TauCeti.GradedLieHom
+
+open Mei
 
 variable {N M R : Type*} {L L' : Type u}
   [AddCommMonoid N] [AddCommMonoid M] [CommRing R] [Algebra ℚ R]
@@ -232,5 +252,4 @@ theorem changeDegreeEquiv_naturality (hP : d.monoid = e.monoid)
   simpa only [completedMap_comp, MonoidHom.comp_apply, ← PositiveDegrees.changeDegreeEquiv_apply]
     using DFunLike.congr_fun h x
 
-end GradedLieHom
-end Mei
+end TauCeti.GradedLieHom

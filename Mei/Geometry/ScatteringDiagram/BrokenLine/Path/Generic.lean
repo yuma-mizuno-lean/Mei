@@ -35,6 +35,8 @@ anti-canonical class*, §3.2 (arXiv:1601.07081v4).
 
 public noncomputable section
 
+open TauCeti (IsRationalNormalPolyhedron IsRationalSemilinear)
+
 open Set Filter Topology Quiver Mei.Convex
 
 namespace Mei
@@ -56,7 +58,7 @@ variable {E Λ : Type*} [AddCommMonoid E] [Module R E]
   (α : E →ₗ[R] ℳ a i₀) (s : Finset (Path a b))
   [AddCommGroup Λ] {i : Λ →+ V} (h : TauCeti.Toric.IsIntegralLattice i)
   (w : ∀ q, ι q → Λ) [Finite J] [Finite K]
-  (hν : ∀ {b c : Q} (e : b ⟶ c), Toric.IsRationalFunctional h (ν e).toLinearMap)
+  (hν : ∀ {b c : Q} (e : b ⟶ c), TauCeti.Toric.IsRationalFunctional h (ν e).toLinearMap)
   (hP : ∀ {b c : Q} (e : b ⟶ c), IsRationalSemilinear h (P e))
   (hW : ∀ j, IsRationalNormalPolyhedron h (W j))
   (hS : ∀ j, IsRationalNormalPolyhedron h (S j))

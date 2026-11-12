@@ -26,6 +26,8 @@ curve counts*, §3.3.3 (arXiv:1503.06183). The group comparison specializes
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading SupportedRay)
+
 noncomputable section
 
 namespace Mei.ModuleProbe

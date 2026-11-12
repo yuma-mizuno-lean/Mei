@@ -38,11 +38,15 @@ is shared through `OrientedCell.exists_ball_disjoint_other_boundaryFacets`.
 
 public section
 
+open TauCeti (OrientedCell)
+
 noncomputable section
 
 open Set Module Topology
 
-namespace Mei.OrientedCell
+namespace TauCeti.OrientedCell
+
+open Mei
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
@@ -255,9 +259,11 @@ theorem exists_ball_sum_intersectionIndex_boundaryFacets_eq_sub_endpoints_of_reg
     intersectionIndex_singleton, intersectionIndex_singleton,
     (he (Metric.mem_ball.mp hx)).1, (he (Metric.mem_ball.mp hy)).1, sub_self]
 
-end Mei.OrientedCell
+end TauCeti.OrientedCell
 
-namespace Mei.PolyhedralCochain
+namespace TauCeti.PolyhedralCochain
+
+open Mei
 
 variable {N V R E : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
@@ -299,4 +305,4 @@ theorem exists_ball_intersectionPairing_coboundaryPresentation_eq_sub
       simp only [sub_smul, Finset.sum_sub_distrib,
         OrientedCell.intersectionPairing_apply, Finsupp.sum]
 
-end Mei.PolyhedralCochain
+end TauCeti.PolyhedralCochain

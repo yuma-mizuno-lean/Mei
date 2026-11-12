@@ -24,15 +24,19 @@ This is the generator formula only: descent through subdivision relations requir
 additional geometric cancellation results. In particular, no coboundary on the quotient of
 source presentations is defined here.
 
-The finite assembly uses `TauCeti.IsConvexPolyhedron.finite_exposed_sets`,
+The finite assembly uses `TauCeti.IsConvexPolyhedron.finite_setOf_isExposed`,
 `OrientedCell.boundaryFacet` and its reversal law, and Mathlib's `Finsupp.lsum`.
 -/
 
 public section
 
+open TauCeti (OrientedCell PolyhedralCochain)
+
 noncomputable section
 
-namespace Mei
+namespace TauCeti
+
+open Mei
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
@@ -150,4 +154,4 @@ theorem mapRange_coboundaryPresentation {F : Type*} [FunLike F E E'] [AddMonoidH
 
 end PolyhedralCochain
 
-end Mei
+end TauCeti

@@ -8,7 +8,7 @@ module
 public import Mei.Algebra.Lie.Free.Grading
 public import TauCeti.Algebra.Lie.LowerCentralSeries
 public import TauCeti.Algebra.Lie.Quotient
-public import Mei.Algebra.DirectSum.Degree.Basic
+public import TauCeti.Algebra.DirectSum.DegreeTail
 
 /-!
 # Word length and the lower central series of a free Lie algebra
@@ -90,15 +90,15 @@ theorem lowerCentralSeries_toSubmodule_eq_span_words (k : ℕ) :
 /-- Lower-central order `k` is the degree tail beginning at word length `k + 1`. -/
 theorem lowerCentralSeries_toSubmodule_eq_degreeTail (k : ℕ) :
     (LieModule.lowerCentralSeries R F F k).toSubmodule =
-      DirectSum.degreeTail (homogeneousSubmodule R S) (fun n => (n : ℤ)) (k + 1) := by
+      TauCeti.DirectSum.degreeTail (homogeneousSubmodule R S) (fun n => (n : ℤ)) (k + 1) := by
   rw [lowerCentralSeries_toSubmodule_eq_span_words]
   apply le_antisymm
   · apply Submodule.span_le.mpr
     rintro _ ⟨w, hw, rfl⟩
     simp only [Set.mem_ofPred_eq] at hw
-    exact DirectSum.le_degreeTail (homogeneousSubmodule R S) (fun n => (n : ℤ))
+    exact TauCeti.DirectSum.le_degreeTail (homogeneousSubmodule R S) (fun n => (n : ℤ))
       (by omega : ((k + 1 : ℕ) : ℤ) ≤ (w.length : ℤ)) (word_mem_homogeneousSubmodule R w)
-  · rw [DirectSum.degreeTail_def]
+  · rw [TauCeti.DirectSum.degreeTail_def]
     refine iSup_le fun n => iSup_le fun hn => ?_
     rw [homogeneousSubmodule_def]
     apply Submodule.span_mono
@@ -116,14 +116,14 @@ theorem iInf_lowerCentralSeries_eq_bot :
   apply le_antisymm _ bot_le
   have hle :
       (⨅ k : ℕ, (LieModule.lowerCentralSeries R F F k).toSubmodule) ≤
-        ⨅ k : ℕ, DirectSum.degreeTail (homogeneousSubmodule R S) (fun n => (n : ℤ)) k := by
+        ⨅ k : ℕ, TauCeti.DirectSum.degreeTail (homogeneousSubmodule R S) (fun n => (n : ℤ)) k := by
     apply le_iInf
     intro k x hx
     have hk := (iInf_le (fun k => (LieModule.lowerCentralSeries R F F k).toSubmodule) k) hx
     rw [lowerCentralSeries_toSubmodule_eq_degreeTail] at hk
-    exact DirectSum.degreeTail_antitone (homogeneousSubmodule R S) (fun n => (n : ℤ))
+    exact TauCeti.DirectSum.degreeTail_antitone (homogeneousSubmodule R S) (fun n => (n : ℤ))
       (Nat.le_succ k) hk
-  rwa [DirectSum.iInf_degreeTail_eq_bot] at hle
+  rwa [TauCeti.DirectSum.iInf_degreeTail_eq_bot] at hle
 
 variable {L : Type*} [LieRing L] [LieAlgebra R L]
 

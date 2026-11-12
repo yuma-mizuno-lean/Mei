@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mei.RingTheory.FilteredAlgebra.PowerSeries.Basic
-public import Mei.RingTheory.FilteredAlgebra.Map
+public import TauCeti.RingTheory.FilteredAlgebra.Map
 public import Mei.RingTheory.PowerSeries.Nilpotent.Map
 
 /-!
@@ -21,7 +21,7 @@ coefficient algebras is assumed.
 
 public section
 
-namespace Mei.AlgFiltration
+namespace TauCeti.AlgFiltration
 
 variable {R S A B : Type*} [CommRing R] [CommRing S] [Ring A] [Ring B]
   [Algebra R A] [Algebra S B]
@@ -72,4 +72,4 @@ theorem mapCompletion_completedAeval_of_eq
   exact he.trans (congrArg (fun z => G.completedAeval z (PowerSeries.map φ H)) hy')
 
 
-end Mei.AlgFiltration
+end TauCeti.AlgFiltration

@@ -32,9 +32,15 @@ and `Reconstruction.Completion`. The finite construction follows Tom Bridgeland,
 
 public section
 
+open TauCeti (signSubalgebra signSubalgebra_eq_of_sign_eq)
+
+open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading GradedLieHom)
+
 noncomputable section
 
-namespace Mei.PositiveDegrees
+namespace TauCeti.PositiveDegrees
+
+open Mei
 
 open Set Filter Topology Mei.Convex
 
@@ -79,7 +85,7 @@ theorem eventually_signFactor_eq_of_notMem_arrangementComplex_walls {θ : V →L
   filter_upwards [eventually_all.mpr hrow] with φ hφ
   refine signFactorizationEquiv_symm_eq_of_signSubalgebra_eq ℒ _ d _ k
     (fun s' => signSubalgebra_eq_of_sign_eq _ _ _ (fun n hn => ?_) s') g s
-  simpa using hφ ⟨n, d.mem_cutoff_of_truncatedGrading_ne_bot ℒ hn⟩
+  simpa using hφ ⟨n, d.mem_cutoff_of_lieTruncationGrading_ne_bot ℒ hn⟩
 
 private def arrangementCellPoint (P : (d.arrangementComplex h k).cells) :
     intrinsicInterior ℝ (P : Set (V →L[ℝ] ℝ)) := by
@@ -112,7 +118,7 @@ theorem arrangementSignFactor_mem (g : d.truncatedGroup ℒ k)
     (P : (d.arrangementComplex h k).cells) {θ : V →L[ℝ] ℝ}
     (hθ : θ ∈ intrinsicInterior ℝ (P : Set (V →L[ℝ] ℝ))) (s : SignType) :
     d.arrangementSignFactor h ℒ g P s ∈
-      (signSubalgebra (d.truncatedGrading ℒ k) (θ.toAddMonoidHom.comp i) s).bchSubgroup := by
+      (signSubalgebra (d.lieTruncationGrading ℒ k) (θ.toAddMonoidHom.comp i) s).bchSubgroup := by
   rw [d.arrangementSignFactor_eq h ℒ g P hθ s]
   exact ((signFactorizationEquiv ℒ _ d k).symm g s).property
 
@@ -138,7 +144,7 @@ theorem arrangementSignFactor_one (P : (d.arrangementComplex h k).cells) (s : Si
 theorem arrangementSignFactor_zero_mem_orthogonal (g : d.truncatedGroup ℒ k)
     (P : (d.arrangementComplex h k).cells) :
     d.arrangementSignFactor h ℒ g P 0 ∈
-      (orthogonalLieSubalgebra (d.truncatedGrading ℒ k)
+      (orthogonalLieSubalgebra (d.lieTruncationGrading ℒ k)
         ((KSSpace.continuousDual h).evaluation '' (P : Set (V →L[ℝ] ℝ)))).bchSubgroup := by
   obtain ⟨θ, hθ⟩ := d.arrangementCellPoint h P
   have he : ((KSSpace.continuousDual h).evaluation : _ → _) =
@@ -155,8 +161,8 @@ theorem truncationMap_arrangementSignFactor (hkl : k ≤ l)
     (P : (d.arrangementComplex h k).cells) (Q : (d.arrangementComplex h l).cells)
     {θ : V →L[ℝ] ℝ} (hθP : θ ∈ intrinsicInterior ℝ (P : Set (V →L[ℝ] ℝ)))
     (hθQ : θ ∈ intrinsicInterior ℝ (Q : Set _)) (s : SignType) :
-    (d.truncationMap ℒ hkl).bchGroupMap (d.arrangementSignFactor h ℒ g Q s) =
-      d.arrangementSignFactor h ℒ ((d.truncationMap ℒ hkl).bchGroupMap g) P s := by
+    (d.lieTruncationMap ℒ hkl).bchGroupMap (d.arrangementSignFactor h ℒ g Q s) =
+      d.arrangementSignFactor h ℒ ((d.lieTruncationMap ℒ hkl).bchGroupMap g) P s := by
   rw [d.arrangementSignFactor_eq h ℒ g Q hθQ s,
     d.arrangementSignFactor_eq h ℒ _ P hθP s]
   exact truncationMap_signFactorizationEquiv_symm ℒ _ d hkl g s
@@ -219,8 +225,8 @@ theorem truncationMap_reconstructFinite_label (hkl : k ≤ l)
     (P : (d.arrangementComplex h k).walls) (Q : (d.arrangementComplex h l).walls)
     {θ : V →L[ℝ] ℝ} (hθP : θ ∈ intrinsicInterior ℝ (P : Set (V →L[ℝ] ℝ)))
     (hθQ : θ ∈ intrinsicInterior ℝ (Q : Set _)) :
-    (d.truncationMap ℒ hkl).bchGroupMap ((d.reconstructFinite h ℒ g).label Q) =
-      (d.reconstructFinite h ℒ ((d.truncationMap ℒ hkl).bchGroupMap g)).label P := by
+    (d.lieTruncationMap ℒ hkl).bchGroupMap ((d.reconstructFinite h ℒ g).label Q) =
+      (d.reconstructFinite h ℒ ((d.lieTruncationMap ℒ hkl).bchGroupMap g)).label P := by
   rw [d.reconstructFinite_label h ℒ g Q hθQ,
     d.reconstructFinite_label h ℒ _ P hθP]
   exact truncationMap_signFactorizationEquiv_symm ℒ _ d hkl g 0
@@ -234,7 +240,7 @@ coefficient changes, as an equality on the same geometric arrangement. -/
 theorem map_reconstructFinite
     (f : GradedLieHom (PositiveDegreeMap.id d) ℒ ℳ) (g : d.truncatedGroup ℒ k) :
     (d.reconstructFinite h ℒ g).map f =
-      d.reconstructFinite h ℳ ((f.truncatedMap k (by simp)).bchGroupMap g) := by
+      d.reconstructFinite h ℳ ((f.lieTruncatedMap k (by simp)).bchGroupMap g) := by
   ext P
   · rw [KSComplex.map_degree]
     rfl
@@ -242,6 +248,6 @@ theorem map_reconstructFinite
       ⟨P, (d.arrangementComplex h k).mem_cells_of_mem_walls P.property⟩
     rw [KSComplex.map_label, d.reconstructFinite_label h ℒ g P hθ,
       d.reconstructFinite_label h ℳ _ P hθ]
-    exact f.truncatedMap_signFactorizationEquiv_symm _ k g 0
+    exact f.lieTruncatedMap_signFactorizationEquiv_symm _ k g 0
 
-end Mei.PositiveDegrees
+end TauCeti.PositiveDegrees

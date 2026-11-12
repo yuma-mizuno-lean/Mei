@@ -24,6 +24,8 @@ change of basis `e₁ ↦ y`, `e₂ ↦ x`, carries the weights `(w₁, w₂)` t
 
 public section
 
+open TauCeti (PositiveDegrees)
+
 noncomputable section
 
 namespace Mei.StandardPlane

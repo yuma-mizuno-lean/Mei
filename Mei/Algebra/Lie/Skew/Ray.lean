@@ -32,6 +32,8 @@ The construction uses `ModuleFiltration.lift` for the compatible finite sums and
 
 public section
 
+open TauCeti (PositiveDegrees SupportedRay)
+
 noncomputable section
 
 namespace Mei.SkewLieAlgebra
@@ -45,7 +47,7 @@ variable {R Γ : Type*} [CommRing R] [AddCommGroup Γ]
 local notation "𝔤" => positiveLieAlgebra β hβ d
 local notation "ℒ" => positiveGrading β hβ d
 local notation "F" =>
-  LieIdeal.completionFiltration (d.degreeIdeal ℒ) (d.degreeIdeal_antitone ℒ)
+  LieIdeal.completionFiltration (d.truncationIdeal ℒ) (d.truncationIdeal_antitone ℒ)
 
 include hn hn0
 
@@ -98,17 +100,17 @@ variable [DecidableEq Γ]
 
 /-- Terms beyond order `k` lie in the degree ideal above `k`. -/
 theorem rayPartialSum_sub_mem {k l : ℕ} (h : k ≤ l) (f : R⟦X⟧) :
-    rayPartialSum β hβ hn hn0 l f - rayPartialSum β hβ hn hn0 k f ∈ d.degreeIdeal ℒ k := by
+    rayPartialSum β hβ hn hn0 l f - rayPartialSum β hβ hn hn0 k f ∈ d.truncationIdeal ℒ k := by
   rw [rayPartialSum_apply, rayPartialSum_apply, ← Finset.sum_range_add_sum_Ico _ h,
     add_sub_cancel_left]
-  refine Submodule.sum_mem (d.degreeIdeal ℒ k).toSubmodule fun j hj => ?_
-  apply d.le_degreeIdeal ℒ (lt_of_le_of_lt _ (d.lt_degree_succ_nsmul hn hn0 j))
+  refine Submodule.sum_mem (d.truncationIdeal ℒ k).toSubmodule fun j hj => ?_
+  apply d.le_truncationIdeal ℒ (lt_of_le_of_lt _ (d.lt_degree_succ_nsmul hn hn0 j))
     (rayGenerator_mem β hβ hn hn0 j _)
   exact_mod_cast (Finset.mem_Ico.mp hj).1
 
 /-- The completed Lie element `∑_{j ≥ 1} f_j X_{jn}` of a power series `f`. -/
 def raySeries : R⟦X⟧ →ₗ[R] d.completedLie ℒ :=
-  (F).lift (fun k => (d.degreeIdeal ℒ k).toSubmodule.mkQ ∘ₗ rayPartialSum β hβ hn hn0 k) (by
+  (F).lift (fun k => (d.truncationIdeal ℒ k).toSubmodule.mkQ ∘ₗ rayPartialSum β hβ hn hn0 k) (by
     intro k l h
     ext f
     simp only [LinearMap.comp_apply, Submodule.mkQ_apply,
@@ -118,9 +120,9 @@ def raySeries : R⟦X⟧ →ₗ[R] d.completedLie ℒ :=
 /-- At order `k`, the ray series is the class of its partial sum over `j < k`. -/
 @[simp]
 theorem completionProjection_raySeries (k : ℕ) (f : R⟦X⟧) :
-    LieIdeal.completionProjection (d.degreeIdeal ℒ) (d.degreeIdeal_antitone ℒ) k
+    LieIdeal.completionProjection (d.truncationIdeal ℒ) (d.truncationIdeal_antitone ℒ) k
         (raySeries β hβ hn hn0 f) =
-      (d.degreeIdeal ℒ k).mkQ (rayPartialSum β hβ hn hn0 k f) := by
+      (d.truncationIdeal ℒ k).mkQ (rayPartialSum β hβ hn hn0 k f) := by
   rw [LieIdeal.completionProjection_apply, raySeries, Mei.ModuleFiltration.projection_lift]
   -- The submodule quotient map is the underlying map of the Lie quotient map.
   rfl
@@ -165,8 +167,8 @@ theorem rayExp_congr_degree {n₁ n₂ : Γ} (h : n₁ = n₂) (hn₁ : n₁ ∈
 /-- At order `k`, a ray label is the exponential of the partial sum over `j < k`. -/
 @[simp]
 theorem projection_rayExp (k : ℕ) (f : R⟦X⟧) :
-    CompletedGroup.projection k (rayExp β hβ hn hn0 f) =
-      BCHGroup.exp ((d.degreeIdeal ℒ k).mkQ (rayPartialSum β hβ hn hn0 k f)) := by
+    TauCeti.CompletedGroup.projection k (rayExp β hβ hn hn0 f) =
+      BCHGroup.exp ((d.truncationIdeal ℒ k).mkQ (rayPartialSum β hβ hn hn0 k f)) := by
   rw [rayExp, PositiveDegrees.projection_completedBCHExp, completionProjection_raySeries]
 
 @[simp]
@@ -206,9 +208,9 @@ theorem commute_rayExp_of_eq_zero {n' : Γ} (hn' : n' ∈ d.monoid) (hn0' : n' �
 
 /-- Logarithm of the order-`k` projection, for reading coefficients. -/
 private theorem log_projection_rayExp (k : ℕ) (f : R⟦X⟧) :
-    (d.degreeIdeal ℒ k).mkQ (rayPartialSum β hβ hn hn0 k f) =
-      BCHGroup.log (L := d.truncatedLie ℒ k)
-        (CompletedGroup.projection k (rayExp β hβ hn hn0 f)) := by
+    (d.truncationIdeal ℒ k).mkQ (rayPartialSum β hβ hn hn0 k f) =
+      BCHGroup.log (L := d.lieTruncation ℒ k)
+        (TauCeti.CompletedGroup.projection k (rayExp β hβ hn hn0 f)) := by
   rw [projection_rayExp, BCHGroup.log_exp]
 
 /-- The logarithmic coefficient of a ray label in degree `(j+1)n` is `f_{j+1} X_{(j+1)n}`. -/
@@ -243,7 +245,7 @@ theorem logComponent_rayExp_eq_zero_of_forall_ne (f : R⟦X⟧) {m : Γ}
 /-- A ray label lies in the degree filtration above every order below the degree of `n`:
 its logarithmic coefficients vanish in all smaller degrees. -/
 theorem rayExp_mem_degreeFiltration (f : R⟦X⟧) {a : ℕ} (ha : (a : ℤ) < d.degree n) :
-    rayExp β hβ hn hn0 f ∈ CompletedGroup.degreeFiltration (d.groupTower ℒ) (a + 1) := by
+    rayExp β hβ hn hn0 f ∈ TauCeti.CompletedGroup.degreeFiltration (d.groupTower ℒ) (a + 1) := by
   refine d.mem_degreeFiltration_succ_iff.mpr fun m hm => ?_
   refine logComponent_rayExp_eq_zero_of_forall_ne β hβ hn hn0 f fun j hj => ?_
   have h := d.degree_pos hn hn0
@@ -256,9 +258,9 @@ regardless of the coefficients of its power series. -/
 @[simp↓] -- Discard high-degree rays before expanding their partial sums.
 theorem projection_rayExp_eq_one_of_lt (f : R⟦X⟧) {k : ℕ}
     (hk : (k : ℤ) < d.degree n) :
-    CompletedGroup.projection k (rayExp β hβ hn hn0 f) = 1 := by
+    TauCeti.CompletedGroup.projection k (rayExp β hβ hn hn0 f) = 1 := by
   exact MonoidHom.mem_ker.mp (by
-    simpa only [CompletedGroup.degreeFiltration_succ] using
+    simpa only [TauCeti.CompletedGroup.degreeFiltration_succ] using
       rayExp_mem_degreeFiltration β hβ hn hn0 f hk)
 
 /-- A ray label lies in the completed subgroup of the supported ray through `n`. -/

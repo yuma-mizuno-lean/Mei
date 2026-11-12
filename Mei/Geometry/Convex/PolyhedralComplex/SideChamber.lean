@@ -20,7 +20,7 @@ Consequently an admissible segment crossing exactly one wall, with positive norm
 velocity, runs from the negative to the positive chamber of that wall.
 
 Chambers are the connected components of the wall complement
-(`Mei.Convex.WallComplement.Chamber`), so no covering hypothesis on the complex is
+(`TauCeti.WallComplement.Chamber`), so no covering hypothesis on the complex is
 needed, and the two chambers of a wall may coincide. Near a relative interior point, a
 ball meets no other wall (`FinitePolyhedralComplex.exists_isolating_ball`); its open
 half on the positive side is convex and avoids every wall. Overlapping half-balls along
@@ -32,9 +32,11 @@ interiors.
 
 public section
 
+open TauCeti (WallComplement)
+
 noncomputable section
 
-open Set Filter Topology Mei.Convex Mei.Convex.WallComplement
+open Set Filter Topology Mei.Convex TauCeti.WallComplement
 
 namespace Mei.FinitePolyhedralComplex
 

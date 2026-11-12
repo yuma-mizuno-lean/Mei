@@ -30,9 +30,17 @@ its central coefficient and exchanges the incident chambers.
 
 public section
 
+open TauCeti (OrientedCell)
+
+open TauCeti (WallComplement)
+
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
-open Set Mei.Convex WallComplement
+open Set Mei.Convex TauCeti.WallComplement
 
 namespace Mei.DirectedDiagram
 
@@ -53,7 +61,7 @@ variable {Γ Λ R L V ι : Type*} [AddCommGroup Γ] [AddCommGroup Λ]
   (ht : ∀ (P : (D.adaptedComplex (k + 1)).cellsOfCodimension 0)
     (x : WallComplement (fun j : D.active k => (D.wall j).support)),
     x.val ∈ interior (P : Set V) →
-    (d.truncationMap ℒ (Nat.le_succ k)).bchGroupMap (t P) = D.levelTransport k hk b x)
+    (d.lieTruncationMap ℒ (Nat.le_succ k)).bchGroupMap (t P) = D.levelTransport k hk b x)
   {x y : WallComplement (fun Q : (D.adaptedComplex (k + 1)).walls => (Q : Set V))}
 
 /-- A single adapted-wall crossing extracts the signed central coefficient
@@ -62,7 +70,7 @@ including the cells the segment misses. -/
 theorem intersectionPairing_crossingDefect_of_crossings_singleton
     (e : x ⟶ y) (Q : (D.adaptedComplex (k + 1)).walls) (s : ℝ)
     (he : crossings x y = {(Q, s)}) :
-    (∀ P, (σ P).IsTransverse ![x.val, y.val]) ∧
+    (∀ P, (σ P).IsTransverseToCarrier ![x.val, y.val]) ∧
     OrientedCell.intersectionPairing (R := R) ![x.val, y.val]
         (∑ P, Finsupp.single (σ P) ((cross P).defect hk b t ht)) =
       (SignType.sign (h.realCharacter (cross Q).normal (y.val - x.val)) : ℤ) •
@@ -97,7 +105,7 @@ theorem intersectionPairing_eq_log_defect_of_positive_crossing
     y.val ∈ interior ((cross Q).plus : Set V) ∧
     ((OrientedCell.intersectionPairing (R := R) ![x.val, y.val]
       (∑ P, Finsupp.single (σ P) ((cross P).defect hk b t ht)) :
-        (d.truncationMap ℒ (Nat.le_succ k)).ker) : d.truncatedLie ℒ (k + 1)) =
+        (d.lieTruncationMap ℒ (Nat.le_succ k)).ker) : d.lieTruncation ℒ (k + 1)) =
       BCHGroup.log ((t (cross Q).plus)⁻¹ *
         D.levelPathProduct (k + 1) (((D.adaptedPathPrefunctor (k + 1)).map e).toPath) *
         t (cross Q).minus) := by
@@ -123,7 +131,7 @@ theorem intersectionPairing_eq_log_defect_of_negative_crossing
     y.val ∈ interior ((cross Q).minus : Set V) ∧
     ((OrientedCell.intersectionPairing (R := R) ![x.val, y.val]
       (∑ P, Finsupp.single (σ P) ((cross P).defect hk b t ht)) :
-        (d.truncationMap ℒ (Nat.le_succ k)).ker) : d.truncatedLie ℒ (k + 1)) =
+        (d.lieTruncationMap ℒ (Nat.le_succ k)).ker) : d.lieTruncation ℒ (k + 1)) =
       BCHGroup.log ((t (cross Q).minus)⁻¹ *
         D.levelPathProduct (k + 1) (((D.adaptedPathPrefunctor (k + 1)).map e).toPath) *
         t (cross Q).plus) := by
@@ -155,7 +163,7 @@ theorem intersectionPairing_eq_zero_of_crossings_eq_empty
     (P : (D.adaptedComplex (k + 1)).cellsOfCodimension 0)
     (hx : x.val ∈ interior (P : Set V)) :
     y.val ∈ interior (P : Set V) ∧
-    (∀ Q, (σ Q).IsTransverse ![x.val, y.val]) ∧
+    (∀ Q, (σ Q).IsTransverseToCarrier ![x.val, y.val]) ∧
     OrientedCell.intersectionPairing (R := R) ![x.val, y.val]
       (∑ Q, Finsupp.single (σ Q) ((cross Q).defect hk b t ht)) = 0 ∧
     D.levelPathProduct (k + 1) (((D.adaptedPathPrefunctor (k + 1)).map e).toPath) = 1 := by
@@ -171,7 +179,7 @@ theorem intersectionPairing_eq_zero_of_crossings_eq_empty
     simpa only [AffineMap.lineMap_apply_one] using
       (D.adaptedComplex (k + 1)).lineMap_mem_interior_of_crossings_eq_empty
         P.property hx he 1 (by simp)
-  refine ⟨hyP, fun Q => (σ Q).isTransverse_of_disjoint (hdisj Q), ?_, ?_⟩
+  refine ⟨hyP, fun Q => (σ Q).isTransverseToCarrier_of_disjoint (hdisj Q), ?_, ?_⟩
   · simp only [map_sum, OrientedCell.intersectionPairing_single,
       OrientedCell.intersectionIndex_of_disjoint (hdisj _), zero_smul, Finset.sum_const_zero]
   · obtain ⟨e', he'⟩ := D.exists_segment_levelPathProduct_eq_one_of_mem_interior_adapted
@@ -194,7 +202,7 @@ theorem intersectionPairing_eq_log_defect_of_subsingleton_crossings
     (hx : x.val ∈ interior (P : Set V)) (hy : y.val ∈ interior (Q : Set V)) :
     ((OrientedCell.intersectionPairing (R := R) ![x.val, y.val]
       (∑ W, Finsupp.single (σ W) ((cross W).defect hk b t ht)) :
-        (d.truncationMap ℒ (Nat.le_succ k)).ker) : d.truncatedLie ℒ (k + 1)) =
+        (d.lieTruncationMap ℒ (Nat.le_succ k)).ker) : d.lieTruncation ℒ (k + 1)) =
       BCHGroup.log ((t Q)⁻¹ *
         D.levelPathProduct (k + 1) (((D.adaptedPathPrefunctor (k + 1)).map e).toPath) * t P) := by
   have hcell (A B : (D.adaptedComplex (k + 1)).cellsOfCodimension 0) {z : V}

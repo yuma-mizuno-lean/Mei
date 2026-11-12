@@ -42,6 +42,8 @@ anti-canonical class*, §1 (arXiv:1601.07081v4).
 
 public section
 
+open TauCeti.Toric (IntegralAffineEquiv)
+
 open Set Topology Manifold
 
 namespace Mei.Toric

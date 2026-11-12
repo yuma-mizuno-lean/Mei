@@ -5,185 +5,25 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.Toric.Algebraic.RationalFunctional
+public import TauCeti.Geometry.Toric.Algebraic.IntegralAffine
+public import Mei.Geometry.Toric.Algebraic.Lattice
 public import Mei.Analysis.Convex.Exposed
-public import Mathlib.Analysis.Normed.Affine.AddTorsorBases
-public import Mathlib.Analysis.Normed.Module.FiniteDimension
 
 /-!
-# Integral affine equivalences
+# Lattice lifts and translations of integral affine equivalences
 
-An integral affine equivalence is a real affine equivalence together with an
-isomorphism of the integral lattices compatible with its linear part. Its
-translation is arbitrary. Both directions pull rational functionals back to
-rational functionals. In normed spaces the integral lattice supplies finite
-dimensionality and hence continuity without further assumptions. These
-equivalences preserve exposed subsets. Self-equivalences form a group whose
-integral lattice map is split surjective, with the real translations as its kernel.
+Scalar extension lifts integral linear automorphisms to zero-translation affine
+automorphisms. Translations form the kernel of the projection to the lattice
+automorphism group. Integral affine transport also preserves exposed subsets.
 -/
 
 public section
 
-namespace Mei.Toric
-
-open TauCeti.Toric
-
-section Algebra
-
-variable {N N' N'' V V' V'' : Type*}
-  [AddCommGroup N] [AddCommGroup N'] [AddCommGroup N'']
-  [AddCommGroup V] [AddCommGroup V'] [AddCommGroup V'']
-  [Module ℝ V] [Module ℝ V'] [Module ℝ V'']
-  {i : N →+ V} {i' : N' →+ V'} {i'' : N'' →+ V''}
-
-/-- An affine equivalence whose linear part identifies the integral lattices. -/
-structure IntegralAffineEquiv (h : IsIntegralLattice i) (h' : IsIntegralLattice i') where
-  /-- The underlying real affine equivalence, with arbitrary translation. -/
-  toAffineEquiv : V ≃ᵃ[ℝ] V'
-  /-- The isomorphism of the integral vectors. -/
-  latticeEquiv : N ≃+ N'
-  /-- Compatibility concerns the linear part, not the translated lattice points. -/
-  map_lattice : ∀ n, toAffineEquiv.linear (i n) = i' (latticeEquiv n)
-
-namespace IntegralAffineEquiv
-
-variable {h : IsIntegralLattice i} {h' : IsIntegralLattice i'}
-  {h'' : IsIntegralLattice i''}
-
-instance : CoeFun (IntegralAffineEquiv h h') (fun _ => V → V') :=
-  ⟨fun e => e.toAffineEquiv⟩
-
-/-- The real affine equivalence determines the integral lattice map uniquely. -/
-theorem toAffineEquiv_injective :
-    Function.Injective (toAffineEquiv : IntegralAffineEquiv h h' → V ≃ᵃ[ℝ] V') := by
-  rintro ⟨e, l, hl⟩ ⟨f, l', hl'⟩ (rfl : e = f)
-  obtain rfl : l = l' := AddEquiv.ext fun n => h'.injective <| by rw [← hl, ← hl']
-  rfl
-
-/-- Integral affine equivalences agreeing pointwise are equal. -/
-@[ext]
-theorem ext {e f : IntegralAffineEquiv h h'} (H : ∀ x, e x = f x) : e = f :=
-  toAffineEquiv_injective (AffineEquiv.ext H)
-
-/-- The real linear part is the canonical scalar extension of the integral lattice map. -/
-theorem linear_eq_extend (e : IntegralAffineEquiv h h') :
-    e.toAffineEquiv.linear.toLinearMap = h.extend i' e.latticeEquiv.toAddMonoidHom :=
-  h.eq_extend e.map_lattice
-
-/-- The identity preserves the integral lattice. -/
-def refl (h : IsIntegralLattice i) : IntegralAffineEquiv h h where
-  toAffineEquiv := AffineEquiv.refl ℝ V
-  latticeEquiv := AddEquiv.refl N
-  map_lattice _ := rfl
-
-/-- Inverting the affine and integral equivalences preserves compatibility. -/
-def symm (e : IntegralAffineEquiv h h') : IntegralAffineEquiv h' h where
-  toAffineEquiv := e.toAffineEquiv.symm
-  latticeEquiv := e.latticeEquiv.symm
-  map_lattice n := by
-    apply e.toAffineEquiv.linear.injective
-    simp [e.map_lattice]
-
-/-- Compose integral affine equivalences, applying the left one first. -/
-def trans (e : IntegralAffineEquiv h h') (f : IntegralAffineEquiv h' h'') :
-    IntegralAffineEquiv h h'' where
-  toAffineEquiv := e.toAffineEquiv.trans f.toAffineEquiv
-  latticeEquiv := e.latticeEquiv.trans f.latticeEquiv
-  map_lattice n := by
-    dsimp only [AffineEquiv.trans]
-    rw [LinearEquiv.trans_apply, e.map_lattice, f.map_lattice]
-    rfl
-
-/-- The identity has the identity affine equivalence. -/
-@[simp]
-theorem refl_toAffineEquiv (h : IsIntegralLattice i) :
-    (refl h).toAffineEquiv = AffineEquiv.refl ℝ V := (rfl)
-
-/-- The identity has the identity lattice equivalence. -/
-@[simp]
-theorem refl_latticeEquiv (h : IsIntegralLattice i) :
-    (refl h).latticeEquiv = AddEquiv.refl N := (rfl)
-
-/-- Inversion inverts the underlying affine equivalence. -/
-@[simp]
-theorem symm_toAffineEquiv (e : IntegralAffineEquiv h h') :
-    e.symm.toAffineEquiv = e.toAffineEquiv.symm := (rfl)
-
-/-- Inversion inverts the lattice equivalence. -/
-@[simp]
-theorem symm_latticeEquiv (e : IntegralAffineEquiv h h') :
-    e.symm.latticeEquiv = e.latticeEquiv.symm := (rfl)
-
-/-- Composition composes the underlying affine equivalences. -/
-@[simp]
-theorem trans_toAffineEquiv (e : IntegralAffineEquiv h h') (f : IntegralAffineEquiv h' h'') :
-    (e.trans f).toAffineEquiv = e.toAffineEquiv.trans f.toAffineEquiv := (rfl)
-
-/-- Composition composes the lattice equivalences. -/
-@[simp]
-theorem trans_latticeEquiv (e : IntegralAffineEquiv h h') (f : IntegralAffineEquiv h' h'') :
-    (e.trans f).latticeEquiv = e.latticeEquiv.trans f.latticeEquiv := (rfl)
-
-/-- Inverting twice recovers the integral affine equivalence. -/
-@[simp]
-theorem symm_symm (e : IntegralAffineEquiv h h') : e.symm.symm = e := by
-  ext; rfl
-
-/-- Applying the inverse to an image recovers the original set carrier. -/
-@[simp↓]
-theorem symm_image_image (e : IntegralAffineEquiv h h') (P : Set V) :
-    e.symm '' (e '' P) = P :=
-  e.toAffineEquiv.toEquiv.symm_image_image P
-
-/-- Applying an equivalence after its inverse recovers the set carrier. -/
-@[simp↓]
-theorem image_symm_image (e : IntegralAffineEquiv h h') (P : Set V') :
-    e '' (e.symm '' P) = P :=
-  e.toAffineEquiv.toEquiv.image_symm_image P
-
-/-- Composition with the identity on the target changes nothing. -/
-@[simp]
-theorem trans_refl (e : IntegralAffineEquiv h h') : e.trans (refl h') = e := by
-  ext; rfl
-
-/-- Composition with the identity on the source changes nothing. -/
-@[simp]
-theorem refl_trans (e : IntegralAffineEquiv h h') : (refl h).trans e = e := by
-  ext; rfl
-
-/-- Composition with the inverse on the right gives the source identity. -/
-@[simp]
-theorem self_trans_symm (e : IntegralAffineEquiv h h') : e.trans e.symm = refl h := by
-  ext; simp [trans, symm, refl]
-
-/-- Composition with the inverse on the left gives the target identity. -/
-@[simp]
-theorem symm_trans_self (e : IntegralAffineEquiv h h') : e.symm.trans e = refl h' := by
-  ext; simp [trans, symm, refl]
-
-/-- Composition of integral affine equivalences is associative. -/
-theorem trans_assoc {N''' V''' : Type*} [AddCommGroup N'''] [AddCommGroup V''']
-    [Module ℝ V'''] {i''' : N''' →+ V'''} {h''' : IsIntegralLattice i'''}
-    (e : IntegralAffineEquiv h h') (f : IntegralAffineEquiv h' h'')
-    (g : IntegralAffineEquiv h'' h''') :
-    (e.trans f).trans g = e.trans (f.trans g) := by
-  ext; rfl
-
-/-- The linear part is rational relative to the given integral lattices. -/
-theorem isRationalLinearMap (e : IntegralAffineEquiv h h') :
-    IsRationalLinearMap h h' e.toAffineEquiv.linear.toLinearMap :=
-  .of_integral_compatible h h' e.latticeEquiv.toAddMonoidHom
-    e.toAffineEquiv.linear.toLinearMap e.map_lattice
-
-end IntegralAffineEquiv
-
-end Algebra
+namespace TauCeti.Toric
 
 /-! ### The integral affine symmetry group -/
 
 namespace IntegralAffineEquiv
-
-open TauCeti.Toric
 
 variable {N N' V V' : Type*} [AddCommGroup N] [AddCommGroup N']
   [AddCommGroup V] [AddCommGroup V'] [Module ℝ V] [Module ℝ V']
@@ -218,14 +58,17 @@ noncomputable def ofLatticeEquiv (h : IsIntegralLattice i) (h' : IsIntegralLatti
 @[simp] theorem ofLatticeEquiv_refl (h : IsIntegralLattice i) :
     ofLatticeEquiv h h (AddEquiv.refl N) = refl h := by
   apply toAffineEquiv_injective
-  exact congrArg LinearEquiv.toAffineEquiv (h.extendEquiv_refl)
+  rw [ofLatticeEquiv_toAffineEquiv, refl_toAffineEquiv, h.extendEquiv_refl]
+  rfl
 
 /-- Inversion commutes with the zero-translation extension of a lattice equivalence. -/
 @[simp] theorem ofLatticeEquiv_symm (h : IsIntegralLattice i)
     (h' : IsIntegralLattice i') (σ : N ≃+ N') :
     (ofLatticeEquiv h h' σ).symm = ofLatticeEquiv h' h σ.symm := by
   apply toAffineEquiv_injective
-  exact congrArg LinearEquiv.toAffineEquiv (h.extendEquiv_symm h' σ)
+  rw [symm_toAffineEquiv, ofLatticeEquiv_toAffineEquiv, ofLatticeEquiv_toAffineEquiv,
+    ← h.extendEquiv_symm h' σ]
+  rfl
 
 /-- Zero-translation extension respects composition between arbitrary integral lattices. -/
 @[simp] theorem ofLatticeEquiv_trans {N'' V'' : Type*} [AddCommGroup N'']
@@ -235,78 +78,22 @@ noncomputable def ofLatticeEquiv (h : IsIntegralLattice i) (h' : IsIntegralLatti
     (ofLatticeEquiv h h' σ).trans (ofLatticeEquiv h' h'' τ) =
       ofLatticeEquiv h h'' (σ.trans τ) := by
   apply toAffineEquiv_injective
-  exact congrArg LinearEquiv.toAffineEquiv (h.extendEquiv_trans h' h'' σ τ)
-
-/-- Integral affine self-equivalences form a group under function composition. -/
-instance (h : IsIntegralLattice i) : Group (IntegralAffineEquiv h h) where
-  mul e f := f.trans e
-  one := refl h
-  inv e := e.symm
-  mul_assoc e f g := (trans_assoc g f e).symm
-  one_mul := trans_refl
-  mul_one := refl_trans
-  inv_mul_cancel := self_trans_symm
+  rw [trans_toAffineEquiv, ofLatticeEquiv_toAffineEquiv, ofLatticeEquiv_toAffineEquiv,
+    ofLatticeEquiv_toAffineEquiv, ← h.extendEquiv_trans h' h'' σ τ]
+  rfl
 
 variable (h : IsIntegralLattice i)
-
-/-- Group multiplication agrees with composition, applying the right map first. -/
-theorem mul_def (e f : IntegralAffineEquiv h h) : e * f = f.trans e := (rfl)
-
-/-- The group identity is the identity integral affine equivalence. -/
-theorem one_def : (1 : IntegralAffineEquiv h h) = refl h := (rfl)
-
-/-- Group inversion agrees with the inverse integral affine equivalence. -/
-theorem inv_def (e : IntegralAffineEquiv h h) : e⁻¹ = e.symm := (rfl)
-
-/-- Multiplication composes the integral lattice equivalences. -/
-@[simp]
-theorem mul_latticeEquiv (e f : IntegralAffineEquiv h h) :
-    (e * f).latticeEquiv = f.latticeEquiv.trans e.latticeEquiv := (rfl)
-
-/-- Multiplication composes the real affine equivalences. -/
-@[simp]
-theorem mul_toAffineEquiv (e f : IntegralAffineEquiv h h) :
-    (e * f).toAffineEquiv = f.toAffineEquiv.trans e.toAffineEquiv := (rfl)
-
-/-- The group identity acts identically on the lattice. -/
-@[simp]
-theorem one_latticeEquiv :
-    (1 : IntegralAffineEquiv h h).latticeEquiv = AddEquiv.refl N := (rfl)
-
-/-- The group identity has the identity real affine equivalence. -/
-@[simp]
-theorem one_toAffineEquiv :
-    (1 : IntegralAffineEquiv h h).toAffineEquiv = AffineEquiv.refl ℝ V := (rfl)
-
-/-- The inverse group element inverts the lattice equivalence. -/
-@[simp]
-theorem inv_latticeEquiv (e : IntegralAffineEquiv h h) :
-    e⁻¹.latticeEquiv = e.latticeEquiv.symm := (rfl)
-
-/-- The inverse group element inverts the real affine equivalence. -/
-@[simp]
-theorem inv_toAffineEquiv (e : IntegralAffineEquiv h h) :
-    e⁻¹.toAffineEquiv = e.toAffineEquiv.symm := (rfl)
-
-/-- Multiplication applies the right-hand map first. -/
-@[simp↓]
-theorem mul_apply (e f : IntegralAffineEquiv h h) (x : V) :
-    (e * f) x = e (f x) := by rfl
-
-/-- The group identity is the identity on the ambient vector space. -/
-@[simp↓]
-theorem one_apply (x : V) : (1 : IntegralAffineEquiv h h) x = x := by rfl
 
 /-- Group inversion agrees with the existing inverse equivalence. -/
 @[simp↓]
 theorem inv_apply (e : IntegralAffineEquiv h h) (x : V) :
-    e⁻¹ x = e.symm x := by rfl
+    e⁻¹ x = e.symm x := by rw [inv_def]
 
 /-- Forgetting the integral data respects composition. -/
 def toAffineEquivHom : IntegralAffineEquiv h h →* (V ≃ᵃ[ℝ] V) where
   toFun := toAffineEquiv
-  map_one' := by rfl
-  map_mul' _ _ := by rfl
+  map_one' := one_toAffineEquiv
+  map_mul' := mul_toAffineEquiv
 
 /-- The affine homomorphism keeps the given real affine equivalence. -/
 @[simp] theorem toAffineEquivHom_apply (e : IntegralAffineEquiv h h) :
@@ -316,8 +103,8 @@ def toAffineEquivHom : IntegralAffineEquiv h h →* (V ≃ᵃ[ℝ] V) where
 Mathlib uses an additive group for `AddAut`, so its multiplicative tag records composition. -/
 def latticeHom : IntegralAffineEquiv h h →* Multiplicative (AddAut N) where
   toFun e := Multiplicative.ofAdd e.latticeEquiv
-  map_one' := by rfl
-  map_mul' _ _ := by rfl
+  map_one' := congrArg Multiplicative.ofAdd (one_latticeEquiv (h := h))
+  map_mul' e f := congrArg Multiplicative.ofAdd (mul_latticeEquiv e f)
 
 /-- The lattice homomorphism returns the specified integral lattice map. -/
 @[simp] theorem latticeHom_apply (e : IntegralAffineEquiv h h) :
@@ -328,7 +115,9 @@ noncomputable def latticeLift : Multiplicative (AddAut N) →* IntegralAffineEqu
   toFun σ := ofLatticeEquiv h h σ.toAdd
   map_one' := by
     exact ofLatticeEquiv_refl h
-  map_mul' σ τ := (ofLatticeEquiv_trans h h h τ.toAdd σ.toAdd).symm
+  map_mul' σ τ := by
+    rw [mul_def]
+    exact (ofLatticeEquiv_trans h h h τ.toAdd σ.toAdd).symm
 
 /-- The lifted lattice action evaluates by scalar extension. -/
 @[simp↓] theorem latticeLift_apply (σ : Multiplicative (AddAut N)) (x : V) :
@@ -360,9 +149,11 @@ def constVAddHom : Multiplicative V →* IntegralAffineEquiv h h where
       map_lattice _ := by rfl }
   map_one' := by
     apply toAffineEquiv_injective
+    rw [one_toAffineEquiv]
     exact AffineEquiv.constVAdd_zero ℝ V
   map_mul' v w := by
     apply toAffineEquiv_injective
+    rw [mul_toAffineEquiv]
     exact AffineEquiv.constVAdd_add ℝ V v.toAdd w.toAdd
 
 /-- The translation homomorphism acts by addition of its real vector. -/
@@ -419,56 +210,22 @@ variable {N N' V V' : Type*} [AddCommGroup N] [AddCommGroup N']
   {i : N →+ V} {i' : N' →+ V'}
   {h : IsIntegralLattice i} {h' : IsIntegralLattice i'}
 
-/-- Agreement on a nonempty open set determines the entire integral affine equivalence. -/
-theorem eq_of_eqOn_open {e f : IntegralAffineEquiv h h'} {s : Set V}
-    (hs : IsOpen s) (hne : s.Nonempty) (he : Set.EqOn e f s) : e = f := by
-  apply toAffineEquiv_injective
-  exact AffineEquiv.ext_on (hs.affineSpan_eq_top hne) e.toAffineEquiv f.toAffineEquiv he
-
-/-- Continuity follows from the finite dimensionality supplied by the lattice. -/
-theorem continuous (e : IntegralAffineEquiv h h') : Continuous e := by
-  let := h.finiteDimensional
-  exact e.toAffineEquiv.continuous_of_finiteDimensional
-
-/-- The continuous affine equivalence underlying an integral affine equivalence.
-This allows transport of topological constructions, such as admissible wall paths. -/
-def toContinuousAffineEquiv (e : IntegralAffineEquiv h h') : V ≃ᴬ[ℝ] V' :=
-  { e.toAffineEquiv with
-    continuous_toFun := e.continuous
-    continuous_invFun := e.symm.continuous }
-
+/-- The bundled continuous affine equivalence evaluates as the original map. -/
 @[simp]
 theorem toContinuousAffineEquiv_apply (e : IntegralAffineEquiv h h') (x : V) :
-    e.toContinuousAffineEquiv x = e x := (rfl)
+    e.toContinuousAffineEquiv x = e x :=
+  congrFun e.coe_toContinuousAffineEquiv x
 
+/-- Forgetting continuity recovers the underlying affine equivalence. -/
 @[simp]
 theorem toContinuousAffineEquiv_toAffineEquiv (e : IntegralAffineEquiv h h') :
-    e.toContinuousAffineEquiv.toAffineEquiv = e.toAffineEquiv := (rfl)
-
-/-- The underlying continuous affine map used to transport affine inequalities. -/
-def toContinuousAffineMap (e : IntegralAffineEquiv h h') : V →ᴬ[ℝ] V' :=
-  { e.toAffineEquiv.toAffineMap with cont := e.continuous }
-
-/-- Bundling continuity does not change evaluation. -/
-@[simp]
-theorem toContinuousAffineMap_apply (e : IntegralAffineEquiv h h') (x : V) :
-    e.toContinuousAffineMap x = e x := (rfl)
-
-/-- Forgetting continuity gives the original affine map. -/
-@[simp]
-theorem toContinuousAffineMap_toAffineMap (e : IntegralAffineEquiv h h') :
-    e.toContinuousAffineMap.toAffineMap = e.toAffineEquiv.toAffineMap := (rfl)
-
-/-- Rationality with the exact bundled continuous-map type, for use in public
-constructions without relying on unfolding the rational-map predicate. -/
-theorem isRational_toContinuousAffineMap (e : IntegralAffineEquiv h h') :
-    IsRationalLinearMap h h' e.toContinuousAffineMap.toAffineMap.linear := by
-  simpa only [toContinuousAffineMap_toAffineMap, AffineEquiv.linear_toAffineMap]
-    using e.isRationalLinearMap
+    e.toContinuousAffineEquiv.toAffineEquiv = e.toAffineEquiv := by
+  ext x
+  exact e.toContinuousAffineEquiv_apply x
 
 end IntegralAffineEquiv
 
-end Mei.Toric
+end TauCeti.Toric
 
 namespace IsExposed
 
@@ -480,8 +237,8 @@ variable {N N' V W : Type*} [AddCommGroup N] [AddCommGroup N']
 
 /-- Integral affine equivalences preserve actual exposed subsets. -/
 theorem image_integralAffineEquiv (hF : IsExposed ℝ P F)
-    (e : Mei.Toric.IntegralAffineEquiv h h') : IsExposed ℝ (e '' P) (e '' F) := by
+    (e : TauCeti.Toric.IntegralAffineEquiv h h') : IsExposed ℝ (e '' P) (e '' F) := by
   apply hF.image_affineEquiv e.toAffineEquiv
-  simpa only [Mei.Toric.IntegralAffineEquiv.symm_toAffineEquiv] using e.symm.continuous
+  simpa only [TauCeti.Toric.IntegralAffineEquiv.symm_toAffineEquiv] using e.symm.continuous
 
 end IsExposed

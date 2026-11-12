@@ -135,7 +135,7 @@ theorem rayIndex_eq_inv_gcd {m : Γ} (hm : m ≠ 0) :
 
 /-- A ray label of a plane degree lies in the degree filtration of its order. -/
 theorem dilogPow_mem_degreeFiltration (m : PlaneDegree w) (c : ℚ) :
-    dilogPow m c ∈ CompletedGroup.degreeFiltration
+    dilogPow m c ∈ TauCeti.CompletedGroup.degreeFiltration
       ((plane w).groupTower (SkewLieAlgebra.positiveGrading β hβ (plane w))) m.deg := by
   have h := m.deg_pos
   obtain ⟨a, ha⟩ : ∃ a, m.deg = a + 1 := ⟨m.deg - 1, by omega⟩
@@ -146,7 +146,7 @@ theorem dilogPow_mem_degreeFiltration (m : PlaneDegree w) (c : ℚ) :
   omega
 
 theorem unitFactor_mem_degreeFiltration (m : PlaneDegree w) :
-    unitFactor m ∈ CompletedGroup.degreeFiltration
+    unitFactor m ∈ TauCeti.CompletedGroup.degreeFiltration
       ((plane w).groupTower (SkewLieAlgebra.positiveGrading β hβ (plane w))) m.deg :=
   dilogPow_mem_degreeFiltration m _
 

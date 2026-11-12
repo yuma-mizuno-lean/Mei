@@ -12,17 +12,18 @@ public import Mathlib.Algebra.MonoidAlgebra.Defs
 # Monomials over the nonnegative integers
 
 The monoid algebra `A[nonnegIntegers.monoid]` of the nonnegative integers
-`Mei.PositiveDegrees.nonnegIntegers` is the polynomial ring in one variable. This file names
-the natural exponents (`Mei.PositiveDegrees.nonnegIntegers.natExponent`) and the variable
-`Mei.PositiveDegrees.nonnegIntegers.X`, the monomial of exponent `1`, whose powers are the
-monomials of natural exponent (`Mei.PositiveDegrees.nonnegIntegers.X_pow`).
+`TauCeti.PositiveDegrees.nonnegIntegers` is the polynomial ring in one variable. This file names
+the natural exponents (`TauCeti.PositiveDegrees.nonnegIntegers.natExponent`) and the variable
+`TauCeti.PositiveDegrees.nonnegIntegers.X`, the monomial of exponent `1`, whose powers are the
+monomials of natural exponent (`TauCeti.PositiveDegrees.nonnegIntegers.X_pow`).
 -/
 
 public section
 
 noncomputable section
 
-namespace Mei.PositiveDegrees.nonnegIntegers
+namespace TauCeti.PositiveDegrees.nonnegIntegers
+
 
 open _root_.AddMonoidAlgebra
 
@@ -65,4 +66,4 @@ theorem X_def : X A = single (natExponent 1) 1 :=
 theorem X_pow (j : ℕ) : X A ^ j = single (natExponent j) 1 := by
   simp [X_def]
 
-end Mei.PositiveDegrees.nonnegIntegers
+end TauCeti.PositiveDegrees.nonnegIntegers

@@ -18,6 +18,8 @@ inherits wall annihilation, with no positivity or nilpotence hypothesis.
 
 public noncomputable section
 
+open TauCeti (DirectedWallSpaces)
+
 namespace Mei.GradedOperators
 
 variable {R H M Γ L Λ : Type*} [CommRing R] [AddCommGroup H] [Module R H]

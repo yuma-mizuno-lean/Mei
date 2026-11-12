@@ -43,9 +43,15 @@ the escape step is `DirectedWall.wallCrossingSum_eq_zero_of_outgoing`.
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath)
+
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
-open Set Mei Mei.Convex WallComplement BCHGroup
+open Set Mei Mei.Convex TauCeti.WallComplement BCHGroup
 open scoped symmDiff
 
 namespace Mei.DirectedDiagram
@@ -63,7 +69,7 @@ variable {Γ Λ R L V ι : Type*} [AddCommGroup Γ] [AddCommGroup Λ]
 walls. -/
 private def indicatorLabel (s : Set ι) [DecidablePred (· ∈ s)] (k : ℕ) (j : F.active k) :
     d.truncatedGroup ℒ k :=
-  if j.val ∈ s then CompletedGroup.projection k (F.wall j).label else 1
+  if j.val ∈ s then TauCeti.CompletedGroup.projection k (F.wall j).label else 1
 
 private theorem lie_log_indicatorLabel (s : Set ι) [DecidablePred (· ∈ s)] (k : ℕ)
     (j j' : F.active k)
@@ -94,11 +100,11 @@ private theorem truncation_wallPathProduct_indicatorLabel_eq {s t : Set ι}
     (hk : (F.restrict s).LevelEquivalent (F.restrict t) k)
     {x y : WallComplement (fun j : F.active (k + 1) => (F.wall j).support)}
     (r : AdmissiblePLPath x y) :
-    (d.truncationMap ℒ (Nat.le_succ k)).bchGroupMap
+    (d.lieTruncationMap ℒ (Nat.le_succ k)).bchGroupMap
         (r.wallPathProduct (fun j : F.active (k + 1) => h.realCharacter (F.wall j).normal)
           (F.indicatorLabel s (k + 1)) fun j j' hjj' =>
             commute_of_lie_log_eq_zero _ _ (F.lie_log_indicatorLabel s (k + 1) j j' hjj')) =
-      (d.truncationMap ℒ (Nat.le_succ k)).bchGroupMap
+      (d.lieTruncationMap ℒ (Nat.le_succ k)).bchGroupMap
         (r.wallPathProduct (fun j : F.active (k + 1) => h.realCharacter (F.wall j).normal)
           (F.indicatorLabel t (k + 1)) fun j j' hjj' =>
             commute_of_lie_log_eq_zero _ _ (F.lie_log_indicatorLabel t (k + 1) j j' hjj')) := by
@@ -143,26 +149,26 @@ private theorem wallPathProduct_indicatorLabel_eq {s t : Set ι} [DecidablePred 
       (q : AdmissiblePLPath u v) := q.log_wallPathProduct_mul_inv_eq_wallCrossingSum_sub
     (fun j : F.active (k + 1) => (F.wall j).isConvexPolyhedron.isClosed) ν a b
     (F.lie_log_indicatorLabel s (k + 1)) (F.lie_log_indicatorLabel t (k + 1))
-    (d.truncationMap ℒ (Nat.le_succ k)) (d.ker_truncationMap_succ_le_center ℒ k)
+    (d.lieTruncationMap ℒ (Nat.le_succ k)) (d.ker_lieTruncationMap_succ_le_center ℒ k)
     fun e => truncation_wallPathProduct_indicatorLabel_eq hk e.toPath
   have hsum : r.wallCrossingSum ν c = 0 := by
-    rw [← DirectSum.sum_support_decompose (d.truncatedGrading ℒ (k + 1))
+    rw [← DirectSum.sum_support_decompose (d.lieTruncationGrading ℒ (k + 1))
       (r.wallCrossingSum ν c)]
     apply Finset.sum_eq_zero
     intro n _
-    let f := ((d.truncatedGrading ℒ (k + 1) n).subtype.comp
-      ((DirectSum.component R Γ (fun m => d.truncatedGrading ℒ (k + 1) m) n).comp
-        (DirectSum.decomposeLinearEquiv (d.truncatedGrading ℒ (k + 1))).toLinearMap)
+    let f := ((d.lieTruncationGrading ℒ (k + 1) n).subtype.comp
+      ((DirectSum.component R Γ (fun m => d.lieTruncationGrading ℒ (k + 1) m) n).comp
+        (DirectSum.decomposeLinearEquiv (d.lieTruncationGrading ℒ (k + 1))).toLinearMap)
       ).toAddMonoidHom
-    have hcomp (g : d.completedBCHGroup ℒ) : f (log (CompletedGroup.projection (k + 1) g)) =
-        (DirectSum.decompose (d.truncatedGrading ℒ (k + 1))
-          (log (CompletedGroup.projection (k + 1) g)) n : d.truncatedLie ℒ (k + 1)) :=
+    have hcomp (g : d.completedBCHGroup ℒ) : f (log (TauCeti.CompletedGroup.projection (k + 1) g)) =
+        (DirectSum.decompose (d.lieTruncationGrading ℒ (k + 1))
+          (log (TauCeti.CompletedGroup.projection (k + 1) g)) n : d.lieTruncation ℒ (k + 1)) :=
       -- `f` is the degree-`n` component map by construction.
       (rfl)
     -- A nonzero coefficient comes from a wall of exactly one subdiagram with `n` on its ray.
     have hwall (j : F.active (k + 1)) (hj : f (c j) ≠ 0) :
         (F.wall j).Outgoing ∧ n ∈ (F.wall j).ray.rayDegrees := by
-      have hne : f (log (CompletedGroup.projection (k + 1) (F.wall j).label)) ≠ 0 ∧
+      have hne : f (log (TauCeti.CompletedGroup.projection (k + 1) (F.wall j).label)) ≠ 0 ∧
           j.val ∈ s ∆ t := by
         by_cases hjs : j.val ∈ s <;> by_cases hjt : j.val ∈ t <;>
           simp_all [c, a, b, indicatorLabel, mem_symmDiff]

@@ -28,7 +28,7 @@ noncomputable section
 
 open scoped PowerSeries
 
-namespace Mei.AlgFiltration
+namespace TauCeti.AlgFiltration
 
 variable {R A : Type*} [CommRing R] [Ring A] [Algebra R A] (F : AlgFiltration A)
   (x : F.completionIdeal 1) (y : F.completion) (q : Rˣ)
@@ -96,4 +96,4 @@ theorem completedAeval_quantumDilogarithm_conj_of_nonpos (r : ℕ)
   exact h.trans (congrArg (fun t => y * t)
     (F.completedAeval_quantumDilogarithm_ratio_of_nonpos x q hq r))
 
-end Mei.AlgFiltration
+end TauCeti.AlgFiltration

@@ -18,6 +18,8 @@ hypothesis is needed; relative cutoff control is supplied by the positive degree
 -/
 
 public section
+
+open TauCeti (PositiveDegrees PositiveDegreeMap)
 noncomputable section
 
 namespace Mei.QuantumMonoidAlgebra

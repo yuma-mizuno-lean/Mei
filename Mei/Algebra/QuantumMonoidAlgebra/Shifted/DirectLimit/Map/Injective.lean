@@ -19,6 +19,8 @@ No spanning condition on the positive monoid is needed.
 -/
 
 public section
+
+open TauCeti (PositiveDegrees PositiveDegreeMap)
 noncomputable section
 
 namespace Mei.QuantumMonoidAlgebra

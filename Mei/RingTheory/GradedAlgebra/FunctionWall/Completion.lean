@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mei.RingTheory.GradedAlgebra.FunctionWall.Exp
-public import Mei.RingTheory.FilteredAlgebra.Action
+public import TauCeti.RingTheory.FilteredAlgebra.Action.Algebra
 
 /-!
 # Function walls on completed coefficient algebras
@@ -20,7 +20,7 @@ of its logarithmic normal derivation, with nilpotency bound `k + 1` at order `k`
 
 The quotient gradings need only be preserved by the transition maps; the
 completion itself need not have an internal direct-sum grading. The construction
-uses `AlgFiltration.completedAction` and the finite `GradedAlgebra.functionWallAction`,
+uses `AlgFiltration.completedAlgebraAction` and the finite `GradedAlgebra.functionWallAction`,
 including its naturality and exponential comparison. The function-wall formula
 follows Mandel, *Scattering diagrams, theta functions, and refined tropical curve
 counts*, Example 2.1(i), arXiv:1503.06183v5.
@@ -28,9 +28,11 @@ counts*, Example 2.1(i), arXiv:1503.06183v5.
 
 public section
 
+open TauCeti (completedGroup)
+
 noncomputable section
 
-namespace Mei.AlgFiltration
+namespace TauCeti.AlgFiltration
 
 open Mei.GradedAlgebra CategoryTheory Opposite
 
@@ -150,7 +152,7 @@ private def wallGroupDiagram : ℕᵒᵖ ⥤ GrpCat where
       (F.antitone (Nat.add_le_add_right (leOfHom h'.unop) 1)) _).symm
 
 private def wallLabel : completedGroup (F.wallGroupDiagram 𝒜 h𝒜) :=
-  ⟨f, (mem_completedGroup_iff _ _).mpr fun _ _ h => Units.ext (Subtype.ext (hf h))⟩
+  ⟨f, (TauCeti.mem_completedGroup_iff _ _).mpr fun _ _ h => Units.ext (Subtype.ext (hf h))⟩
 
 private def wallRepresentation (k : ℕ) :
     (F.wallGroupDiagram 𝒜 h𝒜).obj (op k) →*
@@ -170,7 +172,7 @@ private theorem wallRepresentation_compatible {k l : ℕ} (h : k ≤ l)
 /-- The algebra automorphism of the coefficient completion defined by compatible
 weight-zero function walls on its quotients. -/
 def completedFunctionWallAction : F.completion ≃ₐ[R] F.completion :=
-  F.completedAction (F.wallRepresentation 𝒜 h𝒜) (F.wallRepresentation_compatible 𝒜 h𝒜)
+  F.completedAlgebraAction (F.wallRepresentation 𝒜 h𝒜) (F.wallRepresentation_compatible 𝒜 h𝒜)
     (F.wallLabel 𝒜 h𝒜 f hf)
 
 /-- The completed action is evaluated by the finite function-wall action at each order. -/
@@ -179,9 +181,9 @@ theorem projection_completedFunctionWallAction (k : ℕ) (x : F.completion) :
     F.projection k (F.completedFunctionWallAction 𝒜 h𝒜 f hf x) =
       functionWallAction (𝒜 k) (f k) (F.projection k x) := by
   rw [completedFunctionWallAction,
-    F.projection_completedAction (F.wallRepresentation 𝒜 h𝒜)
+    F.projection_completedAlgebraAction (F.wallRepresentation 𝒜 h𝒜)
       (F.wallRepresentation_compatible 𝒜 h𝒜),
-    CompletedGroup.projection_apply]
+    TauCeti.CompletedGroup.projection_apply]
   rfl
 
 /-- The finite projection formula characterizes the completed automorphism uniquely. -/
@@ -199,7 +201,7 @@ theorem completedFunctionWallAction_unique (e : F.completion ≃ₐ[R] F.complet
 theorem completedFunctionWallAction_one :
     F.completedFunctionWallAction 𝒜 h𝒜 (fun _ => 1) (by intro k l h; simp) =
       AlgEquiv.refl :=
-  (F.completedAction (F.wallRepresentation 𝒜 h𝒜)
+  (F.completedAlgebraAction (F.wallRepresentation 𝒜 h𝒜)
     (F.wallRepresentation_compatible 𝒜 h𝒜)).map_one
 
 /-- Inverting every finite wall function inverts the completed action. -/
@@ -207,7 +209,7 @@ theorem completedFunctionWallAction_inv :
     F.completedFunctionWallAction 𝒜 h𝒜 (fun k => (f k)⁻¹)
         (by exact F.compatible_inv 𝒜 f hf) =
       (F.completedFunctionWallAction 𝒜 h𝒜 f hf).symm :=
-  map_inv (F.completedAction (F.wallRepresentation 𝒜 h𝒜)
+  map_inv (F.completedAlgebraAction (F.wallRepresentation 𝒜 h𝒜)
     (F.wallRepresentation_compatible 𝒜 h𝒜)) (F.wallLabel 𝒜 h𝒜 f hf)
 
 /-- Multiplying compatible wall functions composes their completed actions. -/
@@ -220,7 +222,7 @@ theorem completedFunctionWallAction_mul (g : ∀ k, (𝒜 k 0)ˣ)
         (by intro k l h; simp only [Units.val_mul, map_mul, hf h, hg h]) =
       (F.completedFunctionWallAction 𝒜 h𝒜 g hg).trans
         (F.completedFunctionWallAction 𝒜 h𝒜 f hf) :=
-  (F.completedAction (F.wallRepresentation 𝒜 h𝒜)
+  (F.completedAlgebraAction (F.wallRepresentation 𝒜 h𝒜)
     (F.wallRepresentation_compatible 𝒜 h𝒜)).map_mul
       (F.wallLabel 𝒜 h𝒜 f hf) (F.wallLabel 𝒜 h𝒜 g hg)
 
@@ -229,7 +231,7 @@ theorem completedFunctionWallAction_mul (g : ∀ k, (𝒜 k 0)ˣ)
 theorem completedFunctionWallAction_mem_completionIdeal_iff (k : ℕ) (x : F.completion) :
     F.completedFunctionWallAction 𝒜 h𝒜 f hf x ∈ F.completionIdeal k ↔
       x ∈ F.completionIdeal k :=
-  F.completedAction_mem_completionIdeal_iff (F.wallRepresentation 𝒜 h𝒜)
+  F.completedAlgebraAction_mem_completionIdeal_iff (F.wallRepresentation 𝒜 h𝒜)
     (F.wallRepresentation_compatible 𝒜 h𝒜) (F.wallLabel 𝒜 h𝒜 f hf) x k
 
 /-- On a completed element of fixed normal weight, the wall formula uses an
@@ -283,4 +285,4 @@ theorem projection_completedFunctionWallAction_eq_exp (k : ℕ) (x : F.completio
 
 end Exponential
 
-end Mei.AlgFiltration
+end TauCeti.AlgFiltration

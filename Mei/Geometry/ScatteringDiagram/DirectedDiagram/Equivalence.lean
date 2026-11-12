@@ -17,6 +17,12 @@ ideal vanishes at a cutoff, agreement there detects full diagram equivalence.
 
 public section
 
+open TauCeti (WallComplement)
+
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
 open Set Mei.Convex
@@ -42,26 +48,26 @@ The lower-order test paths may meet walls that are active only at the higher ord
 theorem LevelEquivalent.mono {k l : ℕ} (hDE : D.LevelEquivalent E l) (hkl : k ≤ l) :
     D.LevelEquivalent E k := by
   have ha : (DirectedWallSpaces.CoordinateChange.refl (d := d) H).degreeMap.modulus k ≤ l :=
-    ((DirectedWallSpaces.CoordinateChange.refl H).degreeMap_modulus_le_iff k l).mpr
+    ((DirectedWallSpaces.CoordinateChange.refl d H).degreeMap_modulus_le_iff k l).mpr
       fun n _ hn => by
         simpa only [DirectedWallSpaces.CoordinateChange.refl_degreeEquiv, AddEquiv.refl_apply]
           using hn.trans (Int.ofNat_le.mpr hkl)
   simpa only [image_refl] using hDE.image
-    (e := Toric.IntegralAffineEquiv.refl h)
-    (E := DirectedWallSpaces.CoordinateChange.refl H) (hE := by simp) ha
+    (e := TauCeti.Toric.IntegralAffineEquiv.refl h)
+    (E := DirectedWallSpaces.CoordinateChange.refl d H) (hE := by simp) ha
 
 /-- If no Lie degrees remain above order `k`, that order detects diagram equivalence.
 No consistency hypothesis is required. -/
 theorem equivalent_iff_levelEquivalent_of_degreeIdeal_eq_bot
     (D : DirectedDiagram (d := d) h H ι) (E : DirectedDiagram (d := d) h H κ)
-    {k : ℕ} (hk : d.degreeIdeal ℒ k = ⊥) :
+    {k : ℕ} (hk : d.truncationIdeal ℒ k = ⊥) :
     D.Equivalent E ↔ D.LevelEquivalent E k := by
   rw [equivalent_iff]
   refine ⟨fun hDE => hDE k, fun hDE l => ?_⟩
   obtain hlk | hkl := le_total l k
   · exact hDE.mono hlk
-  · have hinj : Function.Injective (d.truncationMap ℒ hkl) := by
-      rw [← LieHom.ker_eq_bot, PositiveDegrees.truncationMap_def, LieIdeal.ker_factor, hk]
+  · have hinj : Function.Injective (d.lieTruncationMap ℒ hkl) := by
+      rw [← LieHom.ker_eq_bot, PositiveDegrees.lieTruncationMap_def, LieIdeal.ker_factor, hk]
       simp
     rw [levelEquivalent_def] at hDE ⊢
     intro x y x' y' p q hpq

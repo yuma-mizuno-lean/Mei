@@ -85,7 +85,7 @@ theorem completedRayGenerator_semiconjBy_skew (n p : P) (hn : 0 < δ n) :
   simp only [map_mul] at h
   simp only [AlgHom.toLinearMap_apply] at hs
   simp only [hs] at h
-  simpa only [SemiconjBy, AlgFiltration.toCompletionₐ_apply,
+  simpa only [SemiconjBy, TauCeti.AlgFiltration.toCompletionₐ_apply,
     coe_completedRayGenerator] using h
 
 /-- Under `β.IsAlt`, completed ray semiconjugacy uses exponent `2β(n,p)`. -/
@@ -156,7 +156,8 @@ theorem completedRay_quantumDilogarithm_conj
   | zero => simp
   | succ r ih =>
     simp only [Finset.prod_range_succ, map_mul, List.prod_range_succ, ih,
-      map_add, map_one, AlgFiltration.completedAeval_C, AlgFiltration.completedAeval_X,
+      map_add, map_one, TauCeti.AlgFiltration.completedAeval_C,
+      TauCeti.AlgFiltration.completedAeval_X,
       Algebra.smul_def]
 
 /-- For a nonpositive pairing, the multiplier is an ordered product of the ring
@@ -198,7 +199,7 @@ theorem completedRay_quantumDilogarithm_conj_neg
         (F).completedAeval_invOfUnit _ _ 1 (by simp)
       _ = _ := by
         congr 1
-        simp only [map_add, map_one, map_mul, AlgFiltration.completedAeval_C,
-          AlgFiltration.completedAeval_X, Algebra.smul_def]
+        simp only [map_add, map_one, map_mul, TauCeti.AlgFiltration.completedAeval_C,
+          TauCeti.AlgFiltration.completedAeval_X, Algebra.smul_def]
 
 end Mei.QuantumMonoidAlgebra

@@ -7,6 +7,7 @@ module
 
 public import Mei.Geometry.Convex.PolyhedralComplex.Filling.Grid
 public import Mei.Geometry.Convex.PolyhedralComplex.Grid
+import Mei.Combinatorics.Quiver.Path
 
 /-!
 # Admissible grids subordinate to local crossing relations
@@ -30,6 +31,8 @@ once, so adjacent cell loops use exactly the same edges with opposite directions
 -/
 
 public section
+
+open TauCeti (WallComplement)
 
 noncomputable section
 

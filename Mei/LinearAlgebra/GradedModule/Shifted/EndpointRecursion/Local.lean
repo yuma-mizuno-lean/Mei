@@ -28,7 +28,10 @@ the source. This is a supplier for the generic-endpoint comparison in Mandel,
 
 public noncomputable section
 
-namespace Mei.PositiveDegrees
+open TauCeti (PositiveDegrees)
+
+namespace TauCeti.PositiveDegrees
+
 
 variable {Γ R M V ι : Type*} [AddCommGroup Γ] [Semiring R]
   [AddCommMonoid M] [Module R M] (d : PositiveDegrees Γ)
@@ -108,4 +111,4 @@ theorem eqOn_finiteRecursion_of_shiftedLowerStep_eq_add
   exact congrFun (congrFun (Module.End.finiteRecursion_eq_add U
     (shiftedLowerStep_pow_eq_zero d ℳ p k events block point) a) Q) n
 
-end Mei.PositiveDegrees
+end TauCeti.PositiveDegrees

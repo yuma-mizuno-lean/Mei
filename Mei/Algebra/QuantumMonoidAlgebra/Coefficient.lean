@@ -31,6 +31,10 @@ No faithfulness or genericity assumption on the quantum parameter is required.
 
 public section
 
+open TauCeti (AlgFiltration)
+
+open TauCeti (PositiveDegrees PositiveDegreeMap)
+
 noncomputable section
 
 namespace Mei.QuantumMonoidAlgebra

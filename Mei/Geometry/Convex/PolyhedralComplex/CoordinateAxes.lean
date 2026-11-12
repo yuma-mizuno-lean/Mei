@@ -10,6 +10,7 @@ public import Mei.Geometry.Convex.PolyhedralComplex.Star
 public import Mei.Geometry.Convex.Polyhedron.AdmissiblePath
 public import Mei.Analysis.Convex.Sign
 public import Mei.LinearAlgebra.AffineSpace.Ordered
+import Mei.Geometry.Affine.Codimension
 
 /-!
 # The coordinate axes of the plane
@@ -25,12 +26,17 @@ origin (`FinitePolyhedralComplex.singularSupport_coordinateAxes`). Consequently 
 which one coordinate keeps a strict sign is admissible.
 
 The complex is `FinitePolyhedralComplex.ofArrangement` of the coordinate rows. The wall
-classification uses `Mei.Convex.exists_zero_sign_of_affineSpan_ne_top`, and the singular
+classification uses `TauCeti.Convex.exists_zero_sign_of_affineSpan_ne_top`, and the singular
 support is computed from
 `FinitePolyhedralComplex.singularSupport_walls_subset_support_codimensionAtLeast`.
 -/
 
 public section
+
+open TauCeti.Convex (closure_signCell exists_zero_sign_of_affineSpan_ne_top signCell
+  weakSignCell)
+
+open TauCeti (WallComplement AdmissiblePLPath singularSupport mem_singularSupport)
 
 open Set Mei.Convex
 
@@ -100,11 +106,11 @@ variable (h : TauCeti.Toric.IsIntegralLattice ((Int.castAddHom ℝ).prodMap (Int
 
 /-- The coordinate rows are rational for the standard lattice. -/
 theorem isRationalFunctional_axisRow (j : Bool) :
-    Toric.IsRationalFunctional h (axisRow j).toLinearMap := by
+    TauCeti.Toric.IsRationalFunctional h (axisRow j).toLinearMap := by
   cases j
-  · convert Toric.IsRationalFunctional.realCharacter h (LinearMap.fst ℤ ℤ ℤ) using 1
+  · convert TauCeti.Toric.IsRationalFunctional.realCharacter h (LinearMap.fst ℤ ℤ ℤ) using 1
     exact h.eq_realCharacter (by intro x; simp)
-  · convert Toric.IsRationalFunctional.realCharacter h (LinearMap.snd ℤ ℤ ℤ) using 1
+  · convert TauCeti.Toric.IsRationalFunctional.realCharacter h (LinearMap.snd ℤ ℤ ℤ) using 1
     exact h.eq_realCharacter (by intro x; simp)
 
 /-- The subdivision of the plane by its two coordinate axes. -/
@@ -136,7 +142,7 @@ theorem exists_subset_axisRow_eq_zero_of_mem_coordinateAxes_walls {P : Set (ℝ 
   obtain ⟨j, hj⟩ := exists_zero_sign_of_affineSpan_ne_top hσ hspan
   refine ⟨j, fun v hv => ?_⟩
   rw [closure_signCell hσ] at hv
-  simpa using (mem_weakSignCell.mp hv j).1 hj
+  simpa using (TauCeti.Convex.mem_weakSignCell.mp hv j).1 hj
 
 /-- Each point of a coordinate axis lies on a wall contained in that axis. -/
 theorem exists_mem_coordinateAxes_walls_subset_of_axisRow_eq_zero {j : Bool} {v : ℝ × ℝ}
@@ -212,7 +218,7 @@ theorem fst_nonneg_or_fst_nonpos_of_mem_coordinateAxes_walls {P : Set (ℝ × �
   obtain ⟨σ, hσ, rfl⟩ := mem_ofArrangement_cells.mp hPC
   rw [closure_signCell hσ]
   have hrow (v : ℝ × ℝ) (hv : v ∈ weakSignCell (fun j => (axisRow j).toContinuousAffineMap) σ) :=
-    mem_weakSignCell.mp hv false
+    TauCeti.Convex.mem_weakSignCell.mp hv false
   cases hs : σ false
   · exact Or.inl fun v hv => by simpa using ((hrow v hv).1 hs).ge
   · exact Or.inr fun v hv => by simpa using (hrow v hv).2.1 hs
@@ -233,7 +239,7 @@ theorem support_codimensionAtLeast_two_coordinateAxes_subset :
   -- Cells of a linear arrangement contain the origin.
   have h0 : (0 : ℝ × ℝ) ∈
       closure (signCell (fun j => (axisRow j).toContinuousAffineMap) σ) := by
-    rw [closure_signCell hσ, mem_weakSignCell]
+    rw [closure_signCell hσ, TauCeti.Convex.mem_weakSignCell]
     intro j
     simp
   have hmem := AffineSubspace.vsub_mem_direction (subset_affineSpan ℝ _ hxQ)

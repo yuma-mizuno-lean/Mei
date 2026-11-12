@@ -25,9 +25,13 @@ and refined tropical curve counts*, §2.1 (arXiv:1503.06183).
 
 public section
 
+open TauCeti (PositiveDegrees)
+
 noncomputable section
 
-namespace Mei.PositiveDegrees
+namespace TauCeti.PositiveDegrees
+
+open Mei
 
 open _root_.DirectSum
 
@@ -72,7 +76,7 @@ theorem shiftedHomogeneousComponent_completionMap_eq_sum (j : Γ') (k : ℕ)
   rw [← e.coe_completionComponent_shiftedGrading 𝓝 (T p)]
   calc
     _ = ∑ n ∈ (d.finite_cutoff (μ k)).toFinset with T n = j,
-        (f (d.completionComponent (shiftedGrading ℳ d.monoid p) F
+        (f (d.filtrationCompletionComponent (shiftedGrading ℳ d.monoid p) F
           (d.shiftedFiltration_succ ℳ p) n x) : N) := by
       simpa only [Submodule.coe_sum] using congrArg (fun a : shiftedSubmodule 𝓝 e.monoid
         (T p) => (a : N)) h
@@ -82,4 +86,4 @@ theorem shiftedHomogeneousComponent_completionMap_eq_sum (j : Γ') (k : ℕ)
       rw [hcoe]
       rw [d.coe_completionComponent_shiftedGrading ℳ p]
 
-end Mei.PositiveDegrees
+end TauCeti.PositiveDegrees

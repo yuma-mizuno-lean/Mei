@@ -11,6 +11,7 @@ public import Mei.Geometry.Convex.PolyhedralCochain.Exact
 import Mei.Geometry.Convex.PolyhedralCochain.Crossing
 import Mei.Geometry.Convex.PolyhedralCochain.Stokes.Path
 import Mei.Geometry.Convex.PolyhedralComplex.RegularLocus
+import Mei.Combinatorics.Quiver.Path
 
 /-!
 # Consistency after central cochain correction
@@ -35,9 +36,17 @@ the original diagram, or common admissibility of the original loop is assumed.
 
 public section
 
+open TauCeti (OrientedCell PolyhedralCochain)
+
+open TauCeti (WallComplement AdmissiblePLPath)
+
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
-open Set Mei Mei.Convex WallComplement BCHGroup
+open Set Mei Mei.Convex TauCeti.WallComplement BCHGroup
 
 namespace Mei.DirectedDiagram
 
@@ -61,7 +70,7 @@ variable {Γ Λ R L V ι κ : Type*} [AddCommGroup Γ] [AddCommGroup Λ]
   (ht : ∀ (P : (E.adaptedComplex (k + 1)).cellsOfCodimension 0)
     (x : WallComplement (fun j : E.active k => (E.wall j).support)),
     x.val ∈ interior (P : Set V) →
-    (d.truncationMap ℒ (Nat.le_succ k)).bchGroupMap (t P) = E.levelTransport k hk b x)
+    (d.lieTruncationMap ℒ (Nat.le_succ k)).bchGroupMap (t P) = E.levelTransport k hk b x)
   (ω : D.active (k + 1) → OrientedCell h 1)
   (hω : ∀ j, (ω j).carrier = (D.wall j).support)
   (hν : ∀ j : D.active (k + 1), j.val ∉ s → ∀ v : V,
@@ -79,18 +88,18 @@ theorem levelConsistent_succ_of_closed_residual
       let _ := Fintype.ofFinite (D.active (k + 1))
       PolyhedralCochain.coboundary (PolyhedralCochain.ofFinsupp (R := R)
         ((∑ Q, Finsupp.single (σ Q)
-            ((cross Q).defect hk b t ht : d.truncatedLie ℒ (k + 1))) -
+            ((cross Q).defect hk b t ht : d.lieTruncation ℒ (k + 1))) -
           ∑ j : D.active (k + 1), Finsupp.single (ω j)
             (if j.val ∈ s then 0 else
-              log (CompletedGroup.projection (k + 1) (D.wall j).label)))) = 0) :
+              log (TauCeti.CompletedGroup.projection (k + 1) (D.wall j).label)))) = 0) :
     D.LevelConsistent (k + 1) := by
   classical
   have := h.finiteDimensional
   let := Fintype.ofFinite (D.active (k + 1))
   let A := ∑ Q, Finsupp.single (σ Q)
-    ((cross Q).defect hk b t ht : d.truncatedLie ℒ (k + 1))
+    ((cross Q).defect hk b t ht : d.lieTruncation ℒ (k + 1))
   let c := fun j : D.active (k + 1) => if j.val ∈ s then 0 else
-    log (CompletedGroup.projection (k + 1) (D.wall j).label)
+    log (TauCeti.CompletedGroup.projection (k + 1) (D.wall j).label)
   let B := ∑ j : D.active (k + 1), Finsupp.single (ω j) (c j)
   -- A primitive may introduce additional facets. Include all of them in the perturbation.
   obtain ⟨_, F, hF, _⟩ := PolyhedralCochain.exists_outgoing_primitive
@@ -152,9 +161,9 @@ theorem levelConsistent_succ_of_closed_residual
       ((Finsupp.mem_support_single _ _ _).mp hτ).1⟩
   -- Every perturbed segment is transverse to both representatives of the residual.
   have htrans {u v : WallComplement W} (e : u ⟶ v)
-      (g : OrientedCell h 1 →₀ d.truncatedLie ℒ (k + 1))
+      (g : OrientedCell h 1 →₀ d.lieTruncation ℒ (k + 1))
       (hg : ∀ τ ∈ g.support, ∃ j, τ = υ j) :
-      ∀ τ ∈ g.support, τ.IsTransverse ![u.val, v.val] := by
+      ∀ τ ∈ g.support, τ.IsTransverseToCarrier ![u.val, v.val] := by
     intro τ hτ
     obtain ⟨j, rfl⟩ := hg τ hτ
     exact e.down.isTransverse_orientedCell j
@@ -167,7 +176,7 @@ theorem levelConsistent_succ_of_closed_residual
     | nil => simp only [Quiver.Path.addWeightOfEPs_nil]
     | cons q e ih =>
       rw [Quiver.Path.addWeightOfEPs_cons, Quiver.Path.addWeightOfEPs_cons, ih,
-        PolyhedralCochain.intersectionPairing_eq_of_ofFinsupp_eq hFK
+        PolyhedralCochain.intersectionPairing_eq_of_ofFinsupp_eq_of_isTransverseToCarrier hFK
           (htrans e (A - B) hABcov) (htrans e K hKcov)]
   apply (D.levelConsistent_iff_loops (k + 1)).mpr
   intro x p
@@ -221,7 +230,7 @@ theorem levelConsistent_succ_of_closed_residual
         (r : AdmissiblePLPath u v) =>
           r.addWeightOfEPs_intersectionPairing_eq_neg_wallCrossingSum (R := R)
             (fun Q => h.realCharacter (cross Q).normal)
-            (fun Q => ((cross Q).defect hk b t ht : d.truncatedLie ℒ (k + 1)))
+            (fun Q => ((cross Q).defect hk b t ht : d.lieTruncation ℒ (k + 1)))
             (fun Q _ v => (cross Q).sign_normal v)
       have hcar : (fun Q => (σ Q).carrier) =
           (fun Q : (E.adaptedComplex (k + 1)).walls => (Q : Set V)) := funext hσ

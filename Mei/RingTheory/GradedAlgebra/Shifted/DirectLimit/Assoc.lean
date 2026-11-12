@@ -14,9 +14,13 @@ Multiplication on the global coefficient module is associative.
 -/
 
 public section
+
+open TauCeti (PositiveDegrees)
 noncomputable section
 
-namespace Mei.PositiveDegrees
+namespace TauCeti.PositiveDegrees
+
+open Mei
 
 variable {Γ R A : Type*} [AddCommGroup Γ] [CommRing R] [Ring A] [Algebra R A]
   [DecidableEq Γ] (d : PositiveDegrees Γ) (𝒜 : Γ → Submodule R A)
@@ -46,4 +50,4 @@ theorem shiftedDirectLimitMul_assoc (x y z : d.ShiftedDirectLimit 𝒜) :
   simp only [toShiftedDirectLimit_eq_ofChart, shiftedDirectLimitMul_toShiftedDirectLimitOfChart]
   exact hc.symm.trans ha
 
-end Mei.PositiveDegrees
+end TauCeti.PositiveDegrees

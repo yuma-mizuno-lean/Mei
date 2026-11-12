@@ -20,9 +20,13 @@ used by filtered actions, without imposing finiteness on any homogeneous piece.
 
 public noncomputable section
 
+open TauCeti (PositiveDegrees)
+
 open scoped DirectSum
 
-namespace Mei.PositiveDegrees
+namespace TauCeti.PositiveDegrees
+
+open Mei
 
 variable {Γ R M : Type*} [AddCommGroup Γ] [Ring R] [AddCommGroup M] [Module R M]
   [DecidableEq Γ] (d : PositiveDegrees Γ) (ℳ : Γ → Submodule R M)
@@ -151,4 +155,4 @@ theorem shiftedQuotientEquivDirectSum_symm_lof (k : ℕ) (n : d.cutoff k)
     exact DirectSum.of_eq_of_ne
       (β := fun n : d.cutoff k => ℳ (p + n.val)) n m x (Ne.symm hnm)
 
-end Mei.PositiveDegrees
+end TauCeti.PositiveDegrees

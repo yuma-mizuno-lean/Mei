@@ -29,6 +29,16 @@ from the projection-fixed correction logarithms using
 
 public section
 
+open TauCeti.CompletedGroup (projection)
+
+open TauCeti (OrientedCell)
+
+open TauCeti (WallComplement GradedLieHom)
+
+open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading)
+
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
 open Set Mei Mei.Convex BCHGroup
@@ -68,7 +78,7 @@ theorem exists_consistent_kernel_extension
     (ht : ∀ (P : (D.adaptedComplex (k + 1)).cellsOfCodimension 0)
       (x : WallComplement (fun j : D.active k => (D.wall j).support)),
       x.val ∈ interior (P : Set V) →
-      (d.truncationMap ℒ (Nat.le_succ k)).bchGroupMap (t P) = D.levelTransport k hk b x)
+      (d.lieTruncationMap ℒ (Nat.le_succ k)).bchGroupMap (t P) = D.levelTransport k hk b x)
     (τ : (D.adaptedComplex (k + 1)).joints → OrientedCell h 2)
     (hτ : ∀ J, (τ J).carrier = (J : Set V))
     (hq : (D.map π hπ).LevelConsistent (k + 1)) (lifted : Set ι)
@@ -93,12 +103,12 @@ theorem exists_consistent_kernel_extension
   obtain ⟨hout, ⟨n, hn, hdeg, z, hz, hlabel⟩, hborn, hfix⟩ := hnew a
   -- The correction logarithm is fixed by `id - s ∘ π`, hence killed by `π`.
   rw [LoopProjection.ofSplitting_toLinearMap] at hfix
-  have h0 := GradedLieHom.truncatedMap_eq_zero_of_idSubSectionComp_eq hsπ (k + 1) hfix
-  have hproj : CompletedGroup.projection (k + 1) (π.completedMap (F.wall (.inr a)).label) = 1 := by
+  have h0 := GradedLieHom.lieTruncatedMap_eq_zero_of_idSubSectionComp_eq hsπ (k + 1) hfix
+  have hproj : projection (k + 1) (π.completedMap (F.wall (.inr a)).label) = 1 := by
     rw [π.projection_completedMap_of_le (k + 1) (a := k + 1) (by simp)]
     apply log_injective
-    have h1 := LieHom.log_bchGroupMap (π.truncatedMap (k + 1) (by simp))
-      (CompletedGroup.projection (k + 1) (F.wall (.inr a)).label)
+    have h1 := LieHom.log_bchGroupMap (π.lieTruncatedMap (k + 1) (by simp))
+      (projection (k + 1) (F.wall (.inr a)).label)
     exact h1.trans (h0.trans log_one.symm)
   rw [hlabel, GradedLieHom.completedMap_expToCompletion] at hproj
   have hπz : π z = 0 := by

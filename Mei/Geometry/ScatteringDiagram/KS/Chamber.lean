@@ -28,9 +28,13 @@ The interpretation follows Tom Bridgeland,
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 noncomputable section
 
-namespace Mei.PositiveDegrees
+namespace TauCeti.PositiveDegrees
+
+open Mei
 
 variable {N V R L : Type*} [AddCommMonoid N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   (d : PositiveDegrees N) (i : N →+ V)
@@ -59,4 +63,4 @@ element and the other factors are identities. -/
   intro n hn hn0
   exact sign_neg (((AddSubmonoid.mem_negativeChamber d.monoid i).mp hθ) n hn hn0)
 
-end Mei.PositiveDegrees
+end TauCeti.PositiveDegrees

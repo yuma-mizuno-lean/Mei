@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.GroupTheory.CompletedGroup.Map
+public import TauCeti.GroupTheory.CompletedGroup.Map
 public import Mathlib.GroupTheory.SemidirectProduct
 
 /-!
@@ -18,18 +18,20 @@ transitions leave the `H` coordinate fixed.
 The comparison and its inverse are characterized by their finite projections.
 Thus a compatible family of elements of `Gₖ ⋊ H` has a single, constant `H`-coordinate.
 
-The construction uses `CompletedGroup.congr`, `CompletedGroup.lift`, and Mathlib's
+The construction uses `TauCeti.CompletedGroup.congr`, `TauCeti.CompletedGroup.lift`, and Mathlib's
 `SemidirectProduct.map`.
 No surjectivity of the tower transitions or finiteness of either group is required.
 -/
 
 public section
 
+open TauCeti (completedGroup)
+
 open CategoryTheory Opposite
 
 universe u v
 
-namespace Mei.CompletedGroup
+namespace TauCeti.CompletedGroup
 
 variable {F : ℕᵒᵖ ⥤ GrpCat.{u}} {H : Type v}
 
@@ -120,7 +122,7 @@ theorem projection_right_eq_projection_zero (x : completedGroup (semidirectTower
     MonoidHom.id_apply] using hx
 
 private def leftPart (x : completedGroup (semidirectTower φ hφ)) : completedGroup F :=
-  ⟨fun k => (projection k x).left, (mem_completedGroup_iff F _).mpr (by
+  ⟨fun k => (projection k x).left, (TauCeti.mem_completedGroup_iff F _).mpr (by
     intro k l hkl
     have hx := congrArg SemidirectProduct.left (map_projection k l hkl x)
     simpa only [ConcreteCategory.hom_ofHom, SemidirectProduct.map_left] using hx)⟩
@@ -187,4 +189,4 @@ theorem projection_semidirectProductEquiv_symm
       semidirectProjection φ hφ k x :=
   projection_assemble φ hφ x k
 
-end Mei.CompletedGroup
+end TauCeti.CompletedGroup

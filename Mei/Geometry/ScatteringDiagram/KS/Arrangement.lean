@@ -8,7 +8,8 @@ module
 public import Mei.Algebra.PositiveDegrees.Basic
 public import Mei.Geometry.Convex.PolyhedralComplex.AmbientSubdivision
 public import Mei.Geometry.Toric.Algebraic.DualLattice
-public import Mei.Geometry.Convex.Polyhedron.SignCell.Interior
+public import TauCeti.Analysis.Convex.Polyhedron.SignCell.Interior
+public import Mei.Analysis.Convex.Intrinsic
 public import Mei.Geometry.Convex.PolyhedralComplex.Strata
 public import Mei.Geometry.ScatteringDiagram.KS.Space
 
@@ -31,9 +32,15 @@ finite generation or saturation of the positive monoid is required.
 
 public section
 
+open TauCeti.Convex (closure_signCell exists_zero_sign_of_affineSpan_ne_top signCell)
+
+open TauCeti (PositiveDegrees)
+
 noncomputable section
 
-namespace Mei.PositiveDegrees
+namespace TauCeti.PositiveDegrees
+
+open Mei
 
 open Mei.Convex Mei.FinitePolyhedralComplex
 
@@ -121,7 +128,7 @@ theorem commonKernel_mem_arrangementComplex_cells (k : ℕ) :
   let g := fun n : ↥(d.cutoff k \ {0}) =>
     (ContinuousLinearMap.apply ℝ ℝ (i n)).toContinuousAffineMap
   have hzero : (signCell g (fun _ => 0)).Nonempty := by
-    refine ⟨0, mem_signCell.mpr ?_⟩
+    refine ⟨0, TauCeti.Convex.mem_signCell.mpr ?_⟩
     simp [g]
   apply (d.mem_arrangementComplex_cells h k _).mpr
   refine ⟨fun _ => 0, hzero, ?_⟩
@@ -130,13 +137,13 @@ theorem commonKernel_mem_arrangementComplex_cells (k : ℕ) :
   simp only [Set.mem_ofPred_eq]
   constructor
   · intro hθ
-    apply mem_weakSignCell.mpr
+    apply TauCeti.Convex.mem_weakSignCell.mpr
     intro n
     simp [g, hθ n n.property.1]
   · intro hθ n hn
     by_cases hn0 : n = 0
     · simp [hn0]
-    · exact (mem_weakSignCell.mp hθ ⟨n, hn, hn0⟩).1 rfl
+    · exact (TauCeti.Convex.mem_weakSignCell.mp hθ ⟨n, hn, hn0⟩).1 rfl
 
 /-- Every wall of the degree arrangement lies in a hyperplane of a retained
 nonzero allowed degree. Redundant hyperplanes and lineality are allowed. -/
@@ -154,7 +161,7 @@ theorem exists_degree_forall_eq_zero_of_mem_arrangementComplex_walls
   refine ⟨n, n.property, ?_⟩
   intro θ hθ
   rw [heq, closure_signCell hσ] at hθ
-  exact (mem_weakSignCell.mp hθ n).1 hn
+  exact (TauCeti.Convex.mem_weakSignCell.mp hθ n).1 hn
 
 /-- Every retained nonzero degree hyperplane is covered by walls of the arrangement:
 each of its points lies on a codimension-one cell. -/
@@ -177,9 +184,11 @@ theorem exists_mem_arrangementComplex_walls_of_eval_eq_zero {k : ℕ} {n : N}
   rw [arrangementComplex_eq_ofArrangement]
   exact ⟨P, hP, hθP⟩
 
-end Mei.PositiveDegrees
+end TauCeti.PositiveDegrees
 
-namespace Mei.PositiveDegrees
+namespace TauCeti.PositiveDegrees
+
+open Mei
 
 variable {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : ℤ →+ V} (d : PositiveDegrees ℤ) (h : TauCeti.Toric.IsIntegralLattice i)
@@ -230,4 +239,4 @@ theorem walls_arrangementComplex_nonnegIntegers (k : ℕ) :
     have hex : ∃ n, n ∈ nonnegIntegers.cutoff k \ {0} := ⟨1, hn⟩
     simp only [hex, and_true, ite_eq_right hk, Finset.mem_singleton]
 
-end Mei.PositiveDegrees
+end TauCeti.PositiveDegrees

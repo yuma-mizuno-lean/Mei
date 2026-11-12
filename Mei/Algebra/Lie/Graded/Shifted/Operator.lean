@@ -25,9 +25,13 @@ tropical curve counts*, §3.3.3 (arXiv:1503.06183v5).
 
 public noncomputable section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 open scoped DirectSum
 
-namespace Mei.PositiveDegrees
+namespace TauCeti.PositiveDegrees
+
+open Mei
 
 variable {Γ R M H : Type*} [AddCommGroup Γ] [CommRing R]
   [AddCommGroup M] [Module R M] [AddCommMonoid H] [Module R H]
@@ -80,7 +84,7 @@ theorem operatorBCHAction_apply (k : ℕ) (g : d.truncatedGroup ℒ k)
 theorem operatorTransition_operatorBCHAction {k l : ℕ} (hkl : k ≤ l)
     (g : d.truncatedGroup ℒ l) (f : O(l)) :
     operatorTransition d ℳ p hkl (operatorBCHAction d ℳ p ℒ l g f) =
-      operatorBCHAction d ℳ p ℒ k ((d.truncationMap ℒ hkl).bchGroupMap g)
+      operatorBCHAction d ℳ p ℒ k ((d.lieTruncationMap ℒ hkl).bchGroupMap g)
         (operatorTransition d ℳ p hkl f) := by
   apply (operatorCoefficientsEquiv d ℳ p k).injective
   apply LinearMap.ext
@@ -89,4 +93,4 @@ theorem operatorTransition_operatorBCHAction {k l : ℕ} (hkl : k ≤ l)
     operatorCoefficientsEquiv_operatorBCHAction]
   exact (F).transition_truncatedBCHAction d ℒ hkl g _
 
-end Mei.PositiveDegrees
+end TauCeti.PositiveDegrees

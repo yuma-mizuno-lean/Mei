@@ -22,6 +22,8 @@ embeddings. No alternating or positive-difference spanning hypothesis is needed.
 -/
 
 public section
+
+open TauCeti (PositiveDegrees)
 noncomputable section
 
 namespace Mei.QuantumMonoidAlgebra

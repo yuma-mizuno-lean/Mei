@@ -31,11 +31,15 @@ contraction calculation and boundary-sum reduction supply the Stokes formulas.
 
 public section
 
+open TauCeti (OrientedCell)
+
 noncomputable section
 
 open Set Module
 
-namespace Mei.OrientedCell
+namespace TauCeti.OrientedCell
+
+open Mei
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
@@ -186,4 +190,4 @@ theorem exists_ball_sum_intersectionIndex_boundaryFacets_eq_sum_succAbove_of_fac
     exact (hδball τ hτ hτne).mono_left
       (hs.trans (Metric.ball_subset_ball (min_le_right _ _)))
 
-end Mei.OrientedCell
+end TauCeti.OrientedCell

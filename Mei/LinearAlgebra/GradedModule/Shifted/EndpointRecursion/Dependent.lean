@@ -19,7 +19,10 @@ No finiteness of the entire event type is required; each endpoint uses a finite 
 
 public noncomputable section
 
-namespace Mei.PositiveDegrees
+open TauCeti (PositiveDegrees)
+
+namespace TauCeti.PositiveDegrees
+
 
 variable {Γ R M V : Type*} [AddCommGroup Γ] [Semiring R]
   [AddCommMonoid M] [Module R M] (d : PositiveDegrees Γ)
@@ -84,4 +87,4 @@ theorem eqOn_finiteRecursion_of_shiftedDependentLowerStep_eq_add
   simp only [Function.Embedding.sigmaMk_apply, taggedPoint, ↓reduceDIte]
   exact hΩ Q n hQ j hj m hmn hblock
 
-end Mei.PositiveDegrees
+end TauCeti.PositiveDegrees

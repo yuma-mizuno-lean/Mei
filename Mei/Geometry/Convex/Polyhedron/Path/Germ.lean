@@ -24,9 +24,12 @@ their generic perturbations, using
 
 public section
 
-open Set Filter Topology
+open TauCeti (WallComplement)
 
-namespace Mei.Convex.WallComplement
+open Set Filter Topology
+open Mei (eventually_add_smul_pair eventually_forall_lineMap_notMem_of_mul_pos)
+
+namespace TauCeti.WallComplement
 
 variable {V ι : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V] [Finite ι]
   {W : ι → Set V}
@@ -56,4 +59,4 @@ theorem eventually_exists_crossings_eq_empty_of_mul_pos
   rw [mem_crossings] at hm
   exact hnot j t hm.1 hm.2
 
-end Mei.Convex.WallComplement
+end TauCeti.WallComplement

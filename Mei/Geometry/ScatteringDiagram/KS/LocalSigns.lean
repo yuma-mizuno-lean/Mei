@@ -9,6 +9,7 @@ public import Mei.Geometry.ScatteringDiagram.KS.Sign
 public import Mei.Geometry.Convex.PolyhedralComplex.Strata
 public import Mei.LinearAlgebra.Dual.Order
 public import Mathlib.Topology.Instances.Sign
+import Mei.Geometry.Affine.Codimension
 
 /-!
 # Local degree signs at arrangement walls
@@ -33,9 +34,13 @@ and Mathlib's continuity of sign away from zero and finite intersection of neigh
 
 public section
 
+open TauCeti (PositiveDegrees)
+
 noncomputable section
 
-namespace Mei.PositiveDegrees
+namespace TauCeti.PositiveDegrees
+
+open Mei
 
 open Set Filter Topology
 
@@ -101,4 +106,4 @@ theorem eventually_sign_eq_of_mem_intrinsicInterior_wall
   filter_upwards [Filter.eventually_all.mpr hrows] with φ hφ n hn
   exact hφ ⟨n, hn⟩
 
-end Mei.PositiveDegrees
+end TauCeti.PositiveDegrees

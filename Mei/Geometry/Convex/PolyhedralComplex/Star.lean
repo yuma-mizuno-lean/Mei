@@ -48,6 +48,8 @@ triangles is `Quiver.Path.crossingWord_mem_normalClosure_triangles`.
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath singularSupport singularSupport_subset_iUnion)
+
 noncomputable section
 
 open Set Module Mei.Convex
@@ -329,13 +331,13 @@ namespace Quiver.Path
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
   {C : Mei.FinitePolyhedralComplex h}
-  {x : Mei.Convex.WallComplement (fun P : C.walls => (P : Set V))}
+  {x : TauCeti.WallComplement (fun P : C.walls => (P : Set V))}
 
 /-- In an open convex region meeting a joint, all of whose incident cells contain
 that joint, the word of every admissible polygonal loop lies in the normal closure
 of the words of isolating triangular meridians around the joint. Each filled
 triangle meets the skeleton once and avoids the joint boundary and all other joints. -/
-theorem crossingWord_mem_normalClosure_jointTriangleWords (p : Mei.Convex.AdmissiblePLPath x x)
+theorem crossingWord_mem_normalClosure_jointTriangleWords (p : TauCeti.AdmissiblePLPath x x)
     (ν : C.walls → V →ₗ[ℝ] ℝ)
     (hν : ∀ P, LinearMap.ker (ν P) = (affineSpan ℝ (P : Set V)).direction)
     {J U : Set V} (hJ : J ∈ C.joints) (hUo : IsOpen U) (hU : Convex ℝ U)

@@ -8,6 +8,7 @@ module
 public import Mei.Geometry.Convex.PolyhedralComplex.Sampling
 public import Mei.Geometry.Convex.Polyhedron.Filling
 import Mathlib.Tactic.FunProp
+import Mei.Combinatorics.Quiver.Path
 
 /-!
 # Boundary words of fillings from local relations
@@ -30,6 +31,8 @@ breakpoints of its sides, places each grid cell in one of the open sets, and com
 `Quiver.Path.crossingWord_eq_prod_ofFn_sampling`. The affine boundary theorem follows by
 reparametrizing each side as the realization of a single-edge path.
 -/
+
+open TauCeti (WallComplement AdmissiblePLPath singularSupport singularSupport_subset_iUnion)
 
 public noncomputable section
 

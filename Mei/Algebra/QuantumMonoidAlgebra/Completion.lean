@@ -6,8 +6,8 @@ Authors: Codex
 module
 
 public import Mei.Algebra.QuantumMonoidAlgebra.Positive
-public import Mei.Algebra.PositiveDegrees.Map
-public import Mei.RingTheory.FilteredAlgebra.Map
+public import TauCeti.Algebra.PositiveDegrees.FinitelyGenerated
+public import TauCeti.RingTheory.FilteredAlgebra.Map
 public import Mei.RingTheory.FilteredAlgebra.Algebra
 
 /-!
@@ -29,6 +29,10 @@ functions, and refined tropical curve counts*, Example 2.1(iii).
 -/
 
 public section
+
+open TauCeti (AlgFiltration)
+
+open TauCeti (PositiveDegrees PositiveDegreeMap)
 
 noncomputable section
 

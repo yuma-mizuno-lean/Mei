@@ -31,6 +31,8 @@ algebras*, §1 and Appendix B (arXiv:1411.1394v2).
 
 public section
 
+open TauCeti (PositiveDegrees PositiveDegreeMap GradedLieHom)
+
 noncomputable section
 
 namespace Mei.SkewLieAlgebra
@@ -168,12 +170,12 @@ to the ray label of `f(χ(n) T)`. -/
 theorem completedMap_weightGradedLieHom_rayExp (f : PowerSeries R) :
     (weightGradedLieHom β hβ d hχ).completedMap (rayExp β hβ hn hn0 f) =
       rayExp β hβ hn hn0 (rescale (χ n) f) := by
-  apply CompletedGroup.ext
+  apply TauCeti.CompletedGroup.ext
   intro k
   rw [GradedLieHom.projection_completedMap_of_le _ k (a := k) (PositiveDegreeMap.id_modulus k).le,
     projection_rayExp, projection_rayExp, LieHom.bchGroupMap_exp]
   congr 1
-  rw [LieIdeal.mkQ_apply, GradedLieHom.truncatedMap_mk, weightGradedLieHom_rayPartialSum,
+  rw [LieIdeal.mkQ_apply, GradedLieHom.lieTruncatedMap_mk, weightGradedLieHom_rayPartialSum,
     LieIdeal.mkQ_apply]
 
 end Ray

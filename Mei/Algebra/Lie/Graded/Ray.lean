@@ -31,6 +31,8 @@ uses Mathlib's `Submodule.iSup_induction` and `IsLieAbelian`.
 
 public section
 
+open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading SupportedRay GradedLieHom)
+
 namespace Mei
 
 variable {N R L L' : Type*} [AddCommGroup N] [CommRing R]
@@ -167,7 +169,9 @@ theorem disjoint_rayLieSubalgebra [HasUniqueDiv N] {v w : SupportedRay d} (h : v
 
 end Mei
 
-namespace Mei.PositiveDegrees
+namespace TauCeti.PositiveDegrees
+
+open Mei
 
 variable {N R L : Type*} [AddCommGroup N] [CommRing R]
   [LieRing L] [LieAlgebra R L] [DecidableEq N]
@@ -176,31 +180,33 @@ variable {N R L : Type*} [AddCommGroup N] [CommRing R]
 
 /-- Taking the finite degree quotient commutes with forming a ray Lie algebra. -/
 theorem map_rayLieSubalgebra_mkQ (w : SupportedRay d) (k : ℕ) :
-    (rayLieSubalgebra ℒ w).map (d.degreeIdeal ℒ k).mkQ =
-      rayLieSubalgebra (d.truncatedGrading ℒ k) w := by
+    (rayLieSubalgebra ℒ w).map (d.truncationIdeal ℒ k).mkQ =
+      rayLieSubalgebra (d.lieTruncationGrading ℒ k) w := by
   apply LieSubalgebra.toSubmodule_injective
   refine (congrArg LieSubalgebra.toSubmodule
-    (map_rayLieSubalgebra ℒ w (d.degreeIdeal ℒ k).mkQ)).trans ?_
+    (map_rayLieSubalgebra ℒ w (d.truncationIdeal ℒ k).mkQ)).trans ?_
   simp only [rayLieSubalgebra_toSubmodule]
-  exact iSup_congr fun n => (d.truncatedGrading_eq ℒ k n).symm
+  exact iSup_congr fun n => (d.lieTruncationGrading_eq ℒ k n).symm
 
 /-- Degree truncation maps a ray Lie algebra onto its lower-order counterpart. -/
 theorem map_rayLieSubalgebra_truncationMap (w : SupportedRay d)
     {k l : ℕ} (h : k ≤ l) :
-    (rayLieSubalgebra (d.truncatedGrading ℒ l) w).map (d.truncationMap ℒ h) =
-      rayLieSubalgebra (d.truncatedGrading ℒ k) w := by
-  simpa only [d.map_truncatedGrading_truncationMap ℒ h] using
-    map_rayLieSubalgebra (d.truncatedGrading ℒ l) w (d.truncationMap ℒ h)
+    (rayLieSubalgebra (d.lieTruncationGrading ℒ l) w).map (d.lieTruncationMap ℒ h) =
+      rayLieSubalgebra (d.lieTruncationGrading ℒ k) w := by
+  simpa only [d.map_lieTruncationGrading_lieTruncationMap ℒ h] using
+    map_rayLieSubalgebra (d.lieTruncationGrading ℒ l) w (d.lieTruncationMap ℒ h)
 
 /-- Finite degree quotients inherit abelian rays. -/
 instance isAbelianRays_truncatedGrading [IsAbelianRays d ℒ] (k : ℕ) :
-    IsAbelianRays d (d.truncatedGrading ℒ k) :=
-  isAbelianRays_of_map_eq ℒ (d.truncatedGrading ℒ k) (d.degreeIdeal ℒ k).mkQ
-    (fun n => (d.truncatedGrading_eq ℒ k n).symm)
+    IsAbelianRays d (d.lieTruncationGrading ℒ k) :=
+  isAbelianRays_of_map_eq ℒ (d.lieTruncationGrading ℒ k) (d.truncationIdeal ℒ k).mkQ
+    (fun n => (d.lieTruncationGrading_eq ℒ k n).symm)
 
-end Mei.PositiveDegrees
+end TauCeti.PositiveDegrees
 
-namespace Mei.GradedLieHom
+namespace TauCeti.GradedLieHom
+
+open Mei
 
 variable {N M R L L' : Type*} [AddCommGroup N] [AddCommGroup M] [CommRing R]
   [LieRing L] [LieAlgebra R L] [LieRing L'] [LieAlgebra R L']
@@ -226,16 +232,16 @@ variable [DecidableEq N] [DecidableEq M]
 
 /-- Ray support is preserved at finite order, for any source cutoff at least
 the order prescribed by the positive degree map. -/
-theorem truncatedMap_mem_rayLieSubalgebra (f : GradedLieHom T ℒ ℳ)
+theorem lieTruncatedMap_mem_rayLieSubalgebra (f : GradedLieHom T ℒ ℳ)
     (hdegree : ∀ n ∈ w.rayDegrees, T n ∈ v.rayDegrees)
-    {a k : ℕ} (ha : T.modulus k ≤ a) {x : d.truncatedLie ℒ a}
-    (hx : x ∈ rayLieSubalgebra (d.truncatedGrading ℒ a) w) :
-    f.truncatedMap k ha x ∈ rayLieSubalgebra (e.truncatedGrading ℳ k) v := by
+    {a k : ℕ} (ha : T.modulus k ≤ a) {x : d.lieTruncation ℒ a}
+    (hx : x ∈ rayLieSubalgebra (d.lieTruncationGrading ℒ a) w) :
+    f.lieTruncatedMap k ha x ∈ rayLieSubalgebra (e.lieTruncationGrading ℳ k) v := by
   rw [← d.map_rayLieSubalgebra_mkQ ℒ w a] at hx
   obtain ⟨y, hy, rfl⟩ := (LieSubalgebra.mem_map _ _ _).mp hx
   rw [← e.map_rayLieSubalgebra_mkQ ℳ v k]
   refine (LieSubalgebra.mem_map _ _ _).mpr
     ⟨f y, f.map_mem_rayLieSubalgebra hdegree hy, ?_⟩
-  simpa only [LieIdeal.mkQ_apply] using (f.truncatedMap_mk k ha y).symm
+  simpa only [LieIdeal.mkQ_apply] using (f.lieTruncatedMap_mk k ha y).symm
 
-end Mei.GradedLieHom
+end TauCeti.GradedLieHom

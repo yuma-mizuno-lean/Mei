@@ -20,12 +20,18 @@ lifting, even when the projected degree direction vanishes.
 
 This is the geometric cylinder construction used in the principal realization of
 Gross–Hacking–Keel–Kontsevich, *Canonical bases for cluster algebras*, §1 and
-Appendix B, arXiv:1411.1394v2. We use `DirectedWallSpaces.project` for labels,
+Appendix B, arXiv:1411.1394v2. We use `DirectedWallSpaces.mapTangent` for labels,
 `RationalAffinePolyhedron.preimage` for supports and
 `TauCeti.Toric.IsIntegralLattice.realCharacter_comp` for normals.
 -/
 
 public section
+
+open TauCeti (isRationalNormalPolyhedron_iff)
+
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
+open TauCeti (DirectedWallSpaces)
 
 noncomputable section
 
@@ -42,7 +48,7 @@ variable {Γ Λ K R L V E : Type*} [AddCommGroup Γ] [AddCommGroup Λ] [AddCommG
   [GradedLieAlgebra ℒ] [IsPositiveGrading d ℒ]
   {i : Λ →+ V} {j : K →+ E} {h : TauCeti.Toric.IsIntegralLattice i}
   {H : DirectedWallSpaces ρ ℒ}
-  (W : DirectedWall (d := d) h (H.project (AddMonoidHom.fst Λ K)))
+  (W : DirectedWall (d := d) h (H.mapTangent (AddMonoidHom.fst Λ K)))
   (h' : TauCeti.Toric.IsIntegralLattice j)
 
 /-- Lift a projected wall to the cylinder over its support, using the original
@@ -61,8 +67,8 @@ def cylinder : DirectedWall (d := d) (h.prod h') H where
   rational_support := by
     obtain ⟨P, hP⟩ := isRationalNormalPolyhedron_iff.mp W.rational_support
     let f := (ContinuousLinearMap.fst ℝ V E).toContinuousAffineMap
-    have hf : Toric.IsRationalLinearMap (h.prod h') h f.toAffineMap.linear :=
-      Toric.IsRationalLinearMap.fst h h'
+    have hf : TauCeti.Toric.IsRationalLinearMap (h.prod h') h f.toAffineMap.linear :=
+      TauCeti.Toric.IsRationalLinearMap.fst h h'
     apply isRationalNormalPolyhedron_iff.mpr
     refine ⟨P.preimage f hf, (P.carrier_preimage f hf).trans ?_⟩
     rw [hP]
@@ -75,7 +81,7 @@ def cylinder : DirectedWall (d := d) (h.prod h') H where
     ext x
     simp
   label := W.label
-  label_mem := (H.project_wallGroup (AddMonoidHom.fst Λ K) W.ray W.normal) ▸ W.label_mem
+  label_mem := (H.mapTangent_wallGroup (AddMonoidHom.fst Λ K) W.ray W.normal) ▸ W.label_mem
 
 @[simp]
 theorem cylinder_normal : (W.cylinder h').normal = W.normal.comp (AddMonoidHom.fst Λ K) :=

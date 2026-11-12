@@ -8,7 +8,7 @@ module
 public import Mei.Algebra.QuantumMonoidAlgebra.Action
 public import Mei.Algebra.QuantumMonoidAlgebra.Completion
 public import Mei.Algebra.Lie.BCH.RestrictScalars
-public import Mei.RingTheory.FilteredAlgebra.Exp.Map
+public import TauCeti.RingTheory.FilteredAlgebra.Exp.Map
 public import Mathlib.Algebra.Algebra.Hom.Rat
 
 /-!
@@ -34,6 +34,8 @@ tropical curve counts*, Example 2.1(iii), arXiv:1503.06183v5.
 -/
 
 public section
+
+open TauCeti (PositiveDegrees PositiveDegreeMap GradedLieHom)
 
 noncomputable section
 
@@ -75,17 +77,17 @@ local notation "ψ" => positiveMap φ.toRingHom T.toAddMonoidHom h d.monoid e.mo
 map from the source cutoff prescribed by the positive degree modulus. -/
 @[simp↓]
 theorem quotientMap_truncatedCoefficientInclusion (k : ℕ)
-    (x : d.truncatedLie ℒ (T.modulus k)) :
+    (x : d.lieTruncation ℒ (T.modulus k)) :
     Ideal.quotientMap ((G).ideal (k + 1)) ψ (positiveMap_ideal_le d e T φ.toRingHom h k)
         (truncatedCoefficientInclusion q β d (T.modulus k) x) =
       truncatedCoefficientInclusion q' β' e k
-        (e.truncatedRestrictScalarsEquiv (R := K) ℳ k
-          ((positiveGradedLieHom φ T h).truncatedMap k le_rfl
-            ((d.truncatedRestrictScalarsEquiv (R := K) ℒ (T.modulus k)).symm x))) := by
+        (e.lieTruncationRestrictScalarsEquiv (R := K) ℳ k
+          ((positiveGradedLieHom φ T h).lieTruncatedMap k le_rfl
+            ((d.lieTruncationRestrictScalarsEquiv (R := K) ℒ (T.modulus k)).symm x))) := by
   induction x using Submodule.Quotient.induction_on with | _ x =>
   simp only [truncatedCoefficientInclusion_mk,
-    Ideal.quotientMap_mk, PositiveDegrees.truncatedRestrictScalarsEquiv_symm_mk,
-    GradedLieHom.truncatedMap_mk, PositiveDegrees.truncatedRestrictScalarsEquiv_mk]
+    Ideal.quotientMap_mk, PositiveDegrees.lieTruncationRestrictScalarsEquiv_symm_mk,
+    GradedLieHom.lieTruncatedMap_mk, PositiveDegrees.lieTruncationRestrictScalarsEquiv_mk]
   exact congrArg (Ideal.Quotient.mk _)
     (positiveMap_positiveLieToCoefficients d e T φ h x)
 

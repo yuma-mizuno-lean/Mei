@@ -32,6 +32,8 @@ defined.
 
 public section
 
+open TauCeti.CompletedGroup (projection)
+
 noncomputable section
 
 namespace Mei.StandardPlane
@@ -47,7 +49,7 @@ local notation "hβ" => E.isAlt_coefficientForm ℚ
 /-- A family of rational powers of dilogarithm labels of plane degrees has only finitely many
 nonidentity factors at every order. -/
 theorem hasFiniteSupport_dilogPow (c : PlaneDegree w → ℚ) :
-    CompletedGroup.HasFiniteSupport fun m => dilogPow m (c m) := by
+    TauCeti.CompletedGroup.HasFiniteSupport fun m => dilogPow m (c m) := by
   simpa only [dilogPow_def] using SkewLieAlgebra.hasFiniteSupport_rayExp_smul_negDilogNeg β hβ
     PlaneDegree.vec PlaneDegree.mem PlaneDegree.ne_zero PlaneDegree.vec_injective c
 
@@ -58,15 +60,15 @@ angular order (`PlaneDegree.key`), smallest degree leftmost. Only finitely many 
 nonidentity at every order (`hasFiniteSupport_dilogPow`), so the infinite product is defined. -/
 theorem existsUnique_orderedProd_dilogPow (l : List (PlaneDegree w × ℕ)) :
     ∃! s : PlaneDegree w → ℕ,
-      CompletedGroup.orderedProd (fun m => dilogPow m (s m * rayIndex m.vec))
+      TauCeti.CompletedGroup.orderedProd (fun m => dilogPow m (s m * rayIndex m.vec))
           (hasFiniteSupport_dilogPow fun m => s m * rayIndex m.vec) =
         (l.map fun p => dilogPow p.1 (p.2 * rayIndex p.1.vec)).prod := by
   -- At every order, the ordered unit factors of the finite-order ordering form a sorted list.
   have hfact (k : ℕ) : ∃ l' : List (PlaneDegree w),
       l'.Pairwise (fun a b => 0 ≤ β a.vec b.vec) ∧
-      CompletedGroup.projection k (l'.map fun m => SkewLieAlgebra.rayExp β hβ m.mem m.ne_zero
+      projection k (l'.map fun m => SkewLieAlgebra.rayExp β hβ m.mem m.ne_zero
           (rayIndex m.vec • PowerSeries.negDilogNeg ℚ)).prod =
-        CompletedGroup.projection k
+        projection k
           (l.map fun p => dilogPow p.1 (p.2 * rayIndex p.1.vec)).prod := by
     obtain ⟨l', hchain, -, hprod⟩ := exists_isChain_projection_prod_pow_eq k l
     refine ⟨l', LinearMap.IsAlt.pairwise_of_isChain_of_mem_closure_pair hβ PlaneDegree.vec

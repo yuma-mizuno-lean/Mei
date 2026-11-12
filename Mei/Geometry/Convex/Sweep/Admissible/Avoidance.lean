@@ -29,6 +29,8 @@ Landau–Ginzburg models*, §4 (arXiv:2205.07753v2), using
 
 public section
 
+open TauCeti (singularSupport mem_singularSupport affineSpan_eq_of_notMem_singularSupport)
+
 open Set Mei.Convex
 
 namespace Mei.Convex

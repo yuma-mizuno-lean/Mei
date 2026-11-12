@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.Convex.Sweep
+public import TauCeti.Analysis.Convex.Sweep.Basic
 public import Mei.Analysis.Convex.Exposed
 import Mathlib.Tactic.Linarith
 
@@ -24,7 +24,6 @@ lineality; the exposed-subset classification does not require convexity.
 
 public section
 
-open Mei.Convex
 
 namespace ContinuousLinearMap
 
@@ -33,22 +32,22 @@ variable {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
 /-- A functional positive on the sweeping vector attains its maximum only
 on the base, where its maximizers are unchanged. -/
 theorem toExposed_sweep_of_pos (l : V →L[ℝ] ℝ) (P : Set V) {n : V}
-    (hn : 0 < l n) : l.toExposed (sweep P n) = l.toExposed P := by
+    (hn : 0 < l n) : l.toExposed (Set.sweep ℝ P n) = l.toExposed P := by
   ext y
   constructor
   · rintro ⟨hy, hmax⟩
-    obtain ⟨x, hx, t, ht, rfl⟩ := mem_sweep_iff_exists.mp hy
-    have hm := hmax x (subset_sweep P n hx)
+    obtain ⟨x, hx, t, ht, rfl⟩ := Set.mem_sweep_iff_exists.mp hy
+    have hm := hmax x (Set.subset_sweep (𝕜 := ℝ) P n hx)
     have ht0 : t = 0 := by
       simp only [map_sub, map_smul, smul_eq_mul] at hm
       nlinarith
     subst t
     simp only [zero_smul, sub_zero] at hmax ⊢
-    exact ⟨hx, fun z hz => hmax z (subset_sweep P n hz)⟩
+    exact ⟨hx, fun z hz => hmax z (Set.subset_sweep (𝕜 := ℝ) P n hz)⟩
   · rintro ⟨hy, hmax⟩
-    refine ⟨subset_sweep P n hy, ?_⟩
+    refine ⟨Set.subset_sweep (𝕜 := ℝ) P n hy, ?_⟩
     rintro z hz
-    obtain ⟨x, hx, t, ht, rfl⟩ := mem_sweep_iff_exists.mp hz
+    obtain ⟨x, hx, t, ht, rfl⟩ := Set.mem_sweep_iff_exists.mp hz
     have hm := hmax x hx
     have hp := mul_nonneg ht hn.le
     simp only [map_sub, map_smul, smul_eq_mul]
@@ -57,28 +56,28 @@ theorem toExposed_sweep_of_pos (l : V →L[ℝ] ℝ) (P : Set V) {n : V}
 /-- A functional vanishing on the sweeping vector has precisely the swept
 base maximizers as maximizers on the sweep. -/
 theorem toExposed_sweep_of_eq_zero (l : V →L[ℝ] ℝ) (P : Set V) {n : V}
-    (hn : l n = 0) : l.toExposed (sweep P n) = sweep (l.toExposed P) n := by
+    (hn : l n = 0) : l.toExposed (Set.sweep ℝ P n) = Set.sweep ℝ (l.toExposed P) n := by
   ext y
   constructor
   · rintro ⟨hy, hmax⟩
-    obtain ⟨x, hx, t, ht, rfl⟩ := mem_sweep_iff_exists.mp hy
-    refine mem_sweep_iff_exists.mpr ⟨x, ⟨hx, ?_⟩, t, ht, rfl⟩
+    obtain ⟨x, hx, t, ht, rfl⟩ := Set.mem_sweep_iff_exists.mp hy
+    refine Set.mem_sweep_iff_exists.mpr ⟨x, ⟨hx, ?_⟩, t, ht, rfl⟩
     intro z hz
     simpa only [map_sub, map_smul, smul_eq_mul, hn, mul_zero, sub_zero] using
-      hmax z (subset_sweep P n hz)
+      hmax z (Set.subset_sweep (𝕜 := ℝ) P n hz)
   · intro hy
-    obtain ⟨x, ⟨hx, hmax⟩, t, ht, rfl⟩ := mem_sweep_iff_exists.mp hy
-    refine ⟨mem_sweep_iff_exists.mpr ⟨x, hx, t, ht, rfl⟩, ?_⟩
+    obtain ⟨x, ⟨hx, hmax⟩, t, ht, rfl⟩ := Set.mem_sweep_iff_exists.mp hy
+    refine ⟨Set.mem_sweep_iff_exists.mpr ⟨x, hx, t, ht, rfl⟩, ?_⟩
     intro z hz
-    obtain ⟨w, hw, s, hs, rfl⟩ := mem_sweep_iff_exists.mp hz
+    obtain ⟨w, hw, s, hs, rfl⟩ := Set.mem_sweep_iff_exists.mp hz
     simpa only [map_sub, map_smul, smul_eq_mul, hn, mul_zero, sub_zero] using hmax w hw
 
 /-- A functional with a maximizer on a negative-ray sweep is nonnegative on
 the sweeping vector. -/
 theorem nonneg_apply_of_toExposed_sweep_nonempty (l : V →L[ℝ] ℝ) {P : Set V} {n : V}
-    (hne : (l.toExposed (sweep P n)).Nonempty) : 0 ≤ l n := by
+    (hne : (l.toExposed (Set.sweep ℝ P n)).Nonempty) : 0 ≤ l n := by
   obtain ⟨y, hy, hmax⟩ := hne
-  have hm := hmax (y - (1 : ℝ) • n) (sub_smul_mem_sweep hy zero_le_one)
+  have hm := hmax (y - (1 : ℝ) • n) (Set.sub_smul_mem_sweep hy zero_le_one)
   simp only [map_sub, map_smul, smul_eq_mul, one_mul] at hm
   linarith
 
@@ -91,20 +90,20 @@ variable {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
 
 /-- Every nonempty exposed subset of a negative-ray sweep is an exposed
 subset of the base or the sweep of one. This direction needs no transversality. -/
-theorem exists_base_or_sweep (hG : IsExposed ℝ (sweep P n) G) (hne : G.Nonempty) :
-    ∃ F : Set V, F.Nonempty ∧ IsExposed ℝ P F ∧ (G = F ∨ G = sweep F n) := by
+theorem exists_base_or_sweep (hG : IsExposed ℝ (Set.sweep ℝ P n) G) (hne : G.Nonempty) :
+    ∃ F : Set V, F.Nonempty ∧ IsExposed ℝ P F ∧ (G = F ∨ G = Set.sweep ℝ F n) := by
   obtain ⟨l, hl⟩ := hG hne
   -- IsExposed stores a set-builder equality; name it to use the toExposed sweep lemmas.
-  change G = l.toExposed (sweep P n) at hl
-  have hm : (l.toExposed (sweep P n)).Nonempty := hl ▸ hne
+  change G = l.toExposed (Set.sweep ℝ P n) at hl
+  have hm : (l.toExposed (Set.sweep ℝ P n)).Nonempty := hl ▸ hne
   have hn := l.nonneg_apply_of_toExposed_sweep_nonempty hm
   rcases eq_or_lt_of_le hn with hn | hn
-  · have he : G = sweep (l.toExposed P) n :=
+  · have he : G = Set.sweep ℝ (l.toExposed P) n :=
       hl.trans (l.toExposed_sweep_of_eq_zero P hn.symm)
     have hF : (l.toExposed P).Nonempty := by
       obtain ⟨y, hy⟩ := hne
       rw [he] at hy
-      obtain ⟨x, hx, _, _, _⟩ := mem_sweep_iff_exists.mp hy
+      obtain ⟨x, hx, _, _, _⟩ := Set.mem_sweep_iff_exists.mp hy
       exact ⟨x, hx⟩
     exact ⟨l.toExposed P, hF, ContinuousLinearMap.toExposed.isExposed, Or.inr he⟩
   · have he : G = l.toExposed P := hl.trans (l.toExposed_sweep_of_pos P hn)
@@ -120,7 +119,7 @@ variable {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
 /-- A height constant on the base and normalized on the sweeping vector makes
 each exposed base subset an exposed subset of the whole sweep. -/
 theorem in_sweep_of_height (hF : IsExposed ℝ P F) (f : V →L[ℝ] ℝ) (c : ℝ)
-    (hfn : f n = 1) (hfP : ∀ x ∈ P, f x = c) : IsExposed ℝ (sweep P n) F := by
+    (hfn : f n = 1) (hfP : ∀ x ∈ P, f x = c) : IsExposed ℝ (Set.sweep ℝ P n) F := by
   intro hne
   obtain ⟨l, hl⟩ := hF hne
   -- IsExposed stores a set-builder equality; name it to use the toExposed adjustment lemma.
@@ -138,10 +137,10 @@ theorem in_sweep_of_height (hF : IsExposed ℝ P F) (f : V →L[ℝ] ℝ) (c : �
 subset of the sweep. The adjusted functional vanishes on the sweeping vector. -/
 theorem sweep_of_height (hF : IsExposed ℝ P F) (f : V →L[ℝ] ℝ) (c : ℝ)
     (hfn : f n = 1) (hfP : ∀ x ∈ P, f x = c) :
-    IsExposed ℝ (sweep P n) (sweep F n) := by
+    IsExposed ℝ (Set.sweep ℝ P n) (Set.sweep ℝ F n) := by
   intro hne
   obtain ⟨y, hy⟩ := hne
-  obtain ⟨x, hx, _, _, _⟩ := mem_sweep_iff_exists.mp hy
+  obtain ⟨x, hx, _, _, _⟩ := Set.mem_sweep_iff_exists.mp hy
   obtain ⟨l, hl⟩ := hF ⟨x, hx⟩
   -- IsExposed stores a set-builder equality; name it to use the toExposed adjustment lemma.
   change F = l.toExposed P at hl
@@ -151,7 +150,7 @@ theorem sweep_of_height (hF : IsExposed ℝ P F) (f : V →L[ℝ] ℝ) (c : ℝ)
   have hkn : k n = 0 := by simp [k, hfn]
   refine ⟨k, ?_⟩
   -- The witness goal is a set-builder equality; name it to rewrite with the sweep formula.
-  change sweep F n = k.toExposed (sweep P n)
+  change Set.sweep ℝ F n = k.toExposed (Set.sweep ℝ P n)
   rw [k.toExposed_sweep_of_eq_zero P hkn, hk]
 
 variable [FiniteDimensional ℝ V]
@@ -159,19 +158,19 @@ variable [FiniteDimensional ℝ V]
 /-- Every exposed subset of a transverse base is exposed in the whole sweep.
 Empty subsets are included according to Mathlib's convention. -/
 theorem in_sweep_of_transverse (hF : IsExposed ℝ P F) (hn : n ∉ vectorSpan ℝ P) :
-    IsExposed ℝ (sweep P n) F := by
+    IsExposed ℝ (Set.sweep ℝ P n) F := by
   intro hne
   obtain ⟨x, hx⟩ := hne
-  obtain ⟨f, c, hfn, hfP⟩ := exists_sweep_height ⟨x, hF.subset hx⟩ hn
+  obtain ⟨f, c, hfn, hfP⟩ := Set.exists_sweep_height ⟨x, hF.subset hx⟩ hn
   exact hF.in_sweep_of_height ⟨f, f.continuous_of_finiteDimensional⟩ c hfn hfP ⟨x, hx⟩
 
 /-- Sweeping preserves exposure when the sweeping vector is transverse to the base. -/
 theorem sweep_of_transverse (hF : IsExposed ℝ P F) (hn : n ∉ vectorSpan ℝ P) :
-    IsExposed ℝ (sweep P n) (sweep F n) := by
+    IsExposed ℝ (Set.sweep ℝ P n) (Set.sweep ℝ F n) := by
   intro hne
   obtain ⟨y, hy⟩ := hne
-  obtain ⟨x, hx, _, _, _⟩ := mem_sweep_iff_exists.mp hy
-  obtain ⟨f, c, hfn, hfP⟩ := exists_sweep_height ⟨x, hF.subset hx⟩ hn
+  obtain ⟨x, hx, _, _, _⟩ := Set.mem_sweep_iff_exists.mp hy
+  obtain ⟨f, c, hfn, hfP⟩ := Set.exists_sweep_height ⟨x, hF.subset hx⟩ hn
   exact hF.sweep_of_height ⟨f, f.continuous_of_finiteDimensional⟩ c hfn hfP ⟨y, hy⟩
 
 end IsExposed
@@ -184,8 +183,8 @@ variable {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V] [FiniteDimension
 /-- The nonempty exposed subsets of a transverse sweep are exactly its base
 faces and the sweeps of base faces. No convexity or closedness is required. -/
 theorem isExposed_sweep_iff (hn : n ∉ vectorSpan ℝ P) (hG : G.Nonempty) :
-    IsExposed ℝ (sweep P n) G ↔
-      ∃ F : Set V, F.Nonempty ∧ IsExposed ℝ P F ∧ (G = F ∨ G = sweep F n) := by
+    IsExposed ℝ (Set.sweep ℝ P n) G ↔
+      ∃ F : Set V, F.Nonempty ∧ IsExposed ℝ P F ∧ (G = F ∨ G = Set.sweep ℝ F n) := by
   constructor
   · exact fun hex => hex.exists_base_or_sweep hG
   · rintro ⟨F, _, hF, rfl | rfl⟩
@@ -197,13 +196,13 @@ exactly the base and sweeps of codimension-one exposed subsets of the base.
 Dimensions are relative to the affine direction, so lineality is allowed. -/
 theorem isExposed_sweep_codimension_one_iff (hP : P.Nonempty)
     (hn : n ∉ vectorSpan ℝ P) (hG : G.Nonempty) :
-    (IsExposed ℝ (sweep P n) G ∧
+    (IsExposed ℝ (Set.sweep ℝ P n) G ∧
       Module.finrank ℝ (vectorSpan ℝ G) + 1 =
-        Module.finrank ℝ (vectorSpan ℝ (sweep P n))) ↔
+        Module.finrank ℝ (vectorSpan ℝ (Set.sweep ℝ P n))) ↔
     G = P ∨ ∃ F : Set V, F.Nonempty ∧ IsExposed ℝ P F ∧
       Module.finrank ℝ (vectorSpan ℝ F) + 1 = Module.finrank ℝ (vectorSpan ℝ P) ∧
-      G = sweep F n := by
-  have hdimP := finrank_sweep hP hn
+      G = Set.sweep ℝ F n := by
+  have hdimP := Set.finrank_vectorSpan_sweep (𝕜 := ℝ) hP hn
   constructor
   · rintro ⟨hex, hdim⟩
     obtain ⟨F, hFne, hF, rfl | rfl⟩ := hex.exists_base_or_sweep hG
@@ -212,12 +211,12 @@ theorem isExposed_sweep_codimension_one_iff (hP : P.Nonempty)
       exact hF.eq_of_finrank_vectorSpan_eq hFne (Nat.add_right_cancel hdim)
     · right
       have hnF : n ∉ vectorSpan ℝ F := fun hn' => hn (vectorSpan_mono ℝ hF.subset hn')
-      rw [finrank_sweep hFne hnF, hdimP] at hdim
+      rw [Set.finrank_vectorSpan_sweep (𝕜 := ℝ) hFne hnF, hdimP] at hdim
       exact ⟨F, hFne, hF, Nat.add_right_cancel hdim, rfl⟩
   · rintro (rfl | ⟨F, hFne, hF, hdim, rfl⟩)
     · exact ⟨(IsExposed.refl _).in_sweep_of_transverse hn, hdimP.symm⟩
     · have hnF : n ∉ vectorSpan ℝ F := fun hn' => hn (vectorSpan_mono ℝ hF.subset hn')
       refine ⟨hF.sweep_of_transverse hn, ?_⟩
-      rw [finrank_sweep hFne hnF, hdimP, hdim]
+      rw [Set.finrank_vectorSpan_sweep (𝕜 := ℝ) hFne hnF, hdimP, hdim]
 
 end Mei.Convex

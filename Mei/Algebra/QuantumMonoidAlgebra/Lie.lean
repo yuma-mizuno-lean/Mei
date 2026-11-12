@@ -33,6 +33,8 @@ Lie algebra should install `LieRing.ofAssociativeRing` locally.
 
 public section
 
+open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading GradedLieHom)
+
 noncomputable section
 
 namespace Mei.QuantumMonoidAlgebra

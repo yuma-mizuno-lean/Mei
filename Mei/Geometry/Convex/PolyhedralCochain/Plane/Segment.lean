@@ -26,9 +26,13 @@ cochain by cells transverse to the triangle.
 
 public section
 
+open TauCeti (OrientedCell PolyhedralCochain isRationalNormalPolyhedron_singleton)
+
 open Set Module
 
-namespace Mei
+namespace TauCeti
+
+open Mei
 
 variable {R : Type*} [Ring R] {E : Type*} [AddCommGroup E] [Module R E]
   {h : TauCeti.Toric.IsIntegralLattice ((Int.castAddHom ℝ).prodMap (Int.castAddHom ℝ))}
@@ -292,15 +296,15 @@ theorem fst_mem_Icc_of_mem_convexHull_smallTriangle (p : ℝ × ℝ) {q : ℝ ×
 
 /-- The triangle around `p` is positively oriented: its edge frame has area `1`. -/
 theorem area_smallTriangle_frame (p : ℝ × ℝ) :
-    area (fun j : Fin 2 => smallTriangle p j.succ - smallTriangle p 0) = 1 := by
-  simp [area_apply]
+    Mei.Plane.area (fun j : Fin 2 => smallTriangle p j.succ - smallTriangle p 0) = 1 := by
+  simp [Mei.Plane.area_apply]
   norm_num
 
 /-- The edge frame of the triangle around `p` is linearly independent. -/
 theorem linearIndependent_smallTriangle_frame (p : ℝ × ℝ) :
     LinearIndependent ℝ (fun j : Fin 2 => smallTriangle p j.succ - smallTriangle p 0) := by
   by_contra hdep
-  have := area.map_linearDependent _ hdep
+  have := Mei.Plane.area.map_linearDependent _ hdep
   rw [area_smallTriangle_frame] at this
   exact one_ne_zero this
 
@@ -313,7 +317,7 @@ positive area and whose hull contains `x`. -/
 theorem planePoint_intersectionIndex_of_mem (x : ℝ × ℝ) {T : Fin 3 → ℝ × ℝ}
     (hx : x ∈ convexHull ℝ (range T)) :
     (planePoint h x).intersectionIndex T =
-      (SignType.sign (Plane.area fun j : Fin 2 => T j.succ - T 0) : ℤ) := by
+      (SignType.sign (Mei.Plane.area fun j : Fin 2 => T j.succ - T 0) : ℤ) := by
   rw [intersectionIndex_of_nonempty ⟨x, hx, rfl⟩]
   simp
 
@@ -344,7 +348,7 @@ theorem planePoint_intersectionIndex_smallTriangle_of_gt {p q : ℝ × ℝ} (hpq
 
 /-- The triangle around `p` is transverse to the point cell at `p`. -/
 theorem isTransverse_planePoint_smallTriangle_self (p : ℝ × ℝ) :
-    (planePoint h p).IsTransverse (Plane.smallTriangle p) where
+    (planePoint h p).IsTransverseToCarrier (Plane.smallTriangle p) where
   disjoint_intrinsicFrontier := by simp
   linearIndependent _ := by
     rw [direction_affineSpan_planePoint]
@@ -353,31 +357,32 @@ theorem isTransverse_planePoint_smallTriangle_self (p : ℝ × ℝ) :
 /-- The triangle around `p` is transverse to point cells that it misses. -/
 theorem isTransverse_planePoint_smallTriangle_of_notMem {p q : ℝ × ℝ}
     (hq : q ∉ convexHull ℝ (range (Plane.smallTriangle p))) :
-    (planePoint h q).IsTransverse (Plane.smallTriangle p) :=
-  isTransverse_of_disjoint _ (by simpa using hq)
+    (planePoint h q).IsTransverseToCarrier (Plane.smallTriangle p) :=
+  isTransverseToCarrier_of_disjoint _ (by simpa using hq)
 
 open Classical in
 /-- The triangle around an endpoint `(0, 0)` or `(1, 0)` of the unit segment is transverse to
 both boundary facets of the segment. -/
 theorem isTransverse_smallTriangle_of_mem_boundaryFacets {p : ℝ × ℝ}
     (hp : p = (0, 0) ∨ p = (1, 0)) {τ : OrientedCell h (1 + 1)}
-    (hτ : τ ∈ (unitSegment h).boundaryFacets) : τ.IsTransverse (Plane.smallTriangle p) := by
+    (hτ : τ ∈ (unitSegment h).boundaryFacets) :
+    τ.IsTransverseToCarrier (Plane.smallTriangle p) := by
   rw [unitSegment_boundaryFacets, Finset.mem_insert, Finset.mem_singleton] at hτ
   rcases hτ with rfl | rfl <;> rcases hp with rfl | rfl
   · exact isTransverse_planePoint_smallTriangle_self _
   · refine isTransverse_planePoint_smallTriangle_of_notMem fun hq => ?_
     linarith [(Plane.fst_mem_Icc_of_mem_convexHull_smallTriangle _ hq).1]
-  · rw [isTransverse_reverse_iff]
+  · rw [isTransverseToCarrier_reverse_iff]
     refine isTransverse_planePoint_smallTriangle_of_notMem fun hq => ?_
     linarith [(Plane.fst_mem_Icc_of_mem_convexHull_smallTriangle _ hq).2]
-  · rw [isTransverse_reverse_iff]
+  · rw [isTransverseToCarrier_reverse_iff]
     exact isTransverse_planePoint_smallTriangle_self _
 
 end OrientedCell
 
 namespace PolyhedralCochain
 
-open OrientedCell
+open TauCeti.OrientedCell
 
 open Classical in
 /-- The pairing of the signed boundary presentation of the coboundary of the unit segment with a
@@ -418,7 +423,7 @@ around `p₀` pairs with it to give `c`. -/
 theorem intersectionPairing_eq_of_ofFinsupp_eq_coboundary_unitSegment_zero (c : E)
     {y : OrientedCell h (1 + 1) →₀ E}
     (hy : ofFinsupp (R := R) y = coboundaryOfFinsupp (Finsupp.single (unitSegment h) c))
-    (hT : ∀ τ ∈ y.support, τ.IsTransverse (Plane.smallTriangle (0, 0))) :
+    (hT : ∀ τ ∈ y.support, τ.IsTransverseToCarrier (Plane.smallTriangle (0, 0))) :
     intersectionPairing (R := R) (Plane.smallTriangle (0, 0)) y = c := by
   rw [← intersectionPairing_coboundaryPresentation_unitSegment_zero (R := R) (h := h) c]
   exact intersectionPairing_eq_coboundaryPresentation_of_ofFinsupp_eq c hy
@@ -429,7 +434,7 @@ around `p₁` pairs with it to give `-c`. -/
 theorem intersectionPairing_eq_neg_of_ofFinsupp_eq_coboundary_unitSegment_one (c : E)
     {y : OrientedCell h (1 + 1) →₀ E}
     (hy : ofFinsupp (R := R) y = coboundaryOfFinsupp (Finsupp.single (unitSegment h) c))
-    (hT : ∀ τ ∈ y.support, τ.IsTransverse (Plane.smallTriangle (1, 0))) :
+    (hT : ∀ τ ∈ y.support, τ.IsTransverseToCarrier (Plane.smallTriangle (1, 0))) :
     intersectionPairing (R := R) (Plane.smallTriangle (1, 0)) y = -c := by
   rw [← intersectionPairing_coboundaryPresentation_unitSegment_one (R := R) (h := h) c]
   exact intersectionPairing_eq_coboundaryPresentation_of_ofFinsupp_eq c hy
@@ -437,4 +442,4 @@ theorem intersectionPairing_eq_neg_of_ofFinsupp_eq_coboundary_unitSegment_one (c
 
 end PolyhedralCochain
 
-end Mei
+end TauCeti

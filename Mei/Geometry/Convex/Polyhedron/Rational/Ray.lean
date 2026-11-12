@@ -5,10 +5,12 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.Convex.Polyhedron.Rational.Sweep
-public import Mei.Geometry.Convex.Polyhedron.Rational.LocallyClosed
+public import TauCeti.Analysis.Convex.Polyhedron.Rational.Sweep
+public import TauCeti.Analysis.Convex.Polyhedron.Rational.LocallyClosed
+public import Mei.Geometry.Convex.Polyhedron.Rational.Map
 public import TauCeti.Analysis.Convex.Recession.Basic
 import Mei.LinearAlgebra.AffineSpace.Ray
+import Mei.Topology.Algebra.ContinuousAffineMap
 import Mei.Geometry.Convex.Polyhedron.Face
 import Mei.Geometry.Convex.Polyhedron.Escape
 
@@ -28,12 +30,15 @@ In recession directions, only the inequalities constant along the ray remain.
 These two results supply wall avoidance and source admission for unbounded incoming
 segments.
 
-The construction reuses `IsRationalNormalPolyhedron.negRay` and the active-inequality
-perturbation theorem `AffineMap.exists_pos_smul_add_forall_le`, together with
+The construction reuses `IsRationalNormalPolyhedron.sweep` and the active-inequality
+perturbation theorem `TauCeti.exists_pos_smul_add_forall_le`, together with
 `Convex.eventually_forall_notMem_of_notMem_recessionCone` for nonrecession directions.
 -/
 
 public section
+
+open TauCeti (IsLocallyClosedPolyhedron IsRationalNormalPolyhedron RationalAffinePolyhedron
+  isRationalNormalPolyhedron_iff isRationalNormalPolyhedron_setOf_forall)
 
 namespace Mei
 
@@ -42,10 +47,10 @@ variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ 
 
 /-- The base points of open positive rays along a lattice vector meeting a closed
 rational-normal polyhedron form a locally closed rational-normal polyhedron.
-This is the strict-parameter counterpart of `IsRationalNormalPolyhedron.negRay`.
+This is the strict-parameter counterpart of `IsRationalNormalPolyhedron.sweep`.
 The vector may be zero or tangent to the polyhedron, and the intersection may be
 a single point. -/
-theorem IsRationalNormalPolyhedron.isLocallyClosedPolyhedron_openNegRay
+theorem _root_.TauCeti.IsRationalNormalPolyhedron.isLocallyClosedPolyhedron_openNegRay
     (hP : IsRationalNormalPolyhedron h P) (w : N) :
     IsLocallyClosedPolyhedron h {x : V | ∃ t : ℝ, 0 < t ∧ x + t • i w ∈ P} := by
   obtain ⟨A, rfl⟩ := isRationalNormalPolyhedron_iff.mp hP
@@ -69,7 +74,7 @@ theorem IsRationalNormalPolyhedron.isLocallyClosedPolyhedron_openNegRay
           by_contra hle
           have hs := hstrict ⟨j, lt_of_not_ge hle⟩
           linarith
-        obtain ⟨ε, hε, hmem⟩ := AffineMap.exists_pos_smul_add_forall_le
+        obtain ⟨ε, hε, hmem⟩ := TauCeti.exists_pos_smul_add_forall_le
           (fun j => (A.inequality j).toAffineMap)
           (RationalAffinePolyhedron.mem_carrier.mp hx) hactive
         exact ⟨ε, hε, RationalAffinePolyhedron.mem_carrier.mpr
@@ -77,14 +82,19 @@ theorem IsRationalNormalPolyhedron.isLocallyClosedPolyhedron_openNegRay
             simpa only [ContinuousAffineMap.coe_toAffineMap, add_comm] using hmem j)⟩
       · exact ⟨t, ht, hx⟩
   rw [he]
-  have hweak := (isRationalNormalPolyhedron_iff.mpr ⟨A, rfl⟩).negRay w
+  have hweak : IsRationalNormalPolyhedron h
+      {y : V | ∃ t : ℝ, 0 ≤ t ∧ y + t • i w ∈ A.carrier} := by
+    have he : Set.sweep ℝ A.carrier (i w) = {y | ∃ t : ℝ, 0 ≤ t ∧ y + t • i w ∈ A.carrier} :=
+      Set.ext fun _ => Set.mem_sweep_iff
+    rw [← he]
+    exact (isRationalNormalPolyhedron_iff.mpr ⟨A, rfl⟩).sweep w
   exact hweak.isLocallyClosedPolyhedron_inter (fun j : J => A.inequality j.val)
     (fun j => A.rational_linear j.val)
 
 /-- Eventual admission along any real direction has a closed rational-normal domain,
 including for empty sources and zero directions. Outside the recession cone,
 the domain is empty. -/
-theorem IsRationalNormalPolyhedron.eventually_add_smul_mem
+theorem _root_.TauCeti.IsRationalNormalPolyhedron.eventually_add_smul_mem
     (hP : IsRationalNormalPolyhedron h P) (w : V) :
     IsRationalNormalPolyhedron h
       {x : V | ∀ᶠ t : ℝ in Filter.atTop, x + t • w ∈ P} := by

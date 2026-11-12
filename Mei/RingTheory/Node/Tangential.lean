@@ -27,6 +27,8 @@ arXiv:1601.07081v4.
 
 public section
 
+open TauCeti (GradedCorrespondence)
+
 noncomputable section
 
 namespace Mei.NodeAlgebra

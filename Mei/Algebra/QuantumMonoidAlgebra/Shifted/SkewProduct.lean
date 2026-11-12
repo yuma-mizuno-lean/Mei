@@ -7,9 +7,10 @@ module
 
 public import Mei.Algebra.QuantumMonoidAlgebra.Units
 public import Mei.Algebra.QuantumMonoidAlgebra.Shifted.Map
-public import Mei.RingTheory.FilteredAlgebra.AlgHom
+public import TauCeti.RingTheory.FilteredAlgebra.AlgHom
 public import Mathlib.Algebra.Ring.Action.ConjAct
 public import Mathlib.Algebra.Algebra.Equiv
+import Mei.RingTheory.FilteredAlgebra.Algebra
 
 /-!
 # Products of shifted coefficients for arbitrary quantum forms
@@ -22,6 +23,10 @@ normalized conjugation.
 -/
 
 public section
+
+open TauCeti (AlgFiltration)
+
+open TauCeti (PositiveDegrees)
 noncomputable section
 
 namespace Mei.QuantumMonoidAlgebra
@@ -130,10 +135,10 @@ local notation "F" => positiveFiltration q β P δ hδ
 theorem positiveMonomialRightConjSkew_filtration_le (s : Γ) (k : ℕ) :
     (F).ideal k ≤ ((F).ideal k).comap (positiveMonomialRightConjSkew q β P s) := by
   classical
-  rw [positiveFiltration_ideal, GradedAlgebra.degreeIdeal_le_iff]
+  rw [positiveFiltration_ideal, TauCeti.GradedAlgebra.degreeIdeal_le_iff]
   intro u hu a ha
   rw [Ideal.mem_comap]
-  exact GradedAlgebra.le_degreeIdeal _ δ _ hu _
+  exact TauCeti.GradedAlgebra.le_degreeIdeal _ δ _ hu _
     (positiveMonomialRightConjSkew_mem_grading q β P s ha)
 
 /-- Right monomial conjugation extends through the existing filtered algebra completion map. -/

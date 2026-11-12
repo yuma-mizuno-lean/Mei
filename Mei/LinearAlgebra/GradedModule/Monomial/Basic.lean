@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mei.LinearAlgebra.Basis.Quotient
-public import Mei.Algebra.DirectSum.Degree.Basic
+public import TauCeti.Algebra.DirectSum.DegreeTail
 
 /-!
 # Monomial presentations of homogeneous modules
@@ -22,6 +22,8 @@ projection uses Mathlib's internal direct-sum decomposition and basis coordinate
 -/
 
 public noncomputable section
+
+open TauCeti.DirectSum (mem_degreeTail_iff)
 
 namespace Mei
 
@@ -93,10 +95,10 @@ theorem isInternal [DecidableEq ι] : DirectSum.IsInternal ℳ := by
 /-- A degree tail discards exactly the basis coordinates below its bound. -/
 theorem mem_degreeTail_iff
     (d : ι → ℤ) (k : ℕ) (x : M) :
-    x ∈ Mei.DirectSum.degreeTail ℳ d k ↔ ∀ i, d i < k → P.basis.repr x i = 0 := by
+    x ∈ TauCeti.DirectSum.degreeTail ℳ d k ↔ ∀ i, d i < k → P.basis.repr x i = 0 := by
   classical
   let := P.isInternal.chooseDecomposition
-  rw [Mei.DirectSum.mem_degreeTail_iff]
+  rw [TauCeti.DirectSum.mem_degreeTail_iff]
   apply forall_congr'
   intro i
   rw [P.coe_decompose]
@@ -145,8 +147,8 @@ Only the surviving degrees index its basis. -/
 def degreeQuotient
     (d : ι → ℤ) (k : ℕ) :
     MonomialPresentation (fun i : {i // d i ≤ k} =>
-      (ℳ i).map (Mei.DirectSum.degreeTail ℳ d (k + 1)).mkQ) :=
-  P.quotient (Mei.DirectSum.degreeTail ℳ d (k + 1)) {i | d i ≤ k} (by
+      (ℳ i).map (TauCeti.DirectSum.degreeTail ℳ d (k + 1)).mkQ) :=
+  P.quotient (TauCeti.DirectSum.degreeTail ℳ d (k + 1)) {i | d i ≤ k} (by
     intro x
     rw [P.mem_degreeTail_iff]
     simp only [Set.mem_ofPred_eq]
@@ -158,7 +160,7 @@ theorem degreeQuotient_basis
     (d : ι → ℤ) (k : ℕ) (i : {i // d i ≤ k}) :
     (P.degreeQuotient d k).basis i = Submodule.Quotient.mk (P.basis i) := by
   unfold degreeQuotient
-  exact P.quotient_basis (Mei.DirectSum.degreeTail ℳ d (k + 1))
+  exact P.quotient_basis (TauCeti.DirectSum.degreeTail ℳ d (k + 1))
     {i | d i ≤ k} _ i
 
 /-- Taking coordinates commutes with a degree truncation on every retained degree. -/
@@ -167,7 +169,7 @@ theorem degreeQuotient_repr_mk
     (d : ι → ℤ) (k : ℕ) (x : M) (i : {i // d i ≤ k}) :
     (P.degreeQuotient d k).basis.repr (Submodule.Quotient.mk x) i = P.basis.repr x i := by
   unfold degreeQuotient
-  exact P.quotient_repr_mk (Mei.DirectSum.degreeTail ℳ d (k + 1)) {i | d i ≤ k} _ x i
+  exact P.quotient_repr_mk (TauCeti.DirectSum.degreeTail ℳ d (k + 1)) {i | d i ≤ k} _ x i
 
 end MonomialPresentation
 end Mei

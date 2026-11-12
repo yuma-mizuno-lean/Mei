@@ -6,6 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.LocalCrossing
+import Mei.Geometry.Convex.Polyhedron.SingularSupport
 
 /-!
 # Local constancy along regular wall germs
@@ -24,7 +25,13 @@ In particular, near a regular point of an affine subspace `A` all of whose incid
 (`DirectedDiagram.eventually_nhdsWithin_combinedLabel_eq`).
 -/
 
+open TauCeti (singularSupport isClosed_singularSupport)
+
 public noncomputable section
+
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
+open TauCeti (DirectedWallSpaces)
 
 open Set Filter Topology Mei.Convex
 

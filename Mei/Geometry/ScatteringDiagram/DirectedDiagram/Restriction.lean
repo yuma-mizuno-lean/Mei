@@ -29,9 +29,17 @@ indexed walls preserves finite-order equivalence by
 
 public section
 
+open TauCeti.CompletedGroup (projection)
+
+open TauCeti (WallComplement AdmissiblePLPath)
+
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
-open Set Mei.Convex WallComplement
+open Set Mei.Convex TauCeti.WallComplement
 
 namespace Mei.DirectedDiagram
 
@@ -84,27 +92,27 @@ theorem levelPathProduct_restrictPathPrefunctor (s : Set ι) [DecidablePred (· 
     (comm : ∀ a b : D.active k,
       affineSpan ℝ (D.wall a).support = affineSpan ℝ (D.wall b).support →
         Commute
-          (if a.val ∈ s then CompletedGroup.projection k (D.wall a).label else 1 :
+          (if a.val ∈ s then projection k (D.wall a).label else 1 :
             d.truncatedGroup ℒ k)
-          (if b.val ∈ s then CompletedGroup.projection k (D.wall b).label else 1))
+          (if b.val ∈ s then projection k (D.wall b).label else 1))
     {x y : WallComplement (fun j : D.active k => (D.wall j).support)}
     (p : AdmissiblePLPath x y) :
     (D.restrict s).levelPathProduct k ((D.restrictPathPrefunctor s k).mapPath p) =
       p.wallPathProduct (fun j : D.active k => h.realCharacter (D.wall j).normal)
-        (fun j => (if j.val ∈ s then CompletedGroup.projection k (D.wall j).label else 1 :
+        (fun j => (if j.val ∈ s then projection k (D.wall j).label else 1 :
           d.truncatedGroup ℒ k)) comm := by
   have hf : Function.Injective (activeOfRestrict D s k) := fun a b hab =>
     Subtype.ext (Subtype.ext (congrArg (fun j : D.active k => j.val) hab))
   have hlabel : ∀ j, j ∉ range (activeOfRestrict D s k) →
-      (if j.val ∈ s then CompletedGroup.projection k (D.wall j).label else 1 :
+      (if j.val ∈ s then projection k (D.wall j).label else 1 :
         d.truncatedGroup ℒ k) = 1 :=
     fun j hj => ite_eq_right_iff.mpr fun hjs => (hj ⟨⟨⟨j.val, hjs⟩,
       ((D.restrict s).mem_active k _).mpr ((D.mem_active k _).mp j.property)⟩, rfl⟩).elim
   have hl : (fun j : D.active k =>
-      (if j.val ∈ s then CompletedGroup.projection k (D.wall j).label else 1 :
+      (if j.val ∈ s then projection k (D.wall j).label else 1 :
         d.truncatedGroup ℒ k)) ∘ activeOfRestrict D s k =
       fun j : (D.restrict s).active k =>
-        (CompletedGroup.projection k ((D.restrict s).wall j).label : d.truncatedGroup ℒ k) := by
+        (projection k ((D.restrict s).wall j).label : d.truncatedGroup ℒ k) := by
     funext j
     -- The surviving labels agree; the tower and BCH presentations of the group coincide.
     simp only [Function.comp_apply, activeOfRestrict, j.val.property]
@@ -163,7 +171,7 @@ private theorem levelPathProduct_restrict_union {s t u : Set ι} {k : ℕ}
   let := h.finiteDimensional
   let ν := fun j : F.active k => h.realCharacter (F.wall j).normal
   let a := fun (v : Set ι) (j : F.active k) =>
-    v.mulIndicator (fun j => CompletedGroup.projection k (F.wall j).label) j.val
+    v.mulIndicator (fun j => projection k (F.wall j).label) j.val
   have comm (v w : Set ι) (j j' : F.active k)
       (hjj' : affineSpan ℝ (F.wall j).support = affineSpan ℝ (F.wall j').support) :
       Commute (a v j) (a w j') := by
@@ -188,7 +196,7 @@ private theorem levelPathProduct_restrict_union {s t u : Set ι} {k : ℕ}
       a (v ∪ u) = fun j => a v j * a u j := by
     funext j
     exact congrFun (Set.mulIndicator_union_of_disjoint hvu
-      (fun j => CompletedGroup.projection k (F.wall j).label)) j.val
+      (fun j => projection k (F.wall j).label)) j.val
   -- Compare the original labels on every common segment.
   rw [formula, formula]
   have hab {x y : WallComplement (fun j : F.active k => (F.wall j).support)}

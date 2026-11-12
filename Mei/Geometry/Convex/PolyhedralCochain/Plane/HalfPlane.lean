@@ -25,9 +25,13 @@ holds for every presentation of the coboundary cochain whose cells are transvers
 
 public section
 
+open TauCeti (OrientedCell PolyhedralCochain)
+
 open Set Module
 
-namespace Mei
+namespace TauCeti
+
+open Mei
 
 variable {R : Type*} [Ring R] {E : Type*} [AddCommGroup E] [Module R E]
   {h : TauCeti.Toric.IsIntegralLattice ((Int.castAddHom ℝ).prodMap (Int.castAddHom ℝ))}
@@ -224,7 +228,7 @@ private theorem intrinsicFrontier_horizontalLine :
 
 /-- The vertical segment is transverse to the horizontal axis. -/
 theorem isTransverse_horizontalLine_verticalSegment :
-    (horizontalLine h).IsTransverse ![((0 : ℝ), (1 : ℝ)), (0, -1)] where
+    (horizontalLine h).IsTransverseToCarrier ![((0 : ℝ), (1 : ℝ)), (0, -1)] where
   disjoint_intrinsicFrontier := by
     rw [intrinsicFrontier_horizontalLine]
     exact disjoint_empty _
@@ -236,7 +240,7 @@ end OrientedCell
 
 namespace PolyhedralCochain
 
-open OrientedCell
+open TauCeti.OrientedCell
 
 /-- The coboundary of the upper half-plane with coefficient `c` pairs with the segment from
 `(0, 1)` to `(0, -1)` to give `-c`, for the signed boundary presentation. -/
@@ -253,7 +257,7 @@ segment from `(0, 1)` to `(0, -1)` pairs with it to give `-c`. -/
 theorem intersectionPairing_eq_neg_of_ofFinsupp_eq_coboundary_upperHalfPlane (c : E)
     {y : OrientedCell h 1 →₀ E}
     (hy : ofFinsupp (R := R) y = coboundaryOfFinsupp (Finsupp.single (upperHalfPlane h) c))
-    (hT : ∀ τ ∈ y.support, τ.IsTransverse ![((0 : ℝ), (1 : ℝ)), (0, -1)]) :
+    (hT : ∀ τ ∈ y.support, τ.IsTransverseToCarrier ![((0 : ℝ), (1 : ℝ)), (0, -1)]) :
     intersectionPairing (R := R) ![((0 : ℝ), (1 : ℝ)), (0, -1)] y = -c := by
   rw [← intersectionPairing_coboundaryPresentation_upperHalfPlane (R := R) (h := h) c]
   refine intersectionPairing_eq_coboundaryPresentation_of_ofFinsupp_eq c hy (fun τ hτ => ?_) hT
@@ -263,4 +267,4 @@ theorem intersectionPairing_eq_neg_of_ofFinsupp_eq_coboundary_upperHalfPlane (c 
 
 end PolyhedralCochain
 
-end Mei
+end TauCeti

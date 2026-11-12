@@ -87,7 +87,7 @@ theorem exists_incomparable_superset_of_isConvexPolyhedron
     dsimp only [t]
     rw [div_mul_cancel₀ _ hjy.ne]
     exact sub_self _
-  obtain ⟨ε, hε, hstep⟩ := AffineMap.exists_pos_smul_add_forall_le
+  obtain ⟨ε, hε, hstep⟩ := TauCeti.exists_pos_smul_add_forall_le
     (fun a => (g a).toAffineMap) (hrows (hQ.subset hx)) hv
   let p := ε • v + x
   -- A small step realizes that direction in P. The exposing functional of F
@@ -115,7 +115,7 @@ theorem exists_incomparable_superset_of_isConvexPolyhedron
   have hG : IsExposed ℝ P G := by
     rw [hPg]
     simpa only [Finset.mem_singleton, forall_eq] using
-      Mei.Convex.isExposed_setOf_active g {j}
+      TauCeti.isExposed_setOf_active g {j}
   refine ⟨G, hG, fun q hq => ⟨hrows (hQ.subset hq), (hxzero j).mp hjx q hq⟩,
     fun hyG => hjy.ne hyG.2, fun hGF => hpF (hGF ⟨hstep, hpzero⟩)⟩
 

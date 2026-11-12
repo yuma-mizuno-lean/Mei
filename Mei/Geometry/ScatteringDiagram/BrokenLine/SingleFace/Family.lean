@@ -34,9 +34,13 @@ class*, §3 (arXiv:1601.07081v4).
 
 public noncomputable section
 
+open TauCeti (IsLocallyClosedPolyhedron IsRationalNormalPolyhedron IsRationalSemilinear)
+
 open Set Filter Mei.Convex
 
-namespace Mei.GradedCorrespondence
+namespace TauCeti.GradedCorrespondence
+
+open Mei
 
 variable {R B U M ι κ V Λ : Type*} [Semiring R]
   [AddCommMonoid B] [Module R B] [AddCommMonoid U] [Module R U]
@@ -47,7 +51,7 @@ variable {R B U M ι κ V Λ : Type*} [Semiring R]
   [NormedAddCommGroup V] [NormedSpace ℝ V]
   [AddCommGroup Λ] {i : Λ →+ V} (h : TauCeti.Toric.IsIntegralLattice i)
   (w₀ : Λ) (w : κ → Λ) (ν : V →L[ℝ] ℝ) (b : ℝ) (Z : Set V)
-  (hν : Toric.IsRationalFunctional h ν.toLinearMap)
+  (hν : TauCeti.Toric.IsRationalFunctional h ν.toLinearMap)
   (hZ : Z ⊆ {x | ν x = b}) (hsemi : IsRationalSemilinear h Z)
 
 local notation "u" => i w₀
@@ -218,4 +222,4 @@ theorem exists_singleFaceTransferFamily_closedCharts :
     exact (C.singleFaceTransferFamilyFiberEquiv_label p a h w₀ w ν b Z hν hZ hsemi
       (E z).1 (E z).2).trans (hlabel z)
 
-end Mei.GradedCorrespondence
+end TauCeti.GradedCorrespondence

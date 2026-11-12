@@ -6,6 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.Convex.PolyhedralCochain.Pairing
+public import Mei.Geometry.Convex.PolyhedralCochain.Basic
 public import Mei.Geometry.Convex.Polyhedron.Path.Sum
 public import Mathlib.Combinatorics.Quiver.Path.Weight
 
@@ -31,11 +32,15 @@ cochain relations, `WallComplement.wallCrossingSum_toPath`, and Mathlib's
 
 public section
 
+open TauCeti (OrientedCell PolyhedralCochain)
+
+open TauCeti (WallComplement AdmissiblePLPath mem_singularSupport)
+
 noncomputable section
 
-open Set Mei Mei.Convex
+open Set
 
-namespace Mei.OrientedCell
+namespace TauCeti.OrientedCell
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
@@ -86,9 +91,9 @@ theorem intersectionIndex_eq_sub_side (σ : OrientedCell h 1)
     rw [ite_eq_right (hm.not.mp hmeet)] at hc
     omega
 
-end Mei.OrientedCell
+end TauCeti.OrientedCell
 
-namespace Mei.Convex.WallComplement
+namespace TauCeti.WallComplement
 
 variable {N V ι : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
@@ -98,7 +103,7 @@ variable {N V ι : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace �
 /-- An admissible segment is a transverse affine one-simplex for every wall cell,
 including cells that it misses. -/
 theorem AdmissibleSegment.isTransverse_orientedCell (e : AdmissibleSegment x y) (j : ι) :
-    (σ j).IsTransverse ![x.val, y.val] := by
+    (σ j).IsTransverseToCarrier ![x.val, y.val] := by
   have hhull : convexHull ℝ (range ![x.val, y.val]) = segment ℝ x.val y.val := by
     rw [Matrix.range_cons_cons_empty, convexHull_pair]
   have hmeet : (convexHull ℝ (range ![x.val, y.val]) ∩ (σ j).carrier).Nonempty ↔
@@ -229,28 +234,28 @@ theorem wallCrossingSum_toPath_eq_of_cochain_eq
     simpa only [map_sum, PolyhedralCochain.ofFinsupp_single] using hc
   have ht {a b : WallComplement (fun j => (σ j).carrier)} (f : a ⟶ b)
       (υ : OrientedCell h 1) (hυ : υ ∈ (∑ j, Finsupp.single (σ j) (c j)).support) :
-      υ.IsTransverse ![a.val, b.val] := by
+      υ.IsTransverseToCarrier ![a.val, b.val] := by
     obtain ⟨j, _, hj⟩ := Finsupp.mem_support_finsetSum υ hυ
     obtain ⟨rfl, _⟩ := (Finsupp.mem_support_single _ _ _).mp hj
     exact f.down.isTransverse_orientedCell j
   have ht' (υ : OrientedCell h 1)
       (hυ : υ ∈ (∑ j, Finsupp.single (τ j) (c' j)).support) :
-      υ.IsTransverse ![x.val, y.val] := by
+      υ.IsTransverseToCarrier ![x.val, y.val] := by
     obtain ⟨j, _, hj⟩ := Finsupp.mem_support_finsetSum υ hυ
     obtain ⟨rfl, _⟩ := (Finsupp.mem_support_single _ _ _).mp hj
     simpa only [hx, hy] using e'.down.isTransverse_orientedCell j
-  have he := PolyhedralCochain.intersectionPairing_eq_of_ofFinsupp_eq
+  have he := PolyhedralCochain.intersectionPairing_eq_of_ofFinsupp_eq_of_isTransverseToCarrier
     (v := ![x.val, y.val]) hf (ht e) ht'
   conv_rhs at he => rw [hx, hy]
   rw [intersectionPairing_eq_neg_wallCrossingSum e ν c hν,
     intersectionPairing_eq_neg_wallCrossingSum e' μ c' hμ] at he
   exact neg_injective he
 
-end Mei.Convex.WallComplement
+end TauCeti.WallComplement
 
 namespace Quiver.Path
 
-open Mei.Convex.WallComplement
+open TauCeti.WallComplement
 
 variable {N V ι : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i} [Fintype ι]
@@ -338,7 +343,7 @@ end Quiver.Path
 
 namespace Quiver.Path
 
-open Mei Mei.Convex.WallComplement
+open TauCeti.WallComplement
 
 variable {N V ι : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}

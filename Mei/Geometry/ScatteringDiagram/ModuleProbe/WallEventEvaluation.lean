@@ -37,9 +37,16 @@ recursion follows Mandel, *Scattering diagrams, theta functions, and refined
 tropical curve counts*, §3.3.3 (arXiv:1503.06183v5).
 -/
 
+open TauCeti (WallComplement singularSupport affineSpan_eq_of_notMem_singularSupport
+  isClosed_singularSupport singularSupport_subset_iUnion)
+
 public noncomputable section
 
-open Set Filter Topology Quiver Mei.Convex Mei.Convex.WallComplement
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
+open TauCeti (DirectedWallSpaces)
+
+open Set Filter Topology Quiver Mei.Convex TauCeti.WallComplement
 
 namespace Mei.ModuleProbe
 
@@ -66,7 +73,7 @@ The geometric inventory and the coefficient quotient may use different cutoffs. 
 def wallEventPropagation (k K : ℕ) (hkK : k ≤ K) (b : WallEvent (B.active K)) :
     Module.End R ((d.shiftedLieFiltration ℒ ℳ p).quotient k) :=
   ((A).truncatedBCHAction d ℒ k
-    ((d.truncationMap ℒ hkK).bchGroupMap (B.wallEventLabel K b))).toLinearMap
+    ((d.lieTruncationMap ℒ hkK).bchGroupMap (B.wallEventLabel K b))).toLinearMap
 
 omit [IsWallAnnihilating H ℳ] in
 @[simp]
@@ -74,14 +81,14 @@ theorem wallEventPropagation_apply (k K : ℕ) (hkK : k ≤ K) (b : WallEvent (B
     (z : (d.shiftedLieFiltration ℒ ℳ p).quotient k) :
     wallEventPropagation d ℳ p ℒ H h B k K hkK b z =
       (A).truncatedBCHAction d ℒ k
-        ((d.truncationMap ℒ hkK).bchGroupMap (B.wallEventLabel K b)) z := (rfl)
+        ((d.lieTruncationMap ℒ hkK).bchGroupMap (B.wallEventLabel K b)) z := (rfl)
 
 omit [IsWallAnnihilating H ℳ] in
 /-- Characterization of simultaneous-event propagation as a whole linear map. -/
 theorem wallEventPropagation_def (k K : ℕ) (hkK : k ≤ K) (b : WallEvent (B.active K)) :
     wallEventPropagation d ℳ p ℒ H h B k K hkK b =
       ((A).truncatedBCHAction d ℒ k
-        ((d.truncationMap ℒ hkK).bchGroupMap (B.wallEventLabel K b))).toLinearMap := (rfl)
+        ((d.lieTruncationMap ℒ hkK).bchGroupMap (B.wallEventLabel K b))).toLinearMap := (rfl)
 
 omit [IsWallAnnihilating H ℳ] in
 /-- With matching geometric and coefficient cutoffs, event propagation is simply the
@@ -90,7 +97,7 @@ theorem wallEventPropagation_self (k : ℕ) (b : WallEvent (B.active k))
     (z : (d.shiftedLieFiltration ℒ ℳ p).quotient k) :
     wallEventPropagation d ℳ p ℒ H h B k k (Nat.le_refl k) b z =
       (A).truncatedBCHAction d ℒ k (B.wallEventLabel k b) z := by
-  rw [wallEventPropagation_apply, d.truncationMap_refl, LieHom.bchGroupMap_id,
+  rw [wallEventPropagation_apply, d.lieTruncationMap_refl, LieHom.bchGroupMap_id,
     MonoidHom.id_apply]
 
 /-- Paths of canonical simultaneous wall events with at most
@@ -171,7 +178,7 @@ theorem cutoffWallEventEvaluation_eq_pathDecoratedEvaluation (k K : ℕ) (hkK : 
   rw [mem_wallEventPaths]
   simp only [wallEventPropagation_def] at r
   exact d.pathDecoratedRay_shiftedBCH_length_le ℒ ℳ p k
-    (fun e => (d.truncationMap ℒ hkK).bchGroupMap (B.wallEventLabel K e)) a
+    (fun e => (d.lieTruncationMap ℒ hkK).bchGroupMap (B.wallEventLabel K e)) a
     (fun n => i (ρ (p + n))) (fun e => e.normal (B.activeNormal K))
     (fun e => e.offset (B.activeOffset K)) (fun e => e.2) (fun e => e.support (B.activeSupport K))
     (B.activeSupport K) (fun _ : Unit => singularSupport (B.activeSupport K)) C r
@@ -372,7 +379,7 @@ theorem exists_decompose_cutoffWallEventEvaluation_eq_sum_lastChange (k : ℕ)
     intro X q r
     exact (mem_wallEventPaths d ℒ H h B).mpr
       (d.pathDecoratedRay_shiftedBCH_length_le ℒ ℳ p (k + 1)
-        (fun e => (d.truncationMap ℒ (Nat.le_refl (k + 1))).bchGroupMap
+        (fun e => (d.lieTruncationMap ℒ (Nat.le_refl (k + 1))).bchGroupMap
           (B.wallEventLabel (k + 1) e)) a vel f
         (fun e => e.offset (B.activeOffset (k + 1))) (fun e => e.2)
         (fun e => e.support walls) walls (fun _ : Unit => singularSupport walls) C r)
@@ -464,7 +471,7 @@ theorem transition_cutoffWallEventEvaluation {k K : ℕ} (hk : k ≤ K)
     simp only [wallEventPropagation_def] at r
     rw [mem_wallEventPaths]
     refine (d.pathDecoratedRay_shiftedBCH_length_le ℒ ℳ p k
-      (fun e => (d.truncationMap ℒ hk).bchGroupMap (B.wallEventLabel K e)) _
+      (fun e => (d.lieTruncationMap ℒ hk).bchGroupMap (B.wallEventLabel K e)) _
       (fun n => i (ρ (p + n))) (fun e => e.normal (B.activeNormal K))
       (fun e => e.offset (B.activeOffset K)) (fun e => e.2)
       (fun e => e.support (B.activeSupport K)) (B.activeSupport K)
@@ -474,7 +481,7 @@ theorem transition_cutoffWallEventEvaluation {k K : ℕ} (hk : k ≤ K)
     simp only [wallEventPropagation_def] at r
     rw [mem_wallEventPaths]
     exact d.pathDecoratedRay_shiftedBCH_length_le ℒ ℳ p k
-      (fun e => (d.truncationMap ℒ hk).bchGroupMap (B.wallEventLabel K e)) _
+      (fun e => (d.lieTruncationMap ℒ hk).bchGroupMap (B.wallEventLabel K e)) _
       (fun n => i (ρ (p + n))) (fun e => e.normal (B.activeNormal K))
       (fun e => e.offset (B.activeOffset K)) (fun e => e.2)
       (fun e => e.support (B.activeSupport K)) (B.activeSupport K)

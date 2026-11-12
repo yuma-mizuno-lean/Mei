@@ -15,7 +15,7 @@ public import Mei.Geometry.ScatteringDiagram.Skew.Hyperplane
 Take the principal degree lattice `L_pr = M° × N_uf`, the principal positive monoid of
 `r(n) = (p₁*(n), n)` and the projected principal wall spaces, with spatial map
 `ρ = pr₁ : L_pr → M°`. Since the projected principal graph wall spaces are the
-`DirectedWallSpaces.project` of the principal graph wall spaces along `pr₁`, every
+`DirectedWallSpaces.mapTangent` of the principal graph wall spaces along `pr₁`, every
 projected principal wall lifts by pullback of supports to a principal cylinder
 `𝔡 × (N_uf)_ℝ` with `ρ = id`, and the normal `κ(n)⟨n,-⟩` pulls back to `κ(n)ν_n`.
 The generic cylinder API then preserves signed path products, consistency,
@@ -43,6 +43,10 @@ cluster algebras*, §1 and Appendix B, arXiv:1411.1394v2. We use
 -/
 
 public section
+
+open TauCeti (PositiveDegrees SupportedRay)
+
+open TauCeti (DirectedWallSpaces)
 
 noncomputable section
 
@@ -161,7 +165,7 @@ def projectedAdaptedPolynomialInput :
         rw [← D.principalEmbedding_apply, D.cast_principalNormal_principalEmbedding]
         simp)
       ⟨B.polynomialWallLabel ℓ a k, by
-        rw [DirectedWallSpaces.project_wallGroup, D.projectedPrincipalNormal_comp_fst]
+        rw [DirectedWallSpaces.mapTangent_wallGroup, D.projectedPrincipalNormal_comp_fst]
         exact (B.polynomialWallLabel ℓ a k).property⟩
 
 /-- The coorientation at `k` is the projected principal normal `κ(e_k)⟨e_k,-⟩`. -/

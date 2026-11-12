@@ -29,9 +29,15 @@ Gross–Hacking–Keel–Kontsevich, *Canonical bases for cluster algebras*, §1
 (arXiv:1411.1394v2).
 -/
 
+open TauCeti (WallComplement AdmissiblePLPath GradedLieHom)
+
 public noncomputable section
 
-open Set Mei.Convex Mei.Convex.WallComplement
+open TauCeti.CompletedGroup (projection)
+
+open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading)
+
+open Set Mei.Convex TauCeti.WallComplement
 
 namespace Mei.IndexedWallPresentation
 
@@ -54,25 +60,25 @@ private theorem homogeneousFiber_product (k : ℕ) (j : D.active k) (σ : ℤ)
     (T : Finset (D.homogeneousPresentation.active k × ℤ))
     (hT : ∀ a, a ∈ T ↔ a.1.val.1 = j.val ∧ a.2 = σ)
     (comm : (T : Set (D.homogeneousPresentation.active k × ℤ)).Pairwise (fun a b =>
-      Commute (CompletedGroup.projection k (D.homogeneousPresentation.wall a.1).label ^ a.2)
-        (CompletedGroup.projection k (D.homogeneousPresentation.wall b.1).label ^ b.2)))
+      Commute (projection k (D.homogeneousPresentation.wall a.1).label ^ a.2)
+        (projection k (D.homogeneousPresentation.wall b.1).label ^ b.2)))
     (hσ : σ = -1 ∨ σ = 1) :
     T.noncommProd
-      (fun a => CompletedGroup.projection k (D.homogeneousPresentation.wall a.1).label ^ a.2)
-      comm = CompletedGroup.projection k (D.wall j).label ^ σ := by
+      (fun a => projection k (D.homogeneousPresentation.wall a.1).label ^ a.2)
+      comm = projection k (D.wall j).label ^ σ := by
   classical
   let f (n : (D.wall j).ray.rayDegrees) :=
-    CompletedGroup.projection k (D.homogeneousPresentation.wall ⟨j.val, n⟩).label
+    projection k (D.homogeneousPresentation.wall ⟨j.val, n⟩).label
   have hc (n m : (D.wall j).ray.rayDegrees) : Commute (f n) (f m) := by
     simpa only [f, homogeneousPresentation_wall, IndexedWall.homogeneousFactor_label] using
       (d.commute_of_mem_completedRaySubgroup ℒ
       (d.homogeneousFactor_mem_completedRaySubgroup ℒ (D.wall j).label_mem n.val)
       (d.homogeneousFactor_mem_completedRaySubgroup ℒ (D.wall j).label_mem m.val)).map
-        (CompletedGroup.projection k)
+        (projection k)
   have he : (D.homogeneousIndices k j).noncommProd (fun n => f n ^ σ)
       (fun n _ m _ _ => (hc n m).zpow_zpow _ _) =
       T.noncommProd
-        (fun a => CompletedGroup.projection k (D.homogeneousPresentation.wall a.1).label ^ a.2)
+        (fun a => projection k (D.homogeneousPresentation.wall a.1).label ^ a.2)
         comm := by
     apply Finset.noncommProd_bij
       (i := fun n hn => (⟨⟨j.val, n⟩, (D.mem_homogeneousIndices k j n).mp hn⟩, σ))
@@ -105,11 +111,11 @@ private theorem crossingEventProduct_homogeneousPresentation (k : ℕ)
       (fun a : D.homogeneousPresentation.active k => (D.homogeneousPresentation.wall a).support)}
     (e : x ⟶ y) (e' : x' ⟶ y') (hx : x.val = x'.val) (hy : y.val = y'.val) (t : ℝ) :
     crossingEventProduct (fun j : D.active k => s.normal (D.wall j).ray.generator)
-        (fun j => CompletedGroup.projection k (D.wall j).label) (D.activeLabels_commute k) e t =
+        (fun j => projection k (D.wall j).label) (D.activeLabels_commute k) e t =
       crossingEventProduct
         (fun a : D.homogeneousPresentation.active k =>
           s.normal (D.homogeneousPresentation.wall a).ray.generator)
-        (fun a => CompletedGroup.projection k (D.homogeneousPresentation.wall a).label)
+        (fun a => projection k (D.homogeneousPresentation.wall a).label)
         (D.homogeneousPresentation.activeLabels_commute k) e' t := by
   classical
   let S := signedCrossingEvent
@@ -129,7 +135,7 @@ private theorem crossingEventProduct_homogeneousPresentation (k : ℕ)
     (D.homogeneousPresentation.activeLabels_commute k) e' t
   -- Regroup a simultaneous split event by its original signed wall index.
   have he := Finset.noncommProd_fiberwise_of_maps_to T S p
-    (fun a => CompletedGroup.projection k (D.homogeneousPresentation.wall a.1).label ^ a.2)
+    (fun a => projection k (D.homogeneousPresentation.wall a.1).label ^ a.2)
     hc (fun a ha => (hmem a).mp ha)
   rw [crossingEventProduct_eq_noncommProd _ _ _ e t
     (signedCrossingEvent_pairwise _ _ (D.activeLabels_commute k) e t),
@@ -205,7 +211,7 @@ theorem levelPathProduct_homogeneousPresentation_map
     (p : AdmissiblePLPath x y) (q : AdmissiblePLPath x' y')
     (hpq : p.vertices.map WallComplement.val = q.vertices.map WallComplement.val) :
     (D.map f).homogeneousPresentation.levelPathProduct k q =
-      (f.truncatedMap (a := k) k (by simp)).bchGroupMap (D.levelPathProduct k p) := by
+      (f.lieTruncatedMap (a := k) k (by simp)).bchGroupMap (D.levelPathProduct k p) := by
   let r := (D.mapPathPrefunctor f k).mapPath p
   have hrq : r.vertices.map WallComplement.val = q.vertices.map WallComplement.val :=
     (D.vertices_mapPathPrefunctor f k p).trans hpq

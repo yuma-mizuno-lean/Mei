@@ -30,6 +30,10 @@ stability conditions*, Definition 2.3 (arXiv:1603.00416v4).
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath)
+
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 noncomputable section
 
 open Set Mei.Convex
@@ -85,12 +89,12 @@ theorem exists_common_toKSComplex_pathProduct_eq (k : ℕ)
     (fun j => (D.wall j).finrank_direction_add_one)
     (fun j => s.normal (D.wall j).ray.generator)
     (fun j => (D.wall j).direction_support.symm)
-    (fun j => CompletedGroup.projection k (D.wall j).label) (D.activeLabels_commute k)
+    (fun j => TauCeti.CompletedGroup.projection k (D.wall j).label) (D.activeLabels_commute k)
     (fun j : E.active k => (E.wall j).isConvexPolyhedron.isClosed)
     (fun j => (E.wall j).finrank_direction_add_one)
     (fun j => s.normal (E.wall j).ray.generator)
     (fun j => (E.wall j).direction_support.symm)
-    (fun j => CompletedGroup.projection k (E.wall j).label) (E.activeLabels_commute k)
+    (fun j => TauCeti.CompletedGroup.projection k (E.wall j).label) (E.activeLabels_commute k)
     (A := fun b => fun Q : (C b).walls => (Q : Set V))
     (fun b Q => (C b).isConvexPolyhedron ((C b).mem_cells_of_mem_walls Q.property))
     (fun b Q => (C b).finrank_direction_add_one_of_mem_walls Q.property) q hpq

@@ -25,7 +25,13 @@ as in Gross–Hacking–Siebert, *Theta functions on varieties with effective
 anti-canonical class*, §3.2 (arXiv:1601.07081v4).
 -/
 
+open TauCeti (WallComplement AdmissiblePLPath)
+
 public noncomputable section
+
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
+open TauCeti (DirectedWallSpaces)
 
 open Mei.Convex
 

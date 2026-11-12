@@ -7,6 +7,7 @@ module
 
 public import Mei.Geometry.ScatteringDiagram.KS.Completion
 public import Mei.Geometry.ScatteringDiagram.HyperplanePair
+public import Mei.Geometry.Toric.Algebraic.Lattice
 
 /-!
 # Completed diagrams whose complexes alternate
@@ -32,6 +33,12 @@ cutoff diagrams is `FiniteWallDiagram.IsCompatibleRefinement.pathProduct_eq`.
 -/
 
 public section
+
+open TauCeti.CompletedGroup (projection)
+
+open TauCeti (WallComplement AdmissiblePLPath)
+
+open TauCeti (PositiveDegrees IsPositiveGrading)
 
 noncomputable section
 
@@ -104,14 +111,14 @@ variable (j) in
 /-- The labels admitted on the hyperplane `ker (evaluation at b)` at cutoff `k`: the
 exponential of the Lie algebra orthogonal to that hyperplane. -/
 def hyperplaneLabels (b : N) (k : ℕ) : Subgroup (d.truncatedGroup ℒ k) :=
-  (orthogonalLieSubalgebra (d.truncatedGrading ℒ k)
+  (orthogonalLieSubalgebra (d.lieTruncationGrading ℒ k)
     ((KSSpace.continuousDual h).evaluation '' {θ : W →L[ℝ] ℝ | θ (j b) = 0})).bchSubgroup
 
 variable {h d ℒ}
 
 theorem hyperplaneLabels_def (b : N) (k : ℕ) :
     hyperplaneLabels j h d ℒ b k =
-      (orthogonalLieSubalgebra (d.truncatedGrading ℒ k)
+      (orthogonalLieSubalgebra (d.lieTruncationGrading ℒ k)
         ((KSSpace.continuousDual h).evaluation '' {θ : W →L[ℝ] ℝ | θ (j b) = 0})).bchSubgroup :=
   (rfl)
 
@@ -120,7 +127,7 @@ when its logarithm lies in the orthogonal Lie subalgebra. -/
 @[simp]
 theorem mem_hyperplaneLabels {b : N} {k : ℕ} (g : d.truncatedGroup ℒ k) :
     g ∈ hyperplaneLabels j h d ℒ b k ↔
-      BCHGroup.log g ∈ orthogonalLieSubalgebra (d.truncatedGrading ℒ k)
+      BCHGroup.log g ∈ orthogonalLieSubalgebra (d.lieTruncationGrading ℒ k)
         ((KSSpace.continuousDual h).evaluation '' {θ : W →L[ℝ] ℝ | θ (j b) = 0}) :=
   LieSubalgebra.mem_bchSubgroup _ _
 
@@ -244,7 +251,7 @@ theorem toFiniteWallDiagram_stageKS_false :
       simp [stageKS, hQ]
 
 variable {g} {g' : d.truncatedGroup ℒ (k + 1)} (hg' : g' ∈ hyperplaneLabels j h d ℒ b (k + 1))
-  (hπ : (d.truncationMap ℒ (Nat.le_succ k)).bchGroupMap g' = g)
+  (hπ : (d.lieTruncationMap ℒ (Nat.le_succ k)).bchGroupMap g' = g)
 
 include hπ in
 /-- Projecting the two-hyperplane diagram of `g'` agrees with the one-hyperplane diagram of
@@ -254,7 +261,7 @@ theorem truncationMap_pathProduct_stageKS_false
     {x' y' : WallComplement (fun P : (stageComplex h a b false).walls => (P : Set (W →L[ℝ] ℝ)))}
     (p : AdmissiblePLPath x y) (q : AdmissiblePLPath x' y')
     (hpq : p.vertices.map WallComplement.val = q.vertices.map WallComplement.val) :
-    (d.truncationMap ℒ (Nat.le_succ k)).bchGroupMap
+    (d.lieTruncationMap ℒ (Nat.le_succ k)).bchGroupMap
       ((stageKS hb hb0 ha ha0 g' hg' false).toFiniteWallDiagram.pathProduct q) =
       (stageKS hb hb0 ha ha0 g hg true).toFiniteWallDiagram.pathProduct p := by
   rw [← FiniteWallDiagram.pathProduct_relabel, toFiniteWallDiagram_stageKS_false,
@@ -270,7 +277,7 @@ theorem truncationMap_pathProduct_stageKS_true
     {x' y' : WallComplement (fun P : (stageComplex h a b true).walls => (P : Set (W →L[ℝ] ℝ)))}
     (p : AdmissiblePLPath x y) (q : AdmissiblePLPath x' y')
     (hpq : p.vertices.map WallComplement.val = q.vertices.map WallComplement.val) :
-    (d.truncationMap ℒ (Nat.le_succ k)).bchGroupMap
+    (d.lieTruncationMap ℒ (Nat.le_succ k)).bchGroupMap
       ((stageKS hb hb0 ha ha0 g' hg' true).toFiniteWallDiagram.pathProduct q) =
       (stageKS hb hb0 ha ha0 g hg false).toFiniteWallDiagram.pathProduct p := by
   rw [← FiniteWallDiagram.pathProduct_relabel, toFiniteWallDiagram_stageKS_true,
@@ -286,7 +293,7 @@ theorem truncationMap_pathProduct_stageKS (t t' : Bool) (ht : t' = !t)
     {x' y' : WallComplement (fun P : (stageComplex h a b t').walls => (P : Set (W →L[ℝ] ℝ)))}
     (p : AdmissiblePLPath x y) (q : AdmissiblePLPath x' y')
     (hpq : p.vertices.map WallComplement.val = q.vertices.map WallComplement.val) :
-    (d.truncationMap ℒ (Nat.le_succ k)).bchGroupMap
+    (d.lieTruncationMap ℒ (Nat.le_succ k)).bchGroupMap
       ((stageKS hb hb0 ha ha0 g' hg' t').toFiniteWallDiagram.pathProduct q) =
       (stageKS hb hb0 ha ha0 g hg t).toFiniteWallDiagram.pathProduct p := by
   subst ht
@@ -298,20 +305,20 @@ theorem truncationMap_pathProduct_stageKS (t t' : Bool) (ht : t' = !t)
 walls inside `ker (evaluation at b)` carry the projections of the completed group element
 `x`, all other walls carrying `1`. -/
 def alternating (x : d.completedBCHGroup ℒ)
-    (hx : ∀ k, CompletedGroup.projection k x ∈ hyperplaneLabels j h d ℒ b k) :
+    (hx : ∀ k, projection k x ∈ hyperplaneLabels j h d ℒ b k) :
     CompletedDiagram (KSSpace.continuousDual h) d ℒ (alternatingComplex h a b) where
-  diagram k := stageKS hb hb0 ha ha0 (CompletedGroup.projection k x) (hx k) (decide (Even k))
+  diagram k := stageKS hb hb0 ha ha0 (projection k x) (hx k) (decide (Even k))
   compatible k _ _ _ _ p q hpq :=
     truncationMap_pathProduct_stageKS hb hb0 ha ha0 (hx k) (hx (k + 1))
-      (CompletedGroup.map_projection k (k + 1) (Nat.le_succ k) x) _ _
+      (TauCeti.CompletedGroup.map_projection k (k + 1) (Nat.le_succ k) x) _ _
       (by simp only [Nat.even_add_one, decide_not]) p q hpq
 
 /-- The diagram of the completed diagram at cutoff `k` is the stage of the parity of `k`. -/
 @[simp]
 theorem alternating_diagram (x : d.completedBCHGroup ℒ)
-    (hx : ∀ k, CompletedGroup.projection k x ∈ hyperplaneLabels j h d ℒ b k) (k : ℕ) :
+    (hx : ∀ k, projection k x ∈ hyperplaneLabels j h d ℒ b k) (k : ℕ) :
     (alternating hb hb0 ha ha0 x hx).diagram k =
-      stageKS hb hb0 ha ha0 (CompletedGroup.projection k x) (hx k) (decide (Even k)) := (rfl)
+      stageKS hb hb0 ha ha0 (projection k x) (hx k) (decide (Even k)) := (rfl)
 
 end Diagram
 
@@ -330,7 +337,7 @@ orthogonal to the hyperplane `θ ↦ θ(e₂) = 0`: the complex of the even cuto
 that hyperplane and the complex of the odd cutoffs by it and `θ(e₁) = 0`. -/
 theorem exists_completedDiagram_not_eventually_eq_orthant
     (x : (PositiveDegrees.orthant (Fin 2)).completedBCHGroup ℒ)
-    (hx : ∀ k, CompletedGroup.projection k x ∈ hyperplaneLabels
+    (hx : ∀ k, projection k x ∈ hyperplaneLabels
       ((Int.castAddHom ℝ).compLeft (Fin 2)) Λ₂
       (PositiveDegrees.orthant (Fin 2)) ℒ (Pi.single 1 1) k) :
     ∃ (C : ℕ → FinitePolyhedralComplex (Λ₂).continuousDual)

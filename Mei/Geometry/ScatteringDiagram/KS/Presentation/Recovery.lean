@@ -32,7 +32,11 @@ Bridgeland's finite-complex description in *Scattering diagrams, Hall algebras
 and stability conditions*, Definition 2.3 (arXiv:1603.00416v4).
 -/
 
+open TauCeti (singularSupport)
+
 public noncomputable section
+
+open TauCeti (PositiveDegrees IsPositiveGrading)
 
 open Set Mei.Convex
 
@@ -55,7 +59,7 @@ theorem germLabel_homogeneousPresentation (θ : V)
     (hθ' : ∀ k, θ ∉ singularSupport
       (fun P : (D.homogeneousPresentation.levelComplex k).walls => (P : Set V))) :
     D.homogeneousPresentation.toCompletedDiagram.germLabel θ hθ' = D.germLabel θ hθ := by
-  apply CompletedGroup.ext
+  apply TauCeti.CompletedGroup.ext
   intro k
   rw [projection_germLabel, IndexedWallPresentation.toCompletedDiagram_diagram,
     IndexedWallPresentation.localLabel_toKSComplex]

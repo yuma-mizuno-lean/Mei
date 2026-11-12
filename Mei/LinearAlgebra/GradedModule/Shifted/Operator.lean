@@ -25,9 +25,13 @@ functions, and refined tropical curve counts*, §3.3.3 (arXiv:1503.06183v5).
 
 public noncomputable section
 
+open TauCeti (PositiveDegrees)
+
 open scoped DirectSum
 
-namespace Mei.PositiveDegrees
+namespace TauCeti.PositiveDegrees
+
+open Mei
 
 variable {Γ R M H : Type*} [AddCommGroup Γ] [CommRing R]
   [AddCommGroup M] [Module R M] [AddCommMonoid H] [Module R H]
@@ -127,4 +131,4 @@ theorem operatorTransition_comp {k l m : ℕ} (hkl : k ≤ l) (hlm : l ≤ m) :
   ext f n x
   simp
 
-end Mei.PositiveDegrees
+end TauCeti.PositiveDegrees

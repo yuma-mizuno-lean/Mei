@@ -17,6 +17,8 @@ for arbitrary integral bilinear forms.
 -/
 
 public section
+
+open TauCeti (PositiveDegrees)
 noncomputable section
 
 namespace Mei.QuantumMonoidAlgebra

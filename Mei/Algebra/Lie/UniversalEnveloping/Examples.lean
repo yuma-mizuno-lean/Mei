@@ -9,6 +9,7 @@ public import Mei.Algebra.Lie.Graded.Abelian
 public import Mei.Algebra.Lie.UniversalEnveloping.Cofinality
 public import TauCeti.Algebra.Lie.UniversalEnveloping.Augmentation.Abelian
 public import TauCeti.Algebra.Lie.UniversalEnveloping.Polynomial
+import Mei.RingTheory.FilteredAlgebra.Basic
 
 /-!
 # The degree and augmentation filtrations on abelian examples
@@ -25,7 +26,7 @@ and to the powers of the augmentation ideal `J`.
   lies in the term of order `s + 1` of the degree filtration but outside `J ^ 2`. No term of the
   degree filtration is therefore contained in `J ^ 2`, so the two filtrations are not cofinal,
   although the converse inclusions `J ^ k ≤ I ^ k` hold for every positive grading
-  (`Mei.UniversalEnvelopingAlgebra.augmentation_pow_le_degreeFiltration`). The bound on the
+  (`TauCeti.UniversalEnvelopingAlgebra.augmentation_pow_le_degreeFiltration`). The bound on the
   degrees of generators in
   `Mei.UniversalEnvelopingAlgebra.degreeFiltration_augmentation_isCofinalFor` cannot be dropped.
 
@@ -34,6 +35,10 @@ algebra with the trivial square-zero extension.
 -/
 
 public section
+
+open TauCeti.UniversalEnvelopingAlgebra (degreeFiltration ι_mem_degreeFiltration)
+
+open TauCeti (AlgFiltration)
 
 namespace Mei.UniversalEnvelopingAlgebra.Examples
 

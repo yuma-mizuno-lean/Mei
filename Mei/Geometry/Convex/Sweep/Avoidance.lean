@@ -31,6 +31,8 @@ Carl–Pumperla–Siebert, *A tropical view on Landau–Ginzburg models*, §4
 
 public section
 
+open TauCeti (IsRationalNormalPolyhedron IsRationalSemilinear)
+
 namespace Mei.Convex
 
 variable {V J : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
@@ -81,7 +83,7 @@ variable {N : Type*} [AddCommGroup N] {i : N →+ V}
 polyhedra preserves semilinearity of the backward endpoint domain. No
 transversality, genericity or nonemptiness assumption is required. -/
 theorem isRationalSemilinear_backwardAvoidanceDomain [Finite J]
-    (w : Fin n → N) (hf : ∀ j, Toric.IsRationalFunctional h (f j).toLinearMap)
+    (w : Fin n → N) (hf : ∀ j, TauCeti.Toric.IsRationalFunctional h (f j).toLinearMap)
     (hP : ∀ j, IsRationalSemilinear h (P j))
     (hW : ∀ a, IsRationalNormalPolyhedron h (W a)) :
     IsRationalSemilinear h (backwardAvoidanceDomain f c (fun j => i (w j)) P W) := by

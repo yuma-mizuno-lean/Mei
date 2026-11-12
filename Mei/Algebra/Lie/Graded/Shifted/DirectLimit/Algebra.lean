@@ -23,9 +23,13 @@ theta functions, and refined tropical curve counts*, §2.1 and Definition 2.10
 -/
 
 public section
+
+open TauCeti (PositiveDegrees IsPositiveGrading)
 noncomputable section
 
-namespace Mei.PositiveDegrees
+namespace TauCeti.PositiveDegrees
+
+open Mei
 
 variable {Γ R L A : Type*} [AddCommGroup Γ] [CommRing R] [Algebra ℚ R]
   [LieRing L] [LieAlgebra R L] [LieAlgebra ℚ L] [IsScalarTower ℚ R L]
@@ -66,4 +70,4 @@ theorem shiftedDirectLimitBCHAlgAction_inv (g : d.completedBCHGroup ℒ) :
     d.shiftedDirectLimitBCHAlgAction ℒ 𝒜 g⁻¹ = (d.shiftedDirectLimitBCHAlgAction ℒ 𝒜 g).symm :=
   map_inv (d.shiftedDirectLimitBCHAlgAction ℒ 𝒜) g
 
-end Mei.PositiveDegrees
+end TauCeti.PositiveDegrees

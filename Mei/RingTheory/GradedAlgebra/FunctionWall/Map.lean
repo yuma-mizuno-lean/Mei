@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mei.RingTheory.GradedAlgebra.FunctionWall.Completion
-public import Mei.RingTheory.FilteredAlgebra.Map
+public import TauCeti.RingTheory.FilteredAlgebra.Map
 
 /-!
 # Coefficient maps of completed function walls
@@ -30,7 +30,7 @@ public section
 
 noncomputable section
 
-namespace Mei.AlgFiltration
+namespace TauCeti.AlgFiltration
 
 open Mei.GradedAlgebra
 
@@ -102,4 +102,4 @@ theorem mapCompletion_completedFunctionWallAction (x : F.completion) :
       (fun u => functionWallAction (ℬ k) u
         (Ideal.quotientMap (G.ideal (k + 1)) φ (hφ k) (F.projection (l k) x))) hunit)
 
-end Mei.AlgFiltration
+end TauCeti.AlgFiltration

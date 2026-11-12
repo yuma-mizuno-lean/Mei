@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Algebra.DirectSum.Degree.Basic
+public import TauCeti.Algebra.DirectSum.DegreeTail
 public import TauCeti.Algebra.DirectSum.Internal
 
 /-!
@@ -34,9 +34,9 @@ theorem comap_degreeTail_eq_of_injective (f : M →ₗ[R] N)
     (𝓝 : ι → Submodule R N) [DirectSum.Decomposition 𝓝]
     (hf : Function.Injective f) (hhom : ∀ i x, x ∈ ℳ i → f x ∈ 𝓝 i)
     (d : ι → ℤ) (k : ℕ) :
-    (Mei.DirectSum.degreeTail 𝓝 d k).comap f = Mei.DirectSum.degreeTail ℳ d k := by
+    (TauCeti.DirectSum.degreeTail 𝓝 d k).comap f = TauCeti.DirectSum.degreeTail ℳ d k := by
   ext x
-  simp only [Submodule.mem_comap, Mei.DirectSum.mem_degreeTail_iff]
+  simp only [Submodule.mem_comap, TauCeti.DirectSum.mem_degreeTail_iff]
   have hproj (i : ι) : f (DirectSum.decompose ℳ x i : M) =
       (DirectSum.decompose 𝓝 (f x) i : N) :=
     DirectSum.map_decompose_shift ℳ 𝓝 f.toAddMonoidHom

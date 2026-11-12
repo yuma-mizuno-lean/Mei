@@ -49,6 +49,10 @@ formalized here.
 
 public section
 
+open TauCeti (AlgFiltration)
+
+open TauCeti (PositiveDegrees PositiveDegreeMap SupportedRay GradedLieHom)
+
 noncomputable section
 
 namespace Mei

@@ -26,11 +26,15 @@ dichotomy ultimately comes from Mathlib's `Orientation.eq_or_eq_neg`.
 
 public section
 
+open TauCeti (OrientedCell)
+
 noncomputable section
 
 open Set Module
 
-namespace Mei.PolyhedralCochain
+namespace TauCeti.PolyhedralCochain
+
+open Mei
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i} {k : ℕ}
@@ -133,7 +137,7 @@ theorem ofFinsupp_eq_zero_iff_intersectionPairing_eq_zero {ε : ℝ} (hε : 0 < 
     ofFinsupp (R := R) f = 0 ↔
       ∀ (p : V) (v : Fin (k + 1) → V),
         convexHull ℝ (range v) ⊆ Metric.ball p ε →
-        (∀ τ ∈ f.support, τ.IsTransverse v) →
+        (∀ τ ∈ f.support, τ.IsTransverseToCarrier v) →
         OrientedCell.intersectionPairing (R := R) v f = 0 := by
   classical
   let := Fintype.ofFinite (C.cellsOfCodimension k)
@@ -141,8 +145,9 @@ theorem ofFinsupp_eq_zero_iff_intersectionPairing_eq_zero {ε : ℝ} (hε : 0 < 
   constructor
   · intro hz p v _ hv
     simpa only [map_zero] using
-      intersectionPairing_eq_of_ofFinsupp_eq (hz.trans (map_zero _).symm) hv
-        (by simp : ∀ τ ∈ (0 : OrientedCell h k →₀ E).support, τ.IsTransverse v)
+      intersectionPairing_eq_of_ofFinsupp_eq_of_isTransverseToCarrier
+        (hz.trans (map_zero _).symm) hv
+        (by simp : ∀ τ ∈ (0 : OrientedCell h k →₀ E).support, τ.IsTransverseToCarrier v)
   · intro htest
     -- Choose auxiliary orientations of the normal quotients.
     have hex (Q : C.cellsOfCodimension k) :
@@ -162,7 +167,7 @@ theorem ofFinsupp_eq_zero_iff_intersectionPairing_eq_zero {ε : ℝ} (hε : 0 < 
         Disjoint (convexHull ℝ (range s.points)) (σ P).carrier := by
       rw [hσ P]
       exact hother P P.property (by rw [hσ Q]; exact Subtype.coe_ne_coe.mpr hne)
-    have hall : ∀ τ ∈ f.support, τ.IsTransverse s.points := by
+    have hall : ∀ τ ∈ f.support, τ.IsTransverseToCarrier s.points := by
       intro τ hτ
       let P : C.cellsOfCodimension k := ⟨τ.carrier,
         (C.mem_cellsOfCodimension k _).mpr ⟨hf τ hτ, τ.finrank_direction_add⟩⟩
@@ -171,9 +176,9 @@ theorem ofFinsupp_eq_zero_iff_intersectionPairing_eq_zero {ε : ℝ} (hε : 0 < 
           (congrArg Subtype.val hPQ).trans (hσ Q).symm
         rcases τ.eq_or_eq_reverse_of_carrier_eq (σ Q) hc with he | he
         · exact he ▸ htrans
-        · rw [he, OrientedCell.isTransverse_reverse_iff]
+        · rw [he, OrientedCell.isTransverseToCarrier_reverse_iff]
           exact htrans
-      · apply τ.isTransverse_of_disjoint
+      · apply τ.isTransverseToCarrier_of_disjoint
         simpa only [hσ P] using hdisj P hPQ
     have hz := htest p s.points hball hall
     rw [intersectionPairing_eq_sum_sub_reverse C σ hσ f hf,
@@ -185,4 +190,4 @@ theorem ofFinsupp_eq_zero_iff_intersectionPairing_eq_zero {ε : ℝ} (hε : 0 < 
     · simpa only [hi, one_smul, sub_eq_zero] using hz
     · simpa only [hi, neg_smul, one_smul, neg_eq_zero, sub_eq_zero] using hz
 
-end Mei.PolyhedralCochain
+end TauCeti.PolyhedralCochain

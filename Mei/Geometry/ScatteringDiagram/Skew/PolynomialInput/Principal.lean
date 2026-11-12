@@ -35,7 +35,7 @@ positive rational multiple `e_j / d'_j` of `e_j`. Under it:
   exponent `w_i` (`dualMap_principalSublatticeEquiv_principalCharacter`).
 
 The variables `p_{i,s}` of the input are the letters `v_{i,s} = (s w_i, e_{(i,s)})` of the finite
-alphabet lattice `M × ℤ^E` (`Mei.PositiveDegrees.finiteAlphabet`). The lift
+alphabet lattice `M × ℤ^E` (`TauCeti.PositiveDegrees.finiteAlphabet`). The lift
 `T(m, b) = (m, ∑_{i,s} s b_{i,s} ε_i)` to the principal lattice `M'° × N'_uf` sends `v_{i,s}` to
 `s r(ε_i)`, where `r(ε_i) = (p₁*(ε_i), ε_i)` is the principal exponent
 (`principalLift_letter`). With the coordinate-sum degree `δ_pr` of the basis `(ε_i)` of `N'_uf`,
@@ -60,6 +60,8 @@ where `p_{i,s} z^{s w_i}` corresponds to `a_{i,s} t_i^s z^{s w_i}`.
 -/
 
 public section
+
+open TauCeti (PositiveDegrees PositiveDegreeMap)
 
 noncomputable section
 

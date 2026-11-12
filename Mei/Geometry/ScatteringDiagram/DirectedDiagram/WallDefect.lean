@@ -36,9 +36,15 @@ refined tropical curve counts*, proof of Theorem 2.6, and Gross–Hacking–Keel
 
 public section
 
+open TauCeti (WallComplement)
+
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
-open Set Filter Topology Mei.Convex WallComplement
+open Set Filter Topology Mei.Convex TauCeti.WallComplement
 
 namespace Mei.DirectedDiagram
 
@@ -68,19 +74,19 @@ theorem exists_adapted_wall_defects (k : ℕ) (hk : D.LevelConsistent k)
       (∀ (P : (D.adaptedComplex (k + 1)).cellsOfCodimension 0)
         (x : WallComplement (fun j : D.active k => (D.wall j).support)),
         x.val ∈ interior (P : Set V) →
-        (d.truncationMap ℒ (Nat.le_succ k)).bchGroupMap (t P) =
+        (d.lieTruncationMap ℒ (Nat.le_succ k)).bchGroupMap (t P) =
           D.levelTransport k hk b x) ∧
       ∀ (Q : (D.adaptedComplex (k + 1)).walls) (ν : V →ₗ[ℝ] ℝ)
         (hν : ν.ker = (affineSpan ℝ (Q : Set V)).direction)
         (θ v : V), θ ∈ intrinsicInterior ℝ (Q : Set V) → 0 < ν v →
         ∃ (Pminus Pplus : (D.adaptedComplex (k + 1)).cellsOfCodimension 0)
-          (c : (d.truncationMap ℒ (Nat.le_succ k)).ker),
+          (c : (d.lieTruncationMap ℒ (Nat.le_succ k)).ker),
           Pminus ≠ Pplus ∧ (Pminus : Set V) ∩ (Pplus : Set V) = (Q : Set V) ∧
-          (c : d.truncatedLie ℒ (k + 1)) =
+          (c : d.lieTruncation ℒ (k + 1)) =
             BCHGroup.log ((t Pplus)⁻¹ * D.wallCrossingLabel Q ν hν * t Pminus) ∧
           BCHGroup.log ((t Pminus)⁻¹ * D.wallCrossingLabel Q (-ν)
             (by simpa using hν) * t Pplus) =
-            -(c : d.truncatedLie ℒ (k + 1)) ∧
+            -(c : d.lieTruncation ℒ (k + 1)) ∧
           ∀ᶠ a : ℝ in 𝓝[>] 0,
             ∃ (x y : WallComplement (fun j : D.active (k + 1) => (D.wall j).support))
               (e : x ⟶ y),
@@ -88,7 +94,7 @@ theorem exists_adapted_wall_defects (k : ℕ) (hk : D.LevelConsistent k)
               x.val ∈ interior (Pminus : Set V) ∧ y.val ∈ interior (Pplus : Set V) ∧
               D.levelPathProduct (k + 1) e.toPath = D.wallCrossingLabel Q ν hν ∧
               BCHGroup.log ((t Pplus)⁻¹ * D.levelPathProduct (k + 1) e.toPath * t Pminus) =
-                (c : d.truncatedLie ℒ (k + 1)) := by
+                (c : d.lieTruncation ℒ (k + 1)) := by
   obtain ⟨B, t, hbB, htB, ht⟩ := D.exists_adapted_chamber_lifts (Nat.le_succ k) hk b hb
   refine ⟨B, t, hbB, htB, ht, ?_⟩
   intro Q ν hν θ v hθ hv
@@ -99,15 +105,15 @@ theorem exists_adapted_wall_defects (k : ℕ) (hk : D.LevelConsistent k)
   have hker := D.adapted_chamber_lift_path_mem_ker (Nat.le_succ k) hk b t ht
     e.toPath Pminus Pplus hx hy
   rw [he] at hker
-  have hX : (d.truncationMap ℒ (Nat.le_succ k)).bchGroupMap
+  have hX : (d.lieTruncationMap ℒ (Nat.le_succ k)).bchGroupMap
         (D.wallCrossingLabel Q ν hν) *
-        (d.truncationMap ℒ (Nat.le_succ k)).bchGroupMap (t Pminus) =
-      (d.truncationMap ℒ (Nat.le_succ k)).bchGroupMap (t Pplus) := by
+        (d.lieTruncationMap ℒ (Nat.le_succ k)).bchGroupMap (t Pminus) =
+      (d.lieTruncationMap ℒ (Nat.le_succ k)).bchGroupMap (t Pplus) := by
     simp only [MonoidHom.mem_ker, map_mul, map_inv, mul_assoc, inv_mul_eq_one] at hker
     exact hker.symm
-  let c := (d.truncationMap ℒ (Nat.le_succ k)).logDefect
+  let c := (d.lieTruncationMap ℒ (Nat.le_succ k)).logDefect
     (t Pminus) (t Pplus) (D.wallCrossingLabel Q ν hν) hX
-  have hc : (c : d.truncatedLie ℒ (k + 1)) =
+  have hc : (c : d.lieTruncation ℒ (k + 1)) =
       BCHGroup.log ((t Pplus)⁻¹ * D.wallCrossingLabel Q ν hν * t Pminus) :=
     LieHom.coe_logDefect _ _ _ _ _
   refine ⟨Pminus, Pplus, c, hne, hinter, hc, ?_, ?_⟩

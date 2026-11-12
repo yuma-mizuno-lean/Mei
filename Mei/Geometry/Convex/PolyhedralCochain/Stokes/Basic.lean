@@ -7,6 +7,7 @@ module
 
 public import Mei.Geometry.Convex.PolyhedralCochain.Boundary
 public import Mei.Geometry.Convex.PolyhedralCochain.Pairing
+public import Mei.Geometry.Convex.PolyhedralCochain.Basic
 public import Mei.LinearAlgebra.Alternating.EdgeFrame
 
 /-!
@@ -36,9 +37,13 @@ lineality or nondegeneracy of the test simplex is assumed.
 
 public section
 
+open TauCeti (OrientedCell)
+
 open Module Set
 
-namespace Mei.OrientedCell
+namespace TauCeti.OrientedCell
+
+open Mei
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i} {k : ℕ}
@@ -221,4 +226,4 @@ theorem sum_intersectionIndex_boundaryFacets_eq_sum_succAbove_of_two_faces
   rw [σ.intrinsicFrontier_eq_biUnion_boundaryFacets]
   exact subset_iUnion₂_of_subset τ hτ Subset.rfl
 
-end Mei.OrientedCell
+end TauCeti.OrientedCell

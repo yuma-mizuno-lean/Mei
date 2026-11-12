@@ -32,6 +32,10 @@ conical.
 
 public section
 
+open TauCeti.Convex (closure_signCell weakSignCell)
+
+open TauCeti (WallComplement singularSupport mem_singularSupport)
+
 open Set Mei.Convex
 
 namespace Mei.FinitePolyhedralComplex
@@ -43,7 +47,7 @@ variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ 
 `f ≠ 0` its cells are the hyperplane and its two closed half-spaces; for `f = 0` it is the
 ambient cell alone. -/
 noncomputable def hyperplaneComplex (f : V →L[ℝ] ℝ)
-    (hf : Toric.IsRationalFunctional h f.toLinearMap) : FinitePolyhedralComplex h :=
+    (hf : TauCeti.Toric.IsRationalFunctional h f.toLinearMap) : FinitePolyhedralComplex h :=
   ofArrangement (fun _ : Unit => f.toContinuousAffineMap) (fun _ => hf)
 
 /-- The two defining functionals of a hyperplane pair, indexed by `Bool`: row `false` is `f`
@@ -58,13 +62,13 @@ theorem hyperplanePairRows_false (f g : V →L[ℝ] ℝ) : hyperplanePairRows f 
 @[simp]
 theorem hyperplanePairRows_true (f g : V →L[ℝ] ℝ) : hyperplanePairRows f g true = g := (rfl)
 
-variable (hf : Toric.IsRationalFunctional h f.toLinearMap)
-  (hg : Toric.IsRationalFunctional h g.toLinearMap)
+variable (hf : TauCeti.Toric.IsRationalFunctional h f.toLinearMap)
+  (hg : TauCeti.Toric.IsRationalFunctional h g.toLinearMap)
 
 include hf hg in
 /-- Both rows of a hyperplane pair of rational functionals are rational. -/
 theorem isRationalFunctional_hyperplanePairRows (j : Bool) :
-    Toric.IsRationalFunctional h (hyperplanePairRows f g j).toLinearMap := by
+    TauCeti.Toric.IsRationalFunctional h (hyperplanePairRows f g j).toLinearMap := by
   cases j
   · exact hf
   · exact hg
@@ -72,8 +76,8 @@ theorem isRationalFunctional_hyperplanePairRows (j : Bool) :
 /-- The complex of the closures of the sign cells of the two hyperplanes `ker f` and `ker g`.
 Its row `false` is `f` and its row `true` is `g`. -/
 noncomputable def hyperplanePairComplex (f g : V →L[ℝ] ℝ)
-    (hf : Toric.IsRationalFunctional h f.toLinearMap)
-    (hg : Toric.IsRationalFunctional h g.toLinearMap) : FinitePolyhedralComplex h :=
+    (hf : TauCeti.Toric.IsRationalFunctional h f.toLinearMap)
+    (hg : TauCeti.Toric.IsRationalFunctional h g.toLinearMap) : FinitePolyhedralComplex h :=
   ofArrangement (fun j => (hyperplanePairRows f g j).toContinuousAffineMap)
     (isRationalFunctional_hyperplanePairRows hf hg)
 
@@ -99,11 +103,11 @@ theorem eq_ker_of_mem_hyperplaneComplex_walls {P : Set V}
     ((hyperplaneComplex f hf).mem_cells_of_mem_walls hP)
   have hfp : f p = 0 := by simpa using hPZ (subset_closure hp)
   have hσ : σ () = 0 := by
-    rw [← mem_signCell.mp hp ()]
+    rw [← TauCeti.Convex.mem_signCell.mp hp ()]
     simp [hfp]
   ext θ
   rw [closure_signCell ⟨p, hp⟩]
-  simp [mem_weakSignCell, hσ]
+  simp [TauCeti.Convex.mem_weakSignCell, hσ]
 
 /-- The hyperplane `ker f` of a nonzero rational functional is the unique wall of its
 complex. -/
@@ -225,8 +229,8 @@ theorem ker_notMem_hyperplanePairComplex_cells {θ₀ : V} (hf₀ : f θ₀ = 0)
       (fun j => (hyperplanePairRows f g j).toContinuousAffineMap) σ := by
     rw [← closure_signCell hσ, ← hZ]
     simpa using hθ
-  have h₁ := mem_weakSignCell.mp (hmem θ₀ hf₀) true
-  have h₂ := mem_weakSignCell.mp (hmem (-θ₀) (by simp [hf₀])) true
+  have h₁ := TauCeti.Convex.mem_weakSignCell.mp (hmem θ₀ hf₀) true
+  have h₂ := TauCeti.Convex.mem_weakSignCell.mp (hmem (-θ₀) (by simp [hf₀])) true
   simp only [hyperplanePairRows_true, ContinuousLinearMap.coe_toContinuousAffineMap,
     map_neg] at h₁ h₂
   cases hs : σ true

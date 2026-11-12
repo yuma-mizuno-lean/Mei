@@ -39,7 +39,8 @@ namespace Mei.FiniteWallDiagram
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i} {f : V →L[ℝ] ℝ}
-  {hf : Toric.IsRationalFunctional h f.toLinearMap} {hf0 : f ≠ 0} {H : Type*} [Group H] {θ : H}
+  {hf : TauCeti.Toric.IsRationalFunctional h f.toLinearMap} {hf0 : f ≠ 0}
+  {H : Type*} [Group H] {θ : H}
   {M : Type*} [MulAction H M]
 
 /-- The values of a section of the coefficient local system of the one-hyperplane diagram at

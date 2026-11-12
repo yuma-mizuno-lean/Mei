@@ -30,9 +30,15 @@ existing finite component correction formula. The recursion follows Mandel,
 §3.3.3 (arXiv:1503.06183v5).
 -/
 
+open TauCeti (WallComplement)
+
 public noncomputable section
 
-open Set Filter Topology Mei.Convex Mei.Convex.WallComplement
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
+open TauCeti (DirectedWallSpaces)
+
+open Set Filter Topology Mei.Convex TauCeti.WallComplement
 
 namespace Mei.ModuleProbe
 
@@ -59,7 +65,7 @@ local notation "labels" k:max e:max => (List.map
   (crossingEventProduct (G := d.truncatedGroup ℒ k)
     (fun c : B.active k => h.realCharacter
       (DirectedWall.normal (DirectedDiagram.wall B c)))
-    (fun c => CompletedGroup.projection k (DirectedWall.label (DirectedDiagram.wall B c)))
+    (fun c => TauCeti.CompletedGroup.projection k (DirectedWall.label (DirectedDiagram.wall B c)))
     (B.activeLabels_commute k) e) (List.reverse (orderedCrossingTimes e)))
 local notation "restriction" k:max => (WallComplement.restrictPrefunctor
   (fun c : B.active (k + 1) => DirectedWall.support (DirectedDiagram.wall B c))
@@ -132,7 +138,7 @@ theorem exists_norm_lt_forall_eventually_extendedCoefficientField_eq_add_sum_gen
           F.IsGeneric z.val ∧
           field k (hBc.mono (Nat.le_succ k)) z =
             (A).truncatedBCHAction d ℒ k
-              ((d.truncationMap ℒ (Nat.le_succ k)).bchGroupMap (g.drop (b.val + 1)).prod)
+              ((d.lieTruncationMap ℒ (Nat.le_succ k)).bchGroupMap (g.drop (b.val + 1)).prod)
               (field k (hBc.mono (Nat.le_succ k)) ((restriction k).obj x)) := by
     have hb : b.val < (orderedCrossingTimes e).length := by
       simpa only [g, List.length_map, List.length_reverse] using b.isLt

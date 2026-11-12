@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.Convex.PolyhedralComplex.Strata
-public import Mei.Geometry.Affine.Transverse
+public import TauCeti.LinearAlgebra.AffineSpace.Transverse
 
 /-!
 # Isolated encounters of affine slices with polyhedral skeleta

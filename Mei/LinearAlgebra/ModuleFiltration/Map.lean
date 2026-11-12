@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mei.LinearAlgebra.ModuleFiltration.Completion
-public import Mei.CategoryTheory.Limits.Reindex
+public import TauCeti.CategoryTheory.Limits.Reindex
 
 /-!
 # Maps of filtered module completions

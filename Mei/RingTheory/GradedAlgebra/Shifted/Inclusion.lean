@@ -16,9 +16,13 @@ product in the sum of the containing translates.
 -/
 
 public section
+
+open TauCeti (PositiveDegrees)
 noncomputable section
 
-namespace Mei.PositiveDegrees
+namespace TauCeti.PositiveDegrees
+
+open Mei
 
 variable {Γ R A : Type*} [AddCommGroup Γ] [CommRing R] [Ring A] [Algebra R A]
   (d : PositiveDegrees Γ) (𝒜 : Γ → Submodule R A) [SetLike.GradedMul 𝒜]
@@ -56,4 +60,4 @@ theorem shiftedCompletedInclusion_shiftedCompletionMul (p q r s : Γ)
   apply Subtype.ext
   simp only [coe_shiftedSupportInclusion, coe_shiftedMul]
 
-end Mei.PositiveDegrees
+end TauCeti.PositiveDegrees

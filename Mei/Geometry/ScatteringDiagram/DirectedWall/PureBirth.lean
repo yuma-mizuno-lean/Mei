@@ -19,6 +19,10 @@ bound for the birth order `δ(n)`.
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
 namespace Mei.DirectedWall
@@ -38,13 +42,13 @@ with `δ(n) ≤ k`, and its projection to order `l` is nontrivial exactly when `
 def HasPureBirthLog (W : DirectedWall (d := d) h H) (S : Set L) (k : ℕ) : Prop :=
   ∃ n ∈ W.ray.rayDegrees, d.degree n ≤ k ∧ ∃ a ∈ ℒ n, a ∈ S ∧
     W.label = d.expToCompletion ℒ a ∧
-    ∀ l : ℕ, CompletedGroup.projection l W.label ≠ 1 ↔ d.degree n ≤ l
+    ∀ l : ℕ, TauCeti.CompletedGroup.projection l W.label ≠ 1 ↔ d.degree n ≤ l
 
 /-- Unfolding `HasPureBirthLog`. -/
 theorem hasPureBirthLog_def {W : DirectedWall (d := d) h H} {S : Set L} {k : ℕ} :
     W.HasPureBirthLog S k ↔ ∃ n ∈ W.ray.rayDegrees, d.degree n ≤ k ∧ ∃ a ∈ ℒ n, a ∈ S ∧
       W.label = d.expToCompletion ℒ a ∧
-      ∀ l : ℕ, CompletedGroup.projection l W.label ≠ 1 ↔ d.degree n ≤ l := Iff.rfl
+      ∀ l : ℕ, TauCeti.CompletedGroup.projection l W.label ≠ 1 ↔ d.degree n ≤ l := Iff.rfl
 
 /-- A pure birth logarithm of order at most `k` is one of order at most `l ≥ k`. -/
 theorem HasPureBirthLog.mono {W : DirectedWall (d := d) h H} {S : Set L} {k l : ℕ}

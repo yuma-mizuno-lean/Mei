@@ -22,12 +22,16 @@ groups for the pulled back normals. At the normalized projected normal of a supp
 ray, the completed wall group is the whole completed ray subgroup.
 
 We reuse `SkewLatticeDatum.principalWallSpaces` and
-`DirectedWallSpaces.project`. The principal and projected realizations follow
+`DirectedWallSpaces.mapTangent`. The principal and projected realizations follow
 Gross–Hacking–Keel–Kontsevich, *Canonical bases for cluster algebras*, §1 and
 Appendix B, arXiv:1411.1394v2.
 -/
 
 public section
+
+open TauCeti (PositiveDegrees SupportedRay)
+
+open TauCeti (DirectedWallSpaces)
 
 noncomputable section
 
@@ -46,7 +50,7 @@ local notation "ℒ" => SkewLieAlgebra.positiveGrading
 /-- Principal wall spaces with spatial directions projected to the character
 lattice. The degree lattice and all its cutoff orders are unchanged. -/
 def projectedPrincipalWallSpaces : DirectedWallSpaces D.principalCharacter.toAddMonoidHom ℒ := by
-  let H := (D.principalWallSpaces (R := R) d).project (AddMonoidHom.fst M° D.unfrozen)
+  let H := (D.principalWallSpaces (R := R) d).mapTangent (AddMonoidHom.fst M° D.unfrozen)
   have hρ : (AddMonoidHom.fst M° D.unfrozen).comp
       D.principalEmbedding.toAddMonoidHom = D.principalCharacter.toAddMonoidHom := by
     ext n
@@ -64,7 +68,7 @@ def projectedPrincipalWallSpaces : DirectedWallSpaces D.principalCharacter.toAdd
 theorem projectedPrincipalWallSpaces_wall_eq (n : D.unfrozen) (m : M° →+ ℤ) :
     (D.projectedPrincipalWallSpaces (R := R) d).wall n m =
       (D.principalWallSpaces d).wall n (m.comp (AddMonoidHom.fst M° D.unfrozen)) := by
-  simp only [projectedPrincipalWallSpaces, DirectedWallSpaces.project_wall]
+  simp only [projectedPrincipalWallSpaces, DirectedWallSpaces.mapTangent_wall]
 
 open Classical in
 /-- The complete projected wall-space formula. A normal is eligible precisely

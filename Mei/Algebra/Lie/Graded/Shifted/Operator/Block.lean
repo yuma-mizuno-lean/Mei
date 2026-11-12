@@ -22,9 +22,13 @@ The action is the existing `operatorBCHAction`, transported through
 
 public noncomputable section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 open scoped DirectSum
 
-namespace Mei.PositiveDegrees
+namespace TauCeti.PositiveDegrees
+
+open Mei
 
 universe u
 
@@ -59,4 +63,4 @@ theorem operatorBCHAction_lof_sub (k : ℕ) (g : d.truncatedGroup ℒ k)
         (d.degree_add_val_sub_self_le p k n))
         (operatorCoefficientsEquiv_lof d ℳ p k m f x))
 
-end Mei.PositiveDegrees
+end TauCeti.PositiveDegrees

@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Algebra.Lie.Logarithmic.Grading
-public import Mei.Geometry.ScatteringDiagram.WallSpace.Basic
+public import TauCeti.Geometry.ScatteringDiagram.WallSpace.Basic
 public import Mathlib.Algebra.Algebra.Rat
 
 /-!
@@ -30,6 +30,10 @@ Example 2.1(i), arXiv:1503.06183v5.
 -/
 
 public section
+
+open TauCeti (PositiveDegrees)
+
+open TauCeti (DirectedWallSpaces wallBracketNormal)
 
 noncomputable section
 

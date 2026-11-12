@@ -38,7 +38,7 @@ theorem exists_mem_wall_notMem_singularSupport (B : FinitePolyhedralComplex h)
     {U : Set V} (hU : IsOpen U)
     (hne : (U ∩ intrinsicInterior ℝ (P : Set V)).Nonempty) :
     ∃ x ∈ U ∩ intrinsicInterior ℝ (P : Set V),
-      ∀ j, x ∉ Convex.singularSupport (fun Q : (C j).walls => (Q : Set V)) := by
+      ∀ j, x ∉ TauCeti.singularSupport (fun Q : (C j).walls => (Q : Set V)) := by
   have := h.finiteDimensional
   let E : (Σ j, (C j).codimensionAtLeast 2 |>.cells) → AffineSubspace ℝ V :=
     fun q => affineSpan ℝ (q.2 : Set V)
@@ -61,7 +61,7 @@ theorem exists_mem_intrinsicInterior_wall_notMem_singularSupport
     (B : FinitePolyhedralComplex h) (P : B.walls)
     (C : ι → FinitePolyhedralComplex h) :
     ∃ x ∈ intrinsicInterior ℝ (P : Set V),
-      ∀ j, x ∉ Convex.singularSupport (fun Q : (C j).walls => (Q : Set V)) := by
+      ∀ j, x ∉ TauCeti.singularSupport (fun Q : (C j).walls => (Q : Set V)) := by
   have := h.finiteDimensional
   have hP := B.mem_cells_of_mem_walls P.property
   obtain ⟨x, ⟨-, hx⟩, hreg⟩ := B.exists_mem_wall_notMem_singularSupport P C isOpen_univ

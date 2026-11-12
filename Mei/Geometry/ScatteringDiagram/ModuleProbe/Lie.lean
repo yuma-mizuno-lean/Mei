@@ -26,6 +26,8 @@ tropical curve counts*, §3.3.3 (arXiv:1503.06183).
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 noncomputable section
 
 namespace Mei.ModuleProbe

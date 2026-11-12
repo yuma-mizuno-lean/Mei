@@ -35,6 +35,8 @@ functions are not computed.
 
 public section
 
+open TauCeti (PositiveDegreeMap)
+
 noncomputable section
 
 namespace Mei.RankTwoLatticeChange.Examples

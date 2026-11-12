@@ -37,6 +37,8 @@ compared with Mathlib's `List.Pairwise.eq_of_mem_iff`.
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath singularSupport)
+
 noncomputable section
 
 open Set Mei.Convex

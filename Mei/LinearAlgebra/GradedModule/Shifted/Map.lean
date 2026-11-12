@@ -27,9 +27,13 @@ and refined tropical curve counts*, §2.1 (arXiv:1503.06183).
 
 public section
 
+open TauCeti (PositiveDegrees PositiveDegreeMap)
+
 noncomputable section
 
-namespace Mei.PositiveDegreeMap
+namespace TauCeti.PositiveDegreeMap
+
+open Mei
 
 section Monoid
 
@@ -101,7 +105,7 @@ theorem shiftedMap_mem_shiftedFiltration (k : ℕ)
     by_cases hn : n.val ∈ d.monoid
     · rw [e.shiftedFiltration_submodule 𝓝 (T p), Submodule.mem_comap,
         Submodule.subtype_apply, coe_shiftedMap]
-      apply Mei.DirectSum.le_degreeTail 𝓝 _ (i := T (p + n))
+      apply TauCeti.DirectSum.le_degreeTail 𝓝 _ (i := T (p + n))
       · have hd := T.degree_gt k hn n.property
         simp only [map_add, add_sub_cancel_left, Nat.cast_add, Nat.cast_one]
         omega
@@ -274,9 +278,11 @@ theorem shiftedQuotientMap_mem_shiftedQuotientGrading
 
 end QuotientGrading
 
-end Mei.PositiveDegreeMap
+end TauCeti.PositiveDegreeMap
 
-namespace Mei.PositiveDegrees
+namespace TauCeti.PositiveDegrees
+
+open Mei
 
 section Monoid
 
@@ -350,11 +356,11 @@ theorem shiftedCoefficientMap_mem_filtration (k : ℕ)
     {a : shiftedSubmodule ℳ d.monoid p}
     (ha : a ∈ (d.shiftedFiltration ℳ p).submodule (k + 1)) :
     d.shiftedCoefficientMap ℳ 𝓝 p f hf₀ a ∈ (d.shiftedFiltration 𝓝 p).submodule (k + 1) := by
-  have htail : Mei.DirectSum.degreeTail ℳ (fun u => d.degree (u - p)) (k + 1) ≤
-      (Mei.DirectSum.degreeTail 𝓝 (fun u => d.degree (u - p)) (k + 1)).comap f := by
-    rw [Mei.DirectSum.degreeTail_def]
+  have htail : TauCeti.DirectSum.degreeTail ℳ (fun u => d.degree (u - p)) (k + 1) ≤
+      (TauCeti.DirectSum.degreeTail 𝓝 (fun u => d.degree (u - p)) (k + 1)).comap f := by
+    rw [TauCeti.DirectSum.degreeTail_def]
     refine iSup_le fun u => iSup_le fun hu => ?_
-    exact (hf₀ u).trans (Submodule.comap_mono (Mei.DirectSum.le_degreeTail 𝓝 _ hu))
+    exact (hf₀ u).trans (Submodule.comap_mono (TauCeti.DirectSum.le_degreeTail 𝓝 _ hu))
   rw [d.shiftedFiltration_submodule] at ha ⊢
   simpa only [Submodule.mem_comap, Submodule.subtype_apply,
     coe_shiftedCoefficientMap] using htail ha
@@ -569,9 +575,11 @@ theorem cast_completionMap (F : ModuleFiltration R M) (s t : Γ) (h : s = t)
 
 end TargetTransport
 
-end Mei.PositiveDegrees
+end TauCeti.PositiveDegrees
 
-namespace Mei.PositiveDegreeMap
+namespace TauCeti.PositiveDegreeMap
+
+open Mei
 
 variable {Γ R M : Type*} [AddCommGroup Γ] [Ring R] [AddCommGroup M] [Module R M]
   [DecidableEq Γ] (d : PositiveDegrees Γ) (ℳ : Γ → Submodule R M)
@@ -592,4 +600,4 @@ theorem shiftedCompletionMap_id (p : Γ)
   exact (d.completionCoefficientMap_heq_shiftedCompletionMap_id ℳ ℳ LinearMap.id
     (fun _ => le_rfl) p hf x).symm.trans (heq_of_eq hx)
 
-end Mei.PositiveDegreeMap
+end TauCeti.PositiveDegreeMap

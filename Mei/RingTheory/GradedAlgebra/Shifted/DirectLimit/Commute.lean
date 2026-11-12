@@ -16,9 +16,13 @@ This does not require a graded unit, a spanning positive monoid, or finite suppo
 -/
 
 public section
+
+open TauCeti (PositiveDegrees)
 noncomputable section
 
-namespace Mei.PositiveDegrees
+namespace TauCeti.PositiveDegrees
+
+open Mei
 
 variable {Γ R A : Type*} [AddCommGroup Γ] [CommRing R] [Ring A] [Algebra R A]
   [DecidableEq Γ] (d : PositiveDegrees Γ) (𝒜 : Γ → Submodule R A)
@@ -38,4 +42,4 @@ theorem commute_shiftedDirectLimit (hcomm : ∀ a b : A, Commute a b)
   exact congrArg _ (d.shiftedCompletionMul_comm_same_origin 𝒜 hcomm
     (d.coefficientOrigin s) a b)
 
-end Mei.PositiveDegrees
+end TauCeti.PositiveDegrees

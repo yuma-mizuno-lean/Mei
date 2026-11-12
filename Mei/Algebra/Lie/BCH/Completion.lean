@@ -7,7 +7,7 @@ module
 
 public import Mei.Algebra.Lie.BCH.Group
 public import Mei.Algebra.Lie.Graded.PositiveDegreeHom
-public import Mei.GroupTheory.CompletedGroup.OrderedProduct
+public import TauCeti.GroupTheory.CompletedGroup.OrderedProduct
 
 /-!
 # Completed BCH groups and graded homomorphisms
@@ -24,15 +24,19 @@ quotient and is natural for these completed maps.
 For a nilpotent Lie algebra, `PositiveDegrees.bchToCompletion` bundles this map
 as a group homomorphism. It is an equivalence when some degree ideal vanishes.
 
-The finite maps use `LieHom.bchGroupMap` and `GradedLieHom.truncatedMap`.
+The finite maps use `LieHom.bchGroupMap` and `GradedLieHom.lieTruncatedMap`.
 The inverse-limit construction, cutoff comparison and ordered-product law use
-`Mei.CompletedGroup.map`, `Mei.CompletedGroup.map_eq` and
-`Mei.CompletedGroup.map_orderedProd`, on the compatible-family carrier obtained
+`TauCeti.CompletedGroup.map`, `TauCeti.CompletedGroup.map_eq` and
+`TauCeti.CompletedGroup.map_orderedProd`, on the compatible-family carrier obtained
 from Mathlib's `GrpCat.sectionsSubgroup`.
-The canonical BCH homomorphism uses `Mei.CompletedGroup.lift`.
+The canonical BCH homomorphism uses `TauCeti.CompletedGroup.lift`.
 -/
 
 public section
+
+open TauCeti (completedGroup)
+
+open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading GradedLieHom)
 
 noncomputable section
 
@@ -44,20 +48,22 @@ namespace Mei
 
 namespace PositiveDegrees
 
+open TauCeti.PositiveDegrees
+
 variable {N R L : Type*} [AddCommMonoid N] [CommRing R] [Algebra ℚ R]
   [LieRing L] [LieAlgebra R L] [LieAlgebra ℚ L] [IsScalarTower ℚ R L]
   [DecidableEq N] (d : PositiveDegrees N) (ℒ : N → Submodule R L)
   [GradedLieAlgebra ℒ] [IsPositiveGrading d ℒ]
 
 /-- The BCH group of the order-`k` nilpotent Lie quotient. -/
-abbrev truncatedGroup (k : ℕ) := BCHGroup (d.truncatedLie ℒ k)
+abbrev _root_.TauCeti.PositiveDegrees.truncatedGroup (k : ℕ) := BCHGroup (d.lieTruncation ℒ k)
 
 /-- The tower of BCH groups of finite degree truncations. -/
 -- Objects must compute so that projections have their concrete BCH quotient types.
 @[expose]
-def groupTower : ℕᵒᵖ ⥤ GrpCat where
+def _root_.TauCeti.PositiveDegrees.groupTower : ℕᵒᵖ ⥤ GrpCat where
   obj k := GrpCat.of (d.truncatedGroup ℒ k.unop)
-  map f := GrpCat.ofHom (d.truncationMap ℒ (leOfHom f.unop)).bchGroupMap
+  map f := GrpCat.ofHom (d.lieTruncationMap ℒ (leOfHom f.unop)).bchGroupMap
   map_id k := by
     apply GrpCat.hom_ext
     simp
@@ -65,83 +71,85 @@ def groupTower : ℕᵒᵖ ⥤ GrpCat where
     apply GrpCat.hom_ext
     simpa only [GrpCat.hom_comp, GrpCat.hom_ofHom, ← LieHom.bchGroupMap_comp] using
       congrArg (fun h => h.bchGroupMap)
-        (d.truncationMap_comp ℒ (leOfHom g.unop) (leOfHom f.unop)).symm
+        (d.lieTruncationMap_comp ℒ (leOfHom g.unop) (leOfHom f.unop)).symm
 
 /-- The identity in a categorical tower object is the identity of the concrete
 BCH quotient at the same cutoff. -/
-theorem groupTower_obj_one (k : ℕ) :
+theorem _root_.TauCeti.PositiveDegrees.groupTower_obj_one (k : ℕ) :
     (1 : (d.groupTower ℒ).obj (op k)) = (1 : d.truncatedGroup ℒ k) := (rfl)
 
 /-- Tower transitions are induced by the Lie quotient transitions. -/
 @[simp]
-theorem groupTower_map_hom {k l : ℕᵒᵖ} (f : k ⟶ l) :
+theorem _root_.TauCeti.PositiveDegrees.groupTower_map_hom {k l : ℕᵒᵖ} (f : k ⟶ l) :
     ((d.groupTower ℒ).map f).hom =
-      (d.truncationMap ℒ (leOfHom f.unop)).bchGroupMap := (rfl)
+      (d.lieTruncationMap ℒ (leOfHom f.unop)).bchGroupMap := (rfl)
 
 /-- Every transition in the BCH tower is surjective. -/
-theorem groupTower_map_surjective {k l : ℕᵒᵖ} (f : k ⟶ l) :
+theorem _root_.TauCeti.PositiveDegrees.groupTower_map_surjective {k l : ℕᵒᵖ} (f : k ⟶ l) :
     Function.Surjective ((d.groupTower ℒ).map f) :=
-  LieHom.bchGroupMap_surjective (d.truncationMap_surjective ℒ (leOfHom f.unop))
+  LieHom.bchGroupMap_surjective (d.lieTruncationMap_surjective ℒ (leOfHom f.unop))
 
 /-- The group of compatible BCH elements in all finite degree truncations. -/
-abbrev completedBCHGroup := completedGroup (d.groupTower ℒ)
+abbrev _root_.TauCeti.PositiveDegrees.completedBCHGroup := completedGroup (d.groupTower ℒ)
 
 /-- The exponential of a Lie element in the degree-completed BCH group. The Lie
 algebra itself need not be nilpotent: exponentiation takes place in each quotient. -/
-def expToCompletion (x : L) : d.completedBCHGroup ℒ :=
-  ⟨fun k => BCHGroup.exp ((d.degreeIdeal ℒ k).mkQ x),
-    (mem_completedGroup_iff _ _).mpr (by
+def _root_.TauCeti.PositiveDegrees.expToCompletion (x : L) : d.completedBCHGroup ℒ :=
+  ⟨fun k => BCHGroup.exp ((d.truncationIdeal ℒ k).mkQ x),
+    (TauCeti.mem_completedGroup_iff _ _).mpr (by
       intro k l h
       -- The categorical tower arrow conceals the concrete BCH quotient groups.
-      change (d.truncationMap ℒ h).bchGroupMap
-        (BCHGroup.exp ((d.degreeIdeal ℒ l).mkQ x)) =
-          BCHGroup.exp ((d.degreeIdeal ℒ k).mkQ x)
+      change (d.lieTruncationMap ℒ h).bchGroupMap
+        (BCHGroup.exp ((d.truncationIdeal ℒ l).mkQ x)) =
+          BCHGroup.exp ((d.truncationIdeal ℒ k).mkQ x)
       rw [LieHom.bchGroupMap_exp]
       congr 1
-      exact d.truncationMap_mk ℒ h x)⟩
+      exact d.lieTruncationMap_mk ℒ h x)⟩
 
 /-- The completed exponential projects to the exponential of the quotient class. -/
 @[simp]
-theorem projection_expToCompletion (k : ℕ) (x : L) :
-    CompletedGroup.projection k (d.expToCompletion ℒ x) =
-      BCHGroup.exp ((d.degreeIdeal ℒ k).mkQ x) := by
-  rw [CompletedGroup.projection_apply]
+theorem _root_.TauCeti.PositiveDegrees.projection_expToCompletion (k : ℕ) (x : L) :
+    TauCeti.CompletedGroup.projection k (d.expToCompletion ℒ x) =
+      BCHGroup.exp ((d.truncationIdeal ℒ k).mkQ x) := by
+  rw [TauCeti.CompletedGroup.projection_apply]
   rfl
 
 /-- A homogeneous completed exponential is invisible exactly when its coefficient
 vanishes or its degree lies above the cutoff. -/
-theorem projection_expToCompletion_eq_one_iff {n : N} {x : L} (hx : x ∈ ℒ n) (k : ℕ) :
-    CompletedGroup.projection k (d.expToCompletion ℒ x) = 1 ↔
+theorem _root_.TauCeti.PositiveDegrees.projection_expToCompletion_eq_one_iff
+    {n : N} {x : L} (hx : x ∈ ℒ n) (k : ℕ) :
+    TauCeti.CompletedGroup.projection k (d.expToCompletion ℒ x) = 1 ↔
       x = 0 ∨ (k : ℤ) < d.degree n := by
-  have hquot : BCHGroup.exp ((d.degreeIdeal ℒ k).mkQ x) =
+  have hquot : BCHGroup.exp ((d.truncationIdeal ℒ k).mkQ x) =
       (1 : d.truncatedGroup ℒ k) ↔ x = 0 ∨ (k : ℤ) < d.degree n := by
-    rw [← (BCHGroup.log_injective (L := d.truncatedLie ℒ k)).eq_iff,
-      BCHGroup.log_exp, BCHGroup.log_one, (d.degreeIdeal ℒ k).mkQ_eq_zero]
-    simpa only [← LieSubmodule.mem_toSubmodule, degreeIdeal_toSubmodule] using
+    rw [← (BCHGroup.log_injective (L := d.lieTruncation ℒ k)).eq_iff,
+      BCHGroup.log_exp, BCHGroup.log_one, (d.truncationIdeal ℒ k).mkQ_eq_zero]
+    simpa only [← LieSubmodule.mem_toSubmodule, truncationIdeal_toSubmodule] using
       (d.mem_degreeSubmodule_of_mem_iff ℒ (k := k) hx)
   -- The tower projection and the concrete BCH quotient have the same identity.
   exact (d.projection_expToCompletion ℒ k x).symm ▸ hquot
 
 @[simp]
-theorem expToCompletion_zero : d.expToCompletion ℒ 0 = 1 := by
-  apply CompletedGroup.ext
+theorem _root_.TauCeti.PositiveDegrees.expToCompletion_zero : d.expToCompletion ℒ 0 = 1 := by
+  apply TauCeti.CompletedGroup.ext
   intro k
   rw [map_one, projection_expToCompletion, map_zero, BCHGroup.exp_zero]
   rfl
 
 @[simp]
-theorem expToCompletion_neg (x : L) :
+theorem _root_.TauCeti.PositiveDegrees.expToCompletion_neg (x : L) :
     d.expToCompletion ℒ (-x) = (d.expToCompletion ℒ x)⁻¹ := by
-  apply CompletedGroup.ext
+  apply TauCeti.CompletedGroup.ext
   intro k
   rw [map_inv, projection_expToCompletion, projection_expToCompletion,
     map_neg, BCHGroup.exp_neg]
   rfl
 
 /-- Lie elements with zero bracket have commuting completed exponentials. -/
-theorem commute_expToCompletion_of_lie_eq_zero {x y : L} (h : ⁅x, y⁆ = 0) :
+theorem _root_.TauCeti.PositiveDegrees.commute_expToCompletion_of_lie_eq_zero
+    {x y : L} (h : ⁅x, y⁆ = 0) :
     Commute (d.expToCompletion ℒ x) (d.expToCompletion ℒ y) := by
-  apply CompletedGroup.ext
+  apply TauCeti.CompletedGroup.ext
   intro k
   rw [map_mul, map_mul, projection_expToCompletion, projection_expToCompletion]
   apply BCHGroup.commute_exp_of_lie_eq_zero
@@ -152,12 +160,12 @@ section Nilpotent
 variable [LieRing.IsNilpotent L]
 
 /-- The canonical homomorphism from a nilpotent BCH group to its degree completion. -/
-def bchToCompletion : BCHGroup L →* d.completedBCHGroup ℒ :=
-  CompletedGroup.lift (fun k => (d.degreeIdeal ℒ k).mkQ.bchGroupMap) (by
+def _root_.TauCeti.PositiveDegrees.bchToCompletion : BCHGroup L →* d.completedBCHGroup ℒ :=
+  TauCeti.CompletedGroup.lift (fun k => (d.truncationIdeal ℒ k).mkQ.bchGroupMap) (by
     intro k l h
     -- The lift uses categorical tower objects; state its law on the concrete BCH groups.
-    change (d.truncationMap ℒ h).bchGroupMap.comp
-      (d.degreeIdeal ℒ l).mkQ.bchGroupMap = (d.degreeIdeal ℒ k).mkQ.bchGroupMap
+    change (d.lieTruncationMap ℒ h).bchGroupMap.comp
+      (d.truncationIdeal ℒ l).mkQ.bchGroupMap = (d.truncationIdeal ℒ k).mkQ.bchGroupMap
     rw [← LieHom.bchGroupMap_comp]
     congr 1
     ext x
@@ -165,71 +173,74 @@ def bchToCompletion : BCHGroup L →* d.completedBCHGroup ℒ :=
 
 /-- The canonical BCH homomorphism is computed by the Lie quotient at each order. -/
 @[simp]
-theorem projection_bchToCompletion (k : ℕ) (g : BCHGroup L) :
-    CompletedGroup.projection k (d.bchToCompletion ℒ g) =
-      (d.degreeIdeal ℒ k).mkQ.bchGroupMap g := by
+theorem _root_.TauCeti.PositiveDegrees.projection_bchToCompletion (k : ℕ) (g : BCHGroup L) :
+    TauCeti.CompletedGroup.projection k (d.bchToCompletion ℒ g) =
+      (d.truncationIdeal ℒ k).mkQ.bchGroupMap g := by
   unfold bchToCompletion
-  exact CompletedGroup.projection_lift _ _ k g
+  exact TauCeti.CompletedGroup.projection_lift _ _ k g
 
 /-- The canonical homomorphism sends an exponential to its completed exponential. -/
 @[simp]
-theorem bchToCompletion_exp (x : L) :
+theorem _root_.TauCeti.PositiveDegrees.bchToCompletion_exp (x : L) :
     d.bchToCompletion ℒ (BCHGroup.exp x) = d.expToCompletion ℒ x := by
-  apply CompletedGroup.ext
+  apply TauCeti.CompletedGroup.ext
   intro k
   rw [projection_bchToCompletion, LieHom.bchGroupMap_exp, projection_expToCompletion]
 
 /-- A positive grading with a vanishing cutoff ideal is already complete as a BCH group. -/
-theorem bchToCompletion_bijective {k : ℕ} (hk : d.degreeIdeal ℒ k = ⊥) :
+theorem _root_.TauCeti.PositiveDegrees.bchToCompletion_bijective
+    {k : ℕ} (hk : d.truncationIdeal ℒ k = ⊥) :
     Function.Bijective (d.bchToCompletion ℒ) := by
-  have hinj : Function.Injective (d.degreeIdeal ℒ k).mkQ := by
+  have hinj : Function.Injective (d.truncationIdeal ℒ k).mkQ := by
     rw [← LieHom.ker_eq_bot, LieIdeal.mkQ_ker, hk]
   refine ⟨?_, ?_⟩
   · intro x y hxy
     apply BCHGroup.log_injective
     apply hinj
-    have hp := congrArg (fun z => BCHGroup.log (L := d.truncatedLie ℒ k)
-      (CompletedGroup.projection k z)) hxy
+    have hp := congrArg (fun z => BCHGroup.log (L := d.lieTruncation ℒ k)
+      (TauCeti.CompletedGroup.projection k z)) hxy
     simpa only [projection_bchToCompletion, LieHom.log_bchGroupMap] using hp
   · intro g
     obtain ⟨x, hx⟩ := LieHom.bchGroupMap_surjective
-      (d.degreeIdeal ℒ k).surjective_mkQ (CompletedGroup.projection k g)
-    refine ⟨x, CompletedGroup.ext fun l => ?_⟩
+      (d.truncationIdeal ℒ k).surjective_mkQ (TauCeti.CompletedGroup.projection k g)
+    refine ⟨x, TauCeti.CompletedGroup.ext fun l => ?_⟩
     -- Compare at a common upper cutoff, where a representative also determines
     -- the order-k component and hence, by injectivity, the original BCH element.
     obtain ⟨y, hy⟩ := LieHom.bchGroupMap_surjective
-      (d.degreeIdeal ℒ (max k l)).surjective_mkQ
-      (CompletedGroup.projection (max k l) g)
+      (d.truncationIdeal ℒ (max k l)).surjective_mkQ
+      (TauCeti.CompletedGroup.projection (max k l) g)
     have hrep (a : ℕ) (ha : a ≤ max k l) :
-        (d.degreeIdeal ℒ a).mkQ.bchGroupMap y = CompletedGroup.projection a g := by
-      have he : (d.truncationMap ℒ ha).bchGroupMap
-          (CompletedGroup.projection (max k l) g) = CompletedGroup.projection a g :=
-        CompletedGroup.map_projection a (max k l) ha g
-      have hsquare : (d.truncationMap ℒ ha).comp
-          (d.degreeIdeal ℒ (max k l)).mkQ = (d.degreeIdeal ℒ a).mkQ := by
+        (d.truncationIdeal ℒ a).mkQ.bchGroupMap y = TauCeti.CompletedGroup.projection a g := by
+      have he : (d.lieTruncationMap ℒ ha).bchGroupMap
+          (TauCeti.CompletedGroup.projection (max k l) g) = TauCeti.CompletedGroup.projection a g :=
+        TauCeti.CompletedGroup.map_projection a (max k l) ha g
+      have hsquare : (d.lieTruncationMap ℒ ha).comp
+          (d.truncationIdeal ℒ (max k l)).mkQ = (d.truncationIdeal ℒ a).mkQ := by
         ext z
-        simp only [LieHom.comp_apply, LieIdeal.mkQ_apply, truncationMap_mk]
+        simp only [LieHom.comp_apply, LieIdeal.mkQ_apply, lieTruncationMap_mk]
       have hs := congrArg (fun f => f.bchGroupMap y) hsquare
       rw [LieHom.bchGroupMap_comp, MonoidHom.comp_apply] at hs
-      exact hs.symm.trans ((congrArg (d.truncationMap ℒ ha).bchGroupMap hy).trans he)
+      exact hs.symm.trans ((congrArg (d.lieTruncationMap ℒ ha).bchGroupMap hy).trans he)
     have hyx : y = x := LieHom.bchGroupMap_injective hinj
       ((hrep k (le_max_left _ _)).trans hx.symm)
     rw [projection_bchToCompletion, ← hyx]
     exact hrep l (le_max_right _ _)
 
 /-- For a bounded positive grading, the BCH group equals its degree completion. -/
-def bchCompletionEquiv {k : ℕ} (hk : d.degreeIdeal ℒ k = ⊥) :
+def _root_.TauCeti.PositiveDegrees.bchCompletionEquiv {k : ℕ} (hk : d.truncationIdeal ℒ k = ⊥) :
     BCHGroup L ≃* d.completedBCHGroup ℒ :=
   MulEquiv.ofBijective (d.bchToCompletion ℒ) (d.bchToCompletion_bijective ℒ hk)
 
 /-- The bounded-completion equivalence is the canonical BCH homomorphism. -/
 @[simp]
-theorem bchCompletionEquiv_apply {k : ℕ} (hk : d.degreeIdeal ℒ k = ⊥) (g : BCHGroup L) :
+theorem _root_.TauCeti.PositiveDegrees.bchCompletionEquiv_apply
+    {k : ℕ} (hk : d.truncationIdeal ℒ k = ⊥) (g : BCHGroup L) :
     d.bchCompletionEquiv ℒ hk g = d.bchToCompletion ℒ g := (rfl)
 
 /-- The inverse bounded-completion equivalence recovers the original exponential. -/
 @[simp]
-theorem bchCompletionEquiv_symm_expToCompletion {k : ℕ} (hk : d.degreeIdeal ℒ k = ⊥)
+theorem _root_.TauCeti.PositiveDegrees.bchCompletionEquiv_symm_expToCompletion
+    {k : ℕ} (hk : d.truncationIdeal ℒ k = ⊥)
     (x : L) :
     (d.bchCompletionEquiv ℒ hk).symm (d.expToCompletion ℒ x) = BCHGroup.exp x := by
   rw [← bchToCompletion_exp, ← bchCompletionEquiv_apply d ℒ hk, MulEquiv.symm_apply_apply]
@@ -238,7 +249,11 @@ end Nilpotent
 
 end PositiveDegrees
 
-namespace GradedLieHom
+end Mei
+
+namespace TauCeti.GradedLieHom
+
+open Mei
 
 variable {N M P R : Type*} {L L' L'' : Type u}
   [AddCommMonoid N] [AddCommMonoid M] [AddCommMonoid P]
@@ -258,17 +273,17 @@ monotone cutoff at least as large as its modulus. -/
 def groupTowerMap (f : GradedLieHom T ℒ ℳ) (μ : ℕ →o ℕ)
     (hT : ∀ k, T.modulus k ≤ μ k) :
     μ.toFunctor.op ⋙ d.groupTower ℒ ⟶ e.groupTower ℳ where
-  app k := GrpCat.ofHom (f.truncatedMap k.unop (hT k.unop)).bchGroupMap
+  app k := GrpCat.ofHom (f.lieTruncatedMap k.unop (hT k.unop)).bchGroupMap
   naturality {k l} h := by
     apply GrpCat.hom_ext
     -- Expose the concrete quotient groups hidden by the functor object wrappers.
-    change (f.truncatedMap l.unop (hT l.unop)).bchGroupMap.comp
-        (d.truncationMap ℒ (μ.monotone (leOfHom h.unop))).bchGroupMap =
-      (e.truncationMap ℳ (leOfHom h.unop)).bchGroupMap.comp
-        (f.truncatedMap k.unop (hT k.unop)).bchGroupMap
+    change (f.lieTruncatedMap l.unop (hT l.unop)).bchGroupMap.comp
+        (d.lieTruncationMap ℒ (μ.monotone (leOfHom h.unop))).bchGroupMap =
+      (e.lieTruncationMap ℳ (leOfHom h.unop)).bchGroupMap.comp
+        (f.lieTruncatedMap k.unop (hT k.unop)).bchGroupMap
     simp only [← LieHom.bchGroupMap_comp]
     exact congrArg (fun h => h.bchGroupMap)
-      (f.truncationMap_comp_truncatedMap_of_le (μ.monotone (leOfHom h.unop))
+      (f.lieTruncationMap_comp_lieTruncatedMap_of_le (μ.monotone (leOfHom h.unop))
         (leOfHom h.unop) (hT l.unop) (hT k.unop)).symm
 
 /-- The order-`k` tower map is the BCH map of the corresponding Lie truncation map. -/
@@ -276,58 +291,58 @@ def groupTowerMap (f : GradedLieHom T ℒ ℳ) (μ : ℕ →o ℕ)
 theorem groupTowerMap_app_hom (f : GradedLieHom T ℒ ℳ) (μ : ℕ →o ℕ)
     (hT : ∀ k, T.modulus k ≤ μ k) (k : ℕᵒᵖ) :
     ((f.groupTowerMap μ hT).app k).hom =
-      (f.truncatedMap k.unop (hT k.unop)).bchGroupMap := (rfl)
+      (f.lieTruncatedMap k.unop (hT k.unop)).bchGroupMap := (rfl)
 
 /-- The completed group homomorphism induced by a graded Lie homomorphism. -/
 def completedMap (f : GradedLieHom T ℒ ℳ) :
     d.completedBCHGroup ℒ →* e.completedBCHGroup ℳ :=
-  CompletedGroup.map ⟨T.modulus, T.monotone_modulus⟩
+  TauCeti.CompletedGroup.map ⟨T.modulus, T.monotone_modulus⟩
     (f.groupTowerMap ⟨T.modulus, T.monotone_modulus⟩ (fun _ => le_rfl))
 
 /-- Projection computes the completed map using exactly the prescribed source cutoff. -/
 @[simp]
 theorem projection_completedMap (f : GradedLieHom T ℒ ℳ) (k : ℕ)
     (x : d.completedBCHGroup ℒ) :
-    CompletedGroup.projection k (f.completedMap x) =
-      (f.truncatedMap k le_rfl).bchGroupMap
-        (CompletedGroup.projection (T.modulus k) x) := by
-  rw [completedMap, CompletedGroup.projection_map]
+    TauCeti.CompletedGroup.projection k (f.completedMap x) =
+      (f.lieTruncatedMap k le_rfl).bchGroupMap
+        (TauCeti.CompletedGroup.projection (T.modulus k) x) := by
+  rw [completedMap, TauCeti.CompletedGroup.projection_map]
   rfl
 
 /-- A larger source cutoff also computes the projection of a completed map. -/
 theorem projection_completedMap_of_le (f : GradedLieHom T ℒ ℳ) (k : ℕ)
     {a : ℕ} (ha : T.modulus k ≤ a) (x : d.completedBCHGroup ℒ) :
-    CompletedGroup.projection k (f.completedMap x) =
-      (f.truncatedMap k ha).bchGroupMap (CompletedGroup.projection a x) := by
+    TauCeti.CompletedGroup.projection k (f.completedMap x) =
+      (f.lieTruncatedMap k ha).bchGroupMap (TauCeti.CompletedGroup.projection a x) := by
   rw [projection_completedMap]
-  have hp : (d.truncationMap ℒ ha).bchGroupMap (CompletedGroup.projection a x) =
-      CompletedGroup.projection (T.modulus k) x :=
-    CompletedGroup.map_projection (T.modulus k) a ha x
-  let y : d.truncatedGroup ℒ a := CompletedGroup.projection a x
+  have hp : (d.lieTruncationMap ℒ ha).bchGroupMap (TauCeti.CompletedGroup.projection a x) =
+      TauCeti.CompletedGroup.projection (T.modulus k) x :=
+    TauCeti.CompletedGroup.map_projection (T.modulus k) a ha x
+  let y : d.truncatedGroup ℒ a := TauCeti.CompletedGroup.projection a x
   have hf := DFunLike.congr_fun (congrArg LieHom.bchGroupMap
-    (f.truncatedMap_comp_truncationMap (k := k) le_rfl ha)) y
+    (f.lieTruncatedMap_comp_lieTruncationMap (k := k) le_rfl ha)) y
   simp only [LieHom.bchGroupMap_comp, MonoidHom.comp_apply] at hf
-  exact (congrArg (f.truncatedMap k le_rfl).bchGroupMap hp.symm).trans hf
+  exact (congrArg (f.lieTruncatedMap k le_rfl).bchGroupMap hp.symm).trans hf
 
 /-- A graded completed map carries the exponential of an original Lie element
 to the exponential of its image. -/
 @[simp]
 theorem completedMap_expToCompletion (f : GradedLieHom T ℒ ℳ) (x : L) :
     f.completedMap (d.expToCompletion ℒ x) = e.expToCompletion ℳ (f x) := by
-  apply CompletedGroup.ext
+  apply TauCeti.CompletedGroup.ext
   intro k
   rw [projection_completedMap, PositiveDegrees.projection_expToCompletion,
     PositiveDegrees.projection_expToCompletion, LieHom.bchGroupMap_exp]
   congr 1
-  exact f.truncatedMap_mk k le_rfl x
+  exact f.lieTruncatedMap_mk k le_rfl x
 
 /-- The finite projection formula uniquely characterizes the completed homomorphism. -/
 theorem completedMap_unique (f : GradedLieHom T ℒ ℳ)
     (g : d.completedBCHGroup ℒ →* e.completedBCHGroup ℳ)
-    (hg : ∀ k, (CompletedGroup.projection k).comp g =
-      (f.truncatedMap k le_rfl).bchGroupMap.comp
-        (CompletedGroup.projection (T.modulus k))) : g = f.completedMap :=
-  CompletedGroup.map_unique ⟨T.modulus, T.monotone_modulus⟩
+    (hg : ∀ k, (TauCeti.CompletedGroup.projection k).comp g =
+      (f.lieTruncatedMap k le_rfl).bchGroupMap.comp
+        (TauCeti.CompletedGroup.projection (T.modulus k))) : g = f.completedMap :=
+  TauCeti.CompletedGroup.map_unique ⟨T.modulus, T.monotone_modulus⟩
     (f.groupTowerMap ⟨T.modulus, T.monotone_modulus⟩ (fun _ => le_rfl)) g hg
 
 /-- The completed map of the identity graded homomorphism is the identity. -/
@@ -335,18 +350,18 @@ theorem completedMap_unique (f : GradedLieHom T ℒ ℳ)
 theorem completedMap_id :
     (id (d := d) ℒ).completedMap = MonoidHom.id (d.completedBCHGroup ℒ) := by
   rw [completedMap]
-  apply CompletedGroup.map_eq_id
+  apply TauCeti.CompletedGroup.map_eq_id
   intro k
   refine ⟨max ((PositiveDegreeMap.id d).modulus k) k,
     le_max_left _ _, le_max_right _ _, ?_⟩
   apply GrpCat.hom_ext
   -- The categorical arrows conceal the concrete quotient groups.
-  change ((id (d := d) ℒ).truncatedMap k le_rfl).bchGroupMap.comp
-      (d.truncationMap ℒ (le_max_left _ _)).bchGroupMap =
-    (d.truncationMap ℒ (le_max_right _ _)).bchGroupMap
-  rw [← LieHom.bchGroupMap_comp, truncatedMap_comp_truncationMap]
+  change ((id (d := d) ℒ).lieTruncatedMap k le_rfl).bchGroupMap.comp
+      (d.lieTruncationMap ℒ (le_max_left _ _)).bchGroupMap =
+    (d.lieTruncationMap ℒ (le_max_right _ _)).bchGroupMap
+  rw [← LieHom.bchGroupMap_comp, lieTruncatedMap_comp_lieTruncationMap]
   congr 1
-  apply (d.degreeIdeal ℒ _).lieHom_qext
+  apply (d.truncationIdeal ℒ _).lieHom_qext
   intro a
   simp [LieIdeal.mkQ_apply]
 
@@ -354,27 +369,27 @@ theorem completedMap_id :
 @[simp]
 theorem completedMap_comp (g : GradedLieHom U ℳ ℋ) (f : GradedLieHom T ℒ ℳ) :
     (g.comp f).completedMap = g.completedMap.comp f.completedMap := by
-  rw [completedMap, completedMap, completedMap, ← CompletedGroup.map_comp]
-  apply CompletedGroup.map_eq
+  rw [completedMap, completedMap, completedMap, ← TauCeti.CompletedGroup.map_comp]
+  apply TauCeti.CompletedGroup.map_eq
   intro k
   refine ⟨max ((U.comp T).modulus k) (T.modulus (U.modulus k)),
     le_max_left _ _, le_max_right _ _, ?_⟩
   apply GrpCat.hom_ext
   -- Re-elaborate the functor and whiskering wrappers at their concrete quotient types.
-  change ((g.comp f).truncatedMap k le_rfl).bchGroupMap.comp
-      (d.truncationMap ℒ (le_max_left _ _)).bchGroupMap =
-    (g.truncatedMap k le_rfl).bchGroupMap.comp
-      ((f.truncatedMap (U.modulus k) le_rfl).bchGroupMap.comp
-        (d.truncationMap ℒ (le_max_right _ _)).bchGroupMap)
-  simp only [← LieHom.bchGroupMap_comp, truncatedMap_comp_truncationMap,
-    ← truncatedMap_comp]
+  change ((g.comp f).lieTruncatedMap k le_rfl).bchGroupMap.comp
+      (d.lieTruncationMap ℒ (le_max_left _ _)).bchGroupMap =
+    (g.lieTruncatedMap k le_rfl).bchGroupMap.comp
+      ((f.lieTruncatedMap (U.modulus k) le_rfl).bchGroupMap.comp
+        (d.lieTruncationMap ℒ (le_max_right _ _)).bchGroupMap)
+  simp only [← LieHom.bchGroupMap_comp, lieTruncatedMap_comp_lieTruncationMap,
+    ← lieTruncatedMap_comp]
 
 /-- The original cutoff modulus also bounds the filtration shift on completed groups. -/
 theorem completedMap_mem_degreeFiltration (f : GradedLieHom T ℒ ℳ) (k : ℕ)
     {x : d.completedBCHGroup ℒ}
-    (hx : x ∈ CompletedGroup.degreeFiltration (d.groupTower ℒ) (T.modulus k + 1)) :
-    f.completedMap x ∈ CompletedGroup.degreeFiltration (e.groupTower ℳ) (k + 1) :=
-  CompletedGroup.map_mem_degreeFiltration ⟨T.modulus, T.monotone_modulus⟩
+    (hx : x ∈ TauCeti.CompletedGroup.degreeFiltration (d.groupTower ℒ) (T.modulus k + 1)) :
+    f.completedMap x ∈ TauCeti.CompletedGroup.degreeFiltration (e.groupTower ℳ) (k + 1) :=
+  TauCeti.CompletedGroup.map_mem_degreeFiltration ⟨T.modulus, T.monotone_modulus⟩
     (f.groupTowerMap ⟨T.modulus, T.monotone_modulus⟩ (fun _ => le_rfl)) k hx
 
 /-- Graded homomorphisms with the same underlying Lie map induce the same completed
@@ -383,21 +398,21 @@ theorem completedMap_eq_of_toLieHom_eq {T' : PositiveDegreeMap d e}
     (f : GradedLieHom T ℒ ℳ) (g : GradedLieHom T' ℒ ℳ)
     (hfg : f.toLieHom = g.toLieHom) : f.completedMap = g.completedMap := by
   rw [completedMap, completedMap]
-  apply CompletedGroup.map_eq
+  apply TauCeti.CompletedGroup.map_eq
   intro k
   refine ⟨max (T.modulus k) (T'.modulus k), le_max_left _ _, le_max_right _ _, ?_⟩
   apply GrpCat.hom_ext
   -- Re-elaborate the categorical arrows as homomorphisms of concrete BCH quotients.
-  change (f.truncatedMap k le_rfl).bchGroupMap.comp
-      (d.truncationMap ℒ (le_max_left _ _)).bchGroupMap =
-    (g.truncatedMap k le_rfl).bchGroupMap.comp
-      (d.truncationMap ℒ (le_max_right _ _)).bchGroupMap
-  simp only [← LieHom.bchGroupMap_comp, truncatedMap_comp_truncationMap]
+  change (f.lieTruncatedMap k le_rfl).bchGroupMap.comp
+      (d.lieTruncationMap ℒ (le_max_left _ _)).bchGroupMap =
+    (g.lieTruncatedMap k le_rfl).bchGroupMap.comp
+      (d.lieTruncationMap ℒ (le_max_right _ _)).bchGroupMap
+  simp only [← LieHom.bchGroupMap_comp, lieTruncatedMap_comp_lieTruncationMap]
   congr 1
-  apply (d.degreeIdeal ℒ (max (T.modulus k) (T'.modulus k))).lieHom_qext
+  apply (d.truncationIdeal ℒ (max (T.modulus k) (T'.modulus k))).lieHom_qext
   intro a
-  simpa only [LieIdeal.mkQ_apply, truncatedMap_mk, coe_toLieHom] using
-    congrArg (fun h : L →ₗ⁅R⁆ L' => (e.degreeIdeal ℳ k).mkQ (h a)) hfg
+  simpa only [LieIdeal.mkQ_apply, lieTruncatedMap_mk, coe_toLieHom] using
+    congrArg (fun h : L →ₗ⁅R⁆ L' => (e.truncationIdeal ℳ k).mkQ (h a)) hfg
 
 /-- Completed maps respect composition at the fixed identity degree map. -/
 @[simp]
@@ -414,8 +429,8 @@ variable {ι : Type*}
 
 /-- A graded completed map preserves finite support at every order. -/
 theorem hasFiniteSupport_completedMap (f : GradedLieHom T ℒ ℳ)
-    {x : ι → d.completedBCHGroup ℒ} (hx : CompletedGroup.HasFiniteSupport x) :
-    CompletedGroup.HasFiniteSupport (fun i => f.completedMap (x i)) := by
+    {x : ι → d.completedBCHGroup ℒ} (hx : TauCeti.CompletedGroup.HasFiniteSupport x) :
+    TauCeti.CompletedGroup.HasFiniteSupport (fun i => f.completedMap (x i)) := by
   simpa only [completedMap] using
     hx.map ⟨T.modulus, T.monotone_modulus⟩
       (f.groupTowerMap ⟨T.modulus, T.monotone_modulus⟩ (fun _ => le_rfl))
@@ -424,22 +439,21 @@ theorem hasFiniteSupport_completedMap (f : GradedLieHom T ℒ ℳ)
 using any source cutoff large enough for the target order. -/
 theorem mulSupport_projection_completedMap_subset (f : GradedLieHom T ℒ ℳ)
     (c : ι → d.completedBCHGroup ℒ) (k : ℕ) {a : ℕ} (ha : T.modulus k ≤ a) :
-    Function.mulSupport (fun j => CompletedGroup.projection k (f.completedMap (c j))) ⊆
-      Function.mulSupport (fun j => CompletedGroup.projection a (c j)) := by
+    Function.mulSupport (fun j => TauCeti.CompletedGroup.projection k (f.completedMap (c j))) ⊆
+      Function.mulSupport (fun j => TauCeti.CompletedGroup.projection a (c j)) := by
   simp only [f.projection_completedMap_of_le k ha]
   -- Identify categorical tower identities with the concrete BCH quotient identities.
-  convert Function.mulSupport_comp_subset (f.truncatedMap k ha).bchGroupMap.map_one
-    (fun j => CompletedGroup.projection a (c j)) using 1 <;> rfl
+  convert Function.mulSupport_comp_subset (f.lieTruncatedMap k ha).bchGroupMap.map_one
+    (fun j => TauCeti.CompletedGroup.projection a (c j)) using 1 <;> rfl
 
 /-- Graded maps preserve convergent ordered products, with the smallest index leftmost. -/
 @[simp]
 theorem completedMap_orderedProd [LinearOrder ι] (f : GradedLieHom T ℒ ℳ)
-    (x : ι → d.completedBCHGroup ℒ) (hx : CompletedGroup.HasFiniteSupport x) :
-    f.completedMap (CompletedGroup.orderedProd x hx) =
-      CompletedGroup.orderedProd (fun i => f.completedMap (x i))
+    (x : ι → d.completedBCHGroup ℒ) (hx : TauCeti.CompletedGroup.HasFiniteSupport x) :
+    f.completedMap (TauCeti.CompletedGroup.orderedProd x hx) =
+      TauCeti.CompletedGroup.orderedProd (fun i => f.completedMap (x i))
         (f.hasFiniteSupport_completedMap hx) :=
-  CompletedGroup.map_orderedProd ⟨T.modulus, T.monotone_modulus⟩
+  TauCeti.CompletedGroup.map_orderedProd ⟨T.modulus, T.monotone_modulus⟩
     (f.groupTowerMap ⟨T.modulus, T.monotone_modulus⟩ (fun _ => le_rfl)) x hx
 
-end GradedLieHom
-end Mei
+end TauCeti.GradedLieHom

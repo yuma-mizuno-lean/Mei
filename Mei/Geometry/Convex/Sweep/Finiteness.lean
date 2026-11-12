@@ -39,6 +39,8 @@ tropical curve counts*, Proposition 2.13 (arXiv:1503.06183v5).
 
 public noncomputable section
 
+open TauCeti (PositiveDegrees)
+
 namespace Mei.Convex
 
 open Set

@@ -17,9 +17,13 @@ uses the original completion carrier and its finite-cutoff interpretation.
 -/
 
 public section
+
+open TauCeti (PositiveDegrees)
 noncomputable section
 
-namespace Mei.PositiveDegrees
+namespace TauCeti.PositiveDegrees
+
+open Mei
 
 variable {Γ R M : Type*} [AddCommGroup Γ] [Ring R] [AddCommGroup M] [Module R M]
   [DecidableEq Γ] (d : PositiveDegrees Γ) (ℳ : Γ → Submodule R M)
@@ -39,7 +43,7 @@ private def shiftedFamily (x : ∀ q, ℳ q)
 /-- Reconstruct a shifted completion from a family vanishing outside its translated support. -/
 def shiftedCoefficientsOfComponents (x : ∀ q, ℳ q)
     (hx : ∀ q, q - p ∉ d.monoid → x q = 0) : d.ShiftedCoefficients ℳ p :=
-  (d.completionEquivPi (shiftedGrading ℳ d.monoid p) (d.shiftedFiltration ℳ p)
+  (d.filtrationCompletionEquivPi (shiftedGrading ℳ d.monoid p) (d.shiftedFiltration ℳ p)
     (d.shiftedFiltration_succ ℳ p) (fun _ hn => shiftedGrading_eq_bot ℳ d.monoid p hn)).symm
       (shiftedFamily d ℳ p x hx)
 
@@ -54,12 +58,12 @@ theorem shiftedHomogeneousComponent_ofComponents (x : ∀ q, ℳ q)
   calc
     _ = (d.shiftedHomogeneousComponent ℳ p (p + (q - p))
         (d.shiftedCoefficientsOfComponents ℳ p x hx) : M) := by rw [he]
-    _ = ((d.completionComponent (shiftedGrading ℳ d.monoid p) (d.shiftedFiltration ℳ p)
+    _ = ((d.filtrationCompletionComponent (shiftedGrading ℳ d.monoid p) (d.shiftedFiltration ℳ p)
         (d.shiftedFiltration_succ ℳ p) (q - p)
         (d.shiftedCoefficientsOfComponents ℳ p x hx) : shiftedSubmodule ℳ d.monoid p) : M) :=
       (d.coe_completionComponent_shiftedGrading ℳ p (q - p) _).symm
     _ = (x (p + (q - p)) : M) := by
-      rw [shiftedCoefficientsOfComponents, completionComponent_completionEquivPi_symm]
+      rw [shiftedCoefficientsOfComponents, filtrationCompletionComponent_equivPi_symm]
       rfl
     _ = (x q : M) := congrArg (fun u => (x u : M)) he
 
@@ -84,4 +88,4 @@ theorem existsUnique_shiftedCoefficients_components (x : ∀ q, ℳ q)
     intro q
     exact (ha q).trans (d.shiftedHomogeneousComponent_ofComponents ℳ p x hx q).symm
 
-end Mei.PositiveDegrees
+end TauCeti.PositiveDegrees

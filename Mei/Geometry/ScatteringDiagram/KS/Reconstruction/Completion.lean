@@ -24,9 +24,13 @@ This is the reconstruction of Tom Bridgeland,
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 noncomputable section
 
-namespace Mei.PositiveDegrees
+namespace TauCeti.PositiveDegrees
+
+open Mei
 
 open Set Mei.Convex BCHGroup
 
@@ -41,7 +45,7 @@ variable {N V R L : Type*} [AddCommGroup N]
 /-- The completed KS diagram reconstructed from a completed BCH group element. -/
 def reconstruct (g : d.completedBCHGroup ℒ) :
     CompletedDiagram (KSSpace.continuousDual h) d ℒ (fun k => d.arrangementComplex h k) where
-  diagram k := d.reconstructFinite h ℒ (CompletedGroup.projection k g)
+  diagram k := d.reconstructFinite h ℒ (TauCeti.CompletedGroup.projection k g)
   compatible := by
     intro k x y x' y' p q hv
     have hx : x.val = x'.val := by
@@ -49,17 +53,17 @@ def reconstruct (g : d.completedBCHGroup ℒ) :
     have hy : y.val = y'.val := by
       simpa [List.getLast?_eq_getLast_of_ne_nil p.vertices_ne_nil,
         List.getLast?_eq_getLast_of_ne_nil q.vertices_ne_nil] using congrArg List.getLast? hv
-    let a : d.truncatedGroup ℒ k := CompletedGroup.projection k g
-    let b : d.truncatedGroup ℒ (k + 1) := CompletedGroup.projection (k + 1) g
+    let a : d.truncatedGroup ℒ k := TauCeti.CompletedGroup.projection k g
+    let b : d.truncatedGroup ℒ (k + 1) := TauCeti.CompletedGroup.projection (k + 1) g
     -- The tower objects are the concrete truncated BCH groups. Naming their
     -- elements fixes this identification before rewriting the finite products.
-    change (d.truncationMap ℒ (Nat.le_succ k)).bchGroupMap
+    change (d.lieTruncationMap ℒ (Nat.le_succ k)).bchGroupMap
       ((d.reconstructFinite h ℒ b).toFiniteWallDiagram.pathProduct q) =
       (d.reconstructFinite h ℒ a).toFiniteWallDiagram.pathProduct p
     rw [d.pathProduct_reconstructFinite h ℒ b q, map_mul, map_inv,
       truncationMap_signFactorizationEquiv_symm, truncationMap_signFactorizationEquiv_symm]
-    have hg : (d.truncationMap ℒ (Nat.le_succ k)).bchGroupMap b = a :=
-      CompletedGroup.map_projection k (k + 1) (Nat.le_succ k) g
+    have hg : (d.lieTruncationMap ℒ (Nat.le_succ k)).bchGroupMap b = a :=
+      TauCeti.CompletedGroup.map_projection k (k + 1) (Nat.le_succ k) g
     rw [hg, d.pathProduct_reconstructFinite h ℒ a p, hx, hy]
 
 /-- At each order, completed reconstruction is the existing finite reconstruction
@@ -67,7 +71,7 @@ of the projected group element. -/
 @[simp]
 theorem reconstruct_diagram (g : d.completedBCHGroup ℒ) (k : ℕ) :
     (d.reconstruct h ℒ g).diagram k =
-      d.reconstructFinite h ℒ (CompletedGroup.projection k g) := (rfl)
+      d.reconstructFinite h ℒ (TauCeti.CompletedGroup.projection k g) := (rfl)
 
 /-- The reconstructed completed diagram is consistent at every finite order. -/
 theorem consistent_reconstruct (g : d.completedBCHGroup ℒ) :
@@ -75,7 +79,7 @@ theorem consistent_reconstruct (g : d.completedBCHGroup ℒ) :
   rw [CompletedDiagram.consistent_iff]
   intro k
   rw [reconstruct_diagram]
-  exact d.consistent_reconstructFinite h ℒ (CompletedGroup.projection k g)
+  exact d.consistent_reconstructFinite h ℒ (TauCeti.CompletedGroup.projection k g)
 
 /-- Transport from any positive chamber point to any negative chamber point
 in the reconstructed diagram is its original completed BCH group element.
@@ -88,10 +92,10 @@ theorem transport_reconstruct_of_mem_chambers (g : d.completedBCHGroup ℒ)
   let D := d.reconstruct h ℒ g
   obtain ⟨p⟩ := CompletedDiagram.exists_path x y
   rw [D.transport_eq_pathProduct (d.consistent_reconstruct h ℒ g) p]
-  apply CompletedGroup.ext
+  apply TauCeti.CompletedGroup.ext
   intro k
   rw [CompletedDiagram.projection_pathProduct]
-  let a : d.truncatedGroup ℒ k := CompletedGroup.projection k g
+  let a : d.truncatedGroup ℒ k := TauCeti.CompletedGroup.projection k g
   -- Projection selects the finite diagram of this concrete truncated element.
   change (d.reconstructFinite h ℒ a).toFiniteWallDiagram.pathProduct
     ((CommonWallComplement.projectionPrefunctor k).mapPath p) = a
@@ -138,4 +142,4 @@ theorem reconstruct_injective : Function.Injective (d.reconstruct h ℒ) := by
       (d.reconstruct h ℒ g').degreePoint (d.reconstruct h ℒ g').negDegreePoint at ht
   rwa [d.transport_reconstruct h ℒ g, d.transport_reconstruct h ℒ g'] at ht
 
-end Mei.PositiveDegrees
+end TauCeti.PositiveDegrees

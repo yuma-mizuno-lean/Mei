@@ -30,13 +30,21 @@ This is the classification of consistent diagrams by their chamber transport in
 Tom Bridgeland, *Scattering diagrams, Hall algebras and stability conditions*, §3,
 [arXiv:1603.00416](https://arxiv.org/abs/1603.00416). It uses
 `PositiveDegrees.signFactorizationEquiv`, the orthogonal wall labels of `KSComplex`, and
-Mei's generic two-segment paths `Mei.Convex.exists_mem_open_two_transverse_lineMaps`.
+Mei's generic two-segment paths `TauCeti.exists_mem_open_two_transverse_lineMaps`.
 No finite generation of the positive monoid is needed. For the continuous-dual KS space,
 `Mei.Geometry.ScatteringDiagram.KS.Reconstruction.Classification` identifies each
 consistent diagram with a reconstruction.
 -/
 
 public section
+
+open TauCeti.CompletedGroup (projection)
+
+open TauCeti (signSubalgebra mem_signSubalgebra_iff)
+
+open TauCeti (WallComplement AdmissiblePLPath exists_mem_open_two_transverse_lineMaps)
+
+open TauCeti (PositiveDegrees IsPositiveGrading)
 
 noncomputable section
 
@@ -60,17 +68,17 @@ nonzero degree vanishing at one point of the wall has sign `σ` under `φ`. -/
 theorem label_mem_bchSubgroup_signSubalgebra (P : C.walls) {θ : V}
     (hθ : θ ∈ (P : Set V)) {φ : N →+ ℝ} {σ : SignType}
     (hφ : ∀ n ∈ d.cutoff k \ {0}, s.evaluation θ n = 0 → SignType.sign (φ n) = σ) :
-    D.label P ∈ (signSubalgebra (d.truncatedGrading ℒ k) φ σ).bchSubgroup := by
+    D.label P ∈ (signSubalgebra (d.lieTruncationGrading ℒ k) φ σ).bchSubgroup := by
   refine LieSubalgebra.bchSubgroup_le_bchSubgroup.mpr ?_ (D.label_mem P)
   intro x hx
   rw [mem_orthogonalLieSubalgebra_iff] at hx
   rw [mem_signSubalgebra_iff]
   intro n hn
-  by_cases hb : d.truncatedGrading ℒ k n = ⊥
+  by_cases hb : d.lieTruncationGrading ℒ k n = ⊥
   · simpa only [hb, Submodule.mem_bot] using
-      (DirectSum.decompose (d.truncatedGrading ℒ k) x n).property
+      (DirectSum.decompose (d.lieTruncationGrading ℒ k) x n).property
   · exact hx _ ⟨θ, hθ, rfl⟩ n fun h0 =>
-      hn (hφ n (d.mem_cutoff_of_truncatedGrading_ne_bot ℒ hb) h0)
+      hn (hφ n (d.mem_cutoff_of_lieTruncationGrading_ne_bot ℒ hb) h0)
 
 /-- Starting where every retained nonzero degree has the nonzero sign `σ`, every
 allowed point `y` is reached by an admissible path whose product lies in the sign
@@ -80,7 +88,7 @@ theorem exists_pathProduct_mem_bchSubgroup_signSubalgebra {σ : SignType} (hσ :
     (hx : ∀ n ∈ d.cutoff k \ {0}, SignType.sign (s.evaluation x.val n) = σ)
     (y : WallComplement (fun P : C.walls => (P : Set V))) :
     ∃ p : AdmissiblePLPath x y, D.toFiniteWallDiagram.pathProduct p ∈
-      (signSubalgebra (d.truncatedGrading ℒ k) (s.evaluation y.val) (-σ)).bchSubgroup := by
+      (signSubalgebra (d.lieTruncationGrading ℒ k) (s.evaluation y.val) (-σ)).bchSubgroup := by
   let := h.finiteDimensional
   have heval (u v : V) (t : ℝ) (n : N) : s.evaluation (AffineMap.lineMap u v t) n =
       (1 - t) * s.evaluation u n + t * s.evaluation v n := by
@@ -140,7 +148,7 @@ theorem pathProduct_eq_signFactorizationEquiv_symm_neg
     rw [(FiniteWallDiagram.consistent_def F).mp hD q (a.comp b.reverse), F.pathProduct_comp,
       F.pathProduct_reverse, mul_one]
   -- The ordered sign factors of the chamber product at `y`.
-  let c : ∀ σ, (signSubalgebra (d.truncatedGrading ℒ k) (s.evaluation y.val) σ).bchSubgroup
+  let c : ∀ σ, (signSubalgebra (d.lieTruncationGrading ℒ k) (s.evaluation y.val) σ).bchSubgroup
     | .pos => ⟨(F.pathProduct b)⁻¹, inv_mem hb⟩
     | .zero => 1
     | .neg => ⟨F.pathProduct a, ha⟩
@@ -155,7 +163,7 @@ end KSComplex
 
 namespace CompletedDiagram
 
-open PositiveDegrees
+open TauCeti.PositiveDegrees
 
 variable {N V R L : Type*} [AddCommGroup N]
   [NormedAddCommGroup V] [NormedSpace ℝ V]
@@ -174,10 +182,10 @@ theorem pathProduct_eq_signFactorizationEquiv_symm_neg_mul_inv (hD : D.Consisten
     (p : AdmissiblePLPath x y) :
     (D.diagram k).toFiniteWallDiagram.pathProduct p =
       ((signFactorizationEquiv ℒ (s.evaluation y.val) d k).symm
-          (CompletedGroup.projection k (D.transport hD D.degreePoint D.negDegreePoint)) .neg :
+          (projection k (D.transport hD D.degreePoint D.negDegreePoint)) .neg :
         d.truncatedGroup ℒ k) *
       ((signFactorizationEquiv ℒ (s.evaluation x.val) d k).symm
-          (CompletedGroup.projection k (D.transport hD D.degreePoint D.negDegreePoint)) .neg :
+          (projection k (D.transport hD D.degreePoint D.negDegreePoint)) .neg :
         d.truncatedGroup ℒ k)⁻¹ := by
   let := h.finiteDimensional
   let F := (D.diagram k).toFiniteWallDiagram

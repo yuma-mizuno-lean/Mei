@@ -23,6 +23,8 @@ comparison uses `DirectSum.map_decompose_shift`.
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 noncomputable section
 
 namespace Mei

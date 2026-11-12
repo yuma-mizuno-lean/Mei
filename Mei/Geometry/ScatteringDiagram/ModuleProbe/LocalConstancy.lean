@@ -7,6 +7,7 @@ module
 
 public import Mei.Geometry.ScatteringDiagram.ModuleProbe.Crossing
 public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.LocalConstancy
+import Mei.Geometry.Convex.Polyhedron.SingularSupport
 
 /-!
 # Local constancy of vertical probe coefficients
@@ -25,7 +26,13 @@ The coefficient-field interpretation follows Mandel, *Scattering diagrams, theta
 functions, and refined tropical curve counts*, §3.3.3 (arXiv:1503.06183v5).
 -/
 
+open TauCeti (singularSupport)
+
 public noncomputable section
+
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
+open TauCeti (DirectedWallSpaces)
 
 open Set Filter Topology Mei.Convex
 

@@ -24,6 +24,8 @@ The construction iterates `WallComplement.exists_mem_open_admissible_spokes`.
 
 public section
 
+open TauCeti (WallComplement singularSupport singularSupport_subset_iUnion)
+
 open Set
 
 namespace Mei.Convex

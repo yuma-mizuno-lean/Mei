@@ -33,11 +33,15 @@ internal terms in the full coboundary sum.
 
 public section
 
+open TauCeti (OrientedCell PolyhedralCochain isRationalNormalPolyhedron_iff)
+
 noncomputable section
 
 open Set Module
 
-namespace Mei.OrientedCell
+namespace TauCeti.OrientedCell
+
+open Mei
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i} {k : ℕ}
@@ -297,4 +301,4 @@ theorem existsUnique_reverse_boundaryFacet_of_mem_intrinsicInterior (σ : Orient
     ((hQ.affineSpan_eq hω.1).trans (hQ.affineSpan_eq hυ).symm)
     (hωo.trans hυo.symm) hω.2.2 hr
 
-end Mei.OrientedCell
+end TauCeti.OrientedCell

@@ -26,11 +26,17 @@ Maurer-Cartan equations*, Definition 1.2.
 
 public section
 
-namespace Mei.DirectedWallSpaces
+open TauCeti (SupportedRay)
+
+open TauCeti (DirectedWallSpaces wallBracketNormal)
+
+namespace TauCeti.DirectedWallSpaces
+
+open Mei
 
 variable {Γ Λ R L : Type*} [AddCommGroup Γ] [AddCommMonoid Λ]
   [CommRing R] [LieRing L] [LieAlgebra R L]
-  {ρ : Γ →+ Λ} {ℒ : Γ → Submodule R L} {d : PositiveDegrees Γ}
+  {ρ : Γ →+ Λ} {ℒ : Γ → Submodule R L} {d : TauCeti.PositiveDegrees Γ}
   (H : DirectedWallSpaces ρ ℒ)
 
 /-- Brackets of ray sums lie in the sum of wall spaces with the contracted
@@ -111,4 +117,4 @@ theorem decompose_lie_eq_zero_of_no_ray_decomposition
   simpa only [iSup_of_empty, hn _ (Subtype.property _) _ (Subtype.property _),
     iSup_bot, Submodule.mem_bot] using hxy
 
-end Mei.DirectedWallSpaces
+end TauCeti.DirectedWallSpaces

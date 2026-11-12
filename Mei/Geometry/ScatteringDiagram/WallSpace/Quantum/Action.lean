@@ -30,6 +30,8 @@ counts*, §2.1 and Example 2.1(iii), arXiv:1503.06183.
 
 public section
 
+open TauCeti (PositiveDegrees)
+
 noncomputable section
 
 namespace Mei.QuantumMonoidAlgebra

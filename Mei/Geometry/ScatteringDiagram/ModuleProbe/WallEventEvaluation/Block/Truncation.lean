@@ -31,6 +31,10 @@ curve counts*, §3.3.3 (arXiv:1503.06183v5).
 
 public noncomputable section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
+open TauCeti (DirectedWallSpaces)
+
 open Mei.Convex
 
 namespace Mei.ModuleProbe
@@ -61,7 +65,7 @@ theorem eventBlock_truncation {k l K : ℕ} (hkl : k ≤ l) (hlK : l ≤ K)
   rw [eventBlock_def, eventBlock_def,
     ← PositiveDegrees.labelBlock_truncation d ℳ p ℒ hkl]
   simp only [← MonoidHom.comp_apply, ← LieHom.bchGroupMap_comp,
-    d.truncationMap_comp]
+    d.lieTruncationMap_comp]
 
 /-- Truncating the endpoint step gives the step formed from its retained events
 and read points. Higher input degrees contribute zero to retained outputs. -/

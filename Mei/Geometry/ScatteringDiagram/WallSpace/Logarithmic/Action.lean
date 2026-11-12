@@ -25,6 +25,8 @@ The logarithmic action and tangent-annihilation condition follow Mandel,
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 noncomputable section
 
 namespace Mei.TropicalVertexCoefficientAction

@@ -34,6 +34,8 @@ models*, §4 (arXiv:2205.07753v2).
 
 public section
 
+open TauCeti (IsRationalNormalPolyhedron IsRationalSemilinear)
+
 namespace Mei.Convex
 
 variable {V κ : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
@@ -79,7 +81,7 @@ No transversality, genericity, nonemptiness or nonzero-vector assumption is need
 In particular, the finite disjoint locally closed decomposition applies. -/
 theorem isRationalSemilinear_backwardIncomingDomain
     (u : Fin n → N) (q : N)
-    (hf : ∀ j, Toric.IsRationalFunctional h (f j).toLinearMap)
+    (hf : ∀ j, TauCeti.Toric.IsRationalFunctional h (f j).toLinearMap)
     (hP : ∀ j, IsRationalSemilinear h (P j))
     (hC : IsRationalNormalPolyhedron h C)
     (hW : ∀ b, IsRationalNormalPolyhedron h (W b)) :

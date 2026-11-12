@@ -18,6 +18,8 @@ This allows identities to be transported from a normalized skew form.
 
 public section
 
+open TauCeti (PositiveDegrees PositiveDegreeMap GradedLieHom)
+
 noncomputable section
 
 namespace Mei.SkewLieAlgebra
@@ -111,15 +113,15 @@ variable [Algebra ℚ R] [DecidableEq Γ] [DecidableEq Γ']
 
 /-- A truncated skew map transports a projected ray label by scaling its power series.
 The source order need only cover the degree map's modulus at the target order. -/
-theorem truncatedMap_gradedMap_projection_rayExp {n : Γ} (hn : n ∈ d.monoid) (hn0 : n ≠ 0)
+theorem lieTruncatedMap_gradedMap_projection_rayExp {n : Γ} (hn : n ∈ d.monoid) (hn0 : n ≠ 0)
     (g : PowerSeries R) (k a : ℕ) (hma : T.modulus k ≤ a) :
-    ((gradedMap β hβ β' hβ' c T hT).truncatedMap k hma).bchGroupMap
-        (CompletedGroup.projection a (rayExp β hβ hn hn0 g)) =
-      CompletedGroup.projection k
+    ((gradedMap β hβ β' hβ' c T hT).lieTruncatedMap k hma).bchGroupMap
+        (TauCeti.CompletedGroup.projection a (rayExp β hβ hn hn0 g)) =
+      TauCeti.CompletedGroup.projection k
         (rayExp β' hβ' (T.map_mem hn) (T.map_ne_zero hn hn0) (c • g)) := by
   rw [projection_rayExp, projection_rayExp, LieHom.bchGroupMap_exp]
   congr 1
-  rw [LieIdeal.mkQ_apply, GradedLieHom.truncatedMap_mk]
+  rw [LieIdeal.mkQ_apply, GradedLieHom.lieTruncatedMap_mk]
   have hgen (j : ℕ) : gradedMap β hβ β' hβ' c T hT
       (rayGenerator β hβ hn hn0 j (PowerSeries.coeff (j + 1) g)) =
       rayGenerator β' hβ' (T.map_mem hn) (T.map_ne_zero hn hn0) j
@@ -140,9 +142,9 @@ theorem truncatedMap_gradedMap_projection_rayExp {n : Γ} (hn : n ∈ d.monoid) 
     apply (Submodule.Quotient.eq _).mpr
     rw [rayPartialSum_apply, rayPartialSum_apply, ← Finset.sum_range_add_sum_Ico _ hak,
       add_sub_cancel_left]
-    refine Submodule.sum_mem (e.degreeIdeal (positiveGrading β' hβ' e) k).toSubmodule
+    refine Submodule.sum_mem (e.truncationIdeal (positiveGrading β' hβ' e) k).toSubmodule
       fun j hj => ?_
-    apply e.le_degreeIdeal _ _ (rayGenerator_mem β' hβ' (T.map_mem hn)
+    apply e.le_truncationIdeal _ _ (rayGenerator_mem β' hβ' (T.map_mem hn)
       (T.map_ne_zero hn hn0) j _)
     rw [← T.toAddMonoidHom.map_nsmul]
     apply T.degree_gt k (d.monoid.nsmul_mem hn (j + 1))

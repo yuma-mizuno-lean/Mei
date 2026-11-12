@@ -27,6 +27,8 @@ arXiv:1503.06183v5.
 
 public section
 
+open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading GradedLieHom)
+
 noncomputable section
 
 namespace Mei
@@ -211,7 +213,7 @@ private def lieHom :
       | add x z hx hz => simp_all }
 
 /-- Transport positive tangent fields along a tropical pairing. The existing
-`GradedLieHom.truncatedMap` provides its finite-order Lie map. When `R` is a
+`GradedLieHom.lieTruncatedMap` provides its finite-order Lie map. When `R` is a
 ℚ-algebra, applying `.bchGroupMap` to that Lie map gives the finite group map,
 and `GradedLieHom.completedMap` gives the completed group map after importing
 `Mei.Algebra.Lie.BCH.Completion`, both with the original cutoff modulus. -/

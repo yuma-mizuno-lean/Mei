@@ -19,6 +19,8 @@ changes order. No injectivity of the finite quotient maps is assumed.
 -/
 
 public section
+
+open TauCeti (PositiveDegrees PositiveDegreeMap)
 noncomputable section
 
 namespace Mei.QuantumMonoidAlgebra

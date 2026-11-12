@@ -7,6 +7,7 @@ module
 
 public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Basic
 public import Mei.Geometry.Convex.Polyhedron.CommonPath
+import Mei.Combinatorics.Quiver.Path
 import Mei.Geometry.Convex.Polyhedron.Path.Completion
 
 /-!
@@ -24,6 +25,12 @@ No stabilization of the active supports or local finiteness of all walls is requ
 -/
 
 public section
+
+open TauCeti (WallComplement AdmissiblePLPath)
+
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
+open TauCeti (DirectedWallSpaces)
 
 noncomputable section
 
@@ -44,7 +51,7 @@ variable {Γ Λ R L V ι : Type*} [AddCommGroup Γ] [AddCommGroup Λ]
 theorem truncation_levelPathProduct {k l : ℕ} (hkl : k ≤ l)
     {x y : WallComplement (fun j : D.active l => (D.wall j).support)}
     (p : AdmissiblePLPath x y) :
-    (d.truncationMap ℒ hkl).bchGroupMap (D.levelPathProduct l p) =
+    (d.lieTruncationMap ℒ hkl).bchGroupMap (D.levelPathProduct l p) =
       D.levelPathProduct k
         ((WallComplement.restrictPrefunctor (fun j : D.active l => (D.wall j).support)
           (Set.inclusion (D.active_mono hkl))).mapPath p) := by
@@ -93,7 +100,7 @@ variable {x y z : D.Point}
 
 /-- The finite-order products of an all-order path form a compatible family. -/
 theorem truncation_pathProduct (p : Quiver.Path x y) {k l : ℕ} (hkl : k ≤ l) :
-    (d.truncationMap ℒ hkl).bchGroupMap
+    (d.lieTruncationMap ℒ hkl).bchGroupMap
       (D.levelPathProduct l ((CommonWallComplement.projectionPrefunctor l).mapPath p)) =
         D.levelPathProduct k ((CommonWallComplement.projectionPrefunctor k).mapPath p) := by
   have hp := D.truncation_levelPathProduct hkl
@@ -106,20 +113,20 @@ theorem truncation_pathProduct (p : Quiver.Path x y) {k l : ℕ} (hkl : k ≤ l)
 /-- The completed product of the finite active-wall transports along one all-order path. -/
 def pathProduct (p : Quiver.Path x y) : d.completedBCHGroup ℒ :=
   ⟨fun k => D.levelPathProduct k ((CommonWallComplement.projectionPrefunctor k).mapPath p),
-    (mem_completedGroup_iff _ _).mpr (fun _ _ hkl => D.truncation_pathProduct p hkl)⟩
+    (TauCeti.mem_completedGroup_iff _ _).mpr (fun _ _ hkl => D.truncation_pathProduct p hkl)⟩
 
 /-- Projection of the completed product recovers its actual finite geometric transport. -/
 @[simp]
 theorem projection_pathProduct (k : ℕ) (p : Quiver.Path x y) :
-    CompletedGroup.projection k (D.pathProduct p) =
+    TauCeti.CompletedGroup.projection k (D.pathProduct p) =
       D.levelPathProduct k ((CommonWallComplement.projectionPrefunctor k).mapPath p) := by
-  rw [CompletedGroup.projection_apply]
+  rw [TauCeti.CompletedGroup.projection_apply]
   rfl
 
 -- Reflexivity identifies the categorical tower operations with the concrete BCH operations.
 @[simp]
 theorem pathProduct_nil : D.pathProduct (Quiver.Path.nil : Quiver.Path x x) = 1 := by
-  apply CompletedGroup.ext
+  apply TauCeti.CompletedGroup.ext
   intro k
   simp
   rfl
@@ -128,7 +135,7 @@ theorem pathProduct_nil : D.pathProduct (Quiver.Path.nil : Quiver.Path x x) = 1 
 @[simp]
 theorem pathProduct_comp (p : Quiver.Path x y) (q : Quiver.Path y z) :
     D.pathProduct (p.comp q) = D.pathProduct q * D.pathProduct p := by
-  apply CompletedGroup.ext
+  apply TauCeti.CompletedGroup.ext
   intro k
   simp
   rfl
@@ -137,7 +144,7 @@ theorem pathProduct_comp (p : Quiver.Path x y) (q : Quiver.Path y z) :
 @[simp]
 theorem pathProduct_reverse (p : Quiver.Path x y) :
     D.pathProduct p.reverse = (D.pathProduct p)⁻¹ := by
-  apply CompletedGroup.ext
+  apply TauCeti.CompletedGroup.ext
   intro k
   simp
   rfl

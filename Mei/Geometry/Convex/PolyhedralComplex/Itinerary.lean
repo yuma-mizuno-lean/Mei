@@ -7,6 +7,7 @@ module
 
 public import Mei.Geometry.Convex.PolyhedralComplex.SideChamber
 public import Mei.Geometry.Convex.PolyhedralComplex.SingleCrossing
+import Mei.Combinatorics.Quiver.Path
 
 /-!
 # Chamber itineraries of admissible paths
@@ -37,9 +38,11 @@ invariance follows the list-level formula `FinitePolyhedralComplex.orderedCrossi
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath)
+
 noncomputable section
 
-open Set Mei.Convex Mei.Convex.WallComplement
+open Set Mei.Convex TauCeti.WallComplement
 
 namespace Mei.FinitePolyhedralComplex
 

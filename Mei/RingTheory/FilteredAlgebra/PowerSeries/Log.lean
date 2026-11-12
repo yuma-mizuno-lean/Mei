@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mei.RingTheory.FilteredAlgebra.PowerSeries.Basic
-public import Mei.RingTheory.FilteredAlgebra.Exp.Basic
+public import TauCeti.RingTheory.FilteredAlgebra.Exp.Basic
 public import Mei.RingTheory.PowerSeries.Nilpotent.Log
 
 /-!
@@ -20,7 +20,7 @@ It uses `PowerSeries.nilpotentAeval_log` at every finite quotient.
 
 public section
 
-namespace Mei.AlgFiltration
+namespace TauCeti.AlgFiltration
 
 variable {R A : Type*} [CommRing R] [Algebra ℚ R] [Ring A] [Algebra R A]
   [Algebra ℚ A] (F : AlgFiltration A)
@@ -48,4 +48,4 @@ theorem completedAeval_logOf (x : F.completionIdeal 1) (f : PowerSeries R)
   simp only [F.projection_completedAeval, PowerSeries.nilpotentAeval_logOf _ _ hf,
     F.projection_completedLog]
 
-end Mei.AlgFiltration
+end TauCeti.AlgFiltration

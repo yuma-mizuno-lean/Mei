@@ -23,11 +23,15 @@ It allows unbounded cells and lineality, and uses no choice of inequalities.
 
 public section
 
+open TauCeti (OrientedCell)
+
 noncomputable section
 
 open Module
 
-namespace Mei.OrientedCell
+namespace TauCeti.OrientedCell
+
+open Mei
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i} {k : ℕ}
@@ -44,9 +48,9 @@ theorem boundaryFacet_sweep_side (σ : OrientedCell h (k + 1)) (n : N)
     let hnF : i n ∉ vectorSpan ℝ F := fun hm => hnP (vectorSpan_mono ℝ hF.subset hm)
     (σ.sweep n hn).boundaryFacet
         (by simpa only [sweep_carrier] using hF.sweep_of_transverse hnP)
-        (Convex.sweep_nonempty hne (i n))
-        (by rw [sweep_carrier, Convex.finrank_sweep hne hnF,
-              Convex.finrank_sweep σ.nonempty hnP, hdim]) =
+        (Set.Nonempty.sweep (𝕜 := ℝ) hne (i n))
+        (by rw [sweep_carrier, Set.finrank_vectorSpan_sweep (𝕜 := ℝ) hne hnF,
+              Set.finrank_vectorSpan_sweep (𝕜 := ℝ) σ.nonempty hnP, hdim]) =
       ((σ.boundaryFacet hF hne hdim).sweep n
         (by simpa only [boundaryFacet_carrier, direction_affineSpan] using hnF)).reverse := by
   have := h.finiteDimensional
@@ -59,13 +63,13 @@ theorem boundaryFacet_sweep_side (σ : OrientedCell h (k + 1)) (n : N)
   have hnτ : i n ∉ (affineSpan ℝ τ.carrier).direction := by
     simpa only [hτcar, direction_affineSpan] using hnF
   let υ := (τ.sweep n hnτ).reverse
-  have hc : υ.carrier = Convex.sweep F (i n) := by simp [υ, τ]
-  have hG : IsExposed ℝ (σ.sweep n hn).carrier (Convex.sweep F (i n)) := by
+  have hc : υ.carrier = Set.sweep ℝ F (i n) := by simp [υ, τ]
+  have hG : IsExposed ℝ (σ.sweep n hn).carrier (Set.sweep ℝ F (i n)) := by
     simpa only [sweep_carrier] using hF.sweep_of_transverse hnP
-  have hdimG : finrank ℝ (vectorSpan ℝ (Convex.sweep F (i n))) + 1 =
+  have hdimG : finrank ℝ (vectorSpan ℝ (Set.sweep ℝ F (i n))) + 1 =
       finrank ℝ (vectorSpan ℝ (σ.sweep n hn).carrier) := by
-    rw [sweep_carrier, Convex.finrank_sweep hne hnF,
-      Convex.finrank_sweep σ.nonempty hnP, hdim]
+    rw [sweep_carrier, Set.finrank_vectorSpan_sweep (𝕜 := ℝ) hne hnF,
+      Set.finrank_vectorSpan_sweep (𝕜 := ℝ) σ.nonempty hnP, hdim]
   -- Use an actual vector from the parent towards its facet; it is outward in both prisms.
   have hproper : F ≠ σ.carrier := by
     intro he
@@ -78,23 +82,25 @@ theorem boundaryFacet_sweep_side (σ : OrientedCell h (k + 1)) (n : N)
     ⟨y - x, vsub_mem_vectorSpan ℝ (hF.subset hy) hx⟩
   have hvpos : 0 < (hF.outwardNormal hne hdim).someVector v :=
     (hF.outwardNormal_apply_pos_iff hne hdim hx hy).mpr hxF
-  have hxG : x ∉ Convex.sweep F (i n) := by
+  have hxG : x ∉ Set.sweep ℝ F (i n) := by
     intro hmem
-    obtain ⟨z, hz, t, ht, he⟩ := Convex.mem_sweep_iff_exists.mp hmem
-    have hcoords := Convex.sweep_coordinates_unique hnP hx (hF.subset hz)
+    obtain ⟨z, hz, t, ht, he⟩ := Set.mem_sweep_iff_exists.mp hmem
+    have hcoords := Set.sweep_coordinates_unique hnP (subset_affineSpan ℝ _ hx)
+      (subset_affineSpan ℝ _ (hF.subset hz))
       (t := 0) (t' := t) (by simpa using he)
     exact hxF (hcoords.1 ▸ hz)
   let v' : vectorSpan ℝ (σ.sweep n hn).carrier :=
     ⟨v, by
       rw [sweep_carrier]
-      exact vectorSpan_mono ℝ (Convex.subset_sweep σ.carrier (i n)) v.property⟩
-  have hvpos' : 0 < (hG.outwardNormal (Convex.sweep_nonempty hne (i n)) hdimG).someVector v' :=
+      exact vectorSpan_mono ℝ (Set.subset_sweep (𝕜 := ℝ) σ.carrier (i n)) v.property⟩
+  have hneG := Set.Nonempty.sweep (𝕜 := ℝ) hne (i n)
+  have hvpos' : 0 < (hG.outwardNormal hneG hdimG).someVector v' :=
     (hG.outwardNormal_apply_pos_iff _ _
-      (by simpa only [sweep_carrier] using Convex.subset_sweep σ.carrier (i n) hx)
-      (Convex.subset_sweep F (i n) hy)).mpr hxG
-  have hvG : (v : V) ∉ vectorSpan ℝ (Convex.sweep F (i n)) := by
+      (by simpa only [sweep_carrier] using Set.subset_sweep (𝕜 := ℝ) σ.carrier (i n) hx)
+      (Set.subset_sweep (𝕜 := ℝ) F (i n) hy)).mpr hxG
+  have hvG : (v : V) ∉ vectorSpan ℝ (Set.sweep ℝ F (i n)) := by
     intro hm
-    have hz : (hG.outwardNormal (Convex.sweep_nonempty hne (i n)) hdimG).someVector v' = 0 := by
+    have hz : (hG.outwardNormal hneG hdimG).someVector v' = 0 := by
       apply LinearMap.mem_ker.mp
       rw [IsExposed.ker_outwardNormal]
       exact hm
@@ -102,7 +108,7 @@ theorem boundaryFacet_sweep_side (σ : OrientedCell h (k + 1)) (n : N)
   have hvτ : (v : V) ∉ (affineSpan ℝ τ.carrier).direction := by
     intro hm
     apply hvG
-    exact vectorSpan_mono ℝ (Convex.subset_sweep F (i n))
+    exact vectorSpan_mono ℝ (Set.subset_sweep (𝕜 := ℝ) F (i n))
       (by simpa only [hτcar, direction_affineSpan] using hm)
   have hdir : (affineSpan ℝ τ.carrier).direction ⊔ ℝ ∙ (v : V) =
       (affineSpan ℝ σ.carrier).direction := by
@@ -117,14 +123,14 @@ theorem boundaryFacet_sweep_side (σ : OrientedCell h (k + 1)) (n : N)
       exact hdim
   have hkn : finrank ℝ (V ⧸ ((affineSpan ℝ τ.carrier).direction ⊔ ℝ ∙ i n)) = k + 1 := by
     have he := (τ.sweep n hnτ).finrank_quotient_direction
-    rw [sweep_carrier, direction_affineSpan, Convex.vectorSpan_sweep τ.nonempty] at he
+    rw [sweep_carrier, direction_affineSpan, Set.vectorSpan_sweep (𝕜 := ℝ) τ.nonempty] at he
     rw [direction_affineSpan]
     exact he
   have hkm : finrank ℝ (V ⧸ ((affineSpan ℝ τ.carrier).direction ⊔ ℝ ∙ (v : V))) = k + 1 := by
     rw [hdir]
     exact σ.finrank_quotient_direction
   have hvn : (v : V) ∉ (affineSpan ℝ τ.carrier).direction ⊔ ℝ ∙ i n := by
-    simpa only [hτcar, direction_affineSpan, ← Convex.vectorSpan_sweep hne] using hvG
+    simpa only [hτcar, direction_affineSpan, ← Set.vectorSpan_sweep (𝕜 := ℝ) hne] using hvG
   have hnv : i n ∉ (affineSpan ℝ τ.carrier).direction ⊔ ℝ ∙ (v : V) := by
     rwa [hdir]
   have hcontract := τ.orientation.contract_contract τ.isConormal
@@ -156,4 +162,4 @@ theorem boundaryFacet_sweep_side (σ : OrientedCell h (k + 1)) (n : N)
   exact ((σ.sweep n hn).eq_boundaryFacet_iff hG _ hdimG υ hc v'
     (by simpa only [hc, direction_affineSpan] using hvG) hvpos').mpr he |>.symm
 
-end Mei.OrientedCell
+end TauCeti.OrientedCell

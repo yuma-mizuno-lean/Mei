@@ -23,6 +23,10 @@ Gross–Hacking–Keel–Kontsevich, *Canonical bases for cluster algebras*, §1
 
 public section
 
+open TauCeti (IsRationalNormalPolyhedron)
+
+open TauCeti (PositiveDegrees IsPositiveGrading SupportedRay)
+
 noncomputable section
 
 namespace Mei
@@ -37,16 +41,16 @@ theorem isRationalNormalPolyhedron_ker_normal (n : N) :
     IsRationalNormalPolyhedron h (LinearMap.ker (s.normal n) : Set V) := by
   let := h.finiteDimensional
   let ℓ := (s.normal n).toContinuousLinearMap
-  have hℓ : Toric.IsRationalFunctional h ℓ.toLinearMap := by
-    convert Toric.IsRationalFunctional.realCharacter h (AddMonoidHom.eval n).toIntLinearMap
+  have hℓ : TauCeti.Toric.IsRationalFunctional h ℓ.toLinearMap := by
+    convert TauCeti.Toric.IsRationalFunctional.realCharacter h (AddMonoidHom.eval n).toIntLinearMap
       using 1
     exact s.normal_eq_realCharacter n
   have he : (LinearMap.ker (s.normal n) : Set V) = {x | ℓ x ≤ 0} ∩ {x | (-ℓ) x ≤ -0} := by
     ext x
     simp [ℓ, le_antisymm_iff]
   rw [he]
-  exact (isRationalNormalPolyhedron_setOf_le ℓ hℓ 0).inter
-    (isRationalNormalPolyhedron_setOf_le (-ℓ) (by simpa using hℓ.neg) (-0))
+  exact (TauCeti.isRationalNormalPolyhedron_setOf_le ℓ hℓ 0).inter
+    (TauCeti.isRationalNormalPolyhedron_setOf_le (-ℓ) (by simpa using hℓ.neg) (-0))
 
 end KSSpace
 

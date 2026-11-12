@@ -22,11 +22,13 @@ each event with `WallComplement.exists_segmentCrossingEvents_eq_singleton`.
 
 public section
 
+open TauCeti (WallComplement)
+
 noncomputable section
 
-open Set Mei.Convex WallComplement
+open Set TauCeti.WallComplement
 
-namespace Mei.Convex.WallComplement
+namespace TauCeti.WallComplement
 
 variable {V ι G : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
   [Finite ι] [Group G] {W : ι → Set V}
@@ -70,4 +72,4 @@ theorem segmentPathProduct_mul_congr [FiniteDimensional ℝ V]
   rw [crossingEventProduct_mul ν a c ha hc hac,
     crossingEventProduct_mul ν b c hb hc hbc, hevent t (List.mem_reverse.mp ht)]
 
-end Mei.Convex.WallComplement
+end TauCeti.WallComplement

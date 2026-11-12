@@ -18,7 +18,7 @@ Fix an integral normal `n` and a completed coefficient `u` on the allowed degree
 to `n`. The completed tropical vertex label `exp(u ∂_n)` is not a wall label in general:
 its logarithm `u ∂_n` has terms `u_q z^q ∂_n` in tangent degrees `q` on many different
 supported rays. Every such term lies in the tropical vertex wall space of `q` and `n`.
-Hence the ray factors of the label (`Mei.PositiveDegrees.rayFactor`) are wall labels on
+Hence the ray factors of the label (`TauCeti.PositiveDegrees.rayFactor`) are wall labels on
 their supported rays with normal `n`, all of them commute, and at every order the label is
 the unordered product of its ray factors. For `u = log f`, these are the supported-ray
 walls `exp((log f)_w ∂_n)` presenting the function wall of `f`, whose action multiplies
@@ -50,6 +50,12 @@ scattering diagrams*, §9.2, arXiv:2503.03719v1.
 -/
 
 public section
+
+open TauCeti.CompletedGroup (projection HasFiniteSupport)
+
+open TauCeti (AlgFiltration)
+
+open TauCeti (PositiveDegrees SupportedRay)
 
 noncomputable section
 
@@ -277,8 +283,8 @@ cutoff. -/
 theorem projection_completedBCHExp_completedTropicalTangentField_eq_noncommProd_rayFactor
     [Module.Free ℤ Γ] (u : (G).completion) (k : ℕ) (s : Finset (SupportedRay d))
     (hs : d.raysAtOrder k ⊆ s) :
-    CompletedGroup.projection k (d.completedBCHExp ℒ (completedTropicalTangentField d ρ χ u)) =
-      s.noncommProd (fun w => CompletedGroup.projection k
+    projection k (d.completedBCHExp ℒ (completedTropicalTangentField d ρ χ u)) =
+      s.noncommProd (fun w => projection k
         (d.rayFactor ℒ (d.completedBCHExp ℒ (completedTropicalTangentField d ρ χ u)) w))
         (fun v _ w _ _ => (d.commute_rayFactor (fun q q' => (H).lie_eq_zero_of_same_normal
           (logComponent_completedBCHExp_completedTropicalTangentField_mem_wall d ρ n u q)
@@ -294,7 +300,7 @@ has a degree of `S` on its ray of order at most `k`. -/
 theorem exists_mem_rayDegrees_of_projection_rayFactor_ne_one
     (S : AddSubmonoid T) {g : R[T]} (f : R[S]) (hfg : mapDomainRingHom R S.subtype f = g)
     (hg : (G).toCompletion g - 1 ∈ (G).completionIdeal 1) {w : SupportedRay d} {k : ℕ}
-    (hw : CompletedGroup.projection k (d.rayFactor ℒ (d.completedBCHExp ℒ
+    (hw : projection k (d.rayFactor ℒ (d.completedBCHExp ℒ
       (completedTropicalTangentField d ρ χ ((G).completedLog ⟨(G).toCompletion g, hg⟩))) w) ≠
         1) :
     ∃ t : S, ((t : T) : Γ) ∈ w.rayDegrees ∧ d.degree ((t : T) : Γ) ≤ k := by
@@ -325,8 +331,8 @@ theorem projection_completedBCHExp_completedTropicalTangentField_eq_noncommProd_
     [Module.Free ℤ Γ] (u : (G).completion) (k : ℕ)
     (s : Finset {w : SupportedRay d // n (ρ w.generator) = 0})
     (hs : ∀ w ∈ d.raysAtOrder k, ∀ hw : n (ρ w.generator) = 0, ⟨w, hw⟩ ∈ s) :
-    CompletedGroup.projection k (d.completedBCHExp ℒ (completedTropicalTangentField d ρ χ u)) =
-      s.noncommProd (fun w => CompletedGroup.projection k
+    projection k (d.completedBCHExp ℒ (completedTropicalTangentField d ρ χ u)) =
+      s.noncommProd (fun w => projection k
         (d.rayFactor ℒ (d.completedBCHExp ℒ (completedTropicalTangentField d ρ χ u)) w.val))
         (fun v _ w _ _ => (commute_rayFactor_completedBCHExp_completedTropicalTangentField
           d ρ n u v.val w.val).map _) := by
@@ -335,7 +341,7 @@ theorem projection_completedBCHExp_completedTropicalTangentField_eq_noncommProd_
   let e : {w : SupportedRay d // n (ρ w.generator) = 0} ↪ SupportedRay d :=
     ⟨Subtype.val, Subtype.val_injective⟩
   let t := (d.finite_raysAtOrder k).toFinset
-  let f (w : SupportedRay d) := CompletedGroup.projection k
+  let f (w : SupportedRay d) := projection k
     (d.rayFactor ℒ (d.completedBCHExp ℒ (completedTropicalTangentField d ρ χ u)) w)
   have comm : (↑(s.map e ∪ t) : Set (SupportedRay d)).Pairwise
       (fun v w => Commute (f v) (f w)) := fun v _ w _ _ =>
@@ -357,8 +363,8 @@ supported rays, have finite support at every order, provided that at every order
 many labels have a ray factor surviving the cutoff. -/
 theorem hasFiniteSupport_rayFactor_sigma [HasUniqueDiv Γ] {ι : Type*}
     {P : ι → SupportedRay d → Prop} (g : ι → d.completedBCHGroup ℒ)
-    (hg : ∀ k, {i | ∃ w, CompletedGroup.projection k (d.rayFactor ℒ (g i) w) ≠ 1}.Finite) :
-    CompletedGroup.HasFiniteSupport fun j : Σ i, {w // P i w} => d.rayFactor ℒ (g j.1) j.2.val := by
+    (hg : ∀ k, {i | ∃ w, projection k (d.rayFactor ℒ (g i) w) ≠ 1}.Finite) :
+    HasFiniteSupport fun j : Σ i, {w // P i w} => d.rayFactor ℒ (g j.1) j.2.val := by
   intro k
   let f : (Σ i, {w // P i w}) → ι × SupportedRay d := fun j => (j.1, j.2.val)
   have hf : Function.Injective f := by
@@ -405,7 +411,7 @@ of order at most `k`, and some exponent `e_s` has degree at most `k`. -/
 theorem mem_raysAtOrder_and_exists_degree_le_of_projection_rayFactor_ne_one
     (hg : (G).toCompletion (1 + ∑ s, single (e s) (r s) : R[T]) - 1 ∈ (G).completionIdeal 1)
     {w : SupportedRay d} {k : ℕ}
-    (hw : CompletedGroup.projection k (d.rayFactor ℒ (d.completedBCHExp ℒ
+    (hw : projection k (d.rayFactor ℒ (d.completedBCHExp ℒ
       (completedTropicalTangentField d ρ χ
         ((G).completedLog ⟨(G).toCompletion (1 + ∑ s, single (e s) (r s) : R[T]), hg⟩))) w) ≠ 1) :
     w ∈ d.raysAtOrder k ∧ ∃ s, d.degree (e s : Γ) ≤ k := by

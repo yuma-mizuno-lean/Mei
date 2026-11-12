@@ -31,6 +31,8 @@ the existing operator BCH action, without introducing another representation.
 
 public noncomputable section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 open scoped DirectSum
 
 namespace Mei.GradedOperators

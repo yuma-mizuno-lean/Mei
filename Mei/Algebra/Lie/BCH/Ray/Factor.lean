@@ -26,17 +26,23 @@ ray presentation (Gross–Hacking–Keel–Kontsevich, *Canonical bases for clus
 diagrams*, §9.2, arXiv:2503.03719v1).
 
 The ray factor reassembles the selected coefficients through the product description
-`Mei.PositiveDegrees.completionEquivPi` of the degree completion and the exponential
-coordinate `Mei.PositiveDegrees.completedBCHExp`. The product formula combines
-`Mei.PositiveDegrees.log_projection_eq_mkQ_sum` with `Mei.BCHGroup.exp_sum_of_lie_eq_zero`,
+`TauCeti.PositiveDegrees.filtrationCompletionEquivPi` of the degree completion and the exponential
+coordinate `TauCeti.PositiveDegrees.completedBCHExp`. The product formula combines
+`TauCeti.PositiveDegrees.log_projection_eq_mkQ_sum` with `Mei.BCHGroup.exp_sum_of_lie_eq_zero`,
 using that every nonzero allowed degree lies on exactly one supported ray.
 -/
 
 public section
 
+open TauCeti.CompletedGroup (projection)
+
+open TauCeti (PositiveDegrees IsPositiveGrading SupportedRay)
+
 noncomputable section
 
-namespace Mei.PositiveDegrees
+namespace TauCeti.PositiveDegrees
+
+open Mei
 
 variable {N R L : Type*} [AddCommGroup N] [CommRing R]
   [LieRing L] [LieAlgebra R L] [DecidableEq N]
@@ -45,29 +51,30 @@ variable {N R L : Type*} [AddCommGroup N] [CommRing R]
   [Algebra ℚ R] [LieAlgebra ℚ L] [IsScalarTower ℚ R L]
 
 local notation "F" =>
-  LieIdeal.completionFiltration (d.degreeIdeal ℒ) (d.degreeIdeal_antitone ℒ)
+  LieIdeal.completionFiltration (d.truncationIdeal ℒ) (d.truncationIdeal_antitone ℒ)
 
 open Classical in
 /-- The ray factor of a completed label on a supported ray: the completed label whose
 logarithmic coefficients are those of `g` in the actual degrees of `w` and zero elsewhere. -/
 def rayFactor (g : d.completedBCHGroup ℒ) (w : SupportedRay d) : d.completedBCHGroup ℒ :=
-  d.completedBCHExp ℒ ((d.completionEquivPi ℒ F (fun k => d.degreeIdeal_toSubmodule ℒ k)
-    (fun _ hn => IsPositiveGrading.eq_bot _ (Or.inl hn))).symm
-      fun n => if n ∈ w.rayDegrees then d.logComponent ℒ g n else 0)
+  d.completedBCHExp ℒ
+    ((d.filtrationCompletionEquivPi ℒ F (fun k => d.truncationIdeal_toSubmodule ℒ k)
+      (fun _ hn => IsPositiveGrading.eq_bot _ (Or.inl hn))).symm
+        fun n => if n ∈ w.rayDegrees then d.logComponent ℒ g n else 0)
 
 /-- On an actual degree of the ray, the ray factor keeps the logarithmic coefficient. -/
 @[simp]
 theorem logComponent_rayFactor_of_mem (g : d.completedBCHGroup ℒ) {w : SupportedRay d}
     {n : N} (hn : n ∈ w.rayDegrees) :
     d.logComponent ℒ (d.rayFactor ℒ g w) n = d.logComponent ℒ g n := by
-  rw [rayFactor, logComponent_completedBCHExp, completionComponent_completionEquivPi_symm,
+  rw [rayFactor, logComponent_completedBCHExp, filtrationCompletionComponent_equivPi_symm,
     ite_eq_left hn]
 
 /-- Off the actual degrees of the ray, the ray factor has no logarithmic coefficient. -/
 @[simp]
 theorem logComponent_rayFactor_of_notMem (g : d.completedBCHGroup ℒ) {w : SupportedRay d}
     {n : N} (hn : n ∉ w.rayDegrees) : d.logComponent ℒ (d.rayFactor ℒ g w) n = 0 := by
-  rw [rayFactor, logComponent_completedBCHExp, completionComponent_completionEquivPi_symm,
+  rw [rayFactor, logComponent_completedBCHExp, filtrationCompletionComponent_equivPi_symm,
     ite_eq_right hn]
 
 /-- The ray factors are the unique completed labels with these coefficients. -/
@@ -133,7 +140,7 @@ theorem rayFactor_inv (g : d.completedBCHGroup ℒ) (w : SupportedRay d) :
 
 /-- Only finitely many ray factors of a label are nontrivial at each order. -/
 theorem hasFiniteSupport_rayFactor [HasUniqueDiv N] (g : d.completedBCHGroup ℒ) :
-    CompletedGroup.HasFiniteSupport (d.rayFactor ℒ g) :=
+    TauCeti.CompletedGroup.HasFiniteSupport (d.rayFactor ℒ g) :=
   d.hasFiniteSupport_completedRaySubgroup ℒ fun w =>
     ⟨d.rayFactor ℒ g w, d.rayFactor_mem_completedRaySubgroup ℒ g w⟩
 
@@ -141,8 +148,8 @@ open Classical in
 /-- At order `k`, the logarithm of a ray factor is the class of the sum of the
 coefficients of the label in the actual ray degrees retained at that order. -/
 theorem log_projection_rayFactor (g : d.completedBCHGroup ℒ) (w : SupportedRay d) (k : ℕ) :
-    BCHGroup.log (L := d.truncatedLie ℒ k) (CompletedGroup.projection k (d.rayFactor ℒ g w)) =
-      (d.degreeIdeal ℒ k).mkQ (∑ n ∈ (d.finite_cutoff k).toFinset,
+    BCHGroup.log (L := d.lieTruncation ℒ k) (projection k (d.rayFactor ℒ g w)) =
+      (d.truncationIdeal ℒ k).mkQ (∑ n ∈ (d.finite_cutoff k).toFinset,
         if n ∈ w.rayDegrees then (d.logComponent ℒ g n : L) else 0) := by
   rw [log_projection_eq_mkQ_sum]
   congr 1
@@ -172,8 +179,8 @@ the rays that meet the cutoff. -/
 theorem projection_eq_noncommProd_rayFactor [Module.Free ℤ N] {g : d.completedBCHGroup ℒ}
     (hg : ∀ n m, ⁅(d.logComponent ℒ g n : L), (d.logComponent ℒ g m : L)⁆ = 0)
     (k : ℕ) (s : Finset (SupportedRay d)) (hs : d.raysAtOrder k ⊆ s) :
-    CompletedGroup.projection k g =
-      s.noncommProd (fun w => CompletedGroup.projection k (d.rayFactor ℒ g w))
+    projection k g =
+      s.noncommProd (fun w => projection k (d.rayFactor ℒ g w))
         (fun v _ w _ _ => (d.commute_rayFactor hg v w).map _) := by
   classical
   let : HasUniqueDiv N := .of_isTorsionFree ℤ N
@@ -181,7 +188,7 @@ theorem projection_eq_noncommProd_rayFactor [Module.Free ℤ N] {g : d.completed
   let x (w : SupportedRay d) : L :=
     ∑ n ∈ c, if n ∈ w.rayDegrees then (d.logComponent ℒ g n : L) else 0
   have hx : (s : Set (SupportedRay d)).Pairwise fun v w =>
-      ⁅(d.degreeIdeal ℒ k).mkQ (x v), (d.degreeIdeal ℒ k).mkQ (x w)⁆ = 0 := by
+      ⁅(d.truncationIdeal ℒ k).mkQ (x v), (d.truncationIdeal ℒ k).mkQ (x w)⁆ = 0 := by
     intro v _ w _ _
     rw [← LieHom.map_lie]
     simp only [x, sum_lie, lie_sum]
@@ -204,10 +211,10 @@ theorem projection_eq_noncommProd_rayFactor [Module.Free ℤ N] {g : d.completed
       ite_eq_left hw]
     intro v _ hvw
     exact ite_eq_right fun hv => hvw (SupportedRay.eq_of_mem_rayDegrees hv hw)
-  rw [← BCHGroup.exp_log (L := d.truncatedLie ℒ k) (CompletedGroup.projection k g),
+  rw [← BCHGroup.exp_log (L := d.lieTruncation ℒ k) (projection k g),
     log_projection_eq_mkQ_sum, ← hsum, map_sum, BCHGroup.exp_sum_of_lie_eq_zero s _ hx]
   refine Finset.noncommProd_congr rfl (fun w _ => ?_) _
   rw [← d.log_projection_rayFactor ℒ g w k]
-  exact BCHGroup.exp_log (L := d.truncatedLie ℒ k) _
+  exact BCHGroup.exp_log (L := d.lieTruncation ℒ k) _
 
-end Mei.PositiveDegrees
+end TauCeti.PositiveDegrees

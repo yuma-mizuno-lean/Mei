@@ -28,6 +28,8 @@ The shifted product restricts Mathlib's `LinearMap.mul`.
 
 public section
 
+open TauCeti (PositiveDegrees)
+
 noncomputable section
 
 namespace Mei
@@ -73,6 +75,8 @@ end Semiring
 
 namespace PositiveDegrees
 
+open TauCeti.PositiveDegrees
+
 section Semiring
 
 variable {R A Γ : Type*} [CommSemiring R] [Semiring A] [Algebra R A]
@@ -82,16 +86,16 @@ variable {R A Γ : Type*} [CommSemiring R] [Semiring A] [Algebra R A]
 
 /-- Shifted multiplication adds relative filtration orders. -/
 @[grind .]
-theorem shiftedMul_mem_shiftedFiltration {a b : ℕ}
+theorem _root_.TauCeti.PositiveDegrees.shiftedMul_mem_shiftedFiltration {a b : ℕ}
     {x : shiftedSubmodule 𝒜 d.monoid p} {y : shiftedSubmodule 𝒜 d.monoid q}
     (hx : x ∈ (d.shiftedFiltration 𝒜 p).submodule a)
     (hy : y ∈ (d.shiftedFiltration 𝒜 q).submodule b) :
     shiftedMul 𝒜 d.monoid p q x y ∈ (d.shiftedFiltration 𝒜 (p + q)).submodule (a + b) := by
   have hmul :
-      Mei.DirectSum.degreeTail 𝒜 (fun i => d.degree (i - p)) a *
-          Mei.DirectSum.degreeTail 𝒜 (fun i => d.degree (i - q)) b ≤
-        Mei.DirectSum.degreeTail 𝒜 (fun i => d.degree (i - (p + q))) (a + b) := by
-    simp only [Mei.DirectSum.degreeTail_def, Submodule.iSup_mul, Submodule.mul_iSup,
+      TauCeti.DirectSum.degreeTail 𝒜 (fun i => d.degree (i - p)) a *
+          TauCeti.DirectSum.degreeTail 𝒜 (fun i => d.degree (i - q)) b ≤
+        TauCeti.DirectSum.degreeTail 𝒜 (fun i => d.degree (i - (p + q))) (a + b) := by
+    simp only [TauCeti.DirectSum.degreeTail_def, Submodule.iSup_mul, Submodule.mul_iSup,
       iSup_le_iff]
     intro i hi j hj
     apply (TauCeti.GradedAlgebra.mul_le_grade_add 𝒜 j i).trans
@@ -101,8 +105,8 @@ theorem shiftedMul_mem_shiftedFiltration {a b : ℕ}
     have hab : ((a + b : ℕ) : ℤ) ≤ d.degree (j + i - (p + q)) := by
       rw [hd, Nat.cast_add]
       exact add_le_add hj hi
-    simpa only [Mei.DirectSum.degreeTail_def] using
-      Mei.DirectSum.le_degreeTail 𝒜 (fun i => d.degree (i - (p + q))) hab
+    simpa only [TauCeti.DirectSum.degreeTail_def] using
+      TauCeti.DirectSum.le_degreeTail 𝒜 (fun i => d.degree (i - (p + q))) hab
   simp only [shiftedFiltration_submodule, Submodule.mem_comap,
     Submodule.coe_subtype] at hx hy ⊢
   rw [coe_shiftedMul]
@@ -118,7 +122,7 @@ variable {R A Γ : Type*} [CommRing R] [Ring A] [Algebra R A]
   (p q : Γ)
 
 /-- Products of shifted coefficients in a fixed finite quotient. -/
-def shiftedQuotientMul (k : ℕ) :
+def _root_.TauCeti.PositiveDegrees.shiftedQuotientMul (k : ℕ) :
     (d.shiftedFiltration 𝒜 p).quotient k →ₗ[R]
       (d.shiftedFiltration 𝒜 q).quotient k →ₗ[R]
         (d.shiftedFiltration 𝒜 (p + q)).quotient k :=
@@ -129,14 +133,14 @@ def shiftedQuotientMul (k : ℕ) :
 
 /-- The finite shifted product is computed on representatives. -/
 @[simp]
-theorem shiftedQuotientMul_mk (k : ℕ)
+theorem _root_.TauCeti.PositiveDegrees.shiftedQuotientMul_mk (k : ℕ)
     (x : shiftedSubmodule 𝒜 d.monoid p) (y : shiftedSubmodule 𝒜 d.monoid q) :
     d.shiftedQuotientMul 𝒜 p q k (Submodule.Quotient.mk x) (Submodule.Quotient.mk y) =
       Submodule.Quotient.mk (shiftedMul 𝒜 d.monoid p q x y) :=
   ModuleFiltration.quotientBilinear_mk _ _ _ _ _ k x y
 
 /-- Products of completed shifted coefficients, with shifts added. -/
-def shiftedCompletionMul : d.ShiftedCoefficients 𝒜 p →ₗ[R]
+def _root_.TauCeti.PositiveDegrees.shiftedCompletionMul : d.ShiftedCoefficients 𝒜 p →ₗ[R]
     d.ShiftedCoefficients 𝒜 q →ₗ[R] d.ShiftedCoefficients 𝒜 (p + q) :=
   ModuleFiltration.completionBilinear
     (d.shiftedFiltration 𝒜 p) (d.shiftedFiltration 𝒜 q) (d.shiftedFiltration 𝒜 (p + q))
@@ -144,14 +148,14 @@ def shiftedCompletionMul : d.ShiftedCoefficients 𝒜 p →ₗ[R]
     (fun _ _ _ _ => d.shiftedMul_mem_shiftedFiltration 𝒜 p q)
 
 /-- The shifted product is the general completed bilinear pairing for multiplication. -/
-theorem shiftedCompletionMul_def :
+theorem _root_.TauCeti.PositiveDegrees.shiftedCompletionMul_def :
     d.shiftedCompletionMul 𝒜 p q = ModuleFiltration.completionBilinear
       (d.shiftedFiltration 𝒜 p) (d.shiftedFiltration 𝒜 q) (d.shiftedFiltration 𝒜 (p + q))
       (shiftedMul 𝒜 d.monoid p q)
       (fun _ _ _ _ => d.shiftedMul_mem_shiftedFiltration 𝒜 p q) := (rfl)
 
 /-- Projecting a completed shifted product gives the product of its projections. -/
-theorem projection_shiftedCompletionMul_eq_quotient (k : ℕ)
+theorem _root_.TauCeti.PositiveDegrees.projection_shiftedCompletionMul_eq_quotient (k : ℕ)
     (x : d.ShiftedCoefficients 𝒜 p) (y : d.ShiftedCoefficients 𝒜 q) :
     (d.shiftedFiltration 𝒜 (p + q)).projection k (d.shiftedCompletionMul 𝒜 p q x y) =
       d.shiftedQuotientMul 𝒜 p q k
@@ -160,7 +164,7 @@ theorem projection_shiftedCompletionMul_eq_quotient (k : ℕ)
   ModuleFiltration.projection_completionBilinear _ _ _ _ _ k x y
 
 /-- Products of representatives compute each projection of a completed product. -/
-theorem projection_shiftedCompletionMul (k : ℕ)
+theorem _root_.TauCeti.PositiveDegrees.projection_shiftedCompletionMul (k : ℕ)
     (x : d.ShiftedCoefficients 𝒜 p) (y : d.ShiftedCoefficients 𝒜 q)
     (u : shiftedSubmodule 𝒜 d.monoid p) (v : shiftedSubmodule 𝒜 d.monoid q)
     (hu : Submodule.Quotient.mk u = (d.shiftedFiltration 𝒜 p).projection k x)
@@ -170,7 +174,7 @@ theorem projection_shiftedCompletionMul (k : ℕ)
   rw [projection_shiftedCompletionMul_eq_quotient, ← hu, ← hv, shiftedQuotientMul_mk]
 
 /-- Commuting ambient coefficients give symmetric completed products in a common chart. -/
-theorem shiftedCompletionMul_comm_same_origin
+theorem _root_.TauCeti.PositiveDegrees.shiftedCompletionMul_comm_same_origin
     (hcomm : ∀ a b : A, Commute a b) (p : Γ) (x y : d.ShiftedCoefficients 𝒜 p) :
     d.shiftedCompletionMul 𝒜 p p x y = d.shiftedCompletionMul 𝒜 p p y x := by
   apply (d.shiftedFiltration 𝒜 (p + p)).completion_ext
@@ -187,7 +191,7 @@ theorem shiftedCompletionMul_comm_same_origin
 
 /-- Original coefficients multiply before or after passage to the completion. -/
 @[simp]
-theorem shiftedCompletionMul_of
+theorem _root_.TauCeti.PositiveDegrees.shiftedCompletionMul_of
     (x : shiftedSubmodule 𝒜 d.monoid p) (y : shiftedSubmodule 𝒜 d.monoid q) :
     d.shiftedCompletionMul 𝒜 p q
       ((d.shiftedFiltration 𝒜 p).of x) ((d.shiftedFiltration 𝒜 q).of y) =
@@ -196,7 +200,7 @@ theorem shiftedCompletionMul_of
 
 /-- Completed products add relative orders, including order zero. -/
 @[grind .]
-theorem shiftedCompletionMul_mem_completedFiltration {a b : ℕ}
+theorem _root_.TauCeti.PositiveDegrees.shiftedCompletionMul_mem_completedFiltration {a b : ℕ}
     {x : d.ShiftedCoefficients 𝒜 p} {y : d.ShiftedCoefficients 𝒜 q}
     (hx : x ∈ (d.shiftedFiltration 𝒜 p).completedFiltration.submodule a)
     (hy : y ∈ (d.shiftedFiltration 𝒜 q).completedFiltration.submodule b) :
@@ -225,7 +229,7 @@ private theorem quotient_cast_mk {s t : Γ} (h : s = t)
   rfl
 
 /-- Completed shifted products are associative after identifying the equal total shifts. -/
-theorem shiftedCompletionMul_assoc (r : Γ)
+theorem _root_.TauCeti.PositiveDegrees.shiftedCompletionMul_assoc (r : Γ)
     (x : d.ShiftedCoefficients 𝒜 p) (y : d.ShiftedCoefficients 𝒜 q)
     (z : d.ShiftedCoefficients 𝒜 r) :
     cast (congrArg (d.ShiftedCoefficients 𝒜) (add_assoc p q r))
@@ -266,7 +270,7 @@ include hmul in
 /-- A multiplicative degree-preserving linear map intertwines the existing completed
 shifted products. -/
 @[simp]
-theorem completionCoefficientMap_mul (p q : Γ)
+theorem _root_.TauCeti.PositiveDegrees.completionCoefficientMap_mul (p q : Γ)
     (x : d.ShiftedCoefficients 𝒜 p) (y : d.ShiftedCoefficients 𝒜 q) :
     d.completionCoefficientMap 𝒜 ℬ (p + q) f hf
         (d.shiftedCompletionMul 𝒜 p q x y) =

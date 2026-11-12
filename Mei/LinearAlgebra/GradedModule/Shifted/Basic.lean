@@ -20,7 +20,7 @@ Thus its order-zero quotient retains the original piece `ℳ p`, even when `p` h
 negative degree. These filtered modules provide coefficient spaces on which positive
 degree operators can act.
 
-The filtration restricts `Mei.DirectSum.degreeTail`; its membership and separatedness
+The filtration restricts `TauCeti.DirectSum.degreeTail`; its membership and separatedness
 use the ambient homogeneous decomposition. The relative decomposition uses
 `TauCeti.DirectSum.Decomposition.restrict` and `DirectSum.IsInternal.iSup_fiber`;
 `DirectSum.map_decompose_shift` identifies its projections with the ambient ones.
@@ -28,6 +28,8 @@ No freeness or finiteness of the pieces is required.
 -/
 
 public section
+
+open TauCeti (PositiveDegrees)
 
 noncomputable section
 
@@ -154,46 +156,51 @@ theorem shiftedGrading_eq_bot {n : Γ} (hn : n ∉ P) : shiftedGrading ℳ P p n
 
 namespace PositiveDegrees
 
+open TauCeti.PositiveDegrees
+
 variable (d : PositiveDegrees Γ)
 
 /-- The decreasing filtration on `p + P` by the relative degree `δ(q - p)`. -/
-def shiftedFiltration : ModuleFiltration R (shiftedSubmodule ℳ d.monoid p) where
-  submodule k := (Mei.DirectSum.degreeTail ℳ (fun q => d.degree (q - p)) k).comap
+def _root_.TauCeti.PositiveDegrees.shiftedFiltration : ModuleFiltration R
+    (shiftedSubmodule ℳ d.monoid p) where
+  submodule k := (TauCeti.DirectSum.degreeTail ℳ (fun q => d.degree (q - p)) k).comap
     (shiftedSubmodule ℳ d.monoid p).subtype
-  antitone := fun _ _ h => Submodule.comap_mono (Mei.DirectSum.degreeTail_antitone ℳ _ h)
+  antitone := fun _ _ h => Submodule.comap_mono (TauCeti.DirectSum.degreeTail_antitone ℳ _ h)
   zero_eq_top := by
     apply top_unique
     intro x _
     have hs : shiftedSubmodule ℳ d.monoid p ≤
-        Mei.DirectSum.degreeTail ℳ (fun q => d.degree (q - p)) 0 :=
-      iSup_le fun n => Mei.DirectSum.le_degreeTail ℳ _
+        TauCeti.DirectSum.degreeTail ℳ (fun q => d.degree (q - p)) 0 :=
+      iSup_le fun n => TauCeti.DirectSum.le_degreeTail ℳ _
         (by simpa using d.degree_nonneg n.property)
     exact hs x.property
 
 omit [DecidableEq Γ] [DirectSum.Decomposition ℳ] in
 /-- Each relative filtration term restricts the corresponding ambient degree tail. -/
-theorem shiftedFiltration_submodule (k : ℕ) :
+theorem _root_.TauCeti.PositiveDegrees.shiftedFiltration_submodule (k : ℕ) :
     (d.shiftedFiltration ℳ p).submodule k =
-      (Mei.DirectSum.degreeTail ℳ (fun q => d.degree (q - p)) k).comap
+      (TauCeti.DirectSum.degreeTail ℳ (fun q => d.degree (q - p)) k).comap
         (shiftedSubmodule ℳ d.monoid p).subtype := (rfl)
 
 /-- Filtration membership means that all components of smaller relative degree vanish. -/
-theorem mem_shiftedFiltration_iff {k : ℕ} {x : shiftedSubmodule ℳ d.monoid p} :
+theorem _root_.TauCeti.PositiveDegrees.mem_shiftedFiltration_iff
+    {k : ℕ} {x : shiftedSubmodule ℳ d.monoid p} :
     x ∈ (d.shiftedFiltration ℳ p).submodule k ↔
       ∀ q, d.degree (q - p) < k → (DirectSum.decompose ℳ (x : M) q : M) = 0 :=
-  Mei.DirectSum.mem_degreeTail_iff ℳ _
+  TauCeti.DirectSum.mem_degreeTail_iff ℳ _
 
 omit [DecidableEq Γ] [DirectSum.Decomposition ℳ] in
 /-- Origin inclusion can only increase relative filtration order. -/
-theorem shiftedSupportInclusion_filtered (q : Γ) (hpq : p - q ∈ d.monoid) (k : ℕ) :
+theorem _root_.TauCeti.PositiveDegrees.shiftedSupportInclusion_filtered
+    (q : Γ) (hpq : p - q ∈ d.monoid) (k : ℕ) :
     (d.shiftedFiltration ℳ p).submodule k ≤
       ((d.shiftedFiltration ℳ q).submodule k).comap
         (shiftedSupportInclusion ℳ d.monoid p q hpq) := by
-  have htail : Mei.DirectSum.degreeTail ℳ (fun u => d.degree (u - p)) k ≤
-      Mei.DirectSum.degreeTail ℳ (fun u => d.degree (u - q)) k := by
-    rw [Mei.DirectSum.degreeTail_def]
+  have htail : TauCeti.DirectSum.degreeTail ℳ (fun u => d.degree (u - p)) k ≤
+      TauCeti.DirectSum.degreeTail ℳ (fun u => d.degree (u - q)) k := by
+    rw [TauCeti.DirectSum.degreeTail_def]
     refine iSup_le fun u => iSup_le fun hu => ?_
-    apply Mei.DirectSum.le_degreeTail
+    apply TauCeti.DirectSum.le_degreeTail
     have he : d.degree (u - q) = d.degree (u - p) + d.degree (p - q) := by
       rw [← map_add]
       congr 1
@@ -204,14 +211,14 @@ theorem shiftedSupportInclusion_filtered (q : Γ) (hpq : p - q ∈ d.monoid) (k 
   exact htail hx
 
 /-- The relative-degree filtration is separated. -/
-theorem iInf_shiftedFiltration_eq_bot :
+theorem _root_.TauCeti.PositiveDegrees.iInf_shiftedFiltration_eq_bot :
     (⨅ k, (d.shiftedFiltration ℳ p).submodule k) = ⊥ := by
-  rw [shiftedFiltration, ← Submodule.comap_iInf, Mei.DirectSum.iInf_degreeTail_eq_bot]
+  rw [shiftedFiltration, ← Submodule.comap_iInf, TauCeti.DirectSum.iInf_degreeTail_eq_bot]
   simp
 
 /-- The successor relative filtration term is the degree submodule of the relative grading.
 This identifies shifted completions with the existing degree-completion construction. -/
-theorem shiftedFiltration_succ (k : ℕ) :
+theorem _root_.TauCeti.PositiveDegrees.shiftedFiltration_succ (k : ℕ) :
     (d.shiftedFiltration ℳ p).submodule (k + 1) =
       d.degreeSubmodule (shiftedGrading ℳ d.monoid p) k := by
   ext x
@@ -230,14 +237,15 @@ theorem shiftedFiltration_succ (k : ℕ) :
     exact (congrArg (fun t => (DirectSum.decompose ℳ (x : M) t : M)) he).symm.trans hh
 
 /-- Each successor term of the relative filtration is homogeneous. -/
-theorem shiftedFiltration_succ_isHomogeneous (k : ℕ) :
+theorem _root_.TauCeti.PositiveDegrees.shiftedFiltration_succ_isHomogeneous (k : ℕ) :
     DirectSum.SetLike.IsHomogeneous (shiftedGrading ℳ d.monoid p)
       ((d.shiftedFiltration ℳ p).submodule (k + 1)) := by
   rw [shiftedFiltration_succ]
   exact d.degreeSubmodule_isHomogeneous _ k
 
 /-- A homogeneous coefficient has its specified relative order, unless it is zero. -/
-theorem shiftedInclusion_mem_shiftedFiltration_iff (n : d.monoid) (x : ℳ (p + n)) (k : ℕ) :
+theorem _root_.TauCeti.PositiveDegrees.shiftedInclusion_mem_shiftedFiltration_iff
+    (n : d.monoid) (x : ℳ (p + n)) (k : ℕ) :
     shiftedInclusion ℳ d.monoid p n x ∈ (d.shiftedFiltration ℳ p).submodule k ↔
       x = 0 ∨ (k : ℤ) ≤ d.degree n := by
   cases k with
@@ -252,7 +260,8 @@ theorem shiftedInclusion_mem_shiftedFiltration_iff (n : d.monoid) (x : ℳ (p + 
 /-- A retained homogeneous coefficient belongs to the discarded filtration term
 exactly when it is zero. This is the simplifier normal form of the quotient zero test. -/
 @[simp]
-theorem shiftedInclusion_mem_shiftedFiltration_succ_iff (n : d.monoid)
+theorem _root_.TauCeti.PositiveDegrees.shiftedInclusion_mem_shiftedFiltration_succ_iff
+    (n : d.monoid)
     (a : ℳ (p + n)) {k : ℕ} (hn : d.degree n ≤ k) :
     shiftedInclusion ℳ d.monoid p n a ∈ (d.shiftedFiltration ℳ p).submodule (k + 1) ↔
       a = 0 := by
@@ -267,12 +276,14 @@ theorem shiftedInclusion_mem_shiftedFiltration_succ_iff (n : d.monoid)
 end PositiveDegrees
 end Mei
 
-namespace Mei.PositiveDegrees
+namespace TauCeti.PositiveDegrees
+
+open Mei
 
 variable {R M Γ : Type*} [Ring R] [AddCommGroup M] [Module R M]
-  [AddCommGroup Γ] (d : Mei.PositiveDegrees Γ) (ℳ : Γ → Submodule R M) (p : Γ)
+  [AddCommGroup Γ] (d : TauCeti.PositiveDegrees Γ) (ℳ : Γ → Submodule R M) (p : Γ)
 
 /-- The completed module supported on `p + P`, with completion taken in relative degree. -/
 abbrev ShiftedCoefficients : Type _ := (d.shiftedFiltration ℳ p).completion
 
-end Mei.PositiveDegrees
+end TauCeti.PositiveDegrees

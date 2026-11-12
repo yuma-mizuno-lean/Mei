@@ -31,6 +31,8 @@ Appendix B, arXiv:1411.1394v2.
 -/
 
 public section
+
+open TauCeti (PositiveDegrees PositiveDegreeMap GradedLieHom)
 noncomputable section
 
 namespace Mei.SkewLieAlgebra
@@ -197,17 +199,17 @@ local notation "ℒS" => positiveGrading γ hγ d
 /-- Coefficient specialization on finite Lie truncations, expressed over the
 common scalar ring and on the original quotient carriers. -/
 def coefficientTruncatedMap (k : ℕ) :
-    d.truncatedLie ℒR k →ₗ⁅K⁆ d.truncatedLie ℒS k :=
-  (d.truncatedRestrictScalarsEquiv (R := K) ℒS k).toLieHom.comp
-    (((coefficientGradedLieHom β hβ γ hγ φ hφ d).truncatedMap k (by simp)).comp
-      (d.truncatedRestrictScalarsEquiv (R := K) ℒR k).symm.toLieHom)
+    d.lieTruncation ℒR k →ₗ⁅K⁆ d.lieTruncation ℒS k :=
+  (d.lieTruncationRestrictScalarsEquiv (R := K) ℒS k).toLieHom.comp
+    (((coefficientGradedLieHom β hβ γ hγ φ hφ d).lieTruncatedMap k (by simp)).comp
+      (d.lieTruncationRestrictScalarsEquiv (R := K) ℒR k).symm.toLieHom)
 
 /-- Finite specialization is computed on representatives by the positive Lie map. -/
 @[simp]
 theorem coefficientTruncatedMap_mk (k : ℕ) (x : positiveLieAlgebra β hβ d) :
     coefficientTruncatedMap β hβ γ hγ φ hφ d k (Submodule.Quotient.mk x) =
       Submodule.Quotient.mk (coefficientGradedLieHom β hβ γ hγ φ hφ d x) := by
-  simp [coefficientTruncatedMap, GradedLieHom.truncatedMap_mk]
+  simp [coefficientTruncatedMap, GradedLieHom.lieTruncatedMap_mk]
 
 /-- Finite coefficient specializations compose on the original Lie quotient carriers. -/
 @[simp]
@@ -251,9 +253,9 @@ def coefficientCompletedMap : d.completedBCHGroup ℒR →* d.completedBCHGroup 
 /-- Specialization at every cutoff is the BCH map of finite Lie specialization. -/
 @[simp]
 theorem projection_coefficientCompletedMap (k : ℕ) (g : d.completedBCHGroup ℒR) :
-    CompletedGroup.projection k (coefficientCompletedMap β hβ γ hγ φ hφ d g) =
+    TauCeti.CompletedGroup.projection k (coefficientCompletedMap β hβ γ hγ φ hφ d g) =
       (coefficientTruncatedMap β hβ γ hγ φ hφ d k).bchGroupMap
-        (CompletedGroup.projection k g) := by
+        (TauCeti.CompletedGroup.projection k g) := by
   simp only [coefficientCompletedMap, MonoidHom.comp_apply, MulEquiv.coe_toMonoidHom,
     PositiveDegrees.projection_completedBCHRestrictScalarsEquiv,
     GradedLieHom.projection_completedMap_of_le
@@ -264,8 +266,8 @@ theorem projection_coefficientCompletedMap (k : ℕ) (g : d.completedBCHGroup �
   -- with the concrete quotient before rewriting it as an exponential.
   change BCHGroup.exp _ =
     (coefficientTruncatedMap β hβ γ hγ φ hφ d k).bchGroupMap
-      (CompletedGroup.projection k g : BCHGroup (d.truncatedLie ℒR k))
-  rw [← BCHGroup.exp_log (CompletedGroup.projection k g : BCHGroup (d.truncatedLie ℒR k)),
+      (TauCeti.CompletedGroup.projection k g : BCHGroup (d.lieTruncation ℒR k))
+  rw [← BCHGroup.exp_log (TauCeti.CompletedGroup.projection k g : BCHGroup (d.lieTruncation ℒR k)),
     LieHom.bchGroupMap_exp]
   congr 1
   simp [coefficientTruncatedMap]
@@ -275,7 +277,7 @@ theorem projection_coefficientCompletedMap (k : ℕ) (g : d.completedBCHGroup �
 theorem coefficientCompletedMap_expToCompletion (x : positiveLieAlgebra β hβ d) :
     coefficientCompletedMap β hβ γ hγ φ hφ d (d.expToCompletion ℒR x) =
       d.expToCompletion ℒS (coefficientGradedLieHom β hβ γ hγ φ hφ d x) := by
-  apply CompletedGroup.ext
+  apply TauCeti.CompletedGroup.ext
   intro k
   simp only [projection_coefficientCompletedMap, PositiveDegrees.projection_expToCompletion,
     LieHom.bchGroupMap_exp, LieIdeal.mkQ_apply, coefficientTruncatedMap_mk]
@@ -299,11 +301,11 @@ theorem coefficientCompletedMap_comp {T : Type u} [CommRing T] [Algebra ℚ T]
       coefficientCompletedMap β hβ δ hδ (ψ.comp φ)
         (fun n m => by simp [hφ, hψ]) d := by
   ext g : 1
-  apply CompletedGroup.ext
+  apply TauCeti.CompletedGroup.ext
   intro k
   simp only [MonoidHom.comp_apply, projection_coefficientCompletedMap]
   -- Re-express the categorical projection as its concrete BCH quotient.
-  generalize (CompletedGroup.projection k g : BCHGroup (d.truncatedLie ℒR k)) = x
+  generalize (TauCeti.CompletedGroup.projection k g : BCHGroup (d.lieTruncation ℒR k)) = x
   rw [← BCHGroup.exp_log x]
   simp only [LieHom.bchGroupMap_exp]
   congr 1
@@ -317,7 +319,7 @@ variable {d} {n : Γ} (hn : n ∈ d.monoid) (hn0 : n ≠ 0)
 theorem coefficientCompletedMap_rayExp (f : PowerSeries R) :
     coefficientCompletedMap β hβ γ hγ φ hφ d (rayExp β hβ hn hn0 f) =
       rayExp γ hγ hn hn0 (PowerSeries.map φ.toRingHom f) := by
-  apply CompletedGroup.ext
+  apply TauCeti.CompletedGroup.ext
   intro k
   simp only [projection_coefficientCompletedMap, projection_rayExp, LieHom.bchGroupMap_exp,
     LieIdeal.mkQ_apply, coefficientTruncatedMap_mk,

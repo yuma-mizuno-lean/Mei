@@ -8,6 +8,7 @@ module
 public import Mei.Geometry.Convex.PolyhedralComplex.PathSubdivision
 public import Mei.Geometry.Convex.PolyhedralComplex.Grid
 public import Mei.Geometry.Convex.Polyhedron.Path.Realization
+import Mei.Combinatorics.Quiver.Path
 
 /-!
 # Crossing words of sampled affine segments and polygonal paths
@@ -32,6 +33,8 @@ consistency of a diagram is needed.
 -/
 
 public section
+
+open TauCeti (WallComplement AdmissiblePLPath)
 
 open Set Mei.Convex
 open scoped unitInterval

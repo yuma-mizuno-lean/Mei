@@ -7,7 +7,7 @@ module
 
 public import Mei.Algebra.Lie.Free.Primitive.Truncation
 public import Mei.Algebra.Lie.UniversalEnveloping.PrimitiveBCH
-public import Mei.RingTheory.Nilpotent.BCH
+public import TauCeti.RingTheory.Nilpotent.BCH
 
 /-!
 # Universal finite BCH elements
@@ -39,7 +39,7 @@ local notation "U" => _root_.UniversalEnvelopingAlgebra R F
 local notation "J" => TauCeti.HopfIdeal.toIdeal (TauCeti.HopfIdeal.augmentation R U)
 local notation "ℒ" => homogeneousSubmodule R S
 local notation "δ" => Nat.castAddMonoidHom ℤ
-local notation "𝓕" => Mei.UniversalEnvelopingAlgebra.degreeFiltration ℒ δ
+local notation "𝓕" => TauCeti.UniversalEnvelopingAlgebra.degreeFiltration ℒ δ
   (fun n hn => False.elim (not_lt_of_ge (Int.natCast_nonneg n) hn))
 local notation "T" => Ideal.tensorFiltration R (fun n => J ^ n) (fun n => J ^ n)
 
@@ -77,7 +77,7 @@ theorem exists_primitive_representative_log_exp_product (c : ℕ) (x y : F) :
     (𝓕).isNilpotent_of_factor_eq_zero c b hb
   have hp (z : F) : π (q (_root_.UniversalEnvelopingAlgebra.ι R z)) = 0 := by
     rw [Ideal.Quotient.factor_mk, Ideal.Quotient.eq_zero_iff_mem]
-    exact Mei.UniversalEnvelopingAlgebra.ι_mem_degreeFiltration_one ℒ δ hpos z
+    exact TauCeti.UniversalEnvelopingAlgebra.ι_mem_degreeFiltration_one ℒ δ hpos z
   have hg1 : π g = 1 := by
     rw [map_mul, IsNilpotent.map_exp (hnil _ (hp x)),
       IsNilpotent.map_exp (hnil _ (hp y)), hp x, hp y, IsNilpotent.exp_zero, one_mul]
@@ -92,8 +92,8 @@ theorem exists_primitive_representative_log_exp_product (c : ℕ) (x y : F) :
       (IsNilpotent.log g) = _ at hprim
   rw [← ha] at hprim
   simp only [Mei.UniversalEnvelopingAlgebra.quotientCoproduct_mk,
-    Mei.AlgFiltration.quotientIncludeLeft_mk,
-    Mei.AlgFiltration.quotientIncludeRight_mk] at hprim
+    TauCeti.AlgFiltration.quotientIncludeLeft_mk,
+    TauCeti.AlgFiltration.quotientIncludeRight_mk] at hprim
   have hred : Coalgebra.comul a - 1 ⊗ₜ[R] a - a ⊗ₜ[R] 1 ∈ T (c + 1) := by
     have ht : (fun n => (𝓕).ideal n) = (fun n => J ^ n) :=
       funext (degreeFiltration_eq_augmentation_pow R S)

@@ -43,6 +43,12 @@ Gross–Hacking–Keel–Kontsevich, *Canonical bases for cluster algebras*, App
 
 public section
 
+open TauCeti.CompletedGroup (projection)
+
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
 open Set Mei Mei.Convex
@@ -88,7 +94,7 @@ def CorrectionStep (S : Set L) : Prop :=
       (∀ j, F.wall (.inl j) = (D.listDiagram s).wall j) ∧
       F.LevelConsistent (k + 1) ∧
       ∀ a, (F.wall (.inr a)).Outgoing ∧ (F.wall (.inr a)).HasPureBirthLog S (k + 1) ∧
-        CompletedGroup.projection k (F.wall (.inr a)).label = 1
+        projection k (F.wall (.inr a)).label = 1
 
 /-- Unfolding `CorrectionStep`. -/
 theorem correctionStep_def {S : Set L} :
@@ -101,7 +107,7 @@ theorem correctionStep_def {S : Set L} :
         (∀ j, F.wall (.inl j) = (D.listDiagram s).wall j) ∧
         F.LevelConsistent (k + 1) ∧
         ∀ a, (F.wall (.inr a)).Outgoing ∧ (F.wall (.inr a)).HasPureBirthLog S (k + 1) ∧
-          CompletedGroup.projection k (F.wall (.inr a)).label = 1 := Iff.rfl
+          projection k (F.wall (.inr a)).label = 1 := Iff.rfl
 
 private def CompletionStage (S : Set L) (k : ℕ) :=
   {s : List (DirectedWall (d := d) h H) //
@@ -111,7 +117,7 @@ private theorem exists_next_stage {S : Set L} (step : D.CorrectionStep S)
     {k : ℕ} (s : D.CompletionStage S k) :
     ∃ t : D.CompletionStage S (k + 1), s.val <+: t.val ∧
       ∀ (j : ℕ) (hj : j < t.val.length), s.val.length ≤ j →
-        CompletedGroup.projection k t.val[j].label = 1 := by
+        projection k t.val[j].label = 1 := by
   classical
   obtain ⟨κ, _, F, hleft, hconsistent, hnew⟩ := step k s.val s.property.1 s.property.2
   -- Enumerate only the new corrections and append them, preserving every old position.
@@ -145,7 +151,7 @@ private theorem exists_completion_stages {S : Set L} (step : D.CorrectionStep S)
       (∀ k m, k ≤ m → (stages k).val <+: (stages m).val) ∧
       ∀ k m, k ≤ m → ∀ (j : ℕ) (hj : j < (stages m).val.length),
         (stages k).val.length ≤ j →
-          CompletedGroup.projection k (stages m).val[j].label = 1 := by
+          projection k (stages m).val[j].label = 1 := by
   classical
   let base : D.CompletionStage S 0 := ⟨[], by
     refine ⟨(levelConsistent_def _ 0).mpr (fun _ _ _ _ => Subsingleton.elim _ _), ?_⟩
@@ -154,7 +160,7 @@ private theorem exists_completion_stages {S : Set L} (step : D.CorrectionStep S)
   let stages : ∀ k, D.CompletionStage S k := Nat.rec base next
   have hstep (k : ℕ) : (stages k).val <+: (stages (k + 1)).val ∧
       ∀ (j : ℕ) (hj : j < (stages (k + 1)).val.length), (stages k).val.length ≤ j →
-        CompletedGroup.projection k (stages (k + 1)).val[j].label = 1 :=
+        projection k (stages (k + 1)).val[j].label = 1 :=
     (D.exists_next_stage step (stages k)).choose_spec
   have hprefix {k m : ℕ} (hkm : k ≤ m) : (stages k).val <+: (stages m).val := by
     induction m, hkm using Nat.le_induction with
@@ -170,7 +176,7 @@ private theorem exists_completion_stages {S : Set L} (step : D.CorrectionStep S)
     by_cases hjm : j < (stages m).val.length
     · rw [← (hstep m).1.getElem hjm]
       exact ih j hjm hkj
-    · have he := CompletedGroup.map_projection k m hkm (stages (m + 1)).val[j].label
+    · have he := TauCeti.CompletedGroup.map_projection k m hkm (stages (m + 1)).val[j].label
       rw [(hstep m).2 j hj (by omega), map_one] at he
       exact he.symm
 
@@ -205,7 +211,7 @@ theorem exists_outgoingCompletion_of_step {S : Set L} (step : D.CorrectionStep S
     Finite.of_injective (fun j : C n => (⟨j.val.val, hpos n j⟩ : Fin (stages n).val.length))
       (fun _ _ he => Subtype.ext (Subtype.ext (congrArg Fin.val he)))
   let B (n : ℕ) := (D.restrict {j | 0 = n}).append (ofFinite (fun j : C n => W j.val))
-  have hbirth : ∀ n k, k < n → ∀ j, CompletedGroup.projection k ((B n).wall j).label = 1 := by
+  have hbirth : ∀ n k, k < n → ∀ j, projection k ((B n).wall j).label = 1 := by
     intro n k hkn j
     rcases j with j | j
     · have hn : 0 = n := j.property

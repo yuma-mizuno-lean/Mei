@@ -31,9 +31,9 @@ Completed wall labels with normals annihilating `W` project at each finite order
 exponential subgroup of the joint subalgebra of the truncated wall spaces.
 
 The comparison with the sum of logarithms uses `LieSubalgebra.log_list_prod_sub_sum_mem`. The
-vanishing in degrees along `W` is `Mei.DirectedWallSpaces.lie_eq_zero_of_normal_total_eq_zero`;
+vanishing in degrees along `W` is `TauCeti.DirectedWallSpaces.lie_eq_zero_of_normal_total_eq_zero`;
 the corresponding statement for iterated brackets is
-`Mei.DirectedWallSpaces.word_eq_zero_of_direction_mem`. The local analysis of joints follows
+`TauCeti.DirectedWallSpaces.word_eq_zero_of_direction_mem`. The local analysis of joints follows
 Gross, Hacking, Keel and Kontsevich, *Canonical bases for cluster algebras*, Appendix C.3,
 in the directed setting of Mandel, *Scattering diagrams, theta functions, and refined tropical
 curve counts*, Theorem 2.6.
@@ -41,7 +41,13 @@ curve counts*, Theorem 2.6.
 
 public section
 
-namespace Mei.DirectedWallSpaces
+open TauCeti (SupportedRay)
+
+open TauCeti (DirectedWallSpaces)
+
+namespace TauCeti.DirectedWallSpaces
+
+open Mei
 
 open Mei BCHGroup
 
@@ -235,7 +241,7 @@ end Product
 section Completed
 
 variable [AddCommGroup Γ] [DecidableEq Γ] {ρ : Γ →+ Λ} {ℒ : Γ → Submodule R L}
-  {d : PositiveDegrees Γ} [GradedLieAlgebra ℒ] [IsPositiveGrading d ℒ]
+  {d : TauCeti.PositiveDegrees Γ} [GradedLieAlgebra ℒ] [TauCeti.IsPositiveGrading d ℒ]
   (H : DirectedWallSpaces ρ ℒ) {W : AddSubmonoid Λ}
 
 /-- The finite image of a supported-ray wall Lie algebra with normal annihilating `W` lies in
@@ -245,7 +251,7 @@ theorem truncatedRayLieSubalgebra_le_jointSubalgebra {m : Λ →+ ℤ} (hm : ∀
     H.truncatedRayLieSubalgebra w m k ≤ (H.truncated d k).jointSubalgebra W := by
   intro x hx
   obtain ⟨y, hy, rfl⟩ := (H.mem_truncatedRayLieSubalgebra w m k x).mp hx
-  have hle : (H.raySubmodule w m).map (d.degreeIdeal ℒ k).mkQ.toLinearMap ≤
+  have hle : (H.raySubmodule w m).map (d.truncationIdeal ℒ k).mkQ.toLinearMap ≤
       ((H.truncated d k).jointSubalgebra W).toSubmodule := by
     rw [raySubmodule_def, Submodule.map_iSup]
     exact iSup_le fun n => (H.truncated_wall d k n m).symm.le.trans
@@ -258,11 +264,11 @@ variable [Algebra ℚ R] [LieAlgebra ℚ L] [IsScalarTower ℚ R L]
 exponential subgroup of the truncated joint subalgebra. -/
 theorem projection_mem_bchSubgroup_jointSubalgebra {w : SupportedRay d} {m : Λ →+ ℤ}
     {g : d.completedBCHGroup ℒ} (hg : g ∈ H.wallGroup w m) (hm : ∀ v ∈ W, m v = 0) (k : ℕ) :
-    CompletedGroup.projection k g ∈ ((H.truncated d k).jointSubalgebra W).bchSubgroup :=
+    TauCeti.CompletedGroup.projection k g ∈ ((H.truncated d k).jointSubalgebra W).bchSubgroup :=
   (LieSubalgebra.bchSubgroup_le_bchSubgroup.mpr
     (H.truncatedRayLieSubalgebra_le_jointSubalgebra hm w k))
     ((LieSubalgebra.mem_bchSubgroup _ _).mpr ((H.mem_wallGroup w m g).mp hg k))
 
 end Completed
 
-end Mei.DirectedWallSpaces
+end TauCeti.DirectedWallSpaces

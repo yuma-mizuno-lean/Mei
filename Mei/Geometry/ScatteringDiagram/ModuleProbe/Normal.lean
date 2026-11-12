@@ -5,7 +5,8 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.ScatteringDiagram.WallSpace.Basic
+public import TauCeti.Geometry.ScatteringDiagram.WallSpace.Basic
+import Mei.Algebra.Group.Hom.Int
 
 /-!
 # Directions and normals for module probes
@@ -21,6 +22,8 @@ for the module-probe wall spaces.
 -/
 
 public section
+
+open TauCeti (wallBracketNormal)
 
 namespace Mei.ModuleProbe
 

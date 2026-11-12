@@ -25,6 +25,10 @@ diagrams, theta functions, and refined tropical curve counts*, Example 2.1(i)
 
 public noncomputable section
 
+open TauCeti (ActionIntertwiner)
+
+open TauCeti (PositiveDegrees)
+
 open CategoryTheory
 
 namespace Mei.TropicalPairing
@@ -85,14 +89,14 @@ theorem bchActionIntertwiner_coefficient_app
 corresponding finite Lie quotients. -/
 @[simp]
 theorem bchActionIntertwiner_labelMap_map (k : ℕᵒᵖ)
-    (g : BCHGroup (d.truncatedLie (tropicalSubalgebraGrading ρ U d)
+    (g : BCHGroup (d.lieTruncation (tropicalSubalgebraGrading ρ U d)
       (p.degreeMap.modulus k.unop))) :
     (((p.bchActionIntertwiner hT heval).labelMap.app k).toFunctor.map
-      (X := SingleObj.star (BCHGroup (d.truncatedLie (tropicalSubalgebraGrading ρ U d)
+      (X := SingleObj.star (BCHGroup (d.lieTruncation (tropicalSubalgebraGrading ρ U d)
         (p.degreeMap.modulus k.unop))))
-      (Y := SingleObj.star (BCHGroup (d.truncatedLie (tropicalSubalgebraGrading ρ U d)
+      (Y := SingleObj.star (BCHGroup (d.lieTruncation (tropicalSubalgebraGrading ρ U d)
         (p.degreeMap.modulus k.unop)))) g) =
-      (p.gradedLieHom.truncatedMap k.unop le_rfl).bchGroupMap g :=
+      (p.gradedLieHom.lieTruncatedMap k.unop le_rfl).bchGroupMap g :=
   (F).bchActionIntertwiner_labelMap_map d (tropicalSubalgebraGrading ρ U d)
     G p.gradedLieHom ψ p.degreeMap.modulus p.degreeMap.monotone_modulus
     (fun _ => le_rfl) hψ

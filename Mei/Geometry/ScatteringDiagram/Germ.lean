@@ -25,6 +25,8 @@ wall-germ test for equivalence in Bridgeland, *Scattering diagrams, Hall algebra
 and stability conditions*, §2 (arXiv:1603.00416v4).
 -/
 
+open TauCeti (WallComplement singularSupport singularSupport_subset_iUnion)
+
 public noncomputable section
 
 open Set Filter Topology Mei.Convex

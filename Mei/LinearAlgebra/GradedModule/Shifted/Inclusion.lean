@@ -19,9 +19,13 @@ injective even though its finite quotient maps need not be injective.
 -/
 
 public section
+
+open TauCeti (PositiveDegrees)
 noncomputable section
 
-namespace Mei.PositiveDegrees
+namespace TauCeti.PositiveDegrees
+
+open Mei
 
 variable {Γ R M : Type*} [AddCommGroup Γ] [Ring R] [AddCommGroup M] [Module R M]
   (d : PositiveDegrees Γ) (ℳ : Γ → Submodule R M)
@@ -154,4 +158,4 @@ theorem shiftedCompletedInclusion_injective :
     congrArg (d.shiftedHomogeneousComponent ℳ q u) h
 
 
-end Mei.PositiveDegrees
+end TauCeti.PositiveDegrees

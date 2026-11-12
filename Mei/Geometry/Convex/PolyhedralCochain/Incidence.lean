@@ -32,11 +32,15 @@ are allowed.
 
 public section
 
+open TauCeti (OrientedCell PolyhedralCochain)
+
 noncomputable section
 
 open Set Module
 
-namespace Mei
+namespace TauCeti
+
+open Mei
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i} {k : ℕ}
@@ -74,6 +78,13 @@ theorem mem_cellsOfCodimension_of_mem_support_coboundaryPresentation
   exact σ.mem_cellsOfCodimension_of_mem_boundaryFacets C (hf σ hσ) hτ
 
 end PolyhedralCochain
+
+end TauCeti
+
+namespace Mei
+
+variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
+  {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i} {k : ℕ}
 
 namespace FinitePolyhedralComplex
 

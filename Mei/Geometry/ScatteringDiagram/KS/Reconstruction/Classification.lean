@@ -26,13 +26,15 @@ Tom Bridgeland, *Scattering diagrams, Hall algebras and stability conditions*, ¬
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 noncomputable section
 
 namespace Mei
 
 namespace CompletedDiagram
 
-open PositiveDegrees
+open TauCeti.PositiveDegrees
 
 variable {N V R L : Type*} [AddCommGroup N]
   [NormedAddCommGroup V] [NormedSpace ‚Ñù V]

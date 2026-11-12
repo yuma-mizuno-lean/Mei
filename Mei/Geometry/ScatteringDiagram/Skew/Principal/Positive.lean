@@ -9,6 +9,7 @@ public import Mei.Geometry.ScatteringDiagram.Skew.Principal.Cylinder
 public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.FunctionWall
 public import Mei.Geometry.ScatteringDiagram.Skew.Dilogarithm
 import Mei.Algebra.MonoidAlgebra.Filtration.PowerSeries
+import Mei.RingTheory.FilteredAlgebra.Completion
 
 /-!
 # Positive wall representatives of adapted polynomial inputs
@@ -53,6 +54,10 @@ scattering diagrams*, §8 (arXiv:2503.03719v1).
 -/
 
 public section
+
+open TauCeti (AlgFiltration)
+
+open TauCeti (PositiveDegrees GradedLieHom)
 
 noncomputable section
 

@@ -7,7 +7,7 @@ module
 
 public import Mei.Algebra.QuantumMonoidAlgebra.Hom
 public import Mei.RingTheory.GradedAlgebra.Supported
-public import Mei.RingTheory.GradedAlgebra.DegreeFiltration
+public import TauCeti.RingTheory.GradedAlgebra.Degree.Filtration
 
 /-!
 # Positive quantum coefficient algebras
@@ -24,7 +24,7 @@ identities, and composition.
 
 This is the coefficient algebra to complete before integrating quantum inner
 derivations. We reuse `Mei.supportedSubalgebra`, the inherited grading from
-`Subalgebra.gradedAlgebra`, and `Mei.GradedAlgebra.degreeFiltration`.
+`Subalgebra.gradedAlgebra`, and `TauCeti.GradedAlgebra.degreeFiltration`.
 The supported maps restrict `QuantumMonoidAlgebra.map` using Mathlib's
 `RingHom.restrict`.
 The quantum convention follows Mandel, *Scattering diagrams, theta functions,
@@ -32,6 +32,8 @@ and refined tropical curve counts*, Example 2.1(iii).
 -/
 
 public section
+
+open TauCeti (AlgFiltration)
 
 noncomputable section
 
@@ -85,7 +87,7 @@ variable (P : AddSubmonoid Γ) (δ : Γ →+ ℤ) (hδ : ∀ p ∈ P, 0 ≤ δ p
 have nonnegative degree. -/
 def positiveFiltration : AlgFiltration (positiveSubalgebra q β P) := by
   classical
-  exact GradedAlgebra.degreeFiltration
+  exact TauCeti.GradedAlgebra.degreeFiltration
     ((positiveSubalgebra q β P).grading (grade q β)) δ
     (fun p hp => supportedSubalgebra_grading_eq_bot (grade q β) P
       (fun h => (not_lt_of_ge (hδ p h)) hp))
@@ -94,28 +96,28 @@ open scoped Classical in
 /-- Each positive filtration term is the degree ideal of the inherited grading. -/
 theorem positiveFiltration_ideal (k : ℕ) :
     (positiveFiltration q β P δ hδ).ideal k =
-      GradedAlgebra.degreeIdeal ((positiveSubalgebra q β P).grading (grade q β)) δ
+      TauCeti.GradedAlgebra.degreeIdeal ((positiveSubalgebra q β P).grading (grade q β)) δ
         (fun p hp => supportedSubalgebra_grading_eq_bot (grade q β) P
           (fun h => (not_lt_of_ge (hδ p h)) hp)) k := by
   classical
-  rw [positiveFiltration, GradedAlgebra.degreeFiltration_ideal]
+  rw [positiveFiltration, TauCeti.GradedAlgebra.degreeFiltration_ideal]
 
 /-- Forgetting ideal multiplication gives the degree tail of the inherited grading. -/
 @[simp]
 theorem positiveFiltration_ideal_restrictScalars (k : ℕ) :
     ((positiveFiltration q β P δ hδ).ideal k).restrictScalars R =
-      Mei.DirectSum.degreeTail ((positiveSubalgebra q β P).grading (grade q β)) δ k := by
+      TauCeti.DirectSum.degreeTail ((positiveSubalgebra q β P).grading (grade q β)) δ k := by
   classical
-  rw [positiveFiltration, GradedAlgebra.degreeFiltration_ideal,
-    GradedAlgebra.degreeIdeal_restrictScalars]
+  rw [positiveFiltration, TauCeti.GradedAlgebra.degreeFiltration_ideal,
+    TauCeti.GradedAlgebra.degreeIdeal_restrictScalars]
 
 /-- A filtration term consists exactly of coefficients supported above its lower bound. -/
 theorem mem_positiveFiltration_iff (k : ℕ) (x : positiveSubalgebra q β P) :
     x ∈ (positiveFiltration q β P δ hδ).ideal k ↔
       ∀ p, δ p < k → (basis q β).repr (x : QuantumMonoidAlgebra q β) p = 0 := by
   classical
-  rw [positiveFiltration, GradedAlgebra.degreeFiltration_ideal,
-    GradedAlgebra.mem_degreeIdeal_iff, Mei.DirectSum.mem_degreeTail_iff]
+  rw [positiveFiltration, TauCeti.GradedAlgebra.degreeFiltration_ideal,
+    TauCeti.GradedAlgebra.mem_degreeIdeal_iff, TauCeti.DirectSum.mem_degreeTail_iff]
   constructor
   · intro hx p hp
     have h := congrArg (fun y : positiveSubalgebra q β P =>
@@ -153,8 +155,8 @@ theorem smul_positiveMonomial_mem_positiveFiltration_iff (k : ℕ) (p : P) (r : 
 theorem iInf_positiveFiltration_eq_bot :
     (⨅ k, (positiveFiltration q β P δ hδ).ideal k) = ⊥ := by
   classical
-  simp only [positiveFiltration, GradedAlgebra.degreeFiltration_ideal]
-  exact GradedAlgebra.iInf_degreeIdeal_eq_bot _ _ _
+  simp only [positiveFiltration, TauCeti.GradedAlgebra.degreeFiltration_ideal]
+  exact TauCeti.GradedAlgebra.iInf_degreeIdeal_eq_bot _ _ _
 
 end
 
@@ -229,11 +231,11 @@ theorem positiveMap_ideal_le_of_degree
     (positiveFiltration q β P δ hδ).ideal i ≤
       ((positiveFiltration q' β' P' δ' hδ').ideal j).comap (positiveMap φ f h P P' hf) := by
   classical
-  rw [positiveFiltration_ideal, GradedAlgebra.degreeIdeal_le_iff]
+  rw [positiveFiltration_ideal, TauCeti.GradedAlgebra.degreeIdeal_le_iff]
   intro n hn x hx
   by_cases hnP : n ∈ P
   · rw [Ideal.mem_comap, positiveFiltration_ideal]
-    exact GradedAlgebra.le_degreeIdeal _ δ' _ (hij n hnP hn) _
+    exact TauCeti.GradedAlgebra.le_degreeIdeal _ δ' _ (hij n hnP hn) _
       (positiveMap_mem_grading φ f h P P' hf hx)
   · have hz := supportedSubalgebra_grading_eq_bot (grade q β) P hnP
     have : x = 0 := by simpa only [hz, Submodule.mem_bot] using hx

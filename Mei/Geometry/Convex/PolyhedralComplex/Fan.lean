@@ -42,7 +42,7 @@ noncomputable def toPolyhedralComplex (Φ : Fan i) : Mei.FinitePolyhedralComplex
       exact ⟨0, σ.zero_mem⟩
     rational P hP := by
       obtain ⟨σ, hσ, rfl⟩ := Finset.mem_image.mp hP
-      exact (Mei.isRationalNormalPolyhedron_coe_iff Φ.lattice).mpr
+      exact (TauCeti.isRationalNormalPolyhedron_coe_iff (h := Φ.lattice)).mpr
         (Φ.isToricCone (Φ.finite_cones.mem_toFinset.mp hσ)).rational
     face_closed P hP S hS := by
       obtain ⟨σ, hσ, rfl⟩ := Finset.mem_image.mp hP
@@ -104,11 +104,11 @@ def toFan (C : FinitePolyhedralComplex h)
   cones := {σ | (σ : Set V) ∈ C.cells}
   finite_cones := C.cells.finite_toSet.preimage SetLike.coe_injective.injOn
   isToricCone {σ} hσ :=
-    ⟨(Mei.isRationalNormalPolyhedron_coe_iff h).mp (C.rational _ hσ), hsal _ hσ⟩
+    ⟨(TauCeti.isRationalNormalPolyhedron_coe_iff (h := h)).mp (C.rational _ hσ), hsal _ hσ⟩
   mem_of_isFaceOf {σ τ} hσ hτ := by
     let _ := h.finiteDimensional
     exact C.face_closed _ hσ _ (Mei.isPolyhedralFace_iff.mpr ⟨⟨0, τ.zero_mem⟩,
-      hτ.isExposed_of_fg ((Mei.isRationalNormalPolyhedron_coe_iff h).mp
+      hτ.isExposed_of_fg ((TauCeti.isRationalNormalPolyhedron_coe_iff (h := h)).mp
         (C.rational _ hσ)).fg⟩)
   inf_isFaceOf_left {σ τ} hσ hτ := by
     have hne : ((σ : Set V) ∩ (τ : Set V)).Nonempty := ⟨0, σ.zero_mem, τ.zero_mem⟩

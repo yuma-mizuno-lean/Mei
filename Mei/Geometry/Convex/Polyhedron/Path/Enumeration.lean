@@ -24,11 +24,13 @@ group with `WallComplement.crossingEventProduct_eq_prod`.
 
 public section
 
+open TauCeti (WallComplement)
+
 noncomputable section
 
 open Set
 
-namespace Mei.Convex.WallComplement
+namespace TauCeti.WallComplement
 
 variable {V ι G : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V] [Finite ι] [Group G]
   {W : ι → Set V} (ν : ι → V →ₗ[ℝ] ℝ) (label : ι → G)
@@ -90,4 +92,4 @@ theorem segmentPathProduct_eq_prod_of_pairwise (e : x ⟶ y) (l : List ι) (hl :
       simp only [List.reverse_flatten, List.map_reverse, List.map_map, List.map_flatten,
         List.prod_flatten, Function.comp_def]
 
-end Mei.Convex.WallComplement
+end TauCeti.WallComplement

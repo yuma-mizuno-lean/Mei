@@ -42,6 +42,8 @@ and the tropical vertex*, Example 1.6 (arXiv:0902.0779v3), and Grossâ€“Hackingâ€
 
 public section
 
+open TauCeti (PositiveDegrees)
+
 noncomputable section
 
 namespace Mei.RankTwoPolynomialInput

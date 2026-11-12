@@ -19,7 +19,11 @@ universal lift are available through that general completion API.
 
 public section
 
-namespace Mei.PositiveDegrees
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
+namespace TauCeti.PositiveDegrees
+
+open Mei
 
 variable {N R L : Type*} [AddCommMonoid N] [CommRing R]
   [LieRing L] [LieAlgebra R L] [DecidableEq N]
@@ -27,7 +31,7 @@ variable {N R L : Type*} [AddCommMonoid N] [CommRing R]
   [GradedLieAlgebra ℒ] [IsPositiveGrading d ℒ]
 
 /-- The Lie algebra of compatible finite-degree truncations. -/
-abbrev completedLie := LieIdeal.completion (d.degreeIdeal ℒ) (d.degreeIdeal_antitone ℒ)
+abbrev completedLie := LieIdeal.completion (d.truncationIdeal ℒ) (d.truncationIdeal_antitone ℒ)
 
-end Mei.PositiveDegrees
+end TauCeti.PositiveDegrees
 

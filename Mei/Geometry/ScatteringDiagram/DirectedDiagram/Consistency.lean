@@ -30,6 +30,12 @@ applies to repeated and overlapping indexed walls with grouped coplanar crossing
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath)
+
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
 open Set Mei.Convex
@@ -125,7 +131,7 @@ theorem levelTransport_swap {k : ℕ} (hD : D.LevelConsistent k)
 theorem truncation_levelTransport {k l : ℕ} (hkl : k ≤ l)
     (hk : D.LevelConsistent k) (hl : D.LevelConsistent l)
     (x y : WallComplement (fun j : D.active l => (D.wall j).support)) :
-    (d.truncationMap ℒ hkl).bchGroupMap (D.levelTransport l hl x y) =
+    (d.lieTruncationMap ℒ hkl).bchGroupMap (D.levelTransport l hl x y) =
       D.levelTransport k hk
         ((WallComplement.restrictPrefunctor (fun j : D.active l => (D.wall j).support)
           (Set.inclusion (D.active_mono hkl))).obj x)
@@ -152,7 +158,7 @@ variable {D} {x y z : D.Point}
 /-- Finite-order consistency makes completed products independent of the all-order path. -/
 theorem Consistent.pathProduct_eq (hD : D.Consistent) (p q : Quiver.Path x y) :
     D.pathProduct p = D.pathProduct q := by
-  apply CompletedGroup.ext
+  apply TauCeti.CompletedGroup.ext
   intro k
   simp only [projection_pathProduct]
   exact hD k _ _
@@ -173,14 +179,14 @@ theorem transport_eq_pathProduct (hD : D.Consistent) (p : Quiver.Path x y) :
 theorem projection_transport (hD : D.Consistent) (k : ℕ)
     (p : AdmissiblePLPath (CommonWallComplement.projection k x)
       (CommonWallComplement.projection k y)) :
-    CompletedGroup.projection k (D.transport hD x y) = D.levelPathProduct k p := by
+    TauCeti.CompletedGroup.projection k (D.transport hD x y) = D.levelPathProduct k p := by
   rw [transport, projection_pathProduct]
   exact hD k _ p
 
 /-- Completed endpoint transport projects to the finite-order endpoint transport. -/
 @[simp]
 theorem projection_transport_eq_levelTransport (hD : D.Consistent) (k : ℕ) :
-    CompletedGroup.projection k (D.transport hD x y) =
+    TauCeti.CompletedGroup.projection k (D.transport hD x y) =
       D.levelTransport k ((D.consistent_iff.mp hD) k) (CommonWallComplement.projection k x)
         (CommonWallComplement.projection k y) := by
   obtain ⟨p⟩ := D.exists_level_path k

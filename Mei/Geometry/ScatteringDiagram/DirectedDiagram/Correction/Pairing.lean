@@ -34,9 +34,17 @@ arbitrary original loops into the common admissible family are separate steps.
 
 public section
 
+open TauCeti (OrientedCell)
+
+open TauCeti (WallComplement AdmissiblePLPath)
+
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
-open Set Mei Mei.Convex WallComplement BCHGroup
+open Set Mei Mei.Convex TauCeti.WallComplement BCHGroup
 
 namespace Mei.DirectedDiagram
 
@@ -69,7 +77,7 @@ theorem log_levelPathProduct_eq_residual_pairing
     (ht : ∀ (P : ((D.restrict s).adaptedComplex (k + 1)).cellsOfCodimension 0)
       (x : WallComplement (fun j : (D.restrict s).active k => ((D.restrict s).wall j).support)),
       x.val ∈ interior (P : Set V) →
-      (d.truncationMap ℒ (Nat.le_succ k)).bchGroupMap (t P) =
+      (d.lieTruncationMap ℒ (Nat.le_succ k)).bchGroupMap (t P) =
         (D.restrict s).levelTransport k hk b x)
     (τ : D.active (k + 1) → OrientedCell h 1)
     (hτ : ∀ j, (τ j).carrier = (D.wall j).support)
@@ -88,10 +96,10 @@ theorem log_levelPathProduct_eq_residual_pairing
       log (D.levelPathProduct (k + 1) (F.mapPath p)) =
         p.addWeightOfEPs (fun u v => OrientedCell.intersectionPairing (R := R)
           ![u.val, v.val]
-          ((∑ Q, Finsupp.single (σ Q) ((cross Q).defect hk b t ht : d.truncatedLie ℒ (k + 1))) -
+          ((∑ Q, Finsupp.single (σ Q) ((cross Q).defect hk b t ht : d.lieTruncation ℒ (k + 1))) -
             ∑ j : D.active (k + 1), Finsupp.single (τ j)
               (if j.val ∈ s then 0 else
-                log (CompletedGroup.projection (k + 1) (D.wall j).label)))) := by
+                log (TauCeti.CompletedGroup.projection (k + 1) (D.wall j).label)))) := by
   classical
   let := Fintype.ofFinite ((D.restrict s).adaptedComplex (k + 1)).walls
   let := Fintype.ofFinite (D.active (k + 1))
@@ -104,9 +112,9 @@ theorem log_levelPathProduct_eq_residual_pairing
   let G := WallComplement.restrictPrefunctor W Sum.inl
   let pD := F.mapPath p
   let pA := G.mapPath p
-  let a := fun Q => ((cross Q).defect hk b t ht : d.truncatedLie ℒ (k + 1))
+  let a := fun Q => ((cross Q).defect hk b t ht : d.lieTruncation ℒ (k + 1))
   let c := fun j : D.active (k + 1) => if j.val ∈ s then 0 else
-    log (CompletedGroup.projection (k + 1) (D.wall j).label)
+    log (TauCeti.CompletedGroup.projection (k + 1) (D.wall j).label)
   let f := ∑ Q, Finsupp.single (σ Q) (a Q)
   let g := ∑ j : D.active (k + 1), Finsupp.single (τ j) (c j)
   -- Forgetting different admissibility conditions retains precisely the same

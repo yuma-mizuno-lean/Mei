@@ -31,9 +31,17 @@ curve counts*, proof of Theorem 2.6. No higher-order consistency is required.
 
 public section
 
+open TauCeti (OrientedCell PolyhedralCochain)
+
+open TauCeti (WallComplement AdmissiblePLPath)
+
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
-open Set Mei Mei.Convex WallComplement BCHGroup
+open Set Mei Mei.Convex TauCeti.WallComplement BCHGroup
 
 namespace Mei.DirectedDiagram
 
@@ -56,7 +64,7 @@ variable
   (ht : ∀ (P : (D.adaptedComplex (k + 1)).cellsOfCodimension 0)
     (x : WallComplement (fun j : D.active k => (D.wall j).support)),
     x.val ∈ interior (P : Set V) →
-    (d.truncationMap ℒ (Nat.le_succ k)).bchGroupMap (t P) = D.levelTransport k hk b x)
+    (d.lieTruncationMap ℒ (Nat.le_succ k)).bchGroupMap (t P) = D.levelTransport k hk b x)
 
 /-- At any oriented adapted joint, an arbitrarily small positive isolating
 meridian computes the signed boundary pairing of the actual crossing defects.
@@ -80,7 +88,7 @@ theorem exists_joint_meridian_loopObstruction_eq_boundaryPairing
       convexHull ℝ (range s.points) ∩
         ((D.adaptedComplex (k + 1)).codimensionAtLeast 2).support = {q} ∧
       (∀ τ ∈ (PolyhedralCochain.coboundaryPresentation (R := R) f).support,
-        τ.IsTransverse s.points) ∧
+        τ.IsTransverseToCarrier s.points) ∧
       D.loopObstruction hk ((D.adaptedPathPrefunctor (k + 1)).mapPath p) =
         OrientedCell.intersectionPairing (R := R) s.points
           (PolyhedralCochain.coboundaryPresentation (R := R) f) := by
@@ -163,7 +171,7 @@ theorem exists_joint_meridian_loopObstruction_eq_boundaryPairing
         ![u.val, v.val] f) := by
     apply Subtype.ext
     have he := congrArg
-      (d.truncationMap ℒ (Nat.le_succ k)).ker.incl.toLinearMap.toAddMonoidHom hpair
+      (d.lieTruncationMap ℒ (Nat.le_succ k)).ker.incl.toLinearMap.toAddMonoidHom hpair
     simp only [map_neg, AddMonoidHom.map_wallCrossingSum, LinearMap.toAddMonoidHom_coe,
       LieHom.coe_toLinearMap, LieIdeal.incl_apply] at he
     exact hlog.trans he.symm

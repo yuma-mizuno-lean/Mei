@@ -22,6 +22,8 @@ This is the event-level geometry of deleting walls from a diagram, using the
 same signed-event convention as `WallEvent`.
 -/
 
+open TauCeti (singularSupport singularSupport_comp_subset)
+
 public noncomputable section
 
 open Set

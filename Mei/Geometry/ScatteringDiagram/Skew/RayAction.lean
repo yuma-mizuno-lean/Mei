@@ -33,6 +33,10 @@ functions, and refined tropical curve counts*, Example 2.1(i), arXiv:1503.06183v
 
 public section
 
+open TauCeti (AlgFiltration)
+
+open TauCeti (PositiveDegrees)
+
 noncomputable section
 
 namespace Mei.SkewLatticeDatum
@@ -107,9 +111,9 @@ private theorem principal_rayPartialSum (q : T) (hq : q.val = D.principalEmbeddi
 private theorem principal_rayPartialSum_projection (q : T)
     (hq : q.val = D.principalEmbedding n) (u : (G).completionIdeal 1)
     (hu : u.val = (G).toCompletion (single q 1)) (k : ℕ) :
-    ((e).degreeIdeal ℳ k).mkQ (D.principalGradedLieHom d
+    ((e).truncationIdeal ℳ k).mkQ (D.principalGradedLieHom d
         (SkewLieAlgebra.rayPartialSum β hβ hn hn0 k (κ • a))) =
-      LieIdeal.completionProjection ((e).degreeIdeal ℳ) ((e).degreeIdeal_antitone ℳ) k
+      LieIdeal.completionProjection ((e).truncationIdeal ℳ) ((e).truncationIdeal_antitone ℳ) k
         (completedTropicalTangentField e ρ χ ((G).completedAeval u b)) := by
   have hb0 : constantCoeff b = 0 := by rw [← hab]; simp
   let v : R[T] := ∑ j ∈ Finset.range k,
@@ -128,7 +132,7 @@ private theorem principal_rayPartialSum_projection (q : T)
       (map_smul (Ideal.Quotient.mkₐ R ((G).ideal (k + 1)))
         (PowerSeries.coeff (j + 1) b) (single ((j + 1) • q) (1 : R))).symm
   rw [completionProjection_completedTropicalTangentField e ρ χ k _ v hv]
-  exact congrArg (((e).degreeIdeal ℳ k).mkQ)
+  exact congrArg (((e).truncationIdeal ℳ k).mkQ)
     (D.principal_rayPartialSum (R := R) d hn hn0 s a b hab q hq k)
 
 omit b hab in
@@ -141,17 +145,17 @@ theorem principalGradedLieHom_completedMap_rayExp (q : T) (hq : q.val = D.princi
         (SkewLieAlgebra.rayExp β hβ hn hn0 (κ • a)) =
       (e).completedBCHExp ℳ
         (completedTropicalTangentField e ρ χ ((G).completedAeval u (X * d⁄dX a))) := by
-  apply CompletedGroup.ext
+  apply TauCeti.CompletedGroup.ext
   intro k
   have hp := (D.principalGradedLieHom (R := R) d).projection_completedMap_of_le k
     (a := k) (by simp)
     (SkewLieAlgebra.rayExp β hβ hn hn0 (κ • a))
   refine hp.trans ?_
   refine (congrArg
-    ((D.principalGradedLieHom (R := R) d).truncatedMap k (a := k) (by simp)).bchGroupMap
+    ((D.principalGradedLieHom (R := R) d).lieTruncatedMap k (a := k) (by simp)).bchGroupMap
     (SkewLieAlgebra.projection_rayExp β hβ hn hn0 k (κ • a))).trans ?_
   refine (LieHom.bchGroupMap_exp _ _).trans ?_
-  have hm := (D.principalGradedLieHom (R := R) d).truncatedMap_mk k
+  have hm := (D.principalGradedLieHom (R := R) d).lieTruncatedMap_mk k
     (a := k) (by simp) (SkewLieAlgebra.rayPartialSum β hβ hn hn0 k (κ • a))
   have hm' := congrArg BCHGroup.exp hm
   simp only [← LieIdeal.mkQ_apply] at hm'

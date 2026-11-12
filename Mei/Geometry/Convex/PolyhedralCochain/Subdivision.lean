@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.Convex.PolyhedralCochain.Sweep.Basic
-public import Mei.Geometry.Convex.Sweep.Topology
+public import TauCeti.Analysis.Convex.Sweep.Topology
 
 /-!
 # Sweeping oriented subdivisions
@@ -19,19 +19,21 @@ polyhedral cochains. This is the relation needed to descend the transverse
 sweep from generators to cochains.
 
 The construction uses `OrientedCell.sweep` for the oriented generators and
-`Mei.Convex.sweep_coordinates_unique` for their supports. Relative interior
+`Set.sweep_coordinates_unique` for their supports. Relative interior
 disjointness uses the base-point recovery in
-`Mei.Convex.disjoint_intrinsicInterior_sweep`. No boundedness or absence of
+`Set.disjoint_intrinsicInterior_sweep`. No boundedness or absence of
 lineality is assumed.
 -/
 
 public section
 
+open TauCeti (OrientedCell)
+
 noncomputable section
 
 open Module Set
 
-namespace Mei.OrientedCell.IsOrientedSubdivision
+namespace TauCeti.OrientedCell.IsOrientedSubdivision
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i} {k : ℕ}
@@ -59,7 +61,7 @@ theorem sweep_injective (hQ : IsOrientedSubdivision σ Q) (n : N)
       τ.val.sweep n (by rwa [hQ.direction_eq τ.property])) := by
   intro τ υ he
   have hcarrier : τ.val.carrier = υ.val.carrier :=
-    (Convex.sweep_eq_sweep_iff_of_subset (by simpa [direction_affineSpan] using hn)
+    (Set.sweep_eq_sweep_iff_of_subset (by simpa [direction_affineSpan] using hn)
       (hQ.carrier_subset τ.property) (hQ.carrier_subset υ.property)).mp
         (by simpa using congrArg OrientedCell.carrier he)
   apply Subtype.ext
@@ -73,15 +75,15 @@ theorem sweep (hQ : IsOrientedSubdivision σ Q) (n : N)
   classical
   refine ⟨?_, ?_, ?_⟩
   · simp only [mem_sweepPieces, iUnion_exists, iUnion_iUnion_eq', sweep_carrier]
-    rw [← Convex.sweep_iUnion]
+    rw [← Set.sweep_iUnion]
     simpa only [iUnion_subtype] using
-      congrArg (fun P => Convex.sweep P (i n)) hQ.biUnion_carrier
+      congrArg (fun P => Set.sweep ℝ P (i n)) hQ.biUnion_carrier
   · intro τ hτ υ hυ hne
     obtain ⟨q, rfl⟩ := (mem_sweepPieces hQ n hn τ).mp hτ
     obtain ⟨r, rfl⟩ := (mem_sweepPieces hQ n hn υ).mp hυ
     dsimp only [Function.onFun]
     rw [sweep_carrier, sweep_carrier]
-    apply Convex.disjoint_intrinsicInterior_sweep
+    apply Set.disjoint_intrinsicInterior_sweep
       (fun hm => hn (by
         rw [direction_affineSpan]
         exact vectorSpan_mono ℝ
@@ -94,9 +96,9 @@ theorem sweep (hQ : IsOrientedSubdivision σ Q) (n : N)
     have ho := hQ.orientation_eq q.val q.property
     congr 1
 
-end Mei.OrientedCell.IsOrientedSubdivision
+end TauCeti.OrientedCell.IsOrientedSubdivision
 
-namespace Mei.PolyhedralCochain
+namespace TauCeti.PolyhedralCochain
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i} {k : ℕ}
@@ -116,4 +118,4 @@ theorem mk_sweep_eq_sum_of_isOrientedSubdivision
   rw [Finset.sum_image (fun a _ b _ he => hQ.sweep_injective n hn he)]
   simp
 
-end Mei.PolyhedralCochain
+end TauCeti.PolyhedralCochain

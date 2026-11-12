@@ -28,6 +28,10 @@ presentations. No full-hyperplane or pure-birth assumption is used in this compa
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
 namespace Mei.DirectedDiagram

@@ -19,9 +19,13 @@ finiteness assumption is imposed on global coefficients.
 -/
 
 public section
+
+open TauCeti (PositiveDegrees)
 noncomputable section
 
-namespace Mei.PositiveDegrees
+namespace TauCeti.PositiveDegrees
+
+open Mei
 
 variable {Γ R A : Type*} [AddCommGroup Γ] [CommRing R] [Ring A] [Algebra R A]
   [DecidableEq Γ] (d : PositiveDegrees Γ) (𝒜 : Γ → Submodule R A) [GradedAlgebra 𝒜]
@@ -128,4 +132,4 @@ theorem toShiftedDirectLimitAlgHom_of_supported (p : Γ) (s : Multiset d.monoid)
   rw [shiftedDirectLimitComponents_toShiftedDirectLimitAlgHom,
     shiftedDirectLimitComponents_toShiftedDirectLimitOfChart, shiftedHomogeneousComponent_of]
 
-end Mei.PositiveDegrees
+end TauCeti.PositiveDegrees

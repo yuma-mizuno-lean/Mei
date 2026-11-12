@@ -5,8 +5,8 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.Convex.Cone.FiniteGeneration
-public import Mei.Geometry.Convex.Cone.FiniteDuality
+public import TauCeti.Geometry.Convex.Cone.FiniteGeneration
+public import TauCeti.Geometry.Convex.Cone.FiniteDuality
 public import TauCeti.Analysis.Convex.Recession.Basic
 public import Mathlib.Analysis.Normed.Module.FiniteDimension
 public import TauCeti.Analysis.Convex.Polyhedron.Basic

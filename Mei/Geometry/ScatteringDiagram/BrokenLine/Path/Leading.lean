@@ -38,7 +38,11 @@ conditions. This supplies the initial coefficient in the last-change recursion o
 (arXiv:1503.06183v5).
 -/
 
+open TauCeti (singularSupport)
+
 public noncomputable section
+
+open TauCeti (PositiveDegrees IsPositiveGrading)
 
 open Set Quiver Mei.Convex
 
@@ -478,7 +482,11 @@ theorem exists_pathDecoratedEvaluation_leadingArrangement [FiniteDimensional ℝ
 
 end WallEvent
 
-namespace PositiveDegrees
+end Mei
+
+namespace TauCeti.PositiveDegrees
+
+open Mei
 
 variable {Γ : Type} {R L M V ι : Type*}
   [AddCommGroup Γ] [DecidableEq Γ] [CommRing R] [Algebra ℚ R]
@@ -501,7 +509,7 @@ theorem exists_pathDecoratedEvaluation_leadingArrangement_shiftedBCHAction
       Module.finrank ℝ V)
     (hker : ∀ j, (f j).toLinearMap.ker = (affineSpan ℝ (W j)).direction)
     (hc : ∀ j x, x ∈ W j → f j x = c j) (v : Γ → V) :
-    ∃ A : ExceptionalArrangement V, ∀ Q, A.IsGeneric Q → ∀ (k : ℕ)
+    ∃ A : Mei.ExceptionalArrangement V, ∀ Q, A.IsGeneric Q → ∀ (k : ℕ)
       (g : WallEvent ι → d.truncatedGroup ℒ k)
       (a : (d.shiftedQuotientGrading ℳ p k).piece 0)
       (s : Finset (Path (SingleObj.star (WallEvent ι)) (SingleObj.star (WallEvent ι)))),
@@ -532,6 +540,4 @@ theorem exists_pathDecoratedEvaluation_leadingArrangement_shiftedBCHAction
     (fun e _ _ _ hy hne => d.sub_mem_monoid_of_decompose_shiftedBCHAction_ne_zero ℒ ℳ p k (g e)
       hy (by simpa using hne)) s hs
 
-end PositiveDegrees
-
-end Mei
+end TauCeti.PositiveDegrees

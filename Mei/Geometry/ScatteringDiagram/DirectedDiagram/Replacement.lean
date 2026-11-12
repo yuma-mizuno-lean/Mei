@@ -28,6 +28,10 @@ counts*, Theorem 2.6, arXiv:1503.06183v5.
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
 open Set Mei.Convex

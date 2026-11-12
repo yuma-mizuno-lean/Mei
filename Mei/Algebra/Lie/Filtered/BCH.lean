@@ -11,7 +11,7 @@ public import Mei.Algebra.Lie.Filtered.Faithful
 public import Mei.Algebra.Lie.UniversalEnveloping.BCH.Basic
 public import Mei.Algebra.Lie.BCH.Coordinates
 public import Mei.LinearAlgebra.ModuleFiltration.GroupAction
-public import Mei.RingTheory.FilteredAlgebra.Action
+public import TauCeti.RingTheory.FilteredAlgebra.Action.Algebra
 
 /-!
 # Completed BCH actions on filtered coefficients
@@ -30,6 +30,8 @@ comparison. `ModuleFiltration.completedAction` assembles its inverse limit.
 -/
 
 public section
+
+open TauCeti (PositiveDegrees IsPositiveGrading)
 
 attribute [local instance 100] LieRing.ofAssociativeRing
 
@@ -55,7 +57,7 @@ local instance quotientRatModuleBCH (k : ℕ) : Module ℚ (F.quotient k) :=
 
 /-- The finite BCH representation on the coefficient quotient of the same order. -/
 noncomputable def truncatedBCHAction (k : ℕ) :
-    BCHGroup (d.truncatedLie ℒ k) →* (F.quotient k ≃ₗ[R] F.quotient k) :=
+    BCHGroup (d.lieTruncation ℒ k) →* (F.quotient k ≃ₗ[R] F.quotient k) :=
   (LinearMap.GeneralLinearGroup.generalLinearEquiv R (F.quotient k)).toMonoidHom.comp
     ((Units.map (F.truncatedEnvelopingAction d ℒ k).toMonoidHom).comp
       (truncatedBCHToUnits d ℒ k))
@@ -63,7 +65,7 @@ noncomputable def truncatedBCHAction (k : ℕ) :
 /-- Applying the truncated BCH action termwise to a finite word preserves its
 product as a linear endomorphism. -/
 theorem truncatedBCHAction_list_ofFn_prod_toLinearMap (k : ℕ) {n : ℕ}
-    (g : Fin n → BCHGroup (d.truncatedLie ℒ k)) :
+    (g : Fin n → BCHGroup (d.lieTruncation ℒ k)) :
     (List.ofFn (fun j => (F.truncatedBCHAction d ℒ k (g j)).toLinearMap)).prod =
       (F.truncatedBCHAction d ℒ k (List.ofFn g).prod).toLinearMap := by
   let act := (LinearEquiv.automorphismGroup.toLinearMapMonoidHom
@@ -74,13 +76,13 @@ theorem truncatedBCHAction_list_ofFn_prod_toLinearMap (k : ℕ) {n : ℕ}
     (map_list_prod act (List.ofFn g)).symm
 
 /-- The order-zero BCH group acts trivially on the coefficient quotient. -/
-theorem truncatedBCHAction_zero (g : BCHGroup (d.truncatedLie ℒ 0))
+theorem truncatedBCHAction_zero (g : BCHGroup (d.lieTruncation ℒ 0))
     (a : F.quotient 0) : F.truncatedBCHAction d ℒ 0 g a = a := by
   rw [Subsingleton.elim g 1, map_one, LinearEquiv.one_eq_refl, LinearEquiv.refl_apply]
 
 /-- The finite BCH representation is the exponential of the truncated Lie representation. -/
 @[simp]
-theorem truncatedBCHAction_apply (k : ℕ) (g : BCHGroup (d.truncatedLie ℒ k))
+theorem truncatedBCHAction_apply (k : ℕ) (g : BCHGroup (d.lieTruncation ℒ k))
     (a : F.quotient k) :
     F.truncatedBCHAction d ℒ k g a =
       F.truncatedExpLieAction d ℒ k (BCHGroup.log g) a := by
@@ -96,9 +98,9 @@ theorem truncatedBCHAction_apply (k : ℕ) (g : BCHGroup (d.truncatedLie ℒ k))
 
 /-- The finite BCH representations commute with both group and coefficient truncation. -/
 theorem transition_truncatedBCHAction {k l : ℕ} (h : k ≤ l)
-    (g : BCHGroup (d.truncatedLie ℒ l)) (a : F.quotient l) :
+    (g : BCHGroup (d.lieTruncation ℒ l)) (a : F.quotient l) :
     F.transition h (F.truncatedBCHAction d ℒ l g a) =
-      F.truncatedBCHAction d ℒ k ((d.truncationMap ℒ h).bchGroupMap g)
+      F.truncatedBCHAction d ℒ k ((d.lieTruncationMap ℒ h).bchGroupMap g)
         (F.transition h a) := by
   simp only [truncatedBCHAction_apply, LieHom.log_bchGroupMap,
     transition_truncatedExpLieAction]
@@ -114,7 +116,7 @@ noncomputable def completedBCHAction :
 theorem projection_completedBCHAction (g : d.completedBCHGroup ℒ)
     (a : F.completion) (k : ℕ) :
     F.projection k (F.completedBCHAction d ℒ g a) =
-      F.truncatedBCHAction d ℒ k (CompletedGroup.projection k g) (F.projection k a) := by
+      F.truncatedBCHAction d ℒ k (TauCeti.CompletedGroup.projection k g) (F.projection k a) := by
   exact F.projection_completedAction _ _ g a k
 
 /-- The integrated action agrees with the existing exponential operator in Lie coordinates. -/
@@ -132,7 +134,7 @@ theorem completedBCHAction_exp (x : d.completedLie ℒ) :
 theorem completedBCHAction_unique
     (σ : d.completedBCHGroup ℒ →* (F.completion ≃ₗ[R] F.completion))
     (hσ : ∀ g a k, F.projection k (σ g a) =
-      F.truncatedBCHAction d ℒ k (CompletedGroup.projection k g) (F.projection k a)) :
+      F.truncatedBCHAction d ℒ k (TauCeti.CompletedGroup.projection k g) (F.projection k a)) :
     σ = F.completedBCHAction d ℒ :=
   F.completedAction_unique _ _ σ hσ
 
@@ -155,7 +157,9 @@ theorem completedBCHAction_injective [IsFiltrationDetected d ℒ F] :
 
 end Mei.ModuleFiltration
 
-namespace Mei.AlgFiltration
+namespace TauCeti.AlgFiltration
+
+open Mei
 
 variable {N R L A : Type*} [AddCommMonoid N] [CommRing R] [Algebra ℚ R]
   [LieRing L] [LieAlgebra R L] [LieAlgebra ℚ L] [IsScalarTower ℚ R L]
@@ -171,13 +175,13 @@ local instance rationalModuleQuotient (k : ℕ) :
 
 omit [LieAlgebra ℚ L] [IsScalarTower ℚ R L] in
 /-- The module and algebra quotient exponentials agree under the canonical quotient comparison. -/
-theorem truncatedExpLieAction_restrictScalarsEquiv (k : ℕ) (x : d.truncatedLie ℒ k)
+theorem truncatedExpLieAction_restrictScalarsEquiv (k : ℕ) (x : d.lieTruncation ℒ k)
     (a : (F.toModuleFiltration R).quotient k) :
     F.truncatedExpLieAction d ℒ k x
         (Submodule.Quotient.restrictScalarsEquiv R (F.ideal (k + 1)) a) =
       Submodule.Quotient.restrictScalarsEquiv R (F.ideal (k + 1))
         ((F.toModuleFiltration R).truncatedExpLieAction d ℒ k x a) := by
-  obtain ⟨x, rfl⟩ := (d.degreeIdeal ℒ k).surjective_mkQ x
+  obtain ⟨x, rfl⟩ := (d.truncationIdeal ℒ k).surjective_mkQ x
   let e := Submodule.Quotient.restrictScalarsEquiv R (F.ideal (k + 1))
   have hc : (F.quotientLieAction d ℒ k x).comp e.toLinearMap =
       e.toLinearMap.comp ((F.toModuleFiltration R).quotientLieAction d ℒ k x) := by
@@ -199,7 +203,7 @@ theorem truncatedExpLieAction_restrictScalarsEquiv (k : ℕ) (x : d.truncatedLie
 
 /-- The finite BCH group acts on each coefficient quotient by algebra automorphisms. -/
 noncomputable def truncatedBCHAction (k : ℕ) :
-    BCHGroup (d.truncatedLie ℒ k) →*
+    BCHGroup (d.lieTruncation ℒ k) →*
       ((A ⧸ F.ideal (k + 1)) ≃ₐ[R] (A ⧸ F.ideal (k + 1))) where
   toFun g := F.truncatedExpLieAction d ℒ k (BCHGroup.log g)
   map_one' := by
@@ -219,17 +223,17 @@ noncomputable def truncatedBCHAction (k : ℕ) :
 
 /-- The finite algebra action is the already constructed truncated exponential. -/
 @[simp]
-theorem truncatedBCHAction_apply (k : ℕ) (g : BCHGroup (d.truncatedLie ℒ k))
+theorem truncatedBCHAction_apply (k : ℕ) (g : BCHGroup (d.lieTruncation ℒ k))
     (a : A ⧸ F.ideal (k + 1)) :
     F.truncatedBCHAction d ℒ k g a =
       F.truncatedExpLieAction d ℒ k (BCHGroup.log g) a := (rfl)
 
 /-- Coefficient truncation intertwines the finite BCH algebra actions. -/
 theorem factor_truncatedBCHAction {k l : ℕ} (h : k ≤ l)
-    (g : BCHGroup (d.truncatedLie ℒ l)) (a : A ⧸ F.ideal (l + 1)) :
+    (g : BCHGroup (d.lieTruncation ℒ l)) (a : A ⧸ F.ideal (l + 1)) :
     Ideal.Quotient.factor (F.antitone (Nat.add_le_add_right h 1))
         (F.truncatedBCHAction d ℒ l g a) =
-      F.truncatedBCHAction d ℒ k ((d.truncationMap ℒ h).bchGroupMap g)
+      F.truncatedBCHAction d ℒ k ((d.lieTruncationMap ℒ h).bchGroupMap g)
         (Ideal.Quotient.factor (F.antitone (Nat.add_le_add_right h 1)) a) := by
   rw [truncatedBCHAction_apply, truncatedBCHAction_apply, LieHom.log_bchGroupMap]
   exact F.factor_truncatedExpLieAction d ℒ h (BCHGroup.log g) a
@@ -237,7 +241,7 @@ theorem factor_truncatedBCHAction {k l : ℕ} (h : k ≤ l)
 /-- Integrate a filtration-raising derivation action to the completed BCH group. -/
 noncomputable def completedBCHAction :
     d.completedBCHGroup ℒ →* (F.completion ≃ₐ[R] F.completion) :=
-  F.completedAction (F.truncatedBCHAction d ℒ)
+  F.completedAlgebraAction (F.truncatedBCHAction d ℒ)
     (fun {_ _} h g a => F.factor_truncatedBCHAction d ℒ h g a)
 
 /-- The completed algebra action is computed by exponential operators at each finite order. -/
@@ -245,17 +249,17 @@ noncomputable def completedBCHAction :
 theorem projection_completedBCHAction (g : d.completedBCHGroup ℒ)
     (a : F.completion) (k : ℕ) :
     F.projection k (F.completedBCHAction d ℒ g a) =
-      F.truncatedExpLieAction d ℒ k (BCHGroup.log (CompletedGroup.projection k g))
+      F.truncatedExpLieAction d ℒ k (BCHGroup.log (TauCeti.CompletedGroup.projection k g))
         (F.projection k a) := by
-  exact F.projection_completedAction _ _ g a k
+  exact F.projection_completedAlgebraAction _ _ g a k
 
 /-- The finite-order projection law uniquely determines the completed algebra action. -/
 theorem completedBCHAction_unique
     (σ : d.completedBCHGroup ℒ →* (F.completion ≃ₐ[R] F.completion))
     (hσ : ∀ g a k, F.projection k (σ g a) =
-      F.truncatedExpLieAction d ℒ k (BCHGroup.log (CompletedGroup.projection k g))
+      F.truncatedExpLieAction d ℒ k (BCHGroup.log (TauCeti.CompletedGroup.projection k g))
         (F.projection k a)) : σ = F.completedBCHAction d ℒ :=
-  F.completedAction_unique _ _ σ hσ
+  F.completedAlgebraAction_unique _ _ σ hσ
 
 /-- Completed algebra actions agreeing on the canonical image of `A` agree. At each finite order,
 every completed element has the same projection as some canonical element. -/
@@ -305,4 +309,4 @@ theorem completedBCHAction_exp (x : L) :
   intro k
   simp
 
-end Mei.AlgFiltration
+end TauCeti.AlgFiltration

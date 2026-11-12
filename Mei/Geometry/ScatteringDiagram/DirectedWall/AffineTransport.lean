@@ -22,7 +22,7 @@ are allowed, including walls with zero spatial velocity. This transport is the
 pushforward along `DirectedWall.Pushforward.ofCoordinateChange`, whose normal
 comparison scalars are all one.
 
-The construction combines `Mei.DirectedWallSpaces.CoordinateChange` and its
+The construction combines `TauCeti.DirectedWallSpaces.CoordinateChange` and its
 `completedMap_mem_wallGroup_iff` with the existing integral affine image of
 rational-normal polyhedra. Recession directions are transported using
 `AffineEquiv.linear_mem_recessionCone_image`. No additional wall carrier or
@@ -30,6 +30,10 @@ completion is introduced.
 -/
 
 public section
+
+open TauCeti (PositiveDegrees IsPositiveGrading SupportedRay)
+
+open TauCeti (DirectedWallSpaces)
 
 noncomputable section
 
@@ -58,26 +62,22 @@ variable {Γ Γ' Γ'' Λ Λ' Λ'' R V V' V'' : Type*} {L L' L'' : Type u}
   {H : DirectedWallSpaces ρ ℒ} {H' : DirectedWallSpaces ρ' ℳ}
   {H'' : DirectedWallSpaces ρ'' ℋ}
 
-namespace DirectedWallSpaces.CoordinateChange
-
 /-- Compatible spatial and algebraic coordinate changes pull real normals back
 along the inverse linear map. -/
-theorem realCharacter_comp_tangentEquiv_symm
+theorem _root_.TauCeti.DirectedWallSpaces.CoordinateChange.realCharacter_comp_tangentEquiv_symm
     (E : DirectedWallSpaces.CoordinateChange (d := d) (e := d') H H')
-    (e : Toric.IntegralAffineEquiv h h') (hE : E.tangentEquiv = e.latticeEquiv)
+    (e : TauCeti.Toric.IntegralAffineEquiv h h') (hE : E.tangentEquiv = e.latticeEquiv)
     (m : Λ →+ ℤ) :
     h'.realCharacter (m.comp E.tangentEquiv.symm) =
       (h.realCharacter m).comp e.toAffineEquiv.linear.symm.toLinearMap := by
   rw [hE]
-  simpa only [Toric.IntegralAffineEquiv.symm_latticeEquiv,
-    Toric.IntegralAffineEquiv.symm_toAffineEquiv, AffineEquiv.linear_symm] using
+  simpa only [TauCeti.Toric.IntegralAffineEquiv.symm_latticeEquiv,
+    TauCeti.Toric.IntegralAffineEquiv.symm_toAffineEquiv, AffineEquiv.linear_symm] using
     h'.realCharacter_comp h e.symm.latticeEquiv
       e.symm.toAffineEquiv.linear.toLinearMap e.symm.map_lattice m
 
-end DirectedWallSpaces.CoordinateChange
-
 /-- Compatible spatial and algebraic coordinate changes, with inverse-dual normals. -/
-def DirectedWall.Pushforward.ofCoordinateChange (e : Toric.IntegralAffineEquiv h h')
+def DirectedWall.Pushforward.ofCoordinateChange (e : TauCeti.Toric.IntegralAffineEquiv h h')
     (E : DirectedWallSpaces.CoordinateChange (d := d) (e := d') H H')
     (hE : E.tangentEquiv = e.latticeEquiv) : DirectedWall.Pushforward d d' h h' H H' where
   degreeMap := E.degreeMap
@@ -92,7 +92,7 @@ def DirectedWall.Pushforward.ofCoordinateChange (e : Toric.IntegralAffineEquiv h
     exact (E.wall_mem_iff n m x).mpr hx
   spatialMap := e.toContinuousAffineEquiv
   map_direction n _ := ⟨1, one_pos, by
-    rw [one_smul, Toric.IntegralAffineEquiv.toContinuousAffineEquiv_toAffineEquiv,
+    rw [one_smul, TauCeti.Toric.IntegralAffineEquiv.toContinuousAffineEquiv_toAffineEquiv,
       E.degreeMap_apply, ← E.map_direction, hE, e.map_lattice]⟩
   realCharacter_normalMap m := ⟨1, one_pos, by
     rw [E.realCharacter_comp_tangentEquiv_symm e hE]
@@ -101,7 +101,7 @@ def DirectedWall.Pushforward.ofCoordinateChange (e : Toric.IntegralAffineEquiv h
 
 section ofCoordinateChange
 
-variable (e : Toric.IntegralAffineEquiv h h')
+variable (e : TauCeti.Toric.IntegralAffineEquiv h h')
   (E : DirectedWallSpaces.CoordinateChange (d := d) (e := d') H H')
   (hE : E.tangentEquiv = e.latticeEquiv)
 
@@ -144,7 +144,7 @@ variable [Algebra ℚ R]
   [GradedLieAlgebra ℳ] [IsPositiveGrading d' ℳ]
   [GradedLieAlgebra ℋ] [IsPositiveGrading d'' ℋ]
   (W : DirectedWall (d := d) h H)
-  (e : Toric.IntegralAffineEquiv h h')
+  (e : TauCeti.Toric.IntegralAffineEquiv h h')
   (E : DirectedWallSpaces.CoordinateChange (d := d) (e := d') H H')
   (hE : E.tangentEquiv = e.latticeEquiv)
 
@@ -266,19 +266,19 @@ theorem outgoing_image_iff : (W.image e E hE).Outgoing ↔ W.Outgoing := by
 /-- Identity coordinate changes leave every wall datum unchanged. -/
 @[simp]
 theorem image_refl :
-    W.image (Toric.IntegralAffineEquiv.refl h)
-      (DirectedWallSpaces.CoordinateChange.refl H) (by simp) = W := by
+    W.image (TauCeti.Toric.IntegralAffineEquiv.refl h)
+      (DirectedWallSpaces.CoordinateChange.refl d H) (by simp) = W := by
   apply DirectedWall.ext
   · ext n
     simp
   · simp
-  · simp [Toric.IntegralAffineEquiv.refl_toAffineEquiv]
+  · simp [TauCeti.Toric.IntegralAffineEquiv.refl_toAffineEquiv]
   · simp
 
 /-- Transporting first by one coordinate change and then another agrees with
 transport by their composite. -/
 theorem image_image
-    (f : Toric.IntegralAffineEquiv h' h'')
+    (f : TauCeti.Toric.IntegralAffineEquiv h' h'')
     (F : DirectedWallSpaces.CoordinateChange (d := d') (e := d'') H' H'')
     (hF : F.tangentEquiv = f.latticeEquiv) :
     (W.image e E hE).image f F hF =
@@ -287,7 +287,7 @@ theorem image_image
   · ext n
     simp
   · simp
-  · simp [Set.image_image, Toric.IntegralAffineEquiv.trans_toAffineEquiv]
+  · simp [Set.image_image, TauCeti.Toric.IntegralAffineEquiv.trans_toAffineEquiv]
   · simp
 
 /-- Applying the inverse spatial and algebraic coordinate changes recovers the wall. -/

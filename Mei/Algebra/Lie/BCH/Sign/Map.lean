@@ -23,9 +23,15 @@ factorization itself, see `Mei.Algebra.Lie.BCH.Sign.Basic`.
 
 public section
 
+open TauCeti (signSubalgebra map_mem_signSubalgebra)
+
+open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading GradedLieHom)
+
 noncomputable section
 
-namespace Mei.GradedLieHom
+namespace TauCeti.GradedLieHom
+
+open Mei
 
 variable {N R L L' A : Type*} [AddCommMonoid N] [CommRing R] [Algebra ℚ R]
   [LieRing L] [LieAlgebra R L] [LieAlgebra ℚ L] [IsScalarTower ℚ R L]
@@ -37,25 +43,25 @@ variable {N R L L' A : Type*} [AddCommMonoid N] [CommRing R] [Algebra ℚ R]
 
 /-- Degree-preserving Lie maps commute with extraction of every finite sign factor. -/
 @[simp]
-theorem truncatedMap_signFactorizationEquiv_symm
+theorem lieTruncatedMap_signFactorizationEquiv_symm
     (f : GradedLieHom (PositiveDegreeMap.id d) ℒ ℳ) (θ : N →+ A)
     (k : ℕ) (g : d.truncatedGroup ℒ k) (s : SignType) :
-    (f.truncatedMap k (by simp)).bchGroupMap
+    (f.lieTruncatedMap k (by simp)).bchGroupMap
         ((PositiveDegrees.signFactorizationEquiv ℒ θ d k).symm g s :
           d.truncatedGroup ℒ k) =
       ((PositiveDegrees.signFactorizationEquiv ℳ θ d k).symm
-        ((f.truncatedMap k (by simp)).bchGroupMap g) s : d.truncatedGroup ℳ k) := by
+        ((f.lieTruncatedMap k (by simp)).bchGroupMap g) s : d.truncatedGroup ℳ k) := by
   let F : d.truncatedGroup ℒ k →* d.truncatedGroup ℳ k :=
-    (f.truncatedMap k (by simp)).bchGroupMap
+    (f.lieTruncatedMap k (by simp)).bchGroupMap
   let a := (PositiveDegrees.signFactorizationEquiv ℒ θ d k).symm g
-  have hf (n) (x) (hx : x ∈ d.truncatedGrading ℒ k n) :
-      f.truncatedMap k (by simp) x ∈ d.truncatedGrading ℳ k n := by
-    simpa only [PositiveDegreeMap.id_apply] using f.truncatedMap_mem k (by simp) hx
-  let b : ∀ t, (signSubalgebra (d.truncatedGrading ℳ k) θ t).bchSubgroup :=
+  have hf (n) (x) (hx : x ∈ d.lieTruncationGrading ℒ k n) :
+      f.lieTruncatedMap k (by simp) x ∈ d.lieTruncationGrading ℳ k n := by
+    simpa only [PositiveDegreeMap.id_apply] using f.lieTruncatedMap_mem k (by simp) hx
+  let b : ∀ t, (signSubalgebra (d.lieTruncationGrading ℳ k) θ t).bchSubgroup :=
     fun t => ⟨F (a t), by
       rw [LieSubalgebra.mem_bchSubgroup, LieHom.log_bchGroupMap]
-      exact map_mem_signSubalgebra (d.truncatedGrading ℒ k) θ
-        (d.truncatedGrading ℳ k) (f.truncatedMap k (by simp)).toLinearMap.toAddMonoidHom
+      exact map_mem_signSubalgebra (d.lieTruncationGrading ℒ k) θ
+        (d.lieTruncationGrading ℳ k) (f.lieTruncatedMap k (by simp)).toLinearMap.toAddMonoidHom
         hf ((LieSubalgebra.mem_bchSubgroup _ _).mp (a t).property)⟩
   have hb : PositiveDegrees.signFactorizationEquiv ℳ θ d k b = F g := by
     rw [PositiveDegrees.signFactorizationEquiv_apply]
@@ -64,4 +70,4 @@ theorem truncatedMap_signFactorizationEquiv_symm
   exact congrArg (fun c => (c s : d.truncatedGroup ℳ k))
     ((PositiveDegrees.signFactorizationEquiv ℳ θ d k).eq_symm_apply.mpr hb)
 
-end Mei.GradedLieHom
+end TauCeti.GradedLieHom

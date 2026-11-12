@@ -23,6 +23,8 @@ a product of unit factors (`prod_unitFactor_flatten_replicate`).
 
 public section
 
+open TauCeti (PositiveDegrees)
+
 noncomputable section
 
 namespace Mei.SkewLatticeDatum
@@ -79,8 +81,8 @@ theorem dilogPow_natCast_mul (n : D.NonzeroDegree d) (s : ℕ) (c : ℚ) :
 /-- Labels of degree above the cutoff `k` project to the identity at order `k`. -/
 theorem projection_prod_dilogPow_filter {ι : Type*} (l : List ι) (δ : ι → D.NonzeroDegree d)
     (σ : ι → ℚ) (k : ℕ) :
-    CompletedGroup.projection k (l.map fun i => D.dilogPow d (δ i) (σ i)).prod =
-      CompletedGroup.projection k
+    TauCeti.CompletedGroup.projection k (l.map fun i => D.dilogPow d (δ i) (σ i)).prod =
+      TauCeti.CompletedGroup.projection k
         ((l.filter fun i => d.degree (δ i).1 ≤ k).map fun i => D.dilogPow d (δ i) (σ i)).prod := by
   rw [map_list_prod, map_list_prod, List.map_map, List.map_map]
   refine (List.prod_map_filter_of_ne l fun i _ hi => ?_).symm

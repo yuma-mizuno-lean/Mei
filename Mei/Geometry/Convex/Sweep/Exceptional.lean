@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.Convex.Sweep
+public import TauCeti.Analysis.Convex.Sweep.Basic
 public import Mei.Geometry.Affine.Generic
 
 /-!
@@ -21,7 +21,7 @@ and vectors. A generic endpoint has every corresponding full line disjoint
 from the original affine spans, hence also from the swept sets. This detects
 endpoints whose backward rays can encounter a singular cell.
 
-The construction uses `Mei.Convex.vectorSpan_sweep`, Mathlib's affine-direction
+The construction uses `Set.vectorSpan_sweep`, Mathlib's affine-direction
 and submodule-sum APIs, and the existing finite exceptional arrangements.
 -/
 
@@ -31,7 +31,6 @@ noncomputable section
 
 namespace Mei.ExceptionalArrangement
 
-open Mei.Convex
 
 variable {V : Type*} [AddCommGroup V] [Module ℝ V] [FiniteDimensional ℝ V]
 
@@ -42,10 +41,10 @@ def ofSweeps (cells : Finset (Set V)) (vectors : Finset V)
       Module.finrank ℝ (vectorSpan ℝ P) + 1 < Module.finrank ℝ V) :
     ExceptionalArrangement V := by
   classical
-  refine ⟨(cells ×ˢ vectors).image (fun z => affineSpan ℝ (sweep z.1 z.2)), ?_⟩
+  refine ⟨(cells ×ˢ vectors).image (fun z => affineSpan ℝ (Set.sweep ℝ z.1 z.2)), ?_⟩
   rintro A hA
   obtain ⟨⟨P, n⟩, hPn, rfl⟩ := Finset.mem_image.mp hA
-  exact affineSpan_sweep_ne_top P n (hdim P (Finset.mem_product.mp hPn).1)
+  exact Set.affineSpan_sweep_ne_top (𝕜 := ℝ) P n (hdim P (Finset.mem_product.mp hPn).1)
 
 open Classical in
 /-- The exception set is the image of the cell-vector pairs under swept affine span. -/
@@ -54,7 +53,7 @@ theorem exceptions_ofSweeps (cells : Finset (Set V)) (vectors : Finset V)
     (hdim : ∀ P ∈ cells, P.Nonempty →
       Module.finrank ℝ (vectorSpan ℝ P) + 1 < Module.finrank ℝ V) :
     (ofSweeps cells vectors hdim).exceptions =
-      (cells ×ˢ vectors).image (fun z => affineSpan ℝ (sweep z.1 z.2)) := (rfl)
+      (cells ×ˢ vectors).image (fun z => affineSpan ℝ (Set.sweep ℝ z.1 z.2)) := (rfl)
 
 /-- Genericity for sweep exceptions is equivalent to avoidance by every full
 line in one of the specified directions. -/
@@ -69,10 +68,10 @@ theorem isGeneric_ofSweeps_iff (cells : Finset (Set V)) (vectors : Finset V)
   constructor
   · intro hy P hP n hn t ht
     exact hy _ (Finset.mem_image.mpr ⟨(P, n), Finset.mem_product.mpr ⟨hP, hn⟩, rfl⟩)
-      ((mem_affineSpan_sweep_iff P n y).mpr ⟨t, ht⟩)
+      ((Set.mem_affineSpan_sweep_iff (𝕜 := ℝ) P n y).mpr ⟨t, ht⟩)
   · intro hy A hA hyA
     obtain ⟨⟨P, n⟩, hPn, rfl⟩ := Finset.mem_image.mp hA
-    obtain ⟨t, ht⟩ := (mem_affineSpan_sweep_iff P n y).mp hyA
+    obtain ⟨t, ht⟩ := (Set.mem_affineSpan_sweep_iff (𝕜 := ℝ) P n y).mp hyA
     exact hy P (Finset.mem_product.mp hPn).1 n (Finset.mem_product.mp hPn).2 t ht
 
 end Mei.ExceptionalArrangement

@@ -7,6 +7,7 @@ module
 
 public import Mei.Geometry.ScatteringDiagram.WallSpace.Joint
 public import Mei.Geometry.Convex.PolyhedralComplex.Joint
+import Mei.Algebra.Group.Hom.Int
 
 /-!
 # The wall normal of a transverse joint component
@@ -35,7 +36,11 @@ theta functions, and refined tropical curve counts*, proof of Theorem 2.6.
 
 public section
 
-namespace Mei.DirectedWallSpaces
+open TauCeti (DirectedWallSpaces)
+
+namespace TauCeti.DirectedWallSpaces
+
+open Mei
 
 variable {Γ Λ R L : Type*} [AddCommMonoid Γ] [AddCommGroup Λ]
   [CommRing R] [LieRing L] [LieAlgebra R L]
@@ -149,4 +154,4 @@ theorem decompose_log_list_prod_sub_mem_wall_inf_ker
 
 end BCH
 
-end Mei.DirectedWallSpaces
+end TauCeti.DirectedWallSpaces

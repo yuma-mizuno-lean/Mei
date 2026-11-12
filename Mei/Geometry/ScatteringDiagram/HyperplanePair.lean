@@ -8,6 +8,7 @@ module
 public import Mei.Geometry.Convex.PolyhedralComplex.HyperplanePair
 public import Mei.Geometry.ScatteringDiagram.Refinement.Basic
 public import Mei.Geometry.ScatteringDiagram.LocalProduct
+import Mei.Geometry.Affine.Codimension
 
 /-!
 # Wall diagrams on one and on two hyperplanes
@@ -30,14 +31,16 @@ particular the diagram is consistent (`consistent_hyperplaneDiagram`).
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath)
+
 open Set Mei.Convex
 
 namespace Mei.FiniteWallDiagram
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i} {f g : V →L[ℝ] ℝ}
-  (hf : Toric.IsRationalFunctional h f.toLinearMap)
-  (hg : Toric.IsRationalFunctional h g.toLinearMap) {H K : Type*}
+  (hf : TauCeti.Toric.IsRationalFunctional h f.toLinearMap)
+  (hg : TauCeti.Toric.IsRationalFunctional h g.toLinearMap) {H K : Type*}
 
 /-- The diagram whose only wall, the hyperplane `ker f`, carries `a` and is cooriented
 by `f`. -/

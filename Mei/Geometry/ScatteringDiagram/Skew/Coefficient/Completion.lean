@@ -9,7 +9,7 @@ public import Mei.Geometry.ScatteringDiagram.Skew.Coefficient
 public import Mei.Geometry.ScatteringDiagram.Skew.AdaptedBasis
 public import Mei.Algebra.PositiveDegrees.Basis
 public import Mei.Algebra.MonoidAlgebra.Grading
-public import Mei.RingTheory.FilteredAlgebra.Equiv
+public import TauCeti.RingTheory.FilteredAlgebra.Equiv
 public import Mei.RingTheory.MvPowerSeries.Completion
 public import Mei.RingTheory.MvPowerSeries.Algebra
 
@@ -40,6 +40,10 @@ Appendix B, arXiv:1411.1394v2.
 -/
 
 public section
+
+open TauCeti (AlgFiltration)
+
+open TauCeti (PositiveDegrees)
 
 noncomputable section
 
@@ -178,9 +182,9 @@ variable [Finite ι]
 series algebra in free positive coordinates over the character algebra. -/
 def principalCoefficientCompletionEquiv :
     (F).completion ≃ₐ[R] MvPowerSeries ι R[M] :=
-  ((F).completionEquiv (AlgFiltration.ofIdeal (MvPolynomial.idealOfVars ι R[M]))
+  ((F).completionEquiv (Ideal.algFiltration (MvPolynomial.idealOfVars ι R[M]))
     (D.principalCoefficientPolynomialEquiv d e)
-    (by simpa only [AlgFiltration.ofIdeal_ideal] using
+    (by simpa only [Ideal.algFiltration_ideal] using
       D.comap_idealOfVars_pow_principalCoefficientPolynomialEquiv (R := R) d e he)).trans
     ((principalCompletionEquiv ι R[M]).restrictScalars R)
 
@@ -189,9 +193,9 @@ the identification of the polynomial completion with power series. -/
 theorem principalCoefficientCompletionEquiv_apply (x : (F).completion) :
     D.principalCoefficientCompletionEquiv d e he x =
       principalCompletionEquiv ι R[M] ((F).completionEquiv
-        (AlgFiltration.ofIdeal (MvPolynomial.idealOfVars ι R[M]))
+        (Ideal.algFiltration (MvPolynomial.idealOfVars ι R[M]))
         (D.principalCoefficientPolynomialEquiv d e)
-        (by simpa only [AlgFiltration.ofIdeal_ideal] using
+        (by simpa only [Ideal.algFiltration_ideal] using
           D.comap_idealOfVars_pow_principalCoefficientPolynomialEquiv (R := R) d e he) x) :=
   (rfl)
 
@@ -224,10 +228,10 @@ theorem coeff_principalCoefficientCompletionEquiv_eq_of_projection_eq
     (n : ι →₀ ℕ) (hn : n.degree ≤ k) (m : M) :
     (MvPowerSeries.coeff n (D.principalCoefficientCompletionEquiv d e he x)).coeff m =
       a.coeff ⟨(m, e.symm n), by simp⟩ := by
-  let G := AlgFiltration.ofIdeal (MvPolynomial.idealOfVars ι R[M])
+  let G := Ideal.algFiltration (MvPolynomial.idealOfVars ι R[M])
   let E := D.principalCoefficientPolynomialEquiv (R := R) d e
   have hE : ∀ j, (G.ideal j).comap E.toAlgHom = (F).ideal j := fun j => by
-    simpa only [G, AlgFiltration.ofIdeal_ideal] using
+    simpa only [G, Ideal.algFiltration_ideal] using
       D.comap_idealOfVars_pow_principalCoefficientPolynomialEquiv d e he j
   have hp : Ideal.Quotient.mk (G.ideal (k + 1)) (E a) =
       G.projection k ((F).completionEquiv G E hE x) := by

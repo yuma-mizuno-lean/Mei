@@ -24,6 +24,8 @@ by `FinitePolyhedralComplex.orderedCrossings_eq_iff`.
 
 public section
 
+open TauCeti (WallComplement singularSupport)
+
 open Set Filter Topology Mei.Convex
 
 namespace Mei.FinitePolyhedralComplex

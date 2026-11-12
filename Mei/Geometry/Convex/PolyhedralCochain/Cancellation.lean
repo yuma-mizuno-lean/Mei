@@ -26,11 +26,15 @@ remaining facets with a subdivision of the original boundary is a further step.
 
 public section
 
+open TauCeti (OrientedCell PolyhedralCochain)
+
 noncomputable section
 
 open Module Set
 
-namespace Mei.OrientedCell
+namespace TauCeti.OrientedCell
+
+open Mei
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i} {k : ℕ}
@@ -75,4 +79,4 @@ theorem exists_cellCoboundary_cut_add_eq (σ σ₁ σ₂ : OrientedCell h k)
     hminus hplus ho hne hdim
   exact ⟨υ, hυ, hcarrier, hυr, σ₁.cellCoboundary_add_eq_sum_erase σ₂ hυ hυr c⟩
 
-end Mei.OrientedCell
+end TauCeti.OrientedCell

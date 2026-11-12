@@ -25,7 +25,11 @@ tropical curve counts*, §3.3.3 (arXiv:1503.06183v5).
 
 public noncomputable section
 
-namespace Mei.PositiveDegrees
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
+namespace TauCeti.PositiveDegrees
+
+open Mei
 
 variable {Γ R L M : Type*} [AddCommGroup Γ] [CommRing R] [Algebra ℚ R]
   [LieRing L] [LieAlgebra R L] [LieAlgebra ℚ L] [IsScalarTower ℚ R L]
@@ -112,7 +116,7 @@ theorem shiftedHomogeneousComponent_completedBCHAction_eq_add_sum
       d.shiftedHomogeneousComponent ℳ p q x +
         ∑ n ∈ (d.finite_cutoff k).toFinset.attach,
           d.shiftedQuotientComponent ℳ p q (k + 1) (by omega)
-            ((F).truncatedBCHAction d ℒ (k + 1) (CompletedGroup.projection (k + 1) g)
+            ((F).truncatedBCHAction d ℒ (k + 1) (TauCeti.CompletedGroup.projection (k + 1) g)
               (Submodule.Quotient.mk
                 (shiftedInclusion ℳ d.monoid p
                   ⟨n.val, (d.mem_cutoff.mp
@@ -121,9 +125,9 @@ theorem shiftedHomogeneousComponent_completedBCHAction_eq_add_sum
   rw [d.shiftedHomogeneousComponent_eq ℳ p q (k + 1) (by omega),
     (F).projection_completedBCHAction,
     d.shiftedQuotientComponent_truncatedBCHAction_eq_add_sum ℒ ℳ p k
-      (CompletedGroup.projection (k + 1) g) _ q hq,
+      (TauCeti.CompletedGroup.projection (k + 1) g) _ q hq,
     ← d.shiftedHomogeneousComponent_eq ℳ p q (k + 1) (by omega)]
   simp only [ModuleFiltration.transition_projection,
     ← d.shiftedHomogeneousComponent_eq]
 
-end Mei.PositiveDegrees
+end TauCeti.PositiveDegrees

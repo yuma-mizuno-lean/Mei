@@ -31,11 +31,13 @@ opposite group to reverse multiplication order.
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath singularSupport_subset_iUnion)
+
 noncomputable section
 
 open Set
 
-namespace Mei.Convex.WallComplement
+namespace TauCeti.WallComplement
 
 variable {V ι G K : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V] [Finite ι]
   [Group G] [Group K] {W : ι → Set V}
@@ -243,9 +245,9 @@ theorem segmentPathProduct_reverse
     crossingEventProduct_reverse ν label hcomm hν,
     sub_sub_cancel, List.prod_inv_reverse]
 
-end Mei.Convex.WallComplement
+end TauCeti.WallComplement
 
-namespace Mei.Convex.WallComplement
+namespace TauCeti.WallComplement
 
 variable {V ι G : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
   [Fintype ι] [CommGroup G] {W : ι → Set V}
@@ -294,11 +296,11 @@ theorem segmentPathProduct_eq_prod (e : x ⟶ y) :
   exact propext ⟨fun ⟨t, _, ht⟩ => ⟨t, ht⟩,
     fun ⟨t, ht⟩ => ⟨t, ⟨j, ht⟩, ht⟩⟩
 
-end Mei.Convex.WallComplement
+end TauCeti.WallComplement
 
 namespace Quiver.Path
 
-open Mei.Convex WallComplement
+open TauCeti.WallComplement
 
 variable {V ι G K : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V] [Finite ι]
   [Group G] [Group K] {W : ι → Set V}

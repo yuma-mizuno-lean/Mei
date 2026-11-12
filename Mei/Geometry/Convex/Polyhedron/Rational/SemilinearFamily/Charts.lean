@@ -6,7 +6,8 @@ Authors: Codex
 module
 
 public import Mei.Geometry.Convex.Polyhedron.Rational.SemilinearFamily.Domains
-public import Mei.Geometry.Convex.Polyhedron.Rational.Stratification
+public import TauCeti.Analysis.Convex.Polyhedron.Rational.Stratification.Basic
+public import Mei.Algebra.BigOperators.Group.Finset.Indicator
 public import Mei.Data.Set.DisjointCover
 
 /-!
@@ -25,6 +26,8 @@ same closed charts.
 -/
 
 public noncomputable section
+
+open TauCeti (IsLocallyClosedPolyhedron IsRationalNormalPolyhedron IsRationalSemilinear)
 
 open Set
 

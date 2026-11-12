@@ -28,6 +28,12 @@ only at the lower order, not at the order to which the transports are lifted.
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath)
+
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
 open Set Mei.Convex
@@ -135,9 +141,9 @@ theorem exists_chamberTransport_lifts {k l : ℕ} (hkl : k ≤ l)
     (b : WallComplement (fun j : D.active k => (D.wall j).support)) :
     ∃ t : D.LevelChamber k → d.truncatedGroup ℒ l,
       t (D.levelChamber b) = 1 ∧
-        ∀ C, (d.truncationMap ℒ hkl).bchGroupMap (t C) = D.chamberTransport hD b C := by
+        ∀ C, (d.lieTruncationMap ℒ hkl).bchGroupMap (t C) = D.chamberTransport hD b C := by
   classical
-  have hsurj : Function.Surjective (d.truncationMap ℒ hkl).bchGroupMap :=
+  have hsurj : Function.Surjective (d.lieTruncationMap ℒ hkl).bchGroupMap :=
     d.groupTower_map_surjective ℒ (CategoryTheory.homOfLE hkl).op
   choose t ht using fun C => hsurj (D.chamberTransport hD b C)
   refine ⟨Function.update t (D.levelChamber b) 1, by simp, ?_⟩
@@ -151,13 +157,13 @@ product in the truncation kernel. At successive cutoffs this kernel is central. 
 theorem chamberLift_path_mem_ker {k l : ℕ} (hkl : k ≤ l) (hD : D.LevelConsistent k)
     (b : WallComplement (fun j : D.active k => (D.wall j).support))
     (t : D.LevelChamber k → d.truncatedGroup ℒ l)
-    (ht : ∀ C, (d.truncationMap ℒ hkl).bchGroupMap (t C) = D.chamberTransport hD b C)
+    (ht : ∀ C, (d.lieTruncationMap ℒ hkl).bchGroupMap (t C) = D.chamberTransport hD b C)
     {x y : WallComplement (fun j : D.active l => (D.wall j).support)}
     (p : AdmissiblePLPath x y) :
     let r := WallComplement.restrictPrefunctor (fun j : D.active l => (D.wall j).support)
       (Set.inclusion (D.active_mono hkl))
     (t (D.levelChamber (r.obj y)))⁻¹ * D.levelPathProduct l p *
-      t (D.levelChamber (r.obj x)) ∈ (d.truncationMap ℒ hkl).bchGroupMap.ker := by
+      t (D.levelChamber (r.obj x)) ∈ (d.lieTruncationMap ℒ hkl).bchGroupMap.ker := by
   dsimp only
   rw [MonoidHom.mem_ker, map_mul, map_mul, map_inv, ht, ht,
     D.truncation_levelPathProduct hkl,

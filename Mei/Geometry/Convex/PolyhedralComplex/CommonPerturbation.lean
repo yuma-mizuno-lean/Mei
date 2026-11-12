@@ -26,6 +26,8 @@ is required.
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath singularSupport_subset_iUnion)
+
 noncomputable section
 
 open Set Mei.Convex

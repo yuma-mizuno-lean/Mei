@@ -20,7 +20,7 @@ row restricted to the ambient affine subspace.
 
 The argument uses `Convex.exists_mem_zero_iff_forall` to choose a point with
 exactly the universally active constraints, and
-`AffineMap.exists_pos_lineMap_neg_forall_le` to move a short distance in any
+`TauCeti.exists_pos_lineMap_neg_forall_le` to move a short distance in any
 vector annihilated by those constraints.
 -/
 
@@ -56,7 +56,7 @@ theorem direction_affineSpan_setOf_forall_le (g : ι → (V →ᵃ[ℝ] ℝ))
       have hvall : ∀ j, (∀ x, (∀ k, g k x ≤ 0) → g j x = 0) →
           (g j).linear v = 0 := by simpa only [Submodule.mem_iInf, LinearMap.mem_ker] using hv
       exact hvall j ((hactive j).mp hj)
-    obtain ⟨ε, hε, hmove⟩ := exists_pos_lineMap_neg_forall_le g hp (x := v + p) (by
+    obtain ⟨ε, hε, hmove⟩ := TauCeti.exists_pos_lineMap_neg_forall_le g hp (x := v + p) (by
       intro j hj
       rw [← vadd_eq_add, (g j).map_vadd, hvzero j hj, hj]
       simp)
@@ -86,7 +86,7 @@ theorem vectorSpan_active_eq (g : ι → (V →ᵃ[ℝ] ℝ)) (A : AffineSubspac
       rw [(g j).linear_apply_vsub, hx.2.2, hy.2.2, vsub_self])⟩
   · rintro v ⟨hvA, hvj⟩
     have hpv : v + p ∈ A := A.vadd_mem_of_mem_direction hvA hp
-    obtain ⟨ε, hε, he⟩ := exists_pos_lineMap_neg_forall_le g hpF.2.1
+    obtain ⟨ε, hε, he⟩ := TauCeti.exists_pos_lineMap_neg_forall_le g hpF.2.1
       (x := v + p) (by
         intro l hl
         have hlj : l = j := by

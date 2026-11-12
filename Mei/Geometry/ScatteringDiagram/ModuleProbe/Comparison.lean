@@ -32,9 +32,15 @@ recurrence, probe transport and far-ray condition, and
 `eqOn_of_eventEndpointStep_eq_add` for uniqueness on generic endpoint domains.
 -/
 
+open TauCeti (WallComplement)
+
 public noncomputable section
 
-open Set Filter Topology Mei.Convex Mei.Convex.WallComplement
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
+open TauCeti (DirectedWallSpaces)
+
+open Set Filter Topology Mei.Convex TauCeti.WallComplement
 
 namespace Mei.ModuleProbe
 

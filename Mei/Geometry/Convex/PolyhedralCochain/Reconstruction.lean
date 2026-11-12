@@ -29,11 +29,15 @@ and `PolyhedralCochain.sum_mk_eq_zero_iff`. The required geometric tests exist b
 
 public section
 
+open TauCeti (OrientedCell)
+
 noncomputable section
 
 open Set
 
-namespace Mei.PolyhedralCochain
+namespace TauCeti.PolyhedralCochain
+
+open Mei
 
 variable {N V R E : Type*} [AddCommGroup N]
   [NormedAddCommGroup V] [NormedSpace ℝ V]
@@ -65,7 +69,7 @@ theorem intersectionPairing_eq_index_smul_sub_reverse_of_isolating
     (by simp)
 
 variable (v : C.cellsOfCodimension k → Fin (k + 1) → V)
-  (ht : ∀ Q, (σ Q).IsTransverse (v Q))
+  (ht : ∀ Q, (σ Q).IsTransverseToCarrier (v Q))
   (hm : ∀ Q, (convexHull ℝ (range (v Q)) ∩ (Q : Set V)).Nonempty)
   (ho : ∀ Q P : C.cellsOfCodimension k, P ≠ Q →
     Disjoint (convexHull ℝ (range (v Q))) (P : Set V))
@@ -122,7 +126,7 @@ theorem coboundary_eq_sum_mk_iff_isolating_pairings
     (τ : C.cellsOfCodimension (k + 1) → OrientedCell h (k + 1))
     (hτ : ∀ Q, (τ Q).carrier = (Q : Set V))
     (w : C.cellsOfCodimension (k + 1) → Fin (k + 2) → V)
-    (htw : ∀ Q, (τ Q).IsTransverse (w Q))
+    (htw : ∀ Q, (τ Q).IsTransverseToCarrier (w Q))
     (hmw : ∀ Q, (convexHull ℝ (range (w Q)) ∩ (Q : Set V)).Nonempty)
     (how : ∀ Q P : C.cellsOfCodimension (k + 1), P ≠ Q →
       Disjoint (convexHull ℝ (range (w Q))) (P : Set V))
@@ -140,4 +144,4 @@ theorem coboundary_eq_sum_mk_iff_isolating_pairings
 
 end Coboundary
 
-end Mei.PolyhedralCochain
+end TauCeti.PolyhedralCochain

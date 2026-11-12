@@ -24,9 +24,13 @@ These coordinate changes occur in the coefficient setting of Mandel,
 -/
 
 public section
+
+open TauCeti (PositiveDegrees PositiveDegreeMap)
 noncomputable section
 
-namespace Mei.PositiveDegreeMap
+namespace TauCeti.PositiveDegreeMap
+
+open Mei
 
 variable {Γ Γ' R M N : Type*} [AddCommGroup Γ] [AddCommGroup Γ']
   [Ring R] [AddCommGroup M] [AddCommGroup N] [Module R M] [Module R N]
@@ -156,4 +160,4 @@ theorem coe_shiftedDirectLimitComponents_map_eq_sum (p : Γ)
     (fun q a ha => hf q ha) T.modulus T.monotone_modulus
     (fun l _ ha => T.shiftedMap_mem_shiftedFiltration ℳ 𝓝 p f hf l ha) j k hj x
 
-end Mei.PositiveDegreeMap
+end TauCeti.PositiveDegreeMap

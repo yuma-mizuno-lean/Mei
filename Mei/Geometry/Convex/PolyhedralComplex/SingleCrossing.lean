@@ -7,6 +7,7 @@ module
 
 public import Mei.Geometry.Convex.PolyhedralComplex.PathSubdivision
 public import Mei.Geometry.Convex.Polyhedron.Path.Subdivision
+import Mei.Combinatorics.Quiver.Path
 
 /-!
 # Subdivision into single-crossing segments
@@ -25,6 +26,8 @@ is needed.
 -/
 
 public section
+
+open TauCeti (WallComplement AdmissiblePLPath)
 
 noncomputable section
 

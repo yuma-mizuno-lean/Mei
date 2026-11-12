@@ -29,6 +29,10 @@ walls with zero spatial velocity are allowed.
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
 open Set Mei.Convex
@@ -54,7 +58,7 @@ variable {Γ Γ' Λ Λ' R V V' ι κ : Type*} {L L' : Type u}
   {h : TauCeti.Toric.IsIntegralLattice i} {h' : TauCeti.Toric.IsIntegralLattice i'}
   {H : DirectedWallSpaces ρ ℒ} {H' : DirectedWallSpaces ρ' ℳ}
   (D : DirectedDiagram (d := d) h H ι) (F : DirectedDiagram (d := d) h H κ)
-  (e : Toric.IntegralAffineEquiv h h')
+  (e : TauCeti.Toric.IntegralAffineEquiv h h')
   (E : DirectedWallSpaces.CoordinateChange (d := d) (e := d') H H')
   (hE : E.tangentEquiv = e.latticeEquiv)
 

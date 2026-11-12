@@ -8,6 +8,7 @@ module
 public import Mei.Geometry.Convex.PolyhedralCochain.Facet
 public import Mei.Analysis.Convex.Exposed.Ridge
 public import Mei.Geometry.Convex.Polyhedron.Face.Ridge
+import Mei.Algebra.BigOperators.Group.Finset.Involution
 
 /-!
 # Cancellation at a common boundary ridge
@@ -37,11 +38,15 @@ cells and lineality are allowed.
 
 public section
 
+open TauCeti (OrientedCell)
+
 noncomputable section
 
 open Module Set
 
-namespace Mei.OrientedCell
+namespace TauCeti.OrientedCell
+
+open Mei
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i} {k : ℕ}
@@ -225,4 +230,4 @@ theorem sum_boundaryFacets_boundaryFacets_eq_zero (σ : OrientedCell h k)
     (fun _ hτ _ hr => σ.existsUnique_reverse_mem_boundaryFacets hτ hr)
     f (fun r => by rw [hf, add_neg_cancel])
 
-end Mei.OrientedCell
+end TauCeti.OrientedCell

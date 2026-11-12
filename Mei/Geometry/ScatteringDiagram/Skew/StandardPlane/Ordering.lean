@@ -16,7 +16,7 @@ degrees in the first quadrant of the unimodular plane agrees with a product of u
 (`exists_isChain_projection_prod_pow_eq`). This is the positive ordering of rank-two products
 for the standard plane and arbitrary positive weights, from the exchange of antiordered pairs
 (`exists_exchange`) and the termination of the exchange algorithm
-(`Mei.PositiveDegrees.exists_isChain_projection_prod_eq_of_exchange`). The positive integer
+(`TauCeti.PositiveDegrees.exists_isChain_projection_prod_eq_of_exchange`). The positive integer
 exponents of the factors of the ordered product are the multiplicities of the degrees in the
 list.
 
@@ -42,11 +42,11 @@ degree at most `k`, in which all adjacent pairings `{m, m'}` are nonnegative. -/
 theorem exists_isChain_projection_prod_unit_eq (k : ℕ) (l : List (PlaneDegree w)) :
     ∃ l' : List (PlaneDegree w), (l'.IsChain fun a b => 0 ≤ E.coefficientForm ℚ a.vec b.vec) ∧
       (∀ m ∈ l', m.deg ≤ k) ∧
-      CompletedGroup.projection k (l'.map unitFactor).prod =
-        CompletedGroup.projection k (l.map unitFactor).prod := by
+      TauCeti.CompletedGroup.projection k (l'.map unitFactor).prod =
+        TauCeti.CompletedGroup.projection k (l.map unitFactor).prod := by
   classical
   obtain ⟨l', hchain, hdeg, hprod, -⟩ :=
-    Mei.PositiveDegrees.exists_isChain_projection_prod_eq_of_exchange (plane w)
+    TauCeti.PositiveDegrees.exists_isChain_projection_prod_eq_of_exchange (plane w)
       (SkewLieAlgebra.positiveGrading (E.coefficientForm ℚ) (E.isAlt_coefficientForm ℚ)
         (plane w)) l unitFactor PlaneDegree.deg PlaneDegree.Inverted (fun _ => False) k
       (fun m => unitFactor_mem_degreeFiltration m)
@@ -63,8 +63,8 @@ each factor has weighted degree at most `k`. -/
 theorem exists_isChain_projection_prod_pow_eq (k : ℕ) (l : List (PlaneDegree w × ℕ)) :
     ∃ l' : List (PlaneDegree w), (l'.IsChain fun a b => 0 ≤ E.coefficientForm ℚ a.vec b.vec) ∧
       (∀ m ∈ l', m.deg ≤ k) ∧
-      CompletedGroup.projection k (l'.map unitFactor).prod =
-        CompletedGroup.projection k
+      TauCeti.CompletedGroup.projection k (l'.map unitFactor).prod =
+        TauCeti.CompletedGroup.projection k
           (l.map fun p => dilogPow p.1 (p.2 * rayIndex p.1.vec)).prod := by
   have hflat : ∀ l : List (PlaneDegree w × ℕ),
       ((l.flatMap fun p => List.replicate p.2 p.1).map unitFactor).prod =

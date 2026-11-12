@@ -25,6 +25,8 @@ The slab model follows Gross–Siebert, *An Invitation to Toric Degenerations*,
 
 public noncomputable section
 
+open TauCeti (GradedCorrespondence)
+
 open CategoryTheory CategoryTheory.Limits
 open scoped Mei.NodeAlgebra
 

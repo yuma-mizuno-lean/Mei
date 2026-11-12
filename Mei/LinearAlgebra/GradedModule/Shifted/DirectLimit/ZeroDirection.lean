@@ -17,9 +17,13 @@ diagrams, theta functions, and refined tropical curve counts*, §2.1 and §3.3.3
 -/
 
 public section
+
+open TauCeti (PositiveDegrees)
 noncomputable section
 
-namespace Mei.PositiveDegrees
+namespace TauCeti.PositiveDegrees
+
+open Mei
 
 variable {Γ Λ R M : Type*} [AddCommGroup Γ] [AddCommMonoid Λ] [CommRing R]
   [AddCommGroup M] [Module R M] [DecidableEq Γ]
@@ -50,4 +54,4 @@ theorem toShiftedDirectLimitOfChart_mem_zeroDirectionCoefficients (p : Γ)
       d.zeroDirectionCoefficients ρ ℳ :=
   Submodule.subset_span ⟨p, s, hp, r, a, ha, hr, rfl⟩
 
-end Mei.PositiveDegrees
+end TauCeti.PositiveDegrees

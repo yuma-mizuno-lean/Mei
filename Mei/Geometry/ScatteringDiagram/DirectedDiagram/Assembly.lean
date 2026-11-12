@@ -25,6 +25,10 @@ stabilize or the union of all walls to be locally finite.
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
 open Set Mei.Convex
@@ -41,7 +45,7 @@ variable {Γ Λ R L V : Type*} {ι : ℕ → Type*}
   {i : Λ →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
   {H : DirectedWallSpaces ρ ℒ}
   (D : ∀ n, DirectedDiagram (d := d) h H (ι n))
-  (hbirth : ∀ n k, k < n → ∀ j, CompletedGroup.projection k ((D n).wall j).label = 1)
+  (hbirth : ∀ n k, k < n → ∀ j, TauCeti.CompletedGroup.projection k ((D n).wall j).label = 1)
 
 /-- The union of successive wall families whose birth orders tend to infinity.
 Indices remember their birth family, so repeated walls are retained separately. -/
@@ -66,7 +70,7 @@ theorem ofBirthFamily_wall (j : Σ n, ι n) :
 theorem birth_le_of_mem_active {k : ℕ} {j : Σ n, ι n}
     (hj : j ∈ (ofBirthFamily D hbirth).active k) : j.1 ≤ k := by
   by_contra hn
-  have hne : CompletedGroup.projection k ((D j.1).wall j.2).label ≠ 1 := by
+  have hne : TauCeti.CompletedGroup.projection k ((D j.1).wall j.2).label ≠ 1 := by
     simpa only [mem_active, ofBirthFamily_wall] using hj
   exact hne (hbirth j.1 k (by omega) j.2)
 

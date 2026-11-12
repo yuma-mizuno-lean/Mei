@@ -29,6 +29,9 @@ crossing criterion `WallComplement.exists_crossing_iff_of_hyperplane`.
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath singularSupport
+  mem_intrinsicInterior_of_notMem_singularSupport)
+
 noncomputable section
 
 open Set Filter Topology Mei.Convex

@@ -49,6 +49,8 @@ The polynomial inputs and their positive outgoing representatives are those of B
 
 public section
 
+open TauCeti (PositiveDegrees)
+
 noncomputable section
 
 namespace Mei.SkewLatticeDatum.AdaptedBasis.BLMPolynomialInput

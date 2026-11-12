@@ -28,6 +28,10 @@ Gross–Hacking–Keel–Kontsevich, *Canonical bases for cluster algebras*, §1
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath GradedLieHom)
+
+open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading)
+
 noncomputable section
 
 open Set Mei.Convex
@@ -106,8 +110,8 @@ theorem map_wall (j : ι) : (D.map f).wall j = (D.wall j).map f := (rfl)
 @[simp↓]
 theorem mem_active_map (k : ℕ) (j : ι) :
     j ∈ (D.map f).active k ↔
-      (f.truncatedMap (a := k) k (by simp)).bchGroupMap
-        (CompletedGroup.projection k (D.wall j).label) ≠ 1 := by
+      (f.lieTruncatedMap (a := k) k (by simp)).bchGroupMap
+        (TauCeti.CompletedGroup.projection k (D.wall j).label) ≠ 1 := by
   rw [mem_active, map_wall, IndexedWall.map_label,
     f.projection_completedMap_of_le k (a := k) (by simp)]
   -- The tower-group identity is definitionally the concrete BCH-group identity.
@@ -164,17 +168,17 @@ theorem levelPathProduct_mapPathPrefunctor (k : ℕ)
     {x y : WallComplement (fun j : D.active k => (D.wall j).support)}
     (p : AdmissiblePLPath x y) :
     (D.map f).levelPathProduct k ((D.mapPathPrefunctor f k).mapPath p) =
-      (f.truncatedMap (a := k) k (by simp)).bchGroupMap (D.levelPathProduct k p) := by
+      (f.lieTruncatedMap (a := k) k (by simp)).bchGroupMap (D.levelPathProduct k p) := by
   -- Fix the concrete tower-group instances before composing geometric products.
   let F : d.truncatedGroup ℒ k →* d.truncatedGroup ℳ k :=
-    (f.truncatedMap (a := k) k (by simp)).bchGroupMap
-  have hlabel (j : ι) : CompletedGroup.projection k ((D.wall j).map f).label =
-      F (CompletedGroup.projection k (D.wall j).label) := by
+    (f.lieTruncatedMap (a := k) k (by simp)).bchGroupMap
+  have hlabel (j : ι) : TauCeti.CompletedGroup.projection k ((D.wall j).map f).label =
+      F (TauCeti.CompletedGroup.projection k (D.wall j).label) := by
     rw [IndexedWall.map_label,
       f.projection_completedMap_of_le k (a := k) (by simp)]
   have hm := p.map_wallPathProduct_restrict (fun j => (D.wall j).support)
     (fun j => s.normal (D.wall j).ray.generator)
-    (fun j => CompletedGroup.projection k (D.wall j).label)
+    (fun j => TauCeti.CompletedGroup.projection k (D.wall j).label)
     (D.active k) ((D.map f).active k) (D.active_map_subset f k)
     (D.activeLabels_commute k) F (D.mem_active_map f k)
   calc

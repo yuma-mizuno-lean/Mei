@@ -12,14 +12,18 @@ public import Mei.Algebra.Lie.BCH.Ray.Commensurable
 
 The numerical semigroup `⟨2, 3⟩ = {0, 2, 3, 4, …}` in `ℤ`, with the identity degree, is positive
 degree data in which `2 • 1` and `3 • 1` are allowed and `1` is not. Thus the hypotheses of
-`Mei.PositiveDegrees.commute_of_logComponent_eq_zero_two_nsmul_three_nsmul` hold for `m = 1`:
+`TauCeti.PositiveDegrees.commute_of_logComponent_eq_zero_two_nsmul_three_nsmul` hold for `m = 1`:
 for every positive grading with abelian rays, completed labels supported on the positive
 multiples of `2` commute with those supported on the positive multiples of `3`.
 -/
 
 public section
 
-namespace Mei.PositiveDegrees.Examples
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
+namespace TauCeti.PositiveDegrees.Examples
+
+open Mei
 
 /-- The numerical semigroup `⟨2, 3⟩ = {0, 2, 3, 4, …}` of integers. -/
 def twoThreeMonoid : AddSubmonoid ℤ where
@@ -100,4 +104,4 @@ theorem commute_of_logComponent_eq_zero_twoThreeDegrees [IsAbelianRays twoThreeD
     (by simpa only [nsmul_one, Nat.cast_ofNat] using hg)
     (by simpa only [nsmul_one, Nat.cast_ofNat] using hg')
 
-end Mei.PositiveDegrees.Examples
+end TauCeti.PositiveDegrees.Examples

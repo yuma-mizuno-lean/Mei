@@ -23,6 +23,8 @@ The positive-difference spanning hypothesis is explicit.
 -/
 
 public section
+
+open TauCeti (PositiveDegrees)
 noncomputable section
 
 namespace Mei.QuantumMonoidAlgebra

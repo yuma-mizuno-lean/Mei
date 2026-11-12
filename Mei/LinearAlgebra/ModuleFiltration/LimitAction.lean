@@ -23,6 +23,8 @@ The construction uses Mathlib's `NatIso.ofComponents` and
 
 public section
 
+open TauCeti (completedGroup)
+
 open CategoryTheory CategoryTheory.Limits Opposite
 
 universe u v w
@@ -37,30 +39,31 @@ variable {R : Type u} {M : Type v} [Ring R] [AddCommGroup M] [Module R M]
 
 /-- A completed group label acts by a natural automorphism of the quotient tower. -/
 def quotientAction (g : completedGroup G) : F.quotientTower ≅ F.quotientTower :=
-  NatIso.ofComponents (fun k => (ρ k.unop (CompletedGroup.projection k.unop g)).toModuleIso)
+  NatIso.ofComponents (fun k => (ρ k.unop (TauCeti.CompletedGroup.projection k.unop g)).toModuleIso)
     (by
       intro k l f
       apply ModuleCat.hom_ext
       apply LinearMap.ext
       intro x
       -- Expose the quotient tower's concrete transition and the component linear maps.
-      change ρ l.unop (CompletedGroup.projection l.unop g)
+      change ρ l.unop (TauCeti.CompletedGroup.projection l.unop g)
           (F.transition (leOfHom f.unop) x) =
-        F.transition (leOfHom f.unop) (ρ k.unop (CompletedGroup.projection k.unop g) x)
-      simpa only [CompletedGroup.map_projection] using
-        (hρ (leOfHom f.unop) (CompletedGroup.projection k.unop g) x).symm)
+        F.transition (leOfHom f.unop) (ρ k.unop (TauCeti.CompletedGroup.projection k.unop g) x)
+      simpa only [TauCeti.CompletedGroup.map_projection] using
+        (hρ (leOfHom f.unop) (TauCeti.CompletedGroup.projection k.unop g) x).symm)
 
 /-- Each component of the tower automorphism is the prescribed finite representation. -/
 @[simp]
 theorem quotientAction_hom_app (g : completedGroup G) (k : ℕᵒᵖ) :
     (F.quotientAction ρ hρ g).hom.app k =
-      ModuleCat.ofHom (ρ k.unop (CompletedGroup.projection k.unop g)).toLinearMap := (rfl)
+      ModuleCat.ofHom (ρ k.unop (TauCeti.CompletedGroup.projection k.unop g)).toLinearMap := (rfl)
 
 /-- The inverse tower action uses the inverse finite linear automorphism. -/
 @[simp]
 theorem quotientAction_inv_app (g : completedGroup G) (k : ℕᵒᵖ) :
     (F.quotientAction ρ hρ g).inv.app k =
-      ModuleCat.ofHom (ρ k.unop (CompletedGroup.projection k.unop g)).symm.toLinearMap := (rfl)
+      ModuleCat.ofHom (ρ k.unop (TauCeti.CompletedGroup.projection k.unop g)).symm.toLinearMap :=
+  (rfl)
 
 /-- The identity completed label acts identically on the quotient diagram. -/
 @[simp]
@@ -114,7 +117,7 @@ theorem completedAction_completionIsoLimit (g : completedGroup G) :
   intro x
   -- Evaluate the categorical composites as linear maps on the concrete completion.
   change F.projection k.unop (F.completedAction ρ hρ g x) =
-    ρ k.unop (CompletedGroup.projection k.unop g) (F.projection k.unop x)
+    ρ k.unop (TauCeti.CompletedGroup.projection k.unop g) (F.projection k.unop x)
   exact F.projection_completedAction ρ hρ g x k.unop
 
 end Mei.ModuleFiltration

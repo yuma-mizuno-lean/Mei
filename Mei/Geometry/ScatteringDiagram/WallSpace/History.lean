@@ -33,7 +33,13 @@ For these whole-component and normal-velocity conventions, see Mandel,
 
 public noncomputable section
 
-namespace Mei.DirectedWallSpaces
+open TauCeti (SupportedRay)
+
+open TauCeti (DirectedWallSpaces)
+
+namespace TauCeti.DirectedWallSpaces
+
+open Mei
 
 section Quotient
 
@@ -41,8 +47,8 @@ variable {Γ Λ R L M : Type*} [AddCommGroup Γ] [AddCommMonoid Λ]
   [CommRing R] [Algebra ℚ R] [LieRing L] [LieAlgebra R L]
   [LieAlgebra ℚ L] [IsScalarTower ℚ R L]
   [AddCommGroup M] [Module R M] [LieRingModule L M] [LieModule R L M]
-  [DecidableEq Γ] {ρ : Γ →+ Λ} {d : PositiveDegrees Γ}
-  {ℒ : Γ → Submodule R L} [GradedLieAlgebra ℒ] [IsPositiveGrading d ℒ]
+  [DecidableEq Γ] {ρ : Γ →+ Λ} {d : TauCeti.PositiveDegrees Γ}
+  {ℒ : Γ → Submodule R L} [GradedLieAlgebra ℒ] [TauCeti.IsPositiveGrading d ℒ]
   (H : DirectedWallSpaces ρ ℒ) (ℳ : Γ → Submodule R M)
   [SetLike.GradedBracket ℒ ℳ]
 
@@ -72,8 +78,8 @@ variable {Γ : Type} {Λ R L M : Type*} [AddCommGroup Γ] [AddCommMonoid Λ]
   [CommRing R] [Algebra ℚ R] [LieRing L] [LieAlgebra R L]
   [LieAlgebra ℚ L] [IsScalarTower ℚ R L]
   [AddCommGroup M] [Module R M] [LieRingModule L M] [LieModule R L M]
-  [DecidableEq Γ] {ρ : Γ →+ Λ} {d : PositiveDegrees Γ}
-  {ℒ : Γ → Submodule R L} [GradedLieAlgebra ℒ] [IsPositiveGrading d ℒ]
+  [DecidableEq Γ] {ρ : Γ →+ Λ} {d : TauCeti.PositiveDegrees Γ}
+  {ℒ : Γ → Submodule R L} [GradedLieAlgebra ℒ] [TauCeti.IsPositiveGrading d ℒ]
   (H : DirectedWallSpaces ρ ℒ) (ℳ : Γ → Submodule R M)
   [SetLike.GradedBracket ℒ ℳ] [DirectSum.Decomposition ℳ] (p : Γ)
 
@@ -97,4 +103,4 @@ theorem homogeneousHistory_shiftedBCHAction_normal_eq
     (d.shiftedQuotientGrading_piece ℳ p k) g w m hg r r₀ a hne j
   simp only [map_add, he]
 
-end Mei.DirectedWallSpaces
+end TauCeti.DirectedWallSpaces

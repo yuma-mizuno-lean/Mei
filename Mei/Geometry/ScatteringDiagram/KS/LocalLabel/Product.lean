@@ -31,7 +31,11 @@ Hall algebras and stability conditions*, Definition 2.3 and §§2–3
 (arXiv:1603.00416v4).
 -/
 
+open TauCeti (singularSupport)
+
 public noncomputable section
+
+open TauCeti (PositiveDegrees IsPositiveGrading)
 
 open Set Mei.Convex
 
@@ -118,9 +122,9 @@ theorem homogeneousWall_label_commute_of_mem (a b : HomogeneousWallIndex d C)
 finite projection of its completed germ. The index inventory is precisely the
 presentation's `wallIndices` for the singleton point. -/
 theorem projection_germLabel_eq_noncommProd_homogeneousWall (k : ℕ) :
-    CompletedGroup.projection k (D.germLabel θ hθ) =
+    TauCeti.CompletedGroup.projection k (D.germLabel θ hθ) =
       (D.homogeneousPresentation.wallIndices k {θ}).noncommProd
-        (fun a => CompletedGroup.projection k (D.homogeneousPresentation.wall a).label)
+        (fun a => TauCeti.CompletedGroup.projection k (D.homogeneousPresentation.wall a).label)
         (fun a ha b hb _ => by
           simpa only [homogeneousPresentation_wall] using
             (D.homogeneousWall_label_commute_of_mem θ hθ a b
@@ -128,7 +132,7 @@ theorem projection_germLabel_eq_noncommProd_homogeneousWall (k : ℕ) :
               Set.singleton_subset_iff.mp (D.homogeneousPresentation.mem_wallIndices.mp ha))
             (by simpa only [homogeneousPresentation_wall] using
               Set.singleton_subset_iff.mp (D.homogeneousPresentation.mem_wallIndices.mp hb))).map
-              (CompletedGroup.projection k)) := by
+              (TauCeti.CompletedGroup.projection k)) := by
   classical
   let S := D.homogeneousPresentation.wallIndices k {θ}
   let degree (a : D.homogeneousPresentation.active k) : N := a.val.1.val
@@ -153,7 +157,7 @@ theorem projection_germLabel_eq_noncommProd_homogeneousWall (k : ℕ) :
       obtain ⟨a, ha, he⟩ := Finset.mem_image.mp hn
       exact ⟨a, ha, he⟩)
   intro a ha
-  simpa only [homogeneousPresentation_wall] using congrArg (CompletedGroup.projection k)
+  simpa only [homogeneousPresentation_wall] using congrArg (TauCeti.CompletedGroup.projection k)
     (D.homogeneousWall_label_eq_germLabel a θ hθ (hmem a ha))
 
 omit [IsAbelianRays d ℒ] in
@@ -161,7 +165,7 @@ omit [IsAbelianRays d ℒ] in
 no active homogeneous walls through the point. Different homogeneous degrees
 cannot cancel in their combined local label. This does not require abelian rays. -/
 theorem projection_germLabel_eq_one_iff_wallIndices_eq_empty (k : ℕ) :
-    CompletedGroup.projection k (D.germLabel θ hθ) = 1 ↔
+    TauCeti.CompletedGroup.projection k (D.germLabel θ hθ) = 1 ↔
       D.homogeneousPresentation.wallIndices k {θ} = ∅ := by
   classical
   constructor
@@ -180,7 +184,7 @@ theorem projection_germLabel_eq_one_iff_wallIndices_eq_empty (k : ℕ) :
       by_contra h0
       have ha := (D.mem_image_homogeneousPresentation_wallIndices k θ hθ n).mpr ⟨hn, h0⟩
       simp [he] at ha
-    simpa only [CompletedGroup.degreeFiltration_succ, MonoidHom.mem_ker] using
+    simpa only [TauCeti.CompletedGroup.degreeFiltration_succ, MonoidHom.mem_ker] using
       (d.mem_degreeFiltration_succ_iff (ℒ := ℒ)).mpr hz
 
 end Mei.CompletedDiagram

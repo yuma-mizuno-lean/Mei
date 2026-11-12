@@ -8,6 +8,7 @@ module
 public import Mei.Geometry.Convex.PolyhedralComplex.Grid
 public import Mei.Geometry.Convex.PolyhedralComplex.RegularTransport
 public import Mei.Topology.ContinuousMap.Subdivision
+import Mei.Combinatorics.Quiver.Path
 
 /-!
 # Joint relations on the boundary of a filling grid
@@ -33,6 +34,8 @@ implement the convention that the first crossing acts on the right.
 -/
 
 public section
+
+open TauCeti (WallComplement AdmissiblePLPath)
 
 noncomputable section
 

@@ -14,12 +14,16 @@ A positive degree map `T : d → d` with `T n = n` for every degree may still ca
 modulus other than the identity, and need not be syntactically `PositiveDegreeMap.id d`; this
 happens for degree maps assembled from other data. Completed maps along such a `T` commute with
 taking supported-ray factors, as for `PositiveDegreeMap.id d`
-(`Mei.GradedLieHom.completedMap_rayFactor`).
+(`TauCeti.GradedLieHom.completedMap_rayFactor`).
 -/
 
 public section
 
-namespace Mei.GradedLieHom
+open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading SupportedRay GradedLieHom)
+
+namespace TauCeti.GradedLieHom
+
+open Mei
 
 universe u
 
@@ -48,4 +52,4 @@ theorem completedMap_rayFactor_of_forall_apply_eq (f : GradedLieHom T ℒ 𝓝) 
   · rw [d.logComponent_rayFactor_of_notMem ℒ g hn, d.logComponent_rayFactor_of_notMem 𝓝 _ hn]
     simp
 
-end Mei.GradedLieHom
+end TauCeti.GradedLieHom

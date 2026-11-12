@@ -19,9 +19,13 @@ also makes each chart inclusion injective.
 -/
 
 public section
+
+open TauCeti (PositiveDegrees)
 noncomputable section
 
-namespace Mei.PositiveDegrees
+namespace TauCeti.PositiveDegrees
+
+open Mei
 
 variable {Γ R M : Type*} [AddCommGroup Γ] [Ring R] [AddCommGroup M] [Module R M]
   [DecidableEq Γ] (d : PositiveDegrees Γ) (ℳ : Γ → Submodule R M)
@@ -178,4 +182,4 @@ theorem toShiftedDirectLimit_eq_ofChart (s : Multiset d.monoid)
       d.toShiftedDirectLimitOfChart ℳ (d.coefficientOrigin s) s (by simp) x := by
   rw [toShiftedDirectLimitOfChart_apply, shiftedCompletedInclusion_refl]
 
-end Mei.PositiveDegrees
+end TauCeti.PositiveDegrees

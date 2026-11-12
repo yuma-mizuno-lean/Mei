@@ -28,6 +28,12 @@ positive (`FunctionWallGrouping.IsPositive.append`).
 
 public section
 
+open TauCeti (AlgFiltration)
+
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
 namespace Mei.DirectedDiagram
@@ -105,7 +111,7 @@ theorem groupLabel_append_inl (g : κ₁) (k : ℕ) :
           exact Finset.mem_map.mpr ⟨j, hact j hj (by simpa using hg), rfl⟩
         · simp at hg)]
   exact (Finset.noncommProd_map s Function.Embedding.inl _ _).trans
-    (Finset.noncommProd_congr rfl (fun j _ => congrArg (fun W => CompletedGroup.projection k
+    (Finset.noncommProd_congr rfl (fun j _ => congrArg (fun W => TauCeti.CompletedGroup.projection k
       W.label) (append_wall_inl D E j)) _)
 
 /-- The order-`k` label of a group of the second family is unchanged in the union. -/
@@ -130,7 +136,7 @@ theorem groupLabel_append_inr (g : κ₂) (k : ℕ) :
             false_or, Sum.inr.injEq, exists_eq_right] at hj
           exact Finset.mem_map.mpr ⟨j, hact j hj (by simpa using hg), rfl⟩)]
   exact (Finset.noncommProd_map s Function.Embedding.inr _ _).trans
-    (Finset.noncommProd_congr rfl (fun j _ => congrArg (fun W => CompletedGroup.projection k
+    (Finset.noncommProd_congr rfl (fun j _ => congrArg (fun W => TauCeti.CompletedGroup.projection k
       W.label) (append_wall_inr D E j)) _)
 
 /-- The completed label of a group of the first family is unchanged in the union. -/

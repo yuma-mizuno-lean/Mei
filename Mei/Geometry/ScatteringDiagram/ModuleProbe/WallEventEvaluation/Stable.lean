@@ -26,9 +26,17 @@ interpretation in Carl–Pumperla–Siebert, *A tropical view on Landau–Ginzbu
 models*, §4 (arXiv:2205.07753v2).
 -/
 
+open TauCeti (singularSupport)
+
 public noncomputable section
 
-open Set Filter Topology Mei.Convex Mei.Convex.WallComplement
+open TauCeti (IsRationalNormalPolyhedron IsRationalSemilinear)
+
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
+open TauCeti (DirectedWallSpaces)
+
+open Set Filter Topology Mei.Convex TauCeti.WallComplement
 
 namespace Mei.ModuleProbe
 
@@ -127,7 +135,7 @@ theorem dense_stableWallEventLocus (K : ℕ)
     (B.wall a).rational_support
   obtain ⟨J, hJ, S, hS, hUnion⟩ := exists_finite_singularSupport_polyhedra W hW
   let := hJ
-  have hf (e : WallEvent (B.active K)) : Toric.IsRationalFunctional h (f e).toLinearMap :=
+  have hf (e : WallEvent (B.active K)) : TauCeti.Toric.IsRationalFunctional h (f e).toLinearMap :=
     B.isRationalFunctional_wallEventNormal K e
   have hP (e : WallEvent (B.active K)) : IsRationalSemilinear h (P e) :=
     e.isRationalSemilinear_support W fun a => (hW a).isLocallyClosedPolyhedron.isRationalSemilinear

@@ -35,6 +35,10 @@ Tom Bridgeland, *Scattering diagrams, Hall algebras and stability conditions*,
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath)
+
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 noncomputable section
 
 open Set Mei.Convex
@@ -69,7 +73,7 @@ theorem equivalent_truncate {k l : ℕ} (hkl : k ≤ l) :
         intro x y x' y' p q hpq
         rw [KSComplex.toFiniteWallDiagram_truncate, FiniteWallDiagram.pathProduct_relabel]
         exact D.compatible l q p hpq.symm
-      have ht := hs.relabel (d.truncationMap ℒ hle).bchGroupMap
+      have ht := hs.relabel (d.lieTruncationMap ℒ hle).bchGroupMap
       rw [← KSComplex.toFiniteWallDiagram_truncate,
         ← KSComplex.toFiniteWallDiagram_truncate, KSComplex.truncate_truncate] at ht
       exact ht.trans (ih hle)
@@ -105,7 +109,7 @@ theorem Equivalent.pathProduct_eq (hDF : D.Equivalent F)
     {x y : Point C} {x' y' : Point E} (p : Quiver.Path x y) (q : Quiver.Path x' y')
     (hpq : p.vertices.map CommonWallComplement.val =
       q.vertices.map CommonWallComplement.val) : D.pathProduct p = F.pathProduct q := by
-  apply CompletedGroup.ext
+  apply TauCeti.CompletedGroup.ext
   intro k
   simp only [projection_pathProduct]
   apply (equivalent_iff D F).mp hDF k
@@ -124,9 +128,9 @@ theorem exists_common_pathProduct_eq (k : ℕ)
     (hpq : p.vertices.map WallComplement.val = q.vertices.map WallComplement.val) :
     ∃ (u v : Point C) (u' v' : Point E) (p' : Quiver.Path u v) (q' : Quiver.Path u' v'),
       p'.vertices.map CommonWallComplement.val = q'.vertices.map CommonWallComplement.val ∧
-      CompletedGroup.projection k (D.pathProduct p') =
+      TauCeti.CompletedGroup.projection k (D.pathProduct p') =
         (D.diagram k).toFiniteWallDiagram.pathProduct p ∧
-      CompletedGroup.projection k (F.pathProduct q') =
+      TauCeti.CompletedGroup.projection k (F.pathProduct q') =
         (F.diagram k).toFiniteWallDiagram.pathProduct q := by
   -- One countable family records both sequences; the two selected tests retain their own normals.
   let a : Bool → ℕ ⊕ ℕ := fun b => if b then Sum.inr k else Sum.inl k
@@ -200,7 +204,7 @@ theorem equivalent_of_pathProduct_eq
   intro k x y x' y' p q hpq
   -- Realize both tests by common all-order paths, then project the complete equality.
   obtain ⟨_, _, _, _, p', q', hv, hp, hq⟩ := D.exists_common_pathProduct_eq F k p q hpq
-  exact hp.symm.trans ((congrArg (CompletedGroup.projection k) (hDF p' q' hv)).trans hq)
+  exact hp.symm.trans ((congrArg (TauCeti.CompletedGroup.projection k) (hDF p' q' hv)).trans hq)
 
 /-- Complete geometric products detect precisely orderwise equivalence.
 Both directions compare the same ambient vertex lists, with separate admissibility

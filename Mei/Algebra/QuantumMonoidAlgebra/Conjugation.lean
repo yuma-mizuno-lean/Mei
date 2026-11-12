@@ -24,6 +24,8 @@ cluster scattering diagrams*, §2.3, equations (2.14) and (2.21), arXiv:2202.015
 
 public section
 
+open TauCeti (AlgFiltration)
+
 noncomputable section
 
 open scoped PowerSeries

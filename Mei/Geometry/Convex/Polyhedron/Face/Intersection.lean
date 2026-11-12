@@ -6,6 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.Convex.Polyhedron.Face
+public import Mathlib.Analysis.Normed.Module.Basic
 import Mathlib.Data.Finset.Sum
 
 /-!
@@ -64,8 +65,8 @@ theorem exists_inter_isExposed_of_isConvexPolyhedron (hF : IsExtreme ℝ (P ∩ 
   obtain ⟨p, hp⟩ := hne
   have hp₁ : p ∈ F₁ := (hsplit ▸ hp).1
   have hp₂ : p ∈ F₂ := (hsplit ▸ hp).2
-  exact ⟨F₁, F₂, Mei.Convex.isExposed_setOf_active g L,
-    Mei.Convex.isExposed_setOf_active h R, ⟨p, hp₁⟩, ⟨p, hp₂⟩, hsplit⟩
+  exact ⟨F₁, F₂, TauCeti.isExposed_setOf_active g L,
+    TauCeti.isExposed_setOf_active h R, ⟨p, hp₁⟩, ⟨p, hp₂⟩, hsplit⟩
 
 end IsExtreme
 

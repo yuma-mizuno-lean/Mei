@@ -16,9 +16,13 @@ completed Lie actions and quantum ray actions use this common construction.
 -/
 
 public section
+
+open TauCeti (PositiveDegrees)
 noncomputable section
 
-namespace Mei.PositiveDegrees
+namespace TauCeti.PositiveDegrees
+
+open Mei
 
 variable {Γ R M G : Type*} [AddCommGroup Γ] [Ring R]
   [AddCommGroup M] [Module R M] [DecidableEq Γ] [Monoid G]
@@ -73,4 +77,4 @@ theorem shiftedDirectLimitAction_toShiftedDirectLimitOfChart (g : G) (p : Γ)
   simp only [toShiftedDirectLimitOfChart_apply, shiftedDirectLimitAction_toShiftedDirectLimit]
   exact congrArg (d.toShiftedDirectLimit ℳ s) (hact _ _ hp g x).symm
 
-end Mei.PositiveDegrees
+end TauCeti.PositiveDegrees

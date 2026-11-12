@@ -32,9 +32,15 @@ truncation kernel.
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath)
+
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
-open Set Mei Mei.Convex WallComplement BCHGroup
+open Set Mei Mei.Convex TauCeti.WallComplement BCHGroup
 
 namespace Mei.DirectedDiagram
 
@@ -79,12 +85,12 @@ theorem LoopProjection.exists_pos_joint_loop_obstruction {k : ℕ} (P : D.LoopPr
       (p : AdmissiblePLPath x x), (∀ z ∈ p.vertices, z.val ∈ Metric.ball q r) →
       ∀ n : Γ, d.degree n = k →
         (i (ρ n) ∈ (affineSpan ℝ J).direction →
-          (DirectSum.decompose (d.truncatedGrading ℒ k)
-            (log (D.levelPathProduct k p)) n : d.truncatedLie ℒ k) = 0) ∧
+          (DirectSum.decompose (d.lieTruncationGrading ℒ k)
+            (log (D.levelPathProduct k p)) n : d.lieTruncation ℒ k) = 0) ∧
         (i (ρ n) ∉ (affineSpan ℝ J).direction → ∃ m : Λ →+ ℤ, m ≠ 0 ∧
           (h.realCharacter m).ker = (affineSpan ℝ J).direction ⊔ ℝ ∙ i (ρ n) ∧
-          (DirectSum.decompose (d.truncatedGrading ℒ k)
-            (log (D.levelPathProduct k p)) n : d.truncatedLie ℒ k) ∈
+          (DirectSum.decompose (d.lieTruncationGrading ℒ k)
+            (log (D.levelPathProduct k p)) n : d.lieTruncation ℒ k) ∈
               (H.truncated d k).wall n m) := by
   obtain ⟨r, hr, hlocal⟩ := D.exists_pos_subset_support_of_inter_ball
     (((D.adaptedComplex k).mem_cellsOfCodimension 2 J).mp hJ).1 hq

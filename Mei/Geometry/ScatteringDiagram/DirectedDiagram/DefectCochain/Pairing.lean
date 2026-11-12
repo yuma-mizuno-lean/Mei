@@ -28,9 +28,17 @@ boundary comparison.
 
 public section
 
+open TauCeti (OrientedCell PolyhedralCochain)
+
+open TauCeti (WallComplement)
+
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
-open Set Filter Topology Mei.Convex WallComplement
+open Set Filter Topology Mei.Convex TauCeti.WallComplement
 
 namespace Mei.DirectedDiagram
 
@@ -57,7 +65,7 @@ theorem eventually_exists_intersectionPairing_eq_log_defect
     (ht : ∀ (P : (D.adaptedComplex (k + 1)).cellsOfCodimension 0)
       (x : WallComplement (fun j : D.active k => (D.wall j).support)),
       x.val ∈ interior (P : Set V) →
-      (d.truncationMap ℒ (Nat.le_succ k)).bchGroupMap (t P) = D.levelTransport k hk b x)
+      (d.lieTruncationMap ℒ (Nat.le_succ k)).bchGroupMap (t P) = D.levelTransport k hk b x)
     (Q : (D.adaptedComplex (k + 1)).walls) {q v : V}
     (hq : q ∈ intrinsicInterior ℝ (Q : Set V))
     (hv : 0 < h.realCharacter (cross Q).normal v) :
@@ -67,15 +75,15 @@ theorem eventually_exists_intersectionPairing_eq_log_defect
         x.val = q - a • v ∧ y.val = q + a • v ∧
         x.val ∈ interior ((cross Q).minus : Set V) ∧
         y.val ∈ interior ((cross Q).plus : Set V) ∧
-        (∀ P, (σ P).IsTransverse ![x.val, y.val]) ∧
+        (∀ P, (σ P).IsTransverseToCarrier ![x.val, y.val]) ∧
         ((OrientedCell.intersectionPairing (R := R) ![x.val, y.val]
           (∑ P, Finsupp.single (σ P) ((cross P).defect hk b t ht)) :
-            (d.truncationMap ℒ (Nat.le_succ k)).ker) : d.truncatedLie ℒ (k + 1)) =
+            (d.lieTruncationMap ℒ (Nat.le_succ k)).ker) : d.lieTruncation ℒ (k + 1)) =
           BCHGroup.log ((t (cross Q).plus)⁻¹ *
             D.levelPathProduct (k + 1) e.toPath * t (cross Q).minus) := by
   classical
   obtain ⟨ε, hε, hpair⟩ := PolyhedralCochain.exists_ball_intersectionPairing_eq
-    (R := R) (E := (d.truncationMap ℒ (Nat.le_succ k)).ker)
+    (R := R) (E := (d.lieTruncationMap ℒ (Nat.le_succ k)).ker)
     (D.adaptedComplex (k + 1)) σ hσ Q hq
   have hnear : ∀ᶠ a : ℝ in 𝓝[>] 0,
       q - a • v ∈ Metric.ball q ε ∧ q + a • v ∈ Metric.ball q ε := by

@@ -42,6 +42,8 @@ Landau–Ginzburg models*, §4 (arXiv:2205.07753v2).
 
 public section
 
+open TauCeti (singularSupport)
+
 open Set Filter Topology
 
 namespace Mei.Convex

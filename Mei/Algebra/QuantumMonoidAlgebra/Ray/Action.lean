@@ -41,7 +41,7 @@ theorem completedRayAction_monomial_skew (n p : P) (hn : 0 < δ n)
         (F).completedAeval (completedRayGenerator q β P δ hδ n hn)
           (PowerSeries.rescale ((q ^ (β n p - β p n) : Rˣ) : R) (H : PowerSeries R) *
             (↑(H⁻¹) : PowerSeries R)) := by
-  simp only [completedRayAction, AlgFiltration.completedSeriesAction_apply]
+  simp only [completedRayAction, TauCeti.AlgFiltration.completedSeriesAction_apply]
   exact completedRay_conj_skew q β P δ hδ n p hn H
 
 /-- Under `β.IsAlt`, the ray action on a monomial uses rescaling exponent `2β(n,p)`. -/
@@ -76,7 +76,7 @@ theorem mapPositiveCompletionOfDegree_completedRayAction (n : P) (hn : 0 < δ n)
       completedRayAction q' β' P' δ' hδ' ⟨f n, hP n n.property⟩ (hpos n n.property hn)
         (Units.map (PowerSeries.map φ).toMonoidHom H) (Ψ a) := by
   have hm (u v : (F).completion) : Ψ (u * v) = Ψ u * Ψ v := map_mul Ψ u v
-  simp only [completedRayAction, AlgFiltration.completedSeriesAction_apply, hm,
+  simp only [completedRayAction, TauCeti.AlgFiltration.completedSeriesAction_apply, hm,
     Units.coe_map, Units.coe_map_inv, RingHom.toMonoidHom_eq_coe, MonoidHom.coe_ofClass]
   simp only [mapPositiveCompletionOfDegree_completedRayAeval φ f h P P' hP δ δ' hδ hδ'
     l hl hcut hpos]

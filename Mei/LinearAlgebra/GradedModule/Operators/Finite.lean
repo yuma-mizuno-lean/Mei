@@ -21,6 +21,8 @@ space with uncontrolled homogeneous support is used.
 
 public noncomputable section
 
+open TauCeti (PositiveDegrees)
+
 open scoped DirectSum
 
 namespace Mei.GradedOperators

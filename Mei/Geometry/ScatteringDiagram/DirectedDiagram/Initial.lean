@@ -26,9 +26,15 @@ initial diagram, nor any condition on zero spatial directions.
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath)
+
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
+open TauCeti (DirectedWallSpaces)
+
 noncomputable section
 
-open Set Mei Mei.Convex WallComplement BCHGroup
+open Set Mei Mei.Convex TauCeti.WallComplement BCHGroup
 
 namespace Mei.DirectedDiagram
 
@@ -44,7 +50,7 @@ variable {Γ Λ R L V ι : Type*} [AddCommGroup Γ] [AddCommGroup Λ]
 /-- At an abelian cutoff, the logarithm of transport across full hyperplanes is
 the signed sum of their endpoint-side differences. -/
 theorem log_levelPathProduct_eq_sum_side_sub (k : ℕ)
-    [IsLieAbelian (d.truncatedLie ℒ k)] (b : D.active k → ℝ)
+    [IsLieAbelian (d.lieTruncation ℒ k)] (b : D.active k → ℝ)
     (hfull : ∀ j : D.active k,
       (D.wall j).support = {v | h.realCharacter (D.wall j).normal v = b j})
     {x y : WallComplement (fun j : D.active k => (D.wall j).support)}
@@ -53,18 +59,18 @@ theorem log_levelPathProduct_eq_sum_side_sub (k : ℕ)
     log (D.levelPathProduct k p) = ∑ j : D.active k,
       ((if b j < h.realCharacter (D.wall j).normal x.val then 1 else 0 : ℤ) -
         (if b j < h.realCharacter (D.wall j).normal y.val then 1 else 0)) •
-          log (CompletedGroup.projection k (D.wall j).label) := by
-  let K : LieSubalgebra R (d.truncatedLie ℒ k) := ⊤
-  have hlog := K.log_wallPathProduct_sub_crossingSum_mem (⊥ : Submodule R (d.truncatedLie ℒ k))
+          log (TauCeti.CompletedGroup.projection k (D.wall j).label) := by
+  let K : LieSubalgebra R (d.lieTruncation ℒ k) := ⊤
+  have hlog := K.log_wallPathProduct_sub_crossingSum_mem (⊥ : Submodule R (d.lieTruncation ℒ k))
     (fun a _ z _ => by simp [trivial_lie_zero])
     (fun j : D.active k => h.realCharacter (D.wall j).normal)
-    (fun j => CompletedGroup.projection k (D.wall j).label)
+    (fun j => TauCeti.CompletedGroup.projection k (D.wall j).label)
     (D.activeLabels_commute k) p (fun _ _ _ _ =>
       (K.mem_bchSubgroup _).mpr (by simp [K]))
   rw [Submodule.mem_bot, sub_eq_zero] at hlog
   calc
     _ = p.wallCrossingSum (fun j : D.active k => h.realCharacter (D.wall j).normal)
-        (fun j => log (CompletedGroup.projection k (D.wall j).label)) := by
+        (fun j => log (TauCeti.CompletedGroup.projection k (D.wall j).label)) := by
       rw [D.levelPathProduct_eq_wallPathProduct k p (D.activeLabels_commute k)]
       exact hlog
     _ = _ := p.wallCrossingSum_eq_sum_side_sub
@@ -73,7 +79,7 @@ theorem log_levelPathProduct_eq_sum_side_sub (k : ℕ)
 /-- Full affine hyperplanes are consistent at every abelian Lie cutoff. The
 completed labels need not commute at higher orders. -/
 theorem levelConsistent_of_isLieAbelian_of_full (k : ℕ)
-    [IsLieAbelian (d.truncatedLie ℒ k)]
+    [IsLieAbelian (d.lieTruncation ℒ k)]
     (hfull : ∀ j : D.active k, ∃ b : ℝ,
       (D.wall j).support = {v | h.realCharacter (D.wall j).normal v = b}) :
     D.LevelConsistent k := by

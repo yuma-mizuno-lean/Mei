@@ -44,6 +44,10 @@ computed in `Mei.DualLatticeIndex.Examples`.
 
 public section
 
+open TauCeti (AlgFiltration)
+
+open TauCeti (PositiveDegreeMap SupportedRay)
+
 noncomputable section
 
 namespace Mei.DirectedWall.LatticeChange.Examples
@@ -176,7 +180,8 @@ theorem diagonalNormal_halfLatticeCoord : diagonalNormal (halfLatticeCoord (1, 1
 def squaredDiagonalFunction (c : ℚ) :
     {u : (G latticeCoord).completion // u - 1 ∈ (G latticeCoord).completionIdeal 1} :=
   ⟨(diagonalFunction latticeCoord diagonalNormal_latticeCoord c : (G latticeCoord).completion) ^ 2,
-    (G latticeCoord).pow_sub_one_mem _ 2⟩
+    ((G latticeCoord).completionIdeal 1).pow_sub_one_mem
+      (diagonalFunction latticeCoord diagonalNormal_latticeCoord c).property 2⟩
 
 @[simp]
 theorem coe_squaredDiagonalFunction (c : ℚ) :

@@ -6,7 +6,7 @@ Authors: Claude Code
 module
 
 public import Mei.Geometry.ScatteringDiagram.ModuleProbe.WallSpace
-public import Mei.Geometry.ScatteringDiagram.WallSpace.Map
+public import TauCeti.Geometry.ScatteringDiagram.WallSpace.Map
 public import TauCeti.Algebra.DirectSum.Internal
 
 /-!
@@ -26,6 +26,10 @@ functions, and refined tropical curve counts*, §3.3.3 (arXiv:1503.06183v5).
 -/
 
 public section
+
+open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading GradedLieHom)
+
+open TauCeti (DirectedWallSpaces)
 noncomputable section
 
 namespace Mei.ModuleProbe

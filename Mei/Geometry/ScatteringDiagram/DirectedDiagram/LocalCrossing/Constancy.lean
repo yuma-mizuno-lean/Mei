@@ -27,9 +27,15 @@ point have the same tangent hyperplane. The crossing conventions follow Mandel,
 equation (8) and §3.3.3 (arXiv:1503.06183v5).
 -/
 
+open TauCeti (singularSupport affineSpan_eq_of_notMem_singularSupport)
+
 public noncomputable section
 
-open Set Mei.Convex
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
+open TauCeti (DirectedWallSpaces)
+
+open Set
 
 namespace Mei.DirectedDiagram
 

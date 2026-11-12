@@ -31,12 +31,16 @@ are allowed.
 
 public section
 
+open TauCeti (OrientedCell PolyhedralCochain isRationalNormalPolyhedron_iff)
+
 noncomputable section
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i} {k : ℕ}
 
-namespace Mei.OrientedCell
+namespace TauCeti.OrientedCell
+
+open Mei
 
 /-- Any finite family of oriented cells can be subdivided simultaneously using
 the cells of one finite complex. Each piece inherits its parent's orientation. -/
@@ -53,9 +57,9 @@ theorem exists_common_subdivision {ι : Type*} [Finite ι] (σ : ι → Oriented
       (by rwa [hP a])
   exact ⟨Q, hQ, by rwa [hP a] at hsub, hxQ⟩
 
-end Mei.OrientedCell
+end TauCeti.OrientedCell
 
-open Mei PolyhedralCochain
+open Mei TauCeti.PolyhedralCochain
 
 variable {R E : Type*} [Ring R] [AddCommGroup E] [Module R E]
 
@@ -87,7 +91,9 @@ theorem exists_presentation_on_complex (f : OrientedCell h k →₀ E)
 
 end Finsupp
 
-namespace Mei.PolyhedralCochain
+namespace TauCeti.PolyhedralCochain
+
+open Mei
 
 /-- Every finite family of cochains has presentations supported on the cells
 of one finite complex. Original supports may overlap, coincide, or have
@@ -105,4 +111,4 @@ theorem exists_common_complex_presentation {ι : Type*} [Finite ι]
   choose g hg using hex
   exact ⟨C, g, fun a => ⟨(hg a).1.trans (hf a), (hg a).2⟩⟩
 
-end Mei.PolyhedralCochain
+end TauCeti.PolyhedralCochain

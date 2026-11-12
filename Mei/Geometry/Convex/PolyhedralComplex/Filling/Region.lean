@@ -24,6 +24,8 @@ balls contained in the region, and assemble those local relations using
 perturbs only interior vertices of a subdivision of the filling.
 -/
 
+open TauCeti (WallComplement)
+
 public noncomputable section
 
 open Set Mei.Convex

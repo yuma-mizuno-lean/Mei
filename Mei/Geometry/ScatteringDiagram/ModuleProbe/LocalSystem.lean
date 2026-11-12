@@ -31,6 +31,10 @@ broken-line sum or extension to the maximal original regular locus is asserted.
 
 public noncomputable section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
+open TauCeti (DirectedWallSpaces)
+
 open Set TopologicalSpace Opposite Mei.Convex
 
 namespace Mei.ModuleProbe

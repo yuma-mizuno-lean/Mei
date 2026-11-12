@@ -21,9 +21,15 @@ admissible segment by a ray then has positive event parameter, nonzero
 transversality and precise incident wall set.
 -/
 
+open TauCeti (WallComplement)
+
 public noncomputable section
 
-open Set Mei.Convex Mei.Convex.WallComplement
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
+open TauCeti (DirectedWallSpaces)
+
+open Set Mei.Convex TauCeti.WallComplement
 
 namespace Mei.DirectedDiagram
 
@@ -54,9 +60,9 @@ theorem activeNormal_apply (k : ℕ) (c : D.active k) :
 /-- The normal selected by an active wall event is rational for the integral
 lattice, independently of which incident wall supplies the selected normal. -/
 theorem isRationalFunctional_wallEventNormal (k : ℕ) (e : WallEvent (D.active k)) :
-    Toric.IsRationalFunctional h (e.normal (D.activeNormal k)).toLinearMap := by
+    TauCeti.Toric.IsRationalFunctional h (e.normal (D.activeNormal k)).toLinearMap := by
   rw [WallEvent.normal_def, D.activeNormal_apply]
-  convert Toric.IsRationalFunctional.realCharacter h
+  convert TauCeti.Toric.IsRationalFunctional.realCharacter h
     (D.wall e.1.property.choose).normal.toIntLinearMap using 1
   ext x
   exact h.continuousRealCharacter_apply _ x

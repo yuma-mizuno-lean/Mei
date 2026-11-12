@@ -7,7 +7,7 @@ module
 
 public import Mei.Algebra.Lie.BCH.Coordinates
 public import Mei.Algebra.Lie.Logarithmic.WallFunction
-public import Mei.RingTheory.FilteredAlgebra.Exp.Pow
+public import TauCeti.RingTheory.FilteredAlgebra.Exp.Pow
 
 /-!
 # Function-wall labels under graded maps of tropical vertex algebras
@@ -24,13 +24,13 @@ logarithms (`Mei.completedTropicalTangentMap_completedExp`,
 Let `f` be a graded Lie map between tropical vertex Lie algebras sending every tangent field
 `z^q ∂_m`, `q ≠ 0`, to `c • z^{T q} ∂_{m'}`; its own degree map and cutoff modulus may differ
 from `T`. Then `f` sends `v ∂_m` to `(c • T_* v) ∂_{m'}`
-(`Mei.GradedLieHom.map_tropicalTangentField`) and the completed function-wall label
+(`TauCeti.GradedLieHom.map_tropicalTangentField`) and the completed function-wall label
 `exp(u ∂_m)` to `exp((c • T_* u) ∂_{m'})`
-(`Mei.GradedLieHom.completedMap_completedBCHExp_completedTropicalTangentField`).
+(`TauCeti.GradedLieHom.completedMap_completedBCHExp_completedTropicalTangentField`).
 
 If moreover `r * c = 1` for a natural number `r` and `T_* f₀ = f₁ ^ r`, then `exp(log(f₀) ∂_m)`
 is sent to `exp(log(f₁) ∂_{m'})`
-(`Mei.GradedLieHom.completedMap_completedBCHExp_completedTropicalTangentField_completedLog`).
+(`TauCeti.GradedLieHom.completedMap_completedBCHExp_completedTropicalTangentField_completedLog`).
 These labels act on coefficients by `z^p ↦ z^p f₀^{m(ρ p)}` and `z^p ↦ z^p f₁^{m'(ρ' p)}`
 (`Mei.completedBCHAction_completedBCHExp_completedTropicalTangentField_completedLog`), so for
 primitive integral normals `m` and `m'` the image of the wall function `f₀` is the `r`-th power
@@ -44,9 +44,15 @@ theta functions, and refined tropical curve counts*, Example 2.1(i), arXiv:1503.
 
 public section
 
+open TauCeti (AlgFiltration)
+
+open TauCeti (PositiveDegrees PositiveDegreeMap GradedLieHom)
+
 noncomputable section
 
-namespace Mei
+section
+
+open Mei
 
 open _root_.AddMonoidAlgebra
 
@@ -55,6 +61,8 @@ universe v w
 variable {R : Type*} {Γ Γ' : Type v} {Λ Λ' : Type w} [CommRing R]
   [AddCommMonoid Γ] [AddCommMonoid Λ] [AddCommMonoid Γ'] [AddCommMonoid Λ']
   {d : PositiveDegrees Γ} {e : PositiveDegrees Γ'} {ρ : Γ →+ Λ} {ρ' : Γ' →+ Λ'}
+
+namespace Mei
 
 section TangentMap
 
@@ -184,7 +192,11 @@ theorem map_tropicalTangentMonoid_intCast_le {t : Λ →+ Λ'}
 
 end TangentMap
 
-namespace GradedLieHom
+end Mei
+
+namespace TauCeti.GradedLieHom
+
+open Mei
 
 open LogarithmicVectorField
 
@@ -274,10 +286,11 @@ theorem completedMap_completedBCHExp_completedTropicalTangentField_completedLog 
   have he : (⟨completedTropicalTangentMap T hT f₀,
       completedTropicalTangentMap_sub_one_mem T hT f₀.property⟩ :
         {u : (G').completion // u - 1 ∈ (G').completionIdeal 1}) =
-      ⟨(f₁ : (G').completion) ^ r, (G').pow_sub_one_mem f₁ r⟩ := Subtype.ext hf₀
+      ⟨(f₁ : (G').completion) ^ r, ((G').completionIdeal 1).pow_sub_one_mem f₁.property r⟩ :=
+    Subtype.ext hf₀
   rw [he, AlgFiltration.completedLog_pow, ← Nat.cast_smul_eq_nsmul R, smul_smul, mul_comm, hr,
     one_smul]
 
-end GradedLieHom
+end TauCeti.GradedLieHom
 
-end Mei
+end

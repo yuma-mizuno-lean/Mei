@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Algebra.Lie.Filtered.Exp
-public import Mei.RingTheory.FilteredAlgebra.Exp.Basic
+public import TauCeti.RingTheory.FilteredAlgebra.Exp.Basic
 public import TauCeti.Algebra.Lie.InnerAutomorphism
 
 /-!
@@ -25,9 +25,13 @@ and `AlgFiltration.completedExp` constructions.
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 attribute [local instance] LieRing.ofAssociativeRing
 
-namespace Mei.AlgFiltration
+namespace TauCeti.AlgFiltration
+
+open Mei
 
 variable {N R L A : Type*} [AddCommMonoid N] [CommRing R]
   [LieRing L] [LieAlgebra R L] [Ring A] [Algebra R A]
@@ -77,4 +81,4 @@ theorem expAction_apply_eq_completedExp_mul (x : L) (y : A)
     projection_toCompletion]
   exact F.quotientExpLieAction_apply_eq_exp_mul_exp_neg d ℒ k hxy hy _
 
-end Mei.AlgFiltration
+end TauCeti.AlgFiltration

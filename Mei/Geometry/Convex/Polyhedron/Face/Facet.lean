@@ -18,7 +18,7 @@ covered by facets. This identifies the geometric boundary used by signed facet
 sums, including for unbounded and lower-dimensional polyhedra with lineality.
 
 The construction uses `Convex.exists_mem_zero_iff_forall` to obtain simultaneous
-strict inequalities and `AffineMap.exists_pos_lineMap_neg_forall_le` to move
+strict inequalities and `TauCeti.exists_pos_lineMap_neg_forall_le` to move
 inside the active hyperplane. Facet dimension is computed with
 `Module.Dual.finrank_ker_add_one_of_ne_zero`.
 -/
@@ -122,7 +122,7 @@ theorem exists_facet_presentation (hP : TauCeti.IsConvexPolyhedron P) :
       · simpa [he] using hpj.le
       · exact (hpstrict ⟨l, hl⟩ (fun he' => he (congrArg Subtype.val he'))).le
     have hface : IsExposed ℝ P {y ∈ P | f j.val y = 0} := by
-      simpa [hf] using (Mei.Convex.isExposed_setOf_active f {j.val})
+      simpa [hf] using (TauCeti.isExposed_setOf_active f {j.val})
     refine ⟨hface, ⟨p, hpP, hpj⟩, ?_⟩
     -- The local active-face direction is a hyperplane in the parent direction.
     -- Restrict the row there before applying rank-nullity.

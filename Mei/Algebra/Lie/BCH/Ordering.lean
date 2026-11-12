@@ -29,9 +29,13 @@ whose total degree exceeds the order need no exchange.
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 open scoped commutatorElement
 
-namespace Mei.PositiveDegrees
+namespace TauCeti.PositiveDegrees
+
+open Mei
 
 variable {N R L : Type*} [AddCommMonoid N] [CommRing R] [Algebra ℚ R]
   [LieRing L] [LieAlgebra R L] [LieAlgebra ℚ L] [IsScalarTower ℚ R L]
@@ -48,25 +52,25 @@ original list of degree at most `k`. -/
 theorem exists_isChain_projection_prod_eq_of_exchange {F : Type*} (l : List F)
     (g : F → d.completedBCHGroup ℒ) (deg : F → ℕ) (bad : F → F → Prop) (keep : F → Prop)
     [DecidablePred keep] (k : ℕ)
-    (hg : ∀ x, g x ∈ CompletedGroup.degreeFiltration (d.groupTower ℒ) (deg x))
+    (hg : ∀ x, g x ∈ TauCeti.CompletedGroup.degreeFiltration (d.groupTower ℒ) (deg x))
     (hbad : ∀ x y, bad x y → ¬ bad y x)
     (hex : ∀ x y, bad x y → deg x + deg y ≤ k → ∃ M : List F,
       (∀ m ∈ M, deg x < deg m ∧ deg y < deg m ∧ ¬ keep m) ∧
-        CompletedGroup.projection k (g x * g y) =
-          CompletedGroup.projection k (g y * (M.map g).prod * g x)) :
+        TauCeti.CompletedGroup.projection k (g x * g y) =
+          TauCeti.CompletedGroup.projection k (g y * (M.map g).prod * g x)) :
     ∃ l' : List F, l'.IsChain (fun x y => ¬ bad x y) ∧ (∀ x ∈ l', deg x ≤ k) ∧
-      CompletedGroup.projection k (l'.map g).prod =
-        CompletedGroup.projection k (l.map g).prod ∧
+      TauCeti.CompletedGroup.projection k (l'.map g).prod =
+        TauCeti.CompletedGroup.projection k (l.map g).prod ∧
       (l'.filter keep).Perm ((l.filter fun x => deg x ≤ k).filter keep) := by
   -- Elements of filtration order above `k` project to `1` at order `k`.
   have hone {a : ℕ} (ha : k < a) {u : d.completedBCHGroup ℒ}
-      (hu : u ∈ CompletedGroup.degreeFiltration (d.groupTower ℒ) a) :
-      CompletedGroup.projection k u = 1 := by
-    have := CompletedGroup.degreeFiltration_antitone (d.groupTower ℒ)
+      (hu : u ∈ TauCeti.CompletedGroup.degreeFiltration (d.groupTower ℒ) a) :
+      TauCeti.CompletedGroup.projection k u = 1 := by
+    have := TauCeti.CompletedGroup.degreeFiltration_antitone (d.groupTower ℒ)
       (Nat.succ_le_of_lt ha) hu
-    rwa [CompletedGroup.degreeFiltration_succ, MonoidHom.mem_ker] at this
+    rwa [TauCeti.CompletedGroup.degreeFiltration_succ, MonoidHom.mem_ker] at this
   obtain ⟨l', hc, hdeg, hprod, hperm⟩ := List.exists_isChain_prod_map_eq_of_exchange l
-    (fun x => CompletedGroup.projection k (g x)) deg bad keep k hbad
+    (fun x => TauCeti.CompletedGroup.projection k (g x)) deg bad keep k hbad
     (fun x hx => hone hx (hg x)) fun x y hxy _ _ => by
       by_cases hk : deg x + deg y ≤ k
       · obtain ⟨M, hMdeg, hM⟩ := hex x y hxy hk
@@ -81,4 +85,4 @@ theorem exists_isChain_projection_prod_eq_of_exchange {F : Type*} (l : List F)
   refine ⟨l', hc, hdeg, ?_, hperm⟩
   simpa only [map_list_prod, List.map_map, Function.comp_def] using hprod
 
-end Mei.PositiveDegrees
+end TauCeti.PositiveDegrees

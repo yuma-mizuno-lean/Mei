@@ -30,6 +30,8 @@ This uses Mathlib's kernels, intersections and `LieSubalgebra.map`, together wit
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 namespace Mei
 
 variable {N R L : Type*} [AddCommMonoid N] [CommRing R]
@@ -124,34 +126,34 @@ variable (ℒ : N → Submodule R L) [DecidableEq N] [GradedLieAlgebra ℒ]
 
 /-- Every finite orthogonal element has a representative in the original orthogonal algebra. -/
 theorem map_orthogonalLieSubalgebra_mkQ (σ : Set (N →+ ℝ)) (k : ℕ) :
-    (orthogonalLieSubalgebra ℒ σ).map (d.degreeIdeal ℒ k).mkQ =
-      orthogonalLieSubalgebra (d.truncatedGrading ℒ k) σ := by
+    (orthogonalLieSubalgebra ℒ σ).map (d.truncationIdeal ℒ k).mkQ =
+      orthogonalLieSubalgebra (d.lieTruncationGrading ℒ k) σ := by
   simp only [orthogonalLieSubalgebra_def]
   apply LieSubalgebra.toSubmodule_injective
   refine (congrArg LieSubalgebra.toSubmodule
     (map_supportedLieSubalgebra ℒ (⨅ θ ∈ σ, (AddMonoidHom.mker θ).toAddSubsemigroup)
-      (d.degreeIdeal ℒ k).mkQ)).trans ?_
+      (d.truncationIdeal ℒ k).mkQ)).trans ?_
   simp only [supportedLieSubalgebra_toSubmodule]
-  exact iSup_congr fun n => (d.truncatedGrading_eq ℒ k n).symm
+  exact iSup_congr fun n => (d.lieTruncationGrading_eq ℒ k n).symm
 
 /-- Lowering the cutoff maps the finer orthogonal Lie algebra onto the coarser one. -/
 theorem map_orthogonalLieSubalgebra_truncationMap (σ : Set (N →+ ℝ))
     {k l : ℕ} (h : k ≤ l) :
-    (orthogonalLieSubalgebra (d.truncatedGrading ℒ l) σ).map (d.truncationMap ℒ h) =
-      orthogonalLieSubalgebra (d.truncatedGrading ℒ k) σ := by
+    (orthogonalLieSubalgebra (d.lieTruncationGrading ℒ l) σ).map (d.lieTruncationMap ℒ h) =
+      orthogonalLieSubalgebra (d.lieTruncationGrading ℒ k) σ := by
   simp only [orthogonalLieSubalgebra_def]
-  simpa only [d.map_truncatedGrading_truncationMap ℒ h] using
-    map_supportedLieSubalgebra (d.truncatedGrading ℒ l)
-      (⨅ θ ∈ σ, (AddMonoidHom.mker θ).toAddSubsemigroup) (d.truncationMap ℒ h)
+  simpa only [d.map_lieTruncationGrading_lieTruncationMap ℒ h] using
+    map_supportedLieSubalgebra (d.lieTruncationGrading ℒ l)
+      (⨅ θ ∈ σ, (AddMonoidHom.mker θ).toAddSubsemigroup) (d.lieTruncationMap ℒ h)
 
 variable [Algebra ℚ R] [LieAlgebra ℚ L] [IsScalarTower ℚ R L]
 
 /-- The finite orthogonal BCH subgroups map onto one another under truncation. -/
 theorem map_bchSubgroup_orthogonalLieSubalgebra (σ : Set (N →+ ℝ))
     {k l : ℕ} (h : k ≤ l) :
-    ((orthogonalLieSubalgebra (d.truncatedGrading ℒ l) σ).bchSubgroup).map
-        (d.truncationMap ℒ h).bchGroupMap =
-      (orthogonalLieSubalgebra (d.truncatedGrading ℒ k) σ).bchSubgroup := by
+    ((orthogonalLieSubalgebra (d.lieTruncationGrading ℒ l) σ).bchSubgroup).map
+        (d.lieTruncationMap ℒ h).bchGroupMap =
+      (orthogonalLieSubalgebra (d.lieTruncationGrading ℒ k) σ).bchSubgroup := by
   rw [← LieSubalgebra.bchSubgroup_map, map_orthogonalLieSubalgebra_truncationMap]
 
 end Mei

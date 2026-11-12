@@ -27,7 +27,13 @@ its obstacle family is the original active walls, as in
 `cutoffWallEventEvaluation`.
 -/
 
+open TauCeti (singularSupport)
+
 public noncomputable section
+
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
+open TauCeti (DirectedWallSpaces)
 
 open Set Mei.Convex
 
@@ -72,12 +78,12 @@ theorem exists_cutoffWallEventEvaluation_sourceArrangement (K : ℕ) :
   rw [cutoffWallEventEvaluation_def]
   simp only [wallEventPropagation_def]
   -- The bounded inventory exhausts the endpoint fiber of the finite BCH actions.
-  refine hA Q hQ k (fun e => (d.truncationMap ℒ hkK).bchGroupMap (B.wallEventLabel K e)) a
+  refine hA Q hQ k (fun e => (d.lieTruncationMap ℒ hkK).bchGroupMap (B.wallEventLabel K e)) a
     (wallEventPaths d ℒ H h B k K) ?_
   intro q r
   rw [mem_wallEventPaths]
   exact d.pathDecoratedRay_shiftedBCH_length_le ℒ ℳ p k
-    (fun e => (d.truncationMap ℒ hkK).bchGroupMap (B.wallEventLabel K e)) a
+    (fun e => (d.lieTruncationMap ℒ hkK).bchGroupMap (B.wallEventLabel K e)) a
     (fun n => i (ρ (p + n))) (fun e => e.normal (B.activeNormal K))
     (fun e => e.offset (B.activeOffset K)) (fun e => e.2) (fun e => e.support (B.activeSupport K))
     (B.activeSupport K) (fun _ : Unit => singularSupport (B.activeSupport K)) univ r

@@ -30,9 +30,15 @@ recursion see Mandel, *Scattering diagrams, theta functions, and refined tropica
 curve counts*, §3.3.3 (arXiv:1503.06183v5).
 -/
 
+open TauCeti (WallComplement)
+
 public noncomputable section
 
-open Set Filter Topology Mei.Convex Mei.Convex.WallComplement
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
+open TauCeti (DirectedWallSpaces)
+
+open Set Filter Topology Mei.Convex TauCeti.WallComplement
 
 namespace Mei.ModuleProbe
 
@@ -59,7 +65,7 @@ local notation "labels" k:max e:max => (List.map
   (crossingEventProduct (G := d.truncatedGroup ℒ k)
     (fun c : B.active k => h.realCharacter
       (DirectedWall.normal (DirectedDiagram.wall B c)))
-    (fun c => CompletedGroup.projection k (DirectedWall.label (DirectedDiagram.wall B c)))
+    (fun c => TauCeti.CompletedGroup.projection k (DirectedWall.label (DirectedDiagram.wall B c)))
     (B.activeLabels_commute k) e) (List.reverse (orderedCrossingTimes e)))
 local notation "cutoffRestriction" hkl:max => (WallComplement.restrictPrefunctor
   (fun c : B.active _ => DirectedWall.support (DirectedDiagram.wall B c))
@@ -87,7 +93,7 @@ theorem eventually_exists_extendedCoefficientField_eq_eventInput_of_mul_pos
         z.val = AffineMap.lineMap x.val y.val
           (τ[b.val]'(by simpa only [τ, List.length_reverse] using b.isLt)) + δ • w ∧
         field k hBc z = (A).truncatedBCHAction d ℒ k
-          ((d.truncationMap ℒ hkl).bchGroupMap (g.drop (b.val + 1)).prod)
+          ((d.lieTruncationMap ℒ hkl).bchGroupMap (g.drop (b.val + 1)).prod)
           (field k hBc ((cutoffRestriction hkl).obj x)) := by
   dsimp only
   let τ := (orderedCrossingTimes e).reverse
@@ -152,7 +158,7 @@ theorem exists_straightEventInputArrangement
               (τ[j.val]'(by simpa only [g, List.length_map] using j.isLt)) + δ • w b ∧
             F.IsGeneric z.val ∧
             field k hBc z = (A).truncatedBCHAction d ℒ k
-              ((d.truncationMap ℒ hkl).bchGroupMap (g.drop (j.val + 1)).prod)
+              ((d.lieTruncationMap ℒ hkl).bchGroupMap (g.drop (j.val + 1)).prod)
               (field k hBc ((cutoffRestriction hkl).obj x)) := by
   classical
   let := h.finiteDimensional
@@ -188,7 +194,7 @@ theorem exists_straightEventInputArrangement
     have hh : ν c (AffineMap.lineMap x.val y.val τ[j.val]) = height c :=
       (B.wall c).normal_apply_eq hmem (B.wall c).support_nonempty.choose_spec
     have hpoint : AffineMap.lineMap x.val y.val τ[j.val] =
-        sweepProjection (ν c) (height c) ((ν c (v a))⁻¹ • v a) y.val := by
+        ContinuousLinearMap.sweepProjection (ν c) (height c) ((ν c (v a))⁻¹ • v a) y.val := by
       have hline : AffineMap.lineMap x.val y.val τ[j.val] =
           y.val + ((1 - τ[j.val]) * L) • v a := by
         rw [AffineMap.lineMap_apply_module']
@@ -214,7 +220,7 @@ theorem exists_straightEventInputArrangement
             (τ[j.val]'(by simpa only [g, List.length_map] using j.isLt)) + δ • w b ∧
           F.IsGeneric z.val ∧
           field k hBc z = (A).truncatedBCHAction d ℒ k
-            ((d.truncationMap ℒ hkl).bchGroupMap (g.drop (j.val + 1)).prod)
+            ((d.lieTruncationMap ℒ hkl).bchGroupMap (g.drop (j.val + 1)).prod)
             (field k hBc ((cutoffRestriction hkl).obj x)) := by
     by_cases hs : ∀ c : B.active l,
         AffineMap.lineMap x.val y.val

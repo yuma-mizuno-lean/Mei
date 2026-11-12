@@ -31,6 +31,10 @@ singleton-span and submodule inverse-image constructions.
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
+open TauCeti (DirectedWallSpaces wallBracketNormal)
+
 noncomputable section
 
 namespace Mei.SkewLatticeDatum

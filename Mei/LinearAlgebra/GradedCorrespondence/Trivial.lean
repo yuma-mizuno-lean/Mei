@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.LinearAlgebra.GradedCorrespondence.Basic
+public import TauCeti.LinearAlgebra.GradedCorrespondence.Basic
 public import TauCeti.Algebra.Module.GradedModule.Trivial
 
 /-!
@@ -31,7 +31,7 @@ public section
 
 open TauCeti
 
-namespace Mei.GradedCorrespondence
+namespace TauCeti.GradedCorrespondence
 
 variable {R U V ι κ : Type*} [Semiring R] [AddCommMonoid U] [Module R U]
   [AddCommMonoid V] [Module R V]
@@ -94,4 +94,4 @@ theorem doubleGraph_transfer_of_ne_zero {η : ℤ} (hη : η ≠ 0) :
 
 end Examples
 
-end Mei.GradedCorrespondence
+end TauCeti.GradedCorrespondence

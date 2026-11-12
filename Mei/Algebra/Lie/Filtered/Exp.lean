@@ -23,9 +23,13 @@ The construction uses the finite automorphisms and transition compatibility in
 
 public section
 
+open TauCeti (PositiveDegrees IsPositiveGrading)
+
 attribute [local instance] LieRing.ofAssociativeRing
 
-namespace Mei.AlgFiltration
+namespace TauCeti.AlgFiltration
+
+open Mei
 
 variable {N R L A : Type*} [AddCommMonoid N] [CommRing R]
   [LieRing L] [LieAlgebra R L] [Ring A] [Algebra R A]
@@ -90,4 +94,4 @@ theorem expAction_zero : F.expAction d ℒ 0 = AlgEquiv.refl := by
   intro k
   simp
 
-end Mei.AlgFiltration
+end TauCeti.AlgFiltration

@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Analysis.Convex.Polyhedron.Projection
+public import TauCeti.Analysis.Convex.Polyhedron.Projection
 public import Mei.Geometry.Affine.Segment
 
 /-!
@@ -50,7 +50,11 @@ theorem eventually_forall_notMem_of_openRay
       rcases eq_or_lt_of_le ht with rfl | ht
       · exact (hstart (by simpa using hmem)).1 hv
       · exact havoid t ht hmem
-    have hc := (Mei.Convex.isConvexPolyhedron_setOf_exists_nonneg_add_smul_mem hW v).isClosed
+    have hc : IsClosed {y : V | ∃ s : ℝ, 0 ≤ s ∧ y + s • v ∈ W} := by
+      have he : Set.sweep ℝ W v = {y | ∃ s : ℝ, 0 ≤ s ∧ y + s • v ∈ W} :=
+        Set.ext fun _ => Set.mem_sweep_iff
+      rw [← he]
+      exact (hW.sweep v).isClosed
     filter_upwards [hx.eventually (hc.isOpen_compl.mem_nhds hmiss)] with Y hY _ t ht
     exact fun hmem => hY ⟨t, ht.le, hmem⟩
   · -- A transverse ray has a unique possible contact, varying continuously.

@@ -26,11 +26,13 @@ families with commuting coplanar labels, independently of polyhedral presentatio
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath)
+
 noncomputable section
 
-open Set Mei.Convex
+open Set
 
-namespace Mei.Convex.WallComplement
+namespace TauCeti.WallComplement
 
 variable {V ι κ G : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
   [Finite ι] [Finite κ] [Group G] {W : ι → Set V}
@@ -124,11 +126,11 @@ theorem segmentPathProduct_restrict (e : x ⟶ y) :
     simpa only [hS, hT] using Finset.prod_map_sort_subset hs
       (fun t => (crossingEventProduct ν label hcomm e t)⁻¹) hz)
 
-end Mei.Convex.WallComplement
+end TauCeti.WallComplement
 
 namespace Quiver.Path
 
-open Mei.Convex.WallComplement
+open TauCeti.WallComplement
 
 variable {V ι κ G : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
   [Finite ι] [Finite κ] [Group G] {W : ι → Set V}
@@ -145,8 +147,8 @@ theorem wallPathProduct_restrict (ν : ι → V →ₗ[ℝ] ℝ) (label : ι →
   induction p with
   | nil => simp
   | cons p e ih =>
-    simp only [Prefunctor.mapPath_cons, wallPathProduct_cons, ih,
-      segmentPathProduct_restrict ν label hcomm f hf hlabel]
+    simp only [Prefunctor.mapPath_cons, wallPathProduct_cons, ih]
+    exact congrArg (fun g => g * _) (segmentPathProduct_restrict ν label hcomm f hf hlabel e)
 
 /-- Mapping labels and restricting to the indices with nontrivial images commutes
 with polygonal transport, including simultaneous crossings. The active sets are supplied

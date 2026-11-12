@@ -29,6 +29,10 @@ The module probe follows Mandel,
 -/
 
 public section
+
+open TauCeti (PositiveDegrees IsPositiveGrading SupportedRay)
+
+open TauCeti (DirectedWallSpaces)
 noncomputable section
 
 namespace Mei.ModuleProbe
