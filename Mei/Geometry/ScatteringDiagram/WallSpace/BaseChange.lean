@@ -5,6 +5,7 @@ Authors: Codex
 -/
 module
 
+public import Mei.Geometry.ScatteringDiagram.WallSpace.RestrictScalars
 public import Mei.Geometry.ScatteringDiagram.WallSpace.Truncation
 public import Mei.Algebra.Lie.Graded.BaseChange
 
@@ -21,7 +22,9 @@ We use Mathlib's `Submodule.baseChange`, rather than identifying tensor products
 with submodules without flatness. If `S` is flat, the existing equivalence
 `Submodule.toBaseChange.toLinearEquiv S (H.wall n m)` identifies the tensor product
 with the extended wall space via `baseChange_wall`. Bracket closure is the existing
-`SetLike.GradedBracket.baseChange`, applied to pairs of degrees and normals.
+`SetLike.GradedBracket.baseChange`, applied to pairs of degrees and normals. The graded inclusion
+`x ↦ 1 ⊗ x` maps each wall space into its extension, over `R`
+(`DirectedWallSpaces.includeRight_mem_restrictScalars_baseChange_wall`).
 -/
 
 public section
@@ -59,6 +62,16 @@ def baseChange (S : Type*) [CommRing S] [Algebra R S] :
 @[simp]
 theorem baseChange_wall (n : Γ) (m : Λ →+ ℤ) :
     (H.baseChange S).wall n m = (H.wall n m).baseChange S := (rfl)
+
+variable (S) in
+/-- The graded inclusion `x ↦ 1 ⊗ x` maps each wall space, regarded over `R`, into the extended
+wall space, regarded over `R`. -/
+theorem includeRight_mem_restrictScalars_baseChange_wall {d : PositiveDegrees Γ} (n : Γ)
+    (m : Λ →+ ℤ) (x : L) (hx : x ∈ (H.restrictScalars R).wall n m) :
+    GradedLieHom.includeRight (d := d) S ℒ x ∈ ((H.baseChange S).restrictScalars R).wall n m := by
+  rw [restrictScalars_wall, Submodule.restrictScalars_mem] at hx ⊢
+  rw [GradedLieHom.includeRight_apply, baseChange_wall]
+  exact Submodule.tmul_mem_baseChange_of_mem (1 : S) hx
 
 /-- Scalar extension commutes with pushing wall spaces along a Lie homomorphism. -/
 theorem baseChange_map (f : L →ₗ⁅R⁆ L') (ℒ' : Γ → Submodule R L')

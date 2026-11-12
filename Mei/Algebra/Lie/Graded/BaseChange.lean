@@ -7,6 +7,8 @@ module
 
 public import Mei.Algebra.DirectSum.BaseChange
 public import Mei.Algebra.PositiveDegrees.BaseChange
+public import Mei.Algebra.Lie.BaseChange
+public import Mei.Algebra.Lie.Graded.RestrictScalars
 public import Mei.Algebra.Lie.Graded.Truncation.Basic
 public import Mei.Algebra.Lie.Quotient.Map
 public import TauCeti.Algebra.Lie.BaseChange.Quotient
@@ -22,6 +24,11 @@ dimension hypothesis is imposed on either the pieces or the coefficient algebra.
 
 The decomposition is Mathlib's `DirectSum.Decomposition.baseChange`; the
 truncation comparison uses Tau Ceti's `LieIdeal.quotientBaseChangeEquiv`.
+
+The map `x ↦ 1 ⊗ x` is an `R`-linear fixed-degree graded Lie homomorphism from the grading to
+the restriction to `R` of the extended grading (`Mei.GradedLieHom.includeRight`). Under the
+scalar-restriction and truncation comparisons, its finite quotient maps are `x ↦ 1 ⊗ x` on the
+truncations (`Mei.GradedLieHom.truncatedMap_includeRight`).
 -/
 
 public section
@@ -147,3 +154,50 @@ theorem map_truncatedGrading_baseChange (k : ℕ) (n : N) :
     Submodule.baseChange_map]
 
 end Mei.PositiveDegrees
+
+namespace Mei.GradedLieHom
+
+variable {d : PositiveDegrees N}
+
+omit [DecidableEq N] [GradedLieAlgebra ℒ] in
+variable (S) in
+/-- The `R`-linear fixed-degree graded Lie homomorphism `x ↦ 1 ⊗ x` from the grading `ℒ`,
+regarded over `R`, to the restriction to `R` of the extended grading on `S ⊗[R] L`. -/
+def includeRight :
+    GradedLieHom (PositiveDegreeMap.id d) (fun n => (ℒ n).restrictScalars R)
+      (fun n => ((ℒ n).baseChange S).restrictScalars R) where
+  toLieHom := LieAlgebra.ExtendScalars.includeRight R S L
+  map_mem {n _} hx := by
+    rw [Submodule.restrictScalars_mem] at hx ⊢
+    simpa using Submodule.tmul_mem_baseChange_of_mem (1 : S) hx
+
+omit [DecidableEq N] [GradedLieAlgebra ℒ] in
+/-- The graded inclusion sends `x` to `1 ⊗ x`. -/
+@[simp]
+theorem includeRight_apply (x : L) : includeRight (d := d) S ℒ x = 1 ⊗ₜ x :=
+  LieAlgebra.ExtendScalars.includeRight_apply x
+
+omit [DecidableEq N] [GradedLieAlgebra ℒ] in
+/-- The underlying Lie homomorphism of the graded inclusion is `x ↦ 1 ⊗ x`. -/
+@[simp]
+theorem toLieHom_includeRight :
+    (includeRight (d := d) S ℒ).toLieHom = LieAlgebra.ExtendScalars.includeRight R S L := (rfl)
+
+variable [IsPositiveGrading d ℒ]
+
+variable (S) in
+/-- Under the scalar-restriction comparisons and the truncation comparison
+`PositiveDegrees.truncatedBaseChangeEquiv`, the order-`k` quotient map of the graded inclusion
+is the inclusion `x ↦ 1 ⊗ x` of the order-`k` truncation into its scalar extension. -/
+theorem truncatedMap_includeRight (k : ℕ) :
+    ((d.truncatedBaseChangeEquiv (S := S) ℒ k).toLieHom.restrictScalars R).comp
+        ((d.truncatedRestrictScalarsEquiv (R := R) (fun n => (ℒ n).baseChange S) k).toLieHom.comp
+          ((includeRight (d := d) S ℒ).truncatedMap (a := k) k
+            (PositiveDegreeMap.id_modulus k).le)) =
+      (LieAlgebra.ExtendScalars.includeRight R S (d.truncatedLie ℒ k)).comp
+        (d.truncatedRestrictScalarsEquiv (R := R) ℒ k).toLieHom := by
+  apply (d.degreeIdeal (fun n => (ℒ n).restrictScalars R) k).lieHom_qext
+  intro x
+  simp [LieIdeal.mkQ_apply]
+
+end Mei.GradedLieHom
