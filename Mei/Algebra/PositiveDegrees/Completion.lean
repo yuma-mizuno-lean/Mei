@@ -94,7 +94,6 @@ private def completionComparison : F.completion ≃ₗ[R] (T).lim where
     intro k
     simp [ModuleTower.limπ_apply]
 
-@[simp]
 private theorem limπ_completionComparison (k : ℕ) (x : F.completion) :
     (T).limπ k (completionComparison F x) = quotientComparison F k (F.projection k x) := by
   rw [ModuleTower.limπ_apply]
