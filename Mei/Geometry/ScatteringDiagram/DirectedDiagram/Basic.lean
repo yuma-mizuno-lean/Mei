@@ -27,6 +27,8 @@ finiteness of all supports is imposed.
 
 public section
 
+open TauCeti.CompletedGroup (projection)
+
 open TauCeti (WallComplement AdmissiblePLPath)
 
 open TauCeti (PositiveDegrees IsPositiveGrading)
@@ -73,17 +75,17 @@ theorem ofFinite_wall [Finite ι] (W : ι → DirectedWall (d := d) h H) (j : ι
 
 /-- The indices whose labels survive the order-`k` projection. -/
 def active (k : ℕ) : Set ι :=
-  Function.mulSupport (fun j => TauCeti.CompletedGroup.projection k (D.wall j).label)
+  Function.mulSupport (fun j => projection k (D.wall j).label)
 
 /-- The active indices are the support of the projected labels. -/
 theorem active_def (k : ℕ) :
-    D.active k = Function.mulSupport (fun j => TauCeti.CompletedGroup.projection k (D.wall j).label) :=
+    D.active k = Function.mulSupport (fun j => projection k (D.wall j).label) :=
   (rfl)
 
 /-- Activity is exactly nontriviality of the projected label. -/
 @[simp]
 theorem mem_active (k : ℕ) (j : ι) :
-    j ∈ D.active k ↔ TauCeti.CompletedGroup.projection k (D.wall j).label ≠ 1 := Iff.rfl
+    j ∈ D.active k ↔ projection k (D.wall j).label ≠ 1 := Iff.rfl
 
 /-- No wall is active at order zero, since the order-zero group is trivial. -/
 theorem not_mem_active_zero (j : ι) : j ∉ D.active 0 := by
@@ -110,10 +112,10 @@ theorem active_mono : Monotone D.active :=
 /-- The projected labels of active walls with the same affine span commute. -/
 theorem activeLabels_commute (k : ℕ) (a b : D.active k)
     (hab : affineSpan ℝ (D.wall a).support = affineSpan ℝ (D.wall b).support) :
-    Commute (TauCeti.CompletedGroup.projection k (D.wall a).label)
-      (TauCeti.CompletedGroup.projection k (D.wall b).label) :=
+    Commute (projection k (D.wall a).label)
+      (projection k (D.wall b).label) :=
   ((D.wall a).commute_label_of_direction_eq (D.wall b)
-    (congrArg AffineSubspace.direction hab)).map (TauCeti.CompletedGroup.projection k)
+    (congrArg AffineSubspace.direction hab)).map (projection k)
 
 /-- Any endpoints allowed at a fixed cutoff admit a finite-order admissible path. -/
 theorem exists_level_path (k : ℕ)
@@ -130,7 +132,7 @@ def levelPathProduct (k : ℕ)
     {x y : WallComplement (fun j : D.active k => (D.wall j).support)}
     (p : AdmissiblePLPath x y) : d.truncatedGroup ℒ k :=
   p.wallPathProduct (fun j : D.active k => h.realCharacter (D.wall j).normal)
-    (fun j => TauCeti.CompletedGroup.projection k (D.wall j).label) (D.activeLabels_commute k)
+    (fun j => projection k (D.wall j).label) (D.activeLabels_commute k)
 
 /-- The grouped wall-family product characterizes finite-order transport, independently
 of which proof of coplanar commutation is used. -/
@@ -139,11 +141,11 @@ theorem levelPathProduct_eq_wallPathProduct (k : ℕ)
     (p : AdmissiblePLPath x y)
     (comm : ∀ a b : D.active k,
       affineSpan ℝ (D.wall a).support = affineSpan ℝ (D.wall b).support →
-        Commute (TauCeti.CompletedGroup.projection k (D.wall a).label)
-          (TauCeti.CompletedGroup.projection k (D.wall b).label)) :
+        Commute (projection k (D.wall a).label)
+          (projection k (D.wall b).label)) :
     D.levelPathProduct k p =
       p.wallPathProduct (fun j : D.active k => h.realCharacter (D.wall j).normal)
-        (fun j => TauCeti.CompletedGroup.projection k (D.wall j).label) comm := (rfl)
+        (fun j => projection k (D.wall j).label) comm := (rfl)
 
 /-- A segment meeting no active wall has identity finite-order transport. -/
 theorem levelPathProduct_eq_one_of_crossings_eq_empty (k : ℕ)
@@ -193,7 +195,7 @@ theorem levelPathProduct_reverse (k : ℕ)
 /-- Finite-order transport lies in every subgroup containing the projected labels of the walls
 active at that order. -/
 theorem levelPathProduct_mem (k : ℕ) {S : Subgroup (d.truncatedGroup ℒ k)}
-    (hS : ∀ j : D.active k, TauCeti.CompletedGroup.projection k (D.wall j).label ∈ S)
+    (hS : ∀ j : D.active k, projection k (D.wall j).label ∈ S)
     {x y : WallComplement (fun j : D.active k => (D.wall j).support)}
     (p : AdmissiblePLPath x y) : D.levelPathProduct k p ∈ S := by
   rw [D.levelPathProduct_eq_wallPathProduct k p (D.activeLabels_commute k)]

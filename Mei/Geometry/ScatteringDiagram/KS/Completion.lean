@@ -140,7 +140,7 @@ theorem truncation_pathProduct (p : Quiver.Path x y) {k l : ℕ} (hkl : k ≤ l)
 def pathProduct (p : Quiver.Path x y) : d.completedBCHGroup ℒ :=
   ⟨fun k => (D.diagram k).toFiniteWallDiagram.pathProduct
       ((CommonWallComplement.projectionPrefunctor k).mapPath p),
-    (mem_completedGroup_iff _ _).mpr (fun _ _ hkl => D.truncation_pathProduct p hkl)⟩
+    (TauCeti.mem_completedGroup_iff _ _).mpr (fun _ _ hkl => D.truncation_pathProduct p hkl)⟩
 
 /-- Projection recovers exactly the existing geometric finite-order product. -/
 @[simp]

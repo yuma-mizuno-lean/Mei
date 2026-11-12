@@ -34,6 +34,8 @@ and refined tropical curve counts*, Example 2.1(iii), arXiv:1503.06183.
 
 public section
 
+open TauCeti.CompletedGroup (projection)
+
 open TauCeti (AlgFiltration)
 
 open TauCeti (PositiveDegrees)
@@ -198,7 +200,7 @@ def completedCoefficientLog (g : d.completedBCHGroup ℒ) : (𝓕).completionIde
 @[simp]
 theorem projection_completedCoefficientLog (g : d.completedBCHGroup ℒ) (k : ℕ) :
     (𝓕).projection k (completedCoefficientLog q β d g) =
-      truncatedCoefficientInclusion q β d k (BCHGroup.log (TauCeti.CompletedGroup.projection k g)) := by
+      truncatedCoefficientInclusion q β d k (BCHGroup.log (projection k g)) := by
   have hc : (completedCoefficientLog q β d g : (𝓕).completion) =
       (𝓕).completedInnerMap d ℒ j hj ((d.completedBCHExp ℒ).symm g) := by
     simpa only [completedCoefficientLog] using!
@@ -233,17 +235,17 @@ theorem coe_completedCoefficientLog_inv (g : d.completedBCHGroup ℒ) :
       -(completedCoefficientLog q β d g : (𝓕).completion) := by
   apply (𝓕).completion_ext
   intro k
-  have hg : BCHGroup.log (L := d.lieTruncation ℒ k) (TauCeti.CompletedGroup.projection k g⁻¹) =
-      -BCHGroup.log (L := d.lieTruncation ℒ k) (TauCeti.CompletedGroup.projection k g) :=
+  have hg : BCHGroup.log (L := d.lieTruncation ℒ k) (projection k g⁻¹) =
+      -BCHGroup.log (L := d.lieTruncation ℒ k) (projection k g) :=
     (congrArg (BCHGroup.log (L := d.lieTruncation ℒ k))
-      ((TauCeti.CompletedGroup.projection (F := d.groupTower ℒ) k).map_inv g)).trans
-        (BCHGroup.log_inv (TauCeti.CompletedGroup.projection k g))
+      ((projection (F := d.groupTower ℒ) k).map_inv g)).trans
+        (BCHGroup.log_inv (projection k g))
   calc
     _ = truncatedCoefficientInclusion q β d k
-        (BCHGroup.log (TauCeti.CompletedGroup.projection k g⁻¹)) :=
+        (BCHGroup.log (projection k g⁻¹)) :=
       projection_completedCoefficientLog q β d g⁻¹ k
     _ = -truncatedCoefficientInclusion q β d k
-        (BCHGroup.log (TauCeti.CompletedGroup.projection k g)) :=
+        (BCHGroup.log (projection k g)) :=
       (congrArg (truncatedCoefficientInclusion q β d k) hg).trans (map_neg _ _)
     _ = -((𝓕).projection k (completedCoefficientLog q β d g)) :=
       congrArg Neg.neg (projection_completedCoefficientLog q β d g k).symm

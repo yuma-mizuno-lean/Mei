@@ -38,6 +38,8 @@ open TauCeti (singularSupport)
 
 public noncomputable section
 
+open TauCeti.CompletedGroup (projection)
+
 open TauCeti (PositiveDegrees IsPositiveGrading)
 
 open TauCeti (DirectedWallSpaces)
@@ -83,7 +85,7 @@ private theorem sum_incoming_coefficient
     ∑ b : D.active (k + 1),
       (if (D.wall b).Incoming ∧ θ ∈ (D.wall b).support then
         (if 0 < (h.prod h').realCharacter (D.wall b).normal v then -1 else 1 : ℤ) •
-          P (BCHGroup.log (TauCeti.CompletedGroup.projection (k + 1) (D.wall b).label)) else 0) =
+          P (BCHGroup.log (projection (k + 1) (D.wall b).label)) else 0) =
       -DirectSum.decompose ℳ (a : M) q := by
   classical
   let := Fintype.ofFinite (D.active (k + 1))
@@ -101,7 +103,7 @@ private theorem sum_incoming_coefficient
       using hout b hb hn
   -- Base cylinders have zero charge-one component, while the probe recovers the input.
   have hbase (b : ι) :
-      P (BCHGroup.log (TauCeti.CompletedGroup.projection (k + 1)
+      P (BCHGroup.log (projection (k + 1)
         (D.wall (.inl (.inl b))).label)) = 0 := by
     rw [← hP]
     have hz := (wallSpaces d ℳ p ℒ H).decompose_log_projection_eq_zero_of_notMem_rayDegrees
@@ -110,7 +112,7 @@ private theorem sum_incoming_coefficient
           mem_baseRay_rayDegrees, one_ne_zero, and_false, not_false_eq_true])
     rw [hz, map_zero]
   have hprobe :
-      P (BCHGroup.log (TauCeti.CompletedGroup.projection (k + 1)
+      P (BCHGroup.log (projection (k + 1)
         (D.wall (.inl (.inr ()))).label)) = DirectSum.decompose ℳ (a : M) q := by
     simp only [hinitial, initialDiagram_wall_inr, probeWall_label,
       PositiveDegrees.projection_expToCompletion, BCHGroup.log_exp,
@@ -120,7 +122,7 @@ private theorem sum_incoming_coefficient
   have hterm (b : D.active (k + 1)) (hb : b.val ≠ .inl (.inr ())) :
       (if (D.wall b).Incoming ∧ θ ∈ (D.wall b).support then
         (if 0 < (h.prod h').realCharacter (D.wall b).normal v then -1 else 1 : ℤ) •
-          P (BCHGroup.log (TauCeti.CompletedGroup.projection (k + 1) (D.wall b).label)) else 0) = 0 := by
+          P (BCHGroup.log (projection (k + 1) (D.wall b).label)) else 0) = 0 := by
     rcases b with ⟨((b | b) | b), hb'⟩
     · simp only [hbase, smul_zero, ite_self]
     · exact (hb (by cases b; rfl)).elim

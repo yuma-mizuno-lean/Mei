@@ -122,7 +122,7 @@ theorem projection_right_eq_projection_zero (x : completedGroup (semidirectTower
     MonoidHom.id_apply] using hx
 
 private def leftPart (x : completedGroup (semidirectTower φ hφ)) : completedGroup F :=
-  ⟨fun k => (projection k x).left, (mem_completedGroup_iff F _).mpr (by
+  ⟨fun k => (projection k x).left, (TauCeti.mem_completedGroup_iff F _).mpr (by
     intro k l hkl
     have hx := congrArg SemidirectProduct.left (map_projection k l hkl x)
     simpa only [ConcreteCategory.hom_ofHom, SemidirectProduct.map_left] using hx)⟩

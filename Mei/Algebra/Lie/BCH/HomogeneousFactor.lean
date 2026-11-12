@@ -49,6 +49,8 @@ filtration statements use the commutator bound
 
 public section
 
+open TauCeti.CompletedGroup (projection)
+
 open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading GradedLieHom)
 
 noncomputable section
@@ -88,7 +90,7 @@ theorem homogeneousFactor_def (g : d.completedBCHGroup ℒ) (n : N) :
 /-- At every order, a homogeneous factor is the exponential of the class of its coefficient. -/
 @[simp]
 theorem projection_homogeneousFactor (g : d.completedBCHGroup ℒ) (n : N) (k : ℕ) :
-    TauCeti.CompletedGroup.projection k (d.homogeneousFactor ℒ g n) =
+    projection k (d.homogeneousFactor ℒ g n) =
       BCHGroup.exp ((d.truncationIdeal ℒ k).mkQ (d.logComponent ℒ g n)) :=
   d.projection_expToCompletion ℒ k _
 
@@ -97,7 +99,7 @@ and its logarithmic coefficient is nonzero. -/
 @[simp↓]
 theorem projection_homogeneousFactor_ne_one_iff (g : d.completedBCHGroup ℒ) (n : N)
     (k : ℕ) :
-    TauCeti.CompletedGroup.projection k (d.homogeneousFactor ℒ g n) ≠ 1 ↔
+    projection k (d.homogeneousFactor ℒ g n) ≠ 1 ↔
       d.degree n ≤ k ∧ d.logComponent ℒ g n ≠ 0 := by
   rw [homogeneousFactor_def, ne_eq,
     d.projection_expToCompletion_eq_one_iff ℒ (d.logComponent ℒ g n).property]
@@ -115,7 +117,7 @@ representative of the finite logarithm. -/
 theorem logComponent_eq_decompose (g : d.completedBCHGroup ℒ) {n : N} {k : ℕ}
     (hn : d.degree n ≤ k) {x : L}
     (hx : (d.truncationIdeal ℒ k).mkQ x =
-      BCHGroup.log (L := d.lieTruncation ℒ k) (TauCeti.CompletedGroup.projection k g)) :
+      BCHGroup.log (L := d.lieTruncation ℒ k) (projection k g)) :
     d.logComponent ℒ g n = DirectSum.decompose ℒ x n := by
   rw [logComponent, filtrationCompletionComponent_eq_quotientComponent d ℒ F _ n k hn,
     ← LieIdeal.completionProjection_apply, completionProjection_completedBCHExp_symm, ← hx,
@@ -125,10 +127,10 @@ theorem logComponent_eq_decompose (g : d.completedBCHGroup ℒ) {n : N} {k : ℕ
 /-- A finite projection determines every logarithmic coefficient it retains. -/
 theorem logComponent_eq_of_projection_eq {g g' : d.completedBCHGroup ℒ}
     {n : N} {k : ℕ} (hn : d.degree n ≤ k)
-    (hg : TauCeti.CompletedGroup.projection k g = TauCeti.CompletedGroup.projection k g') :
+    (hg : projection k g = projection k g') :
     d.logComponent ℒ g n = d.logComponent ℒ g' n := by
   obtain ⟨x, hx⟩ := (d.truncationIdeal ℒ k).surjective_mkQ
-    (BCHGroup.log (L := d.lieTruncation ℒ k) (TauCeti.CompletedGroup.projection k g))
+    (BCHGroup.log (L := d.lieTruncation ℒ k) (projection k g))
   rw [d.logComponent_eq_decompose ℒ g hn hx,
     d.logComponent_eq_decompose ℒ g' hn (hx.trans (congrArg BCHGroup.log hg))]
 
@@ -136,9 +138,9 @@ theorem logComponent_eq_of_projection_eq {g g' : d.completedBCHGroup ℒ}
 retained degree. -/
 theorem logComponent_eq_zero_of_projection_eq_one {g : d.completedBCHGroup ℒ}
     {n : N} {k : ℕ} (hn : d.degree n ≤ k)
-    (hg : TauCeti.CompletedGroup.projection k g = 1) : d.logComponent ℒ g n = 0 := by
+    (hg : projection k g = 1) : d.logComponent ℒ g n = 0 := by
   have hl : BCHGroup.log (L := d.lieTruncation ℒ k)
-      (TauCeti.CompletedGroup.projection k g) = 0 :=
+      (projection k g) = 0 :=
     (congrArg (BCHGroup.log (L := d.lieTruncation ℒ k)) hg).trans
       (BCHGroup.log_one (L := d.lieTruncation ℒ k))
   rw [d.logComponent_eq_decompose ℒ g hn (x := 0) ((map_zero _).trans hl.symm),
@@ -208,7 +210,7 @@ theorem mem_monoid_and_ne_zero_of_logComponent_ne_zero {g : d.completedBCHGroup 
 /-- A homogeneous factor above the cutoff projects trivially. -/
 theorem projection_homogeneousFactor_of_lt (g : d.completedBCHGroup ℒ) {n : N} {k : ℕ}
     (hn : (k : ℤ) < d.degree n) :
-    TauCeti.CompletedGroup.projection k (d.homogeneousFactor ℒ g n) = 1 := by
+    projection k (d.homogeneousFactor ℒ g n) = 1 := by
   rw [projection_homogeneousFactor,
     (d.truncationIdeal ℒ k).mkQ_eq_zero.mpr (d.le_truncationIdeal ℒ hn (d.logComponent ℒ g
       n).property)]
@@ -218,7 +220,7 @@ theorem projection_homogeneousFactor_of_lt (g : d.completedBCHGroup ℒ) {n : N}
 there and its coefficient is nonzero. -/
 theorem projection_homogeneousFactor_eq_one (g : d.completedBCHGroup ℒ) {n : N} {k : ℕ}
     (h : d.degree n ≤ k → d.logComponent ℒ g n = 0) :
-    TauCeti.CompletedGroup.projection k (d.homogeneousFactor ℒ g n) = 1 := by
+    projection k (d.homogeneousFactor ℒ g n) = 1 := by
   by_cases hn : d.degree n ≤ k
   · rw [homogeneousFactor_def, h hn, ZeroMemClass.coe_zero, expToCompletion_zero, map_one]
   · exact d.projection_homogeneousFactor_of_lt ℒ g (lt_of_not_ge hn)
@@ -244,7 +246,7 @@ theorem commute_homogeneousFactor {g : d.completedBCHGroup ℒ} {n m : N}
 /-- At order `k`, the finite logarithm is the class of the sum of the coefficients
 retained at that order. -/
 theorem log_projection_eq_mkQ_sum (g : d.completedBCHGroup ℒ) (k : ℕ) :
-    BCHGroup.log (L := d.lieTruncation ℒ k) (TauCeti.CompletedGroup.projection k g) =
+    BCHGroup.log (L := d.lieTruncation ℒ k) (projection k g) =
       (d.truncationIdeal ℒ k).mkQ
         (∑ n ∈ (d.finite_cutoff k).toFinset, (d.logComponent ℒ g n : L)) := by
   let e := d.filtrationCompletionEquivPi ℒ F (fun k => d.truncationIdeal_toSubmodule ℒ k)
@@ -258,11 +260,11 @@ theorem log_projection_eq_mkQ_sum (g : d.completedBCHGroup ℒ) (k : ℕ) :
 coefficient in some degree of order at most `k`. This is the converse of
 `PositiveDegrees.logComponent_eq_zero_of_projection_eq_one`. -/
 theorem exists_logComponent_ne_zero_of_projection_ne_one {g : d.completedBCHGroup ℒ} {k : ℕ}
-    (hg : TauCeti.CompletedGroup.projection k g ≠ 1) :
+    (hg : projection k g ≠ 1) :
     ∃ n, d.degree n ≤ k ∧ d.logComponent ℒ g n ≠ 0 := by
   by_contra! h0
   apply hg
-  rw [← BCHGroup.exp_log (L := d.lieTruncation ℒ k) (TauCeti.CompletedGroup.projection k g),
+  rw [← BCHGroup.exp_log (L := d.lieTruncation ℒ k) (projection k g),
     d.log_projection_eq_mkQ_sum ℒ g k, Finset.sum_eq_zero fun n hn => by
       rw [h0 n (d.mem_cutoff.mp ((d.finite_cutoff k).mem_toFinset.mp hn)).2,
         ZeroMemClass.coe_zero], map_zero]
@@ -276,8 +278,8 @@ theorem commute_of_lie_logComponent_eq_zero {g g' : d.completedBCHGroup ℒ}
   apply TauCeti.CompletedGroup.ext
   intro k
   rw [map_mul, map_mul,
-    ← BCHGroup.exp_log (L := d.lieTruncation ℒ k) (TauCeti.CompletedGroup.projection k g),
-    ← BCHGroup.exp_log (L := d.lieTruncation ℒ k) (TauCeti.CompletedGroup.projection k g'),
+    ← BCHGroup.exp_log (L := d.lieTruncation ℒ k) (projection k g),
+    ← BCHGroup.exp_log (L := d.lieTruncation ℒ k) (projection k g'),
     log_projection_eq_mkQ_sum, log_projection_eq_mkQ_sum]
   refine (BCHGroup.commute_exp_of_lie_eq_zero _ _ ?_).eq
   rw [← LieHom.map_lie, sum_lie]
@@ -291,16 +293,16 @@ theorem projection_eq_noncommProd_homogeneousFactor {g : d.completedBCHGroup ℒ
     (hg : ∀ n m, ⁅(d.logComponent ℒ g n : L), (d.logComponent ℒ g m : L)⁆ = 0)
     (k : ℕ) (s : Finset N)
     (hs : ∀ n, d.degree n ≤ k → d.logComponent ℒ g n ≠ 0 → n ∈ s) :
-    TauCeti.CompletedGroup.projection k g =
-      s.noncommProd (fun n => TauCeti.CompletedGroup.projection k (d.homogeneousFactor ℒ g n))
+    projection k g =
+      s.noncommProd (fun n => projection k (d.homogeneousFactor ℒ g n))
         (fun n _ m _ _ => (d.commute_homogeneousFactor ℒ (hg n m)).map _) := by
   classical
   let c := (d.finite_cutoff k).toFinset
-  let f n := TauCeti.CompletedGroup.projection k (d.homogeneousFactor ℒ g n)
+  let f n := projection k (d.homogeneousFactor ℒ g n)
   have hcomm (t : Finset N) : (t : Set N).Pairwise fun a b => Commute (f a) (f b) :=
     fun n _ m _ _ => (d.commute_homogeneousFactor ℒ (hg n m)).map _
-  have hc : TauCeti.CompletedGroup.projection k g = c.noncommProd f (hcomm c) := by
-    rw [← BCHGroup.exp_log (L := d.lieTruncation ℒ k) (TauCeti.CompletedGroup.projection k g),
+  have hc : projection k g = c.noncommProd f (hcomm c) := by
+    rw [← BCHGroup.exp_log (L := d.lieTruncation ℒ k) (projection k g),
       log_projection_eq_mkQ_sum, map_sum,
       BCHGroup.exp_sum_of_lie_eq_zero c _ fun n _ m _ _ => by
         beta_reduce
@@ -321,22 +323,22 @@ variable {ℒ} in
 label at every order are its logarithmic coefficients. -/
 theorem logComponent_eq_of_projection_eq_noncommProd {g : d.completedBCHGroup ℒ}
     (x : ∀ n, ℒ n) (hx : ∀ n m, ⁅(x n : L), (x m : L)⁆ = 0)
-    (h : ∀ k, TauCeti.CompletedGroup.projection k g =
+    (h : ∀ k, projection k g =
       (d.finite_cutoff k).toFinset.noncommProd
-        (fun n => TauCeti.CompletedGroup.projection k (d.expToCompletion ℒ (x n)))
+        (fun n => projection k (d.expToCompletion ℒ (x n)))
         (fun n _ m _ _ => (d.commute_expToCompletion_of_lie_eq_zero ℒ (hx n m)).map _))
     (n : N) : d.logComponent ℒ g n = x n := by
   by_cases hP : n ∈ d.monoid
   · let k := (d.degree n).toNat
     have hk : d.degree n ≤ k := Int.self_le_toNat _
-    have hg : TauCeti.CompletedGroup.projection k g = BCHGroup.exp
+    have hg : projection k g = BCHGroup.exp
         ((d.truncationIdeal ℒ k).mkQ (∑ m ∈ (d.finite_cutoff k).toFinset, (x m : L))) := by
       rw [h k, map_sum, BCHGroup.exp_sum_of_lie_eq_zero _ _ fun a _ b _ _ => by
         beta_reduce
         rw [← LieHom.map_lie, hx a b, map_zero]]
       exact Finset.noncommProd_congr rfl (fun n _ => d.projection_expToCompletion ℒ k _) _
     have hlog : (d.truncationIdeal ℒ k).mkQ (∑ m ∈ (d.finite_cutoff k).toFinset, (x m : L)) =
-        BCHGroup.log (L := d.lieTruncation ℒ k) (TauCeti.CompletedGroup.projection k g) := by
+        BCHGroup.log (L := d.lieTruncation ℒ k) (projection k g) := by
       rw [hg, BCHGroup.log_exp]
     rw [d.logComponent_eq_decompose ℒ g hk hlog, DirectSum.decompose_sum]
     apply Subtype.ext
@@ -366,13 +368,13 @@ theorem mem_degreeFiltration_succ_iff {g : d.completedBCHGroup ℒ} {a : ℕ} :
   constructor
   · intro hg n hn
     have h0 : (d.truncationIdeal ℒ a).mkQ 0 =
-        BCHGroup.log (L := d.lieTruncation ℒ a) (TauCeti.CompletedGroup.projection a g) :=
+        BCHGroup.log (L := d.lieTruncation ℒ a) (projection a g) :=
       (map_zero _).trans ((congrArg (BCHGroup.log (L := d.lieTruncation ℒ a)) hg).trans
         (BCHGroup.log_one (L := d.lieTruncation ℒ a))).symm
     rw [d.logComponent_eq_decompose ℒ g hn h0, DirectSum.decompose_zero]
     rfl
   · intro hg
-    rw [← BCHGroup.exp_log (L := d.lieTruncation ℒ a) (TauCeti.CompletedGroup.projection a g),
+    rw [← BCHGroup.exp_log (L := d.lieTruncation ℒ a) (projection a g),
       log_projection_eq_mkQ_sum]
     rw [Finset.sum_eq_zero fun n hn => by
       rw [hg n (d.mem_cutoff.mp ((d.finite_cutoff a).mem_toFinset.mp hn)).2,
@@ -389,10 +391,10 @@ theorem logComponent_mul_of_mem_degreeFiltration {g h : d.completedBCHGroup ℒ}
     d.logComponent ℒ (g * h) n = d.logComponent ℒ g n + d.logComponent ℒ h n := by
   obtain ⟨x, hx⟩ := (d.truncationIdeal ℒ (a + b + 1)).surjective_mkQ
     (BCHGroup.log (L := d.lieTruncation ℒ (a + b + 1))
-      (TauCeti.CompletedGroup.projection (a + b + 1) g))
+      (projection (a + b + 1) g))
   obtain ⟨y, hy⟩ := (d.truncationIdeal ℒ (a + b + 1)).surjective_mkQ
     (BCHGroup.log (L := d.lieTruncation ℒ (a + b + 1))
-      (TauCeti.CompletedGroup.projection (a + b + 1) h))
+      (projection (a + b + 1) h))
   have hxa := (d.mem_degreeIdeal_iff_of_mkQ_eq_log_projection ℒ
     (by omega : a ≤ a + b + 1) g hx).mpr hg
   have hya := (d.mem_degreeIdeal_iff_of_mkQ_eq_log_projection ℒ
@@ -402,17 +404,17 @@ theorem logComponent_mul_of_mem_degreeFiltration {g h : d.completedBCHGroup ℒ}
     rw [← LieHom.map_lie, LieIdeal.mkQ_eq_zero]
     exact d.lie_truncationIdeal_le ℒ a b (LieSubmodule.lie_mem_lie hxa hya)
   have hexp : BCHGroup.exp ((d.truncationIdeal ℒ (a + b + 1)).mkQ (x + y)) =
-      TauCeti.CompletedGroup.projection (a + b + 1) g * TauCeti.CompletedGroup.projection (a + b + 1) h := by
+      projection (a + b + 1) g * projection (a + b + 1) h := by
     rw [map_add, BCHGroup.exp_add_of_lie_eq_zero _ _ hlie, hx, hy,
       BCHGroup.exp_log (L := d.lieTruncation ℒ (a + b + 1))
-        (TauCeti.CompletedGroup.projection (a + b + 1) g),
+        (projection (a + b + 1) g),
       BCHGroup.exp_log (L := d.lieTruncation ℒ (a + b + 1))
-        (TauCeti.CompletedGroup.projection (a + b + 1) h)]
+        (projection (a + b + 1) h)]
     -- The products in the group tower and in the BCH group are the same operation.
     rfl
   have hxy : (d.truncationIdeal ℒ (a + b + 1)).mkQ (x + y) =
       BCHGroup.log (L := d.lieTruncation ℒ (a + b + 1))
-        (TauCeti.CompletedGroup.projection (a + b + 1) (g * h)) := by
+        (projection (a + b + 1) (g * h)) := by
     rw [map_mul]
     exact (BCHGroup.log_exp _).symm.trans (congrArg BCHGroup.log hexp)
   rw [d.logComponent_eq_decompose ℒ _ hn hxy, d.logComponent_eq_decompose ℒ g hn hx,

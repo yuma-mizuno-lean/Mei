@@ -43,6 +43,8 @@ and these regroup into unit factors by the integrality of the exponents
 
 public section
 
+open TauCeti.CompletedGroup (projection)
+
 noncomputable section
 
 namespace Mei.StandardPlane
@@ -92,14 +94,14 @@ private theorem exists_isChain_rebase (k A B : ℕ) (x y : PlaneDegree w) (hk : 
       x'.deg + y'.deg ≤ k →
       ∃ M : List (PlaneDegree (Weight.rebase x y)),
         (∀ m ∈ M, x'.deg < m.deg ∧ y'.deg < m.deg ∧ ¬ m.Boundary) ∧
-        TauCeti.CompletedGroup.projection k (unitFactor x' * unitFactor y') =
-          TauCeti.CompletedGroup.projection k (unitFactor y' * (M.map unitFactor).prod * unitFactor x')) :
+        projection k (unitFactor x' * unitFactor y') =
+          projection k (unitFactor y' * (M.map unitFactor).prod * unitFactor x')) :
     ∃ I : List (PlaneDegree (Weight.rebase x y)), (∀ i ∈ I, ¬ i.Boundary) ∧
       (I.IsChain fun a b => ¬ PlaneDegree.Inverted a b) ∧
-      TauCeti.CompletedGroup.projection k
+      projection k
           ((List.replicate A (PlaneDegree.e₂ (Weight.rebase x y)) ++
             List.replicate B (PlaneDegree.e₁ (Weight.rebase x y))).map unitFactor).prod =
-        TauCeti.CompletedGroup.projection k
+        projection k
           ((List.replicate B (PlaneDegree.e₁ (Weight.rebase x y)) ++ I ++
             List.replicate A (PlaneDegree.e₂ (Weight.rebase x y))).map unitFactor).prod := by
   classical
@@ -144,14 +146,14 @@ private theorem projection_mul_eq_of_rebase (k A B : ℕ) (x y : PlaneDegree w)
     (hAx : (A : ℚ) * (y.det x : ℚ)⁻¹ = rayIndex x.vec)
     (hBy : (B : ℚ) * (y.det x : ℚ)⁻¹ = rayIndex y.vec)
     (I : List (PlaneDegree (Weight.rebase x y)))
-    (h : TauCeti.CompletedGroup.projection k
+    (h : projection k
         ((List.replicate A (PlaneDegree.e₂ (Weight.rebase x y)) ++
           List.replicate B (PlaneDegree.e₁ (Weight.rebase x y))).map unitFactor).prod =
-      TauCeti.CompletedGroup.projection k
+      projection k
         ((List.replicate B (PlaneDegree.e₁ (Weight.rebase x y)) ++ I ++
           List.replicate A (PlaneDegree.e₂ (Weight.rebase x y))).map unitFactor).prod) :
-    TauCeti.CompletedGroup.projection k (unitFactor x * unitFactor y) =
-      TauCeti.CompletedGroup.projection k (unitFactor y * ((I.map fun m =>
+    projection k (unitFactor x * unitFactor y) =
+      projection k (unitFactor y * ((I.map fun m =>
         dilogPow (rebasePos x y m) ((y.det x : ℚ)⁻¹ * rayIndex m.vec)).prod *
           unitFactor x)) := by
   have hT := projection_prod_rebasePos_eq x y hD k h
@@ -201,13 +203,13 @@ private theorem exists_units_prod_eq_rebase (k : ℕ) (x y : PlaneDegree w)
     (hdet : 0 < y.det x)
     (I : List (PlaneDegree (Weight.rebase x y)))
     (hchain : I.IsChain fun a b => ¬ PlaneDegree.Inverted a b)
-    (hmid : TauCeti.CompletedGroup.projection k
+    (hmid : projection k
       ((unitFactor y)⁻¹ * unitFactor x * unitFactor y * (unitFactor x)⁻¹) =
-      TauCeti.CompletedGroup.projection k (I.map fun m =>
+      projection k (I.map fun m =>
         dilogPow (rebasePos x y m) ((y.det x : ℚ)⁻¹ * rayIndex m.vec)).prod) :
     ∃ M : List (PlaneDegree w), (∀ m ∈ M, ∃ i ∈ I, rebasePos x y i = m) ∧
-      TauCeti.CompletedGroup.projection k (M.map unitFactor).prod =
-        TauCeti.CompletedGroup.projection k (I.map fun m =>
+      projection k (M.map unitFactor).prod =
+        projection k (I.map fun m =>
           dilogPow (rebasePos x y m) ((y.det x : ℚ)⁻¹ * rayIndex m.vec)).prod := by
   classical
   have hDpos : 0 < (y.det x : ℚ) := by exact_mod_cast hdet
@@ -257,11 +259,11 @@ private theorem exists_exchange_of_two_le_det (k : ℕ) (x y : PlaneDegree w)
       x'.deg + y'.deg ≤ k →
       ∃ M : List (PlaneDegree (Weight.rebase x y)),
         (∀ m ∈ M, x'.deg < m.deg ∧ y'.deg < m.deg ∧ ¬ m.Boundary) ∧
-        TauCeti.CompletedGroup.projection k (unitFactor x' * unitFactor y') =
-          TauCeti.CompletedGroup.projection k (unitFactor y' * (M.map unitFactor).prod * unitFactor x')) :
+        projection k (unitFactor x' * unitFactor y') =
+          projection k (unitFactor y' * (M.map unitFactor).prod * unitFactor x')) :
     ∃ M : List (PlaneDegree w), (∀ m ∈ M, x.deg < m.deg ∧ y.deg < m.deg ∧ ¬ m.Boundary) ∧
-      TauCeti.CompletedGroup.projection k (unitFactor x * unitFactor y) =
-        TauCeti.CompletedGroup.projection k (unitFactor y * (M.map unitFactor).prod * unitFactor x) := by
+      projection k (unitFactor x * unitFactor y) =
+        projection k (unitFactor y * (M.map unitFactor).prod * unitFactor x) := by
   have hdet0 : 0 < y.det x := by omega
   have hDpos : 0 < (y.det x : ℚ) := by exact_mod_cast hdet0
   have hD : y.det x ≠ 0 := hdet0.ne'
@@ -273,9 +275,9 @@ private theorem exists_exchange_of_two_le_det (k : ℕ) (x y : PlaneDegree w)
     exact PlaneDegree.form_det y x)
   obtain ⟨I, hI, hchain, hprod⟩ := exists_isChain_rebase k A B x y hk IH
   have hT := projection_mul_eq_of_rebase k A B x y hD hAx hBy I hprod
-  have hmid : TauCeti.CompletedGroup.projection k
+  have hmid : projection k
       ((unitFactor y)⁻¹ * unitFactor x * unitFactor y * (unitFactor x)⁻¹) =
-      TauCeti.CompletedGroup.projection k (I.map fun m =>
+      projection k (I.map fun m =>
         dilogPow (rebasePos x y m) ((y.det x : ℚ)⁻¹ * rayIndex m.vec)).prod := by
     simp only [map_mul, map_inv]
     exact inv_mul_mul_mul_inv_eq_of_mul_eq (by simpa only [map_mul] using hT)
@@ -321,13 +323,13 @@ quadrant and of weighted degree larger than those of `x` and `y`. -/
 theorem exists_exchange (k : ℕ) {w : Weight} (x y : PlaneDegree w)
     (hxy : PlaneDegree.Inverted x y) (hk : x.deg + y.deg ≤ k) :
     ∃ M : List (PlaneDegree w), (∀ m ∈ M, x.deg < m.deg ∧ y.deg < m.deg ∧ ¬ m.Boundary) ∧
-      TauCeti.CompletedGroup.projection k (unitFactor x * unitFactor y) =
-        TauCeti.CompletedGroup.projection k (unitFactor y * (M.map unitFactor).prod * unitFactor x) := by
+      projection k (unitFactor x * unitFactor y) =
+        projection k (unitFactor y * (M.map unitFactor).prod * unitFactor x) := by
   suffices key : ∀ n : ℕ, ∀ (w : Weight) (x y : PlaneDegree w), k + 1 - (w.fst + w.snd) = n →
       PlaneDegree.Inverted x y → x.deg + y.deg ≤ k → ∃ M : List (PlaneDegree w),
         (∀ m ∈ M, x.deg < m.deg ∧ y.deg < m.deg ∧ ¬ m.Boundary) ∧
-          TauCeti.CompletedGroup.projection k (unitFactor x * unitFactor y) =
-            TauCeti.CompletedGroup.projection k (unitFactor y * (M.map unitFactor).prod * unitFactor x) from
+          projection k (unitFactor x * unitFactor y) =
+            projection k (unitFactor y * (M.map unitFactor).prod * unitFactor x) from
     key _ w x y rfl hxy hk
   intro n
   induction n using Nat.strong_induction_on with

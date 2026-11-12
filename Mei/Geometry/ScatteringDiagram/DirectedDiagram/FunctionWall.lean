@@ -212,7 +212,7 @@ theorem map_groupLabel (g : κ) {k l : ℕ} (hkl : k ≤ l) :
 of its walls, whose order-`k` projection is the group label. -/
 def label (g : κ) : d.completedBCHGroup ℒ :=
   ⟨fun k => G.groupLabel g k,
-    (mem_completedGroup_iff _ _).mpr fun _ _ hkl => G.map_groupLabel g hkl⟩
+    (TauCeti.mem_completedGroup_iff _ _).mpr fun _ _ hkl => G.map_groupLabel g hkl⟩
 
 /-- The finite-order projections of the completed group label are the group labels. -/
 @[simp]

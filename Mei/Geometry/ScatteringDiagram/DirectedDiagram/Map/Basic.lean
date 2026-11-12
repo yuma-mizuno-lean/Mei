@@ -26,6 +26,8 @@ action or injective coefficient map is needed.
 
 public section
 
+open TauCeti.CompletedGroup (projection)
+
 open TauCeti (WallComplement AdmissiblePLPath GradedLieHom)
 
 open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading)
@@ -108,12 +110,12 @@ theorem map_levelPathProduct_eq_self (k : ℕ)
     {x y : WallComplement (fun j : D.active k => (D.wall j).support)}
     (p : AdmissiblePLPath x y) (hp : ∀ z ∈ p.vertices, z.val ∈ U)
     (hF : ∀ j : D.active k, (U ∩ (D.wall j).support).Nonempty →
-      F (TauCeti.CompletedGroup.projection k (D.wall j).label) =
-        TauCeti.CompletedGroup.projection k (D.wall j).label) :
+      F (projection k (D.wall j).label) =
+        projection k (D.wall j).label) :
     F (D.levelPathProduct k p) = D.levelPathProduct k p := by
   let ν := fun j : D.active k => h.realCharacter (D.wall j).normal
   -- Read the tower projections as elements of the concrete finite BCH group.
-  let c : D.active k → d.truncatedGroup ℒ k := fun j => TauCeti.CompletedGroup.projection k (D.wall j).label
+  let c : D.active k → d.truncatedGroup ℒ k := fun j => projection k (D.wall j).label
   let l := (p.signedCrossingEvents ν).reverse.flatMap Finset.toList
   have hl : l.map (fun a => F (c a.1) ^ a.2) = l.map (fun a => c a.1 ^ a.2) := by
     apply List.map_congr_left

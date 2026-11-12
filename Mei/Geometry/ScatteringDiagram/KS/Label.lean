@@ -32,6 +32,8 @@ This is the local label recovery in Tom Bridgeland,
 
 public section
 
+open TauCeti.CompletedGroup (projection)
+
 open TauCeti (singularSupport)
 
 open TauCeti (PositiveDegrees IsPositiveGrading)
@@ -60,7 +62,7 @@ theorem label_eq_signFactorizationEquiv_symm_zero (hD : D.Consistent) (k : ℕ)
     (hθ : θ ∉ singularSupport (fun Q : (C k).walls => (Q : Set V))) :
     (D.diagram k).label P =
       ((signFactorizationEquiv ℒ (s.evaluation θ) d k).symm
-        (TauCeti.CompletedGroup.projection k (D.transport hD D.degreePoint D.negDegreePoint)) .zero :
+        (projection k (D.transport hD D.degreePoint D.negDegreePoint)) .zero :
           d.truncatedGroup ℒ k) := by
   have hs := s.eventually_sign_evaluation_add_smul_degreePoint d k θ
   have hn : Tendsto (fun a : ℝ => -a) (𝓝 0) (𝓝 0) := by

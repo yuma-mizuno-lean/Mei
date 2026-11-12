@@ -26,6 +26,8 @@ original Lie algebra is needed.
 
 public section
 
+open TauCeti.CompletedGroup (projection)
+
 open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading GradedLieHom)
 
 noncomputable section
@@ -91,29 +93,29 @@ def completedBCHRestrictScalarsEquiv :
 @[simp]
 theorem projection_completedBCHRestrictScalarsEquiv (k : ℕ)
     (x : d.completedBCHGroup (fun n => (ℒ n).restrictScalars R)) :
-    TauCeti.CompletedGroup.projection k (d.completedBCHRestrictScalarsEquiv (R := R) ℒ x) =
+    projection k (d.completedBCHRestrictScalarsEquiv (R := R) ℒ x) =
       (d.lieTruncationRestrictScalarsEquiv (R := R) ℒ k).toLieHom.bchGroupMap
-        (TauCeti.CompletedGroup.projection k x) := by
+        (projection k x) := by
   rw [completedBCHRestrictScalarsEquiv, TauCeti.CompletedGroup.projection_congr]
   exact DFunLike.congr_fun (d.groupTowerRestrictScalarsIso_hom_app_hom (R := R) ℒ (op k))
-    (TauCeti.CompletedGroup.projection k x)
+    (projection k x)
 
 /-- The inverse comparison also acts at the same finite cutoff. -/
 @[simp]
 theorem projection_completedBCHRestrictScalarsEquiv_symm (k : ℕ)
     (x : d.completedBCHGroup ℒ) :
-    TauCeti.CompletedGroup.projection k ((d.completedBCHRestrictScalarsEquiv (R := R) ℒ).symm x) =
+    projection k ((d.completedBCHRestrictScalarsEquiv (R := R) ℒ).symm x) =
       BCHGroup.exp ((d.lieTruncationRestrictScalarsEquiv (R := R) ℒ k).symm
-        (BCHGroup.log (TauCeti.CompletedGroup.projection k x))) := by
+        (BCHGroup.log (projection k x))) := by
   rw [completedBCHRestrictScalarsEquiv, TauCeti.CompletedGroup.projection_congr_symm]
-  conv_lhs => arg 2; rw [← BCHGroup.exp_log (TauCeti.CompletedGroup.projection k x)]
+  conv_lhs => arg 2; rw [← BCHGroup.exp_log (projection k x)]
   exact d.groupTowerRestrictScalarsIso_inv_app_exp (R := R) ℒ _ _
 
 /-- The comparison preserves and reflects triviality at every finite cutoff. -/
 theorem projection_completedBCHRestrictScalarsEquiv_eq_one_iff (k : ℕ)
     (x : d.completedBCHGroup (fun n => (ℒ n).restrictScalars R)) :
-    TauCeti.CompletedGroup.projection k (d.completedBCHRestrictScalarsEquiv (R := R) ℒ x) = 1 ↔
-      TauCeti.CompletedGroup.projection k x = 1 := by
+    projection k (d.completedBCHRestrictScalarsEquiv (R := R) ℒ x) = 1 ↔
+      projection k x = 1 := by
   rw [projection_completedBCHRestrictScalarsEquiv, ← LieEquiv.coe_bchGroupEquiv]
   exact (d.lieTruncationRestrictScalarsEquiv (R := R) ℒ k).bchGroupEquiv.injective.eq_iff'
     (map_one _)
@@ -123,8 +125,8 @@ comparison of `x` back to the projection of `x`. -/
 theorem bchGroupEquiv_projection_completedBCHRestrictScalarsEquiv_symm (k : ℕ)
     (x : d.completedBCHGroup ℒ) :
     (d.lieTruncationRestrictScalarsEquiv (R := R) ℒ k).bchGroupEquiv
-        (TauCeti.CompletedGroup.projection k ((d.completedBCHRestrictScalarsEquiv (R := R) ℒ).symm x)) =
-      TauCeti.CompletedGroup.projection k x := by
+        (projection k ((d.completedBCHRestrictScalarsEquiv (R := R) ℒ).symm x)) =
+      projection k x := by
   have hx := d.projection_completedBCHRestrictScalarsEquiv (R := R) ℒ k
     ((d.completedBCHRestrictScalarsEquiv (R := R) ℒ).symm x)
   rw [MulEquiv.apply_symm_apply] at hx
@@ -201,6 +203,6 @@ theorem completedMap_restrictScalars (f : GradedLieHom T ℒ ℳ) :
     PositiveDegrees.projection_completedBCHRestrictScalarsEquiv, projection_completedMap]
   have ht := congrArg (fun h => h.bchGroupMap) (f.lieTruncatedMap_restrictScalars (R := R) k le_rfl)
   simp only [LieHom.bchGroupMap_comp, LieHom.bchGroupMap_restrictScalars] at ht
-  exact DFunLike.congr_fun ht (TauCeti.CompletedGroup.projection (T.modulus k) x)
+  exact DFunLike.congr_fun ht (projection (T.modulus k) x)
 
 end TauCeti.GradedLieHom

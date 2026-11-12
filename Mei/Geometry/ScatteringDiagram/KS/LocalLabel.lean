@@ -134,7 +134,7 @@ theorem truncation_localLabel {k l : ℕ} (hkl : k ≤ l) :
 coorientation is the one positive on the degree point. -/
 def germLabel : d.completedBCHGroup ℒ :=
   ⟨fun k => (D.diagram k).localLabel θ (hθ k),
-    (mem_completedGroup_iff _ _).mpr (fun _ _ hkl => D.truncation_localLabel θ hθ hkl)⟩
+    (TauCeti.mem_completedGroup_iff _ _).mpr (fun _ _ hkl => D.truncation_localLabel θ hθ hkl)⟩
 
 /-- Each projection is the actual local label of the finite complex. -/
 @[simp]

@@ -51,6 +51,8 @@ A worked instance, the pentagon identity read as the ordered factorization of `�
 
 public section
 
+open TauCeti.CompletedGroup (projection)
+
 open TauCeti (PositiveDegrees)
 
 noncomputable section
@@ -99,8 +101,8 @@ theorem orderedNormalizedProd_def (hδ : Function.Injective δ) (s : ι → ℕ)
 with `deg (δ i) ≤ k`. -/
 theorem projection_orderedNormalizedProd (hδ : Function.Injective δ) (s : ι → ℕ) (k : ℕ)
     (S : Finset ι) (hS : ∀ i, d.degree (δ i).1 ≤ k → i ∈ S) :
-    TauCeti.CompletedGroup.projection k (orderedNormalizedProd hδ s) =
-      TauCeti.CompletedGroup.projection k (S.sort.map fun i => D.unitFactor d (δ i) ^ s i).prod := by
+    projection k (orderedNormalizedProd hδ s) =
+      projection k (S.sort.map fun i => D.unitFactor d (δ i) ^ s i).prod := by
   rw [orderedNormalizedProd_def,
     TauCeti.CompletedGroup.projection_orderedProd_of_support _ _ k S fun i hi => hS i ?_,
     map_list_prod, List.map_map, Function.comp_def]
@@ -122,8 +124,8 @@ theorem exists_pairwise_projection_prod_unitFactor_eq
     (l : List (D.NonzeroDegree d × ℕ))
     (hl : ∀ p ∈ l, (p.1 : D.unfrozen) ∈ AddSubmonoid.closure {x.1, y.1}) (k : ℕ) :
     ∃ L : List ι, L.Pairwise (fun i j => 0 ≤ βℚ (δ i).1 (δ j).1) ∧
-      TauCeti.CompletedGroup.projection k (L.map fun i => D.unitFactor d (δ i)).prod =
-        TauCeti.CompletedGroup.projection k
+      projection k (L.map fun i => D.unitFactor d (δ i)).prod =
+        projection k
           (l.map fun p => D.dilogPow d p.1 (p.2 * κ (p.1 : N))).prod := by
   obtain ⟨l', hmem, hchain, -, hprod⟩ := D.exists_isChain_projection_prod_pow_eq d x y k l hl
   obtain ⟨i₀, -⟩ := hrange x (AddSubmonoid.subset_closure (Set.mem_insert _ _))
@@ -154,9 +156,9 @@ theorem existsUnique_orderedNormalizedProd_eq (hδ : Function.Injective δ)
     ∃! s : ι → ℕ, orderedNormalizedProd hδ s =
       (l.map fun p => D.dilogPow d p.1 (p.2 * κ (p.1 : N))).prod := by
   have hfact (k : ℕ) : ∃ L : List ι, L.Pairwise (fun i j => 0 ≤ βℚ (δ i).1 (δ j).1) ∧
-      TauCeti.CompletedGroup.projection k (L.map fun i => SkewLieAlgebra.rayExp βℚ hβℚ (δ i).2.1
+      projection k (L.map fun i => SkewLieAlgebra.rayExp βℚ hβℚ (δ i).2.1
           (δ i).2.2 (κ ((δ i).1 : N) • negDilogNeg ℚ)).prod =
-        TauCeti.CompletedGroup.projection k
+        projection k
           (l.map fun p => D.dilogPow d p.1 (p.2 * κ (p.1 : N))).prod := by
     simpa only [unitFactor_def, dilogPow_def] using
       exists_pairwise_projection_prod_unitFactor_eq x y hrange l hl k

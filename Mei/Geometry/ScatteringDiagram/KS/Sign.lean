@@ -54,7 +54,8 @@ theorem sign_eq_of_mem_intrinsicInterior_arrangementComplex
     SignType.sign (θ (i n)) = SignType.sign (φ (i n)) := by
   obtain ⟨σ, _, rfl⟩ := (d.mem_arrangementComplex_cells h k P).mp hP
   rw [intrinsicInterior_closure_signCell] at hθ hφ
-  exact (TauCeti.Convex.mem_signCell.mp hθ ⟨n, hn⟩).trans (TauCeti.Convex.mem_signCell.mp hφ ⟨n, hn⟩).symm
+  exact (TauCeti.Convex.mem_signCell.mp hθ ⟨n, hn⟩).trans
+    (TauCeti.Convex.mem_signCell.mp hφ ⟨n, hn⟩).symm
 
 /-- A retained degree annihilates a relative interior point exactly when it
 annihilates the entire arrangement cell. -/

@@ -113,7 +113,7 @@ theorem truncation_pathProduct (p : Quiver.Path x y) {k l : ℕ} (hkl : k ≤ l)
 /-- The completed product of the finite active-wall transports along one all-order path. -/
 def pathProduct (p : Quiver.Path x y) : d.completedBCHGroup ℒ :=
   ⟨fun k => D.levelPathProduct k ((CommonWallComplement.projectionPrefunctor k).mapPath p),
-    (mem_completedGroup_iff _ _).mpr (fun _ _ hkl => D.truncation_pathProduct p hkl)⟩
+    (TauCeti.mem_completedGroup_iff _ _).mpr (fun _ _ hkl => D.truncation_pathProduct p hkl)⟩
 
 /-- Projection of the completed product recovers its actual finite geometric transport. -/
 @[simp]

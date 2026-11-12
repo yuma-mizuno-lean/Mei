@@ -199,6 +199,7 @@ theorem completedLieToU_completedBCHGroupLikeEquiv_symm (u : G) :
   have hlog := congrArg (fun v : G => (F).completedLog ⟨(v.val : (F).completion),
     ((mem_completedGroupLikeSubgroup ℒ d.degree hneg _).mp v.property).sub_one_mem
       ℒ d.degree hneg hpos⟩) he
-  simpa only [coe_completedBCHToGroupLike, TauCeti.AlgFiltration.completedLog_completedExp] using hlog
+  simpa only [coe_completedBCHToGroupLike, TauCeti.AlgFiltration.completedLog_completedExp]
+    using hlog
 
 end Mei.UniversalEnvelopingAlgebra

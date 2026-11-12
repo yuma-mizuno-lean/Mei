@@ -23,6 +23,8 @@ Unit factors act integrally, and so do their inverses and products.
 
 public section
 
+open TauCeti.CompletedGroup (projection)
+
 noncomputable section
 
 namespace Mei.StandardPlane
@@ -41,8 +43,8 @@ instance factPrincipal (w : Weight) :
 /-- Labels of degree above the cutoff `k` project to the identity at order `k`. -/
 theorem projection_prod_dilogPow_filter {w : Weight} {ι : Type*} (l : List ι)
     (δ : ι → PlaneDegree w) (σ : ι → ℚ) (k : ℕ) :
-    TauCeti.CompletedGroup.projection k (l.map fun i => dilogPow (δ i) (σ i)).prod =
-      TauCeti.CompletedGroup.projection k
+    projection k (l.map fun i => dilogPow (δ i) (σ i)).prod =
+      projection k
         ((l.filter fun i => (δ i).deg ≤ k).map fun i => dilogPow (δ i) (σ i)).prod := by
   rw [map_list_prod, map_list_prod, List.map_map, List.map_map]
   refine (List.prod_map_filter_of_ne l fun i _ hi => ?_).symm
@@ -92,10 +94,10 @@ theorem exists_units_prod_eq_of_isChain {ι : Type*} (I : List ι) (δ : ι → 
     (hxy : ∀ i ∈ I, (δ i).vec ∈ AddSubmonoid.closure {x.vec, y.vec})
     (hI : I.IsChain fun i j => 0 ≤ E.coefficientForm ℚ (δ i).vec (δ j).vec)
     {g : Label w} (hg : E.IsIntegralLabel (plane w) g) {k : ℕ}
-    (hk : TauCeti.CompletedGroup.projection k g =
-      TauCeti.CompletedGroup.projection k (I.map fun i => dilogPow (δ i) (c i)).prod) :
+    (hk : projection k g =
+      projection k (I.map fun i => dilogPow (δ i) (c i)).prod) :
     ∃ M : List (PlaneDegree w), (∀ m ∈ M, ∃ i ∈ I, δ i = m) ∧
-      TauCeti.CompletedGroup.projection k (M.map unitFactor).prod = TauCeti.CompletedGroup.projection k g := by
+      projection k (M.map unitFactor).prod = projection k g := by
   classical
   obtain ⟨l', hl'I, -, -, -, hprod, hint⟩ :=
     E.exists_nodup_prod_eq_and_intCast_mul_rayIndex_of_isChain (plane w) I (fun i => (δ i).vec)

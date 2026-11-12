@@ -38,6 +38,8 @@ consistent diagram with a reconstruction.
 
 public section
 
+open TauCeti.CompletedGroup (projection)
+
 open TauCeti (signSubalgebra mem_signSubalgebra_iff)
 
 open TauCeti (WallComplement AdmissiblePLPath exists_mem_open_two_transverse_lineMaps)
@@ -180,10 +182,10 @@ theorem pathProduct_eq_signFactorizationEquiv_symm_neg_mul_inv (hD : D.Consisten
     (p : AdmissiblePLPath x y) :
     (D.diagram k).toFiniteWallDiagram.pathProduct p =
       ((signFactorizationEquiv ℒ (s.evaluation y.val) d k).symm
-          (TauCeti.CompletedGroup.projection k (D.transport hD D.degreePoint D.negDegreePoint)) .neg :
+          (projection k (D.transport hD D.degreePoint D.negDegreePoint)) .neg :
         d.truncatedGroup ℒ k) *
       ((signFactorizationEquiv ℒ (s.evaluation x.val) d k).symm
-          (TauCeti.CompletedGroup.projection k (D.transport hD D.degreePoint D.negDegreePoint)) .neg :
+          (projection k (D.transport hD D.degreePoint D.negDegreePoint)) .neg :
         d.truncatedGroup ℒ k)⁻¹ := by
   let := h.finiteDimensional
   let F := (D.diagram k).toFiniteWallDiagram

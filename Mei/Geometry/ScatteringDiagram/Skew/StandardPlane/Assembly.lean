@@ -32,6 +32,8 @@ defined.
 
 public section
 
+open TauCeti.CompletedGroup (projection)
+
 noncomputable section
 
 namespace Mei.StandardPlane
@@ -64,9 +66,9 @@ theorem existsUnique_orderedProd_dilogPow (l : List (PlaneDegree w × ℕ)) :
   -- At every order, the ordered unit factors of the finite-order ordering form a sorted list.
   have hfact (k : ℕ) : ∃ l' : List (PlaneDegree w),
       l'.Pairwise (fun a b => 0 ≤ β a.vec b.vec) ∧
-      TauCeti.CompletedGroup.projection k (l'.map fun m => SkewLieAlgebra.rayExp β hβ m.mem m.ne_zero
+      projection k (l'.map fun m => SkewLieAlgebra.rayExp β hβ m.mem m.ne_zero
           (rayIndex m.vec • PowerSeries.negDilogNeg ℚ)).prod =
-        TauCeti.CompletedGroup.projection k
+        projection k
           (l.map fun p => dilogPow p.1 (p.2 * rayIndex p.1.vec)).prod := by
     obtain ⟨l', hchain, -, hprod⟩ := exists_isChain_projection_prod_pow_eq k l
     refine ⟨l', LinearMap.IsAlt.pairwise_of_isChain_of_mem_closure_pair hβ PlaneDegree.vec

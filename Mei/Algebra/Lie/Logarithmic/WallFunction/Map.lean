@@ -286,7 +286,8 @@ theorem completedMap_completedBCHExp_completedTropicalTangentField_completedLog 
   have he : (⟨completedTropicalTangentMap T hT f₀,
       completedTropicalTangentMap_sub_one_mem T hT f₀.property⟩ :
         {u : (G').completion // u - 1 ∈ (G').completionIdeal 1}) =
-      ⟨(f₁ : (G').completion) ^ r, ((G').completionIdeal 1).pow_sub_one_mem f₁.property r⟩ := Subtype.ext hf₀
+      ⟨(f₁ : (G').completion) ^ r, ((G').completionIdeal 1).pow_sub_one_mem f₁.property r⟩ :=
+    Subtype.ext hf₀
   rw [he, AlgFiltration.completedLog_pow, ← Nat.cast_smul_eq_nsmul R, smul_smul, mul_comm, hr,
     one_smul]
 

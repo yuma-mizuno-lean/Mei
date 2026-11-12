@@ -152,7 +152,7 @@ private def wallGroupDiagram : ℕᵒᵖ ⥤ GrpCat where
       (F.antitone (Nat.add_le_add_right (leOfHom h'.unop) 1)) _).symm
 
 private def wallLabel : completedGroup (F.wallGroupDiagram 𝒜 h𝒜) :=
-  ⟨f, (mem_completedGroup_iff _ _).mpr fun _ _ h => Units.ext (Subtype.ext (hf h))⟩
+  ⟨f, (TauCeti.mem_completedGroup_iff _ _).mpr fun _ _ h => Units.ext (Subtype.ext (hf h))⟩
 
 private def wallRepresentation (k : ℕ) :
     (F.wallGroupDiagram 𝒜 h𝒜).obj (op k) →*

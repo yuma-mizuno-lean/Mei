@@ -26,6 +26,8 @@ completeness or surjectivity assumption is required.
 
 public section
 
+open TauCeti.CompletedGroup (projection)
+
 open TauCeti (signSubalgebra)
 
 open TauCeti (PositiveDegrees IsPositiveGrading)
@@ -46,41 +48,41 @@ variable {N R L A : Type*} [AddCommMonoid N] [CommRing R] [Algebra ℚ R]
 every finite cutoff. -/
 def completedSignSubgroup (s : SignType) : Subgroup (d.completedBCHGroup ℒ) :=
   ⨅ k : ℕ, (signSubalgebra (d.lieTruncationGrading ℒ k) θ s).bchSubgroup.comap
-    (TauCeti.CompletedGroup.projection k)
+    (projection k)
 
 /-- Membership in a completed sign subgroup is tested at every finite cutoff. -/
 @[simp]
 theorem mem_completedSignSubgroup (s : SignType) (g : d.completedBCHGroup ℒ) :
     g ∈ completedSignSubgroup ℒ θ d s ↔
-      ∀ k, TauCeti.CompletedGroup.projection k g ∈
+      ∀ k, projection k g ∈
         (signSubalgebra (d.lieTruncationGrading ℒ k) θ s).bchSubgroup := by
   simp only [completedSignSubgroup, Subgroup.mem_iInf]
   exact forall_congr' fun k => Iff.rfl
 
 private def completedSignFactor (g : d.completedBCHGroup ℒ) (s : SignType) :
     completedSignSubgroup ℒ θ d s :=
-  ⟨⟨fun k => ((signFactorizationEquiv ℒ θ d k).symm (TauCeti.CompletedGroup.projection k g) s :
-      d.truncatedGroup ℒ k), (mem_completedGroup_iff _ _).mpr (by
+  ⟨⟨fun k => ((signFactorizationEquiv ℒ θ d k).symm (projection k g) s :
+      d.truncatedGroup ℒ k), (TauCeti.mem_completedGroup_iff _ _).mpr (by
         intro k l h
         -- The categorical tower arrow has the concrete quotient BCH map as its homomorphism.
         change (d.lieTruncationMap ℒ h).bchGroupMap
           ((signFactorizationEquiv ℒ θ d l).symm
-            (TauCeti.CompletedGroup.projection l g) s : d.truncatedGroup ℒ l) =
+            (projection l g) s : d.truncatedGroup ℒ l) =
           ((signFactorizationEquiv ℒ θ d k).symm
-            (TauCeti.CompletedGroup.projection k g) s : d.truncatedGroup ℒ k)
+            (projection k g) s : d.truncatedGroup ℒ k)
         exact (truncationMap_signFactorizationEquiv_symm ℒ θ d h
-          (TauCeti.CompletedGroup.projection l g) s).trans (congrArg (fun a =>
+          (projection l g) s).trans (congrArg (fun a =>
           ((signFactorizationEquiv ℒ θ d k).symm a s : d.truncatedGroup ℒ k))
           (TauCeti.CompletedGroup.map_projection k l h g)))⟩,
     (mem_completedSignSubgroup ℒ θ d s _).mpr (fun k => by
       rw [TauCeti.CompletedGroup.projection_apply]
       exact ((signFactorizationEquiv ℒ θ d k).symm
-        (TauCeti.CompletedGroup.projection k g) s).property)⟩
+        (projection k g) s).property)⟩
 
 private theorem projection_completedSignFactor (g : d.completedBCHGroup ℒ)
     (s : SignType) (k : ℕ) :
-    TauCeti.CompletedGroup.projection k (completedSignFactor ℒ θ d g s : d.completedBCHGroup ℒ) =
-      ((signFactorizationEquiv ℒ θ d k).symm (TauCeti.CompletedGroup.projection k g) s :
+    projection k (completedSignFactor ℒ θ d g s : d.completedBCHGroup ℒ) =
+      ((signFactorizationEquiv ℒ θ d k).symm (projection k g) s :
         d.truncatedGroup ℒ k) := by
   rw [TauCeti.CompletedGroup.projection_apply, completedSignFactor]
 
@@ -97,10 +99,10 @@ def completedSignFactorizationEquiv :
     intro k
     rw [projection_completedSignFactor]
     let b : ∀ s, (signSubalgebra (d.lieTruncationGrading ℒ k) θ s).bchSubgroup := fun s =>
-      ⟨TauCeti.CompletedGroup.projection k (a s : d.completedBCHGroup ℒ),
+      ⟨projection k (a s : d.completedBCHGroup ℒ),
         (mem_completedSignSubgroup ℒ θ d s _).mp (a s).property k⟩
     have hb : (signFactorizationEquiv ℒ θ d k).symm
-        (TauCeti.CompletedGroup.projection k ((a .pos : d.completedBCHGroup ℒ) *
+        (projection k ((a .pos : d.completedBCHGroup ℒ) *
           (a .zero : d.completedBCHGroup ℒ) * (a .neg : d.completedBCHGroup ℒ))) = b := by
       apply (signFactorizationEquiv ℒ θ d k).symm_apply_eq.mpr
       simp only [signFactorizationEquiv_apply, map_mul, b]
@@ -110,7 +112,7 @@ def completedSignFactorizationEquiv :
     apply TauCeti.CompletedGroup.ext
     intro k
     simp only [map_mul, projection_completedSignFactor]
-    have h := (signFactorizationEquiv ℒ θ d k).apply_symm_apply (TauCeti.CompletedGroup.projection k g)
+    have h := (signFactorizationEquiv ℒ θ d k).apply_symm_apply (projection k g)
     rw [signFactorizationEquiv_apply] at h
     exact h
 
@@ -124,9 +126,9 @@ theorem completedSignFactorizationEquiv_apply (a : ∀ s, completedSignSubgroup 
 @[simp]
 theorem projection_completedSignFactorizationEquiv_symm (g : d.completedBCHGroup ℒ)
     (s : SignType) (k : ℕ) :
-    TauCeti.CompletedGroup.projection k
+    projection k
         ((completedSignFactorizationEquiv ℒ θ d).symm g s : d.completedBCHGroup ℒ) =
-      ((signFactorizationEquiv ℒ θ d k).symm (TauCeti.CompletedGroup.projection k g) s :
+      ((signFactorizationEquiv ℒ θ d k).symm (projection k g) s :
         d.truncatedGroup ℒ k) :=
   projection_completedSignFactor ℒ θ d g s k
 

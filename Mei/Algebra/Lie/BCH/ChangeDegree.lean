@@ -33,6 +33,8 @@ moduli need not be mutually inverse functions.
 
 public section
 
+open TauCeti.CompletedGroup (projection)
+
 open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading GradedLieHom)
 
 noncomputable section
@@ -87,9 +89,9 @@ theorem _root_.TauCeti.PositiveDegrees.changeDegreeEquiv_symm (hP : d.monoid = e
 theorem _root_.TauCeti.PositiveDegrees.projection_changeDegreeEquiv
     (hP : d.monoid = e.monoid) (k : ℕ)
     (x : d.completedBCHGroup ℒ) :
-    TauCeti.CompletedGroup.projection k (d.changeDegreeEquiv e ℒ hP x) =
+    projection k (d.changeDegreeEquiv e ℒ hP x) =
       ((GradedLieHom.changeDegree d e hP ℒ).lieTruncatedMap k le_rfl).bchGroupMap
-        (TauCeti.CompletedGroup.projection ((PositiveDegreeMap.changeDegree d e hP).modulus k) x) :=
+        (projection ((PositiveDegreeMap.changeDegree d e hP).modulus k) x) :=
   GradedLieHom.projection_completedMap _ k x
 
 /-- Changing to the same degree function is the identity. -/
@@ -199,20 +201,20 @@ theorem _root_.TauCeti.PositiveDegrees.bijective_lieTruncatedMap_changeDegree_sc
 projection. -/
 theorem _root_.TauCeti.PositiveDegrees.projection_changeDegreeEquiv_scale
     (k : ℕ) (x : d.completedBCHGroup ℒ) :
-    TauCeti.CompletedGroup.projection k (d.changeDegreeEquiv (d.scale c) ℒ (d.scale_monoid c).symm x) =
+    projection k (d.changeDegreeEquiv (d.scale c) ℒ (d.scale_monoid c).symm x) =
       ((GradedLieHom.changeDegree d (d.scale c) (d.scale_monoid c).symm ℒ).lieTruncatedMap k
         (PositiveDegreeMap.changeDegree_scale_modulus_le d c k)).bchGroupMap
-          (TauCeti.CompletedGroup.projection (k / c) x) :=
+          (projection (k / c) x) :=
   GradedLieHom.projection_completedMap_of_le _ k _ x
 
 /-- At order `k`, the change of degree from `c δ` back to `δ` is computed from the order-`c k`
 projection. -/
 theorem _root_.TauCeti.PositiveDegrees.projection_changeDegreeEquiv_scale_symm
     (k : ℕ) (x : (d.scale c).completedBCHGroup ℒ) :
-    TauCeti.CompletedGroup.projection k ((d.scale c).changeDegreeEquiv d ℒ (d.scale_monoid c) x) =
+    projection k ((d.scale c).changeDegreeEquiv d ℒ (d.scale_monoid c) x) =
       ((GradedLieHom.changeDegree (d.scale c) d (d.scale_monoid c) ℒ).lieTruncatedMap k
         (PositiveDegreeMap.changeDegree_scale_symm_modulus_le d c k)).bchGroupMap
-          (TauCeti.CompletedGroup.projection (c * k) x) :=
+          (projection (c * k) x) :=
   GradedLieHom.projection_completedMap_of_le _ k _ x
 
 end Scale

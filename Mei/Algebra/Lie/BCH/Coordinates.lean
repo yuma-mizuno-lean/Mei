@@ -26,6 +26,8 @@ The carriers and transition laws are those of `LieIdeal.completion` and
 
 public section
 
+open TauCeti.CompletedGroup (projection)
+
 open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading GradedLieHom)
 
 namespace TauCeti.PositiveDegrees
@@ -44,7 +46,7 @@ local notation "π" =>
 
 /-- Levelwise exponential identifies the Lie and BCH group completions as sets. -/
 noncomputable def completedBCHExp : d.completedLie ℒ ≃ d.completedBCHGroup ℒ where
-  toFun x := ⟨fun k => BCHGroup.exp (π k x), (mem_completedGroup_iff _ _).mpr (by
+  toFun x := ⟨fun k => BCHGroup.exp (π k x), (TauCeti.mem_completedGroup_iff _ _).mpr (by
     intro k l h
     -- The categorical tower map conceals the concrete BCH quotient homomorphism.
     change (d.lieTruncationMap ℒ h).bchGroupMap (BCHGroup.exp (π l x)) =
@@ -52,7 +54,7 @@ noncomputable def completedBCHExp : d.completedLie ℒ ≃ d.completedBCHGroup �
     rw [LieHom.bchGroupMap_exp, lieTruncationMap_def,
       LieIdeal.factor_completionProjection])⟩
   invFun g := ⟨fun k =>
-    BCHGroup.log (L := d.lieTruncation ℒ k.unop) (TauCeti.CompletedGroup.projection k.unop g),
+    BCHGroup.log (L := d.lieTruncation ℒ k.unop) (projection k.unop g),
     (ModuleFiltration.mem_completionSubmodule_iff _ _).mpr (by
       intro k l h
       rw [LieIdeal.completionFiltration_transition, LieHom.coe_toLinearMap]
@@ -60,10 +62,10 @@ noncomputable def completedBCHExp : d.completedLie ℒ ≃ d.completedBCHGroup �
         (TauCeti.CompletedGroup.map_projection k l h g)
       -- Rewrite the categorical arrow at its concrete quotient group type.
       change BCHGroup.log (L := d.lieTruncation ℒ k) ((d.lieTruncationMap ℒ h).bchGroupMap
-        (TauCeti.CompletedGroup.projection l g)) =
-          BCHGroup.log (L := d.lieTruncation ℒ k) (TauCeti.CompletedGroup.projection k g) at hg
+        (projection l g)) =
+          BCHGroup.log (L := d.lieTruncation ℒ k) (projection k g) at hg
       simpa only [lieTruncationMap_def] using
-        ((d.lieTruncationMap ℒ h).log_bchGroupMap (TauCeti.CompletedGroup.projection l g)).symm.trans hg)⟩
+        ((d.lieTruncationMap ℒ h).log_bchGroupMap (projection l g)).symm.trans hg)⟩
   left_inv x := by
     apply ModuleFiltration.completion_ext
     intro k
@@ -79,7 +81,7 @@ noncomputable def completedBCHExp : d.completedLie ℒ ≃ d.completedBCHGroup �
 /-- Projection of the completed exponential is the finite exponential coordinate. -/
 @[simp]
 theorem projection_completedBCHExp (k : ℕ) (x : d.completedLie ℒ) :
-    TauCeti.CompletedGroup.projection k (d.completedBCHExp ℒ x) = BCHGroup.exp (π k x) := by
+    projection k (d.completedBCHExp ℒ x) = BCHGroup.exp (π k x) := by
   rw [TauCeti.CompletedGroup.projection_apply, completedBCHExp]
   rfl
 
@@ -87,7 +89,7 @@ theorem projection_completedBCHExp (k : ℕ) (x : d.completedLie ℒ) :
 @[simp]
 theorem completionProjection_completedBCHExp_symm (k : ℕ) (g : d.completedBCHGroup ℒ) :
     π k ((d.completedBCHExp ℒ).symm g) =
-      BCHGroup.log (L := d.lieTruncation ℒ k) (TauCeti.CompletedGroup.projection k g) := by
+      BCHGroup.log (L := d.lieTruncation ℒ k) (projection k g) := by
   rw [LieIdeal.completionProjection_apply, completedBCHExp]
   exact ModuleFiltration.projection_mk _ _ _ k
 
@@ -97,7 +99,7 @@ theorem completedBCHExp_zero : d.completedBCHExp ℒ 0 = 1 := by
   apply TauCeti.CompletedGroup.ext
   intro k
   rw [projection_completedBCHExp, map_zero, BCHGroup.exp_zero]
-  exact ((TauCeti.CompletedGroup.projection (F := d.groupTower ℒ) k).map_one).symm
+  exact ((projection (F := d.groupTower ℒ) k).map_one).symm
 
 /-- Negation of a completed Lie coordinate gives inversion in the completed group. -/
 @[simp]
@@ -107,7 +109,7 @@ theorem completedBCHExp_neg (x : d.completedLie ℒ) :
   intro k
   rw [projection_completedBCHExp, map_neg, BCHGroup.exp_neg]
   exact (congrArg Inv.inv (d.projection_completedBCHExp ℒ k x).symm).trans
-    ((TauCeti.CompletedGroup.projection k).map_inv (d.completedBCHExp ℒ x)).symm
+    ((projection k).map_inv (d.completedBCHExp ℒ x)).symm
 
 /-- Completed Lie coordinates with zero bracket add under the completed exponential. -/
 theorem completedBCHExp_add_of_lie_eq_zero {x y : d.completedLie ℒ} (h : ⁅x, y⁆ = 0) :
@@ -179,7 +181,7 @@ theorem completedBCHExp_symm_completedMap (f : GradedLieHom T ℒ ℳ)
   rw [← LieIdeal.completionProjection_apply,
     e.completionProjection_completedBCHExp_symm ℳ, projection_completedMap]
   refine ((f.lieTruncatedMap k le_rfl).log_bchGroupMap
-    (TauCeti.CompletedGroup.projection (T.modulus k) g)).trans ?_
+    (projection (T.modulus k) g)).trans ?_
   rw [← d.completionProjection_completedBCHExp_symm ℒ,
     LieIdeal.completionProjection_apply]
   rw [lieTruncatedMap_def]

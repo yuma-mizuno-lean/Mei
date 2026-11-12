@@ -35,6 +35,8 @@ separate statements.
 
 public section
 
+open TauCeti.CompletedGroup (projection)
+
 open TauCeti (OrientedCell PolyhedralCochain)
 
 open TauCeti (WallComplement AdmissiblePLPath)
@@ -92,14 +94,14 @@ theorem exists_joint_sweep_correction_family {k : ℕ}
                 (fun _ : Fin 1 => v)) ∧
             a.2.val ∈ (E.wall a).ray.rayDegrees ∧
             (∃ b ∈ ℒ a.2.val, (E.wall a).label = d.expToCompletion ℒ (-b)) ∧
-            (E.wall a).Outgoing ∧ log (TauCeti.CompletedGroup.projection (k + 1) (E.wall a).label) = -c a ∧
+            (E.wall a).Outgoing ∧ log (projection (k + 1) (E.wall a).label) = -c a ∧
             ∀ l : ℕ, a ∈ E.active l ↔ k + 1 ≤ l) ∧
           (PolyhedralCochain.coboundary
               (D.jointObstructionCochain σ x p hσ hk) = 0 →
             PolyhedralCochain.coboundaryOfFinsupp (R := R)
               (∑ a : D.JointCorrectionIndex x p,
                 Finsupp.single ((σ a.1).sweep (ρ a.2.val) (htrans a))
-                  (log (TauCeti.CompletedGroup.projection (k + 1) (E.wall a).label))) =
+                  (log (projection (k + 1) (E.wall a).label))) =
               ∑ J : (D.adaptedComplex (k + 1)).joints,
                 PolyhedralCochain.mk (σ J) (log (D.levelPathProduct (k + 1) (p J)))) := by
   classical
@@ -129,8 +131,8 @@ theorem exists_joint_sweep_correction_family {k : ℕ}
           ((σ a.1).sweep (ρ a.2.val) (htrans a)).orientation.evalSign (fun _ : Fin 1 => v)) ∧
         a.2.val ∈ W.ray.rayDegrees ∧
         (∃ b ∈ ℒ a.2.val, W.label = d.expToCompletion ℒ (-b)) ∧ W.Outgoing ∧
-        log (TauCeti.CompletedGroup.projection (k + 1) W.label) = -c a ∧
-        ∀ l : ℕ, TauCeti.CompletedGroup.projection l W.label = 1 ↔
+        log (projection (k + 1) W.label) = -c a ∧
+        ∀ l : ℕ, projection l W.label = 1 ↔
           c a = 0 ∨ (l : ℤ) < d.degree a.2.val := by
     obtain ⟨m, _, hmker, hmem⟩ :=
       (hlocal a.1 (x a.1) (p a.1) (hp a.1) a.2.val (by exact_mod_cast hd a)).2

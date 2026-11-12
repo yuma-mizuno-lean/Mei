@@ -96,7 +96,7 @@ abbrev _root_.TauCeti.PositiveDegrees.completedBCHGroup := completedGroup (d.gro
 algebra itself need not be nilpotent: exponentiation takes place in each quotient. -/
 def _root_.TauCeti.PositiveDegrees.expToCompletion (x : L) : d.completedBCHGroup ℒ :=
   ⟨fun k => BCHGroup.exp ((d.truncationIdeal ℒ k).mkQ x),
-    (mem_completedGroup_iff _ _).mpr (by
+    (TauCeti.mem_completedGroup_iff _ _).mpr (by
       intro k l h
       -- The categorical tower arrow conceals the concrete BCH quotient groups.
       change (d.lieTruncationMap ℒ h).bchGroupMap
