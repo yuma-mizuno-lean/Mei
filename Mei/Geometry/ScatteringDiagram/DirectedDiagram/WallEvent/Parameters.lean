@@ -21,13 +21,16 @@ admissible segment by a ray then has positive event parameter, nonzero
 transversality and precise incident wall set.
 -/
 
+open TauCeti (WallComplement)
+
+
 public noncomputable section
 
 open TauCeti (PositiveDegrees IsPositiveGrading)
 
 open TauCeti (DirectedWallSpaces)
 
-open Set Mei.Convex Mei.Convex.WallComplement
+open Set Mei.Convex TauCeti.WallComplement
 
 namespace Mei.DirectedDiagram
 

@@ -28,6 +28,8 @@ only at the lower order, not at the order to which the transports are lifted.
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath)
+
 open TauCeti (PositiveDegrees IsPositiveGrading)
 
 open TauCeti (DirectedWallSpaces)

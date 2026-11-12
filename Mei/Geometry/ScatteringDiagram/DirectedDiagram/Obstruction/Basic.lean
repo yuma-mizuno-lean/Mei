@@ -48,13 +48,15 @@ Appendix C.3. No freeness or dimension assumption on the homogeneous pieces is u
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath)
+
 open TauCeti (PositiveDegrees IsPositiveGrading)
 
 open TauCeti (DirectedWallSpaces)
 
 noncomputable section
 
-open Set Mei Mei.Convex WallComplement BCHGroup
+open Set Mei Mei.Convex TauCeti.WallComplement BCHGroup
 
 namespace Mei.DirectedDiagram
 

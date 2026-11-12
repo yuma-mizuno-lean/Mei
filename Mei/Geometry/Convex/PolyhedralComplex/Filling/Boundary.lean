@@ -27,6 +27,8 @@ well as isolation in the original affine slice.
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath)
+
 noncomputable section
 
 open Set Mei.Convex

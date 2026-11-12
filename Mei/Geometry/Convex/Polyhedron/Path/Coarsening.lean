@@ -24,9 +24,13 @@ fixed affine span. The path construction follows `WallComplement.restrictPrefunc
 
 public section
 
+open TauCeti (WallComplement)
+
 open Set
 
-namespace Mei.Convex
+section
+
+open Mei.Convex
 
 variable {V ι κ : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
   {W : ι → Set V} {W' : κ → Set V}
@@ -34,7 +38,7 @@ variable {V ι κ : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
   (hcover : ∀ j x, x ∈ W j → ∃ a, x ∈ W' a ∧ W' a ⊆ W j ∧
     affineSpan ℝ (W' a) = affineSpan ℝ (W j))
 
-namespace WallComplement
+namespace TauCeti.WallComplement
 
 /-- Forget a wall cover's additional cuts without moving vertices or segments.
 Every coarse wall is covered by fine pieces with its affine span. -/
@@ -59,6 +63,6 @@ theorem wallCoverPrefunctor_obj_val (x : WallComplement W') :
 instance : (wallCoverPrefunctor hclosed hcover).MapReverse where
   map_reverse' _ := rfl
 
-end WallComplement
+end TauCeti.WallComplement
 
-end Mei.Convex
+end

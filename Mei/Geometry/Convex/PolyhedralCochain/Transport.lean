@@ -30,9 +30,11 @@ coefficients, unbounded cells and lineality are allowed.
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath)
+
 noncomputable section
 
-open Set Mei Mei.Convex WallComplement
+open Set Mei Mei.Convex TauCeti.WallComplement
 
 namespace Quiver.Path
 

@@ -33,6 +33,8 @@ The sequence crossing-word formula is adapted from Codex,
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath)
+
 noncomputable section
 
 open Set

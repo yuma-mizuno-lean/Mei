@@ -32,6 +32,8 @@ tangent diagram. Consistency of the tangent diagram is not asserted here.
 
 public section
 
+open TauCeti (singularSupport)
+
 open TauCeti (PositiveDegrees IsPositiveGrading)
 
 open TauCeti (DirectedWallSpaces)

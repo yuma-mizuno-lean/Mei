@@ -40,9 +40,11 @@ completed group, this is the levelwise action on the limit of a coefficient diag
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath)
+
 noncomputable section
 
-open CategoryTheory CategoryTheory.Limits Mei.Convex Mei.Convex.WallComplement
+open CategoryTheory CategoryTheory.Limits Mei.Convex TauCeti.WallComplement
   Mei.FinitePolyhedralComplex
 open TauCeti (TransportSection)
 

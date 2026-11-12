@@ -32,6 +32,8 @@ support is computed from
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath singularSupport mem_singularSupport)
+
 open Set Mei.Convex
 
 namespace Mei.FinitePolyhedralComplex

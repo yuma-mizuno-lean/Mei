@@ -26,11 +26,13 @@ comparison, extracted from `Quiver.Path.wallPathProduct_eq_of_refines`, uses
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath)
+
 noncomputable section
 
-open Set Mei.Convex WallComplement
+open Set Mei.Convex TauCeti.WallComplement
 
-namespace Mei.Convex.WallComplement
+namespace TauCeti.WallComplement
 
 variable {V ι κ G : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
   [Finite ι] [Finite κ] [Group G] {W : ι → Set V} {W' : κ → Set V}
@@ -66,7 +68,7 @@ theorem segmentPathProduct_eq_of_crossingEventProduct_eq
   exact ht.elim (fun ht => Ioo_subset_Icc_self (mem_Ioo_of_mem_orderedCrossingTimes e ht))
     (fun ht => Ioo_subset_Icc_self (mem_Ioo_of_mem_orderedCrossingTimes e' ht))
 
-end Mei.Convex.WallComplement
+end TauCeti.WallComplement
 
 namespace Quiver.Path
 

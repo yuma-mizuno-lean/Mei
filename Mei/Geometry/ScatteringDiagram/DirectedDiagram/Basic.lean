@@ -26,6 +26,8 @@ finiteness of all supports is imposed.
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath)
+
 open TauCeti (PositiveDegrees IsPositiveGrading)
 
 open TauCeti (DirectedWallSpaces)

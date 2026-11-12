@@ -31,13 +31,16 @@ theta functions, and refined tropical curve counts*, equation (8) and §3.3.3
 (arXiv:1503.06183v5).
 -/
 
+open TauCeti (WallComplement singularSupport affineSpan_eq_of_notMem_singularSupport)
+
+
 public noncomputable section
 
 open TauCeti (PositiveDegrees IsPositiveGrading)
 
 open TauCeti (DirectedWallSpaces)
 
-open Set Filter Topology Mei.Convex Mei.Convex.WallComplement
+open Set Filter Topology Mei.Convex TauCeti.WallComplement
 
 namespace Mei.DirectedDiagram
 
@@ -235,7 +238,7 @@ theorem truncation_wallEventLabel {k l : ℕ} (hkl : k ≤ l)
       (e.normal_ne_zero_of_mem_support (W k) (f k) he hvk)]
   exact D.truncation_combinedLabel hkl x (-v) hl hk
 
-open WallComplement in
+open TauCeti.WallComplement in
 /-- The product at an actual admissible-segment event is the fixed alphabet
 label whose sign is computed on the negative segment velocity. -/
 theorem crossingEventProduct_eq_wallEventLabel (k : ℕ)

@@ -31,6 +31,8 @@ diagrams, theta functions, and refined tropical curve counts*,
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath)
+
 open TauCeti (PositiveDegrees IsPositiveGrading)
 
 open TauCeti (DirectedWallSpaces)

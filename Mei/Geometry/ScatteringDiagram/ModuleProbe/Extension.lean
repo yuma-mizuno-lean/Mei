@@ -20,6 +20,9 @@ These are probe-derived parallel coefficients. Identification with sums of
 broken lines is a separate theorem.
 -/
 
+open TauCeti (WallComplement)
+
+
 public noncomputable section
 
 open TauCeti (PositiveDegrees IsPositiveGrading)

@@ -23,7 +23,9 @@ or codimension assumption on the walls is needed.
 
 public section
 
-open Set Mei.Convex Mei.Convex.WallComplement
+open TauCeti (WallComplement)
+
+open Set Mei.Convex TauCeti.WallComplement
 
 namespace ContinuousAffineEquiv
 

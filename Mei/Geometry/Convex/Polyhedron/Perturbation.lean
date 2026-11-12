@@ -42,14 +42,18 @@ away from it by `IsClosed.isOpen_setOf_lineMap_notMem`.
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath mem_singularSupport singularSupport_subset_iUnion)
+
 open Set Filter Topology
 
-namespace Mei.Convex
+section
+
+open Mei.Convex
 
 variable {V ι : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V] [FiniteDimensional ℝ V]
   {W : ι → Set V}
 
-namespace WallComplement.AdmissibleSegment
+namespace TauCeti.WallComplement.AdmissibleSegment
 
 variable {x y : WallComplement W}
 
@@ -83,7 +87,7 @@ private theorem exists_crossingTime
   have hlim : Tendsto (fun q : V × V => AffineMap.lineMap q.1 q.2 (τ q)) (𝓝 (x.val, y.val))
       (𝓝[affineSpan ℝ (W i)] AffineMap.lineMap x.val y.val t₀) :=
     tendsto_nhdsWithin_iff.mpr ⟨by simpa only [hτ] using hpt.tendsto, hτA⟩
-  have hW := hlim.eventually_mem (mem_nhdsWithin_affineSpan_of_mem_intrinsicInterior hint)
+  have hW := hlim.eventually_mem (Mei.mem_nhdsWithin_affineSpan_of_mem_intrinsicInterior hint)
   filter_upwards [htrans, hIoo', hW] with q hq hq₁ hq₂
   refine ⟨hq, fun s => ⟨fun hs => ?_, ?_⟩⟩
   · exact (affineSpan ℝ (W i)).subsingleton_preimage_lineMap (by simpa only [vsub_eq_sub] using hq)
@@ -202,9 +206,9 @@ theorem eventually_lt_iff_of_mem_crossings
   rintro x' y' rfl rfl i j s t s' t' hs ht hs' ht'
   exact hq i j hs ht ((mem_crossings x' y' i s').mp hs') ((mem_crossings x' y' j t').mp ht')
 
-end WallComplement.AdmissibleSegment
+end TauCeti.WallComplement.AdmissibleSegment
 
-namespace AdmissiblePLPath
+namespace TauCeti.AdmissiblePLPath
 
 /-- In a finite family of codimension-one polyhedra, any nonempty list `l` of interior
 vertices is approximated, within any positive distance, by the interior vertices of an
@@ -271,9 +275,9 @@ theorem exists_loop_forall₂_dist_lt [Finite ι]
   exact (dist_triangle _ ((x.val :: (l ++ [x.val])).get ⟨j, hj₂⟩) _).trans_lt
     (by linarith [hs.get hj₁ hj₂, hp.get hj₂ hj₃])
 
-end AdmissiblePLPath
+end TauCeti.AdmissiblePLPath
 
-namespace CommonWallComplement
+namespace Mei.Convex.CommonWallComplement
 
 variable {J K : Type*} {I : J → Type*}
   [Countable J] [∀ j, Finite (I j)] [Finite K] {W : ∀ j, I j → Set V}
@@ -316,13 +320,13 @@ theorem exists_forall₂_dist_lt_forall
     hq.imp (fun _ _ huv => huv.trans_le
       (Finset.inf'_le radius (Finset.mem_univ (some k))))
 
-end CommonWallComplement
+end Mei.Convex.CommonWallComplement
 
-end Mei.Convex
+end
 
 namespace Quiver.Path
 
-open Mei.Convex Mei.Convex.WallComplement
+open Mei.Convex TauCeti.WallComplement
 
 variable {V ι A B : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
   {W : ι → Set V} {x y : WallComplement W}

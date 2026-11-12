@@ -32,6 +32,8 @@ conical.
 
 public section
 
+open TauCeti (WallComplement singularSupport mem_singularSupport)
+
 open Set Mei.Convex
 
 namespace Mei.FinitePolyhedralComplex

@@ -48,6 +48,8 @@ the local criterion `DirectedDiagram.levelConsistent_of_local` applied to the ch
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath singularSupport)
+
 open TauCeti (PositiveDegrees IsPositiveGrading)
 
 open TauCeti (DirectedWallSpaces)

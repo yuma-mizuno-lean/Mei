@@ -27,7 +27,7 @@ open TauCeti (DirectedWallSpaces)
 
 noncomputable section
 
-open Set Mei.Convex WallComplement
+open Set Mei.Convex TauCeti.WallComplement
 
 namespace Mei.DirectedDiagram
 

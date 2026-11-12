@@ -23,6 +23,8 @@ the relative topology of each support, and the local carrier comparison for conv
 
 public section
 
+open TauCeti (singularSupport mem_singularSupport)
+
 open Set Filter Topology
 
 namespace Mei.Convex

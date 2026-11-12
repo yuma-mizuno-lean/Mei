@@ -44,6 +44,8 @@ cluster algebras*, §1 and Appendix B, arXiv:1411.1394v2, and the abelian-ray KS
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath)
+
 open TauCeti (PositiveDegrees SupportedRay)
 
 noncomputable section

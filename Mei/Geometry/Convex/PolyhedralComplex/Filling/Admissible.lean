@@ -31,6 +31,8 @@ once, so adjacent cell loops use exactly the same edges with opposite directions
 
 public section
 
+open TauCeti (WallComplement)
+
 noncomputable section
 
 open Set Mei.Convex

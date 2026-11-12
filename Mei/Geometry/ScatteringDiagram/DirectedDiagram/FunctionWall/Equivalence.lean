@@ -66,6 +66,8 @@ grouping nor matched crossing germs. The crossing germs of the first diagram's g
 
 public section
 
+open TauCeti (singularSupport singularSupport_comp_subset)
+
 open TauCeti (PositiveDegrees IsPositiveGrading)
 
 open TauCeti (DirectedWallSpaces)

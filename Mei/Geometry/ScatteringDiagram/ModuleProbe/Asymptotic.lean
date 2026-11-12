@@ -34,6 +34,9 @@ theta functions, and refined tropical curve counts*, §3.3.3
 (arXiv:1503.06183v5), in the coefficient recursion for theta functions.
 -/
 
+open TauCeti (singularSupport)
+
+
 public noncomputable section
 
 open TauCeti (PositiveDegrees IsPositiveGrading)

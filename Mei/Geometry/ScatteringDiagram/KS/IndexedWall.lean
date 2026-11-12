@@ -33,6 +33,8 @@ The path products use `Quiver.Path.wallPathProduct`; ray uniqueness is
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath)
+
 open TauCeti (PositiveDegrees IsPositiveGrading SupportedRay)
 
 noncomputable section

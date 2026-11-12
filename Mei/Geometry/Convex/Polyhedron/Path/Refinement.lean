@@ -28,11 +28,13 @@ interior (`WallComplement.AdmissibleSegment.crossing_mem_intrinsicInterior`).
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath)
+
 noncomputable section
 
 open Set
 
-namespace Mei.Convex.WallComplement
+namespace TauCeti.WallComplement
 
 variable {V ι κ G : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
   [Finite ι] [Finite κ] [Group G] {W : ι → Set V} {W' : κ → Set V}
@@ -134,11 +136,11 @@ theorem segmentPathProduct_eq_of_refines (e : x ⟶ y) (e' : x' ⟶ y')
   rw [segmentPathProduct_def, segmentPathProduct_def, hevent,
     orderedCrossingTimes_eq_of_refines hsub hcover e e' hx hy]
 
-end Mei.Convex.WallComplement
+end TauCeti.WallComplement
 
 namespace Quiver.Path
 
-open Mei.Convex WallComplement
+open Mei.Convex TauCeti.WallComplement
 
 variable {V ι κ G : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
   [Finite ι] [Finite κ] [Group G] {W : ι → Set V} {W' : κ → Set V}

@@ -16,13 +16,16 @@ domain. The coefficient field uses one ambient cutoff throughout, while the
 geometric event inventory is chosen separately at each output degree.
 -/
 
+open TauCeti (WallComplement)
+
+
 public noncomputable section
 
 open TauCeti (PositiveDegrees IsPositiveGrading)
 
 open TauCeti (DirectedWallSpaces)
 
-open Set Filter Topology Mei.Convex Mei.Convex.WallComplement
+open Set Filter Topology Mei.Convex TauCeti.WallComplement
 
 namespace Mei.ModuleProbe
 

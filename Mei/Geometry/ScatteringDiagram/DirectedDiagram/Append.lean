@@ -52,6 +52,8 @@ indices. These are the same restriction and reindexing comparisons used in
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath singularSupport singularSupport_comp_subset)
+
 open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading)
 
 open TauCeti (DirectedWallSpaces)

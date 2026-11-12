@@ -37,6 +37,8 @@ to such triangles.
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath)
+
 noncomputable section
 
 open Set Mei.Convex
@@ -108,12 +110,12 @@ namespace Quiver.Path
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
   {C : Mei.FinitePolyhedralComplex h}
-  {x : Mei.Convex.WallComplement (fun P : C.walls => (P : Set V))}
+  {x : TauCeti.WallComplement (fun P : C.walls => (P : Set V))}
 
 /-- **Generation of loop words by joint meridians.** For a complex covering the ambient space,
 the crossing word of every admissible polygonal loop in a convex open region lies in the
 normal closure of the words of the isolating triangular meridians of joints in that region. -/
-theorem crossingWord_mem_normalClosure_jointMeridianWords (p : Mei.Convex.AdmissiblePLPath x x)
+theorem crossingWord_mem_normalClosure_jointMeridianWords (p : TauCeti.AdmissiblePLPath x x)
     (hC : C.support = Set.univ) (ν : C.walls → V →ₗ[ℝ] ℝ)
     (hν : ∀ P, LinearMap.ker (ν P) = (affineSpan ℝ (P : Set V)).direction)
     {U : Set V} (hUo : IsOpen U) (hU : Convex ℝ U) (hp : ∀ u ∈ p.vertices, u.val ∈ U) :

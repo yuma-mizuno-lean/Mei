@@ -16,17 +16,22 @@ polygonal paths and their wall products to the original wall family.
 A fixed-coordinate lift is a section of this projection on points and paths.
 -/
 
+open TauCeti (WallComplement AdmissiblePLPath)
+
+
 public section
 noncomputable section
 
 open Set Mei.Convex
 
-namespace Mei.Convex
+section
+
+open Mei.Convex
 
 variable {V E ι : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
   [NormedAddCommGroup E] [NormedSpace ℝ E]
 
-namespace WallComplement
+namespace TauCeti.WallComplement
 
 variable (W : ι → Set V)
 
@@ -123,12 +128,12 @@ theorem segmentCrossingEvents_cylinderProjection (ν : ι → V →ₗ[ℝ] ℝ)
   intro t _
   exact signedCrossingEvent_cylinderProjection W ν t
 
-end WallComplement
-end Mei.Convex
+end TauCeti.WallComplement
+end
 
 namespace Quiver.Path
 
-open Mei.Convex.WallComplement
+open TauCeti.WallComplement
 
 variable {V E ι : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
   [NormedAddCommGroup E] [NormedSpace ℝ E]

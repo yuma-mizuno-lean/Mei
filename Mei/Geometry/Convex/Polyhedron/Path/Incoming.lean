@@ -23,11 +23,14 @@ different events. They use the crossing rescaling formulas of
 crossing-time and simultaneous-product APIs.
 -/
 
+open TauCeti (WallComplement)
+
+
 public noncomputable section
 
 open Set Filter Topology
 
-namespace Mei.Convex.WallComplement
+namespace TauCeti.WallComplement
 
 variable {V ι G : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V] [Finite ι]
   {W : ι → Set V} {x y z : WallComplement W}
@@ -107,4 +110,4 @@ theorem eventually_exists_segmentPathProduct_eq_drop (e : x ⟶ y)
   have hp : T.Pairwise (· > ·) := (pairwise_orderedCrossingTimes e).reverse
   rw [hp.filter_lt_getElem_eq_drop j.val hj, ← List.map_drop]
 
-end Mei.Convex.WallComplement
+end TauCeti.WallComplement

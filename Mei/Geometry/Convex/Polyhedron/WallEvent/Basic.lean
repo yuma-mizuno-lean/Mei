@@ -25,6 +25,9 @@ are. This uses finite Boolean closure of `IsRationalSemilinear`; grouping
 simultaneous crossings follows `WallComplement.signedCrossingEvent`.
 -/
 
+open TauCeti (singularSupport)
+
+
 public noncomputable section
 
 open Set

@@ -25,6 +25,9 @@ Mandel, *Scattering diagrams, theta functions, and refined tropical curve counts
 Definition 2.10 (arXiv:1503.06183v5).
 -/
 
+open TauCeti (singularSupport affineSpan_eq_of_notMem_singularSupport)
+
+
 public noncomputable section
 
 open TauCeti (PositiveDegrees IsPositiveGrading)

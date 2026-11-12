@@ -37,13 +37,17 @@ recursion follows Mandel, *Scattering diagrams, theta functions, and refined
 tropical curve counts*, §3.3.3 (arXiv:1503.06183v5).
 -/
 
+open TauCeti (WallComplement singularSupport affineSpan_eq_of_notMem_singularSupport
+  isClosed_singularSupport singularSupport_subset_iUnion)
+
+
 public noncomputable section
 
 open TauCeti (PositiveDegrees IsPositiveGrading)
 
 open TauCeti (DirectedWallSpaces)
 
-open Set Filter Topology Quiver Mei.Convex Mei.Convex.WallComplement
+open Set Filter Topology Quiver Mei.Convex TauCeti.WallComplement
 
 namespace Mei.ModuleProbe
 

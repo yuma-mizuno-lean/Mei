@@ -25,6 +25,9 @@ points and admissible segments between them. Cells may be unbounded and have lin
 
 public section
 
+open TauCeti (WallComplement singularSupport isClosed_singularSupport
+  mem_intrinsicInterior_of_notMem_singularSupport)
+
 open Set Mei.Convex CategoryTheory TopologicalSpace Topology
 
 namespace Mei.FinitePolyhedralComplex

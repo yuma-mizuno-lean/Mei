@@ -38,6 +38,9 @@ conditions. This supplies the initial coefficient in the last-change recursion o
 (arXiv:1503.06183v5).
 -/
 
+open TauCeti (singularSupport)
+
+
 public noncomputable section
 
 open TauCeti (PositiveDegrees IsPositiveGrading)

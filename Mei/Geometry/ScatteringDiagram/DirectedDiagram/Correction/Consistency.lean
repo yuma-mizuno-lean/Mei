@@ -35,13 +35,15 @@ the original diagram, or common admissibility of the original loop is assumed.
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath)
+
 open TauCeti (PositiveDegrees IsPositiveGrading)
 
 open TauCeti (DirectedWallSpaces)
 
 noncomputable section
 
-open Set Mei Mei.Convex WallComplement BCHGroup
+open Set Mei Mei.Convex TauCeti.WallComplement BCHGroup
 
 namespace Mei.DirectedDiagram
 

@@ -28,6 +28,9 @@ geometric argument follows Mandel, *Scattering diagrams, theta functions, and re
 tropical curve counts*, §3.3.3 (arXiv:1503.06183v5).
 -/
 
+open TauCeti (singularSupport exists_finite_singularSupport_cover)
+
+
 public noncomputable section
 
 open TauCeti (PositiveDegrees IsPositiveGrading)

@@ -26,9 +26,11 @@ The cancellation is the elementary telescoping of the indicator of a half-space.
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath)
+
 noncomputable section
 
-open Set Mei.Convex WallComplement
+open Set Mei.Convex TauCeti.WallComplement
 
 namespace Quiver.Path
 
@@ -101,7 +103,7 @@ theorem map_wallCrossingSum (f : E →+ F) (p : AdmissiblePLPath x y)
 
 end AddMonoidHom
 
-namespace Mei.Convex.WallComplement
+namespace TauCeti.WallComplement
 
 variable {V ι E : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V] [Finite ι]
   [AddCommGroup E] {W : ι → Set V} {x y : WallComplement W}
@@ -151,11 +153,11 @@ theorem wallCrossingSum_toPath (e : x ⟶ y) (ν : ι → V →ₗ[ℝ] ℝ) (c 
     have hjt : (j, t) ∉ crossings x y := fun ht => hj ⟨t, ht⟩
     simp only [mem_crossingWalls, hjt, ↓reduceIte]
 
-end Mei.Convex.WallComplement
+end TauCeti.WallComplement
 
 namespace Quiver.Path
 
-open Mei.Convex.WallComplement
+open TauCeti.WallComplement
 
 variable {V ι κ E : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V] [Finite ι] [Finite κ]
   [AddCommGroup E] {W : ι → Set V}
@@ -178,11 +180,11 @@ theorem wallCrossingSum_restrict (ν : ι → V →ₗ[ℝ] ℝ) (c : ι → E) 
       wallCrossingSum_toPath]
     congr 1
     exact Fintype.sum_of_injective f hf _ _ (fun j hj => by simp [hc j hj])
-      fun _ => by simp only [mem_crossings, restrictPrefunctor_obj_val, Function.comp_apply]
+      fun _ => by simp only [mem_crossings, Function.comp_apply]
 
 end Quiver.Path
 
-namespace Mei.Convex.WallComplement
+namespace TauCeti.WallComplement
 
 variable {V ι : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
   {W : ι → Set V} {x y : WallComplement W}
@@ -208,7 +210,7 @@ theorem crossingExponent_eq_side_sub (x y : WallComplement W)
   simp only [mem_uIcc]
   split_ifs <;> norm_num at * <;> grind
 
-end Mei.Convex.WallComplement
+end TauCeti.WallComplement
 
 namespace Quiver.Path
 

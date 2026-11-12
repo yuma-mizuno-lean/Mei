@@ -25,6 +25,8 @@ uses `Quiver.Path.crossingWord_restrict` and Mathlib's universal property
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath)
+
 noncomputable section
 
 open Set Mei.Convex

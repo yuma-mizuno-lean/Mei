@@ -38,6 +38,8 @@ and consistency of the combined diagram are separate conclusions.
 
 public section
 
+open TauCeti (WallComplement)
+
 open TauCeti (PositiveDegrees IsPositiveGrading)
 
 open TauCeti (DirectedWallSpaces)

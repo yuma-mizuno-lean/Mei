@@ -28,6 +28,9 @@ compatibility, the finite shifted BCH correction formula, and
 `DirectedDiagram.eventually_exists_levelPathProduct_eq_combinedLabel`.
 -/
 
+open TauCeti (WallComplement AdmissiblePLPath singularSupport)
+
+
 public noncomputable section
 
 open TauCeti (PositiveDegrees IsPositiveGrading)

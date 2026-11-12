@@ -30,9 +30,11 @@ allowed endpoints and with the ambient carriers.
 
 public section
 
+open TauCeti (WallComplement)
+
 open Set
 
-namespace Mei.Convex.WallComplement
+namespace TauCeti.WallComplement
 
 section Topological
 
@@ -123,4 +125,4 @@ theorem chamber_eq_of_crossings_eq_empty {x y : WallComplement W}
     ⟨0, ⟨le_rfl, zero_le_one⟩, AffineMap.lineMap_apply_zero _ _⟩
     ⟨1, ⟨zero_le_one, le_rfl⟩, AffineMap.lineMap_apply_one _ _⟩ (val_mem_carrier_chamber y)
 
-end Mei.Convex.WallComplement
+end TauCeti.WallComplement

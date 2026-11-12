@@ -30,13 +30,16 @@ counts*, [arXiv:1503.06183v5](https://arxiv.org/abs/1503.06183v5), equation (8).
 
 public section
 
+open TauCeti (WallComplement singularSupport mem_singularSupport
+  affineSpan_eq_of_notMem_singularSupport)
+
 open TauCeti (PositiveDegrees IsPositiveGrading)
 
 open TauCeti (DirectedWallSpaces)
 
 noncomputable section
 
-open Set Filter Topology Mei.Convex WallComplement
+open Set Filter Topology Mei.Convex TauCeti.WallComplement
 
 namespace Mei.DirectedDiagram
 

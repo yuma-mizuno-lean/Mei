@@ -26,11 +26,13 @@ This combines `LinearMap.prodKerEquiv`, `ContinuousAffineEquiv.wallComplementMap
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath)
+
 noncomputable section
 
 open Set Mei.Convex
 
-namespace Mei.Convex.WallComplement
+namespace TauCeti.WallComplement
 
 variable {V V' ι ι' : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
   [NormedAddCommGroup V'] [NormedSpace ℝ V'] [FiniteDimensional ℝ V]
@@ -99,11 +101,11 @@ theorem preimageLift_comp_preimageProjection :
   · intros
     exact PLift.ext (Subsingleton.elim _ _)
 
-end Mei.Convex.WallComplement
+end TauCeti.WallComplement
 
 namespace Quiver.Path
 
-open WallComplement
+open TauCeti.WallComplement
 
 variable {V V' ι ι' G : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
   [NormedAddCommGroup V'] [NormedSpace ℝ V'] [FiniteDimensional ℝ V] [Finite ι] [Finite ι']

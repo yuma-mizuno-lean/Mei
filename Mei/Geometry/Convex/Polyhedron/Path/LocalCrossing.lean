@@ -27,11 +27,14 @@ The product comparison uses `WallComplement.crossingEventProduct` and
 
 public section
 
+open TauCeti (WallComplement singularSupport isClosed_singularSupport)
+
 noncomputable section
 
 open Set Filter Topology
+open Mei (eventually_add_smul_pair eventually_forall_lineMap_notMem_of_notMem)
 
-namespace Mei.Convex.WallComplement
+namespace TauCeti.WallComplement
 
 variable {V ι : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V] [Finite ι]
   {W : ι → Set V}
@@ -168,4 +171,4 @@ theorem segmentPathProduct_eq_noncommProd_of_crossings
     simp only [segmentPathProduct_def, htimes, List.reverse_nil, List.map_nil, List.prod_nil]
     exact (Finset.noncommProd_empty _ _).symm
 
-end Mei.Convex.WallComplement
+end TauCeti.WallComplement

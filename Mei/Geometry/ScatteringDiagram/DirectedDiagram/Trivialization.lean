@@ -33,6 +33,8 @@ order, local finiteness of the all-order wall union, or salient support is neede
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath)
+
 open TauCeti (PositiveDegrees IsPositiveGrading)
 
 open TauCeti (DirectedWallSpaces)

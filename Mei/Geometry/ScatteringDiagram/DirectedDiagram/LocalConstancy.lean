@@ -24,6 +24,9 @@ In particular, near a regular point of an affine subspace `A` all of whose incid
 (`DirectedDiagram.eventually_nhdsWithin_combinedLabel_eq`).
 -/
 
+open TauCeti (singularSupport isClosed_singularSupport)
+
+
 public noncomputable section
 
 open TauCeti (PositiveDegrees IsPositiveGrading)

@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.Affine.Transverse
+public import TauCeti.LinearAlgebra.AffineSpace.Transverse
 public import Mei.Geometry.Convex.Sweep
 public import Mathlib.Analysis.Normed.Module.FiniteDimension
 public import Mathlib.Topology.Homeomorph.Defs

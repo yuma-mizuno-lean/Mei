@@ -31,6 +31,8 @@ cochain relations, `WallComplement.wallCrossingSum_toPath`, and Mathlib's
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath mem_singularSupport)
+
 noncomputable section
 
 open Set Mei Mei.Convex
@@ -88,7 +90,7 @@ theorem intersectionIndex_eq_sub_side (σ : OrientedCell h 1)
 
 end Mei.OrientedCell
 
-namespace Mei.Convex.WallComplement
+namespace TauCeti.WallComplement
 
 variable {N V ι : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
@@ -246,11 +248,11 @@ theorem wallCrossingSum_toPath_eq_of_cochain_eq
     intersectionPairing_eq_neg_wallCrossingSum e' μ c' hμ] at he
   exact neg_injective he
 
-end Mei.Convex.WallComplement
+end TauCeti.WallComplement
 
 namespace Quiver.Path
 
-open Mei.Convex.WallComplement
+open TauCeti.WallComplement
 
 variable {N V ι : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i} [Fintype ι]
@@ -338,7 +340,7 @@ end Quiver.Path
 
 namespace Quiver.Path
 
-open Mei Mei.Convex.WallComplement
+open Mei TauCeti.WallComplement
 
 variable {N V ι : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}

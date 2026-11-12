@@ -127,7 +127,7 @@ theorem lie_smul_coeff_one_commutator :
 theorem bracketNormal_eq : P.bracketNormal =
     P.normal 0 (ρ (P.degree 1)) • P.normal 1 - P.normal 1 (ρ (P.degree 0)) • P.normal 0 := by
   ext v
-  simp [bracketNormal, wallBracketNormal_apply]
+  simp [bracketNormal, TauCeti.wallBracketNormal_apply]
 
 /-- A nonzero bracket normal has a nonzero coefficient `m₀(ρ n₁)` or `m₁(ρ n₀)`. -/
 theorem ne_zero_or_ne_zero_of_bracketNormal_ne_zero (hμ : P.bracketNormal ≠ 0) :
@@ -164,7 +164,7 @@ theorem bracketNormal_eq_zero_of_direction_eq_zero
   have h₀₁' : P.normal 0 (ρ (P.degree 1)) = 0 := by
     rw [h₀₁, map_neg, h₀, neg_zero]
   ext v
-  simp [bracketNormal, wallBracketNormal_apply, h₁₀, h₀₁']
+  simp [bracketNormal, TauCeti.wallBracketNormal_apply, h₁₀, h₀₁']
 
 /-- If the total degree has zero geometric direction, the correction coefficient vanishes. -/
 theorem commutator_eq_zero_of_direction_eq_zero

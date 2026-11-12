@@ -5,7 +5,8 @@ Authors: Claude
 -/
 module
 
-public import Mei.Geometry.Convex.Polyhedron.SegmentSubdivision
+public import TauCeti.Geometry.ScatteringDiagram.Path.Subdivision
+public import Mei.Geometry.Convex.Polyhedron.AdmissiblePath
 public import Mei.Geometry.Convex.Polyhedron.SimultaneousPath
 
 /-!
@@ -28,6 +29,8 @@ by an admissible grid whose boundary edges lie on those sides.
 -/
 
 public section
+
+open TauCeti (WallComplement AdmissiblePLPath singularSupport singularSupport_subset_iUnion)
 
 open Set Mei.Convex
 open scoped unitInterval

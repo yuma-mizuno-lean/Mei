@@ -45,9 +45,11 @@ and refined tropical curve counts*, Theorem 2.6,
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath)
+
 noncomputable section
 
-open Mei Mei.Convex WallComplement BCHGroup
+open Mei Mei.Convex TauCeti.WallComplement BCHGroup
 
 namespace Quiver.Path
 

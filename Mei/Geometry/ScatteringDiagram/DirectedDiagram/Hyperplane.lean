@@ -38,6 +38,8 @@ by the active labels (`Subgroup.isMulCommutative_closure`).
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath singularSupport mem_singularSupport)
+
 open TauCeti (PositiveDegrees IsPositiveGrading SupportedRay)
 
 open TauCeti (DirectedWallSpaces)

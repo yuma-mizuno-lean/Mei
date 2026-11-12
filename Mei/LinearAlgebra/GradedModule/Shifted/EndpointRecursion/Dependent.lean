@@ -23,7 +23,6 @@ open TauCeti (PositiveDegrees)
 
 namespace TauCeti.PositiveDegrees
 
-open Mei
 
 variable {Γ R M V : Type*} [AddCommGroup Γ] [Semiring R]
   [AddCommMonoid M] [Module R M] (d : PositiveDegrees Γ)

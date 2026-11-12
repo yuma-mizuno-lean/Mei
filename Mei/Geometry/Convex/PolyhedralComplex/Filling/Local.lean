@@ -31,6 +31,9 @@ breakpoints of its sides, places each grid cell in one of the open sets, and com
 reparametrizing each side as the realization of a single-edge path.
 -/
 
+open TauCeti (WallComplement AdmissiblePLPath singularSupport singularSupport_subset_iUnion)
+
+
 public noncomputable section
 
 open Set Mei.Convex

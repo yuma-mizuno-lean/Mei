@@ -30,13 +30,15 @@ This is the classification of consistent diagrams by their chamber transport in
 Tom Bridgeland, *Scattering diagrams, Hall algebras and stability conditions*, §3,
 [arXiv:1603.00416](https://arxiv.org/abs/1603.00416). It uses
 `PositiveDegrees.signFactorizationEquiv`, the orthogonal wall labels of `KSComplex`, and
-Mei's generic two-segment paths `Mei.Convex.exists_mem_open_two_transverse_lineMaps`.
+Mei's generic two-segment paths `TauCeti.exists_mem_open_two_transverse_lineMaps`.
 No finite generation of the positive monoid is needed. For the continuous-dual KS space,
 `Mei.Geometry.ScatteringDiagram.KS.Reconstruction.Classification` identifies each
 consistent diagram with a reconstruction.
 -/
 
 public section
+
+open TauCeti (WallComplement AdmissiblePLPath exists_mem_open_two_transverse_lineMaps)
 
 open TauCeti (PositiveDegrees IsPositiveGrading)
 

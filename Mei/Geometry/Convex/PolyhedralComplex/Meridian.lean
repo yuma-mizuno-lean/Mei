@@ -33,6 +33,8 @@ Cells may be unbounded and have lineality.
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath singularSupport)
+
 open Set Mei.Convex
 
 namespace Mei.FinitePolyhedralComplex

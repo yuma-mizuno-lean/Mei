@@ -41,13 +41,15 @@ and Gross–Hacking–Keel–Kontsevich, *Canonical bases for cluster algebras*,
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath singularSupport)
+
 open TauCeti (PositiveDegrees IsPositiveGrading)
 
 open TauCeti (DirectedWallSpaces)
 
 noncomputable section
 
-open Set Mei.Convex WallComplement
+open Set Mei.Convex TauCeti.WallComplement
 
 namespace Mei.DirectedDiagram
 

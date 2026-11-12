@@ -20,6 +20,8 @@ from sign factorization, as in Bridgeland's Lemma 3.2, §3.4 of
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath)
+
 open TauCeti (PositiveDegrees IsPositiveGrading)
 
 noncomputable section

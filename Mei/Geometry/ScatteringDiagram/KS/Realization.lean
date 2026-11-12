@@ -31,11 +31,13 @@ conditions*, §§2–3 (arXiv:1603.00416v4). The central formal inputs are
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath)
+
 open TauCeti (PositiveDegrees IsPositiveGrading)
 
 noncomputable section
 
-open Set Mei.Convex Mei.Convex.WallComplement
+open Set Mei.Convex TauCeti.WallComplement
 
 namespace Mei.KSComplex
 

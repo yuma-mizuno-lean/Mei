@@ -26,13 +26,16 @@ interpretation in Carl–Pumperla–Siebert, *A tropical view on Landau–Ginzbu
 models*, §4 (arXiv:2205.07753v2).
 -/
 
+open TauCeti (singularSupport)
+
+
 public noncomputable section
 
 open TauCeti (PositiveDegrees IsPositiveGrading)
 
 open TauCeti (DirectedWallSpaces)
 
-open Set Filter Topology Mei.Convex Mei.Convex.WallComplement
+open Set Filter Topology Mei.Convex TauCeti.WallComplement
 
 namespace Mei.ModuleProbe
 

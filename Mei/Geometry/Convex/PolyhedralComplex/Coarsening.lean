@@ -26,9 +26,11 @@ the crossing letters for `D` are the coarsened crossing letters for `C`
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath)
+
 noncomputable section
 
-open Set Filter Topology Mei.Convex Mei.Convex.WallComplement
+open Set Filter Topology Mei.Convex TauCeti.WallComplement
 
 namespace Mei.FinitePolyhedralComplex
 

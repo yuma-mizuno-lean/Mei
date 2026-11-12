@@ -34,6 +34,8 @@ commute (`DirectedDiagram.commute_levelTransportFun`).
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath singularSupport)
+
 open TauCeti (PositiveDegrees IsPositiveGrading)
 
 open TauCeti (DirectedWallSpaces)

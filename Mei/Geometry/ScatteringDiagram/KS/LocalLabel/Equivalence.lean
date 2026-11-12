@@ -29,11 +29,14 @@ Gross–Hacking–Keel–Kontsevich, *Canonical bases for cluster algebras*, §1
 (arXiv:1411.1394v2).
 -/
 
+open TauCeti (WallComplement singularSupport)
+
+
 public noncomputable section
 
 open TauCeti (PositiveDegrees IsPositiveGrading)
 
-open Set Mei.Convex WallComplement
+open Set Mei.Convex TauCeti.WallComplement
 
 namespace Mei
 

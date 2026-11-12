@@ -34,6 +34,8 @@ implement the convention that the first crossing acts on the right.
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath)
+
 noncomputable section
 
 open Set Mei.Convex

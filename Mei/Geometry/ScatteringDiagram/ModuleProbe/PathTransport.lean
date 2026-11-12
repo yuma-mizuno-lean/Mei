@@ -35,6 +35,9 @@ with the charge-zero comparison `DirectedDiagram.levelPathProduct_pushforward` a
 `ModuleProbe.levelTransport_cylinderDiagram`.
 -/
 
+open TauCeti (WallComplement AdmissiblePLPath)
+
+
 public noncomputable section
 
 open TauCeti (PositiveDegrees IsPositiveGrading)

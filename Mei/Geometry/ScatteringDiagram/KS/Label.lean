@@ -32,6 +32,8 @@ This is the local label recovery in Tom Bridgeland,
 
 public section
 
+open TauCeti (singularSupport)
+
 open TauCeti (PositiveDegrees IsPositiveGrading)
 
 noncomputable section

@@ -31,13 +31,15 @@ and refined tropical curve counts*, proof of Theorem 2.6.
 
 public section
 
+open TauCeti (WallComplement)
+
 open TauCeti (PositiveDegrees IsPositiveGrading)
 
 open TauCeti (DirectedWallSpaces)
 
 noncomputable section
 
-open Set Filter Topology Mei.Convex WallComplement
+open Set Filter Topology Mei.Convex TauCeti.WallComplement
 
 namespace Mei.DirectedDiagram.AdaptedWallCrossing
 

@@ -30,6 +30,8 @@ applies to repeated and overlapping indexed walls with grouped coplanar crossing
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath)
+
 open TauCeti (PositiveDegrees IsPositiveGrading)
 
 open TauCeti (DirectedWallSpaces)

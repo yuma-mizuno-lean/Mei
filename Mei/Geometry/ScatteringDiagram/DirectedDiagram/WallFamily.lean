@@ -32,6 +32,8 @@ finite-order equivalence by combined labels, `DirectedDiagram.levelEquivalent_if
 
 public section
 
+open TauCeti (singularSupport)
+
 open TauCeti (PositiveDegrees IsPositiveGrading)
 
 open TauCeti (DirectedWallSpaces)

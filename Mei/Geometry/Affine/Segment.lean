@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.Affine.Transverse
+public import TauCeti.LinearAlgebra.AffineSpace.Transverse
 public import Mei.Topology.Algebra.ContinuousLinearMap
 public import Mathlib.Analysis.Convex.Basic
 public import Mathlib.Topology.Algebra.Affine

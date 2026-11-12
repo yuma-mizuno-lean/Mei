@@ -69,6 +69,8 @@ Theorem 9.9 (arXiv:2503.03719v1). The local crossing comparison uses
 
 public section
 
+open TauCeti (WallComplement singularSupport)
+
 open TauCeti (PositiveDegrees IsPositiveGrading)
 
 open TauCeti (DirectedWallSpaces)

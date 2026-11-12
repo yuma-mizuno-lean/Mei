@@ -29,6 +29,8 @@ correction diagram or identify the orientation sign of a joint cochain.
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath)
+
 open TauCeti (PositiveDegrees IsPositiveGrading)
 
 open TauCeti (DirectedWallSpaces)

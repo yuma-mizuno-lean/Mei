@@ -23,11 +23,14 @@ all of them by admissible segments.
 
 This develops the endpoint topology of `WallComplement.AdmissibleSegment`,
 using the finite-family construction
-`Mei.Convex.exists_mem_open_two_transverse_lineMaps` and Mathlib's
+`TauCeti.exists_mem_open_two_transverse_lineMaps` and Mathlib's
 `dense_iInter_of_isOpen`. No preservation of prescribed crossing words is asserted.
 -/
 
 public section
+
+open TauCeti (WallComplement AdmissiblePLPath singularSupport isClosed_singularSupport
+  exists_mem_open_two_transverse_lineMaps)
 
 open Set
 

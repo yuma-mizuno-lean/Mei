@@ -5,7 +5,8 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.Convex.Polyhedron.SegmentSubdivision
+public import TauCeti.Geometry.ScatteringDiagram.Path.Subdivision
+public import Mei.Geometry.Convex.Polyhedron.AdmissiblePath
 public import Mei.Geometry.Convex.Polyhedron.CrossingEvents
 
 /-!
@@ -26,11 +27,14 @@ No closedness, convexity, lattice, or dimension hypothesis is needed in addition
 to the given admissibility of the path.
 -/
 
+open TauCeti (WallComplement AdmissiblePLPath)
+
+
 public noncomputable section
 
 open Set Mei.Convex
 
-namespace Mei.Convex.WallComplement
+namespace TauCeti.WallComplement
 
 variable {V ι : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V] [Finite ι]
   {W : ι → Set V} {x y z : WallComplement W} {t : ℝ}
@@ -197,11 +201,11 @@ theorem exists_segment_subdivision_subsingleton_crossingTimes (e : x ⟶ y) :
       exact (Quiver.Path.isChain_vertices_comp _ _ _).mpr
         ⟨by simpa only [Quiver.Path.vertices_toPath, List.isChain_pair] using hsingle, hqsmall⟩
 
-end Mei.Convex.WallComplement
+end TauCeti.WallComplement
 
 namespace Quiver.Path
 
-open Mei.Convex.WallComplement
+open TauCeti.WallComplement
 
 variable {V ι : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V] [Finite ι]
   {W : ι → Set V} {x y : WallComplement W}

@@ -27,11 +27,13 @@ crossing-word construction in `Mei.Geometry.Convex.PolyhedralComplex.Perturbatio
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath)
+
 noncomputable section
 
 open Set Filter Topology Mei.Convex
 
-namespace Mei.Convex.WallComplement
+namespace TauCeti.WallComplement
 
 variable {V ι : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
   [FiniteDimensional ℝ V] [Finite ι] {W : ι → Set V}
@@ -116,11 +118,11 @@ theorem eventually_segmentCrossingEvents_eq
   simp only [mem_signedCrossingEvent, hτ]
   exact and_congr_right fun hi => by simp only [hsign i ⟨t, hi⟩]
 
-end Mei.Convex.WallComplement
+end TauCeti.WallComplement
 
 namespace Quiver.Path
 
-open Mei.Convex.WallComplement
+open TauCeti.WallComplement
 
 variable {V ι : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
   [FiniteDimensional ℝ V] [Finite ι] {W : ι → Set V}

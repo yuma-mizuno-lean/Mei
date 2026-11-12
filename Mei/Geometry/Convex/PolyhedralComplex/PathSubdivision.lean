@@ -6,7 +6,8 @@ Authors: Codex
 module
 
 public import Mei.Geometry.Convex.PolyhedralComplex.CrossingWord
-public import Mei.Geometry.Convex.Polyhedron.SegmentSubdivision
+public import TauCeti.Geometry.ScatteringDiagram.Path.Subdivision
+public import Mei.Geometry.Convex.Polyhedron.AdmissiblePath
 
 /-!
 # Crossing words under path subdivision
@@ -22,6 +23,8 @@ and Mathlib's list append, map and product operations; no wall-label relations a
 -/
 
 public section
+
+open TauCeti (WallComplement AdmissiblePLPath)
 
 open Set Mei.Convex
 

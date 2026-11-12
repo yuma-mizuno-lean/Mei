@@ -20,6 +20,9 @@ This transport comparison lowers the coefficient order of sections on the
 adapted regular loci.
 -/
 
+open TauCeti (WallComplement AdmissiblePLPath)
+
+
 -- Combine `levelPathProduct_eq_adaptedDiagram`, `truncation_levelPathProduct`,
 -- and `levelPathProduct_eq_of_vertices_eq`.
 

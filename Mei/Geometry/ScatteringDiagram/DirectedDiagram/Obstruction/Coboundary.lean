@@ -34,13 +34,15 @@ Appendix C.3.
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath)
+
 open TauCeti (PositiveDegrees IsPositiveGrading)
 
 open TauCeti (DirectedWallSpaces)
 
 noncomputable section
 
-open Set Module Mei Mei.Convex WallComplement BCHGroup
+open Set Module Mei Mei.Convex TauCeti.WallComplement BCHGroup
 
 namespace Mei.DirectedDiagram
 

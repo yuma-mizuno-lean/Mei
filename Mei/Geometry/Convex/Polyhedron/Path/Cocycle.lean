@@ -38,9 +38,11 @@ Gross–Hacking–Siebert, *Theta functions on varieties with effective anti-can
 
 public section
 
+open TauCeti (WallComplement singularSupport)
+
 noncomputable section
 
-open Set Topology Mei.Convex Mei.Convex.WallComplement
+open Set Topology Mei.Convex TauCeti.WallComplement
 
 namespace Convex
 
@@ -224,7 +226,7 @@ private theorem crossing_classes (hK : Convex ℝ K) (hKW : Disjoint K (singular
 
 end Convex
 
-namespace Mei.Convex.WallComplement
+namespace TauCeti.WallComplement
 
 variable {V ι : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V] {W : ι → Set V}
   {ν : ι → V →ₗ[ℝ] ℝ}
@@ -360,4 +362,4 @@ theorem segmentPathProduct_mul_segmentPathProduct {x y z : WallComplement W}
   rw [hgA, hgC, hgB]
   group
 
-end Mei.Convex.WallComplement
+end TauCeti.WallComplement

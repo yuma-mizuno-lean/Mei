@@ -31,9 +31,11 @@ words in `Mei.Geometry.Convex.PolyhedralComplex.CrossingWord`.
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath)
+
 noncomputable section
 
-open Set Mei.Convex Mei.Convex.WallComplement
+open Set Mei.Convex TauCeti.WallComplement
 
 namespace Mei
 

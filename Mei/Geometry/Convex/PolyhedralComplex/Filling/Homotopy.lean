@@ -32,6 +32,8 @@ paths in `U` therefore agree (`Mei.FiniteWallDiagram.pathProduct_eq_of_homotopy`
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath)
+
 noncomputable section
 
 open Set Mei.Convex

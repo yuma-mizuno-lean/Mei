@@ -27,9 +27,11 @@ group-labelled diagrams (`Mei.FiniteWallDiagram.pathProduct_image`).
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath)
+
 noncomputable section
 
-open CategoryTheory Mei.Convex Mei.Convex.WallComplement Mei.FinitePolyhedralComplex
+open CategoryTheory Mei.Convex TauCeti.WallComplement Mei.FinitePolyhedralComplex
 
 namespace Mei.GroupoidWallDiagram
 

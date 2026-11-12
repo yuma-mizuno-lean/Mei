@@ -31,9 +31,11 @@ and Gross–Hacking–Keel–Kontsevich, *Canonical bases for cluster algebras*,
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath)
+
 noncomputable section
 
-open Mei.Convex WallComplement
+open Mei.Convex TauCeti.WallComplement
 
 namespace Quiver.Path
 

@@ -26,13 +26,16 @@ for limiting rays on type-domain frontiers. The comparison follows Mandel,
 §3.3.3 (arXiv:1503.06183v5).
 -/
 
+open TauCeti (WallComplement AdmissiblePLPath singularSupport)
+
+
 public noncomputable section
 
 open TauCeti (PositiveDegrees IsPositiveGrading)
 
 open TauCeti (DirectedWallSpaces)
 
-open Set Filter Topology Mei.Convex Mei.Convex.WallComplement
+open Set Filter Topology Mei.Convex TauCeti.WallComplement
 
 namespace Mei.ModuleProbe
 

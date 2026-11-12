@@ -30,6 +30,8 @@ particular the diagram is consistent (`consistent_hyperplaneDiagram`).
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath)
+
 open Set Mei.Convex
 
 namespace Mei.FiniteWallDiagram

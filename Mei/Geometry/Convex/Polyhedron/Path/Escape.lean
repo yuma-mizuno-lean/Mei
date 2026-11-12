@@ -36,11 +36,13 @@ Travis Mandel, *Scattering diagrams, theta functions, and refined tropical curve
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath)
+
 noncomputable section
 
-open Set Filter Topology Mei.Convex WallComplement
+open Set Filter Topology Mei.Convex TauCeti.WallComplement
 
-namespace Mei.Convex.AdmissiblePLPath
+namespace TauCeti.AdmissiblePLPath
 
 variable {V ι : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V] [FiniteDimensional ℝ V]
   [Finite ι] {W : ι → Set V}
@@ -121,7 +123,7 @@ theorem exists_signedCrossingEvents_eq_nil_of_notMem_recessionCone
     (segmentCrossingEvents_eq_nil_iff ν _).mpr c₄, (segmentCrossingEvents_eq_nil_iff ν _).mpr c₅,
     List.append_nil]
 
-end Mei.Convex.AdmissiblePLPath
+end TauCeti.AdmissiblePLPath
 
 namespace Quiver.Path
 

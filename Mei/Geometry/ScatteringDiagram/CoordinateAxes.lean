@@ -33,6 +33,8 @@ Tom Bridgeland, *Scattering diagrams, Hall algebras and stability conditions*,
 
 public section
 
+open TauCeti (WallComplement singularSupport)
+
 open Set Mei.Convex Mei.FinitePolyhedralComplex
 
 namespace Mei.FiniteWallDiagram

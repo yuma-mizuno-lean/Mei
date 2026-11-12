@@ -30,6 +30,8 @@ The word comparison follows `Mei.FinitePolyhedralComplex.wallDeletion`.
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath)
+
 noncomputable section
 
 open Set Mei.Convex

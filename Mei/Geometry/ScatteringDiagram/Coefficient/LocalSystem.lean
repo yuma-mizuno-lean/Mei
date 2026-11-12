@@ -26,6 +26,9 @@ transport interpretation follows Gross–Hacking–Siebert, *Theta functions on
 varieties with effective anti-canonical class*, §3.2 (arXiv:1601.07081v4).
 -/
 
+open TauCeti (WallComplement)
+
+
 public noncomputable section
 
 open CategoryTheory TopologicalSpace Opposite Set Topology Mei.Convex

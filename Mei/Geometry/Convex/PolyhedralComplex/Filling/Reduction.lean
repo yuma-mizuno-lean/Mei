@@ -30,6 +30,8 @@ lineality, repeated vertices and degenerate triangles missing all joints.
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath)
+
 noncomputable section
 
 open Set Mei.Convex

@@ -30,9 +30,11 @@ with the geometric membership and order characterization of `orderedCrossings`.
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath)
+
 noncomputable section
 
-open Set Mei.Convex Mei.Convex.WallComplement
+open Set Mei.Convex TauCeti.WallComplement
 
 namespace Mei.FinitePolyhedralComplex
 

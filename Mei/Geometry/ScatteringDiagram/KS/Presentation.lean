@@ -40,11 +40,14 @@ The construction uses `FinitePolyhedralComplex.ambientSubdivision`,
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath singularSupport
+  affineSpan_eq_of_notMem_singularSupport)
+
 open TauCeti (PositiveDegrees IsPositiveGrading SupportedRay)
 
 noncomputable section
 
-open Set Mei.Convex Mei.Convex.WallComplement
+open Set Mei.Convex TauCeti.WallComplement
 
 namespace Mei
 

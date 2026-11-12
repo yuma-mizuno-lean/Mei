@@ -33,6 +33,8 @@ cutoff diagrams is `FiniteWallDiagram.IsCompatibleRefinement.pathProduct_eq`.
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath)
+
 open TauCeti (PositiveDegrees IsPositiveGrading)
 
 noncomputable section

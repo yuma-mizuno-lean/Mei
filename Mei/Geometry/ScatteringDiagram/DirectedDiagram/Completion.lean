@@ -25,6 +25,8 @@ No stabilization of the active supports or local finiteness of all walls is requ
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath)
+
 open TauCeti (PositiveDegrees IsPositiveGrading)
 
 open TauCeti (DirectedWallSpaces)

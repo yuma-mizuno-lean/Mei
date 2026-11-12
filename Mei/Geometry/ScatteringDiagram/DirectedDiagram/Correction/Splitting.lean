@@ -29,6 +29,8 @@ from the projection-fixed correction logarithms using
 
 public section
 
+open TauCeti (WallComplement)
+
 open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading)
 
 open TauCeti (DirectedWallSpaces)

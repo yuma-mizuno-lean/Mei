@@ -43,13 +43,15 @@ the escape step is `DirectedWall.wallCrossingSum_eq_zero_of_outgoing`.
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath)
+
 open TauCeti (PositiveDegrees IsPositiveGrading)
 
 open TauCeti (DirectedWallSpaces)
 
 noncomputable section
 
-open Set Mei Mei.Convex WallComplement BCHGroup
+open Set Mei Mei.Convex TauCeti.WallComplement BCHGroup
 open scoped symmDiff
 
 namespace Mei.DirectedDiagram

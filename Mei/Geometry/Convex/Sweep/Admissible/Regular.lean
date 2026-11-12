@@ -35,6 +35,8 @@ Carl–Pumperla–Siebert, *A tropical view on Landau–Ginzburg models*, §4
 
 public section
 
+open TauCeti (singularSupport affineSpan_eq_of_notMem_singularSupport)
+
 open Set Filter Topology
 
 namespace Mei.Convex

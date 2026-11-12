@@ -26,6 +26,8 @@ injective or surjective.
 
 public section
 
+open TauCeti (AdmissiblePLPath)
+
 open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading)
 
 noncomputable section

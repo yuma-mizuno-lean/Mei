@@ -57,11 +57,14 @@ scattering diagram in Gross–Hacking–Keel–Kontsevich, *Canonical bases for 
 diagrams*, Theorem 9.5 (arXiv:2503.03719v1).
 
 The comparison uses `DirectedDiagram.LevelEquivalent.combinedLabel_eq`, and the existence uses
-`Mei.Convex.exists_finite_singularSupport_cover` and
+`TauCeti.exists_finite_singularSupport_cover` and
 `AffineSubspace.exists_mem_open_avoid_of_not_le`.
 -/
 
 public section
+
+open TauCeti (singularSupport affineSpan_eq_of_notMem_singularSupport
+  exists_finite_singularSupport_cover)
 
 open TauCeti (PositiveDegrees IsPositiveGrading SupportedRay)
 

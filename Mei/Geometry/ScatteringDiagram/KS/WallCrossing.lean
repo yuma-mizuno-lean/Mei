@@ -30,6 +30,8 @@ assembling these local formulas along an entire path.
 
 public section
 
+open TauCeti (WallComplement singularSupport mem_intrinsicInterior_of_notMem_singularSupport)
+
 open TauCeti (PositiveDegrees IsPositiveGrading)
 
 noncomputable section

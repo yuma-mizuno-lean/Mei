@@ -19,7 +19,7 @@ indexed walls remain distinct factors, so this applies to overlapping wall
 families as well as to walls of a complex.
 
 This combines `ContinuousAffineEquiv.wallComplementMap`, the signed events of
-`Mei.Convex.WallComplement`, and `Finset.noncommProd_map`. Commutation is required
+`TauCeti.WallComplement`, and `Finset.noncommProd_map`. Commutation is required
 only for labels whose supports have the same affine span; labels at different
 crossing times need not commute. No polyhedrality or lattice is required.
 Positive rescaling of the coorientations does not change a polygonal product, so normals
@@ -28,9 +28,11 @@ need only be pulled back up to positive multiples.
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath)
+
 noncomputable section
 
-open Set Mei.Convex Mei.Convex.WallComplement
+open Set Mei.Convex TauCeti.WallComplement
 
 namespace ContinuousAffineEquiv
 

@@ -19,6 +19,8 @@ any directed or KS presentation of the supports and coorientations.
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath)
+
 noncomputable section
 
 open Set Mei Mei.Convex CategoryTheory Opposite

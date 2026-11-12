@@ -31,6 +31,8 @@ is `Quiver.Path.wallPathProduct_eq_of_refines`, applied to the active walls.
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath)
+
 open TauCeti (PositiveDegrees IsPositiveGrading)
 
 open TauCeti (DirectedWallSpaces)

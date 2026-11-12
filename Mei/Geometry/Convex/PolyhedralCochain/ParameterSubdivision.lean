@@ -6,7 +6,8 @@ Authors: Codex
 module
 
 public import Mei.Geometry.Convex.PolyhedralCochain.Pairing
-public import Mei.Geometry.Convex.Polyhedron.SegmentSubdivision
+public import TauCeti.Geometry.ScatteringDiagram.Path.Subdivision
+public import Mei.Geometry.Convex.Polyhedron.AdmissiblePath
 public import Mathlib.Analysis.Convex.Between
 public import Mathlib.Combinatorics.Quiver.Path.Weight
 
@@ -33,6 +34,8 @@ for the orientation under positive parameter rescaling.
 -/
 
 public section
+
+open TauCeti (WallComplement AdmissiblePLPath)
 
 noncomputable section
 
@@ -129,7 +132,7 @@ end Mei.OrientedCell
 
 namespace Quiver.Path
 
-open Mei Mei.Convex.WallComplement
+open Mei TauCeti.WallComplement
 
 variable {N V ι : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}

@@ -21,6 +21,9 @@ are again convex regular charts.
 These comparisons do not require the complexes to cover the ambient space.
 -/
 
+open TauCeti (singularSupport)
+
+
 public noncomputable section
 
 open Set CategoryTheory TopologicalSpace Topology Mei.Convex

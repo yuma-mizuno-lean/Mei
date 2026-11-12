@@ -39,6 +39,8 @@ and an instance of the existence and uniqueness of outgoing completions in Travi
 
 public section
 
+open TauCeti (singularSupport affineSpan_eq_of_notMem_singularSupport)
+
 open TauCeti (PositiveDegrees IsPositiveGrading SupportedRay)
 
 open TauCeti (DirectedWallSpaces)

@@ -19,6 +19,9 @@ logarithms. The comparison supplies the diagram equivalence needed for finite
 and completed coefficient-field naturality.
 -/
 
+open TauCeti (WallComplement)
+
+
 public noncomputable section
 
 open TauCeti (PositiveDegrees IsPositiveGrading)

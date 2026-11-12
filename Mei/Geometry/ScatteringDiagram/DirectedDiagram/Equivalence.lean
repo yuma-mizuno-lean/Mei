@@ -17,6 +17,8 @@ ideal vanishes at a cutoff, agreement there detects full diagram equivalence.
 
 public section
 
+open TauCeti (WallComplement)
+
 open TauCeti (PositiveDegrees IsPositiveGrading)
 
 open TauCeti (DirectedWallSpaces)

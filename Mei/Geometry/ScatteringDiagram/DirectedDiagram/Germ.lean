@@ -33,13 +33,15 @@ This uses `WallComplement.segmentPathProduct_eq_of_crossingEventProduct_eq` and
 
 public section
 
+open TauCeti (WallComplement singularSupport)
+
 open TauCeti (PositiveDegrees IsPositiveGrading)
 
 open TauCeti (DirectedWallSpaces)
 
 noncomputable section
 
-open Set Filter Topology Mei.Convex WallComplement
+open Set Filter Topology Mei.Convex TauCeti.WallComplement
 
 namespace Mei.DirectedDiagram
 

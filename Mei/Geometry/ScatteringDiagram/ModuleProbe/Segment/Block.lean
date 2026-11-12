@@ -23,13 +23,16 @@ expansion of a BCH correction. The backward-ray interpretation follows Mandel,
 §3.3.3 (arXiv:1503.06183v5).
 -/
 
+open TauCeti (WallComplement)
+
+
 public noncomputable section
 
 open TauCeti (PositiveDegrees IsPositiveGrading)
 
 open TauCeti (DirectedWallSpaces)
 
-open Mei.Convex Mei.Convex.WallComplement
+open Mei.Convex TauCeti.WallComplement
 
 namespace Mei.ModuleProbe
 

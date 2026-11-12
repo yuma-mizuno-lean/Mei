@@ -30,6 +30,9 @@ algebras and stability conditions*, Definition 2.3 and §§2.9–2.11
 algebras*, §1.1 (arXiv:1411.1394v2).
 -/
 
+open TauCeti (singularSupport)
+
+
 public noncomputable section
 
 open TauCeti (PositiveDegrees IsPositiveGrading SupportedRay)

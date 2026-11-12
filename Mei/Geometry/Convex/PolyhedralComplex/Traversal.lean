@@ -30,6 +30,8 @@ a short one. Real offsets, unbounded cells and lineality are allowed.
 
 public section
 
+open TauCeti (WallComplement)
+
 open Set Mei.Convex
 
 namespace Mei.FinitePolyhedralComplex

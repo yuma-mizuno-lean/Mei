@@ -29,6 +29,8 @@ This local evaluation connects geometric wall coefficients to transport defects.
 
 public section
 
+open TauCeti (WallComplement)
+
 noncomputable section
 
 open Set Module
@@ -82,7 +84,7 @@ theorem exists_ball_intersectionPairing_eq (C : FinitePolyhedralComplex h) {k : 
     rw [OrientedCell.intersectionIndex_of_nonempty
       ⟨q, hqv, (hσ Q).symm ▸ intrinsicInterior_subset hq⟩]
 
-open Mei.Convex WallComplement
+open Mei.Convex TauCeti.WallComplement
 
 variable {ι : Type*} [Fintype ι] {W : ι → Set V}
 

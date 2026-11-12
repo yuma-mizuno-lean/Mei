@@ -34,13 +34,15 @@ proof of Theorem 2.6, and Gross–Hacking–Keel–Kontsevich,
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath)
+
 open TauCeti (PositiveDegrees IsPositiveGrading)
 
 open TauCeti (DirectedWallSpaces)
 
 noncomputable section
 
-open Set Module Mei.Convex WallComplement
+open Set Module Mei.Convex TauCeti.WallComplement
 
 namespace Mei.DirectedDiagram
 

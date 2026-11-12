@@ -25,9 +25,11 @@ transport to be studied separately from geometric cancellation of its linear par
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath)
+
 noncomputable section
 
-open Mei Mei.Convex WallComplement BCHGroup
+open Mei Mei.Convex TauCeti.WallComplement BCHGroup
 
 namespace Quiver.Path
 

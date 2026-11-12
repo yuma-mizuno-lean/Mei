@@ -33,6 +33,8 @@ consistency of a diagram is needed.
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath)
+
 open Set Mei.Convex
 open scoped unitInterval
 

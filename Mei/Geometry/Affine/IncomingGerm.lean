@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.Affine.Generic
-public import Mei.Geometry.Affine.Transverse
+public import TauCeti.LinearAlgebra.AffineSpace.Transverse
 
 /-!
 # Generic incoming affine germs

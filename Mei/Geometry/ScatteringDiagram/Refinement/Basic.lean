@@ -26,6 +26,8 @@ Tom Bridgeland, *Scattering diagrams, Hall algebras and stability conditions*,
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath)
+
 noncomputable section
 
 open Set Mei.Convex

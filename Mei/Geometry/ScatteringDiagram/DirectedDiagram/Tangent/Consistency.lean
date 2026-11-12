@@ -26,13 +26,15 @@ For the application to local broken-line wall crossing, see Travis Mandel,
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath)
+
 open TauCeti (PositiveDegrees IsPositiveGrading)
 
 open TauCeti (DirectedWallSpaces)
 
 noncomputable section
 
-open Set Filter Topology Mei.Convex WallComplement
+open Set Filter Topology Mei.Convex TauCeti.WallComplement
 
 namespace Mei.DirectedDiagram
 

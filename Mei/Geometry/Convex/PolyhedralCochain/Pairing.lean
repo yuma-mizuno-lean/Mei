@@ -6,7 +6,7 @@ Authors: Claude Code
 module
 
 public import Mei.Geometry.Convex.PolyhedralCochain.Basic
-public import Mei.Geometry.Affine.Transverse
+public import TauCeti.LinearAlgebra.AffineSpace.Transverse
 public import Mei.Analysis.Convex.Intrinsic
 public import Mei.Geometry.Affine.Simplex.Conormal
 

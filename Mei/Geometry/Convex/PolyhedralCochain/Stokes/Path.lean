@@ -37,9 +37,11 @@ subdivision and orientation relations are retained.
 
 public section
 
+open TauCeti (WallComplement AdmissiblePLPath mem_singularSupport)
+
 noncomputable section
 
-open Set Mei.Convex WallComplement
+open Set Mei.Convex TauCeti.WallComplement
 
 namespace Mei.PolyhedralCochain
 

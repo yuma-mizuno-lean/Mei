@@ -43,6 +43,8 @@ cluster scattering diagrams*, Theorem 9.5 (arXiv:2503.03719v1).
 
 public section
 
+open TauCeti (singularSupport singularSupport_comp_subset)
+
 open TauCeti (PositiveDegrees IsPositiveGrading)
 
 open TauCeti (DirectedWallSpaces)
