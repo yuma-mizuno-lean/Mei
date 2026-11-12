@@ -25,6 +25,8 @@ diagrams, theta functions, and refined tropical curve counts*, Example 2.1(i)
 
 public noncomputable section
 
+open TauCeti (ActionIntertwiner)
+
 open TauCeti (PositiveDegrees)
 
 open CategoryTheory

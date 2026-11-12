@@ -5,7 +5,7 @@ Authors: Claude
 -/
 module
 
-public import Mei.CategoryTheory.Grothendieck.SingleObj
+public import TauCeti.CategoryTheory.Grothendieck.SingleObj
 public import Mei.Geometry.ScatteringDiagram.Groupoid
 
 /-!

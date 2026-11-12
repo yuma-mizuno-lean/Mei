@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Algebra.Lie.Filtered.Map
-public import Mei.CategoryTheory.Grothendieck.Intertwiner.SingleObj
+public import TauCeti.CategoryTheory.Grothendieck.Intertwiner.SingleObj
 
 /-!
 # Represented intertwiners for filtered BCH module actions
@@ -26,6 +26,8 @@ The integrated actions and shifted coefficient setting follow Mandel,
 -/
 
 public noncomputable section
+
+open TauCeti (ActionIntertwiner)
 
 open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading GradedLieHom)
 

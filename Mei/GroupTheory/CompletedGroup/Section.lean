@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.CategoryTheory.Grothendieck.SingleObj
+public import TauCeti.CategoryTheory.Grothendieck.SingleObj
 public import Mei.GroupTheory.CompletedGroup.Basic
 
 /-!

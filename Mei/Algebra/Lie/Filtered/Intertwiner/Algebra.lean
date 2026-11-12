@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Algebra.Lie.Filtered.Map
-public import Mei.CategoryTheory.Grothendieck.Intertwiner.SingleObj
+public import TauCeti.CategoryTheory.Grothendieck.Intertwiner.SingleObj
 
 /-!
 # Represented intertwiners for filtered BCH algebra actions
@@ -31,6 +31,8 @@ functions, and refined tropical curve counts*, §2.1 (arXiv:1503.06183v5).
 -/
 
 public noncomputable section
+
+open TauCeti (ActionIntertwiner)
 
 open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading GradedLieHom)
 

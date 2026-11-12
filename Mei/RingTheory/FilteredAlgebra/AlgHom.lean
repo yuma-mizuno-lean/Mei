@@ -7,7 +7,7 @@ module
 
 public import Mei.RingTheory.FilteredAlgebra.Algebra
 public import Mei.RingTheory.FilteredAlgebra.Map
-public import Mei.CategoryTheory.Limits.Reindex
+public import TauCeti.CategoryTheory.Limits.Reindex
 
 /-!
 # Algebra maps between filtered completions
