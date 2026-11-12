@@ -10,6 +10,7 @@ public import Mei.Geometry.Convex.PolyhedralComplex.Star
 public import Mei.Geometry.Convex.Polyhedron.AdmissiblePath
 public import Mei.Analysis.Convex.Sign
 public import Mei.LinearAlgebra.AffineSpace.Ordered
+import Mei.Geometry.Affine.Codimension
 
 /-!
 # The coordinate axes of the plane

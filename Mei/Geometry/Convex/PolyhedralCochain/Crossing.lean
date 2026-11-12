@@ -35,7 +35,7 @@ open TauCeti (WallComplement AdmissiblePLPath mem_singularSupport)
 
 noncomputable section
 
-open Set Mei Mei.Convex
+open Set Mei
 
 namespace Mei.OrientedCell
 

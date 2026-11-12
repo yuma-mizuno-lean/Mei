@@ -6,6 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.Convex.Polyhedron.Path.Product
+public import Mei.Geometry.Affine.Span
 import Mei.Geometry.Convex.Polyhedron.SingularSupport
 
 /-!

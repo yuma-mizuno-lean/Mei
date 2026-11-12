@@ -9,6 +9,7 @@ public import Mei.Geometry.ScatteringDiagram.KS.Space
 public import Mei.Geometry.ScatteringDiagram.KS.Orthogonal
 public import Mei.Geometry.ScatteringDiagram.Finite
 public import Mei.Algebra.Lie.BCH.Completion
+import Mei.Geometry.Affine.Codimension
 
 /-!
 # Finite graded Kontsevich–Soibelman complexes

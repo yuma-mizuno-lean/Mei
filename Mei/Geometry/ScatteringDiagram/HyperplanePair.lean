@@ -8,6 +8,7 @@ module
 public import Mei.Geometry.Convex.PolyhedralComplex.HyperplanePair
 public import Mei.Geometry.ScatteringDiagram.Refinement.Basic
 public import Mei.Geometry.ScatteringDiagram.LocalProduct
+import Mei.Geometry.Affine.Codimension
 
 /-!
 # Wall diagrams on one and on two hyperplanes

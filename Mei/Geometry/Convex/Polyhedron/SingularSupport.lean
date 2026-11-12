@@ -6,8 +6,6 @@ Authors: Codex
 module
 
 public import TauCeti.Geometry.ScatteringDiagram.SingularSupport
-public import Mei.Geometry.Convex.Polyhedron.Boundary
-public import Mei.Geometry.Affine.Codimension
 public import Mei.Geometry.Affine.Span
 import Mei.Analysis.Convex.Intrinsic
 

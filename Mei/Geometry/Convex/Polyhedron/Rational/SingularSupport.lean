@@ -7,6 +7,7 @@ module
 
 public import Mei.Geometry.Convex.Polyhedron.Rational.Face
 public import Mei.Geometry.Convex.Polyhedron.SingularSupport
+import Mei.Geometry.Convex.Polyhedron.Boundary
 
 /-!
 # Exact polyhedral pieces of rational wall singular support

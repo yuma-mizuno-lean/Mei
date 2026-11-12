@@ -9,6 +9,7 @@ public import Mei.Geometry.Convex.PolyhedralComplex.Basic
 public import Mei.Geometry.Convex.Polyhedron.SingularSupport
 public import Mei.Geometry.Convex.Polyhedron.Face
 import TauCeti.LinearAlgebra.AffineSpace.Transverse
+import Mei.Geometry.Convex.Polyhedron.Boundary
 
 /-!
 # Walls, joints and regular points of finite polyhedral complexes

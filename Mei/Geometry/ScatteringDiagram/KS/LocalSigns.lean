@@ -9,6 +9,7 @@ public import Mei.Geometry.ScatteringDiagram.KS.Sign
 public import Mei.Geometry.Convex.PolyhedralComplex.Strata
 public import Mei.LinearAlgebra.Dual.Order
 public import Mathlib.Topology.Instances.Sign
+import Mei.Geometry.Affine.Codimension
 
 /-!
 # Local degree signs at arrangement walls
