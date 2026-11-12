@@ -144,8 +144,7 @@ private theorem ker_quotientEnvelopingHom
 underlying free Lie module is free. In particular this applies over every field. -/
 theorem quotientEnvelopingMap_injective [Module.Free R F] (c : ℕ) :
     Function.Injective (quotientEnvelopingMap R S c) := by
-  rw [quotientEnvelopingMap]
-  apply LieIdeal.liftQ_injective
+  rw [quotientEnvelopingMap, LieIdeal.liftQ_injective_iff]
   exact (ker_quotientEnvelopingHom R S (TauCeti.UniversalEnvelopingAlgebra.ι_injective R F) c).le
 
 end Mei.FreeLieAlgebra
