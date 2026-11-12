@@ -7,6 +7,7 @@ module
 
 public import Mei.Algebra.Lie.BCH.Ray.LogSum
 public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.WallFamily
+public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Refinement
 public import Mei.Geometry.ScatteringDiagram.DirectedWall.Hyperplane
 public import Mei.Geometry.ScatteringDiagram.WallSpace.Logarithmic.RayFactor
 
@@ -27,7 +28,11 @@ More generally, a diagram is a *ray presentation* of labels `g_j` on supports `S
 (`DirectedDiagram.IsRayFactorPresentation`) when its walls are indexed by pairs `(j, w)` of a
 label and a supported ray tangent to `μ_j`, and the wall `(j, w)` lies on `S_j` with normal
 `μ_j`, ray `w` and the ray factor of `g_j` on `w` as label. The diagram of labels on affine
-hyperplanes is one (`DirectedDiagram.isRayFactorPresentation_ofHyperplaneRayFactors`).
+hyperplanes is one (`DirectedDiagram.isRayFactorPresentation_ofHyperplaneRayFactors`). If the
+labels `g_j` are the labels of the walls of a diagram `E` with supports `S_j` and normals `μ_j`,
+so that each `g_j` lies on a single supported ray, the ray presentation refines `E`
+(`DirectedDiagram.IsRayFactorPresentation.refinement`) and is equivalent to it
+(`DirectedDiagram.IsRayFactorPresentation.equivalent`): it only adds identity walls.
 
 This is the common ray presentation of the incoming diagrams of
 `RankTwoPolynomialInput.incomingDiagram`, `BLMPolynomialInput.incomingDiagram` and
@@ -64,6 +69,80 @@ structure IsRayFactorPresentation {μ : ι → Λ →+ ℤ}
   /-- The wall `(j, w)` carries the ray factor of `g_j` on `w`. -/
   label (x : Σ j, {w : SupportedRay d // μ j (ρ w.generator) = 0}) :
     (D.wall x).label = d.rayFactor (tropicalVertexGrading (R := R) d ρ) (g x.1) x.2.val
+
+namespace IsRayFactorPresentation
+
+variable {μ : ι → Λ →+ ℤ}
+  {D : DirectedDiagram (d := d) h (tropicalVertexWallSpaces (R := R) d ρ)
+    (Σ j, {w : SupportedRay d // μ j (ρ w.generator) = 0})}
+  {S : ι → Set V} {g : ι → d.completedBCHGroup (tropicalVertexGrading (R := R) d ρ)}
+  (hD : D.IsRayFactorPresentation S g)
+  {E : DirectedDiagram (d := d) h (tropicalVertexWallSpaces (R := R) d ρ) ι}
+  (hS : ∀ j, (E.wall j).support = S j) (hμ : ∀ j, (E.wall j).normal = μ j)
+  (hg : ∀ j, (E.wall j).label = g j)
+
+include hD hg in
+/-- If `g_j` is the label of the wall `j` of a diagram `E`, the wall `(j, w)` of the ray
+presentation `D` on the ray `w` of the wall `j` of `E` carries `g_j`. -/
+theorem label_eq_of_ray_eq {x : Σ j, {w : SupportedRay d // μ j (ρ w.generator) = 0}}
+    (hx : x.2.val = (E.wall x.1).ray) : (D.wall x).label = (E.wall x.1).label := by
+  rw [hD.label, ← hg, hx]
+  exact d.rayFactor_eq_self _
+    ((tropicalVertexWallSpaces d ρ).wallGroup_le_completedRaySubgroup _ _ (E.wall x.1).label_mem)
+
+variable [HasUniqueDiv Γ]
+
+include hD hg in
+/-- If `g_j` is the label of the wall `j` of a diagram `E`, so that it lies on the ray of that
+wall, a nonidentity wall `(j, w)` of the ray presentation `D` of the labels `g_j` has `w` equal
+to that ray. -/
+theorem ray_eq_of_label_ne_one {x : Σ j, {w : SupportedRay d // μ j (ρ w.generator) = 0}}
+    (hx : (D.wall x).label ≠ 1) : x.2.val = (E.wall x.1).ray := by
+  by_contra hne
+  apply hx
+  rw [hD.label, ← hg]
+  exact d.rayFactor_eq_one _
+    ((tropicalVertexWallSpaces d ρ).wallGroup_le_completedRaySubgroup _ _ (E.wall x.1).label_mem)
+    (Ne.symm hne)
+
+include hD hS hμ hg in
+/-- Let `D` be a ray presentation of labels `g_j` on supports `S_j`, and `E` a diagram whose
+wall `j` has support `S_j`, normal `μ_j` and label `g_j`. Then `D` refines `E`: a nonidentity
+wall `(j, w)` of `D` is assigned to `j`. Since `g_j` lies on the ray of the wall `j` of `E`, its
+ray factors on all other rays are trivial, so only the wall of `D` on that ray is assigned to
+`j`. -/
+def refinement : E.Refinement D where
+  assign x := x.val.1
+  ray_eq x := (hD.ray x.val).trans (hD.ray_eq_of_label_ne_one hg x.property)
+  normal_eq x := (hD.normal x.val).trans (hμ x.val.1).symm
+  label_eq x := hD.label_eq_of_ray_eq hg (hD.ray_eq_of_label_ne_one hg x.property)
+  support_subset x := by rw [hD.support, hS]
+  support_subset_iUnion j hj z hz := by
+    have hw : μ j (ρ (E.wall j).ray.generator) = 0 := by
+      rw [← hμ]
+      exact (E.wall j).normal_direction
+    refine Set.mem_iUnion₂.mpr ⟨⟨⟨j, (E.wall j).ray, hw⟩, ?_⟩, rfl, ?_⟩
+    · rw [hD.label_eq_of_ray_eq hg rfl]
+      exact hj
+    · rw [hD.support, ← hS]
+      exact hz
+  pairwiseDisjoint_intrinsicInterior j x₁ hx₁ x₂ hx₂ hne := by
+    refine (hne (Subtype.ext (Sigma.subtype_ext (hx₁.trans hx₂.symm) ?_))).elim
+    rw [hD.ray_eq_of_label_ne_one hg x₁.property, hD.ray_eq_of_label_ne_one hg x₂.property,
+      show x₁.val.1 = x₂.val.1 from hx₁.trans hx₂.symm]
+
+/-- Each nonidentity wall `(j, w)` of `D` is assigned to `j`. -/
+@[simp]
+theorem refinement_assign (x : {x // (D.wall x).label ≠ 1}) :
+    (hD.refinement hS hμ hg).assign x = x.val.1 := (rfl)
+
+include hD hS hμ hg in
+/-- A diagram whose wall `j` has support `S_j`, normal `μ_j` and label `g_j` is equivalent to the
+ray presentation of the labels `g_j` on the supports `S_j`. -/
+theorem equivalent : E.Equivalent D :=
+  (hD.refinement hS hμ hg).equivalent
+
+end IsRayFactorPresentation
 
 variable (h) (μ : ι → Λ →+ ℤ) (hμ : ∀ j, μ j ≠ 0) (a : ι → ℝ)
   (g : ι → d.completedBCHGroup (tropicalVertexGrading (R := R) d ρ))

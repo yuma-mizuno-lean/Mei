@@ -16,7 +16,9 @@ completion of the monomial `z^m`. Evaluating a power series `g = ∑ᵢ gᵢ X�
 `k`, the class of `∑_{i ≤ k} gᵢ z^{i • m}`
 (`Mei.AlgFiltration.projection_completedAeval_of_val_eq_toCompletion_single`); for instance
 `1 + b X` gives the completion of `1 + b z^m`
-(`Mei.AlgFiltration.completedAeval_one_add_C_mul_X_of_val_eq_toCompletion_single`).
+(`Mei.AlgFiltration.completedAeval_one_add_C_mul_X_of_val_eq_toCompletion_single`), and `c Xⁿ`
+gives the completion of `c z^{n • m}`
+(`Mei.AlgFiltration.completedAeval_monomial_of_val_eq_toCompletion_single`).
 
 Suppose the terms of `F` lie in the monomial ideals of an integral degree `δ` that is
 nonnegative on `M` and positive on `m`. An element of the `k`-th monomial ideal has no
@@ -76,6 +78,18 @@ theorem completedAeval_one_add_C_mul_X_of_val_eq_toCompletion_single
   rw [map_add, map_one, map_mul, completedAeval_C, completedAeval_X, hx,
     ← toCompletion_algebraMap, ← map_mul, coe_algebraMap, Function.comp_apply, single_mul_single,
     zero_add, mul_one, Algebra.algebraMap_self, RingHom.id_apply]
+
+/-- The monomial `c Xⁿ` evaluated at the completion of `z^m` is the completion of
+`c z^{n • m}`. -/
+theorem completedAeval_monomial_of_val_eq_toCompletion_single
+    (hx : (x : F.completion) = F.toCompletion (single m 1)) (n : ℕ) (c : R) :
+    F.completedAeval x (PowerSeries.monomial n c) = F.toCompletion (single (n • m) c) := by
+  have hm : PowerSeries.monomial n c = PowerSeries.C c * PowerSeries.X ^ n := by
+    rw [PowerSeries.X_pow_eq, ← PowerSeries.monomial_zero_eq_C_apply,
+      PowerSeries.monomial_mul_monomial, zero_add, mul_one]
+  rw [hm, map_mul, completedAeval_C, map_pow, completedAeval_X, hx, ← map_pow, single_pow,
+    one_pow, ← toCompletion_algebraMap, ← map_mul, coe_algebraMap, Function.comp_apply,
+    single_mul_single, zero_add, mul_one, Algebra.algebraMap_self, RingHom.id_apply]
 
 variable {P : AddSubmonoid M} {δ : M →+ ℤ}
 

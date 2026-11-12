@@ -18,9 +18,10 @@ For an integer scale `s`, a scalar ray potential `a(T)` defines a skew label wit
 logarithm `s κ(n) ∑ a_j X_{jn}`. Its principal image is the tangent label with
 logarithmic coefficient `T * derivative a` at the integral normal `s κ(n) νₙ`,
 because the normal in degree `jn` is `j νₙ`. Taking `a` to be the inverse Euler
-derivation of `logOf f` gives the wall function `f` at the integral normal
-`s κ(n) νₙ` (equivalently `f^s` at `κ(n) νₙ`) for every scalar series with constant
-coefficient one. The resulting action uses powers in units, so it includes
+derivation of `logOf f` gives the tangent label of `log f(z^{r(n)})`
+(`principalGradedLieHom_completedMap_rayExp_eulerDerivInv_logOf`), with wall function `f` at the
+integral normal `s κ(n) νₙ` (equivalently `f^s` at `κ(n) νₙ`) for every scalar series with
+constant coefficient one. The resulting action uses powers in units, so it includes
 negative normal weights and inverse crossings.
 
 This connects `SkewLieAlgebra.rayExp`, `principalGradedLieHom`, and
@@ -165,14 +166,29 @@ theorem principalGradedLieHom_completedMap_rayExp (q : T) (hq : q.val = D.princi
 
 end Potential
 
-private theorem principal_rayLog (f : PowerSeries R) (hf : constantCoeff f = 1)
-    (q : T) (hq : q.val = D.principalEmbedding n)
-    (u : (G).completionIdeal 1) (hu : u.val = (G).toCompletion (single q 1)) :
+/-- The principal image of the normalized skew ray label with scalar potential
+`eulerDerivInv (logOf f)`, for a scalar series `f` with constant coefficient one, is the tangent
+label `exp(log f(z^{r(n)}) ∂)` at the integral normal `s κ(n) νₙ`. Here `u` is the completed
+monomial `z^{r(n)}` of the tangent coefficient algebra. The character `χ'` is any character equal
+to the cast of `s κ(n) νₙ`; it is a parameter because the tangent coefficient algebra depends on
+it. -/
+theorem principalGradedLieHom_completedMap_rayExp_eulerDerivInv_logOf {χ' : Lpr →+ R}
+    (hχ : χ' = χ) (f : PowerSeries R) (hf : constantCoeff f = 1)
+    (q : tropicalTangentMonoid e ρ χ') (hq : q.val = D.principalEmbedding n)
+    (u : (TropicalVertexCoefficientAction.filtration (R := R) e
+      (tropicalTangentMonoid e ρ χ')).completionIdeal 1)
+    (hu : u.val = (TropicalVertexCoefficientAction.filtration (R := R) e
+      (tropicalTangentMonoid e ρ χ')).toCompletion (single q 1)) :
     (D.principalGradedLieHom d).completedMap
         (SkewLieAlgebra.rayExp β hβ hn hn0 (κ • eulerDerivInv (logOf f))) =
-      (e).completedBCHExp ℳ (completedTropicalTangentField e ρ χ
-        ((G).completedLog ⟨(G).completedAeval u f,
-          (G).completedAeval_sub_one_mem_first u f hf⟩)) := by
+      (e).completedBCHExp ℳ (completedTropicalTangentField e ρ χ'
+        ((TropicalVertexCoefficientAction.filtration (R := R) e
+          (tropicalTangentMonoid e ρ χ')).completedLog
+          ⟨(TropicalVertexCoefficientAction.filtration (R := R) e
+            (tropicalTangentMonoid e ρ χ')).completedAeval u f,
+          (TropicalVertexCoefficientAction.filtration (R := R) e
+            (tropicalTangentMonoid e ρ χ')).completedAeval_sub_one_mem_first u f hf⟩)) := by
+  subst hχ
   have hlabel := D.principalGradedLieHom_completedMap_rayExp (R := R) d hn hn0 s
     (eulerDerivInv (logOf f)) q hq u hu
   have hlog := (congrArg ((G).completedAeval u)
@@ -180,7 +196,6 @@ private theorem principal_rayLog (f : PowerSeries R) (hf : constantCoeff f = 1)
       ((G).completedAeval_logOf u f hf)
   exact hlabel.trans (congrArg (fun x =>
     (e).completedBCHExp ℳ (completedTropicalTangentField e ρ χ x)) hlog)
-
 
 open TropicalVertexCoefficientAction
 
@@ -219,7 +234,8 @@ theorem completedBCHAction_completedMap_rayExp_eulerDerivInv_logOf
   have ht : (t : Lpr) = D.principalEmbedding n := rfl
   let u : (G).completionIdeal 1 := ⟨(G).toCompletion (single t 1),
     D.toCompletion_single_principalEmbedding_mem_first d hn hn0 T t ht⟩
-  have hlabel := D.principal_rayLog (R := R) d hn hn0 s f hconst t ht u rfl
+  have hlabel := D.principalGradedLieHom_completedMap_rayExp_eulerDerivInv_logOf (R := R) d hn hn0 s
+    rfl f hconst t ht u rfl
   refine (congrArg (fun z =>
     (F).completedBCHAction (R := R) e ℳ z ((F).toCompletion (single p c))) hlabel).trans ?_
   have hg : (G).completedAeval u f - 1 ∈ (G).completionIdeal 1 :=

@@ -139,23 +139,30 @@ theorem coe_completedPolynomialWallFunction_eq_completedAeval (i : B.unfrozenInd
 /-- Evaluating the monomial `c Xⁿ` at `q^{eᵢ}` gives the monomial `c z^{n r(eᵢ)}`. -/
 theorem completedAeval_principalMonomial_monomial (i : B.unfrozenIndex) (n : ℕ) (c : R) :
     (F).completedAeval (B.principalMonomial Q i) (monomial n c) =
-      (F).toCompletion (single (n • B.principalExponent Q i) c) := by
-  have hm : monomial n c = C c * X ^ n := by
-    rw [X_pow_eq, ← monomial_zero_eq_C_apply, monomial_mul_monomial, zero_add, mul_one]
-  simp only [hm, map_mul, AlgFiltration.completedAeval_C, map_pow, AlgFiltration.completedAeval_X,
-    coe_principalMonomial, ← map_pow (F).toCompletion, single_pow, one_pow,
-    Algebra.algebraMap_eq_smul_one, smul_mul_assoc, one_mul]
-  rw [← AlgFiltration.toCompletionₐ_apply (R := R), ← map_smul, smul_single, smul_eq_mul, mul_one,
-    AlgFiltration.toCompletionₐ_apply]
+      (F).toCompletion (single (n • B.principalExponent Q i) c) :=
+  AlgFiltration.completedAeval_monomial_of_val_eq_toCompletion_single
+    (B.coe_principalMonomial Q i) n c
+
+/-- Evaluating the polynomial ray function `fᵢ` at the completion of a monomial `z^m` of any
+filtered monoid algebra gives the completion of `1 + ∑_{s<ℓᵢ} aᵢₛ z^{(s+1) m}`. -/
+theorem completedAeval_polynomialWallFunction_of_val_eq_toCompletion_single {M : Type*}
+    [AddCommMonoid M] {G : AlgFiltration R[M]} {x : G.completionIdeal 1} {m : M}
+    (hx : (x : G.completion) = G.toCompletion (single m 1)) (i : B.unfrozenIndex) :
+    G.completedAeval x (B.polynomialWallFunction ℓ a i) =
+      G.toCompletion (1 + ∑ s : Fin (ℓ i), single ((s.val + 1) • m) (a i s)) := by
+  rw [polynomialWallFunction_def]
+  simp only [map_add, map_one, map_sum,
+    AlgFiltration.completedAeval_monomial_of_val_eq_toCompletion_single hx]
 
 /-- The wall function is the polynomial `1 + ∑_{s<ℓᵢ} aᵢₛ z^{(s+1) r(eᵢ)}`. -/
 @[simp]
 theorem coe_completedPolynomialWallFunction (i : B.unfrozenIndex) :
     (B.completedPolynomialWallFunction ℓ a Q i : (F).completion) =
       (F).toCompletion (1 + ∑ s : Fin (ℓ i), single ((s.val + 1) • B.principalExponent Q i)
-        (a i s)) := by
-  rw [coe_completedPolynomialWallFunction_eq_completedAeval, polynomialWallFunction_def]
-  simp only [map_add, map_one, map_sum, completedAeval_principalMonomial_monomial]
+        (a i s)) :=
+  (B.coe_completedPolynomialWallFunction_eq_completedAeval ℓ a Q i).trans
+    (B.completedAeval_polynomialWallFunction_of_val_eq_toCompletion_single ℓ a
+      (B.coe_principalMonomial Q i) i)
 
 /-- If every coefficient `aᵢₛ` is the image of an element of `S`, the wall function `fᵢ` is
 positive for the image of `S[Q]`. -/
