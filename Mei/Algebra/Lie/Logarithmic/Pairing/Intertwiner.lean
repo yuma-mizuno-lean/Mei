@@ -94,7 +94,7 @@ theorem bchActionIntertwiner_labelMap_map (k : ℕᵒᵖ)
         (p.degreeMap.modulus k.unop))))
       (Y := SingleObj.star (BCHGroup (d.lieTruncation (tropicalSubalgebraGrading ρ U d)
         (p.degreeMap.modulus k.unop)))) g) =
-      (p.gradedLieHom.truncatedMap k.unop le_rfl).bchGroupMap g :=
+      (p.gradedLieHom.lieTruncatedMap k.unop le_rfl).bchGroupMap g :=
   (F).bchActionIntertwiner_labelMap_map d (tropicalSubalgebraGrading ρ U d)
     G p.gradedLieHom ψ p.degreeMap.modulus p.degreeMap.monotone_modulus
     (fun _ => le_rfl) hψ

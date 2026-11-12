@@ -46,7 +46,7 @@ the origin. -/
 theorem not_isGeneric_singularDiscriminant_coordinateAxes_diagonal (s : ℝ) :
     ¬ ((coordinateAxes h).singularDiscriminant {((1 : ℝ), (1 : ℝ))}).IsGeneric (s, s) := by
   intro hgen
-  have h0 : (0 : ℝ × ℝ) ∈ Convex.singularSupport
+  have h0 : (0 : ℝ × ℝ) ∈ TauCeti.singularSupport
       (fun P : (coordinateAxes h).walls => (P : Set (ℝ × ℝ))) := by
     rw [singularSupport_coordinateAxes]
     exact Set.mem_singleton _

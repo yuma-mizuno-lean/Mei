@@ -20,7 +20,7 @@ with a degree-preserving coefficient map.
 This gives the sign-factor comparison for coefficient maps and changes of degree
 without choosing compatible finite factorizations anew. It uses the homogeneous
 component criterion `Mei.mem_signSubalgebra_iff`,
-`Mei.GradedLieHom.truncatedMap_mem`, and uniqueness in
+`TauCeti.GradedLieHom.lieTruncatedMap_mem`, and uniqueness in
 `TauCeti.PositiveDegrees.completedSignFactorizationEquiv`. For the underlying sign
 factorization and its attribution to Bridgeland, see
 `Mei.Algebra.Lie.BCH.Sign.Basic`.
@@ -28,13 +28,15 @@ factorization and its attribution to Bridgeland, see
 
 public section
 
-open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading)
+open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading GradedLieHom)
 
 noncomputable section
 
 universe u
 
-namespace Mei.GradedLieHom
+namespace TauCeti.GradedLieHom
+
+open Mei
 
 open TauCeti.PositiveDegrees
 
@@ -56,7 +58,7 @@ theorem truncatedMap_mem_signSubgroup {a k : ℕ} (h : T.modulus k ≤ a)
     {s : SignType} {g : d.truncatedGroup ℒ a}
     (hg : g ∈ (signSubalgebra (d.lieTruncationGrading ℒ a)
       (φ.comp T.toAddMonoidHom) s).bchSubgroup) :
-    (f.truncatedMap k h).bchGroupMap g ∈
+    (f.lieTruncatedMap k h).bchGroupMap g ∈
       (signSubalgebra (e.lieTruncationGrading ℳ k) φ s).bchSubgroup := by
   classical
   rw [LieSubalgebra.mem_bchSubgroup] at hg ⊢
@@ -68,7 +70,7 @@ theorem truncatedMap_mem_signSubgroup {a k : ℕ} (h : T.modulus k ≤ a)
   apply Submodule.sum_mem
   intro n _
   by_cases hn : SignType.sign (φ (T n)) = s
-  · have hy := f.truncatedMap_mem k h
+  · have hy := f.lieTruncatedMap_mem k h
       (DirectSum.decompose (d.lieTruncationGrading ℒ a) (BCHGroup.log g) n).property
     simpa only [hn] using le_signSubalgebra (e.lieTruncationGrading ℳ k) φ (T n) hy
   · rw [hc n (by simpa only [AddMonoidHom.comp_apply] using hn), map_zero]
@@ -104,4 +106,4 @@ theorem completedMap_completedSignFactorizationEquiv_symm
   exact congrArg (fun c => (c s : e.completedBCHGroup ℳ))
     ((completedSignFactorizationEquiv ℳ φ e).eq_symm_apply.mpr hb)
 
-end Mei.GradedLieHom
+end TauCeti.GradedLieHom

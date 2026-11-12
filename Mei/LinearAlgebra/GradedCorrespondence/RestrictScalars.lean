@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mei.LinearAlgebra.GradedCorrespondence.Basic
-public import Mei.Algebra.DirectSum.RestrictScalars
+public import TauCeti.Algebra.DirectSum.RestrictScalars
 
 /-!
 # Restricting scalars in homogeneous correspondences

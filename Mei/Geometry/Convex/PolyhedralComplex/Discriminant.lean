@@ -83,7 +83,7 @@ boundary or a joint of the complex. -/
 theorem add_smul_notMem_singularSupport_walls (C : FinitePolyhedralComplex h)
     {vectors : Finset V} {Q : V} (hQ : (C.singularDiscriminant vectors).IsGeneric Q)
     {n : V} (hn : n ∈ vectors) (t : ℝ) :
-    Q + t • n ∉ Convex.singularSupport (fun W : C.walls => (W : Set V)) :=
+    Q + t • n ∉ TauCeti.singularSupport (fun W : C.walls => (W : Set V)) :=
   fun ht => C.add_smul_notMem_support_codimensionAtLeast_two hQ hn t
     (C.singularSupport_walls_subset_support_codimensionAtLeast ht)
 

@@ -35,7 +35,7 @@ counts*, §3.3.3 (arXiv:1503.06183v5).
 
 public noncomputable section
 
-open TauCeti (PositiveDegrees IsPositiveGrading SupportedRay)
+open TauCeti (PositiveDegrees IsPositiveGrading SupportedRay GradedLieHom)
 
 namespace Mei.ModuleProbe
 
@@ -73,7 +73,7 @@ theorem baseQuotientProjection_mk (k : ℕ) (x : ProbeLie d ℳ p ℒ) :
 @[simp]
 theorem baseQuotientProjection_base (k : ℕ) (x : d.lieTruncation ℒ k) :
     baseQuotientProjection d ℳ p ℒ k
-      ((baseGradedLieHom d ℳ p ℒ).truncatedMap (a := k) k (by simp) x) = x := by
+      ((baseGradedLieHom d ℳ p ℒ).lieTruncatedMap (a := k) k (by simp) x) = x := by
   obtain ⟨x, rfl⟩ := (d.truncationIdeal ℒ k).surjective_mkQ x
   simp [LieIdeal.mkQ_apply, baseInclusion]
 
@@ -121,8 +121,8 @@ theorem moduleQuotientInclusion_projection_of_base_eq_zero (k : ℕ)
 /-- At every finite order the degree-preserving projection is the existing base
 projection followed by the charge-zero inclusion. -/
 theorem truncatedMap_chargeZeroGradedLieHom (k : ℕ) :
-    (chargeZeroGradedLieHom d ℳ p ℒ).truncatedMap (a := k) k (by simp) =
-      ((baseGradedLieHom d ℳ p ℒ).truncatedMap (a := k) k (by simp)).comp
+    (chargeZeroGradedLieHom d ℳ p ℒ).lieTruncatedMap (a := k) k (by simp) =
+      ((baseGradedLieHom d ℳ p ℒ).lieTruncatedMap (a := k) k (by simp)).comp
         (baseQuotientProjection d ℳ p ℒ k) := by
   have hcomp : (chargeZeroGradedLieHom d ℳ p ℒ).toLieHom =
       ((baseGradedLieHom d ℳ p ℒ).toLieHom).comp (LieAlgebra.SemiDirectSum.projr _) := by
@@ -172,7 +172,7 @@ theorem conj_moduleBCHInclusion (k : ℕ)
           ((baseQuotientProjection d ℳ p ℒ (k + 1)).bchGroupMap g))
         a.toAdd)) := by
   let b := (baseQuotientProjection d ℳ p ℒ (k + 1)).bchGroupMap g
-  let s := ((baseGradedLieHom d ℳ p ℒ).truncatedMap (a := k + 1) (k + 1)
+  let s := ((baseGradedLieHom d ℳ p ℒ).lieTruncatedMap (a := k + 1) (k + 1)
     (by simp)).bchGroupMap
   have hs : (baseQuotientProjection d ℳ p ℒ (k + 1)).bchGroupMap (s b) = b := by
     apply BCHGroup.log_injective
@@ -235,7 +235,7 @@ theorem completedBaseProjection_base (g : d.completedBCHGroup ℒ) :
   rw [projection_completedBaseProjection,
     (baseGradedLieHom d ℳ p ℒ).projection_completedMap_of_le k (a := k) (by simp)]
   have hs : (baseQuotientProjection d ℳ p ℒ k).comp
-      ((baseGradedLieHom d ℳ p ℒ).truncatedMap (a := k) k (by simp)) = LieHom.id := by
+      ((baseGradedLieHom d ℳ p ℒ).lieTruncatedMap (a := k) k (by simp)) = LieHom.id := by
     apply LieHom.ext
     intro x
     exact baseQuotientProjection_base d ℳ p ℒ k x

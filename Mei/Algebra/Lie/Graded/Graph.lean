@@ -20,7 +20,7 @@ existing truncation and completed-map constructions apply to this regrading.
 
 public section
 
-open TauCeti (PositiveDegrees IsPositiveGrading)
+open TauCeti (PositiveDegrees IsPositiveGrading GradedLieHom)
 
 namespace Mei
 

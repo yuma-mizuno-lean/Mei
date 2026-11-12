@@ -33,7 +33,7 @@ Appendix B (arXiv:1411.1394v2).
 
 public noncomputable section
 
-open TauCeti (PositiveDegrees)
+open TauCeti (PositiveDegrees GradedLieHom)
 
 namespace Mei.SkewLatticeDatum.AdaptedBasis
 

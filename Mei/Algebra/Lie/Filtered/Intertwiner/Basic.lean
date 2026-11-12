@@ -27,7 +27,7 @@ The integrated actions and shifted coefficient setting follow Mandel,
 
 public noncomputable section
 
-open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading)
+open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading GradedLieHom)
 
 open CategoryTheory CategoryTheory.Limits Opposite
 
@@ -112,7 +112,7 @@ def bchActionIntertwiner :
     (F.quotientTowerMap G ψ μ hμ hψ) (by
       intro k g
       have hτ : τ.app k =
-          GrpCat.ofHom (φ.truncatedMap k.unop (hT k.unop)).bchGroupMap := by
+          GrpCat.ofHom (φ.lieTruncatedMap k.unop (hT k.unop)).bchGroupMap := by
         apply GrpCat.hom_ext
         exact φ.groupTowerMap_app_hom ⟨μ, hμ⟩ hT k
       rw [hτ, quotientTowerMap_app]
@@ -141,7 +141,7 @@ theorem bchActionIntertwiner_labelMap_map (k : ℕᵒᵖ)
     (((F.bchActionIntertwiner d ℒ G φ ψ μ hμ hT hψ hequiv).labelMap.app k).toFunctor.map
       (X := SingleObj.star (BCHGroup (d.lieTruncation ℒ (μ k.unop))))
       (Y := SingleObj.star (BCHGroup (d.lieTruncation ℒ (μ k.unop)))) g) =
-        (φ.truncatedMap k.unop (hT k.unop)).bchGroupMap g := by
+        (φ.lieTruncatedMap k.unop (hT k.unop)).bchGroupMap g := by
   unfold bchActionIntertwiner
   -- The group tower objects are the corresponding concrete BCH quotient groups.
   erw [Functor.singleObjActionIntertwiner_labelMap]

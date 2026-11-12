@@ -37,7 +37,7 @@ form is zero. The principal realization follows Gross–Hacking–Keel–Kontsev
 
 public section
 
-open TauCeti (PositiveDegrees)
+open TauCeti (PositiveDegrees GradedLieHom)
 
 noncomputable section
 
@@ -357,7 +357,7 @@ theorem projection_completedBCHAction_single_of_mem_degreeFiltration
   have hfy : D.principalGradedLieHom d y ∈ (e).degreeSubmodule ℳ a := by
     rw [← PositiveDegrees.truncationIdeal_toSubmodule]
     exact (LieSubmodule.mem_toSubmodule _).mpr
-      ((D.principalGradedLieHom d).map_mem_degreeIdeal a (by
+      ((D.principalGradedLieHom d).map_mem_truncationIdeal a (by
         rwa [PositiveDegrees.graphMap_modulus]))
   have hsq : (Fpr).quotientLieAction e ℳ (a + 1) (D.principalGradedLieHom d y) ^ 2 = 0 := by
     apply LinearMap.ext
@@ -375,9 +375,9 @@ theorem projection_completedBCHAction_single_of_mem_degreeFiltration
     exact (Fpr).antitone (by omega) h₂
   have hle : (d.graphMap D.principalCharacter.toAddMonoidHom).modulus (a + 1) ≤ a + 1 :=
     (PositiveDegrees.graphMap_modulus _ _ _).le
-  have hmap := ((D.principalGradedLieHom d).truncatedMap (a + 1) hle).log_bchGroupMap
+  have hmap := ((D.principalGradedLieHom d).lieTruncatedMap (a + 1) hle).log_bchGroupMap
     (CompletedGroup.projection (a + 1) g)
-  have hmk := GradedLieHom.truncatedMap_mk (D.principalGradedLieHom d) (a + 1) hle y
+  have hmk := GradedLieHom.lieTruncatedMap_mk (D.principalGradedLieHom d) (a + 1) hle y
   simp only [AlgFiltration.projection_completedBCHAction, AlgFiltration.projection_toCompletion]
   rw [GradedLieHom.projection_completedMap_of_le _ (a + 1) hle, hmap, ← hylog, LieIdeal.mkQ_apply,
     hmk, AlgFiltration.truncatedExpLieAction_mk, AlgFiltration.quotientExpLieAction_apply,

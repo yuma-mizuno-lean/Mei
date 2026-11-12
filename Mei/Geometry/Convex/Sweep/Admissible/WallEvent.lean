@@ -142,6 +142,8 @@ end Mei.Convex.AdmissibleRayRealization
 
 namespace TauCeti.WallComplement
 
+open Mei.Convex
+
 variable {V ι : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V] [Finite ι]
   {W : ι → Set V} {x y : WallComplement W}
 

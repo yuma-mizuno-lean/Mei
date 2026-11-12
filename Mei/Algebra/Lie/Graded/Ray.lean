@@ -31,7 +31,7 @@ uses Mathlib's `Submodule.iSup_induction` and `IsLieAbelian`.
 
 public section
 
-open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading SupportedRay)
+open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading SupportedRay GradedLieHom)
 
 namespace Mei
 
@@ -204,7 +204,9 @@ instance isAbelianRays_truncatedGrading [IsAbelianRays d ℒ] (k : ℕ) :
 
 end TauCeti.PositiveDegrees
 
-namespace Mei.GradedLieHom
+namespace TauCeti.GradedLieHom
+
+open Mei
 
 variable {N M R L L' : Type*} [AddCommGroup N] [AddCommGroup M] [CommRing R]
   [LieRing L] [LieAlgebra R L] [LieRing L'] [LieAlgebra R L']
@@ -234,12 +236,12 @@ theorem truncatedMap_mem_rayLieSubalgebra (f : GradedLieHom T ℒ ℳ)
     (hdegree : ∀ n ∈ w.rayDegrees, T n ∈ v.rayDegrees)
     {a k : ℕ} (ha : T.modulus k ≤ a) {x : d.lieTruncation ℒ a}
     (hx : x ∈ rayLieSubalgebra (d.lieTruncationGrading ℒ a) w) :
-    f.truncatedMap k ha x ∈ rayLieSubalgebra (e.lieTruncationGrading ℳ k) v := by
+    f.lieTruncatedMap k ha x ∈ rayLieSubalgebra (e.lieTruncationGrading ℳ k) v := by
   rw [← d.map_rayLieSubalgebra_mkQ ℒ w a] at hx
   obtain ⟨y, hy, rfl⟩ := (LieSubalgebra.mem_map _ _ _).mp hx
   rw [← e.map_rayLieSubalgebra_mkQ ℳ v k]
   refine (LieSubalgebra.mem_map _ _ _).mpr
     ⟨f y, f.map_mem_rayLieSubalgebra hdegree hy, ?_⟩
-  simpa only [LieIdeal.mkQ_apply] using (f.truncatedMap_mk k ha y).symm
+  simpa only [LieIdeal.mkQ_apply] using (f.lieTruncatedMap_mk k ha y).symm
 
-end Mei.GradedLieHom
+end TauCeti.GradedLieHom

@@ -19,7 +19,7 @@ logarithms. The comparison supplies the diagram equivalence needed for finite
 and completed coefficient-field naturality.
 -/
 
-open TauCeti (WallComplement)
+open TauCeti (WallComplement GradedLieHom)
 
 
 public noncomputable section

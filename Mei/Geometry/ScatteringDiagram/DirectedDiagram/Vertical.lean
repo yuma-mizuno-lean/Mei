@@ -20,7 +20,7 @@ affine span contains it is transverse to the vertical direction. The statement
 allows arbitrary supports and repeated indexed walls; it needs neither consistency
 nor a classification of the wall labels.
 
-We pull the finite codimension-two cover of `Convex.singularSupport` and the spans
+We pull the finite codimension-two cover of `TauCeti.singularSupport` and the spans
 of vertically tangent walls back to the zero slice. Each pullback is a proper affine
 subspace of the base, so these pullbacks form an `ExceptionalArrangement`. This
 supplies actual regular germs for the coefficient extraction of module probes; the

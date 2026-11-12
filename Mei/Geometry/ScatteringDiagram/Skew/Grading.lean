@@ -30,7 +30,7 @@ for cluster algebras*, §1 and Appendix B, arXiv:1411.1394v2. The construction u
 
 public section
 
-open TauCeti (PositiveDegrees PositiveDegreeMap)
+open TauCeti (PositiveDegrees PositiveDegreeMap GradedLieHom)
 
 noncomputable section
 

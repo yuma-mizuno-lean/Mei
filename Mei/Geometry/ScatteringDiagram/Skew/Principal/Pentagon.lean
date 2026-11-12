@@ -59,7 +59,7 @@ there). The relation between the walls at `i₁`, `i₂` is the pentagon identit
 
 public section
 
-open TauCeti (PositiveDegrees SupportedRay)
+open TauCeti (PositiveDegrees SupportedRay GradedLieHom)
 
 noncomputable section
 

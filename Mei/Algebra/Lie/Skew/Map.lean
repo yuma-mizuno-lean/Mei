@@ -18,7 +18,7 @@ This allows identities to be transported from a normalized skew form.
 
 public section
 
-open TauCeti (PositiveDegrees PositiveDegreeMap)
+open TauCeti (PositiveDegrees PositiveDegreeMap GradedLieHom)
 
 noncomputable section
 
@@ -115,13 +115,13 @@ variable [Algebra ℚ R] [DecidableEq Γ] [DecidableEq Γ']
 The source order need only cover the degree map's modulus at the target order. -/
 theorem truncatedMap_gradedMap_projection_rayExp {n : Γ} (hn : n ∈ d.monoid) (hn0 : n ≠ 0)
     (g : PowerSeries R) (k a : ℕ) (hma : T.modulus k ≤ a) :
-    ((gradedMap β hβ β' hβ' c T hT).truncatedMap k hma).bchGroupMap
+    ((gradedMap β hβ β' hβ' c T hT).lieTruncatedMap k hma).bchGroupMap
         (CompletedGroup.projection a (rayExp β hβ hn hn0 g)) =
       CompletedGroup.projection k
         (rayExp β' hβ' (T.map_mem hn) (T.map_ne_zero hn hn0) (c • g)) := by
   rw [projection_rayExp, projection_rayExp, LieHom.bchGroupMap_exp]
   congr 1
-  rw [LieIdeal.mkQ_apply, GradedLieHom.truncatedMap_mk]
+  rw [LieIdeal.mkQ_apply, GradedLieHom.lieTruncatedMap_mk]
   have hgen (j : ℕ) : gradedMap β hβ β' hβ' c T hT
       (rayGenerator β hβ hn hn0 j (PowerSeries.coeff (j + 1) g)) =
       rayGenerator β' hβ' (T.map_mem hn) (T.map_ne_zero hn hn0) j

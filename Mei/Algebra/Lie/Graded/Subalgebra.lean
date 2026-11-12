@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Algebra.Lie.Graded.Hom
+public import TauCeti.Algebra.Lie.Graded.Hom
 public import Mei.Algebra.Lie.Graded.Truncation.Basic
 public import Mei.Algebra.PositiveDegrees.Subquotient
 

@@ -29,7 +29,7 @@ homogeneous splitting of abelian-ray labels in Gross–Hacking–Keel–Kontsevi
 
 public noncomputable section
 
-open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading)
+open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading GradedLieHom)
 
 open Set Mei.Convex
 

@@ -29,7 +29,7 @@ Gross–Hacking–Keel–Kontsevich, *Canonical bases for cluster algebras*, §1
 (arXiv:1411.1394v2).
 -/
 
-open TauCeti (WallComplement AdmissiblePLPath)
+open TauCeti (WallComplement AdmissiblePLPath GradedLieHom)
 
 
 public noncomputable section
@@ -210,7 +210,7 @@ theorem levelPathProduct_homogeneousPresentation_map
     (p : AdmissiblePLPath x y) (q : AdmissiblePLPath x' y')
     (hpq : p.vertices.map WallComplement.val = q.vertices.map WallComplement.val) :
     (D.map f).homogeneousPresentation.levelPathProduct k q =
-      (f.truncatedMap (a := k) k (by simp)).bchGroupMap (D.levelPathProduct k p) := by
+      (f.lieTruncatedMap (a := k) k (by simp)).bchGroupMap (D.levelPathProduct k p) := by
   let r := (D.mapPathPrefunctor f k).mapPath p
   have hrq : r.vertices.map WallComplement.val = q.vertices.map WallComplement.val :=
     (D.vertices_mapPathPrefunctor f k p).trans hpq

@@ -68,6 +68,8 @@ see Gross–Hacking–Keel–Kontsevich, *Canonical bases for cluster algebras*,
 
 public section
 
+open TauCeti (GradedLieHom)
+
 noncomputable section
 
 namespace Mei.SkewLatticeDatum.Examples

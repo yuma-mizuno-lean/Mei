@@ -133,7 +133,7 @@ theorem dense_setOf_admissiblePairs [FiniteDimensional ℝ V] [Finite ι]
 
 /-- Countably many allowed vertices admit a common apex in any nonempty open
 set, joined to each vertex by an admissible segment. The vertices may repeat. -/
-theorem WallComplement.exists_mem_open_admissible_spokes
+theorem _root_.TauCeti.WallComplement.exists_mem_open_admissible_spokes
     [FiniteDimensional ℝ V] [Finite ι] {κ : Type*} [Countable κ]
     (W : ι → Set V) (hpoly : ∀ i, TauCeti.IsConvexPolyhedron (W i))
     (hdim : ∀ i, Module.finrank ℝ (affineSpan ℝ (W i)).direction + 1 = Module.finrank ℝ V)

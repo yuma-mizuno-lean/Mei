@@ -25,7 +25,7 @@ is that of Gross–Hacking–Keel–Kontsevich, *Canonical bases for cluster alg
 
 public noncomputable section
 
-open TauCeti (PositiveDegrees PositiveDegreeMap)
+open TauCeti (PositiveDegrees PositiveDegreeMap GradedLieHom)
 
 namespace Mei.LogarithmicVectorField
 
@@ -136,7 +136,7 @@ theorem completedTropicalTangentFieldToSubalgebra_toCompletion
 theorem completionMap_completedTropicalTangentFieldToSubalgebra (u : (H).completion) :
     (G).completionMap F (TropicalPairing.id d ρ U).gradedLieHom.toLieHom.toLinearMap
         id monotone_id (fun k _ hx =>
-          (TropicalPairing.id d ρ U).gradedLieHom.map_mem_degreeIdeal k
+          (TropicalPairing.id d ρ U).gradedLieHom.map_mem_truncationIdeal k
             (by simpa only [LieIdeal.completionFiltration_succ,
               LieSubmodule.mem_toSubmodule, TropicalPairing.id_degreeMap,
               PositiveDegreeMap.id_modulus, id_eq] using hx))

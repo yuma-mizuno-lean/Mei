@@ -29,7 +29,7 @@ theta functions, and refined tropical curve counts*, §3.3.3 and Theorem 2.6
 
 public section
 
-open TauCeti (PositiveDegrees IsPositiveGrading)
+open TauCeti (PositiveDegrees IsPositiveGrading GradedLieHom)
 
 open TauCeti (DirectedWallSpaces)
 noncomputable section

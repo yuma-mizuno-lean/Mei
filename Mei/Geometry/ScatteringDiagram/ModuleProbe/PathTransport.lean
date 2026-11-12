@@ -96,7 +96,7 @@ theorem baseBCHProjection_levelPathProduct (k : ℕ)
     simp [P, y', ← hb]
   have hr : (D.pushforward P).levelPathProduct k
       ((D.levelPathPushforward P k (by simp [P])).mapPath r) =
-      ((chargeZeroGradedLieHom d ℳ p ℒ).truncatedMap (a := k) k (by simp)).bchGroupMap
+      ((chargeZeroGradedLieHom d ℳ p ℒ).lieTruncatedMap (a := k) k (by simp)).bchGroupMap
         (D.levelPathProduct k r) :=
     (D.levelPathProduct_pushforward P k _ r).trans
       (by rw [DirectedWall.Pushforward.ofFixedDegree_lieHom_truncatedMap])
@@ -124,7 +124,7 @@ private theorem exists_pos_forall_exists_levelPathProduct_eq (k : ℕ) :
         (h.prod h').realCharacter (probeNormal (Λ := Λ)) z.val ∈ I →
         (h.prod h').realCharacter (probeNormal (Λ := Λ)) w.val ∈ I →
         ∃ q : AdmissiblePLPath z w,
-          ((chargeZeroGradedLieHom d ℳ p ℒ).truncatedMap (a := k) k (by simp)).bchGroupMap
+          ((chargeZeroGradedLieHom d ℳ p ℒ).lieTruncatedMap (a := k) k (by simp)).bchGroupMap
             (D.levelPathProduct k q) = D.levelPathProduct k q := by
   let := h.finiteDimensional
   let := h'.finiteDimensional
@@ -143,7 +143,7 @@ private theorem exists_pos_forall_exists_levelPathProduct_eq (k : ℕ) :
     (fun a => (D.wall a).finrank_direction_add_one)
     (hIo.preimage ζ.continuous_of_finiteDimensional) hz hw
   refine ⟨q, D.map_levelPathProduct_eq_self k
-    ((chargeZeroGradedLieHom d ℳ p ℒ).truncatedMap (a := k) k (by simp)).bchGroupMap
+    ((chargeZeroGradedLieHom d ℳ p ℒ).lieTruncatedMap (a := k) k (by simp)).bchGroupMap
     (hIc.convex.linear_preimage ζ) q hq ?_⟩
   rintro a ⟨u, huI, hu⟩
   rw [← (chargeZeroGradedLieHom d ℳ p ℒ).projection_completedMap_of_le k (a := k) (by simp)]
@@ -170,9 +170,9 @@ private theorem levelPathProduct_eq_of_baseBCHProjection_eq_one (k : ℕ)
     (r₀ : AdmissiblePLPath x₀ y₀) (r₁ : AdmissiblePLPath x₁ y₁)
     (he : (π k).bchGroupMap (D.levelPathProduct k e) = 1)
     (hf : (π k).bchGroupMap (D.levelPathProduct k f) = 1)
-    (hr₀ : ((chargeZeroGradedLieHom d ℳ p ℒ).truncatedMap (a := k) k (by simp)).bchGroupMap
+    (hr₀ : ((chargeZeroGradedLieHom d ℳ p ℒ).lieTruncatedMap (a := k) k (by simp)).bchGroupMap
       (D.levelPathProduct k r₀) = D.levelPathProduct k r₀)
-    (hr₁ : ((chargeZeroGradedLieHom d ℳ p ℒ).truncatedMap (a := k) k (by simp)).bchGroupMap
+    (hr₁ : ((chargeZeroGradedLieHom d ℳ p ℒ).lieTruncatedMap (a := k) k (by simp)).bchGroupMap
       (D.levelPathProduct k r₁) = D.levelPathProduct k r₁) :
     D.levelPathProduct k r₁ = D.levelPathProduct k r₀ := by
   have hc := congrArg (π k).bchGroupMap

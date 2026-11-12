@@ -17,7 +17,7 @@ specialization enlarges the center of the quantum algebra. Coefficient maps may
 have kernels and can kill wall labels.
 
 The positive graded Lie map is linear over a common base ring. Its wall-preservation
-theorem supplies the hypothesis of `Mei.GradedLieHom.wallGroupMap` and of the
+theorem supplies the hypothesis of `TauCeti.GradedLieHom.wallGroupMap` and of the
 coefficient maps of directed diagrams and outgoing scattering classes. Over rational
 coefficient algebras these apply after restriction to the common rational scalars.
 

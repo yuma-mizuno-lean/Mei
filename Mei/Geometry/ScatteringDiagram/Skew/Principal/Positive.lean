@@ -54,7 +54,7 @@ scattering diagrams*, §8 (arXiv:2503.03719v1).
 
 public section
 
-open TauCeti (PositiveDegrees)
+open TauCeti (PositiveDegrees GradedLieHom)
 
 noncomputable section
 

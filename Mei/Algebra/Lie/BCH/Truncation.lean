@@ -23,7 +23,7 @@ nilpotent or bounded.
 
 public section
 
-open TauCeti (PositiveDegrees IsPositiveGrading)
+open TauCeti (PositiveDegrees IsPositiveGrading GradedLieHom)
 
 noncomputable section
 
@@ -62,7 +62,7 @@ projection on the original completed BCH group. -/
 theorem truncatedBCHCompletionEquiv_completedMap_truncation (k : ℕ)
     (g : d.completedBCHGroup ℒ) :
     d.truncatedBCHCompletionEquiv ℒ k
-      ((GradedLieHom.truncation d ℒ k).completedMap g) =
+      ((GradedLieHom.lieTruncationHom d ℒ k).completedMap g) =
         CompletedGroup.projection k g := by
   apply (d.truncatedBCHCompletionEquiv ℒ k).symm.injective
   rw [MulEquiv.symm_apply_apply]
@@ -70,10 +70,10 @@ theorem truncatedBCHCompletionEquiv_completedMap_truncation (k : ℕ)
     (CompletedGroup.projection k g)).symm
   apply CompletedGroup.ext
   intro l
-  -- Compare at a common upper cutoff using `GradedLieHom.truncatedMap_mk`
+  -- Compare at a common upper cutoff using `GradedLieHom.lieTruncatedMap_mk`
   -- and `CompletedGroup.map_projection`.
-  let f := GradedLieHom.truncation d ℒ k
-  have hmap : f.truncatedMap l (a := max k l) (by simp) =
+  let f := GradedLieHom.lieTruncationHom d ℒ k
+  have hmap : f.lieTruncatedMap l (a := max k l) (by simp) =
       (d.truncationIdeal (d.lieTruncationGrading ℒ k) l).mkQ.comp
         (d.lieTruncationMap ℒ (le_max_left k l)) := by
     apply (d.truncationIdeal ℒ (max k l)).lieHom_qext
@@ -81,7 +81,7 @@ theorem truncatedBCHCompletionEquiv_completedMap_truncation (k : ℕ)
     simp [f, LieIdeal.mkQ_apply]
   let gm : d.truncatedGroup ℒ (max k l) := CompletedGroup.projection (max k l) g
   let gk : d.truncatedGroup ℒ k := CompletedGroup.projection k g
-  have hp : (f.truncatedMap l (a := max k l) (by simp)).bchGroupMap gm =
+  have hp : (f.lieTruncatedMap l (a := max k l) (by simp)).bchGroupMap gm =
       (d.truncationIdeal (d.lieTruncationGrading ℒ k) l).mkQ.bchGroupMap gk := by
     rw [hmap, LieHom.bchGroupMap_comp, MonoidHom.comp_apply]
     exact congrArg (d.truncationIdeal (d.lieTruncationGrading ℒ k) l).mkQ.bchGroupMap

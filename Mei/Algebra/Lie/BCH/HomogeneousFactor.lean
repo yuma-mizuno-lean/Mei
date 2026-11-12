@@ -49,7 +49,7 @@ filtration statements use the commutator bound
 
 public section
 
-open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading)
+open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading GradedLieHom)
 
 noncomputable section
 
@@ -481,7 +481,9 @@ end DegreeFiltration
 
 end TauCeti.PositiveDegrees
 
-namespace Mei.GradedLieHom
+namespace TauCeti.GradedLieHom
+
+open Mei
 
 universe u
 
@@ -514,7 +516,7 @@ theorem logComponent_completedMap_eq_sum (f : GradedLieHom T ℒ ℳ)
   exact d.completionComponent_completionMap_eq_sum e ℒ ℳ F G
     (fun k => d.truncationIdeal_toSubmodule ℒ k) (fun k => e.truncationIdeal_toSubmodule ℳ k)
     f.toLieHom.toLinearMap T (fun _ _ hx => f.map_mem hx) T.modulus T.monotone_modulus
-    (fun k _ hx => f.map_mem_degreeIdeal k hx)
+    (fun k _ hx => f.map_mem_truncationIdeal k hx)
     (fun n hn => IsPositiveGrading.eq_bot n (Or.inl hn)) m k hm _
 
 /-- An injective regrading carries each logarithmic coefficient to its image
@@ -527,7 +529,7 @@ theorem logComponent_completedMap_of_injective (f : GradedLieHom T ℒ ℳ)
   exact d.completionComponent_completionMap_of_injective e ℒ ℳ F G
     (fun k => d.truncationIdeal_toSubmodule ℒ k) (fun k => e.truncationIdeal_toSubmodule ℳ k)
     f.toLieHom.toLinearMap T (fun _ _ hx => f.map_mem hx) T.modulus T.monotone_modulus
-    (fun k _ hx => f.map_mem_degreeIdeal k hx) hT n _
+    (fun k _ hx => f.map_mem_truncationIdeal k hx) hT n _
 
 /-- **Injective completed maps.** A graded Lie homomorphism along an injective regrading that is
 injective on every homogeneous piece has an injective completed map. -/
@@ -572,4 +574,4 @@ theorem completedMap_homogeneousFactor
   simpa only [hid] using f.completedMap_homogeneousFactor_of_injective
     (fun _ _ h => by simpa only [PositiveDegreeMap.id_apply] using h) g n
 
-end Mei.GradedLieHom
+end TauCeti.GradedLieHom

@@ -32,7 +32,7 @@ and `Reconstruction.Completion`. The finite construction follows Tom Bridgeland,
 
 public section
 
-open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading)
+open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading GradedLieHom)
 
 noncomputable section
 
@@ -238,7 +238,7 @@ coefficient changes, as an equality on the same geometric arrangement. -/
 theorem map_reconstructFinite
     (f : GradedLieHom (PositiveDegreeMap.id d) ℒ ℳ) (g : d.truncatedGroup ℒ k) :
     (d.reconstructFinite h ℒ g).map f =
-      d.reconstructFinite h ℳ ((f.truncatedMap k (by simp)).bchGroupMap g) := by
+      d.reconstructFinite h ℳ ((f.lieTruncatedMap k (by simp)).bchGroupMap g) := by
   ext P
   · rw [KSComplex.map_degree]
     rfl

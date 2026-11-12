@@ -32,7 +32,7 @@ refined tropical curve counts*, §2.1 (arXiv:1503.06183).
 
 public section
 
-open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading)
+open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading GradedLieHom)
 
 noncomputable section
 
@@ -70,7 +70,7 @@ theorem mapQ_truncatedBCHAction_of_gradedLieHom {a : ℕ} (k : ℕ)
     (F.submodule (a + 1)).mapQ (G.submodule (k + 1)) ψ
         hψ
         (F.truncatedBCHAction d ℒ a g z) =
-      G.truncatedBCHAction e ℒ' k ((φ.truncatedMap k h).bchGroupMap g)
+      G.truncatedBCHAction e ℒ' k ((φ.lieTruncatedMap k h).bchGroupMap g)
         ((F.submodule (a + 1)).mapQ (G.submodule (k + 1)) ψ
           hψ z) := by
   rw [F.truncatedBCHAction_apply, G.truncatedBCHAction_apply, LieHom.log_bchGroupMap]
@@ -125,7 +125,7 @@ theorem completionMap_completedBCHAction_of_gradedLieHom
   have hr : G.projection k
       (G.completedBCHAction e ℒ' (φ.completedMap g)
         (F.completionMap G ψ μ hμ hψ z)) =
-      G.truncatedBCHAction e ℒ' k ((φ.truncatedMap k hLie).bchGroupMap gk)
+      G.truncatedBCHAction e ℒ' k ((φ.lieTruncatedMap k hLie).bchGroupMap gk)
         (qψ (F.projection a z)) :=
     (G.projection_completedBCHAction e ℒ' (φ.completedMap g) _ k).trans
       (congrArg₂ (fun g z => G.truncatedBCHAction e ℒ' k g z)
@@ -167,7 +167,7 @@ theorem quotientMapₐ_truncatedExpLieAction_of_gradedLieHom {a : ℕ} (k : ℕ)
     (h : T.modulus k ≤ a) (hψ : F.ideal (a + 1) ≤ (G.ideal (k + 1)).comap ψ)
     (x : d.lieTruncation ℒ a) (z : A ⧸ F.ideal (a + 1)) :
     Ideal.quotientMapₐ (G.ideal (k + 1)) ψ hψ (F.truncatedExpLieAction d ℒ a x z) =
-      G.truncatedExpLieAction e ℒ' k (φ.truncatedMap k h x)
+      G.truncatedExpLieAction e ℒ' k (φ.lieTruncatedMap k h x)
         (Ideal.quotientMapₐ (G.ideal (k + 1)) ψ hψ z) := by
   obtain ⟨z, rfl⟩ := (Submodule.Quotient.restrictScalarsEquiv R
     (F.ideal (a + 1))).surjective z
@@ -201,14 +201,14 @@ theorem mapCompletionₐ_completedBCHAction_of_gradedLieHom
     (F.projection_mapCompletionₐ_of_le G ψ μ hμ hψ k a hCoeff _).trans
       (congrArg qψ (F.projection_completedBCHAction d ℒ g z a))
   have hg : BCHGroup.log (CompletedGroup.projection k (φ.completedMap g)) =
-      φ.truncatedMap k hLie (BCHGroup.log (CompletedGroup.projection a g)) :=
+      φ.lieTruncatedMap k hLie (BCHGroup.log (CompletedGroup.projection a g)) :=
     (congrArg BCHGroup.log (φ.projection_completedMap_of_le k hLie g)).trans
-      ((φ.truncatedMap k hLie).log_bchGroupMap _)
+      ((φ.lieTruncatedMap k hLie).log_bchGroupMap _)
   have hr : G.projection k
       (G.completedBCHAction e ℒ' (φ.completedMap g)
         (F.mapCompletionₐ G ψ μ hμ hψ z)) =
       G.truncatedExpLieAction e ℒ' k
-        (φ.truncatedMap k hLie (BCHGroup.log (CompletedGroup.projection a g)))
+        (φ.lieTruncatedMap k hLie (BCHGroup.log (CompletedGroup.projection a g)))
         (qψ (F.projection a z)) :=
     (G.projection_completedBCHAction e ℒ' (φ.completedMap g) _ k).trans
       (congrArg₂ (fun x z => G.truncatedExpLieAction e ℒ' k x z) hg

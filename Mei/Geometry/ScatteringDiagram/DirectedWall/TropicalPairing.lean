@@ -58,7 +58,7 @@ arXiv:1503.06183v5.
 
 public section
 
-open TauCeti (PositiveDegrees PositiveDegreeMap SupportedRay)
+open TauCeti (PositiveDegrees PositiveDegreeMap SupportedRay GradedLieHom)
 
 noncomputable section
 
@@ -92,9 +92,8 @@ def ofTropicalPairing :
     where
   degreeMap := p.degreeMap
   lieHom := p.tropicalVertexGradedLieHom
-  rayMap w := w.map p.degreeMap.toAddMonoidHom (fun _ hn => p.degreeMap.map_mem hn)
-    (fun _ hn h0 => p.degreeMap.map_ne_zero hn h0)
-  mem_rayDegrees_rayMap w _ hn := w.map_mem_rayDegrees _ _ _ hn
+  rayMap w := w.map p.degreeMap
+  mem_rayDegrees_rayMap w _ hn := w.map_mem_rayDegrees p.degreeMap hn
   normalMap := ν
   wall_mem _ _ _ _ hx := p.tropicalVertexGradedLieHom_mem_wall ν hν hx
   spatialMap := A
@@ -127,8 +126,7 @@ theorem ofTropicalPairing_lieHom_completedMap_injective (hT : Function.Injective
 @[simp]
 theorem ofTropicalPairing_rayMap (w : SupportedRay d) :
     (ofTropicalPairing (h := h) (h' := h') p ν hν A hA hνA).rayMap w =
-      w.map p.degreeMap.toAddMonoidHom (fun _ hn => p.degreeMap.map_mem hn)
-        (fun _ hn h0 => p.degreeMap.map_ne_zero hn h0) := (rfl)
+      w.map p.degreeMap := (rfl)
 
 /-- The normal map is the given map of integral normals. -/
 @[simp]
@@ -187,7 +185,7 @@ theorem coe_ofTropicalDegreeMap_lieHom_of_homogeneous {n : Γ}
 @[simp]
 theorem ofTropicalDegreeMap_rayMap (w : SupportedRay d) :
     (ofTropicalDegreeMap (R := R) (h := h) T hT).rayMap w =
-      w.map T.toAddMonoidHom (fun _ hn => T.map_mem hn) (fun _ hn h0 => T.map_ne_zero hn h0) := by
+      w.map T := by
   simp only [ofTropicalDegreeMap, ofTropicalPairing_rayMap, TropicalPairing.ofDegreeMap_degreeMap]
 
 /-- Normals are unchanged. -/
@@ -261,7 +259,7 @@ theorem ofFiniteIndex_degreeMap :
 @[simp]
 theorem ofFiniteIndex_rayMap (w : SupportedRay d) :
     (ofFiniteIndex (R := R) (h := h) (h' := h') T t ht hρ ν q hq hν).rayMap w =
-      w.map T.toAddMonoidHom (fun _ hn => T.map_mem hn) (fun _ hn h0 => T.map_ne_zero hn h0) := by
+      w.map T := by
   simp only [ofFiniteIndex, ofTropicalPairing_rayMap, TropicalPairing.ofFiniteIndex_degreeMap]
 
 /-- The normal map is the given map of integral normals. -/
@@ -342,9 +340,7 @@ theorem ofFiniteAlphabetLift_degreeMap :
 @[simp]
 theorem ofFiniteAlphabetLift_rayMap (w : SupportedRay (PositiveDegrees.finiteAlphabet m)) :
     (ofFiniteAlphabetLift (R := R) (g := g) hτ hτ0 hπ).rayMap w =
-      w.map (PositiveDegrees.finiteAlphabetLift m hτ hτ0).toAddMonoidHom
-        (fun _ hn => (PositiveDegrees.finiteAlphabetLift m hτ hτ0).map_mem hn)
-        (fun _ hn h0 => (PositiveDegrees.finiteAlphabetLift m hτ hτ0).map_ne_zero hn h0) := by
+      w.map (PositiveDegrees.finiteAlphabetLift m hτ hτ0) := by
   rw [ofFiniteAlphabetLift, ofTropicalDegreeMap_rayMap]
 
 /-- Normals are unchanged. -/

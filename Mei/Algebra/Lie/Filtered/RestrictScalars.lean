@@ -60,7 +60,7 @@ theorem restrictScalarsEquiv_truncatedLieAction (k : ℕ)
     Submodule.Quotient.restrictScalarsEquiv R (F.submodule (k + 1))
         ((F.restrictScalars R).truncatedLieAction d
           (fun n => (ℒ n).restrictScalars R) k x a) =
-      F.truncatedLieAction d ℒ k (d.truncatedRestrictScalarsEquiv (R := R) ℒ k x)
+      F.truncatedLieAction d ℒ k (d.lieTruncationRestrictScalarsEquiv (R := R) ℒ k x)
         (Submodule.Quotient.restrictScalarsEquiv R (F.submodule (k + 1)) a) := by
   obtain ⟨x, rfl⟩ := (d.truncationIdeal (fun n => (ℒ n).restrictScalars R) k).surjective_mkQ x
   obtain ⟨m, rfl⟩ := ((F.restrictScalars R).submodule (k + 1)).mkQ_surjective a
@@ -86,12 +86,12 @@ theorem restrictScalarsEquiv_truncatedExpLieAction (k : ℕ)
     Submodule.Quotient.restrictScalarsEquiv R (F.submodule (k + 1))
         ((F.restrictScalars R).truncatedExpLieAction d
           (fun n => (ℒ n).restrictScalars R) k x a) =
-      F.truncatedExpLieAction d ℒ k (d.truncatedRestrictScalarsEquiv (R := R) ℒ k x)
+      F.truncatedExpLieAction d ℒ k (d.lieTruncationRestrictScalarsEquiv (R := R) ℒ k x)
         (Submodule.Quotient.restrictScalarsEquiv R (F.submodule (k + 1)) a) := by
   let e := Submodule.Quotient.restrictScalarsEquiv R (F.submodule (k + 1))
   let D := (F.restrictScalars R).truncatedLieAction d
     (fun n => (ℒ n).restrictScalars R) k x
-  let E := F.truncatedLieAction d ℒ k (d.truncatedRestrictScalarsEquiv (R := R) ℒ k x)
+  let E := F.truncatedLieAction d ℒ k (d.lieTruncationRestrictScalarsEquiv (R := R) ℒ k x)
   have hc : (e.conjAlgEquiv R) D = E.restrictScalars R := by
     ext b
     obtain ⟨a, rfl⟩ := e.surjective b
@@ -118,7 +118,7 @@ theorem restrictScalarsEquiv_truncatedBCHAction (k : ℕ)
         ((F.restrictScalars R).truncatedBCHAction d
           (fun n => (ℒ n).restrictScalars R) k g a) =
       F.truncatedBCHAction d ℒ k
-        ((d.truncatedRestrictScalarsEquiv (R := R) ℒ k).toLieHom.bchGroupMap g)
+        ((d.lieTruncationRestrictScalarsEquiv (R := R) ℒ k).toLieHom.bchGroupMap g)
         (Submodule.Quotient.restrictScalarsEquiv R (F.submodule (k + 1)) a) := by
   simp only [truncatedBCHAction_apply, LieHom.log_bchGroupMap]
   exact F.restrictScalarsEquiv_truncatedExpLieAction d ℒ k (BCHGroup.log g) a
@@ -202,10 +202,10 @@ theorem truncatedExpLieAction_restrictScalars (k : ℕ)
     (x : d.lieTruncation (fun n => (ℒ n).restrictScalars R) k) :
     F.truncatedExpLieAction d (fun n => (ℒ n).restrictScalars R) k x =
       (F.truncatedExpLieAction d ℒ k
-        (d.truncatedRestrictScalarsEquiv (R := R) ℒ k x)).restrictScalars R := by
+        (d.lieTruncationRestrictScalarsEquiv (R := R) ℒ k x)).restrictScalars R := by
   obtain ⟨x, rfl⟩ := (d.truncationIdeal (fun n => (ℒ n).restrictScalars R) k).surjective_mkQ x
   simpa only [LieIdeal.mkQ_apply, truncatedExpLieAction_mk,
-    PositiveDegrees.truncatedRestrictScalarsEquiv_mk] using
+    PositiveDegrees.lieTruncationRestrictScalarsEquiv_mk] using
     F.quotientExpLieAction_restrictScalars d ℒ k x
 
 variable [Algebra ℚ R] [Algebra ℚ S] [LieAlgebra ℚ L] [IsScalarTower ℚ R L] [IsScalarTower ℚ S L]
@@ -215,7 +215,7 @@ theorem truncatedBCHAction_restrictScalars (k : ℕ)
     (g : BCHGroup (d.lieTruncation (fun n => (ℒ n).restrictScalars R) k)) :
     F.truncatedBCHAction d (fun n => (ℒ n).restrictScalars R) k g =
       (F.truncatedBCHAction d ℒ k
-        ((d.truncatedRestrictScalarsEquiv (R := R) ℒ k).toLieHom.bchGroupMap
+        ((d.lieTruncationRestrictScalarsEquiv (R := R) ℒ k).toLieHom.bchGroupMap
           g)).restrictScalars R := by
   ext a
   simp only [truncatedBCHAction_apply, AlgEquiv.restrictScalars_apply,

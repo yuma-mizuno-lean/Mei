@@ -28,7 +28,7 @@ Gross–Hacking–Keel–Kontsevich, *Canonical bases for cluster algebras*, §1
 
 public section
 
-open TauCeti (WallComplement AdmissiblePLPath)
+open TauCeti (WallComplement AdmissiblePLPath GradedLieHom)
 
 open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading)
 
@@ -110,7 +110,7 @@ theorem map_wall (j : ι) : (D.map f).wall j = (D.wall j).map f := (rfl)
 @[simp↓]
 theorem mem_active_map (k : ℕ) (j : ι) :
     j ∈ (D.map f).active k ↔
-      (f.truncatedMap (a := k) k (by simp)).bchGroupMap
+      (f.lieTruncatedMap (a := k) k (by simp)).bchGroupMap
         (CompletedGroup.projection k (D.wall j).label) ≠ 1 := by
   rw [mem_active, map_wall, IndexedWall.map_label,
     f.projection_completedMap_of_le k (a := k) (by simp)]
@@ -168,10 +168,10 @@ theorem levelPathProduct_mapPathPrefunctor (k : ℕ)
     {x y : WallComplement (fun j : D.active k => (D.wall j).support)}
     (p : AdmissiblePLPath x y) :
     (D.map f).levelPathProduct k ((D.mapPathPrefunctor f k).mapPath p) =
-      (f.truncatedMap (a := k) k (by simp)).bchGroupMap (D.levelPathProduct k p) := by
+      (f.lieTruncatedMap (a := k) k (by simp)).bchGroupMap (D.levelPathProduct k p) := by
   -- Fix the concrete tower-group instances before composing geometric products.
   let F : d.truncatedGroup ℒ k →* d.truncatedGroup ℳ k :=
-    (f.truncatedMap (a := k) k (by simp)).bchGroupMap
+    (f.lieTruncatedMap (a := k) k (by simp)).bchGroupMap
   have hlabel (j : ι) : CompletedGroup.projection k ((D.wall j).map f).label =
       F (CompletedGroup.projection k (D.wall j).label) := by
     rw [IndexedWall.map_label,

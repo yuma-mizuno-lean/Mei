@@ -26,7 +26,7 @@ Example 2.1(i), arXiv:1503.06183v5.
 
 public section
 
-open TauCeti (PositiveDegrees PositiveDegreeMap)
+open TauCeti (PositiveDegrees PositiveDegreeMap GradedLieHom)
 
 noncomputable section
 

@@ -40,7 +40,7 @@ Burcroff–Lee–Mou, *Positivity of generalized cluster scattering diagrams*,
 
 public noncomputable section
 
-open TauCeti (PositiveDegrees)
+open TauCeti (PositiveDegrees GradedLieHom)
 
 namespace Mei.SkewLatticeDatum.AdaptedBasis.BLMPolynomialInput
 

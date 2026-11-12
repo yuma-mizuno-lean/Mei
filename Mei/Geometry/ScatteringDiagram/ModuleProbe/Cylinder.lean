@@ -29,7 +29,7 @@ curve counts*, §3.3.3 (arXiv:1503.06183v5).
 
 public section
 
-open TauCeti (WallComplement AdmissiblePLPath)
+open TauCeti (WallComplement AdmissiblePLPath GradedLieHom)
 
 open TauCeti (PositiveDegrees IsPositiveGrading)
 
@@ -98,10 +98,10 @@ theorem levelPathProduct_cylinderDiagram (k : ℕ)
       ((cylinderDiagram d ℳ p ℒ H h h' D).wall a).support)}
     (q : AdmissiblePLPath x y) :
     (cylinderDiagram d ℳ p ℒ H h h' D).levelPathProduct k q =
-      ((baseGradedLieHom d ℳ p ℒ).truncatedMap (a := k) k (by simp)).bchGroupMap
+      ((baseGradedLieHom d ℳ p ℒ).lieTruncatedMap (a := k) k (by simp)).bchGroupMap
         (D.levelPathProduct k ((cylinderPathProjection d ℳ p ℒ H h h' D k).mapPath q)) := by
   let C := cylinderDiagram d ℳ p ℒ H h h' D
-  let f := ((baseGradedLieHom d ℳ p ℒ).truncatedMap (a := k) k (by simp)).bchGroupMap
+  let f := ((baseGradedLieHom d ℳ p ℒ).lieTruncatedMap (a := k) k (by simp)).bchGroupMap
   let W := fun a : D.active k => (D.wall a).support
   let ν := fun a : D.active k => h.realCharacter (D.wall a).normal
   let label := fun a : D.active k => f (CompletedGroup.projection k (D.wall a).label)
@@ -182,7 +182,7 @@ theorem levelPathProduct_cylinderPathLift (k : ℕ) (v : E)
     (q : AdmissiblePLPath x y) :
     (cylinderDiagram d ℳ p ℒ H h h' D).levelPathProduct k
         ((cylinderPathLift d ℳ p ℒ H h h' D k v).mapPath q) =
-      ((baseGradedLieHom d ℳ p ℒ).truncatedMap (a := k) k (by simp)).bchGroupMap
+      ((baseGradedLieHom d ℳ p ℒ).lieTruncatedMap (a := k) k (by simp)).bchGroupMap
         (D.levelPathProduct k q) := by
   rw [levelPathProduct_cylinderDiagram]
   have he := congrArg
@@ -222,7 +222,7 @@ theorem levelTransport_cylinderDiagram {k : ℕ} (hD : D.LevelConsistent k)
       ((cylinderDiagram d ℳ p ℒ H h h' D).wall a).support)) :
     (cylinderDiagram d ℳ p ℒ H h h' D).levelTransport k
         ((cylinderDiagram_levelConsistent_iff d ℳ p ℒ H h h' D k).mpr hD) x y =
-      ((baseGradedLieHom d ℳ p ℒ).truncatedMap (a := k) k (by simp)).bchGroupMap
+      ((baseGradedLieHom d ℳ p ℒ).lieTruncatedMap (a := k) k (by simp)).bchGroupMap
         (D.levelTransport k hD ((cylinderPathProjection d ℳ p ℒ H h h' D k).obj x)
           ((cylinderPathProjection d ℳ p ℒ H h h' D k).obj y)) := by
   obtain ⟨q⟩ := (cylinderDiagram d ℳ p ℒ H h h' D).exists_level_path k x y

@@ -49,7 +49,7 @@ formalized here.
 
 public section
 
-open TauCeti (PositiveDegrees PositiveDegreeMap SupportedRay)
+open TauCeti (PositiveDegrees PositiveDegreeMap SupportedRay GradedLieHom)
 
 noncomputable section
 

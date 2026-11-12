@@ -32,7 +32,7 @@ functions, and refined tropical curve counts*, §2.1 (arXiv:1503.06183v5).
 
 public noncomputable section
 
-open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading)
+open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading GradedLieHom)
 
 open CategoryTheory CategoryTheory.Limits Opposite
 
@@ -120,7 +120,7 @@ def bchActionIntertwiner :
     (F.quotientAlgebraDiagramMap G ψ μ hμ hψ) (by
       intro k g
       have hτ : τ.app k =
-          GrpCat.ofHom (φ.truncatedMap k.unop (hT k.unop)).bchGroupMap := by
+          GrpCat.ofHom (φ.lieTruncatedMap k.unop (hT k.unop)).bchGroupMap := by
         apply GrpCat.hom_ext
         exact φ.groupTowerMap_app_hom ⟨μ, hμ⟩ hT k
       rw [hτ, quotientAlgebraDiagramMap_app]
@@ -131,7 +131,7 @@ def bchActionIntertwiner :
       -- action computation lemmas can rewrite under their original scalar action.
       change Ideal.quotientMapₐ (G.ideal (k.unop + 1)) ψ (hψ k.unop)
           (F.truncatedBCHAction d ℒ (μ k.unop) g a) =
-        G.truncatedBCHAction e ℒ' k.unop ((φ.truncatedMap k.unop (hT k.unop)).bchGroupMap g)
+        G.truncatedBCHAction e ℒ' k.unop ((φ.lieTruncatedMap k.unop (hT k.unop)).bchGroupMap g)
           (Ideal.quotientMapₐ (G.ideal (k.unop + 1)) ψ (hψ k.unop) a)
       erw [truncatedBCHAction_apply, truncatedBCHAction_apply, LieHom.log_bchGroupMap]
       exact F.quotientMapₐ_truncatedExpLieAction_of_gradedLieHom G φ ψ hequiv
@@ -155,7 +155,7 @@ theorem bchActionIntertwiner_labelMap_map (k : ℕᵒᵖ)
     (((F.bchActionIntertwiner d ℒ G φ ψ μ hμ hT hψ hequiv).labelMap.app k).toFunctor.map
       (X := SingleObj.star (BCHGroup (d.lieTruncation ℒ (μ k.unop))))
       (Y := SingleObj.star (BCHGroup (d.lieTruncation ℒ (μ k.unop)))) g) =
-        (φ.truncatedMap k.unop (hT k.unop)).bchGroupMap g := by
+        (φ.lieTruncatedMap k.unop (hT k.unop)).bchGroupMap g := by
   unfold bchActionIntertwiner
   -- The group tower objects are the corresponding concrete BCH quotient groups.
   erw [Functor.singleObjActionIntertwiner_labelMap]

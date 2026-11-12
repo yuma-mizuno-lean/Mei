@@ -28,7 +28,7 @@ Coordinate transport descends `DirectedDiagram.image` using `Equivalent.image` a
 
 public section
 
-open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading)
+open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading GradedLieHom)
 
 open TauCeti (DirectedWallSpaces)
 

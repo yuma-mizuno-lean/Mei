@@ -26,7 +26,7 @@ injective or surjective.
 
 public section
 
-open TauCeti (AdmissiblePLPath)
+open TauCeti (AdmissiblePLPath GradedLieHom)
 
 open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading)
 

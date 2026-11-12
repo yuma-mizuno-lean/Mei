@@ -21,7 +21,7 @@ These are the special case `DirectedWall.Pushforward.ofFixedDegree` of
 
 public section
 
-open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading)
+open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading GradedLieHom)
 
 open TauCeti (DirectedWallSpaces)
 
@@ -58,7 +58,7 @@ theorem LevelEquivalent.map {k : ℕ} (hDE : D.LevelEquivalent E k) :
 /-- A coefficient map injective at the cutoff preserves and reflects finite-order
 equivalence, including for inconsistent diagrams. -/
 theorem levelEquivalent_map_iff_of_injective (k : ℕ)
-    (hinj : Function.Injective (f.truncatedMap k (a := k) (by simp))) :
+    (hinj : Function.Injective (f.lieTruncatedMap k (a := k) (by simp))) :
     (D.map f hf).LevelEquivalent (E.map f hf) k ↔ D.LevelEquivalent E k := by
   refine ⟨?_, fun hDE => hDE.map f hf⟩
   rw [← pushforward_ofFixedDegree, ← pushforward_ofFixedDegree, levelEquivalent_def,

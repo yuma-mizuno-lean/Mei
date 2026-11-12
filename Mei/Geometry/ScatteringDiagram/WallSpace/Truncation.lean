@@ -49,9 +49,9 @@ theorem truncated_wall (k : ℕ) (n : Γ) (m : Λ →+ ℤ) :
 /-- The canonical graded quotient homomorphism preserves directed wall spaces. -/
 theorem truncation_mem_wall (k : ℕ) (n : Γ) (m : Λ →+ ℤ) (x : L)
     (hx : x ∈ H.wall n m) :
-    Mei.GradedLieHom.truncation d ℒ k x ∈ (H.truncated d k).wall n m := by
+    TauCeti.GradedLieHom.lieTruncationHom d ℒ k x ∈ (H.truncated d k).wall n m := by
   rw [truncated_wall]
-  exact Submodule.mem_map.mpr ⟨x, hx, (Mei.GradedLieHom.truncation_apply k x).symm⟩
+  exact Submodule.mem_map.mpr ⟨x, hx, (TauCeti.GradedLieHom.lieTruncationHom_apply k x).symm⟩
 
 /-- Every finite-order wall space maps onto its image at a lower cutoff. -/
 theorem map_truncationMap_wall {k l : ℕ} (h : k ≤ l) (n : Γ) (m : Λ →+ ℤ) :
@@ -65,7 +65,9 @@ theorem map_truncationMap_wall {k l : ℕ} (h : k ≤ l) (n : Γ) (m : Λ →+ �
 
 end TauCeti.DirectedWallSpaces
 
-namespace Mei.GradedLieHom
+namespace TauCeti.GradedLieHom
+
+open Mei
 
 variable {Γ Λ R L L' : Type*} [AddCommMonoid Γ] [AddCommMonoid Λ] [CommRing R]
   [LieRing L] [LieAlgebra R L] [LieRing L'] [LieAlgebra R L'] [DecidableEq Γ]
@@ -76,14 +78,15 @@ variable {Γ Λ R L L' : Type*} [AddCommMonoid Γ] [AddCommMonoid Λ] [CommRing 
 
 /-- A fixed-degree homomorphism preserving wall spaces preserves the wall spaces at every
 finite order. -/
-theorem truncatedMap_mem_truncated_wall (f : Mei.GradedLieHom (TauCeti.PositiveDegreeMap.id d) ℒ ℳ)
+theorem truncatedMap_mem_truncated_wall
+    (f : TauCeti.GradedLieHom (TauCeti.PositiveDegreeMap.id d) ℒ ℳ)
     (hf : ∀ n m, ∀ x ∈ H.wall n m, f x ∈ H'.wall n m) (k : ℕ) {n : Γ} {m : Λ →+ ℤ}
     {x : d.lieTruncation ℒ k} (hx : x ∈ (H.truncated d k).wall n m) :
-    f.truncatedMap k (by simp) x ∈ (H'.truncated d k).wall n m := by
+    f.lieTruncatedMap k (by simp) x ∈ (H'.truncated d k).wall n m := by
   rw [DirectedWallSpaces.truncated_wall] at hx ⊢
   obtain ⟨y, hy, rfl⟩ := Submodule.mem_map.mp hx
   refine Submodule.mem_map.mpr ⟨f y, hf n m y hy, ?_⟩
   simpa only [LieIdeal.mkQ_apply, LieHom.coe_toLinearMap] using
-    (f.truncatedMap_mk k (by simp) y).symm
+    (f.lieTruncatedMap_mk k (by simp) y).symm
 
-end Mei.GradedLieHom
+end TauCeti.GradedLieHom

@@ -63,8 +63,8 @@ theorem ofTangentEquiv_completedEquiv :
   intro g
   rw [completedEquiv_apply, MulEquiv.refl_apply]
   exact DFunLike.congr_fun
-    ((Mei.GradedLieHom.completedMap_eq_of_toLieHom_eq _ (Mei.GradedLieHom.id ℒ)
-      (by ext x; simp)).trans Mei.GradedLieHom.completedMap_id) g
+    ((TauCeti.GradedLieHom.completedMap_eq_of_toLieHom_eq _ (TauCeti.GradedLieHom.id ℒ)
+      (by ext x; simp)).trans TauCeti.GradedLieHom.completedMap_id) g
 
 end CoordinateChange
 

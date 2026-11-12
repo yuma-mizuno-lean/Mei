@@ -23,7 +23,7 @@ theta functions, and refined tropical curve counts*, §2.1 and Definition 2.10
 
 public section
 
-open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading)
+open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading GradedLieHom)
 noncomputable section
 
 namespace TauCeti.PositiveDegreeMap

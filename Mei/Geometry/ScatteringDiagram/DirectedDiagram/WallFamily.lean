@@ -154,7 +154,7 @@ variable {Γ' Λ' V' : Type*} {L' : Type u} [AddCommGroup Γ'] [AddCommGroup Λ'
 Lie map. -/
 theorem familyLog_pushforward (k : ℕ) (i : κ) :
     (D.pushforward P).familyLog a k i =
-      P.lieHom.truncatedMap k le_rfl (D.familyLog a (P.degreeMap.modulus k) i) := by
+      P.lieHom.lieTruncatedMap k le_rfl (D.familyLog a (P.degreeMap.modulus k) i) := by
   classical
   let s := (Set.toFinite (D.active (P.degreeMap.modulus k))).toFinset.filter (a · = i)
   have hs : ∀ j ∈ s, a j = i := fun j hj => (Finset.mem_filter.mp hj).2

@@ -35,7 +35,7 @@ tropical curve counts*, Example 2.1(iii), arXiv:1503.06183v5.
 
 public section
 
-open TauCeti (PositiveDegrees PositiveDegreeMap)
+open TauCeti (PositiveDegrees PositiveDegreeMap GradedLieHom)
 
 noncomputable section
 
@@ -81,13 +81,13 @@ theorem quotientMap_truncatedCoefficientInclusion (k : ℕ)
     Ideal.quotientMap ((G).ideal (k + 1)) ψ (positiveMap_ideal_le d e T φ.toRingHom h k)
         (truncatedCoefficientInclusion q β d (T.modulus k) x) =
       truncatedCoefficientInclusion q' β' e k
-        (e.truncatedRestrictScalarsEquiv (R := K) ℳ k
-          ((positiveGradedLieHom φ T h).truncatedMap k le_rfl
-            ((d.truncatedRestrictScalarsEquiv (R := K) ℒ (T.modulus k)).symm x))) := by
+        (e.lieTruncationRestrictScalarsEquiv (R := K) ℳ k
+          ((positiveGradedLieHom φ T h).lieTruncatedMap k le_rfl
+            ((d.lieTruncationRestrictScalarsEquiv (R := K) ℒ (T.modulus k)).symm x))) := by
   induction x using Submodule.Quotient.induction_on with | _ x =>
   simp only [truncatedCoefficientInclusion_mk,
-    Ideal.quotientMap_mk, PositiveDegrees.truncatedRestrictScalarsEquiv_symm_mk,
-    GradedLieHom.truncatedMap_mk, PositiveDegrees.truncatedRestrictScalarsEquiv_mk]
+    Ideal.quotientMap_mk, PositiveDegrees.lieTruncationRestrictScalarsEquiv_symm_mk,
+    GradedLieHom.lieTruncatedMap_mk, PositiveDegrees.lieTruncationRestrictScalarsEquiv_mk]
   exact congrArg (Ideal.Quotient.mk _)
     (positiveMap_positiveLieToCoefficients d e T φ h x)
 

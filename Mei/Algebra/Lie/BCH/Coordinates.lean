@@ -26,7 +26,7 @@ The carriers and transition laws are those of `LieIdeal.completion` and
 
 public section
 
-open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading)
+open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading GradedLieHom)
 
 namespace TauCeti.PositiveDegrees
 
@@ -144,7 +144,9 @@ theorem completedBCHExp_symm_inv (g : d.completedBCHGroup ℒ) :
 
 end TauCeti.PositiveDegrees
 
-namespace Mei.GradedLieHom
+namespace TauCeti.GradedLieHom
+
+open Mei
 
 universe u
 
@@ -170,19 +172,19 @@ theorem completedBCHExp_symm_completedMap (f : GradedLieHom T ℒ ℳ)
     (g : d.completedBCHGroup ℒ) :
     (e.completedBCHExp ℳ).symm (f.completedMap g) =
       (F).completionMap G f.toLieHom.toLinearMap T.modulus T.monotone_modulus
-        (fun k _ hx => f.map_mem_degreeIdeal k hx) ((d.completedBCHExp ℒ).symm g) := by
+        (fun k _ hx => f.map_mem_truncationIdeal k hx) ((d.completedBCHExp ℒ).symm g) := by
   apply (G).completion_ext
   intro k
   rw [ModuleFiltration.projection_completionMap]
   rw [← LieIdeal.completionProjection_apply,
     e.completionProjection_completedBCHExp_symm ℳ, projection_completedMap]
-  refine ((f.truncatedMap k le_rfl).log_bchGroupMap
+  refine ((f.lieTruncatedMap k le_rfl).log_bchGroupMap
     (CompletedGroup.projection (T.modulus k) g)).trans ?_
   rw [← d.completionProjection_completedBCHExp_symm ℒ,
     LieIdeal.completionProjection_apply]
   rw [truncatedMap_def]
   exact LinearMap.congr_fun
     ((d.truncationIdeal ℒ (T.modulus k)).toLinearMap_mapQ (e.truncationIdeal ℳ k)
-      f.toLieHom (fun _ hx => f.map_mem_degreeIdeal k hx)) _
+      f.toLieHom (fun _ hx => f.map_mem_truncationIdeal k hx)) _
 
-end Mei.GradedLieHom
+end TauCeti.GradedLieHom

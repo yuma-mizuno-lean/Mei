@@ -51,7 +51,7 @@ Example 2.1(i) and Definition 2.2.
 
 public section
 
-open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading SupportedRay)
+open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading SupportedRay GradedLieHom)
 
 open TauCeti (DirectedWallSpaces)
 
@@ -346,8 +346,8 @@ omit [Algebra ℚ R] [LieAlgebra ℚ L] [IsScalarTower ℚ R L] in
 @[simp]
 theorem dilation_lieHom_truncatedMap (k : ℕ)
     (hk : (dilation d h H q hq).degreeMap.modulus k ≤ k) :
-    (dilation d h H q hq).lieHom.truncatedMap k hk = LieHom.id :=
-  GradedLieHom.truncatedMap_id k
+    (dilation d h H q hq).lieHom.lieTruncatedMap k hk = LieHom.id :=
+  GradedLieHom.lieTruncatedMap_id k
 
 end Pushforward
 
@@ -397,10 +397,9 @@ theorem pushforward_label : (W.pushforward P).label = P.lieHom.completedMap W.la
 transport of supported rays: the image of the primitive generator is a positive multiple
 of the target primitive generator. -/
 theorem pushforward_ray_eq_map [Module.Free ℤ Γ'] :
-    (W.pushforward P).ray = W.ray.map P.degreeMap.toAddMonoidHom
-      (fun _ hn => P.degreeMap.map_mem hn) (fun _ hn h0 => P.degreeMap.map_ne_zero hn h0) := by
+    (W.pushforward P).ray = W.ray.map P.degreeMap := by
   obtain ⟨n, hn⟩ := W.ray.rayDegrees_nonempty
-  exact ((W.ray.map_eq_iff_exists_mem_rayDegrees _ _ _ _).mpr
+  exact ((W.ray.map_eq_iff_exists_mem_rayDegrees _ _).mpr
     ⟨n, hn, P.mem_rayDegrees_rayMap W.ray n hn⟩).symm
 
 /-- The image of an actual degree of the wall is an actual degree of the pushed wall. -/

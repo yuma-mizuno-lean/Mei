@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Algebra.Lie.BCH.Associativity
-public import Mei.Algebra.Lie.RestrictScalars
+public import TauCeti.Algebra.Lie.RestrictScalars
 public import Mathlib.Data.Finset.NoncommProd
 
 /-!

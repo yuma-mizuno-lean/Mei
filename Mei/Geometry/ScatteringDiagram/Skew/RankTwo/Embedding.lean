@@ -187,7 +187,7 @@ by `X_n ↦ {x, y}⁻¹ X_{a x + b y}`. -/
 def planeTransport (hxy : βℚ x.1 y.1 ≠ 0) (k : ℕ) :=
   ((SkewLieAlgebra.gradedMap (E.coefficientForm ℚ) (E.isAlt_coefficientForm ℚ) βℚ hβℚ
           (βℚ x.1 y.1)⁻¹ (D.planeMap d x y)
-          (D.coefficientForm_eq_inv_mul_planeMap d x y hxy)).truncatedMap k
+          (D.coefficientForm_eq_inv_mul_planeMap d x y hxy)).lieTruncatedMap k
         (D.planeMap_modulus_le d x y k)).bchGroupMap
 
 /-- The finite-order projection of a ray label of the plane, carried to `D` by the map

@@ -26,7 +26,7 @@ The probe construction and its transport interpretation follow Mandel,
 
 public section
 
-open TauCeti (PositiveDegrees IsPositiveGrading)
+open TauCeti (PositiveDegrees IsPositiveGrading GradedLieHom)
 noncomputable section
 
 namespace Mei.ModuleProbe
@@ -166,7 +166,7 @@ theorem base_conj_completedModuleBCHInclusion (g : d.completedBCHGroup ℒ)
   | succ k =>
     have hb : CompletedGroup.projection (k + 1)
         ((baseGradedLieHom d ℳ p ℒ).completedMap g) =
-        ((baseGradedLieHom d ℳ p ℒ).truncatedMap (a := k + 1) (k + 1)
+        ((baseGradedLieHom d ℳ p ℒ).lieTruncatedMap (a := k + 1) (k + 1)
           (by simp)).bchGroupMap (CompletedGroup.projection (k + 1) g) :=
       GradedLieHom.projection_completedMap_of_le (baseGradedLieHom d ℳ p ℒ)
         (k + 1) (by simp) g

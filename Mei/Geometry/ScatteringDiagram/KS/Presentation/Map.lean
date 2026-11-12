@@ -26,7 +26,7 @@ Gross–Hacking–Keel–Kontsevich, *Canonical bases for cluster algebras*, §1
 
 public section
 
-open TauCeti (WallComplement AdmissiblePLPath)
+open TauCeti (WallComplement AdmissiblePLPath GradedLieHom)
 
 open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading)
 
@@ -61,7 +61,7 @@ theorem pathProduct_toKSComplex_map (k : ℕ)
     (p : AdmissiblePLPath x y) (q : AdmissiblePLPath x' y')
     (hpq : p.vertices.map WallComplement.val = q.vertices.map WallComplement.val) :
     ((D.map f).toKSComplex k).toFiniteWallDiagram.pathProduct q =
-      (f.truncatedMap (a := k) k (by simp)).bchGroupMap
+      (f.lieTruncatedMap (a := k) k (by simp)).bchGroupMap
         ((D.toKSComplex k).toFiniteWallDiagram.pathProduct p) := by
   let r := (D.pathPrefunctor k).mapPath p
   let r' := (D.mapPathPrefunctor f k).mapPath r

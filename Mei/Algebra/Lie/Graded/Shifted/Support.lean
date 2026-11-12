@@ -45,7 +45,7 @@ Definition 2.10 and Proposition 2.13 (arXiv:1503.06183v5).
 
 public noncomputable section
 
-open TauCeti (PositiveDegrees IsPositiveGrading)
+open TauCeti (PositiveDegrees IsPositiveGrading GradedLieHom)
 
 namespace TauCeti.PositiveDegrees
 

@@ -29,7 +29,7 @@ exponential, `LinearEquiv.ofLinearMap`, and the compatible-family lift
 
 public section
 
-open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading)
+open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading GradedLieHom)
 
 attribute [local instance] LieRing.ofAssociativeRing
 
@@ -210,24 +210,24 @@ theorem mapQ_truncatedExpLieAction_of_gradedLieHom {a : ℕ} (k : ℕ)
     (F.submodule (a + 1)).mapQ (G.submodule (k + 1)) ψ
         hψ
         (F.truncatedExpLieAction d ℒ a x z) =
-      G.truncatedExpLieAction e ℒ' k (φ.truncatedMap k h x)
+      G.truncatedExpLieAction e ℒ' k (φ.lieTruncatedMap k h x)
         ((F.submodule (a + 1)).mapQ (G.submodule (k + 1)) ψ
           hψ z) := by
   let qψ := (F.submodule (a + 1)).mapQ (G.submodule (k + 1)) ψ
     hψ
-  have hc : (G.truncatedLieAction e ℒ' k (φ.truncatedMap k h x)).comp qψ =
+  have hc : (G.truncatedLieAction e ℒ' k (φ.lieTruncatedMap k h x)).comp qψ =
       qψ.comp (F.truncatedLieAction d ℒ a x) := by
     apply LinearMap.ext
     intro z
     obtain ⟨x, rfl⟩ := (d.truncationIdeal ℒ a).surjective_mkQ x
     obtain ⟨m, rfl⟩ := (F.submodule (a + 1)).mkQ_surjective z
     simp only [LinearMap.comp_apply, qψ, Submodule.mkQ_apply, Submodule.mapQ_apply,
-      LieIdeal.mkQ_apply, GradedLieHom.truncatedMap_mk, truncatedLieAction_mk,
+      LieIdeal.mkQ_apply, GradedLieHom.lieTruncatedMap_mk, truncatedLieAction_mk,
       quotientLieAction_mk, hequiv]
   simpa only [truncatedExpLieAction_apply, LinearMap.comp_apply] using
     (LinearMap.congr_fun (Module.End.commute_exp_left_of_commute
       ⟨a + 1, F.truncatedLieAction_pow_eq_zero d ℒ a x⟩
-      ⟨k + 1, G.truncatedLieAction_pow_eq_zero e ℒ' k (φ.truncatedMap k h x)⟩ hc) z).symm
+      ⟨k + 1, G.truncatedLieAction_pow_eq_zero e ℒ' k (φ.lieTruncatedMap k h x)⟩ hc) z).symm
 
 end GeneralEquivariantMap
 
@@ -249,7 +249,7 @@ theorem mapQ_truncatedExpLieAction (k : ℕ) (x : d.lieTruncation ℒ k)
         (F.truncatedExpLieAction d ℒ k x a) =
       G.truncatedExpLieAction d ℒ k x
         ((F.submodule (k + 1)).mapQ (G.submodule (k + 1)) f (hf k) a) := by
-  simpa only [GradedLieHom.truncatedMap_id, LieHom.id_apply] using
+  simpa only [GradedLieHom.lieTruncatedMap_id, LieHom.id_apply] using
     F.mapQ_truncatedExpLieAction_of_gradedLieHom (d := d) (ℒ := ℒ) G
       (GradedLieHom.id (d := d) ℒ) f
       (fun x m => by simpa only [GradedLieHom.id_apply] using hequiv x m)

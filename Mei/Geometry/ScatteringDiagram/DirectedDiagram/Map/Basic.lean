@@ -26,7 +26,7 @@ action or injective coefficient map is needed.
 
 public section
 
-open TauCeti (WallComplement AdmissiblePLPath)
+open TauCeti (WallComplement AdmissiblePLPath GradedLieHom)
 
 open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading)
 

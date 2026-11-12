@@ -182,7 +182,7 @@ theorem combinedLabel_pushforward (k : ℕ) {a : ℕ} (ha : P.degreeMap.modulus 
     (hθ : θ ∉ singularSupport (fun j : D.active a => (D.wall j).support)) :
     (D.pushforward P).combinedLabel k (P.spatialMap θ) (P.spatialMap.toAffineEquiv.linear v)
         (D.notMem_singularSupport_pushforward P k ha hθ) =
-      (P.lieHom.truncatedMap k ha).bchGroupMap (D.combinedLabel a θ v hθ) := by
+      (P.lieHom.lieTruncatedMap k ha).bchGroupMap (D.combinedLabel a θ v hθ) := by
   /- Both combined labels are products over the active walls through the point
   (`combinedLabel_eq_noncommProd_incidentActive`). The truncated BCH map sends each source factor
   to the order-`k` projection of the pushed label with the original crossing sign. These factors
@@ -194,7 +194,7 @@ theorem combinedLabel_pushforward (k : ℕ) {a : ℕ} (ha : P.degreeMap.modulus 
   let e := D.activePushforwardEmbedding P k ha
   -- The truncated BCH map of the pushforward, between the objects of the two group towers.
   let F : (d.groupTower ℒ).obj (Opposite.op a) →* (d'.groupTower ℳ).obj (Opposite.op k) :=
-    (P.lieHom.truncatedMap k ha).bchGroupMap
+    (P.lieHom.lieTruncatedMap k ha).bchGroupMap
   have hproj (b : D.active a) : F (CompletedGroup.projection a (D.wall b).label) =
       CompletedGroup.projection k ((D.pushforward P).wall b).label :=
     (D.projection_pushforward_wall_label P k ha b).symm

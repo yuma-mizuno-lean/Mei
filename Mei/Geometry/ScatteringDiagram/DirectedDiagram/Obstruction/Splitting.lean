@@ -32,7 +32,7 @@ used for module probes. The kernel need not be abelian for these statements.
 
 public section
 
-open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading)
+open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading GradedLieHom)
 
 open TauCeti (DirectedWallSpaces)
 
@@ -77,7 +77,7 @@ def LoopProjection.ofSplitting {k : ℕ} (hq : (D.map π hπ).LevelConsistent k)
   isIdempotentElem := GradedLieHom.isIdempotentElem_idSubSectionComp hsπ k
   decompose_map x n := by
     rw [GradedLieHom.idSubSectionComp_apply, DirectSum.decompose_sub, DFinsupp.sub_apply,
-      Submodule.coe_sub, s.decompose_truncatedMap, π.decompose_truncatedMap,
+      Submodule.coe_sub, s.decompose_lieTruncatedMap, π.decompose_lieTruncatedMap,
       GradedLieHom.idSubSectionComp_apply]
   map_wall n m x hx := by
     rw [GradedLieHom.idSubSectionComp_apply]
@@ -86,7 +86,8 @@ def LoopProjection.ofSplitting {k : ℕ} (hq : (D.map π hπ).LevelConsistent k)
   map_log_loop {x} p := by
     apply GradedLieHom.idSubSectionComp_of_map_eq_zero
     rw [← pushforward_ofFixedDegree] at hq
-    have hp : (π.truncatedMap k (a := k) (by simp)).bchGroupMap (D.levelPathProduct k p) = 1 := by
+    have hp :
+        (π.lieTruncatedMap k (a := k) (by simp)).bchGroupMap (D.levelPathProduct k p) = 1 := by
       rw [← DirectedWall.Pushforward.ofFixedDegree_lieHom_truncatedMap (h := h) π hπ k (by simp)]
       exact (D.levelPathProduct_pushforward (.ofFixedDegree π hπ) k (by simp) p).symm.trans
         ((levelConsistent_iff_loops _ k).mp hq _ _)
@@ -96,10 +97,10 @@ def LoopProjection.ofSplitting {k : ℕ} (hq : (D.map π hπ).LevelConsistent k)
     · obtain ⟨y, hy⟩ := hlift j hj
       refine (hne ?_).elim
       have hl : log (CompletedGroup.projection k (D.wall j).label) =
-          s.truncatedMap k (by simp) (log (CompletedGroup.projection k y)) := by
+          s.lieTruncatedMap k (by simp) (log (CompletedGroup.projection k y)) := by
         rw [hy, s.projection_completedMap_of_le k (a := k) (by simp)]
         exact LieHom.log_bchGroupMap _ _
-      rw [hl, s.decompose_truncatedMap, GradedLieHom.idSubSectionComp_truncatedMap hsπ]
+      rw [hl, s.decompose_lieTruncatedMap, GradedLieHom.idSubSectionComp_truncatedMap hsπ]
     · rcases hfull j hj with hfull | ⟨m, hm, a, ha, he⟩
       · exact hfull
       · have hmn : m ≠ n := by intro he; subst m; omega

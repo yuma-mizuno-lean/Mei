@@ -26,14 +26,14 @@ order-`⌊k / c⌋` truncation for `δ`. The order-`k` projection of the change 
 is the identity of Lie algebras applied at order `⌊k / c⌋`, an isomorphism of truncations,
 and the reverse change is computed at order `c k`.
 
-The construction uses `Mei.GradedLieHom.completedMap`, its composition law and
+The construction uses `TauCeti.GradedLieHom.completedMap`, its composition law and
 its independence from the degree map and modulus. In particular, the two cutoff
 moduli need not be mutually inverse functions.
 -/
 
 public section
 
-open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading)
+open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading GradedLieHom)
 
 noncomputable section
 
@@ -88,7 +88,7 @@ theorem _root_.TauCeti.PositiveDegrees.projection_changeDegreeEquiv
     (hP : d.monoid = e.monoid) (k : ℕ)
     (x : d.completedBCHGroup ℒ) :
     CompletedGroup.projection k (d.changeDegreeEquiv e ℒ hP x) =
-      ((GradedLieHom.changeDegree d e hP ℒ).truncatedMap k le_rfl).bchGroupMap
+      ((GradedLieHom.changeDegree d e hP ℒ).lieTruncatedMap k le_rfl).bchGroupMap
         (CompletedGroup.projection ((PositiveDegreeMap.changeDegree d e hP).modulus k) x) :=
   GradedLieHom.projection_completedMap _ k x
 
@@ -183,12 +183,12 @@ omit [Algebra ℚ R] [LieAlgebra ℚ L] [IsScalarTower ℚ R L] in
 truncation for `c δ` is bijective. -/
 theorem _root_.TauCeti.PositiveDegrees.bijective_truncatedMap_changeDegree_scale (k : ℕ) :
     Function.Bijective
-      ((GradedLieHom.changeDegree d (d.scale c) (d.scale_monoid c).symm ℒ).truncatedMap k
+      ((GradedLieHom.changeDegree d (d.scale c) (d.scale_monoid c).symm ℒ).lieTruncatedMap k
         (PositiveDegreeMap.changeDegree_scale_modulus_le d c k)) := by
   refine ⟨fun x y hxy => ?_, fun y => ?_⟩
   · induction x using Submodule.Quotient.induction_on
     induction y using Submodule.Quotient.induction_on
-    rw [GradedLieHom.truncatedMap_mk, GradedLieHom.truncatedMap_mk,
+    rw [GradedLieHom.lieTruncatedMap_mk, GradedLieHom.lieTruncatedMap_mk,
       Submodule.Quotient.eq] at hxy
     rw [Submodule.Quotient.eq]
     simpa only [degreeIdeal_scale, GradedLieHom.changeDegree_apply] using hxy
@@ -200,7 +200,7 @@ projection. -/
 theorem _root_.TauCeti.PositiveDegrees.projection_changeDegreeEquiv_scale
     (k : ℕ) (x : d.completedBCHGroup ℒ) :
     CompletedGroup.projection k (d.changeDegreeEquiv (d.scale c) ℒ (d.scale_monoid c).symm x) =
-      ((GradedLieHom.changeDegree d (d.scale c) (d.scale_monoid c).symm ℒ).truncatedMap k
+      ((GradedLieHom.changeDegree d (d.scale c) (d.scale_monoid c).symm ℒ).lieTruncatedMap k
         (PositiveDegreeMap.changeDegree_scale_modulus_le d c k)).bchGroupMap
           (CompletedGroup.projection (k / c) x) :=
   GradedLieHom.projection_completedMap_of_le _ k _ x
@@ -210,7 +210,7 @@ projection. -/
 theorem _root_.TauCeti.PositiveDegrees.projection_changeDegreeEquiv_scale_symm
     (k : ℕ) (x : (d.scale c).completedBCHGroup ℒ) :
     CompletedGroup.projection k ((d.scale c).changeDegreeEquiv d ℒ (d.scale_monoid c) x) =
-      ((GradedLieHom.changeDegree (d.scale c) d (d.scale_monoid c) ℒ).truncatedMap k
+      ((GradedLieHom.changeDegree (d.scale c) d (d.scale_monoid c) ℒ).lieTruncatedMap k
         (PositiveDegreeMap.changeDegree_scale_symm_modulus_le d c k)).bchGroupMap
           (CompletedGroup.projection (c * k) x) :=
   GradedLieHom.projection_completedMap_of_le _ k _ x
@@ -219,7 +219,11 @@ end Scale
 
 end PositiveDegrees
 
-namespace GradedLieHom
+end Mei
+
+namespace TauCeti.GradedLieHom
+
+open Mei
 
 variable {N M R : Type*} {L L' : Type u}
   [AddCommMonoid N] [AddCommMonoid M] [CommRing R] [Algebra ℚ R]
@@ -246,5 +250,4 @@ theorem changeDegreeEquiv_naturality (hP : d.monoid = e.monoid)
   simpa only [completedMap_comp, MonoidHom.comp_apply, ← PositiveDegrees.changeDegreeEquiv_apply]
     using DFunLike.congr_fun h x
 
-end GradedLieHom
-end Mei
+end TauCeti.GradedLieHom

@@ -20,7 +20,7 @@ charge-one coefficient summand, including coefficients killed by the map.
 
 public noncomputable section
 
-open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading)
+open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading GradedLieHom)
 
 open TauCeti (DirectedWallSpaces)
 
@@ -170,12 +170,12 @@ theorem coefficientGradedLieHom_mem_wall {Λ : Type*} [AddCommMonoid Λ]
 theorem moduleQuotientProjection_coefficientGradedLieHom (k : ℕ)
     (x : (positiveDegrees d p).lieTruncation (grading d ℳ p ℒ) (k + 1)) :
     moduleQuotientProjection d 𝓝 p ℒ k
-        ((coefficientGradedLieHom d ℳ 𝓝 p ℒ f hf hequiv).truncatedMap (k + 1) (by simp) x) =
+        ((coefficientGradedLieHom d ℳ 𝓝 p ℒ f hf hequiv).lieTruncatedMap (k + 1) (by simp) x) =
       PositiveDegrees.quotientCoefficientMap d ℳ 𝓝 p f hf k
         (moduleQuotientProjection d ℳ p ℒ k x) := by
   obtain ⟨x, rfl⟩ := ((positiveDegrees d p).truncationIdeal
     (grading d ℳ p ℒ) (k + 1)).surjective_mkQ x
-  rw [LieIdeal.mkQ_apply, GradedLieHom.truncatedMap_mk,
+  rw [LieIdeal.mkQ_apply, GradedLieHom.lieTruncatedMap_mk,
     moduleQuotientProjection_mk, moduleQuotientProjection_mk,
     PositiveDegrees.quotientCoefficientMap_mk]
   congr 1

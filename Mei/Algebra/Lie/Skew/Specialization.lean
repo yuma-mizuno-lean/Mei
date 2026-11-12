@@ -32,7 +32,7 @@ Appendix B, arXiv:1411.1394v2.
 
 public section
 
-open TauCeti (PositiveDegrees PositiveDegreeMap)
+open TauCeti (PositiveDegrees PositiveDegreeMap GradedLieHom)
 noncomputable section
 
 namespace Mei.SkewLieAlgebra
@@ -200,16 +200,16 @@ local notation "ℒS" => positiveGrading γ hγ d
 common scalar ring and on the original quotient carriers. -/
 def coefficientTruncatedMap (k : ℕ) :
     d.lieTruncation ℒR k →ₗ⁅K⁆ d.lieTruncation ℒS k :=
-  (d.truncatedRestrictScalarsEquiv (R := K) ℒS k).toLieHom.comp
-    (((coefficientGradedLieHom β hβ γ hγ φ hφ d).truncatedMap k (by simp)).comp
-      (d.truncatedRestrictScalarsEquiv (R := K) ℒR k).symm.toLieHom)
+  (d.lieTruncationRestrictScalarsEquiv (R := K) ℒS k).toLieHom.comp
+    (((coefficientGradedLieHom β hβ γ hγ φ hφ d).lieTruncatedMap k (by simp)).comp
+      (d.lieTruncationRestrictScalarsEquiv (R := K) ℒR k).symm.toLieHom)
 
 /-- Finite specialization is computed on representatives by the positive Lie map. -/
 @[simp]
 theorem coefficientTruncatedMap_mk (k : ℕ) (x : positiveLieAlgebra β hβ d) :
     coefficientTruncatedMap β hβ γ hγ φ hφ d k (Submodule.Quotient.mk x) =
       Submodule.Quotient.mk (coefficientGradedLieHom β hβ γ hγ φ hφ d x) := by
-  simp [coefficientTruncatedMap, GradedLieHom.truncatedMap_mk]
+  simp [coefficientTruncatedMap, GradedLieHom.lieTruncatedMap_mk]
 
 /-- Finite coefficient specializations compose on the original Lie quotient carriers. -/
 @[simp]

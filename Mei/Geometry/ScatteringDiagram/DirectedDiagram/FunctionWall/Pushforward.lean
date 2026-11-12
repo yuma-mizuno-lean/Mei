@@ -88,7 +88,7 @@ Gross–Hacking–Keel–Kontsevich, *Canonical bases for cluster algebras*, §1
 
 public section
 
-open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading SupportedRay)
+open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading SupportedRay GradedLieHom)
 
 open TauCeti (DirectedWallSpaces)
 
@@ -182,7 +182,7 @@ theorem pushforward_group (j : ι) : (G.pushforward hπ hprim).group j = G.group
 order of the cutoff modulus. -/
 theorem groupLabel_pushforward (g : κ) (k : ℕ) :
     (G.pushforward hπ hprim).groupLabel g k =
-      (P.lieHom.truncatedMap k le_rfl).bchGroupMap (G.groupLabel g (P.degreeMap.modulus k)) := by
+      (P.lieHom.lieTruncatedMap k le_rfl).bchGroupMap (G.groupLabel g (P.degreeMap.modulus k)) := by
   classical
   let s := (Set.toFinite (D.active (P.degreeMap.modulus k))).toFinset.filter
     fun j => G.group j = g
@@ -212,14 +212,14 @@ theorem IsCrossingGerm.pushforward {g : κ} {k a : ℕ} (ha : P.degreeMap.modulu
     (G.pushforward hπ hprim).IsCrossingGerm g k (P.spatialMap θ)
       (P.spatialMap.toAffineEquiv.linear v) where
   notMem_singularSupport hθ := by
-    have hs : Convex.singularSupport
+    have hs : TauCeti.singularSupport
         (fun j : (D.pushforward P).active k => ((D.pushforward P).wall j).support) =
-        P.spatialMap '' Convex.singularSupport
+        P.spatialMap '' TauCeti.singularSupport
           (fun j : (D.pushforward P).active k => (D.wall j).support) := by
       simp only [pushforward_wall_support]
       exact Convex.singularSupport_image _ _
     rw [hs, P.spatialMap.injective.mem_set_image] at hθ
-    exact hG.notMem_singularSupport (Convex.singularSupport_comp_subset _
+    exact hG.notMem_singularSupport (TauCeti.singularSupport_comp_subset _
       (Set.inclusion (D.active_pushforward_subset P k ha)) hθ)
   mem_support_iff j := by
     rw [pushforward_wall_support, P.spatialMap.injective.mem_set_image, pushforward_group]

@@ -17,7 +17,7 @@ of that same representative at every order. It commutes with graded Lie maps,
 including maps that regrade and change the cutoff, and identifies the degree
 filtrations and convergent ordered products.
 
-The finite comparisons use `TauCeti.PositiveDegrees.truncatedRestrictScalarsEquiv`
+The finite comparisons use `TauCeti.PositiveDegrees.lieTruncationRestrictScalarsEquiv`
 and `LieEquiv.bchGroupEquiv`. Their inverse limit uses
 `Mei.CompletedGroup.mapEquiv`, on the compatible-family carrier coming from
 Mathlib's `GrpCat.sectionsSubgroup`. No freeness, flatness or nilpotence of the
@@ -26,7 +26,7 @@ original Lie algebra is needed.
 
 public section
 
-open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading)
+open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading GradedLieHom)
 
 noncomputable section
 
@@ -47,31 +47,31 @@ variable {N R S L : Type*} [AddCommMonoid N] [DecidableEq N]
 def groupTowerRestrictScalarsIso :
     d.groupTower (fun n => (ℒ n).restrictScalars R) ≅ d.groupTower ℒ :=
   NatIso.ofComponents
-    (fun k => (d.truncatedRestrictScalarsEquiv (R := R) ℒ k.unop).bchGroupEquiv.toGrpIso)
+    (fun k => (d.lieTruncationRestrictScalarsEquiv (R := R) ℒ k.unop).bchGroupEquiv.toGrpIso)
     (by
       intro k l f
       apply GrpCat.hom_ext
       -- Categorical composition conceals the concrete BCH quotient homomorphisms.
       change
-        (d.truncatedRestrictScalarsEquiv (R := R) ℒ l.unop).bchGroupEquiv.toMonoidHom.comp
+        (d.lieTruncationRestrictScalarsEquiv (R := R) ℒ l.unop).bchGroupEquiv.toMonoidHom.comp
             (d.lieTruncationMap (fun n => (ℒ n).restrictScalars R)
               (leOfHom f.unop)).bchGroupMap =
           (d.lieTruncationMap ℒ (leOfHom f.unop)).bchGroupMap.comp
-            (d.truncatedRestrictScalarsEquiv (R := R) ℒ k.unop).bchGroupEquiv.toMonoidHom
+            (d.lieTruncationRestrictScalarsEquiv (R := R) ℒ k.unop).bchGroupEquiv.toMonoidHom
       rw [← LieHom.bchGroupMap_restrictScalars (R := R)
         (d.lieTruncationMap ℒ (leOfHom f.unop))]
       simp only [MulEquiv.toMonoidHom_eq_coe, LieEquiv.coe_bchGroupEquiv, ← LieHom.bchGroupMap_comp]
       congr 1
       simpa only [lieTruncationMap_def] using
-        d.truncatedRestrictScalarsEquiv_naturality (R := R) ℒ (leOfHom f.unop))
+        d.lieTruncationRestrictScalarsEquiv_naturality (R := R) ℒ (leOfHom f.unop))
 
 /-- The tower comparison acts by the canonical finite Lie quotient comparison. -/
 @[simp]
 theorem groupTowerRestrictScalarsIso_hom_app_hom (k : ℕᵒᵖ) :
     ((d.groupTowerRestrictScalarsIso (R := R) ℒ).hom.app k).hom =
-      (d.truncatedRestrictScalarsEquiv (R := R) ℒ k.unop).toLieHom.bchGroupMap := by
+      (d.lieTruncationRestrictScalarsEquiv (R := R) ℒ k.unop).toLieHom.bchGroupMap := by
   -- The natural isomorphism wraps the multiplicative equivalence in a categorical isomorphism.
-  change (d.truncatedRestrictScalarsEquiv (R := R) ℒ k.unop).bchGroupEquiv.toMonoidHom = _
+  change (d.lieTruncationRestrictScalarsEquiv (R := R) ℒ k.unop).bchGroupEquiv.toMonoidHom = _
   exact LieEquiv.coe_bchGroupEquiv _
 
 /-- The inverse tower comparison acts by the inverse finite Lie quotient comparison. -/
@@ -79,8 +79,8 @@ theorem groupTowerRestrictScalarsIso_hom_app_hom (k : ℕᵒᵖ) :
 theorem groupTowerRestrictScalarsIso_inv_app_exp (k : ℕᵒᵖ)
     (x : d.lieTruncation ℒ k.unop) :
     (d.groupTowerRestrictScalarsIso (R := R) ℒ).inv.app k (BCHGroup.exp x) =
-      BCHGroup.exp ((d.truncatedRestrictScalarsEquiv (R := R) ℒ k.unop).symm x) := by
-  exact (d.truncatedRestrictScalarsEquiv (R := R) ℒ k.unop).bchGroupEquiv_symm_exp x
+      BCHGroup.exp ((d.lieTruncationRestrictScalarsEquiv (R := R) ℒ k.unop).symm x) := by
+  exact (d.lieTruncationRestrictScalarsEquiv (R := R) ℒ k.unop).bchGroupEquiv_symm_exp x
 
 /-- Restricting scalars preserves the completed BCH group, at every finite order. -/
 def completedBCHRestrictScalarsEquiv :
@@ -92,7 +92,7 @@ def completedBCHRestrictScalarsEquiv :
 theorem projection_completedBCHRestrictScalarsEquiv (k : ℕ)
     (x : d.completedBCHGroup (fun n => (ℒ n).restrictScalars R)) :
     CompletedGroup.projection k (d.completedBCHRestrictScalarsEquiv (R := R) ℒ x) =
-      (d.truncatedRestrictScalarsEquiv (R := R) ℒ k).toLieHom.bchGroupMap
+      (d.lieTruncationRestrictScalarsEquiv (R := R) ℒ k).toLieHom.bchGroupMap
         (CompletedGroup.projection k x) := by
   rw [completedBCHRestrictScalarsEquiv, CompletedGroup.projection_congr]
   exact DFunLike.congr_fun (d.groupTowerRestrictScalarsIso_hom_app_hom (R := R) ℒ (op k))
@@ -103,7 +103,7 @@ theorem projection_completedBCHRestrictScalarsEquiv (k : ℕ)
 theorem projection_completedBCHRestrictScalarsEquiv_symm (k : ℕ)
     (x : d.completedBCHGroup ℒ) :
     CompletedGroup.projection k ((d.completedBCHRestrictScalarsEquiv (R := R) ℒ).symm x) =
-      BCHGroup.exp ((d.truncatedRestrictScalarsEquiv (R := R) ℒ k).symm
+      BCHGroup.exp ((d.lieTruncationRestrictScalarsEquiv (R := R) ℒ k).symm
         (BCHGroup.log (CompletedGroup.projection k x))) := by
   rw [completedBCHRestrictScalarsEquiv, CompletedGroup.projection_congr_symm]
   conv_lhs => arg 2; rw [← BCHGroup.exp_log (CompletedGroup.projection k x)]
@@ -115,13 +115,14 @@ theorem projection_completedBCHRestrictScalarsEquiv_eq_one_iff (k : ℕ)
     CompletedGroup.projection k (d.completedBCHRestrictScalarsEquiv (R := R) ℒ x) = 1 ↔
       CompletedGroup.projection k x = 1 := by
   rw [projection_completedBCHRestrictScalarsEquiv, ← LieEquiv.coe_bchGroupEquiv]
-  exact (d.truncatedRestrictScalarsEquiv (R := R) ℒ k).bchGroupEquiv.injective.eq_iff' (map_one _)
+  exact (d.lieTruncationRestrictScalarsEquiv (R := R) ℒ k).bchGroupEquiv.injective.eq_iff'
+    (map_one _)
 
 /-- At every finite cutoff, the finite comparison sends the projection of the inverse
 comparison of `x` back to the projection of `x`. -/
 theorem bchGroupEquiv_projection_completedBCHRestrictScalarsEquiv_symm (k : ℕ)
     (x : d.completedBCHGroup ℒ) :
-    (d.truncatedRestrictScalarsEquiv (R := R) ℒ k).bchGroupEquiv
+    (d.lieTruncationRestrictScalarsEquiv (R := R) ℒ k).bchGroupEquiv
         (CompletedGroup.projection k ((d.completedBCHRestrictScalarsEquiv (R := R) ℒ).symm x)) =
       CompletedGroup.projection k x := by
   have hx := d.projection_completedBCHRestrictScalarsEquiv (R := R) ℒ k
@@ -142,7 +143,7 @@ theorem completedBCHRestrictScalarsEquiv_mem_degreeFiltration_iff (a : ℕ)
   | succ k =>
     simp only [CompletedGroup.degreeFiltration_succ, MonoidHom.mem_ker,
       projection_completedBCHRestrictScalarsEquiv]
-    have he := (d.truncatedRestrictScalarsEquiv (R := R) ℒ k).bchGroupEquiv.injective
+    have he := (d.lieTruncationRestrictScalarsEquiv (R := R) ℒ k).bchGroupEquiv.injective
     rw [← LieEquiv.coe_bchGroupEquiv]
     exact he.eq_iff' (map_one _)
 
@@ -174,7 +175,9 @@ end TauCeti.PositiveDegrees
 
 universe u
 
-namespace Mei.GradedLieHom
+namespace TauCeti.GradedLieHom
+
+open Mei
 
 variable {N M R S : Type*} {L L' : Type u} [AddCommMonoid N] [AddCommMonoid M]
   [DecidableEq N] [DecidableEq M]
@@ -200,4 +203,4 @@ theorem completedMap_restrictScalars (f : GradedLieHom T ℒ ℳ) :
   simp only [LieHom.bchGroupMap_comp, LieHom.bchGroupMap_restrictScalars] at ht
   exact DFunLike.congr_fun ht (CompletedGroup.projection (T.modulus k) x)
 
-end Mei.GradedLieHom
+end TauCeti.GradedLieHom

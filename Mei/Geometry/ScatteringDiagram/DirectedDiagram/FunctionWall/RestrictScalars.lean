@@ -67,7 +67,7 @@ covered, since the transfer of wall functions requires the monomials to be fixed
 
 public section
 
-open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading)
+open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading GradedLieHom)
 
 open TauCeti (DirectedWallSpaces)
 
@@ -143,7 +143,7 @@ theorem ofRestrictScalars_group (j : ι) : G'.ofRestrictScalars.group j = G'.gro
 /-- The finite scalar-restriction comparison sends the group labels of a grouping of the
 restriction to the group labels of the corresponding grouping of `D`. -/
 theorem bchGroupEquiv_groupLabel_restrictScalars (g : κ) (k : ℕ) :
-    (d.truncatedRestrictScalarsEquiv (R := K) ℒ k).bchGroupEquiv (G'.groupLabel g k) =
+    (d.lieTruncationRestrictScalarsEquiv (R := K) ℒ k).bchGroupEquiv (G'.groupLabel g k) =
       G'.ofRestrictScalars.groupLabel g k := by
   classical
   let s := (Set.toFinite (D.active k)).toFinset.filter fun j => G'.group j = g

@@ -25,7 +25,7 @@ and refined tropical curve counts*, §2.1 (arXiv:1503.06183).
 
 public section
 
-open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading)
+open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading GradedLieHom)
 
 noncomputable section
 
@@ -61,7 +61,7 @@ theorem shiftedQuotientMap_truncatedBCHAction
     T.shiftedQuotientMap ℳ 𝓝 p f hf k
         ((d.shiftedLieFiltration ℒ ℳ p).truncatedBCHAction d ℒ (T.modulus k) g a) =
       (e.shiftedLieFiltration ℒ' 𝓝 (T p)).truncatedBCHAction e ℒ' k
-        ((φ.truncatedMap k le_rfl).bchGroupMap g)
+        ((φ.lieTruncatedMap k le_rfl).bchGroupMap g)
         (T.shiftedQuotientMap ℳ 𝓝 p f hf k a) := by
   have hcoe (z : d.shiftedLieSubmodule ℒ ℳ p) :
       (T.shiftedMap ℳ 𝓝 p f hf z : M') = f z := T.coe_shiftedMap ℳ 𝓝 p f hf z
@@ -131,7 +131,7 @@ theorem quotientCoefficientMap_truncatedBCHAction (k : ℕ) (g : d.truncatedGrou
       apply Subtype.ext
       simp only [hcoe, LieSubmodule.coe_bracket, GradedLieHom.id_apply, hequiv]) k (by simp)
     (fun _ ha => d.shiftedCoefficientMap_mem_filtration ℳ 𝓝 p f hf k ha) g a
-  simpa only [quotientCoefficientMap_def, GradedLieHom.truncatedMap_id,
+  simpa only [quotientCoefficientMap_def, GradedLieHom.lieTruncatedMap_id,
     LieHom.bchGroupMap_id, MonoidHom.id_apply] using ht
 
 

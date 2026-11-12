@@ -22,7 +22,7 @@ wall groups, with the same cutoff orders and integral normals. No saturation,
 freeness or injectivity of the spatial map is needed.
 
 We reuse `graphGrading`, `SupportedRay.graph` and the wall-preservation theorem
-`Mei.GradedLieHom.completedMap_mem_wallGroup`. The subgroup restriction follows the
+`TauCeti.GradedLieHom.completedMap_mem_wallGroup`. The subgroup restriction follows the
 construction of `DirectedWallSpaces.CoordinateChange.wallGroupEquiv`.
 -/
 

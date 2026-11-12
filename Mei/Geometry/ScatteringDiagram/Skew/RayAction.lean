@@ -150,10 +150,10 @@ theorem principalGradedLieHom_completedMap_rayExp (q : T) (hq : q.val = D.princi
     (SkewLieAlgebra.rayExp β hβ hn hn0 (κ • a))
   refine hp.trans ?_
   refine (congrArg
-    ((D.principalGradedLieHom (R := R) d).truncatedMap k (a := k) (by simp)).bchGroupMap
+    ((D.principalGradedLieHom (R := R) d).lieTruncatedMap k (a := k) (by simp)).bchGroupMap
     (SkewLieAlgebra.projection_rayExp β hβ hn hn0 k (κ • a))).trans ?_
   refine (LieHom.bchGroupMap_exp _ _).trans ?_
-  have hm := (D.principalGradedLieHom (R := R) d).truncatedMap_mk k
+  have hm := (D.principalGradedLieHom (R := R) d).lieTruncatedMap_mk k
     (a := k) (by simp) (SkewLieAlgebra.rayPartialSum β hβ hn hn0 k (κ • a))
   have hm' := congrArg BCHGroup.exp hm
   simp only [← LieIdeal.mkQ_apply] at hm'

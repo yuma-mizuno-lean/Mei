@@ -21,7 +21,7 @@ element of `S` (`Mei.isPositive_binomialUnit`), and the binomial label multiplie
 `r z^p` by `(1 + c z^n)^{μ(ρ p)}` (`Mei.completedBCHAction_binomialLabel`). A graded Lie map of
 tropical vertex Lie algebras sending every tangent field `z^q ∂_μ` to `z^{T q} ∂_{μ'}` sends the
 binomial label of `(μ, n, c)` to that of `(μ', T n, c)`
-(`Mei.GradedLieHom.completedMap_binomialLabel`); in particular so does a tropical pairing on all
+(`TauCeti.GradedLieHom.completedMap_binomialLabel`); in particular so does a tropical pairing on all
 characters sending the character of `μ` to that of `μ'`
 (`Mei.TropicalPairing.completedMap_binomialLabel`). Reversing the sign of the character inverts
 the label (`Mei.binomialLabel_neg`).
@@ -34,7 +34,7 @@ refined tropical curve counts*, Example 2.1(i), arXiv:1503.06183v5.
 
 public section
 
-open TauCeti (PositiveDegrees PositiveDegreeMap)
+open TauCeti (PositiveDegrees PositiveDegreeMap GradedLieHom)
 
 noncomputable section
 
@@ -182,7 +182,8 @@ include hT hf in
 /-- A graded Lie map sending each tangent field `z^q ∂_μ` to `z^{T q} ∂_{μ'}` sends the binomial
 label `exp(log(1 + c z^n) ∂_μ)` to the binomial label `exp(log(1 + c z^{n'}) ∂_{μ'})` of
 `n' = T n`. -/
-theorem GradedLieHom.completedMap_binomialLabel {n : Γ} (hn : n ∈ d.monoid) (hn0 : n ≠ 0)
+theorem _root_.TauCeti.GradedLieHom.completedMap_binomialLabel
+    {n : Γ} (hn : n ∈ d.monoid) (hn0 : n ≠ 0)
     (hμ : μ (ρ n) = 0) {n' : Γ'} (hn' : n' ∈ e.monoid) (hn0' : n' ≠ 0) (hμ' : μ' (ρ' n') = 0)
     (hTn : T n = n') (c : R) :
     f.completedMap (binomialLabel d ρ μ hn hn0 hμ c) = binomialLabel e ρ' μ' hn' hn0' hμ' c := by

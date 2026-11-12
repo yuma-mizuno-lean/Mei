@@ -29,7 +29,7 @@ from the projection-fixed correction logarithms using
 
 public section
 
-open TauCeti (WallComplement)
+open TauCeti (WallComplement GradedLieHom)
 
 open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading)
 
@@ -103,7 +103,7 @@ theorem exists_consistent_kernel_extension
   have hproj : CompletedGroup.projection (k + 1) (π.completedMap (F.wall (.inr a)).label) = 1 := by
     rw [π.projection_completedMap_of_le (k + 1) (a := k + 1) (by simp)]
     apply log_injective
-    have h1 := LieHom.log_bchGroupMap (π.truncatedMap (k + 1) (by simp))
+    have h1 := LieHom.log_bchGroupMap (π.lieTruncatedMap (k + 1) (by simp))
       (CompletedGroup.projection (k + 1) (F.wall (.inr a)).label)
     exact h1.trans (h0.trans log_one.symm)
   rw [hlabel, GradedLieHom.completedMap_expToCompletion] at hproj

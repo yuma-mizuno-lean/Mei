@@ -49,7 +49,8 @@ variable {Γ R : Type*} {L : Type u} [AddCommGroup Γ] [CommRing R] [Algebra ℚ
   (W : DirectedWall (d := d) h H)
 
 /-- Transport a directed wall along the coordinate swap of the plane. -/
-def swapImage : DirectedWall (d := d) h (H.mapTangent (AddEquiv.prodComm : ℤ × ℤ →+ ℤ × ℤ)) :=
+def swapImage : DirectedWall (d := d) h
+    (H.mapTangent ((AddEquiv.prodComm : ℤ × ℤ ≃+ ℤ × ℤ) : ℤ × ℤ →+ ℤ × ℤ)) :=
   W.image (Toric.IntegralAffineEquiv.swap h) (CoordinateChange.ofTangentEquiv d H AddEquiv.prodComm)
     (by simp)
 
@@ -123,7 +124,8 @@ variable {Γ R ι : Type*} {L : Type u} [AddCommGroup Γ] [CommRing R] [Algebra 
   (D : DirectedDiagram (d := d) h H ι)
 
 /-- Transport a directed diagram along the coordinate swap of the plane. -/
-def swapImage : DirectedDiagram (d := d) h (H.mapTangent (AddEquiv.prodComm : ℤ × ℤ →+ ℤ × ℤ)) ι :=
+def swapImage : DirectedDiagram (d := d) h
+    (H.mapTangent ((AddEquiv.prodComm : ℤ × ℤ ≃+ ℤ × ℤ) : ℤ × ℤ →+ ℤ × ℤ)) ι :=
   D.pushforward (DirectedWall.Pushforward.ofCoordinateChange (Toric.IntegralAffineEquiv.swap h)
     (DirectedWallSpaces.CoordinateChange.ofTangentEquiv d H AddEquiv.prodComm) (by simp))
 

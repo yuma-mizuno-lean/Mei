@@ -19,26 +19,26 @@ with identity and composition laws.
 
 The source and target rays can be specified by their actual allowed degrees; no
 freeness assumption is needed for this form. For a free target degree group,
-`Mei.GradedLieHom.completedMap_mem_wallGroup_map` identifies the target using the
+`TauCeti.GradedLieHom.completedMap_mem_wallGroup_map` identifies the target using the
 canonical supported-ray map, even when the primitive generator is not an allowed
 degree or its image is nonprimitive. Fixed-degree maps take the same ray and normal.
 
-The construction restricts `Mei.GradedLieHom.completedMap`, using its finite
+The construction restricts `TauCeti.GradedLieHom.completedMap`, using its finite
 projection formula and `LieHom.log_bchGroupMap`. Subgroup restriction uses
 Mathlib's `MonoidHom.domRestrict` and `MonoidHom.codRestrict`.
 -/
 
 public section
 
-open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading SupportedRay)
+open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading SupportedRay GradedLieHom)
 
 open TauCeti (DirectedWallSpaces)
 
-namespace Mei
-
 universe u
 
-namespace GradedLieHom
+namespace TauCeti.GradedLieHom
+
+open Mei
 
 variable {Γ Γ' Γ'' Λ Λ' Λ'' R : Type*} {L L' L'' : Type u}
   [AddCommGroup Γ] [AddCommGroup Γ'] [AddCommGroup Γ'']
@@ -65,11 +65,11 @@ theorem truncatedMap_mem_truncatedRayLieSubalgebra (f : GradedLieHom T ℒ ℳ)
     (hwall : ∀ n ∈ w.rayDegrees, ∀ x ∈ H.wall n m, f x ∈ H'.wall (T n) m')
     {a k : ℕ} (ha : T.modulus k ≤ a) {x : d.lieTruncation ℒ a}
     (hx : x ∈ H.truncatedRayLieSubalgebra w m a) :
-    f.truncatedMap k ha x ∈ H'.truncatedRayLieSubalgebra v m' k := by
+    f.lieTruncatedMap k ha x ∈ H'.truncatedRayLieSubalgebra v m' k := by
   obtain ⟨y, hy, rfl⟩ := (H.mem_truncatedRayLieSubalgebra w m a x).mp hx
   refine (H'.mem_truncatedRayLieSubalgebra v m' k _).mpr
     ⟨f y, H.map_mem_raySubmodule H' f.toLieHom.toLinearMap T hdegree hwall hy, ?_⟩
-  simpa only [LieIdeal.mkQ_apply] using (f.truncatedMap_mk k ha y).symm
+  simpa only [LieIdeal.mkQ_apply] using (f.lieTruncatedMap_mk k ha y).symm
 
 variable [Algebra ℚ R]
   [LieAlgebra ℚ L] [IsScalarTower ℚ R L]
@@ -86,7 +86,7 @@ theorem completedMap_mem_wallGroup (f : GradedLieHom T ℒ ℳ)
   apply (H'.mem_wallGroup v m' _).mpr
   intro k
   rw [projection_completedMap]
-  have hlog := (f.truncatedMap k le_rfl).log_bchGroupMap
+  have hlog := (f.lieTruncatedMap k le_rfl).log_bchGroupMap
     (CompletedGroup.projection (T.modulus k) g)
   exact hlog.symm ▸ f.truncatedMap_mem_truncatedRayLieSubalgebra hdegree hwall le_rfl
     ((H.mem_wallGroup w m g).mp hg (T.modulus k))
@@ -143,11 +143,8 @@ theorem completedMap_mem_wallGroup_map [Module.Free ℤ Γ'] (f : GradedLieHom T
     (hwall : ∀ n ∈ w.rayDegrees, ∀ x ∈ H.wall n m, f x ∈ H'.wall (T n) m')
     {g : d.completedBCHGroup ℒ} (hg : g ∈ H.wallGroup w m) :
     f.completedMap g ∈ H'.wallGroup
-      (w.map T.toAddMonoidHom (fun _ hn => T.map_mem hn)
-        (fun _ hn h0 => T.map_ne_zero hn h0)) m' := by
+      (w.map T) m' := by
   exact f.completedMap_mem_wallGroup
-    (fun _ hn => w.map_mem_rayDegrees T.toAddMonoidHom
-      (fun _ hn => T.map_mem hn) (fun _ hn h0 => T.map_ne_zero hn h0) hn) hwall hg
+    (fun _ hn => w.map_mem_rayDegrees T hn) hwall hg
 
-end GradedLieHom
-end Mei
+end TauCeti.GradedLieHom
