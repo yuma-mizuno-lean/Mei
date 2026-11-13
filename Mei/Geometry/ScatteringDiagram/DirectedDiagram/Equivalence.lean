@@ -67,8 +67,14 @@ theorem equivalent_iff_levelEquivalent_of_degreeIdeal_eq_bot
   obtain hlk | hkl := le_total l k
   · exact hDE.mono hlk
   · have hinj : Function.Injective (d.truncationMap ℒ hkl) := by
-      rw [← LieHom.ker_eq_bot, PositiveDegrees.truncationMap_eq_factor, LieIdeal.ker_factor, hk]
-      simp
+      let I := d.degreeIdeal ℒ l
+      let J := d.degreeIdeal ℒ k
+      have hIJ : I ≤ J := d.degreeIdeal_antitone ℒ hkl
+      have hmap : I ≤ J.comap (LieHom.id : L →ₗ⁅R⁆ L) := fun _ hx => hIJ hx
+      rw [PositiveDegrees.truncationMap_eq_factor, ← LieIdeal.mapQ_id_eq_factor I J hIJ]
+      apply (LieIdeal.mapQ_injective_iff I J LieHom.id hmap).mpr
+      change J ≤ I
+      exact (show J = ⊥ from hk).le.trans bot_le
     rw [levelEquivalent_def] at hDE ⊢
     intro x y x' y' p q hpq
     apply LieHom.bchGroupMap_injective hinj
