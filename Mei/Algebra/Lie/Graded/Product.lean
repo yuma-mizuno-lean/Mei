@@ -67,8 +67,8 @@ theorem filtrationCompletionLieEquivPi_toLinearEquiv :
     (d.filtrationCompletionLieEquivPi ℒ).toLinearEquiv =
       d.filtrationCompletionEquivPi ℒ F (fun k => d.degreeIdeal_toSubmodule ℒ k)
         (fun n hn => IsPositiveGrading.eq_bot n (Or.inl hn)) := by
-  unfold filtrationCompletionLieEquivPi filtrationCompletionEquivPi
-  rfl
+  unfold filtrationCompletionLieEquivPi
+  exact (d.filtrationCompletionEquivPi_def ℒ F _ _).symm
 
 /-- The Lie comparison reads the same coefficients as the module comparison. -/
 @[simp]

@@ -98,6 +98,12 @@ variable (hℳ : ∀ n, n ∉ d.monoid → ℳ n = ⊥)
 noncomputable def filtrationCompletionEquivPi : F.completion ≃ₗ[R] ∀ n, ℳ n :=
   F.completionEquivTowerLimit.trans (d.completionEquivPi ℳ J F.quotientAntitone hF hℳ)
 
+/-- The homogeneous comparison factors through the limit of the quotient tower. -/
+theorem filtrationCompletionEquivPi_def :
+    d.filtrationCompletionEquivPi ℳ F hF hℳ =
+      F.completionEquivTowerLimit.trans (d.completionEquivPi ℳ J F.quotientAntitone hF hℳ) :=
+  (rfl)
+
 /-- The product comparison reads the completed homogeneous components. -/
 @[simp]
 theorem filtrationCompletionEquivPi_apply (x : F.completion) (n : N) :
