@@ -77,7 +77,8 @@ def LoopProjection.ofSplitting {k : ℕ} (hq : (D.map π hπ).LevelConsistent k)
   isIdempotentElem := GradedLieHom.isIdempotentElem_idSubSectionComp hsπ k
   decompose_map x n := by
     rw [GradedLieHom.idSubSectionComp_apply, DirectSum.decompose_sub, DFinsupp.sub_apply,
-      Submodule.coe_sub, s.decompose_truncatedMap_id, π.decompose_truncatedMap_id,
+      Submodule.coe_sub, s.decompose_truncatedMap_id k le_rfl,
+      π.decompose_truncatedMap_id k le_rfl,
       GradedLieHom.idSubSectionComp_apply]
   map_wall n m x hx := by
     rw [GradedLieHom.idSubSectionComp_apply]
@@ -100,12 +101,13 @@ def LoopProjection.ofSplitting {k : ℕ} (hq : (D.map π hπ).LevelConsistent k)
           s.truncatedMap k (by simp) (log (TauCeti.CompletedGroup.projection k y)) := by
         rw [hy, s.projection_completedMap_of_le k (a := k) (by simp)]
         exact LieHom.log_bchGroupMap _ _
-      rw [hl, s.decompose_truncatedMap_id, GradedLieHom.idSubSectionComp_lieTruncatedMap hsπ]
+      rw [hl, s.decompose_truncatedMap_id k le_rfl,
+        GradedLieHom.idSubSectionComp_lieTruncatedMap hsπ]
     · rcases hfull j hj with hfull | ⟨m, hm, a, ha, he⟩
       · exact hfull
       · have hmn : m ≠ n := by intro he; subst m; omega
         refine (hne ?_).elim
-        rw [he, PositiveDegrees.projection_expToCompletion, log_exp,
+        rw [he, PositiveDegrees.projection_expToCompletion, log_exp, LieIdeal.mkQ_apply,
           DirectSum.decompose_of_mem_ne (d.truncatedGrading ℒ k)
             ((d.mem_truncatedGrading_iff ℒ).mpr ⟨a, ha, rfl⟩) hmn]
         exact map_zero _
