@@ -102,7 +102,7 @@ theorem completedBCHAction_apply (g : d.completedBCHGroup ℒ) (a : (F).completi
 
 /-- In completed Lie coordinates, the inner action is conjugation by the completed
 exponential of the canonical Lie image, with inverse given by its negative. -/
-theorem completedBCHAction_exp_apply (x : d.completedLie ℒ) (a : (F).completion) :
+theorem completedBCHAction_exp_apply (x : d.filtrationCompletedLie ℒ) (a : (F).completion) :
     (F).completedBCHAction d ℒ (d.completedBCHExp ℒ x) a =
       (F).completedExp ⟨completedLieToU d ℒ x,
         completedLieToU_mem_completionIdeal_one d ℒ x⟩ * a *

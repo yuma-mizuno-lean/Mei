@@ -101,9 +101,9 @@ theorem transition_truncatedExpLieAction {k l : ℕ} (h : k ≤ l)
       ⟨k + 1, F.truncatedLieAction_pow_eq_zero d ℒ k (d.truncationMap ℒ h x)⟩ hc) a).symm
 
 local notation "π" =>
-  LieIdeal.completionProjection (d.degreeIdeal ℒ) (d.degreeIdeal_antitone ℒ)
+  Mei.LieIdeal.completionProjection (d.degreeIdeal ℒ) (d.degreeIdeal_antitone ℒ)
 
-private noncomputable def completedExpEnd (x : d.completedLie ℒ) :
+private noncomputable def completedExpEnd (x : d.filtrationCompletedLie ℒ) :
     Module.End R F.completion :=
   F.lift (fun k => (F.truncatedExpLieAction d ℒ k (π k x)).toLinearMap.comp (F.projection k))
     (by
@@ -112,11 +112,11 @@ private noncomputable def completedExpEnd (x : d.completedLie ℒ) :
       intro a
       simp only [LinearMap.comp_apply, LinearEquiv.coe_coe,
         transition_truncatedExpLieAction, transition_projection]
-      rw [PositiveDegrees.truncationMap_eq_factor, LieIdeal.factor_completionProjection])
+      rw [PositiveDegrees.truncationMap_eq_factor, Mei.LieIdeal.factor_completionProjection])
 
 /-- Every degree-completed Lie element exponentiates to a linear automorphism of the
 completed coefficient module, computed independently at each finite order. -/
-noncomputable def completedExpLieAction (x : d.completedLie ℒ) :
+noncomputable def completedExpLieAction (x : d.filtrationCompletedLie ℒ) :
     F.completion ≃ₗ[R] F.completion :=
   LinearEquiv.ofLinearMap (F.completedExpEnd d ℒ x) (F.completedExpEnd d ℒ (-x))
     (by
@@ -138,13 +138,14 @@ noncomputable def completedExpLieAction (x : d.completedLie ℒ) :
 
 /-- The completed exponential is characterized by its finite-order actions. -/
 @[simp]
-theorem projection_completedExpLieAction (x : d.completedLie ℒ) (a : F.completion) (k : ℕ) :
+theorem projection_completedExpLieAction (x : d.filtrationCompletedLie ℒ)
+    (a : F.completion) (k : ℕ) :
     F.projection k (F.completedExpLieAction d ℒ x a) =
       F.truncatedExpLieAction d ℒ k (π k x) (F.projection k a) := by
   simp [completedExpLieAction, completedExpEnd]
 
 /-- The projection formula uniquely determines the completed linear automorphism. -/
-theorem completedExpLieAction_unique (x : d.completedLie ℒ)
+theorem completedExpLieAction_unique (x : d.filtrationCompletedLie ℒ)
     (e : F.completion ≃ₗ[R] F.completion)
     (he : ∀ (a : F.completion) (k : ℕ), F.projection k (e a) =
       F.truncatedExpLieAction d ℒ k (π k x) (F.projection k a)) :
@@ -167,7 +168,7 @@ theorem completedExpLieAction_zero :
 
 /-- Negating a completed Lie element gives the inverse exponential action. -/
 @[simp]
-theorem completedExpLieAction_neg (x : d.completedLie ℒ) :
+theorem completedExpLieAction_neg (x : d.filtrationCompletedLie ℒ) :
     F.completedExpLieAction d ℒ (-x) = (F.completedExpLieAction d ℒ x).symm := by
   apply LinearEquiv.ext
   intro a
@@ -178,7 +179,7 @@ theorem completedExpLieAction_neg (x : d.completedLie ℒ) :
 
 /-- Exponentials preserve and reflect every term of the completed module filtration. -/
 @[simp]
-theorem completedExpLieAction_mem_completedFiltration_iff (x : d.completedLie ℒ)
+theorem completedExpLieAction_mem_completedFiltration_iff (x : d.filtrationCompletedLie ℒ)
     (a : F.completion) (k : ℕ) :
     F.completedExpLieAction d ℒ x a ∈ F.completedFiltration.submodule k ↔
       a ∈ F.completedFiltration.submodule k := by
@@ -257,7 +258,7 @@ theorem mapQ_truncatedExpLieAction (k : ℕ) (x : d.truncatedLie ℒ k)
 
 /-- Equivariant filtration-preserving linear maps remain equivariant for exponential
 operators of completed Lie elements on completed coefficient modules. -/
-theorem completionMap_completedExpLieAction (x : d.completedLie ℒ) (a : F.completion) :
+theorem completionMap_completedExpLieAction (x : d.filtrationCompletedLie ℒ) (a : F.completion) :
     F.completionMap G f id monotone_id hf (F.completedExpLieAction d ℒ x a) =
       G.completedExpLieAction d ℒ x (F.completionMap G f id monotone_id hf a) := by
   apply G.completion_ext

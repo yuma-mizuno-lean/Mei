@@ -58,17 +58,17 @@ variable (F : ModuleFiltration R M) (d : PositiveDegrees N) (ℒ : N → Submodu
   [IsPositiveGrading d ℒ] [IsFiltrationRaising d ℒ F]
 
 local notation "π" =>
-  LieIdeal.completionProjection (d.degreeIdeal ℒ) (d.degreeIdeal_antitone ℒ)
+  Mei.LieIdeal.completionProjection (d.degreeIdeal ℒ) (d.degreeIdeal_antitone ℒ)
 
 /-- The action of the degree-completed Lie algebra on the coefficient completion. -/
-def completedLieAction : d.completedLie ℒ →ₗ⁅R⁆ Module.End R F.completion where
+def completedLieAction : d.filtrationCompletedLie ℒ →ₗ⁅R⁆ Module.End R F.completion where
   toFun x := F.lift (fun k => (F.truncatedLieAction d ℒ k (π k x)).comp (F.projection k))
     (by
       intro k l h
       ext m
       simp only [LinearMap.comp_apply, transition_truncatedLieAction,
         transition_projection, PositiveDegrees.truncationMap_eq_factor,
-        LieIdeal.factor_completionProjection])
+        Mei.LieIdeal.factor_completionProjection])
   map_add' x y := by
     apply LinearMap.ext
     intro m
@@ -90,7 +90,7 @@ def completedLieAction : d.completedLie ℒ →ₗ⁅R⁆ Module.End R F.complet
 
 /-- The completed action is computed by the finite representation at every order. -/
 @[simp]
-theorem projection_completedLieAction (k : ℕ) (x : d.completedLie ℒ) (m : F.completion) :
+theorem projection_completedLieAction (k : ℕ) (x : d.filtrationCompletedLie ℒ) (m : F.completion) :
     F.projection k (F.completedLieAction d ℒ x m) =
       F.truncatedLieAction d ℒ k (π k x) (F.projection k m) := by
   simp [completedLieAction]
@@ -99,17 +99,17 @@ variable [IsFiltrationDetected d ℒ F]
 
 /-- Vanishing of all finite representations forces a completed Lie element to vanish.
 The detecting coefficient may require a finer quotient than the Lie order being tested. -/
-theorem eq_zero_of_truncatedLieAction_eq_zero (x : d.completedLie ℒ)
+theorem eq_zero_of_truncatedLieAction_eq_zero (x : d.filtrationCompletedLie ℒ)
     (hx : ∀ k, F.truncatedLieAction d ℒ k (π k x) = 0) : x = 0 := by
   apply completion_ext
   intro k
-  rw [← LieIdeal.completionProjection_apply, map_zero]
+  rw [← Mei.LieIdeal.completionProjection_apply, map_zero]
   by_contra hk
   obtain ⟨y, hy⟩ := (d.degreeIdeal ℒ (k + 1)).surjective_mkQ (π (k + 1) x)
   have hlow : (d.degreeIdeal ℒ k).mkQ y = π k x := by
     simpa only [LieIdeal.mkQ_apply, LieIdeal.factor_apply] using
       congrArg (LieIdeal.factor (d.degreeIdeal_antitone ℒ (Nat.le_succ k))) hy
-      |>.trans (LieIdeal.factor_completionProjection _ _ (Nat.le_succ k) x)
+      |>.trans (Mei.LieIdeal.factor_completionProjection _ _ (Nat.le_succ k) x)
   have hy_not : y ∉ d.degreeSubmodule ℒ k := by
     intro h
     have hz : (d.degreeIdeal ℒ k).mkQ y = 0 :=
@@ -125,7 +125,7 @@ theorem eq_zero_of_truncatedLieAction_eq_zero (x : d.completedLie ℒ)
     rw [hy]
     simpa only [LieIdeal.mkQ_apply, LieIdeal.factor_apply] using
       congrArg (LieIdeal.factor (d.degreeIdeal_antitone ℒ (Nat.le_add_left (k + 1) b))) hz
-      |>.trans (LieIdeal.factor_completionProjection _ _ (by omega) x)
+      |>.trans (Mei.LieIdeal.factor_completionProjection _ _ (by omega) x)
   have hdiff : z - y ∈ d.degreeSubmodule ℒ (k + 1) := by
     rw [← d.degreeIdeal_toSubmodule ℒ]
     exact (d.degreeIdeal ℒ (k + 1)).mkQ_eq_zero.mp (by simp [map_sub, hzy])
@@ -164,7 +164,7 @@ local instance ratAlgebraQuotientEnd (k : ℕ) : Algebra ℚ (Module.End R (F.qu
 /-- Equality of all finite exponential operators implies equality of the completed Lie
 elements. This tests the actual nilpotent representations, without requiring any one of
 them to be injective. -/
-theorem eq_of_exp_truncatedLieAction_eq (x y : d.completedLie ℒ)
+theorem eq_of_exp_truncatedLieAction_eq (x y : d.filtrationCompletedLie ℒ)
     (h : ∀ k, IsNilpotent.exp (F.truncatedLieAction d ℒ k (π k x)) =
       IsNilpotent.exp (F.truncatedLieAction d ℒ k (π k y))) : x = y := by
   apply sub_eq_zero.mp

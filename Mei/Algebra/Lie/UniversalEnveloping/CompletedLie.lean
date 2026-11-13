@@ -54,7 +54,7 @@ local notation "U" => _root_.UniversalEnvelopingAlgebra R L
 local notation "F" => degreeFiltration ℒ d.degree
   (fun n hn => d.eq_bot_of_degree_nonpos ℒ n (le_of_lt hn))
 local notation "π" =>
-  LieIdeal.completionProjection (d.degreeIdeal ℒ) (d.degreeIdeal_antitone ℒ)
+  Mei.LieIdeal.completionProjection (d.degreeIdeal ℒ) (d.degreeIdeal_antitone ℒ)
 
 /-- The canonical enveloping map sends Lie degree tails into the corresponding ideal. -/
 theorem degreeSubmodule_le_comap_ι (k : ℕ) :
@@ -134,12 +134,12 @@ theorem factor_truncatedLieToU {k l : ℕ} (h : k ≤ l) (x : d.truncatedLie ℒ
     LieIdeal.mkQ_apply, PositiveDegrees.truncationMap_mk]
 
 /-- Extend the canonical Lie map to degree completions, computed in each finite quotient. -/
-noncomputable def completedLieToU : d.completedLie ℒ →ₗ⁅R⁆ (F).completion where
+noncomputable def completedLieToU : d.filtrationCompletedLie ℒ →ₗ⁅R⁆ (F).completion where
   toFun x := ⟨fun k => truncatedLieToU d ℒ k.unop (π k.unop x),
     ((F).mem_completion_iff _).mpr (by
       intro k l h
       rw [factor_truncatedLieToU d ℒ h]
-      rw [PositiveDegrees.truncationMap_eq_factor, LieIdeal.factor_completionProjection])⟩
+      rw [PositiveDegrees.truncationMap_eq_factor, Mei.LieIdeal.factor_completionProjection])⟩
   map_add' x y := by
     apply (F).completion_ext
     intro k
@@ -165,7 +165,7 @@ noncomputable def completedLieToU : d.completedLie ℒ →ₗ⁅R⁆ (F).complet
 
 /-- Projection of the completed Lie map is the canonical map of finite quotients. -/
 @[simp]
-theorem projection_completedLieToU (k : ℕ) (x : d.completedLie ℒ) :
+theorem projection_completedLieToU (k : ℕ) (x : d.filtrationCompletedLie ℒ) :
     (F).projection k (completedLieToU d ℒ x) = truncatedLieToU d ℒ k (π k x) := by
   rw [TauCeti.AlgFiltration.projection_apply, completedLieToU]
   rfl
@@ -178,22 +178,22 @@ theorem completedLieToU_injective [Algebra ℚ R] :
   apply ModuleFiltration.completion_ext
   intro k
   apply truncatedLieToU_injective d ℒ k
-  simpa only [projection_completedLieToU, LieIdeal.completionProjection_apply] using
+  simpa only [projection_completedLieToU, Mei.LieIdeal.completionProjection_apply] using
     congrArg ((F).projection k) hxy
 
 /-- The completed map extends the original canonical enveloping map. -/
 @[simp]
 theorem completedLieToU_toCompletion (x : L) :
     completedLieToU d ℒ
-        (LieIdeal.toCompletion (d.degreeIdeal ℒ) (d.degreeIdeal_antitone ℒ) x) =
+        (Mei.LieIdeal.toCompletion (d.degreeIdeal ℒ) (d.degreeIdeal_antitone ℒ) x) =
       (F).toCompletion (ι R x) := by
   apply (F).completion_ext
   intro k
-  rw [projection_completedLieToU, LieIdeal.completionProjection_toCompletion,
+  rw [projection_completedLieToU, Mei.LieIdeal.completionProjection_toCompletion,
     LieIdeal.mkQ_apply, truncatedLieToU_mk, TauCeti.AlgFiltration.projection_toCompletion]
 
 /-- Finite-order compatibility uniquely characterizes the completed canonical map. -/
-theorem completedLieToU_unique (f : d.completedLie ℒ →ₗ⁅R⁆ (F).completion)
+theorem completedLieToU_unique (f : d.filtrationCompletedLie ℒ →ₗ⁅R⁆ (F).completion)
     (hf : ∀ k x, (F).projection k (f x) = truncatedLieToU d ℒ k (π k x)) :
     f = completedLieToU d ℒ := by
   apply LieHom.ext
@@ -228,13 +228,13 @@ theorem completedInnerMap_eq_completedLieToU
     projection_completedLieToU]
 
 /-- Every completed Lie coordinate maps into the first enveloping filtration ideal. -/
-theorem completedLieToU_mem_completionIdeal_one (x : d.completedLie ℒ) :
+theorem completedLieToU_mem_completionIdeal_one (x : d.filtrationCompletedLie ℒ) :
     completedLieToU d ℒ x ∈ (F).completionIdeal 1 := by
   simpa only [completedInnerMap_eq_completedLieToU, LieHom.coe_toLinearMap] using
     (F).completedInnerMap_mem_one d ℒ (ι R).toLinearMap (degreeSubmodule_le_comap_ι d ℒ) x
 
 /-- The canonical map takes the whole Lie completion into completed primitives. -/
-theorem isCompletedPrimitive_completedLieToU (x : d.completedLie ℒ) :
+theorem isCompletedPrimitive_completedLieToU (x : d.filtrationCompletedLie ℒ) :
     IsCompletedPrimitive ℒ d.degree
       (fun n hn => d.eq_bot_of_degree_nonpos ℒ n (le_of_lt hn)) (completedLieToU d ℒ x) := by
   rw [isCompletedPrimitive_iff, TauCeti.AlgFiltration.completedTensor_one_right,
@@ -258,7 +258,7 @@ theorem isCompletedPrimitive_completedLieToU (x : d.completedLie ℒ) :
     TauCeti.AlgFiltration.projection_includeRightCompletion, hp] using h
 
 local notation "𝒰" => homogeneousSubmodule ℒ
-local notation "M" => LieIdeal.completionFiltration (d.degreeIdeal ℒ)
+local notation "M" => Mei.LieIdeal.completionFiltration (d.degreeIdeal ℒ)
   (d.degreeIdeal_antitone ℒ)
 local notation "hM" => (fun k => d.degreeIdeal_toSubmodule ℒ k)
 local notation "hℒ" => (fun n hn => IsPositiveGrading.eq_bot (ℒ := ℒ) n (Or.inl hn))
@@ -294,7 +294,7 @@ theorem mem_range_completedLieToU_iff (u : (F).completion) :
   classical
   constructor
   · rintro ⟨x, rfl⟩ k
-    exact ⟨LieIdeal.completionProjection _ _ k x, (projection_completedLieToU d ℒ k x).symm⟩
+    exact ⟨Mei.LieIdeal.completionProjection _ _ k x, (projection_completedLieToU d ℒ k x).symm⟩
   · intro hu
     have hreps (k : ℕ) : ∃ a : L,
         Ideal.Quotient.mk ((F).ideal (k + 1)) (ι R a) = (F).projection k u := by
@@ -307,7 +307,7 @@ theorem mem_range_completedLieToU_iff (u : (F).completion) :
     refine ⟨(d.filtrationCompletionEquivPi ℒ M hM hℒ).symm x, ?_⟩
     apply (F).completion_ext
     intro k
-    rw [projection_completedLieToU, LieIdeal.completionProjection_apply]
+    rw [projection_completedLieToU, Mei.LieIdeal.completionProjection_apply]
     rw [d.projection_filtrationCompletionEquivPi_symm, truncatedLieToU_mk, ← ha k]
     apply Ideal.Quotient.eq.mpr
     rw [degreeFiltration_ideal, TauCeti.GradedAlgebra.mem_degreeIdeal_iff,

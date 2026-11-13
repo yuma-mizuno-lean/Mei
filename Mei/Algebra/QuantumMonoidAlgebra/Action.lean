@@ -206,7 +206,7 @@ theorem projection_completedCoefficientLog (g : d.completedBCHGroup ℒ) (k : �
     simpa only [completedCoefficientLog] using!
       (𝓕).coe_completedInnerElement d ℒ j hj ((d.completedBCHExp ℒ).symm g)
   let z := (d.completedBCHExp ℒ).symm g
-  let π := LieIdeal.completionProjection (d.degreeIdeal ℒ) (d.degreeIdeal_antitone ℒ)
+  let π := Mei.LieIdeal.completionProjection (d.degreeIdeal ℒ) (d.degreeIdeal_antitone ℒ)
   calc
     _ = (𝓕).projection k ((𝓕).completedInnerMap d ℒ j hj z) :=
       congrArg ((𝓕).projection k) hc

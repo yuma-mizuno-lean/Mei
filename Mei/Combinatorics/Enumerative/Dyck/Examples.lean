@@ -65,7 +65,7 @@ private theorem quad_eq : quad a b = 1 + C a * X + C b * X ^ 2 := (rfl)
 
 @[simp]
 private theorem coeff_quad_zero : (quad a b).coeff 0 = 1 := by
-  simp [quad, coeff_one]
+  simp [quad]
 
 @[simp]
 private theorem coeff_quad_one : (quad a b).coeff 1 = a := by

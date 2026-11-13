@@ -65,7 +65,7 @@ variable {N R L : Type*} [AddCommMonoid N] [CommRing R] [Algebra ℚ R]
   [GradedLieAlgebra ℒ] [IsPositiveGrading d ℒ]
 
 local notation "F" =>
-  LieIdeal.completionFiltration (d.degreeIdeal ℒ) (d.degreeIdeal_antitone ℒ)
+  Mei.LieIdeal.completionFiltration (d.degreeIdeal ℒ) (d.degreeIdeal_antitone ℒ)
 
 /-- The degree-`n` coefficient of the exponential coordinate of a completed label. -/
 def logComponent (g : d.completedBCHGroup ℒ) (n : N) : ℒ n :=
@@ -107,7 +107,7 @@ theorem projection_homogeneousFactor_ne_one_iff (g : d.completedBCHGroup ℒ) (n
 
 /-- The coefficients of a completed exponential are the coefficients of its coordinate. -/
 @[simp]
-theorem logComponent_completedBCHExp (x : d.completedLie ℒ) (n : N) :
+theorem logComponent_completedBCHExp (x : d.filtrationCompletedLie ℒ) (n : N) :
     d.logComponent ℒ (d.completedBCHExp ℒ x) n =
       d.filtrationCompletionComponent ℒ F (fun k => d.degreeIdeal_toSubmodule ℒ k) n x := by
   rw [logComponent, Equiv.symm_apply_apply]
@@ -120,7 +120,7 @@ theorem logComponent_eq_decompose (g : d.completedBCHGroup ℒ) {n : N} {k : ℕ
       BCHGroup.log (L := d.truncatedLie ℒ k) (projection k g)) :
     d.logComponent ℒ g n = DirectSum.decompose ℒ x n := by
   rw [logComponent, filtrationCompletionComponent_eq_quotientComponent d ℒ F _ n k hn,
-    ← LieIdeal.completionProjection_apply, completionProjection_completedBCHExp_symm, ← hx,
+    ← Mei.LieIdeal.completionProjection_apply, completionProjection_completedBCHExp_symm, ← hx,
     LieIdeal.mkQ_apply]
   exact d.filtrationQuotientComponent_mk ℒ F _ k n hn x
 
@@ -251,7 +251,7 @@ theorem log_projection_eq_mkQ_sum (g : d.completedBCHGroup ℒ) (k : ℕ) :
         (∑ n ∈ (d.finite_cutoff k).toFinset, (d.logComponent ℒ g n : L)) := by
   let e := d.filtrationCompletionEquivPi ℒ F (fun k => d.degreeIdeal_toSubmodule ℒ k)
     (fun n hn => IsPositiveGrading.eq_bot n (Or.inl hn))
-  rw [← completionProjection_completedBCHExp_symm, LieIdeal.completionProjection_apply,
+  rw [← completionProjection_completedBCHExp_symm, Mei.LieIdeal.completionProjection_apply,
     ← e.symm_apply_apply ((d.completedBCHExp ℒ).symm g),
     projection_filtrationCompletionEquivPi_symm]
   simp only [e, filtrationCompletionEquivPi_apply, LieIdeal.mkQ_apply, logComponent]
@@ -501,9 +501,9 @@ variable {N M R : Type*} {L L' : Type u} [AddCommMonoid N] [AddCommMonoid M]
   {T : PositiveDegreeMap d e}
 
 local notation "F" =>
-  LieIdeal.completionFiltration (d.degreeIdeal ℒ) (d.degreeIdeal_antitone ℒ)
+  Mei.LieIdeal.completionFiltration (d.degreeIdeal ℒ) (d.degreeIdeal_antitone ℒ)
 local notation "G" =>
-  LieIdeal.completionFiltration (e.degreeIdeal ℳ) (e.degreeIdeal_antitone ℳ)
+  Mei.LieIdeal.completionFiltration (e.degreeIdeal ℳ) (e.degreeIdeal_antitone ℳ)
 
 open Classical in
 /-- Under an arbitrary regrading, a target logarithmic coefficient is the finite

@@ -235,8 +235,8 @@ private theorem tangentFieldQuotient_mk (k : ℕ) (v : R[T]) :
 
 /-- The completed tangent field `u ∂_m` of a completed tangent coefficient `u`, as an
 element of the completed tropical vertex Lie algebra. -/
-def completedTropicalTangentField : (G).completion →ₗ[R] d.completedLie ℒ :=
-  (LieIdeal.completionFiltration (d.degreeIdeal ℒ) (d.degreeIdeal_antitone ℒ)).lift
+def completedTropicalTangentField : (G).completion →ₗ[R] d.filtrationCompletedLie ℒ :=
+  (Mei.LieIdeal.completionFiltration (d.degreeIdeal ℒ) (d.degreeIdeal_antitone ℒ)).lift
     (fun k => tangentFieldQuotient d ρ m k ∘ₗ ((G).projectionₐ (R := R) k).toLinearMap) (by
       intro k l h
       apply LinearMap.ext
@@ -254,10 +254,10 @@ def completedTropicalTangentField : (G).completion →ₗ[R] d.completedLie ℒ 
 representative of the order-`k` coefficient. -/
 theorem completionProjection_completedTropicalTangentField (k : ℕ) (u : (G).completion)
     (v : R[T]) (hv : (G).projection k u = Ideal.Quotient.mk _ v) :
-    LieIdeal.completionProjection (d.degreeIdeal ℒ) (d.degreeIdeal_antitone ℒ) k
+    Mei.LieIdeal.completionProjection (d.degreeIdeal ℒ) (d.degreeIdeal_antitone ℒ) k
         (completedTropicalTangentField d ρ m u) =
       (d.degreeIdeal ℒ k).mkQ (tropicalTangentField d ρ m v) := by
-  rw [LieIdeal.completionProjection_apply, completedTropicalTangentField,
+  rw [Mei.LieIdeal.completionProjection_apply, completedTropicalTangentField,
     ModuleFiltration.projection_lift, LinearMap.comp_apply, AlgHom.toLinearMap_apply,
     AlgFiltration.projectionₐ_apply, hv, tangentFieldQuotient_mk]
   rfl
@@ -266,14 +266,14 @@ theorem completionProjection_completedTropicalTangentField (k : ℕ) (u : (G).co
 @[simp]
 theorem completedTropicalTangentField_toCompletion (u : R[T]) :
     completedTropicalTangentField d ρ m ((G).toCompletion u) =
-      LieIdeal.toCompletion (d.degreeIdeal ℒ) (d.degreeIdeal_antitone ℒ)
+      Mei.LieIdeal.toCompletion (d.degreeIdeal ℒ) (d.degreeIdeal_antitone ℒ)
         (tropicalTangentField d ρ m u) := by
   apply ModuleFiltration.completion_ext
   intro k
-  simpa only [← LieIdeal.completionProjection_apply] using
+  simpa only [← Mei.LieIdeal.completionProjection_apply] using
     (completionProjection_completedTropicalTangentField d ρ m k _ u
       ((G).projection_toCompletion k u)).trans
-      (LieIdeal.completionProjection_toCompletion _ _ k _).symm
+      (Mei.LieIdeal.completionProjection_toCompletion _ _ k _).symm
 
 end Completion
 

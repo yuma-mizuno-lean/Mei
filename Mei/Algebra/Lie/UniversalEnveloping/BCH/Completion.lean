@@ -49,19 +49,19 @@ local notation "hneg" => (fun n hn => d.eq_bot_of_degree_nonpos ℒ n (le_of_lt 
 local notation "hpos" => (fun n hn => d.eq_bot_of_degree_nonpos ℒ n hn)
 local notation "F" => degreeFiltration ℒ d.degree hneg
 local notation "π" =>
-  LieIdeal.completionProjection (d.degreeIdeal ℒ) (d.degreeIdeal_antitone ℒ)
+  Mei.LieIdeal.completionProjection (d.degreeIdeal ℒ) (d.degreeIdeal_antitone ℒ)
 local notation "G" => completedGroupLikeSubgroup ℒ d.degree hneg
 
 /-- Rational scalars on the enveloping algebra are induced from the coefficient ring. -/
 local instance rationalCompletedBCHEnvelopingAlgebra : Algebra ℚ U :=
   Algebra.compHom U (algebraMap ℚ R)
 
-private noncomputable def groupLikeExp (x : d.completedLie ℒ) : G :=
+private noncomputable def groupLikeExp (x : d.filtrationCompletedLie ℒ) : G :=
   completedPrimitiveExpUnitsEquiv ℒ d.degree hneg hpos
     ⟨⟨completedLieToU d ℒ x, completedLieToU_mem_completionIdeal_one d ℒ x⟩,
       isCompletedPrimitive_completedLieToU d ℒ x⟩
 
-private theorem coe_groupLikeExp (x : d.completedLie ℒ) :
+private theorem coe_groupLikeExp (x : d.filtrationCompletedLie ℒ) :
     ((groupLikeExp d ℒ x).val : (F).completion) =
       (F).completedExp ⟨completedLieToU d ℒ x,
         completedLieToU_mem_completionIdeal_one d ℒ x⟩ := by
@@ -69,7 +69,7 @@ private theorem coe_groupLikeExp (x : d.completedLie ℒ) :
 
 variable [LieAlgebra ℚ L] [IsScalarTower ℚ R L]
 
-private theorem projection_groupLikeExp (k : ℕ) (x : d.completedLie ℒ) :
+private theorem projection_groupLikeExp (k : ℕ) (x : d.filtrationCompletedLie ℒ) :
     (F).projection k ((groupLikeExp d ℒ x).val : (F).completion) =
       (truncatedBCHToUnits d ℒ k (BCHGroup.exp (π k x)) : U ⧸ (F).ideal (k + 1)) := by
   simp only [coe_groupLikeExp, TauCeti.AlgFiltration.projection_completedExp,

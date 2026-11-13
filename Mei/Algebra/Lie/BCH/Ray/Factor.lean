@@ -51,7 +51,7 @@ variable {N R L : Type*} [AddCommGroup N] [CommRing R]
   [Algebra ℚ R] [LieAlgebra ℚ L] [IsScalarTower ℚ R L]
 
 local notation "F" =>
-  LieIdeal.completionFiltration (d.degreeIdeal ℒ) (d.degreeIdeal_antitone ℒ)
+  Mei.LieIdeal.completionFiltration (d.degreeIdeal ℒ) (d.degreeIdeal_antitone ℒ)
 
 open Classical in
 /-- The ray factor of a completed label on a supported ray: the completed label whose

@@ -47,7 +47,7 @@ variable {R Γ : Type*} [CommRing R] [AddCommGroup Γ]
 local notation "𝔤" => positiveLieAlgebra β hβ d
 local notation "ℒ" => positiveGrading β hβ d
 local notation "F" =>
-  LieIdeal.completionFiltration (d.degreeIdeal ℒ) (d.degreeIdeal_antitone ℒ)
+  Mei.LieIdeal.completionFiltration (d.degreeIdeal ℒ) (d.degreeIdeal_antitone ℒ)
 
 include hn hn0
 
@@ -109,7 +109,7 @@ theorem rayPartialSum_sub_mem {k l : ℕ} (h : k ≤ l) (f : R⟦X⟧) :
   exact_mod_cast (Finset.mem_Ico.mp hj).1
 
 /-- The completed Lie element `∑_{j ≥ 1} f_j X_{jn}` of a power series `f`. -/
-def raySeries : R⟦X⟧ →ₗ[R] d.completedLie ℒ :=
+def raySeries : R⟦X⟧ →ₗ[R] d.filtrationCompletedLie ℒ :=
   (F).lift (fun k => (d.degreeIdeal ℒ k).toSubmodule.mkQ ∘ₗ rayPartialSum β hβ hn hn0 k) (by
     intro k l h
     ext f
@@ -120,10 +120,10 @@ def raySeries : R⟦X⟧ →ₗ[R] d.completedLie ℒ :=
 /-- At order `k`, the ray series is the class of its partial sum over `j < k`. -/
 @[simp]
 theorem completionProjection_raySeries (k : ℕ) (f : R⟦X⟧) :
-    LieIdeal.completionProjection (d.degreeIdeal ℒ) (d.degreeIdeal_antitone ℒ) k
+    Mei.LieIdeal.completionProjection (d.degreeIdeal ℒ) (d.degreeIdeal_antitone ℒ) k
         (raySeries β hβ hn hn0 f) =
       (d.degreeIdeal ℒ k).mkQ (rayPartialSum β hβ hn hn0 k f) := by
-  rw [LieIdeal.completionProjection_apply, raySeries, Mei.ModuleFiltration.projection_lift]
+  rw [Mei.LieIdeal.completionProjection_apply, raySeries, Mei.ModuleFiltration.projection_lift]
   -- The submodule quotient map is the underlying map of the Lie quotient map.
   rfl
 
@@ -134,8 +134,8 @@ theorem raySeries_bracket_raySeries_of_eq_zero {n' : Γ} (hn' : n' ∈ d.monoid)
     ⁅raySeries β hβ hn hn0 f, raySeries β hβ hn' hn0' g⁆ = 0 := by
   apply Mei.ModuleFiltration.completion_ext
   intro k
-  rw [LieIdeal.projection_bracket, map_zero, ← LieIdeal.completionProjection_apply,
-    ← LieIdeal.completionProjection_apply, completionProjection_raySeries,
+  rw [Mei.LieIdeal.projection_bracket, map_zero, ← Mei.LieIdeal.completionProjection_apply,
+    ← Mei.LieIdeal.completionProjection_apply, completionProjection_raySeries,
     completionProjection_raySeries, ← LieHom.map_lie, rayPartialSum_apply,
     rayPartialSum_apply, sum_lie]
   simp [lie_sum, rayGenerator_bracket_rayGenerator_of_eq_zero β hβ hn hn0 hn' hn0' h]

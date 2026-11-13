@@ -262,9 +262,9 @@ theorem completedMap_completedBCHExp_completedTropicalTangentField (u : (G).comp
       projection_completedTropicalTangentMap_of_le T hT k a (le_max_right _ _), ← hv,
       Ideal.quotient_map_mkₐ, ← map_smul, Ideal.Quotient.mkₐ_eq_mk]
   rw [ModuleFiltration.projection_completionMap_of_le _ _ _ _ _ _ k a (le_max_left _ _),
-    ← LieIdeal.completionProjection_apply,
+    ← Mei.LieIdeal.completionProjection_apply,
     completionProjection_completedTropicalTangentField d ρ m _ u v hv.symm,
-    ← LieIdeal.completionProjection_apply,
+    ← Mei.LieIdeal.completionProjection_apply,
     completionProjection_completedTropicalTangentField e ρ' m' k _ _ hv',
     ← f.map_tropicalTangentField hT hf]
   simp only [LieIdeal.mkQ_apply, Submodule.mapQ_apply, LieHom.coe_toLinearMap, coe_toLieHom]

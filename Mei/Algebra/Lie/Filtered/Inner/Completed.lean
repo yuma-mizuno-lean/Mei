@@ -65,7 +65,7 @@ variable [Algebra ℚ R] [LieAlgebra ℚ L] [IsScalarTower ℚ R L]
 
 include hinner in
 /-- Arbitrary completed Lie elements act by conjugation on arbitrary completed coefficients. -/
-theorem completedBCHAction_exp_eq_inner (x : d.completedLie ℒ) (a : F.completion) :
+theorem completedBCHAction_exp_eq_inner (x : d.filtrationCompletedLie ℒ) (a : F.completion) :
     F.completedBCHAction d ℒ (d.completedBCHExp ℒ x) a =
       F.completedExp (F.completedInnerElement d ℒ j hj x) * a *
         F.completedExp (-F.completedInnerElement d ℒ j hj x) := by

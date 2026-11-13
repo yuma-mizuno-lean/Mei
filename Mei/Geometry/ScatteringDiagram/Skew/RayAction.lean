@@ -113,7 +113,7 @@ private theorem principal_rayPartialSum_projection (q : T)
     (hu : u.val = (G).toCompletion (single q 1)) (k : ℕ) :
     ((e).degreeIdeal ℳ k).mkQ (D.principalGradedLieHom d
         (SkewLieAlgebra.rayPartialSum β hβ hn hn0 k (κ • a))) =
-      LieIdeal.completionProjection ((e).degreeIdeal ℳ) ((e).degreeIdeal_antitone ℳ) k
+      Mei.LieIdeal.completionProjection ((e).degreeIdeal ℳ) ((e).degreeIdeal_antitone ℳ) k
         (completedTropicalTangentField e ρ χ ((G).completedAeval u b)) := by
   have hb0 : constantCoeff b = 0 := by rw [← hab]; simp
   let v : R[T] := ∑ j ∈ Finset.range k,

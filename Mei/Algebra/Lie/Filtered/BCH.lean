@@ -121,7 +121,7 @@ theorem projection_completedBCHAction (g : d.completedBCHGroup ℒ)
 
 /-- The integrated action agrees with the existing exponential operator in Lie coordinates. -/
 @[simp]
-theorem completedBCHAction_exp (x : d.completedLie ℒ) :
+theorem completedBCHAction_exp (x : d.filtrationCompletedLie ℒ) :
     F.completedBCHAction d ℒ (d.completedBCHExp ℒ x) =
       F.completedExpLieAction d ℒ x := by
   apply LinearEquiv.ext

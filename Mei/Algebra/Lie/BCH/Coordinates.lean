@@ -19,7 +19,7 @@ requiring the original Lie algebra to be nilpotent.
 In these coordinates, completed graded group maps agree with the linear maps
 of module completions, retaining the prescribed cutoff modulus.
 
-The carriers and transition laws are those of `LieIdeal.completion` and
+The carriers and transition laws are those of `Mei.LieIdeal.completion` and
 `TauCeti.CompletedGroup`; the finite coordinate maps are `Mei.BCHGroup.exp` and
 `Mei.BCHGroup.log`.
 -/
@@ -42,22 +42,22 @@ variable {N R L : Type*} [AddCommMonoid N] [CommRing R] [Algebra ℚ R]
   [GradedLieAlgebra ℒ] [IsPositiveGrading d ℒ]
 
 local notation "π" =>
-  LieIdeal.completionProjection (d.degreeIdeal ℒ) (d.degreeIdeal_antitone ℒ)
+  Mei.LieIdeal.completionProjection (d.degreeIdeal ℒ) (d.degreeIdeal_antitone ℒ)
 
 /-- Levelwise exponential identifies the Lie and BCH group completions as sets. -/
-noncomputable def completedBCHExp : d.completedLie ℒ ≃ d.completedBCHGroup ℒ where
+noncomputable def completedBCHExp : d.filtrationCompletedLie ℒ ≃ d.completedBCHGroup ℒ where
   toFun x := ⟨fun k => BCHGroup.exp (π k x), (TauCeti.mem_completedGroup_iff _ _).mpr (by
     intro k l h
     -- The categorical tower map conceals the concrete BCH quotient homomorphism.
     change (d.truncationMap ℒ h).bchGroupMap (BCHGroup.exp (π l x)) =
       BCHGroup.exp (π k x)
     rw [LieHom.bchGroupMap_exp, truncationMap_eq_factor,
-      LieIdeal.factor_completionProjection])⟩
+      Mei.LieIdeal.factor_completionProjection])⟩
   invFun g := ⟨fun k =>
     BCHGroup.log (L := d.truncatedLie ℒ k.unop) (projection k.unop g),
     (ModuleFiltration.mem_completionSubmodule_iff _ _).mpr (by
       intro k l h
-      rw [LieIdeal.completionFiltration_transition, LieHom.coe_toLinearMap]
+      rw [Mei.LieIdeal.completionFiltration_transition, LieHom.coe_toLinearMap]
       have hg := congrArg (BCHGroup.log (L := d.truncatedLie ℒ k))
         (TauCeti.CompletedGroup.map_projection k l h g)
       -- Rewrite the categorical arrow at its concrete quotient group type.
@@ -70,17 +70,17 @@ noncomputable def completedBCHExp : d.completedLie ℒ ≃ d.completedBCHGroup �
     apply ModuleFiltration.completion_ext
     intro k
     simp only [ModuleFiltration.projection_mk, TauCeti.CompletedGroup.projection_apply,
-      BCHGroup.log_exp, LieIdeal.completionProjection_apply]
+      BCHGroup.log_exp, Mei.LieIdeal.completionProjection_apply]
   right_inv g := by
     apply TauCeti.CompletedGroup.ext
     intro k
-    simp only [TauCeti.CompletedGroup.projection_apply, LieIdeal.completionProjection_apply,
+    simp only [TauCeti.CompletedGroup.projection_apply, Mei.LieIdeal.completionProjection_apply,
       ModuleFiltration.projection_mk]
     exact BCHGroup.exp_log (L := d.truncatedLie ℒ k) (g.val k)
 
 /-- Projection of the completed exponential is the finite exponential coordinate. -/
 @[simp]
-theorem projection_completedBCHExp (k : ℕ) (x : d.completedLie ℒ) :
+theorem projection_completedBCHExp (k : ℕ) (x : d.filtrationCompletedLie ℒ) :
     projection k (d.completedBCHExp ℒ x) = BCHGroup.exp (π k x) := by
   rw [TauCeti.CompletedGroup.projection_apply, completedBCHExp]
   rfl
@@ -90,7 +90,7 @@ theorem projection_completedBCHExp (k : ℕ) (x : d.completedLie ℒ) :
 theorem completionProjection_completedBCHExp_symm (k : ℕ) (g : d.completedBCHGroup ℒ) :
     π k ((d.completedBCHExp ℒ).symm g) =
       BCHGroup.log (L := d.truncatedLie ℒ k) (projection k g) := by
-  rw [LieIdeal.completionProjection_apply, completedBCHExp]
+  rw [Mei.LieIdeal.completionProjection_apply, completedBCHExp]
   exact ModuleFiltration.projection_mk _ _ _ k
 
 /-- Zero is the exponential coordinate of the identity completed group element. -/
@@ -103,7 +103,7 @@ theorem completedBCHExp_zero : d.completedBCHExp ℒ 0 = 1 := by
 
 /-- Negation of a completed Lie coordinate gives inversion in the completed group. -/
 @[simp]
-theorem completedBCHExp_neg (x : d.completedLie ℒ) :
+theorem completedBCHExp_neg (x : d.filtrationCompletedLie ℒ) :
     d.completedBCHExp ℒ (-x) = (d.completedBCHExp ℒ x)⁻¹ := by
   apply TauCeti.CompletedGroup.ext
   intro k
@@ -112,7 +112,7 @@ theorem completedBCHExp_neg (x : d.completedLie ℒ) :
     ((projection k).map_inv (d.completedBCHExp ℒ x)).symm
 
 /-- Completed Lie coordinates with zero bracket add under the completed exponential. -/
-theorem completedBCHExp_add_of_lie_eq_zero {x y : d.completedLie ℒ} (h : ⁅x, y⁆ = 0) :
+theorem completedBCHExp_add_of_lie_eq_zero {x y : d.filtrationCompletedLie ℒ} (h : ⁅x, y⁆ = 0) :
     d.completedBCHExp ℒ (x + y) = d.completedBCHExp ℒ x * d.completedBCHExp ℒ y := by
   apply TauCeti.CompletedGroup.ext
   intro k
@@ -122,7 +122,7 @@ theorem completedBCHExp_add_of_lie_eq_zero {x y : d.completedLie ℒ} (h : ⁅x,
   rw [← LieHom.map_lie, h, map_zero]
 
 /-- Integer multiples of a completed Lie coordinate give integer powers. -/
-theorem completedBCHExp_zsmul (x : d.completedLie ℒ) (n : ℤ) :
+theorem completedBCHExp_zsmul (x : d.filtrationCompletedLie ℒ) (n : ℤ) :
     d.completedBCHExp ℒ (n • x) = d.completedBCHExp ℒ x ^ n := by
   apply TauCeti.CompletedGroup.ext
   intro k
@@ -164,9 +164,9 @@ variable {N M R : Type*} {L L' : Type u} [AddCommMonoid N] [AddCommMonoid M]
   {T : PositiveDegreeMap d e}
 
 local notation "F" =>
-  LieIdeal.completionFiltration (d.degreeIdeal ℒ) (d.degreeIdeal_antitone ℒ)
+  Mei.LieIdeal.completionFiltration (d.degreeIdeal ℒ) (d.degreeIdeal_antitone ℒ)
 local notation "G" =>
-  LieIdeal.completionFiltration (e.degreeIdeal ℳ) (e.degreeIdeal_antitone ℳ)
+  Mei.LieIdeal.completionFiltration (e.degreeIdeal ℳ) (e.degreeIdeal_antitone ℳ)
 
 /-- In logarithmic coordinates, a completed BCH map is the linear completion map
 with the same cutoff modulus. -/
@@ -178,12 +178,12 @@ theorem completedBCHExp_symm_completedMap (f : GradedLieHom T ℒ ℳ)
   apply (G).completion_ext
   intro k
   rw [ModuleFiltration.projection_completionMap]
-  rw [← LieIdeal.completionProjection_apply,
+  rw [← Mei.LieIdeal.completionProjection_apply,
     e.completionProjection_completedBCHExp_symm ℳ, projection_completedMap]
   refine ((f.truncatedMap k le_rfl).log_bchGroupMap
     (projection (T.modulus k) g)).trans ?_
   rw [← d.completionProjection_completedBCHExp_symm ℒ,
-    LieIdeal.completionProjection_apply]
+    Mei.LieIdeal.completionProjection_apply]
   rw [truncatedMap_eq_mapQ]
   exact LinearMap.congr_fun
     ((d.degreeIdeal ℒ (T.modulus k)).toLinearMap_mapQ (e.degreeIdeal ℳ k)
