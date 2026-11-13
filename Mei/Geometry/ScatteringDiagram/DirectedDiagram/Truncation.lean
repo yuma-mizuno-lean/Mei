@@ -58,10 +58,10 @@ theorem equivalent_map_truncation_iff
         (E.map (GradedLieHom.truncation d ℒ k) (H.truncation_mem_wall d k)) ↔
       D.LevelEquivalent E k := by
   rw [equivalent_iff_levelEquivalent_of_degreeIdeal_eq_bot _ _
-    (d.truncationIdeal_lieTruncationGrading_eq_bot ℒ le_rfl)]
+    (d.degreeIdeal_truncatedGrading_eq_bot ℒ le_rfl)]
   apply levelEquivalent_map_iff_of_injective
   rw [GradedLieHom.truncatedMap_truncation, ← LieHom.ker_eq_bot, LieIdeal.mkQ_ker]
-  exact d.truncationIdeal_lieTruncationGrading_eq_bot ℒ le_rfl
+  exact d.degreeIdeal_truncatedGrading_eq_bot ℒ le_rfl
 
 /-- Interpret a finite-order class as a completed class with coefficients in the
 finite Lie quotient. The result depends only on the given finite-order class. -/

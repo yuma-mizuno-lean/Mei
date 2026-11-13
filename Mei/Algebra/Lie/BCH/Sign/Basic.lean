@@ -158,7 +158,7 @@ theorem _root_.TauCeti.PositiveDegrees.bchSubgroup_map_signSubalgebra_truncation
     (signSubalgebra (d.truncatedGrading ℒ l) θ s).bchSubgroup.map
         (d.truncationMap ℒ h).bchGroupMap =
       (signSubalgebra (d.truncatedGrading ℒ k) θ s).bchSubgroup := by
-  rw [← LieSubalgebra.bchSubgroup_map, d.map_signSubalgebra_lieTruncationMap ℒ θ h s]
+  rw [← LieSubalgebra.bchSubgroup_map, d.map_signSubalgebra_truncationMap ℒ θ h s]
 
 /-- Lower each sign factor along a decrease of the degree cutoff. -/
 def _root_.TauCeti.PositiveDegrees.lowerSignFactors {k l : ℕ} (h : k ≤ l)
@@ -211,7 +211,7 @@ private theorem logSignProduct_truncated_bijective (k : ℕ) :
           exact Submodule.mem_map_of_mem hx) x
     · intro x z hz
       exact logSignProduct_add (d.truncatedGrading ℒ (k + 1)) θ p.ker
-        (d.ker_lieTruncationMap_isHomogeneous ℒ (Nat.le_succ k))
+        (d.ker_truncationMap_isHomogeneous ℒ (Nat.le_succ k))
         (d.ker_truncationMap_succ_le_center ℒ k) x z hz
 
 /-- Multiplication of positive, zero and negative sign subgroups is bijective at

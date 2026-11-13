@@ -40,7 +40,7 @@ variable {N R L : Type*} [AddCommMonoid N] [CommRing R] [Algebra ℚ R]
 def truncatedBCHCompletionEquiv (k : ℕ) :
     d.completedBCHGroup (d.truncatedGrading ℒ k) ≃* d.truncatedGroup ℒ k :=
   (d.bchCompletionEquiv (d.truncatedGrading ℒ k)
-    (d.truncationIdeal_lieTruncationGrading_eq_bot ℒ le_rfl)).symm
+    (d.degreeIdeal_truncatedGrading_eq_bot ℒ le_rfl)).symm
 
 /-- The inverse comparison is the canonical map into the completion. -/
 @[simp]

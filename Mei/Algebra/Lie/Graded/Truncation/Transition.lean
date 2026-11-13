@@ -38,7 +38,7 @@ variable {N R L : Type*} [AddCommMonoid N] [CommRing R]
   [GradedLieAlgebra ℒ] [IsPositiveGrading d ℒ]
 
 /-- Collecting pieces by sign commutes with lowering the degree cutoff. -/
-theorem map_signSubalgebra_lieTruncationMap {A : Type*} [AddCommGroup A] [LinearOrder A]
+theorem map_signSubalgebra_truncationMap {A : Type*} [AddCommGroup A] [LinearOrder A]
     [IsOrderedAddMonoid A] (θ : N →+ A) {k l : ℕ} (h : k ≤ l) (s : SignType) :
     (signSubalgebra (d.truncatedGrading ℒ l) θ s).map (d.truncationMap ℒ h) =
       signSubalgebra (d.truncatedGrading ℒ k) θ s :=
@@ -46,7 +46,7 @@ theorem map_signSubalgebra_lieTruncationMap {A : Type*} [AddCommGroup A] [Linear
 
 /-- Homogeneous projections commute with transitions. -/
 @[simp]
-theorem lieTruncationMap_decompose {k l : ℕ} (h : k ≤ l)
+theorem truncationMap_decompose {k l : ℕ} (h : k ≤ l)
     (x : d.truncatedLie ℒ l) (n : N) :
     d.truncationMap ℒ h (DirectSum.decompose (d.truncatedGrading ℒ l) x n :
         d.truncatedLie ℒ l) =
@@ -56,16 +56,16 @@ theorem lieTruncationMap_decompose {k l : ℕ} (h : k ≤ l)
   simp [LieIdeal.mkQ_apply]
 
 /-- A degree-transition kernel is stable under homogeneous projections. -/
-theorem ker_lieTruncationMap_isHomogeneous {k l : ℕ} (h : k ≤ l) :
+theorem ker_truncationMap_isHomogeneous {k l : ℕ} (h : k ≤ l) :
     DirectSum.SetLike.IsHomogeneous (d.truncatedGrading ℒ l)
       (d.truncationMap ℒ h).ker.toSubmodule := by
   intro n x hx
   simp only [LieSubmodule.mem_toSubmodule, LieHom.mem_ker] at hx ⊢
-  simp [d.lieTruncationMap_decompose, hx]
+  simp [d.truncationMap_decompose, hx]
 
 /-- A nonzero homogeneous element killed by lowering the cutoff has degree
 strictly above the lower cutoff. -/
-theorem lt_degree_of_mem_ker_lieTruncationMap {k l : ℕ} (h : k ≤ l)
+theorem lt_degree_of_mem_ker_truncationMap {k l : ℕ} (h : k ≤ l)
     {n : N} {x : d.truncatedLie ℒ l} (hx : x ∈ d.truncatedGrading ℒ l n)
     (hker : x ∈ (d.truncationMap ℒ h).ker) (hne : x ≠ 0) :
     (k : ℤ) < d.degree n := by

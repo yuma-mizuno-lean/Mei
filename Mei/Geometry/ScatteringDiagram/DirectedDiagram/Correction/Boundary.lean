@@ -143,7 +143,7 @@ theorem exists_joint_sweep_correction_family {k : ℕ}
         (log (D.levelPathProduct (k + 1) (p a.1))) a.2.val).property
       exact hc a (by simpa only [he, Submodule.mem_bot] using hm)
     exact DirectedWall.exists_cooriented_sweep (σ a.1)
-      (d.mem_cutoff.mp (d.mem_cutoff_of_lieTruncationGrading_ne_bot ℒ hpiece).1).1
+      (d.mem_cutoff.mp (d.mem_cutoff_of_truncatedGrading_ne_bot ℒ hpiece).1).1
       (htrans a) m (by simpa only [hσ] using hmker) (k + 1) (by rw [hd a]; omega) (c a) hmem
   choose W hs hsign hray hpureW hout hlog hborn using hex
   refine ⟨htrans, ofFinite W, ?_, ?_⟩

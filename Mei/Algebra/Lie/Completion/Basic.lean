@@ -109,7 +109,9 @@ theorem projection_bracket (k : ℕ) (x y : completion I hI) :
   have hb' : ModuleTower.quotientsπ _ F.quotientAntitone k b = _ :=
     (F.quotientEquivTower_mk k b).symm.trans ((congrArg _ hb).trans (hproj y).symm)
   rw [← hproj, ← ha, ← hb, ← LieHom.map_lie]
+  -- The tower projection in `hproj` is evaluated on the linear comparison `e`.
   change (ModuleTower.quotients _ F.quotientAntitone).limπ k (e ⁅x, y⁆) = _
+  -- The Lie comparison has the same underlying linear map, so it preserves this bracket.
   rw [show e ⁅x, y⁆ = ⁅e x, e y⁆ from (completionLieEquivLimit I hI).map_lie x y]
   rw [_root_.LieIdeal.limπ_bracket_of_representatives I hI k (e x) (e y) a b ha' hb']
   exact (F.quotientEquivTower_mk k ⁅a, b⁆).symm

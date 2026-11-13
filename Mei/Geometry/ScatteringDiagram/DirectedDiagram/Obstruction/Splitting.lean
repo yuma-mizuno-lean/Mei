@@ -82,14 +82,14 @@ def LoopProjection.ofSplitting {k : ℕ} (hq : (D.map π hπ).LevelConsistent k)
       GradedLieHom.idSubSectionComp_apply]
   map_wall n m x hx := by
     rw [GradedLieHom.idSubSectionComp_apply]
-    exact Submodule.sub_mem _ hx (s.lieTruncatedMap_mem_truncated_wall hs k
-      (π.lieTruncatedMap_mem_truncated_wall hπ k hx))
+    exact Submodule.sub_mem _ hx (s.truncatedMap_mem_truncated_wall hs k
+      (π.truncatedMap_mem_truncated_wall hπ k hx))
   map_log_loop {x} p := by
     apply GradedLieHom.idSubSectionComp_of_map_eq_zero
     rw [← pushforward_ofFixedDegree] at hq
     have hp :
         (π.truncatedMap k (a := k) (by simp)).bchGroupMap (D.levelPathProduct k p) = 1 := by
-      rw [← DirectedWall.Pushforward.ofFixedDegree_lieHom_lieTruncatedMap (h := h) π hπ k (by simp)]
+      rw [← DirectedWall.Pushforward.ofFixedDegree_lieHom_truncatedMap (h := h) π hπ k (by simp)]
       exact (D.levelPathProduct_pushforward (.ofFixedDegree π hπ) k (by simp) p).symm.trans
         ((levelConsistent_iff_loops _ k).mp hq _ _)
     rw [← LieHom.log_bchGroupMap, hp, log_one]
@@ -102,7 +102,7 @@ def LoopProjection.ofSplitting {k : ℕ} (hq : (D.map π hπ).LevelConsistent k)
         rw [hy, s.projection_completedMap_of_le k (a := k) (by simp)]
         exact LieHom.log_bchGroupMap _ _
       rw [hl, s.decompose_truncatedMap_id k le_rfl,
-        GradedLieHom.idSubSectionComp_lieTruncatedMap hsπ]
+        GradedLieHom.idSubSectionComp_truncatedMap hsπ]
     · rcases hfull j hj with hfull | ⟨m, hm, a, ha, he⟩
       · exact hfull
       · have hmn : m ≠ n := by intro he; subst m; omega

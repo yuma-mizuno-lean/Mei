@@ -85,7 +85,7 @@ theorem eventually_signFactor_eq_of_notMem_arrangementComplex_walls {θ : V →L
   filter_upwards [eventually_all.mpr hrow] with φ hφ
   refine signFactorizationEquiv_symm_eq_of_signSubalgebra_eq ℒ _ d _ k
     (fun s' => signSubalgebra_eq_of_sign_eq _ _ _ (fun n hn => ?_) s') g s
-  simpa using hφ ⟨n, d.mem_cutoff_of_lieTruncationGrading_ne_bot ℒ hn⟩
+  simpa using hφ ⟨n, d.mem_cutoff_of_truncatedGrading_ne_bot ℒ hn⟩
 
 private def arrangementCellPoint (P : (d.arrangementComplex h k).cells) :
     intrinsicInterior ℝ (P : Set (V →L[ℝ] ℝ)) := by
@@ -248,6 +248,6 @@ theorem map_reconstructFinite
       ⟨P, (d.arrangementComplex h k).mem_cells_of_mem_walls P.property⟩
     rw [KSComplex.map_label, d.reconstructFinite_label h ℒ g P hθ,
       d.reconstructFinite_label h ℳ _ P hθ]
-    exact f.lieTruncatedMap_signFactorizationEquiv_symm _ k g 0
+    exact f.truncatedMap_signFactorizationEquiv_symm _ k g 0
 
 end TauCeti.PositiveDegrees

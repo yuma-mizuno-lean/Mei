@@ -49,12 +49,14 @@ noncomputable def filtrationCompletionLieEquivPi :
       (fun k => d.degreeIdeal_toSubmodule ℒ k)
       (fun n hn => IsPositiveGrading.eq_bot n (Or.inl hn)))
   have hlinear : upstream.toLinearEquiv = linear := by
+    -- Expose the two linear factors of the composed Lie equivalence.
     change (Mei.LieIdeal.completionLieEquivLimit (d.degreeIdeal ℒ)
       (d.degreeIdeal_antitone ℒ)).toLinearEquiv.trans (d.completionLieEquivPi ℒ).toLinearEquiv = _
     rw [Mei.LieIdeal.completionLieEquivLimit_toLinearEquiv,
       d.completionLieEquivPi_toLinearEquiv ℒ]
   refine { linear with map_lie' := ?_ }
   intro x y
+  -- The structure field is evaluated through the linear equivalence's `toFun`.
   change linear ⁅x, y⁆ = ⁅linear x, linear y⁆
   rw [← hlinear]
   exact upstream.map_lie x y
@@ -79,6 +81,7 @@ theorem filtrationCompletionLieEquivPi_apply (x : (F).completion) (n : N) :
       d.filtrationCompletionComponent ℒ F (fun k => d.degreeIdeal_toSubmodule ℒ k) n x := by
   let := d.lieRingPi ℒ
   let := d.lieAlgebraPi ℒ
+  -- The comparison theorem rewrites the linear equivalence underlying the evaluation.
   change (d.filtrationCompletionLieEquivPi ℒ).toLinearEquiv x n = _
   rw [d.filtrationCompletionLieEquivPi_toLinearEquiv ℒ]
   exact d.filtrationCompletionEquivPi_apply ℒ F _ _ x n

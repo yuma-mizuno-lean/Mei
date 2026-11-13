@@ -63,7 +63,7 @@ theorem signFactorizationEquiv_symm_of_uniformSign_monoid (s : SignType)
       if t = s then g else 1 := by
   apply signFactorizationEquiv_symm_of_uniformSign
   intro n hn
-  have hc := d.mem_cutoff_of_lieTruncationGrading_ne_bot ℒ hn
+  have hc := d.mem_cutoff_of_truncatedGrading_ne_bot ℒ hn
   exact hs n (d.mem_cutoff.mp hc.1).1 hc.2
 
 end TauCeti.PositiveDegrees

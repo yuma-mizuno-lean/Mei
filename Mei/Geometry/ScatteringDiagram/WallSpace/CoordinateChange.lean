@@ -119,7 +119,7 @@ theorem truncatedMap_mem (E : CoordinateChange (d := d) (e := e) H H')
     {x : d.truncatedLie ℒ a} (hx : x ∈ H.truncatedRayLieSubalgebra w m a) :
     E.gradedLieHom.truncatedMap k ha x ∈ H'.truncatedRayLieSubalgebra
       (E.rayEquiv w) (m.comp E.tangentEquiv.symm) k :=
-  E.gradedLieHom.lieTruncatedMap_mem_truncatedRayLieSubalgebra
+  E.gradedLieHom.truncatedMap_mem_truncatedRayLieSubalgebra
     (fun n hn => by simpa using (E.mem_rayDegrees_rayEquiv w n).mpr hn)
     (fun n _ x hx => by simpa using (E.wall_mem_iff n m x).mpr hx) ha hx
 

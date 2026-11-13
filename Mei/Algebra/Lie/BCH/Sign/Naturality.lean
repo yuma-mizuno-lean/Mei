@@ -56,7 +56,7 @@ variable {N M R A : Type*} {L L' : Type u}
 
 /-- A finite graded map preserves sign subgroups for the pulled-back character,
 using any source cutoff at least as large as its prescribed modulus. -/
-theorem lieTruncatedMap_mem_signSubgroup {a k : ℕ} (h : T.modulus k ≤ a)
+theorem truncatedMap_mem_signSubgroup {a k : ℕ} (h : T.modulus k ≤ a)
     {s : SignType} {g : d.truncatedGroup ℒ a}
     (hg : g ∈ (signSubalgebra (d.truncatedGrading ℒ a)
       (φ.comp T.toAddMonoidHom) s).bchSubgroup) :
@@ -86,7 +86,7 @@ theorem completedMap_mem_signSubgroup {s : SignType} {g : d.completedBCHGroup �
   rw [mem_completedSignSubgroup] at hg ⊢
   intro k
   rw [projection_completedMap]
-  exact f.lieTruncatedMap_mem_signSubgroup φ le_rfl (hg (T.modulus k))
+  exact f.truncatedMap_mem_signSubgroup φ le_rfl (hg (T.modulus k))
 
 /-- Regrading commutes with extraction of completed positive, zero and negative
 factors, when the source character is the pullback of the target character. -/

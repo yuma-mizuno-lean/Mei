@@ -78,14 +78,14 @@ theorem degree_jointCorrectionIndex (hk : D.LevelConsistent k)
     rw [LieHom.mem_ker, ← LieHom.log_bchGroupMap,
       D.truncation_levelPathProduct (Nat.le_succ k),
       (D.levelConsistent_iff_loops k).mp hk, log_one]
-  have hck := d.ker_lieTruncationMap_isHomogeneous ℒ (Nat.le_succ k) a.2.val hker
+  have hck := d.ker_truncationMap_isHomogeneous ℒ (Nat.le_succ k) a.2.val hker
   have hc := (DirectSum.decompose (d.truncatedGrading ℒ (k + 1))
     (log (D.levelPathProduct (k + 1) (p a.1))) a.2.val).property
-  have hlo := d.lt_degree_of_mem_ker_lieTruncationMap ℒ (Nat.le_succ k) hc hck hne
+  have hlo := d.lt_degree_of_mem_ker_truncationMap ℒ (Nat.le_succ k) hc hck hne
   have hpiece : d.truncatedGrading ℒ (k + 1) a.2.val ≠ ⊥ := by
     intro he
     exact hne (by simpa only [he, Submodule.mem_bot] using hc)
-  have hhi := (d.mem_cutoff.mp (d.mem_cutoff_of_lieTruncationGrading_ne_bot ℒ hpiece).1).2
+  have hhi := (d.mem_cutoff.mp (d.mem_cutoff_of_truncatedGrading_ne_bot ℒ hpiece).1).2
   omega
 
 /-- Whenever one correction wall negates each nonzero component of a joint

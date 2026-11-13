@@ -183,7 +183,7 @@ theorem _root_.TauCeti.PositiveDegrees.degreeIdeal_scale
 omit [Algebra ℚ R] [LieAlgebra ℚ L] [IsScalarTower ℚ R L] in
 /-- The identity of Lie algebras from the order-`⌊k / c⌋` truncation for `δ` to the order-`k`
 truncation for `c δ` is bijective. -/
-theorem _root_.TauCeti.PositiveDegrees.bijective_lieTruncatedMap_changeDegree_scale (k : ℕ) :
+theorem _root_.TauCeti.PositiveDegrees.bijective_truncatedMap_changeDegree_scale (k : ℕ) :
     Function.Bijective
       ((GradedLieHom.changeDegree d (d.scale c) (d.scale_monoid c).symm ℒ).truncatedMap k
         (PositiveDegreeMap.changeDegree_scale_modulus_le d c k)) := by

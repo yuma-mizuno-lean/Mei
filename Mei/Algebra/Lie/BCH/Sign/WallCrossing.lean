@@ -54,7 +54,7 @@ private theorem signFactor_mem_of_refinement (ε : SignType)
     (signSubalgebra_le_of_sign_imp _ _ _ _ _ ?_)
     ((signFactorizationEquiv ℒ θ d k).symm g s).property
   intro n hn hs
-  rw [h n (d.mem_cutoff_of_lieTruncationGrading_ne_bot ℒ hn)]
+  rw [h n (d.mem_cutoff_of_truncatedGrading_ne_bot ℒ hn)]
   by_cases hz : θ n = 0
   · have he : s = .zero := by simpa [hz] using hs.symm
     rw [ite_eq_left hz, ite_eq_left he]

@@ -73,6 +73,7 @@ theorem equivalent_iff_levelEquivalent_of_degreeIdeal_eq_bot
       have hmap : I ≤ J.comap (LieHom.id : L →ₗ⁅R⁆ L) := fun _ hx => hIJ hx
       rw [PositiveDegrees.truncationMap_eq_factor, ← LieIdeal.mapQ_id_eq_factor I J hIJ]
       apply (LieIdeal.mapQ_injective_iff I J LieHom.id hmap).mpr
+      -- Comapping along the identity keeps the ideal; `hk` identifies the local ideal `J`.
       change J ≤ I
       exact (show J = ⊥ from hk).le.trans bot_le
     rw [levelEquivalent_def] at hDE ⊢

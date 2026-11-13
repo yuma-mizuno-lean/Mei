@@ -78,7 +78,7 @@ theorem label_mem_bchSubgroup_signSubalgebra (P : C.walls) {θ : V}
   · simpa only [hb, Submodule.mem_bot] using
       (DirectSum.decompose (d.truncatedGrading ℒ k) x n).property
   · exact hx _ ⟨θ, hθ, rfl⟩ n fun h0 =>
-      hn (hφ n (d.mem_cutoff_of_lieTruncationGrading_ne_bot ℒ hb) h0)
+      hn (hφ n (d.mem_cutoff_of_truncatedGrading_ne_bot ℒ hb) h0)
 
 /-- Starting where every retained nonzero degree has the nonzero sign `σ`, every
 allowed point `y` is reached by an admissible path whose product lies in the sign

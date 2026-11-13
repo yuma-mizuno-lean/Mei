@@ -74,7 +74,7 @@ theorem raySubmodule_restrictScalars (w : SupportedRay d) (m : Λ →+ ℤ) :
 variable [DecidableEq Γ] [GradedLieAlgebra ℒ] [TauCeti.IsPositiveGrading d ℒ]
 
 /-- The finite truncation comparison identifies the truncated supported-ray wall algebras. -/
-theorem lieTruncationRestrictScalarsEquiv_mem_truncatedRayLieSubalgebra_iff (w : SupportedRay d)
+theorem truncatedRestrictScalarsEquiv_mem_truncatedRayLieSubalgebra_iff (w : SupportedRay d)
     (m : Λ →+ ℤ) (k : ℕ) (x : d.truncatedLie (fun n => (ℒ n).restrictScalars R) k) :
     d.truncatedRestrictScalarsEquiv (R := R) ℒ k x ∈ H.truncatedRayLieSubalgebra w m k ↔
       x ∈ (H.restrictScalars R).truncatedRayLieSubalgebra w m k := by
@@ -99,7 +99,7 @@ theorem mem_wallGroup_restrictScalars_iff (w : SupportedRay d) (m : Λ →+ ℤ)
   generalize (TauCeti.CompletedGroup.projection k g :
     BCHGroup (d.truncatedLie (fun n => (ℒ n).restrictScalars R) k)) = x
   rw [LieHom.log_bchGroupMap (d.truncatedRestrictScalarsEquiv (R := R) ℒ k).toLieHom x]
-  exact H.lieTruncationRestrictScalarsEquiv_mem_truncatedRayLieSubalgebra_iff w m k _
+  exact H.truncatedRestrictScalarsEquiv_mem_truncatedRayLieSubalgebra_iff w m k _
 
 end Group
 

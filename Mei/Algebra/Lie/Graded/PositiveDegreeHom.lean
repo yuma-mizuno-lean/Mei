@@ -86,7 +86,7 @@ variable {ℳ' : N → Submodule R L'} [GradedLieAlgebra ℳ'] [IsPositiveGradin
 
 /-- The order-`k` endomorphism `id - s ∘ π` of the truncation of `ℒ`. When `s` is a section
 of `π`, it is idempotent with image the truncated kernel of `π`
-(`isIdempotentElem_idSubSectionComp`, `lieTruncatedMap_idSubSectionComp`). -/
+(`isIdempotentElem_idSubSectionComp`, `truncatedMap_idSubSectionComp`). -/
 def idSubSectionComp (k : ℕ) : Module.End R (d.truncatedLie ℒ k) :=
   LinearMap.id - (s.truncatedMap k (by simp)).toLinearMap.comp
     (π.truncatedMap k (by simp)).toLinearMap
@@ -106,7 +106,7 @@ include hsπ
 
 /-- On truncations, `π` is a retraction of its section. -/
 @[simp]
-theorem lieTruncatedMap_lieTruncatedMap_of_section (k : ℕ) (y : d.truncatedLie ℳ' k) :
+theorem truncatedMap_truncatedMap_of_section (k : ℕ) (y : d.truncatedLie ℳ' k) :
     π.truncatedMap k (by simp) (s.truncatedMap k (by simp) y) = y := by
   have hid : (π.truncatedMap k (by simp)).comp (s.truncatedMap k (by simp)) = LieHom.id := by
     apply (d.degreeIdeal ℳ' k).lieHom_qext
@@ -116,28 +116,28 @@ theorem lieTruncatedMap_lieTruncatedMap_of_section (k : ℕ) (y : d.truncatedLie
 
 /-- For a section, the map kills the truncation of every lifted element. -/
 @[simp]
-theorem idSubSectionComp_lieTruncatedMap (k : ℕ) (y : d.truncatedLie ℳ' k) :
+theorem idSubSectionComp_truncatedMap (k : ℕ) (y : d.truncatedLie ℳ' k) :
     π.idSubSectionComp s k (s.truncatedMap k (by simp) y) = 0 := by
-  rw [idSubSectionComp_apply, lieTruncatedMap_lieTruncatedMap_of_section hsπ, sub_self]
+  rw [idSubSectionComp_apply, truncatedMap_truncatedMap_of_section hsπ, sub_self]
 
 /-- For a section, the map lands in the truncated kernel of `π`. -/
 @[simp]
-theorem lieTruncatedMap_idSubSectionComp (k : ℕ) (x : d.truncatedLie ℒ k) :
+theorem truncatedMap_idSubSectionComp (k : ℕ) (x : d.truncatedLie ℒ k) :
     π.truncatedMap k (by simp) (π.idSubSectionComp s k x) = 0 := by
-  rw [idSubSectionComp_apply, map_sub, lieTruncatedMap_lieTruncatedMap_of_section hsπ, sub_self]
+  rw [idSubSectionComp_apply, map_sub, truncatedMap_truncatedMap_of_section hsπ, sub_self]
 
 /-- For a section, the map is idempotent: it is the projection onto the truncated kernel
 of `π` along the image of `s`. -/
 theorem isIdempotentElem_idSubSectionComp (k : ℕ) :
     IsIdempotentElem (π.idSubSectionComp s k) := by
   ext x
-  exact idSubSectionComp_of_map_eq_zero π s k (lieTruncatedMap_idSubSectionComp hsπ k x)
+  exact idSubSectionComp_of_map_eq_zero π s k (truncatedMap_idSubSectionComp hsπ k x)
 
 /-- For a section, an element fixed by the map lies in the truncated kernel of `π`. -/
-theorem lieTruncatedMap_eq_zero_of_idSubSectionComp_eq (k : ℕ) {x : d.truncatedLie ℒ k}
+theorem truncatedMap_eq_zero_of_idSubSectionComp_eq (k : ℕ) {x : d.truncatedLie ℒ k}
     (hx : π.idSubSectionComp s k x = x) : π.truncatedMap k (by simp) x = 0 := by
   rw [← hx]
-  exact lieTruncatedMap_idSubSectionComp hsπ k x
+  exact truncatedMap_idSubSectionComp hsπ k x
 
 end SectionComplement
 

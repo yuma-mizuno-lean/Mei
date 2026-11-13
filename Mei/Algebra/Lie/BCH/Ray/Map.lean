@@ -72,7 +72,7 @@ theorem completedMap_mem_completedRaySubgroup (f : GradedLieHom T ℒ ℳ)
   rw [projection_completedMap]
   have hlog := (f.truncatedMap k le_rfl).log_bchGroupMap
     (TauCeti.CompletedGroup.projection (T.modulus k) g)
-  exact hlog.symm ▸ f.lieTruncatedMap_mem_rayLieSubalgebra hdegree le_rfl
+  exact hlog.symm ▸ f.truncatedMap_mem_rayLieSubalgebra hdegree le_rfl
     ((d.mem_completedRaySubgroup ℒ w g).mp hg (T.modulus k))
 
 /-- Restrict a completed graded homomorphism to two supported-ray subgroups. -/

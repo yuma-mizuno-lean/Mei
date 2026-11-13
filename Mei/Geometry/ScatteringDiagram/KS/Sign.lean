@@ -82,7 +82,7 @@ theorem signSubalgebra_eq_of_mem_intrinsicInterior_arrangementComplex
   apply signSubalgebra_eq_of_sign_eq
   intro n hn
   exact d.sign_eq_of_mem_intrinsicInterior_arrangementComplex h hP hθ hφ
-    (d.mem_cutoff_of_lieTruncationGrading_ne_bot ℒ hn)
+    (d.mem_cutoff_of_truncatedGrading_ne_bot ℒ hn)
 
 /-- The middle sign algebra at a cell's relative interior point is precisely
 the finite orthogonal algebra of the whole cell. -/
@@ -104,7 +104,7 @@ theorem signSubalgebra_zero_eq_orthogonalLieSubalgebra
       intro hn0
       have hθn : θ (i n) = 0 := sign_eq_zero_iff.mp hn0
       exact hψn ((d.eval_eq_zero_iff_forall_of_mem_intrinsicInterior_arrangementComplex
-        h hP hθ (d.mem_cutoff_of_lieTruncationGrading_ne_bot ℒ hn)).mp hθn φ hφ)
+        h hP hθ (d.mem_cutoff_of_truncatedGrading_ne_bot ℒ hn)).mp hθn φ hφ)
   · intro hx n hn
     exact hx _ ⟨θ, intrinsicInterior_subset hθ, rfl⟩ n
       (fun hn0 => hn (sign_eq_zero_iff.mpr hn0))

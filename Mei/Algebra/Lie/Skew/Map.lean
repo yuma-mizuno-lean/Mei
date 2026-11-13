@@ -113,7 +113,7 @@ variable [Algebra ℚ R] [DecidableEq Γ] [DecidableEq Γ']
 
 /-- A truncated skew map transports a projected ray label by scaling its power series.
 The source order need only cover the degree map's modulus at the target order. -/
-theorem lieTruncatedMap_gradedMap_projection_rayExp {n : Γ} (hn : n ∈ d.monoid) (hn0 : n ≠ 0)
+theorem truncatedMap_gradedMap_projection_rayExp {n : Γ} (hn : n ∈ d.monoid) (hn0 : n ≠ 0)
     (g : PowerSeries R) (k a : ℕ) (hma : T.modulus k ≤ a) :
     ((gradedMap β hβ β' hβ' c T hT).truncatedMap k hma).bchGroupMap
         (TauCeti.CompletedGroup.projection a (rayExp β hβ hn hn0 g)) =

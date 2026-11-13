@@ -91,7 +91,7 @@ variable {N M : Type*} [AddCommMonoid N] [AddCommMonoid M]
 
 /-- The finite quotient maps commute with restriction of scalars, including regraded maps
 whose source cutoff is prescribed by a modulus. -/
-theorem lieTruncatedMap_restrictScalars (f : GradedLieHom T ℋ ℳ) {a : ℕ} (k : ℕ)
+theorem truncatedMap_restrictScalars (f : GradedLieHom T ℋ ℳ) {a : ℕ} (k : ℕ)
     (h : T.modulus k ≤ a) :
     (e.truncatedRestrictScalarsEquiv (R := R) ℳ k).toLieHom.comp
         ((f.restrictScalars R).truncatedMap k h) =

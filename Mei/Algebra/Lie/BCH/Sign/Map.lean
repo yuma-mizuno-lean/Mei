@@ -43,7 +43,7 @@ variable {N R L L' A : Type*} [AddCommMonoid N] [CommRing R] [Algebra ℚ R]
 
 /-- Degree-preserving Lie maps commute with extraction of every finite sign factor. -/
 @[simp]
-theorem lieTruncatedMap_signFactorizationEquiv_symm
+theorem truncatedMap_signFactorizationEquiv_symm
     (f : GradedLieHom (PositiveDegreeMap.id d) ℒ ℳ) (θ : N →+ A)
     (k : ℕ) (g : d.truncatedGroup ℒ k) (s : SignType) :
     (f.truncatedMap k (by simp)).bchGroupMap
