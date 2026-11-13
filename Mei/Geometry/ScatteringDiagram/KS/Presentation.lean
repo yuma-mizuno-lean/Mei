@@ -289,11 +289,11 @@ def toKSComplex (k : ℕ) : KSComplex s d ℒ (D.levelComplex k) k where
     refine Subgroup.noncommProd_mem _ _ fun j hj => ?_
     obtain ⟨n, hn⟩ := (D.wall j).ray.rayDegrees_nonempty
     have hray : projection k (D.wall j).label ∈
-        (rayLieSubalgebra (d.lieTruncationGrading ℒ k) (D.wall j).ray).bchSubgroup := by
+        (rayLieSubalgebra (d.truncatedGrading ℒ k) (D.wall j).ray).bchSubgroup := by
       exact (LieSubalgebra.mem_bchSubgroup _ _).mpr
         ((d.mem_completedRaySubgroup ℒ _ _).mp (D.wall j).label_mem k)
     exact LieSubalgebra.bchSubgroup_le_bchSubgroup.mpr
-      (s.rayLieSubalgebra_le_orthogonalLieSubalgebra (d.lieTruncationGrading ℒ k) hn
+      (s.rayLieSubalgebra_le_orthogonalLieSubalgebra (d.truncatedGrading ℒ k) hn
         (fun θ hθ => (D.wall j).evaluation_eq_zero_of_mem_rayDegrees hn
           (D.mem_wallIndices.mp hj hθ))) hray
 

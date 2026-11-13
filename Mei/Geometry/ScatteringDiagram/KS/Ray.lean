@@ -163,15 +163,15 @@ theorem orthogonalLieSubalgebra_eq_rayLieSubalgebra [Module.Free ℤ N]
 /-- The label group of a wall is the finite supported-ray group of its coorienting degree. -/
 theorem bchSubgroup_orthogonalLieSubalgebra_eq [Module.Free ℤ N] (P : C.walls)
     {w : SupportedRay d} (hw : D.degree P ∈ w.rayDegrees) :
-    (orthogonalLieSubalgebra (d.lieTruncationGrading ℒ k) (s.evaluation '' (P : Set
+    (orthogonalLieSubalgebra (d.truncatedGrading ℒ k) (s.evaluation '' (P : Set
       V))).bchSubgroup =
-      (rayLieSubalgebra (d.lieTruncationGrading ℒ k) w).bchSubgroup := by
+      (rayLieSubalgebra (d.truncatedGrading ℒ k) w).bchSubgroup := by
   rw [D.orthogonalLieSubalgebra_eq_rayLieSubalgebra _ P hw]
 
 /-- Every wall label lies in the finite supported-ray group of its coorienting degree. -/
 theorem label_mem_bchSubgroup_rayLieSubalgebra [Module.Free ℤ N] (P : C.walls)
     {w : SupportedRay d} (hw : D.degree P ∈ w.rayDegrees) :
-    D.label P ∈ (rayLieSubalgebra (d.lieTruncationGrading ℒ k) w).bchSubgroup :=
+    D.label P ∈ (rayLieSubalgebra (d.truncatedGrading ℒ k) w).bchSubgroup :=
   D.bchSubgroup_orthogonalLieSubalgebra_eq P hw ▸ D.label_mem P
 
 /-- Equal nonidentity wall labels have coorientations with the same sign on
@@ -183,7 +183,7 @@ theorem normal_pos_iff_of_label_eq [Module.Free ℤ N]
     0 < s.normal (D.degree P) v ↔ 0 < s.normal (E.degree Q) v := by
   let : HasUniqueDiv N := .of_isTorsionFree ℤ N
   have hray : D.wallRay P = E.wallRay Q :=
-    d.eq_of_mem_bchSubgroup_rayLieSubalgebra (d.lieTruncationGrading ℒ k) hne
+    d.eq_of_mem_bchSubgroup_rayLieSubalgebra (d.truncatedGrading ℒ k) hne
       (D.label_mem_bchSubgroup_rayLieSubalgebra P (D.degree_mem_wallRay P))
       (heq ▸ E.label_mem_bchSubgroup_rayLieSubalgebra Q (E.degree_mem_wallRay Q))
   obtain ⟨a, ha, hDa⟩ := s.exists_normal_eq_smul_of_mem_rayDegrees (D.degree_mem_wallRay P)
@@ -194,12 +194,12 @@ theorem normal_pos_iff_of_label_eq [Module.Free ℤ N]
 /-- With abelian rays, any two elements of the label group of a wall commute. -/
 theorem commute_of_mem_bchSubgroup [Module.Free ℤ N] [IsAbelianRays d ℒ]
     (D : KSComplex s d ℒ C k) (P : C.walls) {g g' : d.truncatedGroup ℒ k}
-    (hg : g ∈ (orthogonalLieSubalgebra (d.lieTruncationGrading ℒ k)
+    (hg : g ∈ (orthogonalLieSubalgebra (d.truncatedGrading ℒ k)
       (s.evaluation '' (P : Set V))).bchSubgroup)
-    (hg' : g' ∈ (orthogonalLieSubalgebra (d.lieTruncationGrading ℒ k)
+    (hg' : g' ∈ (orthogonalLieSubalgebra (d.truncatedGrading ℒ k)
       (s.evaluation '' (P : Set V))).bchSubgroup) :
     Commute g g' :=
-  s.commute_of_mem_bchSubgroup (d.lieTruncationGrading ℒ k) (D.degree_mem P) (D.degree_ne_zero P)
+  s.commute_of_mem_bchSubgroup (d.truncatedGrading ℒ k) (D.degree_mem P) (D.degree_ne_zero P)
     (D.evaluation_eq_zero P) (by rw [D.ker_normal P, direction_affineSpan]) hg hg'
 
 /-- With abelian rays, the labels of two KS complexes on a common wall commute, so coincident
@@ -221,7 +221,7 @@ theorem commute_label_of_affineSpan_eq [Module.Free ℤ N] [IsAbelianRays d ℒ]
   have hg' := D.label_mem_bchSubgroup_rayLieSubalgebra P' hw'
   rw [LieSubalgebra.mem_bchSubgroup] at hg hg'
   exact BCHGroup.commute_of_lie_log_eq_zero _ _
-    (lie_eq_zero_of_mem_rayLieSubalgebra (d.lieTruncationGrading ℒ k) hg hg')
+    (lie_eq_zero_of_mem_rayLieSubalgebra (d.truncatedGrading ℒ k) hg hg')
 
 end KSComplex
 

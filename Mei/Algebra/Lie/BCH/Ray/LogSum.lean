@@ -39,8 +39,8 @@ factors over any finite set of supported rays containing those that meet the cut
 theorem log_projection_eq_sum_log_projection_rayFactor [Module.Free ℤ N]
     (g : d.completedBCHGroup ℒ) (k : ℕ) (s : Finset (SupportedRay d))
     (hs : d.raysAtOrder k ⊆ s) :
-    BCHGroup.log (L := d.lieTruncation ℒ k) (TauCeti.CompletedGroup.projection k g) =
-      ∑ w ∈ s, BCHGroup.log (L := d.lieTruncation ℒ k)
+    BCHGroup.log (L := d.truncatedLie ℒ k) (TauCeti.CompletedGroup.projection k g) =
+      ∑ w ∈ s, BCHGroup.log (L := d.truncatedLie ℒ k)
         (TauCeti.CompletedGroup.projection k (d.rayFactor ℒ g w)) := by
   classical
   let : HasUniqueDiv N := .of_isTorsionFree ℤ N

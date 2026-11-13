@@ -70,9 +70,9 @@ theorem completedMap_mem_completedRaySubgroup (f : GradedLieHom T ℒ ℳ)
   apply (e.mem_completedRaySubgroup ℳ v _).mpr
   intro k
   rw [projection_completedMap]
-  have hlog := (f.lieTruncatedMap k le_rfl).log_bchGroupMap
+  have hlog := (f.truncatedMap k le_rfl).log_bchGroupMap
     (TauCeti.CompletedGroup.projection (T.modulus k) g)
-  exact hlog.symm ▸ f.lieTruncatedMap_mem_rayLieSubalgebra hdegree le_rfl
+  exact hlog.symm ▸ f.truncatedMap_mem_rayLieSubalgebra hdegree le_rfl
     ((d.mem_completedRaySubgroup ℒ w g).mp hg (T.modulus k))
 
 /-- Restrict a completed graded homomorphism to two supported-ray subgroups. -/
@@ -136,15 +136,15 @@ theorem completedMap_eq_self_of_mem_completedRaySubgroup
   -- Read the tower projection as an element of the concrete finite BCH group.
   let y : d.truncatedGroup ℒ k := TauCeti.CompletedGroup.projection k g
   apply BCHGroup.log_injective
-  refine ((f.lieTruncatedMap (a := k) k (by simp)).log_bchGroupMap y).trans ?_
-  have hle : (rayLieSubalgebra (d.lieTruncationGrading ℒ k) w).toSubmodule ≤
-      LinearMap.eqLocus (f.lieTruncatedMap (a := k) k (by simp)).toLinearMap LinearMap.id := by
+  refine ((f.truncatedMap (a := k) k (by simp)).log_bchGroupMap y).trans ?_
+  have hle : (rayLieSubalgebra (d.truncatedGrading ℒ k) w).toSubmodule ≤
+      LinearMap.eqLocus (f.truncatedMap (a := k) k (by simp)).toLinearMap LinearMap.id := by
     rw [rayLieSubalgebra_toSubmodule]
     refine iSup_le fun n => ?_
-    rw [d.lieTruncationGrading_eq]
+    rw [d.truncatedGrading_eq]
     rintro _ ⟨x, hx, rfl⟩
     rw [LinearMap.mem_eqLocus, LieHom.coe_toLinearMap, LinearMap.id_apply,
-      Submodule.mkQ_apply, f.lieTruncatedMap_mk, hf n n.property x hx]
+      Submodule.mkQ_apply, f.truncatedMap_mk, hf n n.property x hx]
   exact LinearMap.mem_eqLocus.mp (hle ((d.mem_completedRaySubgroup ℒ w g).mp hg k))
 
 variable {𝓝 : N → Submodule R L'} [GradedLieAlgebra 𝓝] [IsPositiveGrading d 𝓝]

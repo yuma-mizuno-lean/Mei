@@ -5,25 +5,25 @@ Authors: Codex
 -/
 module
 
-public import Mei.Algebra.Lie.Quotient.Map
-public import Mei.LinearAlgebra.ModuleFiltration.Completion
+public import TauCeti.Algebra.Lie.Completion
+public import Mathlib.Algebra.Lie.TransferInstance
+public import Mei.LinearAlgebra.ModuleFiltration.QuotientTower
 
 /-!
-# Completion along decreasing Lie ideals
+# Lie completions of module filtrations
 
-The module completion of a decreasing sequence of Lie ideals carries a Lie bracket
-computed in each quotient. Its projections are Lie homomorphisms, and compatible
-families of Lie homomorphisms lift uniquely. No bracket estimate between distinct
-filtration orders or separatedness assumption is needed.
-
-The carrier and linear universal property are those of
-`Mei.ModuleFiltration.completion`; quotient transitions use `LieIdeal.factor`.
-This supplies Lie completions without constructing a second compatible-family carrier.
+The module filtration associated to decreasing Lie ideals has the same quotient
+tower as TauCeti's Lie completion. Transport its Lie structure to the filtration
+completion so that the existing filtration maps can be used on this carrier.
 -/
 
 public section
 
-namespace LieIdeal
+noncomputable section
+
+open TauCeti
+
+namespace Mei.LieIdeal
 
 variable {R L : Type*} [CommRing R] [LieRing L] [LieAlgebra R L]
   (I : ℕ → LieIdeal R L) (hI : Antitone I)
@@ -51,13 +51,13 @@ theorem completionFiltration_succ (k : ℕ) :
 
 /-- The module transition is the linear map underlying the Lie quotient transition. -/
 theorem completionFiltration_transition {k l : ℕ} (h : k ≤ l) :
-    (completionFiltration I hI).transition h = (LieIdeal.factor (hI h)).toLinearMap := by
+    (completionFiltration I hI).transition h = (_root_.LieIdeal.factor (hI h)).toLinearMap := by
   apply LinearMap.ext
   intro x
   obtain ⟨x, rfl⟩ := (I l).surjective_mkQ x
   simpa only [Mei.ModuleFiltration.transition_mk, LieHom.coe_toLinearMap,
-    LieIdeal.mkQ_apply] using
-    (LieIdeal.factor_apply (hI h) x).symm
+    _root_.LieIdeal.mkQ_apply] using
+    (_root_.LieIdeal.factor_apply (hI h) x).symm
 
 /-- Completion along a decreasing sequence of Lie ideals, using the module completion carrier. -/
 abbrev completion := (completionFiltration I hI).completion
@@ -73,17 +73,24 @@ instance completionQuotientLieAlgebra (k : ℕ) :
     LieAlgebra R ((completionFiltration I hI).quotient k) :=
   inferInstanceAs (LieAlgebra R (L ⧸ I k))
 
-/-- The bracket on the completion is the compatible family of quotient brackets. -/
-instance completionBracket : Bracket (completion I hI) (completion I hI) where
-  bracket x y := ⟨fun k => ⁅(x.val k : L ⧸ I k.unop), (y.val k : L ⧸ I k.unop)⁆,
-    (Mei.ModuleFiltration.mem_completionSubmodule_iff _ _).mpr (by
-      intro k l h
-      rw [completionFiltration_transition, LieHom.coe_toLinearMap]
-      rw [LieHom.map_lie]
-      have hx := (Mei.ModuleFiltration.mem_completionSubmodule_iff _ _).mp x.property k l h
-      have hy := (Mei.ModuleFiltration.mem_completionSubmodule_iff _ _).mp y.property k l h
-      rw [completionFiltration_transition, LieHom.coe_toLinearMap] at hx hy
-      rw [hx, hy])⟩
+/-- The filtration completion identifies with the upstream limit of Lie quotients. -/
+def completionEquivLimit : completion I hI ≃ₗ[R] _root_.LieIdeal.completion I hI :=
+  (completionFiltration I hI).completionEquivTowerLimit
+
+instance completionLieRing : LieRing (completion I hI) :=
+  (completionEquivLimit I hI).toAddEquiv.lieRing
+
+instance completionLieAlgebra : LieAlgebra R (completion I hI) :=
+  (completionEquivLimit I hI).lieAlgebra
+
+/-- The quotient-tower comparison is a Lie equivalence. -/
+def completionLieEquivLimit : completion I hI ≃ₗ⁅R⁆ _root_.LieIdeal.completion I hI :=
+  (completionEquivLimit I hI).lieEquiv R
+
+/-- The underlying linear equivalence is the comparison of quotient-tower limits. -/
+theorem completionLieEquivLimit_toLinearEquiv :
+    (completionLieEquivLimit I hI).toLinearEquiv =
+      (completionFiltration I hI).completionEquivTowerLimit := (rfl)
 
 /-- Projection of the completed bracket is the bracket of the projections. -/
 @[simp]
@@ -91,37 +98,23 @@ theorem projection_bracket (k : ℕ) (x y : completion I hI) :
     (completionFiltration I hI).projection k ⁅x, y⁆ =
       ⁅((completionFiltration I hI).projection k x : L ⧸ I k),
         ((completionFiltration I hI).projection k y : L ⧸ I k)⁆ := by
-  rcases x with ⟨x, hx⟩
-  rcases y with ⟨y, hy⟩
-  simp only [Bracket.bracket, Mei.ModuleFiltration.projection_mk]
-
-instance completionLieRing : LieRing (completion I hI) where
-  add_lie x y z := by
-    apply Mei.ModuleFiltration.completion_ext
-    intro k
-    simp only [map_add, projection_bracket]
-    exact add_lie _ _ _
-  lie_add x y z := by
-    apply Mei.ModuleFiltration.completion_ext
-    intro k
-    simp only [map_add, projection_bracket]
-    exact lie_add _ _ _
-  lie_self x := by
-    apply Mei.ModuleFiltration.completion_ext
-    intro k
-    simp only [map_zero, projection_bracket, lie_self]
-  leibniz_lie x y z := by
-    apply Mei.ModuleFiltration.completion_ext
-    intro k
-    simp only [map_add, projection_bracket]
-    exact leibniz_lie _ _ _
-
-instance completionLieAlgebra : LieAlgebra R (completion I hI) where
-  lie_smul r x y := by
-    apply Mei.ModuleFiltration.completion_ext
-    intro k
-    simp only [map_smul, projection_bracket]
-    exact lie_smul _ _ _
+  let F := completionFiltration I hI
+  let e := completionEquivLimit I hI
+  obtain ⟨a, ha⟩ := (I k).surjective_mkQ (F.projection k x)
+  obtain ⟨b, hb⟩ := (I k).surjective_mkQ (F.projection k y)
+  apply (F.quotientEquivTower k).injective
+  have hproj (z : completion I hI) := F.limπ_completionEquivTowerLimit k z
+  have ha' : ModuleTower.quotientsπ _ F.quotientAntitone k a = _ :=
+    (F.quotientEquivTower_mk k a).symm.trans ((congrArg _ ha).trans (hproj x).symm)
+  have hb' : ModuleTower.quotientsπ _ F.quotientAntitone k b = _ :=
+    (F.quotientEquivTower_mk k b).symm.trans ((congrArg _ hb).trans (hproj y).symm)
+  rw [← hproj, ← ha, ← hb, ← LieHom.map_lie]
+  -- The tower projection in `hproj` is evaluated on the linear comparison `e`.
+  change (ModuleTower.quotients _ F.quotientAntitone).limπ k (e ⁅x, y⁆) = _
+  -- The Lie comparison has the same underlying linear map, so it preserves this bracket.
+  rw [show e ⁅x, y⁆ = ⁅e x, e y⁆ from (completionLieEquivLimit I hI).map_lie x y]
+  rw [_root_.LieIdeal.limπ_bracket_of_representatives I hI k (e x) (e y) a b ha' hb']
+  exact (F.quotientEquivTower_mk k ⁅a, b⁆).symm
 
 /-- The projection to a finite Lie quotient. -/
 def completionProjection (k : ℕ) : completion I hI →ₗ⁅R⁆ L ⧸ I k where
@@ -141,7 +134,7 @@ theorem completionProjection_apply (k : ℕ) (x : completion I hI) :
 /-- Lie projections commute with all quotient transitions. -/
 @[simp]
 theorem factor_completionProjection {k l : ℕ} (h : k ≤ l) (x : completion I hI) :
-    LieIdeal.factor (hI h) (completionProjection I hI l x) =
+    _root_.LieIdeal.factor (hI h) (completionProjection I hI l x) =
       completionProjection I hI k x := by
   simpa only [completionProjection_apply, completionFiltration_transition,
     LieHom.coe_toLinearMap] using
@@ -151,7 +144,7 @@ variable {M : Type*} [LieRing M] [LieAlgebra R M]
 
 /-- Lift a compatible family of Lie homomorphisms to the Lie completion. -/
 def completionLift (f : ∀ k, M →ₗ⁅R⁆ L ⧸ I k)
-    (hf : ∀ k l (h : k ≤ l), (LieIdeal.factor (hI h)).comp (f l) = f k) :
+    (hf : ∀ k l (h : k ≤ l), (_root_.LieIdeal.factor (hI h)).comp (f l) = f k) :
     M →ₗ⁅R⁆ completion I hI where
   __ := (completionFiltration I hI).lift (fun k => (f k).toLinearMap) (by
     intro k l h
@@ -191,7 +184,7 @@ def toCompletion : L →ₗ⁅R⁆ completion I hI :=
     intro k l h
     apply LieHom.ext
     intro x
-    simp [LieIdeal.mkQ_apply])
+    simp [_root_.LieIdeal.mkQ_apply])
 
 /-- The canonical map has the usual class in every quotient. -/
 @[simp]
@@ -199,4 +192,4 @@ theorem completionProjection_toCompletion (k : ℕ) (x : L) :
     completionProjection I hI k (toCompletion I hI x) = (I k).mkQ x := by
   rw [toCompletion, completionProjection_lift]
 
-end LieIdeal
+end Mei.LieIdeal

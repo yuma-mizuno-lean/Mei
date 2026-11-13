@@ -54,11 +54,11 @@ Together with the inherited decomposition, this identifies its positive degree f
 theorem degreeIdeal_eq_comap (d : TauCeti.PositiveDegrees ι) [TauCeti.IsPositiveGrading d ℒ]
     (hK : DirectSum.SetLike.IsHomogeneous ℒ K) (k : ℕ) :
     let := K.gradedLieAlgebra ℒ hK
-    d.truncationIdeal (fun i => (ℒ i).comap K.incl.toLinearMap) k =
-      (d.truncationIdeal ℒ k).comap K.incl := by
+    d.degreeIdeal (fun i => (ℒ i).comap K.incl.toLinearMap) k =
+      (d.degreeIdeal ℒ k).comap K.incl := by
   let := K.gradedLieAlgebra ℒ hK
   apply LieSubmodule.toSubmodule_injective
-  simp only [TauCeti.PositiveDegrees.truncationIdeal_toSubmodule, LieIdeal.comap_toSubmodule]
+  simp only [TauCeti.PositiveDegrees.degreeIdeal_toSubmodule, LieIdeal.comap_toSubmodule]
   exact d.degreeSubmodule_comap ℒ _ K.incl.toLinearMap Subtype.val_injective
     (fun _ _ hx => Submodule.mem_comap.mp hx) k
 

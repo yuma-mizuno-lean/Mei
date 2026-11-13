@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Algebra.Lie.Quotient.Map
+public import TauCeti.Algebra.Lie.Quotient
 public import Mei.Algebra.Lie.Free.LowerCentral
 public import Mei.Algebra.Lie.UniversalEnveloping.Cofinality
 public import Mei.Algebra.Lie.UniversalEnveloping.GradedEmbedding

@@ -39,14 +39,14 @@ variable {N R L A : Type*} [AddCommMonoid N] [CommRing R] [Algebra ℚ R]
 /-- In a uniform-sign chamber the unique factor of that sign is the original
 BCH element; the other two factors are identities. -/
 theorem signFactorizationEquiv_symm_of_uniformSign (s : SignType)
-    (hs : ∀ n, d.lieTruncationGrading ℒ k n ≠ ⊥ → SignType.sign (θ n) = s)
+    (hs : ∀ n, d.truncatedGrading ℒ k n ≠ ⊥ → SignType.sign (θ n) = s)
     (g : d.truncatedGroup ℒ k) (t : SignType) :
     ((signFactorizationEquiv ℒ θ d k).symm g t : d.truncatedGroup ℒ k) =
       if t = s then g else 1 := by
-  have hg : g ∈ (signSubalgebra (d.lieTruncationGrading ℒ k) θ s).bchSubgroup := by
+  have hg : g ∈ (signSubalgebra (d.truncatedGrading ℒ k) θ s).bchSubgroup := by
     rw [signSubalgebra_eq_top_of_sign_eq _ _ s hs, LieSubalgebra.mem_bchSubgroup]
     exact LieSubalgebra.mem_top _
-  let a : ∀ t, (signSubalgebra (d.lieTruncationGrading ℒ k) θ t).bchSubgroup :=
+  let a : ∀ t, (signSubalgebra (d.truncatedGrading ℒ k) θ t).bchSubgroup :=
     fun t => if ht : t = s then ⟨g, by simpa only [ht] using hg⟩ else 1
   have ha : (signFactorizationEquiv ℒ θ d k).symm g = a := by
     apply (signFactorizationEquiv ℒ θ d k).symm_apply_eq.mpr
@@ -63,7 +63,7 @@ theorem signFactorizationEquiv_symm_of_uniformSign_monoid (s : SignType)
       if t = s then g else 1 := by
   apply signFactorizationEquiv_symm_of_uniformSign
   intro n hn
-  have hc := d.mem_cutoff_of_lieTruncationGrading_ne_bot ℒ hn
+  have hc := d.mem_cutoff_of_truncatedGrading_ne_bot ℒ hn
   exact hs n (d.mem_cutoff.mp hc.1).1 hc.2
 
 end TauCeti.PositiveDegrees

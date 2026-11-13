@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.Convex.PolyhedralCochain.Basic
-public import Mei.Geometry.Convex.Polyhedron.Rational.Direction
+public import TauCeti.Analysis.Convex.Polyhedron.Rational.Direction
 
 /-!
 # Integral coorientations of oriented wall cells
@@ -68,15 +68,9 @@ theorem exists_integral_coorientation (σ : OrientedCell h 1) :
       have hfker := Module.Dual.finrank_ker_add_one_of_ne_zero hf
       omega)
   -- Rational-normality supplies an integral equation of the same hyperplane.
-  obtain ⟨ms, hlin, hms⟩ := σ.rational.exists_direction_eq_iInf_ker
+  obtain ⟨m, hm, hmker⟩ := σ.rational.exists_direction_eq_ker
     σ.nonempty σ.finrank_direction_add
-  let m := (ms 0).toAddMonoidHom
-  have hmker : (h.realCharacter m).ker = (affineSpan ℝ σ.carrier).direction := by
-    simpa only [m, iInf_unique, Fin.default_eq_zero] using hms.symm
-  have hm : m ≠ 0 := by
-    intro hm
-    have hzero := hlin.ne_zero (0 : Fin 1)
-    exact hzero (by simpa only [m, map_zero] using congrArg h.realCharacter hm)
+  have hmker := hmker.symm
   have hspan : h.realCharacter m ∈ Submodule.span ℝ ({f} : Set (V →ₗ[ℝ] ℝ)) := by
     simpa using (mem_span_of_iInf_ker_le_ker
       (L := fun _ : Unit => f) (K := h.realCharacter m)

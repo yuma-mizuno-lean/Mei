@@ -7,7 +7,7 @@ module
 
 public import Mei.Algebra.Lie.BCH.Completion
 public import Mei.Algebra.Lie.BaseChange
-public import Mei.Algebra.Lie.Graded.BaseChange
+public import TauCeti.Algebra.Lie.Graded.BaseChange
 
 /-!
 # Completed scalar extension of BCH groups
@@ -19,7 +19,7 @@ before the inverse limit; no commutation of tensor products with infinite limits
 is asserted. The comparison preserves filtration orders and convergent ordered
 products. Neither flatness nor freeness is required.
 
-The comparison uses `TauCeti.PositiveDegrees.lieTruncationBaseChangeEquiv`, based on
+The comparison uses `TauCeti.PositiveDegrees.truncatedBaseChangeEquiv`, based on
 Tau Ceti's `LieIdeal.quotientBaseChangeEquiv`, and the compatible-family maps
 `TauCeti.CompletedGroup.mapEquiv`. Rational scalars act on the left tensor factor,
 retaining the existing tensor-product module structure.
@@ -49,81 +49,81 @@ variable {N R L : Type*} [AddCommMonoid N] [CommRing R]
 -- Tower objects must compute to expose their concrete tensor-product coordinates.
 @[expose]
 def baseChangeGroupTower : ℕᵒᵖ ⥤ GrpCat where
-  obj k := GrpCat.of (BCHGroup (S ⊗[R] d.lieTruncation ℒ k.unop))
+  obj k := GrpCat.of (BCHGroup (S ⊗[R] d.truncatedLie ℒ k.unop))
   map f := GrpCat.ofHom (LieHom.baseChange S
-    (d.lieTruncationMap ℒ (leOfHom f.unop))).bchGroupMap
+    (d.truncationMap ℒ (leOfHom f.unop))).bchGroupMap
   map_id k := by
     apply GrpCat.hom_ext
     simp
   map_comp f g := by
     apply GrpCat.hom_ext
     simp only [GrpCat.hom_comp, GrpCat.hom_ofHom, ← LieHom.bchGroupMap_comp,
-      ← LieHom.baseChange_comp, lieTruncationMap_comp]
+      ← LieHom.baseChange_comp, truncationMap_comp]
 
 /-- The transitions are the BCH maps of the extended quotient transitions. -/
 @[simp]
 theorem baseChangeGroupTower_map_hom {k l : ℕᵒᵖ} (f : k ⟶ l) :
     ((d.baseChangeGroupTower S ℒ).map f).hom =
-      (LieHom.baseChange S (d.lieTruncationMap ℒ (leOfHom f.unop))).bchGroupMap := (rfl)
+      (LieHom.baseChange S (d.truncationMap ℒ (leOfHom f.unop))).bchGroupMap := (rfl)
 
 /-- Extending the finite quotients gives a tower isomorphic to the degree tower
 of the extended graded Lie algebra. -/
 def baseChangeGroupTowerIso :
     d.groupTower (fun n => (ℒ n).baseChange S) ≅ d.baseChangeGroupTower S ℒ :=
   NatIso.ofComponents (fun k =>
-    { hom := GrpCat.ofHom (d.lieTruncationBaseChangeEquiv (S := S) ℒ k.unop).toLieHom.bchGroupMap
-      inv := GrpCat.ofHom (d.lieTruncationBaseChangeEquiv (S := S) ℒ
+    { hom := GrpCat.ofHom (d.truncatedBaseChangeEquiv (S := S) ℒ k.unop).toLieHom.bchGroupMap
+      inv := GrpCat.ofHom (d.truncatedBaseChangeEquiv (S := S) ℒ
         k.unop).symm.toLieHom.bchGroupMap
       hom_inv_id := by
         apply GrpCat.hom_ext
         -- The functor objects hide the concrete group types at categorical composition.
-        change (d.lieTruncationBaseChangeEquiv (S := S) ℒ k.unop).symm.toLieHom.bchGroupMap.comp
-            (d.lieTruncationBaseChangeEquiv (S := S) ℒ k.unop).toLieHom.bchGroupMap = MonoidHom.id _
+        change (d.truncatedBaseChangeEquiv (S := S) ℒ k.unop).symm.toLieHom.bchGroupMap.comp
+            (d.truncatedBaseChangeEquiv (S := S) ℒ k.unop).toLieHom.bchGroupMap = MonoidHom.id _
         rw [← LieHom.bchGroupMap_comp]
-        have he : (d.lieTruncationBaseChangeEquiv (S := S) ℒ k.unop).symm.toLieHom.comp
-            (d.lieTruncationBaseChangeEquiv (S := S) ℒ k.unop).toLieHom = LieHom.id := by
+        have he : (d.truncatedBaseChangeEquiv (S := S) ℒ k.unop).symm.toLieHom.comp
+            (d.truncatedBaseChangeEquiv (S := S) ℒ k.unop).toLieHom = LieHom.id := by
           apply LieHom.ext
           intro x
-          exact (d.lieTruncationBaseChangeEquiv (S := S) ℒ k.unop).symm_apply_apply x
+          exact (d.truncatedBaseChangeEquiv (S := S) ℒ k.unop).symm_apply_apply x
         rw [he, LieHom.bchGroupMap_id]
       inv_hom_id := by
         apply GrpCat.hom_ext
         -- The functor objects hide the concrete group types at categorical composition.
-        change (d.lieTruncationBaseChangeEquiv (S := S) ℒ k.unop).toLieHom.bchGroupMap.comp
-            (d.lieTruncationBaseChangeEquiv (S := S) ℒ k.unop).symm.toLieHom.bchGroupMap =
+        change (d.truncatedBaseChangeEquiv (S := S) ℒ k.unop).toLieHom.bchGroupMap.comp
+            (d.truncatedBaseChangeEquiv (S := S) ℒ k.unop).symm.toLieHom.bchGroupMap =
               MonoidHom.id _
         rw [← LieHom.bchGroupMap_comp]
-        have he : (d.lieTruncationBaseChangeEquiv (S := S) ℒ k.unop).toLieHom.comp
-            (d.lieTruncationBaseChangeEquiv (S := S) ℒ k.unop).symm.toLieHom = LieHom.id := by
+        have he : (d.truncatedBaseChangeEquiv (S := S) ℒ k.unop).toLieHom.comp
+            (d.truncatedBaseChangeEquiv (S := S) ℒ k.unop).symm.toLieHom = LieHom.id := by
           apply LieHom.ext
           intro x
-          exact (d.lieTruncationBaseChangeEquiv (S := S) ℒ k.unop).apply_symm_apply x
+          exact (d.truncatedBaseChangeEquiv (S := S) ℒ k.unop).apply_symm_apply x
         rw [he, LieHom.bchGroupMap_id] }) (by
     intro k l f
     apply GrpCat.hom_ext
     -- Categorical composition hides the concrete BCH quotient and tensor maps.
-    change (d.lieTruncationBaseChangeEquiv (S := S) ℒ l.unop).toLieHom.bchGroupMap.comp
-        (d.lieTruncationMap (fun n => (ℒ n).baseChange S) (leOfHom f.unop)).bchGroupMap =
-      (LieHom.baseChange S (d.lieTruncationMap ℒ (leOfHom f.unop))).bchGroupMap.comp
-        (d.lieTruncationBaseChangeEquiv (S := S) ℒ k.unop).toLieHom.bchGroupMap
+    change (d.truncatedBaseChangeEquiv (S := S) ℒ l.unop).toLieHom.bchGroupMap.comp
+        (d.truncationMap (fun n => (ℒ n).baseChange S) (leOfHom f.unop)).bchGroupMap =
+      (LieHom.baseChange S (d.truncationMap ℒ (leOfHom f.unop))).bchGroupMap.comp
+        (d.truncatedBaseChangeEquiv (S := S) ℒ k.unop).toLieHom.bchGroupMap
     simp only [← LieHom.bchGroupMap_comp]
     congr 1
     apply LieHom.ext
     intro x
-    exact d.lieTruncationBaseChangeEquiv_lieTruncationMap ℒ (leOfHom f.unop) x)
+    exact d.truncatedBaseChangeEquiv_truncationMap ℒ (leOfHom f.unop) x)
 
 /-- The finite-order comparison is extension of the Lie quotient equivalence in
 exponential coordinates. -/
 @[simp]
 theorem baseChangeGroupTowerIso_hom_app (k : ℕᵒᵖ) :
     ((d.baseChangeGroupTowerIso S ℒ).hom.app k).hom =
-      (d.lieTruncationBaseChangeEquiv (S := S) ℒ k.unop).toLieHom.bchGroupMap := (rfl)
+      (d.truncatedBaseChangeEquiv (S := S) ℒ k.unop).toLieHom.bchGroupMap := (rfl)
 
 /-- The inverse finite-order comparison uses the inverse Lie quotient equivalence. -/
 @[simp]
 theorem baseChangeGroupTowerIso_inv_app (k : ℕᵒᵖ) :
     ((d.baseChangeGroupTowerIso S ℒ).inv.app k).hom =
-      (d.lieTruncationBaseChangeEquiv (S := S) ℒ k.unop).symm.toLieHom.bchGroupMap := (rfl)
+      (d.truncatedBaseChangeEquiv (S := S) ℒ k.unop).symm.toLieHom.bchGroupMap := (rfl)
 
 -- The explicit identity comparison keeps the reindexed functor type in the term,
 -- rather than relying on definitional equality when rewriting completion maps.
@@ -164,7 +164,7 @@ same order. -/
 theorem projection_completedBCHBaseChangeEquiv (k : ℕ)
     (x : d.completedBCHGroup (fun n => (ℒ n).baseChange S)) :
     TauCeti.CompletedGroup.projection k (d.completedBCHBaseChangeEquiv S ℒ x) =
-      (d.lieTruncationBaseChangeEquiv (S := S) ℒ k).toLieHom.bchGroupMap
+      (d.truncatedBaseChangeEquiv (S := S) ℒ k).toLieHom.bchGroupMap
         (TauCeti.CompletedGroup.projection k x) := by
   rw [completedBCHBaseChangeEquiv, TauCeti.CompletedGroup.mapEquiv_apply,
     TauCeti.CompletedGroup.projection_map]
@@ -175,7 +175,7 @@ theorem projection_completedBCHBaseChangeEquiv (k : ℕ)
 theorem projection_completedBCHBaseChangeEquiv_symm (k : ℕ)
     (x : d.completedBCHBaseChange S ℒ) :
     TauCeti.CompletedGroup.projection k ((d.completedBCHBaseChangeEquiv S ℒ).symm x) =
-      (d.lieTruncationBaseChangeEquiv (S := S) ℒ k).symm.toLieHom.bchGroupMap
+      (d.truncatedBaseChangeEquiv (S := S) ℒ k).symm.toLieHom.bchGroupMap
         (TauCeti.CompletedGroup.projection k x) := by
   rw [completedBCHBaseChangeEquiv, TauCeti.CompletedGroup.mapEquiv_symm_apply,
     TauCeti.CompletedGroup.projection_map]
@@ -194,12 +194,12 @@ theorem completedBCHBaseChangeEquiv_mem_degreeFiltration (a : ℕ)
   | succ k =>
     simp only [TauCeti.CompletedGroup.degreeFiltration_succ, MonoidHom.mem_ker,
       projection_completedBCHBaseChangeEquiv]
-    have h (y : BCHGroup (d.lieTruncation (fun n => (ℒ n).baseChange S) k)) :
-        (d.lieTruncationBaseChangeEquiv (S := S) ℒ k).toLieHom.bchGroupMap y = 1 ↔ y = 1 := by
+    have h (y : BCHGroup (d.truncatedLie (fun n => (ℒ n).baseChange S) k)) :
+        (d.truncatedBaseChangeEquiv (S := S) ℒ k).toLieHom.bchGroupMap y = 1 ↔ y = 1 := by
       constructor
       · intro hy
         apply BCHGroup.log_injective
-        apply (d.lieTruncationBaseChangeEquiv (S := S) ℒ k).injective
+        apply (d.truncatedBaseChangeEquiv (S := S) ℒ k).injective
         simpa using congrArg BCHGroup.log hy
       · rintro rfl
         exact map_one _

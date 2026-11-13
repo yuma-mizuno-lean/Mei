@@ -194,7 +194,6 @@ theorem eventually_mem_intrinsicFrontier_iff_sub_mem_posTangentConeAt
     ⟨x, subset_affineSpan ℝ _ ⟨0, hzero, by simp [he]⟩, subset_affineSpan ℝ _ hx⟩
   have hlocal : P =ᶠ[𝓝 x] e '' posTangentConeAt P x := by
     filter_upwards [hP.eventually_mem_iff_sub_mem_posTangentConeAt hx] with y hy
-    apply propext
     refine hy.trans ⟨fun hv => ⟨y - x, hv, by simp [he]⟩, ?_⟩
     rintro ⟨v, hv, rfl⟩
     simpa only [he, add_sub_cancel_left] using hv

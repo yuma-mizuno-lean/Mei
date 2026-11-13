@@ -50,7 +50,7 @@ variable {Γ Λ R L V ι : Type*} [AddCommGroup Γ] [AddCommGroup Λ]
 /-- At an abelian cutoff, the logarithm of transport across full hyperplanes is
 the signed sum of their endpoint-side differences. -/
 theorem log_levelPathProduct_eq_sum_side_sub (k : ℕ)
-    [IsLieAbelian (d.lieTruncation ℒ k)] (b : D.active k → ℝ)
+    [IsLieAbelian (d.truncatedLie ℒ k)] (b : D.active k → ℝ)
     (hfull : ∀ j : D.active k,
       (D.wall j).support = {v | h.realCharacter (D.wall j).normal v = b j})
     {x y : WallComplement (fun j : D.active k => (D.wall j).support)}
@@ -60,8 +60,8 @@ theorem log_levelPathProduct_eq_sum_side_sub (k : ℕ)
       ((if b j < h.realCharacter (D.wall j).normal x.val then 1 else 0 : ℤ) -
         (if b j < h.realCharacter (D.wall j).normal y.val then 1 else 0)) •
           log (TauCeti.CompletedGroup.projection k (D.wall j).label) := by
-  let K : LieSubalgebra R (d.lieTruncation ℒ k) := ⊤
-  have hlog := K.log_wallPathProduct_sub_crossingSum_mem (⊥ : Submodule R (d.lieTruncation ℒ k))
+  let K : LieSubalgebra R (d.truncatedLie ℒ k) := ⊤
+  have hlog := K.log_wallPathProduct_sub_crossingSum_mem (⊥ : Submodule R (d.truncatedLie ℒ k))
     (fun a _ z _ => by simp [trivial_lie_zero])
     (fun j : D.active k => h.realCharacter (D.wall j).normal)
     (fun j => TauCeti.CompletedGroup.projection k (D.wall j).label)
@@ -79,7 +79,7 @@ theorem log_levelPathProduct_eq_sum_side_sub (k : ℕ)
 /-- Full affine hyperplanes are consistent at every abelian Lie cutoff. The
 completed labels need not commute at higher orders. -/
 theorem levelConsistent_of_isLieAbelian_of_full (k : ℕ)
-    [IsLieAbelian (d.lieTruncation ℒ k)]
+    [IsLieAbelian (d.truncatedLie ℒ k)]
     (hfull : ∀ j : D.active k, ∃ b : ℝ,
       (D.wall j).support = {v | h.realCharacter (D.wall j).normal v = b}) :
     D.LevelConsistent k := by

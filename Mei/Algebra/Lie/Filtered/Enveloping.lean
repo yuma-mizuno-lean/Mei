@@ -142,10 +142,10 @@ theorem truncatedEnvelopingAction_mk (k : ℕ) (u : U) :
 
 /-- On canonical Lie coordinates, the enveloping representation is the truncated Lie action. -/
 @[simp]
-theorem truncatedEnvelopingAction_truncatedLieToU (k : ℕ) (x : d.lieTruncation ℒ k) :
+theorem truncatedEnvelopingAction_truncatedLieToU (k : ℕ) (x : d.truncatedLie ℒ k) :
     F.truncatedEnvelopingAction d ℒ k (truncatedLieToU d ℒ k x) =
       F.truncatedLieAction d ℒ k x := by
-  obtain ⟨x, rfl⟩ := (d.truncationIdeal ℒ k).surjective_mkQ x
+  obtain ⟨x, rfl⟩ := (d.degreeIdeal ℒ k).surjective_mkQ x
   rw [LieIdeal.mkQ_apply, truncatedLieToU_mk, truncatedEnvelopingAction_mk,
     lift_ι_apply, truncatedLieAction_mk]
 

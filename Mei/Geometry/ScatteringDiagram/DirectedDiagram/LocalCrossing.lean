@@ -126,14 +126,14 @@ theorem log_combinedLabel_eq_sum (k : ℕ) (θ v : V)
     BCHGroup.log (D.combinedLabel k θ v hθ) = ∑ j : D.active k,
       if θ ∈ (D.wall j).support then
         (if 0 < h.realCharacter (D.wall j).normal v then -1 else 1 : ℤ) •
-          BCHGroup.log (L := d.lieTruncation ℒ k)
+          BCHGroup.log (L := d.truncatedLie ℒ k)
             (TauCeti.CompletedGroup.projection k (D.wall j).label) else 0 := by
   classical
   let := Fintype.ofFinite (D.active k)
   let S := Finset.univ.filter fun j : D.active k => θ ∈ (D.wall j).support
-  let a (j : D.active k) : d.lieTruncation ℒ k :=
+  let a (j : D.active k) : d.truncatedLie ℒ k :=
     (if 0 < h.realCharacter (D.wall j).normal v then -1 else 1 : ℤ) •
-      BCHGroup.log (L := d.lieTruncation ℒ k)
+      BCHGroup.log (L := d.truncatedLie ℒ k)
         (TauCeti.CompletedGroup.projection k (D.wall j).label)
   have hlie : (S : Set (D.active k)).Pairwise fun b c => ⁅a b, a c⁆ = 0 := by
     intro b hb c hc _
@@ -151,9 +151,9 @@ theorem log_combinedLabel_eq_sum (k : ℕ) (θ v : V)
         TauCeti.CompletedGroup.projection k (D.wall j).label ^
           (if 0 < h.realCharacter (D.wall j).normal v then -1 else 1 : ℤ) := by
       exact (BCHGroup.exp_zsmul _ _).trans
-        (congrArg (fun g : BCHGroup (d.lieTruncation ℒ k) =>
+        (congrArg (fun g : BCHGroup (d.truncatedLie ℒ k) =>
           g ^ (if 0 < h.realCharacter (D.wall j).normal v then -1 else 1 : ℤ))
-          (BCHGroup.exp_log (L := d.lieTruncation ℒ k) _))
+          (BCHGroup.exp_log (L := d.truncatedLie ℒ k) _))
     have hc := hlie.imp fun _ _ hij => BCHGroup.commute_exp_of_lie_eq_zero _ _ hij
     simp only [hx] at hc
     rw [BCHGroup.exp_sum_of_lie_eq_zero S a hlie,
@@ -168,7 +168,7 @@ contribute no factor. -/
 theorem truncation_combinedLabel {k l : ℕ} (hkl : k ≤ l) (θ v : V)
     (hl : θ ∉ singularSupport (fun j : D.active l => (D.wall j).support))
     (hk : θ ∉ singularSupport (fun j : D.active k => (D.wall j).support)) :
-    (d.lieTruncationMap ℒ hkl).bchGroupMap (D.combinedLabel l θ v hl) =
+    (d.truncationMap ℒ hkl).bchGroupMap (D.combinedLabel l θ v hl) =
       D.combinedLabel k θ v hk := by
   classical
   let S := (Set.toFinite {j : D.active l | θ ∈ (D.wall j).support}).toFinset

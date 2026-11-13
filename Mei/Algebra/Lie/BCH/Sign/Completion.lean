@@ -47,7 +47,7 @@ variable {N R L A : Type*} [AddCommMonoid N] [CommRing R] [Algebra ℚ R]
 /-- The subgroup whose logarithm has only degrees of the specified sign at
 every finite cutoff. -/
 def completedSignSubgroup (s : SignType) : Subgroup (d.completedBCHGroup ℒ) :=
-  ⨅ k : ℕ, (signSubalgebra (d.lieTruncationGrading ℒ k) θ s).bchSubgroup.comap
+  ⨅ k : ℕ, (signSubalgebra (d.truncatedGrading ℒ k) θ s).bchSubgroup.comap
     (projection k)
 
 /-- Membership in a completed sign subgroup is tested at every finite cutoff. -/
@@ -55,7 +55,7 @@ def completedSignSubgroup (s : SignType) : Subgroup (d.completedBCHGroup ℒ) :=
 theorem mem_completedSignSubgroup (s : SignType) (g : d.completedBCHGroup ℒ) :
     g ∈ completedSignSubgroup ℒ θ d s ↔
       ∀ k, projection k g ∈
-        (signSubalgebra (d.lieTruncationGrading ℒ k) θ s).bchSubgroup := by
+        (signSubalgebra (d.truncatedGrading ℒ k) θ s).bchSubgroup := by
   simp only [completedSignSubgroup, Subgroup.mem_iInf]
   exact forall_congr' fun k => Iff.rfl
 
@@ -65,7 +65,7 @@ private def completedSignFactor (g : d.completedBCHGroup ℒ) (s : SignType) :
       d.truncatedGroup ℒ k), (TauCeti.mem_completedGroup_iff _ _).mpr (by
         intro k l h
         -- The categorical tower arrow has the concrete quotient BCH map as its homomorphism.
-        change (d.lieTruncationMap ℒ h).bchGroupMap
+        change (d.truncationMap ℒ h).bchGroupMap
           ((signFactorizationEquiv ℒ θ d l).symm
             (projection l g) s : d.truncatedGroup ℒ l) =
           ((signFactorizationEquiv ℒ θ d k).symm
@@ -98,7 +98,7 @@ def completedSignFactorizationEquiv :
     apply TauCeti.CompletedGroup.ext
     intro k
     rw [projection_completedSignFactor]
-    let b : ∀ s, (signSubalgebra (d.lieTruncationGrading ℒ k) θ s).bchSubgroup := fun s =>
+    let b : ∀ s, (signSubalgebra (d.truncatedGrading ℒ k) θ s).bchSubgroup := fun s =>
       ⟨projection k (a s : d.completedBCHGroup ℒ),
         (mem_completedSignSubgroup ℒ θ d s _).mp (a s).property k⟩
     have hb : (signFactorizationEquiv ℒ θ d k).symm

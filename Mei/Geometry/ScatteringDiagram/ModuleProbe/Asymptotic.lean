@@ -68,8 +68,8 @@ variable {R Γ Λ V E ι κ : Type*} {M L : Type u} [CommRing R] [Algebra ℚ R]
     (wallSpaces d ℳ p ℒ H) ((ι ⊕ Unit) ⊕ κ))
 
 local notation "v" => (0, j 1)
-local notation "G" => PositiveDegrees.lieTruncation (positiveDegrees d p) (grading d ℳ p ℒ)
-local notation "ℋ" => PositiveDegrees.lieTruncationGrading (positiveDegrees d p) (grading d ℳ p ℒ)
+local notation "G" => PositiveDegrees.truncatedLie (positiveDegrees d p) (grading d ℳ p ℒ)
+local notation "ℋ" => PositiveDegrees.truncatedGrading (positiveDegrees d p) (grading d ℳ p ℒ)
 
 open scoped Classical in
 private theorem sum_incoming_coefficient

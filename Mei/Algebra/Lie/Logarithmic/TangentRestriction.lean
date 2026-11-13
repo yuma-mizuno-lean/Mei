@@ -41,9 +41,9 @@ variable {R Γ Λ : Type*} [CommRing R] [AddCommMonoid Γ] [AddCommMonoid Λ]
 local notation "ℒ" => tropicalVertexGrading (R := R) d ρ
 local notation "ℳ" => tropicalSubalgebraGrading ρ U d
 local notation "F" =>
-  LieIdeal.completionFiltration (d.truncationIdeal ℒ) (d.truncationIdeal_antitone ℒ)
+  Mei.LieIdeal.completionFiltration (d.degreeIdeal ℒ) (d.degreeIdeal_antitone ℒ)
 local notation "G" =>
-  LieIdeal.completionFiltration (d.truncationIdeal ℳ) (d.truncationIdeal_antitone ℳ)
+  Mei.LieIdeal.completionFiltration (d.degreeIdeal ℳ) (d.degreeIdeal_antitone ℳ)
 
 /-- A tangent field uses only scalar multiples of its specified character. -/
 theorem tropicalTangentField_mem_tropicalSubalgebra (m : U)
@@ -79,16 +79,16 @@ theorem tropicalTangentFieldToSubalgebra_mem_degreeIdeal (m : U) {k : ℕ}
     {u : R[tropicalTangentMonoid d ρ m.val]}
     (hu : u ∈ (TropicalVertexCoefficientAction.filtration
       (R := R) d (tropicalTangentMonoid d ρ m.val)).ideal (k + 1)) :
-    tropicalTangentFieldToSubalgebra d ρ U m u ∈ d.truncationIdeal ℳ k := by
+    tropicalTangentFieldToSubalgebra d ρ U m u ∈ d.degreeIdeal ℳ k := by
   -- Compare submodules to rewrite the grading without transporting its Lie algebra instance.
   have he := congrArg LieSubmodule.toSubmodule
     ((tropicalSubalgebra ρ U d).degreeIdeal_eq_comap ℒ d
       (tropicalSubalgebra_isHomogeneous ρ U d) k)
-  simp only [PositiveDegrees.truncationIdeal_toSubmodule, LieIdeal.comap_toSubmodule] at he
-  rw [← LieSubmodule.mem_toSubmodule, PositiveDegrees.truncationIdeal_toSubmodule,
+  simp only [PositiveDegrees.degreeIdeal_toSubmodule, LieIdeal.comap_toSubmodule] at he
+  rw [← LieSubmodule.mem_toSubmodule, PositiveDegrees.degreeIdeal_toSubmodule,
     tropicalSubalgebraGrading_def, he]
   simpa only [Submodule.mem_comap, LieHom.coe_toLinearMap, LieSubalgebra.coe_incl,
-    coe_tropicalTangentFieldToSubalgebra, ← PositiveDegrees.truncationIdeal_toSubmodule,
+    coe_tropicalTangentFieldToSubalgebra, ← PositiveDegrees.degreeIdeal_toSubmodule,
     LieSubmodule.mem_toSubmodule] using
       tropicalTangentField_mem_degreeIdeal d ρ m.val hu
 
@@ -99,7 +99,7 @@ local notation "H" => TropicalVertexCoefficientAction.filtration
 
 /-- Completed tangent fields can be formed inside the selected-character algebra. -/
 def completedTropicalTangentFieldToSubalgebra :
-    (H).completion →ₗ[R] d.completedLie ℳ :=
+    (H).completion →ₗ[R] d.filtrationCompletedLie ℳ :=
   ((H).toModuleFiltration R).completionMap G
     (tropicalTangentFieldToSubalgebra d ρ U m) id monotone_id
     (fun _ _ hu => tropicalTangentFieldToSubalgebra_mem_degreeIdeal d ρ U m
@@ -112,7 +112,7 @@ theorem projection_completedTropicalTangentFieldToSubalgebra (k : ℕ)
     (u : (H).completion) (v : R[tropicalTangentMonoid d ρ m.val])
     (hv : (H).projection k u = Ideal.Quotient.mk _ v) :
     (G).projection k (completedTropicalTangentFieldToSubalgebra d ρ U m u) =
-      (d.truncationIdeal ℳ k).mkQ (tropicalTangentFieldToSubalgebra d ρ U m v) := by
+      (d.degreeIdeal ℳ k).mkQ (tropicalTangentFieldToSubalgebra d ρ U m v) := by
   simp only [completedTropicalTangentFieldToSubalgebra, LinearMap.comp_apply,
     LinearEquiv.coe_coe, ModuleFiltration.projection_completionMap, id_eq]
   rw [AlgFiltration.projection_moduleCompletionEquiv_symm_of_mk _ _ _ _ hv.symm,
@@ -124,22 +124,22 @@ theorem projection_completedTropicalTangentFieldToSubalgebra (k : ℕ)
 theorem completedTropicalTangentFieldToSubalgebra_toCompletion
     (u : R[tropicalTangentMonoid d ρ m.val]) :
     completedTropicalTangentFieldToSubalgebra d ρ U m ((H).toCompletion u) =
-      LieIdeal.toCompletion (d.truncationIdeal ℳ) (d.truncationIdeal_antitone ℳ)
+      Mei.LieIdeal.toCompletion (d.degreeIdeal ℳ) (d.degreeIdeal_antitone ℳ)
         (tropicalTangentFieldToSubalgebra d ρ U m u) := by
   simp only [completedTropicalTangentFieldToSubalgebra, LinearMap.comp_apply,
     LinearEquiv.coe_coe, AlgFiltration.moduleCompletionEquiv_symm_toCompletion,
     ModuleFiltration.completionMap_of]
   apply (G).completion_ext
   intro k
-  simp only [ModuleFiltration.projection_of, ← LieIdeal.completionProjection_apply,
-    LieIdeal.completionProjection_toCompletion, LieIdeal.mkQ_apply]
+  simp only [ModuleFiltration.projection_of, ← Mei.LieIdeal.completionProjection_apply,
+    Mei.LieIdeal.completionProjection_toCompletion, LieIdeal.mkQ_apply]
 
 /-- Forgetting restricted characters after completion gives the original completed field. -/
 theorem completionMap_completedTropicalTangentFieldToSubalgebra (u : (H).completion) :
     (G).completionMap F (TropicalPairing.id d ρ U).gradedLieHom.toLieHom.toLinearMap
         id monotone_id (fun k _ hx =>
-          (TropicalPairing.id d ρ U).gradedLieHom.map_mem_truncationIdeal k
-            (by simpa only [LieIdeal.completionFiltration_succ,
+          (TropicalPairing.id d ρ U).gradedLieHom.map_mem_degreeIdeal k
+            (by simpa only [Mei.LieIdeal.completionFiltration_succ,
               LieSubmodule.mem_toSubmodule, TropicalPairing.id_degreeMap,
               PositiveDegreeMap.id_modulus, id_eq] using hx))
         (completedTropicalTangentFieldToSubalgebra d ρ U m u) =
@@ -152,7 +152,7 @@ theorem completionMap_completedTropicalTangentFieldToSubalgebra (u : (H).complet
   simp only [LieIdeal.mkQ_apply, Submodule.mapQ_apply, LieHom.coe_toLinearMap,
     GradedLieHom.coe_toLieHom,
     TropicalPairing.gradedLieHom_id_apply, coe_tropicalTangentFieldToSubalgebra]
-  simpa only [LieIdeal.completionProjection_apply, LieIdeal.mkQ_apply] using
+  simpa only [Mei.LieIdeal.completionProjection_apply, LieIdeal.mkQ_apply] using
     (completionProjection_completedTropicalTangentField d ρ m.val k u v hv.symm).symm
 
 variable [Algebra ℚ R]

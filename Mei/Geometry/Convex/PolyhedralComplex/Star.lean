@@ -225,7 +225,7 @@ theorem crossingWord_eq_of_disjoint_convexHull (ν : C.walls → V →ₗ[ℝ] �
     Set.disjoint_left.mpr fun w hwΔ hwA => Set.disjoint_left.mp hSJ hwΔ (hspan ⟨hΔ hwΔ, hwA⟩)
   obtain ⟨φ, u₀, v₀, hφΔ, huv, hφA⟩ := geometric_hahn_banach_compact_closed
     (convex_convexHull ℝ _) (hS.isCompact_convexHull ℝ)
-    (affineSpan ℝ J).convex (affineSpan ℝ J).closed_of_finiteDimensional hdisj
+    (affineSpan ℝ J).convex (affineSpan ℝ J).isClosed_of_finiteDimensional hdisj
   obtain ⟨q, hqU, hqJ⟩ := hUJ
   have hqA : q ∈ affineSpan ℝ J := subset_affineSpan ℝ J hqJ
   -- The separating functional is constant on the affine span of the joint.

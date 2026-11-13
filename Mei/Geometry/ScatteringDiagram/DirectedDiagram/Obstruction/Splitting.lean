@@ -77,18 +77,19 @@ def LoopProjection.ofSplitting {k : ℕ} (hq : (D.map π hπ).LevelConsistent k)
   isIdempotentElem := GradedLieHom.isIdempotentElem_idSubSectionComp hsπ k
   decompose_map x n := by
     rw [GradedLieHom.idSubSectionComp_apply, DirectSum.decompose_sub, DFinsupp.sub_apply,
-      Submodule.coe_sub, s.decompose_lieTruncatedMap, π.decompose_lieTruncatedMap,
+      Submodule.coe_sub, s.decompose_truncatedMap_id k le_rfl,
+      π.decompose_truncatedMap_id k le_rfl,
       GradedLieHom.idSubSectionComp_apply]
   map_wall n m x hx := by
     rw [GradedLieHom.idSubSectionComp_apply]
-    exact Submodule.sub_mem _ hx (s.lieTruncatedMap_mem_truncated_wall hs k
-      (π.lieTruncatedMap_mem_truncated_wall hπ k hx))
+    exact Submodule.sub_mem _ hx (s.truncatedMap_mem_truncated_wall hs k
+      (π.truncatedMap_mem_truncated_wall hπ k hx))
   map_log_loop {x} p := by
     apply GradedLieHom.idSubSectionComp_of_map_eq_zero
     rw [← pushforward_ofFixedDegree] at hq
     have hp :
-        (π.lieTruncatedMap k (a := k) (by simp)).bchGroupMap (D.levelPathProduct k p) = 1 := by
-      rw [← DirectedWall.Pushforward.ofFixedDegree_lieHom_lieTruncatedMap (h := h) π hπ k (by simp)]
+        (π.truncatedMap k (a := k) (by simp)).bchGroupMap (D.levelPathProduct k p) = 1 := by
+      rw [← DirectedWall.Pushforward.ofFixedDegree_lieHom_truncatedMap (h := h) π hπ k (by simp)]
       exact (D.levelPathProduct_pushforward (.ofFixedDegree π hπ) k (by simp) p).symm.trans
         ((levelConsistent_iff_loops _ k).mp hq _ _)
     rw [← LieHom.log_bchGroupMap, hp, log_one]
@@ -97,17 +98,18 @@ def LoopProjection.ofSplitting {k : ℕ} (hq : (D.map π hπ).LevelConsistent k)
     · obtain ⟨y, hy⟩ := hlift j hj
       refine (hne ?_).elim
       have hl : log (TauCeti.CompletedGroup.projection k (D.wall j).label) =
-          s.lieTruncatedMap k (by simp) (log (TauCeti.CompletedGroup.projection k y)) := by
+          s.truncatedMap k (by simp) (log (TauCeti.CompletedGroup.projection k y)) := by
         rw [hy, s.projection_completedMap_of_le k (a := k) (by simp)]
         exact LieHom.log_bchGroupMap _ _
-      rw [hl, s.decompose_lieTruncatedMap, GradedLieHom.idSubSectionComp_lieTruncatedMap hsπ]
+      rw [hl, s.decompose_truncatedMap_id k le_rfl,
+        GradedLieHom.idSubSectionComp_truncatedMap hsπ]
     · rcases hfull j hj with hfull | ⟨m, hm, a, ha, he⟩
       · exact hfull
       · have hmn : m ≠ n := by intro he; subst m; omega
         refine (hne ?_).elim
-        rw [he, PositiveDegrees.projection_expToCompletion, log_exp,
-          DirectSum.decompose_of_mem_ne (d.lieTruncationGrading ℒ k)
-            ((d.mem_lieTruncationGrading_iff ℒ).mpr ⟨a, ha, rfl⟩) hmn]
+        rw [he, PositiveDegrees.projection_expToCompletion, log_exp, LieIdeal.mkQ_apply,
+          DirectSum.decompose_of_mem_ne (d.truncatedGrading ℒ k)
+            ((d.mem_truncatedGrading_iff ℒ).mpr ⟨a, ha, rfl⟩) hmn]
         exact map_zero _
 
 @[simp]

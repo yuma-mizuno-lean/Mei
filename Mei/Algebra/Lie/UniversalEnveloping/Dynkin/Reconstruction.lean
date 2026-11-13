@@ -159,14 +159,14 @@ identity in the total-degree tensor quotient. No coalgebra structure on the ordi
 quotient is required. -/
 @[simp]
 theorem exists_truncatedLieToU_eq_iff (k : ℕ) (z : U ⧸ (Fₚ).ideal (k + 1)) :
-    (∃ x : p.lieTruncation ℒ k, truncatedLieToU p ℒ k x = z) ↔
+    (∃ x : p.truncatedLie ℒ k, truncatedLieToU p ℒ k x = z) ↔
       quotientCounit ℒ p.degree _ k z = 0 ∧
         quotientCoproduct ℒ p.degree _ (k + 1) z =
           TauCeti.AlgFiltration.quotientIncludeLeft R (Fₚ) (Fₚ) (k + 1) z +
             TauCeti.AlgFiltration.quotientIncludeRight R (Fₚ) (Fₚ) (k + 1) z := by
   constructor
   · rintro ⟨x, rfl⟩
-    obtain ⟨a, rfl⟩ := (p.truncationIdeal ℒ k).surjective_mkQ x
+    obtain ⟨a, rfl⟩ := (p.degreeIdeal ℒ k).surjective_mkQ x
     rw [LieIdeal.mkQ_apply, truncatedLieToU_mk]
     constructor
     · simp only [quotientCounit_mk, TauCeti.UniversalEnvelopingAlgebra.counit_ι]

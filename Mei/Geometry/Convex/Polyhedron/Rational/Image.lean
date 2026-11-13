@@ -7,7 +7,7 @@ module
 
 public import Mei.Analysis.Convex.Intrinsic
 public import Mei.Geometry.Convex.Polyhedron.Rational.Cone
-public import Mei.Geometry.Convex.Polyhedron.Rational.Direction
+public import TauCeti.Analysis.Convex.Polyhedron.Rational.Direction
 public import TauCeti.Analysis.Convex.Polyhedron.Rational.LocallyClosed
 public import Mei.Geometry.Convex.Polyhedron.Rational.Map
 public import Mei.Geometry.Toric.Algebraic.RationalLinearMap
@@ -52,10 +52,10 @@ theorem exists_leftInvOn_direction {S : Set V} (hS : IsLocallyClosedPolyhedron h
   have hdim := Submodule.finrank_le (affineSpan ℝ (closure S)).direction
   obtain ⟨m, -, hdir⟩ := hS.isRationalNormalPolyhedron_closure.exists_direction_eq_iInf_ker
     (hne.mono subset_closure) (Nat.add_sub_of_le hdim)
-  have hU (v : V) : (∀ j, h.realCharacter (m j).toAddMonoidHom v = 0) ↔
+  have hU (v : V) : (∀ j, h.realCharacter (m j) v = 0) ↔
       v ∈ (affineSpan ℝ S).direction := by
     simp [← hspan, hdir, Submodule.mem_iInf]
-  obtain ⟨B, hB, hBg⟩ := hg.exists_leftInvOn m fun v hv hgv =>
+  obtain ⟨B, hB, hBg⟩ := hg.exists_leftInvOn (fun j => (m j).toIntLinearMap) fun v hv hgv =>
     hS.convex.injOn_linear_direction_of_injOn hinj ((hU v).mp hv) (zero_mem _)
       (hgv.trans (map_zero _).symm)
   exact ⟨B, hB, fun v hv => hBg ((hU v).mpr hv)⟩

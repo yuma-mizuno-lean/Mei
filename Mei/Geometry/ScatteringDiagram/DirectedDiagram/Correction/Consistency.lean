@@ -70,7 +70,7 @@ variable {Γ Λ R L V ι κ : Type*} [AddCommGroup Γ] [AddCommGroup Λ]
   (ht : ∀ (P : (E.adaptedComplex (k + 1)).cellsOfCodimension 0)
     (x : WallComplement (fun j : E.active k => (E.wall j).support)),
     x.val ∈ interior (P : Set V) →
-    (d.lieTruncationMap ℒ (Nat.le_succ k)).bchGroupMap (t P) = E.levelTransport k hk b x)
+    (d.truncationMap ℒ (Nat.le_succ k)).bchGroupMap (t P) = E.levelTransport k hk b x)
   (ω : D.active (k + 1) → OrientedCell h 1)
   (hω : ∀ j, (ω j).carrier = (D.wall j).support)
   (hν : ∀ j : D.active (k + 1), j.val ∉ s → ∀ v : V,
@@ -88,7 +88,7 @@ theorem levelConsistent_succ_of_closed_residual
       let _ := Fintype.ofFinite (D.active (k + 1))
       PolyhedralCochain.coboundary (PolyhedralCochain.ofFinsupp (R := R)
         ((∑ Q, Finsupp.single (σ Q)
-            ((cross Q).defect hk b t ht : d.lieTruncation ℒ (k + 1))) -
+            ((cross Q).defect hk b t ht : d.truncatedLie ℒ (k + 1))) -
           ∑ j : D.active (k + 1), Finsupp.single (ω j)
             (if j.val ∈ s then 0 else
               log (TauCeti.CompletedGroup.projection (k + 1) (D.wall j).label)))) = 0) :
@@ -97,7 +97,7 @@ theorem levelConsistent_succ_of_closed_residual
   have := h.finiteDimensional
   let := Fintype.ofFinite (D.active (k + 1))
   let A := ∑ Q, Finsupp.single (σ Q)
-    ((cross Q).defect hk b t ht : d.lieTruncation ℒ (k + 1))
+    ((cross Q).defect hk b t ht : d.truncatedLie ℒ (k + 1))
   let c := fun j : D.active (k + 1) => if j.val ∈ s then 0 else
     log (TauCeti.CompletedGroup.projection (k + 1) (D.wall j).label)
   let B := ∑ j : D.active (k + 1), Finsupp.single (ω j) (c j)
@@ -161,7 +161,7 @@ theorem levelConsistent_succ_of_closed_residual
       ((Finsupp.mem_support_single _ _ _).mp hτ).1⟩
   -- Every perturbed segment is transverse to both representatives of the residual.
   have htrans {u v : WallComplement W} (e : u ⟶ v)
-      (g : OrientedCell h 1 →₀ d.lieTruncation ℒ (k + 1))
+      (g : OrientedCell h 1 →₀ d.truncatedLie ℒ (k + 1))
       (hg : ∀ τ ∈ g.support, ∃ j, τ = υ j) :
       ∀ τ ∈ g.support, τ.IsTransverseToCarrier ![u.val, v.val] := by
     intro τ hτ
@@ -230,7 +230,7 @@ theorem levelConsistent_succ_of_closed_residual
         (r : AdmissiblePLPath u v) =>
           r.addWeightOfEPs_intersectionPairing_eq_neg_wallCrossingSum (R := R)
             (fun Q => h.realCharacter (cross Q).normal)
-            (fun Q => ((cross Q).defect hk b t ht : d.lieTruncation ℒ (k + 1)))
+            (fun Q => ((cross Q).defect hk b t ht : d.truncatedLie ℒ (k + 1)))
             (fun Q _ v => (cross Q).sign_normal v)
       have hcar : (fun Q => (σ Q).carrier) =
           (fun Q : (E.adaptedComplex (k + 1)).walls => (Q : Set V)) := funext hσ

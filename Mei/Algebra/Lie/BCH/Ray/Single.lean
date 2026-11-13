@@ -52,15 +52,15 @@ theorem expToCompletion_logComponent_eq_of_ray_single
     · exact d.logComponent_eq_zero_of_notMem_rayDegrees ℒ hg hray
   apply TauCeti.CompletedGroup.ext
   intro k
-  apply BCHGroup.log_injective (L := d.lieTruncation ℒ k)
+  apply BCHGroup.log_injective (L := d.truncatedLie ℒ k)
   rw [projection_expToCompletion, BCHGroup.log_exp, log_projection_eq_mkQ_sum]
   by_cases hk : d.degree n ≤ k
   · congr 1
     exact (Finset.sum_eq_single_of_mem (f := fun n => (d.logComponent ℒ g n : L)) n
       ((d.finite_cutoff k).mem_toFinset.mpr (d.mem_cutoff.mpr ⟨w.rayDegrees_subset hn, hk⟩))
       (fun m _ hm => by rw [hz m hm, ZeroMemClass.coe_zero])).symm
-  · rw [(d.truncationIdeal ℒ k).mkQ_eq_zero.mpr
-      (d.le_truncationIdeal ℒ (lt_of_not_ge hk) (d.logComponent ℒ g n).property)]
+  · rw [(d.degreeIdeal ℒ k).mkQ_eq_zero.mpr
+      (d.le_degreeIdeal ℒ (lt_of_not_ge hk) (d.logComponent ℒ g n).property)]
     rw [Finset.sum_eq_zero (fun m hm => by
       have hne : m ≠ n := by
         intro he

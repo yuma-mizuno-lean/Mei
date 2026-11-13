@@ -206,11 +206,11 @@ theorem exists_eventwiseProbeStepArrangement
         (normal_sign_crossingWallEvent _ e _ htmem)
     have hblock : PositiveDegrees.labelBlock d ℳ p ℒ (k + 1) g[b] n m'' =
         eventBlock d ℳ p ℒ H h B (k + 1) (k + 1) (Nat.le_refl _) (event b) n m'' := by
-      rw [hlabel, eventBlock_def, d.lieTruncationMap_refl, LieHom.bchGroupMap_id,
+      rw [hlabel, eventBlock_def, d.truncationMap_refl, LieHom.bchGroupMap_id,
         MonoidHom.id_apply]
     rw [hblock]
     let input := (A).truncatedBCHAction d ℒ k
-      ((d.lieTruncationMap ℒ (Nat.le_succ k)).bchGroupMap (g.drop (b.val + 1)).prod)
+      ((d.truncationMap ℒ (Nat.le_succ k)).bchGroupMap (g.drop (b.val + 1)).prod)
       (field k (hBc.mono (Nat.le_succ k))
         ((WallComplement.restrictPrefunctor (B.activeSupport (k + 1))
           (Set.inclusion (B.active_mono (Nat.le_succ k)))).obj x))

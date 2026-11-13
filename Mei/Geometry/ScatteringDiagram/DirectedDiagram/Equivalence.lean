@@ -60,15 +60,22 @@ theorem LevelEquivalent.mono {k l : ℕ} (hDE : D.LevelEquivalent E l) (hkl : k 
 No consistency hypothesis is required. -/
 theorem equivalent_iff_levelEquivalent_of_degreeIdeal_eq_bot
     (D : DirectedDiagram (d := d) h H ι) (E : DirectedDiagram (d := d) h H κ)
-    {k : ℕ} (hk : d.truncationIdeal ℒ k = ⊥) :
+    {k : ℕ} (hk : d.degreeIdeal ℒ k = ⊥) :
     D.Equivalent E ↔ D.LevelEquivalent E k := by
   rw [equivalent_iff]
   refine ⟨fun hDE => hDE k, fun hDE l => ?_⟩
   obtain hlk | hkl := le_total l k
   · exact hDE.mono hlk
-  · have hinj : Function.Injective (d.lieTruncationMap ℒ hkl) := by
-      rw [← LieHom.ker_eq_bot, PositiveDegrees.lieTruncationMap_def, LieIdeal.ker_factor, hk]
-      simp
+  · have hinj : Function.Injective (d.truncationMap ℒ hkl) := by
+      let I := d.degreeIdeal ℒ l
+      let J := d.degreeIdeal ℒ k
+      have hIJ : I ≤ J := d.degreeIdeal_antitone ℒ hkl
+      have hmap : I ≤ J.comap (LieHom.id : L →ₗ⁅R⁆ L) := fun _ hx => hIJ hx
+      rw [PositiveDegrees.truncationMap_eq_factor, ← LieIdeal.mapQ_id_eq_factor I J hIJ]
+      apply (LieIdeal.mapQ_injective_iff I J LieHom.id hmap).mpr
+      -- Comapping along the identity keeps the ideal; `hk` identifies the local ideal `J`.
+      change J ≤ I
+      exact (show J = ⊥ from hk).le.trans bot_le
     rw [levelEquivalent_def] at hDE ⊢
     intro x y x' y' p q hpq
     apply LieHom.bchGroupMap_injective hinj

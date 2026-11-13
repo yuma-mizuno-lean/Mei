@@ -111,14 +111,14 @@ variable (j) in
 /-- The labels admitted on the hyperplane `ker (evaluation at b)` at cutoff `k`: the
 exponential of the Lie algebra orthogonal to that hyperplane. -/
 def hyperplaneLabels (b : N) (k : ℕ) : Subgroup (d.truncatedGroup ℒ k) :=
-  (orthogonalLieSubalgebra (d.lieTruncationGrading ℒ k)
+  (orthogonalLieSubalgebra (d.truncatedGrading ℒ k)
     ((KSSpace.continuousDual h).evaluation '' {θ : W →L[ℝ] ℝ | θ (j b) = 0})).bchSubgroup
 
 variable {h d ℒ}
 
 theorem hyperplaneLabels_def (b : N) (k : ℕ) :
     hyperplaneLabels j h d ℒ b k =
-      (orthogonalLieSubalgebra (d.lieTruncationGrading ℒ k)
+      (orthogonalLieSubalgebra (d.truncatedGrading ℒ k)
         ((KSSpace.continuousDual h).evaluation '' {θ : W →L[ℝ] ℝ | θ (j b) = 0})).bchSubgroup :=
   (rfl)
 
@@ -127,7 +127,7 @@ when its logarithm lies in the orthogonal Lie subalgebra. -/
 @[simp]
 theorem mem_hyperplaneLabels {b : N} {k : ℕ} (g : d.truncatedGroup ℒ k) :
     g ∈ hyperplaneLabels j h d ℒ b k ↔
-      BCHGroup.log g ∈ orthogonalLieSubalgebra (d.lieTruncationGrading ℒ k)
+      BCHGroup.log g ∈ orthogonalLieSubalgebra (d.truncatedGrading ℒ k)
         ((KSSpace.continuousDual h).evaluation '' {θ : W →L[ℝ] ℝ | θ (j b) = 0}) :=
   LieSubalgebra.mem_bchSubgroup _ _
 
@@ -251,7 +251,7 @@ theorem toFiniteWallDiagram_stageKS_false :
       simp [stageKS, hQ]
 
 variable {g} {g' : d.truncatedGroup ℒ (k + 1)} (hg' : g' ∈ hyperplaneLabels j h d ℒ b (k + 1))
-  (hπ : (d.lieTruncationMap ℒ (Nat.le_succ k)).bchGroupMap g' = g)
+  (hπ : (d.truncationMap ℒ (Nat.le_succ k)).bchGroupMap g' = g)
 
 include hπ in
 /-- Projecting the two-hyperplane diagram of `g'` agrees with the one-hyperplane diagram of
@@ -261,7 +261,7 @@ theorem truncationMap_pathProduct_stageKS_false
     {x' y' : WallComplement (fun P : (stageComplex h a b false).walls => (P : Set (W →L[ℝ] ℝ)))}
     (p : AdmissiblePLPath x y) (q : AdmissiblePLPath x' y')
     (hpq : p.vertices.map WallComplement.val = q.vertices.map WallComplement.val) :
-    (d.lieTruncationMap ℒ (Nat.le_succ k)).bchGroupMap
+    (d.truncationMap ℒ (Nat.le_succ k)).bchGroupMap
       ((stageKS hb hb0 ha ha0 g' hg' false).toFiniteWallDiagram.pathProduct q) =
       (stageKS hb hb0 ha ha0 g hg true).toFiniteWallDiagram.pathProduct p := by
   rw [← FiniteWallDiagram.pathProduct_relabel, toFiniteWallDiagram_stageKS_false,
@@ -277,7 +277,7 @@ theorem truncationMap_pathProduct_stageKS_true
     {x' y' : WallComplement (fun P : (stageComplex h a b true).walls => (P : Set (W →L[ℝ] ℝ)))}
     (p : AdmissiblePLPath x y) (q : AdmissiblePLPath x' y')
     (hpq : p.vertices.map WallComplement.val = q.vertices.map WallComplement.val) :
-    (d.lieTruncationMap ℒ (Nat.le_succ k)).bchGroupMap
+    (d.truncationMap ℒ (Nat.le_succ k)).bchGroupMap
       ((stageKS hb hb0 ha ha0 g' hg' true).toFiniteWallDiagram.pathProduct q) =
       (stageKS hb hb0 ha ha0 g hg false).toFiniteWallDiagram.pathProduct p := by
   rw [← FiniteWallDiagram.pathProduct_relabel, toFiniteWallDiagram_stageKS_true,
@@ -293,7 +293,7 @@ theorem truncationMap_pathProduct_stageKS (t t' : Bool) (ht : t' = !t)
     {x' y' : WallComplement (fun P : (stageComplex h a b t').walls => (P : Set (W →L[ℝ] ℝ)))}
     (p : AdmissiblePLPath x y) (q : AdmissiblePLPath x' y')
     (hpq : p.vertices.map WallComplement.val = q.vertices.map WallComplement.val) :
-    (d.lieTruncationMap ℒ (Nat.le_succ k)).bchGroupMap
+    (d.truncationMap ℒ (Nat.le_succ k)).bchGroupMap
       ((stageKS hb hb0 ha ha0 g' hg' t').toFiniteWallDiagram.pathProduct q) =
       (stageKS hb hb0 ha ha0 g hg t).toFiniteWallDiagram.pathProduct p := by
   subst ht

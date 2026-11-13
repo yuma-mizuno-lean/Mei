@@ -189,7 +189,7 @@ by `X_n ↦ {x, y}⁻¹ X_{a x + b y}`. -/
 def planeTransport (hxy : βℚ x.1 y.1 ≠ 0) (k : ℕ) :=
   ((SkewLieAlgebra.gradedMap (E.coefficientForm ℚ) (E.isAlt_coefficientForm ℚ) βℚ hβℚ
           (βℚ x.1 y.1)⁻¹ (D.planeMap d x y)
-          (D.coefficientForm_eq_inv_mul_planeMap d x y hxy)).lieTruncatedMap k
+          (D.coefficientForm_eq_inv_mul_planeMap d x y hxy)).truncatedMap k
         (D.planeMap_modulus_le d x y k)).bchGroupMap
 
 /-- The finite-order projection of a ray label of the plane, carried to `D` by the map
@@ -202,7 +202,7 @@ theorem map_projection_dilogPow (hxy : βℚ x.1 y.1 ≠ 0) (k : ℕ)
       projection k
         (D.dilogPow d (D.planeDegree d x y q) ((βℚ x.1 y.1)⁻¹ * c)) := by
   rw [planeTransport, StandardPlane.dilogPow_def, dilogPow_def, mul_smul]
-  exact SkewLieAlgebra.lieTruncatedMap_gradedMap_projection_rayExp (E.coefficientForm ℚ)
+  exact SkewLieAlgebra.truncatedMap_gradedMap_projection_rayExp (E.coefficientForm ℚ)
     (E.isAlt_coefficientForm ℚ) βℚ hβℚ (βℚ x.1 y.1)⁻¹ (D.planeMap d x y)
     (D.coefficientForm_eq_inv_mul_planeMap d x y hxy) q.mem q.ne_zero (c • negDilogNeg ℚ) k k
     (D.planeMap_modulus_le d x y k)

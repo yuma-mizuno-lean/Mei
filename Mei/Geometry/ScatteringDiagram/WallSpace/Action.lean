@@ -189,7 +189,7 @@ local instance quotientRatModule (k : ℕ) : Module ℚ (F.quotient k) :=
 /-- Finite wall exponentials fix tangent homogeneous coefficients in every
 coefficient quotient, even when the logarithm has several degrees on its ray. -/
 theorem truncatedExpLieAction_mk_eq_self_of_normal_eq_zero
-    {w : SupportedRay d} {m : Λ →+ ℤ} {k : ℕ} {x : d.lieTruncation ℒ k}
+    {w : SupportedRay d} {m : Λ →+ ℤ} {k : ℕ} {x : d.truncatedLie ℒ k}
     (hx : x ∈ H.truncatedRayLieSubalgebra w m k)
     {p : Γ} {a : M} (ha : a ∈ 𝒜 p) (hm : m (ρ p) = 0) :
     F.truncatedExpLieAction d ℒ k x (Submodule.Quotient.mk a) =

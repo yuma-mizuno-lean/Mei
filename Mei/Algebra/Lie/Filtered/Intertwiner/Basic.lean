@@ -47,7 +47,7 @@ variable {N R : Type*} {L : Type u} {M : Type v}
 
 /-- The finite BCH action as categorical automorphisms of the coefficient module. -/
 def truncatedBCHModuleAut (k : ℕ) :
-    BCHGroup (d.lieTruncation ℒ k) →* Aut (ModuleCat.of R (F.quotient k)) where
+    BCHGroup (d.truncatedLie ℒ k) →* Aut (ModuleCat.of R (F.quotient k)) where
   toFun g := Aut.of (F.truncatedBCHAction d ℒ k g).toModuleIso
   map_one' := by
     apply Aut.ext
@@ -65,7 +65,7 @@ def truncatedBCHModuleAut (k : ℕ) :
 /-- Categorical evaluation is the original finite BCH action. -/
 @[simp]
 theorem truncatedBCHModuleAut_hom_apply (k : ℕ)
-    (g : BCHGroup (d.lieTruncation ℒ k)) (x : F.quotient k) :
+    (g : BCHGroup (d.truncatedLie ℒ k)) (x : F.quotient k) :
     (F.truncatedBCHModuleAut d ℒ k g).asIso.hom x =
       F.truncatedBCHAction d ℒ k g x := (rfl)
 
@@ -114,7 +114,7 @@ def bchActionIntertwiner :
     (F.quotientTowerMap G ψ μ hμ hψ) (by
       intro k g
       have hτ : τ.app k =
-          GrpCat.ofHom (φ.lieTruncatedMap k.unop (hT k.unop)).bchGroupMap := by
+          GrpCat.ofHom (φ.truncatedMap k.unop (hT k.unop)).bchGroupMap := by
         apply GrpCat.hom_ext
         exact φ.groupTowerMap_app_hom ⟨μ, hμ⟩ hT k
       rw [hτ, quotientTowerMap_app]
@@ -139,11 +139,11 @@ theorem bchActionIntertwiner_coefficient_app
 /-- The label component is the BCH map at the prescribed source and target cutoffs. -/
 @[simp]
 theorem bchActionIntertwiner_labelMap_map (k : ℕᵒᵖ)
-    (g : BCHGroup (d.lieTruncation ℒ (μ k.unop))) :
+    (g : BCHGroup (d.truncatedLie ℒ (μ k.unop))) :
     (((F.bchActionIntertwiner d ℒ G φ ψ μ hμ hT hψ hequiv).labelMap.app k).toFunctor.map
-      (X := SingleObj.star (BCHGroup (d.lieTruncation ℒ (μ k.unop))))
-      (Y := SingleObj.star (BCHGroup (d.lieTruncation ℒ (μ k.unop)))) g) =
-        (φ.lieTruncatedMap k.unop (hT k.unop)).bchGroupMap g := by
+      (X := SingleObj.star (BCHGroup (d.truncatedLie ℒ (μ k.unop))))
+      (Y := SingleObj.star (BCHGroup (d.truncatedLie ℒ (μ k.unop)))) g) =
+        (φ.truncatedMap k.unop (hT k.unop)).bchGroupMap g := by
   unfold bchActionIntertwiner
   -- The group tower objects are the corresponding concrete BCH quotient groups.
   erw [Functor.singleObjActionIntertwiner_labelMap]

@@ -186,7 +186,7 @@ theorem pushforward_group (j : ι) : (G.pushforward hπ hprim).group j = G.group
 order of the cutoff modulus. -/
 theorem groupLabel_pushforward (g : κ) (k : ℕ) :
     (G.pushforward hπ hprim).groupLabel g k =
-      (P.lieHom.lieTruncatedMap k le_rfl).bchGroupMap (G.groupLabel g (P.degreeMap.modulus k)) := by
+      (P.lieHom.truncatedMap k le_rfl).bchGroupMap (G.groupLabel g (P.degreeMap.modulus k)) := by
   classical
   let s := (Set.toFinite (D.active (P.degreeMap.modulus k))).toFinset.filter
     fun j => G.group j = g

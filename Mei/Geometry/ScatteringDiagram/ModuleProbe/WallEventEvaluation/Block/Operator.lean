@@ -89,7 +89,7 @@ theorem operatorEventEndpointStep_apply
         if b.normal (B.activeNormal K) (i (ρ (p + n.val))) =
             b.normal (B.activeNormal K) (i (ρ (p + m.val))) then
           PositiveDegrees.operatorBCHAction d ℳ p ℒ k
-              ((d.lieTruncationMap ℒ hkK).bchGroupMap (B.wallEventLabel K b))
+              ((d.truncationMap ℒ hkK).bchGroupMap (B.wallEventLabel K b))
               (lof m (F (point b Q n m) m)) n -
             (lof m (F (point b Q n m) m)) n
         else 0

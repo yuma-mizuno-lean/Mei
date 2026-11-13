@@ -158,7 +158,7 @@ theorem exists_backwardRayEventBlockArrangement
     rw [heq, hn'] at hm
     omega
   rw [eventBlock_apply_of_ne d ℳ p ℒ H h B (k + 1) (k + 1) (Nat.le_refl _) _ n _ hmn]
-  simp only [d.lieTruncationMap_refl, LieHom.bchGroupMap_id, MonoidHom.id_apply]
+  simp only [d.truncationMap_refl, LieHom.bchGroupMap_id, MonoidHom.id_apply]
   congr 2
   apply congrArg ((d.shiftedLieFiltration ℒ ℳ p).truncatedBCHAction d ℒ (k + 1))
   -- The signed product of the coincident indexed crossings is the canonical event label.

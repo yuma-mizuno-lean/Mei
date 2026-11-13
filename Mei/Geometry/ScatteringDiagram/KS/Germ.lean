@@ -88,7 +88,7 @@ theorem truncation_label_eq {k l : ℕ} (hkl : k ≤ l)
     (hθP : θ ∈ (P : Set V)) (hθQ : θ ∈ (Q : Set V))
     (hθP_reg : θ ∉ singularSupport (fun S : (C k).walls => (S : Set V)))
     (hθQ_reg : θ ∉ singularSupport (fun S : (C l).walls => (S : Set V))) :
-    (d.lieTruncationMap ℒ hkl).bchGroupMap ((D.diagram l).label Q) =
+    (d.truncationMap ℒ hkl).bchGroupMap ((D.diagram l).label Q) =
       (D.diagram k).label P := by
   simpa only [KSComplex.truncate_label] using
     KSComplex.label_eq_of_equivalent _ _ (D.equivalent_truncate hkl)
@@ -100,7 +100,7 @@ theorem truncation_label_eq_one {k l : ℕ} (hkl : k ≤ l)
     (Q : (C l).walls) {θ : V} (hθQ : θ ∈ (Q : Set V))
     (hθQ_reg : θ ∉ singularSupport (fun S : (C l).walls => (S : Set V)))
     (hθP : ∀ P : (C k).walls, θ ∉ (P : Set V)) :
-    (d.lieTruncationMap ℒ hkl).bchGroupMap ((D.diagram l).label Q) = 1 := by
+    (d.truncationMap ℒ hkl).bchGroupMap ((D.diagram l).label Q) = 1 := by
   simpa only [KSComplex.truncate_label] using
     KSComplex.label_eq_one_of_equivalent _ _ (D.equivalent_truncate hkl) Q hθQ hθQ_reg hθP
 

@@ -61,7 +61,7 @@ local instance rationalCompletedInnerAlgebra : Algebra ℚ U :=
 /-- At every cutoff, the inner exponential of a truncated Lie element is
 conjugation by the finite exponential of its canonical enveloping image. -/
 @[simp]
-theorem truncatedExpLieAction_apply (k : ℕ) (x : d.lieTruncation ℒ k)
+theorem truncatedExpLieAction_apply (k : ℕ) (x : d.truncatedLie ℒ k)
     (a : U ⧸ (F).ideal (k + 1)) :
     (F).truncatedExpLieAction d ℒ k x a =
       IsNilpotent.exp (truncatedLieToU d ℒ k x) * a *
@@ -73,7 +73,7 @@ theorem truncatedExpLieAction_apply (k : ℕ) (x : d.lieTruncation ℒ k)
 variable [LieAlgebra ℚ L] [IsScalarTower ℚ R L]
 
 /-- The finite inner BCH action is conjugation by the canonical enveloping unit. -/
-theorem truncatedBCHAction_apply (k : ℕ) (g : BCHGroup (d.lieTruncation ℒ k))
+theorem truncatedBCHAction_apply (k : ℕ) (g : BCHGroup (d.truncatedLie ℒ k))
     (a : U ⧸ (F).ideal (k + 1)) :
     (F).truncatedBCHAction d ℒ k g a =
       (truncatedBCHToUnits d ℒ k g : U ⧸ (F).ideal (k + 1)) * a *
@@ -102,7 +102,7 @@ theorem completedBCHAction_apply (g : d.completedBCHGroup ℒ) (a : (F).completi
 
 /-- In completed Lie coordinates, the inner action is conjugation by the completed
 exponential of the canonical Lie image, with inverse given by its negative. -/
-theorem completedBCHAction_exp_apply (x : d.completedLie ℒ) (a : (F).completion) :
+theorem completedBCHAction_exp_apply (x : d.filtrationCompletedLie ℒ) (a : (F).completion) :
     (F).completedBCHAction d ℒ (d.completedBCHExp ℒ x) a =
       (F).completedExp ⟨completedLieToU d ℒ x,
         completedLieToU_mem_completionIdeal_one d ℒ x⟩ * a *

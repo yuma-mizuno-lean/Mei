@@ -251,7 +251,8 @@ gradings with totals `(p, q)`. -/
 theorem sum_coeff_mul_cplus (hP₁ : P₁.coeff 0 = 1) (p q : ℕ) :
     ∑ s ∈ range (p + 1), (P₁ ^ (d₂ - min d₂ q)).coeff s * cplus d₁ d₂ P₁ P₂ (p - s) q =
       compatibleSum d₁ d₂ P₁ P₂ p q := by
-  have key := congrArg (coeff · p) (sum_compatible_genV (d₁ := d₁) (d₂ := d₂) P₁ P₂ hP₁ q)
+  have key := congrArg (fun P : S[X] => P.coeff p)
+    (sum_compatible_genV (d₁ := d₁) (d₂ := d₂) P₁ P₂ hP₁ q)
   conv_rhs at key => rw [mul_comm]
   simp only [coeff_sum_C_mul_X_pow, coeff_mul_sum_C_mul_X_pow] at key
   simp only [cplus_def, compatibleSum_def]
@@ -311,7 +312,8 @@ gradings with totals `(p, q)`. -/
 theorem sum_coeff_mul_cminus (hP₂ : P₂.coeff 0 = 1) (p q : ℕ) :
     ∑ s ∈ range (q + 1), (P₂ ^ (d₁ - min d₁ p)).coeff s * cminus d₁ d₂ P₁ P₂ p (q - s) =
       compatibleSum d₁ d₂ P₁ P₂ p q := by
-  have key := congrArg (coeff · q) (sum_compatible_genH (d₁ := d₁) (d₂ := d₂) P₁ P₂ hP₂ p)
+  have key := congrArg (fun P : S[X] => P.coeff q)
+    (sum_compatible_genH (d₁ := d₁) (d₂ := d₂) P₁ P₂ hP₂ p)
   conv_rhs at key => rw [mul_comm]
   simp only [coeff_sum_C_mul_X_pow, coeff_mul_sum_C_mul_X_pow] at key
   simp only [cminus_def, compatibleSum_def]

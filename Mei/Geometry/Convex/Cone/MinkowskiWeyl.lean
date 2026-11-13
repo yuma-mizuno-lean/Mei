@@ -105,7 +105,7 @@ theorem cone_isClosed (hC : C.FG) : IsClosed (C : Set V) := by
   have himage : Subtype.val '' (D : Set P) = (C : Set V) := by
     exact congrArg (fun S : PointedCone ℝ V => (S : Set V)) hmap
   rw [← himage]
-  exact P.closed_of_finiteDimensional.isClosedEmbedding_subtypeVal.isClosedMap _ hclosed
+  exact P.isClosed_of_finiteDimensional.isClosedEmbedding_subtypeVal.isClosedMap _ hclosed
 
 end Submodule.FG
 

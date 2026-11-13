@@ -84,7 +84,7 @@ theorem operatorBCHAction_apply (k : ℕ) (g : d.truncatedGroup ℒ k)
 theorem operatorTransition_operatorBCHAction {k l : ℕ} (hkl : k ≤ l)
     (g : d.truncatedGroup ℒ l) (f : O(l)) :
     operatorTransition d ℳ p hkl (operatorBCHAction d ℳ p ℒ l g f) =
-      operatorBCHAction d ℳ p ℒ k ((d.lieTruncationMap ℒ hkl).bchGroupMap g)
+      operatorBCHAction d ℳ p ℒ k ((d.truncationMap ℒ hkl).bchGroupMap g)
         (operatorTransition d ℳ p hkl f) := by
   apply (operatorCoefficientsEquiv d ℳ p k).injective
   apply LinearMap.ext

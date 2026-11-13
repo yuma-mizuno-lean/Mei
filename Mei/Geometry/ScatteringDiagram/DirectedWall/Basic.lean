@@ -205,7 +205,7 @@ theorem normal_ker_eq_of_direction_eq (D E : DirectedWall (d := d) h H)
 private theorem exists_ne_zero_zsmul_eq_normal_of_direction_eq (D E : DirectedWall (d := d) h H)
     (he : (affineSpan ℝ D.support).direction = (affineSpan ℝ E.support).direction) :
     ∃ c e : ℤ, c ≠ 0 ∧ e ≠ 0 ∧ c • D.normal = e • E.normal := by
-  exact D.normal.exists_ne_zero_zsmul_eq_of_ker_eq E.normal D.normal_ne_zero
+  exact D.normal.exists_ne_zero_zsmul_eq_of_ker_eq E.normal
     (D.normal_ker_eq_of_direction_eq E he)
 
 /-- Labels commute whenever the affine tangent hyperplanes have the same direction.

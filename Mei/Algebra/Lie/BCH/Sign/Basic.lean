@@ -25,7 +25,7 @@ This formalizes the finite-order (truncated) form of the sign factorization in T
 proved in `Mei.Algebra.Lie.BCH.Sign.Completion`.
 
 The proof uses `TauCeti.signDecomposition` and the central successive kernels of
-`TauCeti.PositiveDegrees.lieTruncationMap`. Central corrections make the nonlinear BCH
+`TauCeti.PositiveDegrees.truncationMap`. Central corrections make the nonlinear BCH
 recombination act by translation on each new kernel. No freeness, finite rank,
 finite generation of the positive monoid, or nilpotence of the original Lie
 algebra is required.
@@ -155,31 +155,31 @@ variable (d : PositiveDegrees N) [IsPositiveGrading d ℒ]
 /-- Lowering the cutoff maps each sign subgroup onto the lower one. -/
 theorem _root_.TauCeti.PositiveDegrees.bchSubgroup_map_signSubalgebra_truncationMap
     {k l : ℕ} (h : k ≤ l) (s : SignType) :
-    (signSubalgebra (d.lieTruncationGrading ℒ l) θ s).bchSubgroup.map
-        (d.lieTruncationMap ℒ h).bchGroupMap =
-      (signSubalgebra (d.lieTruncationGrading ℒ k) θ s).bchSubgroup := by
-  rw [← LieSubalgebra.bchSubgroup_map, d.map_signSubalgebra_lieTruncationMap ℒ θ h s]
+    (signSubalgebra (d.truncatedGrading ℒ l) θ s).bchSubgroup.map
+        (d.truncationMap ℒ h).bchGroupMap =
+      (signSubalgebra (d.truncatedGrading ℒ k) θ s).bchSubgroup := by
+  rw [← LieSubalgebra.bchSubgroup_map, d.map_signSubalgebra_truncationMap ℒ θ h s]
 
 /-- Lower each sign factor along a decrease of the degree cutoff. -/
 def _root_.TauCeti.PositiveDegrees.lowerSignFactors {k l : ℕ} (h : k ≤ l)
-    (a : ∀ s, (signSubalgebra (d.lieTruncationGrading ℒ l) θ s).bchSubgroup) :
-    ∀ s, (signSubalgebra (d.lieTruncationGrading ℒ k) θ s).bchSubgroup :=
-  fun s => ⟨(d.lieTruncationMap ℒ h).bchGroupMap (a s), by
+    (a : ∀ s, (signSubalgebra (d.truncatedGrading ℒ l) θ s).bchSubgroup) :
+    ∀ s, (signSubalgebra (d.truncatedGrading ℒ k) θ s).bchSubgroup :=
+  fun s => ⟨(d.truncationMap ℒ h).bchGroupMap (a s), by
     rw [← bchSubgroup_map_signSubalgebra_truncationMap ℒ θ d h s]
     exact Subgroup.mem_map_of_mem _ (a s).property⟩
 
 /-- Each lowered sign factor is the image of the original factor. -/
 @[simp]
 theorem _root_.TauCeti.PositiveDegrees.coe_lowerSignFactors {k l : ℕ} (h : k ≤ l)
-    (a : ∀ s, (signSubalgebra (d.lieTruncationGrading ℒ l) θ s).bchSubgroup) (s : SignType) :
-    (lowerSignFactors ℒ θ d h a s : BCHGroup (d.lieTruncation ℒ k)) =
-      (d.lieTruncationMap ℒ h).bchGroupMap (a s) := (rfl)
+    (a : ∀ s, (signSubalgebra (d.truncatedGrading ℒ l) θ s).bchSubgroup) (s : SignType) :
+    (lowerSignFactors ℒ θ d h a s : BCHGroup (d.truncatedLie ℒ k)) =
+      (d.truncationMap ℒ h).bchGroupMap (a s) := (rfl)
 
 /-- Lowering sign factors commutes with multiplying them. -/
 theorem _root_.TauCeti.PositiveDegrees.signProduct_lowerSignFactors {k l : ℕ} (h : k ≤ l)
-    (a : ∀ s, (signSubalgebra (d.lieTruncationGrading ℒ l) θ s).bchSubgroup) :
+    (a : ∀ s, (signSubalgebra (d.truncatedGrading ℒ l) θ s).bchSubgroup) :
     signProduct _ θ (lowerSignFactors ℒ θ d h a) =
-      (d.lieTruncationMap ℒ h).bchGroupMap (signProduct _ θ a) := by
+      (d.truncationMap ℒ h).bchGroupMap (signProduct _ θ a) := by
   simp
 
 /-- Every family of lower sign factors lifts along a decrease of the cutoff. -/
@@ -187,53 +187,53 @@ theorem _root_.TauCeti.PositiveDegrees.lowerSignFactors_surjective {k l : ℕ} (
     Function.Surjective (lowerSignFactors ℒ θ d h) := by
   have hs := Function.Surjective.piMap fun s => (MulEquiv.subgroupCongr
     (bchSubgroup_map_signSubalgebra_truncationMap ℒ θ d h s)).surjective.comp
-      ((d.lieTruncationMap ℒ h).bchGroupMap.subgroupMap_surjective
-        (signSubalgebra (d.lieTruncationGrading ℒ l) θ s).bchSubgroup)
+      ((d.truncationMap ℒ h).bchGroupMap.subgroupMap_surjective
+        (signSubalgebra (d.truncatedGrading ℒ l) θ s).bchSubgroup)
   convert hs using 1
   ext a s
   rfl
 
 private theorem logSignProduct_truncated_bijective (k : ℕ) :
-    Function.Bijective (logSignProduct (d.lieTruncationGrading ℒ k) θ) := by
+    Function.Bijective (logSignProduct (d.truncatedGrading ℒ k) θ) := by
   induction k with
   | zero =>
     exact ⟨fun _ _ _ => Subsingleton.elim _ _,
       fun y => ⟨y, Subsingleton.elim _ _⟩⟩
   | succ k ih =>
-    let p := d.lieTruncationMap ℒ (Nat.le_succ k)
+    let p := d.truncationMap ℒ (Nat.le_succ k)
     apply p.toLinearMap.toAddMonoidHom.bijective_of_semiconj_of_add_ker
-      (d.lieTruncationMap_surjective ℒ (Nat.le_succ k)) _ _ ih
+      (d.truncationMap_surjective ℒ (Nat.le_succ k)) _ _ ih
     · intro x
-      exact map_logSignProduct (d.lieTruncationGrading ℒ (k + 1)) θ
-        (d.lieTruncationGrading ℒ k) p
+      exact map_logSignProduct (d.truncatedGrading ℒ (k + 1)) θ
+        (d.truncatedGrading ℒ k) p
         (fun n x hx => by
-          rw [← d.map_lieTruncationGrading_lieTruncationMap ℒ (Nat.le_succ k) n]
+          rw [← d.map_truncationMap_truncatedGrading ℒ (Nat.le_succ k) n]
           exact Submodule.mem_map_of_mem hx) x
     · intro x z hz
-      exact logSignProduct_add (d.lieTruncationGrading ℒ (k + 1)) θ p.ker
-        (d.ker_lieTruncationMap_isHomogeneous ℒ (Nat.le_succ k))
-        (d.ker_lieTruncationMap_succ_le_center ℒ k) x z hz
+      exact logSignProduct_add (d.truncatedGrading ℒ (k + 1)) θ p.ker
+        (d.ker_truncationMap_isHomogeneous ℒ (Nat.le_succ k))
+        (d.ker_truncationMap_succ_le_center ℒ k) x z hz
 
 /-- Multiplication of positive, zero and negative sign subgroups is bijective at
 every finite cutoff, over any commutative rational coefficient algebra. -/
 theorem _root_.TauCeti.PositiveDegrees.signProduct_bijective (k : ℕ) :
-    Function.Bijective (signProduct (d.lieTruncationGrading ℒ k) θ) := by
+    Function.Bijective (signProduct (d.truncatedGrading ℒ k) θ) := by
   have h := (logSignProduct_truncated_bijective ℒ θ d k).comp
-    (signCoordinates (d.lieTruncationGrading ℒ k) θ).symm.bijective
+    (signCoordinates (d.truncatedGrading ℒ k) θ).symm.bijective
   have h' := exp.bijective.comp h
   simpa only [Function.comp_def, logSignProduct, Equiv.apply_symm_apply, exp_log] using h'
 
 /-- Ordered sign factorization at a finite cutoff. Its inverse extracts the
 unique positive, zero and negative factors of a BCH element. -/
 def _root_.TauCeti.PositiveDegrees.signFactorizationEquiv (k : ℕ) :
-    (∀ s, (signSubalgebra (d.lieTruncationGrading ℒ k) θ s).bchSubgroup) ≃
+    (∀ s, (signSubalgebra (d.truncatedGrading ℒ k) θ s).bchSubgroup) ≃
       d.truncatedGroup ℒ k :=
   Equiv.ofBijective _ (signProduct_bijective ℒ θ d k)
 
 /-- The forward equivalence multiplies in positive-zero-negative order. -/
 @[simp]
 theorem _root_.TauCeti.PositiveDegrees.signFactorizationEquiv_apply (k : ℕ)
-    (a : ∀ s, (signSubalgebra (d.lieTruncationGrading ℒ k) θ s).bchSubgroup) :
+    (a : ∀ s, (signSubalgebra (d.truncatedGrading ℒ k) θ s).bchSubgroup) :
     signFactorizationEquiv ℒ θ d k a = (a .pos : d.truncatedGroup ℒ k) * a .zero * a .neg :=
   (rfl)
 
@@ -248,13 +248,13 @@ theorem _root_.TauCeti.PositiveDegrees.signFactorizationEquiv_symm_one (k : ℕ)
 which character presents them. -/
 theorem _root_.TauCeti.PositiveDegrees.signFactorizationEquiv_symm_eq_of_signSubalgebra_eq
     (φ : N →+ A) (k : ℕ)
-    (h : ∀ s, signSubalgebra (d.lieTruncationGrading ℒ k) θ s =
-      signSubalgebra (d.lieTruncationGrading ℒ k) φ s)
+    (h : ∀ s, signSubalgebra (d.truncatedGrading ℒ k) θ s =
+      signSubalgebra (d.truncatedGrading ℒ k) φ s)
     (g : d.truncatedGroup ℒ k) (s : SignType) :
     ((signFactorizationEquiv ℒ θ d k).symm g s : d.truncatedGroup ℒ k) =
       ((signFactorizationEquiv ℒ φ d k).symm g s : d.truncatedGroup ℒ k) := by
   let a := (signFactorizationEquiv ℒ θ d k).symm g
-  let b : ∀ t, (signSubalgebra (d.lieTruncationGrading ℒ k) φ t).bchSubgroup :=
+  let b : ∀ t, (signSubalgebra (d.truncatedGrading ℒ k) φ t).bchSubgroup :=
     fun t => ⟨a t, by rw [← h t]; exact (a t).property⟩
   have hb : signFactorizationEquiv ℒ φ d k b = g := by
     simpa only [signFactorizationEquiv_apply, b] using
@@ -267,16 +267,16 @@ theorem _root_.TauCeti.PositiveDegrees.signFactorizationEquiv_symm_eq_of_signSub
 theorem _root_.TauCeti.PositiveDegrees.truncationMap_signFactorizationEquiv_symm
     {k l : ℕ} (h : k ≤ l)
     (g : d.truncatedGroup ℒ l) (s : SignType) :
-    (d.lieTruncationMap ℒ h).bchGroupMap
+    (d.truncationMap ℒ h).bchGroupMap
         ((signFactorizationEquiv ℒ θ d l).symm g s : d.truncatedGroup ℒ l) =
       ((signFactorizationEquiv ℒ θ d k).symm
-        ((d.lieTruncationMap ℒ h).bchGroupMap g) s : d.truncatedGroup ℒ k) := by
+        ((d.truncationMap ℒ h).bchGroupMap g) s : d.truncatedGroup ℒ k) := by
   let a := (signFactorizationEquiv ℒ θ d l).symm g
   have hb : signFactorizationEquiv ℒ θ d k (lowerSignFactors ℒ θ d h a) =
-      (d.lieTruncationMap ℒ h).bchGroupMap g := by
+      (d.truncationMap ℒ h).bchGroupMap g := by
     rw [signFactorizationEquiv_apply, ← signProduct_apply, signProduct_lowerSignFactors]
     simpa only [signFactorizationEquiv_apply, signProduct_apply] using
-      congrArg (d.lieTruncationMap ℒ h).bchGroupMap
+      congrArg (d.truncationMap ℒ h).bchGroupMap
         ((signFactorizationEquiv ℒ θ d l).apply_symm_apply g)
   exact congrArg (fun a => (a s : d.truncatedGroup ℒ k))
     ((signFactorizationEquiv ℒ θ d k).eq_symm_apply.mpr hb)

@@ -13,7 +13,7 @@ public import Mei.Algebra.Lie.Graded.Truncation.Basic
 
 The degree completion is the Lie algebra of compatible finite-degree truncations.
 It uses the module-completion carrier with the quotient-wise Lie bracket from
-`LieIdeal.completion`. Projections, the canonical map, extensionality and the
+`Mei.LieIdeal.completion`. Projections, the canonical map, extensionality and the
 universal lift are available through that general completion API.
 -/
 
@@ -31,7 +31,8 @@ variable {N R L : Type*} [AddCommMonoid N] [CommRing R]
   [GradedLieAlgebra ℒ] [IsPositiveGrading d ℒ]
 
 /-- The Lie algebra of compatible finite-degree truncations. -/
-abbrev completedLie := LieIdeal.completion (d.truncationIdeal ℒ) (d.truncationIdeal_antitone ℒ)
+abbrev filtrationCompletedLie :=
+  Mei.LieIdeal.completion (d.degreeIdeal ℒ) (d.degreeIdeal_antitone ℒ)
 
 end TauCeti.PositiveDegrees
 

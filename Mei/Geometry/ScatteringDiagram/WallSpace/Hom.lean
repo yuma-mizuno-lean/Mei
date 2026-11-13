@@ -60,16 +60,16 @@ variable {Γ Γ' Γ'' Λ Λ' Λ'' R : Type*} {L L' L'' : Type u}
 
 /-- Wall-space preservation descends to finite ray Lie algebras at every source
 cutoff at least as large as the prescribed modulus. -/
-theorem lieTruncatedMap_mem_truncatedRayLieSubalgebra (f : GradedLieHom T ℒ ℳ)
+theorem truncatedMap_mem_truncatedRayLieSubalgebra (f : GradedLieHom T ℒ ℳ)
     (hdegree : ∀ n ∈ w.rayDegrees, T n ∈ v.rayDegrees)
     (hwall : ∀ n ∈ w.rayDegrees, ∀ x ∈ H.wall n m, f x ∈ H'.wall (T n) m')
-    {a k : ℕ} (ha : T.modulus k ≤ a) {x : d.lieTruncation ℒ a}
+    {a k : ℕ} (ha : T.modulus k ≤ a) {x : d.truncatedLie ℒ a}
     (hx : x ∈ H.truncatedRayLieSubalgebra w m a) :
-    f.lieTruncatedMap k ha x ∈ H'.truncatedRayLieSubalgebra v m' k := by
+    f.truncatedMap k ha x ∈ H'.truncatedRayLieSubalgebra v m' k := by
   obtain ⟨y, hy, rfl⟩ := (H.mem_truncatedRayLieSubalgebra w m a x).mp hx
   refine (H'.mem_truncatedRayLieSubalgebra v m' k _).mpr
     ⟨f y, H.map_mem_raySubmodule H' f.toLieHom.toLinearMap T hdegree hwall hy, ?_⟩
-  simpa only [LieIdeal.mkQ_apply] using (f.lieTruncatedMap_mk k ha y).symm
+  simpa only [LieIdeal.mkQ_apply] using (f.truncatedMap_mk k ha y).symm
 
 variable [Algebra ℚ R]
   [LieAlgebra ℚ L] [IsScalarTower ℚ R L]
@@ -86,9 +86,9 @@ theorem completedMap_mem_wallGroup (f : GradedLieHom T ℒ ℳ)
   apply (H'.mem_wallGroup v m' _).mpr
   intro k
   rw [projection_completedMap]
-  have hlog := (f.lieTruncatedMap k le_rfl).log_bchGroupMap
+  have hlog := (f.truncatedMap k le_rfl).log_bchGroupMap
     (TauCeti.CompletedGroup.projection (T.modulus k) g)
-  exact hlog.symm ▸ f.lieTruncatedMap_mem_truncatedRayLieSubalgebra hdegree hwall le_rfl
+  exact hlog.symm ▸ f.truncatedMap_mem_truncatedRayLieSubalgebra hdegree hwall le_rfl
     ((H.mem_wallGroup w m g).mp hg (T.modulus k))
 
 /-- Restrict a completed graded map to its source and target wall groups. -/

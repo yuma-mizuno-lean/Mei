@@ -75,10 +75,10 @@ theorem verticalCoefficient_eq_action_iff (k : ℕ) (θ θ' : V × E)
       (h.prod h').realCharacter (D.wall a).normal v ≠ 0)
     (hv' : ∀ a : D.active (k + 1), θ' ∈ (D.wall a).support →
       (h.prod h').realCharacter (D.wall a).normal v ≠ 0)
-    (g : BCHGroup ((positiveDegrees d p).lieTruncation (grading d ℳ p ℒ) (k + 1))) :
+    (g : BCHGroup ((positiveDegrees d p).truncatedLie (grading d ℳ p ℒ) (k + 1))) :
     verticalCoefficient d ℳ p ℒ H h h' D k θ' hθ' =
         (d.shiftedLieFiltration ℒ ℳ p).truncatedBCHAction d ℒ k
-          ((d.lieTruncationMap ℒ (Nat.le_succ k)).bchGroupMap ((π (k + 1)).bchGroupMap g))
+          ((d.truncationMap ℒ (Nat.le_succ k)).bchGroupMap ((π (k + 1)).bchGroupMap g))
           (verticalCoefficient d ℳ p ℒ H h h' D k θ hθ) ↔
       D.combinedLabel (k + 1) θ' v hθ' =
         g * D.combinedLabel (k + 1) θ v hθ * g⁻¹ := by
@@ -111,7 +111,7 @@ theorem verticalCoefficient_eq_action_of_paths (k : ℕ) (hD : D.LevelConsistent
     (hr : D.levelPathProduct (k + 1) r₁ = D.levelPathProduct (k + 1) r₀) :
     verticalCoefficient d ℳ p ℒ H h h' D k θ' hθ' =
       (d.shiftedLieFiltration ℒ ℳ p).truncatedBCHAction d ℒ k
-        ((d.lieTruncationMap ℒ (Nat.le_succ k)).bchGroupMap
+        ((d.truncationMap ℒ (Nat.le_succ k)).bchGroupMap
           ((π (k + 1)).bchGroupMap (D.levelPathProduct (k + 1) r₀)))
         (verticalCoefficient d ℳ p ℒ H h h' D k θ hθ) := by
   apply (verticalCoefficient_eq_action_iff d ℳ p ℒ H h h' D k θ θ' hθ hθ' hv hv'
@@ -119,7 +119,7 @@ theorem verticalCoefficient_eq_action_of_paths (k : ℕ) (hD : D.LevelConsistent
   have hc := (D.levelConsistent_def (k + 1)).mp hD (e.comp r₁) (r₀.comp f)
   rw [D.levelPathProduct_comp, D.levelPathProduct_comp, he, hf, hr] at hc
   exact (eq_mul_inv_iff_mul_eq
-    (G := BCHGroup ((positiveDegrees d p).lieTruncation (grading d ℳ p ℒ) (k + 1)))).mpr
+    (G := BCHGroup ((positiveDegrees d p).truncatedLie (grading d ℳ p ℒ) (k + 1)))).mpr
     hc.symm
 
 end Mei.ModuleProbe

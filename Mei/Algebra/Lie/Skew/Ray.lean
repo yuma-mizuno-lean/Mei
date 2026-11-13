@@ -47,7 +47,7 @@ variable {R Γ : Type*} [CommRing R] [AddCommGroup Γ]
 local notation "𝔤" => positiveLieAlgebra β hβ d
 local notation "ℒ" => positiveGrading β hβ d
 local notation "F" =>
-  LieIdeal.completionFiltration (d.truncationIdeal ℒ) (d.truncationIdeal_antitone ℒ)
+  Mei.LieIdeal.completionFiltration (d.degreeIdeal ℒ) (d.degreeIdeal_antitone ℒ)
 
 include hn hn0
 
@@ -100,17 +100,17 @@ variable [DecidableEq Γ]
 
 /-- Terms beyond order `k` lie in the degree ideal above `k`. -/
 theorem rayPartialSum_sub_mem {k l : ℕ} (h : k ≤ l) (f : R⟦X⟧) :
-    rayPartialSum β hβ hn hn0 l f - rayPartialSum β hβ hn hn0 k f ∈ d.truncationIdeal ℒ k := by
+    rayPartialSum β hβ hn hn0 l f - rayPartialSum β hβ hn hn0 k f ∈ d.degreeIdeal ℒ k := by
   rw [rayPartialSum_apply, rayPartialSum_apply, ← Finset.sum_range_add_sum_Ico _ h,
     add_sub_cancel_left]
-  refine Submodule.sum_mem (d.truncationIdeal ℒ k).toSubmodule fun j hj => ?_
-  apply d.le_truncationIdeal ℒ (lt_of_le_of_lt _ (d.lt_degree_succ_nsmul hn hn0 j))
+  refine Submodule.sum_mem (d.degreeIdeal ℒ k).toSubmodule fun j hj => ?_
+  apply d.le_degreeIdeal ℒ (lt_of_le_of_lt _ (d.lt_degree_succ_nsmul hn hn0 j))
     (rayGenerator_mem β hβ hn hn0 j _)
   exact_mod_cast (Finset.mem_Ico.mp hj).1
 
 /-- The completed Lie element `∑_{j ≥ 1} f_j X_{jn}` of a power series `f`. -/
-def raySeries : R⟦X⟧ →ₗ[R] d.completedLie ℒ :=
-  (F).lift (fun k => (d.truncationIdeal ℒ k).toSubmodule.mkQ ∘ₗ rayPartialSum β hβ hn hn0 k) (by
+def raySeries : R⟦X⟧ →ₗ[R] d.filtrationCompletedLie ℒ :=
+  (F).lift (fun k => (d.degreeIdeal ℒ k).toSubmodule.mkQ ∘ₗ rayPartialSum β hβ hn hn0 k) (by
     intro k l h
     ext f
     simp only [LinearMap.comp_apply, Submodule.mkQ_apply,
@@ -120,10 +120,10 @@ def raySeries : R⟦X⟧ →ₗ[R] d.completedLie ℒ :=
 /-- At order `k`, the ray series is the class of its partial sum over `j < k`. -/
 @[simp]
 theorem completionProjection_raySeries (k : ℕ) (f : R⟦X⟧) :
-    LieIdeal.completionProjection (d.truncationIdeal ℒ) (d.truncationIdeal_antitone ℒ) k
+    Mei.LieIdeal.completionProjection (d.degreeIdeal ℒ) (d.degreeIdeal_antitone ℒ) k
         (raySeries β hβ hn hn0 f) =
-      (d.truncationIdeal ℒ k).mkQ (rayPartialSum β hβ hn hn0 k f) := by
-  rw [LieIdeal.completionProjection_apply, raySeries, Mei.ModuleFiltration.projection_lift]
+      (d.degreeIdeal ℒ k).mkQ (rayPartialSum β hβ hn hn0 k f) := by
+  rw [Mei.LieIdeal.completionProjection_apply, raySeries, Mei.ModuleFiltration.projection_lift]
   -- The submodule quotient map is the underlying map of the Lie quotient map.
   rfl
 
@@ -134,8 +134,8 @@ theorem raySeries_bracket_raySeries_of_eq_zero {n' : Γ} (hn' : n' ∈ d.monoid)
     ⁅raySeries β hβ hn hn0 f, raySeries β hβ hn' hn0' g⁆ = 0 := by
   apply Mei.ModuleFiltration.completion_ext
   intro k
-  rw [LieIdeal.projection_bracket, map_zero, ← LieIdeal.completionProjection_apply,
-    ← LieIdeal.completionProjection_apply, completionProjection_raySeries,
+  rw [Mei.LieIdeal.projection_bracket, map_zero, ← Mei.LieIdeal.completionProjection_apply,
+    ← Mei.LieIdeal.completionProjection_apply, completionProjection_raySeries,
     completionProjection_raySeries, ← LieHom.map_lie, rayPartialSum_apply,
     rayPartialSum_apply, sum_lie]
   simp [lie_sum, rayGenerator_bracket_rayGenerator_of_eq_zero β hβ hn hn0 hn' hn0' h]
@@ -168,7 +168,7 @@ theorem rayExp_congr_degree {n₁ n₂ : Γ} (h : n₁ = n₂) (hn₁ : n₁ ∈
 @[simp]
 theorem projection_rayExp (k : ℕ) (f : R⟦X⟧) :
     TauCeti.CompletedGroup.projection k (rayExp β hβ hn hn0 f) =
-      BCHGroup.exp ((d.truncationIdeal ℒ k).mkQ (rayPartialSum β hβ hn hn0 k f)) := by
+      BCHGroup.exp ((d.degreeIdeal ℒ k).mkQ (rayPartialSum β hβ hn hn0 k f)) := by
   rw [rayExp, PositiveDegrees.projection_completedBCHExp, completionProjection_raySeries]
 
 @[simp]
@@ -208,8 +208,8 @@ theorem commute_rayExp_of_eq_zero {n' : Γ} (hn' : n' ∈ d.monoid) (hn0' : n' �
 
 /-- Logarithm of the order-`k` projection, for reading coefficients. -/
 private theorem log_projection_rayExp (k : ℕ) (f : R⟦X⟧) :
-    (d.truncationIdeal ℒ k).mkQ (rayPartialSum β hβ hn hn0 k f) =
-      BCHGroup.log (L := d.lieTruncation ℒ k)
+    (d.degreeIdeal ℒ k).mkQ (rayPartialSum β hβ hn hn0 k f) =
+      BCHGroup.log (L := d.truncatedLie ℒ k)
         (TauCeti.CompletedGroup.projection k (rayExp β hβ hn hn0 f)) := by
   rw [projection_rayExp, BCHGroup.log_exp]
 

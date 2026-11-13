@@ -33,30 +33,30 @@ variable {Γ Λ R L : Type*} [AddCommMonoid Γ] [AddCommMonoid Λ]
   (d : TauCeti.PositiveDegrees Γ) [TauCeti.IsPositiveGrading d ℒ]
 
 /-- Wall spaces at order `k` are the actual quotient images of the original spaces. -/
-def truncated (k : ℕ) : DirectedWallSpaces ρ (d.lieTruncationGrading ℒ k) :=
-  H.map (d.truncationIdeal ℒ k).mkQ (d.lieTruncationGrading ℒ k)
-    (by intro n; rw [TauCeti.PositiveDegrees.lieTruncationGrading_eq]; exact le_rfl)
+def truncated (k : ℕ) : DirectedWallSpaces ρ (d.truncatedGrading ℒ k) :=
+  H.map (d.degreeIdeal ℒ k).mkQ (d.truncatedGrading ℒ k)
+    (by intro n; rw [TauCeti.PositiveDegrees.truncatedGrading_eq]; exact le_rfl)
 
 /-- Truncation takes each wall space to its image in the Lie quotient. -/
 @[simp]
 theorem truncated_wall (k : ℕ) (n : Γ) (m : Λ →+ ℤ) :
     (H.truncated d k).wall n m =
-      (H.wall n m).map (d.truncationIdeal ℒ k).mkQ.toLinearMap := by
+      (H.wall n m).map (d.degreeIdeal ℒ k).mkQ.toLinearMap := by
   rw [truncated, map_wall]
 
 /-- The canonical graded quotient homomorphism preserves directed wall spaces. -/
 theorem truncation_mem_wall (k : ℕ) (n : Γ) (m : Λ →+ ℤ) (x : L)
     (hx : x ∈ H.wall n m) :
-    TauCeti.GradedLieHom.lieTruncationHom d ℒ k x ∈ (H.truncated d k).wall n m := by
+    TauCeti.GradedLieHom.truncation d ℒ k x ∈ (H.truncated d k).wall n m := by
   rw [truncated_wall]
-  exact Submodule.mem_map.mpr ⟨x, hx, (TauCeti.GradedLieHom.lieTruncationHom_apply k x).symm⟩
+  exact Submodule.mem_map.mpr ⟨x, hx, (TauCeti.GradedLieHom.truncation_apply k x).symm⟩
 
 /-- Every finite-order wall space maps onto its image at a lower cutoff. -/
 theorem map_truncationMap_wall {k l : ℕ} (h : k ≤ l) (n : Γ) (m : Λ →+ ℤ) :
-    ((H.truncated d l).wall n m).map (d.lieTruncationMap ℒ h).toLinearMap =
+    ((H.truncated d l).wall n m).map (d.truncationMap ℒ h).toLinearMap =
       (H.truncated d k).wall n m := by
-  have square : (d.lieTruncationMap ℒ h).toLinearMap.comp
-      (d.truncationIdeal ℒ l).mkQ.toLinearMap = (d.truncationIdeal ℒ k).mkQ.toLinearMap := by
+  have square : (d.truncationMap ℒ h).toLinearMap.comp
+      (d.degreeIdeal ℒ l).mkQ.toLinearMap = (d.degreeIdeal ℒ k).mkQ.toLinearMap := by
     ext x
     simp
   rw [truncated_wall, ← Submodule.map_comp, square, truncated_wall]
@@ -74,15 +74,15 @@ variable {Γ Λ R L L' : Type*} [AddCommMonoid Γ] [AddCommMonoid Λ] [CommRing 
 
 /-- A fixed-degree homomorphism preserving wall spaces preserves the wall spaces at every
 finite order. -/
-theorem lieTruncatedMap_mem_truncated_wall
+theorem truncatedMap_mem_truncated_wall
     (f : TauCeti.GradedLieHom (TauCeti.PositiveDegreeMap.id d) ℒ ℳ)
     (hf : ∀ n m, ∀ x ∈ H.wall n m, f x ∈ H'.wall n m) (k : ℕ) {n : Γ} {m : Λ →+ ℤ}
-    {x : d.lieTruncation ℒ k} (hx : x ∈ (H.truncated d k).wall n m) :
-    f.lieTruncatedMap k (by simp) x ∈ (H'.truncated d k).wall n m := by
+    {x : d.truncatedLie ℒ k} (hx : x ∈ (H.truncated d k).wall n m) :
+    f.truncatedMap k (by simp) x ∈ (H'.truncated d k).wall n m := by
   rw [DirectedWallSpaces.truncated_wall] at hx ⊢
   obtain ⟨y, hy, rfl⟩ := Submodule.mem_map.mp hx
   refine Submodule.mem_map.mpr ⟨f y, hf n m y hy, ?_⟩
   simpa only [LieIdeal.mkQ_apply, LieHom.coe_toLinearMap] using
-    (f.lieTruncatedMap_mk k (by simp) y).symm
+    (f.truncatedMap_mk k (by simp) y).symm
 
 end TauCeti.GradedLieHom

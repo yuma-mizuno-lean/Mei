@@ -224,7 +224,7 @@ theorem exists_sweep_correction_wall_of_truncated_of_ker_eq [Module.Free ℤ Γ]
     (htrans : i (ρ n) ∉ (affineSpan ℝ P).direction)
     {m : Λ →+ ℤ} (hm : m ≠ 0)
     (hker : (h.realCharacter m).ker = (affineSpan ℝ P).direction ⊔ ℝ ∙ i (ρ n))
-    (k : ℕ) (hnk : d.degree n ≤ k) (c : d.lieTruncation ℒ k)
+    (k : ℕ) (hnk : d.degree n ≤ k) (c : d.truncatedLie ℒ k)
     (hc : c ∈ (H.truncated d k).wall n m) :
     ∃ W : DirectedWall (d := d) h H,
       W.normal = m ∧ W.support = Set.sweep ℝ P (i (ρ n)) ∧
@@ -241,9 +241,9 @@ theorem exists_sweep_correction_wall_of_truncated_of_ker_eq [Module.Free ℤ Γ]
     · rintro rfl
       simpa using hac.symm
     · intro hc0
-      have hai := (d.truncationIdeal ℒ k).mkQ_eq_zero.mp (hac.trans hc0)
+      have hai := (d.degreeIdeal ℒ k).mkQ_eq_zero.mp (hac.trans hc0)
       have hai' : a ∈ d.degreeSubmodule ℒ k := by
-        simpa only [← LieSubmodule.mem_toSubmodule, PositiveDegrees.truncationIdeal_toSubmodule]
+        simpa only [← LieSubmodule.mem_toSubmodule, PositiveDegrees.degreeIdeal_toSubmodule]
           using hai
       exact ((d.mem_degreeSubmodule_of_mem_iff ℒ ha).mp hai').resolve_right (not_lt.mpr hnk)
   obtain ⟨W, hnormal, hs, hsr, hnW, hlabel, hout, hproj⟩ :=
@@ -261,7 +261,7 @@ birth logarithm with exactly the expected active cutoffs. -/
 theorem exists_swept_correction_wall_of_truncated [Module.Free ℤ Γ]
     (C : FinitePolyhedralComplex h) {J : Set V} (hJ : J ∈ C.joints)
     (n : Γ) (hn : n ∈ d.monoid) (htrans : i (ρ n) ∉ (affineSpan ℝ J).direction)
-    (k : ℕ) (hnk : d.degree n ≤ k) (c : d.lieTruncation ℒ k)
+    (k : ℕ) (hnk : d.degree n ≤ k) (c : d.truncatedLie ℒ k)
     (hc : c ∈ ⨆ (m : Λ →+ ℤ)
       (_ : ∀ v : Λ, i v ∈ (affineSpan ℝ J).direction → m v = 0),
       (H.truncated d k).wall n m) :
@@ -290,7 +290,7 @@ theorem exists_cooriented_sweep [Module.Free ℤ Γ]
     (m₀ : Λ →+ ℤ)
     (h₀ : (h.realCharacter m₀).ker =
       (affineSpan ℝ σ.carrier).direction ⊔ ℝ ∙ i (ρ n))
-    (k : ℕ) (hnk : d.degree n ≤ k) (c : d.lieTruncation ℒ k)
+    (k : ℕ) (hnk : d.degree n ≤ k) (c : d.truncatedLie ℒ k)
     (hc : c ∈ (H.truncated d k).wall n m₀) :
     ∃ W : DirectedWall (d := d) h H,
       W.support = (σ.sweep (ρ n) htrans).carrier ∧

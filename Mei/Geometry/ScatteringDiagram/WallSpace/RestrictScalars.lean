@@ -74,14 +74,14 @@ theorem raySubmodule_restrictScalars (w : SupportedRay d) (m : Λ →+ ℤ) :
 variable [DecidableEq Γ] [GradedLieAlgebra ℒ] [TauCeti.IsPositiveGrading d ℒ]
 
 /-- The finite truncation comparison identifies the truncated supported-ray wall algebras. -/
-theorem lieTruncationRestrictScalarsEquiv_mem_truncatedRayLieSubalgebra_iff (w : SupportedRay d)
-    (m : Λ →+ ℤ) (k : ℕ) (x : d.lieTruncation (fun n => (ℒ n).restrictScalars R) k) :
-    d.lieTruncationRestrictScalarsEquiv (R := R) ℒ k x ∈ H.truncatedRayLieSubalgebra w m k ↔
+theorem truncatedRestrictScalarsEquiv_mem_truncatedRayLieSubalgebra_iff (w : SupportedRay d)
+    (m : Λ →+ ℤ) (k : ℕ) (x : d.truncatedLie (fun n => (ℒ n).restrictScalars R) k) :
+    d.truncatedRestrictScalarsEquiv (R := R) ℒ k x ∈ H.truncatedRayLieSubalgebra w m k ↔
       x ∈ (H.restrictScalars R).truncatedRayLieSubalgebra w m k := by
   simp only [mem_truncatedRayLieSubalgebra, raySubmodule_restrictScalars,
     Submodule.restrictScalars_mem, LieIdeal.mkQ_apply]
   refine exists_congr fun y => and_congr_right fun _ => ?_
-  rw [← TauCeti.PositiveDegrees.lieTruncationRestrictScalarsEquiv_mk (R := R) ℒ d k y,
+  rw [← TauCeti.PositiveDegrees.truncatedRestrictScalarsEquiv_mk (R := R) ℒ d k y,
     EquivLike.apply_eq_iff_eq]
 
 variable [Algebra ℚ R] [Algebra ℚ S] [LieAlgebra ℚ L] [IsScalarTower ℚ R L]
@@ -97,9 +97,9 @@ theorem mem_wallGroup_restrictScalars_iff (w : SupportedRay d) (m : Λ →+ ℤ)
   refine forall_congr' fun k => ?_
   -- The projection has a categorical tower-object type; re-elaborate it as a BCH group element.
   generalize (TauCeti.CompletedGroup.projection k g :
-    BCHGroup (d.lieTruncation (fun n => (ℒ n).restrictScalars R) k)) = x
-  rw [LieHom.log_bchGroupMap (d.lieTruncationRestrictScalarsEquiv (R := R) ℒ k).toLieHom x]
-  exact H.lieTruncationRestrictScalarsEquiv_mem_truncatedRayLieSubalgebra_iff w m k _
+    BCHGroup (d.truncatedLie (fun n => (ℒ n).restrictScalars R) k)) = x
+  rw [LieHom.log_bchGroupMap (d.truncatedRestrictScalarsEquiv (R := R) ℒ k).toLieHom x]
+  exact H.truncatedRestrictScalarsEquiv_mem_truncatedRayLieSubalgebra_iff w m k _
 
 end Group
 

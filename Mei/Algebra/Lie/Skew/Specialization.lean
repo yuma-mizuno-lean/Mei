@@ -199,17 +199,17 @@ local notation "ℒS" => positiveGrading γ hγ d
 /-- Coefficient specialization on finite Lie truncations, expressed over the
 common scalar ring and on the original quotient carriers. -/
 def coefficientTruncatedMap (k : ℕ) :
-    d.lieTruncation ℒR k →ₗ⁅K⁆ d.lieTruncation ℒS k :=
-  (d.lieTruncationRestrictScalarsEquiv (R := K) ℒS k).toLieHom.comp
-    (((coefficientGradedLieHom β hβ γ hγ φ hφ d).lieTruncatedMap k (by simp)).comp
-      (d.lieTruncationRestrictScalarsEquiv (R := K) ℒR k).symm.toLieHom)
+    d.truncatedLie ℒR k →ₗ⁅K⁆ d.truncatedLie ℒS k :=
+  (d.truncatedRestrictScalarsEquiv (R := K) ℒS k).toLieHom.comp
+    (((coefficientGradedLieHom β hβ γ hγ φ hφ d).truncatedMap k (by simp)).comp
+      (d.truncatedRestrictScalarsEquiv (R := K) ℒR k).symm.toLieHom)
 
 /-- Finite specialization is computed on representatives by the positive Lie map. -/
 @[simp]
 theorem coefficientTruncatedMap_mk (k : ℕ) (x : positiveLieAlgebra β hβ d) :
     coefficientTruncatedMap β hβ γ hγ φ hφ d k (Submodule.Quotient.mk x) =
       Submodule.Quotient.mk (coefficientGradedLieHom β hβ γ hγ φ hφ d x) := by
-  simp [coefficientTruncatedMap, GradedLieHom.lieTruncatedMap_mk]
+  simp [coefficientTruncatedMap, GradedLieHom.truncatedMap_mk]
 
 /-- Finite coefficient specializations compose on the original Lie quotient carriers. -/
 @[simp]
@@ -266,8 +266,8 @@ theorem projection_coefficientCompletedMap (k : ℕ) (g : d.completedBCHGroup �
   -- with the concrete quotient before rewriting it as an exponential.
   change BCHGroup.exp _ =
     (coefficientTruncatedMap β hβ γ hγ φ hφ d k).bchGroupMap
-      (TauCeti.CompletedGroup.projection k g : BCHGroup (d.lieTruncation ℒR k))
-  rw [← BCHGroup.exp_log (TauCeti.CompletedGroup.projection k g : BCHGroup (d.lieTruncation ℒR k)),
+      (TauCeti.CompletedGroup.projection k g : BCHGroup (d.truncatedLie ℒR k))
+  rw [← BCHGroup.exp_log (TauCeti.CompletedGroup.projection k g : BCHGroup (d.truncatedLie ℒR k)),
     LieHom.bchGroupMap_exp]
   congr 1
   simp [coefficientTruncatedMap]
@@ -305,7 +305,7 @@ theorem coefficientCompletedMap_comp {T : Type u} [CommRing T] [Algebra ℚ T]
   intro k
   simp only [MonoidHom.comp_apply, projection_coefficientCompletedMap]
   -- Re-express the categorical projection as its concrete BCH quotient.
-  generalize (TauCeti.CompletedGroup.projection k g : BCHGroup (d.lieTruncation ℒR k)) = x
+  generalize (TauCeti.CompletedGroup.projection k g : BCHGroup (d.truncatedLie ℒR k)) = x
   rw [← BCHGroup.exp_log x]
   simp only [LieHom.bchGroupMap_exp]
   congr 1

@@ -41,12 +41,12 @@ theorem degreeIdeal_eq_map (I : LieIdeal R L) (G : TauCeti.InternalGrading R L Î
     (hI : DirectSum.SetLike.IsHomogeneous G.piece I.toSubmodule) (k : â„•) :
     -- Install positivity explicitly at the module quotient / Lie quotient interface.
     let := TauCeti.IsPositiveGrading.quotient d G I.toSubmodule hI
-    d.truncationIdeal (G.quotient I.toSubmodule hI).piece k =
-      (d.truncationIdeal G.piece k).map I.mkQ := by
+    d.degreeIdeal (G.quotient I.toSubmodule hI).piece k =
+      (d.degreeIdeal G.piece k).map I.mkQ := by
   apply LieSubmodule.toSubmodule_injective
-  rw [TauCeti.PositiveDegrees.truncationIdeal_toSubmodule,
+  rw [TauCeti.PositiveDegrees.degreeIdeal_toSubmodule,
     LieIdeal.coe_map_of_surjective I.surjective_mkQ,
-    TauCeti.PositiveDegrees.truncationIdeal_toSubmodule, funext (G.quotient_piece I.toSubmodule hI)]
+    TauCeti.PositiveDegrees.degreeIdeal_toSubmodule, funext (G.quotient_piece I.toSubmodule hI)]
   exact d.degreeSubmodule_map G.piece I.mkQ.toLinearMap k
 
 end LieIdeal

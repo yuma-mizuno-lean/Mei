@@ -211,7 +211,7 @@ theorem levelPathProduct_homogeneousPresentation_map
     (p : AdmissiblePLPath x y) (q : AdmissiblePLPath x' y')
     (hpq : p.vertices.map WallComplement.val = q.vertices.map WallComplement.val) :
     (D.map f).homogeneousPresentation.levelPathProduct k q =
-      (f.lieTruncatedMap (a := k) k (by simp)).bchGroupMap (D.levelPathProduct k p) := by
+      (f.truncatedMap (a := k) k (by simp)).bchGroupMap (D.levelPathProduct k p) := by
   let r := (D.mapPathPrefunctor f k).mapPath p
   have hrq : r.vertices.map WallComplement.val = q.vertices.map WallComplement.val :=
     (D.vertices_mapPathPrefunctor f k p).trans hpq

@@ -16,7 +16,7 @@ are preserved without injectivity or surjectivity assumptions. The construction
 respects identity, composition, cutoff projection and geometric path products,
 and sends consistent complexes to consistent complexes.
 
-This uses `GradedLieHom.lieTruncatedMap`, `orthogonalLieSubalgebra`, and the
+This uses `GradedLieHom.truncatedMap`, `orthogonalLieSubalgebra`, and the
 relabelling API of `FiniteWallDiagram`. It is the coefficient-change construction
 for finite conical scattering diagrams; no faithful coefficient action is needed.
 -/
@@ -54,12 +54,12 @@ def map (D : KSComplex s d ℒ C k)
   degree_mem := D.degree_mem
   degree_ne_zero := D.degree_ne_zero
   evaluation_eq_zero := D.evaluation_eq_zero
-  label P := (f.lieTruncatedMap k (by simp)).bchGroupMap (D.label P)
+  label P := (f.truncatedMap k (by simp)).bchGroupMap (D.label P)
   label_mem P := by
     rw [LieSubalgebra.mem_bchSubgroup, LieHom.log_bchGroupMap]
-    apply map_orthogonalLieSubalgebra_le (d.lieTruncationGrading ℒ k)
-      (d.lieTruncationGrading ℳ k) (f.lieTruncatedMap k (by simp))
-      (fun n x hx => by simpa using f.lieTruncatedMap_mem k (by simp) hx)
+    apply map_orthogonalLieSubalgebra_le (d.truncatedGrading ℒ k)
+      (d.truncatedGrading ℳ k) (f.truncatedMap k (by simp))
+      (fun n x hx => by simpa using f.truncatedMap_mem k (by simp) hx)
       (s.evaluation '' (P : Set V))
     exact ⟨BCHGroup.log (D.label P),
       (LieSubalgebra.mem_bchSubgroup _ _).mp (D.label_mem P), rfl⟩
@@ -84,7 +84,7 @@ theorem map_wallRay [Module.Free ℤ N] (D : KSComplex s d ℒ C k)
 @[simp]
 theorem map_label (D : KSComplex s d ℒ C k)
     (f : GradedLieHom (PositiveDegreeMap.id d) ℒ ℳ) (P : C.walls) :
-    (D.map f).label P = (f.lieTruncatedMap k (by simp)).bchGroupMap (D.label P) := (rfl)
+    (D.map f).label P = (f.truncatedMap k (by simp)).bchGroupMap (D.label P) := (rfl)
 
 /-- The identity Lie homomorphism leaves a KS complex unchanged. -/
 @[simp]
@@ -103,7 +103,7 @@ theorem map_map (D : KSComplex s d ℒ C k)
   · simp
   · simp only [map_label, ← MonoidHom.comp_apply, ← LieHom.bchGroupMap_comp]
     congr 2
-    apply (d.truncationIdeal ℒ k).lieHom_qext
+    apply (d.degreeIdeal ℒ k).lieHom_qext
     intro x
     simp [LieIdeal.mkQ_apply, ← GradedLieHom.coe_toLieHom]
 
@@ -112,7 +112,7 @@ theorem map_map (D : KSComplex s d ℒ C k)
 theorem toFiniteWallDiagram_map (D : KSComplex s d ℒ C k)
     (f : GradedLieHom (PositiveDegreeMap.id d) ℒ ℳ) :
     (D.map f).toFiniteWallDiagram =
-      D.toFiniteWallDiagram.relabel (f.lieTruncatedMap k (by simp)).bchGroupMap := by
+      D.toFiniteWallDiagram.relabel (f.truncatedMap k (by simp)).bchGroupMap := by
   ext <;> simp
 
 /-- Coefficient change preserves consistency, including when some labels become trivial. -/
@@ -134,7 +134,7 @@ theorem truncate_map (D : KSComplex s d ℒ C l)
     -- Work at the explicit cutoffs rather than transporting quotient types
     -- along the propositional identity-modulus equations.
     congr 2
-    apply (d.truncationIdeal ℒ l).lieHom_qext
+    apply (d.degreeIdeal ℒ l).lieHom_qext
     intro x
     simp [LieIdeal.mkQ_apply]
 
@@ -144,7 +144,7 @@ theorem pathProduct_map (D : KSComplex s d ℒ C k)
     {x y : WallComplement (fun P : C.walls => (P : Set V))}
     (p : AdmissiblePLPath x y) :
     (D.map f).toFiniteWallDiagram.pathProduct p =
-      (f.lieTruncatedMap (a := k) k (by simp)).bchGroupMap
+      (f.truncatedMap (a := k) k (by simp)).bchGroupMap
         (D.toFiniteWallDiagram.pathProduct p) := by
   rw [toFiniteWallDiagram_map, FiniteWallDiagram.pathProduct_relabel]
 

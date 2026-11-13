@@ -62,7 +62,7 @@ private theorem eventually_sub_notMem_direction (e : AdmissibleSegment x y) {i :
     (hi : ∃ t ∈ Icc (0 : ℝ) 1, AffineMap.lineMap x.val y.val t ∈ W i) :
     ∀ᶠ q : V × V in 𝓝 (x.val, y.val), q.2 - q.1 ∉ (affineSpan ℝ (W i)).direction :=
   (continuous_snd.sub continuous_fst).continuousAt.eventually_mem
-    ((Submodule.closed_of_finiteDimensional _).isOpen_compl.mem_nhds (e.transverse i hi))
+    ((Submodule.isClosed_of_finiteDimensional _).isOpen_compl.mem_nhds (e.transverse i hi))
 
 /-- Near an admissible segment, the perturbed segments stay transverse to a wall it
 crosses, and cross that wall exactly once, at a parameter depending continuously on the

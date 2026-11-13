@@ -138,7 +138,7 @@ theorem exists_norm_lt_forall_eventually_extendedCoefficientField_eq_add_sum_gen
           F.IsGeneric z.val ∧
           field k (hBc.mono (Nat.le_succ k)) z =
             (A).truncatedBCHAction d ℒ k
-              ((d.lieTruncationMap ℒ (Nat.le_succ k)).bchGroupMap (g.drop (b.val + 1)).prod)
+              ((d.truncationMap ℒ (Nat.le_succ k)).bchGroupMap (g.drop (b.val + 1)).prod)
               (field k (hBc.mono (Nat.le_succ k)) ((restriction k).obj x)) := by
     have hb : b.val < (orderedCrossingTimes e).length := by
       simpa only [g, List.length_map, List.length_reverse] using b.isLt
