@@ -91,7 +91,7 @@ theorem exists_ball_sum_intersectionIndex_boundaryFacets_eq_sum_succAbove
     rw [← intrinsicClosure_sdiff_intrinsicFrontier] at hq
     exact hq.2
   have hfclosed : IsClosed (intrinsicFrontier ℝ σ.carrier) :=
-    isClosed_intrinsicFrontier (affineSpan ℝ σ.carrier).closed_of_finiteDimensional
+    isClosed_intrinsicFrontier (affineSpan ℝ σ.carrier).isClosed_of_finiteDimensional
   obtain ⟨ε, hε, hball⟩ := Metric.isOpen_iff.mp hfclosed.isOpen_compl q hfront
   have hmem := Mei.mem_nhdsWithin_affineSpan_of_mem_intrinsicInterior hq
   obtain ⟨δ, hδ, hδmem⟩ := Metric.mem_nhdsWithin_iff.mp hmem

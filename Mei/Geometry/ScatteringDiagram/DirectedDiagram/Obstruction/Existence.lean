@@ -73,7 +73,7 @@ theorem exists_chamber_trivialization {k : ℕ} (hk : D.LevelConsistent k)
       (ht : ∀ (P : (D.adaptedComplex (k + 1)).cellsOfCodimension 0)
         (x : WallComplement (fun j : D.active k => (D.wall j).support)),
         x.val ∈ interior (P : Set V) →
-        (d.lieTruncationMap ℒ (Nat.le_succ k)).bchGroupMap (t P) = D.levelTransport k hk b x)
+        (d.truncationMap ℒ (Nat.le_succ k)).bchGroupMap (t P) = D.levelTransport k hk b x)
       (τ : (D.adaptedComplex (k + 1)).joints → OrientedCell h 2)
       (hτ : ∀ J, (τ J).carrier = (J : Set V))
       (s : (D.adaptedComplex (k + 1)).joints → Affine.Triangle ℝ V)

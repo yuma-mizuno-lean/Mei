@@ -61,7 +61,7 @@ def mapDiagram (D : CompletedDiagram s d ℒ C)
     have hc := D.compatible k p q hpq
     have hn := DFunLike.congr_fun
       (congrArg LieHom.bchGroupMap
-        (f.lieTruncationMap_comp_lieTruncatedMap_of_le (Nat.le_succ k)
+        (f.truncationMap_comp_truncatedMap_of_le (Nat.le_succ k)
           (Nat.le_succ k) (by simp) (by simp)))
       ((D.diagram (k + 1)).toFiniteWallDiagram.pathProduct q)
     simpa only [LieHom.bchGroupMap_comp, MonoidHom.comp_apply, hc] using hn

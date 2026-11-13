@@ -47,7 +47,7 @@ theorem truncatedBCHAction_mk_eq_self_of_mem (k : ℕ) (g : d.truncatedGroup ℒ
       Submodule.Quotient.mk m := by
   rw [truncatedBCHAction_apply, truncatedExpLieAction_apply]
   apply Module.End.exp_apply_eq_self _ ⟨k + 1, F.truncatedLieAction_pow_eq_zero d ℒ k _⟩
-  obtain ⟨x, hx⟩ := (d.truncationIdeal ℒ k).surjective_mkQ (BCHGroup.log g)
+  obtain ⟨x, hx⟩ := (d.degreeIdeal ℒ k).surjective_mkQ (BCHGroup.log g)
   rw [← hx, LieIdeal.mkQ_apply, truncatedLieAction_mk, quotientLieAction_mk,
     Submodule.Quotient.mk_eq_zero]
   exact F.lie_mem_succ d ℒ x hm
@@ -113,7 +113,7 @@ theorem truncatedBCHAction_list_prod_eq_add_sum (k : ℕ)
     F.truncatedBCHAction d ℒ (k + 1) g.prod a = a +
       ∑ j : Fin g.length, F.truncatedBCHCorrection d ℒ k g[j]
         (F.truncatedBCHAction d ℒ k
-          ((d.lieTruncationMap ℒ (Nat.le_succ k)).bchGroupMap
+          ((d.truncationMap ℒ (Nat.le_succ k)).bchGroupMap
             (g.drop (j.val + 1)).prod) (F.transition (Nat.le_succ k) a)) := by
   induction g with
   | nil => simp
@@ -131,7 +131,7 @@ theorem transition_truncatedBCHCorrection {k l : ℕ} (hkl : k ≤ l)
     (g : d.truncatedGroup ℒ (l + 1)) (a : F.quotient l) :
     F.transition (Nat.add_le_add_right hkl 1) (F.truncatedBCHCorrection d ℒ l g a) =
       F.truncatedBCHCorrection d ℒ k
-        ((d.lieTruncationMap ℒ (Nat.add_le_add_right hkl 1)).bchGroupMap g)
+        ((d.truncationMap ℒ (Nat.add_le_add_right hkl 1)).bchGroupMap g)
         (F.transition hkl a) := by
   obtain ⟨m, rfl⟩ := (F.submodule (l + 1)).mkQ_surjective a
   simp only [Submodule.mkQ_apply, truncatedBCHCorrection_mk, map_sub,

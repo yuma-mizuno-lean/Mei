@@ -41,16 +41,16 @@ variable {N L : Type*} [AddCommMonoid N] [LieRing L] [LieAlgebra R L]
   (hj : ∀ k, d.degreeSubmodule ℒ k ≤ ((F.ideal (k + 1)).restrictScalars R).comap j)
 
 local notation "G" => LieIdeal.completionFiltration
-  (d.truncationIdeal ℒ) (d.truncationIdeal_antitone ℒ)
+  (d.degreeIdeal ℒ) (d.degreeIdeal_antitone ℒ)
 
 include hj in
 private theorem innerMap_filtered (k : ℕ) :
     (G).submodule (k + 1) ≤ ((F.toModuleFiltration R).submodule (k + 1)).comap j := by
-  simpa only [LieIdeal.completionFiltration_succ, PositiveDegrees.truncationIdeal_toSubmodule,
+  simpa only [LieIdeal.completionFiltration_succ, PositiveDegrees.degreeIdeal_toSubmodule,
     toModuleFiltration_submodule] using hj k
 
 /-- The coefficient map induced on the matching Lie and algebra quotients. -/
-def truncatedInnerMap (k : ℕ) : d.lieTruncation ℒ k →ₗ[R] A ⧸ F.ideal (k + 1) :=
+def truncatedInnerMap (k : ℕ) : d.truncatedLie ℒ k →ₗ[R] A ⧸ F.ideal (k + 1) :=
   (Submodule.Quotient.restrictScalarsEquiv R (F.ideal (k + 1))).toLinearMap.comp
     (((G).submodule (k + 1)).mapQ ((F.toModuleFiltration R).submodule (k + 1)) j
       (F.innerMap_filtered d ℒ j hj k))
@@ -73,8 +73,8 @@ def completedInnerMap : d.completedLie ℒ →ₗ[R] F.completion :=
 theorem projection_completedInnerMap (k : ℕ) (x : d.completedLie ℒ) :
     F.projection k (F.completedInnerMap d ℒ j hj x) =
       F.truncatedInnerMap d ℒ j hj k
-        (LieIdeal.completionProjection (d.truncationIdeal ℒ)
-          (d.truncationIdeal_antitone ℒ) k x) := by
+        (LieIdeal.completionProjection (d.degreeIdeal ℒ)
+          (d.degreeIdeal_antitone ℒ) k x) := by
   simp only [completedInnerMap, LinearMap.comp_apply, projection_moduleCompletionEquiv,
     Mei.ModuleFiltration.projection_completionMap, id_eq, truncatedInnerMap,
     LinearEquiv.coe_coe, LieIdeal.completionProjection_apply]
@@ -83,7 +83,7 @@ theorem projection_completedInnerMap (k : ℕ) (x : d.completedLie ℒ) :
 @[simp]
 theorem completedInnerMap_toCompletion (x : L) :
     F.completedInnerMap d ℒ j hj
-        (LieIdeal.toCompletion (d.truncationIdeal ℒ) (d.truncationIdeal_antitone ℒ) x) =
+        (LieIdeal.toCompletion (d.degreeIdeal ℒ) (d.degreeIdeal_antitone ℒ) x) =
       F.toCompletion (j x) := by
   apply F.completion_ext
   intro k
@@ -100,7 +100,7 @@ theorem completedInnerMap_mem_one (x : d.completedLie ℒ) :
     F.completedInnerMap d ℒ j hj x ∈ F.completionIdeal 1 := by
   rw [completionIdeal_succ, RingHom.mem_ker, projection_completedInnerMap]
   rw [Subsingleton.elim
-    (LieIdeal.completionProjection (d.truncationIdeal ℒ) (d.truncationIdeal_antitone ℒ) 0 x) 0,
+    (LieIdeal.completionProjection (d.degreeIdeal ℒ) (d.degreeIdeal_antitone ℒ) 0 x) 0,
     map_zero]
 
 /-- The completed inner image with the positive-order membership needed for exponentiation. -/

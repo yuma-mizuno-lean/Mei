@@ -93,7 +93,7 @@ variable {k : ℕ}
   (ht : ∀ (P : (D.adaptedComplex (k + 1)).cellsOfCodimension 0)
     (x : WallComplement (fun j : D.active k => (D.wall j).support)),
     x.val ∈ interior (P : Set V) →
-    (d.lieTruncationMap ℒ (Nat.le_succ k)).bchGroupMap (t P) = D.levelTransport k hk b x)
+    (d.truncationMap ℒ (Nat.le_succ k)).bchGroupMap (t P) = D.levelTransport k hk b x)
   (z : (D.adaptedComplex (k + 1)).cellsOfCodimension 0 →
     WallComplement (fun j : D.active (k + 1) => (D.wall j).support))
   (hz : ∀ P : (D.adaptedComplex (k + 1)).cellsOfCodimension 0,
@@ -111,7 +111,7 @@ theorem exists_path_log_eq_addWeight_defect
           (h.realCharacter (cross e).normal) (cross e).ker_normal))) ∧
       log ((t Q)⁻¹ * D.levelPathProduct (k + 1) p * t P) =
         (↑(q.addWeight (fun e => (cross e).defect hk b t ht)) :
-          d.lieTruncation ℒ (k + 1)) := by
+          d.truncatedLie ℒ (k + 1)) := by
   induction q with
   | nil => exact ⟨Quiver.Path.nil, by simp, by simp⟩
   | @cons Q S q e ih =>
@@ -121,7 +121,7 @@ theorem exists_path_log_eq_addWeight_defect
     refine ⟨p.comp r, ?_, ?_⟩
     · simp only [D.levelPathProduct_comp, hprod, hr, Quiver.Path.weight_cons,
         MulOpposite.unop_mul, MulOpposite.unop_op]
-    let f := d.lieTruncationMap ℒ (Nat.le_succ k)
+    let f := d.truncationMap ℒ (Nat.le_succ k)
     have hX : f.bchGroupMap (D.levelPathProduct (k + 1) p) *
         f.bchGroupMap (t P) = f.bchGroupMap (t Q) := by
       have hm := D.adapted_chamber_lift_path_mem_ker (Nat.le_succ k) hk b t ht
@@ -131,7 +131,7 @@ theorem exists_path_log_eq_addWeight_defect
     have hY : f.bchGroupMap (D.levelPathProduct (k + 1) r) *
         f.bchGroupMap (t Q) = f.bchGroupMap (t S) := by
       simpa only [hr, hminus, hplus] using (cross e).truncation_label_mul hk b t ht
-    have he := congrArg (fun a : f.ker => (a : d.lieTruncation ℒ (k + 1)))
+    have he := congrArg (fun a : f.ker => (a : d.truncatedLie ℒ (k + 1)))
       (f.logDefect_mul (t P) (t Q) (t S)
         (D.levelPathProduct (k + 1) p) (D.levelPathProduct (k + 1) r) hX hY)
     simp only [LieHom.coe_logDefect, LieSubmodule.coe_add] at he

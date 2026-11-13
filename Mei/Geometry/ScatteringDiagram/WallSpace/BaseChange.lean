@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.ScatteringDiagram.WallSpace.Truncation
-public import Mei.Algebra.Lie.Graded.BaseChange
+public import TauCeti.Algebra.Lie.Graded.BaseChange
 public import TauCeti.Geometry.ScatteringDiagram.WallSpace.BaseChange
 
 /-!
@@ -43,15 +43,15 @@ variable [DecidableEq Γ] [GradedLieAlgebra ℒ]
 truncating gives the scalar extension of its original truncated image. -/
 theorem map_truncatedBaseChangeEquiv_wall (k : ℕ) (n : Γ) (m : Λ →+ ℤ) :
     (((H.baseChange S).truncated d k).wall n m).map
-        (d.lieTruncationBaseChangeEquiv ℒ k).toLinearMap =
+        (d.truncatedBaseChangeEquiv ℒ k).toLinearMap =
       ((H.truncated d k).wall n m).baseChange S := by
-  have square : (d.lieTruncationBaseChangeEquiv ℒ k).toLinearMap.comp
-      (d.truncationIdeal (fun n => (ℒ n).baseChange S) k).mkQ.toLinearMap =
-        ((d.truncationIdeal ℒ k).mkQ.toLinearMap).baseChange S := by
+  have square : (d.truncatedBaseChangeEquiv ℒ k).toLinearMap.comp
+      (d.degreeIdeal (fun n => (ℒ n).baseChange S) k).mkQ.toLinearMap =
+        ((d.degreeIdeal ℒ k).mkQ.toLinearMap).baseChange S := by
     rw [← LieHom.coe_baseChange]
     apply LinearMap.ext
     intro z
-    exact d.lieTruncationBaseChangeEquiv_mk ℒ k z
+    exact d.truncatedBaseChangeEquiv_mk ℒ k z
   rw [truncated_wall, baseChange_wall, ← Submodule.map_comp, square,
     truncated_wall, Submodule.baseChange_map]
 

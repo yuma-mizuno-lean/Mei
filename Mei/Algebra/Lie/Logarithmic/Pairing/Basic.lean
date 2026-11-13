@@ -213,7 +213,7 @@ private def lieHom :
       | add x z hx hz => simp_all }
 
 /-- Transport positive tangent fields along a tropical pairing. The existing
-`GradedLieHom.lieTruncatedMap` provides its finite-order Lie map. When `R` is a
+`GradedLieHom.truncatedMap` provides its finite-order Lie map. When `R` is a
 ℚ-algebra, applying `.bchGroupMap` to that Lie map gives the finite group map,
 and `GradedLieHom.completedMap` gives the completed group map after importing
 `Mei.Algebra.Lie.BCH.Completion`, both with the original cutoff modulus. -/

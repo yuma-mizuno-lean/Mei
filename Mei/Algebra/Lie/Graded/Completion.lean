@@ -31,7 +31,7 @@ variable {N R L : Type*} [AddCommMonoid N] [CommRing R]
   [GradedLieAlgebra ℒ] [IsPositiveGrading d ℒ]
 
 /-- The Lie algebra of compatible finite-degree truncations. -/
-abbrev completedLie := LieIdeal.completion (d.truncationIdeal ℒ) (d.truncationIdeal_antitone ℒ)
+abbrev completedLie := LieIdeal.completion (d.degreeIdeal ℒ) (d.degreeIdeal_antitone ℒ)
 
 end TauCeti.PositiveDegrees
 

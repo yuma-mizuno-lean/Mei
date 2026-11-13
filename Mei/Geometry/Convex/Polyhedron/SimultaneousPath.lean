@@ -87,7 +87,7 @@ theorem isOpen_admissiblePairs [FiniteDimensional ℝ V] [Finite ι]
         p.2 - p.1 ∉ (affineSpan ℝ (W i)).direction} := by
     have hopen := isOpen_iInter_of_finite fun i =>
       ((hclosed i).isOpen_setOf_lineMap_notMem).union
-        (((affineSpan ℝ (W i)).direction.closed_of_finiteDimensional).isOpen_compl.preimage
+        (((affineSpan ℝ (W i)).direction.isClosed_of_finiteDimensional).isOpen_compl.preimage
           (continuous_snd.sub continuous_fst))
     convert hopen using 1
     ext p

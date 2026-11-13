@@ -180,7 +180,7 @@ theorem shiftedQuotientComponent_truncatedBCHCorrection_eq_sum_labelBlock
 its label is truncated along the same quotient tower. -/
 theorem labelBlock_truncation {k l : ℕ} (hkl : k ≤ l)
     (g : d.truncatedGroup ℒ l) (n m : d.cutoff k) :
-    labelBlock d ℳ p ℒ k ((d.lieTruncationMap ℒ hkl).bchGroupMap g) n m =
+    labelBlock d ℳ p ℒ k ((d.truncationMap ℒ hkl).bchGroupMap g) n m =
       labelBlock d ℳ p ℒ l g
         ⟨n.val, d.cutoff_mono hkl n.property⟩
         ⟨m.val, d.cutoff_mono hkl m.property⟩ := by

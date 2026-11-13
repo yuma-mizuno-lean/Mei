@@ -244,7 +244,7 @@ theorem exists_ball_sum_intersectionIndex_boundaryFacets_eq_sub_endpoints_of_reg
       (Mei.eventually_mem_iff_of_notMem_intrinsicFrontier htop
         (x := ⟨p, by trivial⟩) hfront)
   have hclosed : IsClosed (intrinsicFrontier ℝ σ.carrier) :=
-    isClosed_intrinsicFrontier (affineSpan ℝ σ.carrier).closed_of_finiteDimensional
+    isClosed_intrinsicFrontier (affineSpan ℝ σ.carrier).isClosed_of_finiteDimensional
   obtain ⟨ε, hε, he⟩ := Metric.eventually_nhds_iff.mp
     (hmem.and (hclosed.isOpen_compl.mem_nhds hfront))
   refine ⟨ε, hε, fun x hx y hy _ _ => ?_⟩

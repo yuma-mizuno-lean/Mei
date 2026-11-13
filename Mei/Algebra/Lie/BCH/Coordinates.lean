@@ -42,30 +42,30 @@ variable {N R L : Type*} [AddCommMonoid N] [CommRing R] [Algebra ℚ R]
   [GradedLieAlgebra ℒ] [IsPositiveGrading d ℒ]
 
 local notation "π" =>
-  LieIdeal.completionProjection (d.truncationIdeal ℒ) (d.truncationIdeal_antitone ℒ)
+  LieIdeal.completionProjection (d.degreeIdeal ℒ) (d.degreeIdeal_antitone ℒ)
 
 /-- Levelwise exponential identifies the Lie and BCH group completions as sets. -/
 noncomputable def completedBCHExp : d.completedLie ℒ ≃ d.completedBCHGroup ℒ where
   toFun x := ⟨fun k => BCHGroup.exp (π k x), (TauCeti.mem_completedGroup_iff _ _).mpr (by
     intro k l h
     -- The categorical tower map conceals the concrete BCH quotient homomorphism.
-    change (d.lieTruncationMap ℒ h).bchGroupMap (BCHGroup.exp (π l x)) =
+    change (d.truncationMap ℒ h).bchGroupMap (BCHGroup.exp (π l x)) =
       BCHGroup.exp (π k x)
-    rw [LieHom.bchGroupMap_exp, lieTruncationMap_def,
+    rw [LieHom.bchGroupMap_exp, truncationMap_eq_factor,
       LieIdeal.factor_completionProjection])⟩
   invFun g := ⟨fun k =>
-    BCHGroup.log (L := d.lieTruncation ℒ k.unop) (projection k.unop g),
+    BCHGroup.log (L := d.truncatedLie ℒ k.unop) (projection k.unop g),
     (ModuleFiltration.mem_completionSubmodule_iff _ _).mpr (by
       intro k l h
       rw [LieIdeal.completionFiltration_transition, LieHom.coe_toLinearMap]
-      have hg := congrArg (BCHGroup.log (L := d.lieTruncation ℒ k))
+      have hg := congrArg (BCHGroup.log (L := d.truncatedLie ℒ k))
         (TauCeti.CompletedGroup.map_projection k l h g)
       -- Rewrite the categorical arrow at its concrete quotient group type.
-      change BCHGroup.log (L := d.lieTruncation ℒ k) ((d.lieTruncationMap ℒ h).bchGroupMap
+      change BCHGroup.log (L := d.truncatedLie ℒ k) ((d.truncationMap ℒ h).bchGroupMap
         (projection l g)) =
-          BCHGroup.log (L := d.lieTruncation ℒ k) (projection k g) at hg
-      simpa only [lieTruncationMap_def] using
-        ((d.lieTruncationMap ℒ h).log_bchGroupMap (projection l g)).symm.trans hg)⟩
+          BCHGroup.log (L := d.truncatedLie ℒ k) (projection k g) at hg
+      simpa only [truncationMap_eq_factor] using
+        ((d.truncationMap ℒ h).log_bchGroupMap (projection l g)).symm.trans hg)⟩
   left_inv x := by
     apply ModuleFiltration.completion_ext
     intro k
@@ -76,7 +76,7 @@ noncomputable def completedBCHExp : d.completedLie ℒ ≃ d.completedBCHGroup �
     intro k
     simp only [TauCeti.CompletedGroup.projection_apply, LieIdeal.completionProjection_apply,
       ModuleFiltration.projection_mk]
-    exact BCHGroup.exp_log (L := d.lieTruncation ℒ k) (g.val k)
+    exact BCHGroup.exp_log (L := d.truncatedLie ℒ k) (g.val k)
 
 /-- Projection of the completed exponential is the finite exponential coordinate. -/
 @[simp]
@@ -89,7 +89,7 @@ theorem projection_completedBCHExp (k : ℕ) (x : d.completedLie ℒ) :
 @[simp]
 theorem completionProjection_completedBCHExp_symm (k : ℕ) (g : d.completedBCHGroup ℒ) :
     π k ((d.completedBCHExp ℒ).symm g) =
-      BCHGroup.log (L := d.lieTruncation ℒ k) (projection k g) := by
+      BCHGroup.log (L := d.truncatedLie ℒ k) (projection k g) := by
   rw [LieIdeal.completionProjection_apply, completedBCHExp]
   exact ModuleFiltration.projection_mk _ _ _ k
 
@@ -164,9 +164,9 @@ variable {N M R : Type*} {L L' : Type u} [AddCommMonoid N] [AddCommMonoid M]
   {T : PositiveDegreeMap d e}
 
 local notation "F" =>
-  LieIdeal.completionFiltration (d.truncationIdeal ℒ) (d.truncationIdeal_antitone ℒ)
+  LieIdeal.completionFiltration (d.degreeIdeal ℒ) (d.degreeIdeal_antitone ℒ)
 local notation "G" =>
-  LieIdeal.completionFiltration (e.truncationIdeal ℳ) (e.truncationIdeal_antitone ℳ)
+  LieIdeal.completionFiltration (e.degreeIdeal ℳ) (e.degreeIdeal_antitone ℳ)
 
 /-- In logarithmic coordinates, a completed BCH map is the linear completion map
 with the same cutoff modulus. -/
@@ -174,19 +174,19 @@ theorem completedBCHExp_symm_completedMap (f : GradedLieHom T ℒ ℳ)
     (g : d.completedBCHGroup ℒ) :
     (e.completedBCHExp ℳ).symm (f.completedMap g) =
       (F).completionMap G f.toLieHom.toLinearMap T.modulus T.monotone_modulus
-        (fun k _ hx => f.map_mem_truncationIdeal k hx) ((d.completedBCHExp ℒ).symm g) := by
+        (fun k _ hx => f.map_mem_degreeIdeal k hx) ((d.completedBCHExp ℒ).symm g) := by
   apply (G).completion_ext
   intro k
   rw [ModuleFiltration.projection_completionMap]
   rw [← LieIdeal.completionProjection_apply,
     e.completionProjection_completedBCHExp_symm ℳ, projection_completedMap]
-  refine ((f.lieTruncatedMap k le_rfl).log_bchGroupMap
+  refine ((f.truncatedMap k le_rfl).log_bchGroupMap
     (projection (T.modulus k) g)).trans ?_
   rw [← d.completionProjection_completedBCHExp_symm ℒ,
     LieIdeal.completionProjection_apply]
-  rw [lieTruncatedMap_def]
+  rw [truncatedMap_eq_mapQ]
   exact LinearMap.congr_fun
-    ((d.truncationIdeal ℒ (T.modulus k)).toLinearMap_mapQ (e.truncationIdeal ℳ k)
-      f.toLieHom (fun _ hx => f.map_mem_truncationIdeal k hx)) _
+    ((d.degreeIdeal ℒ (T.modulus k)).toLinearMap_mapQ (e.degreeIdeal ℳ k)
+      f.toLieHom (fun _ hx => f.map_mem_degreeIdeal k hx)) _
 
 end TauCeti.GradedLieHom

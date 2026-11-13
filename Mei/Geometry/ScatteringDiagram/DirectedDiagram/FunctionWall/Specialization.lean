@@ -115,7 +115,7 @@ theorem map_group (j : ι) : (G.map f hf).group j = G.group j := (rfl)
 /-- The order-`k` label of an image group is the image of the order-`k` group label. -/
 theorem groupLabel_map (g : κ) (k : ℕ) :
     (G.map f hf).groupLabel g k =
-      (f.lieTruncatedMap (a := k) k (by simp)).bchGroupMap (G.groupLabel g k) := by
+      (f.truncatedMap (a := k) k (by simp)).bchGroupMap (G.groupLabel g k) := by
   classical
   let s := (Set.toFinite (D.active k)).toFinset.filter fun j => G.group j = g
   have hs : ∀ j ∈ s, G.group j = g := fun j hj => (Finset.mem_filter.mp hj).2

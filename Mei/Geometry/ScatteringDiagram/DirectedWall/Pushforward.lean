@@ -348,8 +348,8 @@ omit [Algebra ℚ R] [LieAlgebra ℚ L] [IsScalarTower ℚ R L] in
 @[simp]
 theorem dilation_lieHom_lieTruncatedMap (k : ℕ)
     (hk : (dilation d h H q hq).degreeMap.modulus k ≤ k) :
-    (dilation d h H q hq).lieHom.lieTruncatedMap k hk = LieHom.id :=
-  GradedLieHom.lieTruncatedMap_id k
+    (dilation d h H q hq).lieHom.truncatedMap k hk = LieHom.id :=
+  GradedLieHom.truncatedMap_id k
 
 end Pushforward
 

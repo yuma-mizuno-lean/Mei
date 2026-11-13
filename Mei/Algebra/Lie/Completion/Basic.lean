@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Algebra.Lie.Quotient.Map
+public import TauCeti.Algebra.Lie.Quotient
 public import Mei.LinearAlgebra.ModuleFiltration.Completion
 
 /-!

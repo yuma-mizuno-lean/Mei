@@ -65,10 +65,10 @@ end Bracket
 variable [DecidableEq N] [GradedLieAlgebra ℒ] [IsPositiveGrading d ℒ]
 
 local notation "F" =>
-  LieIdeal.completionFiltration (d.truncationIdeal ℒ) (d.truncationIdeal_antitone ℒ)
+  LieIdeal.completionFiltration (d.degreeIdeal ℒ) (d.degreeIdeal_antitone ℒ)
 
 private noncomputable abbrev productEquiv :=
-  d.filtrationCompletionEquivPi ℒ F (fun k => d.truncationIdeal_toSubmodule ℒ k)
+  d.filtrationCompletionEquivPi ℒ F (fun k => d.degreeIdeal_toSubmodule ℒ k)
     (fun n hn => IsPositiveGrading.eq_bot n (Or.inl hn))
 
 omit [IsPositiveGrading d ℒ] in
@@ -94,7 +94,7 @@ private theorem decompose_lie_cutoff (x y : ∀ n, ℒ n) (n : N) :
     d.filter_cutoff_product_eq_decompositions n _ (Int.self_le_toNat _), piLieBracket_apply]
 
 private theorem component_lie_inverse (x y : ∀ n, ℒ n) (n : N) :
-    d.filtrationCompletionComponent ℒ F (fun k => d.truncationIdeal_toSubmodule ℒ k) n
+    d.filtrationCompletionComponent ℒ F (fun k => d.degreeIdeal_toSubmodule ℒ k) n
       ⁅(productEquiv d ℒ).symm x, (productEquiv d ℒ).symm y⁆ =
         piLieBracket d ℒ x y n := by
   classical
@@ -175,14 +175,14 @@ theorem completionLieEquivPi_toLinearEquiv :
     letI := d.lieRingPi ℒ
     letI := d.lieAlgebraPi ℒ
     (d.completionLieEquivPi ℒ).toLinearEquiv =
-      d.filtrationCompletionEquivPi ℒ F (fun k => d.truncationIdeal_toSubmodule ℒ k)
+      d.filtrationCompletionEquivPi ℒ F (fun k => d.degreeIdeal_toSubmodule ℒ k)
         (fun n hn => IsPositiveGrading.eq_bot n (Or.inl hn)) := (rfl)
 
 /-- The Lie comparison reads the same coefficients as the module comparison. -/
 @[simp]
 theorem completionLieEquivPi_apply (x : d.completedLie ℒ) (n : N) :
     d.completionLieEquivPi ℒ x n =
-      d.filtrationCompletionComponent ℒ F (fun k => d.truncationIdeal_toSubmodule ℒ k) n x :=
+      d.filtrationCompletionComponent ℒ F (fun k => d.degreeIdeal_toSubmodule ℒ k) n x :=
   d.filtrationCompletionEquivPi_apply ℒ F _ _ x n
 
 /-- The inverse Lie comparison reconstructs any family of homogeneous coefficients. -/
@@ -190,7 +190,7 @@ theorem completionLieEquivPi_apply (x : d.completedLie ℒ) (n : N) :
 theorem completionComponent_completionLieEquivPi_symm (x : ∀ n, ℒ n) (n : N) :
     letI := d.lieRingPi ℒ
     letI := d.lieAlgebraPi ℒ
-    d.filtrationCompletionComponent ℒ F (fun k => d.truncationIdeal_toSubmodule ℒ k) n
+    d.filtrationCompletionComponent ℒ F (fun k => d.degreeIdeal_toSubmodule ℒ k) n
       ((d.completionLieEquivPi ℒ).symm x) = x n :=
   d.filtrationCompletionComponent_equivPi_symm ℒ _ _ _ x n
 
@@ -198,12 +198,12 @@ theorem completionComponent_completionLieEquivPi_symm (x : ∀ n, ℒ n) (n : N)
 coefficients, expressed directly on the compatible-family completion. -/
 theorem completionComponent_lie (x y : d.completedLie ℒ) (n : N) :
     (d.filtrationCompletionComponent ℒ F
-      (fun k => d.truncationIdeal_toSubmodule ℒ k) n ⁅x, y⁆ : L) =
+      (fun k => d.degreeIdeal_toSubmodule ℒ k) n ⁅x, y⁆ : L) =
       ∑ p ∈ (d.finite_decompositions n).toFinset,
         ⁅(d.filtrationCompletionComponent ℒ F
-            (fun k => d.truncationIdeal_toSubmodule ℒ k) p.1 x : L),
+            (fun k => d.degreeIdeal_toSubmodule ℒ k) p.1 x : L),
          (d.filtrationCompletionComponent ℒ F
-            (fun k => d.truncationIdeal_toSubmodule ℒ k) p.2 y : L)⁆ := by
+            (fun k => d.degreeIdeal_toSubmodule ℒ k) p.2 y : L)⁆ := by
   simpa only [piLieBracket, filtrationCompletionEquivPi_apply] using
     congrArg (fun z : ∀ n, ℒ n => (z n : L)) (productEquiv_lie d ℒ x y)
 

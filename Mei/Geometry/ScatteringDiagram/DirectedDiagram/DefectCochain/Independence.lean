@@ -144,7 +144,7 @@ variable {k : ℕ} {σ : OrientedCell h 1}
   (ht : ∀ (P : (D.adaptedComplex (k + 1)).cellsOfCodimension 0)
     (x : WallComplement (fun j : D.active k => (D.wall j).support)),
     x.val ∈ interior (P : Set V) →
-    (d.lieTruncationMap ℒ (Nat.le_succ k)).bchGroupMap (t P) = D.levelTransport k hk b x)
+    (d.truncationMap ℒ (Nat.le_succ k)).bchGroupMap (t P) = D.levelTransport k hk b x)
 
 /-- Fixing the chamber lifts, the central coefficient depends only on the
 oriented wall, not on the geometric crossing choices. -/
@@ -163,7 +163,7 @@ theorem eventually_exists_log_defect_eq {q v : V}
         x.val = q - a • v ∧ y.val = q + a • v ∧
         x.val ∈ interior (c.minus : Set V) ∧ y.val ∈ interior (c.plus : Set V) ∧
         BCHGroup.log ((t c.plus)⁻¹ * D.levelPathProduct (k + 1) e.toPath * t c.minus) =
-          (c.defect hk b t ht : d.lieTruncation ℒ (k + 1)) := by
+          (c.defect hk b t ht : d.truncatedLie ℒ (k + 1)) := by
   filter_upwards [c.eventually_mem_interiors hq hv,
     D.eventually_exists_levelPathProduct_eq_wallCrossingLabel
       ⟨σ.carrier, hσ⟩ (h.realCharacter c.normal) c.ker_normal hq hv] with a hi he
@@ -184,7 +184,7 @@ theorem crossingDefectCochain_congr {k : ℕ}
     (ht : ∀ (P : (D.adaptedComplex (k + 1)).cellsOfCodimension 0)
       (x : WallComplement (fun j : D.active k => (D.wall j).support)),
       x.val ∈ interior (P : Set V) →
-      (d.lieTruncationMap ℒ (Nat.le_succ k)).bchGroupMap (t P) = D.levelTransport k hk b x) :
+      (d.truncationMap ℒ (Nat.le_succ k)).bchGroupMap (t P) = D.levelTransport k hk b x) :
     crossingDefectCochain σ hσ cross hk b t ht =
       crossingDefectCochain σ hσ cross' hk b t ht := by
   simp only [crossingDefectCochain_def]

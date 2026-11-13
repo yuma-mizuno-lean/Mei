@@ -99,7 +99,7 @@ theorem posTangentConeAt_subset_direction_affineSpan (hx : x ∈ P) :
     posTangentConeAt P x ⊆ (affineSpan ℝ P).direction := by
   intro v hv
   obtain ⟨α, l, hl, s, d, hd0, hdP, hsd⟩ := exists_fun_of_mem_tangentConeAt hv
-  refine (Submodule.closed_of_finiteDimensional (affineSpan ℝ P).direction).mem_of_tendsto hsd ?_
+  refine (Submodule.isClosed_of_finiteDimensional (affineSpan ℝ P).direction).mem_of_tendsto hsd ?_
   filter_upwards [hdP] with n hn
   refine Submodule.smul_of_tower_mem _ _ ?_
   simpa using AffineSubspace.vsub_mem_direction (subset_affineSpan ℝ _ hn)

@@ -47,7 +47,7 @@ variable {Γ : Type} {R L M : Type*} [AddCommGroup Γ] [CommRing R] [Algebra ℚ
 
 /-- The graph of the finite BCH action on a shifted coefficient module.
 Taking the inverse label gives the opposite sign of the ordinary wall action. -/
-abbrev shiftedBCHCorrespondence (k : ℕ) (g : BCHGroup (d.lieTruncation ℒ k)) :
+abbrev shiftedBCHCorrespondence (k : ℕ) (g : BCHGroup (d.truncatedLie ℒ k)) :
     GradedCorrespondence (B := (d.shiftedLieFiltration ℒ ℳ p).quotient k)
       (d.shiftedQuotientGrading ℳ p k).piece (d.shiftedQuotientGrading ℳ p k).piece
       Set.univ Set.univ :=
@@ -58,9 +58,9 @@ abbrev shiftedBCHCorrespondence (k : ℕ) (g : BCHGroup (d.lieTruncation ℒ k))
 /-- Coefficient truncation is a morphism of the graph correspondences of compatible
 finite wall labels. It intertwines both forward transfers and inverse lifts. -/
 def shiftedBCHCorrespondenceHom {k l : ℕ} (h : k ≤ l)
-    (g : BCHGroup (d.lieTruncation ℒ l)) :
+    (g : BCHGroup (d.truncatedLie ℒ l)) :
     GradedCorrespondence.Hom (d.shiftedBCHCorrespondence ℒ ℳ p l g)
-      (d.shiftedBCHCorrespondence ℒ ℳ p k ((d.lieTruncationMap ℒ h).bchGroupMap g)) id id where
+      (d.shiftedBCHCorrespondence ℒ ℳ p k ((d.truncationMap ℒ h).bchGroupMap g)) id id where
   middle := (d.shiftedLieFiltration ℒ ℳ p).transition h
   left := (d.shiftedLieFiltration ℒ ℳ p).transition h
   right := (d.shiftedLieFiltration ℒ ℳ p).transition h
@@ -80,7 +80,7 @@ def shiftedBCHCorrespondenceHom {k l : ℕ} (h : k ≤ l)
       Submodule.subtype_apply]
   middle_liftRight j a := by
     apply ((d.shiftedLieFiltration ℒ ℳ p).truncatedBCHAction d ℒ k
-      ((d.lieTruncationMap ℒ h).bchGroupMap g)).injective
+      ((d.truncationMap ℒ h).bchGroupMap g)).injective
     simpa only [shiftedBCHCorrespondence, GradedCorrespondence.graph_liftRight,
       LinearMap.comp_apply, LinearEquiv.coe_coe, Submodule.subtype_apply,
       LinearEquiv.apply_symm_apply] using
@@ -90,34 +90,34 @@ def shiftedBCHCorrespondenceHom {k l : ℕ} (h : k ≤ l)
 /-- The middle map of the cutoff comparison is coefficient truncation. -/
 @[simp]
 theorem shiftedBCHCorrespondenceHom_middle {k l : ℕ} (h : k ≤ l)
-    (g : BCHGroup (d.lieTruncation ℒ l)) :
+    (g : BCHGroup (d.truncatedLie ℒ l)) :
     (d.shiftedBCHCorrespondenceHom ℒ ℳ p h g).middle =
       (d.shiftedLieFiltration ℒ ℳ p).transition h := (rfl)
 
 /-- The left chamber map of the cutoff comparison is coefficient truncation. -/
 @[simp]
 theorem shiftedBCHCorrespondenceHom_left {k l : ℕ} (h : k ≤ l)
-    (g : BCHGroup (d.lieTruncation ℒ l)) :
+    (g : BCHGroup (d.truncatedLie ℒ l)) :
     (d.shiftedBCHCorrespondenceHom ℒ ℳ p h g).left =
       (d.shiftedLieFiltration ℒ ℳ p).transition h := (rfl)
 
 /-- The right chamber map of the cutoff comparison is coefficient truncation. -/
 @[simp]
 theorem shiftedBCHCorrespondenceHom_right {k l : ℕ} (h : k ≤ l)
-    (g : BCHGroup (d.lieTruncation ℒ l)) :
+    (g : BCHGroup (d.truncatedLie ℒ l)) :
     (d.shiftedBCHCorrespondenceHom ℒ ℳ p h g).right =
       (d.shiftedLieFiltration ℒ ℳ p).transition h := (rfl)
 
 /-- Cutting off coefficients commutes with the negative-side terminal total
 for a compatible finite BCH wall label, including mixed normal signs. -/
 theorem transition_terminalGraphLift_shiftedBCHAction {k l : ℕ} (h : k ≤ l)
-    (g : BCHGroup (d.lieTruncation ℒ l)) (w : Γ → ℤ) :
+    (g : BCHGroup (d.truncatedLie ℒ l)) (w : Γ → ℤ) :
     ((d.shiftedLieFiltration ℒ ℳ p).transition h).comp
         (GradedCorrespondence.terminalGraphLeft (d.shiftedQuotientGrading ℳ p l).piece
           ((d.shiftedLieFiltration ℒ ℳ p).truncatedBCHAction d ℒ l g) w) =
       (GradedCorrespondence.terminalGraphLeft (d.shiftedQuotientGrading ℳ p k).piece
         ((d.shiftedLieFiltration ℒ ℳ p).truncatedBCHAction d ℒ k
-          ((d.lieTruncationMap ℒ h).bchGroupMap g)) w).comp
+          ((d.truncationMap ℒ h).bchGroupMap g)) w).comp
             ((d.shiftedLieFiltration ℒ ℳ p).transition h) := by
   refine GradedCorrespondence.comp_terminalGraphLeft_of_pos
     _ _ w _ _ w _ id ?_ ?_ (fun _ => Iff.rfl)
@@ -129,13 +129,13 @@ theorem transition_terminalGraphLift_shiftedBCHAction {k l : ℕ} (h : k ≤ l)
 /-- Cutting off coefficients commutes with the positive-side terminal total
 for a compatible finite BCH wall label, including mixed normal signs. -/
 theorem transition_terminalGraphRight_shiftedBCHAction {k l : ℕ} (h : k ≤ l)
-    (g : BCHGroup (d.lieTruncation ℒ l)) (w : Γ → ℤ) :
+    (g : BCHGroup (d.truncatedLie ℒ l)) (w : Γ → ℤ) :
     ((d.shiftedLieFiltration ℒ ℳ p).transition h).comp
         (GradedCorrespondence.terminalGraphRight (d.shiftedQuotientGrading ℳ p l).piece
           ((d.shiftedLieFiltration ℒ ℳ p).truncatedBCHAction d ℒ l g) w) =
       (GradedCorrespondence.terminalGraphRight (d.shiftedQuotientGrading ℳ p k).piece
         ((d.shiftedLieFiltration ℒ ℳ p).truncatedBCHAction d ℒ k
-          ((d.lieTruncationMap ℒ h).bchGroupMap g)) w).comp
+          ((d.truncationMap ℒ h).bchGroupMap g)) w).comp
             ((d.shiftedLieFiltration ℒ ℳ p).transition h) := by
   refine GradedCorrespondence.comp_terminalGraphRight_of_neg
     _ _ w _ _ w _ id ?_ ?_ (fun _ => Iff.rfl)

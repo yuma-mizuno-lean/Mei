@@ -64,7 +64,7 @@ theorem map_combinedLabel_of_levelEquivalent (k : ℕ)
     (hDD' : (D.map φ hφ).LevelEquivalent D' (k + 1)) (Q : V)
     (hQ : (coefficientArrangement d ℳ p ℒ H h h' D k).IsGeneric Q)
     (hQ' : (coefficientArrangement d 𝒩 p ℒ H h h' D' k).IsGeneric Q) :
-    ((φ).lieTruncatedMap (k + 1) (by simp)).bchGroupMap
+    ((φ).truncatedMap (k + 1) (by simp)).bchGroupMap
         (D.combinedLabel (k + 1) (Q, 0) (0, j 1)
           (regular_of_isGeneric d ℳ p ℒ H h h' D k Q hQ)) =
       D'.combinedLabel (k + 1) (Q, 0) (0, j 1)

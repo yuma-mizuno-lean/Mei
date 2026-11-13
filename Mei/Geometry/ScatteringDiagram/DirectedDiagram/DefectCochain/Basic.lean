@@ -171,16 +171,16 @@ variable {k : ℕ} {σ : OrientedCell h 1}
   (ht : ∀ (P : (D.adaptedComplex (k + 1)).cellsOfCodimension 0)
     (x : WallComplement (fun j : D.active k => (D.wall j).support)),
     x.val ∈ interior (P : Set V) →
-    (d.lieTruncationMap ℒ (Nat.le_succ k)).bchGroupMap (t P) = D.levelTransport k hk b x)
+    (d.truncationMap ℒ (Nat.le_succ k)).bchGroupMap (t P) = D.levelTransport k hk b x)
 
 include hk b ht in
 /-- The lower-order crossing equation follows from a geometric realization
 and the chamber-lift projection formula. -/
 theorem truncation_label_mul :
-    (d.lieTruncationMap ℒ (Nat.le_succ k)).bchGroupMap
+    (d.truncationMap ℒ (Nat.le_succ k)).bchGroupMap
         (D.wallCrossingLabel ⟨σ.carrier, hσ⟩ (h.realCharacter c.normal) c.ker_normal) *
-      (d.lieTruncationMap ℒ (Nat.le_succ k)).bchGroupMap (t c.minus) =
-        (d.lieTruncationMap ℒ (Nat.le_succ k)).bchGroupMap (t c.plus) := by
+      (d.truncationMap ℒ (Nat.le_succ k)).bchGroupMap (t c.minus) =
+        (d.truncationMap ℒ (Nat.le_succ k)).bchGroupMap (t c.plus) := by
   obtain ⟨q, v, a, _, _, _, x, y, e, _, _, hx, hy, he⟩ := c.realized
   have hker := D.adapted_chamber_lift_path_mem_ker (Nat.le_succ k) hk b t ht
     e.toPath c.minus c.plus hx hy
@@ -188,8 +188,8 @@ theorem truncation_label_mul :
   exact (inv_mul_eq_one.mp hker).symm
 
 /-- The central crossing defect, with values in the successive Lie kernel. -/
-def defect : (d.lieTruncationMap ℒ (Nat.le_succ k)).ker :=
-  (d.lieTruncationMap ℒ (Nat.le_succ k)).logDefect (t c.minus) (t c.plus)
+def defect : (d.truncationMap ℒ (Nat.le_succ k)).ker :=
+  (d.truncationMap ℒ (Nat.le_succ k)).logDefect (t c.minus) (t c.plus)
     (D.wallCrossingLabel ⟨σ.carrier, hσ⟩ (h.realCharacter c.normal) c.ker_normal)
     (c.truncation_label_mul hk b t ht)
 
@@ -197,7 +197,7 @@ def defect : (d.lieTruncationMap ℒ (Nat.le_succ k)).ker :=
 incident chamber lifts. -/
 @[simp]
 theorem coe_defect :
-    (c.defect hk b t ht : d.lieTruncation ℒ (k + 1)) =
+    (c.defect hk b t ht : d.truncatedLie ℒ (k + 1)) =
       BCHGroup.log ((t c.plus)⁻¹ *
         D.wallCrossingLabel ⟨σ.carrier, hσ⟩ (h.realCharacter c.normal) c.ker_normal *
         t c.minus) := LieHom.coe_logDefect _ _ _ _ _
@@ -218,7 +218,7 @@ theorem defect_reverse : c.reverse.defect hk b t ht = -c.defect hk b t ht := by
       (D.wallCrossingLabel ⟨σ.carrier, hσ⟩ (h.realCharacter c.normal) c.ker_normal)⁻¹ := by
     simpa only [OrientedCell.reverse_carrier, reverse_normal, map_neg] using
       D.wallCrossingLabel_neg ⟨σ.carrier, hσ⟩ (h.realCharacter c.normal) c.ker_normal
-  have he := (d.lieTruncationMap ℒ (Nat.le_succ k)).logDefect_inv (t c.minus) (t c.plus)
+  have he := (d.truncationMap ℒ (Nat.le_succ k)).logDefect_inv (t c.minus) (t c.plus)
     (D.wallCrossingLabel ⟨σ.carrier, hσ⟩ (h.realCharacter c.normal) c.ker_normal)
     (c.truncation_label_mul hk b t ht)
   apply Subtype.ext
@@ -237,12 +237,12 @@ variable {D} {k : ℕ}
   (ht : ∀ (P : (D.adaptedComplex (k + 1)).cellsOfCodimension 0)
     (x : WallComplement (fun j : D.active k => (D.wall j).support)),
     x.val ∈ interior (P : Set V) →
-    (d.lieTruncationMap ℒ (Nat.le_succ k)).bchGroupMap (t P) = D.levelTransport k hk b x)
+    (d.truncationMap ℒ (Nat.le_succ k)).bchGroupMap (t P) = D.levelTransport k hk b x)
 
 /-- The finite central crossing-defect cochain on the adapted wall cells, with
 the given orientations, geometric crossing choices and lower-order chamber lifts. -/
 def crossingDefectCochain :
-    PolyhedralCochain R h (d.lieTruncationMap ℒ (Nat.le_succ k)).ker 1 :=
+    PolyhedralCochain R h (d.truncationMap ℒ (Nat.le_succ k)).ker 1 :=
   ∑ Q, PolyhedralCochain.mk (σ Q) ((cross Q).defect hk b t ht)
 
 /-- The generator formula for the central crossing-defect cochain. -/

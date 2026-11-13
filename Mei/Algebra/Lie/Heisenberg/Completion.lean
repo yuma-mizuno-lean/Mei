@@ -38,8 +38,8 @@ theorem expToCompletion_heisenbergX_mul_expToCompletion_heisenbergY_ne [Nontrivi
       nonnegIntegers.expToCompletion (heisenbergGrading R) (heisenbergY R) *
         nonnegIntegers.expToCompletion (heisenbergGrading R) (heisenbergX R) := by
   intro he
-  have hinj : Function.Injective (nonnegIntegers.truncationIdeal (heisenbergGrading R) 2).mkQ := by
-    rw [← LieHom.ker_eq_bot, LieIdeal.mkQ_ker, truncationIdeal_eq_degreeIdeal,
+  have hinj : Function.Injective (nonnegIntegers.degreeIdeal (heisenbergGrading R) 2).mkQ := by
+    rw [← LieHom.ker_eq_bot, LieIdeal.mkQ_ker,
       TauCeti.degreeIdeal_heisenbergGrading_eq_bot R le_rfl]
   have h2 := congrArg (TauCeti.CompletedGroup.projection 2) he
   rw [map_mul, map_mul, projection_expToCompletion, projection_expToCompletion] at h2

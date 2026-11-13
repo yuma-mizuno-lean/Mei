@@ -221,7 +221,7 @@ theorem levelPathProduct_reverse (k : ℕ)
 theorem truncation_levelPathProduct {k l : ℕ} (hkl : k ≤ l)
     {x y : WallComplement (fun j : D.active l => (D.wall j).support)}
     (p : AdmissiblePLPath x y) :
-    (d.lieTruncationMap ℒ hkl).bchGroupMap (D.levelPathProduct l p) =
+    (d.truncationMap ℒ hkl).bchGroupMap (D.levelPathProduct l p) =
       D.levelPathProduct k
         ((WallComplement.restrictPrefunctor (fun j : D.active l => (D.wall j).support)
           (Set.inclusion (D.active_mono hkl))).mapPath p) := by

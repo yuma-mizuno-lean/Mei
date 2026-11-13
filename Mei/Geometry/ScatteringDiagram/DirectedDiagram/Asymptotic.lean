@@ -66,13 +66,13 @@ theorem eventually_decompose_log_combinedLabel_eq_sum_incoming (k : ℕ) (n : Γ
     ∀ᶠ t : ℝ in atTop, ∀ θ ∈ K, ∀ v : V,
       ∀ hθ : θ + t • i (ρ n) ∉
         singularSupport (fun a : D.active k => (D.wall a).support),
-      DirectSum.decompose (d.lieTruncationGrading ℒ k)
+      DirectSum.decompose (d.truncatedGrading ℒ k)
           (BCHGroup.log (D.combinedLabel k (θ + t • i (ρ n)) v hθ)) n =
         ∑ a : D.active k,
           if (D.wall a).Incoming ∧ θ ∈ (D.wall a).support then
             (if 0 < h.realCharacter (D.wall a).normal v then -1 else 1 : ℤ) •
-              DirectSum.decompose (d.lieTruncationGrading ℒ k)
-                (BCHGroup.log (L := d.lieTruncation ℒ k)
+              DirectSum.decompose (d.truncatedGrading ℒ k)
+                (BCHGroup.log (L := d.truncatedLie ℒ k)
                   (TauCeti.CompletedGroup.projection k (D.wall a).label)) n else 0 := by
   classical
   let := Fintype.ofFinite (D.active k)
@@ -90,13 +90,13 @@ theorem eventually_decompose_log_combinedLabel_eq_sum_incoming (k : ℕ) (n : Γ
       · exact Filter.Eventually.of_forall fun _ _ hn' => (hn hn').elim
     · exact Filter.Eventually.of_forall fun _ hout' => (hout hout').elim
   filter_upwards [hescape] with t ht θ hθK v hθ
-  let pr : d.lieTruncation ℒ k →ₗ[R] d.lieTruncationGrading ℒ k n :=
-    (DirectSum.component R Γ (fun m => d.lieTruncationGrading ℒ k m) n).comp
-      (DirectSum.decomposeLinearEquiv (d.lieTruncationGrading ℒ k)).toLinearMap
+  let pr : d.truncatedLie ℒ k →ₗ[R] d.truncatedGrading ℒ k n :=
+    (DirectSum.component R Γ (fun m => d.truncatedGrading ℒ k m) n).comp
+      (DirectSum.decomposeLinearEquiv (d.truncatedGrading ℒ k)).toLinearMap
   -- This is the standard linear component projection, so maps of sums and
   -- integer multiples apply to the homogeneous decomposition.
-  have hpr (x : d.lieTruncation ℒ k) :
-      pr x = DirectSum.decompose (d.lieTruncationGrading ℒ k) x n := (rfl)
+  have hpr (x : d.truncatedLie ℒ k) :
+      pr x = DirectSum.decompose (d.truncatedGrading ℒ k) x n := (rfl)
   have hlog := congrArg pr (D.log_combinedLabel_eq_sum k (θ + t • i (ρ n)) v hθ)
   simp only [map_sum, apply_ite, map_zsmul, map_zero] at hlog
   simp only [hpr] at hlog
@@ -116,8 +116,8 @@ theorem eventually_decompose_log_combinedLabel_eq_sum_incoming (k : ℕ) (n : Γ
     · have hout : (D.wall a).Outgoing := by
         simpa only [(D.wall a).outgoing_iff, (D.wall a).incoming_iff, mem_recessionCone] using hin
       simp only [ht a hout hn θ hθK, hin, false_and, ite_false]
-  · have hz : DirectSum.decompose (d.lieTruncationGrading ℒ k)
-        (BCHGroup.log (L := d.lieTruncation ℒ k)
+  · have hz : DirectSum.decompose (d.truncatedGrading ℒ k)
+        (BCHGroup.log (L := d.truncatedLie ℒ k)
           (TauCeti.CompletedGroup.projection k (D.wall a).label)) n = 0 := by
       apply Subtype.ext
       exact H.decompose_log_projection_eq_zero_of_notMem_rayDegrees (D.wall a).label_mem k hn
@@ -132,7 +132,7 @@ theorem eventually_decompose_log_combinedLabel_eq_zero_of_outgoing (k : ℕ) (n 
     ∀ᶠ t : ℝ in atTop, ∀ θ ∈ K, ∀ v : V,
       ∀ hθ : θ + t • i (ρ n) ∉
         singularSupport (fun a : D.active k => (D.wall a).support),
-      DirectSum.decompose (d.lieTruncationGrading ℒ k)
+      DirectSum.decompose (d.truncatedGrading ℒ k)
         (BCHGroup.log (D.combinedLabel k (θ + t • i (ρ n)) v hθ)) n = 0 := by
   classical
   filter_upwards [D.eventually_decompose_log_combinedLabel_eq_sum_incoming k n
@@ -150,8 +150,8 @@ theorem eventually_decompose_log_combinedLabel_eq_zero_of_outgoing (k : ℕ) (n 
       by simpa only [(D.wall a).outgoing_iff, (D.wall a).incoming_iff,
           mem_recessionCone] using hout a hn
     simp only [hin, false_and, ite_false]
-  · have hz : DirectSum.decompose (d.lieTruncationGrading ℒ k)
-        (BCHGroup.log (L := d.lieTruncation ℒ k)
+  · have hz : DirectSum.decompose (d.truncatedGrading ℒ k)
+        (BCHGroup.log (L := d.truncatedLie ℒ k)
           (TauCeti.CompletedGroup.projection k (D.wall a).label)) n = 0 := by
       apply Subtype.ext
       exact H.decompose_log_projection_eq_zero_of_notMem_rayDegrees (D.wall a).label_mem k hn

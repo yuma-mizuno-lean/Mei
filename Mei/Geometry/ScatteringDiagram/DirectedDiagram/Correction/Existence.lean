@@ -74,7 +74,7 @@ theorem exists_joint_correction_boundary
     (ht : ∀ (P : (D.adaptedComplex (k + 1)).cellsOfCodimension 0)
       (x : WallComplement (fun j : D.active k => (D.wall j).support)),
       x.val ∈ interior (P : Set V) →
-      (d.lieTruncationMap ℒ (Nat.le_succ k)).bchGroupMap (t P) = D.levelTransport k hk b x)
+      (d.truncationMap ℒ (Nat.le_succ k)).bchGroupMap (t P) = D.levelTransport k hk b x)
     (τ : (D.adaptedComplex (k + 1)).joints → OrientedCell h 2)
     (hτ : ∀ J, (τ J).carrier = (J : Set V))
     (q : (D.adaptedComplex (k + 1)).joints → V)
@@ -112,8 +112,8 @@ theorem exists_joint_correction_boundary
           (∃ c ∈ ℒ a.2.val, (E.wall a).label = d.expToCompletion ℒ (-c)) ∧
           (E.wall a).Outgoing ∧
           log (TauCeti.CompletedGroup.projection (k + 1) (E.wall a).label) =
-            -(DirectSum.decompose (d.lieTruncationGrading ℒ (k + 1))
-              (log (D.levelPathProduct (k + 1) (γ a.1))) a.2.val : d.lieTruncation ℒ (k + 1)) ∧
+            -(DirectSum.decompose (d.truncatedGrading ℒ (k + 1))
+              (log (D.levelPathProduct (k + 1) (γ a.1))) a.2.val : d.truncatedLie ℒ (k + 1)) ∧
           ∀ l : ℕ, a ∈ E.active l ↔ k + 1 ≤ l) ∧
         let B := PolyhedralCochain.ofFinsupp (R := R)
           (∑ a : D.JointCorrectionIndex x γ,
@@ -122,7 +122,7 @@ theorem exists_joint_correction_boundary
         PolyhedralCochain.coboundary B =
           ∑ J, PolyhedralCochain.mk (τ J) (log (D.levelPathProduct (k + 1) (γ J))) ∧
         PolyhedralCochain.coboundary
-          (PolyhedralCochain.map (d.lieTruncationMap ℒ (Nat.le_succ k)).ker.subtype
+          (PolyhedralCochain.map (d.truncationMap ℒ (Nat.le_succ k)).ker.subtype
             (crossingDefectCochain σ hσ cross hk b t ht) - B) = 0 := by
   classical
   -- First obtain the radii required by the local homogeneous obstruction theorem.

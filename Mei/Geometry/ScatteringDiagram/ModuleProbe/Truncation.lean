@@ -41,10 +41,10 @@ variable {R M Γ : Type*} [CommRing R] [AddCommGroup M] [Module R M]
 /-- The probe degree ideal splits into the base cutoff and the shifted coefficient
 cutoff, with the latter one order lower. -/
 theorem mem_degreeIdeal_succ (k : ℕ) (x : ProbeLie d ℳ p ℒ) :
-    x ∈ (positiveDegrees d p).truncationIdeal (grading d ℳ p ℒ) (k + 1) ↔
-      x.right ∈ d.truncationIdeal ℒ (k + 1) ∧
+    x ∈ (positiveDegrees d p).degreeIdeal (grading d ℳ p ℒ) (k + 1) ↔
+      x.right ∈ d.degreeIdeal ℒ (k + 1) ∧
       moduleCoefficientsEquiv d ℳ p x.left ∈ (d.shiftedFiltration ℳ p).submodule (k + 1) := by
-  rw [(positiveDegrees d p).mem_truncationIdeal_iff, d.mem_truncationIdeal_iff,
+  rw [(positiveDegrees d p).mem_degreeIdeal_iff, d.mem_degreeIdeal_iff,
     d.shiftedFiltration_succ ℳ p,
     d.mem_degreeSubmodule_iff (shiftedGrading ℳ d.monoid p)]
   constructor
@@ -74,16 +74,16 @@ order exceeds `k`. -/
 @[simp↓]
 theorem moduleInclusion_mem_degreeIdeal_succ (k : ℕ) (a : shiftedSubmodule ℳ d.monoid p) :
     moduleInclusion d ℳ p ℒ ((moduleCoefficientsEquiv d ℳ p).symm a) ∈
-      (positiveDegrees d p).truncationIdeal (grading d ℳ p ℒ) (k + 1) ↔
+      (positiveDegrees d p).degreeIdeal (grading d ℳ p ℒ) (k + 1) ↔
       a ∈ (d.shiftedFiltration ℳ p).submodule (k + 1) := by
   rw [mem_degreeIdeal_succ]
   simp
 
 /-- Include the order-`k` shifted coefficient quotient in the order-`k + 1` probe. -/
 def moduleQuotientInclusion (k : ℕ) : (d.shiftedFiltration ℳ p).quotient k →ₗ[R]
-    (positiveDegrees d p).lieTruncation (grading d ℳ p ℒ) (k + 1) :=
+    (positiveDegrees d p).truncatedLie (grading d ℳ p ℒ) (k + 1) :=
   ((d.shiftedFiltration ℳ p).submodule (k + 1)).mapQ
-    ((positiveDegrees d p).truncationIdeal (grading d ℳ p ℒ) (k + 1)).toSubmodule
+    ((positiveDegrees d p).degreeIdeal (grading d ℳ p ℒ) (k + 1)).toSubmodule
     ((moduleInclusion d ℳ p ℒ).toLinearMap.comp
       (moduleCoefficientsEquiv d ℳ p).symm.toLinearMap)
     (fun a ha => (moduleInclusion_mem_degreeIdeal_succ d ℳ p ℒ k a).mpr ha)
@@ -98,9 +98,9 @@ theorem moduleQuotientInclusion_mk (k : ℕ) (a : shiftedSubmodule ℳ d.monoid 
 
 /-- Recover the finite shifted coefficient from an arbitrary truncated probe. -/
 def moduleQuotientProjection (k : ℕ) :
-    (positiveDegrees d p).lieTruncation (grading d ℳ p ℒ) (k + 1) →ₗ[R]
+    (positiveDegrees d p).truncatedLie (grading d ℳ p ℒ) (k + 1) →ₗ[R]
       (d.shiftedFiltration ℳ p).quotient k :=
-  ((positiveDegrees d p).truncationIdeal (grading d ℳ p ℒ) (k + 1)).toSubmodule.mapQ
+  ((positiveDegrees d p).degreeIdeal (grading d ℳ p ℒ) (k + 1)).toSubmodule.mapQ
     ((d.shiftedFiltration ℳ p).submodule (k + 1))
     ((moduleCoefficientsEquiv d ℳ p).toLinearMap.comp
       (LieAlgebra.SemiDirectSum.projl _))
@@ -130,7 +130,7 @@ theorem moduleQuotientInclusion_injective (k : ℕ) :
 charge-one homogeneous pieces of the truncated probe. -/
 theorem range_moduleQuotientInclusion (k : ℕ) :
     (moduleQuotientInclusion d ℳ p ℒ k).range =
-      ⨆ q, (positiveDegrees d p).lieTruncationGrading (grading d ℳ p ℒ) (k + 1) (q, 1) := by
+      ⨆ q, (positiveDegrees d p).truncatedGrading (grading d ℳ p ℒ) (k + 1) (q, 1) := by
   have hs : Function.Surjective (fun q : Γ => q - p) :=
     fun n => ⟨p + n, add_sub_cancel_left p n⟩
   have hr : ((moduleInclusion d ℳ p ℒ).toLinearMap.comp
@@ -141,11 +141,11 @@ theorem range_moduleQuotientInclusion (k : ℕ) :
       (DirectSum.Decomposition.isInternal (shiftedGrading ℳ d.monoid p)).submodule_iSup_eq_top,
       Submodule.map_top]
   rw [moduleQuotientInclusion, Submodule.range_mapQ, hr, Submodule.map_iSup]
-  simp only [PositiveDegrees.lieTruncationGrading_eq]
+  simp only [PositiveDegrees.truncatedGrading_eq]
 
 /-- Charge one at extended order `k + 1` is the order-`k` shifted coefficient module. -/
 def moduleQuotientEquiv (k : ℕ) : (d.shiftedFiltration ℳ p).quotient k ≃ₗ[R]
-    ↥(⨆ q, (positiveDegrees d p).lieTruncationGrading (grading d ℳ p ℒ) (k + 1) (q, 1)) :=
+    ↥(⨆ q, (positiveDegrees d p).truncatedGrading (grading d ℳ p ℒ) (k + 1) (q, 1)) :=
   (LinearEquiv.ofLeftInverse (moduleQuotientProjection_inclusion d ℳ p ℒ k)).trans
     (LinearEquiv.ofEq _ _ (range_moduleQuotientInclusion d ℳ p ℒ k))
 
@@ -153,14 +153,14 @@ def moduleQuotientEquiv (k : ℕ) : (d.shiftedFiltration ℳ p).quotient k ≃�
 @[simp]
 theorem coe_moduleQuotientEquiv (k : ℕ) (a : (d.shiftedFiltration ℳ p).quotient k) :
     (moduleQuotientEquiv d ℳ p ℒ k a :
-      (positiveDegrees d p).lieTruncation (grading d ℳ p ℒ) (k + 1)) =
+      (positiveDegrees d p).truncatedLie (grading d ℳ p ℒ) (k + 1)) =
         moduleQuotientInclusion d ℳ p ℒ k a := by
   simp [moduleQuotientEquiv]
 
 /-- The inverse charge-one equivalence is coefficient recovery. -/
 @[simp]
 theorem moduleQuotientEquiv_symm_apply (k : ℕ)
-    (x : ↥(⨆ q, (positiveDegrees d p).lieTruncationGrading (grading d ℳ p ℒ) (k + 1) (q, 1))) :
+    (x : ↥(⨆ q, (positiveDegrees d p).truncatedGrading (grading d ℳ p ℒ) (k + 1) (q, 1))) :
     (moduleQuotientEquiv d ℳ p ℒ k).symm x =
       moduleQuotientProjection d ℳ p ℒ k x := by
   obtain ⟨a, rfl⟩ := (moduleQuotientEquiv d ℳ p ℒ k).surjective x
@@ -170,7 +170,7 @@ theorem moduleQuotientEquiv_symm_apply (k : ℕ)
 @[simp]
 theorem truncationMap_moduleQuotientInclusion {k l : ℕ} (h : k ≤ l)
     (a : (d.shiftedFiltration ℳ p).quotient l) :
-    (positiveDegrees d p).lieTruncationMap (grading d ℳ p ℒ) (Nat.add_le_add_right h 1)
+    (positiveDegrees d p).truncationMap (grading d ℳ p ℒ) (Nat.add_le_add_right h 1)
       (moduleQuotientInclusion d ℳ p ℒ l a) =
       moduleQuotientInclusion d ℳ p ℒ k ((d.shiftedFiltration ℳ p).transition h a) := by
   obtain ⟨a, rfl⟩ := ((d.shiftedFiltration ℳ p).submodule (l + 1)).mkQ_surjective a
@@ -179,19 +179,19 @@ theorem truncationMap_moduleQuotientInclusion {k l : ℕ} (h : k ≤ l)
 /-- Coefficient recovery commutes with transitions on the whole truncated probe. -/
 @[simp]
 theorem transition_moduleQuotientProjection {k l : ℕ} (h : k ≤ l)
-    (x : (positiveDegrees d p).lieTruncation (grading d ℳ p ℒ) (l + 1)) :
+    (x : (positiveDegrees d p).truncatedLie (grading d ℳ p ℒ) (l + 1)) :
     (d.shiftedFiltration ℳ p).transition h (moduleQuotientProjection d ℳ p ℒ l x) =
       moduleQuotientProjection d ℳ p ℒ k
-        ((positiveDegrees d p).lieTruncationMap (grading d ℳ p ℒ) (Nat.add_le_add_right h 1) x) :=
+        ((positiveDegrees d p).truncationMap (grading d ℳ p ℒ) (Nat.add_le_add_right h 1) x) :=
           by
-  obtain ⟨x, rfl⟩ := ((positiveDegrees d p).truncationIdeal
+  obtain ⟨x, rfl⟩ := ((positiveDegrees d p).degreeIdeal
     (grading d ℳ p ℒ) (l + 1)).surjective_mkQ x
   simp
 
 /-- The mixed bracket in the finite probe is the existing order-`k` coefficient action. -/
 theorem lie_base_moduleQuotientInclusion (k : ℕ) (x : L)
     (a : (d.shiftedLieFiltration ℒ ℳ p).quotient k) :
-    ⁅((positiveDegrees d p).truncationIdeal (grading d ℳ p ℒ) (k + 1)).mkQ
+    ⁅((positiveDegrees d p).degreeIdeal (grading d ℳ p ℒ) (k + 1)).mkQ
         (baseInclusion d ℳ p ℒ x), moduleQuotientInclusion d ℳ p ℒ k a⁆ =
       moduleQuotientInclusion d ℳ p ℒ k
         ((d.shiftedLieFiltration ℒ ℳ p).quotientLieAction d ℒ k x a) := by
@@ -214,6 +214,6 @@ theorem lie_moduleQuotientInclusion (k : ℕ)
   rw [Submodule.mkQ_apply, Submodule.mkQ_apply, moduleQuotientInclusion_mk,
     moduleQuotientInclusion_mk,
     ← LieSubmodule.Quotient.mk_bracket, lie_moduleInclusion]
-  exact ((positiveDegrees d p).truncationIdeal (grading d ℳ p ℒ) (k + 1)).mkQ.map_zero
+  exact ((positiveDegrees d p).degreeIdeal (grading d ℳ p ℒ) (k + 1)).mkQ.map_zero
 
 end Mei.ModuleProbe

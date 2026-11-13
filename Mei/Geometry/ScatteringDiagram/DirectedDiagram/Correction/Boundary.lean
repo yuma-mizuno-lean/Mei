@@ -82,8 +82,8 @@ theorem exists_joint_sweep_correction_family {k : ℕ}
         (∀ J z, z ∈ (p J).vertices → z.val ∈ Metric.ball (q J) (r J)) →
         letI := Fintype.ofFinite (D.adaptedComplex (k + 1)).joints
         let c := fun a : D.JointCorrectionIndex x p =>
-          (DirectSum.decompose (d.lieTruncationGrading ℒ (k + 1))
-            (log (D.levelPathProduct (k + 1) (p a.1))) a.2.val : d.lieTruncation ℒ (k + 1))
+          (DirectSum.decompose (d.truncatedGrading ℒ (k + 1))
+            (log (D.levelPathProduct (k + 1) (p a.1))) a.2.val : d.truncatedLie ℒ (k + 1))
         ∃ (htrans : ∀ a : D.JointCorrectionIndex x p,
             i (ρ a.2.val) ∉ (affineSpan ℝ (σ a.1).carrier).direction)
           (E : DirectedDiagram (d := d) h H (D.JointCorrectionIndex x p)),
@@ -111,8 +111,8 @@ theorem exists_joint_sweep_correction_family {k : ℕ}
   dsimp only
   let := Fintype.ofFinite (D.adaptedComplex (k + 1)).joints
   let c := fun a : D.JointCorrectionIndex x p =>
-    (DirectSum.decompose (d.lieTruncationGrading ℒ (k + 1))
-      (log (D.levelPathProduct (k + 1) (p a.1))) a.2.val : d.lieTruncation ℒ (k + 1))
+    (DirectSum.decompose (d.truncatedGrading ℒ (k + 1))
+      (log (D.levelPathProduct (k + 1) (p a.1))) a.2.val : d.truncatedLie ℒ (k + 1))
   -- Only nonzero components occur, and consistency fixes their common birth order.
   have hc (a : D.JointCorrectionIndex x p) : c a ≠ 0 :=
     fun hz => (DFinsupp.mem_support_toFun _ _).mp a.2.property (Subtype.ext hz)
@@ -137,9 +137,9 @@ theorem exists_joint_sweep_correction_family {k : ℕ}
     obtain ⟨m, _, hmker, hmem⟩ :=
       (hlocal a.1 (x a.1) (p a.1) (hp a.1) a.2.val (by exact_mod_cast hd a)).2
         (by simpa only [hσ] using htrans a)
-    have hpiece : d.lieTruncationGrading ℒ (k + 1) a.2.val ≠ ⊥ := by
+    have hpiece : d.truncatedGrading ℒ (k + 1) a.2.val ≠ ⊥ := by
       intro he
-      have hm := (DirectSum.decompose (d.lieTruncationGrading ℒ (k + 1))
+      have hm := (DirectSum.decompose (d.truncatedGrading ℒ (k + 1))
         (log (D.levelPathProduct (k + 1) (p a.1))) a.2.val).property
       exact hc a (by simpa only [he, Submodule.mem_bot] using hm)
     exact DirectedWall.exists_cooriented_sweep (σ a.1)
@@ -158,16 +158,16 @@ theorem exists_joint_sweep_correction_family {k : ℕ}
     -- Coefficient projections commute with the coboundary on the cochain quotient.
     have hcomponent (n : Γ) : PolyhedralCochain.coboundaryOfFinsupp (R := R)
         (∑ J : (D.adaptedComplex (k + 1)).joints, Finsupp.single (σ J)
-          (DirectSum.decompose (d.lieTruncationGrading ℒ (k + 1))
-            (log (D.levelPathProduct (k + 1) (p J))) n : d.lieTruncation ℒ (k + 1))) = 0 := by
-      let f := (d.lieTruncationGrading ℒ (k + 1) n).subtype ∘ₗ
-        DirectSum.component R Γ (d.lieTruncationGrading ℒ (k + 1) ·) n ∘ₗ
-        (DirectSum.decomposeLinearEquiv (d.lieTruncationGrading ℒ (k + 1))).toLinearMap ∘ₗ
-        (d.lieTruncationMap ℒ (Nat.le_succ k)).ker.subtype
+          (DirectSum.decompose (d.truncatedGrading ℒ (k + 1))
+            (log (D.levelPathProduct (k + 1) (p J))) n : d.truncatedLie ℒ (k + 1))) = 0 := by
+      let f := (d.truncatedGrading ℒ (k + 1) n).subtype ∘ₗ
+        DirectSum.component R Γ (d.truncatedGrading ℒ (k + 1) ·) n ∘ₗ
+        (DirectSum.decomposeLinearEquiv (d.truncatedGrading ℒ (k + 1))).toLinearMap ∘ₗ
+        (d.truncationMap ℒ (Nat.le_succ k)).ker.subtype
       have hf (J : (D.adaptedComplex (k + 1)).joints) :
           f (D.loopObstruction hk (p J)) =
-            (DirectSum.decompose (d.lieTruncationGrading ℒ (k + 1))
-              (log (D.levelPathProduct (k + 1) (p J))) n : d.lieTruncation ℒ (k + 1)) := by
+            (DirectSum.decompose (d.truncatedGrading ℒ (k + 1))
+              (log (D.levelPathProduct (k + 1) (p J))) n : d.truncatedLie ℒ (k + 1)) := by
         simp only [f, LinearMap.comp_apply, LinearEquiv.coe_coe,
           DirectSum.decomposeLinearEquiv_apply, ← DirectSum.apply_eq_component,
           Submodule.subtype_apply, D.coe_loopObstruction]
@@ -181,16 +181,16 @@ theorem exists_joint_sweep_correction_family {k : ℕ}
         (∑ a ∈ Finset.univ.filter (fun a : D.JointCorrectionIndex x p => a.2.val = n),
           Finsupp.single (σ a.1) (c a)) =
         ∑ J : (D.adaptedComplex (k + 1)).joints, Finsupp.single (σ J)
-          (DirectSum.decompose (d.lieTruncationGrading ℒ (k + 1))
-            (log (D.levelPathProduct (k + 1) (p J))) n : d.lieTruncation ℒ (k + 1)) := by
+          (DirectSum.decompose (d.truncatedGrading ℒ (k + 1))
+            (log (D.levelPathProduct (k + 1) (p J))) n : d.truncatedLie ℒ (k + 1)) := by
       rw [Finset.sum_filter, Fintype.sum_sigma]
       apply Finset.sum_congr rfl
       intro J _
       dsimp only [c]
-      let f := DirectSum.decompose (d.lieTruncationGrading ℒ (k + 1))
+      let f := DirectSum.decompose (d.truncatedGrading ℒ (k + 1))
         (log (D.levelPathProduct (k + 1) (p J)))
       rw [Finset.sum_coe_sort f.support (fun m =>
-        if m = n then Finsupp.single (σ J) (f m : d.lieTruncation ℒ (k + 1)) else 0)]
+        if m = n then Finsupp.single (σ J) (f m : d.truncatedLie ℒ (k + 1)) else 0)]
       by_cases hn : n ∈ f.support
       · simp only [Finset.sum_ite_eq', ite_eq_left hn]
         rfl
@@ -211,11 +211,11 @@ theorem exists_joint_sweep_correction_family {k : ℕ}
       dsimp only [c]
       rw [← map_sum]
       congr 1
-      let f := DirectSum.decompose (d.lieTruncationGrading ℒ (k + 1))
+      let f := DirectSum.decompose (d.truncatedGrading ℒ (k + 1))
         (log (D.levelPathProduct (k + 1) (p J)))
       exact (Finset.sum_coe_sort f.support
-        (fun n => (f n : d.lieTruncation ℒ (k + 1)))).trans
-          (DirectSum.sum_support_decompose (d.lieTruncationGrading ℒ (k + 1))
+        (fun n => (f n : d.truncatedLie ℒ (k + 1)))).trans
+          (DirectSum.sum_support_decompose (d.truncatedGrading ℒ (k + 1))
             (log (D.levelPathProduct (k + 1) (p J))))
     simp only [ofFinite_wall, hlog, Finsupp.single_neg]
     rw [Finset.sum_neg_distrib, map_neg, hboundary, neg_neg, hsource]

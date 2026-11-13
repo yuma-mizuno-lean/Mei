@@ -66,7 +66,7 @@ theorem iSup_wall_eq_wall_of_inf_ker (f g : Λ →+ ℤ) {n : Γ}
           intro v
           exact AddMonoidHom.mem_ker.mp (hker (by simp [hμ]))
         simp [hm0, H.zero_normal]
-      · obtain ⟨c, d, hc, hcd⟩ := μ.exists_ne_zero_zsmul_eq_of_ker_le m hμ hker
+      · obtain ⟨c, d, hc, hcd⟩ := μ.exists_ne_zero_zsmul_eq_of_ker_le m hker
         by_cases hd : d = 0
         · have hm0 : m = 0 := by
             ext v

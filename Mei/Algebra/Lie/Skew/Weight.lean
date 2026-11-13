@@ -175,7 +175,7 @@ theorem completedMap_weightGradedLieHom_rayExp (f : PowerSeries R) :
   rw [GradedLieHom.projection_completedMap_of_le _ k (a := k) (PositiveDegreeMap.id_modulus k).le,
     projection_rayExp, projection_rayExp, LieHom.bchGroupMap_exp]
   congr 1
-  rw [LieIdeal.mkQ_apply, GradedLieHom.lieTruncatedMap_mk, weightGradedLieHom_rayPartialSum,
+  rw [LieIdeal.mkQ_apply, GradedLieHom.truncatedMap_mk, weightGradedLieHom_rayPartialSum,
     LieIdeal.mkQ_apply]
 
 end Ray

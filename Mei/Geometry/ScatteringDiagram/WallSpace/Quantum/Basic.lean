@@ -93,13 +93,13 @@ theorem wallSubmodule_eq_bot_of_radical (n : Γ) (h : β n = 0) (m : Γ →+ ℤ
     simp [wallSubmodule, hk, hmker]
 
 private theorem contracted_normal_ker {n n' : Γ} {m m' : Γ →+ ℤ}
-    (hβ : β.IsAlt) (hm : m ≠ 0) (hm' : m' ≠ 0)
+    (hβ : β.IsAlt)
     (hk : m.ker = (β n).toAddMonoidHom.ker)
     (hk' : m'.ker = (β n').toAddMonoidHom.ker) (hn : β n n' ≠ 0) :
     (wallBracketNormal (AddMonoidHom.id Γ) n n' m m').ker =
       (β (n + n')).toAddMonoidHom.ker := by
-  obtain ⟨a, b, ha, hb, hab⟩ := m.exists_ne_zero_zsmul_eq_of_ker_eq _ hm hk
-  obtain ⟨c, d, hc, hd, hcd⟩ := m'.exists_ne_zero_zsmul_eq_of_ker_eq _ hm' hk'
+  obtain ⟨a, b, ha, hb, hab⟩ := m.exists_ne_zero_zsmul_eq_of_ker_eq _ hk
+  obtain ⟨c, d, hc, hd, hcd⟩ := m'.exists_ne_zero_zsmul_eq_of_ker_eq _ hk'
   have habv (v : Γ) : a * m v = b * β n v := DFunLike.congr_fun hab v
   have hcdv (v : Γ) : c * m' v = d * β n' v := DFunLike.congr_fun hcd v
   have hs (v : Γ) :
@@ -168,7 +168,7 @@ def ambientWallSpaces (hβ : β.IsAlt) :
     obtain ⟨s, rfl⟩ := (mem_grade_iff q β n' y).mp hy
     by_cases hn : β n n' = 0
     · simp [lie_smul, smul_lie, lie_monomial q β hβ, hn]
-    · have hker := contracted_normal_ker β hβ hm hm' hk hk' hn
+    · have hker := contracted_normal_ker β hβ hk hk' hn
       have hnormal : wallBracketNormal (AddMonoidHom.id Γ) n n' m m' ≠ 0 := by
         intro hz
         have ht : n ∈ (β (n + n')).toAddMonoidHom.ker := by

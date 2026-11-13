@@ -227,7 +227,7 @@ theorem truncation_wallEventLabel {k l : ℕ} (hkl : k ≤ l)
     (hv : ∀ j : D.active l, x ∈ (D.wall j).support → (f l) j v ≠ 0)
     (hs : SignType.sign (e.normal (f k) v) = e.2)
     (hs' : SignType.sign (e'.normal (f l) v) = e'.2) :
-    (d.lieTruncationMap ℒ hkl).bchGroupMap (D.wallEventLabel l e') =
+    (d.truncationMap ℒ hkl).bchGroupMap (D.wallEventLabel l e') =
       D.wallEventLabel k e := by
   have hvk (j : D.active k) (hj : x ∈ (D.wall j).support) : (f k) j v ≠ 0 :=
     hv ⟨j.val, D.active_mono hkl j.property⟩ hj

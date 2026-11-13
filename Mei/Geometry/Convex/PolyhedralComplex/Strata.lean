@@ -246,8 +246,8 @@ theorem exists_isolating_ball (C : FinitePolyhedralComplex h) {P : Set V} {k : �
     rw [← intrinsicClosure_sdiff_intrinsicInterior]
     exact fun hmem => hmem.2 hx
   have hfront : ∀ᶠ y in 𝓝 x, y ∉ intrinsicFrontier ℝ P :=
-    (isClosed_intrinsicFrontier (affineSpan ℝ P).closed_of_finiteDimensional).isOpen_compl.mem_nhds
-      hxf
+    (isClosed_intrinsicFrontier (affineSpan ℝ P).isClosed_of_finiteDimensional).isOpen_compl
+      |>.mem_nhds hxf
   have hnear := (C.eventually_mem_support_codimensionAtLeast_iff hP hx).and
     (hfront.and (C.eventually_subset_of_mem_cell hPC hx))
   obtain ⟨r, hr, hball⟩ := Metric.mem_nhds_iff.mp hnear

@@ -49,7 +49,7 @@ local notation "hneg" => (fun n hn => d.eq_bot_of_degree_nonpos ℒ n (le_of_lt 
 local notation "hpos" => (fun n hn => d.eq_bot_of_degree_nonpos ℒ n hn)
 local notation "F" => degreeFiltration ℒ d.degree hneg
 local notation "π" =>
-  LieIdeal.completionProjection (d.truncationIdeal ℒ) (d.truncationIdeal_antitone ℒ)
+  LieIdeal.completionProjection (d.degreeIdeal ℒ) (d.degreeIdeal_antitone ℒ)
 local notation "G" => completedGroupLikeSubgroup ℒ d.degree hneg
 
 /-- Rational scalars on the enveloping algebra are induced from the coefficient ring. -/
@@ -82,7 +82,7 @@ private theorem projection_groupLikeExp_symm (k : ℕ) (g : d.completedBCHGroup 
         U ⧸ (F).ideal (k + 1)) := by
   rw [projection_groupLikeExp, PositiveDegrees.completionProjection_completedBCHExp_symm]
   exact congrArg (fun a => (truncatedBCHToUnits d ℒ k a : U ⧸ (F).ideal (k + 1)))
-    (BCHGroup.exp_log (L := d.lieTruncation ℒ k) (TauCeti.CompletedGroup.projection k g))
+    (BCHGroup.exp_log (L := d.truncatedLie ℒ k) (TauCeti.CompletedGroup.projection k g))
 
 /-- The canonical homomorphism from completed BCH labels to completed group-like units. -/
 noncomputable def completedBCHToGroupLike : d.completedBCHGroup ℒ →* G where

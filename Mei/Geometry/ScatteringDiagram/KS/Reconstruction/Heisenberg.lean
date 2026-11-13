@@ -82,19 +82,18 @@ theorem mapDiagram_truncation_reconstruct_heisenberg :
     (nonnegIntegers.reconstruct h (heisenbergGrading R)
         (nonnegIntegers.expToCompletion (heisenbergGrading R) (heisenbergX R) *
           nonnegIntegers.expToCompletion (heisenbergGrading R) (heisenbergY R))).mapDiagram
-        (GradedLieHom.lieTruncationHom nonnegIntegers (heisenbergGrading R) 1) =
+        (GradedLieHom.truncation nonnegIntegers (heisenbergGrading R) 1) =
       (nonnegIntegers.reconstruct h (heisenbergGrading R)
         (nonnegIntegers.expToCompletion (heisenbergGrading R) (heisenbergY R) *
           nonnegIntegers.expToCompletion (heisenbergGrading R) (heisenbergX R))).mapDiagram
-        (GradedLieHom.lieTruncationHom nonnegIntegers (heisenbergGrading R) 1) := by
+        (GradedLieHom.truncation nonnegIntegers (heisenbergGrading R) 1) := by
   rw [mapDiagram_reconstruct, mapDiagram_reconstruct, map_mul, map_mul,
     GradedLieHom.completedMap_expToCompletion, GradedLieHom.completedMap_expToCompletion]
   congr 1
   apply Commute.eq
   apply commute_expToCompletion_of_lie_eq_zero
-  rw [GradedLieHom.lieTruncationHom_apply, GradedLieHom.lieTruncationHom_apply, ← LieHom.map_lie,
-    LieIdeal.mkQ_eq_zero, TauCeti.PositiveDegrees.truncationIdeal_eq_degreeIdeal,
-    TauCeti.degreeIdeal_heisenbergGrading_one]
+  rw [GradedLieHom.truncation_apply, GradedLieHom.truncation_apply, ← LieHom.map_lie,
+    LieIdeal.mkQ_eq_zero, TauCeti.degreeIdeal_heisenbergGrading_one]
   exact lie_mem_center_heisenberg (heisenbergX R) (heisenbergY R)
 
 end Mei

@@ -114,10 +114,10 @@ variable [DecidableEq Γ] [DecidableEq Γ'] [DecidableEq Γ'']
 
 /-- At finite order a coordinate change preserves the supported-ray Lie images,
 using any source cutoff at least as large as its canonical modulus. -/
-theorem lieTruncatedMap_mem (E : CoordinateChange (d := d) (e := e) H H')
+theorem truncatedMap_mem (E : CoordinateChange (d := d) (e := e) H H')
     (w : SupportedRay d) (m : Λ →+ ℤ) {a k : ℕ} (ha : E.degreeMap.modulus k ≤ a)
-    {x : d.lieTruncation ℒ a} (hx : x ∈ H.truncatedRayLieSubalgebra w m a) :
-    E.gradedLieHom.lieTruncatedMap k ha x ∈ H'.truncatedRayLieSubalgebra
+    {x : d.truncatedLie ℒ a} (hx : x ∈ H.truncatedRayLieSubalgebra w m a) :
+    E.gradedLieHom.truncatedMap k ha x ∈ H'.truncatedRayLieSubalgebra
       (E.rayEquiv w) (m.comp E.tangentEquiv.symm) k :=
   E.gradedLieHom.lieTruncatedMap_mem_truncatedRayLieSubalgebra
     (fun n hn => by simpa using (E.mem_rayDegrees_rayEquiv w n).mpr hn)

@@ -135,7 +135,7 @@ theorem ofHyperplaneRayFactors_full : ∃ b : ℝ,
 logarithm. -/
 theorem familyLog_ofHyperplaneRayFactors [Module.Free ℤ Γ] (k : ℕ) (j : ι) :
     (ofHyperplaneRayFactors h μ hμ a g hg hfin).familyLog Sigma.fst k j =
-      BCHGroup.log (L := d.lieTruncation (tropicalVertexGrading (R := R) d ρ) k)
+      BCHGroup.log (L := d.truncatedLie (tropicalVertexGrading (R := R) d ρ) k)
         (TauCeti.CompletedGroup.projection k (g j)) := by
   classical
   let : HasUniqueDiv Γ := .of_isTorsionFree ℤ _
@@ -159,7 +159,7 @@ theorem familyLog_ofHyperplaneRayFactors [Module.Free ℤ Γ] (k : ℕ) (j : ι)
     d.log_projection_eq_sum_log_projection_rayFactor _ _ k A (by simp [A])]
   simp only [Function.Embedding.sigmaMk_apply, ofHyperplaneRayFactors_label]
   rw [Finset.sum_subtype_eq_sum_filter (fun w => BCHGroup.log
-      (L := d.lieTruncation (tropicalVertexGrading (R := R) d ρ) k)
+      (L := d.truncatedLie (tropicalVertexGrading (R := R) d ρ) k)
       (TauCeti.CompletedGroup.projection k (d.rayFactor _ (g j) w))),
     Finset.sum_filter_of_ne fun w _ hw => ?_]
   by_contra hn

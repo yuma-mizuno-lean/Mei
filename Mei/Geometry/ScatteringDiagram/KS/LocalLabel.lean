@@ -105,7 +105,7 @@ theorem localLabel_eq_of_equivalent
 @[simp]
 theorem localLabel_truncate {l : ℕ} (hkl : l ≤ k) :
     (D.truncate hkl).localLabel θ hθ =
-      (d.lieTruncationMap ℒ hkl).bchGroupMap (D.localLabel θ hθ) := by
+      (d.truncationMap ℒ hkl).bchGroupMap (D.localLabel θ hθ) := by
   classical
   by_cases hP : ∃ P : C.walls, θ ∈ (P : Set V)
   · obtain ⟨P, hP⟩ := hP
@@ -124,7 +124,7 @@ variable {C E : ℕ → FinitePolyhedralComplex h}
 /-- Local wall labels at different cutoffs are compatible, including cutoffs at
 which the point lies on no wall. -/
 theorem truncation_localLabel {k l : ℕ} (hkl : k ≤ l) :
-    (d.lieTruncationMap ℒ hkl).bchGroupMap ((D.diagram l).localLabel θ (hθ l)) =
+    (d.truncationMap ℒ hkl).bchGroupMap ((D.diagram l).localLabel θ (hθ l)) =
       (D.diagram k).localLabel θ (hθ k) := by
   rw [← KSComplex.localLabel_truncate]
   exact ((D.diagram l).truncate hkl).localLabel_eq_of_equivalent (D.diagram k)
@@ -234,7 +234,7 @@ theorem germLabel_mem_completedRaySubgroup [Module.Free ℤ N]
   have hwk := (d.mem_completedRaySubgroup ℒ w _).mp hw k
   rw [D.projection_germLabel_of_mem θ hθ k P hP] at hwk
   have heq : w = (D.diagram k).wallRay P :=
-    d.eq_of_mem_bchSubgroup_rayLieSubalgebra (d.lieTruncationGrading ℒ k) hlabel
+    d.eq_of_mem_bchSubgroup_rayLieSubalgebra (d.truncatedGrading ℒ k) hlabel
       ((LieSubalgebra.mem_bchSubgroup _ _).mpr hwk)
       ((D.diagram k).label_mem_bchSubgroup_rayLieSubalgebra P
         ((D.diagram k).degree_mem_wallRay P))

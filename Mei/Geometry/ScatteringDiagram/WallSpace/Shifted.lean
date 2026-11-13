@@ -54,7 +54,7 @@ variable {Γ Λ R L M : Type*} [AddCommGroup Γ] [AddCommMonoid Λ]
 /-- A finite wall exponential preserves each retained shifted component tangent
 to its normal. The coefficient input may contain several homogeneous degrees. -/
 theorem shiftedQuotientComponent_truncatedExpLieAction_of_normal_eq_zero
-    {w : SupportedRay d} {m : Λ →+ ℤ} {k : ℕ} {x : d.lieTruncation ℒ k}
+    {w : SupportedRay d} {m : Λ →+ ℤ} {k : ℕ} {x : d.truncatedLie ℒ k}
     (hx : x ∈ H.truncatedRayLieSubalgebra w m k) {q : Γ}
     (hq : m (ρ q) = 0) (hk : d.degree (q - p) ≤ k)
     (a : (d.shiftedLieFiltration ℒ ℳ p).quotient k) :
@@ -98,7 +98,7 @@ theorem shiftedHomogeneousComponent_completedBCHAction_of_normal_eq_zero
       d.shiftedHomogeneousComponent ℳ p q a := by
   let F := d.shiftedLieFiltration ℒ ℳ p
   let k := (d.degree (q - p)).toNat
-  let gk : BCHGroup (d.lieTruncation ℒ k) := TauCeti.CompletedGroup.projection k g
+  let gk : BCHGroup (d.truncatedLie ℒ k) := TauCeti.CompletedGroup.projection k g
   have hk : d.degree (q - p) ≤ k := Int.self_le_toNat _
   have hp : F.projection k (F.completedBCHAction d ℒ g a) =
       F.truncatedExpLieAction d ℒ k (BCHGroup.log gk) (F.projection k a) :=

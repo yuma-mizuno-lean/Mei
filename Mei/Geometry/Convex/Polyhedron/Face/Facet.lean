@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.Convex.Polyhedron.Direction
+public import TauCeti.Analysis.Convex.Polyhedron.Direction
 public import Mei.Analysis.Convex.Exposed
 import Mathlib.Order.Minimal
 
@@ -126,7 +126,7 @@ theorem exists_facet_presentation (hP : TauCeti.IsConvexPolyhedron P) :
     refine ⟨hface, ⟨p, hpP, hpj⟩, ?_⟩
     -- The local active-face direction is a hyperplane in the parent direction.
     -- Restrict the row there before applying rank-nullity.
-    have hspan := AffineMap.vectorSpan_active_eq
+    have hspan := TauCeti.vectorSpan_active_eq
       (fun l : S => (f l.val).toAffineMap) A j hpA hpj hpstrict
     simp only [ContinuousAffineMap.coe_toAffineMap] at hspan
     have hset : {y | y ∈ A ∧ (∀ l : S, f l.val y ≤ 0) ∧ f j.val y = 0} =

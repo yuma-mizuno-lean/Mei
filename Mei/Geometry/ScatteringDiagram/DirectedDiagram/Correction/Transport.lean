@@ -73,7 +73,7 @@ theorem log_levelPathProduct_mul_inv_restrict_eq_crossingSum
       p.wallCrossingSum (fun j : D.active (k + 1) => h.realCharacter (D.wall j).normal)
         (fun j => if j.val ∈ s then 0 else
           log (TauCeti.CompletedGroup.projection (k + 1) (D.wall j).label)) := by
-  let a : D.active (k + 1) → BCHGroup (d.lieTruncation ℒ (k + 1)) := fun j =>
+  let a : D.active (k + 1) → BCHGroup (d.truncatedLie ℒ (k + 1)) := fun j =>
     (TauCeti.CompletedGroup.projection (k + 1) (D.wall j).label : d.truncatedGroup ℒ (k + 1))
   let b := fun j : D.active (k + 1) => if j.val ∈ s then a j else 1
   have hb : ∀ j j' : D.active (k + 1),
@@ -86,15 +86,15 @@ theorem log_levelPathProduct_mul_inv_restrict_eq_crossingSum
       | exact Commute.one_right _
       | exact Commute.one_left _
   have hab (j : D.active (k + 1)) :
-      (d.lieTruncationMap ℒ (Nat.le_succ k)).bchGroupMap (a j) =
-        (d.lieTruncationMap ℒ (Nat.le_succ k)).bchGroupMap (b j) := by
+      (d.truncationMap ℒ (Nat.le_succ k)).bchGroupMap (a j) =
+        (d.truncationMap ℒ (Nat.le_succ k)).bchGroupMap (b j) := by
     dsimp only [b]
     split_ifs with hj
     · rfl
     · have hz : TauCeti.CompletedGroup.projection k (D.wall j).label = 1 := by
         by_contra hne
         exact hj (hs ((D.mem_active k j.val).mpr hne))
-      have he : (d.lieTruncationMap ℒ (Nat.le_succ k)).bchGroupMap (a j) =
+      have he : (d.truncationMap ℒ (Nat.le_succ k)).bchGroupMap (a j) =
           TauCeti.CompletedGroup.projection k (D.wall j).label :=
         TauCeti.CompletedGroup.map_projection k (k + 1) (Nat.le_succ k) (D.wall j).label
       rw [he, hz, map_one]
@@ -104,8 +104,8 @@ theorem log_levelPathProduct_mul_inv_restrict_eq_crossingSum
     D.levelPathProduct_eq_wallPathProduct (k + 1) p (D.activeLabels_commute (k + 1))]
   have he := p.log_wallPathProduct_mul_inv_eq_wallCrossingSum
     (fun j : D.active (k + 1) => h.realCharacter (D.wall j).normal) a b
-    (D.activeLabels_commute (k + 1)) hb (d.lieTruncationMap ℒ (Nat.le_succ k))
-    (d.ker_lieTruncationMap_succ_le_center ℒ k) (fun _ _ j _ => hab j.1)
+    (D.activeLabels_commute (k + 1)) hb (d.truncationMap ℒ (Nat.le_succ k))
+    (d.ker_truncationMap_succ_le_center ℒ k) (fun _ _ j _ => hab j.1)
   have hcoeff : (fun j => log (a j * (b j)⁻¹)) =
       fun j => if j.val ∈ s then 0 else log (a j) := by
     funext j
@@ -143,7 +143,7 @@ theorem log_levelPathProduct_eq_crossingSum_add_restrict
           log (TauCeti.CompletedGroup.projection (k + 1) (D.wall j).label)) +
       log ((D.restrict s).levelPathProduct (k + 1)
         ((D.restrictPathPrefunctor s (k + 1)).mapPath p)) := by
-  let f := d.lieTruncationMap ℒ (Nat.le_succ k)
+  let f := d.truncationMap ℒ (Nat.le_succ k)
   let A := D.levelPathProduct (k + 1) p
   let B := (D.restrict s).levelPathProduct (k + 1)
     ((D.restrictPathPrefunctor s (k + 1)).mapPath p)
@@ -163,7 +163,7 @@ theorem log_levelPathProduct_eq_crossingSum_add_restrict
           log (TauCeti.CompletedGroup.projection k (D.wall j).label) :=
         (f.log_bchGroupMap _).symm.trans (congrArg log he)
       rw [hz] at he'
-      exact he'.trans (log_one (L := d.lieTruncation ℒ k))
+      exact he'.trans (log_one (L := d.truncatedLie ℒ k))
   have hmem : log (A * B⁻¹) ∈ f.ker := by
     rw [D.log_levelPathProduct_mul_inv_restrict_eq_crossingSum s hs p,
       Quiver.Path.wallCrossingSum_def]
@@ -173,7 +173,7 @@ theorem log_levelPathProduct_eq_crossingSum_add_restrict
     exact f.ker.sum_mem fun j _ =>
       f.ker.toSubmodule.toAddSubgroup.zsmul_mem (hcoeff j.1) j.2
   have hlie : ⁅log (A * B⁻¹), log B⁆ = 0 := by
-    rw [← lie_skew, (d.ker_lieTruncationMap_succ_le_center ℒ k hmem) (log B), neg_zero]
+    rw [← lie_skew, (d.ker_truncationMap_succ_le_center ℒ k hmem) (log B), neg_zero]
   have he : log A = log (A * B⁻¹) + log B := by
     rw [← bch_eq_add_of_lie_eq_zero _ _ hlie, ← log_mul, inv_mul_cancel_right]
   rw [D.log_levelPathProduct_mul_inv_restrict_eq_crossingSum s hs p] at he

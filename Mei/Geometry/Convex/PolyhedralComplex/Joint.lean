@@ -6,7 +6,8 @@ Authors: Codex
 module
 
 public import Mei.Geometry.Convex.PolyhedralComplex.Strata
-public import Mei.Geometry.Convex.Polyhedron.Rational.Direction
+public import TauCeti.Analysis.Convex.Polyhedron.Rational.Direction
+import Mei.LinearAlgebra.Dual.Kernel
 public import Mathlib.LinearAlgebra.FiniteDimensional.Lemmas
 public import Mathlib.LinearAlgebra.Dual.Lemmas
 
@@ -55,9 +56,9 @@ theorem exists_joint_direction_eq_inf_ker (C : FinitePolyhedralComplex h) {J : S
     ∃ f g : N →+ ℤ, (affineSpan ℝ J).direction =
       (h.realCharacter f).ker ⊓ (h.realCharacter g).ker := by
   obtain ⟨hJC, hdim⟩ := (C.mem_cellsOfCodimension 2 J).mp hJ
-  obtain ⟨f, g, hfg⟩ := (C.rational J hJC).exists_direction_eq_inf_ker
+  obtain ⟨f, g, _, hfg⟩ := (C.rational J hJC).exists_direction_eq_inf_ker
     (C.nonempty J hJC) hdim
-  exact ⟨f.toAddMonoidHom, g.toAddMonoidHom, hfg⟩
+  exact ⟨f, g, hfg⟩
 
 /-- The direction of an actual joint is cut out by two independent integral
 characters. The joint need not contain any lattice point, since its offsets
@@ -68,16 +69,7 @@ theorem exists_linearIndependent_joint_direction_eq_inf_ker
     ∃ f g : N →+ ℤ, LinearIndependent ℝ ![h.realCharacter f, h.realCharacter g] ∧
       (affineSpan ℝ J).direction = (h.realCharacter f).ker ⊓ (h.realCharacter g).ker := by
   obtain ⟨hcell, hdim⟩ := (C.mem_cellsOfCodimension 2 J).mp hJ
-  obtain ⟨m, hlin, hdir⟩ := (C.rational J hcell).exists_direction_eq_iInf_ker
-    (C.nonempty J hcell) hdim
-  have heq : (fun j => h.realCharacter (m j).toAddMonoidHom) =
-      ![h.realCharacter (m 0).toAddMonoidHom, h.realCharacter (m 1).toAddMonoidHom] := by
-    ext j
-    fin_cases j <;> rfl
-  refine ⟨(m 0).toAddMonoidHom, (m 1).toAddMonoidHom, heq ▸ hlin, ?_⟩
-  rw [hdir]
-  ext v
-  simp only [Submodule.mem_iInf, Submodule.mem_inf, LinearMap.mem_ker, Fin.forall_fin_two]
+  exact (C.rational J hcell).exists_direction_eq_inf_ker (C.nonempty J hcell) hdim
 
 /-- At a degree transverse to a joint, contracting two integral joint equations
 gives a nonzero integral normal. Its real kernel is exactly the joint direction

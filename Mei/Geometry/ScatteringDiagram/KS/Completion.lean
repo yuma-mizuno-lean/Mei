@@ -62,7 +62,7 @@ structure CompletedDiagram where
     {x' y' : WallComplement (fun P : (C (k + 1)).walls => (P : Set V))}
     (p : AdmissiblePLPath x y) (q : AdmissiblePLPath x' y'),
     p.vertices.map WallComplement.val = q.vertices.map WallComplement.val →
-      (d.lieTruncationMap ℒ (Nat.le_succ k)).bchGroupMap
+      (d.truncationMap ℒ (Nat.le_succ k)).bchGroupMap
         ((diagram (k + 1)).toFiniteWallDiagram.pathProduct q) =
           (diagram k).toFiniteWallDiagram.pathProduct p
 
@@ -114,7 +114,7 @@ variable {x y z : Point C}
 
 /-- Products on an all-order path are compatible with every cutoff transition. -/
 theorem truncation_pathProduct (p : Quiver.Path x y) {k l : ℕ} (hkl : k ≤ l) :
-    (d.lieTruncationMap ℒ hkl).bchGroupMap
+    (d.truncationMap ℒ hkl).bchGroupMap
       ((D.diagram l).toFiniteWallDiagram.pathProduct
         ((CommonWallComplement.projectionPrefunctor l).mapPath p)) =
       (D.diagram k).toFiniteWallDiagram.pathProduct
@@ -125,7 +125,7 @@ theorem truncation_pathProduct (p : Quiver.Path x y) {k l : ℕ} (hkl : k ≤ l)
     simp
   | succ l ih =>
     by_cases h : k ≤ l
-    · rw [← d.lieTruncationMap_comp ℒ h (Nat.le_succ l), LieHom.bchGroupMap_comp,
+    · rw [← d.truncationMap_comp ℒ h (Nat.le_succ l), LieHom.bchGroupMap_comp,
         MonoidHom.comp_apply]
       have hs := D.compatible l
         ((CommonWallComplement.projectionPrefunctor l).mapPath p)

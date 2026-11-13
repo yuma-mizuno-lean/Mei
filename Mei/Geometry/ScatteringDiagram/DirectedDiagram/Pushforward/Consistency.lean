@@ -91,7 +91,7 @@ private theorem levelPathProduct_restrict_eq (k : ℕ) {a : ℕ}
     (D.pushforward P).levelPathProduct k
         ((WallComplement.restrictPrefunctor _
           (Set.inclusion (D.active_pushforward_subset P k ha))).mapPath r) =
-      (P.lieHom.lieTruncatedMap k ha).bchGroupMap
+      (P.lieHom.truncatedMap k ha).bchGroupMap
         (D.levelPathProduct a ((D.levelPathPreimage P a).mapPath r)) := by
   rw [← D.levelPathProduct_pushforward P k ha]
   apply levelPathProduct_eq_of_vertices_eq
@@ -190,7 +190,7 @@ theorem levelTransport_pushforward (k : ℕ) {a : ℕ} (ha : P.degreeMap.modulus
     (x y : WallComplement (fun j : D.active a => (D.wall j).support)) :
     (D.pushforward P).levelTransport k (hD.pushforward ha)
         ((D.levelPathPushforward P k ha).obj x) ((D.levelPathPushforward P k ha).obj y) =
-      (P.lieHom.lieTruncatedMap k ha).bchGroupMap (D.levelTransport a hD x y) := by
+      (P.lieHom.truncatedMap k ha).bchGroupMap (D.levelTransport a hD x y) := by
   obtain ⟨p⟩ := D.exists_level_path a x y
   rw [(D.pushforward P).levelTransport_eq_levelPathProduct _
       ((D.levelPathPushforward P k ha).mapPath p),

@@ -88,8 +88,8 @@ given map. -/
 theorem Pushforward.ofFixedDegree_lieHom_lieTruncatedMap [DecidableEq Γ]
     [GradedLieAlgebra ℒ] [GradedLieAlgebra ℳ] [IsPositiveGrading d ℒ] [IsPositiveGrading d ℳ]
     {a : ℕ} (k : ℕ) (ha : (Pushforward.ofFixedDegree (h := h) f hf).degreeMap.modulus k ≤ a) :
-    (Pushforward.ofFixedDegree (h := h) f hf).lieHom.lieTruncatedMap k ha =
-      f.lieTruncatedMap k (by simpa using ha) := (rfl)
+    (Pushforward.ofFixedDegree (h := h) f hf).lieHom.truncatedMap k ha =
+      f.truncatedMap k (by simpa using ha) := (rfl)
 
 /-- The identity pushforward data: identity degree map, Lie map, spatial map, rays and
 normals. -/

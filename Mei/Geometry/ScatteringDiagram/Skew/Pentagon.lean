@@ -260,7 +260,7 @@ theorem rayExp_smul_negDilogNeg_pentagon {n₁ n₂ : Γ} (hn₁ : n₁ ∈ d.mo
   apply TauCeti.CompletedGroup.ext
   intro k
   have hk : T.modulus k ≤ k := (b.positiveDegreeMap_modulus _ _ _ k).le
-  let ψ := (φ.lieTruncatedMap k hk).bchGroupMap.comp
+  let ψ := (φ.truncatedMap k hk).bchGroupMap.comp
     (TauCeti.CompletedGroup.projection (F := δ.groupTower
       (SkewLieAlgebra.positiveGrading (E.coefficientForm R) (E.isAlt_coefficientForm R) δ)) k)
   have h := congrArg ψ hp

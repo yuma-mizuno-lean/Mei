@@ -86,7 +86,7 @@ variable [GradedLieAlgebra ℒ] [IsPositiveGrading d ℒ]
 nilpotent truncations, at the same cutoff order. -/
 @[simp]
 theorem degreeIdeal_graphGrading (k : ℕ) :
-    (d.graph f).truncationIdeal (graphGrading ℒ f) k = d.truncationIdeal ℒ k := by
+    (d.graph f).degreeIdeal (graphGrading ℒ f) k = d.degreeIdeal ℒ k := by
   apply LieSubmodule.toSubmodule_injective
   simp
 

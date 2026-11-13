@@ -36,17 +36,17 @@ charge-one homogeneous piece. -/
 @[simp]
 theorem shiftedQuotientComponent_moduleQuotientProjection_decompose
     (q : Γ) (k : ℕ) (hk : d.degree (q - p) ≤ k)
-    (x : (positiveDegrees d p).lieTruncation (grading d ℳ p ℒ) (k + 1)) :
+    (x : (positiveDegrees d p).truncatedLie (grading d ℳ p ℒ) (k + 1)) :
     d.shiftedQuotientComponent ℳ p q k hk
         (moduleQuotientProjection d ℳ p ℒ k
-          (DirectSum.decompose ((positiveDegrees d p).lieTruncationGrading
+          (DirectSum.decompose ((positiveDegrees d p).truncatedGrading
             (grading d ℳ p ℒ) (k + 1)) x (q, 1))) =
       d.shiftedQuotientComponent ℳ p q k hk
         (moduleQuotientProjection d ℳ p ℒ k x) := by
-  obtain ⟨x, rfl⟩ := ((positiveDegrees d p).truncationIdeal
+  obtain ⟨x, rfl⟩ := ((positiveDegrees d p).degreeIdeal
     (grading d ℳ p ℒ) (k + 1)).toSubmodule.mkQ_surjective x
   simp only [Submodule.mkQ_apply]
-  simp only [PositiveDegrees.decompose_lieTruncationGrading_mk,
+  simp only [PositiveDegrees.decompose_truncatedGrading_mk,
     moduleQuotientProjection_mk,
     PositiveDegrees.shiftedQuotientComponent_mk,
     coe_decompose_grading_module]

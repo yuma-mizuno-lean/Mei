@@ -60,14 +60,14 @@ theorem LevelEquivalent.mono {k l : ℕ} (hDE : D.LevelEquivalent E l) (hkl : k 
 No consistency hypothesis is required. -/
 theorem equivalent_iff_levelEquivalent_of_degreeIdeal_eq_bot
     (D : DirectedDiagram (d := d) h H ι) (E : DirectedDiagram (d := d) h H κ)
-    {k : ℕ} (hk : d.truncationIdeal ℒ k = ⊥) :
+    {k : ℕ} (hk : d.degreeIdeal ℒ k = ⊥) :
     D.Equivalent E ↔ D.LevelEquivalent E k := by
   rw [equivalent_iff]
   refine ⟨fun hDE => hDE k, fun hDE l => ?_⟩
   obtain hlk | hkl := le_total l k
   · exact hDE.mono hlk
-  · have hinj : Function.Injective (d.lieTruncationMap ℒ hkl) := by
-      rw [← LieHom.ker_eq_bot, PositiveDegrees.lieTruncationMap_def, LieIdeal.ker_factor, hk]
+  · have hinj : Function.Injective (d.truncationMap ℒ hkl) := by
+      rw [← LieHom.ker_eq_bot, PositiveDegrees.truncationMap_eq_factor, LieIdeal.ker_factor, hk]
       simp
     rw [levelEquivalent_def] at hDE ⊢
     intro x y x' y' p q hpq
