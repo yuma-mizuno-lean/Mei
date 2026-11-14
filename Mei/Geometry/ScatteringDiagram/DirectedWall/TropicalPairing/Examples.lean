@@ -124,6 +124,12 @@ def doubleFirstPushforward :
     doubleFirstDegreeMap_eq_doubleFirst doubleSecondNormal (fun _ => 2) (fun _ => two_pos)
     doubleSecondNormal_apply_doubleFirst
 
+/-- The normal map of the pushforward data is `m ↦ m ∘ ((x, y) ↦ (x, 2y))`. -/
+@[simp]
+theorem doubleFirstPushforward_normalMap (m : ℤ × ℤ →+ ℤ) :
+    (doubleFirstPushforward h).normalMap m = doubleSecondNormal m := by
+  simp [doubleFirstPushforward]
+
 /-- The basis vector `e₂ = (0, 1)` is an allowed degree. -/
 theorem zero_one_mem : ((0 : ℤ), (1 : ℤ)) ∈ ℕ².monoid := by
   simp [Fin.forall_fin_two]
