@@ -6,7 +6,6 @@ Authors: Codex
 module
 
 public import TauCeti.Algebra.Category.SemimoduleCat.Multispan.Basic
-public import Mei.Algebra.Category.SemimoduleCat.Sections
 
 /-!
 # Matching families for jointly injective spans

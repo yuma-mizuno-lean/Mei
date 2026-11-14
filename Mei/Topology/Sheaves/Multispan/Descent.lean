@@ -5,6 +5,7 @@ Authors: Codex
 -/
 module
 
+public import Mei.Algebra.Category.SemimoduleCat.Sections
 public import Mei.Algebra.Category.SemimoduleCat.Multispan.Descent
 public import Mei.Topology.Sheaves.Multispan.Morphism
 public import Mei.LinearAlgebra.CommonLift

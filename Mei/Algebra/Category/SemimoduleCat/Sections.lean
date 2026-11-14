@@ -7,7 +7,6 @@ module
 
 public import TauCeti.Algebra.Category.SemimoduleCat.Sections
 public import Mathlib.CategoryTheory.Types.Basic
-public import Mathlib.CategoryTheory.Limits.Final.Type
 public import Mathlib.Algebra.Module.Submodule.Basic
 public import Mathlib.LinearAlgebra.Pi
 
