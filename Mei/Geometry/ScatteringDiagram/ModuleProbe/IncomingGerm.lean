@@ -7,7 +7,8 @@ module
 
 public import Mei.Geometry.ScatteringDiagram.ModuleProbe.Extension
 public import Mei.Geometry.Convex.Polyhedron.Path.Germ
-public import Mei.Geometry.Affine.IncomingGerm
+public import TauCeti.Analysis.Normed.Affine.Germ
+public import Mei.Geometry.Affine.Generic
 
 /-!
 # Probe values on generic incoming germs
@@ -31,6 +32,8 @@ tropical curve counts*, §3.3.3 (arXiv:1503.06183v5).
 open TauCeti (WallComplement singularSupport)
 
 public noncomputable section
+
+open TauCeti (ExceptionalArrangement)
 
 open TauCeti (PositiveDegrees IsPositiveGrading)
 
@@ -88,7 +91,7 @@ transverse base point their values equal the straight incoming values, and the
 combined signed crossing transports them to the opposite straight germs.
 The perturbation is independent of the base point; the eventual bound may vary. -/
 theorem exists_norm_lt_forall_eventually_extendedCoefficientField_eq
-    (k : ℕ) (hBc : B.LevelConsistent k) (T : ExceptionalArrangement V)
+    (k : ℕ) (hBc : B.LevelConsistent k) (T : ExceptionalArrangement ℝ V)
     {η : Type*} [Finite η] (v : η → V) {s : ℝ} (hs : 0 < s) :
     ∃ r : V, ‖r‖ < s ∧
       (∀ a (c : B.active k), h.realCharacter (B.wall c).normal (v a) ≠ 0 →

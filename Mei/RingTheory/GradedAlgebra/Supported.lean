@@ -82,7 +82,7 @@ theorem mem_supportedSubalgebra_iff (x : A) :
   classical
   rw [← Subalgebra.mem_toSubmodule, supportedSubalgebra_toSubmodule]
   simpa only [shiftedSubmodule_def, zero_add, iSup_subtype, SetLike.mem_coe] using
-    Mei.DirectSum.mem_iSup_iff_decompose_eq_zero 𝒜 (P : Set Γ)
+    TauCeti.DirectSum.mem_iSup_iff_decompose_eq_zero 𝒜 (P : Set Γ)
 
 /-- The supported subalgebra is closed under ambient homogeneous projections. -/
 theorem supportedSubalgebra_isHomogeneous :
@@ -90,7 +90,7 @@ theorem supportedSubalgebra_isHomogeneous :
   simpa only [DirectSum.SetLike.IsHomogeneous, ← Subalgebra.mem_toSubmodule,
     supportedSubalgebra_toSubmodule, shiftedSubmodule_def, zero_add, iSup_subtype,
     SetLike.mem_coe] using
-    Mei.DirectSum.iSup_isHomogeneous 𝒜 (P : Set Γ)
+    TauCeti.DirectSum.isHomogeneous_iSup 𝒜 (P : Set Γ)
 
 /-- Restrict the ambient grading to the supported subalgebra. -/
 instance instGradedAlgebraSupportedSubalgebra :

@@ -22,20 +22,20 @@ public noncomputable section
 
 open Set Mei.Convex TopologicalSpace
 
-namespace Mei.FinitePolyhedralComplex
+namespace TauCeti.FinitePolyhedralComplex
 
 variable {N V J : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
   (C : FinitePolyhedralComplex h)
 
 /-- Off-wall coefficient points satisfying every arrangement condition. -/
-abbrev arrangementCoefficientPoints (A : J → ExceptionalArrangement V) :=
+abbrev arrangementCoefficientPoints (A : J → ExceptionalArrangement ℝ V) :=
   {x : C.coefficientPoints // ∀ j, (A j).IsGeneric x.val.val}
 
 /-- Simultaneous genericity for a countable family of arrangements preserves density
 in the full regular locus, including its regular wall points. -/
 theorem denseRange_arrangementCoefficientPoints [Countable J]
-    (A : J → ExceptionalArrangement V) :
+    (A : J → ExceptionalArrangement ℝ V) :
     DenseRange (fun x : C.arrangementCoefficientPoints A => x.val.val) := by
   let := h.finiteDimensional
   have hdAll : Dense {x : C.regularSpace | ∀ j, (A j).IsGeneric x.val} :=
@@ -46,5 +46,4 @@ theorem denseRange_arrangementCoefficientPoints [Countable J]
   apply hdPoints.mono
   rintro x ⟨hx, hA⟩
   exact ⟨⟨⟨x, hx⟩, hA⟩, rfl⟩
-
-end Mei.FinitePolyhedralComplex
+end TauCeti.FinitePolyhedralComplex

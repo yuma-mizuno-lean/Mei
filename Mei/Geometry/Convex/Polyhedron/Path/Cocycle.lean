@@ -66,11 +66,11 @@ private theorem exists_crossing_iff_of_mem (hK : Convex ℝ K)
       (¬(0 < ν j u.val - ν j p ↔ 0 < ν j v.val - ν j p)) := by
     have := exists_crossing_iff_of_hyperplane u v
       ((ν j).toAffineMap - AffineMap.const ℝ V (ν j p)) (j := j) fun w hw => by
-        simp only [AffineMap.coe_sub, Pi.sub_apply, LinearMap.coe_toAffineMap,
+        simp only [FunLike.coe_sub, Pi.sub_apply, LinearMap.coe_toAffineMap,
           AffineMap.const_apply, sub_eq_zero]
         exact hK.mem_iff_apply_eq_of_disjoint_singularSupport hKW (hν j) hpK hpW
           (hK.segment_subset hu hv hw)
-    simpa only [AffineMap.coe_sub, Pi.sub_apply, LinearMap.coe_toAffineMap,
+    simpa only [FunLike.coe_sub, Pi.sub_apply, LinearMap.coe_toAffineMap,
       AffineMap.const_apply, ne_eq, eq_iff_iff]
       using this
   refine ⟨hiff, fun h => ?_⟩

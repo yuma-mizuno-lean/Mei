@@ -25,12 +25,14 @@ points and admissible segments between them. Cells may be unbounded and have lin
 
 public section
 
+open TauCeti (FinitePolyhedralComplex)
+
 open TauCeti (WallComplement singularSupport isClosed_singularSupport
   mem_intrinsicInterior_of_notMem_singularSupport)
 
 open Set Mei.Convex CategoryTheory TopologicalSpace Topology
 
-namespace Mei.FinitePolyhedralComplex
+namespace TauCeti.FinitePolyhedralComplex
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
@@ -38,29 +40,29 @@ variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ 
 
 /-- Every point of an ambient complex lies in a full-dimensional cell, including
 points on its boundary strata. -/
-theorem exists_mem_cellsOfCodimension_zero (hC : C.support = univ) (x : V) :
+theorem exists_mem_cellsOfCodimension_zero (hC : C.support = Set.univ) (x : V) :
     ∃ P ∈ C.cellsOfCodimension 0, x ∈ P := by
   -- The full-dimensional covering uses
   -- `FinitePolyhedralComplex.exists_mem_cells_subset_finrank_eq_of_cover`.
   have := h.finiteDimensional
-  obtain ⟨P, hP, -, hxP, hdim⟩ := C.exists_mem_cells_subset_finrank_eq_of_cover (P := univ)
+  obtain ⟨P, hP, -, hxP, hdim⟩ := C.exists_mem_cells_subset_finrank_eq_of_cover (P := Set.univ)
     convex_univ (fun y _ => by
       obtain ⟨Q, hQ, hyQ⟩ := mem_support.mp (hC ▸ mem_univ y)
       exact ⟨Q, hQ, subset_univ Q, hyQ⟩) (mem_univ x)
-  refine ⟨P, (C.mem_cellsOfCodimension 0 P).mpr ⟨hP, ?_⟩, hxP⟩
+  refine ⟨P, mem_cellsOfCodimension.mpr ⟨hP, ?_⟩, hxP⟩
   rw [AffineSubspace.span_univ ℝ V V, AffineSubspace.direction_top, finrank_top] at hdim
   simpa only [add_zero] using hdim
 
 /-- In an ambient complex, the walls cover the entire positive-codimension
 skeleton, including cells of smaller dimension. -/
-theorem support_codimensionAtLeast_one_eq_iUnion_walls (hC : C.support = univ) :
+theorem support_codimensionAtLeast_one_eq_iUnion_walls (hC : C.support = Set.univ) :
     (C.codimensionAtLeast 1).support = ⋃ W : C.walls, (W : Set V) := by
   apply Subset.antisymm
   · intro x hx
     obtain ⟨P, hP, hxP⟩ := C.exists_mem_cellsOfCodimension_zero hC x
     have hnot : x ∉ interior P := fun hxi =>
       C.interior_subset_compl_support_codimensionAtLeast_one hP hxi hx
-    have hPC := ((C.mem_cellsOfCodimension 0 P).mp hP).1
+    have hPC := (mem_cellsOfCodimension.mp hP).1
     -- Boundary points lie on actual facets by
     -- `FinitePolyhedralComplex.exists_mem_wall_of_mem_frontier`.
     obtain ⟨W, hW, hxW, -⟩ := C.exists_mem_wall_of_mem_frontier hP (by
@@ -75,7 +77,7 @@ theorem support_codimensionAtLeast_one_eq_iUnion_walls (hC : C.support = univ) :
 /-- For a finite complex covering the ambient space, wall singular support is
 precisely the skeleton of codimension at least two. The equality includes lower
 strata even when several walls have the same supporting hyperplane. -/
-theorem singularSupport_walls_eq_support_codimensionAtLeast_two (hC : C.support = univ) :
+theorem singularSupport_walls_eq_support_codimensionAtLeast_two (hC : C.support = Set.univ) :
     singularSupport (fun W : C.walls => (W : Set V)) =
       (C.codimensionAtLeast 2).support := by
   have := h.finiteDimensional
@@ -101,7 +103,7 @@ theorem singularSupport_walls_eq_support_codimensionAtLeast_two (hC : C.support 
 /-- Every admissible edge for an ambient complex misses the skeleton of
 codimension at least `k`, for any `k ≥ 2`. This applies to the fixed edges in
 polygonal cone fillings, without perturbing those edges. -/
-theorem disjoint_segment_support_codimensionAtLeast (hC : C.support = univ)
+theorem disjoint_segment_support_codimensionAtLeast (hC : C.support = Set.univ)
     {x y : WallComplement (fun W : C.walls => (W : Set V))}
     (e : x ⟶ y) {k : ℕ} (hk : 2 ≤ k) :
     Disjoint (segment ℝ x.val y.val) (C.codimensionAtLeast k).support := by
@@ -191,5 +193,4 @@ def coefficientSegment (U : Opens C.regularSpace) (hU : U ∈ C.coefficientChart
   ⟨hU.admissibleSegment_of_disjoint_singularSupport
     (Set.disjoint_left.mpr (by rintro _ ⟨z, _, rfl⟩ hz; exact z.property hz))
     ⟨x.val, hx, rfl⟩ ⟨y.val, hy, rfl⟩⟩
-
-end Mei.FinitePolyhedralComplex
+end TauCeti.FinitePolyhedralComplex

@@ -31,6 +31,10 @@ curve counts*, proof of Theorem 2.6. No higher-order consistency is required.
 
 public section
 
+open TauCeti.FinitePolyhedralComplex (mem_cellsOfCodimension)
+
+open TauCeti (FinitePolyhedralComplex)
+
 open TauCeti (OrientedCell PolyhedralCochain)
 
 open TauCeti (WallComplement AdmissiblePLPath)
@@ -136,7 +140,7 @@ theorem exists_joint_meridian_loopObstruction_eq_boundaryPairing
     obtain ⟨Q, hQ, hxQ⟩ := FinitePolyhedralComplex.mem_support.mp hx
     obtain ⟨hQC, hdQ⟩ := (C.mem_codimensionAtLeast_cells 1 Q).mp hQ
     by_cases hdim : Module.finrank ℝ (affineSpan ℝ Q).direction + 1 = Module.finrank ℝ V
-    · exact x.notMem ⟨Q, (C.mem_cellsOfCodimension 1 Q).mpr ⟨hQC, hdim⟩⟩ hxQ
+    · exact x.notMem ⟨Q, mem_cellsOfCodimension.mpr ⟨hQC, hdim⟩⟩ hxQ
     · have hx2 : x.val ∈ (C.codimensionAtLeast 2).support :=
         FinitePolyhedralComplex.mem_support.mpr ⟨Q, (C.mem_codimensionAtLeast_cells 2 Q).mpr
           ⟨hQC, by omega⟩, hxQ⟩

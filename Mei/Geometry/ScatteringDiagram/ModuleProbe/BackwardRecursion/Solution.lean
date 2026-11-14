@@ -29,6 +29,8 @@ open TauCeti (WallComplement)
 
 public noncomputable section
 
+open TauCeti (ExceptionalArrangement)
+
 open TauCeti (PositiveDegrees IsPositiveGrading)
 
 open TauCeti (DirectedWallSpaces)
@@ -72,8 +74,8 @@ theorem exists_coherentProbeEndpoint_finiteRecursion
     (hout : ∀ n : d.cutoff K, ∀ b, Sum.inr b ∈ D.active (K + 1) →
       (p + n.val, 1) ∈ (D.wall (.inr b)).ray.rayDegrees →
         (D.wall (.inr b)).Outgoing)
-    (A : ExceptionalArrangement V) :
-    ∃ (E : d.cutoff K → ExceptionalArrangement V)
+    (A : ExceptionalArrangement ℝ V) :
+    ∃ (E : d.cutoff K → ExceptionalArrangement ℝ V)
       (events : (Q : V) → (n : d.cutoff K) →
         Finset (WallEvent (B.active (d.degree n.val).toNat)))
       (point : (n : d.cutoff K) → WallEvent (B.active (d.degree n.val).toNat) →

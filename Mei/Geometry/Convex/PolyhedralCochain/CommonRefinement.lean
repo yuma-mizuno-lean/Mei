@@ -31,6 +31,8 @@ are allowed.
 
 public section
 
+open TauCeti (FinitePolyhedralComplex)
+
 open TauCeti (OrientedCell PolyhedralCochain isRationalNormalPolyhedron_iff)
 
 noncomputable section

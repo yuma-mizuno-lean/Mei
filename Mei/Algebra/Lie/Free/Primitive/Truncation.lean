@@ -23,6 +23,8 @@ The filtered Dynkin identity converts the coproduct defect into an Euler defect;
 
 public section
 
+open TauCeti.FreeLieAlgebra
+
 open scoped TensorProduct
 
 namespace Mei.FreeLieAlgebra

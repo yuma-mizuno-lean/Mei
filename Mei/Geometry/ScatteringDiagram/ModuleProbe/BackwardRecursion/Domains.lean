@@ -20,6 +20,8 @@ open TauCeti (WallComplement)
 
 public noncomputable section
 
+open TauCeti (ExceptionalArrangement)
+
 open TauCeti (PositiveDegrees IsPositiveGrading)
 
 open TauCeti (DirectedWallSpaces)
@@ -62,8 +64,8 @@ theorem exists_coherentProbeRecursionDomains
     (hout : ∀ n : d.cutoff K, ∀ b, Sum.inr b ∈ D.active (K + 1) →
       (p + n.val, 1) ∈ (D.wall (.inr b)).ray.rayDegrees →
         (D.wall (.inr b)).Outgoing)
-    (A : ExceptionalArrangement V) :
-    ∃ E : d.cutoff K → ExceptionalArrangement V,
+    (A : ExceptionalArrangement ℝ V) :
+    ∃ E : d.cutoff K → ExceptionalArrangement ℝ V,
       (∀ n Q, (E n).IsGeneric Q → A.IsGeneric Q ∧
         ∀ c : B.active K, Q ∉ (B.wall c).support) ∧
       ∀ n : d.cutoff K, n.val ≠ 0 → ∀ Q, (E n).IsGeneric Q →
@@ -102,7 +104,7 @@ theorem exists_coherentProbeRecursionDomains
     obtain ⟨y, hy, _⟩ := hS Q hQ
     exact hy ▸ y.notMem
   let stepProperty (j : ℕ) (hjK : j ≤ K)
-      (F G : ExceptionalArrangement V) : Prop :=
+      (F G : ExceptionalArrangement ℝ V) : Prop :=
     let f := coherentProbeEndpointFunction d ℳ p ℒ H h h' D B
       j K hjK hBc;
       (∀ Q, G.IsGeneric Q → ∀ c : B.active K, Q ∉ (B.wall c).support) ∧
@@ -129,18 +131,18 @@ theorem exists_coherentProbeRecursionDomains
                       (fun b X r m => X +
                         segmentEventParameter (B.activeNormal j) e T b •
                           i (ρ (p + r.val)) + δ • i (ρ (p + m.val))) f Q n
-  have hstep (j : ℕ) (hj : 0 < j) (hjK : j ≤ K) (F : ExceptionalArrangement V) :
+  have hstep (j : ℕ) (hj : 0 < j) (hjK : j ≤ K) (F : ExceptionalArrangement ℝ V) :
       ∃ G, stepProperty j hjK F G := by
     obtain ⟨k, rfl⟩ := Nat.exists_eq_succ_of_ne_zero (Nat.ne_of_gt hj)
     exact exists_coherentBackwardRayEndpointStepArrangement d ℳ p ℒ H h h' D₀ a D B
       hinitial k K hjK hBc hD hB
       (fun n _ b hb hray => hout ⟨n.val, d.cutoff_mono hjK n.property⟩ b
         (D.active_mono (by omega) hb) hray) F
-  let next (j : ℕ) (hj : 0 < j) (hjK : j ≤ K) (F : ExceptionalArrangement V) :=
+  let next (j : ℕ) (hj : 0 < j) (hjK : j ≤ K) (F : ExceptionalArrangement ℝ V) :=
     (hstep j hj hjK F).choose
-  have hnext (j : ℕ) (hj : 0 < j) (hjK : j ≤ K) (F : ExceptionalArrangement V) :=
+  have hnext (j : ℕ) (hj : 0 < j) (hjK : j ≤ K) (F : ExceptionalArrangement ℝ V) :=
     (hstep j hj hjK F).choose_spec
-  let domains : ℕ → ExceptionalArrangement V := Nat.rec (A.union S)
+  let domains : ℕ → ExceptionalArrangement ℝ V := Nat.rec (A.union S)
     (fun j F => if hjK : j + 1 ≤ K then F.union (next (j + 1) (Nat.succ_pos j) hjK F) else F)
   have hdomains (j l : ℕ) (hjl : j ≤ l) (Q : V)
       (hQ : (domains l).IsGeneric Q) : (domains j).IsGeneric Q := by

@@ -28,6 +28,8 @@ functions, and refined tropical curve counts*, §3.3.3 (arXiv:1503.06183v5).
 
 public noncomputable section
 
+open TauCeti (ExceptionalArrangement)
+
 open TauCeti (PositiveDegrees IsPositiveGrading)
 
 open TauCeti (DirectedWallSpaces)
@@ -75,7 +77,7 @@ theorem exists_operatorExtendedCoefficientField_eq_cutoffWallEventEvaluation
     (K : ℕ) (hBc : B.LevelConsistent K)
     (b : (d.shiftedQuotientGrading 𝒪 p K).piece 0)
     (hb : d.shiftedQuotientComponent 𝒪 p p K (by simp) b = input) :
-    ∃ A : d.cutoff K → ExceptionalArrangement V,
+    ∃ A : d.cutoff K → ExceptionalArrangement ℝ V,
       ∀ Q, (∀ n, (A n).IsGeneric Q) →
         ∃ hQ : ∀ c : B.active K, Q ∉ (B.wall c).support,
           ∀ a : H, operatorExtendedCoefficientField d ℳ p ℒ W h h' P B K hBc ⟨Q, hQ⟩ a =

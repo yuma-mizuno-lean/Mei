@@ -18,6 +18,8 @@ walls.
 
 public noncomputable section
 
+open TauCeti (FinitePolyhedralComplex)
+
 open CategoryTheory TopologicalSpace Opposite Set Topology TopCat Mei.Convex
 
 namespace Mei.FiniteWallDiagram

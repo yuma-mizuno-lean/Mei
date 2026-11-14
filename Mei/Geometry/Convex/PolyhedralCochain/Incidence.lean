@@ -32,6 +32,8 @@ are allowed.
 
 public section
 
+open TauCeti.FinitePolyhedralComplex (mem_cellsOfCodimension)
+
 open TauCeti (OrientedCell PolyhedralCochain)
 
 noncomputable section
@@ -54,7 +56,7 @@ theorem mem_cellsOfCodimension_of_mem_boundaryFacets (σ : OrientedCell h k)
     {τ : OrientedCell h (k + 1)} (hτ : τ ∈ σ.boundaryFacets) :
     τ.carrier ∈ C.cellsOfCodimension (k + 1) := by
   obtain ⟨F, hF, hne, hdim, rfl⟩ := (σ.mem_boundaryFacets τ).mp hτ
-  apply (C.mem_cellsOfCodimension _ _).mpr
+  apply mem_cellsOfCodimension.mpr
   refine ⟨?_, (σ.boundaryFacet hF hne hdim).finrank_direction_add⟩
   rw [boundaryFacet_carrier]
   exact C.face_closed _ hσ _ (isPolyhedralFace_iff.mpr ⟨hne, hF⟩)
@@ -81,7 +83,7 @@ end PolyhedralCochain
 
 end TauCeti
 
-namespace Mei
+namespace TauCeti
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i} {k : ℕ}
@@ -169,7 +171,7 @@ theorem reverse_mem_boundaryFacets_of_subset (C : FinitePolyhedralComplex h)
   obtain ⟨F, hF, hFne, hFdim, rfl⟩ := (σ.mem_boundaryFacets υ).mp hυ
   rw [OrientedCell.boundaryFacet_carrier] at hsub
   have hFC := C.face_closed σ.carrier hσ F (isPolyhedralFace_iff.mpr ⟨hFne, hF⟩)
-  have hG := (isPolyhedralFace_iff.mp (C.face_of_subset hFC hτ hsub)).2
+  have hG := (isPolyhedralFace_iff.mp (C.isPolyhedralFace_of_subset hFC hτ hsub)).2
   have hdim : finrank ℝ (vectorSpan ℝ F) + 1 =
       finrank ℝ (vectorSpan ℝ τ.carrier) := by
     rw [← direction_affineSpan ℝ τ.carrier, ← hspan, direction_affineSpan]
@@ -182,4 +184,4 @@ theorem reverse_mem_boundaryFacets_of_subset (C : FinitePolyhedralComplex h)
 
 end FinitePolyhedralComplex
 
-end Mei
+end TauCeti

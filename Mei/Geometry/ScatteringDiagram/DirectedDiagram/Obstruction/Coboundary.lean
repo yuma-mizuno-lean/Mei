@@ -34,6 +34,8 @@ Appendix C.3.
 
 public section
 
+open TauCeti.FinitePolyhedralComplex (mem_cellsOfCodimension)
+
 open TauCeti (OrientedCell PolyhedralCochain)
 
 open TauCeti (WallComplement AdmissiblePLPath)
@@ -127,7 +129,7 @@ theorem exists_jointObstructionCochain_eq_coboundary
     obtain ⟨W, _, hW⟩ := Finsupp.mem_support_finsetSum υ hυ
     obtain ⟨ω, hω, hυ⟩ := Finsupp.mem_support_finsetSum υ hW
     obtain ⟨rfl, _⟩ := (Finsupp.mem_support_single _ _ _).mp hυ
-    exact ((C.mem_cellsOfCodimension 2 υ.carrier).mp
+    exact (mem_cellsOfCodimension.mp
       ((σ W).mem_cellsOfCodimension_of_mem_boundaryFacets C
         (hσ W ▸ C.mem_cells_of_mem_walls W.property) hω)).1
   have hboundary : PolyhedralCochain.ofFinsupp (R := R) B =

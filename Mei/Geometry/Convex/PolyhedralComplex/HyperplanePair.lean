@@ -32,13 +32,15 @@ conical.
 
 public section
 
+open TauCeti (FinitePolyhedralComplex)
+
 open TauCeti.Convex (closure_signCell weakSignCell)
 
 open TauCeti (WallComplement singularSupport mem_singularSupport)
 
 open Set Mei.Convex
 
-namespace Mei.FinitePolyhedralComplex
+namespace TauCeti.FinitePolyhedralComplex
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i} {f g : V →L[ℝ] ℝ}
@@ -131,7 +133,7 @@ theorem singularSupport_hyperplaneComplex :
   have hfr : intrinsicFrontier ℝ {θ : V | f θ = 0} = ∅ := by
     have hle : affineSpan ℝ {θ : V | f θ = 0} ≤ (LinearMap.ker f.toLinearMap).toAffineSubspace :=
       affineSpan_le.mpr fun θ hθ => by simpa using hθ
-    have hpre : ((↑) : affineSpan ℝ {θ : V | f θ = 0} → V) ⁻¹' {θ | f θ = 0} = univ :=
+    have hpre : ((↑) : affineSpan ℝ {θ : V | f θ = 0} → V) ⁻¹' {θ | f θ = 0} = Set.univ :=
       eq_univ_of_forall fun y => by simpa using hle y.property
     rw [intrinsicFrontier, hpre, frontier_univ, image_empty]
   refine eq_empty_iff_forall_notMem.mpr fun x hx => ?_
@@ -143,7 +145,7 @@ theorem singularSupport_hyperplaneComplex :
 
 /-- The regular locus of the hyperplane complex is the whole space, including the hyperplane. -/
 @[simp]
-theorem regularLocus_hyperplaneComplex : (hyperplaneComplex f hf).regularLocus = univ := by
+theorem regularLocus_hyperplaneComplex : (hyperplaneComplex f hf).regularLocus = Set.univ := by
   rw [regularLocus, singularSupport_hyperplaneComplex, compl_empty]
 
 /-- The whole regular locus of the hyperplane complex is a convex coefficient chart. -/
@@ -248,5 +250,4 @@ theorem hyperplaneComplex_ne_hyperplanePairComplex (hf0 : f ≠ 0) {θ₀ : V} (
   rw [heq] at hZ
   exact ker_notMem_hyperplanePairComplex_cells hf hg hf₀ hg₀
     ((hyperplanePairComplex f g hf hg).mem_cells_of_mem_walls hZ)
-
-end Mei.FinitePolyhedralComplex
+end TauCeti.FinitePolyhedralComplex

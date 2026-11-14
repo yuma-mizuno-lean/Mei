@@ -37,13 +37,15 @@ to such triangles.
 
 public section
 
+open TauCeti (FinitePolyhedralComplex)
+
 open TauCeti (WallComplement AdmissiblePLPath)
 
 noncomputable section
 
 open Set Mei.Convex
 
-namespace Mei.FinitePolyhedralComplex
+namespace TauCeti.FinitePolyhedralComplex
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
@@ -102,14 +104,12 @@ theorem crossingWord_triangle_mem_normalClosure_jointMeridianWords
       (hhull θ.property) (disjoint_left.mp havoid θ.property)
   exact C.crossingWord_triangle_mem_of_cover ν hν _ e f r O hO
     (fun θ hθ => mem_iUnion.mpr ⟨⟨θ, hθ⟩, hθO _⟩) hlocal
-
-end Mei.FinitePolyhedralComplex
-
+end TauCeti.FinitePolyhedralComplex
 namespace Quiver.Path
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
-  {C : Mei.FinitePolyhedralComplex h}
+  {C : TauCeti.FinitePolyhedralComplex h}
   {x : TauCeti.WallComplement (fun P : C.walls => (P : Set V))}
 
 /-- **Generation of loop words by joint meridians.** For a complex covering the ambient space,
@@ -124,12 +124,12 @@ theorem crossingWord_mem_normalClosure_jointMeridianWords (p : TauCeti.Admissibl
     (p.crossingWord_mem_normalClosure_transverse_triangles hC ν hν hUo hp)
   obtain ⟨x, y, z, e, f, r, hx, hy, hz, havoid, -, rfl⟩ :=
     (C.mem_transverseTriangleWords ν U g).mp hg
-  exact Mei.FinitePolyhedralComplex.crossingWord_triangle_mem_normalClosure_jointMeridianWords
+  exact TauCeti.FinitePolyhedralComplex.crossingWord_triangle_mem_normalClosure_jointMeridianWords
     ν hν hUo e f r (convexHull_min (by simp [insert_subset_iff, hx, hy, hz]) hU) havoid
 
 end Quiver.Path
 
-namespace Mei.FinitePolyhedralComplex
+namespace TauCeti.FinitePolyhedralComplex
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
@@ -137,7 +137,7 @@ variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ 
 /-- For a complex covering the ambient space, the joint meridians in a convex open region
 normally generate the same subgroup as all triangular relations in the region. -/
 theorem normalClosure_jointMeridianWords_eq (C : FinitePolyhedralComplex h)
-    (hC : C.support = univ) (ν : C.walls → V →ₗ[ℝ] ℝ)
+    (hC : C.support = Set.univ) (ν : C.walls → V →ₗ[ℝ] ℝ)
     (hν : ∀ P, LinearMap.ker (ν P) = (affineSpan ℝ (P : Set V)).direction)
     {U : Set V} (hUo : IsOpen U) (hU : Convex ℝ U) :
     Subgroup.normalClosure (C.jointMeridianWords ν U) =
@@ -151,4 +151,4 @@ theorem normalClosure_jointMeridianWords_eq (C : FinitePolyhedralComplex h)
   exact C.crossingWord_triangle_mem_normalClosure_jointMeridianWords ν hν hUo e f r
     (convexHull_min (by simp [insert_subset_iff, hx, hy, hz]) hU) havoid
 
-end Mei.FinitePolyhedralComplex
+end TauCeti.FinitePolyhedralComplex

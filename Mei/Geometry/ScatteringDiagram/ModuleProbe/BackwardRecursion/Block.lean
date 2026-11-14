@@ -32,6 +32,8 @@ open TauCeti (WallComplement)
 
 public noncomputable section
 
+open TauCeti (ExceptionalArrangement)
+
 open TauCeti (PositiveDegrees IsPositiveGrading)
 
 open TauCeti (DirectedWallSpaces)
@@ -86,8 +88,8 @@ theorem exists_backwardRayEventBlockArrangement
       ∀ b, Sum.inr b ∈ D.active (k + 2) →
         (p + n.val, 1) ∈ (D.wall (.inr b)).ray.rayDegrees →
           (D.wall (.inr b)).Outgoing)
-    (F : ExceptionalArrangement V) {s : ℝ} (hs : 0 < s) :
-    ∃ (E : ExceptionalArrangement V) (r : V), ‖r‖ < s ∧
+    (F : ExceptionalArrangement ℝ V) {s : ℝ} (hs : 0 < s) :
+    ∃ (E : ExceptionalArrangement ℝ V) (r : V), ‖r‖ < s ∧
       (∀ (n : d.cutoff (k + 1)) (c : B.active (k + 1)),
         h.realCharacter (B.wall c).normal (i (ρ (p + n.val))) ≠ 0 →
           0 < h.realCharacter (B.wall c).normal (i (ρ (p + n.val)) + r) *

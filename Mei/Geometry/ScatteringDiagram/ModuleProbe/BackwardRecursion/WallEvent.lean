@@ -32,6 +32,8 @@ open TauCeti (WallComplement)
 
 public noncomputable section
 
+open TauCeti (ExceptionalArrangement)
+
 open TauCeti (PositiveDegrees IsPositiveGrading)
 
 open TauCeti (DirectedWallSpaces)
@@ -83,8 +85,8 @@ theorem exists_commonProbeWallEventRecursionDomains
       ∀ b, Sum.inr b ∈ D.active (k + 2) →
         (p + n.val, 1) ∈ (D.wall (.inr b)).ray.rayDegrees →
           (D.wall (.inr b)).Outgoing)
-    (A : ExceptionalArrangement V) :
-    ∃ (F : d.cutoff (k + 1) → ExceptionalArrangement V)
+    (A : ExceptionalArrangement ℝ V) :
+    ∃ (F : d.cutoff (k + 1) → ExceptionalArrangement ℝ V)
       (f : PositiveDegrees.ShiftedEndpointFunction d ℳ p V (k + 1)),
       (∀ n Q, (F n).IsGeneric Q → A.IsGeneric Q) ∧
       (∀ (z : WallComplement (B.activeSupport k)) (m : d.cutoff k),

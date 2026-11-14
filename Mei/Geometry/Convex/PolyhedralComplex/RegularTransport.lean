@@ -29,6 +29,8 @@ crossing criterion `WallComplement.exists_crossing_iff_of_hyperplane`.
 
 public section
 
+open TauCeti (FinitePolyhedralComplex)
+
 open TauCeti (WallComplement AdmissiblePLPath singularSupport
   mem_intrinsicInterior_of_notMem_singularSupport)
 
@@ -36,7 +38,7 @@ noncomputable section
 
 open Set Filter Topology Mei.Convex
 
-namespace Mei.FinitePolyhedralComplex
+namespace TauCeti.FinitePolyhedralComplex
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
@@ -62,7 +64,7 @@ private theorem segmentCrossingWord_eq_zpow_of_local_wall
   let f : V →ᵃ[ℝ] ℝ := (ν P).toAffineMap - AffineMap.const ℝ V b
   have hc := WallComplement.exists_crossing_iff_of_hyperplane x y f (j := P)
     (fun z hz => (hwall z (hseg hz)).trans (by simp [f, sub_eq_zero]))
-  simp only [f, AffineMap.coe_sub, Pi.sub_apply, LinearMap.coe_toAffineMap,
+  simp only [f, FunLike.coe_sub, Pi.sub_apply, LinearMap.coe_toAffineMap,
     AffineMap.const_apply, sub_pos] at hc
   by_cases hcross : ∃ t, (P, t) ∈ WallComplement.crossings x y
   · obtain ⟨t, ht⟩ := hcross
@@ -92,14 +94,12 @@ private theorem segmentCrossingWord_eq_zpow_of_local_wall
     rw [C.segmentCrossingWord_eq_one ν e hempty]
     have hside := not_not.mp (mt hc.mpr hcross)
     simp only [hside, sub_self, zpow_zero]
-
-end Mei.FinitePolyhedralComplex
-
+end TauCeti.FinitePolyhedralComplex
 namespace Quiver.Path
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
-  {C : Mei.FinitePolyhedralComplex h}
+  {C : TauCeti.FinitePolyhedralComplex h}
   {x y : WallComplement (fun P : C.walls => (P : Set V))}
 
 /-- Within a convex region where the only wall is a full hyperplane slice,
@@ -120,7 +120,7 @@ theorem crossingWord_eq_zpow_of_local_wall (p : AdmissiblePLPath x y)
     have hp' : ∀ v ∈ p.vertices, v.val ∈ U :=
       fun v hv => hp v ((mem_vertices_cons p e).mpr (Or.inl hv))
     rw [crossingWord_cons,
-      Mei.FinitePolyhedralComplex.segmentCrossingWord_eq_zpow_of_local_wall
+      TauCeti.FinitePolyhedralComplex.segmentCrossingWord_eq_zpow_of_local_wall
         ν P b hU hwall hother e (hp' y p.end_mem_vertices)
         (hp z ((mem_vertices_cons p e).mpr (Or.inr rfl))), ih hp', ← zpow_add]
     congr 1
@@ -128,7 +128,7 @@ theorem crossingWord_eq_zpow_of_local_wall (p : AdmissiblePLPath x y)
 
 end Quiver.Path
 
-namespace Mei.FinitePolyhedralComplex
+namespace TauCeti.FinitePolyhedralComplex
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
@@ -212,4 +212,4 @@ theorem exists_ball_crossingWord_loop_eq_one (C : FinitePolyhedralComplex h)
   subst w
   exact hp _ p.start_mem_vertices
 
-end Mei.FinitePolyhedralComplex
+end TauCeti.FinitePolyhedralComplex

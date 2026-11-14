@@ -36,6 +36,8 @@ refined tropical curve counts*, proof of Theorem 2.6, and Gross–Hacking–Keel
 
 public section
 
+open TauCeti (FinitePolyhedralComplex)
+
 open TauCeti (WallComplement)
 
 open TauCeti (PositiveDegrees IsPositiveGrading)

@@ -26,11 +26,13 @@ Coorientations are linear functionals whose kernels are the wall directions.
 
 public section
 
+open TauCeti (FinitePolyhedralComplex)
+
 open TauCeti (WallComplement AdmissiblePLPath)
 
 open Set Filter Topology Mei.Convex
 
-namespace Mei.FinitePolyhedralComplex
+namespace TauCeti.FinitePolyhedralComplex
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
@@ -96,14 +98,12 @@ theorem eventually_segmentCrossingWord_eq (ν : C.walls → V →ₗ[ℝ] ℝ)
   simp only [List.mem_map, mem_orderedCrossings, Prod.exists, exists_and_right,
     exists_eq_right] at hP'
   simp only [crossingLetter_def, hsign P hP']
-
-end Mei.FinitePolyhedralComplex
-
+end TauCeti.FinitePolyhedralComplex
 namespace Quiver.Path
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
-  {C : Mei.FinitePolyhedralComplex h}
+  {C : TauCeti.FinitePolyhedralComplex h}
   {x y : WallComplement (fun P : C.walls => (P : Set V))}
 
 /-- An admissible path has a positive radius such that every admissible path whose

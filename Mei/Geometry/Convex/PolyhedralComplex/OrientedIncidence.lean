@@ -29,9 +29,11 @@ Unbounded cells, lineality and arbitrary real offsets are allowed.
 
 public section
 
+open TauCeti (FinitePolyhedralComplex)
+
 open Set Filter Topology
 
-namespace Mei.FinitePolyhedralComplex
+namespace TauCeti.FinitePolyhedralComplex
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
@@ -81,14 +83,14 @@ theorem existsUnique_cell_of_positive_transverse_rays (C : FinitePolyhedralCompl
       simp only [map_sub] at hdiff
       simp only [map_sub, map_add, map_smul, smul_eq_mul, hv₀]
       linarith
-    exact (C.isConvexPolyhedron ((C.mem_cellsOfCodimension 0 Q).mp hQ).1).convex
+    exact (C.isConvexPolyhedron (mem_cellsOfCodimension.mp hQ).1).convex
       |>.eventually_add_smul_mem_interior_of_ker_le hPQ ν hν.le hq hx hxpos hv
   refine ⟨Q, ⟨hQ, hPQ, hall⟩, ?_⟩
   rintro Q' ⟨hQ', _, hall'⟩
   obtain ⟨t, ht, ht'⟩ := ((hall' q₀ hq₀ v₀ hvpos).and (hall q₀ hq₀ v₀ hvpos)).exists
   exact C.eq_of_mem_intrinsicInterior
-    ((C.mem_cellsOfCodimension 0 Q').mp hQ').1
-    ((C.mem_cellsOfCodimension 0 Q).mp hQ).1
+    (mem_cellsOfCodimension.mp hQ').1
+    (mem_cellsOfCodimension.mp hQ).1
     (interior_subset_intrinsicInterior ht) (interior_subset_intrinsicInterior ht')
 
 /-- One pair of distinct chambers works for all positive transverse crossings of
@@ -129,14 +131,13 @@ theorem exists_cooriented_wall_chambers (C : FinitePolyhedralComplex h)
   obtain ⟨t, ht, htε⟩ :=
     ((hall q hq v (by rw [hv]; exact zero_lt_one)).and (Ioo_mem_nhdsGT hε)).exists
   have heqm : Rminus = Qminus := C.eq_of_mem_intrinsicInterior
-    ((C.mem_cellsOfCodimension 0 Rminus).mp hRm).1
-    ((C.mem_cellsOfCodimension 0 Qminus).mp hm).1
+    (mem_cellsOfCodimension.mp hRm).1
+    (mem_cellsOfCodimension.mp hm).1
     (hshort t htε).1 (interior_subset_intrinsicInterior ht.1)
   have heqp : Rplus = Qplus := C.eq_of_mem_intrinsicInterior
-    ((C.mem_cellsOfCodimension 0 Rplus).mp hRp).1
-    ((C.mem_cellsOfCodimension 0 Qplus).mp hp).1
+    (mem_cellsOfCodimension.mp hRp).1
+    (mem_cellsOfCodimension.mp hp).1
     (hshort t htε).2 (interior_subset_intrinsicInterior ht.2)
   subst Rminus Rplus
   exact ⟨Qminus, hm, Qplus, hp, hne, hinter, hall⟩
-
-end Mei.FinitePolyhedralComplex
+end TauCeti.FinitePolyhedralComplex

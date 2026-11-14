@@ -26,6 +26,8 @@ and the compatible-family construction of `CompletedDiagram`.
 
 public section
 
+open TauCeti (FinitePolyhedralComplex)
+
 open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading GradedLieHom)
 
 noncomputable section

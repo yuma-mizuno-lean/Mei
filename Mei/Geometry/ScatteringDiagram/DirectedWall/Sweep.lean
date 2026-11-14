@@ -42,6 +42,10 @@ proof of Theorem 2.6, and Gross–Hacking–Keel–Kontsevich,
 
 public section
 
+open TauCeti.FinitePolyhedralComplex (mem_cellsOfCodimension)
+
+open TauCeti (FinitePolyhedralComplex)
+
 open TauCeti (IsRationalNormalPolyhedron OrientedCell)
 
 open TauCeti (PositiveDegrees IsPositiveGrading SupportedRay)
@@ -210,7 +214,7 @@ theorem exists_swept_correction_wall [Module.Free ℤ Γ]
       W.Outgoing ∧ ∀ k : ℕ,
         TauCeti.CompletedGroup.projection k W.label = 1 ↔ c = 0 ∨ (k : ℤ) < d.degree n := by
   obtain ⟨m, hm, hker, hwall⟩ := H.exists_joint_sweep_normal C hJ n htrans
-  have hcell := ((C.mem_cellsOfCodimension 2 J).mp hJ).1
+  have hcell := (mem_cellsOfCodimension.mp hJ).1
   obtain ⟨W, _, hW⟩ := exists_sweep_correction_wall_of_ker_eq (C.rational J hcell)
     (C.nonempty J hcell) n hn htrans hm hker c (hwall hc)
   exact ⟨W, hW⟩
@@ -274,7 +278,7 @@ theorem exists_swept_correction_wall_of_truncated [Module.Free ℤ Γ]
       ∀ l : ℕ, TauCeti.CompletedGroup.projection l W.label = 1 ↔ c = 0 ∨ (l : ℤ) < d.degree n := by
   obtain ⟨m, hm, hker, hwall⟩ :=
     (H.truncated d k).exists_joint_sweep_normal C hJ n htrans
-  have hcell := ((C.mem_cellsOfCodimension 2 J).mp hJ).1
+  have hcell := (mem_cellsOfCodimension.mp hJ).1
   obtain ⟨W, _, hW⟩ := exists_sweep_correction_wall_of_truncated_of_ker_eq (C.rational J hcell)
     (C.nonempty J hcell) n hn htrans hm hker k hnk c (hwall hc)
   exact ⟨W, hW⟩

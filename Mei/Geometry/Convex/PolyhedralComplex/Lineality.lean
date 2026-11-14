@@ -20,7 +20,7 @@ lineality are included.
 
 public section
 
-namespace Mei.FinitePolyhedralComplex
+namespace TauCeti.FinitePolyhedralComplex
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
@@ -39,5 +39,4 @@ theorem lineal_recessionCone_eq_of_inter_nonempty (C : FinitePolyhedralComplex h
   exact (hfaceP.lineal_recessionCone_eq hpolyP.convex hpolyP.isClosed hne).symm.trans
     (by simpa only [Set.inter_comm] using
       hfaceQ.lineal_recessionCone_eq hpolyQ.convex hpolyQ.isClosed hneQP)
-
-end Mei.FinitePolyhedralComplex
+end TauCeti.FinitePolyhedralComplex

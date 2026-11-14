@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Algebra.Lie.Graded.Supported
+public import TauCeti.Algebra.Lie.Graded.Supported
 public import Mei.Algebra.Lie.Graded.Truncation.Transition
 public import Mei.Algebra.Lie.BCH.Subgroup
 public import Mathlib.Basic.Real.Basic
@@ -25,7 +25,7 @@ and its BCH subgroup maps onto the corresponding subgroup at every lower order.
 These are the finite-order label groups for conical scattering walls.
 
 This uses Mathlib's kernels, intersections and `LieSubalgebra.map`, together with
-`Mei.supportedLieSubalgebra` and the existing `LieSubalgebra.bchSubgroup`.
+`TauCeti.supportedLieSubalgebra` and the existing `LieSubalgebra.bchSubgroup`.
 -/
 
 public section
@@ -44,24 +44,24 @@ variable (ℒ : N → Submodule R L) [SetLike.GradedBracket ℒ ℒ]
 /-- The Lie subalgebra supported on degrees annihilating every point of `σ`.
 No convexity or rationality assumption on the dual support is required. -/
 def orthogonalLieSubalgebra (σ : Set (N →+ ℝ)) : LieSubalgebra R L :=
-  supportedLieSubalgebra ℒ (⨅ θ ∈ σ, (AddMonoidHom.mker θ).toAddSubsemigroup)
+  TauCeti.supportedLieSubalgebra ℒ (⨅ θ ∈ σ, (AddMonoidHom.mker θ).toAddSubsemigroup)
 
 /-- Orthogonality selects the intersection of the evaluation kernels. -/
 theorem orthogonalLieSubalgebra_def (σ : Set (N →+ ℝ)) :
     orthogonalLieSubalgebra ℒ σ =
-      supportedLieSubalgebra ℒ (⨅ θ ∈ σ, (AddMonoidHom.mker θ).toAddSubsemigroup) := (rfl)
+      TauCeti.supportedLieSubalgebra ℒ (⨅ θ ∈ σ, (AddMonoidHom.mker θ).toAddSubsemigroup) := (rfl)
 
 /-- Every piece annihilating the support is contained in its orthogonal Lie algebra. -/
 theorem le_orthogonalLieSubalgebra {σ : Set (N →+ ℝ)} {n : N}
     (hn : ∀ θ ∈ σ, θ n = 0) : ℒ n ≤ (orthogonalLieSubalgebra ℒ σ).toSubmodule := by
-  apply le_supportedLieSubalgebra
+  apply TauCeti.le_supportedLieSubalgebra
   simpa only [AddSubsemigroup.mem_iInf, AddSubmonoid.mem_toSubsemigroup,
     AddMonoidHom.mem_mker] using hn
 
 /-- A larger dual support imposes more vanishing conditions on degrees. -/
 theorem orthogonalLieSubalgebra_antitone : Antitone (orthogonalLieSubalgebra ℒ) := by
   intro σ τ hστ
-  apply supportedLieSubalgebra_mono
+  apply TauCeti.supportedLieSubalgebra_mono
   intro n hn
   simp only [AddSubsemigroup.mem_iInf, AddSubmonoid.mem_toSubsemigroup,
     AddMonoidHom.mem_mker] at hn ⊢
@@ -75,7 +75,7 @@ theorem map_orthogonalLieSubalgebra_le {L' : Type*} [LieRing L'] [LieAlgebra R L
     (σ : Set (N →+ ℝ)) :
     (orthogonalLieSubalgebra ℒ σ).map f ≤ orthogonalLieSubalgebra ℳ σ := by
   rw [LieSubalgebra.map_le_iff_le_comap, orthogonalLieSubalgebra_def]
-  apply (supportedLieSubalgebra_le_iff ℒ _ _).mpr
+  apply (TauCeti.supportedLieSubalgebra_le_iff ℒ _ _).mpr
   intro n hn x hx
   apply le_orthogonalLieSubalgebra ℳ _ (hf n x hx)
   simpa only [AddSubsemigroup.mem_iInf, AddSubmonoid.mem_toSubsemigroup,
@@ -88,7 +88,7 @@ variable [DecidableEq N] [DirectSum.Decomposition ℒ]
 theorem mem_orthogonalLieSubalgebra_iff (σ : Set (N →+ ℝ)) (x : L) :
     x ∈ orthogonalLieSubalgebra ℒ σ ↔
       ∀ θ ∈ σ, ∀ n, θ n ≠ 0 → (DirectSum.decompose ℒ x n : L) = 0 := by
-  simp only [orthogonalLieSubalgebra_def, mem_supportedLieSubalgebra_iff,
+  simp only [orthogonalLieSubalgebra_def, TauCeti.mem_supportedLieSubalgebra_iff,
     AddSubsemigroup.mem_iInf, AddSubmonoid.mem_toSubsemigroup,
     AddMonoidHom.mem_mker]
   grind
@@ -96,7 +96,7 @@ theorem mem_orthogonalLieSubalgebra_iff (σ : Set (N →+ ℝ)) (x : L) :
 /-- The orthogonal Lie algebra is stable under homogeneous projections. -/
 theorem orthogonalLieSubalgebra_isHomogeneous (σ : Set (N →+ ℝ)) :
     DirectSum.SetLike.IsHomogeneous ℒ (orthogonalLieSubalgebra ℒ σ) :=
-  supportedLieSubalgebra_isHomogeneous ℒ _
+  TauCeti.isHomogeneous_supportedLieSubalgebra ℒ _
 
 /-- The empty support imposes no condition on the Lie algebra. -/
 @[simp]
@@ -131,9 +131,9 @@ theorem map_orthogonalLieSubalgebra_mkQ (σ : Set (N →+ ℝ)) (k : ℕ) :
   simp only [orthogonalLieSubalgebra_def]
   apply LieSubalgebra.toSubmodule_injective
   refine (congrArg LieSubalgebra.toSubmodule
-    (map_supportedLieSubalgebra ℒ (⨅ θ ∈ σ, (AddMonoidHom.mker θ).toAddSubsemigroup)
+    (TauCeti.map_supportedLieSubalgebra ℒ (⨅ θ ∈ σ, (AddMonoidHom.mker θ).toAddSubsemigroup)
       (d.degreeIdeal ℒ k).mkQ)).trans ?_
-  simp only [supportedLieSubalgebra_toSubmodule]
+  simp only [TauCeti.supportedLieSubalgebra_toSubmodule]
   exact iSup_congr fun n => (d.truncatedGrading_eq ℒ k n).symm
 
 /-- Lowering the cutoff maps the finer orthogonal Lie algebra onto the coarser one. -/
@@ -143,7 +143,7 @@ theorem map_orthogonalLieSubalgebra_truncationMap (σ : Set (N →+ ℝ))
       orthogonalLieSubalgebra (d.truncatedGrading ℒ k) σ := by
   simp only [orthogonalLieSubalgebra_def]
   simpa only [d.map_truncationMap_truncatedGrading ℒ h] using
-    map_supportedLieSubalgebra (d.truncatedGrading ℒ l)
+    TauCeti.map_supportedLieSubalgebra (d.truncatedGrading ℒ l)
       (⨅ θ ∈ σ, (AddMonoidHom.mker θ).toAddSubsemigroup) (d.truncationMap ℒ h)
 
 variable [Algebra ℚ R] [LieAlgebra ℚ L] [IsScalarTower ℚ R L]

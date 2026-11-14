@@ -6,7 +6,8 @@ Authors: Codex
 module
 
 public import Mei.Geometry.Convex.PolyhedralComplex.Filling.Homotopy
-public import Mei.Geometry.Convex.Polyhedron.Path.Product
+public import TauCeti.Geometry.ScatteringDiagram.Path.Product
+public import Mei.Geometry.Convex.Polyhedron.AdmissiblePath
 
 /-!
 # Finite wall diagrams and path products
@@ -30,6 +31,8 @@ words in `Mei.Geometry.Convex.PolyhedralComplex.CrossingWord`.
 -/
 
 public section
+
+open TauCeti (FinitePolyhedralComplex)
 
 open TauCeti (WallComplement AdmissiblePLPath)
 

@@ -42,9 +42,11 @@ The construction uses the common-face incidence theorem
 
 public section
 
+open TauCeti (FinitePolyhedralComplex)
+
 open Set Filter Topology
 
-namespace Mei.FinitePolyhedralComplex
+namespace TauCeti.FinitePolyhedralComplex
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
@@ -55,7 +57,7 @@ theorem exists_joint_direction_eq_inf_ker (C : FinitePolyhedralComplex h) {J : S
     (hJ : J ∈ C.joints) :
     ∃ f g : N →+ ℤ, (affineSpan ℝ J).direction =
       (h.realCharacter f).ker ⊓ (h.realCharacter g).ker := by
-  obtain ⟨hJC, hdim⟩ := (C.mem_cellsOfCodimension 2 J).mp hJ
+  obtain ⟨hJC, hdim⟩ := mem_cellsOfCodimension.mp hJ
   obtain ⟨f, g, _, hfg⟩ := (C.rational J hJC).exists_direction_eq_inf_ker
     (C.nonempty J hJC) hdim
   exact ⟨f, g, hfg⟩
@@ -68,7 +70,7 @@ theorem exists_linearIndependent_joint_direction_eq_inf_ker
     (hJ : J ∈ C.joints) :
     ∃ f g : N →+ ℤ, LinearIndependent ℝ ![h.realCharacter f, h.realCharacter g] ∧
       (affineSpan ℝ J).direction = (h.realCharacter f).ker ⊓ (h.realCharacter g).ker := by
-  obtain ⟨hcell, hdim⟩ := (C.mem_cellsOfCodimension 2 J).mp hJ
+  obtain ⟨hcell, hdim⟩ := mem_cellsOfCodimension.mp hJ
   exact (C.rational J hcell).exists_direction_eq_inf_ker (C.nonempty J hcell) hdim
 
 /-- At a degree transverse to a joint, contracting two integral joint equations
@@ -95,7 +97,7 @@ theorem exists_joint_transverse_normal (C : FinitePolyhedralComplex h) {J : Set 
   intro he
   have htop : (affineSpan ℝ J).direction ⊔ ℝ ∙ i v = ⊤ := by
     simpa only [he, map_zero, LinearMap.ker_zero] using hker.symm
-  have hdim := ((C.mem_cellsOfCodimension 2 J).mp hJ).2
+  have hdim := (mem_cellsOfCodimension.mp hJ).2
   have hsup := Submodule.finrank_sup_span_singleton hv
   rw [htop, finrank_top] at hsup
   omega
@@ -116,7 +118,7 @@ theorem exists_isolating_ball_joint (C : FinitePolyhedralComplex h) {J : Set V}
   let := h.finiteDimensional
   obtain ⟨r, hr, hskeleton, hfrontier, hother, hcells⟩ := C.exists_isolating_ball hJ hx
   obtain ⟨W, hW⟩ := Submodule.exists_isCompl (affineSpan ℝ J).direction
-  have hdimJ := ((C.mem_cellsOfCodimension 2 J).mp hJ).2
+  have hdimJ := (mem_cellsOfCodimension.mp hJ).2
   have hdimW := Submodule.finrank_add_eq_of_isCompl hW
   have hxJ := intrinsicInterior_subset hx
   have hxA := subset_affineSpan ℝ J hxJ
@@ -182,18 +184,17 @@ theorem exists_pencil_of_joint (hJ : J ∈ C.joints) (q : V) {φ : V →ₗ[ℝ]
   refine ⟨(-a) • g₁ + (-b) • g₂, b • g₁ + (-a) • g₂, fun w => ?_, fun g hg => ?_⟩
   · have := hab (q - w)
     simp only [map_sub] at this
-    simp only [AffineMap.coe_add, AffineMap.coe_smul, Pi.add_apply, Pi.smul_apply, hg₁, hg₂,
+    simp only [FunLike.coe_add, FunLike.coe_smul, Pi.add_apply, Pi.smul_apply, hg₁, hg₂,
       map_sub, smul_eq_mul]
     linarith
   · obtain ⟨c₁, c₂, hc⟩ := hcomb g hg
     refine ⟨-(c₁ * a + c₂ * b) / (a ^ 2 + b ^ 2), (c₁ * b - c₂ * a) / (a ^ 2 + b ^ 2),
       fun w => ?_⟩
     rw [← map_sub, hc]
-    simp only [AffineMap.coe_add, AffineMap.coe_smul, Pi.add_apply, Pi.smul_apply, hg₁, hg₂,
+    simp only [FunLike.coe_add, FunLike.coe_smul, Pi.add_apply, Pi.smul_apply, hg₁, hg₂,
       smul_eq_mul]
     field_simp
     ring
 
 end JointGeometry
-
-end Mei.FinitePolyhedralComplex
+end TauCeti.FinitePolyhedralComplex

@@ -27,6 +27,8 @@ well as isolation in the original affine slice.
 
 public section
 
+open TauCeti (FinitePolyhedralComplex)
+
 open TauCeti (WallComplement AdmissiblePLPath)
 
 noncomputable section
@@ -34,7 +36,7 @@ noncomputable section
 open Set Mei.Convex
 open scoped unitInterval
 
-namespace Mei.FinitePolyhedralComplex
+namespace TauCeti.FinitePolyhedralComplex
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
@@ -101,5 +103,4 @@ theorem exists_admissible_filling_grid_fixed_boundary (C : FinitePolyhedralCompl
   refine ⟨n, t, hn, ht0, htmono, ht1, v, hvfix, hvnear, a₁, a₂, fun a b => ?_⟩
   obtain ⟨θ, hpatch, hhull⟩ := hgrid a b
   exact ⟨θ.val, θ.property, r θ, hr θ, hpatch, hhull, hlocal θ⟩
-
-end Mei.FinitePolyhedralComplex
+end TauCeti.FinitePolyhedralComplex

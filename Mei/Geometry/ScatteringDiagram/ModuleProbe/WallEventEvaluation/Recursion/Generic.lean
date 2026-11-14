@@ -32,6 +32,8 @@ open TauCeti (WallComplement)
 
 public noncomputable section
 
+open TauCeti (ExceptionalArrangement)
+
 open TauCeti (PositiveDegrees IsPositiveGrading)
 
 open TauCeti (DirectedWallSpaces)
@@ -65,8 +67,8 @@ positive-degree event-block recurrence with generic incoming read points for a
 prescribed arrangement. Each event has one arbitrarily small displacement that
 works for every retained degree with matching normal velocity. -/
 theorem exists_cutoffWallEventEvaluation_eq_sum_eventBlock_generic
-    (k : ℕ) (A : ExceptionalArrangement V) :
-    ∃ F : ExceptionalArrangement V,
+    (k : ℕ) (A : ExceptionalArrangement ℝ V) :
+    ∃ F : ExceptionalArrangement ℝ V,
       ∀ (n : d.cutoff (k + 1)), n.val ≠ 0 →
         ∀ {x y : WallComplement (B.activeSupport (k + 1))}, F.IsGeneric y.val →
           ∀ (e : x ⟶ y) (T : ℝ), 0 < T →
@@ -134,8 +136,8 @@ open Classical in
 endpoint-step formula in every positive relative degree, with all compatible
 incoming points generic for the prescribed arrangement. The refinement and
 segments are chosen before the coefficient and source cell. -/
-theorem exists_wallEventRecursionArrangement_generic (k : ℕ) (A : ExceptionalArrangement V) :
-    ∃ E : ExceptionalArrangement V, ∀ Q, E.IsGeneric Q →
+theorem exists_wallEventRecursionArrangement_generic (k : ℕ) (A : ExceptionalArrangement ℝ V) :
+    ∃ E : ExceptionalArrangement ℝ V, ∀ Q, E.IsGeneric Q →
       ∃ y : WallComplement (B.activeSupport (k + 1)), y.val = Q ∧
         ∀ n : d.cutoff (k + 1), n.val ≠ 0 → ∀ᶠ T : ℝ in atTop,
           0 < T ∧

@@ -29,13 +29,13 @@ noncomputable section
 
 open Set Filter Topology
 
-namespace Mei.ExceptionalArrangement
+namespace TauCeti.ExceptionalArrangement
 
 variable {V ι : Type*} [AddCommGroup V] [Module ℝ V] [Finite ι]
 
 /-- The arrangement of zero sets of the nonconstant affine conditions. Constant
 conditions contribute no exception, regardless of their value. -/
-def ofAffineForms (g : ι → V →ᵃ[ℝ] ℝ) : ExceptionalArrangement V := by
+def ofAffineForms (g : ι → V →ᵃ[ℝ] ℝ) : ExceptionalArrangement ℝ V := by
   classical
   letI := Fintype.ofFinite ι
   refine ⟨(Finset.univ.filter fun j => (g j).linear ≠ 0).image
@@ -80,7 +80,7 @@ theorem eventually_sign_eq_of_isGeneric (g : ι → V →ᴬ[ℝ] ℝ) {x : V}
   · obtain ⟨c, hc⟩ := (g j).toAffineMap.linear_eq_zero_iff_exists_const.mp hj
     have heq (y : V) : g j y = c := congrArg (fun f : V →ᵃ[ℝ] ℝ => f y) hc
     exact Filter.Eventually.of_forall fun y => by rw [heq y, heq x]
-  · exact ((isOpen_setOf_sign_eq (sign_ne_zero.mpr (hx j hj))).preimage
+  · exact ((Mei.isOpen_setOf_sign_eq (sign_ne_zero.mpr (hx j hj))).preimage
       (g j).continuous).mem_nhds rfl
 
-end Mei.ExceptionalArrangement
+end TauCeti.ExceptionalArrangement

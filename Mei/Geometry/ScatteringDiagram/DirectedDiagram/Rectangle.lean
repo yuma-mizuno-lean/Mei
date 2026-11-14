@@ -7,7 +7,8 @@ module
 
 public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Consistency
 public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.LocalCrossing
-public import Mei.Geometry.Affine.IncomingGerm
+public import TauCeti.Analysis.Normed.Affine.Germ
+public import Mei.Geometry.Affine.Generic
 
 /-!
 # Comparing crossings along a common tangent direction
@@ -18,7 +19,7 @@ of walls parallel to that line. Short transverse crossings bound a parallelogram
 whose other two sides meet no wall. Consistency therefore equates the crossings,
 even if the intervening segment inside the wall slice meets singular support.
 
-This uses `AffineSubspace.eventually_smul_vadd_notMem`, the short crossing
+This uses `AffineSubspace.eventually_smul_vadd_notMem_nhdsGT`, the short crossing
 construction in `DirectedDiagram.LocalCrossing`, and endpoint independence of
 `DirectedDiagram.levelPathProduct`. The parallelogram argument for module probes
 follows Mandel, *Scattering diagrams, theta functions, and refined tropical curve
@@ -87,8 +88,8 @@ theorem combinedLabel_eq_of_parallel_displacement (k : ℕ) (hD : D.LevelConsist
         by simpa [add_comm] using
           (S.vadd_mem_iff_mem_of_mem_direction (S.direction.smul_mem a hv)).not.mpr hnot⟩
     · have hneg : -v ∉ S.direction := fun hn => hv (by simpa using S.direction.neg_mem hn)
-      filter_upwards [S.eventually_smul_vadd_notMem hv θ,
-        S.eventually_smul_vadd_notMem hneg θ] with a ha hn
+      filter_upwards [S.eventually_smul_vadd_notMem_nhdsGT hv θ 0,
+        S.eventually_smul_vadd_notMem_nhdsGT hneg θ 0] with a ha hn
       exact ⟨by simpa [sub_eq_add_neg, add_comm] using hn,
         by simpa [add_comm] using ha⟩
   -- Realize the two regular crossings at the same sufficiently small offset.

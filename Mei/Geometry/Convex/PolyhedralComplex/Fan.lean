@@ -25,6 +25,8 @@ affine and conical face conventions.
 
 public section
 
+open TauCeti (FinitePolyhedralComplex)
+
 open TauCeti.Toric
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
@@ -33,7 +35,7 @@ variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ 
 namespace TauCeti.Toric.Fan
 
 /-- Regard the cones of a toric fan as the cells of a finite polyhedral complex. -/
-noncomputable def toPolyhedralComplex (Φ : Fan i) : Mei.FinitePolyhedralComplex Φ.lattice := by
+noncomputable def toPolyhedralComplex (Φ : Fan i) : TauCeti.FinitePolyhedralComplex Φ.lattice := by
   classical
   exact {
     cells := Φ.finite_cones.toFinset.image (fun σ : PointedCone ℝ V => (σ : Set V))
@@ -46,7 +48,7 @@ noncomputable def toPolyhedralComplex (Φ : Fan i) : Mei.FinitePolyhedralComplex
         (Φ.isToricCone (Φ.finite_cones.mem_toFinset.mp hσ)).rational
     face_closed P hP S hS := by
       obtain ⟨σ, hσ, rfl⟩ := Finset.mem_image.mp hP
-      have hS := Mei.isPolyhedralFace_iff.mp hS
+      have hS := TauCeti.isPolyhedralFace_iff.mp hS
       obtain ⟨τ, hτ, rfl⟩ := hS.2.exists_isFaceOf_coe_eq hS.1
       exact Finset.mem_image.mpr ⟨τ, Φ.finite_cones.mem_toFinset.mpr
         (Φ.mem_of_isFaceOf (Φ.finite_cones.mem_toFinset.mp hσ) hτ), rfl⟩
@@ -70,11 +72,11 @@ theorem mem_toPolyhedralComplex_cells (Φ : Fan i) (P : Set V) :
 theorem support_toPolyhedralComplex (Φ : Fan i) :
     Φ.toPolyhedralComplex.support = Φ.support := by
   ext x
-  simp only [Mei.FinitePolyhedralComplex.mem_support, mem_toPolyhedralComplex_cells,
+  simp only [TauCeti.FinitePolyhedralComplex.mem_support, mem_toPolyhedralComplex_cells,
     mem_support]
   aesop
 
-open Mei.FinitePolyhedralComplex
+open TauCeti.FinitePolyhedralComplex
 
 /-- The complex associated to a fan is conical. -/
 theorem isConical_toPolyhedralComplex (Φ : Fan i) : Φ.toPolyhedralComplex.IsConical := by
@@ -92,7 +94,7 @@ theorem salient_toPolyhedralComplex (Φ : Fan i) (σ : PointedCone ℝ V)
 
 end TauCeti.Toric.Fan
 
-namespace Mei.FinitePolyhedralComplex
+namespace TauCeti.FinitePolyhedralComplex
 
 variable {h : IsIntegralLattice i}
 
@@ -107,7 +109,7 @@ def toFan (C : FinitePolyhedralComplex h)
     ⟨(TauCeti.isRationalNormalPolyhedron_coe_iff (h := h)).mp (C.rational _ hσ), hsal _ hσ⟩
   mem_of_isFaceOf {σ τ} hσ hτ := by
     let _ := h.finiteDimensional
-    exact C.face_closed _ hσ _ (Mei.isPolyhedralFace_iff.mpr ⟨⟨0, τ.zero_mem⟩,
+    exact C.face_closed _ hσ _ (TauCeti.isPolyhedralFace_iff.mpr ⟨⟨0, τ.zero_mem⟩,
       hτ.isExposed_of_fg ((TauCeti.isRationalNormalPolyhedron_coe_iff (h := h)).mp
         (C.rational _ hσ)).fg⟩)
   inf_isFaceOf_left {σ τ} hσ hτ := by
@@ -139,7 +141,6 @@ theorem support_toFan (C : FinitePolyhedralComplex h) (hc : C.IsConical) (hsal) 
 @[simp]
 theorem toPolyhedralComplex_toFan (C : FinitePolyhedralComplex h) (hc : C.IsConical)
     (hsal) : (C.toFan hsal).toPolyhedralComplex = C := by
-  apply ext
   ext P
   simp only [Fan.mem_toPolyhedralComplex_cells, mem_toFan_cones]
   constructor
@@ -148,12 +149,10 @@ theorem toPolyhedralComplex_toFan (C : FinitePolyhedralComplex h) (hc : C.IsConi
   · intro hP
     obtain ⟨σ, hσ⟩ := (isConical_iff C).mp hc P hP
     exact ⟨σ, hσ ▸ hP, hσ⟩
-
-end Mei.FinitePolyhedralComplex
-
+end TauCeti.FinitePolyhedralComplex
 namespace TauCeti.Toric.Fan
 
-open Mei.FinitePolyhedralComplex
+open TauCeti.FinitePolyhedralComplex
 
 /-- Converting a fan to its complex and back recovers the fan. -/
 @[simp]
@@ -173,18 +172,19 @@ theorem isSubdivision_iff_toPolyhedralComplex (Φ Ψ : Fan i) :
     Φ.IsSubdivision Ψ ↔ Φ.toPolyhedralComplex.IsSubdivision Ψ.toPolyhedralComplex := by
   constructor
   · intro hsub
-    apply Mei.FinitePolyhedralComplex.isSubdivision_iff.mpr
+    apply TauCeti.FinitePolyhedralComplex.isSubdivision_iff.mpr
     refine ⟨?_, by simpa using hsub.support_eq⟩
-    apply Mei.FinitePolyhedralComplex.isWeakRefinement_iff.mpr
+    apply TauCeti.FinitePolyhedralComplex.isWeakRefinement_iff.mpr
     intro P hP
     obtain ⟨σ, hσ, rfl⟩ := (Φ.mem_toPolyhedralComplex_cells P).mp hP
     obtain ⟨τ, hτ, hστ⟩ := hsub.exists_cone_le hσ
     exact ⟨τ, (Ψ.mem_toPolyhedralComplex_cells _).mpr ⟨τ, hτ, rfl⟩, hστ⟩
   · intro hsub
-    have hsub := Mei.FinitePolyhedralComplex.isSubdivision_iff.mp hsub
+    have hsub := TauCeti.FinitePolyhedralComplex.isSubdivision_iff.mp hsub
     refine ⟨?_, by simpa using hsub.2⟩
     intro σ hσ
-    obtain ⟨Q, hQ, hσQ⟩ := (Mei.FinitePolyhedralComplex.isWeakRefinement_iff.mp hsub.1) (σ : Set V)
+    obtain ⟨Q, hQ, hσQ⟩ := (TauCeti.FinitePolyhedralComplex.isWeakRefinement_iff.mp hsub.1)
+      (σ : Set V)
       ((Φ.mem_toPolyhedralComplex_cells _).mpr ⟨σ, hσ, rfl⟩)
     obtain ⟨τ, hτ, rfl⟩ := (Ψ.mem_toPolyhedralComplex_cells Q).mp hQ
     exact ⟨τ, hτ, hσQ⟩

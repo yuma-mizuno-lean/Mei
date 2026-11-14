@@ -33,6 +33,10 @@ order, local finiteness of the all-order wall union, or salient support is neede
 
 public section
 
+open TauCeti.FinitePolyhedralComplex (mem_cellsOfCodimension)
+
+open TauCeti (FinitePolyhedralComplex)
+
 open TauCeti (WallComplement AdmissiblePLPath)
 
 open TauCeti (PositiveDegrees IsPositiveGrading)
@@ -82,7 +86,7 @@ theorem levelChamber_eq_of_mem_interior_adapted {k l : ℕ} (hkl : k ≤ l)
   let f : interior P → U := fun z =>
     ⟨z.val, D.notMem_support_of_mem_interior_adapted hkl hP z.property⟩
   have hf : Continuous f := continuous_subtype_val.subtype_mk _
-  have hPC := ((D.adaptedComplex l).mem_cellsOfCodimension 0 P).mp hP
+  have hPC := mem_cellsOfCodimension.mp hP
   have hconn : IsPreconnected (range f) := by
     have hpre := (D.adaptedComplex l).isConvexPolyhedron hPC.1 |>.convex.interior.isPreconnected
     let : PreconnectedSpace (interior P) := isPreconnected_iff_preconnectedSpace.mp hpre
@@ -98,7 +102,7 @@ theorem exists_segment_levelPathProduct_eq_one_of_mem_interior_adapted {k : ℕ}
     (hx : x.val ∈ interior P) (hy : y.val ∈ interior P) :
     ∃ e : x ⟶ y, D.levelPathProduct k e.toPath = 1 := by
   have hconv := ((D.adaptedComplex k).isConvexPolyhedron
-    ((D.adaptedComplex k).mem_cellsOfCodimension 0 P |>.mp hP).1).convex.interior
+    (FinitePolyhedralComplex.mem_cellsOfCodimension.mp hP).1).convex.interior
   have he : WallComplement.crossings x y = ∅ := by
     apply Set.eq_empty_iff_forall_notMem.mpr
     rintro ⟨j, a⟩ ha

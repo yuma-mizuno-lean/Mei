@@ -7,7 +7,7 @@ module
 
 public import Mei.Geometry.ScatteringDiagram.WallSpace.Group
 public import Mei.Algebra.Lie.Filtered.BCH
-public import Mei.Algebra.DirectSum.Supported
+public import TauCeti.Algebra.DirectSum.Supported
 
 /-!
 # Conservation of normal velocity under wall actions
@@ -73,7 +73,7 @@ theorem mem_normalDegreeSubmodule_iff (𝒜 : Γ → Submodule R M)
     a ∈ normalDegreeSubmodule ρ 𝒜 m c ↔
       ∀ p, m (ρ p) ≠ c → (DirectSum.decompose 𝒜 a p : M) = 0 := by
   rw [normalDegreeSubmodule_eq_iSup]
-  exact Mei.DirectSum.mem_iSup_iff_decompose_eq_zero 𝒜 {p | m (ρ p) = c}
+  exact TauCeti.DirectSum.mem_iSup_iff_decompose_eq_zero 𝒜 {p | m (ρ p) = c}
 
 end NormalDegree
 

@@ -5,7 +5,9 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.ScatteringDiagram.WallSpace.Ray
+public import TauCeti.Geometry.ScatteringDiagram.WallSpace.Ray
+public import Mei.Algebra.Lie.Graded.Ray
+public import Mei.Algebra.PositiveDegrees.Ray.Basic
 public import Mei.Algebra.Lie.BCH.Subgroup
 public import Mei.Algebra.Lie.BCH.Completion
 public import Mei.Algebra.Lie.BCH.Ray.Factor
@@ -46,7 +48,7 @@ variable {Γ Λ R L : Type*} [AddCommGroup Γ] [AddCommMonoid Λ]
 /-- The image of a supported-ray wall Lie algebra in a finite degree quotient. -/
 def truncatedRayLieSubalgebra (w : SupportedRay d) (m : Λ →+ ℤ) (k : ℕ) :
     LieSubalgebra R (d.truncatedLie ℒ k) :=
-  (H.rayLieSubalgebra w m).map (d.degreeIdeal ℒ k).mkQ
+  (H.wallRayLieSubalgebra w m).map (d.degreeIdeal ℒ k).mkQ
 
 /-- A finite wall logarithm is represented by an element of the original ray sum. -/
 @[simp]
@@ -54,7 +56,7 @@ theorem mem_truncatedRayLieSubalgebra (w : SupportedRay d) (m : Λ →+ ℤ) (k 
     (x : d.truncatedLie ℒ k) :
     x ∈ H.truncatedRayLieSubalgebra w m k ↔
       ∃ y ∈ H.raySubmodule w m, (d.degreeIdeal ℒ k).mkQ y = x := by
-  simp only [truncatedRayLieSubalgebra, LieSubalgebra.mem_map, mem_rayLieSubalgebra]
+  simp only [truncatedRayLieSubalgebra, LieSubalgebra.mem_map, mem_wallRayLieSubalgebra]
 
 /-- Truncation maps a finer ray Lie algebra onto the corresponding coarser one. -/
 theorem map_truncatedRayLieSubalgebra (w : SupportedRay d) (m : Λ →+ ℤ)
@@ -103,7 +105,7 @@ theorem lie_eq_zero_of_mem_truncatedRayLieSubalgebra {w v : SupportedRay d}
     (hy : y ∈ H.truncatedRayLieSubalgebra v m' k)
     {c e : ℤ} (hc : c ≠ 0) (he : e ≠ 0) (hm : c • m = e • m') : ⁅x, y⁆ = 0 :=
   H.lie_eq_zero_of_mem_truncatedRayLieSubalgebra_of_forall
-    (fun _ ha _ hb => H.lie_eq_zero_of_mem_raySubmodule ha hb hc he hm) hx hy
+    (fun _ ha _ hb => H.lie_eq_zero_of_mem_raySubmodule_of_proportional ha hb hc he hm) hx hy
 
 variable [Algebra ℚ R] [LieAlgebra ℚ L] [IsScalarTower ℚ R L]
 
@@ -137,12 +139,12 @@ theorem wallGroup_le_completedRaySubgroup (w : SupportedRay d) (m : Λ →+ ℤ)
 /-- If the wall spaces exhaust a ray Lie algebra, their completed wall group is
 the entire completed ray subgroup. -/
 theorem wallGroup_eq_completedRaySubgroup (w : SupportedRay d) (m : Λ →+ ℤ)
-    (h : H.raySubmodule w m = (Mei.rayLieSubalgebra ℒ w).toSubmodule) :
+    (h : H.raySubmodule w m = (TauCeti.rayLieSubalgebra ℒ w).toSubmodule) :
     H.wallGroup w m = d.completedRaySubgroup ℒ w := by
-  have he : H.rayLieSubalgebra w m = Mei.rayLieSubalgebra ℒ w := by
+  have he : H.wallRayLieSubalgebra w m = TauCeti.rayLieSubalgebra ℒ w := by
     ext x
-    rw [H.mem_rayLieSubalgebra, h]
-    exact LieSubalgebra.mem_toSubmodule (Mei.rayLieSubalgebra ℒ w)
+    rw [H.mem_wallRayLieSubalgebra, h]
+    exact LieSubalgebra.mem_toSubmodule (TauCeti.rayLieSubalgebra ℒ w)
   ext g
   simp only [H.mem_wallGroup, TauCeti.PositiveDegrees.mem_completedRaySubgroup,
     truncatedRayLieSubalgebra, he, d.map_rayLieSubalgebra_mkQ]
@@ -269,7 +271,7 @@ theorem commute_of_mem_wallGroup {w v : SupportedRay d} {m m' : Λ →+ ℤ}
     {g h : d.completedBCHGroup ℒ} (hg : g ∈ H.wallGroup w m) (hh : h ∈ H.wallGroup v m')
     {c e : ℤ} (hc : c ≠ 0) (he : e ≠ 0) (hm : c • m = e • m') : Commute g h :=
   H.commute_of_mem_wallGroup_of_forall
-    (fun _ hx _ hy => H.lie_eq_zero_of_mem_raySubmodule hx hy hc he hm) hg hh
+    (fun _ hx _ hy => H.lie_eq_zero_of_mem_raySubmodule_of_proportional hx hy hc he hm) hg hh
 
 /-- Completed labels in the wall groups of `(w, m)` and `(v, m')` commute if `m` annihilates the
 geometric direction `ρ(v)` of the generator of `v` and `m'` annihilates `ρ(w)`. The normals need

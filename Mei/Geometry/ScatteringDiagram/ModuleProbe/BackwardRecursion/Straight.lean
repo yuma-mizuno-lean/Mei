@@ -33,6 +33,8 @@ open TauCeti (WallComplement)
 
 public noncomputable section
 
+open TauCeti (ExceptionalArrangement)
+
 open TauCeti (PositiveDegrees IsPositiveGrading)
 
 open TauCeti (DirectedWallSpaces)
@@ -81,8 +83,8 @@ theorem exists_eventwiseProbeStepArrangement
     (hB : (D.map (chargeZeroGradedLieHom d ℳ p ℒ)
       (chargeZeroGradedLieHom_mem_wall d ℳ p ℒ H)).LevelEquivalent
       (cylinderDiagram d ℳ p ℒ H h h' B) (k + 1))
-    (F : ExceptionalArrangement V) :
-    ∃ G : ExceptionalArrangement V,
+    (F : ExceptionalArrangement ℝ V) :
+    ∃ G : ExceptionalArrangement ℝ V,
       ∀ (x y : WallComplement (B.activeSupport (k + 1))), G.IsGeneric y.val →
         ∀ (e : x ⟶ y) (n : d.cutoff (k + 1)),
           ∀ T : ℝ, 0 < T → x.val - y.val = T • i (ρ (p + n.val)) →
@@ -246,8 +248,8 @@ theorem exists_straightProbeStepArrangement
     (hB : (D.map (chargeZeroGradedLieHom d ℳ p ℒ)
       (chargeZeroGradedLieHom_mem_wall d ℳ p ℒ H)).LevelEquivalent
       (cylinderDiagram d ℳ p ℒ H h h' B) (k + 1))
-    (F : ExceptionalArrangement V) :
-    ∃ G : ExceptionalArrangement V,
+    (F : ExceptionalArrangement ℝ V) :
+    ∃ G : ExceptionalArrangement ℝ V,
       ∀ (x y : WallComplement (B.activeSupport (k + 1))), G.IsGeneric y.val →
         ∀ (e : x ⟶ y) (n : d.cutoff (k + 1)),
           ∀ T : ℝ, 0 < T → x.val - y.val = T • i (ρ (p + n.val)) →

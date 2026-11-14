@@ -30,6 +30,8 @@ This local evaluation connects geometric wall coefficients to transport defects.
 
 public section
 
+open TauCeti (FinitePolyhedralComplex)
+
 open TauCeti (OrientedCell)
 
 open TauCeti (WallComplement)

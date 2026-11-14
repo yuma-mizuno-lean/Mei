@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Algebra.DirectSum.Degree.Map
+public import TauCeti.Algebra.DirectSum.DegreeTail
 public import Mei.Algebra.Lie.Derivation.Embedding
 public import Mei.Algebra.Lie.Derivation.Graded
 public import Mei.Algebra.Lie.UniversalEnveloping.DegreeFiltration
@@ -35,17 +35,6 @@ attribute [local instance 100] LieRing.ofAssociativeRing
 
 variable {Γ R L : Type*} [AddCommMonoid Γ] [CommRing R] [LieRing L] [LieAlgebra R L]
   [DecidableEq Γ] (ℒ : Γ → Submodule R L) [GradedLieAlgebra ℒ] (d : Γ →+ ℤ)
-
-/-- The preimage of an enveloping degree ideal is the corresponding Lie degree tail,
-provided the canonical enveloping map is injective. -/
-theorem comap_degreeFiltration_ι (hneg : ∀ n, d n < 0 → ℒ n = ⊥)
-    (hι : Function.Injective (ι R : L → _root_.UniversalEnvelopingAlgebra R L)) (k : ℕ) :
-    (((degreeFiltration ℒ d hneg).ideal k).restrictScalars R).comap
-        (ι R : L →ₗ⁅R⁆ _root_.UniversalEnvelopingAlgebra R L).toLinearMap =
-      TauCeti.DirectSum.degreeTail ℒ d k := by
-  rw [degreeFiltration_ideal, TauCeti.GradedAlgebra.degreeIdeal_restrictScalars]
-  exact LinearMap.comap_degreeTail_eq_of_injective _ ℒ (homogeneousSubmodule ℒ)
-    hι (fun _ _ hx => ι_mem_homogeneousSubmodule ℒ hx) d k
 
 /-- Over a commutative rational algebra, an integral grading whose zero-weight
 pieces vanish makes the canonical enveloping map injective. Weights may be negative,

@@ -23,7 +23,7 @@ does not require cancellation of the formal facet presentation. No coboundary on
 the quotient of source presentations is assumed or constructed here.
 
 The construction assembles `OrientedCell.cellCoboundary_sweep_add_sweep_cellCoboundary`
-and `OrientedCell.sweep_strictlyOutgoing`, using the existing linear sweep on
+and `OrientedCell.notMem_recessionCone_sweep_carrier`, using the existing linear sweep on
 transverse cochains. This is the finite cycle-filling argument used for central
 wall corrections in Mandel, *Scattering diagrams, theta functions, and refined
 tropical curve counts*, proof of Theorem 2.6.
@@ -89,7 +89,7 @@ theorem exists_sweep_presentation (n : N) (f : OrientedCell h (k + 1) →₀ E)
     obtain ⟨σ, _, hσ⟩ := Finsupp.mem_support_finsetSum τ hτ
     have he : τ = σ.val.sweep n (hf σ.val σ.property) :=
       ((Finsupp.mem_support_single _ _ _).mp hσ).1
-    exact ⟨σ.val, σ.property, he, he.symm ▸ σ.val.sweep_strictlyOutgoing n
+    exact ⟨σ.val, σ.property, he, he.symm ▸ σ.val.notMem_recessionCone_sweep_carrier n
       (hf σ.val σ.property)⟩
 
 /-- A closed finite transverse presentation has a finite outgoing filling whose

@@ -24,7 +24,7 @@ public section
 
 open TauCeti (IsRationalNormalPolyhedron)
 
-open Set Module Mei.FinitePolyhedralComplex
+open Set Module TauCeti.FinitePolyhedralComplex
 
 namespace Mei.Plane
 

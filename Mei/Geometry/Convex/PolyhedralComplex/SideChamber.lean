@@ -32,13 +32,15 @@ interiors.
 
 public section
 
+open TauCeti (FinitePolyhedralComplex)
+
 open TauCeti (WallComplement)
 
 noncomputable section
 
 open Set Filter Topology Mei.Convex TauCeti.WallComplement
 
-namespace Mei.FinitePolyhedralComplex
+namespace TauCeti.FinitePolyhedralComplex
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i} (C : FinitePolyhedralComplex h)
@@ -274,5 +276,4 @@ theorem chamber_eq_of_crossings_eq_singleton
       ⟨t + s, ⟨le_rfl, by linarith⟩, rfl⟩ (by rwa [hshift])
     rintro _ ⟨u, hu, rfl⟩
     exact hfree u ⟨by linarith [hu.1], hu.2⟩ (by linarith [hu.1])
-
-end Mei.FinitePolyhedralComplex
+end TauCeti.FinitePolyhedralComplex

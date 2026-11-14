@@ -18,7 +18,7 @@ complexes. The fine regular locus embeds openly into the coarse regular locus;
 the target sections are restricted to this open image.
 -/
 
-open TauCeti (WallComplement)
+open TauCeti (FinitePolyhedralComplex WallComplement)
 
 
 -- The transport comparison combines `truncation_pathProduct_adaptedDiagram` with

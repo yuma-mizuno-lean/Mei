@@ -31,6 +31,8 @@ and module-completion APIs. The geometric interpretation follows Mandel,
 
 public noncomputable section
 
+open TauCeti (ExceptionalArrangement)
+
 open TauCeti (PositiveDegrees IsPositiveGrading)
 
 open TauCeti (DirectedWallSpaces)
@@ -138,7 +140,7 @@ theorem exists_completedWallEventEvaluation
       (p + n.val, 1) ∈ (D.wall (.inr c)).ray.rayDegrees →
         (D.wall (.inr c)).Outgoing)
     (hb : ∀ K, d.shiftedQuotientComponent ℳ p p K (by simp) (b K) = a) :
-    ∃ A : (k : ℕ) → d.cutoff k → ExceptionalArrangement V,
+    ∃ A : (k : ℕ) → d.cutoff k → ExceptionalArrangement ℝ V,
       Dense {Q | ∀ k n, (A k n).IsGeneric Q} ∧
       IsGδ {Q | ∀ k n, (A k n).IsGeneric Q} ∧
       ∃ (point : {Q // ∀ k n, (A k n).IsGeneric Q} → B.Point)

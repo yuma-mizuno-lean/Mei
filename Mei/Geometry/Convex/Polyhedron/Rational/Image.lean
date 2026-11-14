@@ -88,7 +88,7 @@ theorem image_of_injOn {S : Set V} (hS : IsLocallyClosedPolyhedron h S) (g : V �
           (AffineSubspace.vsub_mem_direction (mem_affineSpan ℝ hx) (mem_affineSpan ℝ hx₀))
         have hg : g.linear (x - x₀) = g x - g x₀ := by simpa using g.linear_apply_vsub x x₀
         rw [hg, map_sub] at hB
-        simp only [φa, AffineMap.coe_add, Pi.add_apply, LinearMap.coe_toAffineMap,
+        simp only [φa, FunLike.coe_add, Pi.add_apply, LinearMap.coe_toAffineMap,
           AffineMap.const_apply]
         linear_combination (norm := module) hB
       simp [φ, hφx, hx, ψ, ψa]

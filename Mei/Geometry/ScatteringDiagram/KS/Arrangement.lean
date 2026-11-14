@@ -24,13 +24,15 @@ is covered by walls, so points off the walls have no vanishing retained degree.
 They supply the supports on which finite-order scattering labels can be
 assigned by sign factorization.
 
-The construction uses `Mei.FinitePolyhedralComplex.ofArrangement`, the existing
+The construction uses `TauCeti.FinitePolyhedralComplex.ofArrangement`, the existing
 closures of realized sign cells, and the integral dual lattice obtained from
 `TauCeti.Toric.IsIntegralLattice.realCharacter`. Cells may have lineality; no
 finite generation or saturation of the positive monoid is required.
 -/
 
 public section
+
+open TauCeti (FinitePolyhedralComplex)
 
 open TauCeti.Convex (closure_signCell exists_zero_sign_of_affineSpan_ne_top signCell)
 
@@ -42,7 +44,7 @@ namespace TauCeti.PositiveDegrees
 
 open Mei
 
-open Mei.Convex Mei.FinitePolyhedralComplex
+open Mei.Convex TauCeti.FinitePolyhedralComplex
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} (d : PositiveDegrees N) (h : TauCeti.Toric.IsIntegralLattice i)

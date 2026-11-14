@@ -32,6 +32,8 @@ theta functions, and refined tropical curve counts*, §3.3.3 (arXiv:1503.06183v5
 
 public noncomputable section
 
+open TauCeti (ExceptionalArrangement)
+
 open TauCeti (PositiveDegrees)
 
 open Set Filter Topology Quiver
@@ -283,9 +285,9 @@ at each encounter works for every compatible input degree of the finite degree s
 including terms whose coefficient vanishes. The refinement is uniform in the output degree
 and independent of the coefficient data, the inventory and the encounter list. -/
 theorem exists_decompose_pathDecoratedEvaluation_eq_sum_lastChange_generic
-    (d : PositiveDegrees Γ) (D : Finset Γ) (A : ExceptionalArrangement V)
+    (d : PositiveDegrees Γ) (D : Finset Γ) (A : ExceptionalArrangement ℝ V)
     (v : Γ → V) (f : J → V →L[ℝ] ℝ) (c : J → ℝ) :
-    ∃ F : ExceptionalArrangement V, ∀ Q, F.IsGeneric Q →
+    ∃ F : ExceptionalArrangement ℝ V, ∀ Q, F.IsGeneric Q →
       ∀ (ℳ : Γ → Submodule R M) [DirectSum.Decomposition ℳ]
         (T : J → Module.End R M) (a : ℳ 0) (ε : J → SignType)
         (P : J → Set V) (W : I → Set V) (S : K → Set V) (C : Set V)

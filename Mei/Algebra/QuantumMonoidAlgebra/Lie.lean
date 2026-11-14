@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Algebra.Lie.Graded.Supported
+public import TauCeti.Algebra.Lie.Graded.Supported
 public import Mei.Algebra.Lie.Graded.Subalgebra
 public import Mei.Algebra.QuantumMonoidAlgebra.Hom
 public import Mei.Algebra.Lie.Graded.RestrictScalars
@@ -19,7 +19,7 @@ Lie algebra, ready for nilpotent truncation and completed BCH groups. Compatible
 coefficient and exponent maps induce graded Lie maps over any common scalar ring,
 with the original cutoff modulus.
 
-We use `supportedLieSubalgebra` and `LieSubalgebra.gradedLieAlgebra` to retain the
+We use `TauCeti.supportedLieSubalgebra` and `LieSubalgebra.gradedLieAlgebra` to retain the
 existing quantum homogeneous pieces. The map construction follows the positive
 coefficient restriction in `Mei.QuantumMonoidAlgebra.positiveMap`, using submodule
 induction and Mathlib's `AlgHom.toLieHom` and linear-map restriction combinators.
@@ -58,7 +58,7 @@ instance instGradedLieAlgebraGrade [DecidableEq Γ] : GradedLieAlgebra (grade q 
 
 /-- The quantum Lie algebra supported on the nonzero positive degrees. -/
 def positiveLieAlgebra (d : PositiveDegrees Γ) : LieSubalgebra R (QuantumMonoidAlgebra q β) :=
-  supportedLieSubalgebra (grade q β)
+  TauCeti.supportedLieSubalgebra (grade q β)
     { carrier := {n | n ∈ d.monoid ∧ n ≠ 0}
       add_mem' := by
         rintro n n' ⟨hn, hne⟩ ⟨hn', hne'⟩
@@ -75,13 +75,13 @@ outside the allowed monoid. -/
 theorem mem_positiveLieAlgebra_iff [DecidableEq Γ] (x : QuantumMonoidAlgebra q β) :
     x ∈ positiveLieAlgebra q β d ↔ ∀ n, n ∉ d.monoid ∨ n = 0 →
       (DirectSum.decompose (grade q β) x n : QuantumMonoidAlgebra q β) = 0 := by
-  simp only [positiveLieAlgebra, mem_supportedLieSubalgebra_iff,
+  simp only [positiveLieAlgebra, TauCeti.mem_supportedLieSubalgebra_iff,
     AddSubsemigroup.mem_mk, Set.mem_ofPred_eq, not_and_or, not_not]
 
 /-- Every allowed nonzero homogeneous piece lies in the positive Lie algebra. -/
 theorem grade_le_positiveLieAlgebra {n : Γ} (hn : n ∈ d.monoid) (hne : n ≠ 0) :
     grade q β n ≤ (positiveLieAlgebra q β d).toSubmodule :=
-  le_supportedLieSubalgebra (grade q β) (S := _) ⟨hn, hne⟩
+  TauCeti.le_supportedLieSubalgebra (grade q β) (S := _) ⟨hn, hne⟩
 
 /-- The inherited exponent pieces of the positive quantum Lie algebra. -/
 def positiveLieGrading (n : Γ) : Submodule R (positiveLieAlgebra q β d) :=
@@ -113,7 +113,7 @@ instance instGradedLieAlgebraPositiveLieGrading [DecidableEq Γ] :
   exact (positiveLieAlgebra q β d).gradedLieAlgebra (grade q β)
     (by
       unfold positiveLieAlgebra
-      exact supportedLieSubalgebra_isHomogeneous (grade q β) _)
+      exact TauCeti.isHomogeneous_supportedLieSubalgebra (grade q β) _)
 
 /-- The inherited grading vanishes at zero and outside the allowed degrees. -/
 instance instIsPositiveGradingPositiveLieGrading :
@@ -141,7 +141,7 @@ theorem map_mem_positiveLieAlgebra (φ : R →+* S) (T : PositiveDegreeMap d e)
     map φ T.toAddMonoidHom h x ∈ positiveLieAlgebra q' β' e := by
   -- Positive support is the sum of its actual allowed nonzero homogeneous pieces.
   rw [positiveLieAlgebra, ← LieSubalgebra.mem_toSubmodule,
-    supportedLieSubalgebra_toSubmodule] at hx
+    TauCeti.supportedLieSubalgebra_toSubmodule] at hx
   refine Submodule.iSup_induction _
     (motive := fun x => map φ T.toAddMonoidHom h x ∈ positiveLieAlgebra q' β' e) hx
     (fun n x hx => ?_) (by simp) (fun x y hx hy => by

@@ -229,9 +229,9 @@ private theorem facet_not_contained_in_cut (σ π μ : OrientedCell h k)
   have heμ : η = υ.reverse := by
     by_contra hne
     have hcr : υ.reverse.carrier = σ.carrier ∩ {x | (-g) x = 0} := by
-      simpa only [reverse_carrier, AffineMap.coe_neg, Pi.neg_apply, neg_eq_zero] using hcυ
+      simpa only [reverse_carrier, FunLike.coe_neg, Pi.neg_apply, neg_eq_zero] using hcυ
     obtain ⟨x, hx, hnx⟩ := exists_neg_of_ne_cutFacet σ μ (-g) hμ' hυr hcr hημ hne
-    simp only [AffineMap.coe_neg, Pi.neg_apply, hz x hx, neg_zero, lt_self_iff_false] at hnx
+    simp only [FunLike.coe_neg, Pi.neg_apply, hz x hx, neg_zero, lt_self_iff_false] at hnx
   exact υ.reverse_ne_self (heμ.symm.trans heπ)
 
 private theorem cutContribution_eq_mk_of_forall_le (σ π : OrientedCell h k)
@@ -265,7 +265,7 @@ private theorem cutContribution_add (σ π μ : OrientedCell h k) (g : V →ᵃ[
       have hnF : ∃ x ∈ F, g x < 0 := by
         simpa only [heη, boundaryFacet_carrier] using hn
       have hpF : ∃ x ∈ F, 0 < g x := by
-        simpa only [heη, boundaryFacet_carrier, AffineMap.coe_neg, Pi.neg_apply,
+        simpa only [heη, boundaryFacet_carrier, FunLike.coe_neg, Pi.neg_apply,
           neg_lt_zero] using hp
       obtain ⟨τ, hτ, ξ, hξ, hcτ, hcξ, hne, hsub⟩ :=
         σ.exists_boundaryFacet_cut_subdivision π μ g hπ hμ hoπ hoμ hF hFne hFd hnF hpF
@@ -275,14 +275,14 @@ private theorem cutContribution_add (σ π μ : OrientedCell h k) (g : V →ᵃ[
             (cutFacet_spec σ π g hπ hoπ η hη hn).2.1)
       have heξ : cutFacet σ μ (-g) hμ' hoμ η hη hp = ξ :=
         μ.carrier_injOn_boundaryFacets (cutFacet_spec σ μ (-g) hμ' hoμ η hη hp).1 hξ
-          (by simpa only [heη, boundaryFacet_carrier, hcξ, AffineMap.coe_neg,
+          (by simpa only [heη, boundaryFacet_carrier, hcξ, FunLike.coe_neg,
             Pi.neg_apply, neg_nonpos] using
             (cutFacet_spec σ μ (-g) hμ' hoμ η hη hp).2.1)
       simp only [cutContribution, dite_eq_left hn, dite_eq_left hp, heτ, heξ]
       rw [heη, PolyhedralCochain.mk_eq_sum_of_isOrientedSubdivision hsub]
       exact (Finset.sum_pair (f := fun τ => PolyhedralCochain.mk (R := R) τ c) hne).symm
     · rw [cutContribution_eq_mk_of_forall_le σ π g hπ hoπ η hη hn
-        (by simpa only [not_exists, not_and, not_lt, AffineMap.coe_neg, Pi.neg_apply,
+        (by simpa only [not_exists, not_and, not_lt, FunLike.coe_neg, Pi.neg_apply,
           neg_nonneg, neg_nonpos] using hp) c]
       simp only [cutContribution, dite_eq_right hp, add_zero]
   · have hp : ∃ x ∈ η.carrier, (-g) x < 0 := by
@@ -293,7 +293,7 @@ private theorem cutContribution_add (σ π μ : OrientedCell h k) (g : V →ᵃ[
       have hnonpos : g x ≤ 0 := by simpa using hp x hx
       exact le_antisymm hnonpos hnonneg
     rw [cutContribution_eq_mk_of_forall_le σ μ (-g) hμ' hoμ η hη hp
-      (by simpa only [not_exists, not_and, not_lt, AffineMap.coe_neg, Pi.neg_apply,
+      (by simpa only [not_exists, not_and, not_lt, FunLike.coe_neg, Pi.neg_apply,
         neg_nonneg, neg_nonpos] using hn) c]
     simp only [cutContribution, dite_eq_right hn, zero_add]
 

@@ -59,9 +59,9 @@ variable [SetLike.GradedBracket ℒ ℒ]
 
 /-- The ray Lie algebra of a module ray is exactly its homogeneous coefficient piece. -/
 theorem moduleRayLieSubalgebra_toSubmodule (q : Γ) (hq : q - p ∈ d.monoid) :
-    (rayLieSubalgebra (grading d ℳ p ℒ) (moduleRay d p q hq)).toSubmodule =
+    (TauCeti.rayLieSubalgebra (grading d ℳ p ℒ) (moduleRay d p q hq)).toSubmodule =
       grading d ℳ p ℒ (q, 1) :=
-  rayLieSubalgebra_eq_of_single_degree (grading d ℳ p ℒ)
+  TauCeti.rayLieSubalgebra_toSubmodule_eq_of_forall_ne_eq_bot (grading d ℳ p ℒ)
     (moduleRay d p q hq) (q, 1) (by simp)
     (fun _ ha hne => grading_eq_bot_of_charge_one_ray d ℳ p ℒ (moduleRay d p q hq)
       (moduleRay_generator d p q hq) ha hne)
@@ -75,7 +75,7 @@ theorem completedRaySubgroup_eq_bot_of_notMem (w : SupportedRay (positiveDegrees
     (positiveDegrees d p).completedRaySubgroup (grading d ℳ p ℒ) w = ⊥ := by
   apply (positiveDegrees d p).completedRaySubgroup_eq_bot_of_rayLieSubalgebra_eq_bot
   apply LieSubalgebra.toSubmodule_injective
-  rw [rayLieSubalgebra_toSubmodule, LieSubalgebra.bot_toSubmodule]
+  rw [TauCeti.rayLieSubalgebra_toSubmodule, LieSubalgebra.bot_toSubmodule]
   apply iSup_eq_bot.mpr
   intro a
   by_cases ha : (a : Γ × ℤ) = (q, 1)

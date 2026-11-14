@@ -24,11 +24,13 @@ and Mathlib's list append, map and product operations; no wall-label relations a
 
 public section
 
+open TauCeti (FinitePolyhedralComplex)
+
 open TauCeti (WallComplement AdmissiblePLPath)
 
 open Set Mei.Convex
 
-namespace Mei.FinitePolyhedralComplex
+namespace TauCeti.FinitePolyhedralComplex
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
@@ -114,14 +116,12 @@ theorem segmentCrossingWord_subdivide (ν : C.walls → V →ₗ[ℝ] ℝ)
     List.map_map, Function.comp_def,
     C.crossingLetter_subdivide_left ν ht0 hz,
     C.crossingLetter_subdivide_right ν ht1 hz]
-
-end Mei.FinitePolyhedralComplex
-
+end TauCeti.FinitePolyhedralComplex
 namespace Quiver.Path
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
-  {C : Mei.FinitePolyhedralComplex h}
+  {C : TauCeti.FinitePolyhedralComplex h}
   {x y : WallComplement (fun P : C.walls => (P : Set V))}
 
 /-- Every finite subdivision by allowed interior vertices preserves the crossing word. -/

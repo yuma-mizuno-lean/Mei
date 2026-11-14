@@ -175,7 +175,7 @@ theorem mem_iff_exists_div_eq_mul_rayIndex_of_zsmul_eq_zsmul {m n : N} (hn : n �
     ring
   · rintro ⟨j, hj, hje⟩
     refine ⟨j, ?_⟩
-    rw [mul_div_assoc', div_left_inj' hd'] at hje
+    rw [mul_div_assoc', div_left_inj₀ hd'] at hje
     exact_mod_cast (hje.trans (mul_comm _ _))
 
 /-- Every rational multiple `m = (b / a) n` of a nonzero vector lying in `H`, of either sign,

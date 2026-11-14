@@ -6,7 +6,8 @@ Authors: Codex
 module
 
 public import Mei.Geometry.Convex.Sweep.Admissible
-public import Mei.Geometry.Convex.Polyhedron.CrossingEvents
+public import TauCeti.Geometry.ScatteringDiagram.Path.CrossingEvents
+public import Mei.Geometry.Convex.Polyhedron.AdmissiblePath
 public import Mei.Geometry.Convex.Polyhedron.WallEvent.Basic
 public import Mei.Geometry.Convex.Polyhedron.SingularSupport
 

@@ -34,6 +34,8 @@ open TauCeti (WallComplement)
 
 public noncomputable section
 
+open TauCeti (ExceptionalArrangement)
+
 open TauCeti (PositiveDegrees IsPositiveGrading)
 
 open TauCeti (DirectedWallSpaces)
@@ -87,7 +89,7 @@ theorem exists_norm_lt_forall_eventually_extendedCoefficientField_eq_add_sum_gen
     (hB : (D.map (chargeZeroGradedLieHom d ℳ p ℒ)
       (chargeZeroGradedLieHom_mem_wall d ℳ p ℒ H)).LevelEquivalent
       (cylinderDiagram d ℳ p ℒ H h h' B) (k + 1))
-    (F : ExceptionalArrangement V) {η : Type*} [Finite η] (v : η → V)
+    (F : ExceptionalArrangement ℝ V) {η : Type*} [Finite η] (v : η → V)
     {s : ℝ} (hs : 0 < s) :
     ∃ r : V, ‖r‖ < s ∧
       (∀ a (c : B.active (k + 1)), h.realCharacter (B.wall c).normal (v a) ≠ 0 →

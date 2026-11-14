@@ -32,6 +32,8 @@ Landau–Ginzburg models*, §4 (arXiv:2205.07753v2).
 
 public section
 
+open TauCeti (ExceptionalArrangement)
+
 open TauCeti (IsLocallyClosedPolyhedron IsRationalSemilinear)
 
 namespace Mei.Convex
@@ -121,7 +123,7 @@ At a generic endpoint, the evaluation fibers over every nearby endpoint have a
 label-preserving identification. Unlike a stratumwise statement, this uses an
 ambient neighborhood and imposes no extra genericity assumption on its points. -/
 theorem exists_backwardEvaluation_membershipArrangement :
-    ∃ E : ExceptionalArrangement V,
+    ∃ E : ExceptionalArrangement ℝ V,
       (∀ j, frontier (backwardDomain (f j) (c j) (fun b => i (w j b)) (P j)) ⊆
         {Q | ¬ E.IsGeneric Q}) ∧
       ∀ Q, E.IsGeneric Q → ∀ᶠ Q' in nhds Q,

@@ -32,6 +32,8 @@ open TauCeti (WallComplement)
 
 public noncomputable section
 
+open TauCeti (ExceptionalArrangement)
+
 open TauCeti (PositiveDegrees IsPositiveGrading)
 
 open TauCeti (DirectedWallSpaces)
@@ -129,7 +131,7 @@ and source cell. The event inventory in this local step is the inventory of
 the supplied complete segment; the assertion concerns its specified output
 degree at its final endpoint. -/
 theorem exists_wallEventRecursionArrangement (k : ℕ) :
-    ∃ E : ExceptionalArrangement V, ∀ Q, E.IsGeneric Q →
+    ∃ E : ExceptionalArrangement ℝ V, ∀ Q, E.IsGeneric Q →
       ∃ y : WallComplement (B.activeSupport (k + 1)), y.val = Q ∧
         ∀ n : d.cutoff (k + 1), n.val ≠ 0 → ∀ᶠ T : ℝ in atTop,
           0 < T ∧

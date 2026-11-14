@@ -6,7 +6,9 @@ Authors: Codex
 module
 
 public import Mei.Geometry.Convex.PolyhedralCochain.Facet
-public import Mei.Geometry.Convex.PolyhedralCochain.Sweep.Basic
+public import TauCeti.Geometry.Convex.PolyhedralCochain.Sweep.Basic
+public import Mei.Geometry.Convex.PolyhedralCochain.Basic
+public import Mei.LinearAlgebra.Alternating.Contraction
 public import Mei.Geometry.Convex.Sweep.Face
 
 /-!
@@ -133,7 +135,7 @@ theorem boundaryFacet_sweep_side (σ : OrientedCell h (k + 1)) (n : N)
     simpa only [hτcar, direction_affineSpan, ← Set.vectorSpan_sweep (𝕜 := ℝ) hne] using hvG
   have hnv : i n ∉ (affineSpan ℝ τ.carrier).direction ⊔ ℝ ∙ (v : V) := by
     rwa [hdir]
-  have hcontract := τ.orientation.contract_contract τ.isConormal
+  have hcontract := τ.orientation.contract_contract_eq_neg τ.isConormal
     τ.finrank_quotient_direction (i n) v hnτ hvτ hkn hkm hvn hnv
   have hboundary := σ.contract_boundaryFacet hF hne hdim v hvτ hvpos
   -- The two contractions exchange order with a minus sign; the boundary already has a minus.

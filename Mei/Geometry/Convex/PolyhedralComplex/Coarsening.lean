@@ -26,13 +26,15 @@ the crossing letters for `D` are the coarsened crossing letters for `C`
 
 public section
 
+open TauCeti (FinitePolyhedralComplex)
+
 open TauCeti (WallComplement AdmissiblePLPath)
 
 noncomputable section
 
 open Set Filter Topology Mei.Convex TauCeti.WallComplement
 
-namespace Mei.FinitePolyhedralComplex
+namespace TauCeti.FinitePolyhedralComplex
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i} {C D : FinitePolyhedralComplex h}
@@ -263,16 +265,14 @@ theorem segmentCrossingLetters_coarsen (hCD : C.IsSubdivision D)
       rw [hv, hcν, LinearMap.smul_apply, smul_eq_mul, mul_pos_iff_of_pos_left hc]
     simp only [Option.map_some, hsign]
     exact (coarsenLetter_eq_some.mpr ⟨hQP, rfl⟩ : coarsenLetter D (a.1, _) = _).symm
-
-end Mei.FinitePolyhedralComplex
-
+end TauCeti.FinitePolyhedralComplex
 namespace Quiver.Path
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
-  {C D : Mei.FinitePolyhedralComplex h}
+  {C D : TauCeti.FinitePolyhedralComplex h}
 
-open Mei Mei.FinitePolyhedralComplex
+open Mei TauCeti.FinitePolyhedralComplex
 
 /-- For a polygonal path admissible for both a complex and a complex it subdivides, the
 crossing letters for the coarser complex are the coarsened crossing letters for the finer

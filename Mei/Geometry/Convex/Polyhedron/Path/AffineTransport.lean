@@ -6,7 +6,8 @@ Authors: Codex
 module
 
 public import Mei.Geometry.Convex.Polyhedron.Path.Map
-public import Mei.Geometry.Convex.Polyhedron.Path.Product
+public import TauCeti.Geometry.ScatteringDiagram.Path.Product
+public import Mei.Geometry.Convex.Polyhedron.AdmissiblePath
 
 /-!
 # Affine transport of simultaneous wall products

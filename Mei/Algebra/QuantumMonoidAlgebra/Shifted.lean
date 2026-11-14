@@ -8,7 +8,7 @@ module
 public import Mei.Algebra.QuantumMonoidAlgebra.Units
 public import Mei.RingTheory.GradedAlgebra.Shifted.Basic
 public import Mei.LinearAlgebra.ModuleFiltration.Equiv
-public import Mei.Algebra.DirectSum.Degree.Map
+public import TauCeti.Algebra.DirectSum.DegreeTail
 
 /-!
 # Translation equivalences for shifted quantum coefficients

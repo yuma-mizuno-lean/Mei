@@ -29,7 +29,7 @@ span, so it lies in an open half-space bounded by a hyperplane through `J`. Ther
 the walls form a pencil of hyperplanes through the affine span of `J`, and
 `FinitePolyhedralComplex.crossingWord_eq_of_pencil` shows that the triangle's word
 is trivial. If a wall contains `J`, a filled triangle meeting `J` with a non-complementary
-plane would meet `J` on an edge, by `Mei.exists_mem_segment_sub_mem_of_not_isCompl`,
+plane would meet `J` on an edge, by `Mei.Mei.exists_mem_segment_sub_mem_of_not_isCompl`,
 contradicting admissibility of that edge. If no wall contains `J`, no wall meets
 `U`, so all crossing words in `U` are trivial.
 
@@ -48,13 +48,15 @@ triangles is `Quiver.Path.crossingWord_mem_normalClosure_triangles`.
 
 public section
 
+open TauCeti (FinitePolyhedralComplex)
+
 open TauCeti (WallComplement AdmissiblePLPath singularSupport singularSupport_subset_iUnion)
 
 noncomputable section
 
 open Set Module Mei.Convex
 
-namespace Mei.FinitePolyhedralComplex
+namespace TauCeti.FinitePolyhedralComplex
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
@@ -143,10 +145,10 @@ private theorem isCompl_of_convexHull_inter_nonempty (hJ : J ∈ C.joints) (hU :
     (hmeet : (convexHull ℝ {x.val, y.val, z.val} ∩ J).Nonempty) :
     IsCompl (affineSpan ℝ J).direction (vectorSpan ℝ {x.val, y.val, z.val}) := by
   have := h.finiteDimensional
-  obtain ⟨hJC, hdimJ⟩ := (C.mem_cellsOfCodimension 2 J).mp hJ
+  obtain ⟨hJC, hdimJ⟩ := mem_cellsOfCodimension.mp hJ
   by_contra hcompl
   obtain ⟨w, hwΔ, hwJ⟩ := hmeet
-  obtain ⟨u, hu, hud⟩ := exists_mem_segment_sub_mem_of_not_isCompl hdimJ hwΔ hcompl
+  obtain ⟨u, hu, hud⟩ := Mei.exists_mem_segment_sub_mem_of_not_isCompl hdimJ hwΔ hcompl
   have huA : u ∈ affineSpan ℝ J := by
     simpa using AffineSubspace.vadd_mem_of_mem_direction hud (subset_affineSpan ℝ J hwJ)
   have hseg {a b : V} (ha : a ∈ U) (hb : b ∈ U) (hu : u ∈ segment ℝ a b) : u ∈ U :=
@@ -323,14 +325,12 @@ theorem triangleWords_subset_insert_jointTriangleWords (ν : C.walls → V →�
       (Set.toFinite _) (by simp [Set.insert_subset_iff, hx, hy, hz])
       (Set.disjoint_left.mpr fun w hw hwJ => hmeet ⟨w, hw, hwJ⟩) _ Quiver.Path.nil
       (hverts _ (by simp) (by simp) (by simp)) (by simp)).trans hnil)
-
-end Mei.FinitePolyhedralComplex
-
+end TauCeti.FinitePolyhedralComplex
 namespace Quiver.Path
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
-  {C : Mei.FinitePolyhedralComplex h}
+  {C : TauCeti.FinitePolyhedralComplex h}
   {x : TauCeti.WallComplement (fun P : C.walls => (P : Set V))}
 
 /-- In an open convex region meeting a joint, all of whose incident cells contain

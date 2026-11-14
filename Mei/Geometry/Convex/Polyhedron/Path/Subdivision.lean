@@ -7,7 +7,7 @@ module
 
 public import TauCeti.Geometry.ScatteringDiagram.Path.Subdivision
 public import Mei.Geometry.Convex.Polyhedron.AdmissiblePath
-public import Mei.Geometry.Convex.Polyhedron.CrossingEvents
+public import TauCeti.Geometry.ScatteringDiagram.Path.CrossingEvents
 import Mei.Combinatorics.Quiver.Path
 
 /-!

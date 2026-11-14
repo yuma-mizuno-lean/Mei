@@ -72,12 +72,6 @@ variable {Γ Λ Λ' R L : Type*} [AddCommGroup Γ]
   {ρ : Γ →+ Λ} {ℒ : Γ → Submodule R L} {d : TauCeti.PositiveDegrees Γ}
   (H : DirectedWallSpaces ρ ℒ) (π : Λ →+ Λ')
 
-/-- Projection retains the full supported-ray sum for the pulled back normal. -/
-@[simp]
-theorem mapTangent_raySubmodule (w : SupportedRay d) (m : Λ' →+ ℤ) :
-    (H.mapTangent π).raySubmodule w m = H.raySubmodule w (m.comp π) := by
-  simp only [raySubmodule_def, mapTangent_wall]
-
 variable [DecidableEq Γ] [GradedLieAlgebra ℒ] [TauCeti.IsPositiveGrading d ℒ]
 
 /-- Finite ray logarithms agree under spatial projection. -/

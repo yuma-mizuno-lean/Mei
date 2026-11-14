@@ -36,6 +36,8 @@ theta functions, and refined tropical curve counts*, proof of Theorem 2.6.
 
 public section
 
+open TauCeti (FinitePolyhedralComplex)
+
 open TauCeti (DirectedWallSpaces)
 
 namespace TauCeti.DirectedWallSpaces

@@ -42,42 +42,25 @@ All cells may be unbounded and may have lineality.
 
 public section
 
+open TauCeti (FinitePolyhedralComplex)
+
 open TauCeti (singularSupport mem_intrinsicInterior_of_notMem_singularSupport)
 
-namespace Mei.FinitePolyhedralComplex
+namespace TauCeti.FinitePolyhedralComplex
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
 
-/-- The finite collection of cells of ambient codimension exactly `k`. -/
-noncomputable def cellsOfCodimension (C : FinitePolyhedralComplex h) (k : ℕ) :
-    Finset (Set V) := by
-  classical
-  exact C.cells.filter fun P =>
-    Module.finrank ℝ (affineSpan ℝ P).direction + k = Module.finrank ℝ V
-
-/-- Membership records both the original cell and its exact codimension. -/
-@[simp]
-theorem mem_cellsOfCodimension (C : FinitePolyhedralComplex h) (k : ℕ) (P : Set V) :
-    P ∈ C.cellsOfCodimension k ↔ P ∈ C.cells ∧
-      Module.finrank ℝ (affineSpan ℝ P).direction + k = Module.finrank ℝ V := by
-  classical
-  simp [cellsOfCodimension]
-
-/-- Walls are the codimension-one cells. -/
-noncomputable abbrev walls (C : FinitePolyhedralComplex h) : Finset (Set V) :=
-  C.cellsOfCodimension 1
-
 /-- Every wall is a cell of the complex. -/
 theorem mem_cells_of_mem_walls (C : FinitePolyhedralComplex h) {P : Set V}
     (hP : P ∈ C.walls) : P ∈ C.cells :=
-  ((C.mem_cellsOfCodimension 1 P).mp hP).1
+  (mem_cellsOfCodimension.mp hP).1
 
 /-- The direction dimension of a wall is one less than the ambient dimension. -/
 theorem finrank_direction_add_one_of_mem_walls (C : FinitePolyhedralComplex h)
     {P : Set V} (hP : P ∈ C.walls) :
     Module.finrank ℝ (affineSpan ℝ P).direction + 1 = Module.finrank ℝ V :=
-  ((C.mem_cellsOfCodimension 1 P).mp hP).2
+  (mem_cellsOfCodimension.mp hP).2
 
 /-- A complement to the affine direction of a subset of a wall is transverse
 to that wall. No dimension hypothesis on the subset is required. -/
@@ -136,10 +119,6 @@ theorem eq_of_subset_of_mem_walls {C D : FinitePolyhedralComplex h} {Q P P' : Se
     omega
   rw [← hface hP hP' hQP hQP', Set.inter_comm, hface hP' hP hQP' hQP]
 
-/-- Joints are the codimension-two cells. -/
-noncomputable abbrev joints (C : FinitePolyhedralComplex h) : Finset (Set V) :=
-  C.cellsOfCodimension 2
-
 /-- The subcomplex consisting of all cells of ambient codimension at least `k`.
 The dimension inequality also gives the empty complex when `k` exceeds the ambient dimension. -/
 noncomputable def codimensionAtLeast (C : FinitePolyhedralComplex h) (k : ℕ) :
@@ -179,7 +158,6 @@ theorem mem_codimensionAtLeast_cells (C : FinitePolyhedralComplex h) (k : ℕ) (
 theorem codimensionAtLeast_zero (C : FinitePolyhedralComplex h) :
     C.codimensionAtLeast 0 = C := by
   have := h.finiteDimensional
-  apply ext
   ext P
   simp [Submodule.finrank_le]
 
@@ -188,7 +166,7 @@ theorem cellsOfCodimension_subset_codimensionAtLeast_cells
     (C : FinitePolyhedralComplex h) (k : ℕ) :
     C.cellsOfCodimension k ⊆ (C.codimensionAtLeast k).cells := by
   intro P hP
-  obtain ⟨hPC, hdim⟩ := (C.mem_cellsOfCodimension k P).mp hP
+  obtain ⟨hPC, hdim⟩ := mem_cellsOfCodimension.mp hP
   exact (C.mem_codimensionAtLeast_cells k P).mpr ⟨hPC, hdim.le⟩
 
 /-- Increasing the codimension bound gives a subcomplex of the previous one. -/
@@ -214,7 +192,7 @@ theorem eventually_mem_support_codimensionAtLeast_iff (C : FinitePolyhedralCompl
     (hx : x ∈ intrinsicInterior ℝ P) :
     ∀ᶠ y in 𝓝 x, y ∈ (C.codimensionAtLeast k).support ↔ y ∈ P := by
   let := h.finiteDimensional
-  obtain ⟨hPC, hdimP⟩ := (C.mem_cellsOfCodimension k P).mp hP
+  obtain ⟨hPC, hdimP⟩ := mem_cellsOfCodimension.mp hP
   filter_upwards [C.eventually_subset_of_mem_cell hPC hx] with y hy
   constructor
   · intro hys
@@ -222,7 +200,7 @@ theorem eventually_mem_support_codimensionAtLeast_iff (C : FinitePolyhedralCompl
     obtain ⟨hQC, hdimQ⟩ := (C.mem_codimensionAtLeast_cells k Q).mp hQ
     have hPQ := hy Q hQC hyQ
     have hle := Submodule.finrank_mono (AffineSubspace.direction_le (affineSpan_mono ℝ hPQ))
-    have hface := (isPolyhedralFace_iff.mp (C.face_of_subset hPC hQC hPQ)).2
+    have hface := (isPolyhedralFace_iff.mp (C.isPolyhedralFace_of_subset hPC hQC hPQ)).2
     have heq : P = Q := hface.eq_of_finrank_vectorSpan_eq (C.nonempty P hPC)
       (by rw [← direction_affineSpan, ← direction_affineSpan]; omega)
     exact heq ▸ hyQ
@@ -241,7 +219,7 @@ theorem exists_isolating_ball (C : FinitePolyhedralComplex h) {P : Set V} {k : �
       (∀ Q ∈ C.cellsOfCodimension k, Q ≠ P → Disjoint (Metric.ball x r) Q) ∧
       ∀ Q ∈ C.cells, (Metric.ball x r ∩ Q).Nonempty → P ⊆ Q := by
   let := h.finiteDimensional
-  have hPC := ((C.mem_cellsOfCodimension k P).mp hP).1
+  have hPC := (mem_cellsOfCodimension.mp hP).1
   have hxf : x ∉ intrinsicFrontier ℝ P := by
     rw [← intrinsicClosure_sdiff_intrinsicInterior]
     exact fun hmem => hmem.2 hx
@@ -258,10 +236,10 @@ theorem exists_isolating_ball (C : FinitePolyhedralComplex h) {P : Set V} {k : �
   · intro Q hQ hne
     apply Set.disjoint_left.mpr
     intro y hy hyQ
-    obtain ⟨hQC, hdimQ⟩ := (C.mem_cellsOfCodimension k Q).mp hQ
+    obtain ⟨hQC, hdimQ⟩ := mem_cellsOfCodimension.mp hQ
     have hPQ := (hball hy).2.2 Q hQC hyQ
-    have hface := (isPolyhedralFace_iff.mp (C.face_of_subset hPC hQC hPQ)).2
-    have hdimP := ((C.mem_cellsOfCodimension k P).mp hP).2
+    have hface := (isPolyhedralFace_iff.mp (C.isPolyhedralFace_of_subset hPC hQC hPQ)).2
+    have hdimP := (mem_cellsOfCodimension.mp hP).2
     have heq : P = Q := hface.eq_of_finrank_vectorSpan_eq (C.nonempty P hPC)
       (by rw [← direction_affineSpan, ← direction_affineSpan]; omega)
     exact hne heq.symm
@@ -321,10 +299,10 @@ theorem existsUnique_mem_cellsOfCodimension_of_notMem_succ
     rw [← intrinsicClosure_sdiff_intrinsicFrontier]
     exact ⟨subset_intrinsicClosure hxP, fun hfront => hnext
       (C.intrinsicFrontier_subset_support_codimensionAtLeast hPC k hdim hfront)⟩
-  refine ⟨P, ⟨(C.mem_cellsOfCodimension k P).mpr ⟨hPC, hexact⟩, hint⟩, ?_⟩
+  refine ⟨P, ⟨mem_cellsOfCodimension.mpr ⟨hPC, hexact⟩, hint⟩, ?_⟩
   rintro Q ⟨hQ, hxQ⟩
   exact C.eq_of_mem_intrinsicInterior
-    ((C.mem_cellsOfCodimension k Q).mp hQ).1 hPC hxQ hint
+    (mem_cellsOfCodimension.mp hQ).1 hPC hxQ hint
 
 /-- The singular support of the wall family lies in the support of the subcomplex
 of cells of codimension at least two. -/
@@ -377,10 +355,10 @@ theorem inter_support_codimensionAtLeast_two_subset (hJ : J ∈ C.joints)
   rintro y ⟨hyU, hys⟩
   obtain ⟨Q, hQ, hyQ⟩ := mem_support.mp hys
   obtain ⟨hQC, hdimQ⟩ := (C.mem_codimensionAtLeast_cells 2 Q).mp hQ
-  obtain ⟨hJC, hdimJ⟩ := (C.mem_cellsOfCodimension 2 J).mp hJ
+  obtain ⟨hJC, hdimJ⟩ := mem_cellsOfCodimension.mp hJ
   have hJQ := hinc Q hQC ⟨y, hyU, hyQ⟩
   have hle := Submodule.finrank_mono (AffineSubspace.direction_le (affineSpan_mono ℝ hJQ))
-  have hface := (isPolyhedralFace_iff.mp (C.face_of_subset hJC hQC hJQ)).2
+  have hface := (isPolyhedralFace_iff.mp (C.isPolyhedralFace_of_subset hJC hQC hJQ)).2
   have heq : J = Q := hface.eq_of_finrank_vectorSpan_eq (C.nonempty J hJC)
     (by rw [← direction_affineSpan, ← direction_affineSpan]; omega)
   exact heq ▸ hyQ
@@ -391,7 +369,7 @@ theorem disjoint_intrinsicFrontier (hJ : J ∈ C.joints)
     (hinc : ∀ Q ∈ C.cells, (U ∩ Q).Nonempty → J ⊆ Q) :
     Disjoint U (intrinsicFrontier ℝ J) := by
   have := h.finiteDimensional
-  obtain ⟨hJC, hdimJ⟩ := (C.mem_cellsOfCodimension 2 J).mp hJ
+  obtain ⟨hJC, hdimJ⟩ := mem_cellsOfCodimension.mp hJ
   refine Set.disjoint_left.mpr fun y hyU hyf => ?_
   obtain ⟨Q, hQ, hyQ⟩ := mem_support.mp
     (C.intrinsicFrontier_subset_support_codimensionAtLeast hJC 2 hdimJ.le hyf)
@@ -432,10 +410,10 @@ theorem exists_isolating_point_of_disjoint_direction (hJ : J ∈ C.joints)
   · intro Q hQ hne
     apply Set.disjoint_left.mpr
     intro y hyS hyQ
-    obtain ⟨hJC, hdimJ⟩ := (C.mem_cellsOfCodimension 2 J).mp hJ
-    obtain ⟨hQC, hdimQ⟩ := (C.mem_cellsOfCodimension 2 Q).mp hQ
+    obtain ⟨hJC, hdimJ⟩ := mem_cellsOfCodimension.mp hJ
+    obtain ⟨hQC, hdimQ⟩ := mem_cellsOfCodimension.mp hQ
     have hJQ := hinc Q hQC ⟨y, hSU hyS, hyQ⟩
-    have hface := (isPolyhedralFace_iff.mp (C.face_of_subset hJC hQC hJQ)).2
+    have hface := (isPolyhedralFace_iff.mp (C.isPolyhedralFace_of_subset hJC hQC hJQ)).2
     exact hne (hface.eq_of_finrank_vectorSpan_eq (C.nonempty J hJC)
       (by rw [← direction_affineSpan, ← direction_affineSpan]; omega)).symm
 
@@ -444,7 +422,7 @@ theorem mem_singularSupport_of_mem_joint (hJ : J ∈ C.joints) {P : C.walls}
     (hJP : J ⊆ P) {y : V} (hyJ : y ∈ J) :
     y ∈ singularSupport fun Q : C.walls => (Q : Set V) := by
   have := h.finiteDimensional
-  obtain ⟨hJC, hdimJ⟩ := (C.mem_cellsOfCodimension 2 J).mp hJ
+  obtain ⟨hJC, hdimJ⟩ := mem_cellsOfCodimension.mp hJ
   by_contra hy
   have hPJ := C.subset_of_mem_intrinsicInterior (C.mem_cells_of_mem_walls P.property) hJC
     (mem_intrinsicInterior_of_notMem_singularSupport (hJP hyJ) hy) hyJ
@@ -453,5 +431,4 @@ theorem mem_singularSupport_of_mem_joint (hJ : J ∈ C.joints) {P : C.walls}
   omega
 
 end JointGeometry
-
-end Mei.FinitePolyhedralComplex
+end TauCeti.FinitePolyhedralComplex

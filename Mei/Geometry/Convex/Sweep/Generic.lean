@@ -6,7 +6,8 @@ Authors: Codex
 module
 
 public import TauCeti.Analysis.Convex.Sweep.Topology
-public import Mei.Geometry.Affine.IncomingGerm
+public import TauCeti.Analysis.Normed.Affine.Germ
+public import Mei.Geometry.Affine.Generic
 
 /-!
 # Generic straight incoming germs at backward intersections
@@ -31,12 +32,14 @@ crossings themselves. Its endpoint exceptions are the affine preimages of those
 subspaces under the sweep projections.
 
 We use `ContinuousLinearMap.sweepProjection` and
-`ExceptionalArrangement.exists_forall_eventually_isGeneric_smul_vadd`. The
+`ExceptionalArrangement.exists_forall_eventually_isGeneric_smul_vadd_nhdsGT`. The
 backward-ray application follows Mandel, *Scattering diagrams, theta functions,
 and refined tropical curve counts*, §3.3.3 (arXiv:1503.06183v5).
 -/
 
 public noncomputable section
+
+open TauCeti (ExceptionalArrangement)
 
 open Set Filter Topology
 
@@ -51,7 +54,7 @@ theorem exists_forall_notMem_sweepProjection {κ : Type*} [Finite κ]
     (f : ι → V →L[ℝ] ℝ) (c : ι → ℝ) (n : ι → V)
     (A : κ → AffineSubspace ℝ V)
     (hA : ∀ j l, ∃ x, f j x = c j ∧ x ∉ A l) :
-    ∃ E : ExceptionalArrangement V, ∀ Q, E.IsGeneric Q →
+    ∃ E : ExceptionalArrangement ℝ V, ∀ Q, E.IsGeneric Q →
       ∀ j l, ContinuousLinearMap.sweepProjection (f j) (c j) (n j) Q ∉ A l := by
   classical
   let := Fintype.ofFinite ι
@@ -64,7 +67,7 @@ theorem exists_forall_notMem_sweepProjection {κ : Type*} [Finite κ]
     have hm := AffineSubspace.mem_comap.mp (htop ▸ AffineSubspace.mem_top ℝ V x)
     exact hxA (by simpa only [ContinuousAffineMap.coe_toAffineMap,
       ContinuousLinearMap.sweepProjection_eq_self _ _ hx] using hm)
-  let E : ExceptionalArrangement V :=
+  let E : ExceptionalArrangement ℝ V :=
     ⟨Finset.univ.image B, fun _ hm => by
       obtain ⟨z, _, rfl⟩ := Finset.mem_image.mp hm
       exact hB z⟩
@@ -77,15 +80,15 @@ theorem exists_forall_notMem_sweepProjection {κ : Type*} [Finite κ]
 at a projected crossing generic, simultaneously for a finite family. Only the
 incoming normal velocities must be nonzero; sweeping vectors are arbitrary. -/
 theorem exists_forall_eventually_isGeneric_sweepProjection
-    (E : ExceptionalArrangement V) (f : ι → V →L[ℝ] ℝ) (c : ι → ℝ)
+    (E : ExceptionalArrangement ℝ V) (f : ι → V →L[ℝ] ℝ) (c : ι → ℝ)
     (n v : ι → V) (hv : ∀ j, f j (v j) ≠ 0) :
-    ∃ F : ExceptionalArrangement V, ∀ Q, F.IsGeneric Q →
+    ∃ F : ExceptionalArrangement ℝ V, ∀ Q, F.IsGeneric Q →
       ∀ᶠ t : ℝ in 𝓝[>] 0, ∀ j,
         E.IsGeneric (ContinuousLinearMap.sweepProjection (f j) (c j) (n j) Q + t • v j) := by
-  obtain ⟨F, hF⟩ := E.exists_forall_eventually_isGeneric_smul_vadd
+  obtain ⟨F, hF⟩ := E.exists_forall_eventually_isGeneric_smul_vadd_nhdsGT
     (fun j => (ContinuousLinearMap.sweepProjection (f j) (c j) (n j)).toAffineMap) v
     (fun j => (f j).smul_add_sweepProjection_surjective (c j) (n j) (v j) (hv j))
-  exact ⟨F, fun Q hQ => (hF Q hQ).mono fun t ht j => by
+  exact ⟨F, fun Q hQ => (hF Q hQ 0).mono fun t ht j => by
     simpa only [ContinuousAffineMap.coe_toAffineMap, vadd_eq_add, add_comm] using ht j⟩
 
 end Mei.Convex

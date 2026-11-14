@@ -70,7 +70,7 @@ private theorem map_mem_positive (x : positiveLieAlgebra β hβ d) :
   have hle : positiveLieAlgebra β hβ d ≤
       (positiveLieAlgebra β' hβ' e).comap (map β hβ β' hβ' T.toAddMonoidHom c hT) := by
     rw [positiveLieAlgebra_def]
-    apply (supportedLieSubalgebra_le_iff (grade β hβ) _ _).mpr
+    apply (TauCeti.supportedLieSubalgebra_le_iff (grade β hβ) _ _).mpr
     rintro n ⟨hn, hn0⟩ x hx
     obtain ⟨r, rfl⟩ := (mem_grade_iff β hβ n x).mp hx
     rw [LieSubalgebra.mem_toSubmodule, LieSubalgebra.mem_comap, map_single]

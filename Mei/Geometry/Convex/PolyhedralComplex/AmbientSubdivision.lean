@@ -38,6 +38,8 @@ carriers rather than retaining duplicate sign assignments as cells.
 
 public section
 
+open TauCeti (FinitePolyhedralComplex)
+
 open TauCeti (RationalAffinePolyhedron)
 open TauCeti.Convex (closure_signCell coe_weakSignCellCone exists_zero_sign_of_affineSpan_ne_top
   finite_realizedSignCellClosures intrinsicInterior_closure_signCell
@@ -47,7 +49,7 @@ open TauCeti.Convex (closure_signCell coe_weakSignCellCone exists_zero_sign_of_a
   mem_signCell_sign nonempty_of_mem_realizedSignCellClosures realizedSignCellClosures
   sUnion_realizedSignCellClosures signCell weakSignCellCone)
 
-namespace Mei.FinitePolyhedralComplex
+namespace TauCeti.FinitePolyhedralComplex
 
 open Set Mei.Convex Filter Topology
 
@@ -289,7 +291,7 @@ theorem exists_mem_ofArrangement_walls_subset_zeroLocus (g : ι → (V →ᴬ[�
         (subset_affineSpan ℝ _ (subset_closure hr₀))
       rw [vsub_eq_sub, add_sub_cancel_left] at hmem
       exact (Submodule.smul_mem_iff _ hc0).mp hmem
-  refine ⟨closure (signCell g τ), (mem_cellsOfCodimension _ 1 _).mpr
+  refine ⟨closure (signCell g τ), (mem_cellsOfCodimension).mpr
     ⟨mem_ofArrangement_cells.mpr ⟨τ, hτne, rfl⟩, ?_⟩, hxP, ?_⟩
   · rw [hdir]
     exact Module.Dual.finrank_ker_add_one_of_ne_zero hj
@@ -333,7 +335,6 @@ theorem isConical_ambientSubdivision (P : ι → RationalAffinePolyhedron h)
     ext x
     simpa [g, hP] using ((P j.1).inequality j.2 : V →ᵃ[ℝ] ℝ).linear_apply_vsub x 0
   have heq : ambientSubdivision P = ofArrangement (fun j => (g j).toContinuousAffineMap) hg := by
-    apply FinitePolyhedralComplex.ext
     ext Q
     simp only [mem_ambientSubdivision_cells, mem_ofArrangement_cells, hrow]
   rw [heq]
@@ -461,5 +462,4 @@ theorem carrier_eq_iUnion_ambientSubdivision_walls
     exact ⟨Q, hQ, hQP, hxQ⟩
   · rintro ⟨Q, _, hQP, hxQ⟩
     exact hQP hxQ
-
-end Mei.FinitePolyhedralComplex
+end TauCeti.FinitePolyhedralComplex

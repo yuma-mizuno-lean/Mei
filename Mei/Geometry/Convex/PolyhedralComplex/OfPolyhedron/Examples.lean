@@ -31,11 +31,13 @@ the offset `a` of the ray is not required to be rational. They are the complexes
 
 public section
 
+open TauCeti (FinitePolyhedralComplex IsPolyhedralFace)
+
 open TauCeti (IsRationalNormalPolyhedron)
 
 open Set
 
-namespace Mei.FinitePolyhedralComplex.Examples
+namespace TauCeti.FinitePolyhedralComplex.Examples
 
 /-- The horizontal line `{y = c}` in the plane. -/
 def lineAtHeight (c : ℝ) : Set (ℝ × ℝ) := {p | p.2 = c}
@@ -52,23 +54,23 @@ its first coordinate is at least `a`. -/
 @[simp]
 theorem mem_rightRay {a : ℝ} {p : ℝ × ℝ} : p ∈ rightRay a ↔ p.2 = 0 ∧ a ≤ p.1 := Iff.rfl
 
-end Mei.FinitePolyhedralComplex.Examples
+end TauCeti.FinitePolyhedralComplex.Examples
 
-namespace Mei.FinitePolyhedralComplex.Examples
+namespace TauCeti.FinitePolyhedralComplex.Examples
 
 variable (h : TauCeti.Toric.IsIntegralLattice ((Int.castAddHom ℝ).prodMap (Int.castAddHom ℝ)))
 
 /-- A horizontal line is a rational-normal polyhedron. -/
 theorem isRationalNormalPolyhedron_lineAtHeight (c : ℝ) :
     IsRationalNormalPolyhedron h (lineAtHeight c) := by
-  convert Plane.isRationalNormalPolyhedron_setOf_snd_eq h c using 1
+  convert Mei.Plane.isRationalNormalPolyhedron_setOf_snd_eq h c using 1
   ext p
   simp
 
 /-- A horizontal ray with any real endpoint is a rational-normal polyhedron. -/
 theorem isRationalNormalPolyhedron_rightRay (a : ℝ) :
     IsRationalNormalPolyhedron h (rightRay a) := by
-  have h₁ := Plane.isRationalNormalPolyhedron_horizontalLine h
+  have h₁ := Mei.Plane.isRationalNormalPolyhedron_horizontalLine h
   have h₂ := TauCeti.isRationalNormalPolyhedron_setOf_le (h := h) (-axisRow false)
     (by simpa using (isRationalFunctional_axisRow h false).neg) (-a)
   convert h₁.inter h₂ using 1
@@ -164,4 +166,4 @@ theorem mem_cells_ofPolyhedron_rightRay_iff (a : ℝ) (F : Set (ℝ × ℝ)) :
       ↔ F = rightRay a ∨ F = {(a, 0)} := by
   simp
 
-end Mei.FinitePolyhedralComplex.Examples
+end TauCeti.FinitePolyhedralComplex.Examples

@@ -37,17 +37,6 @@ theorem fg_recessionCone (hP : TauCeti.IsConvexPolyhedron P) : (Set.recessionCon
   (Set.recessionCone ℝ P).fg_of_isConvexPolyhedron
     (Mei.Convex.isConvexPolyhedron_recessionCone hP)
 
-/-- The carrier-defined closed homogenization of every convex polyhedron is
-finitely generated. The empty carrier has the zero homogenization cone. -/
-theorem fg_homogenization (hP : TauCeti.IsConvexPolyhedron P) :
-    (Set.homogenization P).FG := by
-  rcases P.eq_empty_or_nonempty with h | hne
-  · subst P
-    rw [Set.homogenization_empty]
-    exact Submodule.fg_bot
-  · exact (Set.homogenization P).fg_of_isConvexPolyhedron
-      (Mei.Convex.isConvexPolyhedron_homogenization hP hne)
-
 /-- **Affine Minkowski–Weyl:** a nonempty convex polyhedron is the sum of a
 finite convex hull of its own points and its actual recession cone. -/
 theorem exists_finset_convexHull_add_recessionCone (hP : TauCeti.IsConvexPolyhedron P)

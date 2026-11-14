@@ -25,7 +25,7 @@ public noncomputable section
 
 open Set
 
-namespace Mei.FinitePolyhedralComplex
+namespace TauCeti.FinitePolyhedralComplex
 
 variable {N V ι : Type*} [AddCommGroup N]
   [NormedAddCommGroup V] [NormedSpace ℝ V] [Countable ι]
@@ -67,5 +67,4 @@ theorem exists_mem_intrinsicInterior_wall_notMem_singularSupport
   obtain ⟨x, ⟨-, hx⟩, hreg⟩ := B.exists_mem_wall_notMem_singularSupport P C isOpen_univ
     (by simpa using (B.nonempty _ hP).intrinsicInterior (B.isConvexPolyhedron hP).convex)
   exact ⟨x, hx, hreg⟩
-
-end Mei.FinitePolyhedralComplex
+end TauCeti.FinitePolyhedralComplex

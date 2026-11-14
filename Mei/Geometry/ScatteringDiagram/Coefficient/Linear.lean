@@ -20,6 +20,8 @@ The linear evaluation equivalence on a convex transport chart is available as
 
 public noncomputable section
 
+open TauCeti (FinitePolyhedralComplex)
+
 open TopCat TopologicalSpace Opposite
 
 namespace Mei.FiniteWallDiagram

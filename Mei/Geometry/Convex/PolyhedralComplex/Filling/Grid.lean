@@ -31,12 +31,14 @@ This combines `ContinuousMap.exists_grid_subdivision_convexHull`,
 
 public section
 
+open TauCeti (FinitePolyhedralComplex)
+
 open TauCeti (WallComplement AdmissiblePLPath)
 
 open Set Mei.Convex
 open scoped unitInterval
 
-namespace Mei.FinitePolyhedralComplex
+namespace TauCeti.FinitePolyhedralComplex
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
@@ -101,5 +103,4 @@ theorem exists_subordinate_filling_grid (C : FinitePolyhedralComplex h)
   refine ⟨n, t, hn, ht0, hmono, ht1, ε, hε, fun a b => ?_⟩
   obtain ⟨θ, hpatch, hperturb⟩ := hgrid a b
   exact ⟨θ.val, θ.property, r θ, hr θ, hpatch, hperturb, hmodel θ⟩
-
-end Mei.FinitePolyhedralComplex
+end TauCeti.FinitePolyhedralComplex

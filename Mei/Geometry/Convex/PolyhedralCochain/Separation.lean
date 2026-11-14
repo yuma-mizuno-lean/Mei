@@ -30,6 +30,8 @@ Unbounded cells and lineality are allowed.
 
 public section
 
+open TauCeti.FinitePolyhedralComplex (mem_cellsOfCodimension)
+
 open TauCeti (OrientedCell PolyhedralCochain)
 
 noncomputable section
@@ -60,7 +62,7 @@ theorem exists_isolating_transverse_test (σ : OrientedCell h k)
         Disjoint (convexHull ℝ (range s.points)) Q := by
   have := h.finiteDimensional
   obtain ⟨r, hr, _, hfront, hother, _⟩ := C.exists_isolating_ball
-    ((C.mem_cellsOfCodimension k _).mpr ⟨hσ, σ.finrank_direction_add⟩) hp
+    (mem_cellsOfCodimension.mpr ⟨hσ, σ.finrank_direction_add⟩) hp
   obtain ⟨s, hcompl, hball, hinter, hpint⟩ :=
     (affineSpan ℝ σ.carrier).exists_small_transverse_simplex σ.finrank_quotient_direction
       (subset_affineSpan ℝ _ (intrinsicInterior_subset hp)) (lt_min hr hε)
@@ -95,7 +97,7 @@ theorem sum_mk_eq_zero_iff (C : FinitePolyhedralComplex h)
   have := h.finiteDimensional
   constructor
   · intro hz Q
-    have hQC := ((C.mem_cellsOfCodimension k Q).mp Q.property).1
+    have hQC := (mem_cellsOfCodimension.mp Q.property).1
     obtain ⟨p, hp⟩ := (C.nonempty Q hQC).intrinsicInterior
       (C.isConvexPolyhedron hQC).convex
     obtain ⟨s, htrans, _, hmeet, _, hother⟩ := (σ Q).exists_isolating_transverse_test C

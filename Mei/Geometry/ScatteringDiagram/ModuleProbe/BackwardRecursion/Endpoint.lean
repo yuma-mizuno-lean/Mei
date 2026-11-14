@@ -28,6 +28,8 @@ open TauCeti (WallComplement)
 
 public noncomputable section
 
+open TauCeti (ExceptionalArrangement)
+
 open TauCeti (PositiveDegrees IsPositiveGrading)
 
 open TauCeti (DirectedWallSpaces)
@@ -77,8 +79,8 @@ theorem exists_backwardRayEndpointStepArrangement
       ∀ b, Sum.inr b ∈ D.active (k + 2) →
         (p + n.val, 1) ∈ (D.wall (.inr b)).ray.rayDegrees →
           (D.wall (.inr b)).Outgoing)
-    (F : ExceptionalArrangement V) :
-    ∃ (G : ExceptionalArrangement V)
+    (F : ExceptionalArrangement ℝ V) :
+    ∃ (G : ExceptionalArrangement ℝ V)
       (f : PositiveDegrees.ShiftedEndpointFunction d ℳ p V (k + 1)),
       (∀ (z : WallComplement (B.activeSupport k)) (m : d.cutoff k),
         let m' : d.cutoff (k + 1) := ⟨m.val, d.mem_cutoff.mpr

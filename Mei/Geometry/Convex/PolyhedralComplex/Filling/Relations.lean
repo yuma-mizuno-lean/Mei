@@ -35,6 +35,8 @@ implement the convention that the first crossing acts on the right.
 
 public section
 
+open TauCeti (FinitePolyhedralComplex)
+
 open TauCeti (WallComplement AdmissiblePLPath)
 
 noncomputable section
@@ -42,7 +44,7 @@ noncomputable section
 open Set Mei.Convex
 open scoped unitInterval
 
-namespace Mei.FinitePolyhedralComplex
+namespace TauCeti.FinitePolyhedralComplex
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
@@ -156,5 +158,4 @@ theorem exists_filling_grid_boundary_mem_normalClosure_jointNeighborhoodWords
       rintro g ⟨a, b, rfl⟩
       exact hcell a b)
   exact hle (C.crossingWord_grid_boundary_mem_normalClosure ν hν v e₁ e₂)
-
-end Mei.FinitePolyhedralComplex
+end TauCeti.FinitePolyhedralComplex

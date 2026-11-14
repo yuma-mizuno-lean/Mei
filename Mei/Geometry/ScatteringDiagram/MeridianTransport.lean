@@ -26,11 +26,13 @@ transports.
 
 public section
 
+open TauCeti (FinitePolyhedralComplex)
+
 open TauCeti (WallComplement AdmissiblePLPath)
 
 noncomputable section
 
-open CategoryTheory Set Mei.Convex TauCeti.WallComplement Mei.FinitePolyhedralComplex
+open CategoryTheory Set Mei.Convex TauCeti.WallComplement TauCeti.FinitePolyhedralComplex
 
 namespace Mei
 

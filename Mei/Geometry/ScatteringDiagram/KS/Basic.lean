@@ -35,6 +35,8 @@ generation of the positive monoid is required.
 
 public section
 
+open TauCeti (FinitePolyhedralComplex)
+
 open TauCeti (PositiveDegrees IsPositiveGrading)
 
 noncomputable section

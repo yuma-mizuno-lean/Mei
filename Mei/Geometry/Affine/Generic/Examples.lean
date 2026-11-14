@@ -22,10 +22,10 @@ public section
 
 open Set Filter Topology
 
-namespace Mei.ExceptionalArrangement
+namespace TauCeti.ExceptionalArrangement
 
 /-- The arrangement of the single point `1 / (j + 1)` of the line. -/
-noncomputable def pointArrangement (j : ℕ) : ExceptionalArrangement ℝ :=
+noncomputable def pointArrangement (j : ℕ) : ExceptionalArrangement ℝ ℝ :=
   ofAffineForms (fun _ : Unit =>
     (LinearMap.id : ℝ →ₗ[ℝ] ℝ).toAffineMap + AffineMap.const ℝ ℝ (-(1 / ((j : ℝ) + 1))))
 
@@ -59,4 +59,4 @@ theorem not_isOpen_setOf_forall_isGeneric_pointArrangement :
     (hopen.mem_nhds (fun j => isGeneric_pointArrangement_zero j))
   exact hxj (hx j)
 
-end Mei.ExceptionalArrangement
+end TauCeti.ExceptionalArrangement

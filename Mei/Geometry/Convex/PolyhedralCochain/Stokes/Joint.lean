@@ -36,6 +36,8 @@ transversality. No local Stokes equation or facet-incidence equation is assumed.
 
 public section
 
+open TauCeti.FinitePolyhedralComplex (mem_cellsOfCodimension)
+
 open TauCeti (OrientedCell PolyhedralCochain)
 
 noncomputable section
@@ -66,10 +68,10 @@ theorem exists_ball_sum_intersectionIndex_boundaryFacets_eq_sum_succAbove_at_joi
         ∑ m : Fin 3, (-1 : ℤ) ^ (m : ℕ) *
           σ.intersectionIndex (s.points ∘ m.succAbove) := by
   by_cases hqσ : q ∈ σ.carrier
-  · have hJC := ((C.mem_cellsOfCodimension 2 J).mp hJ).1
+  · have hJC := (mem_cellsOfCodimension.mp hJ).1
     have hJσ := C.subset_of_mem_intrinsicInterior hJC hσ hq hqσ
-    have hface := (isPolyhedralFace_iff.mp (C.face_of_subset hJC hσ hJσ)).2
-    have hdimJ := ((C.mem_cellsOfCodimension 2 J).mp hJ).2
+    have hface := (isPolyhedralFace_iff.mp (C.isPolyhedralFace_of_subset hJC hσ hJσ)).2
+    have hdimJ := (mem_cellsOfCodimension.mp hJ).2
     have hdimσ := σ.finrank_direction_add
     rw [direction_affineSpan] at hdimJ hdimσ
     obtain ⟨ε, hε, hstokes⟩ :=

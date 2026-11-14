@@ -25,10 +25,12 @@ assumed admissible for both wall families separately; crossing times are unchang
 
 The covering argument uses Mathlib's `Subspace.exists_eq_top_of_iUnion_eq_univ`:
 finitely many lower-dimensional cells cannot cover a relatively open part of a cell.
-The word comparison follows `Mei.FinitePolyhedralComplex.wallDeletion`.
+The word comparison follows `TauCeti.FinitePolyhedralComplex.wallDeletion`.
 -/
 
 public section
+
+open TauCeti (FinitePolyhedralComplex)
 
 open TauCeti (WallComplement AdmissiblePLPath)
 
@@ -36,7 +38,7 @@ noncomputable section
 
 open Set Mei.Convex
 
-namespace Mei.FinitePolyhedralComplex
+namespace TauCeti.FinitePolyhedralComplex
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
@@ -66,7 +68,7 @@ theorem exists_mem_cells_subset_finrank_eq_of_cover (C : FinitePolyhedralComplex
     intro y hy
     by_contra hyG
     obtain ⟨U, hU, hUP⟩ := mem_nhdsWithin_iff_exists_mem_nhds_inter.mp
-      (mem_nhdsWithin_affineSpan_of_mem_intrinsicInterior hy)
+      (Mei.mem_nhdsWithin_affineSpan_of_mem_intrinsicInterior hy)
     let T := C.cells.filter fun Q => Q ⊆ P ∧
       Module.finrank ℝ (affineSpan ℝ Q).direction < Module.finrank ℝ (affineSpan ℝ P).direction
     obtain ⟨Q, hle⟩ := (affineSpan ℝ P).exists_direction_le_of_forall_mem
@@ -103,7 +105,7 @@ theorem IsSubdivision.exists_mem_walls_subset (hCD : C.IsSubdivision D) {P : Set
     (hP : P ∈ D.walls) {x : V} (hx : x ∈ P) : ∃ Q ∈ C.walls, Q ⊆ P ∧ x ∈ Q := by
   obtain ⟨Q, hQ, hQP, hxQ, hdim⟩ :=
     hCD.exists_mem_cells_subset_finrank_eq (D.mem_cells_of_mem_walls hP) hx
-  refine ⟨Q, (C.mem_cellsOfCodimension 1 Q).mpr ⟨hQ, ?_⟩, hQP, hxQ⟩
+  refine ⟨Q, mem_cellsOfCodimension.mpr ⟨hQ, ?_⟩, hQP, hxQ⟩
   rw [hdim]
   exact D.finrank_direction_add_one_of_mem_walls hP
 
@@ -288,14 +290,12 @@ theorem segmentCrossingWord_coarsen (hCD : C.IsSubdivision D)
   simpa only [D.segmentCrossingWord_def, C.segmentCrossingWord_def,
     orderedCrossings_coarsen hCD e e' hx hy, ← List.filterMap_reverse] using
       hl (C.orderedCrossings e).reverse fun a ha => List.mem_reverse.mp ha
-
-end Mei.FinitePolyhedralComplex
-
+end TauCeti.FinitePolyhedralComplex
 namespace Quiver.Path
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
-  {C D : Mei.FinitePolyhedralComplex h}
+  {C D : TauCeti.FinitePolyhedralComplex h}
 
 /-- For a polygonal path admissible for both a complex and a complex it subdivides,
 coarsening its crossing word for the finer complex gives its word for the coarser one. -/
@@ -326,7 +326,7 @@ theorem crossingWord_coarsen (hCD : C.IsSubdivision D) (ν : C.walls → V →�
           List.map_append, List.map_singleton, List.map_singleton] at hpq'
         simpa using (List.append_inj' hpq' rfl).2
       rw [crossingWord_cons, crossingWord_cons, map_mul, ih q hpq,
-        Mei.FinitePolyhedralComplex.segmentCrossingWord_coarsen ν μ hCD hν hμ e e' hz
+        TauCeti.FinitePolyhedralComplex.segmentCrossingWord_coarsen ν μ hCD hν hμ e e' hz
           (by simpa using hw)]
 
 end Quiver.Path

@@ -26,9 +26,11 @@ subcomplex of `C` (`FinitePolyhedralComplex.isSubcomplex_ofPolyhedron`).
 
 public section
 
+open TauCeti (FinitePolyhedralComplex IsPolyhedralFace)
+
 open TauCeti (IsRationalNormalPolyhedron)
 
-namespace Mei
+namespace TauCeti
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
@@ -84,4 +86,4 @@ theorem isSubcomplex_ofPolyhedron (C : FinitePolyhedralComplex h) (hPC : P ∈ C
 
 end FinitePolyhedralComplex
 
-end Mei
+end TauCeti

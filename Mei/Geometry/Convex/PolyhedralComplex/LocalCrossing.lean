@@ -24,11 +24,13 @@ by `FinitePolyhedralComplex.orderedCrossings_eq_iff`.
 
 public section
 
+open TauCeti (FinitePolyhedralComplex)
+
 open TauCeti (WallComplement singularSupport)
 
 open Set Filter Topology Mei.Convex
 
-namespace Mei.FinitePolyhedralComplex
+namespace TauCeti.FinitePolyhedralComplex
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
@@ -39,7 +41,7 @@ theorem eventually_lineMap_notMem_other_walls (hθP : θ ∈ (P : Set V))
     (hθ : θ ∉ singularSupport (fun Q : C.walls => (Q : Set V))) :
     ∀ᶠ q : V × V in 𝓝 (θ, θ), ∀ Q : C.walls, Q ≠ P →
       ∀ t ∈ Icc (0 : ℝ) 1, AffineMap.lineMap q.1 q.2 t ∉ (Q : Set V) := by
-  filter_upwards [eventually_forall_lineMap_notMem_of_notMem
+  filter_upwards [Mei.eventually_forall_lineMap_notMem_of_notMem
     (fun Q : C.walls =>
       (C.isConvexPolyhedron (C.mem_cells_of_mem_walls Q.property)).isClosed) θ]
     with q hq Q hne
@@ -100,5 +102,4 @@ theorem eventually_exists_orderedCrossings_eq_singleton (hθP : θ ∈ (P : Set 
   apply ((C.orderedCrossings_eq_iff e [(P, (1 / 2 : ℝ))]).mpr ⟨by simp, ?_⟩).symm
   intro ⟨Q, t⟩
   simp only [List.mem_singleton, Prod.mk.injEq, hcross, hQ]
-
-end Mei.FinitePolyhedralComplex
+end TauCeti.FinitePolyhedralComplex

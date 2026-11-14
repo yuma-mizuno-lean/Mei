@@ -34,6 +34,8 @@ cutoff diagrams is `FiniteWallDiagram.IsCompatibleRefinement.pathProduct_eq`.
 
 public section
 
+open TauCeti (FinitePolyhedralComplex)
+
 open TauCeti.CompletedGroup (projection)
 
 open TauCeti (WallComplement AdmissiblePLPath)
@@ -42,7 +44,7 @@ open TauCeti (PositiveDegrees IsPositiveGrading)
 
 noncomputable section
 
-open Set Mei.Convex Mei.FinitePolyhedralComplex
+open Set Mei.Convex TauCeti.FinitePolyhedralComplex
 
 namespace Mei.CompletedDiagram
 

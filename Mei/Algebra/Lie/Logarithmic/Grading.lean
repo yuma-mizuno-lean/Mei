@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Algebra.Lie.Logarithmic.Basic
-public import Mei.Algebra.Lie.Graded.Supported
+public import TauCeti.Algebra.Lie.Graded.Supported
 public import Mei.Algebra.Lie.Graded.Subalgebra
 public import Mathlib.LinearAlgebra.Finsupp.Span
 public import Mathlib.LinearAlgebra.Finsupp.Pi
@@ -25,7 +25,7 @@ products of integral tangent characters is a separate base-change identification
 
 The decomposition uses Mathlib's independence and spanning theorems for
 `Finsupp.lsingle`. Restriction uses `LieSubalgebra.gradedLieAlgebra` and
-`supportedLieSubalgebra`; character restriction uses `Finsupp.submodule`.
+`TauCeti.supportedLieSubalgebra`; character restriction uses `Finsupp.submodule`.
 The tangent-character bracket is the logarithmic bracket of Mandel, *Scattering
 diagrams, theta functions, and refined tropical curve counts*, Example 2.1(i),
 arXiv:1503.06183v5.
@@ -120,7 +120,7 @@ instance : SetLike.GradedBracket (tangentGrade (R := R) ρ) (tangentGrade (R := 
 
 /-- Restrict tangent fields to an additive set of exponents. -/
 def tangentSubalgebra (S : AddSubsemigroup Γ) : LieSubalgebra R (LogarithmicVectorField R Γ Λ ρ) :=
-  supportedLieSubalgebra (tangentGrade ρ) S
+  TauCeti.supportedLieSubalgebra (tangentGrade ρ) S
 
 /-- Membership in the tangent subalgebra records tangency and vanishing outside the
 chosen exponent set, including when the spatial map has zero directions. -/
@@ -129,8 +129,8 @@ theorem mem_tangentSubalgebra_iff (S : AddSubsemigroup Γ) (x : LogarithmicVecto
       (∀ n, toFinsupp ρ x n (ρ n) = 0) ∧ (∀ n ∉ S, toFinsupp ρ x n = 0) := by
   constructor
   · intro hx
-    have hx' : x ∈ (supportedLieSubalgebra (tangentGrade ρ) S).toSubmodule := hx
-    rw [supportedLieSubalgebra_toSubmodule] at hx'
+    have hx' : x ∈ (TauCeti.supportedLieSubalgebra (tangentGrade ρ) S).toSubmodule := hx
+    rw [TauCeti.supportedLieSubalgebra_toSubmodule] at hx'
     refine Submodule.iSup_induction (fun n : S => tangentGrade (R := R) ρ n) (motive := fun x =>
       (∀ n, toFinsupp ρ x n (ρ n) = 0) ∧ (∀ n ∉ S, toFinsupp ρ x n = 0)) hx' ?_
       (by simp) ?_
@@ -155,7 +155,7 @@ theorem mem_tangentSubalgebra_iff (S : AddSubsemigroup Γ) (x : LogarithmicVecto
     intro n _
     rw [decompose_grade]
     by_cases hn : n ∈ S
-    · exact le_supportedLieSubalgebra (tangentGrade (R := R) ρ) hn
+    · exact TauCeti.le_supportedLieSubalgebra (tangentGrade (R := R) ρ) hn
         ((single_mem_tangentGrade_iff ρ n _).mpr (ht n))
     · simp [hS n hn]
 
@@ -166,7 +166,7 @@ theorem tangentSubalgebra_isHomogeneous [DecidableEq Γ] (S : AddSubsemigroup Γ
   obtain ⟨ht, hS⟩ := (mem_tangentSubalgebra_iff ρ S x).mp hx
   rw [decompose_grade]
   by_cases hn : n ∈ S
-  · exact le_supportedLieSubalgebra (tangentGrade (R := R) ρ) hn
+  · exact TauCeti.le_supportedLieSubalgebra (tangentGrade (R := R) ρ) hn
       ((single_mem_tangentGrade_iff ρ n _).mpr (ht n))
   · simp [hS n hn]
 
@@ -275,14 +275,14 @@ private instance : SetLike.GradedBracket (characterGrade ρ U) (characterGrade �
 
 /-- Formal logarithmic fields all of whose characters belong to `U`. -/
 def characterSubalgebra : LieSubalgebra R (LogarithmicVectorField R Γ Λ ρ) :=
-  supportedLieSubalgebra (characterGrade ρ U) ⊤
+  TauCeti.supportedLieSubalgebra (characterGrade ρ U) ⊤
 
 /-- The character restriction is the image of the coefficient submodule. -/
 @[simp]
 theorem characterSubalgebra_toSubmodule :
     (characterSubalgebra ρ U).toSubmodule =
       (Finsupp.submodule (fun _ : Γ => U)).map (toFinsupp ρ).symm.toLinearMap := by
-  simp only [characterSubalgebra, supportedLieSubalgebra_toSubmodule, characterGrade,
+  simp only [characterSubalgebra, TauCeti.supportedLieSubalgebra_toSubmodule, characterGrade,
     iSup_subtype, AddSubsemigroup.mem_top, iSup_pos, Finsupp.submodule_eq_iSup,
     Submodule.map_iSup, Submodule.map_comp, single_def]
 

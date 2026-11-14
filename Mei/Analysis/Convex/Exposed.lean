@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mathlib.Analysis.Convex.Exposed
+public import TauCeti.Analysis.Convex.Exposed
 public import Mathlib.Topology.Algebra.Affine
 public import Mei.Analysis.Convex.Intrinsic
 public import Mei.LinearAlgebra.Dual.Order
@@ -55,32 +55,6 @@ section Intersections
 
 variable {R V : Type*} [TopologicalSpace R] [Ring R] [PartialOrder R] [IsOrderedRing R]
   [ContinuousAdd R] [AddCommMonoid V] [TopologicalSpace V] [Module R V] {P Q F G : Set V}
-
-/-- Intersections of exposed subsets are exposed in the intersection of their
-ambient sets. This includes empty intersections and requires no convexity. -/
-theorem inter_inter (hF : IsExposed R P F) (hG : IsExposed R Q G) :
-    IsExposed R (P ∩ Q) (F ∩ G) := by
-  rintro ⟨p, hpF, hpG⟩
-  obtain ⟨l, hl⟩ := hF ⟨p, hpF⟩
-  obtain ⟨m, hm⟩ := hG ⟨p, hpG⟩
-  have hpL := hl ▸ hpF
-  have hpM := hm ▸ hpG
-  refine ⟨l + m, Set.Subset.antisymm ?_ ?_⟩
-  · rintro x ⟨hxF, hxG⟩
-    have hxL := hl ▸ hxF
-    have hxM := hm ▸ hxG
-    exact ⟨⟨hxL.1, hxM.1⟩, fun y hy => add_le_add (hxL.2 y hy.1) (hxM.2 y hy.2)⟩
-  · rintro x ⟨⟨hxP, hxQ⟩, hxmax⟩
-    have hsum := hxmax p ⟨hpL.1, hpM.1⟩
-    constructor
-    · rw [hl]
-      refine ⟨hxP, fun y hy => ?_⟩
-      exact (add_le_add_iff_right (m x)).mp
-        ((add_le_add (hpL.2 y hy) (hpM.2 x hxQ)).trans hsum)
-    · rw [hm]
-      refine ⟨hxQ, fun y hy => ?_⟩
-      exact (add_le_add_iff_left (l x)).mp
-        ((add_le_add (hpL.2 x hxP) (hpM.2 y hy)).trans hsum)
 
 end Intersections
 
@@ -141,21 +115,6 @@ namespace IsExposed
 
 variable {V : Type*} [AddCommGroup V] [Module ℝ V] [TopologicalSpace V]
   [IsTopologicalAddGroup V] [ContinuousSMul ℝ V] {P F : Set V}
-
-/-- An exposed subset meeting the relative interior of its ambient set is the whole set.
-Neither convexity nor finite dimensionality is required. -/
-theorem eq_of_mem_intrinsicInterior (hF : IsExposed ℝ P F) {x : V}
-    (hxF : x ∈ F) (hx : x ∈ intrinsicInterior ℝ P) : F = P := by
-  obtain ⟨l, hl⟩ := hF ⟨x, hxF⟩
-  have hxmax := hl ▸ hxF
-  let g : V →ᵃ[ℝ] ℝ := l.toLinearMap.toAffineMap - AffineMap.const ℝ V (l x)
-  have hg : ∀ p ∈ P, g p = 0 :=
-    g.eq_zero_on_of_mem_intrinsicInterior
-      (fun p hp => sub_nonpos.mpr (hxmax.2 p hp)) hx (sub_self _)
-  apply Set.Subset.antisymm hF.subset
-  intro p hp
-  rw [hl]
-  exact ⟨hp, fun q hq => (hxmax.2 q hq).trans (le_of_eq (sub_eq_zero.mp (hg p hp)).symm)⟩
 
 end IsExposed
 

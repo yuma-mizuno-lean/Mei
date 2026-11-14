@@ -29,9 +29,11 @@ The results use `AffineSubspace.subsingleton_inter_of_disjoint_direction`,
 
 public section
 
+open TauCeti (FinitePolyhedralComplex)
+
 open Set Module
 
-namespace Mei.FinitePolyhedralComplex
+namespace TauCeti.FinitePolyhedralComplex
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
@@ -130,5 +132,4 @@ theorem exists_pairwiseDisjoint_isolating_balls (C : FinitePolyhedralComplex h)
   intro x y hxy
   exact (hdisj x.property y.property (Subtype.val_injective.ne hxy)).mono
     (hr x).2.1 (hr y).2.1
-
-end Mei.FinitePolyhedralComplex
+end TauCeti.FinitePolyhedralComplex

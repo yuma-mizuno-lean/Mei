@@ -30,13 +30,15 @@ with the geometric membership and order characterization of `orderedCrossings`.
 
 public section
 
+open TauCeti (FinitePolyhedralComplex)
+
 open TauCeti (WallComplement AdmissiblePLPath)
 
 noncomputable section
 
 open Set Mei.Convex TauCeti.WallComplement
 
-namespace Mei.FinitePolyhedralComplex
+namespace TauCeti.FinitePolyhedralComplex
 
 variable {N N' V V' : Type*} [AddCommGroup N] [AddCommGroup N']
   [NormedAddCommGroup V] [NormedSpace ℝ V]
@@ -339,9 +341,7 @@ theorem segmentCrossingLetters_pathImage (a : x ⟶ y) :
   have hn := congrArg (fun f : V →ₗ[ℝ] ℝ => f (y.val - x.val)) (hνν' b.1)
   simp only [LinearMap.comp_apply, LinearEquiv.coe_coe] at hn
   simp only [Prod.map_apply, id_eq, hdiff, hn]
-
-end Mei.FinitePolyhedralComplex
-
+end TauCeti.FinitePolyhedralComplex
 namespace Quiver.Path
 
 variable {N N' V V' : Type*} [AddCommGroup N] [AddCommGroup N']
@@ -349,7 +349,7 @@ variable {N N' V V' : Type*} [AddCommGroup N] [AddCommGroup N']
   [NormedAddCommGroup V'] [NormedSpace ℝ V']
   {i : N →+ V} {i' : N' →+ V'}
   {h : TauCeti.Toric.IsIntegralLattice i} {h' : TauCeti.Toric.IsIntegralLattice i'}
-  {C : Mei.FinitePolyhedralComplex h}
+  {C : TauCeti.FinitePolyhedralComplex h}
   {x y : WallComplement (fun P : C.walls => (P : Set V))}
 
 /-- Affine transport preserves the polygonal crossing word through the wall bijection.

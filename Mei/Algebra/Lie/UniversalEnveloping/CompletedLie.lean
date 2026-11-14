@@ -99,7 +99,7 @@ theorem truncatedLieToU_injective [Algebra ℚ R] (k : ℕ) :
   obtain ⟨a, rfl⟩ := (d.degreeIdeal ℒ k).surjective_mkQ x
   rw [LieIdeal.mkQ_apply, truncatedLieToU_mk, Ideal.Quotient.eq_zero_iff_mem] at hx
   apply (d.degreeIdeal ℒ k).mkQ_eq_zero.mpr
-  have he := comap_degreeFiltration_ι ℒ d.degree
+  have he := TauCeti.UniversalEnvelopingAlgebra.comap_degreeFiltration_ι ℒ d.degree
     (fun n hn => d.eq_bot_of_degree_nonpos ℒ n (le_of_lt hn))
     (ι_injective_of_nonzero_grading ℒ d.degree
       (fun n hn => d.eq_bot_of_degree_nonpos ℒ n hn.le)) (k + 1)

@@ -32,6 +32,8 @@ short-segment realization theorem. Incident full cells are supplied by
 
 public section
 
+open TauCeti (FinitePolyhedralComplex)
+
 open TauCeti (WallComplement singularSupport mem_singularSupport)
 
 open TauCeti (PositiveDegrees IsPositiveGrading)

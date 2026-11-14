@@ -5,7 +5,8 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.Convex.Polyhedron.Face.Intersection
+public import TauCeti.Analysis.Convex.Polyhedron.Face.Intersection
+public import Mei.Geometry.Convex.Polyhedron.Face
 public import Mei.Analysis.Convex.Exposed
 
 /-!

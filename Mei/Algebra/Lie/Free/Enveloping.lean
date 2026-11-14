@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import TauCeti.Algebra.Lie.Quotient
+public import TauCeti.Algebra.Lie.Free.Enveloping
 public import Mei.Algebra.Lie.Free.LowerCentral
 public import Mei.Algebra.Lie.UniversalEnveloping.Cofinality
 public import Mei.Algebra.Lie.UniversalEnveloping.GradedEmbedding
@@ -25,6 +25,8 @@ without that hypothesis; the kernel computation proves that it is injective unde
 
 public section
 
+open TauCeti.FreeLieAlgebra
+
 namespace Mei.FreeLieAlgebra
 
 variable (R : Type*) [CommRing R] (S : Type*)
@@ -38,51 +40,6 @@ local notation "δ" => Nat.castAddMonoidHom ℤ
 local notation "J" => TauCeti.HopfIdeal.toIdeal (TauCeti.HopfIdeal.augmentation R U)
 local notation "𝓕" => TauCeti.UniversalEnvelopingAlgebra.degreeFiltration ℒ δ
   (fun n hn => False.elim (not_lt_of_ge (Int.natCast_nonneg n) hn))
-
-/-- Word-length ideals of a free enveloping algebra are exactly augmentation powers. -/
-theorem degreeFiltration_eq_augmentation_pow (k : ℕ) : (𝓕).ideal k = J ^ k := by
-  have hpos : ∀ n, δ n ≤ 0 → ℒ n = ⊥ := by
-    intro n hn
-    have hn0 : n = 0 := by
-      have hn' : (n : ℤ) ≤ 0 := hn
-      omega
-    subst n
-    exact homogeneousSubmodule_zero R S
-  apply le_antisymm
-  · cases k with
-    | zero =>
-      simp only [TauCeti.AlgFiltration.ideal_zero, Submodule.pow_zero, Ideal.one_eq_top, le_rfl]
-    | succ k =>
-      simpa only [Nat.add_sub_cancel, Nat.one_mul] using
-        Mei.UniversalEnvelopingAlgebra.degreeFiltration_le_augmentation_pow
-        ℒ δ (fun n hn => False.elim (not_lt_of_ge (Int.natCast_nonneg n) hn))
-        (_root_.FreeLieAlgebra.of R : S → F) (fun _ => 1)
-        (TauCeti.FreeLieAlgebra.lieSpan_range_of_eq_top R S)
-        (fun s => by simpa using word_mem_homogeneousSubmodule R (FreeMagma.of s))
-        1 (fun _ => le_rfl) (k + 1)
-  · exact TauCeti.UniversalEnvelopingAlgebra.augmentation_pow_le_degreeFiltration ℒ δ hpos k
-
-/-- Membership in an augmentation power is equivalent to vanishing of every lower
-word-length component. -/
-theorem mem_augmentation_pow_iff (a : U) (N : ℕ) :
-    a ∈ J ^ N ↔ ∀ n : ℕ, (n : ℤ) < N →
-      (DirectSum.decompose
-        (TauCeti.UniversalEnvelopingAlgebra.homogeneousSubmodule ℒ) a n : U) = 0 := by
-  rw [← degreeFiltration_eq_augmentation_pow R S N,
-    TauCeti.UniversalEnvelopingAlgebra.degreeFiltration_ideal,
-    TauCeti.GradedAlgebra.mem_degreeIdeal_iff, TauCeti.DirectSum.mem_degreeTail_iff]
-  rfl
-
-/-- The preimage of the `(c + 1)`-st augmentation power is the `c`-th lower central term. -/
-theorem comap_augmentation_pow_ι
-    (hι : Function.Injective (_root_.UniversalEnvelopingAlgebra.ι R : F → U)) (c : ℕ) :
-    ((J ^ (c + 1)).restrictScalars R).comap
-        (_root_.UniversalEnvelopingAlgebra.ι R : F →ₗ⁅R⁆ U).toLinearMap =
-      (LieModule.lowerCentralSeries R F F c).toSubmodule := by
-  rw [← degreeFiltration_eq_augmentation_pow R S (c + 1)]
-  rw [Mei.UniversalEnvelopingAlgebra.comap_degreeFiltration_ι ℒ δ _
-    hι]
-  exact (lowerCentralSeries_toSubmodule_eq_degreeTail R (S := S) c).symm
 
 private noncomputable def quotientEnvelopingHom (c : ℕ) : F →ₗ⁅R⁆ U ⧸ J ^ (c + 1) :=
   (Ideal.Quotient.mkₐ R (J ^ (c + 1))).toLieHom.comp (_root_.UniversalEnvelopingAlgebra.ι R)
@@ -139,7 +96,7 @@ private theorem ker_quotientEnvelopingHom
   ext x
   rw [LieHom.mem_ker, quotientEnvelopingHom, LieHom.comp_apply, AlgHom.toLieHom_apply,
     Ideal.Quotient.mkₐ_eq_mk, Ideal.Quotient.eq_zero_iff_mem]
-  exact (SetLike.ext_iff.mp (comap_augmentation_pow_ι R S hι c)) x
+  exact (SetLike.ext_iff.mp (TauCeti.FreeLieAlgebra.comap_augmentation_pow_ι R S hι c)) x
 
 /-- The free nilpotent Lie quotient embeds in the augmentation quotient whenever the
 underlying free Lie module is free. In particular this applies over every field. -/

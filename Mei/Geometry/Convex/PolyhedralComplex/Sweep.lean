@@ -29,11 +29,13 @@ so swept cells cannot acquire new intersections away from their base intersectio
 
 public section
 
+open TauCeti (FinitePolyhedralComplex)
+
 noncomputable section
 
 open Set Mei.Convex
 
-namespace Mei.FinitePolyhedralComplex
+namespace TauCeti.FinitePolyhedralComplex
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
@@ -175,5 +177,4 @@ theorem IsSubdivision.sweep {C D : FinitePolyhedralComplex h}
       (isSubdivision_iff.mp hCD).1.support_subset hm))).IsSubdivision (D.sweep n hn) := by
   obtain ⟨href, hsupport⟩ := isSubdivision_iff.mp hCD
   exact isSubdivision_iff.mpr ⟨href.sweep n hn, by simp [hsupport]⟩
-
-end Mei.FinitePolyhedralComplex
+end TauCeti.FinitePolyhedralComplex

@@ -7,7 +7,8 @@ module
 
 public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Meridian
 public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Localization
-public import Mei.Geometry.Convex.PolyhedralCochain.Transverse.Basic
+public import TauCeti.Geometry.Convex.PolyhedralCochain.Transverse.Basic
+public import Mei.Geometry.Convex.PolyhedralCochain.Basic
 public import Mei.Geometry.Convex.PolyhedralCochain.Map
 
 /-!
@@ -42,6 +43,8 @@ tropical curve counts*, proof of Theorem 2.6, and Gross–Hacking–Keel–Konts
 -/
 
 public section
+
+open TauCeti.FinitePolyhedralComplex (mem_cellsOfCodimension)
 
 open TauCeti (OrientedCell PolyhedralCochain)
 
@@ -194,7 +197,7 @@ theorem exists_jointObstructionCochain (hk : D.LevelConsistent k)
   let C := D.adaptedComplex (k + 1)
   let := Fintype.ofFinite C.joints
   have hpoint (J : C.joints) : (intrinsicInterior ℝ (J : Set V)).Nonempty := by
-    have hJC := ((C.mem_cellsOfCodimension 2 J).mp J.property).1
+    have hJC := (mem_cellsOfCodimension.mp J.property).1
     exact Set.Nonempty.intrinsicInterior (C.isConvexPolyhedron hJC).convex (C.nonempty J hJC)
   -- Choose a center and a radius where the local obstruction theorem applies.
   choose q hq using hpoint

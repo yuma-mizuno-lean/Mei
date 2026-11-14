@@ -28,6 +28,8 @@ open TauCeti (WallComplement singularSupport exists_finite_singularSupport_cover
 
 public noncomputable section
 
+open TauCeti (ExceptionalArrangement)
+
 open Set Filter Topology
 
 namespace Mei.Convex
@@ -43,7 +45,7 @@ theorem exists_ray_admissibilityArrangement
     (W : ι → Set V) (hpoly : ∀ j, TauCeti.IsConvexPolyhedron (W j))
     (hdim : ∀ j, Module.finrank ℝ (affineSpan ℝ (W j)).direction + 1 =
       Module.finrank ℝ V) (vectors : Finset V) :
-    ∃ A : ExceptionalArrangement V, ∀ Q, A.IsGeneric Q →
+    ∃ A : ExceptionalArrangement ℝ V, ∀ Q, A.IsGeneric Q →
       ∃ y : WallComplement W, y.val = Q ∧ ∀ v ∈ vectors,
         ∀ᶠ T : ℝ in atTop,
           (∀ s ≥ T, ∀ j, Q + s • v ∉ W j) ∧
@@ -59,7 +61,7 @@ theorem exists_ray_admissibilityArrangement
     obtain ⟨B, hB, rfl⟩ := Finset.mem_image.mp hP
     rw [← direction_affineSpan, AffineSubspace.affineSpan_coe]
     exact hS B hB
-  let A : ExceptionalArrangement V :=
+  let A : ExceptionalArrangement ℝ V :=
     ⟨Finset.univ.image (fun j => affineSpan ℝ (W j)), by
       rintro B hB
       obtain ⟨j, _, rfl⟩ := Finset.mem_image.mp hB

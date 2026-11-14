@@ -73,7 +73,7 @@ theorem extendedCoefficientField_eq_of_levelEquivalent {ι' : Type*}
     (coefficientArrangement d ℳ p ℒ H h h' D' k)
   obtain ⟨z', hzT⟩ := exists_generic_allowed (d := d) (ℒ := ℒ) (H := H)
     (h := h) (B := B) k T x
-  obtain ⟨hzD, hzD'⟩ := ExceptionalArrangement.isGeneric_union.mp hzT
+  obtain ⟨hzD, hzD'⟩ := TauCeti.ExceptionalArrangement.isGeneric_union.mp hzT
   have hB' := ((hDD'.mono (Nat.le_succ k)).map (chargeZeroGradedLieHom d ℳ p ℒ)
     (chargeZeroGradedLieHom_mem_wall d ℳ p ℒ H)).symm.trans hB
   rw [extendedCoefficientField_eq_action d ℳ p ℒ H h h' D B k hBc hD hB x z' hzD,

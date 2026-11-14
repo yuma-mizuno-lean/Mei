@@ -28,6 +28,8 @@ open TauCeti (WallComplement)
 
 public noncomputable section
 
+open TauCeti (ExceptionalArrangement)
+
 open TauCeti (PositiveDegrees IsPositiveGrading)
 
 open TauCeti (DirectedWallSpaces)
@@ -185,10 +187,10 @@ theorem exists_coherentBackwardRayEndpointStepArrangement
       ∀ b, Sum.inr b ∈ D.active (k + 2) →
         (p + n.val, 1) ∈ (D.wall (.inr b)).ray.rayDegrees →
           (D.wall (.inr b)).Outgoing)
-    (F : ExceptionalArrangement V) :
+    (F : ExceptionalArrangement ℝ V) :
     let f := coherentProbeEndpointFunction d ℳ p ℒ H h h' D B
       (k + 1) K hkK hBc
-    ∃ G : ExceptionalArrangement V,
+    ∃ G : ExceptionalArrangement ℝ V,
       (∀ Q, G.IsGeneric Q → ∀ c : B.active K, Q ∉ (B.wall c).support) ∧
       ∀ Q, G.IsGeneric Q →
         ∃ y : WallComplement (B.activeSupport (k + 1)), y.val = Q ∧

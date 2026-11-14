@@ -40,6 +40,8 @@ The construction uses `FinitePolyhedralComplex.ambientSubdivision`,
 
 public section
 
+open TauCeti (FinitePolyhedralComplex)
+
 open TauCeti.CompletedGroup (projection)
 
 open TauCeti (RationalAffinePolyhedron)
@@ -116,11 +118,11 @@ theorem mem_levelComplex_walls {k : ℕ} {Q : Set V} :
   constructor
   · rintro ⟨hQ, hdim⟩
     obtain ⟨hQa, Q', -, ⟨-, j, hj⟩, hQQ'⟩ :=
-      FinitePolyhedralComplex.mem_generatedSubcomplex_cells.mp hQ
+      FinitePolyhedralComplex.mem_cells_generatedSubcomplex.mp hQ
     exact ⟨⟨hQa, hdim⟩, j, hQQ'.trans hj⟩
   · rintro ⟨⟨hQa, hdim⟩, hj⟩
-    refine ⟨FinitePolyhedralComplex.mem_generatedSubcomplex_of_mem hQa ⟨?_, hj⟩, hdim⟩
-    exact (FinitePolyhedralComplex.mem_cellsOfCodimension _ 1 Q).mpr ⟨hQa, hdim⟩
+    refine ⟨FinitePolyhedralComplex.mem_cells_generatedSubcomplex_of_mem hQa ⟨?_, hj⟩, hdim⟩
+    exact (FinitePolyhedralComplex.mem_cellsOfCodimension).mpr ⟨hQa, hdim⟩
 
 /-- Every wall of the order-`k` complex lies in an active support. -/
 theorem exists_subset_support_of_mem_levelComplex_walls {k : ℕ} {Q : Set V}
@@ -151,7 +153,7 @@ theorem support_levelComplex (k : ℕ) :
   constructor
   · rintro ⟨Q, hQ, hxQ⟩
     obtain ⟨-, Q', -, ⟨-, j, hj⟩, hQQ'⟩ :=
-      FinitePolyhedralComplex.mem_generatedSubcomplex_cells.mp hQ
+      FinitePolyhedralComplex.mem_cells_generatedSubcomplex.mp hQ
     exact ⟨j, hj (hQQ' hxQ)⟩
   · rintro ⟨j, hj⟩
     obtain ⟨Q, hQ, hxQ, -⟩ := D.exists_mem_levelComplex_walls_subset k j hj
@@ -289,7 +291,7 @@ def toKSComplex (k : ℕ) : KSComplex s d ℒ (D.levelComplex k) k where
     refine Subgroup.noncommProd_mem _ _ fun j hj => ?_
     obtain ⟨n, hn⟩ := (D.wall j).ray.rayDegrees_nonempty
     have hray : projection k (D.wall j).label ∈
-        (rayLieSubalgebra (d.truncatedGrading ℒ k) (D.wall j).ray).bchSubgroup := by
+        (TauCeti.rayLieSubalgebra (d.truncatedGrading ℒ k) (D.wall j).ray).bchSubgroup := by
       exact (LieSubalgebra.mem_bchSubgroup _ _).mpr
         ((d.mem_completedRaySubgroup ℒ _ _).mp (D.wall j).label_mem k)
     exact LieSubalgebra.bchSubgroup_le_bchSubgroup.mpr

@@ -30,6 +30,8 @@ The local input is
 
 public section
 
+open TauCeti (FinitePolyhedralComplex)
+
 open TauCeti (OrientedCell)
 
 noncomputable section

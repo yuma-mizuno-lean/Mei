@@ -39,7 +39,7 @@ public noncomputable section
 open Set Mei.Convex
 open scoped unitInterval
 
-namespace Mei.FinitePolyhedralComplex
+namespace TauCeti.FinitePolyhedralComplex
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
@@ -299,5 +299,4 @@ theorem crossingWord_triangle_mem_of_cover
     Quiver.Hom.toPath, Quiver.Path.crossingWord_nil, mul_one, hself, inv_one, one_mul,
     he₁0, he₁1, he₂1, inv_inv] at hb ⊢
   simpa only [mul_assoc] using hb
-
-end Mei.FinitePolyhedralComplex
+end TauCeti.FinitePolyhedralComplex

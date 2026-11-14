@@ -30,9 +30,11 @@ from homotopy invariance of path products.
 
 public section
 
+open TauCeti (FinitePolyhedralComplex)
+
 open TauCeti (AdmissiblePLPath)
 
-open Set Mei.Convex Mei.FinitePolyhedralComplex
+open Set Mei.Convex TauCeti.FinitePolyhedralComplex
 
 namespace Mei.FiniteWallDiagram
 

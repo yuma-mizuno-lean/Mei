@@ -32,6 +32,8 @@ once, so adjacent cell loops use exactly the same edges with opposite directions
 
 public section
 
+open TauCeti (FinitePolyhedralComplex)
+
 open TauCeti (WallComplement)
 
 noncomputable section
@@ -39,7 +41,7 @@ noncomputable section
 open Set Mei.Convex
 open scoped unitInterval
 
-namespace Mei.FinitePolyhedralComplex
+namespace TauCeti.FinitePolyhedralComplex
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
@@ -109,5 +111,4 @@ theorem exists_admissible_subordinate_filling_grid (C : FinitePolyhedralComplex 
           fun u (hu : u = v (a.castSucc, b.castSucc)) => hu ▸
             hvertices _ (Quiver.Path.start_mem_vertices _))).trans (Quiver.Path.crossingWord_nil ν)
     · exact Or.inr hjoint
-
-end Mei.FinitePolyhedralComplex
+end TauCeti.FinitePolyhedralComplex

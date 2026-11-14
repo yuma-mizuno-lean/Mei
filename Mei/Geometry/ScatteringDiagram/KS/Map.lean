@@ -23,6 +23,8 @@ for finite conical scattering diagrams; no faithful coefficient action is needed
 
 public section
 
+open TauCeti (FinitePolyhedralComplex)
+
 open TauCeti (WallComplement AdmissiblePLPath GradedLieHom)
 
 open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading SupportedRay)

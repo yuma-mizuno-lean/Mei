@@ -43,7 +43,7 @@ theorem principalWallSpaces_wallGroup_eq_completedRaySubgroup (w : SupportedRay 
     (D.principalWallSpaces (R := R) d).wallGroup w
         (D.principalNormal w.generator).toAddMonoidHom = d.completedRaySubgroup ℒ w := by
   apply DirectedWallSpaces.wallGroup_eq_completedRaySubgroup
-  rw [DirectedWallSpaces.raySubmodule_def, Mei.rayLieSubalgebra_toSubmodule]
+  rw [DirectedWallSpaces.raySubmodule_def, TauCeti.rayLieSubalgebra_toSubmodule]
   congr 1
   funext n
   obtain ⟨a, ha, he⟩ := (SupportedRay.mem_rayDegrees.mp n.property).2
