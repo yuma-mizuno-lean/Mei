@@ -11,12 +11,13 @@ public import Mei.Geometry.ScatteringDiagram.Skew.PolynomialInput.Extension.Pent
 public import Mei.Geometry.ScatteringDiagram.Skew.PolynomialInput.Incoming
 public import Mei.Geometry.ScatteringDiagram.Skew.PolynomialInput.Commuting
 public import Mei.Geometry.ScatteringDiagram.Skew.PolynomialInput.Pentagon
+public import Mei.Geometry.ScatteringDiagram.Skew.PolynomialInput.HyperplaneTerm
 public import Mei.Geometry.ScatteringDiagram.Skew.Principal.Examples
 
 /-!
 # Checks on polynomial inputs of generalized cluster scattering diagrams
 
-Two checks on `BLMPolynomialInput`, and instances of the positive representatives of
+Three checks on `BLMPolynomialInput`, and instances of the positive representatives of
 `Mei.Geometry.ScatteringDiagram.Skew.PolynomialInput.Commuting` and
 `Mei.Geometry.ScatteringDiagram.Skew.PolynomialInput.Pentagon`.
 
@@ -34,6 +35,19 @@ Two checks on `BLMPolynomialInput`, and instances of the positive representative
   of the rank-two datum, at the second index of
   `Mei.SkewLatticeDatum.Examples.rankTwoBLMPolynomialInput`, this is
   `Mei.SkewLatticeDatum.Examples.rankTwo_logComponent_rayFactor_letterPairRay`.
+
+* *Specializing the variables.* On the rank-two datum, the alphabet input of
+  `Mei.SkewLatticeDatum.Examples.rankTwoBLMPolynomialInput` on the lines `e₁⊥` and `e₂⊥` of `M`
+  is lifted along the specialization `p_{i,s} ↦ 1`, written in the coordinates
+  `m ↦ (m(e₂), -m(e₁))` of `M` in which `w₁ = e₂*` and `w₂ = -e₁*` are the standard basis of
+  `ℤ²` (`rankTwoSpecialization`). The lift has the walls `1 + x` and `1 + y + y²` in the
+  positive quadrant `ℕ²`, for `x = z^{(1, 0)}` and `y = z^{(0, 1)}` (`rankTwoSpecializedInput`).
+  The letters of `p_{2,1}` and `p_{2,2}` lie on different rays of the alphabet, but their images
+  `y` and `y²` lie on one ray (`rankTwoSpecializedInput_exponent_rankTwoLetter_one`). The
+  pushforward of the scattering class of the alphabet walls is the scattering class of the
+  lifted walls (`rankTwo_pushforward_scat_alphabetInput`), and over `ℚ` the lifted ray
+  presentation is a positive wall representative
+  (`rankTwoSpecializedInput_isPositiveWallRepresentative`).
 
 * *The zero form.* On the rank-one lattice `ℤ` with the zero skew form and `N_uf = N° = ℤ`, the
   map `N_uf ∩ N° → M`, `n ↦ ω(-, n)` is not injective, so there is no polynomial input
@@ -140,6 +154,125 @@ theorem rankTwo_logComponent_rayFactor_letterPairRay :
     (s := ⟨0, by simp [rankTwoSecondIndex]⟩) (t := ⟨1, by simp [rankTwoSecondIndex]⟩) (by simp)
 
 end RayFactor
+
+section Specialization
+
+open HyperplaneTermInput DirectedDiagram
+
+local notation "𝒥" => rankTwoBLMPolynomialInput
+local notation "ℕ²" => Module.Basis.positiveDegrees (Module.Basis.finTwoProd ℤ)
+
+/-- The specialization `p_{i,s} ↦ 1` of the rank-two input, in the coordinates
+`m ↦ (m(e₂), -m(e₁))` of `M = Hom(ℤ², ℤ)`, in which the exponents `w₁ = e₂*` and `w₂ = -e₁*` are
+the standard basis vectors of `ℤ²`. -/
+def rankTwoSpecialization : Module.Dual ℤ (ℤ × ℤ) × ((𝒥).Letter → ℤ) →+ ℤ × ℤ where
+  toFun x := (x.1 (0, 1), -x.1 (1, 0))
+  map_zero' := by simp
+  map_add' x y := by ext <;> simp [add_comm]
+
+@[simp]
+theorem rankTwoSpecialization_apply (x : Module.Dual ℤ (ℤ × ℤ) × ((𝒥).Letter → ℤ)) :
+    rankTwoSpecialization x = (x.1 (0, 1), -x.1 (1, 0)) :=
+  (rfl)
+
+/-- The character `a e₂* + b (-e₁*)` of a point `(a, b)` of `ℤ²`. -/
+def rankTwoCharacter : ℤ × ℤ →+ Module.Dual ℤ (ℤ × ℤ) :=
+  (zmultiplesHom _ (LinearMap.snd ℤ ℤ ℤ)).coprod (zmultiplesHom _ (-LinearMap.fst ℤ ℤ ℤ))
+
+@[simp]
+theorem rankTwoCharacter_apply (p : ℤ × ℤ) :
+    rankTwoCharacter p = p.1 • LinearMap.snd ℤ ℤ ℤ + p.2 • -LinearMap.fst ℤ ℤ ℤ := by
+  simp [rankTwoCharacter]
+
+/-- The variable `p_{i,s}` specializes to `s` times the `i`-th basis vector of `ℤ²`, the
+exponent `s w_i` in the coordinates of `rankTwoSpecialization`. -/
+theorem rankTwoSpecialization_letter (α : (𝒥).Letter) :
+    rankTwoSpecialization (PositiveDegrees.letter (𝒥).letterExponent α) =
+      ((α.2 : ℕ) + 1) • Module.Basis.finTwoProd ℤ α.1.1 := by
+  obtain ⟨⟨i, hi⟩, s⟩ := α
+  fin_cases i <;> ext <;> simp [PositiveDegrees.letter_fst]
+
+/-- The specialized variables are allowed degrees of the positive quadrant `ℕ²`. -/
+theorem rankTwoSpecialization_letter_mem (α : (𝒥).Letter) :
+    rankTwoSpecialization (PositiveDegrees.letter (𝒥).letterExponent α) ∈ (ℕ²).monoid := by
+  rw [rankTwoSpecialization_letter]
+  exact nsmul_mem (Module.Basis.mem_positiveDegrees_monoid_self _ _) _
+
+/-- The specialized variables are nonzero. -/
+theorem rankTwoSpecialization_letter_ne_zero (α : (𝒥).Letter) :
+    rankTwoSpecialization (PositiveDegrees.letter (𝒥).letterExponent α) ≠ 0 := by
+  rw [rankTwoSpecialization_letter]
+  exact smul_ne_zero (Nat.succ_ne_zero _) ((Module.Basis.finTwoProd ℤ).ne_zero _)
+
+/-- The character of the specialization of the variable `p_{i,s}` is its exponent `s w_i`. -/
+theorem rankTwoCharacter_rankTwoSpecialization_letter (α : (𝒥).Letter) :
+    rankTwoCharacter (rankTwoSpecialization (PositiveDegrees.letter (𝒥).letterExponent α)) =
+      (𝒥).letterExponent α := by
+  ext <;> simp [PositiveDegrees.letter_fst]
+
+/-- The specialization `p_{i,s} ↦ 1` of the rank-two input: the lift of its alphabet input along
+`rankTwoSpecialization`, with the walls `1 + x` on `e₁⊥` and `1 + y + y²` on `e₂⊥`, where
+`x = z^{(1, 0)}` and `y = z^{(0, 1)}` in `ℕ²`. -/
+def rankTwoSpecializedInput :
+    HyperplaneTermInput ℕ² rankTwoCharacter rankTwoAdaptedBasis.unfrozenIndex (𝒥).Letter :=
+  (𝒥).alphabetInput.liftFiniteAlphabet rankTwoSpecialization_letter_mem
+    rankTwoSpecialization_letter_ne_zero rankTwoCharacter_rankTwoSpecialization_letter
+
+/-- The variable `p_{i,s}` becomes the monomial of `s` times the `i`-th basis vector of `ℤ²`. -/
+@[simp]
+theorem rankTwoSpecializedInput_exponent (α : (𝒥).Letter) :
+    rankTwoSpecializedInput.exponent α = ((α.2 : ℕ) + 1) • Module.Basis.finTwoProd ℤ α.1.1 := by
+  simp only [rankTwoSpecializedInput, liftFiniteAlphabet_exponent,
+    BLMPolynomialInput.alphabetInput_exponent]
+  exact rankTwoSpecialization_letter α
+
+/-- The terms `p₁ x` and `p₂ x²` of `1 + p₁ x + p₂ x²` lie on different supported rays of the
+alphabet (`rankTwoLetterRay_zero_ne_one`), but their specializations `y` and `y²` lie on one
+ray of `ℕ²`. -/
+theorem rankTwoSpecializedInput_exponent_rankTwoLetter_one :
+    rankTwoSpecializedInput.exponent (rankTwoLetter 1) =
+      2 • rankTwoSpecializedInput.exponent (rankTwoLetter 0) := by
+  simp [rankTwoLetter, rankTwoSecondIndex]
+
+variable {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V] {j : Module.Dual ℤ (ℤ × ℤ) →+ V}
+  (g : TauCeti.Toric.IsIntegralLattice j)
+
+/-- The pushforward of the scattering class of the alphabet walls `1 + p_{1,1} z^{v_{1,1}}` and
+`1 + p_{2,1} z^{v_{2,1}} + p_{2,2} z^{v_{2,2}}` along the specialization is the scattering class of
+the walls `1 + x` and `1 + y + y²` in `ℕ²`. -/
+theorem rankTwo_pushforward_scat_alphabetInput [DecidableEq (Module.Dual ℤ (ℤ × ℤ))] :
+    Class.pushforward (DirectedWall.Pushforward.ofFiniteAlphabetLift (R := ℚ) (g := g)
+        rankTwoSpecialization_letter_mem rankTwoSpecialization_letter_ne_zero
+        rankTwoCharacter_rankTwoSpecialization_letter)
+        (((𝒥).alphabetInput.diagram g fun _ => (1 : ℚ)).Scat
+          (fun _ => ofHyperplaneRayFactors_full ..)) =
+      (rankTwoSpecializedInput.diagram g fun _ => (1 : ℚ)).Scat
+        (fun _ => ofHyperplaneRayFactors_full ..) :=
+  (𝒥).alphabetInput.pushforward_scat_liftFiniteAlphabet _ _ _ g _
+
+open scoped Mei.TropicalVertexCoefficientAction
+
+/-- Every degree of `ℤ²` is a coefficient exponent. -/
+local instance factPositiveDegreesLeTop : Fact ((ℕ²).monoid ≤ (⊤ : AddSubmonoid (ℤ × ℤ))) :=
+  ⟨le_top⟩
+
+/-- Over `ℚ` and for the full coefficient lattice `ℤ²`, the ray presentation of the walls `1 + x`
+and `1 + y + y²` is a positive wall representative for the character map `rankTwoCharacter`: its
+grouped wall functions have natural-number coefficients. -/
+theorem rankTwoSpecializedInput_isPositiveWallRepresentative :
+    (rankTwoSpecializedInput.diagram g fun _ => (1 : ℚ)).IsPositiveWallRepresentative
+      ((TropicalVertexCoefficientAction.filtration (R := ℚ) ℕ²
+        (⊤ : AddSubmonoid (ℤ × ℤ))).completedBCHAction ℕ²
+        (tropicalVertexGrading (R := ℚ) ℕ² rankTwoCharacter))
+      (AddMonoidAlgebra.mapRingHom (⊤ : AddSubmonoid (ℤ × ℤ)) (Nat.castRingHom ℚ)).rangeS
+      rankTwoCharacter :=
+  (𝒥).isPositiveWallRepresentative_liftFiniteAlphabet_alphabetInput _ _ _ g
+    (⊤ : AddSubmonoid (ℤ × ℤ))
+    (fun i => ⟨![(0, -1), (1, 0)] i.1, trivial, trivial, by
+      obtain ⟨i, -⟩ := i
+      fin_cases i <;> simp⟩) _
+
+end Specialization
 
 section ZeroForm
 

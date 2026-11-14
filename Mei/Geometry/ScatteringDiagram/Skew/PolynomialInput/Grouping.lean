@@ -5,7 +5,7 @@ Authors: Claude Code
 -/
 module
 
-public import Mei.Geometry.ScatteringDiagram.Skew.PolynomialInput.Incoming
+public import Mei.Geometry.ScatteringDiagram.Skew.PolynomialInput.HyperplaneTerm
 public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.FunctionWall.RayFactor
 
 /-!
@@ -114,7 +114,8 @@ theorem isPositiveWallRepresentative_incomingDiagram {S : Type*} [Semiring S]
     (I.incomingDiagram (R := R) h).IsPositiveWallRepresentative
       ((G).completedBCHAction 𝒅 ℒ) (AddMonoidAlgebra.mapRingHom Q φ).rangeS
       (AddMonoidHom.fst _ _) :=
-  (I.isPositive_incomingGrouping h Q hQ φ).isPositiveWallRepresentative
+  I.isPositiveWallRepresentative_incomingDiagram_of_exists h Q
+    (fun i => ⟨_, (hQ i).1, by simpa using (hQ i).2, by simp⟩) φ
 
 end Action
 
