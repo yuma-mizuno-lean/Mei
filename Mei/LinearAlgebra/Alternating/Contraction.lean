@@ -6,9 +6,7 @@ Authors: Codex
 module
 
 public import TauCeti.LinearAlgebra.Alternating.Contraction
-public import TauCeti.LinearAlgebra.Alternating.Conormal
 public import Mathlib.LinearAlgebra.Alternating.Uncurry.Fin
-public import Mathlib.LinearAlgebra.Dual.Lemmas
 
 /-!
 # Contraction of conormal orientations

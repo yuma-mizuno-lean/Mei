@@ -7,8 +7,6 @@ module
 
 public import Mei.Algebra.Lie.UniversalEnveloping.Augmentation.Basic
 public import Mei.Algebra.Lie.UniversalEnveloping.DegreeFiltration
-public import Mei.Algebra.Order.BigOperators.Ring.List
-public import Mei.RingTheory.GradedAlgebra.Generators
 public import TauCeti.Algebra.Lie.UniversalEnveloping.Cofinality
 
 /-!
