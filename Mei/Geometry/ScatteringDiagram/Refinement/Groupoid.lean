@@ -32,11 +32,13 @@ stability conditions*, §2, [arXiv:1603.00416](https://arxiv.org/abs/1603.00416)
 
 public section
 
+open TauCeti (FinitePolyhedralComplex)
+
 open TauCeti (WallComplement AdmissiblePLPath)
 
 noncomputable section
 
-open CategoryTheory Mei.Convex TauCeti.WallComplement Mei.FinitePolyhedralComplex
+open CategoryTheory Mei.Convex TauCeti.WallComplement TauCeti.FinitePolyhedralComplex
 
 namespace Mei.GroupoidWallDiagram
 

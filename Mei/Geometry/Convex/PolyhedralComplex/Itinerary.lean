@@ -38,13 +38,15 @@ invariance follows the list-level formula `FinitePolyhedralComplex.orderedCrossi
 
 public section
 
+open TauCeti (FinitePolyhedralComplex)
+
 open TauCeti (WallComplement AdmissiblePLPath)
 
 noncomputable section
 
 open Set Mei.Convex TauCeti.WallComplement
 
-namespace Mei.FinitePolyhedralComplex
+namespace TauCeti.FinitePolyhedralComplex
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i} (C : FinitePolyhedralComplex h)
@@ -215,12 +217,10 @@ theorem isCrossingChain_segmentCrossingLetters_of_subsingleton (e : x ⟶ y)
     · obtain ⟨hx, hy⟩ := C.chamber_eq_of_crossings_eq_singleton e he (hν P) hgt
       simp only [hgt, decide_true]
       exact ⟨hx, hy.symm⟩
-
-end Mei.FinitePolyhedralComplex
-
+end TauCeti.FinitePolyhedralComplex
 namespace Quiver.Path
 
-open Mei Mei.FinitePolyhedralComplex
+open Mei TauCeti.FinitePolyhedralComplex
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}

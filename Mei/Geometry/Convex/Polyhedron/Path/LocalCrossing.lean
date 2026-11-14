@@ -5,7 +5,8 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.Convex.Polyhedron.Path.Product
+public import TauCeti.Geometry.ScatteringDiagram.Path.Product
+public import Mei.Geometry.Convex.Polyhedron.AdmissiblePath
 public import Mei.Geometry.Affine.Segment
 
 /-!

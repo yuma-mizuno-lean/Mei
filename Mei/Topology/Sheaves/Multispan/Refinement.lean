@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Algebra.Category.SemimoduleCat.Multispan.Refinement
+public import TauCeti.Algebra.Category.SemimoduleCat.Multispan.Refinement.Basic
 public import Mei.Topology.Sheaves.Multispan.Restriction
 
 /-!
@@ -70,7 +70,7 @@ theorem existsUnique_sections_gluing_of_local_subdivisions
     exact ((asIso ((I.right j).obj.map
       (homOfLE (inf_le_left : U i ⊓ U i ≤ U i)).op)).toLinearEquivₛ.injective) h
   choose a hp using fun i =>
-    ((D i).existsUnique_sectionsPullback_lift_of_copies_eq
+    ((D i).existsUnique_sectionsPullback_comp_eq_of_chambers_eq
       (I.sectionsIndex (U i)) (hinj i) (ℓ i) (hconst i)).exists
   have har i x j (c : (D i).chambers j) :
       (a i x).val (.right j) = (ℓ i x).val (.right ⟨j, c⟩) := by
@@ -96,7 +96,7 @@ theorem existsUnique_sections_gluing_of_local_subdivisions
     intro i
     apply LinearMap.ext
     intro x
-    apply (D i).sectionsPullback_injective_of_face_coverage (I.sectionsIndex (U i))
+    apply (D i).sectionsPullback_injective_of_nonempty_faces (I.sectionsIndex (U i))
     exact (LinearMap.congr_fun (hq i) x).trans (LinearMap.congr_fun (hp i) x).symm
 
 end CategoryTheory.Limits.MultispanIndex

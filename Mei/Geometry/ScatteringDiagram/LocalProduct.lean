@@ -29,6 +29,8 @@ crossings meet no wall, so `F` is constant on them by connectedness of the unit 
 
 public section
 
+open TauCeti (FinitePolyhedralComplex)
+
 open TauCeti (WallComplement AdmissiblePLPath singularSupport)
 
 open Set Filter Topology Mei.Convex

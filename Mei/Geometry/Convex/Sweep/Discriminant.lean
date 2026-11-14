@@ -29,6 +29,8 @@ and Mathlib's sign comparisons and neighborhood characterizations of interior.
 
 public section
 
+open TauCeti (ExceptionalArrangement)
+
 noncomputable section
 
 open Set Filter Topology
@@ -41,7 +43,7 @@ variable {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
 
 /-- The discriminant of the selected itinerary and presented supports. It omits
 constant endpoint conditions, including identically zero support rows. -/
-def backwardDiscriminant : ExceptionalArrangement V :=
+def backwardDiscriminant : ExceptionalArrangement ℝ V :=
   ExceptionalArrangement.ofAffineForms (fun j => (backwardCondition f c v g j).toAffineMap)
 
 /-- The backward discriminant is the arrangement of the affine endpoint conditions. -/

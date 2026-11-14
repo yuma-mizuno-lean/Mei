@@ -32,6 +32,10 @@ truncation kernel.
 
 public section
 
+open TauCeti.FinitePolyhedralComplex (mem_cellsOfCodimension)
+
+open TauCeti (FinitePolyhedralComplex)
+
 open TauCeti (WallComplement AdmissiblePLPath)
 
 open TauCeti (PositiveDegrees IsPositiveGrading)
@@ -93,7 +97,7 @@ theorem LoopProjection.exists_pos_joint_loop_obstruction {k : ℕ} (P : D.LoopPr
             (log (D.levelPathProduct k p)) n : d.truncatedLie ℒ k) ∈
               (H.truncated d k).wall n m) := by
   obtain ⟨r, hr, hlocal⟩ := D.exists_pos_subset_support_of_inter_ball
-    (((D.adaptedComplex k).mem_cellsOfCodimension 2 J).mp hJ).1 hq
+    (mem_cellsOfCodimension.mp hJ).1 hq
   refine ⟨r, hr, fun x p hp n hn => ?_⟩
   let W : AddSubmonoid Λ :=
     ((affineSpan ℝ J).direction.toAddSubgroup.comap i).toAddSubmonoid

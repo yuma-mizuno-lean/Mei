@@ -37,6 +37,8 @@ open TauCeti (WallComplement)
 
 public noncomputable section
 
+open TauCeti (ExceptionalArrangement)
+
 open TauCeti (PositiveDegrees IsPositiveGrading)
 
 open TauCeti (DirectedWallSpaces)
@@ -72,8 +74,8 @@ domain. The domains are chosen before the incoming coefficient; the event cuts
 may depend on it. The source is the incoming homogeneous coefficient, with zero
 components in every positive relative degree. -/
 theorem exists_cutoffWallEventEvaluation_finiteRecursion (k : ℕ)
-    (A : ExceptionalArrangement V) :
-    ∃ E : d.cutoff (k + 1) → ExceptionalArrangement V,
+    (A : ExceptionalArrangement ℝ V) :
+    ∃ E : d.cutoff (k + 1) → ExceptionalArrangement ℝ V,
       (∀ n Q, (E n).IsGeneric Q → A.IsGeneric Q) ∧
       ∀ a : (d.shiftedQuotientGrading ℳ p (k + 1)).piece 0,
         ∃ (events : V → d.cutoff (k + 1) → Finset (WallEvent (B.active (k + 1))))

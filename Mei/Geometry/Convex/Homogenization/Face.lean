@@ -35,17 +35,17 @@ theorem homogenization_inter_zero_eq_inf_ker {P : Set V}
     (hclosed : IsClosed P) (g : V →ᴬ[ℝ] ℝ)
     (hne : {x ∈ P | g x = 0}.Nonempty) :
     homogenization {x ∈ P | g x = 0} = homogenization P ⊓
-      PointedCone.ofSubmodule (LinearMap.ker (homogenizedInequality g).toLinearMap) := by
+      PointedCone.ofSubmodule (LinearMap.ker (homogenize g).toLinearMap) := by
   let D := homogenization P ⊓
-    PointedCone.ofSubmodule (LinearMap.ker (homogenizedInequality g).toLinearMap)
+    PointedCone.ofSubmodule (LinearMap.ker (homogenize g).toLinearMap)
   have hDclosed : IsClosed (D : Set (V × ℝ)) :=
     (isClosed_homogenization P).inter
-      (isClosed_eq (homogenizedInequality g).continuous continuous_const)
+      (isClosed_eq (homogenize g).continuous continuous_const)
   have hslice : {x : V | (x, (1 : ℝ)) ∈ D} = {x ∈ P | g x = 0} := by
     ext x
     simp only [D, Set.mem_ofPred_eq, Submodule.mem_inf, PointedCone.mem_ofSubmodule_iff,
       LinearMap.mem_ker, ContinuousLinearMap.coe_coe,
-      hconv.mem_homogenization_one_iff hclosed, homogenizedInequality_one]
+      hconv.mem_homogenization_one_iff hclosed, homogenize_apply_one]
   have hDne : {x : V | (x, (1 : ℝ)) ∈ D}.Nonempty := by rwa [hslice]
   have hrec := D.homogenization_slice_one hDclosed
     (fun z hz => homogenization_height_nonneg hz.1) hDne
@@ -58,11 +58,11 @@ theorem homogenization_zeroFace_isFaceOf {P : Set V}
     (hne : {x ∈ P | g x = 0}.Nonempty) :
     (homogenization {x ∈ P | g x = 0}).IsFaceOf (homogenization P) := by
   rw [hconv.homogenization_inter_zero_eq_inf_ker hclosed g hne]
-  have hf : ∀ z ∈ homogenization P, 0 ≤ (-(homogenizedInequality g).toLinearMap) z :=
+  have hf : ∀ z ∈ homogenization P, 0 ≤ (-(homogenize g).toLinearMap) z :=
     fun z hz => neg_nonneg.mpr (homogenizedInequality_nonpos g hg hz)
   have hface := PointedCone.isFaceOf_inf_ker hf
-  have hker : LinearMap.ker (-(homogenizedInequality g).toLinearMap) =
-      LinearMap.ker (homogenizedInequality g).toLinearMap := by ext z; simp
+  have hker : LinearMap.ker (-(homogenize g).toLinearMap) =
+      LinearMap.ker (homogenize g).toLinearMap := by ext z; simp
   rwa [hker] at hface
 
 end Convex

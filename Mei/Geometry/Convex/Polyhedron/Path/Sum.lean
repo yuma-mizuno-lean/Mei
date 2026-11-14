@@ -5,7 +5,8 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.Convex.Polyhedron.CrossingEvents
+public import TauCeti.Geometry.ScatteringDiagram.Path.CrossingEvents
+public import Mei.Geometry.Convex.Polyhedron.AdmissiblePath
 
 /-!
 # Additive sums of signed wall crossings

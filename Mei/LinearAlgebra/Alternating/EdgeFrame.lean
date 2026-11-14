@@ -5,6 +5,7 @@ Authors: Claude Code, Codex
 -/
 module
 
+public import Mathlib.LinearAlgebra.Dual.Lemmas
 public import Mathlib.LinearAlgebra.AffineSpace.AffineSubspace.Basic
 public import Mei.LinearAlgebra.Alternating.Extension
 

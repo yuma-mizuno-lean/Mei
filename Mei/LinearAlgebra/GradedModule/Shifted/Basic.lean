@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Algebra.PositiveDegrees.Grading
-public import Mei.Algebra.DirectSum.Supported
+public import TauCeti.Algebra.DirectSum.Supported
 public import Mei.LinearAlgebra.ModuleFiltration.Completion
 public import TauCeti.Algebra.DirectSum.Internal
 
@@ -111,7 +111,7 @@ theorem mem_shiftedSubmodule_iff {x : M} :
     x ∈ shiftedSubmodule ℳ P p ↔
       ∀ q, q - p ∉ P → (DirectSum.decompose ℳ x q : M) = 0 := by
   classical
-  have h := Mei.DirectSum.mem_iSup_iff_decompose_eq_zero ℳ
+  have h := TauCeti.DirectSum.mem_iSup_iff_decompose_eq_zero ℳ
     ((fun n => p + n) '' (P : Set Γ)) (x := x)
   simp only [iSup_subtype, iSup_image] at h
   simpa only [shiftedSubmodule_def, iSup_subtype, Set.mem_image, SetLike.mem_coe,
@@ -121,7 +121,7 @@ theorem mem_shiftedSubmodule_iff {x : M} :
 theorem shiftedSubmodule_isHomogeneous :
     DirectSum.SetLike.IsHomogeneous ℳ (shiftedSubmodule ℳ P p) := by
   simpa only [shiftedSubmodule_def, iSup_subtype, iSup_image, SetLike.mem_coe] using
-    Mei.DirectSum.iSup_isHomogeneous ℳ ((fun n => p + n) '' (P : Set Γ))
+    TauCeti.DirectSum.isHomogeneous_iSup ℳ ((fun n => p + n) '' (P : Set Γ))
 
 /-- The ambient direct-sum decomposition induces the relative grading on `p + P`. -/
 instance instDecompositionShiftedGrading : DirectSum.Decomposition (shiftedGrading ℳ P p) := by

@@ -29,6 +29,8 @@ open TauCeti (WallComplement singularSupport)
 
 public noncomputable section
 
+open TauCeti (ExceptionalArrangement)
+
 open TauCeti (PositiveDegrees IsPositiveGrading)
 
 open TauCeti (DirectedWallSpaces)
@@ -57,7 +59,7 @@ local notation "v" => (0, j 1)
 
 /-- An endpoint arrangement outside which the zero-slice point is regular and every
 wall whose affine span contains it is transverse to the upward probe direction. -/
-def coefficientArrangement (k : ℕ) : ExceptionalArrangement V :=
+def coefficientArrangement (k : ℕ) : ExceptionalArrangement ℝ V :=
   (D.exists_regular_vertical_points h h' (k + 1)).choose
 
 /-- Over a generic endpoint the zero-slice point is regular. -/

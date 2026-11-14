@@ -21,7 +21,7 @@ Unbounded cells, lineality and arbitrary real offsets are allowed.
 
 public section
 
-namespace Mei.FinitePolyhedralComplex
+namespace TauCeti.FinitePolyhedralComplex
 
 open Set Mei.Convex Filter Topology
 
@@ -89,13 +89,13 @@ theorem existsUnique_cell_of_transverse_ray (C : FinitePolyhedralComplex h)
     have he := lineMap_mem_openSegment ℝ q (q + a • v)
       ⟨div_pos ht.1 ha, (div_lt_one ha).mpr ht.2⟩
     simpa [AffineMap.lineMap_apply_module', smul_smul, ha.ne', add_comm] using he
-  refine ⟨Q, ⟨(C.mem_cellsOfCodimension 0 Q).mpr ⟨hQ, by simpa using hdim⟩,
+  refine ⟨Q, ⟨mem_cellsOfCodimension.mpr ⟨hQ, by simpa using hdim⟩,
     hPQ, a, ha, hshort⟩, ?_⟩
   rintro Q' ⟨hQ', _, ε, hε, hshort'⟩
   have hb : 0 < min a ε / 2 := by positivity
   have hba : min a ε / 2 < a := by have := min_le_left a ε; linarith
   have hbε : min a ε / 2 < ε := by have := min_le_right a ε; linarith
-  exact C.eq_of_mem_intrinsicInterior ((C.mem_cellsOfCodimension 0 Q').mp hQ').1 hQ
+  exact C.eq_of_mem_intrinsicInterior (mem_cellsOfCodimension.mp hQ').1 hQ
     (hshort' _ ⟨hb, hbε⟩) (hshort _ ⟨hb, hba⟩)
 
 /-- A short transverse crossing of a wall has two distinct full-dimensional
@@ -132,25 +132,24 @@ theorem exists_transverse_wall_chambers (C : FinitePolyhedralComplex h)
     rw [heq] at hminus
     have hqint : q ∈ intrinsicInterior ℝ Qplus :=
       Convex.openSegment_intrinsicInterior_intrinsicClosure_subset_intrinsicInterior
-        (C.isConvexPolyhedron ((C.mem_cellsOfCodimension 0 Qplus).mp hQplus).1).convex
+        (C.isConvexPolyhedron (mem_cellsOfCodimension.mp hQplus).1).convex
           hminus (subset_intrinsicClosure (intrinsicInterior_subset hplus))
           (_root_.mem_openSegment_sub_add (𝕜 := ℝ) q _)
     have hQP := C.subset_of_mem_intrinsicInterior
-      ((C.mem_cellsOfCodimension 0 Qplus).mp hQplus).1 (C.mem_cells_of_mem_walls hP)
+      (mem_cellsOfCodimension.mp hQplus).1 (C.mem_cells_of_mem_walls hP)
       hqint (intrinsicInterior_subset hq)
-    have hdimQ := ((C.mem_cellsOfCodimension 0 Qplus).mp hQplus).2
+    have hdimQ := (mem_cellsOfCodimension.mp hQplus).2
     have hdimP := C.finrank_direction_add_one_of_mem_walls hP
     have hle := Submodule.finrank_mono (AffineSubspace.direction_le (affineSpan_mono ℝ hQP))
     omega
   refine ⟨Qminus, hQminus, Qplus, hQplus, hne, ?_,
     min εminus εplus, lt_min hεminus hεplus, hshort⟩
   apply C.inter_eq_of_common_facet (C.mem_cells_of_mem_walls hP)
-    ((C.mem_cellsOfCodimension 0 Qminus).mp hQminus).1
-    ((C.mem_cellsOfCodimension 0 Qplus).mp hQplus).1 hPminus hPplus hne
+    (mem_cellsOfCodimension.mp hQminus).1
+    (mem_cellsOfCodimension.mp hQplus).1 hPminus hPplus hne
   all_goals
     have hdimP := C.finrank_direction_add_one_of_mem_walls hP
-    have hdimMinus := ((C.mem_cellsOfCodimension 0 Qminus).mp hQminus).2
-    have hdimPlus := ((C.mem_cellsOfCodimension 0 Qplus).mp hQplus).2
+    have hdimMinus := (mem_cellsOfCodimension.mp hQminus).2
+    have hdimPlus := (mem_cellsOfCodimension.mp hQplus).2
     omega
-
-end Mei.FinitePolyhedralComplex
+end TauCeti.FinitePolyhedralComplex

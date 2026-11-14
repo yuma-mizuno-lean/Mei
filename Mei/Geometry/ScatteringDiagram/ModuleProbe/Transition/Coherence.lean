@@ -24,6 +24,8 @@ No consistency or probe-diagram hypothesis is needed.
 
 public noncomputable section
 
+open TauCeti (FinitePolyhedralComplex)
+
 open TauCeti (PositiveDegrees IsPositiveGrading)
 
 open TauCeti (DirectedWallSpaces)

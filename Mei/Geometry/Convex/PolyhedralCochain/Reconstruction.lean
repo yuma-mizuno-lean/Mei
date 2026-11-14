@@ -29,6 +29,10 @@ and `PolyhedralCochain.sum_mk_eq_zero_iff`. The required geometric tests exist b
 
 public section
 
+open TauCeti.FinitePolyhedralComplex (mem_cellsOfCodimension)
+
+open TauCeti (FinitePolyhedralComplex)
+
 open TauCeti (OrientedCell)
 
 noncomputable section
@@ -136,7 +140,7 @@ theorem coboundary_eq_sum_mk_iff_isolating_pairings
           (coboundaryPresentation (R := R) f) = (τ Q).intersectionIndex (w Q) • c Q := by
   have hboundary (υ) (hυ : υ ∈ (coboundaryPresentation (R := R) f).support) :
       υ.carrier ∈ C.cells :=
-    ((C.mem_cellsOfCodimension (k + 1) _).mp
+    (mem_cellsOfCodimension.mp
       (mem_cellsOfCodimension_of_mem_support_coboundaryPresentation (R := R) C f hf hυ)).1
   simpa only [ofFinsupp_coboundaryPresentation, coboundary_ofFinsupp] using
     ofFinsupp_eq_sum_mk_iff_isolating_pairings (R := R) C τ hτ

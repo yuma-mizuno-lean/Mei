@@ -23,7 +23,7 @@ spatial degrees pair to zero, their quantum commutator vanishes; otherwise the
 contracted normal has the kernel of `β(n+n',-)`. Restriction to the strictly
 positive quantum Lie algebra supplies the wall spaces used for completed labels.
 
-We use `QuantumMonoidAlgebra.lie_monomial`, `supportedLieSubalgebra`, and
+We use `QuantumMonoidAlgebra.lie_monomial`, `TauCeti.supportedLieSubalgebra`, and
 `AddMonoidHom.exists_ne_zero_zsmul_eq_of_ker_eq`. The quantum wall convention
 follows Mandel, *Scattering diagrams, theta functions, and refined tropical curve
 counts*, Example 2.1(iii).

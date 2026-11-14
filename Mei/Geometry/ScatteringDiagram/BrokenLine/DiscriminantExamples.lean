@@ -26,9 +26,11 @@ through the origin is a joint incidence
 
 public section
 
+open TauCeti (FinitePolyhedralComplex)
+
 open Set Filter Topology
 
-namespace Mei.FinitePolyhedralComplex
+namespace TauCeti.FinitePolyhedralComplex
 
 variable (h : TauCeti.Toric.IsIntegralLattice ((Int.castAddHom ℝ).prodMap (Int.castAddHom ℝ)))
 
@@ -68,5 +70,4 @@ theorem exists_isOpen_notMem_walls_not_isGeneric_coordinateAxes_diagonal {s : �
     (isOpen_lt continuous_const continuous_fst).inter (isOpen_lt continuous_const continuous_snd),
     ⟨hs, hs⟩, fun _ hv => coordinateAxes_notMem_walls_of_pos h hv.1 hv.2,
     not_isGeneric_singularDiscriminant_coordinateAxes_diagonal h s⟩
-
-end Mei.FinitePolyhedralComplex
+end TauCeti.FinitePolyhedralComplex

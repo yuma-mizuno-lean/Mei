@@ -7,7 +7,8 @@ module
 
 public import Mei.Geometry.Convex.Sweep.Admissible
 public import Mei.Geometry.Convex.Polyhedron.Path.Ray
-public import Mei.Geometry.Convex.Polyhedron.CrossingEvents
+public import TauCeti.Geometry.ScatteringDiagram.Path.CrossingEvents
+public import Mei.Geometry.Convex.Polyhedron.AdmissiblePath
 public import Mathlib.Order.Fin.Tuple
 
 /-!
@@ -36,6 +37,8 @@ Definition 2.10 and §3.3.3 (arXiv:1503.06183v5).
 open TauCeti (WallComplement singularSupport singularSupport_subset_iUnion)
 
 public noncomputable section
+
+open TauCeti (ExceptionalArrangement)
 
 open Set Filter Topology TauCeti.WallComplement
 
@@ -160,7 +163,7 @@ theorem exists_straightRayRealizationArrangement [FiniteDimensional ℝ V]
       Module.finrank ℝ V)
     (hν : ∀ a, LinearMap.ker (ν a).toLinearMap = (affineSpan ℝ (W a)).direction)
     (hc : ∀ a z, z ∈ W a → ν a z = c a) (vectors : Finset V) :
-    ∃ A : ExceptionalArrangement V, ∀ Q, A.IsGeneric Q → ∀ v ∈ vectors,
+    ∃ A : ExceptionalArrangement ℝ V, ∀ Q, A.IsGeneric Q → ∀ v ∈ vectors,
       ∃ (n : ℕ) (a : Fin n → ι)
         (r : AdmissibleRayRealization (fun j => ν (a j)) (fun j => c (a j))
           (fun _ => v) (fun j => W (a j)) W

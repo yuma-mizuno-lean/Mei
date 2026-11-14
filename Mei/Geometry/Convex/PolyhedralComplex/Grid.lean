@@ -31,13 +31,15 @@ The crossing-word grid argument is adapted from Codex,
 
 public section
 
+open TauCeti (FinitePolyhedralComplex)
+
 open TauCeti (WallComplement)
 
 noncomputable section
 
 open Set Mei.Convex
 
-namespace Mei.FinitePolyhedralComplex
+namespace TauCeti.FinitePolyhedralComplex
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
@@ -154,5 +156,4 @@ theorem crossingWord_grid_boundary_mem_normalClosure (C : FinitePolyhedralComple
   simpa only [List.prod_reverse_noncomm, List.map_ofFn, Function.comp_def, ← hrow 0,
     ← hrow (Fin.last n), ← hcol 0, ← hcol (Fin.last m), Fin.val_zero,
     Fin.val_last, mul_inv_rev, inv_inv, mul_assoc] using hm
-
-end Mei.FinitePolyhedralComplex
+end TauCeti.FinitePolyhedralComplex

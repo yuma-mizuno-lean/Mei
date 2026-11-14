@@ -31,6 +31,8 @@ classes is defined here. Unbounded cells and lineality are allowed.
 
 public section
 
+open TauCeti (FinitePolyhedralComplex)
+
 open TauCeti (OrientedCell PolyhedralCochain isRationalNormalPolyhedron_iff)
 
 noncomputable section

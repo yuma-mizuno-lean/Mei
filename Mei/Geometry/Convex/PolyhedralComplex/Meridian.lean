@@ -34,11 +34,13 @@ Cells may be unbounded and have lineality.
 
 public section
 
+open TauCeti (FinitePolyhedralComplex)
+
 open TauCeti (WallComplement AdmissiblePLPath singularSupport)
 
 open Set Mei.Convex
 
-namespace Mei.FinitePolyhedralComplex
+namespace TauCeti.FinitePolyhedralComplex
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
@@ -167,5 +169,4 @@ theorem exists_positive_isolating_joint_triangle (C : FinitePolyhedralComplex h)
       intro j W hW hJW
       rw [ht]
       exact hspan (e j) W hW hJW
-
-end Mei.FinitePolyhedralComplex
+end TauCeti.FinitePolyhedralComplex

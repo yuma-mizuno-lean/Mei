@@ -32,6 +32,10 @@ their products in the central truncation kernel.
 
 public section
 
+open TauCeti.FinitePolyhedralComplex (mem_cellsOfCodimension)
+
+open TauCeti (FinitePolyhedralComplex)
+
 open TauCeti (WallComplement AdmissiblePLPath)
 
 open TauCeti (PositiveDegrees IsPositiveGrading)
@@ -99,7 +103,7 @@ theorem exists_positive_isolating_joint_triangle {k : ℕ} {J : Set V}
     obtain ⟨Q, hQ, hpQ, hsub⟩ :=
       D.exists_mem_adaptedComplex_walls_subset k j (hJj (intrinsicInterior_subset hp))
     have hJQ := (D.adaptedComplex k).subset_of_mem_intrinsicInterior
-      (((D.adaptedComplex k).mem_cellsOfCodimension 2 J).mp hJ).1
+      (mem_cellsOfCodimension.mp hJ).1
       ((D.adaptedComplex k).mem_cells_of_mem_walls hQ) hp hpQ
     rw [← D.affineSpan_eq_of_adaptedWall_subset hQ j hsub]
     exact hspan m Q hQ hJQ

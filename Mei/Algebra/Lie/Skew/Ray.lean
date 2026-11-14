@@ -271,8 +271,8 @@ theorem rayExp_mem_completedRaySubgroup {w : SupportedRay d} (hw : n ∈ w.rayDe
   rw [← log_projection_rayExp, ← PositiveDegrees.map_rayLieSubalgebra_mkQ]
   refine ⟨_, ?_, rfl⟩
   rw [rayPartialSum_apply]
-  exact Submodule.sum_mem (rayLieSubalgebra ℒ w).toSubmodule fun j _ =>
-    le_rayLieSubalgebra ℒ (SupportedRay.succ_nsmul_mem_rayDegrees hw j)
+  exact Submodule.sum_mem (TauCeti.rayLieSubalgebra ℒ w).toSubmodule fun j _ =>
+    TauCeti.le_rayLieSubalgebra ℒ (SupportedRay.succ_nsmul_mem_rayDegrees hw j)
       (rayGenerator_mem β hβ hn hn0 j _)
 
 end Mei.SkewLieAlgebra

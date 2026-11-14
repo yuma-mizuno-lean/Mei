@@ -30,11 +30,13 @@ a short one. Real offsets, unbounded cells and lineality are allowed.
 
 public section
 
+open TauCeti (FinitePolyhedralComplex)
+
 open TauCeti (WallComplement)
 
 open Set Mei.Convex
 
-namespace Mei.FinitePolyhedralComplex
+namespace TauCeti.FinitePolyhedralComplex
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
@@ -120,5 +122,4 @@ theorem exists_chambers_of_crossings_singleton (e : x ⟶ y) (W : C.walls) (t : 
       ⟨_, ⟨t + a, ⟨by linarith, by linarith⟩, rfl⟩, hplus⟩
       (havoid (fun u hu => ⟨ht.1.trans hu.1.le, hu.2⟩) (by simp))
     exact fun u hu => hsub (mem_image_of_mem _ hu)
-
-end Mei.FinitePolyhedralComplex
+end TauCeti.FinitePolyhedralComplex

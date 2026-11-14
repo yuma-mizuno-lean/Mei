@@ -5,7 +5,7 @@ Authors: Claude
 -/
 module
 
-public import Mei.CategoryTheory.ActionAsFunctor.Basic
+public import TauCeti.CategoryTheory.ActionAsFunctor.Basic
 public import Mei.RingTheory.DualNumber.Exp
 
 /-!

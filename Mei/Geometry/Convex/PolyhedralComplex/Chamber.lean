@@ -26,9 +26,11 @@ The wall-avoidance criterion uses actual facets supplied by
 
 public section
 
+open TauCeti (FinitePolyhedralComplex)
+
 open Set
 
-namespace Mei.FinitePolyhedralComplex
+namespace TauCeti.FinitePolyhedralComplex
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i} (C : FinitePolyhedralComplex h)
@@ -39,15 +41,15 @@ theorem eq_of_mem_interior_cellsOfCodimension_zero {P Q : C.cellsOfCodimension 0
     P = Q := by
   apply Subtype.ext
   exact C.eq_of_mem_intrinsicInterior
-    ((C.mem_cellsOfCodimension 0 _).mp P.property).1
-    ((C.mem_cellsOfCodimension 0 _).mp Q.property).1
+    (mem_cellsOfCodimension.mp P.property).1
+    (mem_cellsOfCodimension.mp Q.property).1
     (interior_subset_intrinsicInterior hxP) (interior_subset_intrinsicInterior hxQ)
 
 /-- A full-dimensional cell spans the ambient affine space. -/
 theorem affineSpan_eq_top_of_mem_cellsOfCodimension_zero {P : Set V}
     (hP : P ∈ C.cellsOfCodimension 0) : affineSpan ℝ P = ⊤ := by
   have := h.finiteDimensional
-  obtain ⟨hPC, hdim⟩ := (C.mem_cellsOfCodimension 0 P).mp hP
+  obtain ⟨hPC, hdim⟩ := mem_cellsOfCodimension.mp hP
   apply (AffineSubspace.direction_eq_top_iff_of_nonempty
     ((C.nonempty P hPC).mono (subset_affineSpan ℝ P))).mp
   exact Submodule.eq_top_of_finrank_eq (by simpa using hdim)
@@ -56,7 +58,7 @@ theorem affineSpan_eq_top_of_mem_cellsOfCodimension_zero {P : Set V}
 theorem interior_nonempty_of_mem_cellsOfCodimension_zero {P : Set V}
     (hP : P ∈ C.cellsOfCodimension 0) : (interior P).Nonempty := by
   have := h.finiteDimensional
-  exact (C.isConvexPolyhedron ((C.mem_cellsOfCodimension 0 P).mp hP).1).convex
+  exact (C.isConvexPolyhedron (mem_cellsOfCodimension.mp hP).1).convex
     |>.interior_nonempty_iff_affineSpan_eq_top.mpr
       (C.affineSpan_eq_top_of_mem_cellsOfCodimension_zero hP)
 
@@ -65,7 +67,7 @@ theorem interior_subset_compl_support_codimensionAtLeast_one {P : Set V}
     (hP : P ∈ C.cellsOfCodimension 0) :
     interior P ⊆ (C.codimensionAtLeast 1).supportᶜ := by
   have := h.finiteDimensional
-  obtain ⟨hPC, hdimP⟩ := (C.mem_cellsOfCodimension 0 P).mp hP
+  obtain ⟨hPC, hdimP⟩ := mem_cellsOfCodimension.mp hP
   intro x hx hxs
   obtain ⟨Q, hQ, hxQ⟩ := mem_support.mp hxs
   obtain ⟨hQC, hdimQ⟩ := (C.mem_codimensionAtLeast_cells 1 Q).mp hQ
@@ -79,7 +81,7 @@ theorem interior_subset_compl_support_codimensionAtLeast_one {P : Set V}
 theorem inter_compl_support_codimensionAtLeast_one {P : Set V}
     (hP : P ∈ C.cellsOfCodimension 0) :
     P ∩ (C.codimensionAtLeast 1).supportᶜ = interior P := by
-  obtain ⟨hPC, hdim⟩ := (C.mem_cellsOfCodimension 0 P).mp hP
+  obtain ⟨hPC, hdim⟩ := mem_cellsOfCodimension.mp hP
   have hi := Mei.intrinsicInterior_eq_interior_of_affineSpan_eq_top
     (C.affineSpan_eq_top_of_mem_cellsOfCodimension_zero hP)
   refine Subset.antisymm (fun x hx => ?_)
@@ -94,7 +96,7 @@ theorem inter_compl_support_codimensionAtLeast_one {P : Set V}
 theorem connectedComponentIn_compl_support_codimensionAtLeast_one {P : Set V}
     (hP : P ∈ C.cellsOfCodimension 0) {x : V} (hx : x ∈ interior P) :
     connectedComponentIn (C.codimensionAtLeast 1).supportᶜ x = interior P := by
-  have hPC := ((C.mem_cellsOfCodimension 0 P).mp hP).1
+  have hPC := (mem_cellsOfCodimension.mp hP).1
   have hconv := (C.isConvexPolyhedron hPC).convex
   have hsub := C.interior_subset_compl_support_codimensionAtLeast_one hP
   refine Subset.antisymm ?_ (hconv.interior.isPreconnected.subset_connectedComponentIn hx hsub)
@@ -107,7 +109,7 @@ theorem connectedComponentIn_compl_support_codimensionAtLeast_one {P : Set V}
 
 /-- In an ambient complex, each point off the skeleton belongs to exactly one
 full-dimensional cell interior. -/
-theorem exists_unique_mem_interior_cellsOfCodimension_zero (hC : C.support = univ)
+theorem exists_unique_mem_interior_cellsOfCodimension_zero (hC : C.support = Set.univ)
     {x : V} (hx : x ∉ (C.codimensionAtLeast 1).support) :
     ∃! P : Set V, P ∈ C.cellsOfCodimension 0 ∧ x ∈ interior P := by
   have := h.finiteDimensional
@@ -117,7 +119,7 @@ theorem exists_unique_mem_interior_cellsOfCodimension_zero (hC : C.support = uni
     by_contra hne
     exact hx (mem_support.mpr ⟨P,
       (C.mem_codimensionAtLeast_cells 1 P).mpr ⟨hP, by omega⟩, hxP⟩)
-  have hP0 : P ∈ C.cellsOfCodimension 0 := (C.mem_cellsOfCodimension 0 P).mpr
+  have hP0 : P ∈ C.cellsOfCodimension 0 := mem_cellsOfCodimension.mpr
     ⟨hP, by simpa using hdim⟩
   refine ⟨P, ⟨hP0, ?_⟩, fun Q hQ => ?_⟩
   · rw [← C.inter_compl_support_codimensionAtLeast_one hP0]
@@ -125,7 +127,7 @@ theorem exists_unique_mem_interior_cellsOfCodimension_zero (hC : C.support = uni
   · have hxPi : x ∈ interior P := by
       rw [← C.inter_compl_support_codimensionAtLeast_one hP0]
       exact ⟨hxP, hx⟩
-    exact C.eq_of_mem_intrinsicInterior ((C.mem_cellsOfCodimension 0 Q).mp hQ.1).1 hP
+    exact C.eq_of_mem_intrinsicInterior (mem_cellsOfCodimension.mp hQ.1).1 hP
       (interior_subset_intrinsicInterior hQ.2) (interior_subset_intrinsicInterior hxPi)
 
 /-- Every boundary point of a full-dimensional cell lies on a wall of the
@@ -134,17 +136,17 @@ theorem exists_mem_wall_of_mem_frontier {P : Set V}
     (hP : P ∈ C.cellsOfCodimension 0) {x : V} (hx : x ∈ frontier P) :
     ∃ W ∈ C.walls, x ∈ W ∧ W ⊆ P := by
   have := h.finiteDimensional
-  have hPC := ((C.mem_cellsOfCodimension 0 P).mp hP).1
+  have hPC := (mem_cellsOfCodimension.mp hP).1
   have hfront : intrinsicFrontier ℝ P = frontier P := by
     rw [← intrinsicClosure_sdiff_intrinsicInterior, intrinsicClosure_eq_closure,
       Mei.intrinsicInterior_eq_interior_of_affineSpan_eq_top
         (C.affineSpan_eq_top_of_mem_cellsOfCodimension_zero hP), frontier]
   obtain ⟨W, hW, hxW, hdim⟩ :=
     (C.isConvexPolyhedron hPC).exists_facet_of_mem_intrinsicFrontier (hfront.symm ▸ hx)
-  refine ⟨W, (C.mem_cellsOfCodimension 1 W).mpr ⟨?_, ?_⟩, hxW, hW.subset⟩
+  refine ⟨W, mem_cellsOfCodimension.mpr ⟨?_, ?_⟩, hxW, hW.subset⟩
   · exact C.face_closed P hPC W (isPolyhedralFace_iff.mpr ⟨⟨x, hxW⟩, hW⟩)
   · rw [← direction_affineSpan, ← direction_affineSpan] at hdim
-    have hd := ((C.mem_cellsOfCodimension 0 P).mp hP).2
+    have hd := (mem_cellsOfCodimension.mp hP).2
     omega
 
 /-- A preconnected set avoiding the walls cannot leave a full cell's interior
@@ -160,5 +162,4 @@ theorem subset_interior_of_isPreconnected_of_disjoint_walls {P S : Set V}
   obtain ⟨W, hW, hxW, -⟩ := C.exists_mem_wall_of_mem_frontier hP
     (by rw [frontier]; exact ⟨hxP, hnot⟩)
   exact Set.disjoint_left.mp (havoid W hW) hx.2 hxW
-
-end Mei.FinitePolyhedralComplex
+end TauCeti.FinitePolyhedralComplex

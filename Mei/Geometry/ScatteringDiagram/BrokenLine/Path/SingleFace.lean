@@ -37,6 +37,8 @@ effective anti-canonical class*, §3 (arXiv:1601.07081v4).
 
 public noncomputable section
 
+open TauCeti (ExceptionalArrangement)
+
 open Set Quiver Mei.Convex
 
 namespace Mei
@@ -210,7 +212,7 @@ theorem exists_uniform_pathDecoratedEvaluation_singleFace_arrangement
     {κ : Type*} [Finite κ] (A : κ → AffineSubspace ℝ V)
     (hcover : Z ⊆ ⋃ j, (A j : Set V))
     (hA : ∀ j, ∃ y, ν y = β ∧ y ∉ A j) :
-    ∃ E : ExceptionalArrangement V, ∀ X, E.IsGeneric X →
+    ∃ E : ExceptionalArrangement ℝ V, ∀ X, E.IsGeneric X →
       (ν X - β) / ν (v a i₀) < 0 → ∀ y,
         pathDecoratedEvaluation T ℳ i₀ (α y) {(Path.nil : Path a a).cons e} v (fun _ => ν)
           (fun _ => SignType.sign (ν (v a i₀))) (fun _ => β) (fun _ => {y | ν y = β})
@@ -233,7 +235,7 @@ finite output support, even when the grading is infinite. -/
 theorem exists_pathDecoratedEvaluation_singleFace_arrangement {κ : Type*} [Finite κ]
     (A : κ → AffineSubspace ℝ V) (hcover : Z ⊆ ⋃ j, (A j : Set V))
     (hA : ∀ j, ∃ y, ν y = β ∧ y ∉ A j) :
-    ∃ E : ExceptionalArrangement V, ∀ X, E.IsGeneric X →
+    ∃ E : ExceptionalArrangement ℝ V, ∀ X, E.IsGeneric X →
       (ν X - β) / ν (v a i₀) < 0 →
         pathDecoratedEvaluation T ℳ i₀ x {(Path.nil : Path a a).cons e} v (fun _ => ν)
           (fun _ => SignType.sign (ν (v a i₀))) (fun _ => β) (fun _ => {y | ν y = β})

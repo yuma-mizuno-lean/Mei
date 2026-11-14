@@ -31,6 +31,8 @@ open TauCeti (singularSupport)
 
 public noncomputable section
 
+open TauCeti (ExceptionalArrangement)
+
 open TauCeti (PositiveDegrees IsPositiveGrading)
 
 open TauCeti (DirectedWallSpaces)
@@ -58,7 +60,7 @@ variable {R Λ V ι : Type*} {Γ : Type} {M L : Type u}
 actual simultaneous-event evaluation, uniformly in the input and the smaller
 coefficient cutoff. No consistency or annihilating-action hypothesis is needed. -/
 theorem exists_cutoffWallEventEvaluation_sourceArrangement (K : ℕ) :
-    ∃ A : ExceptionalArrangement V, ∀ Q, A.IsGeneric Q →
+    ∃ A : ExceptionalArrangement ℝ V, ∀ Q, A.IsGeneric Q →
       ∀ (k : ℕ) (hkK : k ≤ K) (a : (d.shiftedQuotientGrading ℳ p k).piece 0),
         (DirectSum.decompose (d.shiftedQuotientGrading ℳ p k).piece
           (cutoffWallEventEvaluation d ℳ p ℒ H h B k K hkK a univ Q) 0 :
@@ -92,7 +94,7 @@ theorem exists_cutoffWallEventEvaluation_sourceArrangement (K : ℕ) :
 component maps as the endpoint recursion. The right side is the entire incoming
 homogeneous coefficient, read in the ambient grading. -/
 theorem exists_cutoffWallEventEvaluation_leadingComponentArrangement (K : ℕ) :
-    ∃ A : ExceptionalArrangement V, ∀ Q, A.IsGeneric Q →
+    ∃ A : ExceptionalArrangement ℝ V, ∀ Q, A.IsGeneric Q →
       ∀ (k : ℕ) (hkK : k ≤ K) (a : (d.shiftedQuotientGrading ℳ p k).piece 0),
         d.shiftedQuotientComponent ℳ p p k (by simp)
           (cutoffWallEventEvaluation d ℳ p ℒ H h B k K hkK a univ Q) =

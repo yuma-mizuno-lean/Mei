@@ -27,7 +27,7 @@ public noncomputable section
 
 open Set CategoryTheory TopologicalSpace Topology Mei.Convex
 
-namespace Mei.FinitePolyhedralComplex
+namespace TauCeti.FinitePolyhedralComplex
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
@@ -161,4 +161,4 @@ theorem coefficientChart_regularOpenImage {U : Opens C.regularSpace}
   exact (C.mem_coefficientCharts U).mp hU
 
 end IsSubdivision
-end Mei.FinitePolyhedralComplex
+end TauCeti.FinitePolyhedralComplex

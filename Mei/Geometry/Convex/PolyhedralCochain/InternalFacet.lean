@@ -30,6 +30,8 @@ lineality is required.
 
 public section
 
+open TauCeti (FinitePolyhedralComplex)
+
 open TauCeti (OrientedCell PolyhedralCochain isRationalNormalPolyhedron_iff)
 
 noncomputable section
@@ -101,7 +103,7 @@ theorem existsUnique_reverse_mem_boundaryFacets
   have hne : η ≠ τ := by rintro rfl; exact hft hftη
   have hsub : υ.carrier ⊆ η.carrier := htinc η.carrier (hQC η hη) hftη
   have hex : IsExposed ℝ η.carrier υ.carrier :=
-    (isPolyhedralFace_iff.mp (C.face_of_subset hυC (hQC η hη) hsub)).2
+    (isPolyhedralFace_iff.mp (C.isPolyhedralFace_of_subset hυC (hQC η hη) hsub)).2
   have hd : finrank ℝ (vectorSpan ℝ υ.carrier) + 1 =
       finrank ℝ (vectorSpan ℝ η.carrier) := by
     have hu := υ.finrank_direction_add

@@ -27,13 +27,15 @@ is needed.
 
 public section
 
+open TauCeti (FinitePolyhedralComplex)
+
 open TauCeti (WallComplement AdmissiblePLPath)
 
 noncomputable section
 
 open Set Mei.Convex
 
-namespace Mei.FinitePolyhedralComplex
+namespace TauCeti.FinitePolyhedralComplex
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
@@ -59,14 +61,12 @@ theorem exists_segment_subdivision_subsingleton_crossings
     exact congrArg Subtype.val (C.crossing_time_injective f
       (a₁ := ⟨a, ha⟩) (a₂ := ⟨b, hb⟩)
       (hsmall.2 ⟨a, ha, rfl⟩ ⟨b, hb, rfl⟩))
-
-end Mei.FinitePolyhedralComplex
-
+end TauCeti.FinitePolyhedralComplex
 namespace Quiver.Path
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
-  {C : Mei.FinitePolyhedralComplex h}
+  {C : TauCeti.FinitePolyhedralComplex h}
   {x y : WallComplement (fun P : C.walls => (P : Set V))}
 
 /-- Every admissible polygonal path has a subdivision into segments meeting at

@@ -32,6 +32,8 @@ This is the local label recovery in Tom Bridgeland,
 
 public section
 
+open TauCeti (FinitePolyhedralComplex)
+
 open TauCeti.CompletedGroup (projection)
 
 open TauCeti (singularSupport)

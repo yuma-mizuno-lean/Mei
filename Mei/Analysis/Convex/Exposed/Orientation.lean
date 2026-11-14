@@ -5,6 +5,7 @@ Authors: Codex
 -/
 module
 
+public import TauCeti.LinearAlgebra.Alternating.Contraction
 public import Mei.Analysis.Convex.Exposed
 public import Mei.LinearAlgebra.Alternating.Extension
 

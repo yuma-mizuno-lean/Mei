@@ -34,7 +34,7 @@ public noncomputable section
 open Set Mei.Convex
 open scoped unitInterval
 
-namespace Mei.FinitePolyhedralComplex
+namespace TauCeti.FinitePolyhedralComplex
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
@@ -89,5 +89,4 @@ theorem segmentCrossingWord_mul_eq_of_regular_triangle
   simp only [Quiver.Path.crossingWord_cons, Quiver.Hom.toPath, Quiver.Path.crossingWord_nil,
     mul_one, C.segmentCrossingWord_reverse ν hν] at hmem
   exact (inv_mul_eq_one.mp (by simpa only [mul_assoc] using hmem)).symm
-
-end Mei.FinitePolyhedralComplex
+end TauCeti.FinitePolyhedralComplex

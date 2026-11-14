@@ -34,12 +34,14 @@ consistency of a diagram is needed.
 
 public section
 
+open TauCeti (FinitePolyhedralComplex)
+
 open TauCeti (WallComplement AdmissiblePLPath)
 
 open Set Mei.Convex
 open scoped unitInterval
 
-namespace Mei.FinitePolyhedralComplex
+namespace TauCeti.FinitePolyhedralComplex
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
@@ -107,14 +109,12 @@ theorem segmentCrossingWord_eq_prod_sampling_of_endpoints {n : ℕ}
   subst x
   subst y
   exact C.segmentCrossingWord_eq_prod_sampling ν v e t hmono hv edge
-
-end Mei.FinitePolyhedralComplex
-
+end TauCeti.FinitePolyhedralComplex
 namespace Quiver.Path
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
-  {C : Mei.FinitePolyhedralComplex h}
+  {C : TauCeti.FinitePolyhedralComplex h}
 
 variable {x y : WallComplement (fun P : C.walls => (P : Set V))}
 
@@ -263,7 +263,7 @@ theorem crossingWord_ofSeq_eq_segmentCrossingWord
 
 end Quiver.Path
 
-namespace Mei.FinitePolyhedralComplex
+namespace TauCeti.FinitePolyhedralComplex
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
@@ -331,4 +331,4 @@ theorem crossingWord_boundary_mem_normalClosure_of_sampling (C : FinitePolyhedra
     Quiver.Path.crossingWord_reverse _ ν hν, C.segmentCrossingWord_reverse ν hν,
     Fin.val_zero, Fin.val_last, mul_assoc] using hmem
 
-end Mei.FinitePolyhedralComplex
+end TauCeti.FinitePolyhedralComplex

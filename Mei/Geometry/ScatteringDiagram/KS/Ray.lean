@@ -34,6 +34,8 @@ commutation is `BCHGroup.commute_of_lie_log_eq_zero`.
 
 public section
 
+open TauCeti (FinitePolyhedralComplex)
+
 open TauCeti (PositiveDegrees IsPositiveGrading SupportedRay)
 
 namespace Mei
@@ -83,8 +85,8 @@ variable {R L : Type*} [CommRing R] [LieRing L] [LieAlgebra R L]
 vanishes. -/
 theorem rayLieSubalgebra_le_orthogonalLieSubalgebra {σ : Set V} {w : SupportedRay d} {n : N}
     (hn : n ∈ w.rayDegrees) (hσ : ∀ θ ∈ σ, s.evaluation θ n = 0) :
-    rayLieSubalgebra ℒ w ≤ orthogonalLieSubalgebra ℒ (s.evaluation '' σ) := by
-  refine (rayLieSubalgebra_le_iff ℒ w _).mpr fun m hm => le_orthogonalLieSubalgebra ℒ ?_
+    TauCeti.rayLieSubalgebra ℒ w ≤ orthogonalLieSubalgebra ℒ (s.evaluation '' σ) := by
+  refine (TauCeti.rayLieSubalgebra_le_iff ℒ w _).mpr fun m hm => le_orthogonalLieSubalgebra ℒ ?_
   rintro _ ⟨θ, hθ, rfl⟩
   exact s.evaluation_eq_zero_of_mem_rayDegrees hn hσ hm θ hθ
 
@@ -94,9 +96,9 @@ theorem orthogonalLieSubalgebra_eq_rayLieSubalgebra [Module.Free ℤ N] [IsPosit
     {σ : Set V} {w : SupportedRay d} {n : N} (hn : n ∈ w.rayDegrees)
     (hσ : ∀ θ ∈ σ, s.evaluation θ n = 0)
     (hker : LinearMap.ker (s.normal n) ≤ vectorSpan ℝ σ) :
-    orthogonalLieSubalgebra ℒ (s.evaluation '' σ) = rayLieSubalgebra ℒ w := by
+    orthogonalLieSubalgebra ℒ (s.evaluation '' σ) = TauCeti.rayLieSubalgebra ℒ w := by
   refine le_antisymm ?_ (s.rayLieSubalgebra_le_orthogonalLieSubalgebra ℒ hn hσ)
-  rw [orthogonalLieSubalgebra_def, supportedLieSubalgebra_le_iff]
+  rw [orthogonalLieSubalgebra_def, TauCeti.supportedLieSubalgebra_le_iff]
   intro m hm
   simp only [AddSubsemigroup.mem_iInf, AddSubmonoid.mem_toSubsemigroup, AddMonoidHom.mem_mker,
     Set.mem_image, forall_exists_index, and_imp, forall_apply_eq_imp_iff₂] at hm
@@ -111,7 +113,7 @@ theorem orthogonalLieSubalgebra_eq_rayLieSubalgebra [Module.Free ℤ N] [IsPosit
     rintro _ ⟨θ, hθ, θ', hθ', rfl⟩
     simp [hm θ hθ, hm θ' hθ']
   obtain rfl := s.eq_of_mem_rayDegrees_of_ker_normal_le hn hv (hker.trans hspan)
-  exact le_rayLieSubalgebra ℒ hv
+  exact TauCeti.le_rayLieSubalgebra ℒ hv
 
 /-- With abelian rays, elements of the BCH group of the Lie algebra orthogonal to `σ` commute
 when the vector span of `σ` is the kernel of the normal of a nonzero allowed degree. -/
@@ -156,7 +158,7 @@ theorem orthogonalLieSubalgebra_eq_rayLieSubalgebra [Module.Free ℤ N]
     {R' L' : Type*} [CommRing R'] [LieRing L'] [LieAlgebra R' L']
     (ℳ : N → Submodule R' L') [SetLike.GradedBracket ℳ ℳ] [IsPositiveGrading d ℳ]
     (P : C.walls) {w : SupportedRay d} (hw : D.degree P ∈ w.rayDegrees) :
-    orthogonalLieSubalgebra ℳ (s.evaluation '' (P : Set V)) = rayLieSubalgebra ℳ w :=
+    orthogonalLieSubalgebra ℳ (s.evaluation '' (P : Set V)) = TauCeti.rayLieSubalgebra ℳ w :=
   s.orthogonalLieSubalgebra_eq_rayLieSubalgebra ℳ hw (D.evaluation_eq_zero P)
     (by rw [D.ker_normal P, direction_affineSpan])
 
@@ -165,13 +167,13 @@ theorem bchSubgroup_orthogonalLieSubalgebra_eq [Module.Free ℤ N] (P : C.walls)
     {w : SupportedRay d} (hw : D.degree P ∈ w.rayDegrees) :
     (orthogonalLieSubalgebra (d.truncatedGrading ℒ k) (s.evaluation '' (P : Set
       V))).bchSubgroup =
-      (rayLieSubalgebra (d.truncatedGrading ℒ k) w).bchSubgroup := by
+      (TauCeti.rayLieSubalgebra (d.truncatedGrading ℒ k) w).bchSubgroup := by
   rw [D.orthogonalLieSubalgebra_eq_rayLieSubalgebra _ P hw]
 
 /-- Every wall label lies in the finite supported-ray group of its coorienting degree. -/
 theorem label_mem_bchSubgroup_rayLieSubalgebra [Module.Free ℤ N] (P : C.walls)
     {w : SupportedRay d} (hw : D.degree P ∈ w.rayDegrees) :
-    D.label P ∈ (rayLieSubalgebra (d.truncatedGrading ℒ k) w).bchSubgroup :=
+    D.label P ∈ (TauCeti.rayLieSubalgebra (d.truncatedGrading ℒ k) w).bchSubgroup :=
   D.bchSubgroup_orthogonalLieSubalgebra_eq P hw ▸ D.label_mem P
 
 /-- Equal nonidentity wall labels have coorientations with the same sign on

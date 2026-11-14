@@ -31,6 +31,10 @@ and refined tropical curve counts*, proof of Theorem 2.6.
 
 public section
 
+open TauCeti.FinitePolyhedralComplex (mem_cellsOfCodimension)
+
+open TauCeti (FinitePolyhedralComplex)
+
 open TauCeti (OrientedCell)
 
 open TauCeti (WallComplement)
@@ -84,12 +88,12 @@ theorem mem_interiors_of_crossings_singleton (e : x ⟶ y) (t : ℝ)
     simpa only [AffineMap.lineMap_apply_module', add_smul, add_assoc,
       add_left_comm, add_comm] using haQ
   have hPm : P = (c.minus : Set V) := (D.adaptedComplex l).eq_of_mem_intrinsicInterior
-    (((D.adaptedComplex l).mem_cellsOfCodimension 0 P).mp hP).1
-    (((D.adaptedComplex l).mem_cellsOfCodimension 0 _).mp c.minus.property).1
+    (mem_cellsOfCodimension.mp hP).1
+    (mem_cellsOfCodimension.mp c.minus.property).1
     (interior_subset_intrinsicInterior hb) (interior_subset_intrinsicInterior hc.1)
   have hQp : Q = (c.plus : Set V) := (D.adaptedComplex l).eq_of_mem_intrinsicInterior
-    (((D.adaptedComplex l).mem_cellsOfCodimension 0 Q).mp hQ).1
-    (((D.adaptedComplex l).mem_cellsOfCodimension 0 _).mp c.plus.property).1
+    (mem_cellsOfCodimension.mp hQ).1
+    (mem_cellsOfCodimension.mp c.plus.property).1
     (interior_subset_intrinsicInterior haQ) (interior_subset_intrinsicInterior hc.2)
   constructor
   · simpa only [AffineMap.lineMap_apply_zero, hPm] using hbefore 0 ⟨le_rfl, ht'.1⟩

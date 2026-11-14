@@ -31,6 +31,8 @@ domains after imposing semilinear support, avoidance and incoming-source constra
 
 public section
 
+open TauCeti (ExceptionalArrangement)
+
 open TauCeti (IsRationalSemilinear)
 
 open Set Filter Topology
@@ -45,7 +47,7 @@ all admitted labels are unchanged on an ambient neighborhood. All domain frontie
 are exceptional, including those of lower-dimensional domains. -/
 theorem IsRationalSemilinear.exists_membershipArrangement
     (hS : ∀ j, IsRationalSemilinear h (S j)) :
-    ∃ E : ExceptionalArrangement V,
+    ∃ E : ExceptionalArrangement ℝ V,
       (∀ j, frontier (S j) ⊆ {x | ¬ E.IsGeneric x}) ∧
         ∀ x, E.IsGeneric x → ∀ᶠ y in 𝓝 x, ∀ j, y ∈ S j ↔ x ∈ S j := by
   obtain ⟨κ, _, g, _, hmem⟩ := IsRationalSemilinear.exists_common_signCell hS
@@ -70,7 +72,7 @@ one finite exceptional arrangement. Every statistic or weighted evaluation depen
 only on those labels is therefore locally constant there as well. -/
 theorem IsRationalSemilinear.exists_isLocallyConstant_labels
     (hS : ∀ j, IsRationalSemilinear h (S j)) :
-    ∃ E : ExceptionalArrangement V,
+    ∃ E : ExceptionalArrangement ℝ V,
       (∀ j, frontier (S j) ⊆ {x | ¬ E.IsGeneric x}) ∧
         IsLocallyConstant (fun x : {x // E.IsGeneric x} => {j | x.val ∈ S j}) := by
   obtain ⟨E, hfrontier, hstable⟩ := IsRationalSemilinear.exists_membershipArrangement hS

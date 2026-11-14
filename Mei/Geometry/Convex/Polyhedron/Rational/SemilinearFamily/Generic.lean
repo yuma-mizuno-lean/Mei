@@ -30,6 +30,8 @@ continuity of the chosen bijections is asserted.
 
 public section
 
+open TauCeti (ExceptionalArrangement)
+
 open TauCeti (IsRationalSemilinear)
 
 open Set Filter Topology
@@ -49,7 +51,7 @@ At every generic endpoint, nearby fibers are in bijection with its fiber, preser
 chart labels. The source stratification need not have finitely many strata. -/
 theorem exists_fiberEquivArrangement {κ μ : Type*} [Finite κ]
     (S : F.BranchStratification κ μ) :
-    ∃ E : ExceptionalArrangement W,
+    ∃ E : ExceptionalArrangement ℝ W,
       (∀ b, frontier (S.target b) ⊆ {w | ¬ E.IsGeneric w}) ∧
         ∀ w, E.IsGeneric w → ∀ᶠ w' in 𝓝 w,
           ∃ e : F.fiber w ≃ F.fiber w', ∀ x, (e x).1 = x.1 := by
@@ -67,7 +69,7 @@ namespace IsFiniteBranch
 /-- Off a finite exceptional arrangement, the actual fibers of a finite-branch
 family are locally in bijection, preserving the chart label of each fiber point. -/
 theorem exists_fiberEquivArrangement (hF : F.IsFiniteBranch) :
-    ∃ E : ExceptionalArrangement W,
+    ∃ E : ExceptionalArrangement ℝ W,
       ∀ w, E.IsGeneric w → ∀ᶠ w' in 𝓝 w,
         ∃ e : F.fiber w ≃ F.fiber w', ∀ x, (e x).1 = x.1 := by
   obtain ⟨κ, μ, _, _, ⟨S⟩⟩ := hF.exists_branchStratification
@@ -77,7 +79,7 @@ theorem exists_fiberEquivArrangement (hF : F.IsFiniteBranch) :
 /-- The fiber cardinality of a finite-branch family is locally constant away from
 one finite exceptional arrangement, including for nonclosed branch domains. -/
 theorem exists_isLocallyConstant_nat_card_fiber (hF : F.IsFiniteBranch) :
-    ∃ E : ExceptionalArrangement W,
+    ∃ E : ExceptionalArrangement ℝ W,
       IsLocallyConstant (fun w : {w // E.IsGeneric w} => Nat.card (F.fiber w.val)) := by
   obtain ⟨E, hE⟩ := hF.exists_fiberEquivArrangement
   refine ⟨E, Set.isLocallyConstant_domRestrict_of_eventually_eq
@@ -90,7 +92,7 @@ theorem exists_isLocallyConstant_nat_card_fiber (hF : F.IsFiniteBranch) :
 commutative monoid. Nearby fibers retain their labels, so their finite weighted sums
 are locally constant. Zero weights and coincident branch images are permitted. -/
 theorem exists_isLocallyConstant_finsum_fiber (hF : F.IsFiniteBranch) :
-    ∃ E : ExceptionalArrangement W,
+    ∃ E : ExceptionalArrangement ℝ W,
       ∀ {A : Type*} [AddCommMonoid A] (weight : ι → A),
         IsLocallyConstant (fun w : {w // E.IsGeneric w} =>
           ∑ᶠ x : F.fiber w.val, weight x.1) := by

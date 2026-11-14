@@ -25,6 +25,8 @@ the label is also necessary. The wall-crossing transport follows Gross–Hacking
 
 public noncomputable section
 
+open TauCeti (FinitePolyhedralComplex)
+
 open CategoryTheory TopologicalSpace Opposite
 
 namespace Mei.FiniteWallDiagram

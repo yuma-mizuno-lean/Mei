@@ -34,6 +34,8 @@ open TauCeti (WallComplement)
 
 public noncomputable section
 
+open TauCeti (ExceptionalArrangement)
+
 open TauCeti (PositiveDegrees IsPositiveGrading)
 
 open TauCeti (DirectedWallSpaces)
@@ -138,9 +140,9 @@ The arrangement is chosen before its endpoints and length, and no consistency of
 the extended probe diagram is needed. -/
 theorem exists_straightEventInputArrangement
     {k l : ℕ} (hkl : k ≤ l) (hBc : B.LevelConsistent k)
-    (F : ExceptionalArrangement V) {α β : Type*} [Finite α] [Finite β]
+    (F : ExceptionalArrangement ℝ V) {α β : Type*} [Finite α] [Finite β]
     (v : α → V) (w : β → V) :
-    ∃ G : ExceptionalArrangement V,
+    ∃ G : ExceptionalArrangement ℝ V,
       ∀ (x y : WallComplement (fun c : B.active l => (B.wall c).support)),
         G.IsGeneric y.val → ∀ (e : x ⟶ y) (a : α) (L : ℝ),
         0 < L → x.val - y.val = L • v a →

@@ -27,9 +27,11 @@ together with `ExceptionalArrangement.ofSweeps`.
 
 public section
 
+open TauCeti (FinitePolyhedralComplex)
+
 noncomputable section
 
-namespace Mei.FinitePolyhedralComplex
+namespace TauCeti.FinitePolyhedralComplex
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
@@ -37,7 +39,7 @@ variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ 
 /-- Affine spans of the sweeps of all higher-codimension cells along the
 specified vectors. These are the singular-encounter exceptions for endpoints. -/
 def singularDiscriminant (C : FinitePolyhedralComplex h) (vectors : Finset V) :
-    ExceptionalArrangement V := by
+    ExceptionalArrangement ℝ V := by
   have := h.finiteDimensional
   refine ExceptionalArrangement.ofSweeps (C.codimensionAtLeast 2).cells vectors ?_
   intro P hP _
@@ -86,5 +88,4 @@ theorem add_smul_notMem_singularSupport_walls (C : FinitePolyhedralComplex h)
     Q + t • n ∉ TauCeti.singularSupport (fun W : C.walls => (W : Set V)) :=
   fun ht => C.add_smul_notMem_support_codimensionAtLeast_two hQ hn t
     (C.singularSupport_walls_subset_support_codimensionAtLeast ht)
-
-end Mei.FinitePolyhedralComplex
+end TauCeti.FinitePolyhedralComplex

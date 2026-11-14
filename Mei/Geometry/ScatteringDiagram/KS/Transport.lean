@@ -38,6 +38,8 @@ consistent diagram with a reconstruction.
 
 public section
 
+open TauCeti (FinitePolyhedralComplex)
+
 open TauCeti.CompletedGroup (projection)
 
 open TauCeti (signSubalgebra mem_signSubalgebra_iff)

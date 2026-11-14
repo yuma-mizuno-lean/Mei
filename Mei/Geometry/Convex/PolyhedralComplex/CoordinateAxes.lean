@@ -33,6 +33,8 @@ support is computed from
 
 public section
 
+open TauCeti (FinitePolyhedralComplex)
+
 open TauCeti.Convex (closure_signCell exists_zero_sign_of_affineSpan_ne_top signCell
   weakSignCell)
 
@@ -40,7 +42,7 @@ open TauCeti (WallComplement AdmissiblePLPath singularSupport mem_singularSuppor
 
 open Set Mei.Convex
 
-namespace Mei.FinitePolyhedralComplex
+namespace TauCeti.FinitePolyhedralComplex
 
 /-- The coordinate functionals of the plane: `axisRow false` is the first coordinate and
 `axisRow true` the second, so `axisRow true` vanishes on the horizontal axis. -/
@@ -72,7 +74,7 @@ theorem axisRow_lineMap_ne_zero_of_sign_eq {j : Bool} {v w : ℝ × ℝ} {t : �
         AffineMap.lineMap (axisRow j v) (axisRow j w) t :=
       (axisRow j).toLinearMap.toAffineMap.apply_lineMap v w t
     rw [hl]
-    exact (convex_setOf_sign_eq (SignType.sign (axisRow j v))).lineMap_mem rfl hvw.symm ht
+    exact (Mei.convex_setOf_sign_eq (SignType.sign (axisRow j v))).lineMap_mem rfl hvw.symm ht
   intro hz
   apply hv
   apply sign_eq_zero_iff.mp
@@ -125,7 +127,7 @@ theorem coordinateAxes_eq_ofArrangement :
 
 /-- The coordinate axes subdivide the entire plane. -/
 @[simp]
-theorem support_coordinateAxes : (coordinateAxes h).support = univ := by
+theorem support_coordinateAxes : (coordinateAxes h).support = Set.univ := by
   rw [coordinateAxes_eq_ofArrangement]
   exact support_ofArrangement _ _
 
@@ -434,5 +436,4 @@ theorem jointMeridianWords_coordinateAxes_compl_zero
     rw [hinter]
     rfl
   exact hU hq.1 (support_codimensionAtLeast_two_coordinateAxes_subset h hq.2)
-
-end Mei.FinitePolyhedralComplex
+end TauCeti.FinitePolyhedralComplex

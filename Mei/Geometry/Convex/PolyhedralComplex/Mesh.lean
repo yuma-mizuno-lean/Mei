@@ -33,11 +33,13 @@ nonembedded fillings and degenerate parameter cells are allowed.
 
 public section
 
+open TauCeti (FinitePolyhedralComplex)
+
 open TauCeti (WallComplement AdmissiblePLPath)
 
 open Set Metric Mei.Convex
 
-namespace Mei.FinitePolyhedralComplex
+namespace TauCeti.FinitePolyhedralComplex
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
@@ -110,5 +112,4 @@ theorem exists_square_mesh_regular_or_isolating_joint (C : FinitePolyhedralCompl
   refine ⟨n, hn, ε, hε, fun a b => ?_⟩
   obtain ⟨x, hx⟩ := hmesh a b
   exact ⟨x, x.property, r x, hr x, hx, hlocal x⟩
-
-end Mei.FinitePolyhedralComplex
+end TauCeti.FinitePolyhedralComplex

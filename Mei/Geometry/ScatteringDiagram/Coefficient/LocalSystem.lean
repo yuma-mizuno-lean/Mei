@@ -30,6 +30,8 @@ open TauCeti (WallComplement)
 
 public noncomputable section
 
+open TauCeti (FinitePolyhedralComplex)
+
 open CategoryTheory TopologicalSpace Opposite Set Topology Mei.Convex
 
 namespace Mei.FiniteWallDiagram

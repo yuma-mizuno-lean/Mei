@@ -29,6 +29,8 @@ on Landau–Ginzburg models*, §4 (arXiv:2205.07753v2).
 
 public noncomputable section
 
+open TauCeti (ExceptionalArrangement)
+
 open TauCeti (IsRationalNormalPolyhedron IsRationalSemilinear)
 
 open Set Filter Topology Quiver Mei.Convex
@@ -197,7 +199,7 @@ rays of the inventory continue over a common convex open neighborhood. There is 
 one family of fiber bijections preserving complete types, and its paths vary continuously
 in compact-open topology. -/
 theorem exists_pathDecoratedRay_continuousContinuation :
-    ∃ E : ExceptionalArrangement V,
+    ∃ E : ExceptionalArrangement ℝ V,
       (∀ t : Labels', frontier (D' t) ⊆ {X | ¬ E.IsGeneric X}) ∧
       ∀ X, E.IsGeneric X → ∃ U : Set V,
         IsOpen U ∧ Convex ℝ U ∧ X ∈ U ∧

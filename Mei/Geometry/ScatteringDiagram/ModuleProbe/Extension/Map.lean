@@ -120,7 +120,7 @@ theorem map_extendedCoefficientField (k : ℕ) (hBc : B.LevelConsistent k)
     (coefficientArrangement d 𝒩 p ℒ H h h' D' k)
   obtain ⟨zB, hzT⟩ := exists_generic_allowed (d := d) (ℒ := ℒ) (H := H)
     (h := h) (B := B) k T x
-  obtain ⟨hz, hz'⟩ := ExceptionalArrangement.isGeneric_union.mp hzT
+  obtain ⟨hz, hz'⟩ := TauCeti.ExceptionalArrangement.isGeneric_union.mp hzT
   rw [extendedCoefficientField_eq_action d ℳ p ℒ H h h' D B k hBc hD hB x zB hz,
     extendedCoefficientField_eq_action d 𝒩 p ℒ H h h' D' B k hBc hD' hB' x zB hz',
     PositiveDegrees.quotientCoefficientMap_truncatedBCHAction d ℳ 𝒩 p ℒ f hf hequiv,

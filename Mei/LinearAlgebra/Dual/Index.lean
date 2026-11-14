@@ -52,7 +52,7 @@ namespace LinearMap
 variable {M N : Type*} [AddCommGroup M] [AddCommGroup N] [Module.Free ℤ M] [Module.Finite ℤ M]
   [Module.Free ℤ N] [Module.Finite ℤ N]
 
-omit [Module.Free ℤ M] [Module.Finite ℤ M] in
+omit [Module.Free ℤ M] [Module.Finite ℤ M] [Module.Free ℤ N] in
 /-- The transpose of an injective map into a finite free `ℤ`-module of the same rank is
 injective. -/
 theorem dualMap_injective_of_injective {f : M →ₗ[ℤ] N} (hf : Function.Injective f)
@@ -77,24 +77,9 @@ theorem index_range_dualMap {f : M →ₗ[ℤ] N}
     Fintype.equivOfCardEq <| by
       rw [← finrank_eq_card_chooseBasisIndex, ← finrank_eq_card_chooseBasisIndex, hrank]
   let c := (Free.chooseBasis ℤ N).reindex e
-  by_cases hf : Function.Injective f
-  · rw [index_range_eq_natAbs_det_toMatrix c.dualBasis b.dualBasis
-        (dualMap_injective_of_injective hf hrank),
-      index_range_eq_natAbs_det_toMatrix b c hf, dualMap_def, toMatrix_transpose,
-      Matrix.det_transpose]
-  · have hdualrank : finrank ℤ (Dual ℤ N) = finrank ℤ (Dual ℤ M) := by
-      simpa only [← c.toDualEquiv.finrank_eq, ← b.toDualEquiv.finrank_eq] using hrank.symm
-    have hdual : ¬Function.Injective f.dualMap := by
-      intro h
-      have hbidual := dualMap_injective_of_injective h hdualrank
-      apply hf
-      intro x y hxy
-      apply (bijective_dual_eval ℤ M).injective
-      apply hbidual
-      ext φ
-      simpa using congrArg φ hxy
-    rw [(index_range_eq_zero_iff hdualrank).mpr hdual,
-      (index_range_eq_zero_iff hrank).mpr hf]
+  rw [index_range_eq_natAbs_det_toMatrix c.dualBasis b.dualBasis f.dualMap,
+    index_range_eq_natAbs_det_toMatrix b c f, dualMap_def, toMatrix_transpose,
+    Matrix.det_transpose]
 
 end LinearMap
 

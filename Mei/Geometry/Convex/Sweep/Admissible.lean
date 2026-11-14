@@ -36,6 +36,8 @@ models*, §4 (arXiv:2205.07753v2).
 
 public noncomputable section
 
+open TauCeti (ExceptionalArrangement)
+
 open TauCeti (IsRationalNormalPolyhedron IsRationalSemilinear)
 
 namespace Mei.Convex
@@ -474,7 +476,7 @@ theorem exists_admissibleRayFiber_membershipArrangement
     (hW : ∀ a, IsRationalNormalPolyhedron h (W a))
     (hS : ∀ a, IsRationalNormalPolyhedron h (S a))
     (hsource : ∀ a, IsRationalNormalPolyhedron h (source a)) :
-    ∃ E : ExceptionalArrangement V,
+    ∃ E : ExceptionalArrangement ℝ V,
       (∀ a, frontier (admissibleBackwardDomain (F a) (b a) (fun j => i (w a j))
         (A a) W S (source a)) ⊆ {Q | ¬ E.IsGeneric Q}) ∧
       ∀ Q, E.IsGeneric Q → ∀ᶠ Q' in nhds Q,

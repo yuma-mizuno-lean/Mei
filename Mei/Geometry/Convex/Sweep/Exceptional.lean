@@ -29,7 +29,7 @@ public section
 
 noncomputable section
 
-namespace Mei.ExceptionalArrangement
+namespace TauCeti.ExceptionalArrangement
 
 
 variable {V : Type*} [AddCommGroup V] [Module ℝ V] [FiniteDimensional ℝ V]
@@ -39,7 +39,7 @@ Repeated spans are identified. Empty cells and zero vectors are permitted. -/
 def ofSweeps (cells : Finset (Set V)) (vectors : Finset V)
     (hdim : ∀ P ∈ cells, P.Nonempty →
       Module.finrank ℝ (vectorSpan ℝ P) + 1 < Module.finrank ℝ V) :
-    ExceptionalArrangement V := by
+    ExceptionalArrangement ℝ V := by
   classical
   refine ⟨(cells ×ˢ vectors).image (fun z => affineSpan ℝ (Set.sweep ℝ z.1 z.2)), ?_⟩
   rintro A hA
@@ -74,4 +74,4 @@ theorem isGeneric_ofSweeps_iff (cells : Finset (Set V)) (vectors : Finset V)
     obtain ⟨t, ht⟩ := (Set.mem_affineSpan_sweep_iff (𝕜 := ℝ) P n y).mp hyA
     exact hy P (Finset.mem_product.mp hPn).1 n (Finset.mem_product.mp hPn).2 t ht
 
-end Mei.ExceptionalArrangement
+end TauCeti.ExceptionalArrangement

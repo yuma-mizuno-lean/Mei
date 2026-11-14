@@ -29,6 +29,8 @@ correction diagram or identify the orientation sign of a joint cochain.
 
 public section
 
+open TauCeti.FinitePolyhedralComplex (mem_cellsOfCodimension)
+
 open TauCeti (WallComplement AdmissiblePLPath)
 
 open TauCeti (PositiveDegrees IsPositiveGrading)
@@ -90,7 +92,7 @@ theorem exists_outgoingWall_joint_obstruction {k : ℕ} {J : Set V}
     exact hc hz
   have hcut := d.mem_cutoff_of_truncatedGrading_ne_bot ℒ hpiece
   obtain ⟨w, hw⟩ := d.exists_supportedRay (d.mem_cutoff.mp hcut.1).1 hcut.2
-  have hcell := ((D.adaptedComplex k).mem_cellsOfCodimension 2 J).mp hJ
+  have hcell := mem_cellsOfCodimension.mp hJ
   obtain ⟨W, hnormal, hray, hsupp, hlabel, hout, hborn⟩ :=
     DirectedWall.exists_outgoing_sweep ((D.adaptedComplex k).rational J hcell.1)
       ((D.adaptedComplex k).nonempty J hcell.1) hw htrans hm hker ((H.wall n m).neg_mem ha)

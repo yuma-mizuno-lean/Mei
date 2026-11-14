@@ -33,6 +33,8 @@ varieties with effective anti-canonical class*, §3.2 (arXiv:1601.07081v4).
 
 public section
 
+open TauCeti (FinitePolyhedralComplex)
+
 open CategoryTheory TopologicalSpace Opposite Set Mei.Convex
 
 namespace Mei.FiniteWallDiagram

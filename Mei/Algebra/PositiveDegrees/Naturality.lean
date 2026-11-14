@@ -72,7 +72,7 @@ theorem completionComponent_completionMap_eq_sum
         (d.filtrationCompletionComponent ℳ F hF n x).property)
     · exact decompose_of_mem_ne 𝓝 (hhom n _
         (d.filtrationCompletionComponent ℳ F hF n x).property) h
-  simp only [map_sum, decompose_sum, sum_apply, Submodule.coe_sum]
+  simp only [map_sum, decompose_sum, DirectSum.sum_apply, Submodule.coe_sum]
   simp_rw [hproj]
   rw [Finset.sum_filter]
 

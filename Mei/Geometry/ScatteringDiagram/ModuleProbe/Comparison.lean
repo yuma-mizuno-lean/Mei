@@ -36,6 +36,8 @@ open TauCeti (WallComplement)
 
 public noncomputable section
 
+open TauCeti (ExceptionalArrangement)
+
 open TauCeti (PositiveDegrees IsPositiveGrading)
 
 open TauCeti (DirectedWallSpaces)
@@ -86,7 +88,7 @@ theorem exists_extendedCoefficientField_eq_cutoffWallEventEvaluation
     (b : (d.shiftedQuotientGrading ℳ p K).piece 0)
     (hb : d.shiftedQuotientComponent ℳ p p K (by simp only [sub_self, map_zero]; omega)
       b = a) :
-    ∃ F : d.cutoff K → ExceptionalArrangement V,
+    ∃ F : d.cutoff K → ExceptionalArrangement ℝ V,
       ∀ Q, (∀ n, (F n).IsGeneric Q) →
         ∃ hQ : ∀ c : B.active K, Q ∉ (B.wall c).support,
           field K hBc ⟨Q, hQ⟩ =

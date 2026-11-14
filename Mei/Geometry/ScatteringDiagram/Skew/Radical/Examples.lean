@@ -396,7 +396,7 @@ theorem radicalLabel_mem :
     radicalLabel R ∈ rankThreeDegrees.completedRaySubgroup 𝓛₃ radicalRay := by
   rw [radicalLabel_def]
   refine rankThreeDegrees.expToCompletion_mem_completedRaySubgroup 𝓛₃
-    (le_rayLieSubalgebra 𝓛₃ ?_ (radicalGenerator_mem R))
+    (TauCeti.le_rayLieSubalgebra 𝓛₃ ?_ (radicalGenerator_mem R))
   rw [← radicalRay_generator, SupportedRay.generator_mem_rayDegrees_iff, radicalRay_generator]
   exact radicalVector_mem_monoid
 

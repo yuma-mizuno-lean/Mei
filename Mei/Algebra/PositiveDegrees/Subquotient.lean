@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Algebra.PositiveDegrees.Grading
-public import Mei.Algebra.DirectSum.Degree.Map
+public import TauCeti.Algebra.DirectSum.DegreeTail
 public import TauCeti.Algebra.Module.GradedModule.Quotient
 
 /-!

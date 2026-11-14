@@ -35,6 +35,8 @@ open TauCeti (WallComplement)
 
 public noncomputable section
 
+open TauCeti (ExceptionalArrangement)
+
 open TauCeti (PositiveDegrees IsPositiveGrading)
 
 open TauCeti (DirectedWallSpaces)
@@ -67,8 +69,8 @@ open Classical in
 actual backward-ray recurrences whose strictly preceding, normal-compatible
 inputs lie in their own generic domains. Every output domain also avoids the
 initial arrangement. The domains require no incoming coefficient or source cell. -/
-theorem exists_wallEventRecursionDomains (k : ℕ) (A : ExceptionalArrangement V) :
-    ∃ E : d.cutoff (k + 1) → ExceptionalArrangement V,
+theorem exists_wallEventRecursionDomains (k : ℕ) (A : ExceptionalArrangement ℝ V) :
+    ∃ E : d.cutoff (k + 1) → ExceptionalArrangement ℝ V,
       (∀ n Q, (E n).IsGeneric Q → A.IsGeneric Q) ∧
       ∀ n : d.cutoff (k + 1), n.val ≠ 0 → ∀ Q, (E n).IsGeneric Q →
         ∃ y : WallComplement (B.activeSupport (k + 1)), y.val = Q ∧
@@ -96,9 +98,9 @@ theorem exists_wallEventRecursionDomains (k : ℕ) (A : ExceptionalArrangement V
                           i (ρ (p + r.val)) + η b • i (ρ (p + m.val)))
                       (fun X m => (component (k + 1) m) (evaluation (k + 1) a C X)) Q n := by
   classical
-  choose next hnext using fun F : ExceptionalArrangement V =>
+  choose next hnext using fun F : ExceptionalArrangement ℝ V =>
     exists_wallEventRecursionArrangement_generic d ℳ p ℒ H h B k F
-  let domains : ℕ → ExceptionalArrangement V := Nat.rec A (fun _ F => F.union (next F))
+  let domains : ℕ → ExceptionalArrangement ℝ V := Nat.rec A (fun _ F => F.union (next F))
   have hdomains (j l : ℕ) (hjl : j ≤ l) (Q : V)
       (hQ : (domains l).IsGeneric Q) : (domains j).IsGeneric Q := by
     induction l, hjl using Nat.le_induction with

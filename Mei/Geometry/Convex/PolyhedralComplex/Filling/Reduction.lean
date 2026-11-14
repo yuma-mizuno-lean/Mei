@@ -30,13 +30,15 @@ lineality, repeated vertices and degenerate triangles missing all joints.
 
 public section
 
+open TauCeti (FinitePolyhedralComplex)
+
 open TauCeti (WallComplement AdmissiblePLPath)
 
 noncomputable section
 
 open Set Mei.Convex
 
-namespace Mei.FinitePolyhedralComplex
+namespace TauCeti.FinitePolyhedralComplex
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
@@ -76,14 +78,12 @@ theorem transverseTriangleWords_subset_triangleWords
     C.transverseTriangleWords ν U ⊆ C.triangleWords ν U := by
   rintro g ⟨x, y, z, e, f, r, hx, hy, hz, -, -, he⟩
   exact (C.mem_triangleWords ν U g).mpr ⟨x, y, z, e, f, r, hx, hy, hz, he⟩
-
-end Mei.FinitePolyhedralComplex
-
+end TauCeti.FinitePolyhedralComplex
 namespace Quiver.Path
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
-  {C : Mei.FinitePolyhedralComplex h}
+  {C : TauCeti.FinitePolyhedralComplex h}
   {x : WallComplement (fun P : C.walls => (P : Set V))}
 
 /-- An admissible loop in an ambient complex reduces to triangles with
@@ -91,7 +91,7 @@ joint-transverse fillings avoiding the higher skeleton. No extra general
 position is assumed of the loop. In a convex open region the entire triangular
 fillings lie in that region. -/
 theorem crossingWord_mem_normalClosure_transverse_triangles
-    (p : AdmissiblePLPath x x) (hC : C.support = univ)
+    (p : AdmissiblePLPath x x) (hC : C.support = Set.univ)
     (ν : C.walls → V →ₗ[ℝ] ℝ)
     (hν : ∀ P, (ν P).ker = (affineSpan ℝ (P : Set V)).direction)
     {U : Set V} (hU : IsOpen U) (hp : ∀ u ∈ p.vertices, u.val ∈ U) :
@@ -140,7 +140,7 @@ theorem crossingWord_mem_normalClosure_transverse_triangles
 
 end Quiver.Path
 
-namespace Mei.FinitePolyhedralComplex
+namespace TauCeti.FinitePolyhedralComplex
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
@@ -149,7 +149,7 @@ variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ 
 the ordinary triangular relations. In a convex open set all fillings remain
 in that set, so local relations can be checked on these transverse fillings. -/
 theorem normalClosure_transverseTriangleWords_eq (C : FinitePolyhedralComplex h)
-    (hC : C.support = univ) (ν : C.walls → V →ₗ[ℝ] ℝ)
+    (hC : C.support = Set.univ) (ν : C.walls → V →ₗ[ℝ] ℝ)
     (hν : ∀ P, (ν P).ker = (affineSpan ℝ (P : Set V)).direction)
     {U : Set V} (hU : IsOpen U) :
     Subgroup.normalClosure (C.transverseTriangleWords ν U) =
@@ -165,4 +165,4 @@ theorem normalClosure_transverseTriangleWords_eq (C : FinitePolyhedralComplex h)
     List.concat_eq_append, List.mem_append, List.mem_cons, List.not_mem_nil, or_false] at hu
   rcases hu with (((rfl | rfl) | rfl) | rfl) <;> assumption
 
-end Mei.FinitePolyhedralComplex
+end TauCeti.FinitePolyhedralComplex

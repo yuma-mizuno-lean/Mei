@@ -17,7 +17,7 @@ of the polyhedral coboundary. The number of facets incident to a ridge is a
 separate geometric question.
 
 The argument uses `IsExposed.contract_facetOrientation` and
-`Module.Ray.contract_contract`: vectors from each facet towards their
+`Module.Ray.contract_contract_eq_neg`: vectors from each facet towards their
 intersection are outward for the other facet, and their contractions
 anticommute. Neither convexity nor polyhedrality is needed for this orientation
 comparison.
@@ -155,7 +155,7 @@ theorem facetOrientation_inter_eq_neg (hF : IsExposed K P F) (hG : IsExposed K P
       hkw hkG v hvw hvG hsw, Module.Ray.contract_neg b hb hkG v hvG, hbv]
     exact neg_neg o
   -- Anticommutativity supplies the sign; two injective contractions detect equality.
-  have hrwv := r.contract_contract hr hkW v w hvW hwW hkv hkw hwv hvw
+  have hrwv := r.contract_contract_eq_neg hr hkW v w hvW hwW hkv hkw hwv hvw
   rw [hrvw] at hrwv
   have he : r.contract hr hkW w hwW = -(s.contract hs hkW w hwW) := by
     apply (Module.Ray.contract_eq_contract_iff _ _

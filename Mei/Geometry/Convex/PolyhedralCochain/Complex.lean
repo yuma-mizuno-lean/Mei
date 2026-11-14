@@ -33,6 +33,10 @@ internal terms in the full coboundary sum.
 
 public section
 
+open TauCeti.FinitePolyhedralComplex (mem_cellsOfCodimension)
+
+open TauCeti (FinitePolyhedralComplex)
+
 open TauCeti (OrientedCell PolyhedralCochain isRationalNormalPolyhedron_iff)
 
 noncomputable section
@@ -50,7 +54,7 @@ private def subdivisionCell (σ : OrientedCell h k) (C : FinitePolyhedralComplex
     (P : {P : Set V // P ∈ C.cellsOfCodimension k ∧ P ⊆ σ.carrier}) :
     OrientedCell h k := by
   have := h.finiteDimensional
-  have hm := (C.mem_cellsOfCodimension k P).mp P.property.1
+  have hm := mem_cellsOfCodimension.mp P.property.1
   have hd : (affineSpan ℝ P.val).direction = (affineSpan ℝ σ.carrier).direction := by
     apply Submodule.eq_of_le_of_finrank_eq
       (AffineSubspace.direction_le (affineSpan_mono ℝ P.property.2))
@@ -85,10 +89,10 @@ theorem mem_subdivisionPieces (σ : OrientedCell h k) (C : FinitePolyhedralCompl
   · intro ht
     obtain ⟨P, _, rfl⟩ := Finset.mem_image.mp ht
     have hm := Finset.mem_filter.mp P.property
-    exact ⟨((C.mem_cellsOfCodimension k P).mp hm.1).1, hm.2, rfl⟩
+    exact ⟨(mem_cellsOfCodimension.mp hm.1).1, hm.2, rfl⟩
   · rintro ⟨ht, hsub, ho⟩
     have hm : τ.carrier ∈ (C.cellsOfCodimension k).filter fun P => P ⊆ σ.carrier :=
-      Finset.mem_filter.mpr ⟨(C.mem_cellsOfCodimension k _).mpr
+      Finset.mem_filter.mpr ⟨mem_cellsOfCodimension.mpr
         ⟨ht, τ.finrank_direction_add⟩, hsub⟩
     apply Finset.mem_image.mpr
     refine ⟨⟨τ.carrier, hm⟩, Finset.mem_attach _ _, ?_⟩
@@ -134,7 +138,7 @@ theorem isOrientedSubdivision_subdivisionPieces_of_cover (σ : OrientedCell h k)
         rw [hd]
         exact σ.finrank_direction_add
       let τ := subdivisionCell σ C
-        ⟨P, (C.mem_cellsOfCodimension k P).mpr ⟨hP, hdim⟩, hsub⟩
+        ⟨P, mem_cellsOfCodimension.mpr ⟨hP, hdim⟩, hsub⟩
       exact Set.mem_iUnion₂.mpr ⟨τ,
         (σ.mem_subdivisionPieces C τ).mpr ⟨hP, hsub, rfl⟩, hxP⟩
   · intro τ ht υ hu hne
@@ -172,7 +176,7 @@ theorem existsUnique_boundaryFacet_of_mem_subdivisionPieces (σ : OrientedCell h
   obtain ⟨hP, hsub, hυo⟩ := (σ.mem_subdivisionPieces C υ).mp hυ
   have hτP : τ.carrier ⊆ υ.carrier := C.subset_of_mem_intrinsicInterior hτC hP hx hxP
   have he : IsExposed ℝ υ.carrier τ.carrier :=
-    (isPolyhedralFace_iff.mp (C.face_of_subset hτC hP hτP)).2
+    (isPolyhedralFace_iff.mp (C.isPolyhedralFace_of_subset hτC hP hτP)).2
   have hdf : finrank ℝ (vectorSpan ℝ τ.carrier) + 1 =
       finrank ℝ (vectorSpan ℝ υ.carrier) := by
     have ht := τ.finrank_direction_add

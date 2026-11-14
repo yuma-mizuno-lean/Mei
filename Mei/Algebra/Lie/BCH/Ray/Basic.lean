@@ -27,7 +27,7 @@ multiples of the same ray. Such a label then splits at every order into the
 unordered product of its homogeneous factors, which are trivial off the actual ray
 degrees and are themselves completed ray labels.
 
-The construction uses `Mei.rayLieSubalgebra`, Mathlib's subgroup intersections
+The construction uses `TauCeti.rayLieSubalgebra`, Mathlib's subgroup intersections
 and inverse images, and `LieSubalgebra.bchSubgroup`. Commutation follows from
 `Mei.BCHGroup.commute_exp_of_lie_eq_zero` at every finite order. The levelwise
 subgroup, support-bound and commutation arguments follow

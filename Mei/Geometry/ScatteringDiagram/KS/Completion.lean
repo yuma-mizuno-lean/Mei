@@ -32,6 +32,8 @@ It uses `KSComplex`, `FiniteWallDiagram.pathProduct`,
 
 public section
 
+open TauCeti (FinitePolyhedralComplex)
+
 open TauCeti (WallComplement AdmissiblePLPath)
 
 open TauCeti (PositiveDegrees IsPositiveGrading)

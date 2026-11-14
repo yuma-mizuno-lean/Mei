@@ -21,7 +21,7 @@ including when the ambient primitive vector is outside the positive monoid.
 
 The decomposition follows `Mei.LogarithmicVectorField.grade`, using Mathlib's
 independence and spanning of `Finsupp.lsingle`; restriction uses
-`supportedLieSubalgebra` and `LieSubalgebra.gradedLieAlgebra`.
+`TauCeti.supportedLieSubalgebra` and `LieSubalgebra.gradedLieAlgebra`.
 The skew bracket and abelian-ray observation follow Gross–Hacking–Keel–Kontsevich,
 *Canonical bases for cluster algebras*, §1, arXiv:1411.1394v2.
 -/
@@ -94,7 +94,7 @@ instance : IsAbelianRays d (grade β hβ) := by
 
 /-- The skew Lie algebra supported on the nonzero degrees of a positive monoid. -/
 def positiveLieAlgebra : LieSubalgebra R (SkewLieAlgebra β hβ) :=
-  supportedLieSubalgebra (grade β hβ)
+  TauCeti.supportedLieSubalgebra (grade β hβ)
     { carrier := {n | n ∈ d.monoid ∧ n ≠ 0}
       add_mem' := by
         rintro n m ⟨hn, hne⟩ ⟨hm, hme⟩
@@ -106,7 +106,7 @@ def positiveLieAlgebra : LieSubalgebra R (SkewLieAlgebra β hβ) :=
 
 /-- The positive skew algebra is supported on the nonzero allowed degrees. -/
 theorem positiveLieAlgebra_def : positiveLieAlgebra β hβ d =
-    supportedLieSubalgebra (grade β hβ)
+    TauCeti.supportedLieSubalgebra (grade β hβ)
       { carrier := {n | n ∈ d.monoid ∧ n ≠ 0}
         add_mem' := by
           rintro n m ⟨hn, hn0⟩ ⟨hm, hm0⟩
@@ -122,7 +122,7 @@ theorem mem_positiveLieAlgebra_iff (x : SkewLieAlgebra β hβ) :
     x ∈ positiveLieAlgebra β hβ d ↔
       ∀ n, n ∉ d.monoid ∨ n = 0 → toFinsupp β hβ x n = 0 := by
   classical
-  rw [positiveLieAlgebra, mem_supportedLieSubalgebra_iff]
+  rw [positiveLieAlgebra, TauCeti.mem_supportedLieSubalgebra_iff]
   simp only [decompose_grade, AddSubsemigroup.mem_mk, Set.mem_ofPred_eq, not_and_or,
     not_not]
   simp only [single_eq_zero]
@@ -131,7 +131,7 @@ theorem mem_positiveLieAlgebra_iff (x : SkewLieAlgebra β hβ) :
 theorem positiveLieAlgebra_isHomogeneous [DecidableEq Γ] :
     DirectSum.SetLike.IsHomogeneous (grade β hβ) (positiveLieAlgebra β hβ d) := by
   unfold positiveLieAlgebra
-  exact supportedLieSubalgebra_isHomogeneous (grade β hβ) _
+  exact TauCeti.isHomogeneous_supportedLieSubalgebra (grade β hβ) _
 
 /-- The positive skew algebra inherits the exponent pieces by inclusion. -/
 def positiveGrading (n : Γ) : Submodule R (positiveLieAlgebra β hβ d) :=

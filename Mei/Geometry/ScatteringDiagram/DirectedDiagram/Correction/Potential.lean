@@ -38,6 +38,8 @@ and consistency of the combined diagram are separate conclusions.
 
 public section
 
+open TauCeti.FinitePolyhedralComplex (mem_cellsOfCodimension)
+
 open TauCeti (OrientedCell PolyhedralCochain)
 
 open TauCeti (WallComplement)
@@ -107,7 +109,7 @@ theorem exists_joint_correction_potential
   let C := D.adaptedComplex (k + 1)
   let := Fintype.ofFinite C.joints
   have hpoint (J : C.joints) : (intrinsicInterior ℝ (J : Set V)).Nonempty := by
-    have hJC := ((C.mem_cellsOfCodimension 2 J).mp J.property).1
+    have hJC := (mem_cellsOfCodimension.mp J.property).1
     exact Set.Nonempty.intrinsicInterior (C.isConvexPolyhedron hJC).convex (C.nonempty J hJC)
   choose q hq using hpoint
   -- The local wall-space estimates prescribe radii before the meridians are chosen.

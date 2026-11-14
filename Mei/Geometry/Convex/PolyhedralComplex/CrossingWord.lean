@@ -6,7 +6,8 @@ Authors: Codex
 module
 
 public import Mei.Geometry.Convex.PolyhedralComplex.Strata
-public import Mei.Geometry.Convex.Polyhedron.CrossingEvents
+public import TauCeti.Geometry.ScatteringDiagram.Path.CrossingEvents
+public import Mei.Geometry.Convex.Polyhedron.AdmissiblePath
 public import Mathlib.GroupTheory.FreeGroup.Basic
 public import Mei.Combinatorics.Quiver.Path
 
@@ -34,6 +35,8 @@ The sequence crossing-word formula is adapted from Codex,
 
 public section
 
+open TauCeti (FinitePolyhedralComplex)
+
 open TauCeti (WallComplement AdmissiblePLPath)
 
 noncomputable section
@@ -41,7 +44,7 @@ noncomputable section
 open Set
 open Mei.Convex
 
-namespace Mei.FinitePolyhedralComplex
+namespace TauCeti.FinitePolyhedralComplex
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
@@ -236,14 +239,12 @@ theorem segmentCrossingWord_self (ν : C.walls → V →ₗ[ℝ] ℝ) (e : x ⟶
   apply C.segmentCrossingWord_eq_one ν e
   ext ⟨P, t⟩
   simp [WallComplement.mem_crossings, x.notMem P]
-
-end Mei.FinitePolyhedralComplex
-
+end TauCeti.FinitePolyhedralComplex
 namespace Quiver.Path
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
-  {C : Mei.FinitePolyhedralComplex h}
+  {C : TauCeti.FinitePolyhedralComplex h}
 
 variable {x y z : WallComplement (fun P : C.walls => (P : Set V))}
 

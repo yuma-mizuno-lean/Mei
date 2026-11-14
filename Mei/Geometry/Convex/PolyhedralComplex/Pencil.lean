@@ -37,13 +37,15 @@ compared with Mathlib's `List.Pairwise.eq_of_mem_iff`.
 
 public section
 
+open TauCeti (FinitePolyhedralComplex)
+
 open TauCeti (WallComplement AdmissiblePLPath singularSupport)
 
 noncomputable section
 
 open Set Mei.Convex
 
-namespace Mei.FinitePolyhedralComplex
+namespace TauCeti.FinitePolyhedralComplex
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
@@ -68,7 +70,7 @@ private theorem mem_iff_div_eq_of_pencil (hℓ : ∀ z ∈ U, 0 < ℓ z)
     (hβ : ∀ P : C.walls, (U ∩ P).Nonempty → β P ≠ 0) {P : C.walls} (hP : (U ∩ P).Nonempty)
     {z : V} (hz : z ∈ U) : z ∈ (P : Set V) ↔ m z / ℓ z = -α P / β P := by
   rw [hwall P hP z hz, ← sub_eq_zero, hpen P hP z,
-    mul_add_mul_eq_mul_mul_div_sub (hℓ z hz).ne' (hβ P hP)]
+    Mei.mul_add_mul_eq_mul_mul_div_sub (hℓ z hz).ne' (hβ P hP)]
   simp [hβ P hP, (hℓ z hz).ne', sub_eq_zero]
 
 /-- A segment in the region, traversed with nondecreasing slope, crosses exactly the
@@ -101,8 +103,8 @@ private theorem exists_crossing_iff_of_pencil (hU : Convex ℝ U) (hℓ : ∀ z 
     have hc := WallComplement.exists_crossing_iff_of_hyperplane x y f (j := P)
       (fun z hz => (hwall P hP z (hU.segment_subset hx hy hz)).trans (by rw [hf, sub_eq_zero]))
     apply hc.mpr
-    rw [hf, hf, hpen P hP x.val, mul_add_mul_eq_mul_mul_div_sub (hℓ _ hx).ne' (hβ P hP),
-      hpen P hP y.val, mul_add_mul_eq_mul_mul_div_sub (hℓ _ hy).ne' (hβ P hP)]
+    rw [hf, hf, hpen P hP x.val, Mei.mul_add_mul_eq_mul_mul_div_sub (hℓ _ hx).ne' (hβ P hP),
+      hpen P hP y.val, Mei.mul_add_mul_eq_mul_mul_div_sub (hℓ _ hy).ne' (hβ P hP)]
     have hx' : m x.val / ℓ x.val - κ P < 0 := by linarith
     have hy' : 0 < m y.val / ℓ y.val - κ P := by linarith
     rcases lt_or_gt_of_ne (hβ P hP) with hb | hb
@@ -180,9 +182,9 @@ private theorem segmentCrossingWord_eq_pencilPotential_of_le (hU : Convex ℝ U)
     have hv : ν P (y.val - x.val) =
         β P * (ℓ y.val * (m y.val / ℓ y.val - κ P) + ℓ x.val * (κ P - m x.val / ℓ x.val)) := by
       have hx' := (hpen P hPU x.val).trans
-        (mul_add_mul_eq_mul_mul_div_sub (hℓ _ hx).ne' (hβ P hPU))
+        (Mei.mul_add_mul_eq_mul_mul_div_sub (hℓ _ hx).ne' (hβ P hPU))
       have hy' := (hpen P hPU y.val).trans
-        (mul_add_mul_eq_mul_mul_div_sub (hℓ _ hy).ne' (hβ P hPU))
+        (Mei.mul_add_mul_eq_mul_mul_div_sub (hℓ _ hy).ne' (hβ P hPU))
       rw [map_sub]
       linear_combination hy' - hx'
     have hpos : 0 < ℓ y.val * (m y.val / ℓ y.val - κ P) + ℓ x.val * (κ P - m x.val / ℓ x.val) :=
@@ -310,5 +312,4 @@ theorem crossingWord_eq_of_pencil (C : FinitePolyhedralComplex h)
         hseg e (hr' y r.end_mem_vertices) (hr z ((Quiver.Path.mem_vertices_cons r e).mpr
           (Or.inr rfl))), mul_assoc, inv_mul_cancel_left]
   rw [hpath p hp, hpath q hq]
-
-end Mei.FinitePolyhedralComplex
+end TauCeti.FinitePolyhedralComplex

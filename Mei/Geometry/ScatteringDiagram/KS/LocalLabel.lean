@@ -34,6 +34,8 @@ open TauCeti (singularSupport)
 
 public noncomputable section
 
+open TauCeti (FinitePolyhedralComplex)
+
 open TauCeti (PositiveDegrees IsPositiveGrading SupportedRay)
 
 open Set Mei.Convex

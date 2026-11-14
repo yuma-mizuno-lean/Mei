@@ -30,6 +30,10 @@ and `DirectedDiagram.AdaptedWallCrossing.defect`.
 
 public section
 
+open TauCeti.FinitePolyhedralComplex (mem_cellsOfCodimension)
+
+open TauCeti (FinitePolyhedralComplex)
+
 open TauCeti (OrientedCell PolyhedralCochain)
 
 open TauCeti (WallComplement)
@@ -79,7 +83,7 @@ theorem eventually_mem_interior_plus (c : D.AdaptedWallCrossing σ hσ)
     simp only [map_sub, map_add, map_smul, smul_eq_mul] at hdiff ⊢
     nlinarith
   exact ((D.adaptedComplex l).isConvexPolyhedron
-    (((D.adaptedComplex l).mem_cellsOfCodimension 0 _).mp c.plus.property).1).convex
+    (mem_cellsOfCodimension.mp c.plus.property).1).convex
     |>.eventually_add_smul_mem_interior_of_ker_le hsub (h.realCharacter c.normal)
       c.ker_normal.le hq hyi hypos hv
 

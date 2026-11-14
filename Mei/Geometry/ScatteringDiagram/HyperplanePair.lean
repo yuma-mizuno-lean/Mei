@@ -31,6 +31,8 @@ particular the diagram is consistent (`consistent_hyperplaneDiagram`).
 
 public section
 
+open TauCeti (FinitePolyhedralComplex)
+
 open TauCeti (WallComplement AdmissiblePLPath)
 
 open Set Mei.Convex

@@ -72,7 +72,7 @@ theorem existsUnique_singleFaceTransferFamily_matchingFamily_of_fg
     {δ : Type*} [Finite δ] (A : δ → AffineSubspace ℝ V)
     (hcover : Z ⊆ ⋃ j, (A j : Set V))
     (hA : ∀ j, ∃ x, ν x = b ∧ x ∉ A j) :
-    ∃ F : Mei.ExceptionalArrangement V, ∀ Q, F.IsGeneric Q → (ν Q - b) / ν (i w₀) < 0 →
+    ∃ F : TauCeti.ExceptionalArrangement ℝ V, ∀ Q, F.IsGeneric Q → (ν Q - b) / ν (i w₀) < 0 →
       ∃! ℓ : H →ₗ[R] Sections, ∀ x,
         (ℓ x).val (.right false) = (α x : U) ∧ (ℓ x).val (.right true) = value x Q := by
   simpa only [singleFaceTransferFamily_weightedEvaluation] using
@@ -89,7 +89,7 @@ theorem exists_singleFaceTransferFamily_matchingFamily_iff
     {δ : Type*} [Finite δ] (A : δ → AffineSubspace ℝ V)
     (hcover : Z ⊆ ⋃ j, (A j : Set V))
     (hA : ∀ j, ∃ x, ν x = b ∧ x ∉ A j) :
-    ∃ F : Mei.ExceptionalArrangement V, ∀ Q, F.IsGeneric Q → (ν Q - b) / ν (i w₀) < 0 →
+    ∃ F : TauCeti.ExceptionalArrangement ℝ V, ∀ Q, F.IsGeneric Q → (ν Q - b) / ν (i w₀) < 0 →
       ∀ ℓ : H →ₗ[R] Sections,
         (∀ x, (ℓ x).val (.right false) = (α x : U) ∧
           (ℓ x).val (.right true) = value x Q) ↔
@@ -122,7 +122,7 @@ theorem exists_singleFaceTransferFamily_matchingFamily_iff_of_fg
     {δ : Type*} [Finite δ] (A : δ → AffineSubspace ℝ V)
     (hcover : Z ⊆ ⋃ j, (A j : Set V))
     (hA : ∀ j, ∃ x, ν x = b ∧ x ∉ A j) :
-    ∃ F : Mei.ExceptionalArrangement V, ∀ Q, F.IsGeneric Q → (ν Q - b) / ν (i w₀) < 0 →
+    ∃ F : TauCeti.ExceptionalArrangement ℝ V, ∀ Q, F.IsGeneric Q → (ν Q - b) / ν (i w₀) < 0 →
       ∀ ℓ : H →ₗ[R] Sections,
         (∀ x, (ℓ x).val (.right false) = (α x : U) ∧
           (ℓ x).val (.right true) = value x Q) ↔

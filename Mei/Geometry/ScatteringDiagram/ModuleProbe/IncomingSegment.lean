@@ -33,6 +33,8 @@ open TauCeti (WallComplement)
 
 public noncomputable section
 
+open TauCeti (ExceptionalArrangement)
+
 open TauCeti (PositiveDegrees IsPositiveGrading)
 
 open TauCeti (DirectedWallSpaces)
@@ -72,7 +74,7 @@ theorem exists_incomingSegmentArrangement
     (hB : (D.map (chargeZeroGradedLieHom d ℳ p ℒ)
       (chargeZeroGradedLieHom_mem_wall d ℳ p ℒ H)).LevelEquivalent
       (cylinderDiagram d ℳ p ℒ H h h' B) k) :
-    ∃ A : ExceptionalArrangement V, ∀ Q, A.IsGeneric Q →
+    ∃ A : ExceptionalArrangement ℝ V, ∀ Q, A.IsGeneric Q →
       ∃ y : WallComplement (fun c : B.active k => (B.wall c).support),
         y.val = Q ∧ ∀ n : d.cutoff k,
           (∀ b, Sum.inr b ∈ D.active (k + 1) →

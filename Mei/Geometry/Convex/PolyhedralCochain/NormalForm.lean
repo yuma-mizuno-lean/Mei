@@ -26,6 +26,10 @@ dichotomy ultimately comes from Mathlib's `Orientation.eq_or_eq_neg`.
 
 public section
 
+open TauCeti.FinitePolyhedralComplex (mem_cellsOfCodimension)
+
+open TauCeti (FinitePolyhedralComplex)
+
 open TauCeti (OrientedCell)
 
 noncomputable section
@@ -61,7 +65,7 @@ theorem eq_sum_single_add_single_reverse :
   simp only [Finsupp.add_apply]
   by_cases hτ : τ.carrier ∈ C.cells
   · let Q : C.cellsOfCodimension k :=
-      ⟨τ.carrier, (C.mem_cellsOfCodimension k _).mpr ⟨hτ, τ.finrank_direction_add⟩⟩
+      ⟨τ.carrier, mem_cellsOfCodimension.mpr ⟨hτ, τ.finrank_direction_add⟩⟩
     rw [Finset.sum_eq_single Q]
     · rcases τ.eq_or_eq_reverse_of_carrier_eq (σ Q) (hσ Q).symm with he | he
       · rw [he]
@@ -89,10 +93,10 @@ theorem eq_sum_single_add_single_reverse :
     apply Finset.sum_eq_zero
     intro Q _
     have hne : τ ≠ σ Q := fun he => hτ (he ▸ hσ Q ▸
-      ((C.mem_cellsOfCodimension k Q).mp Q.property).1)
+      (mem_cellsOfCodimension.mp Q.property).1)
     have hnerev : τ ≠ (σ Q).reverse := fun he => hτ (by
       rw [he, OrientedCell.reverse_carrier, hσ Q]
-      exact ((C.mem_cellsOfCodimension k Q).mp Q.property).1)
+      exact (mem_cellsOfCodimension.mp Q.property).1)
     simp [Finsupp.single_eq_of_ne hne, Finsupp.single_eq_of_ne hnerev]
 
 end
@@ -152,13 +156,13 @@ theorem ofFinsupp_eq_zero_iff_intersectionPairing_eq_zero {ε : ℝ} (hε : 0 < 
     -- Choose auxiliary orientations of the normal quotients.
     have hex (Q : C.cellsOfCodimension k) :
         ∃ τ : OrientedCell h k, τ.carrier = (Q : Set V) := by
-      obtain ⟨hQC, hdim⟩ := (C.mem_cellsOfCodimension k Q).mp Q.property
+      obtain ⟨hQC, hdim⟩ := mem_cellsOfCodimension.mp Q.property
       exact (C.rational Q hQC).exists_orientedCell (C.nonempty Q hQC) hdim
     choose σ hσ using hex
     -- An isolating test recovers each signed coefficient of this presentation.
     rw [ofFinsupp_eq_zero_iff_eq_reverse C σ hσ f hf]
     intro Q
-    have hQC := ((C.mem_cellsOfCodimension k Q).mp Q.property).1
+    have hQC := (mem_cellsOfCodimension.mp Q.property).1
     obtain ⟨p, hp⟩ := (C.nonempty Q hQC).intrinsicInterior
       (C.isConvexPolyhedron hQC).convex
     obtain ⟨s, htrans, hball, hmeet, _, hother⟩ := (σ Q).exists_isolating_transverse_test C
@@ -170,7 +174,7 @@ theorem ofFinsupp_eq_zero_iff_intersectionPairing_eq_zero {ε : ℝ} (hε : 0 < 
     have hall : ∀ τ ∈ f.support, τ.IsTransverseToCarrier s.points := by
       intro τ hτ
       let P : C.cellsOfCodimension k := ⟨τ.carrier,
-        (C.mem_cellsOfCodimension k _).mpr ⟨hf τ hτ, τ.finrank_direction_add⟩⟩
+        mem_cellsOfCodimension.mpr ⟨hf τ hτ, τ.finrank_direction_add⟩⟩
       by_cases hPQ : P = Q
       · have hc : τ.carrier = (σ Q).carrier :=
           (congrArg Subtype.val hPQ).trans (hσ Q).symm

@@ -8,7 +8,7 @@ module
 public import Mei.Algebra.Lie.BCH.Coordinates
 public import Mei.Algebra.Lie.BCH.Filtration
 public import Mei.Algebra.PositiveDegrees.Naturality
-public import Mei.Data.Finset.NoncommProd
+public import TauCeti.Data.Finset.NoncommProd
 
 /-!
 # Homogeneous factors of completed BCH labels

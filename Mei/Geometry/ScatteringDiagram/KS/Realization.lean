@@ -31,6 +31,8 @@ conditions*, §§2–3 (arXiv:1603.00416v4). The central formal inputs are
 
 public section
 
+open TauCeti (FinitePolyhedralComplex)
+
 open TauCeti.CompletedGroup (projection)
 
 open TauCeti (WallComplement AdmissiblePLPath)

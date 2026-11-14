@@ -31,6 +31,8 @@ and vanishing spatial degree directions are allowed.
 
 public section
 
+open TauCeti (FinitePolyhedralComplex)
+
 open TauCeti (RationalAffinePolyhedron isRationalNormalPolyhedron_iff)
 
 open TauCeti (WallComplement)

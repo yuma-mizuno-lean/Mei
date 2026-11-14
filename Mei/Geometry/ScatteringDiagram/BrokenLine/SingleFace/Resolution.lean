@@ -57,7 +57,7 @@ theorem exists_singleFaceTransferEvaluationLinear_eq_right
     {δ : Type*} [Finite δ] (A : δ → AffineSubspace ℝ V)
     (hcover : Z ⊆ ⋃ j, (A j : Set V))
     (hA : ∀ j, ∃ x, ν x = b ∧ x ∉ A j) :
-    ∃ F : Mei.ExceptionalArrangement V, ∀ Q, F.IsGeneric Q →
+    ∃ F : TauCeti.ExceptionalArrangement ℝ V, ∀ Q, F.IsGeneric Q →
       (ν Q - b) / ν u < 0 →
         C.singleFaceTransferEvaluationLinear i u v ν b Z α Q =
           C.right.comp ((C.liftLeft i).comp α) := by
@@ -112,7 +112,7 @@ theorem exists_singleFaceTransferEvaluationLinear_eq_right_of_fg
     {δ : Type*} [Finite δ] (A : δ → AffineSubspace ℝ V)
     (hcover : Z ⊆ ⋃ j, (A j : Set V))
     (hA : ∀ j, ∃ x, ν x = b ∧ x ∉ A j) :
-    ∃ F : Mei.ExceptionalArrangement V, ∀ Q, F.IsGeneric Q →
+    ∃ F : TauCeti.ExceptionalArrangement ℝ V, ∀ Q, F.IsGeneric Q →
       (ν Q - b) / ν u < 0 →
         C.singleFaceTransferEvaluationLinear i u v ν b Z α Q =
           C.right.comp ((C.liftLeft i).comp α) := by
@@ -132,7 +132,7 @@ theorem exists_singleFaceTransferEvaluationLinear_commonLift
     (hcover : Z ⊆ ⋃ j, (A j : Set V))
     (hA : ∀ j, ∃ x, ν x = b ∧ x ∉ A j)
     (hinj : Function.Injective (C.left.prod C.right)) :
-    ∃ F : Mei.ExceptionalArrangement V, ∀ Q, F.IsGeneric Q →
+    ∃ F : TauCeti.ExceptionalArrangement ℝ V, ∀ Q, F.IsGeneric Q →
       (ν Q - b) / ν u < 0 →
         ∃! l : E →ₗ[R] B,
           C.left.comp l = (𝒰 i).subtype.comp α ∧
@@ -156,7 +156,7 @@ theorem exists_singleFaceTransferEvaluationLinear_commonLift_of_fg
     (hcover : Z ⊆ ⋃ j, (A j : Set V))
     (hA : ∀ j, ∃ x, ν x = b ∧ x ∉ A j)
     (hinj : Function.Injective (C.left.prod C.right)) :
-    ∃ F : Mei.ExceptionalArrangement V, ∀ Q, F.IsGeneric Q →
+    ∃ F : TauCeti.ExceptionalArrangement ℝ V, ∀ Q, F.IsGeneric Q →
       (ν Q - b) / ν u < 0 →
         ∃! l : E →ₗ[R] B,
           C.left.comp l = (𝒰 i).subtype.comp α ∧

@@ -28,9 +28,11 @@ exceptions; the segments need not avoid their affine spans.
 
 public section
 
+open TauCeti (FinitePolyhedralComplex)
+
 open Set Module
 
-namespace Mei.FinitePolyhedralComplex
+namespace TauCeti.FinitePolyhedralComplex
 
 variable {N V ι μ : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i} [Countable ι] [Countable μ]
@@ -76,7 +78,7 @@ theorem exists_mem_open_triangle_fillings_transverse_joints
   choose B hB htrans using fun aj : ι × C.joints =>
     Mei.exists_affineSubspace_triangle_filling_transverse
       (x aj.1) (y aj.1) (aj.2 : Set V)
-      ((C.mem_cellsOfCodimension 2 aj.2).mp aj.2.property).2
+      (mem_cellsOfCodimension.mp aj.2.property).2
       ((hbase aj.1).mono_right (fun w hw => mem_support.mpr
         ⟨aj.2, C.cellsOfCodimension_subset_codimensionAtLeast_cells 2 aj.2.property, hw⟩))
   obtain ⟨z, hzU, hz, havoid⟩ :=
@@ -92,5 +94,4 @@ theorem exists_mem_open_triangle_fillings_transverse_joints
   refine ⟨z, hzU, fun j => hz (.inr j), havoid, fun a J hJ hne => ?_⟩
   exact (htrans (a, ⟨J, hJ⟩) z (hz (.inl (a, ⟨J, hJ⟩)))).resolve_left
     (not_disjoint_iff_nonempty_inter.mpr hne)
-
-end Mei.FinitePolyhedralComplex
+end TauCeti.FinitePolyhedralComplex

@@ -19,6 +19,8 @@ inverse-Euler calculation reconstructs Lie representatives modulo augmentation p
 
 public section
 
+open TauCeti.FreeLieAlgebra
+
 namespace Mei.FreeLieAlgebra
 
 variable (R : Type*) [CommRing R] (S : Type*)

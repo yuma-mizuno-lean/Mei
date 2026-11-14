@@ -32,6 +32,8 @@ paths in `U` therefore agree (`Mei.FiniteWallDiagram.pathProduct_eq_of_homotopy`
 
 public section
 
+open TauCeti (FinitePolyhedralComplex)
+
 open TauCeti (WallComplement AdmissiblePLPath)
 
 noncomputable section
@@ -43,7 +45,7 @@ namespace Quiver.Path
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
-  {C : Mei.FinitePolyhedralComplex h}
+  {C : TauCeti.FinitePolyhedralComplex h}
   {x y : WallComplement (fun P : C.walls => (P : Set V))}
 
 /-- **Homotopy invariance of crossing words modulo joint meridians.** For a complex covering

@@ -30,6 +30,8 @@ open TauCeti (WallComplement)
 
 public noncomputable section
 
+open TauCeti (ExceptionalArrangement)
+
 open TauCeti (PositiveDegrees IsPositiveGrading)
 
 open TauCeti (DirectedWallSpaces)
@@ -80,7 +82,7 @@ theorem existsUnique_weightedRayLocalSection
     (b : (d.shiftedQuotientGrading ℳ p K).piece 0)
     (hb : d.shiftedQuotientComponent ℳ p p K (by simp only [sub_self, map_zero]; omega)
       b = a) :
-    ∃ A : d.cutoff K → ExceptionalArrangement V,
+    ∃ A : d.cutoff K → ExceptionalArrangement ℝ V,
       let T := (B.adaptedDiagram K ν hν).coefficientTransport ((F).quotient K)
       let ray (x : (B.adaptedComplex K).arrangementCoefficientPoints A) :=
         cutoffWallEventEvaluation d ℳ p ℒ H h B K K (Nat.le_refl _) b univ x.val.val.val

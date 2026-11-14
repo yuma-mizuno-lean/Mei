@@ -26,6 +26,8 @@ Tom Bridgeland, *Scattering diagrams, Hall algebras and stability conditions*, Â
 
 public section
 
+open TauCeti (FinitePolyhedralComplex)
+
 open TauCeti (PositiveDegrees IsPositiveGrading)
 
 noncomputable section

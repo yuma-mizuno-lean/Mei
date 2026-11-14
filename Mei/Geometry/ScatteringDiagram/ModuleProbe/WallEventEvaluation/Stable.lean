@@ -158,7 +158,7 @@ theorem dense_stableWallEventLocus (K : ℕ)
     (fun c => (B.wall c).finrank_direction_add_one) (∅ : Finset V)
   apply (A.union E).dense_isGeneric.mono
   intro Q hQ
-  obtain ⟨hA, hEQ⟩ := ExceptionalArrangement.isGeneric_union.mp hQ
+  obtain ⟨hA, hEQ⟩ := TauCeti.ExceptionalArrangement.isGeneric_union.mp hQ
   obtain ⟨y, hy, _⟩ := hE Q hEQ
   apply (mem_stableWallEventLocus d ℳ p ℒ H h B K b Q).mpr
   refine ⟨?_, ?_⟩

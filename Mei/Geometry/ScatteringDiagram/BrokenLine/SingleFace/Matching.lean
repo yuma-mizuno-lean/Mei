@@ -61,7 +61,7 @@ theorem existsUnique_singleFace_matchingFamily
     {δ : Type*} [Finite δ] (A : δ → AffineSubspace ℝ V)
     (hcover : Z ⊆ ⋃ j, (A j : Set V))
     (hA : ∀ j, ∃ x, ν x = b ∧ x ∉ A j) :
-    ∃ F : Mei.ExceptionalArrangement V, ∀ Q, F.IsGeneric Q → (ν Q - b) / ν u < 0 →
+    ∃ F : TauCeti.ExceptionalArrangement ℝ V, ∀ Q, F.IsGeneric Q → (ν Q - b) / ν u < 0 →
       ∃! ℓ : H →ₗ[R] Sections, ∀ x,
         (ℓ x).val (.right false) = (α x : U) ∧
         (ℓ x).val (.right true) = C.singleFaceTransferEvaluation p (α x) u v ν b Z Q := by
@@ -85,7 +85,7 @@ theorem existsUnique_singleFace_matchingFamily_of_fg
     {δ : Type*} [Finite δ] (A : δ → AffineSubspace ℝ V)
     (hcover : Z ⊆ ⋃ j, (A j : Set V))
     (hA : ∀ j, ∃ x, ν x = b ∧ x ∉ A j) :
-    ∃ F : Mei.ExceptionalArrangement V, ∀ Q, F.IsGeneric Q → (ν Q - b) / ν u < 0 →
+    ∃ F : TauCeti.ExceptionalArrangement ℝ V, ∀ Q, F.IsGeneric Q → (ν Q - b) / ν u < 0 →
       ∃! ℓ : H →ₗ[R] Sections, ∀ x,
         (ℓ x).val (.right false) = (α x : U) ∧
         (ℓ x).val (.right true) = C.singleFaceTransferEvaluation p (α x) u v ν b Z Q := by

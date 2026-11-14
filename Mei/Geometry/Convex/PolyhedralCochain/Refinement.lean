@@ -34,6 +34,8 @@ disjoint relative interiors. The boundary comparison uses
 
 public section
 
+open TauCeti (FinitePolyhedralComplex)
+
 open TauCeti (OrientedCell isRationalNormalPolyhedron_iff)
 
 noncomputable section
@@ -98,7 +100,7 @@ theorem subdivisionPieces_eq_biUnion (hQ : IsOrientedSubdivision σ Q)
     have hηυ : η.carrier ⊆ υ.carrier :=
       C.subset_of_mem_intrinsicInterior hηC hυC hx hxυ
     have he : η.carrier = υ.carrier := by
-      apply (isPolyhedralFace_iff.mp (C.face_of_subset hηC hυC hηυ)).2.eq_of_finrank_vectorSpan_eq
+      apply (C.isPolyhedralFace_of_subset hηC hυC hηυ).isExposed.eq_of_finrank_vectorSpan_eq
         η.nonempty
       have hηdim := η.finrank_direction_add
       have hυdim := υ.finrank_direction_add

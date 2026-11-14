@@ -34,6 +34,8 @@ proof of Theorem 2.6, and Gross–Hacking–Keel–Kontsevich,
 
 public section
 
+open TauCeti.FinitePolyhedralComplex (mem_cellsOfCodimension)
+
 open TauCeti (OrientedCell PolyhedralCochain)
 
 open TauCeti (WallComplement AdmissiblePLPath)
@@ -104,7 +106,7 @@ theorem exists_chamber_trivialization {k : ℕ} (hk : D.LevelConsistent k)
   let C := D.adaptedComplex (k + 1)
   have horient (m : ℕ) (Q : C.cellsOfCodimension m) :
       ∃ υ : OrientedCell h m, υ.carrier = (Q : Set V) := by
-    obtain ⟨hQC, hdim⟩ := (C.mem_cellsOfCodimension m Q).mp Q.property
+    obtain ⟨hQC, hdim⟩ := mem_cellsOfCodimension.mp Q.property
     exact (C.rational Q hQC).exists_orientedCell (C.nonempty Q hQC) hdim
   choose σ hσ using horient 1
   choose τ hτ using horient 2
@@ -120,8 +122,8 @@ theorem exists_chamber_trivialization {k : ℕ} (hk : D.LevelConsistent k)
   obtain ⟨B, t, hbB, htB, ht⟩ :=
     D.exists_adapted_chamber_lifts (Nat.le_succ k) hk b hzoff
   have hcenter (J : C.joints) : (intrinsicInterior ℝ (J : Set V)).Nonempty :=
-    (C.nonempty J ((C.mem_cellsOfCodimension 2 J).mp J.property).1).intrinsicInterior
-      (C.isConvexPolyhedron ((C.mem_cellsOfCodimension 2 J).mp J.property).1).convex
+    (C.nonempty J (mem_cellsOfCodimension.mp J.property).1).intrinsicInterior
+      (C.isConvexPolyhedron (mem_cellsOfCodimension.mp J.property).1).convex
   choose q hq using hcenter
   -- These additional radii ensure isolation for every original indexed support.
   choose r hr hisolate hfrontier hother hincident using fun J : C.joints =>

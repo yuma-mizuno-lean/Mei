@@ -24,6 +24,8 @@ test paths in image complexes by their ambient vertex lists.
 
 public section
 
+open TauCeti (FinitePolyhedralComplex)
+
 open TauCeti (WallComplement AdmissiblePLPath)
 
 noncomputable section

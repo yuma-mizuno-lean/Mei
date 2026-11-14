@@ -26,6 +26,8 @@ The explicit formula through degree three uses
 
 public section
 
+open TauCeti.FreeLieAlgebra
+
 open scoped TensorProduct
 
 namespace Mei.FreeLieAlgebra

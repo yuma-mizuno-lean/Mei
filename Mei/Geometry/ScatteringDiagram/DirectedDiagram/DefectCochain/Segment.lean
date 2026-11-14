@@ -30,6 +30,8 @@ its central coefficient and exchanges the incident chambers.
 
 public section
 
+open TauCeti.FinitePolyhedralComplex (mem_cellsOfCodimension)
+
 open TauCeti (OrientedCell)
 
 open TauCeti (WallComplement)
@@ -209,8 +211,8 @@ theorem intersectionPairing_eq_log_defect_of_subsingleton_crossings
       (ha : z ∈ interior (A : Set V)) (hb : z ∈ interior (B : Set V)) : A = B := by
     apply Subtype.ext
     exact (D.adaptedComplex (k + 1)).eq_of_mem_intrinsicInterior
-      (((D.adaptedComplex (k + 1)).mem_cellsOfCodimension 0 _).mp A.property).1
-      (((D.adaptedComplex (k + 1)).mem_cellsOfCodimension 0 _).mp B.property).1
+      (mem_cellsOfCodimension.mp A.property).1
+      (mem_cellsOfCodimension.mp B.property).1
       (interior_subset_intrinsicInterior ha) (interior_subset_intrinsicInterior hb)
   rcases (crossings x y).eq_empty_or_nonempty with hempty | ⟨⟨W, s⟩, hWs⟩
   · obtain ⟨hyP, -, hpair, hprod⟩ :=

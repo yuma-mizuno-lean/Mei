@@ -25,6 +25,8 @@ The sheaf, its local equations and coefficient evaluation are the existing
 
 public section
 
+open TauCeti (FinitePolyhedralComplex)
+
 open TauCeti (WallComplement AdmissiblePLPath)
 
 open Set CategoryTheory TopologicalSpace Opposite TopCat Mei.Convex Filter Topology

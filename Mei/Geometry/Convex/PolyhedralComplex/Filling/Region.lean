@@ -31,11 +31,11 @@ public noncomputable section
 open Set Mei.Convex
 open scoped unitInterval
 
-namespace Mei.FinitePolyhedralComplex
+namespace TauCeti.FinitePolyhedralComplex
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
-  (C : FinitePolyhedralComplex h) (hC : C.support = univ)
+  (C : FinitePolyhedralComplex h) (hC : C.support = Set.univ)
   (ν : C.walls → V →ₗ[ℝ] ℝ)
   (hν : ∀ P, (ν P).ker = (affineSpan ℝ (P : Set V)).direction)
 
@@ -104,5 +104,4 @@ theorem map_crossingWord_routes_eq_of_filling
           φ (C.segmentCrossingWord ν (e₁ 0))) = 1 := by
     simpa only [mul_inv_rev, mul_assoc] using he
   exact (inv_mul_eq_one.mp he').symm
-
-end Mei.FinitePolyhedralComplex
+end TauCeti.FinitePolyhedralComplex

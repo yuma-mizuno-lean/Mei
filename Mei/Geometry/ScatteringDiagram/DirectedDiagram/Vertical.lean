@@ -32,6 +32,8 @@ open TauCeti (singularSupport exists_finite_singularSupport_cover)
 
 public noncomputable section
 
+open TauCeti (ExceptionalArrangement)
+
 open TauCeti (PositiveDegrees IsPositiveGrading)
 
 open TauCeti (DirectedWallSpaces)
@@ -56,7 +58,7 @@ endpoint is regular, and every wall whose affine span contains it is transverse 
 the vertical direction. The auxiliary real space can be any integral lattice model
 of the added coordinate. -/
 theorem exists_regular_vertical_points (k : ℕ) :
-    ∃ A : ExceptionalArrangement V, ∀ Q, A.IsGeneric Q →
+    ∃ A : ExceptionalArrangement ℝ V, ∀ Q, A.IsGeneric Q →
       (Q, (0 : E)) ∉ singularSupport (fun a : D.active k => (D.wall a).support) ∧
         ∀ a : D.active k, (Q, (0 : E)) ∈ affineSpan ℝ (D.wall a).support →
           (h.prod h').realCharacter (D.wall a).normal (0, j 1) ≠ 0 := by

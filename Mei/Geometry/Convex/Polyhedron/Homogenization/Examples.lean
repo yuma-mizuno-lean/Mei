@@ -19,6 +19,8 @@ homogenization, defined from the carrier, gives the origin in both cases.
 
 public section
 
+open TauCeti (homogeneousInequalityCone mem_homogeneousInequalityCone)
+
 open ContinuousAffineMap Set
 
 namespace Mei.Convex
@@ -52,9 +54,10 @@ theorem homogeneousInequalityCone_emptyConstantRow :
       {z | z.2 = 0} := by
   ext z
   simp only [SetLike.mem_coe, mem_homogeneousInequalityCone, Set.mem_ofPred_eq]
-  have hr : homogenizedInequality emptyConstantRow z = z.2 := by
+  have hr : homogenize emptyConstantRow z = z.2 := by
     rcases z with ⟨x, t⟩
-    rw [homogenizedInequality_apply, ← sub_zero x, ← vsub_eq_sub,
+    rw [homogenize_apply, smul_eq_mul, ContinuousAffineMap.coe_contLinear,
+      ← sub_zero x, ← vsub_eq_sub,
       AffineMap.linear_apply_vsub]
     simp [emptyConstantRow]
   simp only [hr, forall_const]
@@ -65,14 +68,16 @@ theorem homogeneousInequalityCone_emptyOpposedRows :
     homogeneousInequalityCone emptyOpposedRows = ⊥ := by
   ext z
   simp only [mem_homogeneousInequalityCone, Submodule.mem_bot]
-  have h₀ : homogenizedInequality (emptyOpposedRows false) z = z.1 := by
+  have h₀ : homogenize (emptyOpposedRows false) z = z.1 := by
     rcases z with ⟨x, t⟩
-    rw [homogenizedInequality_apply, ← sub_zero x, ← vsub_eq_sub,
+    rw [homogenize_apply, smul_eq_mul, ContinuousAffineMap.coe_contLinear,
+      ← sub_zero x, ← vsub_eq_sub,
       AffineMap.linear_apply_vsub]
     simp [emptyOpposedRows]
-  have h₁ : homogenizedInequality (emptyOpposedRows true) z = z.2 - z.1 := by
+  have h₁ : homogenize (emptyOpposedRows true) z = z.2 - z.1 := by
     rcases z with ⟨x, t⟩
-    rw [homogenizedInequality_apply, ← sub_zero x, ← vsub_eq_sub,
+    rw [homogenize_apply, smul_eq_mul, ContinuousAffineMap.coe_contLinear,
+      ← sub_zero x, ← vsub_eq_sub,
       AffineMap.linear_apply_vsub]
     simp [emptyOpposedRows, sub_eq_add_neg, add_comm]
   constructor

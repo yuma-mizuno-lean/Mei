@@ -29,13 +29,15 @@ wall generators is assumed.
 
 public section
 
+open TauCeti (FinitePolyhedralComplex)
+
 open TauCeti (WallComplement AdmissiblePLPath)
 
 noncomputable section
 
 open Set Mei.Convex
 
-namespace Mei.FinitePolyhedralComplex
+namespace TauCeti.FinitePolyhedralComplex
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
@@ -59,14 +61,12 @@ theorem mem_triangleWords (ν : C.walls → V →ₗ[ℝ] ℝ) (U : Set V)
         (e : x ⟶ y) (f : y ⟶ z) (r : z ⟶ x),
         x.val ∈ U ∧ y.val ∈ U ∧ z.val ∈ U ∧
           g = ((e.toPath.cons f).cons r).crossingWord ν := Iff.rfl
-
-end Mei.FinitePolyhedralComplex
-
+end TauCeti.FinitePolyhedralComplex
 namespace Quiver.Path
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
-  {C : Mei.FinitePolyhedralComplex h}
+  {C : TauCeti.FinitePolyhedralComplex h}
   {x : WallComplement (fun P : C.walls => (P : Set V))}
 
 /-- If every admissible triangle from one apex through two vertices of a

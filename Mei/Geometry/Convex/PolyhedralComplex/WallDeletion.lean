@@ -25,13 +25,15 @@ All maps retain the original affine chain.
 
 public section
 
+open TauCeti (FinitePolyhedralComplex)
+
 open TauCeti (WallComplement AdmissiblePLPath)
 
 noncomputable section
 
 open Mei.Convex
 
-namespace Mei.FinitePolyhedralComplex
+namespace TauCeti.FinitePolyhedralComplex
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
@@ -141,14 +143,12 @@ theorem segmentCrossingWord_restrict (ν : C.walls → V →ₗ[ℝ] ℝ) (e : x
   simpa only [D.segmentCrossingWord_def, C.segmentCrossingWord_def,
     orderedCrossings_restrict hW e, ← List.filterMap_reverse] using
       hl (C.orderedCrossings e).reverse
-
-end Mei.FinitePolyhedralComplex
-
+end TauCeti.FinitePolyhedralComplex
 namespace Quiver.Path
 
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
-  {C D : Mei.FinitePolyhedralComplex h}
+  {C D : TauCeti.FinitePolyhedralComplex h}
   {x y : WallComplement (fun P : C.walls => (P : Set V))}
 
 /-- Forgetting walls in an admissible polygonal path kills precisely their free-group
@@ -166,6 +166,6 @@ theorem crossingWord_restrict (p : AdmissiblePLPath x y) (hW : D.walls ⊆ C.wal
   | cons p e ih =>
     simp only [Prefunctor.mapPath_cons, crossingWord_cons (C := D),
       crossingWord_cons (C := C), map_mul, ih,
-      Mei.FinitePolyhedralComplex.segmentCrossingWord_restrict hW ν e]
+      TauCeti.FinitePolyhedralComplex.segmentCrossingWord_restrict hW ν e]
 
 end Quiver.Path

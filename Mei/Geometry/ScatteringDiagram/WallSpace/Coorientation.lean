@@ -6,7 +6,8 @@ Authors: Codex
 module
 
 public import Mei.Geometry.Convex.PolyhedralCochain.Coorientation
-public import Mei.Geometry.Convex.PolyhedralCochain.Sweep.Basic
+public import TauCeti.Geometry.Convex.PolyhedralCochain.Sweep.Basic
+public import Mei.Geometry.Convex.PolyhedralCochain.Basic
 public import TauCeti.Geometry.ScatteringDiagram.WallSpace.Basic
 
 /-!

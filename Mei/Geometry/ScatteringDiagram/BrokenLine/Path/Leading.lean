@@ -42,7 +42,7 @@ open TauCeti (singularSupport)
 
 public noncomputable section
 
-open TauCeti (PositiveDegrees IsPositiveGrading)
+open TauCeti (PositiveDegrees IsPositiveGrading ExceptionalArrangement)
 
 open Set Quiver Mei.Convex
 
@@ -457,7 +457,7 @@ theorem exists_pathDecoratedEvaluation_leadingArrangement [FiniteDimensional ℝ
       Module.finrank ℝ V)
     (hker : ∀ j, (f j).toLinearMap.ker = (affineSpan ℝ (W j)).direction)
     (hc : ∀ j x, x ∈ W j → f j x = c j) (v : Γ → V) :
-    ∃ A : ExceptionalArrangement V, ∀ Q, A.IsGeneric Q →
+    ∃ A : ExceptionalArrangement ℝ V, ∀ Q, A.IsGeneric Q →
       ∀ (T : WallEvent ι → Module.End R M),
         (∀ e y, y ∈ ℳ 0 → (DirectSum.decompose ℳ (T e y) 0 : M) = y) →
         (∀ e n m (y : M), y ∈ ℳ n →
@@ -509,7 +509,7 @@ theorem exists_pathDecoratedEvaluation_leadingArrangement_shiftedBCHAction
       Module.finrank ℝ V)
     (hker : ∀ j, (f j).toLinearMap.ker = (affineSpan ℝ (W j)).direction)
     (hc : ∀ j x, x ∈ W j → f j x = c j) (v : Γ → V) :
-    ∃ A : Mei.ExceptionalArrangement V, ∀ Q, A.IsGeneric Q → ∀ (k : ℕ)
+    ∃ A : TauCeti.ExceptionalArrangement ℝ V, ∀ Q, A.IsGeneric Q → ∀ (k : ℕ)
       (g : WallEvent ι → d.truncatedGroup ℒ k)
       (a : (d.shiftedQuotientGrading ℳ p k).piece 0)
       (s : Finset (Path (SingleObj.star (WallEvent ι)) (SingleObj.star (WallEvent ι)))),

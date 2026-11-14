@@ -35,6 +35,8 @@ anti-canonical class*, §3.2 (arXiv:1601.07081v4).
 
 public noncomputable section
 
+open TauCeti (ExceptionalArrangement)
+
 open TauCeti (IsRationalNormalPolyhedron IsRationalSemilinear)
 
 open Set Filter Topology Quiver Mei.Convex
@@ -80,7 +82,7 @@ complete types; no topology or continuity of these bijections is asserted. -/
 theorem exists_pathDecoratedRay_uniform_membershipArrangement
     (A : ∀ p : (s : Type _), Finset (p.val.Degrees ι))
     (hA : ∀ p d, d ∉ A p → (p.val.homogeneousHistory T ℳ d).comp input = 0) :
-    ∃ B : ExceptionalArrangement V,
+    ∃ B : ExceptionalArrangement ℝ V,
       (∀ p d, d ∈ A p → frontier (VD(p.val, d)) ⊆ {X | ¬ B.IsGeneric X}) ∧
       ∀ X, B.IsGeneric X → ∀ᶠ Y in 𝓝 X, ∀ z : E,
         ∃ e : Ray(z, X) ≃ Ray(z, Y),
@@ -113,7 +115,7 @@ include hν hP hW hS hC in
 at each generic endpoint for every input's complete actual ray fiber. -/
 theorem exists_pathDecoratedRay_uniform_membershipArrangement_of_fg
     (hα : (LinearMap.range α).FG) :
-    ∃ B : ExceptionalArrangement V,
+    ∃ B : ExceptionalArrangement ℝ V,
       ∀ X, B.IsGeneric X → ∀ᶠ Y in 𝓝 X, ∀ z : E,
         ∃ e : Ray(z, X) ≃ Ray(z, Y),
           ∀ r, (⟨(e r).1, (e r).2.1⟩ : Type(z)) = ⟨r.1, r.2.1⟩ := by
@@ -130,7 +132,7 @@ neighborhood are independent of the incoming parameter, including when some
 parameters kill branches or make distinct whole decorations cancel. -/
 theorem exists_pathDecoratedEvaluation_uniform_eventually_eq
     (hα : (LinearMap.range α).FG) :
-    ∃ B : ExceptionalArrangement V,
+    ∃ B : ExceptionalArrangement ℝ V,
       ∀ X, B.IsGeneric X → ∀ᶠ Y in 𝓝 X, ∀ z : E,
         pathDecoratedEvaluation T ℳ i₀ (α z) s vel ν ε c P W S C Y =
           pathDecoratedEvaluation T ℳ i₀ (α z) s vel ν ε c P W S C X := by

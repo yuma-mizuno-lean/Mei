@@ -5,7 +5,8 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.Convex.PolyhedralCochain.Sweep.Basic
+public import TauCeti.Geometry.Convex.PolyhedralCochain.Sweep.Basic
+public import Mei.Geometry.Convex.PolyhedralCochain.Basic
 public import TauCeti.Analysis.Convex.Sweep.Topology
 
 /-!
