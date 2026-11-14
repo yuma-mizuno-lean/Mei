@@ -8,7 +8,6 @@ module
 public import Mei.Geometry.Convex.PolyhedralCochain.Facet
 public import TauCeti.Geometry.Convex.PolyhedralCochain.Sweep.Basic
 public import Mei.Geometry.Convex.PolyhedralCochain.Basic
-public import Mei.LinearAlgebra.Alternating.Contraction
 public import Mei.Geometry.Convex.Sweep.Face
 
 /-!

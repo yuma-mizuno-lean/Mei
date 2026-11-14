@@ -7,7 +7,6 @@ module
 
 public import TauCeti.Geometry.Convex.PolyhedralCochain.Sweep.Basic
 public import Mei.Geometry.Convex.PolyhedralCochain.Basic
-public import Mei.LinearAlgebra.Alternating.Contraction
 public import TauCeti.Analysis.Convex.Sweep.Topology
 
 /-!
