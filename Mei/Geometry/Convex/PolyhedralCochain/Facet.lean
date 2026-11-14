@@ -5,6 +5,7 @@ Authors: Codex
 -/
 module
 
+public import TauCeti.LinearAlgebra.Alternating.Contraction
 public import Mei.Geometry.Convex.PolyhedralCochain.Basic
 public import Mei.Geometry.Convex.Polyhedron.Rational.Face
 public import Mei.Geometry.Convex.Polyhedron.Face.Cut

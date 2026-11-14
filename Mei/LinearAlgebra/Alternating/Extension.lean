@@ -5,7 +5,8 @@ Authors: Codex
 -/
 module
 
-public import Mei.LinearAlgebra.Alternating.Contraction
+public import TauCeti.LinearAlgebra.Alternating.Contraction
+public import Mathlib.LinearAlgebra.Alternating.Uncurry.Fin
 
 /-!
 # Extending conormal forms by a linear functional

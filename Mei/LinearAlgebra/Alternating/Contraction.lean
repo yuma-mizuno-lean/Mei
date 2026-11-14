@@ -5,7 +5,6 @@ Authors: Codex
 -/
 module
 
-public import TauCeti.LinearAlgebra.Alternating.Contraction
 public import Mathlib.LinearAlgebra.Alternating.Uncurry.Fin
 
 /-!
