@@ -13,10 +13,11 @@ public import Mei.Algebra.PositiveDegrees.Ray.Commensurable
 
 For a nonzero allowed degree `n`, consider completed labels, elements of the completed BCH group,
 whose logarithmic coefficients vanish off the positive multiples `(j + 1) • n`. Such a label lies
-in the completed subgroup of the supported ray through `n`. When rays are abelian
-(`IsAbelianRays`) and the degree lattice is free, two such labels for commensurable allowed degrees
-`n` and `n'` commute, as elements of the completed group of their common supported ray, although
-neither set of positive multiples need contain the other.
+in the completed subgroup of the supported ray through `n`. Completed exponentials of elements
+homogeneous of degree `n` are such labels (`logComponent_expToCompletion_eq_zero_of_mem`). When
+rays are abelian (`IsAbelianRays`) and the degree lattice is free, two such labels for
+commensurable allowed degrees `n` and `n'` commute, as elements of the completed group of their
+common supported ray, although neither set of positive multiples need contain the other.
 
 In particular, for `m ≠ 0` and nonzero `p`, `q` with `p • m` and `q • m` allowed, labels supported
 on the positive multiples of `p • m` commute with those supported on the positive multiples of
@@ -55,6 +56,15 @@ theorem mem_completedRaySubgroup_of_logComponent_eq_zero {w : SupportedRay d} {n
     g ∈ d.completedRaySubgroup ℒ w :=
   (d.mem_completedRaySubgroup_iff_logComponent ℒ w g).mpr fun m hm =>
     hg m fun j hj => hm (hj ▸ SupportedRay.succ_nsmul_mem_rayDegrees hn j)
+
+/-- The completed exponential of an element homogeneous of degree `n` has logarithmic
+coefficients vanishing off the positive multiples of `n`, since they vanish in every degree
+other than `n`. -/
+theorem logComponent_expToCompletion_eq_zero_of_mem {n : N} {x : L} (hx : x ∈ ℒ n) :
+    ∀ m, (∀ j : ℕ, (j + 1) • n ≠ m) → d.logComponent ℒ (d.expToCompletion ℒ x) m = 0 := by
+  intro m hm
+  rw [logComponent_expToCompletion]
+  exact Subtype.ext (DirectSum.decompose_of_mem_ne ℒ hx (by simpa using hm 0))
 
 /-- With abelian rays over a free degree lattice, let `n` be a nonzero allowed degree and `n'` an
 allowed degree with `p • n' = q • n` for nonzero `p`, `q`. Completed labels supported on the
