@@ -15,16 +15,48 @@ public import Mathlib.Data.Fin.Tuple.Basic
 public import Mathlib.RingTheory.Finiteness.Defs
 
 /-!
-# Regrading homogeneous histories along quiver paths
+# Homogeneous histories along quiver paths
 
-Tau Ceti supplies degree histories, homogeneous projections along a path and their finite
-expansion. Vertexwise linear intertwiners transport such histories along degree maps.
-Several source degrees can merge and cancel, so a target history is the sum of the images
-of its source refinements. Injective degree maps give componentwise transport and an
-injective final map reflects selected expansion identities.
+Let every vertex `q` of a quiver carry a module `M q` with an internal direct-sum
+decomposition `ℳ q : ι q → Submodule R (M q)`, and every arrow `e : b ⟶ c` a linear map
+`T e : M b → M c`. The modules and the degree types may differ from vertex to vertex.
+A path then has the composite `Quiver.Path.composeLinear T p` of its arrow maps.
 
-For a one-object quiver, degree histories of `Quiver.SingleObj.pathOfFn` identify with
-functions on the positions.
+A *degree history* of a path selects a degree in the target of each of its arrows
+(`Quiver.Path.Degrees`). Inserting the homogeneous projection to the selected degree
+after every arrow gives `Quiver.Path.homogeneousHistory`. It retains whole homogeneous
+decorations: a nonzero final value forces every intermediate decoration to be nonzero.
+
+Tau Ceti supplies the finite component expansion of transfer compositions between graded
+modules. This file develops regrading and transport of those histories.
+* For a fixed input only finitely many histories are nonzero, and they sum to the
+  composite; no finiteness of the degree types is needed.
+* Concatenation of paths composes finite sums of history pairs as well as individual
+  histories, and an arrow
+  carrying the identity selects a component of the previous decoration. The final
+  selection of a degree keeps a history of that terminal degree and kills the others.
+* Linear output maps preserve a uniformly supported expansion. Along a nonempty path,
+  restricting that sum to a last degree gives its terminal homogeneous component.
+* A finite set containing the contributing histories of every input in the range of a
+  linear map gives an identity of linear maps; finite generation of the input range is
+  a sufficient condition.
+* Vertexwise linear maps intertwining two arrow families and carrying homogeneous
+  pieces along degree maps preserve the expansion; homogeneity and injectivity are
+  needed only at targets of arrows. A target history is the sum of the images of the
+  source histories over it, where several source degrees may merge and cancel;
+  degree maps also commute with the decomposition of histories along concatenation;
+  injective degree maps give componentwise naturality. An injective final map reflects
+  selected linear-map identities from the target expansion to the source.
+
+In a one-object quiver, `Quiver.SingleObj.pathOfFn` turns a finite sequence of arrows
+into a path, and `Quiver.SingleObj.degreesPathOfFn` identifies its degree histories with
+functions on the positions. This recovers the single-module histories of
+`Mei.LinearAlgebra.GradedModule.History.Basic`.
+
+Paths are Mathlib's `Quiver.Path`; concatenation is `Quiver.Path.comp`, and the composite
+is Mathlib's `CategoryTheory.composePath` in semimodules. The finiteness
+and regrouping arguments use `DirectSum.sum_support_decompose`,
+`DirectSum.decompose_map_eq_sum` and Tau Ceti's `DirectSum.map_decompose_shift`.
 -/
 
 public noncomputable section

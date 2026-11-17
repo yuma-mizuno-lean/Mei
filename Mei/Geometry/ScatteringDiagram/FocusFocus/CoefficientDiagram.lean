@@ -7,7 +7,7 @@ module
 
 public import Mei.Geometry.ScatteringDiagram.FocusFocus.Diagram
 public import Mei.Geometry.ScatteringDiagram.FocusFocus.Reduction
-public import Mei.LinearAlgebra.GradedCorrespondence.Hom
+public import TauCeti.LinearAlgebra.GradedCorrespondence.Hom
 
 /-!
 # The focus-focus slab incidence tower

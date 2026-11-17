@@ -7,7 +7,7 @@ module
 
 public import Mei.Geometry.ScatteringDiagram.BrokenLine.SingleFace.Transfer
 public import Mei.Geometry.Convex.Sweep.Degeneration
-public import Mei.LinearAlgebra.GradedCorrespondence.Hom
+public import TauCeti.LinearAlgebra.GradedCorrespondence.Hom
 
 /-!
 # Coefficient comparison of single-face rays
