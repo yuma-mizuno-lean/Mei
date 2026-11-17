@@ -24,7 +24,7 @@ coefficients, real offsets, unbounded cells and lineality.
 
 The local input is
 `PolyhedralCochain.exists_ball_intersectionPairing_coboundaryPresentation_eq_sum_succAbove`.
-`FinitePolyhedralComplex.exists_isolating_ball` separates the joint tests, and
+`FinitePolyhedralComplex.exists_ball_inter_support_codimensionGE_eq` separates the joint tests, and
 `PolyhedralCochain.coboundary_eq_sum_mk_iff_isolating_pairings` assembles them.
 -/
 
@@ -76,14 +76,15 @@ theorem exists_radii_coboundary_eq_sum_mk_iff_edge_pairings
     exists_ball_intersectionPairing_coboundaryPresentation_eq_sum_succAbove (R := R)
       C f hf J.property (hq J)
   choose r hr _ hfront hother _ using fun J : C.joints =>
-    C.exists_isolating_ball J.property (hq J)
+    C.exists_ball_inter_support_codimensionGE_eq J.property (hq J)
   refine ⟨fun J => min (δ J) (r J), fun J => lt_min (hδ J) (hr J),
     fun s hqs hc hs hv c => ?_⟩
   have hsmall (J) : convexHull ℝ (range (s J).points) ⊆ Metric.ball (q J) (r J) :=
     (hs J).trans (Metric.ball_subset_ball (min_le_right _ _))
   have ho (J P : C.joints) (hne : P ≠ J) :
       Disjoint (convexHull ℝ (range (s J).points)) (P : Set V) :=
-    (hother J P P.property (Subtype.coe_ne_coe.mpr hne)).mono_left (hsmall J)
+    (hother J P (C.cellsOfCodimension_subset_cells_codimensionGE 2 P.property)
+      (Subtype.coe_ne_coe.mpr hne)).mono_left (hsmall J)
   have hm (J) : (convexHull ℝ (range (s J).points) ∩ (J : Set V)).Nonempty := by
     refine ⟨q J, ?_, intrinsicInterior_subset (hq J)⟩
     rw [(s J).convexHull_eq_closedInterior]
@@ -91,7 +92,9 @@ theorem exists_radii_coboundary_eq_sum_mk_iff_edge_pairings
   have ht (J) : (τ J).IsTransverseToCarrier (s J).points :=
     (τ J).isTransverse_of_isolating_simplex C (hτ J ▸ J.property) (s J) (hc J)
       ((hfront J).mono_left (hsmall J))
-      (fun P hP hne => (hother J P hP hne).mono_left (hsmall J))
+      (fun P hP hne =>
+        (hother J P (C.cellsOfCodimension_subset_cells_codimensionGE 2 hP) hne).mono_left
+          (hsmall J))
   rw [coboundary_eq_sum_mk_iff_isolating_pairings f hf τ hτ
     (fun J => (s J).points) ht hm ho c]
   apply forall_congr'

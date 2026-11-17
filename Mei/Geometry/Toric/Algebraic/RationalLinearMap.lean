@@ -5,7 +5,7 @@ Authors: Claude
 -/
 module
 
-public import Mei.Geometry.Toric.Algebraic.RationalFunctional
+public import TauCeti.Geometry.Toric.Algebraic.RationalFunctional
 public import Mei.LinearAlgebra.FreeModule.Int
 public import Mathlib.RingTheory.TensorProduct.IsBaseChangeFree
 
@@ -20,35 +20,18 @@ map `u : N → N'` for a positive integer `d` (`IsRationalLinearMap.exists_nsmul
 If `T` is injective on a subspace `U` cut out by finitely many integral characters, it has a
 rational left inverse on `U`: a rational real-linear map `B : V' → V` with `B (T v) = v` for
 `v ∈ U` (`IsRationalLinearMap.exists_leftInvOn`). The subspace may be all of `V`, and no
-condition on the ranks is needed. Rational multiples and differences of rational maps are
-rational.
+condition on the ranks is needed.
 -/
 
 public section
 
-open TauCeti.Toric (IsRationalFunctional IsRationalLinearMap isRationalLinearMap_iff)
-
 namespace TauCeti.Toric
-
-open TauCeti.Toric
 
 variable {N V N' V' : Type*} [AddCommGroup N] [AddCommGroup V] [Module ℝ V]
   [AddCommGroup N'] [AddCommGroup V'] [Module ℝ V'] {i : N →+ V} {i' : N' →+ V'}
   {h : IsIntegralLattice i} {h' : IsIntegralLattice i'}
 
 namespace IsRationalLinearMap
-
-/-- Rational multiples of rational linear maps are rational. -/
-theorem rat_smul {T : V →ₗ[ℝ] V'} (hT : IsRationalLinearMap h h' T) (q : ℚ) :
-    IsRationalLinearMap h h' ((q : ℝ) • T) :=
-  (isRationalLinearMap_iff h h' _).mpr fun f hf => by
-    simpa [LinearMap.comp_smul] using (hT.map_functional hf).rat_smul q
-
-/-- Differences of rational linear maps are rational. -/
-theorem sub {S T : V →ₗ[ℝ] V'} (hS : IsRationalLinearMap h h' S)
-    (hT : IsRationalLinearMap h h' T) : IsRationalLinearMap h h' (S - T) :=
-  (isRationalLinearMap_iff h h' _).mpr fun f hf => by
-    simpa [LinearMap.comp_sub] using (hS.map_functional hf).sub (hT.map_functional hf)
 
 /-- A rational linear map is a rational multiple of the real extension of an integral map: some
 positive integer multiple `d • T` extends an additive map `N →+ N'`. -/

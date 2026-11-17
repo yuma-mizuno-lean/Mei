@@ -31,6 +31,8 @@ All statements hold over a semiring and semimodule; no additive cancellation is 
 
 public noncomputable section
 
+open TauCeti (homogeneousComponent)
+
 namespace Mei
 
 variable {R M ι : Type*} [Semiring R] [AddCommMonoid M] [Module R M]

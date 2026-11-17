@@ -27,7 +27,7 @@ so its pairing is invariant under replacement by an equal cochain representative
 that is transverse to the same triangle.
 
 This assembles `FinitePolyhedralComplex.subset_of_mem_intrinsicInterior`,
-`FinitePolyhedralComplex.exists_isolating_ball`,
+`FinitePolyhedralComplex.exists_ball_inter_support_codimensionGE_eq`,
 `OrientedCell.exists_ball_sum_intersectionIndex_boundaryFacets_eq_sum_succAbove_of_facet`
 and `PolyhedralCochain.intersectionPairing_coboundaryPresentation_eq_sum_incident`.
 `PolyhedralCochain.isTransverse_coboundaryPresentation` supplies the boundary
@@ -146,12 +146,13 @@ theorem exists_ball_sum_incident_eq_sum_succAbove
           OrientedCell.intersectionPairing (R := R) (s.points ∘ m.succAbove) f := by
   obtain ⟨ε, hε, hstokes⟩ :=
     exists_ball_intersectionPairing_coboundaryPresentation_eq_sum_succAbove (R := R) C f hf hJ hq
-  obtain ⟨r, hr, _, hfront, hother, _⟩ := C.exists_isolating_ball hJ hq
+  obtain ⟨r, hr, _, hfront, hother, _⟩ := C.exists_ball_inter_support_codimensionGE_eq hJ hq
   refine ⟨min ε r, lt_min hε hr, fun s hqs hc hs hv => ?_⟩
   have hsε := hs.trans (Metric.ball_subset_ball (min_le_left ε r))
   have hsr := hs.trans (Metric.ball_subset_ball (min_le_right ε r))
   have ho : ∀ Q ∈ C.joints, Q ≠ J → Disjoint (convexHull ℝ (range s.points)) Q :=
-    fun Q hQ hne => (hother Q hQ hne).mono_left hsr
+    fun Q hQ hne =>
+      (hother Q (C.cellsOfCodimension_subset_cells_codimensionGE 2 hQ) hne).mono_left hsr
   refine ⟨isTransverse_coboundaryPresentation (R := R) C f hf s hc
     (hfront.mono_left hsr) ho, ?_⟩
   have hqHull : q ∈ convexHull ℝ (range s.points) := by

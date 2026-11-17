@@ -60,7 +60,7 @@ theorem exists_admissible_filling_grid_fixed_boundary (C : FinitePolyhedralCompl
       f (if a = 0 then 0 else 1, s) =
         AffineMap.lineMap (x (a, 0)).val (x (a, 1)).val (s : ℝ))
     (hA : range f ⊆ A)
-    (hnext : Disjoint (range f) (C.codimensionAtLeast 3).support)
+    (hnext : Disjoint (range f) (C.codimensionGE 3).support)
     (htrans : ∀ J ∈ C.joints, (range f ∩ J).Nonempty →
       Disjoint A.direction (affineSpan ℝ J).direction)
     {η : ℝ} (hη : 0 < η) :
@@ -85,7 +85,7 @@ theorem exists_admissible_filling_grid_fixed_boundary (C : FinitePolyhedralCompl
           (∀ w ∈ q.vertices, w.val ∈ Metric.ball θ r) →
             p.crossingWord ν = q.crossingWord ν) ∨
         ∃ J ∈ C.joints, θ ∈ intrinsicInterior ℝ J ∧
-          Metric.ball θ r ∩ ((A : Set V) ∩ (C.codimensionAtLeast 2).support) = {θ} ∧
+          Metric.ball θ r ∩ ((A : Set V) ∩ (C.codimensionGE 2).support) = {θ} ∧
           ∀ Q ∈ C.cells, (Metric.ball θ r ∩ Q).Nonempty → J ⊆ Q) := by
   have := h.finiteDimensional
   choose r hr hlocal using fun θ : range f =>

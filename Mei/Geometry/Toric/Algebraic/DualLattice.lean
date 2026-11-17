@@ -9,7 +9,7 @@ public import TauCeti.Geometry.Toric.Algebraic.Lattice.Dual
 public import Mathlib.LinearAlgebra.Dual.Lemmas
 public import Mathlib.Analysis.Normed.Module.FiniteDimension
 public import Mathlib.Analysis.Normed.Module.HahnBanach
-public import Mei.Geometry.Toric.Algebraic.RationalFunctional
+public import TauCeti.Geometry.Toric.Algebraic.RationalFunctional
 
 /-!
 # The integral dual lattice

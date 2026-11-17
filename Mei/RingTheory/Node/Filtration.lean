@@ -8,7 +8,7 @@ module
 public import Mei.RingTheory.Node.Tangential
 public import Mei.Algebra.MonoidAlgebra.Ideal
 public import Mei.Algebra.MonoidAlgebra.Filtration.Coefficient
-public import Mei.Algebra.DirectSum.Component
+public import TauCeti.Algebra.DirectSum.Component
 public import Mathlib.Algebra.BigOperators.Fin
 
 /-!

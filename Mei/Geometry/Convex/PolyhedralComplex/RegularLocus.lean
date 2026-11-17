@@ -56,7 +56,7 @@ theorem exists_mem_cellsOfCodimension_zero (hC : C.support = Set.univ) (x : V) :
 /-- In an ambient complex, the walls cover the entire positive-codimension
 skeleton, including cells of smaller dimension. -/
 theorem support_codimensionAtLeast_one_eq_iUnion_walls (hC : C.support = Set.univ) :
-    (C.codimensionAtLeast 1).support = ⋃ W : C.walls, (W : Set V) := by
+    (C.codimensionGE 1).support = ⋃ W : C.walls, (W : Set V) := by
   apply Subset.antisymm
   · intro x hx
     obtain ⟨P, hP, hxP⟩ := C.exists_mem_cellsOfCodimension_zero hC x
@@ -72,26 +72,26 @@ theorem support_codimensionAtLeast_one_eq_iUnion_walls (hC : C.support = Set.uni
   · intro x hx
     obtain ⟨W, hxW⟩ := mem_iUnion.mp hx
     exact mem_support.mpr
-      ⟨W, C.cellsOfCodimension_subset_codimensionAtLeast_cells 1 W.property, hxW⟩
+      ⟨W, C.cellsOfCodimension_subset_cells_codimensionGE 1 W.property, hxW⟩
 
 /-- For a finite complex covering the ambient space, wall singular support is
 precisely the skeleton of codimension at least two. The equality includes lower
 strata even when several walls have the same supporting hyperplane. -/
 theorem singularSupport_walls_eq_support_codimensionAtLeast_two (hC : C.support = Set.univ) :
     singularSupport (fun W : C.walls => (W : Set V)) =
-      (C.codimensionAtLeast 2).support := by
+      (C.codimensionGE 2).support := by
   have := h.finiteDimensional
   apply Subset.antisymm C.singularSupport_walls_subset_support_codimensionAtLeast
   intro x hx
   by_contra hregular
-  have hxone : x ∈ (C.codimensionAtLeast 1).support := by
+  have hxone : x ∈ (C.codimensionGE 1).support := by
     obtain ⟨P, hP, hxP⟩ := mem_support.mp hx
     exact mem_support.mpr
-      ⟨P, C.codimensionAtLeast_cells_antitone (by omega : 1 ≤ 2) hP, hxP⟩
+      ⟨P, C.cells_codimensionGE_antitone (by omega : 1 ≤ 2) hP, hxP⟩
   rw [C.support_codimensionAtLeast_one_eq_iUnion_walls hC] at hxone
   obtain ⟨W, hxW⟩ := mem_iUnion.mp hxone
   obtain ⟨P, hP, hxP⟩ := mem_support.mp hx
-  obtain ⟨hPC, hdimP⟩ := (C.mem_codimensionAtLeast_cells 2 P).mp hP
+  obtain ⟨hPC, hdimP⟩ := FinitePolyhedralComplex.mem_cells_codimensionGE.mp hP
   -- Common-face incidence prevents a regular interior point of a wall from
   -- also lying in a cell of smaller dimension.
   have hWP := C.subset_of_mem_intrinsicInterior (C.mem_cells_of_mem_walls W.property)
@@ -106,7 +106,7 @@ polygonal cone fillings, without perturbing those edges. -/
 theorem disjoint_segment_support_codimensionAtLeast (hC : C.support = Set.univ)
     {x y : WallComplement (fun W : C.walls => (W : Set V))}
     (e : x ⟶ y) {k : ℕ} (hk : 2 ≤ k) :
-    Disjoint (segment ℝ x.val y.val) (C.codimensionAtLeast k).support := by
+    Disjoint (segment ℝ x.val y.val) (C.codimensionGE k).support := by
   apply disjoint_left.mpr
   intro z hz hzk
   rw [segment_eq_image_lineMap] at hz
@@ -114,7 +114,7 @@ theorem disjoint_segment_support_codimensionAtLeast (hC : C.support = Set.univ)
   apply e.down.regular t ht
   rw [C.singularSupport_walls_eq_support_codimensionAtLeast_two hC]
   obtain ⟨P, hP, hzP⟩ := mem_support.mp hzk
-  exact mem_support.mpr ⟨P, C.codimensionAtLeast_cells_antitone hk hP, hzP⟩
+  exact mem_support.mpr ⟨P, C.cells_codimensionGE_antitone hk hP, hzP⟩
 
 /-- The open locus obtained by removing wall boundaries and joints. -/
 abbrev regularLocus : Set V :=

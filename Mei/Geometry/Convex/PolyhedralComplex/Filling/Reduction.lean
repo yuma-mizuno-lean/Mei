@@ -53,7 +53,7 @@ def transverseTriangleWords (ν : C.walls → V →ₗ[ℝ] ℝ) (U : Set V) :
   {g | ∃ (x y z : WallComplement (fun P : C.walls => (P : Set V)))
     (e : x ⟶ y) (f : y ⟶ z) (r : z ⟶ x),
     x.val ∈ U ∧ y.val ∈ U ∧ z.val ∈ U ∧
-    Disjoint (convexHull ℝ {x.val, y.val, z.val}) (C.codimensionAtLeast 3).support ∧
+    Disjoint (convexHull ℝ {x.val, y.val, z.val}) (C.codimensionGE 3).support ∧
     (∀ J ∈ C.joints, (convexHull ℝ {x.val, y.val, z.val} ∩ J).Nonempty →
       IsCompl (affineSpan ℝ J).direction (vectorSpan ℝ {x.val, y.val, z.val})) ∧
     g = ((e.toPath.cons f).cons r).crossingWord ν}
@@ -67,7 +67,7 @@ theorem mem_transverseTriangleWords (ν : C.walls → V →ₗ[ℝ] ℝ) (U : Se
       ∃ (x y z : WallComplement (fun P : C.walls => (P : Set V)))
         (e : x ⟶ y) (f : y ⟶ z) (r : z ⟶ x),
         x.val ∈ U ∧ y.val ∈ U ∧ z.val ∈ U ∧
-        Disjoint (convexHull ℝ {x.val, y.val, z.val}) (C.codimensionAtLeast 3).support ∧
+        Disjoint (convexHull ℝ {x.val, y.val, z.val}) (C.codimensionGE 3).support ∧
         (∀ J ∈ C.joints, (convexHull ℝ {x.val, y.val, z.val} ∩ J).Nonempty →
           IsCompl (affineSpan ℝ J).direction (vectorSpan ℝ {x.val, y.val, z.val})) ∧
         g = ((e.toPath.cons f).cons r).crossingWord ν := Iff.rfl

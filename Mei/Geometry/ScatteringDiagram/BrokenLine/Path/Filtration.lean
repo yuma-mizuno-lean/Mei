@@ -47,6 +47,8 @@ Carl–Pumperla–Siebert, *A tropical view on Landau–Ginzburg models*, §4
 
 public noncomputable section
 
+open TauCeti (homogeneousComponent)
+
 open TauCeti (IsLocallyClosedPolyhedron IsRationalNormalPolyhedron IsRationalSemilinear)
 
 open Set Filter Quiver Mei.Convex

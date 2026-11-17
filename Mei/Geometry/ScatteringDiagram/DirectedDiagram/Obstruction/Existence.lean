@@ -92,7 +92,7 @@ theorem exists_chamber_trivialization {k : ℕ} (hk : D.LevelConsistent k)
         IsCompl (affineSpan ℝ (J : Set V)).direction (vectorSpan ℝ (range (s J).points)) ∧
         convexHull ℝ (range (s J).points) ⊆ Metric.ball (s J).centroid (ε J) ∧
         convexHull ℝ (range (s J).points) ∩
-          ((D.adaptedComplex (k + 1)).codimensionAtLeast 2).support = {(s J).centroid} ∧
+          ((D.adaptedComplex (k + 1)).codimensionGE 2).support = {(s J).centroid} ∧
         Disjoint (convexHull ℝ (range (s J).points)) (intrinsicFrontier ℝ (J : Set V)) ∧
         (∀ Q ∈ (D.adaptedComplex (k + 1)).joints, Q ≠ (J : Set V) →
           Disjoint (convexHull ℝ (range (s J).points)) Q) ∧
@@ -127,7 +127,7 @@ theorem exists_chamber_trivialization {k : ℕ} (hk : D.LevelConsistent k)
   choose q hq using hcenter
   -- These additional radii ensure isolation for every original indexed support.
   choose r hr hisolate hfrontier hother hincident using fun J : C.joints =>
-    C.exists_isolating_ball J.property (hq J)
+    C.exists_ball_inter_support_codimensionGE_eq J.property (hq J)
   obtain ⟨s, x, γ, hs, he⟩ := exists_jointObstructionCochain_eq_coboundary
     σ hσ cross hk b t ht τ hτ q hq (fun J => min (ε J) (r J))
       (fun J => lt_min (hε J) (hr J))

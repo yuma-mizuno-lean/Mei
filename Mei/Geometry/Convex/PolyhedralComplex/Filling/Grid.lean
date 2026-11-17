@@ -52,7 +52,7 @@ theorem exists_subordinate_filling_grid (C : FinitePolyhedralComplex h)
     (hν : ∀ P, (ν P).ker = (affineSpan ℝ (P : Set V)).direction)
     (A : AffineSubspace ℝ V) (f : C(↥unitInterval × ↥unitInterval, V))
     (hA : range f ⊆ A)
-    (hnext : Disjoint (range f) (C.codimensionAtLeast 3).support)
+    (hnext : Disjoint (range f) (C.codimensionGE 3).support)
     (htrans : ∀ J ∈ C.joints, (range f ∩ J).Nonempty →
         Disjoint A.direction (affineSpan ℝ J).direction) :
     ∃ (n : ℕ) (t : ℕ → unitInterval), 0 < n ∧ t 0 = 0 ∧ Monotone t ∧ t n = 1 ∧
@@ -69,7 +69,7 @@ theorem exists_subordinate_filling_grid (C : FinitePolyhedralComplex h)
             (∀ z ∈ q.vertices, z.val ∈ Metric.ball θ r) →
               p.crossingWord ν = q.crossingWord ν) ∨
           ∃ J ∈ C.joints, θ ∈ intrinsicInterior ℝ J ∧
-            Metric.ball θ r ∩ ((A : Set V) ∩ (C.codimensionAtLeast 2).support) = {θ} ∧
+            Metric.ball θ r ∩ ((A : Set V) ∩ (C.codimensionGE 2).support) = {θ} ∧
             ∀ Q ∈ C.cells, (Metric.ball θ r ∩ Q).Nonempty → J ⊆ Q) := by
   classical
   let S := range f
@@ -81,9 +81,9 @@ theorem exists_subordinate_filling_grid (C : FinitePolyhedralComplex h)
         (∀ z ∈ q.vertices, z.val ∈ Metric.ball θ.val r) →
           p.crossingWord ν = q.crossingWord ν) ∨
       ∃ J ∈ C.joints, θ.val ∈ intrinsicInterior ℝ J ∧
-        Metric.ball θ.val r ∩ ((A : Set V) ∩ (C.codimensionAtLeast 2).support) = {θ.val} ∧
+        Metric.ball θ.val r ∩ ((A : Set V) ∩ (C.codimensionGE 2).support) = {θ.val} ∧
         ∀ Q ∈ C.cells, (Metric.ball θ.val r ∩ Q).Nonempty → J ⊆ Q := by
-    by_cases hθ : θ.val ∈ (C.codimensionAtLeast 2).support
+    by_cases hθ : θ.val ∈ (C.codimensionGE 2).support
     · obtain ⟨J, hJ, _⟩ := C.existsUnique_mem_cellsOfCodimension_of_notMem_succ hθ
         (hnext.notMem_of_mem_left θ.property)
       obtain ⟨r, hr, heq, hinc⟩ := C.exists_ball_inter_slice_support_eq_singleton A

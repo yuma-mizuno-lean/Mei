@@ -20,7 +20,7 @@ each cell of a complex represents zero exactly when all its coefficients vanish.
 The conclusion concerns equality in polyhedral cochains, including all subdivision
 relations, rather than equality of formal presentations.
 
-The tests use `FinitePolyhedralComplex.exists_isolating_ball`,
+The tests use `FinitePolyhedralComplex.exists_ball_inter_support_codimensionGE_eq`,
 `AffineSubspace.exists_small_transverse_simplex` and
 `Affine.Simplex.conormal_apply_ne_zero`. Detection uses the representative
 invariance of `OrientedCell.intersectionPairing`. This lets geometric cochain
@@ -61,7 +61,7 @@ theorem exists_isolating_transverse_test (σ : OrientedCell h k)
       ∀ Q ∈ C.cellsOfCodimension k, Q ≠ σ.carrier →
         Disjoint (convexHull ℝ (range s.points)) Q := by
   have := h.finiteDimensional
-  obtain ⟨r, hr, _, hfront, hother, _⟩ := C.exists_isolating_ball
+  obtain ⟨r, hr, _, hfront, hother, _⟩ := C.exists_ball_inter_support_codimensionGE_eq
     (mem_cellsOfCodimension.mpr ⟨hσ, σ.finrank_direction_add⟩) hp
   obtain ⟨s, hcompl, hball, hinter, hpint⟩ :=
     (affineSpan ℝ σ.carrier).exists_small_transverse_simplex σ.finrank_quotient_direction
@@ -70,7 +70,8 @@ theorem exists_isolating_transverse_test (σ : OrientedCell h k)
     hball.trans (Metric.ball_subset_ball (min_le_left _ _))
   refine ⟨s, σ.isTransverseToCarrier_of_isCompl s hcompl (hfront.mono_left hsmall),
     hball.trans (Metric.ball_subset_ball (min_le_right _ _)), ?_, hpint,
-    fun Q hQ hne => (hother Q hQ hne).mono_left hsmall⟩
+    fun Q hQ hne =>
+      (hother Q (C.cellsOfCodimension_subset_cells_codimensionGE k hQ) hne).mono_left hsmall⟩
   apply Set.Subset.antisymm
   · exact (inter_subset_inter_right _ (subset_affineSpan ℝ _)).trans hinter.le
   · rintro y (rfl : y = p)

@@ -90,7 +90,7 @@ theorem exists_joint_meridian_loopObstruction_eq_boundaryPairing
       IsCompl (affineSpan ℝ (J : Set V)).direction (vectorSpan ℝ (range s.points)) ∧
       convexHull ℝ (range s.points) ⊆ Metric.ball q ε ∧
       convexHull ℝ (range s.points) ∩
-        ((D.adaptedComplex (k + 1)).codimensionAtLeast 2).support = {q} ∧
+        ((D.adaptedComplex (k + 1)).codimensionGE 2).support = {q} ∧
       (∀ τ ∈ (PolyhedralCochain.coboundaryPresentation (R := R) f).support,
         τ.IsTransverseToCarrier s.points) ∧
       D.loopObstruction hk ((D.adaptedPathPrefunctor (k + 1)).mapPath p) =
@@ -135,14 +135,15 @@ theorem exists_joint_meridian_loopObstruction_eq_boundaryPairing
   have hx0 : x.val = s.points 0 := by
     have he := congrArg List.head? hvertices
     simpa using he
-  have hxskel : x.val ∉ (C.codimensionAtLeast 1).support := by
+  have hxskel : x.val ∉ (C.codimensionGE 1).support := by
     intro hx
     obtain ⟨Q, hQ, hxQ⟩ := FinitePolyhedralComplex.mem_support.mp hx
-    obtain ⟨hQC, hdQ⟩ := (C.mem_codimensionAtLeast_cells 1 Q).mp hQ
+    obtain ⟨hQC, hdQ⟩ := FinitePolyhedralComplex.mem_cells_codimensionGE.mp hQ
     by_cases hdim : Module.finrank ℝ (affineSpan ℝ Q).direction + 1 = Module.finrank ℝ V
     · exact x.notMem ⟨Q, mem_cellsOfCodimension.mpr ⟨hQC, hdim⟩⟩ hxQ
-    · have hx2 : x.val ∈ (C.codimensionAtLeast 2).support :=
-        FinitePolyhedralComplex.mem_support.mpr ⟨Q, (C.mem_codimensionAtLeast_cells 2 Q).mpr
+    · have hx2 : x.val ∈ (C.codimensionGE 2).support :=
+        FinitePolyhedralComplex.mem_support.mpr
+          ⟨Q, FinitePolyhedralComplex.mem_cells_codimensionGE.mpr
           ⟨hQC, by omega⟩, hxQ⟩
       have he : x.val = q := Set.mem_singleton_iff.mp (hskeleton ▸
         ⟨hx0 ▸ subset_convexHull ℝ _ (mem_range_self 0), hx2⟩)

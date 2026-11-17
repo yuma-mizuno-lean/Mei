@@ -19,7 +19,7 @@ on the coarse relative boundary in the total signed boundary.
 
 The construction applies to an oriented subdivision whose pieces are cells of
 one finite complex, including subdivisions of lower-dimensional cells. It uses
-`FinitePolyhedralComplex.eventually_subset_of_mem_cell` to recover incidence
+`FinitePolyhedralComplex.eventually_subset_of_mem_intrinsicInterior` to recover incidence
 from a short ray across the facet, and
 `FinitePolyhedralComplex.eq_reverse_of_mem_boundaryFacets` to determine its sign.
 Mathlib's exposed-face maximizers and relative-interior segment theorem provide
@@ -87,7 +87,7 @@ theorem existsUnique_reverse_mem_boundaryFacets
   have hυC : υ.carrier ∈ C.cells := by
     rw [hFc]
     exact C.face_closed τ.carrier (hQC τ hτ) F (isPolyhedralFace_iff.mpr ⟨hFn, hF⟩)
-  have hinc := hf.eventually (C.eventually_subset_of_mem_cell hυC hqυ)
+  have hinc := hf.eventually (C.eventually_subset_of_mem_intrinsicInterior hυC hqυ)
   -- A short outward ray remains inside the coarse cell. Its containing piece
   -- is distinct from the original one and contains the entire facet.
   have hpos : ∀ᶠ t : ℝ in 𝓝[>] 0, 0 < t := self_mem_nhdsWithin

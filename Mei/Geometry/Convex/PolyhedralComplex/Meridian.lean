@@ -61,7 +61,7 @@ theorem exists_isolating_joint_triangle (C : FinitePolyhedralComplex h) {J : Set
       γ.vertices.map WallComplement.val = [s.points 0, s.points 1, s.points 2, s.points 0] ∧
       IsCompl (affineSpan ℝ J).direction (vectorSpan ℝ (range s.points)) ∧
       convexHull ℝ (range s.points) ⊆ Metric.ball p ε ∧
-      convexHull ℝ (range s.points) ∩ (C.codimensionAtLeast 2).support = {p} ∧
+      convexHull ℝ (range s.points) ∩ (C.codimensionGE 2).support = {p} ∧
       Disjoint (convexHull ℝ (range s.points)) (intrinsicFrontier ℝ J) ∧
       (∀ Q ∈ C.joints, Q ≠ J → Disjoint (convexHull ℝ (range s.points)) Q) ∧
       (∀ Q ∈ C.cells, (convexHull ℝ (range s.points) ∩ Q).Nonempty → J ⊆ Q) ∧
@@ -110,7 +110,7 @@ theorem exists_isolating_joint_triangle (C : FinitePolyhedralComplex h) {J : Set
       have heq := Set.mem_singleton_iff.mp hy
       subst y
       exact ⟨hcenter, mem_support.mpr ⟨J,
-        C.cellsOfCodimension_subset_codimensionAtLeast_cells 2 hJ,
+        C.cellsOfCodimension_subset_cells_codimensionGE 2 hJ,
         intrinsicInterior_subset hp⟩⟩
   · exact fun Q hQ hne => (hother Q hQ hne).mono_left hfillball
   · rintro Q hQ ⟨y, hy, hyQ⟩
@@ -136,7 +136,7 @@ theorem exists_positive_isolating_joint_triangle (C : FinitePolyhedralComplex h)
       γ.vertices.map WallComplement.val = [s.points 0, s.points 1, s.points 2, s.points 0] ∧
       IsCompl (affineSpan ℝ J).direction (vectorSpan ℝ (range s.points)) ∧
       convexHull ℝ (range s.points) ⊆ Metric.ball p ε ∧
-      convexHull ℝ (range s.points) ∩ (C.codimensionAtLeast 2).support = {p} ∧
+      convexHull ℝ (range s.points) ∩ (C.codimensionGE 2).support = {p} ∧
       Disjoint (convexHull ℝ (range s.points)) (intrinsicFrontier ℝ J) ∧
       (∀ Q ∈ C.joints, Q ≠ J → Disjoint (convexHull ℝ (range s.points)) Q) ∧
       (∀ Q ∈ C.cells, (convexHull ℝ (range s.points) ∩ Q).Nonempty → J ⊆ Q) ∧

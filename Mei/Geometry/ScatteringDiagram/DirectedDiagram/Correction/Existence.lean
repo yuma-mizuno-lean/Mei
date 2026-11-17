@@ -94,7 +94,7 @@ theorem exists_joint_correction_boundary
         IsCompl (affineSpan ℝ (J : Set V)).direction (vectorSpan ℝ (range (s J).points)) ∧
         convexHull ℝ (range (s J).points) ⊆ Metric.ball (q J) (ε J) ∧
         convexHull ℝ (range (s J).points) ∩
-          ((D.adaptedComplex (k + 1)).codimensionAtLeast 2).support = {q J} ∧
+          ((D.adaptedComplex (k + 1)).codimensionGE 2).support = {q J} ∧
         Disjoint (convexHull ℝ (range (s J).points)) (intrinsicFrontier ℝ (J : Set V)) ∧
         ∀ Q ∈ (D.adaptedComplex (k + 1)).joints, Q ≠ (J : Set V) →
           Disjoint (convexHull ℝ (range (s J).points)) Q) ∧

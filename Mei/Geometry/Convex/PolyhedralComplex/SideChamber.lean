@@ -22,7 +22,8 @@ velocity, runs from the negative to the positive chamber of that wall.
 Chambers are the connected components of the wall complement
 (`TauCeti.WallComplement.Chamber`), so no covering hypothesis on the complex is
 needed, and the two chambers of a wall may coincide. Near a relative interior point, a
-ball meets no other wall (`FinitePolyhedralComplex.exists_isolating_ball`); its open
+ball meets no other wall by `FinitePolyhedralComplex.exists_ball_inter_support_codimensionGE_eq`.
+Its open
 half on the positive side is convex and avoids every wall. Overlapping half-balls along
 the preconnected relative interior give one chamber. When the complex covers a
 neighborhood of the wall, the full cells of

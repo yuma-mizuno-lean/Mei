@@ -29,6 +29,8 @@ incoming history, ring structure, cancellation or freeness assumption is used.
 
 public noncomputable section
 
+open TauCeti (homogeneousComponent homogeneousComponent_mem)
+
 namespace Mei
 
 /-- A chamber together with one of its homogeneous degrees. -/

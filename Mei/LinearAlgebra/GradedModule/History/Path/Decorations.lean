@@ -82,9 +82,9 @@ the recorded outgoing degree. -/
 theorem reverseHomogeneousDecorations_propagation (i₀ : ι) (x : M) {b : Q} (p : Path a b)
     (d : p.Degrees (fun _ => ι)) (j : Fin p.length) :
     p.reverseHomogeneousDecorations T ℳ i₀ x d j.castSucc =
-      Mei.homogeneousComponent ℳ (Degrees.reverseVertexLabels (fun _ i => i) i₀ p d j.castSucc)
+      TauCeti.homogeneousComponent ℳ (Degrees.reverseVertexLabels (fun _ i => i) i₀ p d j.castSucc)
         (p.reverseArrowLabels T j (p.reverseHomogeneousDecorations T ℳ i₀ x d j.succ)) := by
-  simp only [reverseHomogeneousDecorations, Mei.homogeneousComponent_apply]
+  simp only [reverseHomogeneousDecorations, TauCeti.homogeneousComponent_apply]
   exact Mei.homogeneousHistoryStage_castSucc_apply ℳ (p.reverseArrowLabels T)
     (Fin.init (Degrees.reverseVertexLabels (fun _ i => i) i₀ p d)) j x
 

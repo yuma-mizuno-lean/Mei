@@ -51,7 +51,7 @@ theorem exists_ball_crossingWord_eq_or_isolating_joint (C : FinitePolyhedralComp
     (ν : C.walls → V →ₗ[ℝ] ℝ)
     (hν : ∀ P, (ν P).ker = (affineSpan ℝ (P : Set V)).direction)
     (A : AffineSubspace ℝ V) {x : V} (hxA : x ∈ A)
-    (hnext : x ∉ (C.codimensionAtLeast 3).support)
+    (hnext : x ∉ (C.codimensionGE 3).support)
     (htrans : ∀ J ∈ C.joints, x ∈ J →
       Disjoint A.direction (affineSpan ℝ J).direction) :
     ∃ r > 0,
@@ -60,9 +60,9 @@ theorem exists_ball_crossingWord_eq_or_isolating_joint (C : FinitePolyhedralComp
         (∀ w ∈ p.vertices, w.val ∈ ball x r) →
         (∀ w ∈ q.vertices, w.val ∈ ball x r) → p.crossingWord ν = q.crossingWord ν) ∨
       ∃ J ∈ C.joints, x ∈ intrinsicInterior ℝ J ∧
-        ball x r ∩ ((A : Set V) ∩ (C.codimensionAtLeast 2).support) = {x} ∧
+        ball x r ∩ ((A : Set V) ∩ (C.codimensionGE 2).support) = {x} ∧
         ∀ Q ∈ C.cells, (ball x r ∩ Q).Nonempty → J ⊆ Q := by
-  by_cases hx : x ∈ (C.codimensionAtLeast 2).support
+  by_cases hx : x ∈ (C.codimensionGE 2).support
   · obtain ⟨J, ⟨hJ, hxJ⟩, _⟩ :=
       C.existsUnique_mem_cellsOfCodimension_of_notMem_succ hx hnext
     obtain ⟨r, hr, hisolate, hincident⟩ := C.exists_ball_inter_slice_support_eq_singleton
@@ -84,7 +84,7 @@ theorem exists_square_mesh_regular_or_isolating_joint (C : FinitePolyhedralCompl
     (A : AffineSubspace ℝ V)
     (hA : H '' (Icc (0 : ℝ) 1 ×ˢ Icc (0 : ℝ) 1) ⊆ A)
     (hnext : Disjoint (H '' (Icc (0 : ℝ) 1 ×ˢ Icc (0 : ℝ) 1))
-      (C.codimensionAtLeast 3).support)
+      (C.codimensionGE 3).support)
     (htrans : ∀ J ∈ C.joints,
       (H '' (Icc (0 : ℝ) 1 ×ˢ Icc (0 : ℝ) 1) ∩ J).Nonempty →
         Disjoint A.direction (affineSpan ℝ J).direction) :
@@ -98,7 +98,7 @@ theorem exists_square_mesh_regular_or_isolating_joint (C : FinitePolyhedralCompl
           (∀ w ∈ p.vertices, w.val ∈ ball x r) →
           (∀ w ∈ q.vertices, w.val ∈ ball x r) → p.crossingWord ν = q.crossingWord ν) ∨
         ∃ J ∈ C.joints, x ∈ intrinsicInterior ℝ J ∧
-          ball x r ∩ ((A : Set V) ∩ (C.codimensionAtLeast 2).support) = {x} ∧
+          ball x r ∩ ((A : Set V) ∩ (C.codimensionGE 2).support) = {x} ∧
           ∀ Q ∈ C.cells, (ball x r ∩ Q).Nonempty → J ⊆ Q) := by
   classical
   let S := H '' (Icc (0 : ℝ) 1 ×ˢ Icc (0 : ℝ) 1)

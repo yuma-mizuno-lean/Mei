@@ -28,7 +28,7 @@ outer boundary with a prescribed original polygon is a separate step.
 This combines `ContinuousMap.exists_grid_subdivision_convexHull`,
 `FinitePolyhedralComplex.exists_admissible_grid_perturbation`, and
 `FinitePolyhedralComplex.crossingWord_grid_boundary_mem_normalClosure`.
-Local balls come from `FinitePolyhedralComplex.exists_isolating_ball` and
+Local balls come from `FinitePolyhedralComplex.exists_ball_inter_support_codimensionGE_eq` and
 `FinitePolyhedralComplex.exists_ball_crossingWord_eq`. The inverses in the boundary formula
 implement the convention that the first crossing acts on the right.
 -/
@@ -81,7 +81,7 @@ theorem exists_filling_grid_boundary_mem_normalClosure_jointNeighborhoodWords
     (C : FinitePolyhedralComplex h) (ν : C.walls → V →ₗ[ℝ] ℝ)
     (hν : ∀ P, (ν P).ker = (affineSpan ℝ (P : Set V)).direction)
     (f : C(↥unitInterval × ↥unitInterval, V))
-    (hnext : Disjoint (range f) (C.codimensionAtLeast 3).support)
+    (hnext : Disjoint (range f) (C.codimensionGE 3).support)
     (hbase : ∀ P : C.walls, f (0, 0) ∉ (P : Set V))
     {η : ℝ} (hη : 0 < η) :
     ∃ (n : ℕ) (t : ℕ → unitInterval), 0 < n ∧ t 0 = 0 ∧ Monotone t ∧ t n = 1 ∧
@@ -109,10 +109,10 @@ theorem exists_filling_grid_boundary_mem_normalClosure_jointNeighborhoodWords
           p.crossingWord ν = q.crossingWord ν) ∨
       ∃ J ∈ C.joints, θ.val ∈ intrinsicInterior ℝ J ∧
         ∀ Q ∈ C.cells, (Metric.ball θ.val r ∩ Q).Nonempty → J ⊆ Q := by
-    by_cases hθ : θ.val ∈ (C.codimensionAtLeast 2).support
+    by_cases hθ : θ.val ∈ (C.codimensionGE 2).support
     · obtain ⟨J, hJ, _⟩ := C.existsUnique_mem_cellsOfCodimension_of_notMem_succ hθ
         (hnext.notMem_of_mem_left θ.property)
-      obtain ⟨r, hr, -, -, -, hinc⟩ := C.exists_isolating_ball hJ.1 hJ.2
+      obtain ⟨r, hr, -, -, -, hinc⟩ := C.exists_ball_inter_support_codimensionGE_eq hJ.1 hJ.2
       exact ⟨r, hr, Or.inr ⟨J, hJ.1, hJ.2, hinc⟩⟩
     · obtain ⟨r, hr, hword⟩ := C.exists_ball_crossingWord_eq ν hν
         (fun hs => hθ (C.singularSupport_walls_subset_support_codimensionAtLeast hs))

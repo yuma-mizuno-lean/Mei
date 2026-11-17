@@ -60,12 +60,12 @@ variable {Γ Λ R L V ι : Type*} [AddCommGroup Γ] [AddCommGroup Λ]
 
 /-- A point off the adapted skeleton lies on no active directed support. -/
 theorem notMem_support_of_notMem_adapted_skeleton {k : ℕ} {x : V}
-    (hx : x ∉ ((D.adaptedComplex k).codimensionAtLeast 1).support) (j : D.active k) :
+    (hx : x ∉ ((D.adaptedComplex k).codimensionGE 1).support) (j : D.active k) :
     x ∉ (D.wall j).support := by
   intro hxj
   obtain ⟨Q, hQ, hxQ, -⟩ := D.exists_mem_adaptedComplex_walls_subset k j hxj
   exact hx (FinitePolyhedralComplex.mem_support.mpr ⟨Q,
-    (D.adaptedComplex k).cellsOfCodimension_subset_codimensionAtLeast_cells 1 hQ, hxQ⟩)
+    (D.adaptedComplex k).cellsOfCodimension_subset_cells_codimensionGE 1 hQ, hxQ⟩)
 
 /-- Every point in an adapted full cell interior is allowed at each lower cutoff. -/
 theorem notMem_support_of_mem_interior_adapted {k l : ℕ} (hkl : k ≤ l)
@@ -119,7 +119,7 @@ every interior point, not just a selected representative. -/
 theorem exists_adapted_chamber_lifts {k l : ℕ} (hkl : k ≤ l)
     (hk : D.LevelConsistent k)
     (b : WallComplement (fun j : D.active k => (D.wall j).support))
-    (hb : b.val ∉ ((D.adaptedComplex l).codimensionAtLeast 1).support) :
+    (hb : b.val ∉ ((D.adaptedComplex l).codimensionGE 1).support) :
     ∃ (B : (D.adaptedComplex l).cellsOfCodimension 0)
       (t : (D.adaptedComplex l).cellsOfCodimension 0 → d.truncatedGroup ℒ l),
       b.val ∈ interior (B : Set V) ∧ t B = 1 ∧

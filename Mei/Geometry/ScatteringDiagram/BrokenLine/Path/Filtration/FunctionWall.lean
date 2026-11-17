@@ -30,6 +30,8 @@ varieties with effective anti-canonical class*, Proposition 3.5 and Lemma 3.7
 
 public noncomputable section
 
+open TauCeti (homogeneousComponent_apply)
+
 open TauCeti (AlgFiltration)
 
 open Quiver Mei.GradedAlgebra

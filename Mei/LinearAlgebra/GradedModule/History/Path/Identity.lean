@@ -106,7 +106,7 @@ theorem homogeneousHistory_cons_last_of_eq_id (p : Path a b)
         ((d, Degrees.terminalDegree i p d) : (p.cons e).Degrees ι) x =
       p.homogeneousHistory T ℳ d x := by
   rw [homogeneousHistory_cons_of_eq_id T ℳ p e he, LinearMap.comp_apply]
-  exact Mei.homogeneousComponent_apply_of_mem (ℳ b)
+  exact TauCeti.homogeneousComponent_apply_of_mem (ℳ b)
     (homogeneousHistory_mem_vertex (T := T) (ℳ := ℳ) p d i x hx)
 
 /-- Repeating the incoming degree at an identity arrow preserves the entire
@@ -136,7 +136,7 @@ theorem last_eq_of_identity_history_ne_zero (p : Path a b) (q : Path b c)
   rw [← (degreesComp (ι := ι) (p.cons e) q).symm_apply_apply d,
     homogeneousHistory_comp, LinearMap.comp_apply,
     homogeneousHistory_cons_of_eq_id T ℳ p e he, LinearMap.comp_apply,
-    Mei.homogeneousComponent_apply_of_mem_ne (ℳ b)
+    TauCeti.homogeneousComponent_apply_of_mem_ne (ℳ b)
       (homogeneousHistory_mem_vertex (T := T) (ℳ := ℳ) p _ i x hx) (Ne.symm hne), map_zero]
 
 /-- Erasing an identity arrow from a surviving history keeps its whole output. -/

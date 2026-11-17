@@ -65,12 +65,12 @@ theorem interior_nonempty_of_mem_cellsOfCodimension_zero {P : Set V}
 /-- A full cell's interior misses every cell of positive codimension. -/
 theorem interior_subset_compl_support_codimensionAtLeast_one {P : Set V}
     (hP : P ∈ C.cellsOfCodimension 0) :
-    interior P ⊆ (C.codimensionAtLeast 1).supportᶜ := by
+    interior P ⊆ (C.codimensionGE 1).supportᶜ := by
   have := h.finiteDimensional
   obtain ⟨hPC, hdimP⟩ := mem_cellsOfCodimension.mp hP
   intro x hx hxs
   obtain ⟨Q, hQ, hxQ⟩ := mem_support.mp hxs
-  obtain ⟨hQC, hdimQ⟩ := (C.mem_codimensionAtLeast_cells 1 Q).mp hQ
+  obtain ⟨hQC, hdimQ⟩ := FinitePolyhedralComplex.mem_cells_codimensionGE.mp hQ
   have hPQ := C.subset_of_mem_intrinsicInterior hPC hQC
     (interior_subset_intrinsicInterior hx) hxQ
   have hle := Submodule.finrank_mono (AffineSubspace.direction_le (affineSpan_mono ℝ hPQ))
@@ -80,7 +80,7 @@ theorem interior_subset_compl_support_codimensionAtLeast_one {P : Set V}
 @[simp]
 theorem inter_compl_support_codimensionAtLeast_one {P : Set V}
     (hP : P ∈ C.cellsOfCodimension 0) :
-    P ∩ (C.codimensionAtLeast 1).supportᶜ = interior P := by
+    P ∩ (C.codimensionGE 1).supportᶜ = interior P := by
   obtain ⟨hPC, hdim⟩ := mem_cellsOfCodimension.mp hP
   have hi := Mei.intrinsicInterior_eq_interior_of_affineSpan_eq_top
     (C.affineSpan_eq_top_of_mem_cellsOfCodimension_zero hP)
@@ -95,7 +95,7 @@ theorem inter_compl_support_codimensionAtLeast_one {P : Set V}
 /-- Each full cell interior is a chamber of the skeleton complement. -/
 theorem connectedComponentIn_compl_support_codimensionAtLeast_one {P : Set V}
     (hP : P ∈ C.cellsOfCodimension 0) {x : V} (hx : x ∈ interior P) :
-    connectedComponentIn (C.codimensionAtLeast 1).supportᶜ x = interior P := by
+    connectedComponentIn (C.codimensionGE 1).supportᶜ x = interior P := by
   have hPC := (mem_cellsOfCodimension.mp hP).1
   have hconv := (C.isConvexPolyhedron hPC).convex
   have hsub := C.interior_subset_compl_support_codimensionAtLeast_one hP
@@ -110,7 +110,7 @@ theorem connectedComponentIn_compl_support_codimensionAtLeast_one {P : Set V}
 /-- In an ambient complex, each point off the skeleton belongs to exactly one
 full-dimensional cell interior. -/
 theorem exists_unique_mem_interior_cellsOfCodimension_zero (hC : C.support = Set.univ)
-    {x : V} (hx : x ∉ (C.codimensionAtLeast 1).support) :
+    {x : V} (hx : x ∉ (C.codimensionGE 1).support) :
     ∃! P : Set V, P ∈ C.cellsOfCodimension 0 ∧ x ∈ interior P := by
   have := h.finiteDimensional
   obtain ⟨P, hP, hxP⟩ := mem_support.mp (hC ▸ mem_univ x)
@@ -118,7 +118,7 @@ theorem exists_unique_mem_interior_cellsOfCodimension_zero (hC : C.support = Set
     have hle := Submodule.finrank_le (affineSpan ℝ P).direction
     by_contra hne
     exact hx (mem_support.mpr ⟨P,
-      (C.mem_codimensionAtLeast_cells 1 P).mpr ⟨hP, by omega⟩, hxP⟩)
+      FinitePolyhedralComplex.mem_cells_codimensionGE.mpr ⟨hP, by omega⟩, hxP⟩)
   have hP0 : P ∈ C.cellsOfCodimension 0 := mem_cellsOfCodimension.mpr
     ⟨hP, by simpa using hdim⟩
   refine ⟨P, ⟨hP0, ?_⟩, fun Q hQ => ?_⟩

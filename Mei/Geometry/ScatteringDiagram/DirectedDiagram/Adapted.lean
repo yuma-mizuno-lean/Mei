@@ -178,7 +178,7 @@ theorem exists_pos_subset_support_of_inter_ball {k : ℕ} {J : Set V}
     ∃ r > 0, ∀ j : D.active k,
       (Metric.ball q r ∩ (D.wall j).support).Nonempty → J ⊆ (D.wall j).support := by
   obtain ⟨r, hr, hcells⟩ := Metric.mem_nhds_iff.mp
-    ((D.adaptedComplex k).eventually_subset_of_mem_cell hJ hq)
+    ((D.adaptedComplex k).eventually_subset_of_mem_intrinsicInterior hJ hq)
   refine ⟨r, hr, fun j ⟨z, hz, hzj⟩ => ?_⟩
   obtain ⟨Q, hQ, hzQ, hQj⟩ := D.exists_mem_adaptedComplex_walls_subset k j hzj
   exact (hcells hz Q ((D.adaptedComplex k).mem_cells_of_mem_walls hQ) hzQ).trans hQj

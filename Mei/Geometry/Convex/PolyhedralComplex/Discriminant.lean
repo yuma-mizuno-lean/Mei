@@ -41,9 +41,9 @@ specified vectors. These are the singular-encounter exceptions for endpoints. -/
 def singularDiscriminant (C : FinitePolyhedralComplex h) (vectors : Finset V) :
     ExceptionalArrangement ℝ V := by
   have := h.finiteDimensional
-  refine ExceptionalArrangement.ofSweeps (C.codimensionAtLeast 2).cells vectors ?_
+  refine ExceptionalArrangement.ofSweeps (C.codimensionGE 2).cells vectors ?_
   intro P hP _
-  have hd := ((C.mem_codimensionAtLeast_cells 2 P).mp hP).2
+  have hd := (FinitePolyhedralComplex.mem_cells_codimensionGE.mp hP).2
   rw [← direction_affineSpan]
   omega
 
@@ -53,7 +53,7 @@ open Classical in
 theorem exceptions_singularDiscriminant (C : FinitePolyhedralComplex h)
     (vectors : Finset V) :
     (C.singularDiscriminant vectors).exceptions =
-      ((C.codimensionAtLeast 2).cells ×ˢ vectors).image
+      ((C.codimensionGE 2).cells ×ˢ vectors).image
         (fun z => affineSpan ℝ (Set.sweep ℝ z.1 z.2)) := by
   have := h.finiteDimensional
   exact ExceptionalArrangement.exceptions_ofSweeps _ _ _
@@ -64,7 +64,7 @@ from the affine span of each higher-codimension cell. -/
 theorem isGeneric_singularDiscriminant_iff (C : FinitePolyhedralComplex h)
     (vectors : Finset V) (Q : V) :
     (C.singularDiscriminant vectors).IsGeneric Q ↔
-      ∀ P ∈ (C.codimensionAtLeast 2).cells, ∀ n ∈ vectors, ∀ t : ℝ,
+      ∀ P ∈ (C.codimensionGE 2).cells, ∀ n ∈ vectors, ∀ t : ℝ,
         Q + t • n ∉ affineSpan ℝ P := by
   have := h.finiteDimensional
   exact ExceptionalArrangement.isGeneric_ofSweeps_iff _ _ _ Q
@@ -74,7 +74,7 @@ the entire codimension-at-least-two skeleton. -/
 theorem add_smul_notMem_support_codimensionAtLeast_two (C : FinitePolyhedralComplex h)
     {vectors : Finset V} {Q : V} (hQ : (C.singularDiscriminant vectors).IsGeneric Q)
     {n : V} (hn : n ∈ vectors) (t : ℝ) :
-    Q + t • n ∉ (C.codimensionAtLeast 2).support := by
+    Q + t • n ∉ (C.codimensionGE 2).support := by
   intro ht
   obtain ⟨P, hP, htP⟩ := mem_support.mp ht
   exact (C.isGeneric_singularDiscriminant_iff vectors Q).mp hQ P hP n hn t

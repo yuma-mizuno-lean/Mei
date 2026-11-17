@@ -7,7 +7,7 @@ module
 
 public import Mei.LinearAlgebra.GradedCorrespondence.History
 public import Mei.LinearAlgebra.GradedCorrespondence.Path
-public import Mei.LinearAlgebra.GradedModule.History.Path.Regrouping
+public import TauCeti.LinearAlgebra.Graded.History.Regrouping
 
 /-!
 # Selected transfers and uniform regrouping

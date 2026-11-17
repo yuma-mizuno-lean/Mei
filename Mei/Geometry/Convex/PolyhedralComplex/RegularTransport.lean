@@ -22,7 +22,7 @@ regular walls, as well as points in their complement. These balls provide the
 regular neighborhoods used when decomposing a polygonal homotopy into local
 crossing relations; arbitrary group-valued labels inherit the same independence.
 
-The construction uses `FinitePolyhedralComplex.exists_isolating_ball`,
+The construction uses `FinitePolyhedralComplex.exists_ball_inter_support_codimensionGE_eq`,
 `Mei.mem_nhdsWithin_affineSpan_of_mem_intrinsicInterior`, and the local hyperplane
 crossing criterion `WallComplement.exists_crossing_iff_of_hyperplane`.
 -/
@@ -152,7 +152,7 @@ theorem exists_ball_crossingWord_eq (C : FinitePolyhedralComplex h)
     have hint := mem_intrinsicInterior_of_notMem_singularSupport hP hθ
     obtain ⟨δ, hδ, hδmem⟩ := Metric.mem_nhdsWithin_iff.mp
       (Mei.mem_nhdsWithin_affineSpan_of_mem_intrinsicInterior hint)
-    obtain ⟨ε, hε, -, -, hotherε, -⟩ := C.exists_isolating_ball P.property hint
+    obtain ⟨ε, hε, -, -, hotherε, -⟩ := C.exists_ball_inter_support_codimensionGE_eq P.property hint
     -- Express that affine span by the given coorientation to compute both words.
     have hplane (z : V) : z ∈ affineSpan ℝ (P : Set V) ↔ ν P z = ν P θ := by
       rw [← (affineSpan ℝ (P : Set V)).mk'_eq (subset_affineSpan ℝ _ hP),
@@ -165,7 +165,8 @@ theorem exists_ball_crossingWord_eq (C : FinitePolyhedralComplex h)
       · exact fun he => hδmem ⟨Metric.ball_subset_ball (min_le_left _ _) hz, (hplane z).mpr he⟩
     have hother (Q : C.walls) (hne : Q ≠ P) :
         Disjoint (Metric.ball θ (min δ ε)) (Q : Set V) :=
-      (hotherε Q Q.property (Subtype.coe_ne_coe.mpr hne)).mono_left
+      (hotherε Q (C.cellsOfCodimension_subset_cells_codimensionGE 1 Q.property)
+        (Subtype.coe_ne_coe.mpr hne)).mono_left
         (Metric.ball_subset_ball (min_le_right _ _))
     refine ⟨min δ ε, lt_min hδ hε, fun x y p q hp hq => ?_⟩
     rw [p.crossingWord_eq_zpow_of_local_wall ν P (ν P θ) (convex_ball θ _) hlocal hother hp,

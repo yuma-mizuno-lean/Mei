@@ -24,7 +24,7 @@ The covering and incidence arguments use
 `FinitePolyhedralComplex.IsSubdivision.exists_mem_cells_subset_finrank_eq` and
 `FinitePolyhedralComplex.subset_of_mem_intrinsicInterior`. The orientation comparison
 uses `OrientedCell.boundaryFacet_orientation_eq_of_subset`. Internal incidence uses
-`FinitePolyhedralComplex.eventually_subset_of_mem_cell`: a short ray beyond an
+`FinitePolyhedralComplex.eventually_subset_of_mem_intrinsicInterior`: a short ray beyond an
 internal facet must enter another piece containing that facet. Opposite signs and
 uniqueness use `FinitePolyhedralComplex.eq_reverse_of_mem_boundaryFacets`.
 These are the local incidence statements needed to assemble cancellation of the
@@ -279,7 +279,7 @@ theorem existsUnique_reverse_boundaryFacet_of_mem_intrinsicInterior (σ : Orient
     (tendsto_nhdsWithin_iff.mpr ⟨htend, Filter.Eventually.of_forall hspan⟩).eventually
       (Mei.mem_nhdsWithin_affineSpan_of_mem_intrinsicInterior hqσ)
   have hnear := (hmem.and
-    (htend.eventually (C.eventually_subset_of_mem_cell hξC hqξ))).filter_mono
+    (htend.eventually (C.eventually_subset_of_mem_intrinsicInterior hξC hqξ))).filter_mono
       (nhdsWithin_le_nhds (s := Ioi (0 : ℝ)))
   obtain ⟨t, ⟨htσ, htinc⟩, htpos⟩ :=
     (hnear.and (self_mem_nhdsWithin : ∀ᶠ t : ℝ in 𝓝[>] (0 : ℝ), 0 < t)).exists

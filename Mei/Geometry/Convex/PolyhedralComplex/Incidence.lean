@@ -28,7 +28,7 @@ open Set Mei.Convex Filter Topology
 variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ V]
   {i : N →+ V} {h : TauCeti.Toric.IsIntegralLattice i}
 
--- The construction uses `FinitePolyhedralComplex.exists_isolating_ball` to exclude
+-- The ball from `FinitePolyhedralComplex.exists_ball_inter_support_codimensionGE_eq` excludes
 -- all other cells of positive codimension, `IsExposed.eq_of_finrank_vectorSpan_eq`
 -- to identify the common facet, and Mathlib's convexity theorem for open segments
 -- from relative interior points.
@@ -43,7 +43,7 @@ theorem existsUnique_cell_of_transverse_ray (C : FinitePolyhedralComplex h)
     ∃! Q : Set V, Q ∈ C.cellsOfCodimension 0 ∧ P ⊆ Q ∧
       ∃ ε > 0, ∀ t ∈ Ioo (0 : ℝ) ε, q + t • v ∈ intrinsicInterior ℝ Q := by
   let := h.finiteDimensional
-  obtain ⟨r, hr, hskel, _, _, hinc⟩ := C.exists_isolating_ball hP hq
+  obtain ⟨r, hr, hskel, _, _, hinc⟩ := C.exists_ball_inter_support_codimensionGE_eq hP hq
   have htend : Tendsto (fun t : ℝ => q + t • v) (𝓝 0) (𝓝 q) := by
     have hc : Continuous (fun t : ℝ => q + t • v) :=
       continuous_const.add (continuous_id.smul continuous_const)
@@ -64,7 +64,7 @@ theorem existsUnique_cell_of_transverse_ray (C : FinitePolyhedralComplex h)
       (subset_affineSpan ℝ P hy) (subset_affineSpan ℝ P (intrinsicInterior_subset hq))
     have hasmul : a • v ∈ (affineSpan ℝ P).direction := by simpa using hdir
     exact hv ((Submodule.smul_mem_iff _ (ne_of_gt ha)).mp hasmul)
-  have hynskel : q + a • v ∉ (C.codimensionAtLeast 1).support := by
+  have hynskel : q + a • v ∉ (C.codimensionGE 1).support := by
     intro hy
     exact hynP ((Set.ext_iff.mp hskel _).mp ⟨hyball.1, hy⟩).2
   obtain ⟨Q, hQ, hyQ⟩ := mem_support.mp hyball.2
@@ -72,7 +72,7 @@ theorem existsUnique_cell_of_transverse_ray (C : FinitePolyhedralComplex h)
   have hdim : Module.finrank ℝ (affineSpan ℝ Q).direction = Module.finrank ℝ V := by
     by_contra hne
     exact hynskel (mem_support.mpr ⟨Q,
-      (C.mem_codimensionAtLeast_cells 1 Q).mpr ⟨hQ, by omega⟩, hyQ⟩)
+      FinitePolyhedralComplex.mem_cells_codimensionGE.mpr ⟨hQ, by omega⟩, hyQ⟩)
   have hyint : q + a • v ∈ intrinsicInterior ℝ Q := by
     rw [← intrinsicClosure_sdiff_intrinsicFrontier]
     refine ⟨subset_intrinsicClosure hyQ, fun hyfr => hynskel ?_⟩

@@ -143,8 +143,11 @@ private theorem rational_slabRows (n q : ℤ) (a : Bool) :
     convert TauCeti.Toric.IsRationalFunctional.realCharacter h (LinearMap.snd ℤ ℤ ℤ) using 1
     exact h.eq_realCharacter (by intro x; simp)
   cases a
-  · exact hf.smul ⟨(n : ℚ)⁻¹, by simp⟩
-  · exact hg.sub (hf.smul ⟨(q : ℚ) / n, by simp⟩)
+  · change TauCeti.Toric.IsRationalFunctional h ((n : ℝ)⁻¹ • LinearMap.fst ℝ ℝ ℝ)
+    simpa using hf.rat_smul ((n : ℚ)⁻¹)
+  · change TauCeti.Toric.IsRationalFunctional h
+      (LinearMap.snd ℝ ℝ ℝ - ((q : ℝ) / n) • LinearMap.fst ℝ ℝ ℝ)
+    simpa using hg.sub (hf.rat_smul ((q : ℚ) / n))
 
 /-- Branch endpoint charts are locally closed rational-normal polyhedra for the
 standard integral lattice, so they are legitimate finite semilinear charts. -/
