@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mei.LinearAlgebra.GradedModule.History.Uniform
-public import Mei.LinearAlgebra.GradedModule.History.Path.Regrouping
+public import TauCeti.LinearAlgebra.Graded.History.Regrouping
 import Mathlib.Data.Fintype.BigOperators
 
 /-!
@@ -34,6 +34,8 @@ support (`sum_homogeneousHistory_terminal_comp_eq`).
 -/
 
 public noncomputable section
+
+open TauCeti (homogeneousComponent)
 
 namespace Mei
 

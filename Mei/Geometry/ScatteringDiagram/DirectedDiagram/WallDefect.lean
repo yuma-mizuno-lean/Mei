@@ -68,7 +68,7 @@ The coefficients take values in the successive Lie kernel, without assuming
 consistency at the higher order or a pre-existing lower-order crossing equation. -/
 theorem exists_adapted_wall_defects (k : ℕ) (hk : D.LevelConsistent k)
     (b : WallComplement (fun j : D.active k => (D.wall j).support))
-    (hb : b.val ∉ ((D.adaptedComplex (k + 1)).codimensionAtLeast 1).support) :
+    (hb : b.val ∉ ((D.adaptedComplex (k + 1)).codimensionGE 1).support) :
     ∃ (B : (D.adaptedComplex (k + 1)).cellsOfCodimension 0)
       (t : (D.adaptedComplex (k + 1)).cellsOfCodimension 0 →
         d.truncatedGroup ℒ (k + 1)),

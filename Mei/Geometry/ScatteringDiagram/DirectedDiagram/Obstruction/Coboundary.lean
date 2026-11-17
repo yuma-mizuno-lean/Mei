@@ -93,7 +93,7 @@ theorem exists_jointObstructionCochain_eq_coboundary
         IsCompl (affineSpan ℝ (J : Set V)).direction (vectorSpan ℝ (range (s J).points)) ∧
         convexHull ℝ (range (s J).points) ⊆ Metric.ball (q J) (ε J) ∧
         convexHull ℝ (range (s J).points) ∩
-          ((D.adaptedComplex (k + 1)).codimensionAtLeast 2).support = {q J} ∧
+          ((D.adaptedComplex (k + 1)).codimensionGE 2).support = {q J} ∧
         Disjoint (convexHull ℝ (range (s J).points)) (intrinsicFrontier ℝ (J : Set V)) ∧
         ∀ Q ∈ (D.adaptedComplex (k + 1)).joints, Q ≠ (J : Set V) →
           Disjoint (convexHull ℝ (range (s J).points)) Q) ∧
@@ -104,7 +104,7 @@ theorem exists_jointObstructionCochain_eq_coboundary
   let := Fintype.ofFinite C.joints
   -- Shrink the requested radii so all chosen tests also miss other joints.
   choose r hr hisolate hfrontier hothers hincident using fun J : C.joints =>
-    C.exists_isolating_ball J.property (hq J)
+    C.exists_ball_inter_support_codimensionGE_eq J.property (hq J)
   choose s x p hpos hcenter hp hc hs hskel htrans hloop using fun J : C.joints =>
     exists_joint_meridian_loopObstruction_eq_boundaryPairing
       σ hσ cross hk b t ht J (hq J) (τ J) (hτ J) (lt_min (hε J) (hr J))
@@ -119,7 +119,9 @@ theorem exists_jointObstructionCochain_eq_coboundary
         D.adaptedPathPrefunctor_obj_val] using hp J
     · exact ⟨hc J, (hs J).trans (Metric.ball_subset_ball (min_le_left _ _)),
         hskel J, (hfrontier J).mono_left (hsmall J),
-        fun Q hQ hne => (hothers J Q hQ hne).mono_left (hsmall J)⟩
+        fun Q hQ hne =>
+          (hothers J Q (C.cellsOfCodimension_subset_cells_codimensionGE 2 hQ) hne).mono_left
+            (hsmall J)⟩
   -- Every signed facet occurrence is a joint of the same adapted complex.
   let f := ∑ W, Finsupp.single (σ W) ((cross W).defect hk b t ht)
   let B := PolyhedralCochain.coboundaryPresentation (R := R) f
@@ -162,7 +164,8 @@ theorem exists_jointObstructionCochain_eq_coboundary
   · intro K _ hKJ
     rw [OrientedCell.intersectionIndex_of_disjoint, zero_smul]
     rw [hτ K]
-    exact (hothers J K K.property (Subtype.coe_ne_coe.mpr hKJ)).mono_left (hsmall J)
+    exact (hothers J K (C.cellsOfCodimension_subset_cells_codimensionGE 2 K.property)
+      (Subtype.coe_ne_coe.mpr hKJ)).mono_left (hsmall J)
   · simp
 
 end Mei.DirectedDiagram

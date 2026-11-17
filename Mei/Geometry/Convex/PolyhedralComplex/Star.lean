@@ -74,7 +74,7 @@ def jointTriangleWords (ν : C.walls → V →ₗ[ℝ] ℝ) (J U : Set V) : Set 
       Disjoint (segment ℝ x.val y.val ∪ segment ℝ y.val z.val ∪ segment ℝ z.val x.val) J ∧
       convexHull ℝ {x.val, y.val, z.val} ⊆ U ∧
       IsCompl (affineSpan ℝ J).direction (vectorSpan ℝ {x.val, y.val, z.val}) ∧
-      convexHull ℝ {x.val, y.val, z.val} ∩ (C.codimensionAtLeast 2).support = {q} ∧
+      convexHull ℝ {x.val, y.val, z.val} ∩ (C.codimensionGE 2).support = {q} ∧
       Disjoint (convexHull ℝ {x.val, y.val, z.val}) (intrinsicFrontier ℝ J) ∧
       (∀ Q ∈ C.joints, Q ≠ J → Disjoint (convexHull ℝ {x.val, y.val, z.val}) Q) ∧
       (∀ Q ∈ C.cells, (convexHull ℝ {x.val, y.val, z.val} ∩ Q).Nonempty → J ⊆ Q) ∧
@@ -91,7 +91,7 @@ theorem mem_jointTriangleWords (ν : C.walls → V →ₗ[ℝ] ℝ) (J U : Set V
           Disjoint (segment ℝ x.val y.val ∪ segment ℝ y.val z.val ∪ segment ℝ z.val x.val) J ∧
           convexHull ℝ {x.val, y.val, z.val} ⊆ U ∧
           IsCompl (affineSpan ℝ J).direction (vectorSpan ℝ {x.val, y.val, z.val}) ∧
-          convexHull ℝ {x.val, y.val, z.val} ∩ (C.codimensionAtLeast 2).support = {q} ∧
+          convexHull ℝ {x.val, y.val, z.val} ∩ (C.codimensionGE 2).support = {q} ∧
           Disjoint (convexHull ℝ {x.val, y.val, z.val}) (intrinsicFrontier ℝ J) ∧
           (∀ Q ∈ C.joints, Q ≠ J → Disjoint (convexHull ℝ {x.val, y.val, z.val}) Q) ∧
           (∀ Q ∈ C.cells, (convexHull ℝ {x.val, y.val, z.val} ∩ Q).Nonempty → J ⊆ Q) ∧
@@ -254,7 +254,7 @@ theorem crossingWord_eq_of_disjoint_convexHull (ν : C.walls → V →ₗ[ℝ] �
     rw [hℓφ]
     linarith [hφA q hqA]
   -- The region misses the codimension-two skeleton, hence singular support.
-  have hskel' (w : V) (hw : w ∈ U') : w ∉ (C.codimensionAtLeast 2).support := fun hws => by
+  have hskel' (w : V) (hw : w ∈ U') : w ∉ (C.codimensionGE 2).support := fun hws => by
     have hwA := subset_affineSpan ℝ J (hskel ⟨hw.1, hws⟩)
     have hwu : φ w < u₀ := hw.2
     linarith [hφA w hwA]

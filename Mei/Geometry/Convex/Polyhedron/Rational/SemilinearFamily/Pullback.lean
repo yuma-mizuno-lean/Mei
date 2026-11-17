@@ -7,7 +7,7 @@ module
 
 public import Mei.Data.Set.Pullback
 public import Mei.Geometry.Convex.Polyhedron.Rational.SemilinearFamily.Basic
-public import Mei.Geometry.Convex.Polyhedron.Rational.Equalizer
+public import TauCeti.Analysis.Convex.Polyhedron.Rational.Equalizer
 
 /-!
 # Pullback of finite semilinear families
@@ -51,7 +51,8 @@ theorem IsRationalPiecewiseAffine.pullback {D : Set V} {f : D → W}
   obtain ⟨κ, _, S, g, hD, hS⟩ := isRationalPiecewiseAffine_iff.mp hf
   have hpieces (k : κ) : IsRationalSemilinear (h.prod h'')
       (Prod.fst ⁻¹' S k ∩ {p | g k p.1 = φ p.2}) := by
-    have heq := AffineMap.isRationalNormalPolyhedron_pullback_matching (g k) φ (hS k).2.1 hφ
+    have heq :=
+      AffineMap.isRationalNormalPolyhedron_setOf_apply_fst_eq_apply_snd (g k) φ (hS k).2.1 hφ
     simpa only [hπ] using ((hS k).1.preimage π (TauCeti.Toric.IsRationalLinearMap.fst h h'')).inter
       heq.isLocallyClosedPolyhedron.isRationalSemilinear
   have hdom := Set.iUnion_pullback_pieces S (fun k => g k) φ hD (fun k => (hS k).2.2)
@@ -77,7 +78,8 @@ theorem IsFiniteBranchOn.pullback {D : Set V} {f : D → W}
     fun _ => AffineMap.snd, ?_, fun k => ⟨?_, TauCeti.Toric.IsRationalLinearMap.snd h h'', ?_,
       fun _ _ => rfl⟩⟩
   · exact Set.iUnion_pullback_pieces S (fun k => g k) φ hD (fun k => (hS k).2.2.2)
-  · have heq := AffineMap.isRationalNormalPolyhedron_pullback_matching (g k) φ (hS k).2.1 hφ
+  · have heq :=
+      AffineMap.isRationalNormalPolyhedron_setOf_apply_fst_eq_apply_snd (g k) φ (hS k).2.1 hφ
     simpa only [hπ] using ((hS k).1.preimage π (TauCeti.Toric.IsRationalLinearMap.fst h h'')).inter
       heq.isLocallyClosedPolyhedron
   · intro p hp q hq he

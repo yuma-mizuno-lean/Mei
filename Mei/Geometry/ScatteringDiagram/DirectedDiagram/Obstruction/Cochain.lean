@@ -175,7 +175,7 @@ theorem exists_jointObstructionCochain (hk : D.LevelConsistent k)
         IsCompl (affineSpan ℝ (J : Set V)).direction (vectorSpan ℝ (range s.points)) ∧
         convexHull ℝ (range s.points) ⊆ Metric.ball s.centroid (ε J) ∧
         convexHull ℝ (range s.points) ∩
-          ((D.adaptedComplex (k + 1)).codimensionAtLeast 2).support = {s.centroid} ∧
+          ((D.adaptedComplex (k + 1)).codimensionGE 2).support = {s.centroid} ∧
         Disjoint (convexHull ℝ (range s.points)) (intrinsicFrontier ℝ (J : Set V)) ∧
         (∀ Q ∈ (D.adaptedComplex (k + 1)).joints, Q ≠ (J : Set V) →
           Disjoint (convexHull ℝ (range s.points)) Q) ∧

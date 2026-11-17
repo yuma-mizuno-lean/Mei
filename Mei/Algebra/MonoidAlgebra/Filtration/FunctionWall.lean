@@ -25,6 +25,8 @@ anti-canonical class*, Proposition 3.5 and Lemma 3.7 (arXiv:1601.07081v4).
 
 public noncomputable section
 
+open TauCeti (homogeneousComponent homogeneousComponent_apply)
+
 namespace Mei.GradedAlgebra
 
 open AddMonoidAlgebra

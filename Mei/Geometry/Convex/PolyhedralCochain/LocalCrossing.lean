@@ -22,7 +22,7 @@ pairing also respects cochain relations. A singleton-crossing formula extracts
 the coefficient of the sole crossed cell for any finite indexed wall family; it
 requires neither a small neighborhood nor admissibility of the segment.
 
-The neighborhood is supplied by `FinitePolyhedralComplex.exists_isolating_ball`.
+The neighborhood comes from `FinitePolyhedralComplex.exists_ball_inter_support_codimensionGE_eq`.
 The sign and transversality use `OrientedCell.intersectionIndex` and the conormal
 normal-quotient criterion `Module.Ray.IsConormal.evalSign_ne_zero_iff`.
 This local evaluation connects geometric wall coefficients to transport defects.
@@ -67,14 +67,15 @@ theorem exists_ball_intersectionPairing_eq (C : FinitePolyhedralComplex h) {k : 
             ((σ Q).orientation.evalSign (fun j : Fin k => v j.succ - v 0) : ℤ) • c Q := by
   classical
   have := h.finiteDimensional
-  obtain ⟨ε, hε, _, hfront, hother, _⟩ := C.exists_isolating_ball Q.property hq
+  obtain ⟨ε, hε, _, hfront, hother, _⟩ := C.exists_ball_inter_support_codimensionGE_eq Q.property hq
   refine ⟨ε, hε, fun {v} hv hqv hsign => ?_⟩
   have hsmall : convexHull ℝ (range v) ⊆ Metric.ball q ε :=
     convexHull_min (range_subset_iff.mpr hv) (convex_ball q ε)
   have hdisj (P : C.cellsOfCodimension k) (hne : P ≠ Q) :
       Disjoint (convexHull ℝ (range v)) (σ P).carrier := by
     rw [hσ P]
-    exact (hother P P.property (Subtype.coe_ne_coe.mpr hne)).mono_left hsmall
+    exact (hother P (C.cellsOfCodimension_subset_cells_codimensionGE k P.property)
+      (Subtype.coe_ne_coe.mpr hne)).mono_left hsmall
   refine ⟨fun P => ?_, fun c => ?_⟩
   · by_cases he : P = Q
     · subst P

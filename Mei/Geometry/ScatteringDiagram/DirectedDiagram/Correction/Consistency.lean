@@ -217,7 +217,7 @@ theorem levelConsistent_succ_of_closed_residual
     have hold : qE.addWeightOfEPs (fun u v => OrientedCell.intersectionPairing (R := R)
         ![u.val, v.val] A) =
         log (E.levelPathProduct (k + 1) ((E.adaptedPathPrefunctor (k + 1)).mapPath qE)) := by
-      have hy : (FE.obj a).val ∉ ((E.adaptedComplex (k + 1)).codimensionAtLeast 1).support := by
+      have hy : (FE.obj a).val ∉ ((E.adaptedComplex (k + 1)).codimensionGE 1).support := by
         rw [(E.adaptedComplex (k + 1)).support_codimensionAtLeast_one_eq_iUnion_walls
           (E.support_adaptedComplex (k + 1))]
         intro hy

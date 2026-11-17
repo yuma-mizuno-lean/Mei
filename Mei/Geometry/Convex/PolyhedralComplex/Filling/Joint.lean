@@ -28,7 +28,8 @@ Each filled triangle avoiding the codimension-at-least-three skeleton is covered
 of neighbourhoods. Off the codimension-two skeleton, admissible loops in the regular balls of
 `FinitePolyhedralComplex.exists_ball_crossingWord_loop_eq_one` have trivial words. At a
 relative interior point of a joint, an isolating ball of
-`FinitePolyhedralComplex.exists_isolating_ball` meets only cells containing the joint, and
+`FinitePolyhedralComplex.exists_ball_inter_support_codimensionGE_eq`
+meets only cells containing the joint, and
 `Quiver.Path.crossingWord_mem_normalClosure_jointTriangleWords` reduces its loops to meridians.
 `FinitePolyhedralComplex.crossingWord_triangle_mem_of_cover` assembles these local relations,
 and `Quiver.Path.crossingWord_mem_normalClosure_transverse_triangles` reduces an arbitrary loop
@@ -60,15 +61,15 @@ theorem exists_isOpen_crossingWord_mem_normalClosure_jointMeridianWords
     (ν : C.walls → V →ₗ[ℝ] ℝ)
     (hν : ∀ P, LinearMap.ker (ν P) = (affineSpan ℝ (P : Set V)).direction)
     {U : Set V} (hUo : IsOpen U) {θ : V} (hθU : θ ∈ U)
-    (hθ : θ ∉ (C.codimensionAtLeast 3).support) :
+    (hθ : θ ∉ (C.codimensionGE 3).support) :
     ∃ O : Set V, IsOpen O ∧ θ ∈ O ∧
       ∀ (y : WallComplement (fun P : C.walls => (P : Set V))) (p : AdmissiblePLPath y y),
         (∀ w ∈ p.vertices, w.val ∈ O) →
           p.crossingWord ν ∈ Subgroup.normalClosure (C.jointMeridianWords ν U) := by
-  by_cases hθ₂ : θ ∈ (C.codimensionAtLeast 2).support
+  by_cases hθ₂ : θ ∈ (C.codimensionGE 2).support
   · -- At a relative interior point of a joint, use an isolating ball inside the region.
     obtain ⟨J, ⟨hJ, hθJ⟩, -⟩ := C.existsUnique_mem_cellsOfCodimension_of_notMem_succ hθ₂ hθ
-    obtain ⟨r, hr, -, -, -, hinc⟩ := C.exists_isolating_ball hJ hθJ
+    obtain ⟨r, hr, -, -, -, hinc⟩ := C.exists_ball_inter_support_codimensionGE_eq hJ hθJ
     obtain ⟨s, hs, hsU⟩ := Metric.isOpen_iff.mp hUo θ hθU
     refine ⟨Metric.ball θ r ∩ Metric.ball θ s, Metric.isOpen_ball.inter Metric.isOpen_ball,
       ⟨Metric.mem_ball_self hr, Metric.mem_ball_self hs⟩, fun y p hp => ?_⟩
@@ -96,7 +97,7 @@ theorem crossingWord_triangle_mem_normalClosure_jointMeridianWords
     {x y z : WallComplement (fun P : C.walls => (P : Set V))}
     (e : x ⟶ y) (f : y ⟶ z) (r : z ⟶ x)
     (hhull : convexHull ℝ {x.val, y.val, z.val} ⊆ U)
-    (havoid : Disjoint (convexHull ℝ {x.val, y.val, z.val}) (C.codimensionAtLeast 3).support) :
+    (havoid : Disjoint (convexHull ℝ {x.val, y.val, z.val}) (C.codimensionGE 3).support) :
     ((e.toPath.cons f).cons r).crossingWord ν ∈
       Subgroup.normalClosure (C.jointMeridianWords ν U) := by
   choose O hO hθO hlocal using fun θ : convexHull ℝ {x.val, y.val, z.val} =>

@@ -43,16 +43,16 @@ complex is needed. Arbitrary proper affine exceptions may also be avoided by
 the apex. -/
 theorem exists_mem_open_triangle_fillings_disjoint_codimensionAtLeast_three
     (C : FinitePolyhedralComplex h) (x y : ι → V)
-    (hbase : ∀ a, Disjoint (segment ℝ (x a) (y a)) (C.codimensionAtLeast 3).support)
+    (hbase : ∀ a, Disjoint (segment ℝ (x a) (y a)) (C.codimensionGE 3).support)
     (A : μ → AffineSubspace ℝ V) (hA : ∀ j, A j ≠ ⊤)
     {U : Set V} (hU : IsOpen U) (hne : U.Nonempty) :
     ∃ z ∈ U, (∀ j, z ∉ A j) ∧
-      ∀ a, Disjoint (convexHull ℝ {z, x a, y a}) (C.codimensionAtLeast 3).support := by
+      ∀ a, Disjoint (convexHull ℝ {z, x a, y a}) (C.codimensionGE 3).support := by
   have := h.finiteDimensional
   obtain ⟨z, hzU, hzA, hz⟩ := Mei.exists_mem_open_triangle_fillings_avoid x y
-    (fun Q : (C.codimensionAtLeast 3).cells => (Q : Set V))
+    (fun Q : (C.codimensionGE 3).cells => (Q : Set V))
     (fun Q => by
-      have hd := ((C.mem_codimensionAtLeast_cells 3 Q).mp Q.property).2
+      have hd := (FinitePolyhedralComplex.mem_cells_codimensionGE.mp Q.property).2
       omega)
     (fun a Q => (hbase a).mono_right
       (fun w hw => mem_support.mpr ⟨Q, Q.property, hw⟩))
@@ -67,11 +67,11 @@ tangent to a joint direction; their fillings miss that joint instead. Additional
 proper affine exceptions may be imposed on the apex. -/
 theorem exists_mem_open_triangle_fillings_transverse_joints
     (C : FinitePolyhedralComplex h) (x y : ι → V)
-    (hbase : ∀ a, Disjoint (segment ℝ (x a) (y a)) (C.codimensionAtLeast 2).support)
+    (hbase : ∀ a, Disjoint (segment ℝ (x a) (y a)) (C.codimensionGE 2).support)
     (A : μ → AffineSubspace ℝ V) (hA : ∀ j, A j ≠ ⊤)
     {U : Set V} (hU : IsOpen U) (hne : U.Nonempty) :
     ∃ z ∈ U, (∀ j, z ∉ A j) ∧
-      (∀ a, Disjoint (convexHull ℝ {z, x a, y a}) (C.codimensionAtLeast 3).support) ∧
+      (∀ a, Disjoint (convexHull ℝ {z, x a, y a}) (C.codimensionGE 3).support) ∧
       ∀ a, ∀ J ∈ C.joints, (convexHull ℝ {z, x a, y a} ∩ J).Nonempty →
         IsCompl (affineSpan ℝ J).direction (vectorSpan ℝ {z, x a, y a}) := by
   have := h.finiteDimensional
@@ -80,13 +80,13 @@ theorem exists_mem_open_triangle_fillings_transverse_joints
       (x aj.1) (y aj.1) (aj.2 : Set V)
       (mem_cellsOfCodimension.mp aj.2.property).2
       ((hbase aj.1).mono_right (fun w hw => mem_support.mpr
-        ⟨aj.2, C.cellsOfCodimension_subset_codimensionAtLeast_cells 2 aj.2.property, hw⟩))
+        ⟨aj.2, C.cellsOfCodimension_subset_cells_codimensionGE 2 aj.2.property, hw⟩))
   obtain ⟨z, hzU, hz, havoid⟩ :=
     C.exists_mem_open_triangle_fillings_disjoint_codimensionAtLeast_three x y
       (fun a => (hbase a).mono_right (fun w hw => by
         obtain ⟨Q, hQ, hwQ⟩ := mem_support.mp hw
         exact mem_support.mpr
-          ⟨Q, C.codimensionAtLeast_cells_antitone (by decide : 2 ≤ 3) hQ, hwQ⟩))
+          ⟨Q, C.cells_codimensionGE_antitone (by decide : 2 ≤ 3) hQ, hwQ⟩))
       (Sum.elim B A) (by
         rintro (aj | j)
         · exact hB aj

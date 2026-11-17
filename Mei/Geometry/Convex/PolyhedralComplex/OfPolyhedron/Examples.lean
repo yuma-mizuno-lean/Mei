@@ -6,7 +6,7 @@ Authors: Claude Code
 module
 
 public import Mei.Geometry.Convex.PolyhedralCochain.Plane.Basic
-public import Mei.Geometry.Convex.PolyhedralComplex.OfPolyhedron.Basic
+public import TauCeti.Geometry.Convex.PolyhedralComplex.OfPolyhedron
 public import TauCeti.Analysis.Convex.Recession.Basic
 public import Mei.Geometry.Convex.Sweep.Face
 public import Mei.LinearAlgebra.Plane

@@ -56,7 +56,7 @@ theorem exists_admissible_subordinate_filling_grid (C : FinitePolyhedralComplex 
     (hν : ∀ P, (ν P).ker = (affineSpan ℝ (P : Set V)).direction)
     (A : AffineSubspace ℝ V) (f : C(↥unitInterval × ↥unitInterval, V))
     (hA : range f ⊆ A)
-    (hnext : Disjoint (range f) (C.codimensionAtLeast 3).support)
+    (hnext : Disjoint (range f) (C.codimensionGE 3).support)
     (htrans : ∀ J ∈ C.joints, (range f ∩ J).Nonempty →
       Disjoint A.direction (affineSpan ℝ J).direction)
     (hbase : ∀ P : C.walls, f (0, 0) ∉ (P : Set V))
@@ -79,7 +79,7 @@ theorem exists_admissible_subordinate_filling_grid (C : FinitePolyhedralComplex 
             (Quiver.reverse (e₁ a b.succ))).cons
             (Quiver.reverse (e₂ a.castSucc b))).crossingWord ν = 1 ∨
           ∃ J ∈ C.joints, θ ∈ intrinsicInterior ℝ J ∧
-            Metric.ball θ r ∩ ((A : Set V) ∩ (C.codimensionAtLeast 2).support) = {θ} ∧
+            Metric.ball θ r ∩ ((A : Set V) ∩ (C.codimensionGE 2).support) = {θ} ∧
             ∀ Q ∈ C.cells, (Metric.ball θ r ∩ Q).Nonempty → J ⊆ Q) := by
   classical
   obtain ⟨n, t, hn, ht0, htmono, ht1, ε, hε, hpatch⟩ :=

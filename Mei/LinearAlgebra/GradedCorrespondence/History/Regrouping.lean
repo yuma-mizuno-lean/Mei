@@ -5,9 +5,8 @@ Authors: Codex
 -/
 module
 
-public import Mei.LinearAlgebra.GradedCorrespondence.History
-public import Mei.LinearAlgebra.GradedCorrespondence.Path
-public import Mei.LinearAlgebra.GradedModule.History.Path.Regrouping
+public import TauCeti.LinearAlgebra.GradedCorrespondence.History
+public import TauCeti.LinearAlgebra.Graded.History.Regrouping
 
 /-!
 # Selected transfers and uniform regrouping
@@ -28,8 +27,7 @@ retaining every pair recovers the composite of the two total transfers.
 No geometric realization of an unrestricted operator history is asserted.
 
 The proofs reuse the path expansion and rectangular support construction in
-`Mei.LinearAlgebra.GradedModule.History.Path.Regrouping`, and the single-step
-formula `decompose_right_liftLeftTotal_of_mem`. The interpretation of whole
+`TauCeti.LinearAlgebra.Graded.History.Regrouping`. The interpretation of whole
 component transfers follows Gross–Hacking–Siebert, *Theta functions on varieties
 with effective anti-canonical class*, Definitions 3.1–3.3 (arXiv:1601.07081v4).
 -/
@@ -37,8 +35,6 @@ with effective anti-canonical class*, Definitions 3.1–3.3 (arXiv:1601.07081v4)
 public noncomputable section
 
 namespace TauCeti.GradedCorrespondence
-
-open Mei
 
 variable {R Q : Type*} [Semiring R] [Quiver Q]
   {M : Q → Type*} [∀ q, AddCommMonoid (M q)] [∀ q, Module R (M q)]
@@ -53,49 +49,6 @@ variable {R Q : Type*} [Semiring R] [Quiver Q]
     GradedCorrespondence (B := B e) (ℳ b) (ℳ c) (I e) (J e))
 
 local notation "T" => fun e => totalTransfer (C e)
-
-/-- Selected homogeneous path propagation is precisely the corresponding
-zero-extended transfer history on its incoming homogeneous piece. This compares
-the two existing constructions without an assumption that any decoration survives. -/
-theorem transferFunctor_map_hom_eq_homogeneousHistory
-    (s : ∀ q, ι q) (hs : ∀ {b c : Q} (e : b ⟶ c), s b ∈ I e)
-    {a b : Q} (p : Quiver.Path a b) :
-    (ℳ b (s b)).subtype.comp (((transferFunctor ℳ C s hs).map p).hom) =
-      (p.homogeneousHistory T ℳ (p.degreesOfVertices s)).comp (ℳ a (s a)).subtype := by
-  classical
-  -- Expand the free extension to use Mathlib's path recursion. The component
-  -- transfers are evaluated only through their public single-step formula.
-  unfold transferFunctor
-  induction p with
-  | nil =>
-    -- The objects of `Paths Q` use a type synonym for the original vertices.
-    erw [CategoryTheory.Paths.lift_nil, SemimoduleCat.hom_id,
-      LinearMap.comp_id, Quiver.Path.homogeneousHistory_nil, LinearMap.id_comp]
-  | @cons b c p e ih =>
-    refine LinearMap.ext fun (x : ℳ a (s a)) => ?_
-    have hx := LinearMap.congr_fun ih x
-    erw [LinearMap.comp_apply, LinearMap.comp_apply, Submodule.subtype_apply,
-      Submodule.subtype_apply] at hx
-    have hmem : p.homogeneousHistory T ℳ (p.degreesOfVertices s) x ∈ ℳ b (s b) :=
-      hx ▸ Subtype.property _
-    calc
-      _ = ((C e).transfer ⟨s b, hs e⟩ (s c)
-          (((transferFunctor ℳ C s hs).map p).hom x) : M c) := by
-        erw [CategoryTheory.Paths.lift_cons, transferPrefunctor_map,
-          SemimoduleCat.hom_comp, SemimoduleCat.hom_ofHom,
-          LinearMap.comp_apply, LinearMap.comp_apply, Submodule.subtype_apply]
-      _ = ((C e).transfer ⟨s b, hs e⟩ (s c) ⟨_, hmem⟩ : M c) := by
-        exact congrArg (fun y : ℳ b (s b) =>
-          ((C e).transfer ⟨s b, hs e⟩ (s c) y : M c)) (Subtype.ext hx)
-      _ = (p.cons e).homogeneousHistory T ℳ
-          ((p.cons e).degreesOfVertices s) (x : M a) := by
-        simpa only [Quiver.Path.degreesOfVertices_cons, dite_eq_left (hs e),
-          LinearMap.comp_apply, Submodule.subtype_apply] using
-          (homogeneousHistory_totalTransfer_cons_apply ℳ C p e
-            (p.degreesOfVertices s) (s c) (x : M a) hmem).symm
-      _ = _ := (LinearMap.comp_apply
-        ((p.cons e).homogeneousHistory T ℳ ((p.cons e).degreesOfVertices s))
-        (ℳ a (s a)).subtype x).symm
 
 open Classical in
 /-- A finitely generated incoming range supports every selected two-block transfer sum

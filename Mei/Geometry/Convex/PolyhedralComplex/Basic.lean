@@ -35,25 +35,9 @@ theorem isPolyhedralFace_iff {P F : Set V} :
     IsPolyhedralFace P F ↔ F.Nonempty ∧ IsExposed ℝ P F :=
   ⟨fun h => ⟨h.nonempty, h.isExposed⟩, fun h => ⟨h.1, h.2⟩⟩
 
-/-- A convex polyhedron has finitely many nonempty exposed faces. -/
-theorem finite_isPolyhedralFace {P : Set V} (hP : TauCeti.IsConvexPolyhedron P) :
-    {F : Set V | IsPolyhedralFace P F}.Finite :=
-  hP.finite_setOf_isExposed.subset fun _ hF => (isPolyhedralFace_iff.mp hF).2
-
 namespace FinitePolyhedralComplex
 
 variable {h : TauCeti.Toric.IsIntegralLattice i}
-
-open Filter Topology in
-/-- Near a relative interior point of a cell, every cell encountered contains
-that entire cell. This is uniform over the finite complex. -/
-theorem eventually_subset_of_mem_cell (C : FinitePolyhedralComplex h) {P : Set V}
-    (hP : P ∈ C.cells) {x : V} (hx : x ∈ intrinsicInterior ℝ P) :
-    ∀ᶠ y in 𝓝 x, ∀ Q ∈ C.cells, y ∈ Q → P ⊆ Q := by
-  have hnear := (locallyFinite_of_finite (fun Q : C.cells => (Q : Set V))).eventually_subset
-    (fun Q => (C.isConvexPolyhedron Q.property).isClosed) x
-  filter_upwards [hnear] with y hy Q hQ hyQ
-  exact C.subset_of_mem_intrinsicInterior hP hQ hx (hy (a := ⟨Q, hQ⟩) hyQ)
 
 open Set in
 /-- Two distinct cells with a common facet meet exactly in that facet.

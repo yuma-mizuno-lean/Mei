@@ -36,6 +36,8 @@ or gluing different affine charts.
 
 public noncomputable section
 
+open TauCeti (homogeneousComponent)
+
 namespace Mei.Convex.AdmissibleRayRealization
 
 open AddMonoidAlgebra Mei.GradedAlgebra Mei.NodeAlgebra

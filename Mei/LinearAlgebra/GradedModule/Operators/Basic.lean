@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Algebra.DirectSum.Component
+public import TauCeti.Algebra.DirectSum.Component
 public import TauCeti.Algebra.DirectSum.Internal
 
 /-!
@@ -22,6 +22,8 @@ restriction of a direct-sum decomposition along a linear equivalence.
 -/
 
 public noncomputable section
+
+open TauCeti (homogeneousComponent homogeneousComponent_apply)
 
 open scoped DirectSum
 

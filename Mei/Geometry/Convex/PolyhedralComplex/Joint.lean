@@ -35,7 +35,7 @@ and neighborhood, without assuming a transverse plane as input. Cells may be
 unbounded or have lineality.
 
 The construction uses the common-face incidence theorem
-`FinitePolyhedralComplex.eventually_subset_of_mem_cell`, Mathlib's
+`FinitePolyhedralComplex.eventually_subset_of_mem_intrinsicInterior`, Mathlib's
 `Submodule.exists_isCompl`, and
 `AffineSubspace.inter_eq_singleton_of_nonempty_of_isCompl`.
 -/
@@ -111,12 +111,13 @@ theorem exists_isolating_ball_joint (C : FinitePolyhedralComplex h) {J : Set V}
     ∃ (r : ℝ) (W : Submodule ℝ V), 0 < r ∧
       IsCompl (affineSpan ℝ J).direction W ∧ Module.finrank ℝ W = 2 ∧
       (Metric.ball x r ∩ (AffineSubspace.mk' x W : Set V)) ∩
-        (C.codimensionAtLeast 2).support = {x} ∧
+        (C.codimensionGE 2).support = {x} ∧
       Disjoint (Metric.ball x r) (intrinsicFrontier ℝ J) ∧
       (∀ Q ∈ C.joints, Q ≠ J → Disjoint (Metric.ball x r) Q) ∧
       ∀ Q ∈ C.cells, (Metric.ball x r ∩ Q).Nonempty → J ⊆ Q := by
   let := h.finiteDimensional
-  obtain ⟨r, hr, hskeleton, hfrontier, hother, hcells⟩ := C.exists_isolating_ball hJ hx
+  obtain ⟨r, hr, hskeleton, hfrontier, hother, hcells⟩ :=
+    C.exists_ball_inter_support_codimensionGE_eq hJ hx
   obtain ⟨W, hW⟩ := Submodule.exists_isCompl (affineSpan ℝ J).direction
   have hdimJ := (mem_cellsOfCodimension.mp hJ).2
   have hdimW := Submodule.finrank_add_eq_of_isCompl hW
@@ -128,7 +129,8 @@ theorem exists_isolating_ball_joint (C : FinitePolyhedralComplex h) {J : Set V}
     (by simpa only [AffineSubspace.direction_mk'] using hW)
   have hpx : x = p := Set.mem_singleton_iff.mp (hp ▸ ⟨hxA, hxW⟩)
   subst p
-  refine ⟨r, W, hr, hW, by omega, ?_, hfrontier, hother, hcells⟩
+  refine ⟨r, W, hr, hW, by omega, ?_, hfrontier,
+    fun Q hQ => hother Q (C.cellsOfCodimension_subset_cells_codimensionGE 2 hQ), hcells⟩
   ext y
   constructor
   · rintro ⟨⟨hyball, hyW⟩, hys⟩
@@ -138,7 +140,7 @@ theorem exists_isolating_ball_joint (C : FinitePolyhedralComplex h) {J : Set V}
     have hxy : y = x := Set.mem_singleton_iff.mp hxy
     subst y
     have hxball : x ∈ Metric.ball x r := Metric.mem_ball_self hr
-    have hxs : x ∈ Metric.ball x r ∩ (C.codimensionAtLeast 2).support :=
+    have hxs : x ∈ Metric.ball x r ∩ (C.codimensionGE 2).support :=
       hskeleton.symm ▸ ⟨hxball, hxJ⟩
     exact ⟨⟨hxball, hxW⟩, hxs.2⟩
 

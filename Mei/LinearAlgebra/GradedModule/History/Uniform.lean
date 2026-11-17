@@ -32,6 +32,8 @@ the selection and regrading statements are the linear-map versions of
 
 public noncomputable section
 
+open TauCeti (homogeneousComponent)
+
 open Quiver
 
 namespace Mei

@@ -7,7 +7,7 @@ module
 
 public import Mei.RingTheory.Node.Correspondence
 public import Mei.Algebra.MonoidAlgebra.Grading
-public import Mei.LinearAlgebra.GradedCorrespondence.Hom
+public import TauCeti.LinearAlgebra.GradedCorrespondence.Hom
 public import Mei.LinearAlgebra.GradedCorrespondence.RestrictScalars
 public import TauCeti.RingTheory.Node.BaseChange
 

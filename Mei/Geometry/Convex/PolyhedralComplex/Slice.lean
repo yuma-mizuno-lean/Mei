@@ -23,7 +23,7 @@ bounded, closed or full dimensional. Real offsets, unbounded cells and
 lineality are allowed.
 
 The results use `AffineSubspace.subsingleton_inter_of_disjoint_direction`,
-`FinitePolyhedralComplex.exists_isolating_ball`, and Mathlib's
+`FinitePolyhedralComplex.exists_ball_inter_support_codimensionGE_eq`, and Mathlib's
 `Set.Finite.t2_separation`.
 -/
 
@@ -46,10 +46,10 @@ the skeleton. The slice need not be bounded or closed, and disjoint cells
 impose no transversality condition. -/
 theorem finite_inter_support_codimensionAtLeast (C : FinitePolyhedralComplex h)
     (A : AffineSubspace ℝ V) {S : Set V} (hSA : S ⊆ A)
-    (hnext : Disjoint S (C.codimensionAtLeast (k + 1)).support)
+    (hnext : Disjoint S (C.codimensionGE (k + 1)).support)
     (htrans : ∀ P ∈ C.cellsOfCodimension k, (S ∩ P).Nonempty →
       Disjoint A.direction (affineSpan ℝ P).direction) :
-    (S ∩ (C.codimensionAtLeast k).support).Finite := by
+    (S ∩ (C.codimensionGE k).support).Finite := by
   have hfinite : (⋃ P ∈ C.cellsOfCodimension k, S ∩ P).Finite :=
     (C.cellsOfCodimension k).finite_toSet.biUnion fun P hP => by
       by_cases hmeet : (S ∩ P).Nonempty
@@ -71,13 +71,13 @@ theorem exists_ball_inter_slice_support_eq_singleton (C : FinitePolyhedralComple
     {x : V} (hx : x ∈ intrinsicInterior ℝ P) (hxA : x ∈ A)
     (htrans : Disjoint A.direction (affineSpan ℝ P).direction) :
     ∃ r > 0,
-      Metric.ball x r ∩ ((A : Set V) ∩ (C.codimensionAtLeast k).support) = {x} ∧
+      Metric.ball x r ∩ ((A : Set V) ∩ (C.codimensionGE k).support) = {x} ∧
       ∀ Q ∈ C.cells, (Metric.ball x r ∩ Q).Nonempty → P ⊆ Q := by
-  obtain ⟨r, hr, hlocal, _, _, hincident⟩ := C.exists_isolating_ball hP hx
+  obtain ⟨r, hr, hlocal, _, _, hincident⟩ := C.exists_ball_inter_support_codimensionGE_eq hP hx
   have hsub := A.subsingleton_inter_of_disjoint_direction (affineSpan ℝ P) htrans
   have hxP : x ∈ P := intrinsicInterior_subset hx
-  have hxs : x ∈ (C.codimensionAtLeast k).support :=
-    mem_support.mpr ⟨P, C.cellsOfCodimension_subset_codimensionAtLeast_cells k hP, hxP⟩
+  have hxs : x ∈ (C.codimensionGE k).support :=
+    mem_support.mpr ⟨P, C.cellsOfCodimension_subset_cells_codimensionGE k hP, hxP⟩
   refine ⟨r, hr, Set.Subset.antisymm ?_ ?_, hincident⟩
   · rintro y ⟨hyball, hyA, hys⟩
     have hyP := (Set.ext_iff.mp hlocal y).mp ⟨hyball, hys⟩
@@ -93,23 +93,23 @@ For codimension two these are disjoint neighborhoods of the joint encounters
 of a filling that avoids the higher skeleton. -/
 theorem exists_pairwiseDisjoint_isolating_balls (C : FinitePolyhedralComplex h)
     (A : AffineSubspace ℝ V) {S : Set V} (hSA : S ⊆ A)
-    (hnext : Disjoint S (C.codimensionAtLeast (k + 1)).support)
+    (hnext : Disjoint S (C.codimensionGE (k + 1)).support)
     (htrans : ∀ P ∈ C.cellsOfCodimension k, (S ∩ P).Nonempty →
       Disjoint A.direction (affineSpan ℝ P).direction) :
-    ∃ r : (S ∩ (C.codimensionAtLeast k).support : Set V) → ℝ,
-      Pairwise (fun (x y : (S ∩ (C.codimensionAtLeast k).support : Set V)) =>
+    ∃ r : (S ∩ (C.codimensionGE k).support : Set V) → ℝ,
+      Pairwise (fun (x y : (S ∩ (C.codimensionGE k).support : Set V)) =>
         Disjoint (Metric.ball (x : V) (r x)) (Metric.ball (y : V) (r y))) ∧
       ∀ x, 0 < r x ∧
-        Metric.ball (x : V) (r x) ∩ ((A : Set V) ∩ (C.codimensionAtLeast k).support) = {x.val} ∧
+        Metric.ball (x : V) (r x) ∩ ((A : Set V) ∩ (C.codimensionGE k).support) = {x.val} ∧
         ∃ P ∈ C.cellsOfCodimension k, x.val ∈ intrinsicInterior ℝ P ∧
           ∀ Q ∈ C.cells, (Metric.ball (x : V) (r x) ∩ Q).Nonempty → P ⊆ Q := by
   classical
-  let E := S ∩ (C.codimensionAtLeast k).support
+  let E := S ∩ (C.codimensionGE k).support
   obtain ⟨U, hU, hdisj⟩ :=
     (C.finite_inter_support_codimensionAtLeast A hSA hnext htrans).t2_separation
   have hlocal (x : V) (hx : x ∈ E) : ∃ r > 0,
       Metric.ball x r ⊆ U x ∧
-      Metric.ball x r ∩ ((A : Set V) ∩ (C.codimensionAtLeast k).support) = {x} ∧
+      Metric.ball x r ∩ ((A : Set V) ∩ (C.codimensionGE k).support) = {x} ∧
       ∃ P ∈ C.cellsOfCodimension k, x ∈ intrinsicInterior ℝ P ∧
         ∀ Q ∈ C.cells, (Metric.ball x r ∩ Q).Nonempty → P ⊆ Q := by
     obtain ⟨P, hP, _⟩ := C.existsUnique_mem_cellsOfCodimension_of_notMem_succ hx.2

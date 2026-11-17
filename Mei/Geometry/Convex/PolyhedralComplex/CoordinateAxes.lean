@@ -228,10 +228,10 @@ theorem fst_nonneg_or_fst_nonpos_of_mem_coordinateAxes_walls {P : Set (ℝ × �
 
 /-- The codimension-two skeleton of the coordinate-axes complex is contained in the origin. -/
 theorem support_codimensionAtLeast_two_coordinateAxes_subset :
-    ((coordinateAxes h).codimensionAtLeast 2).support ⊆ {0} := by
+    ((coordinateAxes h).codimensionGE 2).support ⊆ {0} := by
   intro x hx
   obtain ⟨Q, hQ, hxQ⟩ := mem_support.mp hx
-  obtain ⟨hQC, hdim⟩ := ((coordinateAxes h).mem_codimensionAtLeast_cells 2 Q).mp hQ
+  obtain ⟨hQC, hdim⟩ := FinitePolyhedralComplex.mem_cells_codimensionGE.mp hQ
   have hbot : (affineSpan ℝ Q).direction = ⊥ :=
     Submodule.finrank_eq_zero.mp (by
       rw [Module.finrank_prod, Module.finrank_self] at hdim
@@ -432,7 +432,7 @@ theorem jointMeridianWords_coordinateAxes_compl_zero
   obtain ⟨x, y, z, e, f, r, q, -, -, hU, -, hinter, -⟩ :=
     ((coordinateAxes h).mem_jointTriangleWords ν J _ g).mp hJ
   have hq : q ∈ convexHull ℝ {x.val, y.val, z.val} ∩
-      ((coordinateAxes h).codimensionAtLeast 2).support := by
+      ((coordinateAxes h).codimensionGE 2).support := by
     rw [hinter]
     rfl
   exact hU hq.1 (support_codimensionAtLeast_two_coordinateAxes_subset h hq.2)

@@ -77,7 +77,7 @@ theorem exists_positive_isolating_joint_triangle {k : ℕ} {J : Set V}
       IsCompl (affineSpan ℝ J).direction (vectorSpan ℝ (range s.points)) ∧
       convexHull ℝ (range s.points) ⊆ Metric.ball p ε ∧
       convexHull ℝ (range s.points) ∩
-        ((D.adaptedComplex k).codimensionAtLeast 2).support = {p} ∧
+        ((D.adaptedComplex k).codimensionGE 2).support = {p} ∧
       Disjoint (convexHull ℝ (range s.points)) (intrinsicFrontier ℝ J) ∧
       (∀ Q ∈ (D.adaptedComplex k).joints, Q ≠ J →
         Disjoint (convexHull ℝ (range s.points)) Q) ∧

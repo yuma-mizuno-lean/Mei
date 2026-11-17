@@ -40,12 +40,12 @@ theorem exists_mem_wall_notMem_singularSupport (B : FinitePolyhedralComplex h)
     ∃ x ∈ U ∩ intrinsicInterior ℝ (P : Set V),
       ∀ j, x ∉ TauCeti.singularSupport (fun Q : (C j).walls => (Q : Set V)) := by
   have := h.finiteDimensional
-  let E : (Σ j, (C j).codimensionAtLeast 2 |>.cells) → AffineSubspace ℝ V :=
+  let E : (Σ j, (C j).codimensionGE 2 |>.cells) → AffineSubspace ℝ V :=
     fun q => affineSpan ℝ (q.2 : Set V)
   have hdim (q) : Module.finrank ℝ (E q).direction <
       Module.finrank ℝ (affineSpan ℝ (P : Set V)).direction := by
     have hP := B.finrank_direction_add_one_of_mem_walls P.property
-    have hQ := ((C q.1).mem_codimensionAtLeast_cells 2 q.2).mp q.2.property
+    have hQ := FinitePolyhedralComplex.mem_cells_codimensionGE.mp q.2.property
     dsimp only [E]
     omega
   obtain ⟨x, hx, havoid⟩ := (P : Set V).exists_mem_intrinsicInterior_avoid_of_finrank_lt

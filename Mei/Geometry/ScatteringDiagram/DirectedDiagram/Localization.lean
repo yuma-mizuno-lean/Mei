@@ -23,7 +23,8 @@ the required one-dimensional conormal space without choosing a primitive normal.
 
 The results combine `DirectedDiagram.LoopProjection.decompose_log_levelPathProduct_loop_mem`,
 `DirectedWallSpaces.iSup_wall_eq_wall_of_inf_ker`, the adapted support coverage,
-and `FinitePolyhedralComplex.eventually_subset_of_mem_cell`. The geometric attachment is
+and `FinitePolyhedralComplex.eventually_subset_of_mem_intrinsicInterior`.
+The geometric attachment is
 the local obstruction calculation in Mandel, *Scattering diagrams, theta functions,
 and refined tropical curve counts*, proof of Theorem 2.6. No lower-order consistency
 is required here; it is used separately to place the loop product in the central

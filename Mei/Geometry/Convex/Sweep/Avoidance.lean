@@ -6,7 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Geometry.Convex.Sweep.Rational
-public import Mei.Geometry.Convex.Polyhedron.Rational.Segment
+public import TauCeti.Analysis.Convex.Polyhedron.Rational.Segment
 
 /-!
 # Avoiding additional walls in backward itineraries
@@ -90,7 +90,7 @@ theorem isRationalSemilinear_backwardAvoidanceDomain [Finite J]
   have hhit (j : Fin n) (a : J) : IsRationalSemilinear h
       {Q | ∃ t : ℝ, 0 < t ∧ t < backwardTime f c (fun j => i (w j)) j Q ∧
         backwardPoint f c (fun j => i (w j)) j.castSucc Q + t • i (w j) ∈ W a} :=
-    isRationalSemilinear_setOf_exists_pos_lt_add_smul_mem (hW a) (w j)
+    (hW a).isRationalSemilinear_setOf_exists_pos_lt_add_smul_mem (w j)
       (backwardPoint f c (fun j => i (w j)) j.castSucc)
       (backwardTime f c (fun j => i (w j)) j)
       (isRationalLinearMap_backwardPoint f c w hf j.castSucc)

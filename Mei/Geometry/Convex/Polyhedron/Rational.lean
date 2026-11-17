@@ -6,7 +6,6 @@ Authors: Codex
 module
 
 public import TauCeti.Analysis.Convex.Polyhedron.Rational.Basic
-public import Mei.Geometry.Toric.Algebraic.RationalFunctional
 
 /-!
 # Rational offsets under finite reindexing

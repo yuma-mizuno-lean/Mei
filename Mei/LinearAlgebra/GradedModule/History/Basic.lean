@@ -29,6 +29,9 @@ comparison specialize from there to the forms in
 
 public noncomputable section
 
+open TauCeti (homogeneousComponent homogeneousComponent_apply homogeneousComponent_apply_of_mem
+  homogeneousComponent_apply_of_mem_ne)
+
 namespace Mei
 
 variable {R M ι : Type*} [Semiring R] [AddCommMonoid M] [Module R M]
