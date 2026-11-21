@@ -191,6 +191,12 @@ theorem letterExponent_mk (i : B.unfrozenIndex) (s : Fin (I.multiplicity i)) :
     I.letterExponent ⟨i, s⟩ = ((s : ℕ) + 1) • I.exponent i :=
   (rfl)
 
+/-- The exponent `s w_i` of the variable `p_{i,s}` is a positive multiple of `w_i`. -/
+theorem exists_letterExponent_eq_nsmul (α : I.Letter) :
+    ∃ b : ℕ, 0 < b ∧ I.letterExponent α = b • I.exponent α.1 := by
+  obtain ⟨i, s⟩ := α
+  exact ⟨s + 1, Nat.succ_pos _, I.letterExponent_mk i s⟩
+
 /-- The exponents of the initial function at `i` vanish on `e_i`: they are tangent to the
 wall `e_i⊥`. -/
 theorem letterExponent_apply_basis_self (i : B.unfrozenIndex) (s : Fin (I.multiplicity i)) :
