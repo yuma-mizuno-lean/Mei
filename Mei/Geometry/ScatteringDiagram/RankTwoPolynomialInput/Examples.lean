@@ -9,6 +9,8 @@ public import Mei.Geometry.ScatteringDiagram.RankTwoPolynomialInput.Grouping
 public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.FunctionWall.Pushforward
 public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.FunctionWall.RestrictScalars
 public import Mei.Geometry.ScatteringDiagram.RankTwoPolynomialInput.Translation
+public import Mei.Geometry.ScatteringDiagram.RankTwoPolynomialInput.HyperplaneTerm
+public import Mei.Geometry.ScatteringDiagram.RankTwoPolynomialInput.FiniteAlphabet
 public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Hyperplane
 public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Uniqueness
 public import Mei.Algebra.PositiveDegrees.Examples
@@ -95,6 +97,27 @@ line to `{x - y = 1}` puts them in general position
 (`RankTwoPolynomialInput.Examples.isGenericOn_translate_concurrentInput`): the third coorientation
 is the difference of the first two. This example only illustrates general position: no outgoing
 completion or consistency statement is proved for it.
+
+## The concurrent lines at order two and their finite alphabet
+
+The exponents `2e₁`, `e₂` and `2e₁ + 2e₂` of the concurrent lines have degrees `2`, `1` and `4`,
+so only the lines `{y = 0}` and `{x = 0}` have a term of degree at most two
+(`RankTwoPolynomialInput.Examples.linesAtOrder_two_concurrentInput`). Hence the order-two
+scattering class of the three lines is that of the two polynomial function walls `1 + c z^{2e₁}`
+and `1 + c z^{e₂}` on these lines
+(`RankTwoPolynomialInput.Examples.projection_scat_concurrentInput_two`), by
+`RankTwoPolynomialInput.projection_scat_incomingDiagram`.
+
+The two terms `α₀ = (0, 2e₁)` and `α₁ = (1, e₂)` of these lines form the finite alphabet
+`ℤ² × ℤ^{α₀, α₁}` with the letters `v_{α₀} = (2e₁, e_{α₀})` and `v_{α₁} = (e₂, e_{α₁})`. The map
+`(m, b) ↦ b_{α₀} • 2e₁ + b_{α₁} • e₂` sends each letter to its exponent
+(`RankTwoPolynomialInput.Examples.pairLift_letter`), so the pushforward of the scattering class
+of the alphabet input along it is the scattering class of the two lines of `ℤ²`
+(`RankTwoPolynomialInput.Examples.pushforward_scat_pairAlphabet`). The letter `v_{α₀}` has
+alphabet degree one, below the degree two of `2e₁`
+(`RankTwoPolynomialInput.Examples.finiteAlphabet_degree_lt_pairLift`), and in the alphabet both
+lines already have a term of degree one
+(`RankTwoPolynomialInput.Examples.linesAtOrder_one_alphabetPolynomialInput`).
 -/
 
 public section
@@ -604,6 +627,83 @@ theorem isGenericOn_translate_concurrentInput :
     | exact hac.ne rfl
     | exact hbc.ne rfl
     | (simp only [Fin.zero_eta, Fin.mk_one, Fin.reduceFinMk, Matrix.cons_val] at hx; linarith)
+
+section Alphabet
+
+/-- Only the lines `{y = 0}` and `{x = 0}` of the concurrent input have a term of degree at most
+two: the exponents `2e₁`, `e₂` and `2e₁ + 2e₂` have degrees `2`, `1` and `4`. -/
+theorem linesAtOrder_two_concurrentInput : concurrentInput.linesAtOrder 2 = {0, 1} := by
+  ext j
+  fin_cases j <;> simp [concurrentInput]
+
+/-- At order two, the scattering class of the three concurrent lines is that of the ray
+presentation of the wall functions `1 + c z^{2e₁}` and `1 + c z^{e₂}` of the lines `{y = 0}` and
+`{x = 0}`. -/
+theorem projection_scat_concurrentInput_two (b : concurrentInput.Variable → R) :
+    ((concurrentInput.incomingDiagram h b).Scat
+        (concurrentInput.incomingDiagram_full h b)).projection 2 =
+      (((concurrentInput.toHyperplaneTermInput {0, 1}).diagram h fun α => b ⟨α.1, α.2⟩).Scat
+        fun _ => DirectedDiagram.ofHyperplaneRayFactors_full ..).projection 2 :=
+  concurrentInput.projection_scat_incomingDiagram {0, 1} b h fun j hj => by
+    simpa [linesAtOrder_two_concurrentInput] using hj
+
+/-- The terms `(0, 2e₁)` and `(1, e₂)` of the lines `{y = 0}` and `{x = 0}`. -/
+abbrev PairTerm : Type := Σ j : ({0, 1} : Finset (Fin 3)), concurrentInput.exponents j
+
+local notation "v" => PositiveDegrees.letter (concurrentInput.alphabetExponent {0, 1})
+
+/-- The finite alphabet lift `(m, b) ↦ ∑_α b_α n_α` of the two lines, sending the letter of each
+term `α = (j, n)` to its exponent `n`. -/
+def pairLift : (ℤ × ℤ) × (PairTerm → ℤ) →+ ℤ × ℤ :=
+  (Fintype.linearCombination ℤ fun α : PairTerm => (α.2 : ℤ × ℤ)).toAddMonoidHom.comp
+    (AddMonoidHom.snd _ _)
+
+/-- The finite alphabet lift sends the letter of the term `(j, n)` to `n`. -/
+theorem pairLift_letter (α : PairTerm) : pairLift (v α) = α.2 := by
+  simp [pairLift, PositiveDegrees.letter_snd, Fintype.linearCombination_apply_single]
+
+/-- The pushforward of the scattering class of the alphabet input of the two lines along the
+finite alphabet lift is the scattering class of the two polynomial function walls on the lines
+`{y = 0}` and `{x = 0}` of `ℤ²`. -/
+theorem pushforward_scat_pairAlphabet {S : Type} [CommRing S] [Algebra ℚ S] (b : PairTerm → S) :
+    DirectedDiagram.Class.pushforward (DirectedWall.Pushforward.ofFiniteAlphabetLift (R := S)
+        (g := h) (map_letter_mem_monoid pairLift_letter) (map_letter_ne_zero pairLift_letter)
+        (projection_map_letter pairLift_letter))
+      (((concurrentInput.alphabetInput {0, 1}).diagram h b).Scat
+        fun _ => DirectedDiagram.ofHyperplaneRayFactors_full ..) =
+      ((concurrentInput.lineInput {0, 1}).diagram h b).Scat
+        fun _ => DirectedDiagram.ofHyperplaneRayFactors_full .. :=
+  pushforward_scat_alphabetInput pairLift_letter h b
+
+/-- The term `c z^{2e₁}` of the line `{y = 0}`. -/
+def horizontalTerm : PairTerm :=
+  ⟨⟨0, by simp⟩, ⟨(2, 0), Finset.mem_singleton_self _⟩⟩
+
+/-- The letter of the term `c z^{2e₁}` has alphabet degree one, strictly below the degree two of
+its exponent `2e₁`. -/
+theorem finiteAlphabet_degree_lt_pairLift :
+    (PositiveDegrees.finiteAlphabet (concurrentInput.alphabetExponent {0, 1})).degree
+        (v horizontalTerm) < evenOrthant.degree (pairLift (v horizontalTerm)) :=
+  PositiveDegrees.finiteAlphabet_degree_lt _ (map_letter_mem_monoid pairLift_letter)
+    (map_letter_ne_zero pairLift_letter) (PositiveDegrees.letter_mem _ horizontalTerm)
+    (α := horizontalTerm) (by simp [PositiveDegrees.letter_snd])
+    (by simp [pairLift_letter, horizontalTerm])
+
+/-- In the finite alphabet of the two lines, every letter has degree one, so both lines
+`{y = 0}` and `{x = 0}` have a term of degree at most one. -/
+theorem linesAtOrder_one_alphabetPolynomialInput :
+    (concurrentInput.alphabetPolynomialInput {0, 1}).linesAtOrder 1 = {0, 1} := by
+  ext j
+  simp only [mem_linesAtOrder, mem_alphabetPolynomialInput_exponents]
+  constructor
+  · rintro ⟨_, ⟨⟨⟨i, hi⟩, n⟩, rfl, rfl⟩, -⟩
+    simpa using hi
+  · intro hj
+    have hj' : j ∈ ({0, 1} : Finset (Fin 3)) := by simpa using hj
+    exact ⟨_, ⟨⟨⟨j, hj'⟩, ⟨_, Finset.mem_singleton_self _⟩⟩, rfl, rfl⟩,
+      by simp⟩
+
+end Alphabet
 
 end Concurrent
 

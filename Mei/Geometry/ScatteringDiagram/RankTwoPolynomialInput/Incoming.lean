@@ -30,7 +30,8 @@ over the affine line, an incoming full affine hyperplane
 (`DirectedWall.ofAffineHyperplane`), and obtain the incoming diagram
 (`RankTwoPolynomialInput.incomingDiagram`). All logarithmic degrees lie in the monoid generated
 by the exponents of `f_j`; hence a ray factor surviving the cutoff `k` lies on a ray of order at
-most `k` and belongs to a line with a term of degree at most `k`. Since only finitely many lines
+most `k` and belongs to a line with a term of degree at most `k`
+(`RankTwoPolynomialInput.mem_linesAtOrder_of_mem_active`). Since only finitely many lines
 and rays qualify, the diagram is finitely active at every order. The nontrivial ray labels of a
 line have generators projecting to positive multiples of its tangent `m_j`, and at each order
 the ray labels of a line reassemble the projection of its unsplit label.
@@ -224,6 +225,16 @@ theorem incomingDiagram_label (j : I.IncomingIndex) :
 theorem incomingDiagram_incoming (j : I.IncomingIndex) :
     ((I.incomingDiagram h c).wall j).Incoming := by
   simp [incomingDiagram]
+
+/-- A wall of the incoming diagram that is active at order `k` lies over a line with a term of
+degree at most `k`. -/
+theorem mem_linesAtOrder_of_mem_active {k : ℕ} {x : I.IncomingIndex}
+    (hx : x ∈ (I.incomingDiagram h c).active k) : x.1 ∈ I.linesAtOrder k := by
+  rw [DirectedDiagram.mem_active, incomingDiagram_label] at hx
+  obtain ⟨-, n, hn⟩ := mem_raysAtOrder_and_exists_degree_le_of_projection_rayFactor_ne_one d ρ
+    (I.wallNormal x.1) (I.tangentExponent x.1) (fun n => c ⟨x.1, n⟩)
+    (I.toCompletion_tangentInitialFunction_sub_one_mem c x.1) hx
+  exact I.mem_linesAtOrder.mpr ⟨n, n.property, hn⟩
 
 /-- The full-hyperplane condition required for outgoing completion. -/
 theorem incomingDiagram_full (j : I.IncomingIndex) :

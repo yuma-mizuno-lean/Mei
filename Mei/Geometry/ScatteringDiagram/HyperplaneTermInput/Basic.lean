@@ -26,10 +26,12 @@ Its logarithm generally has terms on several supported rays, so the label is not
 Its ray presentation (`HyperplaneTermInput.diagram`) is the shared construction
 `DirectedDiagram.ofHyperplaneRayFactors`, which places the ray factors
 `exp((log f_i)_w ∂_{μ_i})` on the supported rays `w` tangent to `μ_i` on the whole hyperplane;
-with finitely many terms it is finitely active at every order. Its walls, their incomingness
-and its family logarithms are described by the lemmas of that construction. If the exponents
-on the hyperplane `i` project under a map `π` to positive multiples of one direction `u_i`, so
-do the generators of the nontrivial ray factors of the label
+with finitely many terms it is finitely active at every order, and a wall active at order `k`
+lies on a hyperplane carrying a term of degree at most `k`
+(`HyperplaneTermInput.exists_wallIndex_eq_and_degree_le_of_mem_active`). Its walls, their
+incomingness and its family logarithms are described by the lemmas of that construction. If the
+exponents on the hyperplane `i` project under a map `π` to positive multiples of one direction
+`u_i`, so do the generators of the nontrivial ray factors of the label
 (`HyperplaneTermInput.rayFactor_label_projectedDirection`).
 
 These are the cooriented affine walls with finitely many terms `c_α z^{m_α}` of the
@@ -204,6 +206,18 @@ abbrev diagram [Module.Free ℤ Γ] (c : E → R) :
     DirectedDiagram (d := d) h (H) (Σ i, {w : SupportedRay d // I.normal i (ρ w.generator) = 0}) :=
   DirectedDiagram.ofHyperplaneRayFactors h I.normal I.normal_ne_zero I.offset (I.label c)
     (I.rayFactor_label_mem_wallGroup c) (I.hasFiniteSupport_rayFactor_label c)
+
+/-- A wall of the ray presentation that is active at order `k` lies on a hyperplane carrying a
+term whose exponent has degree at most `k`. -/
+theorem exists_wallIndex_eq_and_degree_le_of_mem_active [Module.Free ℤ Γ] (c : E → R) {k : ℕ}
+    {x : Σ i, {w : SupportedRay d // I.normal i (ρ w.generator) = 0}}
+    (hx : x ∈ (I.diagram h c).active k) :
+    ∃ α, I.wallIndex α = x.1 ∧ d.degree (I.exponent α) ≤ k := by
+  rw [DirectedDiagram.mem_active, DirectedDiagram.ofHyperplaneRayFactors_label, label_def] at hx
+  obtain ⟨-, α, hα⟩ := mem_raysAtOrder_and_exists_degree_le_of_projection_rayFactor_ne_one d ρ
+    (I.normal x.1) (I.tangentExponent x.1) (fun α => c α)
+    (I.toCompletion_wallFunction_sub_one_mem c x.1) hx
+  exact ⟨α.1, α.2, by simpa using hα⟩
 
 end HyperplaneTermInput
 
