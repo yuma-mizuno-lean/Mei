@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Algebra.Lie.Abelian
+public import TauCeti.Algebra.Lie.Abelian
 public import Mei.Algebra.Lie.Graded.Shifted.Basic
 public import Mathlib.Algebra.Lie.SemiDirect
 
@@ -36,16 +36,11 @@ variable {R M Γ : Type*} [CommRing R] [AddCommGroup M] [Module R M]
   [AddCommMonoid Γ] (d : PositiveDegrees Γ) (ℳ : Γ → Submodule R M) (p : Γ)
 
 /-- Shifted coefficients, regarded as an abelian Lie algebra for the module probe. -/
-abbrev ModuleCoefficients : Type _ := AbelianLie (shiftedSubmodule ℳ d.monoid p)
-
-/-- The coefficient summand has zero internal bracket. -/
-@[simp]
-theorem moduleCoefficients_lie (a b : ModuleCoefficients d ℳ p) : ⁅a, b⁆ = 0 :=
-  AbelianLie.lie_eq_zero a b
+abbrev ModuleCoefficients : Type _ := TauCeti.AbelianLieAlgebra (shiftedSubmodule ℳ d.monoid p)
 
 /-- Forget the zero bracket on the shifted coefficient summand. -/
 def moduleCoefficientsEquiv : ModuleCoefficients d ℳ p ≃ₗ[R] shiftedSubmodule ℳ d.monoid p :=
-  AbelianLie.linearEquiv R
+  TauCeti.AbelianLieAlgebra.equiv R _
 
 variable [DecidableEq Γ] {L : Type*} [LieRing L] [LieAlgebra R L]
   [LieRingModule L M] [LieModule R L M]
@@ -65,7 +60,7 @@ def actionDerivationHom :
   toFun x :=
     { toLinearMap := actionEndHom d ℳ p ℒ x
       leibniz' a b := by
-        simp only [moduleCoefficients_lie, sub_zero]
+        simp only [TauCeti.AbelianLieAlgebra.lie_eq_zero, sub_zero]
         exact map_zero _ }
   map_add' x y := by
     ext a
@@ -114,7 +109,7 @@ abbrev moduleInclusion : ModuleCoefficients d ℳ p →ₗ⁅R⁆ ProbeLie d ℳ
 /-- The bracket of two coefficient inputs vanishes in the probe. -/
 theorem lie_moduleInclusion (a b : ModuleCoefficients d ℳ p) :
     ⁅moduleInclusion d ℳ p ℒ a, moduleInclusion d ℳ p ℒ b⁆ = 0 := by
-  rw [← LieHom.map_lie, moduleCoefficients_lie, map_zero]
+  rw [← LieHom.map_lie, TauCeti.AbelianLieAlgebra.lie_eq_zero, map_zero]
 
 /-- The mixed bracket is exactly the original restricted coefficient action. -/
 theorem lie_baseInclusion_moduleInclusion (x : L) (a : ModuleCoefficients d ℳ p) :

@@ -36,21 +36,23 @@ algebra with the trivial square-zero extension.
 
 public section
 
+open TauCeti (AbelianLieAlgebra)
+
 open TauCeti.UniversalEnvelopingAlgebra (degreeFiltration ι_mem_degreeFiltration)
 
 open TauCeti (AlgFiltration)
 
 namespace Mei.UniversalEnvelopingAlgebra.Examples
 
-open _root_.UniversalEnvelopingAlgebra Mei.AbelianLie
+open _root_.UniversalEnvelopingAlgebra Mei.AbelianLieAlgebra
 
 variable {S : Type*} (R : Type*) [CommRing R]
 
-/-- The degree filtration of the enveloping algebra of `AbelianLie (S →₀ R)`, graded by
+/-- The degree filtration of the enveloping algebra of `AbelianLieAlgebra (S →₀ R)`, graded by
 `deg : S → ℕ`, where a natural number has itself as integer degree. The negative-degree
 hypothesis of `degreeFiltration` holds vacuously, as no natural number is a negative integer. -/
 noncomputable abbrev abelianFiltration (deg : S → ℕ) :
-    AlgFiltration (UniversalEnvelopingAlgebra R (AbelianLie (S →₀ R))) :=
+    AlgFiltration (UniversalEnvelopingAlgebra R (AbelianLieAlgebra (S →₀ R))) :=
   degreeFiltration (grading R deg) (Nat.castAddMonoidHom ℤ) fun _ hn => by simp at hn; omega
 
 /-- Each basis generator lies in the term of the degree filtration given by its degree. -/
@@ -75,7 +77,7 @@ theorem line_sq_mem_abelianFiltration_two :
 
 /-- The enveloping algebra of the line `R x` is the polynomial ring `R[x]`, so `x ^ 2 ≠ 0`. -/
 theorem line_sq_ne_zero [Nontrivial R] : ι R (basis R ()) ^ 2 ≠ 0 := by
-  rw [← TauCeti.UniversalEnvelopingAlgebra.polynomialEquiv_X_pow R (AbelianLie (Unit →₀ R))
+  rw [← TauCeti.UniversalEnvelopingAlgebra.polynomialEquiv_X_pow R (AbelianLieAlgebra (Unit →₀ R))
     (basis R), map_ne_zero_iff _ (AlgEquiv.injective _)]
   exact (Polynomial.monic_X_pow 2).ne_zero
 
@@ -90,10 +92,10 @@ abbrev generatorDegree : ℕ → ℕ := fun s => s + 1
 theorem basis_notMem_augmentation_sq [Nontrivial R] (s : S) :
     ι R (basis R s) ∉
       (TauCeti.HopfIdeal.augmentation R
-        (UniversalEnvelopingAlgebra R (AbelianLie (S →₀ R)))).toIdeal ^ 2 := by
+        (UniversalEnvelopingAlgebra R (AbelianLieAlgebra (S →₀ R)))).toIdeal ^ 2 := by
   intro h
   have h0 := TauCeti.UniversalEnvelopingAlgebra.augmentationSqEquiv_mk_ι R
-    (AbelianLie (S →₀ R)) (basis R s)
+    (AbelianLieAlgebra (S →₀ R)) (basis R s)
   rw [(Ideal.Quotient.eq_zero_iff_mem).mpr h, map_zero] at h0
   exact (basis R).ne_zero s (by simpa using congrArg TrivSqZeroExt.snd h0.symm)
 
@@ -102,7 +104,7 @@ positive degree lies in the square of the augmentation ideal. -/
 theorem not_abelianFiltration_le_augmentation_sq [Nontrivial R] (n : ℕ) :
     ¬ (abelianFiltration R generatorDegree).ideal n ≤
       (TauCeti.HopfIdeal.augmentation R
-        (UniversalEnvelopingAlgebra R (AbelianLie (ℕ →₀ R)))).toIdeal ^ 2 := by
+        (UniversalEnvelopingAlgebra R (AbelianLieAlgebra (ℕ →₀ R)))).toIdeal ^ 2 := by
   intro h
   exact basis_notMem_augmentation_sq R n
     (h (AlgFiltration.antitone _ n.le_succ (basis_mem_abelianFiltration R generatorDegree n)))
@@ -114,7 +116,7 @@ theorem not_isCofinalFor_augmentation_pow_abelianFiltration [Nontrivial R] :
     ¬ IsCofinalFor
       (Set.range fun k : ℕ => OrderDual.toDual
         ((TauCeti.HopfIdeal.augmentation R
-          (UniversalEnvelopingAlgebra R (AbelianLie (ℕ →₀ R)))).toIdeal ^ k))
+          (UniversalEnvelopingAlgebra R (AbelianLieAlgebra (ℕ →₀ R)))).toIdeal ^ k))
       (Set.range fun n : ℕ =>
         OrderDual.toDual ((abelianFiltration R generatorDegree).ideal n)) := by
   intro h
