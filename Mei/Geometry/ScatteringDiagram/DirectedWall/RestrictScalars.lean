@@ -26,6 +26,22 @@ algebras over `R` and over `S` that preserves the restricted wall spaces maps a 
 a wall for the wall spaces `H'` over `S` (`DirectedWall.mapRestrictScalars`): restrict scalars,
 apply the fixed-degree map `DirectedWall.map` and undo the restriction. The normal, supported
 ray and support are retained, so incomingness and outgoingness are preserved.
+
+Degree-changing pushforwards combine with these coefficient changes. Pushforward data `P` between
+wall spaces over `R` restrict to pushforward data between the restricted wall spaces
+(`DirectedWall.Pushforward.restrictScalars`), and restriction of scalars commutes with pushforward
+(`DirectedWall.restrictScalars_pushforward`). For pushforward data `P` between
+`H.restrictScalars K` and `H'.restrictScalars K`, with `H'` over `S`, the cross-ring pushforward
+`W.pushforwardRestrictScalars P` restricts scalars, pushes forward along `P` and undoes the
+restriction over `S`. It has the image normal, the reindexed ray and the spatial image of the
+support, and it preserves and reflects incomingness and outgoingness
+(`DirectedWall.incoming_pushforwardRestrictScalars_iff`,
+`DirectedWall.outgoing_pushforwardRestrictScalars_iff`). Along fixed-degree data it is
+`DirectedWall.mapRestrictScalars` (`DirectedWall.pushforwardRestrictScalars_ofFixedDegree`), along
+the restriction of data over a single ring it is `DirectedWall.pushforward`
+(`DirectedWall.pushforwardRestrictScalars_restrictScalars`), and successive cross-ring
+pushforwards over `K` compose
+(`DirectedWall.pushforwardRestrictScalars_pushforwardRestrictScalars`).
 -/
 
 public section
@@ -220,5 +236,217 @@ theorem outgoing_mapRestrictScalars_iff : (W.mapRestrictScalars f hf).Outgoing �
   simp only [outgoing_iff, mapRestrictScalars_ray, mapRestrictScalars_support]
 
 end Map
+
+section Pushforward
+
+variable {Γ' Γ'' Λ' Λ'' S T V' V'' : Type*} {L' L'' : Type u}
+  [AddCommGroup Γ'] [AddCommGroup Γ''] [AddCommGroup Λ'] [AddCommGroup Λ'']
+  [NormedAddCommGroup V'] [NormedSpace ℝ V'] [NormedAddCommGroup V''] [NormedSpace ℝ V'']
+  {ρ' : Γ' →+ Λ'} {ρ'' : Γ'' →+ Λ''} {d' : PositiveDegrees Γ'} {d'' : PositiveDegrees Γ''}
+  {i' : Λ' →+ V'} {i'' : Λ'' →+ V''}
+  {h' : TauCeti.Toric.IsIntegralLattice i'} {h'' : TauCeti.Toric.IsIntegralLattice i''}
+
+section Data
+
+omit [Algebra ℚ K] [Algebra ℚ R] [LieAlgebra ℚ L] [IsScalarTower ℚ K L] [IsScalarTower ℚ R L]
+  [DecidableEq Γ] [GradedLieAlgebra ℒ] [IsPositiveGrading d ℒ]
+
+variable [LieRing L'] [LieAlgebra R L'] [LieAlgebra K L'] [IsScalarTower K R L']
+  {ℳ : Γ' → Submodule R L'} {H' : DirectedWallSpaces ρ' ℳ}
+
+variable (K) in
+/-- Regard pushforward data between wall spaces over `R` as pushforward data between the wall
+spaces restricted to the smaller scalar ring `K`, with the scalar restriction of the Lie map and
+the same degree, ray, normal and spatial maps. -/
+def Pushforward.restrictScalars (P : Pushforward d d' h h' H H') :
+    Pushforward d d' h h' (H.restrictScalars K) (H'.restrictScalars K) where
+  degreeMap := P.degreeMap
+  lieHom := P.lieHom.restrictScalars K
+  rayMap := P.rayMap
+  mem_rayDegrees_rayMap := P.mem_rayDegrees_rayMap
+  normalMap := P.normalMap
+  wall_mem n hn m x hx := by simpa using P.wall_mem n hn m x (by simpa using hx)
+  spatialMap := P.spatialMap
+  map_direction := P.map_direction
+  realCharacter_normalMap := P.realCharacter_normalMap
+
+variable (P : Pushforward d d' h h' H H')
+
+/-- Restricting the scalars of pushforward data keeps the degree map. -/
+@[simp]
+theorem Pushforward.restrictScalars_degreeMap :
+    (P.restrictScalars K).degreeMap = P.degreeMap := (rfl)
+
+/-- Restricting the scalars of pushforward data keeps the values of the Lie map. -/
+@[simp]
+theorem Pushforward.restrictScalars_lieHom_apply (x : L) :
+    (P.restrictScalars K).lieHom x = P.lieHom x :=
+  GradedLieHom.restrictScalars_apply P.lieHom x
+
+/-- Restricting the scalars of pushforward data keeps the ray map. -/
+@[simp]
+theorem Pushforward.restrictScalars_rayMap : (P.restrictScalars K).rayMap = P.rayMap := (rfl)
+
+/-- Restricting the scalars of pushforward data keeps the normal map. -/
+@[simp]
+theorem Pushforward.restrictScalars_normalMap :
+    (P.restrictScalars K).normalMap = P.normalMap := (rfl)
+
+/-- Restricting the scalars of pushforward data keeps the spatial map. -/
+@[simp]
+theorem Pushforward.restrictScalars_spatialMap :
+    (P.restrictScalars K).spatialMap = P.spatialMap := (rfl)
+
+end Data
+
+section DataCompletion
+
+variable [LieRing L'] [LieAlgebra R L'] [LieAlgebra K L'] [IsScalarTower K R L']
+  [LieAlgebra ℚ L'] [IsScalarTower ℚ K L'] [IsScalarTower ℚ R L'] [DecidableEq Γ']
+  {ℳ : Γ' → Submodule R L'} [GradedLieAlgebra ℳ] [IsPositiveGrading d' ℳ]
+  {H' : DirectedWallSpaces ρ' ℳ} (P : Pushforward d d' h h' H H')
+  (W : DirectedWall (d := d) h H)
+
+omit [Algebra ℚ R] [IsScalarTower ℚ R L] [IsScalarTower ℚ R L'] in
+/-- The completed Lie map of the restricted data is the completed map of the restricted Lie
+map. -/
+@[simp]
+theorem Pushforward.restrictScalars_lieHom_completedMap :
+    (P.restrictScalars K).lieHom.completedMap = (P.lieHom.restrictScalars K).completedMap :=
+  -- The Lie map of the restricted data is `P.lieHom.restrictScalars K` by definition.
+  (rfl)
+
+/-- Restricting scalars commutes with pushforward along pushforward data over `R`. -/
+@[simp]
+theorem restrictScalars_pushforward :
+    (W.pushforward P).restrictScalars K = (W.restrictScalars K).pushforward
+      (P.restrictScalars K) := by
+  apply DirectedWall.ext
+  · rw [restrictScalars_normal, pushforward_normal, pushforward_normal,
+      Pushforward.restrictScalars_normalMap, restrictScalars_normal]
+  · rw [restrictScalars_ray, pushforward_ray, pushforward_ray,
+      Pushforward.restrictScalars_rayMap, restrictScalars_ray]
+  · rw [restrictScalars_support, pushforward_support, pushforward_support,
+      Pushforward.restrictScalars_spatialMap, restrictScalars_support]
+  · rw [restrictScalars_label, pushforward_label, pushforward_label,
+      Pushforward.restrictScalars_lieHom_completedMap, restrictScalars_label,
+      MulEquiv.symm_apply_eq]
+    -- Scalar restriction of completed BCH groups is natural in graded Lie maps.
+    simpa using (DFunLike.congr_fun (P.lieHom.completedMap_restrictScalars (R := K))
+      ((d.completedBCHRestrictScalarsEquiv (R := K) ℒ).symm W.label)).symm
+
+end DataCompletion
+
+variable [CommRing S] [Algebra ℚ S] [SMul K S]
+  [LieRing L'] [LieAlgebra S L'] [LieAlgebra K L'] [LieAlgebra ℚ L']
+  [IsScalarTower K S L'] [IsScalarTower ℚ K L'] [IsScalarTower ℚ S L'] [DecidableEq Γ']
+  {ℳ : Γ' → Submodule S L'} [GradedLieAlgebra ℳ] [IsPositiveGrading d' ℳ]
+  {H' : DirectedWallSpaces ρ' ℳ}
+  (P : Pushforward d d' h h' (H.restrictScalars K) (H'.restrictScalars K))
+  (W : DirectedWall (d := d) h H)
+
+/-- Push a directed wall for wall spaces over `R` forward to wall spaces over `S`, along
+pushforward data `P` between the wall spaces restricted to the common scalar ring `K`: restrict
+scalars, push forward along `P` and undo the restriction over `S`. The degree map of `P` may
+change the degree lattice and carry a cutoff modulus. -/
+def pushforwardRestrictScalars : DirectedWall (d := d') h' H' :=
+  ((W.restrictScalars K).pushforward P).ofRestrictScalars
+
+/-- The cross-ring pushforward is the pushforward of the restricted wall, read back over the
+target coefficient ring. -/
+theorem pushforwardRestrictScalars_def :
+    W.pushforwardRestrictScalars P = ((W.restrictScalars K).pushforward P).ofRestrictScalars :=
+  (rfl)
+
+/-- The cross-ring pushforward has the image normal. -/
+@[simp]
+theorem pushforwardRestrictScalars_normal :
+    (W.pushforwardRestrictScalars P).normal = P.normalMap W.normal := by
+  rw [pushforwardRestrictScalars_def, ofRestrictScalars_normal, pushforward_normal,
+    restrictScalars_normal]
+
+/-- The cross-ring pushforward has the reindexed ray. -/
+@[simp]
+theorem pushforwardRestrictScalars_ray :
+    (W.pushforwardRestrictScalars P).ray = P.rayMap W.ray := by
+  rw [pushforwardRestrictScalars_def, ofRestrictScalars_ray, pushforward_ray,
+    restrictScalars_ray]
+
+/-- The cross-ring pushforward has the spatial image of the support. -/
+@[simp]
+theorem pushforwardRestrictScalars_support :
+    (W.pushforwardRestrictScalars P).support = P.spatialMap '' W.support := by
+  rw [pushforwardRestrictScalars_def, ofRestrictScalars_support, pushforward_support,
+    restrictScalars_support]
+
+/-- The label of the cross-ring pushforward is the completed image of the label through the two
+scalar-restriction comparisons. -/
+@[simp]
+theorem pushforwardRestrictScalars_label :
+    (W.pushforwardRestrictScalars P).label = d'.completedBCHRestrictScalarsEquiv (R := K) ℳ
+      (P.lieHom.completedMap ((d.completedBCHRestrictScalarsEquiv (R := K) ℒ).symm W.label)) := by
+  rw [pushforwardRestrictScalars_def, ofRestrictScalars_label, pushforward_label,
+    restrictScalars_label]
+
+/-- Restricting the scalars of the cross-ring pushforward gives the pushforward of the restricted
+wall. -/
+@[simp]
+theorem restrictScalars_pushforwardRestrictScalars :
+    (W.pushforwardRestrictScalars P).restrictScalars K = (W.restrictScalars K).pushforward P := by
+  rw [pushforwardRestrictScalars_def, restrictScalars_ofRestrictScalars]
+
+/-- The cross-ring pushforward preserves and reflects incomingness. -/
+@[simp]
+theorem incoming_pushforwardRestrictScalars_iff :
+    (W.pushforwardRestrictScalars P).Incoming ↔ W.Incoming := by
+  rw [← incoming_restrictScalars_iff (K := K), restrictScalars_pushforwardRestrictScalars,
+    incoming_pushforward_iff, incoming_restrictScalars_iff]
+
+/-- The cross-ring pushforward preserves and reflects outgoingness. -/
+@[simp]
+theorem outgoing_pushforwardRestrictScalars_iff :
+    (W.pushforwardRestrictScalars P).Outgoing ↔ W.Outgoing := by
+  rw [← outgoing_restrictScalars_iff (K := K), restrictScalars_pushforwardRestrictScalars,
+    outgoing_pushforward_iff, outgoing_restrictScalars_iff]
+
+/-- Along fixed-degree coefficient data, the cross-ring pushforward is the coefficient change
+`DirectedWall.mapRestrictScalars`. -/
+@[simp]
+theorem pushforwardRestrictScalars_ofFixedDegree {ℳ : Γ → Submodule S L'} [GradedLieAlgebra ℳ]
+    [IsPositiveGrading d ℳ] {H' : DirectedWallSpaces ρ ℳ}
+    (f : GradedLieHom (PositiveDegreeMap.id d) (fun n => (ℒ n).restrictScalars K)
+      (fun n => (ℳ n).restrictScalars K))
+    (hf : ∀ n m, ∀ x ∈ (H.restrictScalars K).wall n m, f x ∈ (H'.restrictScalars K).wall n m) :
+    W.pushforwardRestrictScalars (Pushforward.ofFixedDegree f hf) = W.mapRestrictScalars f hf := by
+  rw [pushforwardRestrictScalars_def, pushforward_ofFixedDegree, mapRestrictScalars_def]
+
+omit [CommRing S] [Algebra ℚ S] [SMul K S] [LieAlgebra S L'] [IsScalarTower K S L']
+  [IsScalarTower ℚ S L'] in
+/-- Over a single coefficient ring, the cross-ring pushforward along the scalar restriction of
+pushforward data is the pushforward. -/
+@[simp]
+theorem pushforwardRestrictScalars_restrictScalars [LieAlgebra R L'] [IsScalarTower K R L']
+    [IsScalarTower ℚ R L'] {ℳ : Γ' → Submodule R L'} [GradedLieAlgebra ℳ]
+    [IsPositiveGrading d' ℳ] {H' : DirectedWallSpaces ρ' ℳ}
+    (P : Pushforward d d' h h' H H') :
+    W.pushforwardRestrictScalars (P.restrictScalars K) = W.pushforward P := by
+  rw [pushforwardRestrictScalars_def, ← restrictScalars_pushforward,
+    ofRestrictScalars_restrictScalars]
+
+/-- Successive cross-ring pushforwards over a common scalar ring `K` agree with the cross-ring
+pushforward along the composite data. -/
+@[simp]
+theorem pushforwardRestrictScalars_pushforwardRestrictScalars [CommRing T] [Algebra ℚ T]
+    [SMul K T] [LieRing L''] [LieAlgebra T L''] [LieAlgebra K L''] [LieAlgebra ℚ L'']
+    [IsScalarTower K T L''] [IsScalarTower ℚ K L''] [IsScalarTower ℚ T L''] [DecidableEq Γ'']
+    {ℋ : Γ'' → Submodule T L''} [GradedLieAlgebra ℋ] [IsPositiveGrading d'' ℋ]
+    {H'' : DirectedWallSpaces ρ'' ℋ}
+    (Q : Pushforward d' d'' h' h'' (H'.restrictScalars K) (H''.restrictScalars K)) :
+    (W.pushforwardRestrictScalars P).pushforwardRestrictScalars Q =
+      W.pushforwardRestrictScalars (Q.comp P) := by
+  rw [pushforwardRestrictScalars_def, restrictScalars_pushforwardRestrictScalars,
+    pushforward_pushforward, pushforwardRestrictScalars_def]
+
+end Pushforward
 
 end Mei.DirectedWall
