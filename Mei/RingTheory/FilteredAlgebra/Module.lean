@@ -51,7 +51,6 @@ abbrev toModuleFiltration : ModuleFiltration R A where
   zero_eq_top := F.toSubmodule_zero R
 
 /-- Each module filtration term is the scalar restriction of the original ideal. -/
-@[simp]
 theorem toModuleFiltration_submodule (k : ℕ) :
     (F.toModuleFiltration R).submodule k = (F.ideal k).restrictScalars R := (rfl)
 

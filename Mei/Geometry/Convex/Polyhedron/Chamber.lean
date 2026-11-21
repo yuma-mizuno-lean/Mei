@@ -96,8 +96,7 @@ private theorem lineMap_reachable [Finite ι] {W : ι → Set V} {U : Set V}
 /-- Any two allowed points of an open convex region have chambers joined by
 a finite adjacency walk, with each edge witnessed by a regular closure point
 inside the region. No connectivity of the wall complement is assumed. -/
-theorem chamberGraph_reachable {U : Set V} (hconv : Convex ℝ U)
-    [FiniteDimensional ℝ V] [Finite ι]
+theorem chamberGraph_reachable {U : Set V} (hconv : Convex ℝ U) [Finite ι]
     (W : ι → Set V) (hpoly : ∀ i, TauCeti.IsConvexPolyhedron (W i))
     (hdim : ∀ i, Module.finrank ℝ (affineSpan ℝ (W i)).direction + 1 = Module.finrank ℝ V)
     (hU : IsOpen U) (x y : ↥(U \ ⋃ i, W i)) :
@@ -115,8 +114,7 @@ theorem chamberGraph_reachable {U : Set V} (hconv : Convex ℝ U)
 
 /-- The chamber graph of an open convex region is preconnected, including
 the empty region and empty wall family. -/
-theorem chamberGraph_preconnected {U : Set V} (hconv : Convex ℝ U)
-    [FiniteDimensional ℝ V] [Finite ι]
+theorem chamberGraph_preconnected {U : Set V} (hconv : Convex ℝ U) [Finite ι]
     (W : ι → Set V) (hpoly : ∀ i, TauCeti.IsConvexPolyhedron (W i))
     (hdim : ∀ i, Module.finrank ℝ (affineSpan ℝ (W i)).direction + 1 = Module.finrank ℝ V)
     (hU : IsOpen U) : (chamberGraph W U).Preconnected := by
