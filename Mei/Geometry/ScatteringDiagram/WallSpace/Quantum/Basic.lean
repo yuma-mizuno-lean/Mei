@@ -16,7 +16,8 @@ normal is nonzero and rationally proportional to `β(n,-)`, and zero otherwise.
 We express proportionality by equality of kernels of integer characters; this is
 equivalent to equality of nonzero integer multiples. Eligibility depends on the
 integral alternating form, even when the quantum parameter specializes to one
-or to a root of unity.
+or to a root of unity. Over a nontrivial ring, the wall space is nonzero exactly for
+the eligible normals (`QuantumMonoidAlgebra.wallSubmodule_ne_bot_iff`).
 
 The contracted-normal identity proves the directed bracket law. When the two
 spatial degrees pair to zero, their quantum commutator vanishes; otherwise the
@@ -72,6 +73,17 @@ theorem mem_wallSubmodule_iff (n : Γ) (m : Γ →+ ℤ) (x : QuantumMonoidAlgeb
       · exact hx
   · simp only [wallSubmodule, ite_eq_right h, Submodule.mem_bot]
     tauto
+
+/-- Over a nontrivial ring, the quantum wall space is nonzero exactly when the normal is nonzero
+and has the kernel of `β(n,-)`. -/
+theorem wallSubmodule_ne_bot_iff [Nontrivial R] (n : Γ) (m : Γ →+ ℤ) :
+    wallSubmodule q β n m ≠ ⊥ ↔ m ≠ 0 ∧ m.ker = (β n).toAddMonoidHom.ker := by
+  refine ⟨fun h => ?_, fun h => ?_⟩
+  · by_contra hc
+    exact h (by simp only [wallSubmodule, ite_eq_right hc])
+  · rw [wallSubmodule_eq_grade q β h.1 h.2, Submodule.ne_bot_iff]
+    exact ⟨monomial q β n, (mem_grade_iff q β n _).mpr ⟨1, one_smul _ _⟩,
+      by simpa only [basis_apply] using (basis q β).ne_zero n⟩
 
 /-- The zero normal has no quantum wall elements. -/
 @[simp]
