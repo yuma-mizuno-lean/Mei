@@ -55,7 +55,7 @@ variable {N V R L : Type*} [AddCommGroup N]
 /-- At a regular point, distinct incident homogeneous walls have distinct degrees. -/
 theorem homogeneousPresentation_wallIndices_degree_injOn (k : ℕ) (θ : V)
     (hθ : ∀ k, θ ∉ singularSupport (fun P : (C k).walls => (P : Set V))) :
-    Set.InjOn (fun a : D.homogeneousPresentation.active k => a.1.1.val)
+    Set.InjOn (fun a : D.homogeneousPresentation.active k => a.val.1.val)
       (D.homogeneousPresentation.wallIndices k {θ} : Set (D.homogeneousPresentation.active k)) := by
   rintro ⟨⟨n, P⟩, hPa⟩ hP ⟨⟨m, Q⟩, hQa⟩ hQ he
   have hnm : n = m := Subtype.ext he
@@ -74,7 +74,7 @@ logarithmic coefficients of the completed germ. -/
 @[simp↓]
 theorem mem_image_homogeneousPresentation_wallIndices (k : ℕ) (θ : V)
     (hθ : ∀ k, θ ∉ singularSupport (fun P : (C k).walls => (P : Set V))) (n : N) :
-    n ∈ (D.homogeneousPresentation.wallIndices k {θ}).image (fun a => a.1.1.val) ↔
+    n ∈ (D.homogeneousPresentation.wallIndices k {θ}).image (fun a => a.val.1.val) ↔
       d.degree n ≤ k ∧ d.logComponent ℒ (D.germLabel θ hθ) n ≠ 0 := by
   classical
   constructor

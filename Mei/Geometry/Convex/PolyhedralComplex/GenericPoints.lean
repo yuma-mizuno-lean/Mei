@@ -40,7 +40,7 @@ theorem denseRange_arrangementCoefficientPoints [Countable J]
   let := h.finiteDimensional
   have hdAll : Dense {x : C.regularSpace | ∀ j, (A j).IsGeneric x.val} :=
     (ExceptionalArrangement.dense_iInter_isGeneric A).preimage
-      C.isOpen_regularLocus.isOpenMap_subtype_val
+      C.isOpen_regularLocus.isOpenMap_subtypeVal
   have hdPoints := C.dense_coefficientPoints.inter_of_isOpen_left hdAll C.isOpen_coefficientPoints
   unfold DenseRange
   apply hdPoints.mono

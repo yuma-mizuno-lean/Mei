@@ -51,31 +51,31 @@ def IsSubdivision.restrictChamber (hCD : C.IsSubdivision D) :
     Chamber (fun Q : C.walls => (Q : Set V)) → Chamber (fun P : D.walls => (P : Set V)) :=
   Continuous.connectedComponentsMap
     (f := fun x : {x : V | ∀ Q : C.walls, x ∉ (Q : Set V)} =>
-      (⟨x.1, hCD.forall_notMem_walls x.2⟩ : {x : V | ∀ P : D.walls, x ∉ (P : Set V)}))
-    (continuous_subtype_val.subtype_mk _)
+      (⟨x.val, hCD.forall_notMem_walls x.property⟩ : {x : V | ∀ P : D.walls, x ∉ (P : Set V)}))
+    (continuous_subtypeVal.subtype_mk _)
 
 /-- The restriction of the chamber of a point is the chamber of the same point. -/
 @[simp]
 theorem IsSubdivision.restrictChamber_mk (hCD : C.IsSubdivision D)
     (x : {x : V | ∀ Q : C.walls, x ∉ (Q : Set V)}) :
     hCD.restrictChamber (ConnectedComponents.mk x) =
-      ConnectedComponents.mk ⟨x.1, hCD.forall_notMem_walls x.2⟩ :=
+      ConnectedComponents.mk ⟨x.val, hCD.forall_notMem_walls x.property⟩ :=
   Continuous.connectedComponentsMap_mk _ x
 
 /-- A point of a chamber lies in the restricted chamber. -/
 theorem IsSubdivision.mem_carrier_restrictChamber (hCD : C.IsSubdivision D)
-    {c : Chamber (fun Q : C.walls => (Q : Set V))} {z : V} (hz : z ∈ c.carrier) :
-    z ∈ (hCD.restrictChamber c).carrier := by
-  obtain ⟨hzs, rfl⟩ := ConnectedComponents.mem_carrier_iff.mp hz
-  exact ConnectedComponents.mem_carrier_iff.mpr ⟨hCD.forall_notMem_walls hzs,
+    {c : Chamber (fun Q : C.walls => (Q : Set V))} {z : V} (hz : z ∈ c.carrierIn) :
+    z ∈ (hCD.restrictChamber c).carrierIn := by
+  obtain ⟨hzs, rfl⟩ := ConnectedComponents.mem_carrierIn_iff.mp hz
+  exact ConnectedComponents.mem_carrierIn_iff.mpr ⟨hCD.forall_notMem_walls hzs,
     (hCD.restrictChamber_mk ⟨z, hzs⟩).symm⟩
 
 /-- A chamber restricts to any chamber of the coarser complex sharing a point with it. -/
 theorem IsSubdivision.restrictChamber_eq_of_mem_carrier (hCD : C.IsSubdivision D)
     {c : Chamber (fun Q : C.walls => (Q : Set V))}
-    {c' : Chamber (fun P : D.walls => (P : Set V))} {z : V} (hz : z ∈ c.carrier)
-    (hz' : z ∈ c'.carrier) : hCD.restrictChamber c = c' :=
-  ConnectedComponents.eq_of_mem_carrier (hCD.mem_carrier_restrictChamber hz) hz'
+    {c' : Chamber (fun P : D.walls => (P : Set V))} {z : V} (hz : z ∈ c.carrierIn)
+    (hz' : z ∈ c'.carrierIn) : hCD.restrictChamber c = c' :=
+  ConnectedComponents.eq_of_mem_carrierIn (hCD.mem_carrier_restrictChamber hz) hz'
 
 /-- The restriction of the chamber of an allowed endpoint is the chamber of the same point,
 viewed as an allowed endpoint of the coarser complex. -/
@@ -147,17 +147,17 @@ theorem IsSubdivision.restrictChamber_positiveChamber_eq_negativeChamber
   have hv' : 0 < ν v := by rw [hv]; exact one_pos
   -- The chamber of `D` containing `q` is a neighborhood of `q`, so both short transverse rays
   -- from `q` eventually lie in it.
-  have hcar : (ConnectedComponents.mk (⟨q, hqD⟩ : {x : V | ∀ P : D.walls, x ∉ (P : Set V)})).carrier
-      ∈ 𝓝 q := by
-    rw [ConnectedComponents.carrier_mk]
+  have hcar : (ConnectedComponents.mk
+      (⟨q, hqD⟩ : {x : V | ∀ P : D.walls, x ∉ (P : Set V)})).carrierIn ∈ 𝓝 q := by
+    rw [ConnectedComponents.carrierIn_mk]
     exact connectedComponentIn_mem_nhds (hopen.mem_nhds hqD)
   have hadd : ∀ᶠ t : ℝ in 𝓝[>] 0, q + t • v ∈ (ConnectedComponents.mk
-      (⟨q, hqD⟩ : {x : V | ∀ P : D.walls, x ∉ (P : Set V)})).carrier :=
+      (⟨q, hqD⟩ : {x : V | ∀ P : D.walls, x ∉ (P : Set V)})).carrierIn :=
     nhdsWithin_le_nhds
       (((by fun_prop : Continuous fun t : ℝ => q + t • v).tendsto' 0 q (by simp)).eventually
         hcar)
   have hsub : ∀ᶠ t : ℝ in 𝓝[>] 0, q - t • v ∈ (ConnectedComponents.mk
-      (⟨q, hqD⟩ : {x : V | ∀ P : D.walls, x ∉ (P : Set V)})).carrier :=
+      (⟨q, hqD⟩ : {x : V | ∀ P : D.walls, x ∉ (P : Set V)})).carrierIn :=
     nhdsWithin_le_nhds
       (((by fun_prop : Continuous fun t : ℝ => q - t • v).tendsto' 0 q (by simp)).eventually
         hcar)
@@ -251,7 +251,7 @@ theorem segmentCrossingLetters_coarsen (hCD : C.IsSubdivision D)
   have hv : y'.val - x'.val = y.val - x.val := by rw [hx, hy]
   rw [segmentCrossingLetters_def, segmentCrossingLetters_def,
     orderedCrossings_coarsen hCD e e' hx hy, List.map_filterMap, List.filterMap_map]
-  refine List.filterMap_congr fun a _ => ?_
+  refine List.filterMap_congr rfl fun a _ => ?_
   rw [Function.comp_apply]
   cases hf : coarsenCrossing (D := D) a with
   | none =>

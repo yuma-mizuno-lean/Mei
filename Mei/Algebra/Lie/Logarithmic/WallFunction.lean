@@ -74,8 +74,8 @@ variable [DecidableEq Γ]
 private def tangentFieldValue (q : T) : tropicalVertexLieAlgebra (R := R) d ρ :=
   if hq : (q : Γ) = 0 then 0 else
     ⟨LogarithmicVectorField.single ρ q m, single_mem_tropicalVertexLieAlgebra d ρ
-      ((mem_tropicalTangentMonoid d ρ m q).mp q.2).1 hq m
-      ((mem_tropicalTangentMonoid d ρ m q).mp q.2).2⟩
+      ((mem_tropicalTangentMonoid d ρ m q).mp q.property).1 hq m
+      ((mem_tropicalTangentMonoid d ρ m q).mp q.property).2⟩
 
 /-- The positive tangent field `u ∂_m` of a coefficient `u` supported on tangent degrees.
 The constant coefficient is discarded, since degree zero carries no positive field. -/
@@ -132,7 +132,7 @@ theorem monomialDerivation_zero_tropicalTangentInclusion (u : R[T]) :
   | zero => simp
   | add a b ha hb => simp only [mapDomain_add, map_add, ha, hb, add_zero]
   | single q c =>
-    simp [((mem_tropicalTangentMonoid d ρ m q).mp q.2).2]
+    simp [((mem_tropicalTangentMonoid d ρ m q).mp q.property).2]
 
 omit [DecidableEq Γ] in
 /-- Including tangent coefficients preserves coefficient order. -/
@@ -153,10 +153,10 @@ theorem coeff_zero_eq_zero_of_mem_filtration_ideal_one {v : R[T]} (hv : v ∈ (G
     ext q
     simp only [AddSubmonoid.mem_comap, AddSubmonoid.subtype_apply, AddSubmonoid.mem_top,
       iff_true]
-    exact ((mem_tropicalTangentMonoid d ρ m q).mp q.2).1
+    exact ((mem_tropicalTangentMonoid d ρ m q).mp q.property).1
   rw [TropicalVertexCoefficientAction.filtration_ideal, htop,
     AddSubmonoid.mem_monoidAlgebraIdeal_top_iff_of_nonneg
-      (fun q : T => d.degree_nonneg ((mem_tropicalTangentMonoid d ρ m q).mp q.2).1)] at hv
+      (fun q : T => d.degree_nonneg ((mem_tropicalTangentMonoid d ρ m q).mp q.property).1)] at hv
   by_contra h
   have hd := hv 0 (Finsupp.mem_support_iff.mpr h)
   simp at hd
@@ -175,7 +175,7 @@ theorem tropicalVertexCoefficientAction_tropicalTangentField (u : R[T])
     have : q = 0 := Subtype.ext h
     subst this
     simp [hu] at hq
-  have hqd := ((mem_tropicalTangentMonoid d ρ m q).mp q.2).1
+  have hqd := ((mem_tropicalTangentMonoid d ρ m q).mp q.property).1
   rw [tropicalVertexCoefficientAction_of_homogeneous d ρ Q hQ hqd _ (u.coeff q • m)
     (coe_tropicalTangentField_single d ρ m hq0 _).symm,
     AddMonoidAlgebra.monomialDerivation_eq_single_smul]
@@ -199,10 +199,10 @@ theorem tropicalTangentField_mem_degreeIdeal {k : ℕ} {v : R[T]} (hv : v ∈ (G
     ext q
     simp only [AddSubmonoid.mem_comap, AddSubmonoid.subtype_apply, AddSubmonoid.mem_top,
       iff_true]
-    exact ((mem_tropicalTangentMonoid d ρ m q).mp q.2).1
+    exact ((mem_tropicalTangentMonoid d ρ m q).mp q.property).1
   rw [TropicalVertexCoefficientAction.filtration_ideal, htop,
     AddSubmonoid.mem_monoidAlgebraIdeal_top_iff_of_nonneg
-      (fun q : T => d.degree_nonneg ((mem_tropicalTangentMonoid d ρ m q).mp q.2).1)] at hv
+      (fun q : T => d.degree_nonneg ((mem_tropicalTangentMonoid d ρ m q).mp q.property).1)] at hv
   rw [← sum_coeff_single v, Finsupp.sum, map_sum]
   refine Submodule.sum_mem (d.degreeIdeal ℒ k).toSubmodule fun q hq => ?_
   by_cases hq0 : (q : Γ) = 0

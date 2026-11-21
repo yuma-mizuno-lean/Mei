@@ -517,7 +517,7 @@ theorem isProperMap_slabThetaChartPath (α : SlabThetaChartIndex t c n b) :
     funext Q
     exact slabThetaChartPath_apply_zero t c n b α Q.property
   apply isProperMap_of_comp_of_t2
-    ((slabThetaChartPath t c n b α).continuous.comp continuous_subtype_val)
+    ((slabThetaChartPath t c n b α).continuous.comp continuous_subtypeVal)
     (continuous_eval_const (0 : ℝ))
   -- Composition with evaluation at zero is the closed-domain inclusion.
   change IsProperMap (fun Q : closure (slabThetaChartDomain t c n b α) =>
@@ -552,7 +552,7 @@ theorem exists_slabThetaFamily_closedCharts :
   exact ⟨hne, hpoly, hlc, hsub, hpoly.isClosed.isClosedEmbedding_subtypeVal.isProperMap,
     (isProperMap_slabThetaChartPath t c n b α).comp
       (Topology.IsClosedEmbedding.inclusion hsub
-        (hpoly.isClosed.preimage continuous_subtype_val)).isProperMap⟩
+        (hpoly.isClosed.preimage continuous_subtypeVal)).isProperMap⟩
 
 /-- Common-family evaluation is exactly the actual theta evaluation, including
 constant sections and absent zero or singular crossing branches. -/

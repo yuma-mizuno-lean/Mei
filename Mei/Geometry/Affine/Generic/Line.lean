@@ -46,7 +46,7 @@ theorem exists_lineEvents {X : Type*} (E : ExceptionalArrangement ℝ V) (g : V 
   let : PreconnectedSpace B := isPreconnected_iff_preconnectedSpace.mp hB
   let L (b : B) := g (AffineMap.lineMap x y (b : ℝ))
   have hc : Continuous (fun b : B => AffineMap.lineMap x y (b : ℝ)) :=
-    AffineMap.lineMap_continuous.comp continuous_subtype_val
+    AffineMap.lineMap_continuous.comp continuous_subtypeVal
   have hlocal : IsLocallyConstant L := by
     apply (IsLocallyConstant.iff_eventually_eq L).mpr
     intro b

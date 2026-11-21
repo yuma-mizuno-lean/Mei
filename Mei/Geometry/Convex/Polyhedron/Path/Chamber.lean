@@ -6,7 +6,7 @@ Authors: Claude
 module
 
 public import Mei.Geometry.Convex.Polyhedron.AdmissiblePath
-public import Mei.Topology.Connected.Adjacency
+public import TauCeti.Topology.Connected.Adjacency
 public import Mei.Topology.Connected.Homeomorph
 
 /-!
@@ -19,7 +19,7 @@ wall-free set lie in one chamber; in particular a segment meeting no wall joins
 two points of the same chamber.
 
 Chambers are Mathlib's `ConnectedComponents` of the complement. Their ambient
-carriers are `ConnectedComponents.carrier`, so membership of a point that is not
+carriers are `ConnectedComponents.carrierIn`, so membership of a point that is not
 itself an allowed endpoint can be stated without choosing a proof that it avoids the
 walls. No closedness, finiteness or local finiteness of the walls is needed.
 
@@ -50,8 +50,8 @@ def chamber (x : WallComplement W) : Chamber W :=
 
 /-- An allowed endpoint lies in the carrier of its own chamber. -/
 @[simp]
-theorem val_mem_carrier_chamber (x : WallComplement W) : x.val ∈ (chamber x).carrier :=
-  ConnectedComponents.mem_carrier_iff.mpr ⟨x.notMem, rfl⟩
+theorem val_mem_carrier_chamber (x : WallComplement W) : x.val ∈ (chamber x).carrierIn :=
+  ConnectedComponents.mem_carrierIn_iff.mpr ⟨x.notMem, rfl⟩
 
 /-- Every chamber is the chamber of an allowed endpoint. -/
 theorem chamber_surjective : Function.Surjective (chamber (W := W)) := by
@@ -63,9 +63,9 @@ theorem chamber_surjective : Function.Surjective (chamber (W := W)) := by
 it has the chamber of any of its points. -/
 theorem chamber_eq_of_isPreconnected {A : Set V} (hA : IsPreconnected A)
     (hAW : ∀ a ∈ A, ∀ i, a ∉ W i) {x : WallComplement W} (hx : x.val ∈ A) {z : V}
-    (hz : z ∈ A) {c : Chamber W} (hzc : z ∈ c.carrier) : chamber x = c :=
-  ConnectedComponents.eq_of_mem_carrier (val_mem_carrier_chamber x)
-    (ConnectedComponents.subset_carrier_of_isPreconnected hA (fun a ha => hAW a ha) hz hzc hx)
+    (hz : z ∈ A) {c : Chamber W} (hzc : z ∈ c.carrierIn) : chamber x = c :=
+  ConnectedComponents.eq_of_mem_carrierIn (val_mem_carrier_chamber x)
+    (hA.subset_carrierIn (fun a ha => hAW a ha) hz hzc hx)
 
 section Transport
 
@@ -97,14 +97,14 @@ theorem chamberEquiv_chamber (x : WallComplement W) (x' : WallComplement W')
 
 include hW in
 /-- A point of the carrier of a chamber is carried into the carrier of the identified chamber. -/
-theorem image_mem_carrier_chamberEquiv {c : Chamber W} {z : V} (hz : z ∈ c.carrier) :
-    e z ∈ (chamberEquiv e r hW c).carrier := by
-  obtain ⟨hz', rfl⟩ := ConnectedComponents.mem_carrier_iff.mp hz
+theorem image_mem_carrier_chamberEquiv {c : Chamber W} {z : V} (hz : z ∈ c.carrierIn) :
+    e z ∈ (chamberEquiv e r hW c).carrierIn := by
+  obtain ⟨hz', rfl⟩ := ConnectedComponents.mem_carrierIn_iff.mp hz
   have hz'' : ∀ j, e z ∉ W' j := fun j hj => by
     obtain ⟨i, rfl⟩ := r.surjective j
     rw [hW, e.injective.mem_set_image] at hj
     exact hz' i hj
-  exact ConnectedComponents.mem_carrier_iff.mpr
+  exact ConnectedComponents.mem_carrierIn_iff.mpr
     ⟨hz'', (chamberEquiv_chamber e r hW ⟨z, hz'⟩ ⟨e z, hz''⟩ rfl).symm⟩
 
 end Transport

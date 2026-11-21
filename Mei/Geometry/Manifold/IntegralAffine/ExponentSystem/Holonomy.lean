@@ -58,7 +58,7 @@ variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ 
 /-- The frame change `τ_e(x)⁻¹ ≫ τ'_e(x)` between two trivializations does not depend on the
 chart. -/
 private theorem frame_symm_trans_frame_eq (τ : E.Trivialization Γ₀) (τ' : E.Trivialization Γ₀')
-    {e e' : atlas V B} {x : B} (hx : x ∈ e.1.source ∩ e'.1.source) :
+    {e e' : atlas V B} {x : B} (hx : x ∈ e.val.source ∩ e'.val.source) :
     (τ.frame e' x hx.2).symm.trans (τ'.frame e' x hx.2) =
       (τ.frame e x hx.1).symm.trans (τ'.frame e x hx.1) := by
   ext γ₀
@@ -73,24 +73,24 @@ variable [ConnectedSpace B]
 /-- On a connected space, two trivializations of an exponent system differ by a unique lattice
 isomorphism of the model fibres, in every chart and at every point. -/
 theorem existsUnique_frame_eq (τ : E.Trivialization Γ₀) (τ' : E.Trivialization Γ₀') :
-    ∃! c : Γ₀ ≃+ Γ₀', ∀ e x (hx : x ∈ e.1.source),
+    ∃! c : Γ₀ ≃+ Γ₀', ∀ e x (hx : x ∈ e.val.source),
       τ'.frame e x hx = (τ.frame e x hx).trans c := by
   let g : B → (Γ₀ ≃+ Γ₀') := fun x =>
     (τ.frame (achart V x) x (mem_achart_source V x)).symm.trans
       (τ'.frame (achart V x) x (mem_achart_source V x))
-  have hg (e : atlas V B) (x : B) (hx : x ∈ e.1.source) :
+  have hg (e : atlas V B) (x : B) (hx : x ∈ e.val.source) :
       g x = (τ.frame e x hx).symm.trans (τ'.frame e x hx) :=
     frame_symm_trans_frame_eq τ τ' ⟨hx, mem_achart_source V x⟩
   have hloc : IsLocallyConstant g := by
     rw [IsLocallyConstant.iff_eventually_eq]
     intro x
     have hx := mem_achart_source V x
-    filter_upwards [(achart V x).1.open_source.mem_nhds hx, τ.eventually_frame_eq hx,
+    filter_upwards [(achart V x).val.open_source.mem_nhds hx, τ.eventually_frame_eq hx,
       τ'.eventually_frame_eq hx] with y hy hτ hτ'
     rw [hg (achart V x) y hy, hτ hy, hτ' hy, hg (achart V x) x hx]
   have hconst (x : B) : g x = g (Classical.arbitrary B) :=
     hloc.apply_eq_of_preconnectedSpace _ _
-  have hfr (e : atlas V B) (x : B) (hx : x ∈ e.1.source) :
+  have hfr (e : atlas V B) (x : B) (hx : x ∈ e.val.source) :
       τ'.frame e x hx = (τ.frame e x hx).trans (g (Classical.arbitrary B)) := by
     rw [← hconst x, hg e x hx]
     ext γ
@@ -118,7 +118,7 @@ variable {τ τ'}
 the first to those of the second. -/
 theorem transition_eq_iff {c : Γ₀ ≃+ Γ₀'} :
     τ.transition τ' = c ↔
-      ∀ e x (hx : x ∈ e.1.source), τ'.frame e x hx = (τ.frame e x hx).trans c :=
+      ∀ e x (hx : x ∈ e.val.source), τ'.frame e x hx = (τ.frame e x hx).trans c :=
   ⟨fun hc => hc ▸ (existsUnique_frame_eq τ τ').exists.choose_spec,
     fun hc => (existsUnique_frame_eq τ τ').unique
       (existsUnique_frame_eq τ τ').exists.choose_spec hc⟩
@@ -126,7 +126,7 @@ theorem transition_eq_iff {c : Γ₀ ≃+ Γ₀'} :
 variable (τ τ')
 
 /-- The transition carries the frames of the first trivialization to those of the second. -/
-theorem frame_eq_trans_transition (e : atlas V B) (x : B) (hx : x ∈ e.1.source) :
+theorem frame_eq_trans_transition (e : atlas V B) (x : B) (hx : x ∈ e.val.source) :
     τ'.frame e x hx = (τ.frame e x hx).trans (τ.transition τ') :=
   transition_eq_iff.mp rfl e x hx
 
@@ -177,7 +177,7 @@ noncomputable def holonomy (τ : E.Trivialization Γ₀) : Γ₀ ≃+ Γ₀ :=
 /-- The holonomy is the unique automorphism of the model fibre carrying the frame of `τ` at `x`,
 precomposed with `σ`, to its frame at `f x`. -/
 theorem holonomy_eq_iff {c : Γ₀ ≃+ Γ₀} :
-    τ.holonomy f σ = c ↔ ∀ e x (hx : x ∈ e.1.source),
+    τ.holonomy f σ = c ↔ ∀ e x (hx : x ∈ e.val.source),
       τ.frame (f.chart e) (f x) ((f.mem_source_iff e).mp hx) =
         ((σ.app e x hx).trans (τ.frame e x hx)).trans c := by
   rw [holonomy, transition_eq_iff]
@@ -185,7 +185,7 @@ theorem holonomy_eq_iff {c : Γ₀ ≃+ Γ₀} :
 
 /-- A trivialization is equivariant under an atlas self-map of a connected space: its frame at
 `f x` is the holonomy applied to its frame at `x`, after identifying the fibres by `σ`. -/
-theorem holonomy_apply (e : atlas V B) (x : B) (hx : x ∈ e.1.source) (γ : Γ) :
+theorem holonomy_apply (e : atlas V B) (x : B) (hx : x ∈ e.val.source) (γ : Γ) :
     τ.frame (f.chart e) (f x) ((f.mem_source_iff e).mp hx) γ =
       τ.holonomy f σ (τ.frame e x hx (σ.app e x hx γ)) :=
   DFunLike.congr_fun ((holonomy_eq_iff f σ).mp rfl e x hx) γ
@@ -193,7 +193,7 @@ theorem holonomy_apply (e : atlas V B) (x : B) (hx : x ∈ e.1.source) (γ : Γ)
 /-- The holonomy along the identity atlas map is trivial, for the identity identification of the
 fibres. -/
 theorem holonomy_id (σ : (E.comap (AtlasMap.id V B)).Iso E)
-    (hσ : ∀ e x (hx : x ∈ e.1.source) γ, σ.app e x hx γ = γ) :
+    (hσ : ∀ e x (hx : x ∈ e.val.source) γ, σ.app e x hx γ = γ) :
     τ.holonomy (AtlasMap.id V B) σ = AddEquiv.refl Γ₀ :=
   (holonomy_eq_iff _ σ).mpr fun e x hx => by
     ext γ
@@ -203,7 +203,7 @@ theorem holonomy_id (σ : (E.comap (AtlasMap.id V B)).Iso E)
 composite is the composite of the identifications. -/
 theorem holonomy_comp (g : AtlasMap V B B) (σg : (E.comap g).Iso E)
     (σgf : (E.comap (g.comp f)).Iso E)
-    (hσ : ∀ e x (hx : x ∈ e.1.source) γ, σgf.app e x hx γ =
+    (hσ : ∀ e x (hx : x ∈ e.val.source) γ, σgf.app e x hx γ =
       σ.app e x hx (σg.app (f.chart e) (f x) ((f.mem_source_iff e).mp hx) γ)) :
     τ.holonomy (g.comp f) σgf = (τ.holonomy f σ).trans (τ.holonomy g σg) :=
   (holonomy_eq_iff _ σgf).mpr fun e x hx => by
@@ -216,7 +216,7 @@ theorem holonomy_comp (g : AtlasMap V B B) (σg : (E.comap g).Iso E)
 the tangent frames of a developing map `dev`, then the holonomy intertwines `ρ₀` with the lattice
 part of the integral affine holonomy of `dev`. -/
 theorem projection_holonomy (dev : DevelopingMap h B) (ρ₀ : Γ₀ →+ N)
-    (hρ : ∀ e x (hx : x ∈ e.1.source) γ,
+    (hρ : ∀ e x (hx : x ∈ e.val.source) γ,
       ρ₀ (τ.frame e x hx γ) = dev.tangentFrame e x hx (E.projection e γ)) (γ₀ : Γ₀) :
     ρ₀ (τ.holonomy f σ γ₀) = (dev.holonomy f).latticeEquiv (ρ₀ γ₀) := by
   set x := Classical.arbitrary B

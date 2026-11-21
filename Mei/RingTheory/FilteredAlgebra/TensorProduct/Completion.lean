@@ -49,8 +49,7 @@ theorem completedTensor_apply_eq_completionBilinear (x : F.completion) (y : G.co
     F.projection_moduleCompletionEquiv_symm_of_mk k x a ha,
     G.projection_moduleCompletionEquiv_symm_of_mk k y b hb,
     ModuleFiltration.quotientBilinear_mk _ _ _ _ (F.tmul_mem_tensorProduct R G)]
-  simp only [Submodule.Quotient.restrictScalarsEquiv_mk, Ideal.Quotient.mk_eq_mk,
-    TensorProduct.mk_apply]
+  simp only [restrictScalarsEquiv_toModuleFiltration_mk, TensorProduct.mk_apply]
 
 /-- Projection of a completed pure tensor is computed using only the order-`k` classes. -/
 @[simp]

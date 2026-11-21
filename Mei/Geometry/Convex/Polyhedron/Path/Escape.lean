@@ -150,23 +150,23 @@ theorem wallCrossingSum_eq_zero_of_notMem_recessionCone
     by_contra hcj
     exact hj ⟨⟨j, hcj⟩, rfl⟩
   -- Among those walls, return from `y` to `x` without crossing any.
-  have hpar' (s : S) : v ∈ (affineSpan ℝ (W s.1)).direction := by
-    rw [← hν s.1 s.2, LinearMap.mem_ker]
-    exact hpar s.1 s.2
+  have hpar' (s : S) : v ∈ (affineSpan ℝ (W s.val)).direction := by
+    rw [← hν s.val s.property, LinearMap.mem_ker]
+    exact hpar s.val s.property
   obtain ⟨l, hl, r', hr'v, hr'e⟩ :=
     AdmissiblePLPath.exists_signedCrossingEvents_eq_nil_of_notMem_recessionCone
-      (W := W ∘ (Subtype.val : S → ι)) (fun s => hpoly s.1)
-      (fun s => (affineSpan ℝ (W s.1)).ne_top_of_finrank_direction_add_one_eq (hdim s.1))
-      hpar' (fun s => hrec s.1 s.2)
+      (W := W ∘ (Subtype.val : S → ι)) (fun s => hpoly s.val)
+      (fun s => (affineSpan ℝ (W s.val)).ne_top_of_finrank_direction_add_one_eq (hdim s.val))
+      hpar' (fun s => hrec s.val s.property)
       ((restrictPrefunctor W (Subtype.val : S → ι)).obj y)
       ((restrictPrefunctor W (Subtype.val : S → ι)).obj x)
   -- Move the return path into general position for all walls, keeping those crossings.
   have hclosed' : ∀ s : S, IsClosed ((W ∘ (Subtype.val : S → ι)) s) :=
-    fun s => (hpoly s.1).isClosed
+    fun s => (hpoly s.val).isClosed
   have hdim' : ∀ s : S, Module.finrank ℝ (affineSpan ℝ ((W ∘ (Subtype.val : S → ι)) s)).direction
-      + 1 = Module.finrank ℝ V := fun s => hdim s.1
+      + 1 = Module.finrank ℝ V := fun s => hdim s.val
   have hν' : ∀ s : S, LinearMap.ker ((ν ∘ (Subtype.val : S → ι)) s) =
-      (affineSpan ℝ ((W ∘ (Subtype.val : S → ι)) s)).direction := fun s => hν s.1 s.2
+      (affineSpan ℝ ((W ∘ (Subtype.val : S → ι)) s)).direction := fun s => hν s.val s.property
   obtain ⟨ε, hε, hev⟩ := r'.exists_pos_signedCrossingEvents_eq_of_forall₂_dist_lt
     hclosed' hdim' (ν ∘ Subtype.val) hν'
   obtain ⟨r, hr⟩ := AdmissiblePLPath.exists_forall₂_dist_lt hpoly hdim hl hε y x

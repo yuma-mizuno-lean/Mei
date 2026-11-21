@@ -36,7 +36,7 @@ public section
 
 open TauCeti.CompletedGroup (projection)
 
-open TauCeti (AlgFiltration)
+open TauCeti (AlgFiltration IsFiltrationRaising)
 
 open TauCeti (PositiveDegrees)
 
@@ -100,7 +100,7 @@ theorem lie_eq (x : positiveLieAlgebra q β d) (a : positiveSubalgebra q β d.mo
   rw [LieRingModule.compLieHom_apply, Ring.lie_def]
 
 /-- Quantum commutators satisfy the associative Leibniz rule. -/
-scoped instance instIsDerivationAction : IsDerivationAction (positiveLieAlgebra q β d)
+scoped instance instIsDerivationAction : TauCeti.IsDerivationAction (positiveLieAlgebra q β d)
     (positiveSubalgebra q β d.monoid) where
   lie_mul x a b := by simp [lie_eq, mul_sub, sub_mul, mul_assoc]
 
@@ -180,7 +180,7 @@ namespace CoefficientAction
 
 /-- The positive quantum inner action raises the coefficient degree filtration. -/
 scoped instance instIsFiltrationRaising :
-    IsFiltrationRaising d ℒ ((𝓕).toModuleFiltration R) where
+    IsFiltrationRaising d ℒ ((𝓕).toSubmodule R) where
   lie_mem {a b x y} hx hy := by
     have hi := positiveLieToCoefficients_mem_positiveFiltration q β d hx
     rw [lie_eq]

@@ -97,7 +97,7 @@ theorem coeff_principalCompletionEquiv_eq_of_projection_eq
   rw [Ideal.algFiltration_ideal, MvPolynomial.mem_pow_idealOfVars_iff'] at hmem
   have he := hmem n (Nat.lt_succ_of_le hn)
   symm
-  simpa only [MvPolynomial.coeff_sub, MvPowerSeries.coeff_truncTotal _
+  simpa only [AddMonoidAlgebra.coeff_sub, Finsupp.sub_apply, MvPowerSeries.coeff_truncTotal _
     (Nat.lt_succ_of_le hn), sub_eq_zero] using he
 
 /-- The module completion of a polynomial ring over itself along the ideal of

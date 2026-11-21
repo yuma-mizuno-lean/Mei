@@ -210,8 +210,8 @@ private theorem premultiplier_div_mul_multiplier (i : B.unfrozenIndex) :
     (premultiplier B ℓ (.inl i) : ℚ) / Λ * B.multiplier i = ℓ i := by
   have hd : (B.multiplier i : ℚ) ≠ 0 := by exact_mod_cast (B.multiplier_pos i).ne'
   have hΛ : ((Λ : ℕ) : ℚ) ≠ 0 := Nat.cast_ne_zero.mpr (prod_multiplier_pos B).ne'
-  simp only [premultiplier, i.2, ↓reduceDIte, Nat.cast_mul,
-    Nat.cast_div (Finset.dvd_prod_of_mem _ i.2) hd]
+  simp only [premultiplier, i.property, ↓reduceDIte, Nat.cast_mul,
+    Nat.cast_div (Finset.dvd_prod_of_mem _ i.property) hd]
   field_simp
 
 private theorem premultiplier_eq_of_ne (b : ι ⊕ B.unfrozenIndex)

@@ -27,7 +27,7 @@ The integrated actions and shifted coefficient setting follow Mandel,
 
 public noncomputable section
 
-open TauCeti (ActionIntertwiner)
+open TauCeti (ActionIntertwiner IsFiltrationRaising)
 
 open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading GradedLieHom)
 
@@ -43,7 +43,7 @@ variable {N R : Type*} {L : Type u} {M : Type v}
   [AddCommGroup M] [Module R M] [LieRingModule L M] [LieModule R L M]
   (F : ModuleFiltration R M) (d : PositiveDegrees N) (ℒ : N → Submodule R L)
   [DecidableEq N] [GradedLieAlgebra ℒ] [IsPositiveGrading d ℒ]
-  [IsFiltrationRaising d ℒ F]
+  [IsFiltrationRaising d ℒ F.submodule]
 
 /-- The finite BCH action as categorical automorphisms of the coefficient module. -/
 def truncatedBCHModuleAut (k : ℕ) :
@@ -94,7 +94,7 @@ variable {N' : Type*} {L' : Type u} {M' : Type v}
   [AddCommGroup M'] [Module R M'] [LieRingModule L' M'] [LieModule R L' M']
   {e : PositiveDegrees N'} {T : PositiveDegreeMap d e}
   {ℒ' : N' → Submodule R L'} [GradedLieAlgebra ℒ'] [IsPositiveGrading e ℒ']
-  (G : ModuleFiltration R M') [IsFiltrationRaising e ℒ' G]
+  (G : ModuleFiltration R M') [IsFiltrationRaising e ℒ' G.submodule]
   (φ : GradedLieHom T ℒ ℒ') (ψ : M →ₗ[R] M')
   (μ : ℕ → ℕ) (hμ : Monotone μ) (hT : ∀ k, T.modulus k ≤ μ k)
   (hψ : ∀ k, F.submodule (μ k + 1) ≤ (G.submodule (k + 1)).comap ψ)

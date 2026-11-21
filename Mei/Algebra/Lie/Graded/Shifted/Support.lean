@@ -45,7 +45,7 @@ Definition 2.10 and Proposition 2.13 (arXiv:1503.06183v5).
 
 public noncomputable section
 
-open TauCeti (PositiveDegrees IsPositiveGrading GradedLieHom)
+open TauCeti (PositiveDegrees IsPositiveGrading GradedLieHom IsFiltrationRaising)
 
 namespace TauCeti.PositiveDegrees
 
@@ -276,7 +276,7 @@ variable {Γ R L M : Type*} [AddCommMonoid Γ] [CommRing R] [Algebra ℚ R]
 
 namespace ModuleFiltration
 
-variable (F : ModuleFiltration R M) [IsFiltrationRaising d ℒ F]
+variable (F : ModuleFiltration R M) [IsFiltrationRaising d ℒ F.submodule]
 
 /-- Rational scalars on a coefficient quotient are induced from its scalar ring. -/
 local instance quotientRatModuleSupport (k : ℕ) : Module ℚ (F.quotient k) :=
@@ -290,13 +290,12 @@ theorem truncatedExpLieAction_mem_map_shiftedSubmodule
     F.truncatedExpLieAction d ℒ k x a ∈
       (shiftedSubmodule ℳ d.monoid p).map (F.submodule (k + 1)).mkQ := by
   rw [truncatedExpLieAction_apply]
-  apply Module.End.exp_apply_mem_of_forall_mem _
-    ⟨k + 1, F.truncatedLieAction_pow_eq_zero d ℒ k x⟩ _ ?_ ha
+  apply Module.End.exp_apply_mem_of_forall_mem _ _ ?_ ha
   intro b hb
   obtain ⟨y, rfl⟩ := (d.degreeIdeal ℒ k).surjective_mkQ x
   obtain ⟨b, hb, rfl⟩ := hb
-  rw [LieIdeal.mkQ_apply, truncatedLieAction_mk, Submodule.mkQ_apply,
-    quotientLieAction_mk]
+  rw [LieIdeal.mkQ_apply, PositiveDegrees.truncatedLieAction_mk, Submodule.mkQ_apply,
+    PositiveDegrees.quotientLieAction_mk]
   exact Submodule.mem_map_of_mem (d.lie_mem_shiftedSubmodule ℒ ℳ p y hb)
 
 variable [LieAlgebra ℚ L] [IsScalarTower ℚ R L]
@@ -332,7 +331,7 @@ variable {Γ R L M : Type*} [AddCommGroup Γ] [CommRing R] [Algebra ℚ R]
 
 namespace ModuleFiltration
 
-variable (F : ModuleFiltration R M) [IsFiltrationRaising d ℒ F]
+variable (F : ModuleFiltration R M) [IsFiltrationRaising d ℒ F.submodule]
 
 /-- Every surviving quotient component of a homogeneous input has an allowed
 degree increment. This uses the inherited quotient decomposition, with no

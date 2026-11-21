@@ -176,7 +176,7 @@ theorem isLocallyConstant_normalized {U V : Opens X} (hU : U ∈ T.basis) (hVU :
   obtain ⟨B, hB, hyB, hBW⟩ := Opens.isBasis_iff_nbhd.mp T.isBasis hyW
   have hBU : B ≤ U := hBW.trans (i.le.trans hVU)
   have hn : ∀ᶠ z : V in 𝓝 y, (z : X) ∈ B :=
-    (B.isOpen.preimage continuous_subtype_val).mem_nhds hyB
+    (B.isOpen.preimage continuous_subtypeVal).mem_nhds hyB
   filter_upwards [hn] with z hz
   have h := hsW B hB hBW ⟨y, hyB⟩ ⟨z, hz⟩
   rw [T.transport_restrict hB hU hBU] at h

@@ -69,14 +69,6 @@ theorem inter_eq_of_common_facet (C : FinitePolyhedralComplex h)
   exact ((C.isPolyhedralFace_of_subset hP hI hPI).isExposed.eq_of_finrank_vectorSpan_eq
     (C.nonempty P hP) (by rw [← direction_affineSpan, ← direction_affineSpan]; omega)).symm
 
-/-- Every cell is the carrier of a pointed cone with apex zero. -/
-def IsConical (C : FinitePolyhedralComplex h) : Prop :=
-  ∀ P ∈ C.cells, ∃ σ : PointedCone ℝ V, (σ : Set V) = P
-
-/-- Conicality means that each actual cell carrier is a cone. -/
-theorem isConical_iff (C : FinitePolyhedralComplex h) :
-    C.IsConical ↔ ∀ P ∈ C.cells, ∃ σ : PointedCone ℝ V, (σ : Set V) = P := Iff.rfl
-
 /-- Weak refinement carries a partial-order structure on actual complexes. -/
 @[instance_reducible]
 def weakRefinementPartialOrder : PartialOrder (FinitePolyhedralComplex h) where

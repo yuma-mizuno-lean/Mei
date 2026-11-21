@@ -61,6 +61,6 @@ theorem isLieAbelian_positiveLieAlgebra_of_forall_form_eq_zero {d : PositiveDegr
   have hβ : D.coefficientForm R = 0 := by
     ext n m
     simp [hform]
-  exact ⟨fun x y => Subtype.ext (SkewLieAlgebra.lie_eq_zero_of_eq_zero _ _ hβ x.1 y.1)⟩
+  exact ⟨fun x y => Subtype.ext (SkewLieAlgebra.lie_eq_zero_of_eq_zero _ _ hβ x.val y.val)⟩
 
 end Mei.SkewLatticeDatum

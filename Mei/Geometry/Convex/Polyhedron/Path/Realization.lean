@@ -45,7 +45,8 @@ realization of `p` at double speed. -/
 theorem toContinuousPath_cons_apply_of_le (p : AdmissiblePLPath x y) (e : y ⟶ z)
     {s : I} (hs : (s : ℝ) ≤ 1 / 2) :
     toContinuousPath (p.cons e) s =
-      toContinuousPath p ⟨2 * s, (unitInterval.mul_pos_mem_iff zero_lt_two).2 ⟨s.2.1, hs⟩⟩ := by
+      toContinuousPath p
+        ⟨2 * s, (unitInterval.mul_pos_mem_iff zero_lt_two).2 ⟨s.property.1, hs⟩⟩ := by
   rw [toContinuousPath_cons, Path.trans_apply]
   simp only [hs, ↓reduceDIte]
 
@@ -58,7 +59,8 @@ theorem toContinuousPath_cons_apply_of_ge (p : AdmissiblePLPath x y) (e : y ⟶ 
   · rw [toContinuousPath_cons, Path.trans_apply]
     simp only [not_le.mpr hs, ↓reduceDIte, Path.segment_apply]
   · rw [toContinuousPath_cons_apply_of_le p e hs.ge]
-    have h1 : (⟨2 * s, (unitInterval.mul_pos_mem_iff zero_lt_two).2 ⟨s.2.1, hs.ge⟩⟩ : I) = 1 :=
+    have h1 :
+        (⟨2 * s, (unitInterval.mul_pos_mem_iff zero_lt_two).2 ⟨s.property.1, hs.ge⟩⟩ : I) = 1 :=
       Subtype.ext (by simp only [Set.Icc.coe_one]; linarith)
     rw [h1, Path.target, ← hs]
     norm_num
@@ -132,8 +134,8 @@ theorem toContinuousPath_mem_admissiblePairs (hclosed : ∀ i, IsClosed (W i))
       rw [toContinuousPath_cons_apply_of_ge p e hs₁] at h₁ ⊢
       rw [toContinuousPath_cons_apply_of_ge p e hs₂] at h₂ ⊢
       exact (mem_admissiblePairs_iff ⟨_, h₁⟩ ⟨_, h₂⟩).mpr
-        (e.down.subsegment ⟨by linarith, by linarith [s₁.2.2]⟩
-          ⟨by linarith, by linarith [s₂.2.2]⟩ rfl rfl)
+        (e.down.subsegment ⟨by linarith, by linarith [s₁.property.2]⟩
+          ⟨by linarith, by linarith [s₂.property.2]⟩ rfl rfl)
     · -- Both parameters lie on the realization of `p`, run at double speed.
       have hs₂ : (s₂ : ℝ) ≤ 1 / 2 := by simpa using hhalf
       have hs₁ : (s₁ : ℝ) ≤ 1 / 2 := h₁₂'.trans hs₂

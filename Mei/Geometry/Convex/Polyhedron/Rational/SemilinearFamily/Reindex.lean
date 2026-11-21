@@ -61,7 +61,7 @@ theorem fiberReindexEquiv_label (Q : W) (z : (F.reindex e).fiber Q) :
 
 @[simp]
 theorem fiberReindexEquiv_point (Q : W) (z : (F.reindex e).fiber Q) :
-    (F.fiberReindexEquiv e Q z).2.1.val = z.2.1.val := (rfl)
+    (F.fiberReindexEquiv e Q z).2.val.val = z.2.val.val := (rfl)
 
 instance (Q : W) [Finite (F.fiber Q)] : Finite ((F.reindex e).fiber Q) :=
   Finite.of_equiv _ (F.fiberReindexEquiv e Q).symm

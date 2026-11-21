@@ -26,7 +26,7 @@ and refined tropical curve counts*, Example 2.1(i), arXiv:1503.06183v5.
 
 public section
 
-open TauCeti (PositiveDegrees PositiveDegreeMap GradedLieHom)
+open TauCeti (PositiveDegrees PositiveDegreeMap GradedLieHom IsFiltrationRaising)
 noncomputable section
 
 namespace Mei.TropicalPairing
@@ -156,11 +156,11 @@ local notation "ψ" => AlgHom.comp (AlgHom.restrictScalars ℚ (mapDomainAlgHom 
 local notation "hmap" => filtration_ideal_le_comap_coefficientDegreeMap d Q φ χ f hf
   p.degreeMap hT
 
-local instance : IsFiltrationRaising d ℒ ((F).toModuleFiltration ℚ) :=
+local instance : IsFiltrationRaising d ℒ ((F).toSubmodule ℚ) :=
   IsFiltrationRaising.restrictScalars_algebra (R := ℚ) (S := R) (F) d
     (tropicalSubalgebraGrading ρ U d)
 
-local instance : IsFiltrationRaising e ℳ ((G).toModuleFiltration ℚ) :=
+local instance : IsFiltrationRaising e ℳ ((G).toSubmodule ℚ) :=
   IsFiltrationRaising.restrictScalars_algebra (R := ℚ) (S := S) (G) e
     (tropicalVertexGrading (R := S) e ρ')
 

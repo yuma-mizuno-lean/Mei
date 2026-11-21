@@ -60,14 +60,14 @@ theorem coefficientLocalSystem_segment_of_subset :
       (D.coefficientTransport M).value s y hy := by
   -- Thicken the compact segment to a convex transport chart inside the domain.
   have ho : IsOpen (Subtype.val '' (U : Set C.regularSpace)) :=
-    C.isOpen_regularLocus.isOpenMap_subtype_val _ U.isOpen
+    C.isOpen_regularLocus.isOpenMap_subtypeVal _ U.isOpen
   have hs : IsCompact (segment ℝ x.val.val y.val.val) := by
     rw [segment_eq_image_lineMap]
     exact isCompact_Icc.image AffineMap.lineMap_continuous
   obtain ⟨δ, hδ, hδU⟩ := hs.exists_thickening_subset_open ho hseg
   let B : Opens C.regularSpace :=
     ⟨Subtype.val ⁻¹' Metric.thickening δ (segment ℝ x.val.val y.val.val),
-      Metric.isOpen_thickening.preimage continuous_subtype_val⟩
+      Metric.isOpen_thickening.preimage continuous_subtypeVal⟩
   have hBimage : Subtype.val '' (B : Set C.regularSpace) =
       Metric.thickening δ (segment ℝ x.val.val y.val.val) :=
     Set.image_preimage_eq_of_subset (hδU.trans (Set.image_subset_range _ _))

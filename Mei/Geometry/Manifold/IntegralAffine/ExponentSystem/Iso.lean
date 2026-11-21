@@ -56,15 +56,15 @@ constant in the point, intertwining the frame changes on overlaps and compatible
 projections to the integral tangent lattice. -/
 structure Iso (E : ExponentSystem h B Γ) (E' : ExponentSystem h B Γ') where
   /-- The component in the frame of a chart at a point of its domain. -/
-  app (e : atlas V B) (x : B) : x ∈ e.1.source → Γ ≃+ Γ'
+  app (e : atlas V B) (x : B) : x ∈ e.val.source → Γ ≃+ Γ'
   /-- On overlaps, the components intertwine the frame changes. -/
-  app_coordChange {e e' : atlas V B} {x : B} (hx : x ∈ e.1.source ∩ e'.1.source) (γ : Γ) :
+  app_coordChange {e e' : atlas V B} {x : B} (hx : x ∈ e.val.source ∩ e'.val.source) (γ : Γ) :
     app e' x hx.2 (E.coordChange e e' x γ) = E'.coordChange e e' x (app e x hx.1 γ)
   /-- The components are locally constant on the domain of each chart. -/
-  eventually_app_eq {e : atlas V B} {x : B} (hx : x ∈ e.1.source) :
-    ∀ᶠ y in 𝓝 x, ∀ hy : y ∈ e.1.source, app e y hy = app e x hx
+  eventually_app_eq {e : atlas V B} {x : B} (hx : x ∈ e.val.source) :
+    ∀ᶠ y in 𝓝 x, ∀ hy : y ∈ e.val.source, app e y hy = app e x hx
   /-- The components are compatible with the projections: `ρ'_e ∘ σ_e(x) = ρ_e`. -/
-  projection_app {e : atlas V B} {x : B} (hx : x ∈ e.1.source) (γ : Γ) :
+  projection_app {e : atlas V B} {x : B} (hx : x ∈ e.val.source) (γ : Γ) :
     E'.projection e (app e x hx γ) = E.projection e γ
 
 namespace Iso
@@ -75,7 +75,7 @@ variable {E : ExponentSystem h B Γ} {E' : ExponentSystem h B Γ'}
 /-- Two isomorphisms of exponent systems are equal when their components agree. -/
 @[ext]
 theorem ext {σ τ : E.Iso E'}
-    (hστ : ∀ e x (hx : x ∈ e.1.source) γ, σ.app e x hx γ = τ.app e x hx γ) : σ = τ := by
+    (hστ : ∀ e x (hx : x ∈ e.val.source) γ, σ.app e x hx γ = τ.app e x hx γ) : σ = τ := by
   rcases σ with ⟨σ, _, _, _⟩
   rcases τ with ⟨τ, _, _, _⟩
   obtain rfl : σ = τ := by
@@ -93,7 +93,7 @@ def refl : E.Iso E where
 
 /-- The components of the identity isomorphism are identities. -/
 @[simp]
-theorem refl_app (e : atlas V B) (x : B) (hx : x ∈ e.1.source) :
+theorem refl_app (e : atlas V B) (x : B) (hx : x ∈ e.val.source) :
     (refl E).app e x hx = AddEquiv.refl Γ := (rfl)
 
 /-- The inverse of an isomorphism of exponent systems. -/
@@ -109,7 +109,7 @@ def symm (σ : E.Iso E') : E'.Iso E where
 
 /-- The components of the inverse isomorphism are the inverse components. -/
 @[simp]
-theorem symm_app (σ : E.Iso E') (e : atlas V B) (x : B) (hx : x ∈ e.1.source) :
+theorem symm_app (σ : E.Iso E') (e : atlas V B) (x : B) (hx : x ∈ e.val.source) :
     σ.symm.app e x hx = (σ.app e x hx).symm := (rfl)
 
 /-- The composite of two isomorphisms of exponent systems. -/
@@ -126,7 +126,7 @@ def trans (σ : E.Iso E') (τ : E'.Iso E'') : E.Iso E'' where
 /-- The components of a composite are the composites of the components. -/
 @[simp]
 theorem trans_app (σ : E.Iso E') (τ : E'.Iso E'') (e : atlas V B) (x : B)
-    (hx : x ∈ e.1.source) : (σ.trans τ).app e x hx = (σ.app e x hx).trans (τ.app e x hx) :=
+    (hx : x ∈ e.val.source) : (σ.trans τ).app e x hx = (σ.app e x hx).trans (τ.app e x hx) :=
   (rfl)
 
 /-- Composing with the identity on the left does nothing. -/
@@ -200,7 +200,7 @@ theorem inv_def (σ : E.Iso E) : σ⁻¹ = σ.symm := (rfl)
 /-- A lattice isomorphism of the fibres commuting with all frame changes on overlaps and with
 all projections, as an isomorphism of exponent systems with constant components. -/
 def ofAddEquiv (σ : Γ ≃+ Γ')
-    (hc : ∀ (e e' : atlas V B) (x : B), x ∈ e.1.source ∩ e'.1.source → ∀ γ : Γ,
+    (hc : ∀ (e e' : atlas V B) (x : B), x ∈ e.val.source ∩ e'.val.source → ∀ γ : Γ,
       σ (E.coordChange e e' x γ) = E'.coordChange e e' x (σ γ))
     (hp : ∀ (e : atlas V B) (γ : Γ), E'.projection e (σ γ) = E.projection e γ) : E.Iso E' where
   app _ _ _ := σ
@@ -212,10 +212,10 @@ def ofAddEquiv (σ : Γ ≃+ Γ')
 isomorphism. -/
 @[simp]
 theorem ofAddEquiv_app (σ : Γ ≃+ Γ')
-    (hc : ∀ (e e' : atlas V B) (x : B), x ∈ e.1.source ∩ e'.1.source → ∀ γ : Γ,
+    (hc : ∀ (e e' : atlas V B) (x : B), x ∈ e.val.source ∩ e'.val.source → ∀ γ : Γ,
       σ (E.coordChange e e' x γ) = E'.coordChange e e' x (σ γ))
     (hp : ∀ (e : atlas V B) (γ : Γ), E'.projection e (σ γ) = E.projection e γ)
-    (e : atlas V B) (x : B) (hx : x ∈ e.1.source) : (ofAddEquiv σ hc hp).app e x hx = σ := (rfl)
+    (e : atlas V B) (x : B) (hx : x ∈ e.val.source) : (ofAddEquiv σ hc hp).app e x hx = σ := (rfl)
 
 section comap
 
@@ -239,7 +239,7 @@ def comap (σ : E.Iso E') (f : AtlasMap V B' B) : (E.comap f).Iso (E'.comap f) w
 at the image point. -/
 @[simp]
 theorem comap_app (σ : E.Iso E') (f : AtlasMap V B' B) (e : atlas V B') (x : B')
-    (hx : x ∈ e.1.source) :
+    (hx : x ∈ e.val.source) :
     (σ.comap f).app e x hx = σ.app (f.chart e) (f x) ((f.mem_source_iff e).mp hx) := (rfl)
 
 /-- The pullback of the identity isomorphism is the identity. -/
@@ -294,7 +294,7 @@ def comapCongr (f g : AtlasMap V B' B) (hfg : ⇑f = ⇑g) : (E.comap f).Iso (E.
 `x` is the frame change from `f.chart e` to `g.chart e` at `f x`. -/
 @[simp]
 theorem comapCongr_app (f g : AtlasMap V B' B) (hfg : ⇑f = ⇑g) (e : atlas V B') (x : B')
-    (hx : x ∈ e.1.source) :
+    (hx : x ∈ e.val.source) :
     (E.comapCongr f g hfg).app e x hx = E.coordChange (f.chart e) (g.chart e) (f x) := (rfl)
 
 /-- The canonical isomorphism between the pullbacks along the same atlas map is the

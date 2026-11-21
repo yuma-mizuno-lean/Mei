@@ -173,7 +173,7 @@ theorem exists_facet_of_mem_intrinsicFrontier (hP : TauCeti.IsConvexPolyhedron P
     have hU : IsOpen U := by
       simp only [U, Set.ofPred_forall]
       exact isOpen_iInter_of_finite fun j =>
-        isOpen_lt ((g j).continuous.comp continuous_subtype_val) continuous_const
+        isOpen_lt ((g j).continuous.comp continuous_subtypeVal) continuous_const
     have hxU : xA ∈ U := fun j => lt_of_le_of_ne ((hpres ▸ hxP).2 j) (hn j)
     have hUP : U ⊆ ((↑) ⁻¹' P : Set A) := by
       intro y hy

@@ -87,7 +87,7 @@ theorem eq_straight_of_nonneg_hyperplane_time (htrans : f.linear β.direction �
   apply Finsupp.support_eq_empty.mp
   by_contra hne
   obtain ⟨t, ht, he⟩ := exists_neg_hyperplane_time β f c hwall
-    (Finset.nonempty_iff_ne_empty.mpr hne)
+    (Finset.nonempty_of_ne_empty hne)
   have heq : t = (f β.endpoint - c) / f.linear β.direction := by
     rw [eq_div_iff htrans]
     linarith
@@ -103,7 +103,7 @@ theorem eq_straight_of_parallel (c : ℝ)
   apply Finsupp.support_eq_empty.mp
   by_contra hne
   obtain ⟨t, _, he⟩ := exists_neg_hyperplane_time β f c hwall
-    (Finset.nonempty_iff_ne_empty.mpr hne)
+    (Finset.nonempty_of_ne_empty hne)
   exact hoff (by simpa [hparallel] using he)
 
 

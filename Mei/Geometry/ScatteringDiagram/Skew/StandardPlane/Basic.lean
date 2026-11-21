@@ -51,7 +51,7 @@ namespace Weight
 
 /-- The weighted degree of a vector of the plane. -/
 def degreeHom (w : Weight) : Γ →+ ℤ where
-  toFun v := w.fst * v.1.1 + w.snd * v.1.2
+  toFun v := w.fst * v.val.1 + w.snd * v.val.2
   map_zero' := by simp
   map_add' v v' := by
     simp only [AddMemClass.coe_add, Prod.fst_add, Prod.snd_add]
@@ -60,7 +60,7 @@ def degreeHom (w : Weight) : Γ →+ ℤ where
 -- The coordinates of `Γ` are those of the underlying subtype of `ℤ × ℤ`, so the next lemmas hold
 -- by unfolding the definitions.
 @[simp]
-theorem degreeHom_apply (w : Weight) (v : Γ) : w.degreeHom v = w.fst * v.1.1 + w.snd * v.1.2 :=
+theorem degreeHom_apply (w : Weight) (v : Γ) : w.degreeHom v = w.fst * v.val.1 + w.snd * v.val.2 :=
   (rfl)
 
 end Weight
@@ -69,15 +69,15 @@ end Weight
 positive degree and only finitely many have degree at most any cutoff. -/
 def plane (w : Weight) : PositiveDegrees Γ where
   monoid :=
-    { carrier := {v | 0 ≤ v.1.1 ∧ 0 ≤ v.1.2}
+    { carrier := {v | 0 ≤ v.val.1 ∧ 0 ≤ v.val.2}
       add_mem' := fun {v v'} hv hv' => ⟨add_nonneg hv.1 hv'.1, add_nonneg hv.2 hv'.2⟩
       zero_mem' := ⟨le_rfl, le_rfl⟩ }
   degree := w.degreeHom
   degree_pos {v} hv hne := by
     have h1 : (0 : ℤ) < w.fst := by exact_mod_cast w.fst_pos
     have h2 : (0 : ℤ) < w.snd := by exact_mod_cast w.snd_pos
-    have : v.1 ≠ 0 := fun h => hne (Subtype.ext h)
-    have hne' : v.1.1 ≠ 0 ∨ v.1.2 ≠ 0 := by
+    have : v.val ≠ 0 := fun h => hne (Subtype.ext h)
+    have hne' : v.val.1 ≠ 0 ∨ v.val.2 ≠ 0 := by
       by_contra hc
       push Not at hc
       exact this (Prod.ext hc.1 hc.2)
@@ -102,21 +102,21 @@ def plane (w : Weight) : PositiveDegrees Γ where
 -- `w.degreeHom` by construction, so the next two lemmas hold by unfolding `plane`.
 @[simp]
 theorem mem_plane_monoid {w : Weight} {v : Γ} :
-    v ∈ (plane w).monoid ↔ 0 ≤ v.1.1 ∧ 0 ≤ v.1.2 := Iff.rfl
+    v ∈ (plane w).monoid ↔ 0 ≤ v.val.1 ∧ 0 ≤ v.val.2 := Iff.rfl
 
 @[simp]
 theorem plane_degree {w : Weight} (v : Γ) :
-    (plane w).degree v = w.fst * v.1.1 + w.snd * v.1.2 := (rfl)
+    (plane w).degree v = w.fst * v.val.1 + w.snd * v.val.2 := (rfl)
 
 /-- The skew form of the plane in coordinates. -/
 theorem form_apply (v v' : Γ) :
-    E.form v v' = ((v.1.1 * v'.1.2 - v.1.2 * v'.1.1 : ℤ) : ℚ) := by
+    E.form v v' = ((v.val.1 * v'.val.2 - v.val.2 * v'.val.1 : ℤ) : ℚ) := by
   rw [show E.form = rankTwoForm from unimodularRankTwo_form]
-  exact rankTwoForm_apply v.1 v'.1
+  exact rankTwoForm_apply v.val v'.val
 
 /-- The skew form of the plane with rational coefficients, in coordinates. -/
 theorem coefficientForm_apply (v v' : Γ) :
-    E.coefficientForm ℚ v v' = ((v.1.1 * v'.1.2 - v.1.2 * v'.1.1 : ℤ) : ℚ) := by
+    E.coefficientForm ℚ v v' = ((v.val.1 * v'.val.2 - v.val.2 * v'.val.1 : ℤ) : ℚ) := by
   rw [SkewLatticeDatum.coefficientForm_apply, form_apply, Algebra.algebraMap_self,
     RingHom.id_apply]
 
@@ -140,10 +140,10 @@ namespace PlaneDegree
 variable {w : Weight}
 
 /-- The first coordinate of a plane degree. -/
-abbrev fst (m : PlaneDegree w) : ℤ := m.vec.1.1
+abbrev fst (m : PlaneDegree w) : ℤ := m.vec.val.1
 
 /-- The second coordinate of a plane degree. -/
-abbrev snd (m : PlaneDegree w) : ℤ := m.vec.1.2
+abbrev snd (m : PlaneDegree w) : ℤ := m.vec.val.2
 
 theorem fst_nonneg (m : PlaneDegree w) : 0 ≤ m.fst := m.mem.1
 
@@ -187,13 +187,13 @@ theorem inverted_iff_coefficientForm_lt (m m' : PlaneDegree w) :
 def e₁ (w : Weight) : PlaneDegree w where
   vec := ⟨(1, 0), mem_unfrozen _⟩
   mem := ⟨by simp, le_rfl⟩
-  ne_zero h := by simpa using congrArg (fun v : Γ => v.1.1) h
+  ne_zero h := by simpa using congrArg (fun v : Γ => v.val.1) h
 
 /-- The second basis vector of the plane. -/
 def e₂ (w : Weight) : PlaneDegree w where
   vec := ⟨(0, 1), mem_unfrozen _⟩
   mem := ⟨le_rfl, by simp⟩
-  ne_zero h := by simpa using congrArg (fun v : Γ => v.1.2) h
+  ne_zero h := by simpa using congrArg (fun v : Γ => v.val.2) h
 
 -- The basis vectors are built from the pairs `(1, 0)` and `(0, 1)`, and `fst`, `snd` are the
 -- coordinates of `vec`, so the next four lemmas hold by unfolding `e₁`, `e₂`.
@@ -271,8 +271,8 @@ instance : Add (PlaneDegree w) where
     { vec := x.vec + y.vec
       mem := add_mem x.mem y.mem
       ne_zero := fun h => by
-        have h1 : x.fst + y.fst = 0 := congrArg (fun v : Γ => v.1.1) h
-        have h2 : x.snd + y.snd = 0 := congrArg (fun v : Γ => v.1.2) h
+        have h1 : x.fst + y.fst = 0 := congrArg (fun v : Γ => v.val.1) h
+        have h2 : x.snd + y.snd = 0 := congrArg (fun v : Γ => v.val.2) h
         have := y.fst_nonneg
         have := x.fst_nonneg
         have := y.snd_nonneg

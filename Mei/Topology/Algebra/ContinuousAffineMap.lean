@@ -71,7 +71,7 @@ theorem isProperMap_restrict_Iic_of_eventuallyEq {γ : ℝ → P}
   let : T2Space P := (Homeomorph.vaddConst (f 0)).t2Space
   obtain ⟨a, ha⟩ := Filter.eventually_atBot.mp heq
   refine (f.isProperMap_restrict_Iic hv b).of_eqOn_compl_isCompact
-    (K := Subtype.val ⁻¹' Icc a b) (hγ.comp continuous_subtype_val)
+    (K := Subtype.val ⁻¹' Icc a b) (hγ.comp continuous_subtypeVal)
     (isClosed_Iic.isClosedEmbedding_subtypeVal.isCompact_preimage isCompact_Icc) ?_
   intro t ht
   exact ha t.val (lt_of_not_ge (fun hat => ht ⟨hat, t.property⟩)).le

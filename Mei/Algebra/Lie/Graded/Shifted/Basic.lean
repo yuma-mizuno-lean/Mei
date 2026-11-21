@@ -104,7 +104,7 @@ abbrev shiftedLieFiltration : ModuleFiltration R (d.shiftedLieSubmodule ℒ ℳ 
 
 /-- The restricted Lie action raises the relative coefficient filtration. -/
 instance shiftedLieFiltration_isFiltrationRaising :
-    IsFiltrationRaising d ℒ (d.shiftedLieFiltration ℒ ℳ p) where
+    IsFiltrationRaising d ℒ (d.shiftedLieFiltration ℒ ℳ p).submodule where
   lie_mem {a b x y} hx hy := by
     classical
     rw [d.degreeSubmodule_def ℒ a] at hx

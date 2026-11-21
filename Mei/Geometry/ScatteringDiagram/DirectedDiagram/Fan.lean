@@ -315,7 +315,7 @@ private theorem exists_list_active (k : ℕ) {l : List ι} (hl : l.Nodup) (θ : 
     · rintro ⟨a, ha, rfl⟩
       exact ⟨(List.mem_filter.mp ha).1, (of_decide_eq_true (List.mem_filter.mp ha).2).2⟩
     · rintro ⟨hbl, hb⟩
-      exact ⟨b, List.mem_filter.mpr ⟨hbl, decide_eq_true ⟨b.2, hb⟩⟩, rfl⟩
+      exact ⟨b, List.mem_filter.mpr ⟨hbl, decide_eq_true ⟨b.property, hb⟩⟩, rfl⟩
   · simp only [List.map_pmap, List.pmap_eq_map]
     rw [List.prod_map_filter_eq_prod_map_ite]
     -- The inactive walls of `l` have trivial projected label.
@@ -590,7 +590,7 @@ private theorem eventually_inv_mul_fst {θ : V}
   have hθ₁' : ℓ₁ θ = 0 := by simpa [hD.support_fst] using hθ₁
   rw [D.combinedLabel_eq_prod k θ v hθ [⟨j₁, h₁⟩] (List.nodup_singleton _) fun b =>
     ⟨fun hb => List.eq_of_mem_singleton hb ▸ hθ₁, fun hb => List.mem_singleton.mpr
-      (Subtype.ext (hD.eq_fst_of_mem_support hθ b.2 hb h₁ hθ₁))⟩]
+      (Subtype.ext (hD.eq_fst_of_mem_support hθ b.property hb h₁ hθ₁))⟩]
   simp only [List.map_cons, List.map_nil, List.prod_singleton]
   have hvj := hv ⟨j₁, h₁⟩ hθ₁
   rw [hD.normal_fst] at hvj ⊢
@@ -618,7 +618,7 @@ private theorem eventually_inv_mul_snd {θ : V}
   have hθ₂' : ℓ₂ θ = 0 := by simpa [hD.support_snd] using hθ₂
   rw [D.combinedLabel_eq_prod k θ v hθ [⟨j₂, h₂⟩] (List.nodup_singleton _) fun b =>
     ⟨fun hb => List.eq_of_mem_singleton hb ▸ hθ₂, fun hb => List.mem_singleton.mpr
-      (Subtype.ext (hD.eq_snd_of_mem_support hθ b.2 hb h₂ hθ₂))⟩]
+      (Subtype.ext (hD.eq_snd_of_mem_support hθ b.property hb h₂ hθ₂))⟩]
   simp only [List.map_cons, List.map_nil, List.prod_singleton]
   have hvj := hv ⟨j₂, h₂⟩ hθ₂
   rw [hD.normal_snd] at hvj ⊢
@@ -672,11 +672,11 @@ private theorem mem_support_iff {θ : V}
   constructor
   · intro hb
     have hb₁ : (b : ι) ≠ j₁ := fun he =>
-      hj₀₁ (hD.eq_fst_of_mem_support hθ hj₀ hθj₀ (he ▸ b.2) (he ▸ hb))
+      hj₀₁ (hD.eq_fst_of_mem_support hθ hj₀ hθj₀ (he ▸ b.property) (he ▸ hb))
     have hb₂ : (b : ι) ≠ j₂ := fun he =>
-      hj₀₂ (hD.eq_snd_of_mem_support hθ hj₀ hθj₀ (he ▸ b.2) (he ▸ hb))
+      hj₀₂ (hD.eq_snd_of_mem_support hθ hj₀ hθj₀ (he ▸ b.property) (he ▸ hb))
     rw [hD.support_of_ne b hb₁ hb₂] at hb
-    exact ⟨hact b b.2 hb₁ hb₂, hb.1⟩
+    exact ⟨hact b b.property hb₁ hb₂, hb.1⟩
   · rintro ⟨hbl, hb⟩
     rw [hD.support_of_mem hj₁ hj₂ hbl]
     exact ⟨hb, hθ₁⟩
@@ -701,7 +701,7 @@ private theorem combinedLabel_eq_zpow {θ : V}
   have hsign (b : D.active k) (hb : θ ∈ (D.wall b).support) (x : V) :
       (0 < h.realCharacter (D.wall b).normal x ↔ 0 < h.realCharacter (D.wall j₀).normal x) := by
     have hbl := ((hm b).mp ((hm' b).mpr hb)).1
-    obtain ⟨c, hc, he⟩ := hD.exists_pos_mul_of_mem_support hθ b.2 (ne_of_mem hj₁ hj₂ hbl).1
+    obtain ⟨c, hc, he⟩ := hD.exists_pos_mul_of_mem_support hθ b.property (ne_of_mem hj₁ hj₂ hbl).1
       (ne_of_mem hj₁ hj₂ hbl).2 hj₀ hj₀₁ hj₀₂ hb hθj₀
     rw [he, mul_pos_iff_of_pos_left hc]
   -- It suffices to treat directions pointing to the negative side of `j₀`.

@@ -42,11 +42,13 @@ variable (R : Type*) {A : Type*} [Semiring R] [Semiring A]
   [Module R A] [IsScalarTower R A A]
   (F : AlgFiltration A)
 
-/-- The ideal filtration viewed as submodules over the coefficient semiring. -/
+/-- The ideal filtration viewed as submodules over the coefficient semiring. Its terms are
+`F.toSubmodule R`, so instances stated for that family, such as
+`TauCeti.IsFiltrationRaising`, apply to this module filtration. -/
 abbrev toModuleFiltration : ModuleFiltration R A where
-  submodule k := (F.ideal k).restrictScalars R
-  antitone := fun _ _ h => Submodule.restrictScalars_mono R (F.antitone h)
-  zero_eq_top := by simp
+  submodule := F.toSubmodule R
+  antitone := F.toSubmodule_antitone R
+  zero_eq_top := F.toSubmodule_zero R
 
 /-- Each module filtration term is the scalar restriction of the original ideal. -/
 @[simp]
@@ -69,6 +71,15 @@ namespace TauCeti.AlgFiltration
 open Mei
 
 variable {R A : Type*} [CommRing R] [Ring A] [Algebra R A] (F : AlgFiltration A)
+
+/-- `Submodule.Quotient.restrictScalarsEquiv_mk` for the quotients of the underlying module
+filtration, whose terms are `F.toSubmodule R k` rather than literally scalar restrictions. -/
+@[simp]
+theorem restrictScalarsEquiv_toModuleFiltration_mk (k : ℕ) (a : A) :
+    Submodule.Quotient.restrictScalarsEquiv R (F.ideal k)
+        (Submodule.Quotient.mk (p := (F.toModuleFiltration R).submodule k) a) =
+      Ideal.Quotient.mk (F.ideal k) a :=
+  Submodule.Quotient.restrictScalarsEquiv_mk R (F.ideal k) a
 
 /-- The module and algebra completions of an ideal filtration are linearly equivalent. -/
 def moduleCompletionEquiv : (F.toModuleFiltration R).completion ≃ₗ[R] F.completion := by
@@ -140,15 +151,15 @@ theorem projection_moduleCompletionEquiv_symm (k : ℕ) (x : F.completion) :
   conv_rhs =>
     rw [← (F.moduleCompletionEquiv (R := R)).apply_symm_apply x,
       projection_moduleCompletionEquiv]
-  rw [LinearEquiv.symm_apply_apply]
+  exact (LinearEquiv.symm_apply_apply _ _).symm
 
 /-- An algebra quotient representative also represents the inverse module comparison. -/
 theorem projection_moduleCompletionEquiv_symm_of_mk (k : ℕ) (x : F.completion) (a : A)
     (ha : Ideal.Quotient.mk (F.ideal (k + 1)) a = F.projection k x) :
     (F.toModuleFiltration R).projection k ((F.moduleCompletionEquiv (R := R)).symm x) =
       Submodule.Quotient.mk a := by
-  rw [projection_moduleCompletionEquiv_symm, ← ha, ← Ideal.Quotient.mk_eq_mk,
-    Submodule.Quotient.restrictScalarsEquiv_symm_mk]
+  rw [projection_moduleCompletionEquiv_symm, ← ha, ← Ideal.Quotient.mk_eq_mk]
+  exact Submodule.Quotient.restrictScalarsEquiv_symm_mk R (F.ideal (k + 1)) a
 
 /-- The comparison sends original elements to their canonical algebra completion images. -/
 @[simp]
@@ -204,8 +215,8 @@ theorem moduleCompletionEquiv_mem_completionIdeal_iff (k : ℕ)
   | zero => simp
   | succ k =>
     simp only [completionIdeal_succ, ModuleFiltration.completedFiltration_succ,
-      RingHom.mem_ker, LinearMap.mem_ker, projection_moduleCompletionEquiv,
-      LinearEquiv.map_eq_zero_iff]
+      RingHom.mem_ker, LinearMap.mem_ker, projection_moduleCompletionEquiv]
+    exact LinearEquiv.map_eq_zero_iff _
 
 /-- The inverse comparison recovers the module image of an original element. -/
 @[simp]
@@ -237,8 +248,7 @@ theorem restrictScalarsEquiv_quotientBilinear_mul (k : ℕ)
   obtain ⟨b, rfl⟩ := ((F.toModuleFiltration R).submodule (k + 1)).mkQ_surjective y
   simp only [Submodule.mkQ_apply]
   rw [ModuleFiltration.quotientBilinear_mk _ _ _ _ (F.toModuleFiltration_mul_mem R)]
-  simp only [Submodule.Quotient.restrictScalarsEquiv_mk, LinearMap.mul_apply',
-    Ideal.Quotient.mk_eq_mk, map_mul]
+  simp only [restrictScalarsEquiv_toModuleFiltration_mk, LinearMap.mul_apply', map_mul]
 
 /-- Completing multiplication as a bilinear map agrees with multiplication in
  the algebra completion, also for noncommutative algebras. -/

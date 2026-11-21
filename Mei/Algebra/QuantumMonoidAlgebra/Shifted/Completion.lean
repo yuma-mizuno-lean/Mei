@@ -61,8 +61,8 @@ theorem comap_shiftedFiltration_positiveZeroShiftEquiv (k : ℕ) :
       ((F).toModuleFiltration R).submodule k := by
   classical
   ext x
-  simp only [Submodule.mem_comap, LinearEquiv.coe_coe, Submodule.restrictScalars_mem,
-    mem_positiveFiltration_iff]
+  simp only [Submodule.mem_comap, LinearEquiv.coe_coe, AlgFiltration.toSubmodule_apply,
+    Submodule.restrictScalars_mem, mem_positiveFiltration_iff]
   rw [PositiveDegrees.mem_shiftedFiltration_iff]
   simp only [coe_positiveZeroShiftEquiv, sub_zero, ZeroMemClass.coe_eq_zero,
     decompose_eq_zero_iff]

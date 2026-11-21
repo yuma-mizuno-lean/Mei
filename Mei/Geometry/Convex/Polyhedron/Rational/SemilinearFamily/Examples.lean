@@ -73,7 +73,7 @@ theorem abs_eq_signSMul {σ : SignType} {x : ℝ} (hx : SignType.sign x = σ) :
 
 /-- The absolute value on `ℝ` is piecewise affine with rational linear parts. -/
 theorem isRationalPiecewiseAffine_abs :
-    IsRationalPiecewiseAffine h h (univ : Set ℝ) fun x => |x.1| :=
+    IsRationalPiecewiseAffine h h (univ : Set ℝ) fun x => |x.val| :=
   (isRationalPiecewiseAffine_iff).mpr ⟨SignType, inferInstance,
     fun σ => {x : ℝ | SignType.sign x = σ}, signSMul,
     eq_univ_of_forall fun _ => mem_iUnion.mpr ⟨_, rfl⟩, fun σ =>
@@ -90,7 +90,7 @@ theorem foldFamily_domain (c : Unit) : (foldFamily h).domain c = univ := by
 
 @[simp]
 theorem foldFamily_eval (c : Unit) (x : (foldFamily h).domain c) :
-    (foldFamily h).eval c x = |x.1| := by
+    (foldFamily h).eval c x = |x.val| := by
   simp [foldFamily]
 
 /-- Multiplication by `σ` maps the level set of the sign function at `σ` bijectively onto the

@@ -32,7 +32,8 @@ refined tropical curve counts*, §2.1 (arXiv:1503.06183).
 
 public section
 
-open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading GradedLieHom)
+open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading GradedLieHom
+  IsFiltrationRaising)
 
 noncomputable section
 
@@ -52,7 +53,7 @@ variable {N N' R L L' M M' : Type*} [AddCommMonoid N] [AddCommMonoid N']
   [GradedLieAlgebra ℒ] [IsPositiveGrading d ℒ]
   [GradedLieAlgebra ℒ'] [IsPositiveGrading e ℒ']
   (F : ModuleFiltration R M) (G : ModuleFiltration R M')
-  [IsFiltrationRaising d ℒ F] [IsFiltrationRaising e ℒ' G]
+  [IsFiltrationRaising d ℒ F.submodule] [IsFiltrationRaising e ℒ' G.submodule]
   (φ : GradedLieHom T ℒ ℒ') (ψ : M →ₗ[R] M')
   (hequiv : ∀ (x : L) (a : M), ψ ⁅x, a⁆ = ⁅φ x, ψ a⁆)
 
@@ -92,7 +93,7 @@ variable {N N' R M M' : Type*} {L L' : Type u} [AddCommMonoid N] [AddCommMonoid 
   [GradedLieAlgebra ℒ] [IsPositiveGrading d ℒ]
   [GradedLieAlgebra ℒ'] [IsPositiveGrading e ℒ']
   (F : ModuleFiltration R M) (G : ModuleFiltration R M')
-  [IsFiltrationRaising d ℒ F] [IsFiltrationRaising e ℒ' G]
+  [IsFiltrationRaising d ℒ F.submodule] [IsFiltrationRaising e ℒ' G.submodule]
   (φ : GradedLieHom T ℒ ℒ') (ψ : M →ₗ[R] M')
   (μ : ℕ → ℕ) (hμ : Monotone μ)
   (hψ : ∀ k, F.submodule (μ k + 1) ≤ (G.submodule (k + 1)).comap ψ)
@@ -155,8 +156,8 @@ variable {N N' R A B : Type*} {L L' : Type u}
   [GradedLieAlgebra ℒ] [IsPositiveGrading d ℒ]
   [GradedLieAlgebra ℒ'] [IsPositiveGrading e ℒ']
   (F : AlgFiltration A) (G : AlgFiltration B)
-  [IsFiltrationRaising d ℒ (F.toModuleFiltration R)] [IsDerivationAction L A]
-  [IsFiltrationRaising e ℒ' (G.toModuleFiltration R)] [IsDerivationAction L' B]
+  [IsFiltrationRaising d ℒ (F.toSubmodule R)] [IsDerivationAction L A]
+  [IsFiltrationRaising e ℒ' (G.toSubmodule R)] [IsDerivationAction L' B]
   (φ : GradedLieHom T ℒ ℒ') (ψ : A →ₐ[R] B)
   (hequiv : ∀ (x : L) (a : A), ψ ⁅x, a⁆ = ⁅φ x, ψ a⁆)
 
@@ -174,11 +175,15 @@ theorem quotientMapₐ_truncatedExpLieAction_of_gradedLieHom {a : ℕ} (k : ℕ)
         (Ideal.quotientMapₐ (G.ideal (k + 1)) ψ hψ z) := by
   obtain ⟨z, rfl⟩ := (Submodule.Quotient.restrictScalarsEquiv R
     (F.ideal (a + 1))).surjective z
-  simp only [truncatedExpLieAction_restrictScalarsEquiv,
-    Ideal.quotientMapₐ_restrictScalarsEquiv]
-  exact congrArg (Submodule.Quotient.restrictScalarsEquiv R (G.ideal (k + 1)))
-    ((F.toModuleFiltration R).mapQ_truncatedExpLieAction_of_gradedLieHom
-      (G.toModuleFiltration R) φ ψ.toLinearMap hequiv k h hψ x z)
+  -- The module quotients of `F.toModuleFiltration R` are only default-reducibly the
+  -- scalar-restricted quotients, so the comparison is assembled from explicit instances.
+  exact (congrArg _ (F.truncatedExpLieAction_restrictScalarsEquiv d ℒ a x z)).trans
+    ((Ideal.quotientMapₐ_restrictScalarsEquiv _ _ _ _ _).trans
+      ((congrArg (Submodule.Quotient.restrictScalarsEquiv R (G.ideal (k + 1)))
+        ((F.toModuleFiltration R).mapQ_truncatedExpLieAction_of_gradedLieHom
+          (G.toModuleFiltration R) φ ψ.toLinearMap hequiv k h hψ x z)).trans
+        ((G.truncatedExpLieAction_restrictScalarsEquiv e ℒ' k _ _).symm.trans
+          (congrArg _ (Ideal.quotientMapₐ_restrictScalarsEquiv _ _ _ _ _).symm))))
 
 /-- Equivariant algebra maps intertwine the completed BCH actions on arbitrary
 completed coefficients. The continuity modulus may differ from the Lie modulus. -/

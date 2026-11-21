@@ -74,7 +74,7 @@ theorem mapDomainAlgHom_tropicalVertexCoefficientAction (hQ : d.monoid ≤ Q)
           AddMonoidAlgebra.monomialDerivation_single, AddMonoidHom.comp_apply,
           AddSubmonoid.subtype_apply, map_add]
         congr 1
-        simp [heval m q.2]
+        simp [heval m q.property]
     · have hx : (x : tropicalSubalgebra ρ U d) = 0 := by
         simpa only [IsPositiveGrading.eq_bot (d := d)
           (ℒ := tropicalSubalgebraGrading ρ U d) n (Or.inl hn), Submodule.mem_bot]

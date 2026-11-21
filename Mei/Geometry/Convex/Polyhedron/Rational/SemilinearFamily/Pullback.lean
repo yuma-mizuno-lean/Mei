@@ -44,7 +44,7 @@ theorem IsRationalPiecewiseAffine.pullback {D : Set V} {f : D → W}
     (hf : IsRationalPiecewiseAffine h h' D f) (φ : X →ᵃ[ℝ] W)
     (hφ : TauCeti.Toric.IsRationalLinearMap h'' h' φ.linear) :
     IsRationalPiecewiseAffine (h.prod h'') h''
-      {p : V × X | ∃ hx : p.1 ∈ D, f ⟨p.1, hx⟩ = φ p.2} (fun p => p.1.2) := by
+      {p : V × X | ∃ hx : p.1 ∈ D, f ⟨p.1, hx⟩ = φ p.2} (fun p => p.val.2) := by
   let π : V × X →ᴬ[ℝ] V := (ContinuousLinearMap.fst ℝ V X).toContinuousAffineMap
   have hπ : ⇑π = Prod.fst := by
     simp [π, ContinuousLinearMap.coe_toContinuousAffineMap, ContinuousLinearMap.coe_fst']
@@ -68,7 +68,7 @@ theorem IsFiniteBranchOn.pullback {D : Set V} {f : D → W}
     (hf : IsFiniteBranchOn h h' D f) (φ : X →ᵃ[ℝ] W)
     (hφ : TauCeti.Toric.IsRationalLinearMap h'' h' φ.linear) :
     IsFiniteBranchOn (h.prod h'') h''
-      {p : V × X | ∃ hx : p.1 ∈ D, f ⟨p.1, hx⟩ = φ p.2} (fun p => p.1.2) := by
+      {p : V × X | ∃ hx : p.1 ∈ D, f ⟨p.1, hx⟩ = φ p.2} (fun p => p.val.2) := by
   let π : V × X →ᴬ[ℝ] V := (ContinuousLinearMap.fst ℝ V X).toContinuousAffineMap
   have hπ : ⇑π = Prod.fst := by
     simp [π, ContinuousLinearMap.coe_toContinuousAffineMap, ContinuousLinearMap.coe_fst']
@@ -94,7 +94,7 @@ variable {ι κ : Type*} [Finite ι] [Finite κ] (F : FiniteSemilinearFamily h h
 is unchanged; chart points retain both their original point and their new endpoint. -/
 def pullback : FiniteSemilinearFamily (h.prod h'') h'' ι where
   domain c := {p | ∃ hx : p.1 ∈ F.domain c, F.eval c ⟨p.1, hx⟩ = φ p.2}
-  eval _ p := p.1.2
+  eval _ p := p.val.2
   isRationalPiecewiseAffine c := (F.isRationalPiecewiseAffine c).pullback φ hφ
 
 /-- Membership in a pullback chart is the original domain condition and the
@@ -107,26 +107,26 @@ theorem mem_pullback_domain (c : ι) (p : V × X) :
 /-- Pullback evaluation is the new endpoint coordinate. -/
 @[simp]
 theorem pullback_eval (c : ι) (p : (F.pullback φ hφ).domain c) :
-    (F.pullback φ hφ).eval c p = p.1.2 := (rfl)
+    (F.pullback φ hφ).eval c p = p.val.2 := (rfl)
 
 /-- Forgetting the new endpoint sends a pullback chart to its original chart. -/
 def pullbackFst (c : ι) (p : (F.pullback φ hφ).domain c) : F.domain c :=
-  ⟨p.1.1, p.2.choose⟩
+  ⟨p.val.1, p.property.choose⟩
 
 @[simp]
 theorem pullbackFst_val (c : ι) (p : (F.pullback φ hφ).domain c) :
-    (F.pullbackFst φ hφ c p).1 = p.1.1 := (rfl)
+    (F.pullbackFst φ hφ c p).val = p.val.1 := (rfl)
 
 /-- The chart square defining the pullback commutes. -/
 @[simp]
 theorem eval_pullbackFst (c : ι) (p : (F.pullback φ hφ).domain c) :
     F.eval c (F.pullbackFst φ hφ c p) = φ ((F.pullback φ hφ).eval c p) :=
-  p.2.choose_spec
+  p.property.choose_spec
 
 /-- A pair of matching chart points and endpoints determines a pullback point. -/
 def pullbackLift (c : ι) (v : F.domain c) (x : X) (hv : F.eval c v = φ x) :
     (F.pullback φ hφ).domain c :=
-  ⟨(v.1, x), v.2, hv⟩
+  ⟨(v.val, x), v.property, hv⟩
 
 @[simp]
 theorem pullbackFst_pullbackLift (c : ι) (v : F.domain c) (x : X)
@@ -136,7 +136,7 @@ theorem pullbackFst_pullbackLift (c : ι) (v : F.domain c) (x : X)
 @[simp]
 theorem pullbackLift_val (c : ι) (v : F.domain c) (x : X)
     (hv : F.eval c v = φ x) :
-    (F.pullbackLift φ hφ c v x hv).1 = (v.1, x) := (rfl)
+    (F.pullbackLift φ hφ c v x hv).val = (v.val, x) := (rfl)
 
 /-- The original point and the new endpoint determine a pullback point uniquely. -/
 @[ext]
@@ -148,9 +148,9 @@ theorem pullback_ext (c : ι) {p q : (F.pullback φ hφ).domain c}
 /-- The fiber after base change is the original fiber over the image endpoint.
 Chart indices and original chart points are retained, even for coincident charts. -/
 def fiberPullbackEquiv (x : X) : (F.pullback φ hφ).fiber x ≃ F.fiber (φ x) where
-  toFun p := ⟨p.1, F.pullbackFst φ hφ p.1 p.2.1,
-    (F.eval_pullbackFst φ hφ p.1 p.2.1).trans (congrArg φ p.2.2)⟩
-  invFun p := ⟨p.1, F.pullbackLift φ hφ p.1 p.2.1 x p.2.2, rfl⟩
+  toFun p := ⟨p.1, F.pullbackFst φ hφ p.1 p.2.val,
+    (F.eval_pullbackFst φ hφ p.1 p.2.val).trans (congrArg φ p.2.property)⟩
+  invFun p := ⟨p.1, F.pullbackLift φ hφ p.1 p.2.val x p.2.property, rfl⟩
   left_inv p := by
     rcases p with ⟨c, ⟨⟨v, y⟩, hv⟩, he⟩
     cases he
@@ -163,12 +163,12 @@ theorem fiberPullbackEquiv_apply_fst (x : X) (p : (F.pullback φ hφ).fiber x) :
 
 @[simp]
 theorem fiberPullbackEquiv_apply_snd_val_val (x : X) (p : (F.pullback φ hφ).fiber x) :
-    (F.fiberPullbackEquiv φ hφ x p).2.1.1 = p.2.1.1.1 := (rfl)
+    (F.fiberPullbackEquiv φ hφ x p).2.val.val = p.2.val.val.1 := (rfl)
 
 @[simp]
 theorem fiberPullbackEquiv_symm_apply (x : X) (p : F.fiber (φ x)) :
     (F.fiberPullbackEquiv φ hφ x).symm p =
-      ⟨p.1, F.pullbackLift φ hφ p.1 p.2.1 x p.2.2, by simp⟩ := (rfl)
+      ⟨p.1, F.pullbackLift φ hφ p.1 p.2.val x p.2.property, by simp⟩ := (rfl)
 
 /-- Base change of a family with finite fibers has finite fibers. -/
 instance (x : X) [Finite (F.fiber (φ x))] : Finite ((F.pullback φ hφ).fiber x) :=
@@ -199,12 +199,12 @@ noncomputable def pullbackCompEquiv (ψ : Y →ᵃ[ℝ] X)
     ((F.pullback φ hφ).pullback ψ hψ).domain c ≃
       (F.pullback (φ.comp ψ) (hφ.comp hψ)).domain c where
   toFun p := F.pullbackLift _ _ c
-    (F.pullbackFst φ hφ c ((F.pullback φ hφ).pullbackFst ψ hψ c p)) p.1.2
+    (F.pullbackFst φ hφ c ((F.pullback φ hφ).pullbackFst ψ hψ c p)) p.val.2
     ((F.eval_pullbackFst φ hφ c _).trans
       (congrArg φ ((F.pullback φ hφ).eval_pullbackFst ψ hψ c p)))
   invFun p := (F.pullback φ hφ).pullbackLift ψ hψ c
-    (F.pullbackLift φ hφ c (F.pullbackFst _ _ c p) (ψ p.1.2)
-      (F.eval_pullbackFst _ _ c p)) p.1.2 rfl
+    (F.pullbackLift φ hφ c (F.pullbackFst _ _ c p) (ψ p.val.2)
+      (F.eval_pullbackFst _ _ c p)) p.val.2 rfl
   left_inv p := by
     apply (F.pullback φ hφ).pullback_ext ψ hψ c
     · apply F.pullback_ext φ hφ c
@@ -226,10 +226,10 @@ theorem pullbackCompEquiv_symm_apply (ψ : Y →ᵃ[ℝ] X)
     (p : (F.pullback (φ.comp ψ) (hφ.comp hψ)).domain c) :
     (F.pullbackCompEquiv φ hφ ψ hψ c).symm p =
       (F.pullback φ hφ).pullbackLift ψ hψ c
-        (F.pullbackLift φ hφ c (F.pullbackFst _ _ c p) (ψ p.1.2)
+        (F.pullbackLift φ hφ c (F.pullbackFst _ _ c p) (ψ p.val.2)
           ((F.eval_pullbackFst (φ.comp ψ) (hφ.comp hψ) c p).trans
             (congrArg (fun y => φ (ψ y))
-              (F.pullback_eval (φ.comp ψ) (hφ.comp hψ) c p)))) p.1.2
+              (F.pullback_eval (φ.comp ψ) (hφ.comp hψ) c p)))) p.val.2
         (by rw [F.pullback_eval φ hφ, F.pullbackLift_val]) := (rfl)
 
 @[simp]

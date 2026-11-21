@@ -44,7 +44,7 @@ variable {N L : Type*} [AddCommMonoid N] [LieRing L] [LieAlgebra R L]
   (hj : ∀ k, d.degreeSubmodule ℒ k ≤ ((F.ideal (k + 1)).restrictScalars R).comap j)
 
 variable [LieRingModule L A] [LieModule R L A]
-  [IsFiltrationRaising d ℒ (F.toModuleFiltration R)] [IsDerivationAction L A]
+  [IsFiltrationRaising d ℒ (F.toSubmodule R)] [IsDerivationAction L A]
   [Algebra ℚ A]
   (hinner : ∀ x a, ⁅x, a⁆ = j x * a - a * j x)
 

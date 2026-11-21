@@ -104,7 +104,7 @@ def completedTropicalTangentFieldToSubalgebra :
     (tropicalTangentFieldToSubalgebra d ρ U m) id monotone_id
     (fun _ _ hu => tropicalTangentFieldToSubalgebra_mem_degreeIdeal d ρ U m
       (by simpa only [id_eq, AlgFiltration.toModuleFiltration_submodule,
-        Submodule.restrictScalars_mem] using hu)) ∘ₗ
+        AlgFiltration.toSubmodule_apply, Submodule.restrictScalars_mem] using hu)) ∘ₗ
       (H).moduleCompletionEquiv.symm.toLinearMap
 
 /-- A finite representative computes every projection of the restricted completed field. -/

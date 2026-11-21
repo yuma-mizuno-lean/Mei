@@ -55,7 +55,7 @@ theorem isOpen_setOf_lineMap_notMem {S : Set P} (hS : IsClosed S) :
   have hc : Continuous (fun q : (P × P) × Icc (0 : ℝ) 1 =>
       AffineMap.lineMap q.1.1 q.1.2 (q.2 : ℝ)) :=
     continuous_fst.fst.lineMap continuous_fst.snd
-      (continuous_subtype_val.comp continuous_snd)
+      (continuous_subtypeVal.comp continuous_snd)
   have hclosed := isClosedMap_fst_of_compactSpace _ (hS.preimage hc)
   convert hclosed.isOpen_compl using 1
   ext p

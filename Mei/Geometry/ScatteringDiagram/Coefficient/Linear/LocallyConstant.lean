@@ -41,7 +41,7 @@ private theorem locallyParallel_locallyConstant (a : E) :
   intro x
   obtain ⟨A, hA, hxA, hconst⟩ := g.isLocallyConstant.exists_open x
   let W : Opens C.regularSpace :=
-    ⟨Subtype.val '' A, U.isOpen.isOpenMap_subtype_val _ hA⟩
+    ⟨Subtype.val '' A, U.isOpen.isOpenMap_subtypeVal _ hA⟩
   have hWU : W ≤ U := fun z hz => by
     obtain ⟨y, _, rfl⟩ := hz
     exact y.property
@@ -103,7 +103,7 @@ theorem locallyConstantCoefficientSections_restrict {U' : Opens C.regularSpace}
         (D.locallyConstantCoefficientSections hoff g a) =
       D.locallyConstantCoefficientSections (fun _ hx => hoff (hU'U hx))
         (LocallyConstant.comap
-          ⟨fun x => ⟨x.val, hU'U x.property⟩, continuous_subtype_val.subtype_mk _⟩ g) a := by
+          ⟨fun x => ⟨x.val, hU'U x.property⟩, continuous_subtypeVal.subtype_mk _⟩ g) a := by
   apply (D.coefficientTransport M).section_ext
   intro x hx
   calc
@@ -116,7 +116,7 @@ theorem locallyConstantCoefficientSections_restrict {U' : Opens C.regularSpace}
           (fun _ hz => hoff (hU'U hz))
           (LocallyConstant.comap
             (⟨fun z => ⟨z.val, hU'U z.property⟩,
-              continuous_subtype_val.subtype_mk _⟩ : C(U', U)) g)
+              continuous_subtypeVal.subtype_mk _⟩ : C(U', U)) g)
           a x hx).symm
 
 end Mei.FiniteWallDiagram

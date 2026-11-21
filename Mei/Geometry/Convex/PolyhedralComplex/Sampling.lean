@@ -158,7 +158,7 @@ private theorem crossingWord_eq_prod_range_sampling (ν : C.walls → V →ₗ[�
       have hs (a : Fin (m + 1)) : (s a : ℝ) = 2 * (t (j₀ + a) : ℝ) - 1 := by
         rw [coe_projIcc]
         have := hge (j₀ + a) (by omega)
-        have := (t (j₀ + a)).2.2
+        have := (t (j₀ + a)).property.2
         rw [min_eq_right (by linarith), max_eq_right (by linarith)]
       choose edge hedge using fun a : Fin m => hw (j₀ + a) (by omega)
       have hsample := C.segmentCrossingWord_eq_prod_sampling_of_endpoints ν e
@@ -184,8 +184,8 @@ private theorem crossingWord_eq_prod_range_sampling (ν : C.walls → V →ₗ[�
     · -- The first half samples the realization of `p` at double speed.
       let s : ℕ → I := fun j => projIcc 0 1 zero_le_one (2 * (t j : ℝ))
       have hs (j : ℕ) (hj : j ≤ j₀) : s j = ⟨2 * t j, (unitInterval.mul_pos_mem_iff
-          zero_lt_two).2 ⟨(t j).2.1, hle j hj⟩⟩ := by
-        refine projIcc_of_mem _ ⟨?_, ?_⟩ <;> nlinarith [(t j).2.1, hle j hj]
+          zero_lt_two).2 ⟨(t j).property.1, hle j hj⟩⟩ := by
+        refine projIcc_of_mem _ ⟨?_, ?_⟩ <;> nlinarith [(t j).property.1, hle j hj]
       refine ih j₀ v s (fun a b hab => monotone_projIcc zero_le_one (by
           have : (t a : ℝ) ≤ t b := hmono hab
           linarith))

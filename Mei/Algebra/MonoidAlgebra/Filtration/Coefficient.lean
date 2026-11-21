@@ -41,7 +41,8 @@ def coeffFiltration : Mei.ModuleFiltration R (AddMonoidAlgebra R M) :=
 theorem mem_coeffFiltration_submodule {k : ℕ} {x : AddMonoidAlgebra R M} :
     x ∈ (coeffFiltration I M).submodule k ↔ ∀ m, x.coeff m ∈ I ^ k := by
   rw [coeffFiltration, Module.Basis.mem_coefficientFiltration_submodule]
-  simp only [Ideal.algFiltration_ideal, Submodule.restrictScalars_mem]
+  simp only [TauCeti.AlgFiltration.toSubmodule_apply, Ideal.algFiltration_ideal,
+    Submodule.restrictScalars_mem]
   rfl
 
 /-- A monomial lies in the coefficient filtration exactly when its coefficient lies in the

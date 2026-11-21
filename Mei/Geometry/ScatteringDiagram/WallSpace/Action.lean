@@ -180,7 +180,7 @@ section Filtered
 
 variable [LieModule R L M] [Algebra ℚ R]
   [DecidableEq Γ] [GradedLieAlgebra ℒ] [TauCeti.IsPositiveGrading d ℒ]
-  (F : ModuleFiltration R M) [IsFiltrationRaising d ℒ F]
+  (F : ModuleFiltration R M) [IsFiltrationRaising d ℒ F.submodule]
 
 /-- The coefficient quotient inherits rational scalars from the scalar ring. -/
 local instance quotientRatModule (k : ℕ) : Module ℚ (F.quotient k) :=
@@ -195,10 +195,11 @@ theorem truncatedExpLieAction_mk_eq_self_of_normal_eq_zero
     F.truncatedExpLieAction d ℒ k x (Submodule.Quotient.mk a) =
       Submodule.Quotient.mk a := by
   rw [ModuleFiltration.truncatedExpLieAction_apply]
-  apply Module.End.exp_apply_eq_self _ ⟨k + 1, F.truncatedLieAction_pow_eq_zero d ℒ k x⟩
+  apply Module.End.exp_apply_of_apply_eq_zero _
+    ⟨k + 1, d.truncatedLieAction_pow_eq_zero ℒ F.submodule F.antitone F.zero_eq_top k x⟩
   obtain ⟨y, hy, rfl⟩ := (H.mem_truncatedRayLieSubalgebra w m k x).mp hx
-  rw [LieIdeal.mkQ_apply, ModuleFiltration.truncatedLieAction_mk,
-    ModuleFiltration.quotientLieAction_mk,
+  rw [LieIdeal.mkQ_apply, PositiveDegrees.truncatedLieAction_mk,
+    PositiveDegrees.quotientLieAction_mk,
     H.lie_eq_zero_of_mem_ray_of_normal_eq_zero 𝒜 hy ha hm]
   exact Submodule.Quotient.mk_zero _
 

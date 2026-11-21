@@ -128,8 +128,8 @@ theorem frozenDatum_form_ne_zero : frozenDatum.form ≠ 0 := by
 /-- The form of `frozenDatum` vanishes on the unfrozen sublattice `ℤ e₀ ⊕ ℤ e₁`. -/
 theorem frozenDatum_form_unfrozen_eq_zero (n m : frozenDatum.unfrozen) :
     frozenDatum.form n m = 0 := by
-  have hn := frozenBasis.mem_unfrozen_iff.mp n.2 2 (by simp)
-  have hm := frozenBasis.mem_unfrozen_iff.mp m.2 2 (by simp)
+  have hn := frozenBasis.mem_unfrozen_iff.mp n.property 2 (by simp)
+  have hm := frozenBasis.mem_unfrozen_iff.mp m.property 2 (by simp)
   simp only [frozenBasis_basis, Pi.basisFun_repr] at hn hm
   simp [hn, hm]
 

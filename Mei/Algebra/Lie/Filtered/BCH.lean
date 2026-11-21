@@ -31,7 +31,7 @@ comparison. `ModuleFiltration.completedAction` assembles its inverse limit.
 
 public section
 
-open TauCeti (PositiveDegrees IsPositiveGrading)
+open TauCeti (PositiveDegrees IsPositiveGrading IsFiltrationRaising)
 
 attribute [local instance 100] LieRing.ofAssociativeRing
 
@@ -44,7 +44,7 @@ variable {N R L M : Type*} [AddCommMonoid N] [CommRing R] [Algebra ℚ R]
   [AddCommGroup M] [Module R M] [LieRingModule L M] [LieModule R L M]
   (F : ModuleFiltration R M) (d : PositiveDegrees N) (ℒ : N → Submodule R L)
   [DecidableEq N] [GradedLieAlgebra ℒ] [IsPositiveGrading d ℒ]
-  [IsFiltrationRaising d ℒ F]
+  [IsFiltrationRaising d ℒ F.submodule]
 
 /-- Rational scalars on the enveloping algebra come from the coefficient ring. -/
 local instance rationalEnvelopingAlgebra :
@@ -166,7 +166,7 @@ variable {N R L A : Type*} [AddCommMonoid N] [CommRing R] [Algebra ℚ R]
   [Ring A] [Algebra R A] [Algebra ℚ A] [LieRingModule L A] [LieModule R L A]
   (F : AlgFiltration A) (d : PositiveDegrees N) (ℒ : N → Submodule R L)
   [DecidableEq N] [GradedLieAlgebra ℒ] [IsPositiveGrading d ℒ]
-  [IsFiltrationRaising d ℒ (F.toModuleFiltration R)] [IsDerivationAction L A]
+  [IsFiltrationRaising d ℒ (F.toSubmodule R)] [IsDerivationAction L A]
 
 /-- Rational scalars on the module quotient are induced from `R`. -/
 local instance rationalModuleQuotient (k : ℕ) :
@@ -182,24 +182,21 @@ theorem truncatedExpLieAction_restrictScalarsEquiv (k : ℕ) (x : d.truncatedLie
       Submodule.Quotient.restrictScalarsEquiv R (F.ideal (k + 1))
         ((F.toModuleFiltration R).truncatedExpLieAction d ℒ k x a) := by
   obtain ⟨x, rfl⟩ := (d.degreeIdeal ℒ k).surjective_mkQ x
-  let e := Submodule.Quotient.restrictScalarsEquiv R (F.ideal (k + 1))
+  let e : (F.toModuleFiltration R).quotient k ≃ₗ[R] A ⧸ F.ideal (k + 1) :=
+    Submodule.Quotient.restrictScalarsEquiv R (F.ideal (k + 1))
   have hc : (F.quotientLieAction d ℒ k x).comp e.toLinearMap =
-      e.toLinearMap.comp ((F.toModuleFiltration R).quotientLieAction d ℒ k x) := by
+      e.toLinearMap.comp
+        (d.quotientLieAction ℒ (F.toSubmodule R) (F.toSubmodule_antitone R) k x) := by
     apply LinearMap.ext
     intro a
-    obtain ⟨a, rfl⟩ := ((F.toModuleFiltration R).submodule (k + 1)).mkQ_surjective a
-    simp only [LinearMap.comp_apply, LinearEquiv.coe_coe, Submodule.mkQ_apply, e,
-      Submodule.Quotient.restrictScalarsEquiv_mk]
-    rw [Ideal.Quotient.mk_eq_mk, quotientLieAction_mk,
-      (F.toModuleFiltration R).quotientLieAction_mk d ℒ k x a]
-    rfl
-  simpa only [LieIdeal.mkQ_apply, truncatedExpLieAction_mk,
-    quotientExpLieAction_apply, ModuleFiltration.truncatedExpLieAction_apply,
-    ModuleFiltration.truncatedLieAction_mk, LinearMap.comp_apply,
-    LinearEquiv.coe_coe, e] using
-    LinearMap.congr_fun (Module.End.commute_exp_left_of_commute
-      ((F.toModuleFiltration R).isNilpotent_quotientLieAction d ℒ k x)
-      ⟨k + 1, F.quotientLieAction_pow_eq_zero d ℒ k x⟩ hc) a
+    rw [LinearMap.comp_apply, LinearMap.comp_apply, quotientLieAction_apply]
+    exact congrArg e (congrArg _ (e.symm_apply_apply a))
+  rw [LieIdeal.mkQ_apply, truncatedExpLieAction_mk, quotientExpLieAction_apply,
+    ModuleFiltration.truncatedExpLieAction_apply, PositiveDegrees.truncatedLieAction_mk]
+  exact LinearMap.congr_fun (Module.End.commute_exp_left_of_commute
+    (d.isNilpotent_quotientLieAction ℒ (F.toSubmodule R) (F.toSubmodule_antitone R)
+      (F.toSubmodule_zero R) k x)
+    (F.isNilpotent_quotientLieAction d ℒ k x) hc) a
 
 /-- The finite BCH group acts on each coefficient quotient by algebra automorphisms. -/
 noncomputable def truncatedBCHAction (k : ℕ) :
@@ -213,13 +210,18 @@ noncomputable def truncatedBCHAction (k : ℕ) :
   map_mul' g h := by
     apply AlgEquiv.ext
     intro a
-    let e := Submodule.Quotient.restrictScalarsEquiv R (F.ideal (k + 1))
+    let e : (F.toModuleFiltration R).quotient k ≃ₗ[R] A ⧸ F.ideal (k + 1) :=
+      Submodule.Quotient.restrictScalarsEquiv R (F.ideal (k + 1))
     obtain ⟨a, rfl⟩ := e.surjective a
     have he := congrArg (fun f : (F.toModuleFiltration R).quotient k ≃ₗ[R]
         (F.toModuleFiltration R).quotient k => e (f a))
       (((F.toModuleFiltration R).truncatedBCHAction d ℒ k).map_mul g h)
-    simpa only [mul_apply_eq_comp, ModuleFiltration.truncatedBCHAction_apply,
-      ← truncatedExpLieAction_restrictScalarsEquiv, AlgEquiv.mul_apply, e] using he
+    simp only [mul_apply_eq_comp, ModuleFiltration.truncatedBCHAction_apply, e] at he
+    simp only [AlgEquiv.mul_apply, e]
+    exact (F.truncatedExpLieAction_restrictScalarsEquiv d ℒ k _ a).trans (he.trans
+      ((F.truncatedExpLieAction_restrictScalarsEquiv d ℒ k _ _).symm.trans
+        (congrArg (F.truncatedExpLieAction d ℒ k (BCHGroup.log g))
+          (F.truncatedExpLieAction_restrictScalarsEquiv d ℒ k _ a).symm)))
 
 /-- The finite algebra action is the already constructed truncated exponential. -/
 @[simp]
@@ -292,12 +294,13 @@ theorem completedBCHAction_injective
   obtain ⟨m, rfl⟩ := ((F.toModuleFiltration R).submodule (k + 1)).mkQ_surjective a
   apply (Submodule.Quotient.restrictScalarsEquiv R (F.ideal (k + 1))).injective
   have he := congrArg (fun e => F.projection k (e (F.toCompletion m))) hgh
+  rw [Submodule.mkQ_apply,
+    ← ModuleFiltration.truncatedExpLieAction_apply (F := F.toModuleFiltration R),
+    ← ModuleFiltration.truncatedExpLieAction_apply (F := F.toModuleFiltration R),
+    ← truncatedExpLieAction_restrictScalarsEquiv, ← truncatedExpLieAction_restrictScalarsEquiv,
+    restrictScalarsEquiv_toModuleFiltration_mk]
   simpa only [projection_completedBCHAction, PositiveDegrees.projection_completedBCHExp,
-    BCHGroup.log_exp, projection_toCompletion,
-    ← ModuleFiltration.truncatedExpLieAction_apply,
-    ← truncatedExpLieAction_restrictScalarsEquiv,
-    Submodule.Quotient.restrictScalarsEquiv_mk, Submodule.mkQ_apply,
-    Ideal.Quotient.mk_eq_mk] using he
+    BCHGroup.log_exp, projection_toCompletion] using he
 
 /-- On original Lie elements, the completed group action is the existing exponential action. -/
 @[simp]

@@ -198,13 +198,13 @@ theorem exists_isGenericPoint_pair (E : DirectedDiagram (d := d') h' H' κ) (e :
       LinearEquiv.finrank_map_eq, ← e.toAffineEquiv.linear.finrank_eq, hdim]
   obtain ⟨O, hO, hgen⟩ := D.exists_obstacles A hA hdim
   obtain ⟨O', hO', hgen'⟩ := E.exists_obstacles (A.map f) (hA.image f) hdim'
-  let B : (Σ k, (O k ⊕ O' k)) → AffineSubspace ℝ V := fun x => x.2.elim (↑) fun B => B.1.comap f
+  let B : (Σ k, (O k ⊕ O' k)) → AffineSubspace ℝ V := fun x => x.2.elim (↑) fun B => B.val.comap f
   have hB (x) : ¬ A ≤ B x := by
     obtain ⟨k, b | b⟩ := x
-    · exact hO k b b.2
-    · exact fun hle => hO' k b b.2 (AffineSubspace.map_le_iff_le_comap.mpr hle)
+    · exact hO k b b.property
+    · exact fun hle => hO' k b b.property (AffineSubspace.map_le_iff_le_comap.mpr hle)
   obtain ⟨⟨θ, hθA⟩, hθU, hθ⟩ := A.exists_mem_open_avoid_of_not_le B hB
-    (hU.preimage continuous_subtype_val) (by obtain ⟨x, hxU, hxA⟩ := hne; exact ⟨⟨x, hxA⟩, hxU⟩)
+    (hU.preimage continuous_subtypeVal) (by obtain ⟨x, hxU, hxA⟩ := hne; exact ⟨⟨x, hxA⟩, hxU⟩)
   refine ⟨θ, ⟨hθU, hθA⟩, hgen θ hθA fun k b hb => hθ ⟨k, .inl ⟨b, hb⟩⟩,
     hgen' (e θ) (AffineSubspace.mem_map_of_mem f hθA) fun k b hb => hθ ⟨k, .inr ⟨b, hb⟩⟩⟩
 

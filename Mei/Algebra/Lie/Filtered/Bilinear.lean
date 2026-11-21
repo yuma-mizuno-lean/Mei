@@ -7,7 +7,7 @@ module
 
 public import Mei.Algebra.Lie.Filtered.BCH
 public import Mei.LinearAlgebra.ModuleFiltration.Bilinear
-public import Mei.LinearAlgebra.End.Exp
+public import TauCeti.LinearAlgebra.End.Exp
 
 /-!
 # BCH actions and filtered bilinear pairings
@@ -21,7 +21,7 @@ intertwining theorem. The three coefficient modules may be different.
 
 public section
 
-open TauCeti (PositiveDegrees IsPositiveGrading)
+open TauCeti (PositiveDegrees IsPositiveGrading IsFiltrationRaising)
 
 attribute [local instance] LieRing.ofAssociativeRing
 
@@ -35,7 +35,8 @@ variable {Γ R L M N P : Type*} [AddCommMonoid Γ] [CommRing R] [Algebra ℚ R]
   (F : ModuleFiltration R M) (G : ModuleFiltration R N) (H : ModuleFiltration R P)
   (d : PositiveDegrees Γ) (ℒ : Γ → Submodule R L)
   [DecidableEq Γ] [GradedLieAlgebra ℒ] [IsPositiveGrading d ℒ]
-  [IsFiltrationRaising d ℒ F] [IsFiltrationRaising d ℒ G] [IsFiltrationRaising d ℒ H]
+  [IsFiltrationRaising d ℒ F.submodule] [IsFiltrationRaising d ℒ G.submodule]
+  [IsFiltrationRaising d ℒ H.submodule]
   (f : M →ₗ[R] N →ₗ[R] P)
   (hf : ∀ (a b : ℕ) {x y}, x ∈ F.submodule a → y ∈ G.submodule b →
     f x y ∈ H.submodule (a + b))
@@ -47,14 +48,17 @@ omit [Algebra ℚ R] in
 /-- The Leibniz rule descends to matching finite Lie and coefficient quotients. -/
 theorem truncatedLieAction_quotientBilinear (k : ℕ) (z : d.truncatedLie ℒ k)
     (x : F.quotient k) (y : G.quotient k) :
-    H.truncatedLieAction d ℒ k z (quotientBilinear F G H f hf k x y) =
-      quotientBilinear F G H f hf k x (G.truncatedLieAction d ℒ k z y) +
-        quotientBilinear F G H f hf k (F.truncatedLieAction d ℒ k z x) y := by
+    d.truncatedLieAction ℒ H.submodule H.antitone H.zero_eq_top k z
+        (quotientBilinear F G H f hf k x y) =
+      quotientBilinear F G H f hf k x
+          (d.truncatedLieAction ℒ G.submodule G.antitone G.zero_eq_top k z y) +
+        quotientBilinear F G H f hf k
+          (d.truncatedLieAction ℒ F.submodule F.antitone F.zero_eq_top k z x) y := by
   obtain ⟨z, rfl⟩ := (d.degreeIdeal ℒ k).surjective_mkQ z
   obtain ⟨x, rfl⟩ := (F.submodule (k + 1)).mkQ_surjective x
   obtain ⟨y, rfl⟩ := (G.submodule (k + 1)).mkQ_surjective y
-  simp only [Submodule.mkQ_apply, LieIdeal.mkQ_apply, truncatedLieAction_mk,
-    quotientBilinear_mk, quotientLieAction_mk, hequiv]
+  simp only [Submodule.mkQ_apply, LieIdeal.mkQ_apply, PositiveDegrees.truncatedLieAction_mk,
+    quotientBilinear_mk, PositiveDegrees.quotientLieAction_mk, hequiv]
   exact map_add ((H.submodule (k + 1)).mkQ) _ _
 
 /-- Matching finite exponential actions preserve a filtered bilinear pairing. -/
@@ -68,12 +72,13 @@ theorem truncatedExpLieAction_quotientBilinear (k : ℕ) (z : d.truncatedLie ℒ
   let : Module ℚ (H.quotient k) := Module.compHom _ (algebraMap ℚ R)
   simp only [truncatedExpLieAction_apply]
   exact (quotientBilinear F G H f hf k).exp_bilinear_of_leibniz
-    (F.truncatedLieAction d ℒ k z) (G.truncatedLieAction d ℒ k z)
-    (H.truncatedLieAction d ℒ k z)
+    (d.truncatedLieAction ℒ F.submodule F.antitone F.zero_eq_top k z)
+    (d.truncatedLieAction ℒ G.submodule G.antitone G.zero_eq_top k z)
+    (d.truncatedLieAction ℒ H.submodule H.antitone H.zero_eq_top k z)
     (truncatedLieAction_quotientBilinear F G H d ℒ f hf hequiv k z)
-    ⟨k + 1, F.truncatedLieAction_pow_eq_zero d ℒ k z⟩
-    ⟨k + 1, G.truncatedLieAction_pow_eq_zero d ℒ k z⟩
-    ⟨k + 1, H.truncatedLieAction_pow_eq_zero d ℒ k z⟩ x y
+    ⟨k + 1, d.truncatedLieAction_pow_eq_zero ℒ F.submodule F.antitone F.zero_eq_top k z⟩
+    ⟨k + 1, d.truncatedLieAction_pow_eq_zero ℒ G.submodule G.antitone G.zero_eq_top k z⟩
+    ⟨k + 1, d.truncatedLieAction_pow_eq_zero ℒ H.submodule H.antitone H.zero_eq_top k z⟩ x y
 
 variable [LieAlgebra ℚ L] [IsScalarTower ℚ R L]
 

@@ -83,7 +83,7 @@ theorem crossingWord_boundary_mem_of_cover_of_realization
   have hoff {a b : WallComplement (fun P : C.walls => (P : Set V))}
       (q : AdmissiblePLPath a b) (hq : A q ⊆ S) (s : I) (hs : (s : ℝ) ∉ S)
       (P : C.walls) : q.toContinuousPath s ∉ (P : Set V) :=
-    fun hP => hs (hq ⟨s.2, P, hP⟩)
+    fun hP => hs (hq ⟨s.property, P, hP⟩)
   have hsub₀ : A p₀ ⊆ S := fun _ hs => Or.inl (Or.inl (Or.inl hs))
   have hsub₁ : A p₁ ⊆ S := fun _ hs => Or.inl (Or.inl (Or.inr hs))
   have hsub₂ : A r₀ ⊆ S := fun _ hs => Or.inl (Or.inr hs)
@@ -208,7 +208,7 @@ theorem crossingWord_boundary_mem_of_cover
       (Quiver.reverse (e₂ 0))).crossingWord ν ∈ K := by
   -- A single-edge realization pauses for half the interval before traversing the edge.
   let ρ : C(I, I) := ⟨fun s => ⟨max 0 (2 * (s : ℝ) - 1), le_max_left _ _,
-    max_le zero_le_one (by linarith [s.2.2])⟩, by fun_prop⟩
+    max_le zero_le_one (by linarith [s.property.2])⟩, by fun_prop⟩
   have hρ0 : ρ 0 = 0 := by ext; norm_num [ρ]
   have hρ1 : ρ 1 = 1 := by ext; norm_num [ρ]
   have hedge {a b : WallComplement (fun P : C.walls => (P : Set V))}

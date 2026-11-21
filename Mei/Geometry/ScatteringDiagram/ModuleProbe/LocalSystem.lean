@@ -91,9 +91,9 @@ theorem denseRange_coefficientGenericPoints (k : ℕ) :
   let C := B.adaptedComplex k
   let A := coefficientArrangement d ℳ p ℒ H h h' D k
   have hdA : Dense {x : C.regularSpace | A.IsGeneric x.val} :=
-    A.dense_isGeneric.preimage C.isOpen_regularLocus.isOpenMap_subtype_val
+    A.dense_isGeneric.preimage C.isOpen_regularLocus.isOpenMap_subtypeVal
   have hoA : IsOpen {x : C.regularSpace | A.IsGeneric x.val} :=
-    A.isOpen_isGeneric.preimage continuous_subtype_val
+    A.isOpen_isGeneric.preimage continuous_subtypeVal
   have hd := C.dense_coefficientPoints.inter_of_isOpen_right hdA hoA
   unfold DenseRange
   apply hd.mono

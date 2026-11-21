@@ -177,7 +177,7 @@ theorem chamberEquiv_chamber (x : WallComplement (fun P : C.walls => (P : Set V)
 /-- A point of the carrier of a chamber is carried into the carrier of the identified
 chamber. -/
 theorem image_mem_carrier_chamberEquiv {c : Chamber (fun P : C.walls => (P : Set V))}
-    {z : V} (hz : z ∈ c.carrier) : e z ∈ ((C.chamberEquiv e) c).carrier := by
+    {z : V} (hz : z ∈ c.carrierIn) : e z ∈ ((C.chamberEquiv e) c).carrierIn := by
   let := h.finiteDimensional
   exact WallComplement.image_mem_carrier_chamberEquiv _ _ _ hz
 

@@ -72,14 +72,14 @@ theorem IsOpen.exists_isPreconnected_inter_of_subset_iUnion (hS : IsOpen S)
         IsPreconnected ((N : Set S) ∩ O) ∧ ((N : Set S) ∩ O).Nonempty := by
   obtain ⟨w, hw, hwW⟩ := mem_nhds_subtype S x _ |>.mp
     (Filter.inter_mem hW (U.isOpen.mem_nhds hx))
-  obtain ⟨r, hr, hrw⟩ := Metric.mem_nhds_iff.mp (Filter.inter_mem hw (hS.mem_nhds x.2))
+  obtain ⟨r, hr, hrw⟩ := Metric.mem_nhds_iff.mp (Filter.inter_mem hw (hS.mem_nhds x.property))
   let E : Set V := ⋃ k, (A k : Set V)
   let B : Set V := Metric.ball (x : V) r
   have hBS : B ⊆ S := fun p hp => (hrw hp).2
   have hval {T : Set V} (hT : T ⊆ B) : ((↑) : S → V) '' ((↑) ⁻¹' T) = T := by
     rw [Subtype.image_preimage_coe, inter_eq_right.mpr (hT.trans hBS)]
   have hinduc : IsInducing ((↑) : S → V) := IsInducing.subtypeVal
-  let N : Opens S := ⟨(↑) ⁻¹' B, Metric.isOpen_ball.preimage continuous_subtype_val⟩
+  let N : Opens S := ⟨(↑) ⁻¹' B, Metric.isOpen_ball.preimage continuous_subtypeVal⟩
   have hNWU : (N : Set S) ⊆ W ∩ U := fun p hp => hwW (hrw hp).1
   -- The off-obstacle part of `N` is preconnected and dense in `N`.
   let D : Set S := (↑) ⁻¹' (B \ E)

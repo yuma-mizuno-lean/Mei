@@ -107,10 +107,10 @@ theorem extendedCoefficientField_eq_cutoffWallEventEvaluation_of_eventually_eq
       (fun c : B.active K => (B.wall c).isConvexPolyhedron.isClosed.isOpen_compl)
   let z : U := ⟨x.val, x.notMem⟩
   have hd : Dense {y : U | ∀ n, (F n).IsGeneric y.val} :=
-    (TauCeti.ExceptionalArrangement.dense_iInter_isGeneric F).preimage hU.isOpenMap_subtype_val
+    (TauCeti.ExceptionalArrangement.dense_iInter_isGeneric F).preimage hU.isOpenMap_subtypeVal
   have hprobe := (isLocallyConstant_extendedCoefficientField
     d ℳ p ℒ H h h' D B K hBc).eventually_eq z
-  have hray := (continuous_subtype_val.tendsto z).eventually hx
+  have hray := (continuous_subtypeVal.tendsto z).eventually hx
   obtain ⟨W, hWeq, hW, hzW⟩ := mem_nhds_iff.mp (hprobe.and hray)
   obtain ⟨y, hy, hyW⟩ := hd.exists_mem_open hW ⟨z, hzW⟩
   obtain ⟨hallow, heq⟩ := hF y.val hy

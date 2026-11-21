@@ -227,7 +227,7 @@ theorem map_tropicalTangentField (v : R[tropicalTangentMonoid d ρ m]) :
           tropicalTangentMonoid e ρ' m') = 0 := Subtype.ext (by simp [hq])
       rw [h0, show q = 0 from Subtype.ext hq, tropicalTangentField_single_zero,
         tropicalTangentField_single_zero, map_zero, smul_zero, smul_zero]
-    have hTq : T q ≠ 0 := T.map_ne_zero ((mem_tropicalTangentMonoid d ρ m q).mp q.2).1 hq
+    have hTq : T q ≠ 0 := T.map_ne_zero ((mem_tropicalTangentMonoid d ρ m q).mp q.property).1 hq
     have hx := hf q hq (tropicalTangentField d ρ m (single q 1))
       (by rw [coe_tropicalTangentField_single d ρ m hq, one_smul])
     apply Subtype.ext

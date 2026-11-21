@@ -385,7 +385,7 @@ theorem levelConsistent_completion_of_exp_commutatorLog_eq_one
   have hcomm : Commute (BCHGroup.exp (P.labelLog k 0)) (BCHGroup.exp (P.labelLog k 1)) := by
     have := P.exp_labelLog_mul_exp_labelLog k
     rwa [hC, mul_one] at this
-  have hinl (j : D.active k) : ∃ l : Fin 2, j.1 = .inl l := by
+  have hinl (j : D.active k) : ∃ l : Fin 2, j.val = .inl l := by
     obtain ⟨j | u, hj⟩ := j
     · exact ⟨j, rfl⟩
     · have h1 : projection k (D.wall (.inr u)).label =

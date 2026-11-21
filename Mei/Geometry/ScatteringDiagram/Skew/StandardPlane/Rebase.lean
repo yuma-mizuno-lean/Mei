@@ -52,18 +52,18 @@ theorem Weight.snd_rebase (x y : PlaneDegree w) : (Weight.rebase x y).snd = x.de
 
 /-- The change of basis `e₁ ↦ y`, `e₂ ↦ x` of the plane. -/
 def rebase (x y : Γ) : Γ →+ Γ where
-  toFun v := v.1.1 • y + v.1.2 • x
+  toFun v := v.val.1 • y + v.val.2 • x
   map_zero' := by simp
   map_add' v v' := by
     simp only [AddMemClass.coe_add, Prod.fst_add, Prod.snd_add, add_smul]
     abel
 
 @[simp]
-theorem rebase_fst (x y v : Γ) : (rebase x y v).1.1 = v.1.1 * y.1.1 + v.1.2 * x.1.1 := by
+theorem rebase_fst (x y v : Γ) : (rebase x y v).val.1 = v.val.1 * y.val.1 + v.val.2 * x.val.1 := by
   simp [rebase]
 
 @[simp]
-theorem rebase_snd (x y v : Γ) : (rebase x y v).1.2 = v.1.1 * y.1.2 + v.1.2 * x.1.2 := by
+theorem rebase_snd (x y v : Γ) : (rebase x y v).val.2 = v.val.1 * y.val.2 + v.val.2 * x.val.2 := by
   simp [rebase]
 
 variable (x y : PlaneDegree w)
@@ -74,7 +74,7 @@ theorem degree_rebase (v : Γ) :
   have hx := x.deg_eq
   have hy := y.deg_eq
   simp only [Weight.rebase]
-  linear_combination (-v.1.1) * hy + (-v.1.2) * hx
+  linear_combination (-v.val.1) * hy + (-v.val.2) * hx
 
 theorem rebase_mem {v : Γ} (hv : v ∈ (plane (Weight.rebase x y)).monoid) :
     rebase x.vec y.vec v ∈ (plane w).monoid := by

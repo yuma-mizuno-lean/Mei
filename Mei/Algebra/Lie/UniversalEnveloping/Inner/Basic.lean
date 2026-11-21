@@ -26,7 +26,7 @@ public section
 
 open TauCeti.UniversalEnvelopingAlgebra (degreeFiltration ι_mem_degreeFiltration_one)
 
-open TauCeti (PositiveDegrees IsPositiveGrading)
+open TauCeti (PositiveDegrees IsPositiveGrading IsFiltrationRaising)
 
 attribute [local instance 100] LieRing.ofAssociativeRing
 
@@ -54,7 +54,7 @@ theorem lie_eq (x : L) (a : _root_.UniversalEnvelopingAlgebra R L) :
 
 /-- The inner action satisfies the associative Leibniz rule. -/
 scoped instance instIsDerivationAction :
-    IsDerivationAction L (_root_.UniversalEnvelopingAlgebra R L) where
+    TauCeti.IsDerivationAction L (_root_.UniversalEnvelopingAlgebra R L) where
   lie_mul x a b := by simp [lie_eq, mul_sub, sub_mul, mul_assoc]
 
 variable [DecidableEq N] (d : PositiveDegrees N) (ℒ : N → Submodule R L)
@@ -65,7 +65,7 @@ local notation "F" => degreeFiltration ℒ d.degree
 
 /-- The inner action adds the Lie degree to the enveloping filtration order. -/
 scoped instance instIsFiltrationRaising :
-    IsFiltrationRaising d ℒ ((F).toModuleFiltration R) where
+    IsFiltrationRaising d ℒ ((F).toSubmodule R) where
   lie_mem {a b x m} hx hm := by
     have hx' : x ∈ d.degreeIdeal ℒ a := by
       rw [← d.degreeIdeal_toSubmodule ℒ a] at hx

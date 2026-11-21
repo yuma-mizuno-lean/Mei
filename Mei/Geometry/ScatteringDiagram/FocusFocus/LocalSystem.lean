@@ -106,7 +106,7 @@ theorem latticeTransition_of_nonneg {F : Type*} [AddCommGroup F] (e : F ≃+ F) 
 theorem eventually_latticeTransition_eq {F : Type*} [AddCommGroup F] (e : F ≃+ F) (i j : Bool)
     {p : regularLocus} (hp : p.val.1 ≠ 0) :
     ∀ᶠ q in 𝓝 p, latticeTransition e i j q = latticeTransition e i j p := by
-  have hc : Continuous fun q : regularLocus => q.val.1 := continuous_subtype_val.fst
+  have hc : Continuous fun q : regularLocus => q.val.1 := continuous_subtypeVal.fst
   rcases lt_or_gt_of_ne hp with hp | hp
   · filter_upwards [(isOpen_lt hc continuous_const).mem_nhds hp] with q hq
     have hq' : q.val.1 < 0 := hq
@@ -328,7 +328,7 @@ theorem exponentProjection_coordChange (i j : Bool) (p : regularLocus) (q : ℤ 
 /-- Forget the smoothing exponent in the preferred frame. Compatibility with
 coordinate changes makes this a map of lattice local systems. -/
 def latticeProjection : exponentBundleCore.TotalSpace → tangentLatticeBundleCore.TotalSpace :=
-  fun z => ⟨z.proj, exponentProjection z.2⟩
+  fun z => ⟨z.proj, exponentProjection z.snd⟩
 
 /-- The lattice projection lies over the identity of the punctured plane. -/
 @[simp] theorem latticeProjection_proj (z : exponentBundleCore.TotalSpace) :

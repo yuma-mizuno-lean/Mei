@@ -139,7 +139,7 @@ theorem isOpen_coefficientPoints : IsOpen C.coefficientPoints := by
   simpa only [coefficientPoints, ofPred_forall] using isOpen_iInter_of_finite
     (fun P : C.walls => show IsOpen {x : C.regularSpace | x.val ∉ (P : Set V)} from
       (C.isConvexPolyhedron (C.mem_cells_of_mem_walls P.property)).isClosed.isOpen_compl.preimage
-        continuous_subtype_val)
+        continuous_subtypeVal)
 
 /-- Off-wall coefficient points are dense in the full regular locus. -/
 theorem dense_coefficientPoints : Dense C.coefficientPoints := by
@@ -150,7 +150,7 @@ theorem dense_coefficientPoints : Dense C.coefficientPoints := by
       (C.finrank_direction_add_one_of_mem_walls P.property))
   have hd' : Dense (((↑) : C.regularSpace → V) ⁻¹'
       AffineSubspace.genericLocus (fun P : C.walls => affineSpan ℝ (P : Set V))) :=
-    hd.preimage C.isOpen_regularLocus.isOpenMap_subtype_val
+    hd.preimage C.isOpen_regularLocus.isOpenMap_subtypeVal
   apply hd'.mono
   exact fun x hx P hP => (AffineSubspace.mem_genericLocus.mp hx) P (subset_affineSpan ℝ _ hP)
 
@@ -168,10 +168,10 @@ theorem coefficientCharts_isBasis : Opens.IsBasis C.coefficientCharts := by
   rw [Opens.isBasis_iff_nbhd]
   intro U x hx
   have ho : IsOpen (Subtype.val '' (U : Set C.regularSpace)) :=
-    C.isOpen_regularLocus.isOpenMap_subtype_val _ U.isOpen
+    C.isOpen_regularLocus.isOpenMap_subtypeVal _ U.isOpen
   obtain ⟨ε, hε, hεU⟩ := Metric.isOpen_iff.mp ho x.val ⟨x, hx, rfl⟩
   let B : Opens C.regularSpace :=
-    ⟨Subtype.val ⁻¹' Metric.ball x.val ε, Metric.isOpen_ball.preimage continuous_subtype_val⟩
+    ⟨Subtype.val ⁻¹' Metric.ball x.val ε, Metric.isOpen_ball.preimage continuous_subtypeVal⟩
   have hB : Subtype.val '' (B : Set C.regularSpace) = Metric.ball x.val ε := by
     exact Set.image_preimage_eq_of_subset (hεU.trans (Set.image_subset_range _ _))
   refine ⟨B, ?_, Metric.mem_ball_self hε, ?_⟩

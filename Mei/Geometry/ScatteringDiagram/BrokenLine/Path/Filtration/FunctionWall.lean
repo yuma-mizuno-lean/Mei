@@ -83,6 +83,7 @@ theorem length_le_of_functionWallAction
     · rw [← hij]
       exact hv e i
     · simp [hij] at h
-  · simp only [Ideal.algFiltration_ideal, hr, Submodule.restrictScalars_bot]
+  · simp only [AlgFiltration.toSubmodule_apply, Ideal.algFiltration_ideal, hr,
+      Submodule.restrictScalars_bot]
 
 end Mei.PathDecoratedRay

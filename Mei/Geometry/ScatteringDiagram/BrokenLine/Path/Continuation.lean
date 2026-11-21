@@ -167,7 +167,7 @@ theorem continuous_pathDecoratedFamilyTrivialization
         |>.toContinuousMap := by
   exact PathDecoratedRay.continuous_of_history_eq T ℳ i₀ x v ν ε c P W S C
     (fun Y : U => (PathDecoratedRay.endpointEquiv T ℳ i₀ x v ν ε c P W S C r.1.val
-      (fun d hd => hU Y Y.property ⟨r.1, ⟨d, hd⟩⟩) r.2)) r.2.1.val continuous_subtype_val
+      (fun d hd => hU Y Y.property ⟨r.1, ⟨d, hd⟩⟩) r.2)) r.2.1.val continuous_subtypeVal
     fun Y => congrArg Subtype.val
       (PathDecoratedRay.endpointEquiv_history T ℳ i₀ x v ν ε c P W S C r.1.val _ r.2)
 

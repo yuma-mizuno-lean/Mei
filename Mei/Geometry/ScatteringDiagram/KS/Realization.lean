@@ -67,7 +67,7 @@ def indexedWall (P : C.walls) : IndexedWall s d ℒ := by
   exact {
     ray := D.wallRay P
     support := P
-    isCone := (FinitePolyhedralComplex.isConical_iff C).mp D.isConical P
+    isCone := FinitePolyhedralComplex.isConical_iff.mp D.isConical P
       (C.mem_cells_of_mem_walls P.property)
     rational_support := C.rational P (C.mem_cells_of_mem_walls P.property)
     direction_support := by

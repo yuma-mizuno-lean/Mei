@@ -113,7 +113,8 @@ theorem isCrossingGerm_iff : G.IsCrossingGerm g k θ v ↔
     θ ∉ singularSupport (fun j : D.active k => (D.wall j).support) ∧
       (∀ j : D.active k, θ ∈ (D.wall j).support ↔ G.group j = g) ∧
       ∀ j : D.active k, G.group j = g → h.realCharacter (D.wall j).normal v < 0 :=
-  ⟨fun hG => ⟨hG.1, hG.2, hG.3⟩, fun hG => ⟨hG.1, hG.2.1, hG.2.2⟩⟩
+  ⟨fun hG => ⟨hG.notMem_singularSupport, hG.mem_support_iff, hG.realCharacter_normal_neg⟩,
+    fun hG => ⟨hG.1, hG.2.1, hG.2.2⟩⟩
 
 /-- At a crossing germ, the direction is transverse to every active wall through the point. -/
 theorem IsCrossingGerm.realCharacter_normal_ne_zero (hG : G.IsCrossingGerm g k θ v)

@@ -5,20 +5,20 @@ Authors: Codex
 -/
 module
 
-public import Mei.Algebra.Lie.Filtered.Exponential
+public import TauCeti.Algebra.Lie.Filtered.Exponential
 public import Mei.RingTheory.FilteredAlgebra.Algebra
 
 /-!
 # Exponentiating filtration-raising derivation actions
 
-For a filtration-raising Lie action by derivations, the finite operator exponentials are
-algebra automorphisms of the coefficient quotients. Quotient transitions intertwine these
-automorphisms, so they assemble to an algebra automorphism of the completion for every
-Lie element. Negating the Lie element gives the inverse.
+For a filtration-raising Lie action by derivations, the finite operator exponentials
+`AlgFiltration.quotientExpLieAction` from Tau Ceti are algebra automorphisms of the coefficient
+quotients, intertwined by the quotient transitions. They assemble to an algebra automorphism of
+the completion for every Lie element. Negating the Lie element gives the inverse.
 
-The construction uses the finite automorphisms and transition compatibility in
-`Mei.Algebra.Lie.Filtered.Exponential`, together with the compatible-family algebra lift
-`AlgFiltration.liftₐ`. It requires no norm, basis, or separatedness assumption.
+The construction combines `AlgFiltration.factor_quotientExpLieAction` with the
+compatible-family algebra lift `AlgFiltration.liftₐ`. It requires no norm, basis, or
+separatedness assumption.
 -/
 
 public section
@@ -29,14 +29,12 @@ attribute [local instance] LieRing.ofAssociativeRing
 
 namespace TauCeti.AlgFiltration
 
-open Mei
-
 variable {N R L A : Type*} [AddCommMonoid N] [CommRing R]
   [LieRing L] [LieAlgebra R L] [Ring A] [Algebra R A]
   [LieRingModule L A] [LieModule R L A]
   (F : AlgFiltration A) (d : PositiveDegrees N) (ℒ : N → Submodule R L)
   [DecidableEq N] [DirectSum.Decomposition ℒ] [IsPositiveGrading d ℒ]
-  [IsFiltrationRaising d ℒ (F.toModuleFiltration R)] [IsDerivationAction L A]
+  [IsFiltrationRaising d ℒ (F.toSubmodule R)] [IsDerivationAction L A]
 
 variable [Algebra ℚ A]
 

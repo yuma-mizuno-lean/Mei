@@ -316,7 +316,7 @@ theorem exists_subset_zeroLocus_of_mem_ofArrangement_walls (g : ι → (V →ᴬ
 theorem isConical_ofArrangement (g : ι → (V →L[ℝ] ℝ))
     (hg : ∀ j, TauCeti.Toric.IsRationalFunctional h (g j).toLinearMap) :
     (ofArrangement (fun j => (g j).toContinuousAffineMap) hg).IsConical := by
-  apply (isConical_iff _).mpr
+  apply isConical_iff.mpr
   intro P hP
   obtain ⟨σ, hσ, rfl⟩ := mem_ofArrangement_cells.mp hP
   rw [closure_signCell hσ]

@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Geometry.Convex.PolyhedralCochain.Coorientation
+public import TauCeti.Geometry.Convex.PolyhedralCochain.Coorientation
 public import TauCeti.Geometry.Convex.PolyhedralCochain.Sweep.Basic
 public import Mei.Geometry.Convex.PolyhedralCochain.Basic
 public import TauCeti.Geometry.ScatteringDiagram.WallSpace.Basic
@@ -20,8 +20,8 @@ with this oriented normal preserves all homogeneous wall spaces, because their
 integral kernels agree. Thus homogeneous coefficients can be used with the
 coorientation induced by the oriented sweep, without changing the coefficient.
 
-This combines `OrientedCell.exists_integral_coorientation`, the contraction
-orientation of `OrientedCell.sweep`, and
+This combines `OrientedCell.exists_ker_realCharacter_eq_direction_and_sign_eq_evalSign`, the
+contraction orientation of `OrientedCell.sweep`, and
 `DirectedWallSpaces.wall_eq_of_ker_eq`. It supplies the sign compatibility
 between polyhedral sweeps and directed wall labels in the geometric correction
 construction of Mandel, *Scattering diagrams, theta functions, and refined
@@ -55,7 +55,7 @@ theorem exists_cooriented_normal (σ : OrientedCell h 1) (m₀ : Λ →+ ℤ)
       (∀ v : V, SignType.sign (h.realCharacter m v) =
         σ.orientation.evalSign (fun _ : Fin 1 => v)) ∧
       ∀ n : Γ, H.wall n m = H.wall n m₀ := by
-  obtain ⟨m, hm, hdir, hsign⟩ := σ.exists_integral_coorientation
+  obtain ⟨m, hm, hdir, hsign⟩ := σ.exists_ker_realCharacter_eq_direction_and_sign_eq_evalSign
   refine ⟨m, hm, hdir, hsign, fun n => H.wall_eq_of_ker_eq n ?_⟩
   ext v
   have he := SetLike.ext_iff.mp (hdir.trans h₀.symm) (i v)

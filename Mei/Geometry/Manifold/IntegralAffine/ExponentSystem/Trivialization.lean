@@ -58,13 +58,13 @@ locally constant in the point, such that on overlaps the frame change of `E` fol
 isomorphism of the second chart is the isomorphism of the first chart. -/
 structure Trivialization (E : ExponentSystem h B Γ) (Γ₀ : Type*) [AddCommGroup Γ₀] where
   /-- The isomorphism to the model fibre in the frame of a chart at a point of its domain. -/
-  frame (e : atlas V B) (x : B) : x ∈ e.1.source → Γ ≃+ Γ₀
+  frame (e : atlas V B) (x : B) : x ∈ e.val.source → Γ ≃+ Γ₀
   /-- On overlaps, the frames are compatible with the frame changes. -/
-  frame_coordChange {e e' : atlas V B} {x : B} (hx : x ∈ e.1.source ∩ e'.1.source) (γ : Γ) :
+  frame_coordChange {e e' : atlas V B} {x : B} (hx : x ∈ e.val.source ∩ e'.val.source) (γ : Γ) :
     frame e' x hx.2 (E.coordChange e e' x γ) = frame e x hx.1 γ
   /-- The frames are locally constant on the domain of each chart. -/
-  eventually_frame_eq {e : atlas V B} {x : B} (hx : x ∈ e.1.source) :
-    ∀ᶠ y in 𝓝 x, ∀ hy : y ∈ e.1.source, frame e y hy = frame e x hx
+  eventually_frame_eq {e : atlas V B} {x : B} (hx : x ∈ e.val.source) :
+    ∀ᶠ y in 𝓝 x, ∀ hy : y ∈ e.val.source, frame e y hy = frame e x hx
 
 namespace Trivialization
 
@@ -73,7 +73,7 @@ variable {Γ₀ : Type*} [AddCommGroup Γ₀] {E : ExponentSystem h B Γ} {E' : 
 /-- Two trivializations are equal when their frames agree. -/
 @[ext]
 theorem ext {τ τ' : E.Trivialization Γ₀}
-    (H : ∀ e x (hx : x ∈ e.1.source) γ, τ.frame e x hx γ = τ'.frame e x hx γ) : τ = τ' := by
+    (H : ∀ e x (hx : x ∈ e.val.source) γ, τ.frame e x hx γ = τ'.frame e x hx γ) : τ = τ' := by
   rcases τ with ⟨τ, _, _⟩
   rcases τ' with ⟨τ', _, _⟩
   obtain rfl : τ = τ' := by
@@ -84,7 +84,7 @@ theorem ext {τ τ' : E.Trivialization Γ₀}
 /-- On overlaps, a trivialization determines the frame change: it is the frame of the first
 chart followed by the inverse frame of the second. -/
 theorem coordChange_eq (τ : E.Trivialization Γ₀) {e e' : atlas V B} {x : B}
-    (hx : x ∈ e.1.source ∩ e'.1.source) :
+    (hx : x ∈ e.val.source ∩ e'.val.source) :
     E.coordChange e e' x = (τ.frame e x hx.1).trans (τ.frame e' x hx.2).symm := by
   ext γ
   rw [AddEquiv.trans_apply, AddEquiv.eq_symm_apply, τ.frame_coordChange hx]
@@ -92,13 +92,13 @@ theorem coordChange_eq (τ : E.Trivialization Γ₀) {e e' : atlas V B} {x : B}
 /-- The frame of a trivialization in a chart is constant on every preconnected subset of the
 domain of the chart. -/
 theorem frame_eq_of_isPreconnected (τ : E.Trivialization Γ₀) {e : atlas V B} {s : Set B}
-    (hs : IsPreconnected s) (hse : s ⊆ e.1.source) {x y : B} (hx : x ∈ s) (hy : y ∈ s) :
+    (hs : IsPreconnected s) (hse : s ⊆ e.val.source) {x y : B} (hx : x ∈ s) (hy : y ∈ s) :
     τ.frame e x (hse hx) = τ.frame e y (hse hy) := by
   have : PreconnectedSpace s := Subtype.preconnectedSpace hs
-  have hc : IsLocallyConstant fun z : s => τ.frame e z (hse z.2) := by
+  have hc : IsLocallyConstant fun z : s => τ.frame e z (hse z.property) := by
     refine IsLocallyConstant.iff_eventually_eq _ |>.mpr fun z => ?_
-    filter_upwards [continuous_subtype_val.continuousAt.eventually
-      (τ.eventually_frame_eq (hse z.2))] with w hw
+    filter_upwards [continuous_subtypeVal.continuousAt.eventually
+      (τ.eventually_frame_eq (hse z.property))] with w hw
     exact hw _
   exact hc.apply_eq_of_preconnectedSpace ⟨x, hx⟩ ⟨y, hy⟩
 
@@ -106,8 +106,8 @@ theorem frame_eq_of_isPreconnected (τ : E.Trivialization Γ₀) {e : atlas V B}
 the same value at any two points lying both in a preconnected subset `s` of the domain of the
 first chart and in a preconnected subset `s'` of the domain of the second chart. -/
 theorem coordChange_eq_of_isPreconnected (τ : E.Trivialization Γ₀) {e e' : atlas V B}
-    {s s' : Set B} (hs : IsPreconnected s) (hs' : IsPreconnected s') (hse : s ⊆ e.1.source)
-    (hse' : s' ⊆ e'.1.source) {x y : B} (hx : x ∈ s ∩ s') (hy : y ∈ s ∩ s') :
+    {s s' : Set B} (hs : IsPreconnected s) (hs' : IsPreconnected s') (hse : s ⊆ e.val.source)
+    (hse' : s' ⊆ e'.val.source) {x y : B} (hx : x ∈ s ∩ s') (hy : y ∈ s ∩ s') :
     E.coordChange e e' x = E.coordChange e e' y := by
   rw [τ.coordChange_eq ⟨hse hx.1, hse' hx.2⟩, τ.coordChange_eq ⟨hse hy.1, hse' hy.2⟩,
     τ.frame_eq_of_isPreconnected hs hse hx.1 hy.1,
@@ -129,7 +129,7 @@ def comap (τ : E.Trivialization Γ₀) (f : AtlasMap V B' B) : (E.comap f).Triv
 the image point. -/
 @[simp]
 theorem comap_frame (τ : E.Trivialization Γ₀) (f : AtlasMap V B' B) (e : atlas V B') (x : B')
-    (hx : x ∈ e.1.source) :
+    (hx : x ∈ e.val.source) :
     (τ.comap f).frame e x hx = τ.frame (f.chart e) (f x) ((f.mem_source_iff e).mp hx) := (rfl)
 
 /-- The pullback of a trivialization along an isomorphism of exponent systems: its frame is the
@@ -147,14 +147,14 @@ def ofIso (σ : E.Iso E') (τ : E'.Trivialization Γ₀) : E.Trivialization Γ�
 isomorphism followed by the frame of the trivialization. -/
 @[simp]
 theorem ofIso_frame (σ : E.Iso E') (τ : E'.Trivialization Γ₀) (e : atlas V B) (x : B)
-    (hx : x ∈ e.1.source) :
+    (hx : x ∈ e.val.source) :
     (ofIso σ τ).frame e x hx = (σ.app e x hx).trans (τ.frame e x hx) := (rfl)
 
 variable (E) in
 /-- Let `f` be an atlas map whose image lies in the domain of the chart `e₀`. The pullback
 `E.comap f` of an exponent system `E` is trivialized, with model fibre `Γ`, by the frame changes
 of `E` to `e₀`: the frame in a chart `e` at `x` is `E.coordChange (f.chart e) e₀ (f x)`. -/
-def ofAtlasMap (f : AtlasMap V B' B) (e₀ : atlas V B) (hf : ∀ x, f x ∈ e₀.1.source) :
+def ofAtlasMap (f : AtlasMap V B' B) (e₀ : atlas V B) (hf : ∀ x, f x ∈ e₀.val.source) :
     (E.comap f).Trivialization Γ where
   frame e x _ := E.coordChange (f.chart e) e₀ (f x)
   frame_coordChange {e e' x} hx γ := by
@@ -168,8 +168,8 @@ def ofAtlasMap (f : AtlasMap V B' B) (e₀ : atlas V B) (hf : ∀ x, f x ∈ e�
 /-- The frame of the trivialization by the frame changes to a chart `e₀` is, in a chart `e` at
 `x`, the frame change from the target chart of `e` to `e₀` at `f x`. -/
 @[simp]
-theorem ofAtlasMap_frame (f : AtlasMap V B' B) (e₀ : atlas V B) (hf : ∀ x, f x ∈ e₀.1.source)
-    (e : atlas V B') (x : B') (hx : x ∈ e.1.source) :
+theorem ofAtlasMap_frame (f : AtlasMap V B' B) (e₀ : atlas V B) (hf : ∀ x, f x ∈ e₀.val.source)
+    (e : atlas V B') (x : B') (hx : x ∈ e.val.source) :
     (ofAtlasMap E f e₀ hf).frame e x hx = E.coordChange (f.chart e) e₀ (f x) := (rfl)
 
 end Trivialization

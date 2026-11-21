@@ -46,9 +46,10 @@ theorem degreeSubmodule_scale (k : ℕ) :
     (d.scale c).degreeSubmodule ℒ k = d.degreeSubmodule ℒ (k / c) := by
   apply le_antisymm
   · rw [degreeSubmodule_def]
-    exact iSup_le fun n => d.le_degreeSubmodule ℒ ((d.lt_scale_degree_iff c).mp n.2)
+    exact iSup_le fun n => d.le_degreeSubmodule ℒ ((d.lt_scale_degree_iff c).mp n.property)
   · rw [degreeSubmodule_def]
-    exact iSup_le fun n => (d.scale c).le_degreeSubmodule ℒ ((d.lt_scale_degree_iff c).mpr n.2)
+    exact iSup_le fun n =>
+      (d.scale c).le_degreeSubmodule ℒ ((d.lt_scale_degree_iff c).mpr n.property)
 
 end PositiveDegrees
 

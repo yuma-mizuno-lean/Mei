@@ -41,7 +41,7 @@ theorem exists_mem_intrinsicInterior_avoid_of_not_le (P : Set V)
     ∃ x ∈ U ∩ intrinsicInterior ℝ P, ∀ j, x ∉ E j := by
   let A := affineSpan ℝ P
   let W : Set A := (Subtype.val ⁻¹' U) ∩ interior (Subtype.val ⁻¹' P)
-  have hW : IsOpen W := (hU.preimage continuous_subtype_val).inter isOpen_interior
+  have hW : IsOpen W := (hU.preimage continuous_subtypeVal).inter isOpen_interior
   obtain ⟨x, hxU, hxP⟩ := hne
   obtain ⟨xA, hxA, rfl⟩ := mem_intrinsicInterior.mp hxP
   obtain ⟨y, ⟨hyU, hyP⟩, hy⟩ :=

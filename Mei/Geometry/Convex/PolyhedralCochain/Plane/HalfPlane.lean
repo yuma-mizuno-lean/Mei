@@ -221,7 +221,7 @@ private theorem intrinsicFrontier_horizontalLine :
     refine eq_univ_of_forall fun x => ?_
     have hx0 : ((0, 0) : ℝ × ℝ) ∈ affineSpan ℝ (horizontalLine h).carrier :=
       subset_affineSpan ℝ _ rfl
-    have := (AffineSubspace.vsub_right_mem_direction_iff_mem hx0 x.1).mpr x.2
+    have := (AffineSubspace.vsub_right_mem_direction_iff_mem hx0 x.val).mpr x.property
     rw [direction_affineSpan_horizontalLine] at this
     simpa using this
   rw [intrinsicFrontier, hpre, frontier_univ, image_empty]

@@ -25,7 +25,7 @@ exponential. No freeness, flatness or separatedness is required.
 
 public section
 
-open TauCeti (PositiveDegrees IsPositiveGrading)
+open TauCeti (PositiveDegrees IsPositiveGrading IsFiltrationRaising)
 
 attribute [local instance] LieRing.ofAssociativeRing
 
@@ -39,9 +39,9 @@ variable {N R S L M : Type*} [AddCommMonoid N] [CommRing R] [CommRing S]
 /-- Scalar restriction preserves the filtration-raising condition on a Lie action. -/
 instance IsFiltrationRaising.restrictScalars (d : PositiveDegrees N)
     (ℒ : N → Submodule S L) (F : ModuleFiltration S M)
-    [IsFiltrationRaising d ℒ F] :
-    IsFiltrationRaising d (fun n => (ℒ n).restrictScalars R) (F.restrictScalars R) where
-  lie_mem hx hm := IsFiltrationRaising.lie_mem (d := d) (ℒ := ℒ) (F := F)
+    [IsFiltrationRaising d ℒ F.submodule] :
+    IsFiltrationRaising d (fun n => (ℒ n).restrictScalars R) (F.restrictScalars R).submodule where
+  lie_mem hx hm := IsFiltrationRaising.lie_mem (d := d) (ℒ := ℒ) (F := F.submodule)
     (by simpa only [PositiveDegrees.degreeSubmodule_restrictScalars,
       Submodule.restrictScalars_mem] using hx) hm
 
@@ -50,7 +50,7 @@ namespace ModuleFiltration
 variable [LieModule S L M] [LieModule R L M]
   (F : ModuleFiltration S M) (d : PositiveDegrees N) (ℒ : N → Submodule S L)
   [DecidableEq N] [GradedLieAlgebra ℒ] [IsPositiveGrading d ℒ]
-  [IsFiltrationRaising d ℒ F]
+  [IsFiltrationRaising d ℒ F.submodule]
 
 /-- The finite module comparison intertwines the restricted Lie representations. -/
 @[simp]
@@ -58,9 +58,10 @@ theorem restrictScalarsEquiv_truncatedLieAction (k : ℕ)
     (x : d.truncatedLie (fun n => (ℒ n).restrictScalars R) k)
     (a : (F.restrictScalars R).quotient k) :
     Submodule.Quotient.restrictScalarsEquiv R (F.submodule (k + 1))
-        ((F.restrictScalars R).truncatedLieAction d
-          (fun n => (ℒ n).restrictScalars R) k x a) =
-      F.truncatedLieAction d ℒ k (d.truncatedRestrictScalarsEquiv (R := R) ℒ k x)
+        (d.truncatedLieAction (fun n => (ℒ n).restrictScalars R) (F.restrictScalars R).submodule
+          (F.restrictScalars R).antitone (F.restrictScalars R).zero_eq_top k x a) =
+      d.truncatedLieAction ℒ F.submodule F.antitone F.zero_eq_top k
+        (d.truncatedRestrictScalarsEquiv (R := R) ℒ k x)
         (Submodule.Quotient.restrictScalarsEquiv R (F.submodule (k + 1)) a) := by
   obtain ⟨x, rfl⟩ := (d.degreeIdeal (fun n => (ℒ n).restrictScalars R) k).surjective_mkQ x
   obtain ⟨m, rfl⟩ := ((F.restrictScalars R).submodule (k + 1)).mkQ_surjective a
@@ -89,9 +90,10 @@ theorem restrictScalarsEquiv_truncatedExpLieAction (k : ℕ)
       F.truncatedExpLieAction d ℒ k (d.truncatedRestrictScalarsEquiv (R := R) ℒ k x)
         (Submodule.Quotient.restrictScalarsEquiv R (F.submodule (k + 1)) a) := by
   let e := Submodule.Quotient.restrictScalarsEquiv R (F.submodule (k + 1))
-  let D := (F.restrictScalars R).truncatedLieAction d
-    (fun n => (ℒ n).restrictScalars R) k x
-  let E := F.truncatedLieAction d ℒ k (d.truncatedRestrictScalarsEquiv (R := R) ℒ k x)
+  let D := d.truncatedLieAction (fun n => (ℒ n).restrictScalars R) (F.restrictScalars R).submodule
+    (F.restrictScalars R).antitone (F.restrictScalars R).zero_eq_top k x
+  let E := d.truncatedLieAction ℒ F.submodule F.antitone F.zero_eq_top k
+    (d.truncatedRestrictScalarsEquiv (R := R) ℒ k x)
   have hc : (e.conjAlgEquiv R) D = E.restrictScalars R := by
     ext b
     obtain ⟨a, rfl⟩ := e.surjective b
@@ -99,10 +101,10 @@ theorem restrictScalarsEquiv_truncatedExpLieAction (k : ℕ)
       LinearEquiv.symm_apply_apply, LinearMap.restrictScalars_apply, e, D, E] using
       F.restrictScalarsEquiv_truncatedLieAction d ℒ k x a
   have he := (IsNilpotent.map_exp
-    ⟨k + 1, (F.restrictScalars R).truncatedLieAction_pow_eq_zero d
-      (fun n => (ℒ n).restrictScalars R) k x⟩ (e.conjAlgEquiv R))
-  rw [hc, ← Module.End.exp_restrictScalars E
-    ⟨k + 1, F.truncatedLieAction_pow_eq_zero d ℒ k _⟩] at he
+    ⟨k + 1, d.truncatedLieAction_pow_eq_zero (fun n => (ℒ n).restrictScalars R)
+      (F.restrictScalars R).submodule (F.restrictScalars R).antitone
+      (F.restrictScalars R).zero_eq_top k x⟩ (e.conjAlgEquiv R))
+  rw [hc, ← Module.End.restrictScalars_exp E] at he
   simpa only [LinearEquiv.conjAlgEquiv_apply, LinearMap.comp_apply, LinearEquiv.coe_coe,
     LinearEquiv.symm_apply_apply, LinearMap.restrictScalars_apply,
     truncatedExpLieAction_apply, e, D, E] using
@@ -152,10 +154,9 @@ instance IsFiltrationRaising.restrictScalars_algebra
     [SMul R S] [LieRing L] [LieAlgebra S L] [LieAlgebra R L]
     [IsScalarTower R S L] [Ring A] [Algebra S A] [Algebra R A]
     [LieRingModule L A] (F : TauCeti.AlgFiltration A) (d : PositiveDegrees N)
-    (ℒ : N → Submodule S L) [IsFiltrationRaising d ℒ (F.toModuleFiltration S)] :
-    IsFiltrationRaising d (fun n => (ℒ n).restrictScalars R) (F.toModuleFiltration R) where
-  lie_mem hx hm := IsFiltrationRaising.lie_mem (d := d) (ℒ := ℒ)
-    (F := F.toModuleFiltration S)
+    (ℒ : N → Submodule S L) [IsFiltrationRaising d ℒ (F.toSubmodule S)] :
+    IsFiltrationRaising d (fun n => (ℒ n).restrictScalars R) (F.toSubmodule R) where
+  lie_mem hx hm := IsFiltrationRaising.lie_mem (d := d) (ℒ := ℒ) (F := F.toSubmodule S)
     (by simpa only [PositiveDegrees.degreeSubmodule_restrictScalars,
       Submodule.restrictScalars_mem] using hx) hm
 
@@ -171,7 +172,7 @@ variable {N R S L A : Type*} [AddCommMonoid N] [CommRing R] [CommRing S]
   [IsScalarTower R S A] [LieRingModule L A] [LieModule S L A] [LieModule R L A]
   (F : AlgFiltration A) (d : PositiveDegrees N) (ℒ : N → Submodule S L)
   [DecidableEq N] [IsPositiveGrading d ℒ]
-  [IsFiltrationRaising d ℒ (F.toModuleFiltration S)]
+  [IsFiltrationRaising d ℒ (F.toSubmodule S)]
 
 /-- Restricting scalars preserves the Lie representation on each coefficient algebra quotient. -/
 @[simp]
@@ -192,8 +193,7 @@ theorem quotientExpLieAction_restrictScalars [DirectSum.Decomposition ℒ] (k : 
   ext a
   simp only [quotientExpLieAction_apply, AlgEquiv.restrictScalars_apply]
   rw [quotientLieAction_restrictScalars,
-    ← Module.End.exp_restrictScalars (F.quotientLieAction d ℒ k x)
-      ⟨k + 1, F.quotientLieAction_pow_eq_zero d ℒ k x⟩]
+    ← Module.End.restrictScalars_exp (F.quotientLieAction d ℒ k x)]
   rfl
 
 variable [GradedLieAlgebra ℒ]

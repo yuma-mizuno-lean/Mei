@@ -89,7 +89,8 @@ theorem expAd_moduleQuotientInclusion (k : ℕ) (x : d.truncatedLie ℒ (k + 1))
       ((baseGradedLieHom d ℳ p ℒ).truncatedMap (a := k + 1) (k + 1) (by simp) x)).comp
       (moduleQuotientInclusion d ℳ p ℒ k) =
       (moduleQuotientInclusion d ℳ p ℒ k).comp
-        ((d.shiftedLieFiltration ℒ ℳ p).truncatedLieAction d ℒ k
+        (d.truncatedLieAction ℒ (d.shiftedLieFiltration ℒ ℳ p).submodule
+          (d.shiftedLieFiltration ℒ ℳ p).antitone (d.shiftedLieFiltration ℒ ℳ p).zero_eq_top k
           (d.truncationMap ℒ (Nat.le_succ k) x)) := by
     obtain ⟨x, rfl⟩ := (d.degreeIdeal ℒ (k + 1)).surjective_mkQ x
     apply LinearMap.ext
@@ -97,13 +98,14 @@ theorem expAd_moduleQuotientInclusion (k : ℕ) (x : d.truncatedLie ℒ (k + 1))
     simp only [LinearMap.comp_apply, LieIdeal.mkQ_apply,
       GradedLieHom.truncatedMap_mk, baseGradedLieHom_apply,
       LieAlgebra.ad_apply, PositiveDegrees.truncationMap_mk,
-      ModuleFiltration.truncatedLieAction_mk]
+      PositiveDegrees.truncatedLieAction_mk]
     simpa only [LieIdeal.mkQ_apply] using lie_base_moduleQuotientInclusion d ℳ p ℒ k x b
   rw [TauCeti.expAd_apply _ hx]
   simpa only [ModuleFiltration.truncatedExpLieAction_apply,
     LinearMap.comp_apply] using LinearMap.congr_fun
       (Module.End.commute_exp_left_of_commute
-        ⟨k + 1, (d.shiftedLieFiltration ℒ ℳ p).truncatedLieAction_pow_eq_zero d ℒ k _⟩
+        ⟨k + 1, d.truncatedLieAction_pow_eq_zero ℒ (d.shiftedLieFiltration ℒ ℳ p).submodule
+          (d.shiftedLieFiltration ℒ ℳ p).antitone (d.shiftedLieFiltration ℒ ℳ p).zero_eq_top k _⟩
         hx hc) a
 
 variable [LieAlgebra ℚ L] [IsScalarTower ℚ R L]

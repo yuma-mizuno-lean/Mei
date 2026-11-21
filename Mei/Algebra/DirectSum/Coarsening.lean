@@ -36,13 +36,13 @@ theorem decompose_decompose_apply_of_le (hw : ∀ q, ∀ x ∈ ℳ q, x ∈ 𝒜
   induction x using Decomposition.inductionOn ℳ with
   | zero => simp
   | @homogeneous q y =>
-    have hy : (y : M) ∈ 𝒜 (w q) := hw q y y.2
+    have hy : (y : M) ∈ 𝒜 (w q) := hw q y y.property
     by_cases hηq : η = q
     · subst hηq
       by_cases hi : w η = i
       · simp [decompose_of_mem_same 𝒜 (hi ▸ hy), hi]
       · simp [decompose_of_mem_ne 𝒜 hy hi, hi]
-    · have h0 : (decompose ℳ (y : M) η : M) = 0 := decompose_of_mem_ne ℳ y.2 (Ne.symm hηq)
+    · have h0 : (decompose ℳ (y : M) η : M) = 0 := decompose_of_mem_ne ℳ y.property (Ne.symm hηq)
       by_cases hi : w q = i
       · rw [decompose_of_mem_same 𝒜 (hi ▸ hy), h0]
         split_ifs <;> rfl

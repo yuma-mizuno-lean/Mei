@@ -8,7 +8,8 @@ module
 public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.Trivialization
 public import Mei.Geometry.ScatteringDiagram.DirectedDiagram.CellCrossing
 public import Mei.Geometry.Convex.PolyhedralComplex.Incidence
-public import Mei.Geometry.Convex.PolyhedralCochain.Coorientation
+public import TauCeti.Geometry.Convex.PolyhedralCochain.Coorientation
+public import Mei.Geometry.Convex.PolyhedralCochain.Basic
 public import Mei.Algebra.Lie.BCH.CentralExtension
 
 /-!
@@ -24,7 +25,7 @@ crossing leaves its contribution unchanged.
 
 The geometric choices are constructed using
 `FinitePolyhedralComplex.exists_transverse_wall_chambers`,
-`OrientedCell.exists_integral_coorientation` and
+`OrientedCell.exists_ker_realCharacter_eq_direction_and_sign_eq_evalSign` and
 `DirectedDiagram.eventually_exists_levelPathProduct_eq_wallCrossingLabel`.
 Kernel membership uses the finite chamber-lift projection formula; its logarithm
 is `LieHom.logDefect`. The obstruction construction follows Mandel,
@@ -102,7 +103,7 @@ variable {D} {l : ℕ} {σ : OrientedCell h 1}
 consistency, chamber lifts or crossing-defect equations are required. -/
 instance : Nonempty (D.AdaptedWallCrossing σ hσ) := by
   have := h.finiteDimensional
-  obtain ⟨m, -, hmker, hmsign⟩ := σ.exists_integral_coorientation
+  obtain ⟨m, -, hmker, hmsign⟩ := σ.exists_ker_realCharacter_eq_direction_and_sign_eq_evalSign
   have hmreal : h.realCharacter m ≠ 0 := by
     intro he
     have hd := σ.finrank_direction_add

@@ -29,7 +29,7 @@ and refined tropical curve counts*, Definition 2.10 and §3.3.3
 (arXiv:1503.06183v5).
 -/
 
-open TauCeti (singularSupport)
+open TauCeti (singularSupport IsFiltrationRaising)
 
 public noncomputable section
 
@@ -60,7 +60,7 @@ local notation "f" k => fun j : D.active k => h.continuousRealCharacter
 of its chosen incident normal, including unrealizable events with label one. -/
 @[simp↓] -- Preserve membership before expanding the exponential action.
 theorem truncatedBCHAction_wallEventLabel_mem_normalDegreeSubmodule_iff
-    (F : ModuleFiltration R M) [IsFiltrationRaising d ℒ F] (k : ℕ)
+    (F : ModuleFiltration R M) [IsFiltrationRaising d ℒ F.submodule] (k : ℕ)
     (e : WallEvent (D.active k)) (z : ℤ) (a : F.quotient k) :
     F.truncatedBCHAction d ℒ k (D.wallEventLabel k e) a ∈
         (normalDegreeSubmodule ρ ℳ (D.wall e.1.property.choose).normal z).map
@@ -81,7 +81,7 @@ theorem truncatedBCHAction_wallEventLabel_mem_normalDegreeSubmodule_iff
 of its homogeneous input. The coefficient grading is any inherited quotient
 grading, and the input can be an arbitrary homogeneous quotient class. -/
 theorem normal_eq_of_decompose_truncatedBCHAction_wallEventLabel_ne_zero
-    (F : ModuleFiltration R M) [IsFiltrationRaising d ℒ F] (k : ℕ)
+    (F : ModuleFiltration R M) [IsFiltrationRaising d ℒ F.submodule] (k : ℕ)
     (𝓝 : Γ → Submodule R (F.quotient k)) [DirectSum.Decomposition 𝓝]
     (h𝓝 : ∀ n, 𝓝 n = (ℳ n).map (F.submodule (k + 1)).mkQ)
     (e : WallEvent (D.active k)) {p q : Γ} {a : F.quotient k}

@@ -98,7 +98,7 @@ theorem eventually_shiftedQuotientComponent_extendedCoefficientField_eq
   have hdense : Dense {x : {x : V // ∀ c : B.active k, x ∉ (B.wall c).support} |
       (coefficientArrangement d ℳ p ℒ H h h' D k).IsGeneric x.val} :=
     (coefficientArrangement d ℳ p ℒ H h h' D k).dense_isGeneric.preimage
-      hopen.isOpenMap_subtype_val
+      hopen.isOpenMap_subtypeVal
   filter_upwards [eventually_shiftedQuotientComponent_coefficientField_eq
     d ℳ p ℒ H h h' D₀ a D hinitial k q hk hout (hK.cthickening (r := 1))]
     with t ht Q hQK hQ
@@ -108,7 +108,7 @@ theorem eventually_shiftedQuotientComponent_extendedCoefficientField_eq
     (isLocallyConstant_extendedCoefficientField d ℳ p ℒ H h h' D B k hBc).exists_open x
   obtain ⟨z, ⟨hzU, hdist⟩, hz⟩ := hdense.inter_open_nonempty
     (U ∩ Subtype.val ⁻¹' Metric.ball x.val 1)
-    (hU.inter (Metric.isOpen_ball.preimage continuous_subtype_val))
+    (hU.inter (Metric.isOpen_ball.preimage continuous_subtypeVal))
     ⟨x, hxU, by simp⟩
   simp only [mem_ofPred_eq] at hz
   have hzK : z.val - t • i (ρ q) ∈ Metric.cthickening 1 K := by

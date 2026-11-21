@@ -58,19 +58,19 @@ structure ExponentSystem (h : TauCeti.Toric.IsIntegralLattice i) (B : Type*)
   /-- On triple overlaps, changing frames through an intermediate chart is the direct
   change. -/
   coordChange_trans {e e' e'' : atlas V B} {x : B} :
-    x ∈ e.1.source ∩ e'.1.source ∩ e''.1.source →
+    x ∈ e.val.source ∩ e'.val.source ∩ e''.val.source →
       (coordChange e e' x).trans (coordChange e' e'' x) = coordChange e e'' x
   /-- The frame changes are locally constant on overlaps. -/
   eventually_coordChange_eq {e e' : atlas V B} {x : B} :
-    x ∈ e.1.source ∩ e'.1.source → ∀ᶠ y in 𝓝 x, coordChange e e' y = coordChange e e' x
+    x ∈ e.val.source ∩ e'.val.source → ∀ᶠ y in 𝓝 x, coordChange e e' y = coordChange e e' x
   /-- Off the overlap of the two chart domains, the frame change is the identity. -/
   coordChange_of_notMem {e e' : atlas V B} {x : B} :
-    x ∉ e.1.source ∩ e'.1.source → coordChange e e' x = AddEquiv.refl Γ
+    x ∉ e.val.source ∩ e'.val.source → coordChange e e' x = AddEquiv.refl Γ
   /-- The projection `ρ_e` to the integral tangent lattice in the frame of a chart. -/
   projection : atlas V B → Γ →+ N
   /-- On overlaps, `ρ_{e'} ∘ T_Γ = T_Λ ∘ ρ_e`. -/
   projection_coordChange {e e' : atlas V B} {x : B} :
-    x ∈ e.1.source ∩ e'.1.source → ∀ γ : Γ,
+    x ∈ e.val.source ∩ e'.val.source → ∀ γ : Γ,
       projection e' (coordChange e e' x γ) = tangentLatticeChange h e e' x (projection e γ)
 
 variable {h : TauCeti.Toric.IsIntegralLattice i} {B : Type*} [TopologicalSpace B]
@@ -82,7 +82,7 @@ variable (E : ExponentSystem h B Γ)
 
 /-- On its domain, the frame change from a chart to itself is the identity. -/
 @[simp]
-theorem coordChange_self {e : atlas V B} {x : B} (hx : x ∈ e.1.source) :
+theorem coordChange_self {e : atlas V B} {x : B} (hx : x ∈ e.val.source) :
     E.coordChange e e x = AddEquiv.refl Γ := by
   have := E.coordChange_trans (e := e) (e' := e) (e'' := e) ⟨⟨hx, hx⟩, hx⟩
   ext γ
@@ -90,7 +90,7 @@ theorem coordChange_self {e : atlas V B} {x : B} (hx : x ∈ e.1.source) :
     simpa only [AddEquiv.trans_apply, AddEquiv.refl_apply] using DFunLike.congr_fun this γ
 
 /-- Reversing the two charts inverts the frame change on the overlap. -/
-theorem coordChange_symm {e e' : atlas V B} {x : B} (hx : x ∈ e.1.source ∩ e'.1.source) :
+theorem coordChange_symm {e e' : atlas V B} {x : B} (hx : x ∈ e.val.source ∩ e'.val.source) :
     E.coordChange e' e x = (E.coordChange e e' x).symm := by
   ext γ
   rw [AddEquiv.eq_symm_apply, ← AddEquiv.trans_apply, E.coordChange_trans ⟨⟨hx.2, hx.1⟩, hx.2⟩,
@@ -100,12 +100,12 @@ theorem coordChange_symm {e e' : atlas V B} {x : B} (hx : x ∈ e.1.source ∩ e
 projections agree in every chart. -/
 @[ext]
 theorem ext {E E' : ExponentSystem h B Γ}
-    (hc : ∀ e e' : atlas V B, ∀ x ∈ e.1.source ∩ e'.1.source,
+    (hc : ∀ e e' : atlas V B, ∀ x ∈ e.val.source ∩ e'.val.source,
       E.coordChange e e' x = E'.coordChange e e' x)
     (hp : ∀ e, E.projection e = E'.projection e) : E = E' := by
   have hc' : E.coordChange = E'.coordChange := by
     funext e e' x
-    by_cases hx : x ∈ e.1.source ∩ e'.1.source
+    by_cases hx : x ∈ e.val.source ∩ e'.val.source
     · exact hc e e' x hx
     · rw [E.coordChange_of_notMem hx, E'.coordChange_of_notMem hx]
   rcases E with ⟨c, _, _, _, ρ, _⟩
@@ -137,13 +137,13 @@ end ExponentSystem
 
 /-- On its domain, the tangent frame change from a chart to itself is the identity. -/
 @[simp]
-theorem tangentLatticeChange_self {e : atlas V B} {x : B} (hx : x ∈ e.1.source) :
+theorem tangentLatticeChange_self {e : atlas V B} {x : B} (hx : x ∈ e.val.source) :
     tangentLatticeChange h e e x = AddEquiv.refl N :=
   (ExponentSystem.tangent h B).coordChange_self hx
 
 /-- Reversing the two charts inverts the tangent frame change on the overlap. -/
 theorem tangentLatticeChange_symm {e e' : atlas V B} {x : B}
-    (hx : x ∈ e.1.source ∩ e'.1.source) :
+    (hx : x ∈ e.val.source ∩ e'.val.source) :
     tangentLatticeChange h e' e x = (tangentLatticeChange h e e' x).symm :=
   (ExponentSystem.tangent h B).coordChange_symm hx
 
@@ -152,8 +152,8 @@ identity. -/
 @[simp]
 theorem tangentLatticeChange_modelSpace (e e' : atlas V V) (x : V) :
     tangentLatticeChange h e e' x = AddEquiv.refl N := by
-  have he := chartedSpaceSelf_atlas.mp e.2
-  obtain rfl : e = e' := Subtype.ext (he.trans (chartedSpaceSelf_atlas.mp e'.2).symm)
+  have he := chartedSpaceSelf_atlas.mp e.property
+  obtain rfl : e = e' := Subtype.ext (he.trans (chartedSpaceSelf_atlas.mp e'.property).symm)
   exact tangentLatticeChange_self (by rw [he]; exact mem_univ x)
 
 namespace ExponentSystem
@@ -166,8 +166,8 @@ variable [TopologicalSpace Γ] [DiscreteTopology Γ]
 over the atlas whose chart at `x` is `achart V x` and whose transition functions are the frame
 changes. -/
 noncomputable def toFiberBundleCore : FiberBundleCore (atlas V B) B Γ where
-  baseSet e := e.1.source
-  isOpen_baseSet e := e.1.open_source
+  baseSet e := e.val.source
+  isOpen_baseSet e := e.val.open_source
   indexAt := achart V
   mem_baseSet_at := mem_chart_source V
   coordChange e e' x := E.coordChange e e' x
@@ -185,7 +185,7 @@ noncomputable def toFiberBundleCore : FiberBundleCore (atlas V B) B Γ where
 /-- The trivializations of the lattice local system live over the chart domains. -/
 @[simp]
 theorem toFiberBundleCore_localTriv_baseSet (e : atlas V B) :
-    (E.toFiberBundleCore.localTriv e).baseSet = e.1.source := (rfl)
+    (E.toFiberBundleCore.localTriv e).baseSet = e.val.source := (rfl)
 
 /-- The preferred frame at a point is the chart at that point. -/
 @[simp]

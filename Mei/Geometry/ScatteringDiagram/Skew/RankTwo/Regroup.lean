@@ -45,12 +45,12 @@ nonnegative pairings of the degrees `δ i` and all `δ i` have degree at most `k
 list of `s i` copies of each `δ i` consists of the `δ i`, is a chain for the nonnegative pairing,
 and has all degrees at most `k`. -/
 theorem flatten_replicate_properties {ι : Type*} (I' : List ι) (δ : ι → D.NonzeroDegree d)
-    (s : ι → ℕ) (hpw : I'.Pairwise fun i j => 0 ≤ βℚ (δ i).1 (δ j).1) {k : ℕ}
-    (hdeg : ∀ i ∈ I', d.degree (δ i).1 ≤ k) :
+    (s : ι → ℕ) (hpw : I'.Pairwise fun i j => 0 ≤ βℚ (δ i).val (δ j).val) {k : ℕ}
+    (hdeg : ∀ i ∈ I', d.degree (δ i).val ≤ k) :
     (∀ m ∈ (I'.map fun i => List.replicate (s i) (δ i)).flatten, ∃ i ∈ I', δ i = m) ∧
       ((I'.map fun i => List.replicate (s i) (δ i)).flatten.IsChain
-        fun a b => 0 ≤ βℚ a.1 b.1) ∧
-      ∀ m ∈ (I'.map fun i => List.replicate (s i) (δ i)).flatten, d.degree m.1 ≤ k := by
+        fun a b => 0 ≤ βℚ a.val b.val) ∧
+      ∀ m ∈ (I'.map fun i => List.replicate (s i) (δ i)).flatten, d.degree m.val ≤ k := by
   refine ⟨fun m hm => ?_, ?_, fun m hm => ?_⟩
   · simp only [List.mem_flatten, List.mem_map] at hm
     obtain ⟨L, ⟨i, hi, rfl⟩, hmL⟩ := hm
@@ -79,29 +79,29 @@ theorem exists_isChain_projection_prod_unitFactor_eq [Module.Free ℤ D.sublatti
     [Fact ((D.principalPositiveDegrees d).monoid ≤ D.principalCoefficientMonoid d)]
     {ι : Type*} (I : List ι) (δ : ι → D.NonzeroDegree d) (c : ι → ℚ) (hc : ∀ i ∈ I, 0 < c i)
     {x y : D.unfrozen} (hxy : ∀ i ∈ I, (δ i : D.unfrozen) ∈ AddSubmonoid.closure {x, y})
-    (hI : I.IsChain fun i j => 0 ≤ βℚ (δ i).1 (δ j).1) {g : d.completedBCHGroup
+    (hI : I.IsChain fun i j => 0 ≤ βℚ (δ i).val (δ j).val) {g : d.completedBCHGroup
       (SkewLieAlgebra.positiveGrading βℚ (D.isAlt_coefficientForm ℚ) d)}
-    (hg : D.IsIntegralLabel d g) {k : ℕ} (hdeg : ∀ i ∈ I, d.degree (δ i).1 ≤ k)
+    (hg : D.IsIntegralLabel d g) {k : ℕ} (hdeg : ∀ i ∈ I, d.degree (δ i).val ≤ k)
     (hk : TauCeti.CompletedGroup.projection k g =
       TauCeti.CompletedGroup.projection k (I.map fun i => D.dilogPow d (δ i) (c i)).prod) :
     ∃ M : List (D.NonzeroDegree d), (∀ m ∈ M, ∃ i ∈ I, δ i = m) ∧
-      (M.IsChain fun a b => 0 ≤ βℚ a.1 b.1) ∧ (∀ m ∈ M, d.degree m.1 ≤ k) ∧
+      (M.IsChain fun a b => 0 ≤ βℚ a.val b.val) ∧ (∀ m ∈ M, d.degree m.val ≤ k) ∧
       TauCeti.CompletedGroup.projection k (M.map (D.unitFactor d)).prod =
         TauCeti.CompletedGroup.projection k g := by
   classical
   obtain ⟨I', hI'I, -, -, hI'pw, hprod, hs⟩ :=
-    D.exists_nodup_prod_eq_and_intCast_mul_rayIndex_of_isChain d I (fun i => (δ i).1)
-      (fun i => (δ i).2.1) (fun i => (δ i).2.2) c hxy hI hg
+    D.exists_nodup_prod_eq_and_intCast_mul_rayIndex_of_isChain d I (fun i => (δ i).val)
+      (fun i => (δ i).property.1) (fun i => (δ i).property.2) c hxy hI hg
       (by simpa only [dilogPow_def] using hk)
   -- The total exponent of the degree of `i`.
-  set σ : ι → ℚ := fun i => ((I.filter fun j => decide ((δ j).1 = (δ i).1)).map c).sum with hσ
+  set σ : ι → ℚ := fun i => ((I.filter fun j => decide ((δ j).val = (δ i).val)).map c).sum with hσ
   have hσpos : ∀ i ∈ I', 0 < σ i := by
     intro i hi
     refine List.sum_pos _ (fun a ha => ?_) (List.ne_nil_of_mem (List.mem_map.mpr
       ⟨i, List.mem_filter.mpr ⟨hI'I hi, by simp⟩, rfl⟩))
     obtain ⟨j, hj, rfl⟩ := List.mem_map.mp ha
     exact hc j (List.mem_filter.mp hj).1
-  have hs' : ∀ i, ∃ s : ℤ, i ∈ I' → σ i = s * κ (δ i).1 := by
+  have hs' : ∀ i, ∃ s : ℤ, i ∈ I' → σ i = s * κ (δ i).val := by
     intro i
     by_cases h : i ∈ I'
     · obtain ⟨s, hs⟩ := hs i h (hdeg i (hI'I h))
@@ -110,7 +110,8 @@ theorem exists_isChain_projection_prod_unitFactor_eq [Module.Free ℤ D.sublatti
   choose s hs using hs'
   have hpow : ∀ i ∈ I', D.dilogPow d (δ i) (σ i) = D.unitFactor d (δ i) ^ (s i).toNat := by
     intro i hi
-    have hκ : 0 < κ (δ i).1 := AddSubgroup.rayIndex_pos _ fun h => (δ i).2.2 (Subtype.ext h)
+    have hκ : 0 < κ (δ i).val :=
+      AddSubgroup.rayIndex_pos _ fun h => (δ i).property.2 (Subtype.ext h)
     have hspos : 0 < s i := by
       have h1 := hσpos i hi
       rw [hs i hi] at h1

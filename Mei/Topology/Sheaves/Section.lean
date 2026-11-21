@@ -49,7 +49,7 @@ theorem section_ext {U : Opens X} {s t : F.presheaf.obj (op U)}
       F.presheaf.map (homOfLE hN).op s = F.presheaf.map (homOfLE hN).op t) :
     s = t := by
   have hF := (isSheaf_iff_isSheaf_of_type _ _).mp F.property
-  choose N hN hxN H using fun x : U => h x.1 x.2
+  choose N hN hxN H using fun x : U => h x.val x.property
   refine (hF.isSheafFor (.ofArrows N fun x => homOfLE (hN x)) ?_).isSeparatedFor.ext ?_
   · exact fun x hx => ⟨N ⟨x, hx⟩, homOfLE (hN _), Sieve.ofArrows_mk _ _ _, hxN _⟩
   · rintro _ _ ⟨x⟩
@@ -70,7 +70,7 @@ theorem existsUnique_extension_of_injective {G U : Opens X} (hGU : G ≤ U)
     obtain ⟨u, hu⟩ := h
     refine ⟨u, hu, fun u' hu' => hinj U le_rfl ?_⟩
     exact F.presheaf.restrict_eq_of_le hGU hGU inf_le_right (hu'.trans hu.symm)
-  choose N t hxN ht using fun x : U => hloc x.1 x.2
+  choose N t hxN ht using fun x : U => hloc x.val x.property
   -- Glue the local extensions, restricted to `U`.
   let N' : U → Opens X := fun x => N x ⊓ U
   let t' : ∀ x, F.presheaf.obj (op (N' x)) := fun x =>
@@ -97,7 +97,7 @@ theorem existsUnique_extension_of_injective {G U : Opens X} (hGU : G ≤ U)
     Opens.mem_iSup.mpr ⟨⟨x, hx⟩, hxN ⟨x, hx⟩, hx⟩
   refine ⟨F.presheaf.map (homOfLE hcover).op g, section_ext F fun x hx => ?_⟩
   -- Near each point of `G`, both sections are restrictions of the local extension.
-  obtain ⟨y, rfl⟩ : ∃ y : U, y.1 = x := ⟨⟨x, hGU hx⟩, rfl⟩
+  obtain ⟨y, rfl⟩ : ∃ y : U, y.val = x := ⟨⟨x, hGU hx⟩, rfl⟩
   refine ⟨N' y ⊓ G, inf_le_right, ⟨⟨hxN y, hGU hx⟩, hx⟩, ?_⟩
   have h := congrArg (F.presheaf.map (homOfLE (inf_le_left : N' y ⊓ G ≤ N' y)).op) (hg y)
   have h' : F.presheaf.map (homOfLE (inf_le_left.trans (le_iSup N' y))).op g =

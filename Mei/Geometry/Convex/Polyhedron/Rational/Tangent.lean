@@ -41,13 +41,13 @@ variable {N V : Type*} [AddCommGroup N] [NormedAddCommGroup V] [NormedSpace ℝ 
 noncomputable def tangentAt (Q : RationalAffinePolyhedron h) (x : V) :
     RationalAffinePolyhedron h :=
   ofFinite (ι := {j // Q.inequality j x = 0})
-    (fun j => (Q.inequality j.1).contLinear.toContinuousAffineMap) fun j => by
-      have hlin : ((Q.inequality j.1).contLinear.toContinuousAffineMap :
-          V →ᴬ[ℝ] ℝ).linear = (Q.inequality j.1).linear := by
+    (fun j => (Q.inequality j.val).contLinear.toContinuousAffineMap) fun j => by
+      have hlin : ((Q.inequality j.val).contLinear.toContinuousAffineMap :
+          V →ᴬ[ℝ] ℝ).linear = (Q.inequality j.val).linear := by
         simp only [← ContinuousAffineMap.coe_contLinear_eq_linear,
           ContinuousLinearMap.toContinuousAffineMap_contLinear]
       rw [hlin]
-      exact Q.rational_linear j.1
+      exact Q.rational_linear j.val
 
 /-- A displacement lies in the tangent presentation when it is nonpositive for the linear
 part of every inequality tight at `x`. -/

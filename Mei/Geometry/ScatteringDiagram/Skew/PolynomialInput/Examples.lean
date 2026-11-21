@@ -309,7 +309,7 @@ noncomputable def unimodularBLMPolynomialInput :
     unimodularRankTwoAdaptedBasis.BLMPolynomialInput where
   multiplicity _ := 1
   multiplicity_pos _ := one_pos
-  exponent i := ![LinearMap.snd ℤ ℤ ℤ, -LinearMap.fst ℤ ℤ ℤ] i.1
+  exponent i := ![LinearMap.snd ℤ ℤ ℤ, -LinearMap.fst ℤ ℤ ℤ] i.val
   multiplicity_mul_exponent i a := by
     obtain ⟨i, -⟩ := i
     fin_cases i <;> simp
@@ -398,7 +398,7 @@ end TypeA₂
 section TypeA₂WithIsolated
 
 /-- The multiplicities `ℓ = (1, 1, 2)` at the unfrozen indices of `isolatedBasis`. -/
-def isolatedMultiplicity : isolatedBasis.unfrozenIndex → ℕ+ := fun i => ![1, 1, 2] i.1
+def isolatedMultiplicity : isolatedBasis.unfrozenIndex → ℕ+ := fun i => ![1, 1, 2] i.val
 
 /-- The principal BLM extension of `isolatedBasis` with multiplicities `ℓ = (1, 1, 2)`. -/
 abbrev isolatedExtension :

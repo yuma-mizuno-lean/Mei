@@ -159,7 +159,7 @@ def slabAlgebraMap : slabAlgebra t f k →ₐ[R] slabAlgebra t' f' k' :=
     (slabAlgebra t f k).val) ((slabAlgebra t' f' k').restrictScalars R) fun p => by
       rw [Subalgebra.mem_restrictScalars, mem_slabAlgebra_iff]
       exact (localizedOverlapMap_leftGluing t f ht hf hk _).symm.trans
-        ((congrArg _ ((mem_slabAlgebra_iff t f k).mp p.2)).trans
+        ((congrArg _ ((mem_slabAlgebra_iff t f k).mp p.property)).trans
           (localizedOverlapMap_rightGluing t f ht hf hk _))
 
 /-- The slab algebra map acts by the two chamber maps. -/

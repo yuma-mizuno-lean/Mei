@@ -28,7 +28,7 @@ for cluster algebras*, §1.1 (arXiv:1411.1394v2).
 
 public noncomputable section
 
-open TauCeti (PositiveDegrees)
+open TauCeti (PositiveDegrees IsFiltrationRaising)
 
 namespace Mei.SkewLatticeDatum.AdaptedBasis.BLMPolynomialInput
 
@@ -139,7 +139,7 @@ local instance initialLabelPrincipalLieModule : LieModule R (tropicalVertexLieAl
   LieModule.restrictScalars R (MvPolynomial I.Letter R) _ _
 
 local instance initialLabelPrincipalIsFiltrationRaising :
-    IsFiltrationRaising e ℳ' ((G).toModuleFiltration R) :=
+    IsFiltrationRaising e ℳ' ((G).toSubmodule R) :=
   IsFiltrationRaising.restrictScalars_algebra (R := R) (S := MvPolynomial I.Letter R) (G) e
     (tropicalVertexGrading (R := MvPolynomial I.Letter R) e ρ')
 

@@ -130,7 +130,7 @@ theorem isPositive_badlandsWallFunction : (F).IsPositive 𝒫 badlandsWallFuncti
 theorem badlandsWallFunction_notMem_range_toCompletion :
     (badlandsWallFunction : (F).completion) ∉ Set.range (F).toCompletion := by
   have hδ (n : Q) : 0 ≤ ((orthant (Fin 2)).degree.comp (Q).subtype) n :=
-    (orthant (Fin 2)).degree_nonneg n.2
+    (orthant (Fin 2)).degree_nonneg n.property
   have hm : 0 < ((orthant (Fin 2)).degree.comp (Q).subtype) diagonalExponent := by
     rw [AddMonoidHom.comp_apply, AddSubmonoid.subtype_apply, degree_diagonalExponent]
     norm_num
