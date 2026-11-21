@@ -55,7 +55,7 @@ theorem regularLocus_subset : C.regularLocus ⊆ D.regularLocus :=
 /-- The canonical inclusion of the fine regular locus in the coarse one. -/
 def regularInclusion : C.regularSpace ⟶ D.regularSpace :=
   TopCat.ofHom ⟨Set.inclusion hCD.regularLocus_subset,
-    continuous_subtype_val.subtype_mk _⟩
+    continuous_subtypeVal.subtype_mk _⟩
 
 /-- Regular-locus inclusion leaves ambient coordinates unchanged. -/
 @[simp]
@@ -65,7 +65,7 @@ theorem regularInclusion_val (x : C.regularSpace) :
 /-- The regular-locus map is an open embedding for the inherited topologies. -/
 theorem isOpenEmbedding_regularInclusion : IsOpenEmbedding hCD.regularInclusion :=
   IsOpenEmbedding.inclusion hCD.regularLocus_subset
-    (C.isOpen_regularLocus.preimage continuous_subtype_val)
+    (C.isOpen_regularLocus.preimage continuous_subtypeVal)
 
 omit hCD in
 /-- Inclusion for the reflexive subdivision is the identity map. -/

@@ -35,7 +35,7 @@ arXiv:1503.06183v5.
 
 public section
 
-open TauCeti (AlgFiltration)
+open TauCeti (AlgFiltration IsFiltrationRaising)
 
 open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading)
 
@@ -276,17 +276,18 @@ scoped instance instGradedBracket :
 
 /-- Logarithmic fields act by derivations of coefficient multiplication. -/
 scoped instance instIsDerivationAction :
-    IsDerivationAction (tropicalVertexLieAlgebra (R := R) d ρ) R[Q] where
+    TauCeti.IsDerivationAction (tropicalVertexLieAlgebra (R := R) d ρ) R[Q] where
   lie_mul x a b := by simp [lie_eq, Derivation.leibniz, mul_comm]
 
 /-- A positive field above cutoff `a` raises coefficient order by `a + 1`. -/
 scoped instance instIsFiltrationRaising :
     IsFiltrationRaising d (tropicalVertexGrading (R := R) d ρ)
-      ((filtration (R := R) d Q).toModuleFiltration R) where
+      ((filtration (R := R) d Q).toSubmodule R) where
   lie_mem {a b x f} hx hf := by
     classical
     have hQ : d.monoid ≤ Q := Fact.out
-    simp only [filtration_ideal, Submodule.restrictScalars_mem] at hf ⊢
+    simp only [AlgFiltration.toSubmodule_apply, filtration_ideal,
+      Submodule.restrictScalars_mem] at hf ⊢
     rw [d.degreeSubmodule_def (tropicalVertexGrading (R := R) d ρ) a] at hx
     refine Submodule.iSup_induction
       (fun n : {n : Γ // (a : ℤ) < d.degree n} => tropicalVertexGrading (R := R) d ρ n)
@@ -319,7 +320,7 @@ scoped instance instIsFiltrationRaising :
 preserves its positive-increment filtration bound. -/
 scoped instance instIsFiltrationRaisingTropicalSubalgebra (U : Submodule R (Λ →+ R)) :
     IsFiltrationRaising d (LogarithmicVectorField.tropicalSubalgebraGrading ρ U d)
-      ((filtration (R := R) d Q).toModuleFiltration R) := by
+      ((filtration (R := R) d Q).toSubmodule R) := by
   rw [LogarithmicVectorField.tropicalSubalgebraGrading_def]
   infer_instance
 

@@ -5,7 +5,7 @@ Authors: Codex
 -/
 module
 
-public import Mei.Topology.Connected.Adjacency
+public import TauCeti.Topology.Connected.Adjacency
 public import Mei.Geometry.Convex.Polyhedron.AdmissiblePath
 public import Mathlib.Analysis.Normed.Module.Convex
 
@@ -37,7 +37,7 @@ variable {V ι : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
 common closure points inside that region. -/
 def chamberGraph (W : ι → Set V) (U : Set V) :
     SimpleGraph (ConnectedComponents ↥(U \ ⋃ i, W i)) :=
-  componentAdjacencyGraph (U \ ⋃ i, W i) (U \ singularSupport W)
+  TauCeti.componentAdjacencyGraph (U \ ⋃ i, W i) (U \ singularSupport W)
 
 /-- At represented chambers, adjacency is witnessed by closures of the actual
 ambient `connectedComponentIn` sets, at a nonsingular point of the region. -/
@@ -47,8 +47,8 @@ theorem chamberGraph_adj {W : ι → Set V} {U : Set V} {x y : ↥(U \ ⋃ i, W 
         ∃ p ∈ U, p ∉ singularSupport W ∧
           p ∈ closure (connectedComponentIn (U \ ⋃ i, W i) x.val) ∧
           p ∈ closure (connectedComponentIn (U \ ⋃ i, W i) y.val) := by
-  simp only [chamberGraph, componentAdjacencyGraph_adj, mem_sdiff,
-    ConnectedComponents.carrier_mk, and_assoc]
+  simp only [chamberGraph, TauCeti.componentAdjacencyGraph_adj, mem_sdiff,
+    ConnectedComponents.carrierIn_mk, and_assoc]
 
 end Mei.Convex
 
@@ -82,21 +82,21 @@ private theorem lineMap_reachable [Finite ι] {W : ι → Set V} {U : Set V}
     dsimp only [T]
     rw [(e.finite_crossings.image Prod.snd).mem_toFinset]
     exact ⟨(i, t), (WallComplement.mem_crossings wx wy i t).mpr ⟨ht, hi⟩, rfl⟩
-  have hwalk := componentAdjacencyGraph_reachable_of_finite_exceptions
+  have hwalk := TauCeti.reachable_componentAdjacencyGraph_of_continuousOn
     (s := U \ ⋃ i, W i) (R := U \ singularSupport W)
-    (f := fun t : ℝ => AffineMap.lineMap x.val y.val t) T
+    (f := fun t : ℝ => AffineMap.lineMap x.val y.val t)
     AffineMap.lineMap_continuous.continuousOn (by norm_num : (0 : ℝ) ≤ 1)
     (by simpa only [AffineMap.lineMap_apply_zero] using x.property)
     (by simpa only [AffineMap.lineMap_apply_one] using y.property)
-    (fun t ht _ => ⟨hconv.lineMap_mem x.property.1 y.property.1 ht, hreg t ht⟩) hT
+    (T.finite_toSet.subset fun t ht => hT t ht.1 ht.2)
+    (fun t ht _ => ⟨hconv.lineMap_mem x.property.1 y.property.1 ht, hreg t ht⟩)
   simpa only [chamberGraph, AffineMap.lineMap_apply_zero,
     AffineMap.lineMap_apply_one] using hwalk
 
 /-- Any two allowed points of an open convex region have chambers joined by
 a finite adjacency walk, with each edge witnessed by a regular closure point
 inside the region. No connectivity of the wall complement is assumed. -/
-theorem chamberGraph_reachable {U : Set V} (hconv : Convex ℝ U)
-    [FiniteDimensional ℝ V] [Finite ι]
+theorem chamberGraph_reachable {U : Set V} (hconv : Convex ℝ U) [Finite ι]
     (W : ι → Set V) (hpoly : ∀ i, TauCeti.IsConvexPolyhedron (W i))
     (hdim : ∀ i, Module.finrank ℝ (affineSpan ℝ (W i)).direction + 1 = Module.finrank ℝ V)
     (hU : IsOpen U) (x y : ↥(U \ ⋃ i, W i)) :
@@ -114,8 +114,7 @@ theorem chamberGraph_reachable {U : Set V} (hconv : Convex ℝ U)
 
 /-- The chamber graph of an open convex region is preconnected, including
 the empty region and empty wall family. -/
-theorem chamberGraph_preconnected {U : Set V} (hconv : Convex ℝ U)
-    [FiniteDimensional ℝ V] [Finite ι]
+theorem chamberGraph_preconnected {U : Set V} (hconv : Convex ℝ U) [Finite ι]
     (W : ι → Set V) (hpoly : ∀ i, TauCeti.IsConvexPolyhedron (W i))
     (hdim : ∀ i, Module.finrank ℝ (affineSpan ℝ (W i)).direction + 1 = Module.finrank ℝ V)
     (hU : IsOpen U) : (chamberGraph W U).Preconnected := by

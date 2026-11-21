@@ -50,9 +50,9 @@ structure AtlasMap (H : Type*) [TopologicalSpace H] (M M' : Type*) [TopologicalS
   /-- The chart of the target of which a chart of the source is the pullback. -/
   chart : atlas H M → atlas H M'
   /-- The domain of a chart is the preimage of the domain of its target chart. -/
-  source_eq (e : atlas H M) : e.1.source = toFun ⁻¹' (chart e).1.source
+  source_eq (e : atlas H M) : e.val.source = toFun ⁻¹' (chart e).val.source
   /-- On its domain, a chart is its target chart composed with the map. -/
-  apply_eq (e : atlas H M) {x : M} : x ∈ e.1.source → e.1 x = (chart e).1 (toFun x)
+  apply_eq (e : atlas H M) {x : M} : x ∈ e.val.source → e.val x = (chart e).val (toFun x)
 
 namespace AtlasMap
 
@@ -79,55 +79,55 @@ variable (f : AtlasMap H M M')
 /-- A point lies in the domain of a chart exactly when its image lies in the domain of the
 target chart. -/
 theorem mem_source_iff (e : atlas H M) {x : M} :
-    x ∈ e.1.source ↔ f x ∈ (f.chart e).1.source := by
+    x ∈ e.val.source ↔ f x ∈ (f.chart e).val.source := by
   rw [f.source_eq e, mem_preimage]
 
 /-- A point lies in the overlap of two chart domains exactly when its image lies in the
 overlap of the domains of their target charts. -/
 theorem mem_source_inter_iff (e e' : atlas H M) {x : M} :
-    x ∈ e.1.source ∩ e'.1.source ↔ f x ∈ (f.chart e).1.source ∩ (f.chart e').1.source := by
+    x ∈ e.val.source ∩ e'.val.source ↔ f x ∈ (f.chart e).val.source ∩ (f.chart e').val.source := by
   rw [mem_inter_iff, mem_inter_iff, f.mem_source_iff e, f.mem_source_iff e']
 
 /-- For two atlas maps with the same underlying map, at a point of the domain of a chart, the
 image point lies in the domains of the target charts of that chart under both maps. -/
 theorem mem_chart_source_inter_of_coe_eq {f g : AtlasMap H M M'} (hfg : ⇑f = ⇑g)
-    {e : atlas H M} {x : M} (hx : x ∈ e.1.source) :
-    f x ∈ (f.chart e).1.source ∩ (g.chart e).1.source :=
+    {e : atlas H M} {x : M} (hx : x ∈ e.val.source) :
+    f x ∈ (f.chart e).val.source ∩ (g.chart e).val.source :=
   ⟨(f.mem_source_iff e).mp hx, by rw [hfg]; exact (g.mem_source_iff e).mp hx⟩
 
 /-- On its domain, a chart is its target chart composed with the map. -/
-theorem chart_apply (e : atlas H M) {x : M} (hx : x ∈ e.1.source) :
-    (f.chart e).1 (f x) = e.1 x :=
+theorem chart_apply (e : atlas H M) {x : M} (hx : x ∈ e.val.source) :
+    (f.chart e).val (f x) = e.val x :=
   (f.apply_eq e hx).symm
 
 /-- On the domain of a chart, the map is the inverse of the target chart composed with the
 chart. -/
-theorem chart_symm_apply (e : atlas H M) {x : M} (hx : x ∈ e.1.source) :
-    (f.chart e).1.symm (e.1 x) = f x := by
+theorem chart_symm_apply (e : atlas H M) {x : M} (hx : x ∈ e.val.source) :
+    (f.chart e).val.symm (e.val x) = f x := by
   rw [← f.chart_apply e hx, OpenPartialHomeomorph.left_inv _ ((f.mem_source_iff e).mp hx)]
 
 /-- The target of a chart is contained in the target of its target chart. -/
-theorem target_subset_chart_target (e : atlas H M) : e.1.target ⊆ (f.chart e).1.target := by
+theorem target_subset_chart_target (e : atlas H M) : e.val.target ⊆ (f.chart e).val.target := by
   intro y hy
-  rw [← e.1.right_inv hy, ← f.chart_apply e (e.1.map_target hy)]
-  exact (f.chart e).1.map_source ((f.mem_source_iff e).mp (e.1.map_target hy))
+  rw [← e.val.right_inv hy, ← f.chart_apply e (e.val.map_target hy)]
+  exact (f.chart e).val.map_source ((f.mem_source_iff e).mp (e.val.map_target hy))
 
 /-- On the target of a chart, the map composed with the inverse chart is the inverse of the
 target chart. -/
-theorem apply_symm_eq_chart_symm (e : atlas H M) {y : H} (hy : y ∈ e.1.target) :
-    f (e.1.symm y) = (f.chart e).1.symm y := by
-  rw [← f.chart_symm_apply e (e.1.map_target hy), e.1.right_inv hy]
+theorem apply_symm_eq_chart_symm (e : atlas H M) {y : H} (hy : y ∈ e.val.target) :
+    f (e.val.symm y) = (f.chart e).val.symm y := by
+  rw [← f.chart_symm_apply e (e.val.map_target hy), e.val.right_inv hy]
 
 /-- An atlas map is continuous. -/
 @[fun_prop]
 theorem continuous : Continuous f := by
   refine continuous_iff_continuousAt.mpr fun x => ?_
   have hx := mem_chart_source H x
-  have hc : ContinuousAt (f.chart (achart H x)).1.symm ((achart H x).1 x) := by
+  have hc : ContinuousAt (f.chart (achart H x)).val.symm ((achart H x).val x) := by
     rw [← f.chart_apply _ hx]
-    exact (f.chart _).1.continuousAt_symm
-      ((f.chart _).1.map_source ((f.mem_source_iff (achart H x)).mp hx))
-  refine (hc.comp ((achart H x).1.continuousAt hx)).congr_of_eventuallyEq ?_
+    exact (f.chart _).val.continuousAt_symm
+      ((f.chart _).val.map_source ((f.mem_source_iff (achart H x)).mp hx))
+  refine (hc.comp ((achart H x).val.continuousAt hx)).congr_of_eventuallyEq ?_
   filter_upwards [(chartAt H x).open_source.mem_nhds hx] with y hy
   exact (f.chart_symm_apply (achart H x) hy).symm
 
@@ -136,7 +136,7 @@ the source is defined wherever the chart change from the target chart of the fir
 the first map to the target chart of the second chart under the second map is. -/
 theorem symm_trans_source_subset_of_coe_eq (g : AtlasMap H M M') (hfg : ⇑f = ⇑g)
     (e e' : atlas H M) :
-    (e.1.symm ≫ₕ e'.1).source ⊆ ((f.chart e).1.symm ≫ₕ (g.chart e').1).source := by
+    (e.val.symm ≫ₕ e'.val).source ⊆ ((f.chart e).val.symm ≫ₕ (g.chart e').val).source := by
   intro y hy
   rw [OpenPartialHomeomorph.trans_source, OpenPartialHomeomorph.symm_source] at hy ⊢
   refine ⟨f.target_subset_chart_target e hy.1, ?_⟩
@@ -146,15 +146,15 @@ theorem symm_trans_source_subset_of_coe_eq (g : AtlasMap H M M') (hfg : ⇑f = �
 /-- The chart change between two charts of the source is defined wherever the chart change
 between their target charts is. -/
 theorem symm_trans_source_subset (e e' : atlas H M) :
-    (e.1.symm ≫ₕ e'.1).source ⊆ ((f.chart e).1.symm ≫ₕ (f.chart e').1).source :=
+    (e.val.symm ≫ₕ e'.val).source ⊆ ((f.chart e).val.symm ≫ₕ (f.chart e').val).source :=
   f.symm_trans_source_subset_of_coe_eq f rfl e e'
 
 /-- For two atlas maps with the same underlying map, the chart change between two charts of
 the source is the restriction of the chart change from the target chart of the first chart
 under the first map to the target chart of the second chart under the second map. -/
 theorem symm_trans_eqOn_of_coe_eq (g : AtlasMap H M M') (hfg : ⇑f = ⇑g) (e e' : atlas H M) :
-    EqOn (e.1.symm ≫ₕ e'.1) ((f.chart e).1.symm ≫ₕ (g.chart e').1)
-      (e.1.symm ≫ₕ e'.1).source := by
+    EqOn (e.val.symm ≫ₕ e'.val) ((f.chart e).val.symm ≫ₕ (g.chart e').val)
+      (e.val.symm ≫ₕ e'.val).source := by
   intro y hy
   rw [OpenPartialHomeomorph.trans_source, OpenPartialHomeomorph.symm_source] at hy
   rw [OpenPartialHomeomorph.trans_apply, OpenPartialHomeomorph.trans_apply,
@@ -163,8 +163,8 @@ theorem symm_trans_eqOn_of_coe_eq (g : AtlasMap H M M') (hfg : ⇑f = ⇑g) (e e
 /-- The chart change between two charts of the source is the restriction of the chart change
 between their target charts. -/
 theorem symm_trans_eqOn (e e' : atlas H M) :
-    EqOn (e.1.symm ≫ₕ e'.1) ((f.chart e).1.symm ≫ₕ (f.chart e').1)
-      (e.1.symm ≫ₕ e'.1).source :=
+    EqOn (e.val.symm ≫ₕ e'.val) ((f.chart e).val.symm ≫ₕ (f.chart e').val)
+      (e.val.symm ≫ₕ e'.val).source :=
   f.symm_trans_eqOn_of_coe_eq f rfl e e'
 
 include f in
@@ -174,7 +174,8 @@ theorem hasGroupoid {G : StructureGroupoid H} [ClosedUnderRestriction G] [HasGro
     HasGroupoid M G where
   compatible {e e'} he he' := by
     have hm := G.restr_mem_of_eqOn
-      (G.compatible (f.chart ⟨e, he⟩).2 (f.chart ⟨e', he'⟩).2) (e.symm ≫ₕ e').open_source
+      (G.compatible (f.chart ⟨e, he⟩).property (f.chart ⟨e', he'⟩).property)
+      (e.symm ≫ₕ e').open_source
       (f.symm_trans_eqOn ⟨e, he⟩ ⟨e', he'⟩).symm
       (inter_subset_left.trans (f.symm_trans_source_subset ⟨e, he⟩ ⟨e', he'⟩))
     rwa [OpenPartialHomeomorph.restr_eq_of_source_subset subset_rfl] at hm
@@ -238,12 +239,12 @@ assigned a chart of the ambient space of which it is the restriction. The assign
 choice, since different charts may have the same restriction. -/
 noncomputable def ofOpens (s : Opens M) : AtlasMap H s M where
   toFun := (↑)
-  chart e := achart H (mem_iUnion.mp e.2).choose.1
+  chart e := achart H (mem_iUnion.mp e.property).choose.val
   source_eq e := by
-    conv_lhs => rw [mem_singleton_iff.mp (mem_iUnion.mp e.2).choose_spec]
+    conv_lhs => rw [mem_singleton_iff.mp (mem_iUnion.mp e.property).choose_spec]
     rw [OpenPartialHomeomorph.subtypeRestr_source, achart_val]
   apply_eq e x _ := by
-    conv_lhs => rw [mem_singleton_iff.mp (mem_iUnion.mp e.2).choose_spec]
+    conv_lhs => rw [mem_singleton_iff.mp (mem_iUnion.mp e.property).choose_spec]
     rw [OpenPartialHomeomorph.subtypeRestr_coe, domRestrict_apply, achart_val]
 
 /-- The inclusion of an open subset is the subtype inclusion. -/
@@ -254,8 +255,8 @@ theorem coe_ofOpens (s : Opens M) : ⇑(ofOpens (H := H) s) = Subtype.val := (rf
 space. -/
 @[simp]
 theorem subtypeRestr_ofOpens_chart {s : Opens M} (e : atlas H s) (hs : Nonempty s) :
-    ((ofOpens s).chart e).1.subtypeRestr hs = e.1 :=
-  (mem_singleton_iff.mp (mem_iUnion.mp e.2).choose_spec).symm
+    ((ofOpens s).chart e).val.subtypeRestr hs = e.val :=
+  (mem_singleton_iff.mp (mem_iUnion.mp e.property).choose_spec).symm
 
 end AtlasMap
 

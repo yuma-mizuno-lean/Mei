@@ -66,14 +66,14 @@ theorem shiftedQuotientComponent_truncatedExpLieAction_of_normal_eq_zero
   let : Module ℚ (F.quotient k) := Module.compHom _ (algebraMap ℚ R)
   let : Module ℚ (ℳ q) := Module.compHom _ (algebraMap ℚ R)
   have hf : (0 : Module.End R (ℳ q)).comp f =
-      f.comp (F.truncatedLieAction d ℒ k x) := by
+      f.comp (d.truncatedLieAction ℒ F.submodule F.antitone F.zero_eq_top k x) := by
     apply LinearMap.ext
     intro b
     obtain ⟨y, hy, rfl⟩ := (H.mem_truncatedRayLieSubalgebra w m k x).mp hx
     obtain ⟨b, rfl⟩ := (F.submodule (k + 1)).mkQ_surjective b
     simp only [LinearMap.comp_apply, LinearMap.zero_apply, LieIdeal.mkQ_apply,
-      ModuleFiltration.truncatedLieAction_mk, Submodule.mkQ_apply,
-      ModuleFiltration.quotientLieAction_mk]
+      PositiveDegrees.truncatedLieAction_mk, Submodule.mkQ_apply,
+      PositiveDegrees.quotientLieAction_mk]
     have hb := d.shiftedQuotientComponent_mk ℳ p q k hk
       (⁅y, b⁆ : d.shiftedLieSubmodule ℒ ℳ p)
     rw [LieSubmodule.coe_bracket] at hb
@@ -81,7 +81,8 @@ theorem shiftedQuotientComponent_truncatedExpLieAction_of_normal_eq_zero
       (H.decompose_lie_eq_zero_of_mem_ray_of_normal_eq_zero ℳ hy hq (b : M))).symm
   have he := LinearMap.congr_fun
     (Module.End.commute_exp_left_of_commute
-      ⟨k + 1, F.truncatedLieAction_pow_eq_zero d ℒ k x⟩ IsNilpotent.zero hf) a
+      ⟨k + 1, d.truncatedLieAction_pow_eq_zero ℒ F.submodule F.antitone F.zero_eq_top k x⟩
+      IsNilpotent.zero hf) a
   simpa only [ModuleFiltration.truncatedExpLieAction_apply, IsNilpotent.exp_zero,
     LinearMap.comp_apply, one_apply_eq_self] using he.symm
 

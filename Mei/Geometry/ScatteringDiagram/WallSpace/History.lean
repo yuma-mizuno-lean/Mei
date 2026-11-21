@@ -56,7 +56,7 @@ variable {Γ Λ R L M : Type*} [AddCommGroup Γ] [AddCommMonoid Λ]
 history. The last comparison uses the incoming degree, not a selected output
 degree. Each encounter may have a different ray and normal. -/
 theorem homogeneousHistory_truncatedBCHAction_normal_eq
-    (F : ModuleFiltration R M) [IsFiltrationRaising d ℒ F] (k : ℕ)
+    (F : ModuleFiltration R M) [IsFiltrationRaising d ℒ F.submodule] (k : ℕ)
     (𝓝 : Γ → Submodule R (F.quotient k)) [DirectSum.Decomposition 𝓝]
     (h𝓝 : ∀ q, 𝓝 q = (ℳ q).map (F.submodule (k + 1)).mkQ)
     {n : ℕ} (g : Fin n → d.truncatedGroup ℒ k)

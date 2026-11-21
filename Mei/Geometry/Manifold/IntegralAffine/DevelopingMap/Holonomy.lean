@@ -60,8 +60,8 @@ theorem image_mem_nhds (dev : DevelopingMap h B) {x : B} {s : Set B} (hs : s ∈
     dev '' s ∈ 𝓝 (dev x) := by
   obtain ⟨a, u, hu, hxu, ha⟩ := isLocallyIntegralAffineOn_iff.mp
     (dev.isLocallyIntegralAffineOn (achart V x)) _
-    ((achart V x).1.map_source (mem_chart_source V x))
-  set e := (achart V x).1
+    ((achart V x).val.map_source (mem_chart_source V x))
+  set e := (achart V x).val
   have hx : x ∈ e.source := mem_chart_source V x
   have hdev (y : B) (hy : y ∈ e.source) (hyu : e y ∈ u) : dev y = a (e y) := by
     simpa only [Function.comp_apply, e.left_inv hy] using ha ⟨e.map_source hy, hyu⟩
@@ -93,11 +93,11 @@ theorem exists_eventually_eq_apply (dev dev' : DevelopingMap h B) (x : B) :
     ∃ c : IntegralAffineEquiv h h, ∀ᶠ y in 𝓝 x, dev' y = c (dev y) := by
   obtain ⟨a, u, hu, hxu, ha⟩ := isLocallyIntegralAffineOn_iff.mp
     (dev.isLocallyIntegralAffineOn (achart V x)) _
-    ((achart V x).1.map_source (mem_chart_source V x))
+    ((achart V x).val.map_source (mem_chart_source V x))
   obtain ⟨b, v, hv, hxv, hb⟩ := isLocallyIntegralAffineOn_iff.mp
     (dev'.isLocallyIntegralAffineOn (achart V x)) _
-    ((achart V x).1.map_source (mem_chart_source V x))
-  set e := (achart V x).1
+    ((achart V x).val.map_source (mem_chart_source V x))
+  set e := (achart V x).val
   have hx : x ∈ e.source := mem_chart_source V x
   refine ⟨a.symm.trans b, ?_⟩
   filter_upwards [e.open_source.mem_nhds hx,
@@ -111,16 +111,16 @@ theorem exists_eventually_eq_apply (dev dev' : DevelopingMap h B) (x : B) :
 tangent frames there differ by its lattice equivalence. -/
 theorem tangentFrame_eq_trans_latticeEquiv {dev dev' : DevelopingMap h B} {x : B}
     {c : IntegralAffineEquiv h h} (hc : ∀ᶠ y in 𝓝 x, dev' y = c (dev y))
-    (e : atlas V B) (hx : x ∈ e.1.source) :
+    (e : atlas V B) (hx : x ∈ e.val.source) :
     dev'.tangentFrame e x hx = (dev.tangentFrame e x hx).trans c.latticeEquiv := by
   obtain ⟨a, u, hu, hxu, ha⟩ := isLocallyIntegralAffineOn_iff.mp
-    (dev.isLocallyIntegralAffineOn e) _ (e.1.map_source hx)
-  have ha' : ∀ᶠ y in 𝓝 (e.1 x), dev' (e.1.symm y) = (c * a) y := by
-    have hc' : ∀ᶠ y in 𝓝 (e.1.symm (e.1 x)), dev' y = c (dev y) := by
-      rwa [e.1.left_inv hx]
-    have hpre := Filter.Tendsto.eventually (f := e.1.symm)
-      (e.1.symm.continuousAt (e.1.map_source hx)) hc'
-    filter_upwards [hpre, e.1.open_target.mem_nhds (e.1.map_source hx),
+    (dev.isLocallyIntegralAffineOn e) _ (e.val.map_source hx)
+  have ha' : ∀ᶠ y in 𝓝 (e.val x), dev' (e.val.symm y) = (c * a) y := by
+    have hc' : ∀ᶠ y in 𝓝 (e.val.symm (e.val x)), dev' y = c (dev y) := by
+      rwa [e.val.left_inv hx]
+    have hpre := Filter.Tendsto.eventually (f := e.val.symm)
+      (e.val.symm.continuousAt (e.val.map_source hx)) hc'
+    filter_upwards [hpre, e.val.open_target.mem_nhds (e.val.map_source hx),
       hu.mem_nhds hxu] with y hy hyt hyu
     have hya := ha ⟨hyt, hyu⟩
     simp only [Function.comp_apply] at hya
@@ -206,7 +206,7 @@ theorem holonomy_comp (dev : DevelopingMap h B) (f g : AtlasMap V B B) :
 chart `e` at `x` to its tangent frame in the target chart `f.chart e` at `f x`. -/
 theorem tangentFrame_chart_eq_trans_holonomy_latticeEquiv (dev : DevelopingMap h B)
     (f : AtlasMap V B B) (e : atlas V B)
-    (x : B) (hx : x ∈ e.1.source) :
+    (x : B) (hx : x ∈ e.val.source) :
     dev.tangentFrame (f.chart e) (f x) ((f.mem_source_iff e).mp hx) =
       (dev.tangentFrame e x hx).trans (dev.holonomy f).latticeEquiv := by
   rw [← tangentFrame_comap]
@@ -217,7 +217,7 @@ theorem tangentFrame_chart_eq_trans_holonomy_latticeEquiv (dev : DevelopingMap h
 def ofIntegralAffineEquiv (a : IntegralAffineEquiv h h) : DevelopingMap h V where
   toFun := a
   isLocallyIntegralAffineOn' e := by
-    have he : e.1 = OpenPartialHomeomorph.refl V := chartedSpaceSelf_atlas.mp e.2
+    have he : e.val = OpenPartialHomeomorph.refl V := chartedSpaceSelf_atlas.mp e.property
     rw [he]
     exact .of_eqOn a fun _ _ => (rfl)
 

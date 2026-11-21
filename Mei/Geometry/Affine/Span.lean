@@ -8,6 +8,7 @@ module
 public import Mathlib.LinearAlgebra.AffineSpace.AffineSubspace.Basic
 public import Mathlib.LinearAlgebra.Basis.VectorSpace
 public import Mathlib.LinearAlgebra.Projection
+public import TauCeti.LinearAlgebra.AffineSpace.Span
 
 /-!
 # Directions of affine spans under affine maps
@@ -15,8 +16,6 @@ public import Mathlib.LinearAlgebra.Projection
 The direction of the affine span of an image is the linear image of the original
 direction. This formula supports transport of transversality and codimension
 without requiring an invertible map or a nonempty set.
-A linear map whose kernel contains the direction of a set is constant on it.
-Equality of affine spans transfers tangency between level hyperplanes.
 Adding unrestricted coordinates preserves and reflects equality of affine spans.
 For nonempty sets it also preserves and reflects equality of their directions.
 
@@ -28,36 +27,6 @@ the direction. The splitting uses Mathlib's `LinearMap.equivProdOfSurjectiveOfIs
 -/
 
 public section
-
-namespace LinearMap
-
-/-- A linear map whose kernel contains the direction of a set is constant on that set. -/
-theorem apply_eq_of_direction_le_ker {K V W : Type*} [Ring K] [AddCommGroup V] [Module K V]
-    [AddCommGroup W] [Module K W] (f : V →ₗ[K] W) {P : Set V}
-    (hf : (affineSpan K P).direction ≤ f.ker) {x y : V} (hx : x ∈ P) (hy : y ∈ P) :
-    f x = f y := by
-  have hd := hf (AffineSubspace.vsub_mem_direction (subset_affineSpan K P hx)
-    (subset_affineSpan K P hy))
-  rwa [LinearMap.mem_ker, vsub_eq_sub, map_sub, sub_eq_zero] at hd
-
-/-- If two sets share an affine span and the first has constant height for `f`,
-a displacement tangent to the second at a point of the first is tangent for `f`. -/
-theorem map_eq_zero_of_affineSpan_eq {K V : Type*} [Ring K] [AddCommGroup V] [Module K V]
-    {W₁ W₂ : Set V} (f ν : V →ₗ[K] K) {c b : K}
-    (hheight : ∀ x ∈ W₁, f x = c) (hspan : (affineSpan K W₂ : Set V) = {x | ν x = b})
-    (heq : affineSpan K W₁ = affineSpan K W₂) {y q : V} (hy : y ∈ W₁) (hq : ν q = 0) :
-    f q = 0 := by
-  have hyν : ν y = b := (hspan.subset) (heq ▸ subset_affineSpan K _ hy)
-  have hyq : y + q ∈ affineSpan K W₁ := by
-    rw [heq]
-    apply hspan.symm.subset
-    simpa only [Set.mem_ofPred_eq, map_add, hq, add_zero] using hyν
-  have hh := AffineMap.eqOn_affineSpan
-    (f := f.toAffineMap) (g := AffineMap.const K V c) hheight hyq
-  simpa only [LinearMap.coe_toAffineMap, AffineMap.const_apply, map_add,
-    hheight _ hy, add_eq_left] using hh
-
-end LinearMap
 
 namespace AffineMap
 
@@ -168,24 +137,5 @@ theorem image_prodKerEquiv_symm_prod_univ (S : Set V') :
     (A.prodKerEquiv hA).symm '' (S ×ˢ (univ : Set (LinearMap.ker A))) = A ⁻¹' S := by
   rw [← A.image_prodKerEquiv_preimage hA S]
   exact (A.prodKerEquiv hA).toEquiv.symm_image_image _
-
-include hA in
-/-- The supporting direction of a preimage of a nonempty set under a linear surjection is
-the preimage of the original supporting direction. -/
-theorem direction_affineSpan_preimage {S : Set V'} (hS : S.Nonempty) :
-    (affineSpan K (A ⁻¹' S)).direction = (affineSpan K S).direction.comap A := by
-  have he := AffineMap.direction_affineSpan_image
-    (A.prodKerEquiv hA).symm.toLinearMap.toAffineMap (S ×ˢ (univ : Set (LinearMap.ker A)))
-  rw [LinearMap.coe_toAffineMap, LinearEquiv.coe_coe, A.image_prodKerEquiv_symm_prod_univ hA,
-    Mei.direction_affineSpan_prod_univ hS] at he
-  rw [he]
-  ext v
-  simp only [Submodule.mem_map, Submodule.mem_comap, Submodule.mem_prod, Submodule.mem_top,
-    and_true, LinearMap.toAffineMap_linear, LinearEquiv.coe_coe]
-  constructor
-  · rintro ⟨z, hz, rfl⟩
-    simpa using hz
-  · intro hv
-    exact ⟨A.prodKerEquiv hA v, by simpa using hv, by simp⟩
 
 end LinearMap

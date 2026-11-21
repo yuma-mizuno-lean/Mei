@@ -7,6 +7,7 @@ module
 
 public import Mathlib.Combinatorics.Quiver.SingleObj
 public import TauCeti.Combinatorics.Quiver.Prefunctor
+public import TauCeti.Combinatorics.Quiver.Symmetric
 public import Mathlib.Data.List.Chain
 public import Mathlib.Data.Set.Finite.List
 public import Mathlib.Combinatorics.Quiver.Path.Weight
@@ -44,16 +45,6 @@ namespace Prefunctor
 
 variable {U V : Type*} [Quiver U] [Quiver V]
   [Quiver.HasReverse U] [Quiver.HasReverse V]
-
-/-- A prefunctor preserving edge reversal preserves reversal of entire paths. -/
-@[simp]
-theorem mapPath_reverse (F : U ⥤q V) [F.MapReverse] {x y : U} (p : Quiver.Path x y) :
-    F.mapPath p.reverse = (F.mapPath p).reverse := by
-  induction p with
-  | nil => rfl
-  | cons p e ih =>
-    simp only [Quiver.Path.reverse, mapPath_comp, mapPath_toPath, mapPath_cons, ih,
-      map_reverse]
 
 end Prefunctor
 

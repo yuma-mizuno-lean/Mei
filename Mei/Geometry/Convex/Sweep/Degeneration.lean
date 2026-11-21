@@ -320,7 +320,7 @@ theorem isProperMap_backwardPath_restrict {K : Set V} (hK : IsClosed K)
     funext Q
     exact backwardPath_apply_zero f c v (h0 Q.val Q.property)
   apply isProperMap_of_comp_of_t2
-    ((backwardPath f c v).continuous.comp continuous_subtype_val)
+    ((backwardPath f c v).continuous.comp continuous_subtypeVal)
     (continuous_eval_const (0 : ℝ))
   -- Expose evaluation after composition to apply the endpoint identity `he`.
   change IsProperMap (fun Q : K => backwardPath f c v Q.val 0)

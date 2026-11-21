@@ -85,7 +85,7 @@ theorem levelChamber_eq_of_mem_interior_adapted {k l : ℕ} (hkl : k ≤ l)
   let U := {z : V // ∀ j : D.active k, z ∉ (D.wall j).support}
   let f : interior P → U := fun z =>
     ⟨z.val, D.notMem_support_of_mem_interior_adapted hkl hP z.property⟩
-  have hf : Continuous f := continuous_subtype_val.subtype_mk _
+  have hf : Continuous f := continuous_subtypeVal.subtype_mk _
   have hPC := mem_cellsOfCodimension.mp hP
   have hconn : IsPreconnected (range f) := by
     have hpre := (D.adaptedComplex l).isConvexPolyhedron hPC.1 |>.convex.interior.isPreconnected

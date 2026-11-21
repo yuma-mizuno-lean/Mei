@@ -184,13 +184,13 @@ theorem Equivalent.consistent (hDE : D.Equivalent E) (hc : D.Consistent) : E.Con
         Sum.elim (fun P => (P : Set V)) (fun P => (P : Set V))
       have hpoly : ∀ a, TauCeti.IsConvexPolyhedron (W a) := by
         rintro (P | P)
-        · exact C'.isConvexPolyhedron (C'.mem_cells_of_mem_walls P.2)
-        · exact C.isConvexPolyhedron (C.mem_cells_of_mem_walls P.2)
+        · exact C'.isConvexPolyhedron (C'.mem_cells_of_mem_walls P.property)
+        · exact C.isConvexPolyhedron (C.mem_cells_of_mem_walls P.property)
       have hdim : ∀ a, Module.finrank ℝ (affineSpan ℝ (W a)).direction + 1 =
           Module.finrank ℝ V := by
         rintro (P | P)
-        · exact C'.finrank_direction_add_one_of_mem_walls P.2
-        · exact C.finrank_direction_add_one_of_mem_walls P.2
+        · exact C'.finrank_direction_add_one_of_mem_walls P.property
+        · exact C.finrank_direction_add_one_of_mem_walls P.property
       -- Keep the new basepoint common, and perturb the interior vertices.
       obtain ⟨a, q, hq⟩ := AdmissiblePLPath.exists_loop_forall₂_dist_lt hpoly hdim x.val
         (l := l.map WallComplement.val ++ [y.val]) hε

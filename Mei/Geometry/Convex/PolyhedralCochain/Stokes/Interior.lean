@@ -6,7 +6,8 @@ Authors: Codex
 module
 
 public import Mei.Geometry.Convex.PolyhedralCochain.Crossing
-public import Mei.Geometry.Convex.PolyhedralCochain.Coorientation
+public import TauCeti.Geometry.Convex.PolyhedralCochain.Coorientation
+public import Mei.Geometry.Convex.PolyhedralCochain.Basic
 public import Mei.Geometry.Convex.PolyhedralCochain.Boundary
 
 /-!
@@ -20,8 +21,9 @@ this interior case. This includes degenerate triangles with vertices off the
 tangent hyperplane.
 
 The endpoint calculation reuses `WallComplement.crossingExponent_eq_side_sub`;
-the local hyperplane description uses `OrientedCell.exists_integral_coorientation`
-and `Mei.mem_nhdsWithin_affineSpan_of_mem_intrinsicInterior`. Together with the
+the local hyperplane description uses
+`OrientedCell.exists_ker_realCharacter_eq_direction_and_sign_eq_evalSign` and
+`Mei.mem_nhdsWithin_affineSpan_of_mem_intrinsicInterior`. Together with the
 single-boundary-facet comparison, the interior case describes the local wall
 contributions to polygonal meridian intersections.
 -/
@@ -80,7 +82,7 @@ theorem exists_ball_sum_intersectionIndex_boundaryFacets_eq_sum_succAbove
       (∑ τ ∈ σ.boundaryFacets, τ.intersectionIndex v) =
         ∑ m : Fin 3, (-1 : ℤ) ^ (m : ℕ) * σ.intersectionIndex (v ∘ m.succAbove) := by
   have := h.finiteDimensional
-  obtain ⟨ν, -, hker, hsign⟩ := σ.exists_integral_coorientation
+  obtain ⟨ν, -, hker, hsign⟩ := σ.exists_ker_realCharacter_eq_direction_and_sign_eq_evalSign
   let f := h.realCharacter ν
   have hqA : q ∈ affineSpan ℝ σ.carrier := subset_affineSpan ℝ _ (intrinsicInterior_subset hq)
   have hplane (z : V) : z ∈ affineSpan ℝ σ.carrier ↔ f z = f q := by

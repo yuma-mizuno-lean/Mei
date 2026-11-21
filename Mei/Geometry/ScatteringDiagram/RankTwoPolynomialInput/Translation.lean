@@ -434,9 +434,9 @@ theorem exists_seq_translate_isGenericOn_linesAtOrder {ε : ι → ℝ} (hε : �
     rw [h₂' j fun hj' => hj hj'.1]
     exact h₂ j fun hjk => hj (I.linesAtOrder_mono k.le_succ hjk)
   let seq : (k : ℕ) → {t // P k t} := fun k => Nat.rec ⟨base.choose, base.choose_spec⟩
-    (fun k t => ⟨(step k t.1 t.2).choose, (step k t.1 t.2).choose_spec.1⟩) k
-  exact ⟨fun k => (seq k).1, fun k => (seq k).2.1, fun k => (seq k).2.2.1,
-    fun k => (seq k).2.2.2, fun k => (step k (seq k).1 (seq k).2).choose_spec.2⟩
+    (fun k t => ⟨(step k t.val t.property).choose, (step k t.val t.property).choose_spec.1⟩) k
+  exact ⟨fun k => (seq k).val, fun k => (seq k).property.1, fun k => (seq k).property.2.1,
+    fun k => (seq k).property.2.2, fun k => (step k (seq k).val (seq k).property).choose_spec.2⟩
 
 variable (I h) in
 /-- **Generic translations.** For any bounds `ε_j > 0` there is a translation `t` with

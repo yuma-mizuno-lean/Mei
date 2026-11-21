@@ -54,7 +54,7 @@ changes takes the same value at any two points of the overlap of the two chart d
 theorem coordChange_eq_of_trivialization {Γ Γ₀ : Type*} [AddCommGroup Γ] [AddCommGroup Γ₀]
     {E : Toric.ExponentSystem h regularLocus Γ} (τ : E.Trivialization Γ₀)
     (e e' : atlas (ℝ × ℝ) regularLocus) {p q : regularLocus}
-    (hp : p ∈ e.1.source ∩ e'.1.source) (hq : q ∈ e.1.source ∩ e'.1.source) :
+    (hp : p ∈ e.val.source ∩ e'.val.source) (hq : q ∈ e.val.source ∩ e'.val.source) :
     E.coordChange e e' p = E.coordChange e e' q :=
   τ.coordChange_eq_of_isPreconnected (isPreconnected_source e) (isPreconnected_source e')
     subset_rfl subset_rfl hp hq
@@ -99,9 +99,9 @@ theorem isEmpty_developingMap : IsEmpty (Toric.DevelopingMap h regularLocus) :=
 
 /-- Every point of the upper half-plane lies in the domain of the upper chart. -/
 theorem ofOpens_upperHalfPlane_mem_upperAtlas_source (p : upperHalfPlane) :
-    AtlasMap.ofOpens (H := ℝ × ℝ) upperHalfPlane p ∈ upperAtlas.1.source := by
+    AtlasMap.ofOpens (H := ℝ × ℝ) upperHalfPlane p ∈ upperAtlas.val.source := by
   rw [upperAtlas_val, AtlasMap.coe_ofOpens, mem_upperChart_source]
-  exact (mem_upperHalfPlane _).mp p.2
+  exact (mem_upperHalfPlane _).mp p.property
 
 /-- The trivialization of the focus-focus exponent system restricted to the upper half-plane by
 the frame changes to the upper chart. -/

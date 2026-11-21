@@ -96,8 +96,8 @@ theorem principalMultiplier_pos (j : ι) : 0 < I.principalMultiplier j := by
 theorem cast_principalMultiplier (i : B.unfrozenIndex) :
     (I.principalMultiplier i : ℚ) = ((Λ : ℕ) : ℚ) * I.multiplicity i / B.multiplier i := by
   have hd : (B.multiplier i : ℚ) ≠ 0 := by exact_mod_cast (B.multiplier_pos i).ne'
-  simp only [principalMultiplier, i.2, ↓reduceDIte, Nat.cast_mul,
-    Nat.cast_div (Finset.dvd_prod_of_mem _ i.2) hd]
+  simp only [principalMultiplier, i.property, ↓reduceDIte, Nat.cast_mul,
+    Nat.cast_div (Finset.dvd_prod_of_mem _ i.property) hd]
   ring
 
 /-- At a frozen index, `d'_j = 1`. -/
@@ -429,7 +429,7 @@ theorem degree_principalLift_le {c : ℕ} (hc : ∀ i, I.multiplicity i ≤ c)
   refine PositiveDegrees.finiteAlphabet_degree_map_le_mul I.letterExponent
     (τ := I.principalLift.toAddMonoidHom) (fun α => ?_) hx
   simp only [LinearMap.toAddMonoidHom_coe, degree_principalLift_letter]
-  have hs : (α.2 : ℕ) + 1 ≤ c := (Nat.succ_le_of_lt α.2.2).trans (hc α.1)
+  have hs : (α.2 : ℕ) + 1 ≤ c := (Nat.succ_le_of_lt α.2.isLt).trans (hc α.1)
   exact_mod_cast hs
 
 end Lift

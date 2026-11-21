@@ -25,7 +25,7 @@ recursions for transported coefficients.
 
 public noncomputable section
 
-open TauCeti (PositiveDegrees IsPositiveGrading)
+open TauCeti (PositiveDegrees IsPositiveGrading IsFiltrationRaising)
 
 namespace Mei.ModuleFiltration
 
@@ -34,7 +34,7 @@ variable {N R L M : Type*} [AddCommMonoid N] [CommRing R] [Algebra ℚ R]
   [AddCommGroup M] [Module R M] [LieRingModule L M] [LieModule R L M]
   (F : ModuleFiltration R M) (d : PositiveDegrees N) (ℒ : N → Submodule R L)
   [DecidableEq N] [GradedLieAlgebra ℒ] [IsPositiveGrading d ℒ]
-  [IsFiltrationRaising d ℒ F]
+  [IsFiltrationRaising d ℒ F.submodule]
 
 private local instance correctionQuotientRatModule (k : ℕ) : Module ℚ (F.quotient k) :=
   Module.compHom _ (algebraMap ℚ R)
@@ -46,11 +46,12 @@ theorem truncatedBCHAction_mk_eq_self_of_mem (k : ℕ) (g : d.truncatedGroup ℒ
     F.truncatedBCHAction d ℒ k g (Submodule.Quotient.mk m) =
       Submodule.Quotient.mk m := by
   rw [truncatedBCHAction_apply, truncatedExpLieAction_apply]
-  apply Module.End.exp_apply_eq_self _ ⟨k + 1, F.truncatedLieAction_pow_eq_zero d ℒ k _⟩
+  apply Module.End.exp_apply_of_apply_eq_zero _
+    ⟨k + 1, d.truncatedLieAction_pow_eq_zero ℒ F.submodule F.antitone F.zero_eq_top k _⟩
   obtain ⟨x, hx⟩ := (d.degreeIdeal ℒ k).surjective_mkQ (BCHGroup.log g)
-  rw [← hx, LieIdeal.mkQ_apply, truncatedLieAction_mk, quotientLieAction_mk,
-    Submodule.Quotient.mk_eq_zero]
-  exact F.lie_mem_succ d ℒ x hm
+  rw [← hx, LieIdeal.mkQ_apply, PositiveDegrees.truncatedLieAction_mk,
+    PositiveDegrees.quotientLieAction_mk, Submodule.Quotient.mk_eq_zero]
+  exact d.lie_mem_succ ℒ F.submodule x hm
 
 /-- The order-`k + 1` correction to a BCH action, as a linear function of
 coefficients retained only through order `k`. -/

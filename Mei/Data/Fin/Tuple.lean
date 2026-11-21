@@ -6,6 +6,7 @@ Authors: Codex
 module
 
 public import Mathlib.Data.Fin.Tuple.Basic
+public import TauCeti.Data.Fin.Tuple.Basic
 
 /-!
 # Appending and deleting entries of tuples
@@ -37,14 +38,6 @@ theorem snoc_succ {α : Sort*} {n : ℕ} (g : Fin (n + 1) → α) (x : α) (i : 
   refine lastCases ?_ (fun j => ?_) i
   · simp
   · rw [succ_castSucc, snoc_castSucc, snoc_castSucc]
-
-/-- Applying a function to an appended tuple applies it to each block. -/
-@[simp]
-theorem comp_append {α β : Sort*} {m n : ℕ} (f : α → β)
-    (a : Fin m → α) (b : Fin n → α) :
-    f ∘ append a b = append (f ∘ a) (f ∘ b) := by
-  funext j
-  refine addCases (fun _ => ?_) (fun _ => ?_) j <;> simp
 
 /-- The entry after an index in the left block, including the block junction. -/
 @[simp]

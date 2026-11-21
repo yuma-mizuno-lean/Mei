@@ -31,14 +31,12 @@ attribute [local instance] LieRing.ofAssociativeRing
 
 namespace TauCeti.AlgFiltration
 
-open Mei
-
 variable {N R L A : Type*} [AddCommMonoid N] [CommRing R]
   [LieRing L] [LieAlgebra R L] [Ring A] [Algebra R A]
   [LieRingModule L A] [LieModule R L A]
   (F : AlgFiltration A) (d : PositiveDegrees N) (ℒ : N → Submodule R L)
   [DecidableEq N] [DirectSum.Decomposition ℒ] [IsPositiveGrading d ℒ]
-  [IsFiltrationRaising d ℒ (F.toModuleFiltration R)]
+  [IsFiltrationRaising d ℒ (F.toSubmodule R)]
 
 /-- An inner coefficient action descends to the adjoint action on every quotient. -/
 theorem quotientLieAction_eq_ad (k : ℕ) {x : L} {y : A}

@@ -25,7 +25,7 @@ Mandel, *Scattering diagrams, theta functions, and refined tropical curve counts
 Definition 2.10 (arXiv:1503.06183v5).
 -/
 
-open TauCeti (singularSupport affineSpan_eq_of_notMem_singularSupport)
+open TauCeti (singularSupport affineSpan_eq_of_notMem_singularSupport IsFiltrationRaising)
 
 public noncomputable section
 
@@ -57,7 +57,7 @@ submodule of a filtered quotient. The normal may be chosen from any incident
 wall, even when the incident labels lie on different supported rays. -/
 @[simp↓]
 theorem truncatedBCHAction_combinedLabel_mem_normalDegreeSubmodule_iff
-    (F : ModuleFiltration R M) [IsFiltrationRaising d ℒ F] (k : ℕ)
+    (F : ModuleFiltration R M) [IsFiltrationRaising d ℒ F.submodule] (k : ℕ)
     (θ v : V) (hθ : θ ∉ singularSupport (walls k))
     (j : D.active k) (hj : θ ∈ (D.wall j).support) (z : ℤ) (a : F.quotient k) :
     F.truncatedBCHAction d ℒ k (D.combinedLabel k θ v hθ) a ∈

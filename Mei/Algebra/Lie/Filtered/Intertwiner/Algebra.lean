@@ -50,7 +50,7 @@ variable {N R : Type*} {L : Type u} {A : Type v}
   [Ring A] [Algebra R A] [Algebra ℚ A] [LieRingModule L A] [LieModule R L A]
   (F : AlgFiltration A) (d : PositiveDegrees N) (ℒ : N → Submodule R L)
   [DecidableEq N] [GradedLieAlgebra ℒ] [IsPositiveGrading d ℒ]
-  [IsFiltrationRaising d ℒ (F.toModuleFiltration R)] [IsDerivationAction L A]
+  [IsFiltrationRaising d ℒ (F.toSubmodule R)] [IsDerivationAction L A]
 
 /-- The finite BCH action as categorical automorphisms of the coefficient algebra. -/
 def truncatedBCHAlgebraAut (k : ℕ) :
@@ -103,7 +103,7 @@ variable {N' : Type*} {L' : Type u} {B : Type v}
   {e : PositiveDegrees N'} {T : PositiveDegreeMap d e}
   {ℒ' : N' → Submodule R L'} [GradedLieAlgebra ℒ'] [IsPositiveGrading e ℒ']
   (G : AlgFiltration B)
-  [IsFiltrationRaising e ℒ' (G.toModuleFiltration R)] [IsDerivationAction L' B]
+  [IsFiltrationRaising e ℒ' (G.toSubmodule R)] [IsDerivationAction L' B]
   (φ : GradedLieHom T ℒ ℒ') (ψ : A →ₐ[R] B)
   (μ : ℕ → ℕ) (hμ : Monotone μ) (hT : ∀ k, T.modulus k ≤ μ k)
   (hψ : ∀ k, F.ideal (μ k + 1) ≤ (G.ideal (k + 1)).comap ψ)

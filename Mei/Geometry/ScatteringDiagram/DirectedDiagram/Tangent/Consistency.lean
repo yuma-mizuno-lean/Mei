@@ -72,7 +72,7 @@ theorem eventually_exists_segment_levelPathProduct_tangentAt (k : ℕ)
       ∀ j : D.active k, x + t • v.val ∉ (D.wall j).support := by
     intro j hj
     obtain ⟨hxj, hjv⟩ := (hS v.val hv j).mp hj
-    exact v.notMem ⟨⟨j.1, hxj⟩, (D.mem_active_tangentAt x k _).mpr j.2⟩
+    exact v.notMem ⟨⟨j.val, hxj⟩, (D.mem_active_tangentAt x k _).mpr j.property⟩
       (by simpa only [tangentAt_wall] using hjv)
   let a' : WallComplement (fun j : D.active k => (D.wall j).support) :=
     ⟨x + t • a.val, hoff a (left_mem_segment ℝ _ _)⟩
@@ -94,7 +94,7 @@ theorem eventually_exists_segment_levelPathProduct_tangentAt (k : ℕ)
       rw [hline] at hj
       obtain ⟨hxj, hjv⟩ := (hS _ (hmem hs) j).mp hj
       let j' : (D.tangentAt x).active k :=
-        ⟨⟨j.1, hxj⟩, (D.mem_active_tangentAt x k _).mpr j.2⟩
+        ⟨⟨j.val, hxj⟩, (D.mem_active_tangentAt x k _).mpr j.property⟩
       apply e.down.transverse j' ⟨s, hs, by simpa only [tangentAt_wall, j'] using hjv⟩
       rw [((D.tangentAt x).wall j').direction_support, LinearMap.mem_ker]
       rw [(D.wall j).direction_support, LinearMap.mem_ker, hsub, map_smul,
@@ -144,7 +144,7 @@ theorem eventually_exists_levelPathProduct_tangentAt (k : ℕ)
     have hoff : ∀ j : D.active k, x + t • a.val ∉ (D.wall j).support := by
       intro j hj
       obtain ⟨hxj, hjv⟩ := (ht a.val (mem_singleton _) j).mp hj
-      exact a.notMem ⟨⟨j.1, hxj⟩, (D.mem_active_tangentAt x k _).mpr j.2⟩
+      exact a.notMem ⟨⟨j.val, hxj⟩, (D.mem_active_tangentAt x k _).mpr j.property⟩
         (by simpa only [tangentAt_wall] using hjv)
     exact ⟨⟨_, hoff⟩, ⟨_, hoff⟩, .nil, rfl, rfl, rfl, by simp⟩
   | @cons b c p e ih =>

@@ -55,10 +55,10 @@ is the tangent frame change from `e` to `e'` at the point. -/
 theorem _root_.Mei.AtlasMap.tangentLatticeChange_chart_of_coe_eq (f g : AtlasMap V B' B)
     (hfg : ⇑f = ⇑g) (e e' : atlas V B') (x : B') :
     tangentLatticeChange h (f.chart e) (g.chart e') (f x) = tangentLatticeChange h e e' x := by
-  have hmem : x ∈ e.1.source ∩ e'.1.source ↔
-      f x ∈ (f.chart e).1.source ∩ (g.chart e').1.source := by
+  have hmem : x ∈ e.val.source ∩ e'.val.source ↔
+      f x ∈ (f.chart e).val.source ∩ (g.chart e').val.source := by
     rw [mem_inter_iff, mem_inter_iff, f.mem_source_iff e, g.mem_source_iff e', hfg]
-  by_cases hx : x ∈ e.1.source ∩ e'.1.source
+  by_cases hx : x ∈ e.val.source ∩ e'.val.source
   · obtain ⟨a, u, hu, hxu, ha, hT⟩ := exists_tangentLatticeChange_eq (h := h) (hmem.mp hx)
     refine hT.trans (tangentLatticeChange_eq hx hu (by rwa [f.apply_eq e hx.1]) ?_).symm
     intro y hy
@@ -78,7 +78,7 @@ theorem _root_.Mei.AtlasMap.tangentLatticeChange_chart (f : AtlasMap V B' B)
 tangent frame change between the target charts of that chart under the two maps is the
 identity. -/
 theorem _root_.Mei.AtlasMap.tangentLatticeChange_chart_chart_of_coe_eq (f g : AtlasMap V B' B)
-    (hfg : ⇑f = ⇑g) (e : atlas V B') {x : B'} (hx : x ∈ e.1.source) :
+    (hfg : ⇑f = ⇑g) (e : atlas V B') {x : B'} (hx : x ∈ e.val.source) :
     tangentLatticeChange h (f.chart e) (g.chart e) (f x) = AddEquiv.refl N := by
   rw [f.tangentLatticeChange_chart_of_coe_eq g hfg, tangentLatticeChange_self hx]
 

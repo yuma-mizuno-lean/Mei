@@ -55,7 +55,8 @@ theorem thetaFiltration_submodule (k : ℕ) :
   ext x
   rw [thetaFiltration, Module.Basis.mem_coefficientFiltration_submodule,
     (b).mem_ideal_smul_top_iff_repr_mem]
-  simp only [Ideal.algFiltration_ideal, Submodule.restrictScalars_mem]
+  simp only [AlgFiltration.toSubmodule_apply, Ideal.algFiltration_ideal,
+    Submodule.restrictScalars_mem]
 
 /-- Power series coefficient families with only finitely many nonzero residues
 modulo each power of the smoothing parameter. -/
@@ -74,7 +75,8 @@ theorem mem_restrictedThetaCoefficients (f : (ℤ × ℤ) → PowerSeries K) :
     ModuleFiltration.mem_restrictedFamilies, LinearEquiv.coe_coe,
     LinearEquiv.piCongrRight_apply]
   simp only [projection_principalModuleCompletionEquiv_symm, ne_eq,
-    Submodule.Quotient.mk_eq_zero, Submodule.restrictScalars_mem, Ideal.algFiltration_ideal,
+    Submodule.Quotient.mk_eq_zero, AlgFiltration.toSubmodule_apply,
+    Submodule.restrictScalars_mem, Ideal.algFiltration_ideal,
     Function.support, Ideal.Quotient.eq_zero_iff_mem]
 
 /-- Completed theta monomial expansions have precisely the power series coefficients

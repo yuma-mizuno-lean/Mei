@@ -88,11 +88,11 @@ theorem mem_intrinsicInterior_iff (hPQ : P =ᶠ[𝓝 x] Q)
   constructor
   · rintro ⟨y, hy, rfl⟩
     have he : (Subtype.val ⁻¹' P : Set (affineSpan 𝕜 P)) =ᶠ[𝓝 y] Subtype.val ⁻¹' Q :=
-      (continuous_subtype_val.tendsto y).eventually hPQ
+      (continuous_subtypeVal.tendsto y).eventually hPQ
     exact ⟨y, he.mem_interior hy, rfl⟩
   · rintro ⟨y, hy, rfl⟩
     have he : (Subtype.val ⁻¹' Q : Set (affineSpan 𝕜 P)) =ᶠ[𝓝 y] Subtype.val ⁻¹' P :=
-      (continuous_subtype_val.tendsto y).eventually hPQ.symm
+      (continuous_subtypeVal.tendsto y).eventually hPQ.symm
     exact ⟨y, he.mem_interior hy, rfl⟩
 
 /-- Sets with the same affine span and the same germ have the same relative boundary
@@ -163,7 +163,7 @@ omit [IsTopologicalAddGroup V] [ContinuousSMul ℝ V] in
 theorem mem_nhdsWithin_affineSpan_of_mem_intrinsicInterior {P : Set V} {x : V}
     (hx : x ∈ intrinsicInterior ℝ P) : P ∈ 𝓝[affineSpan ℝ P] x := by
   obtain ⟨y, hy, rfl⟩ := hx
-  rw [nhdsWithin_eq_map_subtype_coe y.property]
+  rw [nhdsWithin_eq_map_subtypeVal y.property]
   exact mem_interior_iff_mem_nhds.mp hy
 
 /-- For a set spanning the ambient affine space, relative and ordinary interiors agree. -/
@@ -173,7 +173,7 @@ theorem intrinsicInterior_eq_interior_of_affineSpan_eq_top {𝕜 W P : Type*}
   refine Subset.antisymm (fun x hx => ?_) interior_subset_intrinsicInterior
   obtain ⟨y, hy, rfl⟩ := hx
   have hn : s ∈ 𝓝[affineSpan 𝕜 s] (y : P) := by
-    rw [nhdsWithin_eq_map_subtype_coe y.property]
+    rw [nhdsWithin_eq_map_subtypeVal y.property]
     exact mem_interior_iff_mem_nhds.mp hy
   simpa [hs, ← mem_interior_iff_mem_nhds] using hn
 
@@ -185,7 +185,7 @@ theorem isNowhereDense_preimage_intrinsicFrontier {P : Set V} (hP : IsClosed P)
   subst hA
   rw [intrinsicFrontier, preimage_image_eq _ Subtype.val_injective,
     isClosed_frontier.isNowhereDense_iff]
-  exact interior_frontier (hP.preimage continuous_subtype_val)
+  exact interior_frontier (hP.preimage continuous_subtypeVal)
 
 omit [IsTopologicalAddGroup V] [ContinuousSMul ℝ V] in
 /-- Off the relative boundary of a set, membership in the set is locally constant within

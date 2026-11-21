@@ -86,14 +86,14 @@ theorem weightedEvaluation_restrict {U : Set V} (hU : IsRationalSemilinear h U)
     (weight : ι → M) (Q : W) [Finite (F.fiber Q)] :
     (F.restrict hU).weightedEvaluation weight Q =
       let := Fintype.ofFinite (F.fiber Q)
-      ∑ z : F.fiber Q, if (z.2.1 : V) ∈ U then weight z.1 else 0 := by
+      ∑ z : F.fiber Q, if (z.2.val : V) ∈ U then weight z.1 else 0 := by
   let := Fintype.ofFinite (F.fiber Q)
   let := Fintype.ofFinite ((F.restrict hU).fiber Q)
   rw [weightedEvaluation_def]
-  trans ∑ z : {z : F.fiber Q // (z.2.1 : V) ∈ U}, weight z.val.1
+  trans ∑ z : {z : F.fiber Q // (z.2.val : V) ∈ U}, weight z.val.1
   · exact Fintype.sum_equiv (F.fiberRestrictEquiv hU Q) _ _ (fun _ => by simp)
   · rw [← Finset.sum_filter]
-    exact (Finset.sum_subtype (Finset.univ.filter fun z : F.fiber Q => (z.2.1 : V) ∈ U)
+    exact (Finset.sum_subtype (Finset.univ.filter fun z : F.fiber Q => (z.2.val : V) ∈ U)
       (by simp) (fun z => weight z.1)).symm
 
 variable (D : ι → Set V) (hD : ∀ t, IsRationalSemilinear h (D t))
@@ -123,8 +123,8 @@ theorem weightedEvaluation_ofDomains_restrict {U : Set V}
       if Q ∈ U then (ofDomains D hD).weightedEvaluation weight Q else 0 := by
   let := Fintype.ofFinite ((ofDomains D hD).fiber Q)
   rw [weightedEvaluation_restrict]
-  have hxQ (z : (ofDomains D hD).fiber Q) : (z.2.1 : V) = Q :=
-    (ofDomains_eval D hD _ _).symm.trans z.2.2
+  have hxQ (z : (ofDomains D hD).fiber Q) : (z.2.val : V) = Q :=
+    (ofDomains_eval D hD _ _).symm.trans z.2.property
   simp only [hxQ]
   by_cases hQ : Q ∈ U <;> simp [hQ, weightedEvaluation_def]
 

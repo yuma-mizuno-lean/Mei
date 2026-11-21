@@ -7,14 +7,14 @@ module
 
 public import Mathlib.Algebra.Lie.Graded
 public import Mathlib.LinearAlgebra.Finsupp.VectorSpace
-public import Mei.Algebra.Lie.Abelian
+public import TauCeti.Algebra.Lie.Abelian
 public import TauCeti.Algebra.DirectSum.Internal
 
 /-!
 # Gradings of finitely supported abelian Lie algebras
 
-The abelian Lie algebra `Mei.AbelianLie (S →₀ R)` on the free module with basis `S` is graded by
-any degree function `deg : S → Γ`: the piece of degree `n` is spanned by the basis vectors
+The abelian Lie algebra `AbelianLieAlgebra (S →₀ R)` on the free module with basis `S` is
+graded by any degree function `deg : S → Γ`: the piece of degree `n` is spanned by the basis vectors
 `Finsupp.single s 1` with `deg s = n`. The pieces form an internal decomposition, and the zero
 bracket is trivially homogeneous. A piece is zero when no basis vector has that degree.
 
@@ -24,23 +24,31 @@ for instance one generator in each positive degree.
 
 public section
 
+open TauCeti (AbelianLieAlgebra)
+
 noncomputable section
 
-namespace Mei.AbelianLie
+namespace Mei.AbelianLieAlgebra
+
+/-- `AbelianLieAlgebra V` is definitionally `V`, so the central scalar action is inherited. -/
+instance instIsCentralScalar {R V : Type*} [Semiring R] [AddCommGroup V] [Module R V]
+    [Module Rᵐᵒᵖ V] [IsCentralScalar R V] : IsCentralScalar R (AbelianLieAlgebra V) where
+  op_smul_eq_smul r v := IsCentralScalar.op_smul_eq_smul r (show V from v)
 
 variable {S Γ : Type*} (R : Type*) [CommRing R] (deg : S → Γ)
 
 /-- The standard basis of the abelian Lie algebra on the free module with basis `S`. -/
-def basis : Module.Basis S R (AbelianLie (S →₀ R)) :=
-  Finsupp.basisSingleOne.map (linearEquiv R).symm
+def basis : Module.Basis S R (AbelianLieAlgebra (S →₀ R)) :=
+  Finsupp.basisSingleOne.map (TauCeti.AbelianLieAlgebra.equiv R (S →₀ R)).symm
 
-/-- The grading of `AbelianLie (S →₀ R)` whose degree-`n` piece is spanned by the basis vectors
-of degree `n`. -/
-def grading (n : Γ) : Submodule R (AbelianLie (S →₀ R)) :=
+/-- The grading of `AbelianLieAlgebra (S →₀ R)` whose degree-`n` piece is spanned by the
+basis vectors of degree `n`. -/
+def grading (n : Γ) : Submodule R (AbelianLieAlgebra (S →₀ R)) :=
   ⨆ s, ⨆ _ : deg s = n, R ∙ basis R s
 
 /-- The standard basis vector of `s` is `Finsupp.single s 1`. -/
-@[simp] theorem linearEquiv_basis (s : S) : linearEquiv R (basis R s) = Finsupp.single s 1 := by
+@[simp] theorem equiv_basis (s : S) :
+    TauCeti.AbelianLieAlgebra.equiv R (S →₀ R) (basis R s) = Finsupp.single s 1 := by
   simp [basis]
 
 /-- The degree-`n` piece is the span of the basis vectors of degree `n`. -/
@@ -53,7 +61,7 @@ theorem grading_eq_span (n : Γ) :
   by_cases h : deg s = n <;> simp [h]
 
 /-- Membership in the degree-`n` piece: `x` lies in the span of the basis vectors of degree `n`. -/
-theorem mem_grading_iff {n : Γ} {x : AbelianLie (S →₀ R)} :
+theorem mem_grading_iff {n : Γ} {x : AbelianLieAlgebra (S →₀ R)} :
     x ∈ grading R deg n ↔ x ∈ Submodule.span R (basis R '' {s | deg s = n}) := by
   rw [grading_eq_span]
 
@@ -83,6 +91,6 @@ instance [AddCommMonoid Γ] [DecidableEq Γ] : GradedLieAlgebra (grading R deg) 
   toDecomposition := (isInternal_grading R deg).chooseDecomposition
   bracket_mem := by simp
 
-end Mei.AbelianLie
+end Mei.AbelianLieAlgebra
 
 end

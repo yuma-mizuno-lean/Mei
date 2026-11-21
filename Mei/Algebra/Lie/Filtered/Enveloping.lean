@@ -28,7 +28,7 @@ public section
 open TauCeti.UniversalEnvelopingAlgebra (degreeFiltration degreeFiltration_ideal
   homogeneousSubmodule homogeneousSubmodule_le_iff)
 
-open TauCeti (PositiveDegrees IsPositiveGrading)
+open TauCeti (PositiveDegrees IsPositiveGrading IsFiltrationRaising)
 
 attribute [local instance 100] LieRing.ofAssociativeRing
 
@@ -42,7 +42,7 @@ variable {N R L M : Type*} [AddCommMonoid N] [CommRing R]
   [LieRingModule L M] [LieModule R L M]
   (F : ModuleFiltration R M) (d : PositiveDegrees N) (ℒ : N → Submodule R L)
   [DecidableEq N] [GradedLieAlgebra ℒ] [IsPositiveGrading d ℒ]
-  [IsFiltrationRaising d ℒ F]
+  [IsFiltrationRaising d ℒ F.submodule]
 
 local notation "U" => _root_.UniversalEnvelopingAlgebra R L
 local notation "ρ" => TauCeti.UniversalEnvelopingAlgebra.representation R L M
@@ -60,7 +60,7 @@ private theorem representation_word_mem (l : List (Σ n, ℒ n))
     simp only [List.map_cons, List.prod_cons, List.sum_cons, map_mul, mul_apply_eq_comp]
     rw [TauCeti.UniversalEnvelopingAlgebra.representation_ι, LieModule.toEnd_apply_apply]
     simpa only [Nat.add_assoc] using
-      F.lie_mem_of_mem_homogeneous d ℒ x.2.property (ih hm)
+      d.lie_mem_of_mem_homogeneous ℒ F.submodule x.2.property (ih hm)
 
 /-- An enveloping element of degree at least `a` raises coefficient order by at least `a`. -/
 theorem representation_mem_of_mem_degreeFiltration {a b : ℕ} {u : U} {m : M}
@@ -88,10 +88,10 @@ theorem representation_mem_of_mem_degreeFiltration {a b : ℕ} {u : U} {m : M}
   simpa only [degreeFiltration_ideal, TauCeti.GradedAlgebra.mem_degreeIdeal_iff] using hu
 
 private theorem lift_quotientLieAction_mk (k : ℕ) (u : U) (m : M) :
-    (_root_.UniversalEnvelopingAlgebra.lift R (F.quotientLieAction d ℒ k)) u
+    (_root_.UniversalEnvelopingAlgebra.lift R (d.quotientLieAction ℒ F.submodule F.antitone k)) u
         (Submodule.Quotient.mk m) =
       Submodule.Quotient.mk (ρ u m) := by
-  let q := _root_.UniversalEnvelopingAlgebra.lift R (F.quotientLieAction d ℒ k)
+  let q := _root_.UniversalEnvelopingAlgebra.lift R (d.quotientLieAction ℒ F.submodule F.antitone k)
   let := TauCeti.UniversalEnvelopingAlgebra.asModule R L M
   let := TauCeti.UniversalEnvelopingAlgebra.isScalarTower_asModule R L M
   let : Module U (F.quotient k) := Module.compHom _ q.toRingHom
@@ -102,7 +102,7 @@ private theorem lift_quotientLieAction_mk (k : ℕ) (u : U) (m : M) :
     ((F.submodule (k + 1)).mkQ) (fun x m => by
       rw [TauCeti.UniversalEnvelopingAlgebra.asModule_ι_smul]
       simpa only [hq, q, lift_ι_apply, Submodule.mkQ_apply] using
-        (F.quotientLieAction_mk d ℒ k x m).symm) u m
+        (d.quotientLieAction_mk ℒ F.submodule F.antitone k x m).symm) u m
   simpa only [Submodule.mkQ_apply,
     TauCeti.UniversalEnvelopingAlgebra.asModule_smul_def, hq, q] using he.symm
 
@@ -110,7 +110,8 @@ private theorem lift_quotientLieAction_mk (k : ℕ) (u : U) (m : M) :
 theorem degreeFiltration_le_ker_quotientAction (k : ℕ) :
     (E).ideal (k + 1) ≤
       RingHom.ker
-        (_root_.UniversalEnvelopingAlgebra.lift R (F.quotientLieAction d ℒ k)).toRingHom := by
+        (_root_.UniversalEnvelopingAlgebra.lift R
+          (d.quotientLieAction ℒ F.submodule F.antitone k)).toRingHom := by
   intro u hu
   rw [RingHom.mem_ker]
   apply LinearMap.ext
@@ -126,7 +127,7 @@ theorem degreeFiltration_le_ker_quotientAction (k : ℕ) :
 noncomputable def truncatedEnvelopingAction (k : ℕ) :
     (U ⧸ (E).ideal (k + 1)) →ₐ[R] Module.End R (F.quotient k) :=
   Ideal.Quotient.liftₐ ((E).ideal (k + 1))
-    (_root_.UniversalEnvelopingAlgebra.lift R (F.quotientLieAction d ℒ k))
+    (_root_.UniversalEnvelopingAlgebra.lift R (d.quotientLieAction ℒ F.submodule F.antitone k))
     (fun _ hu => RingHom.mem_ker.mp
       (F.degreeFiltration_le_ker_quotientAction d ℒ k hu))
 
@@ -134,9 +135,10 @@ noncomputable def truncatedEnvelopingAction (k : ℕ) :
 @[simp]
 theorem truncatedEnvelopingAction_mk (k : ℕ) (u : U) :
     F.truncatedEnvelopingAction d ℒ k (Ideal.Quotient.mk _ u) =
-      _root_.UniversalEnvelopingAlgebra.lift R (F.quotientLieAction d ℒ k) u := by
+      _root_.UniversalEnvelopingAlgebra.lift R
+        (d.quotientLieAction ℒ F.submodule F.antitone k) u := by
   exact AlgHom.congr_fun (Ideal.Quotient.liftₐ_comp ((E).ideal (k + 1))
-    (_root_.UniversalEnvelopingAlgebra.lift R (F.quotientLieAction d ℒ k))
+    (_root_.UniversalEnvelopingAlgebra.lift R (d.quotientLieAction ℒ F.submodule F.antitone k))
     (fun _ hu => RingHom.mem_ker.mp
       (F.degreeFiltration_le_ker_quotientAction d ℒ k hu))) u
 
@@ -144,9 +146,9 @@ theorem truncatedEnvelopingAction_mk (k : ℕ) (u : U) :
 @[simp]
 theorem truncatedEnvelopingAction_truncatedLieToU (k : ℕ) (x : d.truncatedLie ℒ k) :
     F.truncatedEnvelopingAction d ℒ k (truncatedLieToU d ℒ k x) =
-      F.truncatedLieAction d ℒ k x := by
+      d.truncatedLieAction ℒ F.submodule F.antitone F.zero_eq_top k x := by
   obtain ⟨x, rfl⟩ := (d.degreeIdeal ℒ k).surjective_mkQ x
   rw [LieIdeal.mkQ_apply, truncatedLieToU_mk, truncatedEnvelopingAction_mk,
-    lift_ι_apply, truncatedLieAction_mk]
+    lift_ι_apply, PositiveDegrees.truncatedLieAction_mk]
 
 end Mei.ModuleFiltration

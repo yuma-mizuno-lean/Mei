@@ -40,7 +40,7 @@ Burcroff–Lee–Mou, *Positivity of generalized cluster scattering diagrams*,
 
 public noncomputable section
 
-open TauCeti (PositiveDegrees GradedLieHom)
+open TauCeti (PositiveDegrees GradedLieHom IsFiltrationRaising)
 
 namespace Mei.SkewLatticeDatum.AdaptedBasis.BLMPolynomialInput
 
@@ -349,7 +349,7 @@ local instance : Fact ((e).monoid ≤ 𝒬) :=
 local instance : LieModule R (tropicalVertexLieAlgebra (R := 𝒮) e ρ') 𝒮[𝒬] :=
   LieModule.restrictScalars R 𝒮 _ _
 
-local instance : IsFiltrationRaising e 𝓛' ((G).toModuleFiltration R) :=
+local instance : IsFiltrationRaising e 𝓛' ((G).toSubmodule R) :=
   IsFiltrationRaising.restrictScalars_algebra (R := R) (S := 𝒮) (G) e
     (tropicalVertexGrading (R := 𝒮) e ρ')
 

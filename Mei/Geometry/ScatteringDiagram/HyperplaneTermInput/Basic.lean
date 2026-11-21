@@ -191,7 +191,7 @@ theorem rayFactor_label_projectedDirection {M : Type*} [AddCommGroup M] (c : E �
   refine exists_nsmul_eq_nsmul_of_rayFactor_completedLog_ne_one d ρ (I.normal i)
     (I.tangentExponent i) (fun α => c α) π (u i) (fun α => ?_)
     (I.toCompletion_wallFunction_sub_one_mem c i) hw
-  obtain ⟨b, hb, he⟩ := hu α.1
+  obtain ⟨b, hb, he⟩ := hu α.val
   exact ⟨b, hb, by rw [coe_tangentExponent, he, α.property]⟩
 
 variable [NormedAddCommGroup V] [NormedSpace ℝ V] {j : Λ →+ V}

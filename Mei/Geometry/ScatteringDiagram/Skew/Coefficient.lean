@@ -38,7 +38,7 @@ form is zero. The principal realization follows Gross–Hacking–Keel–Kontsev
 
 public section
 
-open TauCeti (AlgFiltration)
+open TauCeti (AlgFiltration IsFiltrationRaising)
 
 open TauCeti (PositiveDegrees GradedLieHom)
 
@@ -238,12 +238,12 @@ theorem lie_eq (x : 𝔤) (a : R[Qpr]) :
     ⁅x, a⁆ = D.principalCoefficientAction d x a := (rfl)
 
 /-- Principal fields act by derivations of coefficient multiplication. -/
-scoped instance instIsDerivationAction : IsDerivationAction 𝔤 R[Qpr] where
+scoped instance instIsDerivationAction : TauCeti.IsDerivationAction 𝔤 R[Qpr] where
   lie_mul x a b := by simp [lie_eq, Derivation.leibniz, mul_comm]
 
 /-- The principal action raises coefficient order by the positive Lie degree. -/
 scoped instance instIsFiltrationRaising :
-    IsFiltrationRaising d 𝓛 ((Fpr).toModuleFiltration R) where
+    IsFiltrationRaising d 𝓛 ((Fpr).toSubmodule R) where
   lie_mem {a b x m} hx hm := by
     let : Fact ((D.principalPositiveDegrees d).monoid ≤ Qpr) :=
       ⟨D.principalPositiveDegrees_le_coefficientMonoid d⟩
@@ -261,7 +261,7 @@ scoped instance instIsFiltrationRaising :
       (d := D.principalPositiveDegrees d)
       (ℒ := tropicalVertexGrading (R := R) (D.principalPositiveDegrees d)
         (AddMonoidHom.id Lpr))
-      (F := (Fpr).toModuleFiltration R)
+      (F := (Fpr).toSubmodule R)
       (hmap (Submodule.mem_map.mpr ⟨x, hx, rfl⟩)) hm
 
 variable [Module.Projective ℤ N]
@@ -308,7 +308,7 @@ scoped instance instIsFiltrationDetected :
     refine ⟨0, single p 1, by simp, ?_⟩
     intro hf
     have hf' : D.principalCoefficientAction d x (single p 1) ∈ (Fpr).ideal (k + 2) := by
-      simpa only [AlgFiltration.toModuleFiltration_submodule, Submodule.restrictScalars_mem,
+      simpa only [AlgFiltration.toSubmodule_apply, Submodule.restrictScalars_mem,
         lie_eq, Nat.zero_add] using hf
     have hd := (D.mem_principalCoefficientFiltration_ideal_iff d (k + 2) _).mp
       hf' q (Finsupp.mem_support_iff.mpr hcoeff)
@@ -368,13 +368,13 @@ theorem projection_completedBCHAction_single_of_mem_degreeFiltration
     obtain ⟨b, rfl⟩ := Ideal.Quotient.mk_surjective q
     rw [pow_two, mul_apply_eq_comp, AlgFiltration.quotientLieAction_mk,
       AlgFiltration.quotientLieAction_mk, LinearMap.zero_apply, Ideal.Quotient.eq_zero_iff_mem]
-    have h₀ : b ∈ ((Fpr).toModuleFiltration R).submodule 0 := by
+    have h₀ : b ∈ (Fpr).toSubmodule R 0 := by
       simp
-    have h₁ := IsFiltrationRaising.lie_mem (d := e) (ℒ := ℳ) (F := (Fpr).toModuleFiltration R)
+    have h₁ := IsFiltrationRaising.lie_mem (d := e) (ℒ := ℳ) (F := (Fpr).toSubmodule R)
       hfy h₀
-    have h₂ := IsFiltrationRaising.lie_mem (d := e) (ℒ := ℳ) (F := (Fpr).toModuleFiltration R)
+    have h₂ := IsFiltrationRaising.lie_mem (d := e) (ℒ := ℳ) (F := (Fpr).toSubmodule R)
       hfy h₁
-    rw [AlgFiltration.toModuleFiltration_submodule, Submodule.restrictScalars_mem] at h₂
+    rw [AlgFiltration.toSubmodule_apply, Submodule.restrictScalars_mem] at h₂
     exact (Fpr).antitone (by omega) h₂
   have hle : (d.graphMap D.principalCharacter.toAddMonoidHom).modulus (a + 1) ≤ a + 1 :=
     (PositiveDegrees.graphMap_modulus _ _ _).le

@@ -31,7 +31,7 @@ diagrams*, §8.1 and §9.2 (arXiv:2503.03719v1).
 
 public noncomputable section
 
-open TauCeti (AlgFiltration)
+open TauCeti (AlgFiltration IsFiltrationRaising)
 
 open TauCeti (PositiveDegrees)
 
@@ -159,7 +159,7 @@ local instance : Fact ((e).monoid ≤ 𝒬) :=
 local instance : LieModule R (tropicalVertexLieAlgebra (R := 𝒮) e ρ') 𝒮[𝒬] :=
   LieModule.restrictScalars R 𝒮 _ _
 
-local instance : IsFiltrationRaising e 𝓛' ((G).toModuleFiltration R) :=
+local instance : IsFiltrationRaising e 𝓛' ((G).toSubmodule R) :=
   IsFiltrationRaising.restrictScalars_algebra (R := R) (S := 𝒮) (G) e
     (tropicalVertexGrading (R := 𝒮) e ρ')
 

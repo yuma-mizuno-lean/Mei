@@ -193,7 +193,7 @@ theorem pathDecoratedType_closedChart (t : PathDecoratedType T ℳ i₀ x s v ν
         (v a i₀ ≠ 0 → IsProperMap (fun r : Iic (0 : ℝ) => (path t) X r)) := by
   refine ⟨(isProperMap_backwardPath_closure_admissibleBackwardDomain _ _ _ _ W S C).comp
     (Topology.IsClosedEmbedding.inclusion hsub
-      (hE.preimage continuous_subtype_val)).isProperMap, fun X hX => ?_⟩
+      (hE.preimage continuous_subtypeVal)).isProperMap, fun X hX => ?_⟩
   have hlim := hsub hX
   refine ⟨backwardPath_apply_zero _ _ _
     (backwardTime_nonneg_of_mem_closure_admissibleBackwardDomain _ _ _ _ W S C hlim),

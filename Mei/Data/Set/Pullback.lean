@@ -24,7 +24,7 @@ of the matching loci on its pieces. -/
 theorem iUnion_pullback_pieces {V W X κ : Type*} {D : Set V} {f : D → W}
     (S : κ → Set V) (g : κ → V → W) (φ : X → W)
     (hD : (⋃ k, S k) = D)
-    (hfg : ∀ k (v : D), v.1 ∈ S k → f v = g k v) :
+    (hfg : ∀ k (v : D), v.val ∈ S k → f v = g k v) :
     (⋃ k, Prod.fst ⁻¹' S k ∩ {p : V × X | g k p.1 = φ p.2}) =
       {p : V × X | ∃ hx : p.1 ∈ D, f ⟨p.1, hx⟩ = φ p.2} := by
   ext p

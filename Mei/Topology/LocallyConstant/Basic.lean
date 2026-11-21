@@ -28,6 +28,6 @@ theorem isLocallyConstant_domRestrict_of_eventually_eq {X Y : Type*} [Topologica
     IsLocallyConstant (s.domRestrict f) := by
   apply (IsLocallyConstant.iff_eventually_eq _).mpr
   intro x
-  exact continuous_subtype_val.continuousAt.tendsto.eventually (hf x.val x.property)
+  exact continuous_subtypeVal.continuousAt.tendsto.eventually (hf x.val x.property)
 
 end Set

@@ -158,7 +158,7 @@ theorem exists_normalized {B U : Opens X} (hB : B ∈ T.basis) (hUB : U ≤ B)
   let f : A → U := (U : Set X).restrictPreimage (Subtype.val : S → X)
   have hd : DenseRange f := by
     have hdU : Dense (((↑) : U → X) ⁻¹' S) :=
-      T.dense.preimage U.isOpen.isOpenMap_subtype_val
+      T.dense.preimage U.isOpen.isOpenMap_subtypeVal
     have hr : range f = ((↑) : U → X) ⁻¹' S := by
       rw [Set.range_restrictPreimage, Subtype.range_coe_subtype]
       -- The open and its underlying set have the same subtype projection.
@@ -177,7 +177,7 @@ theorem exists_normalized {B U : Opens X} (hB : B ∈ T.basis) (hUB : U ≤ B)
     refine ⟨T.transport B hB z' a (hUB (hCU hzC)) ha
       (T.value s z' (hCU hzC)), ?_⟩
     have hn : ∀ᶠ y : U in 𝓝 x, y.val ∈ C :=
-      (C.isOpen.preimage continuous_subtype_val).mem_nhds hxC
+      (C.isOpen.preimage continuous_subtypeVal).mem_nhds hxC
     filter_upwards [hn.comap f] with y hy
     simp only [f, Set.restrictPreimage_coe] at hy
     have hp := hsW C hC hCW z' y.val hzC hy

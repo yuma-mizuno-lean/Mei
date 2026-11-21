@@ -162,7 +162,7 @@ theorem tropicalVertexCoefficientAction_axisField :
       axisDegrees.monoid le_rfl axisField = 0 := by
   have h : (coordinate 1).comp ((AddMonoidHom.id (Fin 2 → ℤ)).comp
       axisDegrees.monoid.subtype) = 0 :=
-    AddMonoidHom.ext fun p => by simp [p.2.2]
+    AddMonoidHom.ext fun p => by simp [p.property.2]
   rw [axisField, tropicalVertexCoefficientAction_single axisDegrees _ _ le_rfl
     single_zero_mem_axisDegrees (by simp) _ (by simp), h, map_zero]
 

@@ -81,7 +81,7 @@ noncomputable def exponentSystemTwist (c : ℤ) : (exponentSystem h).Iso (expone
 /-- Every component of the height twist automorphism is the height twist. -/
 @[simp]
 theorem exponentSystemTwist_app (c : ℤ) (e : atlas (ℝ × ℝ) regularLocus) (p : regularLocus)
-    (hp : p ∈ e.1.source) :
+    (hp : p ∈ e.val.source) :
     (exponentSystemTwist h c).app e p hp = (heightTwist c).toAddEquiv := by
   rw [exponentSystemTwist, Toric.ExponentSystem.Iso.ofAddEquiv_app]
 

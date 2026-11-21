@@ -115,7 +115,7 @@ theorem isOpen_setOf_admissiblePairs [FiniteDimensional ℝ V] [Finite ι]
 
 /-- Two segments through an intermediate vertex are simultaneously admissible
 for a finite polyhedral wall family on a dense set of vertices. -/
-theorem dense_setOf_admissiblePairs [FiniteDimensional ℝ V] [Finite ι]
+theorem dense_setOf_admissiblePairs [Finite ι]
     (W : ι → Set V) (hpoly : ∀ i, TauCeti.IsConvexPolyhedron (W i))
     (hdim : ∀ i, Module.finrank ℝ (affineSpan ℝ (W i)).direction + 1 = Module.finrank ℝ V)
     {x y : V} (hx : ∀ i, x ∉ W i) (hy : ∀ i, y ∉ W i) :

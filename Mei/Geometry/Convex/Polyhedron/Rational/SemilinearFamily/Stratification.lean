@@ -66,7 +66,7 @@ theorem exists_pairwise_disjoint {D : Set V} {f : D → W} (hf : IsFiniteBranchO
       (⋃ k, S k) = D ∧ (Pairwise fun a b => Disjoint (S a) (S b)) ∧ (∀ k, (S k).Nonempty) ∧
         (∀ k, IsLocallyClosedPolyhedron h (S k)) ∧
         (∀ k, TauCeti.Toric.IsRationalLinearMap h h' (g k).linear) ∧ (∀ k, InjOn (g k) (S k)) ∧
-        ∀ k (x : D), x.1 ∈ S k → f x = g k x := by
+        ∀ k (x : D), x.val ∈ S k → f x = g k x := by
   classical
   obtain ⟨κ, _, S, g, hD, hS⟩ := isFiniteBranchOn_iff.mp hf
   choose hlc hrat hinj heval using hS
@@ -77,7 +77,7 @@ theorem exists_pairwise_disjoint {D : Set V} {f : D → W} (hf : IsFiniteBranchO
   have hsub {a k x} (hx : x ∈ C a) (hxk : x ∈ S k) : C a ⊆ S k := fun y hy =>
     (hmem a x hx y hy k).mp hxk
   let A' := {a : A // ∃ k, C a ⊆ S k}
-  choose k hk using fun a : A' => a.2
+  choose k hk using fun a : A' => a.property
   refine ⟨A', inferInstance, fun a => C a, fun a => g (k a), ?_,
     fun a b hab => hdisj (Subtype.coe_injective.ne hab), fun a => hne a, fun a => hlcC a,
     fun a => hrat (k a), fun a => (hinj (k a)).mono (hk a), fun a x hx => heval (k a) x (hk a hx)⟩
@@ -129,7 +129,7 @@ structure BranchStratification (κ μ : Type*) where
   linear part that maps the source stratum bijectively onto its target stratum. -/
   exists_affineMap : ∀ a, ∃ g : V →ᵃ[ℝ] W, TauCeti.Toric.IsRationalLinearMap h h' g.linear ∧
     BijOn g (source a) (target (stratum a)) ∧
-      ∀ x : F.domain (chart a), x.1 ∈ source a → F.eval (chart a) x = g x
+      ∀ x : F.domain (chart a), x.val ∈ source a → F.eval (chart a) x = g x
 
 namespace BranchStratification
 
@@ -141,7 +141,7 @@ theorem nonempty_source (a : μ) : (S.source a).Nonempty := by
   exact (hg.image_eq ▸ S.nonempty_target (S.stratum a)).of_image
 
 /-- The evaluation maps each source stratum into its target stratum. -/
-theorem eval_mem_target (a : μ) (x : F.domain (S.chart a)) (hx : x.1 ∈ S.source a) :
+theorem eval_mem_target (a : μ) (x : F.domain (S.chart a)) (hx : x.val ∈ S.source a) :
     F.eval (S.chart a) x ∈ S.target (S.stratum a) := by
   obtain ⟨g, -, hg, heval⟩ := S.exists_affineMap a
   exact heval x hx ▸ hg.mapsTo hx
@@ -150,10 +150,10 @@ theorem eval_mem_target (a : μ) (x : F.domain (S.chart a)) (hx : x.1 ∈ S.sour
 and source stratum of every point. The source and target stratum indices may be infinite. -/
 theorem exists_fiberEquiv {b : κ} {w : W} (hw : w ∈ S.target b) :
     ∃ e : {a // S.stratum a = b} ≃ F.fiber w,
-      ∀ a, (e a).1 = S.chart a ∧ ((e a).2.1 : V) ∈ S.source a := by
+      ∀ a, (e a).1 = S.chart a ∧ ((e a).2.val : V) ∈ S.source a := by
   choose g _ hbij heval using S.exists_affineMap
   -- Each source stratum over `b` has exactly one point over `w`.
-  choose x hx hxw using fun a : {a // S.stratum a = b} => (hbij a).surjOn (a.2 ▸ hw)
+  choose x hx hxw using fun a : {a // S.stratum a = b} => (hbij a).surjOn (a.property ▸ hw)
   have hdom (a : {a // S.stratum a = b}) : x a ∈ F.domain (S.chart a) :=
     S.domain_eq _ ▸ mem_iUnion₂.mpr ⟨a, rfl, hx a⟩
   let e (a : {a // S.stratum a = b}) : F.fiber w :=
@@ -161,13 +161,13 @@ theorem exists_fiberEquiv {b : κ} {w : W} (hw : w ∈ S.target b) :
   have he_bij : Function.Bijective e := by
     refine ⟨fun a a' he => ?_, ?_⟩
     · by_contra hne
-      have hxx : x a = x a' := congrArg (fun p : F.fiber w => (p.2.1 : V)) he
+      have hxx : x a = x a' := congrArg (fun p : F.fiber w => (p.2.val : V)) he
       exact (S.disjoint_source a a' (congrArg Sigma.fst he)
         (Subtype.coe_injective.ne hne)).ne_of_mem (hx a) (hxx ▸ hx a') rfl
     · rintro ⟨c, y, hy⟩
       have hy' : (y : V) ∈ ⋃ (a) (_ : S.chart a = c), S.source a := by
         rw [← S.domain_eq c]
-        exact y.2
+        exact y.property
       obtain ⟨a, hac, hya⟩ := mem_iUnion₂.mp hy'
       subst hac
       have hab : S.stratum a = b := by
@@ -222,12 +222,12 @@ theorem exists_branchStratification (hF : F.IsFiniteBranch) :
     (hTmem b w hw w' hw' p).mp hwp
   -- A source stratum is the part of a piece mapped into a target stratum inside its image.
   let μ := {q : (Σ c, κ c) × B // T q.2 ⊆ Y q.1}
-  let gc (q : μ) : V →ᴬ[ℝ] W := ⟨g q.1.1.1 q.1.1.2, AffineMap.continuous_of_finiteDimensional _⟩
+  let gc (q : μ) : V →ᴬ[ℝ] W := ⟨g q.val.1.1 q.val.1.2, AffineMap.continuous_of_finiteDimensional _⟩
   refine ⟨B, μ, inferInstance, inferInstance, ⟨{
     target := T
-    chart := fun q => q.1.1.1
-    source := fun q => S q.1.1.1 q.1.1.2 ∩ gc q ⁻¹' T q.1.2
-    stratum := fun q => q.1.2
+    chart := fun q => q.val.1.1
+    source := fun q => S q.val.1.1 q.val.1.2 ∩ gc q ⁻¹' T q.val.2
+    stratum := fun q => q.val.2
     nonempty_target := hTne
     isLocallyClosedPolyhedron_target := hTlc
     pairwise_disjoint_target := hTdisj
@@ -236,7 +236,7 @@ theorem exists_branchStratification (hF : F.IsFiniteBranch) :
       (hlc _ _).inter ((hTlc _).preimage (gc q) (hrat _ _))
     domain_eq := fun c => ?_
     disjoint_source := ?_
-    exists_affineMap := fun q => ⟨g q.1.1.1 q.1.1.2, hrat _ _,
+    exists_affineMap := fun q => ⟨g q.val.1.1 q.val.1.2, hrat _ _,
       ⟨fun x hx => hx.2, (hinj _ _).mono inter_subset_left, fun w hw => ?_⟩,
       fun x hx => heval _ _ x hx.1⟩ }⟩⟩
   · ext x
@@ -253,7 +253,7 @@ theorem exists_branchStratification (hF : F.IsFiniteBranch) :
       exact ((hTdisj fun hb => hne (by subst hb; rfl)).preimage _).mono inter_subset_right
         inter_subset_right
     · exact (hdisj c hk).mono inter_subset_left inter_subset_left
-  · obtain ⟨x, hx, rfl⟩ := q.2 hw
+  · obtain ⟨x, hx, rfl⟩ := q.property hw
     exact ⟨x, ⟨hx, hw⟩, rfl⟩
 
 /-- For a family of finite branches, `W` has a finite partition into nonempty locally closed

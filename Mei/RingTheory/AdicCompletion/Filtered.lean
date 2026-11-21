@@ -7,6 +7,7 @@ module
 
 public import Mei.RingTheory.FilteredAlgebra.Algebra
 public import Mathlib.RingTheory.AdicCompletion.Algebra
+public import TauCeti.RingTheory.AdicCompletion.AlgHom
 
 /-!
 # Ideal-adic and filtered completions
@@ -24,25 +25,6 @@ public section
 
 noncomputable section
 
-namespace AdicCompletion
-
-variable {A : Type*} [CommRing A] (I : Ideal A)
-
-/-- Adic projections commute with the canonical maps between ideal-power quotients. -/
-theorem factor_evalₐ {m n : ℕ} (h : m ≤ n) (x : AdicCompletion I A) :
-    Ideal.Quotient.factor (Ideal.pow_le_pow_right h) (evalₐ I n x) = evalₐ I m x := by
-  rw [← factor_eval_eq_evalₐ I x (le_of_eq (Ideal.mul_top _)),
-    ← factor_eval_eq_evalₐ I x (le_of_eq (Ideal.mul_top _))]
-  obtain ⟨a, ha⟩ := Ideal.Quotient.mk_surjective (eval I A n x)
-  have hx := transitionMap_comp_eval_apply I A h x
-  rw [← eval_apply] at hx
-  rw [← ha, transitionMap_ideal_mk] at hx
-  rw [← eval_apply] at hx
-  rw [← hx, ← ha]
-  simp
-
-end AdicCompletion
-
 namespace TauCeti.AlgFiltration
 
 variable {A : Type*} [CommRing A] (I : Ideal A)
@@ -56,7 +38,7 @@ private def fromAdicCompletion :
     intro k l h
     ext x
     simp only [AlgHom.comp_apply, AlgEquiv.coe_toAlgHom]
-    rw [← AdicCompletion.factor_evalₐ I (Nat.add_le_add_right h 1) x]
+    rw [← AdicCompletion.factor_evalₐ (Nat.add_le_add_right h 1) x]
     obtain ⟨a, ha⟩ := Ideal.Quotient.mk_surjective (AdicCompletion.evalₐ I (l + 1) x)
     rw [← ha]
     simp)
@@ -105,7 +87,7 @@ def adicCompletionEquiv : AdicCompletion I A ≃ₐ[A] (Ideal.algFiltration I).c
     apply AdicCompletion.ext_evalₐ
     intro n
     rw [eval_toAdicCompletion, projection_fromAdicCompletion,
-      AlgEquiv.apply_symm_apply, AdicCompletion.factor_evalₐ I (Nat.le_succ n)]
+      AlgEquiv.apply_symm_apply, AdicCompletion.factor_evalₐ (Nat.le_succ n)]
   right_inv x := by
     apply (Ideal.algFiltration I).completion_ext
     intro k

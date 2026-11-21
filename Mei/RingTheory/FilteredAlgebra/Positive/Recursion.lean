@@ -55,7 +55,7 @@ theorem IsPositive.completionRecursion {x : F.completion} (hx : F.IsPositive P x
     simp only [moduleCompletionEquiv_symm_toCompletion, projection_moduleCompletionEquiv,
       ModuleFiltration.projection_completionRecursion, ModuleFiltration.projection_of,
       ModuleFiltration.quotientRecursion_mk, Submodule.mkQ_apply,
-      Submodule.Quotient.restrictScalarsEquiv_mk, Ideal.Quotient.mk_eq_mk]
+      restrictScalarsEquiv_toModuleFiltration_mk]
 
 /-- Every completed recursion solution is positive when its incoming value is positive. -/
 theorem isPositive_moduleCompletionEquiv_of_eq_add

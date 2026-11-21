@@ -51,17 +51,17 @@ abbrev unitPlane : PositiveDegrees E.unfrozen := plane unitWeight
 /-- The degree `x = e₁`. -/
 def pentagonFst : E.NonzeroDegree unitPlane :=
   ⟨⟨(1, 0), mem_unfrozen _⟩, mem_plane_monoid.mpr ⟨zero_le_one, le_rfl⟩,
-    fun h => one_ne_zero (congrArg (fun v : Γ => v.1.1) h)⟩
+    fun h => one_ne_zero (congrArg (fun v : Γ => v.val.1) h)⟩
 
 /-- The degree `y = e₁ + e₂`. -/
 def pentagonSnd : E.NonzeroDegree unitPlane :=
   ⟨⟨(1, 1), mem_unfrozen _⟩, mem_plane_monoid.mpr ⟨zero_le_one, zero_le_one⟩,
-    fun h => one_ne_zero (congrArg (fun v : Γ => v.1.1) h)⟩
+    fun h => one_ne_zero (congrArg (fun v : Γ => v.val.1) h)⟩
 
 /-- The degree `x + y = 2 e₁ + e₂`. -/
 def pentagonSum : E.NonzeroDegree unitPlane :=
-  ⟨pentagonFst.1 + pentagonSnd.1, add_mem pentagonFst.2.1 pentagonSnd.2.1,
-    unitPlane.add_ne_zero pentagonFst.2.1 pentagonSnd.2.1 pentagonFst.2.2⟩
+  ⟨pentagonFst.val + pentagonSnd.val, add_mem pentagonFst.property.1 pentagonSnd.property.1,
+    unitPlane.add_ne_zero pentagonFst.property.1 pentagonSnd.property.1 pentagonFst.property.2⟩
 
 /-- The vector of `x` is `(1, 0)`. -/
 @[simp]
@@ -82,7 +82,7 @@ local notation "w₀" => E.planeWeight unitPlane pentagonFst pentagonSnd
 
 /-- The pairing `{x, y}` is one. -/
 theorem coefficientForm_pentagonFst_pentagonSnd :
-    βℚ pentagonFst.1 pentagonSnd.1 = 1 := by
+    βℚ pentagonFst.val pentagonSnd.val = 1 := by
   rw [StandardPlane.coefficientForm_apply]
   simp
 
@@ -93,19 +93,19 @@ theorem planeDegree_pentagon_injective :
     (by rw [coefficientForm_pentagonFst_pentagonSnd]; exact one_ne_zero)
 
 /-- The ray index of `x` is one. -/
-theorem rayIndex_pentagonFst : κ (pentagonFst.1 : ℤ × ℤ) = 1 :=
+theorem rayIndex_pentagonFst : κ (pentagonFst.val : ℤ × ℤ) = 1 :=
   StandardPlane.rayIndex_eq_one_of_form_eq_one ⟨(0, -1), mem_unfrozen _⟩ (by
     rw [form_apply, coe_pentagonFst]
     simp)
 
 /-- The ray index of `y` is one. -/
-theorem rayIndex_pentagonSnd : κ (pentagonSnd.1 : ℤ × ℤ) = 1 :=
+theorem rayIndex_pentagonSnd : κ (pentagonSnd.val : ℤ × ℤ) = 1 :=
   StandardPlane.rayIndex_eq_one_of_form_eq_one ⟨(0, -1), mem_unfrozen _⟩ (by
     rw [form_apply, coe_pentagonSnd]
     simp)
 
 /-- The ray index of `x + y` is one. -/
-theorem rayIndex_pentagonSum : κ (pentagonSum.1 : ℤ × ℤ) = 1 :=
+theorem rayIndex_pentagonSum : κ (pentagonSum.val : ℤ × ℤ) = 1 :=
   StandardPlane.rayIndex_eq_one_of_form_eq_one ⟨(1, 0), mem_unfrozen _⟩ (by
     rw [form_apply, coe_pentagonSum]
     simp)
@@ -196,8 +196,9 @@ theorem orderedNormalizedProd_planeDegree_eq_iff (s : PlaneDegree w₀ → ℕ) 
       E.dilogPow unitPlane pentagonFst 1 * E.dilogPow unitPlane pentagonSum 1 *
         E.dilogPow unitPlane pentagonSnd 1 := by
     simpa only [dilogPow_def, pentagonSum] using SkewLieAlgebra.rayExp_smul_negDilogNeg_pentagon
-      βℚ (E.isAlt_coefficientForm ℚ) unitPlane pentagonFst.2.1 pentagonSnd.2.1 pentagonFst.2.2
-      pentagonSnd.2.2 (c := 1) (by rw [one_mul, coefficientForm_pentagonFst_pentagonSnd])
+      βℚ (E.isAlt_coefficientForm ℚ) unitPlane pentagonFst.property.1 pentagonSnd.property.1
+      pentagonFst.property.2 pentagonSnd.property.2 (c := 1)
+      (by rw [one_mul, coefficientForm_pentagonFst_pentagonSnd])
   have hexp : orderedNormalizedProd planeDegree_pentagon_injective pentagonExponent =
       E.dilogPow unitPlane pentagonSnd 1 * E.dilogPow unitPlane pentagonFst 1 := by
     rw [hpent, orderedNormalizedProd_def,

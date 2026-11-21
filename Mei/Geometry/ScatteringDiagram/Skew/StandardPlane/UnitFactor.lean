@@ -98,15 +98,15 @@ theorem rayIndex_e₂ : rayIndex (PlaneDegree.e₂ w).vec = 1 :=
 
 /-- The ray index of a nonzero vector of `ℤ²` is the reciprocal of the gcd of its coordinates. -/
 theorem rayIndex_eq_inv_gcd {m : Γ} (hm : m ≠ 0) :
-    rayIndex m = ((Int.gcd m.1.1 m.1.2 : ℕ) : ℚ)⁻¹ := by
-  have hne : m.1.1 ≠ 0 ∨ m.1.2 ≠ 0 := by
+    rayIndex m = ((Int.gcd m.val.1 m.val.2 : ℕ) : ℚ)⁻¹ := by
+  have hne : m.val.1 ≠ 0 ∨ m.val.2 ≠ 0 := by
     by_contra h
     push Not at h
     exact hm (Subtype.ext (Prod.ext h.1 h.2))
-  have hg : 0 < Int.gcd m.1.1 m.1.2 := Int.gcd_pos_iff.mpr hne
-  obtain ⟨a, ha⟩ := Int.gcd_dvd_left (a := m.1.1) (b := m.1.2)
-  obtain ⟨b, hb⟩ := Int.gcd_dvd_right (a := m.1.1) (b := m.1.2)
-  set g := Int.gcd m.1.1 m.1.2 with hgdef
+  have hg : 0 < Int.gcd m.val.1 m.val.2 := Int.gcd_pos_iff.mpr hne
+  obtain ⟨a, ha⟩ := Int.gcd_dvd_left (a := m.val.1) (b := m.val.2)
+  obtain ⟨b, hb⟩ := Int.gcd_dvd_right (a := m.val.1) (b := m.val.2)
+  set g := Int.gcd m.val.1 m.val.2 with hgdef
   have hcop : Int.gcd a b = 1 := by
     have h := Int.gcd_mul_left (g : ℤ) a b
     rw [← ha, ← hb, ← hgdef] at h

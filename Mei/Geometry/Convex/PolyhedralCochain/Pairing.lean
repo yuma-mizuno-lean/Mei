@@ -6,6 +6,7 @@ Authors: Claude Code
 module
 
 public import TauCeti.Geometry.Convex.PolyhedralCochain.Pairing
+public import TauCeti.LinearAlgebra.AffineSpace.Simplex.Conormal
 public import Mei.Geometry.Convex.PolyhedralCochain.Basic
 
 /-!

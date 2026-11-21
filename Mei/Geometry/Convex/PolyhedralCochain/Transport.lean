@@ -8,7 +8,7 @@ module
 public import Mei.Geometry.Convex.PolyhedralCochain.Exact
 public import Mei.Geometry.Convex.PolyhedralCochain.Crossing
 public import Mei.Geometry.Convex.PolyhedralCochain.Stokes.Path
-import Mei.Geometry.Convex.PolyhedralCochain.Coorientation
+import TauCeti.Geometry.Convex.PolyhedralCochain.Coorientation
 import Mei.Geometry.Convex.Polyhedron.Path.Perturbation
 
 /-!
@@ -62,7 +62,7 @@ private theorem wallCrossingSum_loop_eq_zero_of_eq_coboundary
   have hpoly (τ : OrientedCell h 1) : TauCeti.IsConvexPolyhedron τ.carrier :=
     τ.rational.isConvexPolyhedron
   have hker (j : ι) : (ν j).ker = (affineSpan ℝ (σ j).carrier).direction := by
-    obtain ⟨m, _, hm, hs⟩ := (σ j).exists_integral_coorientation
+    obtain ⟨m, _, hm, hs⟩ := (σ j).exists_ker_realCharacter_eq_direction_and_sign_eq_evalSign
     ext v
     rw [← hm, LinearMap.mem_ker, LinearMap.mem_ker,
       ← sign_eq_zero_iff, hν j v, ← hs v, sign_eq_zero_iff]
@@ -172,7 +172,7 @@ theorem wallCrossingSum_loop_eq_zero_of_coboundary_eq_zero
     p.wallCrossingSum ν c = 0 := by
   classical
   -- Fill in unused normals to apply the geometric perturbation argument.
-  choose m _ _ hm using fun j => (σ j).exists_integral_coorientation
+  choose m _ _ hm using fun j => (σ j).exists_ker_realCharacter_eq_direction_and_sign_eq_evalSign
   let μ : ι → V →ₗ[ℝ] ℝ := fun j => if c j = 0 then h.realCharacter (m j) else ν j
   have hμ : ∀ j v, SignType.sign (μ j v) =
       (σ j).orientation.evalSign (fun _ : Fin 1 => v) := by

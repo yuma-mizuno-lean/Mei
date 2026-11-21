@@ -86,7 +86,7 @@ theorem tropicalTangentField_single_mem_wall (q : T) (c : R) :
   by_cases hn : n (ρ q) = 0
   · exact (LogarithmicVectorField.mem_wallSubmodule_iff ρ _ n hn _).mpr ⟨c, rfl⟩
   -- A nonzero integer vanishes in `R` only when the `ℚ`-algebra `R` is trivial.
-  have hcast : ((n (ρ q) : ℤ) : R) = 0 := ((mem_tropicalTangentMonoid d ρ χ q).mp q.2).2
+  have hcast : ((n (ρ q) : ℤ) : R) = 0 := ((mem_tropicalTangentMonoid d ρ χ q).mp q.property).2
   have h10 : (1 : R) = 0 := by
     have h := congrArg (algebraMap ℚ R ((n (ρ q) : ℚ)⁻¹) * ·) hcast
     rwa [mul_zero, ← map_intCast (algebraMap ℚ R), ← map_mul,

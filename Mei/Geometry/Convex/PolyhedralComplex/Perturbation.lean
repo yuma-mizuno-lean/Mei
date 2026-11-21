@@ -48,8 +48,8 @@ theorem eventually_segmentCrossingWord_eq (ν : C.walls → V →ₗ[ℝ] ℝ)
         x'.val = q.1 → y'.val = q.2 → C.segmentCrossingWord ν e' = C.segmentCrossingWord ν e := by
   have := h.finiteDimensional
   have hclosed (P : C.walls) : IsClosed (P : Set V) :=
-    (C.isConvexPolyhedron (C.mem_cells_of_mem_walls P.2)).isClosed
-  have hdim (P : C.walls) := C.finrank_direction_add_one_of_mem_walls P.2
+    (C.isConvexPolyhedron (C.mem_cells_of_mem_walls P.property)).isClosed
+  have hdim (P : C.walls) := C.finrank_direction_add_one_of_mem_walls P.property
   -- The normal velocity keeps its nonzero sign at each crossed wall.
   filter_upwards [e.down.eventually_exists_mem_crossings_iff hclosed hdim,
     e.down.eventually_lt_iff_of_mem_crossings hdim,

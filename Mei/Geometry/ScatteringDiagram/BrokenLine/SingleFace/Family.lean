@@ -200,7 +200,7 @@ theorem exists_singleFaceTransferFamily_closedCharts :
         (fun _ => {x | ν x = b}) (fun _ : Unit => {x | ν x = b})
         (fun _ : Unit => Z) {x | 0 < (ν x - b) / ν u}).comp
           (Topology.IsClosedEmbedding.inclusion hsub
-            (hpoly.isClosed.preimage continuous_subtype_val)).isProperMap
+            (hpoly.isClosed.preimage continuous_subtypeVal)).isProperMap
     · have hn := (Finset.mem_filter.mp q.property).2
       obtain ⟨X, hX⟩ := (hne.mono hsub).of_closure
       obtain ⟨r⟩ := (nonempty_admissibleRayRealization_iff ..).mpr hX

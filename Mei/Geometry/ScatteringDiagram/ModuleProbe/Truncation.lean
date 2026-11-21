@@ -194,10 +194,11 @@ theorem lie_base_moduleQuotientInclusion (k : ℕ) (x : L)
     ⁅((positiveDegrees d p).degreeIdeal (grading d ℳ p ℒ) (k + 1)).mkQ
         (baseInclusion d ℳ p ℒ x), moduleQuotientInclusion d ℳ p ℒ k a⁆ =
       moduleQuotientInclusion d ℳ p ℒ k
-        ((d.shiftedLieFiltration ℒ ℳ p).quotientLieAction d ℒ k x a) := by
+        (d.quotientLieAction ℒ (d.shiftedLieFiltration ℒ ℳ p).submodule
+          (d.shiftedLieFiltration ℒ ℳ p).antitone k x a) := by
   obtain ⟨a, rfl⟩ := ((d.shiftedFiltration ℳ p).submodule (k + 1)).mkQ_surjective a
   rw [Submodule.mkQ_apply, moduleQuotientInclusion_mk,
-    ModuleFiltration.quotientLieAction_mk, moduleQuotientInclusion_mk,
+    PositiveDegrees.quotientLieAction_mk, moduleQuotientInclusion_mk,
     LieIdeal.mkQ_apply, ← LieSubmodule.Quotient.mk_bracket,
     lie_baseInclusion_moduleInclusion]
   rw [← (moduleCoefficientsEquiv d ℳ p).symm_apply_apply

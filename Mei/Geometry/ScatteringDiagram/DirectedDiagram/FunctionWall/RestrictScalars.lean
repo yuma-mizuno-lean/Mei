@@ -68,7 +68,7 @@ covered, since the transfer of wall functions requires the monomials to be fixed
 
 public section
 
-open TauCeti (AlgFiltration)
+open TauCeti (AlgFiltration IsFiltrationRaising)
 
 open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading GradedLieHom)
 
@@ -374,10 +374,10 @@ local notation "ℳ" => tropicalVertexGrading (R := S) d ρ
 local notation "ℒℚ" => (fun n => Submodule.restrictScalars ℚ (tropicalVertexGrading (R := R) d ρ n))
 local notation "ℳℚ" => (fun n => Submodule.restrictScalars ℚ (tropicalVertexGrading (R := S) d ρ n))
 
-local instance : IsFiltrationRaising d ℒℚ ((F).toModuleFiltration ℚ) :=
+local instance : IsFiltrationRaising d ℒℚ ((F).toSubmodule ℚ) :=
   IsFiltrationRaising.restrictScalars_algebra (R := ℚ) (S := R) (F) d ℒ
 
-local instance : IsFiltrationRaising d ℳℚ ((G).toModuleFiltration ℚ) :=
+local instance : IsFiltrationRaising d ℳℚ ((G).toSubmodule ℚ) :=
   IsFiltrationRaising.restrictScalars_algebra (R := ℚ) (S := S) (G) d ℳ
 
 local notation "φ*" => coefficientMonoidGradedLieHom ρ φ Q 1 d Fact.out

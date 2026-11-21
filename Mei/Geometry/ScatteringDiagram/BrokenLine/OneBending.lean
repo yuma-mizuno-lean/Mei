@@ -298,7 +298,7 @@ theorem oneBending_of_forall_not_between {d₁ d₂ a b k : ℕ} (hk : 0 < k) (h
     exact_mod_cast hΔ
   -- `Δ ≠ 0` excludes the unbent ray and a zero incoming direction
   have hS : β.bends.support.Nonempty := by
-    rw [Finset.nonempty_iff_ne_empty]
+    rw [← Finset.ne_empty_iff_nonempty]
     intro h
     rw [h, sum_empty] at hsum
     have ha : (k : ℝ) * a = 0 := by simpa using (congrArg Prod.fst hsum).symm

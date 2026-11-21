@@ -360,7 +360,7 @@ def addLabel : (𝓗).wallGroup (hA.addRay.graph D.principalCharacter.toAddMonoi
 /-- The outgoing label is the principal image of the ray label of `-Li₂(-a_{i₁} a_{i₂} T)` at
 `e_{i₁} + e_{i₂}`. -/
 @[simp]
-theorem coe_addLabel : (hA.addLabel a).1 =
+theorem coe_addLabel : (hA.addLabel a).val =
     (𝒅).graphBCHGroupEquiv ℒ D.principalCharacter.toAddMonoidHom
       (SkewLieAlgebra.rayExp (D.coefficientForm R) (D.isAlt_coefficientForm R)
         (B.unfrozenBasis_add_mem_positiveDegrees_monoid i₁ i₂) hA.add_ne_zero

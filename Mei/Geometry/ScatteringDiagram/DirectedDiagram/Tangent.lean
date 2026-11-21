@@ -55,19 +55,19 @@ variable {Γ Λ R L V ι : Type*} [AddCommGroup Γ] [AddCommGroup Λ]
 
 /-- The walls through `x`, each replaced by its tangent wall at `x`. -/
 def tangentAt : DirectedDiagram (d := d) h H {j | x ∈ (D.wall j).support} where
-  wall j := (D.wall j.1).tangentAt x j.2
+  wall j := (D.wall j.val).tangentAt x j.property
   finite_active := by
     simpa only [restrict_wall, DirectedWall.tangentAt_label] using
       (D.restrict {j | x ∈ (D.wall j).support}).finite_active
 
 @[simp]
 theorem tangentAt_wall (j : {j | x ∈ (D.wall j).support}) :
-    (D.tangentAt x).wall j = (D.wall j.1).tangentAt x j.2 := (rfl)
+    (D.tangentAt x).wall j = (D.wall j.val).tangentAt x j.property := (rfl)
 
 /-- A wall through `x` is active in the tangent diagram exactly when it is active in the
 diagram. -/
 theorem mem_active_tangentAt (k : ℕ) (j : {j | x ∈ (D.wall j).support}) :
-    j ∈ (D.tangentAt x).active k ↔ j.1 ∈ D.active k := by
+    j ∈ (D.tangentAt x).active k ↔ j.val ∈ D.active k := by
   simp only [mem_active, tangentAt_wall, DirectedWall.tangentAt_label]
 
 variable {x}
@@ -90,14 +90,14 @@ theorem eventually_mem_singularSupport_tangentAt_iff (k : ℕ) :
           ((D.tangentAt x).wall j).support) := by
   have := h.finiteDimensional
   let r : {j : D.active k | x ∈ (D.wall j).support} ≃ (D.tangentAt x).active k :=
-    { toFun := fun j => ⟨⟨j.1.1, j.2⟩, (D.mem_active_tangentAt x k _).mpr j.1.2⟩
-      invFun := fun j => ⟨⟨j.1.1, (D.mem_active_tangentAt x k _).mp j.2⟩, j.1.2⟩
+    { toFun := fun j => ⟨⟨j.val.val, j.property⟩, (D.mem_active_tangentAt x k _).mpr j.val.property⟩
+      invFun := fun j => ⟨⟨j.val.val, (D.mem_active_tangentAt x k _).mp j.property⟩, j.val.property⟩
       left_inv := fun _ => rfl
       right_inv := fun _ => rfl }
   have hsing : singularSupport (fun j : (D.tangentAt x).active k =>
       ((D.tangentAt x).wall j).support) = singularSupport
         (fun j : {j : D.active k | x ∈ (D.wall j).support} =>
-          posTangentConeAt (D.wall j.1).support x) := by
+          posTangentConeAt (D.wall j.val).support x) := by
     simpa using (ContinuousAffineEquiv.refl ℝ V).singularSupport_image r
       (fun j => by simp [r])
   filter_upwards [eventually_mem_singularSupport_iff_sub_mem_posTangentConeAt
@@ -114,7 +114,7 @@ theorem smul_mem_singularSupport_tangentAt_iff (k : ℕ) {t : ℝ} (ht : 0 < t) 
           ((D.tangentAt x).wall j).support) := by
   simpa only [tangentAt_wall, DirectedWall.tangentAt_support] using
     smul_mem_singularSupport_posTangentConeAt_iff
-      (fun j : (D.tangentAt x).active k => (D.wall j.1.1).support) x ht v
+      (fun j : (D.tangentAt x).active k => (D.wall j.val.val).support) x ht v
 
 /-- On a bounded set of tangent displacements, the singular-support comparison holds
 uniformly for every sufficiently small positive scaling factor. -/
@@ -152,9 +152,9 @@ theorem eventually_combinedLabel_tangentAt (k : ℕ) :
   have hl : l.Nodup := Finset.nodup_toList _
   have hm : ∀ j, j ∈ l ↔ y - x ∈ ((D.tangentAt x).wall j).support := by simp [l]
   let e : (D.tangentAt x).active k → D.active k := fun j =>
-    ⟨j.1.1, (D.mem_active_tangentAt x k j.1).mp j.2⟩
+    ⟨j.val.val, (D.mem_active_tangentAt x k j.val).mp j.property⟩
   have he : Function.Injective e := fun a b hab =>
-    Subtype.ext (Subtype.ext (congrArg (fun j : D.active k => j.1) hab))
+    Subtype.ext (Subtype.ext (congrArg (fun j : D.active k => j.val) hab))
   rw [(D.tangentAt x).combinedLabel_eq_prod k (y - x) v hy' l hl hm,
     D.combinedLabel_eq_prod k y v hy (l.map e) (hl.map he) fun j => ?_]
   · rw [List.map_map]
@@ -164,9 +164,10 @@ theorem eventually_combinedLabel_tangentAt (k : ℕ) :
   · rw [List.mem_map, hyS j]
     constructor
     · rintro ⟨j', hj', rfl⟩
-      exact ⟨j'.1.2, (hm j').mp hj'⟩
+      exact ⟨j'.val.property, (hm j').mp hj'⟩
     · rintro ⟨hj, hjy⟩
-      exact ⟨⟨⟨j.1, hj⟩, (D.mem_active_tangentAt x k ⟨j.1, hj⟩).mpr j.2⟩, (hm _).mpr hjy, rfl⟩
+      exact ⟨⟨⟨j.val, hj⟩, (D.mem_active_tangentAt x k ⟨j.val, hj⟩).mpr j.property⟩,
+        (hm _).mpr hjy, rfl⟩
 
 /-- On bounded sets, sufficiently small positive dilations identify active supports
 with the incident tangent supports, uniformly in the displacement. -/
@@ -192,6 +193,6 @@ theorem combinedLabel_tangentAt_smul_pos (k : ℕ) (v w : V) {t : ℝ} (ht : 0 <
   refine (D.tangentAt x).combinedLabel_eq_of_incident_iff_of_pos_iff htv
     (fun hv => htv ((D.smul_mem_singularSupport_tangentAt_iff k ht v).mpr hv))
     (fun j => ?_) (fun _ _ => Iff.rfl)
-  exact (D.wall j.1.1).smul_mem_tangentAt_support_iff j.1.2 ht
+  exact (D.wall j.val.val).smul_mem_tangentAt_support_iff j.val.property ht
 
 end Mei.DirectedDiagram

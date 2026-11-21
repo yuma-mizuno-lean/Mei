@@ -194,9 +194,9 @@ private theorem reverseArrowLabels_crossing {A : Type*} (g : A) :
 /-- The history `x ↦ θ x` with final degree `q` has the component of `θ x` in that degree. -/
 theorem homogeneousHistory_incoming (q : Degree) :
     crossing.homogeneousHistory (M := fun _ => Coefficients) (ι := fun _ => Degree)
-      (fun _ => theta) (fun _ => grade ℚ) ((PUnit.unit, q) : PUnit × Degree) incoming.1 =
+      (fun _ => theta) (fun _ => grade ℚ) ((PUnit.unit, q) : PUnit × Degree) incoming.val =
       if q = (1, 0) then single (1, 0) 1 else if q = (1, 1) then single (1, 1) 1 else 0 := by
-  have hx : theta incoming.1 = single (1, 0) 1 + single (1, 1) 1 := by
+  have hx : theta incoming.val = single (1, 0) 1 + single (1, 1) 1 := by
     simp [incoming, theta_single_zero]
   have h₀ : (single (1, 0) 1 : Coefficients) ∈ grade ℚ ((1, 0) : Degree) := single_mem_grade _ _
   have h₁ : (single (1, 1) 1 : Coefficients) ∈ grade ℚ ((1, 1) : Degree) := single_mem_grade _ _
@@ -297,18 +297,18 @@ private theorem mem_domain_iff_neg {d : PUnit × Degree} (hd : d ∈ historySupp
 
 /-- No ray ends on the far side of the wall or on it. -/
 theorem isEmpty_ray_of_nonneg {Q : ℝ} (hQ : 0 ≤ Q) : IsEmpty (Ray Q) :=
-  ⟨fun r => absurd ((mem_domain_iff_neg r.1.2 Q).mp r.2.mem_admissibleBackwardDomain)
+  ⟨fun r => absurd ((mem_domain_iff_neg r.1.property Q).mp r.2.mem_admissibleBackwardDomain)
     hQ.not_gt⟩
 
 /-- Every history of the support is realized by a ray ending at each point left of the wall. -/
 theorem exists_ray_of_neg {Q : ℝ} (hQ : Q < 0) {d : PUnit × Degree}
-    (hd : d ∈ historySupport) : ∃ r : Ray Q, r.1.1 = d :=
+    (hd : d ∈ historySupport) : ∃ r : Ray Q, r.1.val = d :=
   ⟨⟨⟨d, hd⟩, admissibleRayRealization _ _ _ _ _ _ _ _ ((mem_domain_iff_neg hd Q).mpr hQ)⟩, rfl⟩
 
 /-- Both rays have velocity `1` before and after the crossing, so each is the line of slope `-1`
 in the backward parameter through `Q`. -/
 theorem ray_apply_of_nonpos {Q : ℝ} (r : Ray Q) {t : ℝ} (ht : t ≤ 0) : r.2.ray t = Q - t := by
-  have hv := velocity_of_mem_historySupport r.1.2
+  have hv := velocity_of_mem_historySupport r.1.property
   have h := r.2.ray_eq_endpoint_sub_smul_of_directions_eq
     (fun i => by rw [congrFun hv i, congrFun hv 0]) ht
   simpa only [congrFun hv 0, smul_eq_mul, mul_one] using h
@@ -316,7 +316,7 @@ theorem ray_apply_of_nonpos {Q : ℝ} (r : Ray Q) {t : ℝ} (ht : t ≤ 0) : r.2
 /-- The final decoration of a ray is the component of `θ x` in its degree. -/
 theorem decoration_eq {Q : ℝ} (r : Ray Q) :
     r.decoration =
-      if r.1.1.2 = (1, 0) then single (1, 0) 1 else if r.1.1.2 = (1, 1) then single (1, 1) 1
+      if r.1.val.2 = (1, 0) then single (1, 0) 1 else if r.1.val.2 = (1, 1) then single (1, 1) 1
       else 0 := by
   rw [PathDecoratedRay.decoration_def, ← homogeneousHistory_incoming]
 
@@ -326,7 +326,7 @@ theorem range_decoration_eq {Q : ℝ} (hQ : Q < 0) :
   ext y
   constructor
   · rintro ⟨r, rfl⟩
-    have hp : r.1.1 ∈ historySupport := r.1.2
+    have hp : r.1.val ∈ historySupport := r.1.property
     rw [historySupport_eq, Finset.mem_insert, Finset.mem_singleton] at hp
     dsimp only
     rw [decoration_eq]
@@ -350,7 +350,7 @@ noncomputable abbrev evaluation (Q : ℝ) : Coefficients :=
 theorem evaluation_eq_sum_of_neg {Q : ℝ} (hQ : Q < 0) :
     evaluation Q = ∑ d ∈ historySupport,
       crossing.homogeneousHistory (M := fun _ => Coefficients) (ι := fun _ => Degree)
-        (fun _ => theta) (fun _ => grade ℚ) d incoming.1 := by
+        (fun _ => theta) (fun _ => grade ℚ) d incoming.val := by
   classical
   rw [evaluation, pathDecoratedEvaluation_singleton, sum_pathDecoratedRay_eq_sum_histories]
   rw [Finset.sum_coe_sort historySupport (fun d => if Q ∈ admissibleBackwardDomain
@@ -361,7 +361,7 @@ theorem evaluation_eq_sum_of_neg {Q : ℝ} (hQ : Q < 0) :
       (crossing.reverseArrowLabels fun {_ _ : SingleObj Unit} _ => (univ : Set ℝ))
       (fun _ : Unit => ({0} : Set ℝ)) (fun _ : Empty => (∅ : Set ℝ)) univ
     then crossing.homogeneousHistory (M := fun _ => Coefficients) (ι := fun _ => Degree)
-      (fun _ => theta) (fun _ => grade ℚ) d incoming.1 else 0)]
+      (fun _ => theta) (fun _ => grade ℚ) d incoming.val else 0)]
   exact Finset.sum_congr rfl fun d hd => ite_eq_left ((mem_domain_iff_neg hd Q).mpr hQ)
 
 /-- Left of the wall the weighted evaluation is `θ x = x + t x`. -/
@@ -379,7 +379,7 @@ theorem evaluation_of_nonneg {Q : ℝ} (hQ : 0 ≤ Q) : evaluation Q = 0 := by
 
 /-- Left of the wall, the weighted evaluation is the action of the label on the incoming
 decoration. -/
-theorem evaluation_of_neg_eq_theta {Q : ℝ} (hQ : Q < 0) : evaluation Q = theta incoming.1 := by
+theorem evaluation_of_neg_eq_theta {Q : ℝ} (hQ : Q < 0) : evaluation Q = theta incoming.val := by
   rw [evaluation_of_neg hQ]
   simp [incoming, theta_single_zero]
 

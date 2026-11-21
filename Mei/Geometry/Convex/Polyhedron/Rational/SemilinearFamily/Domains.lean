@@ -65,8 +65,8 @@ theorem isFiniteBranch_ofDomains : (ofDomains D hD).IsFiniteBranch :=
 the endpoint; there is no identification of coincident charts. -/
 def fiberOfDomainsEquiv (Q : V) : (ofDomains D hD).fiber Q ≃ {t // Q ∈ D t} where
   toFun z := ⟨z.1, by
-    have hxQ : z.2.1.val = Q := (ofDomains_eval D hD z.1 z.2.1).symm.trans z.2.2
-    simpa only [ofDomains_domain, hxQ] using z.2.1.property⟩
+    have hxQ : z.2.val.val = Q := (ofDomains_eval D hD z.1 z.2.val).symm.trans z.2.property
+    simpa only [ofDomains_domain, hxQ] using z.2.val.property⟩
   invFun z := ⟨z.val, ⟨Q, z.property⟩, ofDomains_eval D hD _ _⟩
   left_inv := by
     rintro ⟨t, x, hx⟩

@@ -112,7 +112,7 @@ theorem isLocallyConstant_verticalCoefficient (k : ℕ) (η : E) :
         ∀ a : D.active (k + 1), (Q', η) ∈ (D.wall a).support →
           (h.prod h').realCharacter (D.wall a).normal v ≠ 0} => displacement Q'.val)
       (𝓝 Q) (𝓝 0) := by
-    simpa only [Function.comp_def, hd0] using (hd.comp continuous_subtype_val).tendsto Q
+    simpa only [Function.comp_def, hd0] using (hd.comp continuous_subtypeVal).tendsto Q
   filter_upwards [ht.eventually (eventually_verticalCoefficient_add_eq
     d ℳ p ℒ H h h' D k (Q.val, η) Q.property.1 Q.property.2)] with Q' hQ'
   obtain ⟨hreg, _, he⟩ := hQ'

@@ -60,7 +60,7 @@ diagrams*, §8.1, arXiv:2503.03719v1.
 
 public section
 
-open TauCeti (AlgFiltration)
+open TauCeti (AlgFiltration IsFiltrationRaising)
 
 open TauCeti (PositiveDegrees)
 
@@ -164,11 +164,11 @@ local notation "G" => TropicalVertexCoefficientAction.filtration (R := S) d Q
 local notation "ℒ" => (fun n => Submodule.restrictScalars ℚ (tropicalVertexGrading (R := R) d ρ n))
 local notation "ℳ" => (fun n => Submodule.restrictScalars ℚ (tropicalVertexGrading (R := S) d ρ n))
 
-local instance : IsFiltrationRaising d ℒ ((F).toModuleFiltration ℚ) :=
+local instance : IsFiltrationRaising d ℒ ((F).toSubmodule ℚ) :=
   IsFiltrationRaising.restrictScalars_algebra (R := ℚ) (S := R) (F) d
     (tropicalVertexGrading (R := R) d ρ)
 
-local instance : IsFiltrationRaising d ℳ ((G).toModuleFiltration ℚ) :=
+local instance : IsFiltrationRaising d ℳ ((G).toSubmodule ℚ) :=
   IsFiltrationRaising.restrictScalars_algebra (R := ℚ) (S := S) (G) d
     (tropicalVertexGrading (R := S) d ρ)
 
@@ -325,11 +325,11 @@ local notation "ψ" => AlgHom.comp (AlgHom.restrictScalars ℚ (mapDomainAlgHom 
   (AddMonoidHom.comp (AddSubmonoid.inclusion hT)
     (AddMonoidHom.addSubmonoidMap p.degreeMap.toAddMonoidHom Q)))) f
 
-local instance : IsFiltrationRaising d ℒ ((F).toModuleFiltration ℚ) :=
+local instance : IsFiltrationRaising d ℒ ((F).toSubmodule ℚ) :=
   IsFiltrationRaising.restrictScalars_algebra (R := ℚ) (S := R) (F) d
     (tropicalSubalgebraGrading ρ U d)
 
-local instance : IsFiltrationRaising e ℳ ((G).toModuleFiltration ℚ) :=
+local instance : IsFiltrationRaising e ℳ ((G).toSubmodule ℚ) :=
   IsFiltrationRaising.restrictScalars_algebra (R := ℚ) (S := S) (G) e
     (tropicalVertexGrading (R := S) e ρ')
 

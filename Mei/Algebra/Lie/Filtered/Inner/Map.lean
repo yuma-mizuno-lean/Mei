@@ -47,7 +47,7 @@ include hj in
 private theorem innerMap_filtered (k : ℕ) :
     (G).submodule (k + 1) ≤ ((F.toModuleFiltration R).submodule (k + 1)).comap j := by
   simpa only [Mei.LieIdeal.completionFiltration_succ, PositiveDegrees.degreeIdeal_toSubmodule,
-    toModuleFiltration_submodule] using hj k
+    toModuleFiltration_submodule, toSubmodule_apply] using hj k
 
 /-- The coefficient map induced on the matching Lie and algebra quotients. -/
 def truncatedInnerMap (k : ℕ) : d.truncatedLie ℒ k →ₗ[R] A ⧸ F.ideal (k + 1) :=
@@ -78,6 +78,7 @@ theorem projection_completedInnerMap (k : ℕ) (x : d.filtrationCompletedLie ℒ
   simp only [completedInnerMap, LinearMap.comp_apply, projection_moduleCompletionEquiv,
     Mei.ModuleFiltration.projection_completionMap, id_eq, truncatedInnerMap,
     LinearEquiv.coe_coe, Mei.LieIdeal.completionProjection_apply]
+  rfl
 
 /-- The completed extension agrees with the original coefficient map on Lie elements. -/
 @[simp]

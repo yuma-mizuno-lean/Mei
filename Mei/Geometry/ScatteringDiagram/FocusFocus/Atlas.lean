@@ -190,7 +190,7 @@ theorem isPreconnected_cutChart_source : IsPreconnected cutChart.source := by
     exact mem_cutChart_source p
   rw [hsrc]
   refine (hstar.isPathConnected (Or.inr (by norm_num))).isConnected.isPreconnected
-    |>.preimage_of_isOpenMap Subtype.val_injective regularLocus.isOpen.isOpenMap_subtype_val
+    |>.preimage_of_isOpenMap Subtype.val_injective regularLocus.isOpen.isOpenMap_subtypeVal
       fun p hp => ⟨⟨p, ?_⟩, rfl⟩
   rw [mem_regularLocus]
   rintro rfl
@@ -203,7 +203,7 @@ theorem isPreconnected_upperChart_source : IsPreconnected upperChart.source := b
     simp only [mem_upperChart_source, mem_preimage, mem_prod, mem_univ, mem_Ioi, true_and]
   rw [hsrc]
   refine (isPreconnected_univ.prod isPreconnected_Ioi).preimage_of_isOpenMap
-    Subtype.val_injective regularLocus.isOpen.isOpenMap_subtype_val fun p hp => ⟨⟨p, ?_⟩, rfl⟩
+    Subtype.val_injective regularLocus.isOpen.isOpenMap_subtypeVal fun p hp => ⟨⟨p, ?_⟩, rfl⟩
   rw [mem_regularLocus]
   rintro rfl
   exact lt_irrefl _ hp.2
@@ -242,18 +242,18 @@ def upperAtlas :
 
 /-- The underlying chart of `cutAtlas` is the cut chart. -/
 @[simp]
-theorem cutAtlas_val : cutAtlas.1 = cutChart := (rfl)
+theorem cutAtlas_val : cutAtlas.val = cutChart := (rfl)
 
 /-- The underlying chart of `upperAtlas` is the upper chart. -/
 @[simp]
-theorem upperAtlas_val : upperAtlas.1 = upperChart := (rfl)
+theorem upperAtlas_val : upperAtlas.val = upperChart := (rfl)
 
 /-- The domain of every chart of the focus-focus atlas is preconnected. -/
 theorem isPreconnected_source :
     letI := chartedSpace
-    ∀ e : atlas (ℝ × ℝ) regularLocus, IsPreconnected e.1.source := by
+    ∀ e : atlas (ℝ × ℝ) regularLocus, IsPreconnected e.val.source := by
   intro e
-  rcases (mem_atlas_iff e.1).mp e.2 with he | he <;> rw [he]
+  rcases (mem_atlas_iff e.val).mp e.property with he | he <;> rw [he]
   · exact isPreconnected_cutChart_source
   · exact isPreconnected_upperChart_source
 

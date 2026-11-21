@@ -140,7 +140,7 @@ theorem lie_mem_normalDegreeSubmodule_of_mem_ray {w : SupportedRay d} {m : Λ �
 
 variable [Algebra ℚ R] [LieModule R L M] [DecidableEq Γ]
   [GradedLieAlgebra ℒ] [TauCeti.IsPositiveGrading d ℒ]
-  (F : ModuleFiltration R M) [IsFiltrationRaising d ℒ F]
+  (F : ModuleFiltration R M) [IsFiltrationRaising d ℒ F.submodule]
 
 /-- Rational scalars on a finite coefficient quotient come from its scalar ring. -/
 local instance quotientRatModuleNormalVelocity (k : ℕ) : Module ℚ (F.quotient k) :=
@@ -155,13 +155,12 @@ theorem truncatedExpLieAction_mem_normalDegreeSubmodule
     F.truncatedExpLieAction d ℒ k x a ∈
       (normalDegreeSubmodule ρ 𝒜 m c).map (F.submodule (k + 1)).mkQ := by
   rw [ModuleFiltration.truncatedExpLieAction_apply]
-  apply Module.End.exp_apply_mem_of_forall_mem _
-    ⟨k + 1, F.truncatedLieAction_pow_eq_zero d ℒ k x⟩ _ ?_ ha
+  apply Module.End.exp_apply_mem_of_forall_mem _ _ ?_ ha
   intro b hb
   obtain ⟨y, hy, rfl⟩ := (H.mem_truncatedRayLieSubalgebra w m k x).mp hx
   obtain ⟨b, hb, rfl⟩ := hb
-  rw [LieIdeal.mkQ_apply, ModuleFiltration.truncatedLieAction_mk,
-    Submodule.mkQ_apply, ModuleFiltration.quotientLieAction_mk]
+  rw [LieIdeal.mkQ_apply, PositiveDegrees.truncatedLieAction_mk,
+    Submodule.mkQ_apply, PositiveDegrees.quotientLieAction_mk]
   exact Submodule.mem_map_of_mem (H.lie_mem_normalDegreeSubmodule_of_mem_ray 𝒜 hy hb)
 
 /-- A finite wall exponential maps a quotient coefficient into the image of a

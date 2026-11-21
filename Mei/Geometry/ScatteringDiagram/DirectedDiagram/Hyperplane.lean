@@ -112,7 +112,7 @@ theorem levelPathProduct_eq_zpow_of_support_eq
   classical
   by_cases hθ : TauCeti.CompletedGroup.projection k W.label = 1
   · have hempty : IsEmpty (D.active k) :=
-      ⟨fun j => (D.mem_active k j.1).mp j.2 (by rw [hD]; exact hθ)⟩
+      ⟨fun j => (D.mem_active k j.val).mp j.property (by rw [hD]; exact hθ)⟩
     refine (D.levelPathProduct_of_isEmpty_active k p).trans (Eq.symm ?_)
     rw [hθ]
     exact one_zpow _
@@ -136,11 +136,11 @@ theorem levelPathProduct_eq_zpow_of_support_eq
     have hν : (fun j => (F j).linear) =
         fun j : D.active k => h.realCharacter (D.wall j).normal := by
       funext j
-      exact (hF j).trans (by rw [hD j.1])
+      exact (hF j).trans (by rw [hD j.val])
     have hl : (fun _ : D.active k => TauCeti.CompletedGroup.projection k W.label) =
         fun j : D.active k => TauCeti.CompletedGroup.projection k (D.wall j).label := by
       funext j
-      rw [hD j.1]
+      rw [hD j.val]
     have hside : ∀ z, 0 < F j₀ z ↔ c < h.realCharacter W.normal z := fun z => by
       simp [F, sub_pos]
     simp only [zpowersHom_apply, toAdd_ofAdd, zpow_one, hside] at hmap
@@ -176,12 +176,12 @@ theorem not_equivalent_of_isEmpty_of_support_eq {κ : Type*} [IsEmpty κ]
     exact inv_mul_cancel₀ (by simpa using hv)
   have hpoint (t : ℝ) (ht : t ≠ c) (k : ℕ) (j : D.active k) :
       t • u ∉ (D.wall j).support := by
-    rw [hD j.1, hW]
+    rw [hD j.val, hW]
     simpa [hu] using ht
   let xD : D.Point := ⟨(c + 1) • u, fun k j => hpoint _ (by linarith) k j⟩
   let yD : D.Point := ⟨(c - 1) • u, fun k j => hpoint _ (by linarith) k j⟩
-  let xE : E.Point := ⟨(c + 1) • u, fun _ j => isEmptyElim j.1⟩
-  let yE : E.Point := ⟨(c - 1) • u, fun _ j => isEmptyElim j.1⟩
+  let xE : E.Point := ⟨(c + 1) • u, fun _ j => isEmptyElim j.val⟩
+  let yE : E.Point := ⟨(c - 1) • u, fun _ j => isEmptyElim j.val⟩
   have htrans := hDE.transport_eq (D.consistent_of_support_eq hD c hW) E.consistent_of_isEmpty
     (x := xD) (y := yD) (x' := xE) (y' := yE) rfl rfl
   rw [E.transport_of_isEmpty xE yE] at htrans

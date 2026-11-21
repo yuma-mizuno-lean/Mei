@@ -105,7 +105,7 @@ theorem subset_stableWallEventLocus_iff (K : ℕ)
     refine ⟨fun Q hQ => ((mem_stableWallEventLocus _ _ _ _ _ _ _ _ _ _).mp (hsub hQ)).1,
       (IsLocallyConstant.iff_eventually_eq _).mpr ?_⟩
     intro Q
-    exact (continuous_subtype_val.tendsto Q).eventually
+    exact (continuous_subtypeVal.tendsto Q).eventually
       ((mem_stableWallEventLocus _ _ _ _ _ _ _ _ _ _).mp (hsub Q.property)).2
   · rintro ⟨hallow, hlocal⟩ Q hQ
     apply (mem_stableWallEventLocus _ _ _ _ _ _ _ _ _ _).mpr

@@ -33,7 +33,7 @@ Appendix B (arXiv:1411.1394v2).
 
 public noncomputable section
 
-open TauCeti (PositiveDegrees GradedLieHom)
+open TauCeti (PositiveDegrees GradedLieHom IsFiltrationRaising)
 
 namespace Mei.SkewLatticeDatum.AdaptedBasis
 
@@ -249,7 +249,7 @@ local instance : Fact ((𝒆).monoid ≤ 𝒬) :=
 local instance : LieModule R (tropicalVertexLieAlgebra (R := 𝒮) 𝒆 ϱ') 𝒮[𝒬] :=
   LieModule.restrictScalars R 𝒮 _ _
 
-local instance : IsFiltrationRaising 𝒆 𝓛' ((G).toModuleFiltration R) :=
+local instance : IsFiltrationRaising 𝒆 𝓛' ((G).toSubmodule R) :=
   IsFiltrationRaising.restrictScalars_algebra (R := R) (S := 𝒮) (G) 𝒆
     (tropicalVertexGrading (R := 𝒮) 𝒆 ϱ')
 

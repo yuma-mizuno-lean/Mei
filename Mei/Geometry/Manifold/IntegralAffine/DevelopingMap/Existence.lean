@@ -59,7 +59,7 @@ omit [DiscreteTopology (IntegralAffineEquiv h h)] in
 /-- The chart changes of an integral-affine atlas are locally constant, hence continuous for the
 discrete topology on the integral affine group. -/
 private theorem continuousOn_chartChange (e e' : atlas V B) :
-    ContinuousOn (chartChange h e e') (e.1.source ∩ e'.1.source) := fun _ hx =>
+    ContinuousOn (chartChange h e e') (e.val.source ∩ e'.val.source) := fun _ hx =>
   (continuousAt_const.congr_of_eventuallyEq (eventually_chartChange_eq hx)).continuousWithinAt
 
 variable (B) in
@@ -68,13 +68,13 @@ from the chart `e` to the chart `e'` is left multiplication by `chartChange h e 
 private def germBundleCore : FiberBundleCore (atlas V B) B (IntegralAffineEquiv h h) :=
   letI : ContinuousSMul (IntegralAffineEquiv h h) (IntegralAffineEquiv h h) :=
     ⟨continuous_of_discreteTopology⟩
-  TauCeti.fiberBundleCoreOfGroupCocycle (fun e => e.1.source) (chartChange h)
+  TauCeti.fiberBundleCoreOfGroupCocycle (fun e => e.val.source) (chartChange h)
     (fun _ _ _ _ hb => chartChange_trans hb) (IntegralAffineEquiv h h)
-    (fun e => e.1.open_source) (fun x => ⟨chartAt V x, chart_mem_atlas V x⟩)
+    (fun e => e.val.open_source) (fun x => ⟨chartAt V x, chart_mem_atlas V x⟩)
     (fun x => mem_chart_source V x) (continuousOn_chartChange h)
 
 private theorem germBundleCore_baseSet (e : atlas V B) :
-    (germBundleCore h B).baseSet e = e.1.source := by
+    (germBundleCore h B).baseSet e = e.val.source := by
   rw [FiberBundleCore.baseSet_at, germBundleCore,
     TauCeti.fiberBundleCoreOfGroupCocycle_localTriv_baseSet]
 
@@ -99,23 +99,23 @@ private def germ (s : C(B, (germBundleCore h B).TotalSpace)) (e : atlas V B) (x 
 /-- Changing the chart multiplies the fibre coordinate of a section by the chart change. -/
 private theorem germ_change (s : C(B, (germBundleCore h B).TotalSpace))
     (hs : (germBundleCore h B).proj ∘ s = id) {e e' : atlas V B} {x : B}
-    (hx : x ∈ e.1.source ∩ e'.1.source) :
+    (hx : x ∈ e.val.source ∩ e'.val.source) :
     germ s e' x = chartChange h e e' x * germ s e x := by
-  have hb : (s x).1 = x := congr_fun hs x
-  have h₁ : (s x).1 ∈ (germBundleCore h B).baseSet ((germBundleCore h B).indexAt (s x).1) ∩
+  have hb : (s x).proj = x := congr_fun hs x
+  have h₁ : (s x).proj ∈ (germBundleCore h B).baseSet ((germBundleCore h B).indexAt (s x).proj) ∩
       (germBundleCore h B).baseSet e ∩ (germBundleCore h B).baseSet e' :=
     ⟨⟨(germBundleCore h B).mem_baseSet_at _, by rw [germBundleCore_baseSet, hb]; exact hx.1⟩,
       by rw [germBundleCore_baseSet, hb]; exact hx.2⟩
   rw [germ, germ, FiberBundleCore.localTriv_apply, FiberBundleCore.localTriv_apply]
-  refine ((germBundleCore h B).coordChange_comp _ e e' _ h₁ (s x).2).symm.trans ?_
+  refine ((germBundleCore h B).coordChange_comp _ e e' _ h₁ (s x).snd).symm.trans ?_
   rw [germBundleCore_coordChange, hb]
 
 /-- The fibre coordinate of a continuous section of the bundle of germs is continuous, hence
 locally constant, on the domain of the chart. -/
 private theorem continuousOn_germ (s : C(B, (germBundleCore h B).TotalSpace))
     (hs : (germBundleCore h B).proj ∘ s = id) (e : atlas V B) :
-    ContinuousOn (germ s e) e.1.source := by
-  have hmaps : MapsTo s e.1.source ((germBundleCore h B).localTriv e).source := fun x hx =>
+    ContinuousOn (germ s e) e.val.source := by
+  have hmaps : MapsTo s e.val.source ((germBundleCore h B).localTriv e).source := fun x hx =>
     ((germBundleCore h B).localTriv e).mem_source.mpr (by
       rw [show (germBundleCore h B).proj (s x) = x from congr_fun hs x,
         ← FiberBundleCore.baseSet_at, germBundleCore_baseSet]
@@ -126,20 +126,20 @@ private theorem continuousOn_germ (s : C(B, (germBundleCore h B).TotalSpace))
 variable (h B) in
 /-- A point of the covering space of germs lies over each point of `B`, in the chart at `x`. -/
 private theorem mem_source_indexAt (x : B) :
-    x ∈ ((germBundleCore h B).indexAt x).1.source := by
+    x ∈ ((germBundleCore h B).indexAt x).val.source := by
   have := (germBundleCore h B).mem_baseSet_at x
   rwa [germBundleCore_baseSet] at this
 
 /-- The developing map of a section `s` of the bundle of germs: at `x`, the inverse of the fibre
 coordinate in the chart `e` at `x` applied to the point `e x`. -/
 private def devOfSection (s : C(B, (germBundleCore h B).TotalSpace)) (x : B) : V :=
-  (germ s ((germBundleCore h B).indexAt x) x)⁻¹ (((germBundleCore h B).indexAt x).1 x)
+  (germ s ((germBundleCore h B).indexAt x) x)⁻¹ (((germBundleCore h B).indexAt x).val x)
 
 /-- The developing map of a section is computed in any chart at the point. -/
 private theorem devOfSection_eq (s : C(B, (germBundleCore h B).TotalSpace))
-    (hs : (germBundleCore h B).proj ∘ s = id) {e : atlas V B} {x : B} (hx : x ∈ e.1.source) :
-    devOfSection s x = (germ s e x)⁻¹ (e.1 x) := by
-  have hx₀ : x ∈ ((germBundleCore h B).indexAt x).1.source ∩ e.1.source :=
+    (hs : (germBundleCore h B).proj ∘ s = id) {e : atlas V B} {x : B} (hx : x ∈ e.val.source) :
+    devOfSection s x = (germ s e x)⁻¹ (e.val x) := by
+  have hx₀ : x ∈ ((germBundleCore h B).indexAt x).val.source ∩ e.val.source :=
     ⟨mem_source_indexAt h B x, hx⟩
   have hc := chartChange_apply (h := h) hx₀
   rw [devOfSection, germ_change s hs hx₀, mul_inv_rev, IntegralAffineEquiv.mul_apply]
@@ -151,20 +151,20 @@ point the fibre coordinate is constant. -/
 private theorem isLocallyIntegralAffineOn_devOfSection
     (s : C(B, (germBundleCore h B).TotalSpace)) (hs : (germBundleCore h B).proj ∘ s = id)
     (e : atlas V B) :
-    IsLocallyIntegralAffineOn h h (devOfSection s ∘ e.1.symm) e.1.target := by
+    IsLocallyIntegralAffineOn h h (devOfSection s ∘ e.val.symm) e.val.target := by
   rw [isLocallyIntegralAffineOn_iff]
   intro y hy
-  have hx : e.1.symm y ∈ e.1.source := e.1.map_target hy
-  have hconst := (continuousOn_germ s hs e).continuousAt (e.1.open_source.mem_nhds hx)
-  have hnhds : ({germ s e (e.1.symm y)} : Set (IntegralAffineEquiv h h)) ∈
-      𝓝 (germ s e (e.1.symm y)) := (isOpen_discrete _).mem_nhds rfl
+  have hx : e.val.symm y ∈ e.val.source := e.val.map_target hy
+  have hconst := (continuousOn_germ s hs e).continuousAt (e.val.open_source.mem_nhds hx)
+  have hnhds : ({germ s e (e.val.symm y)} : Set (IntegralAffineEquiv h h)) ∈
+      𝓝 (germ s e (e.val.symm y)) := (isOpen_discrete _).mem_nhds rfl
   obtain ⟨W, hW, hWopen, hxW⟩ := mem_nhds_iff.mp
-    ((hconst.eventually_mem hnhds).and (e.1.open_source.mem_nhds hx))
-  refine ⟨(germ s e (e.1.symm y))⁻¹, e.1.target ∩ e.1.symm ⁻¹' W,
-    e.1.isOpen_inter_preimage_symm hWopen, ⟨hy, hxW⟩, ?_⟩
+    ((hconst.eventually_mem hnhds).and (e.val.open_source.mem_nhds hx))
+  refine ⟨(germ s e (e.val.symm y))⁻¹, e.val.target ∩ e.val.symm ⁻¹' W,
+    e.val.isOpen_inter_preimage_symm hWopen, ⟨hy, hxW⟩, ?_⟩
   rintro y' ⟨hy'₁, -, hy'₂⟩
   obtain ⟨hg, hz⟩ := hW hy'₂
-  rw [Function.comp_apply, devOfSection_eq s hs hz, mem_singleton_iff.mp hg, e.1.right_inv hy'₁]
+  rw [Function.comp_apply, devOfSection_eq s hs hz, mem_singleton_iff.mp hg, e.val.right_inv hy'₁]
 
 end GermBundle
 

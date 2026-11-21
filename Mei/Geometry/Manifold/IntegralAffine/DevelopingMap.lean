@@ -55,7 +55,7 @@ structure DevelopingMap (h : TauCeti.Toric.IsIntegralLattice i) (B : Type*)
   toFun : B → V
   /-- In every chart, the map is locally integral affine. -/
   isLocallyIntegralAffineOn' (e : atlas V B) :
-    IsLocallyIntegralAffineOn h h (toFun ∘ e.1.symm) e.1.target
+    IsLocallyIntegralAffineOn h h (toFun ∘ e.val.symm) e.val.target
 
 namespace DevelopingMap
 
@@ -82,7 +82,7 @@ theorem ext {dev dev' : DevelopingMap h B} (H : ∀ x, dev x = dev' x) : dev = d
 /-- In every chart `e`, a developing map composed with `e⁻¹` is locally integral affine on the
 target of `e`. -/
 theorem isLocallyIntegralAffineOn (dev : DevelopingMap h B) (e : atlas V B) :
-    IsLocallyIntegralAffineOn h h (dev ∘ e.1.symm) e.1.target :=
+    IsLocallyIntegralAffineOn h h (dev ∘ e.val.symm) e.val.target :=
   dev.isLocallyIntegralAffineOn' e
 
 /-- The pullback of a developing map along an atlas map: its composite with the atlas map. -/
@@ -102,26 +102,26 @@ theorem comap_apply (dev : DevelopingMap h B) (f : AtlasMap V B' B) (x : B') :
 /-- The tangent frame of a developing map in the chart `e` at a point `x` of its domain: the
 integral linear part of `dev ∘ e⁻¹` at `e x`. -/
 noncomputable def tangentFrame (dev : DevelopingMap h B) (e : atlas V B) (x : B)
-    (hx : x ∈ e.1.source) : N ≃+ N :=
-  (dev.isLocallyIntegralAffineOn e).latticeEquivAt (e.1.map_source hx)
+    (hx : x ∈ e.val.source) : N ≃+ N :=
+  (dev.isLocallyIntegralAffineOn e).latticeEquivAt (e.val.map_source hx)
 
 /-- The tangent frame of a developing map in the chart `e` at `x` is the lattice equivalence of
 every integral affine equivalence agreeing with `dev ∘ e⁻¹` near `e x`. -/
 theorem tangentFrame_eq (dev : DevelopingMap h B) {e : atlas V B} {x : B}
-    (hx : x ∈ e.1.source) {a : IntegralAffineEquiv h h} {u : Set V} (hu : IsOpen u)
-    (hxu : e.1 x ∈ u) (ha : EqOn (dev ∘ e.1.symm) a (e.1.target ∩ u)) :
+    (hx : x ∈ e.val.source) {a : IntegralAffineEquiv h h} {u : Set V} (hu : IsOpen u)
+    (hxu : e.val x ∈ u) (ha : EqOn (dev ∘ e.val.symm) a (e.val.target ∩ u)) :
     dev.tangentFrame e x hx = a.latticeEquiv :=
-  (dev.isLocallyIntegralAffineOn e).latticeEquivAt_eq e.1.open_target _ hu hxu ha
+  (dev.isLocallyIntegralAffineOn e).latticeEquivAt_eq e.val.open_target _ hu hxu ha
 
 /-- The tangent frame of the pullback of a developing map along an atlas map, in a chart at a
 point, is the tangent frame of the developing map in the target chart at the image point. -/
 theorem tangentFrame_comap (dev : DevelopingMap h B) (f : AtlasMap V B' B) (e : atlas V B')
-    (x : B') (hx : x ∈ e.1.source) :
+    (x : B') (hx : x ∈ e.val.source) :
     (dev.comap f).tangentFrame e x hx =
       dev.tangentFrame (f.chart e) (f x) ((f.mem_source_iff e).mp hx) := by
   obtain ⟨a, u, hu, hxu, ha⟩ := isLocallyIntegralAffineOn_iff.mp
     (dev.isLocallyIntegralAffineOn (f.chart e)) _
-    ((f.chart e).1.map_source ((f.mem_source_iff e).mp hx))
+    ((f.chart e).val.map_source ((f.mem_source_iff e).mp hx))
   rw [dev.tangentFrame_eq _ hu hxu ha]
   rw [f.chart_apply e hx] at hxu
   refine tangentFrame_eq _ hx hu hxu fun y hy => ?_
@@ -131,11 +131,11 @@ theorem tangentFrame_comap (dev : DevelopingMap h B) (f : AtlasMap V B' B) (e : 
 /-- The tangent frames of a developing map are locally constant on the domain of each
 chart. -/
 theorem eventually_tangentFrame_eq (dev : DevelopingMap h B) {e : atlas V B} {x : B}
-    (hx : x ∈ e.1.source) :
-    ∀ᶠ y in 𝓝 x, ∀ hy : y ∈ e.1.source, dev.tangentFrame e y hy = dev.tangentFrame e x hx := by
-  filter_upwards [(e.1.continuousAt hx).eventually
-    ((dev.isLocallyIntegralAffineOn e).eventually_latticeEquivAt_eq e.1.open_target
-      (e.1.map_source hx))] with y hy hy'
+    (hx : x ∈ e.val.source) :
+    ∀ᶠ y in 𝓝 x, ∀ hy : y ∈ e.val.source, dev.tangentFrame e y hy = dev.tangentFrame e x hx := by
+  filter_upwards [(e.val.continuousAt hx).eventually
+    ((dev.isLocallyIntegralAffineOn e).eventually_latticeEquivAt_eq e.val.open_target
+      (e.val.map_source hx))] with y hy hy'
   exact hy _
 
 variable [HasGroupoid B (integralAffineGroupoid h)]
@@ -143,27 +143,27 @@ variable [HasGroupoid B (integralAffineGroupoid h)]
 /-- On the overlap of two charts, the tangent frame change followed by the tangent frame of a
 developing map in the second chart is its tangent frame in the first chart. -/
 theorem tangentFrame_coordChange (dev : DevelopingMap h B) {e e' : atlas V B} {x : B}
-    (hx : x ∈ e.1.source ∩ e'.1.source) :
+    (hx : x ∈ e.val.source ∩ e'.val.source) :
     (tangentLatticeChange h e e' x).trans (dev.tangentFrame e' x hx.2) =
       dev.tangentFrame e x hx.1 := by
   obtain ⟨a, u, hu, hxu, ha, hT⟩ := exists_tangentLatticeChange_eq (h := h) hx
   obtain ⟨b, v, hv, hxv, hb⟩ := isLocallyIntegralAffineOn_iff.mp
-    (dev.isLocallyIntegralAffineOn e') (e'.1 x) (e'.1.map_source hx.2)
-  have hex : e.1.symm (e.1 x) = x := e.1.left_inv hx.1
-  have hax : a (e.1 x) = e'.1 x := (ha ⟨PartialEquiv.mem_symm_trans_source e.1.toPartialEquiv
-    hx.1 hx.2, hxu⟩).symm.trans (congrArg e'.1 hex)
-  have hO : IsOpen (u ∩ a ⁻¹' v ∩ (e.1.symm ≫ₕ e'.1).source) :=
-    (hu.inter (hv.preimage a.continuous)).inter (e.1.symm ≫ₕ e'.1).open_source
-  have hxO : e.1 x ∈ u ∩ a ⁻¹' v ∩ (e.1.symm ≫ₕ e'.1).source :=
+    (dev.isLocallyIntegralAffineOn e') (e'.val x) (e'.val.map_source hx.2)
+  have hex : e.val.symm (e.val x) = x := e.val.left_inv hx.1
+  have hax : a (e.val x) = e'.val x := (ha ⟨PartialEquiv.mem_symm_trans_source e.val.toPartialEquiv
+    hx.1 hx.2, hxu⟩).symm.trans (congrArg e'.val hex)
+  have hO : IsOpen (u ∩ a ⁻¹' v ∩ (e.val.symm ≫ₕ e'.val).source) :=
+    (hu.inter (hv.preimage a.continuous)).inter (e.val.symm ≫ₕ e'.val).open_source
+  have hxO : e.val x ∈ u ∩ a ⁻¹' v ∩ (e.val.symm ≫ₕ e'.val).source :=
     ⟨⟨hxu, by rwa [mem_preimage, hax]⟩,
-      PartialEquiv.mem_symm_trans_source e.1.toPartialEquiv hx.1 hx.2⟩
+      PartialEquiv.mem_symm_trans_source e.val.toPartialEquiv hx.1 hx.2⟩
   rw [hT, dev.tangentFrame_eq hx.2 hv hxv hb, dev.tangentFrame_eq hx.1 hO hxO (a := a.trans b),
     IntegralAffineEquiv.trans_latticeEquiv]
   rintro y ⟨-, ⟨hyu, hyv⟩, hy⟩
-  have hy' : e.1.symm y ∈ e'.1.source := hy.2
-  have hay : e'.1 (e.1.symm y) = a y := ha ⟨hy, hyu⟩
-  have hby := hb ⟨e'.1.map_source hy', by rwa [mem_preimage, ← hay] at hyv⟩
-  rw [Function.comp_apply, e'.1.left_inv hy', hay] at hby
+  have hy' : e.val.symm y ∈ e'.val.source := hy.2
+  have hay : e'.val (e.val.symm y) = a y := ha ⟨hy, hyu⟩
+  have hby := hb ⟨e'.val.map_source hy', by rwa [mem_preimage, ← hay] at hyv⟩
+  rw [Function.comp_apply, e'.val.left_inv hy', hay] at hby
   rw [Function.comp_apply, hby, IntegralAffineEquiv.trans_toAffineEquiv, AffineEquiv.trans_apply]
 
 /-- The trivialization of the integral tangent lattice by the tangent frames of a developing
@@ -179,7 +179,7 @@ noncomputable def tangentTrivialization (dev : DevelopingMap h B) :
 /-- The frames of the tangent trivialization of a developing map are its tangent frames. -/
 @[simp]
 theorem tangentTrivialization_frame (dev : DevelopingMap h B) (e : atlas V B) (x : B)
-    (hx : x ∈ e.1.source) : dev.tangentTrivialization.frame e x hx = dev.tangentFrame e x hx :=
+    (hx : x ∈ e.val.source) : dev.tangentTrivialization.frame e x hx = dev.tangentFrame e x hx :=
   (rfl)
 
 /-- If the integral tangent lattice of `B` has no trivialization, then `B` has no developing
@@ -191,13 +191,14 @@ theorem isEmpty_of_isEmpty_trivialization
 
 /-- Let `f` be an atlas map whose image lies in the domain of the chart `e₀`. Then the chart
 `e₀` composed with `f` is a developing map. -/
-def ofAtlasMap (f : AtlasMap V B' B) (e₀ : atlas V B) (hf : ∀ x, f x ∈ e₀.1.source) :
+def ofAtlasMap (f : AtlasMap V B' B) (e₀ : atlas V B) (hf : ∀ x, f x ∈ e₀.val.source) :
     DevelopingMap h B' where
-  toFun := e₀.1 ∘ f
+  toFun := e₀.val ∘ f
   isLocallyIntegralAffineOn' e := by
     refine ((isLocallyIntegralAffineOn_symm_trans h (f.chart e) e₀).mono fun y hy => ?_).congr
       fun y hy => ?_
-    · refine ⟨f.target_subset_chart_target e hy, show (f.chart e).1.symm y ∈ e₀.1.source from ?_⟩
+    · refine ⟨f.target_subset_chart_target e hy,
+        show (f.chart e).val.symm y ∈ e₀.val.source from ?_⟩
       rw [← f.apply_symm_eq_chart_symm e hy]
       exact hf _
     · rw [OpenPartialHomeomorph.trans_apply, Function.comp_apply, Function.comp_apply,
@@ -205,23 +206,23 @@ def ofAtlasMap (f : AtlasMap V B' B) (e₀ : atlas V B) (hf : ∀ x, f x ∈ e�
 
 /-- The developing map given by a chart `e₀` along an atlas map `f` is `e₀ ∘ f`. -/
 @[simp]
-theorem ofAtlasMap_apply (f : AtlasMap V B' B) (e₀ : atlas V B) (hf : ∀ x, f x ∈ e₀.1.source)
-    (x : B') : ofAtlasMap (h := h) f e₀ hf x = e₀.1 (f x) := (rfl)
+theorem ofAtlasMap_apply (f : AtlasMap V B' B) (e₀ : atlas V B) (hf : ∀ x, f x ∈ e₀.val.source)
+    (x : B') : ofAtlasMap (h := h) f e₀ hf x = e₀.val (f x) := (rfl)
 
 /-- The tangent frame of the developing map `e₀ ∘ f` in a chart `e` at `x` is the tangent frame
 change from the target chart of `e` to `e₀` at `f x`. -/
 theorem tangentFrame_ofAtlasMap (f : AtlasMap V B' B) (e₀ : atlas V B)
-    (hf : ∀ x, f x ∈ e₀.1.source) (e : atlas V B') (x : B') (hx : x ∈ e.1.source) :
+    (hf : ∀ x, f x ∈ e₀.val.source) (e : atlas V B') (x : B') (hx : x ∈ e.val.source) :
     (ofAtlasMap (h := h) f e₀ hf).tangentFrame e x hx =
       tangentLatticeChange h (f.chart e) e₀ (f x) := by
   obtain ⟨a, u, hu, hxu, ha, hT⟩ :=
     exists_tangentLatticeChange_eq (h := h) ⟨(f.mem_source_iff e).mp hx, hf x⟩
   rw [f.chart_apply e hx] at hxu
   refine (tangentFrame_eq _ hx hu hxu fun y hy => ?_).trans hT.symm
-  have hy₀ : (f.chart e).1.symm y ∈ e₀.1.source := by
+  have hy₀ : (f.chart e).val.symm y ∈ e₀.val.source := by
     rw [← f.apply_symm_eq_chart_symm e hy.1]
     exact hf _
-  have hys : y ∈ ((f.chart e).1.symm ≫ₕ e₀.1).source :=
+  have hys : y ∈ ((f.chart e).val.symm ≫ₕ e₀.val).source :=
     ⟨f.target_subset_chart_target e hy.1, hy₀⟩
   rw [← ha ⟨hys, hy.2⟩, OpenPartialHomeomorph.trans_apply, Function.comp_apply,
     ofAtlasMap_apply, f.apply_symm_eq_chart_symm e hy.1]

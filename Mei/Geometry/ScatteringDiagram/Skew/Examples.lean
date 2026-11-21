@@ -192,11 +192,11 @@ with multiplicities `ℓ = (1, 2)`. Its exponents are `w₁ = d₁ {e₁, -} / �
 `w₂ = d₂ {e₂, -} / ℓ₂ = -e₁*`, so its initial functions are `1 + p_{1,1} z^{e₂*}` and
 `1 + p_{2,1} z^{-e₁*} + p_{2,2} z^{-2e₁*}`. -/
 noncomputable def rankTwoBLMPolynomialInput : rankTwoAdaptedBasis.BLMPolynomialInput where
-  multiplicity i := ![1, 2] i.1
+  multiplicity i := ![1, 2] i.val
   multiplicity_pos i := by
     obtain ⟨i, -⟩ := i
     fin_cases i <;> simp
-  exponent i := ![LinearMap.snd ℤ ℤ ℤ, -LinearMap.fst ℤ ℤ ℤ] i.1
+  exponent i := ![LinearMap.snd ℤ ℤ ℤ, -LinearMap.fst ℤ ℤ ℤ] i.val
   multiplicity_mul_exponent i a := by
     obtain ⟨i, -⟩ := i
     fin_cases i <;> simp
@@ -215,12 +215,12 @@ noncomputable def rankTwoBLMPolynomialInput : rankTwoAdaptedBasis.BLMPolynomialI
 
 @[simp]
 theorem rankTwoBLMPolynomialInput_multiplicity (i : rankTwoAdaptedBasis.unfrozenIndex) :
-    rankTwoBLMPolynomialInput.multiplicity i = ![1, 2] i.1 :=
+    rankTwoBLMPolynomialInput.multiplicity i = ![1, 2] i.val :=
   (rfl)
 
 @[simp]
 theorem rankTwoBLMPolynomialInput_exponent (i : rankTwoAdaptedBasis.unfrozenIndex) :
-    rankTwoBLMPolynomialInput.exponent i = ![LinearMap.snd ℤ ℤ ℤ, -LinearMap.fst ℤ ℤ ℤ] i.1 :=
+    rankTwoBLMPolynomialInput.exponent i = ![LinearMap.snd ℤ ℤ ℤ, -LinearMap.fst ℤ ℤ ℤ] i.val :=
   (rfl)
 
 end Mei.SkewLatticeDatum.Examples

@@ -106,8 +106,8 @@ theorem levelComplex_isSubcomplex (k : ℕ) : (D.levelComplex k).IsSubcomplex (D
 
 /-- The order-`k` complex is conical. -/
 theorem isConical_levelComplex (k : ℕ) : (D.levelComplex k).IsConical :=
-  (FinitePolyhedralComplex.isConical_iff _).mpr fun Q hQ =>
-    (FinitePolyhedralComplex.isConical_iff _).mp (D.isConical_ambientComplex k) Q
+  FinitePolyhedralComplex.isConical_iff.mpr fun Q hQ =>
+    FinitePolyhedralComplex.isConical_iff.mp (D.isConical_ambientComplex k) Q
       (FinitePolyhedralComplex.isSubcomplex_iff.mp (D.levelComplex_isSubcomplex k) hQ)
 
 /-- The walls of the order-`k` complex are the ambient walls contained in an active support. -/

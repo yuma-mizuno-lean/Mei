@@ -79,7 +79,7 @@ theorem isFiltrationDetected
       ext q
       simp
     refine ⟨b, a, ?_, ?_⟩
-    · simp only [Submodule.restrictScalars_mem,
+    · simp only [TauCeti.AlgFiltration.toSubmodule_apply, Submodule.restrictScalars_mem,
         filtration_ideal, htop,
         AddSubmonoid.mem_monoidAlgebraIdeal_top_iff_of_nonneg
           (δ := d.degree.comp d.monoid.subtype)
@@ -89,7 +89,7 @@ theorem isFiltrationDetected
       subst q
       exact hb.le
     · intro hf
-      simp only [Submodule.restrictScalars_mem,
+      simp only [TauCeti.AlgFiltration.toSubmodule_apply, Submodule.restrictScalars_mem,
         filtration_ideal, lie_eq, htop,
         AddSubmonoid.mem_monoidAlgebraIdeal_top_iff_of_nonneg
           (δ := d.degree.comp d.monoid.subtype)

@@ -5,7 +5,9 @@ Authors: Codex
 -/
 module
 
+public import Mei.Algebra.Lie.Filtered.Action
 public import Mei.Algebra.Lie.Filtered.Exp
+public import Mei.RingTheory.FilteredAlgebra.Module
 public import Mei.Algebra.Lie.Graded.Completion
 public import TauCeti.RingTheory.Nilpotent.Log
 
@@ -33,7 +35,7 @@ public section
 
 open TauCeti (AlgFiltration)
 
-open TauCeti (PositiveDegrees IsPositiveGrading)
+open TauCeti (PositiveDegrees IsPositiveGrading IsFiltrationRaising)
 
 attribute [local instance] LieRing.ofAssociativeRing
 
@@ -55,14 +57,16 @@ namespace ModuleFiltration
 
 variable (F : ModuleFiltration R M) (d : PositiveDegrees N) (ℒ : N → Submodule R L)
   [LieModule R L M] [DecidableEq N] [GradedLieAlgebra ℒ]
-  [IsPositiveGrading d ℒ] [IsFiltrationRaising d ℒ F]
+  [IsPositiveGrading d ℒ] [IsFiltrationRaising d ℒ F.submodule]
 
 local notation "π" =>
   Mei.LieIdeal.completionProjection (d.degreeIdeal ℒ) (d.degreeIdeal_antitone ℒ)
 
 /-- The action of the degree-completed Lie algebra on the coefficient completion. -/
 def completedLieAction : d.filtrationCompletedLie ℒ →ₗ⁅R⁆ Module.End R F.completion where
-  toFun x := F.lift (fun k => (F.truncatedLieAction d ℒ k (π k x)).comp (F.projection k))
+  toFun x := F.lift (fun k =>
+      (d.truncatedLieAction ℒ F.submodule F.antitone F.zero_eq_top k (π k x)).comp
+        (F.projection k))
     (by
       intro k l h
       ext m
@@ -92,7 +96,8 @@ def completedLieAction : d.filtrationCompletedLie ℒ →ₗ⁅R⁆ Module.End R
 @[simp]
 theorem projection_completedLieAction (k : ℕ) (x : d.filtrationCompletedLie ℒ) (m : F.completion) :
     F.projection k (F.completedLieAction d ℒ x m) =
-      F.truncatedLieAction d ℒ k (π k x) (F.projection k m) := by
+      d.truncatedLieAction ℒ F.submodule F.antitone F.zero_eq_top k (π k x)
+        (F.projection k m) := by
   simp [completedLieAction]
 
 variable [IsFiltrationDetected d ℒ F]
@@ -100,7 +105,8 @@ variable [IsFiltrationDetected d ℒ F]
 /-- Vanishing of all finite representations forces a completed Lie element to vanish.
 The detecting coefficient may require a finer quotient than the Lie order being tested. -/
 theorem eq_zero_of_truncatedLieAction_eq_zero (x : d.filtrationCompletedLie ℒ)
-    (hx : ∀ k, F.truncatedLieAction d ℒ k (π k x) = 0) : x = 0 := by
+    (hx : ∀ k, d.truncatedLieAction ℒ F.submodule F.antitone F.zero_eq_top k (π k x) = 0) :
+    x = 0 := by
   apply completion_ext
   intro k
   rw [← Mei.LieIdeal.completionProjection_apply, map_zero]
@@ -131,10 +137,11 @@ theorem eq_zero_of_truncatedLieAction_eq_zero (x : d.filtrationCompletedLie ℒ)
     exact (d.degreeIdeal ℒ (k + 1)).mkQ_eq_zero.mp (by simp [map_sub, hzy])
   have heq : ⁅z - y, m⁆ ∈ F.submodule (b + k + 2) := by
     simpa only [Nat.add_assoc, Nat.add_comm, Nat.add_left_comm] using
-      IsFiltrationRaising.lie_mem (d := d) (ℒ := ℒ) (F := F) hdiff hm
+      IsFiltrationRaising.lie_mem (d := d) (ℒ := ℒ) (F := F.submodule) hdiff hm
   have hzero : ⁅z, m⁆ ∈ F.submodule (b + k + 2) := by
     have ha := LinearMap.congr_fun (hx (b + k + 1)) (Submodule.Quotient.mk m)
-    rw [← hz, LieIdeal.mkQ_apply, truncatedLieAction_mk, quotientLieAction_mk,
+    rw [← hz, LieIdeal.mkQ_apply, PositiveDegrees.truncatedLieAction_mk,
+      PositiveDegrees.quotientLieAction_mk,
       LinearMap.zero_apply, Submodule.Quotient.mk_eq_zero] at ha
     exact ha
   exact hdet (by simpa [sub_lie] using (F.submodule (b + k + 2)).sub_mem hzero heq)
@@ -165,14 +172,18 @@ local instance ratAlgebraQuotientEnd (k : ℕ) : Algebra ℚ (Module.End R (F.qu
 elements. This tests the actual nilpotent representations, without requiring any one of
 them to be injective. -/
 theorem eq_of_exp_truncatedLieAction_eq (x y : d.filtrationCompletedLie ℒ)
-    (h : ∀ k, IsNilpotent.exp (F.truncatedLieAction d ℒ k (π k x)) =
-      IsNilpotent.exp (F.truncatedLieAction d ℒ k (π k y))) : x = y := by
+    (h : ∀ k, IsNilpotent.exp (d.truncatedLieAction ℒ F.submodule F.antitone F.zero_eq_top k
+        (π k x)) =
+      IsNilpotent.exp (d.truncatedLieAction ℒ F.submodule F.antitone F.zero_eq_top k
+        (π k y))) : x = y := by
   apply sub_eq_zero.mp
   apply F.eq_zero_of_truncatedLieAction_eq_zero d ℒ (x - y)
   intro k
   have hk := congrArg IsNilpotent.log (h k)
-  rw [IsNilpotent.log_exp ⟨k + 1, F.truncatedLieAction_pow_eq_zero d ℒ k _⟩,
-    IsNilpotent.log_exp ⟨k + 1, F.truncatedLieAction_pow_eq_zero d ℒ k _⟩] at hk
+  have hn (z : d.truncatedLie ℒ k) :
+      IsNilpotent (d.truncatedLieAction ℒ F.submodule F.antitone F.zero_eq_top k z) :=
+    ⟨k + 1, d.truncatedLieAction_pow_eq_zero ℒ F.submodule F.antitone F.zero_eq_top k z⟩
+  rw [IsNilpotent.log_exp (hn _), IsNilpotent.log_exp (hn _)] at hk
   simp only [map_sub, hk, sub_self]
 
 end Rational
@@ -191,7 +202,7 @@ variable {A : Type*} [Ring A] [Algebra R A] [Algebra ℚ A]
   [LieRingModule L A] [LieModule R L A]
   (F : AlgFiltration A) (d : PositiveDegrees N) (ℒ : N → Submodule R L)
   [DecidableEq N] [DirectSum.Decomposition ℒ] [IsPositiveGrading d ℒ]
-  [IsFiltrationRaising d ℒ (F.toModuleFiltration R)] [IsDerivationAction L A]
+  [IsFiltrationRaising d ℒ (F.toSubmodule R)] [IsDerivationAction L A]
   [IsFiltrationDetected d ℒ (F.toModuleFiltration R)]
 
 /-- Filtration detection makes the exponential action of the original Lie algebra

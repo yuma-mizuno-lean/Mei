@@ -30,7 +30,7 @@ arXiv:1503.06183v5.
 
 public section
 
-open TauCeti (PositiveDegrees PositiveDegreeMap)
+open TauCeti (PositiveDegrees PositiveDegreeMap IsFiltrationRaising)
 
 namespace Mei.LogarithmicVectorField
 
@@ -104,11 +104,11 @@ local notation "ℳ" => (fun n => Submodule.restrictScalars ℚ (tropicalVertexG
 local notation "hmap" => fun k =>
   filtration_ideal_le_comap_coefficientMonoidMap d Q φ χ f hf (k + 1)
 
-local instance : IsFiltrationRaising d ℒ ((F).toModuleFiltration ℚ) :=
+local instance : IsFiltrationRaising d ℒ ((F).toSubmodule ℚ) :=
   IsFiltrationRaising.restrictScalars_algebra (R := ℚ) (S := R) (F) d
     (tropicalVertexGrading (R := R) d ρ)
 
-local instance : IsFiltrationRaising d ℳ ((G).toModuleFiltration ℚ) :=
+local instance : IsFiltrationRaising d ℳ ((G).toSubmodule ℚ) :=
   IsFiltrationRaising.restrictScalars_algebra (R := ℚ) (S := S) (G) d
     (tropicalVertexGrading (R := S) d ρ)
 

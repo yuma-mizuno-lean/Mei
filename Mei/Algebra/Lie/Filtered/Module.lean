@@ -22,14 +22,15 @@ reflected. Equivariant filtration-preserving coefficient maps intertwine the exp
 before and after completion. No derivation rule or multiplication on the coefficient
 module is required.
 
-The construction uses `ModuleFiltration.truncatedLieAction`, Mathlib's finite nilpotent
-exponential, `LinearEquiv.ofLinearMap`, and the compatible-family lift
+The construction uses `PositiveDegrees.truncatedLieAction` from Tau Ceti, Mathlib's finite
+nilpotent exponential, `LinearEquiv.ofLinearMap`, and the compatible-family lift
 `ModuleFiltration.lift`. Multiplicativity for the BCH group is a separate statement.
 -/
 
 public section
 
-open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading GradedLieHom)
+open TauCeti (PositiveDegrees PositiveDegreeMap IsPositiveGrading GradedLieHom
+  IsFiltrationRaising)
 
 attribute [local instance] LieRing.ofAssociativeRing
 
@@ -40,7 +41,7 @@ variable {N R L M : Type*} [AddCommMonoid N] [CommRing R] [Algebra ℚ R]
   [LieRingModule L M] [LieModule R L M]
   (F : ModuleFiltration R M) (d : PositiveDegrees N) (ℒ : N → Submodule R L)
   [DecidableEq N] [GradedLieAlgebra ℒ] [IsPositiveGrading d ℒ]
-  [IsFiltrationRaising d ℒ F]
+  [IsFiltrationRaising d ℒ F.submodule]
 
 /-- The rational module structure on each coefficient quotient is induced from `R`. -/
 local instance quotientRatModule (k : ℕ) : Module ℚ (F.quotient k) :=
@@ -50,18 +51,20 @@ local instance quotientRatModule (k : ℕ) : Module ℚ (F.quotient k) :=
 The inverse is the exponential of its negative. -/
 noncomputable def truncatedExpLieAction (k : ℕ) (x : d.truncatedLie ℒ k) :
     F.quotient k ≃ₗ[R] F.quotient k :=
-  LinearEquiv.ofLinearMap (IsNilpotent.exp (F.truncatedLieAction d ℒ k x))
-    (IsNilpotent.exp (-(F.truncatedLieAction d ℒ k x)))
+  LinearEquiv.ofLinearMap
+    (IsNilpotent.exp (d.truncatedLieAction ℒ F.submodule F.antitone F.zero_eq_top k x))
+    (IsNilpotent.exp (-(d.truncatedLieAction ℒ F.submodule F.antitone F.zero_eq_top k x)))
     (IsNilpotent.exp_mul_exp_neg_self
-      ⟨k + 1, F.truncatedLieAction_pow_eq_zero d ℒ k x⟩)
+      ⟨k + 1, d.truncatedLieAction_pow_eq_zero ℒ F.submodule F.antitone F.zero_eq_top k x⟩)
     (IsNilpotent.exp_neg_mul_exp_self
-      ⟨k + 1, F.truncatedLieAction_pow_eq_zero d ℒ k x⟩)
+      ⟨k + 1, d.truncatedLieAction_pow_eq_zero ℒ F.submodule F.antitone F.zero_eq_top k x⟩)
 
 /-- The finite automorphism evaluates by the nilpotent endomorphism exponential. -/
 @[simp]
 theorem truncatedExpLieAction_apply (k : ℕ) (x : d.truncatedLie ℒ k)
     (a : F.quotient k) :
-    F.truncatedExpLieAction d ℒ k x a = IsNilpotent.exp (F.truncatedLieAction d ℒ k x) a :=
+    F.truncatedExpLieAction d ℒ k x a =
+      IsNilpotent.exp (d.truncatedLieAction ℒ F.submodule F.antitone F.zero_eq_top k x) a :=
   (rfl)
 
 /-- Zero in the Lie truncation acts as the identity. -/
@@ -83,22 +86,24 @@ theorem truncatedExpLieAction_neg (k : ℕ) (x : d.truncatedLie ℒ k) :
     truncatedExpLieAction_apply, map_neg]
   exact LinearMap.congr_fun
     (IsNilpotent.exp_mul_exp_neg_self
-      ⟨k + 1, F.truncatedLieAction_pow_eq_zero d ℒ k x⟩) a
+      ⟨k + 1, d.truncatedLieAction_pow_eq_zero ℒ F.submodule F.antitone F.zero_eq_top k x⟩) a
 
 /-- Lie and coefficient transitions intertwine the finite exponential actions. -/
 theorem transition_truncatedExpLieAction {k l : ℕ} (h : k ≤ l)
     (x : d.truncatedLie ℒ l) (a : F.quotient l) :
     F.transition h (F.truncatedExpLieAction d ℒ l x a) =
       F.truncatedExpLieAction d ℒ k (d.truncationMap ℒ h x) (F.transition h a) := by
-  have hc : (F.truncatedLieAction d ℒ k (d.truncationMap ℒ h x)).comp (F.transition h) =
-      (F.transition h).comp (F.truncatedLieAction d ℒ l x) := by
+  have hc : (d.truncatedLieAction ℒ F.submodule F.antitone F.zero_eq_top k
+        (d.truncationMap ℒ h x)).comp (F.transition h) =
+      (F.transition h).comp (d.truncatedLieAction ℒ F.submodule F.antitone F.zero_eq_top l x) := by
     apply LinearMap.ext
     intro q
     exact (F.transition_truncatedLieAction d ℒ h x q).symm
   simpa only [truncatedExpLieAction_apply, LinearMap.comp_apply] using
     (LinearMap.congr_fun (Module.End.commute_exp_left_of_commute
-      ⟨l + 1, F.truncatedLieAction_pow_eq_zero d ℒ l x⟩
-      ⟨k + 1, F.truncatedLieAction_pow_eq_zero d ℒ k (d.truncationMap ℒ h x)⟩ hc) a).symm
+      ⟨l + 1, d.truncatedLieAction_pow_eq_zero ℒ F.submodule F.antitone F.zero_eq_top l x⟩
+      ⟨k + 1, d.truncatedLieAction_pow_eq_zero ℒ F.submodule F.antitone F.zero_eq_top k
+        (d.truncationMap ℒ h x)⟩ hc) a).symm
 
 local notation "π" =>
   Mei.LieIdeal.completionProjection (d.degreeIdeal ℒ) (d.degreeIdeal_antitone ℒ)
@@ -196,7 +201,7 @@ variable {d ℒ} {N' L' M' : Type*} [AddCommMonoid N'] [DecidableEq N']
   [AddCommGroup M'] [Module R M'] [LieRingModule L' M'] [LieModule R L' M']
   {e : PositiveDegrees N'} {T : PositiveDegreeMap d e}
   {ℒ' : N' → Submodule R L'} [GradedLieAlgebra ℒ'] [IsPositiveGrading e ℒ']
-  (G : ModuleFiltration R M') [IsFiltrationRaising e ℒ' G]
+  (G : ModuleFiltration R M') [IsFiltrationRaising e ℒ' G.submodule]
   (φ : GradedLieHom T ℒ ℒ') (ψ : M →ₗ[R] M')
   (hequiv : ∀ (x : L) (a : M), ψ ⁅x, a⁆ = ⁅φ x, ψ a⁆)
 
@@ -216,19 +221,21 @@ theorem mapQ_truncatedExpLieAction_of_gradedLieHom {a : ℕ} (k : ℕ)
           hψ z) := by
   let qψ := (F.submodule (a + 1)).mapQ (G.submodule (k + 1)) ψ
     hψ
-  have hc : (G.truncatedLieAction e ℒ' k (φ.truncatedMap k h x)).comp qψ =
-      qψ.comp (F.truncatedLieAction d ℒ a x) := by
+  have hc : (e.truncatedLieAction ℒ' G.submodule G.antitone G.zero_eq_top k
+        (φ.truncatedMap k h x)).comp qψ =
+      qψ.comp (d.truncatedLieAction ℒ F.submodule F.antitone F.zero_eq_top a x) := by
     apply LinearMap.ext
     intro z
     obtain ⟨x, rfl⟩ := (d.degreeIdeal ℒ a).surjective_mkQ x
     obtain ⟨m, rfl⟩ := (F.submodule (a + 1)).mkQ_surjective z
     simp only [LinearMap.comp_apply, qψ, Submodule.mkQ_apply, Submodule.mapQ_apply,
-      LieIdeal.mkQ_apply, GradedLieHom.truncatedMap_mk, truncatedLieAction_mk,
-      quotientLieAction_mk, hequiv]
+      LieIdeal.mkQ_apply, GradedLieHom.truncatedMap_mk, PositiveDegrees.truncatedLieAction_mk,
+      PositiveDegrees.quotientLieAction_mk, hequiv]
   simpa only [truncatedExpLieAction_apply, LinearMap.comp_apply] using
     (LinearMap.congr_fun (Module.End.commute_exp_left_of_commute
-      ⟨a + 1, F.truncatedLieAction_pow_eq_zero d ℒ a x⟩
-      ⟨k + 1, G.truncatedLieAction_pow_eq_zero e ℒ' k (φ.truncatedMap k h x)⟩ hc) z).symm
+      ⟨a + 1, d.truncatedLieAction_pow_eq_zero ℒ F.submodule F.antitone F.zero_eq_top a x⟩
+      ⟨k + 1, e.truncatedLieAction_pow_eq_zero ℒ' G.submodule G.antitone G.zero_eq_top k
+        (φ.truncatedMap k h x)⟩ hc) z).symm
 
 end GeneralEquivariantMap
 
@@ -236,7 +243,7 @@ section EquivariantMap
 
 variable {M' : Type*} [AddCommGroup M'] [Module R M']
   [LieRingModule L M'] [LieModule R L M']
-  (G : ModuleFiltration R M') [IsFiltrationRaising d ℒ G]
+  (G : ModuleFiltration R M') [IsFiltrationRaising d ℒ G.submodule]
   (f : M →ₗ[R] M')
   (hf : ∀ k, F.submodule (k + 1) ≤ (G.submodule (k + 1)).comap f)
   (hequiv : ∀ (x : L) (m : M), f ⁅x, m⁆ = ⁅x, f m⁆)

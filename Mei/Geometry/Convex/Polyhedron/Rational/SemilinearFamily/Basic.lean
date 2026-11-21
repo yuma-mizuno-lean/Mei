@@ -71,7 +71,7 @@ def IsRationalPiecewiseAffine (h : TauCeti.Toric.IsIntegralLattice i)
     (h' : TauCeti.Toric.IsIntegralLattice i') (D : Set V) (f : D → W) : Prop :=
   ∃ (κ : Type) (_ : Finite κ) (S : κ → Set V) (g : κ → (V →ᵃ[ℝ] W)),
     (⋃ k, S k) = D ∧ ∀ k, IsRationalSemilinear h (S k) ∧
-      TauCeti.Toric.IsRationalLinearMap h h' (g k).linear ∧ ∀ x : D, x.1 ∈ S k → f x = g k x
+      TauCeti.Toric.IsRationalLinearMap h h' (g k).linear ∧ ∀ x : D, x.val ∈ S k → f x = g k x
 
 /-- A map `f` on `D` is a finite branch: finitely many locally closed rational-normal
 polyhedra cover `D`, and on each of them `f` agrees with an affine map, with rational
@@ -81,14 +81,15 @@ def IsFiniteBranchOn (h : TauCeti.Toric.IsIntegralLattice i)
   ∃ (κ : Type) (_ : Finite κ) (S : κ → Set V) (g : κ → (V →ᵃ[ℝ] W)),
     (⋃ k, S k) = D ∧ ∀ k, IsLocallyClosedPolyhedron h (S k) ∧
       TauCeti.Toric.IsRationalLinearMap h h' (g k).linear ∧ Set.InjOn (g k) (S k) ∧
-        ∀ x : D, x.1 ∈ S k → f x = g k x
+        ∀ x : D, x.val ∈ S k → f x = g k x
 
 /-- Unfolds `IsRationalPiecewiseAffine`. -/
 theorem isRationalPiecewiseAffine_iff {D : Set V} {f : D → W} :
     IsRationalPiecewiseAffine h h' D f ↔
       ∃ (κ : Type) (_ : Finite κ) (S : κ → Set V) (g : κ → (V →ᵃ[ℝ] W)),
         (⋃ k, S k) = D ∧ ∀ k, IsRationalSemilinear h (S k) ∧
-          TauCeti.Toric.IsRationalLinearMap h h' (g k).linear ∧ ∀ x : D, x.1 ∈ S k → f x = g k x :=
+          TauCeti.Toric.IsRationalLinearMap h h' (g k).linear ∧
+            ∀ x : D, x.val ∈ S k → f x = g k x :=
   Iff.rfl
 
 /-- Unfolds `IsFiniteBranchOn`. -/
@@ -97,7 +98,7 @@ theorem isFiniteBranchOn_iff {D : Set V} {f : D → W} :
       ∃ (κ : Type) (_ : Finite κ) (S : κ → Set V) (g : κ → (V →ᵃ[ℝ] W)),
         (⋃ k, S k) = D ∧ ∀ k, IsLocallyClosedPolyhedron h (S k) ∧
           TauCeti.Toric.IsRationalLinearMap h h' (g k).linear ∧ Set.InjOn (g k) (S k) ∧
-            ∀ x : D, x.1 ∈ S k → f x = g k x :=
+            ∀ x : D, x.val ∈ S k → f x = g k x :=
   Iff.rfl
 
 namespace IsRationalPiecewiseAffine
@@ -111,10 +112,10 @@ theorem isRationalSemilinear {D : Set V} {f : D → W} (hf : IsRationalPiecewise
 /-- Restricting to a rational semilinear set keeps the map piecewise affine. -/
 theorem inter {D : Set V} {f : D → W} (hf : IsRationalPiecewiseAffine h h' D f) {P : Set V}
     (hP : IsRationalSemilinear h P) :
-    IsRationalPiecewiseAffine h h' (D ∩ P) fun x => f ⟨x.1, x.2.1⟩ := by
+    IsRationalPiecewiseAffine h h' (D ∩ P) fun x => f ⟨x.val, x.property.1⟩ := by
   obtain ⟨κ, _, S, g, rfl, hS⟩ := hf
   refine ⟨κ, ‹_›, fun k => S k ∩ P, g, (Set.iUnion_inter ..).symm, fun k =>
-    ⟨(hS k).1.inter hP, (hS k).2.1, fun x hx => (hS k).2.2 ⟨x.1, x.2.1⟩ hx.1⟩⟩
+    ⟨(hS k).1.inter hP, (hS k).2.1, fun x hx => (hS k).2.2 ⟨x.val, x.property.1⟩ hx.1⟩⟩
 
 /-- Composing the values with a rational affine map keeps the map piecewise affine. -/
 theorem postcomp {D : Set V} {f : D → W} (hf : IsRationalPiecewiseAffine h h' D f)
@@ -140,12 +141,12 @@ theorem isRationalPiecewiseAffine {D : Set V} {f : D → W} (hf : IsFiniteBranch
 /-- Restricting a finite branch to a rational semilinear set gives a finite branch. -/
 theorem inter {D : Set V} {f : D → W} (hf : IsFiniteBranchOn h h' D f) {P : Set V}
     (hP : IsRationalSemilinear h P) :
-    IsFiniteBranchOn h h' (D ∩ P) fun x => f ⟨x.1, x.2.1⟩ := by
+    IsFiniteBranchOn h h' (D ∩ P) fun x => f ⟨x.val, x.property.1⟩ := by
   obtain ⟨κ, _, S, g, rfl, hS⟩ := hf
   obtain ⟨μ, _, C, hC, -, rfl⟩ := TauCeti.isRationalSemilinear_iff_exists_pairwise_disjoint.mp hP
   refine ⟨κ × μ, inferInstance, fun p => S p.1 ∩ C p.2, fun p => g p.1, ?_, fun p =>
     ⟨(hS p.1).1.inter (hC p.2), (hS p.1).2.1, (hS p.1).2.2.1.mono Set.inter_subset_left,
-      fun x hx => (hS p.1).2.2.2 ⟨x.1, x.2.1⟩ hx.1⟩⟩
+      fun x hx => (hS p.1).2.2.2 ⟨x.val, x.property.1⟩ hx.1⟩⟩
   ext x
   simp only [Set.mem_iUnion, Set.mem_inter_iff, Prod.exists]
   tauto
@@ -154,14 +155,14 @@ theorem inter {D : Set V} {f : D → W} (hf : IsFiniteBranchOn h h' D f) {P : Se
 theorem finite_fiber {D : Set V} {f : D → W} (hf : IsFiniteBranchOn h h' D f) (w : W) :
     Finite {x : D // f x = w} := by
   obtain ⟨κ, _, S, g, hD, hS⟩ := hf
-  have hpiece : ∀ x : D, ∃ k, x.1 ∈ S k := fun x => by
-    simpa only [Set.mem_iUnion, ← hD] using x.2
+  have hpiece : ∀ x : D, ∃ k, x.val ∈ S k := fun x => by
+    simpa only [Set.mem_iUnion, ← hD] using x.property
   choose k hk using hpiece
-  refine Finite.of_injective (fun x : {x : D // f x = w} => k x.1) fun x y hxy => ?_
-  have hxy : k x.1 = k y.1 := hxy
-  refine Subtype.ext (Subtype.ext ((hS (k x.1)).2.2.1 (hk x.1) (hxy ▸ hk y.1) ?_))
-  rw [← (hS (k x.1)).2.2.2 x.1 (hk x.1), hxy, ← (hS (k y.1)).2.2.2 y.1 (hk y.1)]
-  exact x.2.trans y.2.symm
+  refine Finite.of_injective (fun x : {x : D // f x = w} => k x.val) fun x y hxy => ?_
+  have hxy : k x.val = k y.val := hxy
+  refine Subtype.ext (Subtype.ext ((hS (k x.val)).2.2.1 (hk x.val) (hxy ▸ hk y.val) ?_))
+  rw [← (hS (k x.val)).2.2.2 x.val (hk x.val), hxy, ← (hS (k y.val)).2.2.2 y.val (hk y.val)]
+  exact x.property.trans y.property.symm
 
 end IsFiniteBranchOn
 
@@ -189,7 +190,7 @@ theorem ext {F G : FiniteSemilinearFamily h h' ι} (hd : ∀ c, F.domain c = G.d
   obtain ⟨d, e, p⟩ := F
   obtain ⟨d', e', p'⟩ := G
   obtain rfl : d = d' := funext hd
-  obtain rfl : e = e' := funext fun c => funext fun x => he c x.1 x.2 x.2
+  obtain rfl : e = e' := funext fun c => funext fun x => he c x.val x.property x.property
   rfl
 
 /-- The fiber of a family over `w`: a chart together with a point of its domain evaluating to
@@ -291,7 +292,7 @@ theorem isFiniteBranch_sum_iff :
 @[expose] def restrict {P : Set V} (hP : IsRationalSemilinear h P) :
     FiniteSemilinearFamily h h' ι where
   domain c := F.domain c ∩ P
-  eval c x := F.eval c ⟨x.1, x.2.1⟩
+  eval c x := F.eval c ⟨x.val, x.property.1⟩
   isRationalPiecewiseAffine c := (F.isRationalPiecewiseAffine c).inter hP
 
 @[simp]
@@ -300,14 +301,14 @@ theorem restrict_domain {P : Set V} (hP : IsRationalSemilinear h P) (c : ι) :
 
 @[simp]
 theorem restrict_eval {P : Set V} (hP : IsRationalSemilinear h P) (c : ι)
-    (x : ↥(F.domain c ∩ P)) : (F.restrict hP).eval c x = F.eval c ⟨x.1, x.2.1⟩ := (rfl)
+    (x : ↥(F.domain c ∩ P)) : (F.restrict hP).eval c x = F.eval c ⟨x.val, x.property.1⟩ := (rfl)
 
 /-- The fiber of a restriction consists of the points of the original fiber lying in the
 restricting set. -/
 def fiberRestrictEquiv {P : Set V} (hP : IsRationalSemilinear h P) (w : W) :
-    (F.restrict hP).fiber w ≃ {p : F.fiber w // (p.2.1 : V) ∈ P} where
-  toFun p := ⟨⟨p.1, ⟨p.2.1.1, p.2.1.2.1⟩, p.2.2⟩, p.2.1.2.2⟩
-  invFun p := ⟨p.1.1, ⟨p.1.2.1.1, p.1.2.1.2, p.2⟩, p.1.2.2⟩
+    (F.restrict hP).fiber w ≃ {p : F.fiber w // (p.2.val : V) ∈ P} where
+  toFun p := ⟨⟨p.1, ⟨p.2.val.val, p.2.val.property.1⟩, p.2.property⟩, p.2.val.property.2⟩
+  invFun p := ⟨p.val.1, ⟨p.val.2.val.val, p.val.2.val.property, p.property⟩, p.val.2.property⟩
   left_inv _ := rfl
   right_inv _ := rfl
 
@@ -348,8 +349,8 @@ theorem postcomp_eval (φ : W →ᵃ[ℝ] X) (hφ : TauCeti.Toric.IsRationalLine
 points of `φ ⁻¹' {w'}`. -/
 def fiberPostcompEquiv (φ : W →ᵃ[ℝ] X) (hφ : TauCeti.Toric.IsRationalLinearMap h' h'' φ.linear)
     (w' : X) : (F.postcomp φ hφ).fiber w' ≃ Σ w : {w : W // φ w = w'}, F.fiber w where
-  toFun p := ⟨⟨F.eval p.1 p.2.1, p.2.2⟩, p.1, p.2.1, rfl⟩
-  invFun p := ⟨p.2.1, p.2.2.1, (congrArg φ p.2.2.2).trans p.1.2⟩
+  toFun p := ⟨⟨F.eval p.1 p.2.val, p.2.property⟩, p.1, p.2.val, rfl⟩
+  invFun p := ⟨p.2.1, p.2.2.val, (congrArg φ p.2.2.property).trans p.1.property⟩
   left_inv _ := rfl
   right_inv := by
     rintro ⟨⟨w, hw⟩, c, x, hx⟩
@@ -405,7 +406,7 @@ variable {h}
 /-- A one-chart family evaluating by the identity on the whole line has a single point in each
 fiber. -/
 private theorem nat_card_fiber_eq_one {F : FiniteSemilinearFamily h h Unit}
-    (hd : F.domain () = Set.univ) (he : ∀ x, F.eval () x = x.1) (w : ℝ) :
+    (hd : F.domain () = Set.univ) (he : ∀ x, F.eval () x = x.val) (w : ℝ) :
     Nat.card (F.fiber w) = 1 := by
   rw [Nat.card_eq_one_iff_unique]
   refine ⟨⟨?_⟩, ⟨⟨(), ⟨w, by simp [hd]⟩, by rw [he]⟩⟩⟩
@@ -417,8 +418,8 @@ private theorem nat_card_fiber_eq_one {F : FiniteSemilinearFamily h h Unit}
 /-- The disjoint union of two copies of `id : ℝ → ℝ` has fibers of cardinality two: the
 coinciding images of the two charts are not identified. -/
 theorem nat_card_fiber_sum_id (F G : FiniteSemilinearFamily h h Unit)
-    (hFd : F.domain () = Set.univ) (hFe : ∀ x, F.eval () x = x.1)
-    (hGd : G.domain () = Set.univ) (hGe : ∀ x, G.eval () x = x.1) (w : ℝ) :
+    (hFd : F.domain () = Set.univ) (hFe : ∀ x, F.eval () x = x.val)
+    (hGd : G.domain () = Set.univ) (hGe : ∀ x, G.eval () x = x.val) (w : ℝ) :
     Nat.card ((F.sum G).fiber w) = 2 := by
   have hF := nat_card_fiber_eq_one hFd hFe w
   have hG := nat_card_fiber_eq_one hGd hGe w

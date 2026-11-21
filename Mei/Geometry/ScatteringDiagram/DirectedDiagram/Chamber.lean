@@ -92,7 +92,7 @@ theorem isLocallyConstant_levelTransport {k : ℕ} (hD : D.LevelConsistent k)
   obtain ⟨r, hr, hball⟩ :=
     Metric.isOpen_iff.mp (D.isOpen_setOf_forall_notMem_support k) y.val y.property
   refine ⟨Subtype.val ⁻¹' Metric.ball y.val r,
-    Metric.isOpen_ball.preimage continuous_subtype_val, by simpa, ?_⟩
+    Metric.isOpen_ball.preimage continuous_subtypeVal, by simpa, ?_⟩
   intro z hz
   let a : WallComplement (fun j : D.active k => (D.wall j).support) := ⟨y.val, y.property⟩
   let b : WallComplement (fun j : D.active k => (D.wall j).support) := ⟨z.val, z.property⟩

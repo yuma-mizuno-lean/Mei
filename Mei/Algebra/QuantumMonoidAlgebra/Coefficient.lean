@@ -31,7 +31,7 @@ No faithfulness or genericity assumption on the quantum parameter is required.
 
 public section
 
-open TauCeti (AlgFiltration)
+open TauCeti (AlgFiltration IsFiltrationRaising)
 
 open TauCeti (PositiveDegrees PositiveDegreeMap)
 
@@ -130,19 +130,18 @@ scoped instance instGradedBracket :
 
 /-- Inner quantum coefficient actions satisfy the associative Leibniz rule. -/
 scoped instance instIsDerivationAction :
-    IsDerivationAction (positiveLieAlgebra q β d) (positiveSubalgebra q β Q) where
+    TauCeti.IsDerivationAction (positiveLieAlgebra q β d) (positiveSubalgebra q β Q) where
   lie_mul x a b :=
-    IsDerivationAction.lie_mul (coefficientLieHom q β d Q Fact.out x) a b
+    TauCeti.IsDerivationAction.lie_mul (coefficientLieHom q β d Q Fact.out x) a b
 
 /-- Positive quantum Lie degrees raise the coefficient degree filtration. -/
 scoped instance instIsFiltrationRaising :
     IsFiltrationRaising d (positiveLieGrading q β d)
-      ((positiveFiltration q β Q d.degree hδ).toModuleFiltration R) where
+      ((positiveFiltration q β Q d.degree hδ).toSubmodule R) where
   lie_mem {a b x y} hx hy := by
     let F := positiveFiltration q β Q d.degree hδ
     have hx' := coefficientLieHom_mem_positiveFiltration q β d Q Fact.out hδ hx
-    rw [AlgFiltration.toModuleFiltration_submodule,
-      Submodule.restrictScalars_mem] at hy ⊢
+    rw [AlgFiltration.toSubmodule_apply, Submodule.restrictScalars_mem] at hy ⊢
     rw [lie_eq]
     exact (F.ideal _).sub_mem (by simpa [Nat.add_assoc, Nat.add_comm 1 b] using F.mul_mem hx' hy)
       (by simpa [Nat.add_assoc, Nat.add_comm b a, Nat.add_left_comm] using F.mul_mem hy hx')

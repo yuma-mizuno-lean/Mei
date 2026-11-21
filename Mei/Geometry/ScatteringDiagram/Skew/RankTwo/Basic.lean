@@ -46,11 +46,12 @@ variable [DecidableEq D.unfrozen]
 /-- The dilogarithm label `Ψ[n]^c = exp(c ∑_{j ≥ 1} (-1)^(j+1) X_{jn} / j²)` of a nonzero allowed
 degree `n` and a rational exponent `c`, in the completed skew group. -/
 def dilogPow (n : D.NonzeroDegree d) (c : ℚ) : d.completedBCHGroup 𝓛ℚ :=
-  SkewLieAlgebra.rayExp βℚ hβℚ n.2.1 n.2.2 (c • negDilogNeg ℚ)
+  SkewLieAlgebra.rayExp βℚ hβℚ n.property.1 n.property.2 (c • negDilogNeg ℚ)
 
 /-- Unfolds `dilogPow`, which holds by definition. -/
 theorem dilogPow_def (n : D.NonzeroDegree d) (c : ℚ) :
-    D.dilogPow d n c = SkewLieAlgebra.rayExp βℚ hβℚ n.2.1 n.2.2 (c • negDilogNeg ℚ) := (rfl)
+    D.dilogPow d n c =
+      SkewLieAlgebra.rayExp βℚ hβℚ n.property.1 n.property.2 (c • negDilogNeg ℚ) := (rfl)
 
 /-- The exponent `c + c'` gives the product of the labels with exponents `c` and `c'`. -/
 theorem dilogPow_add (n : D.NonzeroDegree d) (c c' : ℚ) :
@@ -83,7 +84,8 @@ theorem projection_prod_dilogPow_filter {ι : Type*} (l : List ι) (δ : ι → 
     (σ : ι → ℚ) (k : ℕ) :
     TauCeti.CompletedGroup.projection k (l.map fun i => D.dilogPow d (δ i) (σ i)).prod =
       TauCeti.CompletedGroup.projection k
-        ((l.filter fun i => d.degree (δ i).1 ≤ k).map fun i => D.dilogPow d (δ i) (σ i)).prod := by
+        ((l.filter fun i => d.degree (δ i).val ≤ k).map
+          fun i => D.dilogPow d (δ i) (σ i)).prod := by
   rw [map_list_prod, map_list_prod, List.map_map, List.map_map]
   refine (List.prod_map_filter_of_ne l fun i _ hi => ?_).symm
   by_contra hik
@@ -97,16 +99,16 @@ variable [Module.Free ℤ N]
 of `N°`. The normalized positive factors `Ψ[n]^{sκ(n)}`, `s ∈ ℕ`, are the powers of unit
 factors. -/
 def unitFactor (n : D.NonzeroDegree d) : d.completedBCHGroup 𝓛ℚ :=
-  D.dilogPow d n (κ (n.1 : N))
+  D.dilogPow d n (κ (n.val : N))
 
 /-- Unfolds `unitFactor`, which holds by definition. -/
 theorem unitFactor_def (n : D.NonzeroDegree d) :
-    D.unitFactor d n = D.dilogPow d n (κ (n.1 : N)) := (rfl)
+    D.unitFactor d n = D.dilogPow d n (κ (n.val : N)) := (rfl)
 
 /-- A normalized positive factor `Ψ[n]^{sκ(n)}` with `s ≥ 0` is the `s`-th power of the unit
 factor of `n`. -/
 theorem dilogPow_intCast_mul_rayIndex (n : D.NonzeroDegree d) {s : ℤ} (hs : 0 ≤ s) :
-    D.dilogPow d n (s * κ (n.1 : N)) = D.unitFactor d n ^ s.toNat := by
+    D.dilogPow d n (s * κ (n.val : N)) = D.unitFactor d n ^ s.toNat := by
   rw [dilogPow_intCast_mul, unitFactor_def, ← zpow_natCast, Int.toNat_of_nonneg hs]
 
 /-- If each label `Ψ[δ i]^{σ i}` is the `s i`-th power of the unit factor of `δ i`, then the unit
